@@ -20,14 +20,14 @@
     la copie dit « Copié » en mots, au lieu d'un carré de 14 px ;
     les trois boutons verts pleins à la suite deviennent des boutons cernés :
       ils restent les mêmes mots, « J'ai reçu le paiement » ;
-    la TVA de chaque pièce passe de l'or (2,8) à l'or foncé (4,6).
+    l'or reste celui de l'appli (#B98B47), sa demande du 25 octobre.
 */
-.ligne-ma-tva { margin: -8px 0 18px; font-size: 15px; font-weight: 700; color: var(--atlas-orTexte); }
+.ligne-ma-tva { margin: -8px 0 18px; font-size: 15px; font-weight: 700; color: var(--atlas-or); }
 
 .frise { display: flex; align-items: center; gap: 4px; margin: 0 calc(var(--gouttiere) * -1); padding-left: var(--gouttiere); }
 .frise-annee { flex: none; display: inline-flex; align-items: center; gap: 7px; min-height: 44px; padding: 0 12px 0 8px;
                border-radius: 22px; font: 400 17px/1 var(--serif); box-shadow: inset 0 0 0 1px var(--atlas-line); }
-.frise-annee .ico { color: var(--atlas-orTexte); width: 20px; height: 20px; }
+.frise-annee .ico { color: var(--atlas-or); width: 20px; height: 20px; }
 .pastille-rouge { min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; display: inline-grid; place-items: center;
                   font: 700 12.5px/1 var(--sans); background: var(--atlas-alerte); color: var(--atlas-card); }
 .frise-mois { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; padding-right: var(--gouttiere);
@@ -49,12 +49,12 @@
            text-decoration-thickness: 1.5px; }
 .add-montant { font: 400 23px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; color: var(--atlas-ink); white-space: nowrap; }
 .add-moins { color: var(--atlas-inkSoft); margin-right: 6px; }
-.copier { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-orTexte); }
+.copier { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-or); }
 .copier .copie-mot { display: none; font-size: 12.5px; font-weight: 700; }
 .copier.copie .ico { display: none; }
 .copier.copie .copie-mot { display: block; }
 .add-trait { height: 1px; background: var(--atlas-line); margin: 6px 0; }
-.add-total .add-mot { text-decoration: none; color: var(--atlas-orTexte); font-weight: 700; }
+.add-total .add-mot { text-decoration: none; color: var(--atlas-or); font-weight: 700; }
 .add-total .add-montant { font-size: 40px; letter-spacing: -0.02em; }
 
 .gestes-achat { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
@@ -70,7 +70,7 @@
 .fa-droite { text-align: right; }
 .fa-montant { font: 400 19px/1.2 var(--serif); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
 .fa-petit { display: block; font-size: 13.5px; color: var(--atlas-inkSoft); }
-.fa-sur { display: block; margin-top: 2px; font-size: 13.5px; font-weight: 600; color: var(--atlas-orTexte); }
+.fa-sur { display: block; margin-top: 2px; font-size: 13.5px; font-weight: 600; color: var(--atlas-or); }
 .fa-trace b { color: var(--atlas-ink); }
 .fa-paye { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px; margin-top: 14px; }
 .fa-paye span { font-size: 14.5px; font-weight: 600; color: var(--atlas-inkSoft); }
@@ -91,12 +91,12 @@
 .preuve-detail { margin-top: 3px; font-size: 14px; color: var(--atlas-inkSoft); }
 .paire { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-top: 8px; font-size: 15px; color: var(--atlas-inkSoft); }
 .paire b { font: 400 17px/1.2 var(--serif); color: var(--atlas-ink); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
-.paire.or, .paire.or b { color: var(--atlas-orTexte); }
+.paire.or, .paire.or b { color: var(--atlas-or); }
 .paire.or b { font-weight: 700; }
 .total-preuve { display: flex; justify-content: space-between; align-items: baseline; margin-top: 4px; padding-top: 12px;
                 box-shadow: inset 0 1.5px 0 var(--atlas-ink); }
 .total-preuve span { font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
-.total-preuve b { font: 700 21px/1 var(--serif); color: var(--atlas-orTexte); font-variant-numeric: tabular-nums lining-nums; }
+.total-preuve b { font: 700 21px/1 var(--serif); color: var(--atlas-or); font-variant-numeric: tabular-nums lining-nums; }
 .pas-encore { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; }
 .mention { margin: 36px 4px 8px; text-align: center; font-size: 14px; line-height: 1.5; color: var(--atlas-inkSoft); }
 
@@ -379,7 +379,7 @@
       <li>« Ma TVA » s'écrit en clair sous le mois, et les mois de la frise se lisent en entier.</li>
       <li>TVA collectée et TVA déductible sont soulignés d'or : on voit qu'ils s'ouvrent. Toucher un chiffre le copie, et l'écran dit « Copié ».</li>
       <li>Les trois boutons verts pleins à la suite deviennent des boutons cernés de vert. Les mots restent : J'ai reçu le paiement.</li>
-      <li>La TVA de chaque pièce passe à l'or foncé, lisible au soleil.</li>
+      <li>Le doré est celui de l'appli, partout.</li>
       <li>Après un paiement, « M. Bernard, 312,00 € est rentrée au relevé. » : une virgule à la place du point.</li>
     </ul>
     <h2>Ce qui ne bouge pas</h2>

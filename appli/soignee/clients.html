@@ -29,7 +29,7 @@
 .champ-recherche { flex: 1; display: flex; align-items: center; gap: 10px; min-height: 52px;
                    box-shadow: inset 0 -1.5px 0 var(--atlas-line); transition: box-shadow 200ms var(--courbe); }
 .champ-recherche:focus-within { box-shadow: inset 0 -2px 0 var(--atlas-or); }
-.champ-recherche .ico { color: var(--atlas-orTexte); }
+.champ-recherche .ico { color: var(--atlas-or); }
 .champ-recherche input { flex: 1; min-width: 0; height: 48px; border: 0; background: transparent; outline: none;
                          font: 400 17px/1 var(--sans); color: var(--atlas-ink); }
 .champ-recherche input::placeholder { color: var(--atlas-muted); }
@@ -40,8 +40,8 @@
 
 .portes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
 .porte { display: flex; align-items: center; gap: 10px; min-height: 64px; padding: 10px 12px; border-radius: 10px; text-decoration: none;
-         color: var(--atlas-orTexte); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 70%, transparent); }
-.porte .ico { color: var(--atlas-orTexte); flex: none; width: 22px; height: 22px; }
+         color: var(--atlas-or); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 70%, transparent); }
+.porte .ico { color: var(--atlas-or); flex: none; width: 22px; height: 22px; }
 .porte .ico-p { width: 18px; height: 18px; }
 .porte-texte { flex: 1; min-width: 0; }
 .porte-nom { display: block; font-size: 15px; font-weight: 700; line-height: 1.2; }
@@ -77,8 +77,8 @@
 .ecran[data-etat="choix"] .tout { display: inline-flex; }
 .tout .coche-ronde { display: grid; place-items: center; width: 24px; height: 24px; }
 
-.importer { margin-top: 28px; color: var(--atlas-orTexte); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 70%, transparent); }
-.importer .ico { color: var(--atlas-orTexte); }
+.importer { margin-top: 28px; color: var(--atlas-or); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 70%, transparent); }
+.importer .ico { color: var(--atlas-or); }
 .rien { padding: 26px 4px; text-align: center; font-size: 15.5px; color: var(--atlas-inkSoft); }
 
 .barre-choix { position: absolute; left: 0; right: 0; bottom: 66px; z-index: 7; padding: 12px var(--gouttiere) 6px;
@@ -94,7 +94,7 @@
 .volet-choix[aria-pressed="true"] { background: var(--atlas-plein); color: var(--sur-plein); box-shadow: none; }
 .volet-choix[aria-pressed="true"] .ico { color: var(--sur-plein); }
 .mois-filtre { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 18px 0 0; font: 400 22px/1.2 var(--serif); }
-.mois-filtre .ico { color: var(--atlas-orTexte); }
+.mois-filtre .ico { color: var(--atlas-or); }
 .mois-filtre button { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-inkSoft); box-shadow: inset 0 0 0 1px var(--atlas-line); }
 .suppression-titre { margin: 0 0 6px; font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--atlas-alerte); }
 </style>
@@ -143,7 +143,7 @@
             </div>
 
             <div class="portes" data-si-etat="rempli vide">
-              <a class="porte touche" href="clients.html?vue=entreprises" data-pas-encore><svg class="ico" aria-hidden="true"><use href="#i-entreprise"/></svg><span class="porte-texte"><span class="porte-nom">Vos entreprises</span><span class="porte-compte">Aucune</span></span><svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+              <a class="porte touche" href="clients.html?vue=partenaires" data-pas-encore><svg class="ico" aria-hidden="true"><use href="#i-entreprise"/></svg><span class="porte-texte"><span class="porte-nom">Vos partenaires</span><span class="porte-compte">Aucun</span></span><svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
               <a class="porte touche" href="clients.html?vue=publics" data-pas-encore><svg class="ico" aria-hidden="true"><use href="#i-banque"/></svg><span class="porte-texte"><span class="porte-nom">Services publics</span><span class="porte-compte">1</span></span><svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
             </div>
 
@@ -249,14 +249,14 @@
     <h2>Ce qui change</h2>
     <ul>
       <li>Le Filtre rejoint la recherche sur sa ligne : le premier client se voit dès l'ouverture, plus besoin de descendre.</li>
-      <li>Vos entreprises et Services publics deviennent deux cartes dorées côte à côte, chacune avec son nombre.</li>
+      <li>Vos entreprises s'appelle Vos partenaires. Avec Services publics, ce sont deux cartes dorées côte à côte, chacune avec son nombre.</li>
       <li>Chaque lettre range ses clients dans une plage ; chaque client a ses initiales, son adresse, sa dernière pièce, et « 312,00 € dus » d'un seul tenant, en rouge.</li>
       <li>La recherche trouve à chaque lettre tapée (essaie « gar »). Rester appuyé sur un client ouvre le choix pour en supprimer plusieurs.</li>
       <li>Importer devis / facture, geste rare, descend au bout de la liste.</li>
     </ul>
     <h2>Ce qui ne bouge pas</h2>
     <ul class="garde">
-      <li>L'or garde son rôle de ta page : ce qui mène ailleurs (les portes, l'import, la loupe). Le rouge reste le dû.</li>
+      <li>Le doré de l'appli, à la même place que sur ta page : ce qui mène ailleurs (les portes, l'import, la loupe). Le rouge reste le dû.</li>
       <li>De A à Z, les lettres, la recherche soulignée, le Filtre et ses trois choix, la feuille de suppression et sa case.</li>
     </ul>
     <h2>À noter</h2>

@@ -16,9 +16,11 @@ planche « Ce qui change partout » (`fondations.html`), puis une planche par
 proposition, à essayer au pouce. Un lien vers une planche pas encore faite dit
 « Cette planche arrive bientôt » : la liste des prêtes est `PRETES` dans `kit.js`.
 
-**Livrées :** Réglages (le sommaire), Vos clients, Terminés et Ma TVA (avec des chantiers terminés et des factures de démonstration). **À trancher par lui :** le vert des
+**Livrées :** Réglages (le sommaire), Vos clients et la fiche d'un client, Terminés et Ma TVA (avec des chantiers terminés et des factures de démonstration). **À trancher par lui :** le vert des
 boutons, le sien (#7d9a6d, 3,0 de contraste sous le crème) ou un cran plus
 sombre (#587a4c, 4,6), sur `fondations.html`. Rien n'est codé dans `src/`.
+
+**Le doré, sa consigne du 25 octobre :** le doré de l'appli (#B98B47, `--atlas-or`) partout dans les planches, jamais l'or foncé (`orTexte`). « Vos entreprises » s'appelle « Vos partenaires » sur la planche des clients.
 
 **Pour reprendre :** l'inventaire de 48 écrans (décisions du patron relevées
 écran par écran) a été fait dans la session du 25 octobre, hors dépôt ; il
