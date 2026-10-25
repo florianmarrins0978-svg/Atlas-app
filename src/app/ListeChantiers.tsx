@@ -373,6 +373,11 @@ export default function ListeChantiers({
               // **En phrase, 15 px en demi-gras — sa planche du 25 octobre 2026**
               // (`appli/soignee/accueil.html`) : en capitales espacées de
               // 12 px, l'état se lisait lettre à lettre. L'or reste le sien.
+              //
+              // **Un repère, comme la précision juste en dessous** : la suite qui
+              // vérifie l'or le trouvait par ses capitales, et c'est l'écriture
+              // qui vient de changer, pas la règle (`CLAUDE.md` §5 bis).
+              data-atlas="etat-chantier"
               className="mt-[6px] text-[15px] font-semibold leading-[1.3]"
               style={{ color: c.attend ? colors.or : colors.inkSoft }}
             >
