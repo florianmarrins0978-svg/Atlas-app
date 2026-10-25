@@ -39,6 +39,14 @@ Le prompt renforcé est au §6 de `docs/audit-securite-prompt-renforce.md`. Éta
 
 Le seed refuse lui-même `atlas_dev` qui porte du travail (`ARCHITECTURE.md` §498).
 
+## ⏳ UN VIREMENT REÇU SANS FACTURE D'ATLAS BLOQUE LE DOSSIER POUR TOUJOURS (25 octobre 2026)
+
+**Son signalement :** *« le dernier ticket, je peux pas le valider parce que je dois le valider sur la première page, Vos chantiers, sauf que la notification n'apparaît pas ; donc je peux pas verrouiller mon dossier »*.
+
+**Reproduit sur le poste** (`atlas_test`, virement de 864 € de Mme Costa enregistré comme la banque l'écrit) : l'accueil ne pose aucune question. La racine : `questionsDesVirements` (`src/lib/virement-en-mots.ts`) ne garde un virement que si `proposerFacture` lui trouve une facture en attente ; le dossier, lui, compte toute entrée sans facture confirmée comme à justifier (`ligneAJustifier`) et sa carte renvoie vers l'accueil (« Sa facture se confirme sur l'accueil »). Un client payé hors d'Atlas, un paiement partiel sans numéro, un remboursement, un apport personnel, un virement de plus de 60 jours (`QUESTIONS_SUR_JOURS`) : aucune question ne viendra jamais, et « Arrêter mon dossier » reste refusé.
+
+**Proposé sur la planche `appli/soignee/termines-comptable.html`, à trancher par lui avant d'y toucher :** la carte du virement reçu se règle sur place, comme une sortie : choisir la facture qui attend (même en partie), joindre une facture faite hors d'Atlas, ou dire ce que c'est (un remboursement, mon argent perso, un prêt, une aide ou une subvention, entre mes comptes). Une fois choisi, le correctif se code avec son test rouge d'abord (`.claude/rules/testing.md`) : une entrée sans facture correspondante doit pouvoir être justifiée, et le dossier rangé.
+
 ## POUR MON COMPTABLE : SES CHOIX SONT DONNÉS, À CODER (23 octobre 2026)
 
 **Sa demande :** préparer la visite annuelle au comptable. Chaque sortie de la
