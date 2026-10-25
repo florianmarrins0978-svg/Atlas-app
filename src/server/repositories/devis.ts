@@ -1054,7 +1054,12 @@ async function lireLesTravaux(tx: DbOrTx, ctx: Ctx, chantierId: string): Promise
   const lignes = d
     ? tachesDuDevis(
         await tx
-          .select({ libelle: lignesDevis.libelle, quantite: lignesDevis.quantite, unite: lignesDevis.unite })
+          .select({
+            libelle: lignesDevis.libelle,
+            quantite: lignesDevis.quantite,
+            unite: lignesDevis.unite,
+            mainDoeuvre: lignesDevis.mainDoeuvre,
+          })
           .from(lignesDevis)
           .where(eq(lignesDevis.devisId, d.id))
           .orderBy(lignesDevis.ordre)
