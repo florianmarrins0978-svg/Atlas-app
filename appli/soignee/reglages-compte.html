@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mon compte, soigné</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  MON COMPTE (src/app/reglages/compte/page.tsx, CompteClient.tsx,
+  components/atlas/FichePhoto.tsx, BarreEnregistrer.tsx).
+
+  Sa demande du 25 octobre : une planche par rubrique des Réglages, plus jolie,
+  le doré de l'appli quand il y a du doré, de la couleur si elle aide.
+
+  L'écran d'aujourd'hui tient déjà sur un écran : le rond des initiales, le
+  nom, puis quatre lignes sous des libellés en petites capitales espacées.
+  Ce qui change : les quatre lignes vont dans une plage, sous un titre doré ;
+  le rond porte un petit appareil doré, parce que rien ne dit aujourd'hui qu'il
+  se touche pour poser sa photo ; l'e-mail porte un cadenas doré à côté de sa
+  phrase ; le nom du haut suit la frappe.
+
+  Ce qui ne bouge pas (ses décisions dans le code) : pas de téléphone ici (sa
+  réponse A du 14 août), la civilité se choisit et se retire en réappuyant
+  (8 septembre), l'e-mail ne se change pas et la ligne qui le dit reste
+  (26 août), le nom seul sous le rond (26 août), la barre Enregistrer qui
+  n'existe que s'il y a quelque chose à enregistrer, et Enregistré qui
+  s'attarde deux secondes et demie.
+*/
+.carte-personne { display: flex; align-items: center; gap: 16px; padding: 16px 18px; }
+/* Le rond : les initiales en or, comme aujourd'hui, et le petit appareil qui
+   dit qu'il se touche. */
+.portrait { position: relative; flex: none; width: 64px; height: 64px; border-radius: 50%; }
+.portrait-rond { width: 64px; height: 64px; display: grid; place-items: center; border-radius: 50%;
+                 box-shadow: inset 0 0 0 1.5px var(--atlas-or); font: 400 25px/1 var(--serif); color: var(--atlas-or); }
+.portrait-badge { position: absolute; right: -4px; bottom: -4px; width: 28px; height: 28px; display: grid; place-items: center;
+                  border-radius: 50%; background: var(--atlas-or); color: var(--sur-plein); box-shadow: 0 0 0 3px var(--atlas-card); }
+.portrait-badge .ico { width: 16px; height: 16px; stroke-width: 2; }
+.nom-compte { font-size: 23px; line-height: 1.2; }
+
+/* La civilité : deux grandes pastilles, la prise en plein. */
+.civilites { display: flex; gap: 10px; margin-top: 8px; }
+.civilites button { flex: 1; min-height: 48px; border-radius: 24px; font: 400 18px/1 var(--serif); color: var(--atlas-ink);
+                    box-shadow: inset 0 0 0 1px var(--atlas-line); transition: background-color 200ms var(--courbe); }
+.civilites button[aria-pressed="true"] { background: var(--atlas-plein); color: var(--sur-plein); box-shadow: none; }
+
+.courriel { display: flex; align-items: center; gap: 10px; }
+.courriel .reglage-valeur { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.courriel .ico { width: 20px; height: 20px; color: var(--atlas-or); }
+.reglage-sous { text-wrap: pretty; }
+
+/* Enregistrer, puis Enregistré qui s'attarde : le bouton creux de l'appli. */
+.bouton-fait { background: transparent; color: var(--atlas-inkSoft); box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
+
+/* La feuille de la photo. */
+.feuille-photo { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.portrait-grand { width: 132px; height: 132px; display: grid; place-items: center; border-radius: 50%;
+                  box-shadow: inset 0 0 0 2px var(--atlas-or); font: 400 50px/1 var(--serif); color: var(--atlas-or); }
+.feuille-photo .feuille-titre { margin: 14px 0 20px; }
+.feuille-photo .pile { width: 100%; }
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="reglages.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Réglages</a>
+  <h1 class="pl-titre">Mon compte</h1>
+  <p class="pl-verdict">Les quatre lignes d'aujourd'hui dans <b>une seule plage</b>, sous un titre doré. Le rond porte un <b>petit appareil doré</b> : on voit enfin qu'il se touche pour mettre sa photo.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <!-- PROPOSÉ -->
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats">
+        <button type="button" data-etat="rempli" aria-pressed="true">Tout est rempli</button>
+        <button type="button" data-etat="neuf">Un compte neuf</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre avec-action" data-etat="rempli" id="ecran-compte">
+          <div class="defile">
+            <div class="tete-ronds">
+              <a class="rond-creux" href="reglages.html" aria-label="Retour aux réglages"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </div>
+            <header class="tete" style="margin-top:0"><h1 class="tete-titre">Mon compte</h1></header>
+
+            <div class="plage carte-personne">
+              <button class="portrait touche" type="button" data-ouvre="feuille-photo" aria-label="Ma photo">
+                <span class="portrait-rond" data-initiales>PM</span>
+                <span class="portrait-badge" aria-hidden="true"><svg class="ico"><use href="#i-photo"/></svg></span>
+              </button>
+              <span class="ligne-corps"><span class="ligne-nom nom-compte" data-nom>Paul Morel</span></span>
+            </div>
+
+            <p class="rubrique rubrique-or">Qui vous êtes</p>
+            <div class="plage reglages">
+              <div class="reglage">
+                <span class="reglage-libelle">Civilité</span>
+                <div class="civilites" id="civilites">
+                  <button type="button" data-civilite="mme" aria-pressed="false">Mme</button>
+                  <button type="button" data-civilite="mr" aria-pressed="true" data-si-etat="rempli">Mr.</button>
+                  <button type="button" data-civilite="mr" aria-pressed="false" data-si-etat="neuf">Mr.</button>
+                </div>
+              </div>
+              <label class="reglage">
+                <span class="reglage-libelle">Prénom</span>
+                <input class="reglage-valeur" id="prenom" value="Paul" placeholder="Votre prénom" autocomplete="off">
+              </label>
+              <label class="reglage">
+                <span class="reglage-libelle">Nom</span>
+                <input class="reglage-valeur" id="nom" value="Morel" placeholder="Votre nom de famille" autocomplete="off">
+              </label>
+              <div class="reglage">
+                <span class="reglage-libelle">E-mail</span>
+                <span class="courriel">
+                  <span class="reglage-valeur" data-si-etat="rempli">paul@jardins-demo.fr</span>
+                  <span class="reglage-valeur" data-si-etat="neuf">contact@jardins-demo.fr</span>
+                  <svg class="ico" aria-hidden="true"><use href="#i-cadenas"/></svg>
+                </span>
+                <span class="reglage-sous">Sert aussi à vous connecter. Pas encore modifiable.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Elle n'existe que s'il y a quelque chose à enregistrer (BarreEnregistrer). -->
+          <div class="action-bas" id="barre-enregistrer" hidden>
+            <button class="bouton bouton-plein" type="button" id="enregistrer">Enregistrer</button>
+          </div>
+
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html">Terminés</a>
+              <a class="barre-onglet" href="paysage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html" aria-current="page">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+
+          <section class="feuille" id="feuille-photo" aria-hidden="true" aria-label="Ma photo">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans feuille-photo">
+              <span class="portrait-grand" data-initiales>PM</span>
+              <h2 class="feuille-titre" data-nom>Paul Morel</h2>
+              <div class="pile">
+                <button class="bouton bouton-plein" type="button" data-fait="Sur la planche, l'appareil photo ne s'ouvre pas."><svg class="ico" aria-hidden="true"><use href="#i-photo"/></svg>Prendre une photo</button>
+                <button class="bouton bouton-creux" type="button" data-fait="Sur la planche, la galerie ne s'ouvre pas."><svg class="ico" aria-hidden="true"><use href="#i-importer"/></svg>Choisir dans la galerie</button>
+                <button class="bouton bouton-texte" type="button" data-ferme style="width:100%;justify-content:center;color:var(--atlas-inkSoft)">Annuler</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- AUJOURD'HUI -->
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre">
+        <div class="cadre-capture"><img src="aujourdhui/reglages-compte.jpg" alt="L'écran Mon compte tel qu'il est aujourd'hui"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>Plus de « MOI » doré sous le titre : le titre suffit, comme sur le sommaire.</li>
+      <li>Le rond et le nom ouvrent la page dans une plage. Le rond porte un petit appareil doré : aujourd'hui rien ne dit qu'on le touche pour mettre sa photo.</li>
+      <li>Civilité, Prénom, Nom et E-mail vont dans une plage, sous « Qui vous êtes » en doré. Les libellés s'écrivent en toutes lettres, plus en petites capitales espacées.</li>
+      <li>Mme et Mr. deviennent deux grandes pastilles de 48 px ; la prise est pleine, en vert.</li>
+      <li>Une case vide dit ce qu'elle attend : « Votre prénom », « Votre nom de famille ». Aujourd'hui, une case vide ressemble à un trou.</li>
+      <li>L'e-mail porte un cadenas doré : on voit qu'il ne s'ouvre pas avant de lire pourquoi.</li>
+      <li>La feuille de la photo gagne « Annuler » en simple mot, comme celle de Se déconnecter.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Pas de téléphone ici : celui que vos clients voient est celui de Mon entreprise (votre réponse A du 14 août).</li>
+      <li>La civilité se retire en réappuyant dessus : touchez Mr. deux fois.</li>
+      <li>Le nom du haut et les initiales suivent ce que vous tapez dans Prénom et Nom ; sans nom, c'est l'e-mail qui s'affiche (touchez « Un compte neuf »).</li>
+      <li>L'e-mail ne se change pas, et sa phrase reste : sans elle, une case qui ne s'ouvre pas se lirait comme une panne.</li>
+      <li>Enregistrer n'apparaît que si quelque chose a changé, au-dessus de la barre. Quitter une case enregistre aussi, et « Enregistré » s'attarde le temps de se lire. Essayez en changeant le prénom.</li>
+      <li>La feuille de la photo : Prendre une photo, Choisir dans la galerie, et Retirer la photo quand il y en a une.</li>
+      <li>Un refus du serveur s'écrit en haut : « Impossible d'enregistrer pour l'instant. Réessayez. »</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="reglages-donnees.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Mes données</a>
+  <a href="reglages-notifications.html">Notifications<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  "use strict";
+  var ecran = document.getElementById("ecran-compte");
+  var prenom = document.getElementById("prenom");
+  var nom = document.getElementById("nom");
+  var barre = document.getElementById("barre-enregistrer");
+  var bouton = document.getElementById("enregistrer");
+  var minuterie = null;
+
+  /* Les initiales et le nom affiché : la règle de identite-personne.ts. */
+  function courriel() {
+    return ecran.getAttribute("data-etat") === "neuf" ? "contact@jardins-demo.fr" : "paul@jardins-demo.fr";
+  }
+  function initiales(p, n) {
+    if (p && n) return (p[0] + n[0]).toUpperCase();
+    var mots = (p || n).split(/\s+/).filter(Boolean);
+    if (mots.length >= 2) return (mots[0][0] + mots[mots.length - 1][0]).toUpperCase();
+    if (mots.length === 1) return mots[0].slice(0, 2).toUpperCase();
+    return (courriel().split("@")[0].slice(0, 2) || "?").toUpperCase();
+  }
+  function peindre() {
+    var p = prenom.value.trim(), n = nom.value.trim();
+    var affiche = [p, n].filter(Boolean).join(" ");
+    ecran.querySelectorAll("[data-nom]").forEach(function (el) { el.textContent = affiche || courriel(); });
+    ecran.querySelectorAll("[data-initiales]").forEach(function (el) { el.textContent = initiales(p, n); });
+  }
+
+  /* La barre : Enregistrer tant que c'est à écrire, puis Enregistré qui s'en va. */
+  /* Un geste fait pendant l'enregistrement le rend caduc : la barre redit
+     Enregistrer, comme l'appli quand la civilité change après le prénom. */
+  var tour = 0;
+  function aEcrire() {
+    tour++;
+    clearTimeout(minuterie);
+    barre.hidden = false;
+    bouton.textContent = "Enregistrer";
+    bouton.classList.remove("bouton-fait");
+    bouton.classList.add("bouton-plein");
+  }
+  function enregistrer() {
+    if (barre.hidden || bouton.classList.contains("bouton-fait")) return;
+    var celuiCi = tour;
+    bouton.textContent = "Enregistrement…";
+    setTimeout(function () {
+      if (celuiCi !== tour) return;
+      bouton.textContent = "Enregistré";
+      bouton.classList.remove("bouton-plein");
+      bouton.classList.add("bouton-fait");
+      minuterie = setTimeout(function () { barre.hidden = true; }, 2500);
+    }, 450);
+  }
+
+  [prenom, nom].forEach(function (champ) {
+    champ.addEventListener("input", function () { aEcrire(); peindre(); });
+    champ.addEventListener("blur", enregistrer);
+  });
+  bouton.addEventListener("click", enregistrer);
+
+  /* La civilité se prend, et se retire en réappuyant. */
+  document.getElementById("civilites").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-civilite]");
+    if (!b) return;
+    var prise = b.getAttribute("aria-pressed") === "true";
+    this.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", "false"); });
+    if (!prise) this.querySelectorAll("button[data-civilite='" + b.getAttribute("data-civilite") + "']").forEach(function (x) { x.setAttribute("aria-pressed", "true"); });
+    aEcrire();
+  });
+
+  /* Les deux états : Paul Morel, puis un compte qui n'a pas encore dit son nom. */
+  document.querySelectorAll(".pl-etats button[data-etat]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var neuf = b.getAttribute("data-etat") === "neuf";
+      prenom.value = neuf ? "" : "Paul";
+      nom.value = neuf ? "" : "Morel";
+      document.querySelectorAll("#civilites button").forEach(function (x) {
+        x.setAttribute("aria-pressed", !neuf && x.getAttribute("data-civilite") === "mr" ? "true" : "false");
+      });
+      clearTimeout(minuterie);
+      barre.hidden = true;
+      peindre();
+    });
+  });
+
+  document.querySelectorAll("[data-fait]").forEach(function (b) {
+    b.addEventListener("click", function () { Kit.fermerFeuilles(ecran); Kit.note(ecran, b.getAttribute("data-fait")); });
+  });
+  peindre();
+});
+</script>
+</body>
+</html>
