@@ -1,4 +1,4 @@
-import { colors, smallCaps } from "@/lib/design-tokens";
+import { colors } from "@/lib/design-tokens";
 import { couleursDuTon, type TonCarte } from "@/lib/ton-des-cartes";
 
 /**
@@ -12,11 +12,17 @@ import { couleursDuTon, type TonCarte } from "@/lib/ton-des-cartes";
  * comprendre, et c'est lui que lit qui ne distingue pas les couleurs. Sur une
  * carte « pour mémoire », le point est un simple trait gris : il garde la place
  * sans rien signaler.
+ *
+ * **En phrase et non plus en petites capitales — sa planche du 25 octobre 2026**
+ * (`appli/soignee/accueil.html`, « tu peux coder ça »). À 11 px espacés de
+ * 0,18 em, « CORRECTION DEMANDÉE » se lisait mal sur un téléphone tenu d'une
+ * main ; à 15 px en gras, le titre se lit d'un coup, et le point garde la
+ * couleur de la famille.
  */
 export default function TitreDeCarte({ ton, children }: { ton: TonCarte; children: React.ReactNode }) {
   const couleurs = couleursDuTon(ton);
   return (
-    <p className={`${smallCaps} flex items-center gap-[7px]`} style={{ color: couleurs.titre, marginBottom: 6 }}>
+    <p className="flex items-center gap-[8px] text-[15px] font-bold leading-[1.3]" style={{ color: couleurs.titre, marginBottom: 2 }}>
       <span
         aria-hidden
         className="h-2 w-2 flex-none rounded-full"

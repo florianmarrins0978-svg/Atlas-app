@@ -2,7 +2,7 @@ import Link from "next/link";
 import { colors, font } from "@/lib/design-tokens";
 import TitreDeCarte from "@/components/atlas/TitreDeCarte";
 import { NOM_CONTROLE, phraseDeLEcheance, type Echeance, type RappelVehicule } from "@/lib/vehicules";
-import { couleursDuTon, type TonCarte } from "@/lib/ton-des-cartes";
+import { couleurDuGeste, couleursDuTon, type TonCarte } from "@/lib/ton-des-cartes";
 
 /**
  * L'échéance dans les familles de l'accueil (sa planche du 23 octobre 2026).
@@ -38,30 +38,30 @@ export default function RappelsVehicules({ rappels }: { rappels: RappelVehicule[
             key={`${r.vehiculeId}-${r.controle}`}
             data-atlas="rappel-vehicule"
             data-atlas-ton={ton}
-            className="rounded-[18px] px-5 py-4"
+            className="rounded-[18px] px-5 pb-1 pt-3.5"
             style={{ backgroundColor: couleurs.fond }}
           >
             <TitreDeCarte ton={ton}>{NOM_CONTROLE[r.controle]}</TitreDeCarte>
-            <p className="text-[16px]" style={{ fontFamily: font.display, color: colors.ink }}>
+            <p className="mt-1 text-[20px] leading-[1.2]" style={{ fontFamily: font.display, color: colors.ink }}>
               {r.vehiculeNom}
             </p>
             <p
-              className="mt-1 text-[13px]"
+              className="mt-1 text-[15px] leading-[1.45]"
               style={{ color: couleurs.texte, fontWeight: r.echeance.ton === "depasse" ? 600 : 400 }}
             >
               {phraseDeLEcheance(r)}
             </p>
-            <div className="-mx-2 mt-2 flex items-center gap-2">
+            <div className="-mx-2 mt-1 flex flex-wrap items-center gap-x-3">
               <Link
                 href={`/reglages/vehicules/${r.vehiculeId}?ajouter=controle_technique`}
-                className="inline-flex min-h-[44px] items-center px-2 text-[14px] font-medium"
-                style={{ color: colors.rust }}
+                className="inline-flex min-h-[48px] items-center px-2 text-[16px] font-bold"
+                style={{ color: couleurDuGeste(ton) }}
               >
                 Ajouter le procès‑verbal
               </Link>
               <Link
                 href={`/reglages/vehicules/${r.vehiculeId}`}
-                className="inline-flex min-h-[44px] items-center px-2 text-[14px]"
+                className="inline-flex min-h-[48px] items-center px-2 text-[16px] font-medium"
                 style={{ color: colors.inkSoft }}
               >
                 Taper la date
