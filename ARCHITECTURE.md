@@ -36034,3 +36034,20 @@ retirée, et `test-papier-facture-db.ts` avec elle.
 
 **E16, refusé.** `/api/health/diagnostic` reste ouvert sans compte : il sert justement quand on ne peut pas se connecter, et `test-diagnostic-sans-secret.ts` vérifie déjà qu'il ne porte aucun secret.
 
+## §504 : Terminés, le jour du chantier passe dans un carré qui dit l'état
+
+Sa planche du 25 octobre 2026 (`appli/soignee/termines.html`), codée le soir
+même. Le jour du chantier quitte la ligne d'état pour un carré à gauche de la
+rangée (`carreDuJour`, règle pure) : doré pâle pour une facture partie, vert
+plein comme la capsule « À facturer » pour ce qui attend. Deux teintes pâles
+avaient été dessinées d'abord : elles se confondaient à l'œil. Le jour est
+`dateDuChantier` (le planning, sinon le jour de la facture), confirmé par lui le
+même soir ; sans aucune date, la place reste vide. L'année s'écrit dans le
+carré quand ce n'est plus celle du jour, pour la raison que porte déjà
+`libelleDateChantier` : l'œil mêle tous les mois.
+
+La carte de TVA perd son contour doré du 26 août : il disait « on peut appuyer »
+à une carte du même blanc que l'écran, et c'est désormais le fond teinté qui la
+détache. `test-tva-en-tete-e2e` mesure donc l'écart entre ce fond et celui de
+l'écran, plus le contour.
+

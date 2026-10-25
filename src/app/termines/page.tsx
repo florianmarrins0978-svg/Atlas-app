@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { colors, font, libelleCaps, voile } from "@/lib/design-tokens";
+import { colors, font } from "@/lib/design-tokens";
 import { compterLesRetours } from "@/server/repositories/retours-intervention";
 import { abonnementDeLEntreprise } from "@/server/repositories/abonnements";
 import { fonctionOuverte } from "@/lib/abonnements";
@@ -115,102 +115,77 @@ export default async function TerminesPage({ searchParams }: { searchParams: Pro
             régime, et n'est exigible qu'à l'échéance. Sans ces deux mots, la
             carte se lirait « ce que je dois aujourd'hui ».
 
-            **ELLE PORTE UN CONTOUR DEPUIS LE 26 AOÛT 2026, et c'est son choix
-            — la proposition 3** de `appli/termines-sans-traits.html` : *« on ne
-            comprend pas trop qu'on peut cliquer dessus, corrige ça, mais garde
-            ce style et cette forme, j'aime bien »*.
-
-            **Pourquoi elle ne se voyait pas.** Son fond (`card`, #faf9f5) est à
-            deux points du fond de l'écran (`cream`, #f5f3ee). Sans bord, sans
-            ombre et sans rien qui ressemble aux boutons du même écran, elle
-            avait la forme d'un BANDEAU D'INFORMATION — un chiffre affiché, pas
-            un objet qu'on touche. Déplacer la carte en tête le 23 août avait
-            réglé « on ne la voit pas » ; restait « on ne sait pas qu'on peut
-            appuyer », qui n'est pas la même chose.
-
-            **Un contour, et pas une capsule.** Les deux lui ont été dessinées.
-            La capsule aurait réemployé le seul signe du geste que cette page
-            connaît déjà ; il a retenu le contour, qui laisse la forme
-            rigoureusement intacte.
-
-            **Il est doré, jamais gris.** L'or est déjà la couleur du titre de
-            cette carte : un bord gris en aurait fait deux objets — un cadre, et
-            un contenu sans rapport. Et il est posé en `boxShadow` interne
-            plutôt qu'en `border` : une bordure vraie déplacerait le contenu de
-            1,5 px et désalignerait la carte des lignes en dessous.
+            **Elle a porté un contour doré du 26 août au 25 octobre 2026**
+            (`appli/termines-sans-traits.html`, proposition 3), pour qu'on voie
+            qu'elle s'appuie ; la plage teintée l'a remplacé, voir juste dessous.
 
             **Ce qui a été écarté, et qu'il ne faut pas ramener :** une flèche au
             bout (*« arrête de mettre des flèches, c'est moche »*, 25 août, redit
             le soir même) et un « Voir le relevé » sous le montant (*« le moins
             de mots possible »*, même jour). */}
-        <Link
-          href="/termines/tva"
-          data-atlas="carte-tva"
-          // **20 px de haut au lieu de 17, 18 de côté au lieu de 15, et 24 sous
-          // le titre au lieu de 18 — « le calme », sa proposition A du
-          // 2 septembre 2026** (`appli/termines-elegance.html`). La carte porte
-          // un montant de 21 px entre 17 px de marge : le chiffre touchait
-          // presque le contour doré, et la carte paraissait pincée là où elle
-          // est le premier objet de l'écran. Rien d'autre n'y bouge — ni la
-          // forme, ni le fond, ni le contour : *« garde ce style et cette
-          // forme, j'aime bien »* (26 août).
-          className="mx-[26px] mt-6 flex items-center justify-between gap-3 rounded-[4px] px-[18px] py-5"
-          style={{
-            backgroundColor: colors.card,
-            boxShadow: `inset 0 0 0 1.5px ${voile(colors.or, 0.55)}`,
-          }}
-        >
-          <span className="min-w-0">
-            {/* **En or et en gras — sa demande du 23 août 2026 au soir.** Ce
-                titre était le plus pâle de la carte alors que c'est lui qui
-                nomme l'outil dont il disait, le matin même, *« il est caché, on
-                ne le voit pas trop »*. Déplacer la carte en tête ne suffisait
-                donc pas : encore fallait-il qu'on la voie. */}
-            <span className={`block ${libelleCaps} font-bold`} style={{ color: colors.or }}>
+        {/* **DEUX PLAGES TEINTÉES, CÔTE À CÔTE — sa planche du 25 octobre 2026**
+            (`appli/soignee/termines.html`) : *« garde deux plages teintées
+            mais remets le doré de l'appli pour tout ce qui est en doré »*. La
+            TVA sur l'or pâle (ce qu'on doit), le comptable sur le vert pâle (ce
+            qui est en ordre). Côte à côte, elles tiennent sur une rangée au
+            lieu de deux cartes empilées, et la liste remonte.
+
+            **Le contour doré du 26 août est parti avec ce choix.** Il servait à
+            dire « on peut appuyer » à une carte du même blanc que l'écran ; une
+            plage teintée se détache d'elle-même du fond. Le contrôle
+            `test-tva-en-tete-e2e` mesure désormais cela : la carte se voit,
+            par son fond. */}
+        <div className="mx-[26px] mt-6 grid grid-cols-2 gap-2.5" data-atlas="cases-argent">
+          <Link
+            href="/termines/tva"
+            data-atlas="carte-tva"
+            className="flex min-h-[140px] min-w-0 flex-col rounded-[4px] px-3.5 py-4 no-underline"
+            style={{ backgroundColor: colors.carteAmbreFond, color: colors.ink }}
+          >
+            {/* En or et en gras depuis le 23 août 2026 : c'est lui qui nomme
+                l'outil qu'il disait « caché ». L'or de l'appli, jamais un or
+                foncé : sa correction du 25 octobre. */}
+            <span className="block text-[13px] font-bold uppercase leading-[1.35] tracking-[0.1em] [text-wrap:balance]" style={{ color: colors.or }}>
               Ma TVA à déclarer
             </span>
-            <span
-              className="mt-[5px] block truncate text-[17px]"
-              style={{ fontFamily: font.display }}
-            >
+            <span className="mt-1.5 block truncate text-[17px]" style={{ fontFamily: font.display }}>
               {tva.periode}
             </span>
-          </span>
-          <span
-            className="shrink-0 text-[21px]"
-            style={{ fontFamily: font.display, color: colors.rust, fontVariantNumeric: "tabular-nums" }}
+            {/* Le montant se lit sans ouvrir : sa proposition B du 23 août. */}
+            <span
+              className="mt-auto whitespace-nowrap pt-3.5 text-[24px] leading-none"
+              style={{ fontFamily: font.display, fontVariantNumeric: "tabular-nums lining-nums" }}
+            >
+              {formatEuros.format(tva.reste)}
+            </span>
+          </Link>
+          {/* Le mot du bas dit ce qui manque, en rouille, ou que tout est
+              justifié, avec sa coche (sa planche du 23 octobre 2026). */}
+          <Link
+            href="/termines/comptable"
+            data-atlas="carte-comptable"
+            className="flex min-h-[140px] min-w-0 flex-col rounded-[4px] px-3.5 py-4 no-underline"
+            style={{ backgroundColor: colors.carteVertFond, color: colors.ink }}
           >
-            {formatEuros.format(tva.reste)}
-          </span>
-        </Link>
-        {/* **La même forme que la carte de la TVA, juste dessous** — son choix du
-            23 octobre 2026 (`appli/pour-mon-comptable.html`, écran 1) : la barre
-            du bas garde ses cinq onglets. Le mot de droite dit ce qui manque, en
-            rouille, ou que tout est justifié. */}
-        <Link
-          href="/termines/comptable"
-          data-atlas="carte-comptable"
-          className="mx-[26px] mt-3 flex items-center justify-between gap-3 rounded-[4px] px-[18px] py-5"
-          style={{
-            backgroundColor: colors.card,
-            boxShadow: `inset 0 0 0 1.5px ${voile(colors.or, 0.55)}`,
-          }}
-        >
-          <span className="min-w-0">
-            <span className={`block ${libelleCaps} font-bold`} style={{ color: colors.or }}>
+            <span className="block text-[13px] font-bold uppercase leading-[1.35] tracking-[0.1em] [text-wrap:balance]" style={{ color: colors.carteVertTexte }}>
               Pour mon comptable
             </span>
-            <span className="mt-[5px] block truncate text-[17px]" style={{ fontFamily: font.display }}>
+            <span className="mt-1.5 block truncate text-[17px]" style={{ fontFamily: font.display }}>
               Dossier en cours
             </span>
-          </span>
-          <span
-            className="shrink-0 text-[16px]"
-            style={{ fontFamily: font.display, color: sansTicket > 0 ? colors.rust : colors.inkSoft }}
-          >
-            {sansTicket > 0 ? `${sansTicket} sans ticket` : "Tout est justifié"}
-          </span>
-        </Link>
+            <span
+              className="mt-auto flex items-center gap-1.5 pt-3.5 text-[17px] leading-[1.15]"
+              style={{ fontFamily: font.display, color: sansTicket > 0 ? colors.rust : colors.ink }}
+            >
+              {sansTicket === 0 && (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="flex-none">
+                  <path d="M5 12.5l4.5 4.5L19 7.5" stroke={colors.carteVertTexte} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
+              {sansTicket > 0 ? `${sansTicket} sans ticket` : "Tout est justifié"}
+            </span>
+          </Link>
+        </div>
         {/* **La mention grise sous la carte est partie le 23 août 2026**, à sa
             demande : *« la petite phrase en dessous d'août 2026, en gris,
             supprime-la »*. Cet écran portait trop de choses à lire pour ce

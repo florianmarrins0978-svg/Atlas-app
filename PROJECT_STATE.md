@@ -5,6 +5,10 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## TERMINÉS SOIGNÉ, CODÉ (25 octobre 2026)
+
+Codé d'après `appli/soignee/termines.html` : `src/app/termines/page.tsx` (deux plages teintées), `ListeTermines.tsx` (boutons, Non payées, carré du jour), règle pure `carreDuJour` (`src/lib/termines-par-mois.ts`). Ma TVA et le comptable, les écrans, n'ont pas bougé. `ARCHITECTURE.md` §504.
+
 ## LES FACTURES DES FOURNISSEURS, CODÉ (23 octobre 2026), SUR `main` LE 24 OCTOBRE 2026 (batterie commune)
 
 Codé : onglet Factures de la fiche (`FournisseursPartenaires.tsx`), dépôt photo, PDF, Excel ou CSV (`deposerDevisRecuAction`), remplacement d'un prix par une facture (`accepterLignesDuDevisAction`, `remplacerPrixAchat`), règle pure `rapprocherDuPrix` (`src/lib/devis-fournisseur-lu.ts`), migration `0139_factures_recues.sql`. Livré par la batterie commune du 24 octobre, avec la facture acquittée, la banque et le ticket : 496 suites base, 191 navigateur vertes. Elle a trouvé deux défauts, corrigés : la sauvegarde oubliait la banque reliée et les virements, et les cartes teintées de l'accueil perdaient en lisibilité en Nuit.

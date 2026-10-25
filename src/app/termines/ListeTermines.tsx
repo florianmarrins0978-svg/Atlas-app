@@ -12,6 +12,7 @@ import {
   factureesPartout,
   formatEuros,
   libelleEtatLigne,
+  carreDuJour,
   moisDuChantier,
   nomDuMois,
   resumeDuMois,
@@ -171,14 +172,13 @@ export default function ListeTermines({
           **« Tout » et « À facturer » ont quitté cette rangée**, et le filtre
           vit désormais dans la phrase de comptes, sous le mois : c'est l'ŒIL,
           plus bas. Il ne reste ici que ce qui OUVRE une page — les deux
-          portes —, et elles tiennent sur une seule rangée : 44 px de haut, le
-          bord droit sur la marge de 26 px, comme le 11 septembre. À 360 px la
-          rangée se replie, et « Créer une facture » passe dessous, à droite.
-
-          **28 px sous la carte — « le calme », sa proposition A du 2 septembre
-          2026** (`appli/termines-elegance.html`). */}
+          portes —, et elles tiennent sur une seule rangée. */}
+      {/* **Deux boutons de même largeur, 56 px de haut — sa planche du 25 octobre
+          2026** (`appli/soignee/termines.html`) : le pouce les trouve sans
+          viser, et la rangée ne se replie plus à 360 px, le nom long passe
+          sur deux lignes dans son bouton. */}
       <div
-        className="mx-[26px] mt-7 flex flex-wrap justify-between gap-2"
+        className="mx-[26px] mt-3 grid grid-cols-2 gap-2.5"
         data-atlas="portes-termines"
       >
         {/* ─── LES RETOURS D'INTERVENTION — sa décision du 8 septembre 2026 ───
@@ -201,10 +201,10 @@ export default function ListeTermines({
         <Link
           href="/termines/retours"
           data-atlas="onglet-retours"
-          className="flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 text-[12.5px] no-underline"
+          className="flex min-h-14 min-w-0 items-center justify-center gap-2 rounded-full px-3.5 text-center text-[15px] font-medium leading-[1.2] no-underline"
           style={{
             backgroundColor: colors.card,
-            color: colors.inkSoft,
+            color: colors.ink,
             boxShadow: `inset 0 0 0 1px ${colors.line}`,
             WebkitTapHighlightColor: "transparent",
           }}
@@ -220,7 +220,7 @@ export default function ListeTermines({
           {retoursNonLus > 0 && (
             <span
               data-atlas="compte-des-non-lus"
-              className="grid h-5 min-w-5 place-items-center rounded-full px-1.5 text-[11px] font-bold"
+              className="grid h-6 min-w-6 flex-none place-items-center rounded-full px-1.5 text-[13px] font-bold"
               style={{ backgroundColor: colors.or, color: colors.cream }}
             >
               {retoursNonLus}
@@ -242,7 +242,7 @@ export default function ListeTermines({
             **Sur la même rangée depuis le 13 septembre 2026.** Elle vivait sur
             une seconde rangée parce que les trois onglets prenaient 300 px sur
             les 306 d'un écran de 360 ; deux d'entre eux partis, la place est
-            là — et `ml-auto` la garde à droite même quand la rangée se replie.
+            là, et depuis le 25 octobre 2026 chacune en prend la moitié.
 
             **À DROITE ET EN OR, et ce n'est pas de l'ornement.** Le contour
             vide plutôt qu'un aplat : le vert plein dit « c'est ce que vous
@@ -254,10 +254,10 @@ export default function ListeTermines({
         <Link
           href="/chantiers/nouveau?facture=1"
           data-atlas="creer-une-facture"
-          className="ml-auto flex min-h-11 flex-none items-center justify-center whitespace-nowrap rounded-full px-3.5 text-[12.5px] no-underline"
+          className="flex min-h-14 min-w-0 items-center justify-center rounded-full px-3.5 text-center text-[15px] font-medium leading-[1.2] no-underline"
           style={{
             color: colors.or,
-            boxShadow: `inset 0 0 0 1px ${colors.or}`,
+            boxShadow: `inset 0 0 0 1.5px ${colors.or}`,
             WebkitTapHighlightColor: "transparent",
           }}
         >
@@ -275,13 +275,20 @@ export default function ListeTermines({
         <Link
           href="/termines/non-payees"
           data-atlas="categorie-non-payees"
-          className="mx-[26px] mt-3 flex min-h-12 items-center justify-between rounded-full px-[18px] text-[14px] no-underline"
-          style={{ color: colors.alert, boxShadow: `inset 0 0 0 1px ${colors.alert}` }}
+          // **Une plage rouge pâle, plus un simple contour — sa planche du
+          // 25 octobre 2026** : c'est de l'argent qui ne rentre pas, il doit se
+          // voir avant la liste.
+          className="mx-[26px] mt-2.5 flex min-h-14 items-center gap-2.5 rounded-full px-4 text-[15.5px] font-bold no-underline"
+          style={{ backgroundColor: colors.carteRougeFond, color: colors.carteRougeTexte }}
         >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="flex-none">
+            <path d="M12 4l9 15.5H3z" stroke="currentColor" strokeWidth="1.75" strokeLinejoin="round" />
+            <path d="M12 10v4.5M12 17v.4" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+          </svg>
           Non payées
           <span
-            className="grid h-6 min-w-6 place-items-center rounded-full px-1.5 text-[12.5px] font-semibold"
-            style={{ backgroundColor: colors.alert, color: surPlein }}
+            className="ml-auto grid h-6 min-w-6 place-items-center rounded-full px-1.5 text-[13px] font-bold"
+            style={{ backgroundColor: colors.carteRougeTexte, color: colors.carteRougeFond }}
           >
             {nonPayees}
           </span>
@@ -478,8 +485,8 @@ function NavigationMois({
       <span
         style={{
           fontFamily: font.display,
-          fontSize: 26,
-          lineHeight: 1.2,
+          fontSize: 30,
+          lineHeight: 1.1,
           whiteSpace: "nowrap",
           marginInline: 2,
           color: enVeille ? colors.muted : colors.ink,
@@ -767,7 +774,14 @@ function Ligne({ ligne, annee, cle, soldee }: { ligne: LigneAffichee; annee: str
   // **Sauf quand la rangée porte la capsule**, qui garde le centrage : une
   // pastille de 44 px n'a pas de ligne d'écriture, et l'aligner sur une
   // lettre la ferait descendre sous la rangée.
-  const classe = `flex w-full text-left ${ligne.aFacturer ? "items-center" : "items-baseline"} gap-3.5 py-[24px] first:pt-[22px]`;
+  //
+  // **LE CARRÉ DU JOUR, 25 OCTOBRE 2026** (`appli/soignee/termines.html`) :
+  // chaque rangée ouvre sur son jour en grand, et ce carré sépare à lui seul
+  // deux rangées voisines. Les 24 px de respiration qui remplaçaient le trait
+  // redescendent à 17 : 34 px d'un carré au suivant, le plancher que tient
+  // `test-tva-en-tete-e2e`. Le montant reste posé sur la ligne du NOM
+  // (`ContenuLigne`), la colonne des montants tient toujours.
+  const classe = `flex w-full text-left ${ligne.aFacturer ? "items-center" : "items-start"} gap-3 py-[17px] first:pt-5`;
   if (ligne.factureStatut !== "emise") {
     return (
       <Link href={`/chantiers/${ligne.id}/facture`} data-atlas="ligne-terminee" id={`chantier-${ligne.id}`} className={classe} style={{ minWidth: 0 }}>
@@ -827,17 +841,79 @@ function Ligne({ ligne, annee, cle, soldee }: { ligne: LigneAffichee; annee: str
   );
 }
 
+/**
+ * Le jour du chantier, en grand, à gauche de la rangée.
+ *
+ * **Sa planche du 25 octobre 2026, et sa demande du même soir :** *« une
+ * couleur au niveau de la date en carré à gauche, pour les factures déjà
+ * facturées et pour celles à facturer, comme ça d'un coup d'œil on le voit »*.
+ * L'or pâle pour une facture partie, le vert plein du bouton « À facturer »
+ * pour ce qui attend. Deux teintes pâles avaient d'abord été dessinées : elles
+ * se confondaient à l'œil.
+ *
+ * **Sans aucune date, la place reste vide** plutôt que de porter un jour
+ * inventé : les noms des rangées voisines restent alignés.
+ */
+function CarreDuJour({ ligne, annee }: { ligne: LigneAffichee; annee: string }) {
+  const carre = carreDuJour(ligne, annee);
+  const forme = "w-12 flex-none rounded-[8px] pb-[7px] pt-1.5 text-center leading-none";
+  if (!carre) return <span className={forme} aria-hidden="true" />;
+  const attend = ligne.aFacturer;
+  return (
+    <span
+      className={forme}
+      style={{ backgroundColor: attend ? colors.plein : colors.carteAmbreFond, color: attend ? surPlein : colors.ink }}
+      data-atlas="carre-du-jour"
+    >
+      <span className="block text-[22px]" style={{ fontFamily: font.display, fontVariantNumeric: "lining-nums" }}>
+        {carre.jour}
+      </span>
+      <span
+        className="mt-[3px] block text-[13px] font-bold uppercase tracking-[0.03em]"
+        style={{ color: attend ? surPlein : colors.or }}
+      >
+        {carre.mois}
+      </span>
+      {carre.annee && (
+        <span className="mt-[3px] block text-[11px] font-semibold" style={{ color: attend ? surPlein : colors.inkSoft }}>
+          {carre.annee}
+        </span>
+      )}
+    </span>
+  );
+}
+
 function ContenuLigne({ ligne, annee, cle }: { ligne: LigneAffichee; annee: string; cle: CleDeTri }) {
   const { avant, mot, apres } = libelleEtatLigne(ligne, annee, cle);
   return (
     <>
+      <CarreDuJour ligne={ligne} annee={annee} />
       <span className="min-w-0 flex-1">
-        <b
-          className="block truncate font-normal"
-          style={{ fontFamily: font.display, fontSize: 17, lineHeight: 1.2, color: colors.ink }}
-        >
-          {ligne.nom}
-        </b>
+        <span className="flex items-baseline gap-2.5">
+          <b
+            className={`min-w-0 flex-1 font-normal ${ligne.aFacturer ? "" : "truncate"}`}
+            style={{ fontFamily: font.display, fontSize: 19, lineHeight: 1.25, color: colors.ink }}
+          >
+            {ligne.nom}
+          </b>
+          {!ligne.aFacturer && (
+            <span
+              className="flex-none"
+              style={{
+                fontFamily: font.display,
+                fontSize: 19,
+                lineHeight: 1.25,
+                fontVariantNumeric: "tabular-nums",
+                whiteSpace: "nowrap",
+                // Gras doré, comme « Facturé » : sa planche A du 24 septembre 2026.
+                fontWeight: 700,
+                color: colors.or,
+              }}
+            >
+              {ligne.montant === null ? "—" : formatEuros(ligne.montant)}
+            </span>
+          )}
+        </span>
         {/* **La ligne d'état s'enroule, elle ne se coupe pas.** Vu sur une
             capture de l'écran, avec de vrais montants : « 12 août,
             1 764,00 € prévus » perdrait « prévus », et parfois le montant
@@ -866,7 +942,7 @@ function ContenuLigne({ ligne, annee, cle }: { ligne: LigneAffichee; annee: stri
               liste, en gras, où il a la place de se voir. */}
         {avant + mot + apres !== "" && (
           <span
-            className="mt-[5px] block text-[13px] leading-[1.5]"
+            className="mt-1 block text-[15px] leading-[1.4]"
             style={{ color: colors.inkSoft, fontVariantNumeric: "tabular-nums" }}
             data-atlas="etat-ligne"
           >
@@ -884,7 +960,7 @@ function ContenuLigne({ ligne, annee, cle }: { ligne: LigneAffichee; annee: stri
           </span>
         )}
       </span>
-      {ligne.aFacturer ? (
+      {ligne.aFacturer && (
         <span
           // **Il l'a demandée dedans le 31 août**, après avoir vu la liste des
           // écartés : elle prend le vert des boutons pleins et leur geste. Elle
@@ -907,22 +983,6 @@ function ContenuLigne({ ligne, annee, cle }: { ligne: LigneAffichee; annee: stri
           data-atlas="capsule-a-facturer"
         >
           À facturer
-        </span>
-      ) : (
-        <span
-          className="flex-none"
-          style={{
-            fontFamily: font.display,
-            fontSize: 16,
-            lineHeight: 1.2,
-            fontVariantNumeric: "tabular-nums",
-            whiteSpace: "nowrap",
-            // Gras doré, comme « Facturé » : sa planche A du 24 septembre 2026.
-            fontWeight: 700,
-            color: colors.or,
-          }}
-        >
-          {ligne.montant === null ? "—" : formatEuros(ligne.montant)}
         </span>
       )}
     </>
