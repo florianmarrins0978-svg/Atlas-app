@@ -127,6 +127,33 @@
         "reason": "seul relevé : l'or #b98b47 sur le crème, décision du patron consignée dans TODO.md (25 octobre 2026, le doré de l'appli partout dans les planches) et état des chantiers toujours en or (src/lib/chantier-etat.ts, 16 août)"
       },
       {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "appli/soignee/termines-comptable.html"
+        ],
+        "createdAt": "2026-10-25T22:11:35.743Z",
+        "reason": "Claude: .cadre est le cadre du téléphone de la planche (kit.css), l'écran dedans porte sa propre gouttière de 22 px"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/termines-comptable.html"
+        ],
+        "createdAt": "2026-10-25T22:11:35.758Z",
+        "reason": "Claude: fond des planches soignées (kit.css) et crème de la charte Origine de l'application (src/lib/chartes.ts), recopiés tels quels"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "appli/soignee/termines-comptable.html"
+        ],
+        "createdAt": "2026-10-25T22:11:43.190Z",
+        "reason": "Claude: seule occurrence relevée le 25 octobre, le crème sur le vert des boutons #7d9a6d choisi par le patron le 3 septembre (src/lib/chartes.ts) ; le cran plus sombre lui est proposé sur appli/soignee/fondations.html, à trancher par lui (TODO.md)"
+      },
+      {
         "rule": "low-contrast",
         "value": "*",
         "files": [
