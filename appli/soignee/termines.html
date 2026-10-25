@@ -7,97 +7,117 @@
 <link rel="stylesheet" href="kit.css">
 <style>
 /*
-  TERMINÉS, REFAIT (src/app/termines/page.tsx, ListeTermines.tsx).
+  TERMINÉS, TROISIÈME PLANCHE (src/app/termines/page.tsx, ListeTermines.tsx).
 
-  Sa demande du 25 octobre, après la première planche : « tu n'as changé que la
-  couleur ; fais-moi une proposition pour l'améliorer ; tout ce que tu vois dans
-  la page doit y être, mais tu peux faire toutes les modifications que tu
-  veux ». Tout y est : Ma TVA, le comptable, Retours d'intervention et sa
-  pastille, Créer une facture, Non payées quand elle existe, le mois et ses
-  flèches, les deux comptes, le Filtre, chaque chantier avec sa date, sa facture
-  et son montant, le volet à trois choix. Ce qui change, c'est l'ordre :
-    l'argent tient sur une rangée de deux cartes au lieu de deux cartes
-      empilées : la liste remonte de 180 points ;
-    ce qui attend sa facture vit dans sa propre partie, en haut, tous mois
-      confondus (sa règle du 22 août : à facturer ne suit pas le mois) ; c'est
-      ce que l'œil faisait, et c'est désormais toujours visible ;
-    les facturés se feuillettent mois par mois, chacun avec sa date en grand.
+  Sa réponse du 25 octobre à la deuxième : « remets les couleurs de l'appli ;
+  Ma TVA et Pour mon comptable, essaye de me faire deux cases jolies, plusieurs
+  propositions ; à facturer et déjà facturés, remets comme c'était avant, sous
+  la date ; conserve les jours de la date sur la gauche ; conserve Non payées ».
+    les couleurs sont celles de l'écran d'aujourd'hui : titres des cases en or
+      espacé, montants en or, pastille or, À facturer en vert plein, Créer une
+      facture au contour or ; plus de dessins vert foncé ni de gris ajoutés ;
+    les deux cases ont trois propositions, au choix au-dessus du téléphone ;
+    la liste redevient UNE liste sous le mois, comme dans l'appli : le mois et
+      ses flèches, « 2 à facturer », l'œil, « 8 facturés », le Filtre, puis les
+      chantiers du mois mêlés, à facturer et facturés ; l'œil ne montre que ce
+      qui attend, tous mois confondus (règle du 22 août) ;
+    gardé de la deuxième planche : le jour en grand à gauche de chaque ligne,
+      Non payées en rouge sous les deux boutons.
 */
-.argent { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.tuile { display: flex; flex-direction: column; justify-content: space-between; min-height: 132px; padding: 14px 14px 16px;
-         border-radius: 10px; background: var(--atlas-card); text-decoration: none; color: inherit;
-         box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 60%, transparent); }
-.tuile-titre { font-size: 14px; font-weight: 700; line-height: 1.25; color: var(--atlas-orTexte); }
-.tuile-sous { margin-top: 3px; font: 400 16px/1.2 var(--serif); color: var(--atlas-inkSoft); }
-.tuile-valeur { margin-top: 14px; font: 400 25px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; letter-spacing: -0.01em;
-                color: var(--atlas-ink); white-space: nowrap; }
-.tuile-bien { display: flex; align-items: center; gap: 6px; margin-top: 14px; font-size: 15px; font-weight: 700; color: var(--atlas-carteVertTexte); }
-.tuile-bien .ico { width: 20px; height: 20px; stroke-width: 2.2; }
 
-.portes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-.porte { position: relative; display: flex; align-items: center; gap: 10px; min-height: 60px; padding: 8px 12px; border-radius: 10px;
-         font-size: 14.5px; font-weight: 600; line-height: 1.2; text-decoration: none; color: var(--atlas-ink);
-         background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
-.porte .ico { width: 22px; height: 22px; flex: none; color: var(--atlas-rust); }
-.porte-or { color: var(--atlas-orTexte); background: transparent; box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 75%, transparent); }
-.porte-or .ico { color: var(--atlas-orTexte); }
-.porte .pastille { position: absolute; top: -7px; right: -5px; }
-.pastille { min-width: 24px; height: 24px; padding: 0 7px; border-radius: 12px; display: inline-grid; place-items: center;
-            font: 700 13px/1 var(--sans); background: var(--atlas-orTexte); color: var(--atlas-card); }
-.non-payees { display: flex; align-items: center; gap: 10px; min-height: 56px; margin-top: 10px; padding: 0 14px; border-radius: 10px;
+/* ─── Les deux cases : trois propositions ─────────────────────────────── */
+.argent { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.case { display: flex; flex-direction: column; min-height: 140px; padding: 16px 14px; border-radius: var(--r-plage);
+        text-decoration: none; color: inherit; background: var(--atlas-card);
+        box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 70%, transparent); }
+.case-titre { font-size: 13px; font-weight: 700; line-height: 1.35; letter-spacing: 0.1em; text-wrap: balance; text-transform: uppercase; color: var(--atlas-orTexte); }
+.case-sous { margin-top: 6px; font: 400 17px/1.2 var(--serif); color: var(--atlas-ink); }
+.case-pied { margin-top: auto; padding-top: 14px; }
+.case-valeur { font: 400 26px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; letter-spacing: -0.01em; white-space: nowrap; color: var(--atlas-ink); }
+.case-bien { display: flex; align-items: center; gap: 6px; font: 400 18px/1.15 var(--serif); color: var(--atlas-ink); }
+.case-bien .ico { width: 20px; height: 20px; stroke-width: 2; color: var(--atlas-or); }
+
+/* 2 : une seule carte, coupée en deux par un filet d'or. */
+.argent[data-prop="2"] { gap: 0; border-radius: var(--r-plage); background: var(--atlas-card);
+                         box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 70%, transparent); }
+.argent[data-prop="2"] .case { background: transparent; box-shadow: none; min-height: 150px; padding: 18px 16px; }
+.argent[data-prop="2"] .case + .case { position: relative; }
+.argent[data-prop="2"] .case + .case::before { content: ""; position: absolute; left: 0; top: 18px; bottom: 18px; width: 1px;
+                                               background: color-mix(in srgb, var(--atlas-or) 55%, transparent); }
+.argent[data-prop="2"] .case-valeur { font-size: 28px; }
+
+/* 3 : deux plages teintées, l'or pour ce qu'on doit, le vert pour ce qui est en ordre. */
+.argent[data-prop="3"] .case { box-shadow: none; }
+.argent[data-prop="3"] .case-tva { background: var(--atlas-carteAmbreFond); }
+.argent[data-prop="3"] .case-tva .case-titre { color: var(--atlas-carteAmbreTexte); }
+.argent[data-prop="3"] .case-compta { background: var(--atlas-carteVertFond); }
+.argent[data-prop="3"] .case-compta .case-titre,
+.argent[data-prop="3"] .case-compta .case-bien .ico { color: var(--atlas-carteVertTexte); }
+
+/* ─── Les deux boutons, aux couleurs de l'appli ───────────────────────── */
+.portes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+.porte { position: relative; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 56px; padding: 0 14px;
+         border-radius: 28px; font-size: 15px; font-weight: 500; line-height: 1.2; text-align: center; text-decoration: none;
+         color: var(--atlas-ink); background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.porte-or { color: var(--atlas-orTexte); background: transparent; box-shadow: inset 0 0 0 1.5px var(--atlas-or); }
+.pastille { min-width: 24px; height: 24px; padding: 0 7px; border-radius: 12px; display: inline-grid; place-items: center; flex: none;
+            font: 700 13px/1 var(--sans); background: var(--atlas-or); color: var(--sur-plein); }
+.non-payees { display: flex; align-items: center; gap: 10px; min-height: 56px; margin-top: 10px; padding: 0 16px; border-radius: 28px;
               text-decoration: none; font-size: 15.5px; font-weight: 700; background: var(--atlas-carteRougeFond); color: var(--atlas-carteRougeTexte); }
 .non-payees .pastille { margin-left: auto; background: var(--atlas-carteRougeTexte); color: var(--atlas-carteRougeFond); }
 
-.partie-tete { display: flex; align-items: center; gap: 10px; margin: 32px 0 12px; }
-.partie-tete h2 { margin: 0; font: 400 24px/1.1 var(--serif); }
-.compte-rond { min-width: 30px; height: 30px; padding: 0 9px; border-radius: 15px; display: inline-grid; place-items: center;
-               font: 700 15px/1 var(--sans); background: var(--atlas-plein); color: var(--sur-plein); }
-.compte-rond.creux { background: transparent; color: var(--atlas-inkSoft); box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
-.partie-tete .filtre { margin-left: auto; }
+/* ─── Sous la date : le mois, les comptes, le Filtre, comme dans l'appli ─ */
+.mois { display: flex; align-items: center; justify-content: center; gap: 2px; margin: 34px 0 0; }
+.mois-nom { min-width: 0; padding: 0 6px; text-align: center; font: 400 30px/1.1 var(--serif); }
+.mois-fleche { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-or); }
+.mois-fleche .ico { width: 20px; height: 20px; stroke-width: 2; }
+.mois-fleche[disabled] { color: color-mix(in srgb, var(--atlas-or) 30%, transparent); cursor: default; }
+.ecran.attente .mois-fleche { color: color-mix(in srgb, var(--atlas-or) 30%, transparent); pointer-events: none; }
 
-.attend { display: block; padding: 14px 14px 14px 12px; border-radius: 10px; background: var(--atlas-card); text-decoration: none; color: inherit;
-          box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-plein) 55%, transparent); }
-.attend + .attend { margin-top: 10px; }
-.attend-haut { display: flex; align-items: center; gap: 12px; }
-.attend-texte { flex: 1; min-width: 0; }
-.attend-nom { display: block; font: 400 19px/1.25 var(--serif); }
-.attend-prevu { display: block; margin-top: 4px; font-size: 14.5px; color: var(--atlas-inkSoft); }
-.attend-prevu b { color: var(--atlas-ink); font-weight: 600; }
-.capsule-facturer { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border-radius: 22px;
-                    font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
-                    background: var(--atlas-plein); color: var(--sur-plein); margin-left: auto; }
-.rien-attend { display: flex; align-items: center; gap: 10px; padding: 16px; border-radius: 10px; font-size: 15px;
-               background: var(--atlas-carteVertFond); color: var(--atlas-carteVertTexte); font-weight: 600; }
+.comptes { display: flex; align-items: center; gap: 8px; margin-top: 14px; font-size: 18px; font-weight: 700; }
+.comptes .or { color: var(--atlas-orTexte); }
+.oeil { width: 44px; height: 44px; margin: -10px -2px; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-or); }
+.oeil .ico { width: 24px; height: 24px; }
+.oeil .ouvert { display: none; }
+.ecran.attente .oeil .ouvert { display: block; }
+.ecran.attente .oeil .ferme { display: none; }
+.filtre-rang { display: flex; justify-content: flex-end; margin-top: 10px; }
+.filtre { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 18px; border-radius: 24px; font-size: 15px;
+          background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.filtre .ico { width: 20px; height: 20px; }
 
-.jour-bloc { width: 48px; flex: none; padding: 6px 0 7px; border-radius: 8px; text-align: center; line-height: 1;
-             background: color-mix(in srgb, var(--atlas-ink) 5%, transparent); }
+[data-liste="attente"] { display: none; }
+.ecran.attente [data-liste="attente"] { display: block; }
+.ecran.attente [data-liste="mois"] { display: none; }
+
+.ligne { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 76px; padding: 12px 0; text-align: left; text-decoration: none; color: inherit; }
+.ligne + .ligne { margin-top: 6px; }
+.jour-bloc { width: 48px; flex: none; align-self: flex-start; padding: 6px 0 7px; border-radius: 8px; text-align: center; line-height: 1;
+             background: var(--atlas-rustTint); }
 .jour-bloc b { display: block; font: 400 22px/1 var(--serif); font-variant-numeric: lining-nums; }
 .jour-bloc span { display: block; margin-top: 3px; font-size: 13px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase;
                   color: var(--atlas-inkSoft); }
-
-.mois { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; margin: 0 0 10px; }
-.mois-nom { text-align: center; font: 400 21px/1.1 var(--serif); }
-.mois-fleche { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-ink);
-               box-shadow: inset 0 0 0 1px var(--atlas-line); }
-.mois-fleche[disabled] { color: color-mix(in srgb, var(--atlas-ink) 22%, transparent); box-shadow: none; cursor: default; }
-
-.facture-ligne { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 72px; padding: 10px 0; text-align: left; }
-.facture-ligne + .facture-ligne { margin-top: 4px; }
-.facture-corps { flex: 1; min-width: 0; }
-.facture-nom { display: block; font: 400 18px/1.25 var(--serif); }
-.facture-bas { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-top: 4px; }
-.facture-etat { font-size: 14px; color: var(--atlas-inkSoft); }
-.facture-etat b { color: var(--atlas-orTexte); }
-.facture-montant { flex: none; font: 700 18px/1.2 var(--serif); color: var(--atlas-orTexte); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
+.ligne-corps { flex: 1; min-width: 0; }
+.ligne-haut { display: flex; align-items: baseline; gap: 10px; }
+.ligne-nom { flex: 1; min-width: 0; font: 400 19px/1.25 var(--serif); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ligne-montant { flex: none; font: 700 19px/1.25 var(--serif); color: var(--atlas-or); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
+.ligne-etat { display: block; margin-top: 4px; font-size: 15px; line-height: 1.4; color: var(--atlas-inkSoft); }
+.ligne-etat b { color: var(--atlas-orTexte); }
+.ligne-attend { align-items: center; }
+.ligne-attend .jour-bloc { align-self: center; }
+.ligne-attend .ligne-nom { white-space: normal; }
+.capsule-facturer { flex: none; display: inline-flex; align-items: center; min-height: 48px; padding: 0 18px; border-radius: 24px;
+                    font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+                    background: var(--atlas-plein); color: var(--sur-plein); }
 .rien-mois { padding: 18px 0; text-align: center; font-size: 15px; color: var(--atlas-inkSoft); }
 .debut { padding: 28px 8px 8px; text-align: center; }
-.debut .ico { width: 40px; height: 40px; color: var(--atlas-orTexte); stroke-width: 1.4; margin: 0 auto 12px; }
+.debut .ico { width: 40px; height: 40px; color: var(--atlas-or); stroke-width: 1.4; margin: 0 auto 12px; }
 .debut p { margin: 0 auto; max-width: 22em; font-size: 15.5px; line-height: 1.5; color: var(--atlas-inkSoft); }
 
 .volet-choix { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 58px; padding: 0 16px; border-radius: 12px; text-align: left;
                font: 400 19px/1 var(--serif); background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line);
                text-decoration: none; color: inherit; }
-.volet-choix .ico { color: var(--atlas-rust); }
+.volet-choix .ico { color: var(--atlas-or); }
 .volet-choix.alerte, .volet-choix.alerte .ico { color: var(--atlas-alerte); }
 .volet-choix + .volet-choix { margin-top: 10px; }
 .volet-choix[aria-pressed="true"] { background: var(--atlas-plein); color: var(--sur-plein); box-shadow: none; }
@@ -106,6 +126,11 @@
 .tri-sens button { flex: 1; min-height: 48px; border-radius: 12px; font-size: 15px; font-weight: 600; color: var(--atlas-inkSoft);
                    box-shadow: inset 0 0 0 1px var(--atlas-line); }
 .tri-sens button[aria-pressed="true"] { color: var(--atlas-orTexte); box-shadow: inset 0 0 0 1.5px var(--atlas-or); }
+.pl-props { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 0 0 18px; }
+.pl-props button { min-height: 40px; padding: 0 14px; border-radius: 20px; font-size: 14px; color: #4a4a44; background: rgba(28,28,26,0.06); }
+.pl-props button[aria-pressed="true"] { background: #8b6835; color: #faf9f5; font-weight: 600; }
+@media (max-width: 760px) { .pl-props, .pl-props-titre { padding: 0 var(--gouttiere); } }
+.pl-props-titre { margin: 0 0 6px; text-align: center; font-size: 14px; font-weight: 600; color: #4a4a44; }
 </style>
 </head>
 <body class="pl">
@@ -113,7 +138,7 @@
 <header class="pl-tete">
   <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
   <h1 class="pl-titre">Terminés</h1>
-  <p class="pl-verdict">Tout ce qui est sur la page y est encore, rangé autrement : <b>ce qui attend ta facture en haut</b>, l'argent sur une rangée, et les factures mois par mois.</p>
+  <p class="pl-verdict">Les couleurs de l'appli, <b>trois propositions pour Ma TVA et le comptable</b>, et la liste sous le mois comme avant, avec le jour en grand à gauche.</p>
 </header>
 
 <main class="pl-scene">
@@ -126,6 +151,12 @@
         <button type="button" data-etat="nonpayee">Une facture non payée</button>
         <button type="button" data-etat="vide">Au début</button>
       </div>
+      <p class="pl-props-titre">Les deux cases</p>
+      <div class="pl-props">
+        <button type="button" data-prop="1" aria-pressed="true">Deux cartes</button>
+        <button type="button" data-prop="2">Une carte en deux</button>
+        <button type="button" data-prop="3">Deux plages teintées</button>
+      </div>
       <div class="cadre">
         <div class="ecran avec-barre" data-etat="rempli">
           <div class="defile">
@@ -134,21 +165,22 @@
               <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
             </header>
 
-            <div class="argent">
-              <a class="tuile touche" href="termines-tva.html">
-                <span><span class="tuile-titre">Ma TVA à déclarer</span><span class="tuile-sous" style="display:block">Octobre 2026</span></span>
-                <span class="tuile-valeur" data-si-etat="rempli nonpayee septembre aout">1 342,00 €</span>
-                <span class="tuile-valeur" data-si-etat="vide">0,00 €</span>
+            <div class="argent" data-prop="1">
+              <a class="case case-tva touche" href="termines-tva.html">
+                <span class="case-titre">Ma TVA à déclarer</span>
+                <span class="case-sous">Octobre 2026</span>
+                <span class="case-pied"><span class="case-valeur" data-si-etat="rempli nonpayee septembre aout">1 342,00 €</span><span class="case-valeur" data-si-etat="vide">0,00 €</span></span>
               </a>
-              <a class="tuile touche" href="termines-comptable.html">
-                <span><span class="tuile-titre">Pour mon comptable</span><span class="tuile-sous" style="display:block">Dossier en cours</span></span>
-                <span class="tuile-bien"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg>Tout est justifié</span>
+              <a class="case case-compta touche" href="termines-comptable.html">
+                <span class="case-titre">Pour mon comptable</span>
+                <span class="case-sous">Dossier en cours</span>
+                <span class="case-pied"><span class="case-bien"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg>Tout est justifié</span></span>
               </a>
             </div>
 
             <div class="portes">
-              <a class="porte touche" href="termines-retours.html"><svg class="ico" aria-hidden="true"><use href="#i-note"/></svg>Retours d'intervention<span class="pastille" data-si-etat="rempli nonpayee septembre aout" aria-label="1 retour non lu">1</span></a>
-              <a class="porte porte-or touche" href="chantier-nouveau.html"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Créer une facture</a>
+              <a class="porte touche" href="termines-retours.html">Retours d'intervention<span class="pastille" data-si-etat="rempli nonpayee septembre aout" aria-label="1 retour non lu">1</span></a>
+              <a class="porte porte-or touche" href="chantier-nouveau.html">Créer une facture</a>
             </div>
             <a class="non-payees touche" href="termines-non-payees.html" data-si-etat="nonpayee"><svg class="ico" aria-hidden="true"><use href="#i-alerte"/></svg>Non payées<span class="pastille">1</span></a>
 
@@ -158,19 +190,6 @@
             </div>
 
             <div data-si-etat="rempli nonpayee septembre aout">
-              <div class="partie-tete"><h2>À facturer</h2><span class="compte-rond">2</span></div>
-              <a class="attend touche" href="chantier-facture.html">
-                <span class="attend-haut"><span class="jour-bloc"><b>20</b><span>oct.</span></span><span class="attend-texte"><span class="attend-nom">Élagage du tilleul</span><span class="attend-prevu"><b>1 764,00 €</b> prévus</span></span><span class="capsule-facturer">À facturer</span></span>
-              </a>
-              <a class="attend touche" href="chantier-facture.html">
-                <span class="attend-haut"><span class="jour-bloc"><b>26</b><span>sept.</span></span><span class="attend-texte"><span class="attend-nom">Débroussaillage du talus</span></span><span class="capsule-facturer">À facturer</span></span>
-              </a>
-
-              <div class="partie-tete">
-                <h2>Facturés</h2><span class="compte-rond creux">8</span>
-                <button class="porte filtre touche" type="button" data-ouvre="feuille-tri" style="min-height:44px"><svg class="ico" aria-hidden="true"><use href="#i-filtre"/></svg>Filtre</button>
-              </div>
-
               <div class="mois">
                 <button class="mois-fleche" type="button" aria-label="Mois précédent" data-va-etat="septembre" data-si-etat="rempli nonpayee"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
                 <button class="mois-fleche" type="button" aria-label="Mois précédent" data-va-etat="aout" data-si-etat="septembre"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
@@ -183,43 +202,76 @@
                 <button class="mois-fleche" type="button" aria-label="Mois suivant" data-va-etat="septembre" data-si-etat="aout"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></button>
               </div>
 
-              <div data-si-etat="rempli nonpayee">
-                <button class="facture-ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Taille des haies de thuyas" data-detail="Facture n° 14, 864,00 €">
+              <div class="comptes">
+                <span class="or">2 à facturer</span>
+                <button class="oeil" type="button" aria-pressed="false" aria-label="Ne montrer que ce qui attend"><svg class="ico ferme" aria-hidden="true"><use href="#i-oeil-barre"/></svg><svg class="ico ouvert" aria-hidden="true"><use href="#i-oeil"/></svg></button>
+                <span>8 facturés</span>
+              </div>
+              <div class="filtre-rang">
+                <button class="filtre touche" type="button" data-ouvre="feuille-tri"><svg class="ico" aria-hidden="true"><use href="#i-filtre"/></svg>Filtre</button>
+              </div>
+
+              <div data-liste="mois">
+                <div data-si-etat="rempli nonpayee">
+                <button class="ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Taille des haies de thuyas" data-detail="Facture n° 14, 864,00 €">
                   <span class="jour-bloc"><b>21</b><span>oct.</span></span>
-                  <span class="facture-corps"><span class="facture-nom">Taille des haies de thuyas</span><span class="facture-bas"><span class="facture-etat"><b>Facturé</b> le 22 octobre, n° 14</span><span class="facture-montant">864,00 €</span></span></span>
+                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom">Taille des haies de thuyas</span><span class="ligne-montant">864,00 €</span></span><span class="ligne-etat"><b>Facturé</b> le 22 octobre, Facture n° 14</span></span>
                 </button>
-                <button class="facture-ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Tonte et ramassage des feuilles" data-detail="Facture n° 13, 312,00 €">
+                <a class="ligne ligne-attend touche" href="chantier-facture.html">
+                  <span class="jour-bloc"><b>20</b><span>oct.</span></span>
+                  <span class="ligne-corps"><span class="ligne-nom">Élagage du tilleul</span><span class="ligne-etat">1 764,00 € prévus</span></span>
+                  <span class="capsule-facturer">À facturer</span>
+                </a>
+                <button class="ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Tonte et ramassage des feuilles" data-detail="Facture n° 13, 312,00 €">
                   <span class="jour-bloc"><b>16</b><span>oct.</span></span>
-                  <span class="facture-corps"><span class="facture-nom">Tonte et ramassage des feuilles</span><span class="facture-bas"><span class="facture-etat"><b>Facturé</b> le 17 octobre, n° 13</span><span class="facture-montant">312,00 €</span></span></span>
+                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom">Tonte et ramassage des feuilles</span><span class="ligne-montant">312,00 €</span></span><span class="ligne-etat"><b>Facturé</b> le 17 octobre, Facture n° 13</span></span>
                 </button>
-                <button class="facture-ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Création d'un massif de vivaces et de graminées le long de la terrasse" data-detail="Facture n° 12, 1 776,00 €">
+                <button class="ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Création d'un massif de vivaces et de graminées le long de la terrasse" data-detail="Facture n° 12, 1 776,00 €">
                   <span class="jour-bloc"><b>13</b><span>oct.</span></span>
-                  <span class="facture-corps"><span class="facture-nom">Création d'un massif de vivaces et de graminées le long de la terrasse</span><span class="facture-bas"><span class="facture-etat"><b>Facturé</b> le 14 octobre, n° 12</span><span class="facture-montant">1 776,00 €</span></span></span>
+                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom">Création d'un massif de vivaces et de graminées le long de la terrasse</span><span class="ligne-montant">1 776,00 €</span></span><span class="ligne-etat"><b>Facturé</b> le 14 octobre, Facture n° 12</span></span>
                 </button>
-                <button class="facture-ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Pose de gazon en rouleau" data-detail="Facture n° 11, 2 940,00 €" data-payee>
+                <button class="ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Pose de gazon en rouleau" data-detail="Facture n° 11, 2 940,00 €" data-payee>
                   <span class="jour-bloc"><b>9</b><span>oct.</span></span>
-                  <span class="facture-corps"><span class="facture-nom">Pose de gazon en rouleau</span><span class="facture-bas"><span class="facture-etat"><b>Facturé</b> le 10 octobre, n° 11</span><span class="facture-montant">2 940,00 €</span></span></span>
+                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom">Pose de gazon en rouleau</span><span class="ligne-montant">2 940,00 €</span></span><span class="ligne-etat"><b>Facturé</b> le 10 octobre, Facture n° 11</span></span>
                 </button>
-                <button class="facture-ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Entretien d'automne" data-detail="Facture n° 10, 420,00 €" data-payee>
+                <button class="ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Entretien d'automne" data-detail="Facture n° 10, 420,00 €" data-payee>
                   <span class="jour-bloc"><b>6</b><span>oct.</span></span>
-                  <span class="facture-corps"><span class="facture-nom">Entretien d'automne</span><span class="facture-bas"><span class="facture-etat"><b>Facturé</b> le 7 octobre, n° 10</span><span class="facture-montant">420,00 €</span></span></span>
+                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom">Entretien d'automne</span><span class="ligne-montant">420,00 €</span></span><span class="ligne-etat"><b>Facturé</b> le 7 octobre, Facture n° 10</span></span>
                 </button>
-              </div>
-              <div data-si-etat="septembre">
-                <button class="facture-ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Plantation d'une haie champêtre" data-detail="Facture n° 9, 3 828,00 €" data-payee>
+                </div>
+                <div data-si-etat="septembre">
+                <a class="ligne ligne-attend touche" href="chantier-facture.html">
+                  <span class="jour-bloc"><b>26</b><span>sept.</span></span>
+                  <span class="ligne-corps"><span class="ligne-nom">Débroussaillage du talus</span></span>
+                  <span class="capsule-facturer">À facturer</span>
+                </a>
+                <button class="ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Plantation d'une haie champêtre" data-detail="Facture n° 9, 3 828,00 €" data-payee>
                   <span class="jour-bloc"><b>18</b><span>sept.</span></span>
-                  <span class="facture-corps"><span class="facture-nom">Plantation d'une haie champêtre</span><span class="facture-bas"><span class="facture-etat"><b>Facturé</b> le 19 septembre, n° 9</span><span class="facture-montant">3 828,00 €</span></span></span>
+                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom">Plantation d'une haie champêtre</span><span class="ligne-montant">3 828,00 €</span></span><span class="ligne-etat"><b>Facturé</b> le 19 septembre, Facture n° 9</span></span>
                 </button>
-                <button class="facture-ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Arrosage automatique du jardin de devant" data-detail="Facture n° 8, 2 412,00 €" data-payee>
+                <button class="ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Arrosage automatique du jardin de devant" data-detail="Facture n° 8, 2 412,00 €" data-payee>
                   <span class="jour-bloc"><b>10</b><span>sept.</span></span>
-                  <span class="facture-corps"><span class="facture-nom">Arrosage automatique du jardin de devant</span><span class="facture-bas"><span class="facture-etat"><b>Facturé</b> le 11 septembre, n° 8</span><span class="facture-montant">2 412,00 €</span></span></span>
+                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom">Arrosage automatique du jardin de devant</span><span class="ligne-montant">2 412,00 €</span></span><span class="ligne-etat"><b>Facturé</b> le 11 septembre, Facture n° 8</span></span>
                 </button>
-              </div>
-              <div data-si-etat="aout">
-                <button class="facture-ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Taille de la glycine" data-detail="Facture n° 7, 540,00 €">
+                </div>
+                <div data-si-etat="aout">
+                <button class="ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Taille de la glycine" data-detail="Facture n° 7, 540,00 €">
                   <span class="jour-bloc"><b>27</b><span>août</span></span>
-                  <span class="facture-corps"><span class="facture-nom">Taille de la glycine</span><span class="facture-bas"><span class="facture-etat"><b>Facturé</b> le 28 août, n° 7</span><span class="facture-montant">540,00 €</span></span></span>
+                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom">Taille de la glycine</span><span class="ligne-montant">540,00 €</span></span><span class="ligne-etat"><b>Facturé</b> le 28 août, Facture n° 7</span></span>
                 </button>
+                </div>
+              </div>
+              <div data-liste="attente">
+                <a class="ligne ligne-attend touche" href="chantier-facture.html">
+                  <span class="jour-bloc"><b>20</b><span>oct.</span></span>
+                  <span class="ligne-corps"><span class="ligne-nom">Élagage du tilleul</span><span class="ligne-etat">1 764,00 € prévus</span></span>
+                  <span class="capsule-facturer">À facturer</span>
+                </a>
+                <a class="ligne ligne-attend touche" href="chantier-facture.html">
+                  <span class="jour-bloc"><b>26</b><span>sept.</span></span>
+                  <span class="ligne-corps"><span class="ligne-nom">Débroussaillage du talus</span></span>
+                  <span class="capsule-facturer">À facturer</span>
+                </a>
               </div>
             </div>
           </div>
@@ -281,16 +333,15 @@
   <section class="pl-notes">
     <h2>Ce qui change</h2>
     <ul>
-      <li>Ce qui attend ta facture est tout en haut, tous mois confondus, chaque chantier dans sa carte avec À facturer. Plus besoin de l'œil : ce qu'il montrait est toujours là.</li>
-      <li>Ma TVA et le comptable tiennent côte à côte sur une rangée : la liste remonte d'un tiers d'écran.</li>
-      <li>Retours d'intervention et Créer une facture deviennent deux grands boutons avec leur dessin ; Non payées, quand elle existe, s'écrit en rouge juste dessous.</li>
-      <li>Les facturés se feuillettent mois par mois, avec la date du chantier en grand à gauche et le montant à droite.</li>
-      <li>Le volet d'une facture rappelle son numéro et son montant, et chaque choix a son dessin.</li>
+      <li>Ma TVA et Pour mon comptable côte à côte : trois propositions, à choisir au-dessus du téléphone.</li>
+      <li>Chaque chantier porte son jour en grand à gauche.</li>
+      <li>Non payées, quand elle existe, s'écrit en rouge sous les deux boutons.</li>
     </ul>
-    <h2>Ce qui ne bouge pas</h2>
+    <h2>Ce qui revient comme dans l'appli</h2>
     <ul class="garde">
-      <li>Tout ce qui est sur la page aujourd'hui : rien n'a été retiré.</li>
-      <li>Le contour doré de Ma TVA, Créer une facture en or, aucun trait entre les chantiers.</li>
+      <li>Les couleurs : titres en or espacé, montants en or, pastille or, À facturer en vert plein, Créer une facture au contour or.</li>
+      <li>Sous le mois et ses flèches : 2 à facturer, l'œil, 8 facturés, puis le Filtre, et les chantiers du mois mêlés.</li>
+      <li>L'œil ne montre que ce qui attend sa facture, tous mois confondus.</li>
       <li>Toucher un chantier à facturer ouvre la facture ; toucher une facture partie ouvre ses trois choix.</li>
     </ul>
   </section>
@@ -311,6 +362,24 @@
       document.getElementById("volet-sous").textContent = r.getAttribute("data-detail");
       document.getElementById("volet-non-payee").hidden = r.hasAttribute("data-payee");
     });
+  });
+  /* Les deux cases : la proposition choisie au-dessus du téléphone. */
+  var props = document.querySelectorAll(".pl-props button");
+  props.forEach(function (b) {
+    b.addEventListener("click", function () {
+      props.forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+      document.querySelector(".argent").setAttribute("data-prop", b.getAttribute("data-prop"));
+    });
+  });
+  /* L'œil : seulement ce qui attend sa facture, tous mois confondus, et les
+     flèches se ferment (ListeTermines.tsx). */
+  var oeil = document.querySelector(".oeil");
+  oeil.addEventListener("click", function () {
+    var ecran = oeil.closest(".ecran");
+    var ouvert = !ecran.classList.contains("attente");
+    ecran.classList.toggle("attente", ouvert);
+    oeil.setAttribute("aria-pressed", ouvert ? "true" : "false");
+    oeil.setAttribute("aria-label", ouvert ? "Tout montrer" : "Ne montrer que ce qui attend");
   });
   /* Trier par : la clé choisie, et les deux sens dans ses propres mots. */
   var sens = document.querySelectorAll(".tri-sens button");
