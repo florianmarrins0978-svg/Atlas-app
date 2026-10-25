@@ -206,6 +206,24 @@
         ],
         "createdAt": "2026-10-25T23:03:26.388Z",
         "reason": "agent: fond des planches soignées (kit.css, #ebe8e1) et crème de la charte Origine du produit, recopiés tels quels comme sur les planches voisines"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "appli/soignee/reglages-*.html"
+        ],
+        "createdAt": "2026-10-25T23:25:06.612Z",
+        "reason": "Le .cadre est le téléphone de la planche : l'écran le remplit bord à bord par construction (kit.css, série L'appli soignée)"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/reglages-*.html"
+        ],
+        "createdAt": "2026-10-25T23:25:06.627Z",
+        "reason": "Fond commun des planches, tiré de la charte Origine de l'appli (PRODUCT.md, palette relevée sur Arborea) : l'identité existante qu'il a demandé de garder"
       }
     ]
   }

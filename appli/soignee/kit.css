@@ -422,3 +422,87 @@ textarea.champ-saisie { min-height: 110px; resize: vertical; }
 @media (prefers-reduced-motion: reduce) {
   .ecran *, .ecran *::before, .ecran *::after { transition-duration: 1ms !important; animation-duration: 1ms !important; }
 }
+
+/* ═══ LES ÉCRANS DES RÉGLAGES, soignés (25 octobre 2026) ══════════════════════
+   Les pièces que partagent les seize planches des rubriques, pour qu'elles se
+   ressemblent sans se recopier. Ce que le sommaire a déjà tranché avec lui :
+   le doré de l'appli sur les titres de paquet, les icônes et les flèches ;
+   les paquets en plages, SANS encadré ; plus de libellé doré sous le titre. */
+
+/* En haut : le retour à gauche, l'assistant à droite, puis le titre seul. */
+.tete-ronds { display: flex; align-items: center; justify-content: space-between; margin: 0 0 10px; }
+.tete-ronds .rond-creux { text-decoration: none; }
+.rubrique-or { color: var(--atlas-or); }
+
+/* Une ligne de réglage dans sa plage : le libellé en clair, la valeur en serif. */
+/* Le filet se pose AU-DESSUS de chaque ligne, et la plage rogne celui de la
+   première : un voisin caché par un état ne laisse pas de trait orphelin. */
+.reglages { padding: 0 18px; overflow: hidden; }
+.reglage { position: relative; display: block; padding: 14px 0; }
+.reglage::before { content: ""; position: absolute; left: 0; right: 0; top: -1px; height: 1px; background: var(--atlas-line); }
+.reglage-libelle { display: block; font-size: 14px; font-weight: 600; color: var(--atlas-inkSoft); }
+.reglage-valeur { display: block; width: 100%; margin-top: 3px; padding: 0; border: 0; background: transparent; outline: none;
+                  font: 400 18px/1.3 var(--serif); color: var(--atlas-ink); font-variant-numeric: lining-nums; }
+.reglage-valeur::placeholder { color: color-mix(in srgb, var(--atlas-inkSoft) 80%, var(--atlas-card)); }
+.reglage-valeur.chiffre { font-variant-numeric: tabular-nums lining-nums; letter-spacing: 0.01em; }
+.reglage-sous { display: block; margin-top: 4px; font-size: 13.5px; line-height: 1.4; color: var(--atlas-inkSoft); }
+.reglage-rang { display: flex; align-items: center; gap: 12px; }
+.reglage-rang > :first-child { flex: 1; min-width: 0; }
+/* Ce qui manque se dit en ambre, à la place de la valeur : ni rouge, ni cadre. */
+.reglage.manque .reglage-libelle { color: var(--atlas-carteAmbreTexte); }
+.reglage.manque .reglage-sous { color: var(--atlas-carteAmbreTexte); font-weight: 600; }
+
+
+/* Deux ou trois choix posés côte à côte : on voit d'un coup d'œil lequel est pris. */
+.cartes-choix { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.carte-choix { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-height: 92px;
+               padding: 14px 14px 13px; border-radius: 12px; text-align: left; background: var(--atlas-card);
+               box-shadow: inset 0 0 0 1px var(--atlas-lineSoft);
+               transition: box-shadow 200ms var(--courbe), background-color 200ms var(--courbe); }
+.carte-choix b { font: 400 17.5px/1.2 var(--serif); color: var(--atlas-ink); }
+.carte-choix small { font-size: 13.5px; line-height: 1.35; color: var(--atlas-inkSoft); }
+.carte-choix[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--atlas-rust); }
+.carte-choix .coche-ronde { margin-bottom: 6px; }
+
+/* La pastille du choix : un rond creux, plein d'or quand il est pris. */
+.coche-ronde { width: 22px; height: 22px; flex: none; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--atlas-chevron);
+               display: grid; place-items: center; transition: box-shadow 200ms var(--courbe); }
+[aria-pressed="true"] > .coche-ronde, [aria-checked="true"] > .coche-ronde { box-shadow: inset 0 0 0 7px var(--atlas-or); }
+
+/* Un choix en ligne, dans sa plage : la pastille, le mot, sa conséquence. */
+.radio { position: relative; display: flex; align-items: flex-start; gap: 12px; width: 100%; min-height: 60px; padding: 13px 0; text-align: left; }
+.radio + .radio::before { content: ""; position: absolute; left: 34px; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
+.radio .coche-ronde { margin-top: 1px; }
+.radio b { display: block; font: 400 17.5px/1.25 var(--serif); color: var(--atlas-ink); }
+.radio small { display: block; margin-top: 2px; font-size: 14px; line-height: 1.4; color: var(--atlas-inkSoft); }
+
+/* Le compteur : − le chiffre +, pour ce qui se compte au doigt. */
+.compteur { display: flex; align-items: center; justify-content: center; gap: 22px; }
+.compteur button { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; color: var(--atlas-ink);
+                   box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
+.compteur button[disabled] { color: var(--atlas-chevron); cursor: default; }
+.compteur output { min-width: 56px; text-align: center; font: 400 46px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; }
+
+/* La ligne d'un interrupteur : le mot à gauche, la bascule à droite. */
+.ligne-bascule { position: relative; display: flex; align-items: center; gap: 14px; min-height: 64px; padding: 12px 0; }
+.ligne-bascule + .ligne-bascule::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
+.ligne-bascule .ligne-corps b { display: block; font: 400 18px/1.25 var(--serif); }
+.ligne-bascule .ligne-corps small { display: block; margin-top: 2px; font-size: 14px; line-height: 1.4; color: var(--atlas-inkSoft); }
+
+/* Le rond d'une icône dorée devant une ligne de sommaire. */
+.ico-or { color: var(--atlas-or); }
+.pastille-ico { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: 12px; color: var(--atlas-or);
+                background: color-mix(in srgb, var(--atlas-or) 12%, transparent); }
+.pastille-ico[data-ton="vert"] { background: var(--atlas-carteVertFond); color: var(--atlas-carteVertTexte); }
+.pastille-ico[data-ton="bleu"] { background: var(--atlas-carteBleuFond); color: var(--atlas-carteBleuTexte); }
+.pastille-ico[data-ton="ambre"] { background: var(--atlas-carteAmbreFond); color: var(--atlas-carteAmbreTexte); }
+.pastille-ico[data-ton="rouge"] { background: var(--atlas-carteRougeFond); color: var(--atlas-carteRougeTexte); }
+
+/* Ce que le choix change, dit dans une plage teintée et non dans un paragraphe gris. */
+.plage-ton { border-radius: var(--r-plage); padding: 13px 16px; font-size: 14.5px; line-height: 1.45; }
+.plage-ton[data-ton="or"] { background: color-mix(in srgb, var(--atlas-or) 13%, transparent); color: var(--atlas-ink); }
+.plage-ton[data-ton="vert"] { background: var(--atlas-carteVertFond); color: var(--atlas-carteVertTexte); }
+.plage-ton[data-ton="ambre"] { background: var(--atlas-carteAmbreFond); color: var(--atlas-carteAmbreTexte); }
+.plage-ton[data-ton="bleu"] { background: var(--atlas-carteBleuFond); color: var(--atlas-carteBleuTexte); }
+.plage-ton[data-ton="rouge"] { background: var(--atlas-carteRougeFond); color: var(--atlas-carteRougeTexte); }
+.plage-ton b { color: var(--atlas-ink); font-weight: 700; }
