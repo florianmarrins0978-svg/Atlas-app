@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ce qui change partout</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  CE QUI CHANGE PARTOUT : les cinq retouches communes à toutes les planches,
+  montrées une fois ici plutôt que redites quatre-vingt-six fois.
+
+  Les valeurs d'avant sont celles du code d'aujourd'hui, relevées dans
+  src/lib/design-tokens.ts (libelleCaps 11 px à 0,28 em, texteSituation 13 px
+  en gris), src/components/atlas/AtlasBottomNav.tsx (8,5 px à 0,14 em) et
+  src/lib/chartes.ts (le vert des boutons #7d9a6d, sa décision du 3 septembre).
+  Les contrastes sont mesurés, pas estimés.
+*/
+.fond-page { max-width: 760px; margin: 0 auto; padding: 8px var(--gouttiere) 0; }
+.bloc { margin-top: 30px; }
+.bloc h2 { margin: 0 0 6px; font: 400 25px/1.2 var(--serif); }
+.bloc > p { margin: 0 0 14px; color: #4a4a44; }
+.paire { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.cote { position: relative; border-radius: 14px; padding: 16px; overflow: hidden; }
+.cote .ecran { position: relative; inset: auto; display: block; border-radius: 8px; padding: 16px; overflow: visible; }
+.cote-titre { margin: 0 0 10px; font-size: 13px; font-weight: 700; color: #4a4a44; }
+.cote.avant { background: rgba(28,28,26,0.05); }
+.cote.apres { background: rgba(47,59,47,0.08); }
+.mesure { display: block; margin-top: 10px; font-size: 13px; color: #4a4a44; }
+/* L'écriture d'aujourd'hui, recopiée pour comparer. */
+.avant-libelle { font-size: 11px; font-weight: 500; letter-spacing: 0.28em; text-transform: uppercase; color: var(--atlas-or); }
+.avant-situation { font-size: 13px; line-height: 1.5; color: var(--atlas-muted); }
+.avant-barre, .apres-barre { display: grid; grid-template-columns: repeat(5, 1fr); text-align: center; padding: 14px 0 12px;
+                             box-shadow: inset 0 1px 0 var(--atlas-line); }
+.avant-barre span { font-size: 8.5px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--atlas-muted); }
+.avant-barre span.actif, .apres-barre span.actif { color: var(--atlas-ink); }
+.avant-barre span.actif { box-shadow: inset 0 -1px 0 var(--atlas-or); padding-bottom: 6px; }
+.apres-barre span { font-size: 12.5px; font-weight: 500; color: var(--atlas-inkSoft); }
+.apres-barre span.actif { font-weight: 700; box-shadow: inset 0 -2px 0 var(--atlas-or); padding-bottom: 6px; }
+.choix-vert { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.choix-vert button { text-align: left; border-radius: 14px; padding: 14px; background: #faf9f5;
+                     box-shadow: inset 0 0 0 1px rgba(28,28,26,0.1); }
+.choix-vert button[aria-pressed="true"] { box-shadow: inset 0 0 0 2px #2f3b2f; }
+.choix-vert .echantillon { display: flex; align-items: center; justify-content: center; height: 52px; border-radius: 14px;
+                           font-size: 17px; font-weight: 600; color: #faf9f5; }
+.choix-vert b { display: block; margin-top: 10px; font-size: 15px; }
+.choix-vert small { display: block; margin-top: 2px; font-size: 13.5px; color: #4a4a44; }
+.mini { position: relative; height: 430px; border-radius: 22px; overflow: hidden; box-shadow: 0 0 0 8px #1c1c1a; margin: 18px auto 0; max-width: 360px; }
+@media (max-width: 520px) { .paire, .choix-vert { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">Ce qui change partout</h1>
+  <p class="pl-verdict">Cinq retouches, les mêmes sur tous les écrans. <b>Vos couleurs, vos chartes et votre écriture restent.</b></p>
+</header>
+
+<div class="fond-page">
+
+  <section class="bloc">
+    <h2>Les petits mots se lisent</h2>
+    <p>Ils grandissent et passent du gris à l'encre douce.</p>
+    <div class="paire">
+      <div class="cote avant">
+        <p class="cote-titre">Aujourd'hui</p>
+        <div class="ecran">
+          <div class="avant-libelle">Ma TVA à déclarer</div>
+          <div class="serif" style="font-size:19px;margin-top:6px">Mme Costa</div>
+          <div class="avant-situation">12 rue des Tilleuls, Angers</div>
+        </div>
+        <span class="mesure">11 et 13 points, contraste 2,8 et 3,3.</span>
+      </div>
+      <div class="cote apres">
+        <p class="cote-titre">Proposé</p>
+        <div class="ecran">
+          <div class="rubrique" style="margin:0">Ma TVA à déclarer</div>
+          <div class="ligne-nom" style="margin-top:6px">Mme Costa</div>
+          <div class="ligne-situation">12 rue des Tilleuls, Angers</div>
+        </div>
+        <span class="mesure">13 et 14,5 points, contraste 8,0.</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="bloc">
+    <h2>La barre du bas</h2>
+    <p>Toujours cinq mots sans icône, et le trait d'or. Les mots sont plus grands.</p>
+    <div class="paire">
+      <div class="cote avant">
+        <p class="cote-titre">Aujourd'hui</p>
+        <div class="ecran" style="padding:0"><div class="avant-barre"><span>Chantiers</span><span class="actif">Planning</span><span>Terminés</span><span>Paysage</span><span>Réglages</span></div></div>
+        <span class="mesure">8,5 points en capitales.</span>
+      </div>
+      <div class="cote apres">
+        <p class="cote-titre">Proposé</p>
+        <div class="ecran" style="padding:0"><div class="apres-barre"><span>Chantiers</span><span class="actif">Planning</span><span>Terminés</span><span>Paysage</span><span>Réglages</span></div></div>
+        <span class="mesure">12,5 points. Tient sur un écran de 360.</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="bloc">
+    <h2>Le vert des boutons</h2>
+    <p>Votre vert, choisi le 3 septembre, est gardé partout. Le crème posé dessus se lit mal au soleil : un cran plus sombre le règle. À vous de voir, le choix vaut pour toutes les planches.</p>
+    <div class="choix-vert">
+      <button type="button" data-vert-choix="le-sien">
+        <span class="echantillon" style="background:#7d9a6d">Créer un devis</span>
+        <b>Le vôtre</b><small>Contraste 3,0.</small>
+      </button>
+      <button type="button" data-vert-choix="plus-lisible">
+        <span class="echantillon" style="background:#587a4c">Créer un devis</span>
+        <b>Un cran plus sombre</b><small>Contraste 4,6. Se lit en plein soleil.</small>
+      </button>
+    </div>
+  </section>
+
+  <section class="bloc">
+    <h2>Un seul bouton plein par écran</h2>
+    <p>Le geste principal est plein, toujours au même endroit, juste au-dessus de la barre. Les autres sont creux ou écrits.</p>
+    <div class="mini">
+      <div class="ecran avec-barre avec-action">
+        <div class="defile">
+          <header class="tete"><h1 class="tete-titre moyen">Mme Costa</h1></header>
+          <p class="tete-situation">Taille de haies, 12 rue des Tilleuls</p>
+          <div class="plage">
+            <div class="rang-espace"><span class="second">Devis</span><span class="etat" data-ton="ambre">À envoyer</span></div>
+            <div class="montant mt-8">1 284,00 €</div>
+          </div>
+          <div class="rang-boutons mt-16">
+            <button class="bouton bouton-creux bouton-petit" type="button">Modifier</button>
+            <button class="bouton bouton-creux bouton-petit" type="button">Le PDF</button>
+          </div>
+        </div>
+        <div class="action-bas"><button class="bouton bouton-plein" type="button"><svg class="ico" aria-hidden="true"><use href="#i-envoyer"/></svg>Envoyer le devis</button></div>
+        <nav class="barre" aria-label="Exemple de barre"><div class="barre-onglets"><a class="barre-onglet" href="#" aria-current="page">Chantiers</a><a class="barre-onglet" href="#">Planning</a><a class="barre-onglet" href="#">Terminés</a><a class="barre-onglet" href="#">Paysage</a><a class="barre-onglet" href="#">Réglages</a><span class="barre-trait" aria-hidden="true"><span></span></span></div></nav>
+      </div>
+    </div>
+  </section>
+
+  <section class="bloc">
+    <h2>Les cibles du pouce</h2>
+    <p>Une ligne fait au moins 60 points de haut, un bouton 56, un rond 48. On vise juste avec un gant.</p>
+  </section>
+
+  <section class="pl-notes" style="margin-top:12px">
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Les huit chartes et leurs couleurs. Essayez-les avec le bouton en haut.</li>
+      <li>La serif de votre téléphone pour les titres et les noms.</li>
+      <li>Aucune ombre, des coins presque droits, aucune flèche, aucun point au milieu.</li>
+      <li>Le geste Retirer et son tiroir Annuler.</li>
+    </ul>
+  </section>
+</div>
+
+<footer class="pl-pied">
+  <a href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+</footer>
+
+<script src="kit.js"></script>
+</body>
+</html>

@@ -1,0 +1,424 @@
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  L'APPLI SOIGNÉE — la boîte commune de toutes les planches, 25 octobre 2026
+  ═══════════════════════════════════════════════════════════════════════════
+
+  SA DEMANDE : « reprends toutes les pages de l'application et améliore-moi le
+  rendu visuel ; une planche pour chaque page ; le but, une application très
+  jolie et facile d'utilisation ». Ses trois réponses du même soir :
+    l'allure se GARDE et se soigne (mêmes couleurs, mêmes chartes, même
+    écriture) ; les choses peuvent changer de place si c'est plus simple ;
+    les planches vont en ligne.
+
+  CE QUE « SOIGNER » VEUT DIRE ICI, et rien de plus :
+    lire sans plisser les yeux : rien sous 13 px, le texte de second plan en
+      encre douce (8,0 de contraste) et non plus en gris (3,3) ; l'or ne fait
+      plus que des traits et des chiffres, ses mots passent par orTexte (4,6) ;
+    un geste par écran : un seul bouton plein, à la même place partout ;
+    des cibles pour le pouce : 56 px le bouton, 64 px la ligne, 48 px un rond ;
+    un seul rythme d'espaces : 4, 8, 12, 16, 20, 24, 32, 40, 56.
+
+  CE QUI NE BOUGE PAS (ses décisions, relevées dans le dépôt) : les huit
+  chartes et leurs valeurs, calculées par src/lib/chartes.ts et recopiées dans
+  kit.js ; la serif du système pour les titres et les noms ; aucune ombre ;
+  des coins presque droits sur les plages ; le vert « D à plat » des boutons ;
+  la barre du bas sans icônes, et son trait d'or qui glisse (« trait G ») ;
+  le geste Retirer et son tiroir ; aucune flèche au bout d'un libellé ; ni
+  point médian ni tiret dans une phrase.
+
+  AUCUNE COULEUR N'EST ÉCRITE EN CLAIR DANS UNE PLANCHE : tout passe par les
+  variables --atlas-* que kit.js pose sur chaque écran, comme l'appli le fait.
+  Le repli écrit ici est la charte d'Origine, au caractère près.
+*/
+
+:root {
+  --atlas-cream: #f5f3ee; --atlas-card: #faf9f5; --atlas-ink: #1c1c1a;
+  --atlas-inkSoft: #4a4a44; --atlas-muted: #8a8578; --atlas-rust: #2f3b2f;
+  --atlas-rustDeep: #4f5f4c; --atlas-rustTint: #ece9e1; --atlas-or: #B98B47;
+  --atlas-orClair: #C9A15E; --atlas-orTexte: #8b6835; --atlas-orSurEncre: #b98b47;
+  --atlas-line: rgba(28,28,26,0.12); --atlas-lineSoft: rgba(28,28,26,0.07);
+  --atlas-chevron: rgba(28,28,26,0.28); --atlas-alerte: #9C3B2E; --atlas-bordeaux: #6E2433;
+  --atlas-vertPale: #b9c6b4; --atlas-plein: #7d9a6d;
+  --atlas-carteVertFond: #e1e8da; --atlas-carteVertTexte: #506f44;
+  --atlas-carteAmbreFond: #ede3d2; --atlas-carteAmbreTexte: #806031;
+  --atlas-carteBleuFond: #cdd8e1; --atlas-carteBleuTexte: #35608d;
+  --atlas-carteRougeFond: #edded9; --atlas-carteRougeTexte: #9c3b2e;
+  --atlas-montantEntree: #1f7a45; --atlas-montantSortie: #b3392b;
+
+  /* Les deux piles de l'appli (src/app/globals.css), au caractère près. */
+  --serif: var(--atlas-police-titres, ui-serif, Georgia, "Iowan Old Style", "Palatino Linotype", serif);
+  --sans: ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* Ce qu'on pose SUR un aplat : la plage, retournée (design-tokens.ts, surPlein). */
+  --sur-plein: var(--atlas-card);
+
+  /* L'échelle des textes soignée. Le titre garde ses 34 px ; tout le reste monte. */
+  --t-titre: 34px;
+  --t-carte: 21px;
+  --t-nom: 18px;
+  --t-corps: 16px;
+  --t-second: 14.5px;
+  --t-libelle: 12px;
+  --t-mini: 13px;
+
+  --r-plage: 6px;
+  --r-bouton: 14px;
+  --r-feuille: 26px;
+  --gouttiere: 22px;
+
+  --courbe: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --courbe-g: cubic-bezier(0.34, 1.4, 0.5, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; }
+img { display: block; max-width: 100%; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+a { color: inherit; }
+
+.ico { width: 24px; height: 24px; flex: none; fill: none; stroke: currentColor;
+       stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.ico-p { width: 20px; height: 20px; }
+.ico-g { width: 28px; height: 28px; }
+
+/* ═══ LA PLANCHE : ce qui entoure le téléphone ═══════════════════════════════
+   Elle reste en Origine quelle que soit la charte essayée dans le cadre : on
+   compare un écran, pas la page qui le présente. */
+
+body.pl {
+  background: #ebe8e1;
+  color: #1c1c1a;
+  font: 16px/1.5 var(--sans);
+  padding-bottom: 48px;
+}
+body.pl ::selection { background: rgba(185,139,71,0.28); }
+
+.pl-tete { max-width: 1080px; margin: 0 auto; padding: 22px var(--gouttiere) 6px; }
+.pl-sommaire { display: inline-flex; align-items: center; gap: 4px; min-height: 44px;
+               margin-left: -8px; padding: 0 8px; border-radius: 10px;
+               text-decoration: none; font-size: 15px; font-weight: 600; color: #2f3b2f; }
+.pl-sommaire:focus-visible { outline: 2px solid #8b6835; outline-offset: 2px; }
+.pl-titre { margin: 6px 0 0; font: 400 32px/1.08 var(--serif); letter-spacing: -0.012em; }
+.pl-verdict { margin: 10px 0 0; max-width: 40em; font-size: 16px; line-height: 1.5; color: #4a4a44; }
+.pl-verdict b { color: #1c1c1a; font-weight: 600; }
+
+/* La barre collée en haut : Proposé ou Aujourd'hui, et la charte. Elle reste
+   sous le pouce quand l'écran remplit le téléphone. */
+.pl-barre { position: sticky; top: 0; z-index: 30; background: #ebe8e1;
+            border-bottom: 1px solid rgba(28,28,26,0.08); }
+.pl-barre-dedans { max-width: 1080px; margin: 0 auto; padding: 8px var(--gouttiere);
+                   display: flex; align-items: center; gap: 10px; }
+.pl-onglets { display: inline-flex; padding: 3px; gap: 2px; border-radius: 12px;
+              background: rgba(28,28,26,0.07); }
+.pl-onglets button { min-height: 40px; padding: 0 16px; border-radius: 9px;
+                     font-size: 15px; font-weight: 600; color: #4a4a44; }
+.pl-onglets button[aria-selected="true"] { background: #faf9f5; color: #1c1c1a;
+                     box-shadow: 0 1px 2px rgba(28,28,26,0.10); }
+.pl-onglets button:focus-visible { outline: 2px solid #8b6835; outline-offset: 1px; }
+.pl-charte-bouton { margin-left: auto; display: inline-flex; align-items: center; gap: 8px;
+                    min-height: 44px; padding: 0 12px 0 8px; border-radius: 12px;
+                    font-size: 14px; font-weight: 600; color: #2f3b2f;
+                    background: rgba(28,28,26,0.05); }
+.pl-charte-bouton .pastille-charte { width: 22px; height: 22px; }
+.pl-chartes { max-width: 1080px; margin: 0 auto; padding: 4px var(--gouttiere) 12px;
+              display: none; gap: 8px; flex-wrap: wrap; }
+.pl-chartes.ouvertes { display: flex; }
+.pl-chartes button { display: inline-flex; align-items: center; gap: 8px; min-height: 44px;
+                     padding: 0 12px 0 6px; border-radius: 22px; font-size: 14px; color: #1c1c1a;
+                     background: #faf9f5; box-shadow: inset 0 0 0 1px rgba(28,28,26,0.10); }
+.pl-chartes button[aria-pressed="true"] { box-shadow: inset 0 0 0 2px #2f3b2f; font-weight: 600; }
+.pastille-charte { width: 30px; height: 30px; border-radius: 50%; flex: none;
+                   box-shadow: inset 0 0 0 1px rgba(28,28,26,0.18); }
+
+.pl-scene { max-width: 1080px; margin: 0 auto; padding: 16px var(--gouttiere) 0;
+            display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr); }
+.pl-ecrans { display: grid; gap: 28px; justify-content: center;
+             grid-template-columns: minmax(0, 390px); }
+.pl-legende { margin: 0 0 8px; font-size: 13px; font-weight: 600; color: #4a4a44; text-align: center; }
+.pl-etats { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 0 0 12px; }
+.pl-etats button { min-height: 40px; padding: 0 14px; border-radius: 20px; font-size: 14px;
+                   color: #4a4a44; background: rgba(28,28,26,0.06); }
+.pl-etats button[aria-pressed="true"] { background: #2f3b2f; color: #faf9f5; font-weight: 600; }
+
+/* Le téléphone : 390 × 664, la mesure de SON écran (PRODUCT.md). */
+.cadre { position: relative; width: 390px; max-width: 100%; height: 664px;
+         border-radius: 30px; overflow: hidden; background: var(--atlas-cream);
+         box-shadow: 0 0 0 10px #1c1c1a, 0 18px 40px -12px rgba(28,28,26,0.45); margin: 10px auto 12px; }
+.cadre-capture { position: absolute; inset: 0; overflow-y: auto; background: #f5f3ee;
+                 overscroll-behavior: contain; }
+.cadre-capture img { width: 100%; height: auto; }
+
+.pl-notes { max-width: 34em; margin: 0 auto; font-size: 16px; line-height: 1.55; color: #1c1c1a; }
+.pl-notes h2 { margin: 26px 0 8px; font: 400 22px/1.2 var(--serif); }
+.pl-notes ul { margin: 0; padding: 0; list-style: none; }
+.pl-notes li { position: relative; padding: 9px 0 9px 22px; border-top: 1px solid rgba(28,28,26,0.09); }
+.pl-notes li::before { content: ""; position: absolute; left: 3px; top: 19px; width: 8px; height: 8px;
+                       border-radius: 50%; background: #B98B47; }
+.pl-notes .garde li::before { background: transparent; box-shadow: inset 0 0 0 1.5px #8a8578; }
+.pl-notes .a-trancher li::before { border-radius: 2px; background: #9C3B2E; }
+.pl-pied { max-width: 1080px; margin: 32px auto 0; padding: 0 var(--gouttiere);
+           display: flex; justify-content: space-between; gap: 12px; }
+.pl-pied a { display: inline-flex; align-items: center; gap: 4px; min-height: 48px; padding: 0 14px;
+             border-radius: 12px; background: #faf9f5; text-decoration: none; font-size: 15px;
+             font-weight: 600; color: #2f3b2f; box-shadow: inset 0 0 0 1px rgba(28,28,26,0.08); }
+.pl-pied a:only-child { margin-left: auto; }
+
+[hidden] { display: none !important; }
+
+/* Sur ordinateur : l'écran d'aujourd'hui et le proposé côte à côte, les notes
+   à droite. Les onglets n'ont plus rien à basculer. */
+@media (min-width: 900px) {
+  .pl-scene { grid-template-columns: auto minmax(0, 1fr); align-items: start; }
+  .pl-ecrans { grid-template-columns: repeat(2, 390px); }
+  .pl-ecrans [data-vue-panneau] { display: block !important; }
+  .pl-onglets { display: none; }
+  .pl-notes { margin: 8px 0 0; }
+}
+@media (min-width: 900px) and (max-width: 1240px) {
+  .pl-scene { grid-template-columns: minmax(0, 1fr); }
+  .pl-notes { margin: 0 auto; }
+}
+
+/* Sur son téléphone : l'écran proposé prend tout le téléphone, comme l'appli. */
+@media (max-width: 480px) {
+  .pl-scene { padding: 0; }
+  .pl-ecrans { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .cadre { width: 100%; height: calc(100svh - 64px); min-height: 560px; border-radius: 0;
+           box-shadow: none; margin: 0; }
+  .pl-legende { display: none; }
+  .pl-etats { padding: 10px var(--gouttiere) 0; margin: 0 0 10px; }
+  .pl-notes { padding: 0 var(--gouttiere); }
+}
+
+/* ═══ L'ÉCRAN DE L'APPLI, soigné ═════════════════════════════════════════════ */
+
+/* Les deux variables dérivées se REcalculent ici : posées sur :root, elles
+   garderaient les valeurs d'Origine dans un écran passé en Nuit, et le crème
+   écrit sur l'aplat clair de Nuit disparaîtrait (le défaut du 22 août 2026). */
+.ecran { --serif: var(--atlas-police-titres, ui-serif, Georgia, "Iowan Old Style", "Palatino Linotype", serif);
+         --sur-plein: var(--atlas-card);
+         position: absolute; inset: 0; display: flex; flex-direction: column;
+         background: var(--atlas-cream); color: var(--atlas-ink);
+         font: 400 var(--t-corps)/1.45 var(--sans); overflow: hidden;
+         -webkit-font-smoothing: antialiased; }
+.ecran ::selection { background: color-mix(in srgb, var(--atlas-or) 30%, transparent); }
+.ecran :focus-visible { outline: 2px solid var(--atlas-orTexte); outline-offset: 2px; border-radius: 6px; }
+.ecran input, .ecran textarea, .ecran select { caret-color: var(--atlas-rust); }
+
+.defile { flex: 1; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none;
+          padding: 14px var(--gouttiere) 28px; }
+.defile::-webkit-scrollbar { display: none; }
+.ecran.avec-barre .defile { padding-bottom: 96px; }
+
+/* ─── L'en-tête : le titre, et au plus deux ronds ─────────────────────────── */
+.tete { display: flex; align-items: center; gap: 10px; min-height: 56px; margin: 4px 0 18px; }
+.tete-titre { flex: 1; min-width: 0; margin: 0; font: 400 var(--t-titre)/1.05 var(--serif);
+              letter-spacing: -0.012em; }
+.tete-titre.moyen { font-size: 28px; }
+.tete-retour { width: 48px; height: 48px; margin-left: -12px; display: grid; place-items: center;
+               border-radius: 50%; color: var(--atlas-ink); }
+.tete-retour .ico { width: 26px; height: 26px; }
+.tete-situation { margin: -10px 0 20px; font-size: var(--t-second); color: var(--atlas-inkSoft); }
+
+/* Le rond plein : l'assistant, la note vocale. Un seul aplat de couleur en haut. */
+.rond { width: 48px; height: 48px; flex: none; display: grid; place-items: center; border-radius: 50%;
+        background: var(--atlas-plein); color: var(--sur-plein); }
+.rond-creux { width: 48px; height: 48px; flex: none; display: grid; place-items: center; border-radius: 50%;
+              color: var(--atlas-ink); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+
+/* ─── Les voix du texte ───────────────────────────────────────────────────── */
+.serif { font-family: var(--serif); font-weight: 400; }
+.rubrique { margin: 28px 0 10px; font-size: 13px; font-weight: 600; letter-spacing: 0.12em;
+            text-transform: uppercase; color: var(--atlas-inkSoft); }
+.rubrique:first-child { margin-top: 4px; }
+.titre-carte { margin: 0; font: 400 var(--t-carte)/1.2 var(--serif); letter-spacing: -0.005em; }
+.second { font-size: var(--t-second); line-height: 1.45; color: var(--atlas-inkSoft); }
+.discret { font-size: var(--t-mini); color: var(--atlas-inkSoft); }
+.or-texte { color: var(--atlas-orTexte); }
+.chiffre { font-variant-numeric: tabular-nums lining-nums; }
+.montant { font: 400 26px/1.1 var(--serif); font-variant-numeric: tabular-nums lining-nums;
+           letter-spacing: -0.01em; }
+.montant-grand { font: 400 40px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums;
+                 letter-spacing: -0.02em; }
+.entree { color: var(--atlas-montantEntree); }
+.sortie { color: var(--atlas-montantSortie); }
+
+/* ─── Les plages : plus claires que le fond, ni ombre ni bordure ──────────── */
+.plage { background: var(--atlas-card); border-radius: var(--r-plage); padding: 18px; }
+.plage + .plage { margin-top: 12px; }
+.plage-serree { padding: 4px 18px; }
+.plage-trait { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--atlas-or) 55%, transparent); }
+.filet { height: 1px; background: var(--atlas-line); border: 0; margin: 0; }
+.trait-or { width: 36px; height: 2px; background: var(--atlas-or); border: 0; margin: 12px 0; }
+
+/* ─── Les lignes d'une liste : 64 px au moins, un nom en serif, une situation ── */
+.liste { margin: 0; padding: 0; list-style: none; }
+.ligne { position: relative; display: flex; align-items: center; gap: 14px; min-height: 68px;
+         padding: 12px 0; text-decoration: none; color: inherit; width: 100%; text-align: left; }
+/* Le filet entre deux lignes : un trait droit, pas une ombre qui suivrait l'arrondi de l'appui. */
+.liste > li + li > .ligne::before, .liste > .ligne + .ligne::before { content: ""; position: absolute; left: 0; right: 0; top: 0;
+                 height: 1px; background: var(--atlas-line); pointer-events: none; }
+.ligne-corps { flex: 1; min-width: 0; }
+.ligne-nom { display: block; font: 400 var(--t-nom)/1.25 var(--serif); letter-spacing: -0.005em;
+             overflow-wrap: anywhere; }
+.ligne-situation { display: block; margin-top: 3px; font-size: var(--t-second); line-height: 1.4;
+                   color: var(--atlas-inkSoft); }
+.ligne-fin { display: flex; align-items: center; gap: 6px; flex: none; color: var(--atlas-inkSoft); }
+.ligne-fin .ico { width: 20px; height: 20px; color: var(--atlas-chevron); stroke-width: 2; }
+.ligne-icone { width: 44px; height: 44px; flex: none; display: grid; place-items: center;
+               border-radius: 50%; background: var(--atlas-rustTint); color: var(--atlas-rust); }
+.ligne-icone.or { background: transparent; color: var(--atlas-orTexte); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+
+/* La date d'une ligne : le jour en grand, le mois dessous. */
+.jour { width: 48px; flex: none; text-align: center; line-height: 1; }
+.jour b { display: block; font: 400 26px/1 var(--serif); font-variant-numeric: lining-nums; }
+.jour span { display: block; margin-top: 4px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em;
+             text-transform: uppercase; color: var(--atlas-inkSoft); }
+
+/* ─── L'état : un point ET un mot, jamais la couleur seule ─────────────────── */
+.etat { display: inline-flex; align-items: center; gap: 7px; min-height: 28px; padding: 0 11px;
+        border-radius: 14px; font-size: 13.5px; font-weight: 600; line-height: 1; white-space: nowrap;
+        background: color-mix(in srgb, var(--atlas-ink) 6%, transparent); color: var(--atlas-inkSoft); }
+.etat::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex: none; }
+.etat[data-ton="vert"] { background: var(--atlas-carteVertFond); color: var(--atlas-carteVertTexte); }
+.etat[data-ton="ambre"] { background: var(--atlas-carteAmbreFond); color: var(--atlas-carteAmbreTexte); }
+.etat[data-ton="bleu"] { background: var(--atlas-carteBleuFond); color: var(--atlas-carteBleuTexte); }
+.etat[data-ton="rouge"] { background: var(--atlas-carteRougeFond); color: var(--atlas-carteRougeTexte); }
+.etat[data-ton="or"] { background: transparent; color: var(--atlas-orTexte);
+                       box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--atlas-or) 60%, transparent); }
+
+/* Les cartes de l'accueil, une famille par ce qu'il a à faire (23 octobre 2026). */
+.carte-ton { display: block; width: 100%; text-align: left; text-decoration: none; color: inherit;
+             border-radius: var(--r-plage); padding: 16px 18px; background: var(--atlas-card); }
+.carte-ton + .carte-ton { margin-top: 10px; }
+.carte-ton[data-ton="vert"] { background: var(--atlas-carteVertFond); }
+.carte-ton[data-ton="ambre"] { background: var(--atlas-carteAmbreFond); }
+.carte-ton[data-ton="bleu"] { background: var(--atlas-carteBleuFond); }
+.carte-ton[data-ton="rouge"] { background: var(--atlas-carteRougeFond); }
+.carte-ton-titre { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; }
+.carte-ton-titre::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.carte-ton[data-ton="vert"] .carte-ton-titre { color: var(--atlas-carteVertTexte); }
+.carte-ton[data-ton="ambre"] .carte-ton-titre { color: var(--atlas-carteAmbreTexte); }
+.carte-ton[data-ton="bleu"] .carte-ton-titre { color: var(--atlas-carteBleuTexte); }
+.carte-ton[data-ton="rouge"] .carte-ton-titre { color: var(--atlas-carteRougeTexte); }
+.carte-ton-texte { margin-top: 6px; font: 400 19px/1.3 var(--serif); color: var(--atlas-ink); }
+.carte-ton-pied { display: flex; gap: 10px; margin-top: 14px; }
+
+/* ─── Les boutons : un plein par écran, des creux, des mots ──────────────── */
+.bouton { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;
+          min-height: 56px; padding: 0 22px; border-radius: var(--r-bouton); text-decoration: none;
+          font-size: 17px; font-weight: 600; letter-spacing: 0.005em; text-align: center;
+          transition: transform 140ms var(--courbe), background-color 200ms var(--courbe); }
+.bouton:active { transform: scale(0.985); }
+.bouton-plein { background: var(--atlas-plein); color: var(--sur-plein); }
+.bouton-creux { color: var(--atlas-ink); box-shadow: inset 0 0 0 1.5px var(--atlas-line); background: transparent; }
+.bouton-creux.or { color: var(--atlas-orTexte); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 70%, transparent); }
+.bouton-texte { display: inline-flex; align-items: center; gap: 6px; min-height: 48px; padding: 0 4px;
+                font-size: 16px; font-weight: 600; color: var(--atlas-rust); text-decoration: none; }
+.bouton-texte.or { color: var(--atlas-orTexte); }
+.bouton-texte.alerte { color: var(--atlas-alerte); }
+.bouton[disabled], .bouton[aria-disabled="true"] { background: var(--atlas-line); color: var(--atlas-inkSoft);
+          box-shadow: none; cursor: default; }
+.bouton-petit { min-height: 44px; width: auto; padding: 0 16px; font-size: 15px; border-radius: 12px; }
+.rang-boutons { display: flex; gap: 10px; }
+.rang-boutons > .bouton { flex: 1; }
+
+/* L'action principale, collée au-dessus de la barre : toujours au même endroit. */
+.action-bas { position: absolute; left: 0; right: 0; bottom: 0; z-index: 4;
+              padding: 12px var(--gouttiere) calc(12px + env(safe-area-inset-bottom));
+              background: linear-gradient(to top, var(--atlas-cream) 72%, color-mix(in srgb, var(--atlas-cream) 0%, transparent)); }
+.ecran.avec-barre .action-bas { bottom: 66px; }
+.ecran.avec-action .defile { padding-bottom: 104px; }
+.ecran.avec-barre.avec-action .defile { padding-bottom: 170px; }
+
+/* ─── Les champs : la plage, 16 px (en dessous, iOS agrandit la page) ──────── */
+.champ { display: block; margin-top: 16px; }
+.champ:first-child { margin-top: 0; }
+.champ-libelle { display: block; margin-bottom: 7px; font-size: 14.5px; font-weight: 600; color: var(--atlas-inkSoft); }
+.champ-saisie { display: block; width: 100%; min-height: 52px; padding: 14px 15px; border: 0; border-radius: 6px;
+                background: var(--atlas-card); color: var(--atlas-ink); font: 400 16px/1.4 var(--sans);
+                box-shadow: inset 0 0 0 1px var(--atlas-lineSoft); outline: none; }
+.champ-saisie::placeholder { color: var(--atlas-muted); }
+.champ-saisie:focus { box-shadow: inset 0 0 0 2px var(--atlas-rust); }
+textarea.champ-saisie { min-height: 110px; resize: vertical; }
+.champ-aide { display: block; margin-top: 6px; font-size: 13.5px; color: var(--atlas-inkSoft); }
+.champ-manque .champ-saisie { box-shadow: inset 0 0 0 2px var(--atlas-carteAmbreTexte); }
+.champ-manque .champ-aide { color: var(--atlas-carteAmbreTexte); font-weight: 600; }
+
+/* Le choix entre quelques mots : une pastille glisse sous le mot choisi. */
+.choix { display: flex; padding: 4px; gap: 4px; border-radius: 12px; background: color-mix(in srgb, var(--atlas-ink) 6%, transparent); }
+.choix button { flex: 1; min-height: 44px; padding: 0 10px; border-radius: 9px; font-size: 15px; font-weight: 600;
+                color: var(--atlas-inkSoft); transition: background-color 200ms var(--courbe), color 200ms var(--courbe); }
+.choix button[aria-pressed="true"], .choix button[aria-selected="true"] { background: var(--atlas-card); color: var(--atlas-ink);
+                box-shadow: 0 1px 2px color-mix(in srgb, var(--atlas-ink) 14%, transparent); }
+
+/* L'interrupteur : grand, lisible, son état écrit à côté. */
+.bascule { position: relative; width: 52px; height: 32px; flex: none; border-radius: 16px;
+           background: color-mix(in srgb, var(--atlas-ink) 18%, transparent); transition: background-color 220ms var(--courbe); }
+.bascule::after { content: ""; position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 50%;
+                  background: var(--atlas-card); transition: transform 240ms var(--courbe-g); }
+.bascule[aria-checked="true"] { background: var(--atlas-plein); }
+.bascule[aria-checked="true"]::after { transform: translateX(20px); }
+
+/* ─── La barre du bas : cinq mots, sans icônes, le trait d'or qui glisse ───── */
+.barre { position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--atlas-cream);
+         box-shadow: inset 0 1px 0 var(--atlas-line); padding-bottom: env(safe-area-inset-bottom); }
+.barre-onglets { position: relative; display: grid; grid-template-columns: repeat(var(--onglets, 5), minmax(0, 1fr));
+                 padding: 0 8px; height: 66px; }
+.barre-onglet { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center;
+                text-decoration: none; font-size: 12.5px; font-weight: 500; letter-spacing: 0.01em;
+                color: var(--atlas-inkSoft); transition: color 320ms var(--courbe), transform 340ms var(--courbe-g); }
+.barre-onglet[aria-current="page"] { color: var(--atlas-onglet-encre, var(--atlas-ink)); font-weight: 700; transform: translateY(-2px); }
+.barre-trait { position: absolute; left: 8px; bottom: 14px; height: var(--atlas-onglet-hauteur, 2px);
+               top: var(--atlas-onglet-haut, auto);
+               width: calc((100% - 16px) / var(--onglets, 5)); transform: translateX(calc(var(--rang, 0) * 100%));
+               transition: transform 540ms var(--courbe-g); pointer-events: none; }
+.barre-trait > span { display: block; height: 100%; margin: 0 18%; border-radius: var(--atlas-onglet-rayon, 2px);
+                      background: var(--atlas-onglet-fond, var(--atlas-or)); }
+.barre[data-pastille] .barre-trait { bottom: 10px; top: 10px; height: auto; }
+.barre[data-pastille] .barre-trait > span { margin: 0 4%; }
+
+/* ─── La feuille qui monte du bas, et son voile ───────────────────────────── */
+.voile { position: absolute; inset: 0; z-index: 20; background: color-mix(in srgb, #0d0e0c 42%, transparent);
+         opacity: 0; pointer-events: none; transition: opacity 260ms var(--courbe); }
+.feuille { position: absolute; left: 0; right: 0; bottom: 0; z-index: 21; max-height: 88%;
+           display: flex; flex-direction: column; background: var(--atlas-cream);
+           border-radius: var(--r-feuille) var(--r-feuille) 0 0; transform: translateY(104%);
+           transition: transform 420ms cubic-bezier(0.16, 1, 0.3, 1); }
+.feuille-poignee { width: 40px; height: 5px; border-radius: 3px; margin: 10px auto 2px;
+                   background: color-mix(in srgb, var(--atlas-ink) 22%, transparent); }
+.feuille-dedans { overflow-y: auto; padding: 10px var(--gouttiere) 24px; }
+.feuille-titre { margin: 6px 0 16px; font: 400 26px/1.15 var(--serif); }
+.ecran[data-feuille] .voile { opacity: 1; pointer-events: auto; }
+.feuille.ouverte { transform: translateY(0); }
+
+/* ─── Le tiroir des retirés : il pousse, il ne recouvre pas ───────────────── */
+.tiroir { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px;
+          margin-top: 14px; padding: 0 8px 0 16px; border-radius: var(--r-plage); background: var(--atlas-ink);
+          color: var(--atlas-cream); font-size: 15px; }
+.tiroir .bouton-texte { color: var(--atlas-orSurEncre); }
+
+/* ─── L'écran vide : une phrase, un geste ─────────────────────────────────── */
+.vide { padding: 44px 8px 24px; text-align: center; }
+.vide .ico { width: 40px; height: 40px; color: var(--atlas-orTexte); stroke-width: 1.4; margin: 0 auto 14px; }
+.vide-titre { margin: 0; font: 400 22px/1.25 var(--serif); }
+.vide-texte { margin: 8px auto 20px; max-width: 26em; font-size: 15px; color: var(--atlas-inkSoft); }
+
+/* ─── Les petits outils de mise en page ───────────────────────────────────── */
+.pile > * + * { margin-top: 12px; }
+.pile-serree > * + * { margin-top: 8px; }
+.pile-large > * + * { margin-top: 24px; }
+.rang { display: flex; align-items: center; gap: 12px; }
+.rang-espace { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.deux-colonnes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.centre { text-align: center; }
+.mt-8 { margin-top: 8px; } .mt-16 { margin-top: 16px; } .mt-24 { margin-top: 24px; } .mt-32 { margin-top: 32px; }
+
+/* L'appui se sent : le fond s'assombrit d'un rien sous le doigt. */
+.touche { -webkit-tap-highlight-color: transparent; transition: background-color 160ms var(--courbe); border-radius: var(--r-plage); }
+.touche:active { background-color: color-mix(in srgb, var(--atlas-ink) 5%, transparent); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ecran *, .ecran *::before, .ecran *::after { transition-duration: 1ms !important; animation-duration: 1ms !important; }
+}

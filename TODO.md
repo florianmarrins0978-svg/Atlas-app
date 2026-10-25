@@ -1,5 +1,31 @@
 # Prochaines tâches
 
+## ⏳ DES PLANCHES À REGARDER : L'APPLI SOIGNÉE, ÉCRAN PAR ÉCRAN (25 octobre 2026)
+
+**Sa demande :** *« reprends toutes les pages de l'application et améliore-moi le
+rendu visuel ; une planche pour chaque page ; le but, une application très jolie
+et facile d'utilisation »*. Ses réponses : l'allure se GARDE et se soigne (mêmes
+couleurs, mêmes chartes, même écriture), les choses peuvent changer de place si
+c'est plus simple, les planches vont en ligne. Puis, la limite de session
+atteinte : *« on va faire planche par planche »*.
+
+**Où :** `appli/soignee/` (sommaire `index.html`). Une boîte commune
+(`kit.css`, `kit.js`, les huit chartes recopiées de `variablesCharte`), une
+planche « Ce qui change partout » (`fondations.html`), puis une planche par
+écran : la capture d'aujourd'hui (`aujourdhui/<écran>.jpg`) à côté de la
+proposition, à essayer au pouce. Un lien vers une planche pas encore faite dit
+« Cette planche arrive bientôt » : la liste des prêtes est `PRETES` dans `kit.js`.
+
+**Livrées :** Réglages (le sommaire), Terminés et Ma TVA (avec des chantiers terminés et des factures de démonstration). **À trancher par lui :** le vert des
+boutons, le sien (#7d9a6d, 3,0 de contraste sous le crème) ou un cran plus
+sombre (#587a4c, 4,6), sur `fondations.html`. Rien n'est codé dans `src/`.
+
+**Pour reprendre :** l'inventaire de 48 écrans (décisions du patron relevées
+écran par écran) a été fait dans la session du 25 octobre, hors dépôt ; il
+manque celui des Réglages et des pages du client. Une planche se dessine à
+partir de la capture d'aujourd'hui, du code de l'écran et de `reglages.html`,
+qui sert de modèle.
+
 
 ## AUDIT DE SÉCURITÉ : LE LOT 0 EST FAIT, LA SUITE ATTEND SON PROMPT (25 octobre 2026)
 
