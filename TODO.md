@@ -16,7 +16,7 @@ planche « Ce qui change partout » (`fondations.html`), puis une planche par
 proposition, à essayer au pouce. Un lien vers une planche pas encore faite dit
 « Cette planche arrive bientôt » : la liste des prêtes est `PRETES` dans `kit.js`.
 
-**Livrées :** Réglages (le sommaire), Vos clients et la fiche d'un client, Terminés et Ma TVA (avec des chantiers terminés et des factures de démonstration), le Planning (25 octobre, `planning.html`). **À trancher par lui sur le Planning :** la semaine lue d'office sous le mois, au lieu du mot « La semaine » à toucher (c'est revenir sur sa réponse du 15 octobre, « au repos, rien dessous ») ; si non, le mot revient tel quel et le reste de la planche ne bouge pas. **À trancher par lui :** le vert des
+**Livrées :** Réglages (le sommaire), Vos clients et la fiche d'un client, Terminés et Ma TVA (avec des chantiers terminés et des factures de démonstration), le Planning (25 octobre, `planning.html`), Vos chantiers, l'accueil (25 octobre, `accueil.html`). **À trancher par lui sur le Planning :** la semaine lue d'office sous le mois, au lieu du mot « La semaine » à toucher (c'est revenir sur sa réponse du 15 octobre, « au repos, rien dessous ») ; si non, le mot revient tel quel et le reste de la planche ne bouge pas. **Sur Vos chantiers :** les chantiers loin du milieu ne pâlissent plus (son fil du 10 août les effaçait à 45 %) ; si non, l'effet revient, plus léger. **À trancher par lui :** le vert des
 boutons, le sien (#7d9a6d, 3,0 de contraste sous le crème) ou un cran plus
 sombre (#587a4c, 4,6), sur `fondations.html`. Rien n'est codé dans `src/`.
 

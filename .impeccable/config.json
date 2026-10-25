@@ -98,6 +98,33 @@
         ],
         "createdAt": "2026-10-25T21:27:39.280Z",
         "reason": "agent: fond de planche #ebe8e1 et crème de l'écran viennent de la charte Origine du produit (PRODUCT.md, palette relevée sur Arborea), recopiée par kit.js"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "appli/soignee/accueil.html"
+        ],
+        "createdAt": "2026-10-25T21:55:17.804Z",
+        "reason": "agent: .cadre est le cadre du téléphone, l'écran y est posé bord à bord exprès (kit.css commun à toutes les planches soignées)"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/accueil.html"
+        ],
+        "createdAt": "2026-10-25T21:55:17.817Z",
+        "reason": "agent: fond de planche et crème de l'écran viennent de la charte Origine du produit (PRODUCT.md, palette relevée sur Arborea), recopiée par kit.js"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "appli/soignee/accueil.html"
+        ],
+        "createdAt": "2026-10-25T21:55:36.524Z",
+        "reason": "seul relevé : l'or #b98b47 sur le crème, décision du patron consignée dans TODO.md (25 octobre 2026, le doré de l'appli partout dans les planches) et état des chantiers toujours en or (src/lib/chantier-etat.ts, 16 août)"
       }
     ]
   }
