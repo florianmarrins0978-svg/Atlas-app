@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import BottomSheet from "@/components/atlas/BottomSheet";
-import { colors, font } from "@/lib/design-tokens";
+import { colors, font, surPlein } from "@/lib/design-tokens";
 import { natureDeLaPiece, nomDuFichierDeLaPiece, numeroDeLaPiece, type PieceDuClient } from "@/lib/documents-du-client";
 import { adresseDeLaVisionneuse } from "@/lib/visionneuse-pdf";
 import { rapportDansLAppli } from "@/lib/rapport-dans-l-appli";
@@ -46,7 +46,14 @@ import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocum
 /** Ce que l'en-tête de la visionneuse écrit au-dessus du numéro. */
 const NATURE_LISIBLE = { facture: "Facture", avoir: "Avoir", devis: "Devis", "fiche-chantier": "Fiche de chantier" } as const;
 
-export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
+export default function PieceDuDossier({
+  piece,
+  premiere = false,
+}: {
+  piece: PieceDuClient;
+  /** La première pièce du registre : pas de filet, les onglets en ont déjà un. */
+  premiere?: boolean;
+}) {
   const [feuilleOuverte, setFeuilleOuverte] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
 
@@ -87,6 +94,20 @@ export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
     );
   }
 
+  // L'adresse que « Ouvrir » sert : la visionneuse pour un PDF, l'application
+  // pour un rapport d'entretien (jamais un onglet à part, voir plus haut).
+  const adresseOuvrir = estUnFichier
+    ? adresseDeLaVisionneuse(piece.href, {
+        surtitre: NATURE_LISIBLE[natureDeLaPiece(piece.href)],
+        titre: numeroDeLaPiece(piece.titre) ?? piece.titre,
+      })
+    // **Plus d'onglet neuf — 24 septembre 2026.** Il y tombait sur la page de
+    // son client, sans flèche : *« j'ai aucun moyen de faire retour ! »*. Le
+    // rapport se relit dans l'application (`rapport-dans-l-appli.ts`) ;
+    // « Partager » garde l'adresse publique, la seule que le client puisse
+    // ouvrir.
+    : (rapportDansLAppli(piece.href) ?? piece.href);
+
   return (
     <>
       {/* **Un vrai bouton, pas un `<div>` qui écoute.** Il porte un nom lisible
@@ -94,21 +115,13 @@ export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
           l'attend : « Ouvrir les actions » plutôt que le seul numéro, qui
           laisserait croire que l'appui ouvre le document.
 
-          Les 64 px de haut viennent de la règle de cet écran : « un lien qu'il
-          touche d'une main, dehors, parfois avec des gants ».
-
-          ── LA PIÈCE EST UNE LIGNE DEPUIS LE 2 SEPTEMBRE 2026 ──────────────
-          Retenu sur maquette. Elle était une vignette dans une colonne de
-          118 px, et son numéro n'y tenait pas : « n° 2026-0031 » se coupait.
-          Le registre porte maintenant toute la largeur, le numéro se lit en
-          serif comme un nom de chantier, et la date se range à droite en
-          chiffres alignés.
-
-          **La pastille rouge « PDF » a disparu, et c'était la seule tache
-          d'alerte de l'écran** — posée sur un document qui n'alerte rien. Ce
-          qu'elle disait, l'onglet le dit mieux : la nature de la pièce EST son
-          registre. `estUnFichier` continue de commander la feuille, où la
-          différence a une conséquence (on n'enregistre pas une page). */}
+          ── LA DATE PASSE SOUS LE NUMÉRO — 25 octobre 2026, sur sa planche ──
+          Elle était à droite en 11,5 px gris. Sous le numéro, à 14 px, elle se
+          lit, et le numéro prend toute la largeur : il ne se coupe jamais. Ni
+          icône devant la pièce (*« les icônes à côté de devis, factures et
+          fiches, tu me les enlèves »*), ni pastille : la nature de la pièce EST
+          son registre. Un filet sépare deux pièces, jamais la première de ses
+          onglets, qui ont déjà le leur. */}
       <button
         type="button"
         onClick={() => {
@@ -117,139 +130,120 @@ export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
         }}
         data-atlas="piece"
         aria-label={`${piece.titre}, que faire de ce document ?`}
-        className="grid min-h-[64px] w-full grid-cols-[1fr_auto_auto] items-center gap-x-[14px] py-[15px] text-left"
-        style={{ borderTop: `1px solid ${colors.lineSoft}`, WebkitTapHighlightColor: "transparent" }}
+        className="flex min-h-[68px] w-full items-center gap-3 py-2.5 text-left"
+        style={{
+          borderTop: premiere ? "none" : `1px solid ${colors.line}`,
+          WebkitTapHighlightColor: "transparent",
+        }}
       >
-        <span data-atlas="piece-titre" className="block truncate text-[19px] leading-[1.15]" style={{ fontFamily: font.display }}>
-          {piece.titre}
-        </span>
-        {/* **UNE DATE NE SE MET JAMAIS EN CAPITALES.** Écrite ici en petites
-            capitales espacées, « 12 août 2026 » devenait « 12 AOÛT 2026 » : le
-            mois cesse d'avoir une forme, et l'on épelle au lieu de lire. C'est
-            l'argument même qui a fait repasser l'adresse en bas de casse dans
-            l'en-tête — il vaut autant ici.
-
-            Et cela cassait une règle qu'il avait payée : une seule façon
-            d'écrire une date sur cet écran, en toutes lettres
-            (`test-fiche-client-e2e`, qui l'a vu avant lui). */}
-        <span
-          className="text-[11.5px] leading-[1.5]"
-          style={{ color: colors.muted, fontVariantNumeric: "tabular-nums" }}
-        >
-          {piece.precision ?? ""}
+        <span className="min-w-0 flex-1">
+          <span
+            data-atlas="piece-titre"
+            className="block truncate text-[18.5px] leading-[1.25]"
+            style={{ fontFamily: font.display, fontVariantNumeric: "lining-nums" }}
+          >
+            {piece.titre}
+          </span>
+          {/* **UNE DATE NE SE MET JAMAIS EN CAPITALES**, et elle s'écrit d'une
+              seule façon sur cet écran (`test-fiche-client-e2e`). */}
+          {piece.precision && (
+            <span
+              className="mt-0.5 block text-[14px] leading-[1.4]"
+              style={{ color: colors.inkSoft, fontVariantNumeric: "tabular-nums" }}
+            >
+              {piece.precision}
+            </span>
+          )}
+          {/* **CE QUE LE CLIENT A FAIT DE SA FACTURE — sa réponse du 9 septembre
+              2026** : *« je vais dans mes clients sur la catégorie facture »*.
+              « Pas encore ouverte » s'écrit : c'est justement ce qu'il vient
+              vérifier quand un client prétend n'avoir rien reçu. La phrase se
+              décide dans `src/lib/reception-facture.ts`, pas ici ; la date est
+              en gras, sa demande du 11 septembre. */}
+          {piece.reception && (
+            <span data-atlas="piece-reception" className="mt-[3px] block text-[14px] leading-[1.4]" style={{ color: colors.inkSoft }}>
+              {piece.reception.avant}
+              {piece.reception.date && <strong style={{ color: colors.ink }}>{piece.reception.date}</strong>}
+            </span>
+          )}
         </span>
         {/* Le chevron : seule affordance de navigation vers l'intérieur, et
             discret — il montre un sens, il ne décore pas (`CLAUDE.md` §3). */}
-        <svg width="7" height="12" viewBox="0 0 8 14" fill="none" stroke={colors.chevron} strokeWidth="1.5" aria-hidden="true">
-          <path d="M1.5 1l5 6-5 6" strokeLinecap="round" strokeLinejoin="round" />
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={colors.chevron} strokeWidth="2" aria-hidden="true" className="flex-none">
+          <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
-        {/* **CE QUE LE CLIENT A FAIT DE SA FACTURE — sa réponse du 9 septembre
-            2026.** Je lui demandais où il chercherait le jour d'un litige :
-            *« je vais dans mes clients sur la catégorie facture »*. C'est donc
-            ici, et pas seulement sur « En attente de paiement ».
-
-            Sur toute la largeur, SOUS le numéro : à droite, elle se serait
-            battue avec la date pour la même colonne de 118 px — celle-là même
-            où « n° 2026-0031 » ne tenait pas. La ligne passe de 64 à 90 px, et
-            seules les factures la portent.
-
-            **« Pas encore ouverte » S'ÉCRIT**, et ce n'est pas du bruit : c'est
-            justement ce qu'il vient vérifier quand un client prétend n'avoir
-            rien reçu. Ne rien afficher ferait lire l'absence de trace comme une
-            absence de fonctionnalité.
-
-            **La phrase se décide dans `src/lib/reception-facture.ts`**, pas
-            ici : l'écran des impayés la montre aussi, et le choix « confirmée
-            plutôt qu'ouverte » y était écrit une seconde fois (`CLAUDE.md`
-            §3). */}
-        {piece.reception && (
-          <span
-            data-atlas="piece-reception"
-            className="col-span-3 mt-[3px] block text-[11.5px] leading-[1.5]"
-            style={{ color: piece.reception.date ? colors.inkSoft : colors.muted }}
-          >
-            {piece.reception.avant}
-            {/* Le gras, et non le demi-gras d'avant : c'est la date qu'il cherche
-                dans la ligne, et il l'a demandée « en gras » le 11 septembre
-                2026. À 11,5 px, un 500 ne se distingue pas du texte autour. */}
-            {piece.reception.date && <strong>{piece.reception.date}</strong>}
-          </span>
-        )}
       </button>
 
       <BottomSheet open={feuilleOuverte} onBackdropClick={() => setFeuilleOuverte(false)}>
-        <p className="text-center text-[12px]" style={{ color: colors.muted }}>
+        <p className="text-[26px] leading-[1.15]" style={{ fontFamily: font.display, color: colors.ink }}>
           {piece.titre}
-          {piece.precision ? ` ${piece.precision}` : ""}
         </p>
+        {piece.precision && (
+          <p className="mt-1 text-[15px]" style={{ color: colors.inkSoft }}>
+            {piece.precision}
+          </p>
+        )}
 
         {/* **« Télécharger » en tête, et c'est le geste qu'il est venu chercher.**
             Le mot était « Enregistrer » ; il a demandé « Télécharger » le
-            23 octobre 2026, capture à l'appui.
-            La feuille de l'application ne se referme qu'une fois le document
-            parti : refermée à l'appui, elle emportait le message d'un refus.
+            23 octobre 2026, capture à l'appui. La feuille ne se referme qu'une
+            fois le document parti : refermée à l'appui, elle emportait le
+            message d'un refus.
 
             **Sauf pour une fiche d'entretien**, qui n'est pas un fichier : elle
-            n'a rien à enregistrer, et « Ouvrir » devient alors le geste
-            principal. */}
+            n'a rien à enregistrer, et « Ouvrir » devient alors le geste plein. */}
         {estUnFichier && (
           <BoutonTelechargerDocument
             fichier={piece.href}
             nom={nomFichier}
             onFini={() => setFeuilleOuverte(false)}
             dataAtlas="piece-enregistrer"
-            className="atlas-plein mt-4 block w-full rounded-full py-4 text-center text-[16px] font-medium"
-            style={{ backgroundColor: colors.plein, color: colors.cream }}
+            className={`atlas-plein mt-5 ${GESTE_DE_LA_FEUILLE}`}
+            style={{ backgroundColor: colors.plein, color: surPlein }}
           >
+            <IconeDeLaFeuille d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14" />
             Télécharger
           </BoutonTelechargerDocument>
         )}
 
-        <a
-          href={
-            estUnFichier
-              ? adresseDeLaVisionneuse(piece.href, {
-                  surtitre: NATURE_LISIBLE[natureDeLaPiece(piece.href)],
-                  titre: numeroDeLaPiece(piece.titre) ?? piece.titre,
-                })
-              // **Plus d'onglet neuf — 24 septembre 2026.** Il y tombait sur la
-              // page de son client, sans flèche : *« j'ai aucun moyen de faire
-              // retour ! »*. Le rapport se relit dans l'application
-              // (`rapport-dans-l-appli.ts`) ; « Partager » garde l'adresse
-              // publique, la seule que le client puisse ouvrir.
-              : (rapportDansLAppli(piece.href) ?? piece.href)
-          }
-          onClick={() => setFeuilleOuverte(false)}
-          data-atlas="piece-ouvrir"
-          className={
-            estUnFichier
-              ? "mt-2 block py-4 text-center text-[15px]"
-              // **Seule cette branche est un aplat.** L'autre est un simple
-              // lien à l'encre : lui poser la classe du bouton plein lui
-              // donnerait un geste que rien ne peint — « surtout pas ceux qui
-              // sont creux » (sa consigne du 31 août).
-              : "atlas-plein mt-4 block rounded-full py-4 text-center text-[16px] font-medium"
-          }
-          style={estUnFichier ? { color: colors.ink } : { backgroundColor: colors.plein, color: colors.cream }}
-        >
-          Ouvrir
-        </a>
+        {/* **Ouvrir et Partager côte à côte, creux** quand Télécharger porte
+            l'aplat ; pour une fiche, Ouvrir le prend et Partager suit dessous.
+            « Surtout pas ceux qui sont creux » (31 août) : un bouton creux ne
+            reçoit jamais la classe de l'aplat. */}
+        <div className={estUnFichier ? "mt-2.5 flex gap-2.5" : "mt-5"}>
+          <a
+            href={adresseOuvrir}
+            onClick={() => setFeuilleOuverte(false)}
+            data-atlas="piece-ouvrir"
+            className={estUnFichier ? `flex-1 ${GESTE_DE_LA_FEUILLE}` : `atlas-plein ${GESTE_DE_LA_FEUILLE}`}
+            style={
+              estUnFichier
+                ? { color: colors.ink, boxShadow: `inset 0 0 0 1.5px ${colors.line}` }
+                : { backgroundColor: colors.plein, color: surPlein }
+            }
+          >
+            <IconeDeLaFeuille d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+            Ouvrir
+          </a>
 
-        {/* **« Partager » revient ici**, après avoir disparu de l'écran d'envoi
-            le 21 août au matin. C'était le seul chemin vers WhatsApp, et sa
-            place est plutôt sur le document rangé que sur le geste d'envoi. */}
-        <button
-          type="button"
-          onClick={partager}
-          data-atlas="piece-partager"
-          className="mt-1 block w-full py-4 text-center text-[15px]"
-          style={{ color: colors.ink }}
-        >
-          Partager
-        </button>
+          {/* **« Partager » vit ici**, après avoir disparu de l'écran d'envoi le
+              21 août au matin : c'est le seul chemin vers WhatsApp. */}
+          <button
+            type="button"
+            onClick={partager}
+            data-atlas="piece-partager"
+            className={estUnFichier ? `flex-1 ${GESTE_DE_LA_FEUILLE}` : `mt-2.5 ${GESTE_DE_LA_FEUILLE}`}
+            style={{ color: colors.ink, boxShadow: `inset 0 0 0 1.5px ${colors.line}` }}
+          >
+            <IconeDeLaFeuille d="M12 15V4M8 7.5L12 3.5l4 4M6 11.5H5v9h14v-9h-1" />
+            Partager
+          </button>
+        </div>
 
+        {/* Un refus se lit dans le rouge des refus, et non plus dans le vert pin
+            de la charte, qui est la voix de ce qu'on fait. */}
         {erreur && (
-          <p role="alert" className="mt-2 text-center text-[13px]" style={{ color: colors.rust }}>
+          <p role="alert" className="mt-3 text-center text-[14px]" style={{ color: colors.alert }}>
             {erreur}
           </p>
         )}
@@ -257,12 +251,35 @@ export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
         <button
           type="button"
           onClick={() => setFeuilleOuverte(false)}
-          className="mt-2 block w-full py-3 text-center text-[14px]"
-          style={{ color: colors.muted }}
+          className="mt-2 block min-h-[48px] w-full text-center text-[15px]"
+          style={{ color: colors.inkSoft }}
         >
           Annuler
         </button>
       </BottomSheet>
     </>
+  );
+}
+
+/** Les gestes de la feuille : 56 px de haut, le dessin devant le mot. */
+const GESTE_DE_LA_FEUILLE =
+  "flex min-h-[56px] w-full items-center justify-center gap-2.5 rounded-[14px] px-3 text-center text-[16.5px] font-semibold";
+
+function IconeDeLaFeuille({ d }: { d: string }) {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className="flex-none"
+    >
+      <path d={d} />
+    </svg>
   );
 }
