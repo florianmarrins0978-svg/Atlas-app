@@ -26,10 +26,17 @@ La batterie complète posait déjà la base d'essai, elle était donc sûre. Un 
 | La ligne dans `atlas_dev` | **effacée** | intacte |
 | Le nettoyage sur la base d'essai | fonctionne | fonctionne |
 
-## Ce qui reste ouvert
+## La suite le même jour : `db:seed`
 
-`npm run db:seed` tapé à la main vide encore ta base, même quand elle porte du travail. Le message d'allumage de ton espace le propose même. C'est inscrit dans `TODO.md`, à traiter avec la revue de sécurité. Le choix de la correction me revient ; ton accord n'est nécessaire que si elle change ce que tu tapes.
+`npm run db:seed` tapé à la main effaçait aussi ta base : il ne regardait que son nom. Il demande maintenant lui-même si elle contient du travail, et refuse si oui, ou s'il ne peut pas le savoir.
+
+| | Avant | Après |
+|---|---|---|
+| `db:seed` sur ta base avec ton entreprise | **remplacée par « Atelier Démo »** | intacte, refus |
+| Premier allumage d'un espace neuf | amorcé | amorcé |
+
+Preuve : `scripts/test-base-habitee.ts`, sur une vraie base `atlas_dev`.
 
 ## Ce que tu dois faire
 
-Rien. Ne lance pas `db:seed` toi-même sur ton espace.
+Rien.

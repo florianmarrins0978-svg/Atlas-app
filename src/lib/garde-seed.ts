@@ -41,10 +41,9 @@
  * Les bases que le jeu de démonstration a le droit d'effacer.
  *
  * **`atlas_dev` n'est PAS une base d'essai (25 octobre 2026).** C'est celle de
- * son espace, et ses chantiers y vivent. Le seed y garde sa place parce qu'il
- * l'amorce au premier allumage, et `preparer.sh` ne l'appelle que sur une base
- * vierge (`scripts/base-habitee.mjs`). Les suites, elles, n'y ont aucun droit :
- * `estBaseDEssai` l'exclut, et c'est ce que lit `garderNettoyage`.
+ * son espace, et ses chantiers y vivent. Le seed ne l'amorce que VIERGE, au
+ * premier allumage : la base se mesure avant (`occupation`). Les suites n'y ont
+ * aucun droit : `estBaseDEssai` l'exclut, et c'est ce que lit `garderNettoyage`.
  */
 export const BASES_AUTORISEES = ["atlas_test", "atlas_dev"] as const;
 
@@ -98,7 +97,12 @@ export type RefusSeed =
   /** La base est ailleurs que sur cette machine. */
   | "hote-distant"
   /** Forçage demandé, mais le mot de passe de démonstration n'est pas posé. */
-  | "forcage-sans-mot-de-passe";
+  | "forcage-sans-mot-de-passe"
+  /** `atlas_dev` porte déjà du travail, ou l'on n'a pas pu le savoir. */
+  | "base-habitee";
+
+/** Ce que la base porte, mesuré auprès d'elle (`src/server/db/occupation-de-la-base.ts`). */
+export type Occupation = "habitee" | "vierge" | "indeterminee";
 
 export type VerdictSeed =
   | { ok: true; force: boolean; base: string }
@@ -111,6 +115,8 @@ export type ContexteSeed = {
   forcage: string | undefined;
   /** La valeur de `ATLAS_MDP_DEMO`, telle qu'elle arrive. */
   motDePasseDemo: string | undefined;
+  /** Ce que la base porte. Seule `atlas_dev` le demande : elle seule peut être la sienne. */
+  occupation: Occupation;
 };
 
 /** Le nom de la base porté par une adresse PostgreSQL, ou `null`. */
@@ -120,7 +126,7 @@ function baseDe(url: URL): string | null {
 }
 
 export function garderSeed(contexte: ContexteSeed): VerdictSeed {
-  const { databaseUrl, nodeEnv, forcage, motDePasseDemo } = contexte;
+  const { databaseUrl, nodeEnv, forcage, motDePasseDemo, occupation } = contexte;
 
   const refus = (refus: RefusSeed, phrase: string): VerdictSeed => ({ ok: false, refus, phrase });
 
@@ -186,11 +192,24 @@ export function garderSeed(contexte: ContexteSeed): VerdictSeed {
     );
   }
 
+  // Le doute range du côté d'habitée : se tromper en n'amorçant pas coûte un
+  // forçage ; se tromper en amorçant coûte ses chantiers.
+  if (base === "atlas_dev" && occupation !== "vierge") {
+    return refus(
+      "base-habitee",
+      occupation === "habitee"
+        ? "La base « atlas_dev » porte déjà du travail : on n'y touche pas."
+        : "Impossible de savoir si la base « atlas_dev » porte du travail : on n'y touche pas.",
+    );
+  }
+
   return { ok: true, force: false, base };
 }
 
 /** Ce qui s'affiche au terminal quand on refuse. Une phrase, puis quoi faire. */
 export function phraseDeRefus(verdict: Extract<VerdictSeed, { ok: false }>): string {
+  // Devant SA base, on ne donne pas la recette pour la vider (`CLAUDE.md` §4 septies).
+  if (verdict.refus === "base-habitee") return `⏭ Jeu de démonstration non amorcé. ${verdict.phrase}\n`;
   return (
     `❌ Le jeu de démonstration REFUSE de s'exécuter.\n\n` +
     `   ${verdict.phrase}\n\n` +

@@ -110,12 +110,29 @@
 <td>fonctionne</td>
 </tr>
 </tbody></table></div>
-<h2 id="ce-qui-reste-ouvert">Ce qui reste ouvert</h2>
+<h2 id="la-suite-le-même-jour--dbseed">La suite le même jour : <code>db:seed</code></h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p><code>npm run db:seed</code> tapé à la main vide encore ta base, même quand elle porte du travail. Le message d'allumage de ton espace le propose même. C'est inscrit dans <code>TODO.md</code>, à traiter avec la revue de sécurité. Le choix de la correction me revient ; ton accord n'est nécessaire que si elle change ce que tu tapes.</p>
+<p><code>npm run db:seed</code> tapé à la main effaçait aussi ta base : il ne regardait que son nom. Il demande maintenant lui-même si elle contient du travail, et refuse si oui, ou s'il ne peut pas le savoir.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Avant</th>
+<th>Après</th>
+</tr></thead><tbody>
+<tr>
+<td><code>db:seed</code> sur ta base avec ton entreprise</td>
+<td><strong>remplacée par « Atelier Démo »</strong></td>
+<td>intacte, refus</td>
+</tr>
+<tr>
+<td>Premier allumage d'un espace neuf</td>
+<td>amorcé</td>
+<td>amorcé</td>
+</tr>
+</tbody></table></div>
+<p>Preuve : <code>scripts/test-base-habitee.ts</code>, sur une vraie base <code>atlas_dev</code>.</p>
 <h2 id="ce-que-tu-dois-faire">Ce que tu dois faire</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p>Rien. Ne lance pas <code>db:seed</code> toi-même sur ton espace.</p>
+<p>Rien.</p>
 </main>
 </body>
 </html>

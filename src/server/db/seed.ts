@@ -3,6 +3,7 @@ import Decimal from "decimal.js";
 import { hashSync } from "bcryptjs";
 import { pool, db } from "./client";
 import { garderSeed, phraseDeRefus } from "../../lib/garde-seed";
+import { mesurerOccupation } from "./occupation-de-la-base";
 import { createHash } from "node:crypto";
 import { attribuerNumeroDevis } from "../repositories/devis";
 import { genererPdfDevis } from "../pdf/devis-pdf";
@@ -225,17 +226,24 @@ const MOT_DE_PASSE_DEMO = process.env.ATLAS_MDP_DEMO?.trim() || "demo1234";
  * fonction pure, éprouvée sans base sur les cas qu'on ne veut surtout pas jouer
  * en vrai (`scripts/test-garde-seed.ts`).
  */
-function verifierLaCible(): void {
+/**
+ * Le code de sortie d'un refus devant SA base : une réponse, pas une panne.
+ * `preparer.sh` le lit pour continuer l'allumage sans rien vider.
+ */
+const CODE_BASE_HABITEE = 3;
+
+async function verifierLaCible(): Promise<void> {
   const verdict = garderSeed({
     databaseUrl: process.env.DATABASE_URL,
     nodeEnv: process.env.NODE_ENV,
     forcage: process.env.ATLAS_SEED_FORCER,
     motDePasseDemo: process.env.ATLAS_MDP_DEMO,
+    occupation: process.env.DATABASE_URL ? await mesurerOccupation(process.env.DATABASE_URL) : "indeterminee",
   });
 
   if (!verdict.ok) {
     console.error(phraseDeRefus(verdict));
-    process.exit(1);
+    process.exit(verdict.refus === "base-habitee" ? CODE_BASE_HABITEE : 1);
   }
 
   if (verdict.force) {
@@ -797,9 +805,8 @@ async function seedCatalogue() {
 // écrit lui aussi. Appelée ici, au point d'entrée, plutôt qu'au début de
 // `main()` : `seedCatalogue()` passe en premier, et l'oublier reviendrait à
 // laisser une écriture franchir le contrôle censé tout arrêter.
-verifierLaCible();
-
-seedCatalogue()
+verifierLaCible()
+  .then(() => seedCatalogue())
   .then(() => main())
   .then(() => pool.end())
   .catch((err) => {

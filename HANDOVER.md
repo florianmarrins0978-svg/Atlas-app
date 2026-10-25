@@ -12,7 +12,7 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 ---
 ## LES SUITES NE VIDENT PLUS SA BASE (25 octobre 2026)
 
-`nettoyerBase()` et `run-e2e-tests.ts` refusent toute base qui n'est pas `atlas_test` ou `atlas_test_aN` (`garderNettoyage`, `src/lib/garde-seed.ts`). **Le piège :** sur son espace, `DATABASE_URL` désigne `atlas_dev`, sa vraie base ; une suite jouée là sans la batterie l'aurait vidée. Pour jouer des suites chez lui : `npm run verifier:avant-fusion`, qui pose la base d'essai. `ARCHITECTURE.md` §498.
+`nettoyerBase()` et `run-e2e-tests.ts` refusent toute base qui n'est pas `atlas_test` ou `atlas_test_aN` (`garderNettoyage`, `src/lib/garde-seed.ts`). **Le piège :** sur son espace, `DATABASE_URL` désigne `atlas_dev`, sa vraie base ; une suite jouée là sans la batterie l'aurait vidée. Pour jouer des suites chez lui : `npm run verifier:avant-fusion`, qui pose la base d'essai. `ARCHITECTURE.md` §498. **Et le seed refuse lui-même `atlas_dev` qui porte une entreprise** (code 3, que `preparer.sh` lit) : la question vit dans `src/server/db/occupation-de-la-base.ts`, et le seul forçage, `ATLAS_SEED_FORCER=oui-j-efface-tout`, ne se propose jamais.
 
 ---
 ## LES FACTURES DES FOURNISSEURS (23 octobre 2026)
@@ -1510,15 +1510,15 @@ regarder.
 | sa question | *« Ça va pas supprimer toutes mes données ? »* — devant le « Rebuild Container » que le lot précédent venait de lui conseiller |
 | la réponse | **OUI**, en l'état. Et c'est lui qui l'a vue — **pour la deuxième fois** (10 août : *« ça va effacer tout ce qu'il y a en mémoire »*) |
 | la racine | `preparer.sh` est le `postCreateCommand` : il tourne à chaque reconstruction et appelait le seed sans rien demander. Le seed VIDE la base ; la base, elle, SURVIT sur le volume nommé `atlas-pgdata` |
-| ce qui est fait | `scripts/base-habitee.mjs` — habitée (0), vierge (1), indéterminé (2). `preparer.sh` n'amorce que sur 1, et **le doute ne vide pas** |
+| révisé | le 25 octobre 2026 : la question vit dans le seed lui-même (`src/server/db/occupation-de-la-base.ts`), `base-habitee.mjs` a disparu. `ARCHITECTURE.md` §498 |
+| ce qui était fait | la sonde `base-habitee.mjs`, supprimée depuis, — habitée (0), vierge (1), indéterminé (2). `preparer.sh` n'amorce que sur 1, et **le doute ne vide pas** |
 | le piège fermé | le zéro d'un rôle qui ne traverse pas la RLS ne vaut pas « vierge » : il vaudrait la base entière. Mesuré auprès de la base, jamais déduit du nom du rôle |
 | la migration | **aucune** |
 | les suites | `test-base-habitee.ts` (neuve, jouée contre une vraie base dans cinq états, rouge contre l'ancien `preparer.sh`) |
 | le détail | `ARCHITECTURE.md` §346 |
 
-**LE SEED N'A PAS CHANGÉ, ET NE DOIT PAS CHANGER.** Vider puis reconstruire est
-son contrat, et les suites en dépendent. Ce qui a changé, c'est **qui décide de
-l'appeler**.
+**Vider puis reconstruire reste le contrat du seed**, et les suites en
+dépendent. Depuis le 25 octobre 2026, il refuse lui-même `atlas_dev` habitée.
 
 **Avant toute reconstruction, chez lui :** `npm run sauvegarder:banc`.
 

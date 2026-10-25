@@ -29374,7 +29374,7 @@ l'appeler** — corriger le seed aurait cassé les suites qui s'appuient dessus.
 
 ### Ce qui est fait
 
-`scripts/base-habitee.mjs` pose la question avant, et rend trois réponses :
+La sonde `base-habitee.mjs` pose la question avant, et rend trois réponses (révisé le 25 octobre 2026 : la question est passée dans le seed, §498) :
 **habitée** (0), **vierge** (1), **indéterminé** (2). `preparer.sh` n'amorce que
 sur 1.
 
@@ -35965,5 +35965,5 @@ retirée, et `test-papier-facture-db.ts` avec elle.
 
 **Deux droits distincts, et c'est délibéré.** Le seed garde `atlas_dev` : `preparer.sh` l'amorce au premier allumage, et seulement sur une base vierge (`base-habitee.mjs`, §346). Une suite n'y a aucun droit et aucun forçage (`garderNettoyage`) : vider sa base n'est le travail d'aucune suite. Les deux adresses se vérifient, celle qu'on vide et celle où la suite écrira ensuite.
 
-**Ce qui reste ouvert** : le seed lancé à la main (`npm run db:seed`) vide encore `atlas_dev` habitée, et `preparer.sh` le propose en toutes lettres devant une base habitée, contre `CLAUDE.md` §4 septies. Inscrit dans `TODO.md`.
+**Le seed demande lui-même si `atlas_dev` porte du travail** (le même jour). La question vivait dans `preparer.sh` (`base-habitee.mjs`, §346), l'appelant du premier allumage : `npm run db:seed` tapé à la main l'esquivait, et vidait ses chantiers. Elle vit dans `src/server/db/occupation-de-la-base.ts`, `garderSeed` la lit (`occupation`), et le seul endroit qui détruit est celui qui demande. Habitée ou indéterminée refuse avec le code 3, que `preparer.sh` lit comme une réponse ; le refus ne donne pas la recette du forçage (`CLAUDE.md` §4 septies). `base-habitee.mjs` a disparu avec le choix qu'il faisait à la place du seed. `scripts/test-base-habitee.ts` le joue sur une vraie base `atlas_dev`, vu rouge avant (« Atelier Démo » à la place de son entreprise).
 

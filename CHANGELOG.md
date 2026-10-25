@@ -9,6 +9,7 @@ Format : le plus récent en tête.
 ## 2026-10-25
 
 - **Un `npm test` tapé sur son espace n'efface plus ses chantiers.** Les suites vident la base avant chaque essai (`nettoyerBase`, `TRUNCATE … CASCADE`) et visaient celle que l'environnement désignait ; sur son espace, c'est `atlas_dev`, sa vraie base. La batterie posait déjà la base d'essai : le geste à la main, lui, ne tenait à rien. Les suites base et navigateur refusent désormais toute base qui n'est pas `atlas_test` ou une base d'atelier, avant la première ligne vidée (`garderNettoyage`, `src/lib/garde-seed.ts`). Reproduit sur une vraie base `atlas_dev` avec une ligne dedans : vidée avant, intacte après (`test-nettoyage-epargne-sa-base.ts`). `ARCHITECTURE.md` §498.
+- **`npm run db:seed` tapé sur son espace n'efface plus ses chantiers.** Le seed acceptait `atlas_dev` sur son seul nom ; la question « la base porte-t-elle du travail ? » vivait dans `preparer.sh`, et le geste à la main l'esquivait. Elle vit désormais dans le seed : une base qui porte une entreprise, ou qu'on ne sait pas mesurer, est refusée, et le refus ne propose pas de forcer. Le premier allumage d'un espace neuf amorce comme avant. Reproduit sur une vraie base `atlas_dev` : « Atelier Démo » remplaçait son entreprise, elle reste désormais (`test-base-habitee.ts`). `ARCHITECTURE.md` §498.
 
 ---
 ## 2026-10-24

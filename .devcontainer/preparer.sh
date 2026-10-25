@@ -60,34 +60,19 @@ fi
 # sur le volume nommé `atlas-pgdata` (`docker-compose.yml`). Ce script supposait
 # donc une base vierge devant une base habitée, et l'écrasait sans rien demander.
 #
-# **Le seed n'a pas changé, et ne doit pas changer** : vider puis reconstruire
-# est son contrat, et les suites en dépendent. Ce qui change, c'est QUI décide
-# de l'appeler.
-#
-# **Le doute ne vide pas.** Quand la question ne peut pas être posée (code 2),
-# on s'abstient : se tromper en n'amorçant pas coûte une commande, se tromper en
-# amorçant coûte ses chantiers.
+# **Le seed vide puis reconstruit, et les suites en dépendent.** Ce qui a
+# changé le 25 octobre 2026, c'est qu'il demande lui-même si la base porte du
+# travail : la question vivait ici, et `npm run db:seed` tapé à la main
+# l'esquivait. Le doute ne vide pas.
 echo "→ Données de démonstration…"
-# **`set -e` tuerait le script sur le code de sortie de la sonde**, qui est
-# justement sa réponse : 1 et 2 ne sont pas des pannes, ce sont des verdicts.
-HABITEE=0
-node scripts/base-habitee.mjs || HABITEE=$?
-case "$HABITEE" in
-  0)
-    echo "   ⏭ La base porte déjà du travail — on n'y touche pas."
-    echo "     Pour repartir des données de démonstration : npm run db:seed"
-    ;;
-  1)
-    # Le seed vide puis reconstruit : il lui faut un rôle qui traverse RLS.
-    DATABASE_URL="$DATABASE_SUPER_URL" npx tsx src/server/db/seed.ts
-    ;;
-  *)
-    echo "   ⚠ Impossible de savoir si la base contient déjà quelque chose."
-    echo "     On n'amorce PAS : une base habitée qu'on vide ne se rend pas."
-    echo "     Si cet espace est neuf et que la connexion est refusée :"
-    echo "     npm run db:seed"
-    ;;
-esac
+# Son code 3 est sa réponse devant une base qui porte du travail, pas une panne :
+# `set -e` ne doit pas arrêter l'allumage dessus.
+AMORCE=0
+DATABASE_URL="$DATABASE_SUPER_URL" npx tsx src/server/db/seed.ts || AMORCE=$?
+if [ "$AMORCE" -ne 0 ] && [ "$AMORCE" -ne 3 ]; then
+  echo "   ❌ Le jeu de démonstration a échoué (code $AMORCE)."
+  exit "$AMORCE"
+fi
 
 cat <<'FIN'
 

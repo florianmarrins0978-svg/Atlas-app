@@ -39,6 +39,7 @@ const base = (p: Partial<ContexteSeed> = {}): ContexteSeed => ({
   nodeEnv: "test",
   forcage: undefined,
   motDePasseDemo: undefined,
+  occupation: "vierge",
   ...p,
 });
 
@@ -130,14 +131,34 @@ essai("les bases d'essai connues passent, sur cette machine", () => {
 // pointe sur `atlas_dev` via le service `postgres`, et `NODE_ENV` y vaut
 // `production` parce que `next start` l'impose. Le patron ne pourrait plus
 // rafraîchir ses données d'essai — et personne ne saurait pourquoi.
-essai("le banc d'essai reste servi : atlas_dev, hôte « postgres »", () => {
+essai("le banc d'essai reste servi : atlas_dev VIERGE, hôte « postgres »", () => {
   const v = garderSeed({
     databaseUrl: "postgresql://atlas_app:atlas_app_dev_pw@postgres:5432/atlas_dev",
     nodeEnv: "development",
     forcage: undefined,
     motDePasseDemo: undefined,
+    occupation: "vierge",
   });
   assert.equal(v.ok, true);
+});
+
+// **Sa base, elle, ne se vide plus sur son nom** (25 octobre 2026) : sur son
+// espace, `atlas_dev` porte ses chantiers. Le doute refuse comme l'habitée.
+essai("atlas_dev habitée, ou qu'on n'a pas pu mesurer, est refusée", () => {
+  const dev = "postgresql://postgres:x@postgres:5432/atlas_dev";
+  refuse(base({ databaseUrl: dev, occupation: "habitee" }), "base-habitee");
+  refuse(base({ databaseUrl: dev, occupation: "indeterminee" }), "base-habitee");
+});
+
+essai("le refus devant sa base ne donne pas la recette pour la vider", () => {
+  const v = garderSeed(base({ databaseUrl: "postgresql://u:p@localhost:5432/atlas_dev", occupation: "habitee" }));
+  assert.equal(v.ok, false);
+  if (!v.ok) assert.doesNotMatch(phraseDeRefus(v), /ATLAS_SEED_FORCER|db:seed/);
+});
+
+essai("une base d'essai habitée se refait toujours : les suites en dépendent", () => {
+  assert.equal(garderSeed(base({ occupation: "habitee" })).ok, true);
+  assert.equal(garderSeed(base({ occupation: "indeterminee" })).ok, true);
 });
 
 // ─── Le forçage : explicite, et jamais par distraction ──────────────────────
