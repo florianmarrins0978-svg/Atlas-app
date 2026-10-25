@@ -18,9 +18,10 @@ proposition, à essayer au pouce. Un lien vers une planche pas encore faite dit
 
 **Livrées :** Réglages (le sommaire), Vos clients et la fiche d'un client, Terminés et Ma TVA (avec des chantiers terminés et des factures de démonstration), le Planning (25 octobre, `planning.html`), Vos chantiers, l'accueil (25 octobre, `accueil.html`), Pour mon comptable en entier (25 octobre, `termines-comptable.html` : dossier en cours, relevé du mois, Mes dossiers ; treize captures `aujourdhui/comptable*.jpg`, une par état, que la planche affiche à côté du geste touché). **À trancher par lui sur le Planning :** la semaine lue d'office sous le mois, au lieu du mot « La semaine » à toucher (c'est revenir sur sa réponse du 15 octobre, « au repos, rien dessous ») ; si non, le mot revient tel quel et le reste de la planche ne bouge pas. **À trancher par lui sur Pour mon comptable :** le filtre « Sans ticket » renommé « À justifier » (il compte aussi les virements) ; sans banque, Check up retiré et « Relier ma banque » en bouton plein. **Sur Vos chantiers :** les chantiers loin du milieu ne pâlissent plus (son fil du 10 août les effaçait à 45 %) ; si non, l'effet revient, plus léger. **À trancher par lui :** le vert des
 boutons, le sien (#7d9a6d, 3,0 de contraste sous le crème) ou un cran plus
-sombre (#587a4c, 4,6), sur `fondations.html`. **Codée dans `src/` : la
-fiche d'un client** (25 octobre, `client.html`, sa réponse « code ça »). Le
-reste n'est pas codé. **Branche morte laissée :** l'allure « ample » de
+sombre (#587a4c, 4,6), sur `fondations.html`. **Codés dans `src/` le
+25 octobre, par la batterie commune des quatre lots :** la fiche d'un client
+(`client.html`, sa réponse « code ça »), Réglages en paquets, Terminés (plages
+teintées et carré du jour). Le reste n'est pas codé. **Branche morte laissée :** l'allure « ample » de
 `EnTeteEcran` n'a plus d'utilisateur depuis que la fiche client ne l'emploie
 plus ; à retirer dans le prochain lot qui touche `EnTeteEcran` (niveau 3).
 
