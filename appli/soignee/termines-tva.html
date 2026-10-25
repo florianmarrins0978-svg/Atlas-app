@@ -71,6 +71,8 @@
          --achat-main-fond: var(--atlas-carteAmbreFond); --achat-main-texte: var(--atlas-carteAmbreTexte); }
 .ecran[data-etat="vert-bleu"] { --achat-scan-fond: var(--atlas-carteVertFond); --achat-scan-texte: var(--atlas-carteVertTexte);
                                 --achat-main-fond: var(--atlas-carteBleuFond); --achat-main-texte: var(--atlas-carteBleuTexte); }
+.ecran[data-etat="vert-sable"] { --achat-scan-fond: var(--atlas-carteVertFond); --achat-scan-texte: var(--atlas-carteVertTexte);
+                                 --achat-main-fond: var(--atlas-carteAmbreFond); --achat-main-texte: var(--atlas-carteAmbreTexte); }
 .ecran[data-etat="ambre-vert"] { --achat-scan-fond: var(--atlas-carteAmbreFond); --achat-scan-texte: var(--atlas-carteAmbreTexte);
                                  --achat-main-fond: var(--atlas-carteVertFond); --achat-main-texte: var(--atlas-carteVertTexte); }
 
@@ -292,9 +294,10 @@ body.seul .cadre { height: 100svh; min-height: 0; margin: 0; border-radius: 0; b
     <div data-vue-panneau="propose">
       <p class="pl-legende">Proposé</p>
       <div class="pl-etats">
-        <button type="button" data-etat="bleu-ambre" aria-pressed="true">Bleu et ambre</button>
+        <button type="button" data-etat="vert-sable" aria-pressed="true">Vert et sable</button>
+        <button type="button" data-etat="bleu-ambre">Bleu et sable</button>
         <button type="button" data-etat="vert-bleu">Vert et bleu</button>
-        <button type="button" data-etat="ambre-vert">Ambre et vert</button>
+        <button type="button" data-etat="ambre-vert">Sable et vert</button>
       </div>
       <div class="pl-etats" id="formes-recu">
         <button type="button" data-forme="arrondi" aria-pressed="true">Coins arrondis</button>
@@ -779,7 +782,7 @@ body.seul .cadre { height: 100svh; min-height: 0; margin: 0; border-radius: 0; b
       <li>« Ma TVA » s'écrit en clair sous le mois, et les mois de la frise se lisent en entier.</li>
       <li>TVA collectée et TVA déductible sont soulignés d'or : on voit qu'ils s'ouvrent. Toucher un chiffre le copie, et l'écran dit « Copié ».</li>
       <li>J'ai reçu le paiement reste vert plein, la couleur de l'appli.</li>
-      <li>Scanner un ticket et Écrire à la main gardent leur forme d'aujourd'hui, et chacun sa couleur. Trois couples à essayer au dessus du téléphone.</li>
+      <li>Scanner un ticket et Écrire à la main gardent leur forme d'aujourd'hui, et chacun sa couleur. Quatre couples à essayer au dessus du téléphone.</li>
       <li>Le doré est celui de l'appli, partout.</li>
       <li>Après un paiement, « M. Bernard, 312,00 € est rentrée au relevé. » : une virgule à la place du point.</li>
     </ul>
