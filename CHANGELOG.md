@@ -6,6 +6,11 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-25
+
+- **Un `npm test` tapé sur son espace n'efface plus ses chantiers.** Les suites vident la base avant chaque essai (`nettoyerBase`, `TRUNCATE … CASCADE`) et visaient celle que l'environnement désignait ; sur son espace, c'est `atlas_dev`, sa vraie base. La batterie posait déjà la base d'essai : le geste à la main, lui, ne tenait à rien. Les suites base et navigateur refusent désormais toute base qui n'est pas `atlas_test` ou une base d'atelier, avant la première ligne vidée (`garderNettoyage`, `src/lib/garde-seed.ts`). Reproduit sur une vraie base `atlas_dev` avec une ligne dedans : vidée avant, intacte après (`test-nettoyage-epargne-sa-base.ts`). `ARCHITECTURE.md` §498.
+
+---
 ## 2026-10-24
 
 - **Le ticket se photographie depuis sa ligne, part redressé, et se recopie ligne par ligne** (lot 5 de « Pour mon comptable »). « Photographier le ticket » sur une carte du Check up ouvre l'appareil sur place, puis la feuille de Ma TVA (la même, sortie dans `FeuilleAchat.tsx`), et le ticket rejoint sa ligne. La photo est trouvée sur la table, remise droite, l'ombre effacée, et passe d'environ 1 Mo à 300 Ko ; dans le doute, elle part entière, réduite. La lecture recopie chaque ligne imprimée (migration 0146) : la page du comptable et le PDF montrent le ticket entier, sa ligne du total surlignée, un long ticket continuant sur la page suivante. Ce que ça évite : aller dans Ma TVA pour un ticket qu'on regarde dans le dossier, une photo d'un mégaoctet par ticket, et un ticket résumé là où le comptable veut le voir entier. La lecture réelle des lignes par l'IA reste à essayer sur son espace. `ARCHITECTURE.md` §497.

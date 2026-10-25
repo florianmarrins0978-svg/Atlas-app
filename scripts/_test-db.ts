@@ -1,4 +1,5 @@
 import { Client } from "pg";
+import { garderNettoyage } from "../src/lib/garde-seed";
 
 // Nettoyage de la base pour les suites de tests.
 //
@@ -56,7 +57,16 @@ const TABLES = [
 // Connexion courte et dédiée : les suites terminent par pool.end() sur le pool
 // applicatif, un pool d'administration persistant retiendrait la boucle
 // d'événements et ferait traîner chaque script jusqu'au timeout.
+//
+// Les DEUX adresses se vérifient avant la première ligne vidée : celle qu'on
+// vide, et celle où la suite écrira ensuite. Sur son espace, l'environnement
+// désigne `atlas_dev`, sa vraie base (`scripts/test-nettoyage-epargne-sa-base.ts`).
 export async function nettoyerBase() {
+  for (const adresse of [process.env.DATABASE_ADMIN_URL, process.env.DATABASE_URL]) {
+    if (adresse === undefined) continue;
+    const verdict = garderNettoyage(adresse);
+    if (!verdict.ok) throw new Error(`Nettoyage refusé. ${verdict.phrase}`);
+  }
   const connectionString = process.env.DATABASE_ADMIN_URL ?? process.env.DATABASE_URL;
   const client = new Client({ connectionString });
   await client.connect();

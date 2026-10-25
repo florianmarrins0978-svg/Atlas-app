@@ -37,7 +37,15 @@
  * (`scripts/test-garde-seed.ts`).
  */
 
-/** Les bases sur lesquelles effacer est sans conséquence. */
+/**
+ * Les bases que le jeu de démonstration a le droit d'effacer.
+ *
+ * **`atlas_dev` n'est PAS une base d'essai (25 octobre 2026).** C'est celle de
+ * son espace, et ses chantiers y vivent. Le seed y garde sa place parce qu'il
+ * l'amorce au premier allumage, et `preparer.sh` ne l'appelle que sur une base
+ * vierge (`scripts/base-habitee.mjs`). Les suites, elles, n'y ont aucun droit :
+ * `estBaseDEssai` l'exclut, et c'est ce que lit `garderNettoyage`.
+ */
 export const BASES_AUTORISEES = ["atlas_test", "atlas_dev"] as const;
 
 /**
@@ -57,9 +65,9 @@ export const BASES_AUTORISEES = ["atlas_test", "atlas_dev"] as const;
  */
 const BASE_D_ATELIER = /^atlas_test_a\d{1,2}$/;
 
-/** Cette base est-elle une base d'essai, nommée ou d'atelier ? */
+/** Cette base est-elle une base d'essai, nommée ou d'atelier ? `atlas_dev` n'en est pas une. */
 export function estBaseDEssai(base: string): boolean {
-  return (BASES_AUTORISEES as readonly string[]).includes(base) || BASE_D_ATELIER.test(base);
+  return base === "atlas_test" || BASE_D_ATELIER.test(base);
 }
 
 /**
@@ -161,7 +169,7 @@ export function garderSeed(contexte: ContexteSeed): VerdictSeed {
     );
   }
 
-  if (!estBaseDEssai(base)) {
+  if (!estBaseDEssai(base) && base !== "atlas_dev") {
     return refus(
       "base-inconnue",
       `La base « ${base} » n'est pas une base d'essai connue (${BASES_AUTORISEES.join(", ")}, ` +
@@ -192,4 +200,37 @@ export function phraseDeRefus(verdict: Extract<VerdictSeed, { ok: false }>): str
     `   Si c'est vraiment ce que vous voulez, sur cette base-là :\n` +
     `     ATLAS_SEED_FORCER=${FORCAGE_ATTENDU} ATLAS_MDP_DEMO=<un mot de passe> npm run db:seed\n`
   );
+}
+
+export type VerdictNettoyage = { ok: true; base: string } | { ok: false; phrase: string };
+
+/**
+ * Une suite a-t-elle le droit de vider cette base entre deux essais ?
+ *
+ * **Plus étroit que le seed, et c'est le point.** Le seed peut amorcer
+ * `atlas_dev` vierge ; une suite, jamais : sur son espace, l'environnement
+ * désigne `atlas_dev`, et un `npm test` tapé là effaçait ses chantiers
+ * (`scripts/test-nettoyage-epargne-sa-base.ts`). Aucun forçage : vider sa base
+ * n'est le travail d'aucune suite.
+ */
+export function garderNettoyage(databaseUrl: string | undefined): VerdictNettoyage {
+  let url: URL;
+  try {
+    url = new URL(databaseUrl ?? "");
+  } catch {
+    return { ok: false, phrase: "L'adresse de la base ne se lit pas : rien ne dit ce que les suites videraient." };
+  }
+  const base = baseDe(url);
+  if (!base || !estBaseDEssai(base)) {
+    return {
+      ok: false,
+      phrase:
+        `La base « ${base ?? "sans nom"} » n'est pas une base d'essai (atlas_test, ou atlas_test_a1 à atlas_test_a99). ` +
+        "Les suites la videraient. Pour les jouer : npm run verifier:avant-fusion, qui pose la base d'essai.",
+    };
+  }
+  if (!(HOTES_LOCAUX as readonly string[]).includes(url.hostname.toLowerCase())) {
+    return { ok: false, phrase: `La base « ${base} » est sur « ${url.hostname} », pas sur cette machine.` };
+  }
+  return { ok: true, base };
 }

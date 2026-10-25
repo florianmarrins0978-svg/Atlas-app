@@ -12,6 +12,7 @@ const NODE = process.execPath;
 const TSX = path.join(__dirname, "..", "node_modules", "tsx", "dist", "cli.mjs");
 import { CHEMIN_NEXT, arreterArbre } from "./_processus";
 import { prendreUnAtelier, suffixeDeLAtelier, type Atelier } from "./_atelier";
+import { garderNettoyage } from "../src/lib/garde-seed";
 
 /**
  * L'atelier de cette exécution : son port, et l'adresse que les suites visent.
@@ -337,6 +338,15 @@ async function main() {
    * **Il n'excuse rien.** La batterie entière (sans `--seulement`) amorce
    * toujours, et c'est elle qui autorise une livraison.
    */
+  // Le seed accepte `atlas_dev` vierge, pour le premier allumage de son espace.
+  // Les suites, non : elles vident et écrivent, et sur son espace `atlas_dev`
+  // porte ses chantiers. Refusé AVANT l'amorçage, `--sans-seed` compris.
+  const cible = garderNettoyage(process.env.DATABASE_URL);
+  if (!cible.ok) {
+    console.error(`❌ Suites navigateur refusées. ${cible.phrase}`);
+    process.exit(1);
+  }
+
   const sansSeed = process.argv.includes("--sans-seed");
   if (sansSeed && motifDemande === null) {
     console.error(

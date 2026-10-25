@@ -1,6 +1,10 @@
 # Prochaines tâches
 
 
+## LE SEED LANCÉ À LA MAIN VIDE ENCORE SA BASE HABITÉE (25 octobre 2026)
+
+`npm run db:seed` accepte `atlas_dev` sans regarder si elle porte du travail ; `preparer.sh` le propose même devant une base habitée (« Pour repartir des données de démonstration : npm run db:seed »), contre `CLAUDE.md` §4 septies. Les suites, elles, sont tenues depuis le 25 octobre (`ARCHITECTURE.md` §498). À traiter avec la revue de sécurité.
+
 ## POUR MON COMPTABLE : SES CHOIX SONT DONNÉS, À CODER (23 octobre 2026)
 
 **Sa demande :** préparer la visite annuelle au comptable. Chaque sortie de la

@@ -35954,3 +35954,16 @@ retirée, et `test-papier-facture-db.ts` avec elle.
 **Le ticket se recopie EN ENTIER** (migration 0146, `achats_tva.lignes_imprimees`, expand seul). La lecture demande chaque ligne imprimée, rien de regroupé ; `lignesImprimees` (`src/lib/ticket-imprime.ts`) relit et borne ce qui revient, du modèle comme du formulaire. **La ligne du total se surligne si elle tombe juste et le dit** (`ligneDuTotal` : « SOUS-TOTAL » écarté) ; sinon le total s'ajoute à part. Dans le PDF, un long ticket continue sur la page suivante plutôt que d'être coupé ou résumé ; un ticket d'avant garde son résumé.
 
 **Ce qui n'est pas éprouvé ici** : la lecture réelle des lignes par l'IA (aucune clé sur ce poste). La transformation de sa réponse l'est (`test-lecture-ticket.ts`, `test-ticket-imprime.ts`) ; le reste se joue sur son espace, avec un vrai ticket.
+
+## §498 : Les suites ne vident que les bases d'essai, et `atlas_dev` n'en est pas une
+
+*25 octobre 2026.*
+
+**Le défaut.** `nettoyerBase()` (`scripts/_test-db.ts`) et l'amorçage des suites navigateur (`run-e2e-tests.ts`, qui appelle le seed) vidaient la base que désignait l'environnement. La batterie et le niveau 2 posent la base d'essai (`_bases-essai.ts`) ; `npm test`, `npm run test:e2e` ou une suite jouée à la main héritent de l'environnement. Sur son espace, il désigne `atlas_dev` (`.devcontainer/docker-compose.yml`), où vivent ses chantiers depuis qu'il s'en sert pour de bon.
+
+**La racine** était un mot faux : `estBaseDEssai` comptait `atlas_dev` parmi les bases « où effacer est sans conséquence ». C'était vrai quand `atlas_dev` ne portait que la démonstration ; ce ne l'est plus. Elle ne reconnaît plus que `atlas_test` et les bases d'atelier.
+
+**Deux droits distincts, et c'est délibéré.** Le seed garde `atlas_dev` : `preparer.sh` l'amorce au premier allumage, et seulement sur une base vierge (`base-habitee.mjs`, §346). Une suite n'y a aucun droit et aucun forçage (`garderNettoyage`) : vider sa base n'est le travail d'aucune suite. Les deux adresses se vérifient, celle qu'on vide et celle où la suite écrira ensuite.
+
+**Ce qui reste ouvert** : le seed lancé à la main (`npm run db:seed`) vide encore `atlas_dev` habitée, et `preparer.sh` le propose en toutes lettres devant une base habitée, contre `CLAUDE.md` §4 septies. Inscrit dans `TODO.md`.
+

@@ -10,6 +10,11 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## LES SUITES NE VIDENT PLUS SA BASE (25 octobre 2026)
+
+`nettoyerBase()` et `run-e2e-tests.ts` refusent toute base qui n'est pas `atlas_test` ou `atlas_test_aN` (`garderNettoyage`, `src/lib/garde-seed.ts`). **Le piège :** sur son espace, `DATABASE_URL` désigne `atlas_dev`, sa vraie base ; une suite jouée là sans la batterie l'aurait vidée. Pour jouer des suites chez lui : `npm run verifier:avant-fusion`, qui pose la base d'essai. `ARCHITECTURE.md` §498.
+
+---
 ## LES FACTURES DES FOURNISSEURS (23 octobre 2026)
 
 Une facture reçue est une ligne de `devis_recus` avec `genre = 'facture'` : même fichier gardé, même porte (`/reglages/fournisseurs/devis/[id]`, un tableur s'y télécharge), même lecture IA (le modèle rend aussi `total_ht` et `total_ttc`). Un Excel ou un CSV passe par la règle des tarifs (`lireFichierTarifs`, puis `lignesDuTableau`) : il est lu AVANT d'être gardé, et refusé s'il ne s'ouvre pas. **Le piège :** une facture REMPLACE le prix qu'elle confirme, un devis AJOUTE ; le rapprochement se refait au serveur avec la règle qui a dessiné l'écran, jamais sur ce que le navigateur renvoie. Un prix inchangé remplacé perd son ancien barré : la facture le confirme.
