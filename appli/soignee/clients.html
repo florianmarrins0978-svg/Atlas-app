@@ -40,6 +40,7 @@
 
 .portes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
 .sous-portes { margin-top: 14px; }
+.ecran[data-etat="publics"] .sous-portes { margin-top: 0; }
 .ecran[data-etat="choix"] .sous-portes, .ecran[data-etat="mois"] .sous-portes { margin-top: 0; }
 .porte { display: flex; align-items: center; gap: 10px; min-height: 64px; padding: 10px 12px; border-radius: 10px; text-decoration: none;
          color: var(--atlas-or); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 70%, transparent); }
@@ -124,20 +125,21 @@
         <div class="ecran avec-barre" data-etat="rempli" id="ecran-clients">
           <div class="defile">
             <div class="rang-espace" style="margin-top:4px">
-              <a class="rond-creux" href="accueil.html" aria-label="Retour à la liste des chantiers"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+              <a class="rond-creux" href="accueil.html" aria-label="Retour à la liste des chantiers" data-si-etat="rempli choix mois vide"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+              <button class="rond-creux" type="button" aria-label="Retour à vos clients" data-va-etat="rempli" data-si-etat="partenaires publics"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
             </div>
             <header class="tete" style="margin:12px 0 0">
-              <h1 class="tete-titre">Vos clients</h1>
+              <h1 class="tete-titre" data-si-etat="rempli choix mois vide">Vos clients</h1><h1 class="tete-titre" data-si-etat="partenaires">Vos partenaires</h1><h1 class="tete-titre" data-si-etat="publics">Services publics</h1>
               <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
             </header>
             <p class="tete-situation" style="margin:4px 0 18px" id="compte">7 clients</p>
 
 
             <div class="portes" data-si-etat="rempli vide">
-              <a class="porte touche" href="clients.html?vue=partenaires" data-pas-encore><svg class="ico" aria-hidden="true"><use href="#i-entreprise"/></svg><span class="porte-texte"><span class="porte-nom">Vos partenaires</span><span class="porte-compte">Aucun</span></span><svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
-              <a class="porte touche" href="clients.html?vue=publics" data-pas-encore><svg class="ico" aria-hidden="true"><use href="#i-banque"/></svg><span class="porte-texte"><span class="porte-nom">Services publics</span><span class="porte-compte">1</span></span><svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+              <a class="porte touche" href="#" data-va-etat="partenaires"><svg class="ico" aria-hidden="true"><use href="#i-entreprise"/></svg><span class="porte-texte"><span class="porte-nom">Vos partenaires</span><span class="porte-compte">Aucun</span></span><svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+              <a class="porte touche" href="#" data-va-etat="publics"><svg class="ico" aria-hidden="true"><use href="#i-banque"/></svg><span class="porte-texte"><span class="porte-nom">Services publics</span><span class="porte-compte">1</span></span><svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
             </div>
-            <div data-si-etat="rempli choix mois" class="sous-portes">
+            <div data-si-etat="rempli choix mois publics" class="sous-portes">
               <div class="recherche">
                 <label class="champ-recherche">
                   <svg class="ico" aria-hidden="true"><use href="#i-recherche"/></svg>
@@ -150,6 +152,13 @@
             </div>
 
             <p class="rien" data-si-etat="vide">Aucun client pour l'instant. Ils naissent avec vos chantiers.</p>
+            <p class="rien" data-si-etat="partenaires">Aucun partenaire pour l'instant.</p>
+
+            <div id="liste-publics" class="plage groupe liste-une" data-si-etat="publics">
+              <div class="bloc-lettre"><p class="lettre">M</p>
+                <a class="client touche" href="#" data-nom="Mairie de Saint-Sylvain" data-pas-encore><span class="coche-ronde"></span><span class="initiales">MS</span><span class="client-corps"><span class="client-nom">Mairie de Saint-Sylvain</span><span class="client-lieu">Place de la Mairie, 49480 Saint-Sylvain-d'Anjou</span><span class="client-bas"><span class="client-piece">Facture du 19 sept.</span></span></span><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+              </div>
+            </div>
 
             <div class="mois-filtre" data-si-etat="mois">
               <svg class="ico" aria-hidden="true"><use href="#i-calendrier"/></svg>Factures d'octobre 2026
@@ -251,6 +260,7 @@
     <h2>Ce qui change</h2>
     <ul>
       <li>Le Filtre rejoint la recherche sur sa ligne, juste sous Vos partenaires et Services publics.</li>
+      <li>Vos partenaires et Services publics sont le même écran, avec la même allure : touche les deux cartes pour les voir.</li>
       <li>Vos entreprises s'appelle Vos partenaires. Avec Services publics, ce sont deux cartes dorées côte à côte, chacune avec son nombre.</li>
       <li>Chaque lettre range ses clients dans une plage ; chaque client a ses initiales, son adresse, sa dernière pièce, et « 312,00 € dus » d'un seul tenant, en rouge.</li>
       <li>La recherche trouve à chaque lettre tapée (essaie « gar »). Rester appuyé sur un client ouvre le choix pour en supprimer plusieurs.</li>
@@ -281,7 +291,11 @@
     var effacer = document.getElementById("effacer");
     var compte = document.getElementById("compte");
     var aucun = document.getElementById("aucun");
-    var clients = Array.prototype.slice.call(document.querySelectorAll("#liste .client"));
+    var clients = Array.prototype.slice.call(document.querySelectorAll("#liste .client, #liste-publics .client"));
+    var VUES = { publics: { compte: "1 service public", cherche: "Chercher un service public", seul: "service public trouvé", plusieurs: "services publics trouvés" },
+                 partenaires: { compte: "", cherche: "Chercher un partenaire" },
+                 vide: { compte: "" } };
+    var vue = function () { return VUES[ecran.getAttribute("data-etat")] || { compte: "7 clients", cherche: "Chercher un client", seul: "client trouvé", plusieurs: "clients trouvés" }; };
     var sansAccent = function (s) { return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase(); };
     var echapper = function (s) { return s.replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
 
@@ -295,7 +309,8 @@
         var nom = c.getAttribute("data-nom");
         var ok = mots.every(function (m) { return sansAccent(nom).indexOf(m) >= 0; });
         c.hidden = !ok;
-        if (ok) vus++;
+        /* Seule la liste regardée compte : la mairie ne se trouve pas dans Vos clients. */
+        if (ok && !c.closest("#liste, #liste-publics").hidden) vus++;
         var html = echapper(nom);
         if (mots.length && ok) {
           var brut = sansAccent(nom), m = mots[0], i = brut.indexOf(m);
@@ -303,11 +318,12 @@
         }
         c.querySelector(".client-nom").innerHTML = html;
       });
-      document.querySelectorAll("#liste .bloc-lettre").forEach(function (b) {
+      document.querySelectorAll("#liste .bloc-lettre, #liste-publics .bloc-lettre").forEach(function (b) {
         b.hidden = !b.querySelector(".client:not([hidden])");
         b.querySelector(".lettre").hidden = mots.length > 0;
       });
-      compte.textContent = mots.length ? (vus ? vus + (vus > 1 ? " clients trouvés" : " client trouvé") : "") : "7 clients";
+      var v = vue();
+      compte.textContent = mots.length ? (vus ? vus + " " + (vus > 1 ? v.plusieurs : v.seul) : "") : v.compte;
       aucun.hidden = vus > 0;
       aucun.textContent = "Aucun client ne s'appelle « " + champ.value.trim() + " ».";
     }
@@ -374,7 +390,9 @@
     var observateur = new MutationObserver(function () {
       if (ecran.getAttribute("data-etat") !== "choix") {
         clients.forEach(function (c) { c.removeAttribute("aria-checked"); });
-        compte.textContent = ecran.getAttribute("data-etat") === "vide" ? "" : "7 clients";
+        champ.value = ""; chercher();
+        champ.placeholder = vue().cherche || "Chercher un client";
+        compte.textContent = vue().compte;
         supprimer.textContent = "Supprimer"; supprimer.setAttribute("aria-disabled", "true");
       } else if (!clients.some(function (c) { return c.getAttribute("aria-checked") === "true"; })) { majChoix(); }
       document.querySelectorAll("#feuille-tri .volet-choix").forEach(function (b, i) { b.setAttribute("aria-pressed", (ecran.getAttribute("data-etat") === "mois" ? i === 2 : i === 0) ? "true" : "false"); });
