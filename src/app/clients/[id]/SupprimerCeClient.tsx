@@ -76,31 +76,25 @@ export default function SupprimerCeClient({
   return (
     <>
       {/* ── LE GESTE NE S'ANNONCE PLUS, IL SE TROUVE — 2 septembre 2026 ─────
-          Retenu sur maquette. C'était une capsule cernée de rouge sur toute la
-          largeur : le seul objet dessiné de l'écran, et il désignait la seule
-          chose irréparable qu'on puisse y faire. Elle appelait l'œil vers la
-          sortie.
+          Retenu sur maquette : plus de capsule rouge, le seul objet dessiné de
+          l'écran, qui appelait l'œil vers la sortie. Il reste en bas de la
+          fiche, là où on le trouve en le cherchant.
 
-          Devenu une ligne en capitales espacées, il reste parfaitement lisible
-          et cesse d'appeler. Ce que la place disait déjà — « un geste qu'on
-          trouve EN LE CHERCHANT ne se déclenche pas au pouce » — le dessin le
-          dit maintenant aussi.
-
-          **Les 44 px de haut restent**, invisibles : le mot fait 9,5 px, la
-          cible n'en fait pas moins pour autant. */}
-      <div className="mt-10 px-[26px]">
+          **En toutes lettres depuis le 25 octobre 2026**, sur sa planche :
+          9,5 px en capitales espacées étaient le texte le plus petit de la
+          fiche. Le mot passe à 15,5 px, en gras, précédé d'une croix ; il reste
+          sans cadre, et c'est la feuille qui protège, pas le dessin. */}
+      <div className="mt-[34px] px-[22px]">
         <button
           type="button"
           data-atlas="supprimer-client"
           onClick={() => setOuverte(true)}
-          className="inline-flex min-h-[44px] cursor-pointer items-center text-[9.5px] font-medium uppercase"
-          style={{
-            background: "transparent",
-            color: colors.alert,
-            letterSpacing: "0.28em",
-            WebkitTapHighlightColor: "transparent",
-          }}
+          className="flex min-h-[52px] w-full cursor-pointer items-center justify-center gap-2 text-[15.5px] font-bold"
+          style={{ background: "transparent", color: colors.alert, WebkitTapHighlightColor: "transparent" }}
         >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" aria-hidden="true">
+            <path d="M6.5 6.5l11 11M17.5 6.5l-11 11" />
+          </svg>
           Supprimer ce client
         </button>
       </div>
