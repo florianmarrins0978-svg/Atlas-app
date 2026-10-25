@@ -93,6 +93,19 @@
 .fa-paye span { font-size: 14.5px; font-weight: 600; color: var(--atlas-inkSoft); }
 .fa-paye select { appearance: none; min-height: 48px; padding: 0 14px; }
 .bouton-recu { margin-top: 10px; }
+/* La forme de l'appli aujourd'hui (EnAttenteDePaiement.tsx, rounded-full),
+   à la même taille, pour que seule la forme change entre les deux écrans de
+   tva-bouton-paiement.html. */
+.bouton-pilule .bouton-recu { border-radius: 999px; }
+
+/* L'écran seul, sans la planche autour : tva-bouton-paiement.html en pose
+   deux côte à côte, chacun dans son cadre. */
+body.seul { padding: 0; background: transparent; }
+body.seul .pl-tete, body.seul .pl-barre, body.seul .pl-notes, body.seul .pl-pied,
+body.seul .pl-legende, body.seul .pl-etats,
+body.seul [data-vue-panneau]:not([data-vue-panneau="propose"]) { display: none !important; }
+body.seul .pl-scene { padding: 0; }
+body.seul .cadre { height: 100svh; min-height: 0; margin: 0; border-radius: 0; box-shadow: none; }
 .fa-partie { display: block; margin: 4px auto 0; }
 .acompte { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 12px; padding-top: 10px;
            box-shadow: inset 0 1px 0 var(--atlas-line); font-size: 14px; color: var(--atlas-inkSoft); }
@@ -259,6 +272,13 @@
 </style>
 </head>
 <body class="pl">
+<script>
+  (function () {
+    var q = new URLSearchParams(window.location.search);
+    if (q.get("seul") === "propose") document.body.classList.add("seul");
+    if (q.get("bouton") === "pilule") document.body.classList.add("bouton-pilule");
+  })();
+</script>
 
 <header class="pl-tete">
   <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
@@ -866,6 +886,15 @@
         document.querySelectorAll("#achat-quoi button").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
       });
     });
+  })();
+</script>
+<script>
+  (function () {
+    if (new URLSearchParams(window.location.search).get("ancre") !== "attente") return;
+    var ecran = document.querySelector("[data-vue-panneau='propose'] .ecran");
+    var defile = ecran.querySelector(".defile");
+    var titre = document.getElementById("compte-attente").parentNode;
+    defile.scrollTop += titre.getBoundingClientRect().top - defile.getBoundingClientRect().top - 8;
   })();
 </script>
 <script>

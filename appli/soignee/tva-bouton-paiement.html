@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>J'ai reçu le paiement, deux formes</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  Sa demande du 25 octobre au soir, devant la planche de Ma TVA : « deux pages
+  côte à côte, le bouton J'ai reçu le paiement comme tu l'as mis, et dans la
+  forme de l'application, que je voie laquelle je préfère ».
+
+  Les deux écrans sont LA MÊME planche (termines-tva.html, Proposé), ouverte
+  seule dans un cadre : rien n'est recopié, donc rien ne peut différer qu'on
+  n'a pas voulu. Le bouton garde la même taille des deux côtés ; seule sa
+  forme change. Sur un téléphone, les deux tiennent côte à côte en réduction,
+  et chacun s'ouvre en grand.
+*/
+/* Une grille de trois rangées, légendes, écrans, liens : une légende qui passe
+   sur deux lignes ne décale plus l'écran d'à côté. */
+.duo { max-width: 1080px; margin: 0 auto; padding: 18px 8px 0; display: grid; grid-template-columns: 1fr 1fr;
+       column-gap: 12px; row-gap: 10px; justify-items: center; align-items: end; }
+.duo-legende { margin: 0; font-size: 16px; font-weight: 700; text-align: center; line-height: 1.3; }
+.duo-legende span { display: block; font-weight: 400; font-size: 14.5px; color: #4a4a44; }
+.duo-cadre { width: calc(390px * var(--k, 1)); height: calc(664px * var(--k, 1)); overflow: hidden;
+             border-radius: calc(30px * var(--k, 1)); box-shadow: 0 0 0 4px #1c1c1a; background: #f5f3ee; }
+.duo-cadre iframe { display: block; width: 390px; height: 664px; border: 0; transform: scale(var(--k, 1)); transform-origin: 0 0; }
+.duo .bouton-texte { color: #2f3b2f; }
+@media (min-width: 900px) { .duo-cadre { box-shadow: 0 0 0 10px #1c1c1a, 0 18px 40px -12px rgba(28,28,26,0.45); } }
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="termines-tva.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Ma TVA</a>
+  <h1 class="pl-titre">J'ai reçu le paiement</h1>
+  <p class="pl-verdict">Le même écran deux fois. Seule la forme du bouton change.</p>
+</header>
+
+<main class="duo" id="duo">
+  <p class="duo-legende">A<span>Coins arrondis</span></p>
+  <p class="duo-legende">B<span>Bouts ronds, comme dans l'appli</span></p>
+  <div class="duo-cadre"><iframe src="termines-tva.html?seul=propose&amp;ancre=attente" title="Ma TVA, le bouton aux coins arrondis"></iframe></div>
+  <div class="duo-cadre"><iframe src="termines-tva.html?seul=propose&amp;bouton=pilule&amp;ancre=attente" title="Ma TVA, le bouton aux bouts ronds de l'appli"></iframe></div>
+  <a class="bouton-texte" href="termines-tva.html?seul=propose&amp;ancre=attente">Ouvrir A en grand</a>
+  <a class="bouton-texte" href="termines-tva.html?seul=propose&amp;bouton=pilule&amp;ancre=attente">Ouvrir B en grand</a>
+</main>
+
+<script src="kit.js"></script>
+<script>
+  /* Les deux écrans tiennent dans la largeur, quelle qu'elle soit : réduits sur
+     un téléphone, à leur vraie taille dès qu'il y a la place. */
+  (function () {
+    var duo = document.getElementById("duo");
+    function ajuster() {
+      var place = (duo.clientWidth - 16 - 12) / 2;
+      duo.style.setProperty("--k", Math.min(1, place / 390).toFixed(4));
+    }
+    ajuster();
+    window.addEventListener("resize", ajuster);
+  })();
+</script>
+</body>
+</html>
