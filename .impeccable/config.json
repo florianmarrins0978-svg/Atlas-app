@@ -197,6 +197,15 @@
         ],
         "createdAt": "2026-10-25T23:00:17.992Z",
         "reason": "Claude: fond des planches soignées (kit.css), commun à toutes ; le document lui-même est blanc ou crème d'Origine comme le vrai"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/tva-bouton-paiement.html"
+        ],
+        "createdAt": "2026-10-25T23:03:26.388Z",
+        "reason": "agent: fond des planches soignées (kit.css, #ebe8e1) et crème de la charte Origine du produit, recopiés tels quels comme sur les planches voisines"
       }
     ]
   }
