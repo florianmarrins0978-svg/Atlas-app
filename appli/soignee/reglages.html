@@ -11,19 +11,24 @@
 
   Les seize rubriques gardent leur nom et leur ordre. Ce qui change :
     onze rubriques d'entreprise d'affilée se lisaient mal ; elles vont en trois
-    paquets, sans un mot de plus (une plage par paquet) ;
+    paquets, chacun sous son titre (une plage par paquet) ;
     le libellé doré sous le titre part, le titre suffit ;
-    les icônes passent de l'or (2,8 de contraste) à l'or foncé (4,6) ;
+    sa réponse du 25 octobre : les couleurs de l'appli, le doré partout. Les
+    icônes restent dans l'or d'aujourd'hui, les titres de paquet et le filet
+    des plages le prennent aussi ;
     Se déconnecter s'écrit en toutes lettres et non plus en petites capitales.
 */
 .identite { display: flex; align-items: center; gap: 14px; }
 .identite-sceau { width: 52px; height: 52px; flex: none; display: grid; place-items: center; border-radius: 50%;
-                  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 70%, transparent);
-                  font: 400 22px/1 var(--serif); color: var(--atlas-orTexte); }
+                  box-shadow: inset 0 0 0 1.5px var(--atlas-or);
+                  font: 400 22px/1 var(--serif); color: var(--atlas-or); }
+.identite { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 70%, transparent); }
+.rubrique { color: var(--atlas-or); }
 .identite .ligne-nom { font-size: 21px; }
-.paquet { padding: 0 18px; }
+.paquet { padding: 0 18px; box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 70%, transparent); }
 .paquet .ligne { min-height: 60px; }
-.paquet .ligne .ico.rubrique-ico { color: var(--atlas-orTexte); }
+.paquet .ligne .ico.rubrique-ico { color: var(--atlas-or); }
+.paquet .ligne-fin .ico, .identite .ligne-fin .ico { color: var(--atlas-or); }
 .deconnexion { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 60px; margin-top: 28px;
                padding: 0 18px; border-radius: var(--r-plage); background: var(--atlas-card);
                font-size: 17px; font-weight: 600; color: var(--atlas-alerte); }
@@ -68,6 +73,7 @@
                 <li><a class="ligne touche" href="reglages-organigramme.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-organigramme"/></svg><span class="ligne-corps"><span class="ligne-nom">Organigramme</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
               </ul>
             </div>
+            <p class="rubrique">Pour les devis</p>
             <div class="plage paquet">
               <ul class="liste">
                 <li><a class="ligne touche" href="reglages-tarifs.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-etiquette"/></svg><span class="ligne-corps"><span class="ligne-nom">Tarifs &amp; catalogue</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
@@ -75,6 +81,7 @@
                 <li><a class="ligne touche" href="reglages-fournisseurs.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-carton"/></svg><span class="ligne-corps"><span class="ligne-nom">Fournisseurs et partenaires</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
               </ul>
             </div>
+            <p class="rubrique">L'application</p>
             <div class="plage paquet">
               <ul class="liste">
                 <li><a class="ligne touche" href="reglages-ia.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-etincelle"/></svg><span class="ligne-corps"><span class="ligne-nom">Atlas IA</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
@@ -129,13 +136,14 @@
     <h2>Ce qui change</h2>
     <ul>
       <li>Le nom de l'entreprise ouvre la page, en grand : on sait où l'on est.</li>
-      <li>Onze rubriques d'affilée deviennent trois paquets, sans un mot de plus. Les voisines se rangent ensemble : Véhicules et Organigramme avec Équipe, Fournisseurs avec Tarifs.</li>
-      <li>Les icônes passent à l'or foncé, qui se voit au soleil.</li>
+      <li>Onze rubriques d'affilée deviennent trois paquets, chacun sous son titre : L'entreprise, Pour les devis, L'application. Les voisines se rangent ensemble : Véhicules et Organigramme avec Équipe, Fournisseurs avec Tarifs.</li>
+      <li>Le doré de l'appli partout : les titres, les icônes, les flèches, le filet de chaque paquet.</li>
       <li>Se déconnecter s'écrit en toutes lettres, au bout de la liste.</li>
     </ul>
     <h2>Ce qui ne bouge pas</h2>
     <ul class="garde">
       <li>Les noms des rubriques, et l'ordre de Moi.</li>
+      <li>Les couleurs de l'appli : l'or, le rond vert, le rouge de Se déconnecter.</li>
       <li>Le rond de l'assistant, en haut à droite.</li>
       <li>La barre du bas : cinq mots, sans icône, et le trait d'or qui glisse.</li>
     </ul>
