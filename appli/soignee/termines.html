@@ -23,6 +23,9 @@
       ses flèches, « 2 à facturer », l'œil, « 8 facturés », le Filtre, puis les
       chantiers du mois mêlés, à facturer et facturés ; l'œil ne montre que ce
       qui attend, tous mois confondus (règle du 22 août) ;
+    le carré du jour dit l'état d'un coup d'œil (sa demande du même soir) :
+      doré pâle pour une facture partie, vert plein comme À facturer pour ce
+      qui attend ;
     gardé de la deuxième planche : le jour en grand à gauche de chaque ligne,
       Non payées en rouge sous les deux boutons.
 */
@@ -86,10 +89,10 @@
 .ligne { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 76px; padding: 12px 0; text-align: left; text-decoration: none; color: inherit; }
 .ligne + .ligne { margin-top: 6px; }
 .jour-bloc { width: 48px; flex: none; align-self: flex-start; padding: 6px 0 7px; border-radius: 8px; text-align: center; line-height: 1;
-             background: var(--atlas-rustTint); }
+             background: var(--atlas-carteAmbreFond); }
 .jour-bloc b { display: block; font: 400 22px/1 var(--serif); font-variant-numeric: lining-nums; }
 .jour-bloc span { display: block; margin-top: 3px; font-size: 13px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase;
-                  color: var(--atlas-inkSoft); }
+                  color: var(--atlas-or); }
 .ligne-corps { flex: 1; min-width: 0; }
 .ligne-haut { display: flex; align-items: baseline; gap: 10px; }
 .ligne-nom { flex: 1; min-width: 0; font: 400 19px/1.25 var(--serif); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -97,7 +100,8 @@
 .ligne-etat { display: block; margin-top: 4px; font-size: 15px; line-height: 1.4; color: var(--atlas-inkSoft); }
 .ligne-etat b { color: var(--atlas-or); }
 .ligne-attend { align-items: center; }
-.ligne-attend .jour-bloc { align-self: center; }
+.ligne-attend .jour-bloc { align-self: center; background: var(--atlas-plein); color: var(--sur-plein); }
+.ligne-attend .jour-bloc span { color: var(--sur-plein); }
 .ligne-attend .ligne-nom { white-space: normal; }
 .capsule-facturer { flex: none; display: inline-flex; align-items: center; min-height: 48px; padding: 0 18px; border-radius: 24px;
                     font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
@@ -316,7 +320,7 @@
     <h2>Ce qui change</h2>
     <ul>
       <li>Ma TVA sur une plage dorée, Pour mon comptable sur une plage verte, côte à côte.</li>
-      <li>Chaque chantier porte son jour en grand à gauche.</li>
+      <li>Chaque chantier porte son jour en grand à gauche, dans un carré doré quand la facture est partie, vert plein quand elle attend.</li>
       <li>Non payées, quand elle existe, s'écrit en rouge sous les deux boutons.</li>
     </ul>
     <h2>Ce qui revient comme dans l'appli</h2>
