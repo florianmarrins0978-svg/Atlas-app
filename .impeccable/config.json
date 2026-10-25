@@ -80,6 +80,24 @@
         "value": "inter",
         "createdAt": "2026-10-23T21:13:59.378Z",
         "reason": "police de l'application elle-même (src/lib/design-tokens.ts, font.body = Inter) : la maquette reproduit l'écran existant"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "appli/soignee/planning.html"
+        ],
+        "createdAt": "2026-10-25T21:27:39.265Z",
+        "reason": "agent: .cadre est le cadre du téléphone, l'écran y est posé bord à bord exprès (kit.css commun à toutes les planches soignées)"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/planning.html"
+        ],
+        "createdAt": "2026-10-25T21:27:39.280Z",
+        "reason": "agent: fond de planche #ebe8e1 et crème de l'écran viennent de la charte Origine du produit (PRODUCT.md, palette relevée sur Arborea), recopiée par kit.js"
       }
     ]
   }
