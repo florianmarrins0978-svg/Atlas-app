@@ -35994,3 +35994,13 @@ retirée, et `test-papier-facture-db.ts` avec elle.
 
 **Ce qui le tient** : `test-gestes-sensibles-db.ts` (quatre cas neufs, dont l'écriture directe par le dépôt, vus rouges avant) et `test-devis-complet-e2e.ts`, qui vérifie que rien ne s'écrit avant la preuve.
 
+## §501 : Les routes lisent leur corps par la borne, et le journal n'écrit plus d'adresse
+
+*25 octobre 2026, audit de sécurité, vague 1 (`docs/audit-2026-10-etape-2.md`).*
+
+**Le corps des routes.** `formDataBornee` existait depuis le lot 2B, mais rien ne vérifiait que les routes s'en servent : `api/pieces-importees` refusait sur `content-length` puis lisait tout, et `api/paiement`, publique, faisait `request.text()` avant de vérifier la signature. `src/server/corps-borne.ts` porte désormais une seule lecture bornée (`lireBorne`) et ses trois formes (`formDataBornee`, `texteBorne`, `jsonBorne`). `test-corps-borne.ts` lit toutes les routes de `src/app/api` et refuse une lecture directe du corps : la route écrite demain y passe.
+
+**Les adresses dans le journal.** `redigerPourJournal` remplace toute valeur texte d'une clé `email` ou `courriel` par son empreinte (`src/lib/empreinte-courriel.ts`, HMAC-SHA256 sous `AUTH_SECRET`, seize caractères, casse et espaces ignorés comme à la connexion). Le support garde son geste : `npm run empreinte -- adresse`, joué dans l'espace d'Atlas, rend l'empreinte à chercher. Aucune tentative trouvée veut dire qu'il a tapé autre chose. La rétention du journal reste à appliquer chez l'hébergeur.
+
+**Les protections fragiles.** `test-cadences-gardees.ts` (cadence de l'import de tarifs et du croquis, posée avant le geste coûteux ; seuil par source de la réponse au devis, règle sortie dans `src/lib/seuils-reponse-devis.ts`), `test-gestes-sensibles-db.ts` (l'export complet appelé en direct sans preuve), `test-photo-entrante.ts` (tout `src/` lu : personne d'autre que la porte ne nettoie ni ne trie une image). Chacun a été vu rouge en retirant sa protection.
+

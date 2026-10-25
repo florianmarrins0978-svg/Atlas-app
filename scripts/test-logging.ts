@@ -1,5 +1,6 @@
 import assert from "node:assert";
 import { redigerPourJournal } from "../src/server/logger";
+import { empreinteCourriel } from "../src/lib/empreinte-courriel";
 import { idRequeteValideOuGenere, executerAvecContexte, getContexteRequete, enrichirContexteRequete } from "../src/server/request-context";
 
 let passed = 0;
@@ -27,8 +28,35 @@ async function main() {
     assert.equal(redige.password, "[rédigé]");
     assert.equal((redige.donnees as Record<string, unknown>).motDePasse, "[rédigé]");
     assert.equal(redige.DATABASE_URL, "[rédigé]");
-    assert.equal(redige.email, "demo@atlas.local");
     assert.equal((redige.donnees as Record<string, unknown>).tarifId, "abc");
+  });
+
+  // **L'adresse ne part plus en clair, elle part en EMPREINTE** (sa décision du
+  // 25 octobre 2026). Le journal est copié chez l'hébergeur, chez Sentry, dans
+  // les sauvegardes : une fuite y livrait la liste des comptes et l'heure de
+  // leurs échecs. L'empreinte garde ce qui servait, retrouver les tentatives
+  // d'une personne, en calculant celle de son adresse (`npm run empreinte`).
+  await test("Courriel : l'adresse ne s'écrit jamais en clair, mais en empreinte", () => {
+    process.env.AUTH_SECRET = "secret-d-essai-du-journal-0000000000000000";
+    const redige = redigerPourJournal({ email: "Jean.Dupont@Exemple.fr", donnees: { emailPro: "pro@exemple.fr" } }) as Record<string, unknown>;
+    const texte = JSON.stringify(redige);
+    assert.ok(!texte.includes("Dupont") && !texte.includes("exemple"), `une adresse est partie en clair : ${texte}`);
+    assert.equal(redige.email, empreinteCourriel("Jean.Dupont@Exemple.fr", process.env.AUTH_SECRET));
+    assert.match(String(redige.email), /^courriel:[0-9a-f]{16}$/);
+  });
+
+  await test("Courriel : la même adresse tapée autrement donne la même empreinte, une autre adresse non", () => {
+    const s = "secret-d-essai-du-journal-0000000000000000";
+    assert.equal(empreinteCourriel(" jean.dupont@exemple.fr ", s), empreinteCourriel("JEAN.DUPONT@EXEMPLE.FR", s));
+    assert.notEqual(empreinteCourriel("jean.dupont@exemple.fr", s), empreinteCourriel("jean.dupont@gmial.com", s));
+    // Sans la clé, on ne la recalcule pas : une autre clé donne autre chose.
+    assert.notEqual(empreinteCourriel("jean.dupont@exemple.fr", s), empreinteCourriel("jean.dupont@exemple.fr", "une-autre-cle"));
+  });
+
+  await test("Courriel : un champ qui n'est pas une adresse n'est pas touché", () => {
+    const redige = redigerPourJournal({ emailEnvoye: true, nbEmails: 3 }) as Record<string, unknown>;
+    assert.equal(redige.emailEnvoye, true);
+    assert.equal(redige.nbEmails, 3);
   });
 
   await test("Rédaction : une Error conserve message/pile/cause sans jamais lever", () => {

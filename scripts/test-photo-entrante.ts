@@ -22,7 +22,7 @@
 // Ni base, ni réseau, ni navigateur.
 
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import { GPS_TEMOIN, contient, jpegAvecExif, pngAvecExif, webpAvecExif } from "./_images-temoins";
 import { preparerPhotoEntrante } from "../src/server/photo-entrante";
@@ -246,6 +246,40 @@ async function main() {
         !/\.arrayBuffer\(\)/.test(code),
         `${quoi} lit encore les octets bruts lui-même — l'original peut repartir de là`
       );
+    }
+  });
+
+  // **Les chemins d'image arrivés APRÈS le 24 août** (audit du 25 octobre
+  // 2026) : neuf fichiers passent par la porte, et la liste ci-dessus n'en
+  // connaissait que cinq. Ces deux cas ne tiennent plus de liste : ils lisent
+  // tout `src/`, donc le chemin écrit demain y entre de lui-même.
+  const tousLesFichiers = (() => {
+    const trouves: string[] = [];
+    const parcourir = (dossier: string) => {
+      for (const nom of readdirSync(path.join(RACINE, dossier))) {
+        const relatif = path.join(dossier, nom);
+        if (statSync(path.join(RACINE, relatif)).isDirectory()) parcourir(relatif);
+        else if (/\.tsx?$/.test(nom)) trouves.push(relatif);
+      }
+    };
+    parcourir("src");
+    return trouves;
+  })();
+
+  await essai("PERSONNE d'autre que la porte ne nettoie ni ne trie les images, dans tout src/", async () => {
+    // `src/lib/exif.ts` définit les deux fonctions, la porte les emploie.
+    const permis = new Set(["src/server/photo-entrante.ts", "src/lib/exif.ts"]);
+    const cuisiniers = tousLesFichiers.filter(
+      (f) => !permis.has(f) && /retirerMetadonnees\(|photoAcceptee\(/.test(codeSeul(f))
+    );
+    assert.deepEqual(cuisiniers, [], `Ces fichiers traitent les images à côté de la porte : ${cuisiniers.join(", ")}`);
+  });
+
+  await essai("les cinq chemins d'origine passent TOUJOURS par la porte (aucun renommé en silence)", async () => {
+    const parLaPorte = new Set(tousLesFichiers.filter((f) => /preparerPhotoEntrante\(/.test(codeSeul(f))));
+    assert.ok(parLaPorte.size >= 10, `seulement ${parLaPorte.size} fichier(s) par la porte : le parcours ne voit rien`);
+    for (const { quoi, fichier } of CHEMINS_IMAGE) {
+      assert.ok(parLaPorte.has(fichier), `${quoi} (${fichier}) ne passe plus par la porte, ou a changé de nom`);
     }
   });
 

@@ -25,6 +25,7 @@ import * as entreprisesRepo from "../src/server/repositories/entreprises";
 import { poserPreuveParMotDePasse, effacerPreuves } from "../src/server/preuve-recente";
 import { majIdentiteAction } from "../src/app/reglages/identite/actions";
 import { majEmetteurAction } from "../src/app/chantiers/[id]/devis-complet/actions";
+import { GET as telechargerMesDonnees } from "../src/app/api/mes-donnees/route";
 import { retirerCleAction } from "../src/app/reglages/connexion/actions";
 import { deconnecterPartoutAction } from "../src/app/reglages/connexion/actions";
 
@@ -231,6 +232,22 @@ async function main() {
       /identité|preuve|mot de passe/i
     );
     assert.equal(await ibanEnBase(), avant, "L'IBAN A ÉTÉ ÉCRIT PAR LE DÉPÔT SANS PREUVE");
+  });
+
+  // **L'export complet, appelé EN DIRECT** (audit du 25 octobre 2026) : la
+  // suite navigateur voyait la demande de mot de passe parce que l'écran la
+  // pose avant d'ouvrir l'adresse. Retirer la garde de la ROUTE la laissait
+  // verte. Ici, on frappe la route sans passer par l'écran.
+  await essai("EXPORT COMPLET appelé en direct SANS preuve : refusé, rien ne sort", async () => {
+    await effacerPreuves(utilisateurId);
+    const r = await telechargerMesDonnees();
+    assert.equal(r.status, 404, `la route a rendu ${r.status} sans preuve d'identité`);
+  });
+
+  await essai("EXPORT COMPLET appelé en direct AVEC preuve : l'archive sort", async () => {
+    await poserPreuve(utilisateurId, SESSION);
+    const r = await telechargerMesDonnees();
+    assert.equal(r.status, 200, `refusé alors que la preuve est là : ${r.status}`);
   });
 
   // ─── 2. Les clés d'appareil ───────────────────────────────────────────────

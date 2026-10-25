@@ -5,7 +5,7 @@ import { enregistrerReponse } from "@/server/repositories/envois-devis";
 import { logger } from "@/server/logger";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { horsProductionReelle, sourceDuVisiteur } from "@/server/source-visiteur";
-import { SOURCE_NON_ETABLIE } from "@/lib/source-visiteur";
+import { seuilsDeLaReponseAuDevis } from "@/lib/seuils-reponse-devis";
 import { adresseClient } from "@/lib/adresse-client";
 
 export type EtatReponse =
@@ -70,33 +70,13 @@ export async function repondreAction(
    * **La borne vient AVANT toute lecture en base**, sinon elle ne bornerait
    * que ce qui a déjà coûté.
    */
-  /**
-   * **LE SEUIL PAR SOURCE NE S'APPLIQUE QUE SI LA SOURCE EST ÉTABLIE — et
-   * c'est la revue hostile de ce lot qui l'a imposé.**
-   *
-   * Sans `ATLAS_PROXY_SAUTS` posé, `sourceDuVisiteur` rend délibérément une
-   * valeur commune : rien ne permet de savoir qui a écrit `x-forwarded-for`, et
-   * deviner reviendrait à faire confiance à l'attaquant
-   * (`src/lib/source-visiteur.ts`). Tous les clients partagent alors **un seul
-   * seau**.
-   *
-   * Appliqué tel quel, ce seuil devenait une arme retournée : soixante appels
-   * en une minute, depuis n'importe où, et PLUS AUCUN client de PLUS AUCUN
-   * artisan ne peut signer son devis pendant ce temps. On aurait échangé une
-   * dépense de calcul contre un blocage commercial — exactement ce que la
-   * consigne du patron interdit : *« ne fais rien qui peut endommager
-   * l'appli »*.
-   *
-   * Le seuil par JETON, lui, n'a pas ce défaut : il ne borne qu'un lien, celui
-   * qu'on martèle. Il s'applique donc toujours.
-   */
+  // Le seuil par source ne vaut que pour une source établie, sans quoi tous les
+  // clients partageraient un seau : la règle et son pourquoi vivent dans
+  // `seuilsDeLaReponseAuDevis`.
   const source = await sourceDuVisiteur(horsProductionReelle());
-  const seuils: Array<readonly [string, { max: number; fenetreMs: number }]> = [
-    [`reponse-devis:${jeton}`, LIMITES.reponseDevis],
-  ];
-  if (source !== SOURCE_NON_ETABLIE) {
-    seuils.push([`reponse-devis:source:${source}`, LIMITES.reponseDevisParSource]);
-  }
+  const seuils = seuilsDeLaReponseAuDevis(jeton, source).map(
+    ({ cle, quel }) => [cle, quel === "jeton" ? LIMITES.reponseDevis : LIMITES.reponseDevisParSource] as const
+  );
 
   for (const [cle, limite] of seuils) {
     const cadence = await verifierLimite(cle, limite);

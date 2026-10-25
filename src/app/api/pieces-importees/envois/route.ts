@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { CorpsTropGros, jsonBorne } from "@/server/corps-borne";
 import { patronQuiImporte } from "@/server/import/garde";
 import { creerEnvoi, fermerEnvoi, getEnvoi } from "@/server/repositories/pieces-importees";
 import { refusDeLEnvoi } from "@/lib/import-pieces";
@@ -13,7 +14,15 @@ export const dynamic = "force-dynamic";
 export async function POST(requete: Request) {
   const ctx = await patronQuiImporte();
   if (!ctx) return NextResponse.json({ error: "Introuvable" }, { status: 404 });
-  const corps = (await requete.json().catch(() => null)) as
+  // Quelques champs : 16 Ko suffisent largement, et rien de plus n'entre en mémoire.
+  let lu: unknown;
+  try {
+    lu = await jsonBorne(requete, 16 * 1024);
+  } catch (erreur) {
+    if (erreur instanceof CorpsTropGros) return NextResponse.json({ ok: false, raison: "Demande trop longue." }, { status: 413 });
+    throw erreur;
+  }
+  const corps = lu as
     | { nom?: unknown; nombre?: unknown; octets?: unknown; fermer?: unknown }
     | null;
 

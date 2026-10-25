@@ -3,7 +3,7 @@
 
 ## AUDIT DE SÉCURITÉ : LE LOT 0 EST FAIT, LA SUITE ATTEND SON PROMPT (25 octobre 2026)
 
-Le prompt renforcé est au §6 de `docs/audit-securite-prompt-renforce.md`. Étape 2 faite (`docs/audit-2026-10-etape-2.md`) ; R1 (IBAN par le devis) corrigé. Restent R2 et R3 (corps de requête non bornés, `api/pieces-importees` et `api/paiement`), puis les tests des protections fragiles, puis l'inventaire. Restent hors du lot 0 : poser `min-release-age` (npm 11.10+, à vérifier sur son espace et en CI), épingler les actions GitHub par empreinte, passer `@simplewebauthn/server` en 13.x dans son propre lot (`ARCHITECTURE.md` §499).
+Le prompt renforcé est au §6 de `docs/audit-securite-prompt-renforce.md`. Étape 2 faite (`docs/audit-2026-10-etape-2.md`) ; R1, R2, R3, l'empreinte des e-mails et les protections fragiles faits (vague 1, `ARCHITECTURE.md` §500 et §501). Reste : la rétention du journal chez l'hébergeur, puis l'étape 3, l'inventaire. Restent hors du lot 0 : poser `min-release-age` (npm 11.10+, à vérifier sur son espace et en CI), épingler les actions GitHub par empreinte, passer `@simplewebauthn/server` en 13.x dans son propre lot (`ARCHITECTURE.md` §499).
 
 ## ~~LE SEED LANCÉ À LA MAIN VIDE ENCORE SA BASE HABITÉE~~ corrigé le 25 octobre 2026
 

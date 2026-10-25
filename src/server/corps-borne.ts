@@ -85,13 +85,45 @@ export function fluxBorne(flux: ReadableStream<Uint8Array>, limiteOctets: number
  * sans avoir à distinguer.
  */
 export async function formDataBornee(requete: Request, limiteOctets: number): Promise<FormData> {
+  return lireBorne(requete, limiteOctets, (r) => r.formData());
+}
+
+/**
+ * Le corps entier en texte, borné par le même flux (audit du 25 octobre 2026,
+ * R3). Le crochet de paiement lisait tout avant de vérifier la signature : un
+ * corps de plusieurs gigaoctets, sans en-tête de taille, aurait été chargé en
+ * mémoire par n'importe qui.
+ */
+export async function texteBorne(requete: Request, limiteOctets: number): Promise<string> {
+  return lireBorne(requete, limiteOctets, (r) => r.text());
+}
+
+/**
+ * Le corps en JSON, borné. **Un JSON illisible rend `null`**, comme le
+ * `.json().catch(() => null)` qu'il remplace : c'est à la route de dire ce qui
+ * manque. Un dépassement, lui, lève toujours `CorpsTropGros`.
+ */
+export async function jsonBorne(requete: Request, limiteOctets: number): Promise<unknown> {
+  const texte = await texteBorne(requete, limiteOctets);
+  try {
+    return JSON.parse(texte);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * La lecture commune : refus rapide sur l'en-tête annoncé, puis le flux coupé
+ * au-delà de la limite, quoi que l'en-tête ait prétendu.
+ */
+async function lireBorne<T>(requete: Request, limiteOctets: number, lire: (r: Response) => Promise<T>): Promise<T> {
   const annonce = Number(requete.headers.get("content-length") ?? "");
   if (Number.isFinite(annonce) && annonce > limiteOctets) throw new CorpsTropGros();
 
   const corps = requete.body;
-  // Pas de corps du tout : `formData()` rendra son propre refus, qui nomme
-  // mieux le problème que nous ne le ferions.
-  if (!corps) return requete.formData();
+  // Pas de corps du tout : le lecteur rendra son propre refus, qui nomme mieux
+  // le problème que nous ne le ferions.
+  if (!corps) return lire(new Response(null, { headers: requete.headers }));
 
   const typeContenu = requete.headers.get("content-type");
   const reponse = new Response(fluxBorne(corps, limiteOctets), {
@@ -99,7 +131,7 @@ export async function formDataBornee(requete: Request, limiteOctets: number): Pr
   });
 
   try {
-    return await reponse.formData();
+    return await lire(reponse);
   } catch (erreur) {
     /**
      * **La cause est enterrée par le parseur**, et il faut aller la chercher.

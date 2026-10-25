@@ -10,6 +10,11 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## AUDIT DE SÉCURITÉ D'OCTOBRE : OÙ IL EN EST (25 octobre 2026)
+
+Fait : lot 0 (dépendances), étape 2 (`docs/audit-2026-10-etape-2.md`), R1, vague 1 (`ARCHITECTURE.md` §500, §501). **Les pièges :** une route de `src/app/api` lit son corps par `src/server/corps-borne.ts`, jamais en direct (`test-corps-borne.ts` refuse) ; une adresse e-mail dans le journal s'écrit en empreinte, et `npm run empreinte -- adresse` la retrouve. **Les corrections de l'audit se groupent en vague** (`CLAUDE.md` §6). Prochaine étape : l'inventaire complet (étape 3 du prompt renforcé, `docs/audit-securite-prompt-renforce.md` §6).
+
+---
 ## L'IBAN DEMANDE LE MOT DE PASSE PAR TOUTES LES PORTES (25 octobre 2026)
 
 La preuve d'identité des coordonnées bancaires vit dans `mettreAJourEntreprise` (`src/server/repositories/entreprises.ts`), plus dans une action. **Le piège :** une action qui appelle `mettreAJourEntreprise` avec un IBAN doit rendre `PreuveRecenteExigeeError` en valeur (`preuveExigee`), et son écran ouvrir `DemanderPreuve`. `ARCHITECTURE.md` §500. L'audit en cours est décrit dans `docs/audit-2026-10-etape-2.md`.

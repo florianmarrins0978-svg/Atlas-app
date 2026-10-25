@@ -20,7 +20,9 @@
 // Ni base, ni réseau, ni navigateur.
 
 import assert from "node:assert/strict";
-import { CorpsTropGros, fluxBorne, formDataBornee } from "../src/server/corps-borne";
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import path from "node:path";
+import { CorpsTropGros, fluxBorne, formDataBornee, texteBorne, jsonBorne } from "../src/server/corps-borne";
 
 let echecs = 0;
 async function essai(nom: string, fn: () => Promise<void> | void) {
@@ -183,6 +185,74 @@ async function main() {
       attrape = e;
     }
     assert.ok(!(attrape instanceof CorpsTropGros), "un corps vide passe pour trop gros");
+  });
+
+  // ─── Le texte et le JSON, par le même flux (audit du 25 octobre, R3) ──────
+
+  /** Un corps envoyé en morceaux, SANS content-length : le cas qui ment. */
+  const enMorceaux = (octets: number) =>
+    new Request("http://essai.local/", {
+      method: "POST",
+      body: new ReadableStream<Uint8Array>({
+        start(c) {
+          for (let reste = octets; reste > 0; reste -= 16 * 1024) c.enqueue(new Uint8Array(Math.min(reste, 16 * 1024)).fill(0x61));
+          c.close();
+        },
+      }),
+      duplex: "half",
+    } as RequestInit);
+
+  await essai("TEXTE en morceaux AU-DESSUS de la limite → refusé par le flux", async () => {
+    await assert.rejects(texteBorne(enMorceaux(LIMITE + 1), LIMITE), CorpsTropGros);
+  });
+
+  await essai("TEXTE sous la limite → rendu entier", async () => {
+    assert.equal((await texteBorne(enMorceaux(1000), LIMITE)).length, 1000);
+  });
+
+  await essai("JSON en morceaux AU-DESSUS de la limite → refusé, jamais parsé", async () => {
+    await assert.rejects(jsonBorne(enMorceaux(LIMITE + 1), LIMITE), CorpsTropGros);
+  });
+
+  await essai("JSON sous la limite → objet rendu ; JSON illisible → null, pas un dépassement", async () => {
+    const r = new Request("http://essai.local/", { method: "POST", body: JSON.stringify({ a: 1 }) });
+    assert.deepEqual(await jsonBorne(r, LIMITE), { a: 1 });
+    const illisible = new Request("http://essai.local/", { method: "POST", body: "{pas du json" });
+    assert.equal(await jsonBorne(illisible, LIMITE), null);
+  });
+
+  // ─── Toute route de src/app/api lit son corps par la borne ────────────────
+  //
+  // **Ce qui a laissé passer R2 et R3** : la borne existait, mais rien ne
+  // vérifiait que les routes s'en servent. `pieces-importees` se fiait à
+  // content-length, `paiement` lisait tout avant de vérifier la signature.
+  // Une route neuve qui lit son corps en direct fait rougir ce cas.
+
+  await essai("AUCUNE route de src/app/api ne lit son corps sans borne", async () => {
+    const racine = path.join(__dirname, "..", "src", "app", "api");
+    const routes: string[] = [];
+    const parcourir = (dossier: string) => {
+      for (const nom of readdirSync(dossier)) {
+        const chemin = path.join(dossier, nom);
+        if (statSync(chemin).isDirectory()) parcourir(chemin);
+        else if (/^route\.tsx?$/.test(nom)) routes.push(chemin);
+      }
+    };
+    parcourir(racine);
+    assert.ok(routes.length > 10, `seulement ${routes.length} route(s) trouvée(s) : le parcours ne voit rien`);
+    const lectureDirecte = /\b(requete|request|req)\.(formData|text|json|arrayBuffer|blob)\s*\(/;
+    const fautives = routes
+      // Les commentaires citent l'ancien geste pour dire pourquoi il est parti.
+      .filter((r) =>
+        lectureDirecte.test(
+          readFileSync(r, "utf8")
+            .split("\n")
+            .filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l))
+            .join("\n")
+        )
+      )
+      .map((r) => path.relative(racine, r));
+    assert.deepEqual(fautives, [], `Ces routes lisent leur corps sans borne : ${fautives.join(", ")}`);
   });
 
   console.log("");

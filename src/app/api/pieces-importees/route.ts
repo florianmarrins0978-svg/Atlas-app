@@ -1,4 +1,5 @@
 import { NextResponse, after } from "next/server";
+import { CorpsTropGros, formDataBornee } from "@/server/corps-borne";
 import { createHash } from "node:crypto";
 import { patronQuiImporte } from "@/server/import/garde";
 import { deposerPiece, empreintesConnues, getEnvoi } from "@/server/repositories/pieces-importees";
@@ -35,7 +36,14 @@ export async function POST(requete: Request) {
   const limite = await verifierLimite(`import-piece:${ctx.entrepriseId}`, LIMITES.importPiece);
   if (!limite.autorise) return refuser(limite.message, 429);
 
-  const form = await requete.formData().catch(() => null);
+  // **Borné par le flux, pas par l'en-tête** (audit du 25 octobre 2026, R2) :
+  // content-length est écrit par l'expéditeur, et un envoi en morceaux n'en
+  // porte aucun. Le refus d'en-tête ci-dessus reste le premier, et le plus
+  // rapide. Un multipart illisible tombe sur le refus « pas arrivé entier ».
+  const form = await formDataBornee(requete, LIMITES_IMPORT.octetsParDocument + 64 * 1024).catch((erreur: unknown) =>
+    erreur instanceof CorpsTropGros ? ("trop-gros" as const) : null
+  );
+  if (form === "trop-gros") return refuser("Ce fichier pèse plus de 15 Mo.", 413);
   const fichier = form?.get("fichier");
   const envoiId = form?.get("envoiId");
   const empreinte = form?.get("empreinte");

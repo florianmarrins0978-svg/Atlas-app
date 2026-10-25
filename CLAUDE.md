@@ -1332,6 +1332,19 @@ rouge qui bloque un travail qui n'y est pour rien. Le dossier de batterie
 origin/main`, `git cherry-pick` des seuls commits du lot, ses contrôles, sa
 poussée.
 
+**L'EXCEPTION : PLUSIEURS CORRECTIONS D'UN MÊME SUJET SE GROUPENT EN VAGUE —
+sa décision du 25 octobre 2026**, pendant l'audit de sécurité : *« si à chaque
+fois tu joues une batterie par modification, on en a pour une semaine »*. Il
+avait raison : une batterie de cinquante minutes par correction de dix lignes,
+c'est payer dix fois la même mesure.
+
+| | |
+|---|---|
+| **ce qui se groupe** | 3 à 5 corrections d'un **même sujet** (l'audit), chacune déjà éprouvée par SES suites pendant l'écriture (test rouge, correction, test vert) |
+| **la batterie** | une seule, à la fin de la vague |
+| **un rouge** | se corrige et se rejoue seul (`verifier-ce-qui-a-bouge.ts`) ; une correction qui résiste **sort de la vague** plutôt que de la retenir |
+| **ce qui ne se groupe toujours pas** | deux sujets sans rapport : c'est le cas du 17 septembre, et la règle ci-dessus tient |
+
 ### Rien n'est livré tant que ce n'est pas sur `main`
 
 **Payé deux fois, la seconde le 11 août 2026.** Un lot complet — code, suites,

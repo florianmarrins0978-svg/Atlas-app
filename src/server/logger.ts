@@ -1,4 +1,5 @@
 import { getContexteRequete } from "./request-context";
+import { empreinteCourriel, estCleDeCourriel } from "@/lib/empreinte-courriel";
 
 type Niveau = "debug" | "info" | "warn" | "error";
 
@@ -32,19 +33,20 @@ const CLES_SENSIBLES = [
   "jeton",
 ];
 
-// **`email` n'est DÉLIBÉRÉMENT pas dans cette liste**, et il faut l'écrire pour
-// qu'on ne l'y ajoute pas au prochain audit.
+// **Une adresse e-mail s'écrit en EMPREINTE, jamais en clair** (sa décision du
+// 25 octobre 2026, `src/lib/empreinte-courriel.ts`). Elle restait en clair
+// pour répondre à « je n'arrive pas à entrer » (la panne du 6 août 2026) ;
+// l'empreinte le permet toujours, en calculant celle de son adresse
+// (`npm run empreinte`), sans livrer la liste des comptes à qui lit le
+// journal. La rétention déclarée (`RETENTION.journauxJours`) reste à appliquer
+// chez l'hébergeur.
 //
-// L'adresse est journalisée à chaque échec de connexion (`login/actions.ts`),
-// et c'est ce qui permet de répondre à « je n'arrive pas à entrer » — la panne
-// du 6 août 2026, où les parents du patron lisaient « mot de passe incorrect »
-// avec les bons identifiants. La masquer rendrait ces lignes muettes exactement
-// quand on en a besoin.
-//
-// Ce qui reste à trancher, et qui n'est pas de notre ressort : ce journal porte
-// une donnée personnelle, et la rétention déclarée
-// (`RETENTION.journauxJours = 180`) n'est appliquée par aucun code. C'est la
-// durée qu'il faut régler, pas la ligne qu'il faut supprimer.
+// La clé est `AUTH_SECRET`, que l'environnement exige en production : sans
+// elle (essais), l'empreinte se calcule sans clé, et l'adresse ne part pas
+// davantage en clair.
+function cleDesEmpreintes(): string {
+  return process.env.AUTH_SECRET ?? "";
+}
 
 function estCleSensible(cle: string): boolean {
   const c = cle.toLowerCase().replace(/[_-]/g, "");
@@ -73,7 +75,11 @@ export function redigerPourJournal(valeur: unknown, profondeur = 0): unknown {
   if (typeof valeur === "object") {
     const resultat: Record<string, unknown> = {};
     for (const [cle, v] of Object.entries(valeur as Record<string, unknown>)) {
-      resultat[cle] = estCleSensible(cle) ? "[rédigé]" : redigerPourJournal(v, profondeur + 1);
+      resultat[cle] = estCleSensible(cle)
+        ? "[rédigé]"
+        : estCleDeCourriel(cle) && typeof v === "string"
+          ? empreinteCourriel(v, cleDesEmpreintes())
+          : redigerPourJournal(v, profondeur + 1);
     }
     return resultat;
   }

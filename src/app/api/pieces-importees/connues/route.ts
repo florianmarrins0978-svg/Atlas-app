@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { CorpsTropGros, jsonBorne } from "@/server/corps-borne";
 import { patronQuiImporte } from "@/server/import/garde";
 import { empreintesConnues } from "@/server/repositories/pieces-importees";
 
@@ -15,7 +16,16 @@ const PAQUET_MAX = 50;
 export async function POST(requete: Request) {
   const ctx = await patronQuiImporte();
   if (!ctx) return NextResponse.json({ error: "Introuvable" }, { status: 404 });
-  const corps = (await requete.json().catch(() => null)) as { empreintes?: unknown } | null;
+  // Cinquante empreintes de 64 caractères tiennent dans 16 Ko : au-delà, ce
+  // n'est pas l'écran qui envoie.
+  let lu: unknown;
+  try {
+    lu = await jsonBorne(requete, 16 * 1024);
+  } catch (erreur) {
+    if (erreur instanceof CorpsTropGros) return NextResponse.json({ connues: [] }, { status: 413 });
+    throw erreur;
+  }
+  const corps = lu as { empreintes?: unknown } | null;
   const empreintes = (Array.isArray(corps?.empreintes) ? corps.empreintes : [])
     .filter((e): e is string => typeof e === "string" && EMPREINTE.test(e))
     .slice(0, PAQUET_MAX);

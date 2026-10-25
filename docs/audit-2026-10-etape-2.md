@@ -54,6 +54,7 @@
 ## La suite
 
 1. **R1 : CORRIGÉ le 25 octobre.** La preuve d'identité est exigée par l'écriture de l'IBAN elle-même, quelle que soit la porte. L'écran du devis ouvre la même fenêtre de mot de passe que Réglages. Test rouge avant, vert après (`ARCHITECTURE.md` §500).
-2. R2 et R3, puis un contrôle qui vérifie que **chaque** route plafonne son corps.
-3. Les tests des protections fragiles.
-4. L'étape 3 : l'inventaire complet.
+2. **R2 et R3 : CORRIGÉS le 25 octobre**, et un contrôle vérifie désormais que **chaque** route plafonne son corps.
+3. **Les protections fragiles : TENUES** par un test chacune, vu rouge en retirant la protection.
+4. **F11, ta décision** : les adresses s'écrivent dans le journal en empreinte (`courriel:…`). Pour retrouver les tentatives d'une personne : `npm run empreinte -- son.adresse@exemple.fr`. Reste à fixer la durée de conservation du journal chez l'hébergeur.
+5. L'étape 3 : l'inventaire complet.

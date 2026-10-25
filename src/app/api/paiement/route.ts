@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { CorpsTropGros, texteBorne } from "@/server/corps-borne";
 import { verifierSignature } from "@/lib/signature-stripe";
 import { lireUnAbonnement } from "@/server/paiement/stripe";
 import { appliquerDepuisLeCrochet } from "@/server/repositories/abonnements";
@@ -50,7 +51,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ erreur: "Non configuré." }, { status: 503 });
     }
 
-    const corps = await request.text();
+    // **Borné AVANT la signature** (audit du 25 octobre 2026, R3) : la route est
+    // publique, et lire tout avant de vérifier laissait n'importe qui charger
+    // un corps sans fin en mémoire. Un événement du prestataire pèse quelques
+    // kilooctets ; 256 Ko laissent une marge large sans rien ouvrir.
+    let corps: string;
+    try {
+      corps = await texteBorne(request, 256 * 1024);
+    } catch (erreur) {
+      if (erreur instanceof CorpsTropGros) return NextResponse.json({ erreur: "Refusé." }, { status: 413 });
+      throw erreur;
+    }
     const verdict = verifierSignature(corps, request.headers.get("stripe-signature"), secret, new Date());
     if (!verdict.valide) {
       // **Le motif va au journal, pas à la réponse.** Dire « trop vieille »
