@@ -38,7 +38,9 @@
           font-size: 15px; font-weight: 600; color: var(--atlas-ink); background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
 .filtre .ico { width: 20px; height: 20px; }
 
-.portes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+.portes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+.sous-portes { margin-top: 14px; }
+.ecran[data-etat="choix"] .sous-portes, .ecran[data-etat="mois"] .sous-portes { margin-top: 0; }
 .porte { display: flex; align-items: center; gap: 10px; min-height: 64px; padding: 10px 12px; border-radius: 10px; text-decoration: none;
          color: var(--atlas-or); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 70%, transparent); }
 .porte .ico { color: var(--atlas-or); flex: none; width: 22px; height: 22px; }
@@ -130,7 +132,12 @@
             </header>
             <p class="tete-situation" style="margin:4px 0 18px" id="compte">7 clients</p>
 
-            <div data-si-etat="rempli choix mois">
+
+            <div class="portes" data-si-etat="rempli vide">
+              <a class="porte touche" href="clients.html?vue=partenaires" data-pas-encore><svg class="ico" aria-hidden="true"><use href="#i-entreprise"/></svg><span class="porte-texte"><span class="porte-nom">Vos partenaires</span><span class="porte-compte">Aucun</span></span><svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+              <a class="porte touche" href="clients.html?vue=publics" data-pas-encore><svg class="ico" aria-hidden="true"><use href="#i-banque"/></svg><span class="porte-texte"><span class="porte-nom">Services publics</span><span class="porte-compte">1</span></span><svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+            </div>
+            <div data-si-etat="rempli choix mois" class="sous-portes">
               <div class="recherche">
                 <label class="champ-recherche">
                   <svg class="ico" aria-hidden="true"><use href="#i-recherche"/></svg>
@@ -140,11 +147,6 @@
                 <button class="tout" type="button" id="tout"><span class="coche-ronde"></span>Tout</button>
                 <button class="filtre touche" type="button" data-ouvre="feuille-tri"><svg class="ico" aria-hidden="true"><use href="#i-filtre"/></svg>Filtre</button>
               </div>
-            </div>
-
-            <div class="portes" data-si-etat="rempli vide">
-              <a class="porte touche" href="clients.html?vue=partenaires" data-pas-encore><svg class="ico" aria-hidden="true"><use href="#i-entreprise"/></svg><span class="porte-texte"><span class="porte-nom">Vos partenaires</span><span class="porte-compte">Aucun</span></span><svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
-              <a class="porte touche" href="clients.html?vue=publics" data-pas-encore><svg class="ico" aria-hidden="true"><use href="#i-banque"/></svg><span class="porte-texte"><span class="porte-nom">Services publics</span><span class="porte-compte">1</span></span><svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
             </div>
 
             <p class="rien" data-si-etat="vide">Aucun client pour l'instant. Ils naissent avec vos chantiers.</p>
@@ -248,7 +250,7 @@
   <section class="pl-notes">
     <h2>Ce qui change</h2>
     <ul>
-      <li>Le Filtre rejoint la recherche sur sa ligne : le premier client se voit dès l'ouverture, plus besoin de descendre.</li>
+      <li>Le Filtre rejoint la recherche sur sa ligne, juste sous Vos partenaires et Services publics.</li>
       <li>Vos entreprises s'appelle Vos partenaires. Avec Services publics, ce sont deux cartes dorées côte à côte, chacune avec son nombre.</li>
       <li>Chaque lettre range ses clients dans une plage ; chaque client a ses initiales, son adresse, sa dernière pièce, et « 312,00 € dus » d'un seul tenant, en rouge.</li>
       <li>La recherche trouve à chaque lettre tapée (essaie « gar »). Rester appuyé sur un client ouvre le choix pour en supprimer plusieurs.</li>
