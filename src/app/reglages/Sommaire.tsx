@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { colors, font, libelleCaps } from "@/lib/design-tokens";
+import { colors, font, libelleCaps, radius } from "@/lib/design-tokens";
 import type { EnsembleRubriques, Rubrique } from "@/lib/rubriques-reglages";
 import IconeReglage from "./icones";
 
@@ -30,7 +30,49 @@ import IconeReglage from "./icones";
  * liste non plus, sinon son filet tombe trente pixels au-dessus du trait de la
  * section suivante et dessine une bande morte.
  */
-export default function Sommaire({ ensembles }: { ensembles: EnsembleRubriques[] }) {
+export default function Sommaire({
+  ensembles,
+  paquets = false,
+  nomEntreprise = null,
+}: {
+  ensembles: EnsembleRubriques[];
+  /**
+   * **En paquets — sa planche du 25 octobre 2026** (`appli/soignee/reglages.html`,
+   * *« très bien, code ça »*). Chaque ensemble devient une plage claire sous
+   * son titre doré, sans cadre : il a fait retirer les encadrés dorés le même
+   * soir. Réservé au sommaire des Réglages ; les sous-sommaires (« Devis &
+   * factures ») gardent leurs filets, il n'a rien demandé pour eux.
+   */
+  paquets?: boolean;
+  /** Le nom que porte la carte de l'entreprise. Absent, elle dit « Mon entreprise ». */
+  nomEntreprise?: string | null;
+}) {
+  if (paquets) {
+    return (
+      <div className="mx-[26px] mt-[22px]">
+        {ensembles.map((ensemble) =>
+          ensemble.carte ? (
+            <Carte key="carte" rubrique={ensemble.rubriques[0]} nomEntreprise={nomEntreprise} />
+          ) : (
+            <section key={ensemble.titre} className="mt-[28px]">
+              <p
+                className="mb-[10px] text-[13px] font-semibold uppercase tracking-[0.12em]"
+                style={{ color: colors.or }}
+              >
+                {ensemble.titre}
+              </p>
+              <div className="px-[18px]" style={{ background: colors.card, borderRadius: radius.card }}>
+                {ensemble.rubriques.map((r, j) => (
+                  <Ligne key={r.nom} rubrique={r} derniere={j === ensemble.rubriques.length - 1} enPaquet />
+                ))}
+              </div>
+            </section>
+          )
+        )}
+      </div>
+    );
+  }
+
   return (
     <div>
       {ensembles.map((ensemble, i) => (
@@ -87,7 +129,7 @@ export default function Sommaire({ ensembles }: { ensembles: EnsembleRubriques[]
  * une page, et le patron a déjà appuyé deux fois sur des choses qui ne
  * répondaient pas.
  */
-function Ligne({ rubrique, derniere }: { rubrique: Rubrique; derniere: boolean }) {
+function Ligne({ rubrique, derniere, enPaquet = false }: { rubrique: Rubrique; derniere: boolean; enPaquet?: boolean }) {
   const aVenir = rubrique.href === null;
 
   const contenu = (
@@ -120,22 +162,14 @@ function Ligne({ rubrique, derniere }: { rubrique: Rubrique; derniere: boolean }
         // Le chevron est une affordance, pas un ornement : il dit « ça
         // s'ouvre ». Dessiné avec deux bordures plutôt qu'une image — c'est un
         // trait de la charte, pas un pictogramme de plus.
-        <span
-          aria-hidden="true"
-          className="h-2 w-2 rotate-45"
-          style={{
-            flex: "none",
-            borderRight: `1.5px solid ${colors.chevron}`,
-            borderTop: `1.5px solid ${colors.chevron}`,
-          }}
-        />
+        <Chevron couleur={enPaquet ? colors.or : colors.chevron} />
       )}
     </>
   );
 
   // 56 px : au-delà de la cible de 44 px d'Apple, et c'est TOUTE la ligne qui
   // se touche — pas l'icône, pas le seul libellé.
-  const classe = `flex min-h-[56px] w-full items-center gap-[15px] py-[13px] text-left ${
+  const classe = `flex ${enPaquet ? "min-h-[60px]" : "min-h-[56px]"} w-full items-center gap-[15px] py-[13px] text-left ${
     derniere ? "" : "border-b"
   }`;
   const style = derniere ? undefined : { borderColor: colors.line };
@@ -150,6 +184,54 @@ function Ligne({ rubrique, derniere }: { rubrique: Rubrique; derniere: boolean }
   return (
     <Link href={rubrique.href!} className={classe} style={style}>
       {contenu}
+    </Link>
+  );
+}
+
+function Chevron({ couleur }: { couleur: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className="h-2 w-2 rotate-45"
+      style={{ flex: "none", borderRight: `1.5px solid ${couleur}`, borderTop: `1.5px solid ${couleur}` }}
+    />
+  );
+}
+
+/**
+ * La carte de l'entreprise, en tête des réglages : on sait où l'on est.
+ *
+ * **Le sceau porte l'initiale du nom, et rien d'inventé** : sans nom lisible,
+ * il garde l'icône de la rubrique, et la carte dit « Mon entreprise » seule
+ * (`docs/AGENT.md` §3).
+ */
+function Carte({ rubrique, nomEntreprise }: { rubrique: Rubrique; nomEntreprise: string | null }) {
+  const nom = nomEntreprise?.trim() || null;
+  return (
+    <Link
+      href={rubrique.href!}
+      data-atlas="carte-entreprise"
+      className="flex min-h-[60px] items-center gap-[14px] p-[18px]"
+      style={{ background: colors.card, borderRadius: radius.card }}
+    >
+      <span
+        aria-hidden="true"
+        className="grid h-[52px] w-[52px] flex-none place-items-center rounded-full text-[22px] leading-none"
+        style={{ boxShadow: `inset 0 0 0 1.5px ${colors.or}`, color: colors.or, fontFamily: font.display }}
+      >
+        {nom ? nom.charAt(0).toUpperCase() : <IconeReglage nom={rubrique.icone} />}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-[21px] leading-[1.2]" style={{ fontFamily: font.display, color: colors.ink }}>
+          {nom ?? rubrique.nom}
+        </span>
+        {nom && (
+          <span className="mt-[2px] block text-[15px]" style={{ color: colors.inkSoft }}>
+            {rubrique.nom}
+          </span>
+        )}
+      </span>
+      <Chevron couleur={colors.or} />
     </Link>
   );
 }

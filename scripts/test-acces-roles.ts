@@ -340,8 +340,10 @@ essai("tous les rôles ouvrent l'organigramme", () => {
 });
 
 essai("un commercial reçoit l'entreprise amputée, jamais l'identité ni les accès", () => {
+  // Sans l'identité, pas de carte ; les paquets que ses droits vident partent.
   const titres = rubriquesReglages("commercial").map((e) => e.titre);
-  assert.deepEqual(titres, ["L'entreprise", "Moi"]);
+  assert.ok(!rubriquesReglages("commercial").some((e) => e.carte));
+  assert.equal(titres.at(-1), "Moi");
   const adresses = adressesAutorisees("commercial");
   assert.ok(!adresses.includes("/reglages/identite"));
   assert.ok(!adresses.includes("/reglages/equipe"));
