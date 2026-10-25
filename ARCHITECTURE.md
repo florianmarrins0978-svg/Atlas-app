@@ -35982,3 +35982,15 @@ retirée, et `test-papier-facture-db.ts` avec elle.
 | `@simplewebauthn/server` 9.0.3, attestation mal reliée à une autorité (GHSA-6hxq-p678-4hr2) | Atlas demande `attestationType: "none"` (`src/server/cle-appareil.ts`) : l'attestation n'est jamais lue. Le passage en 13.x change l'interface de toutes les clés d'appareil ; il se fera dans son propre lot |
 | `fast-uri` 3.1.8 (moyen, retombé à faible) | Chargé seulement par `@sentry/webpack-plugin`, donc à la construction, jamais par le serveur qui répond |
 
+## §500 : La preuve d'identité de l'IBAN vit dans l'écriture, pas dans une action
+
+*25 octobre 2026, audit de sécurité, R1 (`docs/audit-2026-10-etape-2.md`).*
+
+**Le défaut.** La garde de ré-authentification des coordonnées bancaires (M11, `GESTES_SENSIBLES.coordonneesBancaires`) vivait dans `majIdentiteAction`. `majEmetteurAction`, appelée par le champ IBAN de l'écran du devis, écrivait la même colonne par `mettreAJourEntreprise` sans la poser, et `exigerGestionDevis` y laisse passer le commercial. Le test de M11 n'appelait que l'action de Réglages : il ne pouvait pas voir l'autre porte.
+
+**La racine** était l'endroit de la garde : posée sur une porte, elle est contournée par la suivante. Elle vit désormais dans `mettreAJourEntreprise`, dans la transaction de l'écriture, qui compare à la base avant d'écrire. La fonction exportée `coordonneesBancairesChangent` et la garde de `majIdentiteAction` ont disparu avec elle ; les deux actions ne font plus que rendre `PreuveRecenteExigeeError` en valeur (`preuveExigee`), puisqu'une exception d'action n'arrive jamais à l'écran.
+
+**L'écran du devis** réutilise `DemanderPreuve`, la fenêtre de Réglages, sans rien dessiner de neuf. Abandonner la preuve rend au champ le dernier IBAN accepté par le serveur.
+
+**Ce qui le tient** : `test-gestes-sensibles-db.ts` (quatre cas neufs, dont l'écriture directe par le dépôt, vus rouges avant) et `test-devis-complet-e2e.ts`, qui vérifie que rien ne s'écrit avant la preuve.
+

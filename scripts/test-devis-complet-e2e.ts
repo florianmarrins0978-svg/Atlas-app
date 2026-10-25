@@ -162,10 +162,20 @@ async function main() {
   // --- 2. Ce qui s'y écrit part vers la bonne source ----------------------
   // L'IBAN : sans lui, le client reçoit un devis qu'il ne peut pas payer, et
   // aucun autre écran ne le demandait.
+  //
+  // **Et il ne change pas sans redemander qui l'on est** (audit du 25 octobre
+  // 2026, R1) : c'est là que l'argent des clients arrive. Le mot de passe se
+  // demande sur place, puis l'IBAN s'écrit sans qu'il le retape.
+  const ibanAvant = (await lireEntreprise()).rows[0]?.iban ?? null;
   const iban = page.getByLabel("IBAN");
   await iban.fill("FR76 3000 1000 0100 0000 0000 123");
   await iban.blur();
-  await page.waitForTimeout(800);
+  const motDePasse = page.getByLabel("Votre mot de passe");
+  await motDePasse.waitFor({ state: "visible", timeout: 10000 });
+  assert.equal((await lireEntreprise()).rows[0]?.iban ?? null, ibanAvant, "L'IBAN A ÉTÉ ÉCRIT AVANT LA PREUVE D'IDENTITÉ");
+  await motDePasse.fill("demo1234");
+  await page.locator('[data-atlas="prouver-identite"]').click();
+  await motDePasse.waitFor({ state: "hidden", timeout: 10000 });
 
   const siret = page.getByLabel("SIREN / SIRET");
   await siret.fill("123 456 789 00012");

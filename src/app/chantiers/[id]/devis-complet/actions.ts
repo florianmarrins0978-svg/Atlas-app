@@ -5,6 +5,7 @@ import { exigerGestionDevis } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { retenirLecon } from "@/server/repositories/lecons-prix";
 import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
+import { PreuveRecenteExigeeError } from "@/server/preuve-recente";
 import { mettreAJourClient } from "@/server/repositories/clients";
 import {
   modifierLignePrix,
@@ -53,10 +54,19 @@ export async function majEmetteurAction(data: {
   telephone?: string;
   email?: string;
   iban?: string;
-}) {
+}): Promise<{ ok: true } | { ok: false; raison: string; preuveExigee: true }> {
   const ctx = await getCurrentCtx();
   await exigerGestionDevis(ctx, "modifier l'émetteur du devis");
-  await mettreAJourEntreprise(ctx, data);
+  // L'IBAN demande une identité récente, réclamée par l'écriture elle-même :
+  // le refus se rend en valeur, sans quoi l'écran ne verrait qu'un identifiant
+  // d'erreur opaque (`AGENTS.md`, une exception d'action n'arrive jamais).
+  try {
+    await mettreAJourEntreprise(ctx, data);
+    return { ok: true };
+  } catch (erreur) {
+    if (erreur instanceof PreuveRecenteExigeeError) return { ok: false, raison: erreur.message, preuveExigee: true };
+    throw erreur;
+  }
 }
 
 export async function majClientDuDevisAction(

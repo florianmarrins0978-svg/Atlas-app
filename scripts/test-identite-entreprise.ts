@@ -22,7 +22,7 @@ import type { TraceDocument } from "../src/server/pdf/document-commun";
 import { pool } from "../src/server/db/client";
 import * as entreprisesRepo from "../src/server/repositories/entreprises";
 import { composerFacturePdf } from "../src/server/pdf/facture-pdf";
-import { nettoyerBase } from "./_test-db";
+import { nettoyerBase, prouverIdentite } from "./_test-db";
 
 let passed = 0;
 let failed = 0;
@@ -70,7 +70,9 @@ async function main() {
     { nom: "Identite B" },
     { email: "b@identite.test", nom: "Patron B" }
   );
-  const ctxA = { utilisateurId: userA, entrepriseId: entA.id };
+  // Le patron A vient de prouver son identité : le titulaire du compte, écrit
+  // plus bas avec les champs neufs, la demande (`ARCHITECTURE.md` §500).
+  const ctxA = { utilisateurId: userA, entrepriseId: entA.id, sessionId: await prouverIdentite(userA) };
   const ctxB = { utilisateurId: userB, entrepriseId: entB.id };
 
   // ── Le défaut ne change rien au comportement d'avant ───────────────────

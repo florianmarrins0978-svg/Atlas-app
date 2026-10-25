@@ -1,5 +1,7 @@
 import { Client } from "pg";
 import { garderNettoyage } from "../src/lib/garde-seed";
+import { hash as bcrypt } from "bcryptjs";
+import { poserPreuveParMotDePasse } from "../src/server/preuve-recente";
 
 // Nettoyage de la base pour les suites de tests.
 //
@@ -76,3 +78,31 @@ export async function nettoyerBase() {
     await client.end();
   }
 }
+
+/**
+ * Une identité récemment prouvée, comme le patron qui vient de taper son mot de
+ * passe : rend l'identifiant de session à mettre dans le contexte.
+ *
+ * **Pour les suites dont l'IBAN n'est que le décor** (audit du 25 octobre 2026,
+ * R1) : changer les coordonnées bancaires demande désormais une preuve, quelle
+ * que soit la porte. La preuve passe par le vrai chemin (mot de passe vérifié
+ * DANS la base), jamais par une ligne écrite à la main qui ne prouverait rien
+ * du moteur. Le condensat se pose sous le propriétaire : `atlas_app` n'y a
+ * aucun droit, et c'est voulu (migration 0064).
+ */
+export async function prouverIdentite(utilisateurId: string): Promise<string> {
+  const motDePasse = `preuve-${utilisateurId}`;
+  const client = new Client({ connectionString: process.env.DATABASE_ADMIN_URL ?? process.env.DATABASE_URL });
+  await client.connect();
+  try {
+    await client.query("UPDATE users SET password_hash = $1 WHERE id = $2", [await bcrypt(motDePasse, 4), utilisateurId]);
+  } finally {
+    await client.end();
+  }
+  const sessionId = `session-prouvee-${utilisateurId}`;
+  if (!(await poserPreuveParMotDePasse(utilisateurId, sessionId, motDePasse))) {
+    throw new Error("prouverIdentite : la base a refusé la preuve, le montage ne vaut rien");
+  }
+  return sessionId;
+}
+

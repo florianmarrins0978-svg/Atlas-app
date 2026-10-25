@@ -2,9 +2,7 @@
 
 import { getCurrentCtx } from "@/server/session-ctx";
 import { exigerProprietaire } from "@/server/autorisation";
-import { exigerPreuveRecente, PreuveRecenteExigeeError } from "@/server/preuve-recente";
-import { GESTES_SENSIBLES } from "@/lib/preuve-recente";
-import { coordonneesBancairesChangent } from "@/server/repositories/entreprises";
+import { PreuveRecenteExigeeError } from "@/server/preuve-recente";
 import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
 
 /**
@@ -75,39 +73,16 @@ export async function majIdentiteAction(data: {
     return { ok: false, raison: "Le nom de l'entreprise ne peut pas être vide." };
   }
 
-  /**
-   * **UNE PREUVE RÉCENTE — mais SEULEMENT pour les coordonnées bancaires.**
-   *
-   * C'est là que l'argent des clients arrive : changer l'IBAN sans bruit détourne
-   * un virement, et le patron ne s'en aperçoit qu'à la fin du mois. Ce champ-là
-   * mérite qu'on redemande qui vous êtes.
-   *
-   * **Le reste de cet écran ne le mérite pas**, et l'exiger partout serait une
-   * mauvaise protection : corriger un numéro de téléphone n'engage rien, et
-   * réclamer un mot de passe pour cela apprend à le taper sans lire — ce qui
-   * affaiblit la garde le jour où elle compte vraiment.
-   *
-   * Comparé à ce qui est EN BASE, jamais à ce que l'écran renvoie : réenvoyer le
-   * même IBAN ne demande rien, le changer demande la preuve.
-   */
-  const toucheAuBancaire =
-    (data.iban !== undefined || data.titulaireCompte !== undefined) &&
-    (await coordonneesBancairesChangent(ctx, data));
-  if (toucheAuBancaire) {
-    try {
-      await exigerPreuveRecente(ctx, GESTES_SENSIBLES.coordonneesBancaires);
-    } catch (erreur) {
-      if (erreur instanceof PreuveRecenteExigeeError) {
-        return { ok: false, raison: erreur.message, preuveExigee: true };
-      }
-      throw erreur;
-    }
-  }
-
+  // **Les coordonnées bancaires demandent une identité récente** : c'est
+  // l'écriture elle-même qui la réclame (`mettreAJourEntreprise`), quelle que
+  // soit la porte. Cet écran ne fait que transmettre la demande.
   try {
     await mettreAJourEntreprise(ctx, data);
     return { ok: true };
   } catch (erreur) {
+    if (erreur instanceof PreuveRecenteExigeeError) {
+      return { ok: false, raison: erreur.message, preuveExigee: true };
+    }
     // Journalisé AVANT de rendre : sans cela le défaut serait muet, et c'est le
     // piège que `AGENTS.md` nomme — « devant un défaut muet, la première
     // livraison n'est pas un correctif, c'est de rendre le défaut bavard ».

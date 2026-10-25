@@ -25,7 +25,7 @@ import {
 import { withEntreprise } from "../src/server/db/with-entreprise";
 import { factures } from "../src/server/db/schema";
 import { eq } from "drizzle-orm";
-import { nettoyerBase } from "./_test-db";
+import { nettoyerBase, prouverIdentite } from "./_test-db";
 import { sql } from "drizzle-orm";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -90,14 +90,16 @@ async function refusDe(f: () => Promise<unknown>): Promise<string | null> {
 }
 
 const MAINTENANT = new Date("2026-09-04T09:00:00Z");
-type Ctx = { utilisateurId: string; entrepriseId: string };
+type Ctx = { utilisateurId: string; entrepriseId: string; sessionId: string };
 
 async function contexte(suffixe: string): Promise<Ctx> {
   const { entreprise, utilisateurId } = await entreprisesRepo.creerEntreprise(
     { nom: "Atelier Reprise" },
     { email: `reprise-${suffixe}-${Date.now()}@t.test` }
   );
-  return { utilisateurId, entrepriseId: entreprise.id };
+  // Plusieurs cas changent l'IBAN : comme le patron, on a prouvé son identité
+  // (`ARCHITECTURE.md` §500).
+  return { utilisateurId, entrepriseId: entreprise.id, sessionId: await prouverIdentite(utilisateurId) };
 }
 
 /** Un chantier dont le devis v1 est parti chez le client. */

@@ -24,6 +24,7 @@ import { eq } from "drizzle-orm";
 import * as entreprisesRepo from "../src/server/repositories/entreprises";
 import { poserPreuveParMotDePasse, effacerPreuves } from "../src/server/preuve-recente";
 import { majIdentiteAction } from "../src/app/reglages/identite/actions";
+import { majEmetteurAction } from "../src/app/chantiers/[id]/devis-complet/actions";
 import { retirerCleAction } from "../src/app/reglages/connexion/actions";
 import { deconnecterPartoutAction } from "../src/app/reglages/connexion/actions";
 
@@ -188,6 +189,48 @@ async function main() {
     await effacerPreuves(utilisateurId);
     const r = await majIdentiteAction({ titulaireCompte: "Quelqu'un d'autre" });
     assert.equal(r.ok, false, "le titulaire du compte a changé sans preuve");
+  });
+
+  // **L'IBAN s'écrit aussi depuis l'écran du devis** (audit du 25 octobre
+  // 2026, R1). La garde vivait dans l'action de Réglages : le champ IBAN du
+  // devis écrivait la même colonne sans rien demander, et le rôle commercial y
+  // a accès. Elle vit désormais là où la colonne s'écrit.
+  await essai("PAR L'ÉCRAN DU DEVIS : l'IBAN sans preuve est refusé, et rien ne bouge", async () => {
+    await poserPreuve(utilisateurId, SESSION);
+    await majIdentiteAction({ iban: ibanDeDepart, titulaireCompte: "" });
+    await effacerPreuves(utilisateurId);
+    const r = await majEmetteurAction({ iban: "FR1420041010050500013M02606" });
+    assert.equal(await ibanEnBase(), ibanDeDepart, "L'IBAN A ÉTÉ CHANGÉ PAR LE DEVIS SANS PREUVE");
+    assert.equal(r.ok, false, "le devis a accepté un IBAN sans preuve");
+    assert.equal((r as { preuveExigee?: boolean }).preuveExigee, true, "le refus ne demande pas l'identité");
+  });
+
+  await essai("PAR L'ÉCRAN DU DEVIS : avec la preuve, l'IBAN change", async () => {
+    await poserPreuve(utilisateurId, SESSION);
+    const r = await majEmetteurAction({ iban: "FR1420041010050500013M02606" });
+    assert.equal(r.ok, true, `refusé alors que la preuve est là : ${JSON.stringify(r)}`);
+    assert.equal(await ibanEnBase(), "FR1420041010050500013M02606");
+  });
+
+  await essai("PAR L'ÉCRAN DU DEVIS : le reste de l'émetteur ne demande rien", async () => {
+    await effacerPreuves(utilisateurId);
+    const r = await majEmetteurAction({ telephone: "06 11 22 33 44" });
+    assert.equal(r.ok, true, `un champ ordinaire du devis réclame une preuve : ${JSON.stringify(r)}`);
+  });
+
+  await essai("AU NIVEAU DU DÉPÔT : aucune porte future n'écrit l'IBAN sans preuve", async () => {
+    // La prochaine action qui appellera `mettreAJourEntreprise` n'aura rien à
+    // se rappeler : c'est l'écriture elle-même qui refuse.
+    await effacerPreuves(utilisateurId);
+    const avant = await ibanEnBase();
+    await assert.rejects(
+      entreprisesRepo.mettreAJourEntreprise(
+        { utilisateurId, entrepriseId: entreprise.id, sessionId: SESSION } as Parameters<typeof entreprisesRepo.mettreAJourEntreprise>[0],
+        { iban: "FR7630004000031234567890143" }
+      ),
+      /identité|preuve|mot de passe/i
+    );
+    assert.equal(await ibanEnBase(), avant, "L'IBAN A ÉTÉ ÉCRIT PAR LE DÉPÔT SANS PREUVE");
   });
 
   // ─── 2. Les clés d'appareil ───────────────────────────────────────────────

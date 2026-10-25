@@ -10,6 +10,11 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## L'IBAN DEMANDE LE MOT DE PASSE PAR TOUTES LES PORTES (25 octobre 2026)
+
+La preuve d'identité des coordonnées bancaires vit dans `mettreAJourEntreprise` (`src/server/repositories/entreprises.ts`), plus dans une action. **Le piège :** une action qui appelle `mettreAJourEntreprise` avec un IBAN doit rendre `PreuveRecenteExigeeError` en valeur (`preuveExigee`), et son écran ouvrir `DemanderPreuve`. `ARCHITECTURE.md` §500. L'audit en cours est décrit dans `docs/audit-2026-10-etape-2.md`.
+
+---
 ## LES DÉPENDANCES SUIVENT LES AVIS DE SÉCURITÉ (25 octobre 2026)
 
 Next.js 16.4.2, React 19.2.9, zod 4.6.7, Sentry 10.76.2. **Le piège :** ne pas prendre la version sortie la veille. Dix jours de recul au moins, parce que les paquets piégés de 2026 sont retirés en quelques jours. `npm audit --omit=dev` doit rendre au plus les trois avis faibles de SimpleWebAuthn, expliqués dans `ARCHITECTURE.md` §499.

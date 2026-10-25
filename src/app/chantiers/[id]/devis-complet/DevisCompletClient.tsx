@@ -63,6 +63,7 @@ import BoutonAssistant from "@/components/atlas/BoutonAssistant";
 import FlecheRetour from "@/components/atlas/FlecheRetour";
 import { coordonneesDepuisLeDevis } from "@/lib/retour-du-devis";
 import BottomSheet from "@/components/atlas/BottomSheet";
+import DemanderPreuve from "@/components/atlas/DemanderPreuve";
 import { useAppuiLong } from "@/components/atlas/useAppuiLong";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import EnvoiAuClient from "../export/EnvoiAuClient";
@@ -243,6 +244,10 @@ export default function DevisCompletClient(props: Props) {
   const fige = props.statut === "envoye";
   const router = useRouter();
   const [sousTraitanceEnCours, setSousTraitanceEnCours] = useState(false);
+  /** L'IBAN refusé faute d'identité récente, à réécrire une fois prouvée. */
+  const [ibanAProuver, setIbanAProuver] = useState<{ motif: string; iban: string } | null>(null);
+  /** Le dernier IBAN que le serveur a accepté : abandonner la preuve y revient. */
+  const [ibanEnregistre, setIbanEnregistre] = useState(props.emetteur.iban);
   const [refusSousTraitance, setRefusSousTraitance] = useState<string | null>(null);
   // Les taux viennent d'être réécrits côté serveur : la page se relit, et la
   // clé de l'écran (`page.tsx`) le fait repartir des lignes réelles plutôt que
@@ -1827,7 +1832,31 @@ export default function DevisCompletClient(props: Props) {
           placeholder="IBAN : FR76 …"
           aria="IBAN"
           onChange={(v) => setEmetteur({ ...emetteur, iban: v })}
-          onFini={(duChamp) => majEmetteurAction({ iban: duChamp })}
+          onFini={async (duChamp) => {
+            // Le refus vient du SERVEUR, qui compare à ce qui est en base : cet
+            // écran ne décide pas quand l'identité se redemande.
+            const r = await majEmetteurAction({ iban: duChamp });
+            if (r.ok) setIbanEnregistre(duChamp);
+            else if (r.preuveExigee) setIbanAProuver({ motif: r.raison, iban: duChamp });
+          }}
+        />
+        {/* La même fenêtre que Réglages, Identité : prouver, puis réécrire. */}
+        <DemanderPreuve
+          ouvert={ibanAProuver !== null}
+          motif={ibanAProuver?.motif ?? ""}
+          onAbandon={() => {
+            setIbanAProuver(null);
+            setEmetteur({ ...emetteur, iban: ibanEnregistre });
+          }}
+          onProuve={() => {
+            const iban = ibanAProuver?.iban;
+            setIbanAProuver(null);
+            if (iban !== undefined) {
+              void majEmetteurAction({ iban }).then((r) => {
+                if (r.ok) setIbanEnregistre(iban);
+              });
+            }
+          }}
         />
       </section>
 
