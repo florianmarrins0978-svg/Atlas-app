@@ -58,8 +58,21 @@
 .add-total .add-montant { font-size: 40px; letter-spacing: -0.02em; }
 
 .gestes-achat { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
-.gestes-achat .bouton { min-height: 60px; flex-direction: column; gap: 4px; font-size: 15px; }
-.gestes-achat .ico { color: var(--atlas-rust); }
+/* Sa retouche du 25 octobre au soir : « remets la forme des boutons
+   d'aujourd'hui, et une couleur différente pour les deux ». La forme est celle
+   d'AchatsTva.tsx (rounded-full, l'icône sur le mot) ; les couleurs sont deux
+   tons de carte de la charte, qui suivent les huit chartes, sombres comprises.
+   Le couple se choisit au dessus du téléphone. */
+.gestes-achat .bouton { min-height: 64px; padding: 12px 8px; flex-direction: column; gap: 6px; font-size: 15px;
+                        border-radius: 999px; }
+.gestes-achat .achat-scan { background: var(--achat-scan-fond); color: var(--achat-scan-texte); }
+.gestes-achat .achat-main { background: var(--achat-main-fond); color: var(--achat-main-texte); }
+.ecran { --achat-scan-fond: var(--atlas-carteBleuFond); --achat-scan-texte: var(--atlas-carteBleuTexte);
+         --achat-main-fond: var(--atlas-carteAmbreFond); --achat-main-texte: var(--atlas-carteAmbreTexte); }
+.ecran[data-etat="vert-bleu"] { --achat-scan-fond: var(--atlas-carteVertFond); --achat-scan-texte: var(--atlas-carteVertTexte);
+                                --achat-main-fond: var(--atlas-carteBleuFond); --achat-main-texte: var(--atlas-carteBleuTexte); }
+.ecran[data-etat="ambre-vert"] { --achat-scan-fond: var(--atlas-carteAmbreFond); --achat-scan-texte: var(--atlas-carteAmbreTexte);
+                                 --achat-main-fond: var(--atlas-carteVertFond); --achat-main-texte: var(--atlas-carteVertTexte); }
 
 .section-titre { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 36px 0 12px; }
 .section-titre h2 { margin: 0; font: 400 22px/1.2 var(--serif); }
@@ -70,12 +83,12 @@
 .fa-droite { text-align: right; }
 .fa-montant { font: 400 19px/1.2 var(--serif); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
 .fa-petit { display: block; font-size: 13.5px; color: var(--atlas-inkSoft); }
-.fa-sur { display: block; margin-top: 2px; font-size: 13.5px; font-weight: 600; color: var(--atlas-or); }
+.fa-sur { display: block; margin-top: 2px; font-size: 13.5px; font-weight: 600; color: var(--atlas-or); white-space: nowrap; }
 .fa-trace b { color: var(--atlas-ink); }
 .fa-paye { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px; margin-top: 14px; }
 .fa-paye span { font-size: 14.5px; font-weight: 600; color: var(--atlas-inkSoft); }
 .fa-paye select { appearance: none; min-height: 48px; padding: 0 14px; }
-.bouton-recu { margin-top: 10px; color: var(--atlas-rust); box-shadow: inset 0 0 0 1.5px var(--atlas-rust); }
+.bouton-recu { margin-top: 10px; }
 .fa-partie { display: block; margin: 4px auto 0; }
 .acompte { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 12px; padding-top: 10px;
            box-shadow: inset 0 1px 0 var(--atlas-line); font-size: 14px; color: var(--atlas-inkSoft); }
@@ -254,6 +267,11 @@
 
     <div data-vue-panneau="propose">
       <p class="pl-legende">Proposé</p>
+      <div class="pl-etats">
+        <button type="button" data-etat="bleu-ambre" aria-pressed="true">Bleu et ambre</button>
+        <button type="button" data-etat="vert-bleu">Vert et bleu</button>
+        <button type="button" data-etat="ambre-vert">Ambre et vert</button>
+      </div>
       <div class="cadre">
         <div class="ecran avec-barre">
           <div class="defile">
@@ -303,8 +321,8 @@
             </div>
 
             <div class="gestes-achat">
-              <button class="bouton bouton-creux" type="button" data-ouvre="feuille-achat" data-achat="scan"><svg class="ico" aria-hidden="true"><use href="#i-scanner"/></svg>Scanner un ticket</button>
-              <button class="bouton bouton-creux" type="button" data-ouvre="feuille-achat" data-achat="main"><svg class="ico" aria-hidden="true"><use href="#i-crayon"/></svg>Écrire à la main</button>
+              <button class="bouton achat-scan" type="button" data-ouvre="feuille-achat" data-achat="scan"><svg class="ico" aria-hidden="true"><use href="#i-scanner"/></svg>Scanner un ticket</button>
+              <button class="bouton achat-main" type="button" data-ouvre="feuille-achat" data-achat="main"><svg class="ico" aria-hidden="true"><use href="#i-crayon"/></svg>Écrire à la main</button>
             </div>
 
             <div class="section-titre"><h2>Factures en attente</h2><span id="compte-attente">3 factures</span></div>
@@ -315,7 +333,7 @@
                 <div class="fa-droite"><span class="fa-montant">312,00 €</span></div>
               </div>
               <label class="fa-paye"><span>Payé par</span><select class="champ-saisie"><option>Virement</option><option>Chèque</option><option>Espèces</option><option>Carte</option></select></label>
-              <button class="bouton bouton-creux bouton-recu" type="button" data-recu><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg>J'ai reçu le paiement</button>
+              <button class="bouton bouton-plein bouton-recu" type="button" data-recu><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg>J'ai reçu le paiement</button>
               <button class="bouton-texte fa-partie" type="button" data-partie>J'ai reçu une partie</button>
               <div class="saisie-partie" hidden>
                 <div class="deux-colonnes">
@@ -334,7 +352,7 @@
               </div>
               <div class="acompte"><span>Acompte payé le 09/10/2026 par virement</span><b>300,00 €</b><button class="retirer-acompte" type="button" aria-label="Retirer cet acompte"><svg class="ico ico-p" aria-hidden="true"><use href="#i-croix"/></svg></button></div>
               <label class="fa-paye"><span>Payé par</span><select class="champ-saisie"><option>Virement</option><option>Chèque</option><option>Espèces</option><option>Carte</option></select></label>
-              <button class="bouton bouton-creux bouton-recu" type="button" data-recu><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg>J'ai reçu le paiement</button>
+              <button class="bouton bouton-plein bouton-recu" type="button" data-recu><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg>J'ai reçu le paiement</button>
               <button class="bouton-texte fa-partie" type="button" data-partie>J'ai reçu une partie</button>
               <div class="saisie-partie" hidden>
                 <div class="deux-colonnes">
@@ -352,7 +370,7 @@
                 <div class="fa-droite"><span class="fa-montant">540,00 €</span></div>
               </div>
               <label class="fa-paye"><span>Payé par</span><select class="champ-saisie"><option>Virement</option><option>Chèque</option><option>Espèces</option><option>Carte</option></select></label>
-              <button class="bouton bouton-creux bouton-recu" type="button" data-recu><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg>J'ai reçu le paiement</button>
+              <button class="bouton bouton-plein bouton-recu" type="button" data-recu><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg>J'ai reçu le paiement</button>
               <button class="bouton-texte fa-partie" type="button" data-partie>J'ai reçu une partie</button>
               <div class="saisie-partie" hidden>
                 <div class="deux-colonnes">
@@ -732,7 +750,8 @@
     <ul>
       <li>« Ma TVA » s'écrit en clair sous le mois, et les mois de la frise se lisent en entier.</li>
       <li>TVA collectée et TVA déductible sont soulignés d'or : on voit qu'ils s'ouvrent. Toucher un chiffre le copie, et l'écran dit « Copié ».</li>
-      <li>Les trois boutons verts pleins à la suite deviennent des boutons cernés de vert. Les mots restent : J'ai reçu le paiement.</li>
+      <li>J'ai reçu le paiement reste vert plein, la couleur de l'appli.</li>
+      <li>Scanner un ticket et Écrire à la main gardent leur forme d'aujourd'hui, et chacun sa couleur. Trois couples à essayer au dessus du téléphone.</li>
       <li>Le doré est celui de l'appli, partout.</li>
       <li>Après un paiement, « M. Bernard, 312,00 € est rentrée au relevé. » : une virgule à la place du point.</li>
     </ul>
