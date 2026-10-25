@@ -152,6 +152,24 @@
         ],
         "createdAt": "2026-10-25T22:11:43.190Z",
         "reason": "Claude: seule occurrence relevée le 25 octobre, le crème sur le vert des boutons #7d9a6d choisi par le patron le 3 septembre (src/lib/chartes.ts) ; le cran plus sombre lui est proposé sur appli/soignee/fondations.html, à trancher par lui (TODO.md)"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/comptable-dossier.html"
+        ],
+        "createdAt": "2026-10-25T23:00:17.976Z",
+        "reason": "Claude: fond des planches soignées (kit.css), commun à toutes ; le document lui-même est blanc ou crème d'Origine comme le vrai"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/comptable-verification.html"
+        ],
+        "createdAt": "2026-10-25T23:00:17.992Z",
+        "reason": "Claude: fond des planches soignées (kit.css), commun à toutes ; le document lui-même est blanc ou crème d'Origine comme le vrai"
       }
     ]
   }
