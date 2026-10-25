@@ -168,10 +168,16 @@
 .feuille-preuve { margin: 14px 0 12px; text-align: center; font-size: 15px; color: var(--atlas-inkSoft); }
 
 /* ─── Mes dossiers ───────────────────────────────────────────────────────── */
-.annees { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
-.annees button { min-height: 44px; padding: 0 18px; border-radius: 22px; font: 400 18px/1 var(--serif);
-                 box-shadow: inset 0 0 0 1px var(--atlas-line); color: var(--atlas-inkSoft); }
-.annees button[aria-pressed="true"] { color: var(--atlas-ink); box-shadow: inset 0 0 0 2px var(--atlas-ink); }
+/* L'année se change comme le mois de Terminés : deux flèches d'or autour d'elle (sa demande du 25 octobre). */
+.annee-choix { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; padding: 6px;
+               border-radius: var(--r-plage); background: var(--atlas-card); }
+.annee-fleche { width: 56px; height: 56px; flex: none; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-or); }
+.annee-fleche .ico { width: 26px; height: 26px; stroke-width: 2; }
+.annee-fleche[disabled] { color: color-mix(in srgb, var(--atlas-or) 28%, transparent); cursor: default; }
+.annee-nom { font: 400 32px/1 var(--serif); font-variant-numeric: lining-nums; }
+.annee-resume { margin: 10px 0 0; text-align: center; font-size: 15px; color: var(--atlas-inkSoft); }
+.dossier .bilan { margin-top: 12px; }
+.dossier .ajout-bilan { margin-top: 10px; }
 .dossier { padding: 18px 0 20px; }
 .dossier + .dossier { box-shadow: inset 0 1px 0 var(--atlas-line); }
 .dossier-nom { margin: 0; font: 400 20px/1.25 var(--serif); }
@@ -284,7 +290,7 @@
       <li>Sous chaque mois, ce qui sort en rouge et ce qui entre en vert. La barre de couleurs est plus épaisse.</li>
       <li>Arrêter mon dossier vient après les mois, et dit d'avance pourquoi il attend.</li>
       <li>Le relevé : les totaux en grand, un point de couleur par ligne, un signe par pièce.</li>
-      <li>Mes dossiers : l'année d'un appui, trois vrais boutons, et le lien du comptable sans sa longue adresse.</li>
+      <li>Mes dossiers : l'année se change avec deux flèches, comme le mois de Terminés, et le bilan du comptable est juste sous le nom du dossier. Trois vrais boutons, et le lien du comptable sans sa longue adresse.</li>
     </ul>
     <h2>Ce qui ne bouge pas</h2>
     <ul class="garde">
@@ -301,7 +307,7 @@
 
 <footer class="pl-pied">
   <a href="termines.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Terminés</a>
-  <a href="index.html">Sommaire<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+  <a href="comptable-dossier.html">Le dossier PDF<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
 </footer>
 
 <script src="kit.js"></script>
@@ -670,13 +676,34 @@
         '<div class="carte-gestes"><button class="bouton bouton-creux" type="button" data-note="Le PDF du dossier se range sur le téléphone.">' + ico("telecharger") + "Télécharger</button>" +
         '<button class="bouton-texte" type="button" data-geste="compris" data-id="' + d.id + '">J’ai compris</button></div></div>';
     });
-    h += '<h2 class="rubrique">Rangés</h2><div class="annees" role="group" aria-label="Année">' + annees.map(function (a) {
-      return '<button type="button" data-geste="annee" data-a="' + a + '" aria-pressed="' + (etat.annee === a) + '">' + a + "</button>";
-    }).join("") + "</div>";
+    annees.sort(function (a, b) { return b - a; });
+    var rang = annees.indexOf(etat.annee);
+    var plusVieille = annees[rang + 1], plusRecente = annees[rang - 1];
+    var deLAnnee = etat.dossiers.filter(function (d) { return d.annee === etat.annee; });
+    var bilans = deLAnnee.filter(function (d) { return d.bilan; }).length;
+    h += '<h2 class="rubrique">Rangés</h2><div class="annee-choix">' +
+      '<button class="annee-fleche" type="button" data-geste="annee" data-a="' + (plusVieille || "") + '" aria-label="Année d’avant"' + (plusVieille ? "" : " disabled") + ">" + ico("retour") + "</button>" +
+      '<span class="annee-nom">' + etat.annee + "</span>" +
+      '<button class="annee-fleche" type="button" data-geste="annee" data-a="' + (plusRecente || "") + '" aria-label="Année d’après"' + (plusRecente ? "" : " disabled") + ">" + ico("suivant") + "</button></div>" +
+      '<p class="annee-resume">' + (deLAnnee.length > 1 ? deLAnnee.length + " dossiers" : "1 dossier") + ", " +
+      (bilans ? (bilans > 1 ? bilans + " bilans du comptable" : "son bilan du comptable") : "aucun bilan du comptable") + "</p>";
     etat.dossiers.filter(function (d) { return d.annee === etat.annee; }).forEach(function (d) {
       h += '<section class="dossier"><h3 class="dossier-nom">' + d.nom + "</h3>" +
-        (d.efface ? '<p class="dossier-detail alerte">Sera effacé le ' + d.efface + "</p>" : '<p class="dossier-detail">' + d.detail + "</p>") +
-        (d.verif ? '<span class="etat" data-ton="vert">' + d.verif + "</span>" : "") +
+        (d.efface ? '<p class="dossier-detail alerte">Sera effacé le ' + d.efface + "</p>" : '<p class="dossier-detail">' + d.detail + "</p>");
+      if (d.bilan) {
+        h += '<div class="bilan"><span class="bilan-corps"><b>Bilan du comptable</b><span>' + d.bilan + "</span></span>" +
+          '<button class="bouton-texte" type="button" data-note="Le bilan s’ouvre dans la visionneuse d’Atlas.">Ouvrir</button>' +
+          '<button class="bouton-texte doux" type="button" data-geste="retirer-bilan" data-id="' + d.id + '">Retirer</button></div>';
+      }
+      if (etat.ajout[d.id]) {
+        h += '<ul class="pieces ajout-bilan"><li><button class="piece touche" type="button" data-note="L’appareil photo s’ouvre, page après page.">' +
+          '<span class="ligne-icone or" style="width:40px;height:40px">' + ico("photo") + '</span><span class="piece-corps"><span class="piece-nom">Photographier les pages</span><span class="piece-sous">Le bilan reçu sur papier</span></span></button></li>' +
+          '<li><button class="piece touche" type="button" data-note="Les fichiers du téléphone s’ouvrent.">' +
+          '<span class="ligne-icone or" style="width:40px;height:40px">' + ico("document") + '</span><span class="piece-corps"><span class="piece-nom">Choisir le fichier</span><span class="piece-sous">Le PDF reçu par e-mail</span></span></button></li></ul>';
+      } else {
+        h += '<div class="ajout-bilan"><button class="bouton bouton-creux" type="button" data-geste="ajout-bilan" data-id="' + d.id + '">' + ico("plus") + "Ajouter le bilan du comptable</button></div>";
+      }
+      h += (d.verif ? '<span class="etat" data-ton="vert">' + d.verif + "</span>" : "") +
         '<div class="dossier-gestes"><button type="button" class="touche" data-note="Le PDF s’ouvre dans la visionneuse d’Atlas.">' + ico("document") + "Ouvrir</button>" +
         '<button type="button" class="touche" data-note="Le PDF se range sur le téléphone.">' + ico("telecharger") + "Télécharger</button>" +
         '<button type="button" class="touche" data-geste="envoyer" data-id="' + d.id + '">' + ico("envoyer") + "Envoyer au comptable</button></div>";
@@ -700,19 +727,6 @@
             '<button class="bouton-texte" type="button" data-geste="ouvrir-rejet">Ticket perdu</button></div>';
         }
         h += "</div>";
-      }
-      if (d.bilan) {
-        h += '<div class="bilan"><span class="bilan-corps"><b>Bilan du comptable</b><span>' + d.bilan + "</span></span>" +
-          '<button class="bouton-texte" type="button" data-note="Le bilan s’ouvre dans la visionneuse d’Atlas.">Ouvrir</button>' +
-          '<button class="bouton-texte doux" type="button" data-geste="retirer-bilan" data-id="' + d.id + '">Retirer</button></div>';
-      }
-      if (etat.ajout[d.id]) {
-        h += '<ul class="pieces ajout-bilan"><li><button class="piece touche" type="button" data-note="L’appareil photo s’ouvre, page après page.">' +
-          '<span class="ligne-icone or" style="width:40px;height:40px">' + ico("photo") + '</span><span class="piece-corps"><span class="piece-nom">Photographier les pages</span><span class="piece-sous">Le bilan reçu sur papier</span></span></button></li>' +
-          '<li><button class="piece touche" type="button" data-note="Les fichiers du téléphone s’ouvrent.">' +
-          '<span class="ligne-icone or" style="width:40px;height:40px">' + ico("document") + '</span><span class="piece-corps"><span class="piece-nom">Choisir le fichier</span><span class="piece-sous">Le PDF reçu par e-mail</span></span></button></li></ul>';
-      } else {
-        h += '<div class="ajout-bilan"><button class="bouton bouton-creux" type="button" data-geste="ajout-bilan" data-id="' + d.id + '">' + ico("plus") + "Ajouter le bilan du comptable</button></div>";
       }
       h += "</section>";
     });

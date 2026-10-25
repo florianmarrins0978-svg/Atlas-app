@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le dossier du comptable, soigné</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  LE DOSSIER JUSTIFIÉ, le PDF que le patron envoie à son comptable
+  (src/server/pdf/dossier-comptable-pdf.ts).
+
+  Sa demande du 25 octobre : « tu n'as pas fait la correction de la planche
+  que j'envoie au comptable pour qu'il vérifie si je n'ai pas fait d'erreur ».
+
+  À CÔTÉ, LE VRAI PDF : celui que l'appli a rangé sur le poste le 25 octobre,
+  jeu d'essai dans atlas_test, 26 pages ; sept d'entre elles en image
+  (aujourdhui/comptable-pdf-<page>.jpg).
+
+  CE QUI EST GARDÉ, ses choix du 24 octobre : côte à côte (la ligne de banque
+  à gauche, sa pièce réécrite à droite), le total de la pièce surligné bleu
+  gris, « Voir la photo » vers les vraies photos tout au bout et « Retour à la
+  ligne » au retour, les sorties en rouge et les entrées en vert.
+
+  CE QUI CHANGE, et pourquoi :
+    la date d'une ligne sans pièce est barrée par le trait d'au-dessus (les
+      virements, le ticket perdu) : un défaut de tracé, corrigé ;
+    chaque pièce réservait une case haute de 130 points, même pour un ticket
+      de trois lignes : janvier prenait deux pages pour huit lignes, la
+      seconde avec une seule. La case prend la hauteur de la pièce, et chaque
+      mois commence sa page : 18 pages au lieu de 26 ;
+    la couverture et « En un coup d'œil » tiennent sur une seule page, qui dit
+      d'abord ce que le comptable vient vérifier : tout est justifié ;
+    les colonnes portent un titre (Date, Ligne de banque, Montant,
+      Justificatif) ; la couleur de la catégorie est un point devant son nom,
+      plus une barre de la hauteur de la case ;
+    le libellé de la banque s'écrit en lettres droites ; seule la pièce
+      recopiée garde l'écriture de la caisse ;
+    une facture dit « Voir la facture », plus « Voir la photo ».
+
+  Un document part en papier : il garde les couleurs d'Origine quelle que soit
+  la charte essayée (PRODUCT.md), comme le vrai PDF.
+*/
+
+/* Un PDF garde les couleurs d'Origine : le bouton des chartes n'a rien à montrer ici. */
+.pl-charte-bouton, .pl-chartes { display: none !important; }
+.pl-scene { grid-template-columns: minmax(0, 1fr) !important; }
+.pl-notes { margin: 8px auto 0 !important; }
+.feuilles { display: grid; gap: 22px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) {
+  .feuilles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .feuilles [data-vue-panneau] { display: block !important; }
+}
+.pl-etats { grid-column: 1 / -1; }
+.capture-quoi { margin: 0 0 10px; text-align: center; font-size: 14px; color: #4a4a44; }
+.capture-quoi b { color: #1c1c1a; }
+
+/* Le bureau du comptable : les pages posées l'une sous l'autre, à faire défiler. */
+.bureau { height: min(78vh, 980px); overflow-y: auto; overscroll-behavior: contain; padding: 14px; border-radius: 14px;
+          background: #d9d5cc; }
+.bureau img { display: block; width: 100%; height: auto; box-shadow: 0 6px 18px -6px rgba(28,28,26,0.4); }
+.bureau img + img, .bureau .a4 + .a4 { margin-top: 14px; }
+@media (max-width: 480px) {
+  .pl-scene { padding: 0 var(--gouttiere) !important; }
+  .bureau { height: 72svh; padding: 10px; }
+}
+
+/* ─── La page A4 proposée : 595 × 842 points, mise à l'échelle de la colonne ── */
+.a4 { position: relative; width: 595px; height: 842px; overflow: hidden; background: #fff; color: #1c1c1a;
+      font: 400 9.5px/1.4 var(--sans); box-shadow: 0 6px 18px -6px rgba(28,28,26,0.4); zoom: var(--echelle, 1); }
+.a4-dedans { position: absolute; inset: 40px 42px 46px; display: flex; flex-direction: column; }
+.a4-pied { position: absolute; left: 42px; right: 42px; bottom: 22px; display: flex; justify-content: space-between;
+           font-size: 7.5px; color: #6b6b5c; }
+.a4 .serif { font-family: var(--serif); }
+.a4 .s { color: #b3392b; } .a4 .e { color: #1f7a45; }
+.a4 .chiffres { font-variant-numeric: tabular-nums lining-nums; }
+.a4-tete { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding-bottom: 8px;
+           border-bottom: 1px solid #1c1c1a; }
+.a4-tete h2 { margin: 0; font: 400 22px/1.1 var(--serif); }
+.a4-tete .bilan-du-mois { display: flex; gap: 14px; font-size: 10px; }
+.a4-tete .bilan-du-mois b { font-weight: 600; }
+.etiquette-doc { font-size: 7.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #6b6b5c; }
+
+/* La couverture qui résume */
+.couv-titre { margin: 0; font: 400 34px/1.05 var(--serif); }
+.couv-periode { margin: 6px 0 0; font: 400 15px/1.3 var(--serif); color: #4a4a44; }
+.couv-qui { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 14px; margin-top: 18px; padding-top: 12px; border-top: 1px solid #e4e0d6; }
+.couv-qui p { margin: 3px 0 0; font-size: 9.5px; line-height: 1.45; }
+.atteste { display: flex; align-items: center; gap: 10px; margin-top: 18px; padding: 11px 14px; border-radius: 3px; background: #e1e8da;
+           font-size: 11px; font-weight: 600; color: #2f4a26; }
+.atteste svg { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.quatre { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 14px; border-top: 1px solid #e4e0d6; border-bottom: 1px solid #e4e0d6; }
+.quatre div { padding: 9px 10px 10px 0; }
+.quatre div + div { padding-left: 12px; border-left: 1px solid #e4e0d6; }
+.quatre b { display: block; margin-top: 3px; font: 400 16px/1.1 var(--serif); }
+.contient { margin: 10px 0 0; font-size: 9.5px; color: #4a4a44; }
+.deux-tables { display: grid; grid-template-columns: 1fr 1.25fr; gap: 22px; margin-top: 16px; }
+.tdoc { width: 100%; border-collapse: collapse; font-size: 9.5px; }
+.tdoc th { padding: 0 0 4px; text-align: left; border-bottom: 1px solid #1c1c1a; }
+.tdoc td { padding: 4.5px 0; border-bottom: 1px solid #efece5; }
+.tdoc .d { text-align: right; }
+.tdoc i { display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 50%; vertical-align: 1px; }
+.tdoc a { color: #8b6835; text-decoration: none; font-weight: 600; }
+.part { display: block; height: 3px; margin-top: 3px; border-radius: 2px; }
+
+/* Un mois : des colonnes titrées, une case à la hauteur de sa pièce */
+.cols, .rang-doc { display: grid; grid-template-columns: 50px minmax(0, 1fr) 72px 186px; gap: 0 12px; }
+.cols { margin-top: 12px; padding-bottom: 4px; border-bottom: 1px solid #1c1c1a; }
+.cols .d { text-align: right; }
+.rang-doc { padding: 8px 0; border-bottom: 1px solid #efece5; align-items: start; }
+.rang-doc .jour { font-size: 9px; color: #4a4a44; padding-top: 1px; }
+.rang-doc .lib { font-size: 9.5px; font-weight: 600; letter-spacing: 0.01em; }
+.rang-doc .cat { display: flex; align-items: center; gap: 5px; margin-top: 2px; font-size: 8.5px; color: #4a4a44; }
+.rang-doc .cat i { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+.rang-doc .mt { text-align: right; font: 400 11.5px/1.2 var(--serif); font-variant-numeric: tabular-nums lining-nums; }
+.piece-doc { border: 1px solid #e4e0d6; border-radius: 2px; padding: 6px 8px; background: #faf9f5; }
+.piece-doc .mono { font: 400 7.6px/1.42 ui-monospace, "Courier New", monospace; }
+.piece-doc .r { display: flex; justify-content: space-between; gap: 6px; padding: 0 2px; }
+.piece-doc .tot { background: #ebf0f4; font-weight: 700; border-radius: 1px; }
+.piece-doc .nom { font: 400 10.5px/1.2 var(--serif); }
+.piece-doc .sous { margin-top: 1px; font-size: 8px; color: #6b6b5c; }
+.piece-doc .tt { display: flex; justify-content: space-between; margin-top: 5px; padding: 2px 4px; background: #ebf0f4; font-weight: 700; font-size: 8.5px; }
+.voir { display: inline-flex; align-items: center; gap: 4px; margin-top: 3px; font-size: 8px; font-weight: 600; color: #8b6835; }
+.voir svg { width: 9px; height: 9px; fill: none; stroke: currentColor; stroke-width: 2; }
+.simple { font-size: 9px; color: #4a4a44; padding-top: 1px; }
+.simple b { color: #1c1c1a; font-weight: 600; }
+.perdu-doc { font-size: 9px; font-style: italic; color: #9c3b2e; padding-top: 1px; }
+.suite { margin-top: 6px; font-size: 8.5px; color: #6b6b5c; text-align: right; }
+
+/* Les photos tout au bout */
+.photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px 12px; margin-top: 14px; }
+.leg { font-size: 8.5px; line-height: 1.35; }
+.leg b { display: block; font-weight: 600; }
+.photo-doc .cliche { height: 228px; margin-top: 5px; display: grid; place-items: center; background: #d8d4cb; }
+.ticket-mini { width: 112px; padding: 9px 8px; background: #fbfaf6; font: 6.4px/1.45 ui-monospace, "Courier New", monospace; color: #222;
+               box-shadow: 0 1px 4px rgba(0,0,0,0.2); transform: rotate(-1.4deg); }
+.ticket-mini b { display: block; text-align: center; font-size: 7.5px; }
+.ticket-mini .r { display: flex; justify-content: space-between; }
+.ticket-mini hr { border: 0; border-top: 1px dashed #999; margin: 3px 0; }
+.retour-doc { display: block; margin-top: 4px; padding: 3px 6px; border: 1px solid #e4e0d6; font-size: 8px; font-weight: 600; color: #8b6835; }
+.facture-pleine { flex: 1; margin-top: 10px; padding: 34px 40px; background: #f3f1eb; font: 10px/1.6 Georgia, serif; color: #222; }
+.facture-pleine h3 { margin: 0 0 6px; font-size: 16px; font-weight: 400; }
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="termines-comptable.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Pour mon comptable</a>
+  <h1 class="pl-titre">Le dossier du comptable</h1>
+  <p class="pl-verdict">Le PDF que vous lui envoyez. <b>Même côte à côte, même bleu gris sur le total</b>, la date qui n'est plus barrée, une case à la hauteur de sa pièce : <b>18 pages au lieu de 26</b>. À droite, le vrai PDF rangé par l'appli.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="feuilles">
+    <div class="pl-etats" id="pages">
+      <button type="button" data-p="couverture" aria-pressed="true">La première page</button>
+      <button type="button" data-p="mois">Un mois : octobre</button>
+      <button type="button" data-p="perdus">Les tickets perdus</button>
+      <button type="button" data-p="photos">Les photos</button>
+    </div>
+
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <p class="capture-quoi" id="quoi-propose"></p>
+      <div class="bureau" id="bureau-propose"></div>
+    </div>
+
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <p class="capture-quoi" id="quoi-vrai"></p>
+      <div class="bureau" id="bureau-vrai"></div>
+    </div>
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>La date d'un virement ou d'un ticket perdu n'est plus barrée par le trait du dessus.</li>
+      <li>La case de la pièce prend sa hauteur : plus de grands blancs. Chaque mois commence sa page, et le dossier passe de 26 à 18 pages.</li>
+      <li>La première page dit tout de suite que chaque ligne est justifiée, puis les chiffres, les catégories et les mois, chacun avec sa page.</li>
+      <li>Des titres de colonnes : Date, Ligne de banque, Montant, Justificatif.</li>
+      <li>La couleur de la catégorie est un point devant son nom.</li>
+      <li>Sous une facture, Voir la facture ; sous un ticket, Voir la photo. Chaque photo du bout porte sa ligne de banque.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>La ligne de banque à gauche, sa pièce réécrite à droite, le total surligné bleu gris.</li>
+      <li>Les photos tout au bout, six tickets par page, une facture par page, et Retour à la ligne.</li>
+      <li>Les sorties en rouge, les entrées en vert, les tickets perdus sur leur page.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>Un mois commence toujours sa page, même court : plus facile à retrouver, au prix de quelques blancs en bas de page.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="termines-comptable.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Pour mon comptable</a>
+  <a href="comptable-verification.html">La page du comptable<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var CAT = { carburant: ["Carburant", "#3d6e9e"], repas: ["Repas", "#477c36"], materiel: ["Matériel", "#9c6123"], hotel: ["Hôtel", "#7a5aa6"],
+              transport: ["Train, taxi", "#277a7a"], virement: ["Virement envoyé", "#a3506b"], autre: ["Autre", "#736f64"], recu: ["Virement reçu", "#2f3b2f"] };
+  var TOTAL_PAGES = 18;
+  var COCHE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  var PHOTO = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="6.5" width="17" height="13" rx="2"/><circle cx="12" cy="13" r="3.5"/></svg>';
+
+  function page(n, contenu) {
+    return '<section class="a4"><div class="a4-dedans">' + contenu + '</div><div class="a4-pied"><span>Dossier justifié, Atelier Démo, du 1er janvier au 25 octobre 2026</span><span>Page ' + n + " sur " + TOTAL_PAGES + "</span></div></section>";
+  }
+
+  /* ═══ La première page : ce qu'il vient vérifier, puis les chiffres ═════ */
+  var MOIS = [["Janvier 2026", "2 099,06", "1 814,22", 2], ["Février 2026", "1 726,10", "1 126,78", 3], ["Mars 2026", "1 172,88", "3 269,27", 4],
+              ["Avril 2026", "2 579,30", "1 624,02", 5], ["Mai 2026", "1 008,40", "1 351,82", 6], ["Juin 2026", "1 710,16", "1 414,90", 7],
+              ["Juillet 2026", "2 494,93", "1 649,42", 8], ["Août 2026", "1 269,67", "2 212,99", 9], ["Septembre 2026", "2 620,90", "2 792,85", 10],
+              ["Octobre 2026", "5 268,99", "2 940,00", 11]];
+  var CATS = [["carburant", 998.99], ["repas", 484.55], ["materiel", 2871.54], ["hotel", 296.84], ["transport", 311.30], ["virement", 16225.85], ["autre", 761.32]];
+  function fr(n) { return n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+
+  var couverture = page(1,
+    '<p class="etiquette-doc">Pour mon comptable</p>' +
+    '<h2 class="couv-titre" style="margin-top:8px">Dossier justifié</h2>' +
+    '<p class="couv-periode">Du 1er janvier 2026 au 25 octobre 2026</p>' +
+    '<div class="couv-qui"><div><span class="etiquette-doc">Entreprise</span><p><b>Atelier Démo</b><br>10 rue des Artisans, Nantes<br>SIRET 123 456 789 00012</p></div>' +
+    '<div><span class="etiquette-doc">Relevé lu</span><p>Crédit Agricole,<br>par Enable Banking</p></div>' +
+    '<div><span class="etiquette-doc">Rangé</span><p>le 25 octobre 2026,<br>gardé jusqu’au 25 octobre 2036</p></div></div>' +
+    '<div class="atteste">' + COCHE + "Chaque ligne de la banque a son justificatif, ou sa mention de ticket perdu.</div>" +
+    '<div class="quatre chiffres"><div><span class="etiquette-doc">Sorties</span><b class="s">−21 950,39 €</b></div><div><span class="etiquette-doc">Entrées</span><b class="e">+20 196,27 €</b></div>' +
+    '<div><span class="etiquette-doc">Lignes de banque</span><b>78</b></div><div><span class="etiquette-doc">Tickets perdus</span><b>3</b></div></div>' +
+    '<p class="contient">46 tickets, 5 factures de fournisseur, 10 virements reçus et leur facture, 3 tickets perdus déclarés (page 12).</p>' +
+    '<div class="deux-tables"><table class="tdoc chiffres"><thead><tr><th class="etiquette-doc">Catégorie</th><th class="etiquette-doc d">Sorties</th></tr></thead><tbody>' +
+    CATS.map(function (c) {
+      return '<tr><td><i style="background:' + CAT[c[0]][1] + '"></i>' + (c[0] === "virement" ? "Virements envoyés" : CAT[c[0]][0]) +
+        '<span class="part" style="width:' + Math.max(2, c[1] / 16225.85 * 100).toFixed(1) + "%;background:" + CAT[c[0]][1] + '"></span></td><td class="d s">−' + fr(c[1]) + " €</td></tr>";
+    }).join("") + "</tbody></table>" +
+    '<table class="tdoc chiffres"><thead><tr><th class="etiquette-doc">Mois</th><th class="etiquette-doc d">Sorties</th><th class="etiquette-doc d">Entrées</th><th class="etiquette-doc d">Page</th></tr></thead><tbody>' +
+    MOIS.map(function (m) { return "<tr><td>" + m[0] + '</td><td class="d s">−' + m[1] + ' €</td><td class="d e">+' + m[2] + ' €</td><td class="d"><a href="#">' + m[3] + "</a></td></tr>"; }).join("") +
+    "</tbody></table></div>");
+
+  /* ═══ Octobre : douze lignes, la plus récente en haut, comme le vrai ════ */
+  function recopie(l) {
+    return '<div class="piece-doc"><div class="mono">' + l.map(function (r) {
+      return '<div class="r' + (r[2] ? " tot" : "") + '"><span>' + r[0] + "</span><span>" + (r[1] || "") + "</span></div>";
+    }).join("") + "</div></div>";
+  }
+  function resume(nom, jour, ttc, tva) {
+    return '<div class="piece-doc"><div class="mono" style="text-align:center"><b>' + nom + "</b><br>" + jour + "</div>" +
+      '<div class="mono"><div class="r tot" style="margin-top:3px"><span>TOTAL TTC</span><span>' + ttc + ' €</span></div><div class="r"><span>dont TVA</span><span>' + tva + " €</span></div></div></div>";
+  }
+  function facture(soc, nom, ttc) {
+    return '<div class="piece-doc"><div class="nom">' + soc + '</div><div class="sous">' + nom + '</div><div class="tt"><span>Total TTC</span><span>' + ttc + " €</span></div></div>";
+  }
+  var voirPhoto = '<span class="voir">' + PHOTO + "Voir la photo</span>";
+  var voirFacture = '<span class="voir">' + PHOTO + "Voir la facture</span>";
+  var LIGNES = [
+    ["24 oct.", "VIR SARL MOTOCULTURE OUEST", "virement", "−1 450,00", facture("Motoculture Ouest", "Facture débroussailleuse", "1 450,00") + voirFacture],
+    ["23 oct.", "CB LEROY MERLIN", "materiel", "−48,90", resume("LEROY MERLIN", "23 octobre 2026", "48,90", "8,15")],
+    ["22 oct.", "CB TOTAL ENERGIES CHOLET", "carburant", "−67,89", resume("TOTAL ENERGIES", "21 octobre 2026", "67,89", "11,31")],
+    ["21 oct.", "CB IBIS BUDGET NANTES", "hotel", "−89,00", recopie([["IBIS BUDGET"], ["ANGERS"], ["NUITEE 1 PERS.", "79,00"], ["PETIT DEJEUNER", "10,00"], ["TOTAL TTC", "89,00", 1], ["DONT TVA 20%", "14,83"], ["CB SANS CONTACT"]]) + voirPhoto],
+    ["20 oct.", "VIR SCI DU PARC", "recu", "+2 940,00", '<div class="simple"><b>Facture F-2026-010</b>, émise par Atlas</div>'],
+    ["16 oct.", "PRLV URSSAF PAYS DE LA LOIRE", "virement", "−1 120,00", '<div class="simple">Justifié par sa nature : <b>impôts, cotisations</b></div>'],
+    ["15 oct.", "CB RESTAURANT LE RELAIS", "repas", "−56,00", recopie([["LE RELAIS"], ["ANGERS"], ["MENU OUVRIER x2", "48,00"], ["CAFE x2", "4,00"], ["EAU 50CL x2", "4,00"], ["TOTAL TTC", "56,00", 1], ["DONT TVA 10%", "5,09"], ["CB SANS CONTACT"]]) + voirPhoto],
+    ["13 oct.", "CB POINT P ANGERS", "materiel", "−412,30", recopie([["POINT P"], ["ANGERS"], ["BORDURE BETON 100X20", "186,00"], ["SAC CIMENT 35KG x4", "38,40"], ["GRAVIER 0/20 BIG BAG", "187,90"], ["TOTAL TTC", "412,30", 1], ["DONT TVA 20%", "68,72"], ["CB SANS CONTACT"]]) + voirPhoto],
+    ["9 oct.", "CB LA MIE CALINE", "autre", "−18,50", '<div class="perdu-doc">Ticket perdu, mention validée. TVA non déduite.</div>'],
+    ["6 oct.", "CB TOTAL ENERGIES ANGERS", "carburant", "−72,40", recopie([["TOTAL ENERGIES"], ["ANGERS"], ["GAZOLE B7"], ["41,02 L x 1,765", "72,40"], ["TOTAL TTC", "72,40", 1], ["DONT TVA 20%", "12,07"], ["CB SANS CONTACT"]]) + voirPhoto],
+    ["5 oct.", "PRLV SEPA SCI LES HAUTS", "virement", "−650,00", '<div class="simple">Justifié par sa nature : <b>un loyer</b></div>'],
+    ["2 oct.", "VIR PEPINIERES RIVIERE", "virement", "−1 284,00", facture("Pépinières Rivière", "Facture plants d’automne", "1 284,00") + voirFacture]
+  ];
+  function rang(l) {
+    return '<div class="rang-doc"><span class="jour">' + l[0] + '</span><div><div class="lib">' + l[1] + '</div><div class="cat"><i style="background:' + CAT[l[2]][1] + '"></i>' + CAT[l[2]][0] + "</div></div>" +
+      '<div class="mt ' + (l[3].charAt(0) === "+" ? "e" : "s") + '">' + l[3] + " €</div><div>" + l[4] + "</div></div>";
+  }
+  var cols = '<div class="cols etiquette-doc"><span>Date</span><span>Ligne de banque</span><span class="d">Montant</span><span>Justificatif</span></div>';
+  var teteOctobre = '<div class="a4-tete"><h2>Octobre 2026</h2><div class="bilan-du-mois chiffres"><span>Sorties <b class="s">−5 268,99 €</b></span><span>Entrées <b class="e">+2 940,00 €</b></span><span>12 lignes</span></div></div>';
+  /* Le mois commence sa page ; ce qui ne tient pas passe à la suivante, et les tickets perdus suivent le dernier mois. */
+  var page12 = page(12, '<div class="a4-tete"><h2>Octobre 2026, suite</h2><div class="bilan-du-mois"><span>5 lignes</span></div></div>' + cols + LIGNES.slice(7).map(rang).join("") +
+      '<div style="margin-top:26px" class="a4-tete"><h2>Les tickets perdus</h2><div class="bilan-du-mois"><span>3 lignes</span></div></div>' + PERDUS());
+  var octobre = page(11, teteOctobre + cols + LIGNES.slice(0, 7).map(rang).join("") + '<p class="suite">Suite d’octobre page 12</p>') + page12;
+
+  function PERDUS() {
+    return '<table class="tdoc chiffres" style="margin-top:10px"><tbody>' +
+      [["23 mars 2026", "CB LA POSTE", "94,55"], ["23 juillet 2026", "CB LEROY MERLIN", "245,50"], ["9 octobre 2026", "CB LA MIE CALINE", "18,50"]].map(function (p) {
+        return '<tr><td style="width:90px">' + p[0] + "</td><td>" + p[1] + '</td><td class="d s">−' + p[2] + " €</td></tr>";
+      }).join("") + '<tr><td></td><td style="font-weight:600">Total</td><td class="d s" style="font-weight:600">−358,55 €</td></tr></tbody></table>' +
+      '<p class="contient" style="margin-top:10px">Ces dépenses restent dans le relevé, avec leur mention. Leur TVA n’a pas été déduite, faute de ticket.</p>';
+  }
+
+  /* ═══ Les photos, tout au bout ═════════════════════════════════════════ */
+  function ticketMini(nom, jour, ttc) {
+    return '<div class="ticket-mini"><b>' + nom + '</b><div style="text-align:center">Angers</div><hr><div>' + jour + ' 10:42</div><hr>' +
+      '<div class="r" style="font-weight:700"><span>TOTAL TTC</span><span>' + ttc + ' EUR</span></div><div>CB SANS CONTACT</div></div>';
+  }
+  var TICKETS = [["6 octobre 2026", "CB TOTAL ENERGIES ANGERS", "−72,40", "TOTAL ENERGIES", "05/10/2026", "72,40"],
+                 ["13 octobre 2026", "CB POINT P ANGERS", "−412,30", "POINT P", "13/10/2026", "412,30"],
+                 ["15 octobre 2026", "CB RESTAURANT LE RELAIS", "−56,00", "LE RELAIS", "15/10/2026", "56,00"],
+                 ["21 octobre 2026", "CB IBIS BUDGET NANTES", "−89,00", "IBIS BUDGET", "21/10/2026", "89,00"]];
+  var photos = page(13, '<div class="a4-tete"><h2>Les photos des justificatifs</h2><div class="bilan-du-mois"><span>4 tickets</span></div></div>' +
+    '<div class="photos">' + TICKETS.map(function (t) {
+      return '<div class="photo-doc"><div class="leg chiffres"><b>' + t[1] + "</b>" + t[0] + ', <span class="s">' + t[2] + " €</span></div>" +
+        '<div class="cliche">' + ticketMini(t[3], t[4], t[5]) + '</div><span class="retour-doc">Retour à la ligne du ' + t[0].replace(" 2026", "") + "</span></div>";
+    }).join("") + "</div>") +
+    page(18, '<div class="a4-tete"><h2>Les photos des justificatifs</h2><div class="bilan-du-mois"><span>Facture</span></div></div>' +
+      '<div class="leg chiffres" style="margin-top:12px;font-size:9.5px"><b>VIR SARL MOTOCULTURE OUEST</b>24 octobre 2026, <span class="s">−1 450,00 €</span></div>' +
+      '<div class="facture-pleine"><h3>Motoculture Ouest</h3><p>Facture du 20/10/2026<br>Facture débroussailleuse<br>Client : Atelier Démo</p>' +
+      '<p style="display:flex;justify-content:space-between;border-top:1px solid #999;padding-top:8px;margin-top:30px"><span>Total TTC</span><span>1 450,00 €</span></p></div>' +
+      '<span class="retour-doc" style="margin-top:8px">Retour à la ligne du 24 octobre</span>');
+
+  /* ═══ Ce que montre chaque côté ═════════════════════════════════════════ */
+  var VUES = {
+    couverture: { propose: couverture, quoi: "La page 1, qui remplace les pages 1 et 2", vrai: [1, 2], quoiVrai: "Les pages 1 et 2" },
+    mois: { propose: octobre, quoi: "Octobre, pages 11 et 12 ; les tickets perdus suivent", vrai: [18, 19], quoiVrai: "Octobre, pages 18 et 19" },
+    perdus: { propose: page12, quoi: "Les tickets perdus, sous la fin d’octobre, avec leur total", vrai: [20], quoiVrai: "La page 20, seule" },
+    photos: { propose: photos, quoi: "Les photos, la ligne de banque sur chacune", vrai: [21, 22], quoiVrai: "Les pages 21 et 22" }
+  };
+
+  var proposeEl = document.getElementById("bureau-propose");
+  var vraiEl = document.getElementById("bureau-vrai");
+  function echelle() {
+    var l = proposeEl.clientWidth - 28;
+    if (window.matchMedia("(max-width: 480px)").matches) l = proposeEl.clientWidth - 20;
+    proposeEl.style.setProperty("--echelle", Math.max(0.3, Math.min(1.4, l / 595)).toFixed(4));
+  }
+  function montrer(cle) {
+    var v = VUES[cle];
+    proposeEl.innerHTML = v.propose;
+    vraiEl.innerHTML = v.vrai.map(function (n) { return '<img src="aujourdhui/comptable-pdf-' + n + '.jpg" alt="La page ' + n + ' du vrai dossier">'; }).join("");
+    document.getElementById("quoi-propose").innerHTML = "<b>" + v.quoi + "</b>";
+    document.getElementById("quoi-vrai").innerHTML = "Le vrai PDF : <b>" + v.quoiVrai + "</b>";
+    proposeEl.scrollTop = 0; vraiEl.scrollTop = 0;
+    document.querySelectorAll("#pages button").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-p") === cle ? "true" : "false"); });
+    echelle();
+  }
+  document.querySelectorAll("#pages button").forEach(function (b) { b.addEventListener("click", function () { montrer(b.getAttribute("data-p")); }); });
+  window.addEventListener("resize", echelle);
+  /* L'onglet Aujourd'hui révèle sa colonne : l'échelle se recalcule. */
+  document.addEventListener("click", function (e) { if (e.target.closest(".pl-onglets")) setTimeout(echelle, 30); });
+  montrer("couverture");
+})();
+</script>
+</body>
+</html>

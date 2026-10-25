@@ -179,6 +179,24 @@
         ],
         "createdAt": "2026-10-25T22:29:57.296Z",
         "reason": "agent: fond de planche et crème de l'écran viennent de la charte Origine du produit (PRODUCT.md, palette relevée sur Arborea), recopiée par kit.js"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/comptable-dossier.html"
+        ],
+        "createdAt": "2026-10-25T23:00:17.976Z",
+        "reason": "Claude: fond des planches soignées (kit.css), commun à toutes ; le document lui-même est blanc ou crème d'Origine comme le vrai"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/comptable-verification.html"
+        ],
+        "createdAt": "2026-10-25T23:00:17.992Z",
+        "reason": "Claude: fond des planches soignées (kit.css), commun à toutes ; le document lui-même est blanc ou crème d'Origine comme le vrai"
       }
     ]
   }

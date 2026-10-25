@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La page du comptable, soignée</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  LA PAGE DU COMPTABLE, celle qu'ouvre le lien privé : il valide ou rejette
+  chaque ligne (src/app/comptable/[jeton]/page.tsx, Verification.tsx).
+
+  Sa demande du 25 octobre : « tu n'as pas fait la page avec le lien où il
+  peut valider ou non les tickets ».
+
+  À CÔTÉ, LA VRAIE PAGE : ouverte par le lien que l'appli a donné le
+  25 octobre sur le poste (jeu d'essai, dossier du 1er janvier au
+  25 octobre 2026), sur un ordinateur de 1280 points et sur un téléphone
+  (aujourdhui/comptable-verif-*.jpg).
+
+  CE QUI EST GARDÉ, ses choix du 24 octobre : le montant à gauche et la pièce
+  qui s'ouvre d'un appui (à droite sur un ordinateur, en plein écran sur un
+  téléphone) ; la pièce reconstituée d'abord, la photo ensuite ; Valider,
+  Rejeter et Suivant de la même largeur ; « Vous l'aviez validée » et la
+  raison demandée quand il change d'avis.
+
+  CE QUI CHANGE, et pourquoi :
+    les colonnes ne s'alignaient pas : chaque ligne était sa propre grille,
+      et un montant tombait plus à gauche quand le nom de la pièce était plus
+      long. Pour un comptable qui lit des colonnes de chiffres, c'est le
+      défaut principal. Un seul tableau, des montants alignés à droite ;
+    sur un téléphone la date n'apparaissait pas (cachée sous 768 points),
+      et Valider tombait sous l'écran une fois la pièce ouverte : la date
+      revient, les trois boutons restent collés en bas ;
+    sur un ordinateur, la case de la raison du rejet poussait « Rejeter »
+      sous l'écran : même remède ;
+    la photo d'origine se cachait derrière deux points à glisser ; deux mots
+      la nomment (« Reconstitué », « Photo d'origine ») ;
+    chaque mois dit où il en est (« 0 sur 12 ») et le haut compte le dossier
+      entier ;
+    les ronds ✓ et ✕ étaient des caractères : des icônes dessinées, et la
+      ligne prend la couleur de son verdict.
+
+  La page part chez le comptable : elle garde les couleurs d'Origine quelle
+  que soit la charte du patron (data-sans-charte), comme aujourd'hui.
+*/
+
+/* Ce document part chez le comptable : la charte essayée ne s'y applique pas, son bouton n'a rien à montrer. */
+.pl-charte-bouton, .pl-chartes { display: none !important; }
+.pl-scene { grid-template-columns: minmax(0, 1fr) !important; }
+.pl-notes { margin: 8px auto 0 !important; }
+.feuilles { display: grid; gap: 22px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) {
+  .feuilles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .feuilles [data-vue-panneau] { display: block !important; }
+}
+.reglages-planche { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.reglages-planche .pl-etats { margin: 0; }
+.appareil { display: inline-flex; padding: 3px; gap: 2px; border-radius: 12px; background: rgba(28,28,26,0.07); }
+.appareil button { min-height: 40px; padding: 0 16px; border-radius: 9px; font-size: 15px; font-weight: 600; color: #4a4a44; }
+.appareil button[aria-pressed="true"] { background: #faf9f5; color: #1c1c1a; box-shadow: 0 1px 2px rgba(28,28,26,0.10); }
+.capture-quoi { margin: 0 0 10px; text-align: center; font-size: 14px; color: #4a4a44; }
+.capture-quoi b { color: #1c1c1a; }
+
+/* L'écran d'ordinateur : 1120 × 700, mis à l'échelle de la colonne. */
+.ordi { position: relative; width: 100%; aspect-ratio: 1120 / 700; overflow: hidden; border-radius: 10px; background: #f5f3ee;
+        box-shadow: 0 0 0 8px #1c1c1a, 0 18px 40px -12px rgba(28,28,26,0.45); margin: 8px 0 14px; }
+.ordi-scene { position: absolute; left: 0; top: 0; width: 1120px; height: 700px; zoom: var(--z, 0.5); }
+.ordi-vrai { position: absolute; inset: 0; overflow-y: auto; }
+.ordi-vrai img { width: 100%; height: auto; display: block; }
+@media (max-width: 480px) {
+  .pl-scene { padding: 0 var(--gouttiere) !important; }
+  .cadre { width: 100%; height: 664px; border-radius: 26px; box-shadow: 0 0 0 8px #1c1c1a; margin: 8px 0 14px; }
+}
+
+/* ═══ La page proposée ════════════════════════════════════════════════════ */
+.v { display: flex; height: 100%; }
+.v-main { flex: 1; min-width: 0; overflow-y: auto; scrollbar-width: thin; padding: 26px 32px 40px; }
+.v-tete { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+.v-titre { margin: 0; font: 400 28px/1.1 var(--serif); }
+.v-envoye { font-size: 14px; color: var(--atlas-inkSoft); white-space: nowrap; }
+.v-qui { margin: 6px 0 0; font-size: 15px; color: var(--atlas-inkSoft); }
+.v-avance { margin-top: 18px; }
+.v-avance-mots { display: flex; justify-content: space-between; gap: 12px; font-size: 14.5px; color: var(--atlas-inkSoft); }
+.v-avance-mots b { color: var(--atlas-ink); font-weight: 600; }
+.v-avance-mots .rej { color: var(--atlas-montantSortie); font-weight: 600; }
+.v-jauge { display: flex; height: 8px; margin-top: 8px; border-radius: 4px; overflow: hidden; background: var(--atlas-lineSoft); }
+.v-jauge i { display: block; height: 100%; transition: width 300ms var(--courbe); }
+.v-mois { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 18px 0 0; padding-bottom: 2px; }
+.v-mois::-webkit-scrollbar { display: none; }
+.v-mois button { flex: none; display: inline-flex; flex-direction: column; align-items: flex-start; gap: 1px; min-height: 52px; padding: 7px 14px;
+                 border-radius: 10px; font-size: 14.5px; font-weight: 600; color: var(--atlas-inkSoft); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.v-mois button span { font-size: 13px; font-weight: 400; font-variant-numeric: tabular-nums; }
+.v-mois button[aria-pressed="true"] { color: var(--atlas-ink); box-shadow: inset 0 0 0 2px var(--atlas-ink); }
+.v-mois button.fini span { color: var(--atlas-montantEntree); font-weight: 600; }
+
+.v-table { width: 100%; margin-top: 16px; border-collapse: collapse; }
+.v-table th { padding: 0 8px 8px; text-align: left; font-size: 13px; font-weight: 600; color: var(--atlas-inkSoft); border-bottom: 1px solid var(--atlas-ink); }
+.v-table td { padding: 10px 8px; vertical-align: middle; border-bottom: 1px solid var(--atlas-line); }
+.v-table th:first-child, .v-table td:first-child { padding-left: 4px; }
+.v-table .d { text-align: right; }
+.v-table .c { text-align: center; }
+.v-table tr.valide td { background: color-mix(in srgb, var(--atlas-montantEntree) 7%, transparent); }
+.v-table tr.rejete td { background: color-mix(in srgb, var(--atlas-montantSortie) 8%, transparent); }
+.v-table tr.ouverte td { background: var(--atlas-rustTint); }
+.v-jour { font-size: 14px; color: var(--atlas-inkSoft); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.v-lib { display: block; font-size: 14.5px; font-weight: 600; overflow-wrap: anywhere; }
+.v-cat { display: flex; align-items: center; gap: 6px; margin-top: 2px; font-size: 13px; color: var(--atlas-inkSoft); }
+.v-cat i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.v-note { display: block; margin-top: 4px; font-size: 13.5px; color: var(--atlas-montantSortie); }
+.v-mt { font: 400 16.5px/1.2 var(--serif); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
+.v-piece { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 13px 0 10px; border-radius: 20px; font-size: 14px;
+           font-weight: 500; white-space: nowrap; box-shadow: inset 0 0 0 1px var(--atlas-line); background: var(--atlas-card); }
+.v-piece .ico { width: 18px; height: 18px; color: var(--atlas-or); }
+.v-piece.perdu { color: var(--atlas-alerte); font-style: italic; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--atlas-alerte) 45%, transparent); }
+.v-piece.perdu .ico { color: var(--atlas-alerte); }
+.v-ronds { display: inline-flex; gap: 6px; }
+.v-rond { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-inkSoft);
+          box-shadow: inset 0 0 0 1.5px var(--atlas-line); background: var(--atlas-card); }
+.v-rond .ico { width: 20px; height: 20px; stroke-width: 2.2; }
+.v-rond.oui[aria-pressed="true"] { background: var(--atlas-montantEntree); color: var(--atlas-card); box-shadow: none; }
+.v-rond.non[aria-pressed="true"] { background: var(--atlas-montantSortie); color: var(--atlas-card); box-shadow: none; }
+
+/* Le panneau de la pièce : les trois boutons ne quittent jamais l'écran. */
+.v-panneau { width: 400px; flex: none; display: flex; flex-direction: column; background: var(--atlas-card); box-shadow: inset 1px 0 0 var(--atlas-line); }
+.v-panneau-haut { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 0 10px; }
+.v-fermer { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 8px; font-size: 15px; font-weight: 600; color: var(--atlas-inkSoft); }
+.v-fermer .ico { width: 20px; height: 20px; }
+.v-rang { font-size: 13.5px; color: var(--atlas-inkSoft); }
+.v-panneau-defile { flex: 1; overflow-y: auto; padding: 8px 20px 18px; }
+.v-ligne-carte { padding: 14px 16px; border-radius: 10px; background: var(--atlas-cream); }
+.v-ligne-carte .v-lib { font-size: 15px; }
+.v-ligne-carte .grand { display: block; margin-top: 4px; font: 400 26px/1.1 var(--serif); font-variant-numeric: tabular-nums lining-nums; }
+.v-ligne-carte .sous { display: block; margin-top: 4px; font-size: 13.5px; color: var(--atlas-inkSoft); }
+.v-onglets { display: flex; padding: 3px; gap: 3px; margin-top: 14px; border-radius: 10px; background: color-mix(in srgb, var(--atlas-ink) 6%, transparent); }
+.v-onglets button { flex: 1; min-height: 40px; border-radius: 8px; font-size: 14px; font-weight: 600; color: var(--atlas-inkSoft); }
+.v-onglets button[aria-pressed="true"] { background: var(--atlas-card); color: var(--atlas-ink); box-shadow: 0 1px 2px color-mix(in srgb, var(--atlas-ink) 14%, transparent); }
+.v-scene-piece { display: grid; place-items: center; margin-top: 14px; }
+.papier { width: 290px; max-width: 100%; padding: 14px 14px; background: #faf9f5; color: #1c1c1a; box-shadow: 0 8px 22px -8px rgba(28,28,26,0.35);
+          font: 12px/1.5 ui-monospace, "Courier New", monospace; }
+.papier .r { display: flex; justify-content: space-between; gap: 8px; padding: 0 4px; border-radius: 2px; }
+.papier .tot { background: #ebf0f4; font-weight: 700; }
+.papier .nom { font: 400 15px/1.2 var(--serif); }
+.papier .sous { margin: 2px 0 10px; color: #6b6b5c; font-family: var(--sans); font-size: 12.5px; }
+.cliche { width: 100%; padding: 26px 0; display: grid; place-items: center; background: #d8d4cb; border-radius: 6px; }
+.cliche .papier { width: 200px; transform: rotate(-1.5deg); font-size: 11px; box-shadow: 0 2px 8px rgba(0,0,0,0.25); }
+.encart { width: 100%; padding: 14px 16px; border-radius: 10px; font-size: 14.5px; line-height: 1.45; color: var(--atlas-inkSoft);
+          box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
+.encart.pointille { box-shadow: none; border: 1.5px dashed var(--atlas-line); }
+.v-accord { margin: 12px 0 0; font-size: 14.5px; font-weight: 600; }
+.v-accord.oui { color: var(--atlas-montantEntree); } .v-accord.non { color: var(--atlas-montantSortie); }
+.v-panneau-bas { padding: 12px 20px 16px; box-shadow: inset 0 1px 0 var(--atlas-line); background: var(--atlas-card); }
+.v-raison { display: block; margin-bottom: 10px; font-size: 14px; font-weight: 600; color: var(--atlas-inkSoft); }
+.v-raison textarea { display: block; width: 100%; min-height: 76px; margin-top: 6px; padding: 10px 12px; border: 0; border-radius: 8px; resize: none;
+                     font: 400 15px/1.4 var(--sans); color: var(--atlas-ink); background: var(--atlas-cream); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.v-raison textarea:focus { outline: none; box-shadow: inset 0 0 0 2px var(--atlas-ink); }
+.v-trois { display: flex; gap: 8px; }
+.v-trois button { flex: 1 1 0; min-width: 0; min-height: 50px; border-radius: 12px; font-size: 15.5px; font-weight: 600; }
+.v-oui { background: var(--atlas-montantEntree); color: var(--atlas-card); }
+.v-non { background: var(--atlas-montantSortie); color: var(--atlas-card); }
+.v-neutre { color: var(--atlas-ink); box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
+.v-fini { margin: 0 0 10px; padding: 10px 12px; border-radius: 8px; font-size: 14px; background: var(--atlas-carteVertFond); color: var(--atlas-carteVertTexte); }
+.v-fini b { font-weight: 700; }
+
+/* Sur un téléphone : des lignes qui gardent leur date, la pièce en plein écran. */
+.tel .v-main { padding: 18px 18px 30px; }
+.tel .v-titre { font-size: 26px; }
+.tel .v-tete { flex-direction: column; gap: 4px; }
+.tel .v-avance-mots { flex-direction: column; gap: 2px; }
+.tel .v-liste { margin: 14px 0 0; padding: 0; list-style: none; }
+.tel .v-l { padding: 12px 0; border-bottom: 1px solid var(--atlas-line); }
+.tel .v-l.valide { background: color-mix(in srgb, var(--atlas-montantEntree) 7%, transparent); }
+.tel .v-l.rejete { background: color-mix(in srgb, var(--atlas-montantSortie) 8%, transparent); }
+.tel .v-l-haut { display: flex; align-items: baseline; gap: 8px; }
+.tel .v-l-haut .v-jour { flex: none; width: 46px; font-size: 13.5px; }
+.tel .v-l-haut .v-lib { flex: 1; min-width: 0; font-size: 14.5px; }
+.tel .v-l-bas { display: flex; align-items: center; gap: 8px; margin: 8px 0 0 54px; }
+.tel .v-l-bas .v-ronds { margin-left: auto; }
+.tel .v-l .v-cat { margin-left: 54px; }
+.tel .v-l .v-note { margin-left: 54px; }
+.tel .v-panneau { position: absolute; inset: 0; z-index: 10; width: auto; box-shadow: none; }
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="termines-comptable.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Pour mon comptable</a>
+  <h1 class="pl-titre">La page du comptable</h1>
+  <p class="pl-verdict">Celle qu'il ouvre avec le lien pour valider ou rejeter chaque ligne. <b>Des montants en colonne, la date sur le téléphone, Valider toujours à l'écran.</b> À droite, la vraie page ouverte par le vrai lien.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="feuilles">
+    <div class="reglages-planche">
+      <div class="appareil" role="group" aria-label="Appareil">
+        <button type="button" data-mode="ordi" aria-pressed="true">Sur un ordinateur</button>
+        <button type="button" data-mode="tel">Sur un téléphone</button>
+      </div>
+      <div class="pl-etats" id="vues">
+        <button type="button" data-v="liste" aria-pressed="true">La liste</button>
+        <button type="button" data-v="piece">Une pièce ouverte</button>
+        <button type="button" data-v="photo">Sa photo</button>
+        <button type="button" data-v="rejet">Rejeter</button>
+      </div>
+    </div>
+
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <p class="capture-quoi">Validez, rejetez, ouvrez une pièce : la vraie page suit.</p>
+      <div id="scene-propose"></div>
+    </div>
+
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <p class="capture-quoi" id="quoi-vrai"></p>
+      <div id="scene-vrai"></div>
+    </div>
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>Un seul tableau : les montants tombent l'un sous l'autre, alignés à droite. Aujourd'hui, un montant se décale selon le nom de sa pièce.</li>
+      <li>Sur un téléphone, chaque ligne garde sa date, et Valider, Rejeter, Suivant restent collés en bas quand la pièce est ouverte.</li>
+      <li>Sur un ordinateur, Rejeter ne tombe plus sous l'écran quand il écrit sa raison.</li>
+      <li>Reconstitué et Photo d'origine sont écrits, au lieu de deux points à glisser.</li>
+      <li>Chaque mois dit où il en est, et le haut compte tout le dossier.</li>
+      <li>Une ligne validée se teinte de vert, une ligne rejetée de rouge, avec sa raison dessous.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Le montant à gauche, la pièce à droite sur un ordinateur et en plein écran sur un téléphone.</li>
+      <li>La pièce reconstituée d'abord, le total surligné bleu gris, puis la photo.</li>
+      <li>Valider, Rejeter, Suivant de la même largeur ; « Vous l'aviez validée » et la raison demandée quand il change d'avis.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="comptable-dossier.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Le dossier PDF</a>
+  <a href="termines-comptable.html">Pour mon comptable<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* ═══ Octobre, tel que le vrai lien le montre (le jeu d'essai) ══════════ */
+  var CAT = { carburant: ["Carburant", "--atlas-catCarburant"], repas: ["Repas", "--atlas-catRepas"], materiel: ["Matériel", "--atlas-catMateriel"],
+              hotel: ["Hôtel", "--atlas-catHotel"], virement: ["Virement envoyé", "--atlas-catVirement"], autre: ["Autre", "--atlas-catAutre"], recu: ["Virement reçu", "--atlas-catRecu"] };
+  function recopie(nom, corps, ttc, tva) {
+    return [[nom], ["ANGERS"]].concat(corps).concat([["TOTAL TTC", ttc, 1], ["DONT TVA " + tva[0], tva[1]], ["CB SANS CONTACT"]]);
+  }
+  var LIGNES = [
+    { id: 1, jour: "2 oct.", long: "2 octobre 2026", lib: "VIR PEPINIERES RIVIERE", cat: "virement", m: "−1 284,00 €", p: { g: "facture", e: "Facture", soc: "Pépinières Rivière", nom: "Facture plants d’automne", ttc: "1 284,00 €" } },
+    { id: 2, jour: "5 oct.", long: "5 octobre 2026", lib: "PRLV SEPA SCI LES HAUTS", cat: "virement", m: "−650,00 €", p: { g: "motif", e: "Un loyer" } },
+    { id: 3, jour: "6 oct.", long: "6 octobre 2026", lib: "CB TOTAL ENERGIES ANGERS", cat: "carburant", m: "−72,40 €", p: { g: "ticket", e: "Ticket", photo: ["TOTAL ENERGIES", "05/10/2026", "72,40"], lignes: recopie("TOTAL ENERGIES", [["GAZOLE B7"], ["41,02 L x 1,765", "72,40"]], "72,40", ["20%", "12,07"]) } },
+    { id: 4, jour: "9 oct.", long: "9 octobre 2026", lib: "CB LA MIE CALINE", cat: "autre", m: "−18,50 €", p: { g: "perdu", e: "Ticket perdu" } },
+    { id: 5, jour: "13 oct.", long: "13 octobre 2026", lib: "CB POINT P ANGERS", cat: "materiel", m: "−412,30 €", p: { g: "ticket", e: "Ticket", photo: ["POINT P", "13/10/2026", "412,30"], lignes: recopie("POINT P", [["BORDURE BETON 100X20", "186,00"], ["SAC CIMENT 35KG x4", "38,40"], ["GRAVIER 0/20 BIG BAG", "187,90"]], "412,30", ["20%", "68,72"]) } },
+    { id: 6, jour: "15 oct.", long: "15 octobre 2026", lib: "CB RESTAURANT LE RELAIS", cat: "repas", m: "−56,00 €", p: { g: "ticket", e: "Ticket", photo: ["LE RELAIS", "15/10/2026", "56,00"], lignes: recopie("LE RELAIS", [["MENU OUVRIER x2", "48,00"], ["CAFE x2", "4,00"], ["EAU 50CL x2", "4,00"]], "56,00", ["10%", "5,09"]) } },
+    { id: 7, jour: "16 oct.", long: "16 octobre 2026", lib: "PRLV URSSAF PAYS DE LA LOIRE", cat: "virement", m: "−1 120,00 €", p: { g: "motif", e: "Impôts, cotisations" } },
+    { id: 8, jour: "20 oct.", long: "20 octobre 2026", lib: "VIR SCI DU PARC", cat: "recu", m: "+2 940,00 €", entree: true, p: { g: "emise", e: "Facture F-2026-010" } },
+    { id: 9, jour: "21 oct.", long: "21 octobre 2026", lib: "CB IBIS BUDGET NANTES", cat: "hotel", m: "−89,00 €", p: { g: "ticket", e: "Ticket", photo: ["IBIS BUDGET", "21/10/2026", "89,00"], lignes: recopie("IBIS BUDGET", [["NUITEE 1 PERS.", "79,00"], ["PETIT DEJEUNER", "10,00"]], "89,00", ["20%", "14,83"]) } },
+    { id: 10, jour: "22 oct.", long: "22 octobre 2026", lib: "CB TOTAL ENERGIES CHOLET", cat: "carburant", m: "−67,89 €", p: { g: "ticket", e: "Ticket", resume: ["TOTAL ENERGIES", "21 octobre 2026", "67,89 €", "11,31 €"] } },
+    { id: 11, jour: "23 oct.", long: "23 octobre 2026", lib: "CB LEROY MERLIN", cat: "materiel", m: "−48,90 €", p: { g: "ticket", e: "Ticket", resume: ["LEROY MERLIN", "23 octobre 2026", "48,90 €", "8,15 €"] } },
+    { id: 12, jour: "24 oct.", long: "24 octobre 2026", lib: "VIR SARL MOTOCULTURE OUEST", cat: "virement", m: "−1 450,00 €", p: { g: "facture", e: "Facture", soc: "Motoculture Ouest", nom: "Facture débroussailleuse", ttc: "1 450,00 €" } }
+  ];
+  var MOIS = [["Janvier", 8], ["Février", 7], ["Mars", 7], ["Avril", 8], ["Mai", 6], ["Juin", 8], ["Juillet", 8], ["Août", 6], ["Septembre", 8], ["Octobre", 12]];
+
+  var CAPTURES = {
+    "ordi-liste": ["comptable-verif-bureau", "La liste d’octobre"],
+    "ordi-piece": ["comptable-verif-bureau-piece", "CB POINT P ANGERS ouverte"],
+    "ordi-photo": ["comptable-verif-bureau-photo", "La photo, après un glissement"],
+    "ordi-rejet": ["comptable-verif-bureau-rejet", "Rejeter touché : le bouton est sous l’écran"],
+    "tel-liste": ["comptable-verif-tel", "La liste d’octobre, sans les dates"],
+    "tel-piece": ["comptable-verif-tel-piece", "Une pièce ouverte : Valider est sous l’écran"],
+    "tel-photo": ["comptable-verif-tel-piece", "Une pièce ouverte (la photo se trouve en glissant)"],
+    "tel-rejet": ["comptable-verif-tel-piece", "Une pièce ouverte : Rejeter est sous l’écran"]
+  };
+
+  function ico(nom) { return '<svg class="ico" aria-hidden="true"><use href="#i-' + nom + '"/></svg>'; }
+  var ICONE_PIECE = { ticket: "facture", facture: "document", emise: "document", motif: "banque", perdu: "alerte" };
+
+  /* ═══ L'état ════════════════════════════════════════════════════════════ */
+  var etat = { mode: "ordi", ouverte: null, onglet: "reconstitue", rouge: false, verdicts: {}, notes: {}, brouillon: "" };
+
+  function verifiees() {
+    var n = 0, r = 0;
+    LIGNES.forEach(function (l) { if (etat.verdicts[l.id]) { n++; if (etat.verdicts[l.id] === "rejete") r++; } });
+    return { n: n, r: r };
+  }
+  function suivante() {
+    var depuis = etat.ouverte ? LIGNES.findIndex(function (l) { return l.id === etat.ouverte; }) : -1;
+    return LIGNES.filter(function (l, k) { return k > depuis && !etat.verdicts[l.id]; })[0] || null;
+  }
+
+  /* ═══ Les morceaux ══════════════════════════════════════════════════════ */
+  function htmlTete() {
+    var a = verifiees();
+    return '<div class="v-tete"><h1 class="v-titre">Dossier justifié, Atelier Démo</h1><span class="v-envoye">Envoyé le 25 octobre</span></div>' +
+      '<p class="v-qui">Du 1er janvier 2026 au 25 octobre 2026</p>' +
+      '<div class="v-avance"><div class="v-avance-mots"><span><b>' + a.n + " sur 78</b> lignes vérifiées, dont " + a.n + " sur 12 en octobre</span>" +
+      (a.r ? '<span class="rej">' + a.r + (a.r > 1 ? " rejetées" : " rejetée") + "</span>" : "") + "</div>" +
+      '<div class="v-jauge"><i style="width:' + ((a.n - a.r) / 78 * 100) + '%;background:var(--atlas-montantEntree)"></i><i style="width:' + (a.r / 78 * 100) + '%;background:var(--atlas-montantSortie)"></i></div></div>' +
+      '<div class="v-mois" role="group" aria-label="Mois">' + MOIS.map(function (m) {
+        var oct = m[0] === "Octobre", n = oct ? a.n : 0;
+        return '<button type="button" class="' + (oct && n === m[1] ? "fini" : "") + '" aria-pressed="' + oct + '"' + (oct ? "" : ' data-note="Sur la planche, seul octobre est rempli."') + ">" + m[0] + "<span>" + n + " sur " + m[1] + "</span></button>";
+      }).join("") + "</div>";
+  }
+  function htmlPieceBouton(l) {
+    return '<button type="button" class="v-piece' + (l.p.g === "perdu" ? " perdu" : "") + '" data-geste="ouvrir" data-id="' + l.id + '">' + ico(ICONE_PIECE[l.p.g]) + l.p.e + "</button>";
+  }
+  function htmlRonds(l) {
+    var v = etat.verdicts[l.id];
+    return '<span class="v-ronds"><button type="button" class="v-rond oui" aria-label="Valider" aria-pressed="' + (v === "valide") + '" data-geste="rond-oui" data-id="' + l.id + '">' + ico("coche") + "</button>" +
+      '<button type="button" class="v-rond non" aria-label="Rejeter" aria-pressed="' + (v === "rejete") + '" data-geste="rond-non" data-id="' + l.id + '">' + ico("croix") + "</button></span>";
+  }
+  function htmlCat(l) { return '<span class="v-cat"><i style="background:var(' + CAT[l.cat][1] + ')"></i>' + CAT[l.cat][0] + "</span>"; }
+  function htmlNote(l) { return etat.verdicts[l.id] === "rejete" ? '<span class="v-note">Rejetée : ' + (etat.notes[l.id] || "sans raison écrite") + "</span>" : ""; }
+  function classe(l) { return [etat.verdicts[l.id] || "", etat.ouverte === l.id ? "ouverte" : ""].join(" "); }
+
+  function htmlTable() {
+    return '<table class="v-table"><thead><tr><th>Date</th><th>Ligne de banque</th><th class="d">Montant</th><th>Justificatif</th><th class="c">Vérification</th></tr></thead><tbody>' +
+      LIGNES.map(function (l) {
+        return '<tr class="' + classe(l) + '"><td class="v-jour">' + l.jour + '</td><td><span class="v-lib">' + l.lib + "</span>" + htmlCat(l) + htmlNote(l) + "</td>" +
+          '<td class="d v-mt ' + (l.entree ? "entree" : "sortie") + '">' + l.m + "</td><td>" + htmlPieceBouton(l) + '</td><td class="c">' + htmlRonds(l) + "</td></tr>";
+      }).join("") + "</tbody></table>";
+  }
+  function htmlListeTel() {
+    return '<ul class="v-liste">' + LIGNES.map(function (l) {
+      return '<li class="v-l ' + classe(l) + '"><div class="v-l-haut"><span class="v-jour">' + l.jour + '</span><span class="v-lib">' + l.lib + '</span><span class="v-mt ' + (l.entree ? "entree" : "sortie") + '">' + l.m + "</span></div>" +
+        htmlCat(l) + htmlNote(l) + '<div class="v-l-bas">' + htmlPieceBouton(l) + htmlRonds(l) + "</div></li>";
+    }).join("") + "</ul>";
+  }
+
+  function htmlPapier(l) {
+    var p = l.p;
+    if (p.g === "ticket" && p.lignes) {
+      return '<div class="papier">' + p.lignes.map(function (r) { return '<div class="r' + (r[2] ? " tot" : "") + '"><span>' + r[0] + "</span><span>" + (r[1] || "") + "</span></div>"; }).join("") + "</div>";
+    }
+    if (p.g === "ticket") {
+      return '<div class="papier"><div style="text-align:center;font-weight:700">' + p.resume[0] + '</div><div style="text-align:center">' + p.resume[1] + "</div><hr style=\"border:0;border-top:1px solid #ccc;margin:8px 0\">" +
+        '<div class="r tot"><span>TOTAL TTC</span><span>' + p.resume[2] + '</span></div><div class="r"><span>dont TVA déductible</span><span>' + p.resume[3] + "</span></div></div>";
+    }
+    if (p.g === "facture") {
+      return '<div class="papier" style="font-family:var(--sans)"><div class="nom">' + p.soc + '</div><div class="sous">' + p.nom + '</div><div class="r tot" style="font-family:var(--sans)"><span>Total TTC</span><span>' + p.ttc + '</span></div><div class="sous" style="margin:8px 0 0">Client : Atelier Démo</div></div>';
+    }
+    if (p.g === "emise") return '<div class="papier" style="font-family:var(--sans)"><div class="r"><span class="nom">Atelier Démo</span><span>F-2026-010</span></div><div class="r tot" style="margin-top:8px"><span>Total TTC</span><span>2 940,00 €</span></div><div class="sous" style="margin:8px 0 0">Facture émise par Atlas</div></div>';
+    if (p.g === "perdu") return '<div class="encart pointille">Ticket perdu. La ligne a été validée avec cette mention, et sa TVA n’a pas été déduite.</div>';
+    return '<div class="encart">Virement justifié par sa nature : ' + p.e.toLowerCase() + ".</div>";
+  }
+  function htmlPhoto(l) {
+    var p = l.p;
+    if (p.g === "facture") return '<div class="encart" style="text-align:center"><a class="bouton-texte" href="#" data-note="La facture d’origine s’ouvre dans un nouvel onglet.">' + ico("document") + "Ouvrir la facture</a></div>";
+    var t = p.photo;
+    return '<div class="cliche"><div class="papier"><div style="text-align:center;font-weight:700">' + t[0] + '</div><div style="text-align:center">Angers</div><hr style="border:0;border-top:1px dashed #999;margin:6px 0">' +
+      "<div>" + t[1] + ' 10:42</div><hr style="border:0;border-top:1px dashed #999;margin:6px 0"><div class="r" style="font-weight:700"><span>TOTAL TTC</span><span>' + t[2] + " EUR</span></div><div>CB SANS CONTACT</div></div></div>";
+  }
+  function aUnOriginal(l) { return (l.p.g === "ticket" && l.p.photo) || l.p.g === "facture"; }
+
+  function htmlPanneau() {
+    var l = LIGNES.filter(function (x) { return x.id === etat.ouverte; })[0];
+    if (!l) return "";
+    var v = etat.verdicts[l.id], rang = LIGNES.indexOf(l) + 1, s = suivante(), a = verifiees();
+    var h = '<aside class="v-panneau" aria-label="La pièce"><div class="v-panneau-haut"><button type="button" class="v-fermer" data-geste="fermer">' + ico("croix") + "Fermer</button>" +
+      '<span class="v-rang">Ligne ' + rang + " sur 12</span></div><div class=\"v-panneau-defile\">" +
+      '<div class="v-ligne-carte"><span class="v-lib">' + l.lib + '</span><span class="grand ' + (l.entree ? "entree" : "sortie") + '">' + l.m + '</span><span class="sous">' + l.long + " à la banque, " + CAT[l.cat][0].toLowerCase() + "</span></div>";
+    if (aUnOriginal(l)) {
+      h += '<div class="v-onglets" role="group" aria-label="La pièce"><button type="button" data-geste="onglet" data-o="reconstitue" aria-pressed="' + (etat.onglet === "reconstitue") + '">Reconstitué par Atlas</button>' +
+        '<button type="button" data-geste="onglet" data-o="origine" aria-pressed="' + (etat.onglet === "origine") + '">' + (l.p.g === "facture" ? "Facture d’origine" : "Photo d’origine") + "</button></div>";
+    }
+    h += '<div class="v-scene-piece">' + (aUnOriginal(l) && etat.onglet === "origine" ? htmlPhoto(l) : htmlPapier(l)) + "</div>";
+    if (v === "valide" && !etat.rouge) h += '<p class="v-accord oui">Validée.</p>';
+    if (v === "rejete" && !etat.rouge) h += '<p class="v-accord non">Rejetée : ' + (etat.notes[l.id] || "sans raison écrite") + "</p>";
+    if (v === "valide" && etat.rouge) h += '<p class="v-accord oui">Vous l’aviez validée.</p>';
+    h += '</div><div class="v-panneau-bas">';
+    if (a.n === 12) h += '<p class="v-fini"><b>Octobre est vérifié.</b> ' + (a.r ? "Atelier Démo reçoit vos rejets dans Atlas." : "Tout est validé.") + "</p>";
+    if (etat.rouge) {
+      h += '<label class="v-raison">' + (v === "valide" ? "Expliquez ce changement" : "Justifier le rejet") + '<textarea id="raison" maxlength="1000">' + etat.brouillon + "</textarea></label>" +
+        '<div class="v-trois"><button type="button" class="v-non" data-geste="confirmer-rejet">Rejeter</button><button type="button" class="v-neutre" data-geste="annuler-rejet">Annuler</button></div>';
+    } else {
+      h += '<div class="v-trois"><button type="button" class="v-oui" data-geste="valider">Valider</button><button type="button" class="v-non" data-geste="rejeter">Rejeter</button>' +
+        (s ? '<button type="button" class="v-neutre" data-geste="suivant">Suivant</button>' : "") + "</div>";
+    }
+    return h + "</div></aside>";
+  }
+
+  /* ═══ Les deux côtés ═══════════════════════════════════════════════════ */
+  var propose = document.getElementById("scene-propose");
+  var vrai = document.getElementById("scene-vrai");
+
+  function vueDuMoment() {
+    if (!etat.ouverte) return "liste";
+    if (etat.rouge) return "rejet";
+    if (etat.onglet === "origine") return "photo";
+    return "piece";
+  }
+
+  function rendre() {
+    var tel = etat.mode === "tel";
+    var corps = '<div class="v"><div class="v-main">' + htmlTete() + (tel ? htmlListeTel() : htmlTable()) + "</div>" + htmlPanneau() + "</div>";
+    if (tel) {
+      propose.innerHTML = '<div class="cadre"><div class="ecran tel" data-sans-charte id="ecran-v">' + corps + "</div></div>";
+    } else {
+      propose.innerHTML = '<div class="ordi"><div class="ordi-scene"><div class="ecran" data-sans-charte id="ecran-v">' + corps + "</div></div></div>";
+    }
+    // La page du comptable garde la charte d'Origine : ses couleurs se posent ici, sans toucher au choix retenu pour les autres planches.
+    var origine = Kit.chartes()[0].vars, ev = document.getElementById("ecran-v");
+    for (var k in origine) ev.style.setProperty(k, origine[k]);
+    var cle = etat.mode + "-" + vueDuMoment();
+    var c = CAPTURES[cle];
+    document.getElementById("quoi-vrai").innerHTML = "La vraie page : <b>" + c[1] + "</b>";
+    var src = "aujourdhui/" + c[0] + ".jpg";
+    if (!vrai.querySelector('img[src="' + src + '"]')) {
+      vrai.innerHTML = tel ? '<div class="cadre"><div class="cadre-capture"><img src="' + src + '" alt="La vraie page du comptable sur un téléphone"></div></div>'
+                           : '<div class="ordi"><div class="ordi-vrai"><img src="' + src + '" alt="La vraie page du comptable sur un ordinateur"></div></div>';
+    }
+    document.querySelectorAll("#vues button").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-v") === vueDuMoment() ? "true" : "false"); });
+    document.querySelectorAll(".appareil button").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-mode") === etat.mode ? "true" : "false"); });
+    echelle();
+    // Le mois ouvert reste en vue dans sa rangée, même quand le panneau la rétrécit.
+    var rangee = propose.querySelector(".v-mois"), choisi = rangee && rangee.querySelector('[aria-pressed="true"]');
+    if (choisi) rangee.scrollLeft = choisi.offsetLeft - rangee.offsetLeft - 12;
+    var champ = document.getElementById("raison");
+    if (champ) {
+      champ.addEventListener("input", function () { etat.brouillon = champ.value; });
+      champ.focus({ preventScroll: true });
+    }
+  }
+
+  function echelle() {
+    document.querySelectorAll(".ordi").forEach(function (o) {
+      var s = o.querySelector(".ordi-scene");
+      if (s) s.style.setProperty("--z", (o.clientWidth / 1120).toFixed(4));
+    });
+  }
+
+  function aller(v) {
+    etat.ouverte = v === "liste" ? null : 5;
+    etat.onglet = v === "photo" ? "origine" : "reconstitue";
+    etat.rouge = v === "rejet";
+    etat.brouillon = "";
+    rendre();
+  }
+
+  /* La charte essayée en haut ne touche pas cette page : elle part chez le comptable. */
+  document.querySelectorAll(".appareil button").forEach(function (b) { b.addEventListener("click", function () { etat.mode = b.getAttribute("data-mode"); rendre(); }); });
+  document.querySelectorAll("#vues button").forEach(function (b) { b.addEventListener("click", function () { aller(b.getAttribute("data-v")); }); });
+
+  propose.addEventListener("click", function (e) {
+    var note = e.target.closest("[data-note]");
+    if (note) { e.preventDefault(); Kit.note(document.getElementById("ecran-v"), note.getAttribute("data-note")); return; }
+    var g = e.target.closest("[data-geste]");
+    if (!g) return;
+    var id = Number(g.getAttribute("data-id"));
+    switch (g.getAttribute("data-geste")) {
+      case "ouvrir": etat.ouverte = id; etat.onglet = "reconstitue"; etat.rouge = false; break;
+      case "fermer": etat.ouverte = null; etat.rouge = false; break;
+      case "onglet": etat.onglet = g.getAttribute("data-o"); break;
+      case "rond-oui":
+        if (etat.verdicts[id] === "valide") delete etat.verdicts[id]; else { etat.verdicts[id] = "valide"; delete etat.notes[id]; }
+        break;
+      case "rond-non":
+        if (etat.verdicts[id] === "rejete") { delete etat.verdicts[id]; break; }
+        etat.ouverte = id; etat.onglet = "reconstitue"; etat.rouge = true; etat.brouillon = etat.notes[id] || "";
+        break;
+      case "valider": {
+        etat.verdicts[etat.ouverte] = "valide"; delete etat.notes[etat.ouverte];
+        var s = suivante();
+        if (s) { etat.ouverte = s.id; etat.onglet = "reconstitue"; }
+        break;
+      }
+      case "rejeter": etat.rouge = true; etat.brouillon = etat.notes[etat.ouverte] || ""; break;
+      case "confirmer-rejet": etat.verdicts[etat.ouverte] = "rejete"; etat.notes[etat.ouverte] = etat.brouillon.trim().replace(/\s+/g, " ") || null; etat.rouge = false; break;
+      case "annuler-rejet": etat.rouge = false; break;
+      case "suivant": { var n = suivante(); if (n) { etat.ouverte = n.id; etat.onglet = "reconstitue"; } break; }
+      default: return;
+    }
+    rendre();
+  });
+
+  window.addEventListener("resize", echelle);
+  document.addEventListener("click", function (e) { if (e.target.closest(".pl-onglets")) setTimeout(echelle, 30); });
+  rendre();
+})();
+</script>
+</body>
+</html>
