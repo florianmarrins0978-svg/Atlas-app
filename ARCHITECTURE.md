@@ -35967,3 +35967,18 @@ retirée, et `test-papier-facture-db.ts` avec elle.
 
 **Le seed demande lui-même si `atlas_dev` porte du travail** (le même jour). La question vivait dans `preparer.sh` (`base-habitee.mjs`, §346), l'appelant du premier allumage : `npm run db:seed` tapé à la main l'esquivait, et vidait ses chantiers. Elle vit dans `src/server/db/occupation-de-la-base.ts`, `garderSeed` la lit (`occupation`), et le seul endroit qui détruit est celui qui demande. Habitée ou indéterminée refuse avec le code 3, que `preparer.sh` lit comme une réponse ; le refus ne donne pas la recette du forçage (`CLAUDE.md` §4 septies). `base-habitee.mjs` a disparu avec le choix qu'il faisait à la place du seed. `scripts/test-base-habitee.ts` le joue sur une vraie base `atlas_dev`, vu rouge avant (« Atelier Démo » à la place de son entreprise).
 
+## §499 : Les dépendances se mettent à jour sur avis de sécurité, avec dix jours de recul
+
+*25 octobre 2026, lot 0 de l'audit de sécurité (`docs/audit-securite-prompt-renforce.md`).*
+
+**Ce qui a été fait.** Next.js 16.3.8 vers 16.4.2, React et React DOM 19.2.4 vers 19.2.9, zod vers 4.6.7, `@sentry/nextjs` vers 10.76.2, `eslint-config-next` suivant Next.js. `npm audit --omit=dev` passe de 2 critiques, 1 élevée et 1 moyenne à 3 faibles.
+
+**Pourquoi pas la toute dernière version.** Les vers npm de 2026 (Shai-Hulud et ses suites) publient des versions piégées de paquets légitimes, retirées en quelques heures ou quelques jours. Une version qui n'a pas dix jours n'a pas été éprouvée par le reste du monde : Next.js 16.4.3 (23 octobre) a été écartée, 16.4.2 fermant déjà les failles. Ce délai est une règle de choix, pas encore un réglage du dépôt (`min-release-age`, `TODO.md`).
+
+**Ce qui reste, et pourquoi.**
+
+| Avis | Pourquoi il reste |
+|---|---|
+| `@simplewebauthn/server` 9.0.3, attestation mal reliée à une autorité (GHSA-6hxq-p678-4hr2) | Atlas demande `attestationType: "none"` (`src/server/cle-appareil.ts`) : l'attestation n'est jamais lue. Le passage en 13.x change l'interface de toutes les clés d'appareil ; il se fera dans son propre lot |
+| `fast-uri` 3.1.8 (moyen, retombé à faible) | Chargé seulement par `@sentry/webpack-plugin`, donc à la construction, jamais par le serveur qui répond |
+

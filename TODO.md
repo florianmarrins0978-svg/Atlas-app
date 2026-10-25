@@ -1,6 +1,10 @@
 # Prochaines tâches
 
 
+## AUDIT DE SÉCURITÉ : LE LOT 0 EST FAIT, LA SUITE ATTEND SON PROMPT (25 octobre 2026)
+
+Le prompt renforcé est au §6 de `docs/audit-securite-prompt-renforce.md`. Restent hors du lot 0 : poser `min-release-age` (npm 11.10+, à vérifier sur son espace et en CI), épingler les actions GitHub par empreinte, passer `@simplewebauthn/server` en 13.x dans son propre lot (`ARCHITECTURE.md` §499).
+
 ## ~~LE SEED LANCÉ À LA MAIN VIDE ENCORE SA BASE HABITÉE~~ corrigé le 25 octobre 2026
 
 Le seed refuse lui-même `atlas_dev` qui porte du travail (`ARCHITECTURE.md` §498).

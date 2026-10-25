@@ -10,6 +10,11 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## LES DÉPENDANCES SUIVENT LES AVIS DE SÉCURITÉ (25 octobre 2026)
+
+Next.js 16.4.2, React 19.2.9, zod 4.6.7, Sentry 10.76.2. **Le piège :** ne pas prendre la version sortie la veille. Dix jours de recul au moins, parce que les paquets piégés de 2026 sont retirés en quelques jours. `npm audit --omit=dev` doit rendre au plus les trois avis faibles de SimpleWebAuthn, expliqués dans `ARCHITECTURE.md` §499.
+
+---
 ## LES SUITES NE VIDENT PLUS SA BASE (25 octobre 2026)
 
 `nettoyerBase()` et `run-e2e-tests.ts` refusent toute base qui n'est pas `atlas_test` ou `atlas_test_aN` (`garderNettoyage`, `src/lib/garde-seed.ts`). **Le piège :** sur son espace, `DATABASE_URL` désigne `atlas_dev`, sa vraie base ; une suite jouée là sans la batterie l'aurait vidée. Pour jouer des suites chez lui : `npm run verifier:avant-fusion`, qui pose la base d'essai. `ARCHITECTURE.md` §498. **Et le seed refuse lui-même `atlas_dev` qui porte une entreprise** (code 3, que `preparer.sh` lit) : la question vit dans `src/server/db/occupation-de-la-base.ts`, et le seul forçage, `ATLAS_SEED_FORCER=oui-j-efface-tout`, ne se propose jamais.

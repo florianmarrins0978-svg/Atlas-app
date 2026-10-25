@@ -29,6 +29,8 @@ Mesuré par `npm audit --omit=dev` sur le code de `main`, le 25 octobre.
 
 **Ce que je recommande avant tout le reste : un lot 0** qui passe Next.js en 16.4.3, React en 19.2.8 et zod en 4.6.6, avec la batterie complète. C'est le seul point où l'application est exposée **aujourd'hui** à une attaque publique et sans connexion.
 
+**Fait le 25 octobre (lot 0)** : Next.js 16.4.2, React 19.2.9, zod 4.6.7, Sentry 10.76.2. J'ai écarté Next.js 16.4.3, sortie deux jours avant : trop récente pour être sûre, et 16.4.2 ferme déjà les failles. `npm audit` ne rend plus que trois avis faibles, sans exposition (`ARCHITECTURE.md` §499).
+
 ## 3. Les menaces actuelles que les deux prompts oublient
 
 | Menace | Ce qui se passe en 2026 | Ce que l'audit doit vérifier dans Atlas |
