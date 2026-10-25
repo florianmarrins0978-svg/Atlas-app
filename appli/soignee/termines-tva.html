@@ -79,9 +79,13 @@
 .section-titre span { font-size: 14px; color: var(--atlas-inkSoft); }
 
 .facture-attente + .facture-attente { margin-top: 10px; }
+/* Sa retouche du 25 octobre au soir : le nom et le montant d'une facture en
+   attente en gras. Ce sont les deux choses qu'il cherche pour savoir qui doit
+   combien ; le reste de la carte garde son poids. */
+.facture-attente .ligne-nom { font-weight: 700; }
 .fa-tete { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
 .fa-droite { text-align: right; }
-.fa-montant { font: 400 19px/1.2 var(--serif); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
+.fa-montant { font: 700 19px/1.2 var(--serif); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
 .fa-petit { display: block; font-size: 13.5px; color: var(--atlas-inkSoft); }
 .fa-sur { display: block; margin-top: 2px; font-size: 13.5px; font-weight: 600; color: var(--atlas-or); white-space: nowrap; }
 .fa-trace b { color: var(--atlas-ink); }
