@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Audit de sécurité d'octobre 2026, étape 3 : l'inventaire</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="audit-de-sécurité-doctobre-2026-étape-3--linventaire">Audit de sécurité d'octobre 2026, étape 3 : l'inventaire</h1>
+<p><em>25 octobre 2026. Quatre relevés en lecture seule (routes, actions serveur, base, flux extérieurs et CI). Chaque point classé « confirmé » a été relu dans le code par moi, pas seulement rapporté.</em></p>
+<h2 id="le-verdict">Le verdict</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Le cloisonnement ENTRE artisans tient.</strong> 86 tables sous RLS forcée, le contexte posé de façon transactionnelle, aucune action ne prend l'entreprise dans la requête, aucun jeton public n'ouvre plus que son document. Aucune fuite d'une entreprise vers une autre n'a été trouvée.</p>
+<p><strong>Les failles sont DANS une même entreprise</strong> (quel rôle peut faire quoi, quels champs une action accepte), <strong>et sur ton espace lui-même</strong>.</p>
+<h2 id="ce-qui-est-à-corriger-par-gravité">Ce qui est à corriger, par gravité</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>#</th>
+<th>Faille</th>
+<th>Gravité</th>
+<th>État</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>E1</strong></td>
+<td>La clé qui signe les sessions de ton espace (<code>AUTH_SECRET</code>) est écrite dans le dépôt public (<code>.devcontainer/docker-compose.yml</code>). Avec elle, on fabrique un cookie de connexion ; elle chiffre aussi les mots de passe d'agenda Apple et les codes de double vérification. Il faut en plus l'identifiant interne d'un compte, impossible à deviner, et l'adresse de ton espace, qui figure dans chaque lien de devis envoyé</td>
+<td><strong>élevée</strong></td>
+<td>confirmé, lot à part (te déconnecte une fois)</td>
+</tr>
+<tr>
+<td><strong>E2</strong></td>
+<td>Un commercial ou la facturation réécrit l'identité de l'entreprise et son <strong>IBAN</strong> depuis l'écran du devis : l'action accepte n'importe quel champ, et la preuve d'identité se fait avec SON propre mot de passe</td>
+<td><strong>élevée</strong></td>
+<td><strong>corrigé le 25 octobre</strong></td>
+</tr>
+<tr>
+<td><strong>E3</strong></td>
+<td>N'importe quel rôle, salarié compris, pose une <strong>remise</strong> sur le devis de n'importe quel chantier : la branche « réduction » des retouches n'a aucune garde</td>
+<td><strong>élevée</strong></td>
+<td><strong>corrigé le 25 octobre</strong></td>
+</tr>
+<tr>
+<td><strong>E4</strong></td>
+<td>« Durée et équipe » d'un chantier accepte n'importe quelle colonne du chantier (date planifiée, autoliquidation, dates de facture…)</td>
+<td><strong>élevée</strong></td>
+<td><strong>reproduit, corrigé le 25 octobre</strong></td>
+</tr>
+<tr>
+<td><strong>E5</strong></td>
+<td>La feuille de chantier en PDF s'ouvre pour tout rôle, sur tout chantier de l'entreprise, sans contrôle de portée</td>
+<td>moyenne</td>
+<td><strong>corrigé le 25 octobre</strong></td>
+</tr>
+<tr>
+<td><strong>E6</strong></td>
+<td>Un salarié peut effacer une photo d'un chantier qui n'est pas le sien, par la fiche de sécurité</td>
+<td>moyenne</td>
+<td><strong>reproduit, corrigé le 25 octobre</strong></td>
+</tr>
+<tr>
+<td><strong>E7</strong></td>
+<td>Deux autres écritures acceptent des champs en trop (client du devis, lignes de prix : déplacer une ligne vers un autre chantier)</td>
+<td>moyenne</td>
+<td><strong>corrigé le 25 octobre</strong></td>
+</tr>
+<tr>
+<td><strong>E8</strong></td>
+<td>La garde des rôles des PAGES vit dans le gabarit racine, que Next.js ne rejoue pas à la navigation interne : un commercial pourrait recevoir les données d'une page qui lui est fermée</td>
+<td>à mesurer</td>
+<td>à reproduire avant de conclure</td>
+</tr>
+<tr>
+<td><strong>E9</strong></td>
+<td>Droits de la base plus larges que le besoin : l'application peut écrire le registre des migrations, les conditions générales, supprimer une entreprise entière</td>
+<td>moyenne (défense en profondeur)</td>
+<td>vague 3</td>
+</tr>
+<tr>
+<td><strong>E10</strong></td>
+<td>Liens entre tables non composites (paiement et facture, acompte et devis…) : la base n'empêche pas de rattacher un élément à une autre entreprise</td>
+<td>moyenne (défense en profondeur)</td>
+<td>vague 3</td>
+</tr>
+<tr>
+<td><strong>E11</strong></td>
+<td>Donner un accès, changer un rôle (jusqu'à créer un second patron), résilier : sans redemander le mot de passe</td>
+<td>moyenne</td>
+<td>vague 3</td>
+</tr>
+<tr>
+<td><strong>E12</strong></td>
+<td>Liens clients en clair en base, certains sans expiration (contrat, passages) ; lien du comptable valable un an</td>
+<td>moyenne</td>
+<td>vague 3</td>
+</tr>
+<tr>
+<td><strong>E13</strong></td>
+<td>Les libellés des lignes de devis entrent dans la consigne système de l'IA (retouches) ; aucun plafond de dépense d'IA par mois</td>
+<td>moyenne</td>
+<td>vague 3</td>
+</tr>
+<tr>
+<td><strong>E14</strong></td>
+<td>Sans <code>ATLAS_PROXY_SAUTS</code>, les seuils par source deviennent communs à tous : un inconnu peut bloquer les inscriptions ou le mot de passe oublié de tout le monde, ou verrouiller un compte dont il connaît l'adresse</td>
+<td>moyenne</td>
+<td>dépend du déploiement</td>
+</tr>
+<tr>
+<td><strong>E15</strong></td>
+<td>Chaîne logicielle : actions GitHub épinglées par étiquette, <code>pages.yml</code> donne ses droits de publication à l'étape qui installe les paquets, aucun délai avant d'installer une version neuve, <code>demarrer.sh</code> retombe sur <code>npm install</code></td>
+<td>moyenne</td>
+<td>vague 3</td>
+</tr>
+<tr>
+<td><strong>E16</strong></td>
+<td><code>/api/health/diagnostic</code> et <code>/api/health/banc</code> répondent sans compte (en-têtes reçus, version servie)</td>
+<td>faible</td>
+<td>vague 3</td>
+</tr>
+<tr>
+<td><strong>E17</strong></td>
+<td>Petits défauts : <code>choisirLeMotDePasse</code> sans cadence, une adresse e-mail se devine par le mot de passe oublié, un GET qui écrit, un 500 au lieu d'un refus</td>
+<td>faible</td>
+<td>vague 3</td>
+</tr>
+</tbody></table></div>
+<h2 id="ce-qui-a-été-vérifié-et-qui-tient">Ce qui a été vérifié et qui tient</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>Isolation par la base</td>
+<td>86 tables cloisonnées et forcées, contexte transactionnel, rôles sans <code>BYPASSRLS</code></td>
+</tr>
+<tr>
+<td>Fonctions privilégiées</td>
+<td>5 fonctions de mot de passe, chemin de recherche épinglé, aucune ne rend le condensat</td>
+</tr>
+<tr>
+<td>Jetons publics</td>
+<td>256 bits, chacun borné à son document</td>
+</tr>
+<tr>
+<td>Crochet de paiement</td>
+<td>signature vérifiée en temps constant, rejeu refusé</td>
+</tr>
+<tr>
+<td>Requêtes vers l'extérieur</td>
+<td>une seule destination venue d'une donnée (agenda Apple), filtrée et revérifiée à chaque redirection</td>
+</tr>
+<tr>
+<td>Rendu des réponses d'IA</td>
+<td>ni HTML, ni lien, ni image chargée</td>
+</tr>
+<tr>
+<td>En-têtes</td>
+<td>CSP, HSTS, anti-cadre, <code>nosniff</code></td>
+</tr>
+</tbody></table></div>
+<h2 id="ce-qui-na-pas-été-vérifié">Ce qui n'a pas été vérifié</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li>les cookies de session réels (valeurs par défaut d'Auth.js supposées) ;</li>
+<li>les droits par défaut des workflows GitHub du dépôt (réglage du site GitHub) ;</li>
+<li>la protection de la branche <code>main</code> sur GitHub ;</li>
+<li>tout ce qui dépend de l'hébergeur de production, qui n'existe pas encore.</li>
+</ul>
+<h2 id="la-vague-2-faite-le-25-octobre">La vague 2, faite le 25 octobre</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>E2 à E7 sont corrigés. Chaque faille a été reproduite sous le vrai rôle (commercial, salarié réglé sur son équipe), avec la requête qu'un attaquant écrirait, vue rouge, corrigée là où la donnée s'écrit, puis vue verte : <code>scripts/test-roles-dans-l-entreprise-db.ts</code>, onze cas. Sur l'écran du devis, un commercial lit l'en-tête de l'entreprise sans pouvoir l'écrire (vérifié à l'écran). Le contrôle des gardes refuse désormais une garde qui vit dans une seule branche.</p>
+</main>
+</body>
+</html>

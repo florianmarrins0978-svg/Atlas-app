@@ -36004,3 +36004,17 @@ retirée, et `test-papier-facture-db.ts` avec elle.
 
 **Les protections fragiles.** `test-cadences-gardees.ts` (cadence de l'import de tarifs et du croquis, posée avant le geste coûteux ; seuil par source de la réponse au devis, règle sortie dans `src/lib/seuils-reponse-devis.ts`), `test-gestes-sensibles-db.ts` (l'export complet appelé en direct sans preuve), `test-photo-entrante.ts` (tout `src/` lu : personne d'autre que la porte ne nettoie ni ne trie une image). Chacun a été vu rouge en retirant sa protection.
 
+## §502 : Une écriture ne prend que les champs qu'elle nomme, et la garde passe avant tout
+
+*25 octobre 2026, audit de sécurité, vague 2 (`docs/audit-2026-10-etape-3-inventaire.md`, E2 à E7).*
+
+**Le constat.** Le cloisonnement entre entreprises tenait. Dans une même entreprise, trois dépôts écrivaient `{ ...data }` reçu d'une action serveur (`mettreAJourDureeEquipe`, `mettreAJourClient`, `modifierLignePrix`), et `majEmetteurAction` passait son objet entier à `mettreAJourEntreprise` sous une garde qui laissait passer le commercial. Le type TypeScript n'existe pas à l'exécution : une action s'appelle avec l'objet qu'on veut.
+
+**La règle.** `seulement(objet, cles)` (`src/lib/champs-permis.ts`) garde les champs nommés et eux seuls ; une clé absente reste absente. Les trois dépôts l'emploient, donc toute porte future aussi. `majEmetteurAction` exige le patron (l'en-tête du devis EST l'identité de l'entreprise) et ne passe que ses six champs ; l'écran du devis les montre en lecture seule aux autres rôles (`emetteurModifiable`).
+
+**La garde avant l'aiguillage.** `appliquerRetouchesAction` ne gardait que sa branche « ajouter ». La garde passe désormais avant la boucle, et `test-actions-gardees-db.ts` refuse toute action dont la première garde suit un `switch`, un `for` ou un `while`.
+
+**La portée.** La feuille de chantier en PDF pose `exigerChantierDansSaPortee`, comme la fiche de sécurité. `enregistrerLaFiche` ne garde dans le contenu que les photos du chantier : la liste venait du navigateur, et retirer de la fiche une photo glissée d'un autre chantier l'effaçait.
+
+**Ce qui le tient** : `test-roles-dans-l-entreprise-db.ts`, onze cas sous le vrai rôle, chacun vu rouge contre l'ancien code. **Reste à mesurer** : la garde des pages, posée dans le gabarit racine que Next.js ne rejoue pas à la navigation interne (E8).
+

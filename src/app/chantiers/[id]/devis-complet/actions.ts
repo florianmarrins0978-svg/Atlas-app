@@ -6,6 +6,8 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { retenirLecon } from "@/server/repositories/lecons-prix";
 import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
 import { PreuveRecenteExigeeError } from "@/server/preuve-recente";
+import { exigerProprietaire } from "@/server/autorisation";
+import { seulement } from "@/lib/champs-permis";
 import { mettreAJourClient } from "@/server/repositories/clients";
 import {
   modifierLignePrix,
@@ -56,7 +58,15 @@ export async function majEmetteurAction(data: {
   iban?: string;
 }): Promise<{ ok: true } | { ok: false; raison: string; preuveExigee: true }> {
   const ctx = await getCurrentCtx();
-  await exigerGestionDevis(ctx, "modifier l'émetteur du devis");
+  // **L'en-tête du devis EST l'identité de l'entreprise** (audit E2) : chaque
+  // champ écrit la ligne `entreprises`, celle que Réglages, Identité réserve au
+  // patron (`ceQueLeRoleChange`). La garde du devis laissait passer le
+  // commercial et la facturation, qui réécrivaient ainsi le nom, le SIRET et
+  // l'IBAN où arrivent les virements.
+  await exigerProprietaire(ctx, "modifier l'identité de l'entreprise");
+  // Les six champs que cet en-tête montre, et eux seuls : le reste de la ligne
+  // (régime de TVA, conditions, logo…) a ses propres écrans et ses propres gardes.
+  data = seulement(data, ["nom", "adresse", "siret", "telephone", "email", "iban"]);
   // L'IBAN demande une identité récente, réclamée par l'écriture elle-même :
   // le refus se rend en valeur, sans quoi l'écran ne verrait qu'un identifiant
   // d'erreur opaque (`AGENTS.md`, une exception d'action n'arrive jamais).
@@ -313,15 +323,19 @@ export async function dicterRetouchesDevisAction(chantierId: string, formData: F
  * vérité de la base plutôt que celle qu'il espérait.
  */
 export async function appliquerRetouchesAction(chantierId: string, changements: Changement[]) {
+  // **La garde AVANT la boucle, pour toutes les branches** (audit E3) : elle ne
+  // vivait que dans la branche « ajouter », et la remise passait sans aucune,
+  // salarié compris. Les autres branches repassent par leurs actions gardées.
+  const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "appliquer des retouches au devis");
   for (const c of changements) {
     switch (c.type) {
       case "reduction": {
         // **Elle ne touche aucune ligne** : c'est l'en-tête du devis qui la
         // porte, et `mettreAJourEnTeteDevis` recalcule les totaux au passage.
-        const ctxR = await getCurrentCtx();
-        const devisEnCours = await getDevisPourChantier(ctxR, chantierId);
+        const devisEnCours = await getDevisPourChantier(ctx, chantierId);
         if (devisEnCours) {
-          await mettreAJourEnTeteDevis(ctxR, devisEnCours.id, { reductionPourcent: c.pourcent });
+          await mettreAJourEnTeteDevis(ctx, devisEnCours.id, { reductionPourcent: c.pourcent });
         }
         break;
       }
@@ -338,8 +352,6 @@ export async function appliquerRetouchesAction(chantierId: string, changements: 
         await retirerLigneAction(c.ligneId);
         break;
       case "ajouter": {
-        const ctx = await getCurrentCtx();
-        await exigerGestionDevis(ctx, "appliquer des retouches au devis");
         // **Un ajout sans prix arrive à zéro, et l'écran le dit.** Poser un
         // montant « probable » ici serait inventer un prix sur un document qui
         // part chez un client — le refus le plus ancien du produit.
@@ -358,7 +370,6 @@ export async function appliquerRetouchesAction(chantierId: string, changements: 
     }
   }
 
-  const ctx = await getCurrentCtx();
   const lignes = await listerLignesPrix(ctx, chantierId);
   // **Le prix accordé repart avec les lignes, et ce n'est pas une commodité.**
   // Il ne vit sur AUCUNE ligne : c'est l'en-tête du devis qui le porte. Rendre

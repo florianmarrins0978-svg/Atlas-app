@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentCtx } from "@/server/session-ctx";
+import { ActionRefuseeError, exigerChantierDansSaPortee } from "@/server/garde-action";
 import { genererDevisSansPrix } from "@/server/repositories/devis";
 import { enTetesDeRemise, veutTelecharger } from "@/lib/remise-de-fichier";
 
@@ -24,6 +25,19 @@ export async function GET(
 ) {
   const { chantierId } = await params;
   const ctx = await getCurrentCtx();
+  // **La feuille d'un chantier qui est DANS SA PORTÉE** (audit du 25 octobre
+  // 2026, E5) : un salarié réglé sur ses équipes demandait l'adresse d'un autre
+  // chantier et recevait son devis sans prix, nom et adresse du client compris.
+  // La fiche de sécurité posait déjà cette garde ; la feuille l'avait oubliée.
+  // Même réponse qu'un chantier inexistant, comme plus bas.
+  try {
+    await exigerChantierDansSaPortee(ctx, chantierId, "ouvrir la feuille de chantier");
+  } catch (erreur) {
+    if (erreur instanceof ActionRefuseeError) {
+      return NextResponse.json({ error: "Aucun devis pour ce chantier" }, { status: 404 });
+    }
+    throw erreur;
+  }
 
   const pdf = await genererDevisSansPrix(ctx, chantierId);
   // Chantier inexistant, sans devis, ou appartenant à une autre entreprise :

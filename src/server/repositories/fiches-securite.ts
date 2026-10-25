@@ -203,9 +203,28 @@ export async function enregistrerLaFiche(
   quoi: { contenu: ContenuFiche; etapeVue: number; loiLue: boolean }
 ): Promise<FicheEnregistree | null> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    // **Les photos de la fiche sont celles DU CHANTIER, et c'est ce qui
+    // s'enregistre** (audit du 25 octobre 2026, E6). La liste venait du
+    // navigateur et s'écrivait telle quelle dans le contenu : un salarié y
+    // glissait la photo d'un chantier hors de sa portée, puis la « retirait »
+    // de la fiche, ce qui l'effaçait. Seules celles du chantier entrent, dans
+    // l'ordre où il les a posées.
+    const siennes =
+      quoi.contenu.photoIds.length === 0
+        ? new Set<string>()
+        : new Set(
+            (
+              await tx
+                .select({ id: photos.id })
+                .from(photos)
+                .where(and(eq(photos.chantierId, chantierId), isNull(photos.deletedAt), inArray(photos.id, quoi.contenu.photoIds)))
+            ).map((p) => p.id)
+          );
+    const contenu: ContenuFiche = { ...quoi.contenu, photoIds: quoi.contenu.photoIds.filter((id) => siennes.has(id)) };
+
     const [ligne] = await tx
       .update(fichesSecurite)
-      .set({ contenu: quoi.contenu, etapeVue: quoi.etapeVue, loiLue: quoi.loiLue, updatedAt: new Date() })
+      .set({ contenu, etapeVue: quoi.etapeVue, loiLue: quoi.loiLue, updatedAt: new Date() })
       // **Signée, elle ne se réécrit plus** : sinon le contenu, et avec lui la
       // liste des photos, changeait sous une signature sans passer par
       // « Modifier ». C'est la porte que la campagne QA du 13 octobre a ouverte.
@@ -214,30 +233,16 @@ export async function enregistrerLaFiche(
     if (!ligne) return null;
     await tx
       .insert(fichesSecuriteMemoire)
-      .values({ entrepriseId: ctx.entrepriseId, contenu: memoireDepuis(quoi.contenu) })
+      .values({ entrepriseId: ctx.entrepriseId, contenu: memoireDepuis(contenu) })
       .onConflictDoUpdate({
         target: fichesSecuriteMemoire.entrepriseId,
-        set: { contenu: memoireDepuis(quoi.contenu), updatedAt: new Date() },
+        set: { contenu: memoireDepuis(contenu), updatedAt: new Date() },
       });
-    // Les photos de la fiche sont celles du chantier : on ne garde en liaison
-    // que celles qui existent vraiment, dans l'ordre où il les a posées.
     await tx.delete(fichesSecuritePhotos).where(eq(fichesSecuritePhotos.ficheId, ligne.id));
-    if (quoi.contenu.photoIds.length > 0) {
-      const siennes = await tx
-        .select({ id: photos.id })
-        .from(photos)
-        .where(and(eq(photos.chantierId, chantierId), isNull(photos.deletedAt), inArray(photos.id, quoi.contenu.photoIds)));
-      const ordre = new Map(quoi.contenu.photoIds.map((id, i) => [id, i]));
-      if (siennes.length > 0) {
-        await tx.insert(fichesSecuritePhotos).values(
-          siennes.map((p) => ({
-            entrepriseId: ctx.entrepriseId,
-            ficheId: ligne.id,
-            photoId: p.id,
-            ordre: ordre.get(p.id) ?? 0,
-          }))
-        );
-      }
+    if (contenu.photoIds.length > 0) {
+      await tx.insert(fichesSecuritePhotos).values(
+        contenu.photoIds.map((photoId, ordre) => ({ entrepriseId: ctx.entrepriseId, ficheId: ligne.id, photoId, ordre }))
+      );
     }
     return versFiche(ligne);
   });

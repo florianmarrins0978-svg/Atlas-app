@@ -428,6 +428,36 @@ async function main() {
     assert.ok(FICHIERS.includes("src/app/planning/actions.ts"));
   });
 
+  // **Une garde dans UNE branche n'est pas une garde** (audit du 25 octobre
+  // 2026, E3). `appliquerRetouchesAction` portait `exigerGestionDevis`, mais
+  // dans sa seule branche « ajouter » : la remise, quelques lignes plus haut,
+  // passait sans aucune, salarié compris. Le cas ci-dessous ne cherchait qu'un
+  // nom de garde quelque part dans le corps, et restait vert. Celui-ci exige
+  // qu'elle passe AVANT le premier aiguillage ou la première boucle.
+  await essai("la garde passe AVANT tout aiguillage ou toute boucle, jamais dans une seule branche", () => {
+    const tardives: string[] = [];
+    const sansCommentaires = (corps: string) =>
+      corps
+        .split("\n")
+        .filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l))
+        .join("\n");
+    for (const f of FICHIERS) {
+      const aides = aidesDe(join(process.cwd(), f));
+      for (const { nom, corps } of actionsDe(join(process.cwd(), f))) {
+        const code = sansCommentaires(corps);
+        const positions = [
+          ...GARDES.map((g) => code.indexOf(g)),
+          ...[...aides].filter(([, c]) => GARDES.some((g) => c.includes(g))).map(([a]) => code.indexOf(`${a}(`)),
+        ].filter((i) => i >= 0);
+        if (positions.length === 0) continue;
+        const premiere = Math.min(...positions);
+        const aiguillages = ["switch (", "for (", "while ("].map((m) => code.indexOf(m)).filter((i) => i >= 0);
+        if (aiguillages.length > 0 && Math.min(...aiguillages) < premiere) tardives.push(`${f}#${nom}`);
+      }
+    }
+    assert.deepEqual(tardives, [], `La garde de ces actions vit après un aiguillage :\n      ${tardives.join("\n      ")}`);
+  });
+
   await essai("CHAQUE action serveur du dépôt porte une garde, ou une raison écrite", () => {
     const nues: string[] = [];
     let comptees = 0;

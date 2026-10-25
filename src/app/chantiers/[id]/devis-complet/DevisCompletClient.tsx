@@ -174,6 +174,12 @@ type Props = {
    */
   logo: string | null;
   emetteur: { nom: string; adresse: string; siret: string; telephone: string; email: string; iban: string };
+  /**
+   * L'en-tête EST l'identité de l'entreprise, réservée au patron (audit E2) :
+   * pour un autre rôle, elle se lit sans s'écrire, plutôt qu'un champ qui
+   * échouerait en silence.
+   */
+  emetteurModifiable: boolean;
   clientId: string | null;
   /**
    * Où mène la flèche, et ce qu'elle annonce — décidé par la page
@@ -242,6 +248,7 @@ type Props = {
 
 export default function DevisCompletClient(props: Props) {
   const fige = props.statut === "envoye";
+  const emetteurFige = fige || !props.emetteurModifiable;
   const router = useRouter();
   const [sousTraitanceEnCours, setSousTraitanceEnCours] = useState(false);
   /** L'IBAN refusé faute d'identité récente, à réécrire une fois prouvée. */
@@ -1063,7 +1070,7 @@ export default function DevisCompletClient(props: Props) {
           )}
           <ChampNu
             valeur={emetteur.nom}
-            fige={fige}
+            fige={emetteurFige}
             placeholder="Votre entreprise"
             aria="Nom de l'entreprise"
             grand
@@ -1076,16 +1083,16 @@ export default function DevisCompletClient(props: Props) {
               bas, pendant que le nom, le téléphone et l'e-mail vivaient ici.
               L'ordre est celui du document : nom, adresse, téléphone, e-mail,
               SIRET, **une ligne par information**. */}
-          <ChampNu long valeur={emetteur.adresse} fige={fige} placeholder="Adresse du siège social" aria="Adresse de l'entreprise"
+          <ChampNu long valeur={emetteur.adresse} fige={emetteurFige} placeholder="Adresse du siège social" aria="Adresse de l'entreprise"
             onChange={(v) => setEmetteur({ ...emetteur, adresse: v })}
             onFini={(duChamp) => majEmetteurAction({ adresse: duChamp })} />
-          <ChampNu valeur={emetteur.telephone} fige={fige} placeholder="Téléphone" aria="Téléphone de l'entreprise"
+          <ChampNu valeur={emetteur.telephone} fige={emetteurFige} placeholder="Téléphone" aria="Téléphone de l'entreprise"
             onChange={(v) => setEmetteur({ ...emetteur, telephone: v })}
             onFini={(duChamp) => majEmetteurAction({ telephone: duChamp })} />
-          <ChampNu valeur={emetteur.email} fige={fige} placeholder="E-mail" aria="E-mail de l'entreprise"
+          <ChampNu valeur={emetteur.email} fige={emetteurFige} placeholder="E-mail" aria="E-mail de l'entreprise"
             onChange={(v) => setEmetteur({ ...emetteur, email: v })}
             onFini={(duChamp) => majEmetteurAction({ email: duChamp })} />
-          <ChampNu valeur={emetteur.siret} fige={fige} placeholder="N° SIREN / SIRET" aria="SIREN / SIRET"
+          <ChampNu valeur={emetteur.siret} fige={emetteurFige} placeholder="N° SIREN / SIRET" aria="SIREN / SIRET"
             onChange={(v) => setEmetteur({ ...emetteur, siret: v })}
             onFini={(duChamp) => majEmetteurAction({ siret: duChamp })} />
         </div>
@@ -1828,7 +1835,7 @@ export default function DevisCompletClient(props: Props) {
         <p className="text-[15px]">Paiement par virement bancaire</p>
         <ChampNu
           valeur={emetteur.iban}
-          fige={fige}
+          fige={emetteurFige}
           placeholder="IBAN : FR76 …"
           aria="IBAN"
           onChange={(v) => setEmetteur({ ...emetteur, iban: v })}

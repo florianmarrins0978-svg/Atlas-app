@@ -3,7 +3,7 @@
 
 ## AUDIT DE SÉCURITÉ : LE LOT 0 EST FAIT, LA SUITE ATTEND SON PROMPT (25 octobre 2026)
 
-Le prompt renforcé est au §6 de `docs/audit-securite-prompt-renforce.md`. Étape 2 faite (`docs/audit-2026-10-etape-2.md`) ; R1, R2, R3, l'empreinte des e-mails et les protections fragiles faits (vague 1, `ARCHITECTURE.md` §500 et §501). Reste : la rétention du journal chez l'hébergeur, puis l'étape 3, l'inventaire. Restent hors du lot 0 : poser `min-release-age` (npm 11.10+, à vérifier sur son espace et en CI), épingler les actions GitHub par empreinte, passer `@simplewebauthn/server` en 13.x dans son propre lot (`ARCHITECTURE.md` §499).
+Le prompt renforcé est au §6 de `docs/audit-securite-prompt-renforce.md`. Étape 2 faite (`docs/audit-2026-10-etape-2.md`) ; R1, R2, R3, l'empreinte des e-mails et les protections fragiles faits (vague 1, `ARCHITECTURE.md` §500 et §501). Étape 3 faite (`docs/audit-2026-10-etape-3-inventaire.md`), vague 2 faite (E2 à E7, `ARCHITECTURE.md` §502). Restent : E1 (`AUTH_SECRET` de son espace dans le dépôt public, lot à part car il le déconnecte une fois), E8 (garde des pages dans le gabarit racine, à reproduire), puis la vague 3 (E9 à E17), et la rétention du journal chez l'hébergeur. Restent hors du lot 0 : poser `min-release-age` (npm 11.10+, à vérifier sur son espace et en CI), épingler les actions GitHub par empreinte, passer `@simplewebauthn/server` en 13.x dans son propre lot (`ARCHITECTURE.md` §499).
 
 ## ~~LE SEED LANCÉ À LA MAIN VIDE ENCORE SA BASE HABITÉE~~ corrigé le 25 octobre 2026
 

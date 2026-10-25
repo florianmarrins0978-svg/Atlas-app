@@ -3,6 +3,7 @@ import { originePublique } from "@/server/origine-publique";
 import { notFound } from "next/navigation";
 import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
+import { estProprietaire } from "@/server/autorisation";
 import { getChantier } from "@/server/repositories/chantiers";
 import { getClient } from "@/server/repositories/clients";
 import { canalPourJoindre } from "@/lib/message-client";
@@ -142,6 +143,7 @@ export default async function DevisCompletPage({
         // dans ses `useState` (la même raison que la facture, `page.tsx`).
         key={`${devisRow.id}-${chantier.autoliquidation ? "sans-tva" : "tva"}`}
         chantierId={id}
+        emetteurModifiable={await estProprietaire(ctx)}
         sousTraitance={chantier.autoliquidation}
         // Pour un client Entreprise, hors franchise : son choix B, décoché
         // d'office. La règle de « Entreprise » est celle de `civilite.ts`.

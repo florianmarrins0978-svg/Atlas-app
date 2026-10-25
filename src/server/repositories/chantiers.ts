@@ -1,4 +1,5 @@
 import { and, eq, gte, isNull, isNotNull, or, sql, desc } from "drizzle-orm";
+import { seulement } from "@/lib/champs-permis";
 import { withEntreprise } from "../db/with-entreprise";
 import { NOTE_MAX } from "../../lib/note-chantier";
 import { creneauxParChantier, equipesParChantier } from "./occupation-chantiers";
@@ -1199,7 +1200,9 @@ export async function mettreAJourDureeEquipe(
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [row] = await tx
       .update(chantiers)
-      .set({ ...data, updatedBy: ctx.utilisateurId, updatedAt: new Date() })
+      // Ces deux champs et eux seuls : l'objet vient d'une action serveur, et
+      // `{ ...data }` écrivait toute colonne du chantier (audit E4).
+      .set({ ...seulement(data, ["dureePrevue", "tailleEquipe"]), updatedBy: ctx.utilisateurId, updatedAt: new Date() })
       .where(eq(chantiers.id, chantierId))
       .returning();
     return row;

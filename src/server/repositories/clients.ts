@@ -1,4 +1,5 @@
 import { and, count, eq, inArray, isNull } from "drizzle-orm";
+import { seulement } from "@/lib/champs-permis";
 import { withEntreprise } from "../db/with-entreprise";
 import { chantiers, clients } from "../db/schema";
 import type { Ctx } from "./context";
@@ -331,7 +332,14 @@ export async function mettreAJourClient(
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [row] = await tx
       .update(clients)
-      .set({ ...data, updatedAt: new Date() })
+      // Les champs déclarés et eux seuls : `{ ...data }` laissait écrire la date
+      // d'effacement ou le motif de conservation d'un client (audit E7).
+      .set({
+        ...seulement(data, [
+          "nom", "civilite", "telephone", "adresse", "email", "canalCommunication", "siret", "numeroTva", "codeService",
+        ]),
+        updatedAt: new Date(),
+      })
       .where(
         and(
           eq(clients.id, id),

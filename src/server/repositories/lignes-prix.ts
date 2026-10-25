@@ -1,4 +1,5 @@
 import { asc, eq } from "drizzle-orm";
+import { seulement } from "@/lib/champs-permis";
 import Decimal from "decimal.js";
 import { withEntreprise } from "../db/with-entreprise";
 import type { DbOrTx } from "../db/client";
@@ -126,7 +127,11 @@ export async function modifierLignePrix(
     // tilleuls à 250 € donnaient un montant resté à 0,00 €, donc un devis à
     // zéro alors que l'écran affichait 750 €. Une ligne dont le total ne
     // correspond pas à son détail ne se rattrape que par un avoir.
-    const patch: typeof data & { prixAncien?: null; prixGrille?: null } = { ...data };
+    // Les champs déclarés et eux seuls : `{ ...data }` laissait déplacer une
+    // ligne vers un autre chantier, ou réécrire son prix de grille (audit E7).
+    const patch: Partial<typeof data> & { prixAncien?: null; prixGrille?: null } = seulement(data, [
+      "libelle", "montant", "quantite", "prixUnitaire", "unite", "aChiffrer", "tauxTva",
+    ]);
     if (data.unite !== undefined) patch.unite = uniteAdmise(data.unite);
     const [avant] = await tx.select().from(lignesPrix).where(eq(lignesPrix.id, id)).limit(1);
     if (data.tauxTva !== undefined && avant && (await sansTvaSurLeChantier(tx, avant.chantierId))) {
