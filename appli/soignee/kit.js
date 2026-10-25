@@ -289,7 +289,7 @@
   /* ─── Les planches pas encore dessinées ─────────────────────────────────
      Elles arrivent une par une : un lien vers l'une d'elles ne mène pas à une
      page d'erreur, il le dit. La liste grandit à chaque planche publiée. */
-  var PRETES = ["index", "fondations", "reglages", "termines", "termines-tva", "termines-comptable", "clients", "client", "planning"];
+  var PRETES = ["index", "fondations", "reglages", "termines", "termines-tva", "termines-comptable", "clients", "client", "planning", "accueil"];
 
   function planchePrete(href) {
     if (!href || /^(https?:|#|mailto:|tel:|\.\.\/)/.test(href)) return true;
