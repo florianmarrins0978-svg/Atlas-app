@@ -10,6 +10,11 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## POUR MON COMPTABLE : UN VIREMENT REÇU SE RÈGLE DANS SA LIGNE (26 octobre 2026)
+
+Une entrée se justifie par sa facture d'Atlas (`confirmerLaLigneRecue`, qui écrit la réponse de l'accueil dans la même transaction), par une facture faite hors d'Atlas (`facture_hors_atlas`, 0148) ou par une réponse de son sens (`MOTIFS_RECUS`). **Les pièges :** toute pose passe par `poser`, qui lit la ligne VERROUILLÉE et compare la pièce dans la même transaction (`refusDEcart`) : une nouvelle façon de justifier qui écrirait à côté échapperait au contrôle du montant. Le ticket photographié depuis sa ligne se compare AVANT d'être rangé (`ecartAvecLaLigne`). Le fichier d'une facture hors d'Atlas remplacée revient en `pieceRetiree` : l'action l'efface, après l'écriture. La contrainte de cohérence de 0148 est NOT VALID : ne la valider qu'après avoir compté les lignes qui ne la tiennent pas sur sa base (`ARCHITECTURE.md` §509).
+
+---
 ## LA CLÉ DE SESSION DE SON ESPACE LUI EST PROPRE (25 octobre 2026)
 
 `banc.mjs` lance le serveur avec la clé de `/workspaces/.atlas-secrets/auth-secret`, créée et re-chiffrée par `scripts/secret-de-l-espace.ts`. **Les pièges :** ne jamais effacer un fichier de ce dossier (une clé perdue rend ses secrets illisibles) ; un `npm run dev` lancé à la main sur son espace tourne encore sous l'ancienne clé du dépôt. `ARCHITECTURE.md` §503.
