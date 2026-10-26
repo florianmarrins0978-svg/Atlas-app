@@ -1,0 +1,1029 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Créer un compte, soigné</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  CRÉER UN COMPTE, de la porte à l'accueil (src/app/bienvenue/page.tsx,
+  src/app/creer-un-compte/page.tsx et ses règles dans src/lib/creation-compte.ts,
+  src/components/atlas/SaisieDuCode.tsx, src/app/documents-legaux/).
+
+  Sa demande du 26 octobre 2026 : « fais-moi une planche plus jolie à partir du
+  moment où on fait la création d'un compte jusqu'à arriver à rentrer dans le
+  compte, avec toutes les questions qui vont pré-remplir les cases des
+  paramètres ; certains paramètres ont évolué, donc va d'abord checker s'il
+  n'y a pas besoin de rajouter ou enlever des questions ou les modifier ».
+
+  CE QUI A ÉTÉ CONFRONTÉ : les seize questions de creation-compte.ts (posées
+  du 8 au 18 septembre) aux colonnes de la table entreprises et aux écrans
+  Mon entreprise, Équipe et TVA d'aujourd'hui. Sont nés depuis : la
+  périodicité et l'exigibilité de la TVA (dans Mon entreprise depuis le
+  6 et le 12 septembre), la décennale et son attestation lue par l'IA (14
+  septembre, 5 et 7 octobre), le médiateur (14 septembre), le répertoire des
+  métiers (9 octobre), les chantiers par jour (10 et 26 août, jamais
+  demandés à la porte). Le détail est dans docs/creer-un-compte-soigne.md.
+
+  LES CAPTURES D'AUJOURD'HUI sont prises par l'appli, le 26 octobre 2026, à
+  390 × 664 : une SARL assujettie, Lucas Bernard, Jardins Démo. Les valeurs de
+  démonstration du téléphone proposé sont les mêmes, et celles de la planche
+  Mon entreprise (reglages-identite.html) pour le reste.
+
+  LA PORTE RESTE EN NUIT, quelle que soit la charte essayée : avant le compte,
+  personne n'a choisi de couleurs, et l'appli la pose en Nuit (PorteDeNuit).
+  Seul l'accueil, une fois entré, suit la charte. La photo de la forêt garde
+  ses couleurs de photo : elles vivent dans --photo-* et nulle part ailleurs.
+*/
+
+.porte { --photo-texte: #ffffff; --photo-encre: #12160f; --photo-voile-1: rgba(10,14,10,.52); --photo-voile-2: rgba(10,14,10,.30);
+         --photo-voile-3: rgba(10,14,10,.48); --photo-voile-4: rgba(8,11,8,.90); --photo-trait: rgba(255,255,255,.62);
+         background: radial-gradient(120% 62% at 8% 4%, color-mix(in srgb, var(--atlas-or) 22%, var(--atlas-card)) 0%,
+                     var(--atlas-card) 40%, var(--atlas-cream) 78%); }
+.vue { position: absolute; inset: 0; display: flex; flex-direction: column; padding: 0 var(--gouttiere); }
+
+/* ─── La porte en forêt : la photo, ATLAS, les deux gestes ─────────────── */
+.vue-bienvenue { color: var(--photo-texte); padding-bottom: 14px; overflow: hidden; }
+.vue-bienvenue > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; max-width: none; }
+.vue-bienvenue .voile-photo { position: absolute; inset: 0;
+  background: linear-gradient(180deg, var(--photo-voile-1) 0%, var(--photo-voile-2) 34%, var(--photo-voile-3) 62%, var(--photo-voile-4) 100%); }
+.vue-bienvenue .nom-atlas { position: relative; flex: 1; display: grid; place-items: center;
+  font: 400 34px/1 var(--serif); letter-spacing: 0.28em; text-indent: 0.28em; text-shadow: 0 2px 18px rgba(0,0,0,.55); }
+.vue-bienvenue .bas-photo { position: relative; }
+.legal { margin: 0 0 16px; text-align: center; font-size: 13px; line-height: 1.5; color: color-mix(in srgb, var(--photo-texte) 90%, transparent); }
+.legal button { font: inherit; color: var(--photo-texte); text-decoration: underline; text-underline-offset: 2px; }
+.bouton-photo { background: var(--photo-texte); color: var(--photo-encre); }
+.bouton-photo-creux { margin-top: 10px; color: var(--photo-texte); box-shadow: inset 0 0 0 1.5px var(--photo-trait); }
+
+/* ─── Une question : le haut, ce qui se remplit, les deux gestes du bas ─── */
+.vue-haut { flex: none; padding-top: 6px; }
+.retour { display: inline-flex; align-items: center; gap: 6px; min-height: 48px; margin-left: -10px; padding: 0 12px 0 8px;
+          border-radius: 24px; font-size: 15.5px; font-weight: 600; color: var(--atlas-inkSoft); }
+.retour .ico { width: 22px; height: 22px; }
+.progression { display: flex; justify-content: space-between; align-items: baseline; margin-top: 2px;
+               font-size: 14.5px; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
+.progression b { color: var(--atlas-ink); font-weight: 600; }
+.segments { display: flex; gap: 5px; margin-top: 10px; }
+.segments span { flex: 1; height: 4px; border-radius: 2px; background: var(--atlas-line); overflow: hidden; }
+.segments i { display: block; height: 100%; border-radius: 2px; background: var(--atlas-or); transition: width 320ms var(--courbe); }
+.vue-milieu { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; scrollbar-width: none;
+              overscroll-behavior: contain; padding: 18px 0 8px; }
+.vue-milieu::-webkit-scrollbar { display: none; }
+.vue-milieu > .dedans { margin-block: auto; }
+.question { margin: 0 0 20px; font: 400 30px/1.12 var(--serif); letter-spacing: -0.01em; text-wrap: balance; }
+.aide { margin: -8px 0 20px; font-size: 15px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.refus { min-height: 22px; margin: 12px 0 0; font-size: 14.5px; line-height: 22px; color: var(--atlas-alerte); }
+.vue-bas { flex: none; padding: 8px 0 calc(12px + env(safe-area-inset-bottom)); }
+.passer { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 48px; margin-top: 4px;
+          font-size: 15.5px; font-weight: 600; color: var(--atlas-inkSoft); }
+
+/* Les cases de la porte : des pilules, comme aujourd'hui, et leur nom au-dessus
+   dès qu'un écran en porte deux : une case remplie ne dit plus ce qu'elle est. */
+.porte .champ { margin-top: 14px; }
+.porte .champ:first-child { margin-top: 0; }
+.porte .champ-libelle { margin: 0 0 7px 22px; font-size: 14px; }
+.porte .champ-saisie { min-height: 56px; padding: 0 22px; border-radius: 999px; font-size: 16.5px;
+                       box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.porte .champ-saisie:focus { box-shadow: inset 0 0 0 2px var(--atlas-or); }
+/* Le contour d'or de la case dit déjà où l'on écrit : pas de second anneau. */
+.porte input:focus-visible { outline: none; }
+.porte .champ-saisie::placeholder { color: var(--atlas-muted); }
+.porte .champ-aide { margin: 7px 0 0 22px; font-size: 14px; }
+.porte .champ-aide.lu { color: var(--atlas-carteVertTexte); font-weight: 600; }
+.saisie-rang { position: relative; display: flex; align-items: center; min-height: 56px; border-radius: 999px;
+               background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.saisie-rang:focus-within { box-shadow: inset 0 0 0 2px var(--atlas-or); }
+.saisie-rang .champ-saisie { flex: 1; min-width: 0; background: transparent; box-shadow: none; }
+.saisie-rang .champ-saisie:focus { box-shadow: none; }
+.indicatif { flex: none; display: flex; align-items: center; gap: 6px; height: 32px; margin-left: 8px; padding: 0 12px;
+             border-radius: 16px; background: var(--atlas-rustTint); font-size: 15px; font-weight: 600; color: var(--atlas-ink); }
+.unite { flex: none; padding-right: 22px; font-size: 16px; color: var(--atlas-inkSoft); }
+.oeil { flex: none; width: 48px; height: 48px; margin-right: 4px; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-inkSoft); }
+.oeil[aria-pressed="true"] { color: var(--atlas-or); }
+
+/* Madame ou Monsieur : deux pilules, la pastille d'or sur celle qui est prise. */
+.paire { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.paire button { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 56px; border-radius: 999px;
+                background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); font-size: 16.5px; color: var(--atlas-ink); }
+.paire button[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--atlas-or); }
+
+/* La règle du mot de passe se lit AVANT le refus. */
+.regles { margin: 14px 0 0 22px; padding: 0; list-style: none; }
+.regles li { display: flex; align-items: center; gap: 10px; min-height: 30px; font-size: 14.5px; color: var(--atlas-inkSoft); }
+.regles .coche { width: 20px; height: 20px; flex: none; display: grid; place-items: center; border-radius: 50%;
+                 box-shadow: inset 0 0 0 1.5px var(--atlas-chevron); }
+.regles .coche .ico { width: 13px; height: 13px; stroke-width: 2.6; opacity: 0; }
+.regles li[data-tenue] { color: var(--atlas-ink); }
+.regles li[data-tenue] .coche { background: var(--atlas-carteVertTexte); box-shadow: none; color: var(--atlas-cream); }
+.regles li[data-tenue] .coche .ico { opacity: 1; }
+
+/* Une liste à choisir : la plage de la porte, ses coins de la porte (14 px). */
+.porte .plage { border-radius: 14px; padding: 2px 18px; }
+.porte .radio { min-height: 62px; align-items: center; }
+.porte .radio .coche-ronde { margin-top: 0; }
+.porte .radio b { font-size: 18px; }
+.porte .radio small { font-size: 14px; }
+.porte .radio + .radio::before { left: 34px; }
+.autre-forme { display: flex; align-items: center; gap: 6px; min-height: 48px; margin-top: 6px; font-size: 15.5px; font-weight: 600; color: var(--atlas-or); }
+.autre-forme .ico { width: 18px; height: 18px; stroke-width: 2.2; }
+
+/* Oui ou Non : deux cartes côte à côte, comme Mon entreprise soignée. */
+.porte .cartes-choix { gap: 12px; }
+.porte .carte-choix { min-height: 132px; padding: 16px; border-radius: 14px; box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.porte .carte-choix b { margin-top: 8px; font-size: 24px; }
+.porte .carte-choix small { font-size: 14px; }
+.porte .carte-choix[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--atlas-or); }
+
+/* Les suggestions d'adresse : la même pièce que Réglages (Base Adresse Nationale). */
+.suggestions { margin-top: 10px; padding: 2px 6px; border-radius: 14px; background: var(--atlas-card); }
+.suggestions button { position: relative; display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 0 12px;
+                      text-align: left; font-size: 15.5px; line-height: 1.3; color: var(--atlas-ink); border-radius: 10px; }
+.suggestions button + button::before { content: ""; position: absolute; left: 46px; right: 12px; top: 0; height: 1px; background: var(--atlas-line); }
+.suggestions .ico { width: 20px; height: 20px; color: var(--atlas-or); }
+
+/* L'attestation : la photo, sa lecture, ce qui y est lu. */
+.attestation-gestes .bouton + .bouton { margin-top: 10px; }
+.feuillet { display: flex; align-items: center; gap: 16px; padding: 16px; border-radius: 14px; background: var(--atlas-card); }
+.feuillet svg { flex: none; width: 54px; height: 70px; }
+.feuillet-texte { min-width: 0; font-size: 15px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.feuillet-texte b { display: block; font: 400 18px/1.25 var(--serif); color: var(--atlas-ink); }
+.souffle { display: inline-flex; gap: 5px; margin-top: 8px; }
+.souffle i { width: 7px; height: 7px; border-radius: 50%; background: var(--atlas-or); animation: souffle 1.1s var(--courbe) infinite; }
+.souffle i:nth-child(2) { animation-delay: 0.16s; } .souffle i:nth-child(3) { animation-delay: 0.32s; }
+@keyframes souffle { 0%, 100% { opacity: 0.25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
+.porte .plage-ton { margin-top: 12px; border-radius: 14px; }
+.reprendre { display: inline-flex; align-items: center; min-height: 48px; margin-top: 4px; font-size: 15.5px; font-weight: 600; color: var(--atlas-or); }
+
+/* Le compteur de chantiers. */
+.porte .compteur { margin: 8px 0 4px; }
+.porte .compteur output { font-size: 64px; min-width: 80px; }
+.porte .compteur button { width: 60px; height: 60px; }
+.compteur-mot { margin: 6px 0 0; text-align: center; font-size: 15.5px; color: var(--atlas-inkSoft); }
+
+/* Le code : six cases, la même pièce qu'aujourd'hui. */
+.cases-code { position: relative; display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.cases-code span { display: grid; place-items: center; height: 64px; border-radius: 14px; background: var(--atlas-card);
+                   box-shadow: inset 0 0 0 1px var(--atlas-line); font-size: 28px; font-variant-numeric: tabular-nums; }
+.cases-code span[data-ici] { box-shadow: inset 0 0 0 2px var(--atlas-or); }
+.cases-code input { position: absolute; inset: 0; width: 100%; opacity: 0; border: 0; font-size: 16px; }
+.adresse-mail { margin: -10px 0 26px; font-size: 15.5px; color: var(--atlas-inkSoft); overflow-wrap: anywhere; }
+.adresse-mail b { font-weight: 600; color: var(--atlas-ink); }
+
+/* Les conditions : le texte, mot pour mot ; les deux documents dans leur plage. */
+.conditions-texte { margin: -6px 0 22px; font-size: 15.5px; line-height: 1.55; color: var(--atlas-inkSoft); }
+.porte .plage-documents { padding: 0 18px; }
+.plage-documents p { margin: 0; padding: 16px 0; font-size: 15.5px; line-height: 1.45; }
+.plage-documents .ligne { min-height: 70px; }
+.plage-documents .ligne::before, .plage-documents p + .ligne::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
+.plage-documents .ligne-nom { font-size: 17.5px; }
+
+/* Face ID : le dessin, une phrase, deux gestes. */
+.visage { display: block; width: 76px; height: 76px; margin: 0 0 22px; color: var(--atlas-or); }
+.porte .enregistre { display: flex; align-items: center; gap: 10px; }
+
+/* Tout est prêt : chaque paquet de Mon entreprise, et ce qu'il porte. */
+.manque-phrase { margin: -10px 0 18px; font-size: 15.5px; font-weight: 600; color: var(--atlas-carteAmbreTexte); }
+.porte .recap { padding: 0 18px; border-radius: 14px; }
+.recap .reglage { padding: 13px 0; }
+.recap .reglage:first-child::before { display: none; }
+.recap .reglage-valeur { font-size: 18px; }
+.recap .reglage.manque .reglage-valeur { font: 600 15.5px/1.4 var(--sans); color: var(--atlas-carteAmbreTexte); }
+.ou-changer { margin: 14px 0 0; font-size: 14.5px; color: var(--atlas-inkSoft); }
+.ou-changer b { color: var(--atlas-ink); font-weight: 600; }
+
+/* ─── Dans Atlas : l'accueil d'un compte neuf (accueil.html, « Au début ») ── */
+.bandeau-essai { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px;
+                 padding: 0 var(--gouttiere); background: var(--atlas-rustTint); font-size: 14.5px; color: var(--atlas-inkSoft); }
+.bandeau-essai a { display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; color: var(--atlas-or);
+                   text-decoration: underline; text-underline-offset: 3px; }
+.haut { flex: none; padding: 30px var(--gouttiere) 0; }
+.haut .tete { margin: 0; min-height: 0; align-items: flex-start; }
+.haut .tete-titre { margin-top: 2px; font-size: 40px; line-height: 1.02; letter-spacing: -0.018em; white-space: nowrap; }
+.vos-clients { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; margin: 0 0 -6px -2px; padding: 0 2px;
+               text-decoration: none; font-size: 15.5px; font-weight: 600; color: var(--atlas-or); }
+.vos-clients .ico { width: 18px; height: 18px; stroke-width: 2.2; }
+.creer-rang { flex: none; display: flex; justify-content: center; padding: 64px var(--gouttiere) 0; }
+.geste-nouveau { display: flex; align-items: center; justify-content: center; gap: 14px; min-height: 56px; padding: 4px 10px;
+                 text-decoration: none; color: var(--atlas-ink); }
+.geste-nouveau .phrase { font: 400 27px/1.1 var(--serif); letter-spacing: -0.014em; white-space: nowrap; }
+.plume { display: grid; place-items: center; width: 30px; height: 30px; }
+.plume svg { width: 22px; height: 22px; }
+.plume path { stroke: var(--atlas-or); stroke-width: 1.6; stroke-linecap: round; fill: none; stroke-dasharray: 24;
+              animation: trace 3.4s cubic-bezier(0.3, 0.6, 0.2, 1) infinite; }
+.plume .trait-v { animation-delay: 0.32s; }
+@keyframes trace {
+  0% { stroke-dashoffset: 24; opacity: 0; } 4% { opacity: 1; } 22% { stroke-dashoffset: 0; opacity: 1; }
+  72% { stroke-dashoffset: 0; opacity: 1; } 86% { opacity: 0; stroke-dashoffset: 0; } 100% { stroke-dashoffset: 24; opacity: 0; }
+}
+.en-cours { display: flex; align-items: baseline; gap: 10px; margin-top: 30px; padding: 12px var(--gouttiere) 4px;
+            font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--atlas-inkSoft); }
+.en-cours b { font-size: 16px; letter-spacing: 0.02em; color: var(--atlas-ink); font-variant-numeric: tabular-nums; }
+
+/* ─── Le téléphone d'aujourd'hui : la capture, ou ce qui n'existe pas ─── */
+.cadre-capture hr { height: 10px; margin: 0; border: 0; background: #1c1c1a; }
+.absent { min-height: 100%; display: flex; flex-direction: column; justify-content: center; gap: 14px; padding: 40px 34px;
+          background: #ebe8e1; color: #1c1c1a; }
+.absent .ico { width: 34px; height: 34px; color: #8b6835; stroke-width: 1.5; }
+.absent b { font: 400 23px/1.25 var(--serif); }
+.absent p { margin: 0; font-size: 16px; line-height: 1.5; color: #4a4a44; }
+
+.pl-ecrans > .pl-etats { grid-column: 1 / -1; margin-bottom: 0; }
+@media (max-width: 480px) {
+  .pl-ecrans > .pl-etats { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; scrollbar-width: none; }
+  .pl-ecrans > .pl-etats::-webkit-scrollbar { display: none; }
+  .pl-ecrans > .pl-etats button { flex: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .plume path, .souffle i { animation: none; stroke-dashoffset: 0; opacity: 1; }
+}
+</style>
+</head>
+<body class="pl pl-pilules">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">Créer un compte</h1>
+  <p class="pl-verdict">De la porte à l'accueil, <b>toujours une question à la fois</b>, et chaque réponse remplit sa case des Réglages. Ce qui est né dans Mon entreprise depuis septembre se demande aussi : <b>la décennale, le médiateur, le rythme de la TVA</b>. La fin montre ce qui est rempli, et ce qui manque.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <!-- Les étapes, au-dessus des DEUX téléphones : les deux suivent. -->
+    <div class="pl-etats" id="etapes">
+      <button type="button" data-aller="bienvenue" aria-pressed="true">La porte</button>
+      <button type="button" data-aller="Vous">Vous</button>
+      <button type="button" data-aller="Vous joindre">Vous joindre</button>
+      <button type="button" data-aller="Votre entreprise">Votre entreprise</button>
+      <button type="button" data-aller="La TVA">La TVA</button>
+      <button type="button" data-aller="Être payé">Être payé</button>
+      <button type="button" data-aller="Assurance et médiateur">Assurance et médiateur</button>
+      <button type="button" data-aller="Votre équipe">Votre équipe</button>
+      <button type="button" data-aller="code">Le code</button>
+      <button type="button" data-aller="conditions">Les conditions</button>
+      <button type="button" data-aller="faceid">Face ID</button>
+      <button type="button" data-aller="pret">Tout est prêt</button>
+      <button type="button" data-aller="atlas">Dans Atlas</button>
+    </div>
+
+    <!-- ═══ PROPOSÉ ═══ -->
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="cadre">
+        <div class="ecran porte" id="porte" data-charte-fixe="nuit"></div>
+
+        <div class="ecran avec-barre" id="atlas" hidden>
+          <div class="bandeau-essai"><span>Essai gratuit, 15 jours restants</span><a href="reglages-abonnement.html">S’abonner</a></div>
+          <div class="haut">
+            <header class="tete">
+              <h1 class="tete-titre">Vos chantiers</h1>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-pas-ici="L’assistant s’ouvre ici, comme sur l’accueil soigné."><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </header>
+            <a class="vos-clients" href="clients.html">Vos clients<svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+          </div>
+          <div class="creer-rang">
+            <a class="geste-nouveau" href="#" data-pas-ici="Votre premier devis commence ici.">
+              <span class="phrase">Créer un devis</span>
+              <span class="plume"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h18"/><path class="trait-v" d="M12 3v18"/></svg></span>
+            </a>
+          </div>
+          <p class="en-cours">En cours <b>0</b></p>
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html" aria-current="page">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html">Terminés</a>
+              <a class="barre-onglet" href="paysage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ AUJOURD'HUI ═══ -->
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre">
+        <div class="cadre-capture" id="capture"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>La fin montre chaque paquet de Mon entreprise rempli, et dit en or ce qui manque. Aujourd’hui elle dit « Vos réglages sont remplis. Votre premier devis peut partir. » alors que le médiateur n’a jamais été demandé, et que Mon entreprise le dit manquant juste après.</li>
+      <li>Ce qui est né dans les Réglages depuis septembre se demande : la décennale (Oui ou Non, puis la photo de l’attestation, que l’IA lit déjà dans Mon entreprise, puis l’assureur), le médiateur, le rythme de la TVA et quand vous la reversez, les chantiers par jour.</li>
+      <li>Le rythme, le reversement et les chantiers par jour arrivent déjà choisis, sur la valeur que l’appli prend aujourd’hui sans le dire : vous regardez, et Continuer.</li>
+      <li>Trois paires passent sur un seul écran, comme dans Mon entreprise : le téléphone et l’e-mail des devis, le capital et la ville du RCS, l’IBAN et son titulaire.</li>
+      <li>Le numéro de TVA arrive déjà écrit, tiré du SIRET : l’appli sait déjà le calculer, pour vos clients.</li>
+      <li>La forme juridique se lit en liste et avance au premier appui, comme Facturez-vous la TVA. Aujourd’hui le déroulant, ouvert, cache la question.</li>
+      <li>Le mot de passe montre sa règle pendant qu’on tape (12 caractères, les deux identiques), au lieu de la dire au refus.</li>
+      <li>Le téléphone derrière FR +33, l’adresse et ses suggestions, l’IBAN par groupes de quatre : les mêmes cases que dans Réglages.</li>
+      <li>Sur un écran à plusieurs cases, chaque case garde son nom au-dessus : remplie, elle ne dit plus « Prénom » ni rien.</li>
+      <li>Rien sous 13 points (le compteur, Passer, la phrase sous la photo), des boutons de 56 points, Se connecter en vrai bouton sous Créer un compte.</li>
+      <li>La fin dans cet ordre : le code, les conditions, Face ID, Tout est prêt. Entrer dans Atlas entre vraiment ; aujourd’hui il ouvre encore les conditions.</li>
+      <li>Le compte annoncé ne monte jamais : 14 questions pour une micro-entreprise sans décennale, 20 pour une société qui facture la TVA et a une décennale. Aujourd’hui, de 13 à 16.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Une question à la fois (votre choix du 8 septembre), et l’ordre de vos chapitres : Vous, Vous joindre, Votre entreprise, la TVA, Être payé.</li>
+      <li>La porte en forêt, ATLAS, et la nuit jusqu’à l’entrée.</li>
+      <li>Ce qui se devine se propose et se corrige d’un doigt : l’e-mail des devis, le titulaire du compte, Virement et chèque.</li>
+      <li>Passer n’existe que là où passer est permis, et ce qui est passé se redit à la fin.</li>
+      <li>Le code à six chiffres reçu par e-mail, et les mots des conditions, mot pour mot.</li>
+      <li>Rien n’est enregistré avant Créer mon compte.</li>
+    </ul>
+    <h2>Pas demandé ici, et pourquoi</h2>
+    <ul class="garde">
+      <li>Le répertoire des métiers : facultatif, jamais réclamé (votre choix du 9 octobre).</li>
+      <li>L’endroit des mentions sur le devis : En bas, avec le SIRET, que vous avez gardé.</li>
+      <li>Le numéro de contrat de la décennale : il n’est pas exigé sur un devis.</li>
+      <li>Les salariés et leurs noms, l’acompte, la validité des devis, le logo, les couleurs : ils partent d’une valeur juste et se règlent quand vous voulez.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>Face ID proposé juste avant d’entrer, ou laissé dans Réglages, Mot de passe.</li>
+      <li>Les chantiers par jour demandés ici, ou laissés à un jusqu’à ce que vous le changiez dans Équipe.</li>
+    </ul>
+    <h2>Trouvé en chemin</h2>
+    <ul class="a-trancher">
+      <li>La TVA déclarée une fois par an (le régime simplifié) n’a pas de case : l’appli ne connaît que le mois et le trimestre. À voir avec un comptable avant d’y toucher.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+/*
+  Les gestes propres à cette planche :
+    la porte se traverse pour de vrai : chaque question se répond, se passe,
+      revient en arrière, et les questions qui dépendent d'une réponse (le
+      capital, la TVA, la décennale) n'apparaissent que si elle les appelle ;
+    une étape touchée au-dessus des téléphones y mène, en remplissant ce qui
+      précède avec les valeurs de démonstration (le médiateur reste passé :
+      c'est ce qui montre la fin avec un manque) ;
+    le téléphone d'aujourd'hui suit l'écran montré, question par question.
+
+  Les règles recopiées de l'appli, et d'où elles viennent :
+    l'ordre, ce qui est obligatoire, ce qui se propose, le total qui ne monte
+      jamais, la phrase de ce qui manque : src/lib/creation-compte.ts ;
+    les formes juridiques et celles qui ont un capital : formes-juridiques.ts ;
+    les moyens de paiement : modalites-paiement.ts ;
+    le numéro de TVA tiré du SIREN : autoliquidation.ts (numeroTvaFrancais) ;
+    les mots du rythme et du reversement : PeriodiciteTva.tsx, ExigibiliteTva.tsx.
+*/
+(function () {
+  "use strict";
+
+  var porte = document.getElementById("porte");
+  var atlas = document.getElementById("atlas");
+  var capture = document.getElementById("capture");
+  var etapes = document.getElementById("etapes");
+
+  var FORMES = [
+    { v: "EI", n: "Entreprise individuelle", capital: false },
+    { v: "Micro-entreprise", n: "Régime de l’entreprise individuelle", capital: false },
+    { v: "EURL", n: "SARL à associé unique", capital: true },
+    { v: "SARL", n: "Société à responsabilité limitée", capital: true },
+    { v: "SASU", n: "SAS à associé unique", capital: true },
+    { v: "SAS", n: "Société par actions simplifiée", capital: true },
+    { v: "SA", n: "Société anonyme", capital: true, rare: true },
+    { v: "SNC", n: "Société en nom collectif", capital: true, rare: true },
+    { v: "SCOP", n: "Société coopérative de production", capital: true, rare: true },
+    { v: "SCI", n: "Société civile immobilière", capital: true, rare: true }
+  ];
+
+  var QUESTIONS = [
+    { id: "identite", chap: "Vous", titre: "Quelle est votre identité ?", requis: true, forme: "identite" },
+    { id: "email", chap: "Vous", titre: "Votre adresse e-mail ?", aide: "C’est elle qui vous ouvrira Atlas.", requis: true, forme: "champ",
+      champ: { cle: "email", type: "email", ph: "Votre e-mail", ac: "username" } },
+    { id: "mdp", chap: "Vous", titre: "Choisissez un mot de passe", requis: true, forme: "mdp" },
+    { id: "joindre", chap: "Vous joindre", titre: "Comment vos clients vous joignent ?", forme: "joindre", cles: ["tel", "emailPro"],
+      reste: "le téléphone" },
+    { id: "entreprise", chap: "Votre entreprise", titre: "Le nom de votre entreprise ?", requis: true, forme: "champ",
+      champ: { cle: "entreprise", ph: "Nom de l’entreprise", ac: "organization" } },
+    { id: "forme", chap: "Votre entreprise", titre: "Sa forme juridique ?", requis: true, forme: "forme" },
+    { id: "capitalRcs", chap: "Votre entreprise", titre: "Son capital et la ville du RCS ?", si: "capital", forme: "champs", reste: "le capital ou le RCS",
+      champs: [{ cle: "capital", lib: "Capital social", ph: "1 000", unite: "€", mode: "decimal" }, { cle: "rcs", lib: "Ville du RCS", ph: "Versailles" }] },
+    { id: "siret", chap: "Votre entreprise", titre: "Votre SIRET ?", forme: "champ", reste: "le SIRET",
+      champ: { cle: "siret", ph: "14 chiffres", mode: "numeric", format: "siret" } },
+    { id: "adresse", chap: "Votre entreprise", titre: "Où est domiciliée votre entreprise ?", forme: "adresse", reste: "l’adresse" },
+    { id: "tva", chap: "La TVA", titre: "Facturez-vous la TVA ?", requis: true, forme: "cartes",
+      choix: [{ v: "assujettie", t: "Oui", n: "je facture la TVA à mes clients" }, { v: "franchise", t: "Non", n: "je suis en franchise de TVA" }] },
+    { id: "numTva", chap: "La TVA", titre: "Votre numéro de TVA intracommunautaire ?", si: "assujettie", forme: "champ", reste: "le numéro de TVA",
+      champ: { cle: "numTva", ph: "FR…", tire: true } },
+    { id: "rythme", chap: "La TVA", titre: "À quel rythme la déclarez-vous ?", si: "assujettie", forme: "liste", propose: "mensuelle",
+      aide: "Le mois est le défaut. Le trimestre s’obtient sous condition.",
+      choix: [{ v: "mensuelle", t: "Tous les mois" }, { v: "trimestrielle", t: "Tous les trimestres" }] },
+    { id: "reversement", chap: "La TVA", titre: "Quand la reversez-vous aux impôts ?", si: "assujettie", forme: "liste", propose: "encaissements",
+      aide: "Dans le doute, votre comptable le dit en une phrase.",
+      choix: [{ v: "encaissements", t: "Le mois où mon client me paie", n: "Elle entre au relevé quand vous la marquez payée." },
+              { v: "debits", t: "Le mois où j’envoie la facture", n: "Même si le client n’a pas encore payé." }] },
+    { id: "paye", chap: "Être payé", titre: "Votre IBAN ?", forme: "iban", cles: ["iban", "titulaire"], reste: "l’IBAN" },
+    { id: "moyens", chap: "Être payé", titre: "Les moyens de paiement que vous acceptez ?", requis: true, forme: "liste", propose: "virement, chèque",
+      choix: [{ v: "virement, chèque", t: "Virement et chèque" }, { v: "virement", t: "Virement seulement" }, { v: "virement, chèque, espèces", t: "Virement, chèque, espèces" }] },
+    { id: "decennale", chap: "Assurance et médiateur", titre: "Avez-vous une assurance décennale ?", requis: true, forme: "cartes",
+      choix: [{ v: "oui", t: "Oui", n: "elle va sur mes devis et mes factures" }, { v: "non", t: "Non", n: "je n’en ai pas" }] },
+    { id: "attestation", chap: "Assurance et médiateur", titre: "Prenez votre attestation en photo", si: "decennale", forme: "attestation", reste: "l’attestation" },
+    { id: "assureur", chap: "Assurance et médiateur", titre: "Votre assureur ?", si: "decennale", forme: "champs", reste: "l’assureur",
+      champs: [{ cle: "assureur", lib: "Assureur", ph: "Le nom sur l’attestation" }, { cle: "adresseAssureur", lib: "Adresse de l’assureur", ph: "Sur votre attestation" },
+               { cle: "couverture", lib: "Couverture géographique", ph: "France métropolitaine" }] },
+    { id: "mediateur", chap: "Assurance et médiateur", titre: "Votre médiateur de la consommation ?", aide: "Obligatoire dès que vous travaillez pour des particuliers.",
+      forme: "champs", reste: "le médiateur",
+      champs: [{ cle: "mediateur", lib: "Nom", ph: "Celui auquel vous adhérez" }, { cle: "mediateurOu", lib: "Adresse ou site", ph: "Son adresse ou son site" }] },
+    { id: "equipe", chap: "Votre équipe", titre: "Combien de chantiers par jour ?", aide: "Une équipe, un chantier.", forme: "compteur", propose: "1" }
+  ];
+  var CHAPITRES = [];
+  QUESTIONS.forEach(function (q) { if (CHAPITRES.indexOf(q.chap) < 0) CHAPITRES.push(q.chap); });
+
+  var DEMO = {
+    civ: "mr", prenom: "Lucas", nom: "Bernard", email: "lucas@jardins-demo.fr", mdp: "Haie-de-buis-taillee", confirm: "Haie-de-buis-taillee",
+    tel: "2 41 00 00 00", entreprise: "Jardins Démo", forme: "SARL", capital: "5 000", rcs: "Angers", siret: "123 456 789 00012",
+    adresse: "12 rue des Tilleuls, 49000 Angers", tva: "assujettie", iban: "FR76 3000 6000 0112 3456 7890 189",
+    decennale: "oui", attestation: "lue", adresseAssureur: "1 rue de l’Exemple, 44000 Nantes", couverture: "France métropolitaine",
+    mediateur: "", mediateurOu: ""
+  };
+  var ADRESSES = ["12 rue des Tilleuls, 49000 Angers", "12 avenue des Tilleuls, 49000 Angers", "12 rue des Tilleuls, 49130 Les Ponts-de-Cé"];
+  var LU = { assureur: "Assureur de démonstration", fin: "31 décembre 2026" };
+
+  var R = {};
+  var vue = "bienvenue";
+  var rang = 0;
+  var lecture = false;
+  var autresFormes = false;
+  var faceIdFait = false;
+  var mdpVisible = {};
+
+  // ─── Les règles ─────────────────────────────────────────────────────────
+  function aCapital(forme) { var f = FORMES.filter(function (x) { return x.v === forme; })[0]; return !!(f && f.capital); }
+  function applique(q, r) {
+    if (q.si === "capital") return aCapital(r.forme);
+    if (q.si === "assujettie") return r.tva === "assujettie";
+    if (q.si === "decennale") return r.decennale === "oui";
+    return true;
+  }
+  function applicables(r) { return QUESTIONS.filter(function (q) { return applique(q, r || R); }); }
+  /* Le total annoncé ne monte jamais : une question conditionnelle compte
+     tant qu'on ne sait pas (totalAnnonce). */
+  function totalAnnonce() {
+    var possibles = QUESTIONS.filter(function (q) {
+      if (q.si === "capital") return R.forme === undefined || aCapital(R.forme);
+      if (q.si === "assujettie") return R.tva === undefined || R.tva === "assujettie";
+      if (q.si === "decennale") return R.decennale === undefined || R.decennale === "oui";
+      return true;
+    }).length;
+    return Math.max(possibles, applicables().length);
+  }
+  function chiffres(s) { return String(s || "").replace(/\D/g, ""); }
+  function numeroTva(siret) {
+    var c = chiffres(siret);
+    if (c.length !== 14) return "";
+    var siren = c.slice(0, 9);
+    var cle = (12 + 3 * (Number(siren) % 97)) % 97;
+    return "FR " + (cle < 10 ? "0" : "") + cle + " " + siren;
+  }
+  /* Ce que l'écran montre est ce qui part en base : les réponses, plus ce
+     qui se propose (reponsesProposees). Une case vidée à la main reste vide. */
+  function vues() {
+    var v = {};
+    for (var k in R) v[k] = R[k];
+    if (v.emailPro === undefined && (R.email || "").trim()) v.emailPro = R.email.trim();
+    if (v.titulaire === undefined && (R.entreprise || "").trim()) v.titulaire = R.entreprise.trim();
+    if (v.numTva === undefined && numeroTva(R.siret)) v.numTva = numeroTva(R.siret);
+    if (v.assureur === undefined && R.attestation === "lue") v.assureur = LU.assureur;
+    QUESTIONS.forEach(function (q) { if (q.propose && v[q.id] === undefined) v[q.id] = q.propose; });
+    return v;
+  }
+  function vide(x) { return !String(x || "").trim(); }
+  function refusDe(q, v) {
+    if (q.id === "identite") {
+      if (!v.civ) return "Madame ou Monsieur ?";
+      if (vide(v.prenom)) return "Votre prénom.";
+      if (vide(v.nom)) return "Votre nom.";
+      return null;
+    }
+    if (q.id === "email") {
+      var e = String(v.email || "").trim();
+      return e.indexOf("@") < 1 || e.slice(-1) === "@" ? "Cette adresse ne ressemble pas à une adresse e-mail." : null;
+    }
+    if (q.id === "mdp") {
+      if (String(v.mdp || "").length < 12) return "Il faut au moins 12 caractères.";
+      if (v.confirm !== v.mdp) return "Les deux saisies ne sont pas identiques.";
+      return null;
+    }
+    if (q.id === "capitalRcs" && !vide(v.capital) && !/^[\d\s.,]+$/.test(v.capital)) return "Un montant, en chiffres.";
+    if (q.id === "forme" && vide(v.forme)) return "Choisissez une forme juridique.";
+    if (q.requis && vide(v[q.id])) return "Cette réponse est nécessaire.";
+    return null;
+  }
+  function avanceSeule(q) { return (q.forme === "cartes" || q.forme === "forme") && !q.propose; }
+  function manques() {
+    var v = vues(), restes = [];
+    applicables().forEach(function (q) {
+      if (!q.reste) return;
+      var cles = q.cles || (q.champs ? q.champs.map(function (c) { return c.cle; }) : q.champ ? [q.champ.cle] : [q.id]);
+      if (q.id === "joindre") cles = ["tel"];
+      if (q.id === "paye") cles = ["iban"];
+      if (q.id === "attestation") { if (v.attestation !== "lue") restes.push(q.reste); return; }
+      if (cles.some(function (c) { return vide(v[c]); })) restes.push(q.reste);
+    });
+    return restes;
+  }
+  /* Trois nommés, pas plus ; le reste se compte (phraseDeCeQuiManque). */
+  function phraseDuManque(restes) {
+    if (!restes.length) return "";
+    var trois = restes.slice(0, 3);
+    var enumere = trois.length === 1 ? trois[0] : trois.slice(0, -1).join(", ") + " et " + trois[trois.length - 1];
+    var autres = restes.length - trois.length;
+    return "Il manque " + enumere + (autres > 0 ? ", et " + autres + " autre" + (autres > 1 ? "s" : "") : "") + ".";
+  }
+
+  // ─── Les petits outils d'écriture ───────────────────────────────────────
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  /* L'espace insécable avant « ? » (typographie), et le trait d'union
+     insécable de « reversez-vous » : sans lui, la ligne se coupait au milieu. */
+  function typo(s) { return s.replace(/ ([?!:;])/g, "\u00a0$1").replace(/-vous/g, "\u2011vous"); }
+  function ico(nom, cls) { return '<svg class="ico' + (cls ? " " + cls : "") + '" aria-hidden="true"><use href="#i-' + nom + '"/></svg>'; }
+  function parGroupes(s, taille) { return String(s || "").replace(/\s/g, "").toUpperCase().replace(new RegExp("(.{" + taille + "})", "g"), "$1 ").trim(); }
+  function siretLisible(s) { var c = chiffres(s).slice(0, 14); return [c.slice(0, 3), c.slice(3, 6), c.slice(6, 9), c.slice(9)].filter(Boolean).join(" "); }
+
+  function champ(c, v, seul) {
+    var val = v[c.cle] === undefined ? "" : v[c.cle];
+    var attrs = ' name="' + c.cle + '" data-cle="' + c.cle + '" value="' + esc(val) + '" placeholder="' + esc(c.ph || "") + '"' +
+      ' type="' + (c.type === "password" ? (mdpVisible[c.cle] ? "text" : "password") : c.type || "text") + '"' +
+      (c.ac ? ' autocomplete="' + c.ac + '"' : ' autocomplete="off"') + (c.mode ? ' inputmode="' + c.mode + '"' : "") +
+      (seul ? ' aria-label="' + esc(seul) + '"' : "");
+    var dedans;
+    if (c.unite || c.oeil) {
+      dedans = '<span class="saisie-rang"><input class="champ-saisie"' + attrs + ">" +
+        (c.unite ? '<span class="unite">' + c.unite + "</span>" : "") +
+        (c.oeil ? '<button type="button" class="oeil" data-oeil="' + c.cle + '" aria-pressed="' + !!mdpVisible[c.cle] + '" aria-label="Montrer le mot de passe">' + ico("oeil") + "</button>" : "") +
+        "</span>";
+    } else dedans = '<input class="champ-saisie"' + attrs + ">";
+    var tire = c.tire && R.numTva === undefined && v.numTva ? '<span class="champ-aide lu">Tiré de votre SIRET.</span>' : "";
+    var lu = c.cle === "assureur" && R.assureur === undefined && R.attestation === "lue" ? '<span class="champ-aide lu">Lu sur votre attestation.</span>' : "";
+    return seul ? dedans + tire + lu
+      : '<label class="champ"><span class="champ-libelle">' + c.lib + "</span>" + dedans + tire + lu + "</label>";
+  }
+
+  function rangee(q, v) {
+    var h = "";
+    if (q.forme === "identite") {
+      h += '<div class="paire" role="group" aria-label="Civilité">' +
+        [["mme", "Madame"], ["mr", "Monsieur"]].map(function (x) {
+          return '<button type="button" data-civ="' + x[0] + '" aria-pressed="' + (v.civ === x[0]) + '"><span class="coche-ronde"></span>' + x[1] + "</button>";
+        }).join("") + "</div>";
+      h += champ({ cle: "prenom", lib: "Prénom", ph: "Prénom", ac: "given-name" }, v);
+      h += champ({ cle: "nom", lib: "Nom", ph: "Nom", ac: "family-name" }, v);
+    } else if (q.forme === "champ") {
+      h += champ(q.champ, v, q.titre);
+    } else if (q.forme === "champs") {
+      q.champs.forEach(function (c) { h += champ(c, v); });
+    } else if (q.forme === "mdp") {
+      h += champ({ cle: "mdp", lib: "Mot de passe", ph: "Un mot de passe", type: "password", ac: "new-password", oeil: true }, v);
+      h += champ({ cle: "confirm", lib: "Confirmez le mot de passe", ph: "Le même", type: "password", ac: "new-password", oeil: true }, v);
+      h += '<ul class="regles" id="regles"><li data-regle="longueur"><span class="coche">' + ico("coche") + "</span>12 caractères au moins</li>" +
+        '<li data-regle="pareil"><span class="coche">' + ico("coche") + "</span>Les deux sont identiques</li></ul>";
+    } else if (q.forme === "joindre") {
+      h += '<label class="champ"><span class="champ-libelle">Téléphone</span><span class="saisie-rang"><span class="indicatif">FR +33</span>' +
+        '<input class="champ-saisie" data-cle="tel" name="tel" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="6 12 34 56 78" value="' + esc(v.tel || "") + '"></span></label>';
+      h += champ({ cle: "emailPro", lib: "E-mail sur vos devis", ph: "Adresse e-mail", type: "email", ac: "email" }, v);
+    } else if (q.forme === "forme") {
+      var montrees = FORMES.filter(function (f) { return !f.rare || autresFormes || v.forme === f.v; });
+      h += '<div class="plage" role="group" aria-label="Forme juridique">' + montrees.map(function (f) {
+        return '<button type="button" class="radio" data-forme="' + f.v + '" aria-pressed="' + (v.forme === f.v) + '"><span class="coche-ronde"></span><span><b>' + f.v + "</b><small>" + f.n + "</small></span></button>";
+      }).join("") + "</div>";
+      if (!autresFormes && !FORMES.some(function (f) { return f.rare && f.v === v.forme; }))
+        h += '<button type="button" class="autre-forme" data-autres-formes>Une autre forme' + ico("bas") + "</button>";
+    } else if (q.forme === "cartes") {
+      h += '<div class="cartes-choix">' + q.choix.map(function (c) {
+        return '<button type="button" class="carte-choix" data-choix-q="' + c.v + '" aria-pressed="' + (v[q.id] === c.v) + '"><span class="coche-ronde"></span><b>' + c.t + "</b><small>" + c.n + "</small></button>";
+      }).join("") + "</div>";
+    } else if (q.forme === "liste") {
+      h += '<div class="plage" role="group" aria-label="' + esc(q.titre) + '">' + q.choix.map(function (c) {
+        return '<button type="button" class="radio" data-choix-q="' + c.v + '" aria-pressed="' + (v[q.id] === c.v) + '"><span class="coche-ronde"></span><span><b>' + c.t + "</b>" + (c.n ? "<small>" + c.n + "</small>" : "") + "</span></button>";
+      }).join("") + "</div>";
+    } else if (q.forme === "adresse") {
+      h += champ({ cle: "adresse", ph: "Adresse du siège", ac: "street-address" }, v, q.titre);
+      h += '<div id="suggestions"></div>';
+    } else if (q.forme === "iban") {
+      h += champ({ cle: "iban", lib: "IBAN", ph: "FR76 …", ac: "off" }, v);
+      h += champ({ cle: "titulaire", lib: "Titulaire du compte", ph: "Le nom qui figure sur le compte" }, v);
+    } else if (q.forme === "attestation") {
+      h += attestationHtml();
+    } else if (q.forme === "compteur") {
+      var n = Number(v.equipe || 1);
+      h += '<div class="compteur" data-min="1" data-max="9"><button type="button" data-pas="-1" aria-label="Un de moins"' + (n <= 1 ? " disabled" : "") + ">" + ico("moins") +
+        "</button><output aria-live=\"polite\">" + n + '</output><button type="button" data-pas="1" aria-label="Un de plus"' + (n >= 9 ? " disabled" : "") + ">" + ico("plus") + "</button></div>" +
+        '<p class="compteur-mot" id="compteur-mot">' + motChantiers(n) + "</p>";
+    }
+    return h;
+  }
+  function motChantiers(n) { return n === 1 ? "chantier par jour" : "chantiers par jour"; }
+
+  function attestationHtml() {
+    var feuillet = '<svg viewBox="0 0 54 70" aria-hidden="true"><rect x="1" y="1" width="52" height="68" rx="5" fill="var(--atlas-cream)" stroke="var(--atlas-line)"/>' +
+      '<path d="M10 14h26M10 21h34M10 28h30M10 40h34M10 47h22" stroke="var(--atlas-chevron)" stroke-width="2.4" stroke-linecap="round"/>' +
+      '<circle cx="40" cy="56" r="7" fill="none" stroke="var(--atlas-or)" stroke-width="2"/></svg>';
+    if (lecture) {
+      return '<div class="feuillet">' + feuillet + '<div class="feuillet-texte"><b>Votre attestation</b>Lecture en cours<span class="souffle" aria-hidden="true"><i></i><i></i><i></i></span></div></div>';
+    }
+    if (R.attestation === "lue") {
+      return '<div class="feuillet">' + feuillet + '<div class="feuillet-texte"><b>Votre attestation</b>Jointe à vos devis et vos factures.</div></div>' +
+        '<p class="plage-ton" data-ton="vert">Lue : <b>' + LU.assureur + "</b>, valable jusqu’au " + LU.fin + ".</p>" +
+        '<button type="button" class="reprendre" data-photo>Reprendre la photo</button>';
+    }
+    return '<div class="attestation-gestes"><button type="button" class="bouton bouton-plein" data-photo>' + ico("photo") + "Prendre la photo</button>" +
+      '<button type="button" class="bouton bouton-creux" data-photo>' + ico("document") + "Choisir un fichier</button></div>";
+  }
+
+  // ─── Les vues de la porte ───────────────────────────────────────────────
+  function haut(avecProgression) {
+    var h = '<div class="vue-haut"><button type="button" class="retour" data-retour>' + ico("retour") + "Retour</button>";
+    if (avecProgression) {
+      var q = applicables()[rang];
+      var total = totalAnnonce();
+      var ici = CHAPITRES.indexOf(q.chap);
+      var duChap = applicables().filter(function (x) { return x.chap === q.chap; });
+      var pos = duChap.indexOf(q);
+      h += '<div class="progression"><b>' + q.chap + "</b><span>" + (rang + 1) + " sur " + total + "</span></div>";
+      h += '<div class="segments" aria-hidden="true">' + CHAPITRES.map(function (c, i) {
+        var w = i < ici ? 100 : i > ici ? 0 : Math.round(((pos + 1) / duChap.length) * 100);
+        return '<span><i style="width:' + w + '%"></i></span>';
+      }).join("") + "</div>";
+    }
+    return h + "</div>";
+  }
+
+  function vueQuestion() {
+    var q = applicables()[rang];
+    var v = vues();
+    var dernier = rang === applicables().length - 1;
+    var h = haut(true);
+    h += '<div class="vue-milieu"><div class="dedans">';
+    h += '<h2 class="question">' + typo(q.titre) + "</h2>";
+    if (q.aide) h += '<p class="aide">' + typo(q.aide) + "</p>";
+    h += rangee(q, v);
+    h += '<p class="refus" role="alert" aria-live="polite" id="refus"></p>';
+    h += "</div></div>";
+    h += '<div class="vue-bas">';
+    if (!avanceSeule(q)) h += '<button type="button" class="bouton bouton-plein" data-continuer>' + (dernier ? "Créer mon compte" : "Continuer") + "</button>";
+    if (!q.requis && !q.propose) h += '<button type="button" class="passer" data-passer>Passer</button>';
+    h += "</div>";
+    return h;
+  }
+
+  function vueBienvenue() {
+    return '<img src="../images/porte-foret.jpg" alt=""><div class="voile-photo" aria-hidden="true"></div>' +
+      '<div class="nom-atlas">ATLAS</div>' +
+      '<div class="bas-photo"><p class="legal">En appuyant sur «&nbsp;Créer un compte&nbsp;» ou «&nbsp;Se connecter&nbsp;», vous acceptez nos ' +
+      '<button type="button" data-pas-ici="Les conditions s’ouvrent en entier, comme aujourd’hui.">Conditions d’utilisation</button>. Pour savoir comment vos données sont traitées, consultez notre ' +
+      '<button type="button" data-pas-ici="La politique s’ouvre en entier, comme aujourd’hui.">Politique de confidentialité</button>.</p>' +
+      '<button type="button" class="bouton bouton-photo" data-commencer>Créer un compte</button>' +
+      '<button type="button" class="bouton bouton-photo-creux" data-pas-ici="Se connecter mène à la page de connexion, qui n’est pas sur cette planche.">Se connecter</button></div>';
+  }
+
+  function vueCode() {
+    var email = (R.email || DEMO.email).trim();
+    return haut(false) + '<div class="vue-milieu"><div class="dedans">' +
+      '<h2 class="question">Le code reçu</h2><p class="adresse-mail">à <b>' + esc(email) + "</b></p>" +
+      '<div class="cases-code" id="cases">' + [0, 1, 2, 3, 4, 5].map(function () { return "<span></span>"; }).join("") +
+      '<input id="code" inputmode="numeric" autocomplete="one-time-code" aria-label="Le code reçu par e-mail" maxlength="6"></div>' +
+      '<p class="refus" role="alert" aria-live="polite" id="refus"></p></div></div>' +
+      '<div class="vue-bas"><button type="button" class="bouton bouton-plein" data-code-ok>Continuer</button>' +
+      '<button type="button" class="passer" data-pas-ici="Un nouveau code est parti.">Renvoyer le code</button></div>';
+  }
+
+  function vueConditions() {
+    return '<div class="vue-haut" style="padding-top:30px"></div><div class="vue-milieu" style="padding-top:0"><div class="dedans" style="margin-top:0">' +
+      '<h2 class="question">Avant de commencer</h2>' +
+      '<p class="conditions-texte">Vos clients vous confient leurs coordonnées&nbsp;; vous nous les confiez à votre tour. Ces documents stipulent ce que nous en faisons, et ce que nous nous engageons à ne pas en faire.</p>' +
+      '<div class="plage plage-documents"><p>En touchant «&nbsp;Accepter&nbsp;», vous acceptez les deux documents ci-dessous.</p>' +
+      ligneDoc("Conditions générales d’utilisation", "Version 3") + ligneDoc("Contrat de sous-traitance (article 28 RGPD)", "Version canevas-1") +
+      "</div></div></div>" +
+      '<div class="vue-bas"><button type="button" class="bouton bouton-plein" data-accepter>Accepter</button>' +
+      '<button type="button" class="passer" data-sortir>Se déconnecter</button></div>';
+  }
+  function ligneDoc(nom, version) {
+    return '<button type="button" class="ligne" data-pas-ici="Le document s’ouvre en entier, comme aujourd’hui."><span class="ligne-corps"><span class="ligne-nom">' + nom +
+      '</span><span class="ligne-situation">' + version + '</span></span><span class="ligne-fin">' + ico("suivant") + "</span></button>";
+  }
+
+  function vueFaceId() {
+    var visage = '<svg class="visage" viewBox="0 0 76 76" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<path d="M4 22V12a8 8 0 0 1 8-8h10M54 4h10a8 8 0 0 1 8 8v10M72 54v10a8 8 0 0 1-8 8H54M22 72H12a8 8 0 0 1-8-8V54"/>' +
+      '<path d="M26 28v5M50 28v5M38 30v13h-4M28 52c6 5 14 5 20 0"/></svg>';
+    var h = '<div class="vue-haut" style="min-height:54px"></div><div class="vue-milieu"><div class="dedans">' + visage +
+      '<h2 class="question">Ouvrir Atlas avec Face&nbsp;ID&nbsp;?</h2>' +
+      '<p class="aide">Sans retaper votre mot de passe.</p>';
+    if (faceIdFait) h += '<p class="plage-ton enregistre" data-ton="vert">' + ico("coche", "ico-p") + "Cet appareil est enregistré. Vous pourrez ouvrir Atlas avec Face ID.</p>";
+    h += "</div></div><div class=\"vue-bas\">";
+    h += faceIdFait ? '<button type="button" class="bouton bouton-plein" data-vers-pret>Continuer</button>'
+      : '<button type="button" class="bouton bouton-plein" data-faceid>Activer Face ID</button><button type="button" class="passer" data-vers-pret>Plus tard</button>';
+    return h + "</div>";
+  }
+
+  function vuePret() {
+    var v = vues();
+    var restes = manques();
+    var f = FORMES.filter(function (x) { return x.v === v.forme; })[0];
+    var lignes = [
+      ["Vous", (v.prenom || "") + " " + (v.nom || ""), v.email],
+      ["Qui vous êtes", (v.entreprise || "") + (f ? ", " + f.v : ""), vide(v.siret) ? null : "SIRET " + siretLisible(v.siret),
+        vide(v.siret) ? "SIRET à compléter" : vide(v.adresse) ? "Adresse à compléter"
+          : aCapital(v.forme) && (vide(v.capital) || vide(v.rcs)) ? "Capital ou RCS à compléter" : null],
+      ["Votre TVA", v.tva === "franchise" ? "Franchise, sans TVA" : "Déclarée " + (v.rythme === "trimestrielle" ? "tous les trimestres" : "tous les mois"),
+        v.tva === "franchise" ? null : vide(v.numTva) ? null : v.numTva, v.tva !== "franchise" && vide(v.numTva) ? "Numéro à compléter" : null],
+      ["Vous joindre", vide(v.tel) ? "" : "+33 " + String(v.tel).trim().replace(/^0/, ""), v.emailPro, vide(v.tel) ? "Téléphone à compléter" : null],
+      ["Pour être payé", vide(v.iban) ? "" : masque(v.iban), labelMoyens(v.moyens), vide(v.iban) ? "IBAN à compléter" : null],
+      ["Assurance décennale", v.decennale === "non" ? "Aucune" : v.assureur || "", v.decennale === "oui" && v.attestation === "lue" ? "Attestation jointe à vos devis" : null,
+        v.decennale !== "oui" ? null : v.attestation !== "lue" ? "Attestation à joindre"
+          : vide(v.assureur) || vide(v.adresseAssureur) || vide(v.couverture) ? "Assureur à compléter" : null],
+      ["Médiateur de la consommation", v.mediateur || "", v.mediateurOu, vide(v.mediateur) ? "À compléter" : null],
+      ["Votre équipe", v.equipe + " " + motChantiers(Number(v.equipe)), null]
+    ];
+    var h = '<div class="vue-haut" style="min-height:30px"></div><div class="vue-milieu" style="padding-top:0"><div class="dedans">';
+    h += '<h2 class="question">' + (restes.length ? "C’est fait." : "Tout est prêt.") + "</h2>";
+    if (restes.length) h += '<p class="manque-phrase">' + phraseDuManque(restes) + "</p>";
+    h += '<div class="plage recap">' + lignes.map(function (l) {
+      var manque = !!l[3] || vide(l[1]);
+      return '<div class="reglage' + (manque ? " manque" : "") + '"><span class="reglage-libelle">' + l[0] + '</span><span class="reglage-valeur">' +
+        esc(manque ? l[3] || "À compléter" : l[1]) + "</span>" + (!manque && l[2] ? '<span class="reglage-sous">' + esc(l[2]) + "</span>" : "") + "</div>";
+    }).join("") + "</div>";
+    h += '<p class="ou-changer">Tout se change dans <b>Réglages</b>, <b>Mon entreprise</b>.</p>';
+    h += '</div></div><div class="vue-bas"><button type="button" class="bouton bouton-plein" data-entrer>Entrer dans Atlas</button></div>';
+    return h;
+  }
+  function masque(iban) { var g = parGroupes(iban, 4).split(" "); return g.length > 2 ? g[0] + " " + g[1] + " … " + g[g.length - 1] : g.join(" "); }
+  function labelMoyens(m) { var c = QUESTIONS.filter(function (q) { return q.id === "moyens"; })[0].choix.filter(function (x) { return x.v === m; })[0]; return c ? c.t : ""; }
+
+  // ─── Montrer ─────────────────────────────────────────────────────────────
+  function rendre() {
+    atlas.hidden = vue !== "atlas";
+    porte.hidden = vue === "atlas";
+    if (vue !== "atlas") {
+      var html = vue === "bienvenue" ? vueBienvenue() : vue === "q" ? vueQuestion() : vue === "code" ? vueCode()
+        : vue === "conditions" ? vueConditions() : vue === "faceid" ? vueFaceId() : vuePret();
+      porte.innerHTML = '<div class="vue' + (vue === "bienvenue" ? " vue-bienvenue" : "") + '">' + html + "</div>";
+      apresRendu();
+    }
+    suivreAujourdhui();
+    suivreEtapes();
+  }
+
+  function apresRendu() {
+    var v = vues();
+    if (vue === "q") {
+      var q = applicables()[rang];
+      if (q.forme === "mdp") regles();
+      if (q.forme === "adresse") suggerer();
+    }
+    if (vue === "code") {
+      var entree = document.getElementById("code");
+      peindreCode("");
+      entree.addEventListener("input", function () { entree.value = chiffres(entree.value).slice(0, 6); peindreCode(entree.value); });
+      /* Sur la planche, le code ne vient d'aucune boîte : il se tape tout seul,
+         chiffre après chiffre, comme on le recopierait. */
+      var code = "004213", i = 0;
+      var tic = setInterval(function () {
+        if (vue !== "code" || !entree.isConnected) { clearInterval(tic); return; }
+        entree.value = code.slice(0, ++i); peindreCode(entree.value);
+        if (i >= 6) clearInterval(tic);
+      }, 170);
+    }
+  }
+  function peindreCode(c) {
+    var cases = document.querySelectorAll("#cases span");
+    cases.forEach(function (s, i) { s.textContent = c[i] || ""; if (i === Math.min(c.length, 5)) s.setAttribute("data-ici", ""); else s.removeAttribute("data-ici"); });
+  }
+  function regles() {
+    var l = document.querySelector('[data-regle="longueur"]'), p = document.querySelector('[data-regle="pareil"]');
+    if (!l) return;
+    l.toggleAttribute("data-tenue", String(R.mdp || "").length >= 12);
+    p.toggleAttribute("data-tenue", !!R.confirm && R.confirm === R.mdp);
+  }
+  function plier(s) { return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, ""); }
+  function suggerer() {
+    var zone = document.getElementById("suggestions");
+    if (!zone) return;
+    var t = plier((R.adresse || "").trim());
+    var trouvees = t.length < 3 ? [] : ADRESSES.filter(function (a) { return plier(a).indexOf(t) >= 0 && plier(a) !== t; });
+    zone.innerHTML = trouvees.length ? '<div class="suggestions" role="listbox" aria-label="Suggestions">' + trouvees.map(function (a) {
+      return '<button type="button" role="option" data-adresse="' + esc(a) + '">' + ico("lieu") + "<span>" + esc(a) + "</span></button>";
+    }).join("") + "</div>" : "";
+  }
+
+  // ─── Avancer, revenir, sauter ───────────────────────────────────────────
+  function suivante() {
+    var liste = applicables();
+    if (rang + 1 < liste.length) { rang += 1; rendre(); focusPremier(); return; }
+    vue = "code"; rendre();
+  }
+  function focusPremier() {
+    var e = porte.querySelector(".vue-milieu input");
+    if (e && window.matchMedia("(min-width: 900px)").matches) e.focus({ preventScroll: true });
+  }
+  function avancer() {
+    var q = applicables()[rang];
+    var refus = refusDe(q, vues());
+    if (refus) { document.getElementById("refus").textContent = refus; return; }
+    /* Ce qui était proposé et qu'on garde devient une réponse : c'est ce qui part. */
+    var v = vues();
+    ["emailPro", "titulaire", "numTva", "assureur", "rythme", "reversement", "moyens", "equipe"].forEach(function (k) { if (R[k] === undefined && v[k] !== undefined && applique(q, R)) {
+      if (cleDe(q).indexOf(k) >= 0) R[k] = v[k];
+    } });
+    suivante();
+  }
+  function cleDe(q) {
+    if (q.cles) return q.cles;
+    if (q.champs) return q.champs.map(function (c) { return c.cle; });
+    if (q.champ) return [q.champ.cle];
+    return [q.id];
+  }
+  function passer() {
+    var q = applicables()[rang];
+    cleDe(q).forEach(function (k) { R[k] = ""; });
+    suivante();
+  }
+  function revenir() {
+    if (vue === "q") { if (rang === 0) vue = "bienvenue"; else rang -= 1; }
+    /* Le compte existe déjà : comme aujourd'hui, Retour ramène à la porte. */
+    else if (vue === "code") vue = "bienvenue";
+    rendre();
+  }
+
+  /* Une étape touchée : ce qui la précède se remplit de démonstration. */
+  function remplirJusqua(indexQuestion) {
+    QUESTIONS.forEach(function (q, i) {
+      if (i >= indexQuestion) return;
+      if (!applique(q, R)) return;
+      cleDe(q).concat(q.id === "identite" ? ["civ", "prenom", "nom"] : q.id === "mdp" ? ["mdp", "confirm"] : []).forEach(function (k) {
+        if (R[k] === undefined && DEMO[k] !== undefined) R[k] = DEMO[k];
+      });
+      var v = vues();
+      cleDe(q).forEach(function (k) { if (R[k] === undefined && v[k] !== undefined) R[k] = v[k]; });
+    });
+  }
+  function aller(cible) {
+    lecture = false;
+    if (cible === "bienvenue") { vue = "bienvenue"; rendre(); return; }
+    var i = QUESTIONS.map(function (q) { return q.chap; }).indexOf(cible);
+    if (i >= 0) {
+      remplirJusqua(i);
+      vue = "q";
+      rang = applicables().indexOf(QUESTIONS[i]);
+      rendre();
+      return;
+    }
+    remplirJusqua(QUESTIONS.length);
+    vue = cible;
+    rendre();
+  }
+
+  // ─── Les deux téléphones et la rangée des étapes suivent ────────────────
+  var CAPTURES = {
+    identite: ["compte-identite"], email: ["compte-email"], mdp: ["compte-mot-de-passe"], joindre: ["compte-telephone", "compte-email-devis"],
+    entreprise: ["compte-entreprise"], forme: ["compte-forme"], capitalRcs: ["compte-capital", "compte-rcs"], siret: ["compte-siret"],
+    adresse: ["compte-adresse"], tva: ["compte-tva"], numTva: ["compte-numero-tva"], paye: ["compte-iban", "compte-titulaire"], moyens: ["compte-moyens"],
+    bienvenue: ["compte-bienvenue"], code: ["compte-code"], conditions: ["compte-conditions"], pret: ["compte-fin"], atlas: ["compte-accueil"]
+  };
+  var ABSENTS = {
+    rythme: ["Cette question n’existe pas.", "L’appli part sur Tous les mois, sans le dire. Le choix attend dans Mon entreprise."],
+    reversement: ["Cette question n’existe pas.", "L’appli part sur Le mois où mon client me paie, sans le dire. Le choix attend dans Mon entreprise."],
+    decennale: ["La décennale ne se demande pas.", "Elle attend dans Mon entreprise, et rien ne la réclame."],
+    attestation: ["L’attestation ne se demande pas.", "Elle se dépose dans Mon entreprise, où l’IA la lit déjà."],
+    assureur: ["L’assureur ne se demande pas.", "Ses trois cases attendent dans Mon entreprise."],
+    mediateur: ["Le médiateur ne se demande pas.", "Juste après Tout est prêt, Mon entreprise le dit manquant, et obligatoire."],
+    equipe: ["Cette question n’existe pas.", "Le planning part sur un chantier par jour. Le compteur attend dans Équipe."],
+    faceid: ["Face ID ne se propose pas.", "Il se trouve dans Réglages, Mot de passe."]
+  };
+  var montree = null;
+  function cleAujourdhui() { return vue === "q" ? applicables()[rang].id : vue; }
+  function suivreAujourdhui() {
+    var cle = cleAujourdhui();
+    if (cle === montree) return;
+    montree = cle;
+    if (CAPTURES[cle]) {
+      capture.innerHTML = CAPTURES[cle].map(function (nom) {
+        return '<img src="aujourdhui/' + nom + '.jpg" alt="' + nom.replace("compte-", "").replace(/-/g, " ") + ', aujourd’hui">';
+      }).join("<hr>");
+    } else {
+      var a = ABSENTS[cle] || ["", ""];
+      capture.innerHTML = '<div class="absent">' + ico("info") + "<b>" + a[0] + "</b><p>" + a[1] + "</p></div>";
+    }
+    capture.scrollTop = 0;
+  }
+  function suivreEtapes() {
+    var ici = vue === "q" ? applicables()[rang].chap : vue;
+    etapes.querySelectorAll("[data-aller]").forEach(function (b) {
+      var oui = b.getAttribute("data-aller") === ici;
+      b.setAttribute("aria-pressed", oui ? "true" : "false");
+      if (oui && etapes.scrollWidth > etapes.clientWidth) b.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
+    });
+  }
+
+  // ─── Les gestes ──────────────────────────────────────────────────────────
+  etapes.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-aller]");
+    if (b) aller(b.getAttribute("data-aller"));
+  });
+
+  document.addEventListener("click", function (e) {
+    var pasIci = e.target.closest("[data-pas-ici]");
+    if (pasIci) { e.preventDefault(); Kit.note(pasIci, pasIci.getAttribute("data-pas-ici")); return; }
+    if (!porte.contains(e.target)) return;
+    var t = e.target;
+    if (t.closest("[data-commencer]")) { vue = "q"; rang = 0; rendre(); return; }
+    if (t.closest("[data-retour]")) { revenir(); return; }
+    if (t.closest("[data-continuer]")) { avancer(); return; }
+    if (t.closest("[data-passer]")) { passer(); return; }
+    var civ = t.closest("[data-civ]");
+    if (civ) {
+      R.civ = civ.getAttribute("data-civ");
+      porte.querySelectorAll("[data-civ]").forEach(function (b) { b.setAttribute("aria-pressed", b === civ ? "true" : "false"); });
+      document.getElementById("refus").textContent = "";
+      return;
+    }
+    var oeil = t.closest("[data-oeil]");
+    if (oeil) {
+      var k = oeil.getAttribute("data-oeil");
+      mdpVisible[k] = !mdpVisible[k];
+      var entree = porte.querySelector('input[data-cle="' + k + '"]');
+      entree.type = mdpVisible[k] ? "text" : "password";
+      oeil.setAttribute("aria-pressed", mdpVisible[k] ? "true" : "false");
+      return;
+    }
+    if (t.closest("[data-autres-formes]")) { autresFormes = true; rendre(); return; }
+    var forme = t.closest("[data-forme]");
+    if (forme) { R.forme = forme.getAttribute("data-forme"); rendre(); setTimeout(suivante, 160); return; }
+    var choix = t.closest("[data-choix-q]");
+    if (choix) {
+      var q = applicables()[rang];
+      R[q.id] = choix.getAttribute("data-choix-q");
+      porte.querySelectorAll("[data-choix-q]").forEach(function (b) { b.setAttribute("aria-pressed", b === choix ? "true" : "false"); });
+      if (avanceSeule(q)) setTimeout(suivante, 160);
+      return;
+    }
+    var adr = t.closest("[data-adresse]");
+    if (adr) {
+      R.adresse = adr.getAttribute("data-adresse");
+      porte.querySelector('input[data-cle="adresse"]').value = R.adresse;
+      suggerer();
+      return;
+    }
+    if (t.closest("[data-photo]")) {
+      lecture = true; rendre();
+      setTimeout(function () { lecture = false; R.attestation = "lue"; if (vue === "q") rendre(); }, 1700);
+      return;
+    }
+    if (t.closest("[data-code-ok]")) {
+      var c = document.getElementById("code").value;
+      if (c.length < 6) { document.getElementById("refus").textContent = "Les six chiffres du code."; return; }
+      vue = "conditions"; rendre(); return;
+    }
+    if (t.closest("[data-accepter]")) { vue = "faceid"; rendre(); return; }
+    if (t.closest("[data-sortir]")) { vue = "bienvenue"; rendre(); return; }
+    if (t.closest("[data-faceid]")) { faceIdFait = true; rendre(); return; }
+    if (t.closest("[data-vers-pret]")) { vue = "pret"; rendre(); return; }
+    if (t.closest("[data-entrer]")) { vue = "atlas"; rendre(); return; }
+  });
+
+  porte.addEventListener("input", function (e) {
+    var entree = e.target.closest("input[data-cle]");
+    if (!entree) return;
+    var k = entree.getAttribute("data-cle");
+    if (k === "siret") { var p = siretLisible(entree.value); if (p !== entree.value) entree.value = p; }
+    if (k === "iban") { var g = parGroupes(entree.value, 4); if (g !== entree.value) entree.value = g; }
+    R[k] = entree.value;
+    var refus = document.getElementById("refus");
+    if (refus) refus.textContent = "";
+    if (k === "numTva" || k === "assureur") {
+      var lu = porte.querySelector(".champ-aide.lu");
+      if (lu) lu.remove();
+    }
+    if (k === "mdp" || k === "confirm") regles();
+    if (k === "adresse") suggerer();
+  });
+  porte.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && e.target.matches("input[data-cle]")) { e.preventDefault(); avancer(); }
+  });
+  porte.addEventListener("kit:compte", function (e) {
+    R.equipe = String(e.detail.valeur);
+    var mot = document.getElementById("compteur-mot");
+    if (mot) mot.textContent = motChantiers(e.detail.valeur);
+  });
+
+  rendre();
+})();
+</script>
+</body>
+</html>

@@ -15,11 +15,11 @@
   le chiffre qui copie, les deux gestes d'achat sous le total, les factures en
   attente avant les preuves, la mention du bas. Ce qui change :
     « Ma TVA » passe de 9,5 px or en capitales à une ligne lisible ;
-    les libellés de l'addition passent de 9,5 px à 15 px, soulignés d'or parce
-      qu'ils s'ouvrent ;
+    les libellés de l'addition passent de 9,5 px à 15 px, sans trait dessous
+      (sa demande du 26 octobre), et leurs chiffres prennent une couleur ;
     la copie dit « Copié » en mots, au lieu d'un carré de 14 px ;
-    les trois boutons verts pleins à la suite deviennent des boutons cernés :
-      ils restent les mêmes mots, « J'ai reçu le paiement » ;
+    « J'ai reçu le paiement » reste vert plein, la couleur de l'appli (sa
+      retouche du 25 octobre au soir) ;
     l'or reste celui de l'appli (#B98B47), sa demande du 25 octobre.
 */
 .ligne-ma-tva { margin: -8px 0 18px; font-size: 15px; font-weight: 700; color: var(--atlas-or); }
@@ -44,11 +44,20 @@
 
 .addition { margin-top: 18px; }
 .add-ligne { display: flex; align-items: center; gap: 8px; min-height: 56px; }
-.add-mot { flex: 1; min-width: 0; font-size: 15.5px; font-weight: 600; color: var(--atlas-ink); text-decoration: underline;
-           text-decoration-color: color-mix(in srgb, var(--atlas-or) 80%, transparent); text-underline-offset: 5px;
-           text-decoration-thickness: 1.5px; }
+/* Sans trait sous les mots, sa demande du 26 octobre : ils s'ouvrent toujours
+   d'un appui, comme la ligne d'une facture qu'il a refusé de souligner. */
+.add-mot { flex: 1; min-width: 0; font-size: 15.5px; font-weight: 600; color: var(--atlas-ink); text-decoration: none; }
 .add-montant { font: 400 23px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; color: var(--atlas-ink); white-space: nowrap; }
-.add-moins { color: var(--atlas-inkSoft); margin-right: 6px; }
+.add-moins { margin-right: 6px; }
+/* Une couleur par chiffre, « pour que ça soit visuel tout de suite » (sa
+   demande du 26 octobre). Des jetons de la charte, donc lisibles dans les huit,
+   sombres comprises ; trois choix au-dessus du téléphone. Le total reste à
+   l'encre : c'est lui qu'on recopie. */
+.ecran { --chiffre-collectee: var(--atlas-ink); --chiffre-deductible: var(--atlas-ink); }
+.ecran[data-chiffres="bleu-vert"] { --chiffre-collectee: var(--atlas-carteBleuTexte); --chiffre-deductible: var(--atlas-carteVertTexte); }
+.ecran[data-chiffres="rouge-vert"] { --chiffre-collectee: var(--atlas-montantSortie); --chiffre-deductible: var(--atlas-montantEntree); }
+.add-montant[data-copie="collectee"] { color: var(--chiffre-collectee); }
+.add-montant[data-copie="deductible"] { color: var(--chiffre-deductible); }
 .copier { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-or); }
 .copier .copie-mot { display: none; font-size: 12.5px; font-weight: 700; }
 .copier.copie .ico { display: none; }
@@ -118,6 +127,11 @@ body.seul .cadre { height: 100svh; min-height: 0; margin: 0; border-radius: 0; b
 .acompte b { color: var(--atlas-ink); font-weight: 600; white-space: nowrap; }
 .retirer-acompte { width: 44px; height: 44px; flex: none; display: grid; place-items: center; color: var(--atlas-inkSoft); }
 .saisie-partie { margin-top: 12px; padding-top: 12px; box-shadow: inset 0 1px 0 var(--atlas-line); }
+/* Sa remarque du 26 octobre : « Payé par » restait au-dessus quand on ouvrait
+   « J'ai reçu une partie », et le règlement partait par virement sans qu'il
+   l'ait vu. Ouverte, la saisie prend « Payé par » avec elle : le moyen, le
+   jour et le montant se remplissent au même endroit. */
+.saisie-partie .fa-paye { margin: 0 0 12px; }
 .fa-droite { border-radius: 6px; padding: 2px 4px; margin: -2px -4px; }
 /* Le reste vient de changer : il s'éclaire un instant, pour que l'œil le
    trouve après la saisie (sa remarque du 26 octobre : « il faudrait que j'aie
@@ -311,12 +325,17 @@ body.seul .cadre { height: 100svh; min-height: 0; margin: 0; border-radius: 0; b
         <button type="button" data-etat="vert-bleu">Vert et bleu</button>
         <button type="button" data-etat="ambre-vert">Sable et vert</button>
       </div>
+      <div class="pl-etats" id="chiffres-couleur">
+        <button type="button" data-chiffres="bleu-vert" aria-pressed="true">Chiffres bleu et vert</button>
+        <button type="button" data-chiffres="rouge-vert" aria-pressed="false">Rouge et vert</button>
+        <button type="button" data-chiffres="aucune" aria-pressed="false">Sans couleur</button>
+      </div>
       <div class="pl-etats" id="formes-recu">
         <button type="button" data-forme="arrondi" aria-pressed="true">Coins arrondis</button>
         <button type="button" data-forme="pilule" aria-pressed="false">Bouts ronds</button>
       </div>
       <div class="cadre">
-        <div class="ecran avec-barre">
+        <div class="ecran avec-barre" data-chiffres="bleu-vert">
           <div class="defile">
             <div class="rang-espace" style="margin-top:4px">
               <a class="rond-creux" href="termines.html" aria-label="Retour aux chantiers terminés"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
@@ -792,7 +811,7 @@ body.seul .cadre { height: 100svh; min-height: 0; margin: 0; border-radius: 0; b
     <h2>Ce qui change</h2>
     <ul>
       <li>« Ma TVA » s'écrit en clair sous le mois, et les mois de la frise se lisent en entier.</li>
-      <li>TVA collectée et TVA déductible sont soulignés d'or : on voit qu'ils s'ouvrent. Toucher un chiffre le copie, et l'écran dit « Copié ».</li>
+      <li>TVA collectée et TVA déductible sans trait dessous ; leurs chiffres en couleur, trois choix au dessus du téléphone. Toucher un chiffre le copie, et l'écran dit « Copié ».</li>
       <li>J'ai reçu le paiement reste vert plein, la couleur de l'appli.</li>
       <li>Scanner un ticket et Écrire à la main, chacun sa couleur. Quatre couples à essayer au dessus du téléphone.</li>
       <li>Les trois boutons ont la même forme : coins arrondis, ou bouts ronds comme aujourd'hui.</li>
@@ -930,8 +949,23 @@ body.seul .cadre { height: 100svh; min-height: 0; margin: 0; border-radius: 0; b
         sortir(f, reste);
       });
     });
+    /* « Payé par » suit la saisie : il y descend quand elle s'ouvre, et
+       remonte au-dessus de « J'ai reçu le paiement » quand elle se ferme. Le
+       même choix sert aux deux boutons, comme dans l'appli. */
+    function ouvrirSaisie(s) {
+      s.hidden = false;
+      s.insertBefore(s.closest(".facture-attente").querySelector(".fa-paye"), s.firstChild);
+    }
+    function fermerSaisie(s) {
+      var f = s.closest(".facture-attente");
+      s.hidden = true;
+      f.insertBefore(f.querySelector(".fa-paye"), f.querySelector("[data-recu]"));
+    }
     document.querySelectorAll("[data-partie]").forEach(function (b) {
-      b.addEventListener("click", function () { var s = b.parentNode.querySelector(".saisie-partie"); s.hidden = !s.hidden; });
+      b.addEventListener("click", function () {
+        var s = b.parentNode.querySelector(".saisie-partie");
+        if (s.hidden) ouvrirSaisie(s); else fermerSaisie(s);
+      });
     });
     document.querySelectorAll(".saisie-partie").forEach(function (s) {
       var champ = s.querySelectorAll("input")[1], ok = s.querySelector("[data-partie-ok]");
@@ -949,9 +983,10 @@ body.seul .cadre { height: 100svh; min-height: 0; margin: 0; border-radius: 0; b
         var montant = arrondi(lireMontant(champs[1].value)), c = chiffres(f);
         if (!(montant > 0)) { Kit.note(ecran, "Le montant reçu doit être un nombre positif."); return; }
         if (montant > c.reste) { Kit.note(ecran, "Il ne reste que " + euros(c.reste) + " à recevoir sur cette facture."); return; }
+        var moyen = f.querySelector(".fa-paye select").value.toLowerCase();
         poserReleve(tvaDe(f, montant));
         f.dataset.reste = arrondi(c.reste - montant);
-        s.hidden = true;
+        fermerSaisie(s);
         champs[1].value = "";
         b.disabled = true;
         if (+f.dataset.reste === 0) { sortir(f, montant); return; }
@@ -961,7 +996,7 @@ body.seul .cadre { height: 100svh; min-height: 0; margin: 0; border-radius: 0; b
         ligne.dataset.montant = montant;
         ligne.dataset.date = champs[0].value;
         ligne.innerHTML = '<span></span><b>' + euros(montant) + '</b><button class="retirer-acompte" type="button" aria-label="Retirer cet acompte"><svg class="ico ico-p" aria-hidden="true"><use href="#i-croix"/></svg></button>';
-        ligne.querySelector("span").textContent = "Acompte payé le " + champs[0].value + " par " + f.querySelector(".fa-paye select").value.toLowerCase();
+        ligne.querySelector("span").textContent = "Acompte payé le " + champs[0].value + " par " + moyen;
         var dernier = f.querySelectorAll(".acompte");
         if (dernier.length) dernier[dernier.length - 1].after(ligne);
         else f.insertBefore(ligne, f.querySelector(".fa-paye"));
@@ -990,6 +1025,17 @@ body.seul .cadre { height: 100svh; min-height: 0; margin: 0; border-radius: 0; b
   })();
 </script>
 <script>
+  /* La couleur des deux chiffres de l'addition, à essayer sur l'écran même. */
+  (function () {
+    var ecran = document.querySelector("[data-vue-panneau='propose'] .ecran");
+    var boutons = document.querySelectorAll("#chiffres-couleur [data-chiffres]");
+    boutons.forEach(function (b) {
+      b.addEventListener("click", function () {
+        ecran.setAttribute("data-chiffres", b.getAttribute("data-chiffres"));
+        boutons.forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+      });
+    });
+  })();
   /* La forme de « J'ai reçu le paiement », à essayer sur l'écran même : les
      coins arrondis de la planche, ou les bouts ronds de l'appli. */
   (function () {

@@ -242,6 +242,33 @@
         ],
         "createdAt": "2026-10-25T23:50:45.834Z",
         "reason": "Le point bat pendant qu'Atlas lit vraiment la photo d'un devis ou d'une facture : un état de chargement réel, pas une décoration"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/index.html"
+        ],
+        "createdAt": "2026-10-26T08:51:34.989Z",
+        "reason": "PRODUCT.md, Brand Commitments : charte reprise d'Arborea, fond crème ; la série soignée garde ses couleurs (sa réponse du 25 octobre 2026)"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/abonnement-credits-ia.html"
+        ],
+        "createdAt": "2026-10-26T09:01:57.437Z",
+        "reason": "PRODUCT.md : fond crème de la charte Origine, relevé sur le site Arborea, identité existante qui ne se touche pas sans demande"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "appli/soignee/abonnement-credits-ia.html"
+        ],
+        "createdAt": "2026-10-26T09:01:57.453Z",
+        "reason": "faux positif : .cadre est le cadre du téléphone de la planche, l'écran le remplit bord à bord par construction (kit.css)"
       }
     ]
   }
