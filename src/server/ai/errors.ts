@@ -10,7 +10,10 @@ export type TypeErreurIA =
   // Confondre les deux, c'est envoyer chercher au mauvais endroit — un
   // « fournisseur indisponible » sur un HTTP 401 a fait croire à une panne du
   // prestataire alors que la clé était simplement mauvaise.
-  | "cle_api_refusee";
+  | "cle_api_refusee"
+  // Le plafond du mois est atteint (`compteur.ts`) : rien n'est parti chez le
+  // fournisseur. Ni une panne, ni une clé : l'IA reprend le 1er du mois suivant.
+  | "credits_epuises";
 
 export type ErreurIA = { type: TypeErreurIA; message: string };
 

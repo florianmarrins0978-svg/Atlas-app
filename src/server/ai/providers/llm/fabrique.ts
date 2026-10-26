@@ -4,6 +4,7 @@ import { fournisseurLLMAnthropic } from "./anthropic";
 import { fournisseurLLMOpenAI } from "./openai";
 import { fournisseurLLMGemini } from "./gemini";
 import { getConfigIA } from "../../config";
+import { avecCompteurLLM } from "../../compteur";
 
 /**
  * Un fournisseur posé par une SUITE, et par rien d'autre.
@@ -26,15 +27,24 @@ export function _reinitialiserFabriqueLLM(fournisseur: FournisseurLLM | null): v
   fournisseurDeSuite = fournisseur;
 }
 
+/**
+ * **Les fournisseurs payants passent par le compteur des crédits IA**
+ * (`compteur.ts`) : c'est ici, et seulement ici, qu'un appel payant peut
+ * naître. `dev` ne coûte rien et reste nu.
+ */
+const anthropicCompte = avecCompteurLLM(fournisseurLLMAnthropic);
+const openAICompte = avecCompteurLLM(fournisseurLLMOpenAI);
+const geminiCompte = avecCompteurLLM(fournisseurLLMGemini);
+
 export function getFournisseurLLM(): FournisseurLLM {
   if (fournisseurDeSuite && process.env.NODE_ENV !== "production") return fournisseurDeSuite;
   switch (getConfigIA().llmProvider) {
     case "anthropic":
-      return fournisseurLLMAnthropic;
+      return anthropicCompte;
     case "openai":
-      return fournisseurLLMOpenAI;
+      return openAICompte;
     case "gemini":
-      return fournisseurLLMGemini;
+      return geminiCompte;
     default:
       return fournisseurLLMDev;
   }
@@ -64,11 +74,11 @@ export function getFournisseurLLM(): FournisseurLLM {
 export function getFournisseurVision(): FournisseurLLM {
   switch (getConfigIA().visionProvider) {
     case "anthropic":
-      return fournisseurLLMAnthropic;
+      return anthropicCompte;
     case "openai":
-      return fournisseurLLMOpenAI;
+      return openAICompte;
     case "gemini":
-      return fournisseurLLMGemini;
+      return geminiCompte;
     default:
       return fournisseurLLMDev;
   }

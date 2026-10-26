@@ -433,6 +433,8 @@ function messageErreurUtilisateur(erreur: ErreurIA): string {
       return "L'assistant met trop de temps à répondre. Réessayez.";
     case "quota_depasse":
       return "L'assistant a atteint sa limite d'utilisation pour l'instant.";
+    case "credits_epuises":
+      return "Les crédits IA du mois sont épuisés. Atlas IA reprend le 1er du mois prochain.";
     case "schema_invalide":
     case "reponse_invalide":
     default:

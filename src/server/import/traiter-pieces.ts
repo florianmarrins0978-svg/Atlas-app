@@ -3,6 +3,7 @@ import { noterIllisible, noterLecture, prendrePiecesALire } from "../repositorie
 import { lireObjet } from "../storage";
 import { logger } from "../logger";
 import { lirePiece } from "./lire-piece";
+import { pourLeCompteDe } from "../ai/compteur";
 
 /**
  * LA LECTURE EN ARRIÈRE-PLAN — sans file de travail, et c'est délibéré.
@@ -35,7 +36,10 @@ export async function traiterPiecesEnAttente(ctx: Ctx): Promise<number> {
         lot.map(async (p) => {
           try {
             const octets = new Uint8Array(await lireObjet(p.fichierCle));
-            await noterLecture(ctx, p.id, await lirePiece(octets));
+            // Lancée par `after()`, la lecture n'a plus de requête pour dire
+            // qui paie l'IA : on le pose (`compteur.ts`), sinon la production
+            // refuse l'appel.
+            await noterLecture(ctx, p.id, await pourLeCompteDe(ctx, () => lirePiece(octets)));
           } catch (err) {
             logger.error("Pièce importée illisible", { piece: p.id, erreur: err instanceof Error ? err.message : String(err) });
             await noterIllisible(ctx, p.id);

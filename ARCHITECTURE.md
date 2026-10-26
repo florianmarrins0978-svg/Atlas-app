@@ -36110,3 +36110,23 @@ l'écran, plus le contour.
 
 **Reste ouvert** : le plafond de dépense d'IA par mois, qui demande sa décision (montant, effet quand il est atteint).
 
+## §509 : Les crédits IA du mois, comptés dans la fabrique et coupés au plafond
+
+*26 octobre 2026, audit de sécurité (E13, seconde moitié). Ses plafonds du même jour.*
+
+**Le constat.** Aucun plafond de dépense d'IA : un compte volé, ou un abus, faisait monter sa facture chez le fournisseur sans limite. Un artisan seul qui dicte un devis par jour dépense de l'ordre de 1 à 3 € par mois (estimation).
+
+**Ses plafonds** (`src/lib/credits-ia.ts`, `PLAFONDS_IA_EUROS`) : essai 5 €, Artisan 10 €, Entreprise 20 €, Illimité 60 €, entreprise sans abonnement 10 €, lecture seule 0 €. Son entreprise n'a pas de plafond : elle est désignée par le réglage `ATLAS_IA_SANS_PLAFOND` de son espace (des identifiants séparés par des virgules), jamais en dur, l'appli servant tous les artisans. Mois du calendrier en temps universel, « presque épuisé » à 80 %, coupure à 100 %.
+
+**Le compteur vit dans les fabriques** (`src/server/ai/compteur.ts`). L'IA est appelée depuis une soixantaine d'endroits, tous par `getFournisseurLLM`, `getFournisseurVision` ou `getFournisseurTranscription` : les fournisseurs payants y sortent enveloppés, `dev` et `essai` restent nus (ils ne coûtent rien, et les suites gardent leur indépendance). Avant l'appel, l'état des crédits ; épuisé, l'appel ne part pas et rend `credits_epuises`. Après, le coût estimé s'ajoute (`consommation_ia`, migration 0148).
+
+**Qui paie.** Le contexte posé par `pourLeCompteDe(ctx, fn)` (la lecture des pièces importées, lancée par `after()` quand il n'y a plus de requête), sinon la session de la requête. Hors de toute requête : en production l'appel est refusé et journalisé (`ia_appel_sans_payeur`), ailleurs (un script de vérification) il passe sans être compté.
+
+**Le coût est estimé**, jamais lu sur la facture : trois caractères pour un jeton, 1 600 jetons par image, la durée d'un son déduite de son poids à 16 kbit/s, les prix publics, un dollar pour un euro. Chaque arrondi penche vers le haut. Vérifier avant et compter après laisse passer un appel de trop quand deux partent ensemble à 99 % : quelques centimes, contre une réservation par appel.
+
+**La table** : une ligne par entreprise et par mois, sous RLS forcée. `atlas_app` lit, ajoute et met à jour, sans pouvoir effacer ; un déclencheur refuse que le compteur baisse, pour qu'une injection SQL ne puisse pas rendre l'IA à un compte coupé.
+
+**Ce qui le tient** : `test-credits-ia.ts` (la règle), `test-credits-ia-db.ts` (sous `atlas_app` : l'appel compté, le refus au plafond sans que le fournisseur soit appelé, la dictée aussi, l'exemption, `after()`, le compteur qui ne baisse pas, l'isolation, les fabriques sans fournisseur payant nu ; vue rouge en retirant la coupure).
+
+**Reste à faire** : la barre de l'écran Abonnement (planche `appli/soignee/abonnement-credits-ia.html`, couleur de l'épuisé à choisir), le message de l'écran de dictée une fois épuisé (planche à dessiner), et la lecture des pièces importées qui note « illisible » une pièce refusée faute de crédits.
+
