@@ -92,6 +92,8 @@
 .sommaire-entreprise .etat { margin-top: 5px; }
 .manque-texte { color: var(--atlas-carteAmbreTexte); font-weight: 600; }
 .panneau-titre { margin: 0 0 18px; font: 400 30px/1.08 var(--serif); letter-spacing: -0.012em; }
+/* Voir un exemple garde les bouts ronds de l'appli (VoirUnExemple.tsx, rounded-full), sa demande du 26 octobre. */
+.bouton-pilule { border-radius: 999px; }
 </style>
 </head>
 <body class="pl">
@@ -341,7 +343,7 @@
             </div>
           </section>
 
-          <div class="action-bas"><button class="bouton bouton-plein" type="button" data-note="Sur la planche, l'exemple ne s'ouvre pas."><svg class="ico" aria-hidden="true"><use href="#i-oeil"/></svg>Voir un exemple</button></div>
+          <div class="action-bas"><button class="bouton bouton-plein bouton-pilule" type="button" data-note="Sur la planche, l'exemple ne s'ouvre pas."><svg class="ico" aria-hidden="true"><use href="#i-oeil"/></svg>Voir un exemple</button></div>
 
           <nav class="barre" aria-label="Navigation principale">
             <div class="barre-onglets">
@@ -388,7 +390,7 @@
                   <li><button class="ligne touche" type="button" data-vers="mediateur"><span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-equipe"/></svg></span><span class="ligne-corps"><span class="ligne-nom">Médiateur</span><span class="ligne-situation">Médiateur de démonstration</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></button></li>
                 </ul>
               </div>
-              <button class="bouton bouton-plein mt-24" type="button" data-note="Sur la planche, l'exemple ne s'ouvre pas."><svg class="ico" aria-hidden="true"><use href="#i-oeil"/></svg>Voir un exemple</button>
+              <button class="bouton bouton-plein bouton-pilule mt-24" type="button" data-note="Sur la planche, l'exemple ne s'ouvre pas."><svg class="ico" aria-hidden="true"><use href="#i-oeil"/></svg>Voir un exemple</button>
             </div>
 
             <!-- Les sept écrans courts : le même contenu que Proposé, paquet par paquet. -->
@@ -518,7 +520,7 @@
       <li>L'IBAN se lit par groupes de quatre, sur la plage verte de l'argent qui rentre.</li>
       <li>L'attestation dit son état en vert : Déposée, jointe à chaque devis et facture.</li>
       <li>Ce qui manque se dit en ambre, avec sa conséquence, à la place du rouge. Un compte neuf le compte sous son nom : « Il manque 4 cases ».</li>
-      <li>Voir un exemple reste sous le pouce, au-dessus de la barre, au lieu d'attendre au bout de cinq écrans.</li>
+      <li>Voir un exemple reste sous le pouce, au-dessus de la barre, avec ses bouts ronds de l'appli, au lieu d'attendre au bout de cinq écrans.</li>
       <li>Deux phrases partent : « Il ne se saisit pas séparément » sous le SIREN, et « Le mois est le défaut. Le trimestre s'obtient sous condition. »</li>
     </ul>
     <h2>Plus loin</h2>

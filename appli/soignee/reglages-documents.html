@@ -204,6 +204,8 @@
 .teinte-autre .ico { width: 20px; height: 20px; }
 .teinte-autre input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: 0; padding: 0; }
 .revenir { margin-top: 18px; }
+/* Voir un exemple garde les bouts ronds de l'appli (VoirUnExemple.tsx, rounded-full), sa demande du 26 octobre. */
+.bouton-pilule { border-radius: 999px; }
 </style>
 </head>
 <body class="pl">
@@ -496,7 +498,7 @@
 
           </div>
 
-          <div class="action-bas" id="action-exemple"><button class="bouton bouton-plein" type="button" data-note="Sur la planche, l'exemple ne s'ouvre pas."><svg class="ico" aria-hidden="true"><use href="#i-oeil"/></svg>Voir un exemple</button></div>
+          <div class="action-bas" id="action-exemple"><button class="bouton bouton-plein bouton-pilule" type="button" data-note="Sur la planche, l'exemple ne s'ouvre pas."><svg class="ico" aria-hidden="true"><use href="#i-oeil"/></svg>Voir un exemple</button></div>
           <div class="action-bas" id="action-enregistrer" hidden><button class="bouton bouton-plein" type="button">Enregistrer</button></div>
 
           <!-- Le texte entier des conditions générales : src/lib/conditions-generales.ts, au caractère près. -->
@@ -568,7 +570,7 @@
     <h2>Ce qui change</h2>
     <ul>
       <li>Les quatre lignes disent déjà ce qu'elles portent&nbsp;: la validité et l'acompte, les trois messages, le format du numéro, le logo et le doré. Sur un compte neuf, la première dit en ambre le crochet qui reste à remplir.</li>
-      <li>Voir un exemple reste sous le pouce, au-dessus de la barre. «&nbsp;Chaque devis garde ce que ces réglages disaient&nbsp;» se lit sur une plage bleue, au sommaire seulement.</li>
+      <li>Voir un exemple reste sous le pouce, au-dessus de la barre, avec ses bouts ronds de l'appli. «&nbsp;Chaque devis garde ce que ces réglages disaient&nbsp;» se lit sur une plage bleue, au sommaire seulement.</li>
       <li>Ce qui s'imprime&nbsp;: les sept interrupteurs se rangent en trois paquets, dans le même ordre (Sur le devis, Pour être payé, Vos textes). Le chiffre qu'un interrupteur déplie se lit en grand, son unité en doré.</li>
       <li>Les conditions générales ne défilent plus dans une case qui défile dans l'écran&nbsp;: le début se lit sur une feuille, le texte entier s'ouvre au doigt. Le texte ne change pas d'une lettre.</li>
       <li>Ce que votre devis dira se lit sur une feuille blanche, celle que le client recevra. Elle nomme aussi la validité et les conditions générales, qui s'impriment déjà.</li>
