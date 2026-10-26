@@ -7,7 +7,7 @@ import { COULEUR_CATEGORIE, NOM_CATEGORIE, ORDRE_CATEGORIES } from "@/lib/couleu
 import type { Categorie } from "@/lib/pour-mon-comptable";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import { delierAction } from "../actions";
-import Icone, { type NomIcone } from "../Icone";
+import Icone, { type NomIcone } from "@/components/atlas/IconeTrait";
 
 export type LigneAffichee = {
   id: string;

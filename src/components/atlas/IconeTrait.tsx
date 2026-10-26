@@ -1,11 +1,14 @@
 /**
- * LES ICÔNES DU DOSSIER — les tracés de la planche choisie le 25 octobre 2026
- * (`appli/soignee/kit.js`, la même grammaire : un trait, sans remplissage, de
- * la couleur du texte). Elles disent la nature d'un geste ; aucune ne décore.
+ * LES ICÔNES AU TRAIT — les tracés des planches du 25 octobre 2026
+ * (`appli/soignee/kit.js`, ICONES) : un trait, sans remplissage, de la couleur
+ * du texte. Elles disent la nature d'un geste ; aucune ne décore. Une seule
+ * source pour Pour mon comptable et la page du comptable : elles remplacent
+ * les caractères ✓ et ✕, dont le dessin changeait d'une police à l'autre.
  */
 const TRACES = {
   alerte: <><path d="M12 4l9 15.5H3z" /><path d="M12 10v4.5M12 17v.4" /></>,
   coche: <path d="M5 12.5l4.5 4.5L19 7.5" />,
+  croix: <path d="M6.5 6.5l11 11M17.5 6.5l-11 11" />,
   facture: <><path d="M6 3.5h12v17l-2-1.3-2 1.3-2-1.3-2 1.3-2-1.3-2 1.3z" /><path d="M9 8.5h6M9 12h6M9 15.5h3.5" /></>,
   photo: <><rect x="3.5" y="6.5" width="17" height="13" rx="2" /><path d="M8.5 6.5L10 4h4l1.5 2.5" /><circle cx="12" cy="13" r="3.5" /></>,
   cadenas: <><rect x="5" y="10.5" width="14" height="10" rx="2" /><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" /></>,
@@ -27,7 +30,7 @@ const TRACES = {
 
 export type NomIcone = keyof typeof TRACES;
 
-export default function Icone({ nom, taille = 20, epaisseur = 1.6, className }: { nom: NomIcone; taille?: number; epaisseur?: number; className?: string }) {
+export default function IconeTrait({ nom, taille = 20, epaisseur = 1.75, className }: { nom: NomIcone; taille?: number; epaisseur?: number; className?: string }) {
   return (
     <svg
       width={taille}

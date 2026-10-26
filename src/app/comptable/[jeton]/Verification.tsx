@@ -6,7 +6,7 @@ import { COULEUR_CATEGORIE, NOM_CATEGORIE } from "@/lib/couleurs-comptable";
 import { avancementDeLaVerification, libellePeriode, type Categorie, type EtatDeVerification, type VerdictDuComptable } from "@/lib/pour-mon-comptable";
 import { moisSeul } from "@/lib/termines-par-mois";
 import { poserVerdictAction } from "./actions";
-import Icone, { type NomIcone } from "./Icone";
+import Icone, { type NomIcone } from "@/components/atlas/IconeTrait";
 
 export type PieceAffichee =
   | {

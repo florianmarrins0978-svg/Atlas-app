@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { colors } from "@/lib/design-tokens";
 import { jourComplet } from "@/lib/pour-mon-comptable";
 import { arreterDossierAction } from "./actions";
-import Icone from "./Icone";
+import Icone from "@/components/atlas/IconeTrait";
 
 /**
  * « ARRÊTER MON DOSSIER ICI » — sa règle du 24 octobre 2026 : *« l'utilisateur

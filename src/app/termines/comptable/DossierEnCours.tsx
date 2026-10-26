@@ -10,7 +10,7 @@ import { checkUpAction } from "./actions";
 import ArretDuDossier from "./ArretDuDossier";
 import CarteARegarder from "./CarteARegarder";
 import type { ARegarder, Facture } from "./a-regarder";
-import Icone from "./Icone";
+import Icone from "@/components/atlas/IconeTrait";
 
 /**
  * L'ÉCRAN DU DOSSIER EN COURS — la planche choisie le 25 octobre 2026

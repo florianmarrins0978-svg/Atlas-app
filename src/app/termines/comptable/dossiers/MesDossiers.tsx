@@ -11,7 +11,7 @@ import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocum
 import { ajouterBilanAction, envoyerAuComptableAction, retirerBilanAction } from "../actions";
 import CarteARegarder from "../CarteARegarder";
 import type { ARegarder, Facture } from "../a-regarder";
-import Icone from "../Icone";
+import Icone from "@/components/atlas/IconeTrait";
 
 export type DossierAffiche = {
   id: string;

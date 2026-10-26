@@ -24,7 +24,7 @@ import {
   type PieceDeposee,
 } from "./actions";
 import type { ARegarder, Facture } from "./a-regarder";
-import Icone from "./Icone";
+import Icone from "@/components/atlas/IconeTrait";
 
 /**
  * UNE LIGNE QUI ATTEND SA RÉPONSE — la carte de la planche choisie le
