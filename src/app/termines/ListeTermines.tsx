@@ -201,7 +201,11 @@ export default function ListeTermines({
         <Link
           href="/termines/retours"
           data-atlas="onglet-retours"
-          className="flex min-h-14 min-w-0 items-center justify-center gap-2 rounded-full px-3.5 text-center text-[15px] font-medium leading-[1.2] no-underline"
+          // **10 px de bord et 6 d'écart, pas 14 et 8** : à 360 px,
+          // « d'intervention » et sa pastille demandent 127 px, et la planche
+          // n'en laissait que 121 (`test-onglets-termines-e2e`, batterie
+          // commune du 25 octobre 2026). À 390 px, rien ne se voit.
+          className="flex min-h-14 min-w-0 items-center justify-center gap-1.5 rounded-full px-2.5 text-center text-[15px] font-medium leading-[1.2] no-underline"
           style={{
             backgroundColor: colors.card,
             color: colors.ink,
@@ -254,7 +258,7 @@ export default function ListeTermines({
         <Link
           href="/chantiers/nouveau?facture=1"
           data-atlas="creer-une-facture"
-          className="flex min-h-14 min-w-0 items-center justify-center rounded-full px-3.5 text-center text-[15px] font-medium leading-[1.2] no-underline"
+          className="flex min-h-14 min-w-0 items-center justify-center rounded-full px-2.5 text-center text-[15px] font-medium leading-[1.2] no-underline"
           style={{
             color: colors.or,
             boxShadow: `inset 0 0 0 1.5px ${colors.or}`,
