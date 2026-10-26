@@ -36118,7 +36118,7 @@ l'écran, plus le contour.
 |---|---|---|
 | sous « Planning » | « Vos journées », 9,5 px doré | rien |
 | l'agenda | conseil et panne au-dessus du mois, sur deux lignes | la panne en haut sur une plage rouge, « Ouvrir » seul en geste ; le conseil en bas de page, « Relier votre agenda » et « Masquer » |
-| les sept jours | sous le mot « La semaine », à toucher (sa réponse du 15 octobre) | d'office ; un jour touché les retire toujours (« la B » du 7 octobre) ; le titre en phrase, « Du 26 octobre au 1er novembre » |
+| les sept jours | sous le mot « La semaine », à toucher (sa réponse du 15 octobre) | d'office ; un jour touché les retire toujours (« la B » du 7 octobre) ; le titre en phrase, « Du 26 octobre au 1er novembre ». **La planche écrivait « Semaine du 26 octobre »** : ses sept jours partaient d'un lundi, ceux de l'application partent du jour où il arrive. Un mercredi, « Semaine du 28 octobre » annoncerait une semaine qui n'en est pas une |
 | la date d'un jour | pastille centrée en capitales (sa D du 23 août) | titre en serif à gauche, « Aujourd'hui » en or puis la date ; la pastille se remplace par la PLAGE claire qui porte les chantiers |
 | une ligne | nom, durée 12,5 px doré dessous, ville 11,5 px grise dessous | nom ; « Une journée » (14,5 px) et la ville avec sa pointe de carte sur une ligne ; l'équipe à 15 px |
 | l'équipe | « Julien / Kévin » | « Julien et Kévin » (`ditQuiPart`, donc aussi la fiche de chantier en PDF) |
