@@ -3,6 +3,7 @@
 import { Fragment } from "react";
 import { jourIso } from "@/lib/jour";
 import { colors, font, voile } from "@/lib/design-tokens";
+import { enCapitale } from "@/lib/chantier-etat";
 import type { Creneau, JourIso } from "@/lib/disponibilites";
 import type { ChantierPourAbsence } from "@/lib/equipe-absente";
 import { jourLisibleCourt } from "@/lib/mois";
@@ -69,8 +70,8 @@ function LigneLibre({
     >
       <Pastille etat={etatDemi(occupation)} />
       <span
-        className="w-[70px] flex-shrink-0 whitespace-nowrap text-[10px] font-semibold uppercase leading-[1.15]"
-        style={{ letterSpacing: "0.06em", color: colors.ink }}
+        className="w-[92px] flex-shrink-0 whitespace-nowrap text-[14px] font-bold leading-[1.15]"
+        style={{ letterSpacing: "0.02em", color: colors.inkSoft }}
       >
         {MOT_DEMI[demi]}
       </span>
@@ -463,6 +464,35 @@ export function CarteDuJour({
     />
   ) : null;
 
+  // **La date en titre, à gauche, comme sur la liste — sa planche du
+  // 25 octobre 2026** (`appli/soignee/planning.html`). En capitales espacées
+  // de 12,5 px au centre, elle se lisait comme une étiquette ; « Aujourd'hui »
+  // garde son or et passe devant la date. « Salarié absent ? » se pose à côté
+  // (sa réponse du 26 octobre, « mets-le à côté ») : c'est `PasLaCeJour` qui
+  // range les deux sur une ligne.
+  const titreDuJour = (
+    <h3 className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5 font-normal">
+      {jour === jourIso(new Date()) && (
+        <span
+          data-atlas="aujourdhui-fiche"
+          className="text-[22px] leading-[1.2]"
+          style={{ fontFamily: font.display, color: colors.or }}
+        >
+          Aujourd’hui
+        </span>
+      )}
+      <span
+        className={jour === jourIso(new Date()) ? "text-[15px]" : "text-[20px] leading-[1.2]"}
+        style={
+          jour === jourIso(new Date())
+            ? { fontFamily: font.body, color: colors.inkSoft }
+            : { fontFamily: font.display, color: colors.ink }
+        }
+      >
+        {jour === jourIso(new Date()) ? jourLisibleCourt(jour).toLocaleLowerCase("fr") : jourLisibleCourt(jour)}
+      </span>
+    </h3>
+  );
   return (
     <>
       {/* ─── ELLE SE RATTACHE À CE QU'IL A TOUCHÉ ───────────────────────────
@@ -524,23 +554,13 @@ export function CarteDuJour({
             14 octobre 2026 (`appli/fiche-du-jour-en-mieux.html`). C'est sa règle
             du 9 septembre pour la liste du bas ; la fiche du jour, elle, ne
             disait que la date. La date reste : « Aujourd'hui » s'ajoute. */}
-        {!seulement && jour === jourIso(new Date()) && (
-          <p
-            data-atlas="aujourdhui-fiche"
-            className="mb-2 text-center text-[11px] font-semibold uppercase leading-none"
-            style={{ letterSpacing: "0.2em", color: colors.or }}
-          >
-            Aujourd’hui
-          </p>
-        )}
-        {!seulement && (
-          <p
-            className="mb-3.5 text-center text-[12.5px] font-bold uppercase leading-none"
-            style={{ letterSpacing: "0.14em", color: colors.ink }}
-          >
-            {jourLisibleCourt(jour)}
-          </p>
-        )}
+        {/* **La date en titre, à gauche, comme sur la liste — sa planche du
+            25 octobre 2026** (`appli/soignee/planning.html`). En capitales
+            espacées de 12,5 px au centre, elle se lisait comme une étiquette ;
+            « Aujourd'hui » garde son or et passe devant la date. */}
+        {/* La date seule quand « Salarié absent ? » n'existe pas (un salarié, un
+            jour passé) ; sinon c'est `PasLaCeJour` qui la pose, le geste à côté. */}
+        {!seulement && !(ecriture) && <div className="mb-2">{titreDuJour}</div>}
 
         {/* ─── « JE NE SUIS PAS LÀ » — sa demande du 6 septembre 2026 ────────
 
@@ -582,6 +602,7 @@ export function CarteDuJour({
 
         {ecriture && !seulement && (
           <PasLaCeJour
+            titre={titreDuJour}
             jour={jour}
             absences={absencesDuJour(jour)}
             lignesEquipes={lignesEquipes}
@@ -669,15 +690,19 @@ export function CarteDuJour({
                       chantier tenait la demi-journée ou trois jours. Même
                       fonction, même or, même place que sur la ligne — deux
                       écritures pour une seule durée finiraient par diverger. */}
-                  <span
-                    data-atlas="duree-du-jour"
-                    className="mt-[3px] block text-[12.5px]"
-                    style={{ color: colors.or }}
-                  >
-                    {ditCeQuIlOccupe(c)}
+                  {/* La durée et la ville sur une ligne, comme sur la liste
+                      (sa planche du 25 octobre 2026). */}
+                  <span className="mt-1 flex flex-wrap items-center gap-x-3.5 gap-y-0.5">
+                    <span
+                      data-atlas="duree-du-jour"
+                      className="block text-[14.5px] font-semibold"
+                      style={{ fontFamily: font.body, color: colors.or }}
+                    >
+                      {enCapitale(ditCeQuIlOccupe(c))}
+                    </span>
+                    <LieuDuChantier chantier={c} />
                   </span>
                   <PasEncoreSigne chantier={c} />
-                  <LieuDuChantier chantier={c} />
                   {retourAEnvoyer(c.id, jour) && <RetourAEnvoyer />}
                   </span>
                   {/* **LE CHEVRON DIT QUE LA FICHE S'OUVRE** — sa réponse du
@@ -745,8 +770,8 @@ export function CarteDuJour({
                   >
                     <Pastille etat={etatDemi(o)} />
                     <span
-                      className="w-[70px] flex-shrink-0 whitespace-nowrap text-[10px] font-semibold uppercase leading-[1.15]"
-                      style={{ letterSpacing: "0.06em", color: colors.ink }}
+                      className="w-[92px] flex-shrink-0 whitespace-nowrap text-[14px] font-bold leading-[1.15]"
+                      style={{ letterSpacing: "0.02em", color: colors.inkSoft }}
                     >
                       {MOT_DEMI[demi]}
                     </span>

@@ -1,7 +1,7 @@
 "use client";
 
 import { poseSansAccord } from "@/lib/chantier-etat";
-import { colors, surPlein } from "@/lib/design-tokens";
+import { colors, font, surPlein } from "@/lib/design-tokens";
 import TeteRonde from "@/components/atlas/TeteRonde";
 import { styleDuCarre } from "@/components/atlas/MoisCharge";
 import { communeDeLAdresse } from "@/lib/commune-adresse";
@@ -254,7 +254,7 @@ export function PastilleEquipe({
     return (
       <span
         data-atlas="equipe-lecture"
-        className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap text-[14.5px]"
+        className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap text-[15px] font-semibold"
         style={{ color: colors.ink }}
       >
         <TetesQuiPartent tetes={tetes} />
@@ -269,7 +269,14 @@ export function PastilleEquipe({
       data-atlas="equipe"
       data-vide={vide ? "1" : "0"}
       onClick={onClick}
-      className="inline-flex min-h-[44px] flex-shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap border-0 bg-transparent px-0 text-[14.5px]"
+      // **Le « + » au bord droit — sa planche du 25 octobre 2026**, et sa
+      // demande du 26 : *« mets-le comme tu l'avais disposé sur la planche »*.
+      // Collé aux noms, il se lisait comme un mot de plus ; au bord, il tombe
+      // dans la colonne de Supprimer, juste dessous. Toute la ligne reste un
+      // seul bouton : le doigt n'a pas à viser le signe.
+      className={`inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 whitespace-nowrap border-0 bg-transparent px-0 text-[15px] font-semibold ${
+        avecPlus && !vide ? "min-w-0 flex-1" : "flex-shrink-0"
+      }`}
       style={{ color: vide ? colors.or : colors.ink, WebkitTapHighlightColor: "transparent" }}
     >
       {vide ? (
@@ -284,7 +291,7 @@ export function PastilleEquipe({
           <TetesQuiPartent tetes={tetes} />
           {libelle}
           {avecPlus && (
-            <span className="text-[17px] leading-none" style={{ color: colors.or }} aria-hidden="true">
+            <span className="ml-auto text-[24px] font-normal leading-none" style={{ color: colors.or }} aria-hidden="true">
               +
             </span>
           )}
@@ -314,12 +321,29 @@ export function LieuDuChantier({ chantier }: { chantier: ChantierPlanning }) {
   const commune = communeDeLAdresse(chantier.adresseChantier);
   if (!commune) return null;
   return (
+    // **14,5 px en encre douce, sa pointe de carte devant — sa planche du
+    // 25 octobre 2026** (`appli/soignee/planning.html`). En 11,5 px gris, sur
+    // un chantier au soleil, la ville ne se lisait plus ; c'est pourtant elle
+    // qui distingue quatre clients du même nom.
     <span
       data-atlas="lieu-du-chantier"
-      className="mt-[2px] block truncate text-[11.5px] leading-[1.5]"
-      style={{ color: colors.muted }}
+      className="inline-flex min-w-0 items-center gap-1 text-[14.5px] leading-[1.35]"
+      style={{ color: colors.inkSoft, fontFamily: font.body }}
     >
-      {commune}
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        className="h-4 w-4 flex-none"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.75}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z" />
+        <circle cx="12" cy="10" r="2.3" />
+      </svg>
+      <span className="truncate">{commune}</span>
     </span>
   );
 }

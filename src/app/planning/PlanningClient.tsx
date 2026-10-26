@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useAncrageDuGeste } from "@/components/atlas/useAncrageDuGeste";
 import Link from "next/link";
-import { getPlanificationEtat, trierParDatePlanifiee } from "@/lib/chantier-etat";
+import { enCapitale, getPlanificationEtat, trierParDatePlanifiee } from "@/lib/chantier-etat";
 import { useRouter } from "next/navigation";
 import { lienDeRelecture } from "@/lib/retour-au-planning";
 import { estAuCalendrier } from "@/lib/onglet-chantier";
@@ -302,13 +302,13 @@ export default function PlanningClient({
    * flèche arrivent éteintes.
    */
   const [debutFenetre, setDebutFenetre] = useState<JourIso>(jourDArrivee as JourIso);
-  /**
-   * **Les sept jours sous le mois, ouverts ou non.** Jusqu'au 15 octobre 2026,
-   * deux points choisissaient entre la journée d'aujourd'hui (le défaut) et la
-   * semaine. Sa réponse du 15 octobre (`appli/deux-points-ou-la-semaine.html`) :
-   * *« la semaine »*. Au repos, rien sous le mois ; le mot ouvre les sept jours.
+  /*
+   * **Les sept jours se lisent d'office sous le mois — sa planche du 25 octobre
+   * 2026** (`appli/soignee/planning.html`, « code toute la planche »). Le mot
+   * « La semaine » qui les ouvrait (sa réponse du 15 octobre) est parti : c'est
+   * la première chose qu'on vient lire le matin, et elle demandait un geste.
+   * Un jour touché retire toujours la liste (« la B » du 7 octobre).
    */
-  const [semaineOuverte, setSemaineOuverte] = useState(false);
   const [, enTransition] = useTransition();
 
   const grilleRef = useRef<HTMLDivElement>(null);
@@ -1366,9 +1366,12 @@ export default function PlanningClient({
     const fin = enDate(plusDeJours(debutFenetre, JOURS_DE_LA_FENETRE - 1));
     const moisDebut = MOIS_LONGS[debut.getUTCMonth()];
     const moisFin = MOIS_LONGS[fin.getUTCMonth()];
+    // **En phrase, sans tiret — sa planche du 25 octobre 2026** : « Du 26
+    // octobre au 1er novembre » se lit à voix haute, « 26 – 1 » non.
+    const quantieme = (d: Date) => (d.getUTCDate() === 1 ? "1er" : String(d.getUTCDate()));
     return debut.getUTCMonth() === fin.getUTCMonth()
-      ? `${debut.getUTCDate()} – ${fin.getUTCDate()} ${moisFin}`
-      : `${debut.getUTCDate()} ${moisDebut} – ${fin.getUTCDate()} ${moisFin}`;
+      ? `Du ${quantieme(debut)} au ${quantieme(fin)} ${moisFin}`
+      : `Du ${quantieme(debut)} ${moisDebut} au ${quantieme(fin)} ${moisFin}`;
   }, [joursDeLaSemaine]);
 
   const joursAvecChantiers = joursDeLaSemaine.filter((j) => chantiersDuJour(j).length > 0);
@@ -1437,7 +1440,10 @@ export default function PlanningClient({
       }}
     >
       <div className="pb-16">
-        <EnTeteEcran surtitre="Vos journées" titre="Planning" />
+        {/* **Plus de « Vos journées » sous le titre — sa planche du 25 octobre
+            2026** (`appli/soignee/planning.html`, « code toute la planche ») :
+            9,5 px de capitales dorées qui ne disaient rien de plus. */}
+        <EnTeteEcran titre="Planning" />
 
         {/* Le raccordement de l'agenda : sa demande du 9 août 2026, resserrée
             le 26 septembre (planche `appli/mon-agenda-simple.html`, C). La
@@ -1447,45 +1453,47 @@ export default function PlanningClient({
         {/* **Pas pour un salarié** : relier l'agenda de l'entreprise est un
             réglage du patron, et le lien le renverrait ici même. Un renvoi sans
             explication se lit comme une panne. */}
-        {ouvertes.agenda && bandeauAgenda !== null && !rappelMasque && (
-          <div className="mt-5 px-[26px]">
-            <div className="flex items-center justify-between py-3.5" style={{ borderBottom: `1px solid ${colors.line}` }}>
-              <Link href="/reglages/agenda" className="min-w-0 flex-1">
-                {/* **Une ligne pour le conseil, deux pour la panne** — sa planche
-                    du 14 octobre 2026. La phrase du conseil redisait le titre ;
-                    celle de la panne dit un risque, elle reste. Le titre passe en
-                    texte courant et les deux gestes en minuscules : en capitales
-                    espacées, « OUVRIR MASQUER » repoussait le titre sur deux
-                    lignes (vu à l'écran). */}
-                <span
-                  className="block text-[14px]"
-                  style={{ color: bandeauAgenda === "panne" ? colors.ink : colors.inkSoft }}
-                >
-                  {bandeauAgenda === "panne" ? "Votre agenda n'est plus lu" : "Vous pouvez relier votre agenda"}
+        {/* **La panne reste en haut, et passe en rouge ; le conseil descend en
+            bas de page** — sa planche du 25 octobre 2026. Un conseil ne passe
+            plus devant le mois ; un risque, si. Le conseil vit sous les sept
+            jours (`conseilAgenda`, plus bas). */}
+        {ouvertes.agenda && bandeauAgenda === "panne" && !rappelMasque && (
+          <div className="mt-5 px-[22px]">
+            {/* Une plage, et « Ouvrir » seul est le geste : une carte entière
+                qui s'appuie serait un bouton rectangulaire de plus. */}
+            <div
+              data-atlas="agenda-en-panne"
+              className="flex items-start gap-3 rounded-[6px] px-4 py-3.5"
+              style={{ background: colors.carteRougeFond, color: colors.ink }}
+            >
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                className="mt-px h-6 w-6 flex-none"
+                fill="none"
+                stroke={colors.carteRougeTexte}
+                strokeWidth={1.75}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 4l9 15.5H3z" />
+                <path d="M12 10v4.5M12 17v.4" />
+              </svg>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[16px] font-bold" style={{ color: colors.carteRougeTexte }}>
+                  Votre agenda n&apos;est plus lu
                 </span>
-                {bandeauAgenda === "panne" && (
-                  <span className="block text-[12.5px] leading-snug" style={{ color: colors.muted }}>
-                    Un client peut retenir un jour où vous êtes déjà pris.
-                  </span>
-                )}
-              </Link>
-              <span className="ml-3 flex flex-shrink-0 items-center gap-3.5 text-[14px]">
-                <Link href="/reglages/agenda" className="flex min-h-[44px] items-center" style={{ color: colors.or }}>
-                  Ouvrir
-                </Link>
-                {/* « Masquer » n'existe pas pour la panne : ce n'est pas un
-                    conseil qu'on écarte, c'est un raccordement qui a lâché. */}
-                {bandeauAgenda === "proposer" && (
-                  <button
-                    type="button"
-                    onClick={masquerLeRappel}
-                    className="flex min-h-[44px] cursor-pointer items-center border-0 bg-transparent p-0 text-[14px]"
-                    style={{ color: colors.muted }}
-                  >
-                    Masquer
-                  </button>
-                )}
+                <span className="mt-[3px] block text-[14.5px] leading-[1.4]" style={{ color: colors.ink }}>
+                  Un client peut retenir un jour où vous êtes déjà pris.
+                </span>
               </span>
+              <Link
+                href="/reglages/agenda"
+                className="flex min-h-[44px] flex-none items-center self-center text-[15px] font-bold no-underline"
+                style={{ color: colors.carteRougeTexte }}
+              >
+                Ouvrir
+              </Link>
             </div>
           </div>
         )}
@@ -1509,7 +1517,7 @@ export default function PlanningClient({
             // deux navigations cessent de s'ignorer : changer de semaine ne
             // disait rien au mois, et rien ne montrait d'où venait la liste.
             // Sans liste à l'écran (un jour est ouvert), aucune semaine n'est lue.
-            semaineLue={jourTouche === null && semaineOuverte ? lundiDe(debutFenetre) : null}
+            semaineLue={jourTouche === null ? lundiDe(debutFenetre) : null}
             // **Le patron seul** : c'est un réglage de l'entreprise, sa réponse
             // du 29 septembre 2026. Ses salariés voient ses couleurs.
             sousLaLegende={
@@ -1562,44 +1570,12 @@ export default function PlanningClient({
           />
         </div>
 
-        {/* ─── « LA SEMAINE », À LA PLACE DES DEUX POINTS ──────────────────
-            **Sa réponse du 15 octobre 2026**, planche
-            `appli/deux-points-ou-la-semaine.html` : *« la semaine »*. Les deux
-            points (son choix du 9 septembre) montraient au repos les chantiers
-            d'aujourd'hui ; depuis le 7 octobre la fiche d'un jour ouvert les
-            porte déjà, et un point ne disait pas ce qu'il ouvrait. Un mot en or
-            est un geste sur cet écran (sa planche du 18 septembre) : il ouvre
-            les sept jours, et le même mot les referme. Au repos, rien dessous.
-
-            Le repère `point-semaine` reste : il désigne toujours le geste qui
-            ouvre les sept jours, et les suites s'y tiennent. */}
-        <div data-atlas="portee-liste" className="mt-[14px] flex justify-center">
-          <button
-            type="button"
-            data-atlas="point-semaine"
-            aria-pressed={semaineOuverte}
-            aria-expanded={semaineOuverte}
-            onClick={() => setSemaineOuverte((o) => !o)}
-            className="min-h-[44px] cursor-pointer border-0 bg-transparent px-2.5 text-[14.5px]"
-            style={{
-              color: semaineOuverte ? colors.ink : colors.or,
-              textDecorationLine: semaineOuverte ? "underline" : "none",
-              textDecorationColor: colors.or,
-              textUnderlineOffset: 7,
-              textDecorationThickness: 1.5,
-              WebkitTapHighlightColor: "transparent",
-            }}
-          >
-            La semaine
-          </button>
-        </div>
-
         {/* **Un jour ouvert retire la liste, ses flèches avec elle** : sa fiche
             montre déjà ces chantiers, et les relire en dessous était le doublon
             qu'il a vu le 7 octobre 2026 (« la B »). */}
-        {jourTouche === null && semaineOuverte && (
+        {jourTouche === null && (
         <>
-        <div className="mx-[18px] mt-[14px] flex items-center justify-between gap-2.5">
+        <div className="mx-[18px] mt-[26px] flex items-center justify-between gap-2.5">
           <Fleche
             libelle="Sept jours avant"
             signe="‹"
@@ -1608,7 +1584,7 @@ export default function PlanningClient({
           <div className="flex-1 text-center">
             <b
               data-atlas="semaine-titre"
-              className="block text-[15px] font-bold leading-[1.2]"
+              className="block text-[16px] font-bold leading-[1.2]"
               style={{ color: colors.ink }}
             >
               {titreSemaine}
@@ -1663,7 +1639,7 @@ export default function PlanningClient({
               key={jour}
               data-atlas="jour-planifie"
               data-passe={jour < aujourdHui ? "1" : undefined}
-              className="mx-[18px] mt-5"
+              className="mx-[22px] mt-[26px]"
             >
               {/* ─── « AUJOURD'HUI », EN DORÉ — sa proposition B, choisie ──────
                   Sa demande du 9 septembre 2026 : *« si on est le 8 septembre
@@ -1692,30 +1668,33 @@ export default function PlanningClient({
 
                   Les autres journées ne bougent pas : 12 px, encre sur papier,
                   14,07 de contraste. */}
-              <p className="text-center leading-none">
+              {/* **La date en titre, à gauche, et non plus dans une pastille —
+                  sa planche du 25 octobre 2026.** La pastille (sa D du 23 août)
+                  faisait ressortir la date du nom ; c'est désormais la PLAGE qui
+                  les sépare : la date sur le fond, les chantiers sur la carte.
+                  « Aujourd'hui » reste en or, en premier (sa B du 9 septembre),
+                  et la date suit en encre douce. */}
+              <h3 className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5 px-0.5 font-normal">
                 <span
                   data-atlas="date-planifiee"
                   data-aujourdhui={jour === aujourdHui ? "1" : undefined}
-                  className={
-                    jour === aujourdHui
-                      ? "inline-block rounded-full px-[17px] py-[8px] text-[19px] font-bold uppercase"
-                      : "inline-block rounded-full px-[15px] py-[7px] text-[12px] font-bold uppercase"
-                  }
+                  className={jour === aujourdHui ? "text-[24px] leading-[1.2]" : "text-[21px] leading-[1.2]"}
                   style={{
-                    letterSpacing: jour === aujourdHui ? "0.08em" : "0.14em",
-                    background: colors.rustTint,
-                    color:
-                      jour === aujourdHui
-                        ? colors.or
-                        : jour < aujourdHui
-                          ? colors.muted
-                          : colors.ink,
+                    fontFamily: font.display,
+                    letterSpacing: "-0.005em",
+                    color: jour === aujourdHui ? colors.or : jour < aujourdHui ? colors.muted : colors.ink,
                   }}
                 >
                   {jour === aujourdHui ? "Aujourd’hui" : jourLisibleCourt(jour)}
                 </span>
-              </p>
-              {chantiersDuJour(jour).map((c) => {
+                {jour === aujourdHui && (
+                  <span className="text-[15px]" style={{ fontFamily: font.body, color: colors.inkSoft }}>
+                    {jourLisibleCourt(jour).toLocaleLowerCase("fr")}
+                  </span>
+                )}
+              </h3>
+              <div data-atlas="plage-du-jour" className="mt-2.5 rounded-[6px] px-4" style={{ background: colors.card }}>
+              {chantiersDuJour(jour).map((c, rangDansLeJour) => {
                 // **Ceux de CE jour** (migration 0093) : la ligne est celle d'une
                 // journée, et Julien « à partir du 4e jour » ne se lit pas le 1er.
                 const duJour = equipesDuJour(c.equipes, jour);
@@ -1752,13 +1731,14 @@ export default function PlanningClient({
                        élément disparu. Un attribut posé pour ça ne dépend
                        d'aucun choix d'apparence. */
                     data-chantier={c.id}
+                    style={rangDansLeJour > 0 ? { boxShadow: `inset 0 1px 0 ${colors.line}` } : undefined}
                   >
-                    <div className="mt-3 flex items-center gap-2.5">
+                    <div className="flex items-center gap-2.5">
                       <button
                         type="button"
                         data-atlas="nom-planifie"
                         onClick={ouvrir}
-                        className="flex-1 cursor-pointer border-0 bg-transparent p-0 text-left"
+                        className="min-h-[72px] min-w-0 flex-1 cursor-pointer border-0 bg-transparent px-0 py-3.5 text-left"
                         style={{
                           fontFamily: font.display,
                           fontSize: 19,
@@ -1784,18 +1764,24 @@ export default function PlanningClient({
                             cassait en deux lignes et la durée finissait seule
                             en dessous, à gauche, sans qu'on sache à quoi elle
                             se rapportait. Vu sur sa capture. */}
-                        <span
-                          data-atlas="duree-planifiee"
-                          className="mt-[3px] block text-[12.5px]"
-                          style={{ color: jour < aujourdHui ? colors.muted : colors.or }}
-                        >
-                          {ditCeQuIlOccupe(c)}
+                        {/* **La durée et la ville sur UNE ligne, dans la même
+                            écriture — sa planche du 25 octobre 2026.** Elles
+                            s'écrivaient en serif de 12,5 et 11,5 px, l'une sous
+                            l'autre ; la ville a sa pointe de carte devant elle. */}
+                        <span className="mt-1 flex flex-wrap items-center gap-x-3.5 gap-y-0.5">
+                          <span
+                            data-atlas="duree-planifiee"
+                            className="block text-[14.5px] font-semibold"
+                            style={{ fontFamily: font.body, color: jour < aujourdHui ? colors.muted : colors.or }}
+                          >
+                            {enCapitale(ditCeQuIlOccupe(c))}
+                          </span>
+                          {/* **Le lieu, à côté de la durée.** C'est la deuxième
+                              question après « qui » — et sur quatre clients qui
+                              s'appellent Martins, c'est la seule qui distingue. */}
+                          <LieuDuChantier chantier={c} />
                         </span>
                         <PasEncoreSigne chantier={c} />
-                        {/* **Le lieu, sous la durée.** C'est la deuxième
-                            question après « qui » — et sur quatre clients qui
-                            s'appellent Martins, c'est la seule qui distingue. */}
-                        <LieuDuChantier chantier={c} />
                   {retourAEnvoyer(c.id, jour) && <RetourAEnvoyer />}
                       </button>
                       {/* La pastille MÈNE AU JOUR au lieu d'ouvrir un choix : un
@@ -1888,11 +1874,49 @@ export default function PlanningClient({
                 }
               />
               )}
+              </div>
             </div>
           ))
         )}
         </div>
         </>
+        )}
+
+        {/* ─── LE CONSEIL DE RELIER L'AGENDA, EN BAS DE PAGE ───────────────
+            Sa planche du 25 octobre 2026 : un conseil se lit, il ne passe pas
+            devant le mois. « Masquer » le fait taire pour toujours, comme
+            avant ; la panne, elle, reste en haut (plus haut dans ce fichier). */}
+        {ouvertes.agenda && bandeauAgenda === "proposer" && !rappelMasque && (
+          <div
+            data-atlas="conseil-agenda"
+            className="mx-[22px] mt-10 flex items-center gap-2 pt-1.5"
+            style={{ boxShadow: `inset 0 1px 0 ${colors.line}` }}
+          >
+            <Link href="/reglages/agenda" className="flex min-h-[56px] flex-1 items-center gap-3 text-[16px] no-underline" style={{ color: colors.ink }}>
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                className="h-6 w-6 flex-none"
+                fill="none"
+                stroke={colors.or}
+                strokeWidth={1.75}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="3.5" y="5" width="17" height="15.5" rx="2" />
+                <path d="M3.5 10h17M8 3v4M16 3v4" />
+              </svg>
+              Relier votre agenda
+            </Link>
+            <button
+              type="button"
+              onClick={masquerLeRappel}
+              className="flex min-h-[48px] cursor-pointer items-center border-0 bg-transparent px-1 text-[15px]"
+              style={{ color: colors.inkSoft }}
+            >
+              Masquer
+            </button>
+          </div>
         )}
 
         {/* ─── CE QUI N'A PAS ENCORE DE JOUR — dans le tiroir du bas ────── */}

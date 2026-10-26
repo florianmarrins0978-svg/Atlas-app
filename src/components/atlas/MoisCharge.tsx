@@ -405,7 +405,8 @@ export default function MoisCharge({
             className="block text-[21px] font-normal leading-[1.2]"
             style={{ color: colors.ink, fontFamily: font.display, fontVariantNumeric: "lining-nums" }}
           >
-            {MOIS_LONGS[moisEcrit.mois]} {moisEcrit.annee}
+            {/* Capitale au mois, comme un titre — sa planche du 25 octobre 2026. */}
+            {MOIS_LONGS[moisEcrit.mois].charAt(0).toLocaleUpperCase("fr") + MOIS_LONGS[moisEcrit.mois].slice(1)} {moisEcrit.annee}
           </b>
         </div>
         <Fleche
@@ -416,8 +417,8 @@ export default function MoisCharge({
       </div>
 
       <div
-        className="mb-1.5 mt-4 grid grid-cols-7 gap-1 text-center text-[10px] font-semibold uppercase"
-        style={{ letterSpacing: "0.1em", color: colors.muted }}
+        className="mb-1.5 mt-3 grid grid-cols-7 gap-1 text-center text-[12.5px] font-semibold uppercase"
+        style={{ letterSpacing: "0.08em", color: colors.inkSoft }}
         aria-hidden="true"
       >
         {JOURS_COURTS.map((j, i) => (
@@ -488,8 +489,10 @@ export default function MoisCharge({
         </button>
       )}
 
-      <Legende />
-      {sousLaLegende}
+      {/* **« Couleurs » à côté de la légende, et non plus dessous — sa planche
+          du 25 octobre 2026** (`appli/soignee/planning.html`) : c'est elle
+          qu'il change. */}
+      <Legende aCote={sousLaLegende} />
     </div>
   );
 
@@ -773,7 +776,7 @@ export function Fleche({ libelle, signe, onClick }: { libelle: string; signe: st
  * l'après-midi »*. Rempli, le premier se lisait comme un cinquième état, juste
  * après « au-delà » ; il ne dit rien de la charge, seulement où est le matin.
  */
-export function Legende() {
+export function Legende({ aCote }: { aCote?: ReactNode } = {}) {
   const carre = (etat: EtatDemi) => (
     <i
       data-atlas="carre"
@@ -788,21 +791,26 @@ export function Legende() {
   // lisent jamais ensemble.
   const mots: EtatDemi[] = ["libre", "dispo", "plein", "dela"];
   return (
+    // **Deux lignes lisibles, et non plus une de 9 px — sa planche du
+    // 25 octobre 2026** : les quatre états à 13 px en encre douce, puis le matin
+    // et l'après-midi, et ce qui se pose à côté (« Couleurs » au planning).
+    <div data-atlas="legende" className="mt-3.5">
     <div
-      data-atlas="legende"
-      className="mt-3.5 flex flex-nowrap items-center justify-center gap-1.5 text-[9px]"
-      style={{ color: colors.muted }}
+      className="flex flex-wrap items-center justify-center gap-x-3.5 gap-y-1.5 text-[13px]"
+      style={{ color: colors.inkSoft }}
     >
       {mots.map((etat) => (
-        <span key={etat} className="flex flex-shrink-0 items-center gap-[5px] whitespace-nowrap">
+        <span key={etat} className="flex flex-shrink-0 items-center gap-[6px] whitespace-nowrap">
           {carre(etat)} {MOT_ETAT[etat]}
         </span>
       ))}
+    </div>
+    <div className="mt-0.5 flex min-h-[44px] items-center justify-center gap-[22px]">
       <span
         data-atlas="legende-position"
-        className="flex flex-shrink-0 items-center gap-[7px] whitespace-nowrap"
+        className="flex flex-shrink-0 items-center gap-[8px] whitespace-nowrap"
       >
-        <span className="flex w-[24px] flex-shrink-0 flex-col gap-[2.5px] self-stretch">
+        <span className="flex w-[24px] flex-shrink-0 flex-col justify-center gap-[2.5px] self-stretch">
           {["matin", "apres_midi"].map((d) => (
             <i
               key={d}
@@ -812,14 +820,16 @@ export function Legende() {
           ))}
         </span>
         <span className="flex flex-col gap-[2.5px] leading-none">
-          <b className="flex h-[6px] items-center text-[9.5px] font-semibold" style={{ color: colors.inkSoft }}>
+          <b className="text-[12.5px] font-semibold leading-[1.15]" style={{ color: colors.inkSoft }}>
             matin
           </b>
-          <b className="flex h-[6px] items-center text-[9.5px] font-semibold" style={{ color: colors.inkSoft }}>
+          <b className="text-[12.5px] font-semibold leading-[1.15]" style={{ color: colors.inkSoft }}>
             après-midi
           </b>
         </span>
       </span>
+      {aCote}
+    </div>
     </div>
   );
 }

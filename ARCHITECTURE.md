@@ -36179,4 +36179,28 @@ l'écran, plus le contour.
 **Le terminal de son espace lit la clé du serveur** (`poserLaCleDeLEspace`, `scripts/secret-de-l-espace.ts`). Depuis E1 (§503), le serveur reçoit la clé de l'espace par `banc.mjs`, mais un terminal garde la valeur de `docker-compose.yml` : `npm run empreinte` aurait rendu une empreinte absente du journal, et l'épreuve d'une restauration aurait déclaré ses secrets illisibles. Les deux scripts lisent désormais le fichier de l'espace. Écarté : écrire dans `~/.bashrc` pour tous les terminaux (une persistance que rien ne demandait).
 
 **La restauration** existait (`scripts/eprouver-restauration.ts`, neuf contrôles) et a été jouée ici de bout en bout le 26 octobre ; elle reste à jouer sur SA sauvegarde, sur son espace.
+## §514 : Le planning se lit sans geste, et chaque jour range ses chantiers sur une plage
+
+**Sa demande du 26 octobre 2026**, devant la planche `appli/soignee/planning.html` : *« code toute la planche planning, ne lance pas de batterie »*. Elle tranche du même coup le point qui restait ouvert : les sept jours se lisent d'office.
+
+| | avant | après |
+|---|---|---|
+| sous « Planning » | « Vos journées », 9,5 px doré | rien |
+| l'agenda | conseil et panne au-dessus du mois, sur deux lignes | la panne en haut sur une plage rouge, « Ouvrir » seul en geste ; le conseil en bas de page, « Relier votre agenda » et « Masquer » |
+| les sept jours | sous le mot « La semaine », à toucher (sa réponse du 15 octobre) | d'office ; un jour touché les retire toujours (« la B » du 7 octobre) ; le titre en phrase, « Du 26 octobre au 1er novembre ». **La planche écrivait « Semaine du 26 octobre »** : ses sept jours partaient d'un lundi, ceux de l'application partent du jour où il arrive. Un mercredi, « Semaine du 28 octobre » annoncerait une semaine qui n'en est pas une |
+| la date d'un jour | pastille centrée en capitales (sa D du 23 août) | titre en serif à gauche, « Aujourd'hui » en or puis la date ; la pastille se remplace par la PLAGE claire qui porte les chantiers |
+| une ligne | nom, durée 12,5 px doré dessous, ville 11,5 px grise dessous | nom ; « Une journée » (14,5 px) et la ville avec sa pointe de carte sur une ligne ; l'équipe à 15 px |
+| l'équipe | « Julien / Kévin » | « Julien et Kévin » (`ditQuiPart`, donc aussi la fiche de chantier en PDF) |
+| « Ajouter » | mot doré centré sous chaque jour | au bout de la plage, à gauche, avec son « + » dessiné |
+| la légende | une ligne de 9 px, « COULEURS » seul dessous | deux lignes à 13 et 12,5 px, « Couleurs » à côté du matin et de l'après-midi (`Legende aCote`) |
+| fiche du jour | date en capitales centrées, « Matin » 10 px en capitales | date en titre à gauche (« Aujourd'hui » en or devant), « Matin » 14 px, durée et ville sur une ligne |
+| fiche d'intervention | « FICHE D'INTERVENTION » puis le nom redit en 22 px ; quatre gestes sur une rangée (sa planche du 19 septembre) | **inchangée** : sa réponse du 26 octobre, « tu conserves la fiche d'intervention » ; la planche la montrait en deux rangées de deux, il garde celle de l'application |
+| tiroir du bas | 13 px | 16,5 px, et le nombre qui attend dans une pastille d'or quand un jour est touché |
+| titre « En attente du client » | pastille, comme la date | titre en serif, comme la date |
+
+**Trois de ses choix sont revus, et c'est lui qui l'a fait** en faisant coder la planche : la semaine derrière un mot (15 octobre), la date en pastille (23 août), les quatre gestes sur une rangée (19 septembre). Chaque fois, la RÈGLE qu'il défendait reste et se mesure autrement : la date se détache du nom (hors de la plage, plus grande), les quatre gestes se voient d'un coup d'œil (deux rangées sans mot coupé).
+
+**Les suites suivent la règle, pas le dessin** (`CLAUDE.md` §5 bis) : `test-ligne-planning-e2e` mesure la date hors de la plage et plus grande que le nom ; `test-planning-e2e` vérifie la liste d'office et le titre en phrase, et compare le titre du tiroir à celui d'un jour par la police et la taille ; neuf suites ne touchent plus « La semaine ».
+
+**Ce qui n'est PAS dans ce lot** : la barre du bas garde sa taille, sa décision du 26 octobre (*« la barre du bas peut garder sa taille actuelle »*). « Salarié absent ? » se pose à côté de la date du jour, comme sur la planche (*« Salarié absent, mets-le à côté »*, même jour) : `PasLaCeJour` reçoit le titre du jour de `CarteDuJour` et le porte sur sa propre ligne, pour que la liste des absents s'ouvre toujours juste dessous.
 

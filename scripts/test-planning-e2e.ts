@@ -282,7 +282,6 @@ async function main() {
    */
   const amenerLaListeSur = async (nomCherche: string) => {
     await allerAuPlanning();
-    await page.click('[data-atlas="point-semaine"]');
     const ligne = page.locator(`[data-atlas="ligne-planifiee"]:has-text("${nomCherche}")`);
     for (let i = 0; i < 20 && !(await ligne.count()); i++) {
       await page.click('button[aria-label="Sept jours après"]');
@@ -1018,7 +1017,6 @@ async function main() {
     // Les sept jours d'abord ouverts : c'est là que le doublon pourrait
     // revenir. Au repos il n'y a rien sous le mois (sa réponse du
     // 15 octobre 2026), et la suite le vérifie plus bas.
-    await page.click('[data-atlas="point-semaine"]');
     await page.locator('[data-atlas="liste-planifies"]').waitFor({ state: "visible", timeout: 10_000 });
     await toucherLeJour(JOUR);
     // D'abord, la fiche le porte : sans cela, « absent de la liste » serait
@@ -1040,22 +1038,27 @@ async function main() {
     await page.locator('[data-atlas="liste-planifies"]').waitFor({ state: "visible", timeout: 10_000 });
   });
 
-  // **« LA SEMAINE » À LA PLACE DES DEUX POINTS** — sa réponse du 15 octobre
-  // 2026 (`appli/deux-points-ou-la-semaine.html`). Au repos, rien sous le
-  // mois ; le mot ouvre les sept jours, le même mot les referme.
-  await essai("au repos rien sous le mois, « La semaine » ouvre puis referme", async () => {
+  // **LES SEPT JOURS SE LISENT D'OFFICE** — sa planche du 25 octobre 2026
+  // (`appli/soignee/planning.html`, « code toute la planche »), qui remplace sa
+  // réponse du 15 octobre (« au repos, rien sous le mois »). Le mot « La
+  // semaine » n'existe plus : la liste est là à l'arrivée, et un jour touché la
+  // retire toujours (« la B » du 7 octobre).
+  await essai("au repos, les sept jours se lisent sous le mois, sans mot à toucher", async () => {
     await allerAuPlanning();
     const fiche = page.locator('[data-atlas="carte-jour"]');
     assert.equal(await fiche.count(), 0, "un jour est déjà ouvert à l'arrivée : le repos ne se mesure pas");
     const liste = page.locator('[data-atlas="liste-planifies"]');
-    assert.equal(await liste.count(), 0, "une liste est sous le mois au repos");
-    const mot = page.locator('[data-atlas="point-semaine"]');
-    assert.equal((await mot.innerText()).trim(), "La semaine", "le geste ne dit pas « La semaine »");
-    await mot.click();
     await liste.waitFor({ state: "visible", timeout: 10_000 });
-    assert.equal(await mot.getAttribute("aria-pressed"), "true", "le mot ne dit pas que la semaine est ouverte");
-    await mot.click();
-    await liste.waitFor({ state: "detached", timeout: 10_000 });
+    assert.equal(
+      await page.locator('[data-atlas="point-semaine"]').count(),
+      0,
+      "le mot « La semaine » est revenu : la liste se lit d'office"
+    );
+    assert.match(
+      (await page.locator('[data-atlas="semaine-titre"]').innerText()).trim(),
+      /^Du \d/,
+      "le titre des sept jours ne se lit plus en phrase (« Du 26 au 31 octobre »)"
+    );
   });
 
   // **« AUJOURD'HUI », EN OR, SUR LA FICHE DU JOUR** — sa planche du
@@ -1251,7 +1254,6 @@ async function main() {
     // Les chevrons ne se montrent que sur les sept jours, et jamais sous un
     // jour ouvert : la page repart donc d'un calendrier sans jour touché.
     await allerAuPlanning();
-    await page.click('[data-atlas="point-semaine"]');
     await page.waitForTimeout(300);
     const moisAvant = await page.locator('[data-atlas="mois-titre"]').innerText();
     await page.click('button[aria-label="Sept jours après"]');
@@ -1499,7 +1501,7 @@ async function main() {
     );
   });
 
-  await essai("« En attente du client » porte la même pastille qu'un jour", async () => {
+  await essai("« En attente du client » s'écrit comme le titre d'un jour", async () => {
     // **Le titre « Sans date » n'existe plus** — sa demande du 12 septembre
     // 2026 : la poignée le disait déjà. Le seul titre encadré du tiroir est
     // désormais « En attente du client », qui ne se fabrique pas en libérant
@@ -1511,7 +1513,6 @@ async function main() {
     // réponse « la B » du 7 octobre 2026, un jour ouvert retire la liste du bas,
     // et la pastille avec elle. Les sept jours, puis les flèches, jusqu'à une
     // journée posée qui n'est pas aujourd'hui.
-    await page.click('[data-atlas="point-semaine"]');
     const ordinaire = page.locator('[data-atlas="date-planifiee"]:not([data-aujourdhui])');
     for (let i = 0; i < 8 && !(await ordinaire.count()); i++) {
       await page.click('button[aria-label="Sept jours après"]');
@@ -1535,12 +1536,16 @@ async function main() {
       // constante d'un appel à `__name`. Cette fonction-là n'existe pas dans le
       // navigateur, et la mesure tombe sur « __name is not defined » — une
       // erreur qui accuse le produit alors qu'elle vient de l'outillage.
+      // **Ce qui se compare depuis le 25 octobre 2026** : la date d'un jour est
+      // un titre en serif (sa planche), et le titre du tiroir la suit. Police,
+      // taille, encre et hauteur : la même grammaire, mesurée.
       const mesures = [jour, ...titres].map((e) => {
         const st = getComputedStyle(e);
         return {
           fond: st.backgroundColor,
           encre: st.color,
-          rayon: parseFloat(st.borderTopLeftRadius),
+          police: st.fontFamily,
+          taille: st.fontSize,
           hauteur: Math.round(e.getBoundingClientRect().height),
         };
       });
@@ -1550,17 +1555,14 @@ async function main() {
       vu,
       "aucune pastille de jour ou aucun titre encadré sur l'écran : il n'y a rien à comparer"
     );
-    // Un aplat transparent n'est pas une pastille — et un contrôle qui mesure
-    // zéro ne mesure rien (`CLAUDE.md` §5).
-    assert.ok(
-      !/rgba\(0, 0, 0, 0\)|transparent/.test(vu!.jour.fond),
-      `la pastille du jour ne porte aucun fond : ${vu!.jour.fond}`
-    );
-    assert.ok(vu!.jour.hauteur > 0, "la pastille du jour mesure zéro pixel : la mise en page n'est pas appliquée");
+    // Un titre de zéro pixel ne se compare pas — un contrôle qui mesure zéro
+    // ne mesure rien (`CLAUDE.md` §5).
+    assert.ok(vu!.jour.hauteur > 0, "le titre du jour mesure zéro pixel : la mise en page n'est pas appliquée");
     for (const t of vu!.titres) {
       assert.equal(t.fond, vu!.jour.fond, `un titre de section ne porte pas le fond du jour : ${t.fond}`);
       assert.equal(t.encre, vu!.jour.encre, `un titre de section ne porte pas l'encre du jour : ${t.encre}`);
-      assert.equal(t.rayon, vu!.jour.rayon, `un titre de section n'est pas aussi arrondi : ${t.rayon}`);
+      assert.equal(t.police, vu!.jour.police, `un titre de section n'a pas la police du jour : ${t.police}`);
+      assert.equal(t.taille, vu!.jour.taille, `un titre de section n'a pas la taille du jour : ${t.taille}`);
       assert.equal(t.hauteur, vu!.jour.hauteur, `un titre de section n'a pas la hauteur du jour : ${t.hauteur}`);
     }
   }

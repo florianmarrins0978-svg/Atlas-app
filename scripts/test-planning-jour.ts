@@ -108,7 +108,7 @@ essai("la pastille compte au-delà de deux équipes", () => {
   assert.ok(!/[ÉE]quipe/i.test(ditQuiPart([])), "la pastille vide dit encore « équipe »");
   assert.equal(ditQuiPart(["Julien"]), "Julien");
   // **Une barre oblique, pas une virgule** — sa demande du 9 septembre 2026.
-  assert.equal(ditQuiPart(["Julien", "Paul"]), "Julien / Paul");
+  assert.equal(ditQuiPart(["Julien", "Paul"]), "Julien et Paul");
   assert.ok(!ditQuiPart(["Julien", "Paul"]).includes(","), "la pastille énumère encore à la virgule");
   assert.equal(ditQuiPart(["Julien", "Paul", "Marc"]), "Julien +2");
 });

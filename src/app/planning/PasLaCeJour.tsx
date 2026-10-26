@@ -63,7 +63,11 @@ function GesteAbsence({
       // « ceci s'appuie » ; l'or le dit pour toute la fiche, et un mot en or ET
       // en gras crierait. Le « + » reste — *« garde le + avant salarié
       // absent ? »*, sa retouche du 18 au soir.
-      className="flex min-h-[44px] w-full items-center justify-center gap-2.5 py-[9px] text-center text-[14px]"
+      //
+      // **À CÔTÉ DE LA DATE depuis le 26 octobre 2026** — sa réponse devant la
+      // planche soignée : *« Salarié absent, mets-le à côté »*. Il quitte le
+      // milieu et la ligne d'en dessous pour la droite du titre du jour.
+      className="flex min-h-[44px] flex-none items-center gap-1.5 py-[9px] text-[15px] font-semibold"
       style={{ color: colors.or, WebkitTapHighlightColor: "transparent" }}
     >
       <span
@@ -79,6 +83,7 @@ function GesteAbsence({
 }
 
 export function PasLaCeJour({
+  titre,
   jour,
   absences,
   lignesEquipes,
@@ -87,6 +92,8 @@ export function PasLaCeJour({
   fermer,
   rouvrir,
 }: {
+  /** La date du jour, posée à gauche du geste, sur la même ligne. */
+  titre: React.ReactNode;
   jour: JourIso;
   absences: AbsenceDuPlanning[];
   lignesEquipes: { rang: number; nom?: string | null }[];
@@ -143,7 +150,7 @@ export function PasLaCeJour({
   const ligne = "flex min-h-[48px] w-full items-center justify-between gap-3 py-[11px] text-left";
 
   return (
-    <div className="mt-1 border-t pt-1" style={{ borderColor: colors.lineSoft }}>
+    <div className="mb-1">
       {/* ─── LE + EN TÊTE, LES NOMS DESSOUS — 10 septembre 2026 ────────────
           *« L'ordre devrait être + salarié absent ? puis Julien. »* Il ouvre la
           liste et la referme ; c'est aussi par lui qu'on annule, ce qui libère
@@ -152,7 +159,8 @@ export function PasLaCeJour({
 
           **Le geste se reconnaît au +, pas à un cerne** (voir `GesteAbsence`) :
           sa décision du 9 septembre, et le pourquoi y est écrit en entier. */}
-      <div className="py-1">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0 flex-1">{titre}</div>
         <GesteAbsence
           data-atlas="fermer-le-jour"
           onClick={() => {
