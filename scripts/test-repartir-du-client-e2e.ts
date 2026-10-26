@@ -122,6 +122,16 @@ async function main() {
   // **Le chantier en porte déjà un, en brouillon** : on l’envoie, parce que
   // seuls les devis ENVOYÉS entrent dans la colonne de sa fiche — et que le
   // bouton se lit sur cette même liste, pour qu’il n’y ait qu’une vérité.
+  // **On attend le devis en base, pas un délai** : l'adresse change dès que
+  // l'écran commence à arriver, et le brouillon se crée pendant son rendu.
+  // Depuis que chaque écran vérifie d'abord le compte et le rôle (audit E8),
+  // ce rendu prend quelques requêtes de plus : la suite lisait la base avant
+  // lui, et concluait « aucun devis ».
+  for (let i = 0; i < 50; i++) {
+    const { rowCount } = await pool.query(`SELECT 1 FROM devis WHERE chantier_id = $1`, [premier]);
+    if (rowCount) break;
+    await page.waitForTimeout(200);
+  }
   const { rowCount: envoyes } = await pool.query(
     `UPDATE devis SET statut = 'envoye', date_emission = CURRENT_DATE
       WHERE chantier_id = $1`,
