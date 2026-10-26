@@ -7,6 +7,10 @@
 // donne une autre empreinte. Rien ne s'affiche que l'empreinte.
 
 import { empreinteCourriel } from "../src/lib/empreinte-courriel";
+import { poserLaCleDeLEspace } from "./secret-de-l-espace";
+
+// La clé du serveur de l'espace, pas celle du terminal (audit E1).
+poserLaCleDeLEspace();
 
 const adresse = process.argv[2];
 if (!adresse) {

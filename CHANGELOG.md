@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-26
 
+- **Fin de l'audit de sécurité : une session dure trente jours après la connexion (sa décision), une ligne de devis refuse un nombre négatif ou démesuré envoyé à la main, et les commandes du terminal de son espace lisent la bonne clé.** Le rapport final est `docs/audit-securite-2026-10.md`. `ARCHITECTURE.md` §513.
 - **Audit de sécurité, fin : des conditions à accepter arrêtent aussi le clic suivant, pas seulement le rechargement ; la purge de son espace a sa propre clé.** `ARCHITECTURE.md` §512.
 - **Audit de sécurité, E15 : les outils des flux GitHub sont figés sur une version exacte, et chaque flux est en lecture seule par défaut.** Le droit de publier le site ne vaut plus que pour l'étape qui publie, plus pour celle qui installe les paquets. `ARCHITECTURE.md` §511.
 - **Audit de sécurité, E10 : la base refuse qu'un paiement, une photo ou un retour d'une entreprise vise une ligne d'une autre.** Vingt-six liens entre tables reçoivent leur clé composite (migration 0149, sans toucher aux données existantes). E12 (les liens des clients) est gardé tel quel, raisons écrites. `ARCHITECTURE.md` §510.

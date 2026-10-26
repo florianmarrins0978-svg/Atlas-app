@@ -155,6 +155,18 @@ export async function assurerLeSecretDeLEspace(): Promise<{ etat: "deja-la" | "c
   }
 }
 
+/**
+ * **Ce que le serveur emploie, pour un script lancé à la main dans l'espace.**
+ * Le terminal garde l'ancienne valeur de `docker-compose.yml` : un script qui
+ * dépend d'`AUTH_SECRET` (`empreinte-email.ts`, `eprouver-restauration.ts`)
+ * rendrait sinon une empreinte ou un verdict faux. Hors espace (la CI, une
+ * suite), aucun fichier : la valeur de l'environnement reste.
+ */
+export function poserLaCleDeLEspace(): void {
+  const cle = lireLeSecretDeLEspace();
+  if (cle) process.env.AUTH_SECRET = cle;
+}
+
 /** La clé propre à l'espace, si elle existe. Lue par `banc.mjs` pour lancer le serveur. */
 export function lireLeSecretDeLEspace(): string | null {
   const fichier = path.join(dossierDesSecrets(), "auth-secret");

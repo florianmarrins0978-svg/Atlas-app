@@ -36168,3 +36168,15 @@ l'écran, plus le contour.
 
 **Les pièces importées sans crédits IA** ne sont pas marquées illisibles : la lecture par l'IA rend « rien », et la pièce passe en « à vérifier » avec ce que le texte a pu dire, ce qui est la saisie à la main que la coupure promet.
 
+## §513 : Une session meurt trente jours après la connexion ; une ligne refuse un nombre impossible ; le terminal lit la clé de l'espace
+
+*26 octobre 2026, dernier lot de l'audit de sécurité (scénarios 4, 5 et 11 du prompt renforcé ; rapport final : `docs/audit-securite-2026-10.md`).*
+
+**Trente jours** (sa décision du 26 octobre). Le jeton est réémis à chaque requête : une session servie chaque jour ne mourait jamais, et un cookie copié vivait jusqu'au changement de mot de passe. `sessionTropAncienne` (`src/lib/identite-session.ts`) compte depuis `authentifieLe`, posé à la vraie connexion et jamais avancé par une réémission ; `getCurrentCtx` renvoie alors vers `/api/session-perimee`, la même porte que la coupure, en vrai 307 depuis le gabarit. Un jeton sans `authentifieLe` (d'avant le 25 août) est tenu pour trop ancien : il se reconnecte une fois. `test-identite-session.ts`, `test-session-perimee-e2e.ts` (rouge sans la limite).
+
+**Les nombres d'une ligne** (`nombreDeLigneAdmis`, `src/lib/montant-ecrivable.ts`). Le serveur recalculait déjà le montant et la base fige un devis émis ; restait la requête forgée : un prix négatif retirait de l'argent sans passer par la remise, un nombre démesuré faisait une erreur 500. `ajouterLignePrix` et `modifierLignePrix` refusent avant d'écrire. Plus large que `montantEcrivable`, délibérément : « 0,125 » m³ passe, comme avant. `test-nombres-de-ligne-db.ts`.
+
+**Le terminal de son espace lit la clé du serveur** (`poserLaCleDeLEspace`, `scripts/secret-de-l-espace.ts`). Depuis E1 (§503), le serveur reçoit la clé de l'espace par `banc.mjs`, mais un terminal garde la valeur de `docker-compose.yml` : `npm run empreinte` aurait rendu une empreinte absente du journal, et l'épreuve d'une restauration aurait déclaré ses secrets illisibles. Les deux scripts lisent désormais le fichier de l'espace. Écarté : écrire dans `~/.bashrc` pour tous les terminaux (une persistance que rien ne demandait).
+
+**La restauration** existait (`scripts/eprouver-restauration.ts`, neuf contrôles) et a été jouée ici de bout en bout le 26 octobre ; elle reste à jouer sur SA sauvegarde, sur son espace.
+

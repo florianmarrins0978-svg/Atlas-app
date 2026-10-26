@@ -135,6 +135,23 @@ async function main() {
       assert.ok(!r.stdout.includes(valide) && !r.stderr.includes(valide), "LA CLÉ EST SORTIE À L'ÉCRAN");
     });
 
+    await essai("un script lancé à la main dans le terminal lit la clé du serveur, pas celle du dépôt", () => {
+      // `npm run empreinte` : une autre clé donnerait une empreinte qu'aucune
+      // ligne du journal ne porte.
+      const valide = readFileSync(fichier, "utf8").trim();
+      const tsx = path.join(__dirname, "..", "node_modules", "tsx", "dist", "cli.mjs");
+      const parLeTerminal = spawnSync(process.execPath, [tsx, path.join(__dirname, "empreinte-email.ts"), "a@b.fr"], {
+        env: { ...process.env, AUTH_SECRET: ANCIEN },
+        encoding: "utf8",
+      }).stdout.trim();
+      const parLeServeur = spawnSync(process.execPath, [tsx, path.join(__dirname, "empreinte-email.ts"), "a@b.fr"], {
+        env: { ...process.env, AUTH_SECRET: valide, ATLAS_SECRETS_DIR: path.join(dossier, "absent") },
+        encoding: "utf8",
+      }).stdout.trim();
+      assert.match(parLeServeur, /^courriel:/);
+      assert.equal(parLeTerminal, parLeServeur, "LE TERMINAL CALCULE SOUS L'ANCIENNE CLÉ");
+    });
+
     await essai("le banc lance son serveur avec la clé de l'espace, pas celle du dépôt", () => {
       const banc = readFileSync(path.join(__dirname, "banc.mjs"), "utf8");
       const iSecret = banc.indexOf("secret-de-l-espace");

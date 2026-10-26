@@ -12,6 +12,15 @@ import { listerTarifs } from "./tarifs";
 import { montantDeLaLigne } from "../../lib/montant-de-ligne";
 import { memeValeur } from "../../lib/hausse-du-devis";
 import { uniteAdmise } from "../../lib/unite-de-ligne";
+import { nombreDeLigneAdmis } from "../../lib/montant-ecrivable";
+import { ActionRefuseeError } from "../garde-action";
+
+/** Refuse avant toute écriture un nombre qu'aucun écran n'envoie (`nombreDeLigneAdmis`). */
+function exigerNombresDeLigne(...nombres: (string | undefined)[]): void {
+  if (nombres.some((n) => n !== undefined && !nombreDeLigneAdmis(n))) {
+    throw new ActionRefuseeError("écrire sur une ligne un nombre négatif, illisible ou démesuré");
+  }
+}
 
 export async function listerLignesPrix(ctx: Ctx, chantierId: string) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
@@ -71,6 +80,7 @@ export async function ajouterLignePrix(
     mainDoeuvre?: boolean;
   }
 ) {
+  exigerNombresDeLigne(montant, options?.quantite, options?.prixUnitaire);
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const existantes = await tx.select().from(lignesPrix).where(eq(lignesPrix.chantierId, chantierId));
     const sansTva = await sansTvaSurLeChantier(tx, chantierId);
@@ -116,6 +126,7 @@ export async function modifierLignePrix(
     tauxTva?: string | null;
   }
 ) {
+  exigerNombresDeLigne(data.montant, data.quantite, data.prixUnitaire);
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     // **Les deux sens de l'invariant `montant = quantité × prix unitaire`.**
     //
