@@ -185,6 +185,7 @@
       <li>La date d'un virement ou d'un ticket perdu n'est plus barrée par le trait du dessus.</li>
       <li>La case de la pièce prend sa hauteur : plus de grands blancs. Chaque mois commence sa page, et le dossier passe de 26 à 18 pages.</li>
       <li>La première page dit tout de suite que chaque ligne est justifiée, puis les chiffres, les catégories et les mois, chacun avec sa page.</li>
+      <li>Les dépenses par catégorie disent leur montant et leur part, en noir : « Sorties » en rouge ne se lit plus qu'une fois, dans le tableau des mois.</li>
       <li>Des titres de colonnes : Date, Ligne de banque, Montant, Justificatif.</li>
       <li>La couleur de la catégorie est un point devant son nom.</li>
       <li>Sous une facture, Voir la facture ; sous un ticket, Voir la photo. Chaque photo du bout porte sa ligne de banque.</li>
@@ -241,10 +242,14 @@
     '<div class="quatre chiffres"><div><span class="etiquette-doc">Sorties</span><b class="s">−21 950,39 €</b></div><div><span class="etiquette-doc">Entrées</span><b class="e">+20 196,27 €</b></div>' +
     '<div><span class="etiquette-doc">Lignes de banque</span><b>78</b></div><div><span class="etiquette-doc">Tickets perdus</span><b>3</b></div></div>' +
     '<p class="contient">46 tickets, 5 factures de fournisseur, 10 virements reçus et leur facture, 3 tickets perdus déclarés (page 12).</p>' +
-    '<div class="deux-tables"><table class="tdoc chiffres"><thead><tr><th class="etiquette-doc">Catégorie</th><th class="etiquette-doc d">Sorties</th></tr></thead><tbody>' +
+    /* Sa question du 26 octobre : « pourquoi il y a deux fois les sorties ? ». Les deux tableaux portaient
+       « Sorties » en rouge, côte à côte : le même argent, rangé par catégorie puis par mois. La catégorie dit
+       maintenant sa part, en noir, comme le vrai PDF (« Montant ») ; « Sorties » ne titre plus que les mois. */
+    '<div class="deux-tables"><table class="tdoc chiffres"><thead><tr><th class="etiquette-doc">Dépenses par catégorie</th><th class="etiquette-doc d">Montant</th><th class="etiquette-doc d">Part</th></tr></thead><tbody>' +
     CATS.map(function (c) {
       return '<tr><td><i style="background:' + CAT[c[0]][1] + '"></i>' + (c[0] === "virement" ? "Virements envoyés" : CAT[c[0]][0]) +
-        '<span class="part" style="width:' + Math.max(2, c[1] / 16225.85 * 100).toFixed(1) + "%;background:" + CAT[c[0]][1] + '"></span></td><td class="d s">−' + fr(c[1]) + " €</td></tr>";
+        '<span class="part" style="width:' + Math.max(2, c[1] / 16225.85 * 100).toFixed(1) + "%;background:" + CAT[c[0]][1] + '"></span></td><td class="d">' + fr(c[1]) + ' €</td><td class="d" style="color:#6b6b5c">' +
+        (c[1] / 21950.39 * 100).toLocaleString("fr-FR", { maximumFractionDigits: 0 }) + " %</td></tr>";
     }).join("") + "</tbody></table>" +
     '<table class="tdoc chiffres"><thead><tr><th class="etiquette-doc">Mois</th><th class="etiquette-doc d">Sorties</th><th class="etiquette-doc d">Entrées</th><th class="etiquette-doc d">Page</th></tr></thead><tbody>' +
     MOIS.map(function (m) { return "<tr><td>" + m[0] + '</td><td class="d s">−' + m[1] + ' €</td><td class="d e">+' + m[2] + ' €</td><td class="d"><a href="#">' + m[3] + "</a></td></tr>"; }).join("") +
