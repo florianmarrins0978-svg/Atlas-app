@@ -24,7 +24,7 @@
 | **E10** | Liens entre tables non composites (paiement et facture, acompte et devis…) : la base n'empêche pas de rattacher un élément à une autre entreprise | moyenne (défense en profondeur) | vague 3 |
 | **E11** | Donner un accès, changer un rôle (jusqu'à créer un second patron), résilier : sans redemander le mot de passe | moyenne | **corrigé le 26 octobre** pour les accès ; la résiliation **gardée telle quelle, délibérément** |
 | **E12** | Liens clients en clair en base, certains sans expiration (contrat, passages) ; lien du comptable valable un an | moyenne | vague 3 |
-| **E13** | Les libellés des lignes de devis entrent dans la consigne système de l'IA (retouches) ; aucun plafond de dépense d'IA par mois | moyenne | vague 3 |
+| **E13** | Les libellés des lignes de devis entrent dans la consigne système de l'IA (retouches) ; aucun plafond de dépense d'IA par mois | moyenne | **consigne corrigée le 26 octobre** ; le plafond attend ta décision |
 | **E14** | Sans `ATLAS_PROXY_SAUTS`, les seuils par source deviennent communs à tous : un inconnu peut bloquer les inscriptions ou le mot de passe oublié de tout le monde, ou verrouiller un compte dont il connaît l'adresse | moyenne | dépend du déploiement |
 | **E15** | Chaîne logicielle : actions GitHub épinglées par étiquette, `pages.yml` donne ses droits de publication à l'étape qui installe les paquets, aucun délai avant d'installer une version neuve, `demarrer.sh` retombe sur `npm install` | moyenne | vague 3 |
 | **E16** | `/api/health/diagnostic` et `/api/health/banc` répondent sans compte (en-têtes reçus, version servie) | faible | **gardé tel quel, délibérément** : la page sert quand on ne peut pas se connecter, et ne porte aucun secret |
@@ -48,6 +48,14 @@
 - les droits par défaut des workflows GitHub du dépôt (réglage du site GitHub) ;
 - la protection de la branche `main` sur GitHub ;
 - tout ce qui dépend de l'hébergeur de production, qui n'existe pas encore.
+
+## E13, fait le 26 octobre (moitié)
+
+Quand tu dictes une correction sur un devis, l'IA reçoit les lignes du devis. Elles arrivaient au milieu de nos propres règles, avec la même autorité. Or une ligne peut venir d'un devis fournisseur importé : une phrase rédigée comme un ordre y aurait été obéie. Le devis passe désormais à part, comme une donnée, et une ligne ne peut plus en fabriquer une fausse. C'était déjà fait ainsi pour la lecture des dictées de chantier.
+
+Pas vérifiable ICI avec la vraie IA (pas de clé sur ce poste) ; sur ton espace : `npm run verifier:dictee`.
+
+**Le plafond de dépense d'IA par mois attend ta décision** : combien par artisan, et ce qui se passe quand il est atteint (l'IA se coupe jusqu'au mois suivant, ou seulement un avertissement). Sans plafond, un compte volé ou un abus peut faire monter ta facture chez le fournisseur.
 
 ## E11, fait le 26 octobre
 

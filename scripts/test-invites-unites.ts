@@ -36,7 +36,7 @@ function cas(nom: string, verifier: () => void): void {
   }
 }
 
-const RETOUCHES = systemeRetouches([], null);
+const RETOUCHES = systemeRetouches();
 
 console.log("\n=== Les deux invites disent la même chose des unités ===\n");
 

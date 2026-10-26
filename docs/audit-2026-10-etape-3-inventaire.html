@@ -147,7 +147,7 @@
 <td><strong>E13</strong></td>
 <td>Les libellés des lignes de devis entrent dans la consigne système de l'IA (retouches) ; aucun plafond de dépense d'IA par mois</td>
 <td>moyenne</td>
-<td>vague 3</td>
+<td><strong>consigne corrigée le 26 octobre</strong> ; le plafond attend ta décision</td>
 </tr>
 <tr>
 <td><strong>E14</strong></td>
@@ -217,6 +217,11 @@
 <li>la protection de la branche <code>main</code> sur GitHub ;</li>
 <li>tout ce qui dépend de l'hébergeur de production, qui n'existe pas encore.</li>
 </ul>
+<h2 id="e13-fait-le-26-octobre-moitié">E13, fait le 26 octobre (moitié)</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Quand tu dictes une correction sur un devis, l'IA reçoit les lignes du devis. Elles arrivaient au milieu de nos propres règles, avec la même autorité. Or une ligne peut venir d'un devis fournisseur importé : une phrase rédigée comme un ordre y aurait été obéie. Le devis passe désormais à part, comme une donnée, et une ligne ne peut plus en fabriquer une fausse. C'était déjà fait ainsi pour la lecture des dictées de chantier.</p>
+<p>Pas vérifiable ICI avec la vraie IA (pas de clé sur ce poste) ; sur ton espace : <code>npm run verifier:dictee</code>.</p>
+<p><strong>Le plafond de dépense d'IA par mois attend ta décision</strong> : combien par artisan, et ce qui se passe quand il est atteint (l'IA se coupe jusqu'au mois suivant, ou seulement un avertissement). Sans plafond, un compte volé ou un abus peut faire monter ta facture chez le fournisseur.</p>
 <h2 id="e11-fait-le-26-octobre">E11, fait le 26 octobre</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p>Donner un accès, changer un rôle et retirer un accès redemandent désormais le mot de passe, avec la même fenêtre que pour l'IBAN. La raison : quelqu'un qui volerait ta session pourrait se créer son propre compte, ou se nommer patron, et garder la porte même après que tu as changé ton mot de passe. Reproduit rouge (les trois gestes passaient sans rien demander), vert après, et joué dans un vrai navigateur.</p>

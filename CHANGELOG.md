@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-26
 
+- **Audit de sécurité, E13 : les lignes du devis ne se mêlent plus aux règles données à l'IA des retouches dictées.** Une ligne venue d'un devis fournisseur importé, rédigée comme un ordre, aurait été obéie. Le devis part désormais à part, comme une donnée, comme le faisait déjà la lecture des dictées de chantier. Le plafond mensuel de dépense d'IA attend sa décision. `ARCHITECTURE.md` §506.
 - **Audit de sécurité, E11 : donner un accès, changer un rôle ou retirer un accès redemande le mot de passe.** Une session volée pouvait se créer un compte ou se nommer patron, et garder la porte après un changement de mot de passe. La même fenêtre « Vérifiez que c'est bien vous » que pour l'IBAN s'ouvre, puis le geste repart tout seul. Reproduit rouge, vert après, joué dans un vrai navigateur. La résiliation reste sans mot de passe, comme il l'avait voulu. `ARCHITECTURE.md` §505.
 
 ## 2026-10-25

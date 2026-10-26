@@ -36060,3 +36060,15 @@ retirée, et `test-papier-facture-db.ts` avec elle.
 
 **Ce qui le tient** : `test-gestes-sensibles-db.ts` (les trois gestes sans preuve ne changent rien en base, avec preuve ils passent) et `test-nouveau-compte-e2e.ts` (la feuille s'ouvre, le rôle ne bouge qu'après).
 
+## §506 : Le devis voyage en donnée auprès de l'IA des retouches, jamais dans sa consigne
+
+*26 octobre 2026, audit de sécurité (E13, `docs/audit-2026-10-etape-3-inventaire.md`).*
+
+**Le constat.** `systeme(lignes, reduction)` recopiait les libellés du devis dans la consigne système des retouches dictées, la position de plus haute autorité. Un libellé peut venir d'un devis fournisseur importé ou d'un catalogue : rédigé comme un ordre, il devenait une règle, et un retour à la ligne y forgeait un faux rang.
+
+**La règle**, celle que l'extraction applique déjà (`extraction-service.ts`, `<exemples_passes>`) : `systeme()` ne porte que nos règles ; `devisEnDonnee(lignes, reduction)` rend le devis dans une balise `<devis>`, chaque valeur aplatie sur sa ligne et privée de chevrons, et il part comme `contexte`, un tour utilisateur à part. La dictée reste SEULE dans son message : le repli littéral (`src/server/ai/providers/llm/dev.ts`) la lit mot à mot et y lirait sinon les lignes comme des travaux dictés. L'accusé de réception que les fournisseurs Anthropic et OpenAI glissent après le contexte dit désormais « des données » et non « des exemples » : il sert aux deux usages.
+
+**Ce qui le tient** : `test-retouches-donnees-hors-consigne.ts`. Le comportement avec un vrai modèle n'est pas éprouvable sur ce poste (aucune clé) : `scripts/verifier-dictee-devis.mts` sur son espace.
+
+**Reste ouvert** : le plafond de dépense d'IA par mois, qui demande sa décision (montant, effet quand il est atteint).
+
