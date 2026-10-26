@@ -218,8 +218,10 @@ export default function ArrosageClient({
                 Mesure au seau
               </p>
               <label className="mt-3 block text-[14.5px] font-semibold" style={{ color: colors.inkSoft }} htmlFor="secondes">
-                Un seau de 10 L rempli en… secondes
+                Un seau de 10 L rempli en<span className="sr-only">, en secondes</span>
               </label>
+              {/* L'unité dans la case, à droite : celle de la planche soignée du 26 octobre 2026. */}
+              <span className="relative mt-[5px] block">
               <input
                 id="secondes"
                 name="secondes"
@@ -228,9 +230,11 @@ export default function ArrosageClient({
                 min="1"
                 step="any"
                 placeholder="20"
-                className="mt-[5px] block w-full rounded-[10px] border-0 px-[12px] py-3 text-[16px]"
+                className="block w-full rounded-[10px] border-0 py-3 pl-[12px] pr-[88px] text-[16px] tabular-nums"
                 style={{ backgroundColor: colors.cream, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
               />
+              <Unite>secondes</Unite>
+              </span>
               {/* **Le seau se dédouane, et il dit QUOI FAIRE À LA PLACE.** Sa
                   correction du 21 août : « peu précis, ordre de grandeur, ça ne
                   va rien dire — qu'on comprenne tout de suite qu'en gros ce
@@ -256,6 +260,7 @@ export default function ArrosageClient({
                   <label className="block text-[14.5px] font-semibold" style={{ color: colors.inkSoft }} htmlFor="barStatique">
                     Bar statique
                   </label>
+                  <span className="relative mt-[5px] block">
                   <input
                     id="barStatique"
                     name="barStatique"
@@ -264,14 +269,17 @@ export default function ArrosageClient({
                     min="0.5"
                     step="any"
                     placeholder="3,5"
-                    className="mt-[5px] block w-full min-w-0 rounded-[10px] border-0 px-[12px] py-3 text-[16px]"
+                    className="block w-full min-w-0 rounded-[10px] border-0 py-3 pl-[12px] pr-[46px] text-[16px] tabular-nums"
                     style={{ backgroundColor: colors.cream, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
                   />
+                  <Unite>bar</Unite>
+                  </span>
                 </span>
                 <span className="min-w-0">
                   <label className="block text-[14.5px] font-semibold" style={{ color: colors.inkSoft }} htmlFor="barDynamique">
                     Bar dynamique
                   </label>
+                  <span className="relative mt-[5px] block">
                   <input
                     id="barDynamique"
                     name="barDynamique"
@@ -280,9 +288,11 @@ export default function ArrosageClient({
                     min="0.5"
                     step="any"
                     placeholder="3"
-                    className="mt-[5px] block w-full min-w-0 rounded-[10px] border-0 px-[12px] py-3 text-[16px]"
+                    className="block w-full min-w-0 rounded-[10px] border-0 py-3 pl-[12px] pr-[46px] text-[16px] tabular-nums"
                     style={{ backgroundColor: colors.cream, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
                   />
+                  <Unite>bar</Unite>
+                  </span>
                 </span>
               </div>
             </div>
@@ -368,7 +378,8 @@ export default function ArrosageClient({
         {/* **Sous la photo, sans la déplacer** : il reconnaît son écran par la
             place de ce qu'il lit (`CLAUDE.md` §3). */}
         <input ref={champDessin} type="hidden" name="dessin" defaultValue="" />
-        {!dessiner && (
+        {/* Pendant la lecture, l'attente seule : dessiner à côté ferait deux plans pour un croquis. */}
+        {!dessiner && !(enCours && !parDessin) && (
           <button
             type="button"
             data-atlas="ouvrir-dessin"
@@ -413,7 +424,8 @@ export default function ArrosageClient({
       )}
 
       {/* ─── Un devis déjà fait, sous le croquis (sa décision du 21 octobre 2026) ─── */}
-      <DepuisUnDevis />
+      {/* Au départ seulement, comme sur la planche : une fois qu'il lit, dessine ou a son plan, ce n'est plus une porte. */}
+      {!dessiner && !(enCours && !parDessin) && etat.etat !== "lu" && <DepuisUnDevis />}
 
       {etat.etat === "refus" && etat.croquis ? (
         /* **LE REFUS COMPTE AUTANT QUE LE PLAN** — sa consigne du 11 septembre
@@ -583,5 +595,14 @@ function LectureDuCroquis({ apercu }: { apercu: string | null }) {
         </span>
       </p>
     </div>
+  );
+}
+
+/** L'unité d'une mesure, posée dans sa case à droite : elle se lit avec le chiffre, sans prendre une ligne. */
+function Unite({ children }: { children: React.ReactNode }) {
+  return (
+    <span aria-hidden="true" className="pointer-events-none absolute right-[15px] top-1/2 -translate-y-1/2 text-[15px]" style={{ color: colors.inkSoft }}>
+      {children}
+    </span>
   );
 }

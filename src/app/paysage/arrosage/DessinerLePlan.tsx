@@ -691,7 +691,7 @@ export default function DessinerLePlan({
                   className={champ}
                   style={{ ...styleChamp, paddingRight: 40 }}
                 />
-                <span aria-hidden="true" className="pointer-events-none absolute right-[14px] top-1/2 mt-[2px] -translate-y-1/2 text-[14px]" style={{ color: colors.muted }}>m</span>
+                <span aria-hidden="true" className="pointer-events-none absolute right-[15px] top-1/2 -translate-y-1/2 text-[15px]" style={{ color: colors.inkSoft }}>m</span>
               </span>
             </span>
           ))}
@@ -896,8 +896,10 @@ export default function DessinerLePlan({
               [sortePiquage, sortePiquage === "robinet" ? "Le robinet" : "Le compteur", piquagePlace !== null],
               ["nourrice", "La nourrice", nourrice !== null],
             ] as const
-          ).map(([cle, nom, fait]) => (
-            <li key={cle} data-etape={cle} data-fait={fait} className="flex min-h-[52px] items-center gap-3 py-[6px] text-[16px]" style={{ borderTop: `1px solid ${colors.line}`, color: fait ? colors.ink : colors.inkSoft }}>
+          ).map(([cle, nom, fait], i) => (
+            // Le filet sépare deux étapes et part après la pastille, comme sur la planche : jamais au-dessus de la première.
+            <li key={cle} data-etape={cle} data-fait={fait} className="relative flex min-h-[52px] items-center gap-3 py-[6px] text-[16px]" style={{ color: fait ? colors.ink : colors.inkSoft }}>
+              {i > 0 && <span aria-hidden="true" className="absolute left-9 right-0 top-0 h-px" style={{ backgroundColor: colors.line }} />}
               <span aria-hidden="true" className="flex h-6 w-6 flex-none items-center justify-center rounded-full" style={fait ? { backgroundColor: colors.carteVertFond } : { boxShadow: `inset 0 0 0 1.5px ${colors.line}` }}>
                 {fait && (
                   <svg width={12} height={12} viewBox="0 0 12 12"><path d="M2.5 6.2l2.3 2.3L9.5 3.6" fill="none" stroke={colors.carteVertTexte} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" /></svg>
@@ -1253,7 +1255,7 @@ function FeuilleDuDessin({
   const nombreChamp = (id: string, valeur: string, changer: (v: string) => void, auto = false, unite = "m") => (
     <span className="relative block">
       <input id={id} inputMode="decimal" enterKeyHint="done" autoComplete="off" autoFocus={auto} value={valeur} onChange={(ev) => changer(ev.target.value)} className={champ} style={{ ...style(id.replace("feuille-", "")), paddingRight: 40 }} />
-      <span aria-hidden="true" className="pointer-events-none absolute right-[14px] top-1/2 mt-[2px] -translate-y-1/2 text-[14px]" style={{ color: colors.muted }}>{unite}</span>
+      <span aria-hidden="true" className="pointer-events-none absolute right-[15px] top-1/2 -translate-y-1/2 text-[15px]" style={{ color: colors.inkSoft }}>{unite}</span>
     </span>
   );
   const fermer = () => (neuf ? onFermer() : valider());
@@ -1270,8 +1272,8 @@ function FeuilleDuDessin({
         aria-label={titre}
         onClick={(ev) => ev.stopPropagation()}
         onKeyDown={(ev) => { if (ev.key === "Escape") fermer(); if (ev.key === "Enter" && (ev.target as HTMLElement).tagName === "INPUT") { ev.preventDefault(); valider(); } }}
-        className="atlas-feuille max-w-[430px] overflow-auto px-4 pt-[2px]"
-        style={{ maxHeight: "86vh", backgroundColor: colors.cream, borderRadius: "18px 18px 0 0", paddingBottom: "calc(24px + env(safe-area-inset-bottom, 0px))" }}
+        className="atlas-feuille max-w-[430px] overflow-auto px-[22px] pt-[2px]"
+        style={{ maxHeight: "88vh", backgroundColor: colors.cream, borderRadius: "26px 26px 0 0", paddingBottom: "calc(24px + env(safe-area-inset-bottom, 0px))" }}
       >
         {/* **LA POIGNÉE REFERME, SANS RIEN VALIDER** — sa demande du 23 octobre
             2026 : *« rajoute le trait en haut pour pouvoir refermer la
@@ -1287,12 +1289,12 @@ function FeuilleDuDessin({
           onPointerDown={(ev) => ev.currentTarget.setPointerCapture(ev.pointerId)}
           onPointerUp={onFermer}
           onClick={(ev) => { if (ev.detail === 0) onFermer(); }}
-          className="sticky top-0 z-10 -mx-4 mb-1 flex h-7 w-[calc(100%+2rem)] items-center justify-center"
+          className="sticky top-0 z-10 -mx-[22px] mb-1 flex h-7 w-[calc(100%+44px)] items-center justify-center"
           style={{ backgroundColor: colors.cream, touchAction: "none" }}
         >
-          <span className="h-1 w-10 rounded-full" style={{ backgroundColor: colors.line }} />
+          <span className="h-[5px] w-10 rounded-[3px]" style={{ backgroundColor: voile(colors.ink, 0.22) }} />
         </button>
-        <h2 className="m-0" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 21, lineHeight: 1.2 }}>{titre}</h2>
+        <h2 className="m-0" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 26, lineHeight: 1.15 }}>{titre}</h2>
 
         {feuille.sorte !== "point" && (
           <>
@@ -1452,7 +1454,7 @@ function FeuilleDuDessin({
 
         <div className="mt-[18px] grid grid-cols-2 gap-2">
           {!neuf && feuille.sorte !== "point" && feuille.sorte !== "arbre" && (
-            <button type="button" onClick={tourner} className="min-h-[56px] rounded-full text-[15px] font-semibold" style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.cream, color: colors.ink }}>
+            <button type="button" onClick={tourner} className="min-h-[56px] rounded-full border-0 bg-transparent text-[17px] font-semibold" style={{ boxShadow: `inset 0 0 0 1.5px ${colors.line}`, color: colors.ink }}>
               Tourner
             </button>
           )}
@@ -1460,7 +1462,7 @@ function FeuilleDuDessin({
             type="button"
             data-atlas="feuille-valider"
             onClick={valider}
-            className={`atlas-plein min-h-[56px] rounded-full border-0 text-[15px] font-semibold ${!neuf && feuille.sorte !== "point" && feuille.sorte !== "arbre" ? "" : "col-span-2"}`}
+            className={`atlas-plein min-h-[56px] rounded-full border-0 text-[17px] font-semibold ${!neuf && feuille.sorte !== "point" && feuille.sorte !== "arbre" ? "" : "col-span-2"}`}
             style={{ backgroundColor: colors.plein, color: surPlein }}
           >
             {feuille.sorte === "point" ? "Fermer" : neuf ? "Poser" : "Valider"}

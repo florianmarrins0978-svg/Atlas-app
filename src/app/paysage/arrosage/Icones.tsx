@@ -31,6 +31,12 @@ const TRACES = {
     </>
   ),
   plus: <path d="M12 5v14M5 12h14" />,
+  document: (
+    <>
+      <path d="M6.5 3.5H14l4 4v13H6.5z" />
+      <path d="M14 3.5v4h4M9.5 12.5h5M9.5 16h5" />
+    </>
+  ),
 } as const;
 
 export type NomIcone = keyof typeof TRACES;
