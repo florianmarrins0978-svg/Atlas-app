@@ -3,6 +3,7 @@ import { colors, font, smallCaps, cardShadow } from "@/lib/design-tokens";
 import StatusIcon from "@/components/atlas/StatusIcon";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import AtlasBottomNav from "@/components/atlas/AtlasBottomNav";
+import { garderLaPage } from "@/server/garde-page";
 
 // Référence de la direction artistique validée — utilise désormais les jetons
 // et composants partagés de src/lib/design-tokens.ts et src/components/atlas/.
@@ -34,7 +35,8 @@ function MetaIcon({ kind }: { kind: "photo" | "mic" }) {
   );
 }
 
-export default function DesignDPage() {
+export default async function DesignDPage() {
+  await garderLaPage();
   return (
     <div
       className="mx-auto flex min-h-dvh max-w-md flex-col"

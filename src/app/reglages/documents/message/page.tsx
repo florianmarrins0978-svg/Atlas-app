@@ -5,6 +5,7 @@ import { estProprietaire } from "@/server/autorisation";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import RubriqueReservee from "../../RubriqueReservee";
 import MessagesClient from "./MessagesClient";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,7 @@ export const dynamic = "force-dynamic";
  * figerait l'entreprise sur la version du jour.
  */
 export default async function MessagePage() {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
   if (!(await estProprietaire(ctx))) {
     return (

@@ -12,10 +12,12 @@ import { estTranscriptionSimulee } from "@/server/ai/providers/transcription/dev
 import { evaluerFraicheurBrouillon } from "@/lib/brouillon-etat";
 import { etatTranscription, transcriptionDisponible } from "@/lib/etat-transcription";
 import InformationsClient from "./InformationsClient";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
 export default async function InformationsPage({ params }: { params: Promise<{ id: string }> }) {
+  await garderLaPage();
   const { id } = await params;
 
   const ctx = await getCurrentCtx();

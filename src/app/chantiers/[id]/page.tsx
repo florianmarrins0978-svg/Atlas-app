@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { lienDeReprise } from "@/lib/chantier-etat";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantierPourHub } from "@/server/repositories/chantiers";
+import { garderLaPage } from "@/server/garde-page";
 
 // Données réelles, propres à l'entreprise courante : jamais de pré-rendu statique.
 export const dynamic = "force-dynamic";
@@ -46,6 +47,7 @@ export default async function ChantierRetireePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await garderLaPage();
   const { id } = await params;
 
   const ctx = await getCurrentCtx();

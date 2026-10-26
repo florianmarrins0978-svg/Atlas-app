@@ -4,6 +4,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { estProprietaire } from "@/server/autorisation";
 import { lireReglagesRappels } from "@/server/repositories/rappels";
 import NotificationsClient from "./NotificationsClient";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +27,7 @@ export const dynamic = "force-dynamic";
  * (`docs/QUESTIONS.md` §10).
  */
 export default async function NotificationsPage() {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
 
   if (!(await estProprietaire(ctx))) {

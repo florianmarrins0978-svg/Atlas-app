@@ -7,6 +7,7 @@ import { lirePassage } from "@/server/repositories/passages-entretien";
 import { listerClients } from "@/server/repositories/clients";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import FicheChantierClient from "./FicheChantierClient";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Fiche de chantier, Atlas" };
@@ -24,6 +25,7 @@ export const metadata = { title: "Fiche de chantier, Atlas" };
  * le serveur à chaque lettre ne répondrait pas quand il en a besoin.
  */
 export default async function FichePage({ params }: { params: Promise<{ id: string }> }) {
+  await garderLaPage();
   const { id } = await params;
   const ctx = await getCurrentCtx();
   const passage = await lirePassage(ctx, id);

@@ -4,11 +4,11 @@
 // **LE DÉFAUT QUE CETTE SUITE FERME** — audit final, 29 août 2026, trouvé
 // **deux fois indépendamment**, ce qui est la meilleure raison de le croire.
 //
-// `GardeAcces` est un composant de `layout.tsx` : il ne s'exécute qu'au RENDU
-// d'un écran. Une action serveur, elle, s'exécute AVANT tout rendu. Et le
+// La garde des écrans (`garderLaPage`, alors `GardeAcces` dans `layout.tsx`)
+// ne s'exécute qu'au RENDU d'un écran. Une action serveur, elle, s'exécute AVANT tout rendu. Et le
 // middleware ne vérifie que la session, jamais le rôle.
 //
-// Entre les deux il n'y avait rien — alors que `GardeAcces.tsx` affirme :
+// Entre les deux il n'y avait rien — alors que `GardeAcces.tsx` affirmait :
 // *« Les Server Actions, de même, gardent leur exigerProprietaire »*. Vrai des
 // réglages, faux de trente-quatre actions qui ouvrent un devis complet,
 // calculent une marge, envoient un devis chez un client, émettent une facture
@@ -474,7 +474,7 @@ async function main() {
       nues,
       [],
       `Ces actions serveur n'ont aucune garde de rôle :\n      ${nues.join("\n      ")}\n` +
-        "    L'écran ne les protège pas : GardeAcces ne s'exécute qu'au RENDU, et l'adresse de\n" +
+        "    L'écran ne les protège pas : garderLaPage ne s'exécute qu'au RENDU, et l'adresse de\n" +
         "    l'action reste postable avec une session valide. Ajouter en première ligne la garde\n" +
         "    qui convient — exigerMontants, exigerEcran, exigerEcritureSurLePlanning…\n" +
         "    Si l'ouverture est délibérée, l'écrire dans EXEMPTIONS avec sa raison."

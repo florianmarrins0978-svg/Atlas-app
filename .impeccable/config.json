@@ -208,6 +208,15 @@
         "reason": "agent: fond des planches soignées (kit.css, #ebe8e1) et crème de la charte Origine du produit, recopiés tels quels comme sur les planches voisines"
       },
       {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "appli/soignee/tva-bouton-paiement.html"
+        ],
+        "createdAt": "2026-10-25T23:11:58.941Z",
+        "reason": "agent: seule occurrence, le crème sur le vert des boutons #7d9a6d choisi par le patron (src/lib/chartes.ts) ; le cran plus sombre lui est proposé sur appli/soignee/fondations.html, à trancher par lui (TODO.md)"
+      },
+      {
         "rule": "cramped-padding",
         "value": "*",
         "files": [

@@ -15,6 +15,7 @@ import { jourIso } from "@/lib/jour";
 import { originePublique } from "@/server/origine-publique";
 import { headers } from "next/headers";
 import PlanningClient from "./PlanningClient";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +33,7 @@ export default async function PlanningPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
   const lus = await searchParams;
   const chantierDemande = chantierDemandeAuPlanning(lus.chantier);
@@ -67,7 +69,7 @@ export default async function PlanningPage({
       bandeauAgenda={bandeauAgendaDuPlanning([google, apple], masque)}
       // Le rôle décide des portes que l'écran propose — la fiche d'un chantier,
       // le raccordement de l'agenda. Ce qui REFUSE les adresses, c'est
-      // `GardeAcces` ; ceci évite seulement de dessiner des portes closes.
+      // `garderLaPage` ; ceci évite seulement de dessiner des portes closes.
       role={role}
       // Le chantier dont on vient : sa journée s'ouvre, et ses portes montent.
       chantierDemande={chantierDemande}

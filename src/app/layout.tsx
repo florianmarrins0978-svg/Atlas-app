@@ -8,7 +8,6 @@ import { estCheminPublic, estPageDuClient } from "@/lib/chemins-publics";
 import VeilleReponseServeur from "@/components/atlas/VeilleReponseServeur";
 import GardeDocumentsLegaux from "@/components/atlas/GardeDocumentsLegaux";
 import GardeVerificationEmail from "@/components/atlas/GardeVerificationEmail";
-import GardeAcces from "@/components/atlas/GardeAcces";
 import JournalDeNavigation from "@/components/atlas/JournalDeNavigation";
 import BandeauBanc from "@/components/atlas/BandeauBanc";
 import { leBandeauDoitParler } from "@/server/etat-banc";
@@ -186,15 +185,17 @@ export default async function RootLayout({
    * La barre est un composant client : lui laisser lire le rôle voudrait dire
    * l'envoyer au navigateur et le croire. Il est donc résolu ici, à chaque
    * requête, à partir de la seule session — et il ne sert qu'à DESSINER : ce qui
-   * refuse une adresse, c'est `GardeAcces` juste au-dessus.
+   * refuse une adresse, c'est `garderLaPage`, en tête de chaque écran
+   * (`src/server/garde-page.ts`) : un gabarit ne se rejoue pas à la navigation
+   * interne, et la garde qui vivait ici laissait passer un clic (audit E8).
    *
    * **Il ne se saute plus sur les écrans sans navigation — 17 septembre 2026.**
    * C'est le cadre, désormais, qui sait s'il y a une barre, et il ne le sait
    * qu'au navigateur (`CadreApplication`) : décider ici de ne pas lire le rôle
    * reviendrait à refaire au serveur le choix qui vient d'en partir, et
    * l'accueil atteint depuis le devis n'aurait plus d'onglets. La lecture ne
-   * coûte rien de plus : `GardeAcces`, juste au-dessus, l'a déjà faite, et
-   * `cache()` la rend une seule fois par requête (`src/server/autorisation.ts`).
+   * coûte rien de plus : la garde de l'écran la fait aussi, et `cache()` la
+   * rend une seule fois par requête (`src/server/autorisation.ts`).
    *
    * **Ce qui s'atteint SANS COMPTE reste hors de cette lecture** : la question
    * n'a pas de sens là où il n'y a pas de session, et la poser sur `/login`
@@ -220,10 +221,6 @@ export default async function RootLayout({
             n'a pas été entré — sa demande du 14 septembre 2026. */}
         <GardeVerificationEmail />
         <GardeDocumentsLegaux />
-        {/* **Le rôle referme ce que le sommaire ne montre plus.** Un bouton
-            retiré n'a jamais fermé une adresse : cette garde refuse au SERVEUR,
-            avant que la page ne soit peinte (`docs/QUESTIONS.md` §10). */}
-        <GardeAcces />
         {/* **Ce qui permet à la flèche de retour d'être un vrai retour.** Il
             tient le journal des écrans traversés dans l'onglet, et chaque
             flèche y lit la page d'où l'on vient — c'est sa demande du

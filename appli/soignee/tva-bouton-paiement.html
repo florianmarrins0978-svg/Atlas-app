@@ -27,6 +27,13 @@
              border-radius: calc(30px * var(--k, 1)); box-shadow: 0 0 0 4px #1c1c1a; background: #f5f3ee; }
 .duo-cadre iframe { display: block; width: 390px; height: 664px; border: 0; transform: scale(var(--k, 1)); transform-origin: 0 0; }
 .duo .bouton-texte { color: #2f3b2f; }
+/* Les deux boutons à leur vraie taille, l'un sous l'autre : réduits dans les
+   écrans, leurs coins se confondaient sur un téléphone (« y a qu'une forme »). */
+.vrais { max-width: 390px; margin: 18px auto 0; padding: 0 var(--gouttiere); }
+.vrais .duo-legende { text-align: left; margin: 18px 0 8px; }
+.vrais .duo-legende:first-child { margin-top: 0; }
+.vrais .bouton { min-height: 56px; }
+.vrais .pilule { border-radius: 999px; }
 @media (min-width: 900px) { .duo-cadre { box-shadow: 0 0 0 10px #1c1c1a, 0 18px 40px -12px rgba(28,28,26,0.45); } }
 </style>
 </head>
@@ -35,8 +42,15 @@
 <header class="pl-tete">
   <a class="pl-sommaire" href="termines-tva.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Ma TVA</a>
   <h1 class="pl-titre">J'ai reçu le paiement</h1>
-  <p class="pl-verdict">Le même écran deux fois. Seule la forme du bouton change.</p>
+  <p class="pl-verdict">Les deux boutons en vraie taille, puis le même écran deux fois. Seule la forme du bouton change.</p>
 </header>
+
+<section class="vrais" aria-label="Les deux boutons en vraie taille">
+  <p class="duo-legende">A<span>Coins arrondis</span></p>
+  <button class="bouton bouton-plein" type="button"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg>J'ai reçu le paiement</button>
+  <p class="duo-legende">B<span>Bouts ronds, comme dans l'appli</span></p>
+  <button class="bouton bouton-plein pilule" type="button"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg>J'ai reçu le paiement</button>
+</section>
 
 <main class="duo" id="duo">
   <p class="duo-legende">A<span>Coins arrondis</span></p>

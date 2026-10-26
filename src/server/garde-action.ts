@@ -13,7 +13,7 @@ import { chantiersDeLEquipe, getChantier } from "./repositories/chantiers";
 import type { Ctx } from "./repositories/context";
 
 /**
- * LA GARDE DES SERVER ACTIONS — celles que `GardeAcces` ne peut pas voir.
+ * LA GARDE DES SERVER ACTIONS — celles que `garderLaPage` ne peut pas voir.
  *
  * ═══════════════════════════════════════════════════════════════════════════
  * **POURQUOI ELLE EXISTE, ET CE QUI ÉTAIT OUVERT SANS ELLE.**
@@ -21,13 +21,13 @@ import type { Ctx } from "./repositories/context";
  * Constat de l'audit final, 29 août 2026, trouvé **deux fois
  * indépendamment** — ce qui est la meilleure raison de le croire.
  *
- * `GardeAcces` est un composant de `layout.tsx` : il ne s'exécute qu'au
- * **rendu** d'un écran. Une action serveur, elle, est exécutée **avant** tout
+ * La garde des écrans (`garderLaPage`, alors `GardeAcces` dans `layout.tsx`)
+ * ne s'exécute qu'au **rendu** d'un écran. Une action serveur, elle, est exécutée **avant** tout
  * rendu. Et le middleware ne vérifie que la session, jamais le rôle
  * (`src/middleware.ts`) — il redirige qui n'est pas connecté, pas qui n'a pas
  * le droit.
  *
- * Entre les deux, il n'y avait rien. `GardeAcces.tsx` affirme pourtant :
+ * Entre les deux, il n'y avait rien. `GardeAcces.tsx` affirmait pourtant :
  *
  *     « Les Server Actions, de même, gardent leur `exigerProprietaire` »
  *

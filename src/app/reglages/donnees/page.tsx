@@ -7,6 +7,7 @@ import { nomFichierSauvegarde } from "@/lib/nom-sauvegarde";
 import RubriqueReservee from "../RubriqueReservee";
 import BoutonTelecharger from "./BoutonTelecharger";
 import { CONTACT_ATLAS } from "@/lib/contact-atlas";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +26,7 @@ export const dynamic = "force-dynamic";
  * action serveur (voir la route, et `CLAUDE.md` §5).
  */
 export default async function DonneesPage() {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
   if (!(await estProprietaire(ctx))) {
     return (

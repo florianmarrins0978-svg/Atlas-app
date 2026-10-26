@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { garderLaPage } from "@/server/garde-page";
 
 /**
  * LA PORTE, EN PLEIN AIR — l'écran qu'on voit avant d'avoir un compte.
@@ -42,7 +43,8 @@ import Link from "next/link";
  * blanc de l'iPhone, là où l'appui ferme l'application au lieu d'ouvrir la
  * page.
  */
-export default function BienvenuePage() {
+export default async function BienvenuePage() {
+  await garderLaPage();
   return (
     <div className="relative flex min-h-[100dvh] flex-col overflow-hidden atlas-bas-sans-barre px-[22px] text-white">
       <Image

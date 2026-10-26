@@ -6,6 +6,7 @@ import { getEntreprise } from "@/server/repositories/entreprises";
 import { conditionsDepuisEntreprise } from "@/lib/conditions-documents";
 import RubriqueReservee from "../../RubriqueReservee";
 import ConditionsClient from "./ConditionsClient";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +24,7 @@ export const dynamic = "force-dynamic";
  * Le garder au seul sommaire laisserait les quatre autres ouverts.
  */
 export default async function ConditionsPage() {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
   if (!(await estProprietaire(ctx))) {
     return (

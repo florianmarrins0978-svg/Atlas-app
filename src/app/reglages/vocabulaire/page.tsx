@@ -5,6 +5,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { estEditeur } from "@/server/editeur";
 import { listerTermesMetier } from "@/server/repositories/termes-metier";
 import VocabulaireClient from "./VocabulaireClient";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +26,7 @@ export const dynamic = "force-dynamic";
  * réglages n'aurait rien protégé : l'adresse se tape.
  */
 export default async function VocabulairePage() {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
   if (!(await estEditeur(ctx))) notFound();
 

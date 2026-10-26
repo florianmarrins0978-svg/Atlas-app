@@ -3,6 +3,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { getClient } from "@/server/repositories/clients";
 import { detacherCivilite } from "@/lib/civilite";
 import SesCoordonnees from "./SesCoordonnees";
+import { garderLaPage } from "@/server/garde-page";
 
 // Les données d'un client, propres à l'entreprise : jamais de pré-rendu.
 export const dynamic = "force-dynamic";
@@ -20,6 +21,7 @@ export default async function SesCoordonneesPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await garderLaPage();
   const { id } = await params;
   const ctx = await getCurrentCtx();
   const client = await getClient(ctx, id);

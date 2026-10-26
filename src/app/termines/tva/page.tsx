@@ -33,6 +33,7 @@ import { listerAchatsTva, totalTvaDeductible, type AchatTva } from "@/server/rep
 import { natureEnMots, recuperation, tvaDue } from "@/lib/achat-tva";
 import CompleterRepas from "./CompleterRepas";
 import { facturesAvecAncienIban } from "@/server/repositories/factures";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -89,6 +90,7 @@ export default async function ReleveTvaPage({
 }: {
   searchParams: Promise<{ annee?: string; t?: string }>;
 }) {
+  await garderLaPage();
   const { annee, t } = await searchParams;
 
   const ctx = await getCurrentCtx();

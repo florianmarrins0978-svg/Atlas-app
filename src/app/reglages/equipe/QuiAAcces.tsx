@@ -30,7 +30,7 @@ import {
  *
  * ───────────────────────────────────────────────────────────────────────────
  * **CE QUE CET ÉCRAN NE FAIT PAS : garder quoi que ce soit.** Tout ce qu'il
- * montre est déjà refusé au serveur (`GardeAcces`, `exigerOuverture`,
+ * montre est déjà refusé au serveur (`garderLaPage`, `exigerOuverture`,
  * `exigerProprietaire`). Un bouton retiré n'a jamais fermé une adresse, et
  * `docs/QUESTIONS.md` §10 le dit d'avance.
  */

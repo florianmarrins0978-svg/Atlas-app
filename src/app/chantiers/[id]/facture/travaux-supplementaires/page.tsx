@@ -5,6 +5,7 @@ import { getFacturePourChantier } from "@/server/repositories/factures";
 import { getPromesseDuDevis } from "@/server/repositories/devis";
 import { reglementsRecus } from "@/server/repositories/paiements-facture";
 import TravauxSupplementairesClient from "./TravauxSupplementairesClient";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +35,7 @@ export default async function TravauxSupplementairesPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await garderLaPage();
   const { id } = await params;
   const ctx = await getCurrentCtx();
   const chantier = await getChantier(ctx, id);

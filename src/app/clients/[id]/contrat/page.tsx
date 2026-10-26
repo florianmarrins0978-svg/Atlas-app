@@ -14,6 +14,7 @@ import { estProprietaire } from "@/server/autorisation";
 import { abonnementDeLEntreprise } from "@/server/repositories/abonnements";
 import { fonctionOuverte } from "@/lib/abonnements";
 import ContratClient from "./ContratClient";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Contrat d'entretien, Atlas" };
@@ -26,6 +27,7 @@ export const metadata = { title: "Contrat d'entretien, Atlas" };
  * se reprend, un contrat parti se relit (il ne se modifie plus).
  */
 export default async function ContratPage({ params }: { params: Promise<{ id: string }> }) {
+  await garderLaPage();
   const { id } = await params;
   const ctx = await getCurrentCtx();
   const client = await getClient(ctx, id);

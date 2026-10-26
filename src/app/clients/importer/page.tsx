@@ -4,6 +4,7 @@ import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { patronQuiImporte } from "@/server/import/garde";
 import { envoiEnCours } from "@/server/repositories/pieces-importees";
 import ImporterPieces from "./ImporterPieces";
+import { garderLaPage } from "@/server/garde-page";
 
 // « Importer devis / facture » — sa demande du 22 octobre 2026, maquette
 // `appli/importer-ancienne-appli.html`, mesures et décisions
@@ -15,6 +16,7 @@ import ImporterPieces from "./ImporterPieces";
 export const dynamic = "force-dynamic";
 
 export default async function ImporterPage() {
+  await garderLaPage();
   const ctx = await patronQuiImporte();
   if (!ctx) notFound();
   // Un envoi déjà arrivé et pas rangé : l'écran reprend à la lecture, puis à

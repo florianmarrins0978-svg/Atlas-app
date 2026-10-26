@@ -19,7 +19,7 @@
 | **E5** | La feuille de chantier en PDF s'ouvre pour tout rôle, sur tout chantier de l'entreprise, sans contrôle de portée | moyenne | **corrigé le 25 octobre** |
 | **E6** | Un salarié peut effacer une photo d'un chantier qui n'est pas le sien, par la fiche de sécurité | moyenne | **reproduit, corrigé le 25 octobre** |
 | **E7** | Deux autres écritures acceptent des champs en trop (client du devis, lignes de prix : déplacer une ligne vers un autre chantier) | moyenne | **corrigé le 25 octobre** |
-| **E8** | La garde des rôles des PAGES vit dans le gabarit racine, que Next.js ne rejoue pas à la navigation interne : un commercial pourrait recevoir les données d'une page qui lui est fermée | à mesurer | à reproduire avant de conclure |
+| **E8** | La garde des rôles des PAGES vit dans le gabarit racine, que Next.js ne rejoue pas à la navigation interne : un commercial pourrait recevoir les données d'une page qui lui est fermée | **élevée** (reproduit : un commercial lisait Ma TVA en passant par Chantiers) | **corrigé le 25 octobre** : chaque écran pose sa garde lui-même |
 | **E9** | Droits de la base plus larges que le besoin : l'application peut écrire le registre des migrations, les conditions générales, supprimer une entreprise entière | moyenne (défense en profondeur) | **corrigé le 25 octobre** (migration 0147) |
 | **E10** | Liens entre tables non composites (paiement et facture, acompte et devis…) : la base n'empêche pas de rattacher un élément à une autre entreprise | moyenne (défense en profondeur) | vague 3 |
 | **E11** | Donner un accès, changer un rôle (jusqu'à créer un second patron), résilier : sans redemander le mot de passe | moyenne | vague 3 |
@@ -48,6 +48,14 @@
 - les droits par défaut des workflows GitHub du dépôt (réglage du site GitHub) ;
 - la protection de la branche `main` sur GitHub ;
 - tout ce qui dépend de l'hébergeur de production, qui n'existe pas encore.
+
+## E8, fait le 25 octobre
+
+La garde des rôles vivait dans le gabarit commun à tous les écrans. Next.js ne le rejoue pas quand on passe d'un écran à l'autre par un clic : un commercial connecté, parti de Chantiers, recevait l'écran Ma TVA avec la TVA collectée et déductible. L'adresse tapée à la main, elle, était bien refusée ; c'est pourquoi rien ne l'avait montré.
+
+Chaque écran pose désormais sa garde en première ligne (90 écrans). `scripts/test-garde-des-pages-e2e.ts` refait le geste dans un vrai navigateur (commercial vers Ma TVA, salarié vers Clients, et le patron qui y arrive toujours), rouge avant, vert après. `scripts/test-pages-gardees.ts` refuse tout écran neuf qui oublierait la garde ou la poserait après une lecture.
+
+Même faiblesse, moins grave, pour la vérification de l'adresse et l'acceptation des conditions : ces deux gardes restent dans le gabarit, notées dans `TODO.md`.
 
 ## La vague 2, faite le 25 octobre
 

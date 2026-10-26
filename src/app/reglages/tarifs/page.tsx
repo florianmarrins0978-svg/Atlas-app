@@ -6,6 +6,7 @@ import { estProprietaire } from "@/server/autorisation";
 import { listerTarifs } from "@/server/repositories/tarifs";
 import RubriqueReservee from "../RubriqueReservee";
 import ReglagesClient from "../ReglagesClient";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +40,7 @@ export const dynamic = "force-dynamic";
  * ce sont ses prix de vente (`docs/QUESTIONS.md` §10).
  */
 export default async function TarifsPage() {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
   if (!(await estProprietaire(ctx))) {
     return (

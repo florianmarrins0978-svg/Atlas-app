@@ -21,7 +21,7 @@ import { facturesAvecAncienIban, marquerIbanSignale, type FactureAPrevenir } fro
  *
  * **Le refus de rôle LÈVE, comme partout ailleurs**, et ce n'est pas une
  * exception à la règle du retour en valeur : celle-ci vise les refus que le
- * patron doit LIRE. Un salarié n'arrive jamais ici — `GardeAcces` lui ferme
+ * patron doit LIRE. Un salarié n'arrive jamais ici — `garderLaPage` lui ferme
  * déjà l'écran —, et s'il y arrivait par une autre porte, il n'y a rien à lui
  * expliquer.
  */

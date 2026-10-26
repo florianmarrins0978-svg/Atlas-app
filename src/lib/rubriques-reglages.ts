@@ -332,7 +332,7 @@ export function surtitreReglages(role: RoleReglages | null): string {
  * désormais, et elle est AILLEURS.**
  *
  * Le lot des rôles a posé `cheminAutorise` (`src/lib/acces-roles.ts`), appelée
- * par `GardeAcces` dans la mise en page racine : c'est elle qui refuse une
+ * par `garderLaPage` en tête de chaque écran : c'est elle qui refuse une
  * adresse tapée à la main, et elle sait lire les SOUS-CHEMINS — ce que cette
  * liste-ci, comparée à l'identique, ne saura jamais faire.
  *

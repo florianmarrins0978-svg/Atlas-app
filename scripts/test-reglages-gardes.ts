@@ -71,7 +71,10 @@ const GARDES = ["estProprietaire", "exigerProprietaire", "estEditeur"];
  * garde. Tout le reste, non — c'est exactement le défaut d'« Intégrations »,
  * qui allait chercher l'état du calendrier du patron avant de savoir à qui.
  */
-const AVANT_LA_GARDE = ["getCurrentCtx", "params", "searchParams", "cookies", "headers", ...GARDES];
+// `garderLaPage` est la garde des rôles posée en tête de chaque écran (E8,
+// `ARCHITECTURE.md` §504) : elle ne lit que la session et le rôle, jamais une
+// donnée de l'entreprise, et précède donc légitimement la garde propre à la rubrique.
+const AVANT_LA_GARDE = ["getCurrentCtx", "garderLaPage", "params", "searchParams", "cookies", "headers", ...GARDES];
 
 /**
  * Ce qui est ATTENDU sur une ligne — le nom derrière `await`, jamais la ligne

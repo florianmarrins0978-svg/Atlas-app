@@ -14,6 +14,7 @@ import { getClient } from "@/server/repositories/clients";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import { jetonVivantDeLaFacture } from "@/server/repositories/envois-factures";
 import TransmettreLaFacture from "../../TransmettreLaFacture";
+import { garderLaPage } from "@/server/garde-page";
 
 /**
  * « C'est fait » — l'avoir est né, numéroté, son papier composé. Planche
@@ -26,6 +27,7 @@ import TransmettreLaFacture from "../../TransmettreLaFacture";
 export const dynamic = "force-dynamic";
 
 export default async function PageAvoirFait({ params }: { params: Promise<{ id: string; avoirId: string }> }) {
+  await garderLaPage();
   const { id, avoirId } = await params;
   const ctx = await getCurrentCtx();
   const a = await avoirPourEcran(ctx, avoirId);

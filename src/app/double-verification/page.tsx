@@ -4,6 +4,7 @@ import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtxPourActiver } from "@/server/session-ctx";
 import { etatDoubleVerification } from "@/server/repositories/double-verification";
 import ActivationObligatoire from "./ActivationObligatoire";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,7 @@ export const dynamic = "force-dynamic";
  * Une fois activée, il n'a plus rien à faire ici : retour à l'accueil.
  */
 export default async function DoubleVerificationPage() {
+  await garderLaPage();
   const ctx = await getCurrentCtxPourActiver();
   if ((await etatDoubleVerification(ctx.utilisateurId)).active) redirect("/");
 

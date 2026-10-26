@@ -5,10 +5,12 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantier } from "@/server/repositories/chantiers";
 import { getNoteVocale } from "@/server/repositories/notes-vocales";
 import NoteVocaleClient from "./NoteVocaleClient";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
 export default async function NoteVocalePage({ params }: { params: Promise<{ id: string }> }) {
+  await garderLaPage();
   const { id } = await params;
 
   const ctx = await getCurrentCtx();

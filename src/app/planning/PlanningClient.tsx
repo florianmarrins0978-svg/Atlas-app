@@ -173,7 +173,7 @@ export default function PlanningClient({
   /**
    * Le RÔLE de la personne, résolu au serveur (`src/app/planning/page.tsx`).
    *
-   * **Il ne protège rien** — c'est `GardeAcces` qui refuse — mais il évite de
+   * **Il ne protège rien** — c'est `garderLaPage` qui refuse — mais il évite de
    * dessiner des portes closes : le chevron qui mène à la fiche du chantier
    * (devis, prix, facture) et le lien qui relie l'agenda de l'entreprise. Un
    * salarié qui les appuierait serait renvoyé ici même, et un renvoi sans

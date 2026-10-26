@@ -13,6 +13,7 @@ import RegistresDuDossier from "./RegistresDuDossier";
 import RepartirDeCeClient from "./RepartirDeCeClient";
 import SupprimerCeClient from "./SupprimerCeClient";
 import { apercuSuppressionClient } from "@/server/repositories/donnees-client";
+import { garderLaPage } from "@/server/garde-page";
 
 // **La fiche d'un client : son nom, ce qu'on lui a fait la dernière fois, et
 // ses papiers.**
@@ -72,6 +73,7 @@ export default async function FicheClientPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  await garderLaPage();
   const { id } = await params;
   // **D'où l'on vient décide où la flèche ramène** — sa remarque du 20 août
   // 2026 : « ça ne me fait pas un retour, mais deux ». La règle vit dans
