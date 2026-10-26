@@ -175,15 +175,16 @@ function Chaine({ maillons, onChaine }: { maillons: Maillon[]; onChaine: (m: Mai
 /** Une rangée de choix, un seul pressé : celle de la planche, pour le goutte-à-goutte comme pour le montage au robinet. */
 export function Chips<T extends string | number>({ valeur, choix, onChoix, libelle }: { valeur: T; choix: [T, string][]; onChoix: (v: T) => void; libelle: string }) {
   return (
-    // Un choix posé côte à côte sur un fond voilé, la case choisie en carte : le `.choix` de la planche soignée.
-    <div className="mt-3 flex flex-wrap gap-1 rounded-[12px] p-1" style={{ backgroundColor: voile(colors.ink, 0.06) }} role="group" aria-label={libelle}>
+    // Un choix posé côte à côte sur un fond voilé, la case choisie en carte : le `.choix` de la planche soignée,
+    // en capsules (sa règle du 12 août 2026, la même forme pour tous les boutons ; la planche les dessinait à 9 px).
+    <div className="mt-3 flex flex-wrap gap-1 rounded-[26px] p-1" style={{ backgroundColor: voile(colors.ink, 0.06) }} role="group" aria-label={libelle}>
       {choix.map(([v, texte]) => (
         <button
           key={String(v)}
           type="button"
           aria-pressed={valeur === v}
           onClick={() => onChoix(v)}
-          className="min-h-[44px] flex-1 rounded-[9px] border-0 px-[10px] text-[15px] font-semibold leading-tight"
+          className="min-h-[44px] flex-1 rounded-full border-0 px-[10px] text-[15px] font-semibold leading-tight"
           style={valeur === v ? { backgroundColor: colors.card, color: colors.ink, boxShadow: `0 1px 2px ${voile(colors.ink, 0.14)}` } : { backgroundColor: "transparent", color: colors.inkSoft }}
         >
           {texte}

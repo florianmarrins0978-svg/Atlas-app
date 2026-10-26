@@ -613,14 +613,14 @@ function Sommaire({ nez }: { nez: boolean }) {
   }, [parties]);
   return (
     <nav aria-label="Le plan, partie par partie" data-atlas="sommaire-du-plan" className="sticky top-0 z-[5] mt-[14px] px-[22px] py-[10px]" style={{ backgroundColor: colors.cream }}>
-      <div className="flex gap-1 rounded-[12px] p-1" style={{ backgroundColor: voile(colors.ink, 0.06) }}>
+      <div className="flex gap-1 rounded-[26px] p-1" style={{ backgroundColor: voile(colors.ink, 0.06) }}>
         {parties.map(([id, mot]) => (
           <button
             key={id}
             type="button"
             aria-pressed={courante === id}
             onClick={() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" })}
-            className="min-h-[42px] flex-1 whitespace-nowrap rounded-[9px] border-0 px-1 text-[14px] font-semibold"
+            className="min-h-[42px] flex-1 whitespace-nowrap rounded-full border-0 px-1 text-[14px] font-semibold"
             style={courante === id ? { backgroundColor: colors.card, color: colors.ink, boxShadow: `0 1px 2px ${voile(colors.ink, 0.14)}` } : { backgroundColor: "transparent", color: colors.inkSoft }}
           >
             {mot}
