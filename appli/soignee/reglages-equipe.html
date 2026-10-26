@@ -136,6 +136,10 @@ section > .rubrique:first-child { margin-top: 30px; }
 .differents { color: var(--atlas-alerte); font-weight: 600; }
 .panneau-avec-action { padding-bottom: 96px; }
 
+/* Noter une absence : la pilule de l'appli d'aujourd'hui (AbsencesEquipe.tsx,
+   rounded-full, filet, mot en vert d'action), sa demande du 26 octobre. */
+.bouton-absence { border-radius: 999px; color: var(--atlas-rust); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+
 /* La feuille d'une absence. */
 .choisir { appearance: none; -webkit-appearance: none; width: 100%; margin-top: 3px; padding: 0; border: 0; background: transparent;
            font: 400 18px/1.3 var(--serif); color: var(--atlas-ink); outline: none; }
@@ -268,7 +272,7 @@ section > .rubrique:first-child { margin-top: 30px; }
                       <button class="retirer-rond" type="button" aria-label="Retirer l'absence de Thomas" data-note="Sur la planche, rien n'est retiré."><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></button>
                     </div>
                   </div>
-                  <button class="bouton bouton-creux mt-16" type="button" data-ouvre="feuille-absence"><svg class="ico" aria-hidden="true" style="color:var(--atlas-or)"><use href="#i-plus"/></svg>Noter une absence</button>
+                  <button class="bouton bouton-creux bouton-absence mt-16" type="button" data-ouvre="feuille-absence"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Noter une absence</button>
                   <p class="loi">Un absent <b>ne compte plus</b> ces jours-là : Atlas propose une date de moins, et tout revient normal ensuite. Vos clients ne voient rien de tout ceci.</p>
                 </div>
                 <div data-si-salaries="non" hidden>
@@ -444,6 +448,7 @@ section > .rubrique:first-child { margin-top: 30px; }
       <li>Toucher un compte ouvre SA page, comme Nouveau compte : son rôle, ce qu'il pourra et ne pourra pas, C'est qui, ce qu'il voit du planning, Retirer l'accès. Aujourd'hui tout cela s'ouvre sous sa ligne, au milieu des autres.</li>
       <li>Pourra et Ne pourra pas passent l'un sous l'autre, en 15 px au lieu de deux colonnes en 13,5 px : Pourra sur une plage verte avec ses coches, Ne pourra pas avec ses cadenas.</li>
       <li>Les titres de paquet en or, comme sur le sommaire ; les petits libellés (C'est qui, Ce qu'il voit du planning, Pourra) en toutes lettres, au lieu de capitales espacées de 9,5 px.</li>
+      <li>Noter une absence garde sa pilule aux bouts ronds, comme dans l'appli d'aujourd'hui (sa demande du 26 octobre).</li>
       <li>Devant chaque nom de salarié, son rond en or ; la date d'une absence en or sous le nom, et la croix grandit à 44 px.</li>
       <li>Seul, la phrase de l'agenda devient une plage qui se touche tout entière.</li>
       <li>Créer le compte reste le seul bouton plein, posé au-dessus de la barre.</li>

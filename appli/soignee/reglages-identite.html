@@ -21,7 +21,7 @@
   s'imprime, la TVA, vous joindre, être payé, la décennale, le médiateur.
 
   Ce qui change en plus : le nom de l'entreprise ouvre la page en carte de
-  visite ; les deux places des mentions se voient sur une feuille en miniature ;
+  visite ; les mentions se voient sur la vraie page du devis, à leur place ;
   le régime de TVA en deux cartes côte à côte ; l'IBAN par groupes de quatre
   sur une plage verte, celle de l'argent qui rentre ; l'attestation dit son état
   en vert ; Voir un exemple reste sous le pouce, au-dessus de la barre.
@@ -43,16 +43,25 @@
 .forme { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .forme .ico { width: 20px; height: 20px; color: var(--atlas-or); }
 
-/* La feuille en miniature : la place des mentions se voit avant de se lire. */
-.feuille-mini { width: 100%; height: 150px; margin-bottom: 10px; padding: 16px 16px 14px; border-radius: 4px;
-                background: #fff; box-shadow: 0 1px 2px rgba(28,28,26,0.12), inset 0 0 0 1px rgba(28,28,26,0.06);
-                display: flex; flex-direction: column; gap: 6px; }
-.ecran[data-sombre] .feuille-mini { background: #f6f4ee; }
-.feuille-mini i { display: block; flex: none; height: 4px; border-radius: 2px; background: rgba(28,28,26,0.13); }
-.feuille-mini i.nom { width: 60%; height: 7px; background: rgba(28,28,26,0.55); }
-.feuille-mini i.mention { width: 48%; height: 5px; background: #B98B47; }
-.feuille-mini i.court { width: 66%; }
-.feuille-mini i.vide { flex: 1; background: transparent; }
+/* « Sur vos papiers » : la VRAIE page du devis, produite par le PDF de l'appli
+   (composerDevisPdf) pour Jardins Démo, et non un dessin. Le repère doré est
+   posé à l'endroit exact que le PDF donne aux lignes (relevé dans sa trace).
+   On voit l'en-tête en grand ; un appui ouvre la page entière. */
+.apercu-devis { display: block; position: relative; width: 100%; padding: 0; border-radius: 10px; overflow: hidden; text-align: left;
+                box-shadow: 0 1px 3px rgba(28,28,26,0.14), inset 0 0 0 1px rgba(28,28,26,0.06); }
+.apercu-cadre { display: block; position: relative; aspect-ratio: 645 / 243; overflow: hidden; }
+.apercu-cadre img { width: 166.7%; max-width: none; }
+.apercu-cadre img, .page-entiere img { height: auto; display: block; }
+.page-entiere img { width: 100%; }
+.repere { position: absolute; top: var(--haut); height: var(--hauteur); left: var(--gauche); width: var(--largeur);
+          border-radius: 4px; background: color-mix(in srgb, var(--atlas-or) 20%, transparent);
+          box-shadow: inset 0 0 0 2px var(--atlas-or); pointer-events: none; }
+.agrandir { position: absolute; right: 10px; bottom: 10px; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%;
+            background: var(--atlas-or); color: var(--atlas-card); }
+.agrandir .ico { width: 20px; height: 20px; }
+.page-entiere { position: relative; border-radius: 6px; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(28,28,26,0.08); }
+.choix-papier { margin-bottom: 10px; }
+.choix-papier button { font-size: 14.5px; }
 
 /* L'IBAN : la plage verte de l'argent qui rentre, les chiffres par quatre. */
 .plage-iban { padding: 16px 18px; border-radius: var(--r-plage); background: var(--atlas-carteVertFond); }
@@ -171,17 +180,28 @@
             </div>
 
             <p class="rubrique rubrique-or">Sur vos papiers</p>
-            <div class="cartes-choix" data-un-seul>
-              <button class="carte-choix" type="button" data-choix="sous" aria-pressed="true">
-                <span class="feuille-mini" aria-hidden="true"><i class="nom"></i><i class="mention"></i><i class="vide"></i><i></i><i class="court"></i><i></i><i class="court"></i></span>
-                <b>Sous le nom</b>
+            <div data-si-etat="rempli neuf">
+              <button class="apercu-devis" type="button" data-ouvre="page-ei" aria-label="Voir la page entière du devis">
+                <span class="apercu-cadre"><img src="devis/devis-ei.jpg" alt="L'en-tête du devis de Jardins Démo"><span class="repere" style="--haut:25%;--hauteur:19%;--gauche:46.3%;--largeur:9.6%"></span></span>
+                <span class="agrandir" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-oeil"/></svg></span>
               </button>
-              <button class="carte-choix" type="button" data-choix="bas" aria-pressed="false">
-                <span class="feuille-mini" aria-hidden="true"><i class="nom"></i><i class="vide"></i><i></i><i class="court"></i><i></i><i class="mention"></i></span>
-                <b>En bas, avec le SIRET</b>
-              </button>
+              <p class="loi">Une entreprise individuelle signe « EI » après son nom. Rien d'autre à choisir.</p>
             </div>
-            <p class="loi">Forme juridique, capital et RCS. Le trait doré montre où ils s'impriment.</p>
+            <div data-si-etat="societe">
+              <div class="choix choix-papier">
+                <button type="button" aria-pressed="true" data-montre="apercu-sous">Sous le nom</button>
+                <button type="button" aria-pressed="false" data-montre="apercu-siret">En bas, avec le SIRET</button>
+              </div>
+              <button class="apercu-devis" type="button" id="apercu-sous" data-ouvre="page-sous" aria-label="Voir la page entière du devis">
+                <span class="apercu-cadre"><img src="devis/devis-sous-le-nom.jpg" alt="L'en-tête du devis, les mentions sous le nom"><span class="repere" style="--haut:42%;--hauteur:19%;--gauche:6.5%;--largeur:48%"></span></span>
+                <span class="agrandir" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-oeil"/></svg></span>
+              </button>
+              <button class="apercu-devis" type="button" id="apercu-siret" data-ouvre="page-siret" aria-label="Voir la page entière du devis" hidden>
+                <span class="apercu-cadre"><img src="devis/devis-avec-le-siret.jpg" alt="L'en-tête du devis, les mentions avec le SIRET"><span class="repere" style="--haut:66.5%;--hauteur:19%;--gauche:6.5%;--largeur:48%"></span></span>
+                <span class="agrandir" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-oeil"/></svg></span>
+              </button>
+              <p class="loi">Forme juridique, capital et RCS de votre société.</p>
+            </div>
 
             <p class="rubrique rubrique-or">Votre TVA</p>
             <div class="cartes-choix" data-un-seul>
@@ -224,7 +244,7 @@
             <div class="plage reglages">
               <label class="reglage">
                 <span class="reglage-libelle">Téléphone</span>
-                <span class="telephone"><span class="indicatif">FR +33<svg class="ico" style="width:16px;height:16px" aria-hidden="true"><use href="#i-bas"/></svg></span><input class="reglage-valeur chiffre" style="margin:0" value="02 41 00 00 00" data-si-etat="rempli societe"><input class="reglage-valeur" style="margin:0" placeholder="06 00 00 00 00" data-si-etat="neuf"></span>
+                <span class="telephone"><span class="indicatif">FR +33<svg class="ico" style="width:16px;height:16px" aria-hidden="true"><use href="#i-bas"/></svg></span><input class="reglage-valeur chiffre" style="margin:0" value="2 41 00 00 00" data-si-etat="rempli societe"><input class="reglage-valeur" style="margin:0" placeholder="6 00 00 00 00" data-si-etat="neuf"></span>
               </label>
               <label class="reglage">
                 <span class="reglage-libelle">Adresse e-mail</span>
@@ -296,6 +316,31 @@
             </div>
           </div>
 
+          <section class="feuille" id="page-ei" aria-hidden="true" aria-label="Le devis, page entière">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre">Votre devis</h2>
+              <div class="page-entiere"><img src="devis/devis-ei.jpg" alt="Le devis de Jardins Démo, page entière"><span class="repere" style="--haut:4%;--hauteur:3%;--gauche:27.7%;--largeur:5.8%"></span></div>
+              <button class="bouton bouton-creux mt-16" type="button" data-ferme>Fermer</button>
+            </div>
+          </section>
+          <section class="feuille" id="page-sous" aria-hidden="true" aria-label="Le devis, page entière">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre">Sous le nom</h2>
+              <div class="page-entiere"><img src="devis/devis-sous-le-nom.jpg" alt="Le devis, les mentions sous le nom, page entière"><span class="repere" style="--haut:6.7%;--hauteur:3%;--gauche:3.9%;--largeur:29%"></span></div>
+              <button class="bouton bouton-creux mt-16" type="button" data-ferme>Fermer</button>
+            </div>
+          </section>
+          <section class="feuille" id="page-siret" aria-hidden="true" aria-label="Le devis, page entière">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre">En bas, avec le SIRET</h2>
+              <div class="page-entiere"><img src="devis/devis-avec-le-siret.jpg" alt="Le devis, les mentions avec le SIRET, page entière"><span class="repere" style="--haut:10.6%;--hauteur:3%;--gauche:3.9%;--largeur:29%"></span></div>
+              <button class="bouton bouton-creux mt-16" type="button" data-ferme>Fermer</button>
+            </div>
+          </section>
+
           <div class="action-bas"><button class="bouton bouton-plein" type="button" data-note="Sur la planche, l'exemple ne s'ouvre pas."><svg class="ico" aria-hidden="true"><use href="#i-oeil"/></svg>Voir un exemple</button></div>
 
           <nav class="barre" aria-label="Navigation principale">
@@ -335,7 +380,7 @@
               <div class="plage plage-serree sommaire-entreprise mt-16">
                 <ul class="liste">
                   <li><button class="ligne touche" type="button" data-vers="qui"><span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-entreprise"/></svg></span><span class="ligne-corps"><span class="ligne-nom">Qui vous êtes</span><span class="ligne-situation">EI, SIRET 123 456 789 00012</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></button></li>
-                  <li><button class="ligne touche" type="button" data-vers="papiers"><span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-document"/></svg></span><span class="ligne-corps"><span class="ligne-nom">Sur vos papiers</span><span class="ligne-situation">Les mentions sous le nom</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></button></li>
+                  <li><button class="ligne touche" type="button" data-vers="papiers"><span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-document"/></svg></span><span class="ligne-corps"><span class="ligne-nom">Sur vos papiers</span><span class="ligne-situation">« EI » après le nom</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></button></li>
                   <li><button class="ligne touche" type="button" data-vers="tva"><span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-euro"/></svg></span><span class="ligne-corps"><span class="ligne-nom">Votre TVA</span><span class="ligne-situation">Assujettie, déclarée tous les mois</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></button></li>
                   <li><button class="ligne touche" type="button" data-vers="joindre"><span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-telephone"/></svg></span><span class="ligne-corps"><span class="ligne-nom">Vous joindre</span><span class="ligne-situation">02 41 00 00 00</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></button></li>
                   <li><button class="ligne touche" type="button" data-vers="paye"><span class="pastille-ico" data-ton="vert"><svg class="ico" aria-hidden="true"><use href="#i-banque"/></svg></span><span class="ligne-corps"><span class="ligne-nom">Pour être payé</span><span class="ligne-situation chiffre">FR76 3000 … 0000</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></button></li>
@@ -362,11 +407,11 @@
             <div data-ecran-panneau="papiers" hidden>
               <div class="tete-ronds"><button class="rond-creux" type="button" data-vers="sommaire" aria-label="Retour à Mon entreprise"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button></div>
               <h1 class="panneau-titre">Sur vos papiers</h1>
-              <div class="cartes-choix" data-un-seul>
-                <button class="carte-choix" type="button" data-choix="sous" aria-pressed="true"><span class="feuille-mini" aria-hidden="true"><i class="nom"></i><i class="mention"></i><i class="vide"></i><i></i><i class="court"></i><i></i><i class="court"></i></span><b>Sous le nom</b></button>
-                <button class="carte-choix" type="button" data-choix="bas" aria-pressed="false"><span class="feuille-mini" aria-hidden="true"><i class="nom"></i><i class="vide"></i><i></i><i class="court"></i><i></i><i class="mention"></i></span><b>En bas, avec le SIRET</b></button>
-              </div>
-              <p class="loi">Forme juridique, capital et RCS. Le trait doré montre où ils s'impriment.</p>
+              <button class="apercu-devis" type="button" data-ouvre="page-ei-loin" aria-label="Voir la page entière du devis">
+                <span class="apercu-cadre"><img src="devis/devis-ei.jpg" alt="L'en-tête du devis de Jardins Démo"><span class="repere" style="--haut:25%;--hauteur:19%;--gauche:46.3%;--largeur:9.6%"></span></span>
+                <span class="agrandir" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-oeil"/></svg></span>
+              </button>
+              <p class="loi">Une entreprise individuelle signe « EI » après son nom. Rien d'autre à choisir.</p>
             </div>
 
             <div data-ecran-panneau="tva" hidden>
@@ -391,7 +436,7 @@
               <div class="tete-ronds"><button class="rond-creux" type="button" data-vers="sommaire" aria-label="Retour à Mon entreprise"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button></div>
               <h1 class="panneau-titre">Vous joindre</h1>
               <div class="plage reglages">
-                <label class="reglage"><span class="reglage-libelle">Téléphone</span><span class="telephone"><span class="indicatif">FR +33</span><input class="reglage-valeur chiffre" style="margin:0" value="02 41 00 00 00"></span></label>
+                <label class="reglage"><span class="reglage-libelle">Téléphone</span><span class="telephone"><span class="indicatif">FR +33</span><input class="reglage-valeur chiffre" style="margin:0" value="2 41 00 00 00"></span></label>
                 <label class="reglage"><span class="reglage-libelle">Adresse e-mail</span><input class="reglage-valeur" value="contact@jardins-demo.fr"></label>
               </div>
             </div>
@@ -428,6 +473,14 @@
             </div>
 
           </div>
+          <section class="feuille" id="page-ei-loin" aria-hidden="true" aria-label="Le devis, page entière">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre">Votre devis</h2>
+              <div class="page-entiere"><img src="devis/devis-ei.jpg" alt="Le devis de Jardins Démo, page entière"><span class="repere" style="--haut:4%;--hauteur:3%;--gauche:27.7%;--largeur:5.8%"></span></div>
+              <button class="bouton bouton-creux mt-16" type="button" data-ferme>Fermer</button>
+            </div>
+          </section>
           <nav class="barre" aria-label="Navigation principale">
             <div class="barre-onglets">
               <a class="barre-onglet" href="accueil.html">Chantiers</a>
@@ -458,8 +511,10 @@
       <li>Le nom de l'entreprise ouvre la page en carte de visite, avec son adresse : on sait de qui on parle.</li>
       <li>Dix-huit cases à la suite deviennent sept paquets, chacun sous son titre doré. L'ordre ne bouge pas.</li>
       <li>Les libellés s'écrivent en toutes lettres et non plus en petites capitales espacées.</li>
-      <li>Les mentions légales se choisissent sur deux feuilles en miniature : le trait doré montre où elles s'impriment.</li>
+      <li><b>Sur vos papiers montre la vraie page de votre devis</b>, produite par l'appli, et le repère doré tombe à l'endroit exact où les mentions s'impriment. Touchez la page : elle s'ouvre en entier.</li>
+      <li>Une entreprise individuelle n'a rien à choisir : seul « EI » s'imprime, après le nom. Le choix ne se montre que pour une société : touchez « Une SARL ».</li>
       <li>Franchise ou assujettie : deux cartes côte à côte. Le numéro, le rythme et le reversement n'apparaissent que pour une entreprise assujettie.</li>
+      <li>Derrière « FR +33 », le numéro s'écrit sans son zéro : +33 2 41 00 00 00. Aujourd'hui, le champ garde le zéro devant (+33 02…), sa demande du 26 octobre. Les devis gardent le numéro tel qu'ils l'impriment déjà, 02 41 00 00 00.</li>
       <li>L'IBAN se lit par groupes de quatre, sur la plage verte de l'argent qui rentre.</li>
       <li>L'attestation dit son état en vert : Déposée, jointe à chaque devis et facture.</li>
       <li>Ce qui manque se dit en ambre, avec sa conséquence, à la place du rouge. Un compte neuf le compte sous son nom : « Il manque 4 cases ».</li>
@@ -480,6 +535,7 @@
     </ul>
     <h2>À trancher</h2>
     <ul class="a-trancher">
+      <li><b>« En bas, avec le SIRET » ne fait rien aujourd'hui.</b> J'ai fabriqué le vrai devis dans les deux réglages : les deux pages sont identiques au point près, les mentions sous le nom. La planche montre ce que « En bas » devrait faire, les lignes posées juste avant le SIRET. Deux réponses possibles : on le corrige comme sur la planche, ou on retire le choix et elles restent sous le nom.</li>
       <li>Proposé, une seule page en sept paquets, ou Plus loin, sept lignes qui s'ouvrent.</li>
     </ul>
   </section>
