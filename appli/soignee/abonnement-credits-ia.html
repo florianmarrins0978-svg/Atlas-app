@@ -34,8 +34,11 @@
 /* La barre. Elle garde sa place et son titre dans les trois états : il
    reconnaît son écran par la position de ce qu'il lit, et seul ce qui change
    de sens change de couleur. Vert tant que tout va ; ambre quand il en reste
-   peu ; épuisé, la barre pleine et le chiffre en ambre, sans fond de couleur
-   autour : sa demande du 26 octobre, « enlève l'encadré marron ». */
+   peu ; épuisé, la barre pleine et le chiffre dans la teinte de l'épuisé, sans
+   fond de couleur autour : sa demande du 26 octobre, « enlève l'encadré
+   marron ». La teinte de l'épuisé est à choisir au-dessus du téléphone,
+   rouge, bordeaux ou ambre (sa question du même jour) ; ce sont les jetons de
+   la charte, lisibles dans les huit. */
 .credits { padding: 16px 18px; }
 .credits-tete { display: flex; align-items: center; gap: 14px; }
 .credits .pastille-ico { width: 52px; height: 52px; border-radius: 14px; }
@@ -52,8 +55,12 @@
 .ecran[data-etat="normal"] .jauge-plein { width: 42%; }
 .ecran[data-etat="presque"] .jauge-plein { width: 88%; background: var(--atlas-carteAmbreTexte); }
 .ecran[data-etat="presque"] .credits-chiffre { color: var(--atlas-carteAmbreTexte); }
-.ecran[data-etat="epuise"] .jauge-plein { width: 100%; background: var(--atlas-carteAmbreTexte); }
-.ecran[data-etat="epuise"] .credits-chiffre { color: var(--atlas-carteAmbreTexte); }
+.ecran { --epuise: var(--atlas-carteRougeTexte); }
+.ecran[data-teinte="bordeaux"] { --epuise: var(--atlas-bordeaux); }
+.ecran[data-teinte="ambre"] { --epuise: var(--atlas-carteAmbreTexte); }
+.ecran[data-etat="epuise"] .jauge-plein { width: 100%; background: var(--epuise); }
+.ecran[data-etat="epuise"] .credits-chiffre { color: var(--epuise); }
+.credits .pastille-epuise { background: color-mix(in srgb, var(--epuise) 13%, transparent); color: var(--epuise); }
 .ecran[data-etat="epuise"] .credits-detail { color: var(--atlas-ink); }
 
 /* Le reste de l'écran, repris de la planche Abonnement. */
@@ -119,8 +126,13 @@
         <button type="button" data-etat="presque">Presque épuisé</button>
         <button type="button" data-etat="epuise">Épuisé</button>
       </div>
+      <div class="pl-etats" id="teinte-epuise">
+        <button type="button" data-teinte="rouge" aria-pressed="true">Épuisé en rouge</button>
+        <button type="button" data-teinte="bordeaux" aria-pressed="false">En bordeaux</button>
+        <button type="button" data-teinte="ambre" aria-pressed="false">En ambre</button>
+      </div>
       <div class="cadre">
-        <div class="ecran avec-barre avec-action" data-etat="normal" data-formule="entreprise" data-periode="mois" id="ecran-credits">
+        <div class="ecran avec-barre avec-action" data-etat="normal" data-teinte="rouge" data-formule="entreprise" data-periode="mois" id="ecran-credits">
           <div class="defile">
             <div class="tete-ronds">
               <a class="rond-creux" href="reglages.html" aria-label="Retour aux réglages"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
@@ -140,7 +152,7 @@
               <div class="credits-tete">
                 <span class="pastille-ico" data-ton="vert" data-si-etat="normal"><svg class="ico" aria-hidden="true"><use href="#i-etincelle"/></svg></span>
                 <span class="pastille-ico" data-ton="ambre" data-si-etat="presque"><svg class="ico" aria-hidden="true"><use href="#i-etincelle"/></svg></span>
-                <span class="pastille-ico" data-ton="ambre" data-si-etat="epuise"><svg class="ico" aria-hidden="true"><use href="#i-pause"/></svg></span>
+                <span class="pastille-ico pastille-epuise" data-si-etat="epuise"><svg class="ico" aria-hidden="true"><use href="#i-pause"/></svg></span>
                 <h2 class="credits-titre" id="credits-titre"><span data-si-etat="normal presque">Crédits IA du mois</span><span data-si-etat="epuise">Crédits IA épuisés</span></h2>
                 <span class="credits-chiffre" aria-hidden="true"><span data-si-etat="normal">42</span><span data-si-etat="presque">88</span><span data-si-etat="epuise">100</span><small>&#8239;%</small></span>
               </div>
@@ -272,7 +284,7 @@
       <li>Sous « Votre abonnement », une plage dit la part des <b>crédits IA du mois</b> déjà utilisée : un pourcentage et une barre, aucun euro.</li>
       <li><b>Normal</b> : la barre est verte, et la ligne dit quand elle repart à zéro.</li>
       <li><b>Presque épuisé</b> : la barre et le chiffre passent à l'ambre, et la ligne le dit en mots : « Il en reste peu ».</li>
-      <li><b>Épuisé</b> : la barre est pleine, le chiffre et le symbole pause en ambre, sans encadré de couleur autour (votre demande du 26 octobre). Le titre devient « Crédits IA épuisés », et la ligne dit ce qui reste : Atlas IA reprend le 1<sup>er</sup> du mois suivant, d'ici là tout s'écrit à la main.</li>
+      <li><b>Épuisé</b> : la barre est pleine, le chiffre et le symbole pause en rouge, sans encadré de couleur autour (votre demande du 26 octobre). Le rouge, le bordeaux ou l'ambre se choisissent au-dessus du téléphone. Le titre devient « Crédits IA épuisés », et la ligne dit ce qui reste : Atlas IA reprend le 1<sup>er</sup> du mois suivant, d'ici là tout s'écrit à la main.</li>
       <li>Le titre et la barre gardent leur place dans les trois états : seul ce qui change de sens change de couleur.</li>
       <li>Aucun bouton sur la plage : rien ne s'y achète, rien ne s'y règle.</li>
     </ul>
@@ -284,6 +296,7 @@
     </ul>
     <h2>À trancher</h2>
     <ul class="a-trancher">
+      <li>Épuisé en rouge, en bordeaux, ou en ambre comme presque épuisé. Je conseille le rouge : il se distingue de l'ambre au premier coup d'œil, même au soleil ; le bordeaux, plus sombre, perd sa couleur plus vite en plein soleil.</li>
       <li>Épuisé, vous ne viendrez pas lire l'Abonnement : c'est en dictant que vous verrez que l'IA ne répond plus. L'écran de la dictée devra le dire aussi. Il n'est pas dessiné ici ; je le dessine si vous le voulez.</li>
       <li>Une entreprise sans abonnement, comme celles d'avant l'offre, a-t-elle aussi un plafond ? C'est la règle d'E13 qui le dira, et la plage suivra.</li>
     </ul>
@@ -329,6 +342,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
   document.addEventListener("click", function (e) {
     if (e.target.closest(".pl-etats button[data-etat]")) { majJauge(); return; }
+
+    /* Une teinte touchée montre l'épuisé : c'est le seul état qu'elle change. */
+    var teinte = e.target.closest("#teinte-epuise [data-teinte]");
+    if (teinte) {
+      ecran.setAttribute("data-teinte", teinte.getAttribute("data-teinte"));
+      document.querySelectorAll("#teinte-epuise [data-teinte]").forEach(function (b) {
+        b.setAttribute("aria-pressed", b === teinte ? "true" : "false");
+      });
+      document.querySelector('.pl-etats button[data-etat="epuise"]').click();
+      return;
+    }
 
     var periode = e.target.closest(".choix [data-periode]");
     if (periode) {
