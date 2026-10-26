@@ -792,8 +792,10 @@ function Attestation({ fichier, onFichier }: { fichier: File | null; onFichier: 
       <button
         type="button"
         onClick={() => photo.current?.click()}
+        // En creux d'or, pas en plein : « Continuer » est déjà le bouton plein
+        // de l'écran, et deux aplats ne disent plus lequel compte.
         className="flex min-h-[56px] w-full items-center justify-center gap-[10px] rounded-full text-[17px] font-semibold"
-        style={{ background: colors.plein, color: surPlein }}
+        style={{ color: colors.or, boxShadow: `inset 0 0 0 1.5px ${colors.or}` }}
       >
         Prendre la photo
       </button>
