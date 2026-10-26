@@ -58,9 +58,18 @@
 
 ---
 
-## 4. La page du comptable
+## 4. La page du comptable, point par point
 
-*À compléter une fois la page reprise et regardée.*
+| Sur la planche | Codé |
+|---|---|
+| Un seul tableau : les montants tombent l'un sous l'autre, alignés à droite | oui, mesuré à 1 280, 1 100, 1 024 et 390 de large |
+| Sur un téléphone, chaque ligne garde sa date ; Valider, Rejeter, Suivant collés en bas quand la pièce est ouverte | oui, mesuré sur 390 × 664 et 360 × 640 |
+| Sur un ordinateur, Rejeter ne tombe plus sous l'écran quand il écrit sa raison | oui |
+| « Reconstitué par Atlas » et « Photo d'origine » écrits en onglets | oui (« Facture d'origine » pour un PDF) |
+| Chaque mois dit où il en est, le haut compte tout le dossier | oui |
+| Une ligne validée teintée de vert, une rejetée de rouge avec sa raison dessous | oui |
+| Des icônes dessinées au lieu des caractères ✓ et ✕ | oui, les mêmes que l'écran du patron |
+| La facture faite hors d'Atlas, et l'écart montré AVANT qu'il valide | oui |
 
 ---
 
@@ -69,6 +78,8 @@
 - **La phrase d'un écart est plus courte que sur la planche.** La planche écrivait *« Elle attend 1 728,00 € : ce virement en paie une partie, il restera 864,00 € »* sous un encart qui montrait déjà les deux montants. L'écran dit *« Ce virement en paie une partie, il restera 864,00 € »* : le montant ne se répète pas (`CLAUDE.md` §3, le moins de mots).
 - **Sans banque mais avec des lignes déjà lues**, l'écran garde le point et le Check up, et la ligne de la banque dit « Aucune banque reliée » avec « Relier ma banque ». La planche ne montrait le cas sans banque que sans aucune ligne ; dans l'autre cas, le Check up a encore des tickets à relier, et son bilan doit pouvoir s'écrire.
 - **Une facture d'Atlas émise APRÈS le virement n'est pas proposée** dans la carte : le règlement serait refusé (*« ce règlement est daté d'avant la facture »*). La proposer serait proposer un refus.
+- **Chez le comptable, la date reste « 02/10 »**, comme aujourd'hui, au lieu de « 2 oct. » sur la planche : la ligne est plus étroite, et une troisième façon d'abréger les mois s'ajoutait aux deux qui existent.
+- **Chez le comptable, une facture d'Atlas payée en partie montre son vrai total** : la page affichait le montant du virement à la place, ce qui était faux dès qu'il ne payait qu'une partie.
 - **La facture faite hors d'Atlas a son propre lecteur**, qui ne rend que le total et le numéro. Le lecteur des factures de fournisseurs lisait des lignes d'articles d'un fournisseur qui écrit à l'artisan : pas la même pièce. Sans clé ou sans total lisible, l'écran le fait taper.
 
 ## 6. Trouvé en route, et refermé
@@ -84,10 +95,12 @@
 | Règles pures (`test-pour-mon-comptable.ts`) | 43 sur 43 |
 | Lecture d'une facture hors d'Atlas (`test-facture-hors-atlas-lue.ts`) | 4 sur 4 |
 | Le dossier PDF (`test-dossier-comptable-pdf.ts`) | 17 sur 17 |
-| Base : pour mon comptable, banque, dossiers, vérification, mouvements, achats | 26, 12, 13, 11, 8, 16 : tout vert |
+| Base : pour mon comptable, banque, dossiers, vérification, mouvements, achats | 26, 12, 13, 12, 8, 16 : tout vert |
 | 0148 sur une base habitée (`test-migration-0148-base-habitee.ts`) | vert, après avoir rougi sur le trou de 0143 |
 | Navigateur : pour mon comptable (dont le virement reçu réglé dans sa carte et l'écart montré avant de joindre) | 11 sur 11 |
+| Navigateur : la page du comptable | 14 sur 14 (8 sur 14 contre l'ancienne page : les six règles nouvelles savent rougir) |
 | Navigateur : la photo du Check up | 4 sur 4 |
+| Navigateur : les pages publiques, sans la barre d'Atlas | vert |
 | Navigateur : Mes dossiers | 6 sur 7, voir ci-dessous |
 | Garde-fous : couches, code mort, tirets, flèches, pansements, chartes lisibles | tous verts |
 
