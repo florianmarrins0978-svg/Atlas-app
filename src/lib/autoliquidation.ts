@@ -138,7 +138,7 @@ export function avisSurLeNumeroTva(
   return null;
 }
 
-function numeroTvaFrancais(siren: string): string {
+export function numeroTvaFrancais(siren: string): string {
   return `FR${String((12 + 3 * (Number(siren) % 97)) % 97).padStart(2, "0")}${siren}`;
 }
 

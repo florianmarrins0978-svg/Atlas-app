@@ -88,7 +88,7 @@ export default async function BienvenuePage() {
       <div className="relative z-[2] mx-auto w-full max-w-md">
         {/* La phrase, et non une case à cocher : point 3 de la planche, encore
             à trancher par lui. En attendant, c'est la forme qu'elle porte. */}
-        <p className="mb-[14px] text-center text-[11.5px] leading-[1.5] text-white/[.88]">
+        <p className="mb-4 text-center text-[13px] leading-[1.5] text-white/[.9]">
           En appuyant sur «&nbsp;Créer un compte&nbsp;» ou «&nbsp;Se
           connecter&nbsp;», vous acceptez nos{" "}
           {/* **Servies telles qu'elles ont été écrites le 8 septembre**, dans
@@ -107,15 +107,20 @@ export default async function BienvenuePage() {
           .
         </p>
 
+        {/* **Deux vrais boutons de 56 points** (planche soignée du 26 octobre
+            2026) : « Se connecter » était un mot sous le bouton, une cible
+            de 46 points pour un doigt épais, dehors. Le plein pour qui
+            arrive, le creux pour qui revient. */}
         <Link
           href="/creer-un-compte"
-          className="block w-full rounded-full bg-white py-[17px] text-center text-[16.5px] font-medium leading-none text-[#12160f] transition-transform active:scale-[0.985]"
+          className="flex min-h-[56px] w-full items-center justify-center rounded-full bg-white text-center text-[17px] font-semibold leading-none text-[#12160f] transition-transform active:scale-[0.985]"
         >
           Créer un compte
         </Link>
         <Link
           href="/login"
-          className="block w-full bg-transparent pb-[2px] pt-[15px] text-center text-[15.5px] font-semibold leading-none text-white"
+          className="mt-[10px] flex min-h-[56px] w-full items-center justify-center rounded-full bg-transparent text-center text-[17px] font-semibold leading-none text-white"
+          style={{ boxShadow: "inset 0 0 0 1.5px rgba(255,255,255,.62)" }}
         >
           Se connecter
         </Link>

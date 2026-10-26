@@ -36110,3 +36110,23 @@ l'écran, plus le contour.
 
 **Reste ouvert** : le plafond de dépense d'IA par mois, qui demande sa décision (montant, effet quand il est atteint).
 
+
+## §509 : La porte demande ce que Mon entreprise attend, et sa fin le montre
+
+*26 octobre 2026, sa planche `appli/soignee/creer-un-compte.html`, « tu peux coder toute la planche ».*
+
+**Le constat.** Les seize questions de septembre ignoraient cinq réglages nés depuis. L'appli posait sans le dire le rythme et le reversement de la TVA et un chantier par jour, et laissait vides la décennale et le médiateur, que la loi veut sur le papier. La fin disait « Vos réglages sont remplis », et Mon entreprise disait juste après le médiateur manquant et obligatoire.
+
+**Les règles** (`src/lib/creation-compte.ts`) : vingt questions au plus, quatorze au moins, sept chapitres. Une question porte des `champs` (une ou plusieurs cases, nommées au-dessus dès qu'elles sont plusieurs), ou une liste, des cartes Oui ou Non, la liste des formes, un compteur, la photo de l'attestation. Ce qui a une valeur d'office se `propose` déjà entouré et ne se passe pas ; le numéro de TVA se tire du SIRET par `numeroTvaFrancais` (`autoliquidation.ts`, exportée pour l'occasion). Le total annoncé ne monte toujours jamais.
+
+**La fin** se lit sur l'entreprise ENREGISTRÉE (`src/lib/recapitulatif-compte.ts`), jamais sur les réponses : un dépôt d'attestation raté s'y voit. L'ordre devient le code, les conditions, `/creer-un-compte/pret` (Face ID s'il est possible, puis le récapitulatif en paquets de Mon entreprise), puis l'accueil. La première acceptation des conditions mène à cette page (`accepterDocumentsAction`) ; un compte invité y est renvoyé à l'accueil, ce n'est pas son entreprise. Le geste d'activer Face ID est sorti dans `useActiverFaceId`, partagé avec Mot de passe.
+
+**Trois écarts à la planche, décidés pour la sécurité ou pour ses règles :**
+
+| la planche | le code | pourquoi |
+|---|---|---|
+| des suggestions d'adresse | une case libre | `/api/adresses` est fermée sans compte, pour ne pas faire de notre serveur un relais ouvert vers la Base Adresse Nationale |
+| l'IA lit l'attestation et propose l'assureur | la photo reste dans le téléphone, part après le code par `deposerAttestationAction`, qui la fait lire | rien ne s'écrit avant « Créer mon compte », et une lecture d'image ouverte à qui n'a pas de compte serait payée par nous |
+| Oui ou Non en deux cartes côte à côte | deux pilules l'une sous l'autre | sa règle du 12 août, la même forme ronde partout (`test-boutons-arrondis`) |
+
+**Ce qui le tient** : `test-creation-compte.ts` (dont « la fin ne dit jamais tout est prêt sans médiateur », rouge contre la version d'avant), `test-recapitulatif-compte.ts`, `test-porte-reglages-neufs-db.ts` (les colonnes écrites, rouge sans le dépôt), `test-creer-son-compte-e2e.ts` (le nouvel ordre de la fin, et les colonnes relues).
