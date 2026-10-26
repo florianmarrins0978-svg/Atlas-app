@@ -206,7 +206,9 @@ export default function EnAttenteDePaiement({
                 className="flex items-baseline justify-between gap-3"
               >
                 <div className="min-w-0">
-                  <p className="truncate text-[14.5px]" style={{ color: colors.ink }}>
+                  {/* Le nom et le montant en gras, sa planche du 26 octobre
+                      2026 : ce qu'il cherche pour savoir qui doit combien. */}
+                  <p className="truncate text-[14.5px] font-bold" style={{ color: colors.ink }}>
                     {f.clientNom ?? "Client"}
                   </p>
                   {/* **LA LIGNE RESTE À SA PLACE, ON NE FAIT QUE L'ÉCRIRE PLUS
@@ -224,14 +226,14 @@ export default function EnAttenteDePaiement({
                 </div>
                 <div className="flex-shrink-0 text-right">
                   <p
-                    className="text-[15.5px]"
+                    className="text-[15.5px] font-bold"
                     style={{ color: colors.ink, fontFamily: font.display, fontVariantNumeric: "tabular-nums" }}
                   >
                     {/* Le mot devant le chiffre, et seulement quand un acompte
                         est passé : sur une facture intacte, « reste à payer »
                         et le total disent la même chose. */}
                     {f.etat === "partielle" && (
-                      <span className="text-[11px]" style={{ color: colors.muted, fontFamily: font.body }}>
+                      <span className="text-[11px] font-normal" style={{ color: colors.muted, fontFamily: font.body }}>
                         Reste à payer{" "}
                       </span>
                     )}
@@ -282,7 +284,15 @@ export default function EnAttenteDePaiement({
                 <VirementSurLaFacture q={virements[f.id]} />
               ) : (
               <>
-              <PayePar moyen={moyenDe(f.id)} choisir={(m) => setMoyens((t) => ({ ...t, [f.id]: m }))} />
+              {/* **« Payé par » suit la saisie d'un règlement partiel** — sa
+                  remarque du 26 octobre 2026 : il a noté une partie par
+                  virement sans voir que le moyen se choisissait AU-DESSUS.
+                  Ouverte, la saisie le prend avec elle (`SaisieDuReglement`) ;
+                  fermée, il reste ici, avant « J'ai reçu le paiement ». Un
+                  seul choix pour les deux boutons. */}
+              {ouverte !== f.id && (
+                <PayePar moyen={moyenDe(f.id)} choisir={(m) => setMoyens((t) => ({ ...t, [f.id]: m }))} />
+              )}
 
               <div className="mt-2.5 flex flex-wrap items-center gap-2">
                 {/* Les suites visent les repères, jamais les mots : c'est le
@@ -313,6 +323,7 @@ export default function EnAttenteDePaiement({
                 <SaisieDuReglement
                   facture={f}
                   moyen={moyenDe(f.id)}
+                  choisirMoyen={(m) => setMoyens((t) => ({ ...t, [f.id]: m }))}
                   aujourdHui={aujourdHui}
                   onErreur={setErreur}
                   onFini={() => {
@@ -458,12 +469,14 @@ export default function EnAttenteDePaiement({
 function SaisieDuReglement({
   facture,
   moyen,
+  choisirMoyen,
   aujourdHui,
   onErreur,
   onFini,
 }: {
   facture: FactureAttendue;
   moyen: MoyenDePaiement;
+  choisirMoyen: (m: MoyenDePaiement) => void;
   aujourdHui: string;
   onErreur: (m: string | null) => void;
   onFini: () => void;
@@ -480,6 +493,7 @@ function SaisieDuReglement({
 
   return (
     <div className="mt-2.5 flex flex-col gap-2">
+      <PayePar moyen={moyen} choisir={choisirMoyen} />
       <div className="flex items-end gap-2">
         <label className="flex min-w-0 flex-1 flex-col gap-1.5">
           <span

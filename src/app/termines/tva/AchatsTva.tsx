@@ -180,15 +180,19 @@ export default function AchatsTva({
           Et le retour est meilleur qu'avant : après un scan, c'est le montant
           juste au-dessus du doigt qui change — plus besoin d'aller chercher la
           ligne quinze lignes plus bas. */}
+      {/* **Chacun sa couleur, sa planche du 26 octobre 2026**
+          (`appli/soignee/termines-tva.html`, « vert et sable ») : les deux
+          gestes se distinguent d'un coup d'œil, en tons de carte de la
+          charte, lisibles dans les huit. */}
       <div className="mt-1 flex gap-2.5" data-atlas="gestes-deductible">
         <button
           type="button"
           onClick={() => objectif.current?.click()}
           disabled={enCours}
           className="flex flex-1 flex-col items-center gap-[7px] rounded-full px-2 py-[13px] text-[12.5px]"
-          style={{ backgroundColor: colors.card, border: `1px solid ${colors.line}`, color: colors.ink }}
+          style={{ backgroundColor: colors.carteVertFond, color: colors.carteVertTexte }}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="1.6" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
             <path d="M4 8.4V6.2A2.2 2.2 0 0 1 6.2 4h2.2M15.6 4h2.2A2.2 2.2 0 0 1 20 6.2v2.2M20 15.6v2.2a2.2 2.2 0 0 1-2.2 2.2h-2.2M8.4 20H6.2A2.2 2.2 0 0 1 4 17.8v-2.2" strokeLinecap="round" />
             <path d="M4 12h16" strokeLinecap="round" />
           </svg>
@@ -198,9 +202,9 @@ export default function AchatsTva({
           type="button"
           onClick={() => ouvrir({ photoCle: null, lu: null, lecture: null, refus: null })}
           className="flex flex-1 flex-col items-center gap-[7px] rounded-full px-2 py-[13px] text-[12.5px]"
-          style={{ backgroundColor: colors.card, border: `1px solid ${colors.line}`, color: colors.ink }}
+          style={{ backgroundColor: colors.carteAmbreFond, color: colors.carteAmbreTexte }}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="1.6" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
             <path d="M4 20h4.2L19 9.2a2 2 0 0 0 0-2.8l-1.4-1.4a2 2 0 0 0-2.8 0L4 15.8V20z" strokeLinejoin="round" />
             <path d="M13.6 6.6l3.8 3.8" strokeLinecap="round" />
           </svg>

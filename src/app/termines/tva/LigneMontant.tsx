@@ -45,6 +45,7 @@ export default function LigneMontant({
   negatif = false,
   total = false,
   lien,
+  teinte,
 }: {
   libelle: string;
   /** Déjà mis en forme — « 1 620,00 € ». C'est ce texte-là qui est copié. */
@@ -62,6 +63,13 @@ export default function LigneMontant({
    * doit copier comme ça le fait déjà »*. Sans lien, la rangée entière copie.
    */
   lien?: string;
+  /**
+   * La couleur du chiffre, sa planche du 26 octobre 2026 (« chiffres bleu et
+   * vert », `appli/soignee/termines-tva.html`) : *« une couleur pour les
+   * chiffres, pour que ça soit visuel tout de suite »*. Un jeton de la charte,
+   * jamais une valeur en clair ; sans teinte, l'encre.
+   */
+  teinte?: string;
 }) {
   const [dit, setDit] = useState<string | null>(null);
 
@@ -94,7 +102,7 @@ export default function LigneMontant({
           fontFamily: font.display,
           fontSize: total ? 34 : 20,
           letterSpacing: total ? "-0.01em" : undefined,
-          color: colors.ink,
+          color: teinte ?? colors.ink,
           fontVariantNumeric: "tabular-nums lining-nums",
         }}
       >
@@ -109,7 +117,7 @@ export default function LigneMontant({
           <span
             aria-hidden="true"
             className="absolute right-full"
-            style={{ marginRight: total ? 10 : 7, color: colors.muted, fontWeight: 400 }}
+            style={{ marginRight: total ? 10 : 7, color: teinte ?? colors.muted, fontWeight: 400 }}
           >
             {"−"}
           </span>

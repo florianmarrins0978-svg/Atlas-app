@@ -211,6 +211,7 @@ export default async function ReleveTvaPage({
             libelle="TVA collectée"
             montant={enEuros(collectee)}
             marque="montant-collectee"
+            teinte={colors.carteBleuTexte}
             lien={`/termines/tva/collectee?annee=${periode.annee}&t=${periode.numero}`}
           />
           <LigneMontant
@@ -218,6 +219,7 @@ export default async function ReleveTvaPage({
             montant={enEuros(deductible)}
             marque="montant-deductible"
             negatif
+            teinte={colors.carteVertTexte}
             lien={`/termines/tva/deductible?annee=${periode.annee}&t=${periode.numero}`}
 
           />
