@@ -21,9 +21,9 @@
 | **E7** | Deux autres écritures acceptent des champs en trop (client du devis, lignes de prix : déplacer une ligne vers un autre chantier) | moyenne | **corrigé le 25 octobre** |
 | **E8** | La garde des rôles des PAGES vit dans le gabarit racine, que Next.js ne rejoue pas à la navigation interne : un commercial pourrait recevoir les données d'une page qui lui est fermée | **élevée** (reproduit : un commercial lisait Ma TVA en passant par Chantiers) | **corrigé le 25 octobre** : chaque écran pose sa garde lui-même |
 | **E9** | Droits de la base plus larges que le besoin : l'application peut écrire le registre des migrations, les conditions générales, supprimer une entreprise entière | moyenne (défense en profondeur) | **corrigé le 25 octobre** (migration 0147) |
-| **E10** | Liens entre tables non composites (paiement et facture, acompte et devis…) : la base n'empêche pas de rattacher un élément à une autre entreprise | moyenne (défense en profondeur) | vague 3 |
+| **E10** | Liens entre tables non composites (paiement et facture, acompte et devis…) : la base n'empêche pas de rattacher un élément à une autre entreprise | moyenne (défense en profondeur) | **corrigé le 26 octobre** pour les lignes neuves (migration 0149) |
 | **E11** | Donner un accès, changer un rôle (jusqu'à créer un second patron), résilier : sans redemander le mot de passe | moyenne | **corrigé le 26 octobre** pour les accès ; la résiliation **gardée telle quelle, délibérément** |
-| **E12** | Liens clients en clair en base, certains sans expiration (contrat, passages) ; lien du comptable valable un an | moyenne | vague 3 |
+| **E12** | Liens clients en clair en base, certains sans expiration (contrat, passages) ; lien du comptable valable un an | moyenne | **gardé tel quel, délibérément** : voir plus bas |
 | **E13** | Les libellés des lignes de devis entrent dans la consigne système de l'IA (retouches) ; aucun plafond de dépense d'IA par mois | moyenne | **corrigé le 26 octobre** : consigne, et plafond mensuel de crédits IA selon tes montants |
 | **E14** | Sans `ATLAS_PROXY_SAUTS`, les seuils par source deviennent communs à tous : un inconnu peut bloquer les inscriptions ou le mot de passe oublié de tout le monde, ou verrouiller un compte dont il connaît l'adresse | moyenne | dépend du déploiement |
 | **E15** | Chaîne logicielle : actions GitHub épinglées par étiquette, `pages.yml` donne ses droits de publication à l'étape qui installe les paquets, aucun délai avant d'installer une version neuve, `demarrer.sh` retombe sur `npm install` | moyenne | vague 3 |
@@ -48,6 +48,12 @@
 - les droits par défaut des workflows GitHub du dépôt (réglage du site GitHub) ;
 - la protection de la branche `main` sur GitHub ;
 - tout ce qui dépend de l'hébergeur de production, qui n'existe pas encore.
+
+## E10 et E12, le 26 octobre
+
+**E10, corrigé.** La base refuse désormais qu'un paiement, un acompte, une photo ou un retour d'intervention d'une entreprise vise une ligne d'une autre entreprise. Vingt-six liens sont concernés. Aucun code ne le faisait : c'est une protection pour la porte que personne n'a encore écrite. Les anciennes lignes ne sont pas revérifiées tout de suite, pour qu'une donnée ancienne imprévue ne bloque pas la mise à jour de ton espace ; c'est noté pour plus tard.
+
+**E12, gardé tel quel.** Les liens envoyés à tes clients (devis, factures, contrats, rapports de passage) restent comme ils sont. Les faire expirer ferait perdre à ton client le contrat qu'il a reçu ; les stocker autrement t'empêcherait de recopier le lien d'un devis déjà envoyé. Chaque lien est impossible à deviner, et n'ouvre que son propre document. Le lien du comptable était déjà protégé autrement, et il dure un exercice.
 
 ## Les crédits IA du mois, faits le 26 octobre
 

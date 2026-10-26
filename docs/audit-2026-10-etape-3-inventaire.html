@@ -129,7 +129,7 @@
 <td><strong>E10</strong></td>
 <td>Liens entre tables non composites (paiement et facture, acompte et devis…) : la base n'empêche pas de rattacher un élément à une autre entreprise</td>
 <td>moyenne (défense en profondeur)</td>
-<td>vague 3</td>
+<td><strong>corrigé le 26 octobre</strong> pour les lignes neuves (migration 0149)</td>
 </tr>
 <tr>
 <td><strong>E11</strong></td>
@@ -141,7 +141,7 @@
 <td><strong>E12</strong></td>
 <td>Liens clients en clair en base, certains sans expiration (contrat, passages) ; lien du comptable valable un an</td>
 <td>moyenne</td>
-<td>vague 3</td>
+<td><strong>gardé tel quel, délibérément</strong> : voir plus bas</td>
 </tr>
 <tr>
 <td><strong>E13</strong></td>
@@ -217,6 +217,10 @@
 <li>la protection de la branche <code>main</code> sur GitHub ;</li>
 <li>tout ce qui dépend de l'hébergeur de production, qui n'existe pas encore.</li>
 </ul>
+<h2 id="e10-et-e12-le-26-octobre">E10 et E12, le 26 octobre</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>E10, corrigé.</strong> La base refuse désormais qu'un paiement, un acompte, une photo ou un retour d'intervention d'une entreprise vise une ligne d'une autre entreprise. Vingt-six liens sont concernés. Aucun code ne le faisait : c'est une protection pour la porte que personne n'a encore écrite. Les anciennes lignes ne sont pas revérifiées tout de suite, pour qu'une donnée ancienne imprévue ne bloque pas la mise à jour de ton espace ; c'est noté pour plus tard.</p>
+<p><strong>E12, gardé tel quel.</strong> Les liens envoyés à tes clients (devis, factures, contrats, rapports de passage) restent comme ils sont. Les faire expirer ferait perdre à ton client le contrat qu'il a reçu ; les stocker autrement t'empêcherait de recopier le lien d'un devis déjà envoyé. Chaque lien est impossible à deviner, et n'ouvre que son propre document. Le lien du comptable était déjà protégé autrement, et il dure un exercice.</p>
 <h2 id="les-crédits-ia-du-mois-faits-le-26-octobre">Les crédits IA du mois, faits le 26 octobre</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p>Tes plafonds : essai 5 €, Artisan 10 €, Entreprise 20 €, Illimité 60 €, sans abonnement 10 €. Chaque appel à l'IA payante se compte (une estimation, toujours un peu au-dessus de la vraie facture) ; au plafond, il ne part plus, et la saisie à la main continue. Sur Abonnement, la barre de ta planche, en rouge une fois épuisée. Une dictée refusée le dit : « Crédits IA épuisés. Atlas IA reprend le 1er novembre. D'ici là, tout s'écrit à la main. »</p>

@@ -36136,3 +36136,13 @@ l'écran, plus le contour.
 
 **Reste ouvert** : la lecture des pièces importées note « illisible » une pièce refusée faute de crédits (`TODO.md`).
 
+## §510 : Un lien entre deux tables d'entreprise porte l'entreprise ; les liens des clients restent tels quels
+
+*26 octobre 2026, audit de sécurité (E10 et E12).*
+
+**E10, le constat.** Vingt-six clés étrangères reliaient deux tables d'entreprise par le seul identifiant (paiement et facture, acompte et devis, retour et chantier, photos…). Une clé étrangère se vérifie hors de la RLS : une écriture recevant l'identifiant d'une autre entreprise aurait été acceptée. Aucun code ne le fait aujourd'hui.
+
+**La règle** (migration 0149) : chaque table visée porte une unicité `(id, entreprise_id)`, et chaque lien une seconde clé, composite, à côté de l'ancienne qui garde son effacement en cascade ou à vide. **`NOT VALID`** : les lignes neuves sont vérifiées, les anciennes ne le sont pas encore, pour qu'un lien ancien illisible sur sa base ne bloque pas toutes les migrations suivantes (la panne du 13 septembre). Valider les anciennes se fera à part, mesuré sur sa base (`TODO.md`). `test-liens-dans-l-entreprise-db.ts` refuse l'écriture croisée sous `atlas_app`, et refuse toute future clé entre tables d'entreprise sans sa sœur composite (vu rouge en retirant une clé).
+
+**E12, refusé délibérément.** Les liens des devis, factures, contrats, rapports de passage et dates restent en clair et, pour contrat et rapport, sans expiration. Trois raisons. Stocker l'empreinte à la place du lien empêcherait le patron de recopier le lien d'un devis déjà envoyé (il le fait depuis l'écran). Ces liens ouvrent un document que le client a reçu et doit pouvoir relire comme un PDF : les faire expirer lui ferait perdre son contrat. Et la lecture d'un lien par l'application passe déjà par la RLS (`app.jeton_*`) : un lien ne se lit qu'avec le lien exact, 256 bits. Le lien du comptable, lui, est déjà stocké en empreinte (migration 0145), et son année de validité couvre un exercice.
+
