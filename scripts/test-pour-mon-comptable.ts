@@ -27,6 +27,7 @@ import {
   ecartSignale,
   justesDAbord,
   ticketsPerdusEnMots,
+  totalSigne,
   type LigneDuDossier,
 } from "../src/lib/pour-mon-comptable";
 import { CHARTES, contraste } from "../src/lib/chartes";
@@ -401,6 +402,14 @@ test("les pièces du même montant viennent d'abord, sans changer l'ordre des au
     justesDAbord(pieces, "1450.00", (p) => p.montant).map((p) => p.nom),
     ["B", "D", "A", "C"]
   );
+});
+
+test("un total nul s'écrit sans signe, les autres avec le leur", () => {
+  assert.equal(totalSigne(0, "sortie"), enEurosAttendu(0));
+  assert.equal(totalSigne(0, "entree"), enEurosAttendu(0));
+  assert.equal(totalSigne(145000, "sortie"), `−${enEurosAttendu(1450)}`);
+  assert.equal(totalSigne(86400, "entree"), `+${enEurosAttendu(864)}`);
+  assert.equal(totalSigne(6789, "sortie", "-"), `-${enEurosAttendu(67.89)}`);
 });
 
 console.log(`\n${passed} réussi(s), ${failed} échoué(s)`);

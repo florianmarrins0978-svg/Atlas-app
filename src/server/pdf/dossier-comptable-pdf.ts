@@ -13,6 +13,7 @@ import {
   jourEnMots,
   suiteDeLaPiece,
   ecartSignale,
+  totalSigne,
   type Categorie,
   type Ecart,
   type Motif,
@@ -225,6 +226,8 @@ function poserADroite(page: PDFPage, bouts: Bout[], xDroit: number, y: number, t
 const signe = (l: LignePourLeDossier) => `${l.sens === "entree" ? "+" : "-"}${enEuros(l.montant)}`;
 const centimes = (m: string) => Math.round(Number(m) * 100);
 const somme = (lignes: LignePourLeDossier[], sens: LignePourLeDossier["sens"]) => lignes.filter((l) => l.sens === sens).reduce((s, l) => s + centimes(l.montant), 0);
+/** Un total avec son signe, la règle des écrans (`totalSigne`), le trait d'union en plus. */
+const signeDuTotal = (c: number, sens: LignePourLeDossier["sens"]) => totalSigne(c, sens, "-");
 const pluriel = (n: number, un: string, plusieurs: string) => `${n} ${n > 1 ? plusieurs : un}`;
 /** « impôts, cotisations » : le mot d'un motif au milieu d'une phrase. */
 const enMinuscule = (t: string) => `${t.charAt(0).toLocaleLowerCase("fr-FR")}${t.slice(1)}`;
@@ -499,9 +502,9 @@ function moisDuReleve(c: Composition, m: string, lignes: LignePourLeDossier[], l
   const { p } = c;
   const bilan: Bout[] = [
     { t: "Sorties ", police: p.sans, teinte: ENCRE },
-    { t: `-${enEuros(somme(lignes, "sortie") / 100)}`, police: p.gras, teinte: SORTIE },
+    { t: signeDuTotal(somme(lignes, "sortie"), "sortie"), police: p.gras, teinte: SORTIE },
     { t: "     Entrées ", police: p.sans, teinte: ENCRE },
-    { t: `+${enEuros(somme(lignes, "entree") / 100)}`, police: p.gras, teinte: ENTREE },
+    { t: signeDuTotal(somme(lignes, "entree"), "entree"), police: p.gras, teinte: ENTREE },
     { t: `     ${pluriel(lignes.length, "ligne", "lignes")}`, police: p.sans, teinte: ENCRE },
   ];
   let pg = pageDuReleve(c, m, false, bilan);
@@ -646,8 +649,8 @@ function couverture(c: Composition, d: DonneesDossier, mois: string[], pageDuMoi
   const sorties = somme(d.lignes, "sortie");
   const perdus = d.lignes.filter((l) => l.ticketPerdu);
   const quatre: [string, string, Teinte][] = [
-    ["Sorties", `-${enEuros(sorties / 100)}`, SORTIE],
-    ["Entrées", `+${enEuros(somme(d.lignes, "entree") / 100)}`, ENTREE],
+    ["Sorties", signeDuTotal(sorties, "sortie"), SORTIE],
+    ["Entrées", signeDuTotal(somme(d.lignes, "entree"), "entree"), ENTREE],
     ["Lignes de banque", String(d.lignes.length), ENCRE],
     ["Tickets perdus", String(perdus.length), ENCRE],
   ];
@@ -698,8 +701,8 @@ function couverture(c: Composition, d: DonneesDossier, mois: string[], pageDuMoi
   tableau(c, flux, suite, "Mois par mois", [["Mois", MARGE, false], ["Sorties", xSorties, true], ["Entrées", xEntrees, true], ["Page", LARGEUR - MARGE, true]], mois, (m, pg, yb) => {
     const L = d.lignes.filter((l) => l.jour.startsWith(m));
     ecrire(pg, libellePeriode(m), MARGE, yb, p.sans, 9.5, ENCRE, 200);
-    ecrireADroite(pg, `-${enEuros(somme(L, "sortie") / 100)}`, xSorties, yb, p.sans, 9.5, SORTIE);
-    ecrireADroite(pg, `+${enEuros(somme(L, "entree") / 100)}`, xEntrees, yb, p.sans, 9.5, ENTREE);
+    ecrireADroite(pg, signeDuTotal(somme(L, "sortie"), "sortie"), xSorties, yb, p.sans, 9.5, SORTIE);
+    ecrireADroite(pg, signeDuTotal(somme(L, "entree"), "entree"), xEntrees, yb, p.sans, 9.5, ENTREE);
     c.apres.push(() => ecrireADroite(pg, String(numero(c, pageDuMois.get(m)!)), LARGEUR - MARGE, yb, p.gras, 9.5, LIEN));
     c.liens.push({ page: pg, x: MARGE, y: yb - 6, l: UTILE, h: 18, vers: () => ({ page: pageDuMois.get(m)!, y: HAUTEUR }) });
   });
@@ -770,7 +773,7 @@ function ticketsPerdus(c: Composition, perdus: LignePourLeDossier[], apres: Page
     flux.y -= RANG;
   };
   for (const l of perdus) rang(jourComplet(l.jour), l.libelle, signe(l), p.sans);
-  rang("", "Total", `-${enEuros(somme(perdus, "sortie") / 100)}`, p.gras);
+  rang("", "Total", signeDuTotal(somme(perdus, "sortie"), "sortie"), p.gras);
   if (flux.y - 18 - 13 * phrase.length < BAS) {
     flux.page = nouvellePage(c);
     flux.y = enTete(flux.page, p, "Les tickets perdus, suite", []) - 10;

@@ -221,8 +221,8 @@ export default function DossierEnCours({
                     {p.totalSorties === 0 && <i className="block h-full flex-1 rounded-full" style={{ backgroundColor: colors.lineSoft }} />}
                   </span>
                   <span className="mt-2 flex items-baseline gap-3.5 text-[15px] tabular-nums">
-                    <span style={{ color: colors.montantSortie }}>−{p.sorties}</span>
-                    <span style={{ color: colors.montantEntree }}>+{p.entrees}</span>
+                    <span style={{ color: colors.montantSortie }}>{p.sorties}</span>
+                    <span style={{ color: colors.montantEntree }}>{p.entrees}</span>
                     {p.perdus && (
                       <span className="ml-auto text-[14px]" style={{ color: colors.inkSoft }}>
                         {p.perdus}

@@ -309,6 +309,16 @@ export function resumerPeriodes(lignes: readonly LigneDuDossier[], d: Decoupage)
 }
 
 /**
+ * Un total avec son signe : « −1 450,00 € », « +864,00 € ». Rien ne sort ni
+ * n'entre, il s'écrit sans signe : « −0,00 € » ne veut rien dire. Le PDF passe
+ * son trait d'union, que ses polices savent écrire (`moins`).
+ */
+export function totalSigne(centimes: number, sens: Sens, moins = "−"): string {
+  if (centimes === 0) return enEuros(0);
+  return `${sens === "entree" ? "+" : moins}${enEuros(centimes / 100)}`;
+}
+
+/**
  * La phrase d'état d'une période, celle de la planche. Les tickets perdus se
  * disent à part, sous la barre (`ticketsPerdusEnMots`) : collés à l'état, ils
  * allongeaient la ligne au point de la faire passer sous le nom du mois.

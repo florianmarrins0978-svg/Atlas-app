@@ -2,7 +2,6 @@ import { after } from "next/server";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import BoutonAssistant from "@/components/atlas/BoutonAssistant";
 import { colors, font } from "@/lib/design-tokens";
-import { enEuros } from "@/lib/euros";
 import { jourIso, jourLisible } from "@/lib/jour";
 import {
   categorieDeLaLigne,
@@ -11,6 +10,7 @@ import {
   libellePeriode,
   resumerPeriodes,
   ticketsPerdusEnMots,
+  totalSigne,
   type Decoupage,
 } from "@/lib/pour-mon-comptable";
 import { getCurrentCtx } from "@/server/session-ctx";
@@ -80,8 +80,8 @@ export default async function PageDossierEnCours() {
           etat: etatDeLaPeriode(r),
           manque: r.aJustifier > 0,
           perdus: ticketsPerdusEnMots(r.ticketsPerdus),
-          sorties: enEuros(r.sorties / 100),
-          entrees: enEuros(r.entrees / 100),
+          sorties: totalSigne(r.sorties, "sortie"),
+          entrees: totalSigne(r.entrees, "entree"),
           parCategorie: r.parCategorie,
           totalSorties: r.sorties,
         })
