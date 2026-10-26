@@ -34,8 +34,9 @@
 /* La barre. Elle garde sa place et son titre dans les trois états : il
    reconnaît son écran par la position de ce qu'il lit, et seul ce qui change
    de sens change de couleur. Vert tant que tout va ; ambre quand il en reste
-   peu ; épuisé, toute la plage passe à l'ambre, comme l'essai fini. */
-.credits { padding: 16px 18px; transition: background-color 260ms var(--courbe); }
+   peu ; épuisé, la barre pleine et le chiffre en ambre, sans fond de couleur
+   autour : sa demande du 26 octobre, « enlève l'encadré marron ». */
+.credits { padding: 16px 18px; }
 .credits-tete { display: flex; align-items: center; gap: 14px; }
 .credits .pastille-ico { width: 52px; height: 52px; border-radius: 14px; }
 .credits-titre { flex: 1; min-width: 0; font: 400 21px/1.2 var(--serif); }
@@ -51,9 +52,6 @@
 .ecran[data-etat="normal"] .jauge-plein { width: 42%; }
 .ecran[data-etat="presque"] .jauge-plein { width: 88%; background: var(--atlas-carteAmbreTexte); }
 .ecran[data-etat="presque"] .credits-chiffre { color: var(--atlas-carteAmbreTexte); }
-.ecran[data-etat="epuise"] .credits { background: var(--atlas-carteAmbreFond); }
-.ecran[data-etat="epuise"] .credits .pastille-ico { background: color-mix(in srgb, var(--atlas-carteAmbreTexte) 16%, transparent); }
-.ecran[data-etat="epuise"] .jauge { background: color-mix(in srgb, var(--atlas-carteAmbreTexte) 18%, transparent); }
 .ecran[data-etat="epuise"] .jauge-plein { width: 100%; background: var(--atlas-carteAmbreTexte); }
 .ecran[data-etat="epuise"] .credits-chiffre { color: var(--atlas-carteAmbreTexte); }
 .ecran[data-etat="epuise"] .credits-detail { color: var(--atlas-ink); }
@@ -274,7 +272,7 @@
       <li>Sous « Votre abonnement », une plage dit la part des <b>crédits IA du mois</b> déjà utilisée : un pourcentage et une barre, aucun euro.</li>
       <li><b>Normal</b> : la barre est verte, et la ligne dit quand elle repart à zéro.</li>
       <li><b>Presque épuisé</b> : la barre et le chiffre passent à l'ambre, et la ligne le dit en mots : « Il en reste peu ».</li>
-      <li><b>Épuisé</b> : toute la plage passe à l'ambre, comme l'essai fini. Le titre devient « Crédits IA épuisés », et la ligne dit ce qui reste : Atlas IA reprend le 1<sup>er</sup> du mois suivant, d'ici là tout s'écrit à la main.</li>
+      <li><b>Épuisé</b> : la barre est pleine, le chiffre et le symbole pause en ambre, sans encadré de couleur autour (votre demande du 26 octobre). Le titre devient « Crédits IA épuisés », et la ligne dit ce qui reste : Atlas IA reprend le 1<sup>er</sup> du mois suivant, d'ici là tout s'écrit à la main.</li>
       <li>Le titre et la barre gardent leur place dans les trois états : seul ce qui change de sens change de couleur.</li>
       <li>Aucun bouton sur la plage : rien ne s'y achète, rien ne s'y règle.</li>
     </ul>
