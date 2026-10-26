@@ -269,7 +269,14 @@ export function PastilleEquipe({
       data-atlas="equipe"
       data-vide={vide ? "1" : "0"}
       onClick={onClick}
-      className="inline-flex min-h-[44px] flex-shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap border-0 bg-transparent px-0 text-[15px] font-semibold"
+      // **Le « + » au bord droit — sa planche du 25 octobre 2026**, et sa
+      // demande du 26 : *« mets-le comme tu l'avais disposé sur la planche »*.
+      // Collé aux noms, il se lisait comme un mot de plus ; au bord, il tombe
+      // dans la colonne de Supprimer, juste dessous. Toute la ligne reste un
+      // seul bouton : le doigt n'a pas à viser le signe.
+      className={`inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 whitespace-nowrap border-0 bg-transparent px-0 text-[15px] font-semibold ${
+        avecPlus && !vide ? "min-w-0 flex-1" : "flex-shrink-0"
+      }`}
       style={{ color: vide ? colors.or : colors.ink, WebkitTapHighlightColor: "transparent" }}
     >
       {vide ? (
@@ -284,7 +291,7 @@ export function PastilleEquipe({
           <TetesQuiPartent tetes={tetes} />
           {libelle}
           {avecPlus && (
-            <span className="text-[17px] leading-none" style={{ color: colors.or }} aria-hidden="true">
+            <span className="ml-auto text-[24px] font-normal leading-none" style={{ color: colors.or }} aria-hidden="true">
               +
             </span>
           )}
