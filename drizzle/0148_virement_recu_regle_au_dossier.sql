@@ -20,9 +20,10 @@
 -- les lignes sans regarder la RLS (`.claude/rules/migrations.md`) : ce qui est
 -- vérifié ci-dessous l'est donc pour de bon, sur la base habitée.
 --
--- **Pourquoi elles ne peuvent pas échouer sur une base habitée** : chaque
--- contrainte nouvelle accepte tout ce que l'ancienne acceptait. La cohérence
--- ajoute une condition sur `piece_cle`, colonne née ici, donc vide partout.
+-- **Pourquoi elles ne peuvent pas échouer sur une base habitée** : la
+-- justification et le motif acceptent tout ce qu'ils acceptaient ; la
+-- cohérence, plus stricte, ne juge que les écritures nouvelles (NOT VALID,
+-- ci-dessous). Éprouvé par `scripts/test-migration-0148-base-habitee.ts`.
 
 ALTER TABLE "mouvements_bancaires"
   -- La facture faite hors d'Atlas : son fichier dans le stockage, sa forme, et
@@ -51,12 +52,25 @@ ALTER TABLE "mouvements_bancaires"
 
 -- Ce que dit la justification, la ligne le porte : une facture hors d'Atlas
 -- sans fichier serait une ligne qui se croit justifiée et ne montre rien au
--- comptable. Le reste de la règle est celui de 0143, inchangé.
+-- comptable.
+--
+-- **Le trou de 0143, refermé ici.** Sa dernière branche, `"justification" IN
+-- (…)`, vaut INCONNU quand la justification est vide ; et une contrainte qui
+-- vaut inconnu PASSE. Une ligne « à justifier » qui portait un ticket, une
+-- facture ou un motif entrait donc sans être refusée (relevé le 26 octobre 2026
+-- par `test-migration-0148-base-habitee.ts`). Chaque branche se dit désormais
+-- vraie ou fausse, jamais inconnue (`IS NOT DISTINCT FROM`, `IS NOT NULL`).
+--
+-- **NOT VALID, et c'est délibéré.** Plus stricte que celle qu'elle remplace,
+-- elle pourrait trouver sur une base habitée une ligne ancienne qui ne la tient
+-- pas, et la migration échouerait : la panne de 0087. NOT VALID la fait tenir
+-- pour toute écriture NOUVELLE, sans juger les lignes d'hier ; elle se valide
+-- plus tard, une fois ces lignes regardées (`TODO.md`).
 ALTER TABLE "mouvements_bancaires"
   DROP CONSTRAINT IF EXISTS "mouvements_bancaires_justification_coherente",
   ADD CONSTRAINT "mouvements_bancaires_justification_coherente" CHECK (
     ("justification" IS NULL AND "achat_id" IS NULL AND "facture_recue_id" IS NULL AND "motif" IS NULL AND "piece_cle" IS NULL)
-    OR ("justification" = 'motif' AND "motif" IS NOT NULL)
-    OR ("justification" = 'facture_hors_atlas' AND "piece_cle" IS NOT NULL AND "piece_nature" IS NOT NULL)
-    OR ("justification" IN ('ticket', 'facture', 'ticket_perdu'))
-  );
+    OR ("justification" IS NOT DISTINCT FROM 'motif' AND "motif" IS NOT NULL)
+    OR ("justification" IS NOT DISTINCT FROM 'facture_hors_atlas' AND "piece_cle" IS NOT NULL AND "piece_nature" IS NOT NULL)
+    OR ("justification" IS NOT NULL AND "justification" IN ('ticket', 'facture', 'ticket_perdu'))
+  ) NOT VALID;
