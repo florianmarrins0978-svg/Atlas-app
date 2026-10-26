@@ -66,6 +66,8 @@
 .feuille-tete { display: flex; align-items: center; gap: 14px; margin: 6px 0 14px; }
 .feuille-tete .feuille-titre { margin: 0; }
 .plein-dit { margin: 14px 2px 0; font-size: 14.5px; color: var(--atlas-inkSoft); }
+/* Les bouts ronds des boutons de l'appli (rounded-full), sa demande du 26 octobre. */
+.bouton-pilule { border-radius: 999px; }
 </style>
 </head>
 <body class="pl">
@@ -98,7 +100,7 @@
             <div class="arbre" data-arbre></div>
           </div>
 
-          <div class="action-bas" data-si-etat="tous seul"><button class="bouton bouton-plein" type="button" data-ouvre="feuille-ajout"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter une personne</button></div>
+          <div class="action-bas" data-si-etat="tous seul"><button class="bouton bouton-plein bouton-pilule" type="button" data-ouvre="feuille-ajout"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter une personne</button></div>
 
           <nav class="barre" aria-label="Navigation principale" data-si-etat="tous seul">
             <div class="barre-onglets">
@@ -173,7 +175,7 @@
       <li>Le chef d'équipe porte ses gars dans sa plage, en pleine largeur ; ceux qui n'ont pas de chef ont la leur.</li>
       <li>Toucher quelqu'un ouvre une feuille qui monte, au lieu d'une carte qui s'ouvre sous l'arbre : touchez Thomas, puis Lucas. Ce que vous y changez se range tout de suite dans l'arbre.</li>
       <li>Les gars d'un chef se cochent dans des cases dorées, à la taille du doigt.</li>
-      <li>Ajouter une personne devient le seul bouton plein, au-dessus de la barre.</li>
+      <li>Ajouter une personne devient le seul bouton plein, au-dessus de la barre, avec les bouts ronds de l'appli (sa demande du 26 octobre).</li>
     </ul>
     <h2>Ce qui ne bouge pas</h2>
     <ul class="garde">

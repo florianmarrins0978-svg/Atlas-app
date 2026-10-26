@@ -111,6 +111,8 @@
 .lecture .ico { display: block; width: 34px; height: 34px; margin: 0 auto 12px; color: var(--atlas-or); animation: tourne 1.4s linear infinite; }
 @keyframes tourne { to { transform: rotate(360deg); } }
 .bouton-alerte { background: var(--atlas-alerte); color: var(--sur-plein); }
+/* Les bouts ronds des boutons de l'appli (rounded-full), sa demande du 26 octobre. */
+.bouton-pilule { border-radius: 999px; }
 </style>
 </head>
 <body class="pl">
@@ -217,7 +219,7 @@
                 <p class="vide-texte">Ajoutez la carte grise : Atlas y lit la plaque, le modèle et le poids.</p>
               </div>
 
-              <div class="action-bas" data-si-etat="patron vide"><button class="bouton bouton-plein" type="button" data-ouvre="feuille-ajout" data-titre="Ajoutez la carte grise du véhicule" data-sous="Atlas y lit la plaque, le modèle et le poids."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter un véhicule</button></div>
+              <div class="action-bas" data-si-etat="patron vide"><button class="bouton bouton-plein bouton-pilule" type="button" data-ouvre="feuille-ajout" data-titre="Ajoutez la carte grise du véhicule" data-sous="Atlas y lit la plaque, le modèle et le poids."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter un véhicule</button></div>
             </div>
 
             <!-- La fiche d'un camion : elle se remplit selon la ligne touchée. -->
@@ -250,7 +252,7 @@
 
               <button class="retirer-vehicule touche" type="button" data-ouvre="feuille-retrait"><svg class="ico ico-p" aria-hidden="true"><use href="#i-croix"/></svg>Retirer ce véhicule</button>
 
-              <div class="action-bas"><button class="bouton bouton-plein" type="button" data-ouvre="feuille-ajout" data-titre="Ajoutez un document du véhicule" data-sous="Carte grise, assurance ou contrôle technique."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter un document</button></div>
+              <div class="action-bas"><button class="bouton bouton-plein bouton-pilule" type="button" data-ouvre="feuille-ajout" data-titre="Ajoutez un document du véhicule" data-sous="Carte grise, assurance ou contrôle technique."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter un document</button></div>
             </div>
 
           </div>
@@ -331,7 +333,7 @@
       <li>Touchez une ligne : sa fiche s'ouvre dans le même téléphone, le rond du haut ramène à la liste. À droite, l'écran d'aujourd'hui suit.</li>
       <li>Sur la fiche, la prochaine date se lit sur un carré, avec ce qui reste : « Plus que 10 jours », « Dépassé depuis 4 jours ».</li>
       <li>Les trois papiers sont toujours nommés : présent avec sa date et Voir, manquant en ambre avec Ajouter. La ligne « À ajouter : … » de la fiche s'y range.</li>
-      <li>Ajouter un véhicule et Ajouter un document deviennent le seul bouton plein, au-dessus de la barre.</li>
+      <li>Ajouter un véhicule et Ajouter un document deviennent le seul bouton plein, au-dessus de la barre, avec les bouts ronds de l'appli (sa demande du 26 octobre).</li>
       <li>Les titres de paquet en or comme sur le sommaire, les libellés des cases en toutes lettres.</li>
       <li>Sans véhicule, une phrase dit quoi faire : « Ajoutez la carte grise : Atlas y lit la plaque, le modèle et le poids. »</li>
       <li>Chez le salarié, Appeler l’assistance reste sous l'assurance, en vert clair au lieu de plein : il y en a un par camion.</li>
