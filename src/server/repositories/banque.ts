@@ -1,5 +1,6 @@
 import { and, asc, desc, eq, gte, lte } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
+import type { DbOrTx } from "../db/client";
 import { liaisonsBancaires, mouvementsBancaires, virementsRecus } from "../db/schema";
 import type { Ctx } from "./context";
 import { noterPaiementDans, retirerPaiementDans } from "./paiements-facture";
@@ -150,20 +151,65 @@ export async function confirmerVirement(
     const [v] = await tx.select().from(virementsRecus).where(eq(virementsRecus.id, virementId)).for("update");
     if (!v) return { ok: false as const, raison: "Ce virement est introuvable." };
     if (v.etat !== "nouveau") return { ok: false as const, raison: "Vous avez déjà répondu pour ce virement." };
+    return confirmerDans(tx, ctx, v, factureId, montant);
+  });
+}
 
-    const note = await noterPaiementDans(tx, ctx, factureId, {
-      date: v.jour,
-      montant,
-      moyen: "virement",
-      note: v.libelle ? `Virement reçu : ${v.libelle}`.slice(0, 200) : "Virement reçu",
-    });
-    if (!note.ok) return note;
+/** Le règlement et la réponse, dans une transaction DÉJÀ ouverte où le virement est verrouillé. */
+async function confirmerDans(
+  tx: DbOrTx,
+  ctx: Ctx,
+  v: typeof virementsRecus.$inferSelect,
+  factureId: string,
+  montant: string
+): Promise<ResultatReponse> {
+  const note = await noterPaiementDans(tx, ctx, factureId, {
+    date: v.jour,
+    montant,
+    moyen: "virement",
+    note: v.libelle ? `Virement reçu : ${v.libelle}`.slice(0, 200) : "Virement reçu",
+  });
+  if (!note.ok) return note;
+
+  await tx
+    .update(virementsRecus)
+    .set({ etat: "confirme", factureId, paiementId: note.paiementId ?? null, reponduAt: new Date() })
+    .where(eq(virementsRecus.id, v.id));
+  return { ok: true as const, paiementId: note.paiementId };
+}
+
+/**
+ * « C'est cette facture » : un virement reçu se règle depuis SA LIGNE du
+ * dossier, sans passer par l'accueil (sa remarque du 25 octobre 2026). L'accueil
+ * ne questionne que les virements qu'une facture d'Atlas explique au montant
+ * près ; un acompte, ou un virement arrivé hors de la fenêtre des questions,
+ * n'y apparaissait jamais, et le dossier ne s'arrêtait plus.
+ *
+ * **Une seule écriture pour les deux écrans** : le virement de l'accueil est
+ * retrouvé par la clé de la ligne, ou créé s'il n'existe pas encore. Confirmé
+ * ici, la question de l'accueil disparaît ; défait là-bas, la ligne revient.
+ * Un « non » donné sur l'accueil ne ferme pas la porte : il choisit ici sa
+ * facture quand même.
+ */
+export async function confirmerLaLigneRecue(
+  ctx: Ctx,
+  mouvementId: string,
+  factureId: string,
+  montant: string
+): Promise<ResultatReponse> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [m] = await tx.select().from(mouvementsBancaires).where(eq(mouvementsBancaires.id, mouvementId)).for("update");
+    if (!m || m.sens !== "entree") return { ok: false as const, raison: "Cette ligne n'existe plus." };
+    if (m.justification !== null) return { ok: false as const, raison: "Cette ligne est déjà justifiée." };
 
     await tx
-      .update(virementsRecus)
-      .set({ etat: "confirme", factureId, paiementId: note.paiementId ?? null, reponduAt: new Date() })
-      .where(eq(virementsRecus.id, virementId));
-    return { ok: true as const, paiementId: note.paiementId };
+      .insert(virementsRecus)
+      .values({ entrepriseId: ctx.entrepriseId, cle: m.cle, jour: m.jour, montant: m.montant, payeur: m.contrepartie, libelle: m.libelle })
+      .onConflictDoNothing({ target: [virementsRecus.entrepriseId, virementsRecus.cle] });
+    const [v] = await tx.select().from(virementsRecus).where(eq(virementsRecus.cle, m.cle)).for("update");
+    if (!v) return { ok: false as const, raison: "Ce virement est introuvable." };
+    if (v.etat === "confirme") return { ok: false as const, raison: "Ce virement paie déjà une facture." };
+    return confirmerDans(tx, ctx, v, factureId, montant);
   });
 }
 

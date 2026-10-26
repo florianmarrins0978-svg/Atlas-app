@@ -1,8 +1,12 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-29, branche `claude/batterie-commune-29-septembre`
-(neuf lots de six sessions, réunis pour une seule batterie), dernière migration
-`drizzle/0116_modele_de_fiche_d_office.sql`
+**Dernière mise à jour :** 2026-10-26, branche `claude/pour-mon-comptable-soigne`,
+dernière migration `drizzle/0148_virement_recu_regle_au_dossier.sql`
+
+---
+## POUR MON COMPTABLE SOIGNÉ, CODÉ (26 octobre 2026), PAS ENCORE SUR `main`
+
+Branche `claude/pour-mon-comptable-soigne`, d'après ses trois planches du 25 octobre (`appli/soignee/termines-comptable.html` en boutons arrondis, `comptable-dossier.html`, `comptable-verification.html`). Migration `drizzle/0148_virement_recu_regle_au_dossier.sql` (expand : trois colonnes, contraintes élargies, cohérence stricte NOT VALID). Écrans : `src/app/termines/comptable/` (`DossierEnCours.tsx`, `CarteARegarder.tsx`, `a-regarder.ts`, `ArretDuDossier.tsx`, `Icone.tsx`, le relevé, Mes dossiers, la route `piece/[ligne]`), la feuille du ticket (`src/app/termines/tva/FeuilleAchat.tsx`), la page du comptable (`src/app/comptable/[jeton]/`), le PDF (`src/server/pdf/dossier-comptable-pdf.ts`). Règles : `src/lib/pour-mon-comptable.ts` (motifs par sens, écart, signe), `src/lib/facture-hors-atlas-lue.ts`. **Reste** : la batterie (niveau 3), puis `main` ; valider la contrainte sur sa base (`TODO.md`). `ARCHITECTURE.md` §515, `docs/pour-mon-comptable-soigne.md`.
 
 ---
 ## TERMINÉS SOIGNÉ, CODÉ (25 octobre 2026)

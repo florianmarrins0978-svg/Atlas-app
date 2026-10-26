@@ -1,5 +1,6 @@
 import type { NatureAchat } from "./achat-tva";
 import { enCentimes } from "./rapprochement-bancaire";
+import { enEuros } from "./euros";
 import { jourIso } from "./jour";
 
 /**
@@ -22,18 +23,34 @@ import { jourIso } from "./jour";
  *   · `ticket_perdu` : le patron a validé la ligne sans pièce. Sa TVA ne se
  *     déduit pas, et l'écran l'a dit avant qu'il valide ;
  *   · `motif` : un virement qui n'appelle pas de facture (un salaire, un
- *     loyer, des cotisations…), dont il a dit la nature.
+ *     loyer, des cotisations, un remboursement reçu…), dont il a dit la nature ;
+ *   · `facture_hors_atlas` : un virement reçu qui paie une facture faite hors
+ *     d'Atlas, photographiée ou jointe en PDF (migration 0148).
  *
- * Une entrée n'en a pas besoin ici : elle se justifie par la facture d'Atlas
- * qu'il a confirmée sur l'accueil (`virements_recus`).
+ * Une entrée se justifie aussi par la facture d'Atlas qu'il a confirmée
+ * (`virements_recus`), sur l'accueil ou dans sa carte du dossier : celle-là
+ * ne s'écrit pas ici, elle se lit dans le virement confirmé.
  */
-export type Justification = "ticket" | "facture" | "ticket_perdu" | "motif";
+export type Justification = "ticket" | "facture" | "ticket_perdu" | "motif" | "facture_hors_atlas";
 
-/** Les natures d'un virement qui n'appelle pas de facture — ses mots, sur la planche. */
+export type Sens = "entree" | "sortie";
+
+/** Les natures d'un virement ENVOYÉ qui n'appelle pas de facture — ses mots, sur la planche. */
 export const MOTIFS_VIREMENT = ["fournisseur", "salaire", "loyer", "impots", "pret", "perso"] as const;
 export type MotifVirement = (typeof MOTIFS_VIREMENT)[number];
 
-export const LIBELLE_MOTIF: Record<MotifVirement, string> = {
+/**
+ * Les natures d'un virement REÇU qu'aucune facture d'Atlas n'explique. Ses
+ * choix du 25 octobre 2026 sur `appli/soignee/termines-comptable.html` : sans
+ * elles, l'accueil ne posait aucune question (`questionsDesVirements` ne garde
+ * que les virements qu'une facture explique) et le dossier ne s'arrêtait plus.
+ */
+export const MOTIFS_RECUS = ["remboursement", "perso", "pret", "aide", "entre_comptes"] as const;
+export type MotifRecu = (typeof MOTIFS_RECUS)[number];
+
+export type Motif = MotifVirement | MotifRecu;
+
+const LIBELLE_ENVOYE: Record<MotifVirement, string> = {
   fournisseur: "Un fournisseur",
   salaire: "Un salaire",
   loyer: "Un loyer",
@@ -42,8 +59,90 @@ export const LIBELLE_MOTIF: Record<MotifVirement, string> = {
   perso: "Pour moi",
 };
 
-export function estMotifVirement(v: unknown): v is MotifVirement {
-  return typeof v === "string" && (MOTIFS_VIREMENT as readonly string[]).includes(v);
+const LIBELLE_RECU: Record<MotifRecu, string> = {
+  remboursement: "Un remboursement",
+  perso: "Mon argent perso",
+  pret: "Un prêt",
+  aide: "Une aide, une subvention",
+  entre_comptes: "Entre mes comptes",
+};
+
+/** Les réponses qu'une ligne propose, selon qu'elle entre ou qu'elle sort. */
+export function motifsDuSens(sens: Sens): readonly Motif[] {
+  return sens === "entree" ? MOTIFS_RECUS : MOTIFS_VIREMENT;
+}
+
+/**
+ * Le mot d'une réponse. `perso` se dit « Pour moi » sur ce qui sort et « Mon
+ * argent perso » sur ce qui entre : la même valeur en base, deux gestes.
+ */
+export function libelleMotif(m: Motif, sens: Sens): string {
+  if (sens === "entree") return (LIBELLE_RECU as Record<string, string>)[m] ?? m;
+  return (LIBELLE_ENVOYE as Record<string, string>)[m] ?? m;
+}
+
+/** Une réponse permise pour ce sens. Un salaire ne s'écrit pas sur ce qui entre. */
+export function estMotif(v: unknown, sens: Sens): v is Motif {
+  return typeof v === "string" && (motifsDuSens(sens) as readonly string[]).includes(v);
+}
+
+// ─── Le montant de la pièce contre celui de la ligne ─────────────────────────
+
+/**
+ * Ce qu'une pièce dit du montant de sa ligne. **Au centime**, comme le Check
+ * up : 62,04 € ne justifie pas 62,40 €.
+ *
+ * `inconnu` quand l'un des deux ne se lit pas (un ticket dont la lecture n'a
+ * pas rendu de total) : ne pas savoir n'est pas un écart, et ne se signale pas
+ * comme tel.
+ */
+export type Ecart = { genre: "juste" } | { genre: "inconnu" } | { genre: "ecart"; ligne: number; piece: number };
+
+export function ecartDeMontant(ligne: string, piece: string | null): Ecart {
+  const l = enCentimes(ligne);
+  const p = piece === null ? null : enCentimes(piece);
+  if (l === null || p === null) return { genre: "inconnu" };
+  return l === p ? { genre: "juste" } : { genre: "ecart", ligne: l, piece: p };
+}
+
+const euros = (centimes: number) => enEuros(centimes / 100);
+
+/**
+ * L'écart en une phrase, sur la carte, avant qu'il joigne quand même. Sur ce
+ * qui entre, une facture plus grande que le virement est presque toujours un
+ * paiement en partie : la phrase le dit tel quel.
+ */
+export function ecartEnMots(e: { ligne: number; piece: number }, sens: Sens): string {
+  const diff = Math.abs(e.piece - e.ligne);
+  if (sens === "entree") {
+    return e.piece > e.ligne ? `Ce virement en paie une partie, il restera ${euros(diff)}.` : `Le virement dépasse la facture de ${euros(diff)}.`;
+  }
+  return e.piece < e.ligne ? `Il manque une pièce de ${euros(diff)}.` : `La pièce dépasse la ligne de ${euros(diff)}.`;
+}
+
+/**
+ * Ce qui suit le nom de la pièce, partout où elle s'écrit : le relevé, le
+ * dossier et la page du comptable. Une pièce jointe malgré l'écart le porte
+ * pour toujours, et c'est ce qui permet de la joindre quand même.
+ */
+export function suiteDeLaPiece(e: Ecart, sens: Sens): string {
+  if (e.genre !== "ecart") return "";
+  if (!ecartSignale(e, sens)) return ", payée en partie";
+  return ` de ${euros(e.piece)}, pas le montant`;
+}
+
+/**
+ * L'écart qui se signale comme tel. Une facture plus grande que le virement
+ * reçu qui la paie est un paiement en partie : il se dit, sans alerte.
+ */
+export function ecartSignale(e: Ecart, sens: Sens): boolean {
+  return e.genre === "ecart" && !(sens === "entree" && e.piece > e.ligne);
+}
+
+/** Les pièces du montant de la ligne d'abord : c'est presque toujours l'une d'elles. */
+export function justesDAbord<T>(pieces: readonly T[], ligne: string, montantDe: (p: T) => string | null): T[] {
+  const juste = (p: T) => ecartDeMontant(ligne, montantDe(p)).genre === "juste";
+  return [...pieces.filter(juste), ...pieces.filter((p) => !juste(p))];
 }
 
 // ─── La couleur d'une ligne ──────────────────────────────────────────────────
@@ -66,7 +165,7 @@ export function ressembleAUnVirement(libelle: string): boolean {
 }
 
 export type LignePourCategorie = {
-  sens: "entree" | "sortie";
+  sens: Sens;
   libelle: string;
   /** La nature du ticket relié, s'il y en a un et qu'elle est connue. */
   natureDuTicket: NatureAchat | null;
@@ -209,12 +308,29 @@ export function resumerPeriodes(lignes: readonly LigneDuDossier[], d: Decoupage)
   return [...parCle.values()].sort((a, b) => b.cle.localeCompare(a.cle));
 }
 
-/** La phrase d'état d'une période, celle de la planche. */
+/**
+ * Un total avec son signe : « −1 450,00 € », « +864,00 € ». Rien ne sort ni
+ * n'entre, il s'écrit sans signe : « −0,00 € » ne veut rien dire. Le PDF passe
+ * son trait d'union, que ses polices savent écrire (`moins`).
+ */
+export function totalSigne(centimes: number, sens: Sens, moins = "−"): string {
+  if (centimes === 0) return enEuros(0);
+  return `${sens === "entree" ? "+" : moins}${enEuros(centimes / 100)}`;
+}
+
+/**
+ * La phrase d'état d'une période, celle de la planche. Les tickets perdus se
+ * disent à part, sous la barre (`ticketsPerdusEnMots`) : collés à l'état, ils
+ * allongeaient la ligne au point de la faire passer sous le nom du mois.
+ */
 export function etatDeLaPeriode(r: Pick<ResumePeriode, "aJustifier" | "ticketsPerdus">): string {
-  if (r.aJustifier > 0) return `${r.aJustifier} sans ticket`;
-  if (r.ticketsPerdus === 1) return "Tout est justifié, 1 ticket perdu";
-  if (r.ticketsPerdus > 1) return `Tout est justifié, ${r.ticketsPerdus} tickets perdus`;
-  return "Tout est justifié";
+  return r.aJustifier > 0 ? `${r.aJustifier} sans ticket` : "Tout est justifié";
+}
+
+/** « 1 ticket perdu », « 3 tickets perdus », rien quand il n'y en a pas. */
+export function ticketsPerdusEnMots(n: number): string | null {
+  if (n <= 0) return null;
+  return n === 1 ? "1 ticket perdu" : `${n} tickets perdus`;
 }
 
 const MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];

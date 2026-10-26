@@ -1,7 +1,7 @@
 import { colors, font } from "@/lib/design-tokens";
 import { enEuros } from "@/lib/euros";
 import { ligneDuTotal } from "@/lib/ticket-imprime";
-import { LIBELLE_MOTIF, categorieDeLaLigne, jourComplet, jourEnMots } from "@/lib/pour-mon-comptable";
+import { libelleMotif, categorieDeLaLigne, ecartSignale, jourComplet, jourEnMots, suiteDeLaPiece } from "@/lib/pour-mon-comptable";
 import { dossierParJeton, type LignePourLeComptable } from "@/server/repositories/verification-comptable";
 import Verification, { type LigneAVerifier, type PieceAffichee } from "./Verification";
 import { jourIso } from "@/lib/jour";
@@ -15,10 +15,17 @@ export const metadata = { title: "Dossier justifié", robots: { index: false, fo
  * LA PAGE DU COMPTABLE — écran 7 de `appli/pour-mon-comptable.html`, ses choix
  * du 24 octobre 2026 : le montant à gauche, le justificatif qui s'ouvre d'un
  * appui (à droite sur un ordinateur, en plein écran sur un téléphone),
- * Valider, Rejeter et Suivant de la même largeur.
+ * Valider, Rejeter et Suivant de la même largeur. Refaite sur sa planche du
+ * 25 octobre (`appli/soignee/comptable-verification.html`).
  *
  * Elle ne décide de rien : ce qu'elle montre sort de `dossierParJeton`, la
  * lecture même du dossier du patron.
+ *
+ * **La pièce montrée est celle de la JUSTIFICATION d'abord**, la facture
+ * d'Atlas confirmée seulement quand rien d'autre ne justifie la ligne : c'est
+ * l'ordre dans lequel `lireLesLignes` compare les montants. Montrer la facture
+ * d'Atlas au-dessus de l'écart d'une autre pièce dirait au comptable que
+ * l'écart porte sur elle.
  */
 function piece(l: LignePourLeComptable): PieceAffichee {
   if (l.justification === "ticket" && l.ticket) {
@@ -44,18 +51,26 @@ function piece(l: LignePourLeComptable): PieceAffichee {
       original: l.factureRecue.nature === "tableur" ? null : l.factureRecue.nature,
     };
   }
-  if (l.factureEmise) return { genre: "emise", numero: l.factureEmise.numero };
+  if (l.justification === "facture_hors_atlas" && l.pieceJointe) {
+    // Un total illisible reste vide (`joindreFactureHorsAtlas`) : il s'écrit
+    // « non lu », jamais deviné.
+    return { genre: "hors_atlas", total: l.pieceJointe.total ? enEuros(l.pieceJointe.total) : null, original: l.pieceJointe.nature };
+  }
   if (l.justification === "ticket_perdu") return { genre: "perdu" };
-  if (l.justification === "motif" && l.motif) return { genre: "motif", libelle: LIBELLE_MOTIF[l.motif] };
+  if (l.justification === "motif" && l.motif) return { genre: "motif", libelle: libelleMotif(l.motif, l.sens) };
+  if (l.factureEmise) return { genre: "emise", numero: l.factureEmise.numero, total: enEuros(l.factureEmise.totalTtc) };
   return { genre: "aucune" };
 }
 
+/** Le mot du bouton de la liste. */
 function etiquette(p: PieceAffichee): string {
   switch (p.genre) {
     case "ticket":
       return "Ticket";
     case "facture":
       return "Facture";
+    case "hors_atlas":
+      return "Facture faite hors d’Atlas";
     case "emise":
       return `Facture ${p.numero}`;
     case "perdu":
@@ -65,6 +80,27 @@ function etiquette(p: PieceAffichee): string {
     case "aucune":
       return "Aucune pièce";
   }
+}
+
+/** Ce que le bouton ne dit pas du nom de la pièce : son fournisseur. */
+function complementDuNom(p: PieceAffichee): string {
+  return p.genre === "ticket" || p.genre === "facture" ? p.nom : "";
+}
+
+/**
+ * L'écart en deux longueurs. Sous la pièce ouverte, la phrase entière
+ * (« Facture Motoculture Ouest de 1 386,40 €, pas le montant ») ; sous le
+ * bouton de la liste, ce qui suit son mot (« Motoculture Ouest de… »,
+ * « payée en partie ») : « Facture F-2026-012 » redit dessous était du bruit.
+ */
+function ecartAffiche(p: PieceAffichee, suite: string, signale: boolean): LigneAVerifier["ecart"] {
+  if (!suite) return null;
+  const complement = complementDuNom(p);
+  return {
+    phrase: `${etiquette(p)}${complement ? ` ${complement}` : ""}${suite}`,
+    suite: `${complement}${suite}`.replace(/^[\s,]+/, ""),
+    signale,
+  };
 }
 
 export default async function PageDuComptable({ params }: { params: Promise<{ jeton: string }> }) {
@@ -89,6 +125,10 @@ export default async function PageDuComptable({ params }: { params: Promise<{ je
 
   const lignes: LigneAVerifier[] = dossier.lignes.map((l) => {
     const p = piece(l);
+    // La phrase et son signal sortent des règles du relevé et du dossier
+    // (`suiteDeLaPiece`, `ecartSignale`) : le comptable lit l'écart dans les
+    // mots où le patron l'a accepté, avant de valider.
+    const ecart = ecartAffiche(p, suiteDeLaPiece(l.ecart, l.sens), ecartSignale(l.ecart, l.sens));
     return {
       id: l.id,
       jour: l.jour,
@@ -100,6 +140,7 @@ export default async function PageDuComptable({ params }: { params: Promise<{ je
       categorie: categorieDeLaLigne({ sens: l.sens, libelle: l.libelle, natureDuTicket: l.ticket?.nature ?? null, justification: l.justification }),
       piece: p,
       etiquette: etiquette(p),
+      ecart,
       verification: l.verification,
     };
   });

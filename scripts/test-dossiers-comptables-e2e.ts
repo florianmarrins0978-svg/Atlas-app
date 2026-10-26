@@ -2,6 +2,7 @@ import assert from "node:assert";
 import { PDFDocument, StandardFonts } from "pdf-lib";
 import type { BrowserContext, Page } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
+import { allerALAnnee } from "./_choix-annee";
 import { pool } from "../src/server/db/client";
 import { ADRESSE } from "./_adresse";
 import { fichierDemandeALaVisionneuse } from "../src/lib/visionneuse-pdf";
@@ -110,10 +111,14 @@ async function main() {
 
   await test("tant qu'une ligne attend sa pièce, le dossier ne se range pas", async () => {
     await page.goto(`${BASE}/termines/comptable`, { waitUntil: "networkidle" });
-    await carte.locator('[data-atlas="arreter-mon-dossier"]').click();
-    await carte.locator('[data-atlas="date-debut"]').fill(hier);
+    // Le bouton le dit d'avance (planche du 25 octobre 2026) : il ne s'ouvre pas.
     // Le compte affiché vient de TOUT le dossier en cours : il en faut au moins un.
-    assert.match(await carte.innerText(), /\d+ lignes? attend(ent)? encore un justificatif/);
+    assert.match(await carte.innerText(), /Possible une fois (les \d+ lignes|la dernière ligne) justifiées?\./);
+    const bouton = carte.locator('[data-atlas="arreter-mon-dossier"]');
+    assert.equal(await bouton.getAttribute("aria-disabled"), "true");
+    // Il peut le toucher quand même : rien ne s'ouvre.
+    await bouton.click({ force: true });
+    assert.equal(await carte.locator('[data-atlas="date-debut"]').count(), 0);
     assert.equal(await carte.locator('[data-atlas="arreter-et-ranger"]').count(), 0);
   });
 
@@ -136,12 +141,12 @@ async function main() {
     const texte = await page.locator('[data-atlas="dossiers-ranges"]').innerText();
     assert.equal(await page.locator('[data-atlas="dossier-range"]').count(), 1);
     assert.match(texte, /Rangé le .*, gardé jusqu’au .* \d{4}, [\d,]+ (Ko|Mo)/);
-    assert.match(await page.locator("body").innerText(), /Atlas garde chaque dossier et son bilan dix ans, puis les efface\./);
+    assert.match(await page.locator("body").innerText(), /Gardés dix ans avec leur bilan, puis effacés\./);
   });
 
   await test("le dossier suivant part du lendemain, sans demander de début", async () => {
     await page.goto(`${BASE}/termines/comptable`, { waitUntil: "networkidle" });
-    assert.match(await carte.innerText(), /Dossier en cours, depuis le/);
+    assert.match(await page.locator("main, body").first().innerText(), /Dossier en cours depuis le/);
     await carte.locator('[data-atlas="arreter-mon-dossier"]').click();
     assert.equal(await carte.locator('[data-atlas="date-debut"]').count(), 0);
   });
@@ -183,7 +188,7 @@ async function main() {
     assert.equal((await page.request.get(`${BASE}${lien}`)).status(), 404);
   });
 
-  await test("le menu Année retrouve un dossier d'une autre année", async () => {
+  await test("les flèches de l'année retrouvent un dossier d'une autre année", async () => {
     const { rows: [d] } = await pool.query(`SELECT fichier_cle, empreinte, taille_octets FROM dossiers_comptables WHERE entreprise_id = $1`, [entreprise]);
     await pool.query(
       `INSERT INTO dossiers_comptables (entreprise_id, du, au, fichier_cle, taille_octets, empreinte, garde_jusqu_au, arrete_par)
@@ -192,7 +197,7 @@ async function main() {
     );
     await page.goto(`${BASE}/termines/comptable/dossiers`, { waitUntil: "networkidle" });
     assert.doesNotMatch(await page.locator('[data-atlas="dossiers-ranges"]').innerText(), /2024/);
-    await page.selectOption('[data-atlas="filtre-annee"]', "2024");
+    await allerALAnnee(page, 2024);
     assert.match(await page.locator('[data-atlas="dossiers-ranges"]').innerText(), /Du 1ᵉʳ janvier 2024 au 31 décembre 2024/);
   });
 

@@ -11,7 +11,7 @@ import {
   type EtatDeVerification,
   type VerdictDuComptable,
 } from "@/lib/pour-mon-comptable";
-import { lireLesLignes, type LigneDuReleve } from "./pour-mon-comptable";
+import { lireLesLignes, pieceDeLaLigne, type LigneDuReleve } from "./pour-mon-comptable";
 import type { Ctx } from "./context";
 
 /**
@@ -152,11 +152,7 @@ export async function pieceParJeton(
     if (!ouvert) return null;
     const ligne = (await lireLesLignes(tx, ouvert.dossier.du, ouvert.dossier.au)).find((l) => l.id === mouvementId);
     if (!ligne) return null;
-    if (ligne.justification === "ticket" && ligne.ticket?.photoCle) return { cle: ligne.ticket.photoCle, nature: "photo" };
-    if (ligne.justification === "facture" && ligne.factureRecue && ligne.factureRecue.nature !== "tableur") {
-      return { cle: ligne.factureRecue.fichierCle, nature: ligne.factureRecue.nature };
-    }
-    return null;
+    return pieceDeLaLigne(ligne);
   });
 }
 

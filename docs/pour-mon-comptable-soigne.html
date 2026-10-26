@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Pour mon comptable, soigné : ce qui est codé, et ce qui a été fait autrement</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="pour-mon-comptable-soigné--ce-qui-est-codé-et-ce-qui-a-été-fait-autrement">Pour mon comptable, soigné : ce qui est codé, et ce qui a été fait autrement</h1>
+<p><strong>Sa demande du 25 octobre 2026 au soir :</strong> <em>« Ok, dans ce cas, tu peux coder tout ça. N'oublie rien et ne lance pas de batterie. »</em> « Tout ça », ce sont ses trois planches du même jour :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Planche</th>
+<th>Adresse</th>
+</tr></thead><tbody>
+<tr>
+<td>L'écran Pour mon comptable, le relevé, Mes dossiers (boutons arrondis)</td>
+<td><code>appli/soignee/termines-comptable.html?forme=arrondi</code></td>
+</tr>
+<tr>
+<td>Le dossier PDF envoyé au comptable</td>
+<td><code>appli/soignee/comptable-dossier.html</code></td>
+</tr>
+<tr>
+<td>La page où le comptable valide ou rejette</td>
+<td><code>appli/soignee/comptable-verification.html</code></td>
+</tr>
+</tbody></table></div>
+<p><strong>État :</strong> codé sur la branche <code>claude/pour-mon-comptable-soigne</code>, <strong>pas encore sur <code>main</code></strong>. Le lot est de niveau 3 (une migration, de l'argent) : la batterie se joue avant de pousser, et il a demandé qu'elle ne parte pas ce soir.</p>
+<hr>
+<h2 id="1-les-deux-défauts-quil-a-signalés">1. Les deux défauts qu'il a signalés</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Son signalement</th>
+<th>Verdict</th>
+<th>Ce qui a été fait</th>
+<th>Le fichier</th>
+</tr></thead><tbody>
+<tr>
+<td><em>« Le dernier ticket, je peux pas le valider : la notification n'apparaît pas, je peux pas verrouiller mon dossier »</em></td>
+<td><strong>vrai</strong>, reproduit</td>
+<td>La carte d'un virement reçu se règle sur place : la facture d'Atlas qui attend (même payée en partie), une facture faite hors d'Atlas (photo ou PDF), ou l'une de ses cinq réponses (un remboursement, mon argent perso, un prêt, une aide ou une subvention, entre mes comptes).</td>
+<td><code>src/app/termines/comptable/CarteARegarder.tsx</code>, <code>src/server/repositories/banque.ts</code> (<code>confirmerLaLigneRecue</code>)</td>
+</tr>
+<tr>
+<td><em>« Je pouvais valider une facture qui n'était pas du montant »</em></td>
+<td><strong>vrai</strong>, lu dans le code</td>
+<td>Une pièce d'un autre montant ne se joint plus sans son accord : les deux montants s'affichent, puis « La joindre quand même » ou une autre pièce. L'écart reste écrit sur le relevé, dans le dossier et chez le comptable.</td>
+<td><code>src/server/repositories/pour-mon-comptable.ts</code> (<code>poser</code>, <code>refusDEcart</code>)</td>
+</tr>
+</tbody></table></div>
+<p><strong>La racine du premier</strong>, et pourquoi l'accueil ne pouvait rien : l'accueil ne pose une question que sur un virement qu'une facture d'Atlas explique au centime. Un acompte, un remboursement, un virement arrivé hors de la fenêtre des questions n'y apparaissait jamais. Le dossier, lui, le comptait comme « à justifier » : il ne pouvait plus s'arrêter.</p>
+<p><strong>Le contrôle du montant vaut partout où une pièce se joint</strong> : le ticket choisi parmi deux, le ticket photographié depuis sa ligne (vérifié AVANT d'être rangé, sans quoi un refus laissait un achat rangé et une ligne vide), la facture de fournisseur, la facture d'Atlas (contre ce qui reste à payer), la facture faite hors d'Atlas. « Payée en partie » se dit sans alerte : c'est le cas normal d'un acompte.</p>
+<hr>
+<h2 id="2-lécran-point-par-point">2. L'écran, point par point</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Sur la planche</th>
+<th>Codé</th>
+</tr></thead><tbody>
+<tr>
+<td>Le point en tête : combien attendent sur une plage rouge, ou « Tout est justifié » en vert, la banque dessous</td>
+<td>oui</td>
+</tr>
+<tr>
+<td>Check up seul bouton plein, collé en bas ; les boutons des cartes cernés</td>
+<td>oui</td>
+</tr>
+<tr>
+<td>Le nom et le montant en grand, ce qui manque en rouge avec son signe</td>
+<td>oui</td>
+</tr>
+<tr>
+<td>Sous chaque mois, ce qui sort en rouge et ce qui entre en vert, une barre plus épaisse</td>
+<td>oui</td>
+</tr>
+<tr>
+<td>« Arrêter mon dossier ici » après les mois, et qui dit d'avance pourquoi il attend</td>
+<td>oui</td>
+</tr>
+<tr>
+<td>Le relevé : les totaux en grand, un point par ligne, un signe par pièce, la pièce qui s'ouvre</td>
+<td>oui</td>
+</tr>
+<tr>
+<td>Le filtre « Sans ticket » renommé « À justifier »</td>
+<td>oui</td>
+</tr>
+<tr>
+<td>Sans banque, Check up disparaît et « Relier ma banque » devient le bouton plein</td>
+<td>oui</td>
+</tr>
+<tr>
+<td>Mes dossiers : l'année avec deux flèches, le bilan sous le nom, trois vrais boutons, le lien sans sa longue adresse</td>
+<td>oui</td>
+</tr>
+<tr>
+<td>Tous les boutons arrondis, comme dans l'application</td>
+<td>oui</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="3-le-dossier-pdf-point-par-point">3. Le dossier PDF, point par point</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Sur la planche</th>
+<th>Codé</th>
+</tr></thead><tbody>
+<tr>
+<td>La date d'une ligne n'est plus barrée par le trait du dessus</td>
+<td>oui</td>
+</tr>
+<tr>
+<td>La case de la pièce prend sa hauteur : plus de grands blancs</td>
+<td>oui</td>
+</tr>
+<tr>
+<td>Chaque mois commence sa page</td>
+<td>oui</td>
+</tr>
+<tr>
+<td>Une première page qui dit tout de suite que chaque ligne est justifiée, puis les chiffres, les mois, et les dépenses par catégorie avec leur part</td>
+<td>oui</td>
+</tr>
+<tr>
+<td>Des titres de colonnes : Date, Ligne de banque, Montant, Justificatif</td>
+<td>oui</td>
+</tr>
+<tr>
+<td>La couleur de la catégorie en point devant son nom</td>
+<td>oui</td>
+</tr>
+<tr>
+<td>« Voir la facture », « Voir la photo », et chaque photo du bout porte sa ligne de banque</td>
+<td>oui</td>
+</tr>
+<tr>
+<td>Les tickets perdus après le dernier mois, avec leur total</td>
+<td>oui, sous le dernier mois quand ils y tiennent, comme sur la planche</td>
+</tr>
+<tr>
+<td>La facture faite hors d'Atlas posée au bout, avec son lien aller et retour ; l'écart écrit sous la pièce</td>
+<td>oui</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="4-la-page-du-comptable-point-par-point">4. La page du comptable, point par point</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Sur la planche</th>
+<th>Codé</th>
+</tr></thead><tbody>
+<tr>
+<td>Un seul tableau : les montants tombent l'un sous l'autre, alignés à droite</td>
+<td>oui, mesuré à 1 280, 1 100, 1 024 et 390 de large</td>
+</tr>
+<tr>
+<td>Sur un téléphone, chaque ligne garde sa date ; Valider, Rejeter, Suivant collés en bas quand la pièce est ouverte</td>
+<td>oui, mesuré sur 390 × 664 et 360 × 640</td>
+</tr>
+<tr>
+<td>Sur un ordinateur, Rejeter ne tombe plus sous l'écran quand il écrit sa raison</td>
+<td>oui</td>
+</tr>
+<tr>
+<td>« Reconstitué par Atlas » et « Photo d'origine » écrits en onglets</td>
+<td>oui (« Facture d'origine » pour un PDF)</td>
+</tr>
+<tr>
+<td>Chaque mois dit où il en est, le haut compte tout le dossier</td>
+<td>oui</td>
+</tr>
+<tr>
+<td>Une ligne validée teintée de vert, une rejetée de rouge avec sa raison dessous</td>
+<td>oui</td>
+</tr>
+<tr>
+<td>Des icônes dessinées au lieu des caractères ✓ et ✕</td>
+<td>oui, les mêmes que l'écran du patron</td>
+</tr>
+<tr>
+<td>La facture faite hors d'Atlas, et l'écart montré AVANT qu'il valide</td>
+<td>oui</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="5-ce-qui-a-été-fait-autrement-et-pourquoi">5. Ce qui a été fait autrement, et pourquoi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li><strong>La phrase d'un écart est plus courte que sur la planche.</strong> La planche écrivait <em>« Elle attend 1 728,00 € : ce virement en paie une partie, il restera 864,00 € »</em> sous un encart qui montrait déjà les deux montants. L'écran dit <em>« Ce virement en paie une partie, il restera 864,00 € »</em> : le montant ne se répète pas (<code>CLAUDE.md</code> §3, le moins de mots).</li>
+<li><strong>Sans banque mais avec des lignes déjà lues</strong>, l'écran garde le point et le Check up, et la ligne de la banque dit « Aucune banque reliée » avec « Relier ma banque ». La planche ne montrait le cas sans banque que sans aucune ligne ; dans l'autre cas, le Check up a encore des tickets à relier, et son bilan doit pouvoir s'écrire.</li>
+<li><strong>Une facture d'Atlas émise APRÈS le virement n'est pas proposée</strong> dans la carte : le règlement serait refusé (<em>« ce règlement est daté d'avant la facture »</em>). La proposer serait proposer un refus.</li>
+<li><strong>Chez le comptable, la date reste « 02/10 »</strong>, comme aujourd'hui, au lieu de « 2 oct. » sur la planche : la ligne est plus étroite, et une troisième façon d'abréger les mois s'ajoutait aux deux qui existent.</li>
+<li><strong>Chez le comptable, une facture d'Atlas payée en partie montre son vrai total</strong> : la page affichait le montant du virement à la place, ce qui était faux dès qu'il ne payait qu'une partie.</li>
+<li><strong>La facture faite hors d'Atlas a son propre lecteur</strong>, qui ne rend que le total et le numéro. Le lecteur des factures de fournisseurs lisait des lignes d'articles d'un fournisseur qui écrit à l'artisan : pas la même pièce. Sans clé ou sans total lisible, l'écran le fait taper.</li>
+</ul>
+<h2 id="6-trouvé-en-route-et-refermé">6. Trouvé en route, et refermé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>La contrainte de cohérence de la migration 0143 ne refusait rien sur une ligne « à justifier ».</strong> Elle finissait par « la justification est l'une de celles-ci », ce qui vaut <em>inconnu</em> quand la justification est vide ; et une contrainte qui vaut inconnu passe. Une ligne à justifier qui portait un ticket ou un motif entrait donc sans refus. L'épreuve de 0148 sur une base habitée l'a montré dès son premier jet (<code>scripts/test-migration-0148-base-habitee.ts</code>).</p>
+<p>0148 la referme, <strong>sans risquer sa base</strong> : la nouvelle règle est posée pour toute écriture nouvelle, sans juger les lignes d'hier. Une ligne ancienne qui ne la tiendrait pas ne peut donc pas bloquer la migration, comme 0087 l'avait fait le 13 septembre. Elle se validera une fois sa base regardée.</p>
+<h2 id="7-ce-qui-a-été-éprouvé-sans-batterie">7. Ce qui a été éprouvé, sans batterie</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Suite</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td>Règles pures (<code>test-pour-mon-comptable.ts</code>)</td>
+<td>43 sur 43</td>
+</tr>
+<tr>
+<td>Lecture d'une facture hors d'Atlas (<code>test-facture-hors-atlas-lue.ts</code>)</td>
+<td>4 sur 4</td>
+</tr>
+<tr>
+<td>Le dossier PDF (<code>test-dossier-comptable-pdf.ts</code>)</td>
+<td>17 sur 17</td>
+</tr>
+<tr>
+<td>Base : pour mon comptable, banque, dossiers, vérification, mouvements, achats</td>
+<td>26, 12, 13, 12, 8, 16 : tout vert</td>
+</tr>
+<tr>
+<td>0148 sur une base habitée (<code>test-migration-0148-base-habitee.ts</code>)</td>
+<td>vert, après avoir rougi sur le trou de 0143</td>
+</tr>
+<tr>
+<td>Navigateur : pour mon comptable (dont le virement reçu réglé dans sa carte et l'écart montré avant de joindre)</td>
+<td>11 sur 11</td>
+</tr>
+<tr>
+<td>Navigateur : la page du comptable</td>
+<td>14 sur 14 (8 sur 14 contre l'ancienne page : les six règles nouvelles savent rougir)</td>
+</tr>
+<tr>
+<td>Navigateur : la photo du Check up</td>
+<td>4 sur 4</td>
+</tr>
+<tr>
+<td>Navigateur : les pages publiques, sans la barre d'Atlas</td>
+<td>vert</td>
+</tr>
+<tr>
+<td>Navigateur : Mes dossiers</td>
+<td>6 sur 7, voir ci-dessous</td>
+</tr>
+<tr>
+<td>Garde-fous : couches, code mort, tirets, flèches, pansements, chartes lisibles</td>
+<td>tous verts</td>
+</tr>
+</tbody></table></div>
+<p><strong>Le rouge de Mes dossiers ne vient pas du lot</strong> : sur ce poste, le navigateur des suites nomme « download » tout fichier tiré d'un blob, quel que soit le nom posé. Éprouvé sur une page nue, sans une ligne d'Atlas.</p>
+<p><strong>Le chemin entier a été joué</strong> dans un vrai navigateur : une facture photographiée depuis la carte d'un virement reçu, son total tapé (aucune clé d'IA ici), l'écart montré, jointe quand même, le dossier arrêté, son PDF ouvert avec la facture posée au bout.</p>
+<p><strong>Les écrans ont été regardés</strong>, état par état, à la largeur de son téléphone : deux défauts en sont sortis et sont corrigés (les titres de rubrique en serif, un « ? » seul à la ligne).</p>
+<h2 id="8-ce-qui-reste-ouvert">8. Ce qui reste ouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Point</th>
+<th>Qui</th>
+</tr></thead><tbody>
+<tr>
+<td>La batterie, puis <code>main</code></td>
+<td>à lancer quand il le dit</td>
+</tr>
+<tr>
+<td>La lecture du total d'une facture faite hors d'Atlas, avec la vraie clé</td>
+<td>à essayer sur son espace</td>
+</tr>
+<tr>
+<td>Valider la règle de cohérence sur sa base, une fois regardée</td>
+<td>une session, plus tard</td>
+</tr>
+<tr>
+<td>Une entrée rejetée par le comptable alors qu'elle était réglée par une facture d'Atlas : sa carte ne propose que les réponses</td>
+<td>à trancher s'il le rencontre</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>

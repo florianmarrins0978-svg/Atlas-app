@@ -1,10 +1,12 @@
 "use client";
 
-import { useMemo, useRef, useState, useTransition } from "react";
-import { colors, couleursDocument, font } from "@/lib/design-tokens";
+import { Fragment, useMemo, useState, useTransition, type ReactNode } from "react";
+import { colors, couleursDocument, font, surPlein, voile } from "@/lib/design-tokens";
 import { COULEUR_CATEGORIE, NOM_CATEGORIE } from "@/lib/couleurs-comptable";
 import { avancementDeLaVerification, libellePeriode, type Categorie, type EtatDeVerification, type VerdictDuComptable } from "@/lib/pour-mon-comptable";
+import { moisSeul } from "@/lib/termines-par-mois";
 import { poserVerdictAction } from "./actions";
+import Icone, { type NomIcone } from "@/components/atlas/IconeTrait";
 
 export type PieceAffichee =
   | {
@@ -20,7 +22,9 @@ export type PieceAffichee =
       totalSurUneLigne: boolean;
     }
   | { genre: "facture"; nom: string; detail: string; total: string | null; original: "photo" | "pdf" | null }
-  | { genre: "emise"; numero: string }
+  /** Un virement reçu qui paie une facture faite hors d'Atlas (migration 0148). */
+  | { genre: "hors_atlas"; total: string | null; original: "photo" | "pdf" }
+  | { genre: "emise"; numero: string; total: string }
   | { genre: "perdu" }
   | { genre: "motif"; libelle: string }
   | { genre: "aucune" };
@@ -36,6 +40,8 @@ export type LigneAVerifier = {
   categorie: Categorie;
   piece: PieceAffichee;
   etiquette: string;
+  /** Une pièce jointe malgré un autre montant : la phrase entière, ce qui suit le mot du bouton, et si elle s'alerte. */
+  ecart: { phrase: string; suite: string; signale: boolean } | null;
   verification: EtatDeVerification;
 };
 
@@ -49,7 +55,37 @@ function etatApres(avant: EtatDeVerification, verdict: VerdictDuComptable | null
   return { etat: "rejete", note: propre, avaitValide: avant.etat === "valide" || (avant.etat === "rejete" && avant.avaitValide) };
 }
 
-const bouton = "min-h-[46px] min-w-0 flex-1 basis-0 rounded-full px-2 text-center text-[14.5px] font-medium disabled:opacity-60";
+const ICONE_DE_LA_PIECE: Record<PieceAffichee["genre"], NomIcone | null> = {
+  ticket: "facture",
+  facture: "document",
+  hors_atlas: "document",
+  emise: "document",
+  motif: "banque",
+  perdu: "alerte",
+  aucune: null,
+};
+
+/** Valider, Rejeter, Suivant : la même largeur, son choix du 24 octobre. */
+const bouton = "min-h-[50px] min-w-0 flex-1 basis-0 rounded-full px-2 text-center text-[15.5px] font-semibold disabled:opacity-60";
+const creux = { boxShadow: `inset 0 0 0 1.5px ${colors.line}`, backgroundColor: colors.card, color: colors.ink };
+
+/**
+ * Entre 1024 et 1280 points, la pièce ouverte laisse 560 points à la liste :
+ * les ronds la feraient défiler de côté. Ils s'effacent, Valider et Rejeter
+ * sont dans le panneau. Au-delà, tout tient, comme sur la planche.
+ */
+const RONDS_SOUS_LE_PANNEAU = "lg:max-xl:hidden";
+
+/**
+ * La teinte d'une ligne : verte validée, rouge rejetée, et celle de la pièce
+ * ouverte par-dessus, pour qu'il retrouve sa place dans la liste.
+ */
+function fondDeLaLigne(l: LigneAVerifier, ouverte: boolean): string | undefined {
+  if (ouverte) return colors.rustTint;
+  if (l.verification.etat === "valide") return voile(colors.montantEntree, 0.07);
+  if (l.verification.etat === "rejete") return voile(colors.montantSortie, 0.08);
+  return undefined;
+}
 
 export default function Verification({
   jeton,
@@ -68,6 +104,9 @@ export default function Verification({
 }) {
   const [lignes, setLignes] = useState(depart);
   const mois = useMemo(() => [...new Set(depart.map((l) => l.jour.slice(0, 7)))], [depart]);
+  // Un exercice décalé court sur deux années : le mois seul ne dirait plus lequel.
+  const uneAnnee = new Set(mois.map((m) => m.slice(0, 4))).size <= 1;
+  const nomDuMois = (m: string) => (uneAnnee ? moisSeul(m) : libellePeriode(m).toLowerCase());
   const [moisChoisi, setMoisChoisi] = useState(mois[0] ?? "");
   const [ouvert, setOuvert] = useState<string | null>(null);
   const [demandeRouge, setDemandeRouge] = useState(false);
@@ -75,6 +114,7 @@ export default function Verification({
   const [refus, setRefus] = useState<string | null>(null);
   const [enCours, demarrer] = useTransition();
 
+  const tout = avancementDeLaVerification(lignes.map((l) => l.verification));
   const duMois = lignes.filter((l) => l.jour.startsWith(moisChoisi));
   const a = avancementDeLaVerification(duMois.map((l) => l.verification));
   const ligne = ouvert ? lignes.find((l) => l.id === ouvert) ?? null : null;
@@ -102,249 +142,364 @@ export default function Verification({
     });
   }
 
+  function demanderLaRaison(l: LigneAVerifier) {
+    setNote(l.verification.etat === "rejete" || l.verification.etat === "corrigee" ? l.verification.note ?? "" : "");
+    setDemandeRouge(true);
+  }
+
   /** Le rond de la liste : un second appui sur le même l'enlève, une erreur se défait. */
   function rond(l: LigneAVerifier, verdict: VerdictDuComptable) {
     if (l.verification.etat === verdict) return poser(l.id, null, null);
     if (verdict === "rejete") {
       ouvrir(l.id);
-      setNote(l.verification.etat === "rejete" || l.verification.etat === "corrigee" ? l.verification.note ?? "" : "");
-      setDemandeRouge(true);
+      demanderLaRaison(l);
       return;
     }
     poser(l.id, "valide", null);
   }
 
   return (
-    <div className="min-h-dvh" style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body }}>
-      <div className="mx-auto flex max-w-[1180px] items-start">
-        <main className="min-w-0 flex-1 px-4 pb-12 pt-6 md:px-6" data-atlas="verification-comptable">
-          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-            <h1 className="m-0 text-[26px] leading-[1.15]" style={{ fontFamily: font.display }}>
+    // La pièce se pose contre le bord droit de la fenêtre ; la liste garde sa
+    // largeur de lecture, centrée dans ce qui reste.
+    <div className="flex min-h-dvh items-start" style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body }}>
+      <main className="min-w-0 flex-1 px-4 pb-12 pt-5 md:px-6 lg:px-8 lg:pt-6" data-atlas="verification-comptable">
+        <div className="mx-auto max-w-[1116px]">
+          <div className="flex flex-col gap-1 md:flex-row md:items-baseline md:justify-between md:gap-4">
+            <h1 className="m-0 text-[26px] leading-[1.12] md:text-[28px]" style={{ fontFamily: font.display }}>
               {titre}
             </h1>
-            <span className="text-[10.5px] font-semibold uppercase tracking-[0.2em]" style={{ color: colors.orTexte }}>
+            <span className="text-[14px] md:whitespace-nowrap" style={{ color: colors.inkSoft }}>
               {envoye}
             </span>
           </div>
-          <p className="mt-1 text-[13.5px]" style={{ color: colors.inkSoft }}>
+          <p className="mt-1.5 text-[15px]" style={{ color: colors.inkSoft }}>
             {periode}
           </p>
 
-          <div className="mt-4">
-            <div className="flex justify-between text-[13px]" style={{ color: colors.inkSoft }}>
+          <div className="mt-[18px]">
+            <div className="flex flex-col gap-0.5 text-[14.5px] md:flex-row md:justify-between md:gap-3" style={{ color: colors.inkSoft }}>
               <span data-atlas="avancement">
-                <b className="font-medium" style={{ color: colors.ink }}>
-                  {a.verifiees} sur {a.total}
+                <b className="font-semibold" style={{ color: colors.ink }}>
+                  {tout.verifiees} sur {tout.total}
                 </b>{" "}
-                lignes vérifiées en {libellePeriode(moisChoisi).toLowerCase()}
+                lignes vérifiées
+                {mois.length > 1 && `, dont ${a.verifiees} sur ${a.total} en ${nomDuMois(moisChoisi)}`}
               </span>
-              {a.rejetees > 0 && <span style={{ color: colors.montantSortie }}>{a.rejetees} rejetée{a.rejetees > 1 ? "s" : ""}</span>}
+              {tout.rejetees > 0 && (
+                <span className="font-semibold" style={{ color: colors.montantSortie }}>
+                  {tout.rejetees} rejetée{tout.rejetees > 1 ? "s" : ""}
+                </span>
+              )}
             </div>
-            <div className="mt-2 flex h-1.5 overflow-hidden rounded-full" style={{ backgroundColor: colors.lineSoft }}>
-              <i style={{ width: `${a.total ? ((a.verifiees - a.rejetees) / a.total) * 100 : 0}%`, backgroundColor: colors.montantEntree }} />
-              <i style={{ width: `${a.total ? (a.rejetees / a.total) * 100 : 0}%`, backgroundColor: colors.montantSortie }} />
+            <div className="mt-2 flex h-2 overflow-hidden rounded-full" style={{ backgroundColor: colors.lineSoft }}>
+              <i className="transition-[width] duration-300" style={{ width: `${tout.total ? ((tout.verifiees - tout.rejetees) / tout.total) * 100 : 0}%`, backgroundColor: colors.montantEntree }} />
+              <i className="transition-[width] duration-300" style={{ width: `${tout.total ? (tout.rejetees / tout.total) * 100 : 0}%`, backgroundColor: colors.montantSortie }} />
             </div>
           </div>
 
-          <div className="mt-4 flex gap-1.5 overflow-x-auto pb-1" role="group" aria-label="Mois">
-            {mois.map((m) => (
-              <button
-                key={m}
-                type="button"
-                aria-pressed={m === moisChoisi}
-                onClick={() => {
-                  setMoisChoisi(m);
-                  setOuvert(null);
-                }}
-                className="min-h-[36px] flex-none rounded-full px-3 text-[13px]"
-                style={{ border: `1px solid ${m === moisChoisi ? colors.ink : colors.line}`, backgroundColor: colors.card, color: m === moisChoisi ? colors.ink : colors.muted }}
-              >
-                {libellePeriode(m)}
-              </button>
-            ))}
-          </div>
-
-          <ul className="mt-3" data-atlas="lignes-du-comptable">
-            {duMois.map((l) => (
-              <li
-                key={l.id}
-                className="grid grid-cols-[4px_1fr_auto] items-center gap-x-3 gap-y-2 py-3 md:grid-cols-[4px_52px_1fr_120px_110px_auto_auto]"
-                style={{ borderBottom: `1px solid ${colors.lineSoft}`, backgroundColor: l.id === ouvert ? colors.rustTint : undefined }}
-                data-atlas="ligne-du-comptable"
-              >
-                <span className="row-span-2 h-full rounded-sm md:row-span-1" style={{ backgroundColor: COULEUR_CATEGORIE[l.categorie] }} />
-                <span className="hidden text-[13px] md:block" style={{ color: colors.muted }}>
-                  {l.jourCourt}
-                </span>
-                <span className="min-w-0">
-                  <span className="block truncate text-[12.5px]" style={{ fontFamily: "ui-monospace, Consolas, monospace" }}>
-                    {l.libelle}
-                  </span>
-                  {(l.verification.etat === "rejete" || l.verification.etat === "corrigee") && l.verification.note && (
-                    <span className="mt-0.5 block text-[12px]" style={{ color: l.verification.etat === "rejete" ? colors.montantSortie : colors.muted }}>
-                      {l.verification.etat === "corrigee" ? `Corrigée depuis votre rejet : ${l.verification.note}` : l.verification.note}
-                    </span>
-                  )}
-                </span>
-                <span className="hidden text-[12px] md:block" style={{ color: COULEUR_CATEGORIE[l.categorie] }}>
-                  {NOM_CATEGORIE[l.categorie]}
-                </span>
-                <span className="text-right text-[15px] tabular-nums" style={{ fontFamily: font.display, color: l.sens === "entree" ? colors.montantEntree : colors.ink }}>
-                  {l.montant}
-                </span>
+          <div className="mt-[18px] flex gap-1.5 overflow-x-auto pb-0.5 [scrollbar-width:none]" role="group" aria-label="Mois">
+            {mois.map((m) => {
+              const am = avancementDeLaVerification(lignes.filter((l) => l.jour.startsWith(m)).map((l) => l.verification));
+              const choisi = m === moisChoisi;
+              const fini = am.total > 0 && am.verifiees === am.total;
+              return (
                 <button
+                  key={m}
                   type="button"
-                  onClick={() => ouvrir(l.id)}
-                  className="col-start-2 justify-self-start whitespace-nowrap rounded-full px-3 py-1.5 text-[12.5px] md:col-start-auto"
-                  style={{
-                    minHeight: 36,
-                    border: `1px ${l.piece.genre === "perdu" ? "dashed" : "solid"} ${colors.line}`,
-                    backgroundColor: colors.card,
-                    color: l.piece.genre === "perdu" ? colors.alert : colors.ink,
-                    fontStyle: l.piece.genre === "perdu" ? "italic" : undefined,
+                  aria-pressed={choisi}
+                  onClick={() => {
+                    setMoisChoisi(m);
+                    setOuvert(null);
                   }}
-                  data-atlas="ouvrir-justificatif"
+                  className="inline-flex min-h-[52px] flex-none flex-col items-center justify-center gap-px rounded-full px-5 text-[14.5px] font-semibold"
+                  style={{ boxShadow: `inset 0 0 0 ${choisi ? 2 : 1}px ${choisi ? colors.ink : colors.line}`, color: choisi ? colors.ink : colors.inkSoft }}
                 >
-                  {l.etiquette}
+                  <span className="capitalize">{nomDuMois(m)}</span>
+                  <span className="text-[13px] tabular-nums" style={fini ? { color: colors.montantEntree } : { fontWeight: 400 }}>
+                    {am.verifiees} sur {am.total}
+                  </span>
                 </button>
-                <span className={`flex justify-end gap-1.5 ${ouvert ? "md:hidden" : ""}`}>
-                  <button
-                    type="button"
-                    aria-label="Valider"
-                    aria-pressed={l.verification.etat === "valide"}
-                    onClick={() => rond(l, "valide")}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[17px] font-semibold"
-                    style={l.verification.etat === "valide" ? { backgroundColor: colors.montantEntree, color: colors.card } : { border: `1.5px solid ${colors.line}`, backgroundColor: colors.card, color: colors.muted }}
-                    data-atlas="rond-valider"
-                  >
-                    ✓
-                  </button>
-                  <button
-                    type="button"
-                    aria-label="Rejeter"
-                    aria-pressed={l.verification.etat === "rejete"}
-                    onClick={() => rond(l, "rejete")}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[17px] font-semibold"
-                    style={l.verification.etat === "rejete" ? { backgroundColor: colors.montantSortie, color: colors.card } : { border: `1.5px solid ${colors.line}`, backgroundColor: colors.card, color: colors.muted }}
-                    data-atlas="rond-rejeter"
-                  >
-                    ✕
-                  </button>
-                </span>
-              </li>
-            ))}
-          </ul>
+              );
+            })}
+          </div>
+
+          {/*
+            UN SEUL TABLEAU : chaque ligne était sa propre grille, et un montant
+            tombait plus à gauche quand le nom de sa pièce était plus long. Sur
+            un téléphone, les mêmes rangées se posent en blocs et gardent leur
+            date (`display` change, la structure non : une seule liste, une
+            seule fois les repères que les suites lisent).
+          */}
+          <div className="md:overflow-x-auto">
+            <table className="mt-4 block w-full border-collapse md:table" data-atlas="lignes-du-comptable">
+              <thead className="hidden md:table-header-group">
+                <tr>
+                  {(["Date", "Ligne de banque", "Montant", "Justificatif", "Vérification"] as const).map((t) => (
+                    <th
+                      key={t}
+                      scope="col"
+                      className={`px-2 pb-2 text-[13px] font-semibold first:pl-1 ${t === "Montant" ? "text-right" : t === "Vérification" ? `text-center ${ligne ? RONDS_SOUS_LE_PANNEAU : ""}` : "text-left"}`}
+                      style={{ color: colors.inkSoft, borderBottom: `1px solid ${colors.ink}` }}
+                    >
+                      {t}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="block md:table-row-group">
+                {duMois.map((l) => (
+                  <Rangee key={l.id} ligne={l} ouverte={l.id === ouvert} panneau={ligne !== null} ouvrir={() => ouvrir(l.id)} rond={(v) => rond(l, v)} />
+                ))}
+              </tbody>
+            </table>
+          </div>
           {refus && !ligne && (
             <p role="alert" className="mt-3 rounded-lg px-3 py-2 text-[13px]" style={{ backgroundColor: colors.carteRougeFond, color: colors.carteRougeTexte }}>
               {refus}
             </p>
           )}
-        </main>
+        </div>
+      </main>
 
-        {ligne && (
-          <aside
-            className="fixed inset-0 z-50 overflow-auto px-5 pb-8 pt-5 md:sticky md:top-0 md:z-auto md:max-h-dvh md:w-[400px] md:flex-none"
-            style={{ backgroundColor: colors.card, borderLeft: `1px solid ${colors.line}` }}
-            data-atlas="panneau-justificatif"
-          >
-            <button type="button" onClick={() => setOuvert(null)} className="min-h-[40px] text-[15px]" style={{ color: colors.inkSoft }}>
+      {ligne && (
+        // Trois étages : le haut, ce qui défile, et le bas où vivent les
+        // boutons. Valider, Rejeter et la raison ne quittent jamais l'écran,
+        // sur un téléphone comme sur un ordinateur.
+        <aside
+          className="fixed inset-0 z-50 flex flex-col lg:sticky lg:top-0 lg:z-auto lg:h-dvh lg:w-[400px] lg:flex-none"
+          style={{ backgroundColor: colors.card, boxShadow: `inset 1px 0 0 ${colors.line}` }}
+          aria-label="La pièce"
+          data-atlas="panneau-justificatif"
+        >
+          <div className="mx-auto flex w-full max-w-[560px] flex-none items-center justify-between pl-2.5 pr-4 pt-2 lg:pt-3">
+            <button type="button" onClick={() => setOuvert(null)} className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-2 text-[15px] font-semibold" style={{ color: colors.inkSoft }}>
+              <Icone nom="croix" />
               Fermer
             </button>
-            <div className="mt-1.5 rounded-xl px-3.5 py-3" style={{ backgroundColor: colors.cream }}>
-              <div className="text-[12.5px]" style={{ fontFamily: "ui-monospace, Consolas, monospace" }}>
-                {ligne.libelle}
+            <span className="text-[13.5px] tabular-nums" style={{ color: colors.inkSoft }}>
+              Ligne {index + 1} sur {duMois.length}
+            </span>
+          </div>
+
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            <div className="mx-auto w-full max-w-[560px] px-5 pb-5 pt-2">
+              <div className="rounded-xl px-4 py-3.5" style={{ backgroundColor: colors.cream }}>
+                <span className="block text-[15px] font-semibold [overflow-wrap:anywhere]">{ligne.libelle}</span>
+                <span className="mt-1 block text-[26px] leading-[1.1] tabular-nums" style={{ fontFamily: font.display, color: ligne.sens === "entree" ? colors.montantEntree : colors.montantSortie }}>
+                  {ligne.montant}
+                </span>
+                <span className="mt-1 block text-[13.5px]" style={{ color: colors.inkSoft }}>
+                  {ligne.jourLong} à la banque, {NOM_CATEGORIE[ligne.categorie].toLowerCase()}
+                </span>
               </div>
-              <div className="mt-1 text-[24px] tabular-nums" style={{ fontFamily: font.display, color: ligne.sens === "entree" ? colors.montantEntree : colors.ink }}>
-                {ligne.montant}
-              </div>
-              <div className="mt-0.5 text-[12px]" style={{ color: colors.muted }}>
-                {ligne.jourLong} à la banque, {NOM_CATEGORIE[ligne.categorie].toLowerCase()}
-              </div>
+
+              <Piece key={ligne.id} jeton={jeton} ligne={ligne} entreprise={entreprise} />
+
+              {ligne.ecart && (
+                <p className="mt-3.5 flex items-start gap-2 text-[14px] font-medium" style={{ color: ligne.ecart.signale ? colors.carteAmbreTexte : colors.inkSoft }} data-atlas="ecart-de-la-piece">
+                  {ligne.ecart.signale && <Icone nom="alerte" taille={18} className="mt-px" />}
+                  {ligne.ecart.phrase}
+                </p>
+              )}
+
+              {!demandeRouge && <Accord etat={ligne.verification} demandeRouge={false} />}
             </div>
+          </div>
 
-            <Piece jeton={jeton} ligne={ligne} entreprise={entreprise} />
-
-            <Accord etat={ligne.verification} demandeRouge={demandeRouge} />
-
-            {demandeRouge ? (
-              <>
-                <label className="mt-3.5 block text-[12.5px]" style={{ color: colors.muted }}>
-                  {ligne.verification.etat === "valide" ? "Expliquez ce changement" : "Justifier le rejet"}
-                  <textarea
-                    autoFocus
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    maxLength={1000}
-                    className="mt-1.5 block min-h-[70px] w-full rounded-[10px] px-3 py-2.5 text-[15px]"
-                    style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.cream, color: colors.ink }}
-                    data-atlas="raison-du-rejet"
-                  />
-                </label>
-                <div className="mt-4 flex gap-2">
+          <div className="flex-none" style={{ boxShadow: `inset 0 1px 0 ${colors.line}` }}>
+            <div className="mx-auto w-full max-w-[560px] px-5 pb-[max(16px,env(safe-area-inset-bottom))] pt-3">
+              {a.verifiees === a.total && a.total > 0 && (
+                <p className="mb-2.5 rounded-lg px-3 py-2.5 text-[14px]" style={{ backgroundColor: colors.carteVertFond, color: colors.carteVertTexte }} data-atlas="mois-verifie">
+                  <b className="font-bold">
+                    <span className="capitalize">{nomDuMois(moisChoisi)}</span> est vérifié.
+                  </b>{" "}
+                  {a.rejetees > 0 ? `${entreprise} reçoit vos rejets dans Atlas.` : "Tout est validé."}
+                </p>
+              )}
+              {demandeRouge ? (
+                <>
+                  <Accord etat={ligne.verification} demandeRouge />
+                  <label className="mb-2.5 mt-1 block text-[14px] font-semibold" style={{ color: colors.inkSoft }}>
+                    {ligne.verification.etat === "valide" ? "Expliquez ce changement" : "Justifier le rejet"}
+                    <textarea
+                      autoFocus
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                      maxLength={1000}
+                      className="mt-1.5 block min-h-[76px] w-full resize-none rounded-xl px-3 py-2.5 text-[15px] font-normal leading-[1.4] outline-none"
+                      style={{ boxShadow: `inset 0 0 0 1px ${colors.line}`, backgroundColor: colors.cream, color: colors.ink }}
+                      data-atlas="raison-du-rejet"
+                    />
+                  </label>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      disabled={enCours}
+                      onClick={() => poser(ligne.id, "rejete", note, () => setDemandeRouge(false))}
+                      className={bouton}
+                      style={{ backgroundColor: colors.montantSortie, color: surPlein }}
+                      data-atlas="confirmer-rejet"
+                    >
+                      Rejeter
+                    </button>
+                    <button type="button" onClick={() => setDemandeRouge(false)} className={bouton} style={creux}>
+                      Annuler
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="flex gap-2">
                   <button
                     type="button"
                     disabled={enCours}
-                    onClick={() => poser(ligne.id, "rejete", note, () => setDemandeRouge(false))}
+                    onClick={() => poser(ligne.id, "valide", null, () => suivante && ouvrir(suivante.id))}
                     className={bouton}
-                    style={{ backgroundColor: colors.montantSortie, color: colors.card }}
-                    data-atlas="confirmer-rejet"
+                    style={{ backgroundColor: colors.montantEntree, color: surPlein }}
+                    data-atlas="valider"
                   >
+                    Valider
+                  </button>
+                  <button type="button" onClick={() => demanderLaRaison(ligne)} className={bouton} style={{ backgroundColor: colors.montantSortie, color: surPlein }} data-atlas="rejeter">
                     Rejeter
                   </button>
-                  <button type="button" onClick={() => setDemandeRouge(false)} className={bouton} style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.card, color: colors.ink }}>
-                    Annuler
-                  </button>
+                  {suivante && (
+                    <button type="button" onClick={() => ouvrir(suivante.id)} className={bouton} style={creux} data-atlas="suivant">
+                      Suivant
+                    </button>
+                  )}
                 </div>
-              </>
-            ) : (
-              <div className="mt-4 flex gap-2">
-                <button
-                  type="button"
-                  disabled={enCours}
-                  onClick={() => poser(ligne.id, "valide", null, () => suivante && ouvrir(suivante.id))}
-                  className={bouton}
-                  style={{ backgroundColor: colors.montantEntree, color: colors.card }}
-                  data-atlas="valider"
-                >
-                  Valider
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setNote(ligne.verification.etat === "rejete" || ligne.verification.etat === "corrigee" ? ligne.verification.note ?? "" : "");
-                    setDemandeRouge(true);
-                  }}
-                  className={bouton}
-                  style={{ backgroundColor: colors.montantSortie, color: colors.card }}
-                  data-atlas="rejeter"
-                >
-                  Rejeter
-                </button>
-                {suivante && (
-                  <button type="button" onClick={() => ouvrir(suivante.id)} className={bouton} style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.card, color: colors.ink }} data-atlas="suivant">
-                    Suivant
-                  </button>
-                )}
-              </div>
-            )}
-            {refus && (
-              <p role="alert" className="mt-3 rounded-lg px-3 py-2 text-[13px]" style={{ backgroundColor: colors.carteRougeFond, color: colors.carteRougeTexte }}>
-                {refus}
-              </p>
-            )}
-            {a.verifiees === a.total && a.total > 0 && (
-              <p className="mt-4 rounded-xl px-4 py-3.5 text-[14px]" style={{ backgroundColor: colors.cream }} data-atlas="mois-verifie">
-                <b className="font-medium">{libellePeriode(moisChoisi)} est vérifié.</b>{" "}
-                {a.rejetees > 0 ? `${entreprise} reçoit vos rejets dans Atlas.` : "Tout est validé."}
-              </p>
-            )}
-          </aside>
-        )}
-      </div>
+              )}
+              {refus && (
+                <p role="alert" className="mt-2.5 rounded-lg px-3 py-2 text-[13px]" style={{ backgroundColor: colors.carteRougeFond, color: colors.carteRougeTexte }}>
+                  {refus}
+                </p>
+              )}
+            </div>
+          </div>
+        </aside>
+      )}
     </div>
   );
 }
 
+/**
+ * Une ligne du tableau. Sur un téléphone, la rangée devient une grille : la
+ * date, le libellé et le montant en haut, la catégorie et la raison d'un rejet
+ * dessous, puis la pièce et les deux ronds. La cellule du libellé s'y efface
+ * (`contents`) pour que sa catégorie et sa raison passent aussi sous le
+ * montant, comme sur la planche.
+ */
+function Rangee({
+  ligne: l,
+  ouverte,
+  panneau,
+  ouvrir,
+  rond,
+}: {
+  ligne: LigneAVerifier;
+  ouverte: boolean;
+  /** Une pièce est ouverte à côté : voir `RONDS_SOUS_LE_PANNEAU`. */
+  panneau: boolean;
+  ouvrir: () => void;
+  rond: (v: VerdictDuComptable) => void;
+}) {
+  const perdu = l.piece.genre === "perdu";
+  const icone = ICONE_DE_LA_PIECE[l.piece.genre];
+  const v = l.verification;
+  const cellule = "md:table-cell md:px-2 md:py-2.5 md:align-middle";
+  return (
+    <tr
+      className="grid grid-cols-[46px_minmax(0,1fr)_auto] items-start gap-x-2 py-3 md:table-row md:py-0"
+      style={{ backgroundColor: fondDeLaLigne(l, ouverte), borderBottom: `1px solid ${colors.line}` }}
+      data-atlas="ligne-du-comptable"
+    >
+      <td className={`col-start-1 row-start-1 pt-px text-[13.5px] tabular-nums md:pl-1 md:text-[14px] ${cellule}`} style={{ color: colors.inkSoft }} data-atlas="date-de-la-ligne">
+        {l.jourCourt}
+      </td>
+      <td className={`contents ${cellule}`}>
+        <span className="col-start-2 row-start-1 block min-w-0 break-words text-[14.5px] font-semibold">{l.libelle}</span>
+        <span className="col-start-2 col-end-4 row-start-2 mt-0.5 flex items-center gap-1.5 text-[13px]" style={{ color: colors.inkSoft }}>
+          <i className="h-2 w-2 flex-none rounded-full" style={{ backgroundColor: COULEUR_CATEGORIE[l.categorie] }} />
+          {NOM_CATEGORIE[l.categorie]}
+        </span>
+        {(v.etat === "rejete" || v.etat === "corrigee") && (
+          <span className="col-start-2 col-end-4 row-start-3 mt-1 block text-[13.5px]" style={{ color: v.etat === "rejete" ? colors.montantSortie : colors.inkSoft }}>
+            {v.etat === "rejete" ? "Rejetée" : "Corrigée depuis votre rejet"} : {v.note ?? "sans raison écrite"}
+          </span>
+        )}
+      </td>
+      <td
+        className={`col-start-3 row-start-1 whitespace-nowrap text-right text-[16.5px] leading-[1.2] tabular-nums ${cellule}`}
+        style={{ fontFamily: font.display, color: l.sens === "entree" ? colors.montantEntree : colors.montantSortie }}
+        data-atlas="montant-de-la-ligne"
+      >
+        {l.montant}
+      </td>
+      <td className={`col-start-2 row-start-4 mt-2 min-w-0 md:mt-0 ${cellule}`}>
+        <button
+          type="button"
+          onClick={ouvrir}
+          className="inline-flex min-h-[44px] max-w-full items-center gap-[7px] rounded-full py-1.5 pl-2.5 pr-3.5 text-left text-[14px] font-medium leading-tight md:whitespace-nowrap"
+          style={{
+            backgroundColor: colors.card,
+            boxShadow: `inset 0 0 0 1px ${perdu ? voile(colors.alert, 0.45) : colors.line}`,
+            color: perdu ? colors.alert : l.piece.genre === "aucune" ? colors.inkSoft : colors.ink,
+            fontStyle: perdu ? "italic" : undefined,
+          }}
+          data-atlas="ouvrir-justificatif"
+        >
+          {icone && (
+            <span className="inline-flex" style={{ color: perdu ? colors.alert : colors.or }}>
+              <Icone nom={icone} taille={18} />
+            </span>
+          )}
+          {/* Sur un petit téléphone le mot passe à la ligne, jamais au milieu
+              d'un numéro : « F-2026- » puis « 012 » ne se lit plus. */}
+          <span>
+            {l.etiquette.split(" ").map((mot, k) => (
+              <Fragment key={k}>
+                {k > 0 && " "}
+                <span className="whitespace-nowrap">{mot}</span>
+              </Fragment>
+            ))}
+          </span>
+        </button>
+        {l.ecart && (
+          <span className="mt-1 block max-w-[240px] text-[12.5px] leading-[1.35]" style={{ color: l.ecart.signale ? colors.carteAmbreTexte : colors.inkSoft }} data-atlas="ecart-de-la-piece">
+            {l.ecart.suite}
+          </span>
+        )}
+      </td>
+      <td className={`col-start-3 row-start-4 mt-2 justify-self-end md:mt-0 md:text-center ${cellule} ${panneau ? RONDS_SOUS_LE_PANNEAU : ""}`}>
+        <span className="inline-flex gap-1.5">
+          <Rond nom="coche" libelle="Valider" presse={v.etat === "valide"} plein={colors.montantEntree} onClick={() => rond("valide")} atlas="rond-valider" />
+          <Rond nom="croix" libelle="Rejeter" presse={v.etat === "rejete"} plein={colors.montantSortie} onClick={() => rond("rejete")} atlas="rond-rejeter" />
+        </span>
+      </td>
+    </tr>
+  );
+}
+
+function Rond({ nom, libelle, presse, plein, onClick, atlas }: { nom: NomIcone; libelle: string; presse: boolean; plein: string; onClick: () => void; atlas: string }) {
+  return (
+    <button
+      type="button"
+      aria-label={libelle}
+      aria-pressed={presse}
+      onClick={onClick}
+      className="grid h-11 w-11 place-items-center rounded-full"
+      style={presse ? { backgroundColor: plein, color: surPlein } : { boxShadow: `inset 0 0 0 1.5px ${colors.line}`, backgroundColor: colors.card, color: colors.inkSoft }}
+      data-atlas={atlas}
+    >
+      <Icone nom={nom} epaisseur={2.2} />
+    </button>
+  );
+}
+
+/**
+ * Où en est la ligne. Quand il change d'avis, « Vous l'aviez validée » vit en
+ * bas, au-dessus de la raison qu'on lui demande : c'est elle qu'il explique.
+ */
 function Accord({ etat, demandeRouge }: { etat: EtatDeVerification; demandeRouge: boolean }) {
   const texte =
     etat.etat === "valide"
@@ -358,61 +513,68 @@ function Accord({ etat, demandeRouge }: { etat: EtatDeVerification; demandeRouge
           : null;
   if (!texte) return null;
   return (
-    <p className="mt-2.5 text-[13px]" style={{ color: etat.etat === "valide" ? colors.montantEntree : etat.etat === "rejete" ? colors.montantSortie : colors.inkSoft }} data-atlas="accord">
+    <p
+      className={`text-[14.5px] font-semibold ${demandeRouge ? "mb-1.5" : "mt-3"}`}
+      style={{ color: etat.etat === "valide" ? colors.montantEntree : etat.etat === "rejete" ? colors.montantSortie : colors.inkSoft }}
+      data-atlas="accord"
+    >
       {texte}
     </p>
   );
 }
 
-/** La pièce reconstituée d'abord, la pièce d'origine en glissant : deux points dessous. */
+/**
+ * La pièce reconstituée d'abord, l'origine derrière un onglet nommé : deux
+ * points à glisser ne disaient pas qu'une photo attendait. L'origine reste
+ * montée, cachée, pour que l'onglet l'ouvre sans attendre.
+ */
 function Piece({ jeton, ligne, entreprise }: { jeton: string; ligne: LigneAVerifier; entreprise: string }) {
-  const pistes = useRef<HTMLDivElement>(null);
-  const [vue, setVue] = useState(0);
+  const [vue, setVue] = useState<"reconstituee" | "origine">("reconstituee");
   const p = ligne.piece;
-  const original = (p.genre === "ticket" || p.genre === "facture") && p.original ? p.original : null;
+  const original = (p.genre === "ticket" || p.genre === "facture" || p.genre === "hors_atlas") && p.original ? p.original : null;
   const adresse = `/comptable/${jeton}/piece/${ligne.id}`;
 
-  const reconstituee = <Reconstituee piece={p} entreprise={entreprise} montant={ligne.montant} />;
-  if (!original) return <div className="mt-4 flex justify-center">{reconstituee}</div>;
+  const reconstituee = <Reconstituee piece={p} entreprise={entreprise} />;
+  if (!original) return <div className="mt-3.5 flex justify-center">{reconstituee}</div>;
 
-  const aller = (k: number) => pistes.current?.scrollTo({ left: (pistes.current?.clientWidth ?? 0) * k, behavior: "smooth" });
+  const onglet = (cle: "reconstituee" | "origine", texte: string, atlas: string) => (
+    <button
+      type="button"
+      aria-pressed={vue === cle}
+      onClick={() => setVue(cle)}
+      className="min-h-[40px] min-w-0 flex-1 rounded-full px-2 text-[14px] font-semibold"
+      style={vue === cle ? { backgroundColor: colors.card, color: colors.ink, boxShadow: `0 1px 2px ${voile(colors.ink, 0.14)}` } : { color: colors.inkSoft }}
+      data-atlas={atlas}
+    >
+      {texte}
+    </button>
+  );
   return (
-    <div className="mt-3.5" data-atlas="carrousel">
-      <div
-        ref={pistes}
-        onScroll={(e) => setVue(Math.round(e.currentTarget.scrollLeft / Math.max(1, e.currentTarget.clientWidth)))}
-        className="flex snap-x snap-mandatory overflow-x-auto"
-        style={{ scrollbarWidth: "none" }}
-      >
-        <div className="flex flex-[0_0_100%] snap-center flex-col items-center">
-          <span className="mb-2.5 mt-1 text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: colors.muted }}>
-            Reconstitué par Atlas
-          </span>
-          {reconstituee}
-        </div>
-        <div className="flex flex-[0_0_100%] snap-center flex-col items-center">
-          <span className="mb-2.5 mt-1 text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: colors.muted }}>
-            {original === "pdf" ? "Facture d’origine" : "Photo d’origine"}
-          </span>
-          {original === "pdf" ? (
-            <a href={adresse} target="_blank" rel="noopener" className="text-[14px] font-medium" style={{ color: colors.rust }} data-atlas="original">
+    <>
+      <div role="group" aria-label="La pièce" className="mt-3.5 flex gap-[3px] rounded-full p-[3px]" style={{ backgroundColor: voile(colors.ink, 0.06) }} data-atlas="onglets-de-la-piece">
+        {onglet("reconstituee", "Reconstitué par Atlas", "onglet-reconstitue")}
+        {onglet("origine", original === "pdf" ? "Facture d’origine" : "Photo d’origine", "onglet-origine")}
+      </div>
+      <div className="mt-3.5 flex justify-center" hidden={vue !== "reconstituee"}>
+        {reconstituee}
+      </div>
+      <div className="mt-3.5" hidden={vue !== "origine"}>
+        {original === "pdf" ? (
+          <div className="flex justify-center rounded-xl px-4 py-4" style={{ boxShadow: `inset 0 0 0 1.5px ${colors.line}` }}>
+            <a href={adresse} target="_blank" rel="noopener" className="inline-flex min-h-[44px] items-center gap-1.5 text-[15px] font-semibold" style={{ color: colors.rust }} data-atlas="original">
+              <Icone nom="document" />
               Ouvrir la facture
             </a>
-          ) : (
-            // Une photo servie par la route du jeton : `next/image` la ferait
-            // passer par l'optimiseur, qui n'a pas le jeton.
+          </div>
+        ) : (
+          <div className="flex justify-center rounded-lg p-3" style={{ backgroundColor: voile(colors.ink, 0.08) }}>
+            {/* Une photo servie par la route du jeton : `next/image` la ferait
+                passer par l'optimiseur, qui n'a pas le jeton. */}
             <img src={adresse} alt="Pièce d’origine" className="max-h-[60dvh] max-w-full rounded" data-atlas="original" />
-          )}
-        </div>
+          </div>
+        )}
       </div>
-      <div className="mt-3 flex justify-center gap-2.5">
-        {[0, 1].map((k) => (
-          <button key={k} type="button" aria-label={k === 0 ? "Reconstitué" : "Origine"} aria-current={vue === k} onClick={() => aller(k)} className="inline-flex h-[22px] w-[22px] items-center justify-center">
-            <span className="block h-[9px] w-[9px] rounded-full" style={{ border: `1.5px solid ${colors.inkSoft}`, backgroundColor: vue === k ? colors.inkSoft : "transparent" }} />
-          </button>
-        ))}
-      </div>
-    </div>
+    </>
   );
 }
 
@@ -421,12 +583,33 @@ function Piece({ jeton, ligne, entreprise }: { jeton: string; ligne: LigneAVerif
  * que soit la charte, comme le PDF (`couleursDocument`). Le total est surligné
  * bleu gris, son choix du 24 octobre.
  */
-function Reconstituee({ piece: p, entreprise, montant }: { piece: PieceAffichee; entreprise: string; montant: string }) {
+function Reconstituee({ piece: p, entreprise }: { piece: PieceAffichee; entreprise: string }) {
   const papier = { backgroundColor: couleursDocument.papier, color: couleursDocument.encre, boxShadow: `0 8px 24px ${colors.line}` };
   const total = (libelle: string, valeur: string | null) => (
     <div className="mt-1 flex justify-between gap-2 rounded-[3px] px-1.5 py-1 font-bold" style={{ backgroundColor: couleursDocument.surligne }}>
       <span>{libelle}</span>
       <span>{valeur ?? "non lu"}</span>
+    </div>
+  );
+  const facture = (tete: ReactNode, sous: string | null, valeur: string | null, pied: string | null) => (
+    <div className="w-[300px] max-w-full px-4 py-4 text-[12px] leading-[1.5]" style={papier} data-atlas="reconstituee">
+      {tete}
+      {sous && (
+        <div className="mb-2.5 mt-1" style={{ color: couleursDocument.etiquette }}>
+          {sous}
+        </div>
+      )}
+      {total("Total TTC", valeur)}
+      {pied && (
+        <div className="mt-2" style={{ color: couleursDocument.etiquette }}>
+          {pied}
+        </div>
+      )}
+    </div>
+  );
+  const nom = (texte: string) => (
+    <div className="text-[14px] font-bold" style={{ fontFamily: font.display }}>
+      {texte}
     </div>
   );
   switch (p.genre) {
@@ -457,50 +640,36 @@ function Reconstituee({ piece: p, entreprise, montant }: { piece: PieceAffichee;
         </div>
       );
     case "facture":
-      return (
-        <div className="w-[300px] max-w-full px-4 py-4 text-[12px] leading-[1.5]" style={papier} data-atlas="reconstituee">
-          <div className="text-[14px] font-bold" style={{ fontFamily: font.display }}>
-            {p.nom}
-          </div>
-          <div className="mb-2.5 mt-1" style={{ color: couleursDocument.etiquette }}>
-            {p.detail}
-          </div>
-          {total("Total TTC", p.total)}
-          <div className="mt-2" style={{ color: couleursDocument.etiquette }}>
-            Client : {entreprise}
-          </div>
-        </div>
-      );
+      return facture(nom(p.nom), p.detail, p.total, `Client : ${entreprise}`);
+    case "hors_atlas":
+      // Son total a été lu sur la facture ou tapé par le patron : le papier
+      // ne dit que ce qui est sûr, l'original est à l'onglet d'à côté.
+      return facture(nom(entreprise), "Facture faite hors d’Atlas", p.total, null);
     case "emise":
-      return (
-        <div className="w-[300px] max-w-full px-4 py-4 text-[12px] leading-[1.5]" style={papier} data-atlas="reconstituee">
-          <div className="flex justify-between">
-            <span className="text-[14px] font-bold" style={{ fontFamily: font.display }}>
-              {entreprise}
-            </span>
-            <span>{p.numero}</span>
-          </div>
-          {total("Total TTC", montant.replace(/^\+/, ""))}
-          <div className="mt-2" style={{ color: couleursDocument.etiquette }}>
-            Facture émise par Atlas
-          </div>
-        </div>
+      return facture(
+        <div className="flex justify-between gap-2">
+          {nom(entreprise)}
+          <span>{p.numero}</span>
+        </div>,
+        null,
+        p.total,
+        "Facture émise par Atlas"
       );
     case "perdu":
       return (
-        <div className="rounded-xl px-4 py-4 text-[14px]" style={{ border: `1.5px dashed ${colors.line}`, color: colors.inkSoft }} data-atlas="reconstituee">
+        <div className="w-full rounded-xl px-4 py-4 text-[14.5px] leading-[1.45]" style={{ border: `1.5px dashed ${colors.line}`, color: colors.inkSoft }} data-atlas="reconstituee">
           Ticket perdu. La ligne a été validée avec cette mention, et sa TVA n’a pas été déduite.
         </div>
       );
     case "motif":
       return (
-        <div className="rounded-xl px-4 py-4 text-[14px]" style={{ border: `1px solid ${colors.line}`, color: colors.inkSoft }} data-atlas="reconstituee">
+        <div className="w-full rounded-xl px-4 py-4 text-[14.5px] leading-[1.45]" style={{ boxShadow: `inset 0 0 0 1.5px ${colors.line}`, color: colors.inkSoft }} data-atlas="reconstituee">
           Virement justifié par sa nature : {p.libelle.toLowerCase()}.
         </div>
       );
     case "aucune":
       return (
-        <div className="rounded-xl px-4 py-4 text-[14px]" style={{ border: `1.5px dashed ${colors.line}`, color: colors.inkSoft }} data-atlas="reconstituee">
+        <div className="w-full rounded-xl px-4 py-4 text-[14.5px] leading-[1.45]" style={{ border: `1.5px dashed ${colors.line}`, color: colors.inkSoft }} data-atlas="reconstituee">
           Aucune pièce jointe à cette ligne.
         </div>
       );

@@ -9,7 +9,9 @@ import { adressePourLeClient } from "@/lib/adresse-du-client";
 import { adresseDeLaVisionneuse } from "@/lib/visionneuse-pdf";
 import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
 import { ajouterBilanAction, envoyerAuComptableAction, retirerBilanAction } from "../actions";
-import { CarteARegarder, type ARegarder, type Facture } from "../DossierEnCours";
+import CarteARegarder from "../CarteARegarder";
+import type { ARegarder, Facture } from "../a-regarder";
+import Icone from "@/components/atlas/IconeTrait";
 
 export type DossierAffiche = {
   id: string;
@@ -23,7 +25,11 @@ export type DossierAffiche = {
   verification: { texte: string | null; rejets: ARegarder[] };
 };
 
-const classeLien = "inline-flex min-h-[40px] items-center pr-3 text-[13.5px] font-medium";
+const creux = "inline-flex min-h-[52px] w-full items-center justify-center gap-2.5 rounded-full px-5 text-[16px] font-medium disabled:opacity-60";
+const styleCreux = { boxShadow: `inset 0 0 0 1.5px ${colors.line}`, backgroundColor: colors.card, color: colors.ink };
+const texte = "min-h-[46px] w-full px-2.5 text-center text-[16px] font-medium disabled:opacity-60";
+/** Les trois gestes d'un dossier : de vrais boutons, l'icône sur le mot (planche du 25 octobre). */
+const geste = "flex min-h-[76px] flex-col items-center justify-center gap-1.5 rounded-[22px] px-1.5 py-2 text-center text-[14px] font-semibold leading-[1.2] disabled:opacity-60";
 
 /**
  * Le PDF d'un dossier : regardé dans la visionneuse d'Atlas (avec sa flèche),
@@ -84,22 +90,32 @@ export default function MesDossiers({ dossiers, factures }: { dossiers: DossierA
   const vues = useSyncExternalStore(sAbonnerAuxVues, vuesDuTelephone, () => AUCUNE);
 
   const aPrevenir = dossiers.filter((d) => d.echeance && !vues.includes(d.id));
+  // L'année se change comme le mois de Terminés : deux flèches d'or autour
+  // d'elle (sa demande du 25 octobre 2026, « changer l'année pour aller voir
+  // les bilans »). Les années vont de la plus récente à la plus ancienne.
+  const rang = annee === null ? -1 : annees.indexOf(annee);
+  const plusVieille = rang >= 0 ? annees[rang + 1] : undefined;
+  const plusRecente = rang > 0 ? annees[rang - 1] : undefined;
+  const deLAnnee = dossiers.filter((d) => d.annee === annee);
+  const bilans = deLAnnee.filter((d) => d.bilans.length > 0).length;
 
   return (
     <>
       {aPrevenir.map((d) => (
-        <article key={d.id} className="mx-6 mt-4 rounded-[18px] px-[18px] py-4" style={{ backgroundColor: colors.carteAmbreFond }} data-atlas="echeance-dossier">
-          <p className="m-0 text-[16px] leading-[1.3]" style={{ fontFamily: font.display, color: colors.ink }}>
+        <article key={d.id} className="mx-6 mt-5 rounded-[18px] px-[18px] py-4" style={{ backgroundColor: colors.carteAmbreFond }} data-atlas="echeance-dossier">
+          <p className="flex items-center gap-2 text-[14px] font-semibold" style={{ color: colors.carteAmbreTexte }}>
+            <i className="inline-block h-[7px] w-[7px] rounded-full" style={{ backgroundColor: "currentColor" }} />
+            Dix ans sont passés
+          </p>
+          <p className="mt-1.5 text-[18px] leading-[1.35]" style={{ fontFamily: font.display, color: colors.ink }}>
             {d.nom} et son bilan seront effacés le {d.echeance}.
           </p>
-          <p className="mt-1 text-[13.5px]" style={{ color: colors.inkSoft }}>
-            Dix ans sont passés. Téléchargez-les si vous voulez les garder.
-          </p>
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <BoutonTelechargerDocument fichier={pdfDuDossier(d.id)} nom={`Dossier justifié, ${d.nom}.pdf`} className="atlas-plein inline-flex min-h-[44px] items-center rounded-full px-5 text-[14px] font-medium" style={{ backgroundColor: colors.plein, color: colors.card }}>
+          <div className="mt-3.5 flex flex-col gap-0.5">
+            <BoutonTelechargerDocument fichier={pdfDuDossier(d.id)} nom={`Dossier justifié, ${d.nom}.pdf`} className={creux} style={{ ...styleCreux, backgroundColor: "transparent" }}>
+              <Icone nom="telecharger" taille={21} />
               Télécharger
             </BoutonTelechargerDocument>
-            <button type="button" onClick={() => vu(d.id)} className="min-h-[44px] px-2 text-[14px] font-medium" style={{ color: colors.inkSoft }}>
+            <button type="button" onClick={() => vu(d.id)} className={texte} style={{ color: colors.inkSoft }}>
               J’ai compris
             </button>
           </div>
@@ -107,7 +123,7 @@ export default function MesDossiers({ dossiers, factures }: { dossiers: DossierA
       ))}
 
       {dossiers.length === 0 ? (
-        <p className="mx-6 mt-6 text-[14px]" style={{ color: colors.muted }}>
+        <p className="mx-6 mt-6 text-[15px] leading-[1.45]" style={{ color: colors.inkSoft }}>
           Aucun dossier rangé pour l’instant. Il se range quand vous l’arrêtez, depuis le dossier en cours.{" "}
           <Link href="/termines/comptable" className="font-medium" style={{ color: colors.rust }}>
             Y aller
@@ -115,33 +131,28 @@ export default function MesDossiers({ dossiers, factures }: { dossiers: DossierA
         </p>
       ) : (
         <>
-          <div className="mx-6 mt-6 flex items-center justify-between gap-3">
-            <p className="m-0 text-[10.5px] font-semibold uppercase tracking-[0.2em]" style={{ color: colors.muted }}>
-              Rangés
-            </p>
-            <label className="flex items-center gap-2 text-[13px]" style={{ color: colors.inkSoft }}>
-              Année
-              <select
-                value={annee ?? ""}
-                onChange={(e) => setAnnee(Number(e.target.value))}
-                className="min-h-[40px] rounded-full px-3.5 text-[14px] font-medium"
-                style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.card, color: colors.ink }}
-                data-atlas="filtre-annee"
-              >
-                {annees.map((a) => (
-                  <option key={a} value={a}>
-                    {a}
-                  </option>
-                ))}
-              </select>
-            </label>
+          <h2 className="mx-6 mt-7 text-[13px] font-semibold uppercase tracking-[0.14em]" style={{ color: colors.inkSoft, fontFamily: font.body }}>
+            Rangés
+          </h2>
+          <div className="mx-6 mt-3 flex items-center justify-between gap-2 rounded-[18px] p-1.5" style={{ backgroundColor: colors.card }} data-atlas="choix-annee">
+            <button type="button" disabled={plusVieille === undefined} onClick={() => plusVieille !== undefined && setAnnee(plusVieille)} aria-label="Année d’avant" className="flex h-14 w-14 flex-none items-center justify-center rounded-full disabled:opacity-30" style={{ color: colors.or }} data-atlas="annee-d-avant">
+              <Icone nom="retour" taille={26} epaisseur={2} />
+            </button>
+            <span className="text-[32px] leading-none tabular-nums" style={{ fontFamily: font.display }} data-atlas="annee-choisie">
+              {annee}
+            </span>
+            <button type="button" disabled={plusRecente === undefined} onClick={() => plusRecente !== undefined && setAnnee(plusRecente)} aria-label="Année d’après" className="flex h-14 w-14 flex-none items-center justify-center rounded-full disabled:opacity-30" style={{ color: colors.or }} data-atlas="annee-d-apres">
+              <Icone nom="suivant" taille={26} epaisseur={2} />
+            </button>
           </div>
-          <ul className="mx-6 mt-2" data-atlas="dossiers-ranges">
-            {dossiers
-              .filter((d) => d.annee === annee)
-              .map((d) => (
-                <Dossier key={d.id} d={d} factures={factures} />
-              ))}
+          <p className="mx-6 mt-2.5 text-center text-[15px]" style={{ color: colors.inkSoft }}>
+            {deLAnnee.length > 1 ? `${deLAnnee.length} dossiers` : "1 dossier"},{" "}
+            {bilans === 0 ? "aucun bilan du comptable" : deLAnnee.length === 1 ? "son bilan du comptable" : bilans > 1 ? `${bilans} bilans du comptable` : "1 bilan du comptable"}
+          </p>
+          <ul className="mx-6" data-atlas="dossiers-ranges">
+            {deLAnnee.map((d, i) => (
+              <Dossier key={d.id} d={d} factures={factures} premier={i === 0} />
+            ))}
           </ul>
         </>
       )}
@@ -149,7 +160,7 @@ export default function MesDossiers({ dossiers, factures }: { dossiers: DossierA
   );
 }
 
-function Dossier({ d, factures }: { d: DossierAffiche; factures: Facture[] }) {
+function Dossier({ d, factures, premier }: { d: DossierAffiche; factures: Facture[]; premier: boolean }) {
   const router = useRouter();
   const [enCours, demarrer] = useTransition();
   const [ajout, setAjout] = useState(false);
@@ -205,97 +216,121 @@ function Dossier({ d, factures }: { d: DossierAffiche; factures: Facture[] }) {
   }
 
   return (
-    <li className="py-3.5" style={{ borderTop: `1px solid ${colors.lineSoft}` }} data-atlas="dossier-range">
-      <p className="m-0 text-[15px]">{d.nom}</p>
-      <p className="mt-0.5 text-[12.5px]" style={{ color: d.echeance ? colors.alert : colors.muted }}>
+    <li className="pb-5 pt-[18px]" style={premier ? undefined : { boxShadow: `inset 0 1px 0 ${colors.line}` }} data-atlas="dossier-range">
+      <p className="text-[20px] leading-[1.25]" style={{ fontFamily: font.display }}>
+        {d.nom}
+      </p>
+      <p className={`mt-1.5 text-[14.5px] leading-[1.45] ${d.echeance ? "font-semibold" : ""}`} style={{ color: d.echeance ? colors.alert : colors.inkSoft }}>
         {d.echeance ? `Sera effacé le ${d.echeance}` : d.detail}
       </p>
-      <div className="mt-1 flex flex-wrap">
-        <Link href={adresseDeLaVisionneuse(pdfDuDossier(d.id), { surtitre: "Dossier justifié", titre: d.nom })} className={classeLien} style={{ color: colors.rust }} data-atlas="ouvrir-dossier">
-          Ouvrir
-        </Link>
-        <BoutonTelechargerDocument fichier={pdfDuDossier(d.id)} nom={`Dossier justifié, ${d.nom}.pdf`} className={classeLien} style={{ color: colors.rust }} dataAtlas="telecharger-dossier">
-          Télécharger
-        </BoutonTelechargerDocument>
-        <button type="button" disabled={enCours} onClick={envoyer} className={classeLien} style={{ color: colors.rust }} data-atlas="envoyer-au-comptable">
-          Envoyer au comptable
-        </button>
-      </div>
-      {lien && (
-        <div className="mt-2 rounded-[12px] px-3.5 py-3" style={{ backgroundColor: colors.card }} data-atlas="lien-du-comptable">
-          <p className="m-0 break-all text-[12.5px]" style={{ color: colors.inkSoft, fontFamily: "ui-monospace, Consolas, monospace" }}>
-            {lien}
-          </p>
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <a
-              href={`mailto:?subject=${encodeURIComponent(`Dossier justifié, ${d.nom.toLowerCase()}`)}&body=${encodeURIComponent(`Bonjour,\n\nVoici mon dossier justifié, à vérifier ligne par ligne :\n${lien}\n\nBonne journée`)}`}
-              className="atlas-plein inline-flex min-h-[44px] items-center rounded-full px-5 text-[14px] font-medium"
-              style={{ backgroundColor: colors.plein, color: colors.card }}
-            >
-              Envoyer par e-mail
-            </a>
-            <button type="button" onClick={() => copier(lien)} className="min-h-[44px] px-2 text-[14px] font-medium" style={{ color: colors.inkSoft }} data-atlas="copier-lien">
-              {copie ? "Lien copié" : "Copier le lien"}
-            </button>
-          </div>
-        </div>
-      )}
-      {d.verification.texte && (
-        <p className="mt-1 text-[12.5px]" style={{ color: colors.muted }} data-atlas="verification-du-comptable">
-          {d.verification.texte}
-        </p>
-      )}
-      {d.verification.rejets.length > 0 && (
-        <div className="mt-2 flex flex-col gap-2" data-atlas="rejets-du-comptable">
-          {d.verification.rejets.map((a) => (
-            <CarteARegarder key={a.id} a={a} factures={factures} />
-          ))}
-        </div>
-      )}
 
       {d.bilans.map((b) => (
-        <div key={b.id} className="mt-2 flex items-center gap-3 rounded-[12px] px-3 py-2.5" style={{ backgroundColor: colors.rustTint }} data-atlas="bilan-range">
-          <span className="min-w-0 flex-1 text-[13px]" style={{ color: colors.inkSoft }}>
-            <b className="block font-medium" style={{ color: colors.ink }}>
+        <div key={b.id} className="mt-3 flex items-center gap-3 rounded-[14px] py-1 pl-4 pr-2" style={{ backgroundColor: colors.card }} data-atlas="bilan-range">
+          <span className="min-w-0 flex-1 py-2 text-[14px]" style={{ color: colors.inkSoft }}>
+            <b className="block text-[15px] font-semibold" style={{ color: colors.ink }}>
               Bilan du comptable
             </b>
             Ajouté le {b.ajoute}
           </span>
           {b.nature === "pdf" ? (
-            <Link href={adresseDeLaVisionneuse(`/termines/comptable/bilans/${b.id}/pdf`, { surtitre: "Bilan du comptable", titre: d.nom })} className="text-[13px] font-medium" style={{ color: colors.rust }} data-atlas="ouvrir-bilan">
+            <Link href={adresseDeLaVisionneuse(`/termines/comptable/bilans/${b.id}/pdf`, { surtitre: "Bilan du comptable", titre: d.nom })} className="flex min-h-[44px] items-center px-2 text-[15px] font-medium" style={{ color: colors.ink }} data-atlas="ouvrir-bilan">
               Ouvrir
             </Link>
           ) : (
-            <a href={`/termines/comptable/bilans/${b.id}/photo`} target="_blank" rel="noopener" className="text-[13px] font-medium" style={{ color: colors.rust }} data-atlas="ouvrir-bilan">
+            <a href={`/termines/comptable/bilans/${b.id}/photo`} target="_blank" rel="noopener" className="flex min-h-[44px] items-center px-2 text-[15px] font-medium" style={{ color: colors.ink }} data-atlas="ouvrir-bilan">
               Ouvrir
             </a>
           )}
-          <button type="button" disabled={enCours} onClick={() => retirer(b.id)} className="min-h-[40px] text-[13px]" style={{ color: colors.inkSoft }}>
+          <button type="button" disabled={enCours} onClick={() => retirer(b.id)} className="min-h-[44px] px-2 text-[15px] font-medium" style={{ color: colors.inkSoft }}>
             Retirer
           </button>
         </div>
       ))}
 
       {ajout ? (
-        <div className="mt-2 flex flex-col overflow-hidden rounded-[12px]" style={{ gap: 1, backgroundColor: colors.lineSoft }}>
-          <button type="button" disabled={enCours} onClick={() => photo.current?.click()} className="min-h-[52px] px-3.5 py-3 text-left disabled:opacity-60" style={{ backgroundColor: colors.cream, color: colors.ink }}>
-            <span className="block text-[14.5px]">Photographier les pages</span>
-            <span className="block text-[12px]" style={{ color: colors.muted }}>
-              Le bilan reçu sur papier
-            </span>
+        <div className="mt-3 flex flex-col gap-2">
+          <button type="button" disabled={enCours} onClick={() => photo.current?.click()} className={creux} style={styleCreux}>
+            <Icone nom="photo" taille={21} />
+            Photographier les pages
           </button>
-          <button type="button" disabled={enCours} onClick={() => pdf.current?.click()} className="min-h-[52px] px-3.5 py-3 text-left disabled:opacity-60" style={{ backgroundColor: colors.cream, color: colors.ink }}>
-            <span className="block text-[14.5px]">Choisir le fichier</span>
-            <span className="block text-[12px]" style={{ color: colors.muted }}>
-              Le PDF reçu par e-mail
-            </span>
+          <button type="button" disabled={enCours} onClick={() => pdf.current?.click()} className={creux} style={styleCreux}>
+            <Icone nom="document" taille={21} />
+            Choisir le PDF reçu
+          </button>
+          <button type="button" disabled={enCours} onClick={() => setAjout(false)} className={texte} style={{ color: colors.inkSoft }}>
+            Annuler
           </button>
         </div>
       ) : (
-        <button type="button" onClick={() => setAjout(true)} className="mt-2 min-h-[44px] rounded-full px-5 text-[14px] font-medium" style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.cream, color: colors.ink }} data-atlas="ajouter-bilan">
+        <button type="button" onClick={() => setAjout(true)} className={`mt-3 ${creux}`} style={styleCreux} data-atlas="ajouter-bilan">
+          <Icone nom="plus" taille={21} />
           Ajouter le bilan du comptable
         </button>
       )}
+
+      {d.verification.texte && (
+        <p className="mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[14px] font-semibold" style={{ backgroundColor: colors.carteVertFond, color: colors.carteVertTexte }} data-atlas="verification-du-comptable">
+          <i className="inline-block h-[7px] w-[7px] rounded-full" style={{ backgroundColor: "currentColor" }} />
+          {d.verification.texte}
+        </p>
+      )}
+
+      <div className="mt-3.5 grid grid-cols-3 gap-2">
+        <Link href={adresseDeLaVisionneuse(pdfDuDossier(d.id), { surtitre: "Dossier justifié", titre: d.nom })} className={geste} style={styleCreux} data-atlas="ouvrir-dossier">
+          <span style={{ color: colors.or }}>
+            <Icone nom="document" taille={22} />
+          </span>
+          Ouvrir
+        </Link>
+        <BoutonTelechargerDocument fichier={pdfDuDossier(d.id)} nom={`Dossier justifié, ${d.nom}.pdf`} className={geste} style={styleCreux} dataAtlas="telecharger-dossier">
+          <span style={{ color: colors.or }}>
+            <Icone nom="telecharger" taille={22} />
+          </span>
+          Télécharger
+        </BoutonTelechargerDocument>
+        <button type="button" disabled={enCours} onClick={envoyer} className={geste} style={styleCreux} data-atlas="envoyer-au-comptable">
+          <span style={{ color: colors.or }}>
+            <Icone nom="envoyer" taille={22} />
+          </span>
+          Envoyer au comptable
+        </button>
+      </div>
+
+      {/* Le lien sans sa longue adresse : elle ne se lit pas, elle se transmet.
+          Elle reste dans le courriel, le presse-papiers et « Voir la page ». */}
+      {lien && (
+        <div className="mt-3 rounded-[18px] px-[18px] py-4" style={{ backgroundColor: colors.card }} data-atlas="lien-du-comptable" data-lien={lien}>
+          <p className="text-[15px] leading-[1.45]" style={{ color: colors.ink }}>
+            Le lien privé de votre comptable est prêt. Il marche un an.
+          </p>
+          <div className="mt-3.5 flex flex-col gap-0.5">
+            <a
+              href={`mailto:?subject=${encodeURIComponent(`Dossier justifié, ${d.nom.toLowerCase()}`)}&body=${encodeURIComponent(`Bonjour,\n\nVoici mon dossier justifié, à vérifier ligne par ligne :\n${lien}\n\nBonne journée`)}`}
+              className="atlas-plein inline-flex min-h-[54px] w-full items-center justify-center gap-2.5 rounded-full px-5 text-[16px] font-medium"
+              style={{ backgroundColor: colors.plein, color: colors.card }}
+              data-atlas="envoyer-par-email"
+            >
+              <Icone nom="email" taille={21} />
+              Envoyer par e-mail
+            </a>
+            <button type="button" onClick={() => copier(lien)} className={texte} style={{ color: colors.inkSoft }} data-atlas="copier-lien">
+              {copie ? "Lien copié" : "Copier le lien"}
+            </button>
+            <a href={lien} target="_blank" rel="noreferrer" className={`flex items-center justify-center ${texte}`} style={{ color: colors.inkSoft }} data-atlas="voir-la-page-du-comptable">
+              Voir la page qu’il ouvre
+            </a>
+          </div>
+        </div>
+      )}
+
+      {d.verification.rejets.length > 0 && (
+        <div className="mt-3 flex flex-col gap-2.5" data-atlas="rejets-du-comptable">
+          {d.verification.rejets.map((a) => (
+            <CarteARegarder key={a.id} a={a} factures={factures} />
+          ))}
+        </div>
+      )}
+
       <input ref={photo} type="file" accept={ACCEPT_PHOTOS} className="hidden" onChange={(e) => deposer(e.target.files?.[0])} />
       <input ref={pdf} type="file" accept="application/pdf" className="hidden" onChange={(e) => deposer(e.target.files?.[0])} data-atlas="fichier-bilan" />
       {refus && (
