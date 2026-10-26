@@ -224,20 +224,20 @@ export function FeuilleChantier({
         boxShadow: `0 2px 10px ${voile(colors.ink, 0.07)}`,
       }}
     >
+      {/* **« Fiche d'intervention » depuis le 8 septembre 2026** — sa demande,
+          capture à l'appui : *« qui d'ailleurs devrait s'appeler fiche
+          d'intervention, change le nom »*.
+
+          **En titre, à gauche, et sans redire le nom — sa planche du
+          25 octobre 2026** (`appli/soignee/planning.html`, « code toute la
+          planche »). Le nom du client est écrit juste au-dessus du cadre, sur
+          la ligne du chantier : le répéter en 22 px repoussait les quatre
+          gestes d'autant. */}
       <p
-        className="m-0 text-center text-[10.5px] font-bold uppercase leading-none"
-        style={{ letterSpacing: "0.22em", color: colors.or }}
+        className="m-0 px-1 text-[19px] leading-[1.2]"
+        style={{ fontFamily: font.display, color: colors.ink }}
       >
-        {/* **« Fiche d'intervention » depuis le 8 septembre 2026** — sa demande,
-            capture à l'appui : *« qui d'ailleurs devrait s'appeler fiche
-            d'intervention, change le nom »*. */}
         Fiche d&apos;intervention
-      </p>
-      <p
-        className="mb-0 mt-2.5 text-center"
-        style={{ fontFamily: font.display, fontSize: 22, lineHeight: 1.15 }}
-      >
-        {chantier.clientNom ?? chantier.nom}
       </p>
 
       {/* **LES QUATRE GESTES SUR UNE SEULE LIGNE — sa planche du 19.** Quatre
@@ -245,8 +245,13 @@ export function FeuilleChantier({
           rangée, le dessin au-dessus du mot, dit d'un coup d'œil qu'il y a
           quatre gestes. Le dessin garde sa couleur, sans rond derrière (sa
           retouche du soir) : vert pin pour y aller et appeler, or pour copier
-          l'adresse — ce qui se fait, et ce qui se lit. */}
-      <div className="mt-3.5 grid grid-cols-4 gap-1.5">
+          l'adresse — ce qui se fait, et ce qui se lit.
+
+          **Deux rangées de deux depuis sa planche du 25 octobre 2026**, qu'il a
+          fait coder : à 11,5 px sur un quart de largeur, « Copier l'adresse »
+          et « Appeler le client » cassaient sur deux lignes. Le dessin passe
+          devant le mot, à 15 px. */}
+      <div className="mt-3 grid grid-cols-2 gap-2">
         <Geste href={liens?.google ?? null} dessin="maps" teinte={colors.rust}>
           Maps
         </Geste>
@@ -391,7 +396,7 @@ function Geste({
   // Une CASE, pas une capsule : c'est la forme de sa planche du 19 septembre
   // 2026, déclarée comme telle dans `test-boutons-arrondis.ts`.
   const classe =
-    "flex min-h-[78px] min-w-0 flex-col items-center justify-center gap-1.5 rounded-[12px] px-1 py-2 text-center text-[11.5px] leading-[1.15] no-underline";
+    "flex min-h-[54px] min-w-0 items-center gap-2.5 rounded-[12px] px-3 py-2 text-left text-[15px] font-semibold leading-[1.2] no-underline";
   const dedans = (
     <>
       <svg
@@ -409,7 +414,7 @@ function Geste({
       >
         {DESSINS_DES_GESTES[dessin]}
       </svg>
-      <span className="flex min-h-[2.3em] items-center">{children}</span>
+      <span className="min-w-0">{children}</span>
     </>
   );
 

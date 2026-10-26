@@ -56,9 +56,8 @@ async function cas(nom: string, verifier: () => Promise<void>) {
 /** Ouvrir la feuille du chantier planifié, depuis le planning. */
 async function ouvrirLaFeuille(page: Page, nom: string) {
   await page.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
-  // Au repos, rien sous le mois depuis le 15 octobre 2026 (sa réponse « la
-  // semaine ») : la liste s'ouvre par le mot « La semaine ».
-  await page.click('[data-atlas="point-semaine"]');
+  // Les sept jours se lisent d\'office sous le mois depuis sa planche du
+  // 25 octobre 2026 : plus de mot « La semaine » à toucher.
   const ligne = page.getByText(nom).first();
   await ligne.waitFor({ state: "visible", timeout: 30_000 });
   await ligne.click();

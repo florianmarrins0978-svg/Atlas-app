@@ -36110,3 +36110,28 @@ l'écran, plus le contour.
 
 **Reste ouvert** : le plafond de dépense d'IA par mois, qui demande sa décision (montant, effet quand il est atteint).
 
+## §509 : Le planning se lit sans geste, et chaque jour range ses chantiers sur une plage
+
+**Sa demande du 26 octobre 2026**, devant la planche `appli/soignee/planning.html` : *« code toute la planche planning, ne lance pas de batterie »*. Elle tranche du même coup le point qui restait ouvert : les sept jours se lisent d'office.
+
+| | avant | après |
+|---|---|---|
+| sous « Planning » | « Vos journées », 9,5 px doré | rien |
+| l'agenda | conseil et panne au-dessus du mois, sur deux lignes | la panne en haut sur une plage rouge, « Ouvrir » seul en geste ; le conseil en bas de page, « Relier votre agenda » et « Masquer » |
+| les sept jours | sous le mot « La semaine », à toucher (sa réponse du 15 octobre) | d'office ; un jour touché les retire toujours (« la B » du 7 octobre) ; le titre en phrase, « Du 26 octobre au 1er novembre » |
+| la date d'un jour | pastille centrée en capitales (sa D du 23 août) | titre en serif à gauche, « Aujourd'hui » en or puis la date ; la pastille se remplace par la PLAGE claire qui porte les chantiers |
+| une ligne | nom, durée 12,5 px doré dessous, ville 11,5 px grise dessous | nom ; « Une journée » (14,5 px) et la ville avec sa pointe de carte sur une ligne ; l'équipe à 15 px |
+| l'équipe | « Julien / Kévin » | « Julien et Kévin » (`ditQuiPart`, donc aussi la fiche de chantier en PDF) |
+| « Ajouter » | mot doré centré sous chaque jour | au bout de la plage, à gauche, avec son « + » dessiné |
+| la légende | une ligne de 9 px, « COULEURS » seul dessous | deux lignes à 13 et 12,5 px, « Couleurs » à côté du matin et de l'après-midi (`Legende aCote`) |
+| fiche du jour | date en capitales centrées, « Matin » 10 px en capitales | date en titre à gauche (« Aujourd'hui » en or devant), « Matin » 14 px, durée et ville sur une ligne |
+| fiche d'intervention | « FICHE D'INTERVENTION » puis le nom redit en 22 px ; quatre gestes sur une rangée (sa planche du 19 septembre) | « Fiche d'intervention » en titre ; deux rangées de deux, le dessin devant le mot à 15 px |
+| tiroir du bas | 13 px | 16,5 px, et le nombre qui attend dans une pastille d'or quand un jour est touché |
+| titre « En attente du client » | pastille, comme la date | titre en serif, comme la date |
+
+**Trois de ses choix sont revus, et c'est lui qui l'a fait** en faisant coder la planche : la semaine derrière un mot (15 octobre), la date en pastille (23 août), les quatre gestes sur une rangée (19 septembre). Chaque fois, la RÈGLE qu'il défendait reste et se mesure autrement : la date se détache du nom (hors de la plage, plus grande), les quatre gestes se voient d'un coup d'œil (deux rangées sans mot coupé).
+
+**Les suites suivent la règle, pas le dessin** (`CLAUDE.md` §5 bis) : `test-ligne-planning-e2e` mesure la date hors de la plage et plus grande que le nom ; `test-planning-e2e` vérifie la liste d'office et le titre en phrase, et compare le titre du tiroir à celui d'un jour par la police et la taille ; neuf suites ne touchent plus « La semaine ».
+
+**Ce qui n'est PAS dans ce lot** : la barre du bas en 12,5 px (« Ce qui change partout », pas tranché) ; « Salarié absent ? » garde sa place sous la date, la planche le montrait à côté.
+

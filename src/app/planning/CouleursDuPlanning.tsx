@@ -53,8 +53,10 @@ export default function CouleursDuPlanning({
         type="button"
         data-atlas="ouvrir-couleurs"
         onClick={() => setOuverte(true)}
-        className="mx-auto mt-2 block min-h-[44px] border-0 bg-transparent px-3 text-[11px] uppercase"
-        style={{ letterSpacing: "0.28em", color: colors.or }}
+        // **En phrase, à côté de la légende — sa planche du 25 octobre 2026** :
+        // en capitales de 11 px espacées, seul sous le mois, le mot flottait.
+        className="min-h-[44px] border-0 bg-transparent px-1 text-[15px] font-semibold"
+        style={{ color: colors.or }}
       >
         Couleurs
       </button>

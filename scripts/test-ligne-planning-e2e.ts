@@ -197,7 +197,6 @@ async function main() {
     // dans la liste. Cela ne dépend d'aucun libellé de fenêtre et survivra au
     // prochain remaniement (`CLAUDE.md` §5 bis).
     if (!(await page.locator('[data-atlas="semaine-titre"]').count())) {
-      await page.click('[data-atlas="point-semaine"]');
       await page.waitForTimeout(300);
     }
     const laJournee = page
@@ -328,54 +327,57 @@ async function main() {
     );
   });
 
-  // ─── LA DATE RESSORT DU NOM — sa proposition D, du 24 août 2026 ──────────
+  // ─── LA DATE RESSORT DU NOM — sa proposition D du 24 août, puis sa planche
+  // du 25 octobre 2026 ────────────────────────────────────────────────────
   //
   // *« Comment on peut faire pour que la date ressorte par rapport au nom du
-  // client ? »*, puis, les quatre propositions comparées du doigt : **« D »**.
+  // client ? »* La D posait la date dans une pastille. Sa planche du 25 octobre
+  // (`appli/soignee/planning.html`, « code toute la planche ») la sort en titre,
+  // à gauche, et pose les chantiers du jour sur une PLAGE claire.
   //
   // **Ce qui se fixe ici n'est PAS un dessin, c'est la RÈGLE qu'il a choisie :**
-  // la date doit se détacher du nom. Écrire « le fond vaut #ece9e1 » ferait
-  // rougir la suite le jour où il change de charte — et le papier de Nuit vaut
-  // #1f211e. On mesure donc ce qui compte : la date porte un FOND, le nom n'en
-  // porte pas, et les deux se distinguent.
-  //
-  // **VU ROUGE** le 24 août 2026, contre la pastille rendue transparente :
-  // « la date ne porte aucun fond : rgba(0, 0, 0, 0) ». Il désigne le bon
-  // coupable et donne la valeur lue.
-  await test("La date porte une pastille, et le nom n'en porte pas", async () => {
+  // la date doit se détacher du nom. On mesure donc ce qui compte, sans écrire
+  // une couleur : la date est HORS de la plage, le nom DEDANS, les deux fonds se
+  // distinguent, et la date s'écrit plus grand que le nom.
+  await test("La date ressort du nom : elle est hors de la plage, le nom dedans", async () => {
     await allerAuPlanning();
     await amenerSurLaSemaineDesCas();
     const vu = await page.evaluate(() => {
-      // **Une journée ORDINAIRE, jamais celle du jour** : depuis le 9 septembre
-      // 2026 la pastille d'aujourd'hui porte volontairement une autre encre et
-      // une autre taille. La mesurer ici ferait rougir la grammaire commune sur
-      // une différence VOULUE.
+      // **Une journée ORDINAIRE, jamais celle du jour** : « Aujourd'hui » porte
+      // volontairement une autre encre et une autre taille.
       const date = document.querySelector('[data-atlas="date-planifiee"]:not([data-aujourdhui])') as HTMLElement | null;
-      const nom = document.querySelector('[data-atlas="nom-planifie"]') as HTMLElement | null;
-      if (!date || !nom) return null;
-      const r = date.getBoundingClientRect();
+      const jour = date?.closest('[data-atlas="jour-planifie"]') as HTMLElement | null;
+      const nom = jour?.querySelector('[data-atlas="nom-planifie"]') as HTMLElement | null;
+      const plage = nom?.closest('[data-atlas="plage-du-jour"]') as HTMLElement | null;
+      if (!date || !jour || !nom || !plage) return null;
+      // Le fond sous un élément : le premier ancêtre qui en porte un.
+      let sous: HTMLElement | null = date;
+      let fondSousLaDate = "rgba(0, 0, 0, 0)";
+      while (sous) {
+        const f = getComputedStyle(sous).backgroundColor;
+        if (!/rgba\(0, 0, 0, 0\)|transparent/.test(f)) {
+          fondSousLaDate = f;
+          break;
+        }
+        sous = sous.parentElement;
+      }
       return {
-        fondDate: getComputedStyle(date).backgroundColor,
-        fondNom: getComputedStyle(nom).backgroundColor,
-        rayon: parseFloat(getComputedStyle(date).borderTopLeftRadius),
-        hauteur: Math.round(r.height),
-        largeur: Math.round(r.width),
-        // Le filet est parti avec le filet : deux séparateurs pour une couture
-        // se verraient, et la planche n'en montre qu'un.
-        filet: parseFloat(getComputedStyle(date.closest('[data-atlas="jour-planifie"]')!).borderTopWidth),
+        fondPlage: getComputedStyle(plage).backgroundColor,
+        fondSousLaDate,
+        dateDansLaPlage: plage.contains(date),
+        tailleDate: parseFloat(getComputedStyle(date).fontSize),
+        tailleNom: parseFloat(getComputedStyle(nom.firstElementChild as HTMLElement).fontSize),
+        filet: parseFloat(getComputedStyle(jour).borderTopWidth),
       };
     });
-    assert.ok(vu, "ni date ni nom sur l'écran : il n'y a rien à mesurer");
-    // Un aplat transparent n'est pas une pastille — et un contrôle qui mesure
-    // zéro ne mesure rien (`CLAUDE.md` §5).
+    assert.ok(vu, "ni date, ni nom, ni plage sur l'écran : il n'y a rien à mesurer");
+    assert.ok(!vu!.dateDansLaPlage, "la date est dans la plage des chantiers : elle ne s'en détache plus");
     assert.ok(
-      !/rgba\(0, 0, 0, 0\)|transparent/.test(vu!.fondDate),
-      `la date ne porte aucun fond : ${vu!.fondDate}`
+      !/rgba\(0, 0, 0, 0\)|transparent/.test(vu!.fondPlage),
+      `la plage du jour ne porte aucun fond : ${vu!.fondPlage}`
     );
-    assert.notEqual(vu!.fondDate, vu!.fondNom, "la date porte le même fond que le nom : elle ne ressort pas");
-    assert.ok(vu!.rayon >= 999 || vu!.rayon >= vu!.hauteur / 2, `la pastille n'est pas ronde (rayon ${vu!.rayon})`);
-    assert.ok(vu!.hauteur >= 24, `la pastille fait ${vu!.hauteur} px de haut`);
-    assert.ok(vu!.largeur >= 80, `la pastille fait ${vu!.largeur} px de large`);
+    assert.notEqual(vu!.fondPlage, vu!.fondSousLaDate, "la plage porte le fond de la page : rien ne sépare la date du nom");
+    assert.ok(vu!.tailleDate > vu!.tailleNom, `la date (${vu!.tailleDate} px) n'est pas plus grande que le nom (${vu!.tailleNom} px)`);
     assert.equal(vu!.filet, 0, `un filet subsiste au-dessus de la journée (${vu!.filet} px)`);
   });
 

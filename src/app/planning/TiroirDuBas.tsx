@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { VALIDITE_LIEN_JOURS } from "@/lib/etat-envoi";
-import { colors, font, voile } from "@/lib/design-tokens";
+import { colors, font, surPlein, voile } from "@/lib/design-tokens";
 import type { JourIso } from "@/lib/disponibilites";
 import { jourLisibleCourt } from "@/lib/mois";
 import { avecCivilite } from "@/lib/civilite";
@@ -72,10 +72,13 @@ function TitreSection({
       {...reste}
       className={`mx-[18px] mt-[26px] leading-none ${aGauche ? "text-left" : "text-center"}`}
     >
+      {/* **Comme le titre d'un jour de la liste — sa planche du 25 octobre
+          2026.** La pastille suivait celle de la date ; la date est devenue un
+          titre en serif, et le tiroir garde la même grammaire que la liste. */}
       <span
         data-atlas="titre-encadre"
-        className="inline-block rounded-full px-[15px] py-[7px] text-[12px] font-bold uppercase"
-        style={{ letterSpacing: "0.14em", background: colors.rustTint, color: colors.ink }}
+        className="inline-block text-[21px] font-normal leading-[1.2]"
+        style={{ fontFamily: font.display, letterSpacing: "-0.005em", color: colors.ink }}
       >
         {children}
       </span>
@@ -451,7 +454,7 @@ export function TiroirDuBas({
         aria-expanded={ouvert}
         aria-controls="tiroir-du-bas"
         onClick={() => setOuvert((o) => !o)}
-        className="flex w-full cursor-pointer items-center gap-3 border-0 bg-transparent px-[18px] py-[15px] text-left"
+        className="flex min-h-[58px] w-full cursor-pointer items-center gap-3 border-0 bg-transparent px-[22px] py-[12px] text-left"
         style={{ WebkitTapHighlightColor: "transparent" }}
       >
         <span
@@ -459,18 +462,32 @@ export function TiroirDuBas({
           // mot « client ». L'encre adoucie faisait de la poignée une note en
           // bas de page ; c'est la seule ligne qui dit ce qui attend un jour.
           // L'or reste à « À poser sur … » : là, c'est le geste qu'on annonce.
-          className="min-w-0 flex-1 truncate text-[13px] font-semibold"
+          //
+          // **16,5 px, et non plus 13 — sa planche du 25 octobre 2026**
+          // (`appli/soignee/planning.html`) : la seule ligne qui dit ce qui
+          // attend un jour se lit au premier regard. Un jour touché, le nombre
+          // qui attend se pose à côté, dans une pastille d'or.
+          className="min-w-0 flex-1 truncate text-[16.5px] font-bold"
           style={{ color: aPoser ? colors.or : colors.ink }}
         >
           {resume}
         </span>
+        {aPoser && combienEnAttente > 0 && (
+          <span
+            data-atlas="pastille-tiroir"
+            className="inline-grid h-[26px] min-w-[26px] flex-none place-items-center rounded-full px-2 text-[13.5px] font-bold leading-none"
+            style={{ background: colors.or, color: surPlein }}
+          >
+            {combienEnAttente}
+          </span>
+        )}
         <svg
           aria-hidden="true"
-          width="14"
-          height="14"
+          width="20"
+          height="20"
           viewBox="0 0 24 24"
           fill="none"
-          stroke={colors.chevron}
+          stroke={colors.inkSoft}
           strokeWidth="2.2"
           style={{
             flex: "none",

@@ -238,7 +238,6 @@ async function main() {
     // liste, et toucher le jour ne l'y amène plus.
     await page.goto(`${BASE}/planning`, { waitUntil: "domcontentloaded" });
     await page.waitForSelector('[data-atlas="grille-mois"]', { timeout: 30_000 });
-    await page.click('[data-atlas="point-semaine"]');
     const jourListe = page.locator(`[data-atlas="jour-planifie"]`).filter({ hasText: nomRecent });
     for (let i = 0; i < 20 && !(await jourListe.count()); i++) {
       await page.click('button[aria-label="Sept jours avant"]');
