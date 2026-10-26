@@ -1,4 +1,6 @@
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
+import PastilleIcone from "@/components/atlas/reglages/PastilleIcone";
+import Picto from "@/components/atlas/reglages/Picto";
 import { colors, font } from "@/lib/design-tokens";
 
 /**
@@ -17,20 +19,28 @@ import { colors, font } from "@/lib/design-tokens";
 export default function RubriqueReservee({ titre, quoi }: { titre: string; quoi: string }) {
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
-      <EnTeteEcran
-        surtitre="Réglages"
-        titre={titre}
-        retour={{ href: "/reglages", libelle: "Retour aux réglages" }}
-      />
-      <p className="mx-[26px] mt-8 text-[13px] leading-[1.7]" style={{ color: colors.muted }}>
-        {/* `{" "}` explicite : écrite « {quoi} Ces réglages », la phrase sortait
-            collée — « …compte salarié.Ces réglages… ». JSX ne garde pas
-            l'espace entre une expression et le texte qui la suit. Vu sur une
-            capture le 14 août 2026, par aucun test (`CLAUDE.md` §5). */}
-        {quoi}
-        {" "}
-        Ces réglages appartiennent au patron de l&apos;entreprise.
-      </p>
+      <EnTeteEcran titre={titre} retour={{ href: "/reglages", libelle: "Retour aux réglages" }} allure="soignee" />
+      {/* Une plage et un cadenas bleu (planches des Réglages soignés,
+          26 octobre 2026) : le bleu informe, il ne refuse pas. La phrase en
+          gris de 13 px se lisait comme une note de bas de page, alors qu'elle
+          est tout l'écran. */}
+      <div
+        className="mx-[22px] mt-7 flex items-start gap-[14px] rounded-[6px] px-[18px] py-[18px]"
+        style={{ backgroundColor: colors.card }}
+      >
+        <PastilleIcone ton="bleu">
+          <Picto nom="cadenas" taille={22} />
+        </PastilleIcone>
+        <p className="mt-0.5 text-[16px] leading-[1.5]" style={{ color: colors.ink }}>
+          {/* `{" "}` explicite : écrite « {quoi} Ces réglages », la phrase sortait
+              collée — « …compte salarié.Ces réglages… ». JSX ne garde pas
+              l'espace entre une expression et le texte qui la suit. Vu sur une
+              capture le 14 août 2026, par aucun test (`CLAUDE.md` §5). */}
+          {quoi}
+          {" "}
+          Ces réglages appartiennent au patron de l&apos;entreprise.
+        </p>
+      </div>
     </div>
   );
 }

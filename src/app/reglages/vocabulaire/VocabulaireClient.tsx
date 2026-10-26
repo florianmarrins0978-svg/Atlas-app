@@ -6,6 +6,8 @@ import Paquet from "@/components/atlas/reglages/Paquet";
 import { colors, font, surPlein } from "@/lib/design-tokens";
 import EtatEcrit from "@/components/atlas/reglages/EtatEcrit";
 import Picto from "@/components/atlas/reglages/Picto";
+import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
+import { useRetraits } from "@/components/atlas/useRetraits";
 import { creerTermeAction, modifierTermeAction, supprimerTermeAction } from "./actions";
 
 type Terme = {
@@ -69,17 +71,27 @@ export default function VocabulaireClient({ initiaux }: { initiaux: Terme[] }) {
     }
   }
 
-  async function retirer(terme: Terme) {
-    setTermes((t) => t.filter((x) => x.id !== terme.id));
-    try {
-      await supprimerTermeAction(terme.id);
-    } catch {
-      setTermes((t) => [...t, terme]);
-    }
-  }
+  // **Supprimer passe par le tiroir, avec Annuler** (planche des Réglages
+  // soignés, 26 octobre 2026), comme tous les écrans qui retirent : un mot
+  // effacé d'un doigt ne revenait plus, et sa consigne était souvent la
+  // phrase la plus longue à réécrire. Rien n'est écrit tant que le tiroir
+  // est ouvert.
+  const retraits = useRetraits({
+    valider: async (id) => {
+      try {
+        await supprimerTermeAction(id);
+      } catch {
+        return { succes: false, erreur: "Ce mot n'a pas pu être supprimé. Réessayez." };
+      }
+      setTermes((t) => t.filter((x) => x.id !== id));
+      return { succes: true };
+    },
+  });
 
-  const regles = termes.filter((t) => t.nature === "regle");
-  const mots = termes.filter((t) => t.nature === "mot");
+  const visibles = termes.filter((t) => !retraits.estRetire(t.id));
+  const regles = visibles.filter((t) => t.nature === "regle");
+  const mots = visibles.filter((t) => t.nature === "mot");
+  const retirer = (t: Terme) => retraits.retirer(t.id, t.intitule);
 
   return (
     <div>
@@ -147,8 +159,16 @@ export default function VocabulaireClient({ initiaux }: { initiaux: Terme[] }) {
         </div>
       </Paquet>
 
-      <Section titre="Mes règles" sousTitre="Elles priment sur les habitudes du modèle." termes={regles} onBasculer={basculer} onRetirer={retirer} />
-      <Section titre="Mes mots" sousTitre="Le vocabulaire du métier, et son traitement." termes={mots} onBasculer={basculer} onRetirer={retirer} />
+      <Section titre="Mes règles" sousTitre="Elles priment sur les habitudes du modèle." termes={regles} refuses={retraits.refuses} onBasculer={basculer} onRetirer={retirer} />
+      <Section titre="Mes mots" sousTitre="Le vocabulaire du métier, et son traitement." termes={mots} refuses={retraits.refuses} onBasculer={basculer} onRetirer={retirer} />
+      <TiroirDesRetires
+        dernier={retraits.dernier}
+        nombre={retraits.nombre}
+        onAnnuler={retraits.annuler}
+        compteARebours={retraits.compteARebours}
+        situation={retraits.nombre > 1 ? "Supprimés à l'instant" : "Supprimé à l'instant"}
+        className="mt-3 mx-[22px]!"
+      />
     </div>
   );
 }
@@ -157,12 +177,15 @@ function Section({
   titre,
   sousTitre,
   termes,
+  refuses,
   onBasculer,
   onRetirer,
 }: {
   titre: string;
   sousTitre: string;
   termes: Terme[];
+  /** Ce que le serveur a refusé de supprimer : le mot est revenu, et dit pourquoi. */
+  refuses: Record<string, string>;
   onBasculer: (t: Terme) => void;
   onRetirer: (t: Terme) => void;
 }) {
@@ -225,6 +248,11 @@ function Section({
                   Supprimer
                 </button>
               </div>
+              {refuses[t.id] && (
+                <p role="alert" className="pb-2 text-[14.5px]" style={{ color: colors.alert }}>
+                  {refuses[t.id]}
+                </p>
+              )}
             </div>
           ))
         )}
