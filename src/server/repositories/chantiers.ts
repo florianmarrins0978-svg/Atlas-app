@@ -842,9 +842,15 @@ export async function planifierDansLaTransaction(
     .from(chantiers)
     .where(eq(chantiers.id, chantierId))
     .limit(1);
+  // **Un chantier que la RLS ne montre pas ne se planifie pas** (audit E10,
+  // 26 octobre 2026). La suite écrivait quand même ses créneaux, au nom de
+  // l'entreprise qui demandait et pointant vers le chantier d'une autre : la
+  // base le refuse désormais (migration 0149), et c'est ici que la demande
+  // s'arrête, sans rien écrire.
+  if (!courant) return undefined;
   const duree = dureeDuChantier({
-    dureeDemiJournees: courant?.duree ?? null,
-    dureePrevue: courant?.dureePrevue ?? null,
+    dureeDemiJournees: courant.duree,
+    dureePrevue: courant.dureePrevue,
   });
 
   const nombreEquipes = entreprise?.nombreEquipes ?? 1;
