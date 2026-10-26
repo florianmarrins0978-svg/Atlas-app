@@ -12,26 +12,27 @@ import type { Poste } from "@/lib/arrosage/postes";
  * RESTE**, grisée et barrée d'un trait rouge (17 octobre) : une pièce qui
  * disparaît se croit oubliée. Changée ou ajoutée, un liseré doré le dit.
  *
- * Quatre tailles, celles de la planche : 88 sur le plateau de l'amenée, 54 dans
+ * Quatre tailles, celles de la planche : 72 sur le plateau de l'amenée, 54 dans
  * un rail, 44 pour le tuyau d'un réseau, 32 posée sur le plan du jardin.
  */
 export default function Vignette({
   poste,
-  taille = 88,
+  taille = 72,
   sansNom = false,
   surPlanEgal = false,
   onClick,
 }: {
   poste: Poste;
-  taille?: 88 | 54 | 44 | 32;
+  taille?: 72 | 54 | 44 | 32;
   sansNom?: boolean;
   /** Le té égal posé sur le croisement : son liseré le distingue de la tête voisine. */
   surPlanEgal?: boolean;
   onClick?: () => void;
 }) {
   const rayon = taille >= 54 ? 12 : taille === 44 ? 9 : 7;
-  const marge = taille === 88 ? 10 : taille === 54 ? 6 : 4;
-  const liseret = poste.changee || poste.ajoutee || surPlanEgal ? `0 0 0 2px ${colors.or}, 0 6px 16px ${colors.lineSoft}` : `0 1px 2px ${colors.line}, 0 6px 16px ${colors.lineSoft}`;
+  const marge = taille === 72 ? 10 : taille === 54 ? 6 : 4;
+  // Planche soignée du 26 octobre 2026 : un filet posé sur la photo, plus d'ombre portée.
+  const liseret = poste.changee || poste.ajoutee || surPlanEgal ? `0 0 0 2px ${colors.or}` : OMBRE_VIGNETTE;
   const mention = poste.retiree ? "supprimée" : poste.changee ? "changée" : "";
   return (
     <button
@@ -42,7 +43,7 @@ export default function Vignette({
       data-etat={poste.retiree ? "retiree" : poste.changee ? "changee" : poste.ajoutee ? "ajoutee" : "proposee"}
       aria-label={poste.nom}
       className="relative m-0 flex flex-col items-center border-0 bg-transparent p-0 text-center"
-      style={{ width: taille, color: "inherit", font: "inherit", cursor: onClick ? "pointer" : "default" }}
+      style={{ width: taille === 72 ? 84 : taille, color: "inherit", font: "inherit", cursor: onClick ? "pointer" : "default" }}
     >
       <span
         className="relative flex items-center justify-center"
@@ -84,7 +85,7 @@ export default function Vignette({
           <span
             className="mt-[6px] block"
             style={{
-              fontSize: taille === 88 ? 11.5 : 10.5, lineHeight: 1.3,
+              fontSize: taille === 72 ? 13 : 10.5, lineHeight: 1.3,
               color: poste.retiree ? colors.muted : poste.changee ? colors.orTexte : colors.inkSoft,
               textDecoration: poste.retiree ? "line-through" : undefined, textDecorationColor: colors.alert, textDecorationThickness: 2,
             }}

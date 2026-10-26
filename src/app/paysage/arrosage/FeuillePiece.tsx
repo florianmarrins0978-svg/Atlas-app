@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { colors, font } from "@/lib/design-tokens";
+import { colors, font, surPlein, voile } from "@/lib/design-tokens";
+import Icone from "./Icones";
 import { CATEGORIES, piecesVisibles, type Choix } from "@/lib/arrosage/choix-de-pieces";
 import { photoDe } from "@/lib/arrosage/photos";
 import type { PieceChoisie } from "@/lib/arrosage/retouches";
@@ -42,27 +43,24 @@ export function MenuPiece({ menu, onFermer }: { menu: Menu; onFermer: () => void
   const [n, setN] = useState(menu.nombre);
   const mot = (libelle: string) => `${libelle}${menu.nombre > 1 ? (n === menu.nombre ? ` les ${n}` : n === 1 ? " une seule" : ` ${n}`) : ""}`;
   return (
-    <Feuille titre={menu.titre} onFermer={onFermer} repere="menu-piece">
+    <Feuille titre={menu.titre} onFermer={onFermer} repere="menu-piece" garder>
       {menu.proposee && (
-        <p className="mt-[6px] text-[13px]" style={{ color: colors.muted }}>
+        <p className="mb-3 text-[15px] leading-[1.45]" style={{ color: colors.inkSoft }}>
           Proposée : {menu.proposee}
         </p>
       )}
-      <div className="mt-[14px] flex flex-col gap-2">
+      <div className="flex flex-col gap-[10px]">
         {menu.nombre > 1 && (
-          <label className="flex min-h-[52px] items-center gap-3 rounded-[12px] px-[14px]" style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.card }}>
-            <span className="flex-1 text-[15.5px]">Combien</span>
+          <label className="mb-[2px] flex min-h-[60px] items-center gap-3 rounded-[6px] px-4" style={{ backgroundColor: colors.card }}>
+            <span className="flex-1 text-[16px]">Combien</span>
+            <span className="relative">
             <select
               aria-label="Combien de pièces"
               data-atlas="combien"
               value={n}
               onChange={(e) => setN(Number(e.target.value))}
-              className="appearance-none rounded-[10px] border-0 py-2 pl-[14px] pr-[34px] text-[17px] font-semibold"
-              style={{
-                minWidth: 110, minHeight: 40, color: colors.ink, backgroundColor: colors.cream, boxShadow: `0 0 0 1px ${colors.line}`,
-                backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%231c1c1a' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\")",
-                backgroundRepeat: "no-repeat", backgroundPosition: "right 12px center",
-              }}
+              className="appearance-none rounded-[10px] border-0 py-2 pl-[14px] pr-[34px] text-[16px] font-semibold"
+              style={{ minWidth: 110, minHeight: 44, color: colors.ink, backgroundColor: colors.cream, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
             >
               {Array.from({ length: menu.nombre }, (_, i) => menu.nombre - i).map((k) => (
                 <option key={k} value={k}>
@@ -70,6 +68,11 @@ export function MenuPiece({ menu, onFermer }: { menu: Menu; onFermer: () => void
                 </option>
               ))}
             </select>
+            {/* Le chevron doré du kit, dessiné par-dessus : l'ancien, une image en dur, restait noir sur les chartes sombres. */}
+            <span aria-hidden="true" className="pointer-events-none absolute right-[10px] top-1/2 -translate-y-1/2" style={{ color: colors.or }}>
+              <Icone nom="bas" taille={18} />
+            </span>
+            </span>
           </label>
         )}
         {menu.gestes.map((g) => (
@@ -78,8 +81,8 @@ export function MenuPiece({ menu, onFermer }: { menu: Menu; onFermer: () => void
             type="button"
             data-atlas="geste"
             onClick={() => { g.agir(n); onFermer(); }}
-            className="min-h-[52px] rounded-full text-[15.5px]"
-            style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.card, color: g.danger ? colors.alert : colors.ink }}
+            className="min-h-[56px] rounded-full border-0 bg-transparent text-[17px] font-semibold"
+            style={{ boxShadow: `inset 0 0 0 1.5px ${g.danger ? voile(colors.alert, 0.55) : colors.line}`, color: g.danger ? colors.alert : colors.ink }}
           >
             {g.libelle.startsWith("Changer") || g.libelle.startsWith("Supprimer") ? mot(g.libelle.split(" ")[0]) : g.libelle}
           </button>
@@ -203,7 +206,7 @@ function SansFournisseur({ message, demande, onFermer }: { message: string; dema
   const peutPartager = typeof navigator !== "undefined" && typeof navigator.share === "function";
   return (
     <Feuille titre="Au fournisseur" onFermer={onFermer} repere="fournisseur">
-      <p className="mt-[6px] text-[13px]" style={{ color: colors.muted }}>
+      <p className="mb-[14px] text-[15px] leading-[1.45]" style={{ color: colors.inkSoft }}>
         Tout est additionné, sans prix. Vous pouvez modifier le texte.
       </p>
       <textarea
@@ -211,19 +214,19 @@ function SansFournisseur({ message, demande, onFermer }: { message: string; dema
         onChange={(e) => setTexte(e.target.value)}
         aria-label="Le message au fournisseur"
         data-atlas="message-fournisseur"
-        className="mt-3 block min-h-[300px] w-full resize-y rounded-[12px] border-0 p-3 text-[16px] leading-[1.5]"
-        style={{ backgroundColor: colors.card, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
+        className="block min-h-[300px] w-full resize-y rounded-[6px] border-0 px-[15px] py-[14px] text-[16px] leading-[1.5]"
+        style={{ backgroundColor: colors.card, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.lineSoft}` }}
       />
       <EnregistrerLaDemande titre={demande.titre} lignes={demande.lignes} parti={parti} />
-      <div className="mt-3 flex gap-2">
+      <div className="mt-[14px] flex gap-[10px]">
         <button
           type="button"
           onClick={() => {
             setParti((n) => n + 1);
             navigator.clipboard.writeText(texte).then(() => setCopie("Copié"), () => setCopie("Sélectionné"));
           }}
-          className="min-h-[52px] flex-1 rounded-full text-[15.5px]"
-          style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.card, color: colors.ink }}
+          className="min-h-[56px] flex-1 rounded-full border-0 bg-transparent text-[17px] font-semibold"
+          style={{ boxShadow: `inset 0 0 0 1.5px ${colors.line}`, color: colors.ink }}
         >
           {copie}
         </button>
@@ -234,9 +237,10 @@ function SansFournisseur({ message, demande, onFermer }: { message: string; dema
               setParti((n) => n + 1);
               navigator.share({ text: texte });
             }}
-            className="atlas-plein min-h-[52px] flex-1 rounded-full border-0 text-[15.5px] font-semibold"
-            style={{ backgroundColor: colors.plein, color: colors.card }}
+            className="atlas-plein flex min-h-[56px] flex-1 items-center justify-center gap-[10px] rounded-full border-0 text-[17px] font-semibold"
+            style={{ backgroundColor: colors.plein, color: surPlein }}
           >
+            <Icone nom="envoyer" />
             Envoyer
           </button>
         )}
@@ -279,9 +283,9 @@ function MailAuFournisseur({
     );
   };
 
-  const case_ = "mt-[10px] block min-h-[84px] w-full resize-y rounded-[12px] border-0 p-3 text-[15px] leading-[1.5]";
-  const styleCase = { backgroundColor: colors.card, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` };
-  const choix = "mt-[14px] text-[13.5px]";
+  const case_ = "mt-[10px] block min-h-[84px] w-full resize-y rounded-[6px] border-0 px-[15px] py-[14px] text-[16px] leading-[1.5]";
+  const styleCase = { backgroundColor: colors.card, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.lineSoft}` };
+  const choix = "mt-[14px] text-[15px] leading-[1.45]";
   return (
     <Feuille titre="Au fournisseur" onFermer={onFermer} repere="fournisseur">
       <p className={choix} style={{ color: colors.inkSoft, overflowWrap: "anywhere" }} data-atlas="destinataire">
@@ -296,9 +300,10 @@ function MailAuFournisseur({
           );
         }}
         data-atlas="ecrire-au-fournisseur"
-        className="atlas-plein mt-[10px] flex min-h-[52px] items-center justify-center rounded-full text-[16px] no-underline"
-        style={{ backgroundColor: colors.plein, color: colors.card }}
+        className="atlas-plein mt-[10px] flex min-h-[56px] items-center justify-center gap-[10px] rounded-full text-[17px] font-semibold no-underline"
+        style={{ backgroundColor: colors.plein, color: surPlein }}
       >
+        <Icone nom="envoyer" />
         Écrire à {f.nom}
       </a>
       {!adresse && (
@@ -317,7 +322,7 @@ function MailAuFournisseur({
       </label>
       <p className={choix} style={{ color: colors.inkSoft }}>La liste, faite par l’outil, sans prix</p>
       <pre
-        className="mt-[10px] max-h-[220px] overflow-auto whitespace-pre-wrap break-words rounded-[12px] p-3 text-[13.5px] leading-[1.5]"
+        className="mt-[10px] max-h-[220px] overflow-auto whitespace-pre-wrap break-words rounded-[6px] px-[15px] py-[14px] text-[15px] leading-[1.5]"
         style={{ backgroundColor: colors.card, color: colors.inkSoft, fontFamily: "inherit" }}
         data-atlas="liste-du-message"
       >
@@ -336,8 +341,13 @@ function MailAuFournisseur({
   );
 }
 
-/** La feuille elle-même : un voile, une boîte qui monte du bas, un titre et « Fermer ». */
-function Feuille({ titre, repere, onFermer, children }: { titre: string; repere: string; onFermer: () => void; children: React.ReactNode }) {
+/**
+ * La feuille elle-même : un voile, une boîte qui monte du bas, sa poignée, un
+ * titre et « Fermer ». Le menu d'une pièce, lui, se referme par « Garder » sous
+ * ses gestes, comme sur la planche soignée du 26 octobre 2026 : la dernière
+ * chose qu'on lit est qu'on peut ne rien changer.
+ */
+function Feuille({ titre, repere, onFermer, garder = false, children }: { titre: string; repere: string; onFermer: () => void; garder?: boolean; children: React.ReactNode }) {
   return (
     <div className="fixed inset-0 z-40 flex items-end justify-center" style={{ backgroundColor: "rgba(0,0,0,.35)" }} onClick={onFermer} data-atlas={repere}>
       <div
@@ -345,18 +355,26 @@ function Feuille({ titre, repere, onFermer, children }: { titre: string; repere:
         aria-modal="true"
         aria-label={titre}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-[430px] overflow-auto px-4 pt-[18px]"
-        style={{ maxHeight: "86vh", backgroundColor: colors.cream, borderRadius: "18px 18px 0 0", paddingBottom: "calc(24px + env(safe-area-inset-bottom, 0px))" }}
+        className="w-full max-w-[430px] overflow-auto px-[22px] pt-[10px]"
+        style={{ maxHeight: "88vh", backgroundColor: colors.cream, borderRadius: "26px 26px 0 0", paddingBottom: "calc(24px + env(safe-area-inset-bottom, 0px))" }}
       >
-        <div className="flex items-center">
-          <h2 className="m-0 flex-1" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 21, lineHeight: 1.2 }}>
+        <div aria-hidden="true" className="mx-auto mb-3 h-[5px] w-10 rounded-[3px]" style={{ backgroundColor: voile(colors.ink, 0.22) }} />
+        <div className="mb-4 flex items-center gap-3">
+          <h2 className="m-0 min-w-0 flex-1" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 26, lineHeight: 1.15 }}>
             {titre}
           </h2>
-          <button type="button" onClick={onFermer} className="border-0 bg-transparent text-[14px] underline" style={{ color: colors.inkSoft }}>
-            Fermer
-          </button>
+          {!garder && (
+            <button type="button" onClick={onFermer} className="min-h-[48px] border-0 bg-transparent px-1 text-[16px] font-semibold" style={{ color: colors.inkSoft }}>
+              Fermer
+            </button>
+          )}
         </div>
         {children}
+        {garder && (
+          <button type="button" onClick={onFermer} className="mt-[10px] min-h-[48px] w-full border-0 bg-transparent text-[16px] font-semibold" style={{ color: colors.inkSoft }}>
+            Garder
+          </button>
+        )}
       </div>
     </div>
   );
