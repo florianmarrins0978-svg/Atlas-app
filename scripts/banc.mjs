@@ -30,6 +30,7 @@ import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
+import { randomBytes } from "node:crypto";
 import { annoncePrete } from "./annonce-adresse.mjs";
 import { prendreVerrouBanc, libererVerrouBanc } from "./verrou-banc.mjs";
 import { peutPrechauffer, memoireDisponibleMo } from "./memoire-prechauffage.mjs";
@@ -952,6 +953,15 @@ try {
   // 2026) : désignée par `npm run ia:sans-plafond`, rangée à côté de la clé.
   const sansPlafond = chemin ? path.join(path.dirname(chemin), "ia-sans-plafond") : "";
   if (sansPlafond && existsSync(sansPlafond)) process.env.ATLAS_IA_SANS_PLAFOND = readFileSync(sansPlafond, "utf8").trim();
+  // **`CRON_SECRET` non plus ne vient plus du dépôt public** (audit, E15 et
+  // E1) : il ouvre la purge planifiée, sur un port public. Rien ne l'appelle
+  // sur son espace ; il reçoit quand même une valeur à lui, créée une fois et
+  // rangée à côté de la clé de session, comme elle.
+  if (chemin) {
+    const cron = path.join(path.dirname(chemin), "cron-secret");
+    if (!existsSync(cron)) writeFileSync(cron, randomBytes(32).toString("base64url"), { mode: 0o600 });
+    process.env.CRON_SECRET = readFileSync(cron, "utf8").trim();
+  }
 } catch (erreur) {
   console.error(`⚠ Clé de l'espace non posée (${erreur instanceof Error ? erreur.message.split("\n")[0] : erreur}) : l'ancienne sert encore.`);
 }

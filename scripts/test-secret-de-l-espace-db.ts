@@ -142,6 +142,9 @@ async function main() {
       assert.ok(iSecret >= 0, "banc.mjs ne demande plus la clé de l'espace");
       assert.ok(iSecret < iLancement, "banc.mjs lance le serveur AVANT d'avoir la clé de l'espace");
       assert.match(banc, /process\.env\.AUTH_SECRET\s*=/, "banc.mjs ne pose pas AUTH_SECRET pour le serveur");
+      // CRON_SECRET non plus ne doit plus venir de docker-compose.yml.
+      assert.ok(banc.indexOf("cron-secret") >= 0 && banc.indexOf("cron-secret") < iLancement, "banc.mjs lance le serveur sans sa propre CRON_SECRET");
+      assert.match(banc, /process\.env\.CRON_SECRET\s*=/);
     });
   } finally {
     await base.query(`DELETE FROM agendas_externes WHERE id = $1`, [ag[0].id]);
