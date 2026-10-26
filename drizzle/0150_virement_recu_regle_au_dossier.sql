@@ -23,7 +23,7 @@
 -- **Pourquoi elles ne peuvent pas échouer sur une base habitée** : la
 -- justification et le motif acceptent tout ce qu'ils acceptaient ; la
 -- cohérence, plus stricte, ne juge que les écritures nouvelles (NOT VALID,
--- ci-dessous). Éprouvé par `scripts/test-migration-0148-base-habitee.ts`.
+-- ci-dessous). Éprouvé par `scripts/test-migration-0150-base-habitee.ts`.
 
 ALTER TABLE "mouvements_bancaires"
   -- La facture faite hors d'Atlas : son fichier dans le stockage, sa forme, et
@@ -58,7 +58,7 @@ ALTER TABLE "mouvements_bancaires"
 -- (…)`, vaut INCONNU quand la justification est vide ; et une contrainte qui
 -- vaut inconnu PASSE. Une ligne « à justifier » qui portait un ticket, une
 -- facture ou un motif entrait donc sans être refusée (relevé le 26 octobre 2026
--- par `test-migration-0148-base-habitee.ts`). Chaque branche se dit désormais
+-- par `test-migration-0150-base-habitee.ts`). Chaque branche se dit désormais
 -- vraie ou fausse, jamais inconnue (`IS NOT DISTINCT FROM`, `IS NOT NULL`).
 --
 -- **NOT VALID, et c'est délibéré.** Plus stricte que celle qu'elle remplace,

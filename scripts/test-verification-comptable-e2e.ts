@@ -125,7 +125,7 @@ async function main() {
   );
   await ligne("ECART", "2025-01-22", "67.89", "CB TOTAL CHOLET E2E", "ticket", autreMontant.rows[0].id, null);
   // Un virement reçu qui paie la moitié d'une facture faite hors d'Atlas,
-  // photographiée (migration 0148).
+  // photographiée (migration 0150).
   await pool.query(
     `INSERT INTO mouvements_bancaires (entreprise_id, cle, jour, montant, sens, libelle, justification, relie_par, justifie_le, piece_cle, piece_nature, piece_total)
      VALUES ($1, $2, '2025-01-24', 864.00, 'entree', 'VIR DURAND HORS ATLAS E2E', 'facture_hors_atlas', 'patron', now(), $3, 'photo', 1728.00)`,

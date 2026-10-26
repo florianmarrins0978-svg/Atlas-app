@@ -194,7 +194,7 @@ async function main() {
 
   await test("une facture faite hors d'Atlas se lit et se sert par le jeton, son écart avec", async () => {
     // Un virement reçu de 864 € qui paie la moitié d'une facture de 1 728 €
-    // faite hors d'Atlas (migration 0148) : le comptable doit la voir, l'ouvrir,
+    // faite hors d'Atlas (migration 0150) : le comptable doit la voir, l'ouvrir,
     // et lire qu'elle n'est payée qu'en partie.
     await ajouterMouvements(ctx, [{ cle: "DURAND", date: "2026-01-15", montant: "864.00", sens: "entree", contrepartie: null, libelle: "VIR DURAND" }]);
     const recu = (await lignesDuReleve(ctx, "2026-01-15", "2026-01-15")).find((l) => l.libelle === "VIR DURAND")!;

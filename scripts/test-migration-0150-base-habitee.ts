@@ -4,17 +4,17 @@ import path from "node:path";
 import { Pool } from "pg";
 
 /**
- * **LA MIGRATION 0148 S'APPLIQUE-T-ELLE SUR UNE BASE QUI A DÉJÀ VÉCU ?**
+ * **LA MIGRATION 0150 S'APPLIQUE-T-ELLE SUR UNE BASE QUI A DÉJÀ VÉCU ?**
  *
  * ───────────────────────────────────────────────────────────────────────────
- * 0148 n'écrit aucune ligne, mais elle REMPLACE trois contraintes de
+ * 0150 n'écrit aucune ligne, mais elle REMPLACE trois contraintes de
  * `mouvements_bancaires` (la justification, le motif, la cohérence). Une
  * contrainte ajoutée se vérifie sur TOUTES les lignes, RLS ou pas
  * (`.claude/rules/migrations.md`) : une ligne qui ne la tiendrait pas bloquerait
  * la migration, et toutes celles qui la suivent, sur sa base et nulle part
  * ailleurs. C'est la panne de 0087 (13 septembre 2026), et l'on ne la rejoue pas.
  *
- * Elle joue le VRAI fichier `drizzle/0148_*.sql`, sur la table reconstituée dans
+ * Elle joue le VRAI fichier `drizzle/0150_*.sql`, sur la table reconstituée dans
  * l'état où 0147 la laisse (les colonnes et contraintes de 0142 et 0143), sous
  * FORCE ROW LEVEL SECURITY comme en vrai, et peuplée d'une ligne de chaque
  * justification que l'ancien code sait écrire. Le modèle est
@@ -23,8 +23,8 @@ import { Pool } from "pg";
  */
 
 const RACINE = path.join(__dirname, "..");
-const FICHIER_0148 = path.join(RACINE, "drizzle", "0148_virement_recu_regle_au_dossier.sql");
-const SCHEMA = `epreuve_0148_${process.pid}`;
+const FICHIER_0150 = path.join(RACINE, "drizzle", "0150_virement_recu_regle_au_dossier.sql");
+const SCHEMA = `epreuve_0150_${process.pid}`;
 const ENTREPRISE = "22222222-2222-2222-2222-222222222222";
 
 let echecs = 0;
@@ -41,7 +41,7 @@ async function cas(nom: string, verifier: () => Promise<void>) {
 /**
  * `mouvements_bancaires` telle que 0147 la laisse : recopiée de 0142 et 0143,
  * et non du schéma TypeScript, qui décrit l'état d'APRÈS. Les clés étrangères
- * sont laissées de côté : 0148 ne les touche pas.
+ * sont laissées de côté : 0150 ne les touche pas.
  */
 const TABLE_EN_0147 = `
   CREATE TABLE "mouvements_bancaires" (
@@ -112,13 +112,13 @@ async function main() {
     );
     await client.query(`SELECT set_config('app.entreprise_id', '', false)`);
 
-    const sql0148 = readFileSync(FICHIER_0148, "utf8");
-    console.log("=== 0148 sur une base qui a déjà vécu ===");
+    const sql0150 = readFileSync(FICHIER_0150, "utf8");
+    console.log("=== 0150 sur une base qui a déjà vécu ===");
 
     await cas("elle s'applique : aucune ligne existante ne viole les contraintes élargies", async () => {
       await client.query("BEGIN");
       try {
-        await client.query(sql0148);
+        await client.query(sql0150);
         await client.query("COMMIT");
       } catch (e) {
         await client.query("ROLLBACK");
@@ -195,7 +195,7 @@ async function main() {
     await pool.end();
   }
 
-  console.log(`\n${echecs === 0 ? "✅" : "❌"} 0148 sur une base habitée — ${echecs} échec(s).`);
+  console.log(`\n${echecs === 0 ? "✅" : "❌"} 0150 sur une base habitée — ${echecs} échec(s).`);
   if (echecs > 0) process.exit(1);
 }
 

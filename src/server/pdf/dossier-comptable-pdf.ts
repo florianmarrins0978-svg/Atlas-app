@@ -59,7 +59,7 @@ export type PieceDeLaLigne =
     }
   | { genre: "facture"; societe: string; nom: string; totalTtc: string | null; fichier: Fichier | null }
   | { genre: "facture-emise"; numero: string }
-  /** Un virement reçu qui paie une facture faite hors d'Atlas (migration 0148) : son total lu, ou tapé, et son fichier. */
+  /** Un virement reçu qui paie une facture faite hors d'Atlas (migration 0150) : son total lu, ou tapé, et son fichier. */
   | { genre: "facture-hors-atlas"; totalTtc: string | null; fichier: Fichier | null };
 
 export type Fichier = { octets: Uint8Array; nature: "image" | "pdf" };

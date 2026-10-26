@@ -42,7 +42,7 @@ import { nettoyerBase } from "./_test-db";
 //   · ticket perdu, facture jointe, motif, et « défaire » qui rend la ligne ;
 //   · un ticket effacé rend sa ligne « à justifier » sans être refusé ;
 //   · une autre entreprise ne voit rien, et ne peut rien relier chez l'autre ;
-//   · (0148) une pièce d'un autre montant ne se joint pas sans son accord ;
+//   · (0150) une pièce d'un autre montant ne se joint pas sans son accord ;
 //     un virement reçu se règle dans sa ligne : facture d'Atlas, facture faite
 //     hors d'Atlas, ou ses cinq réponses à lui.
 
@@ -226,7 +226,7 @@ async function main() {
     assert.equal(ligneAJustifier(e), true);
   });
 
-  // ─── 0148 : l'écart de montant, le virement reçu réglé dans sa ligne ──────
+  // ─── 0150 : l'écart de montant, le virement reçu réglé dans sa ligne ──────
 
   await test("un ticket d'un autre montant ne se relie pas sans son accord, et l'écart reste écrit", async () => {
     await ajouterMouvements(ctx, [sortie("LEROY", "2026-10-23", "48.90")]);

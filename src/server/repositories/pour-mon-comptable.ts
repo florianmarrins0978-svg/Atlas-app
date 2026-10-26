@@ -47,7 +47,7 @@ export type LigneDuReleve = {
   factureRecue: { id: string; nom: string; societe: string; totalTtc: string | null; fichierCle: string; nature: "photo" | "pdf" | "tableur" } | null;
   /** Pour une entrée : la facture d'Atlas qu'il a confirmée, sur l'accueil ou dans sa carte. */
   factureEmise: { numero: string; totalTtc: string } | null;
-  /** Pour une entrée : la facture faite hors d'Atlas qu'il a jointe (migration 0148). */
+  /** Pour une entrée : la facture faite hors d'Atlas qu'il a jointe (migration 0150). */
   pieceJointe: { cle: string; nature: "photo" | "pdf"; total: string | null } | null;
   /**
    * Le montant de la pièce contre celui de la ligne. Une pièce jointe malgré

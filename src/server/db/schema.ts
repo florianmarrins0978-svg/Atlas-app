@@ -4217,7 +4217,7 @@ export const mouvementsBancaires = pgTable("mouvements_bancaires", {
   motif: text("motif", { enum: ["fournisseur", "salaire", "loyer", "impots", "pret", "perso", "remboursement", "aide", "entre_comptes"] }),
   /**
    * La facture faite hors d'Atlas qui justifie un virement reçu (migration
-   * 0148) : son fichier, sa forme, et le total LU dessus. Vides sinon.
+   * 0150) : son fichier, sa forme, et le total LU dessus. Vides sinon.
    */
   pieceCle: text("piece_cle"),
   pieceNature: text("piece_nature", { enum: ["photo", "pdf"] }),

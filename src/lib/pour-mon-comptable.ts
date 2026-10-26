@@ -25,7 +25,7 @@ import { jourIso } from "./jour";
  *   · `motif` : un virement qui n'appelle pas de facture (un salaire, un
  *     loyer, des cotisations, un remboursement reçu…), dont il a dit la nature ;
  *   · `facture_hors_atlas` : un virement reçu qui paie une facture faite hors
- *     d'Atlas, photographiée ou jointe en PDF (migration 0148).
+ *     d'Atlas, photographiée ou jointe en PDF (migration 0150).
  *
  * Une entrée se justifie aussi par la facture d'Atlas qu'il a confirmée
  * (`virements_recus`), sur l'accueil ou dans sa carte du dossier : celle-là

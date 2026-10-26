@@ -84,9 +84,9 @@
 
 ## 6. Trouvé en route, et refermé
 
-**La contrainte de cohérence de la migration 0143 ne refusait rien sur une ligne « à justifier ».** Elle finissait par « la justification est l'une de celles-ci », ce qui vaut *inconnu* quand la justification est vide ; et une contrainte qui vaut inconnu passe. Une ligne à justifier qui portait un ticket ou un motif entrait donc sans refus. L'épreuve de 0148 sur une base habitée l'a montré dès son premier jet (`scripts/test-migration-0148-base-habitee.ts`).
+**La contrainte de cohérence de la migration 0143 ne refusait rien sur une ligne « à justifier ».** Elle finissait par « la justification est l'une de celles-ci », ce qui vaut *inconnu* quand la justification est vide ; et une contrainte qui vaut inconnu passe. Une ligne à justifier qui portait un ticket ou un motif entrait donc sans refus. L'épreuve de 0150 sur une base habitée l'a montré dès son premier jet (`scripts/test-migration-0150-base-habitee.ts`).
 
-0148 la referme, **sans risquer sa base** : la nouvelle règle est posée pour toute écriture nouvelle, sans juger les lignes d'hier. Une ligne ancienne qui ne la tiendrait pas ne peut donc pas bloquer la migration, comme 0087 l'avait fait le 13 septembre. Elle se validera une fois sa base regardée.
+0150 la referme, **sans risquer sa base** : la nouvelle règle est posée pour toute écriture nouvelle, sans juger les lignes d'hier. Une ligne ancienne qui ne la tiendrait pas ne peut donc pas bloquer la migration, comme 0087 l'avait fait le 13 septembre. Elle se validera une fois sa base regardée.
 
 ## 7. Ce qui a été éprouvé, sans batterie
 
@@ -96,7 +96,7 @@
 | Lecture d'une facture hors d'Atlas (`test-facture-hors-atlas-lue.ts`) | 4 sur 4 |
 | Le dossier PDF (`test-dossier-comptable-pdf.ts`) | 17 sur 17 |
 | Base : pour mon comptable, banque, dossiers, vérification, mouvements, achats | 26, 12, 13, 12, 8, 16 : tout vert |
-| 0148 sur une base habitée (`test-migration-0148-base-habitee.ts`) | vert, après avoir rougi sur le trou de 0143 |
+| 0150 sur une base habitée (`test-migration-0150-base-habitee.ts`) | vert, après avoir rougi sur le trou de 0143 |
 | Navigateur : pour mon comptable (dont le virement reçu réglé dans sa carte et l'écart montré avant de joindre) | 11 sur 11 |
 | Navigateur : la page du comptable | 14 sur 14 (8 sur 14 contre l'ancienne page : les six règles nouvelles savent rougir) |
 | Navigateur : la photo du Check up | 4 sur 4 |

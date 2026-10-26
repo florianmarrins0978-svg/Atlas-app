@@ -22,7 +22,7 @@ export type PieceAffichee =
       totalSurUneLigne: boolean;
     }
   | { genre: "facture"; nom: string; detail: string; total: string | null; original: "photo" | "pdf" | null }
-  /** Un virement reçu qui paie une facture faite hors d'Atlas (migration 0148). */
+  /** Un virement reçu qui paie une facture faite hors d'Atlas (migration 0150). */
   | { genre: "hors_atlas"; total: string | null; original: "photo" | "pdf" }
   | { genre: "emise"; numero: string; total: string }
   | { genre: "perdu" }

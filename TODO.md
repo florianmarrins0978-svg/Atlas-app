@@ -64,15 +64,15 @@ Le seed refuse lui-même `atlas_dev` qui porte du travail (`ARCHITECTURE.md` §4
 
 ## ⏳ POUR MON COMPTABLE SOIGNÉ : CE QUI RESTE APRÈS LE LOT DU 26 OCTOBRE 2026
 
-- **La batterie, puis `main`.** Le lot est de niveau 3 (migration 0148, argent) : `npm run verifier:avant-livraison` se joue avant de pousser sur `main`, et se PRÉVIENT (`CLAUDE.md` §5). Il ne l'a pas demandée ce soir (*« ne lance pas de batterie »*).
-- **Valider la contrainte de cohérence de 0148 sur sa base**, une fois regardée : `SELECT count(*)` des lignes qui ne la tiennent pas (la requête est dans `scripts/test-migration-0148-base-habitee.ts`), puis `ALTER TABLE "mouvements_bancaires" VALIDATE CONSTRAINT "mouvements_bancaires_justification_coherente";` par une migration. Posée NOT VALID pour ne jamais bloquer sa base (§515).
+- **La batterie, puis `main`.** Le lot est de niveau 3 (migration 0150, argent) : `npm run verifier:avant-livraison` se joue avant de pousser sur `main`, et se PRÉVIENT (`CLAUDE.md` §5). Il ne l'a pas demandée ce soir (*« ne lance pas de batterie »*).
+- **Valider la contrainte de cohérence de 0150 sur sa base**, une fois regardée : `SELECT count(*)` des lignes qui ne la tiennent pas (la requête est dans `scripts/test-migration-0150-base-habitee.ts`), puis `ALTER TABLE "mouvements_bancaires" VALIDATE CONSTRAINT "mouvements_bancaires_justification_coherente";` par une migration. Posée NOT VALID pour ne jamais bloquer sa base (§515).
 - **La lecture du total d'une facture faite hors d'Atlas** n'est éprouvée qu'à la relecture (aucune clé ici). À jouer sur son espace : photographier une facture depuis la carte d'un virement reçu, et voir si le total se lit ou se fait taper.
 - **Une entrée rejetée par le comptable alors qu'elle était justifiée par une facture d'Atlas** ne propose que ses réponses dans sa carte : choisir une autre facture demande de défaire le règlement sur la facture d'abord. À trancher s'il le rencontre.
 - **Sur ce poste, le navigateur des suites nomme « download » tout fichier tiré d'un blob** : `test-dossiers-comptables-e2e.ts` rougit sur « Télécharger » ici, et ici seulement (éprouvé sur une page nue, sans le code d'Atlas). Le navigateur de la CI est celui des suites ; rien à corriger dans le produit.
 
 ## ~~UN VIREMENT REÇU SANS FACTURE D'ATLAS BLOQUE LE DOSSIER POUR TOUJOURS~~ CODÉ LE 26 OCTOBRE 2026 (signalé le 25)
 
-**Codé sur sa demande du 25 au soir** (*« tu peux coder tout ça »*) : la carte du virement reçu se règle sur place, comme proposé ci-dessous (`ARCHITECTURE.md` §515, `docs/pour-mon-comptable-soigne.md`). Branche `claude/pour-mon-comptable-soigne`, pas encore sur `main` : niveau 3 (migration 0148, argent), la batterie se joue avant.
+**Codé sur sa demande du 25 au soir** (*« tu peux coder tout ça »*) : la carte du virement reçu se règle sur place, comme proposé ci-dessous (`ARCHITECTURE.md` §515, `docs/pour-mon-comptable-soigne.md`). Branche `claude/pour-mon-comptable-soigne`, pas encore sur `main` : niveau 3 (migration 0150, argent), la batterie se joue avant.
 
 **Son signalement :** *« le dernier ticket, je peux pas le valider parce que je dois le valider sur la première page, Vos chantiers, sauf que la notification n'apparaît pas ; donc je peux pas verrouiller mon dossier »*.
 
