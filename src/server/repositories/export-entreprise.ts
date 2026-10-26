@@ -80,6 +80,7 @@ import {
   bilansComptables,
   envoisComptable,
   verdictsComptable,
+  consommationIa,
 } from "../db/schema";
 import type { Ctx } from "./context";
 import { rangerLesFichiers, type FichierARanger } from "@/lib/rangement-sauvegarde";
@@ -230,6 +231,7 @@ export async function exporterEntreprise(
       sesBilansComptables,
       sesEnvoisAuComptable,
       sesVerdictsDuComptable,
+      saConsommationIA,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
       tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
@@ -464,6 +466,8 @@ export async function exporterEntreprise(
       // lien part par son empreinte seule : elle ne rouvre rien.
       tx.select().from(envoisComptable).where(eq(envoisComptable.entrepriseId, e)),
       tx.select().from(verdictsComptable).where(eq(verdictsComptable.entrepriseId, e)),
+      // Ses crédits IA, mois par mois (migration 0148) : une estimation, pas une facture.
+      tx.select().from(consommationIa).where(eq(consommationIa.entrepriseId, e)),
     ]);
 
     // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
@@ -579,6 +583,7 @@ export async function exporterEntreprise(
       bilans_comptables: sesBilansComptables,
       envois_comptable: sesEnvoisAuComptable,
       verdicts_comptable: sesVerdictsDuComptable,
+      consommation_ia: saConsommationIA,
     };
 
     const compte: Record<string, number> = {};
