@@ -1,0 +1,718 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Équipe, soignée</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  ÉQUIPE (src/app/reglages/equipe/page.tsx, QuiAAcces.tsx, ChoixRole.tsx,
+  FinDeChantierReglage.tsx, nouveau/NouveauCompte.tsx, et les pièces qu'il
+  monte : VosEquipes.tsx, VosSalaries.tsx, AbsencesEquipe.tsx, CompteurRond.tsx).
+
+  Sa demande du 25 octobre : une planche par rubrique des Réglages, plus jolie,
+  le doré de l'appli, de la couleur si elle aide, réorganisée si c'est mieux.
+
+  Cinq choses vivent sur cet écran, dans cet ordre, et elles restent dans cet
+  ordre : les comptes (Accès), ce qu'il exige en fin de chantier, combien de
+  chantiers par jour, combien de salariés et leurs noms, les absences.
+  Aujourd'hui elles se suivent sous des libellés en capitales espacées de
+  9,5 px, séparées par des filets ; Proposé les pose en cinq paquets, chacun
+  dans sa plage.
+
+  SES DÉCISIONS QUI NE BOUGENT PAS, relevées dans le code :
+    les comptes d'abord, les files du planning ensuite (planche du 13 août) ;
+    les deux compteurs titrés par une QUESTION en serif (réponse A du
+      8 septembre), et non par une étiquette ;
+    la phrase du compteur des chantiers et son petit carré du planning APRÈS
+      le mot complet (31 août, corrigé le 8 septembre) ;
+    trois rôles sur une ligne, Patron à part avec « Tout, comme vous »
+      (planche du 11 octobre) ; le rôle choisi est un ÉTAT, teinté et coché,
+      jamais plein (sa capture du 26 août) ;
+    Nouveau compte sur un écran à lui (réponse B du 26 août) ;
+    la seconde bascule n'existe que si la première est allumée ;
+    le bloc des noms et celui des absences disparaissent à zéro salarié.
+
+  Ce qui change : les libellés en toutes lettres ; chaque compte dit son rôle
+  dans une pastille, et se touche pour ouvrir SA page (au lieu de s'ouvrir sous
+  sa ligne) ; le rond du rang en or devant chaque nom ; la date d'une absence
+  en or sous le nom ; la phrase de l'agenda devient une plage qui se touche.
+*/
+.ecran { --etat-plein: var(--atlas-rust); }
+/* Un paquet par section : son titre garde l'air d'un titre, le premier colle au titre de l'écran. */
+section > .rubrique:first-child { margin-top: 30px; }
+.paquet-acces > .rubrique:first-child { margin-top: 4px; }
+
+.tete-ronde { width: var(--t, 44px); height: var(--t, 44px); flex: none; display: grid; place-items: center; border-radius: 50%;
+              background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); color: var(--atlas-or);
+              font: 400 calc(var(--t, 44px) * 0.4)/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; }
+.plage .tete-ronde { background: var(--atlas-cream); }
+
+/* Un compte : le nom en gras et son rôle sur la même ligne, l'adresse dessous. */
+.compte .ligne-haut { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.compte .ligne-nom { font-weight: 600; }
+.compte .ligne-situation { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.compte .ligne-fin .ico { color: var(--atlas-or); }
+.ligne-geste { font-size: 17px; font-weight: 600; color: var(--atlas-or); }
+
+/* Les deux compteurs : la question en serif, sa décision du 8 septembre. */
+.question { margin: 32px 0 10px; font: 400 22px/1.25 var(--serif); letter-spacing: -0.005em; }
+.plage-compteur { padding: 20px 18px 16px; }
+.phrase-compteur { margin: 14px 0 0; text-align: center; font-size: 15px; line-height: 1.5; color: var(--atlas-inkSoft); text-wrap: balance; }
+.insecable { white-space: nowrap; }
+.phrase-compteur b { font-weight: 600; color: var(--atlas-ink); }
+.carre { display: inline-block; width: 13px; height: 13px; margin-left: 5px; border-radius: 3px; vertical-align: -1px; background: var(--etat-plein); }
+
+.noms { margin-top: 12px; }
+.nom-salarie { position: relative; display: flex; align-items: center; gap: 14px; min-height: 64px; }
+.nom-salarie + .nom-salarie::before { content: ""; position: absolute; left: 58px; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
+.nom-salarie input { flex: 1; min-width: 0; padding: 0; border: 0; background: transparent; outline: none;
+                     font: 400 18px/1.3 var(--serif); color: var(--atlas-ink); }
+.nom-salarie input::placeholder { color: color-mix(in srgb, var(--atlas-inkSoft) 75%, var(--atlas-card)); }
+.nom-salarie:focus-within .tete-ronde { box-shadow: inset 0 0 0 2px var(--atlas-or); }
+.ecart { margin: 12px 2px 0; font-size: 14.5px; line-height: 1.5; color: var(--atlas-inkSoft); }
+.ecart b { font-weight: 600; color: var(--atlas-ink); }
+
+/* Une absence : qui, la date en or, le motif ; la croix au bout du pouce. */
+.absence { position: relative; display: flex; align-items: center; gap: 14px; min-height: 76px; padding: 12px 0; }
+.absence + .absence::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
+.absence .ligne-nom { font-weight: 600; }
+.absence .quand { display: block; margin-top: 2px; font-size: 15px; font-weight: 600; color: var(--atlas-or); }
+.retirer-rond { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%;
+                color: var(--atlas-inkSoft); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.retirer-rond .ico { width: 18px; height: 18px; }
+.loi { margin: 12px 2px 0; font-size: 14px; line-height: 1.5; color: var(--atlas-inkSoft); }
+.loi b { font-weight: 600; color: var(--atlas-ink); }
+
+.agenda { display: flex; align-items: flex-start; gap: 14px; text-decoration: none; color: inherit; }
+.agenda p { margin: 0; font-size: 15px; line-height: 1.5; color: var(--atlas-inkSoft); }
+.agenda p b { font-weight: 600; color: var(--atlas-or); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 4px; }
+
+/* La page d'un compte : son nom en titre, son adresse dessous. */
+.panneau-titre { margin: 0; font: 400 30px/1.08 var(--serif); letter-spacing: -0.012em; }
+.panneau-sous { margin: 4px 0 6px; font-size: var(--t-second); color: var(--atlas-inkSoft); }
+
+/* Le rôle : trois sur une ligne, Patron à part (planche du 11 octobre). */
+.roles-trois { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.role { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; min-height: 80px; padding: 10px 4px;
+        border-radius: 14px; background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); font-size: 15px; font-weight: 600;
+        color: var(--atlas-inkSoft); transition: box-shadow 200ms var(--courbe), background-color 200ms var(--courbe); }
+.role[aria-pressed="true"] { background: var(--atlas-rustTint); color: var(--atlas-ink); box-shadow: inset 0 0 0 2px var(--atlas-rust); }
+.role-patron { flex-direction: row; justify-content: flex-start; gap: 12px; width: 100%; min-height: 56px; margin-top: 8px; padding: 0 16px; }
+.role-patron small { margin-left: auto; font-size: 14.5px; font-weight: 400; color: var(--atlas-inkSoft); }
+
+/* Ce que le rôle donne, et ce qu'il ferme : un coche, un cadenas. */
+.droits { display: grid; gap: 8px; margin-top: 12px; }
+.droits > div { border-radius: var(--r-plage); padding: 14px 16px 8px; }
+.droits-oui { background: var(--atlas-carteVertFond); }
+.droits-non { background: var(--atlas-card); }
+.droits-titre { margin: 0 0 6px; font-size: 14px; font-weight: 700; }
+.droits-oui .droits-titre { color: var(--atlas-carteVertTexte); }
+.droits-non .droits-titre { color: var(--atlas-inkSoft); }
+.droits ul { margin: 0; padding: 0; list-style: none; }
+.droits li { position: relative; padding: 2px 0 7px 27px; font-size: 15px; line-height: 1.4; }
+.droits li .ico { position: absolute; left: 0; top: 3px; width: 18px; height: 18px; }
+.droits-oui li { color: var(--atlas-ink); }
+.droits-oui li .ico { color: var(--atlas-carteVertTexte); stroke-width: 2.4; }
+.droits-non li { color: var(--atlas-inkSoft); }
+.droits-non li .ico { color: var(--atlas-inkSoft); }
+.droits-rien { margin: 0 0 8px; font-size: 15px; color: var(--atlas-inkSoft); }
+
+.sous-titre { margin: 22px 0 10px; font-size: 14px; font-weight: 600; color: var(--atlas-inkSoft); }
+.pastilles { display: flex; flex-wrap: wrap; gap: 8px; }
+.pastille { min-height: 44px; padding: 0 16px; border-radius: 22px; font-size: 15px; font-weight: 600; color: var(--atlas-inkSoft);
+            box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.pastille[aria-pressed="true"] { background: var(--atlas-rustTint); color: var(--atlas-ink); box-shadow: inset 0 0 0 2px var(--atlas-rust); }
+.retirer-acces { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 52px; margin-top: 30px;
+                 font-size: 16px; font-weight: 600; color: var(--atlas-alerte); }
+
+/* Les cases de Nouveau compte, et l'œil de chaque mot de passe. */
+.secret { display: flex; align-items: center; gap: 8px; }
+.secret input { flex: 1; min-width: 0; }
+.oeil { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-inkSoft); margin: -6px -10px -6px 0; }
+.oeil[aria-pressed="true"] { color: var(--atlas-or); }
+.identiques { color: var(--atlas-carteVertTexte); font-weight: 600; }
+.differents { color: var(--atlas-alerte); font-weight: 600; }
+.panneau-avec-action { padding-bottom: 96px; }
+
+/* La feuille d'une absence. */
+.choisir { appearance: none; -webkit-appearance: none; width: 100%; margin-top: 3px; padding: 0; border: 0; background: transparent;
+           font: 400 18px/1.3 var(--serif); color: var(--atlas-ink); outline: none; }
+.valeur-bas { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.valeur-bas .ico { width: 20px; height: 20px; color: var(--atlas-or); }
+
+/* Plus loin : le sommaire de l'équipe. */
+.sommaire-equipe .ligne { min-height: 72px; }
+.sommaire-equipe .ligne-nom { font-size: 18.5px; }
+.sommaire-equipe .ligne-fin .ico { color: var(--atlas-or); }
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="reglages.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Réglages</a>
+  <h1 class="pl-titre">Équipe</h1>
+  <p class="pl-verdict">Les cinq choses de l'écran, dans le même ordre, chacune dans <b>son paquet</b>. Chaque compte dit son rôle d'un coup d'œil et <b>s'ouvre sur sa page</b> ; les deux compteurs gardent leur question et le petit carré du planning.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <!-- ═══ PROPOSÉ ═══ -->
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats" data-ecran="#ecran-propose, #capture-equipe">
+        <button type="button" data-etat="equipe" aria-pressed="true">Une petite équipe</button>
+        <button type="button" data-etat="seul">Seul, sans salarié</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre" data-etat="equipe" id="ecran-propose">
+          <div class="defile">
+
+            <div data-ecran-panneau="equipe">
+              <div class="tete-ronds">
+                <a class="rond-creux" href="reglages.html" aria-label="Retour aux réglages"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+                <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              </div>
+              <header class="tete" style="margin-top:0"><h1 class="tete-titre">Équipe</h1></header>
+
+              <section class="paquet-acces">
+                <p class="rubrique rubrique-or">Accès</p>
+                <div class="plage plage-serree">
+                  <ul class="liste">
+                    <li><button class="ligne touche compte" type="button" data-vers="p-vous">
+                      <span class="tete-ronde" aria-hidden="true">C</span>
+                      <span class="ligne-corps">
+                        <span class="ligne-haut"><span class="ligne-nom">Vous</span><span class="etat" data-ton="or">Patron</span></span>
+                        <span class="ligne-situation">contact@jardins-demo.fr</span>
+                      </span>
+                      <span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>
+                    </button></li>
+                    <li data-si-etat="equipe"><button class="ligne touche compte" type="button" data-vers="p-sophie">
+                      <span class="tete-ronde" aria-hidden="true">S</span>
+                      <span class="ligne-corps">
+                        <span class="ligne-haut"><span class="ligne-nom">Sophie</span><span class="etat">Facturation</span></span>
+                        <span class="ligne-situation">sophie@jardins-demo.fr</span>
+                      </span>
+                      <span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>
+                    </button></li>
+                    <li data-si-etat="equipe"><button class="ligne touche compte" type="button" data-vers="p-lucas">
+                      <span class="tete-ronde" aria-hidden="true">1</span>
+                      <span class="ligne-corps">
+                        <span class="ligne-haut"><span class="ligne-nom">Lucas</span><span class="etat">Salarié</span></span>
+                        <span class="ligne-situation">lucas@jardins-demo.fr</span>
+                      </span>
+                      <span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>
+                    </button></li>
+                    <li><button class="ligne touche compte" type="button" data-vers="nouveau">
+                      <span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg></span>
+                      <span class="ligne-corps"><span class="ligne-geste">Donner un accès</span></span>
+                      <span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>
+                    </button></li>
+                  </ul>
+                </div>
+              </section>
+
+              <section class="paquet-fin">
+                <p class="rubrique rubrique-or">Fin de chantier</p>
+                <div class="plage plage-serree">
+                  <div class="ligne-bascule">
+                    <span class="ligne-corps"><b>Demander une preuve</b><small>Rappelle d'envoyer le retour d'intervention à chaque fin de chantier</small></span>
+                    <button class="bascule" type="button" role="switch" aria-checked="true" aria-label="Demander une preuve" data-preuve></button>
+                  </div>
+                  <div class="ligne-bascule" data-photo>
+                    <span class="ligne-corps"><b>Au moins une photo</b><small>Rappelée aussi, avant l'envoi</small></span>
+                    <button class="bascule" type="button" role="switch" aria-checked="false" aria-label="Au moins une photo"></button>
+                  </div>
+                </div>
+              </section>
+
+              <section class="paquet-chantiers" data-bloc="chantiers">
+                <h2 class="question">Combien de chantiers par jour&nbsp;?</h2>
+                <div class="plage plage-compteur">
+                  <div class="compteur" data-min="1" data-max="20">
+                    <button type="button" data-pas="-1" aria-label="Une équipe de moins"><svg class="ico" aria-hidden="true"><use href="#i-moins"/></svg></button>
+                    <output>2</output>
+                    <button type="button" data-pas="1" aria-label="Une équipe de plus"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg></button>
+                  </div>
+                  <p class="phrase-compteur"><span data-combien>2 chantiers</span> par jour pour un planning <b>complet</b><span class="carre" aria-hidden="true"></span>.</p>
+                </div>
+              </section>
+
+              <section class="paquet-salaries" data-bloc="salaries">
+                <h2 class="question">Combien de salariés&nbsp;?</h2>
+                <div class="plage plage-compteur">
+                  <div class="compteur" data-min="0" data-max="20">
+                    <button type="button" data-pas="-1" aria-label="Un salarié de moins"><svg class="ico" aria-hidden="true"><use href="#i-moins"/></svg></button>
+                    <output>4</output>
+                    <button type="button" data-pas="1" aria-label="Un salarié de plus"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg></button>
+                  </div>
+                  <p class="phrase-compteur" data-phrase-salaries>Leurs noms se cochent sur chaque <span class="insecable">demi-journée</span>.</p>
+                  <div class="noms" data-noms></div>
+                </div>
+                <p class="ecart" data-ecart></p>
+              </section>
+
+              <section class="paquet-absences">
+                <p class="rubrique rubrique-or">Absences</p>
+                <div data-si-salaries="oui">
+                  <div class="plage plage-serree">
+                    <div class="absence">
+                      <span class="tete-ronde" style="--t:40px" aria-hidden="true">2</span>
+                      <span class="ligne-corps">
+                        <span class="ligne-nom">Thomas</span>
+                        <span class="quand">du 3 au 7 novembre</span>
+                        <span class="ligne-situation">Déplacement à Nantes</span>
+                      </span>
+                      <button class="retirer-rond" type="button" aria-label="Retirer l'absence de Thomas" data-note="Sur la planche, rien n'est retiré."><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></button>
+                    </div>
+                  </div>
+                  <button class="bouton bouton-creux mt-16" type="button" data-ouvre="feuille-absence"><svg class="ico" aria-hidden="true" style="color:var(--atlas-or)"><use href="#i-plus"/></svg>Noter une absence</button>
+                  <p class="loi">Un absent <b>ne compte plus</b> ces jours-là : Atlas propose une date de moins, et tout revient normal ensuite. Vos clients ne voient rien de tout ceci.</p>
+                </div>
+                <div data-si-salaries="non" hidden>
+                  <a class="plage agenda touche" href="reglages-agenda.html">
+                    <span class="pastille-ico" data-ton="bleu"><svg class="ico" aria-hidden="true"><use href="#i-calendrier"/></svg></span>
+                    <p>Seul, une absence fermerait l'entreprise : plus aucune date ne serait proposable. Pour vos congés, <b>reliez votre agenda</b> : Atlas n'en tient compte qu'une fois relié.</p>
+                  </a>
+                </div>
+              </section>
+            </div>
+
+            <!-- La page d'un compte : ce que la ligne ouvrait sous elle, sur un écran à elle. -->
+            <div data-ecran-panneau="p-vous" hidden>
+              <div class="tete-ronds"><button class="rond-creux" type="button" data-vers="equipe" aria-label="Retour à l'équipe"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button></div>
+              <h1 class="panneau-titre">Vous</h1>
+              <p class="panneau-sous">contact@jardins-demo.fr</p>
+              <p class="rubrique rubrique-or">Son rôle</p>
+              <div class="roles" data-roles="proprietaire"></div>
+              <div data-si-salaries="oui">
+                <p class="sous-titre">C'est qui&nbsp;?</p>
+                <div class="pastilles" data-un-seul data-noms-pastilles="personne"></div>
+              </div>
+            </div>
+
+            <div data-ecran-panneau="p-sophie" hidden>
+              <div class="tete-ronds"><button class="rond-creux" type="button" data-vers="equipe" aria-label="Retour à l'équipe"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button></div>
+              <h1 class="panneau-titre">Sophie</h1>
+              <p class="panneau-sous">sophie@jardins-demo.fr</p>
+              <p class="rubrique rubrique-or">Son rôle</p>
+              <div class="roles" data-roles="facturation"></div>
+              <div data-si-salaries="oui">
+                <p class="sous-titre">C'est qui&nbsp;?</p>
+                <div class="pastilles" data-un-seul data-noms-pastilles="personne"></div>
+              </div>
+              <button class="retirer-acces touche" type="button" data-note="Sur la planche, rien n'est retiré."><svg class="ico ico-p" aria-hidden="true"><use href="#i-croix"/></svg>Retirer l'accès</button>
+            </div>
+
+            <div data-ecran-panneau="p-lucas" hidden>
+              <div class="tete-ronds"><button class="rond-creux" type="button" data-vers="equipe" aria-label="Retour à l'équipe"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button></div>
+              <h1 class="panneau-titre">Lucas</h1>
+              <p class="panneau-sous">lucas@jardins-demo.fr</p>
+              <p class="rubrique rubrique-or">Son rôle</p>
+              <div class="roles" data-roles="salarie"></div>
+              <div data-si-salaries="oui">
+                <p class="sous-titre">C'est qui&nbsp;?</p>
+                <div class="pastilles" data-un-seul data-noms-pastilles="1"></div>
+              </div>
+              <div data-si-role="salarie">
+                <p class="sous-titre">Ce qu'il voit du planning</p>
+                <div class="choix">
+                  <button type="button" aria-pressed="false">Tout le planning</button>
+                  <button type="button" aria-pressed="true" data-montre="voit-equipe-lucas">Son équipe</button>
+                </div>
+                <div class="pastilles mt-8" id="voit-equipe-lucas" data-un-seul data-noms-pastilles="1" data-sans-personne></div>
+              </div>
+              <button class="retirer-acces touche" type="button" data-note="Sur la planche, rien n'est retiré."><svg class="ico ico-p" aria-hidden="true"><use href="#i-croix"/></svg>Retirer l'accès</button>
+            </div>
+
+            <!-- Nouveau compte : l'écran à lui seul, sa réponse B du 26 août. -->
+            <div data-ecran-panneau="nouveau" class="panneau-avec-action" hidden>
+              <div class="tete-ronds"><button class="rond-creux" type="button" data-vers="equipe" aria-label="Retour à l'équipe"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button></div>
+              <h1 class="panneau-titre">Nouveau compte</h1>
+              <p class="rubrique rubrique-or">Son rôle</p>
+              <div class="roles" data-roles="salarie"></div>
+              <p class="rubrique rubrique-or">Son compte</p>
+              <div class="plage reglages">
+                <label class="reglage"><span class="reglage-libelle">Nom</span><input class="reglage-valeur" autocomplete="off" placeholder="Son prénom"></label>
+                <label class="reglage"><span class="reglage-libelle">Adresse e-mail</span><input class="reglage-valeur" type="email" inputmode="email" autocomplete="off" placeholder="nom@exemple.fr"></label>
+                <label class="reglage"><span class="reglage-libelle">Mot de passe</span>
+                  <span class="secret"><input class="reglage-valeur" type="password" autocomplete="new-password" data-mdp><button class="oeil" type="button" aria-pressed="false" aria-label="Voir le mot de passe"><svg class="ico" aria-hidden="true"><use href="#i-oeil"/></svg></button></span>
+                  <span class="reglage-sous">Au moins 12 caractères</span></label>
+                <label class="reglage"><span class="reglage-libelle">Confirmer le mot de passe</span>
+                  <span class="secret"><input class="reglage-valeur" type="password" autocomplete="new-password" data-confirmation><button class="oeil" type="button" aria-pressed="false" aria-label="Voir la confirmation"><svg class="ico" aria-hidden="true"><use href="#i-oeil"/></svg></button></span>
+                  <span class="reglage-sous" data-accord hidden></span></label>
+              </div>
+              <button class="bouton bouton-texte mt-8" type="button" data-vers="equipe" style="width:100%;justify-content:center;color:var(--atlas-inkSoft)">Annuler</button>
+              <div class="action-bas"><button class="bouton bouton-plein" type="button" data-note="Sur la planche, aucun compte n'est créé.">Créer le compte</button></div>
+            </div>
+
+          </div>
+
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html">Terminés</a>
+              <a class="barre-onglet" href="paysage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html" aria-current="page">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+
+          <section class="feuille" id="feuille-absence" aria-hidden="true" aria-label="Noter une absence">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre">Qui n'est pas là&nbsp;?</h2>
+              <div class="plage reglages">
+                <label class="reglage"><span class="reglage-libelle">Qui</span>
+                  <span class="valeur-bas"><select class="choisir" data-qui aria-label="Qui est absent"><option value="Lucas">Lucas</option><option value="Thomas" selected>Thomas</option><option value="Hugo">Hugo</option><option value="Salarié 4">Salarié 4</option></select><svg class="ico" aria-hidden="true"><use href="#i-bas"/></svg></span></label>
+                <div class="reglage-rang reglage" style="gap:18px">
+                  <span><span class="reglage-libelle">Du</span><span class="reglage-valeur">3 novembre 2026</span></span>
+                  <span><span class="reglage-libelle">Au</span><span class="reglage-valeur">7 novembre 2026</span></span>
+                </div>
+                <label class="reglage"><span class="reglage-libelle">Motif</span><input class="reglage-valeur" placeholder="Déplacement…"></label>
+              </div>
+              <p class="plage-ton mt-8" data-ton="or" data-resume>Absence de <b>Thomas</b> du 3 au 7 novembre, week-ends compris. Le motif n'est là que pour vous.</p>
+              <div class="pile mt-16">
+                <button class="bouton bouton-plein" type="button" data-fait="Sur la planche, rien n'est enregistré.">Noter l'absence</button>
+                <button class="bouton bouton-texte" type="button" data-ferme style="width:100%;justify-content:center;color:var(--atlas-inkSoft)">Annuler</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PLUS LOIN : l'écran coupé en cinq lignes ═══ -->
+    <div data-vue-panneau="plus-loin">
+      <p class="pl-legende">Plus loin</p>
+      <div class="cadre">
+        <div class="ecran avec-barre" id="ecran-plus-loin">
+          <div class="defile">
+            <div data-ecran-panneau="sommaire">
+              <div class="tete-ronds">
+                <a class="rond-creux" href="reglages.html" aria-label="Retour aux réglages"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+                <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              </div>
+              <header class="tete" style="margin-top:0"><h1 class="tete-titre">Équipe</h1></header>
+              <div class="plage plage-serree sommaire-equipe">
+                <ul class="liste">
+                  <li><button class="ligne touche" type="button" data-vers="acces"><span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-cle"/></svg></span><span class="ligne-corps"><span class="ligne-nom">Accès</span><span class="ligne-situation">Vous, Sophie et Lucas</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></button></li>
+                  <li><button class="ligne touche" type="button" data-vers="fin"><span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-photo"/></svg></span><span class="ligne-corps"><span class="ligne-nom">Fin de chantier</span><span class="etat" data-ton="vert" style="margin-top:5px">Preuve demandée</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></button></li>
+                  <li><button class="ligne touche" type="button" data-vers="chantiers"><span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-calendrier"/></svg></span><span class="ligne-corps"><span class="ligne-nom">Chantiers par jour</span><span class="ligne-situation">2 pour un planning complet<span class="carre" aria-hidden="true"></span></span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></button></li>
+                  <li><button class="ligne touche" type="button" data-vers="salaries"><span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-equipe"/></svg></span><span class="ligne-corps"><span class="ligne-nom">Salariés</span><span class="ligne-situation">4 : Lucas, Thomas, Hugo, Salarié 4</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></button></li>
+                  <li><button class="ligne touche" type="button" data-vers="absences"><span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-horloge"/></svg></span><span class="ligne-corps"><span class="ligne-nom">Absences</span><span class="ligne-situation">Thomas, du 3 au 7 novembre</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></button></li>
+                </ul>
+              </div>
+            </div>
+            <!-- Les panneaux courts se recopient de Proposé au chargement : le même contenu, paquet par paquet. -->
+          </div>
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html">Terminés</a>
+              <a class="barre-onglet" href="paysage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html" aria-current="page">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ AUJOURD'HUI ═══ -->
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre">
+        <div class="cadre-capture" id="capture-equipe">
+          <img src="aujourdhui/reglages-equipe-rempli.jpg" alt="L'écran Équipe aujourd'hui, avec trois comptes et trois salariés" data-si-etat="equipe">
+          <img src="aujourdhui/reglages-equipe.jpg" alt="L'écran Équipe aujourd'hui, pour un patron seul" data-si-etat="seul">
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>Cinq paquets dans l'ordre d'aujourd'hui : Accès, Fin de chantier, les deux compteurs, Absences. Chacun dans sa plage, sous un titre doré ou sous sa question.</li>
+      <li>Chaque compte dit son rôle dans une pastille, Patron en or. Le nom passe en gras.</li>
+      <li>Toucher un compte ouvre SA page, comme Nouveau compte : son rôle, ce qu'il pourra et ne pourra pas, C'est qui, ce qu'il voit du planning, Retirer l'accès. Aujourd'hui tout cela s'ouvre sous sa ligne, au milieu des autres.</li>
+      <li>Pourra et Ne pourra pas passent l'un sous l'autre, en 15 px au lieu de deux colonnes en 13,5 px : Pourra sur une plage verte avec ses coches, Ne pourra pas avec ses cadenas.</li>
+      <li>Les titres de paquet en or, comme sur le sommaire ; les petits libellés (C'est qui, Ce qu'il voit du planning, Pourra) en toutes lettres, au lieu de capitales espacées de 9,5 px.</li>
+      <li>Devant chaque nom de salarié, son rond en or ; la date d'une absence en or sous le nom, et la croix grandit à 44 px.</li>
+      <li>Seul, la phrase de l'agenda devient une plage qui se touche tout entière.</li>
+      <li>Créer le compte reste le seul bouton plein, posé au-dessus de la barre.</li>
+      <li>« ABSENCE » en capitales au-dessus de « Qui n'est pas là ? » part : la question suffit.</li>
+      <li>La phrase de la feuille ne dit plus « Thomas sera absente » (aujourd'hui elle met le féminin à tout le monde) : elle s'écrit « Absence de Thomas du 3 au 7 novembre », juste pour chacun.</li>
+    </ul>
+    <h2>Plus loin</h2>
+    <ul>
+      <li>L'écran coupé en cinq lignes, comme Devis &amp; factures : chaque ligne dit déjà ce qu'elle porte (qui a accès, la preuve demandée, 2 chantiers, les quatre noms, l'absence de Thomas).</li>
+      <li>Touchez une ligne : son paquet s'ouvre seul, le rond du haut ramène au sommaire.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Les deux questions en serif et leurs compteurs ; « 2 chantiers par jour pour un planning complet » et le petit carré après le mot. Touchez le moins et le plus : le chiffre bouge dans la phrase.</li>
+      <li>Les noms se tapent sur leur ligne, et un salarié sans nom s'annonce sous son numéro. À zéro, le bloc des noms et les absences disparaissent : touchez « Seul, sans salarié », ou descendez le compteur.</li>
+      <li>Trois rôles sur une ligne, Patron à part avec « Tout, comme vous ». Le rôle choisi est teinté et coché, jamais plein, et la liste suit le rôle : touchez Commercial.</li>
+      <li>« Au moins une photo » n'existe que si « Demander une preuve » est allumé.</li>
+      <li>Ce qu'il voit du planning, seulement pour un salarié ; on ne se retire pas soi-même ; l'œil de chaque mot de passe ; la phrase « Retiré de … » quand un congé défait une affectation.</li>
+      <li>Un commercial ou un salarié n'ouvre pas Équipe ; sans la formule Entreprise, les absences et la fin de chantier laissent leur place à « Les absences sont dans Entreprise ».</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>Proposé, une seule page en cinq paquets, ou Plus loin, cinq lignes qui s'ouvrent.</li>
+      <li>Un compte qui s'ouvre sur sa page, ou qui s'ouvre sous sa ligne comme aujourd'hui.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="reglages-identite.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Mon entreprise</a>
+  <a href="reglages-vehicules.html">Véhicules<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* Ce que chaque rôle donne et ferme : les phrases de src/lib/acces-roles.ts
+     (ceQueLeRoleChange), au caractère près. */
+  var ROLES = {
+    facturation: { mot: "Facturation",
+      peut: ["Les clients, les devis, les factures", "Le relevé de TVA, les paiements, les achats", "Le planning, en lecture"],
+      non: ["Modifier le planning", "Les tarifs et les grilles de prix", "L'identité de l'entreprise et l'IBAN", "Les accès et l'abonnement"] },
+    commercial: { mot: "Commercial",
+      peut: ["Les chantiers, le planning, les devis et les prix", "Poser, déplacer et supprimer un chantier"],
+      non: ["Les factures et le relevé de TVA", "La mise en page des devis", "L'identité de l'entreprise et l'IBAN", "Les accès et l'abonnement"] },
+    salarie: { mot: "Salarié",
+      peut: ["Le planning, en lecture", "La feuille de chantier, sans un seul montant"],
+      non: ["Modifier le planning", "Les prix, les devis, les factures", "Les chantiers et les clients", "Les réglages de l'entreprise"] },
+    proprietaire: { mot: "Patron",
+      peut: ["Tout Atlas", "Les tarifs, l'identité, l'IBAN, l'abonnement", "Donner et retirer les accès"], non: [] }
+  };
+  var ICO = function (n) { return '<svg class="ico" aria-hidden="true"><use href="#i-' + n + '"/></svg>'; };
+  function texte(t) { var d = document.createElement("div"); d.textContent = t; return d.innerHTML; }
+
+  function dessinerRoles(boite) {
+    var role = boite.getAttribute("data-roles");
+    var trois = ["facturation", "commercial", "salarie"].map(function (r) {
+      return '<button class="role" type="button" data-role="' + r + '" aria-pressed="' + (r === role) + '"><span class="coche-ronde" aria-hidden="true"></span>' + ROLES[r].mot + "</button>";
+    }).join("");
+    boite.innerHTML = '<div class="roles-trois">' + trois + "</div>" +
+      '<button class="role role-patron" type="button" data-role="proprietaire" aria-pressed="' + (role === "proprietaire") + '"><span class="coche-ronde" aria-hidden="true"></span>Patron<small>Tout, comme vous</small></button>' +
+      '<div class="droits" data-droits></div>';
+    dessinerDroits(boite, role);
+  }
+  function dessinerDroits(boite, role) {
+    var d = ROLES[role];
+    var oui = d.peut.map(function (l) { return "<li>" + ICO("coche") + texte(l) + "</li>"; }).join("");
+    var non = d.non.length ? "<ul>" + d.non.map(function (l) { return "<li>" + ICO("cadenas") + texte(l) + "</li>"; }).join("") + "</ul>"
+                           : '<p class="droits-rien">Rien ne lui est fermé.</p>';
+    boite.querySelector("[data-droits]").innerHTML =
+      '<div class="droits-oui"><p class="droits-titre">Pourra</p><ul>' + oui + "</ul></div>" +
+      '<div class="droits-non"><p class="droits-titre">Ne pourra pas</p>' + non + "</div>";
+    var page = boite.closest("[data-ecran-panneau]");
+    if (page) page.querySelectorAll("[data-si-role]").forEach(function (el) { el.hidden = el.getAttribute("data-si-role") !== role; });
+  }
+
+  /* Les salariés : quatre au départ, le quatrième sans nom (VosSalaries.tsx). */
+  var noms = ["Lucas", "Thomas", "Hugo", "", "", "", "", ""];
+  var combien = 4;
+  function libelle(rang) { return (noms[rang - 1] || "").trim() || "Salarié " + rang; }
+
+  function dessinerSalaries(bloc, n) {
+    var sortie = bloc.querySelector(".compteur output");
+    sortie.textContent = String(n);
+    bloc.querySelectorAll(".compteur [data-pas]").forEach(function (b) {
+      var vers = n + Number(b.getAttribute("data-pas"));
+      b.disabled = vers < 0 || vers > 20;
+    });
+    bloc.querySelector("[data-phrase-salaries]").innerHTML = n <= 0 ? "Seul : rien à cocher sur un chantier." : 'Leurs noms se cochent sur chaque <span class="insecable">demi-journée</span>.';
+    var liste = bloc.querySelector("[data-noms]");
+    var html = "";
+    for (var r = 1; r <= n; r++) {
+      html += '<div class="nom-salarie"><span class="tete-ronde" aria-hidden="true">' + r + '</span><input data-rang="' + r + '" value="' +
+              texte(noms[r - 1] || "") + '" placeholder="Salarié ' + r + '" aria-label="Nom du salarié ' + r + '" autocomplete="off" spellcheck="false"></div>';
+    }
+    liste.innerHTML = html;
+    liste.hidden = n <= 0;
+    ecart(bloc, n);
+  }
+  function ecart(bloc, n) {
+    var sansNom = 0;
+    for (var r = 1; r <= n; r++) if (!(noms[r - 1] || "").trim()) sansNom++;
+    var p = bloc.querySelector("[data-ecart]");
+    p.hidden = sansNom === 0;
+    p.innerHTML = sansNom === 1 ? "Un salarié n'a pas de nom : <b>le chantier le montrera sous son numéro</b>."
+                                : sansNom + " salariés n'ont pas de nom : <b>le chantier les montrera sous leur numéro</b>.";
+  }
+  /* Ce qui dépend du nombre de salariés, partout : les absences, « C'est qui ». */
+  function selonSalaries(n) {
+    document.querySelectorAll("[data-si-salaries]").forEach(function (el) {
+      el.hidden = (el.getAttribute("data-si-salaries") === "oui") !== (n > 0);
+    });
+    document.querySelectorAll("[data-noms-pastilles]").forEach(function (boite) {
+      var choisi = boite.getAttribute("data-noms-pastilles");
+      var html = "";
+      for (var r = 1; r <= n; r++) html += '<button class="pastille" type="button" data-choix="' + r + '" aria-pressed="' + (String(r) === choisi) + '">' + texte(libelle(r)) + "</button>";
+      if (!boite.hasAttribute("data-sans-personne")) html += '<button class="pastille" type="button" data-choix="personne" aria-pressed="' + (choisi === "personne") + '">Personne</button>';
+      boite.innerHTML = html;
+    });
+    document.querySelectorAll("[data-qui]").forEach(function (s) {
+      var avant = s.value, html = "";
+      for (var r = 1; r <= n; r++) html += '<option value="' + texte(libelle(r)) + '"' + (libelle(r) === avant ? " selected" : "") + ">" + texte(libelle(r)) + "</option>";
+      s.innerHTML = html;
+      resume(s);
+    });
+  }
+  function resume(select) {
+    var p = select.closest(".feuille").querySelector("[data-resume]");
+    p.innerHTML = "Absence de <b>" + texte(select.value || "") + "</b> du 3 au 7 novembre, week-ends compris. Le motif n'est là que pour vous.";
+  }
+  function dessinerChantiers(bloc, n) {
+    bloc.querySelector(".compteur output").textContent = String(n);
+    bloc.querySelectorAll(".compteur [data-pas]").forEach(function (b) {
+      var vers = n + Number(b.getAttribute("data-pas"));
+      b.disabled = vers < 1 || vers > 20;
+    });
+    bloc.querySelector("[data-combien]").textContent = n <= 1 ? "Un chantier" : n + " chantiers";
+  }
+  function preuve(page, oui) {
+    page.querySelectorAll("[data-preuve]").forEach(function (b) {
+      b.setAttribute("aria-checked", oui ? "true" : "false");
+      var photo = b.closest(".plage").querySelector("[data-photo]");
+      if (photo) photo.hidden = !oui;
+    });
+  }
+
+  function partout(selecteur, fn) { document.querySelectorAll(selecteur).forEach(fn); }
+  function appliquerEtat(etat) {
+    combien = etat === "seul" ? 0 : 4;
+    partout("[data-bloc='salaries']", function (b) { dessinerSalaries(b, combien); });
+    partout("[data-bloc='chantiers']", function (b) { dessinerChantiers(b, etat === "seul" ? 1 : 2); });
+    preuve(document, etat !== "seul");
+    selonSalaries(combien);
+  }
+
+  /* Plus loin : chaque paquet de Proposé devient un écran court. */
+  function recopierPlusLoin() {
+    var ecran = document.getElementById("ecran-plus-loin");
+    var defile = ecran.querySelector(".defile");
+    var source = document.getElementById("ecran-propose");
+    var retour = function (vers, quoi) {
+      return '<div class="tete-ronds"><button class="rond-creux" type="button" data-vers="' + vers + '" aria-label="Retour à ' + quoi + '">' + ICO("retour") + "</button></div>";
+    };
+    [["acces", ".paquet-acces", "Accès"], ["fin", ".paquet-fin", "Fin de chantier"], ["chantiers", ".paquet-chantiers", ""],
+     ["salaries", ".paquet-salaries", ""], ["absences", ".paquet-absences", "Absences"]].forEach(function (p) {
+      var panneau = document.createElement("div");
+      panneau.setAttribute("data-ecran-panneau", p[0]);
+      panneau.hidden = true;
+      panneau.innerHTML = retour("sommaire", "l'équipe") + (p[2] ? '<h1 class="panneau-titre" style="margin-bottom:6px">' + p[2] + "</h1>" : "");
+      var copie = source.querySelector(p[1]).cloneNode(true);
+      var titre = copie.querySelector(".rubrique");
+      if (titre) titre.remove();
+      var question = copie.querySelector(".question");
+      if (question) { question.classList.add("panneau-titre"); question.style.marginTop = "0"; }
+      copie.querySelectorAll("[data-ouvre='feuille-absence']").forEach(function (b) { b.setAttribute("data-ouvre", "feuille-absence-loin"); });
+      panneau.appendChild(copie);
+      defile.appendChild(panneau);
+    });
+    source.querySelectorAll("[data-ecran-panneau^='p-'], [data-ecran-panneau='nouveau']").forEach(function (p) {
+      var copie = p.cloneNode(true);
+      copie.querySelectorAll("[data-vers='equipe']").forEach(function (b) { b.setAttribute("data-vers", "acces"); b.setAttribute("aria-label", "Retour aux accès"); });
+      copie.querySelectorAll("[id]").forEach(function (el) {
+        var ancien = el.id; el.id = ancien + "-loin";
+        copie.querySelectorAll("[data-montre='" + ancien + "']").forEach(function (b) { b.setAttribute("data-montre", ancien + "-loin"); });
+      });
+      copie.hidden = true;
+      defile.appendChild(copie);
+    });
+    var feuille = document.getElementById("feuille-absence").cloneNode(true);
+    feuille.id = "feuille-absence-loin";
+    ecran.appendChild(feuille);
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    partout("[data-roles]", dessinerRoles);
+    recopierPlusLoin();
+    partout("#ecran-plus-loin [data-roles]", dessinerRoles);
+    appliquerEtat("equipe");
+    Kit.appliquerEtat(document.getElementById("ecran-plus-loin"), "equipe");
+    /* Branché APRÈS le kit : la bascule est déjà retournée quand on la lit. */
+    document.addEventListener("click", surClic);
+  });
+
+  function surClic(e) {
+    var etat = e.target.closest(".pl-etats button[data-etat]");
+    if (etat) { appliquerEtat(etat.getAttribute("data-etat")); return; }
+    var role = e.target.closest("[data-roles] [data-role]");
+    if (role) {
+      var boite = role.closest("[data-roles]");
+      boite.querySelectorAll("[data-role]").forEach(function (b) { b.setAttribute("aria-pressed", b === role ? "true" : "false"); });
+      dessinerDroits(boite, role.getAttribute("data-role"));
+      return;
+    }
+    var bascule = e.target.closest("[data-preuve]");
+    if (bascule) {
+      /* Le kit vient de la retourner : la seconde suit. */
+      var photo = bascule.closest(".plage").querySelector("[data-photo]");
+      if (photo) photo.hidden = bascule.getAttribute("aria-checked") !== "true";
+      return;
+    }
+    var oeil = e.target.closest(".oeil");
+    if (oeil) {
+      e.preventDefault();
+      var champ = oeil.parentNode.querySelector("input");
+      var ouvert = champ.type === "password";
+      champ.type = ouvert ? "text" : "password";
+      oeil.setAttribute("aria-pressed", ouvert ? "true" : "false");
+      return;
+    }
+    var fait = e.target.closest("[data-fait]");
+    if (fait) { var ecran = fait.closest(".ecran"); Kit.fermerFeuilles(ecran); Kit.note(fait, fait.getAttribute("data-fait")); return; }
+    var note = e.target.closest("[data-note]");
+    if (note) Kit.note(note, note.getAttribute("data-note"));
+  }
+
+  document.addEventListener("kit:compte", function (e) {
+    var bloc = e.target.closest("[data-bloc]");
+    if (!bloc) return;
+    if (bloc.getAttribute("data-bloc") === "chantiers") dessinerChantiers(bloc, e.detail.valeur);
+    else {
+      /* Les deux téléphones disent le même nombre : une seule équipe. */
+      combien = e.detail.valeur;
+      partout("[data-bloc='salaries']", function (b) { dessinerSalaries(b, combien); });
+      selonSalaries(combien);
+    }
+  });
+
+  document.addEventListener("input", function (e) {
+    var nom = e.target.closest("[data-noms] input");
+    if (nom) { noms[Number(nom.getAttribute("data-rang")) - 1] = nom.value; ecart(nom.closest("[data-bloc]"), combien); return; }
+    var feuille = e.target.closest(".feuille");
+    if (!feuille) {
+      var page = e.target.closest("[data-ecran-panneau]");
+      if (page && (e.target.matches("[data-mdp]") || e.target.matches("[data-confirmation]"))) {
+        var mdp = page.querySelector("[data-mdp]").value, conf = page.querySelector("[data-confirmation]").value;
+        var dit = page.querySelector("[data-accord]");
+        dit.hidden = conf === "";
+        dit.className = "reglage-sous " + (conf === mdp ? "identiques" : "differents");
+        dit.textContent = conf === mdp ? "Les deux sont identiques ✓" : "Les deux saisies ne sont pas identiques.";
+      }
+    }
+  });
+  document.addEventListener("change", function (e) {
+    if (e.target.matches("[data-qui]")) resume(e.target);
+    if (e.target.closest("[data-noms] input")) selonSalaries(combien);
+  });
+})();
+</script>
+</body>
+</html>

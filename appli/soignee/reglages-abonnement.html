@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Abonnement, soigné</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  ABONNEMENT (src/app/reglages/abonnement/page.tsx, AbonnementClient.tsx,
+  AvantDePartir.tsx, src/lib/abonnements.ts, src/lib/resiliation.ts).
+
+  LE PRIX ET LE CONTENU NE SE DÉCIDENT PAS ICI. Les noms, les prix, les
+  accroches et les douze lignes sont ceux de FORMULES et LIGNES, mot pour mot ;
+  ce qui manque se calcule comme lignesDeLaFormule le calcule. La planche
+  soigne la façon de les lire, et ne promet rien de plus.
+
+  L'écran d'aujourd'hui fait 2 205 px : trois cartes de douze lignes, dont cinq
+  identiques dans les trois, et trois boutons « S'abonner » pareils. Proposé
+  garde les trois cartes, et les allège :
+    les cinq lignes communes se lisent une fois, au-dessus ;
+    chaque carte ne garde que ce qui la distingue, et ce qui manque reste
+      barré (sa demande du 24 septembre, « qu'il voie ce qu'il loupe ») ;
+    une carte se touche pour se choisir, et un seul bouton plein, en bas, dit
+      ce qu'il fait : « S'abonner à Artisan », « Passer à Illimité » ;
+    l'état de l'abonnement se lit d'un coup d'œil, ce qui demande un geste
+      sur une plage ambre ;
+    « Attention au mot » se range sous Gérer mon abonnement, la seule ligne
+      qui parle des factures d'Atlas.
+
+  Plus loin remplace les trois cartes par une seule liste : trois prix côte à
+  côte, et la liste barre ce que le prix touché n'ouvre pas.
+
+  Les états viennent d'etatAffiche : essai, essai terminé, actif, arrêt
+  demandé, impayé, aucun abonnement. Le salarié lit que l'abonnement appartient
+  au patron.
+*/
+
+/* Votre abonnement : son état d'un coup d'œil. */
+.statut { display: flex; align-items: center; gap: 14px; padding: 16px 18px; }
+.statut.attention { background: var(--atlas-carteAmbreFond); }
+.statut-titre { display: block; font: 400 21px/1.2 var(--serif); }
+.statut-detail { display: block; margin-top: 4px; font-size: 15px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.statut.attention .statut-detail { color: var(--atlas-ink); }
+.carre { width: 52px; flex: none; padding: 8px 0 7px; border-radius: 10px; text-align: center; line-height: 1;
+         background: color-mix(in srgb, var(--atlas-or) 14%, transparent); }
+.carre b { display: block; font: 400 24px/1 var(--serif); font-variant-numeric: lining-nums; }
+.carre span { display: block; margin-top: 4px; font-size: 13px; font-weight: 700; color: var(--atlas-or); }
+.statut.attention .carre { background: color-mix(in srgb, var(--atlas-carteAmbreTexte) 16%, transparent); }
+.statut.attention .carre span { color: var(--atlas-carteAmbreTexte); }
+.statut .pastille-ico { width: 52px; height: 52px; border-radius: 14px; }
+
+.gerer .ligne { min-height: 76px; }
+.gerer .pastille-ico { color: var(--atlas-or); }
+.gestes-statut { margin-top: 10px; }
+
+/* Les lignes d'une offre : une coche verte, ou un trait gris et le texte barré. */
+.offre { margin: 0; padding: 0; list-style: none; }
+.offre li { display: flex; align-items: flex-start; gap: 10px; padding: 5px 0; font-size: 15px; line-height: 1.4; color: var(--atlas-ink); }
+.offre li .ico { width: 18px; height: 18px; margin-top: 1px; stroke-width: 2.2; }
+.offre li .oui { color: var(--atlas-carteVertTexte); }
+.offre li .non { display: none; width: 18px; height: 18px; flex: none; margin-top: 1px; place-items: center; }
+.offre li .non::after { content: ""; width: 10px; height: 10px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--atlas-inkSoft); }
+.offre li.manque { color: var(--atlas-inkSoft); text-decoration: line-through; text-decoration-thickness: 1px; }
+.offre li.manque .oui { display: none; }
+.offre li.manque .non { display: grid; }
+
+.commun { padding: 14px 18px; }
+.commun-titre { margin: 0 0 4px; font-size: 14.5px; font-weight: 600; color: var(--atlas-inkSoft); }
+.periode { margin: 0 0 12px; }
+.periode button:first-child { flex: 0 0 34%; }
+
+/* Proposé : trois cartes qui se touchent, chacune ne dit que ce qui la distingue. */
+.formules { margin-top: 12px; }
+.formule { position: relative; display: block; width: 100%; padding: 16px 18px 12px; border-radius: 12px; text-align: left; cursor: pointer;
+           background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-lineSoft);
+           transition: box-shadow 200ms var(--courbe); -webkit-tap-highlight-color: transparent; }
+.formule + .formule { margin-top: 10px; }
+.formule[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--atlas-rust); }
+.formule[aria-pressed="true"] .coche-ronde { box-shadow: inset 0 0 0 7px var(--atlas-or); }
+.formule-tete { display: flex; align-items: center; gap: 10px; }
+.formule-nom { flex: 1; min-width: 0; font: 400 21px/1.2 var(--serif); }
+.prix { white-space: nowrap; }
+.prix b { font: 400 24px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; }
+.prix small { margin-left: 3px; font-size: 13px; color: var(--atlas-inkSoft); }
+.formule-accroche { margin: 6px 0 0 32px; font-size: 15px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.formule .offre { margin: 8px 0 0 32px; }
+.votre { display: none; margin: 10px 0 2px 32px; }
+.ecran:is([data-etat="abonne"], [data-etat="arret"], [data-etat="impaye"])[data-periode="mois"] .votre { display: inline-flex; }
+
+/* Au mois ou à l'année : le prix qui ne vaut pas se tait. */
+.ecran[data-periode="mois"] .an, .ecran[data-periode="an"] .mois { display: none; }
+
+.attention-mot { margin-top: 8px; }
+.attention-mot b { font-weight: 700; }
+.paiement { margin-top: 14px; }
+
+/* Avant de partir. */
+.moins-chere { margin-bottom: 4px; }
+.moins-chere .carte-ton-texte { font-size: 17px; }
+.pourquoi { margin: 22px 0 10px; font-size: 16px; color: var(--atlas-ink); }
+.pourquoi small { margin-left: 6px; font-size: 14px; color: var(--atlas-inkSoft); }
+.raisons { display: flex; flex-wrap: wrap; gap: 8px; }
+.raison { min-height: 44px; padding: 0 16px; border-radius: 22px; font-size: 15px; color: var(--atlas-ink);
+          box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.raison[aria-pressed="true"] { background: var(--atlas-ink); color: var(--atlas-cream); box-shadow: none; }
+.bouton-creux.rouge { color: var(--atlas-alerte); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-alerte) 60%, transparent); }
+
+/* Plus loin : trois prix côte à côte, et une seule liste. */
+.tuiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.tuile { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 100px; padding: 12px 11px 11px;
+         border-radius: 12px; text-align: left; background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-lineSoft);
+         transition: box-shadow 200ms var(--courbe); }
+.tuile[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--atlas-rust); }
+.tuile .coche-ronde { width: 20px; height: 20px; margin-bottom: 6px; }
+.tuile-nom { font: 400 16.5px/1.2 var(--serif); }
+.tuile-prix { margin-top: auto; font: 400 23px/1.1 var(--serif); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
+.tuile-unite { font-size: 13px; color: var(--atlas-inkSoft); }
+.accroche-choisie { margin: 14px 2px 10px; font: 400 18px/1.35 var(--serif); }
+.accroche-choisie span { display: none; }
+.ecran[data-formule="artisan"] .accroche-choisie [data-pour="artisan"],
+.ecran[data-formule="entreprise"] .accroche-choisie [data-pour="entreprise"],
+.ecran[data-formule="illimite"] .accroche-choisie [data-pour="illimite"] { display: inline; }
+.liste-offre { padding: 10px 18px; }
+.ecran[data-formule="artisan"] .liste-offre li:not([data-dans~="artisan"]),
+.ecran[data-formule="entreprise"] .liste-offre li:not([data-dans~="entreprise"]),
+.ecran[data-formule="illimite"] .liste-offre li:not([data-dans~="illimite"]) { color: var(--atlas-inkSoft); text-decoration: line-through; text-decoration-thickness: 1px; }
+.ecran[data-formule="artisan"] .liste-offre li:not([data-dans~="artisan"]) .oui,
+.ecran[data-formule="entreprise"] .liste-offre li:not([data-dans~="entreprise"]) .oui,
+.ecran[data-formule="illimite"] .liste-offre li:not([data-dans~="illimite"]) .oui { display: none; }
+.ecran[data-formule="artisan"] .liste-offre li:not([data-dans~="artisan"]) .non,
+.ecran[data-formule="entreprise"] .liste-offre li:not([data-dans~="entreprise"]) .non,
+.ecran[data-formule="illimite"] .liste-offre li:not([data-dans~="illimite"]) .non { display: grid; }
+.ecran[data-formule="illimite"] .liste-offre li[data-sauf~="illimite"] { display: none; }
+
+.reserve { padding-top: 56px; }
+
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="reglages.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Réglages</a>
+  <h1 class="pl-titre">Abonnement</h1>
+  <p class="pl-verdict">Les mêmes prix et les mêmes lignes. Ce qui est commun aux trois formules se lit <b>une fois</b>, chaque carte ne dit plus que <b>ce qui la distingue</b>, et un seul bouton en bas dit ce qu'il fait.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <!-- ═══ PROPOSÉ ═══ -->
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats">
+        <button type="button" data-etat="essai" aria-pressed="true">En essai</button>
+        <button type="button" data-etat="abonne">Abonné</button>
+        <button type="button" data-etat="arret">Résiliation demandée</button>
+        <button type="button" data-etat="impaye">Impayé</button>
+        <button type="button" data-etat="termine">Essai fini</button>
+        <button type="button" data-etat="sans">Sans abonnement</button>
+        <button type="button" data-etat="salarie">Un salarié</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre avec-action" data-etat="essai" data-formule="artisan" data-periode="mois" id="ecran-propose">
+          <div class="defile">
+            <div class="tete-ronds">
+              <a class="rond-creux" href="reglages.html" aria-label="Retour aux réglages"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </div>
+            <header class="tete" style="margin-top:0"><h1 class="tete-titre">Abonnement</h1></header>
+
+            <div data-si-etat="essai abonne arret impaye termine sans">
+              <p class="rubrique rubrique-or">Votre abonnement</p>
+
+              <div class="plage statut" data-si-etat="essai">
+                <span class="carre"><b>12</b><span>jours</span></span>
+                <span class="ligne-corps"><span class="statut-titre">Essai gratuit, 12 jours restants</span><span class="statut-detail">Jusqu'au 6 novembre 2026. Aucune carte n'a été demandée.</span></span>
+              </div>
+              <div class="plage statut" data-si-etat="abonne">
+                <span class="pastille-ico" data-ton="vert"><svg class="ico" aria-hidden="true"><use href="#i-couronne"/></svg></span>
+                <span class="ligne-corps"><span class="statut-titre">Entreprise</span><span class="statut-detail">59 € HT par mois. Prochain paiement le 9 novembre 2026.</span></span>
+              </div>
+              <div class="plage statut attention" data-si-etat="arret">
+                <span class="carre"><b>9</b><span>nov.</span></span>
+                <span class="ligne-corps"><span class="statut-titre">Entreprise, s'arrête le 9 novembre 2026</span><span class="statut-detail">Vous gardez tout jusqu'à cette date.</span></span>
+              </div>
+              <div class="plage statut attention" data-si-etat="impaye">
+                <span class="pastille-ico" data-ton="ambre"><svg class="ico" aria-hidden="true"><use href="#i-carte"/></svg></span>
+                <span class="ligne-corps"><span class="statut-titre">Paiement en attente</span><span class="statut-detail">Votre dernier paiement n'est pas passé. Mettez votre carte à jour.</span></span>
+              </div>
+              <div class="plage statut attention" data-si-etat="termine">
+                <span class="pastille-ico" data-ton="ambre"><svg class="ico" aria-hidden="true"><use href="#i-cadenas"/></svg></span>
+                <span class="ligne-corps"><span class="statut-titre">Essai terminé</span><span class="statut-detail">Tout se relit, rien ne se crée. Choisissez une formule pour continuer.</span></span>
+              </div>
+              <div class="plage statut" data-si-etat="sans">
+                <span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-couronne"/></svg></span>
+                <span class="ligne-corps"><span class="statut-titre">Aucun abonnement</span><span class="statut-detail">Atlas ne vous facture rien aujourd'hui.</span></span>
+              </div>
+
+              <!-- Abonné : le guichet, le mot qui prête à confusion, et partir. -->
+              <div data-si-etat="abonne arret impaye">
+                <div class="plage plage-serree gerer mt-8">
+                  <button class="ligne touche" type="button" data-note="Sur la planche, le guichet de paiement ne s'ouvre pas.">
+                    <span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-carte"/></svg></span>
+                    <span class="ligne-corps"><span class="ligne-nom">Gérer mon abonnement</span><span class="ligne-situation">Changer de carte, vos factures Atlas.</span></span>
+                    <span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>
+                  </button>
+                </div>
+                <p class="plage-ton attention-mot" data-ton="bleu"><b>Attention au mot.</b> Ici, « factures » désigne celles qu'Atlas vous envoie. Celles de vos clients sont dans « Terminés ».</p>
+                <div class="gestes-statut">
+                  <button class="bouton-texte alerte" type="button" data-ouvre="feuille-partir" data-si-etat="abonne impaye">Résilier</button>
+                  <button class="bouton bouton-creux" type="button" data-va-etat="abonne" data-si-etat="arret">Ne pas arrêter</button>
+                </div>
+              </div>
+
+              <p class="rubrique rubrique-or" data-si-etat="essai termine sans">Choisir une formule</p>
+              <p class="rubrique rubrique-or" data-si-etat="abonne arret impaye">Changer de formule</p>
+              <div class="choix periode">
+                <button type="button" aria-pressed="true" data-periode="mois">Au mois</button>
+                <button type="button" aria-pressed="false" data-periode="an">À l'année, 2 mois offerts</button>
+              </div>
+
+              <div class="plage commun">
+                <p class="commun-titre">Dans les trois formules</p>
+                <ul class="offre">
+                  <li><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span>Devis et factures illimités</span></li>
+                  <li><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span>Vos dictées transcrites et chiffrées</span></li>
+                  <li><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span>Le planning de vos chantiers</span></li>
+                  <li><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span>Votre relevé de TVA, tenu tout seul</span></li>
+                  <li><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span>Vos salariés ont accès au planning</span></li>
+                </ul>
+              </div>
+
+              <div class="formules" data-un-seul id="formules-propose">
+                <div class="formule" role="button" tabindex="0" data-choix="artisan" aria-pressed="true">
+                  <div class="formule-tete">
+                    <span class="coche-ronde" aria-hidden="true"></span>
+                    <span class="formule-nom">Artisan</span>
+                    <span class="prix mois"><b>39 €</b><small>/mois HT</small></span>
+                    <span class="prix an"><b>390 €</b><small>/an HT</small></span>
+                  </div>
+                  <p class="formule-accroche">Du devis dicté à la facture, sans rien retaper.</p>
+                  <ul class="offre">
+                    <li class="manque"><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span class="non" aria-hidden="true"></span><span>Le plan d'arrosage automatique</span></li>
+                    <li class="manque"><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span class="non" aria-hidden="true"></span><span>Le diagnostic végétal</span></li>
+                    <li class="manque"><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span class="non" aria-hidden="true"></span><span>Les fiches de chantier de vos entretiens</span></li>
+                    <li class="manque"><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span class="non" aria-hidden="true"></span><span>Les absences de vos équipes</span></li>
+                    <li class="manque"><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span class="non" aria-hidden="true"></span><span>Les retours d'intervention de vos salariés</span></li>
+                    <li class="manque"><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span class="non" aria-hidden="true"></span><span>Jusqu'à 5 personnes aux devis et aux factures</span></li>
+                    <li class="manque"><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span class="non" aria-hidden="true"></span><span>Autant de personnes que vous voulez aux devis et aux factures</span></li>
+                  </ul>
+                </div>
+                <div class="formule" role="button" tabindex="0" data-choix="entreprise" aria-pressed="false">
+                  <div class="formule-tete">
+                    <span class="coche-ronde" aria-hidden="true"></span>
+                    <span class="formule-nom">Entreprise</span>
+                    <span class="prix mois"><b>59 €</b><small>/mois HT</small></span>
+                    <span class="prix an"><b>590 €</b><small>/an HT</small></span>
+                  </div>
+                  <span class="etat votre" data-ton="vert">Votre formule</span>
+                  <p class="formule-accroche">Accès illimité à tous les outils, jusqu'à cinq personnes qui facturent.</p>
+                  <ul class="offre">
+                    <li><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span class="non" aria-hidden="true"></span><span>Le plan d'arrosage automatique</span></li>
+                    <li><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span class="non" aria-hidden="true"></span><span>Le diagnostic végétal</span></li>
+                    <li><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span class="non" aria-hidden="true"></span><span>Les fiches de chantier de vos entretiens</span></li>
+                    <li><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span class="non" aria-hidden="true"></span><span>Les absences de vos équipes</span></li>
+                    <li><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span class="non" aria-hidden="true"></span><span>Les retours d'intervention de vos salariés</span></li>
+                    <li><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span class="non" aria-hidden="true"></span><span>Jusqu'à 5 personnes aux devis et aux factures</span></li>
+                    <li class="manque"><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span class="non" aria-hidden="true"></span><span>Autant de personnes que vous voulez aux devis et aux factures</span></li>
+                  </ul>
+                </div>
+                <div class="formule" role="button" tabindex="0" data-choix="illimite" aria-pressed="false">
+                  <div class="formule-tete">
+                    <span class="coche-ronde" aria-hidden="true"></span>
+                    <span class="formule-nom">Illimité</span>
+                    <span class="prix mois"><b>159 €</b><small>/mois HT</small></span>
+                    <span class="prix an"><b>1 590 €</b><small>/an HT</small></span>
+                  </div>
+                  <p class="formule-accroche">Toute votre équipe sur Atlas.</p>
+                  <ul class="offre">
+                    <li><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span class="non" aria-hidden="true"></span><span>Le plan d'arrosage automatique</span></li>
+                    <li><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span class="non" aria-hidden="true"></span><span>Le diagnostic végétal</span></li>
+                    <li><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span class="non" aria-hidden="true"></span><span>Les fiches de chantier de vos entretiens</span></li>
+                    <li><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span class="non" aria-hidden="true"></span><span>Les absences de vos équipes</span></li>
+                    <li><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span class="non" aria-hidden="true"></span><span>Les retours d'intervention de vos salariés</span></li>
+                    <li><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span class="non" aria-hidden="true"></span><span>Autant de personnes que vous voulez aux devis et aux factures</span></li>
+                  </ul>
+                </div>
+              </div>
+
+              <p class="plage-ton paiement" data-ton="bleu" data-si-etat="sans">Le paiement n'est pas encore branché : vous ne pouvez rien régler pour l'instant.</p>
+            </div>
+
+            <div class="vide reserve" data-si-etat="salarie">
+              <svg class="ico" aria-hidden="true"><use href="#i-cadenas"/></svg>
+              <p class="vide-titre">L'abonnement appartient au patron de l'entreprise.</p>
+            </div>
+          </div>
+
+          <div class="action-bas"><button class="bouton bouton-plein" type="button" data-agir><span class="action-mot">S'abonner à Artisan</span></button></div>
+
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html">Terminés</a>
+              <a class="barre-onglet" href="paysage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html" aria-current="page">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+
+          <!-- Avant de partir (planche du 18 octobre) : la formule moins chère d'abord, la question facultative, puis partir. -->
+          <section class="feuille" id="feuille-partir" aria-hidden="true" aria-label="Avant de partir">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre">Avant de partir</h2>
+              <button class="carte-ton moins-chere touche" type="button" data-ton="vert" data-ferme data-note="Sur la planche, la formule ne change pas.">
+                <span class="carte-ton-titre">Passer à Artisan</span>
+                <span class="carte-ton-texte">39 € HT par mois, au lieu de 59</span>
+              </button>
+              <p class="pourquoi">Pourquoi partez-vous ?<small>Facultatif</small></p>
+              <div class="raisons">
+                <button class="raison" type="button" aria-pressed="false" data-raison>C'est trop cher</button>
+                <button class="raison" type="button" aria-pressed="false" data-raison>Je ne m'en sers pas assez</button>
+                <button class="raison" type="button" aria-pressed="false" data-raison>Il me manque quelque chose</button>
+              </div>
+              <label class="champ"><textarea class="champ-saisie" rows="3" maxlength="500" placeholder="Dites-nous en plus" aria-label="Dites-nous en plus" style="min-height:96px"></textarea></label>
+              <div class="pile mt-24">
+                <button class="bouton bouton-creux rouge" type="button" data-va-etat="arret">Résilier quand même</button>
+                <button class="bouton bouton-texte" type="button" data-ferme style="width:100%;justify-content:center;color:var(--atlas-inkSoft)">Annuler</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PLUS LOIN : une seule liste, trois prix ═══ -->
+    <div data-vue-panneau="plus-loin">
+      <p class="pl-legende">Plus loin</p>
+      <div class="cadre">
+        <div class="ecran avec-barre avec-action" data-formule="artisan" data-periode="mois" id="ecran-plus-loin">
+          <div class="defile">
+            <div class="tete-ronds">
+              <a class="rond-creux" href="reglages.html" aria-label="Retour aux réglages"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </div>
+            <header class="tete" style="margin-top:0"><h1 class="tete-titre">Abonnement</h1></header>
+
+            <p class="rubrique rubrique-or">Votre abonnement</p>
+            <div class="plage statut">
+              <span class="carre"><b>12</b><span>jours</span></span>
+              <span class="ligne-corps"><span class="statut-titre">Essai gratuit, 12 jours restants</span><span class="statut-detail">Jusqu'au 6 novembre 2026. Aucune carte n'a été demandée.</span></span>
+            </div>
+
+            <p class="rubrique rubrique-or">Choisir une formule</p>
+            <div class="choix periode">
+              <button type="button" aria-pressed="true" data-periode="mois">Au mois</button>
+              <button type="button" aria-pressed="false" data-periode="an">À l'année, 2 mois offerts</button>
+            </div>
+
+            <div class="tuiles" data-un-seul>
+              <button class="tuile" type="button" data-choix="artisan" aria-pressed="true">
+                <span class="coche-ronde" aria-hidden="true"></span>
+                <span class="tuile-nom">Artisan</span>
+                <span class="tuile-prix"><span class="mois">39 €</span><span class="an">390 €</span></span>
+                <span class="tuile-unite"><span class="mois">/mois HT</span><span class="an">/an HT</span></span>
+              </button>
+              <button class="tuile" type="button" data-choix="entreprise" aria-pressed="false">
+                <span class="coche-ronde" aria-hidden="true"></span>
+                <span class="tuile-nom">Entreprise</span>
+                <span class="tuile-prix"><span class="mois">59 €</span><span class="an">590 €</span></span>
+                <span class="tuile-unite"><span class="mois">/mois HT</span><span class="an">/an HT</span></span>
+              </button>
+              <button class="tuile" type="button" data-choix="illimite" aria-pressed="false">
+                <span class="coche-ronde" aria-hidden="true"></span>
+                <span class="tuile-nom">Illimité</span>
+                <span class="tuile-prix"><span class="mois">159 €</span><span class="an">1 590 €</span></span>
+                <span class="tuile-unite"><span class="mois">/mois HT</span><span class="an">/an HT</span></span>
+              </button>
+            </div>
+
+            <p class="accroche-choisie">
+              <span data-pour="artisan">Du devis dicté à la facture, sans rien retaper.</span>
+              <span data-pour="entreprise">Accès illimité à tous les outils, jusqu'à cinq personnes qui facturent.</span>
+              <span data-pour="illimite">Toute votre équipe sur Atlas.</span>
+            </p>
+            <div class="plage liste-offre">
+              <ul class="offre">
+                <li data-dans="artisan entreprise illimite"><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span class="non" aria-hidden="true"></span><span>Devis et factures illimités</span></li>
+                <li data-dans="artisan entreprise illimite"><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span class="non" aria-hidden="true"></span><span>Vos dictées transcrites et chiffrées</span></li>
+                <li data-dans="artisan entreprise illimite"><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span class="non" aria-hidden="true"></span><span>Le planning de vos chantiers</span></li>
+                <li data-dans="artisan entreprise illimite"><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span class="non" aria-hidden="true"></span><span>Votre relevé de TVA, tenu tout seul</span></li>
+                <li data-dans="artisan entreprise illimite"><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span class="non" aria-hidden="true"></span><span>Vos salariés ont accès au planning</span></li>
+                <li data-dans="entreprise illimite"><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span class="non" aria-hidden="true"></span><span>Le plan d'arrosage automatique</span></li>
+                <li data-dans="entreprise illimite"><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span class="non" aria-hidden="true"></span><span>Le diagnostic végétal</span></li>
+                <li data-dans="entreprise illimite"><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span class="non" aria-hidden="true"></span><span>Les fiches de chantier de vos entretiens</span></li>
+                <li data-dans="entreprise illimite"><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span class="non" aria-hidden="true"></span><span>Les absences de vos équipes</span></li>
+                <li data-dans="entreprise illimite"><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span class="non" aria-hidden="true"></span><span>Les retours d'intervention de vos salariés</span></li>
+                <li data-dans="entreprise" data-sauf="illimite"><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span class="non" aria-hidden="true"></span><span>Jusqu'à 5 personnes aux devis et aux factures</span></li>
+                <li data-dans="illimite"><svg class="ico oui" aria-hidden="true"><use href="#i-coche"/></svg><span class="non" aria-hidden="true"></span><span>Autant de personnes que vous voulez aux devis et aux factures</span></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="action-bas"><button class="bouton bouton-plein" type="button" data-agir><span class="action-mot">S'abonner à Artisan</span></button></div>
+
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html">Terminés</a>
+              <a class="barre-onglet" href="paysage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html" aria-current="page">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ AUJOURD'HUI ═══ -->
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre">
+        <div class="cadre-capture"><img src="aujourdhui/reglages-abonnement.jpg" alt="L'écran Abonnement tel qu'il est aujourd'hui"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>Votre abonnement se lit d'un coup d'œil : les jours d'essai dans un carré doré, l'abonnement en cours sur une pastille verte, et ce qui demande un geste (essai fini, paiement en attente, arrêt demandé) sur une plage ambre plutôt qu'en titre rouge.</li>
+      <li>Les cinq lignes communes aux trois formules se lisent une fois, sous « Dans les trois formules ». Chaque carte ne garde que ce qui la distingue : trente-cinq lignes deviennent vingt-cinq.</li>
+      <li>Une carte se touche pour se choisir. Les trois boutons « S'abonner » deviennent un seul, en bas, qui dit ce qu'il fait : « S'abonner à Artisan », « Passer à Illimité ». Artisan est choisi d'avance, la moins chère, en premier comme aujourd'hui.</li>
+      <li>Au mois ou à l'année : un choix à deux mots, et les prix changent sous le doigt.</li>
+      <li>Gérer mon abonnement devient une ligne, ce qu'elle ouvre écrit dessous. Résilier s'écrit en rouge, et « Avant de partir » monte du bas : Passer à Artisan sur une plage verte, la question facultative, Résilier quand même cerné de rouge.</li>
+      <li>« Attention au mot » se range sous Gérer mon abonnement, la seule ligne qui parle des factures d'Atlas. Posée sous les formules, elle contredisait « Devis et factures illimités », qui parle des vôtres.</li>
+      <li>Le prix de l'abonnement en cours se dit en deux phrases : « 59 € HT par mois. Prochain paiement le 9 novembre 2026. » Aujourd'hui un point médian les colle.</li>
+      <li>Plus de libellé « Mon entreprise » sous le titre, plus de capitales espacées.</li>
+    </ul>
+    <h2>Plus loin</h2>
+    <ul>
+      <li>Une seule liste à la place des trois cartes : les trois prix côte à côte, et la liste barre ce que le prix touché n'ouvre pas. Tout tient en un écran et demi.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Les noms, les prix, les accroches et les lignes, mot pour mot, tels que l'appli les calcule : 39, 59 et 159 € HT par mois ; 390, 590 et 1 590 € HT par an. Rien n'est ajouté, rien n'est promis.</li>
+      <li>Ce qu'une formule n'ouvre pas reste écrit, barré : sa demande du 24 septembre, « qu'il voie ce qu'il loupe ».</li>
+      <li>Pendant l'essai, on s'abonne. Abonné, on change de formule, la sienne marquée « Votre formule » : touchez « Abonné ». Sans paiement branché, le bouton s'éteint et la phrase le dit : touchez « Sans abonnement ».</li>
+      <li>« Ne pas arrêter » tant que l'échéance n'est pas passée : touchez Résilier, puis Résilier quand même. L'essai passe à l'ambre à trois jours de la fin ; un abonnement arrivé au bout dit « Entreprise, résilié » et propose d'en reprendre un.</li>
+      <li>Un salarié qui tape l'adresse lit que l'abonnement appartient au patron.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>Proposé, trois cartes allégées, ou Plus loin, une seule liste qui change sous le doigt.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="reglages-agenda.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Mon agenda</a>
+  <a href="reglages-donnees.html">Mes données<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+/*
+  Le bouton du bas dit ce qu'il fait, et il le dit pour la formule touchée :
+  s'abonner pendant l'essai, passer à une autre une fois abonné, rien quand on
+  touche la sienne. Branché après le kit, ce script entend chaque clic après
+  lui : la carte, la puce ou le choix ont déjà changé quand on les lit ici.
+*/
+document.addEventListener("DOMContentLoaded", function () {
+  var NOMS = { artisan: "Artisan", entreprise: "Entreprise", illimite: "Illimité" };
+  var ABONNE = ["abonne", "arret", "impaye"];
+  var ACTUELLE = "entreprise";
+
+  function majAction(ecran) {
+    var etat = ecran.getAttribute("data-etat") || "essai";
+    var f = ecran.getAttribute("data-formule");
+    var per = ecran.getAttribute("data-periode");
+    var bas = ecran.querySelector(".action-bas");
+    var bouton = bas.querySelector(".bouton");
+    var abonne = ABONNE.indexOf(etat) >= 0;
+    bas.hidden = etat === "salarie" || (abonne && f === ACTUELLE && per === "mois");
+    var mot;
+    if (abonne && f === ACTUELLE) mot = "Passer à l'année";
+    else if (abonne) mot = "Passer à " + NOMS[f];
+    else mot = "S'abonner à " + NOMS[f];
+    bouton.querySelector(".action-mot").textContent = mot;
+    var eteint = etat === "sans";
+    bouton.setAttribute("aria-disabled", eteint ? "true" : "false");
+    bouton.setAttribute("data-dit", eteint ? "" : abonne ? "Sur la planche, la formule ne change pas." : "Sur la planche, aucun paiement ne s'ouvre.");
+  }
+
+  function choisirFormule(ecran, f) {
+    ecran.setAttribute("data-formule", f);
+    ecran.querySelectorAll("[data-un-seul] [data-choix]").forEach(function (c) {
+      c.setAttribute("aria-pressed", c.getAttribute("data-choix") === f ? "true" : "false");
+    });
+  }
+
+  function choisirPeriode(ecran, p) {
+    ecran.setAttribute("data-periode", p);
+    ecran.querySelectorAll("[data-periode]").forEach(function (b) {
+      if (b !== ecran) b.setAttribute("aria-pressed", b.getAttribute("data-periode") === p ? "true" : "false");
+    });
+  }
+
+  document.querySelectorAll("[data-un-seul]").forEach(function (famille) {
+    famille.addEventListener("kit:choix", function (e) {
+      var ecran = famille.closest(".ecran");
+      ecran.setAttribute("data-formule", e.detail.choix);
+      majAction(ecran);
+    });
+  });
+
+  document.addEventListener("click", function (e) {
+    var puce = e.target.closest(".pl-etats button[data-etat]");
+    var vaEtat = e.target.closest("[data-va-etat]");
+    if (puce || vaEtat) {
+      var ecran = document.getElementById("ecran-propose");
+      choisirFormule(ecran, ABONNE.indexOf(ecran.getAttribute("data-etat")) >= 0 ? ACTUELLE : "artisan");
+      choisirPeriode(ecran, "mois");
+      majAction(ecran);
+      return;
+    }
+
+    var periode = e.target.closest(".choix [data-periode]");
+    if (periode) {
+      var ec = periode.closest(".ecran");
+      ec.setAttribute("data-periode", periode.getAttribute("data-periode"));
+      majAction(ec);
+      return;
+    }
+
+    /* Retoucher une raison la retire : on peut partir sans répondre. */
+    var raison = e.target.closest("[data-raison]");
+    if (raison) {
+      var prise = raison.getAttribute("aria-pressed") !== "true";
+      raison.parentNode.querySelectorAll("[data-raison]").forEach(function (r) { r.setAttribute("aria-pressed", "false"); });
+      raison.setAttribute("aria-pressed", prise ? "true" : "false");
+      return;
+    }
+
+    var agir = e.target.closest("[data-agir]");
+    if (agir) { var dit = agir.getAttribute("data-dit"); if (dit) Kit.note(agir, dit); return; }
+
+    var note = e.target.closest("[data-note]");
+    if (note) Kit.note(note, note.getAttribute("data-note"));
+  });
+
+  /* Une carte se choisit aussi au clavier. */
+  document.addEventListener("keydown", function (e) {
+    var carte = e.target.closest && e.target.closest(".formule[role='button']");
+    if (carte && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); carte.click(); }
+  });
+
+  document.querySelectorAll(".ecran[data-formule]").forEach(majAction);
+});
+</script>
+</body>
+</html>

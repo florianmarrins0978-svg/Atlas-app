@@ -294,7 +294,10 @@
   /* ─── Les planches pas encore dessinées ─────────────────────────────────
      Elles arrivent une par une : un lien vers l'une d'elles ne mène pas à une
      page d'erreur, il le dit. La liste grandit à chaque planche publiée. */
-  var PRETES = ["index", "fondations", "reglages", "termines", "termines-tva", "tva-bouton-paiement", "termines-comptable", "comptable-dossier", "comptable-verification", "clients", "client", "planning", "accueil"];
+  var PRETES = ["index", "fondations", "reglages", "termines", "termines-tva", "tva-bouton-paiement", "termines-comptable", "comptable-dossier", "comptable-verification", "clients", "client", "planning", "accueil",
+    "reglages-identite", "reglages-equipe", "reglages-vehicules", "reglages-organigramme", "reglages-tarifs", "reglages-documents",
+    "reglages-fournisseurs", "reglages-ia", "reglages-agenda", "reglages-abonnement", "reglages-donnees", "reglages-compte",
+    "reglages-notifications", "reglages-connexion", "reglages-connexion-double-verification", "reglages-apparence"];
 
   function planchePrete(href) {
     if (!href || /^(https?:|#|mailto:|tel:|\.\.\/)/.test(href)) return true;
@@ -425,6 +428,51 @@
           var montre = b.getAttribute("data-montre");
           if (montre) { var cible = document.getElementById(montre); if (cible) cible.hidden = !oui; }
         });
+        return;
+      }
+      /* Un choix parmi quelques cartes ou lignes (les réglages) : le geste
+         prend, les voisins lâchent, et ce qui dépend du choix se montre. */
+      var pris = e.target.closest("[data-un-seul] [data-choix]");
+      if (pris) {
+        var famille = pris.closest("[data-un-seul]");
+        famille.querySelectorAll("[data-choix]").forEach(function (b) {
+          if (b.closest("[data-un-seul]") !== famille) return;
+          var oui = b === pris;
+          b.setAttribute("aria-pressed", oui ? "true" : "false");
+          var montre = b.getAttribute("data-montre");
+          if (montre) montre.split(/\s+/).forEach(function (id) { var c = document.getElementById(id); if (c) c.hidden = !oui; });
+        });
+        famille.dispatchEvent(new CustomEvent("kit:choix", { bubbles: true, detail: { choix: pris.getAttribute("data-choix") } }));
+        return;
+      }
+      /* Un écran qui en ouvre un autre, dans le même téléphone : la ligne
+         touchée mène à son panneau, le rond du retour ramène au premier. */
+      var vers = e.target.closest("[data-vers]");
+      if (vers) {
+        e.preventDefault();
+        var ecranVers = vers.closest(".ecran");
+        var cible = vers.getAttribute("data-vers");
+        ecranVers.querySelectorAll("[data-ecran-panneau]").forEach(function (p) {
+          p.hidden = p.getAttribute("data-ecran-panneau") !== cible;
+        });
+        var defile = ecranVers.querySelector(".defile");
+        if (defile) defile.scrollTop = 0;
+        return;
+      }
+      /* Le compteur − / + : il s'arrête à ses bornes, et le dit à la page. */
+      var pas = e.target.closest(".compteur [data-pas]");
+      if (pas) {
+        var compteur = pas.closest(".compteur");
+        var sortie = compteur.querySelector("output");
+        var min = Number(compteur.getAttribute("data-min") || 0);
+        var max = Number(compteur.getAttribute("data-max") || 99);
+        var n = Math.min(max, Math.max(min, Number(sortie.textContent) + Number(pas.getAttribute("data-pas"))));
+        sortie.textContent = String(n);
+        compteur.querySelectorAll("[data-pas]").forEach(function (b) {
+          var vers = n + Number(b.getAttribute("data-pas"));
+          b.disabled = vers < min || vers > max;
+        });
+        compteur.dispatchEvent(new CustomEvent("kit:compte", { bubbles: true, detail: { valeur: n } }));
         return;
       }
       var bascule = e.target.closest(".bascule");

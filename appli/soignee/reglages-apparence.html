@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Couleurs, soigné</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  COULEURS (src/app/reglages/apparence/page.tsx, ApparenceClient.tsx,
+  src/lib/chartes.ts).
+
+  La rubrique où la couleur a le plus de sens. Aujourd'hui : huit lignes, une
+  vignette de 46 px à gauche, le nom, sa phrase, et la pastille d'or à droite.
+  Le principe de l'écran est déjà le bon (« chaque ligne se montre dans sa
+  propre couleur ») ; la vignette est simplement trop petite pour qu'on y
+  voie un écran.
+
+  Proposé pose les huit chartes en deux colonnes, chacune avec un vrai petit
+  écran : le fond, le titre dans sa police (Brume est la seule sans
+  empattement), une carte, le bouton vert de la charte, la barre et son trait
+  d'or. Toucher une charte repeint le téléphone tout de suite, comme l'appli
+  depuis le 16 août. La phrase du haut gagne une feuille blanche miniature,
+  qui ne change pas quand tout le reste change : c'est ce qu'elle dit.
+
+  Ce qui ne bouge pas : les huit noms et leurs phrases (src/lib/chartes.ts),
+  Origine par défaut, Sylve et Nuit marquées Sombre, la pastille d'or sur la
+  charte prise, la phrase « Change toute l'application. Vos devis et vos
+  factures ne bougent pas. » (sa validation du 9 septembre).
+
+  Les couleurs des petits écrans ne sont écrites nulle part ici : elles sont
+  lues dans les chartes du kit (Kit.chartes()), qui recopie src/lib/chartes.ts.
+*/
+.phrase-papier { display: flex; align-items: center; gap: 16px; padding: 14px 16px 14px 18px; }
+.phrase-papier p { flex: 1; margin: 0; font-size: 15.5px; line-height: 1.45; color: var(--atlas-inkSoft); text-wrap: pretty; }
+.phrase-papier b { color: var(--atlas-ink); font-weight: 600; }
+/* Le devis en miniature : du papier blanc, quelle que soit la charte. */
+.devis-mini { flex: none; width: 46px; height: 60px; padding: 7px 6px; border-radius: 3px; background: #fff;
+              box-shadow: 0 1px 2px rgba(28,28,26,0.14), inset 0 0 0 1px rgba(28,28,26,0.06);
+              display: flex; flex-direction: column; gap: 4px; }
+.devis-mini i { display: block; flex: none; height: 3px; border-radius: 2px; background: rgba(28,28,26,0.16); }
+.devis-mini i.nom { width: 70%; height: 4px; background: rgba(28,28,26,0.6); }
+.devis-mini i.court { width: 55%; }
+.devis-mini i.or { width: 40%; background: #B98B47; }
+/* « blanc » et non « vide » : le kit réserve .vide à l'écran vide, avec 68 px de marge. */
+.devis-mini i.blanc { flex: 1; height: auto; background: transparent; }
+
+.grille-chartes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.carte-charte { position: relative; display: flex; flex-direction: column; gap: 0; padding: 8px 8px 12px; border-radius: 14px;
+                text-align: left; background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-lineSoft);
+                transition: box-shadow 200ms var(--courbe); }
+.carte-charte[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--atlas-rust); }
+.carte-charte .nom-charte { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin: 10px 4px 0;
+                            font: 400 18px/1.2 var(--serif); color: var(--atlas-ink); }
+.carte-charte .coche-ronde { flex: none; }
+.carte-charte[aria-pressed="true"] .coche-ronde { box-shadow: inset 0 0 0 7px var(--atlas-or); }
+.carte-charte .dit-charte { margin: 4px 4px 0; font-size: 13.5px; line-height: 1.35; color: var(--atlas-inkSoft); text-wrap: pretty; }
+.carte-charte .etat { align-self: flex-start; margin: 6px 4px 0; min-height: 24px; padding: 0 9px; font-size: 13px; }
+.carte-charte .etat::before { display: none; }
+.carte-charte .etat .ico { width: 14px; height: 14px; stroke-width: 2; color: var(--atlas-or); }
+
+/* Le petit écran d'une charte : fond, titre, carte, bouton, barre. */
+.mini { position: relative; display: block; height: 104px; border-radius: 9px; overflow: hidden; padding: 9px 9px 0; }
+.mini-titre { display: block; font-size: 17px; line-height: 1; letter-spacing: -0.01em; }
+.mini-carte { display: block; margin-top: 7px; padding: 6px 7px; border-radius: 4px; }
+.mini-carte i { display: block; height: 3px; border-radius: 2px; }
+.mini-carte i + i { margin-top: 4px; width: 62%; }
+.mini-bouton { display: block; margin-top: 7px; height: 13px; border-radius: 7px; }
+.mini-barre { position: absolute; left: 0; right: 0; bottom: 0; height: 15px; }
+.mini-trait { position: absolute; right: 12%; bottom: 4px; width: 16%; height: 2px; border-radius: 1px; }
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="reglages.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Réglages</a>
+  <h1 class="pl-titre">Couleurs</h1>
+  <p class="pl-verdict">Les huit chartes en <b>vrais petits écrans</b>, deux par rangée. Touchez-en une : <b>le téléphone se repeint</b>, et la feuille blanche du devis, elle, ne bouge pas.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <!-- PROPOSÉ -->
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="cadre">
+        <div class="ecran avec-barre" id="ecran-couleurs">
+          <div class="defile">
+            <div class="tete-ronds">
+              <a class="rond-creux" href="reglages.html" aria-label="Retour aux réglages"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </div>
+            <header class="tete" style="margin-top:0"><h1 class="tete-titre">Couleurs</h1></header>
+
+            <div class="plage phrase-papier">
+              <p>Change <b>toute l'application</b>. Vos devis et vos factures ne bougent pas.</p>
+              <span class="devis-mini" aria-hidden="true"><i class="nom"></i><i class="or"></i><i class="blanc"></i><i></i><i class="court"></i><i></i></span>
+            </div>
+
+            <p class="rubrique rubrique-or">Votre charte</p>
+            <div class="grille-chartes">
+              <button class="carte-charte" type="button" data-charte-choix="origine" aria-pressed="false">
+                <span class="mini" data-mini="origine" aria-hidden="true"></span>
+                <span class="nom-charte">Origine<span class="coche-ronde" aria-hidden="true"></span></span>
+                <span class="dit-charte">Le gris-vert et l'or.</span>
+              </button>
+              <button class="carte-charte" type="button" data-charte-choix="brume" aria-pressed="false">
+                <span class="mini" data-mini="brume" aria-hidden="true"></span>
+                <span class="nom-charte">Brume moderne<span class="coche-ronde" aria-hidden="true"></span></span>
+                <span class="dit-charte">Blanc froid, bleu marine. Titres sans empattement.</span>
+              </button>
+              <button class="carte-charte" type="button" data-charte-choix="pierre" aria-pressed="false">
+                <span class="mini" data-mini="pierre" aria-hidden="true"></span>
+                <span class="nom-charte">Pierre<span class="coche-ronde" aria-hidden="true"></span></span>
+                <span class="dit-charte">Gris pierre, encre presque noire.</span>
+              </button>
+              <button class="carte-charte" type="button" data-charte-choix="beurre" aria-pressed="false">
+                <span class="mini" data-mini="beurre" aria-hidden="true"></span>
+                <span class="nom-charte">Beurre<span class="coche-ronde" aria-hidden="true"></span></span>
+                <span class="dit-charte">Jaune beurre, très pâle.</span>
+              </button>
+              <button class="carte-charte" type="button" data-charte-choix="moka" aria-pressed="false">
+                <span class="mini" data-mini="moka" aria-hidden="true"></span>
+                <span class="nom-charte">Moka<span class="coche-ronde" aria-hidden="true"></span></span>
+                <span class="dit-charte">Moka laiteux, encre café.</span>
+              </button>
+              <button class="carte-charte" type="button" data-charte-choix="prune" aria-pressed="false">
+                <span class="mini" data-mini="prune" aria-hidden="true"></span>
+                <span class="nom-charte">Prune<span class="coche-ronde" aria-hidden="true"></span></span>
+                <span class="dit-charte">Aubergine, rose poudré, cuivre. La plus habillée.</span>
+              </button>
+              <button class="carte-charte" type="button" data-charte-choix="sylve" aria-pressed="false">
+                <span class="mini" data-mini="sylve" aria-hidden="true"></span>
+                <span class="nom-charte">Sylve<span class="coche-ronde" aria-hidden="true"></span></span>
+                <span class="etat"><svg class="ico" aria-hidden="true"><use href="#i-lune"/></svg>Sombre</span>
+                <span class="dit-charte">Vert profond au fond. Un écran de paysagiste.</span>
+              </button>
+              <button class="carte-charte" type="button" data-charte-choix="nuit" aria-pressed="false">
+                <span class="mini" data-mini="nuit" aria-hidden="true"></span>
+                <span class="nom-charte">Nuit<span class="coche-ronde" aria-hidden="true"></span></span>
+                <span class="etat"><svg class="ico" aria-hidden="true"><use href="#i-lune"/></svg>Sombre</span>
+                <span class="dit-charte">Noir chaud, laiton doux. La moins lisible au soleil.</span>
+              </button>
+            </div>
+          </div>
+
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html">Terminés</a>
+              <a class="barre-onglet" href="paysage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html" aria-current="page">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- AUJOURD'HUI -->
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre">
+        <div class="cadre-capture"><img src="aujourdhui/reglages-apparence.jpg" alt="L'écran Couleurs tel qu'il est aujourd'hui"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>Les huit chartes en deux colonnes, chacune avec un vrai petit écran au lieu d'une vignette de 46 px : le fond, le titre dans sa police, une carte, le bouton, la barre et son trait d'or.</li>
+      <li>Touchez une charte : le téléphone entier se repeint tout de suite, la barre du bas comprise.</li>
+      <li>La phrase du haut porte une feuille blanche en miniature : elle reste blanche quand tout le reste change, c'est ce que dit la phrase.</li>
+      <li>« Sombre » s'écrit en toutes lettres avec une petite lune, au lieu de capitales espacées.</li>
+      <li>La charte prise est cernée, avec sa pastille d'or. Plus de « MOI » doré sous le titre.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Les huit noms et leurs phrases, mot pour mot, dans le même ordre. Origine reste la charte de départ.</li>
+      <li>Le sombre est dans la liste, pas à côté : Nuit et Sylve.</li>
+      <li>La phrase « Change toute l'application. Vos devis et vos factures ne bougent pas. »</li>
+      <li>Ce que reçoivent vos clients garde l'allure d'Origine, quelle que soit votre charte.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="reglages-connexion-double-verification.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Double vérification</a>
+  <a href="reglages.html">Réglages<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+/*
+  Chaque petit écran est peint avec les couleurs de SA charte, lues dans le
+  kit, jamais avec celles de la charte prise : c'est la seule façon de voir une
+  charte avant de la choisir (ApparenceClient.tsx, LigneCharte). Toucher une
+  carte appelle Kit.poserCharte, qui repeint le téléphone et coche la carte
+  (elle porte data-charte-choix, comme les choix de la barre au-dessus).
+*/
+document.addEventListener("DOMContentLoaded", function () {
+  "use strict";
+  var SERIF = "ui-serif, Georgia, \"Iowan Old Style\", \"Palatino Linotype\", serif";
+
+  function el(classe) { var s = document.createElement("span"); s.className = classe; return s; }
+
+  Kit.chartes().forEach(function (c) {
+    var mini = document.querySelector("[data-mini='" + c.nom + "']");
+    if (!mini) return;
+    var v = c.vars;
+    mini.style.background = v["--atlas-cream"];
+    mini.style.boxShadow = "inset 0 0 0 1px " + v["--atlas-line"];
+    var titre = el("mini-titre");
+    titre.textContent = "Aa";
+    titre.style.fontFamily = v["--atlas-police-titres"] || SERIF;
+    titre.style.color = v["--atlas-ink"];
+    var carte = el("mini-carte");
+    carte.style.background = v["--atlas-card"];
+    var l1 = document.createElement("i"), l2 = document.createElement("i");
+    l1.style.background = v["--atlas-ink"]; l1.style.opacity = "0.7";
+    l2.style.background = v["--atlas-or"];
+    carte.appendChild(l1); carte.appendChild(l2);
+    var bouton = el("mini-bouton");
+    bouton.style.background = v["--atlas-plein"];
+    var barre = el("mini-barre");
+    barre.style.background = v["--atlas-cream"];
+    barre.style.boxShadow = "inset 0 1px 0 " + v["--atlas-line"];
+    var trait = el("mini-trait");
+    trait.style.background = v["--atlas-or"];
+    barre.appendChild(trait);
+    [titre, carte, bouton, barre].forEach(function (x) { mini.appendChild(x); });
+  });
+
+  document.querySelectorAll(".carte-charte[data-charte-choix]").forEach(function (b) {
+    b.addEventListener("click", function () { Kit.poserCharte(b.getAttribute("data-charte-choix")); });
+  });
+});
+</script>
+</body>
+</html>

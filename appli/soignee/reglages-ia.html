@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Atlas IA, soigné</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  ATLAS IA (src/app/reglages/ia/page.tsx, src/lib/etat-ia.ts, et l'écran qu'il
+  ouvre à l'éditeur : src/app/reglages/vocabulaire/).
+
+  Chez lui les clés sont posées (CLAUDE.md, « L'IA est branchée chez lui ») :
+  OpenAI écoute, Anthropic rédige et regarde les photos. Son écran dit donc
+  Oui trois fois, et lui, l'éditeur, voit aussi le détail et Mon vocabulaire.
+  La capture d'aujourd'hui dit « Pas encore » parce que CE poste n'a pas de clé.
+
+  L'écran ne décide de rien : les trois lignes viennent de ceQuAtlasSaitFaire,
+  le détail de decrireEtatIA et decrireVision. La planche garde leurs mots ;
+  ce qui change est la façon de les lire :
+    chaque chose qu'Atlas sait faire a son dessin et son état en couleur, Oui
+      sur une pastille verte, Pas encore en gris (jamais « non ») ;
+    « Rien à faire de votre côté » passe sur une plage bleue, lisible ;
+    le détail de l'éditeur tient dans une plage, la phrase du sous-traitant,
+      dite trois fois aujourd'hui, une seule ;
+    Mon vocabulaire s'ouvre dans le même téléphone.
+
+  Ce qui ne bouge pas : le détail et le vocabulaire réservés à l'éditeur ; les
+  clés jamais affichées ; la page refusée au salarié.
+*/
+.savoirs .ligne { min-height: 76px; }
+.savoirs .ligne-nom { font-size: 19px; }
+.savoirs .ligne-etat { display: block; margin-top: 8px; }
+
+.fournisseurs .reglage-valeur { font-size: 19px; }
+.fournisseurs .reglage-sous { font-size: 14px; }
+.loi { margin: 10px 2px 0; font-size: 13.5px; line-height: 1.5; color: var(--atlas-inkSoft); }
+.code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; }
+.vocabulaire-ligne .ligne { min-height: 76px; }
+
+/* Mon vocabulaire, le second écran du téléphone. */
+.reserve-editeur { margin: -8px 0 16px; }
+.voca-tete { margin: 0 0 14px; font-size: 16px; line-height: 1.5; color: var(--atlas-ink); }
+#champs-mot, #champs-regle { margin-top: 16px; }
+.ajout textarea.champ-saisie { min-height: 84px; }
+.champ-libelle small { font-weight: 500; color: var(--atlas-inkSoft); }
+.sous-rubrique { margin: -4px 2px 10px; font-size: 14.5px; color: var(--atlas-inkSoft); }
+.termes { padding: 0 18px; }
+.terme p { margin: 0; }
+.terme { position: relative; padding: 16px 0 6px; transition: opacity 200ms var(--courbe); }
+.terme + .terme::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
+.terme-nom { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; font: 400 18.5px/1.3 var(--serif); }
+.terme-nom .etat { flex: none; }
+.terme .terme-def { margin: 4px 0 0; font-size: 15px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.terme .terme-consigne { display: flex; align-items: flex-start; gap: 8px; margin: 10px 0 0; font-size: 15px; line-height: 1.45; color: var(--atlas-ink); }
+.terme-consigne .ico { width: 19px; height: 19px; margin-top: 1px; color: var(--atlas-or); }
+.terme-gestes { display: flex; gap: 18px; }
+.terme.de-cote .terme-nom > span:first-child, .terme.de-cote .terme-def, .terme.de-cote .terme-consigne { opacity: 0.55; }
+.reserve { padding-top: 56px; }
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="reglages.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Réglages</a>
+  <h1 class="pl-titre">Atlas IA</h1>
+  <p class="pl-verdict">Chez vous, les clés sont posées : l'écran dit <b>Oui trois fois</b>, en vert. Le détail de l'éditeur tient dans une plage, et <b>Mon vocabulaire</b> s'ouvre dans le même téléphone.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <!-- ═══ PROPOSÉ ═══ -->
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats">
+        <button type="button" data-etat="chez-vous" aria-pressed="true">Branché, chez vous</button>
+        <button type="button" data-etat="client">Branché, chez un client</button>
+        <button type="button" data-etat="pas-encore">Pas encore branché</button>
+        <button type="button" data-etat="salarie">Un salarié</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre" data-etat="chez-vous" id="ecran-propose">
+          <div class="defile">
+
+            <div data-ecran-panneau="ia">
+              <div class="tete-ronds">
+                <a class="rond-creux" href="reglages.html" aria-label="Retour aux réglages"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+                <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              </div>
+              <header class="tete" style="margin-top:0"><h1 class="tete-titre">Atlas IA</h1></header>
+
+              <div data-si-etat="chez-vous client pas-encore">
+                <p class="rubrique rubrique-or">Ce qu'Atlas sait faire</p>
+                <div class="plage plage-serree savoirs">
+                  <ul class="liste">
+                    <li><div class="ligne">
+                      <span class="pastille-ico" data-ton="vert" data-si-etat="chez-vous client"><svg class="ico" aria-hidden="true"><use href="#i-micro"/></svg></span>
+                      <span class="pastille-ico" data-si-etat="pas-encore"><svg class="ico" aria-hidden="true"><use href="#i-micro"/></svg></span>
+                      <span class="ligne-corps"><span class="ligne-nom">Écouter vos dictées</span><span class="ligne-situation">Vous parlez, Atlas écrit</span><span class="ligne-etat"><span class="etat" data-ton="vert" data-si-etat="chez-vous client">Oui</span><span class="etat" data-si-etat="pas-encore">Pas encore</span></span></span>
+                    </div></li>
+                    <li><div class="ligne">
+                      <span class="pastille-ico" data-ton="vert" data-si-etat="chez-vous client"><svg class="ico" aria-hidden="true"><use href="#i-crayon"/></svg></span>
+                      <span class="pastille-ico" data-si-etat="pas-encore"><svg class="ico" aria-hidden="true"><use href="#i-crayon"/></svg></span>
+                      <span class="ligne-corps"><span class="ligne-nom">Écrire vos devis</span><span class="ligne-situation">À partir de ce que vous avez dicté</span><span class="ligne-etat"><span class="etat" data-ton="vert" data-si-etat="chez-vous client">Oui</span><span class="etat" data-si-etat="pas-encore">Pas encore</span></span></span>
+                    </div></li>
+                    <li><div class="ligne">
+                      <span class="pastille-ico" data-ton="vert" data-si-etat="chez-vous client"><svg class="ico" aria-hidden="true"><use href="#i-photo"/></svg></span>
+                      <span class="pastille-ico" data-si-etat="pas-encore"><svg class="ico" aria-hidden="true"><use href="#i-photo"/></svg></span>
+                      <span class="ligne-corps"><span class="ligne-nom">Lire vos croquis</span><span class="ligne-situation">Pour le plan d'arrosage</span><span class="ligne-etat"><span class="etat" data-ton="vert" data-si-etat="chez-vous client">Oui</span><span class="etat" data-si-etat="pas-encore">Pas encore</span></span></span>
+                    </div></li>
+                  </ul>
+                </div>
+                <p class="plage-ton mt-8" data-ton="bleu" data-si-etat="pas-encore">Rien à faire de votre côté : c'est nous qui le branchons.</p>
+              </div>
+
+              <!-- Ce qui suit ne s'ouvre qu'à l'éditeur. -->
+              <div class="mt-24" data-si-etat="chez-vous">
+                <p class="rubrique rubrique-or">Ce que l'application utilise</p>
+                <div class="plage reglages fournisseurs">
+                  <div class="reglage">
+                    <span class="reglage-libelle">Transcription</span>
+                    <span class="reglage-valeur">OpenAI (Whisper)</span>
+                    <span class="reglage-sous">L'audio de vos notes vocales part chez ce prestataire.</span>
+                  </div>
+                  <div class="reglage">
+                    <span class="reglage-libelle">Rédaction</span>
+                    <span class="reglage-valeur">Anthropic (Claude)</span>
+                    <span class="reglage-sous">Le texte de vos dictées part chez ce prestataire.</span>
+                  </div>
+                  <div class="reglage">
+                    <span class="reglage-libelle">Lecture d'image</span>
+                    <span class="reglage-valeur">Anthropic (Claude)</span>
+                    <span class="reglage-sous">Les croquis d'arrosage et les tickets photographiés partent chez ce prestataire.</span>
+                  </div>
+                </div>
+                <p class="plage-ton mt-8" data-ton="or">Chacun devient un sous-traitant à faire figurer dans vos documents (voir docs/RGPD.md §3).</p>
+                <p class="loi">Poser une clé suffit à brancher le fournisseur correspondant. Les variables <span class="code">TRANSCRIPTION_PROVIDER</span>, <span class="code">LLM_PROVIDER</span> et <span class="code">VISION_PROVIDER</span> ne servent qu'à forcer un autre choix, par exemple « dev » pour couper l'IA sans retirer les clés. Sans <span class="code">VISION_PROVIDER</span>, les images vont chez celui qui rédige.</p>
+
+                <p class="rubrique rubrique-or">Ce qu'elle sait reconnaître</p>
+                <div class="plage plage-serree vocabulaire-ligne">
+                  <button class="ligne touche" type="button" data-vers="vocabulaire">
+                    <span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-note"/></svg></span>
+                    <span class="ligne-corps"><span class="ligne-nom">Mon vocabulaire</span><span class="ligne-situation">Les mots qu'Atlas rattache à une prestation quand vous dictez.</span></span>
+                    <span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="vide reserve" data-si-etat="salarie">
+                <svg class="ico" aria-hidden="true"><use href="#i-cadenas"/></svg>
+                <p class="vide-titre">Ces réglages appartiennent au patron de l'entreprise.</p>
+                <p class="vide-texte">L'état des fournisseurs et ce qu'ils coûtent regardent celui qui les paie.</p>
+              </div>
+            </div>
+
+            <!-- ─── Mon vocabulaire : l'écran de l'éditeur, ouvert depuis Atlas IA ─── -->
+            <div data-ecran-panneau="vocabulaire" hidden>
+              <div class="tete-ronds">
+                <button class="rond-creux" type="button" data-vers="ia" aria-label="Retour à Atlas IA"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+                <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              </div>
+              <header class="tete" style="margin-top:0"><h1 class="tete-titre">Mon vocabulaire</h1></header>
+              <p class="reserve-editeur"><span class="etat" data-ton="or">Réservé à l'éditeur</span></p>
+
+              <p class="voca-tete">Ce que vous écrivez ici part avec <b>chaque dictée</b>.</p>
+              <p class="plage-ton" data-ton="bleu">Ces mots et ces règles accompagnent l'application chez tous vos clients. Ils ne contiennent aucune donnée de client, c'est ce qui les rend partageables.</p>
+
+              <p class="rubrique rubrique-or">Ajouter</p>
+              <div class="plage ajout">
+                <div class="choix">
+                  <button type="button" aria-pressed="true" data-montre="champs-mot">Un mot</button>
+                  <button type="button" aria-pressed="false" data-montre="champs-regle">Une règle</button>
+                </div>
+                <div id="champs-mot">
+                  <label class="champ"><span class="champ-libelle">Le mot</span><input class="champ-saisie" type="text" placeholder="charpentière champignonnée"></label>
+                  <label class="champ"><span class="champ-libelle">Ce que ça veut dire</span><textarea class="champ-saisie" rows="2" placeholder="Branche maîtresse atteinte par un champignon."></textarea></label>
+                  <label class="champ"><span class="champ-libelle">Ce qu'Atlas doit en faire <small>(le plus utile)</small></span><textarea class="champ-saisie" rows="2" placeholder="C'est une suppression, pas une taille. Ligne à part sur le devis."></textarea></label>
+                </div>
+                <div id="champs-regle" hidden>
+                  <label class="champ"><span class="champ-libelle">La règle, en une phrase</span><input class="champ-saisie" type="text" placeholder="Chaque ligne doit pouvoir se vendre seule"></label>
+                  <label class="champ"><span class="champ-libelle">Ce que ça veut dire</span><textarea class="champ-saisie" rows="2" placeholder="Une prestation détachable porte son propre déplacement."></textarea></label>
+                  <label class="champ"><span class="champ-libelle">Ce qu'Atlas doit en faire <small>(le plus utile)</small></span><textarea class="champ-saisie" rows="2" placeholder="Alléger la ligne principale, charger la détachable. Jamais au prorata du temps."></textarea></label>
+                </div>
+                <button class="bouton bouton-plein mt-16" type="button" data-note="Sur la planche, rien ne s'ajoute.">Ajouter</button>
+              </div>
+
+              <p class="rubrique rubrique-or">Mes règles</p>
+              <p class="sous-rubrique">Elles priment sur les habitudes du modèle.</p>
+              <div class="plage termes">
+                <div class="terme">
+                  <p class="terme-nom"><span>Chaque ligne doit pouvoir se vendre seule</span><span class="etat" hidden>Mis de côté</span></p>
+                  <p class="terme-def">Une prestation détachable porte son propre déplacement.</p>
+                  <p class="terme-consigne"><svg class="ico" aria-hidden="true"><use href="#i-etincelle"/></svg><span>Alléger la ligne principale, charger la détachable. Jamais au prorata du temps.</span></p>
+                  <div class="terme-gestes"><button class="bouton-texte or" type="button" data-de-cote>Mettre de côté</button><button class="bouton-texte alerte" type="button" data-note="Sur la planche, rien ne se supprime.">Supprimer</button></div>
+                </div>
+              </div>
+
+              <p class="rubrique rubrique-or">Mes mots</p>
+              <p class="sous-rubrique">Le vocabulaire du métier, et son traitement.</p>
+              <div class="plage termes">
+                <div class="terme">
+                  <p class="terme-nom"><span>charpentière champignonnée</span><span class="etat" hidden>Mis de côté</span></p>
+                  <p class="terme-def">Branche maîtresse atteinte par un champignon.</p>
+                  <p class="terme-consigne"><svg class="ico" aria-hidden="true"><use href="#i-etincelle"/></svg><span>C'est une suppression, pas une taille. Ligne à part sur le devis.</span></p>
+                  <div class="terme-gestes"><button class="bouton-texte or" type="button" data-de-cote>Mettre de côté</button><button class="bouton-texte alerte" type="button" data-note="Sur la planche, rien ne se supprime.">Supprimer</button></div>
+                </div>
+                <div class="terme de-cote">
+                  <p class="terme-nom"><span>fendre en 50</span><span class="etat">Mis de côté</span></p>
+                  <p class="terme-def">Bois coupé en bûches de 50 cm.</p>
+                  <p class="terme-consigne"><svg class="ico" aria-hidden="true"><use href="#i-etincelle"/></svg><span>C'est une façon, pas un déchet. Ligne à part sur le devis.</span></p>
+                  <div class="terme-gestes"><button class="bouton-texte or" type="button" data-de-cote>Remettre en service</button><button class="bouton-texte alerte" type="button" data-note="Sur la planche, rien ne se supprime.">Supprimer</button></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html">Terminés</a>
+              <a class="barre-onglet" href="paysage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html" aria-current="page">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ AUJOURD'HUI ═══ -->
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre">
+        <div class="cadre-capture"><img src="aujourdhui/reglages-ia.jpg" alt="L'écran Atlas IA tel qu'il est aujourd'hui, sur un poste sans clé"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>Proposé montre votre écran à vous : les clés sont posées, Atlas écoute, écrit et lit. La capture d'Aujourd'hui dit « Pas encore » parce que le poste qui l'a prise n'a pas de clé.</li>
+      <li>Les trois choses qu'Atlas sait faire gardent leurs mots. Chacune a son dessin (le micro, le crayon, la photo) et son état en couleur : Oui sur une pastille verte, Pas encore en gris. Plus de capitales espacées.</li>
+      <li>« Rien à faire de votre côté : c'est nous qui le branchons. » passe sur une plage bleue, en 15 px au lieu de 12 px gris.</li>
+      <li>Votre détail d'éditeur tient dans une plage : qui écoute, qui rédige, qui regarde les photos, et ce qui part chez chacun. La phrase du sous-traitant, dite trois fois aujourd'hui, ne se dit qu'une.</li>
+      <li>Mon vocabulaire s'ouvre dans le même téléphone : touchez sa ligne. L'ajout en haut, un mot ou une règle ; puis vos règles et vos mots, chacun avec ce qu'Atlas doit en faire, marqué d'une étincelle d'or.</li>
+      <li>Un mot mis de côté le dit en toutes lettres, au lieu de seulement pâlir. Touchez « Remettre en service ».</li>
+      <li>Une demi-phrase part en tête de Mon vocabulaire : « pour qu'Atlas comprenne du premier coup au lieu qu'on le rattrape après ».</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>« Pas encore », jamais « non ». Oui seulement quand un vrai prestataire répond : touchez « Pas encore branché ».</li>
+      <li>Le détail et Mon vocabulaire ne s'ouvrent qu'à vous, l'éditeur. Un artisan client voit les trois lignes, rien d'autre : touchez « Branché, chez un client ».</li>
+      <li>Les clés ne s'affichent jamais, seulement les noms des prestataires.</li>
+      <li>Quand rien n'est branché chez l'éditeur, son détail garde ses mots (« Mode déterministe, aucun prestataire branché », « Posez OPENAI_API_KEY… »).</li>
+      <li>Un salarié qui tape l'adresse lit à qui la page appartient.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>« Lire vos croquis, pour le plan d'arrosage » en dit moins qu'Atlas n'en fait : le même branchement lit aussi le ticket de caisse photographié et la plante malade du diagnostic. Écrire « Lire vos photos », avec dessous « Croquis, ticket, plante malade » ?</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="reglages-fournisseurs.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Fournisseurs et partenaires</a>
+  <a href="reglages-agenda.html">Mon agenda<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var ecran = document.getElementById("ecran-propose");
+  document.addEventListener("click", function (e) {
+    /* Les petits mots de la planche : ce qui ne s'enregistre pas le dit. */
+    var b = e.target.closest("[data-note]");
+    if (b) { Kit.note(b, b.getAttribute("data-note")); return; }
+
+    /* Une puce du haut ramène toujours sur Atlas IA. */
+    if (e.target.closest(".pl-etats button[data-etat]")) {
+      ecran.querySelectorAll("[data-ecran-panneau]").forEach(function (p) { p.hidden = p.getAttribute("data-ecran-panneau") !== "ia"; });
+      return;
+    }
+
+    /* Mettre de côté, ou remettre en service : le mot reste, il pâlit, et le dit. */
+    var cote = e.target.closest("[data-de-cote]");
+    if (cote) {
+      var terme = cote.closest(".terme");
+      var mis = !terme.classList.contains("de-cote");
+      terme.classList.toggle("de-cote", mis);
+      terme.querySelector(".terme-nom .etat").hidden = !mis;
+      cote.textContent = mis ? "Remettre en service" : "Mettre de côté";
+    }
+  });
+});
+</script>
+</body>
+</html>
