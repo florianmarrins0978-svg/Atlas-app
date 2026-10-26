@@ -8,7 +8,15 @@ pas besoin de rajouter ou enlever des questions ou les modifier »*.
 
 La planche : `appli/soignee/creer-un-compte.html`, adresse publiée
 `https://florianmarrins0978-svg.github.io/Atlas-app/soignee/creer-un-compte.html`.
-**Rien n'est codé dans `src/`.**
+**Codée le 26 octobre 2026** sur la branche `lot/creer-un-compte-soigne`, sans
+batterie à sa demande (« ne lance pas de batterie ») : elle n'est pas sur
+`main` tant que la batterie entière n'a pas été jouée au vert.
+
+| La planche | Le code | Pourquoi |
+|---|---|---|
+| suggestions d'adresse | une case libre | la recherche d'adresses est fermée sans compte : sinon notre serveur deviendrait un relais ouvert |
+| l'IA lit l'attestation tout de suite | la photo part après le code, et l'IA la lit à ce moment-là | rien ne s'écrit avant « Créer mon compte », et une lecture d'image ouverte sans compte serait payée par nous |
+| Oui ou Non en deux cartes | deux pilules l'une sous l'autre | sa règle du 12 août : la même forme ronde partout |
 
 ## Ce qui a été confronté
 

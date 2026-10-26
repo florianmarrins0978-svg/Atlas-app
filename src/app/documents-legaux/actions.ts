@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import {
+  acceptationsDe,
   documentsAAccepter,
   enregistrerAcceptations,
   utilisateurExiste,
@@ -48,6 +49,11 @@ export async function accepterDocumentsAction(
     return { erreur: "Un document vient de changer. Relisez la liste, puis acceptez.", relire: true };
   }
 
+  // **Une première acceptation est celle d'un compte neuf** : il vient de la
+  // porte, et il passe par « Tout est prêt » avant d'entrer (planche du
+  // 26 octobre 2026). Lue AVANT d'écrire, sinon elle ne serait jamais vide.
+  const premiere = (await acceptationsDe(utilisateurId)).length === 0;
+
   const entetes = await headers();
   const { enregistrees } = await enregistrerAcceptations(
     utilisateurId,
@@ -67,7 +73,7 @@ export async function accepterDocumentsAction(
     versions: attendus.map((d) => `${d.type}@${d.version}`),
   });
 
-  redirect("/");
+  redirect(premiere ? "/creer-un-compte/pret" : "/");
 }
 
 export type ResultatRefus =

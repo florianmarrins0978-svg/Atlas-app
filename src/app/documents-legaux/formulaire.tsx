@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { accepterDocumentsAction } from "./actions";
 import { deconnexionAction } from "@/app/login/actions";
 import type { DocumentAAccepter } from "@/server/repositories/documents-legaux";
-import { colors } from "@/lib/design-tokens";
+import { colors, surPlein } from "@/lib/design-tokens";
 import { phraseDAcceptation } from "@/lib/acceptation-documents";
 import { NUIT, SERIF } from "@/components/atlas/PorteDeNuit";
 import { rendreMarkdownSimple } from "@/components/atlas/rendreMarkdownSimple";
@@ -69,7 +69,7 @@ export default function FormulaireAcceptation({
         className="overflow-hidden rounded-[20px]"
         style={{ background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
       >
-        <p className="px-[18px] pb-4 pt-[18px] text-[15px] leading-[1.55]" style={{ color: colors.ink }}>
+        <p className="px-[18px] pb-4 pt-[18px] text-[15.5px] leading-[1.55]" style={{ color: colors.ink }}>
           {phraseDAcceptation(documents.length)}
         </p>
         {documents.map((doc) => (
@@ -82,7 +82,7 @@ export default function FormulaireAcceptation({
           >
             <span className="flex-1 text-[16px] leading-[1.3]">
               {doc.titre}
-              <span className="mt-[3px] block text-[12.5px]" style={{ color: colors.inkSoft }}>
+              <span className="mt-[3px] block text-[13.5px]" style={{ color: colors.inkSoft }}>
                 Version {doc.version}
               </span>
             </span>
@@ -120,8 +120,10 @@ export default function FormulaireAcceptation({
         <button
           type="submit"
           disabled={occupe}
-          className="w-full rounded-full py-4 text-[17px] leading-none transition-transform active:scale-[0.985] disabled:opacity-60"
-          style={{ background: NUIT.rust, color: NUIT.cream, ...SERIF }}
+          // Les boutons de la porte soignée (26 octobre 2026) : 56 points, en
+          // lettres droites et grasses, comme les questions qui précèdent.
+          className="min-h-[56px] w-full rounded-full text-[17px] font-semibold leading-none transition-transform active:scale-[0.985] disabled:opacity-60"
+          style={{ background: colors.plein, color: surPlein }}
         >
           {enCours ? "Enregistrement…" : "Accepter"}
         </button>
@@ -147,8 +149,8 @@ export default function FormulaireAcceptation({
             type="button"
             onClick={sortir}
             disabled={occupe}
-            className="mt-1 min-h-[44px] w-full bg-transparent text-[14px] disabled:opacity-60"
-            style={{ color: colors.muted }}
+            className="mt-1 min-h-[48px] w-full bg-transparent text-[15.5px] font-semibold disabled:opacity-60"
+            style={{ color: colors.inkSoft }}
           >
             Se déconnecter
           </button>

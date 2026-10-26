@@ -3,6 +3,7 @@ import {
   CHAPITRES,
   QUESTIONS,
   avanceToutSeul,
+  numeroTvaDuSiret,
   phraseDeCeQuiManque,
   questionsApplicables,
   refusDe,
@@ -13,6 +14,7 @@ import {
   type Question,
 } from "../src/lib/creation-compte";
 import { LONGUEUR_MINIMALE } from "../src/lib/mot-de-passe";
+import { MAX_EQUIPES } from "../src/lib/equipes";
 
 /**
  * LES QUESTIONS DE LA PORTE — les règles, sans base et sans navigateur.
@@ -22,11 +24,12 @@ import { LONGUEUR_MINIMALE } from "../src/lib/mot-de-passe";
  * annonce. Si demain il fait changer un mot à l'écran, aucune ligne d'ici ne
  * doit rougir.
  *
- * **Elle sait échouer**, et cela a été vérifié en la confrontant à l'état
- * qu'elle prétend détecter : en remettant le plancher de huit caractères que
- * la porte portait d'abord, `mot de passe : la règle du produit` rougit ; en
+ * **Elle sait échouer** : en remettant le plancher de huit caractères que la
+ * porte portait d'abord, `mot de passe : la règle du produit` rougit ; en
  * comptant les questions applicables au lieu des possibles, `le total ne monte
- * jamais` rougit.
+ * jamais` rougit ; et contre les seize questions d'avant le 26 octobre 2026,
+ * `la fin ne dit jamais « tout est prêt » sans médiateur` rougit (vérifié en la
+ * jouant contre la version précédente de `creation-compte.ts`).
  */
 
 let passed = 0;
@@ -48,8 +51,10 @@ const q = (id: string): Question => {
   assert.ok(trouvee, `question inconnue : ${id}`);
   return trouvee;
 };
+const rang = (id: string) => QUESTIONS.findIndex((x) => x.id === id);
+const champs = (question: Question) => (question.champs ?? []).map((c) => c.cle);
 
-// Une société assujettie, tout rempli — le cas le plus long.
+// Une société assujettie avec une décennale, tout rempli : le cas le plus long.
 const SOCIETE: Record<string, string> = {
   identite: "mme",
   prenom: "Anne",
@@ -57,67 +62,75 @@ const SOCIETE: Record<string, string> = {
   email: "anne@exemple.fr",
   mdp: "un mot de passe long",
   confirm: "un mot de passe long",
-  entreprise: "Amiot Paysage",
-  forme: "SASU",
-  siret: "12345678901234",
-  adresse: "3 rue des Tilleuls",
-  capital: "1 000",
-  rcs: "Versailles",
   tel: "0102030405",
   emailPro: "contact@amiot.fr",
+  entreprise: "Amiot Paysage",
+  forme: "SASU",
+  capital: "1 000",
+  rcs: "Versailles",
+  siret: "12345678901234",
+  adresse: "3 rue des Tilleuls",
   tva: "assujettie",
-  numTva: "FR12345678901",
+  numTva: "FR32123456789",
+  rythme: "mensuelle",
+  reversement: "encaissements",
   iban: "FR7612345678901234567890123",
   titulaire: "Amiot Paysage",
   moyens: "virement, chèque",
+  decennale: "oui",
+  attestation: "jointe",
+  assureur: "Assureur de démonstration",
+  adresseAssureur: "1 rue de l’Exemple, Nantes",
+  couverture: "France métropolitaine",
+  mediateur: "Médiateur de démonstration",
+  mediateurOu: "mediateur.example",
+  equipes: "1",
 };
 
-test("seize questions, cinq chapitres, et on parle de LUI avant sa société", () => {
-  assert.equal(QUESTIONS.length, 16);
+test("sept chapitres, et on parle de LUI avant sa société", () => {
   // **Sa correction du 8 septembre 2026** : « avant le nom de l'entreprise, je
-  // pense qu'il faut mettre le numéro de tél ». On finit de parler de la
-  // personne avant de parler de sa société.
-  assert.deepEqual([...CHAPITRES], ["Vous", "Vous joindre", "Votre entreprise", "La TVA", "Être payé"]);
+  // pense qu'il faut mettre le numéro de tél ». Les deux chapitres du
+  // 26 octobre viennent après l'argent, dans l'ordre de Mon entreprise.
+  assert.deepEqual(
+    [...CHAPITRES],
+    ["Vous", "Vous joindre", "Votre entreprise", "La TVA", "Être payé", "Assurance et médiateur", "Votre équipe"]
+  );
+  assert.ok(rang("joindre") < rang("entreprise"), "le téléphone est demandé après le nom de l'entreprise");
 });
 
-test("le téléphone se demande AVANT le nom de l'entreprise", () => {
-  const rang = (id: string) => QUESTIONS.findIndex((q) => q.id === id);
-  assert.ok(rang("tel") < rang("entreprise"), "le téléphone est demandé après le nom de l'entreprise");
-  assert.ok(rang("tel") > rang("identite"), "le téléphone est demandé avant de savoir qui il est");
-});
-
-test("une question conditionnelle suit CELLE QUI LA COMMANDE", () => {
-  // Choisir « SASU » puis se voir demander son capital deux questions plus loin
-  // rompt le fil — et l'on ne voit plus POURQUOI on le demande.
-  const rang = (id: string) => QUESTIONS.findIndex((q) => q.id === id);
-  for (const [conditionnelle, commande] of [
-    ["capital", "forme"],
-    ["rcs", "forme"],
-    ["numTva", "tva"],
-  ]) {
-    const ecart = rang(conditionnelle) - rang(commande);
-    assert.ok(ecart > 0, `${conditionnelle} est posée AVANT ${commande}, dont elle dépend`);
-    assert.ok(
-      ecart <= 2,
-      `${ecart - 1} question(s) séparent ${commande} de ${conditionnelle} : on ne voit plus pourquoi elle est posée`
-    );
+test("trois paires sur un écran, comme les paquets de Mon entreprise", () => {
+  assert.deepEqual(champs(q("joindre")), ["tel", "emailPro"]);
+  assert.deepEqual(champs(q("capitalRcs")), ["capital", "rcs"]);
+  assert.deepEqual(champs(q("paye")), ["iban", "titulaire"]);
+  // Une case qui partage son écran porte son nom au-dessus : remplie, elle ne
+  // montre plus son exemple.
+  for (const question of QUESTIONS) {
+    if ((question.champs?.length ?? 0) < 2) continue;
+    for (const champ of question.champs ?? []) assert.ok(champ.libelle, `${champ.cle} n'a pas de nom au-dessus`);
   }
 });
 
-test("une question qui en REPREND une autre vient après elle", () => {
-  const rang = (id: string) => QUESTIONS.findIndex((q) => q.id === id);
+test("une question conditionnelle suit CELLE QUI LA COMMANDE", () => {
+  for (const [conditionnelle, commande] of [
+    ["capitalRcs", "forme"],
+    ["numTva", "tva"],
+    ["attestation", "decennale"],
+  ]) {
+    assert.equal(rang(conditionnelle) - rang(commande), 1, `${conditionnelle} ne suit pas ${commande}`);
+  }
+});
+
+test("une case qui en REPREND une autre vient après elle", () => {
   for (const question of QUESTIONS) {
-    if (!question.repriseDe) continue;
-    assert.ok(
-      rang(question.repriseDe) < rang(question.id),
-      `${question.id} propose la réponse de ${question.repriseDe}, qui n'a pas encore été posée`
-    );
+    for (const champ of question.champs ?? []) {
+      if (!champ.repriseDe) continue;
+      const source = QUESTIONS.findIndex((x) => champs(x).includes(champ.repriseDe!));
+      assert.ok(source >= 0 && source < rang(question.id), `${champ.cle} propose ${champ.repriseDe}, pas encore posé`);
+    }
   }
 });
 
 test("les chapitres ne s'entrecoupent pas", () => {
-  // Un chapitre repris plus loin ferait reculer la jauge, qui compte un segment
-  // par chapitre : on repasserait en arrière en avançant.
   const vus = new Set<string>();
   let precedent = "";
   for (const question of QUESTIONS) {
@@ -128,29 +141,21 @@ test("les chapitres ne s'entrecoupent pas", () => {
   }
 });
 
-test("on ne demande jamais le capital d'une micro-entreprise", () => {
-  const micro = questionsApplicables({ forme: "Micro-entreprise", tva: "franchise" }).map((x) => x.id);
-  assert.ok(!micro.includes("capital"), "le capital est posé à une micro-entreprise");
-  assert.ok(!micro.includes("rcs"), "le RCS est posé à une micro-entreprise");
-  assert.ok(!micro.includes("numTva"), "le numéro de TVA est posé à une franchise");
-  assert.equal(micro.length, 13);
-
-  const societe = questionsApplicables({ forme: "SASU", tva: "assujettie" }).map((x) => x.id);
-  assert.ok(societe.includes("capital") && societe.includes("rcs") && societe.includes("numTva"));
-  assert.equal(societe.length, 16);
+test("quatorze questions pour une micro-entreprise sans décennale, vingt au plus long", () => {
+  const micro = questionsApplicables({ forme: "Micro-entreprise", tva: "franchise", decennale: "non" }).map((x) => x.id);
+  for (const absente of ["capitalRcs", "numTva", "rythme", "reversement", "attestation", "assureur"]) {
+    assert.ok(!micro.includes(absente), `${absente} est posée à une micro-entreprise en franchise sans décennale`);
+  }
+  assert.equal(micro.length, 14);
+  assert.equal(questionsApplicables(SOCIETE).length, 20);
+  assert.equal(QUESTIONS.length, 20);
 });
 
 test("le total annoncé ne monte JAMAIS en cours de route", () => {
-  // Avant d'avoir répondu, on compte tout ce qui POURRAIT se poser.
-  const auDepart = totalAnnonce({});
-  assert.equal(auDepart, 16);
-  // Choisir une SAS ne doit pas faire grossir le compteur…
-  assert.equal(totalAnnonce({ forme: "SASU", tva: "assujettie" }), 16);
-  // …et choisir une micro-entreprise le fait DESCENDRE, ce qui est une bonne
-  // nouvelle : c'est le sens interdit qui est l'unique.
-  assert.ok(totalAnnonce({ forme: "EI", tva: "franchise" }) < auDepart);
-  // Et il ne descend jamais sous ce qu'on va réellement poser.
-  for (const reponses of [{}, { forme: "EI" }, { forme: "SASU" }, SOCIETE]) {
+  assert.equal(totalAnnonce({}), 20);
+  assert.equal(totalAnnonce({ forme: "SASU", tva: "assujettie", decennale: "oui" }), 20);
+  assert.ok(totalAnnonce({ forme: "EI", tva: "franchise" }) < 20);
+  for (const reponses of [{}, { forme: "EI" }, { forme: "SASU" }, { decennale: "non" }, SOCIETE]) {
     assert.ok(
       totalAnnonce(reponses) >= questionsApplicables(reponses).length,
       `« x sur ${totalAnnonce(reponses)} » alors qu'on pose ${questionsApplicables(reponses).length} questions`
@@ -159,8 +164,6 @@ test("le total annoncé ne monte JAMAIS en cours de route", () => {
 });
 
 test("mot de passe : la règle du produit, jamais une seconde", () => {
-  // Pas « aaaaaaaaaaaa » : depuis le 29 septembre 2026, une répétition est
-  // refusée pour ce qu'elle est, et la porte doit le refuser comme le reste.
   const bon = "bruyere-nord-sud-est".slice(0, LONGUEUR_MINIMALE);
   const court = bon.slice(0, -1);
   assert.ok(refusDe(q("mdp"), { mdp: court, confirm: court }), "un mot de passe trop court est accepté");
@@ -176,31 +179,53 @@ test("l'identité dit LAQUELLE des trois cases manque", () => {
   assert.equal(refusDe(q("identite"), { identite: "mme", prenom: "Anne", nom: "Amiot" }), null);
 });
 
-test("un capital illisible se refuse à la question, pas en silence", () => {
-  assert.equal(refusDe(q("capital"), { capital: "1 000" }), null);
-  assert.equal(refusDe(q("capital"), { capital: "1000,50" }), null);
-  // Vide : c'est permis, la question n'est pas obligatoire.
-  assert.equal(refusDe(q("capital"), {}), null);
-  assert.ok(refusDe(q("capital"), { capital: "mille euros" }), "un capital en lettres est accepté");
-});
-
-test("UN CAPITAL PLUS GRAND QUE LA COLONNE SE REFUSE ICI — 13 septembre 2026", () => {
-  // Trouvé en balayant toutes les façons de remplir la porte : quinze chiffres
-  // passaient la règle sans un mot, et PostgreSQL refusait la ligne (22003) —
-  // donc la création du compte ENTIÈRE, pour une case facultative. La colonne
-  // est `numeric(12,2)`, et c'est elle qui commande.
-  assert.ok(refusDe(q("capital"), { capital: "999999999999999" }), "un capital que la base ne peut pas porter passe encore");
-  assert.equal(refusDe(q("capital"), { capital: "9999999999,99" }), null, "le plus grand capital possible est refusé à tort");
-  assert.equal(refusDe(q("capital"), { capital: "10 000 000" }), null, "dix millions ne sont pas un montant extravagant");
+test("un capital illisible ou trop grand se refuse à la question, pas en silence", () => {
+  const capital = q("capitalRcs");
+  assert.equal(refusDe(capital, { capital: "1 000" }), null);
+  assert.equal(refusDe(capital, { capital: "1000,50" }), null);
+  assert.equal(refusDe(capital, {}), null, "vide, c'est permis");
+  assert.ok(refusDe(capital, { capital: "mille euros" }), "un capital en lettres est accepté");
+  // 13 septembre 2026 : quinze chiffres faisaient échouer la création ENTIÈRE.
+  assert.ok(refusDe(capital, { capital: "999999999999999" }), "un capital que la base ne peut pas porter passe");
+  assert.equal(refusDe(capital, { capital: "9999999999,99" }), null);
 });
 
 test("ce qu'on propose d'office est ce qui part en base", () => {
-  const vues = reponsesProposees({ email: "anne@exemple.fr", entreprise: "Amiot Paysage" });
+  const vues = reponsesProposees({ email: "anne@exemple.fr", entreprise: "Amiot Paysage", siret: "123 456 789 00012", tva: "assujettie" });
   assert.equal(vues.emailPro, "anne@exemple.fr");
   assert.equal(vues.titulaire, "Amiot Paysage");
+  assert.equal(vues.moyens, "virement, chèque");
+  assert.equal(vues.equipes, "1");
+  assert.equal(vues.rythme, "mensuelle");
+  assert.equal(vues.reversement, "encaissements");
+  // Le numéro de TVA se tire du SIRET, par la règle qui sert déjà aux clients.
+  assert.equal(vues.numTva, "FR32123456789");
   // Une case vidée à la main reste vide : c'est une réponse, pas une absence.
-  const efface = reponsesProposees({ email: "anne@exemple.fr", emailPro: "" });
-  assert.equal(efface.emailPro, "");
+  assert.equal(reponsesProposees({ email: "anne@exemple.fr", emailPro: "" }).emailPro, "");
+  assert.equal(reponsesProposees({ siret: "12345678900012", tva: "assujettie", numTva: "" }).numTva, "");
+});
+
+test("le numéro de TVA ne se tire que d'un SIRET entier", () => {
+  assert.equal(numeroTvaDuSiret("123 456 789 00012"), "FR32123456789");
+  assert.equal(numeroTvaDuSiret("123 456 789"), null);
+  assert.equal(numeroTvaDuSiret(undefined), null);
+  // Une franchise n'a pas de numéro : rien ne se propose hors de sa question.
+  assert.equal(reponsesProposees({ siret: "12345678900012", tva: "franchise" }).numTva, undefined);
+});
+
+test("LA FIN NE DIT JAMAIS « TOUT EST PRÊT » SANS MÉDIATEUR — 26 octobre 2026", () => {
+  // Vu à la capture : la porte disait « Vos réglages sont remplis », et Mon
+  // entreprise disait juste après le médiateur manquant et obligatoire.
+  const sansMediateur = { ...SOCIETE, mediateur: "", mediateurOu: "" };
+  assert.ok(resteAFaire(sansMediateur).includes("le médiateur"), "un médiateur passé n'est pas réclamé à la fin");
+  assert.ok(phraseDeCeQuiManque(resteAFaire(sansMediateur)), "la fin n'a rien à dire sans médiateur");
+});
+
+test("la décennale se réclame seulement chez qui en a une", () => {
+  const avec = resteAFaire({ ...SOCIETE, attestation: "", assureur: "" });
+  assert.ok(avec.includes("l’attestation") && avec.includes("l’assureur"));
+  const sans = resteAFaire({ ...SOCIETE, decennale: "non", attestation: "", assureur: "" });
+  assert.ok(!sans.includes("l’attestation") && !sans.includes("l’assureur"), "une décennale réclamée à qui n'en a pas");
 });
 
 test("ce qui a été proposé ne se compte pas comme manquant", () => {
@@ -218,62 +243,47 @@ test("tout rempli : plus rien à dire", () => {
 test("trois manques nommés au plus, le reste se compte", () => {
   assert.equal(phraseDeCeQuiManque(["le SIRET"]), "Il manque le SIRET.");
   assert.equal(phraseDeCeQuiManque(["le SIRET", "l’adresse"]), "Il manque le SIRET et l’adresse.");
-  assert.equal(
-    phraseDeCeQuiManque(["a", "b", "c", "d"]),
-    "Il manque a, b et c, et 1 autre."
-  );
+  assert.equal(phraseDeCeQuiManque(["a", "b", "c", "d"]), "Il manque a, b et c, et 1 autre.");
   assert.match(String(phraseDeCeQuiManque(["a", "b", "c", "d", "e"])), /2 autres\.$/);
 });
 
-test("une question obligatoire ne se passe jamais", () => {
-  // « Passer » ne s'affiche que sur les questions facultatives : celles qui
-  // sont obligatoires ne portent donc jamais de `reste` à réclamer plus tard.
+test("une question obligatoire ne se réclame jamais à la fin", () => {
   for (const question of QUESTIONS) {
-    if (question.requis && question.id !== "forme" && question.id !== "tva") {
-      assert.ok(!question.reste, `${question.id} est obligatoire ET réclamé à la fin`);
-    }
+    if (!question.requis) continue;
+    assert.ok(!question.reste, `${question.id} est obligatoire ET réclamée à la fin`);
+    for (const champ of question.champs ?? []) assert.ok(!champ.reste, `${champ.cle} est obligatoire ET réclamé`);
+  }
+});
+
+test("Oui ou Non et la forme avancent tout seuls ; ce qui est proposé, non", () => {
+  assert.equal(avanceToutSeul(q("tva")), true);
+  assert.equal(avanceToutSeul(q("decennale")), true);
+  assert.equal(avanceToutSeul(q("forme")), true);
+  assert.equal(avanceToutSeul(q("identite")), false);
+  for (const id of ["moyens", "rythme", "reversement", "equipes"]) {
+    assert.equal(avanceToutSeul(q(id)), false, `${id} quitte l'écran alors qu'une réponse est déjà entourée`);
+  }
+});
+
+test("ce qui est proposé ne se refuse jamais, et ne se réclame jamais", () => {
+  for (const id of ["moyens", "rythme", "reversement", "equipes"]) {
+    const question = q(id);
+    assert.ok(question.propose !== undefined && question.requis, `${id} n'a pas de réponse proposée`);
+    assert.equal(refusDe(question, reponsesProposees(SOCIETE)), null);
   }
   assert.deepEqual(
-    resteAFaire({ ...SOCIETE, forme: "", tva: "" }).filter((r) => r === "la forme juridique"),
-    [],
-    "une question obligatoire est réclamée à la fin"
-  );
-});
-
-test("une liste de deux avance toute seule, les autres non", () => {
-  assert.equal(avanceToutSeul(q("tva")), true);
-  assert.equal(avanceToutSeul(q("identite")), false);
-  assert.equal(avanceToutSeul(q("forme")), false);
-});
-
-test("les moyens de paiement se choisissent, et « virement et chèque » est déjà entouré", () => {
-  // **Sa décision du 18 septembre 2026**, planche
-  // `appli/moyens-de-paiement-a-choisir.html` : trois choix, plus de champ
-  // libre, et il n'a rien à taper — le premier est proposé d'office.
-  const moyens = q("moyens");
-  assert.deepEqual(
-    moyens.liste?.map((o) => o.valeur),
+    q("moyens").liste?.map((o) => o.valeur),
     ["virement, chèque", "virement", "virement, chèque, espèces"]
   );
-  assert.equal(moyens.placeholder, undefined, "un champ libre est resté à côté des choix");
-  assert.equal(reponsesProposees({}).moyens, "virement, chèque");
-  // Un choix qu'on a déjà fait à sa place ne s'efface pas d'un doigt posé
-  // ailleurs : c'est une réponse, elle part en base telle quelle.
-  assert.equal(reponsesProposees({ moyens: "virement" }).moyens, "virement");
-  // Une liste qui PROPOSE n'avance pas toute seule : il doit voir ce qui est
-  // entouré avant « Créer mon compte ».
-  assert.equal(avanceToutSeul(moyens), false);
-  // Proposée d'office, la réponse existe toujours : rien à passer, rien à
-  // réclamer dans les réglages.
-  assert.equal(moyens.requis, true);
-  assert.equal(refusDe(moyens, reponsesProposees({})), null);
-  assert.ok(!resteAFaire({}).includes("les moyens de paiement"));
 });
 
-test("l'espace insécable colle le « ? » à son dernier mot", () => {
-  assert.equal(typographie("Facturez-vous la TVA ?"), "Facturez-vous la TVA ?");
+test("les chantiers par jour gardent les bornes de Réglages", () => {
+  assert.deepEqual(q("equipes").compteur, { min: 1, max: MAX_EQUIPES });
+});
+
+test("l'espace insécable colle le « ? », et « reversez-vous » ne se coupe pas", () => {
+  assert.equal(typographie("Facturez-vous la TVA ?"), "Facturez‑vous la TVA ?");
   assert.equal(typographie("Choisissez un mot de passe"), "Choisissez un mot de passe");
-  // Toutes les questions passent par là : aucune ne porte l'espace en dur.
   for (const question of QUESTIONS) {
     assert.ok(!question.question.includes(" "), `${question.id} écrit l'insécable à la main`);
   }
