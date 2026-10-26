@@ -24,7 +24,9 @@ import {
   ecartDeMontant,
   ecartEnMots,
   suiteDeLaPiece,
+  ecartSignale,
   justesDAbord,
+  ticketsPerdusEnMots,
   type LigneDuDossier,
 } from "../src/lib/pour-mon-comptable";
 import { CHARTES, contraste } from "../src/lib/chartes";
@@ -195,8 +197,11 @@ test("les périodes vont de la plus récente à la plus ancienne", () => {
 test("les phrases d'état de la planche", () => {
   assert.equal(etatDeLaPeriode({ aJustifier: 3, ticketsPerdus: 0 }), "3 sans ticket");
   assert.equal(etatDeLaPeriode({ aJustifier: 0, ticketsPerdus: 0 }), "Tout est justifié");
-  assert.equal(etatDeLaPeriode({ aJustifier: 0, ticketsPerdus: 1 }), "Tout est justifié, 1 ticket perdu");
-  assert.equal(etatDeLaPeriode({ aJustifier: 0, ticketsPerdus: 2 }), "Tout est justifié, 2 tickets perdus");
+  // Les tickets perdus se disent à part, en bas de la période (planche du 25 octobre).
+  assert.equal(etatDeLaPeriode({ aJustifier: 0, ticketsPerdus: 1 }), "Tout est justifié");
+  assert.equal(ticketsPerdusEnMots(0), null);
+  assert.equal(ticketsPerdusEnMots(1), "1 ticket perdu");
+  assert.equal(ticketsPerdusEnMots(2), "2 tickets perdus");
 });
 
 // ─── Les bornes et les noms des périodes ─────────────────────────────────────
@@ -378,6 +383,11 @@ test("la pièce qui ne tombe pas juste se signale partout de la même façon", (
   assert.equal(suiteDeLaPiece({ genre: "ecart", ligne: 145000, piece: 138640 }, "sortie"), ` de ${enEurosAttendu(1386.4)}, pas le montant`);
   assert.equal(suiteDeLaPiece({ genre: "ecart", ligne: 86400, piece: 172800 }, "entree"), ", payée en partie");
   assert.equal(suiteDeLaPiece({ genre: "ecart", ligne: 172800, piece: 86400 }, "entree"), ` de ${enEurosAttendu(864)}, pas le montant`);
+  // Payée en partie se dit sans alerte ; le reste s'alerte.
+  assert.equal(ecartSignale({ genre: "ecart", ligne: 86400, piece: 172800 }, "entree"), false);
+  assert.equal(ecartSignale({ genre: "ecart", ligne: 172800, piece: 86400 }, "entree"), true);
+  assert.equal(ecartSignale({ genre: "ecart", ligne: 6789, piece: 6240 }, "sortie"), true);
+  assert.equal(ecartSignale({ genre: "juste" }, "sortie"), false);
 });
 
 test("les pièces du même montant viennent d'abord, sans changer l'ordre des autres", () => {

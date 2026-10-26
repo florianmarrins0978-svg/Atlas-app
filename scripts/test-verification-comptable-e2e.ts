@@ -1,6 +1,7 @@
 import assert from "node:assert";
 import type { BrowserContext, Page } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
+import { allerALAnnee } from "./_choix-annee";
 import { pool } from "../src/server/db/client";
 import { enregistrerObjet, supprimerObjet } from "../src/server/storage";
 import { ADRESSE } from "./_adresse";
@@ -103,13 +104,15 @@ async function main() {
 
   await test("le patron touche « Envoyer au comptable » et reçoit un lien privé", async () => {
     await page.goto(`${BASE}/termines/comptable/dossiers`, { waitUntil: "networkidle" });
-    await page.selectOption('[data-atlas="filtre-annee"]', "2025");
+    await allerALAnnee(page, 2025);
     await page.click('[data-atlas="envoyer-au-comptable"]');
     const bloc = page.locator('[data-atlas="lien-du-comptable"]');
     await bloc.waitFor({ timeout: 30_000 });
-    lien = (await bloc.locator("p").innerText()).trim();
+    // L'adresse ne s'affiche plus (planche du 25 octobre) : elle se transmet.
+    lien = ((await bloc.getAttribute("data-lien")) ?? "").trim();
     assert.match(lien, /\/comptable\/[A-Za-z0-9_-]{40,}$/);
-    assert.match((await bloc.locator("a").getAttribute("href")) ?? "", /^mailto:/);
+    assert.match((await bloc.locator('[data-atlas="envoyer-par-email"]').getAttribute("href")) ?? "", /^mailto:/);
+    assert.equal(await bloc.locator('[data-atlas="voir-la-page-du-comptable"]').getAttribute("href"), lien);
   });
 
   await test("le comptable l'ouvre sans compte : ses lignes, et pas la barre d'Atlas", async () => {
@@ -172,11 +175,11 @@ async function main() {
 
   await test("le patron lit le rejet dans Mes dossiers, et y répond", async () => {
     await page.goto(`${BASE}/termines/comptable/dossiers`, { waitUntil: "networkidle" });
-    await page.selectOption('[data-atlas="filtre-annee"]', "2025");
+    await allerALAnnee(page, 2025);
     assert.match(await page.locator('[data-atlas="verification-du-comptable"]').innerText(), /Vérifié par votre comptable : 2 sur 3/);
     const carte = page.locator('[data-atlas="rejets-du-comptable"] [data-atlas="ligne-a-regarder"]');
     assert.equal(await carte.count(), 1);
-    assert.match(await carte.innerText(), /Votre comptable l’a rejetée : Ce ticket se retrouve, cherchez-le\./);
+    assert.match(await carte.innerText(), /Rejetée par votre comptable[\s\S]*« Ce ticket se retrouve, cherchez-le »/);
     await carte.locator('[data-atlas="ticket-perdu"]').click();
     await carte.locator('[data-atlas="valider-ticket-perdu"]').click();
     await page.waitForFunction(() => document.querySelectorAll('[data-atlas="rejets-du-comptable"] [data-atlas="ligne-a-regarder"]').length === 0, null, { timeout: 30_000 });

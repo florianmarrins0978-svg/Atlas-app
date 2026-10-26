@@ -15,6 +15,8 @@ import {
   type VehiculeAchat,
 } from "@/lib/achat-tva";
 import type { LigneImprimee } from "@/lib/ticket-imprime";
+import { ecartEnMots } from "@/lib/pour-mon-comptable";
+import { enEuros } from "@/lib/euros";
 import PreuvesRepas from "./PreuvesRepas";
 import { ajouterAchatAction } from "./actions";
 
@@ -73,6 +75,9 @@ export default function FeuilleAchat({
   const { photoCle, lu } = depart;
   const [enCours, setEnCours] = useState(false);
   const [refus, setRefus] = useState<string | null>(depart.refus);
+  // Pris pour une ligne de banque, le ticket ne tombe pas sur son montant : il
+  // choisit de le joindre quand même, de corriger le total, ou de le ranger seul.
+  const [ecart, setEcart] = useState<{ ligne: number; piece: number } | null>(null);
 
   const [fournisseur, setFournisseur] = useState(lu?.fournisseur ?? "");
   const [date, setDate] = useState(lu?.date ?? aujourdHui);
@@ -110,9 +115,10 @@ export default function FeuilleAchat({
     setTva(calcul === null ? "" : calcul.toFixed(2).replace(".", ","));
   }
 
-  async function enregistrer() {
+  async function enregistrer(suite: "normal" | "malgreEcart" | "sansLaLigne" = "normal") {
     setEnCours(true);
     setRefus(null);
+    setEcart(null);
     const fd = new FormData();
     fd.set("fournisseur", fournisseur);
     fd.set("dateAchat", date);
@@ -132,11 +138,13 @@ export default function FeuilleAchat({
     fd.set("saisie", photoCle ? "scan" : "main");
     if (photoCle) fd.set("photoCle", photoCle);
     if (lu?.lignes) fd.set("lignes", JSON.stringify(lu.lignes));
-    if (mouvementId) fd.set("mouvementId", mouvementId);
+    if (mouvementId && suite !== "sansLaLigne") fd.set("mouvementId", mouvementId);
+    if (suite === "malgreEcart") fd.set("malgreEcart", "oui");
     const r = await ajouterAchatAction(fd);
     setEnCours(false);
     if (!r.ok) {
-      setRefus(r.raison);
+      if (r.ecart) setEcart(r.ecart);
+      else setRefus(r.raison);
       return;
     }
     onEnregistre(date);
@@ -252,6 +260,7 @@ export default function FeuilleAchat({
             value={ttc}
             onChange={(e) => {
               setTtc(e.target.value);
+              setEcart(null);
               recalculer(e.target.value, taux);
             }}
             placeholder="0,00 €"
@@ -324,9 +333,32 @@ export default function FeuilleAchat({
         </p>
       )}
 
+      {ecart && (
+        <div className="mt-2.5 rounded-xl px-3.5 py-3" style={{ backgroundColor: colors.carteAmbreFond, color: colors.ink }} data-atlas="ecart-du-ticket">
+          <p className="text-[14px] font-bold" style={{ color: colors.carteAmbreTexte }}>
+            Pas le même montant
+          </p>
+          <p className="mt-1.5 flex justify-between gap-3 text-[14px]">
+            <span>La ligne de banque</span>
+            <span className="tabular-nums">{enEuros(ecart.ligne / 100)}</span>
+          </p>
+          <p className="mt-0.5 flex justify-between gap-3 text-[14px]">
+            <span>Le ticket</span>
+            <span className="tabular-nums">{enEuros(ecart.piece / 100)}</span>
+          </p>
+          <p className="mt-1.5 text-[14px] leading-[1.45]">{ecartEnMots(ecart, "sortie")} Corrigez le total s’il est mal lu.</p>
+          <button type="button" disabled={enCours} onClick={() => enregistrer("malgreEcart")} className="mt-2.5 min-h-[46px] w-full rounded-full text-[15px] font-medium" style={{ boxShadow: `inset 0 0 0 1.5px ${colors.line}`, backgroundColor: colors.card, color: colors.ink }} data-atlas="joindre-ticket-malgre-ecart">
+            Le joindre quand même
+          </button>
+          <button type="button" disabled={enCours} onClick={() => enregistrer("sansLaLigne")} className="min-h-[44px] w-full text-[15px] font-medium" style={{ color: colors.inkSoft }} data-atlas="ranger-sans-joindre">
+            Le ranger sans le joindre
+          </button>
+        </div>
+      )}
+
       <button
         type="button"
-        onClick={enregistrer}
+        onClick={() => enregistrer()}
         disabled={!armé}
         className="atlas-plein mt-3 w-full rounded-full py-[15px] text-[15px]"
         style={{ backgroundColor: colors.plein, color: colors.cream, fontFamily: font.display, opacity: armé ? 1 : 0.35 }}

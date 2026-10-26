@@ -127,8 +127,16 @@ export function ecartEnMots(e: { ligne: number; piece: number }, sens: Sens): st
  */
 export function suiteDeLaPiece(e: Ecart, sens: Sens): string {
   if (e.genre !== "ecart") return "";
-  if (sens === "entree" && e.piece > e.ligne) return ", payée en partie";
+  if (!ecartSignale(e, sens)) return ", payée en partie";
   return ` de ${euros(e.piece)}, pas le montant`;
+}
+
+/**
+ * L'écart qui se signale comme tel. Une facture plus grande que le virement
+ * reçu qui la paie est un paiement en partie : il se dit, sans alerte.
+ */
+export function ecartSignale(e: Ecart, sens: Sens): boolean {
+  return e.genre === "ecart" && !(sens === "entree" && e.piece > e.ligne);
 }
 
 /** Les pièces du montant de la ligne d'abord : c'est presque toujours l'une d'elles. */
@@ -300,12 +308,19 @@ export function resumerPeriodes(lignes: readonly LigneDuDossier[], d: Decoupage)
   return [...parCle.values()].sort((a, b) => b.cle.localeCompare(a.cle));
 }
 
-/** La phrase d'état d'une période, celle de la planche. */
+/**
+ * La phrase d'état d'une période, celle de la planche. Les tickets perdus se
+ * disent à part, sous la barre (`ticketsPerdusEnMots`) : collés à l'état, ils
+ * allongeaient la ligne au point de la faire passer sous le nom du mois.
+ */
 export function etatDeLaPeriode(r: Pick<ResumePeriode, "aJustifier" | "ticketsPerdus">): string {
-  if (r.aJustifier > 0) return `${r.aJustifier} sans ticket`;
-  if (r.ticketsPerdus === 1) return "Tout est justifié, 1 ticket perdu";
-  if (r.ticketsPerdus > 1) return `Tout est justifié, ${r.ticketsPerdus} tickets perdus`;
-  return "Tout est justifié";
+  return r.aJustifier > 0 ? `${r.aJustifier} sans ticket` : "Tout est justifié";
+}
+
+/** « 1 ticket perdu », « 3 tickets perdus », rien quand il n'y en a pas. */
+export function ticketsPerdusEnMots(n: number): string | null {
+  if (n <= 0) return null;
+  return n === 1 ? "1 ticket perdu" : `${n} tickets perdus`;
 }
 
 const MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
