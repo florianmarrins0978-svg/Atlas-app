@@ -115,13 +115,24 @@ export function analyserTelephone(valeur: string | null | undefined): {
     // réécrire son numéro à sa place.
     return { pays: PAYS_PAR_DEFAUT, national: num };
   }
+  return { pays: PAYS_PAR_DEFAUT, national: sansZeroNational(PAYS_PAR_DEFAUT, brut) };
+}
+
+/**
+ * Les chiffres qu'on compose DERRIÈRE l'indicatif : le zéro de tête en moins.
+ *
+ * Le zéro de tête est un zéro NATIONAL : il ne fait pas partie du numéro, il
+ * dit qu'on compose depuis l'intérieur du pays. **Un seul, et seulement pour un
+ * pays qui en a un** : au Portugal ou en Espagne, un zéro de tête serait un
+ * chiffre du numéro, et l'ôter l'effacerait.
+ *
+ * C'est aussi ce qui empêche un zéro tapé ou collé (« 02 41 … ») de se doubler
+ * en base : sans ce pas, `formaterNational` en rajoutait un devant le sien, et
+ * « 00 24 10 … » partait sur les devis (trouvé le 26 octobre 2026).
+ */
+function sansZeroNational(pays: PaysTelephone, brut: string): string {
   const num = chiffres(brut);
-  // Le zéro de tête est un zéro NATIONAL : il ne fait pas partie du numéro, il
-  // dit qu'on compose depuis l'intérieur du pays.
-  return {
-    pays: PAYS_PAR_DEFAUT,
-    national: PAYS_PAR_DEFAUT.zeroNational && num.startsWith("0") ? num.slice(1) : num,
-  };
+  return pays.zeroNational && num.startsWith("0") ? num.slice(1) : num;
 }
 
 /** La découpe brute, employée par les deux affichages — national et étranger. */
@@ -165,10 +176,24 @@ export function formaterNational(pays: PaysTelephone, national: string): string 
  * compose depuis la France.
  */
 export function composerTelephone(pays: PaysTelephone, national: string): string {
-  const num = chiffres(national);
+  const num = sansZeroNational(pays, national);
   if (num === "") return "";
   if (pays.code === PAYS_PAR_DEFAUT.code) return formaterNational(pays, num);
   return `${pays.indicatif} ${decouper(pays, num).join(" ")}`;
+}
+
+/**
+ * Ce que le champ montre derrière l'indicatif, à mesure de la frappe : le
+ * numéro découpé, **sans son zéro national**.
+ *
+ * **Sa demande du 26 octobre 2026** (planche `appli/soignee/reglages-identite.html`) :
+ * le champ écrivait « +33 02 41 … », un numéro que personne ne compose. Seul
+ * l'affichage change : ce qui se range et s'imprime reste « 02 41 00 00 00 »
+ * (`composerTelephone`), comme sur tous les devis déjà partis.
+ */
+export function formaterDerriereIndicatif(pays: PaysTelephone, brut: string): string {
+  const num = sansZeroNational(pays, brut);
+  return num === "" ? "" : decouper(pays, num).join(" ");
 }
 
 /** Ce que l'écran montre dans le champ, pays mis à part. */
@@ -177,5 +202,5 @@ export function afficherTelephone(valeur: string | null | undefined): {
   affiche: string;
 } {
   const { pays, national } = analyserTelephone(valeur);
-  return { pays, affiche: formaterNational(pays, national) };
+  return { pays, affiche: formaterDerriereIndicatif(pays, national) };
 }

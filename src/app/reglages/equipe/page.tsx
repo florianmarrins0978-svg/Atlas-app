@@ -92,8 +92,11 @@ export default async function EquipePage() {
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <div className="pb-24">
+        {/* **Plus de surtitre depuis le 26 octobre 2026** : l'allure des
+            Réglages soignés pose le retour cerné et l'assistant sur la même
+            ligne, et le titre seul dessous (« le titre suffit »). */}
         <EnTeteEcran
-          surtitre="Réglages"
+          allure="soignee"
           titre="Équipe"
           retour={{ href: "/reglages", libelle: "Retour aux réglages" }}
         />
@@ -101,7 +104,11 @@ export default async function EquipePage() {
         {/* **Les comptes d'abord, les files du planning ensuite.** Sur sa
             planche du 13 août, « Qui a accès » ouvre l'écran : c'est la question
             qu'on se pose en venant ici. Les équipes, elles, se règlent une fois
-            pour toutes. */}
+            pour toutes.
+
+            **Cinq paquets, dans cet ordre, et il ne bouge pas** (planche des
+            Réglages soignés, 26 octobre 2026) : Accès, Fin de chantier, les deux
+            questions et leurs compteurs, Absences. Chacun sur sa plage. */}
         <QuiAAcces
           acces={acces}
           moi={ctx.utilisateurId}

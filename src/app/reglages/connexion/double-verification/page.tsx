@@ -28,8 +28,10 @@ export default async function DoubleVerificationReglagesPage() {
       className="atlas-ecran"
       style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body }}
     >
+      {/* Plus de « MOI » doré sous le titre : le titre suffit, comme sur le
+          sommaire (sa planche soignée du 26 octobre 2026). */}
       <EnTeteEcran
-        surtitre="Moi"
+        allure="soignee"
         titre="Double vérification"
         retour={{ href: "/reglages", libelle: "Retour aux réglages" }}
       />

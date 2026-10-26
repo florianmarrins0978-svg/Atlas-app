@@ -3,7 +3,7 @@
 import { useState } from "react";
 import BottomSheet from "./BottomSheet";
 import PrimaryButton from "./PrimaryButton";
-import { colors, libelleCaps } from "@/lib/design-tokens";
+import { colors, font } from "@/lib/design-tokens";
 import { prouverParMotDePasseAction } from "@/app/reglages/connexion/preuve-actions";
 
 /**
@@ -77,19 +77,22 @@ export default function DemanderPreuve({
           Cherchée par son libellé, cette feuille se confondait avec le motif
           juste dessous, qui reprend les mêmes mots — et le contrôle mourait sur
           une ambiguïté plutôt que sur ce qu'il défend. */}
-      <p
+      {/* Le titre en serif, à gauche, et la case sur sa plage (planche
+          `appli/soignee/reglages-donnees.html`, 26 octobre 2026) : centrés en
+          17 et 13 px gris, titre et motif se lisaient comme une alerte. */}
+      <h2
         data-atlas="demander-preuve"
-        className="mb-2 text-center text-[17px]"
-        style={{ color: colors.ink }}
+        className="mb-2 mt-1.5 text-[26px] leading-[1.15]"
+        style={{ color: colors.ink, fontFamily: font.display }}
       >
         Vérifiez que c&apos;est bien vous
-      </p>
-      <p className="mb-5 text-center text-[13px] leading-[1.5]" style={{ color: colors.muted }}>
+      </h2>
+      <p className="mb-[18px] text-[15px] leading-[1.45]" style={{ color: colors.inkSoft }}>
         {motif}
       </p>
 
-      <div className="border-b py-[13px]" style={{ borderColor: colors.line }}>
-        <span className={`mb-[5px] block ${libelleCaps}`} style={{ color: colors.muted }}>
+      <div>
+        <span className="mb-[7px] block text-[14.5px] font-semibold" style={{ color: colors.inkSoft }}>
           Votre mot de passe
         </span>
         <input
@@ -101,20 +104,28 @@ export default function DemanderPreuve({
           onKeyDown={(e) => {
             if (e.key === "Enter" && motDePasse !== "" && !enCours) void prouver();
           }}
-          className="w-full border-0 bg-transparent p-0 outline-none"
+          className="block min-h-[52px] w-full rounded-[6px] border-0 px-[15px] py-[14px] outline-none focus:outline-2 focus:-outline-offset-2"
           // 16 px au moins : en dessous, iOS agrandit la page à la mise au point.
-          style={{ fontSize: 17, lineHeight: 1.35, color: colors.ink, letterSpacing: "0.18em" }}
+          style={{
+            fontSize: 16,
+            lineHeight: 1.4,
+            color: colors.ink,
+            letterSpacing: "0.18em",
+            backgroundColor: colors.card,
+            boxShadow: `inset 0 0 0 1px ${colors.lineSoft}`,
+            outlineColor: colors.or,
+          }}
         />
       </div>
 
       {refus && (
-        <p role="alert" className="mt-3 text-center text-[13px]" style={{ color: colors.alert }}>
+        <p role="alert" className="mt-3 text-[15px] leading-[1.45]" style={{ color: colors.alert }}>
           {refus}
         </p>
       )}
 
       <div className="mt-6">
-        <PrimaryButton disabled={enCours || motDePasse === ""} onClick={prouver} repere="prouver-identite">
+        <PrimaryButton pleineLargeur disabled={enCours || motDePasse === ""} onClick={prouver} repere="prouver-identite">
           {enCours ? "Vérification…" : "Continuer"}
         </PrimaryButton>
       </div>
@@ -122,8 +133,8 @@ export default function DemanderPreuve({
       <button
         type="button"
         onClick={onAbandon}
-        className="mt-4 block w-full text-center text-[13px]"
-        style={{ color: colors.muted }}
+        className="mt-2 block min-h-[48px] w-full text-center text-[16px] font-semibold"
+        style={{ color: colors.inkSoft }}
       >
         Annuler
       </button>

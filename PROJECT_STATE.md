@@ -9,6 +9,11 @@ dernière migration `drizzle/0150_virement_recu_regle_au_dossier.sql`
 Branche `claude/pour-mon-comptable-soigne`, d'après ses trois planches du 25 octobre (`appli/soignee/termines-comptable.html` en boutons arrondis, `comptable-dossier.html`, `comptable-verification.html`). Migration `drizzle/0150_virement_recu_regle_au_dossier.sql` (expand : trois colonnes, contraintes élargies, cohérence stricte NOT VALID). Écrans : `src/app/termines/comptable/` (`DossierEnCours.tsx`, `CarteARegarder.tsx`, `a-regarder.ts`, `ArretDuDossier.tsx`, `Icone.tsx`, le relevé, Mes dossiers, la route `piece/[ligne]`), la feuille du ticket (`src/app/termines/tva/FeuilleAchat.tsx`), la page du comptable (`src/app/comptable/[jeton]/`), le PDF (`src/server/pdf/dossier-comptable-pdf.ts`). Règles : `src/lib/pour-mon-comptable.ts` (motifs par sens, écart, signe), `src/lib/facture-hors-atlas-lue.ts`. **Reste** : la batterie (niveau 3), puis `main` ; valider la contrainte sur sa base (`TODO.md`). `ARCHITECTURE.md` §515, `docs/pour-mon-comptable-soigne.md`.
 
 ---
+## LES SEIZE RUBRIQUES DES RÉGLAGES, SOIGNÉES, CODÉES (26 octobre 2026), EN ATTENTE DE LEUR BATTERIE
+
+Codé d'après `appli/soignee/reglages-*.html` (vue Proposé) sur `correction-reglages`, avec ses pièces communes (`src/components/atlas/reglages/`), l'en-tête `allure="soignee"` et la règle pure `enTeteDuDocument` que lisent l'écran et le PDF. Défauts corrigés au passage : la fin de chantier, « En bas, avec le SIRET », le zéro doublé du téléphone, le rappel rallumé à 7 jours, « Ce que votre devis dira ». Pas sur `main` tant que la batterie unique n'a pas tourné. `ARCHITECTURE.md` §518.
+
+---
 ## TERMINÉS SOIGNÉ, CODÉ (25 octobre 2026)
 
 Codé d'après `appli/soignee/termines.html` : `src/app/termines/page.tsx` (deux plages teintées), `ListeTermines.tsx` (boutons, Non payées, carré du jour), règle pure `carreDuJour` (`src/lib/termines-par-mois.ts`). Ma TVA et le comptable, les écrans, n'ont pas bougé. `ARCHITECTURE.md` §505.

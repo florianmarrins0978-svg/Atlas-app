@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { colors } from "@/lib/design-tokens";
+import { useEffect, useRef, useState } from "react";
+import { colors, couleursDocument } from "@/lib/design-tokens";
 import { segmentsDuModele } from "@/lib/segments-message";
+import { ombrePapier, stylePapier } from "./pieces";
 
 /**
  * L'ÉDITEUR DE SON MESSAGE — sa demande du 25 août 2026.
@@ -30,11 +31,18 @@ import { segmentsDuModele } from "@/lib/segments-message";
  * donc Entrée pour poser un simple « \n » de texte : la relecture n'a plus alors
  * qu'à concaténer les nœuds de texte et les pastilles, et rend exactement le
  * modèle. Le collage est ramené à du texte brut pour la même raison.
+ *
+ * **Sur du papier depuis le 26 octobre 2026** (sa planche des Réglages
+ * soignés) : ce qui part chez le client ne suit pas la charte. Le message se
+ * lit sur le papier de ses documents, et ses mots dorés prennent l'or de ses
+ * documents (`couleursDocument.accent`), lisible sur ce papier en Nuit comme en
+ * Origine, là où l'or de la charte suivrait l'écran.
  */
 export default function EditeurMessage({
   valeur,
   libelles,
   invalide,
+  nom,
   onChange,
 }: {
   /** Le modèle courant (`Bonjour [client], …`). */
@@ -43,6 +51,8 @@ export default function EditeurMessage({
   libelles: Record<string, string>;
   /** Vrai quand le message est refusé : le cadre se souligne d'alerte. */
   invalide: boolean;
+  /** Ce que le lecteur d'écran annonce : « Votre message avec un devis ». */
+  nom: string;
   /** Rappelé à chaque frappe, avec le modèle reconstruit. */
   onChange: (modele: string) => void;
 }) {
@@ -51,6 +61,9 @@ export default function EditeurMessage({
   // pendant qu'il tape (ce qui ferait sauter son curseur) : on ne reconstruit
   // que lorsque `valeur` change pour une autre raison (le bouton « Remettre »).
   const dernierSerialise = useRef<string | null>(null);
+  // Le cadre se cerne d'or quand il a le curseur : un style posé en ligne
+  // l'emporterait sur une classe `focus:`, d'où l'état.
+  const [actif, setActif] = useState(false);
 
   useEffect(() => {
     if (valeur === dernierSerialise.current) return;
@@ -65,12 +78,12 @@ export default function EditeurMessage({
         puce.contentEditable = "false";
         puce.dataset.jeton = seg.valeur;
         puce.textContent = libelles[seg.valeur] ?? seg.valeur;
-        puce.style.color = colors.or;
+        puce.style.color = couleursDocument.accent;
         puce.style.fontWeight = "600";
         puce.style.borderRadius = "4px";
-        puce.style.padding = "0 4px";
+        puce.style.padding = "0 3px";
         // Un voile doré très léger : la puce se lit comme un bloc, sans crier.
-        puce.style.backgroundColor = "color-mix(in srgb, currentColor 12%, transparent)";
+        puce.style.backgroundColor = "color-mix(in srgb, currentColor 13%, transparent)";
         // **Une puce peut être une phrase** depuis le 29 septembre 2026 (la
         // durée du lien, la phrase « autre date ») : elle passe à la ligne comme
         // le texte, sans quoi elle sortait du cadre sur un téléphone.
@@ -152,24 +165,30 @@ export default function EditeurMessage({
       suppressContentEditableWarning
       role="textbox"
       aria-multiline="true"
-      aria-label="Votre message au client"
+      aria-label={nom}
       data-atlas="message-client"
       onInput={auInput}
       onKeyDown={auClavier}
       onPaste={auCollage}
-      className="w-full rounded-[6px] px-[13px] py-[11px]"
+      onFocus={() => setActif(true)}
+      onBlur={() => setActif(false)}
+      className="w-full px-4 pb-[17px] pt-[15px]"
       style={{
+        ...stylePapier,
         // **16 px, jamais moins.** En dessous, iOS grossit la page à la première
         // frappe et l'écran saute sous son doigt.
         fontSize: 16,
-        lineHeight: 1.5,
-        minHeight: 200,
+        lineHeight: 1.55,
+        minHeight: 150,
         whiteSpace: "pre-wrap",
-        wordBreak: "break-word",
-        backgroundColor: colors.card,
-        color: colors.ink,
-        border: `1px solid ${invalide ? colors.alert : colors.line}`,
+        overflowWrap: "anywhere",
         outline: "none",
+        // Refusé, le cadre se cerne d'alerte ; sinon d'or quand on y écrit.
+        boxShadow: invalide
+          ? `${ombrePapier}, inset 0 0 0 2px ${colors.alert}`
+          : actif
+            ? `${ombrePapier}, inset 0 0 0 2px ${colors.or}`
+            : ombrePapier,
       }}
     />
   );

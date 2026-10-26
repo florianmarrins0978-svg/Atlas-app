@@ -3,6 +3,7 @@ import {
   ceQuiLaTrouve,
   conseilDeMarge,
   dateesAMontrer,
+  initialesDeLaSociete,
   ligneDeMarge,
   lireAdresseMail,
   lireMarge,
@@ -167,6 +168,15 @@ test("le début et la fin de son message : vides, celui d'office reprend", () =>
   assert.equal(lireMorceauDeMessage("  \n "), null);
   assert.equal(lireMorceauDeMessage("Bonjour Julien,\r\n\r\nVoici ma commande :"), "Bonjour Julien,\n\nVoici ma commande :");
   assert.equal(lireMorceauDeMessage("x".repeat(3000))?.length, 2000);
+});
+
+test("le rond d'une société porte les lettres de ses mots à majuscule, jamais rien", () => {
+  assert.equal(initialesDeLaSociete("Jardinerie du Centre"), "JC");
+  assert.equal(initialesDeLaSociete("Matériaux Martin"), "MM");
+  assert.equal(initialesDeLaSociete("Pilou"), "P");
+  assert.equal(initialesDeLaSociete("Écorces et Bois"), "ÉB");
+  assert.equal(initialesDeLaSociete("pépinière rivière"), "PR");
+  assert.equal(initialesDeLaSociete("   "), "?");
 });
 
 console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);

@@ -28,13 +28,13 @@ export default async function AllurePage() {
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <EnTeteEcran
-        surtitre="Devis & factures"
+        allure="soignee"
         titre="L'allure de mes devis"
         retour={{ href: "/reglages/documents", libelle: "Retour à Devis & factures" }}
       />
       <AllureClient
         // **Rien de réglé rend le DÉFAUT, pas du vide.** L'écran doit s'ouvrir
-        // sur ce que ses documents portent aujourd'hui — sinon il croit devoir
+        // sur ce que ses documents portent aujourd'hui, sinon il croit devoir
         // tout choisir pour ne rien changer.
         allureInitiale={
           entreprise?.docTypographie || entreprise?.docFond || entreprise?.docAccent
@@ -47,6 +47,9 @@ export default async function AllurePage() {
         }
         logoInitial={entreprise?.logoStorageKey ?? null}
         entrepriseNom={entreprise?.nom ?? ""}
+        // L'aperçu porte le numéro à droite du titre, comme le PDF, et au
+        // format qu'il a choisi.
+        formatNumero={entreprise?.formatNumero ?? null}
       />
     </div>
   );

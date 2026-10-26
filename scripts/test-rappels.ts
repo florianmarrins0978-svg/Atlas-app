@@ -27,6 +27,7 @@ import {
   estGenreVu,
   GENRES_ACQUITTABLES,
   reglagesPourLeRole,
+  derniersDelais,
 } from "../src/lib/rappels";
 
 let echecs = 0;
@@ -351,6 +352,31 @@ essai("un rappel qui ne revient pas au rôle est éteint pour lui", () => {
   for (const r of [reglagesPourLeRole(tous, "salarie"), reglagesPourLeRole(tous, null)]) {
     assert.deepEqual([r.chantierSansDevisJours, r.devisSansReponseJours, r.chantierNonFactureJours, r.factureImpayeeJours], [null, null, null, null]);
   }
+});
+
+// **Rallumé, un rappel reprend SON délai — 26 octobre 2026.** L'écran le
+// remettait à 7 jours, quel qu'il fût : l'impayé réglé à 1 jour revenait à 7,
+// le devis jamais parti, choisi à 4 par lui, aussi. Sa planche soignée l'a
+// montré, et il a dit oui.
+essai("éteint puis rallumé, un rappel reprend le délai qu'il avait", () => {
+  const regle = { ...RAPPELS_PAR_DEFAUT, chantierSansDevisJours: 12, factureImpayeeJours: 1 };
+  const connus = derniersDelais(regle, null);
+  const eteint = { ...regle, chantierSansDevisJours: null, factureImpayeeJours: null };
+  const apres = derniersDelais(eteint, connus);
+  assert.equal(apres.chantierSansDevisJours, 12, "le devis jamais parti ne reprend pas son délai");
+  assert.equal(apres.factureImpayeeJours, 1, "l'impayé réglé à 1 jour ne reprend pas son délai");
+});
+
+essai("éteint sans délai connu (après un rechargement), il reprend son délai d'ORIGINE, jamais 7", () => {
+  const eteints = { ...RAPPELS_PAR_DEFAUT, chantierSansDevisJours: null, devisSansReponseJours: null, chantierNonFactureJours: null, factureImpayeeJours: null };
+  const repris = derniersDelais(eteints, null);
+  assert.deepEqual(
+    [repris.chantierSansDevisJours, repris.devisSansReponseJours, repris.chantierNonFactureJours, repris.factureImpayeeJours],
+    [RAPPELS_PAR_DEFAUT.chantierSansDevisJours, RAPPELS_PAR_DEFAUT.devisSansReponseJours, RAPPELS_PAR_DEFAUT.chantierNonFactureJours, RAPPELS_PAR_DEFAUT.factureImpayeeJours]
+  );
+  // Le contrôle ne vaut que s'il distingue : deux délais d'origine valent autre chose que 7.
+  assert.notEqual(repris.factureImpayeeJours, 7);
+  assert.notEqual(repris.chantierSansDevisJours, 7);
 });
 
 if (echecs) {

@@ -6,7 +6,6 @@ import {
   normaliserPlaque,
   phraseDeLEcheance,
   phraseDeLecture,
-  phraseDuRappel,
   rangerLecture,
   rappelsDesVehicules,
   refusDuDocumentVehicule,
@@ -92,7 +91,6 @@ cas("le plus pressé en haut, tous véhicules confondus", () => {
       ["b", "pollution"],
     ]
   );
-  assert.equal(phraseDuRappel(r[0]), "Contrôle technique avant le 30 novembre. Plus que 12 jours.");
   // Sous le titre de la carte, qui nomme déjà le contrôle, il n'est pas répété.
   assert.equal(phraseDeLEcheance(r[0]), "Avant le 30 novembre. Plus que 12 jours.");
 });

@@ -68,12 +68,11 @@ export default async function AgendaPage({
             précisément sur l'écran le plus difficile des Réglages, celui qui
             demande d'aller générer un mot de passe chez Apple.
 
-            **Le surtitre disait « Mes disponibilités ».** Il ne dit plus que
-            « Réglages », parce que la grammaire de ce mot est « d'où l'on
-            vient » et non « de quoi ça parle » — c'est ce qui permet de savoir
-            où la flèche ramène sans l'essayer. */}
+            **Plus de surtitre depuis le 26 octobre 2026** : l'allure des
+            Réglages soignés pose le retour cerné et l'assistant sur la même
+            ligne, et le titre seul dessous (« le titre suffit »). */}
         <EnTeteEcran
-          surtitre="Réglages"
+          allure="soignee"
           titre="Mon agenda"
           retour={{ href: "/reglages", libelle: "Retour aux réglages" }}
         />

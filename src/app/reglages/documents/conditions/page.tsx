@@ -40,7 +40,7 @@ export default async function ConditionsPage() {
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <EnTeteEcran
-        surtitre="Devis & factures"
+        allure="soignee"
         titre="Ce qui s'imprime"
         retour={{ href: "/reglages/documents", libelle: "Retour à Devis & factures" }}
       />

@@ -48,15 +48,16 @@ export default function VosEquipes({
   }
 
   return (
-    <section className="mt-7 px-[26px]">
+    <section className="mx-[22px]">
       {/* **PAS DE FILET À CÔTÉ DE L'INTERTITRE — retiré le 25 août 2026**, à sa
           demande : *« ça aussi tu peux retirer »*, capture de l'écran Équipe à
           l'appui. Il venait de faire retirer le trait sous les titres ; celui-ci
           était de la même famille, et il l'a vu du même œil.
 
-          **Les filets qui SÉPARENT les blocs restent** — *« ceux qui séparent
-          les blocs, laisse-les »*. Ne pas les confondre : ceux-là disent que
-          deux choses sont distinctes ; celui-ci n'ornait qu'un mot. */}
+          **Les filets qui SÉPARENT les blocs restaient** — *« ceux qui séparent
+          les blocs, laisse-les »*. Depuis les Réglages soignés (26 octobre
+          2026), ce sont les plages qui séparent les blocs : chacun sur la
+          sienne, et le filet n'a plus rien à séparer. */}
       {/* **LE TITRE POSE LA QUESTION — sa réponse A du 8 septembre 2026**, sur
           la planche `appli/deux-compteurs-de-l-equipe.html`.
 
@@ -68,54 +69,61 @@ export default function VosEquipes({
           avait été refait par ses deux demandes du 26 août.
 
           **En minuscules et en serif, pas en capitales espacées.** Une question
-          posée en `libelleCaps` se lit comme une étiquette, pas comme une
-          question — et c'est précisément ce qu'on essaie de retirer ici. */}
-      <p className="mb-1.5 text-[19px] leading-[1.25]" style={{ fontFamily: font.display, color: colors.ink }}>
+          posée en capitales se lit comme une étiquette, pas comme une question
+          — et c'est précisément ce qu'on essaie de retirer ici. Les Réglages
+          soignés (26 octobre 2026) la gardent telle quelle, au-dessus de SA
+          plage, à la place du titre doré des autres paquets. */}
+      <h2
+        className="mb-2.5 mt-8 text-[22px] leading-[1.25]"
+        style={{ fontFamily: font.display, color: colors.ink, letterSpacing: "-0.005em" }}
+      >
         Combien de chantiers par jour&nbsp;?
-      </p>
+      </h2>
 
-      <CompteurRond
-        valeur={nombre}
-        plancher={1}
-        plafond={MAX_EQUIPES}
-        libelleMoins="Une équipe de moins"
-        libellePlus="Une équipe de plus"
-        onChanger={changerNombre}
-      />
-
-      {/* Une seule phrase, et **le chiffre y bouge avec le compteur** — sa
-          dictée du 26 août : *« en dessous en gris marque 2 chantiers par
-          jour ; le chiffre bouge en fonction du nombre d'équipes »*. Elle dit
-          ce que le réglage PRODUIT, pas comment il s'appelle.
-
-          **ET ELLE MONTRE LA COULEUR — sa demande du 31 août 2026** (planche
-          99, réponse A) : *« écrit deux chantiers par jour, planning complet,
-          et met le petit carré vert foncé avec écrit "complet" du planning »*,
-          ici et pas ailleurs — *« c'est sur cette page que doit se faire la
-          modification »*.
-
-          **Le carré vient de `fondDeLEtat`, le mot de `MOT_ETAT`** : ce sont
-          ceux du calendrier, pas leurs sosies. Un vert écrit en clair ici
-          serait illisible sur Nuit et Sylve, et un « complet » recopié
-          finirait un jour par ne plus être le mot de la légende.
-
-          **Le carré est décoratif, le mot porte le sens** : `aria-hidden` sur
-          l'un, rien sur l'autre — une couleur ne se lit pas à voix haute. */}
-      {/* **LE CARRÉ EST PASSÉ APRÈS LE MOT — sa correction du 8 septembre
-          2026 :** *« deux chantiers par jour pour un planning complet, et là tu
-          mets le carré vert foncé »*. Il fermait la phrase entre le mot et son
-          point ; il la ferme maintenant tout court. */}
-      <p className="mt-2 text-center text-[12.5px] leading-[1.6]" style={{ color: colors.muted }}>
-        {phrase.avant}{" "}
-        <span style={{ color: colors.inkSoft }}>{MOT_ETAT.plein}</span>{" "}
-        <span
-          data-atlas="carre-complet"
-          aria-hidden="true"
-          className="inline-block h-[11px] w-[11px] rounded-[3px] align-[-1px]"
-          style={{ backgroundColor: fondDeLEtat("plein") }}
+      <div className="rounded-[6px] px-[18px] pb-4 pt-5" style={{ backgroundColor: colors.card }}>
+        <CompteurRond
+          valeur={nombre}
+          plancher={1}
+          plafond={MAX_EQUIPES}
+          libelleMoins="Une équipe de moins"
+          libellePlus="Une équipe de plus"
+          onChanger={changerNombre}
         />
-        {phrase.apres}
-      </p>
+
+        {/* Une seule phrase, et **le chiffre y bouge avec le compteur** — sa
+            dictée du 26 août : *« en dessous en gris marque 2 chantiers par
+            jour ; le chiffre bouge en fonction du nombre d'équipes »*. Elle dit
+            ce que le réglage PRODUIT, pas comment il s'appelle.
+
+            **ET ELLE MONTRE LA COULEUR — sa demande du 31 août 2026** (planche
+            99, réponse A) : *« écrit deux chantiers par jour, planning complet,
+            et met le petit carré vert foncé avec écrit "complet" du planning »*,
+            ici et pas ailleurs — *« c'est sur cette page que doit se faire la
+            modification »*.
+
+            **Le carré vient de `fondDeLEtat`, le mot de `MOT_ETAT`** : ce sont
+            ceux du calendrier, pas leurs sosies. Un vert écrit en clair ici
+            serait illisible sur Nuit et Sylve, et un « complet » recopié
+            finirait un jour par ne plus être le mot de la légende.
+
+            **Le carré est décoratif, le mot porte le sens** : `aria-hidden` sur
+            l'un, rien sur l'autre — une couleur ne se lit pas à voix haute. */}
+        {/* **LE CARRÉ EST PASSÉ APRÈS LE MOT — sa correction du 8 septembre
+            2026 :** *« deux chantiers par jour pour un planning complet, et là tu
+            mets le carré vert foncé »*. Il fermait la phrase entre le mot et son
+            point ; il la ferme maintenant tout court. */}
+        <p className="mt-3.5 text-balance text-center text-[15px] leading-[1.5]" style={{ color: colors.inkSoft }}>
+          {phrase.avant}{" "}
+          <span className="font-semibold" style={{ color: colors.ink }}>{MOT_ETAT.plein}</span>
+          <span
+            data-atlas="carre-complet"
+            aria-hidden="true"
+            className="ml-[5px] inline-block h-[13px] w-[13px] rounded-[3px] align-[-1px]"
+            style={{ backgroundColor: fondDeLEtat("plein") }}
+          />
+          {phrase.apres}
+        </p>
+      </div>
     </section>
   );
 }

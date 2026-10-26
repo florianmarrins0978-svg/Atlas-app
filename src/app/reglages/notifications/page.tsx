@@ -3,6 +3,7 @@ import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { estProprietaire } from "@/server/autorisation";
 import { lireReglagesRappels } from "@/server/repositories/rappels";
+import PlageTon from "@/components/atlas/reglages/PlageTon";
 import NotificationsClient from "./NotificationsClient";
 import { garderLaPage } from "@/server/garde-page";
 
@@ -33,14 +34,33 @@ export default async function NotificationsPage() {
   if (!(await estProprietaire(ctx))) {
     return (
       <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
-        <EnTeteEcran
-          surtitre="Moi"
-          titre="Notifications"
-          retour={{ href: "/reglages", libelle: "Retour aux réglages" }}
-        />
-        <p className="mx-[26px] mt-8 text-[13px] leading-[1.7]" style={{ color: colors.muted }}>
-          Ces rappels portent sur les devis et les factures de l&apos;entreprise. Ils appartiennent au patron.
-        </p>
+        <EnTeteEcran allure="soignee" titre="Notifications" retour={{ href: "/reglages", libelle: "Retour aux réglages" }} />
+        {/* Une information, pas une faute : la plage bleue, et le cadenas qui
+            dit d'un coup d'œil que la porte est fermée à ce rôle (sa planche
+            soignée du 26 octobre 2026, état « Un salarié »). */}
+        <div className="mx-[22px] mt-[18px]">
+          <PlageTon ton="bleu">
+            <span className="flex items-start gap-3">
+              <svg
+                aria-hidden="true"
+                focusable="false"
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="mt-px flex-none"
+              >
+                <rect x="5" y="10.5" width="14" height="10" rx="2" />
+                <path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" />
+              </svg>
+              <span>Ces rappels portent sur les devis et les factures de l&apos;entreprise. Ils appartiennent au patron.</span>
+            </span>
+          </PlageTon>
+        </div>
       </div>
     );
   }
@@ -49,11 +69,9 @@ export default async function NotificationsPage() {
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
-      <EnTeteEcran
-        surtitre="Moi"
-        titre="Notifications"
-        retour={{ href: "/reglages", libelle: "Retour aux réglages" }}
-      />
+      {/* Plus de « MOI » doré sous le titre : le titre suffit, comme sur le
+          sommaire (sa planche soignée du 26 octobre 2026). */}
+      <EnTeteEcran allure="soignee" titre="Notifications" retour={{ href: "/reglages", libelle: "Retour aux réglages" }} />
       <NotificationsClient initial={reglages} />
     </div>
   );

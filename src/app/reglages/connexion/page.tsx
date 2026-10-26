@@ -4,6 +4,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import ConnexionClient from "./ConnexionClient";
 import { listerCles } from "@/server/repositories/cles-appareil";
 import { lireCompte } from "@/server/repositories/compte";
+import { getEntreprise } from "@/server/repositories/entreprises";
 import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
@@ -41,6 +42,10 @@ export default async function ConnexionPage() {
   // Les mêmes mots que ceux que `changerMotDePasse` relit en base : sans quoi
   // le bouton s'allumerait sur un mot de passe que le serveur refuse.
   const compte = await lireCompte(ctx);
+  // La feuille de « Me déconnecter partout » nomme d'où l'on sort, comme celle
+  // de « Se déconnecter » (`SeDeconnecter.tsx`) : lu ici, l'écran n'interroge
+  // pas la base (`CLAUDE.md` §4 sexies).
+  const entreprise = await getEntreprise(ctx);
 
   return (
     /**
@@ -72,13 +77,16 @@ export default async function ConnexionPage() {
       className="atlas-ecran"
       style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body }}
     >
-      <EnTeteEcran
-        surtitre="Moi"
-        titre="Mot de passe"
-        retour={{ href: "/reglages", libelle: "Retour aux réglages" }}
-      />
+      {/* Plus de « MOI » doré sous le titre (sa planche soignée du 26 octobre
+          2026) : le titre suffit, et ce sont autant de pixels rendus à un
+          écran qui ne doit pas défiler. */}
+      <EnTeteEcran allure="soignee" titre="Mot de passe" retour={{ href: "/reglages", libelle: "Retour aux réglages" }} />
       <div className="atlas-colonne-defile" style={{ overscrollBehavior: "contain" }}>
-        <ConnexionClient cles={cles} personnel={[compte?.prenom, compte?.nom, compte?.email]} />
+        <ConnexionClient
+          cles={cles}
+          personnel={[compte?.prenom, compte?.nom, compte?.email]}
+          nomEntreprise={entreprise?.nom ?? null}
+        />
       </div>
     </div>
   );

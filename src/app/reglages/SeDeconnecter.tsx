@@ -111,47 +111,95 @@ export default function SeDeconnecter({ nomEntreprise }: { nomEntreprise: string
         </button>
       </div>
 
-      <BottomSheet open={ouverte} onBackdropClick={enCours ? undefined : () => setOuverte(false)}>
-        {/* **Le titre nomme d'où l'on sort.** Sans nom lisible — une entreprise
-            que la base ne rend pas —, on ne fabrique pas un libellé plausible
-            (`docs/AGENT.md` §3) : la feuille pose alors la question elle-même,
-            ce qui reste vrai dans les deux cas. */}
-        <h2
-          className="mt-1 text-[26px] leading-[1.15]"
-          style={{ fontFamily: font.display, color: colors.ink }}
-        >
-          {nomEntreprise ?? "Se déconnecter ?"}
-        </h2>
-
-        <button
-          type="button"
-          data-atlas="confirmer-deconnexion"
-          disabled={enCours}
-          onClick={partir}
-          className="mt-5 h-[52px] w-full rounded-full text-[15px] font-semibold"
-          style={{
-            background: colors.alert,
-            color: surPlein,
-            cursor: enCours ? "default" : "pointer",
-            WebkitTapHighlightColor: "transparent",
-          }}
-        >
-          {enCours ? "En cours…" : "Se déconnecter"}
-        </button>
-
-        {/* « Annuler » n'est pas un second bouton, c'est la sortie : deux
-            capsules empilées se pèsent l'une l'autre, et la plus grave des deux
-            perd de son poids — 2 septembre 2026. */}
-        <button
-          type="button"
-          onClick={() => setOuverte(false)}
-          disabled={enCours}
-          className="mt-1.5 h-[46px] w-full cursor-pointer text-[14px]"
-          style={{ background: "transparent", color: colors.muted }}
-        >
-          Annuler
-        </button>
-      </BottomSheet>
+      <FeuilleDeSortie
+        ouverte={ouverte}
+        // **Le titre nomme d'où l'on sort.** Sans nom lisible — une entreprise
+        // que la base ne rend pas —, on ne fabrique pas un libellé plausible
+        // (`docs/AGENT.md` §3) : la feuille pose alors la question elle-même,
+        // ce qui reste vrai dans les deux cas.
+        titre={nomEntreprise ?? "Se déconnecter ?"}
+        libelle="Se déconnecter"
+        dataAtlas="confirmer-deconnexion"
+        enCours={enCours}
+        onConfirmer={partir}
+        onFermer={() => setOuverte(false)}
+      />
     </>
+  );
+}
+
+/**
+ * LA FEUILLE D'UNE SORTIE : le nom d'où l'on sort, le bouton rouge, et
+ * « Annuler » en simple mot.
+ *
+ * **Une seule feuille pour les deux sorties** — se déconnecter d'ici, et se
+ * déconnecter partout (« Mot de passe »). Sa planche soignée du 26 octobre 2026
+ * (`appli/soignee/reglages-connexion.html`) fait monter la confirmation de
+ * « Me déconnecter partout » dans CETTE feuille, celle qu'il a retenue le 2 et
+ * le 9 septembre : ouverte DANS l'écran, elle poussait tout vers le bas, et
+ * l'écran qui ne devait plus défiler défilait. Deux feuilles écrites à la main
+ * auraient divergé à la première retouche (`CLAUDE.md` §3).
+ *
+ * `children` porte ce que la sortie coûte, quand elle coûte quelque chose :
+ * « celui-ci compris », Face ID retiré. Se déconnecter d'ici ne coûte rien, et
+ * n'en dit rien.
+ */
+export function FeuilleDeSortie({
+  ouverte,
+  titre,
+  libelle,
+  dataAtlas,
+  enCours,
+  onConfirmer,
+  onFermer,
+  children,
+}: {
+  ouverte: boolean;
+  titre: string;
+  /** Le mot du bouton rouge : le geste lui-même, pas « Confirmer ». */
+  libelle: string;
+  dataAtlas?: string;
+  enCours: boolean;
+  onConfirmer: () => void;
+  onFermer: () => void;
+  children?: React.ReactNode;
+}) {
+  return (
+    <BottomSheet open={ouverte} onBackdropClick={enCours ? undefined : onFermer}>
+      <h2 className="mt-1 text-[26px] leading-[1.15]" style={{ fontFamily: font.display, color: colors.ink }}>
+        {titre}
+      </h2>
+
+      {children}
+
+      <button
+        type="button"
+        data-atlas={dataAtlas}
+        disabled={enCours}
+        onClick={onConfirmer}
+        className="mt-5 h-[52px] w-full rounded-full text-[15px] font-semibold"
+        style={{
+          background: colors.alert,
+          color: surPlein,
+          cursor: enCours ? "default" : "pointer",
+          WebkitTapHighlightColor: "transparent",
+        }}
+      >
+        {enCours ? "En cours…" : libelle}
+      </button>
+
+      {/* « Annuler » n'est pas un second bouton, c'est la sortie : deux
+          capsules empilées se pèsent l'une l'autre, et la plus grave des deux
+          perd de son poids — 2 septembre 2026. */}
+      <button
+        type="button"
+        onClick={onFermer}
+        disabled={enCours}
+        className="mt-1.5 h-[46px] w-full cursor-pointer text-[14px]"
+        style={{ background: "transparent", color: colors.muted }}
+      >
+        Annuler
+      </button>
+    </BottomSheet>
   );
 }

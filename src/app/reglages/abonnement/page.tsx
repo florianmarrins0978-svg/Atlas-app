@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
-import { colors, font, libelleCaps, texteSituation } from "@/lib/design-tokens";
+import Paquet from "@/components/atlas/reglages/Paquet";
+import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { estProprietaire } from "@/server/autorisation";
 import { abonnementDeLEntreprise, enregistrerLAbonnement } from "@/server/repositories/abonnements";
@@ -11,6 +12,8 @@ import { logger } from "@/server/logger";
 import AbonnementClient from "./AbonnementClient";
 import CreditsIA from "./CreditsIA";
 import { creditsIADeLEntreprise } from "@/server/repositories/consommation-ia";
+import EtatDeLAbonnement from "./EtatDeLAbonnement";
+import Picto from "@/components/atlas/reglages/Picto";
 import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
@@ -43,14 +46,15 @@ export default async function AbonnementPage({
   if (!(await estProprietaire(ctx))) {
     return (
       <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
-        <EnTeteEcran
-          surtitre="Mon entreprise"
-          titre="Abonnement"
-          retour={{ href: "/reglages", libelle: "Retour aux réglages" }}
-        />
-        <p className="mx-[26px] mt-8 text-[13px] leading-[1.7]" style={{ color: colors.muted }}>
-          L&apos;abonnement appartient au patron de l&apos;entreprise.
-        </p>
+        <EnTeteEcran allure="soignee" titre="Abonnement" retour={{ href: "/reglages", libelle: "Retour aux réglages" }} />
+        <div className="px-[30px] pb-6 pt-14 text-center">
+          <span className="inline-block" style={{ color: colors.or }}>
+            <Picto nom="cadenas" taille={40} epaisseur={1.4} />
+          </span>
+          <p className="mt-3.5 text-[22px] leading-[1.25]" style={{ fontFamily: font.display }}>
+            L&apos;abonnement appartient au patron de l&apos;entreprise.
+          </p>
+        </div>
       </div>
     );
   }
@@ -91,25 +95,11 @@ export default async function AbonnementPage({
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
-      <EnTeteEcran
-        surtitre="Mon entreprise"
-        titre="Abonnement"
-        retour={{ href: "/reglages", libelle: "Retour aux réglages" }}
-      />
+      <EnTeteEcran allure="soignee" titre="Abonnement" retour={{ href: "/reglages", libelle: "Retour aux réglages" }} />
 
-      <section className="mx-[26px] mt-[26px]">
-        <p className={`mb-1.5 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
-          Votre abonnement
-        </p>
-        <p style={{ fontFamily: font.display, fontSize: 22, lineHeight: 1.2, color: etat.ton === "attention" ? colors.alert : colors.ink }}>
-          {etat.titre}
-        </p>
-        {etat.detail && (
-          <p className={`mt-1 ${texteSituation}`} style={{ color: colors.inkSoft }}>
-            {etat.detail}
-          </p>
-        )}
-      </section>
+      <Paquet titre="Votre abonnement" sansPlage>
+        <EtatDeLAbonnement etat={etat} />
+      </Paquet>
 
       <CreditsIA credits={credits} />
 
@@ -121,16 +111,6 @@ export default async function AbonnementPage({
         annulationDemandee={abonnement?.annulationDemandee ?? false}
         paiementBranche={paiementConfigure() && retourConfigure()}
       />
-
-      {/* **Le mot « factures » désigne deux choses opposées**, et la confusion
-          se paierait par un appel affolé un soir de trimestre. */}
-      <p
-        className={`mx-[26px] mt-[30px] border-t pb-24 pt-[18px] ${texteSituation}`}
-        style={{ borderColor: colors.line, color: colors.inkSoft }}
-      >
-        <b style={{ color: colors.ink, fontWeight: 500 }}>Attention au mot.</b> Ici, « factures » désigne
-        celles qu&apos;Atlas vous envoie. Celles de vos clients sont dans « Terminés ».
-      </p>
     </div>
   );
 }

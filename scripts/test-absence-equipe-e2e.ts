@@ -150,8 +150,14 @@ async function main() {
     // **Dit AVANT l'appui.** Le patron doit savoir ce qu'il bloque, et que les
     // week-ends comptent — sans quoi il découvrirait le samedi manquant plus
     // tard, sur une date refusée à un client.
+    //
+    // **« Absence de Julien du … au … », et plus « Julien sera absente »**
+    // (planche des Réglages soignés, 26 octobre 2026) : la phrase mettait le
+    // féminin à tout le monde. Ce qui se défend ici, c'est que l'annonce dit QUI
+    // et JUSQU'À QUAND avant l'appui, pas sa tournure.
     const annonce = (await page.locator("text=week-ends compris").first().textContent()) ?? "";
-    assert.ok(/sera absente/.test(annonce), `l'annonce ne dit pas ce qui va se passer : « ${annonce} »`);
+    assert.ok(/^Absence d/.test(annonce.trim()), `l'annonce ne dit pas ce qui va se passer : « ${annonce} »`);
+    assert.ok(!/sera absente/.test(annonce), `l'annonce met encore le féminin à tout le monde : « ${annonce} »`);
   });
 
   await test("Une absence à l'envers est refusée, et l'écran dit laquelle", async () => {

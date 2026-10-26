@@ -36264,3 +36264,30 @@ Trois choix faits en codant : la vignette d'une pièce passe de 88 à 72 (`taill
 | Oui ou Non en deux cartes côte à côte | deux pilules l'une sous l'autre | sa règle du 12 août, la même forme ronde partout (`test-boutons-arrondis`) |
 
 **Ce qui le tient** : `test-creation-compte.ts` (dont « la fin ne dit jamais tout est prêt sans médiateur », rouge contre la version d'avant), `test-recapitulatif-compte.ts`, `test-porte-reglages-neufs-db.ts` (les colonnes écrites, rouge sans le dépôt), `test-creer-son-compte-e2e.ts` (le nouvel ordre de la fin, et les colonnes relues).
+
+
+## §518 : Les Réglages soignés, une grammaire et des pièces communes
+
+**Sa demande du 26 octobre 2026**, après les seize planches `appli/soignee/reglages-*.html` : *« Code toutes les pages là. Et à la fin, tu joueras une seule batterie pour toutes les pages. »* Chaque écran suit la vue Proposé de sa planche ; Mon entreprise suit « Proposé », son choix du même jour (une page en sept paquets).
+
+**Seize écrans écrits en parallèle n'ont pas le droit de se dessiner seize fois.** Les pièces vivent donc dans `src/components/atlas/reglages/`, et un écran les assemble :
+
+| pièce | ce qu'elle porte |
+|---|---|
+| `EnTeteEcran allure="soignee"` | le retour cerné et l'assistant sur la même ligne, le titre seul dessous (34 px), plus de surtitre doré, la précision en 14,5 px |
+| `Paquet` | un titre doré de 13 px en capitales, puis une plage sur `colors.card`. **Police et graisse en ligne** : `globals.css` met le serif et la graisse 400 sur tout `h2`, et une classe Tailwind perd contre elle |
+| `LigneReglage`, `styleValeurReglage` | une ligne de réglage, le filet AU-DESSUS de chaque ligne : la plage le rogne, et un voisin caché par un état ne laisse pas de filet orphelin |
+| `CocheRonde`, `CarteChoix`, `ChoixEnMots` | les trois façons de choisir : une coche, une carte (sa police se passe, pour les cartes de polices), deux à quatre mots dans un rail aux bouts ronds |
+| `PlageTon` (`teintesDuTon`) | une plage teintée : or, vert, ambre, bleu, rouge |
+| `PastilleIcone`, `Picto`, `Trace`, `EtatEcrit` | la pastille d'une ligne, les tracés repris de `kit.js` en `currentColor`, l'état écrit en point et mot |
+| `ActionBas` | le bouton plein du bas : une cale de 96 px dans le flux, puis `atlas-colonne-fixe` au-dessus de la barre (`CLAUDE.md` §3, aucun écran propre à l'ordinateur) |
+
+**Une seule règle pour le papier et pour l'écran.** L'aperçu « Sur vos papiers » de Mon entreprise et le PDF lisent la même fonction pure, `enTeteDuDocument` (`src/lib/en-tete-document.ts`) : le nom avec « EI », puis les lignes dans l'ordre où elles s'impriment, mentions comprises. `document-commun.ts` la lit, et `ligneSiret` y a déménagé. Une seconde implémentation aurait refait le défaut corrigé le même jour, où le réglage « En bas » ne changeait rien au PDF. Même principe ailleurs : `ceQueLeDevisDira` assemble `libelleValidite`, `lignesConditionsDevis` et la règle d'annexe du PDF ; Notifications reprend les cartes de l'accueil par `rappelVersCarte`, `versCarte` et `caducVersCarte`, exportées de `src/app/Notifications.tsx` plutôt que recopiées ; Couleurs peint chaque carte avec `variablesCharte`.
+
+**Les interrupteurs des Réglages prennent le vert des boutons** (`colors.plein`), comme sur leurs planches, où le kit les peint ainsi. Les six sont alignés (fin de chantier, ce qui s'imprime, organigramme, notifications, double vérification, agenda), et leurs déclarations sortent de `test-boutons-pleins.ts`. **§239 disait l'inverse** pour l'interrupteur de la fiche paysage (« son vert dit actif ») ; l'appli mélangeait déjà les deux verts avant ce lot : Contrat et Planning en vert bouton, Devis complet, Envoi au client, Facture et Règlements en vert pin. Ce lot n'y touche pas hors des Réglages (hors périmètre) : l'uniformiser est à lui.
+
+**Les cartes de choix gardent leurs coins** (`test-boutons-arrondis.ts`, exceptions bornées par fichier et par repère) : `CarteChoix`, les cartes de rôle, les huit chartes, les formules d'abonnement, « Passer à moins cher », l'aperçu du papier, la plage de l'agenda à relier. Une carte de 98 px en capsule ferait toucher « Facturation » aux bords ; tout ce qui reste un bouton est aux bouts ronds.
+
+**Ce qui s'écarte des planches, et pourquoi.** Rien ne s'invente : les cartes d'exemple sous les rappels disent « Votre client » et « Le reste dû », pas un nom ni un montant. Les mots des cases de TVA restent ceux d'aujourd'hui, lus par `test-tva-au-paiement-e2e` et le mode d'emploi. La plage bleue de la double vérification dit « Allumée, sur un nouvel appareil : », parce que « Ne plus demander sur cet appareil » dispense du code trente jours. Le bilan d'un import de tarifs reste où il était (sa règle du 11 septembre : le texte change, pas la place). Le mois du carré d'un véhicule s'écrit en entier : aucune table de mois courts n'existe, et en écrire une seconde serait la divergence que §3 refuse.
+
+**Ajouté le même jour, à sa demande** (*« code unité, Mon vocabulaire, la vue d'un salarié, Vérifiez que c'est bien vous »*) : « Unité » en toutes lettres et la pastille prise en gras cernée d'or (`ChoixUnite`) ; un mot de Mon vocabulaire se supprime par le tiroir, avec Annuler (`useRetraits`) ; la vue d'un salarié (`RubriqueReservee`) passe sur une plage au cadenas bleu, sous l'en-tête soigné, ce qui touche aussi le refus de Composer ma fiche ; « Vérifiez que c'est bien vous » (`DemanderPreuve`) prend le titre en serif, la case sur sa plage et Annuler en 16 px. **Ce qui n'est pas dans le lot.** `FichePhoto` n'a pas gagné « Annuler » (partagée avec `VosSalaries`). L'allure « ample » d'`EnTeteEcran`, morte depuis la fiche client soignée, est retirée ici, comme `TODO.md` le prévoyait pour le premier lot qui toucherait l'en-tête.

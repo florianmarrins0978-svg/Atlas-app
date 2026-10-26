@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { colors, font, libelleCaps, smallCaps } from "@/lib/design-tokens";
+import { colors, font, smallCaps } from "@/lib/design-tokens";
+import { styleValeurReglage } from "./reglages/LigneReglage";
 import { memeAdresse, meriteUneRecherche, type SuggestionAdresse } from "@/lib/suggestions-adresse";
 
 /**
@@ -60,12 +61,16 @@ export default function ChampAdresse({
    * `"carte"` — le champ posé sur une plage crème, celui de la fiche client
    * depuis le 7 août.
    *
-   * `"ligne"` — l'étiquette fine, la valeur en serif et un filet dessous : la
-   * grammaire de l'écran d'identité (`IdentiteClient`). Posé le 14 août, quand
-   * le patron a demandé la même aide sur SON adresse de siège. Recopier le
-   * composant pour changer son allure aurait dupliqué la règle des suggestions
-   * — celle qui n'interroge pas à chaque lettre, se tait quand le réseau tombe
-   * et n'enferme jamais la saisie (`CLAUDE.md` §3).
+   * `"ligne"` — la valeur seule, en serif, posée dans une ligne de réglage
+   * (`LigneReglage`) qui porte le libellé et le filet : la grammaire de « Mon
+   * entreprise » (`IdentiteClient`). Posé le 14 août, quand le patron a demandé
+   * la même aide sur SON adresse de siège ; passé le 26 octobre 2026 à
+   * l'allure des Réglages soignés, où le libellé s'écrit en toutes lettres et
+   * passe en ambre quand l'adresse manque, ce qu'il ne pouvait pas faire
+   * dessiné ici en petites capitales. Le nom reste dit au lecteur d'écran.
+   * Recopier le composant pour changer son allure aurait dupliqué la règle des
+   * suggestions — celle qui n'interroge pas à chaque lettre, se tait quand le
+   * réseau tombe et n'enferme jamais la saisie (`CLAUDE.md` §3).
    */
   apparence?: "carte" | "ligne";
 }) {
@@ -154,27 +159,14 @@ export default function ChampAdresse({
   const listeVisible = ouverte && suggestions.length > 0;
 
   const enLigne = apparence === "ligne";
+  // En ligne, c'est la `LigneReglage` autour qui écrit le libellé.
+  const libelleDessine = !sansLibelle && !enLigne;
 
   return (
-    <div
-      className={
-        enLigne
-          ? "relative border-b py-[13px]"
-          : sansLibelle
-            ? "relative"
-            : "relative flex flex-col gap-1.5"
-      }
-      style={enLigne ? { borderColor: colors.line } : undefined}
-    >
-      <label
-        className={enLigne ? "block" : sansLibelle ? "block" : "flex flex-col gap-1.5"}
-        htmlFor={identifiant}
-      >
-        {!sansLibelle && (
-          <span
-            className={enLigne ? `mb-[5px] block ${libelleCaps}` : smallCaps}
-            style={{ color: colors.muted }}
-          >
+    <div className={libelleDessine ? "relative flex flex-col gap-1.5" : "relative"}>
+      <label className={libelleDessine ? "flex flex-col gap-1.5" : "block"} htmlFor={identifiant}>
+        {libelleDessine && (
+          <span className={smallCaps} style={{ color: colors.muted }}>
             {label}
           </span>
         )}
@@ -196,7 +188,7 @@ export default function ChampAdresse({
           autoCapitalize="off"
           spellCheck={false}
           role="combobox"
-          aria-label={sansLibelle ? label : undefined}
+          aria-label={libelleDessine ? undefined : label}
           aria-expanded={listeVisible}
           aria-autocomplete="list"
           aria-controls={`${identifiant}-liste`}
@@ -210,14 +202,10 @@ export default function ChampAdresse({
               ? "block w-full border-0 bg-transparent p-0 outline-none"
               : "atlas-case"
           }
-          // 17 px en ligne, 16 en carte (posé par `.atlas-case`) — jamais
+          // 18 px en ligne, 16 en carte (posé par `.atlas-case`) — jamais
           // moins : en dessous de 16, iOS agrandit la page à la mise au point
           // et l'écran saute.
-          style={
-            enLigne
-              ? { color: colors.ink, fontFamily: font.display, fontSize: 17, lineHeight: 1.35 }
-              : { fontFamily: font.body }
-          }
+          style={enLigne ? styleValeurReglage : { fontFamily: font.body }}
         />
       </label>
 

@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { colors, font } from "@/lib/design-tokens";
+import { colors } from "@/lib/design-tokens";
 import type { PeriodiciteTva } from "@/server/periode-tva";
 import { mettreAJourPeriodiciteTvaAction } from "./actions";
+import ChoixEnMots from "@/components/atlas/reglages/ChoixEnMots";
 
 /**
  * « Votre TVA » — au mois, ou au trimestre.
@@ -12,15 +13,16 @@ import { mettreAJourPeriodiciteTvaAction } from "./actions";
  * tous les mois et pas tous les trimestres. Et si jamais c'est à nous de
  * choisir, dans ce cas-là il faut que l'utilisateur ait le choix. »*
  *
- * **Le mois est coché d'avance parce que c'est le défaut LÉGAL**, pas une
+ * **Le mois est pris d'avance parce que c'est le défaut LÉGAL**, pas une
  * préférence : la déclaration CA3 est mensuelle, et le trimestre est une option
  * ouverte seulement quand la TVA due de l'année précédente est sous 4 000 €.
+ * C'est la base qui le porte (`PERIODICITE_TVA_PAR_DEFAUT`), et le mois vient
+ * en premier.
  *
  * **Et l'application ne dira JAMAIS lequel s'applique.** Le seuil porte sur la
  * TVA *due* — collectée moins déductible — et Atlas ne connaît que la
- * collectée. La phrase sous les deux boutons le dit au patron plutôt que de le
- * lui laisser supposer : c'est son comptable qui tranche. Faire mine de
- * conseiller ici serait inventer une donnée (`CLAUDE.md` §4).
+ * collectée. Faire mine de conseiller ici serait inventer une donnée
+ * (`CLAUDE.md` §4).
  */
 export default function PeriodiciteTvaReglage({ initiale }: { initiale: PeriodiciteTva }) {
   const [choix, setChoix] = useState<PeriodiciteTva>(initiale);
@@ -44,68 +46,37 @@ export default function PeriodiciteTvaReglage({ initiale }: { initiale: Periodic
   }
 
   return (
-    // Aucun retrait horizontal : ce réglage vit DANS le bloc « Votre régime de
-    // TVA » depuis le 6 septembre 2026, et ce bloc pose déjà les 26 px de la
-    // charte. Les additionner décalerait ces deux boutons, seuls au milieu de
-    // l'écran — le défaut déjà payé sur les tarifs (`ReglagesClient`).
     // **`data-atlas` plutôt qu'un titre à lire.** Sa suite visait le mot
-    // « Votre TVA », qui vient de disparaître — elle serait morte sur un
-    // renommage, c'est-à-dire sur du code juste (`CLAUDE.md` §5 bis). Ce
-    // marqueur-ci ne se renomme pas pour faire joli.
-    <section data-atlas="periodicite-tva" className="mt-7">
-      {/* **SON INTERTITRE EST PARTI, et c'est le déplacement qui l'exige.**
-
-          Il disait « VOTRE TVA », et il avait raison tant que ce réglage vivait
-          seul, à un écran du régime. Collé sous « VOTRE RÉGIME DE TVA », il
-          donnait deux titres de TVA à trois centimètres l'un de l'autre — et
-          deux titres pour une seule question, c'est la question qu'on croit
-          double.
-
-          La phrase qui suit suffit, et elle dit ce que le titre disait mal :
-          « à quel rythme vous la déclarez ». */}
-      <p className="pb-3 pt-1 text-[13px] leading-[1.6]" style={{ color: colors.inkSoft }}>
-        À quel rythme vous la déclarez.
+    // « Votre TVA », qui avait disparu — elle serait morte sur un renommage,
+    // c'est-à-dire sur du code juste (`CLAUDE.md` §5 bis). Ce marqueur-ci ne
+    // se renomme pas pour faire joli.
+    //
+    // Aucun retrait horizontal : ce réglage vit DANS le paquet « Votre TVA »,
+    // qui pose déjà les marges de l'écran.
+    <section data-atlas="periodicite-tva" className="mt-[18px]">
+      {/* Un libellé en toutes lettres, comme toutes les lignes des réglages
+          soignés : il dit ce que le titre du paquet ne dit pas, « à quel
+          rythme vous la déclarez ». */}
+      <p className="mb-2 text-[14px] font-semibold" style={{ color: colors.inkSoft }}>
+        À quel rythme vous la déclarez
       </p>
 
-      <div className="flex gap-2.5">
-        {(["mensuelle", "trimestrielle"] as const).map((v) => {
-          const actif = choix === v;
-          return (
-            <button
-              key={v}
-              type="button"
-              onClick={() => choisir(v)}
-              aria-pressed={actif}
-              className="flex-1 rounded-full px-3 py-3 text-[15px]"
-              style={{
-                // Le vert des boutons — 4 septembre 2026.
-                backgroundColor: actif ? colors.plein : colors.card,
-                border: `1px solid ${actif ? colors.plein : colors.line}`,
-                color: actif ? colors.cream : colors.ink,
-                fontFamily: font.display,
-              }}
-            >
-              {v === "mensuelle" ? "Tous les mois" : "Tous les trimestres"}
-            </button>
-          );
-        })}
-      </div>
+      <ChoixEnMots
+        libelle="À quel rythme vous déclarez la TVA"
+        options={[
+          { valeur: "mensuelle", libelle: "Tous les mois" },
+          { valeur: "trimestrielle", libelle: "Tous les trimestres" },
+        ]}
+        valeur={choix}
+        onChoix={choisir}
+      />
 
-      {/* **Une ligne, pas un paragraphe** — sa demande du 24 août 2026. La
-          version longue disait la même chose en quatre lignes ; il l'a fait
-          retirer, puis : « tu peux faire une phrase courte ».
-
-          **Ce qu'elle doit absolument porter :** le mois n'est pas une
-          préférence, c'est le défaut légal, et le trimestre ne s'obtient que
-          sous condition de TVA due. Sans elle, les deux boutons se lisent comme
-          un choix libre — et le mauvais coûte un rappel de l'administration.
-
-          **Ce qu'elle ne dit PAS, et c'est délibéré :** laquelle lui convient.
-          Le seuil porte sur la TVA DUE, donc sur ses achats, qu'Atlas ne voit
-          pas. Conseiller ici serait inventer une donnée (`CLAUDE.md` §4). */}
-      <p className="pt-3 text-[12.5px] leading-[1.65]" style={{ color: colors.muted }}>
-        Le mois est le défaut. Le trimestre s&apos;obtient sous condition.
-      </p>
+      {/* **La phrase « Le mois est le défaut. Le trimestre s'obtient sous
+          condition. » est partie le 26 octobre 2026**, à sa demande, sur la
+          planche soignée (`appli/soignee/reglages-identite.html`, « Deux
+          phrases partent »). Elle avait été raccourcie le 24 août ; il l'a
+          retirée tout à fait. Le défaut légal reste tenu par la base, et le
+          mois reste le premier des deux mots. */}
     </section>
   );
 }

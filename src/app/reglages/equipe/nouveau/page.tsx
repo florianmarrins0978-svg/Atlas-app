@@ -54,7 +54,7 @@ export default async function NouveauComptePage({
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <EnTeteEcran
-        surtitre="Équipe"
+        allure="soignee"
         titre="Nouveau compte"
         retour={{
           href: adresseRetour,

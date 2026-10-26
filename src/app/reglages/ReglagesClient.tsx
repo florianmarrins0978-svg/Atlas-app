@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { colors, libelleCaps } from "@/lib/design-tokens";
+import { colors, font, voile } from "@/lib/design-tokens";
 import { enEuros } from "@/lib/euros";
 import { normaliserUnite } from "@/lib/unites-tarif";
 import ImportTarifs from "./ImportTarifs";
 import { PastillesUnite } from "@/components/atlas/ChoixUnite";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
+import Picto from "@/components/atlas/reglages/Picto";
 import {
   creerTarifAction,
   modifierTarifAction,
@@ -26,8 +27,22 @@ type Champ = "intitule" | "prix" | "unite";
  * le prix à droite, l'unité dessous ; on la touche pour la modifier, elle
  * s'ouvre sur place. Rien de ce qui s'enregistre ne change : chaque champ part
  * quand on le quitte, par la même action qu'avant.
+ *
+ * **La planche soignée du 26 octobre 2026** (`appli/soignee/reglages-tarifs.html`)
+ * garde ce dessin et le rend lisible d'un coup d'œil : le nom en serif, le
+ * montant en gras, l'unité dessous, et « Ajouter un tarif » devenu une vraie
+ * ligne au bout de la liste.
+ *
+ * `children` est la suite de l'écran (Mes autres prix) : elle passe jusqu'à
+ * l'import, qui doit poser son bouton du bas APRÈS elle (`ImportTarifs`).
  */
-export default function ReglagesClient({ initialTarifs }: { initialTarifs: Tarif[] }) {
+export default function ReglagesClient({
+  initialTarifs,
+  children,
+}: {
+  initialTarifs: Tarif[];
+  children: React.ReactNode;
+}) {
   const [tarifs, setTarifs] = useState<Tarif[]>(initialTarifs);
   const [ajoutEnCours, setAjoutEnCours] = useState(false);
   // Une seule ligne ouverte à la fois : deux formulaires dépliés l'un sous
@@ -67,76 +82,88 @@ export default function ReglagesClient({ initialTarifs }: { initialTarifs: Tarif
   const tarifsVisibles = tarifs.filter((t) => !retraits.estRetire(t.id));
 
   return (
-    // Aucun retrait horizontal ici : la rubrique qui l'accueille pose déjà les
-    // 26 px de la charte.
-    <div>
-      {tarifsVisibles.length === 0 ? (
-        <p className="text-[14px]" style={{ color: colors.inkSoft }}>
-          Aucun tarif pour l&apos;instant.
-        </p>
-      ) : (
-        // **`overflow-clip`, pas `overflow-hidden`** : les deux arrondissent les
-        // coins, mais `hidden` fait de la liste une zone de défilement à part
-        // entière. Le navigateur la faisait alors défiler d'abord, et la marge
-        // qui garde « Fermer » au-dessus de la barre basse se perdait : la ligne
-        // ouverte s'arrêtait sous la barre, intouchable (13 octobre 2026).
-        <ul className="overflow-clip rounded-[16px]" style={{ backgroundColor: colors.card }}>
-          {tarifsVisibles.map((t, i) => {
-            const libelle = t.intitule ? `le tarif « ${t.intitule} »` : "ce tarif";
-            return (
-              <li
-                key={t.id}
-                data-atlas="tarif"
-                style={i === 0 ? undefined : { borderTop: `1px solid ${colors.line}` }}
-              >
-                {ouvert === t.id ? (
-                  <LigneOuverte
-                    tarif={t}
-                    onModifier={(champ, valeur) => modifierLocal(t.id, champ, valeur)}
-                    onEnregistrer={(champ, valeur) => void persister(t.id, champ, valeur)}
-                    onRetirer={() => {
-                      setOuvert(null);
-                      retraits.retirer(t.id, libelle);
-                    }}
-                    libelle={libelle}
-                    onFermer={() => setOuvert(null)}
-                  />
-                ) : (
-                  <LigneRepliee tarif={t} onOuvrir={() => setOuvert(t.id)} />
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      )}
+    <>
+      <div className="mx-[22px] mt-6">
+        {/* **`overflow-clip`, pas `overflow-hidden`** : les deux arrondissent les
+            coins, mais `hidden` fait de la plage une zone de défilement à part
+            entière. Le navigateur la faisait alors défiler d'abord, et la marge
+            qui garde « Fermer » au-dessus de la barre basse se perdait : la ligne
+            ouverte s'arrêtait sous la barre, intouchable (13 octobre 2026). */}
+        <div className="overflow-clip rounded-[6px] px-[18px]" style={{ backgroundColor: colors.card }}>
+          {tarifsVisibles.length === 0 ? (
+            <p className="pb-[18px] pt-[22px] text-center text-[15.5px]" style={{ color: colors.inkSoft }}>
+              Aucun tarif pour l&apos;instant.
+            </p>
+          ) : (
+            <ul>
+              {tarifsVisibles.map((t, i) => {
+                const libelle = t.intitule ? `le tarif « ${t.intitule} »` : "ce tarif";
+                return (
+                  <li
+                    key={t.id}
+                    data-atlas="tarif"
+                    style={i === 0 ? undefined : { borderTop: `1px solid ${colors.line}` }}
+                  >
+                    {ouvert === t.id ? (
+                      <LigneOuverte
+                        tarif={t}
+                        onModifier={(champ, valeur) => modifierLocal(t.id, champ, valeur)}
+                        onEnregistrer={(champ, valeur) => void persister(t.id, champ, valeur)}
+                        onRetirer={() => {
+                          setOuvert(null);
+                          retraits.retirer(t.id, libelle);
+                        }}
+                        libelle={libelle}
+                        onFermer={() => setOuvert(null)}
+                      />
+                    ) : (
+                      <LigneRepliee tarif={t} onOuvrir={() => setOuvert(t.id)} />
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
 
-      <TiroirDesRetires
-        dernier={retraits.dernier}
-        nombre={retraits.nombre}
-        onAnnuler={retraits.annuler}
-        // `mx-0!`, et non `!mx-0` : en Tailwind 4 le modificateur s'écrit en
-        // SUFFIXE. Écrite à la mode de la version 3, la classe ne faisait rien
-        // — le tiroir gardait les 26 px de marge du composant et se décalait de
-        // la liste qu'il commente.
-        className="mt-3 mx-0!"
-      />
+          {/* Ajouter est le geste de tous les jours : une vraie ligne au bout de
+              la liste, en or comme les autres ajouts de l'application. **Le doré
+              de l'appli (`or`), jamais l'or foncé** : sa consigne du 25 octobre
+              2026, répétée sur chaque planche des Réglages soignés. */}
+          <button
+            type="button"
+            onClick={ajouter}
+            disabled={ajoutEnCours}
+            className="relative flex min-h-[62px] w-full items-center gap-3 text-left text-[17px] font-semibold disabled:opacity-40"
+            style={{ color: colors.or }}
+          >
+            <span aria-hidden className="absolute inset-x-0 top-0 h-px" style={{ backgroundColor: colors.line }} />
+            <span
+              aria-hidden
+              className="grid h-[34px] w-[34px] flex-none place-items-center rounded-full"
+              style={{ backgroundColor: voile(colors.or, 0.14), color: colors.or }}
+            >
+              <Picto nom="plus" taille={20} epaisseur={2} />
+            </span>
+            {ajoutEnCours ? "Ajout…" : "Ajouter un tarif"}
+          </button>
+        </div>
 
-      {/* Ajouter est le geste de tous les jours, en or comme les autres ajouts
-          de l'application ; reprendre ses prix d'un fichier ne sert qu'une
-          fois, et passe dessous, à voix basse (planche du 11 octobre 2026). */}
-      <div className="mt-2 flex flex-col">
-        <button
-          type="button"
-          onClick={ajouter}
-          disabled={ajoutEnCours}
-          className="min-h-[48px] self-start text-[14px] disabled:opacity-40"
-          style={{ color: colors.or }}
-        >
-          {ajoutEnCours ? "Ajout…" : "+ Ajouter un tarif"}
-        </button>
-        <ImportTarifs onImporte={(nouveaux) => setTarifs(nouveaux)} />
+        <TiroirDesRetires
+          dernier={retraits.dernier}
+          nombre={retraits.nombre}
+          onAnnuler={retraits.annuler}
+          // `mx-0!`, et non `!mx-0` : en Tailwind 4 le modificateur s'écrit en
+          // SUFFIXE. Écrite à la mode de la version 3, la classe ne faisait rien
+          // — le tiroir gardait les 26 px de marge du composant et se décalait de
+          // la liste qu'il commente.
+          className="mt-3 mx-0!"
+        />
       </div>
-    </div>
+
+      {/* Reprendre ses prix d'un fichier ne sert qu'une fois : dessous, à voix
+          basse (planche du 11 octobre 2026, gardée le 26). */}
+      <ImportTarifs onImporte={(nouveaux) => setTarifs(nouveaux)}>{children}</ImportTarifs>
+    </>
   );
 }
 
@@ -151,26 +178,22 @@ export default function ReglagesClient({ initialTarifs }: { initialTarifs: Tarif
 function LigneRepliee({ tarif, onOuvrir }: { tarif: Tarif; onOuvrir: () => void }) {
   const unite = normaliserUnite(tarif.unite ?? "");
   return (
-    <button
-      type="button"
-      onClick={onOuvrir}
-      className="flex min-h-[62px] w-full items-center gap-[14px] px-[18px] py-3 text-left"
-    >
+    <button type="button" onClick={onOuvrir} className="flex min-h-[66px] w-full items-center gap-[14px] py-3 text-left">
       <span
-        className="min-w-0 flex-1 text-[16px] leading-[1.3]"
-        style={{ color: tarif.intitule ? colors.ink : colors.inkSoft }}
+        className="min-w-0 flex-1 text-[18px] leading-[1.25] [overflow-wrap:anywhere]"
+        style={{ fontFamily: font.display, color: tarif.intitule ? colors.ink : colors.inkSoft }}
       >
         {tarif.intitule || "Sans nom"}
       </span>
       <span className="flex-none text-right">
         <span
-          className="block whitespace-nowrap text-[16px] font-medium leading-[1.2] tabular-nums"
-          style={{ color: colors.ink }}
+          className="block whitespace-nowrap text-[17px] font-bold leading-[1.2]"
+          style={{ color: colors.ink, fontVariantNumeric: "tabular-nums lining-nums" }}
         >
           {enEuros(tarif.prix)}
         </span>
         {unite && (
-          <span className="mt-0.5 block whitespace-nowrap text-[12.5px]" style={{ color: colors.inkSoft }}>
+          <span className="mt-[3px] block whitespace-nowrap text-[14px]" style={{ color: colors.inkSoft }}>
             par {unite}
           </span>
         )}
@@ -204,20 +227,31 @@ function LigneOuverte({
     cadre.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, []);
 
-  const champ = "block min-h-[48px] w-full rounded-[10px] border-0 px-[14px] py-3 outline-none";
-  const styleChamp = { backgroundColor: colors.rustTint, color: colors.ink, fontSize: "16px" };
+  // Le trait doré dit la case où l'on tape (planche du 26 octobre 2026).
+  const champ = "block min-h-[50px] w-full rounded-[10px] border-0 px-[14px] py-3 outline-none focus:outline-2 focus:-outline-offset-2";
+  const styleChamp = {
+    backgroundColor: colors.rustTint,
+    color: colors.ink,
+    fontSize: "16px",
+    boxShadow: `inset 0 0 0 1px ${colors.lineSoft}`,
+    outlineColor: colors.or,
+  };
+  // Les libellés en toutes lettres, comme `LigneReglage` : « Nom » à 14 px se
+  // lit, NOM en capitales espacées de 11 px se déchiffre (planche du
+  // 26 octobre 2026).
+  const libelleChamp = "mb-[7px] block text-[14px] font-semibold";
 
   return (
     <div
       ref={cadre}
-      className="px-[18px] pt-4"
+      className="pb-0.5 pt-4"
       // La barre de navigation est posée PAR-DESSUS la page : amener la ligne
       // « au bord de l'écran » cacherait Retirer et Fermer. Ces pixels-là sont
       // sa hauteur, marge comprise.
       style={{ scrollMarginBottom: 96 }}
     >
-      <label className="mb-[14px] block">
-        <span className={`mb-1.5 block ${libelleCaps}`} style={{ color: colors.inkSoft }}>
+      <label className="mb-4 block">
+        <span className={libelleChamp} style={{ color: colors.inkSoft }}>
           Nom
         </span>
         <input
@@ -231,8 +265,8 @@ function LigneOuverte({
         />
       </label>
 
-      <label className="mb-[14px] block">
-        <span className={`mb-1.5 block ${libelleCaps}`} style={{ color: colors.inkSoft }}>
+      <label className="mb-4 block">
+        <span className={libelleChamp} style={{ color: colors.inkSoft }}>
           Prix
         </span>
         <span className="relative block w-[60%]">
@@ -261,7 +295,7 @@ function LigneOuverte({
           confirmée lors du calcul du prix : sans elle, le tarif est toujours
           repris tel quel. Et comme le rapprochement se fait à la lettre près,
           elle se CHOISIT depuis le 14 août 2026 (`src/lib/unites-tarif.ts`). */}
-      <div className="mb-[14px]">
+      <div className="mb-4">
         <PastillesUnite
           valeur={tarif.unite}
           onChoisir={(unite) => {
@@ -276,7 +310,7 @@ function LigneOuverte({
           type="button"
           onClick={onRetirer}
           aria-label={`Retirer ${libelle}`}
-          className={`min-h-[48px] ${libelleCaps}`}
+          className="min-h-[52px] text-[16px] font-semibold"
           style={{ color: colors.alert }}
         >
           Retirer
@@ -286,7 +320,7 @@ function LigneOuverte({
         <button
           type="button"
           onClick={onFermer}
-          className="min-h-[48px] text-[15px] font-medium"
+          className="min-h-[52px] text-[16px] font-semibold"
           style={{ color: colors.rust }}
         >
           Fermer

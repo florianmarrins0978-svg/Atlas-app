@@ -31,11 +31,9 @@ export default async function ComptePage() {
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
-      <EnTeteEcran
-        surtitre="Moi"
-        titre="Mon compte"
-        retour={{ href: "/reglages", libelle: "Retour aux réglages" }}
-      />
+      {/* Plus de « MOI » doré sous le titre : le titre suffit, comme sur le
+          sommaire (sa planche soignée du 26 octobre 2026). */}
+      <EnTeteEcran allure="soignee" titre="Mon compte" retour={{ href: "/reglages", libelle: "Retour aux réglages" }} />
       <CompteClient
         initial={{
           civilite: compte?.civilite ?? null,
