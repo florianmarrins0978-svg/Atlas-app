@@ -18,19 +18,23 @@ export default function ActivationObligatoire() {
       <p className={`mx-[26px] mt-4 ${texteSituation}`} style={{ color: colors.inkSoft }}>
         Obligatoire pour votre compte.
       </p>
+      {/* « Se déconnecter » passe DANS la section, au-dessus de son bouton du
+          bas : posé après elle, il glissait sous Continuer, collé au-dessus
+          de la barre depuis la planche soignée du 26 octobre 2026. */}
       <SectionDoubleVerification
         etatInitial={{ active: false, codesRestants: 0 }}
         obligatoire
         apresActivation={() => router.replace("/")}
-      />
-      <button
-        type="button"
-        onClick={() => void deconnexionAction()}
-        className="mx-[26px] mt-6 py-2 text-[14.5px]"
-        style={{ color: colors.inkSoft }}
       >
-        Se déconnecter
-      </button>
+        <button
+          type="button"
+          onClick={() => void deconnexionAction()}
+          className="mt-6 py-2 text-[14.5px]"
+          style={{ color: colors.inkSoft }}
+        >
+          Se déconnecter
+        </button>
+      </SectionDoubleVerification>
     </>
   );
 }

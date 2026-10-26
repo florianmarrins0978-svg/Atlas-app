@@ -119,11 +119,9 @@ essai("aucun bouton plein n'est resté au vert pin", () => {
  * faire quelque chose, c'est `colors.plein`.
  */
 const APLATS_DECLARES: { fichier: string; motif: RegExp; pourquoi: string }[] = [
-  {
-    fichier: "src/app/reglages/connexion/SectionDoubleVerification.tsx",
-    motif: /allume \? colors\.rust/,
-    pourquoi: "l'interrupteur de la double vérification (7 octobre 2026) : allumé ou éteint est un état, comme celui de l'autre date à l'envoi",
-  },
+  // Les interrupteurs de « Notifications » et de la double vérification sont
+  // sortis de la liste le 26 octobre 2026 : allumés, ils prennent le vert des
+  // bascules des Réglages soignés, et ne peignent plus d'aplat `rust`.
   {
     fichier: "src/app/planning/fiche-de-securite/[chantierId]/FormulaireFicheDeSecurite.tsx",
     motif: /i \+ 1 === etape \? colors\.rust/,
@@ -182,35 +180,16 @@ const APLATS_DECLARES: { fichier: string; motif: RegExp; pourquoi: string }[] = 
     pourquoi: "la coche d'une prestation faite",
   },
   {
-    fichier: "src/app/reglages/agenda/MonAgendaClient.tsx",
-    motif: /allume \? colors\.rust/,
-    pourquoi: "un interrupteur",
-  },
-  {
-    fichier: "src/app/reglages/documents/pieces.tsx",
-    motif: /allume \? colors\.rust/,
-    pourquoi: "un interrupteur",
-  },
-  {
-    fichier: "src/app/reglages/notifications/NotificationsClient.tsx",
-    motif: /allume \? colors\.rust/,
-    pourquoi: "un interrupteur",
-  },
-  {
-    fichier: "src/app/reglages/organigramme/Organigramme.tsx",
-    motif: /allume \? colors\.rust/,
-    pourquoi: "l'interrupteur « Chef d'équipe » (27 septembre 2026) : un état, pas un bouton",
-  },
-  {
     fichier: "src/app/reglages/prix/GrillesPrixClient.tsx",
     motif: /forme === f\.valeur \? colors\.rust/,
     pourquoi: "la pastille d'un choix en liste — une marque de 18 px, pas une capsule",
   },
-  {
-    fichier: "src/app/reglages/ExigibiliteTva.tsx",
-    motif: /choisie === o\.valeur \? colors\.rust/,
-    pourquoi: "la même pastille de choix en liste",
-  },
+  // `ExigibiliteTva.tsx` est sorti de la liste le 26 octobre 2026 : sa
+  // pastille de choix est devenue la `CocheRonde` dorée des Réglages soignés,
+  // et ne peint plus d'aplat `rust`.
+  // L'interrupteur de `MonAgendaClient.tsx` aussi, le même jour : les six
+  // interrupteurs des Réglages prennent le vert des boutons, comme leurs
+  // planches (`ARCHITECTURE.md` §507).
 ];
 
 /** Un aplat écrit dans un écran, quelle que soit la propriété employée. */

@@ -27,7 +27,7 @@ export default async function NumeroPage() {
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <EnTeteEcran
-        surtitre="Devis & factures"
+        allure="soignee"
         titre="Le numéro de mes documents"
         retour={{ href: "/reglages/documents", libelle: "Retour à Devis & factures" }}
       />

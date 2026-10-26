@@ -1,6 +1,7 @@
 "use client";
 
 import { colors, font } from "@/lib/design-tokens";
+import Picto from "@/components/atlas/reglages/Picto";
 
 /**
  * Le compteur des Réglages : deux ronds cerclés, le nombre en serif entre eux.
@@ -20,6 +21,9 @@ import { colors, font } from "@/lib/design-tokens";
  * **Le plancher est un paramètre, pas une constante.** Il vaut 1 pour les
  * équipes — on mène toujours au moins un chantier — et 0 pour les salariés :
  * un artisan seul n'a personne, et ce n'est pas un défaut de saisie.
+ *
+ * **Plus grand depuis les Réglages soignés** (planche du 26 octobre 2026) : des
+ * ronds de 52 px, le chiffre à 46 px, posés dans la plage de leur question.
  */
 export default function CompteurRond({
   valeur,
@@ -37,21 +41,20 @@ export default function CompteurRond({
   onChanger: (valeur: number) => void;
 }) {
   return (
-    <div className="flex items-center justify-center gap-[30px] pb-1 pt-3.5">
+    <div className="flex items-center justify-center gap-[22px]">
       <BoutonPas
-        signe="−"
+        signe="moins"
         libelle={libelleMoins}
         inerte={valeur <= plancher}
         onAppui={() => onChanger(valeur - 1)}
       />
       <span
-        className="min-w-[2ch] text-center"
+        className="min-w-[56px] text-center"
         style={{
           fontFamily: font.display,
-          fontSize: 52,
+          fontSize: 46,
           lineHeight: 1,
-          letterSpacing: "-0.03em",
-          fontVariantNumeric: "tabular-nums",
+          fontVariantNumeric: "tabular-nums lining-nums",
           color: colors.ink,
         }}
         aria-live="polite"
@@ -59,7 +62,7 @@ export default function CompteurRond({
         {valeur}
       </span>
       <BoutonPas
-        signe="+"
+        signe="plus"
         libelle={libellePlus}
         inerte={valeur >= plafond}
         onAppui={() => onChanger(valeur + 1)}
@@ -68,14 +71,14 @@ export default function CompteurRond({
   );
 }
 
-/** Un rond de 46 px cerclé d'un filet — pas de fond, comme la maquette. */
+/** Un rond de 52 px cerclé d'un filet, sans fond : la borne le grise. */
 function BoutonPas({
   signe,
   libelle,
   inerte,
   onAppui,
 }: {
-  signe: string;
+  signe: "moins" | "plus";
   libelle: string;
   inerte: boolean;
   onAppui: () => void;
@@ -86,19 +89,15 @@ function BoutonPas({
       aria-label={libelle}
       disabled={inerte}
       onClick={onAppui}
-      className="flex h-[46px] w-[46px] flex-none items-center justify-center rounded-full"
+      className="flex h-[52px] w-[52px] flex-none items-center justify-center rounded-full"
       style={{
-        boxShadow: `inset 0 0 0 1px ${colors.line}`,
-        fontFamily: font.display,
-        fontSize: 21,
-        lineHeight: 1,
-        color: inerte ? colors.muted : colors.ink,
-        opacity: inerte ? 0.32 : 1,
+        boxShadow: `inset 0 0 0 1.5px ${colors.line}`,
+        color: inerte ? colors.chevron : colors.ink,
         WebkitTapHighlightColor: "transparent",
-        transition: "box-shadow .24s, color .24s, opacity .24s",
+        transition: "color .24s",
       }}
     >
-      {signe}
+      <Picto nom={signe} />
     </button>
   );
 }

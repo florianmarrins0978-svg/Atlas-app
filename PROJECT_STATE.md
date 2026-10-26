@@ -5,6 +5,11 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## LES SEIZE RUBRIQUES DES RÉGLAGES, SOIGNÉES, CODÉES (26 octobre 2026), EN ATTENTE DE LEUR BATTERIE
+
+Codé d'après `appli/soignee/reglages-*.html` (vue Proposé) sur `correction-reglages`, avec ses pièces communes (`src/components/atlas/reglages/`), l'en-tête `allure="soignee"` et la règle pure `enTeteDuDocument` que lisent l'écran et le PDF. Défauts corrigés au passage : la fin de chantier, « En bas, avec le SIRET », le zéro doublé du téléphone, le rappel rallumé à 7 jours, « Ce que votre devis dira ». Pas sur `main` tant que la batterie unique n'a pas tourné. `ARCHITECTURE.md` §507.
+
+---
 ## TERMINÉS SOIGNÉ, CODÉ (25 octobre 2026)
 
 Codé d'après `appli/soignee/termines.html` : `src/app/termines/page.tsx` (deux plages teintées), `ListeTermines.tsx` (boutons, Non payées, carré du jour), règle pure `carreDuJour` (`src/lib/termines-par-mois.ts`). Ma TVA et le comptable, les écrans, n'ont pas bougé. `ARCHITECTURE.md` §505.

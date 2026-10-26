@@ -107,6 +107,21 @@ export function phraseDeLaMargePropre(propre: string | null, generale: string | 
   return "Pas encore donnée.";
 }
 
+/**
+ * Les deux lettres du rond d'une société, comme celui d'un client (sa planche
+ * soignée du 26 octobre 2026, `appli/soignee/reglages-fournisseurs.html`).
+ *
+ * **Les mots qui portent une majuscule d'abord** : « Jardinerie du Centre »
+ * donne JC, et non JD. Un nom tout en minuscules reprend ses deux premiers
+ * mots, et un nom vide ne laisse pas un rond vide.
+ */
+export function initialesDeLaSociete(nom: string): string {
+  const mots = nom.trim().split(/\s+/).filter(Boolean);
+  const marquants = mots.filter((m) => /^\p{Lu}/u.test(m));
+  const retenus = (marquants.length > 0 ? marquants : mots).slice(0, 2);
+  return retenus.map((m) => Array.from(m)[0]).join("").toUpperCase() || "?";
+}
+
 const pluriel = (n: number, un: string, plusieurs: string) => `${n} ${n > 1 ? plusieurs : un}`;
 
 /** « 2 prix, 1 devis reçu, 0 demande ». */

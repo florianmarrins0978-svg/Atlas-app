@@ -1,4 +1,4 @@
-import { colors } from "@/lib/design-tokens";
+import { colors, font } from "@/lib/design-tokens";
 
 /**
  * UN PAQUET DE RÉGLAGES : un titre doré, et ce qu'il range sur une plage.
@@ -27,7 +27,13 @@ export default function Paquet({
   return (
     <section className="mx-[22px] mt-7" data-atlas={dataAtlas}>
       {titre && (
-        <h2 className="mb-2.5 text-[13px] font-semibold uppercase" style={{ color: colors.or, letterSpacing: "0.12em" }}>
+        // La police et la graisse sont posées à la main : `globals.css` met la serif
+        // des titres, en 400, sur tous les `h2`, et un titre de paquet est un
+        // libellé, pas un titre.
+        <h2
+          className="mb-2.5 text-[13px] font-semibold uppercase"
+          style={{ color: colors.or, letterSpacing: "0.12em", fontFamily: font.body, fontWeight: 600 }}
+        >
           {titre}
         </h2>
       )}

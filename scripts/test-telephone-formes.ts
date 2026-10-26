@@ -25,6 +25,7 @@ import {
   formaterNational,
   composerTelephone,
   afficherTelephone,
+  formaterDerriereIndicatif,
 } from "../src/lib/telephone";
 import { FORMES_JURIDIQUES, FORME_AUTRE, formeConnue } from "../src/lib/formes-juridiques";
 
@@ -81,10 +82,50 @@ essai("ailleurs, l'indicatif remplace le zéro — jamais « +32 0471 »", () =>
 });
 
 // ── Ce qui est DÉJÀ en base se relit ─────────────────────────────────────
+// **Re-visé le 26 octobre 2026, pas assoupli** : il exigeait que le champ
+// montre « 02 40 … », et c'est ce zéro-là qu'il a fait retirer de derrière
+// « +33 » (cas suivant). Ce qu'il défendait survit : rien de ce qui est en base
+// ne s'abîme à la relecture, et c'est l'aller-retour qui le prouve.
 essai("un numéro déjà rangé se relit sans être abîmé", () => {
   const { pays, affiche } = afficherTelephone("02 40 00 00 00");
   assert.equal(pays.code, "FR");
-  assert.equal(affiche, "02 40 00 00 00");
+  assert.equal(composerTelephone(pays, affiche), "02 40 00 00 00");
+});
+
+// **Sa demande du 26 octobre 2026** (planche `appli/soignee/reglages-identite.html`) :
+// derrière « +33 », le champ montrait « +33 02 41 … », un numéro que personne
+// ne compose. Le zéro national disparaît devant l'indicatif, à l'écran comme
+// ailleurs ; ce qui se range et s'imprime, lui, ne bouge pas.
+essai("derrière l'indicatif, le champ montre le numéro sans son zéro", () => {
+  assert.equal(afficherTelephone("02 41 00 00 00").affiche, "2 41 00 00 00");
+  assert.equal(afficherTelephone("+32 471 12 34 56").affiche, "471 12 34 56");
+  assert.equal(afficherTelephone("+351 912 345 678").affiche, "912 345 678");
+});
+
+essai("et le devis garde ce qu'il imprimait : 02 41 00 00 00", () => {
+  assert.equal(composerTelephone(PAYS_PAR_DEFAUT, "2 41 00 00 00"), "02 41 00 00 00");
+});
+
+// Le geste qui suit : il tape, ou colle, le numéro tel qu'il le connaît, zéro
+// compris. Le zéro ne doit ni rester derrière « +33 », ni se doubler en base
+// (« 00 24 10 … », un numéro qui n'existe pas).
+essai("un zéro tapé ou collé devant ne reste pas, et ne se double pas", () => {
+  assert.equal(formaterDerriereIndicatif(PAYS_PAR_DEFAUT, "0241000000"), "2 41 00 00 00");
+  assert.equal(formaterDerriereIndicatif(PAYS_PAR_DEFAUT, "2 41 0"), "2 41 0");
+  assert.equal(formaterDerriereIndicatif(paysParCode("BE"), "0471 12 34 56"), "471 12 34 56");
+  assert.equal(composerTelephone(PAYS_PAR_DEFAUT, "02 41 00 00 00"), "02 41 00 00 00");
+  assert.equal(composerTelephone(paysParCode("BE"), "0471123456"), "+32 471 12 34 56");
+});
+
+// Un pays sans zéro national (Portugal, Espagne, Luxembourg) garde tous ses
+// chiffres : retirer un zéro y effacerait un chiffre du numéro.
+essai("un pays sans zéro national garde son premier chiffre", () => {
+  assert.equal(formaterDerriereIndicatif(paysParCode("PT"), "012345678"), "012 345 678");
+});
+
+essai("derrière l'indicatif, un champ vide reste vide", () => {
+  assert.equal(formaterDerriereIndicatif(PAYS_PAR_DEFAUT, ""), "");
+  assert.equal(formaterDerriereIndicatif(PAYS_PAR_DEFAUT, "0"), "");
 });
 
 essai("un numéro étranger retrouve son pays", () => {

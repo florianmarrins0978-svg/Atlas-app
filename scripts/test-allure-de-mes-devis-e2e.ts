@@ -280,8 +280,12 @@ async function main() {
     await page.waitForSelector('[data-atlas="typo-merriweather"]', { timeout: 30_000 });
     const choisie = await page.getAttribute('[data-atlas="typo-merriweather"]', "aria-pressed");
     assert.equal(choisie, "true", "la typographie choisie n'est plus cochée après rechargement");
-    const valeur = await page.textContent('[data-atlas="couleur-fond-valeur"]');
-    assert.equal(valeur?.trim(), "#1C2B1C", `l'écran affiche ${valeur}`);
+    // **Le code « #1C2B1C » écrit à côté du nuancier est parti le 26 octobre
+    // 2026** (sa planche des Réglages soignés) : il ne disait rien. Ce que ce
+    // cas défend n'a pas changé, la couleur relue de la base est celle du
+    // nuancier ; on la lit donc dans le nuancier lui-même (`CLAUDE.md` §5 bis).
+    const valeur = await page.inputValue('[data-atlas="couleur-fond"]');
+    assert.equal(valeur.toLowerCase(), "#1c2b1c", `le nuancier porte ${valeur}`);
   });
 
   await cas("« revenir aux réglages d'aujourd'hui » vide les colonnes", async () => {

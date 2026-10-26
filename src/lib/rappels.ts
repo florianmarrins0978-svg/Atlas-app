@@ -122,6 +122,41 @@ export const BORNES_RAPPELS = {
   factureImpayeeJours: { min: 1, max: 90 },
 } as const;
 
+/** Les quatre rappels qui portent un délai, donc un interrupteur. */
+export type CleDelaiRappel = keyof typeof BORNES_RAPPELS;
+
+/**
+ * Le délai qu'un rappel reprend quand on le rallume : celui qu'il porte s'il
+ * est allumé, sinon le dernier qu'on lui a connu, sinon son délai d'origine.
+ *
+ * **L'écran le remettait à 7 jours, quel qu'il fût** — alors que son
+ * commentaire promettait « le délai d'origine » : l'impayé réglé à 1 jour
+ * revenait à 7, et le devis jamais parti, choisi à 4 par lui le 16 août, aussi.
+ * Sa planche soignée du 26 octobre 2026 l'a montré, et il a dit oui :
+ * *« rallumé, un rappel reprend le délai qu'il avait »*.
+ *
+ * **Éteindre écrit `null`, et rien d'autre** (aucune colonne « actif » à côté
+ * du nombre, voir `ReglagesRappels`) : le dernier délai ne survit donc qu'à
+ * l'écran, qui le garde dans `avant`. Après un rechargement, un rappel éteint
+ * ne le connaît plus, et c'est `RAPPELS_PAR_DEFAUT` qui répond, jamais un
+ * nombre écrit dans un écran.
+ */
+export function derniersDelais(
+  reglages: ReglagesRappels,
+  avant: Record<CleDelaiRappel, number> | null
+): Record<CleDelaiRappel, number> {
+  const connu = (cle: CleDelaiRappel): number =>
+    // `RAPPELS_PAR_DEFAUT` est typé comme un réglage, donc nullable ; ses
+    // quatre délais valent pourtant un nombre, écrit à côté de sa raison.
+    reglages[cle] ?? avant?.[cle] ?? RAPPELS_PAR_DEFAUT[cle]!;
+  return {
+    chantierSansDevisJours: connu("chantierSansDevisJours"),
+    devisSansReponseJours: connu("devisSansReponseJours"),
+    chantierNonFactureJours: connu("chantierNonFactureJours"),
+    factureImpayeeJours: connu("factureImpayeeJours"),
+  };
+}
+
 function jours(valeur: unknown, bornes: { min: number; max: number }): number | null {
   if (valeur === null || valeur === undefined || valeur === "") return null;
   const n = typeof valeur === "number" ? valeur : Number(String(valeur).trim());

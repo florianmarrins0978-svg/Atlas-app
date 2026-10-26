@@ -2,11 +2,14 @@
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { colors, font, libelleCaps, surPlein, voile } from "@/lib/design-tokens";
+import { colors, font, voile } from "@/lib/design-tokens";
 import { libelleRole, type PorteePlanning, type Role } from "@/lib/acces-roles";
 import { libelleSalarie, salariesAffiches } from "@/lib/equipes";
 import TeteRonde from "@/components/atlas/TeteRonde";
+import Paquet from "@/components/atlas/reglages/Paquet";
+import PastilleIcone from "@/components/atlas/reglages/PastilleIcone";
 import ChoixRole from "./ChoixRole";
+import Picto from "@/components/atlas/reglages/Picto";
 import {
   changerLaPorteeAction,
   changerLeRoleAction,
@@ -73,21 +76,19 @@ export default function QuiAAcces({
   }
 
   return (
-    <section className="mt-7 px-[26px]">
-      <p className={`mb-1.5 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
-        Accès
-      </p>
-
-      <ul className="mt-1">
+    <Paquet titre="Accès">
+      <ul>
         {acces.map((p) => {
           const estMoi = p.utilisateurId === moi;
+          const ouverte = ouvert === p.id;
           return (
-            <li key={p.id} style={{ borderTop: `1px solid ${colors.line}` }}>
+            <li key={p.id} className="relative">
+              <Filet />
               <button
                 type="button"
-                onClick={() => setOuvert(ouvert === p.id ? null : p.id)}
-                className="flex w-full items-center gap-3 py-3.5 text-left"
-                aria-expanded={ouvert === p.id}
+                onClick={() => setOuvert(ouverte ? null : p.id)}
+                className="flex min-h-[68px] w-full items-center gap-3.5 py-3 text-left"
+                aria-expanded={ouverte}
               >
                 {/* **Sa tête** (27 septembre 2026) : chacun la pose dans Mon
                     compte. Sans photo, le numéro de son nom s'il est relié,
@@ -95,23 +96,44 @@ export default function QuiAAcces({
                 <TeteRonde
                   repli={p.salarieRang ?? (p.nom ?? p.email).trim().charAt(0).toUpperCase()}
                   photo={p.photo}
-                  taille={36}
+                  taille={44}
                 />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[15px]" style={{ color: colors.ink }}>
-                    {estMoi ? "Vous" : (p.nom ?? p.email)}
+                  {/* **Le rôle dans une pastille, sur la ligne du nom** (planche
+                      du 26 octobre 2026) : il se lit d'un coup d'œil, et
+                      Patron, en or, se distingue des trois autres. */}
+                  <span className="flex items-center justify-between gap-2">
+                    <span
+                      className="min-w-0 truncate text-[18px] font-semibold leading-[1.25]"
+                      style={{ fontFamily: font.display, color: colors.ink }}
+                    >
+                      {estMoi ? "Vous" : (p.nom ?? p.email)}
+                    </span>
+                    <PastilleRole role={p.role} />
                   </span>
-                  <span className="block truncate text-[12px]" style={{ color: colors.inkSoft }}>
+                  <span className="mt-[3px] block truncate text-[14.5px] leading-[1.4]" style={{ color: colors.inkSoft }}>
                     {p.email}
                   </span>
                 </span>
-                <span className={libelleCaps} style={{ color: colors.inkSoft }}>
-                  {libelleRole(p.role)}
+                {/* **Le compte s'ouvre SOUS sa ligne, comme avant.** La planche
+                    du 26 octobre proposait une page à lui ; il n'a pas encore
+                    tranché. Le chevron tourne vers le bas quand la ligne est
+                    ouverte : il dit où se trouve ce qu'on vient d'ouvrir. */}
+                <span
+                  className="flex-none transition-transform duration-200"
+                  style={{ color: colors.or, transform: ouverte ? "rotate(90deg)" : "none" }}
+                >
+                  <Picto nom="suivant" taille={20} epaisseur={2} />
                 </span>
               </button>
 
-              {ouvert === p.id && (
-                <div className="pb-4">
+              {ouverte && (
+                // **Ce qui s'ouvre se pose sur le fond de la page**, toute la
+                // largeur de la plage : c'est la page du compte de la planche,
+                // glissée sous sa ligne. Sa remarque du 26 août, *« la
+                // démarcation n'est pas bien séparée »*, vaut aussi ici : on
+                // voit où ce compte commence et où il finit.
+                <div className="-mx-[18px] px-[18px] pb-5 pt-4" style={{ backgroundColor: colors.cream }}>
                   <ChoixRole
                     valeur={p.role}
                     inerte={enCours}
@@ -153,9 +175,10 @@ export default function QuiAAcces({
                       type="button"
                       disabled={enCours}
                       onClick={() => agir(() => retirerUnAccesAction(p.id), () => setOuvert(null))}
-                      className="mt-4 text-[13px] underline underline-offset-4"
+                      className="mt-6 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-full text-[16px] font-semibold"
                       style={{ color: colors.alert }}
                     >
+                      <Picto nom="croix" taille={20} />
                       Retirer l&apos;accès
                     </button>
                   )}
@@ -164,33 +187,86 @@ export default function QuiAAcces({
             </li>
           );
         })}
+
+        {/* **« Donner un accès » MÈNE AILLEURS depuis le 26 août 2026** — sa
+            réponse « B » sur `appli/donner-un-acces.html`.
+
+            Le formulaire vivait ici, juste sous sa propre ligne : deux blocs de
+            champs et de pastilles se suivaient, et rien ne disait où le sien
+            finissait (*« la démarcation […] n'est pas bien séparée »*). Il prend
+            désormais un écran entier, d'où cette liste a disparu — il n'y a plus
+            rien à confondre. */}
+        <li className="relative">
+          <Filet />
+          <Link
+            href="/reglages/equipe/nouveau"
+            className="flex min-h-[68px] w-full items-center gap-3.5 py-3 text-left"
+          >
+            <PastilleIcone>
+              <Picto nom="plus" />
+            </PastilleIcone>
+            <span className="min-w-0 flex-1 text-[17px] font-semibold" style={{ color: colors.or }}>
+              Donner un accès
+            </span>
+            <span className="flex-none" style={{ color: colors.or }}>
+              <Picto nom="suivant" taille={20} epaisseur={2} />
+            </span>
+          </Link>
+        </li>
       </ul>
 
-      {/* **« Donner un accès » MÈNE AILLEURS depuis le 26 août 2026** — sa
-          réponse « B » sur `appli/donner-un-acces.html`.
-
-          Le formulaire vivait ici, juste sous sa propre ligne : deux blocs de
-          champs et de pastilles se suivaient, et rien ne disait où le sien
-          finissait (*« la démarcation […] n'est pas bien séparée »*). Il prend
-          désormais un écran entier, d'où cette liste a disparu — il n'y a plus
-          rien à confondre. */}
-      <Link
-        href="/reglages/equipe/nouveau"
-        className="flex w-full items-center gap-3 py-3.5 text-left text-[15px]"
-        style={{ borderTop: `1px solid ${colors.line}`, color: colors.ink }}
-      >
-        <span style={{ color: colors.muted }}>+</span>
-        Donner un accès
-      </Link>
-
       {message && (
-        <p className="mt-2 text-[12.5px]" style={{ color: colors.alert }} role="alert">
+        <p className="pb-3.5 text-[14px] leading-[1.45]" style={{ color: colors.alert }} role="alert">
           {message}
         </p>
       )}
-    </section>
+    </Paquet>
   );
 }
+
+/** Le filet entre deux lignes de la plage ; le paquet rogne celui de la première. */
+function Filet() {
+  return <span aria-hidden className="absolute inset-x-0 -top-px h-px" style={{ backgroundColor: colors.line }} />;
+}
+
+/**
+ * Le rôle d'un compte, un point et un mot : jamais la couleur seule. Patron en
+ * or, cerné d'un fil doré ; les trois autres sur un voile discret.
+ */
+function PastilleRole({ role }: { role: Role }) {
+  const patron = role === "proprietaire";
+  return (
+    <span
+      className="inline-flex min-h-[28px] flex-none items-center gap-[7px] whitespace-nowrap rounded-full px-[11px] text-[13.5px] font-semibold leading-none"
+      style={
+        patron
+          ? { color: colors.or, boxShadow: `inset 0 0 0 1px ${voile(colors.or, 0.6)}` }
+          : { color: colors.inkSoft, backgroundColor: voile(colors.ink, 0.06) }
+      }
+    >
+      <span aria-hidden className="h-[7px] w-[7px] flex-none rounded-full" style={{ backgroundColor: "currentColor" }} />
+      {libelleRole(role)}
+    </span>
+  );
+}
+
+/** Le petit libellé d'un réglage du compte, en toutes lettres (planche du 26 octobre). */
+function SousTitre({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="mb-2.5 mt-[22px] text-[14px] font-semibold" style={{ color: colors.inkSoft }}>
+      {children}
+    </p>
+  );
+}
+
+/** Une pastille de choix : teintée et cernée de l'encre d'action quand elle est prise. */
+function stylePastille(choisie: boolean): React.CSSProperties {
+  return choisie
+    ? { backgroundColor: colors.rustTint, color: colors.ink, boxShadow: `inset 0 0 0 2px ${colors.rust}` }
+    : { color: colors.inkSoft, boxShadow: `inset 0 0 0 1px ${colors.line}` };
+}
+
+const PASTILLE = "min-h-[44px] rounded-full px-4 text-[15px] font-semibold";
 
 /**
  * C'EST QUI ? Le nom de salarié que ce compte EST, relié une fois par le
@@ -213,15 +289,9 @@ function ChoixSalarie({
   inerte: boolean;
   onChoisir: (rang: number | null) => void;
 }) {
-  const pastille = (choisie: boolean) =>
-    choisie
-      ? { backgroundColor: voile(colors.ink, 0.08), color: colors.ink }
-      : { border: `1px solid ${colors.line}`, color: colors.muted };
   return (
-    <div className="mt-4" data-atlas="c-est-qui">
-      <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
-        C&apos;est qui&nbsp;?
-      </p>
+    <div data-atlas="c-est-qui">
+      <SousTitre>C&apos;est qui&nbsp;?</SousTitre>
       <div className="flex flex-wrap gap-2">
         {noms.map((e) => (
           <button
@@ -230,8 +300,8 @@ function ChoixSalarie({
             disabled={inerte}
             aria-pressed={e.rang === rang}
             onClick={() => e.rang !== rang && onChoisir(e.rang)}
-            className="rounded-full px-3 py-1.5 text-[12px]"
-            style={pastille(e.rang === rang)}
+            className={PASTILLE}
+            style={stylePastille(e.rang === rang)}
           >
             {libelleSalarie({ rang: e.rang, nom: e.nom ?? null }, nombreSalaries) ?? `Salarié ${e.rang}`}
           </button>
@@ -241,8 +311,8 @@ function ChoixSalarie({
           disabled={inerte}
           aria-pressed={rang === null}
           onClick={() => rang !== null && onChoisir(null)}
-          className="rounded-full px-3 py-1.5 text-[12px]"
-          style={pastille(rang === null)}
+          className={PASTILLE}
+          style={stylePastille(rang === null)}
         >
           Personne
         </button>
@@ -277,23 +347,25 @@ function ChoixPortee({
   // l'entreprise fait autorité sur le nombre, la table ne porte que des noms.
   const proposables = equipes.filter((e) => e.rang <= nombreSalaries);
 
+  // **Deux mots dans un même rail** (planche du 26 octobre 2026) : le mot pris
+  // se pose sur la plage claire. Il était peint en encre pleine, l'allure du
+  // bouton qui agit, alors qu'il ne fait que dire un état.
+  const segment = (pris: boolean): React.CSSProperties =>
+    pris
+      ? { backgroundColor: colors.card, color: colors.ink, boxShadow: `0 1px 2px ${voile(colors.ink, 0.14)}` }
+      : { color: colors.inkSoft };
+
   return (
-    <div className="mt-4">
-      <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
-        Ce qu&apos;il voit du planning
-      </p>
-      <div className="flex gap-2">
+    <div>
+      <SousTitre>Ce qu&apos;il voit du planning</SousTitre>
+      <div className="flex gap-1 rounded-full p-1" style={{ backgroundColor: voile(colors.ink, 0.06) }}>
         <button
           type="button"
           disabled={inerte}
           aria-pressed={portee === "tout"}
           onClick={() => portee !== "tout" && onChoisir("tout", null)}
-          className="flex-1 rounded-full py-2 text-[12.5px]"
-          style={
-            portee === "tout"
-              ? { backgroundColor: colors.ink, color: surPlein }
-              : { border: `1px solid ${colors.line}`, color: colors.muted }
-          }
+          className="min-h-[44px] flex-1 rounded-full px-2.5 text-[15px] font-semibold transition-colors duration-200"
+          style={segment(portee === "tout")}
         >
           Tout le planning
         </button>
@@ -304,12 +376,8 @@ function ChoixPortee({
           onClick={() =>
             portee !== "ses_equipes" && onChoisir("ses_equipes", equipeId ?? proposables[0]?.id ?? null)
           }
-          className="flex-1 rounded-full py-2 text-[12.5px]"
-          style={
-            portee === "ses_equipes"
-              ? { backgroundColor: colors.ink, color: surPlein }
-              : { border: `1px solid ${colors.line}`, color: colors.muted }
-          }
+          className="min-h-[44px] flex-1 rounded-full px-2.5 text-[15px] font-semibold transition-colors duration-200"
+          style={segment(portee === "ses_equipes")}
         >
           Son équipe
         </button>
@@ -324,12 +392,8 @@ function ChoixPortee({
               disabled={inerte}
               aria-pressed={e.id === equipeId}
               onClick={() => onChoisir("ses_equipes", e.id)}
-              className="rounded-full px-3 py-1.5 text-[12px]"
-              style={
-                e.id === equipeId
-                  ? { backgroundColor: voile(colors.ink, 0.08), color: colors.ink }
-                  : { border: `1px solid ${colors.line}`, color: colors.muted }
-              }
+              className={PASTILLE}
+              style={stylePastille(e.id === equipeId)}
             >
               {libelleSalarie({ rang: e.rang, nom: e.nom }, nombreSalaries) ?? `Salarié ${e.rang}`}
             </button>

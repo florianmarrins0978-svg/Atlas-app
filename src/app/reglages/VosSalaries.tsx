@@ -83,69 +83,75 @@ export default function VosSalaries({
   const sansNom = lignes.filter((e) => !(noms[e.rang] ?? "").trim()).length;
 
   return (
-    <section
-      className="mt-[30px] px-[26px] pt-[26px]"
-      style={{ borderTop: `1px solid ${colors.line}` }}
-      data-atlas="vos-salaries"
-    >
+    <section className="mx-[22px]" data-atlas="vos-salaries">
       {/* **LE TITRE POSE LA QUESTION — sa réponse A du 8 septembre 2026**
           (planche `appli/deux-compteurs-de-l-equipe.html`), et c'est le même
           geste que sur le compteur du dessus.
 
           **Ce qu'il répare :** les deux compteurs se suivaient, au dessin
           identique, avec le même chiffre — « 2 » et « 2 ». Deux étiquettes en
-          capitales ne les distinguaient pas ; deux questions, si. */}
-      <p className="mb-1.5 text-[19px] leading-[1.25]" style={{ fontFamily: font.display, color: colors.ink }}>
+          capitales ne les distinguaient pas ; deux questions, si.
+
+          **Les noms vivent dans la plage du compteur** (planche du 26 octobre
+          2026) : ce sont ses gens, et la plage dit qu'ils vont ensemble. */}
+      <h2
+        className="mb-2.5 mt-8 text-[22px] leading-[1.25]"
+        style={{ fontFamily: font.display, color: colors.ink, letterSpacing: "-0.005em" }}
+      >
         Combien de salariés&nbsp;?
-      </p>
+      </h2>
 
-      <CompteurRond
-        valeur={nombre}
-        plancher={0}
-        plafond={MAX_SALARIES}
-        libelleMoins="Un salarié de moins"
-        libellePlus="Un salarié de plus"
-        onChanger={changerNombre}
-      />
+      <div className="rounded-[6px] px-[18px] pb-4 pt-5" style={{ backgroundColor: colors.card }}>
+        <CompteurRond
+          valeur={nombre}
+          plancher={0}
+          plafond={MAX_SALARIES}
+          libelleMoins="Un salarié de moins"
+          libellePlus="Un salarié de plus"
+          onChanger={changerNombre}
+        />
 
-      <p className="mt-2 text-center text-[12.5px] leading-[1.6]" style={{ color: colors.muted }}>
-        {phraseDesSalaries(nombre)}
-      </p>
+        <p className="mt-3.5 text-balance text-center text-[15px] leading-[1.5]" style={{ color: colors.inkSoft }}>
+          {phraseDesSalaries(nombre)}
+        </p>
 
-      {nombre > 0 ? (
-        <div className="mt-[26px]">
-          {lignes.map((e) => (
-            <LigneNom
-              key={e.rang}
-              rang={e.rang}
-              valeur={noms[e.rang] ?? ""}
-              photo={photos[e.rang] ?? null}
-              onOuvrirFiche={() => setFiche(e.rang)}
-              onEcrire={(v) => setNoms((cur) => ({ ...cur, [e.rang]: v }))}
-              onPoser={(v) => nommerEquipeAction(e.rang, v)}
-            />
-          ))}
-          {/* **L'écart est écrit, et seulement quand il existe.** C'est ce que
-              la planche 97 lui a fait toucher du doigt : un compteur qui annonce
-              plus de gens qu'il n'y a de noms. Une phrase permanente sous la
-              liste serait du bruit ; celle-ci ne parle que lorsqu'il y a
-              quelque chose à dire (`CLAUDE.md` §4 ter). */}
-          {sansNom > 0 ? (
-            <p className="mt-3 text-[12.5px] leading-[1.6]" style={{ color: colors.muted }}>
-              {sansNom === 1 ? (
-                <>
-                  Un salarié n&apos;a pas de nom :{" "}
-                  <span style={{ color: colors.ink }}>le chantier le montrera sous son numéro</span>.
-                </>
-              ) : (
-                <>
-                  {sansNom} salariés n&apos;ont pas de nom :{" "}
-                  <span style={{ color: colors.ink }}>le chantier les montrera sous leur numéro</span>.
-                </>
-              )}
-            </p>
-          ) : null}
-        </div>
+        {nombre > 0 ? (
+          <div className="mt-3">
+            {lignes.map((e, i) => (
+              <LigneNom
+                key={e.rang}
+                rang={e.rang}
+                premiere={i === 0}
+                valeur={noms[e.rang] ?? ""}
+                photo={photos[e.rang] ?? null}
+                onOuvrirFiche={() => setFiche(e.rang)}
+                onEcrire={(v) => setNoms((cur) => ({ ...cur, [e.rang]: v }))}
+                onPoser={(v) => nommerEquipeAction(e.rang, v)}
+              />
+            ))}
+          </div>
+        ) : null}
+      </div>
+
+      {/* **L'écart est écrit, et seulement quand il existe.** C'est ce que la
+          planche 97 lui a fait toucher du doigt : un compteur qui annonce plus
+          de gens qu'il n'y a de noms. Une phrase permanente sous la liste
+          serait du bruit ; celle-ci ne parle que lorsqu'il y a quelque chose à
+          dire (`CLAUDE.md` §4 ter). */}
+      {nombre > 0 && sansNom > 0 ? (
+        <p className="mx-0.5 mt-3 text-[14.5px] leading-[1.5]" style={{ color: colors.inkSoft }}>
+          {sansNom === 1 ? (
+            <>
+              Un salarié n&apos;a pas de nom :{" "}
+              <span className="font-semibold" style={{ color: colors.ink }}>le chantier le montrera sous son numéro</span>.
+            </>
+          ) : (
+            <>
+              {sansNom} salariés n&apos;ont pas de nom :{" "}
+              <span className="font-semibold" style={{ color: colors.ink }}>le chantier les montrera sous leur numéro</span>.
+            </>
+          )}
+        </p>
       ) : null}
 
       {fiche !== null ? (
@@ -172,7 +178,7 @@ export default function VosSalaries({
  * Une ligne : le rond du rang (ou sa photo), puis le champ qui occupe tout le
  * reste.
  *
- * **Le champ fait 17 px, jamais moins.** En dessous de 16, Safari zoome à la
+ * **Le champ fait 18 px, jamais moins de 16.** En dessous de 16, Safari zoome à la
  * mise au point et l'écran saute sous le doigt — le patron le vit à chaque
  * saisie sur son téléphone.
  *
@@ -181,6 +187,7 @@ export default function VosSalaries({
  */
 function LigneNom({
   rang,
+  premiere,
   valeur,
   photo,
   onOuvrirFiche,
@@ -188,6 +195,7 @@ function LigneNom({
   onPoser,
 }: {
   rang: number;
+  premiere: boolean;
   valeur: string;
   photo: string | null;
   onOuvrirFiche: () => void;
@@ -199,22 +207,23 @@ function LigneNom({
   // qui contient deux commandes envoie l'appui à la PREMIÈRE, donc toucher le
   // nom aurait ouvert la fiche au lieu du champ.
   return (
-    <div
-      className="flex items-center gap-3.5 py-[9px]"
-      style={{
-        borderBottom: `1px solid ${aLaMain ? colors.or : colors.line}`,
-        transition: "border-color .26s",
-      }}
-    >
+    <div className="relative flex min-h-[64px] items-center gap-3.5">
+      {/* Le filet part du nom, pas du rond (planche du 26 octobre 2026) : les
+          ronds se lisent comme une colonne de numéros. */}
+      {!premiere && (
+        <span aria-hidden className="absolute left-[58px] right-0 top-0 h-px" style={{ backgroundColor: colors.line }} />
+      )}
       {/* **Le rond du rang ouvre la fiche** (sa réponse B du 27 septembre
           2026). Il reste à la place du numéro : sans photo, il montre le même
-          chiffre en or qu'avant. 44 px, la taille d'un doigt. */}
+          chiffre en or qu'avant. 44 px, la taille d'un doigt. **Le champ en
+          main l'entoure d'or** : on voit quelle ligne on écrit. */}
       <button
         type="button"
         data-atlas="ouvrir-fiche-salarie"
         aria-label={`Photo du salarié ${rang}`}
         onClick={onOuvrirFiche}
         className="flex-none rounded-full"
+        style={{ boxShadow: aLaMain ? `0 0 0 2px ${colors.or}` : "none", transition: "box-shadow .26s" }}
       >
         <TeteRonde repli={rang} photo={photo} taille={44} />
       </button>
@@ -233,7 +242,7 @@ function LigneNom({
           void onPoser(e.target.value);
         }}
         className="min-w-0 flex-1 border-0 bg-transparent p-0 outline-none"
-        style={{ fontFamily: font.display, fontSize: 17, lineHeight: 1.3, color: colors.ink }}
+        style={{ fontFamily: font.display, fontSize: 18, lineHeight: 1.3, color: colors.ink }}
       />
     </div>
   );

@@ -26,8 +26,8 @@ import {
   totauxAvecReduction,
   TITRE_TRAVAUX_SUPPLEMENTAIRES,
 } from "@/lib/reduction-devis";
-import { lignesMentionsLegales, positionEffective, type PositionMentionsLegales } from "@/lib/mentions-legales";
-import { nomAvecForme } from "@/lib/formes-juridiques";
+import type { PositionMentionsLegales } from "@/lib/mentions-legales";
+import { enTeteDuDocument } from "@/lib/en-tete-document";
 import { lignesMentionsObligatoires } from "@/lib/mentions-obligatoires";
 import { lignesDuPapier, quantiteLisible, tauxCourt } from "@/lib/lignes-du-papier";
 import { uniteDeLaLigne } from "@/lib/unite-de-ligne";
@@ -823,31 +823,32 @@ export type OptionsDocument = {
 };
 
 
-/**
- * « SIRET 123 456 789 00012, RM 33 » — son choix B du 9 octobre 2026
- * (`appli/numero-rm.html`) : la mention du répertoire des métiers sur la ligne
- * du SIRET, après une virgule. Elle s'imprime telle qu'il l'a écrite, parce
- * qu'aucun texte trouvé ne dit laquelle un artisan doit porter depuis le RNE.
- * Sans SIRET, elle garde sa ligne plutôt que de disparaître avec lui.
- */
-function ligneSiret(siret: string | null | undefined, numeroRm: string | null | undefined): string | null {
-  const rm = numeroRm?.trim();
-  if (!siret) return rm || null;
-  return rm ? `SIRET ${siret}, ${rm}` : `SIRET ${siret}`;
-}
-
 export async function composerDocument(
   donnees: DonneesDocument,
   options: OptionsDocument
 ): Promise<{ pdf: Uint8Array; trace: TraceDocument }> {
-  // **Le nom de l'émetteur se compose UNE fois, ici** : l'en-tête, la mention du
-  // pied et l'ordre du chèque le lisent tous. Un entrepreneur individuel y
-  // reçoit « EI » (R526-27, choix 4A du 3 octobre 2026), sur le devis, la
-  // facture et l'avoir à la fois.
-  const data: DonneesDocument = {
-    ...donnees,
-    entrepriseNom: nomAvecForme(donnees.entrepriseNom, donnees.entrepriseFormeJuridique),
-  };
+  // **L'en-tête se compose UNE fois, ici, par la fonction que l'écran lit
+  // aussi** (`enTeteDuDocument`, 26 octobre 2026) : « Sur vos papiers », dans
+  // Mon entreprise, dessine ces mêmes lignes dans le même ordre.
+  //
+  // **Le nom de l'émetteur en sort** : l'en-tête, la mention du pied et l'ordre
+  // du chèque le lisent tous. Un entrepreneur individuel y reçoit « EI »
+  // (R526-27, choix 4A du 3 octobre 2026), sur le devis, la facture et l'avoir
+  // à la fois.
+  const enTete = enTeteDuDocument({
+    nom: donnees.entrepriseNom,
+    formeJuridique: donnees.entrepriseFormeJuridique,
+    capitalSocial: donnees.entrepriseCapitalSocial,
+    villeRcs: donnees.entrepriseVilleRcs,
+    siret: donnees.entrepriseSiret,
+    numeroRm: donnees.entrepriseNumeroRm,
+    adresse: donnees.entrepriseAdresse,
+    telephone: donnees.entrepriseTelephone,
+    email: donnees.entrepriseEmail,
+    numeroTva: donnees.entrepriseNumeroTva,
+    position: donnees.entrepriseMentionsLegalesPosition,
+  });
+  const data: DonneesDocument = { ...donnees, entrepriseNom: enTete.nom };
   const pdfDoc = await PDFDocument.create();
   // **`registerFontkit` inconditionnellement**, même sans typographie choisie :
   // l'oublier ne se verrait qu'au premier document d'un patron qui en a réglé
@@ -891,46 +892,12 @@ export async function composerDocument(
   // ─── En-tête : l'entreprise à gauche, les références à droite ───────────
   ecrire(ctx, data.entrepriseNom, MARGE, y, { taille: 22, police: ctx.sans });
 
-  // **UNE LIGNE PAR INFORMATION**, sa demande du 25 août 2026 : *« en haut à
-  // gauche il y a un tiret entre le numéro de tél et l'adresse e-mail, change
-  // ça, il faut sauter une ligne, une ligne par information »*. Le téléphone et
-  // l'e-mail tenaient sur la même ligne, séparés d'un tiret cadratin — c'est
-  // lisible sur un écran large, c'est un pâté sur un devis imprimé.
-  //
-  // **La forme juridique, le capital et le RCS d'une société s'y glissent
-  // selon SON choix** (migration 0072) : sous le nom, ou avec le reste des
-  // coordonnées. Plus jamais nulle part : elles sont obligatoires (choix 4A du
-  // 3 octobre 2026, `positionEffective`).
-  const positionMentions = positionEffective(data.entrepriseMentionsLegalesPosition);
-  const mentionsLegales = lignesMentionsLegales({
-    formeJuridique: data.entrepriseFormeJuridique,
-    capitalSocial: data.entrepriseCapitalSocial,
-    villeRcs: data.entrepriseVilleRcs,
-    siret: data.entrepriseSiret,
-  });
-
+  // **Une ligne par information** (sa demande du 25 août 2026), les mentions
+  // d'une société à la place qu'il a choisie : l'ordre vit dans
+  // `enTeteDuDocument`, et nulle part ailleurs.
   let yCoord = y - 15;
-  if (positionMentions === "sous_nom") {
-    for (const ligne of mentionsLegales) {
-      ecrire(ctx, ligne, MARGE, yCoord, { taille: 8.5, couleur: ctx.teintes.coordonnees });
-      yCoord -= 11;
-    }
-  }
-
-  // **« En bas, avec le SIRET » descend VRAIMENT près du SIRET** (sa réponse du
-  // 26 octobre 2026, « je le garde »). Les mentions ouvraient la liste, juste
-  // sous le nom : les deux choix donnaient le même devis au pixel près.
-  const coordonnees = [
-    data.entrepriseAdresse,
-    data.entrepriseTelephone,
-    data.entrepriseEmail,
-    ...(positionMentions === "bas" ? mentionsLegales : []),
-    ligneSiret(data.entrepriseSiret, data.entrepriseNumeroRm),
-    data.entrepriseNumeroTva ? `TVA intracommunautaire ${data.entrepriseNumeroTva}` : null,
-  ].filter((l): l is string => !!l);
-
-  for (const ligne of coordonnees) {
-    ecrire(ctx, ligne, MARGE, yCoord, { taille: 8.5, couleur: ctx.teintes.coordonnees });
+  for (const ligne of enTete.lignes) {
+    ecrire(ctx, ligne.texte, MARGE, yCoord, { taille: 8.5, couleur: ctx.teintes.coordonnees });
     yCoord -= 11;
   }
 

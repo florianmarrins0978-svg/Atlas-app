@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 /**
  * « Mon message au client » — trois messages depuis le 7 septembre 2026.
  *
- * **Un par document** : le devis, la facture, et le compte rendu de passage —
+ * **Un par document** : le devis, la facture, et le compte rendu de passage,
  * celui-là même qu'on a failli oublier, puisqu'il partait avec le modèle unique
  * sans que personne ne le compte (`composerMessageEntretien`).
  *
@@ -37,7 +37,7 @@ export default async function MessagePage() {
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <EnTeteEcran
-        surtitre="Devis & factures"
+        allure="soignee"
         titre="Mon message au client"
         retour={{ href: "/reglages/documents", libelle: "Retour à Devis & factures" }}
       />
@@ -50,6 +50,9 @@ export default async function MessagePage() {
         // L'aperçu signe avec SON nom, pas « votre entreprise » : c'est ce que
         // son client lira, et un exemple générique ne se juge pas.
         entrepriseNom={entreprise?.nom ?? ""}
+        // Le numéro d'exemple suit le format qu'il a choisi : c'est celui que
+        // son client lira dans le message de la facture (sa planche).
+        formatNumero={entreprise?.formatNumero ?? null}
       />
     </div>
   );

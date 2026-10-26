@@ -14,6 +14,7 @@ export default function CarteChoix({
   titre,
   detail,
   children,
+  police,
   dataAtlas,
 }: {
   pris: boolean;
@@ -22,6 +23,11 @@ export default function CarteChoix({
   detail?: string;
   /** Une illustration au-dessus du titre, par exemple l'en-tête du devis. */
   children?: React.ReactNode;
+  /**
+   * La police du titre. Une carte de « L'allure de mes devis » écrit le nom
+   * d'une police DANS cette police : c'est la seule chose qu'on y regarde.
+   */
+  police?: string;
   dataAtlas?: string;
 }) {
   return (
@@ -41,7 +47,7 @@ export default function CarteChoix({
           <CocheRonde pris={pris} />
         </span>
       )}
-      <span className="text-[17.5px] leading-[1.2]" style={{ fontFamily: font.display, color: colors.ink }}>
+      <span className="text-[17.5px] leading-[1.2]" style={{ fontFamily: police ?? font.display, color: colors.ink }}>
         {titre}
       </span>
       {detail && (

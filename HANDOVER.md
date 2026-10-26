@@ -10,6 +10,11 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## LES RÉGLAGES SOIGNÉS ATTENDENT LEUR BATTERIE, SUR `correction-reglages` (26 octobre 2026)
+
+Les seize rubriques des Réglages sont codées d'après leurs planches, avec deux défauts du même jour (la fin de chantier qui ne s'enregistrait pas, « En bas, avec le SIRET » qui ne faisait rien), dans le dossier `/home/user/atlas-correction-reglages`, branche `correction-reglages`. **Il a demandé une seule batterie pour tout, et pas avant son feu vert** : `npm run verifier:avant-livraison` dans ce dossier, puis `git -C /home/user/atlas-correction-reglages push origin HEAD:main` une fois verte (niveau 3). **Les pièges :** un écran des Réglages s'assemble avec `src/components/atlas/reglages/` (jamais un `Picto` ou un choix recopié) ; l'aperçu du papier et le PDF lisent tous deux `enTeteDuDocument` ; le titre d'un `Paquet` porte sa police et sa graisse en ligne, parce que `globals.css` impose le serif et 400 à tout `h2`. `ARCHITECTURE.md` §507, `TODO.md` pour ce que le code a pris sur les points encore ouverts.
+
+---
 ## LA CLÉ DE SESSION DE SON ESPACE LUI EST PROPRE (25 octobre 2026)
 
 `banc.mjs` lance le serveur avec la clé de `/workspaces/.atlas-secrets/auth-secret`, créée et re-chiffrée par `scripts/secret-de-l-espace.ts`. **Les pièges :** ne jamais effacer un fichier de ce dossier (une clé perdue rend ses secrets illisibles) ; un `npm run dev` lancé à la main sur son espace tourne encore sous l'ancienne clé du dépôt. `ARCHITECTURE.md` §503.

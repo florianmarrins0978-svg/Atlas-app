@@ -425,7 +425,7 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
     preuves: ['aria-label="Dicter une note vocale"'],
     ailleurs: [
       { source: "src/app/clients/[id]/RepartirDeCeClient.tsx", preuves: ['"Dernier devis"'] },
-      { source: "src/app/reglages/ReglagesClient.tsx", preuves: ["+ Ajouter un tarif"] },
+      { source: "src/app/reglages/ReglagesClient.tsx", preuves: ["Ajouter un tarif"] },
     ],
   },
 ];

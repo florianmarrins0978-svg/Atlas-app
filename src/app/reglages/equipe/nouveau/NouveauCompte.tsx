@@ -1,10 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import { colors, font, libelleCaps, surPlein } from "@/lib/design-tokens";
+import { useId, useState, useTransition } from "react";
+import { colors, surPlein } from "@/lib/design-tokens";
 import { etatConfirmation, LONGUEUR_MINIMALE } from "@/lib/mot-de-passe";
 import OeilMotDePasse from "@/components/atlas/OeilMotDePasse";
+import ActionBas from "@/components/atlas/reglages/ActionBas";
+import LigneReglage, { styleValeurReglage } from "@/components/atlas/reglages/LigneReglage";
+import Paquet from "@/components/atlas/reglages/Paquet";
 import type { Role } from "@/lib/acces-roles";
 import ChoixRole from "../ChoixRole";
 import { donnerUnAccesAction } from "../actions";
@@ -31,6 +34,13 @@ import { donnerUnAccesAction } from "../actions";
  * version Corrigé) : le rôle d'abord, puis « Son compte » ; des champs à fond
  * teinté de 52 px, qu'on voit au soleil et qu'on touche sans viser ; le refus
  * du serveur au-dessus du bouton. Aucune règle d'accès n'a bougé.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ * **LES RÉGLAGES SOIGNÉS, 26 OCTOBRE 2026** (`appli/soignee/reglages-equipe.html`) :
+ * « Son rôle » et « Son compte » deviennent deux paquets aux titres dorés, et
+ * les cases à fond teinté du 11 octobre prennent l'allure des autres réglages :
+ * une plage claire, le libellé en toutes lettres, la valeur en serif de 18 px.
+ * « Créer le compte », toujours le seul plein, se pose au-dessus de la barre.
  *
  * ═══════════════════════════════════════════════════════════════════════════
  * **CE QUI NE SE DÉCIDE PAS ICI : le droit d'y être.** L'adresse est sous
@@ -74,7 +84,6 @@ export default function NouveauCompte({
 
   return (
     <form
-      className="px-[26px] pb-24 pt-[26px]"
       onSubmit={(e) => {
         e.preventDefault();
         creer();
@@ -84,88 +93,72 @@ export default function NouveauCompte({
           décision de l'écran ; le nom et le mot de passe ne sont que la clé. */}
       <ChoixRole titre valeur={role} inerte={enCours} onChoisir={setRole} />
 
-      <p className={`mt-[30px] ${libelleCaps}`} style={{ color: colors.inkSoft }}>Son compte</p>
-      <Champ etiquette="Nom" valeur={nom} onChange={setNom} autoComplete="off" />
-      <Champ
-        etiquette="Adresse e-mail"
-        valeur={email}
-        onChange={setEmail}
-        type="email"
-        inputMode="email"
-        autoComplete="off"
-      />
-
-      <ChampSecret
-        etiquette="Mot de passe"
-        valeur={motDePasse}
-        onChange={setMotDePasse}
-        sous={`Au moins ${LONGUEUR_MINIMALE} caractères`}
-      />
-      <ChampSecret
-        etiquette="Confirmer le mot de passe"
-        valeur={confirmation}
-        onChange={setConfirmation}
-        sous={disent?.message}
-        // Vert d'accord, rouge en désaccord : la phrase change de sens, sa
-        // couleur aussi. Grise, elle se lirait comme une consigne.
-        souligne={disent ? (disent.identiques ? colors.rust : colors.alert) : undefined}
-        // Le champ se borde aussi : sous un clavier ouvert, la phrase seule ne
-        // se voit pas toujours (planche du 11 octobre 2026).
-        faux={disent?.identiques === false}
-      />
-
-      {/* **Le refus AU-DESSUS du bouton** (planche du 11 octobre 2026). Sous
-          « Annuler », il tombait souvent hors de l'écran : le patron appuyait,
-          et rien ne semblait se passer. */}
-      {message && (
-        <p className="mt-[22px] text-[14px]" style={{ color: colors.alert }} role="alert">
-          {message}
-        </p>
-      )}
-
-      {/* **LE SEUL APLAT PLEIN DE L'ÉCRAN**, et c'est tout l'objet de sa
-          deuxième remarque. Les pastilles de rôle, au-dessus, sont teintées. */}
-      <button
-        type="submit"
-        disabled={enCours}
-        className="atlas-plein mt-7 flex w-full items-center justify-center rounded-full py-3.5 text-[14px] font-semibold"
-        style={{ backgroundColor: colors.plein, color: surPlein, opacity: enCours ? 0.6 : 1 }}
-      >
-        {enCours ? "Un instant…" : "Créer le compte"}
-      </button>
+      <Paquet titre="Son compte">
+        <Champ etiquette="Nom" valeur={nom} onChange={setNom} autoComplete="off" placeholder="Son prénom" />
+        <Champ
+          etiquette="Adresse e-mail"
+          valeur={email}
+          onChange={setEmail}
+          type="email"
+          inputMode="email"
+          autoComplete="off"
+          placeholder="nom@exemple.fr"
+        />
+        <ChampSecret
+          etiquette="Mot de passe"
+          valeur={motDePasse}
+          onChange={setMotDePasse}
+          sous={`Au moins ${LONGUEUR_MINIMALE} caractères`}
+        />
+        <ChampSecret
+          etiquette="Confirmer le mot de passe"
+          valeur={confirmation}
+          onChange={setConfirmation}
+          sous={disent?.message}
+          // Vert d'accord, rouge en désaccord : la phrase change de sens, sa
+          // couleur aussi. Grise, elle se lirait comme une consigne.
+          souligne={disent ? (disent.identiques ? colors.carteVertTexte : colors.alert) : undefined}
+          // Le libellé passe au rouge aussi : sous un clavier ouvert, la phrase
+          // seule ne se voit pas toujours (planche du 11 octobre 2026).
+          faux={disent?.identiques === false}
+        />
+      </Paquet>
 
       <button
         type="button"
         onClick={() => router.push(retour)}
-        className="mt-1 flex w-full items-center justify-center py-3 text-[13px]"
-        style={{ color: colors.muted }}
+        className="mx-[22px] mt-2 flex min-h-[48px] w-[calc(100%-44px)] items-center justify-center rounded-full text-[16px] font-semibold"
+        style={{ color: colors.inkSoft }}
       >
         Annuler
       </button>
+
+      {/* **LE SEUL APLAT PLEIN DE L'ÉCRAN**, et c'est tout l'objet de sa
+          deuxième remarque. Les cartes de rôle, au-dessus, sont teintées. Il se
+          pose au-dessus de la barre, sous le pouce (planche du 26 octobre).
+
+          **Le refus juste AU-DESSUS du bouton** (planche du 11 octobre 2026).
+          Sous « Annuler », il tombait souvent hors de l'écran : le patron
+          appuyait, et rien ne semblait se passer. Collé au bouton, il se lit
+          là où l'on vient d'appuyer. */}
+      <ActionBas>
+        {message && (
+          <p className="mb-2.5 text-[14px] leading-[1.45]" style={{ color: colors.alert }} role="alert">
+            {message}
+          </p>
+        )}
+        <button
+          type="submit"
+          disabled={enCours}
+          className="atlas-plein flex min-h-[56px] w-full items-center justify-center rounded-full text-[17px] font-semibold"
+          style={{ backgroundColor: colors.plein, color: surPlein, opacity: enCours ? 0.6 : 1 }}
+        >
+          {enCours ? "Un instant…" : "Créer le compte"}
+        </button>
+      </ActionBas>
     </form>
   );
 }
-
-/**
- * LA BOÎTE D'UN CHAMP : fond teinté, 52 px, contour or à la mise au point et
- * rouge quand la saisie est fausse (planche du 11 octobre 2026). Le trait seul
- * d'avant disparaissait au soleil, et un champ vide sans repère se lit comme
- * « pas touchable » (`HANDOVER.md`, piège 18).
- */
-function Boite({ faux = false, children }: { faux?: boolean; children: (focus: (v: boolean) => void) => React.ReactNode }) {
-  const [focus, setFocus] = useState(false);
-  const contour = faux ? `inset 0 0 0 1.5px ${colors.alert}` : focus ? `inset 0 0 0 1.5px ${colors.or}` : "none";
-  return (
-    <span
-      className="flex min-h-[52px] items-center rounded-xl pl-3.5 pr-1"
-      style={{ backgroundColor: colors.rustTint, boxShadow: contour }}
-    >
-      {children(setFocus)}
-    </span>
-  );
-}
-
-const STYLE_SAISIE = { color: colors.ink, fontFamily: font.body, caretColor: colors.or } as const;
 
 function Champ({
   etiquette,
@@ -179,27 +172,19 @@ function Champ({
   // `onChange` est OMIS du reste : le nôtre rend la valeur, celui du DOM rend
   // l'événement, et les deux ne peuvent pas porter le même nom.
 } & Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange" | "value">) {
+  const id = useId();
   return (
-    <label className="mt-3.5 block">
-      <span className="mb-1 block text-[11px]" style={{ color: colors.muted }}>
-        {etiquette}
-      </span>
-      <Boite>
-        {(focus) => (
-          <input
-            // 17 px : en dessous de 16, Safari zoome à la mise au point et l'écran
-            // saute sous le doigt. La leçon est déjà écrite dans `atlas-reglages-moi`.
-            className="min-w-0 flex-1 bg-transparent py-[13px] text-[17px] outline-none"
-            style={STYLE_SAISIE}
-            value={valeur}
-            onChange={(e) => onChange(e.target.value)}
-            onFocus={() => focus(true)}
-            onBlur={() => focus(false)}
-            {...reste}
-          />
-        )}
-      </Boite>
-    </label>
+    <LigneReglage libelle={etiquette} htmlFor={id}>
+      {/* 18 px : en dessous de 16, Safari zoome à la mise au point et l'écran
+          saute sous le doigt. La leçon est déjà écrite dans `atlas-reglages-moi`. */}
+      <input
+        id={id}
+        style={{ ...styleValeurReglage, caretColor: colors.or }}
+        value={valeur}
+        onChange={(e) => onChange(e.target.value)}
+        {...reste}
+      />
+    </LigneReglage>
   );
 }
 
@@ -233,44 +218,40 @@ function ChampSecret({
   faux?: boolean;
 }) {
   const [ouvert, setOuvert] = useState(false);
+  const id = useId();
 
   return (
-    <div className="mt-3.5">
-      <span className="mb-1 block text-[11px]" style={{ color: colors.muted }}>
-        {etiquette}
+    <LigneReglage
+      libelle={faux ? <span style={{ color: colors.alert }}>{etiquette}</span> : etiquette}
+      htmlFor={id}
+      sous={
+        sous ? (
+          <span style={{ color: souligne ?? colors.inkSoft, fontWeight: souligne ? 600 : 400 }}>{sous}</span>
+        ) : undefined
+      }
+    >
+      <span className="-my-1.5 -mr-2.5 flex items-center gap-2">
+        <input
+          id={id}
+          className="min-w-0 flex-1"
+          style={{ ...styleValeurReglage, caretColor: colors.or }}
+          type={ouvert ? "text" : "password"}
+          // **`new-password`, jamais `off`.** Sans lui, le gestionnaire du
+          // navigateur propose au patron SON mot de passe — et c'est celui-là
+          // qui partirait dans le compte du salarié.
+          autoComplete="new-password"
+          aria-label={etiquette}
+          value={valeur}
+          onChange={(e) => onChange(e.target.value)}
+        />
+        <OeilMotDePasse
+          ouvert={ouvert}
+          onBasculer={() => setOuvert((o) => !o)}
+          quoi={etiquette.toLowerCase()}
+          couleur={colors.inkSoft}
+          couleurOuvert={colors.or}
+        />
       </span>
-      <Boite faux={faux}>
-        {(focus) => (
-          <>
-            <input
-              className="min-w-0 flex-1 bg-transparent py-[13px] text-[17px] outline-none"
-              style={STYLE_SAISIE}
-              type={ouvert ? "text" : "password"}
-              // **`new-password`, jamais `off`.** Sans lui, le gestionnaire du
-              // navigateur propose au patron SON mot de passe — et c'est celui-là
-              // qui partirait dans le compte du salarié.
-              autoComplete="new-password"
-              aria-label={etiquette}
-              value={valeur}
-              onChange={(e) => onChange(e.target.value)}
-              onFocus={() => focus(true)}
-              onBlur={() => focus(false)}
-            />
-            <OeilMotDePasse
-              ouvert={ouvert}
-              onBasculer={() => setOuvert((o) => !o)}
-              quoi={etiquette.toLowerCase()}
-              couleur={colors.muted}
-              couleurOuvert={colors.or}
-            />
-          </>
-        )}
-      </Boite>
-      {sous && (
-        <span className="mt-1.5 block text-[13px]" style={{ color: souligne ?? colors.inkSoft }}>
-          {sous}
-        </span>
-      )}
-    </div>
+    </LigneReglage>
   );
 }

@@ -149,7 +149,11 @@ export async function reglerContactAction(
     return { ok: true, email: s.email, debut: s.debutMail, fin: s.finMail };
   } catch (err) {
     journaliser("Réglage du contact d'un fournisseur impossible", err);
-    return { ok: false, raison: "Ce n’a pas pu être enregistré. Réessayez." };
+    // Dire CE qui n'a pas tenu : sa fiche n'envoie que l'adresse, la liste du
+    // plan d'arrosage que le début ou la fin du message. « Ce n'a pas pu être
+    // enregistré » n'était pas une phrase (planche du 26 octobre 2026).
+    const quoi = typeof champs.email === "string" ? "L’adresse n’a pas pu être enregistrée" : "Le message n’a pas pu être enregistré";
+    return { ok: false, raison: `${quoi}. Réessayez.` };
   }
 }
 
@@ -300,7 +304,9 @@ export async function deposerDevisRecuAction(
 }
 
 /**
- * Ce qu'il a accepté d'un devis ou d'une facture lus passe dans « Mes prix ».
+ * Ce qu'il a accepté d'un devis ou d'une facture lus passe dans ses prix, la
+ * partie « Prix » de la fiche (et non « Mes prix », l'écran de ses grilles de
+ * vente).
  * **Rien n'est repris du navigateur sans être relu** : nom, unité et prix se
  * revalident ici, et la société est celle du document, jamais une autre.
  *

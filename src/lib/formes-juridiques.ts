@@ -104,9 +104,21 @@ export function formeADuCapital(formeJuridique: string | null | undefined): bool
  * l'ont tapé eux-mêmes depuis 2022.
  */
 export function nomAvecForme(nom: string, formeJuridique: string | null | undefined): string {
+  const forme = formeApresLeNom(nom, formeJuridique);
+  return forme ? `${nom.trim()} ${forme}` : nom;
+}
+
+/**
+ * Ce qui s'ajoute après le nom : « EI », ou rien.
+ *
+ * **Séparé de `nomAvecForme` le 26 octobre 2026**, pour que « Sur vos papiers »
+ * (Mon entreprise) puisse poser son repère doré sur la mention seule, sans
+ * redire la règle : l'écran et le papier lisent cette fonction-ci.
+ */
+export function formeApresLeNom(nom: string, formeJuridique: string | null | undefined): string | null {
   const connue = formeConnue(formeJuridique);
-  if (!connue || connue.capital) return nom;
-  if (/(^|\s)(EI|entrepreneur individuel)(\s|$)/i.test(nom.trim())) return nom;
-  return `${nom.trim()} EI`;
+  if (!connue || connue.capital) return null;
+  if (/(^|\s)(EI|entrepreneur individuel)(\s|$)/i.test(nom.trim())) return null;
+  return "EI";
 }
 

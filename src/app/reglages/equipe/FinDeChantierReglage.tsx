@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { colors, libelleCaps, surPlein } from "@/lib/design-tokens";
+import { colors, font, surPlein, voile } from "@/lib/design-tokens";
+import Paquet from "@/components/atlas/reglages/Paquet";
 import { reglerLaFinDeChantierAction } from "./actions";
 
 /**
@@ -75,11 +76,7 @@ export default function FinDeChantierReglage({
   }
 
   return (
-    <section className="mt-10 px-[26px]" data-atlas="reglage-fin-de-chantier">
-      <p className={libelleCaps} style={{ color: colors.muted }}>
-        Fin de chantier
-      </p>
-
+    <Paquet titre="Fin de chantier" dataAtlas="reglage-fin-de-chantier">
       <Bascule
         titre="Demander une preuve"
         dit="Rappelle d'envoyer le retour d'intervention à chaque fin de chantier"
@@ -101,14 +98,18 @@ export default function FinDeChantierReglage({
       )}
 
       {refus && (
-        <p className="mt-2 text-[13px] leading-[1.5]" style={{ color: colors.alert }}>
+        <p className="pb-3.5 text-[14px] leading-[1.5]" style={{ color: colors.alert }}>
           {refus}
         </p>
       )}
-    </section>
+    </Paquet>
   );
 }
 
+/**
+ * Une ligne d'interrupteur : le titre en serif, ce qu'il fait dessous, la
+ * bascule au bout du pouce (planche du 26 octobre 2026).
+ */
 function Bascule({
   titre,
   dit,
@@ -125,13 +126,14 @@ function Bascule({
   onChange: (actif: boolean) => void;
 }) {
   return (
-    <div
-      className="flex items-center justify-between gap-4 py-4"
-      style={{ borderBottom: `1px solid ${colors.line}` }}
-    >
+    <div className="relative flex min-h-[64px] items-center gap-3.5 py-3">
+      {/* Le filet se pose au-dessus de chaque ligne ; le paquet rogne le premier. */}
+      <span aria-hidden className="absolute inset-x-0 -top-px h-px" style={{ backgroundColor: colors.line }} />
       <span className="min-w-0 flex-1">
-        <span className="block text-[15.5px] leading-[1.35]">{titre}</span>
-        <span className="mt-[3px] block text-[12.5px] leading-[1.45]" style={{ color: colors.muted }}>
+        <span className="block text-[18px] leading-[1.25]" style={{ fontFamily: font.display, color: colors.ink }}>
+          {titre}
+        </span>
+        <span className="mt-0.5 block text-[14px] leading-[1.4]" style={{ color: colors.inkSoft }}>
           {dit}
         </span>
       </span>
@@ -143,22 +145,21 @@ function Bascule({
         disabled={enCours}
         data-atlas={`bascule-${repere}`}
         onClick={() => onChange(!actif)}
-        className="relative h-[31px] w-[52px] flex-none rounded-full disabled:opacity-60"
+        className="relative h-[32px] w-[52px] flex-none rounded-full disabled:opacity-60"
         style={{
-          backgroundColor: actif ? colors.plein : colors.rustTint,
-          boxShadow: actif ? "none" : `inset 0 0 0 1px ${colors.line}`,
-          transition: "background-color .2s cubic-bezier(.22,.9,.3,1)",
+          backgroundColor: actif ? colors.plein : voile(colors.ink, 0.18),
+          transition: "background-color .22s cubic-bezier(.22,.61,.36,1)",
           WebkitTapHighlightColor: "transparent",
         }}
       >
         <span
           aria-hidden="true"
-          className="absolute left-[3px] top-[3px] h-[25px] w-[25px] rounded-full"
+          className="absolute left-[3px] top-[3px] h-[26px] w-[26px] rounded-full"
           style={{
             backgroundColor: actif ? surPlein : colors.card,
-            boxShadow: "0 1px 3px rgba(20,18,14,.28)",
-            transform: actif ? "translateX(21px)" : "none",
-            transition: "transform .2s cubic-bezier(.22,.9,.3,1)",
+            boxShadow: `0 1px 2px ${voile(colors.ink, 0.2)}`,
+            transform: actif ? "translateX(20px)" : "none",
+            transition: "transform .24s cubic-bezier(.34,1.4,.5,1)",
           }}
         />
       </button>

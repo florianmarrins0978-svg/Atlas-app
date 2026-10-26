@@ -1,14 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import { colors, font, libelleCaps } from "@/lib/design-tokens";
+import { useId, useState } from "react";
+import { colors, voile } from "@/lib/design-tokens";
+import LigneReglage, { styleValeurReglage } from "@/components/atlas/reglages/LigneReglage";
 import {
   PAYS_TELEPHONE,
   afficherTelephone,
   composerTelephone,
-  formaterNational,
+  formaterDerriereIndicatif,
   type PaysTelephone,
 } from "@/lib/telephone";
+import Picto from "@/components/atlas/reglages/Picto";
 
 /**
  * Le téléphone : drapeau, indicatif, et espaces posés sous le doigt.
@@ -26,6 +28,11 @@ import {
  *
  * **La liste se referme dès qu'un pays est choisi.** La laisser ouverte
  * obligerait à un second geste pour revenir au numéro, sans rien apporter.
+ *
+ * **Derrière l'indicatif, le numéro s'écrit sans son zéro** — sa demande du
+ * 26 octobre 2026 : « +33 2 41 00 00 00 », et non plus « +33 02 41 … », qu'on
+ * ne compose nulle part. Seul le champ change : ce qui se range et s'imprime
+ * reste « 02 41 00 00 00 » (`formaterDerriereIndicatif`, `composerTelephone`).
  */
 export default function ChampTelephone({
   valeur,
@@ -39,8 +46,8 @@ export default function ChampTelephone({
   /**
    * À la sortie du champ, avec le numéro **prêt à ranger** — composé ici, et
    * non lu dans l'état de l'appelant, qui est celui du dernier rendu (leçon du
-   * 30 août 2026). Ce qui s'affiche (« 06 79 98 45 14 ») n'est pas ce qui se
-   * range (« +33679984514 ») : le champ est le seul à savoir faire le pas.
+   * 30 août 2026). Ce qui s'affiche (« 6 79 98 45 14 ») n'est pas ce qui se
+   * range (« 06 79 98 45 14 ») : le champ est le seul à savoir faire le pas.
    */
   onFini: (valeurPreteARanger: string) => void;
 }) {
@@ -52,9 +59,10 @@ export default function ChampTelephone({
   // un état local est nécessaire, sinon le curseur saute à chaque espace posé.
   const [saisi, setSaisi] = useState(lu.affiche);
 
+  const id = useId();
+
   function ecrire(brut: string, p: PaysTelephone = pays) {
-    const espace = formaterNational(p, brut);
-    setSaisi(espace);
+    setSaisi(formaterDerriereIndicatif(p, brut));
     onChange(composerTelephone(p, brut));
   }
 
@@ -68,84 +76,72 @@ export default function ChampTelephone({
   }
 
   return (
-    <div className="border-b py-[13px]" style={{ borderColor: colors.line }}>
-      <span className={`mb-[5px] block ${libelleCaps}`} style={{ color: colors.inkSoft }}>
-        Téléphone
-      </span>
-
+    <LigneReglage libelle="Téléphone" htmlFor={id}>
       <div className="flex items-center gap-2.5">
+        {/* Sur la plage claire du paquet, la pastille prend un voile d'encre :
+            posée en `card` comme avant, elle disparaissait dans son fond. */}
         <button
           type="button"
           onClick={() => setOuvert((o) => !o)}
           aria-expanded={ouvert}
           aria-label={`Indicatif : ${pays.nom} ${pays.indicatif}`}
-          className="flex flex-none items-center gap-[7px] rounded-full px-3"
-          style={{ backgroundColor: colors.card, minHeight: 44 }}
+          className="flex flex-none items-center gap-1.5 rounded-full px-3 text-[15px] font-semibold"
+          style={{ backgroundColor: voile(colors.ink, 0.06), color: colors.ink, minHeight: 44 }}
         >
           <span aria-hidden="true" className="text-[19px] leading-none">
             {pays.drapeau}
           </span>
-          <span style={{ fontFamily: font.display, fontSize: 16, fontVariantNumeric: "tabular-nums" }}>
-            {pays.indicatif}
-          </span>
-          <span
-            aria-hidden="true"
-            className="-mt-[3px] h-[7px] w-[7px] rotate-45"
-            style={{ borderRight: `1.5px solid ${colors.muted}`, borderBottom: `1.5px solid ${colors.muted}` }}
-          />
+          <span style={{ fontVariantNumeric: "tabular-nums" }}>{pays.indicatif}</span>
+          <Picto nom="bas" taille={16} />
         </button>
 
         <input
+          id={id}
           type="tel"
           inputMode="tel"
           autoComplete="tel"
           aria-label="Numéro de téléphone"
+          placeholder="6 00 00 00 00"
           value={saisi}
           onChange={(e) => ecrire(e.target.value)}
           onBlur={(e) => onFini(composerTelephone(pays, e.currentTarget.value))}
-          className="min-w-0 flex-1 border-0 bg-transparent p-0 outline-none"
-          // 17 px : en dessous de 16, iOS agrandit la page à la mise au point et
-          // le patron se retrouve avec un écran zoomé à rétablir à la main.
-          style={{
-            fontFamily: font.display,
-            fontSize: 17,
-            lineHeight: 1.35,
-            color: colors.ink,
-            fontVariantNumeric: "tabular-nums",
-          }}
+          className="min-w-0 flex-1"
+          // 18 px : en dessous de 16, iOS agrandit la page à la mise au point
+          // et le patron se retrouve avec un écran zoomé à rétablir à la main.
+          style={{ ...styleValeurReglage, fontVariantNumeric: "tabular-nums lining-nums" }}
         />
       </div>
 
       {ouvert && (
-        <div className="mt-2 overflow-hidden rounded-[4px]" style={{ backgroundColor: colors.card }}>
-          {PAYS_TELEPHONE.map((p) => (
+        <div
+          className="mt-2.5 overflow-hidden rounded-[10px]"
+          style={{ backgroundColor: colors.cream, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
+        >
+          {PAYS_TELEPHONE.map((p, rang) => (
             <button
               key={p.code}
               type="button"
               onClick={() => choisirPays(p)}
               aria-pressed={p.code === pays.code}
-              className="flex w-full items-center gap-3 border-b px-3.5 text-left last:border-b-0"
+              className="flex w-full items-center gap-3 px-3.5 text-left"
               style={{
-                borderColor: colors.line,
+                borderTop: rang > 0 ? `1px solid ${colors.line}` : undefined,
                 minHeight: 44,
-                backgroundColor: p.code === pays.code ? colors.line : "transparent",
+                backgroundColor: p.code === pays.code ? voile(colors.ink, 0.06) : "transparent",
+                color: colors.ink,
               }}
             >
               <span aria-hidden="true" className="text-[19px] leading-none">
                 {p.drapeau}
               </span>
               <span className="flex-1 text-[15px]">{p.nom}</span>
-              <span
-                className="text-[14px]"
-                style={{ color: colors.muted, fontVariantNumeric: "tabular-nums" }}
-              >
+              <span className="text-[14px]" style={{ color: colors.inkSoft, fontVariantNumeric: "tabular-nums" }}>
                 {p.indicatif}
               </span>
             </button>
           ))}
         </div>
       )}
-
-    </div>
+    </LigneReglage>
   );
 }
