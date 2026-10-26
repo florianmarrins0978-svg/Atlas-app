@@ -49,7 +49,7 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
       "Le piquage se fait…",
       "Juste après le compteur d’eau",
       "Robinet de jardin",
-      '"Ajouter la photo du croquis"',
+      "Ajouter la photo du croquis",
       "Votre croquis doit impérativement contenir les métrés",
     ],
   },

@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { colors, font, libelleCaps, surPlein, voile } from "@/lib/design-tokens";
+import { colors, font, surPlein, voile } from "@/lib/design-tokens";
+import ActionDuBas from "./ActionDuBas";
+import Icone from "./Icones";
 import { etatDuCroquis, zoneMesuree } from "@/lib/arrosage/croquis-complet";
 import { longueurDeLAmenee } from "@/lib/arrosage/geometrie-croquis";
 import {
@@ -675,7 +677,7 @@ export default function DessinerLePlan({
         <div className="mt-3 grid grid-cols-2 gap-[10px]">
           {(["L", "l"] as const).map((c) => (
             <span key={c} className="min-w-0">
-              <label className={`block ${libelleCaps}`} style={{ color: colors.muted }} htmlFor={`terrain-${c}`}>
+              <label className="block text-[14.5px] font-semibold" style={{ color: colors.inkSoft }} htmlFor={`terrain-${c}`}>
                 {c === "L" ? "Longueur" : "Largeur"}
               </label>
               <span className="relative block">
@@ -696,7 +698,7 @@ export default function DessinerLePlan({
         </div>
       </div>
 
-      <div ref={boite} className="mx-[22px] mt-3 overflow-auto rounded-[14px] p-[10px]" style={{ backgroundColor: colors.card, maxHeight: "68vh", overscrollBehavior: "contain" }}>
+      <div ref={boite} className="mx-[22px] mt-3 overflow-auto rounded-[6px] p-[10px]" style={{ backgroundColor: colors.card, maxHeight: "68vh", overscrollBehavior: "contain" }}>
         <svg
           ref={svg}
           data-atlas="toile"
@@ -795,8 +797,8 @@ export default function DessinerLePlan({
               data-atlas={plus ? "zoom-plus" : "zoom-moins"}
               disabled={!cadre || (plus ? loupe >= ZOOM_MAX : loupe <= 1)}
               onClick={() => setLoupe((z) => (plus ? Math.min(ZOOM_MAX, z * PAS_DU_ZOOM) : Math.max(1, z / PAS_DU_ZOOM)))}
-              className="flex h-11 w-11 items-center justify-center rounded-full disabled:opacity-40"
-              style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.card, color: colors.ink, boxShadow: "0 1px 3px rgba(28,28,26,.12)" }}
+              className="flex h-12 w-12 items-center justify-center rounded-full bg-transparent disabled:opacity-40"
+              style={{ boxShadow: `inset 0 0 0 1.5px ${colors.line}`, color: colors.ink }}
             >
               <SigneMoinsPlus plus={plus} />
             </button>
@@ -828,7 +830,7 @@ export default function DessinerLePlan({
           ] as const
         ).map(([titre, outils]) => (
           <div key={titre} className="mt-[14px]">
-            <span className={`block ${libelleCaps}`} style={{ color: colors.muted }}>{titre}</span>
+            <span className="block text-[13px] font-semibold uppercase tracking-[0.12em]" style={{ color: colors.inkSoft }}>{titre}</span>
             <div role="toolbar" aria-label={titre} className="mt-2 grid grid-cols-4 gap-2">
               {outils.map(({ cle, nom }) => {
                 const estZone = (SORTES as readonly string[]).includes(cle);
@@ -848,9 +850,9 @@ export default function DessinerLePlan({
                       // Les outils sont sous le dessin : il faut le voir pour toucher l'endroit.
                       if (outil !== o) boite.current?.scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
                     }}
-                    className="flex min-h-[72px] flex-col items-center justify-center gap-[6px] rounded-[14px] border-0 px-1 py-2 text-[13.5px] disabled:opacity-45"
+                    className="flex min-h-[76px] flex-col items-center justify-center gap-[6px] rounded-[12px] border-0 px-1 py-2 text-[14px] disabled:opacity-45"
                     style={actif
-                      ? { backgroundColor: colors.plein, color: surPlein, boxShadow: "0 2px 6px rgba(28,28,26,.18)" }
+                      ? { backgroundColor: colors.plein, color: surPlein }
                       : { backgroundColor: colors.card, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
                   >
                     <span className="block h-[18px] scale-[1.35]">{estZone ? <SigneZone sorte={cle as Sorte} /> : <SigneOutil outil={cle as Outil} />}</span>
@@ -884,7 +886,7 @@ export default function DessinerLePlan({
           2026). Les lignes rouges « il manque » deviennent une liste qui se
           coche au fil du dessin, et ce qui manque se pose d'ici. « Faire le
           plan » reste visible, grisé tant que tout n'est pas là. */}
-      <section aria-labelledby="avant-le-plan" className="mx-[22px] mt-[22px] rounded-[16px] p-4" style={{ backgroundColor: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
+      <section aria-labelledby="avant-le-plan" className="mx-[22px] mt-[22px] rounded-[6px] px-[18px] pb-2 pt-4" style={{ backgroundColor: colors.card }}>
         <h3 id="avant-le-plan" className="m-0" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 19 }}>Avant le plan</h3>
         <ol data-atlas="etapes-du-plan" className="m-0 mt-[10px] list-none p-0">
           {(
@@ -895,18 +897,18 @@ export default function DessinerLePlan({
               ["nourrice", "La nourrice", nourrice !== null],
             ] as const
           ).map(([cle, nom, fait]) => (
-            <li key={cle} data-etape={cle} data-fait={fait} className="flex items-center gap-3 py-[9px] text-[15.5px]" style={{ borderTop: `1px solid ${colors.line}`, color: fait ? colors.ink : colors.inkSoft }}>
-              <span aria-hidden="true" className="flex h-6 w-6 flex-none items-center justify-center rounded-full" style={fait ? { backgroundColor: colors.plein } : { boxShadow: `inset 0 0 0 1.5px ${colors.line}` }}>
+            <li key={cle} data-etape={cle} data-fait={fait} className="flex min-h-[52px] items-center gap-3 py-[6px] text-[16px]" style={{ borderTop: `1px solid ${colors.line}`, color: fait ? colors.ink : colors.inkSoft }}>
+              <span aria-hidden="true" className="flex h-6 w-6 flex-none items-center justify-center rounded-full" style={fait ? { backgroundColor: colors.carteVertFond } : { boxShadow: `inset 0 0 0 1.5px ${colors.line}` }}>
                 {fait && (
-                  <svg width={12} height={12} viewBox="0 0 12 12"><path d="M2.5 6.2l2.3 2.3L9.5 3.6" fill="none" stroke={surPlein} strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  <svg width={12} height={12} viewBox="0 0 12 12"><path d="M2.5 6.2l2.3 2.3L9.5 3.6" fill="none" stroke={colors.carteVertTexte} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" /></svg>
                 )}
               </span>
               <span>{nom}</span>
               {!fait && (
                 <button
                   type="button"
-                  className="ml-auto min-h-[40px] rounded-full px-4 text-[14px] font-semibold"
-                  style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.cream, color: colors.ink }}
+                  className="ml-auto min-h-[44px] rounded-full px-[18px] text-[15px] font-semibold"
+                  style={{ boxShadow: `inset 0 0 0 1.5px ${colors.line}`, backgroundColor: colors.cream, color: colors.ink }}
                   onClick={() => {
                     if (cle === "terrain") { document.getElementById("terrain-L")?.focus(); return; }
                     if (cle === "zone") { setFeuille({ sorte: "zone", zone: { id: "", type: "gazon", nom: null, L: 0, l: 0, x: 0, y: 0 }, neuve: true }); return; }
@@ -921,12 +923,18 @@ export default function DessinerLePlan({
             </li>
           ))}
         </ol>
+      </section>
+
+      {/* **FAIRE LE PLAN, SOUS LE POUCE** — sa planche soignée du 26 octobre
+          2026 : collé en bas pendant qu'il vérifie le dessin, grisé tant que
+          tout n'est pas là, comme avant. */}
+      <ActionDuBas>
         <button
           type="button"
           data-atlas="faire-le-plan"
           disabled={!pret || !dessin || enCours}
           onClick={() => dessin && onFaire(JSON.stringify(dessin))}
-          className="atlas-plein mt-[14px] flex min-h-[56px] w-full items-center justify-center gap-2 rounded-full border-0 text-[15px] font-semibold"
+          className="atlas-plein flex min-h-[56px] w-full items-center justify-center gap-[10px] rounded-full border-0 text-[17px] font-semibold"
           style={pret ? { backgroundColor: colors.plein, color: surPlein } : { backgroundColor: colors.rustTint, color: colors.muted }}
         >
           {enCours ? (
@@ -935,10 +943,13 @@ export default function DessinerLePlan({
               <PointsQuiSoufflent />
             </>
           ) : (
-            "Faire le plan"
+            <>
+              <Icone nom="etincelle" />
+              Faire le plan
+            </>
           )}
         </button>
-      </section>
+      </ActionDuBas>
 
       {feuille && cadre && (
         <FeuilleDuDessin
@@ -1233,7 +1244,7 @@ function FeuilleDuDessin({
     boxShadow: `inset 0 0 0 ${invalides.includes(c) ? 2 : 1}px ${invalides.includes(c) ? colors.alert : colors.line}`,
   });
   const libelle = (pour: string, texte: string, haut = 12) => (
-    <label className={`block ${libelleCaps}`} style={{ color: colors.muted, marginTop: haut }} htmlFor={pour}>
+    <label className="block text-[14.5px] font-semibold" style={{ color: colors.inkSoft, marginTop: haut }} htmlFor={pour}>
       {texte}
     </label>
   );
@@ -1331,7 +1342,7 @@ function FeuilleDuDessin({
           <>
             {libelle("feuille-e", "Espacement entre deux dalles")}
             {nombreChamp("feuille-e", e, touche("e", setE))}
-            <span id="arrosees-titre" className={`block ${libelleCaps}`} style={{ color: colors.muted, marginTop: 12 }}>On les arrose ?</span>
+            <span id="arrosees-titre" className="block text-[14.5px] font-semibold" style={{ color: colors.inkSoft, marginTop: 12 }}>On les arrose ?</span>
             <div role="group" aria-labelledby="arrosees-titre" className="mt-[6px] grid grid-cols-2 gap-2">
               {([[true, "Oui"], [false, "Non"]] as const).map(([v, mot]) => (
                 <button

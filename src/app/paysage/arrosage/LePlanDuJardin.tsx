@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { colors, font, libelleCaps } from "@/lib/design-tokens";
+import { useEffect, useMemo, useState } from "react";
+import { colors, font, surPlein, voile } from "@/lib/design-tokens";
 import type { EtatPlan } from "./actions";
 import type { ParametresPlan } from "@/lib/arrosage/consignes";
 import { calculerEtDessiner, montageDuPlan } from "@/lib/arrosage/le-plan";
@@ -30,7 +30,9 @@ import PiecesDuReseau, { Chips } from "./PiecesDuReseau";
 import MontageAuRobinet from "./MontageAuRobinet";
 import ListeDesPieces from "./ListeDesPieces";
 import MotsDuPlan from "./MotsDuPlan";
-import Vignette from "./Vignette";
+import Vignette, { OMBRE_VIGNETTE } from "./Vignette";
+import ActionDuBas from "./ActionDuBas";
+import Icone from "./Icones";
 import { ChoisirUnePiece, FeuilleFournisseur, MenuPiece, type Menu } from "./FeuillePiece";
 
 /**
@@ -62,6 +64,7 @@ export default function LePlanDuJardin({
   onParametres: setParametres,
   sesPrix = SANS_PRIX,
   surMessageGarde,
+  actionVisible = false,
 }: {
   etat: Pick<Extract<EtatPlan, { etat: "lu" }>, "reserves" | "sansDessin">;
   /**
@@ -81,6 +84,12 @@ export default function LePlanDuJardin({
   sesPrix?: SesPrix;
   /** Son début ou sa fin de message, gardés : l'appelant les retient pour la prochaine ouverture. */
   surMessageGarde?: (id: string, champs: { debut: string | null; fin: string | null }) => void;
+  /**
+   * « Envoyer la liste au fournisseur » collé en bas, sous le pouce. Faux
+   * tant que le dessin est ouvert au-dessus : c'est alors « Faire le plan »
+   * qui tient le bas, et deux barres se recouvriraient.
+   */
+  actionVisible?: boolean;
 }) {
   const [retouches, setRetouches] = useState<Retouches>(RETOUCHES_VIERGES);
   const [menu, setMenu] = useState<Menu | null>(null);
@@ -239,67 +248,78 @@ export default function LePlanDuJardin({
   const piquage = nez ? "robinet" : "nourrice";
   const titrePiquage = titreDuDepart(compteur, robinet);
 
-  // La sonde, le grillage et le téflon : cochés, ils se montrent sur une ligne.
+  // La sonde, le grillage et le téflon : un interrupteur chacun, et la pièce
+  // allumée se montre juste dessous, où elle se touche pour être changée.
   // Au compteur, les trois au-dessus de la nourrice ; au robinet, le grillage
   // et le téflon viennent sous la double sortie, la sonde reste à la nourrice.
-  const cocheSonde = <Coche libelle="Sonde de pluie" cochee={Boolean(parametres.sonde)} onChange={(v) => { setParametres({ ...parametres, sonde: v }); r((s) => ({ ...s, sonde: v })); }} />;
-  const cochesGrillageTeflon = (
-    <>
-      <Coche libelle="Grillage avertisseur" cochee={retouches.grillage} onChange={(v) => r((s) => ({ ...s, grillage: v }))} />
-      <Coche libelle="Téflon" cochee={retouches.teflon} onChange={(v) => r((s) => ({ ...s, teflon: v }))} />
-    </>
+  const basculeSonde = (
+    <Bascule libelle="Sonde de pluie" allumee={Boolean(parametres.sonde)} onChange={(v) => { setParametres({ ...parametres, sonde: v }); r((s) => ({ ...s, sonde: v })); }}>
+      {postes.sonde && <PieceEnLigne poste={postes.sonde} onClick={() => menuDeLaPiece(postes.sonde as Poste)} />}
+    </Bascule>
   );
-  const piecesCochees = (quoi: ("sonde" | "grillage" | "teflon")[]) => {
-    const sonde = quoi.includes("sonde") ? postes.sonde : null;
-    const grillage = quoi.includes("grillage") ? postes.grillage : null;
-    const teflon = quoi.includes("teflon") ? postes.teflon : null;
-    if (!sonde && !grillage && !teflon) return null;
-    return (
-      <>
-        <div className="mt-[10px] flex flex-wrap items-start gap-3">
-          {sonde && <Vignette poste={sonde} onClick={() => menuDeLaPiece(sonde)} />}
-          {grillage && (
-            <div className="flex w-[108px] flex-col items-center text-center" data-atlas="grillage">
-              <span className="flex h-[88px] w-[88px] items-center justify-center rounded-[12px]" style={{ backgroundColor: colors.card, boxShadow: `0 1px 2px ${colors.line}` }}>
-                {/* eslint-disable-next-line @next/next/no-img-element -- pansement assumé : next/image n’a rien à optimiser sur une photo de pièce servie telle quelle depuis public/, la photo du grillage, validée */}
-                <img src="/arrosage-photos/grillage-bleu.jpg" alt="" style={{ maxWidth: 78, maxHeight: 78, mixBlendMode: "multiply" }} />
-              </span>
-              <span className="mt-[6px] text-[11.5px] leading-[1.3]" style={{ color: colors.inkSoft }}>
-                {grillage.q}x {grillage.nom}
-              </span>
-            </div>
-          )}
-          {teflon && <Vignette poste={teflon} onClick={() => menuDeLaPiece(teflon)} />}
-        </div>
-        {grillage && (
-          <p className="mt-1 text-[13.5px]" style={{ color: colors.muted }}>
-            Rouleau de 100 m. {grillage.detail}
+  const basculesGrillageTeflon = (
+    <>
+      <Bascule libelle="Grillage avertisseur" allumee={retouches.grillage} onChange={(v) => r((s) => ({ ...s, grillage: v }))}>
+        {postes.grillage && (
+          <div className="flex items-center gap-[14px]" data-atlas="grillage">
+            <span className="flex h-16 w-16 flex-none items-center justify-center rounded-[12px]" style={{ backgroundColor: colors.card, boxShadow: OMBRE_VIGNETTE }}>
+              {/* eslint-disable-next-line @next/next/no-img-element -- pansement assumé : next/image n’a rien à optimiser sur une photo de pièce servie telle quelle depuis public/, la photo du grillage, validée */}
+              <img src="/arrosage-photos/grillage-bleu.jpg" alt="" style={{ maxWidth: 56, maxHeight: 56, mixBlendMode: "multiply" }} />
+            </span>
+            <span className="min-w-0 flex-1 text-[15.5px] leading-[1.35]">
+              {postes.grillage.q}x {postes.grillage.nom}
+              <small className="mt-[3px] block text-[13.5px] leading-[1.4]" style={{ color: colors.inkSoft }}>Rouleau de 100 m. {postes.grillage.detail}</small>
+            </span>
+          </div>
+        )}
+      </Bascule>
+      <Bascule libelle="Téflon" allumee={retouches.teflon} onChange={(v) => r((s) => ({ ...s, teflon: v }))}>
+        {postes.teflon ? (
+          <PieceEnLigne poste={postes.teflon} onClick={() => menuDeLaPiece(postes.teflon as Poste)} />
+        ) : (
+          // Allumé sans pièce derrière : le dire, plutôt qu'un interrupteur qui ne change rien en silence.
+          <p className="m-0 text-[14.5px] font-semibold leading-[1.4]" style={{ color: colors.carteAmbreTexte }} data-atlas="teflon-absent">
+            Pas au catalogue : rien ne s’ajoute à la liste.
           </p>
         )}
-      </>
-    );
-  };
+      </Bascule>
+    </>
+  );
+
+  const boutonEnvoyer = (
+    <button
+      type="button"
+      onClick={() => setFournisseur(true)}
+      data-atlas="envoyer-fournisseur"
+      className="atlas-plein flex min-h-[56px] w-full items-center justify-center gap-[10px] rounded-full border-0 text-[17px] font-semibold"
+      style={{ backgroundColor: colors.plein, color: surPlein }}
+    >
+      <Icone nom="envoyer" />
+      Envoyer la liste au fournisseur
+    </button>
+  );
 
   return (
     <div data-atlas="plan-arrosage">
       {/* En rouge, vers le début : sa demande du 18 octobre 2026. Les pièces de la
           nourrice se touchent par leur numéro, pas sur le dessin. Sans nourrice,
           pas de numéro à toucher : la phrase ne le dit pas. */}
-      <p className="mx-[22px] mt-[10px] text-[14px] font-semibold" style={{ color: colors.alert }}>
+      <Sommaire nez={nez} />
+      <p className="mx-[22px] mt-4 text-[15px] font-semibold leading-[1.45]" style={{ color: colors.alert }}>
         Touchez une pièce pour la changer ou la supprimer.{nez ? "" : " Pour la nourrice, touchez un numéro."}
       </p>
 
       {/* ─── Le piquage, d'abord : son ordre du 18 octobre ───────────────── */}
-      <section className="mx-[22px] mt-[26px]" data-atlas="piquage">
-        <span className={`block ${libelleCaps}`} style={{ color: colors.or }}>{compteur ? "Le piquage, au compteur" : "Le piquage, sur un robinet"}</span>
+      <section id="partie-piquage" className="mx-[22px] scroll-mt-[72px]" data-atlas="piquage">
+        <Rubrique>{compteur ? "Le piquage, au compteur" : "Le piquage, sur un robinet"}</Rubrique>
         {robinet && depart && (
           <>
             <Chips valeur={montage} choix={[["nez", "Programmateur en nez de robinet"], ["nourrice", "Avec la nourrice"]]} onChoix={changerMontage} libelle="Le montage" />
             {/* La double sortie est PROPOSÉE, jamais imposée : une sortie pour l'arrosage, l'autre reste au client. */}
-            <Coche libelle="Double sortie sous le robinet" cochee={double} onChange={(v) => poserRobinet({ double: v })} />
-            <p className="mt-1 text-[13.5px]" style={{ color: colors.muted }}>Une sortie pour l’arrosage, l’autre reste au client.</p>
-            {cochesGrillageTeflon}
-            {piecesCochees(["grillage", "teflon"])}
+            <Plage>
+              <Bascule libelle="Double sortie sous le robinet" sous="Une sortie pour l’arrosage, l’autre reste au client." allumee={double} onChange={(v) => poserRobinet({ double: v })} />
+              {basculesGrillageTeflon}
+            </Plage>
             {/* Le départ : l'outil choisit, il peut changer. Le Ø16 ne se propose qu'au goutte-à-goutte seul ;
                 dès qu'il y a des arroseurs, c'est le Ø25 ou le Ø32 de « la C », à droite du titre. */}
             {goutteSeule && (
@@ -313,7 +333,7 @@ export default function LePlanDuJardin({
           </>
         )}
         <div className="mt-4 flex items-center gap-3">
-          <h2 className="min-w-0 flex-1" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 21, lineHeight: 1.2 }}>{titrePiquage}</h2>
+          <h2 className="min-w-0 flex-1" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 22, lineHeight: 1.2 }}>{titrePiquage}</h2>
           {!goutteSeule && <ChoixDuTuyau valeur={plan.tuyau.diametre} onChoix={(d) => choisirLeTuyau("amenee", d)} libelle={`Tuyau, ${titrePiquage.toLowerCase()}`} />}
         </div>
         {phraseDuTuyau("amenee") && (
@@ -331,7 +351,7 @@ export default function LePlanDuJardin({
             )}
           </>
         ) : (
-          <div className="mt-3 flex flex-wrap justify-center gap-x-3 gap-y-4 rounded-[16px] px-3 pb-[14px] pt-[18px]" style={{ backgroundColor: colors.card }}>
+          <div className="mt-3 flex flex-wrap justify-center gap-x-3 gap-y-4 rounded-[6px] px-3 pb-[14px] pt-[18px]" style={{ backgroundColor: colors.card }}>
             {postes.amenee.map((p) => (
               <Vignette key={p.cle} poste={p} onClick={() => menuDeLaPiece(p)} />
             ))}
@@ -351,23 +371,24 @@ export default function LePlanDuJardin({
 
       {/* ─── La nourrice — pas au nez de robinet ─────────────────────────── */}
       {!nez && (
-        <section className="mx-[22px] mt-[26px]" data-atlas="nourrice">
-          <span className={`block ${libelleCaps}`} style={{ color: colors.or }}>La nourrice</span>
-          <h2 className="mt-[6px]" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 21, lineHeight: 1.2 }}>{nourrice.nom}</h2>
+        <section id="partie-nourrice" className="mx-[22px] scroll-mt-[72px]" data-atlas="nourrice">
+          <Rubrique>La nourrice</Rubrique>
+          <h2 style={{ fontFamily: font.display, fontWeight: 400, fontSize: 22, lineHeight: 1.2 }}>{nourrice.nom}</h2>
           <p className="mt-1 text-[13.5px]" style={{ color: colors.muted }}>
             Une voie par réseau, numérotées de gauche à droite après l’arrivée.{nbGoutte ? " Le goutte-à-goutte est à droite." : ""}
           </p>
-          {cocheSonde}
-          {compteur && cochesGrillageTeflon}
-          {piecesCochees(compteur ? ["sonde", "grillage", "teflon"] : ["sonde"])}
+          <Plage>
+            {basculeSonde}
+            {compteur && basculesGrillageTeflon}
+          </Plage>
           <NourriceEclatee voies={nourrice.voies} nbGoutte={nbGoutte} couleurs={plan.couleurs} retouches={retouches} nombre={nourrice.nombre} onTouche={menuDeLaNourrice} />
         </section>
       )}
 
       {/* ─── Les réseaux, un par un sur le plan ──────────────────────────── */}
-      <section className="mx-[22px] mt-[26px]" data-atlas="reseaux">
-        <span className={`block ${libelleCaps}`} style={{ color: colors.or }}>Les réseaux</span>
-        <h2 className="mt-[6px]" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 21, lineHeight: 1.2 }}>
+      <section id="partie-reseaux" className="mx-[22px] scroll-mt-[72px]" data-atlas="reseaux">
+        <Rubrique>Les réseaux</Rubrique>
+        <h2 style={{ fontFamily: font.display, fontWeight: 400, fontSize: 22, lineHeight: 1.2 }}>
           {plan.secteurs.length} réseau{plan.secteurs.length > 1 ? "x" : ""}
           {dessin ? `, ${virgule(dessin.metresTranchee)} m de tranchée` : ""}
         </h2>
@@ -375,11 +396,10 @@ export default function LePlanDuJardin({
           const rd = dessin?.reseaux.find((x) => x.numero === i) ?? null;
           const pointilles = dessin ? liaisonsDuReseau(dessin, plan, i) : [];
           return (
-            <div key={`${s.nom}-${i}`} className="mt-[18px]" data-atlas="carte-reseau">
+            <div key={`${s.nom}-${i}`} className="mt-[14px] rounded-[6px] px-4 pb-[10px] pt-[14px]" style={{ backgroundColor: colors.card }} data-atlas="carte-reseau">
               <p className="flex items-center gap-2.5">
                 <span className="block h-[12px] w-[12px] flex-none rounded-[3px]" style={{ backgroundColor: plan.couleurs[i] }} />
-                <b style={{ fontFamily: font.display, fontWeight: 400, fontSize: 18, lineHeight: 1.2 }}>Réseau {i + 1}</b>
-                <span className="min-w-0 flex-1 text-[12.5px]" style={{ color: colors.muted }}>{s.nom}</span>
+                <b className="min-w-0 flex-1" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 19, lineHeight: 1.2 }}>Réseau {i + 1}</b>
                 {/* Le goutte-à-goutte n'a pas de perte de ligne au calcul : le Ø32 n'y changerait rien. */}
                 {s.famille !== "Goutte-à-goutte" && (
                   <ChoixDuTuyau valeur={plan.diametres[i] ?? 25} onChoix={(d) => choisirLeTuyau(i, d)} libelle={`Tuyau du réseau ${i + 1}`} />
@@ -412,15 +432,15 @@ export default function LePlanDuJardin({
                   Le passage {nez ? "du robinet" : "de la nourrice"} à « {s.nom} » sort de la pelouse. Le croquis ne montre pas par où il passe (allée, terrasse, bordure). Sa longueur doit être mesurée.
                 </p>
               )}
-              <ul className="mt-2 list-none p-0 text-[14px]">
+              <ul className="mt-2 list-none p-0 text-[14.5px]">
                 {rd?.materiels.map((m) => (
-                  <li key={m.libelle} className="flex gap-2.5 py-[3px]">
+                  <li key={m.libelle} className="flex gap-2.5 py-[9px]" style={{ borderTop: `1px solid ${colors.line}` }}>
                     <span className="w-[58px] flex-none font-semibold tabular-nums" style={{ color: colors.orTexte }}>{m.nombre}x</span>
                     <span>{m.libelle}, {m.bridee ? "bridée à" : "portée"} {virgule(m.portee)} m</span>
                   </li>
                 ))}
                 {s.famille === "Goutte-à-goutte" && (
-                  <li className="flex gap-2.5 py-[3px]">
+                  <li className="flex gap-2.5 py-[9px]" style={{ borderTop: `1px solid ${colors.line}` }}>
                     <span className="w-[58px] flex-none" />
                     <span>
                       Goutte-à-goutte Toro, {postes.reseaux[i]?.tube ? `${postes.reseaux[i].tube}, ` : ""}
@@ -429,10 +449,20 @@ export default function LePlanDuJardin({
                     </span>
                   </li>
                 )}
+                {/* Zéro mètre tracé n'est pas une longueur : le tuyau reste à mesurer, il ne vaut pas rien. */}
                 {rd && (
-                  <li className="flex gap-2.5 py-[3px]">
-                    <span className="w-[58px] flex-none font-semibold tabular-nums" style={{ color: colors.orTexte }}>{virgule(rd.metresTuyau, 0)} m</span>
-                    <span>de PEHD Ø{plan.diametres[i] ?? 25}</span>
+                  <li className="flex gap-2.5 py-[9px]" style={{ borderTop: `1px solid ${colors.line}` }}>
+                    {rd.metresTuyau > 0 ? (
+                      <>
+                        <span className="w-[58px] flex-none font-semibold tabular-nums" style={{ color: colors.orTexte }}>{virgule(rd.metresTuyau, 0)} m</span>
+                        <span>de PEHD Ø{plan.diametres[i] ?? 25}</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="w-[58px] flex-none" />
+                        <span>PEHD Ø{plan.diametres[i] ?? 25}, à mesurer</span>
+                      </>
+                    )}
                   </li>
                 )}
               </ul>
@@ -447,8 +477,8 @@ export default function LePlanDuJardin({
       </section>
 
       {/* ─── Les pièces de chaque réseau, posées sur le plan ──────────────── */}
-      <section className="mx-[22px] mt-[26px]" data-atlas="pieces">
-        <span className={`block ${libelleCaps}`} style={{ color: colors.or }}>Les pièces des réseaux</span>
+      <section id="partie-pieces" className="mx-[22px] scroll-mt-[72px]" data-atlas="pieces">
+        <Rubrique>Les pièces des réseaux</Rubrique>
         {postes.reseaux.map((x) => (
           <PiecesDuReseau
             key={x.i}
@@ -464,8 +494,8 @@ export default function LePlanDuJardin({
       </section>
 
       {/* ─── La liste, et le message au fournisseur ───────────────────────── */}
-      <section className="mx-[22px] mt-[26px]" data-atlas="liste">
-        <span className={`block ${libelleCaps}`} style={{ color: colors.or }}>La liste</span>
+      <section id="partie-liste" className="mx-[22px] scroll-mt-[72px]" data-atlas="liste">
+        <Rubrique>La liste</Rubrique>
         {chez && chezEux.length > 0 && (
           <Chips valeur={chez.id} choix={chezEux.map((f) => [f.id, f.nom])} onChoix={setVue} libelle="Prix de" />
         )}
@@ -489,20 +519,12 @@ export default function LePlanDuJardin({
           type="button"
           onClick={() => setModifier(!modifier)}
           data-atlas="modifier-liste"
-          className="mt-4 min-h-[52px] w-full rounded-full text-[16px]"
-          style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.card, color: colors.ink }}
+          className="mt-4 min-h-[52px] w-full rounded-full bg-transparent text-[16px] font-semibold"
+          style={{ boxShadow: `inset 0 0 0 1.5px ${colors.line}`, color: colors.ink }}
         >
           {modifier ? "Terminer" : "Modifier ma liste"}
         </button>
-        <button
-          type="button"
-          onClick={() => setFournisseur(true)}
-          data-atlas="envoyer-fournisseur"
-          className="atlas-plein mt-[10px] min-h-[52px] w-full rounded-full border-0 text-[16px] font-semibold"
-          style={{ backgroundColor: colors.plein, color: colors.card }}
-        >
-          Envoyer la liste au fournisseur
-        </button>
+        {!actionVisible && <div className="mt-[10px]">{boutonEnvoyer}</div>}
         {/* **CE QUI N'EST PAS CALCULÉ SE DIT SOUS LE PLAN, LÀ OÙ IL LE LIT** (`CLAUDE.md` §4 ter). */}
         {reserves.length > 0 && (
           <ul className="mt-3 list-none p-0" data-atlas="reserves">
@@ -516,10 +538,13 @@ export default function LePlanDuJardin({
         )}
       </section>
 
-      <section className="mt-[26px]">
-        <span className={`mx-[22px] block ${libelleCaps}`} style={{ color: colors.or }}>Les mots du plan</span>
+      <section>
+        <Rubrique marge>Les mots du plan</Rubrique>
         <MotsDuPlan texte={texteDesMots} />
       </section>
+
+      {/* **ENVOYER, SOUS LE POUCE** : la liste se relit en remontant, l'envoi reste en bas. */}
+      {actionVisible && <ActionDuBas>{boutonEnvoyer}</ActionDuBas>}
 
       {menu &&<MenuPiece key={menu.titre + menu.nombre} menu={menu} onFermer={() => setMenu(null)} />}
       {feuille && <ChoisirUnePiece titre={feuille.titre} categorie={feuille.categorie} onChoix={feuille.onChoix} onFermer={() => setFeuille(null)} />}
@@ -550,12 +575,118 @@ function virgule(x: number, d = 1) {
   return (Math.round(x * 10 ** d) / 10 ** d).toString().replace(".", ",");
 }
 
-function Coche({ libelle, cochee, onChange }: { libelle: string; cochee: boolean; onChange: (v: boolean) => void }) {
+const PARTIES = [
+  ["partie-piquage", "Piquage"],
+  ["partie-nourrice", "Nourrice"],
+  ["partie-reseaux", "Réseaux"],
+  ["partie-pieces", "Pièces"],
+  ["partie-liste", "Liste"],
+] as const;
+
+/**
+ * LES CINQ MOTS COLLÉS EN HAUT — planche soignée du 26 octobre 2026 : une
+ * seule page, dans l'ordre de l'eau, et le mot suit la lecture. Toucher un mot
+ * y descend. Au nez de robinet, pas de nourrice : le mot n'y est pas.
+ */
+function Sommaire({ nez }: { nez: boolean }) {
+  const parties = useMemo(() => PARTIES.filter(([id]) => !(nez && id === "partie-nourrice")), [nez]);
+  const [courante, setCourante] = useState<string>(parties[0][0]);
+  useEffect(() => {
+    const suivre = () => {
+      const seuil = 96;
+      let ici: string = parties[0][0];
+      for (const [id] of parties) {
+        const el = document.getElementById(id);
+        if (el && el.getBoundingClientRect().top <= seuil) ici = id;
+      }
+      // Tout en bas, la dernière partie peut ne jamais atteindre le haut : elle est la courante.
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) ici = parties[parties.length - 1][0];
+      setCourante(ici);
+    };
+    suivre();
+    window.addEventListener("scroll", suivre, { passive: true });
+    return () => window.removeEventListener("scroll", suivre);
+  }, [parties]);
   return (
-    <label className="mt-3 flex items-center gap-3 rounded-full px-4 py-[14px] text-[15px]" style={{ backgroundColor: colors.card, cursor: "pointer" }}>
-      <input type="checkbox" checked={cochee} onChange={(e) => onChange(e.target.checked)} className="h-[22px] w-[22px]" style={{ accentColor: colors.plein }} />
-      {libelle}
-    </label>
+    <nav aria-label="Le plan, partie par partie" data-atlas="sommaire-du-plan" className="sticky top-0 z-[5] mt-[14px] px-[22px] py-[10px]" style={{ backgroundColor: colors.cream }}>
+      <div className="flex gap-1 rounded-[12px] p-1" style={{ backgroundColor: voile(colors.ink, 0.06) }}>
+        {parties.map(([id, mot]) => (
+          <button
+            key={id}
+            type="button"
+            aria-pressed={courante === id}
+            onClick={() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" })}
+            className="min-h-[42px] flex-1 whitespace-nowrap rounded-[9px] border-0 px-1 text-[14px] font-semibold"
+            style={courante === id ? { backgroundColor: colors.card, color: colors.ink, boxShadow: `0 1px 2px ${voile(colors.ink, 0.14)}` } : { backgroundColor: "transparent", color: colors.inkSoft }}
+          >
+            {mot}
+          </button>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
+/** Le titre d'une partie : petit, en capitales dorées, celui de la planche soignée. */
+function Rubrique({ children, marge = false }: { children: React.ReactNode; marge?: boolean }) {
+  return (
+    <p className={`mb-[10px] mt-8 text-[13px] font-semibold uppercase ${marge ? "mx-[22px]" : ""}`} style={{ letterSpacing: "0.12em", color: colors.or }}>
+      {children}
+    </p>
+  );
+}
+
+/** Une plage de la carte : les interrupteurs s'y rangent, séparés d'un filet. */
+function Plage({ children }: { children: React.ReactNode }) {
+  return (
+    // Chaque interrupteur porte son filet au-dessus ; celui du premier glisse sous le bord de la plage, qui le coupe.
+    <div className="mt-3 overflow-hidden rounded-[6px] px-4" style={{ backgroundColor: colors.card }}>
+      <div className="-mt-px">{children}</div>
+    </div>
+  );
+}
+
+/**
+ * UN INTERRUPTEUR, ET CE QU'IL ALLUME JUSTE DESSOUS — sa remarque du
+ * 26 octobre 2026 : la sonde cochée « n'apparaît plus, donc je ne peux plus la
+ * modifier ». La pièce vit sous son interrupteur, et se touche là.
+ */
+function Bascule({ libelle, sous, allumee, onChange, children }: { libelle: string; sous?: string; allumee: boolean; onChange: (v: boolean) => void; children?: React.ReactNode }) {
+  return (
+    <div style={{ borderTop: `1px solid ${colors.line}` }} data-atlas="bascule">
+      <div className="flex min-h-[64px] items-center gap-[14px] py-3">
+        <span className="min-w-0 flex-1">
+          <b className="block" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 18, lineHeight: 1.25 }}>{libelle}</b>
+          {sous && <small className="mt-[2px] block text-[14px] leading-[1.4]" style={{ color: colors.inkSoft }}>{sous}</small>}
+        </span>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={allumee}
+          aria-label={libelle}
+          onClick={() => onChange(!allumee)}
+          className="relative h-8 w-[52px] flex-none rounded-full border-0 p-0"
+          style={{ backgroundColor: allumee ? colors.plein : voile(colors.ink, 0.18), transition: "background-color 220ms" }}
+        >
+          <span
+            aria-hidden="true"
+            className="absolute left-[3px] top-[3px] h-[26px] w-[26px] rounded-full"
+            style={{ backgroundColor: colors.card, transform: allumee ? "translateX(20px)" : undefined, transition: "transform 240ms" }}
+          />
+        </button>
+      </div>
+      {allumee && children && <div className="pb-[14px]">{children}</div>}
+    </div>
+  );
+}
+
+/** Une pièce allumée, en ligne : sa photo et son nom, et elle se touche pour être changée. */
+function PieceEnLigne({ poste, onClick }: { poste: Poste; onClick: () => void }) {
+  return (
+    <div data-atlas="piece-allumee" className="flex items-center gap-[14px]">
+      <Vignette poste={poste} taille={54} sansNom onClick={onClick} />
+      <span className="min-w-0 flex-1 text-[15.5px] leading-[1.35]">{poste.nom}</span>
+    </div>
   );
 }
 

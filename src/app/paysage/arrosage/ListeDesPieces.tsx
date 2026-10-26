@@ -50,6 +50,10 @@ export default function ListeDesPieces({
   onBloc: (bloc: string, supprimer: boolean) => void;
 }) {
   const t = totalDeLaListe(groupes, prix);
+  // Aucun prix relevé : « 0,00 € » se lirait comme une liste gratuite, et la
+  // phrase « N sans prix sur N » redirait la même chose en plus long (planche
+  // soignée du 26 octobre 2026).
+  const aucunPrix = t.pieces > 0 && t.sansPrix === t.pieces;
   return (
     <div data-atlas="liste-des-pieces">
       {groupes.map((g) => {
@@ -114,8 +118,8 @@ export default function ListeDesPieces({
       >
         <div className="min-w-0 flex-1">
           <span className="block text-[11px] font-semibold uppercase" style={{ letterSpacing: "0.22em", color: colors.muted }}>Total indicatif, hors taxes</span>
-          <span className="mt-1 block tabular-nums" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 32, lineHeight: 1.05, color: colors.orTexte }}>
-            {euros(t.total)}
+          <span className="mt-1 block tabular-nums" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 32, lineHeight: 1.05, color: aucunPrix ? colors.muted : colors.orTexte }}>
+            {aucunPrix ? "Aucun prix" : euros(t.total)}
           </span>
           {chez && (
             <span className="mt-[6px] block text-[12.5px]" style={{ color: colors.muted }} data-atlas="dates-des-prix">
@@ -128,7 +132,7 @@ export default function ListeDesPieces({
           <span className="text-[10.5px]">pièce{t.pieces > 1 ? "s" : ""}</span>
         </div>
       </div>
-      {t.sansPrix > 0 && (
+      {t.sansPrix > 0 && !aucunPrix && (
         <p className="mt-[10px] text-[13.5px]" style={{ color: colors.alert }} data-atlas="pieces-sans-prix">
           {t.sansPrix} pièce{t.sansPrix > 1 ? "s" : ""} sans prix{chez ? ` chez ${chez.nom}` : ""} sur {t.pieces}, le total ne les compte pas.
         </p>

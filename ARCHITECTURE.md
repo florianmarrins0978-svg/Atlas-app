@@ -36110,3 +36110,17 @@ l'écran, plus le contour.
 
 **Reste ouvert** : le plafond de dépense d'IA par mois, qui demande sa décision (montant, effet quand il est atteint).
 
+## §509 : Le plan d'arrosage soigné : le geste principal sous le pouce, la pièce sous son interrupteur
+
+*26 octobre 2026, planche `appli/soignee/arrosage.html` (Proposé), sa demande « code ça ».*
+
+**Le geste principal colle au bas** (`ActionDuBas.tsx`, `atlas-colonne-fixe` au-dessus de la barre, comme `BarreEnregistrer`). Pendant le dessin, c'est « Faire le plan » (`DessinerLePlan`) ; une fois le plan fait et le croquis replié, « Envoyer la liste au fournisseur » (`LePlanDuJardin`, `actionVisible`). **Jamais les deux à la fois** : `actionVisible` vaut le repli du croquis, et « Modifier » le rouvre en retirant la barre d'envoi. Sans `actionVisible` (une capture, un autre appelant), l'envoi reste sous « Modifier ma liste », où il était. Le formulaire garde son `pb-[170px]` : c'est lui qui laisse la place à la barre, pas le plan.
+
+**La pièce allumée vit sous son interrupteur** (`Bascule`, `role="switch"`). Avant, les cases cochées faisaient apparaître les pièces plus bas, toutes ensemble : il ne la retrouvait pas pour la changer. Le téflon allumé sans pièce derrière (`BDV999` absent de `piecesAjoutables`) le dit en ambre ; ce n'est pas la correction du catalogue, qui reste au `TODO.md`.
+
+**Les cinq mots collés en haut** (`Sommaire`) suivent la fenêtre, pas un conteneur : l'écran défile à la fenêtre, et aucun ancêtre ne coupe le `sticky` (vérifié au navigateur). Chaque partie porte `scroll-mt-[72px]` pour se poser sous eux.
+
+**Le croquis replié** (`croquis-replie`, `ArrosageClient`) cache le formulaire par `hidden`, il ne le démonte pas : les champs gardent leur valeur et repartent avec « Modifier ».
+
+**Ce qui n'a pas bougé** : aucun calcul, aucune règle d'arrosage, aucun repère `data-atlas` des suites (`test-arrosage-e2e` verte). La preuve de la fiche d'aide « Ajouter la photo du croquis » a perdu ses guillemets : le libellé est désormais un texte d'écran, plus une chaîne.
+

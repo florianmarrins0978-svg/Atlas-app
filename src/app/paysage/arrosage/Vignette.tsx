@@ -31,7 +31,8 @@ export default function Vignette({
 }) {
   const rayon = taille >= 54 ? 12 : taille === 44 ? 9 : 7;
   const marge = taille === 88 ? 10 : taille === 54 ? 6 : 4;
-  const liseret = poste.changee || poste.ajoutee || surPlanEgal ? `0 0 0 2px ${colors.or}, 0 6px 16px ${colors.lineSoft}` : `0 1px 2px ${colors.line}, 0 6px 16px ${colors.lineSoft}`;
+  // Planche soignée du 26 octobre 2026 : un filet posé sur la photo, plus d'ombre portée.
+  const liseret = poste.changee || poste.ajoutee || surPlanEgal ? `0 0 0 2px ${colors.or}` : OMBRE_VIGNETTE;
   const mention = poste.retiree ? "supprimée" : poste.changee ? "changée" : "";
   return (
     <button

@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
-import { colors, font, libelleCaps, surPlein } from "@/lib/design-tokens";
+import { colors, font, surPlein, voile } from "@/lib/design-tokens";
 import { lireLeCroquis, type EtatPlan } from "./actions";
 import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
 import LePlanDuJardin, { type SesPrix } from "./LePlanDuJardin";
@@ -12,6 +12,7 @@ import DepuisUnDevis from "./DepuisUnDevis";
 import type { ParametresPlan } from "@/lib/arrosage/consignes";
 import type { PlanLu as LePlanLu } from "@/lib/arrosage/plan-lu";
 import { ACCEPT_PHOTOS } from "@/lib/exif";
+import Icone from "./Icones";
 
 /**
  * L'écran « Plan d'arrosage » — deux gestes, et le plan sort.
@@ -75,12 +76,21 @@ export default function ArrosageClient({
   const [planLu, setPlanLu] = useState<LePlanLu | null>(null);
   const [lecture, setLecture] = useState(0);
   const [apercu, setApercu] = useState<string | null>(null);
+  /**
+   * **UNE FOIS LE PLAN FAIT, CE QUI L'A PRODUIT SE REPLIE EN UNE LIGNE** — sa
+   * planche soignée du 26 octobre 2026 (« code ça ») : le plan commence en
+   * haut de l'écran, et « Modifier » rouvre le piquage, le croquis et le
+   * dessin. Replié, rien n'est démonté : le dessin garde ce qu'il a posé.
+   */
+  const [replie, setReplie] = useState(false);
   // Une lecture neuve se reçoit pendant le rendu, comme React le recommande
   // pour un état qui suit une valeur reçue : un effet la rendrait en deux temps.
   const [etatVu, setEtatVu] = useState(etat);
   if (etat !== etatVu) {
     setEtatVu(etat);
+    if (etat.etat === "lu") setReplie(true);
     if (etat.etat === "a-verifier") {
+      setReplie(false);
       setPlanLu(etat.plan);
       setLecture((n) => n + 1);
       setDessiner(true);
@@ -122,22 +132,43 @@ export default function ArrosageClient({
   }
 
   return (
-    <form ref={formulaire} action={agir} className="pb-[86px]">
+    // 170 px sous la page : la barre du bas ET le geste collé au-dessus d'elle.
+    <form ref={formulaire} action={agir} className="pb-[170px]">
       {/* Le titre vient de `EnTeteEcran`, comme sur tous les autres écrans. */}
 
+      {etat.etat === "lu" && replie && (
+        <div data-atlas="croquis-replie" className="mx-[22px] mt-2 flex items-center gap-[14px] rounded-[6px] py-3 pl-3 pr-[14px]" style={{ backgroundColor: colors.card }}>
+          {apercu && !parDessin && (
+            <span aria-hidden="true" className="h-[44px] w-[64px] flex-none rounded-[4px] bg-cover bg-center" style={{ backgroundImage: `url(${apercu})`, boxShadow: `inset 0 0 0 1px ${colors.line}` }} />
+          )}
+          <span className="min-w-0 flex-1">
+            <b className="block" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 18, lineHeight: 1.25 }}>{parDessin ? "Plan dessiné" : "Croquis lu"}</b>
+            <span className="mt-[2px] block text-[14px]" style={{ color: colors.inkSoft }}>
+              {`${etat.zones.length} zone${etat.zones.length > 1 ? "s" : ""}, ${piquage === "compteur" ? "au compteur" : "au robinet"}`}
+            </span>
+          </span>
+          <button type="button" onClick={() => setReplie(false)} data-atlas="rouvrir-le-dessin" className="min-h-[44px] bg-transparent text-[16px] font-semibold" style={{ color: colors.or }}>
+            Modifier
+          </button>
+        </div>
+      )}
+
+      <div hidden={etat.etat === "lu" && replie}>
+
       {/* ─── Le piquage, et la mesure ─────────────────────────────────────── */}
-      <div className="mx-[22px] mt-2 rounded-[14px] px-[17px] py-[18px]" style={{ backgroundColor: colors.card }}>
-        <label className={`block ${libelleCaps}`} style={{ color: colors.or }} htmlFor="piquage">
+      <div className="mx-[22px] mt-2 rounded-[6px] px-[18px] pb-[18px] pt-4" style={{ backgroundColor: colors.card }}>
+        <label className="block text-[14.5px] font-semibold" style={{ color: colors.inkSoft }} htmlFor="piquage">
           Le piquage se fait…
         </label>
+        <span className="relative mt-2 block">
         {/* 16 px au moins : en dessous, iOS agrandit la page à la mise au point. */}
         <select
           id="piquage"
           name="piquage"
           value={piquage}
           onChange={(e) => setPiquage(e.target.value)}
-          className="mt-[7px] block w-full appearance-none rounded-[11px] border-0 px-[14px] py-[15px] text-[16px]"
-          style={{ backgroundColor: colors.cream, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}`, minHeight: 52 }}
+          className="block w-full appearance-none rounded-[12px] border-0 py-0 pl-4 pr-12 text-[18px]"
+          style={{ fontFamily: font.display, backgroundColor: colors.cream, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}`, minHeight: 56 }}
         >
           <option value="compteur">Juste après le compteur d’eau</option>
           {/* Le puits et la cuve sont retirés sur sa demande du 20 août au soir :
@@ -150,6 +181,10 @@ export default function ArrosageClient({
               `mesure-debit.ts` et sa suite pour un mot d'écran. */}
           <option value="ailleurs">Robinet de jardin</option>
         </select>
+        <span className="pointer-events-none absolute right-[14px] top-1/2 -translate-y-1/2" style={{ color: colors.or }}>
+          <Icone nom="bas" />
+        </span>
+        </span>
 
         {/* **Deux façons de connaître le débit, et il n'en fait qu'une.** Le
             seau donne le débit directement ; le manomètre donne la pression, et
@@ -179,10 +214,10 @@ export default function ArrosageClient({
         {piquage !== "compteur" && (
           <div data-atlas="mesures" className="mt-4">
             <div data-atlas="seau">
-              <p className={`block ${libelleCaps}`} style={{ color: colors.or }}>
+              <p className="block text-[13px] font-semibold uppercase tracking-[0.12em]" style={{ color: colors.or }}>
                 Mesure au seau
               </p>
-              <label className={`mt-3 block ${libelleCaps}`} style={{ color: colors.muted }} htmlFor="secondes">
+              <label className="mt-3 block text-[14.5px] font-semibold" style={{ color: colors.inkSoft }} htmlFor="secondes">
                 Un seau de 10 L rempli en… secondes
               </label>
               <input
@@ -207,18 +242,18 @@ export default function ArrosageClient({
                   DÉCONSEILLE le geste et désigne l'outil juste ferme la
                   question — c'est la différence entre un avertissement qu'on
                   ignore et un avertissement qui change ce qu'on fait. */}
-              <p className="mt-[6px] text-[13px]" style={{ color: colors.muted }}>
+              <p className="mt-[6px] text-[13.5px] font-semibold" style={{ color: colors.carteAmbreTexte }}>
                 Trop approximatif pour calculer un arrosage : prenez le kit.
               </p>
             </div>
 
             <div data-atlas="kit" className="mt-5">
-              <p className={`block ${libelleCaps}`} style={{ color: colors.or }}>
+              <p className="block text-[13px] font-semibold uppercase tracking-[0.12em]" style={{ color: colors.or }}>
                 Kit débit / pression, buse 5
               </p>
               <div className="mt-3 grid grid-cols-2 gap-2">
                 <span className="min-w-0">
-                  <label className={`block ${libelleCaps}`} style={{ color: colors.muted }} htmlFor="barStatique">
+                  <label className="block text-[14.5px] font-semibold" style={{ color: colors.inkSoft }} htmlFor="barStatique">
                     Bar statique
                   </label>
                   <input
@@ -234,7 +269,7 @@ export default function ArrosageClient({
                   />
                 </span>
                 <span className="min-w-0">
-                  <label className={`block ${libelleCaps}`} style={{ color: colors.muted }} htmlFor="barDynamique">
+                  <label className="block text-[14.5px] font-semibold" style={{ color: colors.inkSoft }} htmlFor="barDynamique">
                     Bar dynamique
                   </label>
                   <input
@@ -256,8 +291,8 @@ export default function ArrosageClient({
       </div>
 
       {/* ─── Le croquis ───────────────────────────────────────────────────── */}
-      <div className="mx-[22px] mt-5 rounded-[14px] px-[17px] py-[18px]" style={{ backgroundColor: colors.card }}>
-        <h2 style={{ fontFamily: font.display, fontWeight: 400, fontSize: 21, lineHeight: 1.2 }}>
+      <div className="mx-[22px]">
+        <h2 className="mb-3 mt-7" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 24, lineHeight: 1.15 }}>
           Le croquis et ses métrés
         </h2>
 
@@ -273,51 +308,39 @@ export default function ArrosageClient({
             plan. */}
         <p
           data-atlas="avertissement-croquis"
-          className="mt-[10px] text-[13.5px] font-bold leading-relaxed"
-          style={{ color: colors.ink }}
+          className="rounded-[6px] px-4 py-[14px] text-[15.5px] font-bold leading-[1.45]"
+          style={{ color: colors.ink, backgroundColor: voile(colors.or, 0.13) }}
         >
           Votre croquis doit impérativement contenir les métrés, l’endroit définitif de la
           nourrice, et l’endroit où le piquage se fait (noter l’emplacement du compteur
           d’eau ou du robinet de jardin).
         </p>
 
-        {/* 64 px de haut : c'est un bouton qu'il touche dehors, avec des gants. */}
+        {/* Le bouton plein, 56 px : c'est le geste de l'écran, qu'il fait dehors, avec des gants. */}
         {planLu && !enCours ? (
-          <div data-atlas="croquis-lu" className="mt-[14px] flex items-center gap-3">
+          <div data-atlas="croquis-lu" className="mt-[14px] flex items-center gap-[14px] rounded-[6px] py-3 pl-3 pr-[14px]" style={{ backgroundColor: colors.card }}>
             {apercu ? (
-              <span aria-hidden="true" className="h-[52px] w-[52px] flex-none rounded-[10px] bg-cover bg-center" style={{ backgroundImage: `url(${apercu})`, boxShadow: `inset 0 0 0 1px ${colors.line}` }} />
+              <span aria-hidden="true" className="h-[44px] w-[64px] flex-none rounded-[4px] bg-cover bg-center" style={{ backgroundImage: `url(${apercu})`, boxShadow: `inset 0 0 0 1px ${colors.line}` }} />
             ) : null}
-            <span className="flex-1 text-[15px]">Croquis lu. Vérifiez le plan.</span>
-            <label htmlFor="croquis" className="cursor-pointer text-[14.5px] underline" style={{ color: colors.ink }}>
+            <span className="min-w-0 flex-1">
+              <b className="block" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 18, lineHeight: 1.25 }}>Croquis lu</b>
+              <span className="mt-[2px] block text-[14px]" style={{ color: colors.inkSoft }}>Vérifiez le plan.</span>
+            </span>
+            <label htmlFor="croquis" className="flex min-h-[44px] cursor-pointer items-center text-[16px] font-semibold" style={{ color: colors.or }}>
               Reprendre
             </label>
           </div>
+        ) : enCours && !parDessin ? (
+          <LectureDuCroquis apercu={apercu} />
         ) : (
           <label
             htmlFor="croquis"
             data-atlas="ajouter-croquis"
-            className="mt-[14px] flex min-h-[64px] cursor-pointer items-center justify-center gap-2.5 rounded-[12px] text-[11px] font-semibold uppercase"
-            style={{ border: `1.5px dashed ${colors.line}`, backgroundColor: colors.cream, color: colors.inkSoft, letterSpacing: "0.18em" }}
+            className="atlas-plein mt-[14px] flex min-h-[56px] cursor-pointer items-center justify-center gap-[10px] rounded-full text-[17px] font-semibold"
+            style={{ backgroundColor: colors.plein, color: surPlein }}
           >
-            {/* **L'ATTENTE SOUFFLE ICI COMME PARTOUT AILLEURS** — sa demande du
-                23 août 2026 : *« lors de la lecture du croquis, mets les trois
-                petits points qui bougent »*.
-
-                Trois points de suspension IMMOBILES sont exactement le défaut
-                qu'il avait signalé le 13 août sur la dictée : ils disent « rien
-                ne se passe » alors que le travail est en cours, et la lecture
-                d'un croquis par l'IA est la plus longue attente de
-                l'application. Le geste vient de sa proposition C, et il est
-                partagé — `PointsQuiSoufflent`, jamais recopié
-                (`ARCHITECTURE.md` §66). */}
-            {enCours && !parDessin ? (
-              <>
-                Lecture du croquis
-                <PointsQuiSoufflent />
-              </>
-            ) : (
-              "Ajouter la photo du croquis"
-            )}
+            <Icone nom="photo" />
+            Ajouter la photo du croquis
           </label>
         )}
         {/* `capture` ouvre l'appareil photo du téléphone plutôt que la pellicule :
@@ -350,9 +373,10 @@ export default function ArrosageClient({
             type="button"
             data-atlas="ouvrir-dessin"
             onClick={() => setDessiner(true)}
-            className="mt-2 flex min-h-[56px] w-full items-center justify-center rounded-full text-[11px] font-semibold uppercase"
-            style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.cream, color: colors.ink, letterSpacing: "0.18em" }}
+            className="mt-[10px] flex min-h-[56px] w-full items-center justify-center gap-[10px] rounded-full bg-transparent text-[17px] font-semibold"
+            style={{ boxShadow: `inset 0 0 0 1.5px ${colors.line}`, color: colors.ink }}
           >
+            <Icone nom="crayon" />
             Dessiner le plan
           </button>
         )}
@@ -438,7 +462,9 @@ export default function ArrosageClient({
           éclatée, les réseaux sur le plan, les pièces posées, la liste. La `key`
           repart de zéro à chaque croquis lu : garder la discussion d'un jardin
           sur le plan d'un autre ferait répondre Atlas à côté. */}
-      {etat.etat === "lu" && <PlanLu key={etat.zones.map((z) => z.nom ?? z.type).join("|")} etat={etat} />}
+      </div>
+
+      {etat.etat === "lu" && <PlanLu key={etat.zones.map((z) => z.nom ?? z.type).join("|")} etat={etat} actionVisible={replie} />}
     </form>
   );
 }
@@ -449,7 +475,7 @@ export default function ArrosageClient({
  * même fonction. La discussion se pose APRÈS le plan, et seulement avec lui :
  * sa borne du 21 août, *« la discussion ne doit jamais créer un plan »*.
  */
-function PlanLu({ etat }: { etat: Extract<EtatPlan, { etat: "lu" }> }) {
+function PlanLu({ etat, actionVisible }: { etat: Extract<EtatPlan, { etat: "lu" }>; actionVisible: boolean }) {
   const [parametres, setParametres] = useState<ParametresPlan>(etat.parametres);
   // Ses prix d'achat (Réglages, Fournisseurs et partenaires), pour la colonne
   // et le total de la liste. Le patron seul les reçoit ; sinon, aucun prix.
@@ -470,6 +496,7 @@ function PlanLu({ etat }: { etat: Extract<EtatPlan, { etat: "lu" }> }) {
         etat={etat}
         parametres={parametres}
         onParametres={setParametres}
+        actionVisible={actionVisible}
         sesPrix={sesPrix}
         surMessageGarde={(id, champs) =>
           setSesPrix((d) => d && { ...d, fournisseurs: d.fournisseurs.map((f) => (f.id === id ? { ...f, ...champs } : f)) })
@@ -507,5 +534,54 @@ function Element({ ok, quoi, lu }: { ok: boolean; quoi: string; lu: string | nul
         )}
       </span>
     </li>
+  );
+}
+
+/**
+ * **LA LECTURE SE VOIT** — sa planche soignée du 26 octobre 2026 : la photo
+ * envoyée, balayée d'un trait d'or, et les trois points qui soufflent (sa
+ * demande du 23 août, *« mets les trois petits points qui bougent »* : jamais
+ * un « … » immobile, `PointsQuiSoufflent`, partagé, `ARCHITECTURE.md` §66).
+ * La lecture d'un croquis est la plus longue attente de l'application : on
+ * montre ce qui est lu.
+ *
+ * Le balayage passe par l'animation du navigateur, pas par la feuille de
+ * style : il ne sert qu'ici, et qui demande moins de mouvement ne le voit pas.
+ */
+function LectureDuCroquis({ apercu }: { apercu: string | null }) {
+  const trait = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    const el = trait.current;
+    if (!el || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const balayage = el.animate([{ transform: "translateY(-100%)" }, { transform: "translateY(355%)" }], {
+      duration: 2600,
+      iterations: Infinity,
+      direction: "alternate",
+      easing: "cubic-bezier(0.45, 0, 0.25, 1)",
+    });
+    return () => balayage.cancel();
+  }, []);
+  return (
+    <div data-atlas="ajouter-croquis" role="status" className="mt-[14px]">
+      {apercu && (
+        <div
+          className="relative h-[220px] overflow-hidden rounded-[6px] bg-contain bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${apercu})`, backgroundColor: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
+        >
+          <span
+            ref={trait}
+            aria-hidden="true"
+            className="absolute inset-x-0 top-0 h-[22%]"
+            style={{ borderBottom: `2px solid ${colors.or}`, backgroundImage: `linear-gradient(to bottom, ${voile(colors.or, 0)}, ${voile(colors.or, 0.12)})` }}
+          />
+        </div>
+      )}
+      <p className="mt-[14px] flex min-h-[28px] items-center justify-center gap-[10px] text-[16px] font-semibold" style={{ color: colors.inkSoft }}>
+        Lecture du croquis
+        <span style={{ color: colors.or }}>
+          <PointsQuiSoufflent />
+        </span>
+      </p>
+    </div>
   );
 }
