@@ -917,11 +917,14 @@ export async function composerDocument(
     }
   }
 
+  // **« En bas, avec le SIRET » descend VRAIMENT près du SIRET** (sa réponse du
+  // 26 octobre 2026, « je le garde »). Les mentions ouvraient la liste, juste
+  // sous le nom : les deux choix donnaient le même devis au pixel près.
   const coordonnees = [
-    ...(positionMentions === "bas" ? mentionsLegales : []),
     data.entrepriseAdresse,
     data.entrepriseTelephone,
     data.entrepriseEmail,
+    ...(positionMentions === "bas" ? mentionsLegales : []),
     ligneSiret(data.entrepriseSiret, data.entrepriseNumeroRm),
     data.entrepriseNumeroTva ? `TVA intracommunautaire ${data.entrepriseNumeroTva}` : null,
   ].filter((l): l is string => !!l);

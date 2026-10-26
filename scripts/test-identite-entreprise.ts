@@ -95,6 +95,22 @@ async function main() {
     assert.strictEqual(e?.regimeTva, "franchise");
   });
 
+  // **LA FIN DE CHANTIER NE S'ENREGISTRAIT JAMAIS** — vu le 26 octobre 2026 en
+  // dessinant la planche d'Équipe : l'interrupteur « Demander une preuve »
+  // répondait « ok » et revenait éteint au rechargement. La signature de
+  // `mettreAJourEntreprise` recevait les deux réglages (migration 0080) sans
+  // les recopier dans ce qu'elle écrit. Rouge sur ce code-là.
+  await test("la fin de chantier, preuve et photo, s'écrit et se relit", async () => {
+    await entreprisesRepo.mettreAJourEntreprise(ctxA, { retourDemande: true, retourPhotoExigee: true });
+    let e = await entreprisesRepo.getEntreprise(ctxA);
+    assert.strictEqual(e?.retourDemande, true, "« Demander une preuve » ne s'est pas enregistré");
+    assert.strictEqual(e?.retourPhotoExigee, true, "« Au moins une photo » ne s'est pas enregistré");
+    await entreprisesRepo.mettreAJourEntreprise(ctxA, { retourDemande: false, retourPhotoExigee: false });
+    e = await entreprisesRepo.getEntreprise(ctxA);
+    assert.strictEqual(e?.retourDemande, false, "la preuve ne s'éteint pas");
+    assert.strictEqual(e?.retourPhotoExigee, false, "la photo ne s'éteint pas");
+  });
+
   await test("un champ vidé revient à NULL, jamais à une chaîne vide", async () => {
     await entreprisesRepo.mettreAJourEntreprise(ctxA, { numeroTva: "" });
     const e = await entreprisesRepo.getEntreprise(ctxA);

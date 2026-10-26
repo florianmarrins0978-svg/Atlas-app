@@ -93,14 +93,27 @@ async function main() {
       entrepriseMentionsLegalesPosition: "bas",
     });
     const adresse = trace.textes.find((t) => t.contenu === BASE.entrepriseAdresse);
+    const email = trace.textes.find((t) => t.contenu === BASE.entrepriseEmail);
     const mention = trace.textes.find((t) => t.contenu.includes("SASU au capital de"));
     const rcs = trace.textes.find((t) => t.contenu.includes("RCS Versailles"));
     const siret = trace.textes.find((t) => t.contenu.includes("SIRET"));
-    assert.ok(mention && rcs && adresse && siret, "une des quatre lignes manque au PDF");
-    // Ici la mention précède l'adresse, qui précède elle-même le SIRET.
+    assert.ok(mention && rcs && adresse && email && siret, "une des cinq lignes manque au PDF");
+    // **Ce cas a été vert sur un réglage qui ne faisait rien** (vu le 26 octobre
+    // 2026) : il vérifiait l'ordre de « sous_nom », mention avant l'adresse, et
+    // les deux choix donnaient le même devis au pixel près. « En bas, avec le
+    // SIRET » veut dire après les coordonnées, juste avant le SIRET.
+    assert.ok(adresse!.y > mention!.y, "la mention devrait venir APRÈS l'adresse, pas sous le nom");
+    assert.ok(email!.y > mention!.y, "la mention devrait venir après l'e-mail");
     assert.ok(mention!.y > rcs!.y, "la mention de capital précède le RCS");
-    assert.ok(rcs!.y > adresse!.y, "le RCS précède l'adresse");
-    assert.ok(adresse!.y > siret!.y, "l'adresse précède le SIRET, en dernier");
+    assert.ok(rcs!.y > siret!.y, "le RCS précède le SIRET, juste au-dessus de lui");
+  });
+
+  await cas("les deux places donnent deux devis différents", async () => {
+    const donnees = { ...BASE, entrepriseFormeJuridique: "SASU", entrepriseCapitalSocial: "1000.00", entrepriseVilleRcs: "Versailles" };
+    const sous = await composerDevisPdf({ ...donnees, entrepriseMentionsLegalesPosition: "sous_nom" });
+    const bas = await composerDevisPdf({ ...donnees, entrepriseMentionsLegalesPosition: "bas" });
+    const hauteur = (t: TraceDevis) => t.textes.find((x) => x.contenu.includes("SASU au capital de"))!.y;
+    assert.notStrictEqual(hauteur(sous.trace), hauteur(bas.trace), "le choix ne change pas la place des mentions");
   });
 
   // Une EI n'a ni capital ni RCS : sa seule mention est « EI », collée au nom
