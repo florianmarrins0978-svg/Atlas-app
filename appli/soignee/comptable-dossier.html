@@ -88,26 +88,27 @@
 .etiquette-doc { font-size: 7.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #6b6b5c; }
 
 /* La couverture qui résume */
-.couv-titre { margin: 0; font: 400 34px/1.05 var(--serif); }
+.couv-titre { margin: 0; font: 400 30px/1.05 var(--serif); }
 .couv-periode { margin: 6px 0 0; font: 400 15px/1.3 var(--serif); color: #4a4a44; }
-.couv-qui { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 14px; margin-top: 18px; padding-top: 12px; border-top: 1px solid #e4e0d6; }
+.couv-qui { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 14px; margin-top: 12px; padding-top: 10px; border-top: 1px solid #e4e0d6; }
 .couv-qui p { margin: 3px 0 0; font-size: 9.5px; line-height: 1.45; }
-.atteste { display: flex; align-items: center; gap: 10px; margin-top: 18px; padding: 11px 14px; border-radius: 3px; background: #e1e8da;
+.atteste { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding: 9px 14px; border-radius: 3px; background: #e1e8da;
            font-size: 11px; font-weight: 600; color: #2f4a26; }
 .atteste svg { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
-.quatre { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 14px; border-top: 1px solid #e4e0d6; border-bottom: 1px solid #e4e0d6; }
-.quatre div { padding: 9px 10px 10px 0; }
+.quatre { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 10px; border-top: 1px solid #e4e0d6; border-bottom: 1px solid #e4e0d6; }
+.quatre div { padding: 7px 10px 8px 0; }
 .quatre div + div { padding-left: 12px; border-left: 1px solid #e4e0d6; }
 .quatre b { display: block; margin-top: 3px; font: 400 16px/1.1 var(--serif); }
 .contient { margin: 10px 0 0; font-size: 9.5px; color: #4a4a44; }
-.deux-tables { display: grid; grid-template-columns: 1fr 1.25fr; gap: 22px; margin-top: 16px; }
+.deux-tables { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; margin-top: 10px; }
+.titre-table { margin: 0 0 6px; font: 400 12.5px/1.3 var(--serif); }
+.deux-tables .tdoc td { padding: 3px 0; }
 .tdoc { width: 100%; border-collapse: collapse; font-size: 9.5px; }
 .tdoc th { padding: 0 0 4px; text-align: left; border-bottom: 1px solid #1c1c1a; }
 .tdoc td { padding: 4.5px 0; border-bottom: 1px solid #efece5; }
 .tdoc .d { text-align: right; }
 .tdoc i { display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 50%; vertical-align: 1px; }
 .tdoc a { color: #8b6835; text-decoration: none; font-weight: 600; }
-.part { display: block; height: 3px; margin-top: 3px; border-radius: 2px; }
 
 /* Un mois : des colonnes titrées, une case à la hauteur de sa pièce */
 .cols, .rang-doc { display: grid; grid-template-columns: 50px minmax(0, 1fr) 72px 186px; gap: 0 12px; }
@@ -185,7 +186,7 @@
       <li>La date d'un virement ou d'un ticket perdu n'est plus barrée par le trait du dessus.</li>
       <li>La case de la pièce prend sa hauteur : plus de grands blancs. Chaque mois commence sa page, et le dossier passe de 26 à 18 pages.</li>
       <li>La première page dit tout de suite que chaque ligne est justifiée, puis les chiffres, les catégories et les mois, chacun avec sa page.</li>
-      <li>Les dépenses par catégorie disent leur montant et leur part, en noir : « Sorties » en rouge ne se lit plus qu'une fois, dans le tableau des mois.</li>
+      <li>Les mois et les catégories ne sont plus côte à côte : chaque tableau a sa phrase, les mois d'abord, puis les dépenses de toute la période par catégorie, en noir avec leur part.</li>
       <li>Des titres de colonnes : Date, Ligne de banque, Montant, Justificatif.</li>
       <li>La couleur de la catégorie est un point devant son nom.</li>
       <li>Sous une facture, Voir la facture ; sous un ticket, Voir la photo. Chaque photo du bout porte sa ligne de banque.</li>
@@ -242,18 +243,22 @@
     '<div class="quatre chiffres"><div><span class="etiquette-doc">Sorties</span><b class="s">−21 950,39 €</b></div><div><span class="etiquette-doc">Entrées</span><b class="e">+20 196,27 €</b></div>' +
     '<div><span class="etiquette-doc">Lignes de banque</span><b>78</b></div><div><span class="etiquette-doc">Tickets perdus</span><b>3</b></div></div>' +
     '<p class="contient">46 tickets, 5 factures de fournisseur, 10 virements reçus et leur facture, 3 tickets perdus déclarés (page 12).</p>' +
-    /* Sa question du 26 octobre : « pourquoi il y a deux fois les sorties ? ». Les deux tableaux portaient
-       « Sorties » en rouge, côte à côte : le même argent, rangé par catégorie puis par mois. La catégorie dit
-       maintenant sa part, en noir, comme le vrai PDF (« Montant ») ; « Sorties » ne titre plus que les mois. */
-    '<div class="deux-tables"><table class="tdoc chiffres"><thead><tr><th class="etiquette-doc">Dépenses par catégorie</th><th class="etiquette-doc d">Montant</th><th class="etiquette-doc d">Part</th></tr></thead><tbody>' +
-    CATS.map(function (c) {
-      return '<tr><td><i style="background:' + CAT[c[0]][1] + '"></i>' + (c[0] === "virement" ? "Virements envoyés" : CAT[c[0]][0]) +
-        '<span class="part" style="width:' + Math.max(2, c[1] / 16225.85 * 100).toFixed(1) + "%;background:" + CAT[c[0]][1] + '"></span></td><td class="d">' + fr(c[1]) + ' €</td><td class="d" style="color:#6b6b5c">' +
-        (c[1] / 21950.39 * 100).toLocaleString("fr-FR", { maximumFractionDigits: 0 }) + " %</td></tr>";
-    }).join("") + "</tbody></table>" +
+    /* Ses deux questions du 26 octobre : « pourquoi il y a deux fois les sorties ? », puis « carburant 998, et
+       sortie 2 099, ça correspond à quoi ? ». Côte à côte, la première ligne des catégories (Carburant) tombait
+       en face de la première des mois (Janvier) et se lisait comme la même ligne. Les deux tableaux se posent
+       l'un sous l'autre, chacun avec une phrase qui dit ce qu'il range : les mois d'abord (le sommaire du
+       dossier), puis toute la période par catégorie, en noir avec sa part. */
+    '<div class="deux-tables"><div><h3 class="titre-table">Mois par mois</h3>' +
     '<table class="tdoc chiffres"><thead><tr><th class="etiquette-doc">Mois</th><th class="etiquette-doc d">Sorties</th><th class="etiquette-doc d">Entrées</th><th class="etiquette-doc d">Page</th></tr></thead><tbody>' +
     MOIS.map(function (m) { return "<tr><td>" + m[0] + '</td><td class="d s">−' + m[1] + ' €</td><td class="d e">+' + m[2] + ' €</td><td class="d"><a href="#">' + m[3] + "</a></td></tr>"; }).join("") +
-    "</tbody></table></div>");
+    "</tbody></table></div>" +
+    '<div><h3 class="titre-table">Les dépenses du 1er janvier au 25 octobre, par catégorie</h3>' +
+    '<table class="tdoc chiffres"><thead><tr><th class="etiquette-doc">Catégorie</th><th class="etiquette-doc d">Montant</th><th class="etiquette-doc d">Part</th></tr></thead><tbody>' +
+    CATS.map(function (c) {
+      return '<tr><td><i style="background:' + CAT[c[0]][1] + '"></i>' + (c[0] === "virement" ? "Virements envoyés" : CAT[c[0]][0]) +
+        '</td><td class="d">' + fr(c[1]) + ' €</td><td class="d" style="color:#6b6b5c">' +
+        (c[1] / 21950.39 * 100).toLocaleString("fr-FR", { maximumFractionDigits: 0 }) + " %</td></tr>";
+    }).join("") + "</tbody></table></div></div>");
 
   /* ═══ Octobre : douze lignes, la plus récente en haut, comme le vrai ════ */
   function recopie(l) {
