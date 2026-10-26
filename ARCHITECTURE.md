@@ -36125,7 +36125,7 @@ l'écran, plus le contour.
 | « Ajouter » | mot doré centré sous chaque jour | au bout de la plage, à gauche, avec son « + » dessiné |
 | la légende | une ligne de 9 px, « COULEURS » seul dessous | deux lignes à 13 et 12,5 px, « Couleurs » à côté du matin et de l'après-midi (`Legende aCote`) |
 | fiche du jour | date en capitales centrées, « Matin » 10 px en capitales | date en titre à gauche (« Aujourd'hui » en or devant), « Matin » 14 px, durée et ville sur une ligne |
-| fiche d'intervention | « FICHE D'INTERVENTION » puis le nom redit en 22 px ; quatre gestes sur une rangée (sa planche du 19 septembre) | « Fiche d'intervention » en titre ; deux rangées de deux, le dessin devant le mot à 15 px |
+| fiche d'intervention | « FICHE D'INTERVENTION » puis le nom redit en 22 px ; quatre gestes sur une rangée (sa planche du 19 septembre) | **inchangée** : sa réponse du 26 octobre, « tu conserves la fiche d'intervention » ; la planche la montrait en deux rangées de deux, il garde celle de l'application |
 | tiroir du bas | 13 px | 16,5 px, et le nombre qui attend dans une pastille d'or quand un jour est touché |
 | titre « En attente du client » | pastille, comme la date | titre en serif, comme la date |
 
