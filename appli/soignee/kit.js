@@ -136,7 +136,10 @@
     document.querySelectorAll(".ecran").forEach(function (e) {
       /* Ce que le CLIENT reçoit ne suit pas la charte de l'artisan : un devis
          ne part pas en noir parce qu'il a choisi Nuit (PRODUCT.md). */
-      var ici = e.hasAttribute("data-sans-charte") ? CHARTES[0] : c;
+      /* La porte non plus : avant le compte, personne n'a choisi de charte,
+         et l'appli la pose en Nuit (PorteDeNuit.tsx). data-charte-fixe la nomme. */
+      var fixe = e.getAttribute("data-charte-fixe");
+      var ici = e.hasAttribute("data-sans-charte") ? CHARTES[0] : fixe ? charteNommee(fixe) : c;
       cles.forEach(function (k) { e.style.removeProperty(k); });
       for (var k in ici.vars) e.style.setProperty(k, ici.vars[k]);
       if (vert && ici.nom === "origine") e.style.setProperty("--atlas-plein", VERT_PLUS_LISIBLE);
@@ -298,7 +301,7 @@
     "reglages-identite", "reglages-equipe", "reglages-vehicules", "reglages-organigramme", "reglages-tarifs", "reglages-documents",
     "reglages-fournisseurs", "reglages-ia", "reglages-agenda", "reglages-abonnement", "reglages-donnees", "reglages-compte",
     "reglages-notifications", "reglages-connexion", "reglages-connexion-double-verification", "reglages-apparence",
-    "arrosage", "abonnement-credits-ia"];
+    "arrosage", "abonnement-credits-ia", "creer-un-compte"];
 
   function planchePrete(href) {
     if (!href || /^(https?:|#|mailto:|tel:|\.\.\/)/.test(href)) return true;
