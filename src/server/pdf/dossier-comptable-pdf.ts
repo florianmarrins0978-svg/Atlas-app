@@ -12,6 +12,7 @@ import {
   jourComplet,
   jourEnMots,
   suiteDeLaPiece,
+  ecartSignale,
   type Categorie,
   type Ecart,
   type Motif,
@@ -424,12 +425,14 @@ function planifier(l: LignePourLeDossier, p: Polices): Plan {
   const coupe = enLignes([{ t: l.libelle, police: p.gras, teinte: ENCRE }], 9.5, L_LIBELLE);
   const libelle = coupe.length <= 3 ? coupe : [...coupe.slice(0, 2), [{ t: ajuste(coupe.slice(2).map((x) => x.map((b) => b.t).join("")).join(" "), p.gras, 9.5, L_LIBELLE), police: p.gras, teinte: ENCRE }]];
   const suite = suiteDeLaPiece(l.ecart, l.sens);
+  // Payée en partie se dit sans alerte : seul un vrai écart prend l'ambre.
+  const teinteDeLaSuite = ecartSignale(l.ecart, l.sens) ? ECART : DOUX;
   const rangs = l.piece ? rangsDeLaPiece(l.piece, p) : null;
   let phrase: Bout[] = [];
   if (l.piece?.genre === "facture-emise") {
     phrase = [
       { t: nomDeLaPiece(l.piece), police: p.gras, teinte: ENCRE },
-      ...(suite ? [{ t: suite, police: p.gras, teinte: ECART }] : []),
+      ...(suite ? [{ t: suite, police: p.gras, teinte: teinteDeLaSuite }] : []),
       { t: ", émise par Atlas", police: p.sans, teinte: DOUX },
     ];
   } else if (!l.piece && l.ticketPerdu) {
@@ -448,7 +451,7 @@ function planifier(l: LignePourLeDossier, p: Polices): Plan {
     libelle,
     rangs,
     phrase: enLignes(phrase, 9, L_PIECE),
-    ecart: rangs && suite && l.piece ? enLignes([{ t: `${nomDeLaPiece(l.piece)}${suite}`, police: p.gras, teinte: ECART }], 8, L_PIECE) : [],
+    ecart: rangs && suite && l.piece ? enLignes([{ t: `${nomDeLaPiece(l.piece)}${suite}`, police: p.gras, teinte: teinteDeLaSuite }], 8, L_PIECE) : [],
     voir: fichier ? (fichier.pleinePage ? "Voir la facture" : "Voir la photo") : null,
   };
 }
