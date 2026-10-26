@@ -35,14 +35,21 @@ on:
   schedule:
     - cron: "23 6 * * 2"
 
+# **Lecture seule par défaut** (audit du 25 octobre 2026, E15) : sans ce bloc,
+# le jeton du flux prend les droits par défaut du dépôt, et une dépendance
+# compromise pendant `npm ci` pourrait écrire dans le dépôt. Un job qui a besoin
+# de plus le déclare lui-même.
+permissions:
+  contents: read
+
 jobs:
   interroger:
     name: Répond-il, sans clé, et à quel rythme ?
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "22"
           cache: npm

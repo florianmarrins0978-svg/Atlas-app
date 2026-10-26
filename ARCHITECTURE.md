@@ -36146,3 +36146,13 @@ l'écran, plus le contour.
 
 **E12, refusé délibérément.** Les liens des devis, factures, contrats, rapports de passage et dates restent en clair et, pour contrat et rapport, sans expiration. Trois raisons. Stocker l'empreinte à la place du lien empêcherait le patron de recopier le lien d'un devis déjà envoyé (il le fait depuis l'écran). Ces liens ouvrent un document que le client a reçu et doit pouvoir relire comme un PDF : les faire expirer lui ferait perdre son contrat. Et la lecture d'un lien par l'application passe déjà par la RLS (`app.jeton_*`) : un lien ne se lit qu'avec le lien exact, 256 bits. Le lien du comptable, lui, est déjà stocké en empreinte (migration 0145), et son année de validité couvre un exercice.
 
+## §511 : Les flux GitHub figés par empreinte, et lecture seule par défaut
+
+*26 octobre 2026, audit de sécurité (E15).*
+
+**Les actions sont épinglées par empreinte de commit** (`uses: actions/checkout@<sha> # v4`). Une étiquette comme `v4` se déplace : qui la contrôle change le code qui tourne dans nos flux, jetons compris. Les empreintes ont été lues sur GitHub le 26 octobre (`git ls-remote`), l'étiquette d'origine reste en commentaire pour savoir quoi monter.
+
+**Droits.** `adresses`, `banc-essai`, `ci` et `itineraire` n'avaient aucun bloc `permissions` : leur jeton prenait les droits par défaut du dépôt. Ils sont désormais en lecture seule, et un job qui a besoin de plus le déclare (la fiche d'état de `ci.yml`, `issues: write`). Dans `pages.yml`, `pages: write` et `id-token: write` valaient pour tout le flux, y compris les jobs qui font `npm ci` : ils ne valent plus que pour le job qui publie.
+
+**Refusé, avec ses raisons.** `min-release-age` (un délai avant d'installer une version neuve) n'existe qu'à partir de npm 11.10 ; l'espace et la CI tournent sous npm 10.9, où la clé serait ignorée en silence : une protection qui n'en est pas une. Le repli `npm install` de `.devcontainer/demarrer.sh` reste : il ne sert que si `npm ci` échoue, et sans lui son espace démarrerait sans dépendances, c'est-à-dire sans application.
+

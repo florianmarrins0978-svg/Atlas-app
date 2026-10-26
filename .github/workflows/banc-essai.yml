@@ -53,6 +53,13 @@ on:
   # Déclenchable à la main : utile après une panne signalée par le patron.
   workflow_dispatch:
 
+# **Lecture seule par défaut** (audit du 25 octobre 2026, E15) : sans ce bloc,
+# le jeton du flux prend les droits par défaut du dépôt, et une dépendance
+# compromise pendant `npm ci` pourrait écrire dans le dépôt. Un job qui a besoin
+# de plus le déclare lui-même.
+permissions:
+  contents: read
+
 jobs:
   monter-et-utiliser:
     name: Monter le banc d'essai et s'en servir
@@ -62,13 +69,13 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
       # Construit l'espace de travail à partir de .devcontainer/, services
       # compris — PostgreSQL avec ses rôles restreints, Redis — puis joue
       # `preparer.sh`, exactement comme à la création d'un Codespace.
       - name: Monter l'espace et l'éprouver
-        uses: devcontainers/ci@v0.3
+        uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3
         with:
           configFile: .devcontainer/devcontainer.json
           push: never
