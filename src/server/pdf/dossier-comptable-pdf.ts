@@ -7,12 +7,12 @@ import { texteDuPapier } from "@/lib/texte-pdf";
 import { NOM_CATEGORIE, ORDRE_CATEGORIES } from "@/lib/couleurs-comptable";
 import { ligneDuTotal, type LigneImprimee } from "@/lib/ticket-imprime";
 import {
-  LIBELLE_MOTIF,
+  libelleMotif,
   libellePeriode,
   jourComplet,
   jourEnMots,
   type Categorie,
-  type MotifVirement,
+  type Motif,
 } from "@/lib/pour-mon-comptable";
 
 /**
@@ -60,7 +60,7 @@ export type LignePourLeDossier = {
   categorie: Categorie;
   piece: PieceDeLaLigne | null;
   ticketPerdu: boolean;
-  motif: MotifVirement | null;
+  motif: Motif | null;
 };
 
 export type DonneesDossier = {
@@ -405,7 +405,7 @@ export async function composerDossierComptable(d: DonneesDossier): Promise<Uint8
       const mention = l.ticketPerdu
         ? "Ticket perdu, mention validée. TVA non déduite."
         : l.motif
-          ? LIBELLE_MOTIF[l.motif]
+          ? libelleMotif(l.motif, l.sens)
           : l.piece?.genre === "facture-emise"
             ? `Facture ${l.piece.numero}`
             : null;

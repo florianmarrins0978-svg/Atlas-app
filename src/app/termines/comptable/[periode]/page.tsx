@@ -3,7 +3,7 @@ import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import BoutonAssistant from "@/components/atlas/BoutonAssistant";
 import { colors, font } from "@/lib/design-tokens";
 import { enEuros } from "@/lib/euros";
-import { LIBELLE_MOTIF, bornesDePeriode, categorieDeLaLigne, jourEnMots, libellePeriode } from "@/lib/pour-mon-comptable";
+import { libelleMotif, bornesDePeriode, categorieDeLaLigne, jourEnMots, libellePeriode } from "@/lib/pour-mon-comptable";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { ligneAJustifier, lignesDuReleve } from "@/server/repositories/pour-mon-comptable";
 import Releve, { type LigneAffichee } from "./Releve";
@@ -33,11 +33,11 @@ export default async function PageReleve({ params }: { params: Promise<{ periode
     const preuve: LigneAffichee["preuve"] = l.factureEmise
       ? { genre: "ok", texte: `Facture ${l.factureEmise.numero}` }
       : l.justification === "ticket" && l.ticket
-        ? { genre: "ticket", texte: `Ticket du ${jourEnMots(l.ticket.dateAchat)}${l.reliePar === "atlas" ? ", relié par Atlas" : ""}`, ticketId: l.ticket.photoCle ? l.ticket.id : null }
+        ? { genre: "ticket", texte: `Ticket du ${jourEnMots(l.ticket.dateAchat)}${l.reliePar === "atlas" ? ", relié par Atlas" : ""}`, ticketId: l.ticket.photoCle ? l.id : null }
         : l.justification === "facture" && l.factureRecue
           ? { genre: "ok", texte: `Facture ${l.factureRecue.societe}` }
           : l.justification === "motif" && l.motif
-            ? { genre: "ok", texte: LIBELLE_MOTIF[l.motif] }
+            ? { genre: "ok", texte: libelleMotif(l.motif, l.sens) }
             : l.justification === "ticket_perdu"
               ? { genre: "perdu", texte: "Ticket perdu, mention validée" }
               : { genre: "manque", texte: l.sens === "entree" ? "Facture à confirmer" : "Sans ticket" };

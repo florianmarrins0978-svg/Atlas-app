@@ -1,7 +1,7 @@
 import { colors, font } from "@/lib/design-tokens";
 import { enEuros } from "@/lib/euros";
 import { ligneDuTotal } from "@/lib/ticket-imprime";
-import { LIBELLE_MOTIF, categorieDeLaLigne, jourComplet, jourEnMots } from "@/lib/pour-mon-comptable";
+import { libelleMotif, categorieDeLaLigne, jourComplet, jourEnMots } from "@/lib/pour-mon-comptable";
 import { dossierParJeton, type LignePourLeComptable } from "@/server/repositories/verification-comptable";
 import Verification, { type LigneAVerifier, type PieceAffichee } from "./Verification";
 import { jourIso } from "@/lib/jour";
@@ -46,7 +46,7 @@ function piece(l: LignePourLeComptable): PieceAffichee {
   }
   if (l.factureEmise) return { genre: "emise", numero: l.factureEmise.numero };
   if (l.justification === "ticket_perdu") return { genre: "perdu" };
-  if (l.justification === "motif" && l.motif) return { genre: "motif", libelle: LIBELLE_MOTIF[l.motif] };
+  if (l.justification === "motif" && l.motif) return { genre: "motif", libelle: libelleMotif(l.motif, l.sens) };
   return { genre: "aucune" };
 }
 

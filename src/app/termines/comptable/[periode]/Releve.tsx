@@ -141,7 +141,7 @@ export default function Releve({ lignes }: { lignes: LigneAffichee[] }) {
           </p>
           {/* eslint-plugin-next préfère <Image> ; une photo privée servie par une
               route qui relit la RLS ne passe pas par l'optimiseur d'images. */}
-          <img src={`/termines/comptable/ticket/${ouverte.preuve.ticketId}`} alt="Photo du ticket" className="mx-auto mt-4 max-h-[62vh] w-auto max-w-full rounded-md" style={{ border: `1px solid ${colors.line}` }} />
+          <img src={`/termines/comptable/piece/${ouverte.preuve.ticketId}`} alt="Photo du ticket" className="mx-auto mt-4 max-h-[62vh] w-auto max-w-full rounded-md" style={{ border: `1px solid ${colors.line}` }} />
           <p className="mt-4 text-center text-[13px]" style={{ color: colors.muted }}>
             {ouverte.preuve.texte}
           </p>

@@ -170,13 +170,13 @@ async function main() {
     assert.doesNotMatch(texte, /CB BOULANGERIE E2E/);
   });
 
-  await test("une période illisible et un ticket inconnu ne s'ouvrent pas", async () => {
+  await test("une période illisible et une pièce inconnue ne s'ouvrent pas", async () => {
     // Le statut ne dit rien ici : l'écran de chargement a déjà répondu 200
     // quand la page refuse. On regarde donc ce qui est AFFICHÉ.
     await page.goto(`${BASE}/termines/comptable/2026-13`, { waitUntil: "networkidle" });
     assert.equal(await page.locator('[data-atlas="releve"]').count(), 0);
     assert.match(await page.locator("body").innerText(), /404|could not be found|introuvable/i);
-    const t = await page.request.get(`${BASE}/termines/comptable/ticket/00000000-0000-0000-0000-000000000000`);
+    const t = await page.request.get(`${BASE}/termines/comptable/piece/00000000-0000-0000-0000-000000000000`);
     assert.equal(t.status(), 404);
   });
 

@@ -177,7 +177,7 @@ export function facturesProposees(p: Proposition): FactureARapprocher[] {
  * une TVA que la facture ne porte pas. Le surplus d'un virement « trop »
  * reste à régler avec le client, et l'écran le dit.
  */
-export function montantANoter(virement: VirementRecu, facture: FactureARapprocher): number | null {
+export function montantANoter(virement: Pick<VirementRecu, "montant">, facture: Pick<FactureARapprocher, "reste">): number | null {
   const montant = enCentimes(virement.montant);
   const reste = enCentimes(facture.reste);
   if (montant === null || reste === null) return null;

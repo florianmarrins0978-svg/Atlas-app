@@ -1,14 +1,25 @@
 import assert from "node:assert/strict";
 import { pool } from "../src/server/db/client";
 import * as entreprisesRepo from "../src/server/repositories/entreprises";
-import { ajouterMouvements, type MouvementEnBase } from "../src/server/repositories/banque";
+import { ajouterMouvements, ajouterVirements, confirmerLaLigneRecue, ecarterVirement, virementsDepuis, type MouvementEnBase } from "../src/server/repositories/banque";
+import * as chantiersRepo from "../src/server/repositories/chantiers";
+import * as clientsRepo from "../src/server/repositories/clients";
+import * as devisRepo from "../src/server/repositories/devis";
+import * as prixRepo from "../src/server/repositories/lignes-prix";
+import { terminerChantier, emettreFacture } from "../src/server/repositories/factures";
+import { facturesEnAttente } from "../src/server/repositories/paiements-facture";
+import { withEntreprise } from "../src/server/db/with-entreprise";
+import { sql } from "drizzle-orm";
+import { suiteDeLaPiece } from "../src/lib/pour-mon-comptable";
 import { creerAchatTva, supprimerAchatTva } from "../src/server/repositories/achats-tva";
-import { ajouterDevisRecu, creerSociete } from "../src/server/repositories/fournisseurs-partenaires";
+import { ajouterDevisRecu, creerSociete, poserTotauxDuDevisRecu } from "../src/server/repositories/fournisseurs-partenaires";
 import {
   appliquerCheckUp,
   delier,
   facturesRecuesLibres,
+  joindreFactureHorsAtlas,
   joindreFactureRecue,
+  pieceDeLaLigne,
   ligneAJustifier,
   lignesDuReleve,
   marquerTicketPerdu,
@@ -30,7 +41,10 @@ import { nettoyerBase } from "./_test-db";
 //   · un lien posé par le patron n'est jamais réécrit par le Check up ;
 //   · ticket perdu, facture jointe, motif, et « défaire » qui rend la ligne ;
 //   · un ticket effacé rend sa ligne « à justifier » sans être refusé ;
-//   · une autre entreprise ne voit rien, et ne peut rien relier chez l'autre.
+//   · une autre entreprise ne voit rien, et ne peut rien relier chez l'autre ;
+//   · (0148) une pièce d'un autre montant ne se joint pas sans son accord ;
+//     un virement reçu se règle dans sa ligne : facture d'Atlas, facture faite
+//     hors d'Atlas, ou ses cinq réponses à lui.
 
 let passed = 0;
 let failed = 0;
@@ -68,6 +82,19 @@ const sortie = (cle: string, jour: string, montant: string, libelle = `CB ${cle}
 async function ticket(ctx: Ctx, dateAchat: string, totalTtc: number, fournisseur = "TOTALENERGIES") {
   const t = await creerAchatTva(ctx, { dateAchat, fournisseur, totalTtc, tauxTva: 20, tvaTicket: 1, nature: "carburant", vehicule: "utilitaire", saisie: "main" });
   return t.id as string;
+}
+
+async function factureEmise(ctx: Ctx, qui: string, montant: string) {
+  const client = await clientsRepo.creerClient(ctx, { nom: qui, telephone: "0612345678" });
+  const chantier = await chantiersRepo.creerChantier(ctx, { nom: `Chez ${qui}`, adresseChantier: "5 rue des Lilas", clientId: client.id });
+  await prixRepo.ajouterLignePrix(ctx, chantier.id, "Taille de haies", montant);
+  const brouillon = await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+  await devisRepo.envoyerDevis(ctx, brouillon.id);
+  const facture = await terminerChantier(ctx, chantier.id);
+  await emettreFacture(ctx, facture.id);
+  const enAttente = (await facturesEnAttente(ctx)).find((f) => f.id === facture.id);
+  assert.ok(enAttente, "la facture émise n'est pas en attente : le montage ne mesure rien");
+  return enAttente;
 }
 
 async function ligne(ctx: Ctx, cle: string) {
@@ -130,7 +157,8 @@ async function main() {
 
   await test("un ticket ne justifie qu'une seule ligne", async () => {
     const t = await ligne(ctx, "TOTAL");
-    const r = await relierTicket(ctx, t.id, tInterA, "patron");
+    // Joint quand même malgré l'écart : c'est l'unicité qu'on éprouve ici.
+    const r = await relierTicket(ctx, t.id, tInterA, "patron", true);
     assert.equal(r.ok, false);
     assert.match(!r.ok ? r.raison : "", /justifie déjà une autre ligne/);
   });
@@ -196,6 +224,126 @@ async function main() {
     const e = (await lignesDuReleve(ctx, "2026-10-21", "2026-10-21"))[0];
     assert.equal(e.sens, "entree");
     assert.equal(ligneAJustifier(e), true);
+  });
+
+  // ─── 0148 : l'écart de montant, le virement reçu réglé dans sa ligne ──────
+
+  await test("un ticket d'un autre montant ne se relie pas sans son accord, et l'écart reste écrit", async () => {
+    await ajouterMouvements(ctx, [sortie("LEROY", "2026-10-23", "48.90")]);
+    const tLeroy = await ticket(ctx, "2026-10-22", 52, "LEROY MERLIN");
+    const l = await ligne(ctx, "LEROY");
+    assert.deepEqual(await relierTicket(ctx, l.id, tLeroy, "patron"), { ok: false, raison: "Pas le même montant.", ecart: { ligne: 4890, piece: 5200 } });
+    assert.equal((await ligne(ctx, "LEROY")).justification, null, "le ticket a été relié sans son accord");
+    assert.deepEqual(await relierTicket(ctx, l.id, tLeroy, "patron", true), { ok: true });
+    const apres = await ligne(ctx, "LEROY");
+    assert.equal(apres.justification, "ticket");
+    assert.deepEqual(apres.ecart, { genre: "ecart", ligne: 4890, piece: 5200 });
+  });
+
+  await test("une facture de fournisseur d'un autre montant demande son accord", async () => {
+    await ajouterMouvements(ctx, [sortie("MOTO", "2026-10-24", "1450.00")]);
+    const societe = await creerSociete(ctx, "fournisseur", "Motoculture Ouest");
+    const f = await ajouterDevisRecu(ctx, societe.id, { nom: "Facture débroussailleuse", fichierCle: `entreprises/${ctx.entrepriseId}/devis/m.pdf`, fichierNom: "m.pdf", nature: "pdf", genre: "facture" });
+    await poserTotauxDuDevisRecu(ctx, f.id, { totalHt: "1155.33", totalTtc: "1386.40" });
+    const m = await ligne(ctx, "MOTO");
+    const r = await joindreFactureRecue(ctx, m.id, f.id);
+    assert.equal(r.ok, false);
+    assert.deepEqual(!r.ok ? r.ecart : null, { ligne: 145000, piece: 138640 });
+    assert.deepEqual(await joindreFactureRecue(ctx, m.id, f.id, true), { ok: true });
+    const apres = await ligne(ctx, "MOTO");
+    assert.equal(suiteDeLaPiece(apres.ecart, "sortie").includes("pas le montant"), true);
+  });
+
+  await test("un virement reçu sans facture d'Atlas se justifie par sa nature, et l'accueil cesse de le demander", async () => {
+    await ajouterVirements(ctx, [{ cle: "LALA", date: "2026-10-21", montant: "1200.00", payeur: "LALA", libelle: "VIR LALA" }]);
+    const e = (await lignesDuReleve(ctx, "2026-10-21", "2026-10-21"))[0];
+    assert.deepEqual(await poserMotif(ctx, e.id, "salaire"), { ok: false, raison: "Dites ce qu'est ce virement." });
+    assert.deepEqual(await poserMotif(ctx, e.id, "remboursement"), { ok: true });
+    const apres = (await lignesDuReleve(ctx, "2026-10-21", "2026-10-21"))[0];
+    assert.equal(apres.motif, "remboursement");
+    assert.equal(ligneAJustifier(apres), false);
+    const [v] = (await virementsDepuis(ctx, "2026-10-21")).filter((x) => x.libelle === "VIR LALA");
+    assert.equal(v?.etat, "ecarte", "l'accueil demanderait encore quelle facture ce remboursement paie");
+  });
+
+  await test("une réponse de virement reçu ne s'écrit pas sur une sortie", async () => {
+    const m = await ligne(ctx, "LEROY");
+    assert.deepEqual(await poserMotif(ctx, m.id, "remboursement"), { ok: false, raison: "Dites ce qu'est ce virement." });
+  });
+
+  await test("une facture faite hors d'Atlas justifie un virement reçu, avec son accord quand le montant diffère", async () => {
+    await ajouterMouvements(ctx, [{ cle: "COSTA", date: "2026-10-24", montant: "864.00", sens: "entree", contrepartie: "MME COSTA", libelle: "VIR MME COSTA" }]);
+    const c = (await lignesDuReleve(ctx, "2026-10-24", "2026-10-24")).find((x) => x.sens === "entree");
+    assert.ok(c, "la ligne de Mme Costa est introuvable : le montage ne mesure rien");
+    const piece = { cle: `entreprises/${ctx.entrepriseId}/factures-hors-atlas/costa.jpg`, nature: "photo" as const, total: "1728.00" };
+    assert.deepEqual(await joindreFactureHorsAtlas(ctx, c.id, piece), { ok: false, raison: "Pas le même montant.", ecart: { ligne: 86400, piece: 172800 } });
+    assert.deepEqual(await joindreFactureHorsAtlas(ctx, c.id, piece, true), { ok: true });
+    const apres = (await lignesDuReleve(ctx, "2026-10-24", "2026-10-24")).find((x) => x.id === c.id)!;
+    assert.equal(apres.justification, "facture_hors_atlas");
+    assert.equal(ligneAJustifier(apres), false);
+    assert.equal(suiteDeLaPiece(apres.ecart, "entree"), ", payée en partie");
+    assert.deepEqual(pieceDeLaLigne(apres), { cle: piece.cle, nature: "photo" });
+  });
+
+  await test("une facture faite hors d'Atlas remplacée rend son fichier, pour qu'il ne reste rien", async () => {
+    const c = (await lignesDuReleve(ctx, "2026-10-24", "2026-10-24")).find((x) => x.sens === "entree")!;
+    assert.deepEqual(await poserMotif(ctx, c.id, "aide"), { ok: true, pieceRetiree: `entreprises/${ctx.entrepriseId}/factures-hors-atlas/costa.jpg` });
+    const apres = (await lignesDuReleve(ctx, "2026-10-24", "2026-10-24")).find((x) => x.id === c.id)!;
+    assert.equal(apres.pieceJointe, null);
+    assert.deepEqual(await delier(ctx, c.id), { ok: true });
+  });
+
+  await test("une facture faite hors d'Atlas ne justifie pas une sortie", async () => {
+    const m = await ligne(ctx, "LEROY");
+    const r = await joindreFactureHorsAtlas(ctx, m.id, { cle: `entreprises/${ctx.entrepriseId}/factures-hors-atlas/x.pdf`, nature: "pdf", total: "48.90" });
+    assert.equal(r.ok, false);
+  });
+
+  await test("la base refuse une facture faite hors d'Atlas sans son fichier", async () => {
+    const c = (await lignesDuReleve(ctx, "2026-10-24", "2026-10-24")).find((x) => x.sens === "entree")!;
+    await assert.rejects(
+      withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+        tx.execute(sql`UPDATE mouvements_bancaires SET justification = 'facture_hors_atlas', relie_par = 'patron' WHERE id = ${c.id}`)
+      ),
+      (err: unknown) => ((err as { cause?: { code?: string }; code?: string }).cause?.code ?? (err as { code?: string }).code) === "23514"
+    );
+  });
+
+  await test("un virement reçu se confirme depuis sa ligne, même quand l'accueil n'en demande rien", async () => {
+    const facture = await factureEmise(ctx, "M. Morin", "1000.00");
+    const moitie = (Math.round(Number(facture.reste) * 50) / 100).toFixed(2);
+    // Le jour de la facture : un règlement ne la précède jamais (`noterPaiementDans`).
+    const jour = facture.dateEmission;
+    await ajouterMouvements(ctx, [{ cle: "MORIN", date: jour, montant: moitie, sens: "entree", contrepartie: "M MORIN", libelle: "VIR M MORIN ACOMPTE" }]);
+    // Un « non » donné sur l'accueil ne ferme pas la porte.
+    await ajouterVirements(ctx, [{ cle: "MORIN", date: jour, montant: moitie, payeur: "M MORIN", libelle: "VIR M MORIN ACOMPTE" }]);
+    const [v] = (await virementsDepuis(ctx, jour)).filter((x) => x.libelle === "VIR M MORIN ACOMPTE");
+    assert.equal((await ecarterVirement(ctx, v.id)).ok, true);
+    const m = (await lignesDuReleve(ctx, jour, jour)).find((x) => x.libelle === "VIR M MORIN ACOMPTE")!;
+
+    const r = await confirmerLaLigneRecue(autre, m.id, facture.id, moitie);
+    assert.equal(r.ok, false, "une autre entreprise a confirmé une ligne qui n'est pas la sienne");
+
+    assert.equal((await confirmerLaLigneRecue(ctx, m.id, facture.id, moitie)).ok, true);
+    const apres = (await lignesDuReleve(ctx, jour, jour)).find((x) => x.id === m.id)!;
+    assert.equal(apres.factureEmise?.numero, facture.numeroCommercial);
+    assert.equal(ligneAJustifier(apres), false);
+    assert.equal(suiteDeLaPiece(apres.ecart, "entree"), ", payée en partie");
+    const reste = (await facturesEnAttente(ctx)).find((f) => f.id === facture.id)?.reste;
+    assert.equal(Number(reste), Number(facture.reste) - Number(moitie), "le paiement n'a pas été noté sur la facture");
+
+    assert.equal((await confirmerLaLigneRecue(ctx, m.id, facture.id, moitie)).ok, false, "le même virement a payé deux fois");
+    assert.deepEqual(await poserMotif(ctx, m.id, "pret"), { ok: false, raison: "Ce virement paie déjà une facture d'Atlas." });
+  });
+
+  await test("un virement reçu se confirme même sans virement en attente sur l'accueil", async () => {
+    const facture = await factureEmise(ctx, "M. Petit", "300.00");
+    const jour = facture.dateEmission;
+    await ajouterMouvements(ctx, [{ cle: "PETIT", date: jour, montant: facture.reste, sens: "entree", contrepartie: "M PETIT", libelle: "VIR M PETIT" }]);
+    const p = (await lignesDuReleve(ctx, jour, jour)).find((x) => x.libelle === "VIR M PETIT")!;
+    assert.equal((await confirmerLaLigneRecue(ctx, p.id, facture.id, facture.reste)).ok, true);
+    const apres = (await lignesDuReleve(ctx, jour, jour)).find((x) => x.id === p.id)!;
+    assert.deepEqual(apres.ecart, { genre: "juste" });
   });
 
   await test("une autre entreprise ne voit aucune ligne ni aucun ticket", async () => {

@@ -4211,10 +4211,17 @@ export const mouvementsBancaires = pgTable("mouvements_bancaires", {
    * Une ligne « ticket » dont le ticket a été effacé se lit « à justifier » :
    * l'effacement délie sans réécrire la justification.
    */
-  justification: text("justification", { enum: ["ticket", "facture", "ticket_perdu", "motif"] }),
+  justification: text("justification", { enum: ["ticket", "facture", "ticket_perdu", "motif", "facture_hors_atlas"] }),
   achatId: uuid("achat_id"),
   factureRecueId: uuid("facture_recue_id"),
-  motif: text("motif", { enum: ["fournisseur", "salaire", "loyer", "impots", "pret", "perso"] }),
+  motif: text("motif", { enum: ["fournisseur", "salaire", "loyer", "impots", "pret", "perso", "remboursement", "aide", "entre_comptes"] }),
+  /**
+   * La facture faite hors d'Atlas qui justifie un virement reçu (migration
+   * 0148) : son fichier, sa forme, et le total LU dessus. Vides sinon.
+   */
+  pieceCle: text("piece_cle"),
+  pieceNature: text("piece_nature", { enum: ["photo", "pdf"] }),
+  pieceTotal: numeric("piece_total", { precision: 12, scale: 2 }),
   reliePar: text("relie_par", { enum: ["atlas", "patron"] }),
   justifieLe: timestamp("justifie_le", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

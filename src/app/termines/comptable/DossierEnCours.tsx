@@ -5,7 +5,7 @@ import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { colors, font } from "@/lib/design-tokens";
 import { COULEUR_CATEGORIE, NOM_CATEGORIE, ORDRE_CATEGORIES } from "@/lib/couleurs-comptable";
-import { LIBELLE_MOTIF, MOTIFS_VIREMENT, type Categorie, type Decoupage } from "@/lib/pour-mon-comptable";
+import { libelleMotif, motifsDuSens, type Categorie, type Decoupage } from "@/lib/pour-mon-comptable";
 import { checkUpAction, joindreFactureAction, motifAction, relierTicketAction, ticketPerduAction } from "./actions";
 import ArretDuDossier from "./ArretDuDossier";
 import FeuilleAchat, { type DepartDeLaFeuille } from "../tva/FeuilleAchat";
@@ -311,9 +311,9 @@ export function CarteARegarder({ a, factures }: { a: ARegarder; factures: Factur
             C’est :
           </p>
           <div className="mt-2 flex flex-wrap gap-1.5">
-            {MOTIFS_VIREMENT.map((m) => (
+            {motifsDuSens("sortie").map((m) => (
               <button key={m} type="button" disabled={enCours} onClick={() => jouer(() => motifAction(a.id, m))} className="min-h-[42px] rounded-full px-3.5 py-2 text-[13.5px] disabled:opacity-60" style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.cream, color: colors.ink }} data-atlas="choix-motif">
-                {LIBELLE_MOTIF[m]}
+                {libelleMotif(m, "sortie")}
               </button>
             ))}
           </div>

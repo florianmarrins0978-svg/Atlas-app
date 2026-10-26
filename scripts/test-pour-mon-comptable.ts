@@ -18,9 +18,17 @@ import {
   etatDeVerification,
   noteDuRejet,
   avancementDeLaVerification,
+  estMotif,
+  libelleMotif,
+  motifsDuSens,
+  ecartDeMontant,
+  ecartEnMots,
+  suiteDeLaPiece,
+  justesDAbord,
   type LigneDuDossier,
 } from "../src/lib/pour-mon-comptable";
 import { CHARTES, contraste } from "../src/lib/chartes";
+import { enEuros as enEurosAttendu } from "../src/lib/euros";
 
 // POUR MON COMPTABLE, LOT 2 — les règles du dossier, avec les chiffres de la
 // planche `appli/pour-mon-comptable.html`.
@@ -306,6 +314,82 @@ test("l'avancement compte les validées et les rejetées, jamais les corrigées"
   assert.deepEqual(
     avancementDeLaVerification([{ etat: "valide" }, { etat: "rejete", note: null, avaitValide: false }, { etat: "corrigee", note: null }, { etat: "a_verifier" }]),
     { verifiees: 2, rejetees: 1, total: 4 }
+  );
+});
+
+// ─── Le virement reçu sans facture d'Atlas, et l'écart de montant ───────────
+// Sa remarque du 25 octobre 2026 : un virement reçu qu'aucune facture d'Atlas
+// n'explique ne pouvait se régler nulle part, et le dossier ne s'arrêtait plus.
+// Et le même jour : « je pouvais valider une facture qui n'était pas du montant ».
+
+test("un virement reçu a ses cinq réponses à lui, et un virement envoyé les siennes", () => {
+  assert.deepEqual(motifsDuSens("entree").map((m) => libelleMotif(m, "entree")), [
+    "Un remboursement",
+    "Mon argent perso",
+    "Un prêt",
+    "Une aide, une subvention",
+    "Entre mes comptes",
+  ]);
+  assert.deepEqual(motifsDuSens("sortie").map((m) => libelleMotif(m, "sortie")), [
+    "Un fournisseur",
+    "Un salaire",
+    "Un loyer",
+    "Impôts, cotisations",
+    "Un prêt",
+    "Pour moi",
+  ]);
+});
+
+test("une réponse d'un sens ne vaut pas pour l'autre", () => {
+  assert.equal(estMotif("remboursement", "entree"), true);
+  assert.equal(estMotif("remboursement", "sortie"), false);
+  assert.equal(estMotif("salaire", "entree"), false);
+  assert.equal(estMotif("salaire", "sortie"), true);
+  assert.equal(estMotif("perso", "entree"), true);
+  assert.equal(estMotif("n'importe quoi", "entree"), false);
+  assert.equal(estMotif(undefined, "sortie"), false);
+});
+
+test("une entrée justifiée par sa nature reste un virement reçu, de sa couleur", () => {
+  assert.equal(categorieDeLaLigne({ sens: "entree", libelle: "VIR M DUPONT", natureDuTicket: null, justification: "motif" }), "recu");
+  assert.equal(categorieDeLaLigne({ sens: "entree", libelle: "VIR M DUPONT", natureDuTicket: null, justification: "facture_hors_atlas" }), "recu");
+});
+
+test("l'écart se mesure au centime, et un montant illisible n'est pas un écart", () => {
+  assert.deepEqual(ecartDeMontant("62.40", "62.40"), { genre: "juste" });
+  assert.deepEqual(ecartDeMontant("1450.00", "1450"), { genre: "juste" });
+  assert.deepEqual(ecartDeMontant("0.30", "0.3"), { genre: "juste" });
+  assert.deepEqual(ecartDeMontant("67.89", "62.40"), { genre: "ecart", ligne: 6789, piece: 6240 });
+  assert.deepEqual(ecartDeMontant("62.40", "62.04"), { genre: "ecart", ligne: 6240, piece: 6204 });
+  assert.deepEqual(ecartDeMontant("62.40", null), { genre: "inconnu" });
+  assert.deepEqual(ecartDeMontant("62.40", "soixante"), { genre: "inconnu" });
+});
+
+test("l'écart se dit dans le sens de la ligne", () => {
+  assert.equal(ecartEnMots({ ligne: 6789, piece: 6240 }, "sortie"), `Il manque une pièce de ${enEurosAttendu(5.49)}.`);
+  assert.equal(ecartEnMots({ ligne: 4890, piece: 5200 }, "sortie"), `La pièce dépasse la ligne de ${enEurosAttendu(3.1)}.`);
+  assert.equal(ecartEnMots({ ligne: 86400, piece: 172800 }, "entree"), `Ce virement en paie une partie, il restera ${enEurosAttendu(864)}.`);
+  assert.equal(ecartEnMots({ ligne: 172800, piece: 86400 }, "entree"), `Le virement dépasse la facture de ${enEurosAttendu(864)}.`);
+});
+
+test("la pièce qui ne tombe pas juste se signale partout de la même façon", () => {
+  assert.equal(suiteDeLaPiece({ genre: "juste" }, "sortie"), "");
+  assert.equal(suiteDeLaPiece({ genre: "inconnu" }, "sortie"), "");
+  assert.equal(suiteDeLaPiece({ genre: "ecart", ligne: 145000, piece: 138640 }, "sortie"), ` de ${enEurosAttendu(1386.4)}, pas le montant`);
+  assert.equal(suiteDeLaPiece({ genre: "ecart", ligne: 86400, piece: 172800 }, "entree"), ", payée en partie");
+  assert.equal(suiteDeLaPiece({ genre: "ecart", ligne: 172800, piece: 86400 }, "entree"), ` de ${enEurosAttendu(864)}, pas le montant`);
+});
+
+test("les pièces du même montant viennent d'abord, sans changer l'ordre des autres", () => {
+  const pieces = [
+    { nom: "A", montant: "386.40" },
+    { nom: "B", montant: "1450.00" },
+    { nom: "C", montant: null },
+    { nom: "D", montant: "1450" },
+  ];
+  assert.deepEqual(
+    justesDAbord(pieces, "1450.00", (p) => p.montant).map((p) => p.nom),
+    ["B", "D", "A", "C"]
   );
 });
 
