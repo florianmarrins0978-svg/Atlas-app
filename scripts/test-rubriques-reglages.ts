@@ -14,7 +14,6 @@
 import assert from "node:assert/strict";
 import {
   rubriquesReglages,
-  surtitreReglages,
   adressesAutorisees,
 } from "../src/lib/rubriques-reglages";
 
@@ -33,9 +32,12 @@ function essai(nom: string, fn: () => void) {
 const toutes = (role: Parameters<typeof rubriquesReglages>[0]) =>
   rubriquesReglages(role).flatMap((e) => e.rubriques);
 
-essai("le patron voit les deux ensembles, l'entreprise d'abord", () => {
+// **En paquets depuis sa planche du 25 octobre 2026** : la carte de
+// l'entreprise (sans titre), trois paquets de l'entreprise, puis « Moi ».
+essai("le patron voit la carte, les trois paquets de l'entreprise, puis Moi", () => {
   const titres = rubriquesReglages("proprietaire").map((e) => e.titre);
-  assert.deepEqual(titres, ["L'entreprise", "Moi"]);
+  assert.deepEqual(titres, ["", "L'entreprise", "Pour les devis", "L'application", "Moi"]);
+  assert.equal(rubriquesReglages("proprietaire")[0].carte, true);
 });
 
 /**
@@ -68,8 +70,11 @@ essai("les rubriques de sa planche du 14 août ouvrent toujours leur écran", ()
   }
 });
 
-essai("ses quatre priorités ouvrent l'ensemble de l'entreprise", () => {
-  const entreprise = rubriquesReglages("proprietaire")[0].rubriques.map((r) => r.href);
+essai("ses priorités ouvrent l'entreprise, dans l'ordre de sa planche du 25 octobre", () => {
+  const entreprise = rubriquesReglages("proprietaire")
+    .filter((e) => e.cote === "entreprise")
+    .flatMap((e) => e.rubriques)
+    .map((r) => r.href);
   // **Ses QUATRE priorités, et elles n'ont pas bougé.** Le contrôle porte sur
   // les quatre premières — celles qu'il a nommées — et sur ce qui vient juste
   // après, pour qu'une rubrique nouvelle ne s'insère pas au milieu d'elles.
@@ -80,12 +85,23 @@ essai("ses quatre priorités ouvrent l'ensemble de l'entreprise", () => {
   //
   // **Par adresse depuis le 5 septembre 2026**, pour la raison écrite plus haut :
   // c'est l'ORDRE qu'il a fixé qu'on défend, pas l'orthographe des libellés.
-  assert.deepEqual(entreprise.slice(0, 5), [
+  //
+  // **Sa planche du 25 octobre 2026 les a rangées en paquets** : l'entreprise
+  // et l'équipe restent en tête ; les véhicules et l'organigramme rejoignent
+  // l'équipe, les fournisseurs rejoignent les tarifs. C'est cet ordre-là, le
+  // sien, que le contrôle défend désormais, en entier.
+  assert.deepEqual(entreprise, [
     "/reglages/identite",
     "/reglages/equipe",
+    "/reglages/vehicules",
+    "/reglages/organigramme",
     "/reglages/tarifs",
     "/reglages/documents",
+    "/reglages/fournisseurs",
     "/reglages/ia",
+    "/reglages/agenda",
+    "/reglages/abonnement",
+    "/reglages/donnees",
   ]);
 });
 
@@ -155,19 +171,22 @@ essai("un membre n'ouvre QUE ses réglages personnels", () => {
 
 essai("et AUCUNE adresse de l'entreprise ne lui est ouverte", () => {
   const siennes = adressesAutorisees("salarie");
-  // **L'ensemble se désigne PAR SON TITRE, jamais par soustraction.** Écrit
+  // **L'ensemble se désigne PAR SON CÔTÉ, jamais par soustraction.** Écrit
   // « les adresses du patron moins celles du membre », le contrôle ne voyait
   // plus rien dès qu'une rubrique d'entreprise était DÉPLACÉE dans « Moi » :
   // elle sortait des deux côtés à la fois. Éprouvé en la déplaçant pour de bon,
-  // le 14 août 2026 — le contrôle est resté vert sur une vraie fuite.
+  // le 14 août 2026 — le contrôle est resté vert sur une vraie fuite. Et par
+  // le côté plutôt que par le titre depuis le 25 octobre 2026 : l'entreprise
+  // tient en quatre paquets, et le seul titre « L'entreprise » en laissait
+  // trois hors de vue.
   const delEntreprise = rubriquesReglages("proprietaire")
-    .filter((e) => e.titre === "L'entreprise")
+    .filter((e) => e.cote === "entreprise")
     .flatMap((e) => e.rubriques)
     .map((r) => r.href)
     .filter((h): h is string => h !== null);
   // Et l'on vérifie que cet ensemble existe : le jour où le titre changerait,
   // le contrôle passerait au vert en n'ayant rien regardé du tout.
-  assert.ok(delEntreprise.length >= 5, `l'ensemble « L'entreprise » n'ouvre que ${delEntreprise.length} adresse(s)`);
+  assert.ok(delEntreprise.length >= 10, `l'entreprise n'ouvre que ${delEntreprise.length} adresse(s)`);
   // **Une seule exception, et elle est la sienne** (27 septembre 2026) :
   // *« L'organigramme doit être visible par tout le monde ! »*. Toute autre
   // adresse de l'entreprise ouverte au membre est une fuite.
@@ -215,10 +234,22 @@ essai("l'ensemble « Moi » est le même pour tous", () => {
   assert.deepEqual(duPatron, duMembre);
 });
 
+// **La carte de l'entreprise ne s'ouvre qu'au patron.** Elle remplace, le
+// 25 octobre 2026, le surtitre « Mon entreprise » / « Mon compte » : c'est
+// désormais elle qui annonce l'entreprise, et à lui seul.
 essai("l'entreprise ne s'annonce pas à qui elle n'appartient pas", () => {
-  assert.equal(surtitreReglages("proprietaire"), "Mon entreprise");
-  assert.equal(surtitreReglages("salarie"), "Mon compte");
-  assert.equal(surtitreReglages(null), "Mon compte");
+  assert.ok(rubriquesReglages("proprietaire").some((e) => e.carte));
+  for (const role of ["salarie", "commercial", "facturation", null] as const) {
+    assert.ok(!rubriquesReglages(role).some((e) => e.carte), `la carte de l'entreprise sort pour ${role}`);
+  }
+});
+
+essai("aucun paquet vide ne sort", () => {
+  for (const role of ["proprietaire", "salarie", "commercial", "facturation", null] as const) {
+    for (const e of rubriquesReglages(role)) {
+      assert.ok(e.rubriques.length > 0, `« ${e.titre} » sort vide pour ${role}`);
+    }
+  }
 });
 
 essai("chaque rubrique porte une icône", () => {

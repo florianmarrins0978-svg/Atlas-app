@@ -31,7 +31,7 @@ export type TonCarte = "vert" | "ambre" | "bleu" | "rouge" | "blanc";
 
 export type CouleursDuTon = {
   fond: string;
-  /** Le titre en petites capitales, et le point qui le précède. */
+  /** Le titre, et le point qui le précède. */
   titre: string;
   /** La phrase de la carte. */
   texte: string;
@@ -44,6 +44,11 @@ export type CouleursDuTon = {
  * gris clair d'aujourd'hui (`muted`) tombait à 2,4 de contraste sur le fond
  * bleu, illisible au soleil. Sur la carte blanche il reste le gris d'avant :
  * rien ne bouge là où rien n'a été demandé.
+ *
+ * **La carte blanche passe à son tour à l'encre douce — sa planche du
+ * 25 octobre 2026** (`appli/soignee/accueil.html`). Le titre et la phrase y
+ * tenaient 3,3 de contraste ; c'est la carte « pour mémoire », pas une carte
+ * qu'on doit deviner. Le point, lui, reste un simple trait (`TitreDeCarte`).
  */
 export function couleursDuTon(ton: TonCarte): CouleursDuTon {
   switch (ton) {
@@ -56,6 +61,17 @@ export function couleursDuTon(ton: TonCarte): CouleursDuTon {
     case "rouge":
       return { fond: colors.carteRougeFond, titre: colors.carteRougeTexte, texte: colors.inkSoft };
     case "blanc":
-      return { fond: colors.card, titre: colors.muted, texte: colors.muted };
+      return { fond: colors.card, titre: colors.inkSoft, texte: colors.inkSoft };
   }
+}
+
+/**
+ * La couleur du geste d'une carte : celle du titre de sa famille, l'encre sur la
+ * carte blanche, où le titre n'est qu'à l'encre douce.
+ *
+ * **Sa planche du 25 octobre 2026** (`appli/soignee/accueil.html`) : le geste
+ * prend la couleur de sa carte, au lieu du même vert foncé sur les cinq.
+ */
+export function couleurDuGeste(ton: TonCarte): string {
+  return ton === "blanc" ? colors.ink : couleursDuTon(ton).titre;
 }

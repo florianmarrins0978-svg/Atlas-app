@@ -716,20 +716,11 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
   }
 }
 
-/* Le chantier au centre est net, les autres s'effacent. Sous `@supports` : là
- * où la timeline de défilement manque, tout reste lisible à pleine opacité —
- * une dégradation qui n'enlève rien. */
-@supports (animation-timeline: view()) {
-  .atlas-fil-defile .atlas-ligne {
-    animation: atlas-mettre-en-avant linear both;
-    animation-timeline: view();
-    animation-range: cover 12% cover 88%;
-  }
-  @keyframes atlas-mettre-en-avant {
-    0%, 100% { opacity: 0.45; }
-    44%, 56% { opacity: 1; }
-  }
-}
+/* **Plus aucun chantier ne s'efface loin du milieu — sa planche du
+ * 25 octobre 2026** (`appli/soignee/accueil.html`, « tu peux coder ça »).
+ * Le fil du 10 août mettait le chantier du centre en avant et laissait les
+ * autres à 45 % : une adresse grise y tombait à 2,5 de contraste, illisible au
+ * soleil. La perle d'or dit déjà lequel on regarde. */
 
 /* Ticket / work-order card signature: dashed perforation edge */
 .ticket {

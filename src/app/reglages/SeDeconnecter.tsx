@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import BottomSheet from "@/components/atlas/BottomSheet";
-import { colors, font, surPlein } from "@/lib/design-tokens";
+import { colors, font, radius, surPlein } from "@/lib/design-tokens";
 import { deconnexionAction } from "@/app/login/actions";
 
 /**
@@ -76,19 +76,37 @@ export default function SeDeconnecter({ nomEntreprise }: { nomEntreprise: string
 
   return (
     <>
-      <div className="mt-10 px-[26px]">
+      {/* **En toutes lettres, sur sa plage — sa planche du 25 octobre 2026.**
+          En 9,5 px de capitales espacées, le geste se cherchait ; il se lit
+          désormais comme les rubriques au-dessus de lui, dans son rouge. */}
+      <div className="mt-[28px] px-[26px]">
         <button
           type="button"
           data-atlas="se-deconnecter"
           onClick={() => setOuverte(true)}
-          className="inline-flex min-h-[44px] cursor-pointer items-center text-[9.5px] font-medium uppercase"
+          className="flex min-h-[60px] w-full cursor-pointer items-center gap-[12px] px-[18px] text-left text-[17px] font-semibold"
           style={{
-            background: "transparent",
+            background: colors.card,
+            borderRadius: radius.card,
             color: colors.alert,
-            letterSpacing: "0.28em",
             WebkitTapHighlightColor: "transparent",
           }}
         >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{ flex: "none" }}
+          >
+            <path d="M14.5 4.5h4v15h-4M10 8l-4 4 4 4M6 12h9.5" />
+          </svg>
           Se déconnecter
         </button>
       </div>

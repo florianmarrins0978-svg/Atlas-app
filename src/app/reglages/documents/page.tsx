@@ -62,7 +62,7 @@ export default async function DocumentsPage() {
             recopiée : le jour où la ligne change de hauteur ou de chevron, elle
             change aux deux endroits. Un seul ensemble, sans intertitre — quatre
             lignes n'ont pas de familles à séparer. */}
-        <Sommaire ensembles={[{ titre: "", rubriques: SOUS_RUBRIQUES_DOCUMENTS }]} />
+        <Sommaire ensembles={[{ titre: "", cote: "entreprise", rubriques: SOUS_RUBRIQUES_DOCUMENTS }]} />
 
         {/* Sous les quatre lignes, là où se règle ce qui s'imprime — sa
             réponse « A et B » du 26 septembre 2026 (`VoirUnExemple`). */}

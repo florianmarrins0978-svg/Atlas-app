@@ -21,15 +21,15 @@ function cas(nom: string, f: () => void) {
 cas("une ligne sans texte ne donne pas de case (sa capture)", () => {
   assert.deepEqual(
     tachesDuDevis([
-      { libelle: "", quantite: "1", unite: null },
-      { libelle: "Coupe de cheveux homme", quantite: "45.00", unite: null },
+      { libelle: "", quantite: "1", unite: null, mainDoeuvre: false },
+      { libelle: "Coupe de cheveux homme", quantite: "45.00", unite: null, mainDoeuvre: false },
     ]),
     ["Coupe de cheveux homme, 45 u"]
   );
 });
 
 cas("des espaces seuls ne sont pas un texte", () => {
-  assert.deepEqual(tachesDuDevis([{ libelle: "  \n ", quantite: "3", unite: null }]), []);
+  assert.deepEqual(tachesDuDevis([{ libelle: "  \n ", quantite: "3", unite: null, mainDoeuvre: false }]), []);
 });
 
 // **Sa remarque du 29 septembre 2026 :** *« le 45 c'est la quantité, il faut
@@ -39,11 +39,28 @@ cas("des espaces seuls ne sont pas un texte", () => {
 cas("la quantité s'écrit avec son unité, comme sur le devis", () => {
   assert.deepEqual(
     tachesDuDevis([
-      { libelle: "Taille de haie", quantite: "18.00", unite: "ml" },
-      { libelle: "Engazonnement", quantite: "12.50", unite: " m² " },
-      { libelle: "Évacuation des déchets", quantite: "1.00", unite: null },
+      { libelle: "Taille de haie", quantite: "18.00", unite: "ml", mainDoeuvre: false },
+      { libelle: "Engazonnement", quantite: "12.50", unite: " m² ", mainDoeuvre: false },
+      { libelle: "Évacuation des déchets", quantite: "1.00", unite: null, mainDoeuvre: false },
     ]),
     ["Taille de haie, 18 ml", "Engazonnement, 12,5 m²", "Évacuation des déchets"]
+  );
+});
+
+// **Sa capture du 25 octobre 2026** : « Main d'œuvre » cochable sous la haie
+// et l'érigeron. *« La main d'œuvre ne doit pas apparaître »* : elle se paie,
+// elle ne se fait pas. C'est le drapeau de la ligne qui la reconnaît, jamais
+// son texte (`LIBELLE_LIGNE_MAIN_DOEUVRE`) : renommée, elle part quand même ;
+// un travail qui la nomme sans le drapeau reste un travail.
+cas("une ligne de main d'œuvre ne donne pas de case (sa capture)", () => {
+  assert.deepEqual(
+    tachesDuDevis([
+      { libelle: "Taille de haie de laurier", quantite: "50.00", unite: "ml", mainDoeuvre: false },
+      { libelle: "Erigeron", quantite: "1.00", unite: null, mainDoeuvre: false },
+      { libelle: "Main d’œuvre", quantite: "1.00", unite: null, mainDoeuvre: true },
+      { libelle: "Main d’œuvre plantation", quantite: "1.00", unite: null, mainDoeuvre: true },
+    ]),
+    ["Taille de haie de laurier, 50 ml", "Erigeron"]
   );
 });
 

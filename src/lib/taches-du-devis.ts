@@ -29,10 +29,16 @@ export function sansLigneVide<T extends { libelle: string }>(lignes: readonly T[
   return lignes.filter((l) => !ligneSansTexte(l.libelle));
 }
 
+/**
+ * **La main d'œuvre n'est pas un travail** — sa capture du 25 octobre 2026,
+ * « Main d'œuvre » à cocher sous la haie : *« la main d'œuvre ne doit pas
+ * apparaître »*. Elle se paie, elle ne se fait pas. Le drapeau de la ligne la
+ * reconnaît, jamais son texte (`LIBELLE_LIGNE_MAIN_DOEUVRE`, qu'il renomme).
+ */
 export function tachesDuDevis(
-  lignes: readonly { libelle: string; quantite: string; unite: string | null }[]
+  lignes: readonly { libelle: string; quantite: string; unite: string | null; mainDoeuvre: boolean }[]
 ): string[] {
-  return sansLigneVide(lignes).map((l) => {
+  return sansLigneVide(lignes.filter((l) => !l.mainDoeuvre)).map((l) => {
       // **La quantité s'écrit quand elle apprend quelque chose.** « 1 » ne dit
       // rien de plus que le libellé ; « 18 ml » dit combien de mètres de haie.
       // Elle s'écrit comme sur le papier du devis, unité comprise : *« le 45

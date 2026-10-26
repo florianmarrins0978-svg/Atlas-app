@@ -70,8 +70,10 @@ export default function RegistresDuDossier({ registres }: { registres: Registre[
     const bouton = onglets.current[actif];
     const barre = trait.current;
     if (!bouton || !barre) return;
-    barre.style.width = `${bouton.offsetWidth}px`;
-    barre.style.transform = `translateX(${bouton.offsetLeft}px)`;
+    // Le trait fait les deux tiers de son onglet, centré sous le mot : posé
+    // sur toute la largeur d'un tiers d'écran, il soulignait du vide.
+    barre.style.width = `${Math.round(bouton.offsetWidth * 0.64)}px`;
+    barre.style.transform = `translateX(${Math.round(bouton.offsetLeft + bouton.offsetWidth * 0.18)}px)`;
     if (premier.current) {
       // **Le premier placement ne s'anime pas** : il n'y a rien à montrer d'un
       // trait qui rejoint sa place de départ, et on le verrait grandir depuis
@@ -90,8 +92,13 @@ export default function RegistresDuDossier({ registres }: { registres: Registre[
     <>
       {/* L'air au-dessus des onglets vaut les 42 px de la maquette : les 32 px
           que l'onglet se réserve au-dessus de son mot en font déjà partie. */}
-      <div className="px-[26px] pt-[10px]">
-        <div className="relative flex gap-[26px]" role="tablist" aria-label="Le dossier">
+      <div className="px-[22px] pt-4">
+        <div
+          className="relative flex"
+          role="tablist"
+          aria-label="Le dossier"
+          style={{ boxShadow: `inset 0 -1px 0 ${colors.line}` }}
+        >
           {registres.map((r, i) => (
             <button
               key={r.cle}
@@ -105,18 +112,18 @@ export default function RegistresDuDossier({ registres }: { registres: Registre[
               aria-controls={`registre-${r.cle}`}
               data-atlas="registre"
               onClick={() => setActif(i)}
-              // 9,5 px et 0,28 em : la voix des libellés (`libelleCaps`), la
-              // même que « En cours » sur l'accueil.
+              // **Des mots, plus des petites capitales — 25 octobre 2026**, sur sa
+              // planche : 9,5 px espacées étaient le plus petit texte de l'écran
+              // pour la seule navigation du dossier. Seize pixels, en bas de
+              // casse ; l'onglet ouvert en encre pleine et en gras, les autres en
+              // encre douce. Chacun prend une part égale de la largeur.
               //
-              // **44 px de haut, et le mot posé EN BAS.** Le libellé mesure une
-              // douzaine de pixels : un onglet à sa taille faisait 24 px de
-              // cible, et la suite l'a refusé avant lui — « on les rate au
-              // doigt ». La hauteur est prise au-dessus du mot, si bien que le
-              // trait d'or reste collé sous lui.
-              className="flex min-h-[44px] items-end pb-3 text-[9.5px] font-medium uppercase"
+              // **52 px de haut**, au-delà des 44 du pouce, pour que le trait
+              // d'or reste collé sous le mot.
+              className="flex min-h-[52px] flex-1 basis-0 items-center justify-center text-[16px]"
               style={{
-                color: i === actif ? colors.ink : colors.muted,
-                letterSpacing: "0.28em",
+                color: i === actif ? colors.ink : colors.inkSoft,
+                fontWeight: i === actif ? 700 : 600,
                 transition: "color 320ms cubic-bezier(0.22,0.61,0.36,1)",
                 WebkitTapHighlightColor: "transparent",
               }}
@@ -127,7 +134,7 @@ export default function RegistresDuDossier({ registres }: { registres: Registre[
           <span
             ref={trait}
             aria-hidden="true"
-            className="pointer-events-none absolute bottom-0 left-0 block h-[1.5px]"
+            className="pointer-events-none absolute bottom-0 left-0 block h-[2px] rounded-[2px]"
             style={{ backgroundColor: colors.or, width: 0, transition: "none" }}
           />
         </div>
@@ -140,14 +147,14 @@ export default function RegistresDuDossier({ registres }: { registres: Registre[
           role="tabpanel"
           aria-labelledby={`onglet-${r.cle}`}
           hidden={i !== actif}
-          className="px-[26px]"
+          className="px-[22px]"
         >
           {r.pieces.length === 0 ? (
-            <p className="pt-5 text-[13px] leading-[1.5]" style={{ color: colors.muted }}>
+            <p className="py-6 text-center text-[15px] leading-[1.5]" style={{ color: colors.inkSoft }}>
               {r.rien}
             </p>
           ) : (
-            r.pieces.map((piece) => <PieceDuDossier key={piece.id} piece={piece} />)
+            r.pieces.map((piece, rang) => <PieceDuDossier key={piece.id} piece={piece} premiere={rang === 0} />)
           )}
         </div>
       ))}

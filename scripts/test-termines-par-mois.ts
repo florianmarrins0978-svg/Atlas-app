@@ -25,6 +25,7 @@ import {
   libelleFacturee,
   libelleDateChantier,
   libelleEtatLigne,
+  carreDuJour,
   numeroCourt,
   estFacture,
   trier,
@@ -329,12 +330,40 @@ essai("sans date au planning, on n'invente rien", () => {
   assert.equal(libelleDateChantier("", "2026"), "");
 });
 
-essai("la ligne d'état porte la date puis le montant prévu", () => {
+// ─── LA DATE PASSE DANS LE CARRÉ — sa planche du 25 octobre 2026 ─────────────
+// `appli/soignee/termines.html` : le jour du chantier en grand, à gauche de la
+// rangée. La ligne d'état ne le répète donc plus.
+
+essai("le carré porte le jour du chantier, son mois abrégé", () => {
+  const [l] = preparer([ligne({ id: "a", datePlanifiee: "2026-10-09" })]);
+  assert.deepEqual(carreDuJour(l, "2026"), { jour: 9, mois: "oct.", annee: null });
+  const [s] = preparer([ligne({ id: "b", datePlanifiee: "2026-09-26" })]);
+  assert.equal(carreDuJour(s, "2026")?.mois, "sept.");
+  const [a] = preparer([ligne({ id: "c", datePlanifiee: "2026-08-27" })]);
+  assert.equal(carreDuJour(a, "2026")?.mois, "août");
+});
+
+essai("le carré dit l'année quand ce n'est plus celle du jour", () => {
+  // L'œil mêle tous les mois : « 14 sept. » d'il y a un an se lirait comme le mois qui vient.
+  const [l] = preparer([ligne({ id: "a", datePlanifiee: "2025-09-14" })]);
+  assert.deepEqual(carreDuJour(l, "2026"), { jour: 14, mois: "sept.", annee: "2025" });
+});
+
+essai("sans planning, le carré prend le jour de la facture ; sans rien, il n'y a pas de carré", () => {
+  // Sa réponse du 25 octobre 2026 : la date à gauche est celle du chantier, et
+  // une facture créée sans chantier daté prend le jour de sa création.
+  const [f] = preparer([ligne({ id: "a", factureStatut: "emise", factureDateEmission: "2026-09-18" })]);
+  assert.deepEqual(carreDuJour(f, "2026"), { jour: 18, mois: "sept.", annee: null });
+  const [rien] = preparer([ligne({ id: "b" })]);
+  assert.equal(carreDuJour(rien, "2026"), null);
+});
+
+essai("la ligne d'état ne porte plus que le montant prévu", () => {
   const [l] = preparer([ligne({ id: "a", datePlanifiee: "2026-08-12", totalPrevuTtc: "360.00" })]);
   // Le montant se compare par `formatEuros`, jamais par une chaîne écrite à la
   // main : l'espace qui précède le « € » est une espace fine insécable, et deux
   // caractères invisibles qui diffèrent font rougir un contrôle juste.
-  assert.equal(lue(libelleEtatLigne(l, "2026")), `12 août, ${formatEuros(360)} prévus`);
+  assert.equal(lue(libelleEtatLigne(l, "2026")), `${formatEuros(360)} prévus`);
 });
 
 essai("« Pas encore facturé » n'est plus écrit nulle part", () => {
@@ -349,9 +378,9 @@ essai("« Pas encore facturé » n'est plus écrit nulle part", () => {
   }
 });
 
-essai("sans devis envoyé, il ne reste que la date — et JAMAIS un «, » pendu", () => {
+essai("sans devis envoyé, la ligne d'état est vide, et JAMAIS un «, » pendu", () => {
   const [l] = preparer([ligne({ id: "a", datePlanifiee: "2026-08-26" })]);
-  assert.equal(lue(libelleEtatLigne(l, "2026")), "26 août");
+  assert.equal(lue(libelleEtatLigne(l, "2026")), "");
 });
 
 essai("sans date NI montant, la ligne d'état n'existe pas", () => {
@@ -361,7 +390,7 @@ essai("sans date NI montant, la ligne d'état n'existe pas", () => {
   assert.equal(lue(libelleEtatLigne(l, "2026")), "");
 });
 
-essai("une fois facturé, la date du chantier précède celle de la facture", () => {
+essai("une fois facturé, la ligne dit la facture, le jour du chantier est dans le carré", () => {
   // « Facturé le 20 août » reste : aucun bouton ne le dit à sa place.
   const [l] = preparer([
     ligne({
@@ -373,7 +402,7 @@ essai("une fois facturé, la date du chantier précède celle de la facture", ()
       factureNumero: "F2026-0005",
     }),
   ]);
-  assert.equal(lue(libelleEtatLigne(l, "2026")), "9 août, Facturé le 20 août, Facture n° 5");
+  assert.equal(lue(libelleEtatLigne(l, "2026")), "Facturé le 20 août, Facture n° 5");
 });
 
 essai("« Facturé » sort SÉPARÉ, pour le gras doré (planche A du 24 septembre 2026)", () => {
@@ -388,7 +417,7 @@ essai("« Facturé » sort SÉPARÉ, pour le gras doré (planche A du 24 septemb
     }),
   ]);
   assert.deepEqual(libelleEtatLigne(l, "2026"), {
-    avant: "9 août, ",
+    avant: "",
     mot: "Facturé",
     apres: " le 20 août, Facture n° 5",
   });
@@ -430,9 +459,10 @@ essai("et le mois le retrouve, au lieu de le perdre", () => {
   );
 });
 
-essai("la date de la facture s'écrit sur la rangée qui attend", () => {
+essai("la date de la facture va dans le carré de la rangée qui attend", () => {
   const [l] = preparer([ligne({ id: "a", factureDateEmission: "2026-09-18" })]);
-  assert.equal(lue(libelleEtatLigne(l, "2026")), "18 septembre");
+  assert.equal(carreDuJour(l, "2026")?.jour, 18);
+  assert.equal(lue(libelleEtatLigne(l, "2026")), "");
 });
 
 essai("le planning l'emporte quand les deux existent", () => {
@@ -440,7 +470,7 @@ essai("le planning l'emporte quand les deux existent", () => {
     ligne({ id: "a", datePlanifiee: "2026-09-11", factureDateEmission: "2026-09-18" }),
   ]);
   assert.equal(l.cleMois, "2026-09");
-  assert.equal(lue(libelleEtatLigne(l, "2026")), "11 septembre");
+  assert.equal(carreDuJour(l, "2026")?.jour, 11);
 });
 
 essai("facturée sans date de planning, la date ne s'écrit PAS deux fois", () => {
@@ -534,11 +564,11 @@ essai("client : rangé sans la civilité, et à la française", () => {
   assert.deepEqual(ids(trier(l, { cle: "client", croissant: false })), ["z", "e", "b"]);
 });
 
-essai("rangée par devis, la ligne dit la date du devis ; sans devis, celle du chantier", () => {
+essai("rangée par devis, la ligne dit la date du devis ; sans devis, rien de plus que le carré", () => {
   const [sansDevis, huguette] = quatre();
   assert.equal(lue(libelleEtatLigne(huguette, "2026", "devis")), `Devis du 29 août, ${formatEuros(660)} prévus`);
-  assert.equal(lue(libelleEtatLigne(huguette, "2026")), `12 septembre, ${formatEuros(660)} prévus`);
-  assert.equal(lue(libelleEtatLigne(sansDevis, "2026", "devis")), "22 septembre");
+  assert.equal(lue(libelleEtatLigne(huguette, "2026")), `${formatEuros(660)} prévus`);
+  assert.equal(lue(libelleEtatLigne(sansDevis, "2026", "devis")), "");
 });
 
 essai("un tri relu du téléphone : abîmé ou d'une autre version, l'ordre par défaut", () => {

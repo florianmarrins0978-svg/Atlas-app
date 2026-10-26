@@ -394,7 +394,12 @@ export function numeroCourt(numero: string): string {
 }
 
 /**
- * « 12 août » — la date à laquelle le chantier a été réalisé.
+ * « 12 août » — une date écrite en toutes lettres.
+ *
+ * **Depuis le 25 octobre 2026, elle ne sert plus qu'à la date du devis** (tri
+ * par devis) : le jour du chantier vit dans le carré de gauche
+ * (`carreDuJour`). Ce qui suit raconte pourquoi l'année s'écrit, et vaut pour
+ * les deux.
  *
  * **Sa demande du 31 août 2026 :** *« à côté du nom du client il faudrait
  * inscrire la date à laquelle le chantier a été réalisé »*. Planche
@@ -426,6 +431,34 @@ export function libelleDateChantier(jour: string | null, anneeCourante: string):
   return annee === anneeCourante ? `${numero} ${mois}` : `${numero} ${mois} ${annee}`;
 }
 
+const MOIS_ABREGES = [
+  "janv.", "févr.", "mars", "avr.", "mai", "juin",
+  "juil.", "août", "sept.", "oct.", "nov.", "déc.",
+];
+
+/**
+ * Le carré de gauche d'une rangée : le jour du chantier en grand, son mois
+ * abrégé, et l'année seulement quand ce n'est plus celle du jour.
+ *
+ * **Sa planche du 25 octobre 2026** (`appli/soignee/termines.html`), et sa
+ * réponse le même soir : la date à gauche est celle du chantier. C'est donc
+ * `dateDuChantier` : le planning, et à défaut le jour où la facture a été faite
+ * (sa décision du 21 septembre 2026). Sans aucune des deux, pas de carré : on
+ * n'invente pas de jour.
+ */
+export function carreDuJour(
+  l: Pick<LigneAffichee, "dateDuChantier">,
+  anneeCourante: string
+): { jour: number; mois: string; annee: string | null } | null {
+  const date = l.dateDuChantier;
+  if (!date) return null;
+  const jour = Number(date.slice(8, 10));
+  const mois = MOIS_ABREGES[Number(date.slice(5, 7)) - 1];
+  if (!jour || !mois) return null;
+  const annee = date.slice(0, 4);
+  return { jour, mois, annee: annee === anneeCourante ? null : annee };
+}
+
 /**
  * La deuxième ligne d'une rangée, assemblée morceau par morceau.
  *
@@ -434,9 +467,9 @@ export function libelleDateChantier(jour: string | null, anneeCourante: string):
  * qu'une capsule « À FACTURER » disait exactement la même chose à trois
  * centimètres, sur la même ligne.
  *
- * **Elle rend donc parfois une chaîne VIDE**, ce qui n'existait pas avant : un
- * chantier sans montant au devis n'a plus que sa date, et un chantier sans date
- * ni montant n'a plus de deuxième ligne du tout. L'écran n'affiche alors rien —
+ * **Elle rend donc souvent une chaîne VIDE** : un chantier qui attend, sans
+ * montant au devis, n'a plus de deuxième ligne du tout (son jour est dans le
+ * carré, depuis le 25 octobre 2026). L'écran n'affiche alors rien —
  * ni tiret, ni phrase de remplacement : on n'écrit pas ce qu'on ne sait pas
  * (`docs/AGENT.md` §3).
  *
@@ -451,14 +484,11 @@ export function libelleEtatLigne(l: LigneAffichee, anneeCourante: string, cle: C
   const duDevis = cle === "devis" && l.devisDateEmission
     ? libelleDateChantier(l.devisDateEmission, anneeCourante)
     : "";
-  // **La rangée FACTURÉE ne montre que sa date de planning.** Quand le chantier
-  // n'en a pas, son jour est celui de la facture (`dateDuChantier`) — et
-  // « Facturé le 18 septembre » le dit déjà, trois mots plus loin. Écrire les
-  // deux donnerait « 18 septembre · Facturé le 18 septembre », la répétition
-  // qu'il fait retirer à chaque fois (`CLAUDE.md` §3).
-  const date = duDevis
-    ? `Devis du ${duDevis}`
-    : libelleDateChantier(l.aFacturer ? l.dateDuChantier : l.datePlanifiee, anneeCourante);
+  // **Le jour du chantier n'est plus écrit ici depuis le 25 octobre 2026** :
+  // il vit en grand dans le carré de gauche (`carreDuJour`, sa planche
+  // `appli/soignee/termines.html`). Le répéter dans la phrase serait la
+  // redite qu'il fait retirer à chaque fois (`CLAUDE.md` §3).
+  const date = duDevis ? `Devis du ${duDevis}` : "";
   if (l.aFacturer) {
     const bouts = date ? [date] : [];
     if (l.montant !== null) bouts.push(`${formatEuros(l.montant)} prévus`);

@@ -215,13 +215,16 @@ export default function EcranChantiers({
     <div
       data-atlas="compteur"
       data-compte={compte}
-      className="sticky top-0 z-[2] mb-1 flex items-baseline gap-[10px] px-[26px] pt-[18px] text-[11px] font-medium uppercase"
-      style={{ color: colors.inkSoft, letterSpacing: "0.28em", backgroundColor: colors.cream }}
+      // **13 px et 0,12 em, le chiffre à 16 px — sa planche du 25 octobre 2026**
+      // (`appli/soignee/accueil.html`). À 11 px espacés de 0,28 em, le mot se
+      // lisait comme un filet de lettres.
+      className="sticky top-0 z-[2] mb-1 flex items-baseline gap-[10px] px-[26px] pt-[14px] text-[13px] font-semibold uppercase"
+      style={{ color: colors.inkSoft, letterSpacing: "0.12em", backgroundColor: colors.cream }}
     >
       <span>En cours</span>
       <span
-        className="text-[13.5px] font-bold"
-        style={{ color: colors.ink, letterSpacing: "0.06em", fontVariantNumeric: "tabular-nums" }}
+        className="text-[16px] font-bold"
+        style={{ color: colors.ink, letterSpacing: "0.02em", fontVariantNumeric: "tabular-nums" }}
       >
         {compte}
       </span>
@@ -342,8 +345,8 @@ export default function EcranChantiers({
               cinquième onglet — la barre du bas en porte quatre et le cinquième
               est déjà décidé pour les outils métier (`ARCHITECTURE.md` §125).
 
-              En or et en petites capitales, comme le reste de ce bloc : ce
-              qu'on LIT, jamais ce qu'on FAIT. L'action de cet écran reste
+              En or, comme le reste de ce bloc : ce qu'on LIT, jamais ce
+              qu'on FAIT. L'action de cet écran reste
               « Nouveau chantier », et rien ne doit lui disputer l'œil. */}
           {/* **Deux corrections du 6 septembre 2026**, sur la planche qu'il a
               retenue :
@@ -374,18 +377,21 @@ export default function EcranChantiers({
               l'affichage** : un mot de 11 px ne s'attrape pas sous un pouce
               ganté, et sa cible ne doit pas pour autant décaler la ligne.
               Mesuré à 14 px avant ce lot. */}
+          {/* **15,5 px en phrase, et non plus 11 px en capitales — sa planche
+              du 25 octobre 2026** (`appli/soignee/accueil.html`, « tu peux
+              coder ça »). Le seul chemin vers ses clients se lit d'un coup
+              d'œil ; il garde sa place, son or et son chevron. */}
           <Link
             href="/clients"
-            className="inline-flex min-h-[44px] items-center text-[11px] font-medium uppercase"
+            className="inline-flex min-h-[44px] items-center text-[15.5px] font-semibold"
             // Les marges sont écrites ici, et non en classes : deux classes de
             // marge sur le même axe (`-my-` puis `mt-`) laissent l'ordre du
             // rendu décider laquelle gagne, ce qui n'est pas une décision.
             // Le mot reste où il était ; seule sa cible grandit autour.
             style={{
               color: colors.or,
-              letterSpacing: "0.28em",
-              marginTop: -5,
-              marginBottom: -15,
+              marginTop: -2,
+              marginBottom: -6,
             }}
           >
             Vos clients
@@ -399,11 +405,14 @@ export default function EcranChantiers({
                 L'interlettrage est remis à zéro (à 0,28 em il flottait à cinq
                 pixels du mot) et le signe remonte d'un pixel : son centre
                 optique tombe alors sur celui des capitales, et non une ligne
-                en dessous. Vu en capture, à trois fois la taille. */}
+                en dessous. Vu en capture, à trois fois la taille.
+
+                **21 px depuis le 25 octobre 2026** : le mot est passé à 15,5 px
+                en phrase, et le chevron le suit d'autant. */}
             <span
               aria-hidden="true"
-              className="ml-[5px] text-[19px] font-bold leading-none"
-              style={{ letterSpacing: 0, position: "relative", top: -1 }}
+              className="ml-[6px] text-[21px] font-semibold leading-none"
+              style={{ position: "relative", top: -1 }}
             >
               ›
             </span>
@@ -457,7 +466,7 @@ export default function EcranChantiers({
             jamais le rapport — le jour où l'en-tête change de hauteur, c'est
             elle qui le dira. */}
         {vide && <div aria-hidden className="flex-[2]" />}
-        <div className="flex flex-col items-center px-[26px] pb-0.5 pt-[22px]">
+        <div className="flex flex-col items-center px-[26px] pb-0.5 pt-[12px]">
           <Link
             href="/chantiers/nouveau"
             data-atlas="nouveau-chantier"

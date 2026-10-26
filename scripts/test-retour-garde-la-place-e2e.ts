@@ -44,6 +44,15 @@ const BASE = ADRESSE;
  */
 const COMBIEN = 30;
 
+/**
+ * La flèche de la fiche, reconnue à son nom et non à sa place. La suite visait
+ * `header a[aria-label]` ; depuis la fiche soignée du 25 octobre 2026, l'en-tête
+ * du client porte l'adresse et le téléphone, et la flèche vit au-dessus de lui.
+ * Le nom « Retour… » est ce que lit un lecteur d'écran, et ce que vise déjà
+ * `test-retour-fiche-client-e2e`.
+ */
+const FLECHE = 'a[aria-label^="Retour"]';
+
 let echecs = 0;
 async function cas(nom: string, fn: () => Promise<void>) {
   try {
@@ -165,7 +174,7 @@ async function principal() {
     await page.waitForURL(/\/clients\/[0-9a-f-]{36}/, { timeout: DELAI_PAR_DEFAUT_MS });
     await attendreVivante(page);
 
-    await page.locator("header a[aria-label]").first().click();
+    await page.locator(FLECHE).first().click();
     await page.waitForURL(`${BASE}/clients`, { timeout: DELAI_PAR_DEFAUT_MS });
     // Le navigateur rend la place APRÈS avoir repeint : on lui laisse le temps
     // de le faire plutôt que de mesurer un écran à moitié posé.
@@ -200,7 +209,7 @@ async function principal() {
     await page.goto(`${BASE}${href}`, { waitUntil: "domcontentloaded" });
     await attendreVivante(page);
 
-    await page.locator("header a[aria-label]").first().click();
+    await page.locator(FLECHE).first().click();
     await page.waitForFunction(
       (depart: string) => window.location.pathname !== depart,
       new URL(`${BASE}${href}`).pathname,
@@ -232,7 +241,7 @@ async function principal() {
     await page.waitForURL(/\/clients\/[0-9a-f-]{36}/, { timeout: DELAI_PAR_DEFAUT_MS });
     await attendreVivante(page);
 
-    await page.locator("header a[aria-label]").first().click();
+    await page.locator(FLECHE).first().click();
     await page.waitForURL(`${BASE}/clients`, { timeout: DELAI_PAR_DEFAUT_MS });
     await page.waitForTimeout(600);
 

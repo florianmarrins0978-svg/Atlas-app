@@ -32,10 +32,18 @@ export function JourDuBrin({ jour, mois }: { jour: string; mois: string }) {
           tenait 3,32 de contraste sur le crème, là où un mot en demande 4,5 ;
           `inkSoft` en tient 8,04. */}
       <span
-        className="row-span-3 pr-[13px] text-right text-[11px] font-medium uppercase"
-        style={{ color: colors.inkSoft, letterSpacing: "0.28em", fontVariantNumeric: "tabular-nums" }}
+        // **Le jour à 22 px, le mois à 12,5 px espacé de 0,08 em — sa planche du
+        // 25 octobre 2026** (`appli/soignee/accueil.html`) : à 0,28 em, « JUIL. »
+        // s'étirait plus large que le jour qu'il nomme.
+        //
+        // **Plus de `row-span-3`** : il date du temps où le nom, le lieu et
+        // l'état étaient trois cases de la grille. Ils vivent depuis dans UNE
+        // seule (`.atlas-glisse`), et les deux rangées que la date réclamait
+        // encore restaient vides sous chaque chantier, 30 px mesurés.
+        className="pr-[13px] text-right text-[12.5px] font-semibold uppercase"
+        style={{ color: colors.inkSoft, letterSpacing: "0.08em", fontVariantNumeric: "tabular-nums" }}
       >
-        <b className="block text-[19px] font-normal leading-none" style={{ color: colors.ink, fontFamily: font.display }}>
+        <b className="block text-[22px] font-normal leading-none" style={{ color: colors.ink, fontFamily: font.display, letterSpacing: 0 }}>
           {jour}
         </b>
         <span className="mt-1 block">{mois}</span>
@@ -270,7 +278,12 @@ export default function ListeChantiers({
           // 21 px, et non 17 : sa demande du 2 septembre 2026. Le fil porte
           // jusqu'à cinq chantiers, chacun sur quatre lignes — quatre pixels de
           // plus entre deux, et l'œil cesse de les lire comme un pavé.
-          className="relative grid grid-cols-[47px_1fr] gap-x-[26px] py-[21px]"
+          //
+          // **14 et 16 px depuis sa planche du 25 octobre 2026**, qu'il a fait
+          // coder : l'état écrit en phrase et non plus en capitales espacées
+          // sépare déjà deux chantiers, et l'air gagné fait entrer le premier
+          // dans l'écran un matin où un client a répondu.
+          className="relative grid grid-cols-[47px_1fr] gap-x-[26px] pb-[16px] pt-[14px]"
         >
           {/* Ce qui glisse : le nom, le lieu, l'état. Le fil et la date
               restent en place — une ligne qui part d'un bloc coupe le nom en
@@ -279,7 +292,7 @@ export default function ListeChantiers({
               restent en place — une ligne qui part d'un bloc coupe le nom en
               plein mot et laisse le fil traverser les lettres. */}
           <Link href={c.reprise} className="atlas-brin block">
-            <h2 className="truncate text-[19px] font-normal leading-[1.15]" style={{ fontFamily: font.display }}>
+            <h2 className="truncate text-[20px] font-normal leading-[1.2]" style={{ fontFamily: font.display }}>
               {c.nom}
             </h2>
             {c.lieuManquant ? (
@@ -326,7 +339,7 @@ export default function ListeChantiers({
                    capture, le 17 août). **Il est plein et non pointillé** : à
                    14 px, un pointillé se lit comme une faute d'orthographe
                    soulignée, pas comme un lien. */
-                className="inline-flex min-h-[44px] max-w-full items-center text-[14px]"
+                className="inline-flex min-h-[44px] max-w-full items-center text-[15px]"
                 style={{ color: colors.alert, marginTop: -5, marginBottom: -5 }}
               >
                 <span
@@ -340,7 +353,7 @@ export default function ListeChantiers({
               /* 14 px et l'encre douce — 6 septembre 2026. C'est l'adresse
                  qu'il tape dans son GPS : à 11,5 px dans un gris à 3,32 de
                  contraste, elle ne se lisait pas au soleil. */
-              <p className="mt-[3px] truncate text-[14px]" style={{ color: colors.inkSoft }}>
+              <p className="mt-[4px] truncate text-[15px]" style={{ color: colors.inkSoft }}>
                 {c.lieu}
               </p>
             )}
@@ -357,8 +370,16 @@ export default function ListeChantiers({
                 c'est son écran. `orTexte` (4,59) existe dans
                 `design-tokens.ts` le jour où il changera d'avis. */}
             <p
-              className="mt-[7px] text-[12px] font-medium uppercase"
-              style={{ color: c.attend ? colors.or : colors.inkSoft, letterSpacing: "0.14em" }}
+              // **En phrase, 15 px en demi-gras — sa planche du 25 octobre 2026**
+              // (`appli/soignee/accueil.html`) : en capitales espacées de
+              // 12 px, l'état se lisait lettre à lettre. L'or reste le sien.
+              //
+              // **Un repère, comme la précision juste en dessous** : la suite qui
+              // vérifie l'or le trouvait par ses capitales, et c'est l'écriture
+              // qui vient de changer, pas la règle (`CLAUDE.md` §5 bis).
+              data-atlas="etat-chantier"
+              className="mt-[6px] text-[15px] font-semibold leading-[1.3]"
+              style={{ color: c.attend ? colors.or : colors.inkSoft }}
             >
               {c.etat}
             </p>
@@ -374,7 +395,7 @@ export default function ListeChantiers({
                 // §5 bis). Ce qu'un contrôle doit tenir, c'est qu'une date
                 // existe sous l'état — pas les mots qui l'accompagnent.
                 data-atlas="precision-chantier"
-                className="mt-[4px] truncate text-[13px]"
+                className="mt-[3px] truncate text-[14.5px]"
                 style={{ color: colors.inkSoft }}
               >
                 {c.precision}
