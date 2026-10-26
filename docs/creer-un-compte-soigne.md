@@ -42,7 +42,7 @@ décennale, nés le 14 septembre.
 | Moyens de paiement, « Virement et chèque » proposé | le même | sa décision du 18 septembre | `modalites-paiement.ts` |
 | *absent* | **Avez-vous une assurance décennale ?** Oui ou Non ; si oui, **la photo de l'attestation** (l'IA lit déjà l'assureur et la fin de validité), puis **l'assureur** : nom (proposé par la lecture), adresse, couverture | obligatoire sur les devis et factures de qui en a une (loi 96-603, art. 22-2) | `lire-attestation.ts`, `attestation-lue.ts` |
 | *absent* | **Votre médiateur de la consommation ?**, Passer permis, compté à la fin s'il manque | obligatoire dès qu'on travaille pour des particuliers ; c'est lui que la fin d'aujourd'hui oublie | Mon entreprise |
-| *absent* (un chantier par jour posé sans le dire) | **Combien de chantiers par jour ?**, 1 proposé | la capacité du planning dès le premier jour | `VosEquipes.tsx`, `nombreEquipes` |
+| *absent* (un chantier par jour posé sans le dire) | **Combien de chantiers par jour ?**, 1 proposé, et **à quoi il sert** : « Une équipe, un chantier. Ce chiffre règle le remplissage de votre planning. », trois jours d'exemple qui se remplissent sous le compteur avec les mots du planning (rien, incomplet, complet, au-delà), puis « Les dates proposées à vos clients évitent les jours complets. » | la capacité du planning dès le premier jour ; l'explication est sa demande du 26 octobre : *« on ne sait pas trop pourquoi on choisit deux équipes ou moins »* | `VosEquipes.tsx`, `nombreEquipes`, `planning-jour.ts` (`etatDemi`, `MOT_ETAT`) |
 
 **Le compte annoncé** reste la règle de `totalAnnonce` : il ne monte jamais.
 14 questions pour une micro-entreprise sans décennale, 20 pour une société qui
@@ -71,7 +71,9 @@ sur une navigation côté client : à résoudre au codage, sans affaiblir la gar
 ## À trancher par lui
 
 - Face ID proposé juste avant d'entrer, ou laissé dans Réglages, Mot de passe.
-- Les chantiers par jour demandés à la porte, ou laissés à un.
+
+Les chantiers par jour : **gardés à la porte**, sa réponse du 26 octobre, qui
+demande seulement d'expliquer à quoi ils servent (fait sur la planche).
 
 ## Trouvé en chemin, non corrigé
 

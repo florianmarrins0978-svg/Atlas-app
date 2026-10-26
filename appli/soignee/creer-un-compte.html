@@ -156,10 +156,27 @@
 .reprendre { display: inline-flex; align-items: center; min-height: 48px; margin-top: 4px; font-size: 15.5px; font-weight: 600; color: var(--atlas-or); }
 
 /* Le compteur de chantiers. */
-.porte .compteur { margin: 8px 0 4px; }
-.porte .compteur output { font-size: 64px; min-width: 80px; }
-.porte .compteur button { width: 60px; height: 60px; }
-.compteur-mot { margin: 6px 0 0; text-align: center; font-size: 15.5px; color: var(--atlas-inkSoft); }
+.porte .compteur { margin: 2px 0 0; }
+.porte .compteur output { font-size: 56px; min-width: 76px; }
+.porte .compteur button { width: 56px; height: 56px; }
+.compteur-mot { margin: 4px 0 0; text-align: center; font-size: 15.5px; color: var(--atlas-inkSoft); }
+
+/* À quoi sert le chiffre : une semaine d'exemple qui se remplit comme le
+   planning (planning-jour.ts, etatDemi et MOT_ETAT ; couleurs-planning.ts,
+   couleurDApparence). Le mot accompagne toujours la couleur. */
+.semaine { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 20px; }
+.jour-ex { display: flex; flex-direction: column; gap: 7px; padding: 12px 12px 11px; border-radius: 12px; background: var(--atlas-card); }
+.jour-ex .nom-jour { font-size: 13px; font-weight: 600; color: var(--atlas-inkSoft); }
+.jour-ex .combien { font: 400 17px/1.2 var(--serif); color: var(--atlas-ink); white-space: nowrap; }
+.jour-ex .barre-jour { height: 6px; border-radius: 3px; background: var(--atlas-line); overflow: hidden; }
+.jour-ex .barre-jour i { display: block; height: 100%; border-radius: 3px; transition: width 320ms var(--courbe), background-color 320ms var(--courbe); }
+.jour-ex .mot { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--atlas-ink); white-space: nowrap; }
+.jour-ex .mot b { width: 10px; height: 10px; flex: none; border-radius: 3px; }
+[data-etat-jour="libre"] .mot b { background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-chevron); }
+[data-etat-jour="dispo"] .mot b, [data-etat-jour="dispo"] .barre-jour i { background: var(--atlas-vertPale); }
+[data-etat-jour="plein"] .mot b, [data-etat-jour="plein"] .barre-jour i { background: var(--atlas-rust); }
+[data-etat-jour="dela"] .mot b, [data-etat-jour="dela"] .barre-jour i { background: var(--atlas-bordeaux); }
+.semaine-pied { margin: 12px 0 0; font-size: 14.5px; line-height: 1.45; color: var(--atlas-inkSoft); }
 
 /* Le code : six cases, la même pièce qu'aujourd'hui. */
 .cases-code { position: relative; display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
@@ -327,6 +344,7 @@
       <li>Sur un écran à plusieurs cases, chaque case garde son nom au-dessus : remplie, elle ne dit plus « Prénom » ni rien.</li>
       <li>Rien sous 13 points (le compteur, Passer, la phrase sous la photo), des boutons de 56 points, Se connecter en vrai bouton sous Créer un compte.</li>
       <li>La fin dans cet ordre : le code, les conditions, Face ID, Tout est prêt. Entrer dans Atlas entre vraiment ; aujourd’hui il ouvre encore les conditions.</li>
+      <li>Combien de chantiers par jour dit à quoi il sert (votre demande du 26 octobre) : il règle le remplissage du planning, et trois jours d’exemple se remplissent sous le compteur avec les mots du planning, rien, incomplet, complet, au-delà. Touchez + et −.</li>
       <li>Le compte annoncé ne monte jamais : 14 questions pour une micro-entreprise sans décennale, 20 pour une société qui facture la TVA et a une décennale. Aujourd’hui, de 13 à 16.</li>
     </ul>
     <h2>Ce qui ne bouge pas</h2>
@@ -348,7 +366,6 @@
     <h2>À trancher</h2>
     <ul class="a-trancher">
       <li>Face ID proposé juste avant d’entrer, ou laissé dans Réglages, Mot de passe.</li>
-      <li>Les chantiers par jour demandés ici, ou laissés à un jusqu’à ce que vous le changiez dans Équipe.</li>
     </ul>
     <h2>Trouvé en chemin</h2>
     <ul class="a-trancher">
@@ -440,7 +457,9 @@
     { id: "mediateur", chap: "Assurance et médiateur", titre: "Votre médiateur de la consommation ?", aide: "Obligatoire dès que vous travaillez pour des particuliers.",
       forme: "champs", reste: "le médiateur",
       champs: [{ cle: "mediateur", lib: "Nom", ph: "Celui auquel vous adhérez" }, { cle: "mediateurOu", lib: "Adresse ou site", ph: "Son adresse ou son site" }] },
-    { id: "equipe", chap: "Votre équipe", titre: "Combien de chantiers par jour ?", aide: "Une équipe, un chantier.", forme: "compteur", propose: "1" }
+    { id: "equipe", chap: "Votre équipe", titre: "Combien de chantiers par jour ?",
+      aide: "Une équipe, un chantier. Ce chiffre règle le remplissage de votre planning.",
+      forme: "compteur", propose: "1" }
   ];
   var CHAPITRES = [];
   QUESTIONS.forEach(function (q) { if (CHAPITRES.indexOf(q.chap) < 0) CHAPITRES.push(q.chap); });
@@ -624,11 +643,35 @@
       var n = Number(v.equipe || 1);
       h += '<div class="compteur" data-min="1" data-max="9"><button type="button" data-pas="-1" aria-label="Un de moins"' + (n <= 1 ? " disabled" : "") + ">" + ico("moins") +
         "</button><output aria-live=\"polite\">" + n + '</output><button type="button" data-pas="1" aria-label="Un de plus"' + (n >= 9 ? " disabled" : "") + ">" + ico("plus") + "</button></div>" +
-        '<p class="compteur-mot" id="compteur-mot">' + motChantiers(n) + "</p>";
+        '<p class="compteur-mot" id="compteur-mot">' + motChantiers(n) + "</p>" +
+        '<div class="semaine" id="semaine" aria-label="Trois jours d’exemple">' + semaineHtml(n) + "</div>" +
+        '<p class="semaine-pied">Les dates proposées à vos clients évitent les jours complets.</p>';
     }
     return h;
   }
   function motChantiers(n) { return n === 1 ? "chantier par jour" : "chantiers par jour"; }
+
+  /* Sa demande du 26 octobre : « expliquer à quoi ça sert, que ça donne un
+     indice sur le remplissage du planning ; là, on ne sait pas pourquoi on
+     choisit deux équipes ou moins ». La même semaine se remplit selon le
+     chiffre, avec la règle et les mots du planning (etatDemi, MOT_ETAT). */
+  var SEMAINE = [["Lundi", 2], ["Mardi", 1], ["Mercredi", 3]];
+  var MOT_ETAT = { libre: "rien", dispo: "incomplet", plein: "complet", dela: "au-delà" };
+  function etatDuJour(chantiers, equipes) {
+    if (chantiers === 0) return "libre";
+    var charge = chantiers / equipes;
+    return charge < 1 ? "dispo" : charge === 1 ? "plein" : "dela";
+  }
+  function semaineHtml(equipes) {
+    return SEMAINE.map(function (j) {
+      var etat = etatDuJour(j[1], equipes);
+      var part = etat === "libre" ? 0 : Math.min(j[1] / equipes, 1) * 100;
+      return '<div class="jour-ex" data-etat-jour="' + etat + '"><span class="nom-jour">' + j[0] + "</span>" +
+        '<span class="combien">' + (j[1] === 0 ? "Aucun" : j[1] + (j[1] === 1 ? " chantier" : " chantiers")) + "</span>" +
+        '<span class="barre-jour"><i style="width:' + Math.round(part) + '%"></i></span>' +
+        '<span class="mot"><b></b>' + MOT_ETAT[etat] + "</span></div>";
+    }).join("");
+  }
 
   function attestationHtml() {
     var feuillet = '<svg viewBox="0 0 54 70" aria-hidden="true"><rect x="1" y="1" width="52" height="68" rx="5" fill="var(--atlas-cream)" stroke="var(--atlas-line)"/>' +
@@ -673,7 +716,9 @@
     h += '<h2 class="question">' + typo(q.titre) + "</h2>";
     if (q.aide) h += '<p class="aide">' + typo(q.aide) + "</p>";
     h += rangee(q, v);
-    h += '<p class="refus" role="alert" aria-live="polite" id="refus"></p>';
+    /* La place du refus n'est réservée que là où un refus peut tomber : une
+       réponse déjà choisie (le rythme, les moyens, le compteur) n'en a pas. */
+    if (!q.propose) h += '<p class="refus" role="alert" aria-live="polite" id="refus"></p>';
     h += "</div></div>";
     h += '<div class="vue-bas">';
     if (!avanceSeule(q)) h += '<button type="button" class="bouton bouton-plein" data-continuer>' + (dernier ? "Créer mon compte" : "Continuer") + "</button>";
@@ -1020,6 +1065,19 @@
     R.equipe = String(e.detail.valeur);
     var mot = document.getElementById("compteur-mot");
     if (mot) mot.textContent = motChantiers(e.detail.valeur);
+    /* Les cases restent en place : seules la barre et le mot changent, et la
+       barre glisse jusqu'à sa nouvelle longueur. */
+    var semaine = document.getElementById("semaine");
+    if (semaine) {
+      var neuve = document.createElement("div");
+      neuve.innerHTML = semaineHtml(e.detail.valeur);
+      semaine.querySelectorAll(".jour-ex").forEach(function (jour, i) {
+        var autre = neuve.children[i];
+        jour.setAttribute("data-etat-jour", autre.getAttribute("data-etat-jour"));
+        jour.querySelector(".barre-jour i").style.width = autre.querySelector(".barre-jour i").style.width;
+        jour.querySelector(".mot").innerHTML = autre.querySelector(".mot").innerHTML;
+      });
+    }
   });
 
   rendre();
