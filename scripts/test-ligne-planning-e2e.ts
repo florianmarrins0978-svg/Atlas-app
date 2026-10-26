@@ -294,14 +294,16 @@ async function main() {
     // Le contrôle a donc changé d'objet, et le libellé n'a PAS été remis : une
     // assertion sur un mot qu'il fait enlever rend son écran impossible à
     // changer (`CLAUDE.md` §5 bis).
-    assert.equal(pleine.texte, "une journée", `journée pleine : « ${pleine.texte} »`);
+    // La capitale initiale vient de sa planche du 25 octobre 2026 (« Une
+    // journée ») : ce qui se fixe, ce sont les MOTS de la durée.
+    assert.equal(pleine.texte.toLocaleLowerCase("fr"), "une journée", `journée pleine : « ${pleine.texte} »`);
     assert.ok(
       !/\bmatin\b|\baprès-midi\b/.test(pleine.texte),
       `le moment est revenu à la place de la durée : « ${pleine.texte} »`
     );
 
-    assert.equal(apresMidi.texte, "une demi-journée", `demi-journée : « ${apresMidi.texte} »`);
-    assert.equal(troisJours.texte, "3 jours", `trois jours : « ${troisJours.texte} »`);
+    assert.equal(apresMidi.texte.toLocaleLowerCase("fr"), "une demi-journée", `demi-journée : « ${apresMidi.texte} »`);
+    assert.equal(troisJours.texte.toLocaleLowerCase("fr"), "3 jours", `trois jours : « ${troisJours.texte} »`);
 
     // **LA DATE A QUITTÉ LA LIGNE POUR LE TITRE DU JOUR**, et ce n'est pas une
     // perte : la liste des planifiés est GROUPÉE par jour nommé depuis la
@@ -311,7 +313,9 @@ async function main() {
     const titre = await page
       .locator('[data-atlas="jour-planifie"]')
       .first()
-      .locator("p")
+      // Un titre depuis sa planche du 25 octobre 2026, et non plus un
+      // paragraphe : « Aujourd'hui » y est suivi de la date.
+      .locator("h3")
       .first()
       .innerText();
     assert.match(
