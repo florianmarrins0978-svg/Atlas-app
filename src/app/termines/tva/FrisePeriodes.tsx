@@ -116,8 +116,10 @@ export default function FrisePeriodes({
               key={n}
               href={`/termines/tva?annee=${annee}&t=${n}`}
               aria-current={regarde ? "page" : undefined}
-              className="flex flex-none items-start px-[9px] pt-3 text-[11px] font-medium uppercase tracking-[0.13em] whitespace-nowrap"
-              style={{ color: regarde ? colors.ink : colors.muted, minHeight: 44 }}
+              // Le mois en entier, sa planche du 25 octobre 2026 : des
+              // capitales de 11 px coupées au bord se lisaient « MBRE ».
+              className={`flex flex-none items-start px-[10px] pt-[11px] text-[15.5px] whitespace-nowrap ${regarde ? "font-bold" : "font-medium"}`}
+              style={{ color: regarde ? colors.ink : colors.inkSoft, minHeight: 44 }}
             >
               <span
                 className="pb-[7px]"

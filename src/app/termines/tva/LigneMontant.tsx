@@ -86,12 +86,16 @@ export default function LigneMontant({
     setTimeout(() => setDit(null), 1600);
   }
 
+  // **Des mots qui se lisent, sa planche « Proposé » du 25 octobre 2026**
+  // (`appli/soignee/termines-tva.html`) : les capitales espacées de 9,5 px
+  // devenaient illisibles au soleil. Le libellé reste à sa place ; seul un
+  // refus du presse-papier le remplace, pour qu'un échec se lise aussi.
   const intitule = (
     <span
-      className="text-[9.5px] font-medium uppercase tracking-[0.28em]"
-      style={{ color: dit || total ? colors.or : colors.muted }}
+      className={`text-[15.5px] ${total ? "font-bold" : "font-semibold"}`}
+      style={{ color: dit === "impossible" || total ? colors.or : colors.ink }}
     >
-      {dit ?? libelle}
+      {dit === "impossible" ? "Copie impossible" : libelle}
     </span>
   );
   const chiffre = (
@@ -124,23 +128,31 @@ export default function LigneMontant({
         )}
         {montant}
       </span>
-      <svg
-        width={total ? 15 : 14}
-        height={total ? 15 : 14}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke={colors.or}
-        strokeWidth="1.6"
-        aria-hidden="true"
-        className="justify-self-end self-center"
-      >
-        <rect x="9" y="9" width="11" height="11" rx="2.4" />
-        <path d="M15 5.6A2.6 2.6 0 0 0 12.4 3H6.6A2.6 2.6 0 0 0 4 5.6v5.8A2.6 2.6 0 0 0 6.6 14" strokeLinecap="round" />
-      </svg>
+      {/* « Copié » en toutes lettres à la place du carré : un carré de 14 px
+          qui change de teinte ne se voit pas au soleil. */}
+      {dit === "copié" ? (
+        <span className="justify-self-end self-center text-[13px] font-bold" style={{ color: colors.or }}>
+          Copié
+        </span>
+      ) : (
+        <svg
+          width={total ? 17 : 16}
+          height={total ? 17 : 16}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke={colors.or}
+          strokeWidth="1.6"
+          aria-hidden="true"
+          className="justify-self-end self-center"
+        >
+          <rect x="9" y="9" width="11" height="11" rx="2.4" />
+          <path d="M15 5.6A2.6 2.6 0 0 0 12.4 3H6.6A2.6 2.6 0 0 0 4 5.6v5.8A2.6 2.6 0 0 0 6.6 14" strokeLinecap="round" />
+        </svg>
+      )}
     </>
   );
   const rangee = `grid w-full items-baseline gap-x-2.5 text-left ${total ? "pt-[15px]" : "py-[11px]"}`;
-  const colonnes = { gridTemplateColumns: "1fr auto 24px", minHeight: 48 };
+  const colonnes = { gridTemplateColumns: "1fr auto 44px", minHeight: 48 };
 
   if (lien) {
     // Deux cibles sur la même rangée : le mot à gauche ouvre, le chiffre et son
@@ -158,7 +170,7 @@ export default function LigneMontant({
           onClick={copier}
           aria-label={`Copier ${libelle.toLowerCase()}`}
           className="col-span-2 grid items-baseline gap-x-2.5"
-          style={{ gridTemplateColumns: "auto 24px" }}
+          style={{ gridTemplateColumns: "auto 44px" }}
         >
           {chiffre}
         </button>

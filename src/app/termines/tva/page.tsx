@@ -2,7 +2,7 @@ import Link from "next/link";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import BoutonAssistant from "@/components/atlas/BoutonAssistant";
 import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
-import { colors, font, libelleCaps } from "@/lib/design-tokens";
+import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { estProprietaire } from "@/server/autorisation";
 import { releveTvaCollectee } from "@/server/repositories/factures";
@@ -39,7 +39,12 @@ export const dynamic = "force-dynamic";
 
 // Relevé de TVA collectée (docs/AGENT.md §2.3 et §6).
 //
-// Calculé à partir des factures émises, jamais stocké. Atlas PRÉPARE ce
+// Calculé à partir des factures émises, jamais stocké.
+//
+// **Les tailles du 26 octobre 2026** — sa planche « Proposé »
+// (`appli/soignee/termines-tva.html`), retenue : rien sous 13 px, le second
+// plan à l'encre douce plutôt qu'au gris, les noms en serif 18 px. Le dessin
+// ne bouge pas ; il se lit au soleil. Atlas PRÉPARE ce
 // relevé ; il ne le déclare pas. La mention en bas d'écran le dit au patron
 // plutôt que de le lui laisser supposer.
 //
@@ -183,9 +188,15 @@ export default async function ReleveTvaPage({
           action={<BoutonAssistant />}
           actionPlacee="retour"
           assistant={false}
-          surtitre="Ma TVA"
           titre={libellePeriode(periode)}
         />
+        {/* « Ma TVA » en clair sous le mois, sa planche du 25 octobre 2026 :
+            le surtitre commun (9,5 px, capitales espacées) ne se lisait pas.
+            Posé ici et non dans `EnTeteEcran`, que soixante-dix écrans
+            partagent et qu'il n'a pas demandé de changer. */}
+        <p className="mt-2 px-[26px] text-[15px] font-bold" style={{ color: colors.or }}>
+          Ma TVA
+        </p>
 
         <FrisePeriodes
           periodicite={periodicite}
@@ -303,22 +314,22 @@ export default async function ReleveTvaPage({
             « règlement » sous les débits mentirait sur ce qui est compté. */}
         <section className="mt-[34px] px-6" data-atlas="preuve-collectee">
           <div className="flex items-baseline justify-between gap-3">
-            <h2 className="text-[19px]" style={{ color: colors.ink, fontFamily: font.display }}>
+            <h2 className="text-[22px]" style={{ color: colors.ink, fontFamily: font.display }}>
               TVA collectée
             </h2>
-            <span className="text-[12px] tabular-nums" style={{ color: colors.muted }}>
+            <span className="text-[14px] tabular-nums" style={{ color: colors.inkSoft }}>
               {releve.lignes.length > 0 &&
                 (releve.regime === "encaissements"
                   ? `${releve.lignes.length} règlement${releve.lignes.length > 1 ? "s" : ""}`
                   : `${releve.lignes.length} facture${releve.lignes.length > 1 ? "s" : ""}`)}
             </span>
           </div>
-          <p className={`mt-2.5 ${libelleCaps}`} style={{ color: colors.muted }}>
+          <p className="mt-2 text-[13px] font-semibold uppercase tracking-[0.12em]" style={{ color: colors.inkSoft }}>
             Vos factures
           </p>
 
           {releve.lignes.length === 0 ? (
-            <p className="mt-4 text-center text-[13px]" style={{ color: colors.inkSoft }}>
+            <p className="mt-4 text-center text-[15px]" style={{ color: colors.inkSoft }}>
               {releve.regime === "encaissements"
                 ? "Aucun règlement reçu sur cette période."
                 : "Aucune facture émise sur cette période."}
@@ -343,10 +354,10 @@ export default async function ReleveTvaPage({
                   {(() => {
                     const contenu = (
                       <>
-                        <p className="truncate text-[15px]" style={{ color: colors.ink }}>
+                        <p className="truncate text-[18px]" style={{ color: colors.ink, fontFamily: font.display }}>
                           {l.clientNom ?? "Client non renseigné"}
                         </p>
-                        <p className="mt-0.5 text-[11.5px]" style={{ color: colors.muted }}>
+                        <p className="mt-0.5 text-[14px]" style={{ color: colors.inkSoft }}>
                           {/* Aux débits, un avoir retire sa TVA sous SON numéro (§413) :
                               l'appeler « Facture » ferait chercher la mauvaise pièce. */}
                           {l.motif === "avoir" ? "Avoir" : "Facture"} n° <NumeroDeDocument valeur={l.numeroCommercial} />,{" "}
@@ -385,22 +396,22 @@ export default async function ReleveTvaPage({
         {/* ─── La preuve du second ──────────────────────────────────────── */}
         <section className="mt-[34px] px-6" data-atlas="preuve-deductible">
           <div className="flex items-baseline justify-between gap-3">
-            <h2 className="text-[19px]" style={{ color: colors.ink, fontFamily: font.display }}>
+            <h2 className="text-[22px]" style={{ color: colors.ink, fontFamily: font.display }}>
               TVA déductible
             </h2>
-            <span className="text-[12px] tabular-nums" style={{ color: colors.muted }}>
+            <span className="text-[14px] tabular-nums" style={{ color: colors.inkSoft }}>
               {achats.length > 0 && `${achats.length} achat${achats.length > 1 ? "s" : ""}`}
             </span>
           </div>
           {/* La liste garde son mot juste : ce qu'il ajoute, ce sont des
               ACHATS. « TVA déductible », c'est ce que l'administration en
               fait. */}
-          <p className={`mt-2.5 ${libelleCaps}`} style={{ color: colors.muted }}>
+          <p className="mt-2 text-[13px] font-semibold uppercase tracking-[0.12em]" style={{ color: colors.inkSoft }}>
             Vos achats
           </p>
 
           {achats.length === 0 ? (
-            <p className="mt-4 text-center text-[13px]" style={{ color: colors.inkSoft }}>
+            <p className="mt-4 text-center text-[15px]" style={{ color: colors.inkSoft }}>
               Rien encore. Scannez un ticket, ou écrivez-le.
             </p>
           ) : (
@@ -412,10 +423,10 @@ export default async function ReleveTvaPage({
                   className="py-3"
                   style={{ borderTop: `1px solid ${colors.lineSoft}` }}
                 >
-                  <p className="truncate text-[15px]" style={{ color: colors.ink }}>
+                  <p className="truncate text-[18px]" style={{ color: colors.ink, fontFamily: font.display }}>
                     {a.fournisseur}
                   </p>
-                  <p className="mt-0.5 text-[11.5px]" style={{ color: colors.muted }}>
+                  <p className="mt-0.5 text-[14px]" style={{ color: colors.inkSoft }}>
                     {jourEtMois(a.dateAchat)}
                     {natureEnMots(a) && `. ${natureEnMots(a)}.`}
                   </p>
@@ -434,7 +445,7 @@ export default async function ReleveTvaPage({
         {/* **« vos règlements » ou « vos factures émises » : ce que le relevé
             compte VRAIMENT**, selon le régime. La mention ne doit pas dire
             « règlements » à qui déclare aux débits. */}
-        <p className="mt-10 px-8 text-center text-[12px] leading-[1.55]" style={{ color: colors.inkSoft }}>
+        <p className="mt-10 px-8 text-center text-[14px] leading-[1.55]" style={{ color: colors.inkSoft }}>
           Ce relevé est préparé par Atlas à partir de vos{" "}
           {releve.regime === "encaissements" ? "règlements" : "factures émises"}. Il ne
           vaut pas déclaration : celle-ci reste à faire par votre outil
@@ -485,7 +496,7 @@ function LigneTvaAchat({ achat: a }: { achat: AchatTva }) {
   const enAttente = a.nature === "repas" && a.repas === "affaires" && manques.length > 0;
   return (
     <>
-      <p className="mt-[7px] flex items-baseline justify-between gap-2.5 text-[13px]" data-atlas="tva-non-comptee">
+      <p className="mt-[7px] flex items-baseline justify-between gap-2.5 text-[15px]" data-atlas="tva-non-comptee">
         <span style={{ color: colors.muted }}>TVA {enEuros(tvaTicket)}</span>
         <span className="whitespace-nowrap" style={{ color: colors.muted }}>
           {enAttente ? "Pas encore" : "Non récupérable"}
@@ -508,10 +519,10 @@ function LigneTvaAchat({ achat: a }: { achat: AchatTva }) {
 
 function Paire({ quoi, combien, tva = false }: { quoi: string; combien: string; tva?: boolean }) {
   return (
-    <p className="mt-[7px] flex items-baseline justify-between gap-2.5 text-[13px]">
+    <p className="mt-[7px] flex items-baseline justify-between gap-2.5 text-[15px]">
       <span style={{ color: tva ? colors.or : colors.muted }}>{quoi}</span>
       <span
-        className="whitespace-nowrap text-[16px]"
+        className="whitespace-nowrap text-[17px]"
         style={{ color: tva ? colors.or : colors.ink, fontFamily: font.display, fontVariantNumeric: "tabular-nums" }}
       >
         {combien}
@@ -534,11 +545,11 @@ function Total({ quoi, combien, marque }: { quoi: string; combien: string; marqu
       className="flex items-baseline justify-end gap-3.5 pt-3"
       style={{ borderTop: `1px solid ${colors.line}` }}
     >
-      <span className={`${libelleCaps} font-bold`} style={{ color: colors.ink }}>
+      <span className="text-[13px] font-bold uppercase tracking-[0.1em]" style={{ color: colors.ink }}>
         {quoi}
       </span>
       <span
-        className="whitespace-nowrap text-[18px] font-bold"
+        className="whitespace-nowrap text-[21px] font-bold"
         style={{ color: colors.or, fontFamily: font.display, fontVariantNumeric: "tabular-nums" }}
       >
         {combien}
