@@ -51,7 +51,7 @@ Ni « aucune faille », ni « l'application est sûre ». Ce document dit ce qui
 | 8. Requêtes vers l'extérieur | **tient** : une seule adresse venue d'une donnée (agenda Apple), filtrée et revérifiée à chaque redirection |
 | 9. Chaîne logicielle | **corrigé** (E15) ; le délai avant une version neuve attend npm 11.10 |
 | 10. Ton espace | **tient** : la base et Redis ne sont pas joignables de l'extérieur, seul le port de l'appli est public |
-| 11. Sauvegardes | **à faire chez toi** : l'outil existe, il n'a jamais été joué sur une vraie sauvegarde (voir plus bas) |
+| 11. Sauvegardes | **prévu chez l'hébergeur** (Scaleway, trois couches automatiques, `docs/lot-sauvegarde-cloture.md`) ; l'épreuve de restauration marche sur le format `.sql` de l'hébergeur. **Sur ton espace actuel**, la sauvegarde sort en `.json` (il n'a pas l'outil PostgreSQL) et aucun outil ne l'éprouve : situation provisoire, assumée |
 
 ## Ce qui a été refusé, et pourquoi
 
@@ -66,7 +66,7 @@ Ni « aucune faille », ni « l'application est sûre ». Ce document dit ce qui
 
 | Quoi | Qui | Comment |
 |---|---|---|
-| Jouer une restauration de sauvegarde | toi, sur ton espace | `npm run sauvegarder:banc`, puis `npx tsx scripts/eprouver-restauration.ts` suivi du nom du fichier créé. Il restaure dans une base à part, ne touche pas la tienne, et vérifie 9 propriétés |
+| Jouer une restauration de sauvegarde | toi, chez l'hébergeur | sur une copie `.sql` de Scaleway : `npx tsx scripts/eprouver-restauration.ts` suivi du nom du fichier. Elle restaure dans une base à part et vérifie 9 propriétés. **Corrigé le 26 octobre au soir** : la première version de ce rapport te la faisait jouer sur ton espace, où la sauvegarde sort en `.json` et ne s'éprouve pas. D'ici la mise en ligne : Réglages, « Télécharger mes données », et le fichier rangé ailleurs |
 | Une sauvegarde hors de la machine, automatique | toi, au choix de l'hébergeur | dépend de l'hébergement de production |
 | `ATLAS_PROXY_SAUTS`, en-têtes, rétention du journal | toi, le jour de la mise en ligne | déjà dans `docs/cloture-avant-premier-artisan.md` |
 | Ton entreprise sans plafond d'IA | toi, le jour J | `npm run ia:sans-plafond -- ton@adresse`, puis rallumer |

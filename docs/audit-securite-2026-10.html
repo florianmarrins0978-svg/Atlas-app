@@ -217,7 +217,7 @@
 </tr>
 <tr>
 <td>11. Sauvegardes</td>
-<td><strong>à faire chez toi</strong> : l'outil existe, il n'a jamais été joué sur une vraie sauvegarde (voir plus bas)</td>
+<td><strong>prévu chez l'hébergeur</strong> (Scaleway, trois couches automatiques, <code>docs/lot-sauvegarde-cloture.md</code>) ; l'épreuve de restauration marche sur le format <code>.sql</code> de l'hébergeur. <strong>Sur ton espace actuel</strong>, la sauvegarde sort en <code>.json</code> (il n'a pas l'outil PostgreSQL) et aucun outil ne l'éprouve : situation provisoire, assumée</td>
 </tr>
 </tbody></table></div>
 <h2 id="ce-qui-a-été-refusé-et-pourquoi">Ce qui a été refusé, et pourquoi</h2>
@@ -252,8 +252,8 @@
 </tr></thead><tbody>
 <tr>
 <td>Jouer une restauration de sauvegarde</td>
-<td>toi, sur ton espace</td>
-<td><code>npm run sauvegarder:banc</code>, puis <code>npx tsx scripts/eprouver-restauration.ts</code> suivi du nom du fichier créé. Il restaure dans une base à part, ne touche pas la tienne, et vérifie 9 propriétés</td>
+<td>toi, chez l'hébergeur</td>
+<td>sur une copie <code>.sql</code> de Scaleway : <code>npx tsx scripts/eprouver-restauration.ts</code> suivi du nom du fichier. Elle restaure dans une base à part et vérifie 9 propriétés. <strong>Corrigé le 26 octobre au soir</strong> : la première version de ce rapport te la faisait jouer sur ton espace, où la sauvegarde sort en <code>.json</code> et ne s'éprouve pas. D'ici la mise en ligne : Réglages, « Télécharger mes données », et le fichier rangé ailleurs</td>
 </tr>
 <tr>
 <td>Une sauvegarde hors de la machine, automatique</td>
