@@ -36046,3 +36046,17 @@ retirée, et `test-papier-facture-db.ts` avec elle.
 
 **Ce qui reste dans le gabarit**, avec la même faiblesse : `GardeVerificationEmail` et `GardeDocumentsLegaux` (`TODO.md`). Elles ne protègent pas une donnée d'un rôle, elles orientent vers une étape ; moins grave, mais à déplacer de la même façon.
 
+## §505 : Donner, changer ou retirer un accès redemande une identité récente
+
+*26 octobre 2026, audit de sécurité (E11, `docs/audit-2026-10-etape-3-inventaire.md`).*
+
+**Le constat, reproduit.** `donnerUnAccesAction`, `changerLeRoleAction` et `retirerUnAccesAction` n'exigeaient que le rôle de patron. Une session volée pouvait se créer un compte, ou nommer un second patron : une porte que le changement de mot de passe du vrai patron ne ferme pas, exactement le cas de la clé d'appareil (`src/lib/preuve-recente.ts`).
+
+**La règle.** Un cinquième geste sensible, `accesALEntreprise`. La preuve est exigée dans les trois ACTIONS, pas dans le dépôt : elles sont la seule porte de `src/` vers ces écritures, et le dépôt sert aussi les suites qui montent leurs comptes d'essai (quinze suites). Le refus se rend en valeur (`preuveExigee`), et `QuiAAcces` comme `NouveauCompte` ouvrent `DemanderPreuve` puis rejouent le geste.
+
+**L'ordre dans « donner un accès ».** La règle pure de la saisie (`refusDeLAcces`, la même que le dépôt rejoue) passe avant la preuve : une confirmation qui diffère se corrige sans redemander le mot de passe. L'adresse déjà prise, qui interroge la base, reste derrière la preuve.
+
+**Refusé, délibérément.** La résiliation : elle est voulue facile (`src/app/reglages/abonnement/actions.ts`), ne coupe rien avant l'échéance et s'annule par « Ne pas arrêter ». La portée du planning et le rattachement à un salarié : ils n'ouvrent ni prix ni entreprise.
+
+**Ce qui le tient** : `test-gestes-sensibles-db.ts` (les trois gestes sans preuve ne changent rien en base, avec preuve ils passent) et `test-nouveau-compte-e2e.ts` (la feuille s'ouvre, le rôle ne bouge qu'après).
+

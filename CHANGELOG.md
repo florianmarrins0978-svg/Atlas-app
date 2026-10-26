@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-26
+
+- **Audit de sécurité, E11 : donner un accès, changer un rôle ou retirer un accès redemande le mot de passe.** Une session volée pouvait se créer un compte ou se nommer patron, et garder la porte après un changement de mot de passe. La même fenêtre « Vérifiez que c'est bien vous » que pour l'IBAN s'ouvre, puis le geste repart tout seul. Reproduit rouge, vert après, joué dans un vrai navigateur. La résiliation reste sans mot de passe, comme il l'avait voulu. `ARCHITECTURE.md` §505.
+
 ## 2026-10-25
 
 - **Audit de sécurité, E8 : un écran fermé à un rôle le reste quand on y arrive par un clic.** La garde des rôles vivait dans le gabarit commun, que Next.js ne rejoue pas d'un écran à l'autre : un commercial parti de Chantiers recevait Ma TVA, TVA collectée et déductible comprises. Reproduit dans un vrai navigateur, rouge, puis vert. Chaque écran pose désormais sa garde en première ligne (`garderLaPage`), et `test-pages-gardees.ts` refuse un écran neuf qui l'oublierait. `ARCHITECTURE.md` §504.

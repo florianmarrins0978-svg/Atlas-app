@@ -135,7 +135,7 @@
 <td><strong>E11</strong></td>
 <td>Donner un accès, changer un rôle (jusqu'à créer un second patron), résilier : sans redemander le mot de passe</td>
 <td>moyenne</td>
-<td>vague 3</td>
+<td><strong>corrigé le 26 octobre</strong> pour les accès ; la résiliation <strong>gardée telle quelle, délibérément</strong></td>
 </tr>
 <tr>
 <td><strong>E12</strong></td>
@@ -217,6 +217,12 @@
 <li>la protection de la branche <code>main</code> sur GitHub ;</li>
 <li>tout ce qui dépend de l'hébergeur de production, qui n'existe pas encore.</li>
 </ul>
+<h2 id="e11-fait-le-26-octobre">E11, fait le 26 octobre</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Donner un accès, changer un rôle et retirer un accès redemandent désormais le mot de passe, avec la même fenêtre que pour l'IBAN. La raison : quelqu'un qui volerait ta session pourrait se créer son propre compte, ou se nommer patron, et garder la porte même après que tu as changé ton mot de passe. Reproduit rouge (les trois gestes passaient sans rien demander), vert après, et joué dans un vrai navigateur.</p>
+<p>Une saisie fausse (confirmation qui diffère) se corrige d'abord, sans te demander ton mot de passe pour rien.</p>
+<p><strong>La résiliation n'est pas protégée, et c'est voulu.</strong> Ta décision d'avant était qu'elle reste facile. Elle ne coupe rien avant la date payée, et « Ne pas arrêter » l'annule. Un mot de passe de plus ne protégerait presque rien et gênerait le vrai cas.</p>
+<p><strong>Ce qui n'est pas protégé non plus</strong> : régler ce qu'une personne voit du planning, et relier un compte à son nom de salarié. Ces deux gestes n'ouvrent ni les prix ni l'entreprise.</p>
 <h2 id="e8-fait-le-25-octobre">E8, fait le 25 octobre</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p>La garde des rôles vivait dans le gabarit commun à tous les écrans. Next.js ne le rejoue pas quand on passe d'un écran à l'autre par un clic : un commercial connecté, parti de Chantiers, recevait l'écran Ma TVA avec la TVA collectée et déductible. L'adresse tapée à la main, elle, était bien refusée ; c'est pourquoi rien ne l'avait montré.</p>

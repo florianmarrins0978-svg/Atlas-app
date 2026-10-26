@@ -22,7 +22,7 @@
 | **E8** | La garde des rôles des PAGES vit dans le gabarit racine, que Next.js ne rejoue pas à la navigation interne : un commercial pourrait recevoir les données d'une page qui lui est fermée | **élevée** (reproduit : un commercial lisait Ma TVA en passant par Chantiers) | **corrigé le 25 octobre** : chaque écran pose sa garde lui-même |
 | **E9** | Droits de la base plus larges que le besoin : l'application peut écrire le registre des migrations, les conditions générales, supprimer une entreprise entière | moyenne (défense en profondeur) | **corrigé le 25 octobre** (migration 0147) |
 | **E10** | Liens entre tables non composites (paiement et facture, acompte et devis…) : la base n'empêche pas de rattacher un élément à une autre entreprise | moyenne (défense en profondeur) | vague 3 |
-| **E11** | Donner un accès, changer un rôle (jusqu'à créer un second patron), résilier : sans redemander le mot de passe | moyenne | vague 3 |
+| **E11** | Donner un accès, changer un rôle (jusqu'à créer un second patron), résilier : sans redemander le mot de passe | moyenne | **corrigé le 26 octobre** pour les accès ; la résiliation **gardée telle quelle, délibérément** |
 | **E12** | Liens clients en clair en base, certains sans expiration (contrat, passages) ; lien du comptable valable un an | moyenne | vague 3 |
 | **E13** | Les libellés des lignes de devis entrent dans la consigne système de l'IA (retouches) ; aucun plafond de dépense d'IA par mois | moyenne | vague 3 |
 | **E14** | Sans `ATLAS_PROXY_SAUTS`, les seuils par source deviennent communs à tous : un inconnu peut bloquer les inscriptions ou le mot de passe oublié de tout le monde, ou verrouiller un compte dont il connaît l'adresse | moyenne | dépend du déploiement |
@@ -48,6 +48,16 @@
 - les droits par défaut des workflows GitHub du dépôt (réglage du site GitHub) ;
 - la protection de la branche `main` sur GitHub ;
 - tout ce qui dépend de l'hébergeur de production, qui n'existe pas encore.
+
+## E11, fait le 26 octobre
+
+Donner un accès, changer un rôle et retirer un accès redemandent désormais le mot de passe, avec la même fenêtre que pour l'IBAN. La raison : quelqu'un qui volerait ta session pourrait se créer son propre compte, ou se nommer patron, et garder la porte même après que tu as changé ton mot de passe. Reproduit rouge (les trois gestes passaient sans rien demander), vert après, et joué dans un vrai navigateur.
+
+Une saisie fausse (confirmation qui diffère) se corrige d'abord, sans te demander ton mot de passe pour rien.
+
+**La résiliation n'est pas protégée, et c'est voulu.** Ta décision d'avant était qu'elle reste facile. Elle ne coupe rien avant la date payée, et « Ne pas arrêter » l'annule. Un mot de passe de plus ne protégerait presque rien et gênerait le vrai cas.
+
+**Ce qui n'est pas protégé non plus** : régler ce qu'une personne voit du planning, et relier un compte à son nom de salarié. Ces deux gestes n'ouvrent ni les prix ni l'entreprise.
 
 ## E8, fait le 25 octobre
 
