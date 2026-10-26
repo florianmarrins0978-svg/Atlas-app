@@ -9,6 +9,8 @@ import { retourConfigure } from "@/server/paiement/retour";
 import { etatAffiche, formuleChoisie } from "@/lib/abonnements";
 import { logger } from "@/server/logger";
 import AbonnementClient from "./AbonnementClient";
+import CreditsIA from "./CreditsIA";
+import { creditsIADeLEntreprise } from "@/server/repositories/consommation-ia";
 import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
@@ -83,7 +85,9 @@ export default async function AbonnementPage({
   }
 
   const abonnement = await abonnementDeLEntreprise(ctx);
-  const etat = etatAffiche(abonnement, new Date());
+  const maintenant = new Date();
+  const etat = etatAffiche(abonnement, maintenant);
+  const credits = await creditsIADeLEntreprise(ctx, maintenant);
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -106,6 +110,8 @@ export default async function AbonnementPage({
           </p>
         )}
       </section>
+
+      <CreditsIA credits={credits} />
 
       {/* Pendant l'essai, aucune formule n'est « actuelle » : il S'ABONNE, il ne
           change pas — il n'y a pas d'abonnement Stripe à faire évoluer au prorata. */}

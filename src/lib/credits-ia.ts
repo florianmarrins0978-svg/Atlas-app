@@ -135,3 +135,17 @@ export function coutDUneEcoute(fournisseur: string, octets: number): number {
   const minutes = (Math.max(0, octets) * 8) / 16_000 / 60;
   return Math.ceil(minutes * (PRIX_MINUTE[fournisseur] ?? 0.016) * MICRO);
 }
+
+/**
+ * Ce que dit un geste d'IA refusé au plafond : la dictée, l'assistant, la note
+ * vocale relaient cette phrase telle quelle. Celle de sa planche, précédée de
+ * ce qui s'est passé : en dictant, il ne vient pas de lire l'Abonnement.
+ */
+export function phraseCreditsEpuises(reprise: Date): string {
+  return `Crédits IA épuisés. Atlas IA reprend le ${jourDeReprise(reprise)}. D'ici là, tout s'écrit à la main.`;
+}
+
+/** « 1er novembre » : la reprise tombe toujours un premier du mois. */
+export function jourDeReprise(reprise: Date): string {
+  return `1er ${reprise.toLocaleDateString("fr-FR", { month: "long", timeZone: "UTC" })}`;
+}

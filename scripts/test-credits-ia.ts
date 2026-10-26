@@ -11,6 +11,7 @@ import {
   coutDUneEcoute,
   entreprisesSansPlafond,
   etatDesCreditsIA,
+  jourDeReprise,
   moisDu,
   plafondIA,
 } from "../src/lib/credits-ia";
@@ -81,6 +82,11 @@ essai("le coût d'un devis dicté reste de l'ordre de quelques centimes (son est
   // Deux minutes de dictée au poids d'un téléphone (32 kbit/s, 480 Ko).
   const ecoute = coutDUneEcoute("openai", 480_000);
   assert.ok(ecoute > 0 && ecoute < 0.05 * MICRO, `écoute estimée à ${ecoute} micro-euros`);
+});
+
+essai("la reprise se lit « 1er novembre », comme sur la planche", () => {
+  assert.equal(jourDeReprise(new Date("2026-11-01T00:00:00Z")), "1er novembre");
+  assert.equal(jourDeReprise(new Date("2027-01-01T00:00:00Z")), "1er janvier");
 });
 
 essai("un fournisseur inconnu est compté au plus cher, jamais à zéro", () => {

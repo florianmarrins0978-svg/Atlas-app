@@ -24,7 +24,7 @@
 | **E10** | Liens entre tables non composites (paiement et facture, acompte et devis…) : la base n'empêche pas de rattacher un élément à une autre entreprise | moyenne (défense en profondeur) | vague 3 |
 | **E11** | Donner un accès, changer un rôle (jusqu'à créer un second patron), résilier : sans redemander le mot de passe | moyenne | **corrigé le 26 octobre** pour les accès ; la résiliation **gardée telle quelle, délibérément** |
 | **E12** | Liens clients en clair en base, certains sans expiration (contrat, passages) ; lien du comptable valable un an | moyenne | vague 3 |
-| **E13** | Les libellés des lignes de devis entrent dans la consigne système de l'IA (retouches) ; aucun plafond de dépense d'IA par mois | moyenne | **consigne corrigée le 26 octobre** ; le plafond attend ta décision |
+| **E13** | Les libellés des lignes de devis entrent dans la consigne système de l'IA (retouches) ; aucun plafond de dépense d'IA par mois | moyenne | **corrigé le 26 octobre** : consigne, et plafond mensuel de crédits IA selon tes montants |
 | **E14** | Sans `ATLAS_PROXY_SAUTS`, les seuils par source deviennent communs à tous : un inconnu peut bloquer les inscriptions ou le mot de passe oublié de tout le monde, ou verrouiller un compte dont il connaît l'adresse | moyenne | dépend du déploiement |
 | **E15** | Chaîne logicielle : actions GitHub épinglées par étiquette, `pages.yml` donne ses droits de publication à l'étape qui installe les paquets, aucun délai avant d'installer une version neuve, `demarrer.sh` retombe sur `npm install` | moyenne | vague 3 |
 | **E16** | `/api/health/diagnostic` et `/api/health/banc` répondent sans compte (en-têtes reçus, version servie) | faible | **gardé tel quel, délibérément** : la page sert quand on ne peut pas se connecter, et ne porte aucun secret |
@@ -48,6 +48,14 @@
 - les droits par défaut des workflows GitHub du dépôt (réglage du site GitHub) ;
 - la protection de la branche `main` sur GitHub ;
 - tout ce qui dépend de l'hébergeur de production, qui n'existe pas encore.
+
+## Les crédits IA du mois, faits le 26 octobre
+
+Tes plafonds : essai 5 €, Artisan 10 €, Entreprise 20 €, Illimité 60 €, sans abonnement 10 €. Chaque appel à l'IA payante se compte (une estimation, toujours un peu au-dessus de la vraie facture) ; au plafond, il ne part plus, et la saisie à la main continue. Sur Abonnement, la barre de ta planche, en rouge une fois épuisée. Une dictée refusée le dit : « Crédits IA épuisés. Atlas IA reprend le 1er novembre. D'ici là, tout s'écrit à la main. »
+
+**Pour ton entreprise, sans plafond**, une fois sur ton espace : `npm run ia:sans-plafond -- ton@adresse`, puis rallumer l'espace.
+
+Pas vérifiable ICI : la phrase dans l'écran de dictée avec une vraie transcription (pas de clé sur ce poste). La barre, elle, a été regardée à l'écran dans ses trois états.
 
 ## E13, fait le 26 octobre (moitié)
 

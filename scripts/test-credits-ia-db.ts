@@ -8,7 +8,9 @@
 // ni effacer ni faire baisser le compteur.
 
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { Pool } from "pg";
 import { pool } from "../src/server/db/client";
@@ -100,6 +102,8 @@ async function main() {
       const r = await compte.genererTexte("consigne", "dictée");
       assert.equal(r.succes, false);
       assert.equal(!r.succes && r.erreur.type, "credits_epuises");
+      // La phrase que la dictée, l'assistant et la note vocale relaient telle quelle.
+      assert.match(!r.succes ? r.erreur.message : "", /^Crédits IA épuisés\. Atlas IA reprend le 1er \S+\. D'ici là, tout s'écrit à la main\.$/);
       assert.equal(appels, avant, "LE FOURNISSEUR A ÉTÉ PAYÉ AU-DELÀ DU PLAFOND");
     });
 
@@ -162,6 +166,27 @@ async function main() {
       } finally {
         await c.query("ROLLBACK");
         c.release();
+      }
+    });
+
+    await essai("« npm run ia:sans-plafond » désigne SON entreprise par son adresse, et le banc la passe au serveur", async () => {
+      const dossier = mkdtempSync(path.join(tmpdir(), "atlas-sans-plafond-"));
+      try {
+        const lancer = (...args: string[]) =>
+          spawnSync(process.execPath, [path.join(__dirname, "..", "node_modules", "tsx", "dist", "cli.mjs"), path.join(__dirname, "ia-sans-plafond.ts"), ...args], {
+            env: { ...process.env, ATLAS_SECRETS_DIR: dossier, DATABASE_SUPER_URL: ADMIN.options.connectionString },
+            encoding: "utf8",
+          });
+        const r = lancer(`credits-${marque}@test.local`);
+        assert.equal(r.status, 0, r.stderr);
+        assert.equal(readFileSync(path.join(dossier, "ia-sans-plafond"), "utf8"), entreprise.id);
+        assert.equal(lancer("personne@nulle.part").status, 1, "une adresse inconnue n'exempte personne");
+        assert.equal(lancer("--retirer").status, 0);
+        const banc = readFileSync(path.join(__dirname, "banc.mjs"), "utf8");
+        assert.ok(banc.indexOf("ia-sans-plafond") < banc.indexOf("let serveur = "), "le banc ne lit pas le réglage avant de lancer le serveur");
+        assert.match(banc, /process\.env\.ATLAS_IA_SANS_PLAFOND\s*=/);
+      } finally {
+        rmSync(dossier, { recursive: true, force: true });
       }
     });
 

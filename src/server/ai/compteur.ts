@@ -2,7 +2,7 @@ import { creditsIADeLEntreprise, ajouterDepense } from "../repositories/consomma
 import { executerAvecContexte, getContexteRequete, idRequeteValideOuGenere } from "../request-context";
 import { getCurrentCtx } from "../session-ctx";
 import { logger } from "../logger";
-import { coutDUnAppel, coutDUneEcoute, jetonsDe, JETONS_PAR_IMAGE } from "@/lib/credits-ia";
+import { coutDUnAppel, coutDUneEcoute, jetonsDe, JETONS_PAR_IMAGE, phraseCreditsEpuises } from "@/lib/credits-ia";
 import { erreurIA, type ErreurIA } from "./errors";
 import type { FournisseurLLM, MessageConversation, ResultatLLM } from "./providers/llm/interface";
 import type { FournisseurTranscription } from "./providers/transcription/interface";
@@ -31,8 +31,6 @@ import type { Ctx } from "../repositories/context";
  * tous les deux : le plafond peut se dépasser d'un appel, quelques centimes.
  * Le verrouiller exigerait une réservation par appel, pour rien de plus.
  */
-
-export const MESSAGE_CREDITS_EPUISES = "Les crédits IA du mois sont épuisés.";
 
 /**
  * Pose l'entreprise qui paie pour tout ce que `fn` appellera, quand il n'y a
@@ -75,7 +73,7 @@ async function avantLAppel(): Promise<{ payeur: Ctx | null } | { refus: ErreurIA
   const credits = await creditsIADeLEntreprise(payeur, new Date());
   if (credits.plafonne && credits.etat === "epuise") {
     logger.warn("ia_credits_epuises", { entrepriseId: payeur.entrepriseId });
-    return { refus: erreurIA("credits_epuises", MESSAGE_CREDITS_EPUISES) };
+    return { refus: erreurIA("credits_epuises", phraseCreditsEpuises(credits.reprise)) };
   }
   return { payeur };
 }

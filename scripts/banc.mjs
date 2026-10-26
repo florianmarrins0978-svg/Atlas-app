@@ -29,6 +29,7 @@
 import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
+import path from "node:path";
 import { annoncePrete } from "./annonce-adresse.mjs";
 import { prendreVerrouBanc, libererVerrouBanc } from "./verrou-banc.mjs";
 import { peutPrechauffer, memoireDisponibleMo } from "./memoire-prechauffage.mjs";
@@ -947,6 +948,10 @@ try {
   }).trim();
   const cle = chemin && existsSync(chemin) ? readFileSync(chemin, "utf8").trim() : "";
   if (cle) process.env.AUTH_SECRET = cle;
+  // **Son entreprise, sans plafond de crédits IA** (sa décision du 26 octobre
+  // 2026) : désignée par `npm run ia:sans-plafond`, rangée à côté de la clé.
+  const sansPlafond = chemin ? path.join(path.dirname(chemin), "ia-sans-plafond") : "";
+  if (sansPlafond && existsSync(sansPlafond)) process.env.ATLAS_IA_SANS_PLAFOND = readFileSync(sansPlafond, "utf8").trim();
 } catch (erreur) {
   console.error(`⚠ Clé de l'espace non posée (${erreur instanceof Error ? erreur.message.split("\n")[0] : erreur}) : l'ancienne sert encore.`);
 }

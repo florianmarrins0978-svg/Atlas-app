@@ -184,7 +184,9 @@ export default function NoteVocaleClient({
         setMessageComplement(
           "detail" in r && r.detail
             ? r.detail
-            : r.raison === "vide"
+            : r.raison === "credits" && "message" in r
+              ? r.message
+              : r.raison === "vide"
               ? "Rien n'a été entendu. Votre note d'origine est intacte."
               : "Le complément n'a pas pu être transcrit. Votre note d'origine est intacte."
         );

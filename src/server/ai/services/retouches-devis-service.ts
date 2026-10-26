@@ -165,7 +165,9 @@ export type ResultatRetouches =
    * dictée** — un devis ne se corrige pas d'après une phrase que personne n'a
    * prononcée (`providers/transcription/dev.ts`).
    */
-  | { ok: false; raison: "transcription" | "vide" | "simulee" };
+  | { ok: false; raison: "transcription" | "vide" | "simulee" }
+  // Le plafond du mois : la phrase dit quand l'IA reprend (`compteur.ts`).
+  | { ok: false; raison: "credits"; message: string };
 
 export async function lireRetouchesDictees(
   octets: Buffer,
@@ -175,7 +177,11 @@ export async function lireRetouchesDictees(
 ): Promise<ResultatRetouches> {
   const transcripteur = getFournisseurTranscription();
   const transcrit = await transcripteur.transcrire(octets, mimeType);
-  if (!transcrit.succes) return { ok: false, raison: "transcription" };
+  if (!transcrit.succes) {
+    return transcrit.erreur.type === "credits_epuises"
+      ? { ok: false, raison: "credits", message: transcrit.erreur.message }
+      : { ok: false, raison: "transcription" };
+  }
 
   const transcription = transcrit.texte.trim();
   if (!transcription) return { ok: false, raison: "vide" };
@@ -183,6 +189,9 @@ export async function lireRetouchesDictees(
 
   const modele = getFournisseurLLM();
   const reponse = await modele.genererTexte(systeme(), transcription, devisEnDonnee(lignes, reductionEnCours));
+  if (!reponse.succes && reponse.erreur.type === "credits_epuises") {
+    return { ok: false, raison: "credits", message: reponse.erreur.message };
+  }
   if (!reponse.succes) {
     // **Aucune clé, ou le modèle en panne : on rend la transcription seule.**
     // L'écran affichera ce qu'il a dit, sans changement proposé — il corrigera

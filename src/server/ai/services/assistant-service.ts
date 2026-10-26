@@ -434,7 +434,8 @@ function messageErreurUtilisateur(erreur: ErreurIA): string {
     case "quota_depasse":
       return "L'assistant a atteint sa limite d'utilisation pour l'instant.";
     case "credits_epuises":
-      return "Les crédits IA du mois sont épuisés. Atlas IA reprend le 1er du mois prochain.";
+      // La phrase porte la date de reprise (`phraseCreditsEpuises`).
+      return erreur.message;
     case "schema_invalide":
     case "reponse_invalide":
     default:

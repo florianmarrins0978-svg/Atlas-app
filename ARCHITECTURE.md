@@ -36128,5 +36128,11 @@ l'écran, plus le contour.
 
 **Ce qui le tient** : `test-credits-ia.ts` (la règle), `test-credits-ia-db.ts` (sous `atlas_app` : l'appel compté, le refus au plafond sans que le fournisseur soit appelé, la dictée aussi, l'exemption, `after()`, le compteur qui ne baisse pas, l'isolation, les fabriques sans fournisseur payant nu ; vue rouge en retirant la coupure).
 
-**Reste à faire** : la barre de l'écran Abonnement (planche `appli/soignee/abonnement-credits-ia.html`, couleur de l'épuisé à choisir), le message de l'écran de dictée une fois épuisé (planche à dessiner), et la lecture des pièces importées qui note « illisible » une pièce refusée faute de crédits.
+**L'écran.** La barre de sa planche (`appli/soignee/abonnement-credits-ia.html`) vit sous l'état de l'abonnement (`src/app/reglages/abonnement/CreditsIA.tsx`) : un pourcentage, jamais d'euros, vert, ambre, puis rouge une fois épuisé (son choix du 26 octobre). Elle lit `etatDesCreditsIA` et ne compare rien. Sans plafond, rien ne s'affiche.
+
+**La phrase du refus** (`phraseCreditsEpuises`) : « Crédits IA épuisés. Atlas IA reprend le 1er novembre. D'ici là, tout s'écrit à la main. » Elle est le message de l'erreur `credits_epuises` : la note vocale et l'assistant la relaient tels quels ; la dictée du devis, celle des coordonnées et le complément de note reçoivent la raison `credits` et l'affichent à la place de leur échec, au même endroit. Le texte change, pas la place : aucune planche neuve.
+
+**Son entreprise** se désigne par `npm run ia:sans-plafond -- son@adresse` sur son espace : le fichier va à côté de la clé de l'espace (`.atlas-secrets/ia-sans-plafond`), et `banc.mjs` le passe au serveur.
+
+**Reste ouvert** : la lecture des pièces importées note « illisible » une pièce refusée faute de crédits (`TODO.md`).
 
