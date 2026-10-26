@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-26
 
+- **Audit de sécurité, fin : des conditions à accepter arrêtent aussi le clic suivant, pas seulement le rechargement ; la purge de son espace a sa propre clé.** `ARCHITECTURE.md` §512.
 - **Audit de sécurité, E15 : les outils des flux GitHub sont figés sur une version exacte, et chaque flux est en lecture seule par défaut.** Le droit de publier le site ne vaut plus que pour l'étape qui publie, plus pour celle qui installe les paquets. `ARCHITECTURE.md` §511.
 - **Audit de sécurité, E10 : la base refuse qu'un paiement, une photo ou un retour d'une entreprise vise une ligne d'une autre.** Vingt-six liens entre tables reçoivent leur clé composite (migration 0149, sans toucher aux données existantes). E12 (les liens des clients) est gardé tel quel, raisons écrites. `ARCHITECTURE.md` §510.
 - **Les crédits IA du mois : un plafond par formule, et l'IA se coupe quand il est atteint.** Sa décision : essai 5 €, Artisan 10 €, Entreprise 20 €, Illimité 60 €, sans abonnement 10 €, la sienne sans plafond (réglage `ATLAS_IA_SANS_PLAFOND` de son espace). Chaque appel payant se compte, estimé, et au plafond il ne part plus ; la saisie à la main continue. Sur Abonnement, une barre en pourcentage (vert, ambre, rouge à l'épuisé, son choix) ; une dictée refusée dit « Crédits IA épuisés. Atlas IA reprend le 1er novembre. D'ici là, tout s'écrit à la main. » Sur son espace : `npm run ia:sans-plafond -- son@adresse`. `ARCHITECTURE.md` §509.

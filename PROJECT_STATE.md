@@ -3634,7 +3634,7 @@ dehors — l'application le laissait entrer, puis refusait toute écriture.
 | Brique | Où c'est |
 |---|---|
 | Route qui efface les cookies et renvoie à la connexion | `src/app/api/session-perimee/route.ts` |
-| Contrôle du compte, dans le **layout** (307 sans JavaScript) | `src/components/atlas/GardeDocumentsLegaux.tsx` |
+| Contrôle du compte, dans le **layout** (307 sans JavaScript) | `src/components/atlas/GardeEtapesDuCompte.tsx`, qui appelle `src/server/garde-etapes-du-compte.ts` |
 | Compte disparu ≠ compte sans entreprise | `src/server/session-ctx.ts` |
 | Contrôle, cinq points dont un navigateur sans JavaScript | `scripts/test-session-perimee-e2e.ts` |
 | Le pourquoi, et les trois défauts trouvés à l'essai | `ARCHITECTURE.md` §54 |

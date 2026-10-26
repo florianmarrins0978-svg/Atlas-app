@@ -36156,3 +36156,15 @@ l'écran, plus le contour.
 
 **Refusé, avec ses raisons.** `min-release-age` (un délai avant d'installer une version neuve) n'existe qu'à partir de npm 11.10 ; l'espace et la CI tournent sous npm 10.9, où la clé serait ignorée en silence : une protection qui n'en est pas une. Le repli `npm install` de `.devcontainer/demarrer.sh` reste : il ne sert que si `npm ci` échoue, et sans lui son espace démarrerait sans dépendances, c'est-à-dire sans application.
 
+## §512 : Les étapes du compte se jouent aux deux portes ; la purge de son espace a sa clé
+
+*26 octobre 2026, fin de l'audit de sécurité (le reste d'E8, `CRON_SECRET`, E14).*
+
+**Les étapes du compte** (adresse vérifiée, puis conditions acceptées) vivaient seulement dans le gabarit racine, que Next.js ne rejoue pas à la navigation interne : des conditions publiées pendant qu'il travaille ne l'arrêtaient qu'au rechargement. Leurs fonctions vivent désormais dans `src/server/garde-etapes-du-compte.ts`, texte inchangé, et sont appelées à **deux portes** : chaque écran (`garderLaPage`, pour les clics) et le gabarit (`GardeEtapesDuCompte`, pour le chargement complet). Le gabarit n'est pas une redite : seul lui renvoie un compte supprimé par un vrai 307, avant le premier octet ; depuis la page, sous `loading.tsx`, le renvoi devient du JavaScript qu'un navigateur sans JavaScript ne suit pas (`test-session-perimee-e2e`, la panne du 10 août). `test-garde-des-pages-e2e.ts` efface ses acceptations en cours de route et vérifie que le clic suivant le mène aux documents (rouge sans l'appel dans `garderLaPage`).
+
+**`CRON_SECRET`** venait de `docker-compose.yml`, comme `AUTH_SECRET` avant E1. Rien ne l'appelle sur son espace ; `banc.mjs` lui en crée une quand même, une fois, rangée à côté de la clé de session (`.atlas-secrets/cron-secret`).
+
+**E14** se règle chez l'hébergeur (`ATLAS_PROXY_SAUTS`) : c'est déjà une ligne de `docs/cloture-avant-premier-artisan.md`. Rien à coder.
+
+**Les pièces importées sans crédits IA** ne sont pas marquées illisibles : la lecture par l'IA rend « rien », et la pièce passe en « à vérifier » avec ce que le texte a pu dire, ce qui est la saisie à la main que la coupure promet.
+

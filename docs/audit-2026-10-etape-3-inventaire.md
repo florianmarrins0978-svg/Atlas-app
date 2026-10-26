@@ -25,7 +25,7 @@
 | **E11** | Donner un accès, changer un rôle (jusqu'à créer un second patron), résilier : sans redemander le mot de passe | moyenne | **corrigé le 26 octobre** pour les accès ; la résiliation **gardée telle quelle, délibérément** |
 | **E12** | Liens clients en clair en base, certains sans expiration (contrat, passages) ; lien du comptable valable un an | moyenne | **gardé tel quel, délibérément** : voir plus bas |
 | **E13** | Les libellés des lignes de devis entrent dans la consigne système de l'IA (retouches) ; aucun plafond de dépense d'IA par mois | moyenne | **corrigé le 26 octobre** : consigne, et plafond mensuel de crédits IA selon tes montants |
-| **E14** | Sans `ATLAS_PROXY_SAUTS`, les seuils par source deviennent communs à tous : un inconnu peut bloquer les inscriptions ou le mot de passe oublié de tout le monde, ou verrouiller un compte dont il connaît l'adresse | moyenne | dépend du déploiement |
+| **E14** | Sans `ATLAS_PROXY_SAUTS`, les seuils par source deviennent communs à tous : un inconnu peut bloquer les inscriptions ou le mot de passe oublié de tout le monde, ou verrouiller un compte dont il connaît l'adresse | moyenne | **à régler chez l'hébergeur**, déjà dans la liste avant le premier artisan |
 | **E15** | Chaîne logicielle : actions GitHub épinglées par étiquette, `pages.yml` donne ses droits de publication à l'étape qui installe les paquets, aucun délai avant d'installer une version neuve, `demarrer.sh` retombe sur `npm install` | moyenne | **corrigé le 26 octobre** (versions figées, droits réduits) ; le délai et le repli gardés, voir `ARCHITECTURE.md` §511 |
 | **E16** | `/api/health/diagnostic` et `/api/health/banc` répondent sans compte (en-têtes reçus, version servie) | faible | **gardé tel quel, délibérément** : la page sert quand on ne peut pas se connecter, et ne porte aucun secret |
 | **E17** | Petits défauts : `choisirLeMotDePasse` sans cadence, une adresse e-mail se devine par le mot de passe oublié, un GET qui écrit, un 500 au lieu d'un refus | faible | **mot de passe oublié borné le 25 octobre** ; le reste en vague 3 |
@@ -48,6 +48,13 @@
 - les droits par défaut des workflows GitHub du dépôt (réglage du site GitHub) ;
 - la protection de la branche `main` sur GitHub ;
 - tout ce qui dépend de l'hébergeur de production, qui n'existe pas encore.
+
+## La fin, le 26 octobre
+
+- **Les conditions à accepter** arrêtent désormais aussi le clic suivant, et plus seulement le rechargement de la page. Même chose pour la vérification de l'adresse d'un compte neuf.
+- **La clé de la purge planifiée** de ton espace ne vient plus du dépôt public : comme la clé de session, elle est propre à ton espace.
+- **E14** se règle chez l'hébergeur, le jour où l'appli sera en ligne pour d'autres : c'est déjà dans la liste à cocher avant le premier artisan.
+- **Une pièce importée sans crédits IA** passe en « à vérifier » avec ce que le texte a pu dire : tu la complètes à la main, rien n'est perdu.
 
 ## E10 et E12, le 26 octobre
 

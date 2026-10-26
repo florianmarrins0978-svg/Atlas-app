@@ -65,7 +65,7 @@ export default function CreerUnComptePage() {
    * LA DIX-SEPTIÈME QUESTION : le code reçu à son adresse — 14 septembre 2026.
    *
    * Le compte existe et la session est ouverte dès « Créer mon compte » ; mais
-   * la porte ne s'ouvre qu'une fois le code entré (`GardeVerificationEmail`).
+   * la porte ne s'ouvre qu'une fois le code entré (`garderLAdresseVerifiee`).
    * Il a créé le sien avec une adresse inventée et il est entré : c'est ce
    * que cette étape ferme. Elle est dessinée par la même pièce que
    * `/verifier-email`, où revient un compte qui aurait fermé l'application
@@ -453,11 +453,10 @@ export default function CreerUnComptePage() {
               sont parvenues qu'en RECHARGEANT la page. *« Il faut les signer
               avant d'entrer dans l'appli. »*
 
-              La garde qui les exige vit dans la mise en page racine
-              (`GardeDocumentsLegaux`) — un composant serveur que Next.js ne
-              rejoue PAS sur une navigation côté client : `href="/"` entrait
-              donc sans passer devant elle, et seul un rechargement la
-              réveillait. La page des documents, elle, se rend à chaque visite :
+              La garde qui les exige vivait alors dans la mise en page racine,
+              que Next.js ne rejoue PAS sur une navigation côté client :
+              `href="/"` entrait donc sans passer devant elle. Depuis le 26 octobre
+              2026, chaque écran la rejoue aussi (`garderLesDocumentsLegaux`). La page des documents, elle, se rend à chaque visite :
               elle demande ce qui reste à accepter, et renvoie sur l'accueil
               quand il n'y a rien (`documents-legaux/page.tsx`). C'est donc
               elle, la porte d'entrée d'un compte neuf — et pas l'accueil. */}

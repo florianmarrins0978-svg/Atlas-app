@@ -49,7 +49,7 @@ export async function GET(requete: Request) {
    *
    * `Dest: document` aurait paru plus simple, et **cela aurait cassé un vrai
    * parcours** : quatre des cinq appels légitimes viennent d'un `redirect()`
-   * côté serveur (`session-ctx.ts`, `GardeDocumentsLegaux`,
+   * côté serveur (`session-ctx.ts`, `garderLesDocumentsLegaux`,
    * `documents-legaux/actions.ts`). Suivi depuis une action serveur, le routeur
    * de Next va le chercher en `fetch` — `Dest` vaut alors `empty`, et la session
    * périmée ne s'effacerait plus. C'est le piège du cookie mort que rien

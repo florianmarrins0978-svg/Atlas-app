@@ -23,7 +23,7 @@ import { logger } from "@/server/logger";
  * **ET ELLE OUVRE LA VÉRIFICATION DE L'ADRESSE — 14 septembre 2026.** Il a
  * créé son compte avec une adresse inventée, et il est entré : *« il faut
  * mettre une sécurité avec un numéro envoyé par email »*. Le compte est créé,
- * la session ouverte, mais la porte reste fermée (`GardeVerificationEmail`)
+ * la session ouverte, mais la porte reste fermée (`garderLAdresseVerifiee`)
  * tant que le code reçu n'a pas été entré. `codeEnvoyeA` dit à l'écran où
  * regarder ; `avertissement` dit si l'envoi lui-même a échoué — le compte
  * existe quand même, et « Renvoyer » reste possible.

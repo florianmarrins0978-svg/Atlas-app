@@ -4,6 +4,7 @@ import { accueilDuRole, cheminAutorise } from "@/lib/acces-roles";
 import { estCheminPublic } from "@/lib/chemins-publics";
 import { accesDeLaPersonne } from "@/server/autorisation";
 import { getCurrentCtx } from "@/server/session-ctx";
+import { garderLAdresseVerifiee, garderLesDocumentsLegaux } from "@/server/garde-etapes-du-compte";
 
 /**
  * LE REFUS DES RÔLES, POSÉ PAR CHAQUE ÉCRAN.
@@ -40,6 +41,11 @@ export async function garderLaPage(): Promise<void> {
   // Sans chemin, on ne sait pas de quoi on parle : la garde se tait plutôt que
   // de refuser au hasard. Ce cas n'arrive que hors requête HTTP réelle.
   if (!chemin) return;
+  // Les deux étapes du compte d'abord, dans leur ordre (le code reçu, puis les
+  // conditions) : elles ont leurs propres chemins exempts, et passent AVANT le
+  // test des chemins publics, comme elles le faisaient dans le gabarit.
+  await garderLAdresseVerifiee(chemin);
+  await garderLesDocumentsLegaux(chemin);
   // Ce qui s'atteint sans compte s'atteint sans rôle. Les mêler ferait naître la
   // seconde liste que ce dépôt a déjà payée deux fois (`chemins-publics.ts`).
   if (estCheminPublic(chemin)) return;
