@@ -464,6 +464,35 @@ export function CarteDuJour({
     />
   ) : null;
 
+  // **La date en titre, à gauche, comme sur la liste — sa planche du
+  // 25 octobre 2026** (`appli/soignee/planning.html`). En capitales espacées
+  // de 12,5 px au centre, elle se lisait comme une étiquette ; « Aujourd'hui »
+  // garde son or et passe devant la date. « Salarié absent ? » se pose à côté
+  // (sa réponse du 26 octobre, « mets-le à côté ») : c'est `PasLaCeJour` qui
+  // range les deux sur une ligne.
+  const titreDuJour = (
+    <h3 className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5 font-normal">
+      {jour === jourIso(new Date()) && (
+        <span
+          data-atlas="aujourdhui-fiche"
+          className="text-[22px] leading-[1.2]"
+          style={{ fontFamily: font.display, color: colors.or }}
+        >
+          Aujourd’hui
+        </span>
+      )}
+      <span
+        className={jour === jourIso(new Date()) ? "text-[15px]" : "text-[20px] leading-[1.2]"}
+        style={
+          jour === jourIso(new Date())
+            ? { fontFamily: font.body, color: colors.inkSoft }
+            : { fontFamily: font.display, color: colors.ink }
+        }
+      >
+        {jour === jourIso(new Date()) ? jourLisibleCourt(jour).toLocaleLowerCase("fr") : jourLisibleCourt(jour)}
+      </span>
+    </h3>
+  );
   return (
     <>
       {/* ─── ELLE SE RATTACHE À CE QU'IL A TOUCHÉ ───────────────────────────
@@ -529,29 +558,9 @@ export function CarteDuJour({
             25 octobre 2026** (`appli/soignee/planning.html`). En capitales
             espacées de 12,5 px au centre, elle se lisait comme une étiquette ;
             « Aujourd'hui » garde son or et passe devant la date. */}
-        {!seulement && (
-          <h3 className="mb-2 flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5 font-normal">
-            {jour === jourIso(new Date()) && (
-              <span
-                data-atlas="aujourdhui-fiche"
-                className="text-[22px] leading-[1.2]"
-                style={{ fontFamily: font.display, color: colors.or }}
-              >
-                Aujourd’hui
-              </span>
-            )}
-            <span
-              className={jour === jourIso(new Date()) ? "text-[15px]" : "text-[20px] leading-[1.2]"}
-              style={
-                jour === jourIso(new Date())
-                  ? { fontFamily: font.body, color: colors.inkSoft }
-                  : { fontFamily: font.display, color: colors.ink }
-              }
-            >
-              {jour === jourIso(new Date()) ? jourLisibleCourt(jour).toLocaleLowerCase("fr") : jourLisibleCourt(jour)}
-            </span>
-          </h3>
-        )}
+        {/* La date seule quand « Salarié absent ? » n'existe pas (un salarié, un
+            jour passé) ; sinon c'est `PasLaCeJour` qui la pose, le geste à côté. */}
+        {!seulement && !(ecriture) && <div className="mb-2">{titreDuJour}</div>}
 
         {/* ─── « JE NE SUIS PAS LÀ » — sa demande du 6 septembre 2026 ────────
 
@@ -593,6 +602,7 @@ export function CarteDuJour({
 
         {ecriture && !seulement && (
           <PasLaCeJour
+            titre={titreDuJour}
             jour={jour}
             absences={absencesDuJour(jour)}
             lignesEquipes={lignesEquipes}

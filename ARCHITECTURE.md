@@ -36133,5 +36133,5 @@ l'écran, plus le contour.
 
 **Les suites suivent la règle, pas le dessin** (`CLAUDE.md` §5 bis) : `test-ligne-planning-e2e` mesure la date hors de la plage et plus grande que le nom ; `test-planning-e2e` vérifie la liste d'office et le titre en phrase, et compare le titre du tiroir à celui d'un jour par la police et la taille ; neuf suites ne touchent plus « La semaine ».
 
-**Ce qui n'est PAS dans ce lot** : la barre du bas en 12,5 px (« Ce qui change partout », pas tranché) ; « Salarié absent ? » garde sa place sous la date, la planche le montrait à côté.
+**Ce qui n'est PAS dans ce lot** : la barre du bas garde sa taille, sa décision du 26 octobre (*« la barre du bas peut garder sa taille actuelle »*). « Salarié absent ? » se pose à côté de la date du jour, comme sur la planche (*« Salarié absent, mets-le à côté »*, même jour) : `PasLaCeJour` reçoit le titre du jour de `CarteDuJour` et le porte sur sa propre ligne, pour que la liste des absents s'ouvre toujours juste dessous.
 
