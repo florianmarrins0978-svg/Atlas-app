@@ -3,7 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { exigerProprietaire } from "@/server/autorisation";
-import { messageRefusAcces } from "@/lib/donner-un-acces";
+import { exigerPreuveRecente, PreuveRecenteExigeeError } from "@/server/preuve-recente";
+import { GESTES_SENSIBLES } from "@/lib/preuve-recente";
+import { messageRefusAcces, refusDeLAcces } from "@/lib/donner-un-acces";
 import {
   changerLaPortee,
   changerLeRole,
@@ -39,15 +41,43 @@ function phrase(refus: Parameters<typeof messageRefusAcces>[0]): { ok: false; me
   return { ok: false, message: messageRefusAcces(refus) };
 }
 
+/** Ce que rend un geste des accès : `preuveExigee` fait ouvrir « Vérifiez que c'est bien vous ». */
+export type ResultatGesteAcces = { ok: true } | { ok: false; message: string; preuveExigee?: true };
+
+/**
+ * **Donner, changer, retirer un accès exigent une preuve récente** (audit du
+ * 25 octobre 2026, E11). Posée ici et pas dans le dépôt : ces trois actions
+ * sont la seule porte de `src/` vers ces écritures, et le dépôt sert aussi les
+ * suites qui montent leurs comptes d'essai. Rendue en valeur, comme tout refus
+ * attendu.
+ */
+async function refusFautePreuve(ctx: { utilisateurId: string; sessionId?: string }): Promise<ResultatGesteAcces | null> {
+  try {
+    await exigerPreuveRecente(ctx, GESTES_SENSIBLES.accesALEntreprise);
+    return null;
+  } catch (erreur) {
+    if (erreur instanceof PreuveRecenteExigeeError) return { ok: false, message: erreur.message, preuveExigee: true };
+    throw erreur;
+  }
+}
+
 export async function donnerUnAccesAction(saisie: {
   nom: string;
   email: string;
   motDePasse: string;
   confirmation: string;
   role: Role;
-}): Promise<{ ok: true } | { ok: false; message: string }> {
+}): Promise<ResultatGesteAcces> {
   const ctx = await getCurrentCtx();
   await exigerProprietaire(ctx, "donner un accès");
+  // **La saisie d'abord, la preuve ensuite** : une confirmation qui diffère se
+  // corrige sur place, sans lui redemander son mot de passe pour rien. La même
+  // règle pure que le dépôt rejouera ; l'adresse déjà prise, qui demande la
+  // base, reste au dépôt, derrière la preuve.
+  const refusDeSaisie = refusDeLAcces({ ...saisie, emailDejaPris: false });
+  if (refusDeSaisie) return phrase(refusDeSaisie);
+  const manquePreuve = await refusFautePreuve(ctx);
+  if (manquePreuve) return manquePreuve;
 
   const resultat = await donnerUnAcces(ctx, saisie);
   if (!resultat.ok) return phrase(resultat.refus);
@@ -59,9 +89,11 @@ export async function donnerUnAccesAction(saisie: {
 export async function changerLeRoleAction(
   accesId: string,
   role: string
-): Promise<{ ok: true } | { ok: false; message: string }> {
+): Promise<ResultatGesteAcces> {
   const ctx = await getCurrentCtx();
   await exigerProprietaire(ctx, "changer un rôle");
+  const manquePreuve = await refusFautePreuve(ctx);
+  if (manquePreuve) return manquePreuve;
 
   const resultat = await changerLeRole(ctx, accesId, role);
   if (!resultat.ok) return phrase(resultat.refus);
@@ -107,9 +139,11 @@ export async function relierAuSalarieAction(
 
 export async function retirerUnAccesAction(
   accesId: string
-): Promise<{ ok: true } | { ok: false; message: string }> {
+): Promise<ResultatGesteAcces> {
   const ctx = await getCurrentCtx();
   await exigerProprietaire(ctx, "retirer un accès");
+  const manquePreuve = await refusFautePreuve(ctx);
+  if (manquePreuve) return manquePreuve;
 
   const resultat = await retirerUnAcces(ctx, accesId);
   if (!resultat.ok) return phrase(resultat.refus);

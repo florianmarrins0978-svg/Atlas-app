@@ -196,7 +196,7 @@
 .dossier-detail.alerte { color: var(--atlas-alerte); font-weight: 600; }
 .dossier .etat { margin-top: 10px; }
 .dossier-gestes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 14px; }
-.dossier-gestes button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 76px;
+.dossier-gestes button, .dossier-gestes a { display: flex; text-decoration: none; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 76px;
                          padding: 8px 6px; border-radius: 12px; font-size: 14px; font-weight: 600; line-height: 1.2; text-align: center;
                          color: var(--atlas-ink); box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
 .dossier-gestes .ico { color: var(--atlas-or); }
@@ -227,9 +227,17 @@
 body.forme-arrondie .ecran .bouton,
 body.forme-arrondie .ecran .motifs button,
 body.forme-arrondie .ecran .dossier-gestes button,
+body.forme-arrondie .ecran .dossier-gestes a,
 body.forme-arrondie .ecran .choix,
 body.forme-arrondie .ecran .choix button { border-radius: 999px; }
 .autre-forme { margin-top: 6px; }
+/* Les deux autres planches du comptable, tout en haut : sa question du 26 octobre, « où se trouve le document ». */
+.documents { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-top: 14px; max-width: 720px; }
+.document-lien { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 10px 14px; border-radius: 12px; text-decoration: none;
+                 background: #faf9f5; color: #1c1c1a; box-shadow: inset 0 0 0 1px rgba(28,28,26,0.10); }
+.document-lien .ico { color: #B98B47; }
+.document-lien b { display: block; font: 400 17px/1.25 var(--serif); }
+.document-lien span span { display: block; margin-top: 2px; font-size: 14px; color: #4a4a44; }
 
 /* ─── La vraie page, à côté ──────────────────────────────────────────────── */
 .etats-communs { grid-column: 1 / -1; margin-bottom: 0; }
@@ -245,6 +253,10 @@ body.forme-arrondie .ecran .choix button { border-radius: 999px; }
   <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
   <h1 class="pl-titre">Pour mon comptable</h1>
   <p class="pl-verdict">La page rangée dans l'ordre du geste : <b>ce qui attend, puis les mois, puis le dossier à ranger</b>. Mêmes mots, mêmes couleurs, Check up seul bouton plein. À côté, la vraie page dans le même état.</p>
+  <div class="documents">
+    <a class="document-lien" href="comptable-dossier.html"><svg class="ico" aria-hidden="true"><use href="#i-document"/></svg><span><b>Le dossier envoyé au comptable</b><span>Chaque ligne de la banque, sa pièce à côté</span></span></a>
+    <a class="document-lien" href="comptable-verification.html"><svg class="ico" aria-hidden="true"><use href="#i-envoyer"/></svg><span><b>La page de son lien</b><span>Il valide ou rejette chaque ligne</span></span></a>
+  </div>
   <a class="pl-sommaire autre-forme" id="autre-forme" href="termines-comptable.html?forme=arrondi">Voir la même planche, boutons arrondis<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
 </header>
 
@@ -793,13 +805,15 @@ body.forme-arrondie .ecran .choix button { border-radius: 999px; }
         h += '<div class="ajout-bilan"><button class="bouton bouton-creux" type="button" data-geste="ajout-bilan" data-id="' + d.id + '">' + ico("plus") + "Ajouter le bilan du comptable</button></div>";
       }
       h += (d.verif ? '<span class="etat" data-ton="vert">' + d.verif + "</span>" : "") +
-        '<div class="dossier-gestes"><button type="button" class="touche" data-note="Le PDF s’ouvre dans la visionneuse d’Atlas.">' + ico("document") + "Ouvrir</button>" +
+        // « Ouvrir » mène à la planche du PDF : c'est le document que le comptable reçoit.
+        '<div class="dossier-gestes"><a class="touche" href="comptable-dossier.html">' + ico("document") + "Ouvrir</a>" +
         '<button type="button" class="touche" data-note="Le PDF se range sur le téléphone.">' + ico("telecharger") + "Télécharger</button>" +
         '<button type="button" class="touche" data-geste="envoyer" data-id="' + d.id + '">' + ico("envoyer") + "Envoyer au comptable</button></div>";
       if (etat.lien[d.id]) {
         h += '<div class="plage lien-pret"><p>Le lien privé de votre comptable est prêt. Il marche un an.</p>' +
           '<button class="bouton bouton-plein" type="button" data-note="Votre messagerie s’ouvre, le lien déjà écrit.">' + ico("email") + "Envoyer par e-mail</button>" +
-          '<button class="bouton-texte" type="button" data-geste="copier">' + (etat.lien[d.id] === "copie" ? "Lien copié" : "Copier le lien") + "</button></div>";
+          '<button class="bouton-texte" type="button" data-geste="copier">' + (etat.lien[d.id] === "copie" ? "Lien copié" : "Copier le lien") + "</button>" +
+          '<a class="bouton-texte" href="comptable-verification.html" style="justify-content:center;width:100%">Voir la page qu’il ouvre</a></div>';
       }
       if (d.rejet) {
         var r = etat.ouvertes.rejet || "";

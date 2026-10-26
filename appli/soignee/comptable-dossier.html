@@ -59,6 +59,12 @@
 .bureau { height: min(78vh, 980px); overflow-y: auto; overscroll-behavior: contain; padding: 14px; border-radius: 14px;
           background: #d9d5cc; }
 .bureau img { display: block; width: 100%; height: auto; box-shadow: 0 6px 18px -6px rgba(28,28,26,0.4); }
+.bureau.grand { overflow-x: auto; }
+.bureau.grand img { width: 595px; max-width: none; }
+.grand-rang { grid-column: 1 / -1; display: flex; justify-content: center; margin-top: -8px; }
+.grand-bouton { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 22px; font-size: 15px;
+                font-weight: 600; color: #2f3b2f; background: #faf9f5; box-shadow: inset 0 0 0 1px rgba(28,28,26,0.12); }
+.grand-bouton[aria-pressed="true"] { background: #2f3b2f; color: #faf9f5; }
 .bureau img + img, .bureau .a4 + .a4 { margin-top: 14px; }
 @media (max-width: 480px) {
   .pl-scene { padding: 0 var(--gouttiere) !important; }
@@ -153,11 +159,12 @@
 <main class="pl-scene">
   <div class="feuilles">
     <div class="pl-etats" id="pages">
-      <button type="button" data-p="couverture" aria-pressed="true">La première page</button>
-      <button type="button" data-p="mois">Un mois : octobre</button>
+      <button type="button" data-p="mois" aria-pressed="true">Un mois : octobre</button>
+      <button type="button" data-p="couverture">La première page</button>
       <button type="button" data-p="perdus">Les tickets perdus</button>
       <button type="button" data-p="photos">Les photos</button>
     </div>
+    <div class="grand-rang"><button type="button" class="grand-bouton" id="lire-en-grand" aria-pressed="false"><svg class="ico ico-p" aria-hidden="true"><use href="#i-recherche"/></svg>Lire en grand</button></div>
 
     <div data-vue-panneau="propose">
       <p class="pl-legende">Proposé</p>
@@ -324,7 +331,7 @@
   function echelle() {
     var l = proposeEl.clientWidth - 28;
     if (window.matchMedia("(max-width: 480px)").matches) l = proposeEl.clientWidth - 20;
-    proposeEl.style.setProperty("--echelle", Math.max(0.3, Math.min(1.4, l / 595)).toFixed(4));
+    proposeEl.style.setProperty("--echelle", proposeEl.classList.contains("grand") ? "1" : Math.max(0.3, Math.min(1.4, l / 595)).toFixed(4));
   }
   function montrer(cle) {
     var v = VUES[cle];
@@ -340,7 +347,17 @@
   window.addEventListener("resize", echelle);
   /* L'onglet Aujourd'hui révèle sa colonne : l'échelle se recalcule. */
   document.addEventListener("click", function (e) { if (e.target.closest(".pl-onglets")) setTimeout(echelle, 30); });
-  montrer("couverture");
+  /* Lire en grand : la page à sa vraie taille, qu'on fait glisser du doigt ; sur un téléphone, la page entière ne se lit pas. */
+  var grand = false;
+  var boutonGrand = document.getElementById("lire-en-grand");
+  boutonGrand.addEventListener("click", function () {
+    grand = !grand;
+    document.querySelectorAll(".bureau").forEach(function (b) { b.classList.toggle("grand", grand); });
+    boutonGrand.setAttribute("aria-pressed", grand ? "true" : "false");
+    boutonGrand.lastChild.textContent = grand ? "Voir la page entière" : "Lire en grand";
+    echelle();
+  });
+  montrer("mois");
 })();
 </script>
 </body>

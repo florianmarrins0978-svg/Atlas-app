@@ -68,6 +68,13 @@ export const GESTES_SENSIBLES = {
   retirerCleAppareil: "retirer-cle-appareil",
   /** Toute l'entreprise dans un fichier : clients, prix, factures. */
   exportComplet: "export-complet",
+  /**
+   * Donner un accès, changer un rôle, retirer un accès (audit du 25 octobre
+   * 2026, E11). Une session volée qui se crée un compte garde une porte que le
+   * changement de mot de passe du patron ne ferme pas, comme une clé
+   * d'appareil ; nommer un second patron, ou retirer le vrai, est pire encore.
+   */
+  accesALEntreprise: "acces-a-l-entreprise",
 } as const;
 
 export type GesteSensible = (typeof GESTES_SENSIBLES)[keyof typeof GESTES_SENSIBLES];
@@ -88,5 +95,7 @@ export function messagePreuveExigee(geste: GesteSensible): string {
       return "Retirer un appareil le prive de votre compte : vérifiez que c'est bien vous.";
     case GESTES_SENSIBLES.exportComplet:
       return "Ce fichier contient toute votre entreprise : vérifiez que c'est bien vous.";
+    case GESTES_SENSIBLES.accesALEntreprise:
+      return "Les accès ouvrent votre entreprise : vérifiez que c'est bien vous.";
   }
 }

@@ -6,6 +6,7 @@ import { colors, font, libelleCaps, surPlein, voile } from "@/lib/design-tokens"
 import { libelleRole, type PorteePlanning, type Role } from "@/lib/acces-roles";
 import { libelleSalarie, salariesAffiches } from "@/lib/equipes";
 import TeteRonde from "@/components/atlas/TeteRonde";
+import DemanderPreuve from "@/components/atlas/DemanderPreuve";
 import ChoixRole from "./ChoixRole";
 import {
   changerLaPorteeAction,
@@ -63,11 +64,19 @@ export default function QuiAAcces({
   // **Une seule fonction pour les quatre gestes.** Chacune rend le même couple
   // — c'est fait pour : un refus se lit toujours au même endroit, et l'écran n'a
   // pas quatre façons de dire « non ».
-  function agir(geste: () => Promise<{ ok: true } | { ok: false; message: string }>, apres?: () => void) {
+  // Changer un rôle et retirer un accès demandent une identité récente (E11) :
+  // le SERVEUR le dit, l'écran ouvre la demande puis rejoue le même geste.
+  const [preuveDemandee, setPreuveDemandee] = useState<{ motif: string; reprendre: () => void } | null>(null);
+
+  function agir(
+    geste: () => Promise<{ ok: true } | { ok: false; message: string; preuveExigee?: true }>,
+    apres?: () => void
+  ) {
     setMessage(null);
     demarrer(async () => {
       const r = await geste();
       if (r.ok) apres?.();
+      else if (r.preuveExigee) setPreuveDemandee({ motif: r.message, reprendre: () => agir(geste, apres) });
       else setMessage(r.message);
     });
   }
@@ -188,6 +197,17 @@ export default function QuiAAcces({
           {message}
         </p>
       )}
+
+      <DemanderPreuve
+        ouvert={preuveDemandee !== null}
+        motif={preuveDemandee?.motif ?? ""}
+        onAbandon={() => setPreuveDemandee(null)}
+        onProuve={() => {
+          const reprendre = preuveDemandee?.reprendre;
+          setPreuveDemandee(null);
+          reprendre?.();
+        }}
+      />
     </section>
   );
 }

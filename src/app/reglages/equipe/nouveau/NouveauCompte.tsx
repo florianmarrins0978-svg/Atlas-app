@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { colors, font, libelleCaps, surPlein } from "@/lib/design-tokens";
 import { etatConfirmation, LONGUEUR_MINIMALE } from "@/lib/mot-de-passe";
 import OeilMotDePasse from "@/components/atlas/OeilMotDePasse";
+import DemanderPreuve from "@/components/atlas/DemanderPreuve";
 import type { Role } from "@/lib/acces-roles";
 import ChoixRole from "../ChoixRole";
 import { donnerUnAccesAction } from "../actions";
@@ -54,6 +55,9 @@ export default function NouveauCompte({
   const [role, setRole] = useState<Role>(roleInitial);
   const [message, setMessage] = useState<string | null>(null);
   const [enCours, demarrer] = useTransition();
+  // Donner un accès demande une identité récente (E11) : le serveur le dit,
+  // l'écran ouvre la demande puis recrée le compte tout seul.
+  const [preuveDemandee, setPreuveDemandee] = useState<string | null>(null);
 
   const disent = etatConfirmation(motDePasse, confirmation);
 
@@ -66,6 +70,8 @@ export default function NouveauCompte({
         // écran de félicitations serait un appui de plus pour rien.
         router.push(retour);
         router.refresh();
+      } else if (r.preuveExigee) {
+        setPreuveDemandee(r.message);
       } else {
         setMessage(r.message);
       }
@@ -73,76 +79,90 @@ export default function NouveauCompte({
   }
 
   return (
-    <form
-      className="px-[26px] pb-24 pt-[26px]"
-      onSubmit={(e) => {
-        e.preventDefault();
-        creer();
-      }}
-    >
-      {/* **LE RÔLE D'ABORD** (planche du 11 octobre 2026) : c'est la vraie
-          décision de l'écran ; le nom et le mot de passe ne sont que la clé. */}
-      <ChoixRole titre valeur={role} inerte={enCours} onChoisir={setRole} />
-
-      <p className={`mt-[30px] ${libelleCaps}`} style={{ color: colors.inkSoft }}>Son compte</p>
-      <Champ etiquette="Nom" valeur={nom} onChange={setNom} autoComplete="off" />
-      <Champ
-        etiquette="Adresse e-mail"
-        valeur={email}
-        onChange={setEmail}
-        type="email"
-        inputMode="email"
-        autoComplete="off"
-      />
-
-      <ChampSecret
-        etiquette="Mot de passe"
-        valeur={motDePasse}
-        onChange={setMotDePasse}
-        sous={`Au moins ${LONGUEUR_MINIMALE} caractères`}
-      />
-      <ChampSecret
-        etiquette="Confirmer le mot de passe"
-        valeur={confirmation}
-        onChange={setConfirmation}
-        sous={disent?.message}
-        // Vert d'accord, rouge en désaccord : la phrase change de sens, sa
-        // couleur aussi. Grise, elle se lirait comme une consigne.
-        souligne={disent ? (disent.identiques ? colors.rust : colors.alert) : undefined}
-        // Le champ se borde aussi : sous un clavier ouvert, la phrase seule ne
-        // se voit pas toujours (planche du 11 octobre 2026).
-        faux={disent?.identiques === false}
-      />
-
-      {/* **Le refus AU-DESSUS du bouton** (planche du 11 octobre 2026). Sous
-          « Annuler », il tombait souvent hors de l'écran : le patron appuyait,
-          et rien ne semblait se passer. */}
-      {message && (
-        <p className="mt-[22px] text-[14px]" style={{ color: colors.alert }} role="alert">
-          {message}
-        </p>
-      )}
-
-      {/* **LE SEUL APLAT PLEIN DE L'ÉCRAN**, et c'est tout l'objet de sa
-          deuxième remarque. Les pastilles de rôle, au-dessus, sont teintées. */}
-      <button
-        type="submit"
-        disabled={enCours}
-        className="atlas-plein mt-7 flex w-full items-center justify-center rounded-full py-3.5 text-[14px] font-semibold"
-        style={{ backgroundColor: colors.plein, color: surPlein, opacity: enCours ? 0.6 : 1 }}
+    <>
+      <form
+        className="px-[26px] pb-24 pt-[26px]"
+        onSubmit={(e) => {
+          e.preventDefault();
+          creer();
+        }}
       >
-        {enCours ? "Un instant…" : "Créer le compte"}
-      </button>
+        {/* **LE RÔLE D'ABORD** (planche du 11 octobre 2026) : c'est la vraie
+            décision de l'écran ; le nom et le mot de passe ne sont que la clé. */}
+        <ChoixRole titre valeur={role} inerte={enCours} onChoisir={setRole} />
 
-      <button
-        type="button"
-        onClick={() => router.push(retour)}
-        className="mt-1 flex w-full items-center justify-center py-3 text-[13px]"
-        style={{ color: colors.muted }}
-      >
-        Annuler
-      </button>
-    </form>
+        <p className={`mt-[30px] ${libelleCaps}`} style={{ color: colors.inkSoft }}>Son compte</p>
+        <Champ etiquette="Nom" valeur={nom} onChange={setNom} autoComplete="off" />
+        <Champ
+          etiquette="Adresse e-mail"
+          valeur={email}
+          onChange={setEmail}
+          type="email"
+          inputMode="email"
+          autoComplete="off"
+        />
+
+        <ChampSecret
+          etiquette="Mot de passe"
+          valeur={motDePasse}
+          onChange={setMotDePasse}
+          sous={`Au moins ${LONGUEUR_MINIMALE} caractères`}
+        />
+        <ChampSecret
+          etiquette="Confirmer le mot de passe"
+          valeur={confirmation}
+          onChange={setConfirmation}
+          sous={disent?.message}
+          // Vert d'accord, rouge en désaccord : la phrase change de sens, sa
+          // couleur aussi. Grise, elle se lirait comme une consigne.
+          souligne={disent ? (disent.identiques ? colors.rust : colors.alert) : undefined}
+          // Le champ se borde aussi : sous un clavier ouvert, la phrase seule ne
+          // se voit pas toujours (planche du 11 octobre 2026).
+          faux={disent?.identiques === false}
+        />
+
+        {/* **Le refus AU-DESSUS du bouton** (planche du 11 octobre 2026). Sous
+            « Annuler », il tombait souvent hors de l'écran : le patron appuyait,
+            et rien ne semblait se passer. */}
+        {message && (
+          <p className="mt-[22px] text-[14px]" style={{ color: colors.alert }} role="alert">
+            {message}
+          </p>
+        )}
+
+        {/* **LE SEUL APLAT PLEIN DE L'ÉCRAN**, et c'est tout l'objet de sa
+            deuxième remarque. Les pastilles de rôle, au-dessus, sont teintées. */}
+        <button
+          type="submit"
+          disabled={enCours}
+          className="atlas-plein mt-7 flex w-full items-center justify-center rounded-full py-3.5 text-[14px] font-semibold"
+          style={{ backgroundColor: colors.plein, color: surPlein, opacity: enCours ? 0.6 : 1 }}
+        >
+          {enCours ? "Un instant…" : "Créer le compte"}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => router.push(retour)}
+          className="mt-1 flex w-full items-center justify-center py-3 text-[13px]"
+          style={{ color: colors.muted }}
+        >
+          Annuler
+        </button>
+      </form>
+
+      {/* Hors du formulaire : sa feuille porte son propre bouton, qui ne doit
+          pas soumettre la création. */}
+      <DemanderPreuve
+        ouvert={preuveDemandee !== null}
+        motif={preuveDemandee ?? ""}
+        onAbandon={() => setPreuveDemandee(null)}
+        onProuve={() => {
+          setPreuveDemandee(null);
+          creer();
+        }}
+      />
+    </>
   );
 }
 

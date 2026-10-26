@@ -283,7 +283,8 @@
   var ICONE_PIECE = { ticket: "facture", facture: "document", emise: "document", motif: "banque", perdu: "alerte" };
 
   /* ═══ L'état ════════════════════════════════════════════════════════════ */
-  var etat = { mode: "ordi", ouverte: null, onglet: "reconstitue", rouge: false, verdicts: {}, notes: {}, brouillon: "" };
+  // Sur un écran étroit, la vue ordinateur réduite au tiers ne se lit pas : on ouvre la vue téléphone.
+  var etat = { mode: window.matchMedia("(max-width: 600px)").matches ? "tel" : "ordi", ouverte: null, onglet: "reconstitue", rouge: false, verdicts: {}, notes: {}, brouillon: "" };
 
   function verifiees() {
     var n = 0, r = 0;

@@ -1,6 +1,7 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
 import { ADRESSE } from "./_adresse";
+import { Pool } from "pg";
 
 // « NOUVEAU COMPTE » — l'écran qu'il a retenu le 26 août 2026, dans un vrai
 // navigateur.
@@ -155,6 +156,14 @@ async function main() {
     await page.fill('input[type="email"]', "demo@atlas.local");
     await page.locator('input[type="password"]').last().fill(MOT_DE_PASSE);
     await page.click('button[type="submit"]');
+    // **Donner un accès redemande d'abord qui l'on est** (audit du 25 octobre
+    // 2026, E11) : la feuille s'ouvre avant tout autre refus, puis le geste
+    // repart tout seul. La preuve tient dix minutes, la suite n'y revient pas.
+    const preuve = page.getByLabel("Votre mot de passe");
+    await preuve.waitFor({ state: "visible", timeout: 10_000 });
+    await preuve.fill("demo1234");
+    await page.locator('[data-atlas="prouver-identite"]').click();
+    await preuve.waitFor({ state: "hidden", timeout: 10_000 });
     await page.waitForTimeout(2000);
     const texte = await page.locator("form").innerText();
     assert.ok(texte.includes("utilise déjà cette adresse"), `aucun refus lisible à l'écran :\n${texte.slice(-200)}`);
@@ -177,6 +186,32 @@ async function main() {
     // Le vert pin plein est réservé aux actions. La pastille ne doit pas le
     // porter — ici comme sur l'écran de création.
     assert.notEqual(fond, "rgb(47, 59, 47)", "le rôle est redevenu un aplat plein dans la liste");
+  });
+
+  await cas("changer son rôle sans preuve récente redemande le mot de passe, et rien ne change avant", async () => {
+    // Audit du 25 octobre 2026, E11 : le rôle ouvre les prix, ou l'entreprise
+    // entière s'il devient patron. La preuve posée plus haut est effacée pour
+    // jouer le cas d'une session qui n'a rien prouvé.
+    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    const role = async () =>
+      (await pool.query(`SELECT me.role FROM membres_entreprise me JOIN users u ON u.id = me.utilisateur_id WHERE u.email = $1`, [email])).rows[0]?.role;
+    try {
+      await pool.query(`DELETE FROM preuves_authentification WHERE utilisateur_id = (SELECT id FROM users WHERE email = 'demo@atlas.local')`);
+      const avant = await role();
+      const cible = avant === "commercial" ? "Facturation" : "Commercial";
+      await page.locator('button[aria-pressed="false"]', { hasText: cible }).first().click();
+      const preuve = page.getByLabel("Votre mot de passe");
+      await preuve.waitFor({ state: "visible", timeout: 10_000 });
+      assert.equal(await role(), avant, "LE RÔLE A CHANGÉ AVANT LA PREUVE D'IDENTITÉ");
+      await preuve.fill("demo1234");
+      await page.locator('[data-atlas="prouver-identite"]').click();
+      await preuve.waitFor({ state: "hidden", timeout: 10_000 });
+      const attendu = cible === "Commercial" ? "commercial" : "facturation";
+      for (let i = 0; i < 20 && (await role()) !== attendu; i++) await page.waitForTimeout(300);
+      assert.equal(await role(), attendu, "la preuve donnée, le rôle n'a pas suivi");
+    } finally {
+      await pool.end();
+    }
   });
 
   await navigateur.close();

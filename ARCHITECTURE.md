@@ -36084,3 +36084,29 @@ l'écran, plus le contour.
 
 **Ce qui n'est PAS dans ce lot.** La barre du bas en 12,5 px que montre la planche relève de « Ce qui change partout » (`appli/soignee/fondations.html`), qu'il n'a pas encore tranché : la toucher ici l'aurait changée sur tous les écrans à la fois.
 
+## §507 : Donner, changer ou retirer un accès redemande une identité récente
+
+*26 octobre 2026, audit de sécurité (E11, `docs/audit-2026-10-etape-3-inventaire.md`).*
+
+**Le constat, reproduit.** `donnerUnAccesAction`, `changerLeRoleAction` et `retirerUnAccesAction` n'exigeaient que le rôle de patron. Une session volée pouvait se créer un compte, ou nommer un second patron : une porte que le changement de mot de passe du vrai patron ne ferme pas, exactement le cas de la clé d'appareil (`src/lib/preuve-recente.ts`).
+
+**La règle.** Un cinquième geste sensible, `accesALEntreprise`. La preuve est exigée dans les trois ACTIONS, pas dans le dépôt : elles sont la seule porte de `src/` vers ces écritures, et le dépôt sert aussi les suites qui montent leurs comptes d'essai (quinze suites). Le refus se rend en valeur (`preuveExigee`), et `QuiAAcces` comme `NouveauCompte` ouvrent `DemanderPreuve` puis rejouent le geste.
+
+**L'ordre dans « donner un accès ».** La règle pure de la saisie (`refusDeLAcces`, la même que le dépôt rejoue) passe avant la preuve : une confirmation qui diffère se corrige sans redemander le mot de passe. L'adresse déjà prise, qui interroge la base, reste derrière la preuve.
+
+**Refusé, délibérément.** La résiliation : elle est voulue facile (`src/app/reglages/abonnement/actions.ts`), ne coupe rien avant l'échéance et s'annule par « Ne pas arrêter ». La portée du planning et le rattachement à un salarié : ils n'ouvrent ni prix ni entreprise.
+
+**Ce qui le tient** : `test-gestes-sensibles-db.ts` (les trois gestes sans preuve ne changent rien en base, avec preuve ils passent) et `test-nouveau-compte-e2e.ts` (la feuille s'ouvre, le rôle ne bouge qu'après).
+
+## §508 : Le devis voyage en donnée auprès de l'IA des retouches, jamais dans sa consigne
+
+*26 octobre 2026, audit de sécurité (E13, `docs/audit-2026-10-etape-3-inventaire.md`).*
+
+**Le constat.** `systeme(lignes, reduction)` recopiait les libellés du devis dans la consigne système des retouches dictées, la position de plus haute autorité. Un libellé peut venir d'un devis fournisseur importé ou d'un catalogue : rédigé comme un ordre, il devenait une règle, et un retour à la ligne y forgeait un faux rang.
+
+**La règle**, celle que l'extraction applique déjà (`extraction-service.ts`, `<exemples_passes>`) : `systeme()` ne porte que nos règles ; `devisEnDonnee(lignes, reduction)` rend le devis dans une balise `<devis>`, chaque valeur aplatie sur sa ligne et privée de chevrons, et il part comme `contexte`, un tour utilisateur à part. La dictée reste SEULE dans son message : le repli littéral (`src/server/ai/providers/llm/dev.ts`) la lit mot à mot et y lirait sinon les lignes comme des travaux dictés. L'accusé de réception que les fournisseurs Anthropic et OpenAI glissent après le contexte dit désormais « des données » et non « des exemples » : il sert aux deux usages.
+
+**Ce qui le tient** : `test-retouches-donnees-hors-consigne.ts`. Le comportement avec un vrai modèle n'est pas éprouvable sur ce poste (aucune clé) : `scripts/verifier-dictee-devis.mts` sur son espace.
+
+**Reste ouvert** : le plafond de dépense d'IA par mois, qui demande sa décision (montant, effet quand il est atteint).
+

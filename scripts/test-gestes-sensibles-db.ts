@@ -28,6 +28,8 @@ import { majEmetteurAction } from "../src/app/chantiers/[id]/devis-complet/actio
 import { GET as telechargerMesDonnees } from "../src/app/api/mes-donnees/route";
 import { retirerCleAction } from "../src/app/reglages/connexion/actions";
 import { deconnecterPartoutAction } from "../src/app/reglages/connexion/actions";
+import { changerLeRoleAction, donnerUnAccesAction, retirerUnAccesAction } from "../src/app/reglages/equipe/actions";
+import { listerAcces } from "../src/server/repositories/membres-entreprise";
 
 let echecs = 0;
 async function essai(nom: string, fn: () => Promise<void>) {
@@ -295,6 +297,73 @@ async function main() {
     assert.equal(restantes.length, 0);
   });
 
+  // ─── 2 bis. Les accès à l'entreprise (audit du 25 octobre 2026, E11) ─────
+  //
+  // Une session volée qui se crée son propre compte garde une porte que le
+  // changement de mot de passe du patron ne ferme pas : c'est le cas de la clé
+  // d'appareil, par une autre voie. Promouvoir un compte en patron, ou retirer
+  // le vrai, est du même ordre.
+
+  console.log("");
+  const ctxPatron = { utilisateurId, entrepriseId: entreprise.id };
+  const MDP_MEMBRE = "trois-mots-courts-et-un";
+  const emailMembre = `membre-gestes-${marque}@test.local`;
+  const membre = async () => (await listerAcces(ctxPatron)).find((l) => l.email === emailMembre);
+  /**
+   * Hors d'un serveur Next, `revalidatePath` lève APRÈS l'écriture : un geste
+   * accepté se lit donc dans la base, pas dans la réponse. Un refus, lui, est
+   * rendu avant, et se lit dans la réponse.
+   */
+  const accepte = async (geste: Promise<unknown>) => {
+    try {
+      return await geste;
+    } catch (e) {
+      if (/static generation store missing/.test((e as Error).message)) return { ok: true };
+      throw e;
+    }
+  };
+  const saisieMembre = { nom: "Membre", email: emailMembre, motDePasse: MDP_MEMBRE, confirmation: MDP_MEMBRE, role: "salarie" as const };
+
+  await essai("DONNER UN ACCÈS SANS PREUVE : refusé, et AUCUN COMPTE N'EST CRÉÉ", async () => {
+    await effacerPreuves(utilisateurId);
+    const r = await donnerUnAccesAction(saisieMembre);
+    assert.equal(r.ok, false, "un accès a été donné sans redemander le mot de passe");
+    assert.equal((r as { preuveExigee?: boolean }).preuveExigee, true, `l'écran ne saura pas ouvrir la demande : ${JSON.stringify(r)}`);
+    assert.equal(await membre(), undefined, "LE COMPTE A ÉTÉ CRÉÉ MALGRÉ LE REFUS");
+  });
+
+  await essai("DONNER UN ACCÈS AVEC preuve : le compte naît", async () => {
+    await poserPreuve(utilisateurId, SESSION);
+    const r = await accepte(donnerUnAccesAction(saisieMembre));
+    assert.deepEqual(r, { ok: true });
+    assert.ok(await membre());
+  });
+
+  await essai("CHANGER UN RÔLE SANS PREUVE (jusqu'à patron) : refusé, et le rôle ne bouge pas", async () => {
+    await effacerPreuves(utilisateurId);
+    const lui = (await membre())!;
+    const r = await changerLeRoleAction(lui.id, "proprietaire");
+    assert.equal(r.ok, false, "un second patron a été nommé sans redemander le mot de passe");
+    assert.equal((r as { preuveExigee?: boolean }).preuveExigee, true);
+    assert.equal((await membre())!.role, "salarie", "LE RÔLE A CHANGÉ MALGRÉ LE REFUS");
+  });
+
+  await essai("RETIRER UN ACCÈS SANS PREUVE : refusé, et le compte reste", async () => {
+    await effacerPreuves(utilisateurId);
+    const r = await retirerUnAccesAction((await membre())!.id);
+    assert.equal(r.ok, false);
+    assert.equal((r as { preuveExigee?: boolean }).preuveExigee, true);
+    assert.ok(await membre(), "L'ACCÈS A ÉTÉ RETIRÉ MALGRÉ LE REFUS");
+  });
+
+  await essai("AVEC la preuve, changer le rôle puis retirer l'accès passent", async () => {
+    await poserPreuve(utilisateurId, SESSION);
+    assert.deepEqual(await accepte(changerLeRoleAction((await membre())!.id, "commercial")), { ok: true });
+    assert.equal((await membre())!.role, "commercial");
+    assert.deepEqual(await accepte(retirerUnAccesAction((await membre())!.id)), { ok: true });
+    assert.equal(await membre(), undefined);
+  });
+
   // ─── 3. « Me déconnecter partout » — SANS preuve ──────────────────────────
 
   console.log("");
@@ -322,6 +391,7 @@ async function main() {
     assert.equal(rows[0].n, 0, "des preuves survivent à la coupure générale");
   });
 
+  await pool.query(`DELETE FROM users WHERE email = $1`, [emailMembre]).catch(() => undefined);
   await pool.query(`DELETE FROM entreprises WHERE id = $1`, [entreprise.id]).catch(() => undefined);
   await pool.query(`DELETE FROM users WHERE id = $1`, [utilisateurId]).catch(() => undefined);
   delete process.env.AUTH_TEST_UTILISATEUR_ID;

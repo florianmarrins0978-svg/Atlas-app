@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { getFournisseurLLM } from "../src/server/ai/providers/llm/fabrique";
 import { getConfigIA } from "../src/server/ai/config";
-import { systeme } from "../src/server/ai/services/retouches-devis-service";
+import { devisEnDonnee, systeme } from "../src/server/ai/services/retouches-devis-service";
 import { lireObjetJson } from "../src/lib/json-du-modele";
 import { lireRetouchesDuModele, type LigneDevis, type Retouche } from "../src/lib/retouches-devis";
 import { defautsDeRedaction } from "../src/lib/redaction-lignes";
@@ -69,7 +69,7 @@ async function cas(nom: string, verifier: () => Promise<void>): Promise<void> {
 }
 
 async function comprendre(dictee: string, lignes: readonly LigneDevis[]): Promise<Retouche[]> {
-  const reponse = await getFournisseurLLM().genererTexte(systeme(lignes, null), dictee);
+  const reponse = await getFournisseurLLM().genererTexte(systeme(), dictee, devisEnDonnee(lignes, null));
   assert.equal(reponse.succes, true, `le modèle n'a pas répondu : ${JSON.stringify(reponse)}`);
   const brut = lireObjetJson(reponse.succes ? reponse.texte : "");
   assert.notEqual(brut, null, "la réponse du modèle n'est pas un JSON lisible");
