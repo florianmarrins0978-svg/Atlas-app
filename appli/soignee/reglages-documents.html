@@ -1,0 +1,1160 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Devis &amp; factures, soignés</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@400;700&family=EB+Garamond:wght@400;700&family=Inter:wght@400;700&family=Lato:wght@400;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  DEVIS & FACTURES (src/app/reglages/documents/ : page.tsx et pieces.tsx, puis
+  conditions/, message/ avec EditeurMessage.tsx, numero/, allure/ ;
+  src/app/reglages/VoirUnExemple.tsx).
+
+  Sa demande du 25 octobre : une planche par rubrique des Réglages, plus jolie,
+  le doré de l'appli, de la couleur si elle aide, réorganisée si c'est mieux.
+
+  CE QUI EST À LUI ET NE BOUGE PAS (appli/couper-devis-et-factures.html, « on
+  coupe », 7 septembre) : quatre lignes à l'entrée, chacune ouvrant un écran
+  court ; trois messages par défaut, un par document ; les mots dorés qui se
+  remplissent tout seuls ; le lien, sa durée et le mot du document qui ne se
+  retirent pas ; une seule case par document ; le doré par défaut des
+  documents ; six polices ; l'aperçu collé ; la photo d'abord.
+
+  CE QUI CHANGE : chaque ligne du sommaire dit ce qu'elle porte ; les sept
+  interrupteurs se rangent en trois paquets sans changer d'ordre ; les
+  conditions générales ne défilent plus dans une case qui défile dans l'écran ;
+  les trois messages s'ouvrent un par un ; le numéro d'exemple se lit sur une
+  bande dorée ; les couleurs en pastilles, le nom de celle prise écrit.
+
+  CE QUI PART CHEZ LE CLIENT NE SUIT PAS LA CHARTE : le message, ce que le
+  devis dira, les conditions générales et l'aperçu du devis sont dessinés sur
+  du papier (la seule exception aux couleurs en clair, comme la feuille en
+  miniature de Mon entreprise). Le texte des conditions générales est celui de
+  src/lib/conditions-generales.ts, au caractère près : la présentation change,
+  pas le texte.
+*/
+.ecran { --papier: #fff; }
+.ecran[data-sombre] { --papier: #f6f4ee; }
+.tete-titre, .ligne-nom { text-wrap: balance; }
+.tete-titre.moyen { margin-top: 2px; }
+
+/* Les deux rangées au-dessus du téléphone : l'écran ouvert, puis l'état. */
+.rangee-ecrans { margin-bottom: 6px; }
+
+/* ─── Le sommaire : quatre lignes qui disent ce qu'elles portent ─────────── */
+.sous-sommaire .ligne { min-height: 76px; }
+.sous-sommaire .ligne-nom { font-size: 18.5px; }
+.sous-sommaire .ligne-fin .ico { color: var(--atlas-or); }
+.sous-sommaire .ligne-situation { text-wrap: balance; }
+.sous-sommaire .ligne-situation .etat { margin-top: 2px; }
+.garde-jour { margin-top: 16px; text-wrap: pretty; }
+
+/* ─── Les interrupteurs et ce qu'ils déplient ────────────────────────────── */
+.reglages-bascules { padding: 0 18px; }
+.bloc-reglage { position: relative; }
+.bloc-reglage + .bloc-reglage { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.ligne-bascule { cursor: pointer; }
+.ligne-bascule .ligne-corps b, .ligne-bascule .ligne-corps small { text-wrap: pretty; }
+.deplie { padding: 0 0 16px; }
+.chiffre-case { display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 0 14px; border-radius: 10px;
+                background: var(--atlas-cream); }
+.chiffre-case input { width: 3.4ch; field-sizing: content; min-width: 1.4ch; padding: 0; border: 0; background: transparent; outline: none; color: var(--atlas-ink);
+                      font: 400 24px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; }
+.chiffre-case .unite { font: 400 20px/1 var(--serif); color: var(--atlas-or); }
+.chiffre-case .apres { margin-left: auto; font-size: 14.5px; line-height: 1.3; color: var(--atlas-inkSoft); text-align: right; }
+.chiffre-case:focus-within { box-shadow: inset 0 0 0 2px var(--atlas-or); }
+.moyens { padding: 0 2px; }
+.moyens .radio { min-height: 52px; padding: 12px 0; }
+.reglages-bascules .champ-saisie { min-height: 84px; background: var(--atlas-cream); }
+
+/* ─── Le papier : ce que le client tient dans la main ───────────────────── */
+.papier { border-radius: 10px; background: var(--papier); color: #1c1c1a;
+          box-shadow: 0 1px 2px rgba(28,28,26,0.12), inset 0 0 0 1px rgba(28,28,26,0.06); }
+
+/* Les conditions générales : un aperçu, le texte entier dans la feuille. */
+.cgv-apercu { position: relative; max-height: 196px; overflow: hidden; padding: 16px 16px 0; }
+.cgv-apercu::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 72px;
+                     background: linear-gradient(to bottom, color-mix(in srgb, var(--papier) 0%, transparent), var(--papier)); }
+.cgv-titre { margin: 0 0 8px; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.cgv-apercu p:not(.cgv-titre) { margin: 0 0 8px; font-size: 14px; line-height: 1.5; }
+.cgv-pied { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; }
+.cgv-pied .discret { font-size: 14px; }
+.cgv-pied .bouton-texte { white-space: nowrap; }
+.crochets { margin-top: 10px; }
+.crochets a { color: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+
+/* Ce que votre devis dira : la feuille, avec ce qui s'y imprime. */
+.recap { padding: 16px 18px 14px; }
+.recap-ref { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin: 0; font-size: 14px; }
+.recap-ref span { font-weight: 700; }
+.recap-lignes { margin: 0; padding: 0; list-style: none; }
+.recap-lignes li { position: relative; padding: 3px 0 3px 14px; font-size: 14px; line-height: 1.5; }
+.recap-lignes li::before { content: ""; position: absolute; left: 1px; top: 12px; width: 5px; height: 5px; border-radius: 50%;
+                           background: #B98B47; }
+.recap-annexe { margin: 0; font-size: 14px; line-height: 1.45; }
+/* Un filet entre deux morceaux qui s'impriment, jamais deux filets de suite. */
+.recap .trait-dessus { margin-top: 10px; padding-top: 9px; box-shadow: inset 0 1px 0 rgba(28,28,26,0.12); }
+.recap-annexe b { font-weight: 700; }
+.recap-rien { margin: 0; font-size: 14px; line-height: 1.5; color: #4a4a44; }
+.note-acompte { margin: 10px 2px 0; }
+
+.obligatoire .rang { align-items: flex-start; }
+.obligatoire .ligne-corps b { display: block; font: 400 18px/1.25 var(--serif); }
+.obligatoire .etat { margin-top: 6px; }
+.obligatoire .second { margin: 12px 0 0; }
+
+/* La feuille des conditions générales. */
+.feuille-tete { display: flex; align-items: flex-start; gap: 12px; }
+.feuille-titre.long { flex: 1; min-width: 0; font-size: 22px; line-height: 1.2; text-wrap: balance; }
+.cgv-texte { display: block; width: 100%; height: 400px; margin-bottom: 8px; padding: 14px 16px; border: 0; resize: none; outline: none;
+             font: 400 16px/1.55 var(--sans); }
+.cgv-texte:focus { box-shadow: 0 1px 2px rgba(28,28,26,0.12), inset 0 0 0 2px var(--atlas-or); }
+
+/* ─── Les trois messages ─────────────────────────────────────────────────── */
+.avertissement { margin: 0 2px 16px; }
+.avertissement b { color: var(--atlas-ink); font-weight: 600; }
+.messages .ligne { min-height: 72px; }
+.messages .ligne-fin .ico { color: var(--atlas-or); transition: transform 240ms var(--courbe); }
+.messages li.ouvert .ligne-fin .ico { transform: rotate(180deg); }
+.message-corps { padding: 2px 0 18px; }
+.message-papier { min-height: 150px; padding: 15px 16px 17px; outline: none; white-space: pre-wrap; overflow-wrap: anywhere;
+                  font: 400 16px/1.55 var(--sans); }
+.message-papier:focus { box-shadow: 0 1px 2px rgba(28,28,26,0.12), inset 0 0 0 2px var(--atlas-or); }
+.message-papier.refuse { box-shadow: 0 1px 2px rgba(28,28,26,0.12), inset 0 0 0 2px var(--atlas-alerte); }
+.jeton { padding: 0 3px; border-radius: 4px; font-weight: 600; color: var(--atlas-or);
+         background: color-mix(in srgb, var(--atlas-or) 13%, transparent);
+         -webkit-box-decoration-break: clone; box-decoration-break: clone; user-select: none; }
+.refus { display: flex; gap: 8px; align-items: flex-start; margin: 10px 2px 0; font-size: 14.5px; line-height: 1.4;
+         color: var(--atlas-alerte); }
+.refus .ico { width: 20px; height: 20px; margin-top: 1px; }
+.remettre { margin-top: 4px; }
+
+/* ─── Le numéro ──────────────────────────────────────────────────────────── */
+.formats { padding: 0 18px; }
+.format { position: relative; display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; column-gap: 10px; align-items: baseline;
+          width: 100%; min-height: 64px; padding: 13px 0; text-align: left; }
+.format + .format::before { content: ""; position: absolute; left: 34px; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
+.format .coche-ronde { grid-row: 1 / span 2; align-self: start; margin-top: 1px; }
+.format b { font: 400 17px/1.25 var(--serif); color: var(--atlas-ink); }
+.format .num { font-size: 15px; font-weight: 600; color: var(--atlas-or); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
+.format small { grid-column: 2 / 4; margin-top: 2px; font-size: 14px; line-height: 1.4; color: var(--atlas-inkSoft); }
+.bande-or { padding: 14px 18px; }
+.exemple { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 4px 0; font-size: 15.5px; }
+.exemple b { font: 600 21px/1.2 var(--serif); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
+.consequence { display: flex; gap: 9px; align-items: flex-start; margin-top: 10px; padding-top: 11px; font-size: 14.5px; line-height: 1.45;
+               box-shadow: inset 0 1px 0 color-mix(in srgb, var(--atlas-or) 35%, transparent); }
+.consequence .ico { width: 19px; height: 19px; color: var(--atlas-or); margin-top: 1px; }
+.enregistre { display: flex; align-items: center; gap: 8px; margin: 18px 2px 0; font-size: 14.5px; color: var(--atlas-inkSoft); }
+.enregistre .ico { width: 18px; height: 18px; color: var(--atlas-carteVertTexte); stroke-width: 2.2; }
+
+/* ─── L'allure ───────────────────────────────────────────────────────────── */
+.gestes-photo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.geste-photo { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 92px;
+               padding: 12px 10px; border-radius: 14px; font-size: 15px; font-weight: 600; line-height: 1.25; text-align: center;
+               transition: transform 140ms var(--courbe); }
+.geste-photo span { text-wrap: balance; }
+.geste-photo:active { transform: scale(0.98); }
+.geste-photo[disabled] { opacity: 0.6; cursor: default; }
+.geste-photo[data-ton="bleu"] { background: var(--atlas-carteBleuFond); color: var(--atlas-carteBleuTexte); }
+.geste-photo[data-ton="vert"] { background: var(--atlas-carteVertFond); color: var(--atlas-carteVertTexte); }
+.photo-dit { margin: 10px 2px 0; }
+.reprise { margin-top: 10px; }
+.reprise small { display: block; margin-top: 4px; font-size: 14px; }
+
+.apercu-colle { position: sticky; top: -14px; z-index: 3; margin: 18px calc(var(--gouttiere) * -1) 0;
+                padding: 12px var(--gouttiere) 14px; background: var(--atlas-cream);
+                box-shadow: 0 10px 14px -14px color-mix(in srgb, var(--atlas-ink) 60%, transparent); }
+.feuille-devis { --encre: #141414; --encre-douce: #4a4a44; --accent: #b98b47;
+                 padding: 16px 16px 14px; border-radius: 8px; background: #faf9f5; color: var(--encre);
+                 box-shadow: 0 1px 2px rgba(28,28,26,0.12), inset 0 0 0 1px rgba(28,28,26,0.08); }
+.fd-logo { display: block; width: 30px; height: 30px; margin-bottom: 6px; }
+.fd-nom { margin: 0; font-size: 19px; line-height: 1.15; }
+.fd-coord { margin: 3px 0 0; font-size: 13px; color: var(--encre-douce); }
+.fd-filet { display: block; height: 1.5px; margin: 10px 0 9px; background: var(--encre); }
+.fd-titre { display: flex; justify-content: space-between; align-items: baseline; margin: 0; }
+.fd-titre span { font-size: 15px; letter-spacing: 0.2em; }
+.fd-titre small { font-size: 13px; color: var(--encre-douce); }
+.fd-parties { margin: 9px 0 4px; font-size: 13px; font-weight: 700; letter-spacing: 0.1em; color: var(--accent); }
+.fd-ligne { display: flex; justify-content: space-between; align-items: center; padding: 4px 0;
+            box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--encre-douce) 45%, transparent); font-size: 13.5px; }
+.fd-ligne i { display: block; width: 14px; height: 2px; background: var(--encre-douce); }
+.fd-total { margin: 8px 0 0; text-align: right; font-size: 14px; }
+
+.logo-rang { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.logo-case { width: 64px; height: 64px; flex: none; display: grid; place-items: center; border-radius: 10px; overflow: hidden;
+             background: var(--atlas-cream); box-shadow: inset 0 0 0 1px var(--atlas-line); font-size: 13px; color: var(--atlas-inkSoft); }
+.logo-case svg { width: 46px; height: 46px; }
+.logo-gestes { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.aide { margin: 10px 2px 0; font-size: 14px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.typos .carte-choix { min-height: 84px; }
+.typos .carte-choix b { font-size: 18px; }
+
+.couleur-nom { display: block; font: 400 18px/1.3 var(--serif); color: var(--atlas-ink); }
+.nuancier { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+.teinte { width: 44px; height: 44px; flex: none; border-radius: 50%; background: var(--teinte);
+          box-shadow: inset 0 0 0 1px var(--atlas-line); transition: box-shadow 200ms var(--courbe); }
+.teinte[aria-pressed="true"] { box-shadow: inset 0 0 0 1px var(--atlas-line), 0 0 0 2px var(--atlas-card), 0 0 0 4px var(--atlas-or); }
+.teinte-autre { position: relative; display: grid; place-items: center; width: 44px; height: 44px; flex: none; border-radius: 50%;
+                color: var(--atlas-inkSoft); box-shadow: inset 0 0 0 1.5px var(--atlas-chevron); cursor: pointer; }
+.teinte-autre.prise { box-shadow: 0 0 0 2px var(--atlas-card), 0 0 0 4px var(--atlas-or); }
+.teinte-autre .ico { width: 20px; height: 20px; }
+.teinte-autre input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: 0; padding: 0; }
+.revenir { margin-top: 18px; }
+</style>
+</head>
+<body class="pl pl-pilules">
+
+<!-- Trois dessins de l'appli que la boîte commune n'a pas (src/app/reglages/icones.tsx). -->
+<svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
+  <symbol id="d-liste-cochee" viewBox="0 0 24 24"><path d="M4 6.5l1.8 1.8L9 5M4 12.5l1.8 1.8L9 9M4 18.5l1.8 1.8L9 15M12.5 7h7.5M12.5 13h7.5M12.5 19h5"/></symbol>
+  <symbol id="d-bulle" viewBox="0 0 24 24"><path d="M20.5 13.4c0 3.2-3.4 5.8-7.6 5.8-.9 0-1.8-.1-2.6-.3L5.5 20.5l1.2-3.3c-1.4-1-2.2-2.4-2.2-3.8 0-3.2 3.4-5.8 7.6-5.8s8.4 2.6 8.4 5.8Z"/><path d="M8.6 12.6h7.6M8.6 15.4h4.6"/></symbol>
+  <symbol id="d-contraste" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 0 0 17z"/></symbol>
+  <!-- Le logo de démonstration de Jardins Démo : une image, comme celle qu'il déposerait. -->
+  <symbol id="d-logo-demo" viewBox="0 0 40 40"><circle cx="20" cy="20" r="19" fill="#2f3b2f"/><path d="M11.5 28c0-9.5 6.2-16 17-16 0 10.6-6.4 16-17 16z" fill="#B98B47"/><path d="M11.5 28l9.5-9.5" stroke="#2f3b2f" stroke-width="1.8" fill="none" stroke-linecap="round"/></symbol>
+</svg>
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="reglages.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Réglages</a>
+  <h1 class="pl-titre">Devis &amp; factures</h1>
+  <p class="pl-verdict">Les quatre lignes du 7 septembre restent, et chacune dit déjà ce qu'elle porte. Dedans, les interrupteurs se rangent en <b>trois paquets</b>, les trois messages s'ouvrent un par un, et ce qui part chez le client se lit sur du <b>papier blanc</b>.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <!-- ═══ PROPOSÉ ═══ -->
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats rangee-ecrans">
+        <button type="button" data-vers-ecran="sommaire" aria-pressed="true">Le sommaire</button>
+        <button type="button" data-vers-ecran="conditions" aria-pressed="false">Ce qui s'imprime</button>
+        <button type="button" data-vers-ecran="message" aria-pressed="false">Le message</button>
+        <button type="button" data-vers-ecran="numero" aria-pressed="false">Le numéro</button>
+        <button type="button" data-vers-ecran="allure" aria-pressed="false">L'allure</button>
+      </div>
+      <div class="pl-etats">
+        <button type="button" data-etat="regle" aria-pressed="true">Tout est réglé</button>
+        <button type="button" data-etat="neuf">Un compte neuf</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre avec-action" data-etat="regle" data-ouvert="sommaire" id="ecran-propose">
+          <div class="defile">
+
+            <!-- ─── LE SOMMAIRE ─── -->
+            <div data-ecran-panneau="sommaire">
+              <div class="tete-ronds">
+                <a class="rond-creux" href="reglages.html" aria-label="Retour aux réglages"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+                <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              </div>
+              <header class="tete" style="margin-top:0"><h1 class="tete-titre">Devis &amp; factures</h1></header>
+
+              <div class="plage plage-serree sous-sommaire">
+                <ul class="liste">
+                  <li><button class="ligne touche" type="button" data-vers="conditions"><span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#d-liste-cochee"/></svg></span><span class="ligne-corps"><span class="ligne-nom">Ce qui s'imprime sur le devis</span><span class="ligne-situation" data-resume="conditions">Validité 30 jours, acompte 30&nbsp;%</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></button></li>
+                  <li><button class="ligne touche" type="button" data-vers="message"><span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#d-bulle"/></svg></span><span class="ligne-corps"><span class="ligne-nom">Mon message au client</span><span class="ligne-situation" data-resume="message">Trois messages</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></button></li>
+                  <li><button class="ligne touche" type="button" data-vers="numero"><span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-etiquette"/></svg></span><span class="ligne-corps"><span class="ligne-nom">Le numéro de mes documents</span><span class="ligne-situation" data-resume="numero">Année et 6 chiffres</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></button></li>
+                  <li><button class="ligne touche" type="button" data-vers="allure"><span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#d-contraste"/></svg></span><span class="ligne-corps"><span class="ligne-nom">L'allure de mes devis</span><span class="ligne-situation" data-resume="allure">Votre logo, le doré</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></button></li>
+                </ul>
+              </div>
+
+              <p class="plage-ton garde-jour" data-ton="bleu">Chaque devis garde <b>ce que ces réglages disaient le jour où il a été créé</b>&nbsp;: les corriger aujourd'hui ne change aucun document déjà fait.</p>
+            </div>
+
+            <!-- ─── CE QUI S'IMPRIME ─── -->
+            <div data-ecran-panneau="conditions" hidden>
+              <div class="tete-ronds">
+                <button class="rond-creux" type="button" data-vers="sommaire" aria-label="Retour à Devis &amp; factures"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+                <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              </div>
+              <header class="tete" style="margin-top:0"><h1 class="tete-titre moyen">Ce qui s'imprime</h1></header>
+
+              <p class="rubrique rubrique-or">Sur le devis</p>
+              <div class="plage reglages-bascules">
+                <div class="bloc-reglage" data-reglage="validite">
+                  <div class="ligne-bascule"><span class="ligne-corps"><b>Durée de validité</b><small>En tête, sous le numéro du devis</small></span><button class="bascule" type="button" role="switch" aria-checked="true" aria-label="Durée de validité"></button></div>
+                  <div class="deplie"><label class="chiffre-case"><input data-champ="validite" inputmode="numeric" autocomplete="off" value="30" aria-label="Nombre de jours, entre 1 et 365" data-min="1" data-max="365"><span class="unite">jours</span><span class="apres">à compter de l'envoi</span></label></div>
+                </div>
+                <div class="bloc-reglage" data-reglage="acompte">
+                  <div class="ligne-bascule"><span class="ligne-corps"><b>Acompte à la commande</b><small>Écrit sous le total du devis</small></span><button class="bascule" type="button" role="switch" aria-checked="true" aria-label="Acompte à la commande"></button></div>
+                  <div class="deplie"><label class="chiffre-case"><input data-champ="acompte" inputmode="numeric" autocomplete="off" value="30" aria-label="Pourcentage, entre 1 et 100" data-min="1" data-max="100"><span class="unite">%</span><span class="apres">à la signature</span></label></div>
+                </div>
+              </div>
+
+              <p class="rubrique rubrique-or">Pour être payé</p>
+              <div class="plage reglages-bascules">
+                <div class="bloc-reglage" data-reglage="delai">
+                  <div class="ligne-bascule"><span class="ligne-corps"><b>Délai de paiement</b><small>Zéro veut dire comptant</small></span><button class="bascule" type="button" role="switch" aria-checked="true" aria-label="Délai de paiement"></button></div>
+                  <div class="deplie"><label class="chiffre-case"><input data-champ="delai" inputmode="numeric" autocomplete="off" value="30" aria-label="Nombre de jours, entre 0 et 120" data-min="0" data-max="120"><span class="unite">jours</span><span class="apres">après la facture</span></label></div>
+                </div>
+                <div class="bloc-reglage" data-reglage="moyens">
+                  <div class="ligne-bascule"><span class="ligne-corps"><b>Moyens de paiement acceptés</b><small>Listés sous vos coordonnées bancaires</small></span><button class="bascule" type="button" role="switch" aria-checked="true" aria-label="Moyens de paiement acceptés"></button></div>
+                  <div class="deplie">
+                    <div class="moyens" data-un-seul id="moyens" role="group" aria-label="Moyens de paiement acceptés">
+                      <button class="radio" type="button" data-choix="virement, chèque" aria-pressed="true"><span class="coche-ronde" aria-hidden="true"></span><span><b>Virement et chèque</b></span></button>
+                      <button class="radio" type="button" data-choix="virement" aria-pressed="false"><span class="coche-ronde" aria-hidden="true"></span><span><b>Virement seulement</b></span></button>
+                      <button class="radio" type="button" data-choix="virement, chèque, espèces" aria-pressed="false"><span class="coche-ronde" aria-hidden="true"></span><span><b>Virement, chèque, espèces</b></span></button>
+                    </div>
+                  </div>
+                </div>
+                <div class="bloc-reglage" data-reglage="penalites">
+                  <div class="ligne-bascule"><span class="ligne-corps"><b>Rappeler les pénalités sur le devis</b><small>Elles figurent de toute façon sur la facture</small></span><button class="bascule" type="button" role="switch" aria-checked="false" aria-label="Rappeler les pénalités sur le devis"></button></div>
+                </div>
+              </div>
+
+              <p class="rubrique rubrique-or">Vos textes</p>
+              <div class="plage reglages-bascules">
+                <div class="bloc-reglage" data-reglage="pied">
+                  <div class="ligne-bascule"><span class="ligne-corps"><b>Texte en bas de vos documents</b><small>Ajouté tel quel à chaque devis</small></span><button class="bascule" type="button" role="switch" aria-checked="false" aria-label="Texte en bas de vos documents"></button></div>
+                  <div class="deplie" hidden><textarea class="champ-saisie" data-champ="pied" rows="2" placeholder="Sous réserve d'accès au chantier." aria-label="Texte ajouté en bas de chaque document"></textarea></div>
+                </div>
+                <div class="bloc-reglage" data-reglage="cgv">
+                  <div class="ligne-bascule"><span class="ligne-corps"><b>Conditions générales de vente et de règlement</b><small>Imprimées après le bon pour accord</small></span><button class="bascule" type="button" role="switch" aria-checked="true" aria-label="Conditions générales de vente et de règlement"></button></div>
+                  <div class="deplie">
+                    <div class="papier cgv-apercu" id="cgv-apercu" aria-hidden="true"></div>
+                    <div class="cgv-pied">
+                      <span class="discret" id="cgv-compte">11 articles</span>
+                      <button class="bouton-texte or" type="button" data-ouvre="feuille-cgv"><svg class="ico ico-p" aria-hidden="true"><use href="#i-crayon"/></svg>Lire et modifier</button>
+                    </div>
+                    <p class="plage-ton crochets" data-ton="ambre" id="crochets" hidden><span id="crochets-nombre">1 crochet</span> à remplir dans <a href="reglages-identite.html">Mon&nbsp;entreprise</a>.</p>
+                  </div>
+                </div>
+              </div>
+
+              <p class="rubrique rubrique-or">Ce que votre devis dira</p>
+              <div class="papier recap">
+                <p class="recap-ref" id="recap-validite"><span>Validité</span><em style="font-style:normal" id="recap-validite-valeur">30 jours</em></p>
+                <ul class="recap-lignes" id="recap-lignes"></ul>
+                <p class="recap-annexe" id="recap-cgv">Après le bon pour accord&nbsp;: <b>les conditions générales de vente et de règlement</b>.</p>
+                <p class="recap-rien" id="recap-rien" hidden>Rien ne s'ajoutera&nbsp;: votre devis portera ses lignes, ses totaux et sa mention de signature, sans condition supplémentaire.</p>
+              </div>
+              <p class="discret note-acompte" id="note-acompte">Le montant de l'acompte se calcule sur chaque devis. Il n'est pas écrit ici&nbsp;: il dépend du total.</p>
+
+              <p class="rubrique rubrique-or">Ce qui ne se coupe pas</p>
+              <div class="plage obligatoire">
+                <div class="rang">
+                  <span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-cadenas"/></svg></span>
+                  <span class="ligne-corps"><b>Mentions légales de la facture</b><span class="etat" data-ton="or">Obligatoire</span></span>
+                </div>
+                <p class="second">Pénalités de retard, indemnité de 40&nbsp;€ pour une entreprise, et la franchise de l'article 293 B quand vous n'êtes pas assujetti.</p>
+                <p class="second">Elles s'écrivent seules et suivent votre régime de TVA. Les retirer rendrait la facture irrégulière.</p>
+              </div>
+            </div>
+
+            <!-- ─── MON MESSAGE AU CLIENT ─── -->
+            <div data-ecran-panneau="message" hidden>
+              <div class="tete-ronds">
+                <button class="rond-creux" type="button" data-vers="sommaire" aria-label="Retour à Devis &amp; factures"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+                <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              </div>
+              <header class="tete" style="margin-top:0"><h1 class="tete-titre moyen">Mon message au client</h1></header>
+
+              <p class="second avertissement">Les mots <span class="or-texte" style="font-weight:600">en doré</span> se remplissent tout seuls. <b>Le lien, sa durée et le mot du document (devis, facture, retour d'intervention) ne peuvent pas être retirés.</b> Tout le reste se modifie.</p>
+
+              <div class="plage plage-serree messages">
+                <ul class="liste">
+                  <li data-genre="devis" class="ouvert">
+                    <button class="ligne touche" type="button" data-message="devis" aria-expanded="true"><span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-document"/></svg></span><span class="ligne-corps"><span class="ligne-nom">Ce que j'envoie avec un devis</span><span class="ligne-situation" data-situation="devis">Celui d'Atlas</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-bas"/></svg></span></button>
+                    <div class="message-corps">
+                      <div class="papier message-papier" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Votre message avec un devis" data-editeur="devis"></div>
+                      <p class="refus" role="alert" data-refus="devis" hidden><svg class="ico" aria-hidden="true"><use href="#i-alerte"/></svg><span></span></p>
+                      <button class="bouton-texte or remettre" type="button" data-remettre="devis" hidden><svg class="ico ico-p" aria-hidden="true"><use href="#i-annuler"/></svg>Remettre le message d'Atlas</button>
+                    </div>
+                  </li>
+                  <li data-genre="facture">
+                    <button class="ligne touche" type="button" data-message="facture" aria-expanded="false"><span class="pastille-ico" data-ton="vert"><svg class="ico" aria-hidden="true"><use href="#i-facture"/></svg></span><span class="ligne-corps"><span class="ligne-nom">Ce que j'envoie avec une facture</span><span class="ligne-situation" data-situation="facture">Celui d'Atlas</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-bas"/></svg></span></button>
+                    <div class="message-corps" hidden>
+                      <div class="papier message-papier" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Votre message avec une facture" data-editeur="facture"></div>
+                      <p class="refus" role="alert" data-refus="facture" hidden><svg class="ico" aria-hidden="true"><use href="#i-alerte"/></svg><span></span></p>
+                      <button class="bouton-texte or remettre" type="button" data-remettre="facture" hidden><svg class="ico ico-p" aria-hidden="true"><use href="#i-annuler"/></svg>Remettre le message d'Atlas</button>
+                    </div>
+                  </li>
+                  <li data-genre="passage">
+                    <button class="ligne touche" type="button" data-message="passage" aria-expanded="false"><span class="pastille-ico" data-ton="bleu"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span><span class="ligne-corps"><span class="ligne-nom">Ce que j'envoie avec un retour d'intervention</span><span class="ligne-situation" data-situation="passage">Celui d'Atlas</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-bas"/></svg></span></button>
+                    <div class="message-corps" hidden>
+                      <div class="papier message-papier" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Votre message avec un retour d'intervention" data-editeur="passage"></div>
+                      <p class="refus" role="alert" data-refus="passage" hidden><svg class="ico" aria-hidden="true"><use href="#i-alerte"/></svg><span></span></p>
+                      <button class="bouton-texte or remettre" type="button" data-remettre="passage" hidden><svg class="ico ico-p" aria-hidden="true"><use href="#i-annuler"/></svg>Remettre le message d'Atlas</button>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- ─── LE NUMÉRO DE MES DOCUMENTS ─── -->
+            <div data-ecran-panneau="numero" hidden>
+              <div class="tete-ronds">
+                <button class="rond-creux" type="button" data-vers="sommaire" aria-label="Retour à Devis &amp; factures"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+                <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              </div>
+              <header class="tete" style="margin-top:0"><h1 class="tete-titre moyen">Le numéro de mes documents</h1></header>
+
+              <p class="second" style="margin:0 2px 14px">Vos documents déjà émis gardent leur numéro.</p>
+              <div class="plage formats" data-un-seul id="formats">
+                <button class="format" type="button" data-choix="annee-4" aria-pressed="false"><span class="coche-ronde" aria-hidden="true"></span><b>Année et 4 chiffres</b><span class="num" data-num="annee-4">F2026-0012</span><small>Ce que portaient vos documents jusqu'ici</small></button>
+                <button class="format" type="button" data-choix="annee-6" aria-pressed="true"><span class="coche-ronde" aria-hidden="true"></span><b>Année et 6 chiffres</b><span class="num" data-num="annee-6">F2026-000012</span><small>Le format par défaut</small></button>
+                <button class="format" type="button" data-choix="court" aria-pressed="false"><span class="coche-ronde" aria-hidden="true"></span><b>Année courte</b><span class="num" data-num="court">F26-0012</span><small>Plus court à dicter au téléphone</small></button>
+                <button class="format" type="button" data-choix="mois" aria-pressed="false"><span class="coche-ronde" aria-hidden="true"></span><b>Année, mois, numéro</b><span class="num" data-num="mois">F2026-10-012</span><small>Le mois se lit sans ouvrir le document</small></button>
+                <button class="format" type="button" data-choix="suite" aria-pressed="false"><span class="coche-ronde" aria-hidden="true"></span><b>Une suite sans année</b><span class="num" data-num="suite">F0012</span><small>Ne repart jamais à 1</small></button>
+              </div>
+
+              <p class="rubrique rubrique-or">Ce que ça donne</p>
+              <div class="plage-ton bande-or" data-ton="or">
+                <p class="exemple" style="margin:0"><span>Un devis</span><b id="exemple-devis">2026-000012</b></p>
+                <p class="exemple" style="margin:0"><span>Une facture</span><b id="exemple-facture">F2026-000012</b></p>
+                <p class="consequence" style="margin-bottom:0"><svg class="ico" aria-hidden="true"><use href="#i-calendrier"/></svg><span id="consequence">Le compteur repart à 1 le 1<sup>er</sup> janvier.</span></p>
+              </div>
+              <p class="enregistre" data-statut="numero"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg><span>Enregistré au fur et à mesure.</span></p>
+            </div>
+
+            <!-- ─── L'ALLURE DE MES DEVIS ─── -->
+            <div data-ecran-panneau="allure" hidden>
+              <div class="tete-ronds">
+                <button class="rond-creux" type="button" data-vers="sommaire" aria-label="Retour à Devis &amp; factures"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+                <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              </div>
+              <header class="tete" style="margin-top:0"><h1 class="tete-titre moyen">L'allure de mes devis</h1></header>
+
+              <p class="second" style="margin:0 2px 16px">Elle habille votre devis et votre facture. La feuille de chantier, elle, ne change pas&nbsp;: personne d'autre que vous ne la lit.</p>
+
+              <div class="gestes-photo">
+                <button class="geste-photo" type="button" data-ton="bleu" data-photo="devis"><svg class="ico" aria-hidden="true"><use href="#i-photo"/></svg><span>Photographier mon devis</span></button>
+                <button class="geste-photo" type="button" data-ton="vert" data-photo="facture"><svg class="ico" aria-hidden="true"><use href="#i-photo"/></svg><span>Photographier ma facture</span></button>
+              </div>
+              <p class="discret photo-dit">Les couleurs, la police et les mentions. Ni les lignes, ni les prix.</p>
+              <div class="plage-ton reprise" data-ton="vert" id="reprise" role="status" hidden>Repris&nbsp;: vos couleurs.<small>Le logo n’est pas repris d’une photo, ajoutez-le à la main.</small></div>
+
+              <!-- L'aperçu collé : sa réponse B du 24 août. Le papier ne suit pas la charte. -->
+              <div class="apercu-colle">
+                <div class="feuille-devis" id="feuille-devis" aria-label="L'allure de la page">
+                  <svg class="fd-logo" aria-hidden="true" id="fd-logo"><use href="#d-logo-demo"/></svg>
+                  <p class="fd-nom">Jardins Démo</p>
+                  <p class="fd-coord">Adresse, SIRET, téléphone</p>
+                  <i class="fd-filet"></i>
+                  <p class="fd-titre"><span>DEVIS</span><small>n° 2026-000012</small></p>
+                  <p class="fd-parties">ÉMETTEUR et CLIENT</p>
+                  <div class="fd-ligne"><span>Taille de haie</span><i></i></div>
+                  <div class="fd-ligne"><span>Évacuation des déchets</span><i></i></div>
+                  <p class="fd-total">Total TTC</p>
+                </div>
+              </div>
+
+              <p class="rubrique rubrique-or">Mon logo</p>
+              <div class="plage">
+                <div class="logo-rang">
+                  <span class="logo-case" id="logo-case"><svg aria-hidden="true" id="logo-image"><use href="#d-logo-demo"/></svg><span id="logo-aucun" hidden>Aucun</span></span>
+                  <span class="logo-gestes">
+                    <button class="bouton bouton-creux or bouton-petit" type="button" id="logo-choisir">Changer</button>
+                    <button class="bouton-texte" type="button" id="logo-retirer">Retirer</button>
+                  </span>
+                </div>
+                <p class="aide">En haut à gauche, au-dessus de vos coordonnées. PNG ou JPEG, 1,5 Mo au plus.</p>
+              </div>
+
+              <p class="rubrique rubrique-or">Typographie</p>
+              <div class="cartes-choix typos" data-un-seul id="typos">
+                <button class="carte-choix" type="button" data-choix="systeme" aria-pressed="true"><b style="font-family:var(--sans)">Celle d'aujourd'hui</b><small>Celle de l'appareil, par défaut</small></button>
+                <button class="carte-choix" type="button" data-choix="inter" aria-pressed="false"><b style="font-family:Inter, ui-sans-serif, system-ui, sans-serif">Inter</b><small>Linéale, neutre</small></button>
+                <button class="carte-choix" type="button" data-choix="lato" aria-pressed="false"><b style="font-family:Lato, ui-sans-serif, system-ui, sans-serif">Lato</b><small>Linéale, ronde</small></button>
+                <button class="carte-choix" type="button" data-choix="archivo-narrow" aria-pressed="false"><b style="font-family:'Archivo Narrow', ui-sans-serif, system-ui, sans-serif">Archivo Narrow</b><small>Étroite, tient plus de lignes</small></button>
+                <button class="carte-choix" type="button" data-choix="eb-garamond" aria-pressed="false"><b style="font-family:'EB Garamond', ui-serif, Georgia, serif">EB Garamond</b><small>Empattements, classique</small></button>
+                <button class="carte-choix" type="button" data-choix="merriweather" aria-pressed="false"><b style="font-family:Merriweather, ui-serif, Georgia, serif">Merriweather</b><small>Empattements, solide</small></button>
+              </div>
+
+              <p class="rubrique rubrique-or">Fond de page</p>
+              <div class="plage">
+                <span class="couleur-nom" id="fond-nom">Celui d'aujourd'hui</span>
+                <div class="nuancier" data-un-seul id="fonds" role="group" aria-label="Fond de page">
+                  <button class="teinte" type="button" style="--teinte:#faf9f5" data-choix="#faf9f5" aria-pressed="true" aria-label="Celui d'aujourd'hui"></button>
+                  <button class="teinte" type="button" style="--teinte:#ffffff" data-choix="#ffffff" aria-pressed="false" aria-label="Blanc"></button>
+                  <button class="teinte" type="button" style="--teinte:#ece9e1" data-choix="#ece9e1" aria-pressed="false" aria-label="Crème"></button>
+                  <button class="teinte" type="button" style="--teinte:#e8e8e6" data-choix="#e8e8e6" aria-pressed="false" aria-label="Gris clair"></button>
+                  <label class="teinte-autre" id="fond-autre-rond"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg><input type="color" id="fond-autre" value="#faf9f5" aria-label="Une autre couleur de fond"></label>
+                </div>
+                <p class="aide">N'importe quelle couleur. Un fond sombre éclaircit le texte tout seul.</p>
+              </div>
+
+              <p class="rubrique rubrique-or">Couleur d'accent</p>
+              <div class="plage">
+                <span class="couleur-nom" id="accent-nom">Celui d'aujourd'hui, le doré</span>
+                <div class="nuancier" data-un-seul id="accents" role="group" aria-label="Couleur d'accent">
+                  <button class="teinte" type="button" style="--teinte:#b98b47" data-choix="#b98b47" aria-pressed="true" aria-label="Celui d'aujourd'hui, le doré"></button>
+                  <button class="teinte" type="button" style="--teinte:#2f3b2f" data-choix="#2f3b2f" aria-pressed="false" aria-label="Vert pin"></button>
+                  <button class="teinte" type="button" style="--teinte:#6e2433" data-choix="#6e2433" aria-pressed="false" aria-label="Bordeaux"></button>
+                  <button class="teinte" type="button" style="--teinte:#1c1c1a" data-choix="#1c1c1a" aria-pressed="false" aria-label="Noir"></button>
+                  <label class="teinte-autre" id="accent-autre-rond"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg><input type="color" id="accent-autre" value="#b98b47" aria-label="Une autre couleur d'accent"></label>
+                </div>
+                <p class="aide">Les intitulés «&nbsp;Émetteur&nbsp;» et «&nbsp;Client&nbsp;», et la remise quand il y en a une.</p>
+              </div>
+
+              <button class="bouton bouton-creux revenir" type="button" id="allure-revenir" hidden>Revenir aux réglages d'aujourd'hui</button>
+              <p class="enregistre" data-statut="allure"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg><span>Enregistré au fur et à mesure.</span></p>
+            </div>
+
+          </div>
+
+          <div class="action-bas" id="action-exemple"><button class="bouton bouton-plein" type="button" data-note="Sur la planche, l'exemple ne s'ouvre pas."><svg class="ico" aria-hidden="true"><use href="#i-oeil"/></svg>Voir un exemple</button></div>
+          <div class="action-bas" id="action-enregistrer" hidden><button class="bouton bouton-plein" type="button">Enregistrer</button></div>
+
+          <!-- Le texte entier des conditions générales : src/lib/conditions-generales.ts, au caractère près. -->
+          <div class="feuille" id="feuille-cgv" aria-hidden="true" role="dialog" aria-label="Conditions générales de vente et de règlement">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <div class="feuille-tete">
+                <h2 class="feuille-titre long">Conditions générales de vente et de règlement</h2>
+                <button class="rond-creux" type="button" data-ferme aria-label="Fermer"><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></button>
+              </div>
+              <textarea class="papier cgv-texte" id="cgv-texte" aria-label="Conditions générales de vente et de règlement">L’acceptation de nos devis implique l’adhésion aux conditions générales de vente et de règlement ci-après, qui prévalent sur toute autre condition, sauf dérogation écrite et expresse de notre part.
+
+1. Commande. Le devis, retourné daté et signé avec la mention « bon pour accord », vaut commande ferme des travaux qu’il décrit. Toute prestation non prévue fait l’objet d’un devis complémentaire accepté avant exécution.
+
+2. Prix et validité. Les prix sont établis selon les conditions économiques connues à la date du devis. Ils sont fermes pendant la durée de validité indiquée en tête ; au-delà, ils sont révisables.
+
+3. Règlement. Acompte à la commande selon le pourcentage indiqué, solde à réception de la facture. Pour un devis signé hors de l’établissement de l’entreprise par un client particulier, aucun paiement n’est reçu avant sept jours (art. L221-10 du code de la consommation). Aucun escompte n’est accordé pour paiement anticipé. Tout retard entraîne de plein droit des pénalités au taux de trois fois le taux d’intérêt légal et, pour un client professionnel, une indemnité forfaitaire de 40 € pour frais de recouvrement (art. L441-10 du code de commerce).
+
+4. Délai d’exécution. Les travaux sont exécutés dans le délai indiqué sur le devis. Ce délai est prolongé en cas d’intempéries, de sol impraticable ou de cause indépendante de l’entreprise.
+
+5. Chantier. Le client assure l’accès au chantier, signale les réseaux enterrés et fait exécuter, sauf mention contraire au devis, les travaux relevant d’autres corps de métier. Les pertes de temps dues à des causes qui ne nous sont pas imputables font l’objet d’un supplément sur devis.
+
+6. Réception. La réception des travaux est faite par le client, ou son représentant, à la fin du chantier et en présence de l’entreprise. Les réserves sont formulées par écrit à ce moment.
+
+7. Végétaux. Les végétaux fournis sont garantis à la plantation. Leur reprise dépend de l’arrosage et de l’entretien assurés par le client après réception. La garantie légale de conformité (art. L217-3 et suivants du code de la consommation) et la garantie légale des vices cachés (art. 1641 et suivants du code civil) s’appliquent aux fournitures. Les ouvrages bénéficient des garanties des articles 1792 et suivants du code civil.
+
+8. Réserve de propriété. Les fournitures et végétaux restent la propriété de l’entreprise jusqu’au paiement intégral, en principal et intérêts. Nonobstant les articles 551 et 552 du code civil, l’entreprise demeure propriétaire de l’ouvrage exécuté jusqu’à complet paiement.
+
+9. Assurances. L’entreprise est titulaire d’une assurance responsabilité civile professionnelle et, pour les travaux qui y sont soumis, d’une assurance décennale : [assureur, n° de contrat, couverture géographique].
+
+10. Rétractation. Pour un devis signé hors de l’établissement de l’entreprise, le client particulier dispose d’un délai de rétractation de 14 jours (art. L221-18 du code de la consommation). Les travaux commencés avant ce terme le sont à sa demande écrite.
+
+11. Médiation et litiges. En cas de litige, le client particulier peut saisir gratuitement le médiateur de la consommation : [nom et coordonnées]. À défaut d’accord, les tribunaux compétents sont ceux désignés par le code de procédure civile.</textarea>
+            </div>
+          </div>
+
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html">Terminés</a>
+              <a class="barre-onglet" href="paysage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html" aria-current="page">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ AUJOURD'HUI : la capture de l'écran ouvert à côté ═══ -->
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="pl-etats rangee-ecrans">
+        <button type="button" data-vers-ecran="sommaire" aria-pressed="true">Le sommaire</button>
+        <button type="button" data-vers-ecran="conditions" aria-pressed="false">Ce qui s'imprime</button>
+        <button type="button" data-vers-ecran="message" aria-pressed="false">Le message</button>
+        <button type="button" data-vers-ecran="numero" aria-pressed="false">Le numéro</button>
+        <button type="button" data-vers-ecran="allure" aria-pressed="false">L'allure</button>
+      </div>
+      <div class="cadre">
+        <div class="cadre-capture" id="cadre-capture"><img id="capture" src="aujourdhui/reglages-documents.jpg" alt="L'écran Devis &amp; factures tel qu'il est aujourd'hui"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>Les quatre lignes disent déjà ce qu'elles portent&nbsp;: la validité et l'acompte, les trois messages, le format du numéro, le logo et le doré. Sur un compte neuf, la première dit en ambre le crochet qui reste à remplir.</li>
+      <li>Voir un exemple reste sous le pouce, au-dessus de la barre, avec ses bouts ronds de l'appli. «&nbsp;Chaque devis garde ce que ces réglages disaient&nbsp;» se lit sur une plage bleue, au sommaire seulement.</li>
+      <li>Ce qui s'imprime&nbsp;: les sept interrupteurs se rangent en trois paquets, dans le même ordre (Sur le devis, Pour être payé, Vos textes). Le chiffre qu'un interrupteur déplie se lit en grand, son unité en doré.</li>
+      <li>Les conditions générales ne défilent plus dans une case qui défile dans l'écran&nbsp;: le début se lit sur une feuille, le texte entier s'ouvre au doigt. Le texte ne change pas d'une lettre.</li>
+      <li>Ce que votre devis dira se lit sur une feuille blanche, celle que le client recevra. Elle nomme aussi la validité et les conditions générales, qui s'impriment déjà.</li>
+      <li>Les trois messages s'ouvrent un par un, chacun sur le papier que le client reçoit. La ligne dit d'un mot s'il est celui d'Atlas, le vôtre, ou incomplet. Effacez le lien pour voir le refus.</li>
+      <li>Le numéro&nbsp;: les cinq formats en liste, l'exemple aligné à droite, et ce que ça donne sur une bande dorée. Le format choisi se retrouve dans le message de la facture.</li>
+      <li>L'allure&nbsp;: les deux photos côte à côte, chacune sa couleur&nbsp;; les polices en cartes, écrites dans leur police&nbsp;; les couleurs en pastilles, le nom de celle prise écrit au-dessus. L'aperçu pose le numéro à droite du titre, comme le PDF.</li>
+      <li>Trois choses partent&nbsp;: le libellé «&nbsp;L'allure de la page&nbsp;» au-dessus de l'aperçu, le code «&nbsp;#FAF9F5&nbsp;» à côté du nuancier, et la phrase répétée en bas de Ce qui s'imprime.</li>
+      <li>Trois phrases deviennent justes. L'aide de l'accent promettait «&nbsp;le trait sous le titre&nbsp;»&nbsp;: le PDF le trace à l'encre, seuls les intitulés et la remise prennent l'accent. «&nbsp;Votre prochain devis&nbsp;» montrait toujours le n°&nbsp;12&nbsp;: c'est un exemple, il s'appelle «&nbsp;Un devis&nbsp;». La facture d'exemple disait «&nbsp;à régler avant le 21 septembre&nbsp;», une date passée.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Le découpage du 7 septembre&nbsp;: quatre lignes, quatre écrans courts, leurs titres mot pour mot. Rien ne sort de Devis &amp; factures.</li>
+      <li>Les interrupteurs&nbsp;: éteint, rien ne se déplie&nbsp;; allumé sans rien écrit, rien ne s'imprime. Les trois moyens de paiement&nbsp;; un moyen écrit avant, hors de la liste, se montre tel quel.</li>
+      <li>Ce qui ne se coupe pas reste obligatoire, sans interrupteur. Les crochets se remplissent depuis Mon entreprise.</li>
+      <li>Trois messages, une seule case par document, les mots dorés, et ce qui ne se retire pas&nbsp;: le lien, sa durée, le mot du document. Remettre le message d'Atlas.</li>
+      <li>Le F des factures, le compteur qui repart au 1<sup>er</sup> janvier, les numéros déjà émis.</li>
+      <li>Six polices, le doré par défaut, l'aperçu collé en haut, la photo d'abord, enregistré au fur et à mesure.</li>
+      <li>Ce que le client reçoit ne suit pas la charte&nbsp;: essayez Nuit.</li>
+      <li>Un salarié, un commercial ou la facturation n'ouvrent pas cette rubrique&nbsp;: elle n'est pas dans leurs réglages, et l'adresse tapée les renvoie à leur accueil.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>Les trois messages un par un, ou les trois à la suite comme aujourd'hui.</li>
+      <li>Ce que votre devis dira nomme aussi la validité et les conditions générales&nbsp;: aujourd'hui il annonce «&nbsp;Rien ne s'ajoutera&nbsp;» alors que les deux s'impriment.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="reglages-tarifs.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Tarifs &amp; catalogue</a>
+  <a href="reglages-fournisseurs.html">Fournisseurs et partenaires<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+/* Les petits mots de la planche : ce qui ne s'ouvre pas le dit. */
+document.addEventListener("click", function (e) {
+  var b = e.target.closest("[data-note]");
+  if (b) Kit.note(b, b.getAttribute("data-note"));
+});
+
+/*
+  CE QUE LA PLANCHE FAIT EN PLUS DE LA BOÎTE COMMUNE, et rien ne part nulle part.
+
+  Les règles sont celles de l'appli, recopiées pour être essayées au doigt :
+  lignesConditionsDevis (conditions-documents.ts), refusDuMessage et les trois
+  messages (message-client.ts), ecrireNumero (numero-documents.ts),
+  encreSurFond (allure-documents.ts). Ce script se branche APRÈS kit.js : la
+  bascule, le choix et le panneau sont déjà posés quand il les lit.
+*/
+(function () {
+  "use strict";
+
+  function brancher() {
+    var ecran = document.getElementById("ecran-propose");
+    var defile = ecran.querySelector(".defile");
+    var image = document.getElementById("capture");
+    var cadreCapture = document.getElementById("cadre-capture");
+    var maintenant = new Date();
+    var AN = maintenant.getFullYear();
+    var MOIS = maintenant.getMonth() + 1;
+
+    /* ─── Les cinq écrans, et la capture d'aujourd'hui de chacun ─────────── */
+    var ECRANS = {
+      sommaire: ["aujourdhui/reglages-documents.jpg", "L'écran Devis & factures tel qu'il est aujourd'hui"],
+      conditions: ["aujourdhui/reglages-documents-conditions.jpg", "L'écran Ce qui s'imprime tel qu'il est aujourd'hui"],
+      message: ["aujourdhui/reglages-documents-message.jpg", "L'écran Mon message au client tel qu'il est aujourd'hui"],
+      numero: ["aujourdhui/reglages-documents-numero.jpg", "L'écran Le numéro de mes documents tel qu'il est aujourd'hui"],
+      allure: ["aujourdhui/reglages-documents-allure.jpg", "L'écran L'allure de mes devis tel qu'il est aujourd'hui"]
+    };
+    var ouvert = "sommaire";
+
+    function ouvrir(nom) {
+      if (!ECRANS[nom]) return;
+      ecran.querySelectorAll("[data-ecran-panneau]").forEach(function (p) {
+        p.hidden = p.getAttribute("data-ecran-panneau") !== nom;
+      });
+      defile.scrollTop = 0;
+      quandOuvert(nom);
+    }
+
+    function quandOuvert(nom) {
+      if (nom !== ouvert) { etatEnr = "rien"; clearTimeout(minuterie); }
+      ouvert = nom;
+      ecran.setAttribute("data-ouvert", nom);
+      document.querySelectorAll("[data-vers-ecran]").forEach(function (b) {
+        b.setAttribute("aria-pressed", b.getAttribute("data-vers-ecran") === nom ? "true" : "false");
+      });
+      if (image.getAttribute("src") !== ECRANS[nom][0]) {
+        image.setAttribute("src", ECRANS[nom][0]);
+        image.setAttribute("alt", ECRANS[nom][1]);
+        cadreCapture.scrollTop = 0;
+      }
+      if (nom === "sommaire") resumer();
+      majActions();
+    }
+
+    /* ─── Le bouton du bas : Voir un exemple au sommaire, Enregistrer ailleurs ─
+       BarreEnregistrer : elle n'existe que s'il y a quelque chose à enregistrer,
+       dit « Enregistré ✓ » deux secondes et demie, et reste quand un refus
+       empêche d'enregistrer (« Message incomplet »). */
+    var barreExemple = document.getElementById("action-exemple");
+    var barreEnr = document.getElementById("action-enregistrer");
+    var boutonEnr = barreEnr.querySelector("button");
+    var etatEnr = "rien";
+    var minuterie = null;
+
+    function majActions() {
+      var refus = ouvert === "message" && refusDesMessages() > 0;
+      var avecEnr = (ouvert === "conditions" || ouvert === "message") && (etatEnr !== "rien" || refus);
+      barreExemple.hidden = ouvert !== "sommaire";
+      barreEnr.hidden = !avecEnr;
+      ecran.classList.toggle("avec-action", ouvert === "sommaire" || avecEnr);
+      if (!avecEnr) return;
+      boutonEnr.disabled = refus || etatEnr !== "aEcrire";
+      boutonEnr.textContent = refus ? "Message incomplet"
+        : etatEnr === "enCours" ? "Enregistrement…"
+        : etatEnr === "fait" ? "Enregistré ✓" : "Enregistrer";
+    }
+    function aEcrire() { clearTimeout(minuterie); etatEnr = "aEcrire"; majActions(); }
+    function enregistrer() {
+      clearTimeout(minuterie);
+      etatEnr = "enCours"; majActions();
+      minuterie = setTimeout(function () {
+        etatEnr = "fait"; majActions();
+        minuterie = setTimeout(function () { etatEnr = "rien"; majActions(); }, 2500);
+      }, 600);
+    }
+    boutonEnr.addEventListener("click", enregistrer);
+
+    /* ─── Ce qui s'imprime ────────────────────────────────────────────────── */
+    var ORIGINE_CGV = document.getElementById("cgv-texte").value;
+    var CROCHET_DEC = "[assureur, n° de contrat, couverture géographique]";
+    var MOITIE_DEC = " et, pour les travaux qui y sont soumis, d’une assurance décennale : " + CROCHET_DEC;
+    var CROCHET_MED = "[nom et coordonnées]";
+    var ALLUME = { validite: 30, acompte: 30, delai: 30, moyens: "virement, chèque", penalites: true, pied: "" };
+    var DEPART = {
+      regle: { validite: 30, acompte: 30, delai: 30, moyens: "virement, chèque", penalites: false, pied: null, cgv: true,
+               decennale: true, mediateur: true, logo: true },
+      neuf: { validite: 30, acompte: null, delai: null, moyens: null, penalites: false, pied: null, cgv: true,
+              decennale: false, mediateur: false, logo: false }
+    };
+    var c = {};
+
+    function bloc(clef) { return ecran.querySelector('[data-reglage="' + clef + '"]'); }
+    function allume(clef) {
+      if (clef === "penalites") return c.penalites;
+      if (clef === "cgv") return c.cgv !== "";
+      return c[clef] !== null;
+    }
+
+    function crochetsRestants() {
+      if (!c.cgv) return 0;
+      var t = c.decennale ? c.cgv.split(CROCHET_DEC).join("ok") : c.cgv.split(MOITIE_DEC).join("");
+      if (c.mediateur) t = t.split(CROCHET_MED).join("ok");
+      return (t.match(/\[[^\]]*\]/g) || []).length;
+    }
+
+    function lignesDuDevis() {
+      var l = [];
+      if (c.acompte !== null) l.push("Mode de règlement : " + c.acompte + " % à la commande, solde à réception de la facture.");
+      if (c.delai !== null) l.push(c.delai === 0 ? "Paiement comptant à la fin des travaux." : "Paiement à " + c.delai + " jours à compter de la facture.");
+      if (c.moyens) l.push("Moyens de paiement acceptés : " + c.moyens + ".");
+      if (c.penalites) l.push("En cas de retard de paiement : pénalités au taux de trois fois le taux d'intérêt légal.");
+      if (c.pied && c.pied.trim()) l.push(c.pied.trim());
+      return l;
+    }
+
+    function paragraphes(texte) {
+      return texte.split(/\n\s*\n/).map(function (p) { return p.replace(/\s*\n\s*/g, " ").trim(); }).filter(Boolean);
+    }
+
+    function peindreConditions() {
+      ["validite", "acompte", "delai", "moyens", "penalites", "pied", "cgv"].forEach(function (clef) {
+        var b = bloc(clef), oui = allume(clef);
+        b.querySelector(".bascule").setAttribute("aria-checked", oui ? "true" : "false");
+        var d = b.querySelector(".deplie");
+        if (d) d.hidden = !oui;
+      });
+      ["validite", "acompte", "delai"].forEach(function (clef) {
+        var champ = ecran.querySelector('[data-champ="' + clef + '"]');
+        if (document.activeElement !== champ) champ.value = c[clef] === null ? "" : String(c[clef]);
+      });
+      ecran.querySelectorAll("#moyens [data-choix]").forEach(function (m) {
+        m.setAttribute("aria-pressed", m.getAttribute("data-choix") === c.moyens ? "true" : "false");
+      });
+      var pied = ecran.querySelector('[data-champ="pied"]');
+      if (document.activeElement !== pied) pied.value = c.pied || "";
+
+      /* Les conditions générales : le début sur une feuille, leur compte. */
+      var paras = paragraphes(c.cgv);
+      var apercu = document.getElementById("cgv-apercu");
+      apercu.textContent = "";
+      var titre = document.createElement("p");
+      titre.className = "cgv-titre";
+      titre.textContent = "Conditions générales de vente et de règlement";
+      apercu.appendChild(titre);
+      paras.slice(0, 2).forEach(function (p) { var e = document.createElement("p"); e.textContent = p; apercu.appendChild(e); });
+      var articles = paras.filter(function (p) { return /^\d+\./.test(p); }).length;
+      document.getElementById("cgv-compte").textContent = articles ? articles + " article" + (articles > 1 ? "s" : "") : "Votre texte";
+      var n = crochetsRestants();
+      document.getElementById("crochets").hidden = n === 0;
+      document.getElementById("crochets-nombre").textContent = n + " crochet" + (n > 1 ? "s" : "");
+
+      /* Ce que votre devis dira, recalculé, jamais recopié. */
+      var lignes = lignesDuDevis();
+      document.getElementById("recap-validite").hidden = c.validite === null;
+      document.getElementById("recap-validite-valeur").textContent = c.validite + " jour" + (c.validite > 1 ? "s" : "");
+      var ul = document.getElementById("recap-lignes");
+      ul.textContent = "";
+      lignes.forEach(function (l) { var li = document.createElement("li"); li.textContent = l; ul.appendChild(li); });
+      ul.hidden = lignes.length === 0;
+      document.getElementById("recap-cgv").hidden = c.cgv === "";
+      document.getElementById("recap-rien").hidden = !(c.validite === null && lignes.length === 0 && c.cgv === "");
+      var premier = true;
+      [].forEach.call(document.querySelector(".recap").children, function (morceau) {
+        morceau.classList.toggle("trait-dessus", !morceau.hidden && !premier);
+        if (!morceau.hidden) premier = false;
+      });
+      document.getElementById("note-acompte").hidden = c.acompte === null;
+    }
+
+    /* Toute la ligne bascule, pas seulement la piste : 64 px sous le pouce. */
+    document.addEventListener("click", function (e) {
+      var ligne = e.target.closest(".ligne-bascule");
+      if (ligne && !e.target.closest(".bascule")) { ligne.querySelector(".bascule").click(); return; }
+      var bascule = e.target.closest(".bloc-reglage .bascule");
+      if (!bascule) return;
+      var clef = bascule.closest(".bloc-reglage").getAttribute("data-reglage");
+      var oui = bascule.getAttribute("aria-checked") === "true";
+      if (clef === "cgv") c.cgv = oui ? ORIGINE_CGV : "";
+      else if (clef === "penalites") c.penalites = oui;
+      else c[clef] = oui ? ALLUME[clef] : null;
+      peindreConditions();
+      enregistrer();
+    });
+
+    ecran.querySelectorAll("[data-champ]").forEach(function (champ) {
+      var clef = champ.getAttribute("data-champ");
+      champ.addEventListener("input", function () {
+        if (clef === "pied") c.pied = champ.value;
+        else {
+          champ.value = champ.value.replace(/\D/g, "").slice(0, 3);
+          c[clef] = champ.value === "" ? Number(champ.getAttribute("data-min")) : Number(champ.value);
+        }
+        peindreConditions();
+        aEcrire();
+      });
+      champ.addEventListener("blur", function () {
+        if (clef !== "pied") {
+          /* On borne au lieu de refuser : un doigt qui a glissé, pas une intention. */
+          var min = Number(champ.getAttribute("data-min")), max = Number(champ.getAttribute("data-max"));
+          c[clef] = Math.min(max, Math.max(min, Number(champ.value || min)));
+          champ.value = String(c[clef]);
+          peindreConditions();
+        }
+        if (etatEnr === "aEcrire") enregistrer();
+      });
+    });
+
+    var texteCgv = document.getElementById("cgv-texte");
+    texteCgv.addEventListener("input", function () { c.cgv = texteCgv.value; peindreConditions(); aEcrire(); });
+
+    /* ─── Les trois messages ──────────────────────────────────────────────── */
+    function enveloppe(phrase, sousLeLien) {
+      return ["Bonjour [client],", "", phrase, "", "[lien]", ""].concat(sousLeLien ? [sousLeLien, ""] : [])
+        .concat(["Bien à vous,", "[entreprise]"]).join("\n");
+    }
+    var MODELES = {
+      devis: enveloppe("Voici votre [document]. Vous pouvez le consulter et choisir votre date d'intervention.[autre-date] Tout se fait sur cette page :", "[validite]"),
+      facture: enveloppe("Voici votre [document] [numero][echeance]. Vous pouvez la consulter et la télécharger ici :"),
+      passage: enveloppe("Voici mon [document] après le passage chez vous :")
+    };
+    var MOTS = { devis: "devis", facture: "facture", passage: "retour d'intervention" };
+    var messages = {};
+    var format = "annee-6";
+
+    function jourEnLettres(d, avecJour) {
+      var t = d.toLocaleDateString("fr-FR", avecJour ? { weekday: "long", day: "numeric", month: "long" } : { day: "numeric", month: "long" });
+      return d.getFullYear() === AN ? t : t + " " + d.getFullYear();
+    }
+    function dansJours(n) { return new Date(maintenant.getTime() + n * 86400000); }
+
+    function libelle(jeton, genre) {
+      switch (jeton) {
+        case "[client]": return "Mme Costa";
+        case "[document]": return MOTS[genre];
+        case "[numero]": return ecrireNumero(format, "facture", 8);
+        case "[echeance]": return ", à régler avant le " + jourEnLettres(dansJours(30), false);
+        case "[autre-date]": return " Et si aucune des dates proposées ne vous convient, vous pouvez en proposer une autre.";
+        case "[lien]": return "https://…";
+        case "[validite]": return "Ce lien est valable 45 jours, jusqu'au " + jourEnLettres(dansJours(45), true) +
+          ". Passé ce délai, vous ne pourrez plus répondre depuis ce lien : il faudra appeler Jardins Démo.";
+        case "[entreprise]": return "Jardins Démo";
+      }
+      return jeton;
+    }
+
+    function editeur(genre) { return ecran.querySelector('[data-editeur="' + genre + '"]'); }
+
+    function construire(genre) {
+      var el = editeur(genre);
+      el.textContent = "";
+      messages[genre].split(/(\[[a-z-]+\])/).forEach(function (morceau) {
+        if (!morceau) return;
+        if (/^\[[a-z-]+\]$/.test(morceau)) {
+          var puce = document.createElement("span");
+          puce.className = "jeton";
+          puce.contentEditable = "false";
+          puce.setAttribute("data-jeton", morceau);
+          puce.textContent = libelle(morceau, genre);
+          el.appendChild(puce);
+        } else el.appendChild(document.createTextNode(morceau));
+      });
+    }
+
+    function lire(genre) {
+      var out = "";
+      editeur(genre).childNodes.forEach(function (n) {
+        if (n.nodeType === 3) out += n.nodeValue;
+        else if (n.nodeType === 1) {
+          if (n.getAttribute("data-jeton")) out += n.getAttribute("data-jeton");
+          else if (n.tagName === "BR") out += "\n";
+          else out += n.textContent;
+        }
+      });
+      return out;
+    }
+
+    /* La MÊME règle que le serveur : un bouton allumé sur un message refusé ne ferait rien. */
+    function refusDu(modele, genre) {
+      if (!modele.trim()) return "Écrivez votre message : il ne peut pas être vide.";
+      if (modele.length > 2000) return "Votre message dépasse 2000 caractères. Raccourcissez-le pour l'enregistrer.";
+      if (modele.indexOf("[document]") < 0) return "Le mot du document est obligatoire : sans lui, votre client ne sait pas s'il reçoit un devis, une facture ou un retour d'intervention. Reposez-le pour enregistrer.";
+      if (modele.indexOf("[lien]") < 0) return "Le lien est obligatoire : sans lui, votre client ne peut ni ouvrir son document ni choisir sa date. Reposez-le pour enregistrer.";
+      if (genre === "devis" && modele.indexOf("[validite]") < 0) return "La durée du lien est obligatoire : sans elle, votre client ne sait pas jusqu'à quand il peut répondre. Reposez-la pour enregistrer.";
+      return null;
+    }
+    function refusDesMessages() {
+      return ["devis", "facture", "passage"].filter(function (g) { return refusDu(messages[g], g) !== null; }).length;
+    }
+
+    function peindreMessage(genre) {
+      var raison = refusDu(messages[genre], genre);
+      var p = ecran.querySelector('[data-refus="' + genre + '"]');
+      p.hidden = !raison;
+      p.querySelector("span").textContent = raison || "";
+      editeur(genre).classList.toggle("refuse", !!raison);
+      var different = messages[genre].trim() !== MODELES[genre].trim();
+      ecran.querySelector('[data-remettre="' + genre + '"]').hidden = !different;
+      var s = ecran.querySelector('[data-situation="' + genre + '"]');
+      s.innerHTML = raison ? '<span class="etat" data-ton="rouge">Incomplet</span>'
+        : different ? '<span class="etat">Le vôtre</span>' : "Celui d'Atlas";
+    }
+
+    ecran.querySelectorAll("[data-editeur]").forEach(function (el) {
+      var genre = el.getAttribute("data-editeur");
+      el.addEventListener("input", function () { messages[genre] = lire(genre); peindreMessage(genre); aEcrire(); });
+      /* Entrée pose un saut de ligne en texte, comme EditeurMessage.tsx : la relecture reste fiable. */
+      el.addEventListener("keydown", function (e) {
+        if (e.key !== "Enter") return;
+        e.preventDefault();
+        var sel = window.getSelection();
+        if (!sel || !sel.rangeCount) return;
+        var plage = sel.getRangeAt(0);
+        plage.deleteContents();
+        var saut = document.createTextNode("\n");
+        plage.insertNode(saut);
+        plage.setStartAfter(saut);
+        plage.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(plage);
+        el.dispatchEvent(new Event("input"));
+      });
+      el.addEventListener("paste", function (e) {
+        e.preventDefault();
+        document.execCommand("insertText", false, (e.clipboardData || window.clipboardData).getData("text/plain"));
+      });
+    });
+
+    document.addEventListener("click", function (e) {
+      var ligne = e.target.closest("[data-message]");
+      if (ligne) {
+        var genre = ligne.getAttribute("data-message");
+        var dejaOuvert = ligne.getAttribute("aria-expanded") === "true";
+        ecran.querySelectorAll(".messages li[data-genre]").forEach(function (li) {
+          var oui = !dejaOuvert && li.getAttribute("data-genre") === genre;
+          li.classList.toggle("ouvert", oui);
+          li.querySelector("[data-message]").setAttribute("aria-expanded", oui ? "true" : "false");
+          li.querySelector(".message-corps").hidden = !oui;
+        });
+        return;
+      }
+      var remettre = e.target.closest("[data-remettre]");
+      if (remettre) {
+        var g = remettre.getAttribute("data-remettre");
+        messages[g] = MODELES[g];
+        construire(g);
+        peindreMessage(g);
+        aEcrire();
+      }
+    });
+
+    /* ─── Le numéro ───────────────────────────────────────────────────────── */
+    var FORMATS = {
+      "annee-4": ["Année et 4 chiffres", "longue", false, 4],
+      "annee-6": ["Année et 6 chiffres", "longue", false, 6],
+      "court": ["Année courte", "courte", false, 4],
+      "mois": ["Année, mois, numéro", "longue", true, 3],
+      "suite": ["Une suite sans année", "aucune", false, 4]
+    };
+    function ecrireNumero(clef, genre, n) {
+      var f = FORMATS[clef], m = [];
+      if (f[1] === "longue") m.push(String(AN));
+      else if (f[1] === "courte") m.push(String(AN % 100).padStart(2, "0"));
+      if (f[2]) m.push(String(MOIS).padStart(2, "0"));
+      m.push(String(n).padStart(f[3], "0"));
+      return (genre === "facture" ? "F" : "") + m.join("-");
+    }
+
+    function peindreNumero() {
+      ecran.querySelectorAll("[data-num]").forEach(function (s) { s.textContent = ecrireNumero(s.getAttribute("data-num"), "facture", 12); });
+      ecran.querySelectorAll("#formats [data-choix]").forEach(function (b) {
+        b.setAttribute("aria-pressed", b.getAttribute("data-choix") === format ? "true" : "false");
+      });
+      document.getElementById("exemple-devis").textContent = ecrireNumero(format, "devis", 12);
+      document.getElementById("exemple-facture").textContent = ecrireNumero(format, "facture", 12);
+      document.getElementById("consequence").innerHTML = FORMATS[format][1] === "aucune"
+        ? "Le compteur ne repart jamais : sans l'année, deux documents porteraient le même numéro."
+        : "Le compteur repart à 1 le 1<sup>er</sup> janvier.";
+      ecran.querySelectorAll('.jeton[data-jeton="[numero]"]').forEach(function (j) { j.textContent = ecrireNumero(format, "facture", 8); });
+    }
+
+    function statut(nom) {
+      var s = ecran.querySelector('[data-statut="' + nom + '"] span');
+      s.textContent = "Enregistrement…";
+      clearTimeout(s._minuterie);
+      s._minuterie = setTimeout(function () { s.textContent = "Enregistré au fur et à mesure."; }, 700);
+    }
+
+    /* ─── L'allure ────────────────────────────────────────────────────────── */
+    var DEFAUT = { typo: "systeme", fond: "#faf9f5", accent: "#b98b47" };
+    var POLICES = {
+      systeme: "var(--sans)",
+      inter: "Inter, ui-sans-serif, system-ui, sans-serif",
+      lato: "Lato, ui-sans-serif, system-ui, sans-serif",
+      "archivo-narrow": "'Archivo Narrow', ui-sans-serif, system-ui, sans-serif",
+      "eb-garamond": "'EB Garamond', ui-serif, Georgia, serif",
+      merriweather: "Merriweather, ui-serif, Georgia, serif"
+    };
+    var NOMS_FOND = { "#faf9f5": "Celui d'aujourd'hui", "#ffffff": "Blanc", "#ece9e1": "Crème", "#e8e8e6": "Gris clair" };
+    var NOMS_ACCENT = { "#b98b47": "Celui d'aujourd'hui, le doré", "#2f3b2f": "Vert pin", "#6e2433": "Bordeaux", "#1c1c1a": "Noir" };
+    var allure = {};
+    var logo = true;
+
+    /* La MÊME règle que le PDF : un fond sombre éclaircit l'encre. */
+    function encreSurFond(hex) {
+      var r = parseInt(hex.slice(1, 3), 16), v = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+      return 0.299 * r + 0.587 * v + 0.114 * b > 150 ? ["#141414", "#4a4a44"] : ["#f5f3ee", "#cfccc4"];
+    }
+
+    function peindreAllure() {
+      var feuille = document.getElementById("feuille-devis");
+      var encre = encreSurFond(allure.fond);
+      feuille.style.fontFamily = POLICES[allure.typo];
+      feuille.style.background = allure.fond;
+      feuille.style.setProperty("--encre", encre[0]);
+      feuille.style.setProperty("--encre-douce", encre[1]);
+      feuille.style.setProperty("--accent", allure.accent);
+      ecran.querySelectorAll("#typos [data-choix]").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-choix") === allure.typo ? "true" : "false"); });
+      [["fonds", "fond", NOMS_FOND], ["accents", "accent", NOMS_ACCENT]].forEach(function (t) {
+        var connu = !!t[2][allure[t[1]]];
+        ecran.querySelectorAll("#" + t[0] + " [data-choix]").forEach(function (b) {
+          b.setAttribute("aria-pressed", b.getAttribute("data-choix") === allure[t[1]] ? "true" : "false");
+        });
+        document.getElementById(t[1] + "-autre-rond").classList.toggle("prise", !connu);
+        document.getElementById(t[1] + "-nom").textContent = connu ? t[2][allure[t[1]]] : "Une autre couleur";
+      });
+      document.getElementById("allure-revenir").hidden =
+        allure.typo === DEFAUT.typo && allure.fond === DEFAUT.fond && allure.accent === DEFAUT.accent;
+      document.getElementById("fd-logo").style.display = logo ? "" : "none";
+      document.getElementById("logo-image").style.display = logo ? "" : "none";
+      document.getElementById("logo-aucun").hidden = logo;
+      document.getElementById("logo-choisir").textContent = logo ? "Changer" : "Choisir une image";
+      document.getElementById("logo-retirer").hidden = !logo;
+    }
+
+    ["fond", "accent"].forEach(function (quoi) {
+      var champ = document.getElementById(quoi + "-autre");
+      champ.addEventListener("input", function () { allure[quoi] = champ.value.toLowerCase(); peindreAllure(); statut("allure"); });
+    });
+    document.getElementById("allure-revenir").addEventListener("click", function () {
+      allure = { typo: DEFAUT.typo, fond: DEFAUT.fond, accent: DEFAUT.accent };
+      document.getElementById("reprise").hidden = true;
+      peindreAllure(); statut("allure");
+    });
+    document.getElementById("logo-choisir").addEventListener("click", function () {
+      if (logo) { Kit.note(this, "Sur la planche, l'image ne se choisit pas."); return; }
+      logo = true; peindreAllure(); statut("allure");
+    });
+    document.getElementById("logo-retirer").addEventListener("click", function () { logo = false; peindreAllure(); statut("allure"); });
+
+    /* Photographier : la lecture, puis ce qui a été repris, et ce qui ne l'a pas été. */
+    ecran.querySelectorAll("[data-photo]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var gestes = ecran.querySelectorAll("[data-photo]");
+        var mot = b.querySelector("span"), avant = mot.textContent;
+        gestes.forEach(function (g) { g.disabled = true; });
+        mot.textContent = "Lecture…";
+        document.getElementById("reprise").hidden = true;
+        setTimeout(function () {
+          mot.textContent = avant;
+          gestes.forEach(function (g) { g.disabled = false; });
+          allure.accent = "#2f3b2f";
+          document.getElementById("reprise").hidden = false;
+          peindreAllure(); statut("allure");
+        }, 1300);
+      });
+    });
+
+    /* ─── Les choix de la boîte commune : la page suit ───────────────────── */
+    document.addEventListener("kit:choix", function (e) {
+      var famille = e.target.id, v = e.detail.choix;
+      if (famille === "moyens") { c.moyens = v; peindreConditions(); enregistrer(); }
+      else if (famille === "formats") { format = v; peindreNumero(); statut("numero"); }
+      else if (famille === "typos") { allure.typo = v; peindreAllure(); statut("allure"); }
+      else if (famille === "fonds") { allure.fond = v; peindreAllure(); statut("allure"); }
+      else if (famille === "accents") { allure.accent = v; peindreAllure(); statut("allure"); }
+    });
+
+    /* ─── Le sommaire : chaque ligne dit ce qu'elle porte ─────────────────── */
+    function resumer() {
+      var n = crochetsRestants();
+      var r = ecran.querySelector('[data-resume="conditions"]');
+      if (n > 0) r.innerHTML = '<span class="etat" data-ton="ambre">' + n + " crochet" + (n > 1 ? "s" : "") + " à remplir</span>";
+      else {
+        var morceaux = [];
+        if (c.validite !== null) morceaux.push("validité " + c.validite + " jour" + (c.validite > 1 ? "s" : ""));
+        if (c.acompte !== null) morceaux.push("acompte " + c.acompte + " %");
+        if (c.delai !== null && morceaux.length < 2) morceaux.push(c.delai === 0 ? "comptant" : "paiement à " + c.delai + " jours");
+        var t = morceaux.length ? morceaux.join(", ") : "les lignes et les totaux seulement";
+        r.textContent = t.charAt(0).toUpperCase() + t.slice(1);
+      }
+      ecran.querySelector('[data-resume="numero"]').textContent = FORMATS[format][0];
+      var accent = NOMS_ACCENT[allure.accent] ? (allure.accent === DEFAUT.accent ? "le doré" : NOMS_ACCENT[allure.accent].toLowerCase()) : "une autre couleur";
+      ecran.querySelector('[data-resume="allure"]').textContent = (logo ? "Votre logo, " : "Sans logo, ") + accent;
+    }
+
+    /* ─── Tout réglé, ou un compte neuf : chaque écran repart de là ───────── */
+    function partir(etat) {
+      var d = DEPART[etat] || DEPART.regle;
+      c = { validite: d.validite, acompte: d.acompte, delai: d.delai, moyens: d.moyens, penalites: d.penalites, pied: d.pied,
+            cgv: d.cgv ? ORIGINE_CGV : "", decennale: d.decennale, mediateur: d.mediateur };
+      texteCgv.value = c.cgv || ORIGINE_CGV;
+      format = "annee-6";
+      ["devis", "facture", "passage"].forEach(function (g) { messages[g] = MODELES[g]; });
+      allure = { typo: DEFAUT.typo, fond: DEFAUT.fond, accent: DEFAUT.accent };
+      logo = d.logo;
+      document.getElementById("reprise").hidden = true;
+      peindreConditions();
+      peindreNumero();
+      ["devis", "facture", "passage"].forEach(function (g) { construire(g); peindreMessage(g); });
+      peindreAllure();
+      etatEnr = "rien"; clearTimeout(minuterie);
+      resumer();
+      majActions();
+    }
+    new MutationObserver(function () { partir(ecran.getAttribute("data-etat")); })
+      .observe(ecran, { attributes: true, attributeFilter: ["data-etat"] });
+
+    /* Les rangées au-dessus des deux téléphones, et les lignes dans l'écran. */
+    document.addEventListener("click", function (e) {
+      var choix = e.target.closest("[data-vers-ecran]");
+      if (choix) { ouvrir(choix.getAttribute("data-vers-ecran")); return; }
+      var vers = e.target.closest("[data-vers]");
+      if (vers && ecran.contains(vers)) quandOuvert(vers.getAttribute("data-vers"));
+    });
+
+    partir(ecran.getAttribute("data-etat"));
+    var demande = (window.location.hash || "").slice(1);
+    ouvrir(ECRANS[demande] ? demande : "sommaire");
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", brancher);
+  else brancher();
+})();
+</script>
+</body>
+</html>

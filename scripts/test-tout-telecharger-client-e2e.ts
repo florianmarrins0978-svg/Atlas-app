@@ -78,10 +78,17 @@ async function main() {
     const bouton = page.locator('[data-atlas="tout-telecharger"]');
     assert.ok(await bouton.isVisible(), "« Tout télécharger » est absent de la fiche du client");
 
-    // **Sous « Modifier ses coordonnées »**, la place qu'il a choisie (A).
-    const yCoord = (await page.locator('[data-atlas="modifier-le-client"]').boundingBox())?.y ?? 0;
-    const yBouton = (await bouton.boundingBox())?.y ?? 0;
-    assert.ok(yCoord > 0 && yBouton > yCoord, `le bouton n'est pas sous « Modifier ses coordonnées » (${yCoord}, ${yBouton})`);
+    // **À côté de « Modifier ses coordonnées », sur sa droite** : les deux gestes
+    // sur le client lui-même partagent le pied de sa plage depuis la fiche
+    // soignée du 25 octobre 2026 (`appli/soignee/client.html`). Ils étaient l'un
+    // sous l'autre, la place qu'il avait choisie le 22 octobre (A).
+    const coord = await page.locator('[data-atlas="modifier-le-client"]').boundingBox();
+    const boite = await bouton.boundingBox();
+    assert.ok(coord && boite && coord.height > 0, "les deux gestes ne se mesurent pas");
+    assert.ok(
+      Math.abs(boite.y - coord.y) <= 2 && boite.x > coord.x,
+      `le bouton n'est pas à droite de « Modifier ses coordonnées » (${coord.x}, ${coord.y} ; ${boite.x}, ${boite.y})`
+    );
 
     const nomSurLeLien = await bouton.getAttribute("download");
     assert.match(nomSurLeLien ?? "", /^M\. Dossier \d+, \d+(er)? \S+ \d{4}\.zip$/, `le lien annonce « ${nomSurLeLien} »`);

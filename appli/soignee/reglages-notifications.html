@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Notifications, soigné</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  NOTIFICATIONS (src/app/reglages/notifications/page.tsx, NotificationsClient.tsx,
+  src/lib/rappels.ts ; les cartes qu'ils font naître : src/app/Notifications.tsx
+  et src/lib/ton-des-cartes.ts).
+
+  Sa demande du 25 octobre : une planche par rubrique, plus jolie, de la couleur
+  si elle dit quelque chose.
+
+  Ces rappels ne vivent pas ici : ils arrivent sur son accueil, en cartes de
+  couleur rangées par ce qu'il a à faire (sa planche du 23 octobre). Proposé
+  fait se reconnaître chaque réglage dans la carte qu'il produit : sous chaque
+  rappel allumé, la carte telle qu'elle arrivera, dans sa couleur, avec le
+  nombre de jours qu'il vient de régler. Ce qui est vrai dans le code :
+    Chantier sans devis : ambre, « Devis en attente depuis N jours » ;
+    Devis sans réponse et Chantier fini, pas facturé : cartes blanches, pour
+      mémoire, « Devis sans réponse » et « À facturer » ;
+    Facture impayée : rouge depuis le 23 octobre, avec le reste dû ;
+    les réponses d'un client : vert, ambre, bleu, rouge ; le lien expiré :
+      rouge, « Devis caduc ».
+
+  Ce qui ne bouge pas : ses quatre noms (« Chantier sans devis » choisi par lui
+  le 16 août), ce qu'il règle d'abord et ce qui est toujours signalé en bas
+  (sa proposition B du 9 septembre), le rythme en trois choix et jamais une
+  case (16 août), « après l'échéance » (7 octobre), « 1 jour » et non
+  « 1 jours », l'écran fermé à qui n'est pas le patron.
+*/
+.intro { margin: 0 2px; font-size: 15px; line-height: 1.45; color: var(--atlas-inkSoft); text-wrap: pretty; }
+
+.rappels { padding: 2px 18px; }
+.rappel { position: relative; padding: 12px 0 16px; }
+.rappel + .rappel::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
+.rappel-tete { display: flex; align-items: center; gap: 14px; min-height: 48px; }
+.rappel-nom { display: block; font: 400 18.5px/1.25 var(--serif); }
+.rappel.eteint .pastille-ico { background: color-mix(in srgb, var(--atlas-ink) 6%, transparent); color: var(--atlas-inkSoft); }
+.rappel.eteint .rappel-nom { color: var(--atlas-inkSoft); }
+
+/* Le délai : − le nombre +, et le nombre se tape encore au clavier. */
+.delai { display: flex; align-items: center; flex-wrap: wrap; gap: 2px 10px; margin-top: 10px; font-size: 15px; color: var(--atlas-inkSoft); }
+.pas { display: inline-flex; align-items: center; border-radius: 24px; box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.pas button { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-ink); }
+.pas button[disabled] { color: var(--atlas-chevron); cursor: default; }
+.pas .ico { width: 20px; height: 20px; stroke-width: 2; }
+.pas input { width: 44px; border: 0; padding: 0; background: transparent; outline: none; text-align: center;
+             font: 400 22px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; color: var(--atlas-ink); }
+.unite { white-space: nowrap; }
+
+/* La carte telle qu'elle arrivera sur l'accueil : sa couleur, ses mots. */
+.sur-accueil { display: flex; align-items: center; gap: 6px; margin: 12px 0 6px; font-size: 13.5px; font-weight: 600; color: var(--atlas-inkSoft); }
+.sur-accueil .ico { width: 16px; height: 16px; stroke-width: 2; color: var(--atlas-or); }
+.apercu { border-radius: 14px; padding: 11px 14px 12px; background: var(--atlas-cream); }
+.apercu[data-ton="ambre"] { background: var(--atlas-carteAmbreFond); }
+.apercu[data-ton="rouge"] { background: var(--atlas-carteRougeFond); }
+.apercu p { margin: 0; }
+.apercu .carte-ton-titre { font-size: 14px; color: var(--atlas-or); }
+.apercu[data-ton="ambre"] .carte-ton-titre { color: var(--atlas-carteAmbreTexte); }
+.apercu[data-ton="rouge"] .carte-ton-titre { color: var(--atlas-carteRougeTexte); }
+.apercu-nom { margin: 3px 0 0; font: 400 17px/1.25 var(--serif); color: var(--atlas-ink); }
+.apercu-texte { margin: 2px 0 0; font-size: 14px; line-height: 1.4; color: var(--atlas-inkSoft); text-wrap: pretty; }
+.apercu-montant { margin: 5px 0 0; font: 700 19px/1.2 var(--serif); font-variant-numeric: tabular-nums lining-nums; color: var(--atlas-ink); }
+
+.rythme-libelle { margin: 14px 0 8px; font-size: 15px; color: var(--atlas-inkSoft); }
+.rythme .choix button { min-height: 52px; padding: 4px 6px; font-size: 14.5px; line-height: 1.15; }
+.arret { margin: 10px 0 0; font-size: 14px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.arret b { color: var(--atlas-ink); font-weight: 600; }
+
+/* Ce qui arrive toujours : les cartes elles-mêmes, en pastilles de leur couleur. */
+.toujours .ligne { flex-wrap: wrap; row-gap: 10px; }
+.familles { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 6px; }
+.familles .etat { font-size: 13px; padding: 0 10px; }
+
+.refus-role { display: flex; gap: 12px; align-items: flex-start; }
+.refus-role .ico { width: 22px; height: 22px; flex: none; margin-top: 1px; }
+</style>
+</head>
+<body class="pl pl-pilules">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="reglages.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Réglages</a>
+  <h1 class="pl-titre">Notifications</h1>
+  <p class="pl-verdict">Sous chaque rappel, <b>la carte qu'il fera naître sur l'accueil</b>, dans sa couleur et avec le nombre de jours réglé. Le délai se règle par <b>moins et plus</b>, sans clavier.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <!-- PROPOSÉ -->
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats">
+        <button type="button" data-etat="patron" aria-pressed="true">Le patron</button>
+        <button type="button" data-etat="salarie">Un salarié</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre" data-etat="patron" id="ecran-notifications">
+          <div class="defile">
+            <div class="tete-ronds">
+              <a class="rond-creux" href="reglages.html" aria-label="Retour aux réglages"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </div>
+            <header class="tete" style="margin-top:0"><h1 class="tete-titre">Notifications</h1></header>
+
+            <div data-si-etat="patron">
+              <p class="intro">Ces rappels s'affichent sur votre écran d'accueil, quand vous ouvrez Atlas.</p>
+
+              <p class="rubrique rubrique-or">Ce que vous réglez</p>
+              <div class="plage rappels">
+
+                <div class="rappel" data-rappel="sans-devis">
+                  <div class="rappel-tete">
+                    <span class="pastille-ico" data-ton="ambre"><svg class="ico" aria-hidden="true"><use href="#i-document"/></svg></span>
+                    <span class="ligne-corps"><span class="rappel-nom">Chantier sans devis</span></span>
+                    <button class="bascule" type="button" role="switch" aria-checked="true" aria-label="Chantier sans devis"></button>
+                  </div>
+                  <div class="rappel-reglage">
+                    <div class="delai">Au bout de
+                      <span class="pas"><button type="button" data-pas="-1" aria-label="Un jour de moins"><svg class="ico" aria-hidden="true"><use href="#i-moins"/></svg></button><input type="text" inputmode="numeric" value="4" aria-label="Délai du rappel Chantier sans devis, en jours"><button type="button" data-pas="1" aria-label="Un jour de plus"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg></button></span>
+                      <span class="unite" data-unite>jours</span>
+                    </div>
+                    <p class="sur-accueil"><svg class="ico" aria-hidden="true"><use href="#i-chantier"/></svg>Sur l'accueil</p>
+                    <div class="apercu" data-ton="ambre">
+                      <p class="carte-ton-titre" data-titre>Devis en attente depuis 4 jours</p>
+                      <p class="apercu-nom">Mme Costa</p>
+                      <p class="apercu-texte" data-texte>Chantier ouvert depuis 4 jours, et aucun devis n'est parti.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="rappel" data-rappel="sans-reponse">
+                  <div class="rappel-tete">
+                    <span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-horloge-sable"/></svg></span>
+                    <span class="ligne-corps"><span class="rappel-nom">Devis sans réponse</span></span>
+                    <button class="bascule" type="button" role="switch" aria-checked="true" aria-label="Devis sans réponse"></button>
+                  </div>
+                  <div class="rappel-reglage">
+                    <div class="delai">Au bout de
+                      <span class="pas"><button type="button" data-pas="-1" aria-label="Un jour de moins"><svg class="ico" aria-hidden="true"><use href="#i-moins"/></svg></button><input type="text" inputmode="numeric" value="7" aria-label="Délai du rappel Devis sans réponse, en jours"><button type="button" data-pas="1" aria-label="Un jour de plus"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg></button></span>
+                      <span class="unite" data-unite>jours</span>
+                    </div>
+                    <p class="sur-accueil"><svg class="ico" aria-hidden="true"><use href="#i-chantier"/></svg>Sur l'accueil</p>
+                    <div class="apercu">
+                      <p class="carte-ton-titre" data-titre>Devis sans réponse</p>
+                      <p class="apercu-nom">M. Girard</p>
+                      <p class="apercu-texte" data-texte>Parti depuis 7 jours, sans un mot du client. Vous pouvez le relancer vous-même.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="rappel" data-rappel="non-facture">
+                  <div class="rappel-tete">
+                    <span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-facture"/></svg></span>
+                    <span class="ligne-corps"><span class="rappel-nom">Chantier fini, pas facturé</span></span>
+                    <button class="bascule" type="button" role="switch" aria-checked="true" aria-label="Chantier fini, pas facturé"></button>
+                  </div>
+                  <div class="rappel-reglage">
+                    <div class="delai">Au bout de
+                      <span class="pas"><button type="button" data-pas="-1" aria-label="Un jour de moins"><svg class="ico" aria-hidden="true"><use href="#i-moins"/></svg></button><input type="text" inputmode="numeric" value="3" aria-label="Délai du rappel Chantier fini, pas facturé, en jours"><button type="button" data-pas="1" aria-label="Un jour de plus"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg></button></span>
+                      <span class="unite" data-unite>jours</span>
+                    </div>
+                    <p class="sur-accueil"><svg class="ico" aria-hidden="true"><use href="#i-chantier"/></svg>Sur l'accueil</p>
+                    <div class="apercu">
+                      <p class="carte-ton-titre" data-titre>À facturer</p>
+                      <p class="apercu-nom">Mme Roux</p>
+                      <p class="apercu-texte" data-texte>Chantier terminé depuis 3 jours, et aucune facture n'est partie.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="rappel" data-rappel="impayee">
+                  <div class="rappel-tete">
+                    <span class="pastille-ico" data-ton="rouge"><svg class="ico" aria-hidden="true"><use href="#i-euro"/></svg></span>
+                    <span class="ligne-corps"><span class="rappel-nom">Facture impayée</span></span>
+                    <button class="bascule" type="button" role="switch" aria-checked="true" aria-label="Facture impayée"></button>
+                  </div>
+                  <div class="rappel-reglage">
+                    <div class="delai">Au bout de
+                      <span class="pas"><button type="button" data-pas="-1" aria-label="Un jour de moins" disabled><svg class="ico" aria-hidden="true"><use href="#i-moins"/></svg></button><input type="text" inputmode="numeric" value="1" aria-label="Délai du rappel Facture impayée, en jours"><button type="button" data-pas="1" aria-label="Un jour de plus"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg></button></span>
+                      <span class="unite" data-unite>jour</span><span class="unite">après l'échéance</span>
+                    </div>
+                    <p class="rythme-libelle">Puis me le redire</p>
+                    <div class="rythme">
+                      <div class="choix">
+                        <button type="button" aria-pressed="false">Chaque jour</button>
+                        <button type="button" aria-pressed="true">Chaque semaine</button>
+                        <button type="button" aria-pressed="false">Tous les 15 jours</button>
+                      </div>
+                    </div>
+                    <p class="arret">S'arrête dès que le règlement est noté dans <b>Terminés, TVA</b>.</p>
+                    <p class="sur-accueil"><svg class="ico" aria-hidden="true"><use href="#i-chantier"/></svg>Sur l'accueil</p>
+                    <div class="apercu" data-ton="rouge">
+                      <p class="carte-ton-titre" data-titre>Facture impayée</p>
+                      <p class="apercu-nom">M. Morin</p>
+                      <p class="apercu-texte" data-texte>Échéance dépassée depuis hier.</p>
+                      <p class="apercu-montant">1 240,00 €</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <p class="rubrique rubrique-or">Ce qui vous est toujours signalé</p>
+              <div class="plage plage-serree toujours">
+                <ul class="liste">
+                  <li>
+                    <div class="ligne">
+                      <span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></span>
+                      <span class="ligne-corps"><span class="ligne-nom">Réponse à un devis</span></span>
+                        <span class="familles">
+                          <span class="etat" data-ton="vert">Devis accepté</span>
+                          <span class="etat" data-ton="ambre">Correction demandée</span>
+                          <span class="etat" data-ton="bleu">Autre date proposée</span>
+                          <span class="etat" data-ton="rouge">Devis retourné</span>
+                        </span>
+                    </div>
+                  </li>
+                  <li>
+                    <div class="ligne">
+                      <span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-horloge"/></svg></span>
+                      <span class="ligne-corps"><span class="ligne-nom">Lien de devis expiré</span></span>
+                      <span class="familles"><span class="etat" data-ton="rouge">Devis caduc</span></span>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div data-si-etat="salarie">
+              <div class="plage-ton refus-role" data-ton="bleu">
+                <svg class="ico" aria-hidden="true"><use href="#i-cadenas"/></svg>
+                <span>Ces rappels portent sur les devis et les factures de l'entreprise. Ils appartiennent au patron.</span>
+              </div>
+            </div>
+          </div>
+
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html">Terminés</a>
+              <a class="barre-onglet" href="paysage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html" aria-current="page">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- AUJOURD'HUI -->
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre">
+        <div class="cadre-capture"><img src="aujourdhui/reglages-notifications.jpg" alt="L'écran Notifications tel qu'il est aujourd'hui"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>Sous chaque rappel allumé, la carte qu'il fera naître sur votre accueil, dans sa couleur : ambre pour le devis jamais parti, blanche pour mémoire, rouge pour l'impayé. Le nombre de jours qu'on règle se lit aussitôt dans la carte.</li>
+      <li>Chaque rappel porte devant son nom une pastille de la couleur de sa carte. Éteint, il perd sa couleur, et sa carte disparaît avec son délai.</li>
+      <li>Le délai se règle par moins et plus, de 1 à 90 jours. Le nombre se tape encore au clavier si on le touche.</li>
+      <li>Le rythme de l'impayé en trois grands choix de 52 px, au lieu de trois pastilles en 12 px.</li>
+      <li>Ce qui est toujours signalé montre les cartes elles-mêmes, chacune dans sa couleur : Devis accepté, Correction demandée, Autre date proposée, Devis retourné, Devis caduc.</li>
+      <li>Six phrases partent, parce que la carte en dessous dit la même chose : les quatre phrases grises sous les rappels (« Le chantier est ouvert et vous n'avez pas encore envoyé de devis »…) et les deux sous ce qui est toujours signalé.</li>
+      <li>Plus de « MOI » doré sous le titre ; les titres de paquet passent en doré.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Les quatre noms, dont « Chantier sans devis » que vous avez choisi le 16 août, et leur ordre : ce que vous réglez d'abord, ce qui est toujours signalé en bas.</li>
+      <li>Les délais d'origine : 4, 7, 3 jours, et 1 jour après l'échéance. « 1 jour », jamais « 1 jours ».</li>
+      <li>Le rythme de l'impayé en trois choix, jamais une case, et « S'arrête dès que le règlement est noté dans Terminés, TVA. »</li>
+      <li>La phrase du haut : « Ces rappels s'affichent sur votre écran d'accueil, quand vous ouvrez Atlas. »</li>
+      <li>Un salarié ne règle rien ici : touchez « Un salarié ».</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>Rallumé, un rappel reprend ici le délai qu'il avait. Dans l'appli, il repart à 7 jours, même l'impayé que vous aviez réglé à 1 jour : à corriger dans le code si vous êtes d'accord.</li>
+      <li>D'autres cartes arrivent sur l'accueil sans interrupteur et ne sont pas citées ici : Facture reçue, Retour pas reçu, Virement reçu, Votre banque. Les ajouter à « toujours signalé », ou laisser la liste à deux.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="reglages-compte.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Mon compte</a>
+  <a href="reglages-connexion.html">Mot de passe<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+/*
+  Les mots des cartes sont ceux de rappelVersCarte (src/app/Notifications.tsx)
+  et de depuisCombien (src/lib/rappels.ts) : « depuis hier » à un jour,
+  « depuis N jours » au delà, et le titre du devis jamais parti qui compte ses
+  jours. Les bornes sont celles de BORNES_RAPPELS : de 1 à 90.
+*/
+document.addEventListener("DOMContentLoaded", function () {
+  "use strict";
+  var MIN = 1, MAX = 90;
+
+  function depuis(n) { return n <= 0 ? "aujourd'hui" : n === 1 ? "depuis hier" : "depuis " + n + " jours"; }
+  var MOTS = {
+    "sans-devis": function (n) { return { titre: "Devis en attente depuis " + n + " jour" + (n > 1 ? "s" : ""), texte: "Chantier ouvert " + depuis(n) + ", et aucun devis n'est parti." }; },
+    "sans-reponse": function (n) { return { texte: "Parti " + depuis(n) + ", sans un mot du client. Vous pouvez le relancer vous-même." }; },
+    "non-facture": function (n) { return { texte: "Chantier terminé " + depuis(n) + ", et aucune facture n'est partie." }; },
+    "impayee": function (n) { return { texte: "Échéance dépassée " + depuis(n) + "." }; }
+  };
+
+  function poser(rappel, n) {
+    n = Math.min(MAX, Math.max(MIN, Math.round(n) || MIN));
+    var champ = rappel.querySelector(".pas input");
+    champ.value = String(n);
+    rappel.querySelector("[data-pas='-1']").disabled = n <= MIN;
+    rappel.querySelector("[data-pas='1']").disabled = n >= MAX;
+    rappel.querySelector("[data-unite]").textContent = n === 1 ? "jour" : "jours";
+    var mots = MOTS[rappel.getAttribute("data-rappel")](n);
+    if (mots.titre) rappel.querySelector("[data-titre]").textContent = mots.titre;
+    rappel.querySelector("[data-texte]").textContent = mots.texte;
+  }
+
+  document.querySelectorAll(".rappel").forEach(function (rappel) {
+    var champ = rappel.querySelector(".pas input");
+    rappel.addEventListener("click", function (e) {
+      var pas = e.target.closest("[data-pas]");
+      if (pas) { poser(rappel, Number(champ.value) + Number(pas.getAttribute("data-pas"))); return; }
+      /* L'interrupteur : le délai et la carte suivent. Rallumé, le rappel
+         reprend le délai qu'il avait, puisque rien ne l'a effacé. */
+      var bascule = e.target.closest(".bascule");
+      /* Ce geste est entendu ici AVANT que le kit, à la racine, ait basculé
+         l'interrupteur : on lit son état au tour suivant. */
+      if (bascule) setTimeout(function () {
+        var allume = bascule.getAttribute("aria-checked") === "true";
+        rappel.classList.toggle("eteint", !allume);
+        rappel.querySelector(".rappel-reglage").hidden = !allume;
+      }, 0);
+    });
+    champ.addEventListener("change", function () { poser(rappel, Number(champ.value)); });
+  });
+});
+</script>
+</body>
+</html>

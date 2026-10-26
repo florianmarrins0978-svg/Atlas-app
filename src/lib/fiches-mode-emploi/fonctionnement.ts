@@ -202,7 +202,7 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
       "arrive au planning, à poser.",
     source: "src/app/clients/[id]/contrat/ContratClient.tsx",
     preuves: ['"Passages par mois"', '"Prix du passage HT"', "<Intitule>Facturation</Intitule>"],
-    ailleurs: [{ source: "src/app/clients/[id]/RepartirDeCeClient.tsx", preuves: ['libelle="Contrat d’entretien"'] }],
+    ailleurs: [{ source: "src/app/clients/[id]/RepartirDeCeClient.tsx", preuves: ["Contrat d’entretien"] }],
   },
   {
     id: "chiffre-affaires",
@@ -424,7 +424,7 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
     source: "src/app/chantiers/[id]/AnneauNoteVocale.tsx",
     preuves: ['aria-label="Dicter une note vocale"'],
     ailleurs: [
-      { source: "src/app/clients/[id]/RepartirDeCeClient.tsx", preuves: ['libelle="Dernier devis"'] },
+      { source: "src/app/clients/[id]/RepartirDeCeClient.tsx", preuves: ['"Dernier devis"'] },
       { source: "src/app/reglages/ReglagesClient.tsx", preuves: ["+ Ajouter un tarif"] },
     ],
   },

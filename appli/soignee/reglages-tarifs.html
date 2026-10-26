@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mes tarifs, soignés</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  TARIFS & CATALOGUE, l'écran « Mes tarifs » (src/app/reglages/tarifs/page.tsx,
+  ReglagesClient.tsx, ImportTarifs.tsx, src/components/atlas/ChoixUnite.tsx,
+  src/lib/unites-tarif.ts, RubriqueReservee.tsx).
+
+  Sa demande du 25 octobre : une planche par rubrique des Réglages, plus jolie,
+  le doré de l'appli quand il y a du doré, de la couleur si elle aide.
+
+  Le dessin du 11 octobre (appli/mes-tarifs-corrige.html) reste la base : une
+  ligne par tarif, le nom à gauche, le prix à droite, l'unité dessous, la
+  ligne qui s'ouvre sur place, Ajouter en or et l'import à voix basse dessous.
+  Ce qui change : le nom en serif et le montant en gras ; Ajouter devient une
+  vraie ligne de 60 px au bout de la liste ; les libellés en toutes lettres ;
+  l'aperçu d'un fichier dit ses cas en couleur (vert ce qui s'ajoute, ambre ce
+  qui change) ; Enregistrer ces tarifs passe au-dessus de la barre ; Mes prix
+  et Le catalogue prennent une icône dorée.
+
+  Les tarifs sont ceux du code de démonstration d'un paysagiste
+  (scripts/test-import-tarifs.ts, test-prix-achat.ts, test-reprise-des-prix.ts,
+  et la main d'œuvre du jeu de démonstration) : aucun prix n'est inventé.
+*/
+.tarifs { padding: 2px 18px; }
+.tarifs .liste > li { position: relative; }
+.tarifs .liste > li + li { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.tarifs .liste > li.retire { display: none; }
+.tarif-ligne { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 66px; padding: 12px 0; text-align: left; }
+.tarif-nom { flex: 1; min-width: 0; font: 400 18px/1.25 var(--serif); letter-spacing: -0.005em; overflow-wrap: anywhere; }
+.tarif-nom.sans { color: var(--atlas-inkSoft); }
+.tarif-prix { flex: none; text-align: right; }
+.tarif-prix b { display: block; font-size: 17px; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
+.tarif-prix small { display: block; margin-top: 3px; font-size: 14px; color: var(--atlas-inkSoft); white-space: nowrap; }
+.tarif-prix small:empty { display: none; }
+
+/* La ligne ouverte sur place : nom, prix, unité, puis Retirer et Fermer. */
+.tarif-edition { display: none; padding: 16px 0 2px; }
+li.ouvert > .tarif-ligne { display: none; }
+li.ouvert > .tarif-edition { display: block; }
+.edition-champ { display: block; margin-bottom: 16px; }
+.edition-champ .reglage-libelle { margin-bottom: 7px; }
+.saisie { display: block; width: 100%; min-height: 50px; padding: 13px 14px; border: 0; border-radius: 10px; outline: none;
+          background: var(--atlas-rustTint); color: var(--atlas-ink); font: 400 16px/1.3 var(--sans);
+          box-shadow: inset 0 0 0 1px var(--atlas-lineSoft); }
+.saisie::placeholder { color: var(--atlas-muted); }
+.saisie:focus { box-shadow: inset 0 0 0 2px var(--atlas-or); }
+.saisie:focus-visible { outline: none; }
+.saisie-prix { position: relative; display: block; width: 60%; }
+.saisie-prix .saisie { padding-right: 34px; text-align: right; font-variant-numeric: tabular-nums; }
+.saisie-prix input::-webkit-inner-spin-button, .saisie-prix input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.saisie-prix input { -moz-appearance: textfield; appearance: textfield; }
+.saisie-prix span { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 16px; color: var(--atlas-inkSoft); pointer-events: none; }
+.unites { display: flex; flex-wrap: wrap; gap: 8px; }
+.unite { min-height: 44px; padding: 0 15px; border-radius: 22px; font-size: 15.5px; color: var(--atlas-ink);
+         box-shadow: inset 0 0 0 1px var(--atlas-line); transition: box-shadow 200ms var(--courbe), background-color 200ms var(--courbe); }
+.unite[aria-pressed="true"] { background: var(--atlas-rustTint); box-shadow: inset 0 0 0 1.5px var(--atlas-or); font-weight: 600; }
+.unites + .saisie { margin-top: 10px; }
+.edition-pied { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; box-shadow: inset 0 1px 0 var(--atlas-line); }
+.edition-pied button { min-height: 52px; font-size: 16px; font-weight: 600; }
+.edition-pied .retirer { color: var(--atlas-alerte); }
+.edition-pied .fermer { color: var(--atlas-rust); }
+
+/* Ajouter : le geste de tous les jours, en or, une vraie ligne au bout de la liste. */
+.ajouter { position: relative; display: flex; align-items: center; gap: 12px; width: 100%; min-height: 62px; text-align: left;
+           font-size: 17px; font-weight: 600; color: var(--atlas-or); }
+/* Le filet au-dessus : un trait droit, pas une ombre qui suivrait l'arrondi de l'appui. */
+.ajouter::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
+.rond-or { width: 34px; height: 34px; flex: none; display: grid; place-items: center; border-radius: 50%;
+           background: color-mix(in srgb, var(--atlas-or) 14%, transparent); }
+.rond-or .ico { width: 20px; height: 20px; stroke-width: 2; }
+.aucun-tarif { margin: 0; padding: 22px 0 18px; text-align: center; font-size: 15.5px; color: var(--atlas-inkSoft); }
+.liste:empty { display: none; }
+.importer-lien { display: inline-flex; align-items: center; gap: 8px; min-height: 52px; margin-top: 6px; padding: 0 2px;
+                 font-size: 15px; color: var(--atlas-inkSoft); text-align: left; text-wrap: balance; }
+.importer-lien .ico { width: 20px; height: 20px; color: var(--atlas-inkSoft); }
+
+/* Ce que le fichier changerait : rien n'est écrit avant l'appui. */
+.apercu { margin-top: 10px; padding: 16px 18px 6px; }
+.apercu-bloc + .apercu-bloc { margin-top: 18px; }
+.apercu-ligne { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 10px 0; }
+.apercu-ligne + .apercu-ligne { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.apercu-ligne .nom { min-width: 0; font: 400 17.5px/1.3 var(--serif); }
+.apercu-ligne .nom small { display: block; margin-top: 2px; font: 400 14px/1.3 var(--sans); color: var(--atlas-inkSoft); }
+.apercu-ligne .prix { flex: none; font-size: 16.5px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.apercu-ligne s { margin-right: 6px; font-weight: 400; color: var(--atlas-inkSoft); }
+.apercu-bloc .etat { margin-bottom: 4px; }
+.identiques { margin: 16px 0 0; font-size: 14.5px; color: var(--atlas-inkSoft); }
+.de-cote { margin-top: 14px; padding: 4px 0 8px; box-shadow: inset 0 1px 0 var(--atlas-line); }
+.de-cote summary { display: flex; align-items: center; gap: 8px; min-height: 48px; cursor: pointer; list-style: none;
+                   font-size: 15.5px; font-weight: 600; color: var(--atlas-carteAmbreTexte); }
+.de-cote summary::-webkit-details-marker { display: none; }
+.de-cote summary .ico { width: 20px; height: 20px; transition: transform 220ms var(--courbe); }
+.de-cote[open] summary .ico { transform: rotate(180deg); }
+.de-cote ul { margin: 0; padding: 0; list-style: none; }
+.de-cote li { padding: 8px 0; font-size: 15px; }
+.de-cote li + li { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.de-cote li span { display: block; margin-top: 2px; font-size: 14px; color: var(--atlas-inkSoft); }
+.action-bas .bouton-texte { width: 100%; justify-content: center; color: var(--atlas-inkSoft); min-height: 44px; margin-top: 2px; }
+
+/* Les deux écrans voisins, dans la grammaire du sommaire. */
+.autres { padding: 0 18px; }
+.autres .ligne { min-height: 72px; }
+.autres .ligne-fin .ico { color: var(--atlas-or); }
+.autres .ligne-situation { text-wrap: pretty; }
+/* Enregistrer et Annuler tiennent deux rangs au-dessus de la barre. */
+.ecran.avec-barre.avec-action .defile { padding-bottom: 214px; }
+
+.reserve { display: flex; align-items: flex-start; gap: 14px; }
+.reserve p { margin: 2px 0 0; font-size: 16px; line-height: 1.5; }
+.tiroir-ici { margin-top: 12px; }
+</style>
+</head>
+<body class="pl pl-pilules">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="reglages.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Réglages</a>
+  <h1 class="pl-titre">Tarifs &amp; catalogue</h1>
+  <p class="pl-verdict">Les mêmes tarifs, une ligne chacun : le nom en serif, <b>le montant en gras</b>, l'unité dessous. Ajouter devient une vraie ligne dorée, et un fichier repris dit <b>en vert et en ambre</b> ce qui s'ajoute et ce qui change, avant que rien ne s'écrive.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <!-- ═══ PROPOSÉ ═══ -->
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats">
+        <button type="button" data-etat="rempli" aria-pressed="true">Ses tarifs</button>
+        <button type="button" data-etat="ouvert">Un tarif ouvert</button>
+        <button type="button" data-etat="fichier">Un fichier lu</button>
+        <button type="button" data-etat="refus">Un PDF refusé</button>
+        <button type="button" data-etat="vide">Aucun tarif</button>
+        <button type="button" data-etat="salarie">Un salarié</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre" data-etat="rempli" id="ecran-tarifs">
+          <div class="defile">
+            <div class="tete-ronds">
+              <a class="rond-creux" href="reglages.html" aria-label="Retour aux réglages"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </div>
+            <header class="tete" style="margin-top:0"><h1 class="tete-titre">Mes tarifs</h1></header>
+
+            <!-- Ce qu'un salarié voit s'il tape l'adresse : rien n'est lu avant le rôle. -->
+            <div class="plage reserve" data-si-etat="salarie">
+              <span class="pastille-ico" data-ton="bleu"><svg class="ico" aria-hidden="true"><use href="#i-cadenas"/></svg></span>
+              <p>Les prix de vente ne se consultent pas depuis un compte salarié. Ces réglages appartiennent au patron de l'entreprise.</p>
+            </div>
+
+            <div data-si-etat="rempli ouvert fichier refus importe vide">
+              <p class="plage-ton" data-ton="vert" data-si-etat="importe" style="margin-bottom:12px"><b>1 tarif ajouté, 1 mis à jour</b></p>
+
+              <div class="plage tarifs">
+                <ul class="liste" id="liste-tarifs" data-si-etat="rempli ouvert fichier refus importe">
+                  <li data-tarif="main"></li>
+                  <li data-tarif="haie"></li>
+                  <li data-tarif="tonte"></li>
+                  <li data-tarif="evacuation"></li>
+                  <li data-tarif="broyeur"></li>
+                  <li data-tarif="fendeuse" data-si-etat="importe"></li>
+                  <li data-tarif="deplacement"></li>
+                </ul>
+                <ul class="liste" id="liste-neuve" data-si-etat="vide"></ul>
+                <p class="aucun-tarif" id="aucun-tarif" data-si-etat="vide">Aucun tarif pour l'instant.</p>
+                <button class="ajouter touche" type="button" id="ajouter-tarif"><span class="rond-or"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg></span>Ajouter un tarif</button>
+              </div>
+              <div id="tiroir-tarifs"></div>
+
+              <button class="importer-lien" type="button" data-va-etat="fichier" id="importer"><svg class="ico" aria-hidden="true"><use href="#i-importer"/></svg>Reprendre mes prix d'un fichier Excel ou CSV</button>
+
+              <!-- Un PDF : refusé, et l'on dit pourquoi plutôt que de deviner un prix. -->
+              <p class="plage-ton" data-ton="ambre" data-si-etat="refus" id="refus-pdf">Un PDF est une image de tableau : les colonnes n'y existent plus, et lire un prix de travers est pire que ne pas le lire. Ouvrez la liste dans Excel puis « Enregistrer sous », puis CSV, et redéposez-la ici.</p>
+
+              <!-- Ce que le fichier changerait, et rien n'est écrit avant Enregistrer. -->
+              <div class="plage apercu" data-si-etat="fichier" id="apercu">
+                <div class="apercu-bloc">
+                  <span class="etat" data-ton="vert">1 à ajouter</span>
+                  <div class="apercu-ligne"><span class="nom">Fendeuse<small>par jour</small></span><span class="prix">150,00 €</span></div>
+                </div>
+                <div class="apercu-bloc">
+                  <span class="etat" data-ton="ambre">1 à corriger</span>
+                  <div class="apercu-ligne"><span class="nom">Broyeur<small>par jour</small></span><span class="prix"><s>200,00 €</s>220,00 €</span></div>
+                </div>
+                <p class="identiques">1 déjà à l'identique.</p>
+                <details class="de-cote">
+                  <summary>2 lignes laissées de côté<svg class="ico" aria-hidden="true"><use href="#i-bas"/></svg></summary>
+                  <ul>
+                    <li>ABATTAGE<span>Pas de montant lisible.</span></li>
+                    <li>Mini pelle | sur devis<span>Pas de montant lisible.</span></li>
+                  </ul>
+                </details>
+              </div>
+
+              <p class="rubrique rubrique-or">Mes autres prix</p>
+              <div class="plage autres">
+                <ul class="liste">
+                  <li><a class="ligne touche" href="#" data-note="La planche de Mes prix viendra avec sa rubrique."><span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-etiquette"/></svg></span><span class="ligne-corps"><span class="ligne-nom">Mes prix</span><span class="ligne-situation">Abattage, dessouchage, taille de haie.</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                  <li><a class="ligne touche" href="#" data-note="La planche du catalogue viendra avec sa rubrique."><span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-liste"/></svg></span><span class="ligne-corps"><span class="ligne-nom">Le catalogue</span><span class="ligne-situation">Prestations et matériels reconnus. Sans prix.</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="action-bas" data-si-etat="fichier">
+            <button class="bouton bouton-plein" type="button" id="enregistrer"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg>Enregistrer ces tarifs</button>
+            <button class="bouton-texte" type="button" data-va-etat="rempli">Annuler</button>
+          </div>
+
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html">Terminés</a>
+              <a class="barre-onglet" href="paysage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html" aria-current="page">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ AUJOURD'HUI ═══ -->
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre">
+        <div class="cadre-capture"><img src="aujourdhui/reglages-tarifs.jpg" alt="L'écran Mes tarifs tel qu'il est aujourd'hui, avec les tarifs d'un plombier du jeu de démonstration"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>Une ligne par tarif, comme le 11 octobre, mais le nom en serif et le montant en gras : on lit le prix d'un coup d'œil, l'unité dessous (« par ml », « par jour/homme »).</li>
+      <li>Ajouter un tarif devient une vraie ligne au bout de la liste, toujours en or, avec son rond « + ». Reprendre un fichier reste dessous, à voix basse.</li>
+      <li>Touchez un tarif : il s'ouvre sur place. Nom, Prix, Unité s'écrivent en toutes lettres et non plus en petites capitales, Retirer aussi.</li>
+      <li>Un fichier lu dit ses cas en couleur : vert ce qui s'ajoute, ambre ce qui change avec l'ancien prix barré devant. Chaque ligne laissée de côté porte sa raison dessous, au lieu d'un tiret.</li>
+      <li>Enregistrer ces tarifs passe au-dessus de la barre, seul bouton plein, et seulement quand un fichier attend. Touchez-le : le bilan s'écrit en vert.</li>
+      <li>Le refus d'un PDF se lit en ambre, ce qui reste à faire, au lieu du vert foncé.</li>
+      <li>« MES AUTRES PRIX » devient un titre doré ; Mes prix et Le catalogue gardent leurs mots, avec une icône dorée et le chevron doré du sommaire.</li>
+      <li>Le libellé doré « RÉGLAGES » sous le titre part, comme sur le sommaire.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Le titre Mes tarifs. La rubrique du sommaire garde « Tarifs &amp; catalogue » (refus assumé du 5 septembre) : l'écart ne gêne pas, le catalogue est la dernière ligne de l'écran.</li>
+      <li>Un tarif, c'est un nom, un prix et une unité facultative. Chaque case s'enregistre en la quittant ; Fermer ne fait que replier.</li>
+      <li>Les six unités proposées dans leur ordre, Aucune, et la ligne libre pour le stère ou l'arbre (le Broyeur porte la sienne, « jour »).</li>
+      <li>Le retrait qui se rattrape : Retirer, puis Annuler dans le tiroir.</li>
+      <li>L'import en deux temps : lire, montrer, et rien n'est écrit avant Enregistrer ces tarifs. « Excel ou CSV », jamais le PDF.</li>
+      <li>Mes prix et Le catalogue restent deux écrans à part : l'un s'apprend des devis, l'autre ne porte aucun prix.</li>
+      <li>Un salarié ne voit pas les prix de vente.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>La phrase du PDF refusé tient quatre lignes : la garder telle quelle, ou la couper à « Un PDF ne se lit pas. Ouvrez-le dans Excel, Enregistrer sous, CSV, et redéposez-le ici. »</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="reglages-organigramme.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Organigramme</a>
+  <a href="reglages-documents.html">Devis &amp; factures<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+(function () {
+  "use strict";
+  var ecran = document.getElementById("ecran-tarifs");
+
+  /* Les tarifs du code de démonstration d'un paysagiste, dans l'ordre où ils
+     ont été créés. Une unité absente : le prix est écrit seul. */
+  var TARIFS = {
+    main: { nom: "Main d'œuvre (jour/homme)", prix: "280.00", unite: "jour/homme" },
+    haie: { nom: "Taille de haie", prix: "18.20", unite: "ml" },
+    tonte: { nom: "Tonte de pelouse", prix: "40.00", unite: "" },
+    evacuation: { nom: "Évacuation des déchets verts", prix: "90.00", unite: "" },
+    broyeur: { nom: "Broyeur", prix: "200.00", unite: "jour" },
+    fendeuse: { nom: "Fendeuse", prix: "150.00", unite: "jour" },
+    deplacement: { nom: "Forfait déplacement", prix: "35.00", unite: "" }
+  };
+  var UNITES = ["jour/homme", "m²", "ml", "heure", "forfait", "tonne"];
+
+  function euros(p) {
+    var n = Number(String(p).replace(",", "."));
+    if (!isFinite(n)) n = 0;
+    return n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "\u00a0€";
+  }
+  function el(html) { var d = document.createElement("div"); d.innerHTML = html.trim(); return d.firstChild; }
+  function texte(s) { var e = document.createElement("span"); e.textContent = s; return e.innerHTML; }
+
+  /* Une ligne : repliée (nom, montant, unité) et ouverte sur place. */
+  function remplir(li, t) {
+    var autre = t.unite && UNITES.indexOf(t.unite) < 0 ? t.unite : "";
+    li.innerHTML =
+      '<button class="tarif-ligne touche" type="button">' +
+        '<span class="tarif-nom' + (t.nom ? "" : " sans") + '">' + texte(t.nom || "Sans nom") + "</span>" +
+        '<span class="tarif-prix"><b>' + euros(t.prix) + "</b><small>" + (t.unite ? "par " + texte(t.unite) : "") + "</small></span>" +
+      "</button>" +
+      '<div class="tarif-edition">' +
+        '<label class="edition-champ"><span class="reglage-libelle">Nom</span><input class="saisie" data-champ="nom" value="' + texte(t.nom) + '" autocomplete="off"></label>' +
+        '<label class="edition-champ"><span class="reglage-libelle">Prix</span><span class="saisie-prix"><input class="saisie" data-champ="prix" type="number" step="0.01" inputmode="decimal" value="' + t.prix + '"><span aria-hidden="true">€</span></span></label>' +
+        '<div class="edition-champ"><span class="reglage-libelle">Unité</span>' +
+          '<div class="unites" data-un-seul role="group" aria-label="Unité du tarif">' +
+            '<button class="unite" type="button" data-choix="" aria-pressed="' + (t.unite === "" ? "true" : "false") + '">Aucune</button>' +
+            UNITES.map(function (u) { return '<button class="unite" type="button" data-choix="' + u + '" aria-pressed="' + (t.unite === u ? "true" : "false") + '">' + u + "</button>"; }).join("") +
+          "</div>" +
+          '<input class="saisie" data-champ="autre" placeholder="Une autre unité" aria-label="Une autre unité" autocomplete="off" value="' + texte(autre) + '">' +
+        "</div>" +
+        '<div class="edition-pied"><button class="retirer" type="button">Retirer</button><button class="fermer" type="button">Fermer</button></div>' +
+      "</div>";
+    li._tarif = t;
+  }
+
+  document.querySelectorAll("#liste-tarifs [data-tarif]").forEach(function (li) {
+    var t = TARIFS[li.getAttribute("data-tarif")];
+    remplir(li, { nom: t.nom, prix: t.prix, unite: t.unite });
+  });
+
+  function rafraichir(li) {
+    var t = li._tarif;
+    var nom = li.querySelector(".tarif-nom");
+    nom.textContent = t.nom || "Sans nom";
+    nom.classList.toggle("sans", !t.nom);
+    li.querySelector(".tarif-prix b").textContent = euros(t.prix);
+    li.querySelector(".tarif-prix small").textContent = t.unite ? "par " + t.unite : "";
+  }
+  function fermerTout() { ecran.querySelectorAll(".tarifs li.ouvert").forEach(function (l) { l.classList.remove("ouvert"); }); }
+  function ouvrir(li) {
+    fermerTout();
+    li.classList.add("ouvert");
+    var defile = ecran.querySelector(".defile");
+    var haut = li.getBoundingClientRect().top - defile.getBoundingClientRect().top + defile.scrollTop - 90;
+    defile.scrollTo({ top: Math.max(0, haut), behavior: "smooth" });
+  }
+
+  /* Le tiroir des retirés : il pousse sous la liste, il ne recouvre pas. */
+  function tiroir(li) {
+    var place = document.getElementById("tiroir-tarifs");
+    place.innerHTML = '<div class="tiroir tiroir-ici" role="status"><span>Retiré à l’instant.</span><button type="button" class="bouton-texte">Annuler</button></div>';
+    var minuterie = setTimeout(function () { place.innerHTML = ""; }, 6000);
+    place.querySelector("button").addEventListener("click", function () {
+      clearTimeout(minuterie);
+      li.classList.remove("retire");
+      place.innerHTML = "";
+      majAucun();
+    });
+  }
+  function majAucun() {
+    var neuve = document.getElementById("liste-neuve");
+    var visibles = neuve.querySelectorAll("li:not(.retire)").length;
+    document.getElementById("aucun-tarif").style.display = visibles ? "none" : "";
+  }
+
+  ecran.addEventListener("click", function (e) {
+    var li = e.target.closest(".tarifs .liste > li");
+    if (e.target.closest(".tarif-ligne") && li) { ouvrir(li); return; }
+    if (e.target.closest(".fermer") && li) { li.classList.remove("ouvert"); return; }
+    if (e.target.closest(".retirer") && li) { li.classList.remove("ouvert"); li.classList.add("retire"); tiroir(li); majAucun(); return; }
+    if (e.target.closest("#ajouter-tarif")) {
+      var etat = ecran.getAttribute("data-etat");
+      var liste = document.getElementById(etat === "vide" ? "liste-neuve" : "liste-tarifs");
+      var nouveau = document.createElement("li");
+      remplir(nouveau, { nom: "", prix: "0", unite: "" });
+      liste.appendChild(nouveau);
+      majAucun();
+      ouvrir(nouveau);
+      setTimeout(function () { nouveau.querySelector('[data-champ="nom"]').focus({ preventScroll: true }); }, 350);
+    }
+  });
+  ecran.addEventListener("input", function (e) {
+    var li = e.target.closest(".tarifs .liste > li");
+    if (!li) return;
+    var champ = e.target.getAttribute("data-champ");
+    if (champ === "nom") li._tarif.nom = e.target.value;
+    if (champ === "prix") li._tarif.prix = e.target.value || "0";
+    rafraichir(li);
+  });
+  /* L'unité libre ne part qu'en quittant la case, comme dans l'appli. */
+  ecran.addEventListener("change", function (e) {
+    var li = e.target.closest(".tarifs .liste > li");
+    if (!li || e.target.getAttribute("data-champ") !== "autre") return;
+    var v = e.target.value.trim().replace(/\s+/g, " ");
+    li._tarif.unite = v;
+    li.querySelectorAll(".unite").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-choix") === v ? "true" : "false"); });
+    if (UNITES.indexOf(v) >= 0) e.target.value = "";
+    rafraichir(li);
+  });
+  ecran.addEventListener("kit:choix", function (e) {
+    var li = e.target.closest(".tarifs .liste > li");
+    if (!li) return;
+    li._tarif.unite = e.detail.choix;
+    li.querySelector('[data-champ="autre"]').value = "";
+    rafraichir(li);
+  });
+
+  /* Enregistrer ces tarifs : le bilan en vert, le Broyeur corrigé, la Fendeuse ajoutée. */
+  document.getElementById("enregistrer").addEventListener("click", function () {
+    var broyeur = document.querySelector('[data-tarif="broyeur"]');
+    broyeur._tarif.prix = "220.00";
+    remplir(broyeur, broyeur._tarif);
+    Kit.appliquerEtat(ecran, "importe");
+    document.querySelectorAll(".pl-etats button[data-etat]").forEach(function (b) { b.setAttribute("aria-pressed", "false"); });
+    synchroniser();
+  });
+
+  /* Ce que chaque état demande en plus : la ligne ouverte, le bouton du bas,
+     et l'écran qui descend jusqu'à ce qu'on veut montrer. */
+  var dernier = "rempli";
+  function synchroniser() {
+    var etat = ecran.getAttribute("data-etat");
+    ecran.classList.toggle("avec-action", etat === "fichier");
+    if (etat === dernier) return;
+    var defile = ecran.querySelector(".defile");
+    fermerTout();
+    if (etat !== "importe") {
+      var broyeur = document.querySelector('[data-tarif="broyeur"]');
+      if (broyeur._tarif.prix !== "200.00") { broyeur._tarif.prix = "200.00"; remplir(broyeur, broyeur._tarif); }
+    }
+    if (etat === "ouvert") ouvrir(document.querySelector('[data-tarif="haie"]'));
+    else if (etat === "fichier" || etat === "refus") {
+      var cible = document.getElementById("importer");
+      setTimeout(function () { defile.scrollTo({ top: Math.max(0, cible.offsetTop - 120), behavior: "smooth" }); }, 30);
+    } else defile.scrollTo({ top: 0 });
+    dernier = etat;
+  }
+  document.addEventListener("click", function (e) {
+    if (e.target.closest(".pl-etats button, [data-va-etat]")) setTimeout(synchroniser, 0);
+    var note = e.target.closest("[data-note]");
+    if (note) { e.preventDefault(); Kit.note(note, note.getAttribute("data-note")); }
+  });
+  document.addEventListener("DOMContentLoaded", function () { setTimeout(synchroniser, 0); });
+})();
+</script>
+</body>
+</html>

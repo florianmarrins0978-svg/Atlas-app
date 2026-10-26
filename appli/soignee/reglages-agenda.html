@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mon agenda, soigné</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  MON AGENDA (src/app/reglages/agenda/page.tsx, MonAgendaClient.tsx,
+  src/lib/agenda-externe.ts, motsDeLAgenda).
+
+  Sa planche du 26 septembre (« trop de mots, trop compliqué, il faut qu'elle
+  soit hyper simple ») a fait l'écran d'aujourd'hui : une ligne par agenda, son
+  état en deux mots, un bouton. Elle garde tout son dessin. Ce qui change :
+    l'état se dit en couleur ET en mots : vert Relié, rouge Ne se lit plus,
+      gris Non relié ou En pause ;
+    les initiales G et i prennent le doré de l'appli, les noms la serif ;
+    les deux boutons verts pleins deviennent cernés d'or : le seul bouton
+      plein reste celui du bas, sur les autres écrans ;
+    Relier iCloud : les trois étapes chez Apple numérotées, à la place d'une
+      phrase à deux « puis » ;
+    Débrancher se confirme sur une plage rouge, avec un bouton rouge, comme la
+      suppression d'un client.
+
+  Ce qui ne bouge pas, parce que ce sont des règles : la panne se voit sur la
+  ligne ; l'avertissement iCloud reste AU-DESSUS du mot de passe ; écrire dans
+  iCloud est un interrupteur éteint, et le calendrier ne se choisit qu'une fois
+  allumé ; débrancher se confirme. Le mot « Intégrations » ne revient pas.
+
+  Les états se composent : Google (relié, en pause, non relié, en panne) et
+  iCloud (relié, en pause, non relié). Le script du bas les tient sur l'écran
+  (data-google, data-icloud), et les gestes de la planche les font changer.
+*/
+.agendas { padding: 2px 18px; }
+.agenda { position: relative; display: flex; align-items: center; gap: 14px; min-height: 84px; padding: 14px 0; }
+.agenda + .agenda::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
+.initiale { font: 400 21px/1 var(--serif); }
+.agenda .ligne-nom { font-size: 19px; }
+.ligne-etat { display: block; margin-top: 6px; }
+.agenda .bouton-petit { flex: none; min-width: 92px; }
+
+/* Les états se composent : chaque morceau dit pour quel état de Google ou
+   d'iCloud il se montre, et l'écran porte les deux. */
+.ecran[data-google="relie"] [data-si-google]:not([data-si-google~="relie"]),
+.ecran[data-google="pause"] [data-si-google]:not([data-si-google~="pause"]),
+.ecran[data-google="non"] [data-si-google]:not([data-si-google~="non"]),
+.ecran[data-google="panne"] [data-si-google]:not([data-si-google~="panne"]),
+.ecran[data-icloud="relie"] [data-si-icloud]:not([data-si-icloud~="relie"]),
+.ecran[data-icloud="pause"] [data-si-icloud]:not([data-si-icloud~="pause"]),
+.ecran[data-icloud="non"] [data-si-icloud]:not([data-si-icloud~="non"]) { display: none; }
+
+.retour { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; font-weight: 600; }
+.retour .ico { width: 20px; height: 20px; }
+
+.feuille-sous { margin: -10px 0 18px; font-size: 15px; color: var(--atlas-inkSoft); }
+.feuille .plage-serree { padding-top: 0; padding-bottom: 0; }
+.avertir b { color: var(--atlas-ink); }
+.chez-apple { margin: 18px 0 8px; font-size: 14.5px; font-weight: 600; color: var(--atlas-inkSoft); }
+.etapes { margin: 0; padding: 0; list-style: none; counter-reset: etape; }
+.etapes li { counter-increment: etape; position: relative; display: flex; align-items: center; gap: 12px; min-height: 44px;
+             font: 400 17px/1.3 var(--serif); }
+.etapes li::before { content: counter(etape); width: 28px; height: 28px; flex: none; display: grid; place-items: center; border-radius: 50%;
+                     font: 700 14px/1 var(--sans); color: var(--atlas-or); box-shadow: inset 0 0 0 1.5px var(--atlas-or); }
+
+.calendriers { margin-top: 10px; padding: 4px 18px; }
+.calendriers .reglage-libelle { padding-top: 10px; }
+.radio[disabled] { opacity: 0.5; cursor: default; }
+.renvoye { margin: 10px 2px 0; font-size: 15px; font-weight: 600; color: var(--atlas-carteVertTexte); }
+.erreur-ecriture { margin: 10px 2px 0; font-size: 15px; font-weight: 600; color: var(--atlas-carteRougeTexte); }
+
+.debrancher { margin-top: 18px; }
+.confirmer p { margin: 0 0 12px; color: var(--atlas-ink); font-size: 15.5px; }
+.bouton-supprimer { background: var(--atlas-alerte); color: var(--atlas-card); }
+.reserve { padding-top: 56px; }
+</style>
+</head>
+<body class="pl pl-pilules">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="reglages.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Réglages</a>
+  <h1 class="pl-titre">Mon agenda</h1>
+  <p class="pl-verdict">Les deux mêmes lignes, et l'état de chaque agenda <b>en couleur</b> : vert quand il est relié, rouge quand il ne se lit plus. Relier iCloud se fait en <b>trois étapes numérotées</b>.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <!-- ═══ PROPOSÉ ═══ -->
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats">
+        <button type="button" data-etat="google" aria-pressed="true">Google relié</button>
+        <button type="button" data-etat="deux">Les deux reliés</button>
+        <button type="button" data-etat="rien">Rien de relié</button>
+        <button type="button" data-etat="panne">Une panne</button>
+        <button type="button" data-etat="salarie">Un salarié</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre" data-etat="google" data-google="relie" data-icloud="non" id="ecran-propose">
+          <div class="defile">
+            <div class="tete-ronds">
+              <a class="rond-creux" href="reglages.html" aria-label="Retour aux réglages"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </div>
+            <header class="tete" style="margin-top:0"><h1 class="tete-titre">Mon agenda</h1></header>
+
+            <div data-si-etat="google deux rien panne">
+              <p class="plage-ton retour" data-ton="vert" id="retour-google" role="status" hidden><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg>Agenda Google relié.</p>
+
+              <div class="plage agendas">
+                <div class="agenda">
+                  <span class="pastille-ico initiale" aria-hidden="true">G</span>
+                  <span class="ligne-corps">
+                    <span class="ligne-nom">Google Agenda</span>
+                    <span class="ligne-etat">
+                      <span class="etat" data-ton="vert" data-si-google="relie">Relié</span>
+                      <span class="etat" data-si-google="pause">En pause</span>
+                      <span class="etat" data-si-google="non">Non relié</span>
+                      <span class="etat" data-ton="rouge" data-si-google="panne">Ne se lit plus</span>
+                    </span>
+                  </span>
+                  <button class="bouton bouton-petit bouton-creux" type="button" data-si-google="relie pause" data-ouvre="feuille-gerer-google">Gérer</button>
+                  <button class="bouton bouton-petit bouton-creux or" type="button" data-si-google="non" data-geste="relier-google">Relier</button>
+                  <button class="bouton bouton-petit bouton-creux or" type="button" data-si-google="panne" data-geste="relier-google">Rebrancher</button>
+                </div>
+                <div class="agenda">
+                  <span class="pastille-ico initiale" aria-hidden="true">i</span>
+                  <span class="ligne-corps">
+                    <span class="ligne-nom">iCloud</span>
+                    <span class="ligne-etat">
+                      <span class="etat" data-ton="vert" data-si-icloud="relie">Relié</span>
+                      <span class="etat" data-si-icloud="pause">En pause</span>
+                      <span class="etat" data-si-icloud="non">Non relié</span>
+                    </span>
+                  </span>
+                  <button class="bouton bouton-petit bouton-creux" type="button" data-si-icloud="relie pause" data-ouvre="feuille-gerer-icloud">Gérer</button>
+                  <button class="bouton bouton-petit bouton-creux or" type="button" data-si-icloud="non" data-ouvre="feuille-relier-icloud">Relier</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="vide reserve" data-si-etat="salarie">
+              <svg class="ico" aria-hidden="true"><use href="#i-cadenas"/></svg>
+              <p class="vide-titre">Ces réglages appartiennent au patron de l'entreprise.</p>
+              <p class="vide-texte">Le calendrier relié appartient au compte du patron.</p>
+            </div>
+          </div>
+
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html">Terminés</a>
+              <a class="barre-onglet" href="paysage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html" aria-current="page">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+
+          <!-- Gérer Google : lire ou non, et débrancher, qui se confirme. -->
+          <section class="feuille" id="feuille-gerer-google" aria-hidden="true" aria-label="Google Agenda">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre">Google Agenda</h2>
+              <p class="feuille-sous">contact@jardins-demo.fr</p>
+              <div class="plage plage-serree">
+                <div class="ligne-bascule">
+                  <span class="ligne-corps"><b>Lire mon agenda</b></span>
+                  <button class="bascule" type="button" role="switch" aria-checked="true" aria-label="Lire mon agenda" data-lire="google"></button>
+                </div>
+              </div>
+              <div class="debrancher">
+                <button class="bouton bouton-texte alerte" type="button" data-demande>Débrancher</button>
+                <div class="plage-ton confirmer" data-ton="rouge" hidden>
+                  <p>Atlas cessera de lire cet agenda.</p>
+                  <div class="rang-boutons">
+                    <button class="bouton bouton-supprimer" type="button" data-geste="debrancher-google">Débrancher</button>
+                    <button class="bouton bouton-creux" type="button" data-renonce>Annuler</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Relier iCloud : l'avertissement AU-DESSUS du mot de passe, c'est la règle. -->
+          <section class="feuille" id="feuille-relier-icloud" aria-hidden="true" aria-label="Relier iCloud">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre">Relier iCloud</h2>
+              <p class="plage-ton avertir" data-ton="ambre"><b>Ce mot de passe ouvre tout votre iCloud.</b> Vous pouvez l'annuler chez Apple quand vous voulez.</p>
+              <p class="chez-apple">Sur account.apple.com :</p>
+              <ol class="etapes">
+                <li>Connexion et sécurité</li>
+                <li>Mots de passe pour les apps</li>
+                <li>Générer</li>
+              </ol>
+              <label class="champ mt-16">
+                <span class="champ-libelle">Adresse iCloud</span>
+                <input class="champ-saisie" type="text" autocomplete="off" placeholder="prenom@icloud.com">
+              </label>
+              <label class="champ">
+                <span class="champ-libelle">Mot de passe pour les apps</span>
+                <input class="champ-saisie" type="password" autocomplete="off" placeholder="abcd efgh ijkl mnop">
+              </label>
+              <button class="bouton bouton-plein mt-24" type="button" data-geste="relier-icloud">Relier</button>
+            </div>
+          </section>
+
+          <!-- Gérer iCloud : lire, écrire (éteint tant qu'il ne l'allume pas), renvoyer, débrancher. -->
+          <section class="feuille" id="feuille-gerer-icloud" aria-hidden="true" aria-label="iCloud">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre">iCloud</h2>
+              <p class="feuille-sous">jardins.demo@icloud.com</p>
+              <div class="plage plage-serree">
+                <div class="ligne-bascule">
+                  <span class="ligne-corps"><b>Lire mon agenda</b></span>
+                  <button class="bascule" type="button" role="switch" aria-checked="true" aria-label="Lire mon agenda" data-lire="icloud"></button>
+                </div>
+                <div class="ligne-bascule">
+                  <span class="ligne-corps"><b>Écrire mes chantiers dedans</b></span>
+                  <button class="bascule" type="button" role="switch" aria-checked="false" aria-label="Écrire mes chantiers dedans" id="ecrire-icloud"></button>
+                </div>
+              </div>
+              <div class="plage calendriers" id="calendriers" hidden>
+                <p class="reglage-libelle">Dans quel calendrier ?</p>
+                <div data-un-seul id="liste-calendriers">
+                  <button class="radio" type="button" data-choix="travail" aria-pressed="false"><span class="coche-ronde" aria-hidden="true"></span><span><b>Travail</b></span></button>
+                  <button class="radio" type="button" data-choix="domicile" aria-pressed="false"><span class="coche-ronde" aria-hidden="true"></span><span><b>Domicile</b></span></button>
+                  <button class="radio" type="button" disabled><span class="coche-ronde" aria-hidden="true"></span><span><b>Anniversaires</b><small>En lecture seule</small></span></button>
+                </div>
+              </div>
+              <button class="bouton bouton-creux mt-16" type="button" id="renvoyer" hidden><svg class="ico" aria-hidden="true"><use href="#i-envoyer"/></svg>Renvoyer mes chantiers</button>
+              <p class="renvoye" id="renvoye" hidden>3 chantiers renvoyés.</p>
+              <div class="debrancher">
+                <button class="bouton bouton-texte alerte" type="button" data-demande>Débrancher</button>
+                <div class="plage-ton confirmer" data-ton="rouge" hidden>
+                  <p>Atlas retirera de votre agenda les rendez-vous qu'il y a posés. Les vôtres ne sont pas touchés.</p>
+                  <div class="rang-boutons">
+                    <button class="bouton bouton-supprimer" type="button" data-geste="debrancher-icloud">Débrancher</button>
+                    <button class="bouton bouton-creux" type="button" data-renonce>Annuler</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ AUJOURD'HUI ═══ -->
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre">
+        <div class="cadre-capture"><img src="aujourdhui/reglages-agenda.jpg" alt="L'écran Mon agenda tel qu'il est aujourd'hui"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>Chaque agenda dit son état en couleur et en mots : vert Relié, rouge Ne se lit plus, gris Non relié ou En pause. Touchez « Une panne ».</li>
+      <li>Les initiales G et i prennent le doré de l'appli, les noms la serif des titres.</li>
+      <li>Les deux boutons verts pleins deviennent cernés d'or : Relier se voit sans écraser l'écran. Gérer est cerné de gris, quand tout va bien.</li>
+      <li>Relier iCloud : les trois étapes chez Apple sont numérotées, à la place d'une phrase à deux « puis ».</li>
+      <li>Débrancher se confirme sur une plage rouge, avec un bouton rouge, comme la suppression d'un client.</li>
+      <li>Le retour de Google se pose sur une plage verte, en haut : touchez Relier sur « Rien de relié ».</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Google d'abord, iCloud dessous, et aucune phrase d'explication : sa planche du 26 septembre.</li>
+      <li>La panne se voit sur la ligne. L'avertissement d'iCloud reste au-dessus du mot de passe, sur une plage ambre.</li>
+      <li>Écrire dans iCloud reste un interrupteur éteint, et le calendrier ne se choisit qu'une fois allumé : touchez Gérer sur « Les deux reliés ». Quand iCloud refuse un chantier, « Le dernier chantier n'a pas pu être écrit. » s'écrit en rouge sous les interrupteurs.</li>
+      <li>Les autres retours de Google gardent leurs mots (« Annulé chez Google. Rien n'a changé. », « Google a refusé… »), en rouge. Une installation sans identifiants Google fait d'abord remplir leurs trois cases, comme aujourd'hui.</li>
+      <li>Le mot « Intégrations » ne revient pas. Un salarié qui tape l'adresse lit à qui la page appartient.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="reglages-ia.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Atlas IA</a>
+  <a href="reglages-abonnement.html">Abonnement<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+/*
+  Les deux agendas, chacun son état. Une puce du haut pose les deux ; un geste
+  de la planche n'en change qu'un, et la puce qui correspond s'allume si elle
+  existe. Branché après le kit (qui démarre lui aussi au chargement du
+  document), ce script entend chaque clic après lui : la bascule a déjà changé
+  quand on la lit ici.
+*/
+document.addEventListener("DOMContentLoaded", function () {
+  var ecran = document.getElementById("ecran-propose");
+  var ETATS = {
+    google: { google: "relie", icloud: "non" },
+    deux: { google: "relie", icloud: "relie" },
+    rien: { google: "non", icloud: "non" },
+    panne: { google: "panne", icloud: "relie" }
+  };
+  var retour = document.getElementById("retour-google");
+
+  function remettreLesFeuilles() {
+    ecran.querySelectorAll("[data-lire]").forEach(function (b) { b.setAttribute("aria-checked", "true"); });
+    document.getElementById("ecrire-icloud").setAttribute("aria-checked", "false");
+    ["calendriers", "renvoyer", "renvoye"].forEach(function (id) { document.getElementById(id).hidden = true; });
+    ecran.querySelectorAll("#liste-calendriers [data-choix]").forEach(function (b) { b.setAttribute("aria-pressed", "false"); });
+  }
+
+  function poser(google, icloud) {
+    ecran.setAttribute("data-google", google);
+    ecran.setAttribute("data-icloud", icloud);
+    var nom = null;
+    for (var k in ETATS) if (ETATS[k].google === google && ETATS[k].icloud === icloud) nom = k;
+    if (nom) Kit.appliquerEtat(ecran, nom);
+    document.querySelectorAll(".pl-etats button[data-etat]").forEach(function (b) {
+      b.setAttribute("aria-pressed", b.getAttribute("data-etat") === nom ? "true" : "false");
+    });
+  }
+
+  document.addEventListener("click", function (e) {
+    var puce = e.target.closest(".pl-etats button[data-etat]");
+    if (puce) {
+      var etat = ETATS[puce.getAttribute("data-etat")];
+      if (etat) { ecran.setAttribute("data-google", etat.google); ecran.setAttribute("data-icloud", etat.icloud); }
+      retour.hidden = true;
+      remettreLesFeuilles();
+      return;
+    }
+
+    var ouvre = e.target.closest("[data-ouvre]");
+    if (ouvre) {
+      var feuille = document.getElementById(ouvre.getAttribute("data-ouvre"));
+      feuille.querySelectorAll(".confirmer").forEach(function (c) { c.hidden = true; });
+      feuille.querySelectorAll("[data-demande]").forEach(function (d) { d.hidden = false; });
+      return;
+    }
+
+    var demande = e.target.closest("[data-demande]");
+    if (demande) {
+      demande.hidden = true;
+      demande.parentNode.querySelector(".confirmer").hidden = false;
+      return;
+    }
+    var renonce = e.target.closest("[data-renonce]");
+    if (renonce) {
+      var bloc = renonce.closest(".debrancher");
+      bloc.querySelector(".confirmer").hidden = true;
+      bloc.querySelector("[data-demande]").hidden = false;
+      return;
+    }
+
+    var lire = e.target.closest("[data-lire]");
+    if (lire) {
+      var qui = lire.getAttribute("data-lire");
+      var allume = lire.getAttribute("aria-checked") === "true";
+      if (qui === "google") poser(allume ? "relie" : "pause", ecran.getAttribute("data-icloud"));
+      else poser(ecran.getAttribute("data-google"), allume ? "relie" : "pause");
+      return;
+    }
+
+    if (e.target.closest("#ecrire-icloud")) {
+      var ecrit = e.target.closest("#ecrire-icloud").getAttribute("aria-checked") === "true";
+      document.getElementById("calendriers").hidden = !ecrit;
+      if (!ecrit) { document.getElementById("renvoyer").hidden = true; document.getElementById("renvoye").hidden = true; }
+      ecran.querySelectorAll("#liste-calendriers [data-choix]").forEach(function (b) { b.setAttribute("aria-pressed", "false"); });
+      return;
+    }
+    if (e.target.closest("#renvoyer")) { document.getElementById("renvoye").hidden = false; return; }
+
+    var geste = e.target.closest("[data-geste]");
+    if (!geste) return;
+    var quoi = geste.getAttribute("data-geste");
+    Kit.fermerFeuilles(ecran);
+    remettreLesFeuilles();
+    if (quoi === "relier-google") { poser("relie", ecran.getAttribute("data-icloud")); retour.hidden = false; }
+    if (quoi === "debrancher-google") { poser("non", ecran.getAttribute("data-icloud")); retour.hidden = true; }
+    if (quoi === "relier-icloud") poser(ecran.getAttribute("data-google"), "relie");
+    if (quoi === "debrancher-icloud") poser(ecran.getAttribute("data-google"), "non");
+  });
+
+  /* Le calendrier choisi : l'écriture est réglée, la liste s'efface, Renvoyer paraît. */
+  document.getElementById("liste-calendriers").addEventListener("kit:choix", function () {
+    document.getElementById("calendriers").hidden = true;
+    document.getElementById("renvoyer").hidden = false;
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Véhicules, soignés</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  VÉHICULES (src/app/reglages/vehicules/page.tsx, ListeVehicules.tsx,
+  AjoutDocument.tsx, [id]/FicheVehicule.tsx, et les phrases de
+  src/lib/vehicules.ts).
+
+  Sa demande du 14 octobre (appli/essais.html) : chaque véhicule avec sa carte
+  grise, son assurance et son contrôle technique ; une photo ou un PDF, Atlas
+  remplit les cases, tout se corrige à la main ; les rappels deux mois puis
+  quinze jours avant ; le salarié voit l'assurance pour le constat. Sa
+  troisième planche du même soir (vehicules-plus-simple.html) a fixé la fiche :
+  la prochaine date et ce qui manque en premier, la carte grise tout en bas.
+
+  Ce qui change ici, et rien d'autre :
+    la liste dit l'état de chaque camion par sa couleur : vert à jour, or
+      quinze jours avant (son doré du 14 octobre), rouge dépassé ; et ce qui
+      manque, que seule la fiche disait ;
+    la fiche s'ouvre dans le même téléphone ; la prochaine date sur un carré
+      qui dit l'état d'un coup d'œil ; les trois papiers toujours nommés, celui
+      qui manque en ambre avec son geste ;
+    Ajouter un véhicule et Ajouter un document deviennent LE bouton plein,
+      au-dessus de la barre ;
+    chez le salarié, Appeler l'assistance garde sa place mais n'est plus plein :
+      il y en a un par camion.
+  Aucune couleur écrite en clair : la plaque se dessine en traits de la charte.
+*/
+.plaque { display: inline-block; padding: 1px 7px; border-radius: 5px; box-shadow: inset 0 0 0 1.5px var(--atlas-line);
+          font: 700 14px/1.5 ui-monospace, Menlo, monospace; letter-spacing: 0.05em; color: var(--atlas-ink); white-space: nowrap; }
+
+/* Une ligne de camion : son état par la couleur, son nom en gras, sa plaque. */
+.camion .ligne-nom { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; font-weight: 600; }
+.camion .ligne-fin .ico { color: var(--atlas-or); }
+.dit { position: relative; display: block; margin-top: 4px; padding-left: 15px; font-size: 15px; line-height: 1.4; font-weight: 600; }
+.dit::before { content: ""; position: absolute; left: 0; top: 7px; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.dit[data-ton="vert"] { color: var(--atlas-carteVertTexte); }
+.dit[data-ton="or"] { color: var(--atlas-or); }
+.dit[data-ton="rouge"] { color: var(--atlas-carteRougeTexte); }
+.manque { display: block; margin-top: 3px; font-size: 14px; line-height: 1.4; color: var(--atlas-carteAmbreTexte); }
+
+/* La fiche : le nom, sa plaque, et la prochaine date sur son carré. */
+.fiche-titre { margin: 0; font: 400 34px/1.05 var(--serif); letter-spacing: -0.012em; }
+.fiche-sous { display: flex; align-items: center; gap: 10px; margin: 8px 0 18px; font-size: var(--t-second); color: var(--atlas-inkSoft); }
+.prochain { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: var(--r-plage); }
+.prochain[data-ton="or"] { background: color-mix(in srgb, var(--atlas-or) 13%, transparent); }
+.prochain[data-ton="rouge"] { background: var(--atlas-carteRougeFond); }
+.prochain[data-ton="bleu"] { background: var(--atlas-carteBleuFond); }
+.prochain[data-ton="vert"] { background: var(--atlas-carteVertFond); }
+.carre-date { width: 56px; height: 56px; flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center;
+              border-radius: 12px; background: var(--atlas-card); line-height: 1; }
+.carre-date b { font: 400 26px/1 var(--serif); font-variant-numeric: lining-nums; color: var(--atlas-ink); }
+.carre-date span { margin-top: 3px; font-size: 13px; font-weight: 700; color: var(--carre, var(--atlas-or)); }
+.prochain[data-ton="rouge"] .carre-date { --carre: var(--atlas-carteRougeTexte); }
+.prochain[data-ton="bleu"] .carre-date { --carre: var(--atlas-carteBleuTexte); }
+.prochain[data-ton="vert"] .carre-date { color: var(--atlas-carteVertTexte); }
+.prochain-corps b { display: block; font: 400 19px/1.25 var(--serif); color: var(--atlas-ink); }
+.prochain-corps span { display: block; margin-top: 2px; font-size: 15px; line-height: 1.4; font-weight: 600; text-wrap: balance; }
+.prochain[data-ton="or"] .prochain-corps span { color: var(--atlas-ink); }
+.prochain[data-ton="rouge"] .prochain-corps span { color: var(--atlas-carteRougeTexte); }
+.prochain[data-ton="bleu"] .prochain-corps span { color: var(--atlas-carteBleuTexte); }
+.prochain[data-ton="vert"] .prochain-corps b { color: var(--atlas-carteVertTexte); }
+
+.avis { margin: 0 0 12px; padding: 13px 16px; border-radius: 14px; font-size: 15px; line-height: 1.45; background: var(--atlas-rustTint); color: var(--atlas-ink); }
+
+/* Les trois papiers, toujours nommés : présent en vert, manquant en ambre. */
+.papier { position: relative; display: flex; align-items: center; gap: 14px; min-height: 68px; padding: 12px 0; text-decoration: none; color: inherit; }
+.papier + .papier::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
+.papier .ligne-nom { font-size: 18px; }
+.papier .ajoute { display: block; margin-top: 2px; font-size: 14px; color: var(--atlas-inkSoft); }
+.papier .a-ajouter { display: block; margin-top: 2px; font-size: 14px; font-weight: 600; color: var(--atlas-carteAmbreTexte); }
+.voir { flex: none; min-height: 44px; padding: 0 4px; display: inline-flex; align-items: center; font-size: 16px; font-weight: 600; color: var(--atlas-or); }
+
+.reglage-valeur.vide-case::placeholder { color: color-mix(in srgb, var(--atlas-inkSoft) 75%, var(--atlas-card)); }
+.source { display: block; margin-top: 3px; font-size: 13.5px; font-weight: 600; color: var(--atlas-or); }
+.pas-lue { display: block; margin-top: 3px; font-size: 13.5px; color: var(--atlas-inkSoft); }
+.reglage { transition: background-color 1600ms var(--courbe); }
+.reglage.juste-lu { background: color-mix(in srgb, var(--atlas-or) 16%, transparent); transition: none; }
+/* Le doré d'une case lue couvre toute la largeur de la plage, pas seulement le texte. */
+[data-groupe] { overflow: hidden; }
+[data-groupe] .reglage { margin: 0 -18px; padding-left: 18px; padding-right: 18px; }
+[data-groupe] .reglage + .reglage::before { left: 18px; right: 18px; }
+.loi { margin: 10px 2px 0; font-size: 14px; line-height: 1.5; color: var(--atlas-inkSoft); }
+.retirer-vehicule { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 52px; margin-top: 28px;
+                    font-size: 16px; font-weight: 600; color: var(--atlas-alerte); }
+
+/* Chez le salarié : « En cas d'accident », camion par camion. */
+.accident + .accident { margin-top: 14px; }
+.accident-tete { display: flex; align-items: center; gap: 12px; }
+.accident-tete .ligne-nom { font-weight: 600; }
+.accident-titre { margin: 14px 0 0; font: 400 20px/1.2 var(--serif); }
+.rangee { position: relative; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0; padding: 13px 0; font-size: 15.5px; }
+.rangee + .rangee::before, .accident-titre + .rangee::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
+.rangee span:first-child { color: var(--atlas-inkSoft); }
+.rangee span:last-child { text-align: right; font: 400 17px/1.3 var(--serif); color: var(--atlas-ink); }
+.rangee span.pas-encore:last-child { font: 400 15px/1.4 var(--sans); color: var(--atlas-inkSoft); }
+.bouton-appel { margin-top: 6px; background: var(--atlas-carteVertFond); color: var(--atlas-carteVertTexte); }
+.copie { display: block; margin-top: 2px; font-size: 14px; color: var(--atlas-inkSoft); }
+
+/* La feuille : quoi ajouter, puis d'où. */
+.feuille-sous { margin: -10px 0 14px; font-size: 15px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.source-doc { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 60px; padding: 0 2px; text-align: left; font-size: 17px; }
+.source-doc + .source-doc { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.source-doc .ico { color: var(--atlas-or); }
+.lecture { padding: 30px 0 34px; text-align: center; font-size: 16px; color: var(--atlas-inkSoft); }
+.lecture .ico { display: block; width: 34px; height: 34px; margin: 0 auto 12px; color: var(--atlas-or); animation: tourne 1.4s linear infinite; }
+@keyframes tourne { to { transform: rotate(360deg); } }
+.bouton-alerte { background: var(--atlas-alerte); color: var(--sur-plein); }
+</style>
+</head>
+<body class="pl pl-pilules">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="reglages.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Réglages</a>
+  <h1 class="pl-titre">Véhicules</h1>
+  <p class="pl-verdict">Chaque camion dit son état <b>par sa couleur</b> et ce qui lui manque. Sa fiche s'ouvre dans le même téléphone, la prochaine date sur <b>un carré</b>, les trois papiers toujours nommés.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <!-- ═══ PROPOSÉ ═══ -->
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats" data-ecran="#ecran-propose, #capture-vehicules">
+        <button type="button" data-etat="patron" aria-pressed="true">Trois camions</button>
+        <button type="button" data-etat="salarie">Un salarié le voit</button>
+        <button type="button" data-etat="vide">Aucun véhicule</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre avec-action" data-etat="patron" id="ecran-propose">
+          <div class="defile">
+
+            <div data-ecran-panneau="liste">
+              <div class="tete-ronds">
+                <a class="rond-creux" href="reglages.html" aria-label="Retour aux réglages"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+                <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-si-etat="patron vide"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              </div>
+              <header class="tete" style="margin-top:0"><h1 class="tete-titre">Véhicules</h1></header>
+
+              <!-- Le patron : la liste, et ce qui approche. -->
+              <div class="plage plage-serree" data-si-etat="patron">
+                <ul class="liste">
+                  <li><button class="ligne touche camion" type="button" data-vers="fiche" data-vehicule="fourgon">
+                    <span class="pastille-ico" data-ton="vert"><svg class="ico" aria-hidden="true"><use href="#i-vehicule"/></svg></span>
+                    <span class="ligne-corps">
+                      <span class="ligne-nom">Fourgon <span class="plaque">GH-412-PK</span></span>
+                      <span class="dit" data-ton="vert">À jour</span>
+                    </span>
+                    <span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>
+                  </button></li>
+                  <li><button class="ligne touche camion" type="button" data-vers="fiche" data-vehicule="benne">
+                    <span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-vehicule"/></svg></span>
+                    <span class="ligne-corps">
+                      <span class="ligne-nom">Benne <span class="plaque">FT-208-LM</span></span>
+                      <span class="dit" data-ton="or">Contrôle technique avant le 5 novembre</span>
+                      <span class="manque">À ajouter : l’assurance, le contrôle technique.</span>
+                    </span>
+                    <span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>
+                  </button></li>
+                  <li><button class="ligne touche camion" type="button" data-vers="fiche" data-vehicule="camionnette">
+                    <span class="pastille-ico" data-ton="rouge"><svg class="ico" aria-hidden="true"><use href="#i-vehicule"/></svg></span>
+                    <span class="ligne-corps">
+                      <span class="ligne-nom">Camionnette <span class="plaque">EK-731-RD</span></span>
+                      <span class="dit" data-ton="rouge">Contrôle pollution avant le 22 octobre</span>
+                      <span class="manque">À ajouter : le contrôle technique.</span>
+                    </span>
+                    <span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>
+                  </button></li>
+                </ul>
+              </div>
+
+              <!-- Le salarié : par camion, ce qu'il faut au constat. -->
+              <div data-si-etat="salarie">
+                <section class="plage accident">
+                  <div class="accident-tete"><span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-vehicule"/></svg></span><span class="ligne-nom">Fourgon</span><span class="plaque">GH-412-PK</span></div>
+                  <p class="accident-titre">En cas d’accident</p>
+                  <p class="rangee"><span>Assureur</span><span>Assureur de démonstration</span></p>
+                  <p class="rangee"><span>Numéro de contrat</span><span>0000000</span></p>
+                  <a class="bouton bouton-appel" href="tel:+33639981240"><svg class="ico" aria-hidden="true"><use href="#i-telephone"/></svg>Appeler l’assistance</a>
+                  <div class="mt-8">
+                    <a class="papier touche" href="#" data-note="Sur la planche, la copie ne s'ouvre pas."><span class="ligne-corps"><span class="ligne-nom">Carte grise</span><span class="copie">copie, l’originale est dans le véhicule</span></span><span class="voir">Voir</span></a>
+                    <a class="papier touche" href="#" data-note="Sur la planche, la copie ne s'ouvre pas."><span class="ligne-corps"><span class="ligne-nom">Assurance</span></span><span class="voir">Voir</span></a>
+                  </div>
+                </section>
+                <section class="plage accident">
+                  <div class="accident-tete"><span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-vehicule"/></svg></span><span class="ligne-nom">Benne</span><span class="plaque">FT-208-LM</span></div>
+                  <p class="accident-titre">En cas d’accident</p>
+                  <p class="rangee"><span>Assureur</span><span class="pas-encore">pas encore lu</span></p>
+                  <p class="rangee"><span>Numéro de contrat</span><span class="pas-encore">pas encore lu</span></p>
+                  <div class="mt-8">
+                    <a class="papier touche" href="#" data-note="Sur la planche, la copie ne s'ouvre pas."><span class="ligne-corps"><span class="ligne-nom">Carte grise</span><span class="copie">copie, l’originale est dans le véhicule</span></span><span class="voir">Voir</span></a>
+                  </div>
+                </section>
+                <section class="plage accident">
+                  <div class="accident-tete"><span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-vehicule"/></svg></span><span class="ligne-nom">Camionnette</span><span class="plaque">EK-731-RD</span></div>
+                  <p class="accident-titre">En cas d’accident</p>
+                  <p class="rangee"><span>Assureur</span><span>Assureur de démonstration</span></p>
+                  <p class="rangee"><span>Numéro de contrat</span><span>0000001</span></p>
+                  <a class="bouton bouton-appel" href="tel:+33639981240"><svg class="ico" aria-hidden="true"><use href="#i-telephone"/></svg>Appeler l’assistance</a>
+                  <div class="mt-8">
+                    <a class="papier touche" href="#" data-note="Sur la planche, la copie ne s'ouvre pas."><span class="ligne-corps"><span class="ligne-nom">Carte grise</span><span class="copie">copie, l’originale est dans le véhicule</span></span><span class="voir">Voir</span></a>
+                    <a class="papier touche" href="#" data-note="Sur la planche, la copie ne s'ouvre pas."><span class="ligne-corps"><span class="ligne-nom">Assurance</span></span><span class="voir">Voir</span></a>
+                  </div>
+                </section>
+              </div>
+
+              <!-- Rien encore : une phrase, et le bouton du bas. -->
+              <div class="vide" data-si-etat="vide">
+                <svg class="ico" aria-hidden="true"><use href="#i-vehicule"/></svg>
+                <p class="vide-titre">Aucun véhicule pour l’instant.</p>
+                <p class="vide-texte">Ajoutez la carte grise : Atlas y lit la plaque, le modèle et le poids.</p>
+              </div>
+
+              <div class="action-bas" data-si-etat="patron vide"><button class="bouton bouton-plein" type="button" data-ouvre="feuille-ajout" data-titre="Ajoutez la carte grise du véhicule" data-sous="Atlas y lit la plaque, le modèle et le poids."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter un véhicule</button></div>
+            </div>
+
+            <!-- La fiche d'un camion : elle se remplit selon la ligne touchée. -->
+            <div data-ecran-panneau="fiche" hidden>
+              <div class="tete-ronds">
+                <button class="rond-creux" type="button" data-vers="liste" aria-label="Retour aux véhicules"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+                <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              </div>
+              <h1 class="fiche-titre" data-f="nom">Benne</h1>
+              <p class="fiche-sous"><span class="plaque" data-f="plaque">FT-208-LM</span><span data-f="modele">Iveco Daily benne</span></p>
+
+              <p class="avis" data-avis hidden></p>
+              <div class="prochain" data-prochain data-ton="or">
+                <span class="carre-date" aria-hidden="true"><b data-p="jour">5</b><span data-p="mois">nov.</span></span>
+                <span class="prochain-corps"><b data-p="quoi">Contrôle technique</b><span data-p="phrase">Avant le 5 novembre. Plus que 10 jours.</span></span>
+              </div>
+
+              <p class="rubrique rubrique-or">Documents</p>
+              <div class="plage plage-serree" data-papiers></div>
+
+              <p class="rubrique rubrique-or">Dates limites</p>
+              <div class="plage reglages" data-groupe="dates"></div>
+
+              <p class="rubrique rubrique-or">Assurance</p>
+              <div class="plage reglages" data-groupe="assurance"></div>
+
+              <p class="rubrique rubrique-or">Le véhicule</p>
+              <div class="plage reglages" data-groupe="vehicule"></div>
+              <p class="loi">La carte grise originale reste dans le véhicule.</p>
+
+              <button class="retirer-vehicule touche" type="button" data-ouvre="feuille-retrait"><svg class="ico ico-p" aria-hidden="true"><use href="#i-croix"/></svg>Retirer ce véhicule</button>
+
+              <div class="action-bas"><button class="bouton bouton-plein" type="button" data-ouvre="feuille-ajout" data-titre="Ajoutez un document du véhicule" data-sous="Carte grise, assurance ou contrôle technique."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter un document</button></div>
+            </div>
+
+          </div>
+
+          <nav class="barre" aria-label="Navigation principale" data-si-etat="patron vide">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html">Terminés</a>
+              <a class="barre-onglet" href="paysage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html" aria-current="page">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+          <nav class="barre" aria-label="Navigation principale" data-si-etat="salarie">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="reglages.html" aria-current="page">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+
+          <section class="feuille" id="feuille-ajout" aria-hidden="true" aria-label="Ajouter un document">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <div data-vue-ajout="choisir">
+                <h2 class="feuille-titre" data-ajout-titre>Ajoutez la carte grise du véhicule</h2>
+                <p class="feuille-sous" data-ajout-sous>Atlas y lit la plaque, le modèle et le poids.</p>
+                <div class="plage plage-serree">
+                  <button class="source-doc touche" type="button" data-lire><svg class="ico" aria-hidden="true"><use href="#i-photo"/></svg>Photothèque</button>
+                  <button class="source-doc touche" type="button" data-lire><svg class="ico" aria-hidden="true"><use href="#i-scanner"/></svg>Prendre une photo</button>
+                  <button class="source-doc touche" type="button" data-lire><svg class="ico" aria-hidden="true"><use href="#i-document"/></svg>Choisir un fichier</button>
+                </div>
+                <button class="bouton bouton-texte mt-8" type="button" data-ferme style="width:100%;justify-content:center;color:var(--atlas-inkSoft)">Annuler</button>
+              </div>
+              <div data-vue-ajout="lecture" hidden>
+                <p class="lecture"><svg class="ico" aria-hidden="true"><use href="#i-etincelle"/></svg>Atlas lit le document</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="feuille" id="feuille-retrait" aria-hidden="true" aria-label="Retirer ce véhicule">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre" data-retrait-titre>Retirer Benne ?</h2>
+              <p class="feuille-sous">Il quitte la liste et ses rappels s’arrêtent. Ses papiers restent dans la sauvegarde.</p>
+              <div class="pile">
+                <button class="bouton bouton-alerte" type="button" data-fait="Sur la planche, rien n'est retiré.">Retirer</button>
+                <button class="bouton bouton-texte" type="button" data-ferme style="width:100%;justify-content:center;color:var(--atlas-inkSoft)">Garder</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ AUJOURD'HUI ═══ -->
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre">
+        <div class="cadre-capture" id="capture-vehicules">
+          <img src="aujourdhui/reglages-vehicules-rempli.jpg" alt="La liste des véhicules aujourd'hui, avec le fourgon et la benne" data-si-etat="patron">
+          <img src="aujourdhui/reglages-vehicules-fiche.jpg" alt="La fiche de la benne aujourd'hui" data-si-etat="fiche">
+          <img src="aujourdhui/reglages-vehicules-salarie.jpg" alt="Ce que voit un salarié aujourd'hui" data-si-etat="salarie">
+          <img src="aujourdhui/reglages-vehicules.jpg" alt="L'écran Véhicules aujourd'hui, sans véhicule" data-si-etat="vide">
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>Chaque camion porte sa couleur devant son nom : vert à jour, or quinze jours avant (votre doré du 14 octobre), rouge quand c'est dépassé. La phrase garde ses mots : « Contrôle technique avant le 5 novembre ».</li>
+      <li>La ligne dit aussi ce qui manque, en ambre : « À ajouter : l’assurance ». Aujourd'hui seule la fiche le dit.</li>
+      <li>Le nom passe en gras, la plaque à côté de lui.</li>
+      <li>Touchez une ligne : sa fiche s'ouvre dans le même téléphone, le rond du haut ramène à la liste. À droite, l'écran d'aujourd'hui suit.</li>
+      <li>Sur la fiche, la prochaine date se lit sur un carré, avec ce qui reste : « Plus que 10 jours », « Dépassé depuis 4 jours ».</li>
+      <li>Les trois papiers sont toujours nommés : présent avec sa date et Voir, manquant en ambre avec Ajouter. La ligne « À ajouter : … » de la fiche s'y range.</li>
+      <li>Ajouter un véhicule et Ajouter un document deviennent le seul bouton plein, au-dessus de la barre, avec les bouts ronds de l'appli (sa demande du 26 octobre).</li>
+      <li>Les titres de paquet en or comme sur le sommaire, les libellés des cases en toutes lettres.</li>
+      <li>Sans véhicule, une phrase dit quoi faire : « Ajoutez la carte grise : Atlas y lit la plaque, le modèle et le poids. »</li>
+      <li>Chez le salarié, Appeler l’assistance reste sous l'assurance, en vert clair au lieu de plein : il y en a un par camion.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Le titre de la feuille dit quoi photographier, puis Photothèque, Prendre une photo, Choisir un fichier. Touchez Ajouter un document puis une source : Atlas lit, les cases se remplissent en doré et le doré s'efface.</li>
+      <li>Quand Atlas ne reconnaît pas le papier, il demande « Quel est ce document ? » et ne range rien au hasard.</li>
+      <li>Toute case se corrige à la main, et « d’après la carte grise » disparaît de la case touchée.</li>
+      <li>La contre-visite n'apparaît que si le procès-verbal en pose une ; la carte grise tout en bas, l'originale dans le véhicule.</li>
+      <li>Retirer ce véhicule, sa feuille et « Garder ».</li>
+      <li>Le salarié lit, le patron seul change : sans rond de l'assistant, sans fiche, sans le procès-verbal, avec sa barre à deux mots.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>Appeler l’assistance chez le salarié : vert clair comme ici, ou plein comme aujourd'hui (un par camion).</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="reglages-equipe.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Équipe</a>
+  <a href="reglages-organigramme.html">Organigramme<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* Les trois camions. Les libellés, les mentions « d’après … » et les phrases
+     des rappels sont ceux de src/lib/vehicules.ts. */
+  var NOM_PAPIER = { carte_grise: "Carte grise", assurance: "Assurance", controle_technique: "Contrôle technique" };
+  var D_APRES = { carte_grise: "d’après la carte grise", assurance: "d’après l’assurance", controle_technique: "d’après le procès‑verbal" };
+  var LUE = { carte_grise: "Carte grise lue", assurance: "Assurance lue", controle_technique: "Contrôle technique lu" };
+  var CAMIONS = {
+    fourgon: {
+      nom: "Fourgon", plaque: "GH-412-PK", modele: "Renault Master", ptac: "3 500 kg", genre: "CTTE",
+      assureur: "Assureur de démonstration", contrat: "0000000", assistance: "06 39 98 12 40",
+      ct: "14 mars 2027", pollution: "14 mars 2027", contreVisite: "",
+      sources: { plaque: "carte_grise", modele: "carte_grise", ptac: "carte_grise", genre: "carte_grise", assureur: "assurance", contrat: "assurance", assistance: "assurance", ct: "controle_technique", pollution: "controle_technique" },
+      papiers: { carte_grise: "14 octobre 2026", assurance: "14 octobre 2026", controle_technique: "20 octobre 2026" },
+      prochain: null
+    },
+    benne: {
+      nom: "Benne", plaque: "FT-208-LM", modele: "Iveco Daily benne", ptac: "3 500 kg", genre: "CTTE",
+      assureur: "", contrat: "", assistance: "", ct: "5 novembre 2026", pollution: "", contreVisite: "",
+      sources: { plaque: "carte_grise", modele: "carte_grise", ptac: "carte_grise", genre: "carte_grise" },
+      papiers: { carte_grise: "26 octobre 2026" },
+      prochain: { ton: "or", jour: "5", mois: "nov.", quoi: "Contrôle technique", phrase: "Avant le 5 novembre. Plus que 10 jours." }
+    },
+    camionnette: {
+      nom: "Camionnette", plaque: "EK-731-RD", modele: "Peugeot Partner", ptac: "2 100 kg", genre: "CTTE",
+      assureur: "Assureur de démonstration", contrat: "0000001", assistance: "06 39 98 12 40",
+      ct: "", pollution: "22 octobre 2026", contreVisite: "",
+      sources: { plaque: "carte_grise", modele: "carte_grise", ptac: "carte_grise", genre: "carte_grise", assureur: "assurance", contrat: "assurance", assistance: "assurance" },
+      papiers: { carte_grise: "12 octobre 2026", assurance: "12 octobre 2026" },
+      prochain: { ton: "rouge", jour: "22", mois: "oct.", quoi: "Contrôle pollution", phrase: "Avant le 22 octobre. Dépassé depuis 4 jours." }
+    }
+  };
+  var GROUPES = {
+    dates: [["ct", "Contrôle technique", true], ["pollution", "Contrôle pollution", true], ["contreVisite", "Contre‑visite", true]],
+    assurance: [["assureur", "Assureur"], ["contrat", "Numéro de contrat"], ["assistance", "Assistance"]],
+    vehicule: [["nom", "Nom"], ["plaque", "Plaque"], ["modele", "Marque et modèle"], ["ptac", "Poids total (case F.2)"], ["genre", "Genre (case J.1)"]]
+  };
+  /* Ce qu'une lecture remplit, papier par papier (la lecture est simulée ici). */
+  var LIT = {
+    assurance: { assureur: "Assureur de démonstration", contrat: "0000002", assistance: "06 39 98 12 40" },
+    controle_technique: { ct: "4 novembre 2028", pollution: "4 novembre 2028" },
+    carte_grise: { plaque: null, modele: null, ptac: null, genre: null }
+  };
+  var ICO = function (n) { return '<svg class="ico" aria-hidden="true"><use href="#i-' + n + '"/></svg>'; };
+  function texte(t) { var d = document.createElement("div"); d.textContent = t; return d.innerHTML; }
+  var courant = "benne";
+
+  function manquants(c) {
+    var article = { carte_grise: "la carte grise", assurance: "l’assurance", controle_technique: "le contrôle technique" };
+    return ["carte_grise", "assurance", "controle_technique"].filter(function (n) { return !c.papiers[n]; }).map(function (n) { return article[n]; });
+  }
+
+  function dessinerFiche(cle, lus) {
+    courant = cle;
+    var c = CAMIONS[cle], page = document.querySelector("[data-ecran-panneau='fiche']");
+    page.querySelector("[data-f='nom']").textContent = c.nom;
+    page.querySelector("[data-f='plaque']").textContent = c.plaque;
+    page.querySelector("[data-f='modele']").textContent = c.modele;
+    var p = page.querySelector("[data-prochain]");
+    if (c.prochain) {
+      p.setAttribute("data-ton", c.prochain.ton);
+      p.querySelector("[data-p='quoi']").textContent = c.prochain.quoi;
+      p.querySelector("[data-p='phrase']").textContent = c.prochain.phrase;
+      p.querySelector(".carre-date").innerHTML = "<b>" + c.prochain.jour + "</b><span>" + c.prochain.mois + "</span>";
+    } else {
+      p.setAttribute("data-ton", "vert");
+      p.querySelector(".carre-date").innerHTML = ICO("coche");
+      p.querySelector("[data-p='quoi']").textContent = "À jour";
+      p.querySelector("[data-p='phrase']").textContent = "";
+    }
+    page.querySelector("[data-papiers]").innerHTML = ["carte_grise", "assurance", "controle_technique"].map(function (n) {
+      var le = c.papiers[n];
+      return le
+        ? '<a class="papier touche" href="#" data-note="Sur la planche, le papier ne s\'ouvre pas."><span class="pastille-ico" data-ton="vert">' + ICO("coche") +
+          '</span><span class="ligne-corps"><span class="ligne-nom">' + NOM_PAPIER[n] + '</span><span class="ajoute">ajouté le ' + le + '</span></span><span class="voir">Voir</span></a>'
+        : '<button class="papier touche" type="button" style="width:100%;text-align:left" data-ouvre="feuille-ajout" data-titre="Ajoutez un document du véhicule" data-sous="Carte grise, assurance ou contrôle technique."><span class="pastille-ico" data-ton="ambre">' + ICO("plus") +
+          '</span><span class="ligne-corps"><span class="ligne-nom">' + NOM_PAPIER[n] + '</span><span class="a-ajouter">À ajouter</span></span><span class="voir">Ajouter</span></button>';
+    }).join("");
+    Object.keys(GROUPES).forEach(function (g) {
+      page.querySelector("[data-groupe='" + g + "']").innerHTML = GROUPES[g].filter(function (ch) {
+        return ch[0] !== "contreVisite" || c.contreVisite;
+      }).map(function (ch) {
+        var v = c[ch[0]], source = c.sources[ch[0]];
+        var dessous = source ? '<span class="source">' + D_APRES[source] + "</span>"
+                    : (ch[2] && !v ? '<span class="pas-lue">pas encore lue</span>' : "");
+        return '<label class="reglage' + (lus && lus.indexOf(ch[0]) >= 0 ? " juste-lu" : "") + '" data-champ="' + ch[0] + '"><span class="reglage-libelle">' + ch[1] +
+               '</span><input class="reglage-valeur vide-case" value="' + texte(v) + '" placeholder="à remplir" aria-label="' + ch[1] + '">' + dessous + "</label>";
+      }).join("");
+    });
+    page.querySelector("[data-avis]").hidden = !lus;
+    document.querySelector("[data-retrait-titre]").textContent = "Retirer " + c.nom + " ?";
+  }
+
+  /* Une source touchée : Atlas lit, puis range et remplit en doré. */
+  function lire(depuis) {
+    var feuille = document.getElementById("feuille-ajout");
+    feuille.querySelector("[data-vue-ajout='choisir']").hidden = true;
+    feuille.querySelector("[data-vue-ajout='lecture']").hidden = false;
+    var ecran = feuille.closest(".ecran");
+    var surFiche = !document.querySelector("[data-ecran-panneau='fiche']").hidden;
+    setTimeout(function () {
+      Kit.fermerFeuilles(ecran);
+      if (!surFiche) { Kit.note(depuis, "Sur la planche, le véhicule n'est pas créé."); return; }
+      var c = CAMIONS[courant];
+      var nature = !c.papiers.assurance ? "assurance" : (!c.papiers.controle_technique ? "controle_technique" : "carte_grise");
+      var remplis = Object.keys(LIT[nature]);
+      remplis.forEach(function (k) { if (LIT[nature][k] !== null) c[k] = LIT[nature][k]; c.sources[k] = nature; });
+      c.papiers[nature] = "26 octobre 2026";
+      if (nature === "controle_technique" && c.prochain && c.prochain.quoi === "Contrôle technique") c.prochain = null;
+      dessinerFiche(courant, remplis);
+      var avis = document.querySelector("[data-avis]");
+      avis.textContent = LUE[nature] + ". " + remplis.length + " informations remplies, en doré. Une erreur ? Touchez la case.";
+      avis.hidden = false;
+      setTimeout(function () { document.querySelectorAll(".reglage.juste-lu").forEach(function (r) { r.classList.remove("juste-lu"); }); }, 2200);
+      var defile = ecran.querySelector(".defile");
+      defile.scrollTop = 0;
+    }, 1300);
+  }
+
+  function capture(etat) { Kit.appliquerEtat(document.getElementById("capture-vehicules"), etat); document.getElementById("capture-vehicules").scrollTop = 0; }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    dessinerFiche("benne");
+    document.addEventListener("click", function (e) {
+      var etat = e.target.closest(".pl-etats button[data-etat]");
+      if (etat) {
+        /* Un autre état ramène à la liste : la fiche n'est qu'au patron. */
+        document.querySelectorAll("#ecran-propose [data-ecran-panneau]").forEach(function (p) { p.hidden = p.getAttribute("data-ecran-panneau") !== "liste"; });
+        return;
+      }
+      var ligne = e.target.closest("[data-vehicule]");
+      if (ligne) { dessinerFiche(ligne.getAttribute("data-vehicule")); capture("fiche"); return; }
+      if (e.target.closest("[data-vers='liste']")) { capture("patron"); return; }
+      var ouvre = e.target.closest("[data-ouvre='feuille-ajout']");
+      if (ouvre) {
+        var f = document.getElementById("feuille-ajout");
+        f.querySelector("[data-ajout-titre]").textContent = ouvre.getAttribute("data-titre");
+        f.querySelector("[data-ajout-sous]").textContent = ouvre.getAttribute("data-sous");
+        f.querySelector("[data-vue-ajout='choisir']").hidden = false;
+        f.querySelector("[data-vue-ajout='lecture']").hidden = true;
+        return;
+      }
+      var source = e.target.closest("[data-lire]");
+      if (source) { lire(source); return; }
+      var fait = e.target.closest("[data-fait]");
+      if (fait) { Kit.fermerFeuilles(fait.closest(".ecran")); Kit.note(fait, fait.getAttribute("data-fait")); return; }
+      var note = e.target.closest("[data-note]");
+      if (note) { e.preventDefault(); Kit.note(note, note.getAttribute("data-note")); }
+    });
+    /* Une case corrigée à la main perd sa mention « d’après … ». */
+    document.addEventListener("input", function (e) {
+      var r = e.target.closest("[data-champ]");
+      if (!r) return;
+      var s = r.querySelector(".source");
+      if (s) s.remove();
+      delete CAMIONS[courant].sources[r.getAttribute("data-champ")];
+    });
+  });
+})();
+</script>
+</body>
+</html>

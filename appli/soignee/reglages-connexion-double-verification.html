@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Double vérification, soignée</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  DOUBLE VÉRIFICATION (src/app/reglages/connexion/double-verification/page.tsx,
+  SectionDoubleVerification.tsx, double-verification-actions.ts,
+  src/lib/double-verification.ts).
+
+  Aujourd'hui l'écran est un interrupteur seul sous « Code de l'appli
+  d'authentification », et un grand vide. Touché, il déroule trois étapes
+  dans l'écran, chacune avec son bouton vert au milieu : ajouter Atlas à
+  l'appli, taper le premier code, noter les dix codes de secours.
+
+  Proposé garde ces trois étapes, leurs mots et leur ordre. Ce qui change :
+  l'étape se lit d'un coup d'œil (trois traits dorés, « Étape 2 sur 3 ») ; le
+  bouton de chaque étape va sous le pouce, au-dessus de la barre ; allumée,
+  elle le dit en vert avec le nombre de codes qui restent ; éteinte, une ligne
+  dit ce qu'elle ajoute à la connexion (proposition, à trancher).
+
+  Ce qui ne bouge pas : rien ne se ferme avant le premier code juste (une
+  activation abandonnée ne laisse personne dehors) ; sur le téléphone un
+  bouton ouvre l'appli, sur l'ordinateur le code carré, et la clé à recopier
+  dans les deux cas (sa question du 30 septembre) ; « Je les ai notés » avant
+  Terminer ; pour l'éteindre, un code de l'appli ou un code de secours ;
+  obligatoire pour le patron et la facturation en production (« la A »).
+*/
+.dv-ligne { display: flex; align-items: center; gap: 14px; min-height: 64px; }
+.dv-ligne .ligne-nom { font-size: 18px; }
+.dv-etat { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 8px; margin-top: 6px; font-size: 14.5px; color: var(--atlas-inkSoft); }
+.dv-obligatoire { display: flex; align-items: center; gap: 8px; margin-top: 12px; padding-top: 12px;
+                  box-shadow: inset 0 1px 0 var(--atlas-line); font-size: 14.5px; color: var(--atlas-inkSoft); }
+.dv-obligatoire .ico { width: 18px; height: 18px; color: var(--atlas-or); }
+
+/* L'interrupteur de l'écran : celui du kit, mais c'est l'état de la planche
+   qui le pose (le kit basculerait seul un .bascule). */
+.interrupteur { position: relative; width: 52px; height: 32px; flex: none; border-radius: 16px;
+                background: color-mix(in srgb, var(--atlas-ink) 18%, transparent); }
+.interrupteur::after { content: ""; position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 50%;
+                       background: var(--atlas-card); transition: transform 240ms var(--courbe-g); }
+.interrupteur[aria-checked="true"] { background: var(--atlas-plein); }
+.interrupteur[aria-checked="true"]::after { transform: translateX(20px); }
+.interrupteur[aria-disabled="true"] { opacity: 0.55; cursor: default; }
+
+/* La connexion, en deux gestes : ce que la double vérification ajoute. */
+.deux-preuves { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; margin-top: 12px; }
+.preuve { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 6px; border-radius: var(--r-plage);
+          background: var(--atlas-card); text-align: center; font-size: 14.5px; font-weight: 600; line-height: 1.25; }
+.preuve .ico { color: var(--atlas-or); }
+.preuve-plus { color: var(--atlas-inkSoft); }
+.preuve-plus .ico { width: 20px; height: 20px; }
+.face-id-sans { margin: 10px 2px 0; font-size: 14px; color: var(--atlas-inkSoft); text-align: center; }
+
+/* L'étape : trois traits, le mot. */
+.etapes { display: flex; gap: 6px; margin: 22px 0 8px; }
+.etapes i { flex: 1; height: 4px; border-radius: 2px; background: color-mix(in srgb, var(--atlas-ink) 12%, transparent); }
+.etapes i.fait { background: var(--atlas-or); }
+.etape-mot { margin: 0 0 12px; font-size: 14.5px; font-weight: 600; color: var(--atlas-inkSoft); }
+.etape-titre { margin: 0 0 6px; font: 400 23px/1.2 var(--serif); }
+.etape-dit { margin: 0 0 14px; font-size: 15.5px; line-height: 1.45; color: var(--atlas-inkSoft); text-wrap: pretty; }
+
+.cle-titre { margin: 18px 0 6px; font-size: 14.5px; color: var(--atlas-inkSoft); text-align: center; }
+.cle span { display: block; }
+.cle { margin: 0; padding: 14px 10px; border-radius: var(--r-plage); background: var(--atlas-card); text-align: center;
+       font: 500 17px/1.5 ui-monospace, Menlo, monospace; letter-spacing: 0.08em; word-spacing: 0.25em; color: var(--atlas-ink); }
+
+.code-saisie { display: block; width: 100%; min-height: 64px; border: 0; border-radius: 14px; background: var(--atlas-card);
+               box-shadow: inset 0 0 0 1px var(--atlas-line); text-align: center; outline: none; color: var(--atlas-ink);
+               font: 500 30px/1 ui-monospace, Menlo, monospace; letter-spacing: 0.32em; padding: 0 0 0 0.32em; }
+.code-saisie:focus { box-shadow: inset 0 0 0 2px var(--atlas-rust); }
+.code-saisie::placeholder { color: color-mix(in srgb, var(--atlas-inkSoft) 45%, var(--atlas-card)); }
+.code-saisie.court { font-size: 20px; letter-spacing: 0.2em; min-height: 56px; }
+
+.secours { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; padding: 16px 18px; border-radius: var(--r-plage);
+           background: var(--atlas-card); font: 500 16.5px/1.3 ui-monospace, Menlo, monospace; letter-spacing: 0.05em; }
+.secours span { text-align: center; }
+.note-faite { display: flex; align-items: center; gap: 12px; min-height: 56px; margin-top: 10px; font-size: 16px; font-weight: 600; }
+.note-faite input { width: 26px; height: 26px; margin: 0; flex: none; accent-color: var(--atlas-or); }
+.bouton-creux.alerte { color: var(--atlas-alerte); }
+</style>
+</head>
+<body class="pl pl-pilules">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="reglages.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Réglages</a>
+  <h1 class="pl-titre">Double vérification</h1>
+  <p class="pl-verdict">Les trois étapes d'aujourd'hui, mot pour mot, avec <b>l'étape qui se lit d'un coup d'œil</b> et son bouton sous le pouce. Allumée, elle le dit <b>en vert</b>, avec les codes de secours qui restent.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <!-- PROPOSÉ -->
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats">
+        <button type="button" data-etat="eteinte" aria-pressed="true">Éteinte</button>
+        <button type="button" data-etat="etape1">Étape 1</button>
+        <button type="button" data-etat="etape2">Étape 2</button>
+        <button type="button" data-etat="etape3">Étape 3</button>
+        <button type="button" data-etat="allumee">Allumée</button>
+        <button type="button" data-etat="salarie">Un salarié l'éteint</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre avec-action" data-etat="eteinte" id="ecran-dv">
+          <div class="defile">
+            <div class="tete-ronds">
+              <a class="rond-creux" href="reglages.html" aria-label="Retour aux réglages"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </div>
+            <header class="tete" style="margin-top:0"><h1 class="tete-titre">Double vérification</h1></header>
+
+            <div class="plage">
+              <div class="dv-ligne">
+                <span class="pastille-ico" data-si-etat="eteinte etape1 etape2 etape3"><svg class="ico" aria-hidden="true"><use href="#i-bouclier"/></svg></span>
+                <span class="pastille-ico" data-ton="vert" data-si-etat="allumee salarie"><svg class="ico" aria-hidden="true"><use href="#i-bouclier-coche"/></svg></span>
+                <span class="ligne-corps">
+                  <span class="ligne-nom">Code de l'appli d'authentification</span>
+                  <span class="dv-etat" data-si-etat="allumee salarie"><span class="etat" data-ton="vert">Activée</span><span data-codes>10 codes de secours restants.</span></span>
+                </span>
+                <button class="interrupteur" type="button" role="switch" aria-label="Double vérification" aria-checked="false" data-si-etat="eteinte" data-va-etat="etape1"></button>
+                <button class="interrupteur" type="button" role="switch" aria-label="Double vérification" aria-checked="true" data-si-etat="etape1 etape2 etape3" data-va-etat="eteinte"></button>
+                <button class="interrupteur" type="button" role="switch" aria-label="Double vérification" aria-checked="true" aria-disabled="true" data-si-etat="allumee" data-dit="Elle est obligatoire pour votre rôle."></button>
+                <button class="interrupteur" type="button" role="switch" aria-label="Double vérification" aria-checked="true" data-si-etat="salarie" id="interrupteur-salarie"></button>
+              </div>
+              <p class="dv-obligatoire" data-si-etat="allumee"><svg class="ico" aria-hidden="true"><use href="#i-cadenas"/></svg>Obligatoire pour votre rôle.</p>
+            </div>
+
+            <!-- Éteinte : ce qu'elle ajoute à la connexion. -->
+            <div data-si-etat="eteinte">
+              <div class="plage-ton mt-16" data-ton="bleu" style="padding:14px 14px 12px">
+                <p style="margin:0 0 2px;font-weight:600;color:var(--atlas-ink)">Pour entrer dans Atlas :</p>
+                <div class="deux-preuves">
+                  <span class="preuve"><svg class="ico" aria-hidden="true"><use href="#i-cadenas"/></svg>Votre mot de passe</span>
+                  <span class="preuve-plus"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg></span>
+                  <span class="preuve"><svg class="ico" aria-hidden="true"><use href="#i-telephone"/></svg>Le code de votre téléphone</span>
+                </div>
+              </div>
+              <p class="face-id-sans">Face ID entre sans code.</p>
+            </div>
+
+            <!-- Étape 1 : ajouter Atlas à l'appli (le chemin du téléphone). -->
+            <div data-si-etat="etape1">
+              <div class="etapes" aria-hidden="true"><i class="fait"></i><i></i><i></i></div>
+              <p class="etape-mot">Étape 1 sur 3</p>
+              <p class="etape-dit">Il vous faut une appli d'authentification, comme Google Authenticator.</p>
+              <button class="bouton bouton-creux or" type="button" data-dit="Sur votre téléphone, l'appli s'ouvre et Atlas s'y ajoute."><svg class="ico" aria-hidden="true"><use href="#i-telephone"/></svg>Ajouter à mon appli d'authentification</button>
+              <p class="cle-titre">Ou tapez cette clé dans l'appli :</p>
+              <p class="cle"><span>JBSW Y3DP EHPK 3PXP</span><span>K4ZR 6MNA QW7T L2XC</span></p>
+            </div>
+
+            <!-- Étape 2 : le premier code. -->
+            <div data-si-etat="etape2">
+              <div class="etapes" aria-hidden="true"><i class="fait"></i><i class="fait"></i><i></i></div>
+              <p class="etape-mot">Étape 2 sur 3</p>
+              <p class="etape-dit">Tapez le code que l'appli affiche.</p>
+              <input class="code-saisie" id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" aria-label="Code">
+            </div>
+
+            <!-- Étape 3 : les codes de secours. -->
+            <div data-si-etat="etape3">
+              <div class="etapes" aria-hidden="true"><i class="fait"></i><i class="fait"></i><i class="fait"></i></div>
+              <p class="etape-mot">Étape 3 sur 3</p>
+              <p class="etape-dit">Vos codes de secours. Chacun ouvre une fois, si vous perdez votre téléphone. Notez-les sur papier.</p>
+              <div class="secours">
+                <span>7KQM-3XPT</span><span>A9RD-H2WE</span>
+                <span>M4TZ-8LCN</span><span>QB6V-J3RY</span>
+                <span>5HWK-PD7S</span><span>XN2E-9TQA</span>
+                <span>RC8L-4MJZ</span><span>G3YP-W6BH</span>
+                <span>VT5D-K2NE</span><span>E8SJ-7QLU</span>
+              </div>
+              <button class="bouton bouton-creux mt-16" type="button" data-dit="Sur la planche, rien ne se télécharge."><svg class="ico" aria-hidden="true"><use href="#i-telecharger"/></svg>Télécharger</button>
+              <label class="note-faite"><input type="checkbox" id="notes">Je les ai notés</label>
+            </div>
+
+            <!-- Un salarié l'éteint : un code de l'appli, ou un code de secours. -->
+            <div data-si-etat="salarie">
+              <p class="etape-dit" style="margin-top:20px">Pour la désactiver, tapez un code de l'appli ou un code de secours.</p>
+              <input class="code-saisie court" id="code-arret" autocomplete="one-time-code" placeholder="Code" aria-label="Code">
+              <button class="bouton bouton-creux alerte mt-16" type="button" id="desactiver" aria-disabled="true">Désactiver</button>
+            </div>
+          </div>
+
+          <div class="action-bas" data-si-etat="etape1"><button class="bouton bouton-plein" type="button" data-va-etat="etape2">Continuer</button></div>
+          <div class="action-bas" data-si-etat="etape2"><button class="bouton bouton-plein" type="button" id="verifier" aria-disabled="true">Vérifier</button></div>
+          <div class="action-bas" data-si-etat="etape3"><button class="bouton bouton-plein" type="button" id="terminer" aria-disabled="true">Terminer</button></div>
+
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html">Terminés</a>
+              <a class="barre-onglet" href="paysage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html" aria-current="page">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- AUJOURD'HUI -->
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre">
+        <div class="cadre-capture"><img src="aujourdhui/reglages-connexion-double-verification.jpg" alt="L'écran Double vérification tel qu'il est aujourd'hui, éteint"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>La ligne « Code de l'appli d'authentification » va dans une plage, avec un bouclier doré devant. Allumée, le bouclier passe au vert, et « Activée » se lit en vert avec le nombre de codes de secours qui restent.</li>
+      <li>L'étape se lit d'un coup d'œil : trois traits qui se remplissent d'or, puis « Étape 2 sur 3 » en toutes lettres, et non plus en capitales espacées.</li>
+      <li>Continuer, Vérifier et Terminer passent sous le pouce, au-dessus de la barre, toujours au même endroit. Les autres gestes restent creux.</li>
+      <li>Le code se tape dans une grande case, en gros chiffres. Les dix codes de secours se lisent dans une plage, deux par ligne.</li>
+      <li>Votre rôle l'impose : l'interrupteur grisé porte un cadenas et le dit en une ligne, au lieu de ne rien répondre quand on le touche.</li>
+      <li>Éteinte, une plage bleue montre ce qu'elle ajoute : votre mot de passe, plus le code de votre téléphone. Aujourd'hui l'écran est vide sous l'interrupteur.</li>
+      <li>Plus de « MOI » doré sous le titre.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Les trois étapes, dans cet ordre et avec leurs mots. Touchez l'interrupteur, puis Continuer, tapez six chiffres, Vérifier, cochez, Terminer.</li>
+      <li>Rien ne se ferme avant le premier code juste : retoucher l'interrupteur en route abandonne, sans laisser personne dehors.</li>
+      <li>Sur le téléphone, un bouton ouvre l'appli ; sur un ordinateur, c'est le code carré à scanner. La clé à recopier reste dans les deux cas.</li>
+      <li>Terminer reste éteint tant que « Je les ai notés » n'est pas coché.</li>
+      <li>Pour l'éteindre, un code de l'appli ou un code de secours. Un code faux le dit : « Ce code n'est pas le bon. »</li>
+      <li>Obligatoire pour le patron et la facturation, en vrai seulement. Sur votre banc d'essai, personne n'est forcé, et l'état « Éteinte » est le vôtre.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>La plage bleue de l'écran éteint : la garder pour dire à quoi sert la double vérification, ou laisser l'interrupteur seul comme aujourd'hui.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="reglages-connexion.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Mot de passe</a>
+  <a href="reglages-apparence.html">Couleurs<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+/*
+  Le parcours de SectionDoubleVerification : l'interrupteur ouvre l'étape 1,
+  Continuer mène à l'étape 2, Vérifier attend un code, Terminer attend la
+  case cochée. Les changements d'état passent par data-va-etat (kit.js), qui
+  tient aussi les boutons d'état au-dessus du téléphone.
+*/
+document.addEventListener("DOMContentLoaded", function () {
+  "use strict";
+  var ecran = document.getElementById("ecran-dv");
+  var code = document.getElementById("code");
+  var verifier = document.getElementById("verifier");
+  var notes = document.getElementById("notes");
+  var terminer = document.getElementById("terminer");
+  var codeArret = document.getElementById("code-arret");
+  var desactiver = document.getElementById("desactiver");
+
+  function aller(etat) {
+    Kit.appliquerEtat(ecran, etat);
+    document.querySelectorAll(".pl-etats button[data-etat]").forEach(function (b) {
+      b.setAttribute("aria-pressed", b.getAttribute("data-etat") === etat ? "true" : "false");
+    });
+    ecran.querySelector(".defile").scrollTop = 0;
+  }
+
+  /* Le code : six chiffres, et rien d'autre ne passe. */
+  code.addEventListener("input", function () {
+    code.value = code.value.replace(/\D/g, "").slice(0, 6);
+    verifier.setAttribute("aria-disabled", code.value.length === 0 ? "true" : "false");
+  });
+  verifier.addEventListener("click", function () {
+    if (verifier.getAttribute("aria-disabled") === "true") return;
+    aller("etape3");
+  });
+  notes.addEventListener("change", function () { terminer.setAttribute("aria-disabled", notes.checked ? "false" : "true"); });
+  terminer.addEventListener("click", function () {
+    if (terminer.getAttribute("aria-disabled") === "true") return;
+    aller("allumee");
+  });
+
+  /* Un salarié : l'interrupteur ouvre et referme la désactivation. */
+  var zoneArret = desactiver.parentNode;
+  document.getElementById("interrupteur-salarie").addEventListener("click", function () {
+    var ouvert = !zoneArret.querySelector(".etape-dit").hidden;
+    zoneArret.querySelectorAll(".etape-dit, .code-saisie, #desactiver").forEach(function (el) { el.hidden = ouvert; });
+  });
+  codeArret.addEventListener("input", function () { desactiver.setAttribute("aria-disabled", codeArret.value.trim() === "" ? "true" : "false"); });
+  desactiver.addEventListener("click", function () {
+    if (desactiver.getAttribute("aria-disabled") === "true") return;
+    aller("eteinte");
+  });
+
+  /* Chaque état repart propre : case vide, case décochée. */
+  function remettre() {
+    code.value = ""; verifier.setAttribute("aria-disabled", "true");
+    notes.checked = false; terminer.setAttribute("aria-disabled", "true");
+    codeArret.value = ""; desactiver.setAttribute("aria-disabled", "true");
+    zoneArret.querySelectorAll(".etape-dit, .code-saisie, #desactiver").forEach(function (el) { el.hidden = false; });
+  }
+  document.querySelectorAll(".pl-etats button[data-etat]").forEach(function (b) { b.addEventListener("click", remettre); });
+  ecran.addEventListener("click", function (e) { if (e.target.closest("[data-va-etat]")) remettre(); });
+
+  ecran.querySelectorAll("[data-dit]").forEach(function (b) {
+    b.addEventListener("click", function () { Kit.note(ecran, b.getAttribute("data-dit")); });
+  });
+});
+</script>
+</body>
+</html>

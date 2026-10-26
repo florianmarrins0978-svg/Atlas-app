@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mon entreprise, soignée</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  MON ENTREPRISE (src/app/reglages/identite/page.tsx, IdentiteClient.tsx,
+  PeriodiciteTva.tsx, ExigibiliteTva.tsx, VoirUnExemple.tsx).
+
+  Sa demande du 25 octobre : une planche par rubrique des Réglages, plus jolie,
+  le doré de l'appli quand il y a du doré, de la couleur si elle aide, et
+  réorganisée si c'est mieux.
+
+  L'écran d'aujourd'hui fait 3 184 px, presque cinq écrans de son téléphone :
+  dix-huit cases à la suite, chacune sous un libellé en petites capitales
+  espacées, et Voir un exemple tout en bas. Proposé garde TOUT, dans le même
+  ordre, et le range en sept paquets sous un titre doré : qui vous êtes, ce qui
+  s'imprime, la TVA, vous joindre, être payé, la décennale, le médiateur.
+
+  Ce qui change en plus : le nom de l'entreprise ouvre la page en carte de
+  visite ; les mentions se voient sur la vraie page du devis, à leur place ;
+  le régime de TVA en deux cartes côte à côte ; l'IBAN par groupes de quatre
+  sur une plage verte, celle de l'argent qui rentre ; l'attestation dit son état
+  en vert ; Voir un exemple reste sous le pouce, au-dessus de la barre.
+
+  Plus loin coupe l'écran en sept lignes, comme Devis & factures l'a été le
+  7 septembre (« on coupe ») : chaque ligne dit déjà ce qu'elle contient.
+
+  Ce qui ne bouge pas : les mots des cases, leur ordre, l'alerte de ce qui
+  manque (en ambre plutôt qu'en rouge, sans cadre), la forme juridique qui se
+  choisit, le capital et le RCS qui n'apparaissent que pour une société.
+*/
+.carte-entreprise { display: flex; align-items: center; gap: 14px; padding: 16px 18px; }
+.sceau { width: 56px; height: 56px; flex: none; display: grid; place-items: center; border-radius: 50%;
+         box-shadow: inset 0 0 0 1.5px var(--atlas-or); font: 400 25px/1 var(--serif); color: var(--atlas-or); }
+.carte-entreprise .ligne-nom { font-size: 23px; }
+.carte-entreprise .ligne-situation { display: flex; align-items: center; gap: 6px; }
+.carte-entreprise .ligne-situation .ico { width: 17px; height: 17px; color: var(--atlas-or); }
+
+.forme { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.forme .ico { width: 20px; height: 20px; color: var(--atlas-or); }
+
+/* « Sur vos papiers » : la VRAIE page du devis, produite par le PDF de l'appli
+   (composerDevisPdf) pour Jardins Démo, et non un dessin. Le repère doré est
+   posé à l'endroit exact que le PDF donne aux lignes (relevé dans sa trace).
+   On voit l'en-tête en grand ; un appui ouvre la page entière. */
+.apercu-devis { display: block; position: relative; width: 100%; padding: 0; border-radius: 10px; overflow: hidden; text-align: left;
+                box-shadow: 0 1px 3px rgba(28,28,26,0.14), inset 0 0 0 1px rgba(28,28,26,0.06); }
+.apercu-cadre { display: block; position: relative; aspect-ratio: 645 / 243; overflow: hidden; }
+.apercu-cadre img { width: 166.7%; max-width: none; }
+.apercu-cadre img, .page-entiere img { height: auto; display: block; }
+.page-entiere img { width: 100%; }
+.repere { position: absolute; top: var(--haut); height: var(--hauteur); left: var(--gauche); width: var(--largeur);
+          border-radius: 4px; background: color-mix(in srgb, var(--atlas-or) 20%, transparent);
+          box-shadow: inset 0 0 0 2px var(--atlas-or); pointer-events: none; }
+.agrandir { position: absolute; right: 10px; bottom: 10px; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%;
+            background: var(--atlas-or); color: var(--atlas-card); }
+.agrandir .ico { width: 20px; height: 20px; }
+.page-entiere { position: relative; border-radius: 6px; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(28,28,26,0.08); }
+.choix-papier { margin-bottom: 10px; }
+.choix-papier button { font-size: 14.5px; }
+
+/* L'IBAN : la plage verte de l'argent qui rentre, les chiffres par quatre. */
+.plage-iban { padding: 16px 18px; border-radius: var(--r-plage); background: var(--atlas-carteVertFond); }
+.plage-iban .reglage-libelle { display: flex; align-items: center; gap: 7px; color: var(--atlas-carteVertTexte); }
+.plage-iban .reglage-libelle .ico { width: 19px; height: 19px; }
+.iban { display: block; margin-top: 6px; font: 400 19px/1.35 var(--serif); font-variant-numeric: tabular-nums lining-nums;
+        letter-spacing: 0.02em; word-spacing: 0.18em; color: var(--atlas-ink); }
+.plage-iban .titulaire { margin-top: 12px; padding-top: 11px; box-shadow: inset 0 1px 0 color-mix(in srgb, var(--atlas-carteVertTexte) 25%, transparent); }
+.plage-iban .titulaire .reglage-libelle { color: var(--atlas-carteVertTexte); }
+.plage-iban.manque { background: var(--atlas-carteAmbreFond); }
+.plage-iban.manque .reglage-libelle, .plage-iban.manque .reglage-sous { color: var(--atlas-carteAmbreTexte); }
+.plage-iban.manque .reglage-sous { font-weight: 600; }
+
+.telephone { display: flex; align-items: center; gap: 10px; }
+.indicatif { flex: none; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; min-height: 34px; padding: 0 10px; border-radius: 17px;
+             font-size: 15px; font-weight: 600; background: color-mix(in srgb, var(--atlas-ink) 6%, transparent); }
+
+.attestation { display: flex; align-items: center; gap: 12px; }
+.attestation .ligne-corps b { display: block; font: 400 18px/1.25 var(--serif); }
+.retirer { font-size: 15px; font-weight: 600; color: var(--atlas-or); min-height: 44px; padding: 0 2px; }
+.ajouter-pdf { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-size: 16px; font-weight: 600; color: var(--atlas-or); }
+
+.loi { margin: 10px 2px 0; font-size: 13.5px; line-height: 1.45; color: var(--atlas-inkSoft); }
+
+/* Plus loin : le sommaire de l'entreprise, chaque ligne dit ce qu'elle porte. */
+.sommaire-entreprise .ligne { min-height: 72px; }
+.sommaire-entreprise .ligne-nom { font-size: 18.5px; }
+.sommaire-entreprise .etat { margin-top: 5px; }
+.manque-texte { color: var(--atlas-carteAmbreTexte); font-weight: 600; }
+.panneau-titre { margin: 0 0 18px; font: 400 30px/1.08 var(--serif); letter-spacing: -0.012em; }
+</style>
+</head>
+<body class="pl pl-pilules">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="reglages.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Réglages</a>
+  <h1 class="pl-titre">Mon entreprise</h1>
+  <p class="pl-verdict">Les dix-huit cases d'aujourd'hui, dans le même ordre, rangées en <b>sept paquets</b> sous un titre doré. L'IBAN sur une plage verte, la décennale qui dit son état, et <b>Voir un exemple</b> toujours sous le pouce.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <!-- ═══ PROPOSÉ ═══ -->
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats">
+        <button type="button" data-etat="rempli" aria-pressed="true">Tout est rempli</button>
+        <button type="button" data-etat="neuf">Un compte neuf</button>
+        <button type="button" data-etat="societe">Une SARL</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre avec-action" data-etat="rempli" id="ecran-propose">
+          <div class="defile">
+            <div class="tete-ronds">
+              <a class="rond-creux" href="reglages.html" aria-label="Retour aux réglages"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </div>
+            <header class="tete" style="margin-top:0"><h1 class="tete-titre">Mon entreprise</h1></header>
+
+            <div class="plage carte-entreprise">
+              <span class="sceau" aria-hidden="true" data-si-etat="rempli societe">J</span>
+              <span class="sceau" aria-hidden="true" data-si-etat="neuf"><svg class="ico" aria-hidden="true"><use href="#i-entreprise"/></svg></span>
+              <span class="ligne-corps">
+                <span class="ligne-nom" data-si-etat="rempli">Jardins Démo</span>
+                <span class="ligne-nom" data-si-etat="societe">Jardins Démo SARL</span>
+                <span class="ligne-nom" data-si-etat="neuf">Votre entreprise</span>
+                <span class="ligne-situation" data-si-etat="rempli societe"><svg class="ico" aria-hidden="true"><use href="#i-lieu"/></svg>4 rue des Tilleuls, Angers</span>
+                <span class="ligne-situation manque-texte" data-si-etat="neuf">Il manque 4 cases</span>
+              </span>
+            </div>
+
+            <p class="rubrique rubrique-or">Qui vous êtes</p>
+            <div class="plage reglages">
+              <label class="reglage" data-si-etat="rempli societe">
+                <span class="reglage-libelle">Nom de l'entreprise</span>
+                <input class="reglage-valeur" value="Jardins Démo" data-si-etat="rempli">
+                <input class="reglage-valeur" value="Jardins Démo SARL" data-si-etat="societe">
+              </label>
+              <label class="reglage manque" data-si-etat="neuf">
+                <span class="reglage-libelle">Nom de l'entreprise</span>
+                <input class="reglage-valeur" placeholder="Le nom de vos devis">
+                <span class="reglage-sous">Sans nom, vos documents n'ont pas d'émetteur.</span>
+              </label>
+              <div class="reglage">
+                <span class="reglage-libelle">Forme juridique</span>
+                <span class="reglage-valeur forme"><span data-si-etat="rempli neuf">EI</span><span data-si-etat="societe">SARL</span><svg class="ico" aria-hidden="true"><use href="#i-bas"/></svg></span>
+              </div>
+              <div class="reglage-rang reglage" data-si-etat="societe" style="gap:18px">
+                <label><span class="reglage-libelle">Capital social</span><input class="reglage-valeur chiffre" value="5 000 €"></label>
+                <label><span class="reglage-libelle">Ville du RCS</span><input class="reglage-valeur" value="Angers"></label>
+              </div>
+              <label class="reglage" data-si-etat="rempli societe">
+                <span class="reglage-libelle">Adresse du siège</span>
+                <input class="reglage-valeur" value="4 rue des Tilleuls, 49000 Angers">
+              </label>
+              <label class="reglage manque" data-si-etat="neuf">
+                <span class="reglage-libelle">Adresse du siège</span>
+                <input class="reglage-valeur" placeholder="10 rue…">
+                <span class="reglage-sous">Elle figure en tête de chaque devis et de chaque facture.</span>
+              </label>
+              <label class="reglage" data-si-etat="rempli societe">
+                <span class="reglage-libelle">SIRET</span>
+                <input class="reglage-valeur chiffre" value="123 456 789 00012">
+                <span class="reglage-sous">SIREN 123 456 789, les neuf premiers chiffres.</span>
+              </label>
+              <label class="reglage manque" data-si-etat="neuf">
+                <span class="reglage-libelle">SIRET</span>
+                <input class="reglage-valeur chiffre" placeholder="14 chiffres">
+                <span class="reglage-sous">Vos factures ne sont pas conformes sans lui.</span>
+              </label>
+              <label class="reglage">
+                <span class="reglage-libelle">Répertoire des métiers</span>
+                <input class="reglage-valeur" placeholder="RM 49">
+              </label>
+            </div>
+
+            <p class="rubrique rubrique-or">Sur vos papiers</p>
+            <div data-si-etat="rempli neuf">
+              <button class="apercu-devis" type="button" data-ouvre="page-ei" aria-label="Voir la page entière du devis">
+                <span class="apercu-cadre"><img src="devis/devis-ei.jpg" alt="L'en-tête du devis de Jardins Démo"><span class="repere" style="--haut:25%;--hauteur:19%;--gauche:46.3%;--largeur:9.6%"></span></span>
+                <span class="agrandir" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-oeil"/></svg></span>
+              </button>
+              <p class="loi">Une entreprise individuelle signe « EI » après son nom. Rien d'autre à choisir.</p>
+            </div>
+            <div data-si-etat="societe">
+              <div class="choix choix-papier">
+                <button type="button" aria-pressed="true" data-montre="apercu-sous">Sous le nom</button>
+                <button type="button" aria-pressed="false" data-montre="apercu-siret">En bas, avec le SIRET</button>
+              </div>
+              <button class="apercu-devis" type="button" id="apercu-sous" data-ouvre="page-sous" aria-label="Voir la page entière du devis">
+                <span class="apercu-cadre"><img src="devis/devis-sous-le-nom.jpg" alt="L'en-tête du devis, les mentions sous le nom"><span class="repere" style="--haut:42%;--hauteur:19%;--gauche:6.5%;--largeur:48%"></span></span>
+                <span class="agrandir" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-oeil"/></svg></span>
+              </button>
+              <button class="apercu-devis" type="button" id="apercu-siret" data-ouvre="page-siret" aria-label="Voir la page entière du devis" hidden>
+                <span class="apercu-cadre"><img src="devis/devis-avec-le-siret.jpg" alt="L'en-tête du devis, les mentions avec le SIRET"><span class="repere" style="--haut:66.5%;--hauteur:19%;--gauche:6.5%;--largeur:48%"></span></span>
+                <span class="agrandir" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-oeil"/></svg></span>
+              </button>
+              <p class="loi">Forme juridique, capital et RCS de votre société.</p>
+            </div>
+
+            <p class="rubrique rubrique-or">Votre TVA</p>
+            <div class="cartes-choix" data-un-seul>
+              <button class="carte-choix" type="button" data-choix="franchise" aria-pressed="false" data-montre="tva-franchise">
+                <span class="coche-ronde" aria-hidden="true"></span>
+                <b>Franchise en base</b>
+                <small>Pas de TVA. La mention 293 B s'imprime.</small>
+              </button>
+              <button class="carte-choix" type="button" data-choix="assujettie" aria-pressed="true" data-montre="tva-assujettie">
+                <span class="coche-ronde" aria-hidden="true"></span>
+                <b>Assujettie</b>
+                <small>Vous facturez la TVA.</small>
+              </button>
+            </div>
+            <div id="tva-assujettie">
+              <div class="plage reglages mt-8">
+                <label class="reglage">
+                  <span class="reglage-libelle">Numéro de TVA intracommunautaire</span>
+                  <input class="reglage-valeur chiffre" value="FR 12 123456789">
+                </label>
+              </div>
+              <p class="reglage-libelle" style="margin:18px 0 8px">Vous la déclarez</p>
+              <div class="choix">
+                <button type="button" aria-pressed="true">Tous les mois</button>
+                <button type="button" aria-pressed="false">Tous les trimestres</button>
+              </div>
+              <p class="reglage-libelle" style="margin:18px 0 2px">Vous la reversez</p>
+              <div class="plage reglages" data-un-seul style="padding-top:0;padding-bottom:0">
+                <button class="radio" type="button" data-choix="paye" aria-pressed="true"><span class="coche-ronde" aria-hidden="true"></span><span><b>Le mois où le client paie</b><small>Elle entre au relevé quand vous la marquez payée.</small></span></button>
+                <button class="radio" type="button" data-choix="envoi" aria-pressed="false"><span class="coche-ronde" aria-hidden="true"></span><span><b>Le mois où la facture part</b><small>Même si le client n'a pas encore payé.</small></span></button>
+              </div>
+              <p class="plage-ton mt-8" data-ton="or">Sur <b>octobre 2026</b> : <b>412,80 €</b> en attendant le paiement, <b>1 106,40 €</b> dès l'envoi.</p>
+              <p class="loi">Ce choix doit correspondre à ce que les impôts savent de vous. Dans le doute, votre comptable le dit en une phrase.</p>
+            </div>
+            <div id="tva-franchise" hidden>
+              <p class="plage-ton mt-8" data-ton="vert">Vos factures portent « TVA non applicable, article 293 B du CGI ».</p>
+            </div>
+
+            <p class="rubrique rubrique-or">Vous joindre</p>
+            <div class="plage reglages">
+              <label class="reglage">
+                <span class="reglage-libelle">Téléphone</span>
+                <span class="telephone"><span class="indicatif">FR +33<svg class="ico" style="width:16px;height:16px" aria-hidden="true"><use href="#i-bas"/></svg></span><input class="reglage-valeur chiffre" style="margin:0" value="2 41 00 00 00" data-si-etat="rempli societe"><input class="reglage-valeur" style="margin:0" placeholder="6 00 00 00 00" data-si-etat="neuf"></span>
+              </label>
+              <label class="reglage">
+                <span class="reglage-libelle">Adresse e-mail</span>
+                <input class="reglage-valeur" value="contact@jardins-demo.fr" data-si-etat="rempli societe">
+                <input class="reglage-valeur" placeholder="contact@…" data-si-etat="neuf">
+              </label>
+            </div>
+
+            <p class="rubrique rubrique-or">Pour être payé</p>
+            <div class="plage-iban" data-si-etat="rempli societe">
+              <span class="reglage-libelle"><svg class="ico" aria-hidden="true"><use href="#i-banque"/></svg>IBAN</span>
+              <span class="iban">FR76 3000 1000 0000 0000 0000 000</span>
+              <div class="titulaire">
+                <span class="reglage-libelle">Titulaire du compte</span>
+                <span class="reglage-valeur">Jardins Démo</span>
+              </div>
+            </div>
+            <div class="plage-iban manque" data-si-etat="neuf">
+              <span class="reglage-libelle"><svg class="ico" aria-hidden="true"><use href="#i-banque"/></svg>IBAN</span>
+              <input class="reglage-valeur chiffre" placeholder="FR76 …" style="margin-top:6px">
+              <span class="reglage-sous">Sans lui, votre client reçoit un devis qu'il ne peut pas payer.</span>
+            </div>
+
+            <p class="rubrique rubrique-or">Assurance décennale</p>
+            <div class="plage reglages">
+              <label class="reglage">
+                <span class="reglage-libelle">Assureur</span>
+                <input class="reglage-valeur" value="Assureur de démonstration" data-si-etat="rempli societe">
+                <input class="reglage-valeur" placeholder="AXA, Groupama, MMA…" data-si-etat="neuf">
+              </label>
+              <label class="reglage" data-si-etat="rempli societe">
+                <span class="reglage-libelle">Adresse de l'assureur</span>
+                <input class="reglage-valeur" value="1 rue de l'Exemple, 44000 Nantes">
+              </label>
+              <label class="reglage" data-si-etat="rempli societe">
+                <span class="reglage-libelle">N° de contrat</span>
+                <input class="reglage-valeur chiffre" value="0000000">
+              </label>
+              <label class="reglage" data-si-etat="rempli societe">
+                <span class="reglage-libelle">Couverture géographique</span>
+                <input class="reglage-valeur" value="France métropolitaine">
+              </label>
+              <div class="reglage" data-si-etat="rempli societe">
+                <span class="reglage-libelle">Attestation</span>
+                <span class="attestation" style="margin-top:6px">
+                  <span class="pastille-ico" data-ton="vert"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span>
+                  <span class="ligne-corps"><b>Déposée</b><span class="discret" style="display:block">Jointe à vos devis et factures</span></span>
+                  <button class="retirer" type="button">Retirer</button>
+                </span>
+              </div>
+              <div class="reglage" data-si-etat="neuf">
+                <span class="reglage-libelle">Attestation</span>
+                <span class="ajouter-pdf"><svg class="ico ico-p" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter le PDF</span>
+              </div>
+            </div>
+
+            <p class="rubrique rubrique-or">Médiateur de la consommation</p>
+            <div class="plage reglages">
+              <label class="reglage">
+                <span class="reglage-libelle">Nom</span>
+                <input class="reglage-valeur" value="Médiateur de démonstration" data-si-etat="rempli societe">
+                <input class="reglage-valeur" placeholder="Celui auquel vous adhérez" data-si-etat="neuf">
+              </label>
+              <label class="reglage">
+                <span class="reglage-libelle">Adresse ou site</span>
+                <input class="reglage-valeur" value="1 place de la Médiation, Nantes" data-si-etat="rempli societe">
+                <input class="reglage-valeur" placeholder="Son adresse ou son site" data-si-etat="neuf">
+              </label>
+            </div>
+          </div>
+
+          <section class="feuille" id="page-ei" aria-hidden="true" aria-label="Le devis, page entière">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre">Votre devis</h2>
+              <div class="page-entiere"><img src="devis/devis-ei.jpg" alt="Le devis de Jardins Démo, page entière"><span class="repere" style="--haut:4%;--hauteur:3%;--gauche:27.7%;--largeur:5.8%"></span></div>
+              <button class="bouton bouton-creux mt-16" type="button" data-ferme>Fermer</button>
+            </div>
+          </section>
+          <section class="feuille" id="page-sous" aria-hidden="true" aria-label="Le devis, page entière">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre">Sous le nom</h2>
+              <div class="page-entiere"><img src="devis/devis-sous-le-nom.jpg" alt="Le devis, les mentions sous le nom, page entière"><span class="repere" style="--haut:6.7%;--hauteur:3%;--gauche:3.9%;--largeur:29%"></span></div>
+              <button class="bouton bouton-creux mt-16" type="button" data-ferme>Fermer</button>
+            </div>
+          </section>
+          <section class="feuille" id="page-siret" aria-hidden="true" aria-label="Le devis, page entière">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre">En bas, avec le SIRET</h2>
+              <div class="page-entiere"><img src="devis/devis-avec-le-siret.jpg" alt="Le devis, les mentions avec le SIRET, page entière"><span class="repere" style="--haut:10.6%;--hauteur:3%;--gauche:3.9%;--largeur:29%"></span></div>
+              <button class="bouton bouton-creux mt-16" type="button" data-ferme>Fermer</button>
+            </div>
+          </section>
+
+          <div class="action-bas"><button class="bouton bouton-plein" type="button" data-note="Sur la planche, l'exemple ne s'ouvre pas."><svg class="ico" aria-hidden="true"><use href="#i-oeil"/></svg>Voir un exemple</button></div>
+
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html">Terminés</a>
+              <a class="barre-onglet" href="paysage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html" aria-current="page">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PLUS LOIN : l'écran coupé en sept lignes ═══ -->
+    <div data-vue-panneau="plus-loin">
+      <p class="pl-legende">Plus loin</p>
+      <div class="cadre">
+        <div class="ecran avec-barre" id="ecran-plus-loin">
+          <div class="defile">
+
+            <div data-ecran-panneau="sommaire">
+              <div class="tete-ronds">
+                <a class="rond-creux" href="reglages.html" aria-label="Retour aux réglages"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+                <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              </div>
+              <header class="tete" style="margin-top:0"><h1 class="tete-titre">Mon entreprise</h1></header>
+              <div class="plage carte-entreprise">
+                <span class="sceau" aria-hidden="true">J</span>
+                <span class="ligne-corps">
+                  <span class="ligne-nom">Jardins Démo</span>
+                  <span class="ligne-situation"><svg class="ico" aria-hidden="true"><use href="#i-lieu"/></svg>4 rue des Tilleuls, Angers</span>
+                </span>
+              </div>
+              <div class="plage plage-serree sommaire-entreprise mt-16">
+                <ul class="liste">
+                  <li><button class="ligne touche" type="button" data-vers="qui"><span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-entreprise"/></svg></span><span class="ligne-corps"><span class="ligne-nom">Qui vous êtes</span><span class="ligne-situation">EI, SIRET 123 456 789 00012</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></button></li>
+                  <li><button class="ligne touche" type="button" data-vers="papiers"><span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-document"/></svg></span><span class="ligne-corps"><span class="ligne-nom">Sur vos papiers</span><span class="ligne-situation">« EI » après le nom</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></button></li>
+                  <li><button class="ligne touche" type="button" data-vers="tva"><span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-euro"/></svg></span><span class="ligne-corps"><span class="ligne-nom">Votre TVA</span><span class="ligne-situation">Assujettie, déclarée tous les mois</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></button></li>
+                  <li><button class="ligne touche" type="button" data-vers="joindre"><span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-telephone"/></svg></span><span class="ligne-corps"><span class="ligne-nom">Vous joindre</span><span class="ligne-situation">02 41 00 00 00</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></button></li>
+                  <li><button class="ligne touche" type="button" data-vers="paye"><span class="pastille-ico" data-ton="vert"><svg class="ico" aria-hidden="true"><use href="#i-banque"/></svg></span><span class="ligne-corps"><span class="ligne-nom">Pour être payé</span><span class="ligne-situation chiffre">FR76 3000 … 0000</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></button></li>
+                  <li><button class="ligne touche" type="button" data-vers="decennale"><span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-bouclier-coche"/></svg></span><span class="ligne-corps"><span class="ligne-nom">Assurance décennale</span><span class="etat" data-ton="vert">Attestation déposée</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></button></li>
+                  <li><button class="ligne touche" type="button" data-vers="mediateur"><span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-equipe"/></svg></span><span class="ligne-corps"><span class="ligne-nom">Médiateur</span><span class="ligne-situation">Médiateur de démonstration</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></button></li>
+                </ul>
+              </div>
+              <button class="bouton bouton-plein mt-24" type="button" data-note="Sur la planche, l'exemple ne s'ouvre pas."><svg class="ico" aria-hidden="true"><use href="#i-oeil"/></svg>Voir un exemple</button>
+            </div>
+
+            <!-- Les sept écrans courts : le même contenu que Proposé, paquet par paquet. -->
+            <div data-ecran-panneau="qui" hidden>
+              <div class="tete-ronds"><button class="rond-creux" type="button" data-vers="sommaire" aria-label="Retour à Mon entreprise"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button></div>
+              <h1 class="panneau-titre">Qui vous êtes</h1>
+              <div class="plage reglages">
+                <label class="reglage"><span class="reglage-libelle">Nom de l'entreprise</span><input class="reglage-valeur" value="Jardins Démo"></label>
+                <div class="reglage"><span class="reglage-libelle">Forme juridique</span><span class="reglage-valeur forme">EI<svg class="ico" aria-hidden="true"><use href="#i-bas"/></svg></span></div>
+                <label class="reglage"><span class="reglage-libelle">Adresse du siège</span><input class="reglage-valeur" value="4 rue des Tilleuls, 49000 Angers"></label>
+                <label class="reglage"><span class="reglage-libelle">SIRET</span><input class="reglage-valeur chiffre" value="123 456 789 00012"><span class="reglage-sous">SIREN 123 456 789, les neuf premiers chiffres.</span></label>
+                <label class="reglage"><span class="reglage-libelle">Répertoire des métiers</span><input class="reglage-valeur" placeholder="RM 49"></label>
+              </div>
+            </div>
+
+            <div data-ecran-panneau="papiers" hidden>
+              <div class="tete-ronds"><button class="rond-creux" type="button" data-vers="sommaire" aria-label="Retour à Mon entreprise"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button></div>
+              <h1 class="panneau-titre">Sur vos papiers</h1>
+              <button class="apercu-devis" type="button" data-ouvre="page-ei-loin" aria-label="Voir la page entière du devis">
+                <span class="apercu-cadre"><img src="devis/devis-ei.jpg" alt="L'en-tête du devis de Jardins Démo"><span class="repere" style="--haut:25%;--hauteur:19%;--gauche:46.3%;--largeur:9.6%"></span></span>
+                <span class="agrandir" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-oeil"/></svg></span>
+              </button>
+              <p class="loi">Une entreprise individuelle signe « EI » après son nom. Rien d'autre à choisir.</p>
+            </div>
+
+            <div data-ecran-panneau="tva" hidden>
+              <div class="tete-ronds"><button class="rond-creux" type="button" data-vers="sommaire" aria-label="Retour à Mon entreprise"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button></div>
+              <h1 class="panneau-titre">Votre TVA</h1>
+              <div class="cartes-choix" data-un-seul>
+                <button class="carte-choix" type="button" data-choix="franchise" aria-pressed="false"><span class="coche-ronde" aria-hidden="true"></span><b>Franchise en base</b><small>Pas de TVA. La mention 293 B s'imprime.</small></button>
+                <button class="carte-choix" type="button" data-choix="assujettie" aria-pressed="true"><span class="coche-ronde" aria-hidden="true"></span><b>Assujettie</b><small>Vous facturez la TVA.</small></button>
+              </div>
+              <div class="plage reglages mt-8"><label class="reglage"><span class="reglage-libelle">Numéro de TVA intracommunautaire</span><input class="reglage-valeur chiffre" value="FR 12 123456789"></label></div>
+              <p class="reglage-libelle" style="margin:18px 0 8px">Vous la déclarez</p>
+              <div class="choix"><button type="button" aria-pressed="true">Tous les mois</button><button type="button" aria-pressed="false">Tous les trimestres</button></div>
+              <p class="reglage-libelle" style="margin:18px 0 2px">Vous la reversez</p>
+              <div class="plage reglages" data-un-seul style="padding-top:0;padding-bottom:0">
+                <button class="radio" type="button" data-choix="paye" aria-pressed="true"><span class="coche-ronde" aria-hidden="true"></span><span><b>Le mois où le client paie</b><small>Elle entre au relevé quand vous la marquez payée.</small></span></button>
+                <button class="radio" type="button" data-choix="envoi" aria-pressed="false"><span class="coche-ronde" aria-hidden="true"></span><span><b>Le mois où la facture part</b><small>Même si le client n'a pas encore payé.</small></span></button>
+              </div>
+              <p class="plage-ton mt-8" data-ton="or">Sur <b>octobre 2026</b> : <b>412,80 €</b> en attendant le paiement, <b>1 106,40 €</b> dès l'envoi.</p>
+            </div>
+
+            <div data-ecran-panneau="joindre" hidden>
+              <div class="tete-ronds"><button class="rond-creux" type="button" data-vers="sommaire" aria-label="Retour à Mon entreprise"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button></div>
+              <h1 class="panneau-titre">Vous joindre</h1>
+              <div class="plage reglages">
+                <label class="reglage"><span class="reglage-libelle">Téléphone</span><span class="telephone"><span class="indicatif">FR +33</span><input class="reglage-valeur chiffre" style="margin:0" value="2 41 00 00 00"></span></label>
+                <label class="reglage"><span class="reglage-libelle">Adresse e-mail</span><input class="reglage-valeur" value="contact@jardins-demo.fr"></label>
+              </div>
+            </div>
+
+            <div data-ecran-panneau="paye" hidden>
+              <div class="tete-ronds"><button class="rond-creux" type="button" data-vers="sommaire" aria-label="Retour à Mon entreprise"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button></div>
+              <h1 class="panneau-titre">Pour être payé</h1>
+              <div class="plage-iban">
+                <span class="reglage-libelle"><svg class="ico" aria-hidden="true"><use href="#i-banque"/></svg>IBAN</span>
+                <span class="iban">FR76 3000 1000 0000 0000 0000 000</span>
+                <div class="titulaire"><span class="reglage-libelle">Titulaire du compte</span><span class="reglage-valeur">Jardins Démo</span></div>
+              </div>
+            </div>
+
+            <div data-ecran-panneau="decennale" hidden>
+              <div class="tete-ronds"><button class="rond-creux" type="button" data-vers="sommaire" aria-label="Retour à Mon entreprise"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button></div>
+              <h1 class="panneau-titre">Assurance décennale</h1>
+              <div class="plage reglages">
+                <label class="reglage"><span class="reglage-libelle">Assureur</span><input class="reglage-valeur" value="Assureur de démonstration"></label>
+                <label class="reglage"><span class="reglage-libelle">Adresse de l'assureur</span><input class="reglage-valeur" value="1 rue de l'Exemple, 44000 Nantes"></label>
+                <label class="reglage"><span class="reglage-libelle">N° de contrat</span><input class="reglage-valeur chiffre" value="0000000"></label>
+                <label class="reglage"><span class="reglage-libelle">Couverture géographique</span><input class="reglage-valeur" value="France métropolitaine"></label>
+                <div class="reglage"><span class="reglage-libelle">Attestation</span><span class="attestation" style="margin-top:6px"><span class="pastille-ico" data-ton="vert"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span><span class="ligne-corps"><b>Déposée</b><span class="discret" style="display:block">Jointe à vos devis et factures</span></span><button class="retirer" type="button">Retirer</button></span></div>
+              </div>
+            </div>
+
+            <div data-ecran-panneau="mediateur" hidden>
+              <div class="tete-ronds"><button class="rond-creux" type="button" data-vers="sommaire" aria-label="Retour à Mon entreprise"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button></div>
+              <h1 class="panneau-titre">Médiateur de la consommation</h1>
+              <div class="plage reglages">
+                <label class="reglage"><span class="reglage-libelle">Nom</span><input class="reglage-valeur" value="Médiateur de démonstration"></label>
+                <label class="reglage"><span class="reglage-libelle">Adresse ou site</span><input class="reglage-valeur" value="1 place de la Médiation, Nantes"></label>
+              </div>
+            </div>
+
+          </div>
+          <section class="feuille" id="page-ei-loin" aria-hidden="true" aria-label="Le devis, page entière">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre">Votre devis</h2>
+              <div class="page-entiere"><img src="devis/devis-ei.jpg" alt="Le devis de Jardins Démo, page entière"><span class="repere" style="--haut:4%;--hauteur:3%;--gauche:27.7%;--largeur:5.8%"></span></div>
+              <button class="bouton bouton-creux mt-16" type="button" data-ferme>Fermer</button>
+            </div>
+          </section>
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html">Terminés</a>
+              <a class="barre-onglet" href="paysage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html" aria-current="page">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ AUJOURD'HUI ═══ -->
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre">
+        <div class="cadre-capture"><img src="aujourdhui/reglages-identite.jpg" alt="L'écran Mon entreprise tel qu'il est aujourd'hui"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>Le nom de l'entreprise ouvre la page en carte de visite, avec son adresse : on sait de qui on parle.</li>
+      <li>Dix-huit cases à la suite deviennent sept paquets, chacun sous son titre doré. L'ordre ne bouge pas.</li>
+      <li>Les libellés s'écrivent en toutes lettres et non plus en petites capitales espacées.</li>
+      <li><b>Sur vos papiers montre la vraie page de votre devis</b>, produite par l'appli, et le repère doré tombe à l'endroit exact où les mentions s'impriment. Touchez la page : elle s'ouvre en entier.</li>
+      <li>Une entreprise individuelle n'a rien à choisir : seul « EI » s'imprime, après le nom. Le choix ne se montre que pour une société : touchez « Une SARL ».</li>
+      <li>Franchise ou assujettie : deux cartes côte à côte. Le numéro, le rythme et le reversement n'apparaissent que pour une entreprise assujettie.</li>
+      <li>Derrière « FR +33 », le numéro s'écrit sans son zéro : +33 2 41 00 00 00. Aujourd'hui, le champ garde le zéro devant (+33 02…), sa demande du 26 octobre. Les devis gardent le numéro tel qu'ils l'impriment déjà, 02 41 00 00 00.</li>
+      <li>L'IBAN se lit par groupes de quatre, sur la plage verte de l'argent qui rentre.</li>
+      <li>L'attestation dit son état en vert : Déposée, jointe à chaque devis et facture.</li>
+      <li>Ce qui manque se dit en ambre, avec sa conséquence, à la place du rouge. Un compte neuf le compte sous son nom : « Il manque 4 cases ».</li>
+      <li>Voir un exemple reste sous le pouce, au-dessus de la barre, avec ses bouts ronds de l'appli, au lieu d'attendre au bout de cinq écrans.</li>
+      <li>Deux phrases partent : « Il ne se saisit pas séparément » sous le SIREN, et « Le mois est le défaut. Le trimestre s'obtient sous condition. »</li>
+    </ul>
+    <h2>Plus loin</h2>
+    <ul>
+      <li>L'écran coupé en sept lignes, comme Devis &amp; factures depuis le 7 septembre. Chaque ligne dit déjà ce qu'elle porte : EI et le SIRET, Assujettie tous les mois, l'attestation déposée.</li>
+      <li>Touchez une ligne : son écran court s'ouvre, le rond du haut ramène au sommaire.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Toutes les cases et leurs mots. La forme juridique se choisit, le capital et le RCS n'apparaissent que pour une société : touchez « Une SARL ».</li>
+      <li>L'adresse cherchée dans la Base Adresse Nationale, le SIREN tiré du SIRET.</li>
+      <li>L'alerte des factures parties avec un ancien IBAN, sous l'IBAN.</li>
+      <li>Les couleurs de l'appli, le rond de l'assistant, la barre du bas.</li>
+    </ul>
+    <h2>Vos deux réponses</h2>
+    <ul class="a-trancher">
+      <li><b>1. Une page, ou sept petites : Proposé</b> (votre réponse du 26 octobre). Tout sur une seule page en sept paquets ; Plus loin reste sur la planche pour le chemin.</li>
+      <li><b>2. « En bas, avec le SIRET » : vous le gardez</b> (votre réponse du 26 octobre). Il descendra vraiment près du SIRET, comme sur la planche : c'est à corriger dans l'appli, qui l'imprime aujourd'hui sous le nom.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="reglages.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Réglages</a>
+  <a href="reglages-equipe.html">Équipe<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+/* Les petits mots de la planche : ce qui ne s'ouvre pas le dit. */
+document.addEventListener("click", function (e) {
+  var b = e.target.closest("[data-note]");
+  if (b) Kit.note(b, b.getAttribute("data-note"));
+});
+</script>
+</body>
+</html>

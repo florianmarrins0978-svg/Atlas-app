@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mot de passe, soigné</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  MOT DE PASSE (src/app/reglages/connexion/page.tsx, ConnexionClient.tsx,
+  SectionFaceId.tsx ; src/lib/mot-de-passe.ts pour les règles ;
+  src/app/reglages/SeDeconnecter.tsx pour la feuille qu'on reprend).
+
+  Sa règle du 31 août : « je veux qu'elle tienne sur une seule page », aucun
+  défilement. Aujourd'hui elle tient sans Face ID, et glisse dès qu'un
+  appareil est enregistré ou qu'on touche Me déconnecter partout, dont la
+  confirmation s'ouvre DANS l'écran et pousse tout vers le bas.
+
+  Proposé tient sans défiler dans les trois cas : les trois cases en lignes
+  courtes (le titre au-dessus dit déjà « mot de passe »), Face ID et Me
+  déconnecter partout dans une seule plage, et la confirmation dans une
+  feuille qui monte, la même que Se déconnecter (2 et 9 septembre).
+
+  Ce qui ne bouge pas : le titre en question (« rajoute juste un ? », 9
+  septembre), les deux saisies ET l'œil sur les trois cases (14 août), le
+  bouton sous ses propres cases et au-dessus de Face ID (26 août), la règle
+  qui ne parle qu'en mordant (31 août), Face ID après le mot de passe (23
+  août), une date sous chaque appareil (24 août), deux appuis pour se
+  déconnecter partout, et la phrase qui annonce que Face ID part avec.
+*/
+/* L'écran tient dans le téléphone : la barre du bas, et rien en réserve. */
+#ecran-mdp .defile { padding-top: 12px; padding-bottom: 74px; }
+#ecran-mdp .tete { min-height: 0; margin: 0 0 12px; }
+#ecran-mdp .tete-ronds { margin-bottom: 8px; }
+.rubrique.premiere { margin: 0 0 8px; }
+
+/* Une case de mot de passe : le mot court à gauche, la saisie, l'œil. */
+.secrets { padding: 0 6px 0 18px; }
+.secret { position: relative; display: block; }
+.secret + .secret::before { content: ""; position: absolute; left: 0; right: 12px; top: 0; height: 1px; background: var(--atlas-line); }
+.secret-rang { display: flex; align-items: center; gap: 10px; min-height: 54px; }
+.secret-mot { flex: none; width: 86px; font-size: 15px; font-weight: 600; color: var(--atlas-inkSoft); }
+.secret input { flex: 1; min-width: 0; border: 0; padding: 0; background: transparent; outline: none;
+                font: 400 18px/1.3 var(--sans); letter-spacing: 0.16em; color: var(--atlas-ink); }
+.secret input[type="text"] { letter-spacing: 0.01em; }
+.secret input::placeholder { letter-spacing: 0; font-size: 16px; color: color-mix(in srgb, var(--atlas-inkSoft) 75%, var(--atlas-card)); }
+.oeil { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-inkSoft); }
+.oeil[aria-pressed="true"] { color: var(--atlas-or); }
+.oeil .ico { width: 22px; height: 22px; }
+.secret-dit { display: block; margin: -6px 12px 10px 96px; font-size: 14px; line-height: 1.35; font-weight: 600; }
+.secret-dit.mord { color: var(--atlas-alerte); }
+.secret-dit.bon { color: var(--atlas-carteVertTexte); }
+
+.changer { margin-top: 10px; }
+.changer .plage-ton { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 56px; font-size: 16px; font-weight: 600; }
+.changer .plage-ton .ico { width: 20px; height: 20px; stroke-width: 2.2; }
+
+/* Face ID et la sortie, dans une seule plage. */
+.appareils { margin-top: 12px; }
+.appareils .ligne { min-height: 62px; padding: 9px 0; }
+.appareils .ligne-nom { font-size: 17.5px; }
+.ligne-geste { font-size: 15px; font-weight: 600; color: var(--atlas-or); }
+.retirer { flex: none; min-height: 44px; padding: 0 4px; font-size: 15px; font-weight: 600; color: var(--atlas-alerte); }
+.ligne-sortie .ligne-nom { color: var(--atlas-alerte); }
+/* Le filet ne se pose qu'entre deux lignes MONTRÉES : celles que l'état
+   cache ne doivent ni en laisser un, ni en retirer un. */
+.appareils .liste > li > .ligne::before { display: none; }
+.appareils .liste > li:not([hidden]) ~ li:not([hidden]) > .ligne::before { display: block; }
+.appareils .ligne.ligne-ajout { min-height: 50px; padding: 4px 0 4px 54px; }
+.ligne-ajout .ligne-geste { flex: 1; }
+.ligne-sortie .ligne-fin .ico { color: var(--atlas-alerte); opacity: 0.6; }
+
+/* La feuille de la sortie : celle de Se déconnecter, au trait près. */
+.bouton-alerte { background: var(--atlas-alerte); color: var(--sur-plein); }
+.feuille-sous { margin: -8px 0 6px; font-size: 15.5px; line-height: 1.45; color: var(--atlas-ink); }
+.feuille-sous + .feuille-sous { margin-top: 8px; color: var(--atlas-inkSoft); }
+</style>
+</head>
+<body class="pl pl-pilules">
+
+<svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
+  <symbol id="i-visage" viewBox="0 0 24 24"><path d="M4 8.5V6.5A2.5 2.5 0 0 1 6.5 4h2M15.5 4h2A2.5 2.5 0 0 1 20 6.5v2M20 15.5v2a2.5 2.5 0 0 1-2.5 2.5h-2M8.5 20h-2A2.5 2.5 0 0 1 4 17.5v-2"/><path d="M9 9.5v1.2M15 9.5v1.2M12.2 9.5v3.6h-1M9.4 15.6c1.5 1.1 3.7 1.1 5.2 0"/></symbol>
+</svg>
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="reglages.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Réglages</a>
+  <h1 class="pl-titre">Mot de passe</h1>
+  <p class="pl-verdict">L'écran <b>tient sans défiler</b>, même avec Face ID enregistré, même pendant qu'on se déconnecte partout : la confirmation monte dans <b>la feuille de Se déconnecter</b> au lieu de pousser l'écran.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <!-- PROPOSÉ -->
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats">
+        <button type="button" data-etat="sans" aria-pressed="true">Sans Face ID</button>
+        <button type="button" data-etat="faceid">Face ID sur un iPhone</button>
+        <button type="button" data-etat="pret">Prêt à changer</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre" data-etat="sans" id="ecran-mdp">
+          <div class="defile">
+            <div class="tete-ronds">
+              <a class="rond-creux" href="reglages.html" aria-label="Retour aux réglages"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </div>
+            <header class="tete"><h1 class="tete-titre">Mot de passe</h1></header>
+
+            <p class="rubrique rubrique-or premiere">Changer de mot de passe&nbsp;?</p>
+            <div class="plage secrets">
+              <div class="secret">
+                <label class="secret-rang"><span class="secret-mot">Actuel</span><input type="password" id="actuel" autocomplete="off" aria-label="Mot de passe actuel">
+                  <button class="oeil" type="button" aria-pressed="false" aria-label="Afficher le mot de passe actuel"><svg class="ico" aria-hidden="true"><use href="#i-oeil"/></svg></button></label>
+              </div>
+              <div class="secret">
+                <label class="secret-rang"><span class="secret-mot">Nouveau</span><input type="password" id="nouveau" autocomplete="off" aria-label="Nouveau mot de passe">
+                  <button class="oeil" type="button" aria-pressed="false" aria-label="Afficher le nouveau mot de passe"><svg class="ico" aria-hidden="true"><use href="#i-oeil"/></svg></button></label>
+                <span class="secret-dit mord" id="dit-nouveau" hidden></span>
+              </div>
+              <div class="secret">
+                <label class="secret-rang"><span class="secret-mot">Confirmer</span><input type="password" id="confirmation" autocomplete="off" aria-label="Confirmer le nouveau mot de passe">
+                  <button class="oeil" type="button" aria-pressed="false" aria-label="Afficher la confirmation"><svg class="ico" aria-hidden="true"><use href="#i-oeil"/></svg></button></label>
+                <span class="secret-dit" id="dit-confirmation" hidden></span>
+              </div>
+            </div>
+
+            <div class="changer">
+              <button class="bouton bouton-plein" type="button" id="changer" aria-disabled="true">Changer mon mot de passe</button>
+              <p class="plage-ton" data-ton="vert" id="change" role="status" hidden><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg>Votre mot de passe est changé.</p>
+            </div>
+
+            <div class="plage plage-serree appareils">
+              <ul class="liste">
+                <li data-si-etat="sans pret">
+                  <button class="ligne touche" type="button" data-va-etat="faceid" data-dit="Sur votre iPhone, Face ID s'ouvre ici.">
+                    <span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-visage"/></svg></span>
+                    <span class="ligne-corps"><span class="ligne-nom">Ouvrir avec Face ID</span><span class="ligne-geste">Enregistrer cet appareil</span></span>
+                    <span class="ligne-fin"><svg class="ico" aria-hidden="true" style="color:var(--atlas-or)"><use href="#i-plus"/></svg></span>
+                  </button>
+                </li>
+                <li data-si-etat="faceid">
+                  <div class="ligne">
+                    <span class="pastille-ico" data-ton="vert"><svg class="ico" aria-hidden="true"><use href="#i-visage"/></svg></span>
+                    <span class="ligne-corps"><span class="ligne-nom">Face ID sur iPhone</span><span class="ligne-situation">Dernière ouverture le 24/10/2026</span></span>
+                    <button class="retirer" type="button" data-va-etat="sans">Retirer</button>
+                  </div>
+                </li>
+                <li data-si-etat="faceid">
+                  <button class="ligne touche ligne-ajout" type="button" data-dit="Cet appareil est déjà enregistré.">
+                    <span class="ligne-geste">Enregistrer cet appareil</span>
+                    <span class="ligne-fin"><svg class="ico" aria-hidden="true" style="color:var(--atlas-or)"><use href="#i-plus"/></svg></span>
+                  </button>
+                </li>
+                <li>
+                  <button class="ligne touche ligne-sortie" type="button" data-ouvre="feuille-partout">
+                    <span class="pastille-ico" data-ton="rouge"><svg class="ico" aria-hidden="true"><use href="#i-deconnexion"/></svg></span>
+                    <span class="ligne-corps"><span class="ligne-nom">Me déconnecter partout</span></span>
+                    <span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html">Terminés</a>
+              <a class="barre-onglet" href="paysage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html" aria-current="page">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+
+          <section class="feuille" id="feuille-partout" aria-hidden="true" aria-label="Me déconnecter partout">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre">Jardins Démo</h2>
+              <p class="feuille-sous">Vous devrez vous reconnecter sur tous vos appareils, celui-ci compris.</p>
+              <p class="feuille-sous" data-si-etat="faceid">Face ID sera retiré de vos appareils. Vous le remettrez en un toucher.</p>
+              <div class="pile mt-24">
+                <button class="bouton bouton-alerte" type="button" data-fait="Sur la planche, personne n'est déconnecté.">Me déconnecter partout</button>
+                <button class="bouton bouton-texte" type="button" data-ferme style="width:100%;justify-content:center;color:var(--atlas-inkSoft)">Annuler</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- AUJOURD'HUI -->
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre">
+        <div class="cadre-capture"><img src="aujourdhui/reglages-connexion.jpg" alt="L'écran Mot de passe tel qu'il est aujourd'hui, sur un appareil sans Face ID"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>Il tient sans défiler dans les trois cas. Aujourd'hui il peut glisser dès qu'un appareil porte Face ID, et il glisse quand on touche Me déconnecter partout, dont la confirmation s'ouvre dans l'écran.</li>
+      <li>Les trois cases tiennent chacune sur une ligne : « Actuel », « Nouveau », « Confirmer », en toutes lettres et non plus en capitales espacées. Le titre au-dessus dit déjà « mot de passe ».</li>
+      <li>La phrase qui dit que les deux sont identiques passe au vert, la couleur de ce qui marche. Celles qui bloquent restent rouges.</li>
+      <li>Une fois changé, la confirmation se lit à la place du bouton, en vert, au lieu de s'ouvrir en haut et de pousser l'écran.</li>
+      <li>Face ID et Me déconnecter partout vont dans une seule plage, chacun avec sa pastille : verte quand Face ID est posé, rouge pour la sortie. « Ailleurs » part.</li>
+      <li>Me déconnecter partout ouvre la feuille de Se déconnecter, que vous avez retenue : le nom de l'entreprise, la phrase, le bouton rouge, et « Annuler » en simple mot.</li>
+      <li>Plus de « MOI » doré sous le titre.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>« Changer de mot de passe ? » avec son point d'interrogation, les deux saisies, et l'œil sur les trois cases.</li>
+      <li>Le bouton sous ses propres cases, au-dessus de Face ID (votre demande du 26 août), et éteint tant que la saisie ne tient pas.</li>
+      <li>La règle ne parle qu'en mordant : « Il faut au moins 12 caractères. » n'apparaît qu'en tapant. Essayez dans la case Nouveau.</li>
+      <li>Face ID après le mot de passe, une date sous chaque appareil, et la ligne Face ID qui ne paraît que sur un appareil qui sait le faire. Retirer un appareil peut redemander votre mot de passe, puis reprend tout seul.</li>
+      <li>Deux appuis pour se déconnecter partout, et la phrase qui prévient que Face ID part avec.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>Le 9 septembre, vous aviez gardé les libellés en capitales sur cet écran. Ce soir, la série les écrit en toutes lettres : on suit ce soir, ou on garde les capitales ici.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="reglages-notifications.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Notifications</a>
+  <a href="reglages-connexion-double-verification.html">Double vérification<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+/*
+  Les règles de src/lib/mot-de-passe.ts, recopiées pour la planche : douze
+  caractères au moins, la confirmation comparée telle quelle, et chaque ligne
+  qui ne parle qu'une fois la case commencée. Les refus « trop courant » et
+  « reprend votre nom » existent dans l'appli et ne sont pas simulés ici.
+*/
+document.addEventListener("DOMContentLoaded", function () {
+  "use strict";
+  var ecran = document.getElementById("ecran-mdp");
+  var actuel = document.getElementById("actuel");
+  var nouveau = document.getElementById("nouveau");
+  var confirmation = document.getElementById("confirmation");
+  var ditNouveau = document.getElementById("dit-nouveau");
+  var ditConf = document.getElementById("dit-confirmation");
+  var bouton = document.getElementById("changer");
+  var fait = document.getElementById("change");
+
+  function lire() {
+    var n = nouveau.value, c = confirmation.value;
+    var court = n !== "" && n.length < 12;
+    ditNouveau.hidden = !court;
+    ditNouveau.textContent = "Il faut au moins 12 caractères.";
+    ditConf.hidden = c === "";
+    ditConf.className = "secret-dit " + (c === n ? "bon" : "mord");
+    ditConf.textContent = c === n ? "Les deux sont identiques." : "Les deux saisies ne sont pas identiques.";
+    var pret = actuel.value !== "" && n.length >= 12 && c === n;
+    bouton.setAttribute("aria-disabled", pret ? "false" : "true");
+  }
+  [actuel, nouveau, confirmation].forEach(function (c) { c.addEventListener("input", lire); });
+
+  /* L'œil : il montre, puis il cache. Le mot dit ce que l'appui va faire. */
+  ecran.querySelectorAll(".oeil").forEach(function (o) {
+    o.addEventListener("click", function (e) {
+      e.preventDefault();
+      var champ = o.parentNode.querySelector("input");
+      var voir = champ.type === "password";
+      champ.type = voir ? "text" : "password";
+      o.setAttribute("aria-pressed", voir ? "true" : "false");
+      o.setAttribute("aria-label", (voir ? "Masquer" : "Afficher") + o.getAttribute("aria-label").replace(/^(Afficher|Masquer)/, ""));
+      o.querySelector("use").setAttribute("href", voir ? "#i-oeil-barre" : "#i-oeil");
+    });
+  });
+
+  /* Changé : les trois cases se vident, et la confirmation se lit à la place
+     du bouton, sans rien pousser. */
+  bouton.addEventListener("click", function () {
+    if (bouton.getAttribute("aria-disabled") === "true") return;
+    [actuel, nouveau, confirmation].forEach(function (c) { c.value = ""; });
+    lire();
+    bouton.hidden = true;
+    fait.hidden = false;
+    setTimeout(function () { fait.hidden = true; bouton.hidden = false; }, 3000);
+  });
+
+  function remplir(pret) {
+    actuel.value = pret ? "tilleul-1962" : "";
+    nouveau.value = pret ? "haie-de-charmes-49" : "";
+    confirmation.value = pret ? "haie-de-charmes-49" : "";
+    fait.hidden = true; bouton.hidden = false;
+    lire();
+  }
+  document.querySelectorAll(".pl-etats button[data-etat]").forEach(function (b) {
+    b.addEventListener("click", function () { remplir(b.getAttribute("data-etat") === "pret"); });
+  });
+
+  ecran.querySelectorAll("[data-dit]").forEach(function (b) {
+    b.addEventListener("click", function () { Kit.note(ecran, b.getAttribute("data-dit")); });
+  });
+  ecran.querySelectorAll("[data-fait]").forEach(function (b) {
+    b.addEventListener("click", function () { Kit.fermerFeuilles(ecran); Kit.note(ecran, b.getAttribute("data-fait")); });
+  });
+  lire();
+});
+</script>
+</body>
+</html>

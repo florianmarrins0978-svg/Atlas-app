@@ -2,7 +2,7 @@ import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font, libelleCaps } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getRole } from "@/server/autorisation";
-import { rubriquesReglages, surtitreReglages } from "@/lib/rubriques-reglages";
+import { rubriquesReglages } from "@/lib/rubriques-reglages";
 import { versionEtRetard } from "@/server/version-executee";
 import { etatDeLaBase } from "@/server/retard-de-la-base";
 import { etatVersionLente } from "@/server/etat-banc";
@@ -42,8 +42,8 @@ export const dynamic = "force-dynamic";
 export default async function ReglagesPage() {
   await garderLaPage();
   const ctx = await getCurrentCtx();
-  // **Le nom de l'entreprise ne sert QU'À la feuille de déconnexion**, qui
-  // nomme d'où l'on sort. Lu ici plutôt que dans le composant : un écran
+  // **Le nom de l'entreprise sert à la carte qui ouvre le sommaire, et à la
+  // feuille de déconnexion**, qui nomme d'où l'on sort. Lu ici plutôt que dans le composant : un écran
   // n'interroge pas la base, il affiche ce qu'on lui donne (`CLAUDE.md` §4
   // sexies), et cette lecture-ci part avec les deux autres au lieu d'ajouter un
   // aller-retour.
@@ -73,9 +73,11 @@ export default async function ReglagesPage() {
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <div className="pb-24">
-        <EnTeteEcran surtitre={surtitreReglages(role)} titre="Réglages" />
+        {/* Plus de surtitre doré sous le titre depuis sa planche du 25 octobre
+            2026 : la carte de l'entreprise, juste dessous, dit déjà où l'on est. */}
+        <EnTeteEcran titre="Réglages" />
 
-        <Sommaire ensembles={ensembles} />
+        <Sommaire ensembles={ensembles} paquets nomEntreprise={entreprise?.nom ?? null} />
 
         {/* **Un écran court dit pourquoi il est court.** Sans cette phrase, le
             salarié lit une application amputée et va demander au patron de

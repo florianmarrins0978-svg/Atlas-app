@@ -36046,7 +36046,45 @@ retirée, et `test-papier-facture-db.ts` avec elle.
 
 **Ce qui reste dans le gabarit**, avec la même faiblesse : `GardeVerificationEmail` et `GardeDocumentsLegaux` (`TODO.md`). Elles ne protègent pas une donnée d'un rôle, elles orientent vers une étape ; moins grave, mais à déplacer de la même façon.
 
-## §505 : Donner, changer ou retirer un accès redemande une identité récente
+## §505 : Terminés, le jour du chantier passe dans un carré qui dit l'état
+
+Sa planche du 25 octobre 2026 (`appli/soignee/termines.html`), codée le soir
+même. Le jour du chantier quitte la ligne d'état pour un carré à gauche de la
+rangée (`carreDuJour`, règle pure) : doré pâle pour une facture partie, vert
+plein comme la capsule « À facturer » pour ce qui attend. Deux teintes pâles
+avaient été dessinées d'abord : elles se confondaient à l'œil. Le jour est
+`dateDuChantier` (le planning, sinon le jour de la facture), confirmé par lui le
+même soir ; sans aucune date, la place reste vide. L'année s'écrit dans le
+carré quand ce n'est plus celle du jour, pour la raison que porte déjà
+`libelleDateChantier` : l'œil mêle tous les mois.
+
+La carte de TVA perd son contour doré du 26 août : il disait « on peut appuyer »
+à une carte du même blanc que l'écran, et c'est désormais le fond teinté qui la
+détache. `test-tva-en-tete-e2e` mesure donc l'écart entre ce fond et celui de
+l'écran, plus le contour.
+## §506 : Vos chantiers se lit d'un coup d'œil, et le premier chantier entre dans l'écran
+
+**Sa demande du 25 octobre 2026**, devant la planche `appli/soignee/accueil.html` : *« tu peux coder ça, ne lance pas de batterie »*, puis *« seulement la page chantier, pas la page planning »*. L'écran d'aujourd'hui, regardé avec une réponse de client et cinq chantiers, n'en montrait aucun dans le premier écran.
+
+| | avant | après |
+|---|---|---|
+| « Vos clients » | 11 px, capitales espacées de 0,28 em | 15,5 px en phrase, même place, même or, même chevron (21 px) |
+| titre d'une carte (`TitreDeCarte`) | 11 px, capitales | 15 px gras en phrase, le point de la famille devant |
+| carte d'une réponse | nom 16 px, phrase 13 px, citation derrière un filet noir, gestes 14 px vert foncé | nom 20 px, phrase 15 px, citation en italique sans filet, gestes 16 px gras dans la couleur de la famille (`couleurDuGeste`) |
+| correction sans date | « Le client veut ce devis corrigé avant de l'accepter. » | rien : le titre le dit (`texte: null`) ; ses dates restent |
+| carte blanche « pour mémoire » | titre et phrase à 3,3 de contraste (`muted`) | encre douce (`inkSoft`, 8,0) |
+| « En cours » | 11 px à 0,28 em, chiffre 13,5 px | 13 px à 0,12 em, chiffre 16 px |
+| une ligne du fil | jour 19 px, mois 11 px à 0,28 em, état 12 px en capitales, 21 px d'air, et deux rangées vides sous la date (`row-span-3`, 30 px) | jour 22 px, mois 12,5 px, état 15 px en phrase, 14 et 16 px d'air, plus de rangée vide |
+| loin du milieu | les chantiers tombaient à 45 % (`atlas-mettre-en-avant`) | tout reste net ; la perle dit lequel on regarde |
+| sous « Créer un devis » | 22 px, puis 28 avant la première carte | 12, puis 8 |
+
+**Ce qui revient sur une de ses demandes, et pourquoi c'est la sienne aussi.** Les 21 px entre deux chantiers étaient sa demande du 2 septembre (*« garde l'air, les 44 px, 40 px et 21 px »*). La planche qu'il a fait coder les resserre : l'état écrit en phrase sépare déjà deux chantiers. Les 44 px au-dessus du titre et ses 40 px ne bougent pas. Le fondu du 10 août part de même : c'était le point « à trancher » de la planche, et il l'a fait coder tel quel.
+
+**La rangée vide n'était pas un choix.** `row-span-3` datait du temps où le nom, le lieu et l'état étaient trois cases de la grille ; ils vivent depuis dans une seule (`.atlas-glisse`), et la date réclamait encore deux rangées que rien ne remplissait. Mesuré au navigateur, pas supposé : 136 px par chantier pour 76 de texte.
+
+**Ce qui n'est PAS dans ce lot.** La barre du bas en 12,5 px que montre la planche relève de « Ce qui change partout » (`appli/soignee/fondations.html`), qu'il n'a pas encore tranché : la toucher ici l'aurait changée sur tous les écrans à la fois.
+
+## §507 : Donner, changer ou retirer un accès redemande une identité récente
 
 *26 octobre 2026, audit de sécurité (E11, `docs/audit-2026-10-etape-3-inventaire.md`).*
 
@@ -36060,7 +36098,7 @@ retirée, et `test-papier-facture-db.ts` avec elle.
 
 **Ce qui le tient** : `test-gestes-sensibles-db.ts` (les trois gestes sans preuve ne changent rien en base, avec preuve ils passent) et `test-nouveau-compte-e2e.ts` (la feuille s'ouvre, le rôle ne bouge qu'après).
 
-## §506 : Le devis voyage en donnée auprès de l'IA des retouches, jamais dans sa consigne
+## §508 : Le devis voyage en donnée auprès de l'IA des retouches, jamais dans sa consigne
 
 *26 octobre 2026, audit de sécurité (E13, `docs/audit-2026-10-etape-3-inventaire.md`).*
 

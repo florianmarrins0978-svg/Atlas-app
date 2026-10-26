@@ -55,7 +55,25 @@ export type Rubrique = {
   href: string | null;
 };
 
-export type EnsembleRubriques = { titre: string; rubriques: Rubrique[] };
+/**
+ * Un paquet du sommaire.
+ *
+ * **`cote` dit à qui il appartient, et c'est ce qui coupe** : depuis le
+ * 25 octobre 2026 l'entreprise se range en plusieurs paquets, chacun sous son
+ * titre. Désigner l'entreprise par le titre « L'entreprise » aurait laissé
+ * sortir sans bruit les deux paquets voisins ; la désigner par soustraction
+ * (« tout sauf Moi ») ne voyait rien d'une rubrique déplacée de l'un à l'autre
+ * (`test-rubriques-reglages.ts`).
+ *
+ * **`carte`** : le paquet se dessine en carte de visite, le nom de
+ * l'entreprise en grand. Un seul l'est, celui qui ouvre la page.
+ */
+export type EnsembleRubriques = {
+  titre: string;
+  cote: "entreprise" | "moi";
+  carte?: boolean;
+  rubriques: Rubrique[];
+};
 
 /** Ce qui appartient à la personne : elle l'emporte d'une entreprise à l'autre. */
 const MOI: Rubrique[] = [
@@ -95,15 +113,18 @@ const MOI: Rubrique[] = [
 ];
 
 /**
- * Ce qui appartient à l'entreprise.
+ * Ce qui appartient à l'entreprise, EN PAQUETS — sa planche du 25 octobre 2026
+ * (`appli/soignee/reglages.html`), choisie ce jour-là : *« très bien, code
+ * ça »*. Onze rubriques d'affilée se lisaient mal ; les voisines se rangent
+ * ensemble, chaque paquet sous son titre.
  *
- * **L'ordre est le sien**, et il porte ses quatre priorités du 13 août 2026 —
- * entreprise, équipe, tarifs, documents — plus le planning qu'il a ajouté sur
- * sa planche. Les ranger autrement obligerait à parcourir la liste pour trouver
- * ce qu'on vient chercher neuf fois sur dix.
+ * **Ses priorités du 13 août restent en tête** : l'entreprise ouvre la page,
+ * en carte, puis l'équipe. Les tarifs et les documents, qui suivaient, ouvrent
+ * le paquet d'après.
  */
+const CARTE: Rubrique[] = [{ nom: "Mon entreprise", icone: "immeuble", href: "/reglages/identite" }];
+
 const ENTREPRISE: Rubrique[] = [
-  { nom: "Mon entreprise", icone: "immeuble", href: "/reglages/identite" },
   {
     nom: "Équipe",
     // **Le libellé dit ce qu'on y trouve VRAIMENT.** « Utilisateurs, rôles et
@@ -125,6 +146,19 @@ const ENTREPRISE: Rubrique[] = [
     icone: "personnes",
     href: "/reglages/equipe",
   },
+  // **Les véhicules, sa planche du 14 octobre 2026** : leurs papiers, et les
+  // rappels du contrôle technique. Ouverts à tous, parce que le salarié y
+  // trouve l'assurance pour le constat ; le patron seul y écrit.
+  { nom: "Véhicules", icone: "camion", href: "/reglages/vehicules" },
+  // **La seule autre rubrique de l'entreprise ouverte à TOUS**, sa règle du
+  // 27 septembre 2026 : *« L'organigramme doit être visible par tout le
+  // monde ! »*. Le patron seul y change quelque chose ; l'écran le décide, et
+  // le serveur le refuse (`exigerProprietaire`).
+  { nom: "Organigramme", icone: "organigramme", href: "/reglages/organigramme" },
+];
+
+/** Ce qui entre dans un devis : ses prix, ses papiers, ce qu'il achète. */
+const POUR_LES_DEVIS: Rubrique[] = [
   // **« Tarifs & catalogue » et « Devis & factures » NE CHANGENT PAS, et c'est
   // un refus assumé du 5 septembre 2026.** Ce sont des mots de son métier, ils
   // sont justes, et neuf suites les lisent : les retoucher aurait coûté une
@@ -137,6 +171,16 @@ const ENTREPRISE: Rubrique[] = [
     icone: "feuille",
     href: "/reglages/documents",
   },
+  // **Ce qu'il PAIE, à côté de ce qu'il vend** — sa planche du 18 et du
+  // 19 octobre 2026 : ses fournisseurs, ses partenaires, leurs prix d'achat et
+  // ses deux marges. Le devis dicté y prend ses prix après ses tarifs
+  // (`src/lib/prix-achat.ts`). Le patron seul l'ouvre : la page le vérifie
+  // avant de lire quoi que ce soit.
+  { nom: "Fournisseurs et partenaires", icone: "carton", href: "/reglages/fournisseurs" },
+];
+
+/** Ce qu'Atlas fait pour lui, et ce qu'il lui paie. */
+const L_APPLICATION: Rubrique[] = [
   // **« FICHE D'ENTRETIEN » A QUITTÉ LES RÉGLAGES le 26 août 2026**, à sa
   // demande : *« est-ce qu'on peut la déplacer dans la fiche de chantier, dans
   // la catégorie Paysage ? Et comme ça on ne la voit plus dans la catégorie
@@ -185,23 +229,6 @@ const ENTREPRISE: Rubrique[] = [
     icone: "bouclier",
     href: "/reglages/donnees",
   },
-  // **Ce qu'il PAIE, à part de ce qu'il vend** — sa planche du 18 et du
-  // 19 octobre 2026 : ses fournisseurs, ses partenaires, leurs prix d'achat et
-  // ses deux marges. Après ses priorités et ses outils, jamais au milieu d'eux
-  // (`test-rubriques-reglages.ts`). Le devis dicté y prend ses prix après
-  // ses tarifs (`src/lib/prix-achat.ts`). Le patron seul
-  // l'ouvre : la page le vérifie avant de lire quoi que ce soit.
-  { nom: "Fournisseurs et partenaires", icone: "carton", href: "/reglages/fournisseurs" },
-  // **La seule rubrique de l'entreprise ouverte à TOUS**, sa règle du
-  // 27 septembre 2026 : *« L'organigramme doit être visible par tout le
-  // monde ! »*. Le patron seul y change quelque chose ; l'écran le décide, et
-  // le serveur le refuse (`exigerProprietaire`). **En dernier**, pour ne pas
-  // s'insérer entre ses quatre priorités (`test-rubriques-reglages.ts`).
-  // **Les véhicules, sa planche du 14 octobre 2026** : leurs papiers, et les
-  // rappels du contrôle technique. Ouverte à tous comme l'organigramme, parce
-  // que le salarié y trouve l'assurance pour le constat ; le patron seul y écrit.
-  { nom: "Véhicules", icone: "camion", href: "/reglages/vehicules" },
-  { nom: "Organigramme", icone: "organigramme", href: "/reglages/organigramme" },
 ];
 
 /**
@@ -253,23 +280,21 @@ export function rubriquesReglages(role: RoleReglages | null): EnsembleRubriques[
   // l'organigramme que le salarié lit depuis le 27 septembre 2026 : la garde
   // refuse l'écran à qui n'a pas d'adhésion lisible, et une rubrique qui mène à
   // un refus se lit comme une panne.
-  const entreprise =
-    role === null ? [] : ENTREPRISE.filter((r) => (r.href === null ? effectif === "proprietaire" : visible(r)));
-  const moi = MOI.filter(visible);
+  const garder = (liste: Rubrique[]) =>
+    role === null ? [] : liste.filter((r) => (r.href === null ? effectif === "proprietaire" : visible(r)));
 
   // Un salarié ne reçoit pas une liste plus courte : il reçoit une AUTRE liste.
   // Rien de l'entreprise n'en sort — ni grisé, ni masqué, ni rendu puis caché.
-  if (entreprise.length === 0) return [{ titre: "Moi", rubriques: moi }];
+  // Un paquet vidé par le rôle disparaît avec son titre : un titre sur rien se
+  // lit comme une panne.
+  const entreprise: EnsembleRubriques[] = [
+    { titre: "", cote: "entreprise" as const, carte: true, rubriques: garder(CARTE) },
+    { titre: "L'entreprise", cote: "entreprise" as const, rubriques: garder(ENTREPRISE) },
+    { titre: "Pour les devis", cote: "entreprise" as const, rubriques: garder(POUR_LES_DEVIS) },
+    { titre: "L'application", cote: "entreprise" as const, rubriques: garder(L_APPLICATION) },
+  ].filter((e) => e.rubriques.length > 0);
 
-  return [
-    { titre: "L'entreprise", rubriques: entreprise },
-    { titre: "Moi", rubriques: moi },
-  ];
-}
-
-/** Le surtitre de l'écran : l'entreprise ne lui appartient pas. */
-export function surtitreReglages(role: RoleReglages | null): string {
-  return role === "proprietaire" ? "Mon entreprise" : "Mon compte";
+  return [...entreprise, { titre: "Moi", cote: "moi", rubriques: MOI.filter(visible) }];
 }
 
 // ─── `reservéAuPatron` RETIRÉE LE 5 SEPTEMBRE 2026 — audit de santé ─────────

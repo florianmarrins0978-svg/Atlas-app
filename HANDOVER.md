@@ -5115,7 +5115,7 @@ avant d'écrire un écran ou une route :
 |---|---|
 | **La règle est UNE fonction pure** | `src/lib/acces-roles.ts`. Elle dessine la barre du bas, filtre le sommaire des réglages, ET refuse les adresses. Ne pas en écrire une seconde |
 | **Un ÉCRAN neuf : une ligne** | `await garderLaPage();` en première instruction (`src/server/garde-page.ts`). Plus dans `layout.tsx` depuis le 25 octobre 2026 : un gabarit ne se rejoue pas à la navigation interne (E8, `ARCHITECTURE.md` §504). `scripts/test-pages-gardees.ts` rougit sinon. Fermé d'office au salarié (liste blanche), ouvert au commercial |
-| **Un geste qui ouvre l'entreprise** | une identité récente (`GESTES_SENSIBLES`, `src/lib/preuve-recente.ts`) : IBAN, clés d'appareil, export complet, et depuis le 26 octobre 2026 donner, changer ou retirer un accès (`ARCHITECTURE.md` §505). Rendue en valeur (`preuveExigee`), l'écran ouvre `DemanderPreuve` |
+| **Un geste qui ouvre l'entreprise** | une identité récente (`GESTES_SENSIBLES`, `src/lib/preuve-recente.ts`) : IBAN, clés d'appareil, export complet, et depuis le 26 octobre 2026 donner, changer ou retirer un accès (`ARCHITECTURE.md` §507). Rendue en valeur (`preuveExigee`), l'écran ouvre `DemanderPreuve` |
 | **Une ROUTE d'API neuve, SI** | elle ne traverse aucune mise en page. `const refus = await exigerOuverture(ctx); if (refus) return refus;` en tête du handler. `scripts/test-acces-routes-gardees.ts` rougit sinon |
 
 **Le piège à connaître, et il a coûté un rouge pendant ce lot :** écrire dans
