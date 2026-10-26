@@ -269,6 +269,33 @@
         ],
         "createdAt": "2026-10-26T09:01:57.453Z",
         "reason": "faux positif : .cadre est le cadre du téléphone de la planche, l'écran le remplit bord à bord par construction (kit.css)"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "appli/soignee/creer-un-compte.html"
+        ],
+        "createdAt": "2026-10-26T12:45:24.914Z",
+        "reason": "Claude: .cadre est le téléphone de la planche, ses écrans sont plein bord par construction (kit.css, toutes les planches soignées)"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/creer-un-compte.html"
+        ],
+        "createdAt": "2026-10-26T12:45:24.930Z",
+        "reason": "Claude: #ebe8e1 est le fond commun des planches soignées (kit.css), charte Origine relevée sur Arborea (PRODUCT.md, Brand Commitments)"
+      },
+      {
+        "rule": "pulsing-dot",
+        "value": "*",
+        "files": [
+          "appli/soignee/creer-un-compte.html"
+        ],
+        "createdAt": "2026-10-26T12:45:24.947Z",
+        "reason": "Claude: les trois points ne s'animent que pendant la vraie lecture de l'attestation par l'IA, comme la lecture du croquis sur arrosage.html"
       }
     ]
   }
