@@ -6,6 +6,11 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-26
+
+- **Batterie commune des cinq lots du 25 octobre** (fiche d'un client, main d'œuvre hors des travaux à faire, Réglages en paquets, Terminés soigné, Vos chantiers soigné), sur sa demande : *« fusionne et joue une seule batterie pour toutes »*. Rouges trouvés entre les lots et corrigés : le mode d'emploi cherchait l'ancien texte des gestes de la fiche client ; deux suites réclamaient l'ancienne fiche (la flèche dans `header`, Tout télécharger sous Modifier) ; la borne des portes de Terminés suit la planche (56 px, deux lignes) et, à 360 px, « Retours d'intervention » et sa pastille débordaient de 8 px : le bord passe de 14 à 10 px. Quatre rouges d'outillage (garde-fusion-main, photo-entrante, rappel-arrosage, secret-de-l-espace) sont rouges de la même façon sur `main` (`verifier-rouge-prealable.ts`). `ARCHITECTURE.md` : les paragraphes des lots deviennent §505 (Terminés) et §506 (Vos chantiers), §504 étant pris sur `main` par l'audit.
+
+---
 ## 2026-10-25
 
 - **La fiche d'un client, soignée comme sur sa planche** (`appli/soignee/client.html`, regardée et reprise trois fois le même soir, puis « ok code ça »). Le nom et ses coordonnées tiennent dans une plage sans liseré, « Client » en doré au-dessus ; **le téléphone appelle et l'adresse ouvre le plan** au toucher ; Modifier ses coordonnées et Tout télécharger passent côte à côte au pied de la plage ; Dernier devis, Nouveau devis et Contrat d'entretien perdent leur encadré et gardent leur place (le dessin au-dessus du mot, le vert pour le premier, l'or pour les deux autres) ; les onglets du dossier passent de 9,5 px en capitales à 16 px ; la date d'une pièce passe sous son numéro, sans icône ; Supprimer ce client s'écrit en toutes lettres ; un refus de partage s'écrit enfin dans le rouge des refus. L'en-tête n'emploie plus `EnTeteEcran` : son allure « ample » n'a donc plus d'utilisateur (`TODO.md`).
