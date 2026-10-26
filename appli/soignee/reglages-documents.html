@@ -204,11 +204,9 @@
 .teinte-autre .ico { width: 20px; height: 20px; }
 .teinte-autre input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: 0; padding: 0; }
 .revenir { margin-top: 18px; }
-/* Voir un exemple garde les bouts ronds de l'appli (VoirUnExemple.tsx, rounded-full), sa demande du 26 octobre. */
-.bouton-pilule { border-radius: 999px; }
 </style>
 </head>
-<body class="pl">
+<body class="pl pl-pilules">
 
 <!-- Trois dessins de l'appli que la boîte commune n'a pas (src/app/reglages/icones.tsx). -->
 <svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
@@ -498,7 +496,7 @@
 
           </div>
 
-          <div class="action-bas" id="action-exemple"><button class="bouton bouton-plein bouton-pilule" type="button" data-note="Sur la planche, l'exemple ne s'ouvre pas."><svg class="ico" aria-hidden="true"><use href="#i-oeil"/></svg>Voir un exemple</button></div>
+          <div class="action-bas" id="action-exemple"><button class="bouton bouton-plein" type="button" data-note="Sur la planche, l'exemple ne s'ouvre pas."><svg class="ico" aria-hidden="true"><use href="#i-oeil"/></svg>Voir un exemple</button></div>
           <div class="action-bas" id="action-enregistrer" hidden><button class="bouton bouton-plein" type="button">Enregistrer</button></div>
 
           <!-- Le texte entier des conditions générales : src/lib/conditions-generales.ts, au caractère près. -->

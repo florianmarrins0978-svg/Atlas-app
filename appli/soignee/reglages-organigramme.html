@@ -66,11 +66,9 @@
 .feuille-tete { display: flex; align-items: center; gap: 14px; margin: 6px 0 14px; }
 .feuille-tete .feuille-titre { margin: 0; }
 .plein-dit { margin: 14px 2px 0; font-size: 14.5px; color: var(--atlas-inkSoft); }
-/* Les bouts ronds des boutons de l'appli (rounded-full), sa demande du 26 octobre. */
-.bouton-pilule { border-radius: 999px; }
 </style>
 </head>
-<body class="pl">
+<body class="pl pl-pilules">
 
 <header class="pl-tete">
   <a class="pl-sommaire" href="reglages.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Réglages</a>
@@ -100,7 +98,7 @@
             <div class="arbre" data-arbre></div>
           </div>
 
-          <div class="action-bas" data-si-etat="tous seul"><button class="bouton bouton-plein bouton-pilule" type="button" data-ouvre="feuille-ajout"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter une personne</button></div>
+          <div class="action-bas" data-si-etat="tous seul"><button class="bouton bouton-plein" type="button" data-ouvre="feuille-ajout"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter une personne</button></div>
 
           <nav class="barre" aria-label="Navigation principale" data-si-etat="tous seul">
             <div class="barre-onglets">

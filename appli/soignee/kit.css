@@ -443,6 +443,12 @@ textarea.champ-saisie { min-height: 110px; resize: vertical; }
 .tete-ronds .rond-creux { text-decoration: none; }
 .rubrique-or { color: var(--atlas-or); }
 
+/* Les boutons des réglages ont les bouts ronds de l'appli (rounded-full), ses
+   demandes du 26 octobre, bouton après bouton : une planche des réglages porte
+   la classe pl-pilules sur son body, et tous ses boutons suivent, y compris
+   ceux que son script fabrique. */
+.pl-pilules .ecran .bouton { border-radius: 999px; }
+
 /* Une ligne de réglage dans sa plage : le libellé en clair, la valeur en serif. */
 /* Le filet se pose AU-DESSUS de chaque ligne, et la plage rogne celui de la
    première : un voisin caché par un état ne laisse pas de trait orphelin. */

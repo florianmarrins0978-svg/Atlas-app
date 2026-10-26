@@ -111,11 +111,9 @@
 .lecture .ico { display: block; width: 34px; height: 34px; margin: 0 auto 12px; color: var(--atlas-or); animation: tourne 1.4s linear infinite; }
 @keyframes tourne { to { transform: rotate(360deg); } }
 .bouton-alerte { background: var(--atlas-alerte); color: var(--sur-plein); }
-/* Les bouts ronds des boutons de l'appli (rounded-full), sa demande du 26 octobre. */
-.bouton-pilule { border-radius: 999px; }
 </style>
 </head>
-<body class="pl">
+<body class="pl pl-pilules">
 
 <header class="pl-tete">
   <a class="pl-sommaire" href="reglages.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Réglages</a>
@@ -219,7 +217,7 @@
                 <p class="vide-texte">Ajoutez la carte grise : Atlas y lit la plaque, le modèle et le poids.</p>
               </div>
 
-              <div class="action-bas" data-si-etat="patron vide"><button class="bouton bouton-plein bouton-pilule" type="button" data-ouvre="feuille-ajout" data-titre="Ajoutez la carte grise du véhicule" data-sous="Atlas y lit la plaque, le modèle et le poids."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter un véhicule</button></div>
+              <div class="action-bas" data-si-etat="patron vide"><button class="bouton bouton-plein" type="button" data-ouvre="feuille-ajout" data-titre="Ajoutez la carte grise du véhicule" data-sous="Atlas y lit la plaque, le modèle et le poids."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter un véhicule</button></div>
             </div>
 
             <!-- La fiche d'un camion : elle se remplit selon la ligne touchée. -->
@@ -252,7 +250,7 @@
 
               <button class="retirer-vehicule touche" type="button" data-ouvre="feuille-retrait"><svg class="ico ico-p" aria-hidden="true"><use href="#i-croix"/></svg>Retirer ce véhicule</button>
 
-              <div class="action-bas"><button class="bouton bouton-plein bouton-pilule" type="button" data-ouvre="feuille-ajout" data-titre="Ajoutez un document du véhicule" data-sous="Carte grise, assurance ou contrôle technique."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter un document</button></div>
+              <div class="action-bas"><button class="bouton bouton-plein" type="button" data-ouvre="feuille-ajout" data-titre="Ajoutez un document du véhicule" data-sous="Carte grise, assurance ou contrôle technique."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter un document</button></div>
             </div>
 
           </div>
