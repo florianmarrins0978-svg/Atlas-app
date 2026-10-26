@@ -67,8 +67,10 @@
 .gerer .ligne { min-height: 76px; }
 .gerer .pastille-ico { color: var(--atlas-or); }
 .gestes-statut { margin-top: 10px; }
-.attention-mot { margin-top: 8px; }
-.attention-mot b { font-weight: 700; }
+/* Une simple ligne, sans encadré : sa demande du 26 octobre, l'encadré bleu
+   faisait « un peu trop enfantin ». La phrase garde sa place. */
+.attention-mot { margin: 10px 0 0; }
+.attention-mot b { font-weight: 600; color: var(--atlas-ink); }
 
 .offre { margin: 0; padding: 0; list-style: none; }
 .offre li { display: flex; align-items: flex-start; gap: 10px; padding: 5px 0; font-size: 15px; line-height: 1.4; color: var(--atlas-ink); }
@@ -169,7 +171,7 @@
                 <span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>
               </button>
             </div>
-            <p class="plage-ton attention-mot" data-ton="bleu"><b>Attention au mot.</b> Ici, « factures » désigne celles qu'Atlas vous envoie. Celles de vos clients sont dans « Terminés ».</p>
+            <p class="second attention-mot"><b>Attention au mot.</b> Ici, « factures » désigne celles qu'Atlas vous envoie. Celles de vos clients sont dans « Terminés ».</p>
             <div class="gestes-statut">
               <button class="bouton-texte alerte" type="button" data-note="Avant de partir se voit sur la planche Abonnement.">Résilier</button>
             </div>
@@ -287,6 +289,7 @@
       <li><b>Épuisé</b> : la barre est pleine, le chiffre et le symbole pause en rouge, sans encadré de couleur autour (votre demande du 26 octobre). Le rouge, le bordeaux ou l'ambre se choisissent au-dessus du téléphone. Le titre devient « Crédits IA épuisés », et la ligne dit ce qui reste : Atlas IA reprend le 1<sup>er</sup> du mois suivant, d'ici là tout s'écrit à la main.</li>
       <li>Le titre et la barre gardent leur place dans les trois états : seul ce qui change de sens change de couleur.</li>
       <li>Aucun bouton sur la plage : rien ne s'y achète, rien ne s'y règle.</li>
+      <li>« Attention au mot » perd son encadré bleu : une simple ligne, à la même place (votre demande du 26 octobre). La planche Abonnement suit.</li>
     </ul>
     <h2>Ce qui ne se décide pas ici</h2>
     <ul class="garde">

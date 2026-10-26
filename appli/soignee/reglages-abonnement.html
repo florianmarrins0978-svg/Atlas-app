@@ -91,8 +91,10 @@
 /* Au mois ou à l'année : le prix qui ne vaut pas se tait. */
 .ecran[data-periode="mois"] .an, .ecran[data-periode="an"] .mois { display: none; }
 
-.attention-mot { margin-top: 8px; }
-.attention-mot b { font-weight: 700; }
+/* Une simple ligne, sans encadré : sa demande du 26 octobre, l'encadré bleu
+   faisait « un peu trop enfantin ». La phrase garde sa place. */
+.attention-mot { margin: 10px 0 0; }
+.attention-mot b { font-weight: 600; color: var(--atlas-ink); }
 .paiement { margin-top: 14px; }
 
 /* Avant de partir. */
@@ -214,7 +216,7 @@
                     <span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>
                   </button>
                 </div>
-                <p class="plage-ton attention-mot" data-ton="bleu"><b>Attention au mot.</b> Ici, « factures » désigne celles qu'Atlas vous envoie. Celles de vos clients sont dans « Terminés ».</p>
+                <p class="second attention-mot"><b>Attention au mot.</b> Ici, « factures » désigne celles qu'Atlas vous envoie. Celles de vos clients sont dans « Terminés ».</p>
                 <div class="gestes-statut">
                   <button class="bouton-texte alerte" type="button" data-ouvre="feuille-partir" data-si-etat="abonne impaye">Résilier</button>
                   <button class="bouton bouton-creux" type="button" data-va-etat="abonne" data-si-etat="arret">Ne pas arrêter</button>
@@ -451,7 +453,7 @@
       <li>Une carte se touche pour se choisir. Les trois boutons « S'abonner » deviennent un seul, en bas, qui dit ce qu'il fait : « S'abonner à Artisan », « Passer à Illimité ». Artisan est choisi d'avance, la moins chère, en premier comme aujourd'hui.</li>
       <li>Au mois ou à l'année : un choix à deux mots, et les prix changent sous le doigt.</li>
       <li>Gérer mon abonnement devient une ligne, ce qu'elle ouvre écrit dessous. Résilier s'écrit en rouge, et « Avant de partir » monte du bas : Passer à Artisan sur une plage verte, la question facultative, Résilier quand même cerné de rouge.</li>
-      <li>« Attention au mot » se range sous Gérer mon abonnement, la seule ligne qui parle des factures d'Atlas. Posée sous les formules, elle contredisait « Devis et factures illimités », qui parle des vôtres.</li>
+      <li>« Attention au mot » se range sous Gérer mon abonnement, la seule ligne qui parle des factures d'Atlas. Posée sous les formules, elle contredisait « Devis et factures illimités », qui parle des vôtres. Elle s'écrit en simple ligne, sans encadré bleu (votre demande du 26 octobre).</li>
       <li>Le prix de l'abonnement en cours se dit en deux phrases : « 59 € HT par mois. Prochain paiement le 9 novembre 2026. » Aujourd'hui un point médian les colle.</li>
       <li>Plus de libellé « Mon entreprise » sous le titre, plus de capitales espacées.</li>
     </ul>
