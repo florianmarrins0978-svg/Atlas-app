@@ -168,7 +168,7 @@ export default function CalendrierPeriodes({
                 </span>
                 {mois && (
                   <span
-                    className="mt-0.5 block text-[11px]"
+                    className="mt-0.5 block text-[13px]"
                     style={{ color: regarde ? voile(colors.cream, 0.66) : colors.muted }}
                   >
                     {mois}

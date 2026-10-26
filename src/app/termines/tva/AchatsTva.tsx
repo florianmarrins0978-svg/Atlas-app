@@ -135,7 +135,7 @@ export default function AchatsTva({
     const periodeDeLaSaisie = periodeContenant(periodicite, date);
     if (periodeDeLaSaisie === null || dansLaPeriode(periodeVue, date)) return null;
     return (
-      <p className="mt-2.5 rounded-xl px-3.5 py-3 text-[12.5px] leading-[1.5]" style={{ backgroundColor: voile(colors.or, 0.1), color: colors.or }}>
+      <p className="mt-2.5 rounded-xl px-3.5 py-3 text-[14px] leading-[1.5]" style={{ backgroundColor: voile(colors.or, 0.1), color: colors.or }}>
         Ce ticket est daté du {new Date(`${date}T12:00:00Z`).toLocaleDateString("fr-FR", { day: "numeric", month: "long", timeZone: "UTC" })} :
         il ira dans <b style={{ color: colors.ink, fontWeight: 500 }}>{libellePeriode(periodeDeLaSaisie)}</b>,
         pas dans {libellePeriode(periodeVue)}. L’écran vous y emmènera.
@@ -189,7 +189,7 @@ export default function AchatsTva({
           type="button"
           onClick={() => objectif.current?.click()}
           disabled={enCours}
-          className="flex flex-1 flex-col items-center gap-[7px] rounded-full px-2 py-[13px] text-[12.5px]"
+          className="flex flex-1 flex-col items-center gap-[7px] rounded-full px-2 py-[13px] text-[15px] font-semibold"
           style={{ backgroundColor: colors.carteVertFond, color: colors.carteVertTexte }}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
@@ -201,7 +201,7 @@ export default function AchatsTva({
         <button
           type="button"
           onClick={() => ouvrir({ photoCle: null, lu: null, lecture: null, refus: null })}
-          className="flex flex-1 flex-col items-center gap-[7px] rounded-full px-2 py-[13px] text-[12.5px]"
+          className="flex flex-1 flex-col items-center gap-[7px] rounded-full px-2 py-[13px] text-[15px] font-semibold"
           style={{ backgroundColor: colors.carteAmbreFond, color: colors.carteAmbreTexte }}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">

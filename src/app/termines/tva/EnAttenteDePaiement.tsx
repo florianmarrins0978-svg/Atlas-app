@@ -690,7 +690,7 @@ function VirementSurLaFacture({ q }: { q: QuestionSurLaFacture | undefined }) {
   if (!q) return null;
   return (
     <div data-atlas="virement-sur-la-facture">
-      <p className="mt-2 text-[12px] leading-[1.45]" style={{ color: colors.orTexte }}>
+      <p className="mt-2 text-[14px] leading-[1.45]" style={{ color: colors.orTexte }}>
         {q.vu} {q.raison}
       </p>
       <ReponseVirement virementId={q.virementId} question={q.question} oui={q.oui} choix={[q.choix]} relire />
