@@ -297,7 +297,8 @@
   var PRETES = ["index", "fondations", "reglages", "termines", "termines-tva", "tva-bouton-paiement", "termines-comptable", "comptable-dossier", "comptable-verification", "clients", "client", "planning", "accueil",
     "reglages-identite", "reglages-equipe", "reglages-vehicules", "reglages-organigramme", "reglages-tarifs", "reglages-documents",
     "reglages-fournisseurs", "reglages-ia", "reglages-agenda", "reglages-abonnement", "reglages-donnees", "reglages-compte",
-    "reglages-notifications", "reglages-connexion", "reglages-connexion-double-verification", "reglages-apparence"];
+    "reglages-notifications", "reglages-connexion", "reglages-connexion-double-verification", "reglages-apparence",
+    "arrosage"];
 
   function planchePrete(href) {
     if (!href || /^(https?:|#|mailto:|tel:|\.\.\/)/.test(href)) return true;
