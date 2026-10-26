@@ -76,7 +76,7 @@ export default function CompleterRepas({
         type="button"
         onClick={() => setOuverte(true)}
         data-atlas="completer-repas"
-        className="mt-2 rounded-full px-3.5 py-2 text-[12.5px]"
+        className="mt-2 rounded-full px-3.5 py-2 text-[15px] font-semibold"
         style={{ border: `1px solid ${colors.line}`, color: colors.inkSoft }}
       >
         Compléter
@@ -103,7 +103,7 @@ export default function CompleterRepas({
         </div>
         {manques.length > 0 && (
           <p
-            className="mt-2.5 rounded-xl px-3.5 py-3 text-[12.5px] leading-[1.5]"
+            className="mt-2.5 rounded-xl px-3.5 py-3 text-[14px] leading-[1.5]"
             style={{ backgroundColor: colors.rustTint, color: colors.inkSoft }}
           >
             Tant qu’il manque une preuve, sa TVA ne compte pas.

@@ -81,14 +81,16 @@ async function main() {
 
   await test("un appui sur le chiffre le copie, et l'on reste sur Ma TVA", async () => {
     await page.locator('[data-atlas="montant-deductible"] button').click();
-    await page.locator('[data-atlas="montant-deductible-ouvrir"]', { hasText: "copié" }).waitFor({ timeout: 5_000 });
+    // « Copié » s'écrit à la place du carré, plus du mot (sa planche du
+    // 25 octobre 2026) : on le cherche sur la rangée, pas sur le lien.
+    await page.locator('[data-atlas="montant-deductible"]', { hasText: "Copié" }).waitFor({ timeout: 5_000 });
     assert.equal(new URL(page.url()).pathname, "/termines/tva");
     const copie = (await page.evaluate(() => navigator.clipboard.readText())).replace(/[\s  ]/g, "");
     assert.equal(copie, deductible);
   });
 
   await test("un appui sur le mot « TVA déductible » ouvre sa page, sur la même période", async () => {
-    await page.waitForTimeout(1_800); // le mot redevient « TVA déductible »
+    await page.waitForTimeout(1_800); // le carré revient à la place de « Copié »
     await page.locator('[data-atlas="montant-deductible-ouvrir"]').click();
     await page.waitForURL(/\/termines\/tva\/deductible\?/, { timeout: 30_000 });
     const u = new URL(page.url());
