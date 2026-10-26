@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Organigramme, soigné</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  ORGANIGRAMME (src/app/reglages/organigramme/page.tsx, Organigramme.tsx,
+  actions.ts, et src/lib/organigramme.ts qui range tout le monde).
+
+  Sa planche du 27 septembre (appli/rappels-par-role-et-organigramme.html) et
+  ses réponses : un gars n'a qu'UN chef ; le chef ne voit rien de plus, c'est
+  un titre ; l'organigramme est visible par TOUT LE MONDE, modifiable par le
+  patron seul. Il ne crée aucune liste : il lit les comptes (le patron, le
+  bureau) et les salariés (le terrain).
+
+  Ce qui change : l'arbre se lit de haut en bas, relié par un trait d'or ;
+  les rôles s'écrivent en toutes lettres et en or (aujourd'hui 9,5 px en
+  capitales) ; le nom en gras ; le chef porte ses gars dans SA plage, en
+  pleine largeur ; toucher quelqu'un ouvre une feuille qui monte (aujourd'hui
+  une carte qui s'ouvre sous l'arbre) ; Ajouter une personne devient le bouton
+  plein, au-dessus de la barre. Chez un salarié, rien de tout cela : il lit.
+*/
+.arbre { padding-top: 4px; }
+.lien { display: block; width: 2px; height: 22px; margin: 0 auto; border-radius: 1px; background: color-mix(in srgb, var(--atlas-or) 55%, transparent); }
+.etage { margin: 6px 0 6px; text-align: center; }
+.lien.court { height: 12px; margin-bottom: 6px; }
+.chef-tete .ligne-fin .ico { color: var(--atlas-or); }
+.rangee-cartes { display: flex; justify-content: center; gap: 10px; }
+
+.tete-ronde { width: var(--t, 52px); height: var(--t, 52px); flex: none; display: grid; place-items: center; border-radius: 50%;
+              background: var(--atlas-cream); box-shadow: inset 0 0 0 1px var(--atlas-line); color: var(--atlas-or);
+              font: 400 calc(var(--t, 52px) * 0.38)/1 var(--serif); font-variant-numeric: lining-nums; }
+
+/* Une personne du haut ou du bureau : sa tête, son nom, son rôle en or. */
+.carte-personne { flex: 0 1 180px; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px;
+                  padding: 16px 10px 14px; border-radius: var(--r-plage); background: var(--atlas-card); text-align: center; }
+.carte-personne.haut { background: var(--atlas-rustTint); }
+.carte-personne .tete-ronde { margin-bottom: 6px; }
+.nom { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 19px/1.2 var(--serif); }
+.role-mot { display: block; font-size: 14px; font-weight: 600; color: var(--atlas-or); }
+
+/* Le chef et ses gars, dans la même plage. */
+.plage-chef + .plage-chef { margin-top: 10px; }
+.chef-tete { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 60px; text-align: left; border-radius: var(--r-plage); }
+.chef-tete .ligne-corps { min-width: 0; }
+.gars { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 4px; margin-top: 14px; padding-top: 14px; box-shadow: inset 0 1px 0 var(--atlas-line); }
+.petit { width: 76px; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 6px 2px; border-radius: 12px; text-align: center; }
+.petit span:last-child { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; }
+.sans-chef .gars { margin-top: 0; padding-top: 0; box-shadow: none; }
+.plage.sans-chef { padding: 12px 10px; }
+.ecran[data-etat="salarie"] .touche { pointer-events: none; }
+
+/* La feuille d'un gars : chef d'équipe, ses gars ou son chef. */
+.case { position: relative; display: flex; align-items: center; gap: 14px; width: 100%; min-height: 56px; text-align: left; font: 400 18px/1.25 var(--serif); }
+.case + .case::before { content: ""; position: absolute; left: 38px; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
+.carre-coche { width: 24px; height: 24px; flex: none; display: grid; place-items: center; border-radius: 6px; box-shadow: inset 0 0 0 1.5px var(--atlas-chevron); color: transparent; }
+.carre-coche .ico { width: 18px; height: 18px; stroke-width: 2.6; }
+.case[aria-pressed="true"] .carre-coche { background: var(--atlas-or); box-shadow: none; color: var(--sur-plein); }
+.sous-titre { margin: 18px 0 10px; font-size: 14px; font-weight: 600; color: var(--atlas-inkSoft); }
+.pastilles { display: flex; flex-wrap: wrap; gap: 8px; }
+.pastille { min-height: 44px; padding: 0 16px; border-radius: 22px; font-size: 15px; font-weight: 600; color: var(--atlas-inkSoft); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.pastille[aria-pressed="true"] { background: var(--atlas-rustTint); color: var(--atlas-ink); box-shadow: inset 0 0 0 2px var(--atlas-rust); }
+.feuille-tete { display: flex; align-items: center; gap: 14px; margin: 6px 0 14px; }
+.feuille-tete .feuille-titre { margin: 0; }
+.plein-dit { margin: 14px 2px 0; font-size: 14.5px; color: var(--atlas-inkSoft); }
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="reglages.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Réglages</a>
+  <h1 class="pl-titre">Organigramme</h1>
+  <p class="pl-verdict">Le même arbre, qui se lit de haut en bas, <b>relié d'un trait d'or</b>. Le chef porte ses gars dans sa plage ; toucher quelqu'un ouvre <b>une feuille</b>, au patron seul.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <!-- ═══ PROPOSÉ ═══ -->
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats" data-ecran="#ecran-propose, #capture-organigramme">
+        <button type="button" data-etat="tous" aria-pressed="true">Toute l'équipe</button>
+        <button type="button" data-etat="salarie">Un salarié le voit</button>
+        <button type="button" data-etat="seul">Le patron seul</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre avec-action" data-etat="tous" id="ecran-propose">
+          <div class="defile">
+            <div class="tete-ronds">
+              <a class="rond-creux" href="reglages.html" aria-label="Retour aux réglages"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-si-etat="tous seul"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </div>
+            <header class="tete" style="margin-top:0"><h1 class="tete-titre">Organigramme</h1></header>
+            <div class="arbre" data-arbre></div>
+          </div>
+
+          <div class="action-bas" data-si-etat="tous seul"><button class="bouton bouton-plein" type="button" data-ouvre="feuille-ajout"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter une personne</button></div>
+
+          <nav class="barre" aria-label="Navigation principale" data-si-etat="tous seul">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html">Terminés</a>
+              <a class="barre-onglet" href="paysage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html" aria-current="page">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+          <nav class="barre" aria-label="Navigation principale" data-si-etat="salarie">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="reglages.html" aria-current="page">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+
+          <section class="feuille" id="feuille-gars" aria-hidden="true" aria-label="Un gars du terrain">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans" data-fiche-gars></div>
+          </section>
+
+          <section class="feuille" id="feuille-ajout" aria-hidden="true" aria-label="Ajouter une personne">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre">Nouvelle personne</h2>
+              <p class="sous-titre" style="margin-top:0">C'est</p>
+              <div class="plage reglages" data-un-seul style="padding-top:0;padding-bottom:0">
+                <button class="radio" type="button" data-choix="salarie" aria-pressed="true" data-montre="ajout-salarie"><span class="coche-ronde" aria-hidden="true"></span><span><b>Un salarié</b></span></button>
+                <button class="radio" type="button" data-choix="commercial" aria-pressed="false" data-montre="ajout-compte"><span class="coche-ronde" aria-hidden="true"></span><span><b>Un commercial</b></span></button>
+                <button class="radio" type="button" data-choix="facturation" aria-pressed="false" data-montre="ajout-compte"><span class="coche-ronde" aria-hidden="true"></span><span><b>La facturation</b></span></button>
+              </div>
+              <div id="ajout-salarie">
+                <div class="plage reglages mt-16">
+                  <label class="reglage"><span class="reglage-libelle">Prénom</span><input class="reglage-valeur" data-prenom autocomplete="off" placeholder="Son prénom"></label>
+                </div>
+                <div data-son-chef-ajout></div>
+                <p class="plein-dit" data-plein hidden>Vingt personnes au plus sur le terrain.</p>
+                <button class="bouton bouton-plein mt-24" type="button" data-ajouter disabled>Ajouter</button>
+              </div>
+              <div id="ajout-compte" hidden>
+                <button class="bouton bouton-plein mt-24" type="button" data-fait="Sur la planche, l'écran Nouveau compte ne s'ouvre pas.">Créer son compte</button>
+              </div>
+              <button class="bouton bouton-texte mt-8" type="button" data-ferme style="width:100%;justify-content:center;color:var(--atlas-inkSoft)">Fermer</button>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ AUJOURD'HUI ═══ -->
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre">
+        <div class="cadre-capture" id="capture-organigramme">
+          <img src="aujourdhui/reglages-organigramme-rempli.jpg" alt="L'organigramme aujourd'hui, avec le bureau et le terrain" data-si-etat="tous">
+          <img src="aujourdhui/reglages-organigramme-salarie.jpg" alt="L'organigramme aujourd'hui, vu par un salarié" data-si-etat="salarie">
+          <img src="aujourdhui/reglages-organigramme.jpg" alt="L'organigramme aujourd'hui, le patron seul" data-si-etat="seul">
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>L'arbre se lit de haut en bas : le patron, un trait d'or, le bureau, un trait d'or, le terrain.</li>
+      <li>Les rôles s'écrivent en toutes lettres et en or : Patron, Facturation, Chef d'équipe. Le nom passe en gras.</li>
+      <li>Le chef d'équipe porte ses gars dans sa plage, en pleine largeur ; ceux qui n'ont pas de chef ont la leur.</li>
+      <li>Toucher quelqu'un ouvre une feuille qui monte, au lieu d'une carte qui s'ouvre sous l'arbre : touchez Thomas, puis Lucas. Ce que vous y changez se range tout de suite dans l'arbre.</li>
+      <li>Les gars d'un chef se cochent dans des cases dorées, à la taille du doigt.</li>
+      <li>Ajouter une personne devient le seul bouton plein, au-dessus de la barre.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Tout le monde le lit, vous seul le changez : chez un salarié, rien ne se touche, ni bouton, ni feuille.</li>
+      <li>Un gars n'a qu'un chef ; un chef n'a pas de chef ; un gars dont le chef perd son titre tombe dans « Sans chef », il ne disparaît pas.</li>
+      <li>« Sans chef » ne s'écrit que s'il y a au moins un chef ; « Bureau » que s'il y a un commercial ou la facturation.</li>
+      <li>Nouvelle personne : un salarié, un commercial ou la facturation. Un salarié se nomme ici, avec son chef ; les deux autres vont à Nouveau compte, le rôle déjà choisi. Vingt personnes au plus sur le terrain.</li>
+      <li>Les têtes sont celles de Mon compte et d'Équipe, une seule photo par personne.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="reglages-vehicules.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Véhicules</a>
+  <a href="reglages-tarifs.html">Tarifs &amp; catalogue<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* Les deux listes que l'organigramme LIT (src/lib/organigramme.ts) : les
+     comptes du bureau, et les salariés du terrain, désignés par leur rang. */
+  var BUREAU = [{ nom: "Sophie", role: "Facturation" }];
+  var depart = function () {
+    return [
+      { rang: 1, nom: "Lucas", chef: true, sous: null },
+      { rang: 2, nom: "Thomas", chef: false, sous: 1 },
+      { rang: 3, nom: "Hugo", chef: false, sous: 1 },
+      { rang: 4, nom: "", chef: false, sous: null }
+    ];
+  };
+  var salaries = depart();
+  var etat = "tous";
+  var ouvert = null;
+  var ICO = function (n) { return '<svg class="ico" aria-hidden="true"><use href="#i-' + n + '"/></svg>'; };
+  function texte(t) { var d = document.createElement("div"); d.textContent = t; return d.innerHTML; }
+  function libelle(s) { return (s.nom || "").trim() || "Salarié " + s.rang; }
+  function initiales(t) {
+    var mots = t.trim().split(/\s+/).filter(Boolean);
+    return (mots.length > 1 ? mots[0][0] + mots[1][0] : t.slice(0, 2)).toUpperCase();
+  }
+  function tete(t, taille) { return '<span class="tete-ronde" style="--t:' + taille + 'px" aria-hidden="true">' + texte(initiales(t)) + "</span>"; }
+
+  /* La même règle que construireOrganigramme : un gars dont le chef ne tient
+     plus tombe dans « Sans chef ». */
+  function ranger() {
+    var chefs = salaries.filter(function (s) { return s.chef; });
+    var rangsChefs = chefs.map(function (c) { return c.rang; });
+    return {
+      chefs: chefs.map(function (c) { return { s: c, gars: salaries.filter(function (g) { return !g.chef && g.sous === c.rang; }) }; }),
+      sansChef: salaries.filter(function (g) { return !g.chef && (g.sous === null || rangsChefs.indexOf(g.sous) < 0); })
+    };
+  }
+
+  function petit(g) {
+    return '<button class="petit touche" type="button" data-gars="' + g.rang + '">' + tete(libelle(g), 46) + "<span>" + texte(libelle(g)) + "</span></button>";
+  }
+  function dessinerArbre() {
+    var seul = etat === "seul", html = "";
+    html += '<div class="rangee-cartes"><div class="carte-personne haut">' + tete("Marc", 56) +
+            '<span class="nom">' + (etat === "salarie" ? "Marc" : "Vous") + '</span><span class="role-mot">Patron</span></div></div>';
+    if (!seul) {
+      html += '<span class="lien"></span><p class="rubrique rubrique-or etage">Bureau</p><span class="lien court"></span><div class="rangee-cartes">' +
+              BUREAU.map(function (b) { return '<div class="carte-personne">' + tete(b.nom, 52) + '<span class="nom">' + texte(b.nom) + '</span><span class="role-mot">' + b.role + "</span></div>"; }).join("") +
+              "</div>";
+      var r = ranger();
+      if (salaries.length) {
+        html += '<span class="lien"></span><p class="rubrique rubrique-or etage">Terrain</p><span class="lien court"></span>';
+        html += r.chefs.map(function (c) {
+          return '<div class="plage plage-chef"><button class="chef-tete touche" type="button" data-gars="' + c.s.rang + '">' + tete(libelle(c.s), 52) +
+                 '<span class="ligne-corps"><span class="nom">' + texte(libelle(c.s)) + '</span><span class="role-mot">Chef d\'équipe</span></span>' +
+                 (etat === "salarie" ? "" : '<span class="ligne-fin">' + ICO("suivant") + "</span>") + "</button>" +
+                 (c.gars.length ? '<div class="gars">' + c.gars.map(petit).join("") + "</div>" : "") + "</div>";
+        }).join("");
+        if (r.sansChef.length) {
+          if (r.chefs.length) html += '<p class="rubrique rubrique-or etage" style="margin-top:22px">Sans chef</p>';
+          html += '<div class="plage sans-chef' + (r.chefs.length ? "" : " mt-8") + '"><div class="gars">' + r.sansChef.map(petit).join("") + "</div></div>";
+        }
+      }
+    }
+    document.querySelector("[data-arbre]").innerHTML = html;
+  }
+
+  /* La feuille d'un gars, redessinée à chaque geste. */
+  function dessinerFiche() {
+    var g = salaries.filter(function (s) { return s.rang === ouvert; })[0];
+    if (!g) return;
+    var html = '<div class="feuille-tete">' + tete(libelle(g), 52) + '<h2 class="feuille-titre">' + texte(libelle(g)) + "</h2></div>";
+    html += '<div class="plage plage-serree"><div class="ligne-bascule"><span class="ligne-corps"><b>Chef d\'équipe</b></span>' +
+            '<button class="bascule" type="button" role="switch" aria-label="Chef d\'équipe" aria-checked="' + g.chef + '" data-chef></button></div></div>';
+    if (g.chef) {
+      var prenables = salaries.filter(function (s) { return s.rang !== g.rang && !s.chef; });
+      if (prenables.length) {
+        html += '<p class="sous-titre">Ses gars</p><div class="plage plage-serree">' + prenables.map(function (s) {
+          return '<button class="case" type="button" data-sous="' + s.rang + '" aria-pressed="' + (s.sous === g.rang) + '"><span class="carre-coche">' + ICO("coche") + "</span>" + texte(libelle(s)) + "</button>";
+        }).join("") + "</div>";
+      }
+    } else {
+      var autres = salaries.filter(function (s) { return s.chef && s.rang !== g.rang; });
+      if (autres.length) {
+        var tient = autres.some(function (c) { return c.rang === g.sous; });
+        html += '<p class="sous-titre">Son chef</p><div class="pastilles">' + autres.map(function (c) {
+          return '<button class="pastille" type="button" data-son-chef="' + c.rang + '" aria-pressed="' + (g.sous === c.rang) + '">' + texte(libelle(c)) + "</button>";
+        }).join("") + '<button class="pastille" type="button" data-son-chef="aucun" aria-pressed="' + !tient + '">Aucun</button></div>';
+      }
+    }
+    html += '<button class="bouton bouton-texte mt-16" type="button" data-ferme style="width:100%;justify-content:center;color:var(--atlas-inkSoft)">Fermer</button>';
+    document.querySelector("[data-fiche-gars]").innerHTML = html;
+  }
+
+  var chefAjout = null;
+  function dessinerAjout() {
+    var chefs = salaries.filter(function (s) { return s.chef; });
+    if (chefs.every(function (c) { return c.rang !== chefAjout; })) chefAjout = null;
+    document.querySelector("[data-son-chef-ajout]").innerHTML = chefs.length
+      ? '<p class="sous-titre">Son chef</p><div class="pastilles">' + chefs.map(function (c) {
+          return '<button class="pastille" type="button" data-chef-ajout="' + c.rang + '" aria-pressed="' + (chefAjout === c.rang) + '">' + texte(libelle(c)) + "</button>";
+        }).join("") + '<button class="pastille" type="button" data-chef-ajout="aucun" aria-pressed="' + (chefAjout === null) + '">Aucun</button></div>'
+      : "";
+    var plein = salaries.length >= 20;
+    document.querySelector("[data-plein]").hidden = !plein;
+    var bouton = document.querySelector("[data-ajouter]");
+    bouton.hidden = plein;
+    var prenom = document.querySelector("[data-prenom]").value.trim();
+    bouton.disabled = !prenom;
+    bouton.textContent = prenom ? "Ajouter " + prenom : "Ajouter";
+  }
+
+  function appliquer(e) {
+    etat = e;
+    salaries = e === "seul" ? [] : depart();
+    Kit.fermerFeuilles(document.getElementById("ecran-propose"));
+    dessinerArbre();
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    appliquer("tous");
+    dessinerAjout();
+    document.addEventListener("click", function (ev) {
+      var t = ev.target;
+      var choixEtat = t.closest(".pl-etats button[data-etat]");
+      if (choixEtat) { appliquer(choixEtat.getAttribute("data-etat")); return; }
+      var gars = t.closest("[data-gars]");
+      if (gars && etat !== "salarie") { ouvert = Number(gars.getAttribute("data-gars")); dessinerFiche(); Kit.ouvrirFeuille("feuille-gars", gars); return; }
+      var chef = t.closest("[data-chef]");
+      if (chef) {
+        /* Le kit l'a déjà retournée. Un chef n'a pas de chef. */
+        var g = salaries.filter(function (s) { return s.rang === ouvert; })[0];
+        g.chef = chef.getAttribute("aria-checked") === "true";
+        if (g.chef) g.sous = null;
+        dessinerArbre(); dessinerFiche(); dessinerAjout(); return;
+      }
+      var sous = t.closest("[data-sous]");
+      if (sous) {
+        var s = salaries.filter(function (x) { return x.rang === Number(sous.getAttribute("data-sous")); })[0];
+        s.sous = s.sous === ouvert ? null : ouvert;
+        dessinerArbre(); dessinerFiche(); return;
+      }
+      var sonChef = t.closest("[data-son-chef]");
+      if (sonChef) {
+        var v = sonChef.getAttribute("data-son-chef");
+        salaries.filter(function (x) { return x.rang === ouvert; })[0].sous = v === "aucun" ? null : Number(v);
+        dessinerArbre(); dessinerFiche(); return;
+      }
+      var chefAj = t.closest("[data-chef-ajout]");
+      if (chefAj) { var c = chefAj.getAttribute("data-chef-ajout"); chefAjout = c === "aucun" ? null : Number(c); dessinerAjout(); return; }
+      if (t.closest("[data-ouvre='feuille-ajout']")) { dessinerAjout(); return; }
+      var ajouter = t.closest("[data-ajouter]");
+      if (ajouter && !ajouter.disabled) {
+        var champ = document.querySelector("[data-prenom]");
+        salaries.push({ rang: salaries.length + 1, nom: champ.value.trim(), chef: false, sous: chefAjout });
+        champ.value = "";
+        Kit.fermerFeuilles(document.getElementById("ecran-propose"));
+        dessinerArbre(); dessinerAjout(); return;
+      }
+      var fait = t.closest("[data-fait]");
+      if (fait) { Kit.fermerFeuilles(fait.closest(".ecran")); Kit.note(fait, fait.getAttribute("data-fait")); }
+    });
+    document.addEventListener("input", function (ev) { if (ev.target.matches("[data-prenom]")) dessinerAjout(); });
+  });
+})();
+</script>
+</body>
+</html>
