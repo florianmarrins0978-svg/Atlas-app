@@ -118,6 +118,11 @@ body.seul .cadre { height: 100svh; min-height: 0; margin: 0; border-radius: 0; b
 .acompte b { color: var(--atlas-ink); font-weight: 600; white-space: nowrap; }
 .retirer-acompte { width: 44px; height: 44px; flex: none; display: grid; place-items: center; color: var(--atlas-inkSoft); }
 .saisie-partie { margin-top: 12px; padding-top: 12px; box-shadow: inset 0 1px 0 var(--atlas-line); }
+/* Sa remarque du 26 octobre : « Payé par » restait au-dessus quand on ouvrait
+   « J'ai reçu une partie », et le règlement partait par virement sans qu'il
+   l'ait vu. Ouverte, la saisie prend « Payé par » avec elle : le moyen, le
+   jour et le montant se remplissent au même endroit. */
+.saisie-partie .fa-paye { margin: 0 0 12px; }
 .fa-droite { border-radius: 6px; padding: 2px 4px; margin: -2px -4px; }
 /* Le reste vient de changer : il s'éclaire un instant, pour que l'œil le
    trouve après la saisie (sa remarque du 26 octobre : « il faudrait que j'aie
@@ -930,8 +935,23 @@ body.seul .cadre { height: 100svh; min-height: 0; margin: 0; border-radius: 0; b
         sortir(f, reste);
       });
     });
+    /* « Payé par » suit la saisie : il y descend quand elle s'ouvre, et
+       remonte au-dessus de « J'ai reçu le paiement » quand elle se ferme. Le
+       même choix sert aux deux boutons, comme dans l'appli. */
+    function ouvrirSaisie(s) {
+      s.hidden = false;
+      s.insertBefore(s.closest(".facture-attente").querySelector(".fa-paye"), s.firstChild);
+    }
+    function fermerSaisie(s) {
+      var f = s.closest(".facture-attente");
+      s.hidden = true;
+      f.insertBefore(f.querySelector(".fa-paye"), f.querySelector("[data-recu]"));
+    }
     document.querySelectorAll("[data-partie]").forEach(function (b) {
-      b.addEventListener("click", function () { var s = b.parentNode.querySelector(".saisie-partie"); s.hidden = !s.hidden; });
+      b.addEventListener("click", function () {
+        var s = b.parentNode.querySelector(".saisie-partie");
+        if (s.hidden) ouvrirSaisie(s); else fermerSaisie(s);
+      });
     });
     document.querySelectorAll(".saisie-partie").forEach(function (s) {
       var champ = s.querySelectorAll("input")[1], ok = s.querySelector("[data-partie-ok]");
@@ -949,9 +969,10 @@ body.seul .cadre { height: 100svh; min-height: 0; margin: 0; border-radius: 0; b
         var montant = arrondi(lireMontant(champs[1].value)), c = chiffres(f);
         if (!(montant > 0)) { Kit.note(ecran, "Le montant reçu doit être un nombre positif."); return; }
         if (montant > c.reste) { Kit.note(ecran, "Il ne reste que " + euros(c.reste) + " à recevoir sur cette facture."); return; }
+        var moyen = f.querySelector(".fa-paye select").value.toLowerCase();
         poserReleve(tvaDe(f, montant));
         f.dataset.reste = arrondi(c.reste - montant);
-        s.hidden = true;
+        fermerSaisie(s);
         champs[1].value = "";
         b.disabled = true;
         if (+f.dataset.reste === 0) { sortir(f, montant); return; }
@@ -961,7 +982,7 @@ body.seul .cadre { height: 100svh; min-height: 0; margin: 0; border-radius: 0; b
         ligne.dataset.montant = montant;
         ligne.dataset.date = champs[0].value;
         ligne.innerHTML = '<span></span><b>' + euros(montant) + '</b><button class="retirer-acompte" type="button" aria-label="Retirer cet acompte"><svg class="ico ico-p" aria-hidden="true"><use href="#i-croix"/></svg></button>';
-        ligne.querySelector("span").textContent = "Acompte payé le " + champs[0].value + " par " + f.querySelector(".fa-paye select").value.toLowerCase();
+        ligne.querySelector("span").textContent = "Acompte payé le " + champs[0].value + " par " + moyen;
         var dernier = f.querySelectorAll(".acompte");
         if (dernier.length) dernier[dernier.length - 1].after(ligne);
         else f.insertBefore(ligne, f.querySelector(".fa-paye"));
