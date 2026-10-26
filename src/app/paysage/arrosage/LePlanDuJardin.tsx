@@ -33,6 +33,7 @@ import MotsDuPlan from "./MotsDuPlan";
 import Vignette, { OMBRE_VIGNETTE } from "./Vignette";
 import ActionDuBas from "./ActionDuBas";
 import Icone from "./Icones";
+import BoutonAjouter from "./BoutonAjouter";
 import { ChoisirUnePiece, FeuilleFournisseur, MenuPiece, type Menu } from "./FeuillePiece";
 
 /**
@@ -332,7 +333,9 @@ export default function LePlanDuJardin({
             )}
           </>
         )}
-        <div className="mt-4 flex items-center gap-3">
+        {/* Le titre, les pièces, « Ajouter » et le seuil : une seule plage, celle de la planche. */}
+        <div className="mt-3 rounded-[6px] px-4 pb-4 pt-[14px]" style={{ backgroundColor: colors.card }}>
+        <div className="flex items-center gap-3">
           <h2 className="min-w-0 flex-1" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 22, lineHeight: 1.2 }}>{titrePiquage}</h2>
           {!goutteSeule && <ChoixDuTuyau valeur={plan.tuyau.diametre} onChoix={(d) => choisirLeTuyau("amenee", d)} libelle={`Tuyau, ${titrePiquage.toLowerCase()}`} />}
         </div>
@@ -351,7 +354,7 @@ export default function LePlanDuJardin({
             )}
           </>
         ) : (
-          <div className="mt-3 flex flex-wrap justify-center gap-x-3 gap-y-4 rounded-[6px] px-3 pb-[14px] pt-[18px]" style={{ backgroundColor: colors.card }}>
+          <div className="mt-4 flex flex-wrap gap-x-[10px] gap-y-3">
             {postes.amenee.map((p) => (
               <Vignette key={p.cle} poste={p} onClick={() => menuDeLaPiece(p)} />
             ))}
@@ -361,12 +364,13 @@ export default function LePlanDuJardin({
         {/* **LE SEUIL DU Ø32 — sa demande du 22 août 2026** : l'outil dit à partir de
             combien de mètres le Ø25 ne tient plus, pas seulement le verdict. Une ligne. */}
         {plan.tuyau.debit > 0 && (plan.tuyau.insuffisantMemeEn32 || plan.tuyau.seuil25 > 0) && (
-          <p className="mt-3 text-[13px] leading-relaxed" style={{ color: plan.tuyau.insuffisantMemeEn32 ? colors.alert : colors.muted }} data-atlas="seuil-tuyau">
+          <p className="mt-3 text-[14.5px] leading-relaxed" style={{ color: plan.tuyau.insuffisantMemeEn32 ? colors.alert : colors.inkSoft }} data-atlas="seuil-tuyau">
             {plan.tuyau.insuffisantMemeEn32
               ? `${virgule(plan.tuyau.debit)} m³/h sur un réseau : même le Ø32 est trop juste.`
               : `Ø25 jusqu’à ${Math.floor(plan.tuyau.seuil25)} m, Ø32 au-delà.`}
           </p>
         )}
+        </div>
       </section>
 
       {/* ─── La nourrice — pas au nez de robinet ─────────────────────────── */}
@@ -374,7 +378,7 @@ export default function LePlanDuJardin({
         <section id="partie-nourrice" className="mx-[22px] scroll-mt-[72px]" data-atlas="nourrice">
           <Rubrique>La nourrice</Rubrique>
           <h2 style={{ fontFamily: font.display, fontWeight: 400, fontSize: 22, lineHeight: 1.2 }}>{nourrice.nom}</h2>
-          <p className="mt-1 text-[13.5px]" style={{ color: colors.muted }}>
+          <p className="mt-[6px] text-[15px] leading-[1.45]" style={{ color: colors.inkSoft }}>
             Une voie par réseau, numérotées de gauche à droite après l’arrivée.{nbGoutte ? " Le goutte-à-goutte est à droite." : ""}
           </p>
           <Plage>
@@ -687,19 +691,5 @@ function PieceEnLigne({ poste, onClick }: { poste: Poste; onClick: () => void })
       <Vignette poste={poste} taille={54} sansNom onClick={onClick} />
       <span className="min-w-0 flex-1 text-[15.5px] leading-[1.35]">{poste.nom}</span>
     </div>
-  );
-}
-
-function BoutonAjouter({ libelle, onClick }: { libelle: string; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      data-atlas="ajouter-piece"
-      className="mt-[10px] flex min-h-[48px] w-full items-center justify-center rounded-full bg-transparent text-[14.5px]"
-      style={{ border: `1.5px dashed ${colors.line}`, color: colors.ink }}
-    >
-      {libelle}
-    </button>
   );
 }

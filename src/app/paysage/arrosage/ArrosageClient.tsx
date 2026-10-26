@@ -144,7 +144,7 @@ export default function ArrosageClient({
           <span className="min-w-0 flex-1">
             <b className="block" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 18, lineHeight: 1.25 }}>{parDessin ? "Plan dessiné" : "Croquis lu"}</b>
             <span className="mt-[2px] block text-[14px]" style={{ color: colors.inkSoft }}>
-              {`${etat.zones.length} zone${etat.zones.length > 1 ? "s" : ""}, ${piquage === "compteur" ? "au compteur" : "au robinet"}`}
+              {`${etat.zones.length} zone${etat.zones.length > 1 ? "s" : ""}${parDessin ? "" : ` lue${etat.zones.length > 1 ? "s" : ""}`}, ${piquage === "compteur" ? "au compteur" : "au robinet"}`}
             </span>
           </span>
           <button type="button" onClick={() => setReplie(false)} data-atlas="rouvrir-le-dessin" className="min-h-[44px] bg-transparent text-[16px] font-semibold" style={{ color: colors.or }}>

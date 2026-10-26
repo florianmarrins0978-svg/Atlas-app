@@ -1,6 +1,7 @@
 "use client";
 
 import { colors, font } from "@/lib/design-tokens";
+import { OMBRE_VIGNETTE } from "./Vignette";
 import { composerNourrice, etatsDesPoses, HAUT, type EtatPose, type NourriceComposee } from "@/lib/arrosage/nourrice-eclatee";
 import { PHOTOS_NOURRICE } from "@/lib/arrosage/photos-nourrice";
 import { photoDe } from "@/lib/arrosage/photos";
@@ -63,25 +64,27 @@ export default function NourriceEclatee({
 
   return (
     <div data-atlas="nourrice-eclatee">
-      <div className="mt-3 overflow-hidden rounded-[16px] py-2" style={{ backgroundColor: "#ffffff", boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
+      {/* Le dessin et sa légende dans une même plage : celle de la planche soignée du 26 octobre 2026. */}
+      <div className="mt-4 rounded-[6px] px-[14px] pb-[14px] pt-4" style={{ backgroundColor: colors.card }}>
+      <div className="overflow-hidden rounded-[6px] py-2" style={{ backgroundColor: "#ffffff", boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
         <Dessin n={n} couleurs={couleurs} etats={etatsDesPoses(n.poses, retouches)} reseauDeVoie={voies} />
       </div>
 
       {/* La légende numérotée : c'est elle qu'on touche. */}
-      <ol className="mt-3 list-none p-0" style={{ columns: 2, columnGap: 14, fontSize: 12.5, color: colors.inkSoft }}>
+      <ol className="mt-3 grid list-none grid-cols-2 gap-x-[14px] gap-y-[2px] p-0" style={{ fontSize: 14, lineHeight: 1.35, color: colors.ink }}>
         {n.ordre.map((ref, i) => {
           const etat = etatDe(ref);
           return (
-            <li key={ref} className="flex gap-1.5 py-[2px]" style={{ breakInside: "avoid" }}>
+            <li key={ref} className="flex">
               <button
                 type="button"
                 data-atlas="piece-nourrice"
                 data-nr={ref}
                 onClick={() => onTouche(ref, nomCatalogue(ref))}
-                className="flex w-full gap-1.5 border-0 bg-transparent p-0 text-left"
+                className="flex min-h-[40px] w-full items-start gap-2 border-0 bg-transparent px-0 py-1 text-left"
                 style={{ font: "inherit", color: "inherit", cursor: "pointer" }}
               >
-                <b className="flex-none rounded-full text-center" style={{ width: 17, height: 17, backgroundColor: colors.ink, color: colors.card, fontSize: 10, lineHeight: "17px" }}>
+                <b className="mt-[-1px] flex flex-none items-center justify-center rounded-full" style={{ width: 22, height: 22, backgroundColor: colors.ink, color: colors.card, fontSize: 12, fontWeight: 700 }}>
                   {i + 1}
                 </b>
                 <span style={{ color: couleurTexte(etat), textDecoration: etat === "retiree" ? "line-through" : undefined }}>{nomDe(ref)}</span>
@@ -90,12 +93,13 @@ export default function NourriceEclatee({
           );
         })}
       </ol>
+      </div>
 
       {/* Le bac : ce que la fiche compte et que le dessin ne pose pas (regard, programmateur, pile…). */}
       {Object.keys(n.reste).some((ref) => n.reste[ref] > 0) && (
         <div className="mt-[14px]">
-          <h3 className="m-0 text-[14px] font-semibold">Avec la nourrice</h3>
-          <div className="mt-2 flex flex-wrap gap-x-2 gap-y-3 rounded-[14px] px-[10px] py-[14px]" style={{ backgroundColor: colors.card }}>
+          <h3 className="mb-[10px] mt-[18px]" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 18, lineHeight: 1.25 }}>Avec la nourrice</h3>
+          <div className="flex flex-wrap gap-x-[10px] gap-y-3">
             {Object.keys(n.reste)
               .filter((ref) => n.reste[ref] > 0)
               .map((ref) => {
@@ -109,18 +113,18 @@ export default function NourriceEclatee({
                     data-atlas="piece-nourrice"
                     data-nr={ref}
                     onClick={() => onTouche(ref, nomCatalogue(ref))}
-                    className="flex w-[72px] min-w-0 flex-col items-center border-0 bg-transparent p-0 text-center"
+                    className="flex w-[84px] min-w-0 flex-col items-center gap-[6px] border-0 bg-transparent p-0 text-center"
                     style={{ font: "inherit", color: "inherit", cursor: "pointer" }}
                   >
-                    <span className="flex aspect-square w-full max-w-[64px] items-center justify-center" style={{ opacity: etat === "retiree" ? 0.35 : 1, filter: etat === "retiree" ? "grayscale(1)" : undefined }}>
+                    <span className="flex h-[72px] w-[72px] items-center justify-center rounded-[12px]" style={{ backgroundColor: colors.card, boxShadow: OMBRE_VIGNETTE, opacity: etat === "retiree" ? 0.35 : 1, filter: etat === "retiree" ? "grayscale(1)" : undefined }}>
                       {photo ? (
                         // eslint-disable-next-line @next/next/no-img-element -- pansement assumé : next/image n’a rien à optimiser sur une photo de pièce servie telle quelle depuis public/, une photo de pièce, servie telle quelle
-                        <img src={photo} alt="" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
+                        <img src={photo} alt="" style={{ maxWidth: 62, maxHeight: 62, objectFit: "contain", mixBlendMode: "multiply" }} />
                       ) : (
                         <span style={{ fontSize: 10, color: colors.muted }}>photo à venir</span>
                       )}
                     </span>
-                    <span className="mt-1" style={{ fontSize: 10.5, lineHeight: 1.25, color: couleurTexte(etat), textDecoration: etat === "retiree" ? "line-through" : undefined }}>
+                    <span style={{ fontSize: 13, lineHeight: 1.3, color: couleurTexte(etat), textDecoration: etat === "retiree" ? "line-through" : undefined }}>
                       {n.reste[ref] > 1 ? `${n.reste[ref]}x ` : ""}
                       {nomDe(ref)}
                     </span>

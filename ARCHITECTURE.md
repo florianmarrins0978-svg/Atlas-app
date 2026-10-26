@@ -36124,3 +36124,7 @@ l'écran, plus le contour.
 
 **Ce qui n'a pas bougé** : aucun calcul, aucune règle d'arrosage, aucun repère `data-atlas` des suites (`test-arrosage-e2e` verte). La preuve de la fiche d'aide « Ajouter la photo du croquis » a perdu ses guillemets : le libellé est désormais un texte d'écran, plus une chaîne.
 
+**Complété le même jour, et ce qui l'a rendu nécessaire.** La première livraison du §509 annonçait le plan « codé » sans avoir été confrontée à la planche partie par partie : la feuille du fournisseur, le menu d'une pièce, les pièces des réseaux et la nourrice étaient restés tels quels, par oubli. Le reste a été relevé en faisant défiler le téléphone de la planche à côté de l'écran, puis codé. **La consigne qui borne ce lot, la sienne :** *« la liste des pièces, la nomenclature, les photos, la façon dont ça s'envoie au fournisseur : il ne faut pas les modifier ; c'était simplement un aspect visuel »*. Seuls les cadres, les tailles et les couleurs ont bougé ; le message envoyé est identique, vérifié à l'écran.
+
+Trois choix faits en codant : la vignette d'une pièce passe de 88 à 72 (`taille`, renommée plutôt qu'une « 88 » qui dessinerait 72) ; « Ajouter une pièce » devient un seul composant (`BoutonAjouter.tsx`) pour le piquage et les réseaux, qui ne pourront plus diverger ; les quantités de la liste restent en `orTexte` et non en `or` comme sur la planche, `or` étant trop pâle pour un texte sur la carte. Le fond des photos reste `card` : le blanc de la planche, écrit en clair, se retournerait sur les chartes sombres.
+
