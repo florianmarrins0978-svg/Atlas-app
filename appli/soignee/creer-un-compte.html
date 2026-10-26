@@ -177,6 +177,7 @@
 [data-etat-jour="plein"] .mot b, [data-etat-jour="plein"] .barre-jour i { background: var(--atlas-rust); }
 [data-etat-jour="dela"] .mot b, [data-etat-jour="dela"] .barre-jour i { background: var(--atlas-bordeaux); }
 .semaine-pied { margin: 12px 0 0; font-size: 14.5px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.semaine-pied b { font-weight: 600; color: var(--atlas-ink); }
 
 /* Le code : six cases, la même pièce qu'aujourd'hui. */
 .cases-code { position: relative; display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
@@ -344,7 +345,7 @@
       <li>Sur un écran à plusieurs cases, chaque case garde son nom au-dessus : remplie, elle ne dit plus « Prénom » ni rien.</li>
       <li>Rien sous 13 points (le compteur, Passer, la phrase sous la photo), des boutons de 56 points, Se connecter en vrai bouton sous Créer un compte.</li>
       <li>La fin dans cet ordre : le code, les conditions, Face ID, Tout est prêt. Entrer dans Atlas entre vraiment ; aujourd’hui il ouvre encore les conditions.</li>
-      <li>Combien de chantiers par jour dit à quoi il sert (votre demande du 26 octobre) : il règle le remplissage du planning, et trois jours d’exemple se remplissent sous le compteur avec les mots du planning, rien, incomplet, complet, au-delà. Touchez + et −.</li>
+      <li>Combien de chantiers par jour dit à quoi il sert (votre demande du 26 octobre) : il règle le remplissage du planning, et trois jours d’exemple se remplissent sous le compteur avec les mots du planning, rien, incomplet, complet, au-delà, et la ligne dit que ça ne bloque rien. Touchez + et −.</li>
       <li>Le compte annoncé ne monte jamais : 14 questions pour une micro-entreprise sans décennale, 20 pour une société qui facture la TVA et a une décennale. Aujourd’hui, de 13 à 16.</li>
     </ul>
     <h2>Ce qui ne bouge pas</h2>
@@ -645,7 +646,10 @@
         "</button><output aria-live=\"polite\">" + n + '</output><button type="button" data-pas="1" aria-label="Un de plus"' + (n >= 9 ? " disabled" : "") + ">" + ico("plus") + "</button></div>" +
         '<p class="compteur-mot" id="compteur-mot">' + motChantiers(n) + "</p>" +
         '<div class="semaine" id="semaine" aria-label="Trois jours d’exemple">' + semaineHtml(n) + "</div>" +
-        '<p class="semaine-pied">Les dates proposées à vos clients évitent les jours complets.</p>';
+        /* Sa précision du 26 octobre : « ça ne bloque rien, c'est simplement
+           visuel ». Vrai dans le code : une journée pleine se prévient, elle
+           ne se refuse plus (sa règle du 23 août, verifierJourPropose). */
+        '<p class="semaine-pied"><b>Ça ne bloque rien</b> : un jour complet se choisit quand même, Atlas vous prévient seulement.</p>';
     }
     return h;
   }
