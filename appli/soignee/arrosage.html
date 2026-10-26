@@ -311,9 +311,10 @@
 .total-compte { flex: none; text-align: center; line-height: 1; }
 .total-compte b { display: block; font: 400 34px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; color: var(--atlas-ink); }
 .total-compte span { display: block; margin-top: 4px; font-size: 13px; font-weight: 600; color: var(--atlas-inkSoft); }
-.reserves { margin: 14px 0 0; padding: 8px 16px; list-style: none; }
-.reserves li { position: relative; padding: 8px 0 8px 18px; font-size: 14.5px; line-height: 1.45; }
-.reserves li::before { content: ""; position: absolute; left: 1px; top: 15px; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+/* Les réserves de l'appli, comme elle les montre : un point rouge, ni cadre ni fond. */
+.reserves { margin: 16px 0 0; padding: 0; list-style: none; }
+.reserves li { position: relative; padding: 6px 0 6px 18px; font-size: 14.5px; line-height: 1.45; color: var(--atlas-ink); }
+.reserves li::before { content: ""; position: absolute; left: 1px; top: 14px; width: 7px; height: 7px; border-radius: 50%; background: var(--atlas-alerte); }
 .mots-du-plan { margin: 0; padding: 4px 18px; }
 .mot { position: relative; padding: 12px 0; }
 .mot + .mot::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
@@ -653,7 +654,7 @@
                   <span class="total-compte"><b id="nb-pieces">45</b><span>pièces</span></span>
                 </div>
                 <button class="bouton bouton-creux mt-16" type="button" data-pas-ici="Chaque ligne se retire au nombre choisi, et se remet.">Modifier ma liste</button>
-                <ul class="plage-ton reserves" data-ton="ambre">
+                <ul class="reserves">
                   <li>2,2 bar au dernier arroseur, 0,69 bar perdus dans le réseau, 0,12 dans l’amenée, trajet du regard 11 m lu sur le croquis.</li>
 <li>Amenée de 10,0 m, du piquage à la nourrice, calculée sur le croquis.</li>
 <li>3 bar : les portées sont réduites par rapport au catalogue, donné à plus forte pression. Estimation à confirmer sur place.</li>
@@ -819,7 +820,6 @@ Merci.</textarea>
       <li>Une case qui n’ajoute rien le dit (le Téflon, absent du catalogue) au lieu de se cocher sans effet.</li>
       <li>Les photos des pièces gardent un fond blanc et perdent leur ombre : elles se lisent aussi en Nuit et en Sylve.</li>
       <li>Sans aucun prix, le total dit Aucun prix au lieu de 0,00 € : un zéro se lit comme un montant. La phrase « 45 pièces sans prix sur 45 » disparaît, le compte est à côté.</li>
-      <li>Les réserves gardent leurs mots, sur une plage ambre au lieu de points rouges.</li>
       <li>Touchez une pièce, un numéro de la nourrice ou une tête de la chaîne : la feuille monte, avec Combien quand il y en a plusieurs. Supprimer retire tout de suite, Annuler la remet.</li>
     </ul>
     <h2>Ce qui ne bouge pas</h2>
@@ -831,6 +831,7 @@ Merci.</textarea>
       <li>Les cases Ø 25 et 32 de la C, le Ø doré, la case choisie en noir.</li>
       <li>La phrase rouge Touchez une pièce, en tête du plan.</li>
       <li>Les pièces en « 9x », aucun gras dans la liste, aucune durée d’arrosage, et ce qui n’est pas calculé dit sous le plan.</li>
+      <li>Les réserves sous la liste, avec leurs points rouges, sans cadre (votre remarque du 26 octobre sur le carré marron).</li>
       <li>Le message au fournisseur, Copier et Envoyer ; avec un fournisseur réglé, Écrire à lui et ses début et fin gardés.</li>
       <li>Une photo à laquelle il manque la nourrice ou une cote ne bloque jamais : le plan lu s’ouvre quand même, la cote manquante en rouge, La nourrice avec Poser, et Faire le plan s’allume dès que tout est là. C’est déjà ainsi dans l’appli (À compléter).</li>
     </ul>
