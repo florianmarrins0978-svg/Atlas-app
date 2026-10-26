@@ -115,9 +115,40 @@ export default function EnTeteEcran({
    * à en mélanger deux sur un troisième écran, et la grammaire commune finirait
    * par n'être plus commune (`CLAUDE.md` §3).
    */
-  allure?: "commune" | "ample";
+  allure?: "commune" | "ample" | "soignee";
 }) {
   const ample = allure === "ample";
+  // **La troisième grammaire, celle des Réglages soignés** (ses planches du 25
+  // et du 26 octobre 2026, `appli/soignee/reglages-*.html`, puis « code toutes
+  // les pages là ») : le retour cerné à gauche et l'assistant à droite sur la
+  // MÊME ligne, le titre seul dessous, et plus de surtitre doré (« le titre
+  // suffit », comme sur le sommaire). La ligne du retour existait déjà : poser
+  // l'assistant dessus ne coûte aucun pixel au titre.
+  const soignee = allure === "soignee";
+  if (soignee) {
+    return (
+      <header>
+        <div className="flex items-center justify-between gap-4 px-[22px] pt-6">
+          {retour ? <FlecheRetour repli={retour} allure="cerne" fleche={15} /> : <span />}
+          <div className="flex flex-shrink-0 items-center gap-3">
+            {action}
+            {assistant && <BoutonAssistant />}
+          </div>
+        </div>
+        <h1
+          className="px-[22px] pt-3 text-[34px] leading-[1.05]"
+          style={{ fontFamily: font.display, letterSpacing: "-0.012em" }}
+        >
+          {titre}
+        </h1>
+        {precision && (
+          <p className="px-[22px] pt-2 text-[14.5px] leading-[1.45]" style={{ color: colors.inkSoft }}>
+            {precision}
+          </p>
+        )}
+      </header>
+    );
+  }
   return (
     <header>
       {(retour || actionPlacee === "retour") && (
