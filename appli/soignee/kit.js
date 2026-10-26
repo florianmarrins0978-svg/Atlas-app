@@ -298,7 +298,7 @@
     "reglages-identite", "reglages-equipe", "reglages-vehicules", "reglages-organigramme", "reglages-tarifs", "reglages-documents",
     "reglages-fournisseurs", "reglages-ia", "reglages-agenda", "reglages-abonnement", "reglages-donnees", "reglages-compte",
     "reglages-notifications", "reglages-connexion", "reglages-connexion-double-verification", "reglages-apparence",
-    "arrosage"];
+    "arrosage", "abonnement-credits-ia"];
 
   function planchePrete(href) {
     if (!href || /^(https?:|#|mailto:|tel:|\.\.\/)/.test(href)) return true;
