@@ -118,6 +118,14 @@ body.seul .cadre { height: 100svh; min-height: 0; margin: 0; border-radius: 0; b
 .acompte b { color: var(--atlas-ink); font-weight: 600; white-space: nowrap; }
 .retirer-acompte { width: 44px; height: 44px; flex: none; display: grid; place-items: center; color: var(--atlas-inkSoft); }
 .saisie-partie { margin-top: 12px; padding-top: 12px; box-shadow: inset 0 1px 0 var(--atlas-line); }
+.fa-droite { border-radius: 6px; padding: 2px 4px; margin: -2px -4px; }
+/* Le reste vient de changer : il s'éclaire un instant, pour que l'œil le
+   trouve après la saisie (sa remarque du 26 octobre : « il faudrait que j'aie
+   un visuel pour voir ce qu'il reste à régler »). */
+.fa-droite.vient-de-changer { animation: reste-change 1800ms var(--courbe); }
+@keyframes reste-change { from { background: color-mix(in srgb, var(--atlas-or) 26%, transparent); } to { background: transparent; } }
+@media (prefers-reduced-motion: reduce) { .fa-droite.vient-de-changer { animation: none; } }
+.acompte.retire > span, .acompte.retire > b { text-decoration: line-through; }
 .rentree { margin: 10px 0 0; padding: 12px 14px; border-radius: var(--r-plage); font-size: 15px;
            background: var(--atlas-carteVertFond); color: var(--atlas-carteVertTexte); font-weight: 600; }
 
@@ -362,7 +370,7 @@ body.seul .cadre { height: 100svh; min-height: 0; margin: 0; border-radius: 0; b
 
             <div class="section-titre"><h2>Factures en attente</h2><span id="compte-attente">3 factures</span></div>
 
-            <div class="plage facture-attente" data-tva="52.00" data-qui="M. Bernard, 312,00 €">
+            <div class="plage facture-attente" data-nom="M. Bernard" data-total="312" data-reste="312" data-tva-totale="52">
               <div class="fa-tete">
                 <div><div class="ligne-nom">M. Bernard</div><div class="second">F2026-000013, émise le 17/10</div><div class="second fa-trace">Ouverte le <b>18/10</b></div></div>
                 <div class="fa-droite"><span class="fa-montant">312,00 €</span></div>
@@ -375,17 +383,17 @@ body.seul .cadre { height: 100svh; min-height: 0; margin: 0; border-radius: 0; b
                   <label class="champ" style="margin:0"><span class="champ-libelle">Payé le</span><input class="champ-saisie" value="25/10/2026" inputmode="numeric"></label>
                   <label class="champ" style="margin:0"><span class="champ-libelle">Montant reçu</span><input class="champ-saisie" placeholder="0,00 €" inputmode="decimal"></label>
                 </div>
-                <button class="bouton bouton-creux mt-16" type="button" data-partie-ok>Enregistrer ce règlement</button>
+                <button class="bouton bouton-creux mt-16" type="button" data-partie-ok disabled>Enregistrer ce règlement</button>
                 <p class="discret centre" style="margin:8px 0 0">Seule la part reçue entre au relevé.</p>
               </div>
             </div>
 
-            <div class="plage facture-attente" data-tva="246.00" data-qui="Mme Garnier, 1 476,00 €">
+            <div class="plage facture-attente" data-nom="Mme Garnier" data-total="1776" data-reste="1476" data-tva-totale="296">
               <div class="fa-tete">
                 <div><div class="ligne-nom">Mme Garnier</div><div class="second">F2026-000012, émise le 14/10</div><div class="second fa-trace">Ouverte le <b>15/10</b></div></div>
                 <div class="fa-droite"><span class="fa-petit">Reste à payer</span><span class="fa-montant">1 476,00 €</span><span class="fa-sur">Sur les 1 776,00 €</span></div>
               </div>
-              <div class="acompte"><span>Acompte payé le 09/10/2026 par virement</span><b>300,00 €</b><button class="retirer-acompte" type="button" aria-label="Retirer cet acompte"><svg class="ico ico-p" aria-hidden="true"><use href="#i-croix"/></svg></button></div>
+              <div class="acompte" data-montant="300" data-date="09/10/2026"><span>Acompte payé le 09/10/2026 par virement</span><b>300,00 €</b><button class="retirer-acompte" type="button" aria-label="Retirer cet acompte"><svg class="ico ico-p" aria-hidden="true"><use href="#i-croix"/></svg></button></div>
               <label class="fa-paye"><span>Payé par</span><select class="champ-saisie"><option>Virement</option><option>Chèque</option><option>Espèces</option><option>Carte</option></select></label>
               <button class="bouton bouton-plein bouton-recu" type="button" data-recu><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg>J'ai reçu le paiement</button>
               <button class="bouton-texte fa-partie" type="button" data-partie>J'ai reçu une partie</button>
@@ -394,12 +402,12 @@ body.seul .cadre { height: 100svh; min-height: 0; margin: 0; border-radius: 0; b
                   <label class="champ" style="margin:0"><span class="champ-libelle">Payé le</span><input class="champ-saisie" value="25/10/2026" inputmode="numeric"></label>
                   <label class="champ" style="margin:0"><span class="champ-libelle">Montant reçu</span><input class="champ-saisie" placeholder="0,00 €" inputmode="decimal"></label>
                 </div>
-                <button class="bouton bouton-creux mt-16" type="button" data-partie-ok>Enregistrer ce règlement</button>
+                <button class="bouton bouton-creux mt-16" type="button" data-partie-ok disabled>Enregistrer ce règlement</button>
                 <p class="discret centre" style="margin:8px 0 0">Seule la part reçue entre au relevé.</p>
               </div>
             </div>
 
-            <div class="plage facture-attente" data-tva="90.00" data-qui="Mme Garnier, 540,00 €">
+            <div class="plage facture-attente" data-nom="Mme Garnier" data-total="540" data-reste="540" data-tva-totale="90">
               <div class="fa-tete">
                 <div><div class="ligne-nom">Mme Garnier</div><div class="second">F2026-000007, émise le 28/08</div><div class="second">Pas encore ouverte.</div></div>
                 <div class="fa-droite"><span class="fa-montant">540,00 €</span></div>
@@ -412,7 +420,7 @@ body.seul .cadre { height: 100svh; min-height: 0; margin: 0; border-radius: 0; b
                   <label class="champ" style="margin:0"><span class="champ-libelle">Payé le</span><input class="champ-saisie" value="25/10/2026" inputmode="numeric"></label>
                   <label class="champ" style="margin:0"><span class="champ-libelle">Montant reçu</span><input class="champ-saisie" placeholder="0,00 €" inputmode="decimal"></label>
                 </div>
-                <button class="bouton bouton-creux mt-16" type="button" data-partie-ok>Enregistrer ce règlement</button>
+                <button class="bouton bouton-creux mt-16" type="button" data-partie-ok disabled>Enregistrer ce règlement</button>
                 <p class="discret centre" style="margin:8px 0 0">Seule la part reçue entre au relevé.</p>
               </div>
             </div>
@@ -849,35 +857,116 @@ body.seul .cadre { height: 100svh; min-height: 0; margin: 0; border-radius: 0; b
       });
     });
 
-    /* J'ai reçu le paiement : la facture quitte la liste, sa TVA entre au relevé. */
+    /* Une facture en attente se redessine depuis ses trois chiffres (le total,
+       ce qui reste, la TVA du total), comme dans l'appli : « Reste à payer » et
+       « Sur les » n'apparaissent qu'une fois un acompte passé, et la TVA d'un
+       acompte se compte au prorata du TTC (src/lib/exigibilite-tva.ts). */
+    var arrondi = function (n) { return Math.round(n * 100) / 100; };
+    var lireMontant = function (t) { return parseFloat(String(t).replace(/[\s\u00a0\u202f€]/g, "").replace(",", ".")); };
+    function chiffres(f) { return { total: +f.dataset.total, reste: +f.dataset.reste, tva: +f.dataset.tvaTotale }; }
+    function tvaDe(f, montant) { var c = chiffres(f); return arrondi(montant * c.tva / c.total); }
+    function poserReleve(tva) {
+      collectee = arrondi(collectee + tva);
+      document.getElementById("m-collectee").textContent = euros(collectee);
+      document.getElementById("m-payer").textContent = euros(collectee - deductible);
+    }
+    function dessinerDroite(f, eclairer) {
+      var c = chiffres(f), droite = f.querySelector(".fa-droite");
+      droite.innerHTML = c.reste < c.total
+        ? '<span class="fa-petit">Reste à payer</span><span class="fa-montant">' + euros(c.reste) + '</span><span class="fa-sur">Sur les ' + euros(c.total) + '</span>'
+        : '<span class="fa-montant">' + euros(c.reste) + '</span>';
+      if (!eclairer) return;
+      droite.classList.remove("vient-de-changer");
+      void droite.offsetWidth;
+      droite.classList.add("vient-de-changer");
+    }
+    function sortir(f, montant) {
+      var p = document.createElement("p");
+      p.className = "rentree";
+      p.textContent = f.dataset.nom + ", " + euros(montant) + " est rentrée au relevé.";
+      document.getElementById("rentrees").appendChild(p);
+      f.remove();
+      var reste = document.querySelectorAll(".facture-attente").length;
+      document.getElementById("compte-attente").textContent = reste ? reste + (reste > 1 ? " factures" : " facture") : "rien";
+      document.getElementById("tout-regle").hidden = reste > 0;
+    }
+
+    /* La croix ne fait pas disparaître l'acompte : la ligne reste, barrée et
+       datée, et aucun total ne la compte plus (sa planche du 26 septembre).
+       « Remettre » la recompte. */
+    function brancherRetrait(ligne) {
+      var f = ligne.closest(".facture-attente");
+      var montant = +ligne.dataset.montant, date = ligne.dataset.date;
+      var texte = ligne.querySelector("span").textContent;
+      ligne.querySelector(".retirer-acompte").addEventListener("click", function retirer() {
+        poserReleve(-tvaDe(f, montant));
+        f.dataset.reste = arrondi(+f.dataset.reste + montant);
+        dessinerDroite(f, true);
+        ligne.classList.add("retire");
+        ligne.querySelector("span").textContent = "Acompte du " + date.slice(0, 5) + ", retiré le 25/10";
+        var croix = ligne.querySelector(".retirer-acompte");
+        var remettre = document.createElement("button");
+        remettre.type = "button";
+        remettre.className = "bouton-texte or";
+        remettre.textContent = "Remettre";
+        croix.replaceWith(remettre);
+        remettre.addEventListener("click", function () {
+          poserReleve(tvaDe(f, montant));
+          f.dataset.reste = arrondi(+f.dataset.reste - montant);
+          dessinerDroite(f, true);
+          ligne.classList.remove("retire");
+          ligne.querySelector("span").textContent = texte;
+          remettre.replaceWith(croix);
+        });
+      });
+    }
+    document.querySelectorAll(".facture-attente .acompte").forEach(brancherRetrait);
+
+    /* J'ai reçu le paiement : la facture quitte la liste, ce qui restait entre au relevé. */
     document.querySelectorAll("[data-recu]").forEach(function (b) {
       b.addEventListener("click", function () {
-        var f = b.closest(".facture-attente");
-        collectee += parseFloat(f.getAttribute("data-tva"));
-        document.getElementById("m-collectee").textContent = euros(collectee);
-        document.getElementById("m-payer").textContent = euros(collectee - deductible);
-        var p = document.createElement("p");
-        p.className = "rentree";
-        p.textContent = f.getAttribute("data-qui") + " est rentrée au relevé.";
-        document.getElementById("rentrees").appendChild(p);
-        f.remove();
-        var reste = document.querySelectorAll(".facture-attente").length;
-        document.getElementById("compte-attente").textContent = reste ? reste + (reste > 1 ? " factures" : " facture") : "rien";
-        document.getElementById("tout-regle").hidden = reste > 0;
+        var f = b.closest(".facture-attente"), reste = +f.dataset.reste;
+        poserReleve(tvaDe(f, reste));
+        sortir(f, reste);
       });
     });
     document.querySelectorAll("[data-partie]").forEach(function (b) {
       b.addEventListener("click", function () { var s = b.parentNode.querySelector(".saisie-partie"); s.hidden = !s.hidden; });
     });
-    document.querySelectorAll("[data-partie-ok]").forEach(function (b) {
-      b.addEventListener("click", function () { b.closest(".saisie-partie").hidden = true; Kit.note(ecran, "Règlement noté."); });
+    document.querySelectorAll(".saisie-partie").forEach(function (s) {
+      var champ = s.querySelectorAll("input")[1], ok = s.querySelector("[data-partie-ok]");
+      champ.addEventListener("input", function () { ok.disabled = !(lireMontant(champ.value) > 0); });
     });
-    document.querySelectorAll(".retirer-acompte").forEach(function (b) {
+
+    /* J'ai reçu une partie : l'acompte s'inscrit sous la facture, le reste
+       baisse sous les yeux, et sa part de TVA entre au relevé. Un montant qui
+       solde la facture la fait sortir ; un montant trop grand est refusé avec
+       les mots de l'appli. */
+    document.querySelectorAll("[data-partie-ok]").forEach(function (b) {
       b.addEventListener("click", function () {
-        var ligne = b.closest(".acompte");
-        ligne.style.textDecoration = "line-through";
-        b.outerHTML = '<button class="bouton-texte or" type="button">Remettre</button>';
-        ligne.querySelector(".bouton-texte").addEventListener("click", function () { location.reload(); });
+        var s = b.closest(".saisie-partie"), f = b.closest(".facture-attente");
+        var champs = s.querySelectorAll("input");
+        var montant = arrondi(lireMontant(champs[1].value)), c = chiffres(f);
+        if (!(montant > 0)) { Kit.note(ecran, "Le montant reçu doit être un nombre positif."); return; }
+        if (montant > c.reste) { Kit.note(ecran, "Il ne reste que " + euros(c.reste) + " à recevoir sur cette facture."); return; }
+        poserReleve(tvaDe(f, montant));
+        f.dataset.reste = arrondi(c.reste - montant);
+        s.hidden = true;
+        champs[1].value = "";
+        b.disabled = true;
+        if (+f.dataset.reste === 0) { sortir(f, montant); return; }
+
+        var ligne = document.createElement("div");
+        ligne.className = "acompte";
+        ligne.dataset.montant = montant;
+        ligne.dataset.date = champs[0].value;
+        ligne.innerHTML = '<span></span><b>' + euros(montant) + '</b><button class="retirer-acompte" type="button" aria-label="Retirer cet acompte"><svg class="ico ico-p" aria-hidden="true"><use href="#i-croix"/></svg></button>';
+        ligne.querySelector("span").textContent = "Acompte payé le " + champs[0].value + " par " + f.querySelector(".fa-paye select").value.toLowerCase();
+        var dernier = f.querySelectorAll(".acompte");
+        if (dernier.length) dernier[dernier.length - 1].after(ligne);
+        else f.insertBefore(ligne, f.querySelector(".fa-paye"));
+        brancherRetrait(ligne);
+        dessinerDroite(f, true);
       });
     });
 
