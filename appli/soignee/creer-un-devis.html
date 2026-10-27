@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Créer un devis, la fiche client</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  CRÉER UN DEVIS, LA FICHE CLIENT (src/app/EcranChantiers.tsx, la feuille ;
+  src/app/chantiers/nouveau/FormulaireNouveauChantier.tsx, ce qu'elle porte ;
+  src/components/atlas/ChoixCivilite.tsx, ChoixCanal.tsx).
+
+  Sa demande du 27 octobre 2026 : « va regarder la planche fiche client, la
+  feuille sur laquelle on arrive quand on clique sur créer un devis, et fais
+  une planche pour l'améliorer, la rendre plus jolie ; et regarde s'il y a
+  entreprise et les services publics dessus ».
+
+  CE QUE MONTRE L'ÉCRAN D'AUJOURD'HUI (regardé sur l'appli, aujourdhui/creer-un-devis.jpg) :
+    les quatre pastilles Mr, Mme, Entreprise, Public sont là ;
+    Entreprise ouvre le SIRET et le n° TVA ;
+    Public n'ouvre RIEN, alors que sa fiche (Ses coordonnées) demande le SIRET
+      et le code service, et que la facture d'une mairie part par Chorus Pro
+      avec ce code (casesDuClient, src/lib/civilite.ts) ;
+    les libellés sont en petites capitales grises de 11 px, collés au champ
+      du dessus ;
+    Envoi : deux mots gris à droite, éteints tant qu'aucune coordonnée n'est
+      tapée, et rien ne dit lequel est pris ;
+    « + CLIENT » ouvre l'adresse du client, sans dire que c'est une adresse.
+
+  LA PROPOSITION garde tout à sa place, et les mêmes gestes. Elle reprend les
+  fondations soignées (fondations.html) : les petits mots se lisent, les cibles
+  du pouce, un seul bouton plein (le micro), aucune ombre, aucune flèche.
+*/
+.ecran { background: var(--atlas-cream); }
+/* L'accueil, derrière : on sait d'où l'on vient. */
+.derriere { position: absolute; inset: 0; padding: 18px var(--gouttiere); background: var(--atlas-cream); }
+.derriere h2 { margin: 0; font: 400 34px/1.05 var(--serif); letter-spacing: -0.012em; }
+.derriere-voile { position: absolute; inset: 0; background: color-mix(in srgb, #0d0e0c 30%, transparent); }
+
+.feuille-devis { position: absolute; left: 0; right: 0; top: 60px; bottom: 0; display: flex; flex-direction: column;
+                 border-radius: var(--r-feuille) var(--r-feuille) 0 0; background: var(--atlas-cream); overflow: hidden; }
+.feuille-devis .defile { padding: 8px var(--gouttiere) 32px; }
+
+.tete-feuille { display: grid; grid-template-columns: 48px 1fr 48px; align-items: center; min-height: 60px; margin: 0 -6px 14px; }
+.tete-feuille h1 { margin: 0; text-align: center; font: 400 30px/1.05 var(--serif); letter-spacing: -0.012em; }
+.tete-feuille .tete-retour { margin: 0; }
+.tete-feuille .rond-creux { color: var(--atlas-or); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--atlas-or) 55%, transparent); }
+.tete-feuille .ico { width: 24px; height: 24px; }
+
+/* Les quatre pastilles, à leur place : une seule ligne, prises en or. */
+.civilite { display: flex; gap: 8px; }
+.civilite button { flex: 1 1 auto; min-height: 48px; padding: 0 10px; border-radius: 24px; font-size: 16px; color: var(--atlas-ink);
+                   background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line);
+                   transition: background-color 200ms var(--courbe), box-shadow 200ms var(--courbe); }
+.civilite button[aria-pressed="true"] { background: var(--atlas-rustTint); font-weight: 600; box-shadow: inset 0 0 0 1.5px var(--atlas-or); }
+
+.champs { margin-top: 20px; }
+.deux { display: grid; grid-template-columns: 1.25fr 1fr; gap: 10px; }
+.deux .champ { margin-top: 0; }
+.champs > * + * { margin-top: 16px; }
+.champ-saisie { font-size: 16px; }
+.champ-saisie::placeholder { color: var(--atlas-muted); }
+.libelle-rang { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 7px; }
+.libelle-rang .champ-libelle { margin: 0; }
+.ajout { display: inline-flex; align-items: center; gap: 5px; min-height: 36px; margin: -8px 0; padding: 0 2px;
+         font-size: 14.5px; font-weight: 700; color: var(--atlas-orTexte); }
+.ajout .ico { width: 18px; height: 18px; color: var(--atlas-or); }
+/* Les numéros d'une entreprise ou d'un service public s'ouvrent sous le nom. */
+.numeros { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 320ms var(--courbe); }
+.numeros > div { min-height: 0; overflow: hidden; }
+.numeros.ouverts { grid-template-rows: 1fr; }
+.numeros .deux { grid-template-columns: 1fr 1fr; padding-top: 16px; }
+/* Deux numéros côte à côte : 10 px de retrait, et chaque exemple tient. */
+.numeros .champ-saisie { padding-left: 10px; padding-right: 10px; }
+.champs > .numeros { margin-top: 0; }
+
+.filet-feuille { height: 1px; margin: 22px 0 18px; background: var(--atlas-line); }
+
+.rang-envoi { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.rang-envoi .champ-libelle { margin: 0; }
+.envoi { width: 196px; }
+.envoi button[disabled] { opacity: 0.4; }
+
+.photos { margin-top: 20px; }
+.photo-ajout { width: 76px; height: 76px; display: grid; place-items: center; border-radius: 6px; color: var(--atlas-or);
+               box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 60%, transparent); }
+.photo-ajout .ico { width: 26px; height: 26px; }
+
+.voix { display: flex; flex-direction: column; align-items: center; margin-top: 26px; text-align: center; }
+.voix .champ-libelle { margin: 0 0 12px; }
+.micro { width: 96px; height: 96px; display: grid; place-items: center; border-radius: 50%; background: var(--atlas-plein); color: var(--sur-plein);
+         transition: transform 160ms var(--courbe); }
+.micro:active { transform: scale(0.96); }
+.micro .ico { width: 34px; height: 34px; }
+.voix-sous { margin: 12px 0 0; font-size: var(--t-second); color: var(--atlas-inkSoft); }
+.a-la-main { margin-top: 22px; }
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">Créer un devis, la fiche client</h1>
+  <p class="pl-verdict">Tout reste à sa place. <b>Les mots se lisent</b>, les cases sont plus grandes, et <b>Public ouvre enfin ses numéros</b>, comme Entreprise.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats" id="etats">
+        <button type="button" data-etat="vide" aria-pressed="true">Vide</button>
+        <button type="button" data-etat="particulier">Mme Costa</button>
+        <button type="button" data-etat="entreprise">Une entreprise</button>
+        <button type="button" data-etat="public">Une mairie</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran" id="ecran-feuille">
+          <div class="derriere" aria-hidden="true"><h2>Vos chantiers</h2></div>
+          <div class="derriere-voile" aria-hidden="true"></div>
+
+          <section class="feuille-devis" role="dialog" aria-label="Créer un devis">
+            <div class="defile">
+              <div class="tete-feuille">
+                <button class="tete-retour touche" type="button" aria-label="Fermer" data-note="Sur la planche, la feuille reste ouverte."><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+                <h1>Fiche client</h1>
+                <button class="rond-creux touche" type="button" aria-label="Dicter les coordonnées" data-note="Sur la planche, rien ne s'enregistre."><svg class="ico" aria-hidden="true"><use href="#i-micro"/></svg></button>
+              </div>
+
+              <div class="civilite" role="group" aria-label="Civilité du client">
+                <button type="button" data-civilite="mr" aria-pressed="false">Mr</button>
+                <button type="button" data-civilite="mme" aria-pressed="false">Mme</button>
+                <button type="button" data-civilite="entreprise" aria-pressed="false">Entreprise</button>
+                <button type="button" data-civilite="public" aria-pressed="false">Public</button>
+              </div>
+
+              <div class="champs">
+                <div class="deux">
+                  <label class="champ"><span class="champ-libelle">Nom du client</span><input class="champ-saisie" id="nom" placeholder="Bernard" autocomplete="off"></label>
+                  <label class="champ"><span class="champ-libelle">Téléphone</span><input class="champ-saisie" id="telephone" inputmode="tel" placeholder="06 12 34 56 78" autocomplete="off"></label>
+                </div>
+
+                <div class="numeros" id="numeros">
+                  <div>
+                    <div class="deux">
+                      <label class="champ"><span class="champ-libelle">SIRET</span><input class="champ-saisie" inputmode="numeric" placeholder="812 345 678 00021" autocomplete="off"></label>
+                      <label class="champ" data-numero="entreprise"><span class="champ-libelle">N° TVA</span><input class="champ-saisie" placeholder="FR00812345678" autocomplete="off"></label>
+                      <label class="champ" data-numero="public" hidden><span class="champ-libelle">Code service</span><input class="champ-saisie" placeholder="Sur la commande" autocomplete="off"></label>
+                    </div>
+                  </div>
+                </div>
+
+                <label class="champ"><span class="champ-libelle">E-mail</span><input class="champ-saisie" id="email" inputmode="email" placeholder="bernard@exemple.fr" autocomplete="off"></label>
+
+                <div>
+                  <div class="libelle-rang">
+                    <label class="champ-libelle" for="adresse">Chantier</label>
+                    <button class="ajout touche" type="button" id="ouvrir-adresse-client"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Adresse du client</button>
+                  </div>
+                  <input class="champ-saisie" id="adresse" placeholder="12 rue des Lilas, Nantes" autocomplete="off">
+                </div>
+
+                <label class="champ" id="adresse-client" hidden><span class="champ-libelle">Adresse du client</span><input class="champ-saisie" placeholder="Si différente de l'adresse du chantier" autocomplete="off"></label>
+              </div>
+
+              <div class="filet-feuille"></div>
+
+              <div class="rang-envoi">
+                <span class="champ-libelle">Envoi</span>
+                <div class="choix envoi" role="group" aria-label="Par où envoyer le devis">
+                  <button type="button" data-canal="sms" aria-pressed="false" disabled>SMS</button>
+                  <button type="button" data-canal="email" aria-pressed="false" disabled>E-mail</button>
+                </div>
+              </div>
+
+              <div class="photos">
+                <span class="champ-libelle">Photos</span>
+                <button class="photo-ajout touche" type="button" aria-label="Ajouter une photo" data-note="Sur la planche, rien ne s'ajoute."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg></button>
+              </div>
+
+              <div class="voix">
+                <span class="champ-libelle">Devis à la voix</span>
+                <button class="micro touche" type="button" aria-label="Appuyez et décrivez le chantier" data-note="Sur la planche, rien ne s'enregistre."><svg class="ico" aria-hidden="true"><use href="#i-micro"/></svg></button>
+                <p class="voix-sous">Appuyez et décrivez le chantier</p>
+              </div>
+
+              <button class="bouton bouton-creux a-la-main touche" type="button" data-note="Sur la planche, le devis ne s'ouvre pas.">Je rédige à la main</button>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre">
+        <div class="cadre-capture"><img src="aujourdhui/creer-un-devis.jpg" alt="La feuille Créer un devis telle qu'elle est aujourd'hui"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Entreprise et service public</h2>
+    <ul>
+      <li><b>Entreprise</b> est là, et ouvre le SIRET et le n° TVA.</li>
+      <li><b>Public</b> est là, mais n'ouvre rien. Sa fiche, elle, demande le SIRET et le code service, celui que Chorus Pro attend sur la facture d'une mairie. Ici, Public les ouvre dès la création.</li>
+    </ul>
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>Les libellés en toutes lettres, plus grands, avec de l'air au-dessus.</li>
+      <li>Des cases et des pastilles plus hautes, pour le pouce.</li>
+      <li>« + Client » devient « Adresse du client ».</li>
+      <li>Envoi : SMS ou E-mail s'allume dès que le téléphone ou l'e-mail est tapé, et l'on voit lequel est pris.</li>
+      <li>Je rédige à la main prend toute la largeur.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Chaque chose à sa place, dans le même ordre.</li>
+      <li>Le micro, seul bouton plein, et la dictée des coordonnées en haut.</li>
+      <li>Les quatre pastilles, prises en or, qu'un second appui rend.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>Public ouvre le SIRET et le code service dès la création ?</li>
+      <li>« Adresse du client » au lieu de « + Client » ?</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="accueil.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Accueil</a>
+  <a href="client.html">La fiche d'un client<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+  (function () {
+    var ecran = document.getElementById("ecran-feuille");
+    var pastilles = ecran.querySelectorAll("[data-civilite]");
+    var numeros = document.getElementById("numeros");
+    var tel = document.getElementById("telephone"), email = document.getElementById("email");
+    var canaux = ecran.querySelectorAll("[data-canal]");
+    var canalChoisi = null;
+
+    /* Un second appui rend le choix, comme dans l'appli (ChoixCivilite). */
+    function poserCivilite(cle) {
+      pastilles.forEach(function (p) { p.setAttribute("aria-pressed", String(p.getAttribute("data-civilite") === cle)); });
+      var avecNumeros = cle === "entreprise" || cle === "public";
+      numeros.classList.toggle("ouverts", avecNumeros);
+      numeros.querySelector('[data-numero="entreprise"]').hidden = cle === "public";
+      numeros.querySelector('[data-numero="public"]').hidden = cle !== "public";
+    }
+    pastilles.forEach(function (p) {
+      p.addEventListener("click", function () {
+        poserCivilite(p.getAttribute("aria-pressed") === "true" ? null : p.getAttribute("data-civilite"));
+      });
+    });
+
+    /* Le canal se devine sur la coordonnée tapée, et reste celui qu'il choisit. */
+    function peindreCanal() {
+      var dispo = { sms: tel.value.trim() !== "", email: email.value.trim() !== "" };
+      var pris = canalChoisi && dispo[canalChoisi] ? canalChoisi : dispo.sms ? "sms" : dispo.email ? "email" : null;
+      canaux.forEach(function (b) {
+        var c = b.getAttribute("data-canal");
+        b.disabled = !dispo[c];
+        b.setAttribute("aria-pressed", String(c === pris));
+      });
+    }
+    [tel, email].forEach(function (c) { c.addEventListener("input", peindreCanal); });
+    canaux.forEach(function (b) { b.addEventListener("click", function () { canalChoisi = b.getAttribute("data-canal"); peindreCanal(); }); });
+
+    var adresseClient = document.getElementById("adresse-client");
+    document.getElementById("ouvrir-adresse-client").addEventListener("click", function () {
+      adresseClient.hidden = false;
+      this.hidden = true;
+      adresseClient.querySelector("input").focus();
+    });
+
+    var CAS = {
+      vide: { civilite: null, nom: "", telephone: "", email: "", adresse: "" },
+      particulier: { civilite: "mme", nom: "Costa", telephone: "06 39 98 45 14", email: "", adresse: "12 chemin des Vignes, 49800 Trélazé" },
+      entreprise: { civilite: "entreprise", nom: "SARL Les Jardins du Val", telephone: "", email: "contact@jardinsduval.test", adresse: "4 rue de la Gare, 49000 Angers" },
+      public: { civilite: "public", nom: "Mairie de Trélazé", telephone: "", email: "", adresse: "Parc du Vissoir, 49800 Trélazé" }
+    };
+    document.querySelectorAll("#etats [data-etat]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var c = CAS[b.getAttribute("data-etat")];
+        document.getElementById("nom").value = c.nom;
+        tel.value = c.telephone; email.value = c.email;
+        document.getElementById("adresse").value = c.adresse;
+        canalChoisi = null;
+        poserCivilite(c.civilite);
+        peindreCanal();
+      });
+    });
+
+    ecran.querySelectorAll("[data-note]").forEach(function (b) {
+      b.addEventListener("click", function () { Kit.note(ecran, b.getAttribute("data-note")); });
+    });
+  })();
+</script>
+</body>
+</html>
