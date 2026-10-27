@@ -5,7 +5,7 @@ import { db } from "./db/client";
 import { membresEntreprise, users } from "./db/schema";
 import type { Ctx } from "./repositories/context";
 import { coupureDesJetons, sessionFermee } from "./repositories/compte";
-import { instantDAuthentification, sessionCoupee } from "../lib/identite-session";
+import { instantDAuthentification, sessionCoupee, sessionTropAncienne } from "../lib/identite-session";
 import { enrichirContexteRequete } from "./request-context";
 import { doubleVerificationObligatoire } from "../lib/double-verification";
 import { etatDoubleVerification } from "./repositories/double-verification";
@@ -137,7 +137,7 @@ async function resoudreCtx(exigerDoubleVerification: boolean): Promise<Ctx> {
    * de lui-même quand les anciens jetons expirent.
    */
   const instantSession = instantDAuthentification(session.user);
-  if (fermee || sessionCoupee(instantSession, coupure)) {
+  if (fermee || sessionCoupee(instantSession, coupure) || sessionTropAncienne(session.user.authentifieLe, new Date())) {
     // La même sortie que pour un compte disparu : la route efface les cookies
     // puis renvoie à la connexion. Lever ici afficherait un écran d'erreur, en
     // laissant le cookie mort dans le navigateur — c'est le piège du 10 août

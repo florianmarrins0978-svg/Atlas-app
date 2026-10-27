@@ -36,6 +36,7 @@
     "db:seed:local": "tsx --env-file=.env src/server/db/seed.ts",
     "verifier:avant-livraison": "tsx scripts/verifier-avant-livraison.ts",
     "empreinte": "tsx scripts/empreinte-email.ts",
+    "ia:sans-plafond": "tsx scripts/ia-sans-plafond.ts",
     "verifier:connexion": "tsx scripts/verifier-connexion-avec-serveur.mts",
     "banc": "node scripts/banc.mjs",
     "sessions:preparer": "node scripts/preparer-sessions.mjs",

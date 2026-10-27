@@ -47,13 +47,13 @@ async function main() {
   assert.ok(rows[0], "le compte de démonstration n'est pas patron : rien à éprouver");
   const ctxPatron: Ctx = { utilisateurId: rows[0].u, entrepriseId: rows[0].e };
 
-  const membre = async (role: "commercial" | "salarie") => {
+  const membre = async (role: "commercial" | "salarie", accepter = true) => {
     const email = `${role}-pages-${Date.now()}@essai.local`;
     const donne = await donnerUnAcces(ctxPatron, { nom: role, email, motDePasse: MOT_DE_PASSE, confirmation: MOT_DE_PASSE, role });
     assert.deepEqual(donne, { ok: true }, `le compte ${role} n'a pas pu être créé`);
     const lui = (await listerAcces(ctxPatron)).find((l) => l.email === email)!;
     const aAccepter = await documentsAAccepter(lui.utilisateurId);
-    if (aAccepter.length > 0) {
+    if (accepter && aAccepter.length > 0) {
       await enregistrerAcceptations(lui.utilisateurId, aAccepter.map((d) => d.id), {
         adresseIp: "127.0.0.1",
         agentUtilisateur: "suite d'essai",
@@ -103,6 +103,32 @@ async function main() {
     const { url, texte } = await depuisLInterieur("demo@atlas.local", "demo1234", "/chantiers", "/termines/tva");
     assert.equal(url, "/termines/tva", `le patron a été renvoyé vers ${url}`);
     assert.match(texte, /TVA collectée/i);
+  });
+
+  await cas("des conditions à accepter EN COURS DE ROUTE arrêtent le clic suivant", async () => {
+    // Les étapes du compte vivaient dans le gabarit seul : un chargement
+    // complet renvoyait aux documents, un clic passait. Le cas réel : de
+    // nouvelles conditions sont publiées pendant qu'il travaille.
+    const email = await membre("commercial");
+    const contexte = await navigateur.newContext({ viewport: { width: 390, height: 844 } });
+    const page = await contexte.newPage();
+    await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
+    await page.fill('input[name="email"]', email);
+    await page.fill('input[name="password"]', MOT_DE_PASSE);
+    await page.click('button[type="submit"]');
+    await page.waitForURL((u) => !u.toString().includes("/login"), { timeout: 30_000 });
+    await page.goto(`${BASE}/chantiers`, { waitUntil: "networkidle" });
+    assert.equal(new URL(page.url()).pathname, "/chantiers", "l'écran de départ n'est pas ouvert : rien à éprouver");
+    await pool.query(
+      `DELETE FROM acceptations_documents WHERE utilisateur_id = (SELECT id FROM users WHERE email = $1)`,
+      [email]
+    );
+    await page.evaluate(() => (window as unknown as { next: { router: { push: (u: string) => void } } }).next.router.push("/planning"));
+    await page.waitForTimeout(5000);
+    await page.waitForLoadState("networkidle");
+    const url = new URL(page.url()).pathname;
+    await contexte.close();
+    assert.equal(url, "/documents-legaux", `sans les conditions acceptées, le clic l'a mené sur ${url}`);
   });
 
   await navigateur.close();

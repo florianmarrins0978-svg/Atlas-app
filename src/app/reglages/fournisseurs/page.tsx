@@ -74,14 +74,15 @@ export default async function FournisseursPage() {
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <div className="pb-24">
+        {/* La grammaire des Réglages soignés (planche du 26 octobre 2026,
+            `appli/soignee/reglages-fournisseurs.html`) : plus de surtitre doré,
+            et la phrase s'aligne sur le titre au lieu de dépasser de 10 px. */}
         <EnTeteEcran
-          surtitre="Réglages"
+          allure="soignee"
           titre="Ce que je paie"
+          precision="Prix d’achat, à part de vos prix de vente."
           retour={{ href: "/reglages", libelle: "Retour aux réglages" }}
         />
-        <p className="mx-[16px] mt-1 text-[13.5px]" style={{ color: colors.muted }}>
-          Prix d’achat, à part de vos prix de vente.
-        </p>
         <FournisseursPartenaires
           fournisseurs={fournisseurs.map(vue)}
           partenaires={partenaires.map(vue)}

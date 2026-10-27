@@ -1,8 +1,70 @@
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { verificationEnAttente } from "@/server/repositories/verification-email";
 import { documentsAAccepter, utilisateurExiste } from "@/server/repositories/documents-legaux";
 import { logger } from "@/server/logger";
+
+// LES DEUX ÉTAPES DU COMPTE, jouées par chaque écran (`garderLaPage`).
+//
+// **Elles vivaient seulement dans le gabarit racine** (`GardeVerificationEmail`,
+// `GardeDocumentsLegaux`), que Next.js ne rejoue pas à la navigation interne :
+// un compte en attente de son code, ou de son acceptation des conditions,
+// passait d'un écran à l'autre par un clic (audit du 25 octobre 2026, E8, et
+// `TODO.md` du 14 septembre). Leur texte est repris tel quel. Elles sont
+// appelées à deux portes : le gabarit (`GardeEtapesDuCompte`, pour le vrai 307
+// d'un chargement complet) et chaque écran (`garderLaPage`, pour les clics).
+// L'ordre reste le leur : l'adresse avant les conditions.
+
+/**
+ * TANT QUE L'ADRESSE N'A PAS RÉPONDU, ON N'ENTRE PAS — 14 septembre 2026.
+ *
+ * Sa demande : *« j'ai réussi à me connecter avec une adresse fausse qui
+ * n'existe pas ! […] il faut mettre une sécurité avec un numéro envoyé par
+ * email à rentrer pour pouvoir valider son compte »*.
+ *
+ * Même place et même forme que `GardeDocumentsLegaux`, juste au-dessus dans le
+ * layout, et **avant elle** : un compte dont l'adresse n'est pas prouvée n'a
+ * pas à lire les conditions générales — on ne sait même pas qui les lit.
+ *
+ * **Ce qui décide, c'est une ligne dans `codes_verification_email`**, pas la
+ * colonne `email_verified` : seuls les comptes créés par la porte en reçoivent
+ * une. Ses comptes à lui, ses salariés, Google et Apple n'en ont pas, et rien
+ * ne change pour eux (migration 0091).
+ *
+ * Les chemins exempts sont ceux de `GardeDocumentsLegaux`, plus l'écran du
+ * code lui-même — sans quoi elle s'y renverrait en boucle. **Pas les documents
+ * légaux** : un compte en attente qui y arriverait de lui-même repasse
+ * d'abord par le code. (Et `GardeDocumentsLegaux` exempte `/verifier-email`
+ * pour la même raison, dans l'autre sens.)
+ */
+const EXEMPTS_DE_L_ADRESSE = ["/login", "/verifier-email", "/api", "/devis", "/factures"];
+
+function exemptDeLAdresse(chemin: string) {
+  return EXEMPTS_DE_L_ADRESSE.some((p) => chemin === p || chemin.startsWith(`${p}/`));
+}
+
+export async function garderLAdresseVerifiee(chemin: string): Promise<void> {
+  if (exemptDeLAdresse(chemin)) return;
+
+  const session = await auth();
+  const utilisateurId = session?.user?.id;
+  if (!utilisateurId) return;
+
+  let enAttente = false;
+  try {
+    enAttente = await verificationEnAttente(utilisateurId);
+  } catch (err) {
+    // Une base muette ne ferme pas l'application à ceux qui sont déjà
+    // entrés : `GardeDocumentsLegaux` fait le même choix, pour la même raison.
+    logger.error("Vérification de l'adresse impossible", {
+      utilisateurId,
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    return;
+  }
+  if (enAttente) redirect("/verifier-email");
+  return;
+}
 
 // Garde d'accès : tant qu'un document dont l'acceptation est requise n'a pas
 // été accepté, l'application n'est pas utilisable (voir docs/RGPD.md §8).
@@ -22,7 +84,7 @@ import { logger } from "@/server/logger";
 // écran qui ne le concerne pas.
 // `/verifier-email` : le code d'abord, les conditions ensuite — sans cette
 // exemption, les deux gardes se renverraient l'une à l'autre sans fin.
-const CHEMINS_EXEMPTS = ["/login", "/documents-legaux", "/verifier-email", "/api", "/devis"];
+const EXEMPTS_DES_DOCUMENTS = ["/login", "/documents-legaux", "/verifier-email", "/api", "/devis"];
 
 // Chemins que le contrôle du compte laisse passer, et eux seuls.
 //
@@ -49,19 +111,13 @@ function estExempt(chemin: string, exempts: string[]) {
   return exempts.some((p) => chemin === p || chemin.startsWith(`${p}/`));
 }
 
-export default async function GardeDocumentsLegaux() {
-  const entetes = await headers();
-  const chemin = entetes.get("x-atlas-pathname");
-
-  // En-tête absent : rendu hors requête HTTP normale (génération statique,
-  // outillage). On ne bloque pas — la garde n'a rien à protéger dans ce cas.
-  if (!chemin) return null;
-  if (estExempt(chemin, CHEMINS_SANS_CONTROLE_DE_COMPTE)) return null;
+export async function garderLesDocumentsLegaux(chemin: string): Promise<void> {
+  if (estExempt(chemin, CHEMINS_SANS_CONTROLE_DE_COMPTE)) return;
 
   const session = await auth();
   const utilisateurId = session?.user?.id;
   // Pas de session : le middleware a déjà redirigé vers /login. Rien à faire.
-  if (!utilisateurId) return null;
+  if (!utilisateurId) return;
 
   // **Le compte de cette session existe-t-il encore ?**
   //
@@ -93,7 +149,7 @@ export default async function GardeDocumentsLegaux() {
   }
   if (!compteConnu) redirect("/api/session-perimee");
 
-  if (estExempt(chemin, CHEMINS_EXEMPTS)) return null;
+  if (estExempt(chemin, EXEMPTS_DES_DOCUMENTS)) return;
 
   let enAttente;
   try {
@@ -107,9 +163,9 @@ export default async function GardeDocumentsLegaux() {
       utilisateurId,
       erreur: err instanceof Error ? err.message : String(err),
     });
-    return null;
+    return;
   }
 
   if (enAttente.length > 0) redirect("/documents-legaux");
-  return null;
+  return;
 }

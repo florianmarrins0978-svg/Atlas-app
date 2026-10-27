@@ -85,14 +85,18 @@ export default function CalendrierPeriodes({
           setAnneeVue(annee);
           setOuvert(true);
         }}
-        className="flex h-11 flex-shrink-0 items-center gap-1.5"
+        // **Cerné, comme sur sa planche du 25 octobre 2026** (`appli/soignee/termines-tva.html`,
+        // retenu le 27) : sans contour, « 2026 » se lisait comme un titre posé
+        // devant les mois, pas comme la porte des autres années.
+        className="flex h-11 flex-shrink-0 items-center gap-[7px] rounded-full pl-2 pr-3"
+        style={{ boxShadow: `inset 0 0 0 1px ${colors.line}` }}
       >
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={colors.or} strokeWidth="1.6" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={colors.or} strokeWidth="1.6" aria-hidden="true">
           <rect x="3.2" y="5" width="17.6" height="15.4" rx="2.4" />
           <path d="M3.2 9.6h17.6" />
           <path d="M8 3.4v3.2M16 3.4v3.2" strokeLinecap="round" />
         </svg>
-        <span className="text-[14px] tabular-nums" style={{ fontFamily: font.display, color: colors.inkSoft }}>
+        <span className="text-[17px] leading-none tabular-nums" style={{ fontFamily: font.display, color: colors.ink }}>
           {annee}
         </span>
         {total > 0 && <Compte n={total} />}
@@ -168,7 +172,7 @@ export default function CalendrierPeriodes({
                 </span>
                 {mois && (
                   <span
-                    className="mt-0.5 block text-[11px]"
+                    className="mt-0.5 block text-[13px]"
                     style={{ color: regarde ? voile(colors.cream, 0.66) : colors.muted }}
                   >
                     {mois}

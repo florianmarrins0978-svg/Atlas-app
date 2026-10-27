@@ -104,6 +104,10 @@ function sansCommentaires(source: string): string {
 function adressesDePdfEnVariable(source: string): string[] {
   const noms: string[] = [];
   for (const m of source.matchAll(/(?:const|let)\s+([A-Za-z_$][\w$]*)\s*=([^\n]*)/g)) {
+    // **Une adresse de la visionneuse rangée dans une constante reste une porte**
+    // (26 octobre 2026, `ADRESSE_DE_L_EXEMPLE`) : la même règle que pour un
+    // `href` qui l'appelle directement, plus bas.
+    if (m[2].includes("adresseDeLaVisionneuse")) continue;
     if (/\/pdf|\.pdf/.test(m[2])) noms.push(m[1]);
   }
   return noms;
@@ -185,6 +189,12 @@ cas("un commentaire qui CITE la forme fautive ne compte pas", () => {
   // Sinon l'écran corrigé est accusé par l'explication de sa correction, et un
   // contrôle qui parle à tort s'apprend à être ignoré.
   const ecran = '// interdit : <a href={`${pdf}?telecharger=1`}>\nconst x = 1;';
+  assert.deepEqual(liensDirectsVersUnPdf(ecran), []);
+});
+
+cas("une adresse de la visionneuse rangée dans une constante reste une porte", () => {
+  const ecran =
+    'const ADRESSE = adresseDeLaVisionneuse("/api/factures/exemple/pdf", { titre: "x" });\n<Link href={ADRESSE}>Voir</Link>';
   assert.deepEqual(liensDirectsVersUnPdf(ecran), []);
 });
 

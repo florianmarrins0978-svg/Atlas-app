@@ -3,11 +3,10 @@ import { headers } from "next/headers";
 import { charte, variablesCharte, type Charte } from "@/lib/chartes";
 import { lireCharte } from "@/server/repositories/charte-personne";
 import "./globals.css";
+import GardeEtapesDuCompte from "@/components/atlas/GardeEtapesDuCompte";
 import CadreApplication from "@/components/atlas/CadreApplication";
 import { estCheminPublic, estPageDuClient } from "@/lib/chemins-publics";
 import VeilleReponseServeur from "@/components/atlas/VeilleReponseServeur";
-import GardeDocumentsLegaux from "@/components/atlas/GardeDocumentsLegaux";
-import GardeVerificationEmail from "@/components/atlas/GardeVerificationEmail";
 import JournalDeNavigation from "@/components/atlas/JournalDeNavigation";
 import BandeauBanc from "@/components/atlas/BandeauBanc";
 import { leBandeauDoitParler } from "@/server/etat-banc";
@@ -213,14 +212,11 @@ export default async function RootLayout({
     // charte : vu sur une capture, la bande sous la barre de navigation.
     <html lang="fr" translate="no" style={charteChoisie ? (variablesEnStyle(charteChoisie) as React.CSSProperties) : undefined}>
       <body className="font-body antialiased">
-        {/* Redirige vers l'écran d'acceptation tant qu'un document requis n'a
-            pas été accepté. Rendu avant le contenu : la redirection intervient
-            donc avant que quoi que ce soit d'utilisable soit affiché. */}
-        {/* **L'adresse d'abord, les conditions ensuite.** Un compte créé par
-            la porte n'entre nulle part tant que le code reçu à son adresse
-            n'a pas été entré — sa demande du 14 septembre 2026. */}
-        <GardeVerificationEmail />
-        <GardeDocumentsLegaux />
+        {/* **L'adresse d'abord, les conditions ensuite**, au chargement
+            complet : le renvoi part avant le premier octet. Chaque écran les
+            rejoue (`garderLaPage`), puisque ce gabarit ne se rejoue pas à la
+            navigation interne (audit, E8). */}
+        <GardeEtapesDuCompte />
         {/* **Ce qui permet à la flèche de retour d'être un vrai retour.** Il
             tient le journal des écrans traversés dans l'onglet, et chaque
             flèche y lit la page d'où l'on vient — c'est sa demande du

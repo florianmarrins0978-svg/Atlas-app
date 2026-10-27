@@ -35909,7 +35909,7 @@ retirée, et `test-papier-facture-db.ts` avec elle.
 
 **La couleur vient de la pièce, pas du libellé** (`categorieDeLaLigne`) : un ticket de carburant fait une ligne bleue. Sans pièce, un libellé qui commence par VIR ou PRLV se voit en virement ; le reste est « autre » jusqu'à ce qu'un ticket arrive : aucune catégorie ne se devine. Les dix couleurs (huit catégories, entrées, sorties) sont des jetons de charte (`couleursDuComptable`, `chartes.ts`), détachés à 4,5 du fond et de la plage : elles colorent des mots, et `test-pour-mon-comptable.ts` les mesure sur les huit chartes.
 
-**La photo d'un ticket a sa propre route** (`src/app/termines/comptable/ticket/[id]/route.ts`) : aucune ne servait `achats_tva.photo_cle`. Elle prend l'identifiant du TICKET, relu sous la RLS, jamais une clé de stockage, et vérifie le rôle (`peutOuvrir`), une route s'appelant sans passer par l'écran gardé.
+**La photo d'un ticket a sa propre route** (devenue le 26 octobre `src/app/termines/comptable/piece/[ligne]/route.ts`, qui sert la pièce de toute ligne, §515) : aucune ne servait `achats_tva.photo_cle`. Elle prend l'identifiant du TICKET (de la LIGNE depuis le 26 octobre), relu sous la RLS, jamais une clé de stockage, et vérifie le rôle (`peutOuvrir`), une route s'appelant sans passer par l'écran gardé.
 
 **Ce qui reste au lot 5** : « Photographier le ticket » mène aujourd'hui à Ma TVA, qui sait déjà photographier et lire ; le ticket rejoint sa ligne à l'enregistrement. La prise de vue sur place, le redressement de la photo et le ticket recopié en entier viennent avec le lot des photos.
 
@@ -36110,16 +36110,210 @@ l'écran, plus le contour.
 
 **Reste ouvert** : le plafond de dépense d'IA par mois, qui demande sa décision (montant, effet quand il est atteint).
 
-## §509 : `photos` et `notes_vocales` gagnent le second rempart que `entreprises` avait déjà
+## §509 : Les crédits IA du mois, comptés dans la fabrique et coupés au plafond
+
+*26 octobre 2026, audit de sécurité (E13, seconde moitié). Ses plafonds du même jour.*
+
+**Le constat.** Aucun plafond de dépense d'IA : un compte volé, ou un abus, faisait monter sa facture chez le fournisseur sans limite. Un artisan seul qui dicte un devis par jour dépense de l'ordre de 1 à 3 € par mois (estimation).
+
+**Ses plafonds** (`src/lib/credits-ia.ts`, `PLAFONDS_IA_EUROS`) : essai 5 €, Artisan 10 €, Entreprise 20 €, Illimité 60 €, entreprise sans abonnement 10 €, lecture seule 0 €. Son entreprise n'a pas de plafond : elle est désignée par le réglage `ATLAS_IA_SANS_PLAFOND` de son espace (des identifiants séparés par des virgules), jamais en dur, l'appli servant tous les artisans. Mois du calendrier en temps universel, « presque épuisé » à 80 %, coupure à 100 %.
+
+**Le compteur vit dans les fabriques** (`src/server/ai/compteur.ts`). L'IA est appelée depuis une soixantaine d'endroits, tous par `getFournisseurLLM`, `getFournisseurVision` ou `getFournisseurTranscription` : les fournisseurs payants y sortent enveloppés, `dev` et `essai` restent nus (ils ne coûtent rien, et les suites gardent leur indépendance). Avant l'appel, l'état des crédits ; épuisé, l'appel ne part pas et rend `credits_epuises`. Après, le coût estimé s'ajoute (`consommation_ia`, migration 0148).
+
+**Qui paie.** Le contexte posé par `pourLeCompteDe(ctx, fn)` (la lecture des pièces importées, lancée par `after()` quand il n'y a plus de requête), sinon la session de la requête. Hors de toute requête : en production l'appel est refusé et journalisé (`ia_appel_sans_payeur`), ailleurs (un script de vérification) il passe sans être compté.
+
+**Le coût est estimé**, jamais lu sur la facture : trois caractères pour un jeton, 1 600 jetons par image, la durée d'un son déduite de son poids à 16 kbit/s, les prix publics, un dollar pour un euro. Chaque arrondi penche vers le haut. Vérifier avant et compter après laisse passer un appel de trop quand deux partent ensemble à 99 % : quelques centimes, contre une réservation par appel.
+
+**La table** : une ligne par entreprise et par mois, sous RLS forcée. `atlas_app` lit, ajoute et met à jour, sans pouvoir effacer ; un déclencheur refuse que le compteur baisse, pour qu'une injection SQL ne puisse pas rendre l'IA à un compte coupé.
+
+**Ce qui le tient** : `test-credits-ia.ts` (la règle), `test-credits-ia-db.ts` (sous `atlas_app` : l'appel compté, le refus au plafond sans que le fournisseur soit appelé, la dictée aussi, l'exemption, `after()`, le compteur qui ne baisse pas, l'isolation, les fabriques sans fournisseur payant nu ; vue rouge en retirant la coupure).
+
+**L'écran.** La barre de sa planche (`appli/soignee/abonnement-credits-ia.html`) vit sous l'état de l'abonnement (`src/app/reglages/abonnement/CreditsIA.tsx`) : un pourcentage, jamais d'euros, vert, ambre, puis rouge une fois épuisé (son choix du 26 octobre). Elle lit `etatDesCreditsIA` et ne compare rien. Sans plafond, rien ne s'affiche.
+
+**La phrase du refus** (`phraseCreditsEpuises`) : « Crédits IA épuisés. Atlas IA reprend le 1er novembre. D'ici là, tout s'écrit à la main. » Elle est le message de l'erreur `credits_epuises` : la note vocale et l'assistant la relaient tels quels ; la dictée du devis, celle des coordonnées et le complément de note reçoivent la raison `credits` et l'affichent à la place de leur échec, au même endroit. Le texte change, pas la place : aucune planche neuve.
+
+**Son entreprise** se désigne par `npm run ia:sans-plafond -- son@adresse` sur son espace : le fichier va à côté de la clé de l'espace (`.atlas-secrets/ia-sans-plafond`), et `banc.mjs` le passe au serveur.
+
+**Reste ouvert** : la lecture des pièces importées note « illisible » une pièce refusée faute de crédits (`TODO.md`).
+
+## §510 : Un lien entre deux tables d'entreprise porte l'entreprise ; les liens des clients restent tels quels
+
+*26 octobre 2026, audit de sécurité (E10 et E12).*
+
+**E10, le constat.** Vingt-six clés étrangères reliaient deux tables d'entreprise par le seul identifiant (paiement et facture, acompte et devis, retour et chantier, photos…). Une clé étrangère se vérifie hors de la RLS : une écriture recevant l'identifiant d'une autre entreprise aurait été acceptée. Aucun code ne le fait aujourd'hui.
+
+**La règle** (migration 0149) : chaque table visée porte une unicité `(id, entreprise_id)`, et chaque lien une seconde clé, composite, à côté de l'ancienne qui garde son effacement en cascade ou à vide. **`NOT VALID`** : les lignes neuves sont vérifiées, les anciennes ne le sont pas encore, pour qu'un lien ancien illisible sur sa base ne bloque pas toutes les migrations suivantes (la panne du 13 septembre). Valider les anciennes se fera à part, mesuré sur sa base (`TODO.md`). `test-liens-dans-l-entreprise-db.ts` refuse l'écriture croisée sous `atlas_app`, et refuse toute future clé entre tables d'entreprise sans sa sœur composite (vu rouge en retirant une clé).
+
+**E12, refusé délibérément.** Les liens des devis, factures, contrats, rapports de passage et dates restent en clair et, pour contrat et rapport, sans expiration. Trois raisons. Stocker l'empreinte à la place du lien empêcherait le patron de recopier le lien d'un devis déjà envoyé (il le fait depuis l'écran). Ces liens ouvrent un document que le client a reçu et doit pouvoir relire comme un PDF : les faire expirer lui ferait perdre son contrat. Et la lecture d'un lien par l'application passe déjà par la RLS (`app.jeton_*`) : un lien ne se lit qu'avec le lien exact, 256 bits. Le lien du comptable, lui, est déjà stocké en empreinte (migration 0145), et son année de validité couvre un exercice.
+
+## §511 : Les flux GitHub figés par empreinte, et lecture seule par défaut
+
+*26 octobre 2026, audit de sécurité (E15).*
+
+**Les actions sont épinglées par empreinte de commit** (`uses: actions/checkout@<sha> # v4`). Une étiquette comme `v4` se déplace : qui la contrôle change le code qui tourne dans nos flux, jetons compris. Les empreintes ont été lues sur GitHub le 26 octobre (`git ls-remote`), l'étiquette d'origine reste en commentaire pour savoir quoi monter.
+
+**Droits.** `adresses`, `banc-essai`, `ci` et `itineraire` n'avaient aucun bloc `permissions` : leur jeton prenait les droits par défaut du dépôt. Ils sont désormais en lecture seule, et un job qui a besoin de plus le déclare (la fiche d'état de `ci.yml`, `issues: write`). Dans `pages.yml`, `pages: write` et `id-token: write` valaient pour tout le flux, y compris les jobs qui font `npm ci` : ils ne valent plus que pour le job qui publie.
+
+**Refusé, avec ses raisons.** `min-release-age` (un délai avant d'installer une version neuve) n'existe qu'à partir de npm 11.10 ; l'espace et la CI tournent sous npm 10.9, où la clé serait ignorée en silence : une protection qui n'en est pas une. Le repli `npm install` de `.devcontainer/demarrer.sh` reste : il ne sert que si `npm ci` échoue, et sans lui son espace démarrerait sans dépendances, c'est-à-dire sans application.
+
+## §512 : Les étapes du compte se jouent aux deux portes ; la purge de son espace a sa clé
+
+*26 octobre 2026, fin de l'audit de sécurité (le reste d'E8, `CRON_SECRET`, E14).*
+
+**Les étapes du compte** (adresse vérifiée, puis conditions acceptées) vivaient seulement dans le gabarit racine, que Next.js ne rejoue pas à la navigation interne : des conditions publiées pendant qu'il travaille ne l'arrêtaient qu'au rechargement. Leurs fonctions vivent désormais dans `src/server/garde-etapes-du-compte.ts`, texte inchangé, et sont appelées à **deux portes** : chaque écran (`garderLaPage`, pour les clics) et le gabarit (`GardeEtapesDuCompte`, pour le chargement complet). Le gabarit n'est pas une redite : seul lui renvoie un compte supprimé par un vrai 307, avant le premier octet ; depuis la page, sous `loading.tsx`, le renvoi devient du JavaScript qu'un navigateur sans JavaScript ne suit pas (`test-session-perimee-e2e`, la panne du 10 août). `test-garde-des-pages-e2e.ts` efface ses acceptations en cours de route et vérifie que le clic suivant le mène aux documents (rouge sans l'appel dans `garderLaPage`).
+
+**`CRON_SECRET`** venait de `docker-compose.yml`, comme `AUTH_SECRET` avant E1. Rien ne l'appelle sur son espace ; `banc.mjs` lui en crée une quand même, une fois, rangée à côté de la clé de session (`.atlas-secrets/cron-secret`).
+
+**E14** se règle chez l'hébergeur (`ATLAS_PROXY_SAUTS`) : c'est déjà une ligne de `docs/cloture-avant-premier-artisan.md`. Rien à coder.
+
+**Les pièces importées sans crédits IA** ne sont pas marquées illisibles : la lecture par l'IA rend « rien », et la pièce passe en « à vérifier » avec ce que le texte a pu dire, ce qui est la saisie à la main que la coupure promet.
+
+## §513 : Une session meurt trente jours après la connexion ; une ligne refuse un nombre impossible ; le terminal lit la clé de l'espace
+
+*26 octobre 2026, dernier lot de l'audit de sécurité (scénarios 4, 5 et 11 du prompt renforcé ; rapport final : `docs/audit-securite-2026-10.md`).*
+
+**Trente jours** (sa décision du 26 octobre). Le jeton est réémis à chaque requête : une session servie chaque jour ne mourait jamais, et un cookie copié vivait jusqu'au changement de mot de passe. `sessionTropAncienne` (`src/lib/identite-session.ts`) compte depuis `authentifieLe`, posé à la vraie connexion et jamais avancé par une réémission ; `getCurrentCtx` renvoie alors vers `/api/session-perimee`, la même porte que la coupure, en vrai 307 depuis le gabarit. Un jeton sans `authentifieLe` (d'avant le 25 août) est tenu pour trop ancien : il se reconnecte une fois. `test-identite-session.ts`, `test-session-perimee-e2e.ts` (rouge sans la limite).
+
+**Les nombres d'une ligne** (`nombreDeLigneAdmis`, `src/lib/montant-ecrivable.ts`). Le serveur recalculait déjà le montant et la base fige un devis émis ; restait la requête forgée : un prix négatif retirait de l'argent sans passer par la remise, un nombre démesuré faisait une erreur 500. `ajouterLignePrix` et `modifierLignePrix` refusent avant d'écrire. Plus large que `montantEcrivable`, délibérément : « 0,125 » m³ passe, comme avant. `test-nombres-de-ligne-db.ts`.
+
+**Le terminal de son espace lit la clé du serveur** (`poserLaCleDeLEspace`, `scripts/secret-de-l-espace.ts`). Depuis E1 (§503), le serveur reçoit la clé de l'espace par `banc.mjs`, mais un terminal garde la valeur de `docker-compose.yml` : `npm run empreinte` aurait rendu une empreinte absente du journal, et l'épreuve d'une restauration aurait déclaré ses secrets illisibles. Les deux scripts lisent désormais le fichier de l'espace. Écarté : écrire dans `~/.bashrc` pour tous les terminaux (une persistance que rien ne demandait).
+
+**La restauration** existait (`scripts/eprouver-restauration.ts`, neuf contrôles) et a été jouée ici de bout en bout le 26 octobre ; elle reste à jouer sur SA sauvegarde, sur son espace.
+## §514 : Le planning se lit sans geste, et chaque jour range ses chantiers sur une plage
+
+**Sa demande du 26 octobre 2026**, devant la planche `appli/soignee/planning.html` : *« code toute la planche planning, ne lance pas de batterie »*. Elle tranche du même coup le point qui restait ouvert : les sept jours se lisent d'office.
+
+| | avant | après |
+|---|---|---|
+| sous « Planning » | « Vos journées », 9,5 px doré | rien |
+| l'agenda | conseil et panne au-dessus du mois, sur deux lignes | la panne en haut sur une plage rouge, « Ouvrir » seul en geste ; le conseil en bas de page, « Relier votre agenda » et « Masquer » |
+| les sept jours | sous le mot « La semaine », à toucher (sa réponse du 15 octobre) | d'office ; un jour touché les retire toujours (« la B » du 7 octobre) ; le titre en phrase, « Du 26 octobre au 1er novembre ». **La planche écrivait « Semaine du 26 octobre »** : ses sept jours partaient d'un lundi, ceux de l'application partent du jour où il arrive. Un mercredi, « Semaine du 28 octobre » annoncerait une semaine qui n'en est pas une |
+| la date d'un jour | pastille centrée en capitales (sa D du 23 août) | titre en serif à gauche, « Aujourd'hui » en or puis la date ; la pastille se remplace par la PLAGE claire qui porte les chantiers |
+| une ligne | nom, durée 12,5 px doré dessous, ville 11,5 px grise dessous | nom ; « Une journée » (14,5 px) et la ville avec sa pointe de carte sur une ligne ; l'équipe à 15 px |
+| l'équipe | « Julien / Kévin » | « Julien et Kévin » (`ditQuiPart`, donc aussi la fiche de chantier en PDF) |
+| « Ajouter » | mot doré centré sous chaque jour | au bout de la plage, à gauche, avec son « + » dessiné |
+| la légende | une ligne de 9 px, « COULEURS » seul dessous | deux lignes à 13 et 12,5 px, « Couleurs » à côté du matin et de l'après-midi (`Legende aCote`) |
+| fiche du jour | date en capitales centrées, « Matin » 10 px en capitales | date en titre à gauche (« Aujourd'hui » en or devant), « Matin » 14 px, durée et ville sur une ligne |
+| fiche d'intervention | « FICHE D'INTERVENTION » puis le nom redit en 22 px ; quatre gestes sur une rangée (sa planche du 19 septembre) | **inchangée** : sa réponse du 26 octobre, « tu conserves la fiche d'intervention » ; la planche la montrait en deux rangées de deux, il garde celle de l'application |
+| tiroir du bas | 13 px | 16,5 px, et le nombre qui attend dans une pastille d'or quand un jour est touché |
+| titre « En attente du client » | pastille, comme la date | titre en serif, comme la date |
+
+**Trois de ses choix sont revus, et c'est lui qui l'a fait** en faisant coder la planche : la semaine derrière un mot (15 octobre), la date en pastille (23 août), les quatre gestes sur une rangée (19 septembre). Chaque fois, la RÈGLE qu'il défendait reste et se mesure autrement : la date se détache du nom (hors de la plage, plus grande), les quatre gestes se voient d'un coup d'œil (deux rangées sans mot coupé).
+
+**Les suites suivent la règle, pas le dessin** (`CLAUDE.md` §5 bis) : `test-ligne-planning-e2e` mesure la date hors de la plage et plus grande que le nom ; `test-planning-e2e` vérifie la liste d'office et le titre en phrase, et compare le titre du tiroir à celui d'un jour par la police et la taille ; neuf suites ne touchent plus « La semaine ».
+
+**Ce qui n'est PAS dans ce lot** : la barre du bas garde sa taille, sa décision du 26 octobre (*« la barre du bas peut garder sa taille actuelle »*). « Salarié absent ? » se pose à côté de la date du jour, comme sur la planche (*« Salarié absent, mets-le à côté »*, même jour) : `PasLaCeJour` reçoit le titre du jour de `CarteDuJour` et le porte sur sa propre ligne, pour que la liste des absents s'ouvre toujours juste dessous.
+
+
+## §515 : Un virement reçu se règle dans sa ligne, et une pièce d'un autre montant se joint par un geste
+
+*26 octobre 2026, ses planches du 25 octobre (`appli/soignee/termines-comptable.html`, `comptable-dossier.html`, `comptable-verification.html`).*
+
+**Le constat.** La carte d'un virement reçu renvoyait vers l'accueil. Or l'accueil ne questionne que les virements qu'une facture d'Atlas explique au centime (`questionsDesVirements`) : un acompte, un remboursement ou un virement arrivé hors de la fenêtre des questions n'y apparaissait jamais, et la ligne restait « à justifier » pour toujours. Le dossier ne pouvait plus s'arrêter. Et `relierTicket`, `joindreFactureRecue`, le ticket photographié depuis sa ligne ne comparaient aucun montant : il a pu joindre une facture qui n'était pas celle du virement.
+
+**La règle.** Une entrée se justifie de trois façons, toutes dans sa carte : la facture d'Atlas en attente (`confirmerLaLigneRecue`, `src/server/repositories/banque.ts`), qui retrouve ou crée le virement de l'accueil par la clé de la ligne et note le règlement dans la MÊME transaction que la réponse (une seule écriture pour les deux écrans, et un « non » donné sur l'accueil ne ferme pas la porte) ; une facture faite hors d'Atlas (`justification = 'facture_hors_atlas'`, son fichier, sa forme et son total lu, migration 0150) ; ou l'une de ses cinq réponses (`MOTIFS_RECUS`), qui ferme la question de l'accueil dans la même transaction. Une réponse se vérifie contre le sens de la ligne dans le dépôt, qui lit la ligne verrouillée : un salaire ne s'écrit pas sur ce qui entre.
+
+**L'écart.** `ecartDeMontant(ligne, piece)` compare au centime ; `inconnu` quand un des deux ne se lit pas (ne pas savoir n'est pas un écart). Chaque pose (`poser`) lit la ligne verrouillée et la pièce dans la transaction de l'écriture, et refuse sans `malgreEcart` en rendant les deux montants. La facture d'Atlas se compare à son reste dans l'action, contre les factures du moment, comme l'accueil. Le ticket photographié depuis sa ligne se compare AVANT d'être rangé (`ecartAvecLaLigne`) : un refus après coup laissait un achat rangé et une ligne vide. Jointe quand même, la pièce porte son écart pour toujours, lu par `lireLesLignes` (`l.ecart`) ; `suiteDeLaPiece` et `ecartSignale` l'écrivent de la même façon sur le relevé, dans le dossier et chez le comptable. « Payée en partie » (une facture plus grande que le virement reçu) se dit sans alerte.
+
+**Une seule règle par question.** `pieceDeLaLigne` choisit le fichier d'une ligne pour la route du patron (`/termines/comptable/piece/[ligne]`, qui remplace celle du seul ticket), la page du comptable et le dossier PDF. `carteDeLaLigne` (`src/app/termines/comptable/a-regarder.ts`) fabrique la carte du dossier en cours ET celle d'un rejet du comptable. `totalSigne` écrit un total, sans signe quand il est nul, pour l'écran et le PDF.
+
+**Le fichier qui ne sert plus quitte le stockage.** Une justification qui remplace une facture faite hors d'Atlas rend sa clé (`pieceRetiree`), que l'action efface après l'écriture ; une facture déposée puis abandonnée (« Reprendre la photo ») s'efface si aucune ligne ne la porte. La base d'abord, le fichier ensuite : un effacement raté laisse au pire un orphelin, jamais une ligne qui montre une pièce disparue. La clé rendue par le dépôt se revérifie au retour (préfixe de l'entreprise, pas de `..`), comme celle d'un ticket.
+
+**Le trou de 0143, refermé par 0150.** La contrainte de cohérence finissait par `"justification" IN (…)`, qui vaut INCONNU quand la justification est vide ; une contrainte qui vaut inconnu passe. Une ligne « à justifier » portant un ticket, une facture ou un motif entrait donc sans refus. Chaque branche se dit désormais vraie ou fausse (`IS NOT DISTINCT FROM`, `IS NOT NULL`). Plus stricte que l'ancienne, elle est posée **NOT VALID** : elle tient pour toute écriture nouvelle sans juger les lignes d'hier, qui ne peuvent donc pas bloquer la migration sur sa base (la panne de 0087). `ALTER TABLE … VALIDATE CONSTRAINT` se jouera une fois sa base regardée (`TODO.md`). Le jeu d'essai habité n'en porte aucune.
+
+**Écarté.** Lire la facture hors d'Atlas avec `lireDevisFournisseur` : sa consigne parle d'un fournisseur qui écrit à l'artisan, et lit des lignes d'articles. Un lecteur à lui (`lire-facture-hors-atlas.ts`) ne rend que le total et le numéro, et sa relecture s'éprouve sans clé (`test-facture-hors-atlas-lue.ts`). Sans clé, ou sans total lisible, l'écran le fait taper : rien ne se devine.
+
+**Ce qui le tient** : `test-pour-mon-comptable.ts` (motifs par sens, écart, signe), `test-pour-mon-comptable-db.ts` (écart refusé puis accepté, réponses d'un virement reçu, facture hors d'Atlas, confirmation depuis la ligne avec un « non » de l'accueil, la base qui refuse une facture hors d'Atlas sans fichier), `test-migration-0150-base-habitee.ts`, `test-facture-hors-atlas-lue.ts`, `test-dossier-comptable-pdf.ts`, et au navigateur `test-pour-mon-comptable-e2e.ts` (le virement reçu réglé dans sa carte, l'écart montré avant de joindre), `test-dossiers-comptables-e2e.ts`, `test-verification-comptable-e2e.ts`.
+## §516 : Le plan d'arrosage soigné : le geste principal sous le pouce, la pièce sous son interrupteur
+
+*26 octobre 2026, planche `appli/soignee/arrosage.html` (Proposé), sa demande « code ça ».*
+
+**Le geste principal colle au bas** (`ActionDuBas.tsx`, `atlas-colonne-fixe` au-dessus de la barre, comme `BarreEnregistrer`). Pendant le dessin, c'est « Faire le plan » (`DessinerLePlan`) ; une fois le plan fait et le croquis replié, « Envoyer la liste au fournisseur » (`LePlanDuJardin`, `actionVisible`). **Jamais les deux à la fois** : `actionVisible` vaut le repli du croquis, et « Modifier » le rouvre en retirant la barre d'envoi. Sans `actionVisible` (une capture, un autre appelant), l'envoi reste sous « Modifier ma liste », où il était. Le formulaire garde son `pb-[170px]` : c'est lui qui laisse la place à la barre, pas le plan.
+
+**La pièce allumée vit sous son interrupteur** (`Bascule`, `role="switch"`). Avant, les cases cochées faisaient apparaître les pièces plus bas, toutes ensemble : il ne la retrouvait pas pour la changer. Le téflon allumé sans pièce derrière (`BDV999` absent de `piecesAjoutables`) le dit en ambre ; ce n'est pas la correction du catalogue, qui reste au `TODO.md`.
+
+**Les cinq mots collés en haut** (`Sommaire`) suivent la fenêtre, pas un conteneur : l'écran défile à la fenêtre, et aucun ancêtre ne coupe le `sticky` (vérifié au navigateur). Chaque partie porte `scroll-mt-[72px]` pour se poser sous eux.
+
+**Le croquis replié** (`croquis-replie`, `ArrosageClient`) cache le formulaire par `hidden`, il ne le démonte pas : les champs gardent leur valeur et repartent avec « Modifier ».
+
+**Ce qui n'a pas bougé** : aucun calcul, aucune règle d'arrosage, aucun repère `data-atlas` des suites (`test-arrosage-e2e` verte). La preuve de la fiche d'aide « Ajouter la photo du croquis » a perdu ses guillemets : le libellé est désormais un texte d'écran, plus une chaîne.
+
+**Complété le même jour, et ce qui l'a rendu nécessaire.** La première livraison du §516 annonçait le plan « codé » sans avoir été confrontée à la planche partie par partie : la feuille du fournisseur, le menu d'une pièce, les pièces des réseaux et la nourrice étaient restés tels quels, par oubli. Le reste a été relevé en faisant défiler le téléphone de la planche à côté de l'écran, puis codé. **La consigne qui borne ce lot, la sienne :** *« la liste des pièces, la nomenclature, les photos, la façon dont ça s'envoie au fournisseur : il ne faut pas les modifier ; c'était simplement un aspect visuel »*. Seuls les cadres, les tailles et les couleurs ont bougé ; le message envoyé est identique, vérifié à l'écran.
+
+Trois choix faits en codant : la vignette d'une pièce passe de 88 à 72 (`taille`, renommée plutôt qu'une « 88 » qui dessinerait 72) ; « Ajouter une pièce » devient un seul composant (`BoutonAjouter.tsx`) pour le piquage et les réseaux, qui ne pourront plus diverger ; les quantités de la liste restent en `orTexte` et non en `or` comme sur la planche, `or` étant trop pâle pour un texte sur la carte. Le fond des photos reste `card` : le blanc de la planche, écrit en clair, se retournerait sur les chartes sombres.
+
+**Troisième passe, sur sa question « rien n'est oublié ? ».** Les cinq premiers états de la planche (croquis, robinet, lecture, plan lu, à compléter) n'avaient jamais été remis à côté de l'écran après codage : quatre écarts y restaient, tous corrigés (unités dans les cases, entrée « devis » au départ seulement, attente de lecture seule, filets et feuille de zone du dessin). **Non repris, et dit :** la ligne « PAYSAGE » sous le titre, absente de la planche, vient du cadre commun à tous les outils Paysage (`OuvertParLaFormule`) ; la retirer ici la retirerait partout, ce que la planche d'arrosage ne demandait pas. **Sa réponse, le 26 octobre 2026 : « Non ».** La ligne reste, partout ; ne pas reposer la question.
+
+
+## §517 : La porte demande ce que Mon entreprise attend, et sa fin le montre
+
+*26 octobre 2026, sa planche `appli/soignee/creer-un-compte.html`, « tu peux coder toute la planche ».*
+
+**Le constat.** Les seize questions de septembre ignoraient cinq réglages nés depuis. L'appli posait sans le dire le rythme et le reversement de la TVA et un chantier par jour, et laissait vides la décennale et le médiateur, que la loi veut sur le papier. La fin disait « Vos réglages sont remplis », et Mon entreprise disait juste après le médiateur manquant et obligatoire.
+
+**Les règles** (`src/lib/creation-compte.ts`) : vingt questions au plus, quatorze au moins, sept chapitres. Une question porte des `champs` (une ou plusieurs cases, nommées au-dessus dès qu'elles sont plusieurs), ou une liste, des cartes Oui ou Non, la liste des formes, un compteur, la photo de l'attestation. Ce qui a une valeur d'office se `propose` déjà entouré et ne se passe pas ; le numéro de TVA se tire du SIRET par `numeroTvaFrancais` (`autoliquidation.ts`, exportée pour l'occasion). Le total annoncé ne monte toujours jamais.
+
+**La fin** se lit sur l'entreprise ENREGISTRÉE (`src/lib/recapitulatif-compte.ts`), jamais sur les réponses : un dépôt d'attestation raté s'y voit. L'ordre devient le code, les conditions, `/creer-un-compte/pret` (Face ID s'il est possible, puis le récapitulatif en paquets de Mon entreprise), puis l'accueil. La première acceptation des conditions mène à cette page (`accepterDocumentsAction`) ; un compte invité y est renvoyé à l'accueil, ce n'est pas son entreprise. Le geste d'activer Face ID est sorti dans `useActiverFaceId`, partagé avec Mot de passe.
+
+**Trois écarts à la planche, décidés pour la sécurité ou pour ses règles :**
+
+| la planche | le code | pourquoi |
+|---|---|---|
+| des suggestions d'adresse | une case libre | `/api/adresses` est fermée sans compte, pour ne pas faire de notre serveur un relais ouvert vers la Base Adresse Nationale |
+| l'IA lit l'attestation et propose l'assureur | la photo reste dans le téléphone, part après le code par `deposerAttestationAction`, qui la fait lire | rien ne s'écrit avant « Créer mon compte », et une lecture d'image ouverte à qui n'a pas de compte serait payée par nous |
+| Oui ou Non en deux cartes côte à côte | deux pilules l'une sous l'autre | sa règle du 12 août, la même forme ronde partout (`test-boutons-arrondis`) |
+
+**Ce qui le tient** : `test-creation-compte.ts` (dont « la fin ne dit jamais tout est prêt sans médiateur », rouge contre la version d'avant), `test-recapitulatif-compte.ts`, `test-porte-reglages-neufs-db.ts` (les colonnes écrites, rouge sans le dépôt), `test-creer-son-compte-e2e.ts` (le nouvel ordre de la fin, et les colonnes relues).
+
+
+## §518 : Les Réglages soignés, une grammaire et des pièces communes
+
+**Sa demande du 26 octobre 2026**, après les seize planches `appli/soignee/reglages-*.html` : *« Code toutes les pages là. Et à la fin, tu joueras une seule batterie pour toutes les pages. »* Chaque écran suit la vue Proposé de sa planche ; Mon entreprise suit « Proposé », son choix du même jour (une page en sept paquets).
+
+**Seize écrans écrits en parallèle n'ont pas le droit de se dessiner seize fois.** Les pièces vivent donc dans `src/components/atlas/reglages/`, et un écran les assemble :
+
+| pièce | ce qu'elle porte |
+|---|---|
+| `EnTeteEcran allure="soignee"` | le retour cerné et l'assistant sur la même ligne, le titre seul dessous (34 px), plus de surtitre doré, la précision en 14,5 px |
+| `Paquet` | un titre doré de 13 px en capitales, puis une plage sur `colors.card`. **Police et graisse en ligne** : `globals.css` met le serif et la graisse 400 sur tout `h2`, et une classe Tailwind perd contre elle |
+| `LigneReglage`, `styleValeurReglage` | une ligne de réglage, le filet AU-DESSUS de chaque ligne : la plage le rogne, et un voisin caché par un état ne laisse pas de filet orphelin |
+| `CocheRonde`, `CarteChoix`, `ChoixEnMots` | les trois façons de choisir : une coche, une carte (sa police se passe, pour les cartes de polices), deux à quatre mots dans un rail aux bouts ronds |
+| `PlageTon` (`teintesDuTon`) | une plage teintée : or, vert, ambre, bleu, rouge |
+| `PastilleIcone`, `Picto`, `Trace`, `EtatEcrit` | la pastille d'une ligne, les tracés repris de `kit.js` en `currentColor`, l'état écrit en point et mot |
+| `ActionBas` | le bouton plein du bas : une cale de 96 px dans le flux, puis `atlas-colonne-fixe` au-dessus de la barre (`CLAUDE.md` §3, aucun écran propre à l'ordinateur) |
+
+**Une seule règle pour le papier et pour l'écran.** L'aperçu « Sur vos papiers » de Mon entreprise et le PDF lisent la même fonction pure, `enTeteDuDocument` (`src/lib/en-tete-document.ts`) : le nom avec « EI », puis les lignes dans l'ordre où elles s'impriment, mentions comprises. `document-commun.ts` la lit, et `ligneSiret` y a déménagé. Une seconde implémentation aurait refait le défaut corrigé le même jour, où le réglage « En bas » ne changeait rien au PDF. Même principe ailleurs : `ceQueLeDevisDira` assemble `libelleValidite`, `lignesConditionsDevis` et la règle d'annexe du PDF ; Notifications reprend les cartes de l'accueil par `rappelVersCarte`, `versCarte` et `caducVersCarte`, exportées de `src/app/Notifications.tsx` plutôt que recopiées ; Couleurs peint chaque carte avec `variablesCharte`.
+
+**Les interrupteurs des Réglages prennent le vert des boutons** (`colors.plein`), comme sur leurs planches, où le kit les peint ainsi. Les six sont alignés (fin de chantier, ce qui s'imprime, organigramme, notifications, double vérification, agenda), et leurs déclarations sortent de `test-boutons-pleins.ts`. **§239 disait l'inverse** pour l'interrupteur de la fiche paysage (« son vert dit actif ») ; l'appli mélangeait déjà les deux verts avant ce lot : Contrat et Planning en vert bouton, Devis complet, Envoi au client, Facture et Règlements en vert pin. Ce lot n'y touche pas hors des Réglages (hors périmètre) : l'uniformiser est à lui.
+
+**Les cartes de choix gardent leurs coins** (`test-boutons-arrondis.ts`, exceptions bornées par fichier et par repère) : `CarteChoix`, les cartes de rôle, les huit chartes, les formules d'abonnement, « Passer à moins cher », l'aperçu du papier, la plage de l'agenda à relier. Une carte de 98 px en capsule ferait toucher « Facturation » aux bords ; tout ce qui reste un bouton est aux bouts ronds.
+
+**Ce qui s'écarte des planches, et pourquoi.** Rien ne s'invente : les cartes d'exemple sous les rappels disent « Votre client » et « Le reste dû », pas un nom ni un montant. Les mots des cases de TVA restent ceux d'aujourd'hui, lus par `test-tva-au-paiement-e2e` et le mode d'emploi. La plage bleue de la double vérification dit « Allumée, sur un nouvel appareil : », parce que « Ne plus demander sur cet appareil » dispense du code trente jours. Le bilan d'un import de tarifs reste où il était (sa règle du 11 septembre : le texte change, pas la place). Le mois du carré d'un véhicule s'écrit en entier : aucune table de mois courts n'existe, et en écrire une seconde serait la divergence que §3 refuse.
+
+**Ajouté le même jour, à sa demande** (*« code unité, Mon vocabulaire, la vue d'un salarié, Vérifiez que c'est bien vous »*) : « Unité » en toutes lettres et la pastille prise en gras cernée d'or (`ChoixUnite`) ; un mot de Mon vocabulaire se supprime par le tiroir, avec Annuler (`useRetraits`) ; la vue d'un salarié (`RubriqueReservee`) passe sur une plage au cadenas bleu, sous l'en-tête soigné, ce qui touche aussi le refus de Composer ma fiche ; « Vérifiez que c'est bien vous » (`DemanderPreuve`) prend le titre en serif, la case sur sa plage et Annuler en 16 px. **Ce qui n'est pas dans le lot.** `FichePhoto` n'a pas gagné « Annuler » (partagée avec `VosSalaries`). L'allure « ample » d'`EnTeteEcran`, morte depuis la fiche client soignée, est retirée ici, comme `TODO.md` le prévoyait pour le premier lot qui toucherait l'en-tête.
+
+## §519 : Un numéro de processus vivant n'est pas le porteur d'un verrou
+
+**Le 27 octobre 2026**, l'espace du patron, rallumé, servait une page blanche : `Code récupéré` à jour, `Base : à jour`, `Serveur : ABSENT`, `Veilleur : en place`, pendant vingt minutes.
+
+**Ce qui était faux.** Deux verrous vivent dans `/tmp` : celui du banc (`verrou-banc.mjs`) et celui du veilleur (`veiller.sh`). Ils portent un numéro de processus et se jugeaient tenus dès que `kill -0` répondait. Or `/tmp` survit à l'arrêt de l'espace, et au redémarrage les numéros repartent de zéro : celui d'hier désigne un processus quelconque d'aujourd'hui. Reproduit ici avec un verrou de banc portant le numéro 1 : `npm run banc` sort en 0 sur « Atlas est DÉJÀ en train de se construire », le veilleur relance toutes les quinze secondes, et rien ne sert jamais. Si c'est le numéro du veilleur qui est repris, aucun veilleur ne démarre, et la fiche annonce « en place » (même lecture dans `diagnostiquer-espace.mjs`).
+
+**Ce qui le remplace.** Un verrou n'est tenu que si le processus exécute le programme attendu (`banc.mjs` ou `essai.mjs`, `veiller.sh`), lu dans `/proc/<n>/cmdline`. Ligne illisible (hors Linux) : l'ancien refus, plus sûr que deux bancs. `test-bascule-veilleur.ts` et `test-verrou-veilleur.ts` le tiennent, chacun avec son témoin (un vrai porteur garde son verrou).
+
+**Ce qui n'est pas prouvé.** Le journal de son espace n'a pas été lu : la piste est la plus probable, pas la cause établie. Une construction tuée faute de mémoire (8,3 Go, `memoire-prechauffage.mjs`) reste possible, et se lirait à la même fiche.
+
+**À côté.** `demarrer.sh` publie une première fiche juste après le lancement du veilleur : la publication d'allumage vivait derrière la mise à jour, `npm ci` et les migrations, et arrivait huit minutes après le rallumage.
+
+## §520 : `photos` et `notes_vocales` gagnent le second rempart que `entreprises` avait déjà
 
 *27 octobre 2026, campagne red team (RT-6, `docs/audit-securite-2026-10-27-redteam.md`). Trouvé en
 ATTAQUANT, pas en relisant : un scénario e2e A-contre-B a vu A recevoir la photo d'un chantier de B.*
 
 **Le constat, et pourquoi il n'a pas été vu plus tôt.** `/api/fichiers/[...key]/route.ts` sert trois
-natures de fichiers. Pour le logo, la fuite trouvée le 29 août (§34 ancien, `entreprises` n'a aucune
-RLS) a appris la leçon : un filtre explicite sur `ctx.entrepriseId`, qui ne dépend pas de la RLS.
-Pour les deux autres — `photos` et `notes_vocales`, qui SONT sous `FORCE ROW LEVEL SECURITY` — la
-même leçon n'avait pas été appliquée : leur seule protection restait la RLS, sans second rempart.
+natures de fichiers. Pour le logo, la fuite trouvée le 29 août (`entreprises` n'a aucune RLS) a
+appris la leçon : un filtre explicite sur `ctx.entrepriseId`, qui ne dépend pas de la RLS. Pour les
+deux autres — `photos` et `notes_vocales`, qui SONT sous `FORCE ROW LEVEL SECURITY` — la même leçon
+n'avait pas été appliquée : leur seule protection restait la RLS, sans second rempart.
 
 **Ce que ça voulait dire concrètement.** En production, sous `atlas_app` (sans `BYPASSRLS`), la RLS
 seule referme déjà tout — vérifié dans cette session en isolant la fonction d'autorisation
@@ -36143,3 +36337,9 @@ avait laissé passer la photo). Les deux montent `REDTEAM_ENTREPRISE_A`/`REDTEAM
 un logo et une photo marqués côté B, et vérifient le refus pour A ET l'accès pour B (un refus
 générique ne prouverait rien).
 
+**Ce qui était déjà fait par ailleurs, retrouvé en fusionnant** : la même campagne (E10, E12, E15,
+`CRON_SECRET`) avait été attaquée en parallèle par une autre session, de façon plus complète sur ces
+quatre points (migration 0149 pour E10, actions GitHub épinglées par empreinte pour E15, §510 à
+§512). Les correctifs redondants de cette session (une seconde implémentation de `CRON_SECRET`, un
+second resserrement des permissions de `pages.yml`) ont été retirés au moment de la fusion plutôt
+que gardés en double — `main` n'a qu'une seule version de chacun.

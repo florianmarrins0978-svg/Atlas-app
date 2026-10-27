@@ -75,6 +75,8 @@ async function main() {
 
   await pool.query(`DELETE FROM mouvements_bancaires WHERE entreprise_id = $1 AND cle LIKE $2`, [entreprise, `${MARQUE}%`]);
   await pool.query(`DELETE FROM achats_tva WHERE entreprise_id = $1 AND fournisseur LIKE $2`, [entreprise, `${MARQUE}%`]);
+  await pool.query(`DELETE FROM devis_recus WHERE entreprise_id = $1 AND nom = 'Facture E2E'`, [entreprise]);
+  await pool.query(`DELETE FROM societes_achat WHERE entreprise_id = $1 AND nom LIKE $2`, [entreprise, `${MARQUE}%`]);
 
   const aujourdhui = jour(0);
   const mouvement = (cle: string, j: string, montant: string, libelle: string) =>
@@ -151,16 +153,16 @@ async function main() {
     assert.match(texte, /CB STATION E2E[\s\S]*Ticket du [\s\S]*relié par Atlas/);
     assert.match(texte, /CB BOULANGERIE E2E[\s\S]*Ticket perdu, mention validée/);
     assert.match(texte, /PRLV URSSAF E2E[\s\S]*Impôts, cotisations/);
-    const jours = await page.locator('[data-atlas="releve"] li > p').allTextContents();
+    const jours = await page.locator('[data-atlas="releve"] li > h3').allTextContents();
     assert.ok(jours.length > 0, "aucun jour affiché : le relevé ne mesure rien");
   });
 
-  await test("le filtre « Sans ticket » ne garde que ce qui manque", async () => {
+  await test("le filtre « À justifier » ne garde que ce qui manque", async () => {
     // Une ligne À ELLE qui manque : sans elle, la suite dépendait des restes
     // d'autres suites, et une base fraîche affichait « Rien ne manque. ».
     await mouvement("MANQUE", aujourdhui, "9.99", "CB SANS PIECE E2E");
     await page.reload({ waitUntil: "networkidle" });
-    await page.click('[data-atlas="filtre-sans-ticket"]');
+    await page.click('[data-atlas="filtre-a-justifier"]');
     // La LISTE, et elle seule : le texte de toute la page porte aussi les
     // données que Next.js range au bas du document, où les lignes filtrées
     // figurent encore sans être affichées.
@@ -170,18 +172,78 @@ async function main() {
     assert.doesNotMatch(texte, /CB BOULANGERIE E2E/);
   });
 
-  await test("une période illisible et un ticket inconnu ne s'ouvrent pas", async () => {
+  await test("une période illisible et une pièce inconnue ne s'ouvrent pas", async () => {
     // Le statut ne dit rien ici : l'écran de chargement a déjà répondu 200
     // quand la page refuse. On regarde donc ce qui est AFFICHÉ.
     await page.goto(`${BASE}/termines/comptable/2026-13`, { waitUntil: "networkidle" });
     assert.equal(await page.locator('[data-atlas="releve"]').count(), 0);
     assert.match(await page.locator("body").innerText(), /404|could not be found|introuvable/i);
-    const t = await page.request.get(`${BASE}/termines/comptable/ticket/00000000-0000-0000-0000-000000000000`);
+    const t = await page.request.get(`${BASE}/termines/comptable/piece/00000000-0000-0000-0000-000000000000`);
     assert.equal(t.status(), 404);
+  });
+
+  // ─── Sa remarque du 25 octobre 2026 : un virement reçu sans facture d'Atlas
+  // du même montant n'apparaissait nulle part, et le dossier ne s'arrêtait plus.
+  // Le geste se joue d'où il le joue, lui : sa carte, dans le dossier.
+  await test("un virement reçu sans facture d'Atlas se règle dans sa carte, par sa nature", async () => {
+    await pool.query(
+      `INSERT INTO mouvements_bancaires (entreprise_id, cle, jour, montant, sens, contrepartie, libelle) VALUES ($1, $2, $3, 777.77, 'entree', 'M REMBOURSE E2E', 'VIR M REMBOURSE E2E')`,
+      [entreprise, `${MARQUE}-RECU`, aujourdhui]
+    );
+    await page.goto(`${BASE}/termines/comptable`, { waitUntil: "networkidle" });
+    const carte = page.locator('[data-atlas="ligne-a-regarder"]', { hasText: "777,77" });
+    assert.equal(await carte.count(), 1, "le virement reçu n'a pas sa carte dans le dossier");
+    await carte.locator('[data-atlas="choisir-la-facture"]').click();
+    assert.equal(await carte.locator('[data-atlas="facture-hors-atlas"]').count(), 1, "la facture faite hors d'Atlas n'est pas proposée");
+    await carte.getByRole("button", { name: "Annuler" }).click();
+    await carte.locator('[data-atlas="autre-chose"]').click();
+    // Ses cinq réponses à lui, pas celles d'un virement envoyé.
+    assert.equal(await carte.locator('[data-atlas="choix-motif"]', { hasText: "Un salaire" }).count(), 0);
+    await carte.locator('[data-atlas="choix-motif"]', { hasText: "Un remboursement" }).click();
+    await page.waitForFunction(
+      () => ![...document.querySelectorAll('[data-atlas="ligne-a-regarder"]')].some((e) => e.textContent?.includes("777,77")),
+      null,
+      { timeout: 30_000 }
+    );
+    const { rows: [l] } = await pool.query(`SELECT justification, motif FROM mouvements_bancaires WHERE entreprise_id = $1 AND cle = $2`, [entreprise, `${MARQUE}-RECU`]);
+    assert.deepEqual(l, { justification: "motif", motif: "remboursement" });
+  });
+
+  // ─── Et le même jour : « je pouvais valider une facture qui n'était pas du montant ».
+  await test("une facture d'un autre montant montre l'écart avant d'être jointe", async () => {
+    await mouvement("ECART", aujourdhui, "1450.00", "VIR SARL ECART E2E");
+    const { rows: [societe] } = await pool.query(
+      `INSERT INTO societes_achat (entreprise_id, rubrique, nom) VALUES ($1, 'fournisseur', $2) RETURNING id`,
+      [entreprise, `${MARQUE} Motoculture`]
+    );
+    await pool.query(
+      `INSERT INTO devis_recus (entreprise_id, societe_id, nom, fichier_cle, nature, genre, total_ttc) VALUES ($1, $2, 'Facture E2E', $3, 'pdf', 'facture', 1386.40)`,
+      [entreprise, societe.id, `entreprises/${entreprise}/devis-recus/e2e.pdf`]
+    );
+    await page.goto(`${BASE}/termines/comptable`, { waitUntil: "networkidle" });
+    const carte = page.locator('[data-atlas="ligne-a-regarder"]', { hasText: "VIR SARL ECART E2E" });
+    await carte.locator('[data-atlas="joindre-facture"]').click();
+    await carte.locator('[data-atlas="choix-facture"]', { hasText: `${MARQUE} Motoculture` }).click();
+    const encart = carte.locator('[data-atlas="ecart-de-montant"]');
+    await encart.waitFor({ timeout: 30_000 });
+    // L'espace des milliers est insécable (`enEuros`) : `\s` la reconnaît.
+    assert.match(await encart.innerText(), /Pas le même montant[\s\S]*1\s386,40/);
+    const { rows: [avant] } = await pool.query(`SELECT justification FROM mouvements_bancaires WHERE entreprise_id = $1 AND cle = $2`, [entreprise, `${MARQUE}-ECART`]);
+    assert.equal(avant.justification, null, "la facture a été jointe sans son accord");
+    await carte.locator('[data-atlas="joindre-malgre-ecart"]').click();
+    await page.waitForFunction(
+      () => ![...document.querySelectorAll('[data-atlas="ligne-a-regarder"]')].some((e) => e.textContent?.includes("VIR SARL ECART E2E")),
+      null,
+      { timeout: 30_000 }
+    );
+    await page.goto(`${BASE}/termines/comptable/${aujourdhui.slice(0, 7)}`, { waitUntil: "networkidle" });
+    assert.match(await page.locator('[data-atlas="releve"]').innerText(), /VIR SARL ECART E2E[\s\S]*de 1\s386,40\s€, pas le montant/);
   });
 
   await pool.query(`DELETE FROM mouvements_bancaires WHERE entreprise_id = $1 AND cle LIKE $2`, [entreprise, `${MARQUE}%`]);
   await pool.query(`DELETE FROM achats_tva WHERE entreprise_id = $1 AND fournisseur LIKE $2`, [entreprise, `${MARQUE}%`]);
+  await pool.query(`DELETE FROM devis_recus WHERE entreprise_id = $1 AND nom = 'Facture E2E'`, [entreprise]);
+  await pool.query(`DELETE FROM societes_achat WHERE entreprise_id = $1 AND nom LIKE $2`, [entreprise, `${MARQUE}%`]);
   await browser.close();
   await pool.end();
   console.log(`\n${passed} réussi(s), ${failed} échoué(s)`);

@@ -1,10 +1,14 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
-import { colors, font, libelleCaps, texteSituation } from "@/lib/design-tokens";
-import { estAbandon, messageRefusCle, type CleAppareil } from "@/lib/cle-appareil";
-import { defiEnregistrementAction, enregistrerCleAction, retirerCleAction } from "./actions";
+import { useState } from "react";
+import { colors, font } from "@/lib/design-tokens";
+import { type CleAppareil } from "@/lib/cle-appareil";
+import { retirerCleAction } from "./actions";
+import { useActiverFaceId } from "./useActiverFaceId";
 import DemanderPreuve from "@/components/atlas/DemanderPreuve";
+import PlageTon from "@/components/atlas/reglages/PlageTon";
+import PastilleIcone from "@/components/atlas/reglages/PastilleIcone";
+import Trace from "@/components/atlas/reglages/Trace";
 
 /**
  * « Ouvrir avec Face ID » — l'endroit où on l'allume.
@@ -36,87 +40,10 @@ import DemanderPreuve from "@/components/atlas/DemanderPreuve";
  */
 export default function SectionFaceId({ clesInitiales }: { clesInitiales: CleAppareil[] }) {
   const [cles, setCles] = useState(clesInitiales);
-  const [disponible, setDisponible] = useState(false);
-  const [teste, setTeste] = useState(false);
-  const [refus, setRefus] = useState<string | null>(null);
-  const [fait, setFait] = useState<string | null>(null);
-  const [enCours, demarrer] = useTransition();
-
-  useEffect(() => {
-    let vivant = true;
-    import("@simplewebauthn/browser")
-      .then(async ({ browserSupportsWebAuthn, platformAuthenticatorIsAvailable }) => {
-        const ok = browserSupportsWebAuthn() ? await platformAuthenticatorIsAvailable() : false;
-        if (vivant) {
-          setDisponible(ok);
-          setTeste(true);
-        }
-      })
-      .catch(() => {
-        if (vivant) setTeste(true);
-      });
-    return () => {
-      vivant = false;
-    };
-  }, []);
-
-  /**
-   * Le geste qu'on REPRENDRA une fois l'identité prouvée.
-   *
-   * Sans cela, l'artisan taperait son mot de passe puis devrait réappuyer sur
-   * « Activer » — et sur un chantier, un geste qu'on refait est un geste qu'on
-   * abandonne.
-   */
-  const [preuveDemandee, setPreuveDemandee] = useState<{ motif: string; reprendre: () => void } | null>(
-    null
-  );
-
-  function activer() {
-    setRefus(null);
-    setFait(null);
-    demarrer(async () => {
-      try {
-        // **Lu dans le GESTE, jamais pendant le rendu** — c'est ce qui
-        // distingue cet appel du défaut d'hydratation que le dépôt interdit
-        // (`ARCHITECTURE.md` §68, §81, §177).
-        const defi = await defiEnregistrementAction(window.location.origin);
-        if (!defi.ok) {
-          setRefus(defi.raison);
-          return;
-        }
-        const { startRegistration } = await import("@simplewebauthn/browser");
-        const reponse = await startRegistration(defi.options);
-        const r = await enregistrerCleAction(JSON.stringify(reponse));
-        if (!r.ok) {
-          // Le serveur réclame une identité récente : on la demande, puis on
-          // reprend le geste tout seul.
-          if (r.preuveExigee) {
-            setPreuveDemandee({ motif: r.raison, reprendre: activer });
-            return;
-          }
-          setRefus(r.raison);
-          return;
-        }
-        setCles(r.cles);
-        setFait("Cet appareil est enregistré. Vous pourrez ouvrir Atlas avec Face ID.");
-      } catch (erreur) {
-        const nom = erreur instanceof Error ? erreur.name : null;
-        // **Fermer la fenêtre du système n'est pas une faute.** Rien à l'écran.
-        // La seule exception : `InvalidStateError`, que le navigateur rend quand
-        // l'appareil est DÉJÀ enregistré — là, le taire laisserait croire que
-        // rien ne s'est passé, et il réappuierait.
-        // **Le journal d'abord.** Le navigateur nomme la vraie cause —
-        // `SecurityError` quand le domaine ne s'accorde pas — et sans elle on
-        // répare une panne imaginée (`AGENTS.md`).
-        console.error("[face-id] activation refusée par le navigateur", nom, erreur);
-        if (nom === "InvalidStateError") setRefus(messageRefusCle("deja-enregistree"));
-        // **« panne-activation », et non « panne ».** On est DÉJÀ entré ici :
-        // « entrez votre mot de passe » demanderait un geste qu'il vient de
-        // faire, et se lirait comme une panne d'Atlas.
-        else setRefus(estAbandon(nom) ? null : messageRefusCle("panne-activation"));
-      }
-    });
-  }
+  // Le geste d'activer vit dans `useActiverFaceId`, partagé avec la fin de la
+  // porte (`/creer-un-compte/pret`) : deux copies finiraient par diverger.
+  const { disponible, teste, refus, setRefus, fait, setFait, enCours, demarrer, activer, preuveDemandee, setPreuveDemandee } =
+    useActiverFaceId(setCles);
 
   function retirer(id: string) {
     setRefus(null);
@@ -140,41 +67,52 @@ export default function SectionFaceId({ clesInitiales }: { clesInitiales: CleApp
   if (teste && !disponible && cles.length === 0) return null;
   if (!teste) return null;
 
+  // **Des lignes, pas une rubrique** — sa planche soignée du 26 octobre 2026 :
+  // Face ID partage la plage de « Me déconnecter partout », que l'écran pose
+  // autour. Le titre « Ouvrir avec Face ID » devient le nom de la ligne quand
+  // aucun appareil n'est enregistré ; un appareil enregistré porte, lui, sa
+  // pastille verte.
   return (
-    <section className="mx-[26px] mt-[12px] border-t pt-[10px]" style={{ borderColor: colors.line }}>
-      <p className={`mb-1.5 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
-        Ouvrir avec Face ID
-      </p>
-
+    <>
       {refus && (
-        <p
-          role="alert"
-          className={`mb-3 rounded-[4px] px-[15px] py-3 ${texteSituation}`}
-          style={{ backgroundColor: colors.card, borderLeft: `3px solid ${colors.alert}`, color: colors.alert }}
-        >
-          {refus}
-        </p>
+        <div role="alert" className="py-2.5">
+          <PlageTon ton="rouge">{refus}</PlageTon>
+        </div>
       )}
       {fait && (
-        <p
-          role="status"
-          className={`mb-3 rounded-[4px] px-[15px] py-3 ${texteSituation}`}
-          style={{ backgroundColor: colors.card, borderLeft: `3px solid ${colors.or}`, color: colors.ink }}
-        >
-          {fait}
-        </p>
+        <div role="status" className="py-2.5">
+          <PlageTon ton="vert">{fait}</PlageTon>
+        </div>
       )}
 
-      {cles.length > 0 && (
-        <ul className="mb-3">
+      {cles.length === 0 ? (
+        disponible && (
+          <button type="button" onClick={activer} disabled={enCours} className={LIGNE}>
+            <Filet />
+            <PastilleIcone>{VISAGE}</PastilleIcone>
+            <span className="min-w-0 flex-1">
+              <span className="block" style={NOM}>
+                Ouvrir avec Face ID
+              </span>
+              <span className="mt-0.5 block text-[15px] font-semibold" style={{ color: colors.or }}>
+                {enCours ? "En cours…" : "Enregistrer cet appareil"}
+              </span>
+            </span>
+            <span className="flex" style={{ color: colors.or }}>
+              <Trace taille={20} epaisseur={2}>
+                {PLUS}
+              </Trace>
+            </span>
+          </button>
+        )
+      ) : (
+        <>
           {cles.map((cle) => (
-            <li
-              key={cle.id}
-              className="flex items-center gap-3 border-b py-[10px]"
-              style={{ borderColor: colors.line, minHeight: 44 }}
-            >
+            <div key={cle.id} className={LIGNE}>
+              <Filet />
+              <PastilleIcone ton="vert">{VISAGE}</PastilleIcone>
               <span className="min-w-0 flex-1">
-                <span className="block" style={{ fontFamily: font.display, fontSize: 16, lineHeight: 1.25 }}>
+                <span className="block" style={NOM}>
                   {cle.nomAppareil}
                 </span>
                 {/* **Une DATE, toujours — jamais « Jamais encore servi » seul.**
@@ -184,7 +122,7 @@ export default function SectionFaceId({ clesInitiales }: { clesInitiales: CleApp
                     écran — un téléphone vient d'être perdu. Deux téléphones du
                     même modèle portent le même nom deviné ; leur date
                     d'enregistrement, elle, les sépare. */}
-                <span className={`mt-1 block ${texteSituation}`} style={{ color: colors.inkSoft }}>
+                <span className="mt-0.5 block text-[14.5px] leading-[1.4]" style={{ color: colors.inkSoft }}>
                   {cle.dernierUsageLe
                     ? `Dernière ouverture le ${cle.dernierUsageLe.toLocaleDateString("fr-FR")}`
                     : `Enregistré le ${cle.creeLe.toLocaleDateString("fr-FR")}, jamais encore servi`}
@@ -194,26 +132,34 @@ export default function SectionFaceId({ clesInitiales }: { clesInitiales: CleApp
                 type="button"
                 onClick={() => retirer(cle.id)}
                 disabled={enCours}
-                className="flex-none rounded-full px-4 py-2 text-[14px] disabled:opacity-60"
-                style={{ backgroundColor: colors.card, color: colors.alert, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
+                className="min-h-[44px] flex-none px-1 text-[15px] font-semibold disabled:opacity-60"
+                style={{ color: colors.alert }}
               >
                 Retirer
               </button>
-            </li>
+            </div>
           ))}
-        </ul>
-      )}
-
-      {disponible && (
-        <button
-          type="button"
-          onClick={activer}
-          disabled={enCours}
-          className="w-full rounded-full py-[11px] text-center text-[15px] disabled:opacity-60"
-          style={{ backgroundColor: colors.card, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
-        >
-          {enCours ? "En cours…" : "Enregistrer cet appareil"}
-        </button>
+          {disponible && (
+            // Sous les appareils, alignée sur leurs noms : enregistrer CELUI-CI
+            // reste à un appui, sans répéter le titre.
+            <button
+              type="button"
+              onClick={activer}
+              disabled={enCours}
+              className="relative flex min-h-[50px] w-full items-center gap-3.5 py-1 pl-[54px] text-left"
+            >
+              <Filet />
+              <span className="min-w-0 flex-1 text-[15px] font-semibold" style={{ color: colors.or }}>
+                {enCours ? "En cours…" : "Enregistrer cet appareil"}
+              </span>
+              <span className="flex" style={{ color: colors.or }}>
+                <Trace taille={20} epaisseur={2}>
+                  {PLUS}
+                </Trace>
+              </span>
+            </button>
+          )}
+        </>
       )}
 
       {/* **LA GLOSE EST PARTIE — sa demande du 31 août 2026 :** *« supprime
@@ -242,6 +188,25 @@ export default function SectionFaceId({ clesInitiales }: { clesInitiales: CleApp
           reprendre?.();
         }}
       />
-    </section>
+    </>
   );
 }
+
+/** Une ligne de la plage : 62 px au moins, sous le pouce. */
+const LIGNE = "relative flex min-h-[62px] w-full items-center gap-3.5 py-[9px] text-left";
+
+const NOM: React.CSSProperties = { fontFamily: font.display, fontSize: 17.5, lineHeight: 1.25, color: colors.ink };
+
+/** Le filet au-dessus de chaque ligne ; la plage, qui rogne, efface le premier. */
+function Filet() {
+  return <span aria-hidden className="absolute inset-x-0 -top-px h-px" style={{ backgroundColor: colors.line }} />;
+}
+
+const VISAGE = (
+  <Trace>
+    <path d="M4 8.5V6.5A2.5 2.5 0 0 1 6.5 4h2M15.5 4h2A2.5 2.5 0 0 1 20 6.5v2M20 15.5v2a2.5 2.5 0 0 1-2.5 2.5h-2M8.5 20h-2A2.5 2.5 0 0 1 4 17.5v-2" />
+    <path d="M9 9.5v1.2M15 9.5v1.2M12.2 9.5v3.6h-1M9.4 15.6c1.5 1.1 3.7 1.1 5.2 0" />
+  </Trace>
+);
+
+const PLUS = <path d="M12 5v14M5 12h14" />;

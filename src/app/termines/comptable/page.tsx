@@ -2,21 +2,21 @@ import { after } from "next/server";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import BoutonAssistant from "@/components/atlas/BoutonAssistant";
 import { colors, font } from "@/lib/design-tokens";
-import { enEuros } from "@/lib/euros";
 import { jourIso, jourLisible } from "@/lib/jour";
 import {
   categorieDeLaLigne,
   checkUp,
   etatDeLaPeriode,
-  jourEnMots,
   libellePeriode,
   resumerPeriodes,
-  ressembleAUnVirement,
+  ticketsPerdusEnMots,
+  totalSigne,
   type Decoupage,
 } from "@/lib/pour-mon-comptable";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { lireLaBanque } from "@/server/banque/lecture";
 import { liaisonDeLEntreprise } from "@/server/repositories/banque";
+import { facturesARapprocher } from "@/server/banque/questions";
 import { dossierEnCours } from "@/server/repositories/dossiers-comptables";
 import {
   facturesRecuesLibres,
@@ -24,7 +24,8 @@ import {
   lignesDuReleve,
   ticketsLibres,
 } from "@/server/repositories/pour-mon-comptable";
-import DossierEnCours, { type ARegarder, type Periode } from "./DossierEnCours";
+import DossierEnCours, { type Periode } from "./DossierEnCours";
+import { carteDeLaLigne, facturesAffichees, type ARegarder } from "./a-regarder";
 import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
@@ -53,10 +54,11 @@ export default async function PageDossierEnCours() {
 
   const debutTickets = new Date(`${du}T12:00:00Z`);
   debutTickets.setUTCDate(debutTickets.getUTCDate() - 5);
-  const [lignes, tickets, factures] = await Promise.all([
+  const [lignes, tickets, factures, enAttente] = await Promise.all([
     lignesDuReleve(ctx, du, au),
     ticketsLibres(ctx, debutTickets.toISOString().slice(0, 10), au),
     facturesRecuesLibres(ctx),
+    facturesARapprocher(ctx),
   ]);
 
   const dossier = lignes.map((l) => ({
@@ -77,8 +79,9 @@ export default async function PageDossierEnCours() {
           nom: libellePeriode(r.cle),
           etat: etatDeLaPeriode(r),
           manque: r.aJustifier > 0,
-          sorties: enEuros(r.sorties / 100),
-          entrees: enEuros(r.entrees / 100),
+          perdus: ticketsPerdusEnMots(r.ticketsPerdus),
+          sorties: totalSigne(r.sorties, "sortie"),
+          entrees: totalSigne(r.entrees, "entree"),
           parCategorie: r.parCategorie,
           totalSorties: r.sorties,
         })
@@ -87,48 +90,24 @@ export default async function PageDossierEnCours() {
   ) as Record<Decoupage, Periode[]>;
 
   // Ce qui attend sa réponse : les sorties sans pièce, avec ce que le Check up
-  // en dit, et les entrées dont la facture n'est pas encore confirmée.
+  // en dit, et les virements reçus que rien ne justifie encore. Les plus
+  // récentes d'abord, comme les périodes.
   const sansPiece = lignes.filter((l) => l.sens === "sortie" && l.justification === null);
   const verdicts = checkUp(
     sansPiece.map((l) => ({ id: l.id, jour: l.jour, montant: l.montant })),
     tickets.map((t) => ({ id: t.id, dateAchat: t.dateAchat, totalTtc: t.totalTtc }))
   );
-  const parTicket = new Map(tickets.map((t) => [t.id, t]));
-  // Les plus récentes d'abord, comme les périodes.
   const aRegarder: ARegarder[] = [
-    ...[...sansPiece].reverse().map((l): ARegarder => {
+    ...[...sansPiece].reverse().map((l) => {
       const v = verdicts.get(l.id);
-      return {
-        id: l.id,
-        genre: ressembleAUnVirement(l.libelle) ? "virement" : "carte",
-        qui: l.contrepartie ?? l.libelle,
-        jour: jourEnMots(l.jour),
-        montant: enEuros(l.montant),
-        categorie: categorieDeLaLigne({ sens: "sortie", libelle: l.libelle, natureDuTicket: null, justification: null }),
-        tickets:
-          v?.genre === "choix"
-            ? v.ticketIds.flatMap((id) => {
-                const t = parTicket.get(id);
-                return t ? [{ id, fournisseur: t.fournisseur, jour: `Ticket du ${jourEnMots(t.dateAchat)}` }] : [];
-              })
-            : [],
-      };
+      return carteDeLaLigne(l, v?.genre === "choix" ? tickets.filter((t) => v.ticketIds.includes(t.id)) : [], []);
     }),
     ...lignes
       .filter((l) => l.sens === "entree" && ligneAJustifier(l))
       .reverse()
-      .map(
-        (l): ARegarder => ({
-          id: l.id,
-          genre: "entree",
-          qui: l.contrepartie ?? l.libelle,
-          jour: jourEnMots(l.jour),
-          montant: enEuros(l.montant),
-          categorie: "recu",
-          tickets: [],
-        })
-      ),
+      .map((l) => carteDeLaLigne(l, [], enAttente)),
   ];
+  const perdus = lignes.filter((l) => l.justification === "ticket_perdu").length;
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -138,15 +117,15 @@ export default async function PageDossierEnCours() {
           action={<BoutonAssistant />}
           actionPlacee="retour"
           assistant={false}
-          surtitre="Dossier en cours"
           titre="Pour mon comptable"
         />
         <DossierEnCours
           dossier={{ du, premier, aujourdhui: au }}
           banque={liaison ? { nom: liaison.banque || "Banque reliée", lue: liaison.luLe ? jourLisible(jourIso(liaison.luLe)) : null } : null}
+          perdus={ticketsPerdusEnMots(perdus)}
           periodes={periodes}
           aRegarder={aRegarder}
-          factures={factures.map((f) => ({ id: f.id, nom: f.nom, societe: f.societe, montant: f.totalTtc ? enEuros(f.totalTtc) : null }))}
+          factures={facturesAffichees(factures)}
         />
       </div>
     </div>

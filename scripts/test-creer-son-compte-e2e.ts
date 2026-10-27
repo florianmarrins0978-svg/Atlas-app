@@ -16,7 +16,7 @@ import { empreinteDuCode } from "../src/server/empreinte-du-code";
  *
  * La règle était pourtant éprouvée (`test-creation-compte.ts`), l'écriture en
  * base aussi (`test-compte-db.ts`). **Aucune suite n'entrait par la porte** :
- * répondre aux seize questions et appuyer sur « Créer mon compte ». C'est
+ * répondre à toutes les questions et appuyer sur « Créer mon compte ». C'est
  * exactement la faute du 28 août (`CLAUDE.md` §5 quater) — éprouver la moitié
  * qu'on vient d'écrire, jamais le chemin qu'il emprunte, lui.
  *
@@ -45,8 +45,10 @@ const REPONSES: Record<string, string> = {
   "Prénom": "Camille",
   "Nom": "Perret",
   "Un mot de passe": MOT_DE_PASSE,
-  "Confirmez le mot de passe": MOT_DE_PASSE,
-  "Numéro de téléphone": "0612345678",
+  // La porte soignée (26 octobre 2026) : la confirmation porte son nom
+  // au-dessus, et la case dit « Le même ».
+  "Le même": MOT_DE_PASSE,
+  "6 12 34 56 78": "0612345678",
   "Adresse e-mail": "contact@perret-paysage.fr",
   "Nom de l’entreprise": "Perret Paysage",
   "1 000": "1000",
@@ -54,8 +56,9 @@ const REPONSES: Record<string, string> = {
   "14 chiffres": "12345678901234",
   "Adresse du siège": "3 rue des Tilleuls, 78000 Versailles",
   "FR…": "FR12345678901",
-  "IBAN": "FR7630001007941234567890185",
-  "Titulaire du compte": "Perret Paysage",
+  "FR76 …": "FR7630001007941234567890185",
+  "Le nom qui figure sur le compte": "Perret Paysage",
+  "Celui auquel vous adhérez": "Médiateur de démonstration",
 };
 
 let echecs = 0;
@@ -117,10 +120,13 @@ async function repondreATout(
 
     // La forme juridique : le déroulant dessiné par Atlas, jamais celui du
     // téléphone.
-    const viseur = page.getByRole("button", { name: /Choisissez/ });
-    if (await viseur.count()) {
-      await viseur.click();
-      await page.getByRole("option").first().click();
+    // La forme juridique se choisit dans une liste visible, et avance au
+    // premier appui : une SASU, pour passer par le capital et le RCS.
+    const sasu = page.getByRole("button", { name: /^SASU/ });
+    if (await sasu.count()) {
+      await sasu.click();
+      await page.waitForTimeout(400);
+      continue;
     }
 
     for (const champ of await page.locator("input").all()) {
@@ -219,7 +225,7 @@ async function main() {
 
   const email = `porte-${Date.now()}@exemple.fr`;
 
-  await cas("les seize questions mènent au code, et le compte attend son code", async () => {
+  await cas("les questions mènent au code, et le compte attend son code", async () => {
     const { titre } = await repondreATout(page, email);
     assert.equal(titre, "Le code reçu", `le parcours a fini sur « ${titre} »`);
     // L'adresse a quitté le titre (planche `appli/verifier-son-email.html`,
@@ -305,31 +311,51 @@ async function main() {
     assert.equal(ligne.attente, 0, "la ligne d'attente n'a pas été effacée");
   });
 
-  await cas("« Entrer dans Atlas » passe par les documents légaux AVANT l'accueil", async () => {
-    // **Le geste du patron, pas la route.** Sa capture du 14 septembre 2026 :
-    // entré par ce bouton, il a travaillé, et les conditions ne lui sont
-    // parvenues qu'en rechargeant. La garde du layout ne se rejoue pas sur
-    // une navigation côté client — c'est donc CE clic qu'on éprouve, et l'on
-    // exige la page d'acceptation, pas seulement « pas l'accueil ».
-    //
-    // Un second compte, dont le code se tape SUR LA PORTE cette fois : c'est
-    // le chemin ordinaire, et c'est lui qui montre l'écran de fin.
+  await cas("après le code : les conditions, puis Tout est prêt, puis l'accueil pour de bon", async () => {
+    // **L'ordre de la porte soignée — 26 octobre 2026.** L'ancienne fin
+    // « Entrer dans Atlas » ouvrait encore les conditions ; désormais le code
+    // mène aux conditions, les conditions à « Tout est prêt », et « Entrer
+    // dans Atlas » entre.
     const second = `porte-fin-${Date.now()}@exemple.fr`;
     const { titre } = await repondreATout(page, second);
     assert.equal(titre, "Le code reçu", `le parcours a fini sur « ${titre} »`);
     await page.getByText(second, { exact: true }).waitFor({ timeout: 30_000 });
     await forgerLeCode(second, "004213");
     await entrerLeCode(page, "004213");
-    await page.getByRole("heading", { name: /Tout est prêt|C’est fait/ }).waitFor({ timeout: 30_000 });
-    await page.getByRole("link", { name: "Entrer dans Atlas" }).click();
     await page.waitForURL(/\/documents-legaux(?:\?|$)/, { timeout: 30_000 });
     await page.getByRole("heading", { name: "Avant de commencer" }).waitFor({ timeout: 30_000 });
-    // Plus de cases depuis le 17 octobre 2026 : la phrase dit combien de
-    // documents « Accepter » engage. Un compte neuf en a deux en attente.
-    assert.ok(
-      await page.getByText("vous acceptez les deux documents ci-dessous").isVisible(),
-      "la page des documents ne propose pas les deux textes : un compte neuf devrait les avoir en attente"
-    );
+    await page.getByRole("button", { name: "Accepter" }).click();
+    await page.waitForURL(/\/creer-un-compte\/pret(?:\?|$)/, { timeout: 30_000 });
+
+    // Face ID ne se montre que si l'appareil sait le faire : un navigateur
+    // d'essai ne le sait pas, et l'on arrive droit sur le récapitulatif.
+    const plusTard = page.getByRole("button", { name: "Plus tard" });
+    if (await plusTard.isVisible().catch(() => false)) await plusTard.click();
+    await page.getByRole("heading", { name: /Tout est prêt|C’est fait/ }).waitFor({ timeout: 30_000 });
+    const recap = (await page.locator('[data-atlas="recapitulatif"]').textContent()) ?? "";
+    for (const attendu of ["Perret Paysage, SASU", "Médiateur de démonstration", "1 chantier par jour", "Déclarée tous les mois"]) {
+      assert.ok(recap.includes(attendu), `le récapitulatif ne dit pas « ${attendu} » : ${recap.slice(0, 200)}`);
+    }
+
+    // Ce que la porte a demandé de neuf est bien dans les colonnes que
+    // Mon entreprise et Équipe relisent.
+    const [e] = await surLaBase(async (c) => {
+      const { rows } = await c.query(
+        `SELECT e.mediateur_nom, e.nombre_equipes, e.periodicite_tva, e.tva_exigibilite
+           FROM users u JOIN membres_entreprise m ON m.utilisateur_id = u.id
+           JOIN entreprises e ON e.id = m.entreprise_id WHERE u.email = $1`,
+        [second]
+      );
+      return rows;
+    });
+    assert.equal(e.mediateur_nom, "Médiateur de démonstration");
+    assert.equal(e.nombre_equipes, 1);
+    assert.equal(e.periodicite_tva, "mensuelle");
+    assert.equal(e.tva_exigibilite, "encaissements");
+
+    await page.getByRole("link", { name: "Entrer dans Atlas" }).click();
+    await page.waitForURL((u) => u.pathname === "/", { timeout: 30_000 });
+    await page.getByText("Créer un devis").first().waitFor({ timeout: 30_000 });
   });
 
   await cas("UNE BASE EN RETARD SE DIT — elle ne jette plus sur « Une erreur »", async () => {

@@ -1,13 +1,14 @@
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import BoutonAssistant from "@/components/atlas/BoutonAssistant";
 import { colors, font } from "@/lib/design-tokens";
-import { enEuros } from "@/lib/euros";
-import { categorieDeLaLigne, checkUp, echeanceProche, jourComplet, jourEnMots, ressembleAUnVirement, tailleLisible } from "@/lib/pour-mon-comptable";
+import { checkUp, echeanceProche, jourComplet, tailleLisible } from "@/lib/pour-mon-comptable";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { listerDossiers } from "@/server/repositories/dossiers-comptables";
 import { facturesRecuesLibres, ticketsLibres, type TicketDeLaLigne } from "@/server/repositories/pour-mon-comptable";
 import { verificationsDesDossiers, type VerificationDuDossier } from "@/server/repositories/verification-comptable";
-import type { ARegarder } from "../DossierEnCours";
+import { facturesARapprocher } from "@/server/banque/questions";
+import type { FactureARapprocher } from "@/lib/rapprochement-bancaire";
+import { carteDeLaLigne, facturesAffichees, type ARegarder } from "../a-regarder";
 import MesDossiers, { type DossierAffiche } from "./MesDossiers";
 import { jourIso } from "@/lib/jour";
 import { garderLaPage } from "@/server/garde-page";
@@ -25,7 +26,7 @@ export default async function PageMesDossiers() {
   await garderLaPage();
   const ctx = await getCurrentCtx();
   const aujourdhui = jourIso(new Date());
-  const [dossiers, verifications, factures] = await Promise.all([listerDossiers(ctx), verificationsDesDossiers(ctx), facturesRecuesLibres(ctx)]);
+  const [dossiers, verifications, factures, enAttente] = await Promise.all([listerDossiers(ctx), verificationsDesDossiers(ctx), facturesRecuesLibres(ctx), facturesARapprocher(ctx)]);
   const verificationDe = new Map(verifications.map((v) => [v.dossierId, v]));
   // Les tickets encore libres, pour proposer celui du même montant à côté d'un
   // rejet : seulement s'il y a des rejets, la lecture couvre toute la garde.
@@ -38,7 +39,7 @@ export default async function PageMesDossiers() {
     annee: Number(d.au.slice(0, 4)),
     detail: `Rangé le ${jourComplet(jourIso(d.arreteLe))}, gardé jusqu’au ${jourComplet(d.gardeJusquAu)}, ${tailleLisible(d.tailleOctets)}`,
     echeance: echeanceProche(d.gardeJusquAu, aujourdhui) ? jourComplet(d.gardeJusquAu) : null,
-    verification: verificationAffichee(verificationDe.get(d.id), tickets),
+    verification: verificationAffichee(verificationDe.get(d.id), tickets, enAttente),
     bilans: d.bilans.map((b) => ({ id: b.id, nature: b.nature, nom: b.fichierNom ?? (b.nature === "pdf" ? "Bilan, PDF" : "Bilan, photo"), ajoute: jourComplet(jourIso(b.ajouteLe)) })),
   }));
 
@@ -50,13 +51,12 @@ export default async function PageMesDossiers() {
           action={<BoutonAssistant />}
           actionPlacee="retour"
           assistant={false}
-          surtitre="Gardés dix ans"
           titre="Mes dossiers justifiés"
         />
-        <p className="mx-6 mt-3 text-[13.5px] leading-[1.45]" style={{ color: colors.inkSoft }}>
-          Atlas garde chaque dossier et son bilan dix ans, puis les efface. Téléchargez-les pour les garder plus longtemps.
+        <p className="mx-6 mt-2 text-[15px] leading-[1.45]" style={{ color: colors.inkSoft }}>
+          Gardés dix ans avec leur bilan, puis effacés.
         </p>
-        <MesDossiers dossiers={affiches} factures={factures.map((f) => ({ id: f.id, nom: f.nom, societe: f.societe, montant: f.totalTtc ? enEuros(f.totalTtc) : null }))} />
+        <MesDossiers dossiers={affiches} factures={facturesAffichees(factures)} />
       </div>
     </div>
   );
@@ -67,21 +67,12 @@ export default async function PageMesDossiers() {
  * gestes que dans le dossier en cours. Un rejet auquel il répond change la
  * justification de la ligne, qui revient au comptable « corrigée ».
  */
-function verificationAffichee(v: VerificationDuDossier | undefined, tickets: TicketDeLaLigne[]): DossierAffiche["verification"] {
+function verificationAffichee(v: VerificationDuDossier | undefined, tickets: TicketDeLaLigne[], enAttente: FactureARapprocher[]): DossierAffiche["verification"] {
   if (!v || !v.envoye) return { texte: null, rejets: [] };
   const rejets = v.rejets.map(({ ligne: l, note }): ARegarder => {
     const choix = checkUp([{ id: l.id, jour: l.jour, montant: l.montant }], tickets.map((t) => ({ id: t.id, dateAchat: t.dateAchat, totalTtc: t.totalTtc }))).get(l.id);
     const ids = choix?.genre === "relie" ? [choix.ticketId] : choix?.genre === "choix" ? choix.ticketIds : [];
-    return {
-      id: l.id,
-      genre: l.sens === "entree" ? "entree" : ressembleAUnVirement(l.libelle) || l.justification === "facture" || l.justification === "motif" ? "virement" : "carte",
-      qui: l.contrepartie ?? l.libelle,
-      jour: jourEnMots(l.jour),
-      montant: enEuros(l.montant),
-      categorie: categorieDeLaLigne({ sens: l.sens, libelle: l.libelle, natureDuTicket: l.ticket?.nature ?? null, justification: l.justification }),
-      tickets: l.sens === "sortie" ? ids.flatMap((id) => tickets.filter((t) => t.id === id).map((t) => ({ id, fournisseur: t.fournisseur, jour: `Ticket du ${jourEnMots(t.dateAchat)}` }))) : [],
-      rejet: note,
-    };
+    return carteDeLaLigne(l, tickets.filter((t) => ids.includes(t.id)), enAttente, note);
   });
   return { texte: `Vérifié par votre comptable : ${v.verifiees} sur ${v.total}`, rejets };
 }

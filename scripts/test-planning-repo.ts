@@ -79,12 +79,14 @@ async function main() {
 
   await test("Création d'une intervention (planifierChantier) : passe à 'planifie'", async () => {
     const maj = await chantiersRepo.planifierChantier(A, c1.id, "2026-09-15");
+    assert.ok(maj, "le chantier de A ne s'est pas planifié");
     assert.equal(maj.datePlanifiee, "2026-09-15");
     assert.equal(getPlanificationEtat(maj), "planifie");
   });
 
   await test("Modification d'une intervention : la date change", async () => {
     const maj = await chantiersRepo.planifierChantier(A, c1.id, "2026-09-20");
+    assert.ok(maj, "le chantier ne s'est pas planifié");
     assert.equal(maj.datePlanifiee, "2026-09-20");
   });
 
@@ -120,6 +122,7 @@ async function main() {
     const maj = await chantiersRepo.planifierChantier(A, demiJournee.id, "2026-09-22", {
       demi: "matin",
     });
+    assert.ok(maj, "le chantier ne s'est pas planifié");
     assert.equal(maj.datePlanifiee, "2026-09-22");
     assert.equal(
       maj.dureeDemiJournees,
@@ -139,6 +142,7 @@ async function main() {
     await chantiersRepo.mettreAJourDureeEquipe(A, troisJours.id, { dureePrevue: "3 jours" });
 
     const maj = await chantiersRepo.planifierChantier(A, troisJours.id, "2026-09-24");
+    assert.ok(maj, "le chantier ne s'est pas planifié");
     assert.equal(
       maj.dureeDemiJournees,
       6,

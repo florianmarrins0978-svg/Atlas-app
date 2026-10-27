@@ -178,7 +178,13 @@ type Carte = {
  */
 const VISIBLES_PAR_DEFAUT = 1;
 
-function versCarte(n: NotificationPatron): Carte {
+/**
+ * Une réponse de client, mise en carte. **Exportée, comme `caducVersCarte`,
+ * pour « Réglages › Notifications »**, qui montre ce qui est toujours signalé
+ * avec les titres et les couleurs d'ici : les recopier là-bas, ce serait deux
+ * listes qui divergent au premier titre changé.
+ */
+export function versCarte(n: NotificationPatron): Carte {
   const refus = n.reponse === "refusee";
   const correction = n.reponse === "correction";
 
@@ -273,7 +279,7 @@ function receptionVersCarte(r: ReceptionAffichee): Carte {
   };
 }
 
-function caducVersCarte(e: EnvoiCaduc): Carte {
+export function caducVersCarte(e: EnvoiCaduc): Carte {
   return {
     envoiId: e.envoiId,
     chantierId: e.chantierId,
@@ -300,8 +306,14 @@ function caducVersCarte(e: EnvoiCaduc): Carte {
  * **Il ne mène pas au même endroit selon son genre**, et c'est la même règle
  * que pour les réponses : une carte qui mène ailleurs que là où est le geste
  * fait chercher (`suite-de-la-reponse.ts`, relevé par le patron le 12 août).
+ *
+ * **Exportée pour « Réglages › Notifications »** (sa planche soignée du
+ * 26 octobre 2026) : sous chaque rappel, la carte qu'il fera naître ici. Elle
+ * est lue dans cette fonction, jamais réécrite là-bas : deux rédactions des
+ * mêmes mots finiraient par montrer dans les Réglages une carte qui n'arrive
+ * plus sur l'accueil.
  */
-function rappelVersCarte(r: RappelAffiche): Carte {
+export function rappelVersCarte(r: RappelAffiche): Carte {
   const sansDevis = r.genre === "chantier-sans-devis";
   const devis = r.genre === "devis-sans-reponse";
   const impayee = r.genre === "facture-impayee";

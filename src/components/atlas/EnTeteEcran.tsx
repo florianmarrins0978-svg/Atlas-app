@@ -97,27 +97,48 @@ export default function EnTeteEcran({
    * espacées, flèche de retour sur un rond plein. **Ne change pas d'un
    * caractère** : un écran qui ne dit rien reste exactement ce qu'il était.
    *
-   * `"ample"` — celle qu'il a retenue sur maquette le 2 septembre 2026 pour la
-   * fiche d'un client, et qu'il a nommée point par point :
+   * `"soignee"` — celle des écrans soignés, décrite plus bas.
    *
-   *   - le surtitre doré repasse AU-DESSUS du nom (*« le client en doré, mets
-   *     le au-dessus du nom comme tu avais fait »*). Il annonce ce qu'on ouvre ;
-   *     le nom, lui, porte la page ;
-   *   - le titre passe à 40 px — le nom du client EST l'écran ;
-   *   - la précision quitte les capitales espacées pour du bas de casse à
-   *     13 px. **Une adresse en capitales se déchiffre, elle ne se lit pas** :
-   *     c'est ce que la maquette a montré côte à côte ;
-   *   - la flèche de retour est cernée d'un cheveu au lieu d'être posée sur un
-   *     aplat, parce que rien sur cet écran n'a besoin d'un aplat.
-   *
-   * **Un réglage, pas quatre.** Ces quatre traits forment UNE décision, prise
-   * en une fois sur une maquette ; quatre interrupteurs indépendants inviteraient
-   * à en mélanger deux sur un troisième écran, et la grammaire commune finirait
-   * par n'être plus commune (`CLAUDE.md` §3).
+   * **Un réglage, pas quatre.** Les traits d'une grammaire forment UNE
+   * décision, prise en une fois sur une planche ; des interrupteurs
+   * indépendants inviteraient à en mélanger deux sur un troisième écran, et la
+   * grammaire commune finirait par n'être plus commune (`CLAUDE.md` §3).
+   * L'allure « ample » de la fiche d'un client (2 septembre 2026) est partie le
+   * 26 octobre 2026 : depuis la fiche soignée, plus aucun écran ne l'employait.
    */
-  allure?: "commune" | "ample";
+  allure?: "commune" | "soignee";
 }) {
-  const ample = allure === "ample";
+  // **La grammaire des Réglages soignés** (ses planches du 25
+  // et du 26 octobre 2026, `appli/soignee/reglages-*.html`, puis « code toutes
+  // les pages là ») : le retour cerné à gauche et l'assistant à droite sur la
+  // MÊME ligne, le titre seul dessous, et plus de surtitre doré (« le titre
+  // suffit », comme sur le sommaire). La ligne du retour existait déjà : poser
+  // l'assistant dessus ne coûte aucun pixel au titre.
+  const soignee = allure === "soignee";
+  if (soignee) {
+    return (
+      <header>
+        <div className="flex items-center justify-between gap-4 px-[22px] pt-6">
+          {retour ? <FlecheRetour repli={retour} allure="cerne" fleche={15} /> : <span />}
+          <div className="flex flex-shrink-0 items-center gap-3">
+            {action}
+            {assistant && <BoutonAssistant />}
+          </div>
+        </div>
+        <h1
+          className="px-[22px] pt-3 text-[34px] leading-[1.05]"
+          style={{ fontFamily: font.display, letterSpacing: "-0.012em" }}
+        >
+          {titre}
+        </h1>
+        {precision && (
+          <p className="px-[22px] pt-2 text-[14.5px] leading-[1.45]" style={{ color: colors.inkSoft }}>
+            {precision}
+          </p>
+        )}
+      </header>
+    );
+  }
   return (
     <header>
       {(retour || actionPlacee === "retour") && (
@@ -127,7 +148,7 @@ export default function EnTeteEcran({
           // 2026.** `retour` ne dit plus où va la flèche : il dit où elle va
           // quand on ne sait pas d'où l'on vient. Le reste du temps, elle
           // ramène à la page d'avant (`src/lib/journal-de-navigation.ts`).
-          <FlecheRetour repli={retour} allure={ample ? "cerne" : "plein"} fleche={ample ? 15 : 16} />
+          <FlecheRetour repli={retour} allure="plein" fleche={16} />
         ) : (
           <span />
         )}
@@ -152,26 +173,13 @@ export default function EnTeteEcran({
               {precision}
             </p>
           )}
-          {/* En allure ample, le surtitre doré précède le nom : c'est son choix
-              du 2 septembre 2026, sur la fiche d'un client. Partout ailleurs il
-              reste dessous, comme il l'a demandé le 26 août. */}
-          {surtitre && ample && (
-            <p
-              className="mb-[13px] text-[9.5px] font-medium uppercase"
-              style={{ color: colors.or, letterSpacing: "0.28em" }}
-            >
-              {surtitre}
-            </p>
-          )}
           <h1
-            className={`${precision && precisionPlacee === "avant" ? "mt-3 " : ""}${
-              ample ? "text-[40px] leading-[1.04]" : "text-[36px] leading-[1.02]"
-            }`}
+            className={`${precision && precisionPlacee === "avant" ? "mt-3 " : ""}text-[36px] leading-[1.02]`}
             style={{ fontFamily: font.display, letterSpacing: "-0.018em" }}
           >
             {titre}
           </h1>
-          {surtitre && !ample && (
+          {surtitre && (
             <p
               className="mt-3 text-[9.5px] font-medium uppercase"
               style={{ color: colors.or, letterSpacing: "0.28em" }}
@@ -181,16 +189,8 @@ export default function EnTeteEcran({
           )}
           {precision && precisionPlacee === "sous" && (
             <p
-              className={
-                ample
-                  ? "mt-3.5 text-[13px] leading-[1.65]"
-                  : "mt-2.5 text-[9.5px] font-medium uppercase"
-              }
-              style={
-                ample
-                  ? { color: colors.muted }
-                  : { color: colors.muted, letterSpacing: "0.28em" }
-              }
+              className="mt-2.5 text-[9.5px] font-medium uppercase"
+              style={{ color: colors.muted, letterSpacing: "0.28em" }}
             >
               {precision}
             </p>

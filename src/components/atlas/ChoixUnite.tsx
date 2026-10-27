@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { colors, libelleCaps } from "@/lib/design-tokens";
+import { colors } from "@/lib/design-tokens";
 import { UNITES_PROPOSEES, normaliserUnite, uniteProposee } from "@/lib/unites-tarif";
 
 /**
@@ -36,7 +36,10 @@ export function PastillesUnite({
 
   return (
     <div>
-      <span className={`mb-1.5 block ${libelleCaps}`} style={{ color: colors.inkSoft }}>
+      {/* En toutes lettres, comme « Nom » et « Prix » au-dessus (planche des
+          Réglages soignés, 26 octobre 2026) : UNITÉ en capitales de 11 px se
+          déchiffrait. */}
+      <span className="mb-[7px] block text-[14px] font-semibold" style={{ color: colors.inkSoft }}>
         Unité
       </span>
       <div
@@ -84,11 +87,12 @@ function Pastille({ libelle, prise, onClick }: { libelle: string; prise: boolean
       aria-pressed={prise}
       onClick={onClick}
       // Sous le pouce, sur un chantier : jamais moins de 44 px.
-      className="min-h-[44px] rounded-full px-[14px] text-[15px]"
+      className="min-h-[44px] rounded-full px-[15px] text-[15.5px]"
       style={{
         backgroundColor: prise ? colors.rustTint : "transparent",
         color: colors.ink,
-        boxShadow: `inset 0 0 0 1px ${prise ? colors.or : colors.line}`,
+        fontWeight: prise ? 600 : 400,
+        boxShadow: `inset 0 0 0 ${prise ? "1.5px" : "1px"} ${prise ? colors.or : colors.line}`,
       }}
     >
       {libelle}
@@ -118,8 +122,14 @@ function ChampLibre({ depart, onValider }: { depart: string; onValider: (unite: 
       placeholder="Une autre unité"
       aria-label="Une autre unité"
       autoComplete="off"
-      className="mt-2.5 block min-h-[48px] w-full rounded-[10px] border-0 px-[14px] py-3 outline-none"
-      style={{ backgroundColor: colors.rustTint, color: colors.ink, fontSize: "16px" }}
+      className="mt-2.5 block min-h-[50px] w-full rounded-[10px] border-0 px-[14px] py-3 outline-none focus:outline-2 focus:-outline-offset-2"
+      style={{
+        backgroundColor: colors.rustTint,
+        color: colors.ink,
+        fontSize: "16px",
+        boxShadow: `inset 0 0 0 1px ${colors.lineSoft}`,
+        outlineColor: colors.or,
+      }}
     />
   );
 }

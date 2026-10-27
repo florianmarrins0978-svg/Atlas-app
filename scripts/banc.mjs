@@ -29,6 +29,8 @@
 import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
+import path from "node:path";
+import { randomBytes } from "node:crypto";
 import { annoncePrete } from "./annonce-adresse.mjs";
 import { prendreVerrouBanc, libererVerrouBanc } from "./verrou-banc.mjs";
 import { peutPrechauffer, memoireDisponibleMo } from "./memoire-prechauffage.mjs";
@@ -947,23 +949,21 @@ try {
   }).trim();
   const cle = chemin && existsSync(chemin) ? readFileSync(chemin, "utf8").trim() : "";
   if (cle) process.env.AUTH_SECRET = cle;
+  // **Son entreprise, sans plafond de crédits IA** (sa décision du 26 octobre
+  // 2026) : désignée par `npm run ia:sans-plafond`, rangée à côté de la clé.
+  const sansPlafond = chemin ? path.join(path.dirname(chemin), "ia-sans-plafond") : "";
+  if (sansPlafond && existsSync(sansPlafond)) process.env.ATLAS_IA_SANS_PLAFOND = readFileSync(sansPlafond, "utf8").trim();
+  // **`CRON_SECRET` non plus ne vient plus du dépôt public** (audit, E15 et
+  // E1) : il ouvre la purge planifiée, sur un port public. Rien ne l'appelle
+  // sur son espace ; il reçoit quand même une valeur à lui, créée une fois et
+  // rangée à côté de la clé de session, comme elle.
+  if (chemin) {
+    const cron = path.join(path.dirname(chemin), "cron-secret");
+    if (!existsSync(cron)) writeFileSync(cron, randomBytes(32).toString("base64url"), { mode: 0o600 });
+    process.env.CRON_SECRET = readFileSync(cron, "utf8").trim();
+  }
 } catch (erreur) {
   console.error(`⚠ Clé de l'espace non posée (${erreur instanceof Error ? erreur.message.split("\n")[0] : erreur}) : l'ancienne sert encore.`);
-}
-
-// **Le jeton du planificateur, lui aussi PROPRE À SON ESPACE** (audit du
-// 25 octobre 2026) : `CRON_SECRET` venait du même `docker-compose.yml` public,
-// et ouvrait la purge planifiée à qui lit GitHub, sur le port public de son
-// espace. Pas de base à attendre ici — voir `secret-de-l-espace.ts`.
-try {
-  const cheminCron = execFileSync(process.execPath, ["node_modules/tsx/dist/cli.mjs", "scripts/secret-de-l-espace.ts", "--cron"], {
-    encoding: "utf8",
-    stdio: ["ignore", "pipe", "inherit"],
-  }).trim();
-  const jeton = cheminCron && existsSync(cheminCron) ? readFileSync(cheminCron, "utf8").trim() : "";
-  if (jeton) process.env.CRON_SECRET = jeton;
-} catch (erreur) {
-  console.error(`⚠ Jeton du planificateur non posé (${erreur instanceof Error ? erreur.message.split("\n")[0] : erreur}) : l'ancien sert encore.`);
 }
 
 let serveur = modeDeveloppement ? lancerDev() : lancerBati();

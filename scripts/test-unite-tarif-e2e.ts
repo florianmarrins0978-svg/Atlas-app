@@ -95,7 +95,10 @@ async function main() {
   // du jeu de démonstration ferait dépendre le résultat de son contenu, et
   // laisserait la suite modifier une donnée qu'une autre suite lit.
   const MARQUE = `Unité E2E ${Date.now()}`;
-  await page.getByRole("button", { name: "+ Ajouter un tarif" }).click();
+  // « Ajouter un tarif », sans le « + » écrit : depuis la planche soignée du
+  // 26 octobre 2026, le plus est un dessin dans son rond doré, pas une lettre
+  // du libellé. Le geste visé reste le même : le bouton qui crée un tarif.
+  await page.getByRole("button", { name: "Ajouter un tarif" }).click();
   // Le tarif neuf s'ouvre de lui-même : il n'a encore ni nom ni prix.
   const nom = page.getByLabel("Nom du tarif");
   await nom.waitFor({ state: "visible" });

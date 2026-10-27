@@ -326,17 +326,17 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
   {
     id: "planning-agenda-bandeau",
     ecran: "Planning",
-    ou: "le haut du Planning",
-    intitule: "La phrase de l'agenda en haut du planning, et la masquer",
+    ou: "le bas du Planning, ou son haut quand l'agenda ne se lit plus",
+    intitule: "Relier son agenda depuis le planning, et masquer la proposition",
     motsCles: ["agenda", "google", "bandeau", "relier", "connecter", "lu", "doublon", "masquer", "cacher", "phrase", "enlever"],
     geste:
-      "« Vous pouvez relier votre agenda » : « Ouvrir » mène à « Mon agenda », « Masquer » l'enlève pour toujours. " +
-      "« Votre agenda n'est plus lu » : « Ouvrir », puis « Rebrancher ».",
+      "En bas du planning, « Relier votre agenda » mène à « Mon agenda », « Masquer » l'enlève pour toujours. " +
+      "En haut, en rouge, « Votre agenda n'est plus lu » : « Ouvrir », puis « Rebrancher ».",
     reserve:
       "Réservé au patron. Rien ne s'affiche quand l'agenda est relié et lu, ni quand il est en pause. " +
       "L'alerte d'un agenda qui ne se lit plus ne se masque pas.",
     source: PC,
-    preuves: ['href="/reglages/agenda"', "Vous pouvez relier votre agenda", "Votre agenda n'est plus lu", "Ouvrir", "Masquer"],
+    preuves: ['href="/reglages/agenda"', "Relier votre agenda", "Votre agenda n&apos;est plus lu", "Ouvrir", "Masquer"],
   },
   // --- La fiche d'intervention ----------------------------------------------
   {
@@ -599,9 +599,9 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
     intitule: "Voir les sept jours sous le calendrier",
     motsCles: ["journee", "semaine", "aujourdhui", "jour", "liste", "planning", "sept"],
     geste:
-      "Appuyez sur « La semaine », sous le calendrier ; le même mot les referme. " +
+      "Les sept jours s'affichent d'office sous le calendrier, à partir d'aujourd'hui ; les flèches passent aux sept jours d'avant ou d'après. " +
       "Pour une seule journée, touchez son jour dans le calendrier.",
     source: "src/app/planning/PlanningClient.tsx",
-    preuves: ["La semaine"],
+    preuves: ["Sept jours avant", "Sept jours après"],
   },
 ];

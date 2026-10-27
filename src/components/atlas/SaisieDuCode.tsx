@@ -1,5 +1,6 @@
 "use client";
 
+import { colors, surPlein } from "@/lib/design-tokens";
 import { useState, useTransition } from "react";
 import { NUIT, SERIF } from "@/components/atlas/PorteDeNuit";
 import { LONGUEUR_CODE, codeNormalise } from "@/lib/code-verification";
@@ -136,10 +137,10 @@ export default function SaisieDuCode({
         type="button"
         onClick={sortir}
         disabled={enCours}
-        className="flex min-h-[44px] flex-shrink-0 items-center gap-[6px] self-start pr-[10px] pt-[10px] text-[14px] disabled:opacity-60"
-        style={{ color: NUIT.muted }}
+        className="-ml-[10px] mt-[6px] flex min-h-[48px] flex-shrink-0 items-center gap-[6px] self-start rounded-full pl-2 pr-3 text-[15.5px] font-semibold disabled:opacity-60"
+        style={{ color: NUIT.inkSoft }}
       >
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M15 5 8 12l7 7" />
         </svg>
         Retour
@@ -167,7 +168,7 @@ export default function SaisieDuCode({
               return (
                 <span
                   key={i}
-                  className="grid h-[60px] place-items-center rounded-[14px] text-[27px] leading-none tabular-nums"
+                  className="grid h-[64px] place-items-center rounded-[14px] text-[28px] leading-none tabular-nums"
                   style={{ background: NUIT.card, boxShadow: anneau, color: enCours ? NUIT.muted : NUIT.ink }}
                 >
                   {code[i] ?? ""}
@@ -214,8 +215,10 @@ export default function SaisieDuCode({
           type="button"
           onClick={valider}
           disabled={enCours}
-          className="w-full rounded-full py-4 text-[17px] leading-none transition-transform active:scale-[0.985] disabled:opacity-60"
-          style={{ background: NUIT.rust, color: NUIT.cream, ...SERIF }}
+          // Les boutons de la porte soignée (26 octobre 2026) : 56 points, en
+          // lettres droites et grasses, comme les questions qui précèdent.
+          className="min-h-[56px] w-full rounded-full text-[17px] font-semibold leading-none transition-transform active:scale-[0.985] disabled:opacity-60"
+          style={{ background: colors.plein, color: surPlein }}
         >
           {enCours ? "Un instant…" : mort ? "Renvoyer le code" : "Continuer"}
         </button>
@@ -224,7 +227,7 @@ export default function SaisieDuCode({
             type="button"
             onClick={renvoyer}
             disabled={enCours}
-            className="mt-[6px] min-h-[48px] w-full bg-transparent text-[15px] disabled:opacity-60"
+            className="mt-1 min-h-[48px] w-full bg-transparent text-[15.5px] font-semibold disabled:opacity-60"
             style={{ color: NUIT.inkSoft }}
           >
             Renvoyer le code

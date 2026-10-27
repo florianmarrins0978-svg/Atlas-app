@@ -378,6 +378,11 @@ export async function mettreAJourEntreprise(
     if (data.mentionsLegalesPosition !== undefined) {
       valeurs.mentionsLegalesPosition = data.mentionsLegalesPosition;
     }
+    // **La fin de chantier n'était jamais écrite** (vu le 26 octobre 2026) : la
+    // signature la recevait depuis la migration 0080, mais aucune ligne ne la
+    // recopiait ici, et l'interrupteur revenait éteint au rechargement.
+    if (data.retourDemande !== undefined) valeurs.retourDemande = data.retourDemande;
+    if (data.retourPhotoExigee !== undefined) valeurs.retourPhotoExigee = data.retourPhotoExigee;
     if (data.nombreEquipes !== undefined) {
       valeurs.nombreEquipes = Math.min(MAX_EQUIPES, Math.max(1, Math.trunc(data.nombreEquipes)));
     }

@@ -129,7 +129,7 @@
 <td><strong>E10</strong></td>
 <td>Liens entre tables non composites (paiement et facture, acompte et devis…) : la base n'empêche pas de rattacher un élément à une autre entreprise</td>
 <td>moyenne (défense en profondeur)</td>
-<td>vague 3</td>
+<td><strong>corrigé le 26 octobre</strong> pour les lignes neuves (migration 0149)</td>
 </tr>
 <tr>
 <td><strong>E11</strong></td>
@@ -141,25 +141,25 @@
 <td><strong>E12</strong></td>
 <td>Liens clients en clair en base, certains sans expiration (contrat, passages) ; lien du comptable valable un an</td>
 <td>moyenne</td>
-<td>vague 3</td>
+<td><strong>gardé tel quel, délibérément</strong> : voir plus bas</td>
 </tr>
 <tr>
 <td><strong>E13</strong></td>
 <td>Les libellés des lignes de devis entrent dans la consigne système de l'IA (retouches) ; aucun plafond de dépense d'IA par mois</td>
 <td>moyenne</td>
-<td><strong>consigne corrigée le 26 octobre</strong> ; le plafond attend ta décision</td>
+<td><strong>corrigé le 26 octobre</strong> : consigne, et plafond mensuel de crédits IA selon tes montants</td>
 </tr>
 <tr>
 <td><strong>E14</strong></td>
 <td>Sans <code>ATLAS_PROXY_SAUTS</code>, les seuils par source deviennent communs à tous : un inconnu peut bloquer les inscriptions ou le mot de passe oublié de tout le monde, ou verrouiller un compte dont il connaît l'adresse</td>
 <td>moyenne</td>
-<td>dépend du déploiement</td>
+<td><strong>à régler chez l'hébergeur</strong>, déjà dans la liste avant le premier artisan</td>
 </tr>
 <tr>
 <td><strong>E15</strong></td>
 <td>Chaîne logicielle : actions GitHub épinglées par étiquette, <code>pages.yml</code> donne ses droits de publication à l'étape qui installe les paquets, aucun délai avant d'installer une version neuve, <code>demarrer.sh</code> retombe sur <code>npm install</code></td>
 <td>moyenne</td>
-<td>vague 3</td>
+<td><strong>corrigé le 26 octobre</strong> (versions figées, droits réduits) ; le délai et le repli gardés, voir <code>ARCHITECTURE.md</code> §511</td>
 </tr>
 <tr>
 <td><strong>E16</strong></td>
@@ -217,6 +217,23 @@
 <li>la protection de la branche <code>main</code> sur GitHub ;</li>
 <li>tout ce qui dépend de l'hébergeur de production, qui n'existe pas encore.</li>
 </ul>
+<h2 id="la-fin-le-26-octobre">La fin, le 26 octobre</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li><strong>Les conditions à accepter</strong> arrêtent désormais aussi le clic suivant, et plus seulement le rechargement de la page. Même chose pour la vérification de l'adresse d'un compte neuf.</li>
+<li><strong>La clé de la purge planifiée</strong> de ton espace ne vient plus du dépôt public : comme la clé de session, elle est propre à ton espace.</li>
+<li><strong>E14</strong> se règle chez l'hébergeur, le jour où l'appli sera en ligne pour d'autres : c'est déjà dans la liste à cocher avant le premier artisan.</li>
+<li><strong>Une pièce importée sans crédits IA</strong> passe en « à vérifier » avec ce que le texte a pu dire : tu la complètes à la main, rien n'est perdu.</li>
+</ul>
+<h2 id="e10-et-e12-le-26-octobre">E10 et E12, le 26 octobre</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>E10, corrigé.</strong> La base refuse désormais qu'un paiement, un acompte, une photo ou un retour d'intervention d'une entreprise vise une ligne d'une autre entreprise. Vingt-six liens sont concernés. Aucun code ne le faisait : c'est une protection pour la porte que personne n'a encore écrite. Les anciennes lignes ne sont pas revérifiées tout de suite, pour qu'une donnée ancienne imprévue ne bloque pas la mise à jour de ton espace ; c'est noté pour plus tard.</p>
+<p><strong>E12, gardé tel quel.</strong> Les liens envoyés à tes clients (devis, factures, contrats, rapports de passage) restent comme ils sont. Les faire expirer ferait perdre à ton client le contrat qu'il a reçu ; les stocker autrement t'empêcherait de recopier le lien d'un devis déjà envoyé. Chaque lien est impossible à deviner, et n'ouvre que son propre document. Le lien du comptable était déjà protégé autrement, et il dure un exercice.</p>
+<h2 id="les-crédits-ia-du-mois-faits-le-26-octobre">Les crédits IA du mois, faits le 26 octobre</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Tes plafonds : essai 5 €, Artisan 10 €, Entreprise 20 €, Illimité 60 €, sans abonnement 10 €. Chaque appel à l'IA payante se compte (une estimation, toujours un peu au-dessus de la vraie facture) ; au plafond, il ne part plus, et la saisie à la main continue. Sur Abonnement, la barre de ta planche, en rouge une fois épuisée. Une dictée refusée le dit : « Crédits IA épuisés. Atlas IA reprend le 1er novembre. D'ici là, tout s'écrit à la main. »</p>
+<p><strong>Pour ton entreprise, sans plafond</strong>, une fois sur ton espace : <code>npm run ia:sans-plafond -- ton@adresse</code>, puis rallumer l'espace.</p>
+<p>Pas vérifiable ICI : la phrase dans l'écran de dictée avec une vraie transcription (pas de clé sur ce poste). La barre, elle, a été regardée à l'écran dans ses trois états.</p>
 <h2 id="e13-fait-le-26-octobre-moitié">E13, fait le 26 octobre (moitié)</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p>Quand tu dictes une correction sur un devis, l'IA reçoit les lignes du devis. Elles arrivaient au milieu de nos propres règles, avec la même autorité. Or une ligne peut venir d'un devis fournisseur importé : une phrase rédigée comme un ordre y aurait été obéie. Le devis passe désormais à part, comme une donnée, et une ligne ne peut plus en fabriquer une fausse. C'était déjà fait ainsi pour la lecture des dictées de chantier.</p>

@@ -184,18 +184,20 @@ async function main() {
       WHERE id IN (SELECT m.entreprise_id FROM membres_entreprise m JOIN users u ON u.id = m.utilisateur_id WHERE u.email = 'demo@atlas.local')`
   );
 
-  await cas("jamais relié : la phrase propose, et « Ouvrir » mène à Mon agenda", async () => {
+  // **« Relier votre agenda » est lui-même le lien** depuis le planning soigné
+  // (sa planche du 25 octobre 2026) : la phrase et son « Ouvrir » n'en font plus qu'un.
+  await cas("jamais relié : « Relier votre agenda » mène à Mon agenda", async () => {
     await page.goto(`${BASE}/planning`, { waitUntil: "domcontentloaded" });
-    await page.getByText("Vous pouvez relier votre agenda").waitFor({ state: "visible", timeout: 15000 });
-    await page.getByRole("link", { name: "Ouvrir" }).click();
+    await page.getByRole("link", { name: "Relier votre agenda" }).waitFor({ state: "visible", timeout: 15000 });
+    await page.getByRole("link", { name: "Relier votre agenda" }).click();
     await page.getByRole("heading", { name: "Mon agenda" }).waitFor({ timeout: 15000 });
   });
 
   await cas("« Masquer » : il ne reste rien, et rien ne revient au rechargement", async () => {
     await page.goto(`${BASE}/planning`, { waitUntil: "domcontentloaded" });
-    await page.getByText("Vous pouvez relier votre agenda").waitFor({ state: "visible", timeout: 15000 });
+    await page.getByRole("link", { name: "Relier votre agenda" }).waitFor({ state: "visible", timeout: 15000 });
     await page.getByRole("button", { name: "Masquer" }).click();
-    assert.equal(await page.getByText("Vous pouvez relier votre agenda").count(), 0, "la phrase reste après « Masquer »");
+    assert.equal(await page.getByRole("link", { name: "Relier votre agenda" }).count(), 0, "la phrase reste après « Masquer »");
     // Le serveur écrit en arrière-plan : on attend qu'il l'ait fait, en base,
     // plutôt qu'un délai qui passerait sur cette machine et pas sur une autre.
     for (let i = 0; i < 50; i++) {
@@ -209,7 +211,7 @@ async function main() {
     }
     await page.reload({ waitUntil: "domcontentloaded" });
     await page.getByRole("heading", { name: "Planning" }).waitFor({ timeout: 15000 });
-    assert.equal(await page.getByText("Vous pouvez relier votre agenda").count(), 0, "la phrase est revenue au rechargement");
+    assert.equal(await page.getByRole("link", { name: "Relier votre agenda" }).count(), 0, "la phrase est revenue au rechargement");
     assert.equal(await page.getByRole("button", { name: "Masquer" }).count(), 0, "« Masquer » est resté seul à l'écran");
   });
 

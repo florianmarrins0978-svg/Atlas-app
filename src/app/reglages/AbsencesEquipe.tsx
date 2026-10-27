@@ -3,12 +3,18 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { colors, font, libelleCaps, voile } from "@/lib/design-tokens";
+import { colors, font, surPlein } from "@/lib/design-tokens";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import { salariesAffiches, libelleSalarie } from "@/lib/equipes";
 import { libelleAbsence, phraseDuRefus, refusDeLAbsence } from "@/lib/absences-equipe";
+import { deOuD } from "@/lib/contrats-entretien";
 import { noterAbsenceAction, retirerAbsenceAction } from "./actions";
 import TeteRonde from "@/components/atlas/TeteRonde";
+import Paquet from "@/components/atlas/reglages/Paquet";
+import PlageTon from "@/components/atlas/reglages/PlageTon";
+import PastilleIcone from "@/components/atlas/reglages/PastilleIcone";
+import LigneReglage, { styleValeurReglage } from "@/components/atlas/reglages/LigneReglage";
+import Picto from "@/components/atlas/reglages/Picto";
 
 /**
  * « Absences » — les jours où quelqu'un n'est pas là.
@@ -123,16 +129,16 @@ export default function AbsencesEquipe({
      * n'affirme que ce qui est vrai pour LUI. Quand rien n'est relié, il donne
      * le geste qui manque au lieu d'une promesse.
      */
-    return (
-      <p
-        className="mx-[26px] mt-[30px] border-t pt-[18px] text-[12px] leading-[1.7]"
-        style={{ borderColor: colors.line, color: colors.muted }}
-      >
+    // **La phrase devient une plage qui se touche tout entière** (planche du
+    // 26 octobre 2026) quand il y a un agenda à relier : le geste qui manque
+    // se trouve sans viser un mot souligné.
+    const phrase = (
+      <p className="text-[15px] leading-[1.5]" style={{ color: colors.inkSoft }}>
         Seul, une absence fermerait l’entreprise : plus aucune date ne serait
         proposable.{" "}
         {agendaRelie ? (
           <>
-            <span style={{ color: colors.ink }}>
+            <span className="font-semibold" style={{ color: colors.ink }}>
               Pour vos congés, posez-les dans votre agenda
             </span>{" "}
             : Atlas en tient compte et ne proposera rien sur ces jours-là.
@@ -140,13 +146,40 @@ export default function AbsencesEquipe({
         ) : (
           <>
             Pour vos congés,{" "}
-            <Link href="/reglages/agenda" style={{ color: colors.ink, textDecoration: "underline" }}>
+            <span
+              className="font-semibold underline decoration-[1.5px] underline-offset-4"
+              style={{ color: colors.or }}
+            >
               reliez votre agenda
-            </Link>{" "}
+            </span>{" "}
             : Atlas n’en tient compte qu’une fois relié.
           </>
         )}
       </p>
+    );
+    return (
+      <Paquet titre="Absences" sansPlage>
+        {agendaRelie ? (
+          <div className="flex items-start gap-3.5 rounded-[6px] p-[18px]" style={{ backgroundColor: colors.card }}>
+            <PastilleIcone ton="bleu">
+              <Picto nom="calendrier" />
+            </PastilleIcone>
+            {phrase}
+          </div>
+        ) : (
+          <Link
+            href="/reglages/agenda"
+            data-atlas="agenda-a-relier"
+            className="flex items-start gap-3.5 rounded-[6px] p-[18px]"
+            style={{ backgroundColor: colors.card }}
+          >
+            <PastilleIcone ton="bleu">
+              <Picto nom="calendrier" />
+            </PastilleIcone>
+            {phrase}
+          </Link>
+        )}
+      </Paquet>
     );
   }
 
@@ -220,12 +253,15 @@ export default function AbsencesEquipe({
   const refusSaisi = refusDeLAbsence(premierJour, dernierJour);
   const armé = refusSaisi === null && !enCours;
 
-  return (
-    <section className="mt-[30px]">
-      <p className={`mb-1.5 px-[26px] ${libelleCaps}`} style={{ color: colors.inkSoft }}>
-        Absences
-      </p>
+  // **« Absence de Thomas », et plus « Thomas sera absente »** (planche du
+  // 26 octobre 2026) : la phrase mettait le féminin à tout le monde. Le nom ne
+  // dit pas le genre ; « absence de » est juste pour chacun. L'élision vient de
+  // la règle commune (`deOuD`) : « d'Antoine », jamais « de Antoine ».
+  const nomSaisi = nomDuRang(rang);
+  const deNom = deOuD(nomSaisi);
 
+  return (
+    <Paquet titre="Absences" sansPlage>
       {/* **« ATLAS N'ENVERRA PLUS PERSONNE À SA PLACE » EST PARTI — sa
           remarque du 8 septembre 2026 : *« la phrase dans absence n'a aucun
           sens »*. Il avait raison, et deux fois.
@@ -248,156 +284,161 @@ export default function AbsencesEquipe({
           a été retirée. La liste se ferme d'elle-même au congé suivant : elle
           annonce un fait, elle ne s'installe pas. */}
       {liberes.length > 0 && (
-        <p
-          role="status"
-          data-atlas="chantiers-liberes"
-          className="mx-[26px] mb-2 rounded-xl px-3.5 py-3 text-[12.5px] leading-[1.6]"
-          style={{ backgroundColor: voile(colors.or, 0.1), color: colors.or }}
-        >
-          Retiré de {liberes.map((c) => c.nom).join(", ")}.
-        </p>
+        <div role="status" className="mb-2.5">
+          <PlageTon ton="or" dataAtlas="chantiers-liberes">
+            Retiré de {liberes.map((c) => c.nom).join(", ")}.
+          </PlageTon>
+        </div>
       )}
 
-      {absences.length === 0 ? (
-        <p className="px-[26px] py-2 text-[13px] leading-[1.7]" style={{ color: colors.muted }}>
-          Personne d’absent. Un déplacement, un congé, un arrêt : notez-le ici.
-        </p>
-      ) : (
-        <div className="px-[26px]">
-          {absences.map((a) => (
-            <div
-              key={a.id}
-              className="flex items-center gap-3 py-3"
-              style={{ borderBottom: `1px solid ${colors.lineSoft}` }}
-            >
+      <div className="overflow-hidden rounded-[6px] px-[18px]" style={{ backgroundColor: colors.card }}>
+        {absences.length === 0 ? (
+          <p className="py-4 text-[15px] leading-[1.5]" style={{ color: colors.inkSoft }}>
+            Personne d’absent. Un déplacement, un congé, un arrêt : notez-le ici.
+          </p>
+        ) : (
+          absences.map((a) => (
+            <div key={a.id} className="relative flex min-h-[76px] items-center gap-3.5 py-3">
+              <span aria-hidden className="absolute inset-x-0 -top-px h-px" style={{ backgroundColor: colors.line }} />
               {/* **Sa tête, quand il en a une** (planche du 27 septembre 2026).
-                  Sans photo, la pastille reste celle d'avant : rien ne change
-                  pour qui n'en pose pas. */}
-              {photoDuRang(a.rang) ? (
-                <TeteRonde repli={a.rang} photo={photoDuRang(a.rang)} taille={26} />
-              ) : (
-                <span
-                  className="flex h-[26px] w-[26px] flex-shrink-0 items-center justify-center rounded-full text-[11.5px]"
-                  style={{ backgroundColor: colors.rustTint, color: colors.rust }}
-                  aria-hidden="true"
-                >
-                  {a.rang}
-                </span>
-              )}
+                  Sans photo, son numéro en or, comme sur la ligne de son nom. */}
+              <TeteRonde repli={a.rang} photo={photoDuRang(a.rang)} taille={40} />
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-[15px]">{nomDuRang(a.rang)}</span>
+                <span
+                  className="block truncate text-[18px] font-semibold leading-[1.25]"
+                  style={{ fontFamily: font.display, color: colors.ink }}
+                >
+                  {nomDuRang(a.rang)}
+                </span>
+                <span className="mt-0.5 block text-[15px] font-semibold" style={{ color: colors.or }}>
+                  {libelleAbsence(a.premierJour, a.dernierJour)}
+                </span>
                 {a.motif && (
-                  <span className="mt-0.5 block truncate text-[11.5px]" style={{ color: colors.muted }}>
+                  <span className="mt-[3px] block truncate text-[14.5px] leading-[1.4]" style={{ color: colors.inkSoft }}>
                     {a.motif}
                   </span>
                 )}
               </span>
-              <span className="flex-shrink-0 text-[12.5px]" style={{ color: colors.or }}>
-                {libelleAbsence(a.premierJour, a.dernierJour)}
-              </span>
+              {/* La croix grandit à 44 px : elle se touche sans viser. */}
               <button
                 type="button"
                 onClick={() => void retirer(a.id)}
                 aria-label={`Retirer l'absence de ${nomDuRang(a.rang)}`}
-                className="flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-full"
-                style={{ border: `1px solid ${colors.line}`, color: colors.muted }}
+                className="flex h-11 w-11 flex-none items-center justify-center rounded-full"
+                style={{ boxShadow: `inset 0 0 0 1px ${colors.line}`, color: colors.inkSoft }}
               >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                  <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
-                </svg>
+                <Picto nom="croix" taille={18} />
               </button>
             </div>
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
 
-      {/* Une pastille creuse, comme tous les boutons de ce dépôt
-          (`scripts/test-boutons-arrondis.ts`). */}
+      {/* **Une pilule creuse aux bouts ronds**, comme dans l'appli d'aujourd'hui
+          (sa demande du 26 octobre 2026, et `scripts/test-boutons-arrondis.ts`).
+          Le plein reste au seul geste qui enregistre, dans la feuille. */}
       <button
         type="button"
         onClick={ouvrir}
-        className="mx-[26px] mt-3.5 block w-[calc(100%-52px)] rounded-full py-3 text-center text-[13.5px]"
-        style={{ border: `1px solid ${colors.line}`, color: colors.rust }}
+        className="mt-4 flex min-h-[56px] w-full items-center justify-center rounded-full text-[17px] font-semibold"
+        style={{ boxShadow: `inset 0 0 0 1px ${colors.line}`, color: colors.rust }}
       >
         + Noter une absence
       </button>
 
-      <p className="mx-[26px] mt-3 text-[12px] leading-[1.7]" style={{ color: colors.muted }}>
-        Un absent <span style={{ color: colors.ink }}>ne compte plus</span> ces
+      <p className="mx-0.5 mt-3 text-[14px] leading-[1.5]" style={{ color: colors.inkSoft }}>
+        Un absent <span className="font-semibold" style={{ color: colors.ink }}>ne compte plus</span> ces
         jours-là : Atlas propose une date de moins, et tout revient normal
         ensuite. Vos clients ne voient rien de tout ceci.
       </p>
 
       <BottomSheet open={ouverte} onBackdropClick={() => setOuverte(false)}>
-        <p className={`text-center ${libelleCaps}`} style={{ color: colors.or }}>
-          Absence
-        </p>
-        <p className="mb-3.5 mt-2 text-center text-[20px]" style={{ fontFamily: font.display }}>
+        {/* « ABSENCE » en capitales au-dessus est parti (planche du 26 octobre
+            2026) : la question suffit. */}
+        <h2 className="mb-4 mt-1 text-[26px] leading-[1.15]" style={{ fontFamily: font.display, color: colors.ink }}>
           Qui n’est pas là ?
-        </p>
+        </h2>
 
-        <div className="flex flex-col gap-px overflow-hidden rounded-xl" style={{ backgroundColor: colors.lineSoft }}>
-          <Ligne libelle="Qui">
-            <select
-              value={rang}
-              onChange={(e) => setRang(Number(e.target.value))}
-              aria-label="Qui est absent"
-              className="w-full bg-transparent text-right text-[15.5px] outline-none"
-              style={{ color: colors.ink }}
-            >
-              {lignesEquipes.map((e) => (
-                <option key={e.rang} value={e.rang}>
-                  {nomDuRang(e.rang)}
-                </option>
-              ))}
-            </select>
-          </Ligne>
-          <Ligne libelle="Du">
+        <div className="overflow-hidden rounded-[6px] px-[18px]" style={{ backgroundColor: colors.card }}>
+          <LigneReglage libelle="Qui" htmlFor="absence-qui">
+            <span className="flex items-center justify-between gap-2">
+              <select
+                id="absence-qui"
+                value={rang}
+                onChange={(e) => setRang(Number(e.target.value))}
+                aria-label="Qui est absent"
+                className="min-w-0 flex-1 appearance-none"
+                style={styleValeurReglage}
+              >
+                {lignesEquipes.map((e) => (
+                  <option key={e.rang} value={e.rang}>
+                    {nomDuRang(e.rang)}
+                  </option>
+                ))}
+              </select>
+              <span className="flex-none" style={{ color: colors.or }}>
+                <Picto nom="bas" taille={20} />
+              </span>
+            </span>
+          </LigneReglage>
+          <div className="relative grid grid-cols-2 gap-[18px] py-3.5">
+            <span aria-hidden className="absolute inset-x-0 -top-px h-px" style={{ backgroundColor: colors.line }} />
+            <label className="block min-w-0">
+              <span className="block text-[14px] font-semibold" style={{ color: colors.inkSoft }}>
+                Du
+              </span>
+              <input
+                type="date"
+                value={premierJour}
+                onChange={(e) => changerPremier(e.target.value)}
+                aria-label="Premier jour d'absence"
+                className="mt-[3px] block"
+                style={styleValeurReglage}
+              />
+            </label>
+            <label className="block min-w-0">
+              <span className="block text-[14px] font-semibold" style={{ color: colors.inkSoft }}>
+                Au
+              </span>
+              <input
+                type="date"
+                value={dernierJour}
+                min={premierJour}
+                onChange={(e) => setDernierJour(e.target.value)}
+                aria-label="Dernier jour d'absence"
+                className="mt-[3px] block"
+                style={styleValeurReglage}
+              />
+            </label>
+          </div>
+          <LigneReglage libelle="Motif" htmlFor="absence-motif">
             <input
-              type="date"
-              value={premierJour}
-              onChange={(e) => changerPremier(e.target.value)}
-              aria-label="Premier jour d'absence"
-              className="w-full bg-transparent text-right text-[15.5px] outline-none"
-            />
-          </Ligne>
-          <Ligne libelle="Au">
-            <input
-              type="date"
-              value={dernierJour}
-              min={premierJour}
-              onChange={(e) => setDernierJour(e.target.value)}
-              aria-label="Dernier jour d'absence"
-              className="w-full bg-transparent text-right text-[15.5px] outline-none"
-            />
-          </Ligne>
-          <Ligne libelle="Motif">
-            <input
+              id="absence-motif"
               value={motif}
               onChange={(e) => setMotif(e.target.value)}
               placeholder="Déplacement…"
               aria-label="Motif de l'absence"
-              className="w-full bg-transparent text-right text-[15.5px] outline-none"
+              style={styleValeurReglage}
             />
-          </Ligne>
+          </LigneReglage>
         </div>
 
-        <p
-          className="mt-2.5 rounded-xl px-3.5 py-3 text-[12.5px] leading-[1.5]"
-          style={{ backgroundColor: voile(colors.or, 0.1), color: colors.or }}
-        >
-          {refusSaisi ? (
-            phraseDuRefus(refusSaisi)
-          ) : (
-            <>
-              {nomDuRang(rang)} sera absente {libelleAbsence(premierJour, dernierJour)},
-              week-ends compris. Le motif n’est là que pour vous.
-            </>
-          )}
-        </p>
+        <div className="mt-2.5">
+          <PlageTon ton={refusSaisi ? "ambre" : "or"}>
+            {refusSaisi ? (
+              phraseDuRefus(refusSaisi)
+            ) : (
+              <>
+                Absence {deNom.slice(0, deNom.length - nomSaisi.length)}
+                <span className="font-bold" style={{ color: colors.ink }}>{nomSaisi}</span>{" "}
+                {libelleAbsence(premierJour, dernierJour)}, week-ends compris. Le motif n’est là que pour vous.
+              </>
+            )}
+          </PlageTon>
+        </div>
 
         {refus && (
-          <p role="alert" className="mt-2.5 text-center text-[13px]" style={{ color: colors.alert }}>
+          <p role="alert" className="mt-2.5 text-center text-[14px]" style={{ color: colors.alert }}>
             {refus}
           </p>
         )}
@@ -406,11 +447,10 @@ export default function AbsencesEquipe({
           type="button"
           onClick={() => void enregistrer()}
           disabled={!armé}
-          className="atlas-plein mt-3 w-full rounded-full py-[15px] text-[15px]"
+          className="atlas-plein mt-4 flex min-h-[56px] w-full items-center justify-center rounded-full text-[17px] font-semibold"
           style={{
             backgroundColor: colors.plein,
-            color: colors.cream,
-            fontFamily: font.display,
+            color: surPlein,
             opacity: armé ? 1 : 0.35,
           }}
         >
@@ -419,26 +459,12 @@ export default function AbsencesEquipe({
         <button
           type="button"
           onClick={() => setOuverte(false)}
-          className="mt-1.5 w-full rounded-full py-3 text-[14.5px]"
-          style={{ color: colors.muted }}
+          className="mt-1 flex min-h-[48px] w-full items-center justify-center rounded-full text-[16px] font-semibold"
+          style={{ color: colors.inkSoft }}
         >
           Annuler
         </button>
       </BottomSheet>
-    </section>
-  );
-}
-
-function Ligne({ libelle, children }: { libelle: string; children: React.ReactNode }) {
-  return (
-    <label
-      className="flex items-center justify-between gap-3 px-[15px] py-[13px]"
-      style={{ backgroundColor: colors.card }}
-    >
-      <span className="flex-shrink-0 text-[13px]" style={{ color: colors.muted }}>
-        {libelle}
-      </span>
-      {children}
-    </label>
+    </Paquet>
   );
 }

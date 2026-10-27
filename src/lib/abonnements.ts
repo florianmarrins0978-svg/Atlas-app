@@ -363,6 +363,28 @@ export function lignesDeLaFormule(f: Formule): LigneDeCarte[] {
   }));
 }
 
+/**
+ * CE QUE TOUTES LES FORMULES OUVRENT — lu une fois, au-dessus des cartes.
+ *
+ * **Sa planche du 26 octobre 2026** (`appli/soignee/reglages-abonnement.html`) :
+ * cinq lignes identiques répétées dans les trois cartes faisaient lire
+ * trente-cinq lignes pour en comparer vingt-cinq. Elles se calculent sur les
+ * formules et jamais sur une liste recopiée : une ligne qui deviendrait
+ * réservée demain quitterait ce paquet toute seule, et irait se barrer dans
+ * la carte qui ne l'ouvre pas.
+ */
+export function lignesCommunes(): string[] {
+  return LIGNES.map((l) => l.texte).filter((texte) =>
+    FORMULES.every((f) => lignesDeLaFormule(f).some((l) => l.texte === texte && !l.manque))
+  );
+}
+
+/** Ce que la carte d'une formule garde : ce qui la distingue, ce qui lui manque compris (barré). */
+export function lignesQuiDistinguent(f: Formule): LigneDeCarte[] {
+  const communes = new Set(lignesCommunes());
+  return lignesDeLaFormule(f).filter((l) => !communes.has(l.texte));
+}
+
 export function estFormule(valeur: string | null | undefined): valeur is FormuleCode {
   return typeof valeur === "string" && FORMULES.some((f) => f.code === valeur);
 }
@@ -379,6 +401,28 @@ export function formule(code: string | null | undefined): Formule | null {
 /** Ce qui sera débité, en euros HT, pour une formule et une périodicité. */
 export function montantDu(f: Formule, periodicite: Periodicite): number {
   return periodicite === "annuelle" ? f.prixAnnuel : f.prixMensuel;
+}
+
+export type PrixALAnnee = {
+  /** Douze mois payés au mois : le prix qui s'affiche barré. */
+  douzeMois: number;
+  /** Ce qui est débité pour l'année (`montantDu` à l'année). */
+  annuel: number;
+  /** Ce qu'on gagne, en euros. */
+  gain: number;
+};
+
+/**
+ * À L'ANNÉE, CE QU'ON GAGNE — sa demande du 26 octobre 2026 : le prix de
+ * douze mois barré au-dessus du prix de dix, et le gain en euros.
+ *
+ * **Calculé, jamais écrit à côté du prix.** « Vous gagnez 78 € » recopié dans
+ * l'écran resterait vrai jusqu'au premier prix qui bouge, puis mentirait sur
+ * de l'argent, sans qu'aucun contrôle ne le voie.
+ */
+export function prixALAnnee(f: Formule): PrixALAnnee {
+  const douzeMois = f.prixMensuel * 12;
+  return { douzeMois, annuel: f.prixAnnuel, gain: douzeMois - f.prixAnnuel };
 }
 
 /**
@@ -442,11 +486,28 @@ export function placePourUnFabricant(
 // rédigent les refus d'un même écran donneraient deux voix, et le patron lirait
 // deux applications. Ce fichier décide s'il y a la place ; l'autre le dit.
 
+/**
+ * Ce qui se lit d'un coup d'œil à gauche du titre — sa planche du 26 octobre
+ * 2026 : les jours d'essai dans un carré, la date d'un arrêt aussi, une
+ * pastille sinon (un abonnement qui court, une carte à mettre à jour, un essai
+ * fini, rien en cours).
+ *
+ * **Décidé ICI, et non par l'écran** : distinguer un arrêt demandé d'un
+ * abonnement qui court est la règle de `etatAffiche`. L'écran qui la referait
+ * de son côté finirait par montrer un carré d'échéance sur un abonnement qui
+ * continue (`CLAUDE.md` §3).
+ */
+export type SigneAbonnement =
+  | { genre: "jours"; nombre: number }
+  | { genre: "echeance"; jour: number; mois: string }
+  | { genre: "formule" | "paiement" | "ferme" | "aucun" };
+
 export type EtatAffiche = {
   titre: string;
   detail: string | null;
   /** `attention` quand quelque chose demande un geste de sa part. */
   ton: "calme" | "attention";
+  signe: SigneAbonnement;
 };
 
 /**
@@ -462,7 +523,7 @@ export function etatAffiche(
   maintenant: Date
 ): EtatAffiche {
   if (!abonnement) {
-    return { titre: "Aucun abonnement", detail: "Atlas ne vous facture rien aujourd’hui.", ton: "calme" };
+    return { titre: "Aucun abonnement", detail: "Atlas ne vous facture rien aujourd’hui.", ton: "calme", signe: { genre: "aucun" } };
   }
 
   const f = formule(abonnement.formule);
@@ -478,12 +539,14 @@ export function etatAffiche(
           titre: "Essai terminé",
           detail: "Tout se relit, rien ne se crée. Choisissez une formule pour continuer.",
           ton: "attention",
+          signe: { genre: "ferme" },
         };
       }
       return {
         titre: texteDuRuban(essai),
         detail: `Jusqu’au ${jourEnLettres(essai.fin)}. Aucune carte n’a été demandée.`,
         ton: essai.alerte ? "attention" : "calme",
+        signe: { genre: "jours", nombre: essai.joursRestants },
       };
     }
     case "impaye":
@@ -493,23 +556,41 @@ export function etatAffiche(
         // et une raison devinée enverrait appeler la mauvaise personne.
         detail: "Votre dernier paiement n’est pas passé. Mettez votre carte à jour.",
         ton: "attention",
+        signe: { genre: "paiement" },
       };
     case "resilie":
-      return { titre: `${nom}, résilié`, detail: "Vous pouvez reprendre un abonnement quand vous voulez.", ton: "calme" };
+      return {
+        titre: `${nom}, résilié`,
+        detail: "Vous pouvez reprendre un abonnement quand vous voulez.",
+        ton: "calme",
+        signe: { genre: "aucun" },
+      };
     case "actif":
       if (abonnement.annulationDemandee && abonnement.periodeFin) {
         return {
           titre: `${nom}, s’arrête le ${jourEnLettres(abonnement.periodeFin)}`,
           detail: "Vous gardez tout jusqu’à cette date.",
           ton: "attention",
+          signe: {
+            genre: "echeance",
+            jour: abonnement.periodeFin.getUTCDate(),
+            mois: MOIS_ABREGES[abonnement.periodeFin.getUTCMonth()],
+          },
         };
       }
       return {
         titre: nom,
-        detail: [prix, abonnement.periodeFin ? `Prochain paiement le ${jourEnLettres(abonnement.periodeFin)}` : null]
-          .filter(Boolean)
-          .join(" · ") || null,
+        // **Deux phrases, chacune son point** — et plus le « · » qui les
+        // collait : ni point médian ni tiret entre deux mots à l'écran, sa
+        // règle du 22 septembre 2026 (`CLAUDE.md` §3), relevée sur la planche
+        // du 26 octobre.
+        detail:
+          [prix, abonnement.periodeFin ? `Prochain paiement le ${jourEnLettres(abonnement.periodeFin)}` : null]
+            .filter(Boolean)
+            .map((phrase) => `${phrase}.`)
+            .join(" ") || null,
         ton: maintenant > (abonnement.periodeFin ?? maintenant) ? "attention" : "calme",
+        signe: { genre: "formule" },
       };
   }
 }
@@ -527,6 +608,22 @@ const MOIS = [
   "octobre",
   "novembre",
   "décembre",
+];
+
+/** Le mois d'un carré d'échéance, « 9 nov. » : trois lettres tiennent sous le chiffre, « novembre » non. */
+const MOIS_ABREGES = [
+  "janv.",
+  "févr.",
+  "mars",
+  "avr.",
+  "mai",
+  "juin",
+  "juil.",
+  "août",
+  "sept.",
+  "oct.",
+  "nov.",
+  "déc.",
 ];
 
 /**

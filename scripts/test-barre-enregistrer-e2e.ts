@@ -67,7 +67,10 @@ async function main() {
   for (const [nom, url, attendre] of [
     ["Ce qui s'imprime", "/reglages/documents/conditions", "text=Durée de validité"],
     ["Mon message au client", "/reglages/documents/message", '[data-atlas="message-client"]'],
-    ["Mon entreprise", "/reglages/identite", "text=Votre régime de TVA"],
+    // La carte de visite plutôt qu'un titre : « Votre régime de TVA » est
+    // devenu « Votre TVA » le 26 octobre 2026, et un repère d'attente doit
+    // viser ce que l'écran EST, pas comment il s'appelait.
+    ["Mon entreprise", "/reglages/identite", '[data-atlas="carte-entreprise"]'],
     ["Mon compte", "/reglages/compte", "text=Mon compte"],
   ] as const) {
     await page.goto(`${BASE}${url}`, { waitUntil: "networkidle" });

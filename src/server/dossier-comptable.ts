@@ -3,7 +3,7 @@ import { logger } from "./logger";
 import { enregistrerObjet, lireObjet, supprimerObjet } from "./storage";
 import { getEntreprise } from "./repositories/entreprises";
 import { liaisonDeLEntreprise } from "./repositories/banque";
-import { ligneAJustifier, lignesDuReleve, type LigneDuReleve } from "./repositories/pour-mon-comptable";
+import { ligneAJustifier, lignesDuReleve, pieceDeLaLigne, type LigneDuReleve } from "./repositories/pour-mon-comptable";
 import { dossierEnCours, rangerDossier } from "./repositories/dossiers-comptables";
 import { composerDossierComptable, type Fichier, type LignePourLeDossier } from "./pdf/dossier-comptable-pdf";
 import type { Ctx } from "./repositories/context";
@@ -21,11 +21,18 @@ import { jourIso } from "@/lib/jour";
 
 export type ResultatArret = { ok: true; id: string } | { ok: false; raison: string };
 
-/** Le fichier d'une pièce, lu dans le stockage. Une pièce disparue n'empêche pas le dossier. */
-async function lire(cle: string | null, nature: Fichier["nature"]): Promise<Fichier | null> {
-  if (!cle) return null;
+/**
+ * Le fichier qui justifie la ligne, lu dans le stockage. Lequel, c'est
+ * `pieceDeLaLigne` qui le dit, pour le dossier comme pour la page du
+ * comptable : deux choix finiraient par poser deux pièces différentes. Un
+ * tableur n'en a pas (il ne se pose pas dans un PDF : la ligne garde sa pièce
+ * réécrite). Une pièce disparue n'empêche pas le dossier.
+ */
+async function lire(l: LigneDuReleve): Promise<Fichier | null> {
+  const original = pieceDeLaLigne(l);
+  if (!original) return null;
   try {
-    return { octets: new Uint8Array(await lireObjet(cle)), nature };
+    return { octets: new Uint8Array(await lireObjet(original.cle)), nature: original.nature === "pdf" ? "pdf" : "image" };
   } catch (err) {
     logger.warn("Une pièce du dossier du comptable est introuvable dans le stockage", {
       erreur: err instanceof Error ? err.message : String(err),
@@ -44,22 +51,16 @@ async function pourLeDossier(l: LigneDuReleve): Promise<LignePourLeDossier> {
           date: l.ticket.dateAchat,
           totalTtc: l.ticket.totalTtc,
           tva: l.ticket.tvaDeductible,
-          photo: await lire(l.ticket.photoCle, "image"),
+          photo: await lire(l),
           lignes: l.ticket.lignesImprimees,
         }
       : l.justification === "facture" && l.factureRecue
-        ? {
-            genre: "facture",
-            societe: l.factureRecue.societe,
-            nom: l.factureRecue.nom,
-            totalTtc: l.factureRecue.totalTtc,
-            // Un tableur ne se pose pas dans un PDF : la ligne garde la pièce
-            // réécrite, et le fichier reste dans Atlas.
-            fichier: l.factureRecue.nature === "tableur" ? null : await lire(l.factureRecue.fichierCle, l.factureRecue.nature === "pdf" ? "pdf" : "image"),
-          }
-        : l.factureEmise
-          ? { genre: "facture-emise", numero: l.factureEmise.numero }
-          : null;
+        ? { genre: "facture", societe: l.factureRecue.societe, nom: l.factureRecue.nom, totalTtc: l.factureRecue.totalTtc, fichier: await lire(l) }
+        : l.justification === "facture_hors_atlas" && l.pieceJointe
+          ? { genre: "facture-hors-atlas", totalTtc: l.pieceJointe.total, fichier: await lire(l) }
+          : l.factureEmise
+            ? { genre: "facture-emise", numero: l.factureEmise.numero }
+            : null;
   return {
     jour: l.jour,
     libelle: l.libelle || (l.contrepartie ?? ""),
@@ -69,6 +70,7 @@ async function pourLeDossier(l: LigneDuReleve): Promise<LignePourLeDossier> {
     piece,
     ticketPerdu: l.justification === "ticket_perdu",
     motif: l.justification === "motif" ? l.motif : null,
+    ecart: l.ecart,
   };
 }
 

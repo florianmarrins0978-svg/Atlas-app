@@ -1,10 +1,12 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { colors } from "@/lib/design-tokens";
+import { colors, surPlein } from "@/lib/design-tokens";
+import ActionBas from "@/components/atlas/reglages/ActionBas";
 import DemanderPreuve from "@/components/atlas/DemanderPreuve";
 import { preuveDejaRecenteAction } from "@/app/reglages/connexion/preuve-actions";
 import { messagePreuveExigee, GESTES_SENSIBLES } from "@/lib/preuve-recente";
+import Picto from "@/components/atlas/reglages/Picto";
 
 /**
  * « Télécharger mes données » — et la vérification d'identité qui le précède.
@@ -68,17 +70,28 @@ export default function BoutonTelecharger({ nomFichier }: { nomFichier: string }
 
   return (
     <>
-      <a
-        ref={lien}
-        href="/api/mes-donnees"
-        download={nomFichier}
-        onClick={auClic}
-        data-atlas="telecharger-mes-donnees"
-        className="atlas-plein inline-block rounded-full px-5 py-3 text-[15px] font-medium"
-        style={{ backgroundColor: colors.plein, color: colors.cream }}
-      >
-        {enCours ? "Un instant…" : "Télécharger mes données"}
-      </a>
+      {/* **La vérification reste HORS de `ActionBas`.** Posée dedans, sa
+          feuille hériterait du plan de la colonne fixe (z-10) et passerait
+          SOUS la barre du bas (z-20) : le bouton « Continuer » serait couvert,
+          et le fichier ne partirait jamais. */}
+      <ActionBas>
+        <a
+          ref={lien}
+          href="/api/mes-donnees"
+          download={nomFichier}
+          onClick={auClic}
+          data-atlas="telecharger-mes-donnees"
+          className="atlas-plein flex min-h-[56px] w-full items-center justify-center gap-2.5 rounded-full px-[22px] text-[17px] font-semibold no-underline"
+          // **`surPlein`, et non `colors.cream`** : sur Nuit et Sylve le vert
+          // `plein` devient clair et la crème devient sombre, le mot se
+          // perdait dans son bouton (`CLAUDE.md` §3, sept chartes dont deux
+          // sombres). `surPlein` est ce qui se pose SUR un aplat, partout.
+          style={{ backgroundColor: colors.plein, color: surPlein }}
+        >
+          <Picto nom="telecharger" />
+          {enCours ? "Un instant…" : "Télécharger mes données"}
+        </a>
+      </ActionBas>
 
       <DemanderPreuve
         ouvert={demande}

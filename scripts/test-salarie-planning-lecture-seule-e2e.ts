@@ -201,9 +201,8 @@ async function main() {
   const MARQUE = `essai-forge-${Date.now()}`;
   await cas("le patron écrit une note depuis son planning — on capture l'appel", async () => {
     await pageP.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
-    // Au repos, rien sous le mois depuis le 15 octobre 2026 (sa réponse « la
-    // semaine ») : la liste s'ouvre par le mot « La semaine ».
-    await pageP.click('[data-atlas="point-semaine"]');
+    // Les sept jours se lisent d\'office sous le mois depuis sa planche du
+    // 25 octobre 2026 : plus de mot « La semaine » à toucher.
     // **On vise l'identifiant, jamais le libellé** : si le patron fait renommer
     // un chantier demain, ce contrôle défend encore quelque chose
     // (`CLAUDE.md` §5 bis). La fiche s'ouvre en touchant le nom de la ligne.
@@ -293,9 +292,8 @@ async function main() {
      */
     await pageS.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
     await pageS.waitForSelector('nav[aria-label="Navigation principale"]', { timeout: 30_000 });
-    // Au repos, rien sous le mois depuis le 15 octobre 2026 (sa réponse « la
-    // semaine ») : la liste s'ouvre par le mot « La semaine ».
-    await pageS.click('[data-atlas="point-semaine"]');
+    // Les sept jours se lisent d\'office sous le mois depuis sa planche du
+    // 25 octobre 2026 : plus de mot « La semaine » à toucher.
     // On DÉPLIE la journée : les gestes d'écriture vivent dans la fiche du
     // jour, pas sur le calendrier. Sans ce geste, l'absence ne prouverait rien
     // — c'est un contrôle qui mesurerait zéro (`CLAUDE.md` §5).
@@ -357,7 +355,6 @@ async function main() {
 
   await pageS.screenshot({ path: `${CAPTURES}/salarie.png`, fullPage: true });
   await pageP.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
-  await pageP.click('[data-atlas="point-semaine"]').catch(() => undefined);
   await pageP
     .locator(`[data-chantier="${chantier.id}"] [data-atlas="nom-planifie"]`)
     .click()

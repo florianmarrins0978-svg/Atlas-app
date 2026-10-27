@@ -42,12 +42,17 @@ import assert from "node:assert/strict";
 import { existsSync, statSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { Pool } from "pg";
+import { poserLaCleDeLEspace } from "./secret-de-l-espace";
 // **Import DYNAMIQUE, et ce n'est pas une coquetterie.** `secret-au-repos`
 // passe par `getEnv()`, qui exige `DATABASE_URL`. Importé en tête, il fait
 // tomber le script AVANT qu'il ait pu dire ce qui manque — et le message
 // « Variable d'environnement obligatoire manquante » accuserait la sauvegarde
 // alors que c'est l'outil qui n'est pas prêt.
 type ModuleSecret = typeof import("../src/server/agenda/secret-au-repos");
+
+// La clé du serveur de l'espace, pas celle du terminal (audit E1) : c'est
+// sous elle que ses secrets sont chiffrés depuis le 25 octobre 2026.
+poserLaCleDeLEspace();
 
 const FICHIER = process.argv.find((a) => a.endsWith(".sql") || a.endsWith(".dump"));
 const SUFFIXE_ESSAI = "_restauration_essai";

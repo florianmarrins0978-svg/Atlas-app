@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import BottomSheet from "@/components/atlas/BottomSheet";
-import { colors, font, texteSituation } from "@/lib/design-tokens";
+import { colors, font } from "@/lib/design-tokens";
 import {
   NATURES_DOCUMENT_VEHICULE,
   NOM_DOCUMENT_VEHICULE,
@@ -11,6 +11,7 @@ import {
   type NatureDocumentVehicule,
 } from "@/lib/vehicules";
 import { ajouterDocumentVehiculeAction, classerDocumentVehiculeAction } from "./actions";
+import Picto, { type NomPicto } from "@/components/atlas/reglages/Picto";
 
 /** Ce que la feuille annonce : QUOI ajouter, avant le choix de la source. */
 export type QuoiAjouter = { titre: string; sous: string };
@@ -40,6 +41,9 @@ export const AJOUTER_LE_PROCES_VERBAL: QuoiAjouter = {
  *
  * **Quand Atlas ne reconnaît pas le papier, il DEMANDE** ce que c'est, dans la
  * même feuille ; il ne le range jamais au hasard.
+ *
+ * **Habillée comme ses voisines** (planche du 26 octobre 2026) : le titre en
+ * serif, les trois sources dans une plage avec leur dessin doré.
  */
 export default function AjoutDocument({
   ouverte,
@@ -117,7 +121,21 @@ export default function AjoutDocument({
     />
   );
 
-  const ligne = "block w-full border-b py-4 text-left text-[16px] disabled:opacity-50";
+  const plage = (enfants: React.ReactNode) => (
+    <div className="overflow-hidden rounded-[6px] px-[18px]" style={{ backgroundColor: colors.card }}>
+      {enfants}
+    </div>
+  );
+  const titre = (texte: string) => (
+    <p className="mt-1.5 text-[26px] leading-[1.15]" style={{ fontFamily: font.display, color: colors.ink }}>
+      {texte}
+    </p>
+  );
+  const sous = (texte: string) => (
+    <p className="mb-3.5 mt-2 text-[15px] leading-[1.45]" style={{ color: colors.inkSoft }}>
+      {texte}
+    </p>
+  );
 
   return (
     <BottomSheet open={ouverte} onBackdropClick={fermer}>
@@ -127,57 +145,93 @@ export default function AjoutDocument({
         {champ(fichiers, "application/pdf,image/jpeg,image/png")}
 
         {enCours ? (
-          <p className="py-8 text-center text-[15px]" style={{ color: colors.inkSoft }} data-atlas="lecture-en-cours">
+          <p
+            className="flex flex-col items-center pb-9 pt-7 text-center text-[16px]"
+            style={{ color: colors.inkSoft }}
+            data-atlas="lecture-en-cours"
+          >
+            <span className="mb-3 motion-safe:animate-spin [animation-duration:1.4s]" style={{ color: colors.or }}>
+              <Picto nom="etincelle" taille={34} />
+            </span>
             Atlas lit le document
           </p>
         ) : aClasser ? (
           <>
-            <p style={{ fontFamily: font.display, fontSize: 22, lineHeight: 1.2, color: colors.ink }}>
-              Quel est ce document ?
-            </p>
-            <p className={`mb-2 mt-1 ${texteSituation}`} style={{ color: colors.inkSoft }}>
-              Atlas ne l’a pas reconnu. Il est rangé, les cases se remplissent à la main.
-            </p>
-            {NATURES_DOCUMENT_VEHICULE.map((n) => (
-              <button
-                key={n}
-                type="button"
-                data-atlas={`classer-${n}`}
-                onClick={() => classer(n)}
-                className={ligne}
-                style={{ borderColor: colors.line, color: colors.ink }}
-              >
-                {NOM_DOCUMENT_VEHICULE[n]}
-              </button>
-            ))}
+            {titre("Quel est ce document ?")}
+            {sous("Atlas ne l’a pas reconnu. Il est rangé, les cases se remplissent à la main.")}
+            {plage(
+              NATURES_DOCUMENT_VEHICULE.map((n) => (
+                <LigneDeFeuille key={n} repere={`classer-${n}`} onClick={() => classer(n)}>
+                  {NOM_DOCUMENT_VEHICULE[n]}
+                </LigneDeFeuille>
+              ))
+            )}
           </>
         ) : (
           <>
-            <p style={{ fontFamily: font.display, fontSize: 22, lineHeight: 1.2, color: colors.ink }}>{quoi.titre}</p>
-            <p className={`mb-2 mt-1 ${texteSituation}`} style={{ color: colors.inkSoft }}>
-              {quoi.sous}
-            </p>
-            <button type="button" onClick={() => phototheque.current?.click()} className={ligne} style={{ borderColor: colors.line, color: colors.ink }}>
-              Photothèque
-            </button>
-            <button type="button" onClick={() => appareil.current?.click()} className={ligne} style={{ borderColor: colors.line, color: colors.ink }}>
-              Prendre une photo
-            </button>
-            <button type="button" onClick={() => fichiers.current?.click()} className={ligne} style={{ borderColor: colors.line, color: colors.ink }}>
-              Choisir un fichier
-            </button>
-            <button type="button" onClick={fermer} className="block w-full py-4 text-center text-[16px]" style={{ color: colors.inkSoft }}>
+            {titre(quoi.titre)}
+            {sous(quoi.sous)}
+            {plage(
+              <>
+                <LigneDeFeuille dessin="photo" onClick={() => phototheque.current?.click()}>
+                  Photothèque
+                </LigneDeFeuille>
+                <LigneDeFeuille dessin="scanner" onClick={() => appareil.current?.click()}>
+                  Prendre une photo
+                </LigneDeFeuille>
+                <LigneDeFeuille dessin="document" onClick={() => fichiers.current?.click()}>
+                  Choisir un fichier
+                </LigneDeFeuille>
+              </>
+            )}
+            <button
+              type="button"
+              onClick={fermer}
+              className="mt-2 flex min-h-[48px] w-full items-center justify-center rounded-full text-[16px] font-semibold"
+              style={{ color: colors.inkSoft }}
+            >
               Annuler
             </button>
           </>
         )}
 
         {refus && (
-          <p className={`mt-3 ${texteSituation}`} style={{ color: colors.alert }} data-atlas="refus-document-vehicule">
+          <p className="mt-3 text-[14px] leading-[1.5]" style={{ color: colors.alert }} data-atlas="refus-document-vehicule">
             {refus}
           </p>
         )}
       </div>
     </BottomSheet>
+  );
+}
+
+/** Une source ou un genre de papier : une ligne de la plage, 60 px sous le doigt. */
+function LigneDeFeuille({
+  dessin,
+  repere,
+  onClick,
+  children,
+}: {
+  dessin?: NomPicto;
+  repere?: string;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      data-atlas={repere}
+      onClick={onClick}
+      className="relative flex min-h-[60px] w-full items-center gap-3.5 px-0.5 text-left text-[17px] disabled:opacity-50"
+      style={{ color: colors.ink }}
+    >
+      <span aria-hidden className="absolute inset-x-0 -top-px h-px" style={{ backgroundColor: colors.line }} />
+      {dessin && (
+        <span style={{ color: colors.or }}>
+          <Picto nom={dessin} />
+        </span>
+      )}
+      {children}
+    </button>
   );
 }

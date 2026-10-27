@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
  * Le code se demande normalement sur la porte, juste après « Créer mon
  * compte ». Mais il est en rendez-vous, il ferme l'application, il revient le
  * soir : la session est là, le compte existe, et le code n'a jamais été
- * entré. `GardeVerificationEmail` l'envoie ici, et la connexion aussi
+ * entré. `garderLAdresseVerifiee` l'envoie ici, et la connexion aussi
  * (`accueilPourEmail`). La case est la même qu'à la porte — c'est la même
  * pièce, `SaisieDuCode`.
  *

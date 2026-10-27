@@ -365,6 +365,68 @@ const HORS_CHARTE: Array<{
     seulement: /data-outil=/,
     pourquoi: "tuile d'outil du dessin : une icône sur un mot, rangée en grille",
   },
+  {
+    // **LES CARTES DU RÔLE** (Réglages soignés, planche du 26 octobre 2026,
+    // `appli/soignee/reglages-equipe.html`) : trois cartes de 80 px sur une
+    // ligne, la coche ronde au-dessus du mot, Patron à part. Ce sont des choix
+    // qu'on lit côte à côte, comme les cartes de la TVA : en capsule, « Facturation »
+    // toucherait les bords arrondis d'une carte de 98 px. Le bouton qui AGIT,
+    // « Créer le compte », garde sa capsule.
+    motif: /^src[/\\]app[/\\]reglages[/\\]equipe[/\\]ChoixRole\.tsx$/,
+    seulement: /data-atlas=\{`carte-role-/,
+    pourquoi: "cartes de choix du rôle, rangées côte à côte (planche du 26 octobre 2026)",
+  },
+  {
+    // **LA PLAGE DE L'AGENDA À RELIER** (même planche) : seul, la phrase qui
+    // renvoie à l'agenda devient une plage qui se touche tout entière. C'est
+    // une plage qu'on parcourt, à 6 px comme ses voisines, et non un geste.
+    motif: /^src[/\\]app[/\\]reglages[/\\]AbsencesEquipe\.tsx$/,
+    seulement: /data-atlas="agenda-a-relier"/,
+    pourquoi: "plage qui se touche tout entière, à 6 px comme les autres plages",
+  },
+  {
+    // **LA CARTE DE CHOIX DES RÉGLAGES SOIGNÉS** (`CarteChoix`, planches du 25
+    // et du 26 octobre 2026) : franchise ou assujettie, la police d'un devis.
+    // Deux choix qu'on lit côte à côte, chacun avec sa pastille, un titre et
+    // une ligne dessous : en capsule, deux lignes dans une demi-largeur font
+    // un ovale. Le bouton qui AGIT sur ces écrans garde sa capsule.
+    motif: /^src[/\\]components[/\\]atlas[/\\]reglages[/\\]CarteChoix\.tsx$/,
+    pourquoi: "carte de choix lue côte à côte, la forme des cartes du rôle et de la TVA",
+  },
+  {
+    // **LES CARTES DES FORMULES** (Abonnement soigné, même série) : une carte
+    // par formule, qui se touche pour se choisir et porte son prix et ce qui
+    // la distingue. Le geste, « S'abonner à … », est la capsule du bas.
+    motif: /^src[/\\]app[/\\]reglages[/\\]abonnement[/\\]AbonnementClient\.tsx$/,
+    seulement: /data-atlas=\{`formule-/,
+    pourquoi: "cartes des formules qu'on choisit avant d'appuyer sur le bouton du bas",
+  },
+  {
+    // **LA FORMULE MOINS CHÈRE, DANS « AVANT DE PARTIR »** : une plage verte
+    // qui porte le prix et la phrase, et qu'on touche tout entière. Une plage,
+    // pas un geste en capsule.
+    motif: /^src[/\\]app[/\\]reglages[/\\]abonnement[/\\]AvantDePartir\.tsx$/,
+    seulement: /data-atlas="passer-a-moins-chere"/,
+    pourquoi: "plage verte de la formule moins chère, qu'on touche tout entière",
+  },
+  {
+    // **L'APERÇU DU PAPIER, DANS « SUR VOS PAPIERS »** (Mon entreprise soignée) :
+    // l'en-tête du devis dessiné en miniature, qu'on touche pour ouvrir
+    // l'exemple. C'est une feuille, pas un bouton.
+    motif: /^src[/\\]app[/\\]reglages[/\\]identite[/\\]IdentiteClient\.tsx$/,
+    seulement: /data-atlas="apercu-du-papier"/,
+    pourquoi: "miniature du papier du devis, qu'on touche pour ouvrir l'exemple",
+  },
+  {
+    // **LES HUIT CHARTES EN PETITS ÉCRANS** (Réglages soignés, planche du
+    // 26 octobre 2026, `appli/soignee/reglages-apparence.html`) : deux cartes
+    // par rangée, chacune portant un petit écran à ses couleurs, son nom, sa
+    // phrase. Une carte de choix qu'on regarde avant de la prendre, comme les
+    // cartes du rôle : en capsule, ses coins rogneraient le petit écran.
+    motif: /^src[/\\]app[/\\]reglages[/\\]apparence[/\\]ApparenceClient\.tsx$/,
+    seulement: /data-charte=\{charte\.nom\}/,
+    pourquoi: "cartes des chartes, rangées deux par deux avec leur petit écran (planche du 26 octobre 2026)",
+  },
 ];
 
 /**

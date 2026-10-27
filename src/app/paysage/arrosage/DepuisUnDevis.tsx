@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import { colors, font, libelleCaps, surPlein } from "@/lib/design-tokens";
+import Icone from "./Icones";
 import { photoDe } from "@/lib/arrosage/photos";
 import { quantiteDeLigne } from "@/lib/arrosage/postes";
 import { messageDuComplement, montageDuDevis, reconnaitreLeDevis, type PieceDuDevis } from "@/lib/arrosage/devis-du-plan";
@@ -121,9 +122,12 @@ export default function DepuisUnDevis() {
           type="button"
           onClick={() => setOuvert(true)}
           data-atlas="porte-devis"
-          className="rounded-full border-0 bg-transparent p-0 text-left text-[14.5px] underline"
+          className="inline-flex min-h-[48px] items-center gap-[6px] rounded-full border-0 bg-transparent px-1 text-left text-[16px] font-semibold"
           style={{ color: colors.ink }}
         >
+          <span style={{ color: colors.or }}>
+            <Icone nom="document" taille={20} />
+          </span>
           J’ai déjà un devis fournisseur
         </button>
         {champ(photo, "image/jpeg,image/png", "environment")}

@@ -19,6 +19,8 @@ import {
   marquerSession,
   instantDAuthentification,
   sessionCoupee,
+  sessionTropAncienne,
+  DUREE_MAXIMALE_SESSION_JOURS,
 } from "../src/lib/identite-session";
 
 let echecs = 0;
@@ -141,6 +143,19 @@ function main() {
       true,
       "LA SESSION VOLÉE EST REVENUE : la réémission l'a rajeunie"
     );
+  });
+
+  essai("une session meurt trente jours après la connexion, même servie chaque jour (sa décision du 26 octobre 2026)", () => {
+    const connexion = Date.UTC(2026, 9, 1) / 1000;
+    const jour = 24 * 3600 * 1000;
+    assert.equal(DUREE_MAXIMALE_SESSION_JOURS, 30);
+    assert.equal(sessionTropAncienne(connexion, new Date(connexion * 1000 + 29 * jour)), false);
+    assert.equal(sessionTropAncienne(connexion, new Date(connexion * 1000 + 31 * jour)), true, "un cookie copié vivrait au delà de trente jours");
+  });
+
+  essai("un jeton sans instant de connexion est tenu pour trop ancien : il se reconnecte une fois", () => {
+    assert.equal(sessionTropAncienne(undefined, new Date()), true);
+    assert.equal(sessionTropAncienne("1700000000", new Date()), true);
   });
 
   console.log("");

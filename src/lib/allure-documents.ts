@@ -164,6 +164,49 @@ export type Allure = {
 };
 
 /**
+ * Une teinte proposée d'un doigt, le nom qu'on lit au-dessus du nuancier, et
+ * celui que le sommaire glisse dans sa phrase quand le nom entier y serait
+ * trop long. Sans `court`, le sommaire prend le nom.
+ */
+export type TeinteProposee = { teinte: string; nom: string; court?: string };
+
+/**
+ * LES RACCOURCIS DU NUANCIER, NOMMÉS — le premier est toujours le défaut.
+ *
+ * **Ils vivaient dans l'écran, en tableaux recopiés à la main.** Depuis la
+ * planche des Réglages soignés (26 octobre 2026), le nom de la teinte prise
+ * s'écrit au-dessus du nuancier, et le sommaire de « Devis & factures » le
+ * redit (« Votre logo, le doré ») : deux lecteurs du même nom, donc une seule
+ * liste. **La première vient du défaut, jamais d'un hexa retapé**, sans quoi le
+ * raccourci « aujourd'hui » finirait par désigner une couleur que ses documents
+ * ne portent plus.
+ */
+export const TEINTES_FOND: readonly TeinteProposee[] = [
+  { teinte: ALLURE_PAR_DEFAUT.fond, nom: "Celui d'aujourd'hui" },
+  { teinte: "#ffffff", nom: "Blanc" },
+  { teinte: "#ece9e1", nom: "Crème" },
+  { teinte: "#e8e8e6", nom: "Gris clair" },
+];
+
+/**
+ * **Le doré EST le défaut de ses documents** (`couleursDocument.accent`). Sa
+ * remarque du 7 septembre 2026, *« il manque le doré »*, visait une planche qui
+ * l'avait perdu en recopiant les pastilles à la main.
+ */
+export const TEINTES_ACCENT: readonly TeinteProposee[] = [
+  { teinte: ALLURE_PAR_DEFAUT.accent, nom: "Celui d'aujourd'hui, le doré", court: "le doré" },
+  { teinte: "#2f3b2f", nom: "Vert pin" },
+  { teinte: "#6e2433", nom: "Bordeaux" },
+  { teinte: "#1c1c1a", nom: "Noir" },
+];
+
+/** La teinte parmi ses raccourcis, ou `null` : il l'a prise au nuancier libre. */
+export function teinteProposee(teintes: readonly TeinteProposee[], teinte: string): TeinteProposee | null {
+  const voulue = couleurNettoyee(teinte);
+  return teintes.find((t) => t.teinte === voulue) ?? null;
+}
+
+/**
  * CE QUE DEVIENT UNE POLICE RETIRÉE — la plus proche, jamais le défaut.
  *
  * **Sans cette table, retirer quatre polices le 7 septembre 2026 aurait

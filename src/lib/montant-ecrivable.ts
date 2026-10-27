@@ -108,3 +108,19 @@ function verifierNombre(n: number): MontantVerifie {
   if (arrondi !== n) return { ok: false, raison: "Un euro n'a que deux décimales." };
   return { ok: true, montant: arrondi.toFixed(2) };
 }
+
+/**
+ * **Un nombre de ligne (quantité, prix unitaire, montant) qu'une requête
+ * forgée ne peut pas fausser** — audit du 26 octobre 2026, scénario de
+ * l'argent.
+ *
+ * Plus large que `montantEcrivable`, et c'est voulu : l'écran du devis écrit
+ * « 0,125 » m³ et la base l'arrondit, comme toujours. Ce qui est refusé, c'est
+ * ce qu'aucun écran n'envoie : un nombre négatif (une ligne qui retirerait de
+ * l'argent au devis sans passer par la remise), illisible, ou au delà de ce que
+ * la colonne peut tenir (une erreur 500 à la place d'un refus).
+ */
+export function nombreDeLigneAdmis(brut: string): boolean {
+  const n = Number(String(brut).trim().replace(/[\s €]/g, "").replace(",", "."));
+  return String(brut).trim() !== "" && Number.isFinite(n) && n >= 0 && n <= MONTANT_MAXIMAL;
+}

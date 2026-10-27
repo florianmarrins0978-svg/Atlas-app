@@ -82,6 +82,7 @@ async function main() {
   await test("planifierChantier renseigne date_planifiee", async () => {
     const c = await chantiersRepo.creerChantier(A, { nom: "Chantier à planifier" });
     const c2 = await chantiersRepo.planifierChantier(A, c.id, "2026-09-01");
+    assert.ok(c2, "le chantier ne s'est pas planifié");
     assert.equal(c2.datePlanifiee, "2026-09-01");
   });
 

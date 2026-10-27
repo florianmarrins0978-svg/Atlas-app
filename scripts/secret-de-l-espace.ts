@@ -155,56 +155,35 @@ export async function assurerLeSecretDeLEspace(): Promise<{ etat: "deja-la" | "c
   }
 }
 
+/**
+ * **Ce que le serveur emploie, pour un script lancé à la main dans l'espace.**
+ * Le terminal garde l'ancienne valeur de `docker-compose.yml` : un script qui
+ * dépend d'`AUTH_SECRET` (`empreinte-email.ts`, `eprouver-restauration.ts`)
+ * rendrait sinon une empreinte ou un verdict faux. Hors espace (la CI, une
+ * suite), aucun fichier : la valeur de l'environnement reste.
+ */
+export function poserLaCleDeLEspace(): void {
+  const cle = lireLeSecretDeLEspace();
+  if (cle) process.env.AUTH_SECRET = cle;
+}
+
 /** La clé propre à l'espace, si elle existe. Lue par `banc.mjs` pour lancer le serveur. */
 export function lireLeSecretDeLEspace(): string | null {
   const fichier = path.join(dossierDesSecrets(), "auth-secret");
   return existsSync(fichier) ? readFileSync(fichier, "utf8").trim() || null : null;
 }
 
-/**
- * Le jeton du planificateur externe (`CRON_SECRET`), lui aussi écrit en clair
- * dans `.devcontainer/docker-compose.yml` — audit du 25 octobre 2026, même
- * faille que l'`AUTH_SECRET` ci-dessus (E1) : public dans un dépôt public, sur
- * un port public, il ouvre la purge planifiée
- * (`src/app/api/cron/purge-fichiers/route.ts`) à qui lit GitHub.
- *
- * **Le remède est plus simple, et c'est délibéré.** Rien n'est chiffré SOUS ce
- * jeton — la route le compare seulement en temps constant — donc aucune
- * rotation à orchestrer et aucune base à joindre : un fichier absent se crée,
- * un fichier présent ne se touche pas. La re-création de `AUTH_SECRET`
- * ci-dessus a besoin de la base pour re-chiffrer ; celle-ci n'en a jamais
- * besoin, et ne doit donc jamais attendre qu'elle soit debout.
- */
-export function assurerLeCronSecretDeLEspace(): string {
-  const fichier = path.join(dossierDesSecrets(), "cron-secret");
-  const existant = existsSync(fichier) ? readFileSync(fichier, "utf8").trim() : "";
-  if (existant) return existant;
-  const valeur = randomBytes(32).toString("base64url");
-  mkdirSync(dossierDesSecrets(), { recursive: true, mode: 0o700 });
-  writeFileSync(fichier, valeur, { mode: 0o600 });
-  return valeur;
-}
-
 if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(__filename)) {
-  if (process.argv.includes("--cron")) {
-    // Ni base ni rotation : rien ne peut échouer ici que l'écriture du
-    // fichier lui-même, et une panne de disque arrête `banc.mjs` de toute
-    // façon. Seul le CHEMIN sort en sortie standard, jamais le jeton.
-    assurerLeCronSecretDeLEspace();
-    console.log(path.join(dossierDesSecrets(), "cron-secret"));
-    process.exit(0);
-  } else {
-    assurerLeSecretDeLEspace().then((r) => {
-      // `--chemin` : `banc.mjs` lit la sortie standard, qui ne porte alors QUE le
-      // chemin du fichier (jamais la clé) ; les phrases vont sur la sortie d'erreur.
-      const dire = process.argv.includes("--chemin") ? console.error : console.log;
-      if (process.argv.includes("--chemin") && r.etat !== "echec") console.log(path.join(dossierDesSecrets(), "auth-secret"));
-      if (r.etat === "cree") {
-        dire(`Clé de l'espace créée ; ${r.bilan?.rechiffres ?? 0} secret(s) re-chiffré(s), ${r.bilan?.illisibles ?? 0} illisible(s) laissé(s) tel(s) quel(s).`);
-      } else if (r.etat === "echec") {
-        console.error(`Clé de l'espace NON créée : ${r.raison}. L'ancienne clé continue de servir ; nouvel essai au prochain allumage.`);
-      }
-      process.exit(r.etat === "echec" ? 1 : 0);
-    });
-  }
+  assurerLeSecretDeLEspace().then((r) => {
+    // `--chemin` : `banc.mjs` lit la sortie standard, qui ne porte alors QUE le
+    // chemin du fichier (jamais la clé) ; les phrases vont sur la sortie d'erreur.
+    const dire = process.argv.includes("--chemin") ? console.error : console.log;
+    if (process.argv.includes("--chemin") && r.etat !== "echec") console.log(path.join(dossierDesSecrets(), "auth-secret"));
+    if (r.etat === "cree") {
+      dire(`Clé de l'espace créée ; ${r.bilan?.rechiffres ?? 0} secret(s) re-chiffré(s), ${r.bilan?.illisibles ?? 0} illisible(s) laissé(s) tel(s) quel(s).`);
+    } else if (r.etat === "echec") {
+      console.error(`Clé de l'espace NON créée : ${r.raison}. L'ancienne clé continue de servir ; nouvel essai au prochain allumage.`);
+    }
+    process.exit(r.etat === "echec" ? 1 : 0);
+  });
 }

@@ -6,7 +6,7 @@ import { withEntreprise } from "../src/server/db/with-entreprise";
 import * as entreprisesRepo from "../src/server/repositories/entreprises";
 import { ajouterMouvements, type MouvementEnBase } from "../src/server/repositories/banque";
 import { creerAchatTva } from "../src/server/repositories/achats-tva";
-import { delier, lignesDuReleve, marquerTicketPerdu, relierTicket } from "../src/server/repositories/pour-mon-comptable";
+import { delier, joindreFactureHorsAtlas, lignesDuReleve, marquerTicketPerdu, relierTicket } from "../src/server/repositories/pour-mon-comptable";
 import { rangerDossier } from "../src/server/repositories/dossiers-comptables";
 import {
   creerLienComptable,
@@ -190,6 +190,27 @@ async function main() {
     assert.deepEqual(await poserVerdictParJeton(jetonB, id("POSTE"), "rejete", "x", MAINTENANT), { ok: false, raison: "Cette ligne n'est pas dans le dossier." });
     assert.equal(await pieceParJeton(jetonB, id("GASOIL"), MAINTENANT), null);
     assert.equal((await verificationsDesDossiers(autre))[0].rejets.length, 0);
+  });
+
+  await test("une facture faite hors d'Atlas se lit et se sert par le jeton, son écart avec", async () => {
+    // Un virement reçu de 864 € qui paie la moitié d'une facture de 1 728 €
+    // faite hors d'Atlas (migration 0150) : le comptable doit la voir, l'ouvrir,
+    // et lire qu'elle n'est payée qu'en partie.
+    await ajouterMouvements(ctx, [{ cle: "DURAND", date: "2026-01-15", montant: "864.00", sens: "entree", contrepartie: null, libelle: "VIR DURAND" }]);
+    const recu = (await lignesDuReleve(ctx, "2026-01-15", "2026-01-15")).find((l) => l.libelle === "VIR DURAND")!;
+    const joint = await joindreFactureHorsAtlas(ctx, recu.id, { cle: "entreprises/x/hors-atlas/durand.jpg", nature: "photo", total: "1728.00" }, true);
+    assert.ok(joint.ok, JSON.stringify(joint));
+    const d = (await dossierParJeton(jeton, MAINTENANT))!;
+    const l = d.lignes.find((x) => x.id === recu.id)!;
+    assert.equal(l.justification, "facture_hors_atlas");
+    assert.deepEqual(l.pieceJointe, { cle: "entreprises/x/hors-atlas/durand.jpg", nature: "photo", total: "1728.00" });
+    assert.deepEqual(l.ecart, { genre: "ecart", ligne: 86400, piece: 172800 });
+    assert.deepEqual(await pieceParJeton(jeton, recu.id, MAINTENANT), { cle: "entreprises/x/hors-atlas/durand.jpg", nature: "photo" });
+    // Le lien d'une autre entreprise n'atteint ni la ligne, ni son fichier.
+    const [sien] = await verificationsDesDossiers(autre);
+    const lienB = await creerLienComptable(autre, sien.dossierId, MAINTENANT);
+    assert.ok(lienB.ok);
+    assert.equal(await pieceParJeton((lienB as { jeton: string }).jeton, recu.id, MAINTENANT), null);
   });
 
   await test("un lien ne se réécrit pas : la base refuse l'UPDATE", async () => {

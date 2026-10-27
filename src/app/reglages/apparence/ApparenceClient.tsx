@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { colors, font, libelleCaps, texteSituation } from "@/lib/design-tokens";
+import { colors, couleursDocument, font, voile } from "@/lib/design-tokens";
 import {
   CHARTES,
   charte,
@@ -10,6 +10,10 @@ import {
   type Charte,
   type NomCharte,
 } from "@/lib/chartes";
+import CocheRonde from "@/components/atlas/reglages/CocheRonde";
+import Paquet from "@/components/atlas/reglages/Paquet";
+import PlageTon from "@/components/atlas/reglages/PlageTon";
+import Trace from "@/components/atlas/reglages/Trace";
 import { choisirCharteAction } from "./actions";
 
 /**
@@ -29,6 +33,12 @@ import { choisirCharteAction } from "./actions";
  * **Le mode sombre est DANS la liste**, il n'est pas à côté. Nuit et Sylve sont
  * sombres ; deux réglages séparés se seraient contredits dès qu'on aurait
  * choisi « Nuit » avec le sombre éteint.
+ *
+ * **Huit petits écrans en deux colonnes — sa planche soignée du 26 octobre
+ * 2026** (`appli/soignee/reglages-apparence.html`, vue Proposé). Le principe
+ * ne change pas ; la vignette de 46 px était seulement trop petite pour qu'on
+ * y voie un écran. Les noms, les phrases et l'ordre sont ceux de
+ * `src/lib/chartes.ts`, mot pour mot.
  */
 export default function ApparenceClient({ initiale }: { initiale: NomCharte }) {
   const [choisie, setChoisie] = useState<NomCharte>(initiale);
@@ -117,13 +127,9 @@ export default function ApparenceClient({ initiale }: { initiale: NomCharte }) {
   return (
     <div className="pb-24">
       {refus && (
-        <p
-          role="alert"
-          className={`mx-[26px] mt-4 rounded-[4px] px-[15px] py-3 ${texteSituation}`}
-          style={{ backgroundColor: colors.card, borderLeft: `3px solid ${colors.alert}`, color: colors.alert }}
-        >
-          {refus}
-        </p>
+        <div role="alert" className="mx-[22px] mt-4">
+          <PlageTon ton="rouge">{refus}</PlageTon>
+        </div>
       )}
 
       {/* **Une ligne, et elle dit les deux choses qui comptent** — sa validation
@@ -132,31 +138,40 @@ export default function ApparenceClient({ initiale }: { initiale: NomCharte }) {
           ne bougent pas. « Tout de suite » se VOIT au premier appui ; « elle
           n'appartient qu'à vous » ne veut rien dire pour un artisan seul. Ce
           qu'il ne peut PAS deviner, en revanche, c'est que ses devis gardent
-          leur allure — cela reste (`CLAUDE.md` §3, le moins de mots possible). */}
-      <p className={`mx-[26px] mt-[26px] ${texteSituation}`} style={{ color: colors.inkSoft }}>
-        Change <b style={{ color: colors.ink, fontWeight: 500 }}>toute l&apos;application</b>. Vos devis et vos
-        factures ne bougent pas.
-      </p>
+          leur allure — cela reste (`CLAUDE.md` §3, le moins de mots possible).
 
-      <section className="mx-[26px] mt-[30px] border-t pt-[18px]" style={{ borderColor: colors.line }}>
-        <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
-          Votre charte
+          **La feuille blanche à côté le montre** (sa planche soignée) : elle
+          reste blanche quand tout le reste change de couleur, et c'est
+          exactement ce que dit la phrase. */}
+      <div
+        className="mx-[22px] mt-[18px] flex items-center gap-4 rounded-[6px] py-3.5 pl-[18px] pr-4"
+        style={{ backgroundColor: colors.card }}
+      >
+        <p className="min-w-0 flex-1 text-[15.5px] leading-[1.45]" style={{ color: colors.inkSoft }}>
+          Change <b style={{ color: colors.ink, fontWeight: 600 }}>toute l&apos;application</b>. Vos devis et vos
+          factures ne bougent pas.
         </p>
-        {CHARTES.map((c) => (
-          <LigneCharte
-            key={c.nom}
-            charte={c}
-            prise={choisie === c.nom}
-            enCours={enCours}
-            onChoisir={() => choisir(c.nom)}
-          />
-        ))}
-      </section>
+        <FeuilleDeDevis />
+      </div>
+
+      <Paquet titre="Votre charte" sansPlage>
+        <div className="grid grid-cols-2 gap-2.5">
+          {CHARTES.map((c) => (
+            <CarteCharte
+              key={c.nom}
+              charte={c}
+              prise={choisie === c.nom}
+              enCours={enCours}
+              onChoisir={() => choisir(c.nom)}
+            />
+          ))}
+        </div>
+      </Paquet>
 
       {/* **RETIRÉ le 9 septembre 2026 : le paragraphe qui redisait « sombre ».**
           Il nommait Nuit et Sylve et prévenait qu'elles se lisent mal au soleil.
-          Or l'étiquette « SOMBRE » est déjà posée à côté de ces deux-là, et leur
-          vignette le montre — c'est trois lignes pour répéter ce que l'écran
+          Or l'étiquette « Sombre » est déjà posée à côté de ces deux-là, et leur
+          petit écran le montre — c'est trois lignes pour répéter ce que l'écran
           affiche deux centimètres plus haut. Un écran ne s'explique pas, il se
           montre. Le risque réel n'a pas disparu pour autant : la lisibilité de
           chaque charte reste tenue par `test-chartes-lisibles.ts`. */}
@@ -165,13 +180,49 @@ export default function ApparenceClient({ initiale }: { initiale: NomCharte }) {
 }
 
 /**
+ * Le devis en miniature : du papier, quelle que soit la charte.
+ *
+ * **Les couleurs du DOCUMENT, pas celles de l'écran** (`couleursDocument`) :
+ * c'est la pièce que le client reçoit, et elle garde l'allure d'Origine. Sur
+ * Nuit, la plage devient noire autour d'elle ; la feuille, non.
+ */
+function FeuilleDeDevis() {
+  const ligne = (largeur: string, couleur: string, hauteur = 3) => (
+    <span className="block flex-none rounded-full" style={{ width: largeur, height: hauteur, backgroundColor: couleur }} />
+  );
+  return (
+    <span
+      aria-hidden="true"
+      className="flex h-[60px] w-[46px] flex-none flex-col gap-1 rounded-[3px] px-1.5 py-[7px]"
+      style={{
+        backgroundColor: couleursDocument.papier,
+        boxShadow: `0 1px 2px ${voile(couleursDocument.encre, 0.14)}, inset 0 0 0 1px ${voile(couleursDocument.encre, 0.06)}`,
+      }}
+    >
+      {ligne("70%", voile(couleursDocument.encre, 0.6), 4)}
+      {ligne("40%", couleursDocument.accent)}
+      <span className="flex-1" />
+      {ligne("100%", voile(couleursDocument.encre, 0.16))}
+      {ligne("55%", voile(couleursDocument.encre, 0.16))}
+      {ligne("100%", voile(couleursDocument.encre, 0.16))}
+    </span>
+  );
+}
+
+/**
  * Une charte, montrée dans ses propres couleurs.
  *
- * **La pastille n'emploie PAS `colors.*`** — elle emploie les jetons de la
- * charte qu'elle représente. C'est la seule façon de la voir avant de la
- * choisir, et c'est le principe de la planche : montrer, pas décrire.
+ * **Le petit écran pose les variables de SA charte** (`variablesCharte`) et ses
+ * dessins lisent `colors.*` à l'intérieur : la carte, le titre, le bouton et
+ * la barre prennent ainsi les valeurs de `src/lib/chartes.ts`, jamais celles
+ * de la charte prise, et rien n'est recopié ici. C'est la seule façon de voir
+ * une charte avant de la choisir — le principe de la planche : montrer, pas
+ * décrire.
+ *
+ * **Le nom, la pastille et la phrase restent dans la charte prise** : ce sont
+ * des mots qu'il lit, pas une couleur qu'il essaie.
  */
-function LigneCharte({
+function CarteCharte({
   charte,
   prise,
   enCours,
@@ -182,7 +233,6 @@ function LigneCharte({
   enCours: boolean;
   onChoisir: () => void;
 }) {
-  const j = charte.jetons;
   return (
     <button
       type="button"
@@ -191,49 +241,88 @@ function LigneCharte({
       aria-pressed={prise}
       aria-label={charte.libelle}
       data-charte={charte.nom}
-      className="flex w-full items-center gap-[13px] border-b py-[14px] text-left last:border-b-0 disabled:opacity-60"
-      style={{ borderColor: colors.line, minHeight: 60 }}
+      className="flex flex-col rounded-[14px] px-2 pb-3 pt-2 text-left transition-shadow duration-200 disabled:opacity-60"
+      // La charte prise se cerne de l'encre d'action, comme les cartes de
+      // choix (`CarteChoix`) : un cadre doré autour d'un bloc, il l'a retiré.
+      style={{
+        backgroundColor: colors.card,
+        boxShadow: prise ? `inset 0 0 0 2px ${colors.rust}` : `inset 0 0 0 1px ${colors.lineSoft}`,
+      }}
     >
-      {/* L'écran en réduction : le fond, une carte posée dessus, l'encre, et le
-          bouton d'action dans son plein. Quatre valeurs suffisent à reconnaître
-          une charte — la planche entière tient sur ces quatre-là. */}
-      <span
-        aria-hidden="true"
-        className="flex h-[46px] w-[46px] flex-none flex-col justify-between overflow-hidden rounded-[4px] p-[5px]"
-        style={{ backgroundColor: j.cream, boxShadow: `inset 0 0 0 1px ${j.line}` }}
-      >
-        <span className="block h-[13px] w-full rounded-[2px]" style={{ backgroundColor: j.card }}>
-          <span className="ml-[3px] block h-[3px] w-[18px] rounded-full" style={{ backgroundColor: j.ink, marginTop: 5 }} />
+      <PetitEcran charte={charte} />
+      <span className="mx-1 mt-2.5 flex items-center justify-between gap-1.5">
+        <span style={{ fontFamily: font.display, fontSize: 18, lineHeight: 1.2, color: colors.ink }}>
+          {charte.libelle}
         </span>
-        <span className="flex items-center gap-[3px]">
-          <span className="block h-[10px] flex-1 rounded-[2px]" style={{ backgroundColor: j.rust }} />
-          <span className="block h-[10px] w-[10px] flex-none rounded-full" style={{ backgroundColor: j.or }} />
-        </span>
+        <CocheRonde pris={prise} />
       </span>
-
-      <span className="min-w-0 flex-1">
-        <span className="flex items-baseline gap-2">
-          <span style={{ fontFamily: font.display, fontSize: 17, lineHeight: 1.25, color: colors.ink }}>
-            {charte.libelle}
+      {charte.sombre && (
+        // « Sombre » en toutes lettres, avec sa petite lune, au lieu des
+        // capitales espacées (sa planche soignée).
+        <span
+          className="mx-1 mt-1.5 inline-flex min-h-[24px] items-center gap-1.5 self-start rounded-full px-[9px] text-[13px] font-semibold"
+          style={{ backgroundColor: voile(colors.ink, 0.06), color: colors.inkSoft }}
+        >
+          <span className="flex" style={{ color: colors.or }}>
+            <Trace taille={14} epaisseur={2}>
+              <path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10z" />
+            </Trace>
           </span>
-          {charte.sombre && (
-            <span className={libelleCaps} style={{ color: colors.or }}>
-              Sombre
-            </span>
-          )}
+          Sombre
         </span>
-        <span className={`mt-1 block ${texteSituation}`} style={{ color: colors.inkSoft }}>
-          {charte.dit}
-        </span>
+      )}
+      <span className="mx-1 mt-1 text-[13.5px] leading-[1.35]" style={{ color: colors.inkSoft }}>
+        {charte.dit}
       </span>
-
-      {/* La pastille du choix, comme sur l'écran du régime de TVA : pleine d'or
-          quand elle est prise, un simple cercle sinon. */}
-      <span
-        aria-hidden="true"
-        className="h-[19px] w-[19px] flex-none rounded-full"
-        style={{ boxShadow: prise ? `inset 0 0 0 6px ${colors.or}` : `inset 0 0 0 1px ${colors.line}` }}
-      />
     </button>
+  );
+}
+
+/**
+ * Le petit écran : le fond, le titre dans sa police, une carte, le bouton de la
+ * charte, la barre et son trait d'or.
+ */
+function PetitEcran({ charte }: { charte: Charte }) {
+  return (
+    <span
+      aria-hidden="true"
+      className="relative block h-[104px] overflow-hidden rounded-[9px] px-[9px] pt-[9px]"
+      // Des variables CSS dans un style en ligne : le type de React ne les
+      // connaît pas, d'où la conversion, la même que celle de `PorteDeNuit`.
+      style={
+        {
+          ...variablesCharte(charte),
+          backgroundColor: colors.cream,
+          boxShadow: `inset 0 0 0 1px ${colors.line}`,
+        } as React.CSSProperties
+      }
+    >
+      <span
+        className="block text-[17px] leading-none"
+        style={{
+          // **Pas `font.display`** : `--font-display` se calcule à la racine,
+          // dans la charte PRISE. Sur Brume, les huit petits écrans auraient
+          // tous perdu leur empattement. La police vient donc de la charte
+          // elle-même, et la serif du système à défaut, comme le repli de
+          // `globals.css`.
+          fontFamily: charte.formes?.policeTitres ?? "ui-serif, Georgia, serif",
+          letterSpacing: "-0.01em",
+          color: colors.ink,
+        }}
+      >
+        Aa
+      </span>
+      <span className="mt-[7px] block rounded-[4px] px-[7px] py-1.5" style={{ backgroundColor: colors.card }}>
+        <span className="block h-[3px] rounded-full" style={{ backgroundColor: voile(colors.ink, 0.7) }} />
+        <span className="mt-1 block h-[3px] w-[62%] rounded-full" style={{ backgroundColor: colors.or }} />
+      </span>
+      <span className="mt-[7px] block h-[13px] rounded-full" style={{ backgroundColor: colors.plein }} />
+      <span
+        className="absolute inset-x-0 bottom-0 h-[15px]"
+        style={{ backgroundColor: colors.cream, boxShadow: `inset 0 1px 0 ${colors.line}` }}
+      >
+        <span className="absolute bottom-1 right-[12%] h-0.5 w-[16%] rounded-full" style={{ backgroundColor: colors.or }} />
+      </span>
+    </span>
   );
 }

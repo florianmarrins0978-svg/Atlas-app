@@ -17,10 +17,13 @@ import {
   formule,
   formuleChoisie,
   jourEnLettres,
+  lignesCommunes,
   lignesDeLaFormule,
+  lignesQuiDistinguent,
   montantDu,
   phraseDeLaFermeture,
   placePourUnFabricant,
+  prixALAnnee,
   roleFabrique,
   texteDuRuban,
   type FonctionReservee,
@@ -87,6 +90,66 @@ cas("les lignes des cartes sont celles de la planche, mot pour mot et dans son o
 cas("l'année vaut dix mois — deux mois offerts, comme l'annonce la bascule", () => {
   for (const f of FORMULES) {
     assert.equal(f.prixAnnuel, f.prixMensuel * 10, `${f.nom} : l'annuel n'offre pas deux mois`);
+  }
+});
+
+// **Sa demande du 26 octobre 2026**, sur la planche des Réglages soignés : à
+// l'année, le prix de douze mois barré au-dessus du prix de dix, et ce qu'on
+// gagne en euros. Les trois chiffres se CALCULENT sur `prixMensuel` et
+// `prixAnnuel` : écrits en dur dans l'écran, ils mentiraient au premier prix
+// qui bouge, et c'est le pire défaut de cet écran (en tête de ce fichier).
+cas("à l'année : douze mois barrés, le prix payé, et ce qu'on gagne en euros", () => {
+  const attendu: Record<string, { douzeMois: number; annuel: number; gain: number }> = {
+    artisan: { douzeMois: 468, annuel: 390, gain: 78 },
+    entreprise: { douzeMois: 708, annuel: 590, gain: 118 },
+    illimite: { douzeMois: 1908, annuel: 1590, gain: 318 },
+  };
+  for (const f of FORMULES) {
+    assert.deepEqual(prixALAnnee(f), attendu[f.code], `${f.nom}`);
+  }
+});
+
+cas("le gain annoncé vaut les deux mois offerts que promet la bascule", () => {
+  for (const f of FORMULES) {
+    assert.equal(prixALAnnee(f).gain, f.prixMensuel * 2, `${f.nom} : le gain ne vaut pas deux mois`);
+  }
+});
+
+// **Ce que les trois formules partagent se lit une fois** (même planche) :
+// cinq lignes identiques dans les trois cartes faisaient lire trente-cinq
+// lignes pour en comparer vingt-cinq. La règle se calcule sur les formules,
+// jamais sur une liste recopiée : la ligne qui deviendrait réservée demain
+// quitterait le paquet commun toute seule.
+cas("les lignes communes sont celles que TOUTES les formules ouvrent", () => {
+  assert.deepEqual(lignesCommunes(), [
+    "Devis et factures illimités",
+    "Vos dictées transcrites et chiffrées",
+    "Le planning de vos chantiers",
+    "Votre relevé de TVA, tenu tout seul",
+    "Vos salariés ont accès au planning",
+  ]);
+});
+
+cas("chaque carte ne garde que ce qui la distingue, et ce qui manque reste barré", () => {
+  const artisan = lignesQuiDistinguent(formule("artisan")!);
+  assert.equal(artisan.length, 7);
+  assert.ok(artisan.every((l) => l.manque), "Artisan montre une ligne qu'il ouvre parmi celles qui le distinguent");
+  const entreprise = lignesQuiDistinguent(formule("entreprise")!);
+  assert.deepEqual(
+    entreprise.filter((l) => l.manque).map((l) => l.texte),
+    ["Autant de personnes que vous voulez aux devis et aux factures"]
+  );
+  assert.equal(entreprise.length, 7);
+  const illimite = lignesQuiDistinguent(formule("illimite")!);
+  assert.equal(illimite.length, 6);
+  assert.ok(illimite.every((l) => !l.manque));
+});
+
+cas("rien ne se perd : communes et distinctives refont exactement la carte entière", () => {
+  for (const f of FORMULES) {
+    const entiere = lignesDeLaFormule(f).map((l) => l.texte).sort();
+    const recomposee = [...lignesCommunes(), ...lignesQuiDistinguent(f).map((l) => l.texte)].sort();
+    assert.deepEqual(recomposee, entiere, `${f.nom}`);
   }
 });
 
@@ -188,6 +251,43 @@ cas("actif : la formule, le prix et la date du prochain paiement", () => {
   assert.match(e.detail ?? "", /59 € HT par mois/);
   assert.match(e.detail ?? "", /9 octobre 2026/);
   assert.equal(e.ton, "calme");
+  assert.deepEqual(e.signe, { genre: "formule" });
+});
+
+// **Ni point médian ni tiret : des phrases** (`CLAUDE.md` §3, sa règle du
+// 22 septembre 2026). Le prix et le prochain paiement se collaient d'un « · ».
+cas("actif : le prix et le prochain paiement se disent en deux phrases, sans point médian", () => {
+  const e = etatAffiche(
+    { formule: "entreprise", periodicite: "mensuelle", statut: "actif", periodeFin: LE_9_OCTOBRE, annulationDemandee: false },
+    LE_9
+  );
+  assert.equal(e.detail, "59 € HT par mois. Prochain paiement le 9 octobre 2026.");
+  const sansDate = etatAffiche(
+    { formule: "entreprise", periodicite: "annuelle", statut: "actif", periodeFin: null, annulationDemandee: false },
+    LE_9
+  );
+  assert.equal(sansDate.detail, "590 € HT par an.");
+});
+
+// **L'état se lit d'un coup d'œil** (planche du 26 octobre 2026) : les jours
+// d'essai dans un carré, l'échéance d'un arrêt aussi, une pastille sinon. La
+// fonction DIT ce qui se montre : l'écran ne refait pas la distinction entre
+// un arrêt demandé et un abonnement qui court, qui n'appartient qu'à elle.
+cas("ce qui se lit d'un coup d'œil suit l'état, sans que l'écran le redécide", () => {
+  assert.deepEqual(etatAffiche(null, LE_9).signe, { genre: "aucun" });
+  const arret = etatAffiche(
+    { formule: "entreprise", periodicite: "mensuelle", statut: "actif", periodeFin: new Date("2026-11-09T10:00:00Z"), annulationDemandee: true },
+    LE_9
+  );
+  assert.deepEqual(arret.signe, { genre: "echeance", jour: 9, mois: "nov." });
+  assert.deepEqual(
+    etatAffiche({ formule: "artisan", periodicite: "mensuelle", statut: "impaye", periodeFin: null, annulationDemandee: false }, LE_9).signe,
+    { genre: "paiement" }
+  );
+  assert.deepEqual(
+    etatAffiche({ formule: "artisan", periodicite: "mensuelle", statut: "resilie", periodeFin: null, annulationDemandee: false }, LE_9).signe,
+    { genre: "aucun" }
+  );
 });
 
 cas("impayé : le ton alerte, et la phrase dit quoi faire", () => {
@@ -336,10 +436,13 @@ cas("l'écran dit l'essai : les jours, la date, aucune carte ; puis « terminé 
   assert.match(enCours.detail ?? "", /28 septembre 2026/);
   assert.match(enCours.detail ?? "", /Aucune carte/);
   assert.equal(enCours.ton, "calme");
+  assert.deepEqual(enCours.signe, { genre: "jours", nombre: 15 });
   assert.equal(etatAffiche(ESSAI, apres(13)).ton, "attention");
+  assert.deepEqual(etatAffiche(ESSAI, apres(13)).signe, { genre: "jours", nombre: 2 });
   const fini = etatAffiche(ESSAI, apres(20));
   assert.equal(fini.titre, "Essai terminé");
   assert.equal(fini.ton, "attention");
+  assert.deepEqual(fini.signe, { genre: "ferme" });
 });
 
 console.log("\n=== Ce qui se ferme à « Artisan » — « oui bloqué pour l'abonnement artisan » ===\n");

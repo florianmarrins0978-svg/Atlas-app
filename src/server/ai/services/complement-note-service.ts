@@ -33,7 +33,9 @@ import { getFournisseurTranscription } from "../providers/transcription/fabrique
  */
 export type ResultatComplement =
   | { ok: true; transcription: string }
-  | { ok: false; raison: "aucune_note" | "transcription" | "vide" };
+  | { ok: false; raison: "aucune_note" | "transcription" | "vide" }
+  // Le plafond du mois : la phrase dit quand l'IA reprend (`compteur.ts`).
+  | { ok: false; raison: "credits"; message: string };
 
 export async function completerNoteVocale(
   ctx: Ctx,
@@ -57,7 +59,11 @@ export async function completerNoteVocale(
 
   const fournisseur = getFournisseurTranscription();
   const suite = await fournisseur.transcrire(octets, mimeType);
-  if (!suite.succes) return { ok: false, raison: "transcription" };
+  if (!suite.succes) {
+    return suite.erreur.type === "credits_epuises"
+      ? { ok: false, raison: "credits", message: suite.erreur.message }
+      : { ok: false, raison: "transcription" };
+  }
 
   const ajout = suite.texte.trim();
   if (!ajout) return { ok: false, raison: "vide" };

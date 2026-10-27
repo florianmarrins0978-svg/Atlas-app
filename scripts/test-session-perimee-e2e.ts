@@ -49,12 +49,15 @@ const FANTOME = "38befa76-e564-4751-9060-69ada52e720d";
 const ECRANS = ["/", "/documents-legaux", "/planning"];
 
 /** Fabrique un cookie de session signé pour un identifiant donné. */
-async function cookiePour(utilisateurId: string, email: string) {
+async function cookiePour(utilisateurId: string, email: string, connecteIlYA = 0) {
   const secret = process.env.AUTH_SECRET;
   assert.ok(secret, "AUTH_SECRET est nécessaire pour fabriquer une session d'essai");
   const jeton = await encode({
     // Exactement ce que pose le rappel `jwt` de `src/auth.ts`.
-    token: { sub: utilisateurId, utilisateurId, email },
+    // `authentifieLe` : l'instant de la connexion, que la limite de trente
+    // jours compte (sa décision du 26 octobre 2026). Sans lui, la session est
+    // tenue pour trop ancienne, et le contrôle « session valide » rougirait.
+    token: { sub: utilisateurId, utilisateurId, email, authentifieLe: Math.floor(Date.now() / 1000) - connecteIlYA },
     secret,
     salt: NOM_COOKIE,
     maxAge: 15 * 60,
@@ -147,6 +150,19 @@ async function main() {
     );
   }
   console.log("✓ une session valide n'est jamais renvoyée vers l'effacement");
+
+  // 4 bis. **Trente jours après la connexion, la session meurt**, même si le
+  // jeton a été réémis la veille : un cookie copié ne vit pas indéfiniment.
+  const ancienne = await cookiePour(reel.id, reel.email, 31 * 24 * 3600);
+  for (const ecran of ECRANS) {
+    const r = await aller(ecran, ancienne.entete);
+    const ou = r.headers.get("location") ?? "";
+    assert.ok(
+      r.status >= 300 && r.status < 400 && ou.includes("/api/session-perimee"),
+      `${ecran} a gardé une session connectée il y a trente et un jours (${r.status}, « ${ou} »)`
+    );
+  }
+  console.log("✓ une session de plus de trente jours est renvoyée vers l'effacement, par un vrai 307");
 
   // **La boucle : le défaut que ce correctif a lui-même créé, le 10 août 2026.**
   //

@@ -155,7 +155,9 @@ export default function DicterCoordonnees({
       if (!actuelle()) return;
       if (!r.ok) {
         setMessage(
-          r.raison === "vide"
+          r.raison === "credits"
+            ? r.message
+            : r.raison === "vide"
             ? "Rien n'a été entendu. Réessayez en parlant un peu plus près du téléphone."
             : "La dictée n'a pas pu être transcrite. Vous pouvez saisir les informations à la main."
         );

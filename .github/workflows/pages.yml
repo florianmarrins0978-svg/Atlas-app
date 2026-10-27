@@ -19,28 +19,25 @@ on:
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
+# **La publication n'a ses droits que dans le job qui publie** (audit du
+# 25 octobre 2026, E15). Posés ici, `pages: write` et `id-token: write` valaient
+# aussi pour les jobs qui font `npm ci` : un paquet compromis à l'installation
+# aurait pu publier le site à sa place.
+permissions:
+  contents: read
+
 concurrency:
   group: pages
   cancel-in-progress: true
 
 jobs:
-  # **`pages: write` et `id-token: write` ne vivent QUE sur le job qui en a
-  # besoin** (audit de sécurité, E15, 27 octobre 2026). Ils vivaient au niveau
-  # du *workflow*, donc sur CE job aussi — qui lance `npm ci` puis
-  # `npx playwright install` sur du code tiers. Un paquet piégé exécuté là (le
-  # ver « Shai-Hulud », par exemple, `docs/audit-securite-prompt-renforce.md`
-  # §3) aurait trouvé, dans `GITHUB_TOKEN`, le droit de publier n'importe quoi
-  # sur GitHub Pages et de forger un jeton OIDC — sans avoir touché une seule
-  # ligne de `appli/`. Ce job n'écrit rien : il ne porte que `contents: read`.
   tests:
     name: Tests de bout en bout
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "20"
           cache: "npm"
@@ -147,23 +144,23 @@ jobs:
     outputs:
       page_url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Configurer Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
         with:
           enablement: true
 
       # Seul `appli/` est publié : le reste du dépôt (code serveur Next.js,
       # migrations, scripts d'exploitation) n'a rien à faire sur un site public.
       - name: Préparer l'artefact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
         with:
           path: appli
 
       - name: Déployer sur GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
 
   # Vérification de ce qui est RÉELLEMENT servi au public, une fois la
   # publication faite. Le job « tests » ci-dessus exerce les fichiers du dépôt
@@ -179,13 +176,10 @@ jobs:
     name: Vérification du site en ligne
     needs: deploy
     runs-on: ubuntu-latest
-    # Même raison que sur `tests` : installe des paquets tiers, n'écrit rien.
-    permissions:
-      contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "20"
           cache: "npm"

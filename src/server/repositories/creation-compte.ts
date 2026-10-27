@@ -3,6 +3,7 @@ import { eq, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import { abonnements, entreprises, membresEntreprise, users } from "@/server/db/schema";
 import { FORMULE_DE_LESSAI, finDeLEssai } from "@/lib/abonnements";
+import { MAX_EQUIPES } from "@/lib/equipes";
 import { adresseNormalisee } from "@/lib/donner-un-acces";
 import { formeADuCapital } from "@/lib/formes-juridiques";
 import { capitalEnBase } from "@/lib/mentions-legales";
@@ -60,6 +61,19 @@ export type SaisieCompte = {
   iban?: string;
   titulaire?: string;
   moyens?: string;
+  /**
+   * Les réglages nés après septembre, demandés à la porte depuis le
+   * 26 octobre 2026 (`src/lib/creation-compte.ts`). Tous facultatifs ici :
+   * absents, la colonne garde la valeur d'office qu'elle avait avant.
+   */
+  periodiciteTva?: "mensuelle" | "trimestrielle";
+  tvaExigibilite?: "encaissements" | "debits";
+  assureur?: string;
+  adresseAssureur?: string;
+  couverture?: string;
+  mediateur?: string;
+  mediateurCoordonnees?: string;
+  nombreEquipes?: number;
 };
 
 export type ResultatCreation =
@@ -133,6 +147,23 @@ async function ecrireLeCompte(saisie: SaisieCompte): Promise<ResultatCreation> {
   }
   if (vide(saisie.entreprise)) return { ok: false, refus: "Le nom de l’entreprise est nécessaire." };
 
+  // Les deux réglages de TVA ne se lisent que dans LEUR liste, et n'ont de sens
+  // que pour qui la facture : une franchise garde la valeur d'office, qu'elle
+  // n'emploie jamais. Les bornes des équipes sont celles de Réglages.
+  const assujettie = saisie.tva === "assujettie";
+  const periodiciteTva =
+    assujettie && (saisie.periodiciteTva === "mensuelle" || saisie.periodiciteTva === "trimestrielle")
+      ? saisie.periodiciteTva
+      : undefined;
+  const tvaExigibilite =
+    assujettie && (saisie.tvaExigibilite === "encaissements" || saisie.tvaExigibilite === "debits")
+      ? saisie.tvaExigibilite
+      : undefined;
+  const nombreEquipes =
+    saisie.nombreEquipes !== undefined && Number.isFinite(saisie.nombreEquipes)
+      ? Math.min(MAX_EQUIPES, Math.max(1, Math.trunc(saisie.nombreEquipes)))
+      : undefined;
+
   // Coût 10 : celui d'`authorize`, du changement de mot de passe, de
   // `donnerUnAcces` et du jeu de démonstration. En changer ici rendrait ce
   // chemin plus lent ou plus faible que les autres, sans que rien ne le dise.
@@ -166,6 +197,14 @@ async function ecrireLeCompte(saisie: SaisieCompte): Promise<ResultatCreation> {
         numeroTva: saisie.tva === "assujettie" ? propre(saisie.numeroTva) : null,
         titulaireCompte: propre(saisie.titulaire),
         moyensPaiement: moyens,
+        periodiciteTva,
+        tvaExigibilite,
+        assureurDecennale: propre(saisie.assureur),
+        adresseAssureurDecennale: propre(saisie.adresseAssureur),
+        couvertureDecennale: propre(saisie.couverture),
+        mediateurNom: propre(saisie.mediateur),
+        mediateurCoordonnees: propre(saisie.mediateurCoordonnees),
+        nombreEquipes,
       })
       .returning({ id: entreprises.id });
 

@@ -215,6 +215,10 @@ async function main() {
       // éprouvé ici est celui d'avant la saisie ; ils sont rendus à la fin.
       await pool.query(`UPDATE entreprises SET assureur_decennale = NULL, mediateur_nom = NULL WHERE id = $1`, [entrepriseId]);
       await page.goto(`${BASE}/reglages/documents/conditions`, { waitUntil: "networkidle" });
+      // **Le texte entier s'ouvre au doigt depuis le 26 octobre 2026** (sa
+      // planche des Réglages soignés) : l'écran en montre le début sur une
+      // feuille, et la case se trouve dans la feuille qui monte.
+      await page.click('[data-atlas="cgv-lire"]');
       const champ = page.locator('textarea[aria-label="Conditions générales de vente et de règlement"]');
       await champ.waitFor({ timeout: 10_000 });
       assert.equal(await champ.inputValue(), TEXTE_ORIGINE_CONDITIONS_GENERALES);

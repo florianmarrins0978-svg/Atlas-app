@@ -218,7 +218,10 @@ export function ditLeCompteDuJour(nombreChantiers: number, chargeMax: number): s
  */
 export function ditQuiPart(noms: readonly string[]): string {
   if (noms.length === 0) return "Qui ?";
-  if (noms.length <= 2) return noms.join(" / ");
+  // « Julien et Kévin », et non plus « Julien / Kévin » : sa planche du
+  // 25 octobre 2026 — une barre oblique se lit comme un choix, pas comme deux
+  // personnes qui partent ensemble.
+  if (noms.length <= 2) return noms.join(" et ");
   return `${noms[0]} +${noms.length - 1}`;
 }
 

@@ -24,7 +24,8 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     source: "src/app/bienvenue/page.tsx",
     preuves: ['href="/creer-un-compte"', "Créer un compte"],
     ailleurs: [
-      { source: "src/app/creer-un-compte/page.tsx", preuves: ['"Continuer"', "Passer", "Créer mon compte", "Entrer dans Atlas"] },
+      { source: "src/app/creer-un-compte/page.tsx", preuves: ['"Continuer"', "Passer", "Créer mon compte"] },
+      { source: "src/app/creer-un-compte/pret/PretClient.tsx", preuves: ["Entrer dans Atlas"] },
     ],
   },
   {
@@ -143,11 +144,11 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     intitule: "Ajouter, corriger ou retirer un tarif",
     motsCles: ["tarif", "tarifs", "prix", "ajouter", "modifier", "supprimer", "retirer", "unite", "catalogue"],
     geste:
-      "Touchez « + Ajouter un tarif », écrivez le nom et le prix, puis touchez l'unité. " +
+      "Touchez « Ajouter un tarif », écrivez le nom et le prix, puis touchez l'unité. " +
       "Pour corriger un tarif, touchez sa ligne : elle s'ouvre. « Retirer » est en bas de la ligne ouverte, « Fermer » la replie.",
     reserve: "Chaque case s'enregistre dès que vous la quittez. Après un retrait, « Annuler » reste un instant en bas.",
     source: "src/app/reglages/ReglagesClient.tsx",
-    preuves: ["+ Ajouter un tarif", "Nom du tarif", "Prix du tarif", "Retirer", "Fermer", "TiroirDesRetires"],
+    preuves: ["Ajouter un tarif", "Nom du tarif", "Prix du tarif", "Retirer", "Fermer", "TiroirDesRetires"],
     ailleurs: [{ source: "src/components/atlas/ChoixUnite.tsx", preuves: ['aria-label="Unité du tarif"', "Une autre unité"] }],
   },
   {
@@ -157,7 +158,7 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     intitule: "Importer ses prix depuis un fichier Excel ou CSV",
     motsCles: ["importer", "import", "excel", "csv", "fichier", "tableur", "liste", "tarifs", "charger"],
     geste:
-      "Sous « + Ajouter un tarif », touchez « Reprendre mes prix d'un fichier Excel ou CSV ». " +
+      "Sous « Ajouter un tarif », touchez « Reprendre mes prix d'un fichier Excel ou CSV ». " +
       "Vérifiez ce qu'Atlas ajouterait, puis « Enregistrer ces tarifs ».",
     reserve: "Rien n'est enregistré avant « Enregistrer ces tarifs ». « Annuler » laisse vos tarifs tels quels.",
     source: "src/app/reglages/ImportTarifs.tsx",
@@ -232,35 +233,36 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
   {
     id: "reglages-mentions-legales",
     ecran: "Mon entreprise",
-    ou: `${R}, puis Mon entreprise, bloc Mentions légales`,
+    ou: `${R}, puis Mon entreprise, paquet Sur vos papiers`,
     intitule: "Choisir où s'impriment la forme juridique, le capital et le RCS",
     motsCles: ["mentions", "legales", "imprimer", "capital", "rcs", "forme", "position", "nom", "bas"],
-    geste: "Dans « Mentions légales », touchez « Sous le nom » ou « En bas, avec le SIRET ».",
+    geste: "Dans « Sur vos papiers », touchez « Sous le nom » ou « En bas, avec le SIRET ». Le choix ne se montre que pour une société.",
     // « Ne pas les imprimer » est parti le 3 octobre 2026 (son choix 4A) : la
     // loi les veut sur chaque pièce (C. com. R526-27, R123-237).
     reserve: "Elles s'impriment toujours : la loi les exige.",
     source: "src/app/reglages/identite/IdentiteClient.tsx",
-    preuves: ["Mentions légales", "Sous le nom", "En bas, avec le SIRET"],
+    preuves: ["Sur vos papiers", "Sous le nom", "En bas, avec le SIRET"],
   },
   {
     id: "reglages-regime-tva",
     ecran: "Mon entreprise",
-    ou: `${R}, puis Mon entreprise, bloc Votre régime de TVA`,
+    ou: `${R}, puis Mon entreprise, paquet Votre TVA`,
     intitule: "Dire si je facture la TVA ou si je suis en franchise, mon numéro de TVA",
     motsCles: ["tva", "franchise", "assujetti", "assujettie", "regime", "293", "intracommunautaire", "numero", "auto", "entrepreneur", "micro", "sans tva"],
     geste:
-      "Dans « Votre régime de TVA », touchez « Franchise en base » ou « Assujettie ». " +
+      "Dans « Votre TVA », touchez « Franchise en base » ou « Assujettie ». " +
       "Assujettie : écrivez votre numéro de TVA intracommunautaire dessous.",
     source: "src/app/reglages/identite/IdentiteClient.tsx",
-    preuves: ["Votre régime de TVA", "Franchise en base", "Assujettie", "Numéro de TVA intracommunautaire"],
+    preuves: ["Votre TVA", "Franchise en base", "Assujettie", "Numéro de TVA intracommunautaire"],
   },
   {
     id: "reglages-tva-rythme",
     ecran: "Mon entreprise",
-    ou: `${R}, puis Mon entreprise, sous Votre régime de TVA`,
+    ou: `${R}, puis Mon entreprise, paquet Votre TVA`,
     intitule: "Déclarer sa TVA tous les mois ou tous les trimestres",
     motsCles: ["tva", "declarer", "mensuelle", "trimestrielle", "trimestre", "mois", "rythme", "periode"],
-    geste: "Sous votre régime de TVA, touchez « Tous les mois » ou « Tous les trimestres ».",
+    geste: "Dans « Votre TVA », touchez « Tous les mois » ou « Tous les trimestres ».",
+    reserve: "Seulement pour une entreprise assujettie.",
     source: "src/app/reglages/PeriodiciteTva.tsx",
     preuves: ["Tous les mois", "Tous les trimestres"],
     ailleurs: [{ source: "src/app/reglages/identite/page.tsx", preuves: ["<PeriodiciteTvaReglage"] }],
@@ -268,7 +270,7 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
   {
     id: "reglages-tva-exigibilite",
     ecran: "Mon entreprise",
-    ou: `${R}, puis Mon entreprise, sous Votre régime de TVA`,
+    ou: `${R}, puis Mon entreprise, paquet Votre TVA`,
     intitule: "Choisir quand je reverse la TVA : au paiement du client ou à l'envoi de la facture",
     motsCles: ["tva", "debits", "exigible", "exigibilite", "reverser", "reverse", "impots", "moment"],
     geste:
@@ -302,7 +304,7 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
       "Dans « Pour être payé », corrigez l'IBAN ou le titulaire du compte. " +
       "Atlas redemande votre mot de passe : tapez-le, puis « Continuer ».",
     source: "src/app/reglages/identite/IdentiteClient.tsx",
-    preuves: ["Pour être payé", 'etiquette="IBAN"', "Titulaire du compte"],
+    preuves: ["Pour être payé", 'data-atlas="plage-iban"', "Titulaire du compte"],
     ailleurs: [{ source: "src/components/atlas/DemanderPreuve.tsx", preuves: ["Vérifiez que c&apos;est bien vous"] }],
   },
   {
@@ -406,10 +408,10 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     intitule: "Mettre ses conditions générales de vente sur le devis",
     motsCles: ["cgv", "conditions", "generales", "vente", "reglement", "contrat", "imprimer", "devis"],
     geste:
-      "Allumez « Conditions générales de vente et de règlement » : un texte est proposé, corrigez-le dans la case.",
+      "Allumez « Conditions générales de vente et de règlement » : un texte est proposé. Touchez « Lire et modifier » pour le corriger.",
     reserve: "Les crochets restants se remplissent depuis Mon entreprise. Elles s'impriment après le bon pour accord.",
     source: "src/app/reglages/documents/conditions/ConditionsClient.tsx",
-    preuves: ["Conditions générales de vente et de règlement", "Imprimées après le bon pour accord", "à remplir dans Mon entreprise."],
+    preuves: ["Conditions générales de vente et de règlement", "Imprimées après le bon pour accord", "Lire et modifier", "à remplir dans"],
   },
   {
     id: "reglages-message-client",
@@ -418,7 +420,7 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     intitule: "Changer le message qui part avec un devis, une facture ou un retour d'intervention",
     motsCles: ["message", "texte", "envoi", "envoye", "sms", "mail", "accompagne", "modifier", "changer", "politesse"],
     geste:
-      "Ouvrez « Mon message au client », corrigez le texte sous le document voulu, puis « Enregistrer ». " +
+      "Ouvrez « Mon message au client », touchez le document voulu : son message s'ouvre. Corrigez-le, puis « Enregistrer ». " +
       "« Remettre le message d'Atlas » revient au texte d'origine.",
     reserve: "Les mots en doré se remplissent seuls. Le lien et le mot du document ne peuvent pas être retirés.",
     source: "src/app/reglages/documents/message/MessagesClient.tsx",
@@ -493,7 +495,7 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     intitule: "Changer le rôle d'une personne (patron, facturation, commercial, salarié)",
     motsCles: ["role", "droits", "permission", "facturation", "commercial", "salarie", "patron", "changer"],
     geste: "Dans « Accès », touchez la personne, puis le rôle voulu : Patron, Facturation, Commercial ou Salarié.",
-    reserve: "Sous les rôles, deux colonnes disent ce que la personne pourra faire, et ce qu'elle ne pourra pas.",
+    reserve: "Sous les rôles, deux plages disent ce que la personne pourra faire, et ce qu'elle ne pourra pas.",
     source: "src/app/reglages/equipe/QuiAAcces.tsx",
     preuves: ["Accès", "<ChoixRole"],
     ailleurs: [
@@ -592,7 +594,7 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     ou: `${R}, puis Notifications`,
     intitule: "Couper ou allumer un rappel (chantier sans devis, devis sans réponse, pas facturé)",
     motsCles: ["couper", "desactiver", "eteindre", "rappel", "notification", "devis", "reponse", "facture", "arreter"],
-    geste: "Touchez l'interrupteur à droite du rappel. Allumé, réglez « Au bout de » en jours.",
+    geste: "Touchez l'interrupteur à droite du rappel. Allumé, réglez « Au bout de » avec moins et plus.",
     reserve: "La réponse d'un client à un devis et le lien de devis expiré sont toujours signalés.",
     source: "src/app/reglages/notifications/NotificationsClient.tsx",
     preuves: ["Chantier sans devis", "Devis sans réponse", "Chantier fini, pas facturé", 'role="switch"'],
@@ -722,7 +724,7 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     motsCles: ["formule", "abonner", "offre", "entreprise", "prix", "annuel", "mois", "annee", "changer", "coute", "abonnement", "prix d'atlas"],
     geste:
       "Ouvrez « Abonnement », choisissez « Au mois » ou « À l’année, 2 mois offerts », " +
-      "puis « S’abonner » ou « Passer à cette formule » sous la formule voulue.",
+      "touchez la formule voulue, puis le bouton du bas : « S’abonner à » elle, ou « Passer à » elle une fois abonné.",
     // Les prix sont LUS dans `FORMULES`, jamais recopiés : l'écran les lit là
     // aussi, et une hausse ne laissera pas l'assistant sur l'ancien tarif.
     reserve:
@@ -730,7 +732,7 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
       FORMULES.map((f) => `${f.nom} : ${f.prixMensuel} € HT par mois, ou ${f.prixAnnuel} € HT par an`).join(". ") +
       ".",
     source: "src/app/reglages/abonnement/AbonnementClient.tsx",
-    preuves: ["Au mois", "À l’année, 2 mois offerts", "S’abonner", "Passer à cette formule", "FORMULES"],
+    preuves: ["Au mois", "À l’année, 2 mois offerts", "S’abonner à", "Passer à", "FORMULES"],
   },
   // --- Moi ----------------------------------------------------------------------
   {
@@ -773,10 +775,10 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
   {
     id: "reglages-face-id-retirer",
     ecran: "Mot de passe",
-    ou: `${R}, puis Mot de passe, bloc Ouvrir avec Face ID`,
+    ou: `${R}, puis Mot de passe, ligne de l'appareil`,
     intitule: "Retirer Face ID d'un appareil",
     motsCles: ["face", "faceid", "retirer", "supprimer", "enlever", "appareil", "telephone", "ancien"],
-    geste: "Sous « Ouvrir avec Face ID », touchez « Retirer » à côté de l'appareil.",
+    geste: "Touchez « Retirer » sur la ligne de l'appareil.",
     reserve: "Votre mot de passe marche toujours. Atlas peut vous le redemander avant.",
     source: "src/app/reglages/connexion/SectionFaceId.tsx",
     preuves: ["Ouvrir avec Face ID", "Retirer", "retirerCleAction"],

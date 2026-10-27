@@ -1,5 +1,6 @@
 "use client";
 
+import { colors } from "@/lib/design-tokens";
 import type { JourIso } from "@/lib/disponibilites";
 import type { GestesCarte } from "./types-du-planning";
 import { Choisir, MotEnOr, Petit } from "./ElementsDuPlanning";
@@ -273,13 +274,36 @@ export function AjoutAuJour({
  * marre des gros boutons »*. Il garde sa place — sous les chantiers, en bas de
  * la fiche — et son repère `ajouter` : ouvert, il dit « Fermer » et referme,
  * c'est sa réponse C du 17 septembre (*« le C, pas d'Annuler »*).
+ *
+ * **À gauche, à 16 px, avec son « + » dessiné — sa planche du 25 octobre 2026**
+ * (`appli/soignee/planning.html`). Centré sous chaque jour, le mot flottait
+ * cinq fois au milieu de la page ; au bout de la plage du jour, il dit à quel
+ * jour il ajoute.
  */
 function GesteAjouter({ ouvert, onClick }: { ouvert: boolean; onClick: () => void }) {
   return (
-    <div className="mt-2 flex justify-center">
-      <MotEnOr data-atlas="ajouter" aria-label={ouvert ? "Fermer" : "Ajouter"} onClick={onClick}>
+    <div className="flex justify-start">
+      <button
+        type="button"
+        data-atlas="ajouter"
+        aria-label={ouvert ? "Fermer" : "Ajouter"}
+        onClick={onClick}
+        className="inline-flex min-h-[52px] cursor-pointer items-center gap-2 border-0 bg-transparent px-0.5 text-[16px] font-semibold"
+        style={{ color: colors.or, WebkitTapHighlightColor: "transparent" }}
+      >
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          className="h-5 w-5 flex-none"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2.2}
+          strokeLinecap="round"
+        >
+          <path d={ouvert ? "M6.5 6.5l11 11M17.5 6.5l-11 11" : "M12 5v14M5 12h14"} />
+        </svg>
         {ouvert ? "Fermer" : "Ajouter"}
-      </MotEnOr>
+      </button>
     </div>
   );
 }

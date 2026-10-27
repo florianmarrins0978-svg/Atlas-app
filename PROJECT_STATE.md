@@ -1,8 +1,17 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-29, branche `claude/batterie-commune-29-septembre`
-(neuf lots de six sessions, réunis pour une seule batterie), dernière migration
-`drizzle/0116_modele_de_fiche_d_office.sql`
+**Dernière mise à jour :** 2026-10-26, branche `claude/pour-mon-comptable-soigne`,
+dernière migration `drizzle/0150_virement_recu_regle_au_dossier.sql`
+
+---
+## POUR MON COMPTABLE SOIGNÉ, CODÉ (26 octobre 2026), PAS ENCORE SUR `main`
+
+Branche `claude/pour-mon-comptable-soigne`, d'après ses trois planches du 25 octobre (`appli/soignee/termines-comptable.html` en boutons arrondis, `comptable-dossier.html`, `comptable-verification.html`). Migration `drizzle/0150_virement_recu_regle_au_dossier.sql` (expand : trois colonnes, contraintes élargies, cohérence stricte NOT VALID). Écrans : `src/app/termines/comptable/` (`DossierEnCours.tsx`, `CarteARegarder.tsx`, `a-regarder.ts`, `ArretDuDossier.tsx`, `Icone.tsx`, le relevé, Mes dossiers, la route `piece/[ligne]`), la feuille du ticket (`src/app/termines/tva/FeuilleAchat.tsx`), la page du comptable (`src/app/comptable/[jeton]/`), le PDF (`src/server/pdf/dossier-comptable-pdf.ts`). Règles : `src/lib/pour-mon-comptable.ts` (motifs par sens, écart, signe), `src/lib/facture-hors-atlas-lue.ts`. **Reste** : la batterie (niveau 3), puis `main` ; valider la contrainte sur sa base (`TODO.md`). `ARCHITECTURE.md` §515, `docs/pour-mon-comptable-soigne.md`.
+
+---
+## LES SEIZE RUBRIQUES DES RÉGLAGES, SOIGNÉES, CODÉES (26 octobre 2026), EN ATTENTE DE LEUR BATTERIE
+
+Codé d'après `appli/soignee/reglages-*.html` (vue Proposé) sur `correction-reglages`, avec ses pièces communes (`src/components/atlas/reglages/`), l'en-tête `allure="soignee"` et la règle pure `enTeteDuDocument` que lisent l'écran et le PDF. Défauts corrigés au passage : la fin de chantier, « En bas, avec le SIRET », le zéro doublé du téléphone, le rappel rallumé à 7 jours, « Ce que votre devis dira ». Pas sur `main` tant que la batterie unique n'a pas tourné. `ARCHITECTURE.md` §518.
 
 ---
 ## TERMINÉS SOIGNÉ, CODÉ (25 octobre 2026)
@@ -3634,7 +3643,7 @@ dehors — l'application le laissait entrer, puis refusait toute écriture.
 | Brique | Où c'est |
 |---|---|
 | Route qui efface les cookies et renvoie à la connexion | `src/app/api/session-perimee/route.ts` |
-| Contrôle du compte, dans le **layout** (307 sans JavaScript) | `src/components/atlas/GardeDocumentsLegaux.tsx` |
+| Contrôle du compte, dans le **layout** (307 sans JavaScript) | `src/components/atlas/GardeEtapesDuCompte.tsx`, qui appelle `src/server/garde-etapes-du-compte.ts` |
 | Compte disparu ≠ compte sans entreprise | `src/server/session-ctx.ts` |
 | Contrôle, cinq points dont un navigateur sans JavaScript | `scripts/test-session-perimee-e2e.ts` |
 | Le pourquoi, et les trois défauts trouvés à l'essai | `ARCHITECTURE.md` §54 |

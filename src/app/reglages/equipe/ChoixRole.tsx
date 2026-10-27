@@ -1,7 +1,10 @@
 "use client";
 
-import { colors, libelleCaps } from "@/lib/design-tokens";
+import { colors } from "@/lib/design-tokens";
 import { ROLES, ceQueLeRoleChange, libelleRole, type Role } from "@/lib/acces-roles";
+import CocheRonde from "@/components/atlas/reglages/CocheRonde";
+import Paquet from "@/components/atlas/reglages/Paquet";
+import Picto from "@/components/atlas/reglages/Picto";
 
 /**
  * LE RÔLE, ET CE QU'IL CHANGE — dessiné UNE fois, employé aux deux endroits.
@@ -31,7 +34,8 @@ import { ROLES, ceQueLeRoleChange, libelleRole, type Role } from "@/lib/acces-ro
  * (`CLAUDE.md` §3), et ici la divergence se lirait ainsi — la pastille teintée
  * d'un côté, noire de l'autre, c'est-à-dire le défaut qu'il vient de signaler,
  * revenu par la moitié de l'écran qu'on aurait oubliée. La planche du
- * 11 octobre 2026 arrive donc aux deux endroits à la fois, et c'est voulu.
+ * 11 octobre 2026 arrive donc aux deux endroits à la fois, et c'est voulu, comme
+ * celle des Réglages soignés le 26 octobre (`appli/soignee/reglages-equipe.html`).
  *
  * **Les phrases viennent de `acces-roles.ts`**, avec la règle qu'elles
  * décrivent. Écrites ici, elles auraient vieilli à la première restriction
@@ -46,35 +50,30 @@ export default function ChoixRole({
 }: {
   valeur: Role;
   inerte?: boolean;
-  /** Le libellé « SON RÔLE » au-dessus. Utile sur l'écran de création, où rien
-   *  d'autre ne dit ce que ces pastilles règlent. */
+  /** Le titre doré « Son rôle » au-dessus, dans son paquet. Utile sur l'écran
+   *  de création, où rien d'autre ne dit ce que ces cartes règlent. */
   titre?: boolean;
   onChoisir: (role: Role) => void;
 }) {
   const dit = ceQueLeRoleChange(valeur);
 
-  return (
+  const contenu = (
     <>
-      {titre && (
-        // **Sans filet.** Sa demande du 25 août 2026, capture à l'appui : *« ça
-        // aussi tu peux retirer »* — le trait qui part du mot et file jusqu'au
-        // bord. Il était revenu ici le 26, sur un écran neuf ;
-        // `test-accueil-en-tete.ts` l'a repris. Les séparateurs de BLOCS, eux,
-        // restent : *« ceux qui séparent les blocs, laisse-les »*.
-        <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.inkSoft }}>Son rôle</p>
-      )}
-
       {/* **TROIS SUR UNE LIGNE, PATRON À PART — sa planche du 11 octobre 2026**
           (`appli/donner-un-acces-corrige.html`, version Corrigé). Le 2×2 du
           30 août mettait Patron au rang des trois autres ; or le choisir, c'est
           donner tout Atlas. Il est donc posé seul, dessous, et dit ce qu'il
-          donne. L'ordre des trois reste celui de `ROLES`. */}
+          donne. L'ordre des trois reste celui de `ROLES`.
+
+          **Des cartes, et non plus des pilules** (planche du 26 octobre) : la
+          coche ronde au-dessus du mot, comme les choix de Mon entreprise. Le
+          choix pris se cerne de l'encre d'action et se teinte, jamais plein. */}
       <div className="grid grid-cols-3 gap-2">
         {ROLES.filter((r) => r !== "proprietaire").map((r) => (
-          <Pastille key={r} role={r} choisi={r === valeur} inerte={inerte} onChoisir={onChoisir} />
+          <CarteRole key={r} role={r} choisi={r === valeur} inerte={inerte} onChoisir={onChoisir} />
         ))}
       </div>
-      <Pastille
+      <CarteRole
         role="proprietaire"
         choisi={valeur === "proprietaire"}
         inerte={inerte}
@@ -87,72 +86,74 @@ export default function ChoixRole({
           le périmètre du SALARIÉ. Un écran qui ment sur ce que fait un rôle est
           pire qu'un écran absent.
 
-          **Deux colonnes, plus rien de barré** (planche du 11 octobre 2026) :
-          une ligne barrée se lit comme une erreur effacée, pas comme un refus.
-          Le droit porte un coche, le refus un cadenas. */}
-      <div
-        data-atlas="droits-du-role"
-        className="mt-3.5 grid grid-cols-2 gap-3.5 rounded-2xl px-4 pb-1.5 pt-4"
-        style={{ backgroundColor: colors.card }}
-      >
-        <div>
-          <p className={TITRE_COLONNE} style={{ color: colors.inkSoft }}>Pourra</p>
+          **Plus rien de barré** (planche du 11 octobre 2026) : une ligne barrée
+          se lit comme une erreur effacée, pas comme un refus. Le droit porte un
+          coche, le refus un cadenas.
+
+          **L'une sous l'autre, en 15 px** (planche du 26 octobre) : « Pourra »
+          sur une plage verte, la couleur de ce qui marche ; « Ne pourra pas »
+          sur la plage claire. Deux colonnes de 13,5 px se déchiffraient. */}
+      <div data-atlas="droits-du-role" className="mt-3 grid gap-2">
+        <div className="rounded-[6px] px-4 pb-2 pt-3.5" style={{ backgroundColor: colors.carteVertFond }}>
+          <p className={TITRE_COLONNE} style={{ color: colors.carteVertTexte }}>Pourra</p>
           <ul>
             {dit.peut.map((l) => (
               <li key={l} className={LIGNE} style={{ color: colors.ink }}>
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 24 24"
-                  className={PICTO}
-                  style={{ ...TRAIT, stroke: colors.rust, strokeWidth: 1.8 }}
-                >
-                  <path d="m5 13 4.5 4.5L19 7" />
-                </svg>
+                <span className={PICTO} style={{ color: colors.carteVertTexte }}>
+                  <Picto nom="coche" taille={18} epaisseur={2.4} />
+                </span>
                 {l}
               </li>
             ))}
           </ul>
         </div>
-        <div className="border-l pl-3.5" style={{ borderColor: colors.line }}>
+        <div className="rounded-[6px] px-4 pb-2 pt-3.5" style={{ backgroundColor: colors.card }}>
           <p className={TITRE_COLONNE} style={{ color: colors.inkSoft }}>Ne pourra pas</p>
           {dit.nonPlus.length > 0 ? (
             <ul>
               {dit.nonPlus.map((l) => (
                 <li key={l} className={LIGNE} style={{ color: colors.inkSoft }}>
-                  <svg
-                    aria-hidden="true"
-                    viewBox="0 0 24 24"
-                    className={PICTO}
-                    style={{ ...TRAIT, stroke: colors.inkSoft, strokeWidth: 1.7 }}
-                  >
-                    <rect x="5" y="11" width="14" height="9" rx="2" />
-                    <path d="M8 11V8a4 4 0 0 1 8 0v3" />
-                  </svg>
+                  <span className={PICTO} style={{ color: colors.inkSoft }}>
+                    <Picto nom="cadenas" taille={18} />
+                  </span>
                   {l}
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="mb-2 text-[13.5px]" style={{ color: colors.inkSoft }}>Rien ne lui est fermé.</p>
+            <p className="mb-2 text-[15px]" style={{ color: colors.inkSoft }}>Rien ne lui est fermé.</p>
           )}
         </div>
       </div>
     </>
   );
+
+  // **Sans filet sous le titre.** Sa demande du 25 août 2026, capture à
+  // l'appui : *« ça aussi tu peux retirer »* — le trait qui part du mot et file
+  // jusqu'au bord. Le titre du paquet n'en porte pas.
+  return titre ? (
+    <Paquet titre="Son rôle" sansPlage>
+      {contenu}
+    </Paquet>
+  ) : (
+    contenu
+  );
 }
 
-const TITRE_COLONNE = "mb-2 text-[9.5px] font-medium uppercase tracking-[0.28em]";
-const LIGNE = "relative mb-2 pl-5 text-[13.5px] leading-[1.4]";
-const PICTO = "absolute left-0 top-[2px] h-[14px] w-[14px]";
-const TRAIT = { fill: "none", strokeLinecap: "round", strokeLinejoin: "round" } as const;
+const TITRE_COLONNE = "mb-1.5 text-[14px] font-bold";
+const LIGNE = "relative pb-[7px] pl-[27px] pt-0.5 text-[15px] leading-[1.4]";
+const PICTO = "absolute left-0 top-[3px]";
 
 /**
- * Une pastille de rôle : teintée et cochée quand elle est choisie, jamais
+ * Une carte de rôle : teintée, cernée et cochée quand elle est choisie, jamais
  * pleine. C'est un ÉTAT, et le plein est réservé au geste qui crée le compte
  * (sa capture du 26 août, en tête de ce fichier). `dit`, que seul Patron porte,
- * s'écrit à droite de la pastille.
+ * s'écrit à droite de la carte.
+ *
+ * **La coche est en or** : elle se voit sur les sept chartes, le fond teinté
+ * bouge de l'une à l'autre.
  */
-function Pastille({
+function CarteRole({
   role,
   choisi,
   inerte,
@@ -171,33 +172,22 @@ function Pastille({
       disabled={inerte}
       onClick={() => !choisi && onChoisir(role)}
       aria-pressed={choisi}
-      className={`flex items-center gap-1.5 rounded-full py-2.5 text-[12.5px] ${
-        dit ? "mt-2 w-full justify-between px-4 text-left" : "justify-center px-1"
+      data-atlas={`carte-role-${role}`}
+      className={`flex rounded-[14px] text-[15px] font-semibold transition-shadow duration-200 ${
+        dit
+          ? "mt-2 min-h-[56px] w-full flex-row items-center gap-3 px-4 text-left"
+          : "min-h-[80px] min-w-0 flex-col items-center justify-center gap-2 px-1 py-2.5"
       }`}
       style={
         choisi
-          ? { backgroundColor: colors.rustTint, color: colors.ink, fontWeight: 600, border: "1px solid transparent" }
-          : { border: `1px solid ${colors.line}`, color: colors.muted }
+          ? { backgroundColor: colors.rustTint, color: colors.ink, boxShadow: `inset 0 0 0 2px ${colors.rust}` }
+          : { backgroundColor: colors.card, color: colors.inkSoft, boxShadow: `inset 0 0 0 1px ${colors.line}` }
       }
     >
-      <span className="flex items-center gap-1.5">
-        {/* Le coche dit « celui-là », sans avoir à comparer les fonds. Il est en
-            or : il se voit sur les sept chartes, le fond teinté bouge de l'une
-            à l'autre. */}
-        {choisi && (
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 24 24"
-            className="h-[13px] w-[13px] flex-none"
-            style={{ ...TRAIT, stroke: colors.or, strokeWidth: 2.2 }}
-          >
-            <path d="m5 13 4.5 4.5L19 7" />
-          </svg>
-        )}
-        {libelleRole(role)}
-      </span>
+      <CocheRonde pris={choisi} />
+      {libelleRole(role)}
       {dit && (
-        <span className="font-normal" style={{ color: colors.muted }}>
+        <span className="ml-auto text-[14.5px] font-normal" style={{ color: colors.inkSoft }}>
           {dit}
         </span>
       )}

@@ -373,11 +373,6 @@ export function phraseDeLEcheance(r: Pick<RappelVehicule, "avant" | "echeance">)
   return `Avant le ${jourEtMois(r.avant)}. ${r.echeance.texte}.`;
 }
 
-/** « Contrôle technique avant le 30 novembre. À passer dès maintenant. » — quand rien d'autre ne le nomme. */
-export function phraseDuRappel(r: Pick<RappelVehicule, "controle" | "avant" | "echeance">): string {
-  return `${NOM_CONTROLE[r.controle]} ${phraseDeLEcheance(r).replace(/^A/, "a")}`;
-}
-
 /** Les papiers qui manquent encore à la fiche, dans l'ordre où on les ajoute. */
 export function documentsManquants(presents: readonly NatureDocumentVehicule[]): string[] {
   return NATURES_DOCUMENT_VEHICULE.filter((n) => !presents.includes(n)).map((n) => AVEC_ARTICLE[n]);

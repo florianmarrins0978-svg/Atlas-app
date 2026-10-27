@@ -21,7 +21,7 @@ import {
 } from "@/server/repositories/paiements-facture";
 import { preparerPhotoEntrante } from "@/server/photo-entrante";
 import { dossierEnCours } from "@/server/repositories/dossiers-comptables";
-import { appliquerCheckUp, relierTicket } from "@/server/repositories/pour-mon-comptable";
+import { appliquerCheckUp, ecartAvecLaLigne, relierTicket } from "@/server/repositories/pour-mon-comptable";
 import { lignesImprimees } from "@/lib/ticket-imprime";
 
 /**
@@ -36,7 +36,8 @@ import { lignesImprimees } from "@/lib/ticket-imprime";
 
 export type ResultatAchat =
   | { ok: true; id: string }
-  | { ok: false; raison: string };
+  /** `ecart` : pris pour une ligne de banque, le ticket ne tombe pas sur son montant. */
+  | { ok: false; raison: string; ecart?: { ligne: number; piece: number } };
 
 export async function ajouterAchatAction(formData: FormData): Promise<ResultatAchat> {
   const fournisseur = String(formData.get("fournisseur") ?? "").trim();
@@ -122,6 +123,16 @@ export async function ajouterAchatAction(formData: FormData): Promise<ResultatAc
     return { ok: false, raison: "Cette photo de ticket n'est pas reconnue." };
   }
 
+  // **Pris pour une ligne, un ticket d'un autre montant ne la rejoint pas sans
+  // son accord** (sa remarque du 25 octobre 2026 : « je pouvais valider une
+  // facture qui n'était pas du montant »). Vérifié AVANT d'enregistrer : un
+  // refus après coup laisserait un achat rangé et une ligne toujours vide.
+  const malgreEcart = formData.get("malgreEcart") === "oui";
+  if (mouvementId && !malgreEcart) {
+    const ecart = await ecartAvecLaLigne(ctx, mouvementId, totalTtc === null ? null : totalTtc.toFixed(2));
+    if (ecart) return ecart;
+  }
+
   const ligne = await creerAchatTva(ctx, {
     dateAchat,
     fournisseur,
@@ -142,7 +153,8 @@ export async function ajouterAchatAction(formData: FormData): Promise<ResultatAc
   // **Pris pour une ligne, il la justifie, par le geste du patron** : le Check
   // up ne relierait que s'il tombait juste et seul, et il a montré lequel.
   if (mouvementId) {
-    const relie = await relierTicket(ctx, mouvementId, ligne.id, "patron");
+    // L'écart, s'il y en a un, vient d'être vu et accepté juste au-dessus.
+    const relie = await relierTicket(ctx, mouvementId, ligne.id, "patron", true);
     if (!relie.ok) return { ok: false, raison: `Le ticket est rangé dans Ma TVA, mais n'a pas rejoint sa ligne : ${relie.raison}` };
   }
   // **Le ticket rejoint sa ligne de banque dès qu'il arrive** (« Pour mon

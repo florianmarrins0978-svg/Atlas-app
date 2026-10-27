@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { colors, font, libelleCaps, texteSituation } from "@/lib/design-tokens";
+import { colors, font, voile } from "@/lib/design-tokens";
+import LigneReglage, { styleValeurReglage } from "@/components/atlas/reglages/LigneReglage";
 import { FORMES_JURIDIQUES, FORME_AUTRE, formeConnue } from "@/lib/formes-juridiques";
+import Picto from "@/components/atlas/reglages/Picto";
 
 /**
  * La forme juridique : on choisit, on n'écrit plus.
@@ -59,11 +61,7 @@ export default function ChampFormeJuridique({
   }
 
   return (
-    <div className="border-b py-[13px]" style={{ borderColor: colors.line }}>
-      <span className={`mb-[5px] block ${libelleCaps}`} style={{ color: colors.inkSoft }}>
-        Forme juridique
-      </span>
-
+    <LigneReglage libelle="Forme juridique">
       <button
         type="button"
         onClick={() => setOuvert((o) => !o)}
@@ -73,25 +71,25 @@ export default function ChampFormeJuridique({
       >
         <span
           className="min-w-0 flex-1"
-          style={{
-            fontFamily: font.display,
-            fontSize: 17,
-            lineHeight: 1.35,
-            color: valeur.trim() === "" ? colors.muted : colors.ink,
-          }}
+          style={{ ...styleValeurReglage, color: valeur.trim() === "" ? colors.muted : colors.ink }}
         >
           {valeur.trim() === "" ? "SASU, EI, EURL…" : valeur}
         </span>
-        <span
-          aria-hidden="true"
-          className="-mt-[3px] h-[7px] w-[7px] flex-none rotate-45"
-          style={{ borderRight: `1.5px solid ${colors.muted}`, borderBottom: `1.5px solid ${colors.muted}` }}
-        />
+        {/* Le chevron en or, comme sur la planche soignée : il dit qu'une
+            liste s'ouvre, sans un mot de plus. */}
+        <span style={{ color: colors.or }}>
+          <Picto nom="bas" taille={20} />
+        </span>
       </button>
 
       {ouvert && (
-        <div className="mt-2 overflow-hidden rounded-[4px]" style={{ backgroundColor: colors.card }}>
-          {[...FORMES_JURIDIQUES, { sigle: FORME_AUTRE, nom: "À écrire vous-même" }].map((f) => {
+        // Sur la plage claire du paquet, la liste se pose sur le fond de la
+        // page et un cheveu la borde : en `card`, elle s'y confondait.
+        <div
+          className="mt-2.5 overflow-hidden rounded-[10px]"
+          style={{ backgroundColor: colors.cream, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
+        >
+          {[...FORMES_JURIDIQUES, { sigle: FORME_AUTRE, nom: "À écrire vous-même" }].map((f, rang) => {
             const pris = f.sigle !== FORME_AUTRE && connue?.sigle === f.sigle;
             return (
               <button
@@ -99,11 +97,12 @@ export default function ChampFormeJuridique({
                 type="button"
                 onClick={() => choisir(f.sigle)}
                 aria-pressed={pris}
-                className="flex w-full items-center gap-3 border-b px-3.5 text-left last:border-b-0"
+                className="flex w-full items-center gap-3 px-3.5 text-left"
                 style={{
-                  borderColor: colors.line,
+                  borderTop: rang > 0 ? `1px solid ${colors.line}` : undefined,
                   minHeight: 46,
-                  backgroundColor: pris ? colors.line : "transparent",
+                  backgroundColor: pris ? voile(colors.ink, 0.06) : "transparent",
+                  color: colors.ink,
                 }}
               >
                 <span className="flex-none" style={{ fontFamily: font.display, fontSize: 16 }}>
@@ -111,7 +110,7 @@ export default function ChampFormeJuridique({
                 </span>
                 {/* Le nom complet à côté du sigle : « EURL » ne se retient pas,
                     et sans lui il faudrait chercher ailleurs pour choisir. */}
-                <span className={`flex-1 text-right ${texteSituation}`} style={{ color: colors.inkSoft }}>
+                <span className="flex-1 text-right text-[13.5px] leading-[1.4]" style={{ color: colors.inkSoft }}>
                   {f.nom}
                 </span>
               </button>
@@ -130,16 +129,10 @@ export default function ChampFormeJuridique({
           value={connue ? "" : valeur}
           onChange={(e) => onChange(e.target.value)}
           onBlur={() => onFini(valeur)}
-          className="mt-2 block w-full rounded-[4px] border-0 px-3.5 py-3 outline-none"
-          style={{
-            backgroundColor: colors.card,
-            fontFamily: font.display,
-            fontSize: 17,
-            lineHeight: 1.35,
-            color: colors.ink,
-          }}
+          className="mt-2.5 block w-full rounded-[10px] border-0 px-3.5 py-3 outline-none"
+          style={{ backgroundColor: colors.cream, fontFamily: font.display, fontSize: 18, lineHeight: 1.3, color: colors.ink }}
         />
       )}
-    </div>
+    </LigneReglage>
   );
 }

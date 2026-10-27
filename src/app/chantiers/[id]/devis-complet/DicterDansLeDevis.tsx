@@ -121,7 +121,9 @@ export default function DicterDansLeDevis({
       if (!actuelle()) return;
       if (!r.ok) {
         setMessage(
-          r.raison === "vide"
+          r.raison === "credits"
+            ? r.message
+            : r.raison === "vide"
             ? "Rien n'a été entendu. Réessayez en parlant un peu plus près du téléphone."
             : r.raison === "simulee"
               ? // **Ne jamais présenter le texte de remplacement comme une dictée.**

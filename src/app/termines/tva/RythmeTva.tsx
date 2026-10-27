@@ -79,7 +79,7 @@ export default function RythmeTva({
   }
 
   return (
-    <p data-atlas="rythme" className="mt-2.5 px-6 text-[12px] leading-[1.55]" style={{ color: colors.muted }}>
+    <p data-atlas="rythme" className="mt-2.5 px-6 text-[15px] leading-[1.55]" style={{ color: colors.inkSoft }}>
       Déclaration{" "}
       {modifiable ? (
         // `inline-block` + `relative` : le bandeau se pose sous CE mot, à son
@@ -92,8 +92,8 @@ export default function RythmeTva({
             aria-expanded={ouvert}
             disabled={enCours}
             onClick={() => setOuvert((o) => !o)}
-            className="inline-flex min-h-[44px] items-center bg-transparent p-0"
-            style={{ color: colors.inkSoft }}
+            className="inline-flex min-h-[44px] items-center bg-transparent p-0 font-semibold"
+            style={{ color: colors.ink }}
           >
             {/* Le trait vit sous le MOT, pas sous le bouton de 44 px : posé sur
                 le bouton, il flottait un centimètre plus bas. */}
@@ -109,7 +109,7 @@ export default function RythmeTva({
                 aria-selected={false}
                 data-atlas="rythme-autre"
                 onClick={() => choisir(autre)}
-                className="inline-flex min-h-[36px] items-center bg-transparent p-0 text-[12px]"
+                className="inline-flex min-h-[44px] items-center bg-transparent p-0 text-[15px] font-semibold"
                 style={{ color: colors.inkSoft }}
               >
                 {MOT[autre]}

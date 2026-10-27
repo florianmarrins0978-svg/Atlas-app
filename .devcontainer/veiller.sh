@@ -108,9 +108,21 @@ PROCHAINE_RELANCE=$(( $(date +%s) + RELANCE_APRES ))
 # **Un seul veilleur.** Deux veilleurs relanceraient deux serveurs, et le remède
 # reproduirait la panne. Le verrou porte un identifiant de processus : un
 # fichier resté d'un conteneur précédent ne bloque donc rien.
+#
+# **Un numéro vivant n'est pas un veilleur — 27 octobre 2026.** `/tmp` survit à
+# l'arrêt de l'espace et les numéros repartent de zéro : celui du veilleur
+# d'hier désigne au redémarrage un programme quelconque. `kill -0` le disait
+# « en place », le veilleur neuf sortait, et plus personne ne relançait le
+# serveur. On regarde donc ce que le processus EXÉCUTE ; quand sa ligne de
+# commande ne se lit pas (hors Linux), on garde le refus, plus sûr que deux
+# veilleurs.
+est_un_veilleur() {
+  [ -r "/proc/$1/cmdline" ] || return 0
+  tr '\0' ' ' < "/proc/$1/cmdline" 2>/dev/null | grep -q 'veiller\.sh'
+}
 if [ -f "$VERROU" ]; then
   ANCIEN="$(cat "$VERROU" 2>/dev/null || true)"
-  if [ -n "$ANCIEN" ] && kill -0 "$ANCIEN" 2>/dev/null; then
+  if [ -n "$ANCIEN" ] && kill -0 "$ANCIEN" 2>/dev/null && est_un_veilleur "$ANCIEN"; then
     echo "veilleur déjà en place (pid $ANCIEN)"
     exit 0
   fi

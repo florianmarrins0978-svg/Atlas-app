@@ -154,10 +154,10 @@ export default function EnAttenteDePaiement({
   return (
     <div className="mt-[34px] px-6">
       <div className="flex items-baseline justify-between gap-3">
-        <h2 className="text-[17px]" style={{ color: colors.ink, fontFamily: font.display }}>
+        <h2 className="text-[22px]" style={{ color: colors.ink, fontFamily: font.display }}>
           Factures en attente
         </h2>
-        <span className="text-[12px] tabular-nums" style={{ color: colors.muted }}>
+        <span className="text-[14px] tabular-nums" style={{ color: colors.inkSoft }}>
           {factures.length === 0 ? "rien" : `${factures.length} facture${factures.length > 1 ? "s" : ""}`}
         </span>
       </div>
@@ -175,14 +175,14 @@ export default function EnAttenteDePaiement({
       {rentrees.map((r) => (
         /* Ses mots, et pas de tiret : *« à la place du tiret »*. Le montant est
            celui qui vient d'entrer au relevé — le reste dû, pas le total. */
-        <p key={r.id} data-atlas="rentree-au-releve" className="mt-3 text-[12px] leading-[1.5]" style={{ color: colors.muted }}>
+        <p key={r.id} data-atlas="rentree-au-releve" className="mt-3 text-[14px] leading-[1.5]" style={{ color: colors.inkSoft }}>
           {r.nom} · <span className="tabular-nums" style={{ color: colors.inkSoft }}>{euros(r.montant)}</span> est rentrée au
           relevé.
         </p>
       ))}
 
       {factures.length === 0 ? (
-        <p className="mt-4 text-center text-[13px]" style={{ color: colors.inkSoft }}>
+        <p className="mt-4 text-center text-[15px]" style={{ color: colors.inkSoft }}>
           Tout est réglé. Rien n&apos;attend son paiement.
         </p>
       ) : (
@@ -206,7 +206,9 @@ export default function EnAttenteDePaiement({
                 className="flex items-baseline justify-between gap-3"
               >
                 <div className="min-w-0">
-                  <p className="truncate text-[14.5px]" style={{ color: colors.ink }}>
+                  {/* Le nom et le montant en gras, sa planche du 26 octobre
+                      2026 : ce qu'il cherche pour savoir qui doit combien. */}
+                  <p className="truncate text-[18px] font-bold" style={{ color: colors.ink, fontFamily: font.display }}>
                     {f.clientNom ?? "Client"}
                   </p>
                   {/* **LA LIGNE RESTE À SA PLACE, ON NE FAIT QUE L'ÉCRIRE PLUS
@@ -218,20 +220,20 @@ export default function EnAttenteDePaiement({
 
                       Le jour court, comme la trace de réception juste en
                       dessous : une seule façon d'écrire un jour sur cet écran. */}
-                  <p className="text-[11.5px] leading-[1.45]" style={{ color: colors.muted }}>
+                  <p className="text-[14px] leading-[1.45]" style={{ color: colors.inkSoft }}>
                     {f.numeroCommercial}, émise le {jourCourt(f.dateEmission, aujourdHui)}
                   </p>
                 </div>
                 <div className="flex-shrink-0 text-right">
                   <p
-                    className="text-[15.5px]"
+                    className="text-[19px] font-bold"
                     style={{ color: colors.ink, fontFamily: font.display, fontVariantNumeric: "tabular-nums" }}
                   >
                     {/* Le mot devant le chiffre, et seulement quand un acompte
                         est passé : sur une facture intacte, « reste à payer »
                         et le total disent la même chose. */}
                     {f.etat === "partielle" && (
-                      <span className="text-[11px]" style={{ color: colors.muted, fontFamily: font.body }}>
+                      <span className="block text-[13.5px] font-normal" style={{ color: colors.inkSoft, fontFamily: font.body }}>
                         Reste à payer{" "}
                       </span>
                     )}
@@ -252,7 +254,7 @@ export default function EnAttenteDePaiement({
                       ligne du numéro, à gauche ; c'est le MONTANT entier qu'on
                       vient chercher ici. */}
                   {f.etat === "partielle" && (
-                    <p className="text-[11px] leading-[1.45]" style={{ color: colors.or }}>
+                    <p className="whitespace-nowrap text-[13.5px] font-semibold leading-[1.45]" style={{ color: colors.or }}>
                       Sur les {euros(f.totalTtc)}
                     </p>
                   )}
@@ -282,9 +284,21 @@ export default function EnAttenteDePaiement({
                 <VirementSurLaFacture q={virements[f.id]} />
               ) : (
               <>
-              <PayePar moyen={moyenDe(f.id)} choisir={(m) => setMoyens((t) => ({ ...t, [f.id]: m }))} />
+              {/* **« Payé par » suit la saisie d'un règlement partiel** — sa
+                  remarque du 26 octobre 2026 : il a noté une partie par
+                  virement sans voir que le moyen se choisissait AU-DESSUS.
+                  Ouverte, la saisie le prend avec elle (`SaisieDuReglement`) ;
+                  fermée, il reste ici, avant « J'ai reçu le paiement ». Un
+                  seul choix pour les deux boutons. */}
+              {ouverte !== f.id && (
+                <PayePar moyen={moyenDe(f.id)} choisir={(m) => setMoyens((t) => ({ ...t, [f.id]: m }))} />
+              )}
 
-              <div className="mt-2.5 flex flex-wrap items-center gap-2">
+              {/* **Le bouton vert sur toute la largeur, « J'ai reçu une
+                  partie » dessous** — sa planche du 25 octobre 2026, bouts
+                  ronds retenus le 26 : une cible au pouce, la même place pour
+                  chaque facture. */}
+              <div className="mt-2.5 flex flex-col items-stretch gap-1">
                 {/* Les suites visent les repères, jamais les mots : c'est le
                     libellé qui vient de changer, et il changera encore. */}
                 <button
@@ -292,7 +306,7 @@ export default function EnAttenteDePaiement({
                   data-atlas="solder-la-facture"
                   disabled={enCours === f.id}
                   onClick={() => solder(f.id)}
-                  className="atlas-plein min-h-[40px] rounded-full px-5 py-2 text-[14px] font-medium disabled:opacity-40"
+                  className="atlas-plein min-h-[52px] w-full rounded-full px-5 py-2 text-[16px] font-semibold disabled:opacity-40"
                   style={{ backgroundColor: colors.plein, color: colors.card }}
                 >
                   {enCours === f.id ? "…" : "J'ai reçu le paiement"}
@@ -302,8 +316,8 @@ export default function EnAttenteDePaiement({
                   data-atlas="noter-un-reglement"
                   onClick={() => setOuverte(ouverte === f.id ? null : f.id)}
                   aria-expanded={ouverte === f.id}
-                  className="min-h-[40px] px-2 py-2 text-[14px]"
-                  style={{ color: colors.muted }}
+                  className="min-h-[44px] px-2 py-2 text-[15px] font-semibold"
+                  style={{ color: colors.rust }}
                 >
                   J&apos;ai reçu une partie
                 </button>
@@ -313,6 +327,7 @@ export default function EnAttenteDePaiement({
                 <SaisieDuReglement
                   facture={f}
                   moyen={moyenDe(f.id)}
+                  choisirMoyen={(m) => setMoyens((t) => ({ ...t, [f.id]: m }))}
                   aujourdHui={aujourdHui}
                   onErreur={setErreur}
                   onFini={() => {
@@ -327,7 +342,7 @@ export default function EnAttenteDePaiement({
               {(f.paiements.length > 0 || f.retires.length > 0) && (
                 <ul className="mt-2.5 flex flex-col gap-1.5">
                   {f.paiements.map((p) => (
-                    <li key={p.id} className="flex items-center gap-2 text-[12px]" style={{ color: colors.muted }}>
+                    <li key={p.id} className="flex items-center gap-2 text-[14px]" style={{ color: colors.inkSoft }}>
                       {/* **LA LIGNE ENREGISTRÉE PREND LA FORME DE LA SAISIE —
                           sa demande du 11 septembre 2026 :** *« donc :
                           11/09/2026, le montant qui vient d'être rentré »*, la
@@ -397,7 +412,7 @@ export default function EnAttenteDePaiement({
                     <li
                       key={r.id}
                       data-atlas="reglement-retire"
-                      className="flex items-center gap-2 text-[12px]"
+                      className="flex items-center gap-2 text-[14px]"
                       style={{ color: colors.muted }}
                     >
                       <span className="flex-1 tabular-nums line-through">
@@ -418,7 +433,7 @@ export default function EnAttenteDePaiement({
                           }
                           router.refresh();
                         }}
-                        className="min-h-[36px] flex-none pl-1.5 text-[12px]"
+                        className="min-h-[44px] flex-none pl-1.5 text-[14px]"
                         style={{ color: colors.or }}
                       >
                         Remettre
@@ -458,12 +473,14 @@ export default function EnAttenteDePaiement({
 function SaisieDuReglement({
   facture,
   moyen,
+  choisirMoyen,
   aujourdHui,
   onErreur,
   onFini,
 }: {
   facture: FactureAttendue;
   moyen: MoyenDePaiement;
+  choisirMoyen: (m: MoyenDePaiement) => void;
   aujourdHui: string;
   onErreur: (m: string | null) => void;
   onFini: () => void;
@@ -480,11 +497,12 @@ function SaisieDuReglement({
 
   return (
     <div className="mt-2.5 flex flex-col gap-2">
+      <PayePar moyen={moyen} choisir={choisirMoyen} />
       <div className="flex items-end gap-2">
         <label className="flex min-w-0 flex-1 flex-col gap-1.5">
           <span
-            className="text-[10px] font-medium uppercase tracking-[0.14em]"
-            style={{ color: colors.muted }}
+            className="text-[14px] font-semibold"
+            style={{ color: colors.inkSoft }}
           >
             Payé le
           </span>
@@ -527,8 +545,8 @@ function SaisieDuReglement({
         </label>
         <label className="flex flex-none flex-col gap-1.5">
           <span
-            className="text-[10px] font-medium uppercase tracking-[0.14em]"
-            style={{ color: colors.muted }}
+            className="text-[14px] font-semibold"
+            style={{ color: colors.inkSoft }}
           >
             Montant reçu
           </span>
@@ -565,7 +583,7 @@ function SaisieDuReglement({
             setEnCours(false);
           }
         }}
-        className="atlas-plein min-h-[44px] self-start rounded-full px-5 py-2.5 text-[14px] font-medium disabled:opacity-40"
+        className="atlas-plein min-h-[48px] self-start rounded-full px-5 py-2.5 text-[16px] font-semibold disabled:opacity-40"
         style={{ backgroundColor: colors.plein, color: colors.card }}
       >
         Enregistrer ce règlement
@@ -576,7 +594,7 @@ function SaisieDuReglement({
           l'acompte ; il n'a pas besoin qu'on lui explique un acompte. Ce qui
           reste est la seule chose qu'il ne peut pas deviner : c'est la part
           REÇUE qui entre au relevé, pas la facture. */}
-      <p className="text-[12px] leading-snug" style={{ color: colors.muted }}>
+      <p className="text-[13.5px] leading-snug" style={{ color: colors.inkSoft }}>
         Seule la part reçue entre au relevé.
       </p>
     </div>
@@ -602,7 +620,7 @@ function SaisieDuReglement({
 function CeQueLeClientEnAFait({ reception, facture }: { reception: ReceptionLisible | undefined; facture: string }) {
   if (!reception) return null;
   return (
-    <Link href={facture} tabIndex={-1} className="mt-2 block text-[11.5px] leading-[1.5]" style={{ color: colors.muted }}>
+    <Link href={facture} tabIndex={-1} className="mt-2 block text-[14px] leading-[1.5]" style={{ color: colors.inkSoft }}>
       {reception.avant}
       {reception.date && <strong style={{ color: colors.inkSoft }}>{reception.date}</strong>}
     </Link>
@@ -629,18 +647,23 @@ function euros(montant: string): string {
  * « Payé par » : le libellé est à nous, le déroulant natif est posé dessus,
  * transparent — comme « Payé le » juste en dessous, et pour la même raison :
  * lui seul ouvre la roue du téléphone.
+ *
+ * **Le mot à gauche, le choix à droite, sur une ligne** — sa planche du
+ * 25 octobre 2026, retenue le 27 : posé au-dessus, « Payé par » prenait une
+ * ligne de plus dans chaque facture, et la saisie d'une partie s'allongeait
+ * d'autant.
  */
 function PayePar({ moyen, choisir }: { moyen: MoyenDePaiement; choisir: (m: MoyenDePaiement) => void }) {
   const libelle = (m: MoyenDePaiement) => LIBELLES_MOYEN[m].charAt(0).toUpperCase() + LIBELLES_MOYEN[m].slice(1);
   return (
-    <label className="mt-2.5 flex flex-col gap-1.5" data-atlas="paye-par">
-      <span className="text-[10px] font-medium uppercase tracking-[0.14em]" style={{ color: colors.muted }}>
+    <label className="mt-3.5 grid grid-cols-[auto_1fr] items-center gap-3" data-atlas="paye-par">
+      <span className="text-[14.5px] font-semibold" style={{ color: colors.inkSoft }}>
         Payé par
       </span>
       <span className="relative block rounded-[4px]" style={{ backgroundColor: colors.cream }}>
         <span
           aria-hidden
-          className="flex items-center justify-between gap-2 px-3 py-2.5"
+          className="flex min-h-[48px] items-center justify-between gap-2 px-3.5"
           style={{ color: colors.ink, fontSize: "16px" }}
         >
           <span>{libelle(moyen)}</span>
@@ -672,7 +695,7 @@ function VirementSurLaFacture({ q }: { q: QuestionSurLaFacture | undefined }) {
   if (!q) return null;
   return (
     <div data-atlas="virement-sur-la-facture">
-      <p className="mt-2 text-[12px] leading-[1.45]" style={{ color: colors.orTexte }}>
+      <p className="mt-2 text-[14px] leading-[1.45]" style={{ color: colors.orTexte }}>
         {q.vu} {q.raison}
       </p>
       <ReponseVirement virementId={q.virementId} question={q.question} oui={q.oui} choix={[q.choix]} relire />

@@ -1,4 +1,4 @@
-import { TEXTE_ORIGINE_CONDITIONS_GENERALES } from "./conditions-generales";
+import { TEXTE_ORIGINE_CONDITIONS_GENERALES, paragraphesConditionsGenerales } from "./conditions-generales";
 import { enEuros } from "./euros";
 
 /**
@@ -268,6 +268,36 @@ export function lignesConditionsDevis(
   if (c.textePied) lignes.push(c.textePied);
 
   return lignes;
+}
+
+/**
+ * TOUT CE QUE CES RÉGLAGES AJOUTENT AU DEVIS, à l'endroit où ça s'imprime.
+ *
+ * **L'écran disait « Rien ne s'ajoutera » sur un compte neuf, et c'était faux**
+ * (planche des Réglages soignés, 26 octobre 2026). Il ne lisait que
+ * `lignesConditionsDevis`, c'est-à-dire le seul bloc de conditions ; or la
+ * validité s'imprime en tête du devis, et les conditions générales après le
+ * bon pour accord. Les deux sont allumées d'office.
+ *
+ * **Elle compose les fonctions du PDF, elle n'en réécrit aucune** : la validité
+ * de `libelleValidite`, le bloc de `lignesConditionsDevis`, et l'annexe n'existe
+ * que si elle a un paragraphe, la règle de `annexeConditionsGenerales`. Une
+ * seconde rédaction finirait par annoncer ce que le papier ne porte pas.
+ */
+export function ceQueLeDevisDira(c: Conditions): {
+  /** « 30 jours », en tête, sous le numéro. `null` : rien d'imprimé. */
+  validite: string | null;
+  /** Le bloc de conditions, sans montant : le total n'est pas connu ici. */
+  lignes: string[];
+  /** L'annexe après le bon pour accord. */
+  conditionsGenerales: boolean;
+  /** Vrai seulement quand aucune des trois ne s'imprime. */
+  rien: boolean;
+} {
+  const validite = libelleValidite(c);
+  const lignes = lignesConditionsDevis(c);
+  const conditionsGenerales = paragraphesConditionsGenerales(c.conditionsGenerales).length > 0;
+  return { validite, lignes, conditionsGenerales, rien: validite === null && lignes.length === 0 && !conditionsGenerales };
 }
 
 /**

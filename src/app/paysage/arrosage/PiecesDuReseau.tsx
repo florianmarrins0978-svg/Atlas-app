@@ -1,9 +1,10 @@
 "use client";
 
-import { colors, font } from "@/lib/design-tokens";
+import { colors, font, voile } from "@/lib/design-tokens";
 import type { Maillon, Poste, ReseauPostes } from "@/lib/arrosage/postes";
 import type { Retouches } from "@/lib/arrosage/retouches";
-import Vignette from "./Vignette";
+import Vignette, { OMBRE_VIGNETTE } from "./Vignette";
+import BoutonAjouter from "./BoutonAjouter";
 
 /**
  * LES PIÈCES D'UN RÉSEAU, SUR LE PLAN DU JARDIN — sa demande du 18 octobre
@@ -41,11 +42,11 @@ export default function PiecesDuReseau({
 }) {
   const style = { "--couleur": r.couleur } as React.CSSProperties;
   return (
-    <div className="mt-[18px]" style={style} data-atlas="pieces-reseau" data-reseau={r.i}>
-      <p className="flex items-center gap-2.5">
+    <div className="mt-7 first-of-type:mt-0" style={style} data-atlas="pieces-reseau" data-reseau={r.i}>
+      <p className="mb-1 flex min-h-[40px] items-center gap-2.5">
         <span className="block h-[12px] w-[12px] flex-none rounded-[3px]" style={{ backgroundColor: r.couleur }} />
-        <b style={{ fontFamily: font.display, fontWeight: 400, fontSize: 18, lineHeight: 1.2 }}>Réseau {r.i + 1}</b>
-        <span className="text-[12.5px]" style={{ color: colors.muted }}>{r.nom}</span>
+        <b style={{ fontFamily: font.display, fontWeight: 400, fontSize: 20, lineHeight: 1.2 }}>Réseau {r.i + 1}</b>
+        <span className="min-w-0 text-[14.5px]" style={{ color: colors.inkSoft }}>{r.nom}</span>
       </p>
 
       {r.goutte && (
@@ -63,7 +64,7 @@ export default function PiecesDuReseau({
       </div>
 
       {r.plan ? (
-        <div className="mt-[10px] rounded-[16px] p-3" style={{ backgroundColor: colors.card }} data-atlas="plan-des-pieces">
+        <div className="mt-[10px] rounded-[6px] p-3" style={{ backgroundColor: colors.card }} data-atlas="plan-des-pieces">
           <div className="relative">
             <svg viewBox={`0 0 ${r.plan.largeur} ${r.plan.hauteur}`} className="block h-auto w-full" aria-hidden="true">
               {r.plan.contours.map((pts, i) => (
@@ -95,7 +96,7 @@ export default function PiecesDuReseau({
           </div>
           {/* « Une petite ligne sous chaque plan avec le nombre de pièces du réseau » : lue sur ce qui est posé, jamais un second calcul. */}
           {r.compteDuPlan && (
-            <p className="mx-[2px] mt-[10px] text-[13.5px]" style={{ color: colors.inkSoft }}>
+            <p className="mx-[2px] mt-[10px] text-[14.5px] leading-[1.45]" style={{ color: colors.inkSoft }}>
               {r.compteDuPlan}
             </p>
           )}
@@ -109,7 +110,7 @@ export default function PiecesDuReseau({
           )}
         </div>
       ) : (
-        <div className="relative mt-[10px] rounded-[16px] py-4 pl-7 pr-[10px]" style={{ backgroundColor: colors.card }} data-atlas="rail-goutte">
+        <div className="relative mt-[10px] rounded-[6px] py-4 pl-7 pr-[10px]" style={{ backgroundColor: colors.card }} data-atlas="rail-goutte">
           <span aria-hidden="true" className="absolute bottom-[18px] left-[14px] top-[18px] w-[5px] rounded-[3px]" style={{ backgroundColor: r.couleur }} />
           <div className="flex flex-wrap items-start gap-1.5">
             {[...r.rail, ...r.ajoutees].map((x) => (
@@ -119,15 +120,7 @@ export default function PiecesDuReseau({
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={() => onAjouter(`r${r.i}`)}
-        data-atlas="ajouter-piece"
-        className="mt-[10px] flex min-h-[48px] w-full items-center justify-center rounded-full bg-transparent text-[14.5px]"
-        style={{ border: `1.5px dashed ${colors.line}`, color: colors.ink }}
-      >
-        Ajouter une pièce au réseau {r.i + 1}
-      </button>
+      <BoutonAjouter libelle={`Ajouter une pièce au réseau ${r.i + 1}`} onClick={() => onAjouter(`r${r.i}`)} />
     </div>
   );
 }
@@ -149,7 +142,7 @@ function Chaine({ maillons, onChaine }: { maillons: Maillon[]; onChaine: (m: Mai
           >
             <span
               className="relative flex h-[44px] w-[44px] items-center justify-center rounded-[9px]"
-              style={{ backgroundColor: colors.card, boxShadow: `0 0 0 1px ${colors.line}, 0 2px 5px ${colors.lineSoft}`, opacity: m.etat === "retiree" ? 0.35 : 1, filter: m.etat === "retiree" ? "grayscale(1)" : undefined }}
+              style={{ backgroundColor: colors.card, boxShadow: OMBRE_VIGNETTE, opacity: m.etat === "retiree" ? 0.35 : 1, filter: m.etat === "retiree" ? "grayscale(1)" : undefined }}
             >
               {m.photo && (
                 // eslint-disable-next-line @next/next/no-img-element -- pansement assumé : next/image n’a rien à optimiser sur une photo de pièce servie telle quelle depuis public/, une photo de pièce, servie telle quelle
@@ -160,7 +153,7 @@ function Chaine({ maillons, onChaine }: { maillons: Maillon[]; onChaine: (m: Mai
                 <img src={m.pied} alt="" className="absolute" style={{ right: -5, bottom: -5, width: "55%", borderRadius: 5, backgroundColor: colors.card }} />
               )}
             </span>
-            <small className="mt-1" style={{ fontSize: 10.5, lineHeight: 1.25, color: m.etat === "retiree" ? colors.alert : m.etat === "changee" ? colors.orTexte : colors.inkSoft, textDecoration: m.etat === "retiree" ? "line-through" : undefined }}>
+            <small className="mt-1" style={{ fontSize: 12.5, lineHeight: 1.3, color: m.etat === "retiree" ? colors.alert : m.etat === "changee" ? colors.orTexte : colors.inkSoft, textDecoration: m.etat === "retiree" ? "line-through" : undefined }}>
               {m.libelle}
             </small>
           </button>
@@ -182,15 +175,17 @@ function Chaine({ maillons, onChaine }: { maillons: Maillon[]; onChaine: (m: Mai
 /** Une rangée de choix, un seul pressé : celle de la planche, pour le goutte-à-goutte comme pour le montage au robinet. */
 export function Chips<T extends string | number>({ valeur, choix, onChoix, libelle }: { valeur: T; choix: [T, string][]; onChoix: (v: T) => void; libelle: string }) {
   return (
-    <div className="mt-3 flex flex-wrap gap-1.5" role="group" aria-label={libelle}>
+    // Un choix posé côte à côte sur un fond voilé, la case choisie en carte : le `.choix` de la planche soignée,
+    // en capsules (sa règle du 12 août 2026, la même forme pour tous les boutons ; la planche les dessinait à 9 px).
+    <div className="mt-3 flex flex-wrap gap-1 rounded-[26px] p-1" style={{ backgroundColor: voile(colors.ink, 0.06) }} role="group" aria-label={libelle}>
       {choix.map(([v, texte]) => (
         <button
           key={String(v)}
           type="button"
           aria-pressed={valeur === v}
           onClick={() => onChoix(v)}
-          className="rounded-full px-3 py-2 text-[13.5px]"
-          style={{ border: `1px solid ${valeur === v ? colors.plein : colors.line}`, backgroundColor: valeur === v ? colors.plein : colors.card, color: valeur === v ? colors.card : colors.ink }}
+          className="min-h-[44px] flex-1 rounded-full border-0 px-[10px] text-[15px] font-semibold leading-tight"
+          style={valeur === v ? { backgroundColor: colors.card, color: colors.ink, boxShadow: `0 1px 2px ${voile(colors.ink, 0.14)}` } : { backgroundColor: "transparent", color: colors.inkSoft }}
         >
           {texte}
         </button>

@@ -1,12 +1,15 @@
 import Link from "next/link";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
-import { colors, font, libelleCaps } from "@/lib/design-tokens";
+import Paquet from "@/components/atlas/reglages/Paquet";
+import PastilleIcone from "@/components/atlas/reglages/PastilleIcone";
+import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { estProprietaire } from "@/server/autorisation";
 import { listerTarifs } from "@/server/repositories/tarifs";
 import RubriqueReservee from "../RubriqueReservee";
 import ReglagesClient from "../ReglagesClient";
 import { garderLaPage } from "@/server/garde-page";
+import Picto, { type NomPicto } from "@/components/atlas/reglages/Picto";
 
 export const dynamic = "force-dynamic";
 
@@ -56,79 +59,54 @@ export default async function TarifsPage() {
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <div className="pb-24">
-        <EnTeteEcran
-          surtitre="Réglages"
-          titre="Mes tarifs"
-          retour={{ href: "/reglages", libelle: "Retour aux réglages" }}
-        />
+        {/* La grammaire des Réglages soignés (planche du 26 octobre 2026,
+            `appli/soignee/reglages-tarifs.html`) : le retour et l'assistant sur
+            une ligne, le titre seul. Le surtitre doré « RÉGLAGES » est parti,
+            comme sur le sommaire. */}
+        <EnTeteEcran allure="soignee" titre="Mes tarifs" retour={{ href: "/reglages", libelle: "Retour aux réglages" }} />
 
-        <section className="mx-[26px] mt-[26px]">
-          <ReglagesClient
-            initialTarifs={tarifs.map((t) => ({ id: t.id, intitule: t.intitule, prix: t.prix, unite: t.unite }))}
-          />
-        </section>
-
-        {/* **Les grilles et le catalogue restent des écrans à part**, et ce
-            n'est pas un renvoi paresseux : l'un est un tableau de vingt-quatre
-            cases qu'on parcourt, l'autre une liste partagée qui n'appartient
-            pas à l'artisan. Les déplier ici donnerait un écran de six mètres,
-            exactement celui qu'on vient de défaire. */}
-        <section className="mx-[26px] mt-[30px] border-t pt-[18px]" style={{ borderColor: colors.line }}>
-          <p className={`mb-[10px] ${libelleCaps}`} style={{ color: colors.inkSoft }}>
-            Mes autres prix
-          </p>
-
-          <Renvoi
-            href="/reglages/prix"
-            nom="Mes prix"
-            dit="Abattage, dessouchage, taille de haie."
-          />
-          <Renvoi
-            href="/catalogue"
-            nom="Le catalogue"
-            dit="Prestations et matériels reconnus. Sans prix."
-            derniere
-          />
-        </section>
+        <ReglagesClient
+          initialTarifs={tarifs.map((t) => ({ id: t.id, intitule: t.intitule, prix: t.prix, unite: t.unite }))}
+        >
+          {/* **Les grilles et le catalogue restent des écrans à part**, et ce
+              n'est pas un renvoi paresseux : l'un est un tableau de vingt-quatre
+              cases qu'on parcourt, l'autre une liste partagée qui n'appartient
+              pas à l'artisan. Les déplier ici donnerait un écran de six mètres,
+              exactement celui qu'on vient de défaire. */}
+          <Paquet titre="Mes autres prix">
+            <Renvoi href="/reglages/prix" nom="Mes prix" dit="Abattage, dessouchage, taille de haie." picto="etiquette" />
+            <Renvoi href="/catalogue" nom="Le catalogue" dit="Prestations et matériels reconnus. Sans prix." picto="liste" />
+          </Paquet>
+        </ReglagesClient>
       </div>
     </div>
   );
 }
 
-/** Un renvoi vers un écran voisin, dans la grammaire du sommaire. */
-function Renvoi({
-  href,
-  nom,
-  dit,
-  derniere = false,
-}: {
-  href: string;
-  nom: string;
-  dit: string;
-  derniere?: boolean;
-}) {
+/**
+ * Un renvoi vers un écran voisin, dans la grammaire du sommaire : l'icône dorée
+ * dans sa pastille, le nom en serif, ce qu'on y trouve dessous, le chevron doré.
+ */
+function Renvoi({ href, nom, dit, picto }: { href: string; nom: string; dit: string; picto: NomPicto }) {
   return (
-    <Link
-      href={href}
-      className={`flex min-h-[56px] w-full items-center gap-[15px] py-[13px] ${derniere ? "" : "border-b"}`}
-      style={derniere ? undefined : { borderColor: colors.line }}
-    >
+    <Link href={href} className="relative flex min-h-[72px] w-full items-center gap-[14px] py-3">
+      {/* Le filet se pose au-dessus de chaque ligne ; le paquet rogne le premier. */}
+      <span aria-hidden className="absolute inset-x-0 -top-px h-px" style={{ backgroundColor: colors.line }} />
+      <PastilleIcone>
+        <Picto nom={picto} taille={22} />
+      </PastilleIcone>
       <span className="min-w-0 flex-1">
-        <span className="block text-[17px] leading-[1.25]" style={{ fontFamily: font.display, color: colors.ink }}>
+        <span className="block text-[18px] leading-[1.25]" style={{ fontFamily: font.display, color: colors.ink }}>
           {nom}
         </span>
-        <span className="mt-[3px] block text-[12.5px] leading-[1.5]" style={{ color: colors.inkSoft }}>
+        <span className="mt-[3px] block text-[14.5px] leading-[1.4]" style={{ color: colors.inkSoft }}>
           {dit}
         </span>
       </span>
       <span
         aria-hidden="true"
         className="h-2 w-2 rotate-45"
-        style={{
-          flex: "none",
-          borderRight: `1.5px solid ${colors.chevron}`,
-          borderTop: `1.5px solid ${colors.chevron}`,
-        }}
+        style={{ flex: "none", borderRight: `1.5px solid ${colors.or}`, borderTop: `1.5px solid ${colors.or}` }}
       />
     </Link>
   );

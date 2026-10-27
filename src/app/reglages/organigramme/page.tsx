@@ -28,7 +28,7 @@ export default async function OrganigrammePage() {
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <div className="pb-24">
-        <EnTeteEcran surtitre="Réglages" titre="Organigramme" retour={{ href: "/reglages", libelle: "Retour aux réglages" }} />
+        <EnTeteEcran allure="soignee" titre="Organigramme" retour={{ href: "/reglages", libelle: "Retour aux réglages" }} />
         <Organigramme
           organigramme={organigramme}
           moi={ctx.utilisateurId}

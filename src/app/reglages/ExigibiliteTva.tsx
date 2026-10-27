@@ -2,7 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { colors, libelleCaps } from "@/lib/design-tokens";
+import { colors, font } from "@/lib/design-tokens";
+import CocheRonde from "@/components/atlas/reglages/CocheRonde";
+import PlageTon from "@/components/atlas/reglages/PlageTon";
 import { reglerExigibiliteAction } from "./actions";
 import type { Exigibilite } from "@/lib/exigibilite-tva";
 
@@ -133,16 +135,20 @@ export default function ExigibiliteTva({
   const siEnvoye = actuelle === "encaissements" ? tvaAutre : tvaRetenue;
 
   return (
-    <div className="mt-6">
-      <p className={libelleCaps} style={{ color: colors.muted }}>
+    <div className="mt-[18px]">
+      {/* Le libellé en toutes lettres, et non plus en petites capitales
+          espacées (planche soignée du 26 octobre 2026) : les mots, eux, sont
+          ceux qu'il a validés. */}
+      <p className="mb-0.5 text-[14px] font-semibold" style={{ color: colors.inkSoft }}>
         Je reverse ma TVA aux impôts
       </p>
       <div
         role="radiogroup"
         aria-label="Quand ma TVA devient exigible"
-        className="mt-2 flex flex-col gap-2"
+        className="overflow-hidden rounded-[6px] px-[18px]"
+        style={{ backgroundColor: colors.card }}
       >
-        {OPTIONS.map((o) => (
+        {OPTIONS.map((o, rang) => (
           <button
             key={o.valeur}
             type="button"
@@ -150,23 +156,21 @@ export default function ExigibiliteTva({
             aria-checked={choisie === o.valeur}
             disabled={enCours}
             onClick={() => choisir(o.valeur)}
-            className="flex min-h-[44px] items-start gap-2.5 px-1 py-2.5 text-left disabled:opacity-50"
-            style={{ borderBottom: `1px solid ${colors.line}` }}
+            className="relative flex min-h-[60px] w-full items-start gap-3 py-[13px] text-left disabled:opacity-50"
           >
-            <span
-              aria-hidden
-              className="mt-[3px] h-[18px] w-[18px] flex-none rounded-full"
-              style={{
-                border: `1.5px solid ${choisie === o.valeur ? colors.rust : colors.muted}`,
-                backgroundColor: choisie === o.valeur ? colors.rust : "transparent",
-                boxShadow: choisie === o.valeur ? `inset 0 0 0 3px ${colors.cream}` : undefined,
-              }}
-            />
+            {/* Le filet part après la pastille, comme sur la planche : il
+                sépare deux phrases, pas deux pastilles. */}
+            {rang > 0 && (
+              <span aria-hidden className="absolute left-[34px] right-0 top-0 h-px" style={{ backgroundColor: colors.line }} />
+            )}
+            <span className="mt-px">
+              <CocheRonde pris={choisie === o.valeur} />
+            </span>
             <span className="min-w-0">
-              <span className="block text-[14px] font-medium" style={{ color: colors.ink }}>
+              <span className="block text-[17.5px] leading-[1.25]" style={{ fontFamily: font.display, color: colors.ink }}>
                 {o.titre}
               </span>
-              <span className="text-[12px]" style={{ color: colors.muted }}>
+              <span className="mt-0.5 block text-[14px] leading-[1.4]" style={{ color: colors.inkSoft }}>
                 {o.quoi}
               </span>
             </span>
@@ -176,38 +180,32 @@ export default function ExigibiliteTva({
       {/* **La ligne qui répond à « rien ne se passe ».** Elle est là même quand
           les deux régimes donnent le même chiffre — c'est ce cas-là, le plus
           fréquent chez lui, qui l'a fait douter de l'application. */}
-      {/* **La plage passe de `rustTint` à `card`, le 3 septembre 2026.** Sur les
-          deux chartes sombres, `rustTint` est dérivé du FOND (`chartes.ts`) :
-          `#1f211e` posé sur `#101210` tient 1,14 de contraste, c'est-à-dire
-          rien. L'encart existait donc sur cinq chartes et disparaissait sur
-          Nuit et Sylve. `card` est aux antipodes du fond dans chacune des huit
-          par construction, et le cheveu lui donne son bord. */}
-      <p
-        data-atlas="ecart-des-regimes"
-        className="mt-3 rounded-[4px] px-3 py-2.5 text-[12.5px] leading-snug"
-        style={{ backgroundColor: colors.card, border: `1px solid ${colors.line}`, color: colors.inkSoft }}
-      >
-        {memeChiffre ? (
-          <>
-            Sur <strong style={{ color: colors.ink }}>{periode}</strong>, ce choix ne change rien :{" "}
-            <strong style={{ color: colors.ink }}>{siPaye}</strong>{" "}
-            dans les deux cas.
-          </>
-        ) : (
-          <>
-            Sur <strong style={{ color: colors.ink }}>{periode}</strong> :{" "}
-            <strong style={{ color: colors.ink }}>{siPaye}</strong>{" "}
-            en attendant le paiement,{" "}
-            {/* **L'espace est posé À LA MAIN.** Écrit `</strong> dès`, il
-                disparaît à la compilation : l'écran affichait « 1 400,00 €dès
-                l'envoi », vu dans le HTML rendu et pas autrement. */}
-            <strong style={{ color: colors.ink }}>{siEnvoye}</strong>{" "}
-            dès l&apos;envoi.
-          </>
-        )}
-      </p>
+      {/* **Sur la plage dorée des chiffres** (planche soignée du 26 octobre
+          2026) : elle porte deux montants à retenir. Le ton suit les sept
+          chartes, Nuit et Sylve comprises ; c'est ce que la plage `rustTint`
+          ne savait pas faire le 3 septembre 2026 (1,14 de contraste). */}
+      <div className="mt-2.5">
+        <PlageTon ton="or" dataAtlas="ecart-des-regimes">
+          {memeChiffre ? (
+            <>
+              Sur <strong>{periode}</strong>, ce choix ne change rien : <strong>{siPaye}</strong>{" "}
+              dans les deux cas.
+            </>
+          ) : (
+            <>
+              Sur <strong>{periode}</strong> : <strong>{siPaye}</strong>{" "}
+              en attendant le paiement,{" "}
+              {/* **L'espace est posé À LA MAIN.** Écrit `</strong> dès`, il
+                  disparaît à la compilation : l'écran affichait « 1 400,00 €dès
+                  l'envoi », vu dans le HTML rendu et pas autrement. */}
+              <strong>{siEnvoye}</strong>{" "}
+              dès l&apos;envoi.
+            </>
+          )}
+        </PlageTon>
+      </div>
 
-      <p className="mt-2 text-[12px] leading-snug" style={{ color: colors.muted }}>
+      <p className="mx-0.5 mt-2.5 text-[13.5px] leading-[1.45]" style={{ color: colors.inkSoft }}>
         Ce choix doit correspondre à ce que les impôts savent de vous. Dans le doute, votre comptable
         le dit en une phrase.
       </p>

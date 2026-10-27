@@ -144,10 +144,8 @@ async function ongletsOuIlFigure(page: Page, nom: string): Promise<string[]> {
     ["termines", "/termines", "Terminés"],
   ] as const) {
     await ouvrir(page, chemin, titre);
-    // Au repos, rien sous le mois du planning depuis le 15 octobre 2026 (sa
-    // réponse « la semaine ») : les chantiers se lisent en ouvrant les sept
-    // jours, qui commencent aujourd'hui.
-    if (onglet === "planning") await page.click('[data-atlas="point-semaine"]');
+    // Les sept jours, qui commencent aujourd'hui, se lisent d'office sous le
+    // mois du planning depuis sa planche du 25 octobre 2026.
     let vu = (await page.locator(`text=${nom}`).count()) > 0;
     // **« Terminés » ne montre qu'UN MOIS à la fois**, depuis l'écran refait le
     // 22 août 2026. Ce contrôle-ci parle de RANGEMENT — dans quel onglet le
@@ -226,7 +224,6 @@ async function main() {
       await inspecter(`SELECT date_planifiee::text AS j FROM chantiers WHERE id = $1`, [chantierId], 1)
     ).rows[0].j as string;
     const sens = jour < jourDuPatron() ? "avant" : "après";
-    await page.click('[data-atlas="point-semaine"]');
     const visee = page.locator(`[data-atlas="ligne-planifiee"]:has-text("${nom}")`);
     for (let i = 0; i < 12 && !(await visee.count()); i++) {
       await page.click(`button[aria-label="Sept jours ${sens}"]`);

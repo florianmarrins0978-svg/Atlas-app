@@ -104,3 +104,23 @@ export function sessionCoupee(
   if (typeof instantAuthentification !== "number") return false;
   return instantAuthentification * 1000 < coupure.getTime();
 }
+
+/**
+ * **Une session dure trente jours après la connexion, pas davantage** — sa
+ * décision du 26 octobre 2026 (audit, scénario du compte volé).
+ *
+ * Le jeton est réémis à chaque requête : une session qui sert tous les jours ne
+ * mourait jamais, et un cookie copié restait valable tant que personne ne
+ * changeait le mot de passe. La durée se compte depuis `authentifieLe`, posé à
+ * la vraie connexion et jamais avancé par une réémission.
+ *
+ * **Sans `authentifieLe`, la session est tenue pour trop ancienne** : seul un
+ * jeton d'avant le 25 août 2026 n'en porte pas, et son `emisLe` se renouvelle à
+ * chaque requête, donc ne mesure rien. Il se reconnecte une fois.
+ */
+export const DUREE_MAXIMALE_SESSION_JOURS = 30;
+
+export function sessionTropAncienne(authentifieLe: unknown, maintenant: Date): boolean {
+  if (typeof authentifieLe !== "number") return true;
+  return maintenant.getTime() - authentifieLe * 1000 > DUREE_MAXIMALE_SESSION_JOURS * 24 * 3600 * 1000;
+}

@@ -11,7 +11,6 @@ import ExigibiliteTva from "../ExigibiliteTva";
 import { libellePeriode, periodeCourante, PERIODICITE_TVA_PAR_DEFAUT } from "@/server/periode-tva";
 import { relevesSousLesDeuxRegimes } from "@/server/repositories/factures";
 import { enEuros } from "@/lib/euros";
-import VoirUnExemple from "../VoirUnExemple";
 import { remarquesSurLAttestation } from "@/lib/attestation-lue";
 import { jourIso } from "@/lib/jour";
 import { garderLaPage } from "@/server/garde-page";
@@ -38,8 +37,8 @@ export default async function IdentitePage() {
   if (!(await estProprietaire(ctx))) {
     return (
       <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
-        <EnTeteEcran surtitre="Réglages" titre="Mon entreprise" retour={{ href: "/reglages", libelle: "Retour aux réglages" }} />
-        <p className="mx-[26px] mt-8 text-[13px] leading-[1.7]" style={{ color: colors.muted }}>
+        <EnTeteEcran allure="soignee" titre="Mon entreprise" retour={{ href: "/reglages", libelle: "Retour aux réglages" }} />
+        <p className="mx-[22px] mt-6 text-[14.5px] leading-[1.5]" style={{ color: colors.inkSoft }}>
           Ces informations appartiennent au patron de l&apos;entreprise. Elles
           portent son identité et ses coordonnées bancaires.
         </p>
@@ -62,11 +61,7 @@ export default async function IdentitePage() {
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
-      <EnTeteEcran
-        surtitre="Réglages"
-        titre="Mon entreprise"
-        retour={{ href: "/reglages", libelle: "Retour aux réglages" }}
-      />
+      <EnTeteEcran allure="soignee" titre="Mon entreprise" retour={{ href: "/reglages", libelle: "Retour aux réglages" }} />
       <IdentiteClient
         initial={{
           nom: e?.nom ?? "",
@@ -119,25 +114,14 @@ export default async function IdentitePage() {
           est pourtant la moitié de la même question. Deux réglages fiscaux à
           deux endroits, et le patron devait savoir lequel se trouvait où.
 
-          Le doublon que cela évite n'est pas un doublon de code mais de
-          PENSÉE : « suis-je en franchise » et « à quel rythme je déclare » se
-          répondent ensemble, ou pas du tout.
+          **Elle se pose DANS le paquet « Votre TVA »** depuis le 6 septembre
+          2026 : elle passe en enfant (`declarations`), et l'écran la place sous
+          le régime. **Elle reste montée par la PAGE**, et c'est voulu : elle
+          seule lit la base. Le recopier dans l'écran en aurait fait deux.
 
-          **ET ELLE NE L'AVAIT JAMAIS REJOINT — corrigé le 6 septembre 2026.**
-          Ce commentaire disait vrai de l'intention et faux de l'écran : le
-          réglage était rendu ICI, c'est-à-dire APRÈS tout `IdentiteClient` —
-          donc après le téléphone, l'e-mail et les coordonnées bancaires. Il
-          passe désormais en enfant (`periodicite`) et se pose sous le régime,
-          dans le même bloc.
-
-          **Il reste monté par la PAGE**, et c'est voulu : elle seule lit la
-          base. Le recopier dans l'écran en aurait fait deux. */}
-      {/* En bas, après ce qu'il vient de remplir : l'exemple montre tout de
-          suite ce que son SIRET, ses mentions et sa TVA donnent sur le papier
-          (sa réponse « A et B », 26 septembre 2026, `VoirUnExemple`). */}
-      <VoirUnExemple />
-
-      <div className="pb-24" />
+          **Voir un exemple vit dans l'écran** depuis le 26 octobre 2026, collé
+          au-dessus de la barre (`ActionBas`) : posé ici, après lui, il aurait
+          recouvert la barre d'enregistrement au lieu de lui céder la place. */}
     </div>
   );
 }

@@ -231,13 +231,13 @@ essai("le commercial atteint l'application, sauf les adresses nommées", () => {
     "/reglages/identite",
     "/termines",
     // **Pour mon comptable (24 octobre 2026)**, fermé comme Terminés : le
-    // dossier montre chaque ligne de banque et ses montants. La photo d'un
-    // ticket se sert par sa propre route, fermée de même.
+    // dossier montre chaque ligne de banque et ses montants. La pièce d'une
+    // ligne (ticket, facture) se sert par sa propre route, fermée de même.
     "/termines/comptable",
     "/termines/comptable/bilans/xxxx/xxxx",
     "/termines/comptable/dossiers",
     "/termines/comptable/dossiers/xxxx/pdf",
-    "/termines/comptable/ticket/xxxx",
+    "/termines/comptable/piece/xxxx",
     "/termines/comptable/xxxx",
     // La catégorie « Non payées » (24 septembre 2026), fermée comme Terminés.
     "/termines/non-payees",

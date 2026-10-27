@@ -3,6 +3,7 @@ import { formeADuCapital, nomAvecForme } from "../src/lib/formes-juridiques";
 import { lignesMentionsLegales, positionEffective } from "../src/lib/mentions-legales";
 import { sirenDepuisSiret } from "../src/lib/siren";
 import { enEuros } from "../src/lib/euros";
+import { enTeteDuDocument } from "../src/lib/en-tete-document";
 
 // Sa demande du 30 août 2026 : pouvoir ajouter, s'il le veut, le capital et la
 // forme juridique de sa société sur le devis — puis, le même jour, la ville
@@ -195,6 +196,85 @@ cas("une forme libre (« GAEC ») imprime comme une forme connue", () => {
     }),
     [`GAEC des Trois Chênes au capital de ${enEuros("5000.00")}`]
   );
+});
+
+// ── L'en-tête tel qu'il s'imprime, ligne par ligne ───────────────────────
+// **Une seule fonction pour le papier et pour l'écran** (26 octobre 2026) :
+// « Sur vos papiers », dans Mon entreprise, dessine les lignes que le PDF
+// imprime (`document-commun.ts`). Deux ordres écrits à part finiraient par
+// montrer au patron un devis que son client ne reçoit pas.
+console.log("\n— enTeteDuDocument : l'en-tête, dans l'ordre du papier —");
+
+const COORDONNEES = {
+  adresse: "10 rue des Artisans, Nantes",
+  telephone: "02 41 00 00 00",
+  email: "contact@atlas.fr",
+  siret: SIRET,
+  numeroTva: "FR12123456789",
+};
+const textes = (lignes: { texte: string }[]) => lignes.map((l) => l.texte);
+
+cas("une EI signe « EI » après son nom, et n'a aucune ligne de mention", () => {
+  const e = enTeteDuDocument({ nom: "Atelier Démo", formeJuridique: "EI", ...COORDONNEES, position: "sous_nom" });
+  assert.equal(e.nom, "Atelier Démo EI");
+  assert.equal(e.formeApresLeNom, "EI");
+  assert.deepEqual(textes(e.lignes), [
+    "10 rue des Artisans, Nantes",
+    "02 41 00 00 00",
+    "contact@atlas.fr",
+    `SIRET ${SIRET}`,
+    "TVA intracommunautaire FR12123456789",
+  ]);
+  assert.ok(e.lignes.every((l) => !l.mention), "une EI n'a pas de ligne de mention");
+});
+
+cas("« Sous le nom » : les mentions ouvrent la liste", () => {
+  const e = enTeteDuDocument({
+    nom: "Atlas", formeJuridique: "SARL", capitalSocial: "5000.00", villeRcs: "Angers", ...COORDONNEES, position: "sous_nom",
+  });
+  assert.equal(e.nom, "Atlas");
+  assert.equal(e.formeApresLeNom, null);
+  assert.deepEqual(textes(e.lignes).slice(0, 3), [
+    `SARL au capital de ${enEuros("5000.00")}`,
+    `RCS Angers ${sirenDepuisSiret(SIRET)}`,
+    "10 rue des Artisans, Nantes",
+  ]);
+  assert.deepEqual(e.lignes.map((l) => l.mention), [true, true, false, false, false, false, false]);
+});
+
+// Sa réponse du 26 octobre 2026 : il garde « En bas, avec le SIRET », et il
+// veut qu'il y descende VRAIMENT, entre l'e-mail et le SIRET.
+cas("« En bas, avec le SIRET » : les mentions juste au-dessus du SIRET", () => {
+  const e = enTeteDuDocument({
+    nom: "Atlas", formeJuridique: "SARL", capitalSocial: "5000.00", villeRcs: "Angers", ...COORDONNEES, position: "bas",
+  });
+  assert.deepEqual(textes(e.lignes), [
+    "10 rue des Artisans, Nantes",
+    "02 41 00 00 00",
+    "contact@atlas.fr",
+    `SARL au capital de ${enEuros("5000.00")}`,
+    `RCS Angers ${sirenDepuisSiret(SIRET)}`,
+    `SIRET ${SIRET}`,
+    "TVA intracommunautaire FR12123456789",
+  ]);
+  assert.deepEqual(e.lignes.map((l) => l.mention), [false, false, false, true, true, false, false]);
+});
+
+cas("« aucune », resté en base, se lit « sous le nom »", () => {
+  const e = enTeteDuDocument({ nom: "Atlas", formeJuridique: "SASU", ...COORDONNEES, position: "aucune" });
+  assert.equal(e.lignes[0].texte, "SASU");
+  assert.equal(e.lignes[0].mention, true);
+});
+
+cas("une case vide n'imprime rien, et le répertoire des métiers suit le SIRET", () => {
+  const e = enTeteDuDocument({ nom: "Atlas", formeJuridique: "EI", siret: SIRET, numeroRm: "RM 49" });
+  assert.deepEqual(textes(e.lignes), [`SIRET ${SIRET}, RM 49`]);
+});
+
+cas("un nom qui porte déjà « EI » ne le reçoit pas deux fois", () => {
+  const e = enTeteDuDocument({ nom: "Atelier Démo EI", formeJuridique: "EI" });
+  assert.equal(e.nom, "Atelier Démo EI");
+  assert.equal(e.formeApresLeNom, null);
 });
 
 console.log(`\n${echecs === 0 ? "✅ Toutes les vérifications passent." : `❌ ${echecs} échec(s).`}`);

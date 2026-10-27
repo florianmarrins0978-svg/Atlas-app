@@ -42,12 +42,18 @@ Règles absolues :
 
 export type ResultatDictee =
   | { ok: true; transcription: string; coordonnees: CoordonneesDictees }
-  | { ok: false; raison: "transcription" | "vide" };
+  | { ok: false; raison: "transcription" | "vide" }
+  // Le plafond du mois : la phrase dit quand l'IA reprend (`compteur.ts`).
+  | { ok: false; raison: "credits"; message: string };
 
 export async function lireCoordonneesDictees(octets: Buffer, mimeType: string): Promise<ResultatDictee> {
   const transcripteur = getFournisseurTranscription();
   const transcrit = await transcripteur.transcrire(octets, mimeType);
-  if (!transcrit.succes) return { ok: false, raison: "transcription" };
+  if (!transcrit.succes) {
+    return transcrit.erreur.type === "credits_epuises"
+      ? { ok: false, raison: "credits", message: transcrit.erreur.message }
+      : { ok: false, raison: "transcription" };
+  }
 
   const transcription = transcrit.texte.trim();
   if (!transcription) return { ok: false, raison: "vide" };

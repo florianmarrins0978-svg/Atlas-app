@@ -21,12 +21,12 @@
 | **E7** | Deux autres écritures acceptent des champs en trop (client du devis, lignes de prix : déplacer une ligne vers un autre chantier) | moyenne | **corrigé le 25 octobre** |
 | **E8** | La garde des rôles des PAGES vit dans le gabarit racine, que Next.js ne rejoue pas à la navigation interne : un commercial pourrait recevoir les données d'une page qui lui est fermée | **élevée** (reproduit : un commercial lisait Ma TVA en passant par Chantiers) | **corrigé le 25 octobre** : chaque écran pose sa garde lui-même |
 | **E9** | Droits de la base plus larges que le besoin : l'application peut écrire le registre des migrations, les conditions générales, supprimer une entreprise entière | moyenne (défense en profondeur) | **corrigé le 25 octobre** (migration 0147) |
-| **E10** | Liens entre tables non composites (paiement et facture, acompte et devis…) : la base n'empêche pas de rattacher un élément à une autre entreprise | moyenne (défense en profondeur) | vague 3 |
+| **E10** | Liens entre tables non composites (paiement et facture, acompte et devis…) : la base n'empêche pas de rattacher un élément à une autre entreprise | moyenne (défense en profondeur) | **corrigé le 26 octobre** pour les lignes neuves (migration 0149) |
 | **E11** | Donner un accès, changer un rôle (jusqu'à créer un second patron), résilier : sans redemander le mot de passe | moyenne | **corrigé le 26 octobre** pour les accès ; la résiliation **gardée telle quelle, délibérément** |
-| **E12** | Liens clients en clair en base, certains sans expiration (contrat, passages) ; lien du comptable valable un an | moyenne | vague 3 |
-| **E13** | Les libellés des lignes de devis entrent dans la consigne système de l'IA (retouches) ; aucun plafond de dépense d'IA par mois | moyenne | **consigne corrigée le 26 octobre** ; le plafond attend ta décision |
-| **E14** | Sans `ATLAS_PROXY_SAUTS`, les seuils par source deviennent communs à tous : un inconnu peut bloquer les inscriptions ou le mot de passe oublié de tout le monde, ou verrouiller un compte dont il connaît l'adresse | moyenne | dépend du déploiement |
-| **E15** | Chaîne logicielle : actions GitHub épinglées par étiquette, `pages.yml` donne ses droits de publication à l'étape qui installe les paquets, aucun délai avant d'installer une version neuve, `demarrer.sh` retombe sur `npm install` | moyenne | vague 3 |
+| **E12** | Liens clients en clair en base, certains sans expiration (contrat, passages) ; lien du comptable valable un an | moyenne | **gardé tel quel, délibérément** : voir plus bas |
+| **E13** | Les libellés des lignes de devis entrent dans la consigne système de l'IA (retouches) ; aucun plafond de dépense d'IA par mois | moyenne | **corrigé le 26 octobre** : consigne, et plafond mensuel de crédits IA selon tes montants |
+| **E14** | Sans `ATLAS_PROXY_SAUTS`, les seuils par source deviennent communs à tous : un inconnu peut bloquer les inscriptions ou le mot de passe oublié de tout le monde, ou verrouiller un compte dont il connaît l'adresse | moyenne | **à régler chez l'hébergeur**, déjà dans la liste avant le premier artisan |
+| **E15** | Chaîne logicielle : actions GitHub épinglées par étiquette, `pages.yml` donne ses droits de publication à l'étape qui installe les paquets, aucun délai avant d'installer une version neuve, `demarrer.sh` retombe sur `npm install` | moyenne | **corrigé le 26 octobre** (versions figées, droits réduits) ; le délai et le repli gardés, voir `ARCHITECTURE.md` §511 |
 | **E16** | `/api/health/diagnostic` et `/api/health/banc` répondent sans compte (en-têtes reçus, version servie) | faible | **gardé tel quel, délibérément** : la page sert quand on ne peut pas se connecter, et ne porte aucun secret |
 | **E17** | Petits défauts : `choisirLeMotDePasse` sans cadence, une adresse e-mail se devine par le mot de passe oublié, un GET qui écrit, un 500 au lieu d'un refus | faible | **mot de passe oublié borné le 25 octobre** ; le reste en vague 3 |
 
@@ -48,6 +48,27 @@
 - les droits par défaut des workflows GitHub du dépôt (réglage du site GitHub) ;
 - la protection de la branche `main` sur GitHub ;
 - tout ce qui dépend de l'hébergeur de production, qui n'existe pas encore.
+
+## La fin, le 26 octobre
+
+- **Les conditions à accepter** arrêtent désormais aussi le clic suivant, et plus seulement le rechargement de la page. Même chose pour la vérification de l'adresse d'un compte neuf.
+- **La clé de la purge planifiée** de ton espace ne vient plus du dépôt public : comme la clé de session, elle est propre à ton espace.
+- **E14** se règle chez l'hébergeur, le jour où l'appli sera en ligne pour d'autres : c'est déjà dans la liste à cocher avant le premier artisan.
+- **Une pièce importée sans crédits IA** passe en « à vérifier » avec ce que le texte a pu dire : tu la complètes à la main, rien n'est perdu.
+
+## E10 et E12, le 26 octobre
+
+**E10, corrigé.** La base refuse désormais qu'un paiement, un acompte, une photo ou un retour d'intervention d'une entreprise vise une ligne d'une autre entreprise. Vingt-six liens sont concernés. Aucun code ne le faisait : c'est une protection pour la porte que personne n'a encore écrite. Les anciennes lignes ne sont pas revérifiées tout de suite, pour qu'une donnée ancienne imprévue ne bloque pas la mise à jour de ton espace ; c'est noté pour plus tard.
+
+**E12, gardé tel quel.** Les liens envoyés à tes clients (devis, factures, contrats, rapports de passage) restent comme ils sont. Les faire expirer ferait perdre à ton client le contrat qu'il a reçu ; les stocker autrement t'empêcherait de recopier le lien d'un devis déjà envoyé. Chaque lien est impossible à deviner, et n'ouvre que son propre document. Le lien du comptable était déjà protégé autrement, et il dure un exercice.
+
+## Les crédits IA du mois, faits le 26 octobre
+
+Tes plafonds : essai 5 €, Artisan 10 €, Entreprise 20 €, Illimité 60 €, sans abonnement 10 €. Chaque appel à l'IA payante se compte (une estimation, toujours un peu au-dessus de la vraie facture) ; au plafond, il ne part plus, et la saisie à la main continue. Sur Abonnement, la barre de ta planche, en rouge une fois épuisée. Une dictée refusée le dit : « Crédits IA épuisés. Atlas IA reprend le 1er novembre. D'ici là, tout s'écrit à la main. »
+
+**Pour ton entreprise, sans plafond**, une fois sur ton espace : `npm run ia:sans-plafond -- ton@adresse`, puis rallumer l'espace.
+
+Pas vérifiable ICI : la phrase dans l'écran de dictée avec une vraie transcription (pas de clé sur ce poste). La barre, elle, a été regardée à l'écran dans ses trois états.
 
 ## E13, fait le 26 octobre (moitié)
 
