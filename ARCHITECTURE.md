@@ -36313,3 +36313,15 @@ Trois choix faits en codant : la vignette d'une pièce passe de 88 à 72 (`taill
 **Rendre la panne bavarde.** La fiche ne publie pas le journal (dépôt public), et « Serveur : ABSENT » ne disait pas à quelle étape le banc restait. `etape-du-banc.mjs` note, dans une liste fermée (`démarrage`, `dépendances`, `clé de l'espace`, `serveur lancé`), où en est le banc ; `diagnostiquer-espace.mjs` l'écrit (« Banc : étape … depuis N min »). Un mot hors liste ne s'écrit ni ne se relit : rien de secret ne peut partir.
 
 **Non prouvé chez lui** : ni ce verrou, ni celui de §519 n'ont été lus sur sa machine. La ligne « Banc » de la prochaine fiche le dira.
+
+## §521 : Un veilleur neuf arrête le banc orphelin de l'ancien
+
+**Le 27 octobre 2026, 12 h 55**, son espace rallumé avec §519 : `Veilleur : en place` (vrai, désormais vérifié), `Serveur : ABSENT`, aucune construction, 2,3 Go utilisés. Rien de Next ne tournait, et pourtant aucun banc ne partait.
+
+**Le chemin.** À l'allumage, `demarrer.sh` lance d'abord le veilleur de l'ANCIEN code, qui lance aussitôt un banc (ancien code). Puis la mise à jour arrive : `demarrer.sh` tue le veilleur et Next, réinstalle, relance un veilleur neuf. **Le banc de l'ancien survivait**, avec le verrou du banc, et un processus vivant qui exécute bien `banc.mjs` : §519 le jugeait légitime. Bloqué avant de servir (l'étape de la clé, §520, en est un chemin), il fermait la porte à tout banc neuf, qui sortait en 0 sur « déjà en train de se construire ».
+
+**Ce qui change.** En prenant son verrou, `veiller.sh` lit celui du banc (`ATLAS_VERROU_BANC`, même nom que `verrou-banc.mjs`) ; un banc vivant qui ne répond pas à la santé, hors bascule, est arrêté par son numéro (`kill -9` : bloqué dans un appel synchrone, il ne lirait pas un SIGTERM) et son verrou retiré. Un banc qui sert n'est jamais touché. Le chemin du drapeau de bascule devient absolu : il sert avant et après le `cd`.
+
+**Les suites ne touchent jamais le vrai banc** : celles qui lancent `veiller.sh` posent leur propre `ATLAS_VERROU_BANC`.
+
+**Non prouvé chez lui** non plus ; la ligne « Banc » (§520) dira, au prochain allumage, si le banc neuf part.

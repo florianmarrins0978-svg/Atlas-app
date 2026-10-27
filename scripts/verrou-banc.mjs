@@ -28,7 +28,8 @@ import { existsSync, readFileSync, renameSync, rmSync, writeFileSync } from "nod
  * ───────────────────────────────────────────────────────────────────────────
  */
 
-const CHEMIN_PAR_DEFAUT = "/tmp/atlas-banc.pid";
+// Le même nom que `veiller.sh`, qui arrête un banc précédent par ce verrou.
+const CHEMIN_PAR_DEFAUT = process.env.ATLAS_VERROU_BANC || "/tmp/atlas-banc.pid";
 
 /** Le processus existe-t-il encore ? `kill(pid, 0)` ne tue rien : il interroge. */
 function vivant(pid) {

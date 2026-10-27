@@ -122,6 +122,9 @@ const veilleur = spawn("bash", [veilleurCopie, dossier], {
     PORT: String(PORT),
     JOURNAL,
     ATLAS_INTERVALLE_VEILLE: "1",
+    // Un verrou de banc À NOUS : le veilleur arrête le banc qu'il y lit, et le vrai
+    // banc de cette machine ne doit jamais l'être par une suite.
+    ATLAS_VERROU_BANC: path.join(dossier, "banc.pid"),
     ATLAS_INTERVALLE_CONTROLE_PORT: "1",
     // La fiche ne doit pas partir d'ici : ce dépôt factice n'a pas de quoi la
     // publier, et une suite n'écrit jamais dans la fiche du patron.

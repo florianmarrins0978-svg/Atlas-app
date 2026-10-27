@@ -101,6 +101,9 @@ async function veillerDevantUnServeurVivant(opts: {
       JOURNAL: journal,
       ATLAS_TEMOIN_ECHEC: temoin,
       ATLAS_INTERVALLE_VEILLE: "1",
+      // Un verrou de banc À NOUS : le veilleur arrête le banc qu'il y lit, et le vrai
+      // banc de cette machine ne doit jamais l'être par une suite.
+      ATLAS_VERROU_BANC: path.join(dossier, "banc.pid"),
       ATLAS_INTERVALLE_RAPPORT: "9999",
       ATLAS_RELANCE_CONSTRUCTION_S: "0",
       ATLAS_RELANCES_CONSTRUCTION_MAX: opts.relancesMax ?? "3",
