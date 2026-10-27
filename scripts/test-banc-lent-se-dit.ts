@@ -3,6 +3,10 @@ import { execFileSync, spawn } from "node:child_process";
 import { mkdtempSync, writeFileSync, rmSync, existsSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { exigerUnSystemePosix } from "./_outil-requis";
+
+// Le faux veilleur plus bas se tue par son groupe de processus.
+exigerUnSystemePosix("groupes de processus");
 
 // **« L'appli est vraiment très lente, mais vraiment. »** — le patron, le
 // 16 août 2026 au soir.
@@ -53,9 +57,13 @@ const TEMOIN_ECHEC = path.join(dossier, "echec.txt");
 // courant. La suite lisait ce reste et voyait « Code SERVI : <commit> » là où
 // elle attendait « en cours » — quatre cas rouges, aucun défaut de produit.
 const TEMOIN_BATI = path.join(dossier, "version-batie.txt");
-// Le veilleur de ces cas : un pid bien vivant — le nôtre.
+// Le veilleur de ces cas : un processus bien vivant qui en porte la ligne de
+// commande. Un simple pid vivant ne suffit plus : le diagnostic regarde ce que
+// le processus exécute (`/tmp` survit à l'arrêt de l'espace, les numéros sont
+// repris — 27 octobre 2026).
+const FAUX_VEILLEUR = spawn("bash", ["-c", "exec -a 'bash veiller.sh (faux)' sleep 600"], { detached: true, stdio: "ignore" });
 const VERROU_VEILLEUR = path.join(dossier, "veilleur.pid");
-writeFileSync(VERROU_VEILLEUR, `${process.pid}\n`);
+writeFileSync(VERROU_VEILLEUR, `${FAUX_VEILLEUR.pid}\n`);
 
 /**
  * Joue le diagnostic et rend sa sortie.
@@ -393,6 +401,11 @@ verifier("construction en cours et personne sur le port : on ne promet pas un se
   );
 });
 
+try {
+  process.kill(-FAUX_VEILLEUR.pid!, "SIGKILL");
+} catch {
+  // déjà mort : rien à rendre
+}
 rmSync(dossier, { recursive: true, force: true });
 assert.ok(!existsSync(dossier));
 

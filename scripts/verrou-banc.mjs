@@ -41,12 +41,34 @@ function vivant(pid) {
 }
 
 /**
+ * Ce numéro est-il encore celui d'un banc ?
+ *
+ * **Un numéro vivant ne prouve rien.** Le verrou vit dans `/tmp`, qui survit à
+ * l'arrêt de l'espace, et les numéros repartent de zéro au redémarrage : celui
+ * du banc d'hier peut désigner n'importe quel programme d'aujourd'hui. Pris pour
+ * un banc, il fermait la porte à tous les suivants (27 octobre 2026, page
+ * blanche). On regarde donc ce que le processus EXÉCUTE : `banc.mjs` ou
+ * `essai.mjs`, les deux seuls à prendre ce verrou.
+ *
+ * Quand la ligne de commande ne se lit pas (hors Linux), on ne sait pas : on
+ * garde l'ancien raisonnement, qui refuse. Mieux vaut un refus qu'un second
+ * banc (le EADDRINUSE du 10 août).
+ */
+function estUnBanc(pid) {
+  try {
+    return /\b(banc|essai)\.mjs\b/.test(readFileSync(`/proc/${pid}/cmdline`, "utf8"));
+  } catch {
+    return true;
+  }
+}
+
+/**
  * Tente de prendre le verrou.
  *
- * @param {{ chemin?: string, pid?: number }} [options]
+ * @param {{ chemin?: string, pid?: number, porteur?: (pid: number) => boolean }} [options]
  * @returns {{ pris: true } | { pris: false, parPid: number }}
  */
-export function prendreVerrouBanc({ chemin = CHEMIN_PAR_DEFAUT, pid = process.pid } = {}) {
+export function prendreVerrouBanc({ chemin = CHEMIN_PAR_DEFAUT, pid = process.pid, porteur = estUnBanc } = {}) {
   // **Créer d'abord, EXCLUSIVEMENT — et c'est le trou du 17 août 2026.**
   //
   // La version précédente regardait si le fichier existait, puis l'écrivait.
@@ -72,7 +94,7 @@ export function prendreVerrouBanc({ chemin = CHEMIN_PAR_DEFAUT, pid = process.pi
   }
 
   const ancien = Number.parseInt(readFileSync(chemin, "utf8").trim(), 10);
-  if (Number.isInteger(ancien) && ancien > 0 && ancien !== pid && vivant(ancien)) {
+  if (Number.isInteger(ancien) && ancien > 0 && ancien !== pid && vivant(ancien) && porteur(ancien)) {
     return { pris: false, parPid: ancien };
   }
 

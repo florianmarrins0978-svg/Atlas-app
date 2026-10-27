@@ -161,7 +161,14 @@ function veilleurVivant() {
     const pid = Number(readFileSync(VERROU_VEILLEUR, "utf8").trim());
     if (!Number.isInteger(pid) || pid <= 0) return false;
     process.kill(pid, 0);
-    return true;
+    // Un numéro vivant n'est pas un veilleur : `/tmp` survit à l'arrêt de
+    // l'espace et les numéros sont repris. Annoncer « en place » à la place d'un
+    // programme quelconque est ce qui a caché la panne du 27 octobre 2026.
+    try {
+      return /veiller\.sh/.test(readFileSync(`/proc/${pid}/cmdline`, "utf8"));
+    } catch {
+      return true; // ligne de commande illisible : on ne contredit pas le numéro
+    }
   } catch {
     return false;
   }
