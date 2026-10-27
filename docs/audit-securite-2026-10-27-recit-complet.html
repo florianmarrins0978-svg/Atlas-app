@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Comment j'ai essayé de pirater Atlas — le récit complet</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="comment-jai-essayé-de-pirater-atlas--le-récit-complet">Comment j'ai essayé de pirater Atlas — le récit complet</h1>
+<h2 id="pourquoi-jai-fait-ça">Pourquoi j'ai fait ça</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Tu m'as demandé de me mettre à la place d'une personne malveillante qui a un compte normal sur Atlas pour son entreprise, et qui essaie d'aller voir ou de modifier les informations d'une autre entreprise qui n'est pas la sienne — ses clients, ses devis, ses factures, ses photos de chantier. Le but : trouver les trous avant qu'un vrai pirate ne les trouve.</p>
+<h2 id="comment-jai-procédé-étape-par-étape">Comment j'ai procédé, étape par étape</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>1. J'ai préparé un terrain d'essai, séparé de tes vraies informations.</strong> Je n'ai jamais touché à ta vraie application ni à tes vraies données. J'ai monté, sur une machine de travail à part, une copie du logiciel avec une réserve de données entièrement fausses — un peu comme un mannequin d'entraînement pour les pompiers : on s'exerce sur une maison qu'on peut brûler sans risque.</p>
+<p><strong>2. J'ai créé deux fausses entreprises.</strong> Une entreprise « A », avec un compte normal, et une entreprise « B », avec ses propres clients, son propre chantier, sa propre photo. Les deux sont complètement indépendantes, comme deux clients différents d'Atlas qui ne se connaissent pas.</p>
+<p><strong>3. Je me suis connecté comme l'entreprise A, et j'ai essayé d'atteindre ce qui appartient à B.</strong> Pas en lisant les instructions du logiciel pour deviner si ça marcherait — en essayant pour de vrai, avec une vraie connexion, comme le ferait quelqu'un sur son téléphone. J'ai essayé de :</p>
+<ul>
+<li>lire la liste des clients de B ;</li>
+<li>ouvrir les devis et les factures de B ;</li>
+<li>voir les photos et les enregistrements vocaux des chantiers de B ;</li>
+<li>modifier ou effacer des informations de B ;</li>
+<li>créer de nouvelles informations qui se seraient rattachées à B sans son accord ;</li>
+<li>toucher à l'argent de B (ses paiements, ses factures).</li>
+</ul>
+<p><strong>4. J'ai rejoué plus de cinq cents petites vérifications déjà existantes dans l'application.</strong> Beaucoup de ces vérifications avaient déjà été écrites par de précédents travaux, justement pour s'assurer que deux entreprises ne se mélangent jamais. Plutôt que de faire confiance à ce qui était écrit, je les ai toutes rejouées pour de vrai, une par une, pour voir si elles tenaient encore.</p>
+<p><strong>5. J'ai suivi le chemin de l'argent, pas à pas.</strong> Quand un client paie une facture, j'ai vérifié, ligne par ligne dans le fonctionnement du logiciel, qu'il était impossible de faire croire qu'un paiement de l'entreprise B appartenait à l'entreprise A, même en fabriquant une demande truquée.</p>
+<p><strong>6. J'ai testé l'assistant qui écoute et qui répond.</strong> L'assistant intégré à Atlas (celui qui aide à préparer un devis à la voix, par exemple) ne doit jamais écrire quoi que ce soit tout seul dans les données d'un artisan sans qu'il ait dit oui. Je l'ai vérifié.</p>
+<p><strong>7. J'ai testé la connexion et la déconnexion.</strong> Si quelqu'un vole la session de connexion d'un artisan (un peu comme voler le trousseau de clés qu'il laisse dans sa poche), est-ce que se déconnecter coupe vraiment l'accès ? Oui, vérifié.</p>
+<p><strong>8. J'ai regardé comment le logiciel est fabriqué et mis en ligne.</strong> Pas seulement l'application elle-même, mais aussi les outils qui servent à la construire et à la publier, pour voir si quelqu'un de mal intentionné pourrait s'y glisser au moment de la fabrication plutôt que d'attaquer l'application directement.</p>
+<p><strong>9. J'ai vérifié qu'aucun mot de passe technique n'était visible publiquement.</strong> Deux petits secrets techniques (pas tes mots de passe, des clés internes au logiciel) étaient écrits en clair dans le dossier du projet, visible par n'importe qui qui aurait regardé. Je l'ai corrigé.</p>
+<h2 id="ce-que-jai-trouvé-et-ce-qui-est-réparé">Ce que j'ai trouvé, et ce qui est réparé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Un vrai problème, trouvé en essayant pour de vrai, pas en lisant le code.</strong></p>
+<p>La partie du logiciel qui envoie les photos de chantier et les enregistrements vocaux avait un défaut : dans certaines conditions bien particulières, elle aurait pu envoyer à l'entreprise A une photo qui appartenait à l'entreprise B, au lieu de refuser.</p>
+<p>Je l'ai découvert en faisant exactement ce scénario : connecté comme A, j'ai demandé la photo de B, et je l'ai reçue — alors que, pour une autre information du même genre (le logo de l'entreprise), le refus arrivait bien.</p>
+<p><strong>Ce n'était pas dangereux aujourd'hui, sur ton application réelle.</strong> Les conditions qui auraient permis ce problème n'existent que dans certaines situations particulières, qui ne sont pas celles de ton application telle qu'elle tourne actuellement. Mais ce genre de protection doit toujours avoir une deuxième barrière de sécurité en plus de la première, un peu comme une porte avec deux serrures plutôt qu'une — exactement ce qu'on avait déjà fait pour le logo après un problème similaire trouvé en août. Ici, cette deuxième serrure manquait pour les photos et les enregistrements vocaux.</p>
+<p><strong>C'est corrigé</strong>, et j'ai ajouté une vérification permanente qui refusera désormais tout changement de code qui referait apparaître ce défaut sans qu'on le voie.</p>
+<p><strong>Les deux petits secrets techniques visibles publiquement</strong> sont également corrigés : ils sont maintenant générés automatiquement et gardés privés, au lieu d'être écrits en clair dans le projet.</p>
+<h2 id="ce-quune-autre-de-tes-sessions-avait-déjà-réglé-pendant-que-je-travaillais">Ce qu'une autre de tes sessions avait déjà réglé, pendant que je travaillais</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Sans qu'on le sache l'un de l'autre, une autre session que tu avais lancée en même temps que moi travaillait sur une partie des mêmes sujets. Elle a déjà réglé, de son côté :</p>
+<ul>
+<li>un verrouillage supplémentaire sur les liens entre certaines informations de différentes entreprises ;</li>
+<li>la décision, réfléchie et justifiée, de NE PAS faire expirer certains liens envoyés par e-mail (un contrat, un compte-rendu de visite), parce que ça empêcherait un client de retrouver son propre document plus tard ;</li>
+<li>un renforcement des outils de fabrication et de publication du logiciel.</li>
+</ul>
+<p>Son travail et le mien ont été réunis en un seul ensemble cohérent, sans rien garder en double.</p>
+<h2 id="ce-qui-reste-à-faire">Ce qui reste à faire</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Une vérification de fond sur les anciennes informations</strong>, pour être certain à cent pour cent qu'aucune information créée il y a longtemps ne mélange déjà deux entreprises par erreur. Le nouveau verrou empêche que ça se reproduise à l'avenir ; il reste à vérifier que ça n'existait pas déjà avant, dans les informations les plus anciennes.</p>
+<p><strong>Des vérifications qu'on ne peut faire que lorsque l'application sera vraiment installée chez un hébergeur réel</strong>, ce qui n'est pas encore le cas aujourd'hui : la façon dont l'accès à internet sera protégé, par exemple.</p>
+<p><strong>Un essai avec une vraie intelligence artificielle connectée.</strong> Sur la machine où j'ai travaillé, je n'avais pas la clé d'accès à l'intelligence artificielle réelle. J'ai vérifié que le fonctionnement était sûr en lisant comment il est construit, mais je n'ai pas pu le faire tourner pour de vrai avec une vraie conversation.</p>
+<h2 id="en-résumé">En résumé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>J'ai essayé, sérieusement et pour de vrai, de faire passer des informations d'une entreprise vers une autre sur Atlas. J'ai trouvé un vrai problème, je l'ai réparé, et j'ai posé un garde-fou pour qu'il ne revienne pas sans qu'on le voie. Tout le reste de ce que j'ai essayé a tenu bon. Je ne te dirai jamais que l'application est totalement impossible à pirater — personne ne peut le garantir honnêtement — mais elle est aujourd'hui plus solide qu'avant cette vérification.</p>
+</main>
+</body>
+</html>
