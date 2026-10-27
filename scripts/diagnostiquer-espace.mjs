@@ -26,6 +26,7 @@ import { verdictPort, regarderDuDehors } from "./_verdict-port.mjs";
 import { raisonDeLaMigration } from "./_raison-migration.mjs";
 import { portLibre } from "./port-libre.mjs";
 import { lireEchecConstruction, phraseEchec } from "./lire-echec-construction.mjs";
+import { lireEtape } from "./etape-du-banc.mjs";
 
 const DIST = ".next-batie";
 // **Détournable pour l'éprouver, comme le témoin d'échec plus bas — et ce
@@ -292,6 +293,10 @@ console.log(
   }`
 );
 console.log(`  Veilleur         : ${veilleurVivant() ? "en place" : "absent"}`);
+// Où le banc s'est arrêté : sans cette ligne, « Serveur : ABSENT » ne disait pas
+// s'il bâtissait, attendait la base ou n'avait jamais démarré (27 octobre 2026).
+const etapeDuBanc = lireEtape();
+console.log(`  Banc             : ${etapeDuBanc ? `étape « ${etapeDuBanc.etape} », depuis ${etapeDuBanc.minutes} min` : "aucune étape notée"}`);
 // **Le port, et ce n'est pas un détail d'installation.** Un port privé fait
 // répondre GitHub à la place d'Atlas : depuis un téléphone non connecté, on ne
 // voit qu'une page de connexion, et rien ne dit pourquoi. Le patron l'a vécu le

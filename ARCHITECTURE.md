@@ -36303,3 +36303,13 @@ Trois choix faits en codant : la vignette d'une pièce passe de 88 à 72 (`taill
 **Ce qui n'est pas prouvé.** Le journal de son espace n'a pas été lu : la piste est la plus probable, pas la cause établie. Une construction tuée faute de mémoire (8,3 Go, `memoire-prechauffage.mjs`) reste possible, et se lirait à la même fiche.
 
 **À côté.** `demarrer.sh` publie une première fiche juste après le lancement du veilleur : la publication d'allumage vivait derrière la mise à jour, `npm ci` et les migrations, et arrivait huit minutes après le rallumage.
+
+## §520 : Ce qui précède le lancement du serveur est borné, et la fiche dit l'étape du banc
+
+**Le 27 octobre 2026**, après §519, son espace rallumé avec le correctif servait toujours une page blanche. `banc.mjs` joue, avant `lancerDev`/`lancerBati`, l'étape de la clé de l'espace (`secret-de-l-espace.ts`, audit E1) par un `execFileSync` **sans délai**, et ses requêtes n'en avaient pas non plus : une table `double_verification` ou `agendas_externes` verrouillée ailleurs la fait attendre sans fin, et le serveur ne part jamais (reproduit). Son commentaire promettait pourtant l'inverse : *« un banc qui ne démarre plus ferait pire que la faille »*.
+
+**Ce qui change.** La connexion porte `lock_timeout=5s` et `statement_timeout=20s` ; l'appel dans `banc.mjs`, 90 s. Un dépassement est un échec ordinaire : transaction défaite, ancienne clé.
+
+**Rendre la panne bavarde.** La fiche ne publie pas le journal (dépôt public), et « Serveur : ABSENT » ne disait pas à quelle étape le banc restait. `etape-du-banc.mjs` note, dans une liste fermée (`démarrage`, `dépendances`, `clé de l'espace`, `serveur lancé`), où en est le banc ; `diagnostiquer-espace.mjs` l'écrit (« Banc : étape … depuis N min »). Un mot hors liste ne s'écrit ni ne se relit : rien de secret ne peut partir.
+
+**Non prouvé chez lui** : ni ce verrou, ni celui de §519 n'ont été lus sur sa machine. La ligne « Banc » de la prochaine fiche le dira.

@@ -74,6 +74,30 @@ async function main() {
       assert.equal(existsSync(`${fichier}.en-cours`), false);
     });
 
+    // **27 octobre 2026 : son serveur n'est jamais revenu.** Cette étape se joue
+    // AVANT le lancement du serveur ; une table verrouillée la faisait attendre
+    // sans fin, et l'application avec elle. Elle doit RENONCER, pas attendre :
+    // l'ancienne clé sert encore, c'est sa promesse.
+    await essai("une table verrouillée ailleurs : on renonce vite, on n'attend pas sans fin", async () => {
+      const bloqueur = new pg.Client({ connectionString: SUPER });
+      await bloqueur.connect();
+      await bloqueur.query("BEGIN");
+      await bloqueur.query("LOCK TABLE double_verification IN ACCESS EXCLUSIVE MODE");
+      try {
+        const debut = Date.now();
+        const r = await Promise.race([
+          assurerLeSecretDeLEspace(),
+          new Promise<{ etat: string }>((resoudre) => setTimeout(() => resoudre({ etat: "toujours-en-attente" }), 30_000)),
+        ]);
+        assert.equal(r.etat, "echec", `après ${Math.round((Date.now() - debut) / 1000)} s : ${r.etat} — le serveur ne démarrerait jamais`);
+        assert.equal(existsSync(fichier), false, "une clé a été posée sans que ses secrets aient suivi");
+        assert.equal(existsSync(`${fichier}.en-cours`), false);
+      } finally {
+        await bloqueur.query("ROLLBACK");
+        await bloqueur.end();
+      }
+    });
+
     await essai("la clé neuve naît, à l'abri (600), et ses secrets s'ouvrent SOUS ELLE", async () => {
       const r = await assurerLeSecretDeLEspace();
       assert.equal(r.etat, "cree", JSON.stringify(r));
@@ -158,6 +182,11 @@ async function main() {
       const iLancement = banc.indexOf("let serveur = ");
       assert.ok(iSecret >= 0, "banc.mjs ne demande plus la clé de l'espace");
       assert.ok(iSecret < iLancement, "banc.mjs lance le serveur AVANT d'avoir la clé de l'espace");
+      assert.match(
+        banc.slice(iSecret, iLancement),
+        /timeout:\s*\d/,
+        "l'étape de la clé n'a pas de délai : si elle se bloque, le serveur ne part jamais"
+      );
       assert.match(banc, /process\.env\.AUTH_SECRET\s*=/, "banc.mjs ne pose pas AUTH_SECRET pour le serveur");
       // CRON_SECRET non plus ne doit plus venir de docker-compose.yml.
       assert.ok(banc.indexOf("cron-secret") >= 0 && banc.indexOf("cron-secret") < iLancement, "banc.mjs lance le serveur sans sa propre CRON_SECRET");

@@ -33,6 +33,7 @@ import path from "node:path";
 import { randomBytes } from "node:crypto";
 import { annoncePrete } from "./annonce-adresse.mjs";
 import { prendreVerrouBanc, libererVerrouBanc } from "./verrou-banc.mjs";
+import { noterEtape } from "./etape-du-banc.mjs";
 import { peutPrechauffer, memoireDisponibleMo } from "./memoire-prechauffage.mjs";
 import {
   versionEpinglee,
@@ -593,6 +594,7 @@ if (!verrou.pris) {
   process.exit(0);
 }
 process.on("exit", () => libererVerrouBanc());
+noterEtape("démarrage");
 
 // **Un orphelin d'hier soir ne doit pas condamner ce démarrage.**
 //
@@ -932,6 +934,7 @@ async function annoncerDesQueCaRepond(bati, davant = false) {
 // lancé, sortie 1 sans un mot après « Réinstallation avant de bâtir ».
 //
 // Ne coûte rien quand tout va bien : deux `package.json` lus, aucune commande.
+noterEtape("dépendances");
 await reinstallerSiDesaccordees();
 
 // **La clé de session DE SON ESPACE, jamais celle du dépôt** (audit du
@@ -942,10 +945,15 @@ await reinstallerSiDesaccordees();
 // fichier, jamais la clé. S'il échoue (base pas encore debout), l'ancienne clé
 // continue de servir et l'on retentera au prochain allumage : un banc qui ne
 // démarre plus ferait pire que la faille.
+noterEtape("clé de l'espace");
 try {
+  // Borné : quoi qu'il arrive dans cette étape, le serveur doit partir. Un
+  // dépassement lève, et l'ancienne clé sert (27 octobre 2026, un serveur qui
+  // ne revenait plus).
   const chemin = execFileSync(process.execPath, ["node_modules/tsx/dist/cli.mjs", "scripts/secret-de-l-espace.ts", "--chemin"], {
     encoding: "utf8",
     stdio: ["ignore", "pipe", "inherit"],
+    timeout: 90_000,
   }).trim();
   const cle = chemin && existsSync(chemin) ? readFileSync(chemin, "utf8").trim() : "";
   if (cle) process.env.AUTH_SECRET = cle;
@@ -967,6 +975,7 @@ try {
 }
 
 let serveur = modeDeveloppement ? lancerDev() : lancerBati();
+noterEtape("serveur lancé");
 let enBascule = false;
 // Ce qui SERT réellement, à cet instant — pas ce qu'on espérait servir. La
 // bascule peut échouer (le port n'est pas rendu) : l'annonce doit alors dire
