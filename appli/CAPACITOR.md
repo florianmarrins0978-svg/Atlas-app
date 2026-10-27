@@ -17,11 +17,13 @@ Ce dépôt produit **deux choses à partir d'un seul code** :
 
 ## Ce dont on a besoin pour publier sur les stores
 
-- **Node.js** (déjà requis pour les tests).
-- **iOS** : un **Mac** avec **Xcode**, et un compte **Apple Developer**
+- **Node.js 20 ou plus** (déjà requis pour les tests). La coque est en
+  **Capacitor 7** depuis le 27 octobre 2026 : la 6 portait une faille critique
+  et un outil d'archives troué, que seule la 7 corrige sans bricolage.
+- **iOS** : un **Mac** avec **Xcode 16 ou plus**, et un compte **Apple Developer**
   (**99 $/an**). La soumission à l'App Store ne peut se faire que depuis un Mac
   avec ton compte — personne ne peut le faire à ta place.
-- **Android** : **Android Studio** (gratuit) et un compte **Google Play**
+- **Android** : **Android Studio Ladybug ou plus**, avec Java 21 (gratuit) et un compte **Google Play**
   (**25 $ une seule fois**). Se construit sur Mac, Windows ou Linux.
 
 ---
