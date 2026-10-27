@@ -42,9 +42,9 @@
       travail d'à côté prend la différence (le suivant complète s'il n'a pas
       assez), arrondie à 10 € comme le devis.
 
-  LES COULEURS (sa remarque du même soir, « vraiment à chier ») : la nouvelle
-  quitte les gris du vert pin pour des couleurs franches de l'appli, deux
-  intensités au choix, voir ORDRE et DOSES. La première garde ses gris, pour comparer.
+  LES COULEURS (sa remarque du même soir, « vraiment à chier », puis « mets des
+  couleurs pastel, fais plusieurs propositions ») : quatre palettes pastel,
+  voir PASTELS. La première garde ses gris, pour comparer.
 
   Les teintes de la première : le vert pin de la charte (--atlas-rust) mêlé à la carte. Le
   premier morceau est foncé, écrit en clair ; les suivants sont clairs, écrits
@@ -137,7 +137,7 @@
 [data-style="jolie"] .travaux { margin-top: 26px; }
 [data-style="jolie"] .travail-nom { font: 400 17px/1.25 var(--serif); }
 [data-style="jolie"] .pastille-mo { width: 12px; height: 12px; flex: none; border-radius: 50%;
-  box-shadow: inset 0 0 0 1px rgba(28,28,26,0.08); }
+  box-shadow: inset 0 0 0 1px rgba(28,28,26,0.16); }
 /* Le montant se touche pour s'écrire : souligné d'or, comme ce qui s'appuie
    dans l'appli, et 44 px de haut pour le doigt. */
 [data-style="jolie"] .travail-prix { min-height: 44px; display: inline-flex; align-items: center; padding: 0 2px;
@@ -177,10 +177,13 @@
       <div class="pl-etats" data-ecran=".ecran[data-style='jolie']">
         <button type="button" data-etat="trois" aria-pressed="true">Trois travaux</button>
         <button type="button" data-etat="deux">Deux travaux</button>
+        <button type="button" data-etat="cinq">Cinq travaux</button>
       </div>
       <div class="pl-etats" id="palettes">
-        <button type="button" data-palette="vives" aria-pressed="true">Couleurs vives</button>
-        <button type="button" data-palette="douces">Couleurs douces</button>
+        <button type="button" data-palette="jardin" aria-pressed="true">Jardin</button>
+        <button type="button" data-palette="provence">Provence</button>
+        <button type="button" data-palette="mer">Bord de mer</button>
+        <button type="button" data-palette="verger">Verger</button>
       </div>
       <div class="cadre"><div class="ecran" data-style="jolie"></div></div>
     </div>
@@ -217,9 +220,9 @@
     </ul>
     <h2>Les couleurs</h2>
     <ul>
-      <li>Le vert des feuilles, le doré de l’appli, le bleu, puis la sarcelle et le rose : des couleurs que l’appli a déjà.</li>
-      <li><b>Vives</b> : franches, telles quelles. <b>Douces</b> : adoucies par le fond de la carte.</li>
-      <li>Elles suivent les huit chartes. Le montant s’écrit en noir ou en clair, celui qui se lit le mieux sur sa couleur.</li>
+      <li>Quatre palettes pastel, à essayer en haut : <b>Jardin</b> (sauge, sable, bleu ciel, menthe, rose poudré), <b>Provence</b> (lavande, olive, abricot, ciel, rose), <b>Bord de mer</b> (brume, sable, écume, corail, ardoise), <b>Verger</b> (pêche, pistache, citron, framboise, lilas).</li>
+      <li>« Cinq travaux » montre les cinq couleurs d’une palette.</li>
+      <li>Les pastels restent les mêmes sur les huit chartes. Le montant s’écrit en foncé, toujours lisible.</li>
     </ul>
     <h2>Ce qui reste comme dans l’appli</h2>
     <ul class="garde">
@@ -250,6 +253,13 @@
     deux: [
       { cle: "taille", nom: "Taille de la haie", poids: 70, grille: 420 },
       { cle: "ramassage", nom: "Ramassage des déchets verts", poids: 30, grille: null }
+    ],
+    cinq: [
+      { cle: "haie", nom: "Taille de la haie", poids: 30, grille: 420 },
+      { cle: "tonte", nom: "Tonte de la pelouse", poids: 25, grille: 120 },
+      { cle: "massifs", nom: "Désherbage des massifs", poids: 20, grille: null },
+      { cle: "plantation", nom: "Plantation des arbustes", poids: 15, grille: 260 },
+      { cle: "dechets", nom: "Évacuation des déchets verts", poids: 10, grille: null }
     ]
   };
   var TOTAL = 1600, PAS = 10, MINI = PAS;
@@ -257,21 +267,25 @@
   var GRIS = [[100, "card"], [72, "card"], [50, "ink"], [32, "ink"], [18, "ink"]];
   /*
    * LES COULEURS. Sa remarque du 27 octobre 2026 : « les couleurs, elles sont
-   * vraiment à chier, ça donne pas envie d'aller voir le devis ». Des couleurs
-   * franches, prises dans l'appli et définies sur les huit chartes : le vert,
-   * le doré (--atlas-or), le bleu, la sarcelle, le rose.
+   * vraiment à chier, ça donne pas envie d'aller voir le devis », puis, devant
+   * les couleurs franches : « mets des couleurs pastel, fais plusieurs
+   * propositions ». Quatre palettes, à son choix.
    *
-   * DEUX INTENSITÉS, À SON CHOIX. « Vives » : la couleur telle quelle.
-   * « Douces » : mêlée à la carte. Dans les deux, l'écriture du montant se
-   * CHOISIT, morceau par morceau : l'encre ou la carte, celle qui se lit le
-   * mieux, mesurée sur la couleur peinte ; sous 4,5 de contraste, le montant ne
-   * s'écrit pas dans la barre (il reste sur sa ligne). Une couleur fixe pour
-   * l'écriture ne tenait pas : le blanc se perd sur le doré, l'encre sur le vert
-   * foncé, et une charte sombre inverse les deux.
+   * DES TEINTES FIXES, ET C'EST DÉLIBÉRÉ. Un pastel est clair par nature :
+   * dérivé de chaque charte, il deviendrait sombre et terne sur Nuit et Sylve.
+   * Elles ne suivent donc pas la charte, comme les quatre couleurs du planning
+   * (design-tokens.ts) ; codées, elles seront des jetons, jamais du clair dans
+   * un écran. L'écriture du montant se choisit sur la couleur peinte (l'encre
+   * ou la carte, celle qui se lit le mieux) : sur une charte sombre, c'est la
+   * carte sombre qui s'écrit sur le pastel.
    */
-  var ORDRE = ["catRepas", "or", "catCarburant", "catTransport", "catVirement"];
-  var DOSES = { vives: 100, douces: 54 };
-  var palette = "vives";
+  var PASTELS = {
+    jardin: { nom: "Jardin", teintes: ["#b9d3a8", "#ecd9b0", "#b7d1e6", "#b5e0d2", "#efc6cf"] },
+    provence: { nom: "Provence", teintes: ["#cfc4ea", "#d5ddb0", "#f6cfa8", "#bcd8ef", "#f2c4c4"] },
+    mer: { nom: "Bord de mer", teintes: ["#bcd3e3", "#efe0bf", "#c2e5dc", "#f5c3b5", "#c9cfdc"] },
+    verger: { nom: "Verger", teintes: ["#f7c9b0", "#cfe3b0", "#f3e7a6", "#f0bccb", "#dccbe9"] }
+  };
+  var palette = "jardin";
 
   function euros(n) { return n.toLocaleString("fr-FR") + " €"; }
 
@@ -287,8 +301,8 @@
         var g = GRIS[Math.min(k, GRIS.length - 1)];
         return { fond: "color-mix(in srgb, var(--atlas-rust) " + g[0] + "%, var(--atlas-card))", encre: "var(--atlas-" + g[1] + ")" };
       }
-      var jeton = ORDRE[k % ORDRE.length];
-      return { fond: "color-mix(in srgb, var(--atlas-" + jeton + ") " + DOSES[palette] + "%, var(--atlas-card))", encre: null };
+      var t = PASTELS[palette].teintes;
+      return { fond: t[k % t.length], encre: null };
     }
     function dedans() { return travaux.filter(function (t) { return !retires[t.cle]; }); }
     function barre() { return carte.querySelector(".barre-mo"); }
