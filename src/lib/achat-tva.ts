@@ -46,6 +46,24 @@ export function tvaDepuisTtc(totalTtc: number | null, tauxPourCent: number | nul
   return Math.round(tva * 100) / 100;
 }
 
+/** Le taux d'un ticket dont la lecture n'a pas rendu le sien : le taux normal. */
+export const TAUX_TVA_PAR_DEFAUT = 20;
+
+/**
+ * La TVA avec laquelle la feuille d'un ticket s'OUVRE. Celle que le ticket
+ * affiche fait foi et ne se recalcule jamais ; à défaut, celle du total et du
+ * taux (lu, sinon le taux normal), que le patron voit et corrige.
+ *
+ * Elle n'existait que pendant la frappe : un ticket lu sans sa TVA s'ouvrait
+ * avec un champ vide, le bouton restait grisé sans un mot, et l'écart avec la
+ * ligne de banque ne pouvait jamais s'afficher (27 octobre 2026).
+ */
+export function tvaDeDepart(lu: { tvaDeductible: number | null; totalTtc: number | null; tauxTva: number | null } | null): number | null {
+  if (!lu) return null;
+  if (lu.tvaDeductible !== null) return lu.tvaDeductible;
+  return tvaDepuisTtc(lu.totalTtc, lu.tauxTva ?? TAUX_TVA_PAR_DEFAUT);
+}
+
 /**
  * Ce qu'il reste à payer : collectée moins déductible.
  *

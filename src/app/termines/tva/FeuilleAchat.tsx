@@ -9,6 +9,8 @@ import {
   montantSaisi,
   NATURES_ACHAT,
   recuperation,
+  TAUX_TVA_PAR_DEFAUT,
+  tvaDeDepart,
   tvaDepuisTtc,
   type NatureAchat,
   type RepasAchat,
@@ -82,8 +84,11 @@ export default function FeuilleAchat({
   const [fournisseur, setFournisseur] = useState(lu?.fournisseur ?? "");
   const [date, setDate] = useState(lu?.date ?? aujourdHui);
   const [ttc, setTtc] = useState(lu?.totalTtc != null ? String(lu.totalTtc).replace(".", ",") : "");
-  const [taux, setTaux] = useState(lu?.tauxTva != null ? String(lu.tauxTva).replace(".", ",") : "20");
-  const [tva, setTva] = useState(lu?.tvaDeductible != null ? lu.tvaDeductible.toFixed(2).replace(".", ",") : "");
+  const [taux, setTaux] = useState(String(lu?.tauxTva ?? TAUX_TVA_PAR_DEFAUT).replace(".", ","));
+  const [tva, setTva] = useState(() => {
+    const proposee = tvaDeDepart(lu);
+    return proposee === null ? "" : proposee.toFixed(2).replace(".", ",");
+  });
   // Une TVA venue de la lecture, ou écrite par lui, ne s'écrase plus par le
   // calcul : son ticket fait foi.
   const [tvaEcrite, setTvaEcrite] = useState(lu?.tvaDeductible != null);
