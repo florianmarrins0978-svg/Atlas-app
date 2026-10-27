@@ -94,5 +94,22 @@ test("LA TRANSCRIPTION NE PEUT PLUS ÉCOUTER SANS SAVOIR", () => {
   assert.match(construireIndiceDictee(), /désherbage/i);
 });
 
+test("UN MOT HORS DE L'ESPACE VERT SE CHERCHE, IL NE SE REFUSE PAS", () => {
+  /**
+   * **Sa colère du 27 octobre 2026 :** il a demandé la ligne de devis « coupe
+   * de cheveux » ; l'assistant a refusé de la chercher, « ça n'appartient pas
+   * au métier des espaces verts ». *« On ne fait pas une appli pour les
+   * paysagistes, on la fait pour les artisans ! »*
+   *
+   * La racine était ici : la phrase affirmait que TOUT ce qu'on donne au modèle
+   * vient de l'espace vert. Un mot qui n'en vient pas devenait donc une erreur
+   * à corriger. Le métier sert à lever une ambiguïté, jamais à refuser un mot.
+   */
+  for (const phrase of [METIER_ATLAS, METIER_ATLAS_COURT]) {
+    assert.doesNotMatch(phrase, /Tout ce qu'on te donne[^.]*vient de ce métier/i, "la phrase prétend encore que tout vient de l'espace vert");
+    assert.match(phrase, /jamais une raison\s+de refuser/i, "la phrase ne dit pas qu'un mot hors métier se cherche tel quel");
+  }
+});
+
 console.log(`\n${passed} test(s) réussi(s), ${failed} échec(s)`);
 if (failed > 0) process.exit(1);
