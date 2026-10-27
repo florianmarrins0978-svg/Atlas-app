@@ -19,19 +19,24 @@ on:
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
 concurrency:
   group: pages
   cancel-in-progress: true
 
 jobs:
+  # **`pages: write` et `id-token: write` ne vivent QUE sur le job qui en a
+  # besoin** (audit de sécurité, E15, 27 octobre 2026). Ils vivaient au niveau
+  # du *workflow*, donc sur CE job aussi — qui lance `npm ci` puis
+  # `npx playwright install` sur du code tiers. Un paquet piégé exécuté là (le
+  # ver « Shai-Hulud », par exemple, `docs/audit-securite-prompt-renforce.md`
+  # §3) aurait trouvé, dans `GITHUB_TOKEN`, le droit de publier n'importe quoi
+  # sur GitHub Pages et de forger un jeton OIDC — sans avoir touché une seule
+  # ligne de `appli/`. Ce job n'écrit rien : il ne porte que `contents: read`.
   tests:
     name: Tests de bout en bout
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -132,6 +137,10 @@ jobs:
     name: Déploiement
     needs: tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -170,6 +179,9 @@ jobs:
     name: Vérification du site en ligne
     needs: deploy
     runs-on: ubuntu-latest
+    # Même raison que sur `tests` : installe des paquets tiers, n'écrit rien.
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
 

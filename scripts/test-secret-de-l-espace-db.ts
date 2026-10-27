@@ -16,7 +16,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import pg from "pg";
 import { chiffrerSous, dechiffrerSous } from "../src/lib/chiffre-au-repos";
-import { assurerLeSecretDeLEspace } from "./secret-de-l-espace";
+import { assurerLeCronSecretDeLEspace, assurerLeSecretDeLEspace } from "./secret-de-l-espace";
 
 const ANCIEN = "essai-local-non-utilise-en-production-0000";
 const SUPER = (() => {
@@ -142,6 +142,35 @@ async function main() {
       assert.ok(iSecret >= 0, "banc.mjs ne demande plus la clé de l'espace");
       assert.ok(iSecret < iLancement, "banc.mjs lance le serveur AVANT d'avoir la clé de l'espace");
       assert.match(banc, /process\.env\.AUTH_SECRET\s*=/, "banc.mjs ne pose pas AUTH_SECRET pour le serveur");
+    });
+
+    // **Le jeton du planificateur, même faille, remède plus simple** (pas de
+    // base à joindre : rien n'est chiffré sous lui).
+    await essai("le jeton cron naît à l'abri (600), et ne bouge plus une fois créé", () => {
+      const fichierCron = path.join(dossier, "cron-secret");
+      const premier = assurerLeCronSecretDeLEspace();
+      assert.ok(premier.length >= 40, "jeton cron trop court");
+      assert.equal(statSync(fichierCron).mode & 0o777, 0o600, "le fichier du jeton cron est lisible par d'autres");
+      assert.equal(assurerLeCronSecretDeLEspace(), premier, "le jeton cron change alors qu'un fichier existait déjà");
+    });
+
+    await essai("le jeton cron ne s'affiche JAMAIS, ni à l'écran ni au journal", async () => {
+      const valide = readFileSync(path.join(dossier, "cron-secret"), "utf8").trim();
+      const r = spawnSync(process.execPath, [path.join(__dirname, "..", "node_modules", "tsx", "dist", "cli.mjs"), path.join(__dirname, "secret-de-l-espace.ts"), "--cron"], {
+        env: process.env,
+        encoding: "utf8",
+      });
+      assert.equal(r.status, 0, r.stderr);
+      assert.ok(!r.stdout.includes(valide) && !r.stderr.includes(valide), "LE JETON CRON EST SORTI À L'ÉCRAN");
+    });
+
+    await essai("le banc lance son serveur avec le jeton cron de l'espace, pas celui du dépôt", () => {
+      const banc = readFileSync(path.join(__dirname, "banc.mjs"), "utf8");
+      const iSecretCron = banc.indexOf("secret-de-l-espace.ts\", \"--cron\"");
+      const iLancement = banc.indexOf("let serveur = ");
+      assert.ok(iSecretCron >= 0, "banc.mjs ne demande plus le jeton cron de l'espace");
+      assert.ok(iSecretCron < iLancement, "banc.mjs lance le serveur AVANT d'avoir le jeton cron de l'espace");
+      assert.match(banc, /process\.env\.CRON_SECRET\s*=/, "banc.mjs ne pose pas CRON_SECRET pour le serveur");
     });
   } finally {
     await base.query(`DELETE FROM agendas_externes WHERE id = $1`, [ag[0].id]);

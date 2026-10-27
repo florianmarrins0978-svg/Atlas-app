@@ -951,6 +951,21 @@ try {
   console.error(`⚠ Clé de l'espace non posée (${erreur instanceof Error ? erreur.message.split("\n")[0] : erreur}) : l'ancienne sert encore.`);
 }
 
+// **Le jeton du planificateur, lui aussi PROPRE À SON ESPACE** (audit du
+// 25 octobre 2026) : `CRON_SECRET` venait du même `docker-compose.yml` public,
+// et ouvrait la purge planifiée à qui lit GitHub, sur le port public de son
+// espace. Pas de base à attendre ici — voir `secret-de-l-espace.ts`.
+try {
+  const cheminCron = execFileSync(process.execPath, ["node_modules/tsx/dist/cli.mjs", "scripts/secret-de-l-espace.ts", "--cron"], {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "inherit"],
+  }).trim();
+  const jeton = cheminCron && existsSync(cheminCron) ? readFileSync(cheminCron, "utf8").trim() : "";
+  if (jeton) process.env.CRON_SECRET = jeton;
+} catch (erreur) {
+  console.error(`⚠ Jeton du planificateur non posé (${erreur instanceof Error ? erreur.message.split("\n")[0] : erreur}) : l'ancien sert encore.`);
+}
+
 let serveur = modeDeveloppement ? lancerDev() : lancerBati();
 let enBascule = false;
 // Ce qui SERT réellement, à cet instant — pas ce qu'on espérait servir. La
