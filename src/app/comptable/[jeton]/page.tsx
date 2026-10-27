@@ -54,7 +54,7 @@ function piece(l: LignePourLeComptable): PieceAffichee {
   if (l.justification === "facture_hors_atlas" && l.pieceJointe) {
     // Un total illisible reste vide (`joindreFactureHorsAtlas`) : il s'écrit
     // « non lu », jamais deviné.
-    return { genre: "hors_atlas", total: l.pieceJointe.total ? enEuros(l.pieceJointe.total) : null, original: l.pieceJointe.nature };
+    return { genre: "hors_atlas", sortie: l.sens === "sortie", total: l.pieceJointe.total ? enEuros(l.pieceJointe.total) : null, original: l.pieceJointe.nature };
   }
   if (l.justification === "ticket_perdu") return { genre: "perdu" };
   if (l.justification === "motif" && l.motif) return { genre: "motif", libelle: libelleMotif(l.motif, l.sens) };
@@ -70,7 +70,7 @@ function etiquette(p: PieceAffichee): string {
     case "facture":
       return "Facture";
     case "hors_atlas":
-      return "Facture faite hors d’Atlas";
+      return p.sortie ? "Facture du fournisseur" : "Facture faite hors d’Atlas";
     case "emise":
       return `Facture ${p.numero}`;
     case "perdu":

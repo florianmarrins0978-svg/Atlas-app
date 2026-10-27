@@ -361,6 +361,10 @@ test("une entrée justifiée par sa nature reste un virement reçu, de sa couleu
   assert.equal(categorieDeLaLigne({ sens: "entree", libelle: "VIR M DUPONT", natureDuTicket: null, justification: "facture_hors_atlas" }), "recu");
 });
 
+test("une sortie justifiée par une facture jointe est un virement, de sa couleur", () => {
+  assert.equal(categorieDeLaLigne({ sens: "sortie", libelle: "PRLV TOTALENERGIES", natureDuTicket: null, justification: "facture_hors_atlas" }), "virement");
+});
+
 test("l'écart se mesure au centime, et un montant illisible n'est pas un écart", () => {
   assert.deepEqual(ecartDeMontant("62.40", "62.40"), { genre: "juste" });
   assert.deepEqual(ecartDeMontant("1450.00", "1450"), { genre: "juste" });

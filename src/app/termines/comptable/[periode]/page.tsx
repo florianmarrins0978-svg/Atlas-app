@@ -95,7 +95,7 @@ function preuveDe(l: LigneDuReleve): LigneAffichee["preuve"] {
     return { genre: genre("ticket"), texte: `Ticket du ${jourEnMots(l.ticket.dateAchat)}${suite}${l.reliePar === "atlas" ? ", relié par Atlas" : ""}` };
   }
   if (l.justification === "facture" && l.factureRecue) return { genre: genre("ok"), texte: `Facture ${l.factureRecue.societe}${suite}` };
-  if (l.justification === "facture_hors_atlas") return { genre: genre("ok"), texte: `Facture faite hors d’Atlas${suite}` };
+  if (l.justification === "facture_hors_atlas") return { genre: genre("ok"), texte: `${l.sens === "sortie" ? "Facture du fournisseur" : "Facture faite hors d’Atlas"}${suite}` };
   if (l.justification === "motif" && l.motif) return { genre: "ok", texte: libelleMotif(l.motif, l.sens) };
   if (l.justification === "ticket_perdu") return { genre: "perdu", texte: "Ticket perdu, mention validée" };
   return { genre: "manque", texte: l.sens === "entree" ? "Facture à confirmer" : "Sans ticket" };

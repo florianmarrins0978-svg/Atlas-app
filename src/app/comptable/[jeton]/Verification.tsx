@@ -23,7 +23,7 @@ export type PieceAffichee =
     }
   | { genre: "facture"; nom: string; detail: string; total: string | null; original: "photo" | "pdf" | null }
   /** Un virement reçu qui paie une facture faite hors d'Atlas (migration 0150). */
-  | { genre: "hors_atlas"; total: string | null; original: "photo" | "pdf" }
+  | { genre: "hors_atlas"; sortie: boolean; total: string | null; original: "photo" | "pdf" }
   | { genre: "emise"; numero: string; total: string }
   | { genre: "perdu" }
   | { genre: "motif"; libelle: string }
@@ -644,7 +644,7 @@ function Reconstituee({ piece: p, entreprise }: { piece: PieceAffichee; entrepri
     case "hors_atlas":
       // Son total a été lu sur la facture ou tapé par le patron : le papier
       // ne dit que ce qui est sûr, l'original est à l'onglet d'à côté.
-      return facture(nom(entreprise), "Facture faite hors d’Atlas", p.total, null);
+      return facture(nom(entreprise), p.sortie ? "Facture du fournisseur" : "Facture faite hors d’Atlas", p.total, null);
     case "emise":
       return facture(
         <div className="flex justify-between gap-2">

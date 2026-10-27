@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { colors, font } from "@/lib/design-tokens";
@@ -380,17 +379,21 @@ export default function CarteARegarder({ a, factures, onFait }: { a: ARegarder; 
         </>
       ) : etape.e === "facture" ? (
         <>
-          {factures.length === 0 ? (
-            <p className="mt-2.5 text-[15px]" style={{ color: colors.inkSoft }}>
-              Aucune facture de fournisseur rangée.{" "}
-              <Link href="/reglages/fournisseurs" className="font-medium" style={{ color: colors.rust }}>
-                En ajouter une
-              </Link>
-            </p>
-          ) : (
+          <ul className="mt-3">
+            <li>
+              <Piece
+                nom="Photographier la facture"
+                sous="Ou choisir une photo, un PDF"
+                disabled={enCours}
+                data="facture-hors-atlas"
+                onClick={() => fichierHorsAtlas.current?.click()}
+              />
+            </li>
+          </ul>
+          {factures.length > 0 && (
             <>
-              <p className="mt-2.5 text-[15px]" style={{ color: colors.inkSoft }}>
-                Laquelle ?
+              <p className="mt-3.5 text-[15px]" style={{ color: colors.inkSoft }}>
+                Ou une facture déjà rangée :
               </p>
               <ul className="mt-3">
                 {justesDAbord(factures, a.montantBrut, (f) => f.montantBrut).map((f) => (
