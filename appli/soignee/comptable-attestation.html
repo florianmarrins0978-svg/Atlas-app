@@ -106,6 +106,21 @@
 .t-fausse-ligne span { flex: 1; min-width: 0; font-weight: 600; }
 .t-fausse-ligne em { font-style: normal; font: 400 16px/1.2 var(--serif); color: var(--atlas-montantSortie); white-space: nowrap; }
 
+/* Chez le patron : sa carte de dossier, qui sait enfin que le comptable a fini. */
+.t-dossier { margin-top: 14px; padding: 16px; border-radius: 14px; background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.t-dossier h3 { margin: 0; font: 400 20px/1.2 var(--serif); }
+.t-dossier .detail { margin: 4px 0 0; font-size: var(--t-mini); color: var(--atlas-inkSoft); }
+.t-pilule { display: inline-flex; margin-top: 12px; padding: 7px 12px; border-radius: 18px; font-size: 14px; font-weight: 600; background: var(--atlas-carteVertFond); color: var(--atlas-carteVertTexte); }
+.t-attest { margin-top: 12px; padding: 12px 14px; border-radius: 12px; }
+.t-attest.conforme { background: var(--atlas-carteVertFond); color: var(--atlas-carteVertTexte); }
+.t-attest.reserves { background: var(--atlas-carteAmbreFond); color: var(--atlas-carteAmbreTexte); }
+.t-attest b { display: block; font: 400 19px/1.2 var(--serif); }
+.t-attest span { display: block; margin-top: 4px; font-size: var(--t-second); }
+.t-gestes { display: flex; gap: 8px; margin-top: 12px; }
+.t-gestes .bouton { min-height: 48px; font-size: 15.5px; }
+.t-a-reprendre { margin-top: 12px; padding: 10px 12px; border-radius: 10px; background: var(--atlas-carteRougeFond); color: var(--atlas-carteRougeTexte); font-size: var(--t-second); line-height: 1.4; text-align: left; }
+.t-a-reprendre b { display: block; }
+
 /* ═══ Le document lui-même : une page A4 qu'on fait défiler ═══════════════ */
 .page-a4 { margin: 4px 0 0; padding: 22px 20px 20px; border-radius: 6px; background: var(--atlas-card); box-shadow: 0 1px 0 var(--atlas-line), 0 10px 24px -12px color-mix(in srgb, var(--atlas-ink) 40%, transparent); font-size: 13px; line-height: 1.45; }
 .page-a4 h3 { margin: 0; font: 400 21px/1.1 var(--serif); }
@@ -149,6 +164,7 @@
       <button type="button" data-e="signature">Signature</button>
       <button type="button" data-e="document">Le document</button>
       <button type="button" data-e="envoye">Envoyé</button>
+      <button type="button" data-e="chezvous">Chez le patron</button>
     </div>
     <div class="pl-etats" id="cas" role="group" aria-label="Le dossier essayé">
       <button type="button" data-cas="reserve" aria-pressed="true">Une ligne rejetée</button>
@@ -166,6 +182,7 @@
       <li>Son nom, sa fonction, sa société, son numéro d'inscription à l'Ordre, son adresse, son e-mail et son téléphone. Gardés sur son appareil pour la fois suivante.</li>
       <li>Une signature du doigt, la date et l'heure posées par Atlas, puis le PDF part chez le patron, avec une copie au comptable.</li>
       <li>Le PDF est rangé avec le dossier, gardé dix ans, sans pouvoir être effacé ni réécrit.</li>
+      <li>Chez le patron, la carte du dossier passe à « 60 sur 60 » et montre l'attestation : la conclusion, qui a signé, les lignes à reprendre. Il n'a plus à deviner que le comptable a fini.</li>
     </ul>
     <h2>À trancher</h2>
     <ul class="a-trancher">
@@ -318,7 +335,18 @@
       '<button type="button" class="bouton-texte" data-aller="document">Ouvrir le PDF</button></div></div>';
   }
 
-  var VUES = { liste: vueListe, conclusion: vueConclusion, signataire: vueSignataire, signature: vueSignature, document: vueDocument, envoye: vueEnvoye };
+  function vueChezVous() {
+    var c = conclusion(), x = f(), n = nombres();
+    return '<div class="defile" style="padding-top:20px"><h2 class="t-titre">Mes dossiers justifiés</h2>' +
+      '<div class="t-dossier"><h3>Du 1er janvier 2026 au 27 octobre 2026</h3><p class="detail">Rangé le 27 octobre 2026, gardé jusqu\u2019au 27 octobre 2036</p>' +
+      '<span class="t-pilule">Vérifié par votre comptable : 60 sur 60</span>' +
+      '<div class="t-attest ' + (c === "conforme" ? "conforme" : "reserves") + '"><b>' + MOTS[c] + "</b><span>Signé par " + e(x.nom || "votre comptable") + (x.societe ? ", " + e(x.societe) : "") + ", le 27 octobre 2026</span></div>" +
+      (n.r ? '<div class="t-a-reprendre"><b>1 ligne à reprendre</b>' + REJET.jour + " " + REJET.lib + " " + REJET.m + "</div>" : "") +
+      '<div class="t-gestes"><button type="button" class="bouton bouton-creux">Ouvrir l\u2019attestation</button><button type="button" class="bouton bouton-creux">Télécharger</button></div></div>' +
+      '<p class="t-garde">Reçue aussi par e-mail. Rangée avec le dossier, gardée dix ans.</p></div>';
+  }
+
+  var VUES = { liste: vueListe, conclusion: vueConclusion, signataire: vueSignataire, signature: vueSignature, document: vueDocument, envoye: vueEnvoye, chezvous: vueChezVous };
 
   /* ═══ La toile de la signature ════════════════════════════════════════ */
   var traits = [];
