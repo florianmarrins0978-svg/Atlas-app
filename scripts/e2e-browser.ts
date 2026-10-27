@@ -106,7 +106,19 @@ const RETENIR_LE_SAUT_VERS_LA_MESSAGERIE = `
  */
 export async function lancerNavigateur(optionsSupplementaires: Omit<LaunchOptions, "executablePath"> = {}): Promise<Browser> {
   const executablePath = process.env.PLAYWRIGHT_EXECUTABLE_PATH ?? (existsSync(CHEMIN_SANDBOX) ? CHEMIN_SANDBOX : undefined);
-  const navigateur = await chromium.launch({ ...optionsSupplementaires, ...(executablePath ? { executablePath } : {}) });
+  // **Un nom de fichier accentué se garde, comme sur son téléphone** (27 octobre
+  // 2026). Sans paramètres régionaux UTF-8, Chromium jette « Dossier justifié,
+  // Octobre 2026.pdf » et range le fichier sous « download » : la suite des
+  // dossiers comptables rougissait sur ce poste, et sur lui seul, pour un
+  // bouton qui marchait. Le réglage de la machine reste le sien s'il est déjà
+  // en UTF-8.
+  const regional = process.env.LC_ALL || process.env.LC_CTYPE || process.env.LANG || "";
+  const env = /utf-?8/i.test(regional) ? optionsSupplementaires.env : { ...process.env, ...optionsSupplementaires.env, LC_ALL: "C.UTF-8" };
+  const navigateur = await chromium.launch({
+    ...optionsSupplementaires,
+    ...(env ? { env } : {}),
+    ...(executablePath ? { executablePath } : {}),
+  });
 
   const creerContexte = navigateur.newContext.bind(navigateur);
   navigateur.newContext = async (...args: Parameters<typeof creerContexte>) => {
