@@ -36335,3 +36335,16 @@ Trois choix faits en codant : la vignette d'une pièce passe de 88 à 72 (`taill
 **La règle.** Le format d'un dossier bâti appartient à la version de Next qui l'a écrit. À chaque construction réussie, le banc note ce Next (`atlas-next-batie.txt`, à côté du commit) ; `servableParCeNext` ne laisse servir une version bâtie que si ce Next est celui installé. Non noté (version d'avant la règle) : on ne sert pas, mode développement le temps d'une construction. `doitRebatir` rebâtit aussi quand le Next a changé.
 
 **Ce qui reste fragile, et n'est pas traité ici** : un serveur qui meurt pendant la construction arrête encore le banc et la construction. Avec cette règle, plus rien de connu ne le fait mourir ; si une autre cause apparaît, la ligne « Banc » la montrera de la même façon.
+
+## §524 : Des parts qui font juste le total sont des montants, et le devis les écrit telles quelles
+
+**Sa réponse du 27 octobre 2026**, devant la planche de la barre de la main d'œuvre (`appli/soignee/main-oeuvre-curseur.html`) : *« si la main d'œuvre c'est 397, ça pourra pas être arrondi à 10 »*. Un montant qu'il ÉCRIT reste donc à l'euro près.
+
+**Le défaut que cela a montré.** `repartirMainOeuvre` repassait toutes les parts à la dizaine, même celles qu'il avait réglées : 297 € écrits à l'écran devenaient 300 € sur le devis, et la haie de sa grille à 250 € pouvait sortir à 247 € selon l'ordre des travaux. L'écart d'arrondi allait au DERNIER travail, même à zéro : 395 € pour un travail qui pesait tout et un autre qui ne pesait rien donnaient 400 € et −5 € (rouges d'abord dans `test-repartir-main-oeuvre.ts` et `test-main-oeuvre-dictee-db.ts`).
+
+**La règle.** Des parts toutes connues, positives, au centime, et dont la somme vaut le total SONT des montants : elles s'écrivent telles quelles. C'est ce que la barre enregistre après chaque geste, et ce que `partsDeDepart` pose depuis sa grille. Tout autre partage est calculé (parts égales, un travail retiré, un total changé depuis ses gestes), donc à la dizaine, sa règle du 5 août ; l'écart va au dernier travail qui a une part. Des pourcentages enregistrés par l'ancien curseur ne font pas le total : ils restent des poids.
+
+**Les gestes vivent dans `src/lib`**, et l'écran ne décide de rien : `glisserLeJoint` (seuls les deux voisins d'une poignée changent, de 10 € en 10 €, chacun garde 10 €) et `ecrireUnMontant` (à l'euro près ; le voisin prend la différence, le suivant complète ; un travail à zéro ne paie pas). Les deux comptent en centimes : un total à 397,50 € retombe juste après cent gestes.
+
+**Les cinq teintes sont fixes** (`pastelsMainOeuvre`, palette « Jardin », son choix du même soir), comme `surPhoto` : un pastel dérivé de chaque charte deviendrait sombre sur Nuit et Sylve. Leur encre aussi, mesurée à 4,5 ou plus sur chacune. Le montant s'écrit dans son morceau s'il tient, mesuré sur son texte (15 px, puis 13 px, sinon il se tait et reste sur sa ligne) : un seuil fixe de 62 px taisait tout montant sous 350 € sur son téléphone.
+

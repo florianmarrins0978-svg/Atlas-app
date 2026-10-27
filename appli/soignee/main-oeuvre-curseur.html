@@ -40,7 +40,8 @@
     retirer ou remettre un travail fait couler les morceaux, au lieu de sauter ;
     et, sa réponse du même soir, le montant se touche pour s'écrire : le
       travail d'à côté prend la différence (le suivant complète s'il n'a pas
-      assez), arrondie à 10 € comme le devis.
+      assez), à l'euro près, sa réponse du même soir (« si la main d'œuvre
+      c'est 397, ça pourra pas être arrondi à 10 »).
 
   LES COULEURS (sa remarque du même soir, « vraiment à chier », puis « mets des
   couleurs pastel, fais plusieurs propositions ») : quatre palettes pastel,
@@ -231,9 +232,10 @@
       <li>La carte Avant de chiffrer, la question, Sur une ligne Main d’œuvre ou Répartis sur les travaux.</li>
       <li>La croix qui rend un travail à sa grille, Remettre, et la phrase qui le dit.</li>
     </ul>
-    <h2>À trancher</h2>
-    <ul class="a-trancher">
-      <li>Un montant écrit s’arrondit à 10 €, comme le devis l’écrit aujourd’hui : 655 devient 660. Je peux le laisser à l’euro près, si vous préférez.</li>
+    <h2>Tranché le 27 octobre</h2>
+    <ul>
+      <li>La palette <b>Jardin</b>.</li>
+      <li>Un montant écrit reste <b>à l’euro près</b> : « si la main d’œuvre c’est 397, ça pourra pas être arrondi à 10 ».</li>
     </ul>
     <h2>Ce que montre Aujourd’hui</h2>
     <ul class="a-trancher">
@@ -452,7 +454,7 @@
       var d = dedans(), i = d.findIndex(function (t) { return t.cle === cle; });
       var payeurs = d.slice(i + 1).concat(d.slice(0, i).reverse());
       if (!payeurs.length || !Number.isFinite(voulu)) return [];
-      var v = Math.max(MINI, Math.min(TOTAL - MINI * payeurs.length, Math.round(voulu / PAS) * PAS));
+      var v = Math.max(MINI, Math.min(TOTAL - MINI * payeurs.length, Math.round(voulu)));
       var ecart = v - montants[cle], touches = [];
       montants[cle] = v;
       if (ecart < 0) { montants[payeurs[0].cle] -= ecart; touches.push(payeurs[0].cle); }

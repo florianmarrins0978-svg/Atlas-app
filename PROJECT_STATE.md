@@ -4,6 +4,11 @@
 dernière migration `drizzle/0150_virement_recu_regle_au_dossier.sql`
 
 ---
+## LA BARRE DE LA MAIN D'ŒUVRE, CODÉE (27 octobre 2026), PAS ENCORE SUR `main`
+
+Branche `lot/main-oeuvre-curseur`, d'après sa planche `appli/soignee/main-oeuvre-curseur.html` (palette Jardin, montant écrit à l'euro près). Écran : `src/app/chantiers/[id]/RepartirLaMainOeuvre.tsx`. Règles : `src/lib/main-oeuvre-dictee.ts` (`repartirMainOeuvre` garde les montants qu'il a réglés, `glisserLeJoint`, `ecrireUnMontant`). Jetons : `pastelsMainOeuvre`. Suites : `test-repartir-main-oeuvre.ts`, `test-main-oeuvre-dictee-db.ts`, `test-main-oeuvre-barre-e2e.ts`. **Reste** : la batterie (niveau 3), puis `main`. `ARCHITECTURE.md` §524, `docs/main-oeuvre-curseur.md`.
+
+---
 ## ARROSAGE : SON CROQUIS DU 27 OCTOBRE (27 octobre 2026)
 
 Coins tirés retirés des zones (`formes-du-dessin.ts`, `dessin-du-plan.ts`,

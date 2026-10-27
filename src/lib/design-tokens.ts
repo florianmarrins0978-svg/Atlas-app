@@ -258,6 +258,25 @@ export const surPhoto = {
 } as const;
 
 /**
+ * Les cinq teintes de la barre de la main d'œuvre : la palette « Jardin »,
+ * son choix du 27 octobre 2026 parmi quatre (`appli/soignee/main-oeuvre-curseur.html`),
+ * après « les couleurs, elles sont vraiment à chier », puis « mets des
+ * couleurs pastel », puis « un peu moins pastel ».
+ *
+ * **Fixes, et c'est délibéré** : un pastel est clair par nature, et dérivé de
+ * chaque charte il deviendrait sombre et terne sur Nuit et Sylve. Sauge, sable,
+ * bleu ciel, menthe, rose poudré, dans cet ordre, un par travail.
+ *
+ * `encre` s'écrit SUR ces teintes, sur toutes les chartes, puisqu'elles ne
+ * bougent pas ; `test-repartir-main-oeuvre.ts` mesure qu'elle tient 4,5 sur
+ * chacune.
+ */
+export const pastelsMainOeuvre = {
+  teintes: ["#9fc48a", "#e3c88f", "#93bde0", "#8fd1bd", "#e8a9b7"],
+  encre: "#1c1c1a",
+} as const;
+
+/**
  * Un voile d'encre qui SUIT la charte — ce que `rgba(28,28,26,…)` ne faisait
  * pas.
  *
