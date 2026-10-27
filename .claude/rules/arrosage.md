@@ -316,6 +316,12 @@ disant toujours 12 × 10, et le plan était calculé sur 15,06. Ce que les cotes
 disent est ce qui part au calcul. Les côtés courbes et les rangées en S restent.
 Pour tourner une zone d'un quart de tour : « Tourner », dans sa feuille.
 
+**UN MASSIF DESSINÉ DANS LA PELOUSE S'EN DÉCOUPE, COMME LA MAISON — sa
+réponse du 27 octobre 2026 : « oui ».** Le goutte-à-goutte (massif, haie,
+potager) posé dans une pelouse la coupe en morceaux, chacun arrosé aux
+turbines ; les têtes se posent donc autour du massif, jamais dessus. Une
+pelouse ne coupe pas une autre pelouse (`coupeursDe`).
+
 **UNE COTE ÉCRITE PASSE AVANT TOUTE DÉDUCTION** (même jour). Son massif coté
 6 m, dessiné dans la pelouse de 10 m, avait été lu 10 m : la consigne donnait en
 exemple d'étendre une bande « sur toute la hauteur de la pelouse ». On ne déduit

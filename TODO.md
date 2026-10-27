@@ -335,11 +335,8 @@ Reste :
 1. **`npm run verifier:croquis` sur son espace** : le second croquis (massif
    6 × 3 dans la pelouse, bande GAG 7,50 + 4,50) doit sortir en 6 × 3, 12 m,
    pelouse 12 × 10, massif dedans. Propriétaire : lui (une commande), puis nous.
-2. **Un massif DANS la pelouse : le découper de la pelouse, comme la maison ?**
-   Aujourd'hui les deux zones se chevauchent : les turbines comptent aussi la
-   surface du massif. Le découper change le nombre de têtes (des morceaux
-   autour du massif). Question posée le 27 octobre, sa réponse attendue.
-   Propriétaire : lui.
+2. ~~Un massif DANS la pelouse : le découper ?~~ Sa réponse du 27 octobre,
+   « oui » : codé le même jour (`coupeursDe`, `dessin-du-plan.ts`).
 3. **La nourrice recouvre le nom d'une zone** sur « Dessiner le plan » (sa
    capture du 27 octobre : « Goutte à goutte 9 × 10, 16 lignes » caché par le
    rectangle noir). Apparence : maquette d'abord. Propriétaire : nous.

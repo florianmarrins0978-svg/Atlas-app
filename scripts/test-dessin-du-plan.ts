@@ -253,6 +253,26 @@ dire(phrasesDuDessin(enS).includes("Les dalles en courbe ne coupent pas Pelouse 
 const longueurS = longueurDeLaRangee(enS.dalles[0]);
 dire(longueurS > 12 && longueurS < 13, `la distance d'une rangée courbe se mesure le long de la courbe (${longueurS})`);
 
+// **Un massif dessiné DANS la pelouse la découpe, comme la maison** — sa
+// réponse du 27 octobre 2026 (« oui »), sur son croquis : un massif de
+// goutte-à-goutte de 6 × 3 au bord de sa pelouse de 12 × 10. Sans cela, les
+// turbines comptaient aussi la surface du massif.
+const pelouseEtMassif: DessinDuPlan = {
+  terrain: { L: 12, l: 10 },
+  zones: [
+    { type: "gazon", nom: "Arroseurs", L: 12, l: 10, x: 0, y: 0 },
+    { type: "massif", nom: "Goutte à goutte", L: 3, l: 6, x: 0, y: 2 },
+  ],
+  maisons: [], dalles: [], nourrice: null, piquage: null,
+};
+const autourDuMassif = morceauxDe(pelouseEtMassif.zones[0], pelouseEtMassif).parts;
+const aireAutour = autourDuMassif.reduce((t, q) => t + q.L * q.l, 0);
+dire(autourDuMassif.length === 3 && Math.abs(aireAutour - (120 - 18)) < 1e-6, `le massif découpe la pelouse en 3 parts, 102 m² arrosés aux turbines (${autourDuMassif.length} parts, ${aireAutour} m²)`);
+dire(morceauxDe(pelouseEtMassif.zones[1], pelouseEtMassif).parts.length === 1, "le massif, lui, reste entier");
+dire(phrasesDuDessin(pelouseEtMassif).includes("Goutte à goutte coupe Arroseurs en 3 parts."), `et l'écran le dit (${phrasesDuDessin(pelouseEtMassif).join(" | ")})`);
+const deuxPelouses: DessinDuPlan = { ...pelouseEtMassif, zones: [pelouseEtMassif.zones[0], { type: "gazon", nom: "Pelouse 2", L: 3, l: 6, x: 0, y: 2 }] };
+dire(morceauxDe(deuxPelouses.zones[0], deuxPelouses).parts.length === 1, "une pelouse ne découpe pas une autre pelouse");
+
 // ── 7. Ce qui arrive du téléphone se relit, bornes comprises ───────────────
 const brut2 = { ...brut, maisons: [], dalles: [] };
 refuse("une maison hors du terrain est refusée", { ...brut2, maisons: [{ nom: null, L: 10, l: 10, x: 30, y: 0 }] });

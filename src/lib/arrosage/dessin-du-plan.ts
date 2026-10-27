@@ -202,12 +202,15 @@ export function empriseDesDalles(d: Rangee & { l: number }): Rectangle {
 }
 
 /**
- * Ce qui coupe une zone : les rangées qu'on n'arrose pas, droites, et les
- * maisons. **Une rangée courbe ne coupe pas** : le découpage ne donnerait pas
+ * Ce qui coupe une zone : les rangées qu'on n'arrose pas, droites, les
+ * maisons, et pour une pelouse, le goutte-à-goutte posé dedans (massif, haie,
+ * potager). *Sa réponse du 27 octobre 2026 :* un massif dessiné dans sa
+ * pelouse s'en découpe, comme la maison ; sans cela les turbines comptaient
+ * aussi sa surface. **Une rangée courbe ne coupe pas** : le découpage ne donnerait pas
  * des rectangles, et l'écran le dit (`phrasesDuDessin`). L'aimant se prend sur
  * le rectangle que le calcul reçoit (`cadreDe`), pas sur la forme.
  */
-function coupeursDe(cadre: Rectangle, d: DessinDuPlan): { b: Rectangle; nom: string }[] {
+function coupeursDe(z: ZoneDessinee, cadre: Rectangle, d: DessinDuPlan): { b: Rectangle; nom: string }[] {
   const liste: { b: Rectangle; nom: string }[] = [];
   for (const r of d.dalles) {
     if (r.courbe) continue;
@@ -224,6 +227,9 @@ function coupeursDe(cadre: Rectangle, d: DessinDuPlan): { b: Rectangle; nom: str
     liste.push({ b, nom: "les dalles" });
   }
   for (const m of d.maisons) liste.push({ b: m, nom: m.nom ?? NOMS_DES_ZONES.maison });
+  if (z.type === "gazon") {
+    for (const g of d.zones) if (g.type !== "gazon") liste.push({ b: cadreDe(g), nom: nomDe(g) });
+  }
   return liste;
 }
 
@@ -239,7 +245,7 @@ export function morceauxDe(z: ZoneDessinee, d: DessinDuPlan): { parts: Rectangle
   const e = 0.01;
   let parts: Rectangle[] = [cadre];
   const coupeurs: string[] = [];
-  for (const c of coupeursDe(cadre, d)) {
+  for (const c of coupeursDe(z, cadre, d)) {
     const b = c.b;
     const suite: Rectangle[] = [];
     let coupe = false;
