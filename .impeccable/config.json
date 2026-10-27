@@ -296,6 +296,15 @@
         ],
         "createdAt": "2026-10-26T12:45:24.947Z",
         "reason": "Claude: les trois points ne s'animent que pendant la vraie lecture de l'attestation par l'IA, comme la lecture du croquis sur arrosage.html"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/comptable-justifier-depuis-le-releve.html"
+        ],
+        "createdAt": "2026-10-27T18:14:42.034Z",
+        "reason": "maquette qui reprend les jetons crème de la charte de l'application (pour-mon-comptable.html), choisie par le patron; décision du dépôt, pas un réflexe"
       }
     ]
   }
