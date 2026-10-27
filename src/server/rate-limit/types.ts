@@ -125,6 +125,9 @@ export const LIMITES = {
    */
   attestationComptable: { max: 6, fenetreMs: 10 * 60 * 1000 },
   attestationComptableParSource: { max: 30, fenetreMs: 10 * 60 * 1000 },
+  /** LE RENVOI À CORRIGER (27 octobre 2026) : un avis part chez le patron à chaque fois, donc étroit comme la signature. */
+  retourComptable: { max: 6, fenetreMs: 10 * 60 * 1000 },
+  retourComptableParSource: { max: 30, fenetreMs: 10 * 60 * 1000 },
   assistant: { max: 20, fenetreMs: 60 * 1000 }, // 20 requêtes IA / minute / entreprise
   confirmationProposition: { max: 30, fenetreMs: 60 * 1000 },
   televersementFichier: { max: 20, fenetreMs: 60 * 1000 },

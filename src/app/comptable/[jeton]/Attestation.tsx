@@ -15,13 +15,13 @@ import {
   lignesDuSignataire,
   montantSigne,
   type Conclusion,
-  type Fonction,
   type LigneAttestee,
 } from "@/lib/attestation-comptable";
 import { jourIso } from "@/lib/jour";
 import { signerAttestationAction } from "./actions";
 import Icone from "@/components/atlas/IconeTrait";
 import Tampon from "./Tampon";
+import { VIDE, garderLeSignataire, signataireGarde, type Saisie } from "./appareil";
 
 /**
  * TERMINER ET SIGNER — sa planche du 27 octobre 2026
@@ -37,33 +37,6 @@ import Tampon from "./Tampon";
  */
 
 type Etape = "conclusion" | "signataire" | "signer" | "envoyee";
-type Saisie = { nom: string; fonction: Fonction; societe: string; ordre: string; siren: string; adresse: string; email: string; telephone: string };
-
-const VIDE: Saisie = { nom: "", fonction: "expert_comptable", societe: "", ordre: "", siren: "", adresse: "", email: "", telephone: "" };
-/** Le signataire, gardé sur SON appareil : la seconde fois, rien ne se redemande. */
-const CLE_DU_SIGNATAIRE = "atlas-comptable-signataire";
-
-/** Ce que l'appareil a gardé, ou rien : un stockage refusé (navigation privée) n'empêche pas de signer. */
-function signataireGarde(): Saisie | null {
-  try {
-    const brut = window.localStorage.getItem(CLE_DU_SIGNATAIRE);
-    if (!brut) return null;
-    const s = { ...VIDE, ...(JSON.parse(brut) as Partial<Saisie>) };
-    return FONCTIONS.includes(s.fonction) ? s : null;
-  } catch {
-    return null;
-  }
-}
-
-function garderLeSignataire(s: Saisie) {
-  try {
-    window.localStorage.setItem(CLE_DU_SIGNATAIRE, JSON.stringify(s));
-  } catch {
-    // Le stockage refusé : il retapera ses coordonnées la prochaine fois, rien de plus.
-    return;
-  }
-}
-
 const TEINTE: Record<"vert" | "ambre" | "rouge", string> = {
   vert: colors.carteVertTexte,
   ambre: colors.carteAmbreTexte,

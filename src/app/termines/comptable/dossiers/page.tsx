@@ -14,6 +14,7 @@ import { jourIso } from "@/lib/jour";
 import { garderLaPage } from "@/server/garde-page";
 import VeilleDesNouvelles from "@/components/atlas/VeilleDesNouvelles";
 import { MOT_DE_LA_CONCLUSION, TON_DE_LA_CONCLUSION } from "@/lib/attestation-comptable";
+import { etatDuRetour, lignesAReprendre, messageAuComptable } from "@/lib/retour-comptable";
 
 export const dynamic = "force-dynamic";
 
@@ -43,6 +44,7 @@ export default async function PageMesDossiers() {
     echeance: echeanceProche(d.gardeJusquAu, aujourdhui) ? jourComplet(d.gardeJusquAu) : null,
     verification: verificationAffichee(verificationDe.get(d.id), tickets, enAttente),
     attestation: attestationAffichee(verificationDe.get(d.id)),
+    retour: retourAffiche(verificationDe.get(d.id), d),
     bilans: d.bilans.map((b) => ({ id: b.id, nature: b.nature, nom: b.fichierNom ?? (b.nature === "pdf" ? "Bilan, PDF" : "Bilan, photo"), ajoute: jourComplet(jourIso(b.ajouteLe)) })),
   }));
 
@@ -99,4 +101,24 @@ function attestationAffichee(v: VerificationDuDossier | undefined): DossierAffic
     detail: `${MOT_DE_LA_CONCLUSION[a.conclusion]}, signée le ${jourEnMots(jourIso(a.signeLe))}`,
     perimee: !a.aJour,
   };
+}
+
+/**
+ * Le renvoi à corriger du comptable (sa planche du 27 octobre 2026), à la
+ * place qu'il occupe : sous son compte. Tant qu'un rejet reste, la demande et
+ * son mot ; plus aucun rejet, « Tout est corrigé » et de quoi le prévenir
+ * depuis SA messagerie : rien ne part sans son appui.
+ */
+function retourAffiche(v: VerificationDuDossier | undefined, d: { du: string; au: string }): DossierAffiche["retour"] {
+  const r = v?.retour;
+  if (!v || !r) return null;
+  const etat = etatDuRetour({ renvoyeLe: r.renvoyeLe, attestationSigneeLe: v.attestation?.signeLe ?? null, rejets: v.rejets.length, corrigees: v.corrigees });
+  if (etat === "demande") {
+    return { etat, titre: `Correction demandée le ${jourEnMots(jourIso(r.renvoyeLe))}`, message: r.message, texte: lignesAReprendre(v.rejets.length) };
+  }
+  if (etat === "corrige") {
+    const m = messageAuComptable(d);
+    return { etat, mailto: `mailto:${r.email ?? ""}?subject=${encodeURIComponent(m.objet)}&body=${encodeURIComponent(m.corps)}` };
+  }
+  return null;
 }

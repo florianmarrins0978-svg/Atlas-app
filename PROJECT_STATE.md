@@ -1,12 +1,14 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-10-27, branche `claude/accountant-document-signature-2redc5`,
-dernière migration `drizzle/0151_attestations_du_comptable.sql`
+dernière migration `drizzle/0152_retours_du_comptable.sql`
 
 ---
 ## L'ATTESTATION DU COMPTABLE, CODÉE (27 octobre 2026), PAS ENCORE SUR `main`
 
 Branche `claude/accountant-document-signature-2redc5`, d'après sa planche `appli/soignee/comptable-attestation.html` (*« tu peux coder, pas de batterie »*). Migration `drizzle/0151_attestations_du_comptable.sql` (expand : une table neuve, FORCE RLS, ni réécriture ni effacement). Règle : `src/lib/attestation-comptable.ts`. Serveur : `src/server/attestation-comptable.ts`, `src/server/pdf/attestation-comptable-pdf.ts`, `verification-comptable.ts`. Écrans : `src/app/comptable/[jeton]/` (`Attestation.tsx`, `Tampon.tsx`, la barre de `Verification.tsx`, la route `attestation/pdf`), Mes dossiers (la ligne de l'attestation, `VeilleDesNouvelles`), l'accueil (`CarteAttestation` dans `Notifications.tsx`), la route `termines/comptable/attestations/[id]/pdf`. Suites vertes ici : la règle (9), la base (8), le navigateur (7), et les deux suites voisines du comptable (14 et 7). **Reste** : la batterie (niveau 3), puis `main`. `ARCHITECTURE.md` §523.
+
+**Et le renvoi à corriger, codé le même jour sur la même branche** (sa planche `appli/soignee/comptable-retour.html`, *« tu peux coder ça, pas de batterie »*). Migration `drizzle/0152_retours_du_comptable.sql` (expand : une table neuve, FORCE RLS, seul `vu_le` bouge). Règle : `src/lib/retour-comptable.ts`. Serveur : `renvoyerParJeton`, `retoursAMontrer`, `marquerRetourVu` dans `verification-comptable.ts`. Écrans : `Renvoi.tsx` et la barre de `Verification.tsx` chez le comptable ; Mes dossiers (« Correction demandée », « Tout est corrigé » et son `mailto:`) ; l'accueil (`CarteRetour`). Suites vertes ici : la règle (6), la base (7), le navigateur (8), et les deux voisines (14 et 7). **Reste** : la batterie (niveau 3), puis `main`. `ARCHITECTURE.md` §524.
 
 ---
 ## ARROSAGE : SON CROQUIS DU 27 OCTOBRE (27 octobre 2026)

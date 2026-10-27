@@ -4325,6 +4325,24 @@ export const attestationsComptable = pgTable("attestations_comptable", {
 });
 
 /**
+ * Le comptable renvoie le dossier à corriger (migration 0152, sa planche du
+ * 27 octobre 2026) : le geste seul, son mot et son adresse. Les lignes à
+ * reprendre sont ses rejets. **Jamais réécrit** : la base ne rend que `vu_le`.
+ */
+export const retoursComptable = pgTable("retours_comptable", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  entrepriseId: uuid("entreprise_id")
+    .notNull()
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  dossierId: uuid("dossier_id").notNull(),
+  message: text("message"),
+  email: text("email"),
+  rejetees: integer("rejetees").notNull(),
+  renvoyeLe: timestamp("renvoye_le", { withTimezone: true }).notNull().defaultNow(),
+  vuLe: timestamp("vu_le", { withTimezone: true }),
+});
+
+/**
  * Les crédits IA du mois : ce qu'une entreprise a dépensé, en micro-euros
  * estimés (`drizzle/0148_consommation_ia.sql`, `src/lib/credits-ia.ts`).
  */

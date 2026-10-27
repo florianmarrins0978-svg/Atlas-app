@@ -2,7 +2,7 @@
 
 ## L'ATTESTATION DU COMPTABLE : LA BATTERIE, PUIS `main` (27 octobre 2026)
 
-**Codée** sur la branche `claude/accountant-document-signature-2redc5`, sans batterie à sa demande (*« tu peux coder, pas de batterie »*). Niveau 3 (migration 0151, page publique par jeton) : `npm run verifier:avant-livraison` avant `main`, en le prévenant (`ARCHITECTURE.md` §523).
+**Codée** sur la branche `claude/accountant-document-signature-2redc5`, sans batterie à sa demande (*« tu peux coder, pas de batterie »*). Niveau 3 (migrations 0151 et 0152, page publique par jeton) : `npm run verifier:avant-livraison` avant `main`, en le prévenant (`ARCHITECTURE.md` §523). **Le renvoi à corriger est codé sur la même branche** (sa planche `appli/soignee/comptable-retour.html`, `ARCHITECTURE.md` §524) : une seule batterie pour les deux.
 
 **À trancher par lui, écrit sur la planche :**
 - **Ce que le document vaut** : une attestation de vérification des justificatifs, signature électronique simple. Elle ne remplace pas l'attestation de présentation des comptes.

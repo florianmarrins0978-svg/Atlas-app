@@ -81,6 +81,7 @@ import {
   envoisComptable,
   verdictsComptable,
   attestationsComptable,
+  retoursComptable,
   consommationIa,
 } from "../db/schema";
 import type { Ctx } from "./context";
@@ -234,6 +235,7 @@ export async function exporterEntreprise(
       sesEnvoisAuComptable,
       sesVerdictsDuComptable,
       sesAttestationsDuComptable,
+      sesRetoursDuComptable,
       saConsommationIA,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
@@ -472,6 +474,8 @@ export async function exporterEntreprise(
       // L'attestation que le comptable signe (migration 0151) : sa conclusion,
       // qui il est, et le PDF signé, rangé avec les fichiers.
       tx.select().from(attestationsComptable).where(eq(attestationsComptable.entrepriseId, e)),
+      // Les corrections que le comptable a demandées (migration 0152), avec son mot.
+      tx.select().from(retoursComptable).where(eq(retoursComptable.entrepriseId, e)),
       // Ses crédits IA, mois par mois (migration 0148) : une estimation, pas une facture.
       tx.select().from(consommationIa).where(eq(consommationIa.entrepriseId, e)),
     ]);
@@ -590,6 +594,7 @@ export async function exporterEntreprise(
       envois_comptable: sesEnvoisAuComptable,
       verdicts_comptable: sesVerdictsDuComptable,
       attestations_comptable: sesAttestationsDuComptable,
+      retours_comptable: sesRetoursDuComptable,
       consommation_ia: saConsommationIA,
     };
 

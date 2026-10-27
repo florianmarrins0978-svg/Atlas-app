@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
 import { db, type DbOrTx } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
-import { attestationsComptable, dossiersComptables, entreprises, envoisComptable, verdictsComptable } from "../db/schema";
+import { attestationsComptable, dossiersComptables, entreprises, envoisComptable, retoursComptable, verdictsComptable } from "../db/schema";
 import { empreinteDuJeton, tirerUnJeton } from "../empreinte-du-code";
 import {
   VALIDITE_LIEN_COMPTABLE_JOURS,
@@ -12,6 +12,7 @@ import {
   type VerdictDuComptable,
 } from "@/lib/pour-mon-comptable";
 import { attestationAJour, type Conclusion, type LigneAttestee, type SaisieLue } from "@/lib/attestation-comptable";
+import { courrielDuRetour } from "@/lib/retour-comptable";
 import { lireLesLignes, pieceDeLaLigne, type LigneDuReleve } from "./pour-mon-comptable";
 import type { Ctx } from "./context";
 
@@ -169,6 +170,9 @@ export type VerificationDuDossier = {
   rejets: { ligne: LigneDuReleve; note: string | null; avaitValide: boolean }[];
   /** La dernière attestation signée, et si elle vaut encore pour le dossier tel qu'il est. */
   attestation: AttestationDuDossier | null;
+  /** Le dernier renvoi à corriger, et combien de lignes l'attendent « corrigées ». */
+  retour: RetourDuDossier | null;
+  corrigees: number;
 };
 
 /** Pour le patron, dans Mes dossiers : où en est son comptable, et ce qu'il a rejeté. */
@@ -188,6 +192,8 @@ export async function verificationsDesDossiers(ctx: Ctx): Promise<VerificationDu
         verifiees: a.verifiees,
         total: a.total,
         attestation: await derniereAttestation(tx, d.id, brutes, verdicts),
+        retour: await dernierRetour(tx, d.id),
+        corrigees: lignes.filter((l) => l.verification.etat === "corrigee").length,
         rejets: lignes.flatMap((l) =>
           l.verification.etat === "rejete"
             ? [{ ligne: l, note: l.verification.note, avaitValide: l.verification.avaitValide }]
@@ -425,5 +431,78 @@ export async function marquerAttestationVue(ctx: Ctx, id: string): Promise<void>
       .update(attestationsComptable)
       .set({ vuLe: sql`now()` })
       .where(and(eq(attestationsComptable.id, id), isNull(attestationsComptable.vuLe)))
+  );
+}
+
+// ─── Lot 7 : renvoyer à corriger (migration 0152) ───────────────────────────
+
+export type RetourDuDossier = { id: string; renvoyeLe: Date; message: string | null; email: string | null; rejetees: number };
+
+async function dernierRetour(tx: DbOrTx, dossierId: string): Promise<RetourDuDossier | null> {
+  const [r] = await tx
+    .select({ id: retoursComptable.id, renvoyeLe: retoursComptable.renvoyeLe, message: retoursComptable.message, email: retoursComptable.email, rejetees: retoursComptable.rejetees })
+    .from(retoursComptable)
+    .where(eq(retoursComptable.dossierId, dossierId))
+    .orderBy(desc(retoursComptable.renvoyeLe))
+    .limit(1);
+  return r ?? null;
+}
+
+/**
+ * Le comptable renvoie le dossier à corriger. **Refusé sans ligne rejetée** :
+ * les lignes à reprendre sont ses rejets, il n'y a rien d'autre à renvoyer.
+ * L'avis part chez le patron, à l'adresse de son entreprise ; il ne porte rien
+ * du dossier (`courrielDuRetour`).
+ */
+export async function renvoyerParJeton(
+  jeton: string,
+  r: { message: string | null; email: string | null },
+  maintenant: Date
+): Promise<{ ok: true; retour: RetourDuDossier; courriel: { a: string; objet: string; texte: string } | null } | Refus> {
+  return db.transaction(async (tx) => {
+    const ouvert = await ouvrir(tx, jeton, maintenant);
+    if (!ouvert) return { ok: false as const, raison: "Ce lien n'est plus valable. Demandez-en un nouveau." };
+    const { envoi, dossier } = ouvert;
+    const lignes = avecVerification(await lireLesLignes(tx, dossier.du, dossier.au), await verdictsDuDossier(tx, dossier.id));
+    const rejetees = lignes.filter((l) => l.verification.etat === "rejete").length;
+    if (rejetees === 0) return { ok: false as const, raison: "Aucune ligne rejetée à renvoyer." };
+    const [ent] = await tx.select({ email: entreprises.email }).from(entreprises).where(eq(entreprises.id, envoi.entrepriseId)).limit(1);
+    const [retour] = await tx
+      .insert(retoursComptable)
+      .values({ entrepriseId: dossier.entrepriseId, dossierId: dossier.id, message: r.message, email: r.email, rejetees, renvoyeLe: maintenant })
+      .returning({ id: retoursComptable.id, renvoyeLe: retoursComptable.renvoyeLe, message: retoursComptable.message, email: retoursComptable.email, rejetees: retoursComptable.rejetees });
+    const email = ent?.email?.trim() || null;
+    return { ok: true as const, retour, courriel: email ? { a: email, ...courrielDuRetour({ du: dossier.du, au: dossier.au, rejetees }) } : null };
+  });
+}
+
+/** Le dernier renvoi de ce dossier, pour la page du comptable. */
+export async function dernierRetourParJeton(jeton: string, maintenant: Date = new Date()): Promise<RetourDuDossier | null> {
+  return db.transaction(async (tx) => {
+    const ouvert = await ouvrir(tx, jeton, maintenant);
+    return ouvert ? dernierRetour(tx, ouvert.dossier.id) : null;
+  });
+}
+
+export type RetourAMontrer = { id: string; message: string | null; rejetees: number; renvoyeLe: Date };
+
+/** Les renvois que le patron n'a pas encore vus, le plus récent d'abord : la carte de l'accueil. */
+export async function retoursAMontrer(ctx: Ctx): Promise<RetourAMontrer[]> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+    tx
+      .select({ id: retoursComptable.id, message: retoursComptable.message, rejetees: retoursComptable.rejetees, renvoyeLe: retoursComptable.renvoyeLe })
+      .from(retoursComptable)
+      .where(isNull(retoursComptable.vuLe))
+      .orderBy(desc(retoursComptable.renvoyeLe))
+  );
+}
+
+/** « J'ai vu » : la carte quitte l'accueil. La demande, elle, reste dans Mes dossiers. */
+export async function marquerRetourVu(ctx: Ctx, id: string): Promise<void> {
+  await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+    tx
+      .update(retoursComptable)
+      .set({ vuLe: sql`now()` })
+      .where(and(eq(retoursComptable.id, id), isNull(retoursComptable.vuLe)))
   );
 }

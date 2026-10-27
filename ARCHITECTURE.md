@@ -36354,3 +36354,18 @@ Trois choix faits en codant : la vignette d'une pièce passe de 88 à 72 (`taill
 
 **Ce que ce document vaut**, écrit au pied du PDF : une attestation de vérification des justificatifs présentés dans Atlas, signée d'une signature électronique simple. Elle ne remplace pas l'attestation de présentation des comptes de l'expert-comptable.
 
+## §524 : Le comptable renvoie à corriger ; seul l'appui du patron le prévient
+
+**Sa demande du 27 octobre 2026** : *« qu'il puisse nous le retourner à corriger si besoin, un peu comme pour un devis. Et nous on le corrige, on lui renvoie corrigé, ou c'est connecté ? »* Puis, devant la planche (`appli/soignee/comptable-retour.html`) : *« un e-mail ne peut pas partir sans mon geste dans l'appli »*, et *« tu peux coder ça, pas de batterie »*.
+
+**C'était déjà connecté, et rien ne change de ce côté.** Une ligne rejetée que le patron reprend dans Mes dossiers repasse sur le lien du comptable, « Corrigée depuis votre rejet », à vérifier de nouveau (0145, `test-verification-comptable-e2e.ts`). Ce lot n'ajoute que ce qui manquait : le GESTE du renvoi, sa carte chez le patron, et de quoi prévenir le comptable.
+
+**Le renvoi ne porte que le geste** (migration 0152, `retours_comptable`) : quand, combien de lignes rejetées, son mot, l'adresse où il veut être prévenu. Les lignes à reprendre sont ses rejets, relus au serveur, jamais une liste envoyée par le navigateur. Refusé sans ligne rejetée. FORCE RLS sous l'isolation ordinaire (le jeton ouvre son envoi, qui pose l'entreprise), **ni UPDATE ni DELETE** sauf `vu_le` (« J'ai vu »). La cadence est étroite : `LIMITES.retourComptable` (6 par dix minutes et par lien) et `retourComptableParSource`.
+
+**Quand Mes dossiers montre quoi** (`etatDuRetour`, `src/lib/retour-comptable.ts`) : « Correction demandée » tant qu'un rejet reste ; « Tout est corrigé » quand il n'en reste plus et que des lignes attendent le comptable ; rien sinon. Une attestation signée APRÈS le renvoi le clôt : le comptable a repris la main.
+
+**Atlas n'écrit jamais au comptable.** « Prévenir mon comptable » est un `mailto:` : la messagerie DU PATRON s'ouvre, le message prêt (`messageAuComptable`), adressé à l'e-mail que le comptable a laissé. Le lien n'y est pas (la base n'en garde que l'empreinte, et le comptable a le sien). C'est sa règle, *rien ne part sans mon geste*, et `CLAUDE.md` §4.
+
+**L'avis au patron** passe par Brevo, comme celui de l'attestation (§523), et ne porte rien du dossier : ni ligne, ni montant, ni le mot du comptable, qui peut citer des libellés de banque. Le mot se lit dans Atlas, sur la carte de l'accueil et dans Mes dossiers.
+
+**Ce que la capture a attrapé, et aucun test** : la carte de l'accueil disait « Votre comptable a rejeté 1 ligne. 1 ligne à reprendre. » (la seconde phrase est partie), et le « » » final tombait seul à la ligne (espaces insécables autour du mot). La suite navigateur, elle, a attrapé la phrase d'aide de l'e-mail posée DANS l'étiquette : le champ s'annonçait « Votre e-mail Pour recevoir un mot… ». Elle est sortie de l'étiquette et rattachée par `aria-describedby`.

@@ -25,6 +25,8 @@ export type DossierAffiche = {
   verification: { texte: string | null; rejets: ARegarder[] };
   /** La dernière attestation que le comptable a signée, et si elle vaut encore. */
   attestation: { id: string; ton: "vert" | "ambre" | "rouge"; detail: string; perimee: boolean } | null;
+  /** Son renvoi à corriger : la demande tant qu'un rejet reste, puis de quoi le prévenir. */
+  retour: { etat: "demande"; titre: string; message: string | null; texte: string } | { etat: "corrige"; mailto: string } | null;
 };
 
 const TEINTE_DU_TON = {
@@ -305,6 +307,41 @@ function Dossier({ d, factures, premier }: { d: DossierAffiche; factures: Factur
           <Link href={adresseDeLaVisionneuse(`/termines/comptable/attestations/${d.attestation.id}/pdf`, { surtitre: "Attestation du comptable", titre: d.nom })} className="flex min-h-[44px] items-center px-2 text-[15px] font-medium" style={{ color: colors.ink }} data-atlas="ouvrir-attestation">
             Ouvrir
           </Link>
+        </div>
+      )}
+
+      {/* Le renvoi à corriger, sous le compte du comptable comme l'attestation
+          (sa planche du 27 octobre 2026). C'est connecté : ce qu'il corrige
+          ici repasse sur le lien du comptable ; seul le prévenir se fait. */}
+      {d.retour?.etat === "demande" && (
+        <div className="mt-2.5 rounded-[14px] px-4 pb-3.5 pt-3" style={{ backgroundColor: colors.carteAmbreFond }} data-atlas="correction-demandee">
+          <p className="flex items-center gap-2 text-[14.5px] font-bold" style={{ color: colors.carteAmbreTexte }}>
+            <i className="inline-block h-[7px] w-[7px] rounded-full" style={{ backgroundColor: "currentColor" }} />
+            {d.retour.titre}
+          </p>
+          {d.retour.message && (
+            <p className="mt-1.5 text-[17px] italic leading-[1.4]" style={{ fontFamily: font.display, color: colors.ink }}>
+              «&nbsp;{d.retour.message}&nbsp;»
+            </p>
+          )}
+          <p className="mt-1 text-[14px]" style={{ color: colors.inkSoft }}>
+            {d.retour.texte}
+          </p>
+        </div>
+      )}
+      {d.retour?.etat === "corrige" && (
+        <div className="mt-2.5 rounded-[18px] px-5 pb-[18px] pt-3.5" style={{ backgroundColor: colors.carteVertFond }} data-atlas="tout-corrige">
+          <p className="flex items-center gap-2 text-[15px] font-bold" style={{ color: colors.carteVertTexte }}>
+            <i className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: "currentColor" }} />
+            Tout est corrigé
+          </p>
+          <p className="mt-1.5 text-[15px] leading-[1.45]" style={{ color: colors.ink }}>
+            Vos corrections sont déjà sur son lien.
+          </p>
+          <a href={d.retour.mailto} className="atlas-plein mt-3.5 inline-flex min-h-[54px] w-full items-center justify-center gap-2.5 rounded-full px-5 text-[16px] font-medium" style={{ backgroundColor: colors.plein, color: colors.card }} data-atlas="prevenir-mon-comptable">
+            <Icone nom="email" taille={21} />
+            Prévenir mon comptable
+          </a>
         </div>
       )}
 

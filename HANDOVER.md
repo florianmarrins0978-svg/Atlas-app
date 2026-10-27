@@ -14,6 +14,8 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 Le comptable signe, sur son lien, une attestation qui se range avec le dossier (`ARCHITECTURE.md` §523). **Les pièges :** une attestation ne se réécrit jamais (la base ne rend que `vu_le`) : une nouvelle signature fait une nouvelle ligne, et c'est la dernière qui compte. Les comptes se refont au serveur sur les verdicts ; ne jamais les prendre du navigateur. Le courriel passe par Brevo et ne doit RIEN porter du dossier (ni libellé, ni montant, ni PDF) : `test-attestation-comptable.ts` le refuse. Pour regarder la page du comptable sur un serveur de développement, passer par `localhost` : sur `127.0.0.1`, Next refuse ses scripts et la page ne s'hydrate pas (aucun bouton ne répond).
 
+**Le renvoi à corriger** (`ARCHITECTURE.md` §524) : les lignes renvoyées sont les REJETS relus au serveur, jamais une liste du navigateur ; un renvoi ne se réécrit pas (seul `vu_le`). **Atlas n'écrit jamais au comptable** : « Prévenir mon comptable » est un `mailto:` vers l'adresse qu'il a laissée, et doit le rester (sa règle, rien ne part sans son geste). L'avis Brevo au patron ne porte ni ligne, ni montant, ni le mot du comptable : `test-retour-comptable.ts` et la suite base le refusent. Pour l'éprouver au navigateur, une ligne de CARTE (« CB … ») : seule elle offre « Ticket perdu ».
+
 ---
 ## POUR MON COMPTABLE : UN VIREMENT REÇU SE RÈGLE DANS SA LIGNE (26 octobre 2026)
 

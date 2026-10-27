@@ -2,7 +2,7 @@ import { colors, font } from "@/lib/design-tokens";
 import { enEuros } from "@/lib/euros";
 import { ligneDuTotal } from "@/lib/ticket-imprime";
 import { libelleMotif, categorieDeLaLigne, ecartSignale, jourComplet, jourEnMots, suiteDeLaPiece } from "@/lib/pour-mon-comptable";
-import { attestationParJeton, dossierParJeton, type LignePourLeComptable } from "@/server/repositories/verification-comptable";
+import { attestationParJeton, dernierRetourParJeton, dossierParJeton, type LignePourLeComptable } from "@/server/repositories/verification-comptable";
 import Verification, { type LigneAVerifier, type PieceAffichee } from "./Verification";
 import { jourIso } from "@/lib/jour";
 import { garderLaPage } from "@/server/garde-page";
@@ -106,7 +106,7 @@ function ecartAffiche(p: PieceAffichee, suite: string, signale: boolean): LigneA
 export default async function PageDuComptable({ params }: { params: Promise<{ jeton: string }> }) {
   await garderLaPage();
   const { jeton } = await params;
-  const [dossier, attestation] = await Promise.all([dossierParJeton(jeton), attestationParJeton(jeton)]);
+  const [dossier, attestation, retour] = await Promise.all([dossierParJeton(jeton), attestationParJeton(jeton), dernierRetourParJeton(jeton)]);
 
   if (!dossier) {
     return (
@@ -160,6 +160,7 @@ export default async function PageDuComptable({ params }: { params: Promise<{ je
           ? { conclusion: attestation.conclusion, signee: `Signée le ${jourEnMots(jourIso(attestation.signeLe))}`, aJour: attestation.aJour }
           : null
       }
+      renvoye={retour ? `Renvoyé le ${jourEnMots(jourIso(retour.renvoyeLe))}.` : null}
     />
   );
 }

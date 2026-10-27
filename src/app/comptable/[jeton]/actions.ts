@@ -1,9 +1,10 @@
 "use server";
 
-import { poserVerdictParJeton } from "@/server/repositories/verification-comptable";
+import { poserVerdictParJeton, renvoyerParJeton } from "@/server/repositories/verification-comptable";
 import { signerLAttestation } from "@/server/attestation-comptable";
 import { envoyerCourriel } from "@/server/courriel";
 import { lireLaSaisie, type Conclusion } from "@/lib/attestation-comptable";
+import { lireLeRenvoi } from "@/lib/retour-comptable";
 import { logger } from "@/server/logger";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { horsProductionReelle, sourceDuVisiteur } from "@/server/source-visiteur";
@@ -84,5 +85,39 @@ export async function signerAttestationAction(
   } catch (err) {
     logger.error("L'attestation du comptable n'a pas pu se signer", { erreur: err instanceof Error ? err.message : String(err) });
     return { ok: false, raison: "L'attestation n'a pas pu s'enregistrer. Réessayez." };
+  }
+}
+
+/**
+ * RENVOYER À CORRIGER — sa planche du 27 octobre 2026. Même porte et même
+ * serrure que le verdict : le jeton est la garde, la cadence est bornée, le
+ * mot et l'adresse se relisent (`lireLeRenvoi`). Refusé sans ligne rejetée
+ * (`renvoyerParJeton`).
+ *
+ * L'avis part chez le patron, à qui il est adressé ; Atlas n'écrit jamais au
+ * comptable. Son échec ne défait rien : la demande est sur l'accueil.
+ */
+export async function renvoyerAction(jeton: string, saisie: { message: unknown; email: unknown }): Promise<{ ok: true; rejetees: number } | { ok: false; raison: string }> {
+  const lu = lireLeRenvoi({ message: saisie?.message, email: saisie?.email });
+  if (!lu.ok) return lu;
+
+  const source = await sourceDuVisiteur(horsProductionReelle());
+  const seuils: Array<readonly [string, { max: number; fenetreMs: number }]> = [[`retour-comptable:${jeton}`, LIMITES.retourComptable]];
+  if (source !== SOURCE_NON_ETABLIE) seuils.push([`retour-comptable:source:${source}`, LIMITES.retourComptableParSource]);
+  for (const [cle, limite] of seuils) {
+    if (!(await verifierLimite(cle, limite)).autorise) return { ok: false, raison: "Trop de renvois d'un coup. Réessayez dans quelques minutes." };
+  }
+
+  try {
+    const r = await renvoyerParJeton(jeton, lu.valeur, new Date());
+    if (!r.ok) return r;
+    if (r.courriel) {
+      const envoi = await envoyerCourriel(r.courriel);
+      if (!envoi.ok) logger.warn("L'avis du renvoi à corriger n'est pas parti chez le patron", { raison: envoi.raison });
+    }
+    return { ok: true, rejetees: r.retour.rejetees };
+  } catch (err) {
+    logger.error("Le renvoi du comptable n'a pas pu s'enregistrer", { erreur: err instanceof Error ? err.message : String(err) });
+    return { ok: false, raison: "Le renvoi n'a pas pu s'enregistrer. Réessayez." };
   }
 }

@@ -13,7 +13,7 @@ import { lieuDuChantier, lieuEstManquant } from "@/lib/nom-chantier";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getRole } from "@/server/autorisation";
 import { cheminAutorise, peutGererDevis, recoitLesRappels, type DomaineDesRappels } from "@/lib/acces-roles";
-import { attestationsAMontrer } from "@/server/repositories/verification-comptable";
+import { attestationsAMontrer, retoursAMontrer } from "@/server/repositories/verification-comptable";
 import { avecCivilite } from "@/lib/civilite";
 import { deOuD, ligneDuContratEnCours } from "@/lib/contrats-entretien";
 import { listerChantiersPourAffichage } from "@/server/repositories/chantiers";
@@ -84,7 +84,7 @@ export default async function ChantiersPage() {
   // siens lui-même ; ces trois-là se lisent ici, sur la même règle.
   const role = await getRole(ctx);
   const recoit = (domaine: DomaineDesRappels) => role !== null && recoitLesRappels(role, domaine);
-  const [chantiers, contrats, notifications, caducs, rappels, receptions, abonnement, retoursManques, vehicules, virements, liaison, attestations] = await Promise.all([
+  const [chantiers, contrats, notifications, caducs, rappels, receptions, abonnement, retoursManques, vehicules, virements, liaison, attestations, retours] = await Promise.all([
     listerChantiersPourAffichage(ctx),
     // Qui ne rédige pas de contrat n'en voit pas : il ne pourrait ni les
     // reprendre, ni les retirer.
@@ -113,6 +113,8 @@ export default async function ChantiersPage() {
     // 27 octobre 2026. Ceux qui ouvrent Pour mon comptable, et eux seuls :
     // la carte mène à leurs dossiers.
     role !== null && cheminAutorise(role, "/termines/comptable") ? attestationsAMontrer(ctx) : [],
+    // Et la correction qu'il demande, comme le client d'un devis (même jour).
+    role !== null && cheminAutorise(role, "/termines/comptable") ? retoursAMontrer(ctx) : [],
   ]);
 
   // **La banque se lit APRÈS l'affichage** : l'accueil ne doit pas attendre
@@ -262,6 +264,7 @@ export default async function ChantiersPage() {
               rejetees: a.rejetees,
               quand: a.signeLe.getTime(),
             }))}
+            retours={retours.map((r) => ({ id: r.id, message: r.message, rejetees: r.rejetees, quand: r.renvoyeLe.getTime() }))}
             accord={
               accord?.bientot && liaison
                 ? {
