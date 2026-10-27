@@ -341,6 +341,15 @@
         ],
         "createdAt": "2026-10-27T18:39:22.961Z",
         "reason": "maquette qui reprend les jetons crème de la charte de l'application, déjà choisie par le patron; décision du dépôt"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/salarie-absent.html"
+        ],
+        "createdAt": "2026-10-27T19:31:21.785Z",
+        "reason": "Charte Origine de l'appli (--atlas-cream #f5f3ee, variablesCharte), recopiée par kit.css comme toutes les planches soignées"
       }
     ]
   }
