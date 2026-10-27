@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Salarié absent, A ou B</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  SALARIÉ ABSENT, A OU B (src/app/planning/PasLaCeJour.tsx, BasculeDuMoment.tsx).
+
+  Sa demande du 27 octobre 2026 : la planche du planning (planning.html)
+  ouvrait, sur « Salarié absent ? », une feuille avec un interrupteur par
+  salarié ; le lot du 26 octobre ne l'a pas codée. Avant de la coder, un point
+  à trancher : la feuille dessinée ne connaît que la journée, alors que l'appli
+  sait poser un matin ou un après-midi seul (son choix du 8 septembre, D2,
+  sur main le 28 septembre). Il a demandé à voir les deux.
+
+  A : la feuille, et sous un salarié passé Absent, Matin, Après-midi, Journée ;
+      Journée retenue d'office, comme aujourd'hui (un appui suffit).
+  B : la feuille telle que dessinée ; l'absence vaut la journée.
+
+  Ce qui ne bouge pas, dans les deux : « + Salarié absent ? » à côté de la
+  date ; sous la date, ce qui est posé (Absent, le nom, le moment, la croix
+  noire qui retire) ; Matin et Après-midi qui disent qui manque.
+*/
+.fiche { border-radius: var(--r-plage); background: var(--atlas-card); padding: 6px 18px 8px; margin-top: 8px; }
+.fiche-tete { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.fiche-date b { display: block; font: 400 26px/1.15 var(--serif); color: var(--atlas-or); margin-top: 14px; }
+.fiche-date span { font-size: 15px; color: var(--atlas-inkSoft); }
+.absent { display: inline-flex; align-items: center; gap: 5px; min-height: 44px; flex: none; font-size: 15px; font-weight: 600; color: var(--atlas-or); }
+.absent .ico { stroke-width: 2.2; }
+
+.posee { display: flex; align-items: center; gap: 12px; min-height: 48px; }
+.posee-mot { width: 72px; flex: none; font-size: 13px; color: var(--atlas-muted); }
+.posee-nom { flex: 1; min-width: 0; font-size: 15px; color: var(--atlas-ink); }
+.posee-quand { flex: none; font-size: 14px; color: var(--atlas-muted); }
+.posee-croix { width: 44px; height: 44px; margin-right: -12px; flex: none; display: grid; place-items: center; color: var(--atlas-ink); font-size: 15px; }
+
+.moments { margin: 4px 0 0; }
+.moment { display: flex; align-items: center; gap: 12px; min-height: 48px; }
+.moment-etat { width: 12px; height: 12px; flex: none; border-radius: 3px; background: var(--atlas-vertPale); }
+.moment-nom { width: 100px; flex: none; font-size: 15px; font-weight: 700; color: var(--atlas-inkSoft); }
+.moment-qui { flex: 1; min-width: 0; font-size: 14px; color: var(--atlas-muted); text-align: right; }
+.ajouter { display: inline-flex; align-items: center; gap: 8px; min-height: 52px; font-size: 16px; font-weight: 600; color: var(--atlas-or); }
+.ajouter .ico { stroke-width: 2.2; }
+
+.absent-rang { padding: 4px 0; }
+.absent-rang + .absent-rang { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.absent-ligne { display: flex; align-items: center; gap: 14px; min-height: 60px; }
+.absent-ligne .ligne-nom { flex: 1; font-size: 17px; color: var(--atlas-ink); }
+.absent-ligne .second { min-width: 62px; text-align: right; font-size: 15px; color: var(--atlas-inkSoft); }
+.quand { display: flex; flex-wrap: wrap; gap: 0 20px; margin: -6px 0 6px; }
+.quand button { min-height: 44px; font-size: 15px; font-weight: 600; color: var(--atlas-or); }
+.quand button[aria-pressed="true"] { color: var(--atlas-ink); text-decoration: underline; text-decoration-color: var(--atlas-or);
+                                     text-decoration-thickness: 2px; text-underline-offset: 6px; }
+.fermer { width: 100%; justify-content: center; margin-top: 8px; color: var(--atlas-inkSoft); }
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">Salarié absent</h1>
+  <p class="pl-verdict">Touchez <b>Salarié absent ?</b>, puis l’interrupteur d’un salarié. <b>A</b> : vous choisissez ensuite matin, après-midi ou journée. <b>B</b> : c’est toujours la journée.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <div data-vue-panneau="A">
+      <p class="pl-legende">A, avec la demi-journée</p>
+      <div class="cadre"><div class="ecran avec-barre" data-version="A"></div></div>
+    </div>
+
+    <div data-vue-panneau="B">
+      <p class="pl-legende">B, la journée seule</p>
+      <div class="cadre"><div class="ecran avec-barre" data-version="B"></div></div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change, dans les deux</h2>
+    <ul>
+      <li>Salarié absent ? ouvre une feuille avec un interrupteur par salarié, comme sur la planche du planning.</li>
+      <li>La ligne « Julien, Antoine, annuler » sous la date disparaît : l’interrupteur pose et retire.</li>
+    </ul>
+    <h2>Ce qui reste comme dans l’appli</h2>
+    <ul class="garde">
+      <li>Salarié absent ? à côté de la date.</li>
+      <li>Sous la date, ce qui est posé : Absent, le nom, le moment, et la petite croix noire qui retire.</li>
+      <li>Matin et Après-midi disent qui manque.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li><b>A</b> garde ce que l’appli sait faire depuis septembre : Julien absent le matin seulement. Journée est retenue d’office, donc le cas courant reste un seul geste.</li>
+      <li><b>B</b> est la feuille telle que dessinée. Un matin seul ne se pose plus.</li>
+      <li>Je défends la A.</li>
+    </ul>
+  </section>
+</main>
+
+<script src="kit.js"></script>
+<script>
+(function () {
+  "use strict";
+  var EQUIPE = ["Julien", "Antoine"];
+  var MOMENTS = [["matin", "Matin", "matin"], ["apres_midi", "Après-midi", "après-midi"], ["journee", "Journée", "journée"]];
+
+  function dit(m) { return MOMENTS.filter(function (x) { return x[0] === m; })[0][2]; }
+  function ico(nom) { return '<svg class="ico ico-p" aria-hidden="true"><use href="#i-' + nom + '"/></svg>'; }
+
+  document.querySelectorAll(".ecran[data-version]").forEach(function (ecran) {
+    var version = ecran.getAttribute("data-version");
+    var absents = {};
+    var id = "feuille-" + version;
+
+    ecran.innerHTML =
+      '<div class="defile">' +
+        '<header class="tete"><h1 class="tete-titre moyen">Planning</h1></header>' +
+        '<div class="fiche"></div>' +
+      '</div>' +
+      '<nav class="barre" aria-label="Navigation principale"><div class="barre-onglets">' +
+        '<a class="barre-onglet" href="accueil.html">Chantiers</a>' +
+        '<a class="barre-onglet" href="planning.html" aria-current="page">Planning</a>' +
+        '<a class="barre-onglet" href="termines.html">Terminés</a>' +
+        '<a class="barre-onglet" href="paysage.html">Paysage</a>' +
+        '<a class="barre-onglet" href="reglages.html">Réglages</a>' +
+        '<span class="barre-trait" aria-hidden="true"><span></span></span>' +
+      '</div></nav>' +
+      '<section class="feuille" id="' + id + '" aria-hidden="true" aria-label="Salarié absent">' +
+        '<div class="feuille-poignee"></div><div class="feuille-dedans"></div>' +
+      '</section>';
+
+    var fiche = ecran.querySelector(".fiche");
+    var dedans = ecran.querySelector("#" + id + " .feuille-dedans");
+
+    function qui(moment) {
+      var manquent = EQUIPE.filter(function (n) { return absents[n] === moment || absents[n] === "journee"; });
+      return manquent.length ? manquent.join(" et ") + " absent" + (manquent.length > 1 ? "s" : "") : "libre";
+    }
+
+    function peindreFiche() {
+      var poses = EQUIPE.filter(function (n) { return absents[n]; }).map(function (n) {
+        return '<div class="posee"><span class="posee-mot">Absent</span><span class="posee-nom">' + n + '</span>' +
+          '<span class="posee-quand">' + dit(absents[n]) + '</span>' +
+          '<button type="button" class="posee-croix" data-retirer="' + n + '" aria-label="Supprimer l’absence de ' + n + '">✕</button></div>';
+      }).join("");
+      fiche.innerHTML =
+        '<div class="fiche-tete"><div class="fiche-date"><b>Aujourd’hui</b><span>mardi 27 octobre</span></div>' +
+        '<button type="button" class="absent" data-ouvrir>' + ico("plus") + 'Salarié absent ?</button></div>' +
+        poses +
+        '<div class="moments">' +
+          '<div class="moment"><span class="moment-etat"></span><span class="moment-nom">Matin</span><span class="moment-qui">' + qui("matin") + '</span></div>' +
+          '<div class="moment"><span class="moment-etat"></span><span class="moment-nom">Après-midi</span><span class="moment-qui">' + qui("apres_midi") + '</span></div>' +
+        '</div>' +
+        '<button type="button" class="ajouter">' + ico("plus") + 'Ajouter</button>';
+    }
+
+    function peindreFeuille() {
+      dedans.innerHTML = '<h2 class="feuille-titre">Absent le mardi 27 octobre ?</h2>' +
+        EQUIPE.map(function (n, i) {
+          var oui = !!absents[n];
+          var lib = "absent-" + version + "-" + i;
+          var quand = (version === "A" && oui)
+            ? '<div class="quand">' + MOMENTS.map(function (m) {
+                return '<button type="button" data-qui="' + n + '" data-quand="' + m[0] + '" aria-pressed="' + (absents[n] === m[0]) + '">' + m[1] + '</button>';
+              }).join("") + '</div>'
+            : "";
+          return '<div class="absent-rang"><div class="absent-ligne"><span class="ligne-nom">' + n + '</span>' +
+            '<span class="second" id="' + lib + '">' + (oui ? "Absent" : "Présent") + '</span>' +
+            '<button type="button" class="bascule" role="switch" aria-checked="' + oui + '" aria-label="' + n + ' absent" aria-describedby="' + lib + '" data-oui="Absent" data-non="Présent" data-nom="' + n + '"></button></div>' +
+            quand + '</div>';
+        }).join("") +
+        '<button type="button" class="bouton bouton-texte fermer" data-fermer>Fermer</button>';
+    }
+
+    ecran.addEventListener("click", function (e) {
+      if (e.target.closest("[data-ouvrir]")) { peindreFeuille(); Kit.ouvrirFeuille(id, e.target.closest("[data-ouvrir]")); return; }
+      var croix = e.target.closest("[data-retirer]");
+      if (croix) { delete absents[croix.getAttribute("data-retirer")]; peindreFiche(); return; }
+      if (e.target.closest("[data-fermer]")) { Kit.fermerFeuilles(ecran); return; }
+      var bascule = e.target.closest(".bascule[data-nom]");
+      if (bascule) {
+        // L'écran écoute avant le kit (il est plus près du doigt) : la feuille
+        // se repeint ici, et le kit ne doit pas rebasculer un bouton disparu.
+        e.stopPropagation();
+        var nom = bascule.getAttribute("data-nom");
+        if (absents[nom]) delete absents[nom]; else absents[nom] = "journee";
+        peindreFiche(); peindreFeuille();
+        var b = dedans.querySelector('.bascule[data-nom="' + nom + '"]');
+        if (b) b.focus({ preventScroll: true });
+        return;
+      }
+      var quand = e.target.closest("[data-quand]");
+      if (quand) {
+        absents[quand.getAttribute("data-qui")] = quand.getAttribute("data-quand");
+        peindreFiche(); peindreFeuille();
+      }
+    });
+
+    peindreFiche();
+  });
+})();
+</script>
+</body>
+</html>
