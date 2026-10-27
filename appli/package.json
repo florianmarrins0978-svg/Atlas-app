@@ -20,7 +20,7 @@
     "playwright": "^1.62.0"
   },
   "dependencies": {
-    "@capacitor/android": "^6.2.0",
+    "@capacitor/android": "^6.2.2",
     "@capacitor/core": "^6.2.0",
     "@capacitor/ios": "^6.2.0"
   }
