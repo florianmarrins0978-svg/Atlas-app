@@ -350,6 +350,15 @@
         ],
         "createdAt": "2026-10-27T19:31:21.785Z",
         "reason": "Charte Origine de l'appli (--atlas-cream #f5f3ee, variablesCharte), recopiée par kit.css comme toutes les planches soignées"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/main-oeuvre-curseur.html"
+        ],
+        "createdAt": "2026-10-27T21:11:45.131Z",
+        "reason": "Charte Origine de l'appli (--atlas-cream, rustTint de la carte Avant de chiffrer), recopiée par kit.css comme toutes les planches soignées"
       }
     ]
   }
