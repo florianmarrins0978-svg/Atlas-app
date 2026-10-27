@@ -60,7 +60,8 @@ n'a rien déplacé » ; la règle a ses tests, rouges d'abord.
 | chiffrage voisin (grilles, proposition de prix, corrections, identité, leçons, questions) | verts |
 | types, style, tirets, flèches, couleurs en clair, pansements, code mort, couches, chartes | verts |
 | le composant dans un navigateur, en Origine, Nuit et Sylve | regardé : glissé au doigt, flèches du clavier, croix, Remettre, montant écrit, Échap, une ligne |
-| suite navigateur du geste (`test-main-oeuvre-barre-e2e.ts`) | écrite ; son premier passage est tombé avant de commencer (navigateur introuvable sur ce poste), le second est en cours |
+| suite navigateur du geste (`test-main-oeuvre-barre-e2e.ts`) | verte : montant écrit à l'euro près, poignée du dessus de la pile tirée, le devis porte les mêmes montants ; rouge avant la correction des poignées empilées |
+| suite navigateur des questions (`test-questions-chiffrage-e2e.ts`) | verte |
 
 ## Ce qui reste
 
