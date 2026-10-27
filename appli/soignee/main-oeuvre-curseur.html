@@ -37,7 +37,10 @@
     les noms des travaux dans l'écriture des titres de l'appli, le montant à
       droite en chiffres alignés, une pastille ronde de la couleur du morceau ;
     le total en bas, dans l'écriture des titres ;
-    retirer ou remettre un travail fait couler les morceaux, au lieu de sauter.
+    retirer ou remettre un travail fait couler les morceaux, au lieu de sauter ;
+    et, sa réponse du même soir, le montant se touche pour s'écrire : le
+      travail d'à côté prend la différence (le suivant complète s'il n'a pas
+      assez), arrondie à 10 € comme le devis.
 
   Les teintes : le vert pin de la charte (--atlas-rust) mêlé à la carte. Le
   premier morceau est foncé, écrit en clair ; les suivants sont clairs, écrits
@@ -131,6 +134,15 @@
 [data-style="jolie"] .travail-nom { font: 400 17px/1.25 var(--serif); }
 [data-style="jolie"] .pastille-mo { width: 12px; height: 12px; flex: none; border-radius: 50%;
   box-shadow: inset 0 0 0 1px rgba(28,28,26,0.08); }
+/* Le montant se touche pour s'écrire : souligné d'or, comme ce qui s'appuie
+   dans l'appli, et 44 px de haut pour le doigt. */
+[data-style="jolie"] .travail-prix { min-height: 44px; display: inline-flex; align-items: center; padding: 0 2px;
+  text-decoration: underline dotted var(--atlas-or); text-decoration-thickness: 2px; text-underline-offset: 6px; cursor: text; }
+[data-style="jolie"] .saisie-prix { display: inline-flex; align-items: center; gap: 4px; flex: none; min-height: 44px;
+  padding: 0 10px; border-radius: 10px; background: var(--atlas-cream); box-shadow: inset 0 0 0 2px var(--atlas-or); }
+[data-style="jolie"] .saisie-prix input { width: 4.6ch; border: 0; background: transparent; outline: none; text-align: right;
+  font-family: inherit; font-size: 17px; font-weight: 650; line-height: 1; font-variant-numeric: tabular-nums; color: var(--atlas-ink); caret-color: var(--atlas-or); }
+[data-style="jolie"] .saisie-prix span { font-size: 17px; font-weight: 650; color: var(--atlas-inkSoft); }
 [data-style="jolie"] .travail.bouge { background: linear-gradient(var(--atlas-rustTint), var(--atlas-rustTint)) no-repeat center / calc(100% + 16px) 100%; }
 [data-style="jolie"] .total-mo { display: flex; align-items: baseline; justify-content: space-between; margin-top: 2px;
   padding: 12px 0 10px; box-shadow: inset 0 1px 0 var(--atlas-line); }
@@ -147,7 +159,7 @@
 <header class="pl-tete">
   <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
   <h1 class="pl-titre">Répartir la main d’œuvre</h1>
-  <p class="pl-verdict">Une seule barre pour tout le total. <b>Tirez une poignée</b> : seuls les deux travaux qui la bordent changent, de 10 € en 10 €.</p>
+  <p class="pl-verdict">Une seule barre pour tout le total. <b>Tirez une poignée</b> : seuls les deux travaux qui la bordent changent, de 10 € en 10 €. <b>Ou touchez un montant</b> pour l’écrire.</p>
 </header>
 
 <main class="pl-scene">
@@ -190,6 +202,7 @@
       <li>Des poignées rondes accrochées sous le joint, qui ne cachent aucun montant, et la bulle qui pointe celle qu’on tient.</li>
       <li>Les noms des travaux dans l’écriture des titres, le montant à droite, une pastille ronde de la couleur du morceau.</li>
       <li>Le total en bas, dans l’écriture des titres. Retirer ou remettre un travail fait couler la barre.</li>
+      <li>Touchez un montant pour l’écrire, au clavier des chiffres. Le travail d’à côté prend la différence et s’éclaire, pour qu’on voie lequel a bougé ; s’il n’a pas assez, le suivant complète. Pour le dernier travail, c’est celui du dessus.</li>
     </ul>
     <h2>Ce qui reste comme dans l’appli</h2>
     <ul class="garde">
@@ -198,7 +211,7 @@
     </ul>
     <h2>À trancher</h2>
     <ul class="a-trancher">
-      <li>Au doigt, 10 € font 2 mm de barre sur 1 600 €. Pour tomber pile sur un montant, je peux ajouter : toucher le montant d’un travail et le taper. Le travail d’à côté prend la différence.</li>
+      <li>Un montant écrit s’arrondit à 10 €, comme le devis l’écrit aujourd’hui : 655 devient 660. Je peux le laisser à l’euro près, si vous préférez.</li>
     </ul>
     <h2>Ce que montre Aujourd’hui</h2>
     <ul class="a-trancher">
@@ -288,7 +301,11 @@
         return '<div class="travail" data-cle="' + t.cle + '">' +
           (mode === "reparti" ? '<span class="pastille-mo" style="background:' + teinte(k).fond + '"></span>' : "") +
           '<span class="travail-nom">' + t.nom + '</span>' +
-          (mode === "reparti" ? '<span class="travail-prix">' + euros(montants[t.cle]) + '</span>' : "") +
+          (mode === "reparti"
+            ? (style === "jolie"
+                ? '<button type="button" class="travail-prix" data-ecrire="' + t.cle + '" aria-label="Écrire le montant de ' + t.nom + '">' + euros(montants[t.cle]) + '</button>'
+                : '<span class="travail-prix">' + euros(montants[t.cle]) + '</span>')
+            : "") +
           '<button type="button" class="croix" data-retirer="' + t.cle + '" aria-label="Retirer ' + t.nom + ' de la main d’œuvre">' +
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>';
       }).join("") + '</div>' +
@@ -333,6 +350,63 @@
       d.forEach(function (t) { t.poids = montants[t.cle]; });
       placer();
       montrerBulle(k);
+    }
+
+    /* ÉCRIRE UN MONTANT — sa réponse du 27 octobre 2026, « tu peux rajouter la
+       possibilité de toucher le montant pour l'écrire ». Le travail d'à côté
+       (le suivant, ou celui du dessus pour le dernier) prend la différence :
+       c'est le même échange qu'une poignée, écrit au lieu d'être glissé. */
+    function voisinDe(cle) {
+      var d = dedans(), i = d.findIndex(function (t) { return t.cle === cle; });
+      return d[i + 1] || d[i - 1] || null;
+    }
+    /* Si le voisin n'a pas assez, le suivant complète, puis le suivant : un
+       montant écrit est un montant tenu, jamais plafonné en silence. Seul le
+       total l'arrête (chaque autre travail garde au moins 10 €). */
+    function ecrire(cle, voulu) {
+      var d = dedans(), i = d.findIndex(function (t) { return t.cle === cle; });
+      var payeurs = d.slice(i + 1).concat(d.slice(0, i).reverse());
+      if (!payeurs.length || !Number.isFinite(voulu)) return [];
+      var v = Math.max(MINI, Math.min(TOTAL - MINI * payeurs.length, Math.round(voulu / PAS) * PAS));
+      var ecart = v - montants[cle], touches = [];
+      montants[cle] = v;
+      if (ecart < 0) { montants[payeurs[0].cle] -= ecart; touches.push(payeurs[0].cle); }
+      payeurs.forEach(function (t) {
+        if (ecart <= 0) return;
+        var pris = Math.min(ecart, montants[t.cle] - MINI);
+        if (pris <= 0) return;
+        montants[t.cle] -= pris; ecart -= pris; touches.push(t.cle);
+      });
+      d.forEach(function (t) { t.poids = montants[t.cle]; });
+      return touches;
+    }
+    function ouvrirLaSaisie(bouton) {
+      var cle = bouton.getAttribute("data-ecrire");
+      if (!voisinDe(cle)) return;
+      var nom = travaux.filter(function (t) { return t.cle === cle; })[0].nom;
+      var boite = document.createElement("span");
+      boite.className = "saisie-prix";
+      boite.innerHTML = '<input type="text" inputmode="numeric" pattern="[0-9]*" enterkeyhint="done" aria-label="Montant de ' + nom + ', en euros" value="' + montants[cle] + '"><span>€</span>';
+      bouton.replaceWith(boite);
+      var champ = boite.querySelector("input");
+      champ.focus();
+      champ.select();
+      var fini = false;
+      function finir(garder) {
+        if (fini) return;
+        fini = true;
+        var touches = garder && champ.value.trim() ? ecrire(cle, Number(champ.value.replace(/[^0-9]/g, ""))) : [];
+        peindre();
+        touches.forEach(function (c) {
+          var l = carte.querySelector('.travail[data-cle="' + c + '"]');
+          if (l) { l.classList.add("bouge"); setTimeout(function () { l.classList.remove("bouge"); }, 1200); }
+        });
+      }
+      champ.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") { e.preventDefault(); finir(true); }
+        if (e.key === "Escape") { e.preventDefault(); finir(false); }
+      });
+      champ.addEventListener("blur", function () { finir(true); });
     }
 
     function montrerBulle(k) {
@@ -405,6 +479,8 @@
     }
 
     carte.addEventListener("click", function (e) {
+      var ec = e.target.closest("[data-ecrire]");
+      if (ec) { ouvrirLaSaisie(ec); return; }
       var m = e.target.closest("[data-mode]");
       if (m) { mode = m.getAttribute("data-mode"); peindre(); return; }
       var r = e.target.closest("[data-retirer]");
