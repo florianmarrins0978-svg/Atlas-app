@@ -3,6 +3,10 @@ import { execFileSync, spawn } from "node:child_process";
 import { mkdtempSync, writeFileSync, rmSync, existsSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { exigerUnSystemePosix } from "./_outil-requis";
+
+// Le faux veilleur plus bas se tue par son groupe de processus.
+exigerUnSystemePosix("groupes de processus");
 
 // **« L'appli est vraiment très lente, mais vraiment. »** — le patron, le
 // 16 août 2026 au soir.
