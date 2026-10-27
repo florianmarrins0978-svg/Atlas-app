@@ -42,7 +42,11 @@
       travail d'à côté prend la différence (le suivant complète s'il n'a pas
       assez), arrondie à 10 € comme le devis.
 
-  Les teintes : le vert pin de la charte (--atlas-rust) mêlé à la carte. Le
+  LES COULEURS (sa remarque du même soir, « vraiment à chier ») : la nouvelle
+  quitte les gris du vert pin pour des couleurs franches de l'appli, deux
+  intensités au choix, voir ORDRE et DOSES. La première garde ses gris, pour comparer.
+
+  Les teintes de la première : le vert pin de la charte (--atlas-rust) mêlé à la carte. Le
   premier morceau est foncé, écrit en clair ; les suivants sont clairs, écrits
   à l'encre. Ces quatre dosages tiennent le contraste sur les chartes claires
   ET sombres (vérifié sur Origine et Nuit) ; un dosage du milieu, lui, ne le
@@ -64,7 +68,7 @@
 .morceau { flex: none; display: grid; place-items: center; min-width: 0; overflow: hidden;
            font-size: 15px; font-weight: 650; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
 .morceau span { white-space: nowrap; transition: opacity 150ms ease-out; }
-.morceau[data-etroit="true"] span { opacity: 0; }
+.morceau[data-etroit="true"] span, .morceau[data-illisible="true"] span { opacity: 0; }
 .poignee { position: absolute; top: 50%; width: 48px; height: 64px; margin: -32px 0 0 -24px; display: grid; place-items: center;
            cursor: ew-resize; touch-action: none; -webkit-tap-highlight-color: transparent; }
 .poignee:focus-visible { outline: none; }
@@ -143,7 +147,10 @@
 [data-style="jolie"] .saisie-prix input { width: 4.6ch; border: 0; background: transparent; outline: none; text-align: right;
   font-family: inherit; font-size: 17px; font-weight: 650; line-height: 1; font-variant-numeric: tabular-nums; color: var(--atlas-ink); caret-color: var(--atlas-or); }
 [data-style="jolie"] .saisie-prix span { font-size: 17px; font-weight: 650; color: var(--atlas-inkSoft); }
-[data-style="jolie"] .travail.bouge { background: linear-gradient(var(--atlas-rustTint), var(--atlas-rustTint)) no-repeat center / calc(100% + 16px) 100%; }
+/* La ligne qui bouge s'éclaire de la couleur de son morceau. */
+[data-style="jolie"] .travail.bouge { --voile: color-mix(in srgb, var(--teinte, var(--atlas-rustTint)) 14%, var(--atlas-card));
+  background: linear-gradient(var(--voile), var(--voile)) no-repeat center / calc(100% + 16px) 100%; }
+[data-style="jolie"] .travail.bouge .travail-prix { color: var(--atlas-ink); }
 [data-style="jolie"] .total-mo { display: flex; align-items: baseline; justify-content: space-between; margin-top: 2px;
   padding: 12px 0 10px; box-shadow: inset 0 1px 0 var(--atlas-line); }
 [data-style="jolie"] .total-mo span:first-child { font-size: 13px; color: var(--atlas-muted); }
@@ -170,6 +177,10 @@
       <div class="pl-etats" data-ecran=".ecran[data-style='jolie']">
         <button type="button" data-etat="trois" aria-pressed="true">Trois travaux</button>
         <button type="button" data-etat="deux">Deux travaux</button>
+      </div>
+      <div class="pl-etats" id="palettes">
+        <button type="button" data-palette="vives" aria-pressed="true">Couleurs vives</button>
+        <button type="button" data-palette="douces">Couleurs douces</button>
       </div>
       <div class="cadre"><div class="ecran" data-style="jolie"></div></div>
     </div>
@@ -204,6 +215,12 @@
       <li>Le total en bas, dans l’écriture des titres. Retirer ou remettre un travail fait couler la barre.</li>
       <li>Touchez un montant pour l’écrire, au clavier des chiffres. Le travail d’à côté prend la différence et s’éclaire, pour qu’on voie lequel a bougé ; s’il n’a pas assez, le suivant complète. Pour le dernier travail, c’est celui du dessus.</li>
     </ul>
+    <h2>Les couleurs</h2>
+    <ul>
+      <li>Le vert des feuilles, le doré de l’appli, le bleu, puis la sarcelle et le rose : des couleurs que l’appli a déjà.</li>
+      <li><b>Vives</b> : franches, telles quelles. <b>Douces</b> : adoucies par le fond de la carte.</li>
+      <li>Elles suivent les huit chartes. Le montant s’écrit en noir ou en clair, celui qui se lit le mieux sur sa couleur.</li>
+    </ul>
     <h2>Ce qui reste comme dans l’appli</h2>
     <ul class="garde">
       <li>La carte Avant de chiffrer, la question, Sur une ligne Main d’œuvre ou Répartis sur les travaux.</li>
@@ -236,11 +253,25 @@
     ]
   };
   var TOTAL = 1600, PAS = 10, MINI = PAS;
-  /* Dosages du vert pin dans la carte, et l'encre qui se lit dessus. */
-  var TEINTES = {
-    premiere: [[100, "card"], [72, "card"], [50, "ink"], [32, "ink"], [18, "ink"]],
-    jolie: [[82, "card"], [40, "ink"], [24, "ink"], [13, "ink"]]
-  };
+  /* La première : le vert pin mêlé à la carte, et l'encre qui se lit dessus. */
+  var GRIS = [[100, "card"], [72, "card"], [50, "ink"], [32, "ink"], [18, "ink"]];
+  /*
+   * LES COULEURS. Sa remarque du 27 octobre 2026 : « les couleurs, elles sont
+   * vraiment à chier, ça donne pas envie d'aller voir le devis ». Des couleurs
+   * franches, prises dans l'appli et définies sur les huit chartes : le vert,
+   * le doré (--atlas-or), le bleu, la sarcelle, le rose.
+   *
+   * DEUX INTENSITÉS, À SON CHOIX. « Vives » : la couleur telle quelle.
+   * « Douces » : mêlée à la carte. Dans les deux, l'écriture du montant se
+   * CHOISIT, morceau par morceau : l'encre ou la carte, celle qui se lit le
+   * mieux, mesurée sur la couleur peinte ; sous 4,5 de contraste, le montant ne
+   * s'écrit pas dans la barre (il reste sur sa ligne). Une couleur fixe pour
+   * l'écriture ne tenait pas : le blanc se perd sur le doré, l'encre sur le vert
+   * foncé, et une charte sombre inverse les deux.
+   */
+  var ORDRE = ["catRepas", "or", "catCarburant", "catTransport", "catVirement"];
+  var DOSES = { vives: 100, douces: 54 };
+  var palette = "vives";
 
   function euros(n) { return n.toLocaleString("fr-FR") + " €"; }
 
@@ -252,8 +283,12 @@
     var travaux = [], retires = {}, montants = {}, mode = "reparti", tenue = null;
 
     function teinte(k) {
-      var t = TEINTES[style][Math.min(k, TEINTES[style].length - 1)];
-      return { fond: "color-mix(in srgb, var(--atlas-rust) " + t[0] + "%, var(--atlas-card))", encre: "var(--atlas-" + t[1] + ")" };
+      if (style === "premiere") {
+        var g = GRIS[Math.min(k, GRIS.length - 1)];
+        return { fond: "color-mix(in srgb, var(--atlas-rust) " + g[0] + "%, var(--atlas-card))", encre: "var(--atlas-" + g[1] + ")" };
+      }
+      var jeton = ORDRE[k % ORDRE.length];
+      return { fond: "color-mix(in srgb, var(--atlas-" + jeton + ") " + DOSES[palette] + "%, var(--atlas-card))", encre: null };
     }
     function dedans() { return travaux.filter(function (t) { return !retires[t.cle]; }); }
     function barre() { return carte.querySelector(".barre-mo"); }
@@ -285,7 +320,7 @@
           travaux.map(function (t) {
             if (retires[t.cle]) return "";
             var c = teinte(d.indexOf(t));
-            return '<div class="morceau" data-cle="' + t.cle + '" style="background:' + c.fond + ';color:' + c.encre + '"><span>' + euros(montants[t.cle]) + '</span></div>';
+            return '<div class="morceau" data-cle="' + t.cle + '" style="background:' + c.fond + (c.encre ? ';color:' + c.encre : "") + '"><span>' + euros(montants[t.cle]) + '</span></div>';
           }).join("") + '</div>' +
           d.slice(0, -1).map(function (t, k) {
             return '<div class="poignee" role="slider" tabindex="0" data-k="' + k + '" aria-label="Entre ' + t.nom + ' et ' + d[k + 1].nom + '"></div>';
@@ -298,7 +333,7 @@
             '<p>' + (t.grille !== null ? "Atlas va se référer à votre grille tarifaire : " + euros(t.grille) + "." : "Pas de prix dans votre grille, cette ligne sera à chiffrer.") + '</p></div>';
         }
         var k = d.indexOf(t);
-        return '<div class="travail" data-cle="' + t.cle + '">' +
+        return '<div class="travail" data-cle="' + t.cle + '"' + (mode === "reparti" ? ' style="--teinte:' + teinte(k).fond + '"' : "") + '>' +
           (mode === "reparti" ? '<span class="pastille-mo" style="background:' + teinte(k).fond + '"></span>' : "") +
           '<span class="travail-nom">' + t.nom + '</span>' +
           (mode === "reparti"
@@ -311,7 +346,29 @@
       }).join("") + '</div>' +
       '<div class="total-mo"><span>Total main d’œuvre</span><span>' + euros(TOTAL) + '</span></div></div>';
       carte.innerHTML = html;
+      if (style === "jolie") choisirLesEncres();
       placer();
+    }
+
+    /* L'encre ou la carte, celle qui se lit le mieux sur la couleur peinte. */
+    function luminance(css) {
+      var n = css.match(/[\d.]+/g).map(Number), v = css.indexOf("color(") === 0 ? n.slice(0, 3) : n.slice(0, 3).map(function (x) { return x / 255; });
+      v = v.map(function (x) { return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); });
+      return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
+    }
+    function contraste(a, b) { return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05); }
+    function choisirLesEncres() {
+      var s = getComputedStyle(ecran), sonde = document.createElement("i");
+      ecran.appendChild(sonde);
+      sonde.style.color = s.getPropertyValue("--atlas-ink"); var ink = luminance(getComputedStyle(sonde).color);
+      sonde.style.color = s.getPropertyValue("--atlas-card"); var card = luminance(getComputedStyle(sonde).color);
+      sonde.remove();
+      carte.querySelectorAll(".morceau").forEach(function (m) {
+        var fond = luminance(getComputedStyle(m).backgroundColor);
+        var parInk = contraste(fond, ink), parCard = contraste(fond, card);
+        m.style.color = parInk >= parCard ? "var(--atlas-ink)" : "var(--atlas-card)";
+        m.setAttribute("data-illisible", String(Math.max(parInk, parCard) < 4.5));
+      });
     }
 
     /* Les largeurs suivent les montants ; les poignées se posent sur les joints. */
@@ -352,7 +409,7 @@
       montrerBulle(k);
     }
 
-    /* ÉCRIRE UN MONTANT — sa réponse du 27 octobre 2026, « tu peux rajouter la
+    /* ÉCRIRE UN MONTANT. Sa réponse du 27 octobre 2026, « tu peux rajouter la
        possibilité de toucher le montant pour l'écrire ». Le travail d'à côté
        (le suivant, ou celui du dessus pour le dernier) prend la différence :
        c'est le même échange qu'une poignée, écrit au lieu d'être glissé. */
@@ -497,6 +554,13 @@
     var groupe = document.querySelector('.pl-etats[data-ecran=".ecran[data-style=\'' + style + '\']"]');
     if (groupe) groupe.querySelectorAll("button[data-etat]").forEach(function (b) {
       b.addEventListener("click", function () { poserLeCas(b.getAttribute("data-etat")); });
+    });
+    if (style === "jolie") document.querySelectorAll("#palettes [data-palette]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        palette = b.getAttribute("data-palette");
+        document.querySelectorAll("#palettes [data-palette]").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+        peindre();
+      });
     });
     window.addEventListener("resize", placer);
     /* Une vue cachée a une largeur nulle : on replace en la montrant. */
