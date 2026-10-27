@@ -2,7 +2,7 @@ import { colors, font } from "@/lib/design-tokens";
 import { enEuros } from "@/lib/euros";
 import { ligneDuTotal } from "@/lib/ticket-imprime";
 import { libelleMotif, categorieDeLaLigne, ecartSignale, jourComplet, jourEnMots, suiteDeLaPiece } from "@/lib/pour-mon-comptable";
-import { dossierParJeton, type LignePourLeComptable } from "@/server/repositories/verification-comptable";
+import { attestationParJeton, dossierParJeton, type LignePourLeComptable } from "@/server/repositories/verification-comptable";
 import Verification, { type LigneAVerifier, type PieceAffichee } from "./Verification";
 import { jourIso } from "@/lib/jour";
 import { garderLaPage } from "@/server/garde-page";
@@ -106,7 +106,7 @@ function ecartAffiche(p: PieceAffichee, suite: string, signale: boolean): LigneA
 export default async function PageDuComptable({ params }: { params: Promise<{ jeton: string }> }) {
   await garderLaPage();
   const { jeton } = await params;
-  const dossier = await dossierParJeton(jeton);
+  const [dossier, attestation] = await Promise.all([dossierParJeton(jeton), attestationParJeton(jeton)]);
 
   if (!dossier) {
     return (
@@ -136,6 +136,7 @@ export default async function PageDuComptable({ params }: { params: Promise<{ je
       jourLong: jourComplet(l.jour),
       libelle: l.libelle || (l.contrepartie ?? ""),
       montant: `${l.sens === "entree" ? "+" : "−"}${enEuros(l.montant)}`,
+      montantBrut: l.montant,
       sens: l.sens,
       categorie: categorieDeLaLigne({ sens: l.sens, libelle: l.libelle, natureDuTicket: l.ticket?.nature ?? null, justification: l.justification }),
       piece: p,
@@ -153,6 +154,12 @@ export default async function PageDuComptable({ params }: { params: Promise<{ je
       envoye={`Envoyé le ${jourEnMots(jourIso(dossier.envoyeLe))}`}
       entreprise={dossier.entreprise}
       lignes={lignes}
+      dossier={{ du: dossier.du, au: dossier.au, empreinte: dossier.empreinte }}
+      attestation={
+        attestation
+          ? { conclusion: attestation.conclusion, signee: `Signée le ${jourEnMots(jourIso(attestation.signeLe))}`, aJour: attestation.aJour }
+          : null
+      }
     />
   );
 }

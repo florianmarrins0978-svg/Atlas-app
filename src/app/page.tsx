@@ -12,7 +12,8 @@ import { dansLOrdreDuFil } from "@/lib/ordre-du-fil";
 import { lieuDuChantier, lieuEstManquant } from "@/lib/nom-chantier";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getRole } from "@/server/autorisation";
-import { peutGererDevis, recoitLesRappels, type DomaineDesRappels } from "@/lib/acces-roles";
+import { cheminAutorise, peutGererDevis, recoitLesRappels, type DomaineDesRappels } from "@/lib/acces-roles";
+import { attestationsAMontrer } from "@/server/repositories/verification-comptable";
 import { avecCivilite } from "@/lib/civilite";
 import { deOuD, ligneDuContratEnCours } from "@/lib/contrats-entretien";
 import { listerChantiersPourAffichage } from "@/server/repositories/chantiers";
@@ -83,7 +84,7 @@ export default async function ChantiersPage() {
   // siens lui-même ; ces trois-là se lisent ici, sur la même règle.
   const role = await getRole(ctx);
   const recoit = (domaine: DomaineDesRappels) => role !== null && recoitLesRappels(role, domaine);
-  const [chantiers, contrats, notifications, caducs, rappels, receptions, abonnement, retoursManques, vehicules, virements, liaison] = await Promise.all([
+  const [chantiers, contrats, notifications, caducs, rappels, receptions, abonnement, retoursManques, vehicules, virements, liaison, attestations] = await Promise.all([
     listerChantiersPourAffichage(ctx),
     // Qui ne rédige pas de contrat n'en voit pas : il ne pourrait ni les
     // reprendre, ni les retirer.
@@ -108,6 +109,10 @@ export default async function ChantiersPage() {
     // un « oui » note un paiement.
     recoit("facture") ? questionsEnAttente(ctx, maintenant) : [],
     recoit("facture") ? liaisonDeLEntreprise(ctx) : null,
+    // **L'attestation que son comptable vient de signer** — sa planche du
+    // 27 octobre 2026. Ceux qui ouvrent Pour mon comptable, et eux seuls :
+    // la carte mène à leurs dossiers.
+    role !== null && cheminAutorise(role, "/termines/comptable") ? attestationsAMontrer(ctx) : [],
   ]);
 
   // **La banque se lit APRÈS l'affichage** : l'accueil ne doit pas attendre
@@ -249,6 +254,14 @@ export default async function ChantiersPage() {
             caducs={caducs}
             receptions={receptions}
             virements={virements}
+            attestations={attestations.map((a) => ({
+              id: a.id,
+              conclusion: a.conclusion,
+              signataireNom: a.signataireNom,
+              lignes: a.lignes,
+              rejetees: a.rejetees,
+              quand: a.signeLe.getTime(),
+            }))}
             accord={
               accord?.bientot && liaison
                 ? {

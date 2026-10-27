@@ -10,6 +10,11 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## L'ATTESTATION DU COMPTABLE (27 octobre 2026)
+
+Le comptable signe, sur son lien, une attestation qui se range avec le dossier (`ARCHITECTURE.md` §523). **Les pièges :** une attestation ne se réécrit jamais (la base ne rend que `vu_le`) : une nouvelle signature fait une nouvelle ligne, et c'est la dernière qui compte. Les comptes se refont au serveur sur les verdicts ; ne jamais les prendre du navigateur. Le courriel passe par Brevo et ne doit RIEN porter du dossier (ni libellé, ni montant, ni PDF) : `test-attestation-comptable.ts` le refuse. Pour regarder la page du comptable sur un serveur de développement, passer par `localhost` : sur `127.0.0.1`, Next refuse ses scripts et la page ne s'hydrate pas (aucun bouton ne répond).
+
+---
 ## POUR MON COMPTABLE : UN VIREMENT REÇU SE RÈGLE DANS SA LIGNE (26 octobre 2026)
 
 Une entrée se justifie par sa facture d'Atlas (`confirmerLaLigneRecue`, qui écrit la réponse de l'accueil dans la même transaction), par une facture faite hors d'Atlas (`facture_hors_atlas`, 0150) ou par une réponse de son sens (`MOTIFS_RECUS`). **Les pièges :** toute pose passe par `poser`, qui lit la ligne VERROUILLÉE et compare la pièce dans la même transaction (`refusDEcart`) : une nouvelle façon de justifier qui écrirait à côté échapperait au contrôle du montant. Le ticket photographié depuis sa ligne se compare AVANT d'être rangé (`ecartAvecLaLigne`). Le fichier d'une facture hors d'Atlas remplacée revient en `pieceRetiree` : l'action l'efface, après l'écriture. La contrainte de cohérence de 0150 est NOT VALID : ne la valider qu'après avoir compté les lignes qui ne la tiennent pas sur sa base (`ARCHITECTURE.md` §515).

@@ -23,7 +23,15 @@ export type DossierAffiche = {
   bilans: { id: string; nature: "photo" | "pdf"; nom: string; ajoute: string }[];
   /** Où en est son comptable (rien tant qu'aucun lien n'est parti), et ce qu'il a rejeté. */
   verification: { texte: string | null; rejets: ARegarder[] };
+  /** La dernière attestation que le comptable a signée, et si elle vaut encore. */
+  attestation: { id: string; ton: "vert" | "ambre" | "rouge"; detail: string; perimee: boolean } | null;
 };
+
+const TEINTE_DU_TON = {
+  vert: { fond: colors.carteVertFond, texte: colors.carteVertTexte },
+  ambre: { fond: colors.carteAmbreFond, texte: colors.carteAmbreTexte },
+  rouge: { fond: colors.carteRougeFond, texte: colors.carteRougeTexte },
+} as const;
 
 const creux = "inline-flex min-h-[52px] w-full items-center justify-center gap-2.5 rounded-full px-5 text-[16px] font-medium disabled:opacity-60";
 const styleCreux = { boxShadow: `inset 0 0 0 1.5px ${colors.line}`, backgroundColor: colors.card, color: colors.ink };
@@ -273,6 +281,31 @@ function Dossier({ d, factures, premier }: { d: DossierAffiche; factures: Factur
           <i className="inline-block h-[7px] w-[7px] rounded-full" style={{ backgroundColor: "currentColor" }} />
           {d.verification.texte}
         </p>
+      )}
+
+      {/* L'attestation sous le compte du comptable : la seule ligne que sa
+          planche du 27 octobre ajoute. Le reste garde sa place (sa règle du
+          11 septembre : on change le texte, jamais la place). */}
+      {d.attestation && (
+        <div className="mt-2.5 flex items-center gap-3 rounded-[14px] py-1 pl-3 pr-2" style={{ backgroundColor: colors.card }} data-atlas="attestation-du-comptable">
+          <span className="flex h-10 w-10 flex-none items-center justify-center rounded-xl" style={{ backgroundColor: TEINTE_DU_TON[d.attestation.ton].fond, color: TEINTE_DU_TON[d.attestation.ton].texte }}>
+            <Icone nom="document" taille={21} />
+          </span>
+          <span className="min-w-0 flex-1 py-2 text-[14px]" style={{ color: colors.inkSoft }}>
+            <b className="block text-[15px] font-semibold" style={{ color: colors.ink }}>
+              Attestation du comptable
+            </b>
+            {d.attestation.detail}
+            {d.attestation.perimee && (
+              <span className="block font-semibold" style={{ color: colors.carteAmbreTexte }}>
+                Le dossier a changé depuis.
+              </span>
+            )}
+          </span>
+          <Link href={adresseDeLaVisionneuse(`/termines/comptable/attestations/${d.attestation.id}/pdf`, { surtitre: "Attestation du comptable", titre: d.nom })} className="flex min-h-[44px] items-center px-2 text-[15px] font-medium" style={{ color: colors.ink }} data-atlas="ouvrir-attestation">
+            Ouvrir
+          </Link>
+        </div>
       )}
 
       <div className="mt-3.5 grid grid-cols-3 gap-2">

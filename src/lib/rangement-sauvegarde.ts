@@ -29,7 +29,9 @@ export type OrigineFichier =
   | "facture-recue"
   /** Les dossiers rangés pour le comptable et ses bilans (24 octobre 2026). */
   | "dossier-comptable"
-  | "bilan-comptable";
+  | "bilan-comptable"
+  /** L'attestation que le comptable signe (27 octobre 2026). */
+  | "attestation-comptable";
 
 export type FichierARanger = {
   storageKey: string;
@@ -57,6 +59,7 @@ const DOSSIER_PAR_ORIGINE: Record<OrigineFichier, string> = {
   "facture-recue": "Factures reçues",
   "dossier-comptable": "Pour mon comptable",
   "bilan-comptable": "Pour mon comptable",
+  "attestation-comptable": "Pour mon comptable",
 };
 
 const NOM_PAR_ORIGINE: Record<OrigineFichier, string> = {
@@ -72,6 +75,7 @@ const NOM_PAR_ORIGINE: Record<OrigineFichier, string> = {
   "facture-recue": "Facture",
   "dossier-comptable": "Dossier",
   "bilan-comptable": "Bilan",
+  "attestation-comptable": "Attestation",
 };
 
 /**
@@ -119,7 +123,7 @@ export function rangerLesFichiers(
       dossiers.push(DOSSIER_PAR_ORIGINE[f.origine]);
     } else if (f.origine === "logo") {
       dossiers.push(DOSSIER_PAR_ORIGINE.logo);
-    } else if (f.origine === "ticket-tva" || f.origine === "vehicule" || f.origine === "devis-recu" || f.origine === "facture-recue" || f.origine === "dossier-comptable" || f.origine === "bilan-comptable") {
+    } else if (f.origine === "ticket-tva" || f.origine === "vehicule" || f.origine === "devis-recu" || f.origine === "facture-recue" || f.origine === "dossier-comptable" || f.origine === "bilan-comptable" || f.origine === "attestation-comptable") {
       dossiers.push(DOSSIER_PAR_ORIGINE[f.origine]);
     } else {
       // Un diagnostic fait hors chantier : rien ne le rattache à un client.

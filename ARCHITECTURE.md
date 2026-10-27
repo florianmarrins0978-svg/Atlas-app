@@ -36335,3 +36335,22 @@ Trois choix faits en codant : la vignette d'une pièce passe de 88 à 72 (`taill
 **La règle.** Le format d'un dossier bâti appartient à la version de Next qui l'a écrit. À chaque construction réussie, le banc note ce Next (`atlas-next-batie.txt`, à côté du commit) ; `servableParCeNext` ne laisse servir une version bâtie que si ce Next est celui installé. Non noté (version d'avant la règle) : on ne sert pas, mode développement le temps d'une construction. `doitRebatir` rebâtit aussi quand le Next a changé.
 
 **Ce qui reste fragile, et n'est pas traité ici** : un serveur qui meurt pendant la construction arrête encore le banc et la construction. Avec cette règle, plus rien de connu ne le fait mourir ; si une autre cause apparaît, la ligne « Banc » la montrera de la même façon.
+
+## §523 : L'attestation du comptable se signe sur elle-même, et ne se réécrit pas
+
+**Sa remarque du 27 octobre 2026**, après avoir joué le comptable : *« j'ai coché vert, rouge, et ensuite aucun moyen d'arrêter le document, de le signer »*. Puis, devant sa page : *« 0 sur 60 »* alors que tout était coché. Sa planche du même jour (`appli/soignee/comptable-attestation.html`), approuvée par *« tu peux coder »*.
+
+**Le geste.** La dernière ligne vérifiée fait paraître « Terminer et signer ». Trois étapes : la conclusion (conforme, avec réserves, non conforme ; Atlas propose « avec réserves » dès un rejet, jamais « non conforme »), qui signe (gardé sur l'appareil du comptable, `localStorage`), puis l'attestation relue et signée au doigt ou à la souris, SUR le document. Le tampon du cabinet s'y pose (son nom, la conclusion, la date) ; c'est le seul mouvement.
+
+**Une seule règle pour l'écran et le PDF** (`src/lib/attestation-comptable.ts`) : le contenu, le tampon, le courriel et la carte de l'accueil en sortent. `contenuDeLAttestation` fait les comptes sur les verdicts RELUS au serveur, jamais sur ce que l'écran a cru. Le PDF a son propre moteur (`src/server/pdf/attestation-comptable-pdf.ts`, Inter et EB Garamond embarquées, protégé contre la modification), comme la mise en demeure.
+
+**Ce que la base tient** (migration 0151, `attestations_comptable`) : FORCE RLS, l'écriture du comptable passe par l'isolation ordinaire (son jeton ouvre son envoi, qui pose l'entreprise), et **ni UPDATE ni DELETE** sauf `vu_le` (« J'ai vu » sur l'accueil). Signer est refusé tant qu'une ligne reste à vérifier, et refusé si un verdict a bougé entre la lecture et le rangement (`etatDesVerdicts`) ; le PDF d'une signature refusée s'efface. L'attestation cite l'empreinte du PDF du dossier : elle se lie au fichier exact.
+
+**Périmée, elle le dit.** Un verdict posé ou une ligne justifiée à nouveau APRÈS la signature (`attestationAJour`) : Mes dossiers écrit « Le dossier a changé depuis », et la page du comptable propose de signer à nouveau. Une nouvelle signature fait une nouvelle ligne ; l'ancienne reste.
+
+**Le courriel ne transporte rien du dossier.** `brevo.ts` n'envoie qu'un avis (« ce module sert un code de six chiffres ») : le courriel au patron dit qui a signé, la période et la conclusion, sans une ligne de banque, sans montant, sans pièce jointe. L'attestation se lit dans Atlas, et le comptable télécharge son exemplaire à la fin. **Écart avec la planche**, qui montrait le PDF joint et une copie au comptable : c'est une décision de sécurité, dite au patron, à rouvrir s'il le demande (`TODO.md`).
+
+**Le « 0 sur 60 » n'était pas un défaut de comptage** : sa page était ouverte avant que le comptable ne coche, et rien ne la relisait. Mes dossiers porte désormais `VeilleDesNouvelles`, le veilleur de l'accueil (relecture au retour sur l'écran, puis toutes les trente secondes).
+
+**Ce que ce document vaut**, écrit au pied du PDF : une attestation de vérification des justificatifs présentés dans Atlas, signée d'une signature électronique simple. Elle ne remplace pas l'attestation de présentation des comptes de l'expert-comptable.
+

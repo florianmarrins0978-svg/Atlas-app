@@ -7,6 +7,9 @@ import { avancementDeLaVerification, libellePeriode, type Categorie, type EtatDe
 import { moisSeul } from "@/lib/termines-par-mois";
 import { poserVerdictAction } from "./actions";
 import Icone, { type NomIcone } from "@/components/atlas/IconeTrait";
+import { useRouter } from "next/navigation";
+import { MOT_DE_LA_CONCLUSION, type Conclusion } from "@/lib/attestation-comptable";
+import Attestation from "./Attestation";
 
 export type PieceAffichee =
   | {
@@ -36,6 +39,8 @@ export type LigneAVerifier = {
   jourLong: string;
   libelle: string;
   montant: string;
+  /** Le montant tel qu'en base, positif : l'attestation le relit et le signe elle-même. */
+  montantBrut: string;
   sens: "entree" | "sortie";
   categorie: Categorie;
   piece: PieceAffichee;
@@ -94,6 +99,8 @@ export default function Verification({
   envoye,
   entreprise,
   lignes: depart,
+  dossier,
+  attestation,
 }: {
   jeton: string;
   titre: string;
@@ -101,7 +108,12 @@ export default function Verification({
   envoye: string;
   entreprise: string;
   lignes: LigneAVerifier[];
+  dossier: { du: string; au: string; empreinte: string };
+  /** La dernière attestation signée sur ce lien, et si le dossier n'a pas bougé depuis. */
+  attestation: { conclusion: Conclusion; signee: string; aJour: boolean } | null;
 }) {
+  const router = useRouter();
+  const [signer, setSigner] = useState(false);
   const [lignes, setLignes] = useState(depart);
   const mois = useMemo(() => [...new Set(depart.map((l) => l.jour.slice(0, 7)))], [depart]);
   // Un exercice décalé court sur deux années : le mois seul ne dirait plus lequel.
@@ -258,8 +270,57 @@ export default function Verification({
               {refus}
             </p>
           )}
+
+          {/*
+            TERMINER ET SIGNER — sa planche du 27 octobre 2026. Le bouton naît
+            avec la dernière ligne vérifiée, jamais avant : une attestation porte
+            sur le dossier entier. Signée et rien n'a bougé depuis, la barre dit
+            la conclusion et donne le PDF ; un verdict changé la rend à signer.
+          */}
+          {!ligne && tout.total > 0 && tout.verifiees === tout.total && (
+            <div className="sticky bottom-0 -mx-4 mt-4 px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-3 md:-mx-6 md:px-6" style={{ background: `linear-gradient(to top, ${colors.cream} 78%, ${voile(colors.cream, 0)})` }} data-atlas="fin-de-verification">
+              {attestation?.aJour ? (
+                <div className="flex items-center gap-3 rounded-[14px] py-1 pl-4 pr-2" style={{ backgroundColor: colors.card }} data-atlas="attestation-signee">
+                  <span className="min-w-0 flex-1 py-2 text-[14px]" style={{ color: colors.inkSoft }}>
+                    <b className="block text-[15px] font-semibold" style={{ color: colors.ink }}>
+                      {MOT_DE_LA_CONCLUSION[attestation.conclusion]}
+                    </b>
+                    {attestation.signee}
+                  </span>
+                  <a href={`/comptable/${jeton}/attestation/pdf?telecharger=1`} className="flex min-h-[44px] items-center px-2 text-[15px] font-medium" style={{ color: colors.ink }}>
+                    Télécharger
+                  </a>
+                </div>
+              ) : (
+                <button type="button" onClick={() => setSigner(true)} className="mx-auto flex min-h-[56px] w-full max-w-[560px] items-center justify-center rounded-full px-5 text-[17px] font-semibold" style={{ backgroundColor: colors.plein, color: surPlein }} data-atlas="terminer-et-signer">
+                  Terminer et signer
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </main>
+
+      {signer && (
+        <Attestation
+          jeton={jeton}
+          entreprise={entreprise}
+          du={dossier.du}
+          au={dossier.au}
+          empreinte={dossier.empreinte}
+          lignes={lignes.map((l) => ({
+            id: l.id,
+            jour: l.jour,
+            libelle: l.libelle,
+            montant: l.montantBrut,
+            sens: l.sens,
+            verdict: l.verification.etat === "rejete" ? "rejete" : "valide",
+            note: l.verification.etat === "rejete" ? l.verification.note : null,
+          }))}
+          fermer={() => setSigner(false)}
+          signee={() => router.refresh()}
+        />
+      )}
 
       {ligne && (
         // Trois étages : le haut, ce qui défile, et le bas où vivent les

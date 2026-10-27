@@ -234,6 +234,8 @@ essai("le commercial atteint l'application, sauf les adresses nommées", () => {
     // dossier montre chaque ligne de banque et ses montants. La pièce d'une
     // ligne (ticket, facture) se sert par sa propre route, fermée de même.
     "/termines/comptable",
+    // L'attestation signée du comptable (27 octobre 2026), fermée comme son dossier.
+    "/termines/comptable/attestations/xxxx/pdf",
     "/termines/comptable/bilans/xxxx/xxxx",
     "/termines/comptable/dossiers",
     "/termines/comptable/dossiers/xxxx/pdf",

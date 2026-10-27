@@ -26,6 +26,8 @@ const TRACES = {
   copier: <><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V5.5A1.5 1.5 0 0 0 14.5 4h-9A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16H8" /></>,
   email: <><rect x="3.5" y="5.5" width="17" height="13" rx="2" /><path d="M4 7l8 6 8-6" /></>,
   oeil: <><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" /><circle cx="12" cy="12" r="3" /></>,
+  // La zone de signature et « Modifier » ses coordonnées (l'attestation du comptable, 27 octobre 2026).
+  crayon: <><path d="M4.5 19.5l1-4.3L15.6 5.1a2.1 2.1 0 0 1 3 3L8.5 18.5z" /><path d="M13.5 7.2l3 3" /></>,
 } as const;
 
 export type NomIcone = keyof typeof TRACES;

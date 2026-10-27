@@ -240,6 +240,14 @@ export const COLONNES_OBJET: readonly ColonneObjet[] = [
     quoi: "le bilan rendu par le comptable",
     absenceNormale: false,
   },
+  // L'attestation signée par le comptable (migration 0151, 27 octobre 2026) :
+  // elle naît avec son PDF (NOT NULL), son absence est une perte.
+  {
+    table: "attestations_comptable",
+    colonne: "fichier_cle",
+    quoi: "l'attestation signée par le comptable",
+    absenceNormale: false,
+  },
   {
     table: "images_phyto",
     colonne: "storage_key",
