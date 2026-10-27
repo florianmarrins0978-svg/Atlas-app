@@ -46,24 +46,6 @@ export function tvaDepuisTtc(totalTtc: number | null, tauxPourCent: number | nul
   return Math.round(tva * 100) / 100;
 }
 
-/** Le taux d'un ticket dont la lecture n'a pas rendu le sien : le taux normal. */
-export const TAUX_TVA_PAR_DEFAUT = 20;
-
-/**
- * La TVA avec laquelle la feuille d'un ticket s'OUVRE. Celle que le ticket
- * affiche fait foi et ne se recalcule jamais ; à défaut, celle du total et du
- * taux (lu, sinon le taux normal), que le patron voit et corrige.
- *
- * Elle n'existait que pendant la frappe : un ticket lu sans sa TVA s'ouvrait
- * avec un champ vide, le bouton restait grisé sans un mot, et l'écart avec la
- * ligne de banque ne pouvait jamais s'afficher (27 octobre 2026).
- */
-export function tvaDeDepart(lu: { tvaDeductible: number | null; totalTtc: number | null; tauxTva: number | null } | null): number | null {
-  if (!lu) return null;
-  if (lu.tvaDeductible !== null) return lu.tvaDeductible;
-  return tvaDepuisTtc(lu.totalTtc, lu.tauxTva ?? TAUX_TVA_PAR_DEFAUT);
-}
-
 /**
  * Ce qu'il reste à payer : collectée moins déductible.
  *
@@ -97,6 +79,47 @@ export function montantSaisi(texte: string | null | undefined): number | null {
   const n = Number(propre);
   if (!Number.isFinite(n)) return null;
   return Math.round(n * 100) / 100;
+}
+
+/** Un montant tel qu'il s'écrit dans un champ : « 18,90 », jamais « 18,9 ». */
+function enSaisie(montant: number): string {
+  return montant.toFixed(2).replace(".", ",");
+}
+
+/**
+ * Les champs de la feuille d'achat à son ouverture, depuis ce que la lecture
+ * du ticket a rendu.
+ *
+ * **Rien ne s'invente** (sa décision du 27 octobre 2026, devant un ticket
+ * Uber Eats de 18,90 € qui n'écrit aucune TVA) : un ticket lu sans taux
+ * s'ouvre sans taux et sans TVA, et se note sans TVA (`tvaDuTicket`). Le taux
+ * de 20 n'est proposé qu'à la saisie à la main, où il le voit et le change.
+ * Un taux lu fait calculer la TVA (`tvaEcrite` faux : changer le taux la
+ * refait) ; une TVA lue fait foi et ne s'écrase pas.
+ */
+export function saisieDepuisLaLecture(
+  lu: { totalTtc: number | null; tauxTva: number | null; tvaDeductible: number | null } | null
+): { ttc: string; taux: string; tva: string; tvaEcrite: boolean } {
+  if (!lu) return { ttc: "", taux: "20", tva: "", tvaEcrite: false };
+  const ttc = lu.totalTtc === null ? "" : enSaisie(lu.totalTtc);
+  const taux = lu.tauxTva === null ? "" : String(lu.tauxTva).replace(".", ",");
+  if (lu.tvaDeductible !== null) return { ttc, taux, tva: enSaisie(lu.tvaDeductible), tvaEcrite: true };
+  const calcul = tvaDepuisTtc(lu.totalTtc, lu.tauxTva);
+  return { ttc, taux, tva: calcul === null ? "" : enSaisie(calcul), tvaEcrite: false };
+}
+
+/**
+ * La TVA écrite sur le ticket, depuis le champ de la feuille.
+ *
+ * **Un champ VIDE sous un total est un ticket sans TVA** : zéro, et rien ne se
+ * récupère. Sa décision du 27 octobre 2026 ; avant, le bouton restait éteint
+ * et le ticket ne pouvait pas se noter. Un champ illisible n'est pas une
+ * absence (`null`), et sans total il n'y a pas d'achat à noter. L'écran et le
+ * serveur lisent le champ par cette seule règle.
+ */
+export function tvaDuTicket(champ: string, totalTtc: number | null): number | null {
+  if (totalTtc === null) return null;
+  return champ.trim() === "" ? 0 : montantSaisi(champ);
 }
 
 /**

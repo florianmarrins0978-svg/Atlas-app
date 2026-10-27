@@ -5,7 +5,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { completerRepasAchat, creerAchatTva, supprimerAchatTva } from "@/server/repositories/achats-tva";
 import { enregistrerObjet } from "@/server/storage";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
-import { achatComplet, estNatureAchat, montantSaisi, type SaisieAchat } from "@/lib/achat-tva";
+import { achatComplet, estNatureAchat, montantSaisi, tvaDuTicket, type SaisieAchat } from "@/lib/achat-tva";
 import { causeDeLaPanne, codeSqlDe, messageSansLesValeurs, phraseDeLaPanne } from "@/lib/panne-de-base";
 import { estBancDEssai } from "@/profil-banc";
 import { logger } from "@/server/logger";
@@ -56,7 +56,8 @@ export async function ajouterAchatAction(formData: FormData): Promise<ResultatAc
   const tauxTva = montantSaisi(String(formData.get("tauxTva") ?? ""));
   // La TVA ÉCRITE SUR LE TICKET. Ce qui en compte se calcule au dépôt, par la
   // règle (`recuperation`) : le navigateur ne dit jamais ce qui se déduit.
-  const tvaTicket = montantSaisi(String(formData.get("tvaTicket") ?? ""));
+  // Vide sous un total : un ticket sans TVA (`tvaDuTicket`).
+  const tvaTicket = tvaDuTicket(String(formData.get("tvaTicket") ?? ""), totalTtc);
 
   if (!achatComplet(fournisseur, tvaTicket)) {
     return { ok: false, raison: "Il manque le fournisseur ou le montant de TVA." };

@@ -9,9 +9,9 @@ import {
   montantSaisi,
   NATURES_ACHAT,
   recuperation,
-  TAUX_TVA_PAR_DEFAUT,
-  tvaDeDepart,
+  saisieDepuisLaLecture,
   tvaDepuisTtc,
+  tvaDuTicket,
   type NatureAchat,
   type RepasAchat,
   type VehiculeAchat,
@@ -83,15 +83,13 @@ export default function FeuilleAchat({
 
   const [fournisseur, setFournisseur] = useState(lu?.fournisseur ?? "");
   const [date, setDate] = useState(lu?.date ?? aujourdHui);
-  const [ttc, setTtc] = useState(lu?.totalTtc != null ? String(lu.totalTtc).replace(".", ",") : "");
-  const [taux, setTaux] = useState(String(lu?.tauxTva ?? TAUX_TVA_PAR_DEFAUT).replace(".", ","));
-  const [tva, setTva] = useState(() => {
-    const proposee = tvaDeDepart(lu);
-    return proposee === null ? "" : proposee.toFixed(2).replace(".", ",");
-  });
+  const [saisie] = useState(() => saisieDepuisLaLecture(lu));
+  const [ttc, setTtc] = useState(saisie.ttc);
+  const [taux, setTaux] = useState(saisie.taux);
+  const [tva, setTva] = useState(saisie.tva);
   // Une TVA venue de la lecture, ou écrite par lui, ne s'écrase plus par le
   // calcul : son ticket fait foi.
-  const [tvaEcrite, setTvaEcrite] = useState(lu?.tvaDeductible != null);
+  const [tvaEcrite, setTvaEcrite] = useState(saisie.tvaEcrite);
 
   // **Ce qu'est l'achat — sa demande du 13 octobre 2026.** Tout se note ; seul
   // ce qui se récupère compte (`recuperation`, `src/lib/achat-tva.ts`).
@@ -157,7 +155,7 @@ export default function FeuilleAchat({
 
   // Ce qui comptera, calculé par la MÊME règle que le dépôt : l'écran l'annonce
   // avant l'appui, le serveur le recalcule, et les deux ne peuvent pas diverger.
-  const tvaTicket = montantSaisi(tva);
+  const tvaTicket = tvaDuTicket(tva, montantSaisi(ttc));
   const affaires = nature === "repas" && repas === "affaires";
   const compte =
     nature && tvaTicket !== null
@@ -280,7 +278,7 @@ export default function FeuilleAchat({
               setTaux(e.target.value);
               recalculer(ttc, e.target.value);
             }}
-            placeholder="20"
+            placeholder="aucun"
             className="w-full bg-transparent text-right text-[15.5px] tabular-nums outline-none"
           />
         </Ligne>
@@ -292,7 +290,7 @@ export default function FeuilleAchat({
               setTva(e.target.value);
               setTvaEcrite(true);
             }}
-            placeholder="calculée"
+            placeholder={montantSaisi(ttc) === null ? "calculée" : "aucune"}
             className="w-full bg-transparent text-right text-[15.5px] tabular-nums outline-none"
           />
         </Ligne>

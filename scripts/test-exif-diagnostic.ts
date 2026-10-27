@@ -98,6 +98,86 @@ cas("une longueur de segment absurde n'entraîne pas de boucle infinie", () => {
   assert.doesNotThrow(() => retirerMetadonnees(piege, "image/jpeg"));
 });
 
+// **Sa photo de profil du 27 octobre 2026, couchée sur le côté.** Un iPhone
+// range les pixels comme le capteur les voit, et dit dans l'EXIF de quel côté
+// tenir l'image (« Orientation »). Retirer tout l'APP1 retirait aussi ce mot,
+// et chaque photo prise en portrait s'affichait couchée. L'orientation n'est
+// pas une donnée personnelle : elle survit, et elle seule.
+
+/** Un APP1 EXIF comme celui d'un téléphone : l'orientation, et un GPS derrière. */
+function jpegTenuDeCote(orientation: number, ordre: "II" | "MM"): Uint8Array {
+  const petit = ordre === "II";
+  const u16 = (v: number) => (petit ? [v & 0xff, v >> 8] : [v >> 8, v & 0xff]);
+  const u32 = (v: number) => (petit ? [v & 0xff, (v >> 8) & 0xff, (v >> 16) & 0xff, v >>> 24] : [v >>> 24, (v >> 16) & 0xff, (v >> 8) & 0xff, v & 0xff]);
+  const tiff = [
+    ...texte(ordre), ...u16(42), ...u32(8),
+    ...u16(2),
+    ...u16(0x0112), ...u16(3), ...u32(1), ...u16(orientation), 0, 0,
+    ...u16(0x8825), ...u16(4), ...u32(1), ...u32(38),
+    ...u32(0),
+    ...texte(GPS_TEMOIN),
+  ];
+  return new Uint8Array([
+    0xff, 0xd8,
+    ...segment(0xe0, texte("JFIF\0")),
+    ...segment(0xe1, new Uint8Array([...texte("Exif\0\0"), ...tiff])),
+    0xff, 0xda, 0x00, 0x03, 0x01, 0x11, 0x22, 0xff, 0xd9,
+  ]);
+}
+
+/** L'orientation relue À LA MAIN, sans la fonction éprouvée : grand-boutiste, une seule entrée. */
+function orientationRelue(octets: Uint8Array): number | null {
+  for (let i = 2; i + 4 < octets.length; i++) {
+    if (octets[i] === 0xff && octets[i + 1] === 0xe1) {
+      for (let j = i + 4; j + 9 < octets.length; j++) {
+        if (octets[j] === 0x01 && octets[j + 1] === 0x12) return (octets[j + 8] << 8) | octets[j + 9];
+      }
+    }
+  }
+  return null;
+}
+
+cas("une photo tenue de côté garde son orientation, et rien d'autre", () => {
+  for (const ordre of ["MM", "II"] as const) {
+    const depart = jpegTenuDeCote(6, ordre);
+    assert.ok(contient(depart, GPS_TEMOIN), "le témoin GPS doit être présent au départ");
+    const { octets, nettoye, retires } = retirerMetadonnees(depart, "image/jpeg");
+    assert.equal(nettoye, true);
+    assert.equal(contient(octets, GPS_TEMOIN), false, `GPS resté (${ordre})`);
+    assert.equal(orientationRelue(octets), 6, `orientation perdue (${ordre})`);
+    assert.deepEqual(retires, ["APP1"]);
+    assert.equal(porteEncoreDesMetadonnees(octets, "image/jpeg"), false, "l'orientation seule n'est pas une métadonnée à retirer");
+  }
+});
+
+cas("une photo déjà droite ne garde aucun APP1", () => {
+  const { octets } = retirerMetadonnees(jpegTenuDeCote(1, "MM"), "image/jpeg");
+  assert.equal(orientationRelue(octets), null);
+  assert.equal(contient(octets, "Exif"), false);
+});
+
+cas("un APP1 qui n'est que l'orientation mais porte un octet de trop reste une métadonnée", () => {
+  const { octets } = retirerMetadonnees(jpegTenuDeCote(6, "MM"), "image/jpeg");
+  const k = octets.indexOf(0xe1) - 1;
+  const longueur = (octets[k + 2] << 8) | octets[k + 3];
+  const gonfle = new Uint8Array([...octets.subarray(0, k), 0xff, 0xe1, (longueur + 1) >> 8, (longueur + 1) & 0xff, ...octets.subarray(k + 4, k + 2 + longueur), 0x47, ...octets.subarray(k + 2 + longueur)]);
+  assert.equal(porteEncoreDesMetadonnees(gonfle, "image/jpeg"), true);
+});
+
+cas("un EXIF dont les adresses mentent ne fait rien tomber, et part entier", () => {
+  const depart = jpegTenuDeCote(6, "MM");
+  const tiff = depart.indexOf(0x4d);
+  for (const k of [4, 5, 6, 7]) {
+    const abime = depart.slice();
+    abime[tiff + k] = 0xff;
+    const r = retirerMetadonnees(abime, "image/jpeg");
+    assert.equal(r.nettoye, true);
+    assert.equal(contient(r.octets, GPS_TEMOIN), false);
+    assert.equal(contient(r.octets, "Exif"), false);
+  }
+});
+
+
 console.log("\n=== PNG ===");
 
 cas("l'image de départ porte bien eXIf et tEXt", () => {

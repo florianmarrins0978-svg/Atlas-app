@@ -193,7 +193,12 @@ export function lireReponseTicket(texte: string, aujourdHui: string): ResultatLe
     if (tva !== null) reserves.push("la TVA n’était pas lisible : elle a été calculée depuis le total et le taux");
   }
 
-  if (tva === null) reserves.push("le montant de TVA n’a pas pu être lu");
+  // Un total sans taux ni TVA : souvent un ticket qui n'en écrit aucune (son
+  // ticket Uber Eats du 27 octobre 2026). Rien ne s'invente : la feuille
+  // s'ouvre sans taux et le note sans TVA (`tvaDuTicket`), et la phrase le dit.
+  if (tva === null && totalTtc !== null && tauxTva === null) {
+    reserves.push("aucun taux de TVA n’a été lu : sans TVA écrite, l’achat se note sans TVA");
+  } else if (tva === null) reserves.push("le montant de TVA n’a pas pu être lu");
   if (fournisseur === null) reserves.push("le nom du fournisseur n’a pas pu être lu");
   if (date === null) reserves.push(dateBienFormee ? "la date lue ne tenait pas debout" : "la date n’a pas pu être lue");
 
@@ -209,7 +214,7 @@ export function lireReponseTicket(texte: string, aujourdHui: string): ResultatLe
       // et il choisit lui-même.
       nature: estNatureAchat(chaine(brut.nature)) ? (chaine(brut.nature) as NatureAchat) : null,
       lignes: lignesImprimees(brut.lignes),
-      reserve: reserves.length === 0 ? null : `${reserves.join(", ")}. Vérifiez avant d’ajouter.`,
+      reserve: reserves.length === 0 ? null : `${enPhrase(reserves.join(", "))}. Vérifiez avant d’ajouter.`,
     },
   };
 }
@@ -235,4 +240,9 @@ export async function lireTicket(base64: string, mimeType: string): Promise<Resu
     return { ok: false, raison: r.erreur.message };
   }
   return lireReponseTicket(r.texte, aujourdHui);
+}
+
+/** La réserve s'affiche telle quelle : elle commence comme une phrase. */
+function enPhrase(texte: string): string {
+  return texte.charAt(0).toUpperCase() + texte.slice(1);
 }
