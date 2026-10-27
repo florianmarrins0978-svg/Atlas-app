@@ -647,18 +647,23 @@ function euros(montant: string): string {
  * « Payé par » : le libellé est à nous, le déroulant natif est posé dessus,
  * transparent — comme « Payé le » juste en dessous, et pour la même raison :
  * lui seul ouvre la roue du téléphone.
+ *
+ * **Le mot à gauche, le choix à droite, sur une ligne** — sa planche du
+ * 25 octobre 2026, retenue le 27 : posé au-dessus, « Payé par » prenait une
+ * ligne de plus dans chaque facture, et la saisie d'une partie s'allongeait
+ * d'autant.
  */
 function PayePar({ moyen, choisir }: { moyen: MoyenDePaiement; choisir: (m: MoyenDePaiement) => void }) {
   const libelle = (m: MoyenDePaiement) => LIBELLES_MOYEN[m].charAt(0).toUpperCase() + LIBELLES_MOYEN[m].slice(1);
   return (
-    <label className="mt-2.5 flex flex-col gap-1.5" data-atlas="paye-par">
-      <span className="text-[14px] font-semibold" style={{ color: colors.inkSoft }}>
+    <label className="mt-3.5 grid grid-cols-[auto_1fr] items-center gap-3" data-atlas="paye-par">
+      <span className="text-[14.5px] font-semibold" style={{ color: colors.inkSoft }}>
         Payé par
       </span>
       <span className="relative block rounded-[4px]" style={{ backgroundColor: colors.cream }}>
         <span
           aria-hidden
-          className="flex items-center justify-between gap-2 px-3 py-2.5"
+          className="flex min-h-[48px] items-center justify-between gap-2 px-3.5"
           style={{ color: colors.ink, fontSize: "16px" }}
         >
           <span>{libelle(moyen)}</span>

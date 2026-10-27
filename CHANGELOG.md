@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-27
+
+- **Ma TVA : « 2026 » cerné et « Payé par » à gauche du choix**, deux écarts de sa planche du 25 octobre (`appli/soignee/termines-tva.html`, Proposé) qu'il a retenus le 27. Le bouton de l'année porte le contour de la planche, son calendrier à 20 px et l'année à 17 px ; « Payé par » se lit sur la même ligne que son déroulant, dans chaque facture comme dans « J'ai reçu une partie ». Le troisième écart (le message du relevé en plage verte) n'est pas retenu.
+
 ## 2026-10-26
 
 - **Batterie commune des six lots du 26 octobre** (Ma TVA, Réglages, création de compte, Pour mon comptable, plan d'arrosage, planning), sur sa demande : *« fusionne et joue une seule batterie pour toutes »*. La migration du comptable devient 0150 (main avait pris 0148 et 0149) ; les paragraphes des lots deviennent §514 à §518 ; Face ID, Abonnement, Qui a accès et Nouveau compte gardent la sécurité de main dans l'allure des Réglages. Rouges trouvés entre les lots et corrigés : deux contrôles qui se trompaient (le ternaire d'un champ pris pour un retour, une adresse de visionneuse en constante prise pour un lien de PDF), la pièce d'un virement à déclarer, le mode d'emploi et une suite qui suivaient l'ancien planning, deux interrupteurs carrés. `test-dossiers-comptables-e2e` est rouge de la même façon sur `main` (`verifier-rouge-prealable.ts`). Le détail : `docs/batterie-commune-26-octobre.md`.
