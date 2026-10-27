@@ -68,7 +68,18 @@ type Etape =
 
 type Resultat = { ok: true; fait?: string } | { ok: false; raison: string; ecart?: { ligne: number; piece: number } };
 
-export default function CarteARegarder({ a, factures, onFait }: { a: ARegarder; factures: Facture[]; onFait?: (texte: string) => void }) {
+export default function CarteARegarder({
+  a,
+  factures,
+  onFait,
+  sousLaLigne = false,
+}: {
+  a: ARegarder;
+  factures: Facture[];
+  onFait?: (texte: string) => void;
+  /** Posée sous sa ligne du relevé, qui porte déjà le nom, le montant et ce qui manque : la carte ne redit que les gestes. */
+  sousLaLigne?: boolean;
+}) {
   const router = useRouter();
   const [enCours, demarrer] = useTransition();
   const [etape, setEtape] = useState<Etape>({ e: "ouvert" });
@@ -219,7 +230,13 @@ export default function CarteARegarder({ a, factures, onFait }: { a: ARegarder; 
   const rejetee = a.rejet !== undefined;
 
   return (
-    <article className="rounded-[18px] px-[18px] py-4" style={{ backgroundColor: rejetee ? colors.carteRougeFond : colors.card }} data-atlas="ligne-a-regarder">
+    <article
+      className={sousLaLigne ? "" : "rounded-[18px] px-[18px] py-4"}
+      style={sousLaLigne ? undefined : { backgroundColor: rejetee ? colors.carteRougeFond : colors.card }}
+      data-atlas="ligne-a-regarder"
+    >
+      {!sousLaLigne && (
+        <>
       {rejetee ? (
         <p className="flex items-center gap-2 text-[14px] font-semibold" style={{ color: colors.carteRougeTexte }}>
           <i className="inline-block h-[7px] w-[7px] flex-none rounded-full" style={{ backgroundColor: "currentColor" }} />
@@ -248,6 +265,8 @@ export default function CarteARegarder({ a, factures, onFait }: { a: ARegarder; 
           <p className="mt-2 text-[15px] leading-[1.45]" style={{ color: colors.ink }} data-atlas="raison-du-comptable">
             {a.rejet ? `« ${a.rejet} »` : "Sans raison écrite."}
           </p>
+        </>
+      )}
         </>
       )}
 
@@ -468,7 +487,7 @@ export default function CarteARegarder({ a, factures, onFait }: { a: ARegarder; 
         </>
       ) : (
         <>
-          {!rejetee && (
+          {!rejetee && !sousLaLigne && (
             <p className="mt-2.5 flex items-start gap-2 text-[15px] font-semibold leading-[1.35]" style={{ color: colors.alert }}>
               <Icone nom="alerte" taille={19} epaisseur={2} className="mt-px" />
               {a.genre === "entree"

@@ -8,6 +8,8 @@ import type { Categorie } from "@/lib/pour-mon-comptable";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import { delierAction } from "../actions";
 import Icone, { type NomIcone } from "@/components/atlas/IconeTrait";
+import CarteARegarder from "../CarteARegarder";
+import type { ARegarder, Facture } from "../a-regarder";
 
 export type LigneAffichee = {
   id: string;
@@ -23,6 +25,8 @@ export type LigneAffichee = {
   piece: { nature: "photo" | "pdf"; quoi: "ticket" | "facture" } | null;
   /** Ce qui a été posé se défait d'un appui : « ce n'est pas le bon ticket ». */
   defaisable: boolean;
+  /** Une ligne à justifier porte ses gestes dessous (sa demande du 27 octobre, option B). */
+  carte: ARegarder | null;
 };
 
 type Filtre = "tout" | "manque" | Categorie;
@@ -42,7 +46,7 @@ const SIGNE: Record<LigneAffichee["preuve"]["genre"], NomIcone> = { ok: "coche",
  * dois pouvoir voir la photo du ticket »), avec « Ce n'est pas le bon ticket » :
  * la ligne repasse à justifier (« s'il se trompe, je peux annuler ? »).
  */
-export default function Releve({ lignes }: { lignes: LigneAffichee[] }) {
+export default function Releve({ lignes, factures }: { lignes: LigneAffichee[]; factures: Facture[] }) {
   const router = useRouter();
   const [enCours, demarrer] = useTransition();
   const [filtre, setFiltre] = useState<Filtre>("tout");
@@ -147,6 +151,11 @@ export default function Releve({ lignes }: { lignes: LigneAffichee[] }) {
                 ) : (
                   <div className={`flex items-start gap-3 pb-3 ${pas}`} style={nouveauJour ? undefined : { boxShadow: `inset 0 1px 0 ${colors.line}` }} data-atlas="ligne-du-releve">
                     {contenu}
+                  </div>
+                )}
+                {l.carte && (
+                  <div className="-mt-0.5 pb-3 pl-[22px]" data-atlas="gestes-de-la-ligne">
+                    <CarteARegarder a={l.carte} factures={factures} sousLaLigne />
                   </div>
                 )}
               </li>

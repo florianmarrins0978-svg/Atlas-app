@@ -181,6 +181,19 @@ async function main() {
     assert.doesNotMatch(texte, /CB BOULANGERIE E2E/);
   });
 
+  // Sa demande du 27 octobre 2026 (option B de la planche) : la ligne à
+  // justifier du relevé porte ses gestes dessous, sans remonter au dossier.
+  await test("une ligne à justifier du relevé porte ses gestes dessous, et les autres non", async () => {
+    const ligne = page.locator('[data-atlas="releve"] li', { hasText: "CB SANS PIECE E2E" });
+    const gestes = ligne.locator('[data-atlas="gestes-de-la-ligne"]');
+    assert.equal(await gestes.count(), 1, "la ligne à justifier ne porte pas ses gestes");
+    assert.equal(await gestes.locator('[data-atlas="photographier-ticket"]').count(), 1, "« Photographier le ticket » manque sous la ligne");
+    // Le nom et le montant ne se répètent pas : la ligne les porte déjà.
+    assert.equal(await gestes.locator("text=CB SANS PIECE E2E").count(), 0, "la carte redit le nom de la ligne");
+    await page.click('[data-atlas="filtre-a-justifier"]');
+    assert.equal(await page.locator('[data-atlas="releve"] li', { hasText: "CB STATION E2E" }).count(), 0);
+  });
+
   await test("une période illisible et une pièce inconnue ne s'ouvrent pas", async () => {
     // Le statut ne dit rien ici : l'écran de chargement a déjà répondu 200
     // quand la page refuse. On regarde donc ce qui est AFFICHÉ.
