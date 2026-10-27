@@ -18,9 +18,11 @@
 
   A : la feuille, et sous un salarié passé Absent, Matin, Après-midi, Journée.
   B : la feuille telle que dessinée ; l'absence vaut la journée.
-  C : ni interrupteur ni second temps. Trois mots par salarié, Matin,
-      Après-midi, Journée : toucher l'un le pose absent, le retoucher le rend
-      présent. Ce sont les trois mots que l'appli emploie déjà (BasculeDuMoment).
+  C : ni interrupteur ni second temps. Une piste par salarié, Présent, Matin,
+      Après-midi, Journée : un appui dit qui manque et quand. Les trois moments
+      sont les mots de l'appli (BasculeDuMoment) ; « Présent » est visible,
+      pour qu'une absence se défasse sans geste à deviner (sa règle du
+      5 septembre, « rien de caché »). Sa demande du soir : « plus jolie ».
 
   CE QUE LA RELECTURE DE A ET B A MONTRÉ :
     deux gestes pour une seule question (qui manque, et quand) ;
@@ -72,12 +74,40 @@
   text-decoration-thickness: 2px; text-underline-offset: 6px; }
 .fermer { width: 100%; justify-content: center; margin-top: 8px; color: var(--atlas-inkSoft); }
 
-/* C : le nom, et ses trois mots sur la même ligne ; un nom long les pousse dessous. */
-.rang-c { display: flex; flex-wrap: wrap; align-items: center; gap: 0 14px; min-height: 64px; padding: 6px 0; }
-.rang-c + .rang-c { box-shadow: inset 0 1px 0 var(--atlas-line); }
-.rang-c .ligne-nom { flex: 1 1 auto; min-width: 0; font-size: 17px; color: var(--atlas-ink); }
-.rang-c .mots { display: flex; gap: 0 16px; flex: none; margin-left: auto; }
-.rang-c .periode { flex-basis: 100%; margin: -4px 0 4px; font-size: 14px; color: var(--atlas-muted); }
+/* C : chaque salarié, ses initiales (celles de Vos clients), puis une piste de
+   quatre choix. « Présent » est un choix visible : défaire une absence ne
+   demande pas de deviner qu'un mot se retouche. Le curseur glisse sous le choix
+   retenu ; ambre quand il manque quelqu'un (les jetons carteAmbre, lisibles
+   sur les huit chartes), carte claire quand il est là. */
+.pers { padding: 14px 0 16px; }
+.pers + .pers { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.pers-tete { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+.pers .initiales { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%;
+                   font: 400 18px/1 var(--serif); background: var(--atlas-rustTint); color: var(--atlas-rust);
+                   transition: background-color 240ms ease-out, color 240ms ease-out; }
+.pers[data-absent="true"] .initiales { background: var(--atlas-carteAmbreFond); color: var(--atlas-carteAmbreTexte); }
+.pers-corps { flex: 1; min-width: 0; }
+.pers-nom { display: block; font: 400 21px/1.2 var(--serif); color: var(--atlas-ink); }
+.periode { display: block; margin-top: 2px; font-size: 14px; color: var(--atlas-inkSoft); }
+.periode:empty { display: none; }
+
+.piste { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 4px;
+         border-radius: 14px; background: var(--atlas-rustTint); }
+.curseur { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc((100% - 8px) / 4); border-radius: 10px;
+           background: var(--atlas-card); box-shadow: 0 1px 2px rgba(28,28,26,0.10), 0 2px 8px rgba(28,28,26,0.08);
+           transform: translateX(calc(var(--i, 0) * 100%));
+           transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1), background-color 240ms ease-out; }
+.pers[data-absent="true"] .curseur { background: var(--atlas-carteAmbreFond);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--atlas-carteAmbreTexte) 30%, transparent), 0 2px 8px rgba(28,28,26,0.08); }
+.piste button { position: relative; z-index: 1; min-height: 48px; padding: 0 2px; border-radius: 10px;
+                font-size: 14.5px; font-weight: 600; letter-spacing: -0.005em; white-space: nowrap; color: var(--atlas-inkSoft);
+                transition: color 200ms ease-out; }
+.piste button[aria-checked="true"] { color: var(--atlas-ink); }
+.pers[data-absent="true"] .piste button[aria-checked="true"] { color: var(--atlas-carteAmbreTexte); }
+.piste button:focus-visible { outline: 2px solid var(--atlas-or); outline-offset: -2px; }
+/* Un téléphone de 360 px garde « Après-midi » entier dans sa case. */
+@media (max-width: 370px) { .piste button { font-size: 13.5px; } }
+@media (prefers-reduced-motion: reduce) { .curseur, .piste button, .pers .initiales { transition: none; } }
 </style>
 </head>
 <body class="pl">
@@ -85,7 +115,7 @@
 <header class="pl-tete">
   <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
   <h1 class="pl-titre">Salarié absent</h1>
-  <p class="pl-verdict">Touchez <b>Salarié absent ?</b>. <b>A</b> : l’interrupteur, puis le moment. <b>B</b> : l’interrupteur seul, la journée. <b>C</b> : un seul appui, sur Matin, Après-midi ou Journée.</p>
+  <p class="pl-verdict">Touchez <b>Salarié absent ?</b>. <b>A</b> : l’interrupteur, puis le moment. <b>B</b> : l’interrupteur seul, la journée. <b>C</b> : un seul appui, de Présent à Journée.</p>
 </header>
 
 <main class="pl-scene">
@@ -115,9 +145,9 @@
   <section class="pl-notes">
     <h2>Ce que je propose : C</h2>
     <ul>
-      <li>Un seul appui pour dire qui manque et quand : Journée, Matin ou Après-midi. Retoucher le mot le rend présent.</li>
+      <li>Un seul appui pour dire qui manque et quand. Présent se voit : on revient en arrière du même geste.</li>
       <li>Plus d’interrupteur vert qui veut dire absent : sur l’appli, le vert veut dire « c’est bon ».</li>
-      <li>Les trois mots sont ceux que l’appli emploie déjà pour un chantier.</li>
+      <li>Les initiales de Vos clients, et l’ambre quand quelqu’un manque. Matin, Après-midi et Journée sont les mots de l’appli.</li>
       <li>Un congé de plusieurs jours noté dans Réglages, Équipe, se lit sous le nom. Retirer Antoine ce jour-là ne touche qu’à ce jour.</li>
     </ul>
     <h2>Trouvé dans l’appli en relisant</h2>
@@ -218,21 +248,46 @@
         quand + '</div>';
     }
 
+    var CHOIX_C = [["present", "Présent"]].concat(MOMENTS);
+
+    function periodeDe(n) {
+      if (!conges[n]) return "";
+      // La période se dit entière tant que le jour regardé en fait partie ;
+      // sinon, les jours qui restent, sans rien inventer.
+      return absents[n] === "journee"
+        ? "Du " + JOURS[26] + " au " + JOURS[30] + " octobre"
+        : (absents[n] ? "Absent aussi " : "Absent ") + enMots(conges[n]);
+    }
+
+    function indexC(n) {
+      var cle = absents[n] || "present";
+      for (var i = 0; i < CHOIX_C.length; i++) if (CHOIX_C[i][0] === cle) return i;
+      return 0;
+    }
+
     function rangC(n) {
-      var periode = "";
-      if (conges[n]) {
-        // La période se dit entière tant que le jour regardé en fait partie ;
-        // sinon, les jours qui restent, sans rien inventer.
-        var tous = conges[n].concat(absents[n] === "journee" ? [AUJOURDHUI] : []).sort(function (a, b) { return a - b; });
-        periode = absents[n] === "journee" && tous.length === SEMAINE.length
-          ? "Du " + JOURS[26] + " au " + JOURS[30] + " octobre"
-          : (absents[n] ? "Absent aussi " : "Absent ") + enMots(conges[n]);
-      }
-      return '<div class="rang-c"><span class="ligne-nom">' + n + '</span>' +
-        '<span class="mots" role="group" aria-label="' + n + ' absent">' + MOMENTS.map(function (m) {
-          return '<button type="button" data-qui="' + n + '" data-quand="' + m[0] + '" aria-pressed="' + (absents[n] === m[0]) + '">' + m[1] + '</button>';
-        }).join("") + '</span>' +
-        (periode ? '<span class="periode">' + periode + '</span>' : "") + '</div>';
+      var i = indexC(n);
+      return '<div class="pers" data-pers="' + n + '" data-absent="' + !!absents[n] + '">' +
+        '<div class="pers-tete"><span class="initiales" aria-hidden="true">' + n.charAt(0) + '</span>' +
+        '<span class="pers-corps"><span class="pers-nom">' + n + '</span><span class="periode">' + periodeDe(n) + '</span></span></div>' +
+        '<div class="piste" role="radiogroup" aria-label="' + n + ', le mardi 27 octobre" style="--i:' + i + '">' +
+          '<span class="curseur" aria-hidden="true"></span>' +
+          CHOIX_C.map(function (c, k) {
+            return '<button type="button" role="radio" data-qui="' + n + '" data-quand="' + c[0] + '" aria-checked="' + (k === i) + '">' + c[1] + '</button>';
+          }).join("") +
+        '</div></div>';
+    }
+
+    /* Changer un choix sans repeindre la feuille : c'est ce qui laisse le
+       curseur glisser au lieu de sauter. */
+    function majRangC(n) {
+      var rang = dedans.querySelector('.pers[data-pers="' + n + '"]');
+      if (!rang) return;
+      var i = indexC(n);
+      rang.setAttribute("data-absent", String(!!absents[n]));
+      rang.querySelector(".piste").style.setProperty("--i", i);
+      rang.querySelectorAll(".piste button").forEach(function (b, k) { b.setAttribute("aria-checked", String(k === i)); });
+      rang.querySelector(".periode").textContent = periodeDe(n);
     }
 
     function peindreFeuille() {
@@ -271,8 +326,12 @@
       var quand = e.target.closest("[data-quand]");
       if (quand) {
         var qui = quand.getAttribute("data-qui"), m = quand.getAttribute("data-quand");
-        // En C, retoucher le mot retenu rend le salarié présent ce jour-là.
-        if (version === "C" && absents[qui] === m) delete absents[qui]; else absents[qui] = m;
+        if (version === "C") {
+          if (m === "present") delete absents[qui]; else absents[qui] = m;
+          peindreFiche(); majRangC(qui);
+          return;
+        }
+        absents[qui] = m;
         peindreFiche(); peindreFeuille();
         var r = dedans.querySelector('[data-qui="' + qui + '"][data-quand="' + m + '"]');
         if (r) r.focus({ preventScroll: true });
