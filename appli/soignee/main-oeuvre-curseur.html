@@ -69,6 +69,8 @@
            font-size: 15px; font-weight: 650; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
 .morceau span { white-space: nowrap; transition: opacity 150ms ease-out; }
 .morceau[data-etroit="true"] span, .morceau[data-illisible="true"] span { opacity: 0; }
+/* Un morceau étroit écrit son montant plus petit avant de le taire. */
+.morceau[data-serre="true"] { font-size: 13px; letter-spacing: -0.02em; }
 .poignee { position: absolute; top: 50%; width: 48px; height: 64px; margin: -32px 0 0 -24px; display: grid; place-items: center;
            cursor: ew-resize; touch-action: none; -webkit-tap-highlight-color: transparent; }
 .poignee:focus-visible { outline: none; }
@@ -280,10 +282,12 @@
    * carte sombre qui s'écrit sur le pastel.
    */
   var PASTELS = {
-    jardin: { nom: "Jardin", teintes: ["#b9d3a8", "#ecd9b0", "#b7d1e6", "#b5e0d2", "#efc6cf"] },
-    provence: { nom: "Provence", teintes: ["#cfc4ea", "#d5ddb0", "#f6cfa8", "#bcd8ef", "#f2c4c4"] },
-    mer: { nom: "Bord de mer", teintes: ["#bcd3e3", "#efe0bf", "#c2e5dc", "#f5c3b5", "#c9cfdc"] },
-    verger: { nom: "Verger", teintes: ["#f7c9b0", "#cfe3b0", "#f3e7a6", "#f0bccb", "#dccbe9"] }
+    // Un cran moins pastel, sa demande du même soir devant sa capture : « mets
+    // les couleurs un peu moins pastel ».
+    jardin: { nom: "Jardin", teintes: ["#9fc48a", "#e3c88f", "#93bde0", "#8fd1bd", "#e8a9b7"] },
+    provence: { nom: "Provence", teintes: ["#b5a6e3", "#c3d08f", "#f2b884", "#9cc7ea", "#eea6a6"] },
+    mer: { nom: "Bord de mer", teintes: ["#9cc0d8", "#e8d29e", "#9ed8ca", "#f0a893", "#adb6cb"] },
+    verger: { nom: "Verger", teintes: ["#f2ae8c", "#b6d68e", "#ecd97a", "#ea9fb4", "#c9b0e2"] }
   };
   var palette = "jardin";
 
@@ -395,7 +399,17 @@
         var m = b.querySelector('.morceau[data-cle="' + t.cle + '"]');
         m.style.width = w + "px";
         m.querySelector("span").textContent = euros(montants[t.cle]);
-        m.setAttribute("data-etroit", String(w < 62));
+        // **Le montant s'écrit s'il TIENT, mesuré sur son texte.** Un seuil fixe
+        // de 62 px taisait tout montant sous 350 € sur la barre de son
+        // téléphone (283 px), et avec cinq travaux il ne restait qu'un chiffre
+        // (sa capture du 27 octobre 2026). D'abord à 15 px, puis à 13 px, sinon
+        // il se tait et reste sur sa ligne.
+        var texte = m.querySelector("span");
+        m.removeAttribute("data-serre");
+        var tient = texte.offsetWidth + 10 <= w;
+        if (!tient) { m.setAttribute("data-serre", "true"); tient = texte.offsetWidth + 6 <= w; }
+        if (!tient) m.removeAttribute("data-serre");
+        m.setAttribute("data-etroit", String(!tient));
         x += w;
         var p = b.querySelector('.poignee[data-k="' + k + '"]');
         if (p) {
