@@ -350,6 +350,60 @@
         ],
         "createdAt": "2026-10-27T19:31:21.785Z",
         "reason": "Charte Origine de l'appli (--atlas-cream #f5f3ee, variablesCharte), recopiée par kit.css comme toutes les planches soignées"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/main-oeuvre-curseur.html"
+        ],
+        "createdAt": "2026-10-27T21:11:45.131Z",
+        "reason": "Charte Origine de l'appli (--atlas-cream, rustTint de la carte Avant de chiffrer), recopiée par kit.css comme toutes les planches soignées"
+      },
+      {
+        "rule": "overused-font",
+        "value": "*",
+        "files": [
+          "appli/arrosage-nom-et-nourrice.html"
+        ],
+        "createdAt": "2026-10-27T21:20:50.609Z",
+        "reason": "la planche recopie la charte de l'application (globals.css, chartes.ts) : une maquette doit montrer l'écran tel qu'il est"
+      },
+      {
+        "rule": "kicker-above-heading",
+        "value": "*",
+        "files": [
+          "appli/arrosage-nom-et-nourrice.html"
+        ],
+        "createdAt": "2026-10-27T21:20:50.620Z",
+        "reason": "la planche recopie la charte de l'application (globals.css, chartes.ts) : une maquette doit montrer l'écran tel qu'il est (surtitre Paysage des écrans)"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/arrosage-nom-et-nourrice.html"
+        ],
+        "createdAt": "2026-10-27T21:20:50.630Z",
+        "reason": "la planche recopie la charte de l'application (globals.css, chartes.ts) : une maquette doit montrer l'écran tel qu'il est"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/creer-un-devis.html"
+        ],
+        "createdAt": "2026-10-27T23:27:41.907Z",
+        "reason": "Planche reproduit la charte de l'application Atlas (cream #f5f3ee, card #faf9f5, src/lib/design-tokens.ts)"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "appli/soignee/creer-un-devis.html"
+        ],
+        "createdAt": "2026-10-27T23:27:41.916Z",
+        "reason": "Le .cadre est le téléphone de kit.css, commun à toutes les planches : l'écran y est posé bord à bord exprès"
       }
     ]
   }

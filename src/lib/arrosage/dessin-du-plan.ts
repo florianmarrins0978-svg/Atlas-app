@@ -19,7 +19,6 @@
 import type { CroquisLu, ZoneLue } from "@/server/ai/services/lire-croquis";
 import {
   cadreDe,
-  COINS,
   COTES,
   echantillonsRangee,
   formeLibre,
@@ -61,8 +60,8 @@ export const NOMS_DES_ZONES: Record<ZoneLue["type"] | "maison", string> = {
  * Une zone posée sur le terrain, EN MÈTRES : son coin en haut à gauche, sa
  * longueur couchée (L), sa largeur debout (l). Pour une haie, L est sa
  * longueur et l sa largeur — la largeur qu'il a demandée le 18 octobre (« pas
- * simplement la longueur »). Ses côtés peuvent être courbés et ses coins tirés
- * (`formes-du-dessin.ts`).
+ * simplement la longueur »). Ses côtés peuvent être courbés ; ses coins ne se
+ * tirent plus depuis le 27 octobre 2026 (`formes-du-dessin.ts`).
  */
 export type ZoneDessinee = Forme & {
   type: ZoneLue["type"];
@@ -153,7 +152,7 @@ export function lignesDeLaZone(
 export function zonesQuiDebordent<Z extends Forme>(d: { terrain: DessinDuPlan["terrain"]; zones: Z[] }): Z[] {
   const e = 1e-6;
   const dehors = (p: PointMetres) => p.x < -e || p.y < -e || p.x > d.terrain.L + e || p.y > d.terrain.l + e;
-  // Un coin tiré ou une courbe qui sortirait du terrain : la forme ne tient pas
+  // Une courbe qui sortirait du terrain : la forme ne tient pas
   // plus qu'une cote trop grande.
   return d.zones.filter(
     (z) => z.x < -e || z.y < -e || z.x + z.L > d.terrain.L + e || z.y + z.l > d.terrain.l + e || pointsDeLaForme(z).some(dehors)
@@ -203,12 +202,15 @@ export function empriseDesDalles(d: Rangee & { l: number }): Rectangle {
 }
 
 /**
- * Ce qui coupe une zone : les rangées qu'on n'arrose pas, droites, et les
- * maisons. **Une rangée courbe ne coupe pas** : le découpage ne donnerait pas
+ * Ce qui coupe une zone : les rangées qu'on n'arrose pas, droites, les
+ * maisons, et pour une pelouse, le goutte-à-goutte posé dedans (massif, haie,
+ * potager). *Sa réponse du 27 octobre 2026 :* un massif dessiné dans sa
+ * pelouse s'en découpe, comme la maison ; sans cela les turbines comptaient
+ * aussi sa surface. **Une rangée courbe ne coupe pas** : le découpage ne donnerait pas
  * des rectangles, et l'écran le dit (`phrasesDuDessin`). L'aimant se prend sur
  * le rectangle que le calcul reçoit (`cadreDe`), pas sur la forme.
  */
-function coupeursDe(cadre: Rectangle, d: DessinDuPlan): { b: Rectangle; nom: string }[] {
+function coupeursDe(z: ZoneDessinee, cadre: Rectangle, d: DessinDuPlan): { b: Rectangle; nom: string }[] {
   const liste: { b: Rectangle; nom: string }[] = [];
   for (const r of d.dalles) {
     if (r.courbe) continue;
@@ -225,6 +227,9 @@ function coupeursDe(cadre: Rectangle, d: DessinDuPlan): { b: Rectangle; nom: str
     liste.push({ b, nom: "les dalles" });
   }
   for (const m of d.maisons) liste.push({ b: m, nom: m.nom ?? NOMS_DES_ZONES.maison });
+  if (z.type === "gazon") {
+    for (const g of d.zones) if (g.type !== "gazon") liste.push({ b: cadreDe(g), nom: nomDe(g) });
+  }
   return liste;
 }
 
@@ -240,7 +245,7 @@ export function morceauxDe(z: ZoneDessinee, d: DessinDuPlan): { parts: Rectangle
   const e = 0.01;
   let parts: Rectangle[] = [cadre];
   const coupeurs: string[] = [];
-  for (const c of coupeursDe(cadre, d)) {
+  for (const c of coupeursDe(z, cadre, d)) {
     const b = c.b;
     const suite: Rectangle[] = [];
     let coupe = false;
@@ -272,6 +277,39 @@ function dims(r: Rectangle): string {
 }
 function chevauche(a: Rectangle, b: Rectangle): boolean {
   return a.x < b.x + b.L && a.x + a.L > b.x && a.y < b.y + b.l && a.y + a.l > b.y;
+}
+
+/** La place qu'occupe un nom autour du point où il s'ancre, en mètres. */
+export type BoiteDuNom = { gauche: number; droite: number; haut: number; bas: number };
+
+/**
+ * **Où écrire le nom d'une zone : là où rien n'est posé.** « La A », sa réponse
+ * du 27 octobre 2026 (`appli/arrosage-nom-et-nourrice.html`) : la nourrice,
+ * posée au milieu de son massif, cachait « Goutte à goutte, 9 × 10 ». La
+ * nourrice ne bouge jamais (elle est où il l'a mise) ; c'est le nom qui se
+ * pousse, au-dessus, au-dessous ou à côté de ce qui le gêne, sans sortir de
+ * sa zone, et au plus près du milieu. Sans place libre, il reste au milieu :
+ * un nom hors de sa zone ne dirait plus de quelle zone il parle.
+ */
+export function placeDuNom(zone: Rectangle, b: BoiteDuNom, gene: Rectangle[]): PointMetres {
+  const milieu = { x: zone.x + zone.L / 2, y: zone.y + zone.l / 2 };
+  const boite = (p: PointMetres): Rectangle => ({ x: p.x - b.gauche, y: p.y - b.haut, L: b.gauche + b.droite, l: b.haut + b.bas });
+  const e = 1e-9;
+  const libre = (p: PointMetres) => {
+    const r = boite(p);
+    const dedans = r.x >= zone.x - e && r.y >= zone.y - e && r.x + r.L <= zone.x + zone.L + e && r.y + r.l <= zone.y + zone.l + e;
+    return dedans && gene.every((g) => !chevauche(r, g));
+  };
+  if (libre(milieu)) return milieu;
+  const essais = gene.flatMap((g) => [
+    { x: milieu.x, y: g.y - b.bas },
+    { x: milieu.x, y: g.y + g.l + b.haut },
+    { x: g.x - b.droite, y: milieu.y },
+    { x: g.x + g.L + b.gauche, y: milieu.y },
+  ]);
+  const loin = (p: PointMetres) => Math.hypot(p.x - milieu.x, p.y - milieu.y);
+  const trouve = essais.filter(libre).sort((p, q) => loin(p) - loin(q))[0];
+  return trouve ?? milieu;
 }
 
 /**
@@ -389,11 +427,11 @@ export function lireLeDessin(brut: unknown): { ok: true; dessin: DessinDuPlan } 
       if (z.sensLignes !== "longueur" && z.sensLignes !== "largeur") return { ok: false, raison: `Le sens des lignes de « ${appel} » n’est pas lisible.` };
       zone.sensLignes = z.sensLignes;
     }
+    // Un coin tiré qui arriverait encore (un écran d'avant le 27 octobre 2026,
+    // resté ouvert) ne se lit pas : ce sont les cotes qui commandent.
     const courbes = lireTable(z.courbes, COTES, courbure);
-    const coins = lireTable(z.coins, COINS, decalage);
-    if (courbes === "faux" || coins === "faux") return { ok: false, raison: `La forme de « ${appel} » n’est pas lisible. Reprenez-la.` };
+    if (courbes === "faux") return { ok: false, raison: `La forme de « ${appel} » n’est pas lisible. Reprenez-la.` };
     if (courbes) zone.courbes = courbes;
-    if (coins) zone.coins = coins;
     zones.push(zone);
   }
 
@@ -468,7 +506,7 @@ export function lireLeDessin(brut: unknown): { ok: true; dessin: DessinDuPlan } 
   return { ok: true, dessin };
 }
 
-/** Une table de courbes ou de coins : absente, ou chaque clé connue et lisible. */
+/** Une table de courbes : absente, ou chaque clé connue et lisible. */
 function lireTable<K extends string, V>(v: unknown, cles: readonly K[], lire: (x: unknown) => V | null): Partial<Record<K, V>> | null | "faux" {
   if (v === undefined || v === null) return null;
   if (typeof v !== "object" || Array.isArray(v)) return "faux";
@@ -491,12 +529,6 @@ function courbure(v: unknown, max = COTE_MAX_M): { u: number; v: number } | null
   const o = v as Record<string, unknown>;
   const u = fini(o.u, 3), w = fini(o.v, max);
   return u === null || w === null ? null : { u, v: w };
-}
-function decalage(v: unknown): PointMetres | null {
-  if (typeof v !== "object" || v === null) return null;
-  const o = v as Record<string, unknown>;
-  const x = fini(o.x, COTE_MAX_M), y = fini(o.y, COTE_MAX_M);
-  return x === null || y === null ? null : { x, y };
 }
 
 function virgule(n: number): string {
