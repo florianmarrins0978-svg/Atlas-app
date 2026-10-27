@@ -345,9 +345,9 @@ Reste :
    pelouse 12 × 10, massif dedans. Propriétaire : lui (une commande), puis nous.
 2. ~~Un massif DANS la pelouse : le découper ?~~ Sa réponse du 27 octobre,
    « oui » : codé le même jour (`coupeursDe`, `dessin-du-plan.ts`).
-3. **La nourrice recouvre le nom d'une zone** sur « Dessiner le plan » (sa
-   capture du 27 octobre : « Goutte à goutte 9 × 10, 16 lignes » caché par le
-   rectangle noir). Apparence : maquette d'abord. Propriétaire : nous.
+3. ~~La nourrice recouvre le nom d'une zone~~ « La A », sa réponse du
+   27 octobre (`appli/arrosage-nom-et-nourrice.html`) : codé le même jour
+   (`placeDuNom`, `dessin-du-plan.ts`).
 
 ## ⏳ ARROSAGE : LA LECTURE QUI DÉDUIT LES COTES, À ÉPROUVER SUR SA PHOTO (21 octobre 2026)
 

@@ -279,6 +279,39 @@ function chevauche(a: Rectangle, b: Rectangle): boolean {
   return a.x < b.x + b.L && a.x + a.L > b.x && a.y < b.y + b.l && a.y + a.l > b.y;
 }
 
+/** La place qu'occupe un nom autour du point où il s'ancre, en mètres. */
+export type BoiteDuNom = { gauche: number; droite: number; haut: number; bas: number };
+
+/**
+ * **Où écrire le nom d'une zone : là où rien n'est posé.** « La A », sa réponse
+ * du 27 octobre 2026 (`appli/arrosage-nom-et-nourrice.html`) : la nourrice,
+ * posée au milieu de son massif, cachait « Goutte à goutte, 9 × 10 ». La
+ * nourrice ne bouge jamais (elle est où il l'a mise) ; c'est le nom qui se
+ * pousse, au-dessus, au-dessous ou à côté de ce qui le gêne, sans sortir de
+ * sa zone, et au plus près du milieu. Sans place libre, il reste au milieu :
+ * un nom hors de sa zone ne dirait plus de quelle zone il parle.
+ */
+export function placeDuNom(zone: Rectangle, b: BoiteDuNom, gene: Rectangle[]): PointMetres {
+  const milieu = { x: zone.x + zone.L / 2, y: zone.y + zone.l / 2 };
+  const boite = (p: PointMetres): Rectangle => ({ x: p.x - b.gauche, y: p.y - b.haut, L: b.gauche + b.droite, l: b.haut + b.bas });
+  const e = 1e-9;
+  const libre = (p: PointMetres) => {
+    const r = boite(p);
+    const dedans = r.x >= zone.x - e && r.y >= zone.y - e && r.x + r.L <= zone.x + zone.L + e && r.y + r.l <= zone.y + zone.l + e;
+    return dedans && gene.every((g) => !chevauche(r, g));
+  };
+  if (libre(milieu)) return milieu;
+  const essais = gene.flatMap((g) => [
+    { x: milieu.x, y: g.y - b.bas },
+    { x: milieu.x, y: g.y + g.l + b.haut },
+    { x: g.x - b.droite, y: milieu.y },
+    { x: g.x + g.L + b.gauche, y: milieu.y },
+  ]);
+  const loin = (p: PointMetres) => Math.hypot(p.x - milieu.x, p.y - milieu.y);
+  const trouve = essais.filter(libre).sort((p, q) => loin(p) - loin(q))[0];
+  return trouve ?? milieu;
+}
+
 /**
  * Ce que l'écran dit du découpage et des courbes. **Sa règle du 19 octobre :
  * expliquer, ne pas refuser, et dire que ce sera arrosé quand même.**
