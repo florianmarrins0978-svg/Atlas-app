@@ -7,446 +7,606 @@
 <link rel="stylesheet" href="kit.css">
 <style>
 /*
-  L'ATTESTATION DU COMPTABLE : ce qu'il rend une fois la dernière ligne
-  cochée. Sa demande du 27 octobre 2026 : « j'ai coché vert rouge, et ensuite
-  aucun moyen d'arrêter le document, de le signer. Il faudrait que le comptable
-  puisse signer, mettre son nom, sa dénomination sociale, ses coordonnées, et
-  faire un document qui affirme que j'ai tout vérifié, conforme ou non
-  conforme, et qu'il puisse nous le renvoyer par mail. »
+  L'ATTESTATION DU COMPTABLE, seconde version (27 octobre 2026).
 
-  Rien n'est codé. Le comptable pose sa signature du doigt ou à la souris, et
-  le PDF part chez le patron avec une copie pour lui.
+  Sa demande du jour : « aucun moyen d'arrêter le document, de le signer ;
+  qu'il puisse signer, mettre son nom, sa dénomination sociale, ses
+  coordonnées, conforme ou non conforme, et nous le renvoyer par mail ».
+  Puis, devant le premier jet : « propose mieux, plus jolie ».
 
-  La page part chez le comptable : elle garde les couleurs d'Origine quelle que
-  soit la charte du patron, comme la page de vérification.
+  CE QUI CHANGE DEPUIS LE PREMIER JET (comptable-attestation-premier-jet.html) :
+    on signe SUR l'attestation, pas sur une case à part : ce qu'il signe est
+      ce qu'il voit. L'étape « Le document » et la case « Je certifie »
+      disparaissent, la phrase d'attestation est écrite au-dessus de la
+      signature ;
+    le tampon du cabinet se pose quand il signe : son nom, la conclusion, la
+      date. C'est le seul mouvement de la planche ;
+    les champs, les choix et les pastilles sont ceux du kit (.champ, .radio,
+      .choix, .etat), comme sur toutes les planches soignées ;
+    plus de tuiles « 59 / 1 » ni d'encadrés dans des encadrés ;
+    la seconde visite ne redemande rien : sa carte, et « Modifier » ;
+    chez le patron, Mes dossiers garde SA mise en page (sa règle du
+      11 septembre : on change le texte, jamais la place) et gagne une seule
+      ligne, rangée comme le bilan du comptable ;
+    aucune ombre : le papier se pose sur un filet, comme le reste du kit.
+
+  Les écrans du comptable gardent la charte d'Origine (data-sans-charte) ;
+  ceux du patron suivent la charte essayée en haut.
 */
-.pl-charte-bouton, .pl-chartes { display: none !important; }
-.pl-scene { grid-template-columns: minmax(0, 1fr) !important; }
-.colonne { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.colonne { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.groupe-nom { margin: 6px 0 0; font-size: 13px; font-weight: 600; color: #4a4a44; text-align: center; }
 .colonne .pl-etats { margin: 0; }
-#scene { width: 100%; max-width: 410px; }
+.cadre-zone { width: 100%; max-width: 410px; }
 @media (max-width: 480px) {
   .pl-scene { padding: 0 var(--gouttiere) !important; }
   .cadre { width: 100%; height: 664px; border-radius: 26px; box-shadow: 0 0 0 8px #1c1c1a; margin: 8px 0 14px; }
 }
 
-/* ═══ L'écran proposé ═════════════════════════════════════════════════════ */
-.t-haut { display: flex; align-items: center; gap: 4px; min-height: 52px; padding: 4px 10px 0 6px; }
-.t-retour { display: inline-flex; align-items: center; gap: 2px; min-height: 44px; padding: 0 10px 0 4px; font-size: 15px; font-weight: 600; color: var(--atlas-inkSoft); }
-.t-etape { margin-left: auto; font-size: var(--t-mini); color: var(--atlas-inkSoft); }
-.t-titre { margin: 4px 0 0; font: 400 28px/1.1 var(--serif); }
-.t-sous { margin: 6px 0 0; font-size: var(--t-second); color: var(--atlas-inkSoft); }
+/* ═══ Le haut d'une étape ═════════════════════════════════════════════════ */
+.etape-haut { display: flex; align-items: center; justify-content: space-between; margin: 0 0 6px; }
+.etape-rang { font-size: var(--t-mini); font-weight: 600; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
+.etape-titre { margin: 6px 0 0; font: 400 28px/1.08 var(--serif); letter-spacing: -0.012em; }
+.etape-phrase { margin: 8px 0 0; font-size: var(--t-second); line-height: 1.45; color: var(--atlas-inkSoft); }
+.etape-phrase b { color: var(--atlas-ink); font-weight: 600; }
 
-.t-bilan { display: flex; gap: 8px; margin-top: 16px; }
-.t-bilan div { flex: 1; padding: 10px 12px; border-radius: 10px; background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
-.t-bilan b { display: block; font: 400 24px/1.1 var(--serif); font-variant-numeric: lining-nums; }
-.t-bilan span { font-size: var(--t-mini); color: var(--atlas-inkSoft); }
-.t-bilan .ok b { color: var(--atlas-montantEntree); }
-.t-bilan .ko b { color: var(--atlas-montantSortie); }
+/* ═══ La liste, finie : la vraie page du comptable (Verification.tsx) ════ */
+.v-tete { display: flex; flex-direction: column; gap: 4px; }
+.v-titre { margin: 0; font: 400 26px/1.1 var(--serif); }
+.v-envoye, .v-qui { margin: 0; font-size: 14.5px; color: var(--atlas-inkSoft); }
+.v-avance { margin-top: 16px; }
+.v-avance-mots { display: flex; flex-direction: column; gap: 2px; font-size: 14.5px; color: var(--atlas-inkSoft); }
+.v-avance-mots b { color: var(--atlas-ink); font-weight: 600; }
+.v-avance-mots .rej { color: var(--atlas-montantSortie); font-weight: 600; }
+.v-jauge { display: flex; height: 8px; margin-top: 8px; border-radius: 4px; overflow: hidden; background: var(--atlas-lineSoft); }
+.v-jauge i { display: block; height: 100%; }
+.v-mois { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 16px -4px 0; padding: 2px 4px; }
+.v-mois::-webkit-scrollbar { display: none; }
+.v-mois span { flex: none; display: inline-flex; flex-direction: column; align-items: flex-start; gap: 1px; min-height: 52px; padding: 7px 14px;
+               border-radius: 10px; font-size: 14.5px; font-weight: 600; color: var(--atlas-inkSoft); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.v-mois span small { font-size: 13px; font-weight: 600; color: var(--atlas-montantEntree); font-variant-numeric: tabular-nums; }
+.v-mois span.ouvert { color: var(--atlas-ink); box-shadow: inset 0 0 0 2px var(--atlas-ink); }
+.v-liste { margin: 12px 0 0; padding: 0; list-style: none; }
+.v-l { padding: 12px 8px; margin: 0 -8px; border-bottom: 1px solid var(--atlas-line); }
+.v-l.valide { background: color-mix(in srgb, var(--atlas-montantEntree) 7%, transparent); }
+.v-l.rejete { background: color-mix(in srgb, var(--atlas-montantSortie) 8%, transparent); }
+.v-l-haut { display: flex; align-items: baseline; gap: 8px; }
+.v-jour { flex: none; width: 44px; font-size: 13.5px; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
+.v-lib { flex: 1; min-width: 0; font-size: 14.5px; font-weight: 600; overflow-wrap: anywhere; }
+.v-mt { flex: none; font: 400 16.5px/1.2 var(--serif); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; color: var(--atlas-montantSortie); }
+.v-cat { display: flex; align-items: center; gap: 6px; margin: 3px 0 0 52px; font-size: 13px; color: var(--atlas-inkSoft); }
+.v-cat i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.v-liste.seule .v-l { margin: 0; padding: 12px; border: 0; border-radius: var(--r-plage); }
+.v-note { display: block; margin: 4px 0 0 52px; font-size: 13.5px; color: var(--atlas-montantSortie); }
 
-.t-reserve { margin-top: 12px; text-align: left; padding: 10px 12px; border-radius: 10px; background: var(--atlas-carteRougeFond); color: var(--atlas-carteRougeTexte); font-size: var(--t-second); line-height: 1.4; }
-.t-reserve b { display: block; font-weight: 700; }
+/* ═══ La conclusion ═══════════════════════════════════════════════════════ */
+.conclusions { margin-top: 18px; padding: 2px 16px; border-radius: var(--r-plage); background: var(--atlas-card); }
+.conclusions .radio { align-items: center; }
+.conclusions .radio .coche-ronde { margin-top: 0; }
+.radio-corps { flex: 1; min-width: 0; }
+.conclusions .etat { flex: none; min-height: 24px; padding: 0 9px; font-size: 12.5px; }
+.conclusions .etat::before { display: none; }
 
-.t-choix { display: grid; gap: 8px; margin-top: 16px; padding: 0; border: 0; }
-.t-choix legend { padding: 0; margin-bottom: 8px; font-size: var(--t-second); font-weight: 600; color: var(--atlas-inkSoft); }
-.t-carte { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; padding: 10px 14px; border-radius: 12px; text-align: left;
-           background: var(--atlas-card); box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
-.t-carte .pastille { flex: none; width: 24px; height: 24px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--atlas-chevron); display: grid; place-items: center; }
-.t-carte .pastille .ico { width: 14px; height: 14px; stroke-width: 3; color: var(--sur-plein); opacity: 0; }
-.t-carte b { display: block; font-size: 17px; }
-.t-carte small { display: block; font-size: var(--t-mini); color: var(--atlas-inkSoft); }
-.t-carte[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--atlas-ink); }
-.t-carte[aria-pressed="true"] .pastille { box-shadow: none; opacity: 1; }
-.t-carte[data-c="conforme"][aria-pressed="true"] .pastille { background: var(--atlas-montantEntree); }
-.t-carte[data-c="reserves"][aria-pressed="true"] .pastille { background: var(--atlas-orTexte); }
-.t-carte[data-c="non"][aria-pressed="true"] .pastille { background: var(--atlas-montantSortie); }
-.t-carte[aria-pressed="true"] .pastille .ico { opacity: 1; }
-.t-propose { margin-left: auto; flex: none; padding: 3px 8px; border-radius: 10px; font-size: 12px; font-weight: 600; background: var(--atlas-rustTint); color: var(--atlas-inkSoft); }
+/* ═══ Qui signe ═══════════════════════════════════════════════════════════ */
+.choix.fonctions button { flex: auto; padding: 0 8px; font-size: 14px; white-space: nowrap; }
+.deux { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; margin-top: 16px; }
+.deux .champ { margin-top: 0; }
+.carte-visite { margin-top: 18px; padding: 18px; border-radius: var(--r-plage); background: var(--atlas-card); }
+.carte-visite .nom { margin: 0; font: 400 21px/1.2 var(--serif); }
+.carte-visite .fonction { margin: 2px 0 0; font-size: var(--t-second); color: var(--atlas-inkSoft); }
+.carte-visite .cabinet { margin: 12px 0 0; font-size: 15.5px; font-weight: 600; }
+.carte-visite address { margin: 2px 0 0; font-style: normal; font-size: var(--t-second); line-height: 1.5; color: var(--atlas-inkSoft); }
+.carte-visite .bouton-texte { margin: 6px 0 -10px -4px; }
 
-.t-champ { display: block; margin-top: 14px; font-size: var(--t-second); font-weight: 600; color: var(--atlas-inkSoft); }
-.t-champ input, .t-champ textarea { display: block; width: 100%; min-height: 50px; margin-top: 6px; padding: 10px 12px; border: 0; border-radius: 10px;
-        font: 400 16px/1.4 var(--sans); color: var(--atlas-ink); background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
-.t-champ textarea { min-height: 84px; resize: none; }
-.t-champ input:focus, .t-champ textarea:focus { outline: none; box-shadow: inset 0 0 0 2px var(--atlas-ink); }
-.t-deux { display: flex; gap: 8px; }
-.t-deux .t-champ { flex: 1; min-width: 0; }
-.t-fonctions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
-.t-fonctions button { min-height: 44px; padding: 0 11px; border-radius: 22px; font-size: 15px; font-weight: 600; background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
-.t-fonctions button[aria-pressed="true"] { background: var(--atlas-plein); color: var(--sur-plein); box-shadow: none; }
-.t-garde { margin: 14px 0 0; font-size: var(--t-mini); color: var(--atlas-inkSoft); }
+/* ═══ L'attestation : la feuille qu'il relit et signe ════════════════════ */
+.papier { position: relative; margin-top: 16px; padding: 22px 20px 16px; border-radius: 4px; background: var(--atlas-card);
+          box-shadow: inset 0 0 0 1px var(--atlas-line); font-size: 13.5px; line-height: 1.5; color: var(--atlas-ink); }
+.papier[data-verdict="conforme"] { --verdict: var(--atlas-carteVertTexte); }
+.papier[data-verdict="reserves"] { --verdict: var(--atlas-carteAmbreTexte); }
+.papier[data-verdict="non"] { --verdict: var(--atlas-carteRougeTexte); }
+.papier h3 { margin: 0; font: 400 22px/1.15 var(--serif); letter-spacing: -0.01em; }
+.papier .de { margin: 6px 0 0; color: var(--atlas-inkSoft); }
+.papier dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 5px 16px; margin: 16px 0 0; padding: 14px 0 0; border-top: 1px solid var(--atlas-line); }
+.papier dt { color: var(--atlas-inkSoft); }
+.papier dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums lining-nums; }
+.papier dd.verdict { font: 400 17px/1.3 var(--serif); color: var(--verdict); }
+.papier .reprendre { margin: 14px 0 0; padding: 10px 12px; border-radius: 6px; background: var(--atlas-carteRougeFond); color: var(--atlas-carteRougeTexte); }
+.papier .reprendre b { display: block; font-size: 12.5px; }
+.papier .reprendre .r { display: flex; justify-content: space-between; gap: 10px; margin-top: 2px; font-weight: 600; }
+.papier .reprendre .r span:last-child { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.papier .reprendre p { margin: 2px 0 0; }
+.papier .obs { margin: 14px 0 0; }
+.papier .obs b { display: block; font-size: 12.5px; color: var(--atlas-inkSoft); font-weight: 600; }
+.papier .atteste { margin: 18px 0 0; font: italic 400 16px/1.45 var(--serif); }
+.papier .qui-signe { margin: 10px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--atlas-inkSoft); }
+.papier .qui-signe b { display: block; font-size: 14px; color: var(--atlas-ink); }
+.papier .pied { margin: 16px 0 0; padding-top: 10px; border-top: 1px solid var(--atlas-line); font-size: 11.5px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.papier .empreinte { display: block; margin-top: 4px; font: 11px/1.4 ui-monospace, "SF Mono", Menlo, monospace; overflow-wrap: anywhere; }
 
-.t-pad { position: relative; margin-top: 14px; height: 190px; border-radius: 12px; background: var(--atlas-card); box-shadow: inset 0 0 0 1.5px var(--atlas-line); touch-action: none; }
-.t-pad canvas { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 12px; }
-.t-pad .trait-base { position: absolute; left: 16px; right: 16px; bottom: 46px; height: 1px; background: var(--atlas-line); pointer-events: none; }
-.t-pad .invite { position: absolute; left: 0; right: 0; bottom: 14px; text-align: center; font-size: var(--t-mini); color: var(--atlas-muted); pointer-events: none; }
-.t-pad.signe .invite { display: none; }
-.t-effacer { margin-top: 4px; }
-.t-certifie { display: flex; gap: 12px; align-items: flex-start; width: 100%; margin-top: 14px; padding: 12px 14px; border-radius: 12px; text-align: left; font-size: 15px; line-height: 1.4;
-              background: var(--atlas-card); box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
-.t-certifie .case { flex: none; width: 24px; height: 24px; margin-top: 1px; border-radius: 6px; box-shadow: inset 0 0 0 2px var(--atlas-chevron); display: grid; place-items: center; }
-.t-certifie .case .ico { width: 16px; height: 16px; stroke-width: 3; color: var(--sur-plein); opacity: 0; }
-.t-certifie[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--atlas-ink); }
-.t-certifie[aria-pressed="true"] .case { background: var(--atlas-montantEntree); box-shadow: none; }
-.t-certifie[aria-pressed="true"] .case .ico { opacity: 1; }
-.t-moment { margin: 10px 0 0; font-size: var(--t-mini); color: var(--atlas-inkSoft); }
+.zone-signature { position: relative; margin-top: 14px; }
+.zone-legende { display: flex; align-items: center; justify-content: space-between; min-height: 36px; font-size: 12.5px; color: var(--atlas-inkSoft); }
+.zone-legende button { min-height: 40px; padding: 0 2px 0 12px; font-size: 14px; font-weight: 600; color: var(--atlas-ink); }
+.zone-legende button[hidden] { display: none; }
+.pad { position: relative; height: 132px; border-radius: 6px; touch-action: none; cursor: crosshair;
+       background: color-mix(in srgb, var(--atlas-or) 6%, var(--atlas-card));
+       box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 55%, transparent); transition: box-shadow 200ms var(--courbe), background-color 200ms var(--courbe); }
+.pad::after { content: ""; position: absolute; left: 14px; right: 14px; bottom: 30px; height: 1px; background: color-mix(in srgb, var(--atlas-ink) 22%, transparent); pointer-events: none; }
+.pad canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.pad-invite { position: absolute; left: 0; right: 0; top: 40%; display: flex; align-items: center; justify-content: center; gap: 8px;
+              font-size: 14.5px; font-weight: 600; color: var(--atlas-orTexte); pointer-events: none; transition: opacity 160ms var(--courbe); }
+.pad-invite .ico { width: 20px; height: 20px; }
+.pad.trace .pad-invite { opacity: 0; }
+.pad.trace, .papier.signee .pad { background: transparent; box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.papier.signee .pad { cursor: default; }
 
-.t-fin { display: grid; place-items: center; text-align: center; padding: 40px 8px 0; }
-.t-fin .rond { width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center; background: var(--atlas-montantEntree); color: var(--sur-plein); }
-.t-fin .rond .ico { width: 36px; height: 36px; stroke-width: 2.6; }
-.t-fin h2 { margin: 18px 0 0; font: 400 26px/1.15 var(--serif); }
-.t-fin p { margin: 8px 0 0; font-size: var(--t-corps); color: var(--atlas-inkSoft); line-height: 1.45; }
-.t-fin p b { color: var(--atlas-ink); }
-.t-fin .bouton-texte { margin-top: 10px; }
+/* Le tampon du cabinet : il se pose quand il signe, et c'est le seul mouvement. */
+.tampon { display: block; color: var(--verdict); }
+.tampon text { font-family: var(--sans); font-weight: 700; fill: currentColor; }
+.papier .tampon { position: absolute; right: -6px; bottom: 8px; width: 118px; height: 118px; opacity: 0; transform: rotate(-9deg) scale(1.6);
+                  pointer-events: none; mix-blend-mode: multiply; }
+.papier.signee .tampon { opacity: 0.92; transform: rotate(-9deg) scale(1); animation: poser 460ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.papier.signee.deja .tampon { animation: none; }
+@keyframes poser {
+  0% { opacity: 0; transform: rotate(-9deg) scale(1.6); }
+  62% { opacity: 0.96; transform: rotate(-9deg) scale(0.97); }
+  100% { opacity: 0.92; transform: rotate(-9deg) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) { .papier.signee .tampon { animation: none; } }
 
-/* La liste, tout en bas : la porte vers l'attestation. */
-.t-liste-fin { margin-top: 14px; padding: 14px 16px; border-radius: 12px; background: var(--atlas-carteVertFond); color: var(--atlas-carteVertTexte); font-size: var(--t-corps); line-height: 1.4; }
-.t-liste-fin b { font-weight: 700; }
-.t-fausse-ligne { display: flex; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--atlas-line); font-size: 14.5px; }
-.t-fausse-ligne i { flex: none; width: 46px; font-style: normal; color: var(--atlas-inkSoft); font-size: 13.5px; }
-.t-fausse-ligne span { flex: 1; min-width: 0; font-weight: 600; }
-.t-fausse-ligne em { font-style: normal; font: 400 16px/1.2 var(--serif); color: var(--atlas-montantSortie); white-space: nowrap; }
+/* ═══ Envoyée ═════════════════════════════════════════════════════════════ */
+.envoyee { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 18px 0 4px; }
+.envoyee .tampon { width: 156px; height: 156px; transform: rotate(-6deg); }
+.envoyee .etape-titre { margin-top: 18px; }
+.destinataires { margin-top: 18px; }
+.destinataires .ligne { min-height: 64px; }
 
-/* Le signal chez le patron : une carte en tête de l'accueil, et l'e-mail. */
-.t-accueil-titre { margin: 0; font: 400 28px/1.1 var(--serif); }
-.t-carte-signal { margin-top: 16px; }
-.t-carte-signal .suite { display: block; margin-top: 6px; font-size: var(--t-second); }
-.t-courriel { margin-top: 18px; padding: 14px 16px; border-radius: 12px; background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); font-size: 14.5px; line-height: 1.45; }
-.t-courriel small { display: block; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--atlas-muted); }
-.t-courriel b { display: block; margin: 4px 0 8px; font-size: 16px; }
-.t-courriel p { margin: 0 0 6px; color: var(--atlas-inkSoft); }
+/* ═══ Chez le patron : Mes dossiers, tel que l'appli le montre ══════════ */
+.haut { display: flex; align-items: center; justify-content: space-between; margin: 0 0 10px; }
+.titre-page { margin: 4px 0 0; font: 400 var(--t-titre)/1.06 var(--serif); letter-spacing: -0.012em; }
+.sous-titre { margin: 8px 0 8px; font-size: 15px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.annee-choix { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; padding: 6px;
+               border-radius: var(--r-plage); background: var(--atlas-card); }
+.annee-fleche { width: 56px; height: 56px; flex: none; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-or); }
+.annee-fleche .ico { width: 26px; height: 26px; stroke-width: 2; }
+.annee-fleche[disabled] { color: color-mix(in srgb, var(--atlas-or) 28%, transparent); cursor: default; }
+.annee-nom { font: 400 32px/1 var(--serif); font-variant-numeric: lining-nums; }
+.annee-resume { margin: 10px 0 0; text-align: center; font-size: 15px; color: var(--atlas-inkSoft); }
+.dossier { padding: 18px 0 20px; }
+.dossier-nom { margin: 0; font: 400 20px/1.25 var(--serif); }
+.dossier-detail { margin: 6px 0 0; font-size: 14.5px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.dossier .ajout-bilan { margin-top: 12px; }
+.dossier .etat { margin-top: 12px; }
+.dossier-gestes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 14px; }
+.dossier-gestes button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 76px;
+                         padding: 8px 6px; border-radius: 12px; font-size: 14px; font-weight: 600; line-height: 1.2; text-align: center;
+                         color: var(--atlas-ink); box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
+.dossier-gestes .ico { color: var(--atlas-or); }
+.attestation-recue { display: flex; align-items: center; gap: 12px; min-height: 64px; margin-top: 10px; padding: 10px 4px 10px 12px;
+                     border-radius: var(--r-plage); background: var(--atlas-card); }
+.attestation-recue .corps { flex: 1; min-width: 0; }
+.attestation-recue b { display: block; font-size: 15.5px; font-weight: 600; }
+.attestation-recue .corps span { display: block; font-size: 14px; line-height: 1.35; color: var(--atlas-inkSoft); }
+.attestation-recue .bouton-texte { min-height: 44px; padding: 0 10px; font-size: 15px; }
+.rejet-carte { margin-top: 14px; }
+.rejet-carte .tete { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-top: 8px; }
+.rejet-carte .tete .carte-ton-texte { margin: 0; }
+.rejet-carte .tete .montant { flex: none; font-size: 22px; white-space: nowrap; }
+.rejet-carte .quand { margin: 4px 0 0; font-size: 14.5px; color: var(--atlas-inkSoft); }
+.rejet-carte .raison { margin: 8px 0 0; font-size: 15px; line-height: 1.45; }
+.rejet-carte .gestes { margin-top: 12px; }
+.rejet-carte .bouton-texte { width: 100%; justify-content: center; color: var(--atlas-inkSoft); }
 
-/* Chez le patron : sa carte de dossier, qui sait enfin que le comptable a fini. */
-.t-dossier { margin-top: 14px; padding: 16px; border-radius: 14px; background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
-.t-dossier h3 { margin: 0; font: 400 20px/1.2 var(--serif); }
-.t-dossier .detail { margin: 4px 0 0; font-size: var(--t-mini); color: var(--atlas-inkSoft); }
-.t-pilule { display: inline-flex; margin-top: 12px; padding: 7px 12px; border-radius: 18px; font-size: 14px; font-weight: 600; background: var(--atlas-carteVertFond); color: var(--atlas-carteVertTexte); }
-.t-attest { margin-top: 12px; padding: 12px 14px; border-radius: 12px; }
-.t-attest.conforme { background: var(--atlas-carteVertFond); color: var(--atlas-carteVertTexte); }
-.t-attest.reserves { background: var(--atlas-carteAmbreFond); color: var(--atlas-carteAmbreTexte); }
-.t-attest b { display: block; font: 400 19px/1.2 var(--serif); }
-.t-attest span { display: block; margin-top: 4px; font-size: var(--t-second); }
-.t-gestes { display: flex; gap: 8px; margin-top: 12px; }
-.t-gestes .bouton { min-height: 48px; font-size: 15.5px; }
-.t-a-reprendre { margin-top: 12px; padding: 10px 12px; border-radius: 10px; background: var(--atlas-carteRougeFond); color: var(--atlas-carteRougeTexte); font-size: var(--t-second); line-height: 1.4; text-align: left; }
-.t-a-reprendre b { display: block; }
+/* ═══ Chez le patron : l'accueil, la carte en tête ══════════════════════ */
+.reponse { border-radius: 18px; padding: 14px 20px 4px; }
+.reponse p { margin: 0; }
+.reponse .carte-ton-texte { margin-top: 6px; font-size: 20px; }
+.reponse-texte { margin: 4px 0 0; font-size: 15px; line-height: 1.45; color: var(--atlas-ink); }
+.reponse-gestes { display: flex; flex-wrap: wrap; gap: 0 22px; margin-top: 4px; }
+.reponse-gestes button { display: inline-flex; align-items: center; min-height: 48px; font-size: 16px; font-weight: 700; }
+.reponse[data-ton="vert"] .reponse-suite { color: var(--atlas-carteVertTexte); }
+.reponse[data-ton="ambre"] .reponse-suite { color: var(--atlas-carteAmbreTexte); }
+.reponse[data-ton="rouge"] .reponse-suite { color: var(--atlas-carteRougeTexte); }
+.reponse-gestes .reponse-vu { font-weight: 500; color: var(--atlas-inkSoft); }
+.autres { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 48px; margin-top: 4px;
+          font-size: 15.5px; font-weight: 600; color: var(--atlas-ink); }
+.autres .ico { width: 18px; height: 18px; stroke-width: 2.2; color: var(--atlas-inkSoft); }
+.en-cours { display: flex; align-items: baseline; gap: 10px; margin: 18px 0 0; }
+.en-cours h3 { margin: 0; font: 400 24px/1.1 var(--serif); }
+.en-cours span { font-size: 15px; color: var(--atlas-inkSoft); }
 
-/* ═══ Le document lui-même : une page A4 qu'on fait défiler ═══════════════ */
-.page-a4 { margin: 4px 0 0; padding: 22px 20px 20px; border-radius: 6px; background: var(--atlas-card); box-shadow: 0 1px 0 var(--atlas-line), 0 10px 24px -12px color-mix(in srgb, var(--atlas-ink) 40%, transparent); font-size: 13px; line-height: 1.45; }
-.page-a4 h3 { margin: 0; font: 400 21px/1.1 var(--serif); }
-.page-a4 .sur { margin: 0 0 10px; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--atlas-muted); }
-.page-a4 .qui { margin: 6px 0 0; color: var(--atlas-inkSoft); }
-.page-a4 hr { border: 0; border-top: 1px solid var(--atlas-line); margin: 14px 0; }
-.page-a4 .verdict { margin: 12px 0 0; padding: 10px 12px; border-radius: 8px; font: 400 19px/1.2 var(--serif); }
-.page-a4 .verdict.conforme { background: var(--atlas-carteVertFond); color: var(--atlas-carteVertTexte); }
-.page-a4 .verdict.reserves { background: var(--atlas-carteAmbreFond); color: var(--atlas-carteAmbreTexte); }
-.page-a4 .verdict.non { background: var(--atlas-carteRougeFond); color: var(--atlas-carteRougeTexte); }
-.page-a4 h4 { margin: 0 0 4px; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--atlas-muted); }
-.page-a4 p { margin: 0; }
-.page-a4 .r { display: flex; justify-content: space-between; gap: 8px; padding: 2px 0; }
-.page-a4 .r span:last-child { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
-.page-a4 .rejet { margin-top: 6px; padding-left: 10px; border-left: 3px solid var(--atlas-montantSortie); }
-.page-a4 .sign { display: flex; justify-content: space-between; gap: 12px; align-items: flex-end; }
-.page-a4 .sign img, .page-a4 .sign canvas { display: block; width: 130px; height: 60px; }
-.page-a4 .petit { margin-top: 10px; font-size: 11.5px; color: var(--atlas-inkSoft); }
-.page-a4 .empreinte { margin-top: 8px; font: 11px/1.4 ui-monospace, "Courier New", monospace; color: var(--atlas-inkSoft); overflow-wrap: anywhere; }
+/* ═══ L'e-mail ════════════════════════════════════════════════════════════ */
+.courriel-de { display: flex; align-items: center; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid var(--atlas-line); }
+.courriel-de .pastille-ico { border-radius: 50%; font: 400 20px/1 var(--serif); }
+.courriel-de b { display: block; font-size: 15.5px; }
+.courriel-de .corps span { display: block; font-size: 13.5px; color: var(--atlas-inkSoft); }
+.courriel-objet { margin: 16px 0 0; font: 400 22px/1.2 var(--serif); letter-spacing: -0.01em; }
+.courriel-corps { margin-top: 12px; font-size: 15.5px; line-height: 1.5; }
+.courriel-corps p { margin: 0 0 10px; }
+.piece-jointe { display: flex; align-items: center; gap: 12px; margin-top: 14px; padding: 12px 14px; border-radius: var(--r-plage);
+                background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.piece-jointe b { display: block; font-size: 15px; }
+.piece-jointe .corps span { display: block; font-size: 13.5px; color: var(--atlas-inkSoft); }
 </style>
 </head>
 <body class="pl">
 
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <symbol id="i-retour" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
-  <symbol id="i-ok" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
-</svg>
-
 <header class="pl-tete">
   <a class="pl-sommaire" href="termines-comptable.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Pour mon comptable</a>
   <h1 class="pl-titre">L'attestation du comptable</h1>
-  <p class="pl-verdict">Ce qu'il rend quand la dernière ligne est cochée. <b>Il conclut, il se présente, il signe du doigt</b>, et le PDF part chez vous avec une copie pour lui.</p>
+  <p class="pl-verdict">Quand la dernière ligne est cochée, il conclut, se présente, et <b>signe sur l'attestation elle-même</b>. Le tampon de son cabinet s'y pose, et elle vous revient par e-mail et dans Mes dossiers.</p>
 </header>
 
 <main class="pl-scene">
   <div class="colonne">
-    <div class="pl-etats" id="etapes" role="group" aria-label="Les écrans">
-      <button type="button" data-e="liste" aria-pressed="true">Fin de liste</button>
+    <p class="groupe-nom">Chez le comptable</p>
+    <div class="pl-etats" id="vues-comptable" role="group" aria-label="Chez le comptable">
+      <button type="button" data-e="fin" aria-pressed="true">La liste finie</button>
       <button type="button" data-e="conclusion">Conclusion</button>
       <button type="button" data-e="signataire">Qui signe</button>
-      <button type="button" data-e="signature">Signature</button>
-      <button type="button" data-e="document">Le document</button>
-      <button type="button" data-e="envoye">Envoyé</button>
-      <button type="button" data-e="accueil">Sur l'accueil</button>
-      <button type="button" data-e="chezvous">Chez le patron</button>
+      <button type="button" data-e="signer">Relire et signer</button>
+      <button type="button" data-e="envoyee">Envoyée</button>
     </div>
-    <div class="pl-etats" id="cas" role="group" aria-label="Le dossier essayé">
+    <p class="groupe-nom">Chez vous</p>
+    <div class="pl-etats" id="vues-patron" role="group" aria-label="Chez vous">
+      <button type="button" data-e="accueil">L'accueil</button>
+      <button type="button" data-e="dossiers">Mes dossiers</button>
+      <button type="button" data-e="courriel">L'e-mail</button>
+    </div>
+    <p class="groupe-nom">Le cas essayé</p>
+    <div class="pl-etats" role="group" aria-label="Le cas essayé">
       <button type="button" data-cas="reserve" aria-pressed="true">Une ligne rejetée</button>
       <button type="button" data-cas="propre">Tout validé</button>
+      <button type="button" data-venue="premiere" aria-pressed="true">Première visite</button>
+      <button type="button" data-venue="suivante">Visite suivante</button>
     </div>
-    <div id="scene"></div>
+    <div class="cadre-zone"><div class="cadre"><div class="ecran" id="ecran"></div></div></div>
   </div>
 
   <section class="pl-notes">
-    <h2>Ce qui est proposé</h2>
+    <h2>Ce qui change depuis le premier jet</h2>
     <ul>
-      <li>Dès que la dernière ligne est cochée, la liste propose de terminer le dossier. Rien ne se termine avant.</li>
-      <li>Trois conclusions : conforme, conforme avec réserves, non conforme. Atlas en propose une d'après ses coches, il peut en changer.</li>
-      <li>Les lignes rejetées et leurs raisons sont écrites dans le document, sans qu'il les recopie.</li>
-      <li>Son nom, sa fonction, sa société, son numéro d'inscription à l'Ordre, son adresse, son e-mail et son téléphone. Gardés sur son appareil pour la fois suivante.</li>
-      <li>Une signature du doigt, la date et l'heure posées par Atlas, puis le PDF part chez le patron, avec une copie au comptable.</li>
+      <li>Il signe sur l'attestation, sous la phrase « J'atteste avoir contrôlé ». Ce qu'il signe est ce qu'il voit, et une étape disparaît.</li>
+      <li>Le tampon de son cabinet se pose au moment où il signe : son nom, la conclusion, la date.</li>
+      <li>La seconde fois, ses coordonnées l'attendent sur une carte. Un appui pour les modifier.</li>
+      <li>Les lignes rejetées s'écrivent dans l'attestation, comme dans sa liste.</li>
+      <li>Chez vous, Mes dossiers garde sa place à chaque chose. Une seule ligne s'ajoute, sous « Vérifié par votre comptable ».</li>
+      <li>Une carte en tête de l'accueil et un e-mail, une seule fois : quand il signe. Rien pour chaque ligne cochée.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Trois conclusions : conforme, conforme avec réserves, non conforme. Atlas propose, le comptable choisit.</li>
       <li>Le PDF est rangé avec le dossier, gardé dix ans, sans pouvoir être effacé ni réécrit.</li>
-      <li>Dès que le comptable signe, le patron reçoit une carte en tête de son accueil et un e-mail. Rien n'est envoyé pour chaque ligne cochée : soixante alertes ne diraient rien. Seule la signature dit « j'ai fini ».</li>
-      <li>Chez le patron, la carte du dossier passe à « 60 sur 60 » et montre l'attestation : la conclusion, qui a signé, les lignes à reprendre. Il n'a plus à deviner que le comptable a fini.</li>
+      <li>La page du comptable garde les couleurs d'Origine, quelle que soit votre charte.</li>
     </ul>
     <h2>À trancher</h2>
     <ul class="a-trancher">
-      <li><b>Ce que ce document vaut.</b> C'est une attestation de vérification des justificatifs du dossier, avec une signature électronique simple : elle prouve qui a signé et que le texte n'a pas bougé. Ce n'est pas l'attestation de présentation des comptes, que l'expert-comptable établit dans son propre logiciel avec la formule de sa profession.</li>
-      <li><b>Un rejet ferme-t-il la porte ?</b> Proposé : non. Le comptable peut conclure conforme avec réserves, ou non conforme, et le patron reçoit les rejets pour les reprendre.</li>
+      <li><b>Ce que ce document vaut.</b> Une attestation de vérification des justificatifs, avec une signature électronique simple : elle prouve qui a signé et que le texte n'a pas bougé. Elle ne remplace pas l'attestation de présentation des comptes, que l'expert-comptable établit dans son logiciel.</li>
+      <li><b>Être prévenu en cours de route ?</b> Proposé : non, seulement à la signature. Si vous voulez savoir dès qu'il rejette une ligne, dites-le.</li>
     </ul>
   </section>
 </main>
 
 <footer class="pl-pied">
   <a href="comptable-verification.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>La page du comptable</a>
+  <a href="./comptable-attestation-premier-jet.html">Le premier jet<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
 </footer>
 
+<script src="kit.js"></script>
 <script>
 (function () {
   "use strict";
 
+  /* ═══ Le dossier essayé ═══════════════════════════════════════════════ */
   var ENTREPRISE = "Atelier Démo";
-  var DOSSIER = "Du 1er janvier au 27 octobre 2026";
-  var EMPREINTE = "9f3c 21ab 7d40 e8b5 5a1c 03fe 6b92 d7a4";
-
-  var etat = {
-    e: "liste",
-    cas: "reserve",
-    conclusion: null,
-    observations: "",
-    f: { nom: "", fonction: "Expert-comptable", societe: "", ordre: "", siren: "", adresse: "", mail: "", tel: "" },
-    certifie: false,
-    trace: false
-  };
-
-  var REJET = { jour: "05/10", lib: "PRLV SEPA TOTALENERGIES ELECTRI", m: "−9,28 €", note: "Le prélèvement porte sur un contrat d'électricité du domicile." };
-
-  function propose() { return etat.cas === "reserve" ? "reserves" : "conforme"; }
-  function conclusion() { return etat.conclusion || propose(); }
-  function nombres() { return etat.cas === "reserve" ? { v: 59, r: 1 } : { v: 60, r: 0 }; }
-  function ico(n) { return '<svg class="ico" aria-hidden="true"><use href="#i-' + n + '"/></svg>'; }
-  function e(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
-
+  var COURRIEL_PATRON = "contact@atelier-demo.fr";
+  var PERIODE = "Du 1er janvier 2026 au 27 octobre 2026";
+  var JOUR = "27 octobre 2026";
+  var EMPREINTE = "9f3c21ab 7d40e8b5 5a1c03fe 6b92d7a4";
+  var EXEMPLE = { nom: "Claire Bernard", fonction: "Expert-comptable", societe: "Cabinet Bernard & Associés", ordre: "14-0087654",
+                  siren: "812 345 678", adresse: "14 rue du Commerce, 49100 Angers", mail: "claire@cabinet-bernard.fr", tel: "02 41 00 00 00" };
+  var VIDE = { nom: "", fonction: "Expert-comptable", societe: "", ordre: "", siren: "", adresse: "", mail: "", tel: "" };
+  var REJET = { jour: "05/10", lib: "PRLV SEPA TOTALENERGIES ELECTRI", m: "−9,28 €", note: "Contrat d'électricité du domicile." };
+  var LIGNES = [
+    { jour: "01/10", lib: "VIR INST WERO DIANA DUPONT", m: "−40,00 €", cat: ["Virement envoyé", "--atlas-catVirement"] },
+    { jour: "05/10", lib: REJET.lib, m: REJET.m, cat: ["Virement envoyé", "--atlas-catVirement"], rejet: true },
+    { jour: "05/10", lib: "HABITATION BQ5551665", m: "−35,29 €", cat: ["Autre", "--atlas-catAutre"] },
+    { jour: "06/10", lib: "CB TOTAL ENERGIES ANGERS", m: "−72,40 €", cat: ["Carburant", "--atlas-catCarburant"] }
+  ];
   var MOTS = { conforme: "Conforme", reserves: "Conforme avec réserves", non: "Non conforme" };
-  var PHRASES = {
-    conforme: "Les justificatifs présentés couvrent les lignes du dossier.",
-    reserves: "Les justificatifs présentés couvrent les lignes du dossier, sauf celles rejetées ci-dessous.",
-    non: "Les justificatifs présentés ne permettent pas de conclure."
-  };
+  var SUITES = { conforme: "Tout est justifié", reserves: "Sauf la ligne rejetée", non: "Les justificatifs ne suffisent pas" };
+  var TONS = { conforme: "vert", reserves: "ambre", non: "rouge" };
 
-  function f() { return etat.f; }
-  function signataireOk() { var x = f(); return x.nom.trim() && x.societe.trim() && /\S+@\S+\.\S+/.test(x.mail); }
-  function signeOk() { return etat.trace && etat.certifie; }
+  var etat = { e: "fin", cas: "reserve", venue: "premiere", conclusion: null, observations: "", f: copie(VIDE), modifier: false, traits: [], signee: false };
 
-  /* ═══ Les écrans ══════════════════════════════════════════════════════ */
-  function haut(retourVers, etape) {
-    return '<div class="t-haut"><button type="button" class="t-retour" data-aller="' + retourVers + '">' + ico("retour") + "Retour</button>" +
-      (etape ? '<span class="t-etape">' + etape + " sur 3</span>" : "") + "</div>";
+  function copie(o) { var r = {}; for (var k in o) r[k] = o[k]; return r; }
+  function e(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function ico(n) { return '<svg class="ico" aria-hidden="true"><use href="#i-' + n + '"/></svg>'; }
+  function rejets() { return etat.cas === "reserve" ? 1 : 0; }
+  function propose() { return rejets() ? "reserves" : "conforme"; }
+  function conclusion() { return etat.conclusion || propose(); }
+  /* Ce que l'attestation porte : ce qu'il a écrit, et l'exemple là où il n'a rien écrit encore. */
+  function qui() { var r = {}; for (var k in EXEMPLE) r[k] = etat.f[k] || EXEMPLE[k]; r.fonction = etat.f.fonction; return r; }
+  function formulaireOk() { var f = etat.f; return !!(f.nom.trim() && f.societe.trim() && /\S+@\S+\.\S+/.test(f.mail)); }
+
+  /* ═══ Le tampon du cabinet ════════════════════════════════════════════ */
+  function tampon() {
+    var c = conclusion(), x = qui();
+    var cabinet = x.societe.toUpperCase();
+    var serre = cabinet.length > 22 ? ' textLength="128" lengthAdjust="spacingAndGlyphs"' : "";
+    var centre = c === "conforme" ? '<text x="60" y="64" text-anchor="middle" font-size="10.5" letter-spacing="0.6">CONFORME</text>'
+      : c === "reserves" ? '<text x="60" y="59" text-anchor="middle" font-size="10.5" letter-spacing="0.6">CONFORME</text><text x="60" y="70" text-anchor="middle" font-size="6.6" letter-spacing="0.7">AVEC RÉSERVES</text>'
+      : '<text x="60" y="56" text-anchor="middle" font-size="8.5" letter-spacing="1.2">NON</text><text x="60" y="68.5" text-anchor="middle" font-size="10.5" letter-spacing="0.6">CONFORME</text>';
+    return '<svg class="tampon" viewBox="0 0 120 120" aria-hidden="true"><defs>' +
+      '<path id="arc-haut" d="M 13 60 A 47 47 0 0 1 107 60"/><path id="arc-bas" d="M 7.5 60 A 52.5 52.5 0 0 0 112.5 60"/></defs>' +
+      '<circle cx="60" cy="60" r="57" fill="none" stroke="currentColor" stroke-width="2.4"/>' +
+      '<circle cx="60" cy="60" r="38.5" fill="none" stroke="currentColor" stroke-width="1.1"/>' +
+      '<text font-size="7.5" letter-spacing="0.7"><textPath href="#arc-haut" startOffset="50%" text-anchor="middle"' + serre + ">" + e(cabinet) + "</textPath></text>" +
+      '<text font-size="7" letter-spacing="1.1"><textPath href="#arc-bas" startOffset="50%" text-anchor="middle">LE ' + JOUR.toUpperCase() + "</textPath></text>" +
+      centre + "</svg>";
   }
 
-  function vueListe() {
-    var n = nombres();
-    return '<div class="defile avec-action" style="padding-top:20px">' +
-      '<h2 class="t-titre">Dossier justifié, ' + ENTREPRISE + "</h2>" +
-      '<p class="t-sous">' + DOSSIER + "</p>" +
-      '<div class="t-fausse-ligne" style="margin-top:14px"><i>27/10</i><span>CB LE RELAIS ANGERS</span><em>−56,00 €</em></div>' +
-      '<div class="t-fausse-ligne"><i>27/10</i><span>CB POINT P ANGERS</span><em>−412,30 €</em></div>' +
-      '<div class="t-liste-fin"><b>60 lignes sur 60 vérifiées.</b> ' + (n.r ? "1 rejetée." : "Aucune rejetée.") + "</div>" +
-      '</div><div class="action-bas"><button type="button" class="bouton bouton-plein" data-aller="conclusion">Terminer le dossier</button></div>';
+  /* ═══ Chez le comptable ═══════════════════════════════════════════════ */
+  function haut(retour, rang) {
+    return '<div class="etape-haut"><button type="button" class="rond-creux" data-aller="' + retour + '" aria-label="Retour">' + ico("retour") + "</button>" +
+      (rang ? '<span class="etape-rang">' + rang + " sur 3</span>" : "") + "</div>";
+  }
+
+  function vueFin() {
+    var r = rejets();
+    var lignes = LIGNES.map(function (l) {
+      var rej = l.rejet && r;
+      return '<li class="v-l ' + (rej ? "rejete" : "valide") + '"><div class="v-l-haut"><span class="v-jour">' + l.jour + '</span><span class="v-lib">' + l.lib + '</span><span class="v-mt">' + l.m + "</span></div>" +
+        '<span class="v-cat"><i style="background:var(' + l.cat[1] + ')"></i>' + l.cat[0] + "</span>" + (rej ? '<span class="v-note">Rejetée : ' + REJET.note + "</span>" : "") + "</li>";
+    }).join("");
+    var mois = [["Juillet", 1], ["Août", 19], ["Septembre", 18], ["Octobre", 22]].map(function (m) {
+      return '<span class="' + (m[0] === "Octobre" ? "ouvert" : "") + '">' + m[0] + "<small>" + m[1] + " sur " + m[1] + "</small></span>";
+    }).join("");
+    return { action: true, html: '<div class="defile" style="padding-top:22px">' +
+      '<div class="v-tete"><h2 class="v-titre">Dossier justifié, ' + ENTREPRISE + '</h2><p class="v-envoye">Envoyé le 27 octobre</p><p class="v-qui">' + PERIODE + "</p></div>" +
+      '<div class="v-avance"><div class="v-avance-mots"><span><b>60 sur 60</b> lignes vérifiées, dont 22 sur 22 en octobre</span>' + (r ? '<span class="rej">1 rejetée</span>' : "") + "</div>" +
+      '<div class="v-jauge"><i style="width:' + ((60 - r) / 60 * 100) + '%;background:var(--atlas-montantEntree)"></i><i style="width:' + (r / 60 * 100) + '%;background:var(--atlas-montantSortie)"></i></div></div>' +
+      '<div class="v-mois">' + mois + "</div>" +
+      '<ul class="v-liste">' + lignes + "</ul></div>" +
+      '<div class="action-bas"><button type="button" class="bouton bouton-plein" data-aller="conclusion">Terminer et signer</button></div>' };
   }
 
   function vueConclusion() {
-    var n = nombres(), c = conclusion();
-    function carte(cle, titre, sous) {
-      return '<button type="button" class="t-carte" data-c="' + cle + '" data-geste="conclure" aria-pressed="' + (c === cle) + '"><span class="pastille">' + ico("ok") + '</span><span><b>' + titre + "</b><small>" + sous + "</small></span>" +
-        (propose() === cle && !etat.conclusion ? '<span class="t-propose">Proposé</span>' : "") + "</button>";
+    var r = rejets(), c = conclusion();
+    function radio(cle) {
+      return '<button type="button" class="radio" data-geste="conclure" data-c="' + cle + '" aria-pressed="' + (c === cle) + '"><span class="coche-ronde"></span>' +
+        '<span class="radio-corps"><b>' + MOTS[cle] + "</b><small>" + (cle === "reserves" && !r ? "Sauf les lignes rejetées" : SUITES[cle]) + "</small></span>" +
+        (propose() === cle ? '<span class="etat" data-ton="or">Proposé</span>' : "") + "</button>";
     }
-    return haut("liste", 1) + '<div class="defile avec-action" style="padding-top:6px">' +
-      '<h2 class="t-titre">Votre conclusion</h2>' +
-      '<div class="t-bilan"><div class="ok"><b>' + n.v + "</b><span>validées</span></div><div" + (n.r ? ' class="ko"' : "") + "><b>" + n.r + "</b><span>rejetée" + (n.r > 1 ? "s" : "") + "</span></div></div>" +
-      (n.r ? '<div class="t-reserve"><b>' + REJET.jour + " " + REJET.lib + " " + REJET.m + "</b>" + REJET.note + "</div>" : "") +
-      '<fieldset class="t-choix"><legend>Le dossier est</legend>' +
-      carte("conforme", "Conforme", "Tout est justifié") +
-      carte("reserves", "Conforme avec réserves", "Sauf les lignes rejetées") +
-      carte("non", "Non conforme", "Il manque l'essentiel") + "</fieldset>" +
-      '<label class="t-champ">Observations (facultatif)<textarea id="obs" maxlength="1000">' + e(etat.observations) + "</textarea></label>" +
-      '</div><div class="action-bas"><button type="button" class="bouton bouton-plein" data-aller="signataire">Continuer</button></div>';
+    var ligneRejetee = r ? '<ul class="v-liste seule"><li class="v-l rejete"><div class="v-l-haut"><span class="v-jour">' + REJET.jour + '</span><span class="v-lib">' + REJET.lib + '</span><span class="v-mt">' + REJET.m + "</span></div>" +
+      '<span class="v-note">Rejetée : ' + REJET.note + "</span></li></ul>" : "";
+    return { action: true, html: '<div class="defile">' + haut("fin", 1) +
+      '<h2 class="etape-titre">Votre conclusion</h2>' +
+      '<p class="etape-phrase"><b>60 lignes vérifiées</b>, ' + (r ? "59 validées et 1 rejetée." : "toutes validées.") + "</p>" + ligneRejetee +
+      '<div class="conclusions" role="group" aria-label="Le dossier est">' + radio("conforme") + radio("reserves") + radio("non") + "</div>" +
+      '<label class="champ" style="margin-top:18px"><span class="champ-libelle">Observations</span><textarea class="champ-saisie" id="obs" rows="3" placeholder="Facultatif" style="min-height:84px">' + e(etat.observations) + "</textarea></label>" +
+      '</div><div class="action-bas"><button type="button" class="bouton bouton-plein" data-aller="signataire">Continuer</button></div>' };
   }
 
-  function champ(cle, nom, type, ac) {
-    return '<label class="t-champ">' + nom + '<input data-champ="' + cle + '" type="' + (type || "text") + '" autocomplete="' + (ac || "off") + '" value="' + e(f()[cle]) + '"></label>';
+  function champ(cle, libelle, type, ac, attrs) {
+    return '<label class="champ"><span class="champ-libelle">' + libelle + '</span><input class="champ-saisie" data-champ="' + cle + '" type="' + (type || "text") + '" autocomplete="' + (ac || "off") + '"' + (attrs || "") + ' value="' + e(etat.f[cle]) + '"></label>';
   }
 
   function vueSignataire() {
+    var f = etat.f;
+    if (etat.venue === "suivante" && !etat.modifier) {
+      return { action: true, html: '<div class="defile">' + haut("conclusion", 2) +
+        '<h2 class="etape-titre">Qui signe</h2>' +
+        '<div class="carte-visite"><p class="nom">' + e(f.nom) + '</p><p class="fonction">' + e(f.fonction) + (f.ordre ? ", Ordre n° " + e(f.ordre) : "") + "</p>" +
+        '<p class="cabinet">' + e(f.societe) + "</p><address>SIREN " + e(f.siren) + "<br>" + e(f.adresse) + "<br>" + e(f.mail) + "<br>" + e(f.tel) + "</address>" +
+        '<button type="button" class="bouton-texte" data-geste="modifier">' + ico("crayon") + "Modifier</button></div>" +
+        '<p class="etape-phrase">Gardé sur cet appareil depuis votre dernière attestation.</p>' +
+        '</div><div class="action-bas"><button type="button" class="bouton bouton-plein" data-aller="signer">Continuer</button></div>' };
+    }
     var fonctions = ["Expert-comptable", "Comptable", "Autre"].map(function (x) {
-      return '<button type="button" data-geste="fonction" data-f="' + x + '" aria-pressed="' + (f().fonction === x) + '">' + x + "</button>";
+      return '<button type="button" data-geste="fonction" data-f="' + x + '" aria-pressed="' + (f.fonction === x) + '">' + x + "</button>";
     }).join("");
-    var ok = signataireOk();
-    return haut("conclusion", 2) + '<div class="defile avec-action" style="padding-top:6px">' +
-      '<h2 class="t-titre">Qui signe</h2>' +
+    var expert = f.fonction === "Expert-comptable";
+    return { action: true, html: '<div class="defile">' + haut("conclusion", 2) +
+      '<h2 class="etape-titre">Qui signe</h2>' +
+      '<h3 class="rubrique" style="margin-top:20px">Vous</h3>' +
       champ("nom", "Nom et prénom", "text", "name") +
-      '<div class="t-champ">Fonction<div class="t-fonctions" role="group" aria-label="Fonction">' + fonctions + "</div></div>" +
+      '<div class="champ"><span class="champ-libelle">Fonction</span><div class="choix fonctions" role="group" aria-label="Fonction">' + fonctions + "</div></div>" +
+      '<h3 class="rubrique">Le cabinet</h3>' +
       champ("societe", "Dénomination sociale", "text", "organization") +
-      (f().fonction === "Expert-comptable" ? champ("ordre", "N° d'inscription à l'Ordre", "text") : "") +
-      '<div class="t-deux">' + champ("siren", "SIREN", "text") + "</div>" +
+      '<div class="deux">' + (expert ? champ("ordre", "N° à l'Ordre", "text", "off", ' inputmode="numeric"') : "") + champ("siren", "SIREN", "text", "off", ' inputmode="numeric"') + "</div>" +
       champ("adresse", "Adresse", "text", "street-address") +
+      '<h3 class="rubrique">Pour vous joindre</h3>' +
       champ("mail", "E-mail", "email", "email") +
       champ("tel", "Téléphone", "tel", "tel") +
-      '<p class="t-garde">Gardé sur cet appareil pour la prochaine fois.</p>' +
-      '</div><div class="action-bas"><button type="button" class="bouton bouton-plein" data-aller="signature"' + (ok ? "" : " disabled") + ">Continuer</button></div>";
+      '<p class="champ-aide" style="margin-top:14px">Gardé sur cet appareil pour la prochaine fois.</p>' +
+      '</div><div class="action-bas"><button type="button" class="bouton bouton-plein" data-aller="signer"' + (formulaireOk() ? "" : " disabled") + ">Continuer</button></div>" };
   }
 
-  function vueSignature() {
-    var ok = signeOk();
-    return haut("signataire", 3) + '<div class="defile avec-action" style="padding-top:6px">' +
-      '<h2 class="t-titre">Votre signature</h2>' +
-      '<p class="t-sous">' + e(f().nom || "Le signataire") + (f().societe ? ", " + e(f().societe) : "") + "</p>" +
-      '<div class="t-pad' + (etat.trace ? " signe" : "") + '" id="pad"><canvas id="toile"></canvas><div class="trait-base"></div><div class="invite">Signez ici</div></div>' +
-      '<button type="button" class="bouton-texte t-effacer" data-geste="effacer">Effacer</button>' +
-      '<button type="button" class="t-certifie" data-geste="certifier" aria-pressed="' + etat.certifie + '"><span class="case">' + ico("ok") + "</span><span>Je certifie avoir contrôlé les 60 lignes de ce dossier et conclure en conscience : <b>" + MOTS[conclusion()].toLowerCase() + ".</b></span></button>" +
-      '<p class="t-moment">Daté par Atlas à l\'envoi, le 27 octobre 2026.</p>' +
-      '<button type="button" class="bouton-texte" data-aller="document" style="margin-top:6px">Relire le document</button>' +
-      '</div><div class="action-bas"><button type="button" class="bouton bouton-plein" data-geste="envoyer"' + (ok ? "" : " disabled") + ">Signer et envoyer</button></div>";
+  function papier() {
+    var c = conclusion(), x = qui(), r = rejets();
+    var ordre = x.fonction === "Expert-comptable" && x.ordre ? ", Ordre n° " + e(x.ordre) : "";
+    return '<article class="papier' + (etat.signee ? " signee deja" : "") + '" data-verdict="' + c + '" id="papier">' +
+      "<h3>Attestation de vérification</h3>" +
+      '<p class="de">Dossier justifié, ' + ENTREPRISE + "<br>" + PERIODE + "</p>" +
+      "<dl><dt>Conclusion</dt><dd class=\"verdict\">" + MOTS[c] + "</dd>" +
+      "<dt>Lignes vérifiées</dt><dd>60</dd><dt>Validées</dt><dd>" + (60 - r) + "</dd><dt>Rejetées</dt><dd>" + r + "</dd></dl>" +
+      (r ? '<div class="reprendre"><b>Ligne rejetée</b><div class="r"><span>' + REJET.jour + " " + REJET.lib + "</span><span>" + REJET.m + "</span></div><p>" + REJET.note + "</p></div>" : "") +
+      (etat.observations.trim() ? '<p class="obs"><b>Observations</b>' + e(etat.observations.trim()) + "</p>" : "") +
+      '<p class="atteste">J’atteste avoir contrôlé les 60 lignes de ce dossier et leurs justificatifs, tels que présentés dans Atlas.</p>' +
+      '<p class="qui-signe"><b>' + e(x.nom) + "</b>" + e(x.fonction) + ordre + "<br>" + e(x.societe) + ", SIREN " + e(x.siren) + "<br>" + e(x.adresse) + "<br>" + e(x.mail) + ", " + e(x.tel) + "</p>" +
+      '<div class="zone-signature"><div class="zone-legende"><span>Fait le ' + JOUR + '</span><button type="button" data-geste="effacer"' + (etat.traits.length && !etat.signee ? "" : " hidden") + ">Effacer</button></div>" +
+      '<div class="pad' + (etat.traits.length ? " trace" : "") + '" id="pad" role="img" aria-label="Zone de signature"><canvas id="toile"></canvas><span class="pad-invite">' + ico("crayon") + "Signez ici</span></div>" +
+      tampon() + "</div>" +
+      '<p class="pied">Cette attestation porte sur les justificatifs présentés dans Atlas. Elle ne certifie pas les comptes.<span class="empreinte">Empreinte du dossier ' + EMPREINTE + "</span></p></article>";
   }
 
-  function vueDocument() {
-    var n = nombres(), c = conclusion(), x = f();
-    var rejets = n.r ? '<hr><h4>Lignes rejetées</h4><div class="rejet"><div class="r"><span>' + REJET.jour + " " + REJET.lib + "</span><span>" + REJET.m + "</span></div><p>" + REJET.note + "</p></div>" : "";
-    var lignes = [x.nom || "Nom du signataire", x.fonction + (x.fonction === "Expert-comptable" && x.ordre ? ", inscrit à l'Ordre sous le n° " + x.ordre : ""),
-                  x.societe || "Dénomination sociale", x.siren ? "SIREN " + x.siren : "", x.adresse, x.mail, x.tel].filter(Boolean);
-    return haut("signature") + '<div class="defile" style="padding-top:2px"><div class="page-a4">' +
-      '<p class="sur">Atlas</p><h3>Attestation de vérification</h3>' +
-      '<p class="qui">Dossier justifié de ' + ENTREPRISE + ".<br>" + DOSSIER + ".</p>" +
-      '<div class="verdict ' + c + '">' + MOTS[c] + "</div>" +
-      '<p style="margin-top:8px">' + PHRASES[c] + "</p>" +
-      '<hr><h4>Ce qui a été vérifié</h4>' +
-      '<div class="r"><span>Lignes du dossier</span><span>60</span></div>' +
-      '<div class="r"><span>Validées</span><span>' + n.v + "</span></div>" +
-      '<div class="r"><span>Rejetées</span><span>' + n.r + "</span></div>" + rejets +
-      (etat.observations.trim() ? "<hr><h4>Observations</h4><p>" + e(etat.observations) + "</p>" : "") +
-      '<hr><h4>Signataire</h4><p>' + lignes.map(e).join("<br>") + "</p>" +
-      '<div class="sign" style="margin-top:12px"><span>Signé électroniquement<br>le 27 octobre 2026</span>' + (etat.trace ? '<canvas id="reflet" width="260" height="120"></canvas>' : '<span style="color:var(--atlas-muted)">Pas encore signé</span>') + "</div>" +
-      '<p class="petit">Cette attestation porte sur les justificatifs présentés dans Atlas. Elle ne certifie pas les comptes.</p>' +
-      '<p class="empreinte">Empreinte du dossier : ' + EMPREINTE + "</p>" +
-      '</div></div><div class="action-bas"><button type="button" class="bouton bouton-plein" data-aller="signature">Retour à la signature</button></div>';
+  function vueSigner() {
+    var pret = etat.traits.length > 0 && !etat.signee;
+    return { action: true, html: '<div class="defile">' + haut("signataire", 3) +
+      '<h2 class="etape-titre">Relire et signer</h2>' + papier() +
+      '</div><div class="action-bas"><button type="button" class="bouton bouton-plein" data-geste="signer"' + (pret ? "" : " disabled") + ">" + (etat.signee ? "Signée" : "Signer et envoyer") + "</button></div>" };
   }
 
-  function vueEnvoye() {
-    var x = f();
-    return '<div class="defile" style="padding-top:20px"><div class="t-fin"><div class="rond">' + ico("ok") + "</div>" +
-      "<h2>Attestation envoyée</h2>" +
-      "<p><b>" + ENTREPRISE + "</b> la reçoit par e-mail, avec le dossier.</p>" +
-      "<p>Une copie part à <b>" + e(x.mail || "votre adresse") + "</b>.</p>" +
-      '<button type="button" class="bouton-texte" data-aller="document">Ouvrir le PDF</button></div></div>';
+  function vueEnvoyee() {
+    var x = qui();
+    return { action: true, html: '<div class="defile"><div class="envoyee" data-verdict="' + conclusion() + '" style="--verdict:var(--atlas-' + { conforme: "carteVertTexte", reserves: "carteAmbreTexte", non: "carteRougeTexte" }[conclusion()] + ')">' +
+      tampon() + '<h2 class="etape-titre">Attestation envoyée</h2></div>' +
+      '<ul class="liste destinataires"><li><div class="ligne"><span class="ligne-icone or">' + ico("email") + '</span><span class="ligne-corps"><span class="ligne-nom">' + ENTREPRISE + '</span><span class="ligne-situation">' + COURRIEL_PATRON + ", avec le dossier</span></span></div></li>" +
+      '<li><div class="ligne"><span class="ligne-icone or">' + ico("copier") + '</span><span class="ligne-corps"><span class="ligne-nom">Une copie pour vous</span><span class="ligne-situation">' + e(x.mail) + "</span></span></div></li></ul>" +
+      '</div><div class="action-bas"><button type="button" class="bouton bouton-creux" data-note="Le PDF signé se range sur l’appareil.">' + ico("telecharger") + "Télécharger le PDF</button></div>" };
   }
 
-  function vueChezVous() {
-    var c = conclusion(), x = f(), n = nombres();
-    return '<div class="defile" style="padding-top:20px"><h2 class="t-titre">Mes dossiers justifiés</h2>' +
-      '<div class="t-dossier"><h3>Du 1er janvier 2026 au 27 octobre 2026</h3><p class="detail">Rangé le 27 octobre 2026, gardé jusqu\u2019au 27 octobre 2036</p>' +
-      '<span class="t-pilule">Vérifié par votre comptable : 60 sur 60</span>' +
-      '<div class="t-attest ' + (c === "conforme" ? "conforme" : "reserves") + '"><b>' + MOTS[c] + "</b><span>Signé par " + e(x.nom || "votre comptable") + (x.societe ? ", " + e(x.societe) : "") + ", le 27 octobre 2026</span></div>" +
-      (n.r ? '<div class="t-a-reprendre"><b>1 ligne à reprendre</b>' + REJET.jour + " " + REJET.lib + " " + REJET.m + "</div>" : "") +
-      '<div class="t-gestes"><button type="button" class="bouton bouton-creux">Ouvrir l\u2019attestation</button><button type="button" class="bouton bouton-creux">Télécharger</button></div></div>' +
-      '<p class="t-garde">Reçue aussi par e-mail. Rangée avec le dossier, gardée dix ans.</p></div>';
+  /* ═══ Chez le patron ══════════════════════════════════════════════════ */
+  function hautPatron() {
+    return '<div class="haut"><button class="rond-creux" type="button" aria-label="Retour" data-note="Retour au dossier en cours.">' + ico("retour") + "</button>" +
+      '<button class="rond" type="button" aria-label="Ouvrir l’assistant" data-note="L’assistant, comme aujourd’hui.">' + ico("assistant") + "</button></div>";
+  }
+
+  function vueDossiers() {
+    var c = conclusion(), x = qui(), r = rejets();
+    return { action: false, html: '<div class="defile">' + hautPatron() +
+      '<h2 class="titre-page">Mes dossiers justifiés</h2><p class="sous-titre">Gardés dix ans avec leur bilan, puis effacés.</p>' +
+      '<div class="annee-choix"><button class="annee-fleche" type="button" disabled aria-label="Année d’avant">' + ico("retour") + '</button><span class="annee-nom">2026</span>' +
+      '<button class="annee-fleche" type="button" disabled aria-label="Année d’après">' + ico("suivant") + "</button></div>" +
+      '<p class="annee-resume">1 dossier, aucun bilan du comptable</p>' +
+      '<section class="dossier"><h3 class="dossier-nom">' + PERIODE + '</h3><p class="dossier-detail">Rangé le 27 octobre 2026, gardé jusqu’au 27 octobre 2036, 774 Ko</p>' +
+      '<button type="button" class="bouton bouton-creux ajout-bilan" data-note="Comme aujourd’hui.">' + ico("plus") + "Ajouter le bilan du comptable</button>" +
+      '<span class="etat" data-ton="vert">Vérifié par votre comptable : 60 sur 60</span>' +
+      '<div class="attestation-recue plage-trait"><span class="pastille-ico" data-ton="' + TONS[c] + '">' + ico("document") + '</span><span class="corps"><b>Attestation du comptable</b><span>' + MOTS[c] + ", signée le 27 octobre</span></span>" +
+      '<button type="button" class="bouton-texte" data-note="L’attestation signée s’ouvre dans la visionneuse d’Atlas.">Ouvrir</button></div>' +
+      '<div class="dossier-gestes"><button type="button" data-note="Comme aujourd’hui.">' + ico("document") + "Ouvrir</button><button type=\"button\" data-note=\"Comme aujourd’hui.\">" + ico("telecharger") + "Télécharger</button>" +
+      '<button type="button" data-note="Comme aujourd’hui.">' + ico("envoyer") + "Envoyer au comptable</button></div>" +
+      (r ? '<div class="carte-ton rejet-carte" data-ton="rouge"><p class="carte-ton-titre">Rejetée par votre comptable</p>' +
+        '<div class="tete"><p class="carte-ton-texte">' + REJET.lib + '</p><span class="montant">9,28 €</span></div><p class="quand">5 octobre</p>' +
+        '<p class="raison">« ' + REJET.note + ' »</p><div class="gestes"><button type="button" class="bouton bouton-creux" data-note="Comme aujourd’hui.">' + ico("facture") + "Choisir la facture</button>" +
+        '<button type="button" class="bouton-texte" data-note="Comme aujourd’hui.">C’est autre chose</button></div></div>' : "") +
+      "</section></div>" };
   }
 
   function vueAccueil() {
-    var c = conclusion(), n = nombres(), x = f();
-    var ton = c === "conforme" ? "vert" : "ambre";
-    return '<div class="defile" style="padding-top:20px"><h2 class="t-accueil-titre">Aujourd\u2019hui</h2>' +
-      '<article class="carte-ton t-carte-signal" data-ton="' + ton + '"><p class="carte-ton-titre">Votre comptable a terminé</p><p class="carte-ton-texte">' + MOTS[c] + "</p>" +
-      '<span class="suite">' + (n.r ? "1 ligne à reprendre. " : "") + "Attestation signée par " + e(x.nom || "votre comptable") + ".</span></article>" +
-      '<div class="t-courriel"><small>E-mail reçu</small><b>Dossier justifié : ' + MOTS[c].toLowerCase() + "</b>" +
-      "<p>" + e(x.nom || "Votre comptable") + (x.societe ? ", " + e(x.societe) : "") + " a vérifié les 60 lignes de votre dossier du 1er janvier au 27 octobre 2026.</p>" +
-      (n.r ? "<p>Une ligne est à reprendre : " + REJET.jour + " " + REJET.lib + " " + REJET.m + ".</p>" : "") +
-      "<p>L\u2019attestation signée est jointe en PDF.</p></div></div>";
+    var c = conclusion(), x = qui(), r = rejets();
+    return { action: false, html: '<div class="defile" style="padding-top:20px">' +
+      '<article class="carte-ton reponse" data-ton="' + TONS[c] + '"><p class="carte-ton-titre">Votre comptable a signé</p>' +
+      '<p class="carte-ton-texte">' + MOTS[c] + "</p>" +
+      '<p class="reponse-texte">' + e(x.nom) + " a vérifié les 60 lignes du dossier." + (r ? " 1 ligne à reprendre." : "") + "</p>" +
+      '<div class="reponse-gestes"><button type="button" class="reponse-suite" data-aller="dossiers">' + (r ? "Reprendre la ligne" : "Ouvrir l’attestation") + '</button><button type="button" class="reponse-vu" data-note="La carte quitte l’accueil.">J’ai vu</button></div></article>' +
+      '<button type="button" class="autres" data-note="Comme aujourd’hui.">1 autre devis à regarder' + ico("bas") + "</button>" +
+      '<div class="en-cours"><h3>En cours</h3><span>3 chantiers</span></div>' +
+      '<ul class="liste"><li><div class="ligne"><span class="ligne-corps"><span class="ligne-nom">Reprise de toiture</span><span class="ligne-situation">Devis envoyé le 24 octobre</span></span></div></li>' +
+      '<li><div class="ligne"><span class="ligne-corps"><span class="ligne-nom">Mme Linotte</span><span class="ligne-situation">Lundi 2 novembre</span></span></div></li></ul></div>' };
   }
 
-  var VUES = { liste: vueListe, conclusion: vueConclusion, signataire: vueSignataire, signature: vueSignature, document: vueDocument, envoye: vueEnvoye, chezvous: vueChezVous, accueil: vueAccueil };
+  function vueCourriel() {
+    var c = conclusion(), x = qui(), r = rejets();
+    return { action: false, html: '<div class="defile" style="padding-top:20px">' +
+      '<div class="courriel-de"><span class="pastille-ico">A</span><span class="corps"><b>Atlas</b><span>À ' + COURRIEL_PATRON + ", le 27 octobre</span></span></div>" +
+      '<h2 class="courriel-objet">Votre dossier est vérifié : ' + MOTS[c].toLowerCase() + "</h2>" +
+      '<div class="courriel-corps"><p>Bonjour,</p><p>' + e(x.nom) + ", " + e(x.societe) + ", a vérifié les 60 lignes de votre dossier du 1er janvier au 27 octobre 2026.</p>" +
+      (r ? "<p>Une ligne est à reprendre : " + REJET.jour + " " + REJET.lib + ", " + REJET.m + ".</p>" : "") +
+      "<p>L’attestation signée est jointe, et rangée avec le dossier dans Atlas.</p></div>" +
+      '<div class="piece-jointe"><span class="pastille-ico" data-ton="' + TONS[c] + '">' + ico("document") + '</span><span class="corps"><b>Attestation ' + ENTREPRISE + ".pdf</b><span>PDF signé, 212 Ko</span></span></div>" +
+      '<button type="button" class="bouton bouton-plein" style="margin-top:18px" data-aller="dossiers">Ouvrir dans Atlas</button></div>' };
+  }
 
-  /* ═══ La toile de la signature ════════════════════════════════════════ */
-  var traits = [];
+  var VUES = { fin: vueFin, conclusion: vueConclusion, signataire: vueSignataire, signer: vueSigner, envoyee: vueEnvoyee,
+               accueil: vueAccueil, dossiers: vueDossiers, courriel: vueCourriel };
+  var CHEZ_LE_COMPTABLE = { fin: 1, conclusion: 1, signataire: 1, signer: 1, envoyee: 1, courriel: 1 };
+
+  /* ═══ La signature, au doigt ou à la souris ═══════════════════════════ */
   function monterToile() {
     var toile = document.getElementById("toile");
     if (!toile) return;
     var pad = document.getElementById("pad"), dpr = window.devicePixelRatio || 1;
-    toile.width = pad.clientWidth * dpr; toile.height = pad.clientHeight * dpr;
+    toile.width = Math.round(pad.clientWidth * dpr); toile.height = Math.round(pad.clientHeight * dpr);
     var c = toile.getContext("2d");
     c.scale(dpr, dpr);
-    c.lineWidth = 2.4; c.lineCap = "round"; c.lineJoin = "round";
-    c.strokeStyle = getComputedStyle(document.querySelector(".ecran")).getPropertyValue("--atlas-ink").trim() || "currentColor";
-    function tracer() { traits.forEach(function (t) { c.beginPath(); t.forEach(function (p, i) { if (i) c.lineTo(p[0], p[1]); else c.moveTo(p[0], p[1]); }); c.stroke(); }); }
-    tracer();
+    c.lineWidth = 2.2; c.lineCap = "round"; c.lineJoin = "round";
+    c.strokeStyle = getComputedStyle(ecran).getPropertyValue("--atlas-ink").trim();
+    etat.traits.forEach(function (t) { c.beginPath(); t.forEach(function (p, i) { if (i) c.lineTo(p[0], p[1]); else c.moveTo(p[0], p[1]); }); c.stroke(); });
+    if (etat.signee) return;
     var actif = null;
-    function point(ev) { var r = toile.getBoundingClientRect(); return [ev.clientX - r.left, ev.clientY - r.top]; }
+    function point(ev) { var b = toile.getBoundingClientRect(); return [ev.clientX - b.left, ev.clientY - b.top]; }
     toile.addEventListener("pointerdown", function (ev) {
+      ev.preventDefault();
       toile.setPointerCapture(ev.pointerId);
-      actif = [point(ev)]; traits.push(actif);
+      actif = [point(ev)]; etat.traits.push(actif);
       c.beginPath(); c.moveTo(actif[0][0], actif[0][1]);
     });
     toile.addEventListener("pointermove", function (ev) {
       if (!actif) return;
       var p = point(ev); actif.push(p); c.lineTo(p[0], p[1]); c.stroke();
-      if (!etat.trace) { etat.trace = true; pad.classList.add("signe"); majBouton(); }
+      if (!pad.classList.contains("trace")) {
+        pad.classList.add("trace");
+        ecran.querySelector('[data-geste="effacer"]').hidden = false;
+        ecran.querySelector('[data-geste="signer"]').disabled = false;
+      }
     });
     function fin() { actif = null; }
     toile.addEventListener("pointerup", fin); toile.addEventListener("pointercancel", fin);
   }
-  function effacerToile() { traits = []; etat.trace = false; etat.certifie = false; rendre(); }
-  function majBouton() { var b = document.querySelector('[data-geste="envoyer"]'); if (b) b.disabled = !signeOk(); }
-
-  function dessinerReflet() {
-    var r = document.getElementById("reflet");
-    if (!r || !traits.length) return;
-    var pad = { w: 330, h: 190 }, c = r.getContext("2d");
-    c.scale(r.width / pad.w, r.height / pad.h);
-    c.lineWidth = 2.4; c.lineCap = "round"; c.lineJoin = "round";
-    c.strokeStyle = getComputedStyle(document.querySelector(".ecran")).getPropertyValue("--atlas-ink").trim();
-    traits.forEach(function (t) { c.beginPath(); t.forEach(function (p, i) { if (i) c.lineTo(p[0], p[1]); else c.moveTo(p[0], p[1]); }); c.stroke(); });
-  }
 
   /* ═══ Le rendu ════════════════════════════════════════════════════════ */
-  var scene = document.getElementById("scene");
+  var ecran = document.getElementById("ecran");
+  function charteRetenue() { try { return window.localStorage.getItem("atlas-soignee-charte") || "origine"; } catch (err) { return "origine"; } }
+
   function rendre() {
-    scene.innerHTML = '<div class="cadre"><div class="ecran" id="ecran">' + VUES[etat.e]() + "</div></div>";
-    document.querySelectorAll("#etapes button").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-e") === etat.e ? "true" : "false"); });
-    document.querySelectorAll("#cas button").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-cas") === etat.cas ? "true" : "false"); });
-    if (etat.e === "signature") monterToile();
-    if (etat.e === "document") dessinerReflet();
+    var v = VUES[etat.e]();
+    ecran.className = "ecran" + (v.action ? " avec-action" : "");
+    ecran.toggleAttribute("data-sans-charte", !!CHEZ_LE_COMPTABLE[etat.e]);
+    ecran.innerHTML = v.html;
+    if (window.Kit) Kit.poserCharte(charteRetenue());
+    document.querySelectorAll("[data-e]").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-e") === etat.e ? "true" : "false"); });
+    document.querySelectorAll("[data-cas]").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-cas") === etat.cas ? "true" : "false"); });
+    document.querySelectorAll("[data-venue]").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-venue") === etat.venue ? "true" : "false"); });
+    if (etat.e === "signer") monterToile();
+    var rangee = ecran.querySelector(".v-mois");
+    if (rangee) rangee.scrollLeft = rangee.scrollWidth;
     var obs = document.getElementById("obs");
     if (obs) obs.addEventListener("input", function () { etat.observations = obs.value; });
-    scene.querySelectorAll("[data-champ]").forEach(function (i) {
+    ecran.querySelectorAll("[data-champ]").forEach(function (i) {
       i.addEventListener("input", function () {
         etat.f[i.getAttribute("data-champ")] = i.value;
-        var b = scene.querySelector('[data-aller="signature"]');
-        if (b && etat.e === "signataire") b.disabled = !signataireOk();
+        var b = ecran.querySelector('.action-bas [data-aller="signer"]');
+        if (b) b.disabled = !formulaireOk();
       });
     });
   }
 
-  document.getElementById("etapes").addEventListener("click", function (ev) { var b = ev.target.closest("button"); if (b) { etat.e = b.getAttribute("data-e"); rendre(); } });
-  document.getElementById("cas").addEventListener("click", function (ev) {
-    var b = ev.target.closest("button"); if (!b) return;
-    etat.cas = b.getAttribute("data-cas"); etat.conclusion = null; rendre();
+  function aller(vers) { etat.e = vers; rendre(); var d = ecran.querySelector(".defile"); if (d) d.scrollTop = 0; }
+  function oublierLaSignature() { etat.signee = false; }
+
+  document.querySelectorAll("[data-e]").forEach(function (b) { b.addEventListener("click", function () { aller(b.getAttribute("data-e")); }); });
+  document.querySelectorAll("[data-cas]").forEach(function (b) {
+    b.addEventListener("click", function () { etat.cas = b.getAttribute("data-cas"); etat.conclusion = null; oublierLaSignature(); rendre(); });
   });
-  scene.addEventListener("click", function (ev) {
+  document.querySelectorAll("[data-venue]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      etat.venue = b.getAttribute("data-venue");
+      etat.f = copie(etat.venue === "suivante" ? EXEMPLE : VIDE); etat.modifier = false; oublierLaSignature(); rendre();
+    });
+  });
+
+  ecran.addEventListener("click", function (ev) {
+    var note = ev.target.closest("[data-note]");
+    if (note) { if (window.Kit) Kit.note(note, note.getAttribute("data-note")); return; }
     var a = ev.target.closest("[data-aller]");
-    if (a && !a.disabled) { etat.e = a.getAttribute("data-aller"); rendre(); return; }
+    if (a && !a.disabled) { aller(a.getAttribute("data-aller")); return; }
     var g = ev.target.closest("[data-geste]");
     if (!g || g.disabled) return;
     switch (g.getAttribute("data-geste")) {
-      case "conclure": etat.conclusion = g.getAttribute("data-c"); rendre(); break;
+      case "conclure": etat.conclusion = g.getAttribute("data-c"); oublierLaSignature(); rendre(); break;
       case "fonction": etat.f.fonction = g.getAttribute("data-f"); rendre(); break;
-      case "effacer": effacerToile(); break;
-      case "certifier": etat.certifie = !etat.certifie; g.setAttribute("aria-pressed", etat.certifie); majBouton(); break;
-      case "envoyer": etat.e = "envoye"; rendre(); break;
+      case "modifier": etat.modifier = true; rendre(); break;
+      case "effacer": etat.traits = []; rendre(); break;
+      case "signer": {
+        etat.signee = true;
+        var p = document.getElementById("papier");
+        p.classList.add("signee");
+        ecran.querySelector('[data-geste="effacer"]').hidden = true;
+        g.disabled = true; g.textContent = "Signée";
+        var lent = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 500 : 1300;
+        setTimeout(function () { if (etat.e === "signer" && etat.signee) aller("envoyee"); }, lent);
+        break;
+      }
     }
   });
 
