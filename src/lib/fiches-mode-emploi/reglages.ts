@@ -24,7 +24,8 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     source: "src/app/bienvenue/page.tsx",
     preuves: ['href="/creer-un-compte"', "Créer un compte"],
     ailleurs: [
-      { source: "src/app/creer-un-compte/page.tsx", preuves: ['"Continuer"', "Passer", "Créer mon compte", "Entrer dans Atlas"] },
+      { source: "src/app/creer-un-compte/page.tsx", preuves: ['"Continuer"', "Passer", "Créer mon compte"] },
+      { source: "src/app/creer-un-compte/pret/PretClient.tsx", preuves: ["Entrer dans Atlas"] },
     ],
   },
   {

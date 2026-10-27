@@ -178,6 +178,14 @@ export const COLONNES_OBJET: readonly ColonneObjet[] = [
     absenceNormale: true,
     raisonAbsence: "un achat peut être saisi à la main, sans photo",
   },
+  // La facture faite hors d'Atlas jointe à un virement reçu (migration 0150).
+  {
+    table: "mouvements_bancaires",
+    colonne: "piece_cle",
+    quoi: "la facture faite hors d'Atlas qui justifie un virement reçu",
+    absenceNormale: true,
+    raisonAbsence: "seul un virement justifié par une facture faite hors d'Atlas en porte une",
+  },
   // Les trois papiers d'un véhicule (migration 0131, 14 octobre 2026).
   {
     table: "vehicules",

@@ -43,6 +43,15 @@ function libelleDeRetour(attribut: ts.JsxAttribute): boolean {
     if (ts.isTemplateExpression(n) && n.head.text !== "" && !/^Retour/.test(n.head.text)) return;
     // Un libellé calculé par une fonction de retour (`libelleRetourDesCoordonnees`).
     if (ts.isIdentifier(n) && /^libelleRetour|^libelle$/.test(n.text) && ts.isPropertyAccessExpression(n.parent)) trouve = true;
+    // **La condition d'un ternaire n'est pas le libellé** (26 octobre 2026) :
+    // `nomme && champ.libelle ? undefined : etiquette` nomme un champ de
+    // saisie, et le `.libelle` de sa condition se prenait pour un retour.
+    // Seules les deux branches deviennent ce qui est lu.
+    if (ts.isConditionalExpression(n)) {
+      visiter(n.whenTrue);
+      visiter(n.whenFalse);
+      return;
+    }
     ts.forEachChild(n, visiter);
   };
   visiter(valeur);
