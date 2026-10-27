@@ -286,21 +286,32 @@ cas("la fiche part AVANT que le serveur ait répondu, pas seulement après", () 
   // quoi que ce soit. Or le cas pour lequel cette fiche existe est celui où le
   // serveur NE répond pas. Elle se taisait exactement quand elle servait.
   const demarrage = readFileSync(".devcontainer/demarrer.sh", "utf8");
-  const bloc = demarrage.slice(demarrage.indexOf("rapporter-espace.mjs") - 400);
-  const premier = bloc.indexOf("rapporter-espace.mjs");
-  const attente = bloc.indexOf("health/live");
-  assert.ok(premier >= 0 && attente >= 0, "le bloc de publication a changé de forme : cas à revoir");
+  const publications = [...demarrage.matchAll(/node scripts\/rapporter-espace\.mjs/g)].map((m) => m.index ?? -1);
+  assert.equal(
+    publications.length,
+    3,
+    "trois publications attendues (avant les étapes qui bloquent, après le lancement, " +
+      "une fois le serveur debout) : l'une a disparu, la fiche se tairait à ce moment-là"
+  );
+  const [debut, apresLancement] = publications;
+  const attente = demarrage.indexOf("health/live", apresLancement);
+  assert.ok(attente > apresLancement, "le bloc de publication a changé de forme : cas à revoir");
   assert.ok(
-    premier < attente,
+    apresLancement < attente,
     "la fiche n'est plus publiée avant l'attente du serveur : en cas de panne au " +
       "démarrage — le seul cas qui compte — elle arrivera dix minutes trop tard"
   );
-  assert.equal(
-    (demarrage.match(/node scripts\/rapporter-espace\.mjs/g) ?? []).length,
-    2,
-    "la seconde publication (une fois le serveur debout) a disparu : la fiche resterait " +
-      "sur un état d'avant démarrage"
-  );
+  // 27 octobre 2026 : l'espace était « Active », la fiche muette. Celle d'après le
+  // lancement vit après la mise à jour, `npm ci` et les migrations ; une de ces
+  // étapes qui ne rend pas la main la rendait muette.
+  for (const etape of ["mettre-a-jour.sh", "appliquer-migrations.sh"]) {
+    const appel = demarrage.indexOf(`bash "$(dirname "$0")/${etape}"`);
+    assert.ok(appel > 0, `l'appel de ${etape} a changé de forme : cas à revoir`);
+    assert.ok(
+      debut < appel,
+      `la première fiche part après ${etape} : une étape qui ne rend pas la main la rendrait muette`
+    );
+  }
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Rapport de l'espace — ${echecs} échec(s).`);

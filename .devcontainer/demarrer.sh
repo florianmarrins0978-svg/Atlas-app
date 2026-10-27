@@ -195,6 +195,18 @@ lancer_veilleur() {
 # démarre.
 lancer_veilleur
 
+# **La fiche part AVANT les étapes qui peuvent bloquer — 27 octobre 2026.**
+# Le patron a rallumé son espace, GitHub l'a dit « Active », et la fiche est
+# restée muette plus de dix minutes : la publication d'allumage vit tout en bas,
+# après la mise à jour, `npm ci` et les migrations, donc une étape qui ne rend
+# pas la main (réseau coupé, verrou en base) la rendait muette elle aussi — au
+# seul moment où l'on en a besoin. Posée ici, elle dit au moins que le démarrage
+# a commencé et ce que l'espace voit de lui-même ; son absence ne veut plus que
+# dire « l'espace n'a pas démarré ». Détachée : elle ne retarde rien.
+setsid nohup bash -c "
+  cd '$CD' && ATLAS_MOMENT=allumage node scripts/rapporter-espace.mjs
+" > /tmp/rapport-espace-debut.log 2>&1 < /dev/null &
+
 # Récupérer le code neuf, à chaque allumage. La logique — et ses prudences —
 # vit dans `mettre-a-jour.sh`, qui est éprouvé par
 # `scripts/test-mise-a-jour-espace.ts` : enfouie ici, elle n'aurait jamais été
