@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Renvoyer à corriger</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  RENVOYER À CORRIGER, comme un devis (27 octobre 2026).
+
+  Sa demande : « il faudrait qu'il puisse nous le retourner à corriger si
+  besoin, un peu comme pour un devis. Et nous on le corrige, on lui renvoie
+  corrigé, ou c'est connecté et on n'a pas besoin de lui renvoyer ».
+
+  CE QUI EXISTE DÉJÀ, lu dans le code et éprouvé par la suite navigateur
+  (test-verification-comptable-e2e.ts, « le comptable voit la ligne
+  corrigée ») : c'est CONNECTÉ. Une ligne rejetée que le patron reprend dans
+  Mes dossiers repasse aussitôt chez le comptable, sur le même lien, en
+  « Corrigée depuis votre rejet », à revérifier. Rien à renvoyer.
+
+  CE QUI MANQUE, et que la planche propose :
+    le geste du comptable qui RENVOIE, avec un mot, comme le client qui
+      demande une correction de devis ;
+    la carte « Correction demandée » chez le patron, et son avis par e-mail ;
+    le moment où tout est corrigé, et un appui pour prévenir le comptable ;
+    chez le comptable, les lignes corrigées en tête, « à revoir ».
+
+  Les écrans du comptable gardent la charte d'Origine (data-sans-charte) ;
+  ceux du patron suivent la charte essayée en haut.
+*/
+/* Les boutons en pilule, comme dans l'appli (rounded-full) : sa demande du 27 octobre. */
+.ecran .bouton { border-radius: 999px; }
+.colonne { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.groupe-nom { margin: 6px 0 0; font-size: 13px; font-weight: 600; color: #4a4a44; text-align: center; }
+.colonne .pl-etats { margin: 0; }
+.cadre-zone { width: 100%; max-width: 410px; }
+@media (max-width: 480px) {
+  .pl-scene { padding: 0 var(--gouttiere) !important; }
+  .cadre { width: 100%; height: 664px; border-radius: 26px; box-shadow: 0 0 0 8px #1c1c1a; margin: 8px 0 14px; }
+}
+
+/* ═══ Le haut d'une étape ═════════════════════════════════════════════════ */
+.etape-haut { display: flex; align-items: center; justify-content: space-between; margin: 0 0 6px; }
+.etape-rang { font-size: var(--t-mini); font-weight: 600; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
+.etape-titre { margin: 6px 0 0; font: 400 28px/1.08 var(--serif); letter-spacing: -0.012em; }
+.etape-phrase { margin: 8px 0 0; font-size: var(--t-second); line-height: 1.45; color: var(--atlas-inkSoft); }
+.etape-phrase b { color: var(--atlas-ink); font-weight: 600; }
+
+/* ═══ La liste, finie : la vraie page du comptable (Verification.tsx) ════ */
+.v-tete { display: flex; flex-direction: column; gap: 4px; }
+.v-titre { margin: 0; font: 400 26px/1.1 var(--serif); }
+.v-envoye, .v-qui { margin: 0; font-size: 14.5px; color: var(--atlas-inkSoft); }
+.v-avance { margin-top: 16px; }
+.v-avance-mots { display: flex; flex-direction: column; gap: 2px; font-size: 14.5px; color: var(--atlas-inkSoft); }
+.v-avance-mots b { color: var(--atlas-ink); font-weight: 600; }
+.v-avance-mots .rej { color: var(--atlas-montantSortie); font-weight: 600; }
+.v-jauge { display: flex; height: 8px; margin-top: 8px; border-radius: 4px; overflow: hidden; background: var(--atlas-lineSoft); }
+.v-jauge i { display: block; height: 100%; }
+.v-mois { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 16px -4px 0; padding: 2px 4px; }
+.v-mois::-webkit-scrollbar { display: none; }
+.v-mois span { flex: none; display: inline-flex; flex-direction: column; align-items: center; gap: 1px; min-height: 52px; padding: 7px 20px;
+               border-radius: 999px; font-size: 14.5px; font-weight: 600; color: var(--atlas-inkSoft); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.v-mois span small { font-size: 13px; font-weight: 600; color: var(--atlas-montantEntree); font-variant-numeric: tabular-nums; }
+.v-mois span.ouvert { color: var(--atlas-ink); box-shadow: inset 0 0 0 2px var(--atlas-ink); }
+.v-liste { margin: 12px 0 0; padding: 0; list-style: none; }
+.v-l { padding: 12px 8px; margin: 0 -8px; border-bottom: 1px solid var(--atlas-line); }
+.v-l.valide { background: color-mix(in srgb, var(--atlas-montantEntree) 7%, transparent); }
+.v-l.rejete { background: color-mix(in srgb, var(--atlas-montantSortie) 8%, transparent); }
+.v-l-haut { display: flex; align-items: baseline; gap: 8px; }
+.v-jour { flex: none; width: 44px; font-size: 13.5px; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
+.v-lib { flex: 1; min-width: 0; font-size: 14.5px; font-weight: 600; overflow-wrap: anywhere; }
+.v-mt { flex: none; font: 400 16.5px/1.2 var(--serif); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; color: var(--atlas-montantSortie); }
+.v-cat { display: flex; align-items: center; gap: 6px; margin: 3px 0 0 52px; font-size: 13px; color: var(--atlas-inkSoft); }
+.v-cat i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.v-liste.seule .v-l { margin: 0; padding: 12px; border: 0; border-radius: var(--r-plage); }
+.v-note { display: block; margin: 4px 0 0 52px; font-size: 13.5px; color: var(--atlas-montantSortie); }
+/* ═══ Chez le patron : Mes dossiers, tel que l'appli le montre ══════════ */
+.haut { display: flex; align-items: center; justify-content: space-between; margin: 0 0 10px; }
+.titre-page { margin: 4px 0 0; font: 400 var(--t-titre)/1.06 var(--serif); letter-spacing: -0.012em; }
+.sous-titre { margin: 8px 0 8px; font-size: 15px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.annee-choix { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; padding: 6px;
+               border-radius: var(--r-plage); background: var(--atlas-card); }
+.annee-fleche { width: 56px; height: 56px; flex: none; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-or); }
+.annee-fleche .ico { width: 26px; height: 26px; stroke-width: 2; }
+.annee-fleche[disabled] { color: color-mix(in srgb, var(--atlas-or) 28%, transparent); cursor: default; }
+.annee-nom { font: 400 32px/1 var(--serif); font-variant-numeric: lining-nums; }
+.annee-resume { margin: 10px 0 0; text-align: center; font-size: 15px; color: var(--atlas-inkSoft); }
+.dossier { padding: 18px 0 20px; }
+.dossier-nom { margin: 0; font: 400 20px/1.25 var(--serif); }
+.dossier-detail { margin: 6px 0 0; font-size: 14.5px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.dossier .ajout-bilan { margin-top: 12px; }
+.dossier .etat { margin-top: 12px; }
+.dossier-gestes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 14px; }
+.dossier-gestes button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 76px;
+                         padding: 8px 6px; border-radius: 12px; font-size: 14px; font-weight: 600; line-height: 1.2; text-align: center;
+                         color: var(--atlas-ink); box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
+.dossier-gestes .ico { color: var(--atlas-or); }
+.attestation-recue { display: flex; align-items: center; gap: 12px; min-height: 64px; margin-top: 10px; padding: 10px 4px 10px 12px;
+                     border-radius: var(--r-plage); background: var(--atlas-card); }
+.attestation-recue .corps { flex: 1; min-width: 0; }
+.attestation-recue b { display: block; font-size: 15.5px; font-weight: 600; }
+.attestation-recue .corps span { display: block; font-size: 14px; line-height: 1.35; color: var(--atlas-inkSoft); }
+.attestation-recue .bouton-texte { min-height: 44px; padding: 0 10px; font-size: 15px; }
+.rejet-carte { margin-top: 14px; }
+.rejet-carte .tete { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-top: 8px; }
+.rejet-carte .tete .carte-ton-texte { margin: 0; }
+.rejet-carte .tete .montant { flex: none; font-size: 22px; white-space: nowrap; }
+.rejet-carte .quand { margin: 4px 0 0; font-size: 14.5px; color: var(--atlas-inkSoft); }
+.rejet-carte .raison { margin: 8px 0 0; font-size: 15px; line-height: 1.45; }
+.rejet-carte .gestes { margin-top: 12px; }
+.rejet-carte .bouton-texte { width: 100%; justify-content: center; color: var(--atlas-inkSoft); }
+
+/* ═══ Chez le patron : l'accueil, la carte en tête ══════════════════════ */
+.reponse { border-radius: 18px; padding: 14px 20px 4px; }
+.reponse p { margin: 0; }
+.reponse .carte-ton-texte { margin-top: 6px; font-size: 20px; }
+.reponse-texte { margin: 4px 0 0; font-size: 15px; line-height: 1.45; color: var(--atlas-ink); }
+.reponse-gestes { display: flex; flex-wrap: wrap; gap: 0 22px; margin-top: 4px; }
+.reponse-gestes button { display: inline-flex; align-items: center; min-height: 48px; font-size: 16px; font-weight: 700; }
+.reponse[data-ton="vert"] .reponse-suite { color: var(--atlas-carteVertTexte); }
+.reponse[data-ton="ambre"] .reponse-suite { color: var(--atlas-carteAmbreTexte); }
+.reponse[data-ton="rouge"] .reponse-suite { color: var(--atlas-carteRougeTexte); }
+.reponse-gestes .reponse-vu { font-weight: 500; color: var(--atlas-inkSoft); }
+.autres { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 48px; margin-top: 4px;
+          font-size: 15.5px; font-weight: 600; color: var(--atlas-ink); }
+.autres .ico { width: 18px; height: 18px; stroke-width: 2.2; color: var(--atlas-inkSoft); }
+.en-cours { display: flex; align-items: baseline; gap: 10px; margin: 18px 0 0; }
+.en-cours h3 { margin: 0; font: 400 24px/1.1 var(--serif); }
+.en-cours span { font-size: 15px; color: var(--atlas-inkSoft); }
+
+/* ═══ Ce que cette planche ajoute ════════════════════════════════════════ */
+.ecran .action-bas .bouton + .bouton { margin-top: 8px; }
+.v-l.corrigee { background: color-mix(in srgb, var(--atlas-carteAmbreTexte) 10%, transparent); }
+.v-note.corrigee { color: var(--atlas-carteAmbreTexte); }
+.bandeau { margin-top: 16px; padding: 12px 14px; border-radius: 12px; font-size: 14.5px; line-height: 1.45; }
+.bandeau[data-ton="ambre"] { background: var(--atlas-carteAmbreFond); color: var(--atlas-carteAmbreTexte); }
+.bandeau b { display: block; font-size: 15.5px; font-weight: 700; }
+.renvoi-fin { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 36px 8px 0; }
+.renvoi-fin .rond-ton { width: 72px; height: 72px; display: grid; place-items: center; border-radius: 50%;
+                        background: var(--atlas-carteAmbreFond); color: var(--atlas-carteAmbreTexte); }
+.renvoi-fin .rond-ton .ico { width: 32px; height: 32px; }
+.renvoi-fin .etape-phrase { max-width: 32ch; font-size: 15.5px; }
+.demande { margin-top: 10px; padding: 12px 16px 14px; border-radius: var(--r-plage); background: var(--atlas-carteAmbreFond); }
+.demande .titre { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 14.5px; font-weight: 700; color: var(--atlas-carteAmbreTexte); }
+.demande .titre::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex: none; }
+.demande .citation { margin: 6px 0 0; font: italic 400 17px/1.4 var(--serif); color: var(--atlas-ink); }
+.demande .qui { margin: 4px 0 0; font-size: 14px; color: var(--atlas-inkSoft); }
+.reponse-citation { margin: 8px 0 0; font: italic 400 17px/1.4 var(--serif); color: var(--atlas-ink); }
+.tout-corrige { margin-top: 10px; padding: 14px 20px 18px; border-radius: 18px; background: var(--atlas-carteVertFond); }
+.tout-corrige .carte-ton-titre { color: var(--atlas-carteVertTexte); }
+.tout-corrige p { margin: 6px 0 0; font-size: 15px; line-height: 1.45; color: var(--atlas-ink); }
+.tout-corrige .bouton { margin-top: 14px; }
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="termines-comptable.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Pour mon comptable</a>
+  <h1 class="pl-titre">Renvoyer à corriger</h1>
+  <p class="pl-verdict">Comme pour un devis : le comptable vous renvoie le dossier avec un mot, vous corrigez dans Mes dossiers. <b>C'est connecté</b> : vos corrections arrivent sur son lien, rien à renvoyer. Un appui le prévient quand tout est fait.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="colonne">
+    <p class="groupe-nom">Chez le comptable</p>
+    <div class="pl-etats" id="vues-comptable" role="group" aria-label="Chez le comptable">
+      <button type="button" data-e="liste" aria-pressed="true">La liste</button>
+      <button type="button" data-e="renvoyer">Renvoyer à corriger</button>
+      <button type="button" data-e="renvoye">Renvoyé</button>
+      <button type="button" data-e="revoir">Corrigé, à revoir</button>
+    </div>
+    <p class="groupe-nom">Chez vous</p>
+    <div class="pl-etats" id="vues-patron" role="group" aria-label="Chez vous">
+      <button type="button" data-e="accueil">L'accueil</button>
+      <button type="button" data-e="corriger">À corriger</button>
+      <button type="button" data-e="corrige">Tout corrigé</button>
+    </div>
+    <p class="groupe-nom">Le cas essayé</p>
+    <div class="pl-etats" role="group" aria-label="Le cas essayé">
+      <button type="button" data-cas="fini" aria-pressed="true">Tout vérifié</button>
+      <button type="button" data-cas="encours">En cours de vérification</button>
+    </div>
+    <div class="cadre-zone"><div class="cadre"><div class="ecran" id="ecran"></div></div></div>
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui est proposé</h2>
+    <ul>
+      <li>Le comptable renvoie le dossier dès qu'il a rejeté une ligne, avec un mot pour vous. Il n'a pas besoin d'avoir tout vérifié.</li>
+      <li>Vous êtes prévenu comme pour un devis : une carte « Correction demandée » en tête de l'accueil, son mot dessus, et un e-mail qui ne porte rien du dossier.</li>
+      <li>C'est connecté : vous corrigez dans Mes dossiers, avec les gestes d'aujourd'hui, et la ligne repasse aussitôt chez lui sur le même lien.</li>
+      <li>Quand la dernière ligne est corrigée, « Prévenir mon comptable » ouvre votre messagerie avec le message prêt, à l'adresse qu'il a donnée. Rien ne part sans votre appui.</li>
+      <li>Chez lui, les lignes corrigées passent en tête, en ambre, à revoir. Il les revalide, puis signe l'attestation.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Rejeter une ligne avec sa raison, ligne par ligne.</li>
+      <li>Reprendre une ligne rejetée dans Mes dossiers : choisir la facture, ou dire ce que c'est.</li>
+      <li>Le même lien du début à la fin, gardé un an.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li><b>Prévenir le comptable quand tout est corrigé</b> : par votre appui (proposé), ou par Atlas tout seul, dès la dernière ligne corrigée ? Tout seul, vous n'avez rien à faire, mais un e-mail part sans votre geste.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="comptable-attestation.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>L'attestation du comptable</a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var ENTREPRISE = "Atelier Démo";
+  var COMPTABLE = { nom: "Claire Bernard", mail: "claire@cabinet-bernard.fr" };
+  var PERIODE = "Du 1er janvier 2026 au 27 octobre 2026";
+  var MOT = "Deux lignes à reprendre avant que je signe.";
+  var REJETS = [
+    { jour: "05/10", lib: "PRLV SEPA TOTALENERGIES ELECTRI", m: "−9,28 €", montant: "9,28 €", quand: "5 octobre", cat: ["Virement envoyé", "--atlas-catVirement"], note: "Contrat d'électricité du domicile." },
+    { jour: "12/09", lib: "CB LEROY MERLIN", m: "−48,90 €", montant: "48,90 €", quand: "12 septembre", cat: ["Matériel", "--atlas-catMateriel"], note: "Ticket illisible, la TVA ne se lit pas." }
+  ];
+  var VALIDES = [
+    { jour: "01/10", lib: "VIR INST WERO DIANA DUPONT", m: "−40,00 €", cat: ["Virement envoyé", "--atlas-catVirement"] },
+    { jour: "06/10", lib: "CB TOTAL ENERGIES ANGERS", m: "−72,40 €", cat: ["Carburant", "--atlas-catCarburant"] }
+  ];
+
+  var etat = { e: "liste", cas: "fini", mot: MOT, mail: COMPTABLE.mail };
+  var CHEZ_LE_COMPTABLE = { liste: 1, renvoyer: 1, renvoye: 1, revoir: 1 };
+
+  function ico(n) { return '<svg class="ico" aria-hidden="true"><use href="#i-' + n + '"/></svg>'; }
+  function e(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+  function ligne(l, classe, note) {
+    return '<li class="v-l ' + classe + '"><div class="v-l-haut"><span class="v-jour">' + l.jour + '</span><span class="v-lib">' + l.lib + '</span><span class="v-mt">' + l.m + "</span></div>" +
+      '<span class="v-cat"><i style="background:var(' + l.cat[1] + ')"></i>' + l.cat[0] + "</span>" + (note || "") + "</li>";
+  }
+
+  function tete(verifiees, rejetees, corrigees) {
+    return '<div class="v-tete"><h2 class="v-titre">Dossier justifié, ' + ENTREPRISE + '</h2><p class="v-envoye">Envoyé le 27 octobre</p><p class="v-qui">' + PERIODE + "</p></div>" +
+      '<div class="v-avance"><div class="v-avance-mots"><span><b>' + verifiees + " sur 60</b> lignes vérifiées</span>" +
+      (rejetees ? '<span class="rej">' + rejetees + (rejetees > 1 ? " rejetées" : " rejetée") + "</span>" : "") +
+      (corrigees ? '<span style="color:var(--atlas-carteAmbreTexte);font-weight:600">' + corrigees + " corrigées, à revoir</span>" : "") + "</div>" +
+      '<div class="v-jauge"><i style="width:' + ((verifiees - rejetees) / 60 * 100) + '%;background:var(--atlas-montantEntree)"></i><i style="width:' + (rejetees / 60 * 100) + '%;background:var(--atlas-montantSortie)"></i></div></div>';
+  }
+
+  /* ═══ Chez le comptable ═══════════════════════════════════════════════ */
+  function vueListe() {
+    var fini = etat.cas === "fini";
+    var lignes = [ligne(VALIDES[0], "valide")].concat(REJETS.map(function (r) { return ligne(r, "rejete", '<span class="v-note">Rejetée : ' + r.note + "</span>"); })).concat([ligne(VALIDES[1], fini ? "valide" : "")]).join("");
+    var boutons = (fini ? '<button type="button" class="bouton bouton-plein" data-note="L’attestation, sur sa planche.">Terminer et signer</button>' : "") +
+      '<button type="button" class="bouton bouton-creux" data-aller="renvoyer">' + ico("annuler") + "Renvoyer à corriger</button>";
+    return { action: true, double: fini, html: '<div class="defile" style="padding-top:22px">' + tete(fini ? 60 : 45, 2, 0) +
+      '<ul class="v-liste">' + lignes + "</ul></div>" + '<div class="action-bas">' + boutons + "</div>" };
+  }
+
+  function vueRenvoyer() {
+    return { action: true, html: '<div class="defile"><div class="etape-haut"><button type="button" class="rond-creux" data-aller="liste" aria-label="Retour">' + ico("retour") + "</button></div>" +
+      '<h2 class="etape-titre">Renvoyer à corriger</h2>' +
+      '<p class="etape-phrase">' + ENTREPRISE + " reprend ces lignes. Le même lien vous ramène ici.</p>" +
+      '<ul class="v-liste seule" style="display:flex;flex-direction:column;gap:8px">' + REJETS.map(function (r) { return ligne(r, "rejete", '<span class="v-note">Rejetée : ' + r.note + "</span>"); }).join("") + "</ul>" +
+      '<label class="champ" style="margin-top:18px"><span class="champ-libelle">Un mot pour ' + ENTREPRISE + '</span><textarea class="champ-saisie" id="mot" rows="3" placeholder="Facultatif" style="min-height:84px">' + e(etat.mot) + "</textarea></label>" +
+      '<label class="champ"><span class="champ-libelle">Votre e-mail</span><input class="champ-saisie" id="mail" type="email" value="' + e(etat.mail) + '"><span class="champ-aide">Pour qu’' + ENTREPRISE + " vous prévienne quand c’est corrigé.</span></label>" +
+      '</div><div class="action-bas"><button type="button" class="bouton bouton-plein" data-aller="renvoye">Renvoyer à ' + ENTREPRISE + "</button></div>" };
+  }
+
+  function vueRenvoye() {
+    return { action: true, html: '<div class="defile"><div class="renvoi-fin"><span class="rond-ton">' + ico("envoyer") + "</span>" +
+      '<h2 class="etape-titre" style="margin-top:18px">Renvoyé à ' + ENTREPRISE + "</h2>" +
+      '<p class="etape-phrase">2 lignes à reprendre. ' + ENTREPRISE + " vous préviendra" + (etat.mail ? " à " + e(etat.mail) : "") + " quand c’est corrigé.</p></div></div>" +
+      '<div class="action-bas"><button type="button" class="bouton bouton-creux" data-aller="liste">Revenir au dossier</button></div>' };
+  }
+
+  function vueRevoir() {
+    var corrigees = REJETS.map(function (r) { return ligne(r, "corrigee", '<span class="v-note corrigee">Corrigée depuis votre rejet : ' + r.note + "</span>"); }).join("");
+    return { action: false, html: '<div class="defile" style="padding-top:22px">' + tete(58, 0, 2) +
+      '<div class="bandeau" data-ton="ambre"><b>2 lignes corrigées, à revoir</b>Par ' + ENTREPRISE + ", le 28 octobre. Elles sont en tête.</div>" +
+      '<ul class="v-liste">' + corrigees + ligne(VALIDES[0], "valide") + ligne(VALIDES[1], "valide") + "</ul></div>" };
+  }
+
+  /* ═══ Chez le patron ══════════════════════════════════════════════════ */
+  function hautPatron() {
+    return '<div class="haut"><button class="rond-creux" type="button" aria-label="Retour" data-note="Retour au dossier en cours.">' + ico("retour") + "</button>" +
+      '<button class="rond" type="button" aria-label="Ouvrir l’assistant" data-note="L’assistant, comme aujourd’hui.">' + ico("assistant") + "</button></div>";
+  }
+
+  function vueAccueil() {
+    return { action: false, html: '<div class="defile" style="padding-top:20px">' +
+      '<article class="carte-ton reponse" data-ton="ambre"><p class="carte-ton-titre">Correction demandée</p>' +
+      '<p class="carte-ton-texte">Votre dossier justifié</p>' +
+      '<p class="reponse-citation">« ' + e(etat.mot || MOT) + " »</p>" +
+      '<p class="reponse-texte">' + COMPTABLE.nom + " a rejeté 2 lignes.</p>" +
+      '<div class="reponse-gestes"><button type="button" class="reponse-suite" data-aller="corriger">Corriger les lignes</button><button type="button" class="reponse-vu" data-note="La carte quitte l’accueil.">J’ai vu</button></div></article>' +
+      '<button type="button" class="autres" data-note="Comme aujourd’hui.">1 autre devis à regarder' + ico("bas") + "</button>" +
+      '<div class="en-cours"><h3>En cours</h3><span>3 chantiers</span></div>' +
+      '<ul class="liste"><li><div class="ligne"><span class="ligne-corps"><span class="ligne-nom">Reprise de toiture</span><span class="ligne-situation">Devis envoyé le 24 octobre</span></span></div></li>' +
+      '<li><div class="ligne"><span class="ligne-corps"><span class="ligne-nom">Mme Linotte</span><span class="ligne-situation">Lundi 2 novembre</span></span></div></li></ul></div>' };
+  }
+
+  function dossier(contenu, verifiees) {
+    return '<div class="defile">' + hautPatron() +
+      '<h2 class="titre-page">Mes dossiers justifiés</h2><p class="sous-titre">Gardés dix ans avec leur bilan, puis effacés.</p>' +
+      '<div class="annee-choix"><button class="annee-fleche" type="button" disabled aria-label="Année d’avant">' + ico("retour") + '</button><span class="annee-nom">2026</span>' +
+      '<button class="annee-fleche" type="button" disabled aria-label="Année d’après">' + ico("suivant") + "</button></div>" +
+      '<p class="annee-resume">1 dossier, aucun bilan du comptable</p>' +
+      '<section class="dossier"><h3 class="dossier-nom">' + PERIODE + '</h3><p class="dossier-detail">Rangé le 27 octobre 2026, gardé jusqu’au 27 octobre 2036, 774 Ko</p>' +
+      '<button type="button" class="bouton bouton-creux ajout-bilan" data-note="Comme aujourd’hui.">' + ico("plus") + "Ajouter le bilan du comptable</button>" +
+      '<span class="etat" data-ton="vert">Vérifié par votre comptable : ' + verifiees + " sur 60</span>" + contenu + "</section></div>";
+  }
+
+  function gestesDossier() {
+    return '<div class="dossier-gestes"><button type="button" data-note="Comme aujourd’hui.">' + ico("document") + "Ouvrir</button><button type=\"button\" data-note=\"Comme aujourd’hui.\">" + ico("telecharger") + "Télécharger</button>" +
+      '<button type="button" data-note="Comme aujourd’hui.">' + ico("envoyer") + "Envoyer au comptable</button></div>";
+  }
+
+  function vueCorriger() {
+    var demande = '<div class="demande"><p class="titre">Correction demandée le 27 octobre</p><p class="citation">« ' + e(etat.mot || MOT) + ' »</p><p class="qui">' + COMPTABLE.nom + ", 2 lignes à reprendre.</p></div>";
+    var cartes = REJETS.map(function (r) {
+      return '<div class="carte-ton rejet-carte" data-ton="rouge"><p class="carte-ton-titre">Rejetée par votre comptable</p>' +
+        '<div class="tete"><p class="carte-ton-texte">' + r.lib + '</p><span class="montant">' + r.montant + '</span></div><p class="quand">' + r.quand + "</p>" +
+        '<p class="raison">« ' + r.note + ' »</p><div class="gestes"><button type="button" class="bouton bouton-creux" data-note="Comme aujourd’hui.">' + ico("facture") + "Choisir la facture</button>" +
+        '<button type="button" class="bouton-texte" data-aller="corrige">C’est autre chose</button></div></div>';
+    }).join("");
+    return { action: false, html: dossier(demande + gestesDossier() + cartes, etat.cas === "fini" ? 60 : 45) };
+  }
+
+  function vueCorrige() {
+    // À la place de la demande, sous le compte du comptable : la même place pour la même question.
+    var fini = '<div class="tout-corrige"><p class="carte-ton-titre">Tout est corrigé</p>' +
+      "<p>Vos corrections sont déjà sur son lien.</p>" +
+      '<button type="button" class="bouton bouton-plein" data-note="Votre messagerie s’ouvre, le message est prêt, à ' + COMPTABLE.mail + '.">' + ico("email") + "Prévenir mon comptable</button></div>";
+    return { action: false, html: dossier(fini + gestesDossier(), 58) };
+  }
+
+  var VUES = { liste: vueListe, renvoyer: vueRenvoyer, renvoye: vueRenvoye, revoir: vueRevoir, accueil: vueAccueil, corriger: vueCorriger, corrige: vueCorrige };
+
+  /* ═══ Le rendu ════════════════════════════════════════════════════════ */
+  var ecran = document.getElementById("ecran");
+  function charteRetenue() { try { return window.localStorage.getItem("atlas-soignee-charte") || "origine"; } catch (err) { return "origine"; } }
+
+  function rendre() {
+    var v = VUES[etat.e]();
+    ecran.className = "ecran" + (v.action ? " avec-action" : "");
+    ecran.toggleAttribute("data-sans-charte", !!CHEZ_LE_COMPTABLE[etat.e]);
+    ecran.innerHTML = v.html;
+    if (v.double) ecran.querySelector(".defile").style.paddingBottom = "168px";
+    if (window.Kit) Kit.poserCharte(charteRetenue());
+    document.querySelectorAll("[data-e]").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-e") === etat.e ? "true" : "false"); });
+    document.querySelectorAll("[data-cas]").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-cas") === etat.cas ? "true" : "false"); });
+    var mot = document.getElementById("mot"), mail = document.getElementById("mail");
+    if (mot) mot.addEventListener("input", function () { etat.mot = mot.value; });
+    if (mail) mail.addEventListener("input", function () { etat.mail = mail.value.trim(); });
+  }
+
+  function aller(vers) { etat.e = vers; rendre(); var d = ecran.querySelector(".defile"); if (d) d.scrollTop = 0; }
+
+  document.querySelectorAll("[data-e]").forEach(function (b) { b.addEventListener("click", function () { aller(b.getAttribute("data-e")); }); });
+  document.querySelectorAll("[data-cas]").forEach(function (b) { b.addEventListener("click", function () { etat.cas = b.getAttribute("data-cas"); rendre(); }); });
+  ecran.addEventListener("click", function (ev) {
+    var note = ev.target.closest("[data-note]");
+    if (note) { if (window.Kit) Kit.note(note, note.getAttribute("data-note")); return; }
+    var a = ev.target.closest("[data-aller]");
+    if (a) aller(a.getAttribute("data-aller"));
+  });
+
+  rendre();
+})();
+</script>
+</body>
+</html>
