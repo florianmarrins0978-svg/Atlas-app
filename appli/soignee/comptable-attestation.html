@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>L'attestation du comptable</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  L'ATTESTATION DU COMPTABLE : ce qu'il rend une fois la dernière ligne
+  cochée. Sa demande du 27 octobre 2026 : « j'ai coché vert rouge, et ensuite
+  aucun moyen d'arrêter le document, de le signer. Il faudrait que le comptable
+  puisse signer, mettre son nom, sa dénomination sociale, ses coordonnées, et
+  faire un document qui affirme que j'ai tout vérifié, conforme ou non
+  conforme, et qu'il puisse nous le renvoyer par mail. »
+
+  Rien n'est codé. Le comptable pose sa signature du doigt ou à la souris, et
+  le PDF part chez le patron avec une copie pour lui.
+
+  La page part chez le comptable : elle garde les couleurs d'Origine quelle que
+  soit la charte du patron, comme la page de vérification.
+*/
+.pl-charte-bouton, .pl-chartes { display: none !important; }
+.pl-scene { grid-template-columns: minmax(0, 1fr) !important; }
+.colonne { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.colonne .pl-etats { margin: 0; }
+#scene { width: 100%; max-width: 410px; }
+@media (max-width: 480px) {
+  .pl-scene { padding: 0 var(--gouttiere) !important; }
+  .cadre { width: 100%; height: 664px; border-radius: 26px; box-shadow: 0 0 0 8px #1c1c1a; margin: 8px 0 14px; }
+}
+
+/* ═══ L'écran proposé ═════════════════════════════════════════════════════ */
+.t-haut { display: flex; align-items: center; gap: 4px; min-height: 52px; padding: 4px 10px 0 6px; }
+.t-retour { display: inline-flex; align-items: center; gap: 2px; min-height: 44px; padding: 0 10px 0 4px; font-size: 15px; font-weight: 600; color: var(--atlas-inkSoft); }
+.t-etape { margin-left: auto; font-size: var(--t-mini); color: var(--atlas-inkSoft); }
+.t-titre { margin: 4px 0 0; font: 400 28px/1.1 var(--serif); }
+.t-sous { margin: 6px 0 0; font-size: var(--t-second); color: var(--atlas-inkSoft); }
+
+.t-bilan { display: flex; gap: 8px; margin-top: 16px; }
+.t-bilan div { flex: 1; padding: 10px 12px; border-radius: 10px; background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.t-bilan b { display: block; font: 400 24px/1.1 var(--serif); font-variant-numeric: lining-nums; }
+.t-bilan span { font-size: var(--t-mini); color: var(--atlas-inkSoft); }
+.t-bilan .ok b { color: var(--atlas-montantEntree); }
+.t-bilan .ko b { color: var(--atlas-montantSortie); }
+
+.t-reserve { margin-top: 12px; text-align: left; padding: 10px 12px; border-radius: 10px; background: var(--atlas-carteRougeFond); color: var(--atlas-carteRougeTexte); font-size: var(--t-second); line-height: 1.4; }
+.t-reserve b { display: block; font-weight: 700; }
+
+.t-choix { display: grid; gap: 8px; margin-top: 16px; padding: 0; border: 0; }
+.t-choix legend { padding: 0; margin-bottom: 8px; font-size: var(--t-second); font-weight: 600; color: var(--atlas-inkSoft); }
+.t-carte { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; padding: 10px 14px; border-radius: 12px; text-align: left;
+           background: var(--atlas-card); box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
+.t-carte .pastille { flex: none; width: 24px; height: 24px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--atlas-chevron); display: grid; place-items: center; }
+.t-carte .pastille .ico { width: 14px; height: 14px; stroke-width: 3; color: var(--sur-plein); opacity: 0; }
+.t-carte b { display: block; font-size: 17px; }
+.t-carte small { display: block; font-size: var(--t-mini); color: var(--atlas-inkSoft); }
+.t-carte[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--atlas-ink); }
+.t-carte[aria-pressed="true"] .pastille { box-shadow: none; opacity: 1; }
+.t-carte[data-c="conforme"][aria-pressed="true"] .pastille { background: var(--atlas-montantEntree); }
+.t-carte[data-c="reserves"][aria-pressed="true"] .pastille { background: var(--atlas-orTexte); }
+.t-carte[data-c="non"][aria-pressed="true"] .pastille { background: var(--atlas-montantSortie); }
+.t-carte[aria-pressed="true"] .pastille .ico { opacity: 1; }
+.t-propose { margin-left: auto; flex: none; padding: 3px 8px; border-radius: 10px; font-size: 12px; font-weight: 600; background: var(--atlas-rustTint); color: var(--atlas-inkSoft); }
+
+.t-champ { display: block; margin-top: 14px; font-size: var(--t-second); font-weight: 600; color: var(--atlas-inkSoft); }
+.t-champ input, .t-champ textarea { display: block; width: 100%; min-height: 50px; margin-top: 6px; padding: 10px 12px; border: 0; border-radius: 10px;
+        font: 400 16px/1.4 var(--sans); color: var(--atlas-ink); background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.t-champ textarea { min-height: 84px; resize: none; }
+.t-champ input:focus, .t-champ textarea:focus { outline: none; box-shadow: inset 0 0 0 2px var(--atlas-ink); }
+.t-deux { display: flex; gap: 8px; }
+.t-deux .t-champ { flex: 1; min-width: 0; }
+.t-fonctions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.t-fonctions button { min-height: 44px; padding: 0 11px; border-radius: 22px; font-size: 15px; font-weight: 600; background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.t-fonctions button[aria-pressed="true"] { background: var(--atlas-plein); color: var(--sur-plein); box-shadow: none; }
+.t-garde { margin: 14px 0 0; font-size: var(--t-mini); color: var(--atlas-inkSoft); }
+
+.t-pad { position: relative; margin-top: 14px; height: 190px; border-radius: 12px; background: var(--atlas-card); box-shadow: inset 0 0 0 1.5px var(--atlas-line); touch-action: none; }
+.t-pad canvas { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 12px; }
+.t-pad .trait-base { position: absolute; left: 16px; right: 16px; bottom: 46px; height: 1px; background: var(--atlas-line); pointer-events: none; }
+.t-pad .invite { position: absolute; left: 0; right: 0; bottom: 14px; text-align: center; font-size: var(--t-mini); color: var(--atlas-muted); pointer-events: none; }
+.t-pad.signe .invite { display: none; }
+.t-effacer { margin-top: 4px; }
+.t-certifie { display: flex; gap: 12px; align-items: flex-start; width: 100%; margin-top: 14px; padding: 12px 14px; border-radius: 12px; text-align: left; font-size: 15px; line-height: 1.4;
+              background: var(--atlas-card); box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
+.t-certifie .case { flex: none; width: 24px; height: 24px; margin-top: 1px; border-radius: 6px; box-shadow: inset 0 0 0 2px var(--atlas-chevron); display: grid; place-items: center; }
+.t-certifie .case .ico { width: 16px; height: 16px; stroke-width: 3; color: var(--sur-plein); opacity: 0; }
+.t-certifie[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--atlas-ink); }
+.t-certifie[aria-pressed="true"] .case { background: var(--atlas-montantEntree); box-shadow: none; }
+.t-certifie[aria-pressed="true"] .case .ico { opacity: 1; }
+.t-moment { margin: 10px 0 0; font-size: var(--t-mini); color: var(--atlas-inkSoft); }
+
+.t-fin { display: grid; place-items: center; text-align: center; padding: 40px 8px 0; }
+.t-fin .rond { width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center; background: var(--atlas-montantEntree); color: var(--sur-plein); }
+.t-fin .rond .ico { width: 36px; height: 36px; stroke-width: 2.6; }
+.t-fin h2 { margin: 18px 0 0; font: 400 26px/1.15 var(--serif); }
+.t-fin p { margin: 8px 0 0; font-size: var(--t-corps); color: var(--atlas-inkSoft); line-height: 1.45; }
+.t-fin p b { color: var(--atlas-ink); }
+.t-fin .bouton-texte { margin-top: 10px; }
+
+/* La liste, tout en bas : la porte vers l'attestation. */
+.t-liste-fin { margin-top: 14px; padding: 14px 16px; border-radius: 12px; background: var(--atlas-carteVertFond); color: var(--atlas-carteVertTexte); font-size: var(--t-corps); line-height: 1.4; }
+.t-liste-fin b { font-weight: 700; }
+.t-fausse-ligne { display: flex; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--atlas-line); font-size: 14.5px; }
+.t-fausse-ligne i { flex: none; width: 46px; font-style: normal; color: var(--atlas-inkSoft); font-size: 13.5px; }
+.t-fausse-ligne span { flex: 1; min-width: 0; font-weight: 600; }
+.t-fausse-ligne em { font-style: normal; font: 400 16px/1.2 var(--serif); color: var(--atlas-montantSortie); white-space: nowrap; }
+
+/* ═══ Le document lui-même : une page A4 qu'on fait défiler ═══════════════ */
+.page-a4 { margin: 4px 0 0; padding: 22px 20px 20px; border-radius: 6px; background: var(--atlas-card); box-shadow: 0 1px 0 var(--atlas-line), 0 10px 24px -12px color-mix(in srgb, var(--atlas-ink) 40%, transparent); font-size: 13px; line-height: 1.45; }
+.page-a4 h3 { margin: 0; font: 400 21px/1.1 var(--serif); }
+.page-a4 .sur { margin: 0 0 10px; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--atlas-muted); }
+.page-a4 .qui { margin: 6px 0 0; color: var(--atlas-inkSoft); }
+.page-a4 hr { border: 0; border-top: 1px solid var(--atlas-line); margin: 14px 0; }
+.page-a4 .verdict { margin: 12px 0 0; padding: 10px 12px; border-radius: 8px; font: 400 19px/1.2 var(--serif); }
+.page-a4 .verdict.conforme { background: var(--atlas-carteVertFond); color: var(--atlas-carteVertTexte); }
+.page-a4 .verdict.reserves { background: var(--atlas-carteAmbreFond); color: var(--atlas-carteAmbreTexte); }
+.page-a4 .verdict.non { background: var(--atlas-carteRougeFond); color: var(--atlas-carteRougeTexte); }
+.page-a4 h4 { margin: 0 0 4px; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--atlas-muted); }
+.page-a4 p { margin: 0; }
+.page-a4 .r { display: flex; justify-content: space-between; gap: 8px; padding: 2px 0; }
+.page-a4 .r span:last-child { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.page-a4 .rejet { margin-top: 6px; padding-left: 10px; border-left: 3px solid var(--atlas-montantSortie); }
+.page-a4 .sign { display: flex; justify-content: space-between; gap: 12px; align-items: flex-end; }
+.page-a4 .sign img, .page-a4 .sign canvas { display: block; width: 130px; height: 60px; }
+.page-a4 .petit { margin-top: 10px; font-size: 11.5px; color: var(--atlas-inkSoft); }
+.page-a4 .empreinte { margin-top: 8px; font: 11px/1.4 ui-monospace, "Courier New", monospace; color: var(--atlas-inkSoft); overflow-wrap: anywhere; }
+</style>
+</head>
+<body class="pl">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-retour" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="i-ok" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+</svg>
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="termines-comptable.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Pour mon comptable</a>
+  <h1 class="pl-titre">L'attestation du comptable</h1>
+  <p class="pl-verdict">Ce qu'il rend quand la dernière ligne est cochée. <b>Il conclut, il se présente, il signe du doigt</b>, et le PDF part chez vous avec une copie pour lui.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="colonne">
+    <div class="pl-etats" id="etapes" role="group" aria-label="Les écrans">
+      <button type="button" data-e="liste" aria-pressed="true">Fin de liste</button>
+      <button type="button" data-e="conclusion">Conclusion</button>
+      <button type="button" data-e="signataire">Qui signe</button>
+      <button type="button" data-e="signature">Signature</button>
+      <button type="button" data-e="document">Le document</button>
+      <button type="button" data-e="envoye">Envoyé</button>
+    </div>
+    <div class="pl-etats" id="cas" role="group" aria-label="Le dossier essayé">
+      <button type="button" data-cas="reserve" aria-pressed="true">Une ligne rejetée</button>
+      <button type="button" data-cas="propre">Tout validé</button>
+    </div>
+    <div id="scene"></div>
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui est proposé</h2>
+    <ul>
+      <li>Dès que la dernière ligne est cochée, la liste propose de terminer le dossier. Rien ne se termine avant.</li>
+      <li>Trois conclusions : conforme, conforme avec réserves, non conforme. Atlas en propose une d'après ses coches, il peut en changer.</li>
+      <li>Les lignes rejetées et leurs raisons sont écrites dans le document, sans qu'il les recopie.</li>
+      <li>Son nom, sa fonction, sa société, son numéro d'inscription à l'Ordre, son adresse, son e-mail et son téléphone. Gardés sur son appareil pour la fois suivante.</li>
+      <li>Une signature du doigt, la date et l'heure posées par Atlas, puis le PDF part chez le patron, avec une copie au comptable.</li>
+      <li>Le PDF est rangé avec le dossier, gardé dix ans, sans pouvoir être effacé ni réécrit.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li><b>Ce que ce document vaut.</b> C'est une attestation de vérification des justificatifs du dossier, avec une signature électronique simple : elle prouve qui a signé et que le texte n'a pas bougé. Ce n'est pas l'attestation de présentation des comptes, que l'expert-comptable établit dans son propre logiciel avec la formule de sa profession.</li>
+      <li><b>Un rejet ferme-t-il la porte ?</b> Proposé : non. Le comptable peut conclure conforme avec réserves, ou non conforme, et le patron reçoit les rejets pour les reprendre.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="comptable-verification.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>La page du comptable</a>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var ENTREPRISE = "Atelier Démo";
+  var DOSSIER = "Du 1er janvier au 27 octobre 2026";
+  var EMPREINTE = "9f3c 21ab 7d40 e8b5 5a1c 03fe 6b92 d7a4";
+
+  var etat = {
+    e: "liste",
+    cas: "reserve",
+    conclusion: null,
+    observations: "",
+    f: { nom: "", fonction: "Expert-comptable", societe: "", ordre: "", siren: "", adresse: "", mail: "", tel: "" },
+    certifie: false,
+    trace: false
+  };
+
+  var REJET = { jour: "05/10", lib: "PRLV SEPA TOTALENERGIES ELECTRI", m: "−9,28 €", note: "Le prélèvement porte sur un contrat d'électricité du domicile." };
+
+  function propose() { return etat.cas === "reserve" ? "reserves" : "conforme"; }
+  function conclusion() { return etat.conclusion || propose(); }
+  function nombres() { return etat.cas === "reserve" ? { v: 59, r: 1 } : { v: 60, r: 0 }; }
+  function ico(n) { return '<svg class="ico" aria-hidden="true"><use href="#i-' + n + '"/></svg>'; }
+  function e(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+  var MOTS = { conforme: "Conforme", reserves: "Conforme avec réserves", non: "Non conforme" };
+  var PHRASES = {
+    conforme: "Les justificatifs présentés couvrent les lignes du dossier.",
+    reserves: "Les justificatifs présentés couvrent les lignes du dossier, sauf celles rejetées ci-dessous.",
+    non: "Les justificatifs présentés ne permettent pas de conclure."
+  };
+
+  function f() { return etat.f; }
+  function signataireOk() { var x = f(); return x.nom.trim() && x.societe.trim() && /\S+@\S+\.\S+/.test(x.mail); }
+  function signeOk() { return etat.trace && etat.certifie; }
+
+  /* ═══ Les écrans ══════════════════════════════════════════════════════ */
+  function haut(retourVers, etape) {
+    return '<div class="t-haut"><button type="button" class="t-retour" data-aller="' + retourVers + '">' + ico("retour") + "Retour</button>" +
+      (etape ? '<span class="t-etape">' + etape + " sur 3</span>" : "") + "</div>";
+  }
+
+  function vueListe() {
+    var n = nombres();
+    return '<div class="defile avec-action" style="padding-top:20px">' +
+      '<h2 class="t-titre">Dossier justifié, ' + ENTREPRISE + "</h2>" +
+      '<p class="t-sous">' + DOSSIER + "</p>" +
+      '<div class="t-fausse-ligne" style="margin-top:14px"><i>27/10</i><span>CB LE RELAIS ANGERS</span><em>−56,00 €</em></div>' +
+      '<div class="t-fausse-ligne"><i>27/10</i><span>CB POINT P ANGERS</span><em>−412,30 €</em></div>' +
+      '<div class="t-liste-fin"><b>60 lignes sur 60 vérifiées.</b> ' + (n.r ? "1 rejetée." : "Aucune rejetée.") + "</div>" +
+      '</div><div class="action-bas"><button type="button" class="bouton bouton-plein" data-aller="conclusion">Terminer le dossier</button></div>';
+  }
+
+  function vueConclusion() {
+    var n = nombres(), c = conclusion();
+    function carte(cle, titre, sous) {
+      return '<button type="button" class="t-carte" data-c="' + cle + '" data-geste="conclure" aria-pressed="' + (c === cle) + '"><span class="pastille">' + ico("ok") + '</span><span><b>' + titre + "</b><small>" + sous + "</small></span>" +
+        (propose() === cle && !etat.conclusion ? '<span class="t-propose">Proposé</span>' : "") + "</button>";
+    }
+    return haut("liste", 1) + '<div class="defile avec-action" style="padding-top:6px">' +
+      '<h2 class="t-titre">Votre conclusion</h2>' +
+      '<div class="t-bilan"><div class="ok"><b>' + n.v + "</b><span>validées</span></div><div" + (n.r ? ' class="ko"' : "") + "><b>" + n.r + "</b><span>rejetée" + (n.r > 1 ? "s" : "") + "</span></div></div>" +
+      (n.r ? '<div class="t-reserve"><b>' + REJET.jour + " " + REJET.lib + " " + REJET.m + "</b>" + REJET.note + "</div>" : "") +
+      '<fieldset class="t-choix"><legend>Le dossier est</legend>' +
+      carte("conforme", "Conforme", "Tout est justifié") +
+      carte("reserves", "Conforme avec réserves", "Sauf les lignes rejetées") +
+      carte("non", "Non conforme", "Il manque l'essentiel") + "</fieldset>" +
+      '<label class="t-champ">Observations (facultatif)<textarea id="obs" maxlength="1000">' + e(etat.observations) + "</textarea></label>" +
+      '</div><div class="action-bas"><button type="button" class="bouton bouton-plein" data-aller="signataire">Continuer</button></div>';
+  }
+
+  function champ(cle, nom, type, ac) {
+    return '<label class="t-champ">' + nom + '<input data-champ="' + cle + '" type="' + (type || "text") + '" autocomplete="' + (ac || "off") + '" value="' + e(f()[cle]) + '"></label>';
+  }
+
+  function vueSignataire() {
+    var fonctions = ["Expert-comptable", "Comptable", "Autre"].map(function (x) {
+      return '<button type="button" data-geste="fonction" data-f="' + x + '" aria-pressed="' + (f().fonction === x) + '">' + x + "</button>";
+    }).join("");
+    var ok = signataireOk();
+    return haut("conclusion", 2) + '<div class="defile avec-action" style="padding-top:6px">' +
+      '<h2 class="t-titre">Qui signe</h2>' +
+      champ("nom", "Nom et prénom", "text", "name") +
+      '<div class="t-champ">Fonction<div class="t-fonctions" role="group" aria-label="Fonction">' + fonctions + "</div></div>" +
+      champ("societe", "Dénomination sociale", "text", "organization") +
+      (f().fonction === "Expert-comptable" ? champ("ordre", "N° d'inscription à l'Ordre", "text") : "") +
+      '<div class="t-deux">' + champ("siren", "SIREN", "text") + "</div>" +
+      champ("adresse", "Adresse", "text", "street-address") +
+      champ("mail", "E-mail", "email", "email") +
+      champ("tel", "Téléphone", "tel", "tel") +
+      '<p class="t-garde">Gardé sur cet appareil pour la prochaine fois.</p>' +
+      '</div><div class="action-bas"><button type="button" class="bouton bouton-plein" data-aller="signature"' + (ok ? "" : " disabled") + ">Continuer</button></div>";
+  }
+
+  function vueSignature() {
+    var ok = signeOk();
+    return haut("signataire", 3) + '<div class="defile avec-action" style="padding-top:6px">' +
+      '<h2 class="t-titre">Votre signature</h2>' +
+      '<p class="t-sous">' + e(f().nom || "Le signataire") + (f().societe ? ", " + e(f().societe) : "") + "</p>" +
+      '<div class="t-pad' + (etat.trace ? " signe" : "") + '" id="pad"><canvas id="toile"></canvas><div class="trait-base"></div><div class="invite">Signez ici</div></div>' +
+      '<button type="button" class="bouton-texte t-effacer" data-geste="effacer">Effacer</button>' +
+      '<button type="button" class="t-certifie" data-geste="certifier" aria-pressed="' + etat.certifie + '"><span class="case">' + ico("ok") + "</span><span>Je certifie avoir contrôlé les 60 lignes de ce dossier et conclure en conscience : <b>" + MOTS[conclusion()].toLowerCase() + ".</b></span></button>" +
+      '<p class="t-moment">Daté par Atlas à l\'envoi, le 27 octobre 2026.</p>' +
+      '<button type="button" class="bouton-texte" data-aller="document" style="margin-top:6px">Relire le document</button>' +
+      '</div><div class="action-bas"><button type="button" class="bouton bouton-plein" data-geste="envoyer"' + (ok ? "" : " disabled") + ">Signer et envoyer</button></div>";
+  }
+
+  function vueDocument() {
+    var n = nombres(), c = conclusion(), x = f();
+    var rejets = n.r ? '<hr><h4>Lignes rejetées</h4><div class="rejet"><div class="r"><span>' + REJET.jour + " " + REJET.lib + "</span><span>" + REJET.m + "</span></div><p>" + REJET.note + "</p></div>" : "";
+    var lignes = [x.nom || "Nom du signataire", x.fonction + (x.fonction === "Expert-comptable" && x.ordre ? ", inscrit à l'Ordre sous le n° " + x.ordre : ""),
+                  x.societe || "Dénomination sociale", x.siren ? "SIREN " + x.siren : "", x.adresse, x.mail, x.tel].filter(Boolean);
+    return haut("signature") + '<div class="defile" style="padding-top:2px"><div class="page-a4">' +
+      '<p class="sur">Atlas</p><h3>Attestation de vérification</h3>' +
+      '<p class="qui">Dossier justifié de ' + ENTREPRISE + ".<br>" + DOSSIER + ".</p>" +
+      '<div class="verdict ' + c + '">' + MOTS[c] + "</div>" +
+      '<p style="margin-top:8px">' + PHRASES[c] + "</p>" +
+      '<hr><h4>Ce qui a été vérifié</h4>' +
+      '<div class="r"><span>Lignes du dossier</span><span>60</span></div>' +
+      '<div class="r"><span>Validées</span><span>' + n.v + "</span></div>" +
+      '<div class="r"><span>Rejetées</span><span>' + n.r + "</span></div>" + rejets +
+      (etat.observations.trim() ? "<hr><h4>Observations</h4><p>" + e(etat.observations) + "</p>" : "") +
+      '<hr><h4>Signataire</h4><p>' + lignes.map(e).join("<br>") + "</p>" +
+      '<div class="sign" style="margin-top:12px"><span>Signé électroniquement<br>le 27 octobre 2026</span>' + (etat.trace ? '<canvas id="reflet" width="260" height="120"></canvas>' : '<span style="color:var(--atlas-muted)">Pas encore signé</span>') + "</div>" +
+      '<p class="petit">Cette attestation porte sur les justificatifs présentés dans Atlas. Elle ne certifie pas les comptes.</p>' +
+      '<p class="empreinte">Empreinte du dossier : ' + EMPREINTE + "</p>" +
+      '</div></div><div class="action-bas"><button type="button" class="bouton bouton-plein" data-aller="signature">Retour à la signature</button></div>';
+  }
+
+  function vueEnvoye() {
+    var x = f();
+    return '<div class="defile" style="padding-top:20px"><div class="t-fin"><div class="rond">' + ico("ok") + "</div>" +
+      "<h2>Attestation envoyée</h2>" +
+      "<p><b>" + ENTREPRISE + "</b> la reçoit par e-mail, avec le dossier.</p>" +
+      "<p>Une copie part à <b>" + e(x.mail || "votre adresse") + "</b>.</p>" +
+      '<button type="button" class="bouton-texte" data-aller="document">Ouvrir le PDF</button></div></div>';
+  }
+
+  var VUES = { liste: vueListe, conclusion: vueConclusion, signataire: vueSignataire, signature: vueSignature, document: vueDocument, envoye: vueEnvoye };
+
+  /* ═══ La toile de la signature ════════════════════════════════════════ */
+  var traits = [];
+  function monterToile() {
+    var toile = document.getElementById("toile");
+    if (!toile) return;
+    var pad = document.getElementById("pad"), dpr = window.devicePixelRatio || 1;
+    toile.width = pad.clientWidth * dpr; toile.height = pad.clientHeight * dpr;
+    var c = toile.getContext("2d");
+    c.scale(dpr, dpr);
+    c.lineWidth = 2.4; c.lineCap = "round"; c.lineJoin = "round";
+    c.strokeStyle = getComputedStyle(document.querySelector(".ecran")).getPropertyValue("--atlas-ink").trim() || "currentColor";
+    function tracer() { traits.forEach(function (t) { c.beginPath(); t.forEach(function (p, i) { if (i) c.lineTo(p[0], p[1]); else c.moveTo(p[0], p[1]); }); c.stroke(); }); }
+    tracer();
+    var actif = null;
+    function point(ev) { var r = toile.getBoundingClientRect(); return [ev.clientX - r.left, ev.clientY - r.top]; }
+    toile.addEventListener("pointerdown", function (ev) {
+      toile.setPointerCapture(ev.pointerId);
+      actif = [point(ev)]; traits.push(actif);
+      c.beginPath(); c.moveTo(actif[0][0], actif[0][1]);
+    });
+    toile.addEventListener("pointermove", function (ev) {
+      if (!actif) return;
+      var p = point(ev); actif.push(p); c.lineTo(p[0], p[1]); c.stroke();
+      if (!etat.trace) { etat.trace = true; pad.classList.add("signe"); majBouton(); }
+    });
+    function fin() { actif = null; }
+    toile.addEventListener("pointerup", fin); toile.addEventListener("pointercancel", fin);
+  }
+  function effacerToile() { traits = []; etat.trace = false; etat.certifie = false; rendre(); }
+  function majBouton() { var b = document.querySelector('[data-geste="envoyer"]'); if (b) b.disabled = !signeOk(); }
+
+  function dessinerReflet() {
+    var r = document.getElementById("reflet");
+    if (!r || !traits.length) return;
+    var pad = { w: 330, h: 190 }, c = r.getContext("2d");
+    c.scale(r.width / pad.w, r.height / pad.h);
+    c.lineWidth = 2.4; c.lineCap = "round"; c.lineJoin = "round";
+    c.strokeStyle = getComputedStyle(document.querySelector(".ecran")).getPropertyValue("--atlas-ink").trim();
+    traits.forEach(function (t) { c.beginPath(); t.forEach(function (p, i) { if (i) c.lineTo(p[0], p[1]); else c.moveTo(p[0], p[1]); }); c.stroke(); });
+  }
+
+  /* ═══ Le rendu ════════════════════════════════════════════════════════ */
+  var scene = document.getElementById("scene");
+  function rendre() {
+    scene.innerHTML = '<div class="cadre"><div class="ecran" id="ecran">' + VUES[etat.e]() + "</div></div>";
+    document.querySelectorAll("#etapes button").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-e") === etat.e ? "true" : "false"); });
+    document.querySelectorAll("#cas button").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-cas") === etat.cas ? "true" : "false"); });
+    if (etat.e === "signature") monterToile();
+    if (etat.e === "document") dessinerReflet();
+    var obs = document.getElementById("obs");
+    if (obs) obs.addEventListener("input", function () { etat.observations = obs.value; });
+    scene.querySelectorAll("[data-champ]").forEach(function (i) {
+      i.addEventListener("input", function () {
+        etat.f[i.getAttribute("data-champ")] = i.value;
+        var b = scene.querySelector('[data-aller="signature"]');
+        if (b && etat.e === "signataire") b.disabled = !signataireOk();
+      });
+    });
+  }
+
+  document.getElementById("etapes").addEventListener("click", function (ev) { var b = ev.target.closest("button"); if (b) { etat.e = b.getAttribute("data-e"); rendre(); } });
+  document.getElementById("cas").addEventListener("click", function (ev) {
+    var b = ev.target.closest("button"); if (!b) return;
+    etat.cas = b.getAttribute("data-cas"); etat.conclusion = null; rendre();
+  });
+  scene.addEventListener("click", function (ev) {
+    var a = ev.target.closest("[data-aller]");
+    if (a && !a.disabled) { etat.e = a.getAttribute("data-aller"); rendre(); return; }
+    var g = ev.target.closest("[data-geste]");
+    if (!g || g.disabled) return;
+    switch (g.getAttribute("data-geste")) {
+      case "conclure": etat.conclusion = g.getAttribute("data-c"); rendre(); break;
+      case "fonction": etat.f.fonction = g.getAttribute("data-f"); rendre(); break;
+      case "effacer": effacerToile(); break;
+      case "certifier": etat.certifie = !etat.certifie; g.setAttribute("aria-pressed", etat.certifie); majBouton(); break;
+      case "envoyer": etat.e = "envoye"; rendre(); break;
+    }
+  });
+
+  rendre();
+})();
+</script>
+</body>
+</html>
