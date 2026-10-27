@@ -123,6 +123,19 @@ cas("sans total ni taux, la TVA reste introuvable et l'écran le sait", () => {
   assert.ok(r.ticket.reserve && /pas pu être lu/.test(r.ticket.reserve));
 });
 
+// **Son ticket Uber Eats du 27 octobre 2026** : 18,90 €, aucune TVA écrite.
+// L'écran disait « le montant de TVA n'a pas pu être lu », en minuscule, et ne
+// disait pas ce qui allait se passer : le ticket se note sans TVA.
+cas("un total lu sans son taux nomme le taux, et la réserve commence par une majuscule", () => {
+  const r = lireReponseTicket(`{"fournisseur":"Woodiz","date":"2026-10-18","total_ttc":18.9,"taux_tva":null,"tva":null}`);
+  assert.equal(r.ok, true);
+  if (!r.ok) return;
+  const reserve = r.ticket.reserve ?? "";
+  assert.ok(/taux/.test(reserve) && /sans TVA/.test(reserve), reserve);
+  assert.ok(!/montant de TVA n’a pas pu être lu/.test(reserve), reserve);
+  assert.match(reserve, /^[A-ZÀ-Ý]/, reserve);
+});
+
 cas("chaque champ manquant est nommé dans la réserve, pas résumé", () => {
   const r = lireReponseTicket(`{"fournisseur":null,"date":null,"total_ttc":null,"taux_tva":null,"tva":null}`);
   assert.equal(r.ok, true);

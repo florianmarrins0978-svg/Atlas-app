@@ -6,6 +6,8 @@ import {
   natureEnMots,
   pourquoiMoinsQueLeTicket,
   recuperation,
+  saisieDepuisLaLecture,
+  tvaDuTicket,
   tvaDepuisTtc,
   tvaDue,
   type AchatARecuperer,
@@ -248,6 +250,38 @@ cas("une ligne qui compte toute sa TVA, ou un achat d'avant les natures, se tait
   assert.equal(pourquoiMoinsQueLeTicket({ ...plein, nature: "materiel" }), null);
   assert.equal(pourquoiMoinsQueLeTicket({ ...plein, nature: null, tvaDeductible: "0" }), null);
   assert.equal(pourquoiMoinsQueLeTicket({ ...plein, nature: "hotel", tvaTicket: null, tvaDeductible: "0" }), null);
+});
+
+// **Son ticket Uber Eats du 27 octobre 2026** : 18,90 € payés, aucune TVA
+// écrite. La feuille montrait « 18,9 », le taux 20 d'office, la TVA vide, et le
+// bouton restait éteint. Sa décision : un ticket sans TVA se note sans TVA,
+// rien ne s'invente (ni 20 %, ni 10 %), et il ne se récupère pas.
+cas("un ticket lu sans taux ni TVA s'ouvre sans rien inventer", () => {
+  const s = saisieDepuisLaLecture({ totalTtc: 18.9, tauxTva: null, tvaDeductible: null });
+  assert.deepEqual(s, { ttc: "18,90", taux: "", tva: "", tvaEcrite: false });
+});
+
+cas("un taux lu sans la TVA la fait calculer, et la TVA lue fait foi", () => {
+  assert.deepEqual(saisieDepuisLaLecture({ totalTtc: 120, tauxTva: 20, tvaDeductible: null }), { ttc: "120,00", taux: "20", tva: "20,00", tvaEcrite: false });
+  assert.deepEqual(saisieDepuisLaLecture({ totalTtc: 22, tauxTva: 10, tvaDeductible: 2 }), { ttc: "22,00", taux: "10", tva: "2,00", tvaEcrite: true });
+  assert.equal(saisieDepuisLaLecture({ totalTtc: 22, tauxTva: 5.5, tvaDeductible: null }).taux, "5,5");
+});
+
+cas("un total sans TVA écrite se note à zéro de TVA ; sans total, rien ne se note", () => {
+  assert.equal(tvaDuTicket("", 18.9), 0);
+  assert.equal(tvaDuTicket("  ", 18.9), 0);
+  assert.equal(tvaDuTicket("3,15", 18.9), 3.15);
+  assert.equal(tvaDuTicket("", null), null, "un fournisseur seul n'est pas un achat");
+  assert.equal(tvaDuTicket("abc", 18.9), null, "une TVA illisible n'est pas une absence de TVA");
+});
+
+cas("un repas perso sans TVA se note, et ne se récupère pas", () => {
+  const r = recuperation({ ...base, nature: "repas", repas: "perso", totalTtc: 18.9, tauxTva: null, tvaTicket: 0 });
+  assert.deepEqual(r, { tvaRecuperee: 0, manques: [] });
+});
+
+cas("sans lecture, la feuille s'ouvre vide, au taux de 20", () => {
+  assert.deepEqual(saisieDepuisLaLecture(null), { ttc: "", taux: "20", tva: "", tvaEcrite: false });
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} TVA d'un achat — ${echecs} échec(s).`);
