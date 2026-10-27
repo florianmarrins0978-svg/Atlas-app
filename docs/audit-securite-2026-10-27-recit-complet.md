@@ -56,8 +56,8 @@ plutôt que d'attaquer l'application directement.
 
 **9. J'ai vérifié qu'aucun mot de passe technique n'était visible publiquement.**
 Deux petits secrets techniques (pas tes mots de passe, des clés internes au logiciel) étaient
-écrits en clair dans le dossier du projet, visible par n'importe qui qui aurait regardé. Je l'ai
-corrigé.
+écrits en clair dans le dossier du projet, visible par n'importe qui qui aurait regardé. C'est
+corrigé (par ton autre session, qui l'avait fait au même moment que moi : voir plus bas).
 
 ## Ce que j'ai trouvé, et ce qui est réparé
 
