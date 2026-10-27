@@ -182,9 +182,9 @@ export const COLONNES_OBJET: readonly ColonneObjet[] = [
   {
     table: "mouvements_bancaires",
     colonne: "piece_cle",
-    quoi: "la facture faite hors d'Atlas qui justifie un virement reçu",
+    quoi: "la facture photographiée ou en PDF qui justifie un virement",
     absenceNormale: true,
-    raisonAbsence: "seul un virement justifié par une facture faite hors d'Atlas en porte une",
+    raisonAbsence: "seul un virement justifié par une facture jointe en porte une",
   },
   // Les trois papiers d'un véhicule (migration 0131, 14 octobre 2026).
   {

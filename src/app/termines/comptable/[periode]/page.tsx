@@ -8,6 +8,9 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { ligneAJustifier, lignesDuReleve, pieceDeLaLigne, type LigneDuReleve } from "@/server/repositories/pour-mon-comptable";
 import Releve, { type LigneAffichee } from "./Releve";
 import { garderLaPage } from "@/server/garde-page";
+import { facturesARapprocher } from "@/server/banque/questions";
+import { facturesRecuesLibres } from "@/server/repositories/pour-mon-comptable";
+import { carteDeLaLigne, facturesAffichees } from "../a-regarder";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +28,7 @@ export default async function PageReleve({ params }: { params: Promise<{ periode
   if (!bornes) notFound();
 
   const ctx = await getCurrentCtx();
-  const lignes = await lignesDuReleve(ctx, bornes.du, bornes.au);
+  const [lignes, factures, enAttente] = await Promise.all([lignesDuReleve(ctx, bornes.du, bornes.au), facturesRecuesLibres(ctx), facturesARapprocher(ctx)]);
 
   // La plus récente en haut, comme sur la planche (écran 3).
   const affichees: LigneAffichee[] = [...lignes].reverse().map((l) => {
@@ -43,6 +46,7 @@ export default async function PageReleve({ params }: { params: Promise<{ periode
       // Ce que le patron a posé se défait d'un appui ; la facture d'Atlas
       // confirmée, elle, porte un règlement noté, qui se retire sur la facture.
       defaisable: l.justification !== null,
+      carte: ligneAJustifier(l) ? carteDeLaLigne(l, [], enAttente) : null,
     };
   });
 
@@ -76,7 +80,7 @@ export default async function PageReleve({ params }: { params: Promise<{ periode
             </span>
           ))}
         </div>
-        <Releve lignes={affichees} />
+        <Releve lignes={affichees} factures={facturesAffichees(factures)} />
       </div>
     </div>
   );
@@ -95,7 +99,7 @@ function preuveDe(l: LigneDuReleve): LigneAffichee["preuve"] {
     return { genre: genre("ticket"), texte: `Ticket du ${jourEnMots(l.ticket.dateAchat)}${suite}${l.reliePar === "atlas" ? ", relié par Atlas" : ""}` };
   }
   if (l.justification === "facture" && l.factureRecue) return { genre: genre("ok"), texte: `Facture ${l.factureRecue.societe}${suite}` };
-  if (l.justification === "facture_hors_atlas") return { genre: genre("ok"), texte: `Facture faite hors d’Atlas${suite}` };
+  if (l.justification === "facture_hors_atlas") return { genre: genre("ok"), texte: `${l.sens === "sortie" ? "Facture du fournisseur" : "Facture faite hors d’Atlas"}${suite}` };
   if (l.justification === "motif" && l.motif) return { genre: "ok", texte: libelleMotif(l.motif, l.sens) };
   if (l.justification === "ticket_perdu") return { genre: "perdu", texte: "Ticket perdu, mention validée" };
   return { genre: "manque", texte: l.sens === "entree" ? "Facture à confirmer" : "Sans ticket" };

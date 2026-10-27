@@ -18,6 +18,8 @@ export type DossierAffiche = {
   nom: string;
   annee: number;
   detail: string;
+  /** « 774 Ko » : la taille du PDF, dite sur sa ligne de fichier. */
+  taille: string;
   /** Le jour de son effacement, quand il approche (trois mois). */
   echeance: string | null;
   bilans: { id: string; nature: "photo" | "pdf"; nom: string; ajoute: string }[];
@@ -275,13 +277,29 @@ function Dossier({ d, factures, premier }: { d: DossierAffiche; factures: Factur
         </p>
       )}
 
-      <div className="mt-3.5 grid grid-cols-3 gap-2">
-        <Link href={adresseDeLaVisionneuse(pdfDuDossier(d.id), { surtitre: "Dossier justifié", titre: d.nom })} className={geste} style={styleCreux} data-atlas="ouvrir-dossier">
-          <span style={{ color: colors.or }}>
-            <Icone nom="document" taille={22} />
+      {/* Le fichier se MONTRE : son nom, sa taille, et un appui l'ouvre (sa remarque du
+          27 octobre 2026 : « je ne sais pas où est le dossier »). */}
+      <Link
+        href={adresseDeLaVisionneuse(pdfDuDossier(d.id), { surtitre: "Dossier justifié", titre: d.nom })}
+        className="mt-3.5 flex min-h-[72px] items-center gap-3.5 rounded-[18px] px-3.5 py-3"
+        style={styleCreux}
+        data-atlas="ouvrir-dossier"
+      >
+        <span className="flex h-[56px] w-[46px] flex-none items-end justify-center rounded-[8px] pb-1.5 text-[11px] font-bold tracking-[0.06em]" style={{ backgroundColor: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}`, color: colors.alert }} aria-hidden="true">
+          PDF
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[16px] font-semibold leading-[1.3] [overflow-wrap:anywhere]">{`Dossier justifié, ${d.nom}.pdf`}</span>
+          <span className="mt-0.5 block text-[14px]" style={{ color: colors.inkSoft }}>
+            {`PDF, ${d.taille}`}
           </span>
-          Ouvrir
-        </Link>
+        </span>
+        <span style={{ color: colors.chevron }}>
+          <Icone nom="suivant" taille={20} epaisseur={2} />
+        </span>
+      </Link>
+
+      <div className="mt-2.5 grid grid-cols-2 gap-2">
         <BoutonTelechargerDocument fichier={pdfDuDossier(d.id)} nom={`Dossier justifié, ${d.nom}.pdf`} className={geste} style={styleCreux} dataAtlas="telecharger-dossier">
           <span style={{ color: colors.or }}>
             <Icone nom="telecharger" taille={22} />
@@ -316,7 +334,7 @@ function Dossier({ d, factures, premier }: { d: DossierAffiche; factures: Factur
             <button type="button" onClick={() => copier(lien)} className={texte} style={{ color: colors.inkSoft }} data-atlas="copier-lien">
               {copie ? "Lien copié" : "Copier le lien"}
             </button>
-            <a href={lien} target="_blank" rel="noreferrer" className={`flex items-center justify-center ${texte}`} style={{ color: colors.inkSoft }} data-atlas="voir-la-page-du-comptable">
+            <a href={`${lien}?apercu=1`} className={`flex items-center justify-center ${texte}`} style={{ color: colors.inkSoft }} data-atlas="voir-la-page-du-comptable">
               Voir la page qu’il ouvre
             </a>
           </div>

@@ -6,6 +6,7 @@ import {
   natureEnMots,
   pourquoiMoinsQueLeTicket,
   recuperation,
+  tvaDeDepart,
   tvaDepuisTtc,
   tvaDue,
   type AchatARecuperer,
@@ -248,6 +249,19 @@ cas("une ligne qui compte toute sa TVA, ou un achat d'avant les natures, se tait
   assert.equal(pourquoiMoinsQueLeTicket({ ...plein, nature: "materiel" }), null);
   assert.equal(pourquoiMoinsQueLeTicket({ ...plein, nature: null, tvaDeductible: "0" }), null);
   assert.equal(pourquoiMoinsQueLeTicket({ ...plein, nature: "hotel", tvaTicket: null, tvaDeductible: "0" }), null);
+});
+
+cas("un ticket lu sans sa TVA propose celle du total et du taux, au lieu de griser le bouton", () => {
+  // Sa remarque du 27 octobre 2026 : le ticket de 18,90 € s'ouvrait avec une
+  // TVA vide, le bouton restait grisé sans un mot, et l'écart avec la ligne de
+  // banque ne pouvait jamais s'afficher.
+  assert.equal(tvaDeDepart({ tvaDeductible: null, totalTtc: 18.9, tauxTva: null }), 3.15);
+  assert.equal(tvaDeDepart({ tvaDeductible: null, totalTtc: 120, tauxTva: 10 }), 10.91);
+  // La TVA lue sur le ticket fait foi : elle ne se recalcule jamais.
+  assert.equal(tvaDeDepart({ tvaDeductible: 3.2, totalTtc: 18.9, tauxTva: null }), 3.2);
+  // Sans total, rien ne se calcule, rien ne s'invente.
+  assert.equal(tvaDeDepart({ tvaDeductible: null, totalTtc: null, tauxTva: null }), null);
+  assert.equal(tvaDeDepart(null), null);
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} TVA d'un achat — ${echecs} échec(s).`);

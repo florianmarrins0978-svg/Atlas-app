@@ -25,7 +25,8 @@ import { jourIso } from "./jour";
  *   · `motif` : un virement qui n'appelle pas de facture (un salaire, un
  *     loyer, des cotisations, un remboursement reçu…), dont il a dit la nature ;
  *   · `facture_hors_atlas` : un virement reçu qui paie une facture faite hors
- *     d'Atlas, photographiée ou jointe en PDF (migration 0150).
+ *     d'Atlas, ou un virement envoyé que justifie la facture d'un fournisseur,
+ *     photographiée ou jointe en PDF (migration 0150).
  *
  * Une entrée se justifie aussi par la facture d'Atlas qu'il a confirmée
  * (`virements_recus`), sur l'accueil ou dans sa carte du dossier : celle-là
@@ -181,7 +182,7 @@ export type LignePourCategorie = {
 export function categorieDeLaLigne(l: LignePourCategorie): Categorie {
   if (l.sens === "entree") return "recu";
   if (l.justification === "ticket" && l.natureDuTicket) return l.natureDuTicket;
-  if (l.justification === "facture" || l.justification === "motif") return "virement";
+  if (l.justification === "facture" || l.justification === "facture_hors_atlas" || l.justification === "motif") return "virement";
   if (ressembleAUnVirement(l.libelle)) return "virement";
   return "autre";
 }

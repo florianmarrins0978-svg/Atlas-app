@@ -25,6 +25,7 @@ import {
   delier,
   joindreFactureHorsAtlas,
   joindreFactureRecue,
+  ligneDeposable,
   ligneRecue,
   marquerTicketPerdu,
   pieceDejaJointe,
@@ -180,7 +181,7 @@ export async function deposerFactureHorsAtlasAction(formData: FormData): Promise
   if (typeof mouvementId !== "string" || !UUID.test(mouvementId)) return ADRESSE_INVALIDE;
   if (!(fichier instanceof File)) return { ok: false, raison: "Aucun fichier reçu." };
   const ctx = await contexte("joindre une facture faite hors d'Atlas");
-  const ligne = await ligneRecue(ctx, mouvementId);
+  const ligne = await ligneDeposable(ctx, mouvementId);
   if (!ligne) return ADRESSE_INVALIDE;
   if (ligne.justifiee) return { ok: false, raison: "Cette ligne est déjà justifiée." };
 

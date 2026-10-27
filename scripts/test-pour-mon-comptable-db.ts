@@ -293,10 +293,22 @@ async function main() {
     assert.deepEqual(await delier(ctx, c.id), { ok: true });
   });
 
-  await test("une facture faite hors d'Atlas ne justifie pas une sortie", async () => {
-    const m = await ligne(ctx, "LEROY");
-    const r = await joindreFactureHorsAtlas(ctx, m.id, { cle: `entreprises/${ctx.entrepriseId}/factures-hors-atlas/x.pdf`, nature: "pdf", total: "48.90" });
-    assert.equal(r.ok, false);
+  // Sa remarque du 27 octobre 2026 : « Joindre la facture » d'un virement
+  // envoyé ne proposait ni photo ni fichier, seulement les factures déjà
+  // rangées chez un fournisseur. Le fichier se joint aussi à une sortie.
+  await test("une facture photographiée ou en PDF justifie un virement envoyé, avec son accord quand le montant diffère", async () => {
+    await ajouterMouvements(ctx, [sortie("ENEDIS", "2026-10-25", "48.90")]);
+    const m = await ligne(ctx, "ENEDIS");
+    const piece = { cle: `entreprises/${ctx.entrepriseId}/factures-hors-atlas/x.pdf`, nature: "pdf" as const, total: "50.00" };
+    const refus = await joindreFactureHorsAtlas(ctx, m.id, piece);
+    if (refus.ok) assert.fail("un montant qui ne tombe pas juste doit demander son accord, même sur une sortie");
+    assert.equal(refus.raison, "Pas le même montant.");
+    assert.deepEqual(await joindreFactureHorsAtlas(ctx, m.id, piece, true), { ok: true });
+    const apres = (await lignesDuReleve(ctx, m.jour, m.jour)).find((x) => x.id === m.id)!;
+    assert.equal(apres.justification, "facture_hors_atlas");
+    assert.equal(ligneAJustifier(apres), false);
+    assert.deepEqual(pieceDeLaLigne(apres), { cle: piece.cle, nature: "pdf" });
+    assert.deepEqual(await delier(ctx, m.id), { ok: true, pieceRetiree: piece.cle });
   });
 
   await test("la base refuse une facture faite hors d'Atlas sans son fichier", async () => {

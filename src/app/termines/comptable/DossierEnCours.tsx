@@ -154,19 +154,6 @@ export default function DossierEnCours({
         </section>
       )}
 
-      {n > 0 && (
-        <>
-          <h2 className={rubrique} style={{ color: colors.inkSoft, fontFamily: font.body }}>
-            À justifier
-          </h2>
-          <div className="mx-6 mt-3 flex flex-col gap-2.5" data-atlas="a-regarder">
-            {aRegarder.map((a) => (
-              <CarteARegarder key={a.id} a={a} factures={factures} onFait={setPasse} />
-            ))}
-          </div>
-        </>
-      )}
-
       {aDesLignes && (
         <>
           <h2 className={rubrique} style={{ color: colors.inkSoft, fontFamily: font.body }}>
@@ -233,6 +220,19 @@ export default function DossierEnCours({
               </li>
             ))}
           </ul>
+        </>
+      )}
+
+      {n > 0 && (
+        <>
+          <h2 className={rubrique} style={{ color: colors.inkSoft, fontFamily: font.body }}>
+            À justifier
+          </h2>
+          <div className="mx-6 mt-3 flex flex-col gap-2.5" data-atlas="a-regarder">
+            {aRegarder.map((a) => (
+              <CarteARegarder key={a.id} a={a} factures={factures} onFait={setPasse} />
+            ))}
+          </div>
         </>
       )}
 

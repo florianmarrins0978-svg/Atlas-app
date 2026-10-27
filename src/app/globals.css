@@ -262,12 +262,19 @@ body {
   width: 100%;
   max-width: var(--atlas-largeur);
   margin-inline: auto;
-  translate: calc(var(--atlas-cote) / 2) 0;
 }
 
 @media (min-width: 1024px) {
   :root {
     --atlas-largeur: 64rem;
+  }
+
+  /* Le décalage ne sert qu'à côté de la barre de gauche. Posé aussi sur
+   * téléphone, où il vaut zéro, il faisait quand même de la feuille un bloc
+   * transformé : sur iPhone, le curseur d'un champ de la feuille se dessinait
+   * sous la ligne de texte (sa capture du 27 octobre 2026, champ « Où »). */
+  .atlas-feuille {
+    translate: calc(var(--atlas-cote) / 2) 0;
   }
 
   /* La barre n'occupe la gauche que là où elle est montée : le devis seul,
