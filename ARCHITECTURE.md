@@ -36325,3 +36325,13 @@ Trois choix faits en codant : la vignette d'une pièce passe de 88 à 72 (`taill
 **Les suites ne touchent jamais le vrai banc** : celles qui lancent `veiller.sh` posent leur propre `ATLAS_VERROU_BANC`.
 
 **Non prouvé chez lui** non plus ; la ligne « Banc » (§520) dira, au prochain allumage, si le banc neuf part.
+
+## §522 : Une version bâtie ne se sert qu'avec le Next qui l'a bâtie
+
+**La racine du 27 octobre 2026**, enfin nommée. §519 à §521 ont retiré trois obstacles réels ; aucun n'était celui-là. La ligne « Banc » (§520) a dit, à 16 h 44 puis 16 h 54 : « étape serveur lancé, depuis 0 min ». Le banc lançait donc bien son serveur, et recommençait sans cesse.
+
+**Ce qui se passait.** Sa dernière version bâtie (`017cfb5`, 24 octobre) l'avait été par Next 16.3.8. Le 25, l'application passe à 16.4.2 (`a968ebe`, avis de sécurité). Au démarrage, `quoiServir` sert la version d'avant pendant que la neuve se construit (`relais-version-batie.mjs`) : `next start` 16.4.2 sur un dossier écrit par 16.3.8 tombe en deux secondes, `ENOENT … server/preview-props.json`. Le serveur mort arrête le banc (`surSortie`), et avec lui la construction neuve ; le veilleur relance, et ainsi de suite. **Reproduit** dans les deux sens : banc d'avant, même erreur et sortie 1 ; banc corrigé, réponse en 27 s.
+
+**La règle.** Le format d'un dossier bâti appartient à la version de Next qui l'a écrit. À chaque construction réussie, le banc note ce Next (`atlas-next-batie.txt`, à côté du commit) ; `servableParCeNext` ne laisse servir une version bâtie que si ce Next est celui installé. Non noté (version d'avant la règle) : on ne sert pas, mode développement le temps d'une construction. `doitRebatir` rebâtit aussi quand le Next a changé.
+
+**Ce qui reste fragile, et n'est pas traité ici** : un serveur qui meurt pendant la construction arrête encore le banc et la construction. Avec cette règle, plus rien de connu ne le fait mourir ; si une autre cause apparaît, la ligne « Banc » la montrera de la même façon.

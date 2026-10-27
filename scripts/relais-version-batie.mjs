@@ -121,3 +121,20 @@ export function echangerLesDossiers({ dist, neuve, vieille, renommer, effacer, e
 }
 
 const message = (e) => (e instanceof Error ? e.message : String(e));
+
+/**
+ * **Une version bâtie ne se sert qu'avec le Next qui l'a bâtie — 27 octobre 2026.**
+ *
+ * Sa dernière version bâtie datait de Next 16.3.8 ; l'application est passée à
+ * 16.4.2 le 25 octobre. Servie par le nouveau `next start`, elle tombait en deux
+ * secondes (« ENOENT … server/preview-props.json », reproduit), le banc avec
+ * elle et la construction neuve aussi : une journée de page blanche. Le format
+ * d'un dossier bâti appartient à la version de Next qui l'a écrit.
+ *
+ * Un Next non noté (version bâtie d'avant cette règle) ne se sert pas : on ne
+ * sait pas qui l'a bâtie, et le mode développement pendant une construction
+ * coûte des minutes, pas une journée.
+ */
+export function servableParCeNext({ buildPresent, nextBati, nextInstalle }) {
+  return Boolean(buildPresent && nextBati && nextBati === nextInstalle);
+}

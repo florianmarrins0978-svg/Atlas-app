@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { quoiServir, echangerLesDossiers } from "./relais-version-batie.mjs";
+import { quoiServir, echangerLesDossiers, servableParCeNext } from "./relais-version-batie.mjs";
+import { readFileSync } from "node:fs";
 
 // **« L'appli est lente, corrige ça. »** — le patron, le 31 août 2026 au soir,
 // et c'était la huitième fois (14, 16, 17, 20, 25, 29 août, puis deux fois le
@@ -127,6 +128,33 @@ cas("un échange manqué se DIT, il ne se devine pas", () => {
     const { ops } = disque({ renommageQuiTombe: quiTombe });
     assert.ok(echangerLesDossiers(ops).motif, `${quiTombe} : un échec sans motif est un échec muet`);
   }
+});
+
+// **27 octobre 2026 : une journée de page blanche.** Sa dernière version bâtie
+// datait de Next 16.3.8 ; le 25 octobre, l'application est passée à 16.4.2. Le
+// banc servait l'ancienne avec le nouveau `next start`, qui tombait en deux
+// secondes (« ENOENT … server/preview-props.json », reproduit) ; le banc
+// tombait avec lui, la construction neuve aussi, et le veilleur recommençait.
+cas("une version bâtie par un AUTRE Next ne se sert pas", () => {
+  assert.equal(servableParCeNext({ buildPresent: true, nextBati: "16.3.8", nextInstalle: "16.4.2" }), false);
+});
+
+cas("une version bâtie sans Next noté (d'avant ce correctif) ne se sert pas non plus", () => {
+  // C'est la sienne : on ne sait pas qui l'a bâtie. La servir, c'est parier.
+  assert.equal(servableParCeNext({ buildPresent: true, nextBati: null, nextInstalle: "16.4.2" }), false);
+});
+
+cas("TÉMOIN — bâtie par CE Next : elle se sert", () => {
+  assert.equal(servableParCeNext({ buildPresent: true, nextBati: "16.4.2", nextInstalle: "16.4.2" }), true);
+  assert.equal(servableParCeNext({ buildPresent: false, nextBati: "16.4.2", nextInstalle: "16.4.2" }), false);
+});
+
+cas("le banc branche cette règle : décision, rebâti, et Next noté à la réussite", () => {
+  const banc = readFileSync(`${__dirname}/banc.mjs`, "utf8");
+  assert.match(banc, /versionDavantUtilisable:\s*servableParCeNext\(/, "le banc sert encore une version sans regarder quel Next l'a bâtie");
+  const rebatir = banc.slice(banc.indexOf("function doitRebatir"), banc.indexOf("function doitRebatir") + 1500);
+  assert.match(rebatir, /servableParCeNext\(/, "un Next changé ne fait pas rebâtir");
+  assert.match(banc, /writeFileSync\(temoinNextDans\(DIST_CONSTRUCTION\)/, "la construction réussie ne note pas son Next : elle ne serait plus jamais servie");
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Relais de version bâtie — ${echecs} échec(s).`);

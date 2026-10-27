@@ -46,7 +46,7 @@ import {
   attendreLaConstructionEnCours,
   detenteursDuVerrou,
 } from "./verrou-construction.mjs";
-import { quoiServir, echangerLesDossiers } from "./relais-version-batie.mjs";
+import { quoiServir, echangerLesDossiers, servableParCeNext } from "./relais-version-batie.mjs";
 import { portLibre } from "./port-libre.mjs";
 
 const PORT = process.env.PORT ?? "3000";
@@ -130,6 +130,24 @@ const DIST_VIEILLE = `.next-batie${SUFFIXE_PORT}-vieille`;
 
 const temoinBatiDans = (dossier) => `${dossier}/atlas-version-batie.txt`;
 const TEMOIN_BATI = temoinBatiDans(DIST);
+// Le Next qui a bâti, à côté du commit : sans lui, une version bâtie par un
+// autre Next se servait et tombait aussitôt (27 octobre 2026).
+const temoinNextDans = (dossier) => `${dossier}/atlas-next-batie.txt`;
+// Relu à chaque question : `reinstallerSiDesaccordees` peut changer Next en route.
+const nextInstalle = () => {
+  try {
+    return JSON.parse(readFileSync("node_modules/next/package.json", "utf8")).version;
+  } catch {
+    return null; // Next absent : `reinstallerSiDesaccordees` le dira plus bas
+  }
+};
+const nextQuiABati = (dossier) => {
+  try {
+    return readFileSync(temoinNextDans(dossier), "utf8").trim() || null;
+  } catch {
+    return null; // non noté : version bâtie d'avant cette règle
+  }
+};
 
 // **Le témoin d'une construction EN COURS, et il porte son pid.**
 //
@@ -427,6 +445,8 @@ function versionDuCode() {
  */
 function doitRebatir(version) {
   if (!existsSync(`${DIST}/BUILD_ID`)) return "aucune version bâtie";
+  if (!servableParCeNext({ buildPresent: true, nextBati: nextQuiABati(DIST), nextInstalle: nextInstalle() }))
+    return "le Next installé n'est pas celui qui a bâti";
   if (!version) return null; // Hors git : on ne peut pas comparer, on garde.
   try {
     const bati = readFileSync(TEMOIN_BATI, "utf8").trim();
@@ -633,7 +653,7 @@ const { servirDavant, modeDeveloppement, dossierDeConstruction: DIST_CONSTRUCTIO
   // `BUILD_ID` et non le dossier : `next build` crée sa destination dès la
   // première seconde, et un dossier à demi rempli ne se sert pas. Ce fichier-là
   // n'est écrit qu'à la fin d'une construction réussie.
-  versionDavantUtilisable: existsSync(`${DIST}/BUILD_ID`),
+  versionDavantUtilisable: servableParCeNext({ buildPresent: existsSync(`${DIST}/BUILD_ID`), nextBati: nextQuiABati(DIST), nextInstalle: nextInstalle() }),
   dist: DIST,
   neuve: DIST_NEUVE,
 });
@@ -1290,6 +1310,8 @@ if (raison) {
       // échoue, elle le dirait pour toujours.
       mkdirSync(DIST_CONSTRUCTION, { recursive: true });
       writeFileSync(temoinBatiDans(DIST_CONSTRUCTION), version ?? "inconnue");
+      const nextQuiVientDeBatir = nextInstalle();
+      if (nextQuiVientDeBatir) writeFileSync(temoinNextDans(DIST_CONSTRUCTION), nextQuiVientDeBatir);
       // Un échec d'hier ne doit pas accuser la construction d'aujourd'hui : le
       // témoin d'échec ne survit pas à une réussite.
       rmSync(TEMOIN_ECHEC, { force: true });
