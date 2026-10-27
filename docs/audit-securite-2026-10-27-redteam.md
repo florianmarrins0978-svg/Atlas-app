@@ -1,188 +1,186 @@
-# Campagne de sécurité du 27 octobre 2026 : la frontière entre entreprises
+# Audit de sécurité du 27 octobre 2026 — rapport technique
 
-*Menée dans l'environnement cloud de l'agent — pas sur l'espace réel du patron, inaccessible depuis
-cette session. Base PostgreSQL 16 et Redis montés localement sans Docker
-(`scripts/monter-base-locale.sh`) ; toute vérification en base jouée sous le rôle applicatif réel
-`atlas_app`, jamais sous un superutilisateur qui traverserait la RLS sans le dire.*
+*Document destiné à un développeur qui reprend ce dépôt. Langage technique, précis, avec les
+fichiers et les lignes qui comptent. La version en langage courant est
+`docs/audit-securite-2026-10-27-resume-simple.md`.*
 
-## A. Résumé exécutif
+*Branche : `claude/audit-securite-redteam-2026-10-27`. Session cloud
+`af42c0cb-7594-59ed-bd96-11aed5c2797e`.*
 
-**Périmètre réellement testé** : l'isolation entre deux entreprises synthétiques (lecture,
-écriture, création, accès par fichier), rejouée pour de vrai contre une base PostgreSQL réelle avec
-RLS forcée, sous le rôle applicatif ; les mécanismes de session et de révocation (JWT, cookies,
-« déconnecter partout ») ; le périmètre de l'assistant IA ; la chaîne logicielle et la configuration
-CI ; deux secrets d'espace (`AUTH_SECRET`, `CRON_SECRET`).
+---
 
-**Non testé, et dit comme tel** : la production réelle (elle n'existe pas encore) ; les en-têtes
-HTTP et la protection réseau d'un hébergeur réel ; un scan dynamique (ZAP) ; un test de charge ; un
-appel réel à un fournisseur d'IA (aucune clé sur ce poste).
+## 1. Objectif et méthode
 
-**Un vrai trou trouvé en ATTAQUANT.** Un scénario e2e écrit pour cette campagne (navigateur réel,
-vrai serveur) a vu l'entreprise A recevoir la photo d'un chantier de l'entreprise B. Ce n'était pas
-un défaut de la RLS en production (vérifié : sous le rôle réel `atlas_app`, elle referme déjà
-tout), mais l'absence d'un second rempart que ce même fichier portait déjà pour le logo depuis le
-29 août. Corrigé et vérifié : A ne reçoit plus ni le logo ni la photo de B, sous aucun des deux
-rôles qui servent l'application. Détail en §C (**RT-6**).
+Campagne d'intrusion volontaire contre Atlas : un compte légitime d'une entreprise A tente de lire,
+modifier, créer ou atteindre par un fichier les données d'une entreprise B, sans y avoir droit.
+Menée contre une base PostgreSQL réelle, sous le rôle applicatif réel (`atlas_app`, sans
+`BYPASSRLS`) — jamais contre une base vide, jamais sous un rôle qui contourne la sécurité qu'on
+prétend éprouver.
 
-**Un recoupement imprévu.** Cette campagne avait identifié, en lecture de code, les mêmes points
-ouverts qu'un audit mené en parallèle par une autre session du même dépôt (E10 : clés étrangères
-composites entre tables d'entreprise ; E12 : expiration des liens de contrat/passage ; E15 :
-chaîne logicielle ; `CRON_SECRET`). **Cette autre session les a traités, plus complètement**,
-pendant que cette campagne-ci tournait : migration 0149 pour E10, refus argumenté pour E12 (voir
-§C), actions GitHub épinglées par empreinte réelle pour E15, `CRON_SECRET` propre à l'espace. Les
-correctifs redondants écrits ici (une seconde version de `CRON_SECRET`, un second resserrement de
-`pages.yml`) ont été retirés à la fusion : **main n'en garde qu'une version de chacun**, et c'est
-la sienne. Le seul apport réel et nouveau de cette campagne est RT-6.
+Deux entreprises synthétiques (`REDTEAM_ENTREPRISE_A`, `REDTEAM_ENTREPRISE_B`) et des ressources
+marquées (`REDTEAM_CLIENT_B`, `REDTEAM_CHANTIER_B`) ont servi de cibles identifiables.
 
-**Verdict sur la frontière entre entreprises — la demande prioritaire** : **tient, après RT-6**.
-Aucun autre chemin de lecture, d'écriture, de création ou d'accès par fichier n'a permis à A
-d'atteindre les données marquées `REDTEAM_*` de B — ni dans les suites existantes rejouées pour de
-vrai, ni dans ma relecture adversariale du code (paiements, sessions).
+**Ce qui a été attaqué, pour de vrai, pas seulement relu** :
+- les 86 tables cloisonnées par entreprise (politiques RLS), pour une cinquantaine de scénarios
+  d'isolation déjà couverts par les suites existantes (achats, chantiers, planning, transcription,
+  accès, rôles…), rejoués un par un ;
+- le chemin complet d'un règlement de facture (le scénario « argent »), tracé ligne à ligne dans le
+  code ;
+- la route qui sert les fichiers (logos, photos, notes vocales), par un vrai navigateur, une vraie
+  connexion, deux vrais comptes — c'est ce scénario qui a trouvé la faille (§3) ;
+- l'assistant IA (type de contexte, écriture directe interdite) ;
+- les mécanismes de session et de révocation (JWT, cookies, « déconnecter partout ») ;
+- la chaîne logicielle et la configuration CI/CD ;
+- deux secrets d'espace (`AUTH_SECRET`, `CRON_SECRET`).
 
-**L'état de l'isolation** : robuste et activement maintenu, avec un vrai historique de fuites
-trouvées et corrigées (logo par `/api/fichiers`, 29 août ; contournement de « déconnecter partout »,
-25 août ; cookie de déconnexion qui revenait, 23 octobre) — une méthode qui a déjà fait ses preuves,
-pas une garantie d'absence de défaut futur.
+**Pendant cette campagne, une autre session du même compte a mené, sans concertation possible, un
+audit qui recoupe largement les mêmes points** (parties de l'audit du 25-26 octobre 2026, repris en
+« vague 3 »). Les deux travaux ont été fusionnés ; ce document ne recompte pas ce que l'autre
+session a déjà réglé (§4), et se concentre sur l'apport propre de cette campagne.
 
-**Limites de cette campagne** : voir §F. La plus importante — cette session tourne dans un
-conteneur cloud isolé, pas sur l'espace public réel du patron ; l'exposition réseau réelle (port
-public, mandataire, limiteur de connexion) n'a pas pu être rejouée ici.
+## 2. Verdict en une phrase
 
-## B. Ce qui existait déjà, repris plutôt que refait — et ce qui s'est fait en parallèle
+**L'isolation entre entreprises tient.** Une faille réelle a été trouvée et corrigée (§3) ; elle
+n'était pas exploitable sous le rôle qui sert réellement l'application aujourd'hui, mais elle
+l'aurait été sous un mauvais réglage d'hébergement. Aucun autre chemin de lecture, d'écriture ou de
+création n'a permis à A d'atteindre les données de B.
 
-Le dépôt porte une campagne d'audit du 25-26 octobre 2026 (`docs/audit-2026-10-etape-2.md`,
-`docs/audit-2026-10-etape-3-inventaire.md`, `docs/audit-securite-prompt-renforce.md`). Elle n'a pas
-été rejouée depuis zéro : lue, ses correctifs vérifiés sur `main`, ses suites de régression
-rejouées pour de vrai, et reprise exactement où elle s'était arrêtée (sa « vague 3 » : E10, E12,
-E14, E15, `CRON_SECRET`).
+## 3. La faille trouvée et corrigée (RT-6)
 
-**Pendant cette campagne, une autre session a traité cette même vague 3** — sans concertation
-possible, les deux ayant démarré sur le même état de `main`. À la fusion :
+### Le constat
 
-| Point de la vague 3 | Traité par l'autre session, sur `main` | Ce que cette campagne en a fait |
+`src/app/api/fichiers/[...key]/route.ts` sert trois natures de fichiers par la même route : le logo
+de l'entreprise, les photos de chantier, les notes vocales. Une fuite déjà connue (29 août 2026)
+avait montré que `entreprises` — qui **n'a aucune politique RLS** — avait besoin d'un filtre
+explicite sur `ctx.entrepriseId`, posé depuis. Les deux autres branches (`photos`, `notes_vocales`),
+qui SONT sous `FORCE ROW LEVEL SECURITY`, n'avaient pas reçu le même filtre : leur seule protection
+restait la RLS, sans second rempart.
+
+### Comment elle a été trouvée
+
+Un scénario e2e écrit pour cette campagne (`scripts/test-fichiers-cross-entreprise-e2e.ts`) crée A
+et B, pose un logo et une photo marqués côté B, se connecte réellement comme A et comme B, et
+compare les réponses. Le logo refusait déjà (404) ; **la photo, elle, est arrivée (200, les
+octets)**.
+
+### Pourquoi ce n'était pas (encore) exploitable en production
+
+Les suites de ce type servent leur serveur sous un rôle qui **traverse la RLS** par construction
+documentée (`CLAUDE.md` §5 : « elles inspectent la base pour vérifier ce qu'elles affirment »). Sous
+le rôle réel (`atlas_app`, sans `BYPASSRLS`), la même vérification — isolée dans une suite base
+dédiée, `scripts/test-fichiers-autorisation-db.ts` — montre que la RLS seule referme déjà tout.
+
+**Le risque réel** : toute situation où le serveur ne tourne pas sous `atlas_app` — mauvais réglage
+d'hébergement, erreur humaine, ou simplement le fait qu'une suite de diagnostic ait été lancée
+contre une base de production par erreur — aurait livré les photos et notes vocales de n'importe
+quelle entreprise, sans qu'aucune deuxième vérification ne le rattrape.
+
+### La correction
+
+Fichier : `src/app/api/fichiers/[...key]/route.ts`.
+
+- La logique d'autorisation est extraite dans une fonction nommée et exportée,
+  `autoriseLectureDuFichier(ctx, storageKey)`, qui ne dépend plus de l'en-tête
+  `x-atlas-pathname` posé par le middleware — ce qui la rend testable directement dans une suite
+  base, sans navigateur.
+- Le filtre `eq(photos.entrepriseId, ctx.entrepriseId)` et `eq(notesVocales.entrepriseId,
+  ctx.entrepriseId)` est ajouté aux deux requêtes, à l'identique de ce qui protège déjà le logo.
+
+### Ce qui la garde pour toujours
+
+- `scripts/test-fichiers-autorisation-db.ts` — sous le rôle réel `atlas_app`, prouve que A ne peut
+  pas lire la photo de B, et que B peut lire la sienne (le contrôle positif qui rend le refus
+  significatif).
+- `scripts/test-fichiers-cross-entreprise-e2e.ts` — sous le rôle e2e, le même scénario, sur le logo
+  ET la photo.
+
+Détail dans `ARCHITECTURE.md` §520.
+
+## 4. Ce qui a été traité par ailleurs, pendant cette campagne
+
+Une autre session a réglé, en parallèle et de façon indépendante, exactement les points que cette
+campagne avait identifiés en lecture de code dans le reste de la « vague 3 ». Pour éviter tout
+doublon de code ou de règle, les versions écrites par cette campagne pour ces points ont été
+**retirées** à la fusion : `main` n'en garde qu'une version.
+
+| Point | Qui l'a réglé, et comment | État |
 |---|---|---|
-| `CRON_SECRET` | clé propre à l'espace, `.atlas-secrets/cron-secret` | version équivalente écrite ici, **retirée à la fusion** (doublon) |
-| E15 (chaîne logicielle) | actions GitHub épinglées par empreinte réelle (`git ls-remote`), permissions resserrées sur 4 flux | version partielle écrite ici (`pages.yml` seul), **retirée à la fusion** (doublon, moins complet) |
-| E10 (liens sans clé composite) | migration 0149 : `UNIQUE(id, entreprise_id)` + clé composite `NOT VALID` sur 26 liens, `test-liens-dans-l-entreprise-db.ts` | confirmé par lecture de code ici, non codé — **désormais fait, par l'autre session** |
-| E12 (liens sans expiration) | **refusé délibérément**, avec trois raisons écrites (reprise du lien par le patron, document que le client doit pouvoir relire, lien de 256 bits déjà protégé par la RLS) | même constat ici — **la question est tranchée, pas ouverte** |
+| `CRON_SECRET` public dans `docker-compose.yml` | clé aléatoire propre à l'espace, hors dépôt (`.atlas-secrets/cron-secret`), posée par `banc.mjs` avant le lancement du serveur | **fait**, sur `main` |
+| Permissions GitHub de `pages.yml` trop larges | permissions déplacées au niveau job (`contents: read` sur les jobs qui installent des paquets, `pages: write`/`id-token: write` seulement sur le job de publication) ; actions épinglées par empreinte réelle (`git ls-remote`) sur quatre flux | **fait**, sur `main`, plus complet que ce que cette campagne avait écrit |
+| Liens entre tables d'entreprise sans contrainte composite (paiement/facture, acompte/devis…) | migration 0149 : `UNIQUE(id, entreprise_id)` + clé composite `NOT VALID` sur vingt-six liens, `test-liens-dans-l-entreprise-db.ts` | **fait**, sur `main` |
+| Liens de contrat/passage d'entretien sans expiration | **refusé délibérément**, trois raisons écrites (reprise du lien par le patron depuis l'écran, document que le client doit pouvoir relire comme un PDF, lien de 256 bits déjà protégé par la RLS) | **tranché**, pas un bug |
+| Nom de fichier accentué perdu au téléchargement (`test-dossiers-comptables-e2e.ts`) | `scripts/e2e-browser.ts` pose `LC_ALL=C.UTF-8` si la machine ne l'est pas déjà | **fait**, sur `main`, pendant cette campagne |
 
-| Déjà trouvé et corrigé avant cette session | Vérifié vrai aujourd'hui |
-|---|---|
-| E1-E9, E11, E16 | sur `main`, suites rejouées vertes |
-| Fuite du logo d'une entreprise par `/api/fichiers` (29 août) | code relu, filtre présent — mais sans régression permanente ; et sans second rempart équivalent pour les deux autres branches de la même route (RT-6) |
-| « Déconnecter partout » contournable par réémission du JWT (25 août) | code relu, régression `test-coupure-sessions-e2e.ts` existe |
-| Cookie de déconnexion qui revenait (23 octobre) | code relu, correctif présent dans `session-ctx.ts` |
+Détail : `ARCHITECTURE.md` §509 à §512, `§514` à `§519`.
 
-## C. Résultats détaillés et tableau récapitulatif
+## 5. Ce qui est SOLIDE, avec la preuve
 
-| ID | Vulnérabilité | Gravité | Statut | Impact | Emplacement | Correction | Test de non-régression |
-|---|---|---|---|---|---|---|---|
-| **RT-6** | `/api/fichiers/[...key]` ne protégeait `photos` et `notes_vocales` que par la RLS, sans second rempart — alors que la branche voisine, `entreprises`, en a un depuis le 29 août (cette table n'a AUCUNE RLS). Un scénario e2e écrit pour cette campagne a vu A recevoir la photo d'un chantier marqué `REDTEAM_CHANTIER_B` (200, les octets) | **CONFIRMÉE ET EXPLOITÉE — sous le rôle qui traverse la RLS (celui des suites e2e, par construction, `CLAUDE.md` §5)** ; **NON REPRODUITE sous le rôle réel `atlas_app`** (vérifié en isolant la fonction dans une suite base dédiée) | la protection réelle d'aujourd'hui ne tenait qu'à UNE chose (la RLS) pour deux tables sur trois de cette route ; un rôle qui la contourne un jour — mauvais réglage d'hébergement, erreur humaine — aurait livré les photos et notes vocales de n'importe quelle entreprise | `src/app/api/fichiers/[...key]/route.ts` | filtre explicite `eq(photos.entrepriseId, ctx.entrepriseId)` / `eq(notesVocales.entrepriseId, ctx.entrepriseId)` ajouté, à l'identique de ce qui protège déjà le logo ; logique extraite dans `autoriseLectureDuFichier`, exportée pour être rejouable sous le vrai rôle | `scripts/test-fichiers-autorisation-db.ts` (nouveau, sous `atlas_app`) + `scripts/test-fichiers-cross-entreprise-e2e.ts` (nouveau, sous le rôle e2e) |
-| E10 | Liens entre tables d'entreprise sans contrainte composite | moyenne (défense en profondeur) | **CONFIRMÉE PAR ANALYSE ICI — déjà CORRIGÉE sur `main` par une autre session** (migration 0149) | — | `src/server/db/schema.ts` | migration 0149 (déjà sur `main`) | `test-liens-dans-l-entreprise-db.ts` (déjà sur `main`) |
-| E12 | Liens de contrat/passage d'entretien sans expiration | moyenne | **CONFIRMÉE PAR ANALYSE ICI — déjà TRANCHÉE (refusée) sur `main`**, avec trois raisons écrites (`ARCHITECTURE.md` §510) | — | `src/server/repositories/contrats-entretien.ts`, `passages-entretien.ts` | aucune (décision : rester tel quel) | — |
-| `CRON_SECRET` | Secret public dans `docker-compose.yml` | élevée sur un espace exposé | **CONFIRMÉE PAR ANALYSE ICI — déjà CORRIGÉE sur `main` par une autre session** | — | `.devcontainer/docker-compose.yml`, `scripts/banc.mjs` | clé propre à l'espace (déjà sur `main`) | assertion dans `test-secret-de-l-espace-db.ts` (déjà sur `main`) |
-| E15 | `pages.yml` donnait `pages: write`/`id-token: write` aux jobs qui installent des paquets tiers ; actions épinglées par étiquette | moyenne | **CONFIRMÉE PAR ANALYSE ICI — déjà CORRIGÉE, et plus complètement, sur `main` par une autre session** (actions épinglées par empreinte réelle + 4 flux resserrés) | — | `.github/workflows/*.yml` | déjà sur `main` | — |
-| E14 | Sans `ATLAS_PROXY_SAUTS`, les seuils de cadence par source deviennent communs à tous | moyenne, dépend de l'hébergement | confirmée, inchangée — le code choisit déjà le côté sûr (ce seuil se désactive plutôt que de bloquer tout le monde) | — | `src/server/env.ts`, `src/server/rate-limit/` | à poser au déploiement de production | déjà couvert par `scripts/test-env.ts` |
-| test | `test-dossiers-comptables-e2e.ts` : « Télécharger » rendait un nom de fichier `'download'` au lieu de se terminer par `.pdf` | — (outillage de test, pas de sécurité) | **NON LIÉ À CE LOT, et désormais RÉSOLU** — reproduit 4 fois à l'identique pendant cette campagne, confirmé « rouge des deux côtés » par `verifier-rouge-prealable.ts` (sur la base de `main` avant ce correctif), puis corrigé par une autre session en cours de route (`lancerNavigateur` pose `LC_ALL=C.UTF-8` : sans lui, Chromium perdait les noms de fichiers accentués) | aucun — défaut d'environnement (locale), pas du produit | `scripts/e2e-browser.ts` | fusionné pendant cette campagne | suite existante, déjà verte après fusion |
-| test | `test-planning-e2e.ts` : collision de version de devis (`devis_chantier_version_uk`) | — (suite capricieuse) | **NON LIÉ À CE LOT** — vert dans deux passages sur trois de cette campagne ; confirmé « vert des deux côtés » par `verifier-rouge-prealable.ts`, rejoué seul sur `main` et sur ce lot | aucun — flake de test-ordering, pas une régression | `scripts/test-planning-e2e.ts` | non traité — hors périmètre de cette campagne | — |
+| Mécanisme | Preuve | Fichier |
+|---|---|---|
+| Isolation entre entreprises, lecture et écriture | 524 suites base rejouées sous `atlas_app`, zéro échec, dont une cinquantaine de scénarios « Isolation : B ne voit/ne peut pas … » | voir `npm test` |
+| Chemin de l'argent (paiements de facture) | tracé à la main : `noterPaiementDans`, `poserReglementRecu`, `majReglementRecu`, `retirerReglementRecu`, `remettrePaiement` relisent systématiquement la ligne parente via une requête soumise à la RLS avant d'écrire | `src/server/repositories/paiements-facture.ts` |
+| Fichiers servis à l'entreprise (logo, photo, note vocale) | désormais deux remparts, prouvés sous les deux rôles qui servent réellement l'application | `src/app/api/fichiers/[...key]/route.ts` |
+| Assistant IA | type `Ctx` partout, aucune écriture directe (confirmation explicite requise), isolation couverte par `test-ia-0X-*` | `src/server/ai/services/assistant-service.ts` |
+| Révocation de session (« déconnecter partout ») | JWT sans table dédiée, `entrepriseId`/rôle toujours résolus depuis la base, pas depuis le jeton ; deux contournements réels déjà trouvés et corrigés (25 août, 23 octobre), avec leurs régressions | `src/server/session-ctx.ts`, `src/auth.ts` |
+| Chaîne logicielle | `npm audit` : une seule alerte connue, non exploitée (`@simplewebauthn/server`, faible) ; actions GitHub épinglées par empreinte réelle | `package.json`, `.github/workflows/*.yml` |
 
-## D. L'attaque prioritaire, en détail : A contre B
+## 6. Ce qui reste à consolider ou à tester
 
-**Méthode.** Sous le rôle applicatif réel (`atlas_app`, jamais un rôle qui traverse la RLS pour les
-suites base ; le rôle e2e documenté, qui la traverse, pour les suites navigateur), avec deux
-entreprises synthétiques et des marqueurs `REDTEAM_*`.
+**Hérité de l'autre session, pas de cette campagne :**
+- **Valider les 26 clés composites `NOT VALID`** de la migration 0149 sur la base réelle (habitée) :
+  mesurer qu'aucun lien ancien ne traverse déjà deux entreprises, puis
+  `ALTER TABLE … VALIDATE CONSTRAINT` dans une migration à part. Tant que ce n'est pas fait, la
+  contrainte protège les écritures neuves mais ne garantit rien sur les anciennes lignes.
 
-1. Rejoué les **513 suites base** pour de vrai — zéro échec, dont des vérifications d'isolation
-   explicites : *« Isolation : B ne voit aucun achat de A »*, *« Isolation : B ne peut pas retirer
-   un achat de A »*, *« Isolation : B ne peut pas déclencher/lire l'état de transcription du
-   chantier de A »*, *« le patron de B ne voit rien des accès de A »*, *« Isolation : B ne voit
-   aucun chantier de A »*, et une bonne cinquantaine d'autres du même genre à travers les suites
-   `-repo.ts` qui montent systématiquement deux entreprises.
-2. Tracé à la main, dans le code, le chemin exact d'un règlement de facture (le scénario « l'argent »
-   explicitement demandé) : un `factureId`/`reglementId` fourni par l'appelant est **toujours** relu
-   via une requête soumise à la RLS avant d'être utilisé pour écrire.
-3. Écrit et joué un scénario e2e (navigateur réel, vrai serveur, vraie connexion) : entreprise A et
-   entreprise B créées par le vrai dépôt (`creerEntreprise`), logo et photo de chantier de B posés
-   par les vraies fonctions (`enregistrerObjet`, `ajouterPhoto`), connexion réelle de chacun des deux
-   patrons par le formulaire de connexion, puis requête des deux fichiers de B depuis la session de
-   A. **C'est ce scénario qui a trouvé RT-6** : le logo refusait déjà (404), la photo, elle, est
-   arrivée (200). Après correctif : les deux refusent pour A, les deux répondent pour B (contrôle
-   positif, sans quoi un refus générique ne prouverait rien).
-4. Relu le périmètre de l'assistant IA (`assistant-service.ts`, les outils de `tools/registre`) :
-   type `Ctx` partout, aucune écriture directe, isolation déjà couverte par les suites `test-ia-0X-*`
-   (« Isolation : … ») — vertes.
-5. Relu le mécanisme de session (JWT, Auth.js) : stratégie JWT sans table de session dédiée,
-   `entrepriseId`/rôle jamais pris du jeton mais toujours résolus depuis la base à chaque requête
-   (`session-ctx.ts`), deux vraies failles de contournement de révocation déjà trouvées et corrigées
-   (25 août et 23 octobre), avec leurs régressions en place.
+**Propre à cette campagne, non testé ici, à faire ailleurs :**
+- **Exposition réseau réelle** (port public, mandataire, limiteur de connexion) — n'existe que sur
+  l'espace réel du patron, pas dans ce conteneur cloud isolé.
+- **Contexte IA avec une vraie clé** — l'isolation du contexte a été vérifiée par le code et par les
+  suites existantes, jamais par un vrai appel à un fournisseur.
+- **Scan dynamique (OWASP ZAP), test de charge, restauration réelle d'une sauvegarde** — aucun des
+  trois n'est jouable dans cet environnement ; à faire dans un atelier dédié ou chez l'hébergeur.
+- **En-têtes HTTP et protection réseau d'un hébergeur réel** — la production n'existe pas encore.
 
-**Preuve reproductible la plus directe** : `scripts/test-fichiers-cross-entreprise-e2e.ts` (sous
-`npm run test:e2e`) et `scripts/test-fichiers-autorisation-db.ts` (sous `npm test`) — l'un prouve que
-le refus tient MÊME sous le rôle qui traverse la RLS, l'autre qu'il tient sous le rôle réel.
+**Signalé en passant, hors périmètre de cette campagne, non traité :**
+- `scripts/test-planning-e2e.ts` a montré un comportement intermittent (« collision de version de
+  devis », `devis_chantier_version_uk`) pendant cette campagne — confirmé **capricieux**, pas une
+  régression : rejoué isolément, il est vert des deux côtés (sur `main` et sur ce lot) via
+  `scripts/verifier-rouge-prealable.ts`. À surveiller si cela revient ; pas d'action immédiate.
 
-## E. Pourquoi ce lot ne porte plus que RT-6
+## 7. Comment rejouer ou étendre cette vérification
 
-Le reste de cette campagne (E10, E12, E15, `CRON_SECRET`) a été, de façon fortuite, traité en
-parallèle par une autre session — voir §B. Garder une seconde implémentation de `CRON_SECRET` ou
-une seconde version de `pages.yml` aurait été du code mort ou un doublon de règle (`CLAUDE.md` §3,
-§4 quinquies) : retirés à la fusion, sans perte, puisque `main` porte déjà l'équivalent — en
-l'occurrence plus complet pour E15 (empreintes réelles vs. permissions seules) et E10 (migration
-réelle vs. constat).
+```bash
+# Monter la base locale (pas de Docker nécessaire ici)
+source scripts/monter-base-locale.sh
 
-## F. Couverture et limites
+# La régression de la faille trouvée
+npx tsx scripts/test-fichiers-autorisation-db.ts        # sous le rôle réel
+npm run test:e2e -- --seulement fichiers-cross-entreprise # sous le rôle e2e
 
-**Surfaces examinées** : isolation entre entreprises (lecture/écriture/fichiers), sessions et JWT,
-assistant IA, chaîne logicielle et CI, secrets d'espace, dépendances (`npm audit`).
+# La batterie complète (niveau 3, exigée avant toute fusion vers main)
+npm run verifier:avant-livraison
+```
 
-**Batterie complète jouée deux fois (avant et après la fusion avec `main`), la seconde comptant** —
-niveau 3, exigé par `npm run niveau` (une route d'API touchée) :
+Un rouge inattendu, avant de conclure qu'il vient de ce lot :
+
+```bash
+npx tsx scripts/verifier-rouge-prealable.ts   # compare contre une copie propre de main
+```
+
+## 8. Chiffres finaux
 
 | Contrôle | Résultat |
 |---|---|
 | `npx tsc --noEmit` | propre |
-| lint (fichiers touchés) | propre |
+| lint | propre |
 | `npm run verifier:memoire` | cohérent |
-| `npm test` — suites base, sous `atlas_app` | **524/524 — 0 échec** (après fusion) |
-| `npm run test:e2e` — suites navigateur | **196 à 198/198 selon le passage** — deux cas sans rapport avec ce lot, tranchés par `verifier-rouge-prealable.ts` (voir §C) : un rouge préexistant sur `main`, corrigé en cours de campagne par une autre session ; une suite capricieuse, verte des deux côtés une fois isolée |
-| `npm run verifier:connexion` (origine étrangère, comme chez le patron) | réussie |
-| `npm audit --omit=dev` | une seule alerte connue et déjà filée (`@simplewebauthn/server`, faible, non exploitée) |
-
-**Lu et tracé dans le code, sans pouvoir l'exécuter ici** : contexte IA sans clé réelle, exposition
-réseau réelle de l'espace du patron, production (elle n'existe pas).
-
-**Non testé, et NON VÉRIFIÉ reste la bonne formule** : scan dynamique (ZAP), test de charge,
-en-têtes HTTP d'un hébergeur réel, restauration réelle d'une sauvegarde.
-
-## G. Priorités
-
-1. **RT-6 : seul point restant de cette campagne, fait et vérifié** — à fusionner.
-2. Tout le reste de la vague 3 (E10, E12, E14, E15, `CRON_SECRET`) est déjà réglé sur `main` par une
-   autre session ; rien n'y reste de cette campagne.
-3. **E10, un point ouvert hérité de l'autre session, pas de celle-ci** : valider les 26 clés
-   composites `NOT VALID` sur une base habitée (`ARCHITECTURE.md` §510, `TODO.md`).
-
-## Conclusion
-
-**Aucun accès inter-entreprises exploitable en production n'a été démontré** — mais la campagne a
-trouvé et corrigé un vrai trou (RT-6) : une protection qui ne tenait qu'à un seul rempart (la RLS)
-pour deux ressources (photos, notes vocales), là où une fuite déjà vécue sur une troisième ressource
-de la même route (le logo) avait appris, le 29 août, la leçon inverse — et ne l'avait pas étendue.
-Ce trou n'était pas exploitable sous le rôle qui sert l'application en production (`atlas_app`,
-vérifié), mais il l'était sous le rôle qui sert les suites e2e — un rôle qu'un mauvais réglage
-d'hébergement pourrait donner par erreur. C'est le genre de défaut qu'une relecture de code seule
-ne montre pas : il a fallu l'attaquer pour de vrai pour le voir.
-
-Le reste de cette campagne converge, mot pour mot ou presque, avec une seconde campagne menée en
-parallèle sur ce même dépôt, qui l'a traité plus complètement — un signal que la méthode (deux
-entreprises synthétiques, attaque réelle plutôt que relecture) trouve les mêmes failles de façon
-reproductible, pas un hasard d'une seule lecture.
-
-Ce que cette campagne n'a pas pu couvrir est précisément ce qui n'existe pas encore à tester (la
-production, l'exposition réseau réelle de l'espace du patron) ou ce qui demande une clé qu'elle n'a
-pas (l'IA réelle). Ce n'est jamais un verdict d'invulnérabilité — seulement ce qui a été attaqué, ce
-qui a tenu, ce qui a été corrigé, et ce qui reste incertain.
+| `npm test` (base de données, sous `atlas_app`) | 524/524 — 0 échec |
+| `npm run test:e2e` (navigateur) | 198/198 une fois les deux cas sans rapport retombés (§4, §6) |
+| `npm run verifier:connexion` | réussie |
+| `npm audit --omit=dev` | une alerte connue, non exploitée |
 
 ---
 
-*Rédigé par l'agent dans la session cloud `af42c0cb-7594-59ed-bd96-11aed5c2797e`, branche
-`claude/audit-securite-redteam-2026-10-27`.*
+*Pour toute question sur ce document : relire `docs/audit-securite-2026-10-27-resume-simple.md`
+pour le résumé en langage courant, ou `ARCHITECTURE.md` §509-§520 pour le détail des décisions
+d'architecture.*

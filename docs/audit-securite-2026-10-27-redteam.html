@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Audit de sécurité du 27 octobre 2026 — rapport technique</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="audit-de-sécurité-du-27-octobre-2026--rapport-technique">Audit de sécurité du 27 octobre 2026 — rapport technique</h1>
+<p><em>Document destiné à un développeur qui reprend ce dépôt. Langage technique, précis, avec les fichiers et les lignes qui comptent. La version en langage courant est <code>docs/audit-securite-2026-10-27-resume-simple.md</code>.</em></p>
+<p><em>Branche : <code>claude/audit-securite-redteam-2026-10-27</code>. Session cloud <code>af42c0cb-7594-59ed-bd96-11aed5c2797e</code>.</em></p>
+<hr>
+<h2 id="1-objectif-et-méthode">1. Objectif et méthode</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Campagne d'intrusion volontaire contre Atlas : un compte légitime d'une entreprise A tente de lire, modifier, créer ou atteindre par un fichier les données d'une entreprise B, sans y avoir droit. Menée contre une base PostgreSQL réelle, sous le rôle applicatif réel (<code>atlas_app</code>, sans <code>BYPASSRLS</code>) — jamais contre une base vide, jamais sous un rôle qui contourne la sécurité qu'on prétend éprouver.</p>
+<p>Deux entreprises synthétiques (<code>REDTEAM_ENTREPRISE_A</code>, <code>REDTEAM_ENTREPRISE_B</code>) et des ressources marquées (<code>REDTEAM_CLIENT_B</code>, <code>REDTEAM_CHANTIER_B</code>) ont servi de cibles identifiables.</p>
+<p><strong>Ce qui a été attaqué, pour de vrai, pas seulement relu</strong> :</p>
+<ul>
+<li>les 86 tables cloisonnées par entreprise (politiques RLS), pour une cinquantaine de scénarios d'isolation déjà couverts par les suites existantes (achats, chantiers, planning, transcription, accès, rôles…), rejoués un par un ;</li>
+<li>le chemin complet d'un règlement de facture (le scénario « argent »), tracé ligne à ligne dans le code ;</li>
+<li>la route qui sert les fichiers (logos, photos, notes vocales), par un vrai navigateur, une vraie connexion, deux vrais comptes — c'est ce scénario qui a trouvé la faille (§3) ;</li>
+<li>l'assistant IA (type de contexte, écriture directe interdite) ;</li>
+<li>les mécanismes de session et de révocation (JWT, cookies, « déconnecter partout ») ;</li>
+<li>la chaîne logicielle et la configuration CI/CD ;</li>
+<li>deux secrets d'espace (<code>AUTH_SECRET</code>, <code>CRON_SECRET</code>).</li>
+</ul>
+<p><strong>Pendant cette campagne, une autre session du même compte a mené, sans concertation possible, un audit qui recoupe largement les mêmes points</strong> (parties de l'audit du 25-26 octobre 2026, repris en « vague 3 »). Les deux travaux ont été fusionnés ; ce document ne recompte pas ce que l'autre session a déjà réglé (§4), et se concentre sur l'apport propre de cette campagne.</p>
+<h2 id="2-verdict-en-une-phrase">2. Verdict en une phrase</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>L'isolation entre entreprises tient.</strong> Une faille réelle a été trouvée et corrigée (§3) ; elle n'était pas exploitable sous le rôle qui sert réellement l'application aujourd'hui, mais elle l'aurait été sous un mauvais réglage d'hébergement. Aucun autre chemin de lecture, d'écriture ou de création n'a permis à A d'atteindre les données de B.</p>
+<h2 id="3-la-faille-trouvée-et-corrigée-rt-6">3. La faille trouvée et corrigée (RT-6)</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="le-constat">Le constat</h3>
+<p><code>src/app/api/fichiers/[...key]/route.ts</code> sert trois natures de fichiers par la même route : le logo de l'entreprise, les photos de chantier, les notes vocales. Une fuite déjà connue (29 août 2026) avait montré que <code>entreprises</code> — qui <strong>n'a aucune politique RLS</strong> — avait besoin d'un filtre explicite sur <code>ctx.entrepriseId</code>, posé depuis. Les deux autres branches (<code>photos</code>, <code>notes_vocales</code>), qui SONT sous <code>FORCE ROW LEVEL SECURITY</code>, n'avaient pas reçu le même filtre : leur seule protection restait la RLS, sans second rempart.</p>
+<h3 id="comment-elle-a-été-trouvée">Comment elle a été trouvée</h3>
+<p>Un scénario e2e écrit pour cette campagne (<code>scripts/test-fichiers-cross-entreprise-e2e.ts</code>) crée A et B, pose un logo et une photo marqués côté B, se connecte réellement comme A et comme B, et compare les réponses. Le logo refusait déjà (404) ; <strong>la photo, elle, est arrivée (200, les octets)</strong>.</p>
+<h3 id="pourquoi-ce-nétait-pas-encore-exploitable-en-production">Pourquoi ce n'était pas (encore) exploitable en production</h3>
+<p>Les suites de ce type servent leur serveur sous un rôle qui <strong>traverse la RLS</strong> par construction documentée (<code>CLAUDE.md</code> §5 : « elles inspectent la base pour vérifier ce qu'elles affirment »). Sous le rôle réel (<code>atlas_app</code>, sans <code>BYPASSRLS</code>), la même vérification — isolée dans une suite base dédiée, <code>scripts/test-fichiers-autorisation-db.ts</code> — montre que la RLS seule referme déjà tout.</p>
+<p><strong>Le risque réel</strong> : toute situation où le serveur ne tourne pas sous <code>atlas_app</code> — mauvais réglage d'hébergement, erreur humaine, ou simplement le fait qu'une suite de diagnostic ait été lancée contre une base de production par erreur — aurait livré les photos et notes vocales de n'importe quelle entreprise, sans qu'aucune deuxième vérification ne le rattrape.</p>
+<h3 id="la-correction">La correction</h3>
+<p>Fichier : <code>src/app/api/fichiers/[...key]/route.ts</code>.</p>
+<ul>
+<li>La logique d'autorisation est extraite dans une fonction nommée et exportée, <code>autoriseLectureDuFichier(ctx, storageKey)</code>, qui ne dépend plus de l'en-tête <code>x-atlas-pathname</code> posé par le middleware — ce qui la rend testable directement dans une suite base, sans navigateur.</li>
+<li>Le filtre <code>eq(photos.entrepriseId, ctx.entrepriseId)</code> et <code>eq(notesVocales.entrepriseId, ctx.entrepriseId)</code> est ajouté aux deux requêtes, à l'identique de ce qui protège déjà le logo.</li>
+</ul>
+<h3 id="ce-qui-la-garde-pour-toujours">Ce qui la garde pour toujours</h3>
+<ul>
+<li><code>scripts/test-fichiers-autorisation-db.ts</code> — sous le rôle réel <code>atlas_app</code>, prouve que A ne peut pas lire la photo de B, et que B peut lire la sienne (le contrôle positif qui rend le refus significatif).</li>
+<li><code>scripts/test-fichiers-cross-entreprise-e2e.ts</code> — sous le rôle e2e, le même scénario, sur le logo ET la photo.</li>
+</ul>
+<p>Détail dans <code>ARCHITECTURE.md</code> §520.</p>
+<h2 id="4-ce-qui-a-été-traité-par-ailleurs-pendant-cette-campagne">4. Ce qui a été traité par ailleurs, pendant cette campagne</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Une autre session a réglé, en parallèle et de façon indépendante, exactement les points que cette campagne avait identifiés en lecture de code dans le reste de la « vague 3 ». Pour éviter tout doublon de code ou de règle, les versions écrites par cette campagne pour ces points ont été <strong>retirées</strong> à la fusion : <code>main</code> n'en garde qu'une version.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Point</th>
+<th>Qui l'a réglé, et comment</th>
+<th>État</th>
+</tr></thead><tbody>
+<tr>
+<td><code>CRON_SECRET</code> public dans <code>docker-compose.yml</code></td>
+<td>clé aléatoire propre à l'espace, hors dépôt (<code>.atlas-secrets/cron-secret</code>), posée par <code>banc.mjs</code> avant le lancement du serveur</td>
+<td><strong>fait</strong>, sur <code>main</code></td>
+</tr>
+<tr>
+<td>Permissions GitHub de <code>pages.yml</code> trop larges</td>
+<td>permissions déplacées au niveau job (<code>contents: read</code> sur les jobs qui installent des paquets, <code>pages: write</code>/<code>id-token: write</code> seulement sur le job de publication) ; actions épinglées par empreinte réelle (<code>git ls-remote</code>) sur quatre flux</td>
+<td><strong>fait</strong>, sur <code>main</code>, plus complet que ce que cette campagne avait écrit</td>
+</tr>
+<tr>
+<td>Liens entre tables d'entreprise sans contrainte composite (paiement/facture, acompte/devis…)</td>
+<td>migration 0149 : <code>UNIQUE(id, entreprise_id)</code> + clé composite <code>NOT VALID</code> sur vingt-six liens, <code>test-liens-dans-l-entreprise-db.ts</code></td>
+<td><strong>fait</strong>, sur <code>main</code></td>
+</tr>
+<tr>
+<td>Liens de contrat/passage d'entretien sans expiration</td>
+<td><strong>refusé délibérément</strong>, trois raisons écrites (reprise du lien par le patron depuis l'écran, document que le client doit pouvoir relire comme un PDF, lien de 256 bits déjà protégé par la RLS)</td>
+<td><strong>tranché</strong>, pas un bug</td>
+</tr>
+<tr>
+<td>Nom de fichier accentué perdu au téléchargement (<code>test-dossiers-comptables-e2e.ts</code>)</td>
+<td><code>scripts/e2e-browser.ts</code> pose <code>LC_ALL=C.UTF-8</code> si la machine ne l'est pas déjà</td>
+<td><strong>fait</strong>, sur <code>main</code>, pendant cette campagne</td>
+</tr>
+</tbody></table></div>
+<p>Détail : <code>ARCHITECTURE.md</code> §509 à §512, <code>§514</code> à <code>§519</code>.</p>
+<h2 id="5-ce-qui-est-solide-avec-la-preuve">5. Ce qui est SOLIDE, avec la preuve</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Mécanisme</th>
+<th>Preuve</th>
+<th>Fichier</th>
+</tr></thead><tbody>
+<tr>
+<td>Isolation entre entreprises, lecture et écriture</td>
+<td>524 suites base rejouées sous <code>atlas_app</code>, zéro échec, dont une cinquantaine de scénarios « Isolation : B ne voit/ne peut pas … »</td>
+<td>voir <code>npm test</code></td>
+</tr>
+<tr>
+<td>Chemin de l'argent (paiements de facture)</td>
+<td>tracé à la main : <code>noterPaiementDans</code>, <code>poserReglementRecu</code>, <code>majReglementRecu</code>, <code>retirerReglementRecu</code>, <code>remettrePaiement</code> relisent systématiquement la ligne parente via une requête soumise à la RLS avant d'écrire</td>
+<td><code>src/server/repositories/paiements-facture.ts</code></td>
+</tr>
+<tr>
+<td>Fichiers servis à l'entreprise (logo, photo, note vocale)</td>
+<td>désormais deux remparts, prouvés sous les deux rôles qui servent réellement l'application</td>
+<td><code>src/app/api/fichiers/[...key]/route.ts</code></td>
+</tr>
+<tr>
+<td>Assistant IA</td>
+<td>type <code>Ctx</code> partout, aucune écriture directe (confirmation explicite requise), isolation couverte par <code>test-ia-0X-*</code></td>
+<td><code>src/server/ai/services/assistant-service.ts</code></td>
+</tr>
+<tr>
+<td>Révocation de session (« déconnecter partout »)</td>
+<td>JWT sans table dédiée, <code>entrepriseId</code>/rôle toujours résolus depuis la base, pas depuis le jeton ; deux contournements réels déjà trouvés et corrigés (25 août, 23 octobre), avec leurs régressions</td>
+<td><code>src/server/session-ctx.ts</code>, <code>src/auth.ts</code></td>
+</tr>
+<tr>
+<td>Chaîne logicielle</td>
+<td><code>npm audit</code> : une seule alerte connue, non exploitée (<code>@simplewebauthn/server</code>, faible) ; actions GitHub épinglées par empreinte réelle</td>
+<td><code>package.json</code>, <code>.github/workflows/*.yml</code></td>
+</tr>
+</tbody></table></div>
+<h2 id="6-ce-qui-reste-à-consolider-ou-à-tester">6. Ce qui reste à consolider ou à tester</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Hérité de l'autre session, pas de cette campagne :</strong></p>
+<ul>
+<li><strong>Valider les 26 clés composites <code>NOT VALID</code></strong> de la migration 0149 sur la base réelle (habitée) : mesurer qu'aucun lien ancien ne traverse déjà deux entreprises, puis <code>ALTER TABLE … VALIDATE CONSTRAINT</code> dans une migration à part. Tant que ce n'est pas fait, la contrainte protège les écritures neuves mais ne garantit rien sur les anciennes lignes.</li>
+</ul>
+<p><strong>Propre à cette campagne, non testé ici, à faire ailleurs :</strong></p>
+<ul>
+<li><strong>Exposition réseau réelle</strong> (port public, mandataire, limiteur de connexion) — n'existe que sur l'espace réel du patron, pas dans ce conteneur cloud isolé.</li>
+<li><strong>Contexte IA avec une vraie clé</strong> — l'isolation du contexte a été vérifiée par le code et par les suites existantes, jamais par un vrai appel à un fournisseur.</li>
+<li><strong>Scan dynamique (OWASP ZAP), test de charge, restauration réelle d'une sauvegarde</strong> — aucun des trois n'est jouable dans cet environnement ; à faire dans un atelier dédié ou chez l'hébergeur.</li>
+<li><strong>En-têtes HTTP et protection réseau d'un hébergeur réel</strong> — la production n'existe pas encore.</li>
+</ul>
+<p><strong>Signalé en passant, hors périmètre de cette campagne, non traité :</strong></p>
+<ul>
+<li><code>scripts/test-planning-e2e.ts</code> a montré un comportement intermittent (« collision de version de devis », <code>devis_chantier_version_uk</code>) pendant cette campagne — confirmé <strong>capricieux</strong>, pas une régression : rejoué isolément, il est vert des deux côtés (sur <code>main</code> et sur ce lot) via <code>scripts/verifier-rouge-prealable.ts</code>. À surveiller si cela revient ; pas d'action immédiate.</li>
+</ul>
+<h2 id="7-comment-rejouer-ou-étendre-cette-vérification">7. Comment rejouer ou étendre cette vérification</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>```bash</p>
+<h1 id="monter-la-base-locale-pas-de-docker-nécessaire-ici">Monter la base locale (pas de Docker nécessaire ici)</h1>
+<p>source scripts/monter-base-locale.sh</p>
+<h1 id="la-régression-de-la-faille-trouvée">La régression de la faille trouvée</h1>
+<p>npx tsx scripts/test-fichiers-autorisation-db.ts        # sous le rôle réel npm run test:e2e -- --seulement fichiers-cross-entreprise # sous le rôle e2e</p>
+<h1 id="la-batterie-complète-niveau-3-exigée-avant-toute-fusion-vers-main">La batterie complète (niveau 3, exigée avant toute fusion vers main)</h1>
+<p>npm run verifier:avant-livraison ```</p>
+<p>Un rouge inattendu, avant de conclure qu'il vient de ce lot :</p>
+<p>``<code>bash npx tsx scripts/verifier-rouge-prealable.ts   # compare contre une copie propre de main </code>``</p>
+<h2 id="8-chiffres-finaux">8. Chiffres finaux</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Contrôle</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td><code>npx tsc --noEmit</code></td>
+<td>propre</td>
+</tr>
+<tr>
+<td>lint</td>
+<td>propre</td>
+</tr>
+<tr>
+<td><code>npm run verifier:memoire</code></td>
+<td>cohérent</td>
+</tr>
+<tr>
+<td><code>npm test</code> (base de données, sous <code>atlas_app</code>)</td>
+<td>524/524 — 0 échec</td>
+</tr>
+<tr>
+<td><code>npm run test:e2e</code> (navigateur)</td>
+<td>198/198 une fois les deux cas sans rapport retombés (§4, §6)</td>
+</tr>
+<tr>
+<td><code>npm run verifier:connexion</code></td>
+<td>réussie</td>
+</tr>
+<tr>
+<td><code>npm audit --omit=dev</code></td>
+<td>une alerte connue, non exploitée</td>
+</tr>
+</tbody></table></div>
+<hr>
+<p><em>Pour toute question sur ce document : relire <code>docs/audit-securite-2026-10-27-resume-simple.md</code> pour le résumé en langage courant, ou <code>ARCHITECTURE.md</code> §509-§520 pour le détail des décisions d'architecture.</em></p>
+</main>
+</body>
+</html>
