@@ -197,7 +197,7 @@ cas("un second banc ne peut pas démarrer pendant qu'un premier vit", () => {
   assert.equal(premier.pris, true, "le premier banc n'a pas pris le verrou");
 
   // Un autre processus, bien vivant : le père de celui-ci fait l'affaire.
-  const second = prendreVerrouBanc({ chemin: VERROU, pid: process.ppid });
+  const second = prendreVerrouBanc({ chemin: VERROU, pid: process.ppid, porteur: () => true });
   assert.equal(second.pris, false, "un second banc a pu démarrer : c'est le EADDRINUSE du 10 août");
 });
 
@@ -212,12 +212,29 @@ cas("un second banc ne peut pas démarrer pendant qu'un premier vit", () => {
 // build process is already running » —, et le banc reste lent.
 cas("un verrou vivant n'est jamais écrasé, même par un banc pressé", () => {
   writeFileSync(VERROU, `${process.ppid}\n`);
-  const r = prendreVerrouBanc({ chemin: VERROU, pid: process.pid });
+  const r = prendreVerrouBanc({ chemin: VERROU, pid: process.pid, porteur: () => true });
   assert.equal(r.pris, false, "un second banc a écrasé le verrou d'un banc vivant");
   assert.equal(
     readFileSync(VERROU, "utf8").trim(),
     String(process.ppid),
     "le verrou porte maintenant un autre porteur : le premier banc ne le rendra jamais"
+  );
+});
+
+// **27 octobre 2026 : un numéro de processus repris par un AUTRE programme.** Le
+// verrou vit dans `/tmp`, qui survit à l'arrêt de l'espace ; au redémarrage, les
+// numéros repartent de zéro et celui du banc d'hier peut désigner un processus
+// quelconque, bien vivant. Le banc répondait alors « déjà en train de se
+// construire — rien à relancer » et sortait, le veilleur relançait toutes les
+// quinze secondes, et le serveur ne revenait jamais : page blanche.
+cas("un verrou dont le numéro est repris par un autre programme ne bloque personne", () => {
+  // Le père de ce test est bien vivant, et ce n'est pas un banc.
+  writeFileSync(VERROU, `${process.ppid}\n`);
+  const r = prendreVerrouBanc({ chemin: VERROU, pid: process.pid });
+  assert.equal(
+    r.pris,
+    true,
+    "un numéro repris par un autre programme enferme le patron dehors : le banc ne repartirait jamais"
   );
 });
 

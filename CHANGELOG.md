@@ -6,6 +6,12 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-27
+
+- **Un numéro de processus repris par un autre programme ne ferme plus la porte du banc ni du veilleur.** Son espace, rallumé, restait en page blanche : code et base à jour, serveur absent. Les deux verrous (`/tmp/atlas-banc.pid`, `/tmp/atlas-veilleur.pid`) disaient « tenu » dès que le numéro écrit dedans désignait un processus vivant ; or `/tmp` survit à l'arrêt de l'espace et les numéros repartent de zéro. Reproduit : un verrou portant un processus vivant quelconque fait sortir `npm run banc` sur « rien à relancer », sans fin. Désormais on regarde ce que le processus exécute (`banc.mjs`, `essai.mjs`, `veiller.sh`), et le diagnostic ne dit plus « Veilleur : en place » devant un programme quelconque. **Non confirmé chez lui** : c'est la piste la plus probable, pas une cause lue dans son journal ; la fiche du quart d'heure suivant l'allumage le dira (`ARCHITECTURE.md` §519).
+- **La fiche de l'espace part avant les étapes qui peuvent bloquer** (`demarrer.sh`) : elle arrivait huit minutes après l'allumage, derrière la mise à jour, `npm ci` et les migrations.
+
+---
 ## 2026-10-26
 
 - **Batterie commune des six lots du 26 octobre** (Ma TVA, Réglages, création de compte, Pour mon comptable, plan d'arrosage, planning), sur sa demande : *« fusionne et joue une seule batterie pour toutes »*. La migration du comptable devient 0150 (main avait pris 0148 et 0149) ; les paragraphes des lots deviennent §514 à §518 ; Face ID, Abonnement, Qui a accès et Nouveau compte gardent la sécurité de main dans l'allure des Réglages. Rouges trouvés entre les lots et corrigés : deux contrôles qui se trompaient (le ternaire d'un champ pris pour un retour, une adresse de visionneuse en constante prise pour un lien de PDF), la pièce d'un virement à déclarer, le mode d'emploi et une suite qui suivaient l'ancien planning, deux interrupteurs carrés. `test-dossiers-comptables-e2e` est rouge de la même façon sur `main` (`verifier-rouge-prealable.ts`). Le détail : `docs/batterie-commune-26-octobre.md`.
