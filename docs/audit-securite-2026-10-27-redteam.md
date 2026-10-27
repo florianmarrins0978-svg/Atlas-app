@@ -141,8 +141,8 @@ niveau 3, exigé par `npm run niveau` (une route d'API touchée) :
 | `npx tsc --noEmit` | propre |
 | lint (fichiers touchés) | propre |
 | `npm run verifier:memoire` | cohérent |
-| `npm test` — suites base, sous `atlas_app` | **0 échec**, avant et après la fusion |
-| `npm run test:e2e` — suites navigateur | **1 seul échec**, `test-dossiers-comptables-e2e.ts`, sans rapport avec ce lot (voir §C), déjà rouge sur `main` par ailleurs |
+| `npm test` — suites base, sous `atlas_app` | **524/524 — 0 échec** (après fusion) |
+| `npm run test:e2e` — suites navigateur | **197/198** — le seul échec, `test-dossiers-comptables-e2e.ts`, est sans rapport (voir §C), déjà rouge sur `main` par ailleurs |
 | `npm run verifier:connexion` (origine étrangère, comme chez le patron) | réussie |
 | `npm audit --omit=dev` | une seule alerte connue et déjà filée (`@simplewebauthn/server`, faible, non exploitée) |
 
