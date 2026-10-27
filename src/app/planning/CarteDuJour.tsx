@@ -6,6 +6,7 @@ import { colors, font, voile } from "@/lib/design-tokens";
 import { enCapitale } from "@/lib/chantier-etat";
 import type { Creneau, JourIso } from "@/lib/disponibilites";
 import type { ChantierPourAbsence } from "@/lib/equipe-absente";
+import type { MomentDuJour } from "@/lib/absences-equipe";
 import { jourLisibleCourt } from "@/lib/mois";
 import {
   blocsDeLaJournee,
@@ -329,8 +330,8 @@ export function CarteDuJour({
   absencesDuJour,
   cocheRefuseeDe,
   joursDeLaPastilleDe,
-  fermerLeJour,
-  rouvrirLeJour,
+  absencesAutourDuJour,
+  poserLeJour,
   retourAEnvoyer,
 }: {
   cle: string;
@@ -345,8 +346,8 @@ export function CarteDuJour({
     c: ChantierPourAbsence,
     demi?: "matin" | "apres_midi"
   ) => string;
-  fermerLeJour: (jour: JourIso, rang: number, quand?: "matin" | "apres_midi" | null) => void;
-  rouvrirLeJour: (id: string) => void;
+  absencesAutourDuJour: (jour: JourIso) => AbsenceDuPlanning[];
+  poserLeJour: (jour: JourIso, rang: number, moment: MomentDuJour | null) => void;
   /**
    * Le chantier SEUL qu'on déplie, quand la carte sort d'une ligne des
    * planifiés.
@@ -605,11 +606,11 @@ export function CarteDuJour({
             titre={titreDuJour}
             jour={jour}
             absences={absencesDuJour(jour)}
+            autour={absencesAutourDuJour(jour)}
             lignesEquipes={lignesEquipes}
             nombreSalaries={nombreSalaries}
             nomEquipe={nomEquipe}
-            fermer={fermerLeJour}
-            rouvrir={rouvrirLeJour}
+            poser={poserLeJour}
           />
         )}
 

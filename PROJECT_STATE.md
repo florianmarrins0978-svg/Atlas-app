@@ -4,6 +4,10 @@
 dernière migration `drizzle/0150_virement_recu_regle_au_dossier.sql`
 
 ---
+## SALARIÉ ABSENT, LA C, CODÉE (27 octobre 2026), PAS ENCORE SUR `main`
+
+Fait sur `lot/salarie-absent-c` : la feuille, la piste glissable, le geste d'un jour qui ne touche qu'à ce jour. Reste : la batterie entière (niveau 3), avec son accord, puis `main`. `ARCHITECTURE.md` §523.
+
 ## ARROSAGE : SON CROQUIS DU 27 OCTOBRE (27 octobre 2026)
 
 Coins tirés retirés des zones (`formes-du-dessin.ts`, `dessin-du-plan.ts`,

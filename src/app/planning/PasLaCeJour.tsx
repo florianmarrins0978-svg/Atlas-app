@@ -1,23 +1,29 @@
 "use client";
 
 import { useState } from "react";
-import { colors, texteSituation } from "@/lib/design-tokens";
+import { createPortal } from "react-dom";
+import BottomSheet from "@/components/atlas/BottomSheet";
+import { colors, font, texteSituation } from "@/lib/design-tokens";
 import type { JourIso } from "@/lib/disponibilites";
-import type { AbsenceDuPlanning, MomentEntier } from "./types-du-planning";
-import { MotEnOr } from "./ElementsDuPlanning";
+import { momentDuJour, phraseDeLaPeriode, type MomentDuJour } from "@/lib/absences-equipe";
+import { jourLisible } from "@/lib/jour";
+import type { AbsenceDuPlanning } from "./types-du-planning";
 import { BasculeDuMoment, LES_TROIS_MOMENTS } from "./BasculeDuMoment";
+import { PisteAbsence } from "./PisteAbsence";
 
 /**
- * Ce que porte une absence déjà écrite : une moitié, ou la journée.
+ * Ce que l'absence d'une personne prend de CE jour.
  *
- * **Les deux bornes sont des chaînes libres en base** (`AbsenceEquipe`), et
- * c'est délibéré côté dépôt. Ici on ne garde que ce qu'on sait dessiner : une
- * borne inconnue vaut la journée, comme partout ailleurs dans ce fichier.
+ * **Lu sur le jour, plus sur la ligne** (27 octobre 2026) : une semaine qui
+ * commence un jeudi après-midi se disait « journée » le jeudi, parce qu'on
+ * lisait les deux bornes de la période (`momentDuJour`).
  */
-function momentDe(a: AbsenceDuPlanning): MomentEntier {
-  if (a.premierDemi !== a.dernierDemi) return "journee";
-  if (a.premierDemi === "matin" || a.premierDemi === "apres_midi") return a.premierDemi;
-  return "journee";
+function momentCeJour(absences: readonly AbsenceDuPlanning[], rang: number, jour: JourIso): MomentDuJour | null {
+  const siennes = absences.filter((a) => a.rang === rang);
+  const moments = siennes.map((a) => momentDuJour(a, jour)).filter((m): m is MomentDuJour => m !== null);
+  if (moments.includes("journee")) return "journee";
+  if (moments.includes("matin") && moments.includes("apres_midi")) return "journee";
+  return moments[0] ?? null;
 }
 
 /**
@@ -86,168 +92,99 @@ export function PasLaCeJour({
   titre,
   jour,
   absences,
+  autour,
   lignesEquipes,
   nombreSalaries,
   nomEquipe,
-  fermer,
-  rouvrir,
+  poser,
 }: {
   /** La date du jour, posée à gauche du geste, sur la même ligne. */
   titre: React.ReactNode;
   jour: JourIso;
+  /** Les absences qui touchent ce jour. */
   absences: AbsenceDuPlanning[];
+  /** Celles qui touchent ce jour ou ses deux voisins : la période écrite sous un nom. */
+  autour: AbsenceDuPlanning[];
   lignesEquipes: { rang: number; nom?: string | null }[];
   nombreSalaries: number;
   nomEquipe: (rang: number) => string;
-  fermer: (jour: JourIso, rang: number, quand?: "matin" | "apres_midi" | null) => void;
-  rouvrir: (id: string) => void;
+  /** L'état d'une personne pour CE jour seulement : `null` la rend présente. */
+  poser: (jour: JourIso, rang: number, moment: MomentDuJour | null) => void;
 }) {
   /**
-   * LA LISTE EST-ELLE OUVERTE ?
+   * LA FEUILLE EST-ELLE OUVERTE ?
    *
-   * **Son ordre du 10 septembre 2026 :** *« l'ordre devrait être + salarié
-   * absent ? puis Julien »*, et *« si on veut annuler on reclique sur + salarié
-   * absent, et on verrait Julien / Annuler, puis Antoine ? »*.
-   *
-   * Une seule porte, donc, pour poser ET pour défaire : le + ouvre la liste des
-   * gens du jour, chacun avec ce qu'on peut lui faire. Ce qui reste sous les
-   * yeux le reste du temps est ce qu'il a besoin de LIRE — qui manque, et quand.
+   * **Sa planche C du 27 octobre 2026** (`appli/soignee/salarie-absent.html`) :
+   * « Salarié absent ? » ouvre une feuille, une ligne par salarié, et sur
+   * chaque ligne la piste Présent, Matin, Après-midi, Journée. Elle remplace
+   * la liste des prénoms en or (« Julien », « Antoine, annuler ») et le choix
+   * du moment en second temps : un seul geste dit qui manque et quand.
    */
   const [ouverte, setOuverte] = useState(false);
-  /** Qui il vient de poser absent — le seul à qui l'interrupteur s'adresse. */
-  const [quiManque, setQuiManque] = useState<number | null>(null);
+  /** Seul : le moment se choisit sous la ligne qu'il vient de poser, comme avant. */
+  const [aChoisir, setAChoisir] = useState(false);
 
   // **Le rang 1, c'est LUI.** Sans salarié, la seule ligne d'équipe qui existe
   // est la sienne : fermer le jour revient à noter son absence à ce rang-là.
-  const rangs = nombreSalaries > 0 ? lignesEquipes.map((e) => e.rang) : [1];
-  const absentsParRang = new Map(absences.map((a) => [a.rang, a]));
+  const seul = nombreSalaries === 0;
+  const rangs = seul ? [1] : lignesEquipes.map((e) => e.rang);
+  const absents = [...new Set(absences.map((a) => a.rang))].filter((r) => momentCeJour(absences, r, jour) !== null);
 
   /** Le nom qu'on écrit sur une ligne — le sien quand il travaille seul. */
-  const nomDuRang = (rang: number) => (nombreSalaries > 0 ? nomEquipe(rang) : "Vous");
-
-  /**
-   * Poser une absence, ou la ramener à une moitié de journée.
-   *
-   * **On retire et on repose**, plutôt que de modifier. Une action de mise à
-   * jour aurait ajouté un troisième chemin d'écriture sur cette table — donc un
-   * troisième endroit où la réconciliation des affectations pourrait être
-   * oubliée (`ARCHITECTURE.md` §294). Reposer traverse celle qui existe déjà.
-   */
-  function poserLeMoment(rang: number, moment: MomentEntier) {
-    const a = absentsParRang.get(rang);
-    if (!a) return;
-    if (momentDe(a) === moment) {
-      // Déjà là où il veut : ne rien réécrire, et refermer l'interrupteur.
-      setQuiManque(null);
-      return;
-    }
-    rouvrir(a.id);
-    fermer(jour, rang, moment === "journee" ? null : moment);
-    // **L'interrupteur s'efface une fois choisi** — sa demande du 10 septembre.
-    setQuiManque(null);
-  }
+  const nomDuRang = (rang: number) => (seul ? "Vous" : nomEquipe(rang));
 
   const ligne = "flex min-h-[48px] w-full items-center justify-between gap-3 py-[11px] text-left";
 
   return (
     <div className="mb-1">
-      {/* ─── LE + EN TÊTE, LES NOMS DESSOUS — 10 septembre 2026 ────────────
-          *« L'ordre devrait être + salarié absent ? puis Julien. »* Il ouvre la
-          liste et la referme ; c'est aussi par lui qu'on annule, ce qui libère
-          la ligne d'une absence posée du mot « Annuler » qu'elle portait à
-          demeure — le geste le plus rare occupait la place la plus visible.
-
-          **Le geste se reconnaît au +, pas à un cerne** (voir `GesteAbsence`) :
-          sa décision du 9 septembre, et le pourquoi y est écrit en entier. */}
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0 flex-1">{titre}</div>
         <GesteAbsence
           data-atlas="fermer-le-jour"
           onClick={() => {
-            // **Seul et pas encore absent : un seul appui suffit.** Il n'y a
-            // personne à désigner, et lui demander de se choisir dans une liste
-            // d'un nom serait un geste pour rien.
-            if (nombreSalaries === 0 && !absentsParRang.has(1)) {
-              fermer(jour, 1);
-              setQuiManque(1);
+            // **Seul et pas encore absent : un seul appui suffit**, sans feuille
+            // (sa planche C le garde). Il n'y a personne à désigner.
+            if (seul && absents.length === 0) {
+              poser(jour, 1, "journee");
+              setAChoisir(true);
               return;
             }
-            setOuverte((o) => !o);
-            setQuiManque(null);
+            setAChoisir(false);
+            setOuverte(true);
           }}
         >
-          {nombreSalaries === 0 ? "Absent ?" : "Salarié absent ?"}
+          {seul ? "Absent ?" : "Salarié absent ?"}
         </GesteAbsence>
       </div>
 
-      {ouverte ? (
-        /* ─── OUVERT : LES PRÉNOMS, EN OR, SUR UNE LIGNE ───────────────────
-           Sa planche du 18 septembre 2026 : plus une ligne par personne, des
-           mots. Ceux qui manquent portent « · annuler » ; les autres attendent
-           d'être touchés. Les repères des suites ne bougent pas. */
-        <div className="flex flex-wrap items-center gap-x-[18px]">
-          {rangs.map((r) => {
-            const absente = absentsParRang.get(r);
-            return absente ? (
-              <MotEnOr
-                key={r}
-                data-atlas="rouvrir-le-jour"
-                onClick={() => {
-                  rouvrir(absente.id);
-                  if (quiManque === r) setQuiManque(null);
-                }}
-              >
-                {nomDuRang(r)}, annuler
-              </MotEnOr>
-            ) : (
-              <MotEnOr
-                key={r}
-                data-atlas="qui-nest-pas-la"
-                onClick={() => {
-                  // **La journée entière, tout de suite.** Le cas courant reste
-                  // à un appui : il touche un nom, c'est posé. Le choix du
-                  // moment ne sert qu'à restreindre, le jour où ça compte.
-                  fermer(jour, r);
-                  setQuiManque(r);
-                  setOuverte(false);
-                }}
-              >
-                {nomDuRang(r)}
-              </MotEnOr>
-            );
-          })}
-        </div>
-      ) : (
-        /* ─── FERMÉ : ON NE LIT QUE CE QUI EST POSÉ, ET QUAND ──────────────
-           *« Julien absent, et là on marque soit matin, soit aprem, soit
-           journée en fonction de la sélection ; le Annuler disparaît. »*
-
-           **Et une petite croix noire, à droite de la durée** — sa retouche du
-           18 septembre au soir : *« quand je mets un salarié absent, mets une
-           petite croix à droite en noir pour le supprimer, à côté de la durée
-           de son absence »*. Elle fait ce que fait « · annuler » derrière le
-           +, sans avoir à rouvrir la liste. Le moment ne s'écrit pas pendant
-           qu'on le choisit juste en dessous : il serait écrit deux fois. */
-        absences.map((a) => (
-          <div key={a.id} data-atlas="absence-posee" data-quand={momentDe(a)} className={ligne}>
+      {/* ─── CE QUI EST POSÉ, ET QUAND ─────────────────────────────────────
+          *« Julien absent, et là on marque soit matin, soit aprem, soit
+          journée en fonction de la sélection. »* Et la petite croix noire à
+          droite (sa retouche du 18 septembre au soir) : **elle ne retire que
+          CE jour** depuis le 27 octobre 2026. Elle retirait la ligne entière,
+          et une semaine notée dans Réglages, Équipe partait avec elle. */}
+      {absents.map((r) => {
+        const moment = momentCeJour(absences, r, jour)!;
+        return (
+          <div key={r} data-atlas="absence-posee" data-quand={moment} className={ligne}>
             <span className="w-[86px] flex-shrink-0 text-[13px]" style={{ color: colors.muted }}>
               Absent
             </span>
             <span className="min-w-0 flex-1 text-[14.5px]" style={{ color: colors.ink }}>
-              {nombreSalaries > 0 ? nomEquipe(a.rang) : "Vous"}
+              {nomDuRang(r)}
             </span>
-            {quiManque !== a.rang && (
+            {!(seul && aChoisir) && (
               <span className={texteSituation} style={{ color: colors.muted, flex: "none" }}>
-                {LES_TROIS_MOMENTS.find((m) => m.cle === momentDe(a))?.dit}
+                {LES_TROIS_MOMENTS.find((m) => m.cle === moment)?.dit}
               </span>
             )}
             <button
               type="button"
               data-atlas="retirer-absence"
-              aria-label={`Supprimer l’absence de ${nomDuRang(a.rang)}`}
+              aria-label={`Supprimer l’absence de ${nomDuRang(r)}`}
               onClick={() => {
-                rouvrir(a.id);
-                if (quiManque === a.rang) setQuiManque(null);
+                poser(jour, r, null);
+                setAChoisir(false);
               }}
               className="-mr-2 flex min-h-[44px] min-w-[44px] flex-shrink-0 cursor-pointer items-center justify-end border-0 bg-transparent pr-2 text-[15px]"
               style={{ color: colors.ink, WebkitTapHighlightColor: "transparent" }}
@@ -255,20 +192,89 @@ export function PasLaCeJour({
               ✕
             </button>
           </div>
-        ))
+        );
+      })}
+
+      {/* Seul, le moment se restreint juste dessous, et s'efface une fois choisi
+          (son choix D2 du 8 septembre, dans la forme du 10). */}
+      {seul && aChoisir && absents.includes(1) && (
+        <BasculeDuMoment
+          retenu={momentCeJour(absences, 1, jour)}
+          onChoisir={(m) => {
+            if (m !== momentCeJour(absences, 1, jour)) poser(jour, 1, m);
+            setAChoisir(false);
+          }}
+        />
       )}
 
-      {/* ─── L'INTERRUPTEUR, SUR CELUI QU'IL VIENT DE POSER ───────────────
-          Son choix D2 du 8 septembre — une absence peut ne prendre qu'une
-          demi-journée — dans la forme qu'il a demandée le 10 : le bouton de
-          « Déplacer », allumé sur ce qui vient d'être écrit, et qui s'efface
-          dès qu'il a choisi. Le faire vivre sous chaque ligne remettrait un
-          geste là où il n'en faut plus. */}
-      {quiManque !== null && !ouverte && absentsParRang.has(quiManque) && (
-        <BasculeDuMoment
-          retenu={momentDe(absentsParRang.get(quiManque)!)}
-          onChoisir={(m) => poserLeMoment(quiManque, m)}
-        />
+      {/* **La feuille part sous `<body>`, pas là où vit le geste** — comme
+          celle des périodes de Ma TVA (`CalendrierPeriodes.tsx`). La fiche du
+          jour vit dans le rail des mois (`MoisCharge`), qui se déplace par un
+          `transform` : une feuille `fixed` posée dedans se mesure sur le rail,
+          pas sur l'écran, et glissait avec lui, coupée sur le côté (vu le
+          27 octobre 2026 en jouant le glissé). Montée une fois ouverte : le
+          serveur n'a pas de `document`. */}
+      {ouverte && createPortal(
+        <BottomSheet open onBackdropClick={() => setOuverte(false)}>
+          <div data-atlas="feuille-absent">
+            <h2 className="mb-2 text-[26px] leading-[1.15]" style={{ fontFamily: font.display, color: colors.ink }}>
+              Absent le {jourLisible(jour)} ?
+            </h2>
+            {rangs.map((r, i) => {
+              const moment = momentCeJour(absences, r, jour);
+              const nom = nomDuRang(r);
+              const periode = phraseDeLaPeriode(
+                autour.filter((a) => a.rang === r),
+                jour
+              );
+              return (
+                <div
+                  key={r}
+                  data-atlas="salarie-du-jour"
+                  data-rang={r}
+                  className="pb-4 pt-3.5"
+                  style={i > 0 ? { boxShadow: `inset 0 1px 0 ${colors.line}` } : undefined}
+                >
+                  <div className="mb-3 flex items-center gap-3.5">
+                    {/* Les initiales de Vos clients ; l'ambre quand il manque. */}
+                    <span
+                      aria-hidden="true"
+                      className="grid h-11 w-11 flex-none place-items-center rounded-full text-[18px]"
+                      style={{
+                        fontFamily: font.display,
+                        backgroundColor: moment ? colors.carteAmbreFond : colors.rustTint,
+                        color: moment ? colors.carteAmbreTexte : colors.rust,
+                        transition: "background-color 240ms ease-out, color 240ms ease-out",
+                      }}
+                    >
+                      {nom.charAt(0).toUpperCase()}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[21px] leading-[1.2]" style={{ fontFamily: font.display, color: colors.ink }}>
+                        {nom}
+                      </span>
+                      {periode && (
+                        <span data-atlas="periode-absent" className="mt-0.5 block text-[14px]" style={{ color: colors.inkSoft }}>
+                          {periode}
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                  <PisteAbsence nom={`${nom}, le ${jourLisible(jour)}`} retenu={moment} onChoisir={(m) => poser(jour, r, m)} />
+                </div>
+              );
+            })}
+            <button
+              type="button"
+              onClick={() => setOuverte(false)}
+              className="mt-2 flex min-h-[48px] w-full items-center justify-center border-0 bg-transparent text-[15px] font-semibold"
+              style={{ color: colors.inkSoft }}
+            >
+              Fermer
+            </button>
+          </div>
+        </BottomSheet>,
+        document.body
       )}
     </div>
   );

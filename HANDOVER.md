@@ -10,6 +10,10 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## SALARIÉ ABSENT, LA C, SUR `lot/salarie-absent-c` (27 octobre 2026)
+
+Codée à sa demande, **batterie pas jouée** (« pas de batterie ») : le lot n'est pas sur `main`. La feuille « Salarié absent ? » (`PasLaCeJour.tsx`, `PisteAbsence.tsx`) et le geste d'un jour (`absenceDuJour`, `gesteDuJour`), qui corrige la semaine effacée par un seul jour. Pour livrer : dans le dossier du lot, `npm run verifier:avant-livraison` avec son accord, puis `git push origin HEAD:main`. Détail : `ARCHITECTURE.md` §523, `docs/salarie-absent-c.md`.
+
 ## POUR MON COMPTABLE : UN VIREMENT REÇU SE RÈGLE DANS SA LIGNE (26 octobre 2026)
 
 Une entrée se justifie par sa facture d'Atlas (`confirmerLaLigneRecue`, qui écrit la réponse de l'accueil dans la même transaction), par une facture faite hors d'Atlas (`facture_hors_atlas`, 0150) ou par une réponse de son sens (`MOTIFS_RECUS`). **Les pièges :** toute pose passe par `poser`, qui lit la ligne VERROUILLÉE et compare la pièce dans la même transaction (`refusDEcart`) : une nouvelle façon de justifier qui écrirait à côté échapperait au contrôle du montant. Le ticket photographié depuis sa ligne se compare AVANT d'être rangé (`ecartAvecLaLigne`). Le fichier d'une facture hors d'Atlas remplacée revient en `pieceRetiree` : l'action l'efface, après l'écriture. La contrainte de cohérence de 0150 est NOT VALID : ne la valider qu'après avoir compté les lignes qui ne la tiennent pas sur sa base (`ARCHITECTURE.md` §515).

@@ -64,10 +64,10 @@ export type AbsenceEquipe = {
 };
 
 /** Ce que vaut une borne non renseignée : la journée entière. */
-function borneDebut(a: AbsenceEquipe): Moment {
+function borneDebut(a: Pick<AbsenceEquipe, "premierDemi">): Moment {
   return a.premierDemi === "apres_midi" ? "apres_midi" : "matin";
 }
-function borneFin(a: AbsenceEquipe): Moment {
+function borneFin(a: Pick<AbsenceEquipe, "dernierDemi">): Moment {
   return a.dernierDemi === "matin" ? "matin" : "apres_midi";
 }
 
@@ -229,4 +229,138 @@ export function libelleAbsence(premierJour: JourIso, dernierJour: JourIso): stri
   if (premierJour === dernierJour) return `le ${format(premierJour, true)}`;
   const memeMois = premierJour.slice(0, 7) === dernierJour.slice(0, 7);
   return `du ${format(premierJour, !memeMois)} au ${format(dernierJour, true)}`;
+}
+
+/** Ce qu'une absence prend d'un jour : une moitié, ou la journée. */
+export type MomentDuJour = Moment | "journee";
+
+/** Ce que lisent les règles d'un jour : les dates et les bornes, pas l'équipe. */
+type BornesAbsence = Omit<AbsenceEquipe, "equipeId">;
+
+/** La veille, en UTC, comme `lendemain`. */
+function veille(jour: JourIso): JourIso {
+  const d = new Date(`${jour}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() - 1);
+  return d.toISOString().slice(0, 10);
+}
+
+/**
+ * Ce qu'une absence prend de CE jour, ou `null` si elle ne le touche pas.
+ *
+ * **Les bornes ne rognent que le premier et le dernier jour** (comme
+ * `creneauxOccupesParAbsence`) : un jeudi après-midi qui ouvre une semaine
+ * d'absence se lit « après-midi » le jeudi, « journée » le vendredi. L'écran
+ * lisait les bornes de la LIGNE, et disait donc « journée » le jeudi.
+ */
+export function momentDuJour(absence: BornesAbsence, jour: JourIso): MomentDuJour | null {
+  if (jour < absence.premierJour || jour > absence.dernierJour) return null;
+  const matin = !(jour === absence.premierJour && borneDebut(absence) === "apres_midi");
+  const apresMidi = !(jour === absence.dernierJour && borneFin(absence) === "matin");
+  if (matin && apresMidi) return "journee";
+  if (matin) return "matin";
+  if (apresMidi) return "apres_midi";
+  return null;
+}
+
+/** Une absence à écrire : ses deux jours et ses deux bornes. */
+export type PeriodeAbsence = {
+  premierJour: JourIso;
+  dernierJour: JourIso;
+  premierDemi: Moment;
+  dernierDemi: Moment;
+};
+
+/** Les bornes d'une absence d'un seul jour, pour un moment donné. */
+export function periodeDuJour(jour: JourIso, moment: MomentDuJour): PeriodeAbsence {
+  return {
+    premierJour: jour,
+    dernierJour: jour,
+    premierDemi: moment === "apres_midi" ? "apres_midi" : "matin",
+    dernierDemi: moment === "matin" ? "matin" : "apres_midi",
+  };
+}
+
+/**
+ * Ce qu'il reste d'une période quand on en retire UN jour : rien, un morceau
+ * avant, un morceau après, ou les deux.
+ *
+ * **C'est la racine du défaut du 27 octobre 2026.** Le planning retirait la
+ * ligne entière pour défaire un seul jour : une semaine notée dans Réglages,
+ * Équipe disparaissait d'un appui, et ses dates redevenaient proposables au
+ * client. Les bornes de la période se gardent aux deux bouts ; la coupure, elle,
+ * tombe toujours entre deux journées entières.
+ */
+export function resteAutourDuJour(absence: AbsenceEquipe, jour: JourIso): PeriodeAbsence[] {
+  if (jour < absence.premierJour || jour > absence.dernierJour) {
+    return [
+      {
+        premierJour: absence.premierJour,
+        dernierJour: absence.dernierJour,
+        premierDemi: borneDebut(absence),
+        dernierDemi: borneFin(absence),
+      },
+    ];
+  }
+  const reste: PeriodeAbsence[] = [];
+  if (jour > absence.premierJour) {
+    reste.push({ premierJour: absence.premierJour, dernierJour: veille(jour), premierDemi: borneDebut(absence), dernierDemi: "apres_midi" });
+  }
+  if (jour < absence.dernierJour) {
+    reste.push({ premierJour: lendemain(jour), dernierJour: absence.dernierJour, premierDemi: "matin", dernierDemi: borneFin(absence) });
+  }
+  return reste;
+}
+
+/**
+ * Le geste d'un jour, sur les absences d'une personne : ce qui se retire, ce
+ * qui se pose. `moment` vaut `null` quand il la rend présente ce jour-là.
+ *
+ * **La même fonction sert à l'écran, qui devance le serveur, et au dépôt, qui
+ * écrit** (`CLAUDE.md` §3). Seules les lignes qui touchent le jour bougent ;
+ * les autres jours de leur période sont reposés tels quels.
+ */
+export function gesteDuJour<A extends AbsenceEquipe & { id: string }>(
+  absences: readonly A[],
+  jour: JourIso,
+  moment: MomentDuJour | null
+): { aRetirer: string[]; aPoser: (PeriodeAbsence & { depuis: A | null })[] } {
+  const touchees = absences.filter((a) => a.premierJour <= jour && jour <= a.dernierJour);
+  // `depuis` : la ligne d'où vient un morceau, pour qu'il garde son motif.
+  const aPoser: (PeriodeAbsence & { depuis: A | null })[] = touchees.flatMap((a) =>
+    resteAutourDuJour(a, jour).map((p) => ({ ...p, depuis: a }))
+  );
+  if (moment !== null) aPoser.push({ ...periodeDuJour(jour, moment), depuis: null });
+  return { aRetirer: touchees.map((a) => a.id), aPoser };
+}
+
+/**
+ * Ce que la feuille du planning écrit sous un nom : la période d'absence qui
+ * entoure le jour, ou `null` s'il n'y en a pas.
+ *
+ * Une période qui traverse le jour se dit entière (« Du 26 au 30 octobre »).
+ * Une fois le jour rendu ou réduit à une moitié, ce sont les morceaux qui le
+ * touchent qui se disent (« Absent aussi le 26 octobre, et du 28 au 30
+ * octobre ») : il voit que sa semaine n'a pas été effacée.
+ */
+export function phraseDeLaPeriode(absences: readonly BornesAbsence[], jour: JourIso): string | null {
+  const longue = absences.find((a) => a.premierJour <= jour && jour <= a.dernierJour && a.premierJour < a.dernierJour);
+  if (longue) {
+    const texte = libelleAbsence(longue.premierJour, longue.dernierJour);
+    return texte.charAt(0).toUpperCase() + texte.slice(1);
+  }
+  const avant = veille(jour);
+  const apres = lendemain(jour);
+  const voisines = absences
+    .filter((a) => a.dernierJour === avant || a.premierJour === apres)
+    .sort((x, y) => (x.premierJour < y.premierJour ? -1 : 1));
+  if (voisines.length === 0) return null;
+  const ceJour = absences.some((a) => momentDuJour(a, jour) !== null);
+  return `${ceJour ? "Absent aussi" : "Absent"} ${voisines.map((a) => libelleAbsence(a.premierJour, a.dernierJour)).join(", et ")}`;
+}
+
+/** Les absences qui touchent le jour ou ses deux voisins : de quoi écrire `phraseDeLaPeriode`. */
+export function autourDuJour<A extends AbsenceEquipe>(absences: readonly A[], jour: JourIso): A[] {
+  const avant = veille(jour);
+  const apres = lendemain(jour);
+  return absences.filter((a) => a.premierJour <= apres && a.dernierJour >= avant);
 }
