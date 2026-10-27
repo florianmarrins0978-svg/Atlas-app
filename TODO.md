@@ -58,6 +58,31 @@ Il mesure bien (33,8 % le 25 octobre), puis son nettoyage tombe : `DELETE FROM e
 
 Le prompt renforcé est au §6 de `docs/audit-securite-prompt-renforce.md`. Étape 2 faite (`docs/audit-2026-10-etape-2.md`) ; R1, R2, R3, l'empreinte des e-mails et les protections fragiles faits (vague 1, `ARCHITECTURE.md` §500 et §501). Étape 3 faite (`docs/audit-2026-10-etape-3-inventaire.md`), vague 2 faite (E2 à E7, `ARCHITECTURE.md` §502). E1, E9 et E17 faits (`ARCHITECTURE.md` §503) ; E16 refusé (§503). E8 fait (`ARCHITECTURE.md` §504), E11 fait (§507), E13 moitié faite (§508). **Le plafond mensuel de dépense d'IA est DÉCIDÉ par lui le 26 octobre 2026, à coder** : essai 5 €, Artisan 10 €, Entreprise 20 €, Illimité 60 €, entreprise sans abonnement 10 €, SON entreprise sans plafond (désignée par un réglage de son espace, jamais en dur) ; mois du calendrier, « presque épuisé » à 80 %, coupure à 100 % de l'IA seule (la saisie à la main continue). La planche de la barre attend cette règle : `appli/soignee/abonnement-credits-ia.html`, qui lira le pourcentage, l'état normal, presque épuisé ou épuisé, et la date de reprise ; l'écran de dictée devra dire, épuisé, « Atlas IA reprend le 1er… D'ici là, tout s'écrit à la main » (oui de sa part). Restent : E10, E12, E14, E15, `CRON_SECRET` lui aussi public dans `docker-compose.yml` (même remède que E1), et la rétention du journal chez l'hébergeur. Restent hors du lot 0 : poser `min-release-age` (npm 11.10+, à vérifier sur son espace et en CI), épingler les actions GitHub par empreinte, passer `@simplewebauthn/server` en 13.x dans son propre lot (`ARCHITECTURE.md` §499).
 
+## Campagne red team du 27 octobre 2026 : ce qui en sort (`docs/audit-securite-2026-10-27-redteam.md`)
+
+**Faits, sur la branche `claude/audit-securite-redteam-2026-10-27`, batterie complète jouée
+(513/513 base, 196/197 navigateur — le seul rouge est `test-dossiers-comptables-e2e.ts`, sans
+rapport, voir plus bas) :** `CRON_SECRET` a désormais la même clé propre à l'espace que
+`AUTH_SECRET` (répond à la ligne ci-dessus) ; permissions GitHub de `pages.yml` resserrées au job
+qui en a besoin (une partie d'E15) ; **`photos` et `notes_vocales`, dans
+`/api/fichiers/[...key]`, gagnent le même second rempart que le logo** — trouvé en attaquant pour
+de vrai (A recevait la photo d'un chantier de B sous le rôle qui traverse la RLS, celui des suites
+e2e), non reproduit sous le rôle réel (`ARCHITECTURE.md` §509).
+
+**Deux décisions attendent lui, pas un code :**
+- **E12** — les liens de contrat et de passage d'entretien n'expirent jamais (jeton en clair en
+  base, sans date limite, contrairement au lien du comptable qui expire à un an). Combien de temps
+  un tel lien doit-il rester valable ?
+- **E10** — aucune des tables qui relient un paiement à sa facture (et consorts) n'a de contrainte
+  de clé étrangère en base ; ce n'est exploitable par aucun chemin trouvé (chaque fonction relit la
+  ligne via la RLS avant d'écrire), mais rien au niveau du schéma ne l'empêcherait si un futur code
+  l'oubliait. Vaut-il le coût d'une migration par table (sur une base qui peut être habitée) pour un
+  risque qui, aujourd'hui, n'est que théorique ?
+
+**Sans rapport avec ce lot, trouvé en passant, non traité ici :** `test-dossiers-comptables-e2e.ts`
+échoue de façon reproductible (le nom du fichier téléchargé est `'download'` au lieu de se terminer
+par `.pdf`) — zone du téléchargement de dossier comptable, aucun lien avec les fichiers de ce lot.
+
 ## ~~LE SEED LANCÉ À LA MAIN VIDE ENCORE SA BASE HABITÉE~~ corrigé le 25 octobre 2026
 
 Le seed refuse lui-même `atlas_dev` qui porte du travail (`ARCHITECTURE.md` §498).

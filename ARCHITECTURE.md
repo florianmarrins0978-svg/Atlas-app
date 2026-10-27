@@ -36110,3 +36110,36 @@ l'écran, plus le contour.
 
 **Reste ouvert** : le plafond de dépense d'IA par mois, qui demande sa décision (montant, effet quand il est atteint).
 
+## §509 : `photos` et `notes_vocales` gagnent le second rempart que `entreprises` avait déjà
+
+*27 octobre 2026, campagne red team (RT-6, `docs/audit-securite-2026-10-27-redteam.md`). Trouvé en
+ATTAQUANT, pas en relisant : un scénario e2e A-contre-B a vu A recevoir la photo d'un chantier de B.*
+
+**Le constat, et pourquoi il n'a pas été vu plus tôt.** `/api/fichiers/[...key]/route.ts` sert trois
+natures de fichiers. Pour le logo, la fuite trouvée le 29 août (§34 ancien, `entreprises` n'a aucune
+RLS) a appris la leçon : un filtre explicite sur `ctx.entrepriseId`, qui ne dépend pas de la RLS.
+Pour les deux autres — `photos` et `notes_vocales`, qui SONT sous `FORCE ROW LEVEL SECURITY` — la
+même leçon n'avait pas été appliquée : leur seule protection restait la RLS, sans second rempart.
+
+**Ce que ça voulait dire concrètement.** En production, sous `atlas_app` (sans `BYPASSRLS`), la RLS
+seule referme déjà tout — vérifié dans cette session en isolant la fonction d'autorisation
+(`autoriseLectureDuFichier`) sous ce rôle exact, dans une suite base dédiée. Mais les suites e2e de
+ce dépôt servent leur serveur sous un rôle qui TRAVERSE la RLS, par construction documentée
+(`CLAUDE.md` §5 : « elles inspectent la base »). Sous ce rôle-là, A a reçu la photo de B. Aucune
+suite e2e n'avait jamais exercé ce chemin avant cette session — et c'est justement ce qui aurait dû
+alerter : une protection qui ne tient QUE par la RLS ne peut, par construction, jamais être prouvée
+par une suite e2e. Il lui fallait une suite base, comme pour les autres chemins publics par jeton
+(`CLAUDE.md` §5 : « il lui faut une suite base, sous `atlas_app` »).
+
+**La correction.** Le même filtre explicite que le logo, étendu aux deux branches qui n'en avaient
+pas : `eq(photos.entrepriseId, ctx.entrepriseId)`, `eq(notesVocales.entrepriseId, ctx.entrepriseId)`.
+La fonction d'autorisation est extraite et exportée (`autoriseLectureDuFichier`) : elle ne dépend
+plus de l'en-tête `x-atlas-pathname` posé par le middleware, et devient rejouable directement dans
+une suite base.
+
+**Ce qui le tient, des deux côtés** : `scripts/test-fichiers-autorisation-db.ts` (sous `atlas_app`,
+niveau production) et `scripts/test-fichiers-cross-entreprise-e2e.ts` (sous le rôle e2e — celui qui
+avait laissé passer la photo). Les deux montent `REDTEAM_ENTREPRISE_A`/`REDTEAM_ENTREPRISE_B`, posent
+un logo et une photo marqués côté B, et vérifient le refus pour A ET l'accès pour B (un refus
+générique ne prouverait rien).
+

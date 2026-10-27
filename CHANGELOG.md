@@ -6,6 +6,14 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-27
+
+- **Campagne red team : la photo d'un chantier sortait de son entreprise.** `/api/fichiers/[...key]` ne protégeait `photos` et `notes_vocales` que par la RLS, sans second rempart — alors que la même route porte un filtre explicite pour le logo depuis le 29 août (`entreprises` n'a aucune RLS). Un scénario d'attaque A-contre-B a vu A recevoir la photo d'un chantier de B, sous le rôle qui traverse la RLS (celui des suites navigateur, par construction) ; non reproduit sous le rôle réel (`atlas_app`). Le même filtre que le logo s'étend aux deux branches. Ce que ça évite : une fuite qui ne se verrait que si un hébergement se trompait de rôle. `ARCHITECTURE.md` §509.
+- **`CRON_SECRET` gagne la même clé propre à l'espace que l'`AUTH_SECRET` du 25 octobre.** Il restait écrit en clair dans `docker-compose.yml`, public comme l'était l'`AUTH_SECRET` avant sa correction — sur un espace exposé, il ouvrait la purge planifiée à qui lit le dépôt sur GitHub. Même remède, plus simple (rien n'est chiffré sous ce jeton).
+- **Permissions GitHub de `pages.yml` resserrées au job qui en a besoin.** `pages: write` et `id-token: write` vivaient au niveau du workflow, donc aussi sur les jobs qui installent des paquets tiers (`npm ci`, `playwright install`). Seul `deploy` les garde désormais.
+- **Deux décisions attendent lui**, sans code à écrire avant : la durée de validité des liens de contrat/passage d'entretien (E12, aucune aujourd'hui), et si une contrainte de clé étrangère composite vaut le coût d'une migration par table pour un risque qui n'est, aujourd'hui, qu'un défaut de défense en profondeur, pas une fuite démontrée (E10). Détail : `docs/audit-securite-2026-10-27-redteam.md`.
+
+---
 ## 2026-10-26
 
 - **Audit de sécurité, E13 : les lignes du devis ne se mêlent plus aux règles données à l'IA des retouches dictées.** Une ligne venue d'un devis fournisseur importé, rédigée comme un ordre, aurait été obéie. Le devis part désormais à part, comme une donnée, comme le faisait déjà la lecture des dictées de chantier. Le plafond mensuel de dépense d'IA attend sa décision. `ARCHITECTURE.md` §508.
