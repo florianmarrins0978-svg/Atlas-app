@@ -99,6 +99,10 @@
 <p><strong>Le devis réécrivait à la dizaine ce qu'il avait réglé.</strong> 297 € écrits à l'écran devenaient 300 € sur le devis, sans que rien ne le dise. La haie de sa grille à 250 € pouvait sortir à 247 €, selon l'ordre des travaux. C'était déjà vrai avec l'ancien curseur.</p>
 <p><strong>Un écart d'arrondi pouvait écrire un travail à −5 €.</strong> 395 € de main d'œuvre, un travail qui pesait tout et un autre qui ne pesait rien : 400 € et −5 €.</p>
 <p>Reproduits avant de corriger, rouges sur l'ancien code (<code>test-repartir-main-oeuvre.ts</code>, <code>test-main-oeuvre-dictee-db.ts</code>). La règle maintenant : ce qu'il a réglé s'écrit tel quel ; ce que l'outil partage seul (parts égales, un travail retiré) reste à la dizaine, sa règle du 5 août, et l'écart ne va jamais sur un travail à zéro.</p>
+<h2 id="trouvé-en-jouant-le-geste-et-corrigé">Trouvé en jouant le geste, et corrigé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Une poignée tirée ne bougeait rien quand des travaux étaient à chiffrer.</strong> Un travail à 0 € n'a pas de largeur : ses poignées s'empilent au même endroit, et le doigt attrapait celle du dessus, qui sépare deux travaux vides. C'est le cas le plus courant : l'abattage prend toute la main d'œuvre, la fente et l'évacuation attendent leur prix. Maintenant, tirer vers la gauche donne au premier travail de la pile, tirer vers la droite prend au premier travail qui a de quoi.</p>
+<p>Trouvé par la suite navigateur à son premier passage, rouge sur « la poignée n'a rien déplacé » ; la règle a ses tests, rouges d'abord.</p>
 <h2 id="ce-qui-a-été-fait-autrement-que-la-planche">Ce qui a été fait autrement que la planche</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <div class="tablewrap"><table><thead><tr>
@@ -134,7 +138,7 @@
 </tr></thead><tbody>
 <tr>
 <td>règle pure (<code>test-repartir-main-oeuvre.ts</code>)</td>
-<td>19 sur 19</td>
+<td>23 sur 23</td>
 </tr>
 <tr>
 <td>devis sous la RLS (<code>test-main-oeuvre-dictee-db.ts</code>)</td>

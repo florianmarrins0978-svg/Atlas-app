@@ -120,7 +120,12 @@ async function main() {
       `le total ne tombe plus juste : ${JSON.stringify(apresEcrit)}`
     );
 
-    // --- Il tire la poignée entre les deux derniers -------------------------
+    // --- Il tire la dernière poignée vers la gauche --------------------------
+    //
+    // **La dernière, exprès** : quand des travaux sont « à chiffrer » (0 €),
+    // leurs poignées s'empilent au bout de la barre, et c'est celle du dessus
+    // que le doigt attrape. Le premier passage de cette suite a rougi là, sur
+    // « la poignée n'a rien déplacé » : elle séparait deux travaux vides.
     const k = depart.length - 2;
     const poignee = carte.locator('[data-atlas="poignee-main-oeuvre"]').nth(k);
     const boite = (await poignee.boundingBox())!;
@@ -132,11 +137,12 @@ async function main() {
     await page.mouse.up();
     const apresGlisse = await lire();
     console.log(`   après la poignée : ${apresGlisse.map((v) => `${v.nom} ${v.montant}`).join(", ")}`);
-    assert.notEqual(apresGlisse[k].montant, apresEcrit[k].montant, "la poignée n'a rien déplacé");
-    for (let i = 0; i < apresGlisse.length; i++) {
-      if (i === k || i === k + 1) continue;
-      assert.equal(apresGlisse[i].montant, apresEcrit[i].montant, `${apresGlisse[i].nom} a bougé alors qu'il ne borde pas la poignée`);
-    }
+    const bouges = apresGlisse.map((v, i) => (v.montant !== apresEcrit[i].montant ? i : -1)).filter((i) => i >= 0);
+    assert.ok(bouges.length > 0, "la poignée n'a rien déplacé");
+    assert.ok(
+      bouges.length === 2 && bouges[1] === bouges[0] + 1,
+      `une poignée ne change que deux travaux voisins, ici : ${bouges.map((i) => apresGlisse[i].nom).join(", ")}`
+    );
     assert.equal(apresGlisse.reduce((s, v) => s + v.montant, 0), totalAffiche, "le total ne tombe plus juste après la poignée");
 
     // --- Et le devis porte ce que la barre a montré -------------------------

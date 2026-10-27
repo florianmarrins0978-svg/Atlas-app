@@ -6,6 +6,7 @@ import {
   ecrireChoix,
   ecrireUnMontant,
   glisserLeJoint,
+  jointATirer,
   lireChoix,
   PAS_DE_LA_POIGNEE,
   PART_MINIMUM,
@@ -47,7 +48,7 @@ const euros = (montant: string | number) =>
 const JOINT = 2;
 const HAUTEUR = 64;
 
-type Tenue = { k: number; id: number; x0: number; depart: number[] };
+type Tenue = { k: number; id: number; x0: number; depart: number[]; sensChoisi: boolean };
 
 export default function RepartirLaMainOeuvre({
   question,
@@ -133,15 +134,24 @@ export default function RepartirLaMainOeuvre({
     b.style.setProperty("--pointe", `${ici - x + demi}px`);
   });
 
+  // Sous ces 24 px, deux poignées se recouvrent : elles font une pile, et le
+  // sens du doigt dit laquelle il tire (`jointATirer`).
+  const seuilDePile = utile > 0 ? (24 * total) / utile : 0;
   function saisir(e: PointerEvent<HTMLDivElement>, k: number) {
     e.preventDefault();
     e.currentTarget.setPointerCapture(e.pointerId);
-    setTenue({ k, id: e.pointerId, x0: e.clientX, depart: montants });
+    setTenue({ k, id: e.pointerId, x0: e.clientX, depart: montants, sensChoisi: false });
   }
   function glisser(e: PointerEvent<HTMLDivElement>) {
     if (!tenue || e.pointerId !== tenue.id || utile <= 0) return;
-    const voulu = tenue.depart[tenue.k] + ((e.clientX - tenue.x0) * total) / utile;
-    const nouveaux = glisserLeJoint(tenue.depart, tenue.k, voulu);
+    const ecart = e.clientX - tenue.x0;
+    let k = tenue.k;
+    if (!tenue.sensChoisi) {
+      if (Math.abs(ecart) < 3) return;
+      k = jointATirer(tenue.depart, tenue.k, ecart < 0 ? -1 : 1, seuilDePile);
+      setTenue({ ...tenue, k, sensChoisi: true });
+    }
+    const nouveaux = glisserLeJoint(tenue.depart, k, tenue.depart[k] + (ecart * total) / utile);
     if (nouveaux.some((m, i) => m !== montants[i])) poser(nouveaux);
   }
   function lacher(e: PointerEvent<HTMLDivElement>) {
@@ -150,7 +160,9 @@ export default function RepartirLaMainOeuvre({
   function auClavier(e: KeyboardEvent<HTMLDivElement>, k: number) {
     if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
     e.preventDefault();
-    poser(glisserLeJoint(montants, k, montants[k] + (e.key === "ArrowRight" ? PAS_DE_LA_POIGNEE : -PAS_DE_LA_POIGNEE)));
+    const sens = e.key === "ArrowRight" ? 1 : -1;
+    const j = jointATirer(montants, k, sens, seuilDePile);
+    poser(glisserLeJoint(montants, j, montants[j] + sens * PAS_DE_LA_POIGNEE));
   }
 
   const minuterie = useRef<ReturnType<typeof setTimeout> | null>(null);

@@ -30,6 +30,19 @@ maintenant : ce qu'il a réglé s'écrit tel quel ; ce que l'outil partage seul
 (parts égales, un travail retiré) reste à la dizaine, sa règle du 5 août, et
 l'écart ne va jamais sur un travail à zéro.
 
+## Trouvé en jouant le geste, et corrigé
+
+**Une poignée tirée ne bougeait rien quand des travaux étaient à chiffrer.**
+Un travail à 0 € n'a pas de largeur : ses poignées s'empilent au même endroit,
+et le doigt attrapait celle du dessus, qui sépare deux travaux vides. C'est
+le cas le plus courant : l'abattage prend toute la main d'œuvre, la fente et
+l'évacuation attendent leur prix. Maintenant, tirer vers la gauche donne au
+premier travail de la pile, tirer vers la droite prend au premier travail
+qui a de quoi.
+
+Trouvé par la suite navigateur à son premier passage, rouge sur « la poignée
+n'a rien déplacé » ; la règle a ses tests, rouges d'abord.
+
 ## Ce qui a été fait autrement que la planche
 
 | | la planche | le code | pourquoi |
@@ -42,7 +55,7 @@ l'écart ne va jamais sur un travail à zéro.
 
 | | |
 |---|---|
-| règle pure (`test-repartir-main-oeuvre.ts`) | 19 sur 19 |
+| règle pure (`test-repartir-main-oeuvre.ts`) | 23 sur 23 |
 | devis sous la RLS (`test-main-oeuvre-dictee-db.ts`) | 10 sur 10 |
 | chiffrage voisin (grilles, proposition de prix, corrections, identité, leçons, questions) | verts |
 | types, style, tirets, flèches, couleurs en clair, pansements, code mort, couches, chartes | verts |

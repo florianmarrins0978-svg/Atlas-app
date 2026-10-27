@@ -229,6 +229,24 @@ export function glisserLeJoint(montants: readonly number[], k: number, voulu: nu
 }
 
 /**
+ * La poignée que le doigt tire vraiment, quand plusieurs sont empilées.
+ *
+ * Un travail à 0 € (« à chiffrer », `partsDeDepart`) ou de quelques euros n'a
+ * pas de largeur à l'écran : les poignées qui le bordent tombent au même
+ * endroit, et le doigt attrapait celle du dessus, qui sépare parfois deux
+ * travaux vides. Rien ne bougeait (trouvé par `test-main-oeuvre-barre-e2e.ts`
+ * le 27 octobre 2026). Vers la gauche, c'est la première poignée de la pile
+ * qui part ; vers la droite, la dernière. `seuil` est la largeur, en euros,
+ * sous laquelle un morceau ne sépare plus deux poignées.
+ */
+export function jointATirer(montants: readonly number[], k: number, sens: -1 | 1, seuil: number): number {
+  let j = k;
+  if (sens < 0) while (j > 0 && montants[j] < seuil) j--;
+  else while (j < montants.length - 2 && montants[j + 1] < seuil) j++;
+  return j;
+}
+
+/**
  * Le montant du travail `i`, écrit à la main : **à l'euro près**, comme il l'a
  * tapé (sa réponse du 27 octobre 2026). Le travail d'à côté prend la
  * différence (le suivant, ou celui du dessus pour le dernier) ; s'il n'a pas

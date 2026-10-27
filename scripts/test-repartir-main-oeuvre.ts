@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import {
   ecrireUnMontant,
   glisserLeJoint,
+  jointATirer,
   repartirMainOeuvre,
 } from "../src/lib/main-oeuvre-dictee";
 import { contraste } from "../src/lib/chartes";
@@ -104,6 +105,35 @@ test("des centimes dans le total restent au voisin, sans poussière d'arrondi", 
 
 test("deux travaux trop petits pour se partager ne bougent pas", () => {
   assert.deepEqual(glisserLeJoint([8, 7], 0, 12), [8, 7]);
+});
+
+console.log("\n=== Des poignées empilées : le doigt tire celle qui peut bouger ===\n");
+
+// Trouvé par `test-main-oeuvre-barre-e2e.ts` le 27 octobre 2026. Les travaux à
+// 0 € (« à chiffrer », la règle de `partsDeDepart`) n'ont pas de largeur : leurs
+// poignées tombent au même endroit, et le doigt attrapait celle qui sépare
+// deux travaux vides. Rien ne bougeait, sur son cas le plus courant :
+// l'abattage prend tout, la fente et l'évacuation attendent.
+
+test("abattage à 800 €, fente et évacuation à 0 : tirer à gauche donne à la fente", () => {
+  assert.equal(jointATirer([800, 0, 0], 1, -1, 50), 0);
+  assert.deepEqual(glisserLeJoint([800, 0, 0], jointATirer([800, 0, 0], 1, -1, 50), 600), [600, 200, 0]);
+});
+
+test("tirer à droite depuis la pile prend au premier travail qui a de quoi", () => {
+  // 0 | 0 | 900 : les deux poignées sont au bord gauche, la seconde borde le 900.
+  assert.equal(jointATirer([0, 0, 900], 0, 1, 50), 1);
+});
+
+test("un morceau trop étroit pour se voir compte dans la pile", () => {
+  // 3 € sur 1 120 € ne fait pas un pixel : ses deux poignées n'en font qu'une.
+  assert.equal(jointATirer([1117, 3, 0, 0], 2, -1, 96), 0);
+});
+
+test("des poignées séparées ne changent pas de joint", () => {
+  assert.equal(jointATirer([700, 700, 200], 1, -1, 50), 1);
+  assert.equal(jointATirer([700, 700, 200], 1, 1, 50), 1);
+  assert.equal(jointATirer([700, 700, 200], 0, 1, 50), 0);
 });
 
 console.log("\n=== Le montant écrit : à l'euro près, le voisin prend la différence ===\n");

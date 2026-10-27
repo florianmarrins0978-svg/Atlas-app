@@ -36346,5 +36346,7 @@ Trois choix faits en codant : la vignette d'une pièce passe de 88 à 72 (`taill
 
 **Les gestes vivent dans `src/lib`**, et l'écran ne décide de rien : `glisserLeJoint` (seuls les deux voisins d'une poignée changent, de 10 € en 10 €, chacun garde 10 €) et `ecrireUnMontant` (à l'euro près ; le voisin prend la différence, le suivant complète ; un travail à zéro ne paie pas). Les deux comptent en centimes : un total à 397,50 € retombe juste après cent gestes.
 
+**Des poignées empilées se départagent au sens du doigt** (`jointATirer`). Un travail à 0 € ou de quelques euros n'a pas de largeur : les poignées qui le bordent tombent au même endroit, et le doigt attrapait celle du dessus, qui pouvait séparer deux travaux vides. Rien ne bougeait, sur son cas le plus courant (l'abattage prend tout, la fente et l'évacuation sont « à chiffrer »). Trouvé par `test-main-oeuvre-barre-e2e.ts` à son premier passage. Vers la gauche, la première poignée de la pile part ; vers la droite, la dernière ; une pile, c'est moins de 24 px entre deux poignées.
+
 **Les cinq teintes sont fixes** (`pastelsMainOeuvre`, palette « Jardin », son choix du même soir), comme `surPhoto` : un pastel dérivé de chaque charte deviendrait sombre sur Nuit et Sylve. Leur encre aussi, mesurée à 4,5 ou plus sur chacune. Le montant s'écrit dans son morceau s'il tient, mesuré sur son texte (15 px, puis 13 px, sinon il se tait et reste sur sa ligne) : un seuil fixe de 62 px taisait tout montant sous 350 € sur son téléphone.
 
