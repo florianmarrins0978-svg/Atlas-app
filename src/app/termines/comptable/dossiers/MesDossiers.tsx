@@ -316,7 +316,7 @@ function Dossier({ d, factures, premier }: { d: DossierAffiche; factures: Factur
             <button type="button" onClick={() => copier(lien)} className={texte} style={{ color: colors.inkSoft }} data-atlas="copier-lien">
               {copie ? "Lien copié" : "Copier le lien"}
             </button>
-            <a href={lien} target="_blank" rel="noreferrer" className={`flex items-center justify-center ${texte}`} style={{ color: colors.inkSoft }} data-atlas="voir-la-page-du-comptable">
+            <a href={`${lien}?apercu=1`} className={`flex items-center justify-center ${texte}`} style={{ color: colors.inkSoft }} data-atlas="voir-la-page-du-comptable">
               Voir la page qu’il ouvre
             </a>
           </div>

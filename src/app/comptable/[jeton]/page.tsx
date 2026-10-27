@@ -103,9 +103,19 @@ function ecartAffiche(p: PieceAffichee, suite: string, signale: boolean): LigneA
   };
 }
 
-export default async function PageDuComptable({ params }: { params: Promise<{ jeton: string }> }) {
+export default async function PageDuComptable({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ jeton: string }>;
+  searchParams: Promise<{ apercu?: string }>;
+}) {
   await garderLaPage();
   const { jeton } = await params;
+  // Le patron qui « voit la page qu'il ouvre » arrive avec `?apercu=1` : il a
+  // alors un bouton Fermer vers ses dossiers. Le comptable, lui, ouvre
+  // l'adresse nue et n'a rien à fermer (sa remarque du 27 octobre 2026).
+  const apercu = (await searchParams).apercu === "1";
   const dossier = await dossierParJeton(jeton);
 
   if (!dossier) {
@@ -153,6 +163,7 @@ export default async function PageDuComptable({ params }: { params: Promise<{ je
       envoye={`Envoyé le ${jourEnMots(jourIso(dossier.envoyeLe))}`}
       entreprise={dossier.entreprise}
       lignes={lignes}
+      apercu={apercu}
     />
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Fragment, useMemo, useState, useTransition, type ReactNode } from "react";
 import { colors, couleursDocument, font, surPlein, voile } from "@/lib/design-tokens";
 import { COULEUR_CATEGORIE, NOM_CATEGORIE } from "@/lib/couleurs-comptable";
@@ -94,6 +95,7 @@ export default function Verification({
   envoye,
   entreprise,
   lignes: depart,
+  apercu = false,
 }: {
   jeton: string;
   titre: string;
@@ -101,6 +103,8 @@ export default function Verification({
   envoye: string;
   entreprise: string;
   lignes: LigneAVerifier[];
+  /** Ouverte par le patron pour voir ce que voit son comptable : un bouton Fermer le ramène à ses dossiers. */
+  apercu?: boolean;
 }) {
   const [lignes, setLignes] = useState(depart);
   const mois = useMemo(() => [...new Set(depart.map((l) => l.jour.slice(0, 7)))], [depart]);
@@ -164,6 +168,12 @@ export default function Verification({
     <div className="flex min-h-dvh items-start" style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body }}>
       <main className="min-w-0 flex-1 px-4 pb-12 pt-5 md:px-6 lg:px-8 lg:pt-6" data-atlas="verification-comptable">
         <div className="mx-auto max-w-[1116px]">
+          {apercu && (
+            <Link href="/termines/comptable/dossiers" className="-ml-2 mb-2 inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-3 text-[15px] font-medium" style={{ boxShadow: `inset 0 0 0 1.5px ${colors.line}`, backgroundColor: colors.card, color: colors.ink }} data-atlas="fermer-apercu">
+              <Icone nom="croix" taille={19} epaisseur={2} />
+              Fermer
+            </Link>
+          )}
           <div className="flex flex-col gap-1 md:flex-row md:items-baseline md:justify-between md:gap-4">
             <h1 className="m-0 text-[26px] leading-[1.12] md:text-[28px]" style={{ fontFamily: font.display }}>
               {titre}
