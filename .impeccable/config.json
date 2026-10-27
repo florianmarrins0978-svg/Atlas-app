@@ -314,6 +314,15 @@
         ],
         "createdAt": "2026-10-27T18:16:48.007Z",
         "reason": "maquette qui reprend les jetons crème de la charte de l'application, déjà choisie par le patron; décision du dépôt"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/comptable-voir-le-dossier-pdf.html"
+        ],
+        "createdAt": "2026-10-27T18:36:35.378Z",
+        "reason": "maquette qui reprend les jetons crème de la charte de l'application, déjà choisie par le patron; décision du dépôt"
       }
     ]
   }
