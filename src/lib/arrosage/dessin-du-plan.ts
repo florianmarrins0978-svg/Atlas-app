@@ -19,7 +19,6 @@
 import type { CroquisLu, ZoneLue } from "@/server/ai/services/lire-croquis";
 import {
   cadreDe,
-  COINS,
   COTES,
   echantillonsRangee,
   formeLibre,
@@ -61,8 +60,8 @@ export const NOMS_DES_ZONES: Record<ZoneLue["type"] | "maison", string> = {
  * Une zone posée sur le terrain, EN MÈTRES : son coin en haut à gauche, sa
  * longueur couchée (L), sa largeur debout (l). Pour une haie, L est sa
  * longueur et l sa largeur — la largeur qu'il a demandée le 18 octobre (« pas
- * simplement la longueur »). Ses côtés peuvent être courbés et ses coins tirés
- * (`formes-du-dessin.ts`).
+ * simplement la longueur »). Ses côtés peuvent être courbés ; ses coins ne se
+ * tirent plus depuis le 27 octobre 2026 (`formes-du-dessin.ts`).
  */
 export type ZoneDessinee = Forme & {
   type: ZoneLue["type"];
@@ -153,7 +152,7 @@ export function lignesDeLaZone(
 export function zonesQuiDebordent<Z extends Forme>(d: { terrain: DessinDuPlan["terrain"]; zones: Z[] }): Z[] {
   const e = 1e-6;
   const dehors = (p: PointMetres) => p.x < -e || p.y < -e || p.x > d.terrain.L + e || p.y > d.terrain.l + e;
-  // Un coin tiré ou une courbe qui sortirait du terrain : la forme ne tient pas
+  // Une courbe qui sortirait du terrain : la forme ne tient pas
   // plus qu'une cote trop grande.
   return d.zones.filter(
     (z) => z.x < -e || z.y < -e || z.x + z.L > d.terrain.L + e || z.y + z.l > d.terrain.l + e || pointsDeLaForme(z).some(dehors)
@@ -389,11 +388,11 @@ export function lireLeDessin(brut: unknown): { ok: true; dessin: DessinDuPlan } 
       if (z.sensLignes !== "longueur" && z.sensLignes !== "largeur") return { ok: false, raison: `Le sens des lignes de « ${appel} » n’est pas lisible.` };
       zone.sensLignes = z.sensLignes;
     }
+    // Un coin tiré qui arriverait encore (un écran d'avant le 27 octobre 2026,
+    // resté ouvert) ne se lit pas : ce sont les cotes qui commandent.
     const courbes = lireTable(z.courbes, COTES, courbure);
-    const coins = lireTable(z.coins, COINS, decalage);
-    if (courbes === "faux" || coins === "faux") return { ok: false, raison: `La forme de « ${appel} » n’est pas lisible. Reprenez-la.` };
+    if (courbes === "faux") return { ok: false, raison: `La forme de « ${appel} » n’est pas lisible. Reprenez-la.` };
     if (courbes) zone.courbes = courbes;
-    if (coins) zone.coins = coins;
     zones.push(zone);
   }
 
@@ -468,7 +467,7 @@ export function lireLeDessin(brut: unknown): { ok: true; dessin: DessinDuPlan } 
   return { ok: true, dessin };
 }
 
-/** Une table de courbes ou de coins : absente, ou chaque clé connue et lisible. */
+/** Une table de courbes : absente, ou chaque clé connue et lisible. */
 function lireTable<K extends string, V>(v: unknown, cles: readonly K[], lire: (x: unknown) => V | null): Partial<Record<K, V>> | null | "faux" {
   if (v === undefined || v === null) return null;
   if (typeof v !== "object" || Array.isArray(v)) return "faux";
@@ -491,12 +490,6 @@ function courbure(v: unknown, max = COTE_MAX_M): { u: number; v: number } | null
   const o = v as Record<string, unknown>;
   const u = fini(o.u, 3), w = fini(o.v, max);
   return u === null || w === null ? null : { u, v: w };
-}
-function decalage(v: unknown): PointMetres | null {
-  if (typeof v !== "object" || v === null) return null;
-  const o = v as Record<string, unknown>;
-  const x = fini(o.x, COTE_MAX_M), y = fini(o.y, COTE_MAX_M);
-  return x === null || y === null ? null : { x, y };
 }
 
 function virgule(n: number): string {

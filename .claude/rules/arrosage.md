@@ -308,6 +308,19 @@ qu'on pose la zone, jamais sur la photo, qui n'est pas à l'échelle. Le glissem
 est FACULTATIF : non glissée, la zone est comptée (réseaux, arroseurs,
 pièces), et la réserve dit que sa distance à la nourrice ne l'est pas.
 
+**PLUS DE COIN TIRÉ SUR UNE PELOUSE NI UN MASSIF — sa décision du 27 octobre
+2026 :** *« on va retirer la possibilité de faire des coins tirés pour la
+pelouse et les massifs, on le laisse juste pour le dallage »*. Un coin attrapé
+en glissant sa zone d'arroseurs l'avait étirée de 12 à 15,06 m, l'étiquette
+disant toujours 12 × 10, et le plan était calculé sur 15,06. Ce que les cotes
+disent est ce qui part au calcul. Les côtés courbes et les rangées en S restent.
+Pour tourner une zone d'un quart de tour : « Tourner », dans sa feuille.
+
+**UNE COTE ÉCRITE PASSE AVANT TOUTE DÉDUCTION** (même jour). Son massif coté
+6 m, dessiné dans la pelouse de 10 m, avait été lu 10 m : la consigne donnait en
+exemple d'étendre une bande « sur toute la hauteur de la pelouse ». On ne déduit
+qu'un bord qui ne porte aucune cote.
+
 **LE Ø25 D'ABORD, UN RÉSEAU DE PLUS ENSUITE, LE Ø32 SUR SON CHOIX — sa règle
 du 20 octobre 2026**, qui remplace l'ordre du 16 octobre (Ø25, puis Ø32, puis
 un réseau de plus) : *« il fait le calcul en diamètre 25 ; si le 25 ne passe

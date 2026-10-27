@@ -326,6 +326,24 @@ une longue batterie, ou d'un état laissé par une suite voisine. | nous |
   couronnes du jardin (`postes.ts`), donc la liste les compterait deux fois.
   Cas rare, non vu chez lui ; à corriger quand il se présente à l'essai.
 
+## ⏳ ARROSAGE : SON CROQUIS DU 27 OCTOBRE, CE QUI RESTE (27 octobre 2026)
+
+Fait le 27 : coins tirés retirés des zones, consigne de lecture corrigée (cote
+écrite avant déduction, bande cotée en deux fois, zone dans une autre).
+Reste :
+
+1. **`npm run verifier:croquis` sur son espace** : le second croquis (massif
+   6 × 3 dans la pelouse, bande GAG 7,50 + 4,50) doit sortir en 6 × 3, 12 m,
+   pelouse 12 × 10, massif dedans. Propriétaire : lui (une commande), puis nous.
+2. **Un massif DANS la pelouse : le découper de la pelouse, comme la maison ?**
+   Aujourd'hui les deux zones se chevauchent : les turbines comptent aussi la
+   surface du massif. Le découper change le nombre de têtes (des morceaux
+   autour du massif). Question posée le 27 octobre, sa réponse attendue.
+   Propriétaire : lui.
+3. **La nourrice recouvre le nom d'une zone** sur « Dessiner le plan » (sa
+   capture du 27 octobre : « Goutte à goutte 9 × 10, 16 lignes » caché par le
+   rectangle noir). Apparence : maquette d'abord. Propriétaire : nous.
+
 ## ⏳ ARROSAGE : LA LECTURE QUI DÉDUIT LES COTES, À ÉPROUVER SUR SA PHOTO (21 octobre 2026)
 
 Codé le 21 octobre (`lire-croquis.ts`) : chiffres lus dans tous les sens, cotes
