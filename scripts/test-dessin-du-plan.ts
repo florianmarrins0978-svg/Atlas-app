@@ -24,7 +24,7 @@
  *   6. **Les courbes s'expliquent, elles ne se refusent pas** : une zone courbe
  *      part comme le rectangle qui l'entoure ; une rangée courbe ne coupe pas.
  *   7. **Ce qui arrive du téléphone se relit** : maisons, dalles, courbes,
- *      coins, bornes comprises.
+ *      bornes comprises. Un coin tiré ne change plus les métrés (27 octobre 2026).
  *   8. **Le pas du doigt et les cotes jusqu'aux bords.**
  */
 import assert from "node:assert/strict";
@@ -222,13 +222,29 @@ const dessinBombe: DessinDuPlan = { terrain: { L: 20, l: 20 }, zones: [bombee], 
 const zoneBombee = croquisDuDessin(dessinBombe, "compteur").zones[0];
 dire(zoneBombee.L === 11 && zoneBombee.l === 8, "la zone courbe part au calcul comme le rectangle qui l'entoure");
 dire(phrasesDuDessin(dessinBombe).includes("La forme de Pelouse est arrosée comme le rectangle qui l’entoure, 11 × 8 m. Les arroseurs du bord peuvent mouiller un peu au-delà."), "et l'écran l'explique");
-const massifCoin: ZoneDessinee = { type: "massif", nom: null, L: 8, l: 4, x: 0, y: 0, coins: { hd: { x: 1, y: 0 } } };
-dire(cadreDe(massifCoin).L === 9 && formeLibre(massifCoin), "un coin tiré élargit le rectangle");
+const massifBombe: ZoneDessinee = { type: "massif", nom: null, L: 8, l: 4, x: 0, y: 1, courbes: { droite: { u: 0.5, v: 2 } } };
 dire(
-  phrasesDuDessin({ ...dessinBombe, zones: [massifCoin] }).includes("Le goutte-à-goutte de Massif est compté sur le rectangle qui l’entoure, 9 × 4 m, un peu plus de tube que la forme."),
+  phrasesDuDessin({ ...dessinBombe, zones: [massifBombe] }).includes("Le goutte-à-goutte de Massif est compté sur le rectangle qui l’entoure, 9 × 4 m, un peu plus de tube que la forme."),
   "le goutte-à-goutte d'un massif courbe se compte sur son rectangle, et l'écran le dit",
 );
-dire(!formeLibre({ ...bombee, courbes: undefined }), "sans courbe ni coin, la zone n'est pas libre");
+// **Plus de coin tiré sur une pelouse ni un massif** — sa décision du
+// 27 octobre 2026, après un plan fait sur 15,06 × 10,15 m quand sa fiche disait
+// 12 × 10 : un coin attrapé en glissant la zone l'avait étirée sans rien dire.
+// *« On retire la possibilité de faire des coins tirés pour la pelouse et les
+// massifs. »* Un coin qui arriverait encore (un écran resté ouvert) ne change
+// plus les métrés : ce sont ses cotes qui partent au calcul.
+const relueAvecCoin = lireLeDessin({
+  terrain: { L: 34, l: 31 },
+  zones: [{ type: "gazon", nom: "Arroseurs", L: 12, l: 10, x: 9, y: 6, coins: { hd: { x: 3.06, y: 0 }, bd: { x: 3.06, y: 0.15 } } }],
+  nourrice: { x: 1, y: 1 }, piquage: { x: 30, y: 1 },
+});
+dire(relueAvecCoin.ok, "un dessin qui porte encore un coin tiré se lit");
+if (relueAvecCoin.ok) {
+  const partie = croquisDuDessin(relueAvecCoin.dessin, "compteur").zones[0];
+  dire(partie.L === 12 && partie.l === 10, `un coin tiré ne change plus les métrés : 12 × 10 part au calcul (${partie.L} × ${partie.l})`);
+  dire(!formeLibre(relueAvecCoin.dessin.zones[0]), "et la pelouse reste un rectangle");
+}
+dire(!formeLibre({ ...bombee, courbes: undefined }), "sans courbe, la zone n'est pas libre");
 
 // Une rangée courbe qu'on n'arrose pas ne coupe pas.
 const enS: DessinDuPlan = { ...allee({ x: 0, y: 6 }, { x: 12, y: 6 }), dalles: [{ a: { x: 0, y: 6 }, b: { x: 12, y: 6 }, l: 1, courbe: [{ u: 1 / 3, v: 0.1 }, { u: 2 / 3, v: -0.1 }] }] };
@@ -237,6 +253,26 @@ dire(phrasesDuDessin(enS).includes("Les dalles en courbe ne coupent pas Pelouse 
 const longueurS = longueurDeLaRangee(enS.dalles[0]);
 dire(longueurS > 12 && longueurS < 13, `la distance d'une rangée courbe se mesure le long de la courbe (${longueurS})`);
 
+// **Un massif dessiné DANS la pelouse la découpe, comme la maison** — sa
+// réponse du 27 octobre 2026 (« oui »), sur son croquis : un massif de
+// goutte-à-goutte de 6 × 3 au bord de sa pelouse de 12 × 10. Sans cela, les
+// turbines comptaient aussi la surface du massif.
+const pelouseEtMassif: DessinDuPlan = {
+  terrain: { L: 12, l: 10 },
+  zones: [
+    { type: "gazon", nom: "Arroseurs", L: 12, l: 10, x: 0, y: 0 },
+    { type: "massif", nom: "Goutte à goutte", L: 3, l: 6, x: 0, y: 2 },
+  ],
+  maisons: [], dalles: [], nourrice: null, piquage: null,
+};
+const autourDuMassif = morceauxDe(pelouseEtMassif.zones[0], pelouseEtMassif).parts;
+const aireAutour = autourDuMassif.reduce((t, q) => t + q.L * q.l, 0);
+dire(autourDuMassif.length === 3 && Math.abs(aireAutour - (120 - 18)) < 1e-6, `le massif découpe la pelouse en 3 parts, 102 m² arrosés aux turbines (${autourDuMassif.length} parts, ${aireAutour} m²)`);
+dire(morceauxDe(pelouseEtMassif.zones[1], pelouseEtMassif).parts.length === 1, "le massif, lui, reste entier");
+dire(phrasesDuDessin(pelouseEtMassif).includes("Goutte à goutte coupe Arroseurs en 3 parts."), `et l'écran le dit (${phrasesDuDessin(pelouseEtMassif).join(" | ")})`);
+const deuxPelouses: DessinDuPlan = { ...pelouseEtMassif, zones: [pelouseEtMassif.zones[0], { type: "gazon", nom: "Pelouse 2", L: 3, l: 6, x: 0, y: 2 }] };
+dire(morceauxDe(deuxPelouses.zones[0], deuxPelouses).parts.length === 1, "une pelouse ne découpe pas une autre pelouse");
+
 // ── 7. Ce qui arrive du téléphone se relit, bornes comprises ───────────────
 const brut2 = { ...brut, maisons: [], dalles: [] };
 refuse("une maison hors du terrain est refusée", { ...brut2, maisons: [{ nom: null, L: 10, l: 10, x: 30, y: 0 }] });
@@ -244,7 +280,6 @@ refuse("une maison sans cote est refusée", { ...brut2, maisons: [{ nom: null, L
 refuse("des dalles non arrosées en biais sont refusées", { ...brut2, dalles: [{ a: { x: 0, y: 0 }, b: { x: 10, y: 5 }, l: 1 }] });
 refuse("une courbe qui n'est pas un nombre est refusée", { ...brut2, zones: [{ ...brut.zones[0], courbes: { haut: { u: "x", v: 1 } } }] });
 refuse("une zone dont la courbe sort du terrain est refusée", { ...brut2, zones: [{ ...brut.zones[0], courbes: { haut: { u: 0.5, v: 40 } } }] });
-refuse("un coin tiré hors du terrain est refusé", { ...brut2, zones: [{ ...brut.zones[0], coins: { hg: { x: -3, y: 0 } } }] });
 refuse("une rangée en S qui sort du terrain est refusée", { ...brut2, dalles: [{ a: { x: 1, y: 10 }, b: { x: 12, y: 10 }, l: 1, courbe: [{ u: 1 / 3, v: -2 }, { u: 2 / 3, v: 0 }] }] });
 refuse("une courbe de rangée absurde est refusée", { ...brut2, dalles: [{ a: { x: 1, y: 10 }, b: { x: 12, y: 10 }, l: 1, courbe: [{ u: 1 / 3, v: 1e9 }, { u: 2 / 3, v: 0 }] }] });
 refuse("cent maisons, ce n'est plus un jardin", { ...brut2, maisons: Array.from({ length: 100 }, () => ({ nom: null, L: 1, l: 1, x: 0, y: 0 })) });
@@ -252,13 +287,13 @@ const relu = lireLeDessin({
   ...brut2,
   maisons: [{ nom: "Garage", L: 4, l: 4, x: 2, y: 2 }],
   dalles: [{ a: { x: 0, y: 6 }, b: { x: 12, y: 6.5 }, l: 1 }],
-  zones: [{ ...brut.zones[0], courbes: { bas: { u: 0.5, v: 1 } }, coins: { hd: { x: -1, y: 1 } } }, brut.zones[1]],
+  zones: [{ ...brut.zones[0], courbes: { bas: { u: 0.5, v: 1 } } }, brut.zones[1]],
 });
 dire(relu.ok, `un dessin avec maison, dalles et courbes se lit${relu.ok ? "" : ` (${relu.raison})`}`);
 if (relu.ok) {
   dire(relu.dessin.maisons[0].nom === "Garage" && relu.dessin.dalles.length === 1, "la maison et les dalles arrivent au calcul");
   dire(relu.dessin.dalles[0].b.y === 6, "le serveur redresse la rangée comme l'écran");
-  dire(relu.dessin.zones[0].courbes?.bas?.v === 1 && relu.dessin.zones[0].coins?.hd?.x === -1, "la courbe et le coin arrivent tels quels");
+  dire(relu.dessin.zones[0].courbes?.bas?.v === 1, "la courbe arrive telle quelle");
   dire(phrasesDuDessin(relu.dessin).some((p) => /^Les dalles et Garage coupent Pelouse arrière en \d+ parts\.$/.test(p)), `les deux coupent ensemble (${phrasesDuDessin(relu.dessin).join(" | ")})`);
 }
 dire(lireLeDessin(brut).ok, "un dessin sans maison ni dalles se lit toujours");
