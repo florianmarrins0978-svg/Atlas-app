@@ -377,6 +377,16 @@ const HORS_CHARTE: Array<{
     pourquoi: "cartes de choix du rôle, rangées côte à côte (planche du 26 octobre 2026)",
   },
   {
+    // **LA LIGNE DU FICHIER DU DOSSIER JUSTIFIÉ** (27 octobre 2026, option A de
+    // `appli/comptable-voir-le-dossier-pdf.html`, choisie par le patron : « je ne
+    // sais pas où est le dossier »). Une tuile PDF, le nom et la taille : c'est le
+    // fichier qu'on montre, à 18 px comme sur la planche (`.fichier`), pas un
+    // geste. Télécharger et Envoyer, juste dessous, gardent leur capsule.
+    motif: /^src[/\\]app[/\\]termines[/\\]comptable[/\\]dossiers[/\\]MesDossiers\.tsx$/,
+    seulement: /data-atlas="ouvrir-dossier"/,
+    pourquoi: "ligne du fichier du dossier, à 18 px comme la planche choisie",
+  },
+  {
     // **LA PLAGE DE L'AGENDA À RELIER** (même planche) : seul, la phrase qui
     // renvoie à l'agenda devient une plage qui se touche tout entière. C'est
     // une plage qu'on parcourt, à 6 px comme ses voisines, et non un geste.
