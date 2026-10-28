@@ -20,18 +20,22 @@ export const LIRE_AU_PLUS_TOUS_LES_MS = 30 * 60 * 1000;
 export type ResultatLecture = { ok: true; nouveaux: number; lue: boolean } | Refus;
 
 /**
- * Lit le relevé depuis la dernière fois, et le range : chaque ligne pour le
+ * Lit le relevé du dossier en cours, et le range : chaque ligne pour le
  * dossier du comptable, et les virements reçus pour les questions de l'accueil.
+ * Chaque lecture relit tout le dossier ; la clé empêche de compter deux fois.
  *
  * **Il n'y a pas de tâche de fond dans son espace** : la banque se lit quand
  * quelqu'un ouvre Atlas (l'accueil, Ma TVA, Ma banque), et la carte apparaît à
- * la relecture suivante de l'accueil. La marge de trois jours rattrape une
- * ligne que la banque inscrit avec retard ; la clé empêche qu'elle soit
+ * la relecture suivante de l'accueil. Chaque lecture relit tout le dossier en
+ * cours, depuis son début (ou trente jours avant aujourd'hui) : une ligne que
+ * la banque inscrit avec retard est rattrapée, et la clé empêche qu'elle soit
  * comptée deux fois.
  *
  * **La lecture est marquée faite même quand la banque refuse** : sans quoi
  * chaque relecture de l'accueil retenterait, et l'on brûlerait les lectures
- * permises sur une panne. Le refus part au journal, et Ma banque le dit.
+ * permises sur une panne. Le refus part au journal, et Ma banque le dit. Le
+ * relevé n'en souffre pas : il ne dépend pas de cette date, la lecture suivante
+ * relit tout le dossier.
  *
  * `nouveaux` compte les virements reçus nouveaux, comme avant : c'est ce que
  * l'accueil et Ma banque annoncent.
@@ -50,7 +54,10 @@ export async function lireLaBanque(
     return { ok: false, raison: "L'accord donné à votre banque est terminé. Reliez-la à nouveau." };
   }
 
-  const { releve, virements } = fenetresDeLecture(maintenant, liaison.luLe);
+  // Le dossier d'abord : le relevé se lit depuis son début, pas depuis la
+  // dernière lecture (`fenetresDeLecture`).
+  const dossier = await dossierEnCours(ctx, maintenant);
+  const { releve, virements } = fenetresDeLecture(maintenant, dossier.du);
 
   await marquerBanqueLue(ctx, maintenant);
   const r = await mouvementsBancaires(liaison, releve);
@@ -61,7 +68,6 @@ export async function lireLaBanque(
   await ajouterMouvements(ctx, r.mouvements);
   // Les lignes nouvelles retrouvent leur ticket dès qu'elles arrivent : c'est
   // ici, à l'arrivée de la donnée, que le Check up silencieux a sa place.
-  const dossier = await dossierEnCours(ctx, maintenant);
   await appliquerCheckUp(ctx, dossier.du, dossier.au);
   const nouveaux = await ajouterVirements(
     ctx,

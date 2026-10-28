@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { fenetresDeLecture, lireTransactions, virementsDesMouvements, type Transaction } from "../src/lib/releve-bancaire";
+import { fenetresDeLecture, lireToutesLesPages, lireTransactions, virementsDesMouvements, type PageReleve, type Transaction } from "../src/lib/releve-bancaire";
 
 // POUR MON COMPTABLE, LOT 1 — sa remarque du 24 octobre 2026 : *« e-banking
 // permet de lire les virements entrants, mais pas les sortants »*.
@@ -16,16 +16,22 @@ import { fenetresDeLecture, lireTransactions, virementsDesMouvements, type Trans
 
 let passed = 0;
 let failed = 0;
-function test(nom: string, fn: () => void) {
-  try {
-    fn();
-    console.log(`✅ ${nom}`);
-    passed++;
-  } catch (err) {
-    console.error(`❌ ${nom}`);
-    console.error(`   ${err instanceof Error ? err.message : err}`);
-    failed++;
-  }
+// Un test peut être asynchrone : sans l'attendre, un rejet non géré passerait
+// pour un vert, et la suite mentirait.
+const enCours: Promise<void>[] = [];
+function test(nom: string, fn: () => void | Promise<void>) {
+  const verdict = async () => {
+    try {
+      await fn();
+      console.log(`✅ ${nom}`);
+      passed++;
+    } catch (err) {
+      console.error(`❌ ${nom}`);
+      console.error(`   ${err instanceof Error ? err.message : err}`);
+      failed++;
+    }
+  };
+  enCours.push(verdict());
 }
 
 const credit = (o: Partial<Transaction> = {}): Transaction => ({
@@ -118,23 +124,88 @@ test("les virements reçus se déduisent du relevé, les sorties en sont écart�
   assert.equal(v[0].cle, releve[0].cle);
 });
 
-test("première lecture : 90 jours de relevé, 30 de virements", () => {
-  const f = fenetresDeLecture(new Date("2026-10-24T12:00:00Z"), null);
-  assert.equal(f.releve, "2026-07-26");
+test("la fenêtre de relevé part du début du dossier en cours, et jamais d'une date de lecture", () => {
+  // Le dossier du 1er janvier doit être lu depuis le 1er janvier : une fenêtre
+  // de 90 jours y laissait janvier à juillet sans jamais les relire.
+  const f = fenetresDeLecture(new Date("2026-10-24T12:00:00Z"), "2026-01-01");
+  assert.equal(f.releve, "2026-01-01");
+});
+
+test("la fenêtre ne dépend d'aucune date de dernière lecture : une lecture en échec ne peut plus creuser un trou", () => {
+  // Avant : chaque tentative, même refusée, avançait la date de lecture, et la
+  // suivante ne remontait que trois jours avant elle. Les jours entre la
+  // dernière lecture réussie et la reprise étaient perdus.
+  // Dossier commencé le 1er octobre, aujourd'hui le 24 : la marge de trente
+  // jours remonte plus tôt que le dossier, et c'est elle qui fixe le début.
+  const f = fenetresDeLecture(new Date("2026-10-24T12:00:00Z"), "2026-10-01");
+  assert.equal(f.releve, "2026-09-24");
+});
+
+test("le relevé remonte d'au moins trente jours, pour rattraper une opération inscrite avec retard", () => {
+  // Une fin de dossier récente : la marge de trente jours ramène quand même la
+  // lecture avant la date de début, et le recouvrement est sans effet (clé).
+  const f = fenetresDeLecture(new Date("2026-10-24T12:00:00Z"), "2026-10-20");
+  assert.equal(f.releve, "2026-09-24");
+});
+
+test("les virements à répondre : trente jours, toujours depuis aujourd'hui", () => {
+  const f = fenetresDeLecture(new Date("2026-10-24T12:00:00Z"), "2026-01-01");
   assert.equal(f.virements, "2026-09-24");
 });
 
-test("lecture suivante : depuis la dernière, moins trois jours, pour les deux", () => {
-  const f = fenetresDeLecture(new Date("2026-10-24T12:00:00Z"), new Date("2026-10-20T12:00:00Z"));
-  assert.equal(f.releve, "2026-10-17");
-  assert.equal(f.virements, "2026-10-17");
+test("deux opérations identiques le même jour, sans référence, restent DEUX lignes", () => {
+  // Deux pleins d'essence au même montant, même libellé, même jour : la clé
+  // d'empreinte était la même, et la base n'en gardait qu'une.
+  const plein = debit({ transaction_amount: { amount: "12.50", currency: "EUR" }, remittance_information: ["CB STATION"] });
+  const lues = lireTransactions("compte-1", [plein, { ...plein }]);
+  assert.equal(lues.length, 2);
+  assert.equal(new Set(lues.map((m) => m.cle)).size, 2);
 });
 
-test("une dernière lecture très ancienne ne fait pas remonter plus loin que la première fenêtre", () => {
-  const f = fenetresDeLecture(new Date("2026-10-24T12:00:00Z"), new Date("2026-01-01T12:00:00Z"));
-  assert.equal(f.releve, "2026-07-26");
-  assert.equal(f.virements, "2026-09-24");
+test("la première occurrence garde la clé d'avant, seule la répétition reçoit un rang", () => {
+  const plein = debit({ transaction_amount: { amount: "12.50", currency: "EUR" }, remittance_information: ["CB STATION"] });
+  const [unique] = lireTransactions("compte-1", [plein]);
+  const [premier] = lireTransactions("compte-1", [plein, { ...plein }]);
+  assert.equal(premier.cle, unique.cle);
 });
 
-console.log(`\n${passed} réussi(s), ${failed} échoué(s)`);
-if (failed > 0) process.exit(1);
+test("les lignes identiques restent distinctes d'une lecture à l'autre, dans le même ordre", () => {
+  const plein = debit({ transaction_amount: { amount: "12.50", currency: "EUR" }, remittance_information: ["CB STATION"] });
+  const premiere = lireTransactions("compte-1", [plein, { ...plein }]).map((m) => m.cle);
+  assert.equal(new Set(premiere).size, 2);
+  const seconde = lireTransactions("compte-1", [plein, { ...plein }, debit({ booking_date: "2026-10-22" })]).map((m) => m.cle);
+  assert.deepEqual(seconde.slice(0, 2), premiere);
+});
+
+test("toutes les pages sont lues, dans l'ordre, sans en perdre une", async () => {
+  const pages: Record<string, PageReleve> = {
+    "": { transactions: [debit({ entry_reference: "A" })], continuation_key: "p2" },
+    p2: { transactions: [debit({ entry_reference: "B" })], continuation_key: "p3" },
+    p3: { transactions: [debit({ entry_reference: "C" })], continuation_key: null },
+  };
+  const r = await lireToutesLesPages(async (suite) => ({ ok: true, ...pages[suite ?? ""] }));
+  assert.equal(r.ok, true);
+  if (r.ok) assert.deepEqual(r.transactions.map((t) => t.entry_reference), ["A", "B", "C"]);
+});
+
+test("une banque qui ne finit jamais de paginer fait échouer la lecture, au lieu de rendre une partie", async () => {
+  // Avant : dix pages puis arrêt silencieux, et la lecture était marquée faite.
+  const r = await lireToutesLesPages(async () => ({ ok: true, transactions: [debit()], continuation_key: "encore" }));
+  assert.equal(r.ok, false);
+});
+
+test("une erreur en cours de pagination ne rend aucune partie du relevé", async () => {
+  let appel = 0;
+  const r = await lireToutesLesPages(async () => {
+    appel++;
+    if (appel === 1) return { ok: true, transactions: [debit()], continuation_key: "p2" };
+    return { ok: false, raison: "Enable Banking a refusé (500)." };
+  });
+  assert.equal(r.ok, false);
+  assert.equal("transactions" in r, false);
+});
+
+Promise.all(enCours).then(() => {
+  console.log(`\n${passed} réussi(s), ${failed} échoué(s)`);
+  if (failed > 0) process.exit(1);
+});

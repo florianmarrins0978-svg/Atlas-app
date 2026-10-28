@@ -57,11 +57,17 @@ export type VirementLu = VirementRecu & { cle: string };
  * **La formule n'a pas bougé depuis la lecture des seuls virements reçus** :
  * les clés déjà rangées dans `virements_recus` doivent rester les mêmes, sans
  * quoi la lecture suivante reposerait au patron des questions déjà répondues.
+ *
+ * Deux opérations identiques le même jour sans référence (deux pleins au même
+ * montant, même libellé) ont la même empreinte. C'est le rang de la répétition
+ * qui les sépare (`lireTransactions`), jamais la première occurrence : celle-ci
+ * garde la clé qu'elle avait avant.
  */
-function cleDuMouvement(compte: string, t: Transaction, m: Omit<MouvementLu, "cle" | "sens">): string {
+function cleDeBase(compte: string, t: Transaction, m: Omit<MouvementLu, "cle" | "sens">): { cle: string; sansReference: boolean } {
   const reference = t.entry_reference?.trim() || t.transaction_id?.trim();
-  if (reference) return `${compte}:${reference}`;
-  return createHash("sha256").update([compte, m.date, m.montant, m.contrepartie ?? "", m.libelle].join("|")).digest("hex");
+  if (reference) return { cle: `${compte}:${reference}`, sansReference: false };
+  const empreinte = createHash("sha256").update([compte, m.date, m.montant, m.contrepartie ?? "", m.libelle].join("|")).digest("hex");
+  return { cle: empreinte, sansReference: true };
 }
 
 /**
@@ -73,6 +79,7 @@ function cleDuMouvement(compte: string, t: Transaction, m: Omit<MouvementLu, "cl
  */
 export function lireTransactions(compte: string, transactions: readonly Transaction[]): MouvementLu[] {
   const lus: MouvementLu[] = [];
+  const vus = new Map<string, number>();
   for (const t of transactions) {
     if (t.status !== "BOOK") continue;
     const sens = t.credit_debit_indicator === "CRDT" ? "entree" : t.credit_debit_indicator === "DBIT" ? "sortie" : null;
@@ -89,7 +96,13 @@ export function lireTransactions(compte: string, transactions: readonly Transact
       contrepartie: partie?.name?.trim() || null,
       libelle: (t.remittance_information ?? []).join(" ").trim(),
     };
-    lus.push({ ...m, sens, cle: cleDuMouvement(compte, t, m) });
+    const { cle, sansReference } = cleDeBase(compte, t, m);
+    // Le rang suit l'ordre de la banque, qui reste le même d'une lecture à
+    // l'autre : chaque lecture couvre les jours entiers depuis le début du
+    // dossier, donc les répétitions reçoivent les mêmes clés.
+    const rang = (vus.get(cle) ?? 0) + 1;
+    vus.set(cle, rang);
+    lus.push({ ...m, sens, cle: sansReference && rang > 1 ? `${cle}:${rang}` : cle });
   }
   return lus;
 }
@@ -101,32 +114,59 @@ export function virementsDesMouvements(mouvements: readonly MouvementLu[]): Vire
     .map((m) => ({ cle: m.cle, date: m.date, montant: m.montant, payeur: m.contrepartie, libelle: m.libelle }));
 }
 
-/**
- * À la première lecture : trente jours de virements reçus, quatre-vingt-dix
- * de relevé.
- *
- * **Deux fenêtres, et c'est voulu.** Un virement reçu devient une question sur
- * l'accueil : trois mois de vieux virements y feraient trois mois de cartes.
- * Le relevé, lui, sert le dossier du comptable, qui veut tout ce que la banque
- * accepte de rendre ; quatre-vingt-dix jours est ce qu'elle rend d'ordinaire.
- */
-const PREMIERE_FENETRE_VIREMENTS_JOURS = 30;
-const PREMIERE_FENETRE_RELEVE_JOURS = 90;
-/** Ensuite, depuis la dernière lecture, moins trois jours de marge. */
-const MARGE_JOURS = 3;
+/** Le relevé remonte d'au moins ce nombre de jours avant aujourd'hui, pour une opération inscrite avec retard. */
+const MARGE_RELEVE_JOURS = 30;
+/** Les virements à répondre : les trente derniers jours. */
+const FENETRE_VIREMENTS_JOURS = 30;
 
 /**
  * D'où lire le relevé, et d'où garder les virements reçus : deux jours au
  * format `AAAA-MM-JJ`.
  *
- * Après une première lecture, les deux partent du même jour : la dernière
- * lecture moins la marge, jamais plus tôt que la fenêtre de première lecture.
+ * **Le relevé part toujours du début du dossier en cours**, ou de trente jours
+ * avant aujourd'hui si c'est plus tôt. Chaque lecture relit donc tout le
+ * dossier : une lecture refusée ou interrompue ne laisse aucun trou, la
+ * suivante comble tout, et les lignes déjà rangées sont ignorées par leur clé.
+ *
+ * **Ce qui a été retiré** : la fenêtre depuis la dernière lecture. Elle
+ * avançait à chaque tentative, même refusée, et elle perdait les jours d'une
+ * panne de la banque. Et la première lecture ne remontait que de quatre-vingt-dix
+ * jours, alors qu'un dossier démarré le 1er janvier en contient plus.
  */
-export function fenetresDeLecture(maintenant: Date, luLe: Date | null): { releve: string; virements: string } {
+export function fenetresDeLecture(maintenant: Date, debutDuDossier: string): { releve: string; virements: string } {
   const jours = (n: number) => n * 24 * 3600 * 1000;
-  const depuis = (fenetre: number) => {
-    const plusTot = maintenant.getTime() - jours(fenetre);
-    return jourIso(new Date(luLe ? Math.max(plusTot, luLe.getTime() - jours(MARGE_JOURS)) : plusTot));
-  };
-  return { releve: depuis(PREMIERE_FENETRE_RELEVE_JOURS), virements: depuis(PREMIERE_FENETRE_VIREMENTS_JOURS) };
+  const depuisMarge = jourIso(new Date(maintenant.getTime() - jours(MARGE_RELEVE_JOURS)));
+  const releve = debutDuDossier < depuisMarge ? debutDuDossier : depuisMarge;
+  return { releve, virements: jourIso(new Date(maintenant.getTime() - jours(FENETRE_VIREMENTS_JOURS))) };
+}
+
+/** Une page de relevé telle que la banque la rend, avec la suite à demander. */
+export type PageReleve = { transactions: Transaction[]; continuation_key?: string | null };
+
+/**
+ * Pages au plus pour un compte. Au-delà, la banque rend davantage que prévu :
+ * on refuse plutôt que de garder une partie du relevé et de la marquer complète.
+ */
+export const PAGES_MAX_PAR_COMPTE = 100;
+
+/**
+ * Toutes les pages d'un compte, dans l'ordre. **Tout ou rien** : une page en
+ * erreur, ou une suite qui ne finit pas, rend un refus sans aucune ligne.
+ *
+ * Avant : dix pages au plus, puis arrêt silencieux, et la lecture était
+ * marquée faite. Les lignes au-delà disparaissaient sans message.
+ */
+export async function lireToutesLesPages<R extends { ok: false; raison: string }>(
+  lirePage: (suite: string | undefined) => Promise<({ ok: true } & PageReleve) | R>
+): Promise<({ ok: true; transactions: Transaction[] }) | { ok: false; raison: string }> {
+  const transactions: Transaction[] = [];
+  let suite: string | undefined;
+  for (let page = 0; page < PAGES_MAX_PAR_COMPTE; page++) {
+    const r = await lirePage(suite);
+    if (!r.ok) return r;
+    transactions.push(...r.transactions);
+    suite = r.continuation_key ?? undefined;
+    if (!suite) return { ok: true, transactions };
+  }
+  return { ok: false, raison: `La banque rend plus de ${PAGES_MAX_PAR_COMPTE} pages pour un seul compte. Rien n'a été rangé.` };
 }

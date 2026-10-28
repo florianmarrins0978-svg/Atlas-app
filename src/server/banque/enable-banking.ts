@@ -2,7 +2,7 @@ import { createSign } from "node:crypto";
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { logger } from "../logger";
-import { lireTransactions, type MouvementLu, type Transaction } from "@/lib/releve-bancaire";
+import { lireToutesLesPages, lireTransactions, type MouvementLu, type Transaction } from "@/lib/releve-bancaire";
 
 /**
  * LIRE LES VIREMENTS REÇUS, PAR ENABLE BANKING — l'essai du 22 octobre 2026.
@@ -176,25 +176,29 @@ export async function ouvrirSession(code: string): Promise<({ ok: true } & Liais
   };
 }
 
-/** Toutes les lignes du relevé depuis `depuis`, sur tous les comptes reliés, la plus récente d'abord. */
+/**
+ * Toutes les lignes du relevé depuis `depuis`, sur tous les comptes reliés, la plus récente d'abord.
+ *
+ * **Tout ou rien** : un compte dont une page échoue fait échouer la lecture
+ * entière. Rien ne se range à moitié, puisque la lecture suivante ne relit pas
+ * la part manquante (`fenetresDeLecture` repart du début du dossier, mais
+ * l'écran afficherait sinon un relevé incomplet sans le dire).
+ */
 export async function mouvementsBancaires(liaison: Liaison, depuis: string): Promise<({ ok: true; mouvements: MouvementLu[] }) | Refus> {
   const mouvements: MouvementLu[] = [];
   for (const compte of liaison.comptes) {
-    let suite: string | undefined;
-    // Dix pages au plus : une banque qui renverrait toujours une suite ne doit
-    // pas faire tourner l'écran sans fin.
-    for (let page = 0; page < 10; page++) {
+    // Les pages d'un compte sont lues ENSEMBLE avant d'être rangées : les
+    // répétitions sans référence se comptent sur tout le compte, pas page par page.
+    const r = await lireToutesLesPages((suite) => {
       const parametres = new URLSearchParams({ date_from: depuis });
       if (suite) parametres.set("continuation_key", suite);
-      const r = await appeler<{ transactions: Transaction[]; continuation_key?: string | null }>(
+      return appeler<{ transactions: Transaction[]; continuation_key?: string | null }>(
         "GET",
         `/accounts/${encodeURIComponent(compte)}/transactions?${parametres}`
-      );
-      if (!r.ok) return r;
-      mouvements.push(...lireTransactions(compte, r.donnees.transactions));
-      suite = r.donnees.continuation_key ?? undefined;
-      if (!suite) break;
-    }
+      ).then((x) => (x.ok ? { ok: true as const, ...x.donnees } : x));
+    });
+    if (!r.ok) return r;
+    mouvements.push(...lireTransactions(compte, r.transactions));
   }
   mouvements.sort((a, b) => b.date.localeCompare(a.date));
   return { ok: true, mouvements };
