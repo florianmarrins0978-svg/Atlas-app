@@ -140,6 +140,37 @@ async function principal() {
     assert.equal(await tva.inputValue(), "", "le FR ne s'efface pas");
   });
 
+  // Vu à l'écran le 27 octobre 2026 : à la création, Public n'ouvrait rien,
+  // alors que sa fiche demande le SIRET et le code service de Chorus Pro. Une
+  // mairie créée par « Créer un devis » partait donc sans eux, et sa facture
+  // ne pouvait pas se déposer telle quelle.
+  await cas("à la création, Public fait apparaître le SIRET et le code service, et sa fiche les garde", async () => {
+    await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "domcontentloaded" });
+    const pastille = page.locator('[data-atlas="civilite-public"]');
+    await pastille.waitFor({ timeout: DELAI_PAR_DEFAUT_MS });
+    await pastille.click();
+    await page.locator('input[aria-label="SIRET"]').waitFor({ timeout: DELAI_PAR_DEFAUT_MS });
+    assert.equal(await page.locator('input[aria-label="Code service"]').count(), 1, "le code service manque à une mairie");
+    assert.equal(
+      await page.locator('input[aria-label="N° TVA intracommunautaire"]').count(),
+      0,
+      "le n° TVA s'affiche pour une mairie, comme si elle pouvait être donneuse d'ordre en sous-traitance"
+    );
+    const nom = `Mairie d'essai ${Date.now()}`;
+    await page.locator('input[aria-label="Nom du client"]').fill(nom);
+    await page.locator('input[aria-label="SIRET"]').fill("21490353500018");
+    await page.locator('input[aria-label="Code service"]').fill("ESPACES-VERTS");
+    await page.locator("button", { hasText: /^Je rédige à la main$/ }).click();
+    await page.waitForURL(/\/chantiers\/[^/]+\/devis-complet/, { timeout: DELAI_PAR_DEFAUT_MS });
+    const r = await pool.query<{ siret: string | null; code_service: string | null; civilite: string | null }>(
+      "SELECT siret, code_service, civilite FROM clients WHERE nom = $1",
+      [nom]
+    );
+    assert.equal(r.rows[0]?.civilite, "public", `la mairie n'est pas rangée comme service public : ${JSON.stringify(r.rows)}`);
+    assert.equal(r.rows[0]?.siret, "214 903 535 00018", "le SIRET de la mairie n'est pas sur sa fiche");
+    assert.equal(r.rows[0]?.code_service, "ESPACES-VERTS", "le code service n'est pas sur sa fiche");
+  });
+
   await cas("le devis d'une entreprise : la sous-traitance est là, décochée ; allumée, plus de TVA", async () => {
     await page.goto(`${BASE}/chantiers/${chantier.id}/devis-complet`, { waitUntil: "domcontentloaded" });
     const interrupteur = page.locator('[data-atlas="sous-traitance-devis"]');

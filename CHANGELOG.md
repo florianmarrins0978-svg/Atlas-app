@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-28
+
+- **Créer un devis : Public ouvre le SIRET et le code service, et « Chantier » devient « Adresse »** (ses réponses devant `appli/soignee/creer-un-devis.html` : il garde l'écran d'aujourd'hui). Vu à l'écran : Entreprise ouvrait le SIRET et le n° TVA, Public n'ouvrait rien, alors que sa fiche demande le SIRET et le code service qu'attend la facture d'une mairie sur Chorus Pro. La feuille et l'enregistrement lisaient « entreprise » seule ; ils lisent désormais la règle de la fiche, `casesDuClient`. **Ce que ça évite** : une mairie créée par Créer un devis partait sans les numéros de sa facture. Rouge d'abord dans `test-entreprises-et-sous-traitance-e2e.ts`.
+
 ## 2026-10-27
 
 - **Les 23 alertes Dependabot de `appli/` sont fermées : la coque native passe de Capacitor 6.2.1 à 7.6.9.** Une faille critique (contenu distant chargé à l'origine de l'appli, GHSA-rvm3-566m-v7fv) et vingt-huit failles de `tar`, `@xmldom/xmldom` et `brace-expansion` sous l'outil Capacitor. Aucune n'atteignait ses clients : la coque n'a jamais été construite, et les maquettes publiées n'exécutent rien de tout cela. **Ce qui a été écarté** : Capacitor 6.2.2 avec `tar` 7 forcé fermait les alertes mais cassait `cap add` (`tar_1.default` indéfini, reproduit) ; la 8 demande Node 22 alors que la publication tourne en Node 20. `npm audit` dans `appli/` rend 0 ; `cap add android` et `cap add ios` éprouvés dans un dossier à part. Les 7 alertes faibles ou modérées de l'appli elle-même restent : la « correction » proposée par `npm audit` est un retour en arrière (`drizzle-kit` 0.18, `next-auth` 4), `esbuild` ne sert qu'en développement, et la faille de `@simplewebauthn/server` porte sur l'attestation, que l'appli ne demande pas (`attestationType: "none"`).
