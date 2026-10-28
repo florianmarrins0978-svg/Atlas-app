@@ -1,10 +1,13 @@
-import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
+import { createHash } from "node:crypto";
+import { and, asc, desc, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { chantiers, clients, envoisPieces, piecesImportees } from "../db/schema";
 import type { Ctx } from "./context";
 import { trouverOuCreerClient } from "./clients";
 import type { ChampsLus } from "@/lib/import-pieces";
 import { statutApresLecture } from "@/lib/import-pieces";
+import type { ClientAPoser } from "@/lib/import-tableau";
+import { complementsPourFiche } from "@/lib/rapprochement-client";
 import { logger } from "../logger";
 
 /**
@@ -274,16 +277,170 @@ export async function rangerEnvoi(ctx: Ctx, envoiId: string): Promise<{ rangees:
   return { rangees, clientsCrees: crees.length };
 }
 
+// ─── Un tableau (28 octobre 2026) ─────────────────────────────────────────
+
+/** Ce qu'un tableau a rangé, pour la phrase qui le dit. */
+export type BilanTableau = {
+  envoiId: string | null;
+  rangees: number;
+  clientsCrees: number;
+  /** Déjà importées : ce tableau une seconde fois, ou le PDF de la même pièce. */
+  dejaLa: number;
+  /** Cases vides de fiches déjà là, complétées. */
+  completees: number;
+};
+
+/** Ce qui empêche de ranger deux fois la même ligne, d'un import à l'autre. */
+function empreinteDeLigne(cle: string): string {
+  return createHash("sha256").update(`tableau|${cle}`).digest("hex");
+}
+
+const numeroCompare = (genre: string | null, numero: string) => `${genre}|${numero.replace(/\s+/g, "").toUpperCase()}`;
+
+/**
+ * Range un tableau, **d'un seul tenant** : les fiches créées, les cases vides
+ * complétées et les pièces posées réussissent ensemble ou pas du tout. Un
+ * rangement à moitié fait laisserait des fiches sans pièces, que rien ne
+ * désignerait à « Annuler ».
+ *
+ * `aPoser` sort de `planDeRangement` (`src/lib/import-tableau.ts`) : l'écran a
+ * montré ce plan-là, ligne pour ligne.
+ *
+ * **Une pièce déjà là ne se range pas deux fois** : même ligne d'un tableau
+ * déjà importé (son empreinte), ou même numéro qu'une pièce importée en PDF.
+ * Une fiche qui n'aurait plus aucune pièce ne se crée pas.
+ *
+ * **Une fiche déjà là ne voit que ses cases VIDES complétées** (sa réponse du
+ * 28 octobre), par la règle de toute l'appli, `complementsPourFiche` ; ce qui
+ * est écrit est noté sur l'envoi, pour qu'« Annuler » le vide à nouveau.
+ */
+export async function rangerTableau(ctx: Ctx, nom: string, aPoser: readonly ClientAPoser[]): Promise<BilanTableau> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const toutes = aPoser.flatMap((c) => c.pieces.map((p) => empreinteDeLigne(p.cle)));
+    const connues = new Set<string>();
+    for (let i = 0; i < toutes.length; i += 1000) {
+      const lignes = await tx
+        .select({ e: piecesImportees.empreinte })
+        .from(piecesImportees)
+        .where(inArray(piecesImportees.empreinte, toutes.slice(i, i + 1000)));
+      for (const l of lignes) connues.add(l.e);
+    }
+    const numeros = new Set(
+      (
+        await tx
+          .select({ genre: piecesImportees.genre, numero: piecesImportees.numero })
+          .from(piecesImportees)
+          .where(isNotNull(piecesImportees.numero))
+      ).map((l) => numeroCompare(l.genre, l.numero!))
+    );
+    const retenus = aPoser
+      .map((c) => ({
+        ...c,
+        pieces: c.pieces.filter(
+          (p) => !connues.has(empreinteDeLigne(p.cle)) && !(p.numero && numeros.has(numeroCompare(p.genre, p.numero)))
+        ),
+      }))
+      .filter((c) => c.pieces.length > 0);
+    const total = retenus.reduce((t, c) => t + c.pieces.length, 0);
+    if (total === 0) return { envoiId: null, rangees: 0, clientsCrees: 0, dejaLa: toutes.length, completees: 0 };
+
+    const [envoi] = await tx
+      .insert(envoisPieces)
+      .values({ entrepriseId: ctx.entrepriseId, nom: nom.trim().slice(0, 160) || "Tableau", attendues: total, createdBy: ctx.utilisateurId })
+      .returning({ id: envoisPieces.id });
+
+    const crees: string[] = [];
+    const completees: { clientId: string; champ: "adresse" | "telephone"; valeur: string }[] = [];
+    const lignes: (typeof piecesImportees.$inferInsert)[] = [];
+    for (const c of retenus) {
+      let clientId: string;
+      if (c.existant) {
+        const [fiche] = await tx
+          .select({ id: clients.id, nom: clients.nom, telephone: clients.telephone, email: clients.email, adresse: clients.adresse, creeLe: clients.createdAt })
+          .from(clients)
+          .where(and(eq(clients.id, c.existant), isNull(clients.deletedAt), isNull(clients.effaceLe)))
+          .limit(1);
+        // Retirée entre la lecture et le rangement : tout s'annule, et la
+        // relecture du tableau la verra absente.
+        if (!fiche) throw new Error("Une fiche du tableau a disparu pendant le rangement.");
+        const plus = complementsPourFiche(fiche, { nom: fiche.nom, adresse: c.adresse, telephone: c.telephone });
+        if (plus.adresse || plus.telephone) {
+          await tx
+            .update(clients)
+            .set({ ...(plus.adresse ? { adresse: plus.adresse } : {}), ...(plus.telephone ? { telephone: plus.telephone } : {}), updatedAt: new Date() })
+            .where(eq(clients.id, fiche.id));
+          if (plus.adresse) completees.push({ clientId: fiche.id, champ: "adresse", valeur: plus.adresse });
+          if (plus.telephone) completees.push({ clientId: fiche.id, champ: "telephone", valeur: plus.telephone });
+        }
+        clientId = fiche.id;
+      } else {
+        // Les colonnes de `creerClient`, et elles seules.
+        const [neuf] = await tx
+          .insert(clients)
+          .values({
+            entrepriseId: ctx.entrepriseId,
+            nom: c.nom,
+            ...(c.adresse ? { adresse: c.adresse } : {}),
+            ...(c.telephone ? { telephone: c.telephone } : {}),
+            createdBy: ctx.utilisateurId,
+          })
+          .returning({ id: clients.id });
+        crees.push(neuf.id);
+        clientId = neuf.id;
+      }
+      for (const p of c.pieces) {
+        lignes.push({
+          entrepriseId: ctx.entrepriseId,
+          envoiId: envoi.id,
+          empreinte: empreinteDeLigne(p.cle),
+          fichierCle: null,
+          statut: "rangee",
+          genre: p.genre,
+          numero: p.numero,
+          jour: p.jour,
+          montantTtc: p.montant,
+          nomLu: p.nom,
+          objet: p.objet,
+          adresseChantier: p.chantier,
+          clientId,
+        });
+      }
+    }
+    let rangees = 0;
+    for (let i = 0; i < lignes.length; i += 500) {
+      const posees = await tx.insert(piecesImportees).values(lignes.slice(i, i + 500)).onConflictDoNothing().returning({ id: piecesImportees.id });
+      rangees += posees.length;
+    }
+    await tx
+      .update(envoisPieces)
+      .set({ clientsCrees: crees, casesCompletees: completees, rangeLe: new Date(), attendues: Math.max(rangees, 1) })
+      .where(eq(envoisPieces.id, envoi.id));
+    return { envoiId: envoi.id, rangees, clientsCrees: crees.length, dejaLa: toutes.length - rangees, completees: completees.length };
+  });
+}
+
 /**
  * « Annuler » : les pièces de l'envoi redeviennent prêtes, et les fiches que
  * ce rangement a créées partent, **sauf si on s'en est servi depuis** (un
  * chantier ouvert dessus, une autre pièce rangée chez elle) : on ne retire
  * jamais ce qui porte autre chose que cet envoi.
+ *
+ * **Un tableau s'annule en entier** (28 octobre 2026) : ses pièces n'ont pas
+ * de fichier à relire, elles partent, et le tableau se réimporte. Les cases
+ * vides qu'il avait complétées se vident, si personne ne les a changées depuis.
  */
 export async function annulerRangement(ctx: Ctx, envoiId: string): Promise<boolean> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [e] = await tx.select().from(envoisPieces).where(eq(envoisPieces.id, envoiId)).limit(1);
     if (!e?.rangeLe) return false;
+    await tx.delete(piecesImportees).where(and(eq(piecesImportees.envoiId, envoiId), isNull(piecesImportees.fichierCle)));
+    for (const c of e.casesCompletees) {
+      const colonne = c.champ === "adresse" ? clients.adresse : clients.telephone;
+      await tx
+        .update(clients)
+        .set(c.champ === "adresse" ? { adresse: null, updatedAt: new Date() } : { telephone: null, updatedAt: new Date() })
+        .where(and(eq(clients.id, c.clientId), eq(colonne, c.valeur)));
+    }
     await tx
       .update(piecesImportees)
       .set({ clientId: null, statut: "lue", updatedAt: new Date() })
@@ -308,7 +465,14 @@ export async function annulerRangement(ctx: Ctx, envoiId: string): Promise<boole
         });
       }
     }
-    await tx.update(envoisPieces).set({ clientsCrees: [], rangeLe: null }).where(eq(envoisPieces.id, envoiId));
+    // Un envoi vidé (un tableau) part : il n'a plus rien à ranger, et la bande
+    // de Vos clients annoncerait « 0 sur 312 ».
+    const [{ restent }] = await tx
+      .select({ restent: sql<number>`count(*)::int` })
+      .from(piecesImportees)
+      .where(eq(piecesImportees.envoiId, envoiId));
+    if (restent === 0) await tx.delete(envoisPieces).where(eq(envoisPieces.id, envoiId));
+    else await tx.update(envoisPieces).set({ clientsCrees: [], casesCompletees: [], rangeLe: null }).where(eq(envoisPieces.id, envoiId));
     return true;
   });
 }

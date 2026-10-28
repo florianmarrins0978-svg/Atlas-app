@@ -68,6 +68,8 @@ const EXEMPTEES: Record<string, string> = {
   "pieces-importees/connues": "Import, réservé au patron par `patronQuiImporte` — plus strict que la garde de chemin.",
   "pieces-importees/envois": "Import, réservé au patron par `patronQuiImporte` — plus strict que la garde de chemin.",
   "pieces-importees/etat": "Import, réservé au patron par `patronQuiImporte` — plus strict que la garde de chemin.",
+  "pieces-importees/tableau":
+    "Import d'un tableau de devis et factures (28 octobre 2026), réservé au patron par `patronQuiImporte` : plus strict que la garde de chemin.",
   paiement:
     "Le crochet du prestataire de paiement : il frappe depuis l'extérieur, donc sans " +
     "session ni rôle — c'est la nature d'un crochet. Sa garde est la SIGNATURE de " +

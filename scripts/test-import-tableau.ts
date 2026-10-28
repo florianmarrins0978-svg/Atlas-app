@@ -2,6 +2,9 @@ import assert from "node:assert/strict";
 import {
   CHAMPS_DU_TABLEAU,
   cleDeLaPiece,
+  entetePuisLignes,
+  formatDuTableau,
+  reglagesDesDecisions,
   grouperParClient,
   jourDuTableau,
   lireCsv,
@@ -314,6 +317,56 @@ cas("la clé d'une pièce : son numéro quand elle en a un, sinon tout ce qu'ell
   const [a] = lire().lignes;
   assert.equal(cleDeLaPiece(a), "devis|D2025-0201");
   assert.notEqual(cleDeLaPiece({ ...a, numero: null }), cleDeLaPiece({ ...a, numero: null, montant: "1.00" }));
+});
+
+// ── Ses réponses, et ce qui manque encore ───────────────────────────────────
+cas("un tableau ordinaire se range sans aucune réponse", () => {
+  const r = reglagesDesDecisions(TABLEAU, {});
+  assert.ok(r.ok);
+  if (r.ok) assert.equal(r.reglages.ordreDate, "jma");
+});
+cas("deux dates : rien ne se range avant qu'il ait choisi, puis tout se lit avec SA colonne", () => {
+  const g = [["Type", "Client", "Date 1", "Date 2"], ["Devis", "M. X", "03/04/2025", "28/05/2025"]];
+  const avant = reglagesDesDecisions(g, {});
+  assert.deepEqual(avant, { ok: false, manque: "Choisissez la colonne : date" });
+  const apres = reglagesDesDecisions(g, { colonnes: { Date: 3 } });
+  assert.ok(apres.ok);
+  if (!apres.ok) return;
+  assert.equal(lireLignes(g, apres.reglages).lignes[0].jour, "2025-05-28");
+  // « Pas repris » est une réponse : les pièces se rangent sans date.
+  assert.ok(reglagesDesDecisions(g, { colonnes: { Date: null } }).ok);
+});
+cas("une date qui se lit dans les deux sens attend qu'il le dise", () => {
+  const g = [["Type", "Client", "Date"], ["Devis", "M. X", "03/04/2025"]];
+  assert.deepEqual(reglagesDesDecisions(g, {}), { ok: false, manque: "Dites comment se lisent les dates" });
+  const r = reglagesDesDecisions(g, { ordreDate: "mja" });
+  assert.ok(r.ok);
+  if (r.ok) assert.equal(lireLignes(g, r.reglages).lignes[0].jour, "2025-03-04");
+});
+cas("sans colonne Type, « que des factures » suffit ; sans client, rien ne passe", () => {
+  const g = [["Client", "N°"], ["M. X", "F1"]];
+  assert.deepEqual(reglagesDesDecisions(g, {}), { ok: false, manque: "Choisissez la colonne : type" });
+  const r = reglagesDesDecisions(g, { genreFixe: "facture" });
+  assert.ok(r.ok);
+  if (r.ok) assert.equal(lireLignes(g, r.reglages).lignes[0].genre, "facture");
+  assert.deepEqual(reglagesDesDecisions(g, { genreFixe: "facture", colonnes: { Client: null } }), { ok: false, manque: "Choisissez la colonne : client" });
+});
+cas("une colonne hors du tableau n'est pas une réponse", () => {
+  const g = [["Type", "Client", "Date 1", "Date 2"], ["Devis", "M. X", "03/04/2025", "28/05/2025"]];
+  const r = reglagesDesDecisions(g, { colonnes: { Date: 99 } });
+  assert.ok(r.ok, "« 99 » laisse la date sans colonne : elle n'est simplement pas reprise");
+  if (r.ok) assert.equal(r.reglages.colonnes["Date"], undefined);
+});
+cas("une ligne de titre au-dessus des colonnes est sautée", () => {
+  const g = entetePuisLignes([["Export du 03/01/2026", "", ""], ["", "", ""], ["Type", "Client", "Total TTC"], ["Devis", "M. X", "10,00"]]);
+  assert.deepEqual(g[0], ["Type", "Client", "Total TTC"]);
+  assert.equal(g.length, 2);
+});
+cas("le format se lit au nom ; le .xls est reconnu, pour être refusé en le disant", () => {
+  assert.equal(formatDuTableau("Export.CSV"), "csv");
+  assert.equal(formatDuTableau("2025.xlsx"), "xlsx");
+  assert.equal(formatDuTableau("vieux.xls"), "xls");
+  assert.equal(formatDuTableau("facture.pdf"), null);
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Importer un tableau — ${echecs} échec(s).`);

@@ -52,6 +52,26 @@ export type Colonnes = Partial<Record<ChampDuTableau, number>>;
 export const LIGNES_MAX = 20_000;
 /** Au-delà, ce n'est plus un export de pièces : une feuille de calcul entière. */
 const COLONNES_MAX = 80;
+/** Dix ans de pièces en CSV pèsent un mégaoctet ; dix, c'est de la marge. */
+export const OCTETS_TABLEAU_MAX = 10 * 1024 * 1024;
+
+/**
+ * Un tableau, d'après le nom du fichier. **Le `.xls` est reconnu pour être
+ * refusé en le disant** : l'ancien format d'Excel demande une bibliothèque qui
+ * n'est pas encore là (`TODO.md`), et un refus muet ferait croire le fichier
+ * vide.
+ */
+export function formatDuTableau(nom: string): "csv" | "xlsx" | "xls" | null {
+  const ext = nom.toLowerCase().split(".").pop() ?? "";
+  if (ext === "csv" || ext === "txt") return "csv";
+  if (ext === "xlsx") return "xlsx";
+  if (ext === "xls") return "xls";
+  return null;
+}
+
+/** La phrase qui refuse un `.xls`, en attendant de savoir le lire. */
+export const REFUS_XLS =
+  "Ce fichier .xls est un ancien format d'Excel, qu'Atlas ne lit pas encore. Dans Excel, « Enregistrer sous » puis « Classeur Excel (.xlsx) » ou « CSV », et choisissez ce fichier-là.";
 
 // ─── Lire un CSV ────────────────────────────────────────────────────────────
 
@@ -297,6 +317,74 @@ export function reconnaitreColonnes(entetes: readonly string[], lignes: readonly
   const colDate = colonnes["Date"];
   const ordreDate = colDate === undefined ? null : ordreDesDates(lignes.map((l) => l[colDate] ?? ""));
   return { colonnes, hesite: CHAMPS_DU_TABLEAU.filter((c) => hesite.includes(c)), candidats, ordreDate };
+}
+
+/**
+ * La ligne des titres, et ce qui suit. Un export met parfois une ligne de titre
+ * ou de date au-dessus (« Export du 03/01/2026 ») : on prend, parmi les dix
+ * premières, celle où Atlas reconnaît le plus de colonnes.
+ */
+export function entetePuisLignes(grille: readonly (readonly string[])[]): string[][] {
+  const lignes = grille.filter((l) => l.some((c) => String(c ?? "").trim())).map((l) => l.map((c) => String(c ?? "").trim()));
+  let meilleure = 0;
+  let reconnues = -1;
+  for (let i = 0; i < Math.min(10, lignes.length); i++) {
+    const n = Object.keys(reconnaitreColonnes(lignes[i], []).colonnes).length;
+    if (n > reconnues) {
+      meilleure = i;
+      reconnues = n;
+    }
+  }
+  return lignes.slice(meilleure);
+}
+
+/** Ce qu'il a répondu sur l'écran : ses colonnes, l'ordre des dates, le type. */
+export type Decisions = {
+  /** Un numéro de colonne, ou `null` : « Pas repris ». Absent : ce qu'Atlas a reconnu. */
+  colonnes?: Partial<Record<ChampDuTableau, number | null>>;
+  ordreDate?: OrdreDate | null;
+  genreFixe?: "devis" | "facture" | null;
+};
+
+/**
+ * Les réglages qui lisent le tableau, ou ce qui manque encore — **la même
+ * réponse à l'écran (le bouton dit ce qui manque) et au serveur (qui refuse)**.
+ *
+ * Un champ sur lequel Atlas hésitait doit avoir reçu une réponse, colonne ou
+ * « Pas repris » ; le client et le type, eux, ne peuvent pas être « Pas
+ * repris » : sans eux, rien ne se range.
+ */
+export function reglagesDesDecisions(
+  grille: readonly (readonly string[])[],
+  decisions: Decisions
+): { ok: true; reglages: Reglages } | { ok: false; manque: string } {
+  const entetes = grille[0] ?? [];
+  const r = reconnaitreColonnes(entetes, grille.slice(1));
+  const colonnes: Colonnes = { ...r.colonnes };
+  const repondu = new Set<ChampDuTableau>();
+  for (const champ of CHAMPS_DU_TABLEAU) {
+    const v = decisions.colonnes?.[champ];
+    if (v === undefined) continue;
+    repondu.add(champ);
+    if (v === null) delete colonnes[champ];
+    else if (Number.isInteger(v) && v >= 0 && v < entetes.length) colonnes[champ] = v;
+  }
+  const genreFixe = decisions.genreFixe === "devis" || decisions.genreFixe === "facture" ? decisions.genreFixe : null;
+  if (colonnes["Client"] === undefined) return { ok: false, manque: "Choisissez la colonne : client" };
+  if (colonnes["Type"] === undefined && !genreFixe) return { ok: false, manque: "Choisissez la colonne : type" };
+  for (const champ of r.hesite) {
+    if (champ !== "Type" && !repondu.has(champ)) return { ok: false, manque: `Choisissez la colonne : ${champ.toLowerCase()}` };
+  }
+  let ordreDate: OrdreDate | null = null;
+  const colDate = colonnes["Date"];
+  if (colDate !== undefined) {
+    const lu = ordreDesDates(grille.slice(1).map((l) => l[colDate] ?? ""));
+    if (lu === "doute") {
+      if (decisions.ordreDate !== "jma" && decisions.ordreDate !== "mja") return { ok: false, manque: "Dites comment se lisent les dates" };
+      ordreDate = decisions.ordreDate;
+    } else ordreDate = lu;
+  }
+  return { ok: true, reglages: { colonnes, ordreDate, genreFixe: colonnes["Type"] === undefined ? genreFixe : null } };
 }
 
 // ─── Lire une case ──────────────────────────────────────────────────────────
