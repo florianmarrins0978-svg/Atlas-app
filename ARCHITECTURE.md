@@ -36385,3 +36385,18 @@ Trois choix faits en codant : la vignette d'une pièce passe de 88 à 72 (`taill
 **Un PDF s'ouvre dans la visionneuse** (le panneau se ferme, la flèche ramène). **Une photo s'ouvre par-dessus le panneau**, dans `VisionneusePhoto`, qui prend désormais des ADRESSES et non des clés : une photo de chantier et un ticket ne se servent pas par la même route, et c'est l'écran qui le sait.
 
 **Ce qui n'est pas tenu.** Les pièces ne survivent pas au rechargement du fil (`messages_assistant` ne garde que le texte) : le garder demande une colonne, donc une migration, hors de ce lot. Les notes vocales ne se joignent pas : ce sont des sons, pas des documents.
+
+## §526 : Des parts qui font juste le total sont des montants, et le devis les écrit telles quelles
+
+**Sa réponse du 27 octobre 2026**, devant la planche de la barre de la main d'œuvre (`appli/soignee/main-oeuvre-curseur.html`) : *« si la main d'œuvre c'est 397, ça pourra pas être arrondi à 10 »*. Un montant qu'il ÉCRIT reste donc à l'euro près.
+
+**Le défaut que cela a montré.** `repartirMainOeuvre` repassait toutes les parts à la dizaine, même celles qu'il avait réglées : 297 € écrits à l'écran devenaient 300 € sur le devis, et la haie de sa grille à 250 € pouvait sortir à 247 € selon l'ordre des travaux. L'écart d'arrondi allait au DERNIER travail, même à zéro : 395 € pour un travail qui pesait tout et un autre qui ne pesait rien donnaient 400 € et −5 € (rouges d'abord dans `test-repartir-main-oeuvre.ts` et `test-main-oeuvre-dictee-db.ts`).
+
+**La règle.** Des parts toutes connues, positives, au centime, et dont la somme vaut le total SONT des montants : elles s'écrivent telles quelles. C'est ce que la barre enregistre après chaque geste, et ce que `partsDeDepart` pose depuis sa grille. Tout autre partage est calculé (parts égales, un travail retiré, un total changé depuis ses gestes), donc à la dizaine, sa règle du 5 août ; l'écart va au dernier travail qui a une part. Des pourcentages enregistrés par l'ancien curseur ne font pas le total : ils restent des poids.
+
+**Les gestes vivent dans `src/lib`**, et l'écran ne décide de rien : `glisserLeJoint` (seuls les deux voisins d'une poignée changent, de 10 € en 10 €, chacun garde 10 €) et `ecrireUnMontant` (à l'euro près ; le voisin prend la différence, le suivant complète ; un travail à zéro ne paie pas). Les deux comptent en centimes : un total à 397,50 € retombe juste après cent gestes.
+
+**Des poignées empilées se départagent au sens du doigt** (`jointATirer`). Un travail à 0 € ou de quelques euros n'a pas de largeur : les poignées qui le bordent tombent au même endroit, et le doigt attrapait celle du dessus, qui pouvait séparer deux travaux vides. Rien ne bougeait, sur son cas le plus courant (l'abattage prend tout, la fente et l'évacuation sont « à chiffrer »). Trouvé par `test-main-oeuvre-barre-e2e.ts` à son premier passage. Vers la gauche, la première poignée de la pile part ; vers la droite, la dernière ; une pile, c'est moins de 24 px entre deux poignées.
+
+**Les cinq teintes sont fixes** (`pastelsMainOeuvre`, palette « Jardin », son choix du même soir), comme `surPhoto` : un pastel dérivé de chaque charte deviendrait sombre sur Nuit et Sylve. Leur encre aussi, mesurée à 4,5 ou plus sur chacune. Le montant s'écrit dans son morceau s'il tient, mesuré sur son texte (15 px, puis 13 px, sinon il se tait et reste sur sa ligne) : un seuil fixe de 62 px taisait tout montant sous 350 € sur son téléphone.
+

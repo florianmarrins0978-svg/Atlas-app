@@ -21,6 +21,11 @@ Le comptable signe, sur son lien, une attestation qui se range avec le dossier (
 
 Un outil qui veut joindre un document met `piece: pieceDu…()` dans son résultat (`src/lib/pieces-de-l-assistant.ts`) ; rien d'autre à brancher. Ne jamais fabriquer une pièce à la main ni laisser le modèle écrire une adresse (§525). Une photo se donne à `VisionneusePhoto` par son ADRESSE.
 
+---
+## LA BARRE DE LA MAIN D'ŒUVRE ATTEND SA BATTERIE, SUR `lot/main-oeuvre-curseur` (27 octobre 2026)
+
+`RepartirLaMainOeuvre.tsx` porte la planche `appli/soignee/main-oeuvre-curseur.html` (vue « Proposé », palette Jardin), codée sans batterie à sa demande. **Les pièges :** l'écran ne calcule rien, il appelle `jointATirer`, `glisserLeJoint` et `ecrireUnMontant` (`src/lib/main-oeuvre-dictee.ts`) et enregistre les montants obtenus comme parts ; `repartirMainOeuvre` écrit telles quelles des parts qui font juste le total, et repartage à la dizaine tout le reste. Changer l'une des trois sans les deux autres refait diverger la barre et le devis. Les teintes sont des jetons FIXES (`pastelsMainOeuvre`) et leur encre aussi : ne pas les dériver de la charte. Le montant d'un morceau se mesure dans un effet, sur le DOM, et ne passe pas par l'état (la règle `set-state-in-effect`). **Reste** : `npm run verifier:avant-livraison` (niveau 3), puis `main` (`ARCHITECTURE.md` §526, `docs/main-oeuvre-curseur.md`).
+
 ## POUR MON COMPTABLE : UN VIREMENT REÇU SE RÈGLE DANS SA LIGNE (26 octobre 2026)
 
 Une entrée se justifie par sa facture d'Atlas (`confirmerLaLigneRecue`, qui écrit la réponse de l'accueil dans la même transaction), par une facture faite hors d'Atlas (`facture_hors_atlas`, 0150) ou par une réponse de son sens (`MOTIFS_RECUS`). **Les pièges :** toute pose passe par `poser`, qui lit la ligne VERROUILLÉE et compare la pièce dans la même transaction (`refusDEcart`) : une nouvelle façon de justifier qui écrirait à côté échapperait au contrôle du montant. Le ticket photographié depuis sa ligne se compare AVANT d'être rangé (`ecartAvecLaLigne`). Le fichier d'une facture hors d'Atlas remplacée revient en `pieceRetiree` : l'action l'efface, après l'écriture. La contrainte de cohérence de 0150 est NOT VALID : ne la valider qu'après avoir compté les lignes qui ne la tiennent pas sur sa base (`ARCHITECTURE.md` §515).

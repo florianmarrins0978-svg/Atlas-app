@@ -15,6 +15,11 @@ Branche `claude/accountant-document-signature-2redc5`, d'après sa planche `appl
 
 Planche B retenue. Tous ses documents, à toucher sous la réponse : devis (et la ligne trouvée), factures, avoirs, rapports d'entretien, contrats, feuille et fiches d'un chantier, tickets, bilans, photos, pièces des fournisseurs, papiers des véhicules. `ARCHITECTURE.md` §525. Reste : la mémoire des pièces au rechargement (`TODO.md`).
 
+## LA BARRE DE LA MAIN D'ŒUVRE, CODÉE (27 octobre 2026), PAS ENCORE SUR `main`
+
+Branche `lot/main-oeuvre-curseur`, d'après sa planche `appli/soignee/main-oeuvre-curseur.html` (palette Jardin, montant écrit à l'euro près). Écran : `src/app/chantiers/[id]/RepartirLaMainOeuvre.tsx`. Règles : `src/lib/main-oeuvre-dictee.ts` (`repartirMainOeuvre` garde les montants qu'il a réglés, `glisserLeJoint`, `ecrireUnMontant`). Jetons : `pastelsMainOeuvre`. Suites : `test-repartir-main-oeuvre.ts`, `test-main-oeuvre-dictee-db.ts`, `test-main-oeuvre-barre-e2e.ts`. **Reste** : la batterie (niveau 3), puis `main`. `ARCHITECTURE.md` §526, `docs/main-oeuvre-curseur.md`.
+
+---
 ## ARROSAGE : SON CROQUIS DU 27 OCTOBRE (27 octobre 2026)
 
 Coins tirés retirés des zones (`formes-du-dessin.ts`, `dessin-du-plan.ts`,
