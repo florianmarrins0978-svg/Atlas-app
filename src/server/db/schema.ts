@@ -4157,7 +4157,7 @@ export const liaisonsBancaires = pgTable("liaisons_bancaires", {
   banque: text("banque"),
   accordJusquAu: timestamp("accord_jusqu_au", { withTimezone: true }).notNull(),
   luLe: timestamp("lu_le", { withTimezone: true }),
-  // La profondeur réellement lue (0151) : NULL avant la première lecture réussie.
+  // La profondeur réellement lue (0153) : NULL avant la première lecture réussie.
   historiqueJours: integer("historique_jours"),
   // Le refus de la banque pour la période plus profonde, NULL si elle a tout accepté.
   historiqueRefus: text("historique_refus"),
