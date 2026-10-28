@@ -226,11 +226,11 @@ a.coordonnee { text-decoration: none; }
               <div class="registre" data-registre-panneau="2" hidden>
                 <div data-si-etat="complet">
                   <button class="piece touche" type="button" data-ouvre="feuille-fiche" data-titre="8 octobre 2026" data-jour="6 prestations">
-                    <span class="piece-corps"><span class="piece-titre">8 octobre 2026</span><span class="piece-date">6 prestations</span></span>
+                    <span class="piece-corps"><span class="piece-titre">Tonte de la pelouse</span><span class="piece-date">8 octobre 2026, 6 prestations</span></span>
                     <svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg>
                   </button>
                   <button class="piece touche" type="button" data-ouvre="feuille-fiche" data-titre="10 septembre 2026" data-jour="4 prestations">
-                    <span class="piece-corps"><span class="piece-titre">10 septembre 2026</span><span class="piece-date">4 prestations</span></span>
+                    <span class="piece-corps"><span class="piece-titre">Taille des rosiers</span><span class="piece-date">10 septembre 2026, 4 prestations</span></span>
                     <svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg>
                   </button>
                 </div>
@@ -311,7 +311,8 @@ a.coordonnee { text-decoration: none; }
   <section class="pl-notes">
     <h2>Ce qui change</h2>
     <ul>
-      <li>Une loupe au-dessus des onglets cherche un nom, un titre, un montant parmi ses devis et ses factures : « thuyas », « 640 ».</li>
+      <li>Une loupe au-dessus des onglets cherche un nom, un titre, un montant parmi ses devis, ses factures et ses fiches : « thuyas », « 640 », « rosiers ».</li>
+      <li>Chaque fiche a pour titre sa première tâche ; la date et le nombre de prestations passent dessous. Votre réponse du 28 octobre.</li>
       <li>Chaque devis et chaque facture montre son titre et son montant TTC ; le numéro et la date passent dessous. Votre demande du 28 octobre.</li>
       <li>Plus d'encadré doré autour du client.</li>
       <li>Dernier devis, Nouveau devis et Contrat d'entretien restent à leur place, avec leur dessin et leur mot, sans encadré : le premier en vert, les deux autres en doré.</li>
@@ -392,8 +393,8 @@ a.coordonnee { text-decoration: none; }
     rien.className = "registre-vide"; rien.hidden = true;
     onglets.parentNode.appendChild(rien);
     /* Le mot de chaque pièce trouvée (Devis, Facture) : sans onglet, il dit de quoi il s'agit. */
-    document.querySelectorAll("[data-registre-panneau='0'] .piece-date, [data-registre-panneau='1'] .piece-date").forEach(function (d) {
-      var mot = d.closest("[data-registre-panneau]").getAttribute("data-registre-panneau") === "0" ? "Devis " : "Facture ";
+    document.querySelectorAll("[data-registre-panneau] .piece-date").forEach(function (d) {
+      var mot = { "0": "Devis ", "1": "Facture ", "2": "Fiche du " }[d.closest("[data-registre-panneau]").getAttribute("data-registre-panneau")];
       d.insertAdjacentHTML("afterbegin", '<span class="piece-type" hidden>' + mot + "</span>");
     });
     function chercher() {
@@ -409,11 +410,13 @@ a.coordonnee { text-decoration: none; }
       }
       var vus = 0;
       panneaux.forEach(function (p) {
-        var cherchable = p.getAttribute("data-registre-panneau") !== "2";
+        var fiches = p.getAttribute("data-registre-panneau") === "2";
         var ici = 0;
         p.querySelectorAll(".piece").forEach(function (x) {
-          var titre = x.querySelector(".piece-titre"), somme = x.querySelector(".piece-somme");
-          var oui = cherchable && pieceRepond(titre && titre.textContent, somme && somme.textContent, q);
+          var titre = x.querySelector(".piece-titre"), somme = x.querySelector(".piece-somme"), date = x.querySelector(".piece-date");
+          /* Une fiche n'a pas de montant : elle répond par son titre, sa date ou le nom. */
+          var oui = fiches ? !/^[\d\s\u00a0,.€]+$/.test(q) && (pieceRepond(titre && titre.textContent, "", q) || platP(date && date.textContent).indexOf(platP(q)) >= 0)
+                           : pieceRepond(titre && titre.textContent, somme && somme.textContent, q);
           x.hidden = !oui; if (oui) ici++;
         });
         p.hidden = !ici; vus += ici;

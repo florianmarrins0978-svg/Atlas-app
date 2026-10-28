@@ -413,7 +413,8 @@ mark { background: color-mix(in srgb, var(--atlas-or) 30%, transparent); color: 
       <li>Sur la fiche, devis et factures se rangent par date, chacun avec son titre et son montant TTC, le numéro dessous. Touchés, ils disent ce que le tableau donnait : il n'y a pas de PDF.</li>
       <li>Dix ans de pièces : le rangement continue sans vous, vous pouvez fermer l'appli.</li>
       <li>La loupe de Vos clients cherche un nom, un titre de devis ou de facture, ou un montant : « 960 » trouve la facture de 960,00 €. Une pièce trouvée ouvre sa fiche, sur son onglet.</li>
-      <li>Sur une fiche, une loupe au-dessus des onglets cherche un nom, un titre, un montant parmi les pièces de ce client.</li>
+      <li>Sur une fiche, une loupe au-dessus des onglets cherche un nom, un titre, un montant parmi les pièces de ce client, fiches comprises.</li>
+      <li>Chaque fiche a pour titre sa première tâche, la date et le nombre de prestations dessous.</li>
       <li>Excel se lit comme un CSV, .xlsx comme .xls. Les PDF arrivent au même écran, groupés par client.</li>
     </ul>
     <h2>Ce qui ne bouge pas</h2>
@@ -452,7 +453,8 @@ mark { background: color-mix(in srgb, var(--atlas-or) 30%, transparent); color: 
       { id: "d1", nom: "M. Bernard", lieu: "21 quai de la Fosse, 44000 Nantes", piece: "Facture du 17 oct.", du: "312,00 € dus", natif: true,
         pieces: [{ type: "devis", num: "2026-000046", date: "2026-09-29", objet: "Haie de laurier", ttc: "1 140,00" }, { type: "devis", num: "2026-0012", date: "2026-08-16", objet: "Taille de haie", ttc: "420,00" }, { type: "facture", num: "F2026-000031", date: "2026-10-17", objet: "Taille de haie", ttc: "312,00" }] },
       { id: "d2", nom: "Mme Costa", piece: "Facture du 22 oct.", natif: true, lieu: "12 chemin des Vignes, 49800 Trélazé", tel: "06 39 98 45 14",
-        pieces: [{ type: "devis", num: "2026-000024", date: "2026-10-03", objet: "Taille de haie de thuyas", ttc: "1 380,00" }, { type: "devis", num: "2026-000012", date: "2026-06-02", objet: "Entretien de printemps", ttc: "640,00" }, { type: "facture", num: "F2026-000014", date: "2026-10-22", objet: "Taille de haie de thuyas", ttc: "1 380,00" }, { type: "facture", num: "F2026-000004", date: "2026-06-19", objet: "Entretien de printemps", ttc: "640,00" }] },
+        pieces: [{ type: "devis", num: "2026-000024", date: "2026-10-03", objet: "Taille de haie de thuyas", ttc: "1 380,00" }, { type: "devis", num: "2026-000012", date: "2026-06-02", objet: "Entretien de printemps", ttc: "640,00" }, { type: "facture", num: "F2026-000014", date: "2026-10-22", objet: "Taille de haie de thuyas", ttc: "1 380,00" }, { type: "facture", num: "F2026-000004", date: "2026-06-19", objet: "Entretien de printemps", ttc: "640,00" },
+                 { type: "fiche", num: "fiche-1008", date: "2026-10-08", objet: "Tonte de la pelouse", prestations: 6 }, { type: "fiche", num: "fiche-0910", date: "2026-09-10", objet: "Taille des rosiers", prestations: 4 }] },
       { id: "d3", nom: "M. Faucher", piece: "Facture du 10 oct.", pieces: [{ type: "facture", num: "F2026-000011", date: "2026-10-10", objet: "Élagage", ttc: "850,00" }] },
       { id: "d4", nom: "Mme Garnier", lieu: "18 rue des Lilas, 49100 Angers", piece: "Facture du 14 oct.", du: "2 016,00 € dus", pieces: [{ type: "facture", num: "F2026-000012", date: "2026-10-14", objet: "Aménagement jardin", ttc: "2 016,00" }] },
       { id: "d5", nom: "M. Lefèvre", lieu: "7 allée du Parc, 49130 Les Ponts-de-Cé", piece: "Devis du 2 oct.", natif: true, pieces: [{ type: "devis", num: "2026-000022", date: "2026-10-02", objet: "Création de massifs", ttc: "1 760,00" }] },
@@ -867,6 +869,7 @@ mark { background: color-mix(in srgb, var(--atlas-or) 30%, transparent); color: 
       tousLesClients().forEach(function (c) {
         if (!chiffres && plat(c.nom).indexOf(plat(q)) >= 0) clientsTrouves.push(c);
         piecesDe(c).forEach(function (x) {
+          if (x.type === "fiche") return;
           var oui = chiffres ? montantRepond(x.ttc, q) : plat(x.objet).indexOf(plat(q)) >= 0;
           if (oui) piecesTrouvees.push({ client: c, piece: x });
         });
@@ -930,11 +933,16 @@ mark { background: color-mix(in srgb, var(--atlas-or) 30%, transparent); color: 
       $("effacer-piece").hidden = !q;
       document.querySelector(".onglets-dossier").hidden = !!q;
       if (q) {
-        var trouvees = piecesDe(ouvert).filter(function (x) { return x.type !== "fiche" && (/^[\d\s\u00a0,.€]+$/.test(q) ? montantRepond(x.ttc, q) : plat(x.objet || x.num).indexOf(plat(q)) >= 0 || plat(ouvert.nom).indexOf(plat(q)) >= 0); })
+        var chiffresSeuls = /^[\d\s\u00a0,.€]+$/.test(q);
+        var trouvees = piecesDe(ouvert).filter(function (x) {
+          if (x.type === "fiche") return !chiffresSeuls && (plat(x.objet).indexOf(plat(q)) >= 0 || plat(jour(x.date)).indexOf(plat(q)) >= 0 || plat(ouvert.nom).indexOf(plat(q)) >= 0);
+          return chiffresSeuls ? montantRepond(x.ttc, q) : plat(x.objet || x.num).indexOf(plat(q)) >= 0 || plat(ouvert.nom).indexOf(plat(q)) >= 0;
+        })
           .sort(function (a, b) { return b.date.localeCompare(a.date); });
         $("registre").innerHTML = trouvees.length ? trouvees.map(function (x) {
           return '<button class="piece touche" type="button" data-num="' + x.num + '"><span class="piece-corps"><span class="piece-haut"><span class="piece-titre">' + surligner(x.objet || "n° " + x.num, q) + "</span>" +
-            (x.ttc ? '<span class="piece-somme">' + x.ttc + " €</span>" : "") + '</span><span class="piece-date"><span class="piece-type">' + (x.type === "facture" ? "Facture" : "Devis") + "</span> n° " + x.num + ", " + jour(x.date) + "</span>" +
+            (x.ttc ? '<span class="piece-somme">' + x.ttc + " €</span>" : "") + '</span><span class="piece-date"><span class="piece-type">' + { facture: "Facture", devis: "Devis", fiche: "Fiche du" }[x.type] + "</span> " +
+            (x.type === "fiche" ? jour(x.date) + ", " + x.prestations + " prestations" : "n° " + x.num + ", " + jour(x.date)) + "</span>" +
             (x.chantier ? '<span class="piece-chantier">Chantier au ' + x.chantier + "</span>" : "") + '</span><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></button>';
         }).join("") : '<p class="registre-vide">Rien ne répond à « ' + echapper(q) + " ».</p>";
         return;
@@ -949,7 +957,8 @@ mark { background: color-mix(in srgb, var(--atlas-or) 30%, transparent); color: 
         /* Le titre et le montant d'abord, sa demande du 28 octobre ; le numéro
            et la date dessous. Sans titre, le numéro reprend la première ligne. */
         return '<button class="piece touche" type="button" data-num="' + x.num + '"><span class="piece-corps"><span class="piece-haut"><span class="piece-titre">' + (x.objet || "n° " + x.num) + "</span>" +
-          (x.ttc ? '<span class="piece-somme">' + x.ttc + " €</span>" : "") + '</span><span class="piece-date">' + (x.objet ? "n° " + x.num + ", " : "") + jour(x.date) + "</span>" + (x.chantier ? '<span class="piece-chantier">Chantier au ' + x.chantier + "</span>" : "") + '</span><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></button>';
+          (x.ttc ? '<span class="piece-somme">' + x.ttc + " €</span>" : "") + '</span><span class="piece-date">' +
+          (x.type === "fiche" ? jour(x.date) + ", " + x.prestations + " prestations" : (x.objet ? "n° " + x.num + ", " : "") + jour(x.date)) + "</span>" + (x.chantier ? '<span class="piece-chantier">Chantier au ' + x.chantier + "</span>" : "") + '</span><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></button>';
       }).join("") : '<p class="registre-vide">' + vide + "</p>";
     }
     document.querySelector(".onglets-dossier").addEventListener("click", function (e) {
