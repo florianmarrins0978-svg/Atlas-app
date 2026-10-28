@@ -293,7 +293,7 @@ function BlocExplication({ titre, lignes }: { titre: string; lignes: { libelle: 
       </span>
       {lignes.map((l, i) => (
         <p key={i} className={texteSituation} style={{ color: colors.ink }}>
-          <span style={{ color: colors.muted }}>{l.libelle} — </span>
+          <span style={{ color: colors.muted }}>{l.libelle} : </span>
           {l.detail}
         </p>
       ))}

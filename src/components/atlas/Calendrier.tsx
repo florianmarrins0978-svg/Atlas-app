@@ -148,7 +148,7 @@ export default function Calendrier({
                 disabled={inactif}
                 aria-pressed={etat === "retenu"}
                 aria-label={
-                  etat === "occupe" ? `${lisible} — ${libelleJourBarre(dureeDemiJournees)}` : lisible
+                  etat === "occupe" ? `${lisible}, ${libelleJourBarre(dureeDemiJournees)}` : lisible
                 }
                 onClick={() => !inactif && onBasculer(c.jour)}
                 className="flex h-11 items-center justify-center rounded-full text-[15px] transition-colors"

@@ -32,7 +32,7 @@
    ======================================================================= */
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
-import { fautesDansDuCode, fautesDansDuHtml, autorise, AUTORISES } from "./_tirets.mjs";
+import { fautesDansDuCode, fautesDansDuHtml, autorise, AUTORISES, fichierQuiSAffiche } from "./_tirets.mjs";
 
 const RACINE = path.join(__dirname, "..");
 
@@ -74,6 +74,10 @@ function fautesDuCode(): Faute[] {
      eurent manqués faute de lire autre chose que du TypeScript. */
   for (const chemin of fichiersDe("src", [".ts", ".tsx", ".js", ".mjs"])) {
     const fichier = relatif(chemin);
+    // **Ce qui s'affiche se décide en UN endroit** (`fichierQuiSAffiche`), le
+    // même que pour le garde-fou à l'écriture : une liste à part ici laissait
+    // lire à la batterie ce que l'écriture ignorait (27 octobre 2026).
+    if (!fichierQuiSAffiche(fichier)) continue;
     // Un `.ts` se lit en TS : « const f = <E>(a, b) => … » y est un générique,
     // et le lire comme une balise ferait passer tout le fichier pour du texte
     // d'écran (quatre fichiers justes refusés, trouvé le 23 septembre 2026).
@@ -89,6 +93,7 @@ function fautesDesMaquettes(): Faute[] {
   const fautes: Faute[] = [];
   for (const chemin of MAQUETTES.flatMap((d) => fichiersDe(d, [".html"]))) {
     const fichier = relatif(chemin);
+    if (!fichierQuiSAffiche(fichier)) continue;
     for (const f of fautesDansDuHtml(readFileSync(chemin, "utf8"))) {
       if (!autorise(fichier, f.texte)) fautes.push({ fichier, ligne: f.ligne, texte: f.texte.slice(0, 100) });
     }

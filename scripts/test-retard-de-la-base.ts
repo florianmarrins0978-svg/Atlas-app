@@ -46,7 +46,7 @@ cas("SA PANNE : trois migrations appliquées en moins, nommées une par une", ()
   assert.equal(retard.accordee, false);
   // Le NUMÉRO, pas le compte : c'est lui qui dit quelle colonne manque, donc
   // quel écran tombe. « EN RETARD DE 3 » aurait encore demandé d'aller chercher.
-  assert.equal(ligneEtatDeLaBase(retard), "EN RETARD DE 3 — 0088, 0089, 0090");
+  assert.equal(ligneEtatDeLaBase(retard), "EN RETARD DE 3 : 0088, 0089, 0090");
 });
 
 cas("rien à dire quand les deux s'accordent", () => {
@@ -71,14 +71,14 @@ cas("une base EN AVANCE se dit aussi — c'est le code qui est en retard", () =>
   const retard = retardDeLaBase({ attendues: ["0001_a.sql"], appliquees: ["0001_a.sql", "0002_b.sql"] });
   assert.deepEqual(retard.enTrop, ["0002_b.sql"]);
   assert.equal(retard.accordee, false);
-  assert.match(ligneEtatDeLaBase(retard), /^le CODE est en retard sur elle de 1 — 0002$/);
+  assert.match(ligneEtatDeLaBase(retard), /^le CODE est en retard sur elle de 1 : 0002$/);
 });
 
 cas("les deux écarts à la fois se disent tous les deux", () => {
   const retard = retardDeLaBase({ attendues: ["0001_a.sql", "0002_b.sql"], appliquees: ["0001_a.sql", "0009_z.sql"] });
   const ligne = ligneEtatDeLaBase(retard);
-  assert.match(ligne, /EN RETARD DE 1 — 0002/);
-  assert.match(ligne, /le CODE est en retard sur elle de 1 — 0009/);
+  assert.match(ligne, /EN RETARD DE 1 : 0002/);
+  assert.match(ligne, /le CODE est en retard sur elle de 1 : 0009/);
 });
 
 cas("une mesure IMPOSSIBLE ne rend jamais un vert", () => {

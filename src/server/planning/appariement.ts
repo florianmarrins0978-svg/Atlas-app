@@ -155,7 +155,7 @@ export async function propositionsPourDemiJournee(
 }
 
 function intitule(c: ChantierSitue): string {
-  return c.clientNom ? `${c.nom} — ${c.clientNom}` : c.nom;
+  return c.clientNom ? `${c.nom}, ${c.clientNom}` : c.nom;
 }
 
 function enCandidat(c: ChantierSitue): CandidatDemiJournee {

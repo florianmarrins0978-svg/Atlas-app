@@ -670,7 +670,7 @@ async function noterIssue(etat: string): Promise<void> {
   try {
     const { writeFile } = await import("node:fs/promises");
     const heure = new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-    await writeFile(FICHIER_ISSUE, `${heure} — ${etat}\n`, "utf8");
+    await writeFile(FICHIER_ISSUE, `${heure}, ${etat}\n`, "utf8");
   } catch {
     // Ne jamais faire échouer une mise à jour parce qu'on n'a pas pu noter son
     // issue : le journal sert le diagnostic, il ne commande rien.

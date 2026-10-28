@@ -584,7 +584,7 @@ export default function FactureClient({
           Facture
         </p>
         <p className="text-[15px]" style={{ color: colors.ink }}>
-          <NumeroDeDocument valeur={initialFacture.numeroCommercial} /> —{" "}
+          <NumeroDeDocument valeur={initialFacture.numeroCommercial} />,{" "}
           {avecCivilite(initialFacture.clientNom, initialFacture.clientCivilite) || "Client non renseigné"}
         </p>
         {/* Son titre — « Aménagement du jardin » —, en italique comme sur le

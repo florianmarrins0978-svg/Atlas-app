@@ -378,7 +378,7 @@ export function TiroirDuBas({
         aExpires ? `${devisExpires.length} devis expiré${devisExpires.length > 1 ? "s" : ""}` : null,
       ]
         .filter(Boolean)
-        .join(" · ") ||
+        .join(", ") ||
       // Plus rien n'attend, et le dernier posé est encore à défaire.
       "Aucun client sans date";
 

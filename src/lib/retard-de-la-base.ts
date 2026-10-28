@@ -71,12 +71,12 @@ export function ligneEtatDeLaBase(retard: RetardDeLaBase | null): string {
   const morceaux: string[] = [];
   if (retard.manquantes.length > 0) {
     morceaux.push(
-      `EN RETARD DE ${retard.manquantes.length} — ${retard.manquantes.map(numeroDeLaMigration).join(", ")}`
+      `EN RETARD DE ${retard.manquantes.length} : ${retard.manquantes.map(numeroDeLaMigration).join(", ")}`
     );
   }
   if (retard.enTrop.length > 0) {
     morceaux.push(
-      `le CODE est en retard sur elle de ${retard.enTrop.length} — ${retard.enTrop
+      `le CODE est en retard sur elle de ${retard.enTrop.length} : ${retard.enTrop
         .map(numeroDeLaMigration)
         .join(", ")}`
     );

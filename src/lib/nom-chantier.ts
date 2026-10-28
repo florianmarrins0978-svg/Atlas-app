@@ -89,7 +89,7 @@ export function intituleDuChantier(nomClient: string | null | undefined, nomChan
       .toLowerCase();
 
   if (aplati(nomChantier).includes(aplati(client))) return nomChantier;
-  return `${client} — ${nomChantier}`;
+  return `${client}, ${nomChantier}`;
 }
 
 /**

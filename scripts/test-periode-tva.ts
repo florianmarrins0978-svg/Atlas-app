@@ -142,8 +142,8 @@ cas("le libellé court sert le calendrier, sans l'année", () => {
 // trimestre, si — « 3e trimestre » ne dit pas à qui cherche une facture d'août
 // que c'est là qu'il faut regarder.
 cas("un trimestre annonce ses mois, un mois ne s'explique pas lui-même", () => {
-  assert.equal(moisDuNumero("trimestrielle", 3), "juil. – sept.");
-  assert.equal(moisDuNumero("trimestrielle", 1), "janv. – mars");
+  assert.equal(moisDuNumero("trimestrielle", 3), "juil. à sept.");
+  assert.equal(moisDuNumero("trimestrielle", 1), "janv. à mars");
   assert.equal(moisDuNumero("mensuelle", 8), null);
 });
 

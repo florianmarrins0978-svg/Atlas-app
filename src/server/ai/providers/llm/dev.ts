@@ -671,7 +671,7 @@ function propositionCopieDeLigne(resultat: unknown): ResultatLLMAvecOutils {
   }
   if (r.lignes.length > 1) {
     const choix = r.lignes
-      .map((l) => `- ${l.libelle} — ${l.montant} € (${l.client ?? "client non renseigné"}, devis ${l.numeroDevis})`)
+      .map((l) => `- ${l.libelle}, ${l.montant} € (${l.client ?? "client non renseigné"}, devis ${l.numeroDevis})`)
       .join("\n");
     return { succes: true, type: "texte", texte: `Plusieurs lignes correspondent. Laquelle ?\n${choix}` };
   }
@@ -868,7 +868,7 @@ function direEnFrancais(outil: string, resultat: unknown): string {
       if (valeur.length === 0) continue;
       lignes.push(`${cle} : ${valeur.map(unElement).join(", ")}`);
     } else if (typeof valeur === "object") {
-      lignes.push(`${cle} : ${Object.values(valeur as object).filter(Boolean).join(" · ")}`);
+      lignes.push(`${cle} : ${Object.values(valeur as object).filter(Boolean).join(", ")}`);
     } else if (valeur !== true) {
       lignes.push(`${cle} : ${String(valeur)}`);
     }
@@ -879,6 +879,6 @@ function direEnFrancais(outil: string, resultat: unknown): string {
 /** Un élément de liste, dit par ses valeurs plutôt que par sa forme. */
 function unElement(v: unknown): string {
   if (v === null || v === undefined) return "";
-  if (typeof v === "object") return Object.values(v as object).filter((x) => x !== null && x !== undefined).join(" · ");
+  if (typeof v === "object") return Object.values(v as object).filter((x) => x !== null && x !== undefined).join(", ");
   return String(v);
 }
