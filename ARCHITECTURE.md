@@ -36335,3 +36335,15 @@ Trois choix faits en codant : la vignette d'une pièce passe de 88 à 72 (`taill
 **La règle.** Le format d'un dossier bâti appartient à la version de Next qui l'a écrit. À chaque construction réussie, le banc note ce Next (`atlas-next-batie.txt`, à côté du commit) ; `servableParCeNext` ne laisse servir une version bâtie que si ce Next est celui installé. Non noté (version d'avant la règle) : on ne sert pas, mode développement le temps d'une construction. `doitRebatir` rebâtit aussi quand le Next a changé.
 
 **Ce qui reste fragile, et n'est pas traité ici** : un serveur qui meurt pendant la construction arrête encore le banc et la construction. Avec cette règle, plus rien de connu ne le fait mourir ; si une autre cause apparaît, la ligne « Banc » la montrera de la même façon.
+
+## Lecture bancaire : la profondeur maximale, et le refus dit
+
+**Décision du 28 octobre 2026 (sa demande : « lire toutes les lignes du relevé, sans en oublier une seule »).** La lecture ne part plus de la dernière lecture ni du début du dossier : elle demande d'abord cinq ans d'historique (`NIVEAUX_D_HISTORIQUE_JOURS`), puis deux ans, puis quatre-vingt-dix jours, et s'arrête au premier niveau que la banque accepte. `lireAuPlusProfond` (`src/lib/releve-bancaire.ts`) porte la règle, sans banque : seul un refus de période (statut 4xx hors 401 et 429) descend d'un niveau. Une limite de débit, un accès expiré ou une panne sans réponse arrêtent tout, puisqu'un autre niveau ne les répare pas et que chaque essai compte dans le quota.
+
+**Pourquoi relire tout l'historique accepté à chaque lecture, et non seulement les jours nouveaux.** Une fenêtre depuis la dernière lecture avançait à chaque tentative, même refusée, et perdait les jours d'une panne : c'était une cause de trous. Relire tout l'historique rend la lecture idempotente : une ligne rattrapée tard est comptée une fois, par sa clé, et rien ne dépend de la date de la dernière tentative.
+
+**Pourquoi les répétitions sans référence reçoivent un rang.** Deux opérations identiques le même jour (deux pleins au même montant, même libellé) partagent l'empreinte de la clé. Le rang de la répétition sépare les deux ; la première garde sa clé d'avant, pour que les virements déjà répondus ne reviennent pas en question.
+
+**Ce qui se voit au patron quand il voit moins.** La profondeur atteinte et le premier refus sont gardés sur la liaison (`historique_jours`, `historique_refus`, migration 0151). Ma banque affiche alors « La banque ne rend que N jours, depuis le JJ/MM/AAAA. Elle refuse davantage : … ». Le message reste tant qu'une lecture réussie ne le change pas, y compris après une lecture retenue par le délai de demi-heure.
+
+**Ce qui reste hors de portée ici.** La profondeur que la banque accepte réellement, et le texte de son refus, ne se mesurent qu'avec une clé Enable Banking et un compte réel. Le nombre de pages par lecture, et son effet sur le quota de la banque, sont inconnus : le plafond est de mille pages par compte, au-delà duquel la lecture est refusée et rien n'est rangé.

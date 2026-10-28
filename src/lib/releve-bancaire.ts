@@ -114,30 +114,57 @@ export function virementsDesMouvements(mouvements: readonly MouvementLu[]): Vire
     .map((m) => ({ cle: m.cle, date: m.date, montant: m.montant, payeur: m.contrepartie, libelle: m.libelle }));
 }
 
-/** Le relevé remonte d'au moins ce nombre de jours avant aujourd'hui, pour une opération inscrite avec retard. */
-const MARGE_RELEVE_JOURS = 30;
-/** Les virements à répondre : les trente derniers jours. */
+/**
+ * La profondeur demandée à la banque, en jours, du plus profond au plus court.
+ *
+ * Le patron veut chaque ligne que la banque rend : on demande donc le plus
+ * profond, puis on descend si elle refuse. Le dernier niveau, quatre-vingt-dix
+ * jours, est celui qu'une banque accepte d'ordinaire sans nouvelle validation.
+ * Sur ce poste, la profondeur qu'elle accepte réellement reste non vérifiée.
+ */
+export const NIVEAUX_D_HISTORIQUE_JOURS = [1826, 730, 90] as const;
+
+/** Les virements à répondre : les trente derniers jours, toujours depuis aujourd'hui. */
 const FENETRE_VIREMENTS_JOURS = 30;
 
+/** Le premier jour du relevé, à `joursDHistorique` jours d'aujourd'hui, au format `AAAA-MM-JJ`. */
+export function debutDuReleve(maintenant: Date, joursDHistorique: number): string {
+  return jourIso(new Date(maintenant.getTime() - joursDHistorique * 24 * 3600 * 1000));
+}
+
+export function fenetreDeVirements(maintenant: Date): string {
+  return debutDuReleve(maintenant, FENETRE_VIREMENTS_JOURS);
+}
+
+/** Un refus de la banque, avec son statut HTTP s'il en a un. Sans statut : pas de réponse du tout. */
+export type RefusBanque = { ok: false; raison: string; statut?: number };
+
 /**
- * D'où lire le relevé, et d'où garder les virements reçus : deux jours au
- * format `AAAA-MM-JJ`.
+ * Lit au niveau de profondeur le plus élevé que la banque accepte.
  *
- * **Le relevé part toujours du début du dossier en cours**, ou de trente jours
- * avant aujourd'hui si c'est plus tôt. Chaque lecture relit donc tout le
- * dossier : une lecture refusée ou interrompue ne laisse aucun trou, la
- * suivante comble tout, et les lignes déjà rangées sont ignorées par leur clé.
+ * **Seul un refus de période descend au niveau suivant.** Une limite de débit
+ * (429), un accès expiré (401), ou une panne sans réponse arrêtent tout : un
+ * autre niveau ne les répare pas, et chaque essai compte dans le quota de la
+ * banque.
  *
- * **Ce qui a été retiré** : la fenêtre depuis la dernière lecture. Elle
- * avançait à chaque tentative, même refusée, et elle perdait les jours d'une
- * panne de la banque. Et la première lecture ne remontait que de quatre-vingt-dix
- * jours, alors qu'un dossier démarré le 1er janvier en contient plus.
+ * Le résultat garde le premier refus rencontré (`refusDesPlusProfonds`) : c'est
+ * lui qui dit au patron pourquoi il voit moins.
  */
-export function fenetresDeLecture(maintenant: Date, debutDuDossier: string): { releve: string; virements: string } {
-  const jours = (n: number) => n * 24 * 3600 * 1000;
-  const depuisMarge = jourIso(new Date(maintenant.getTime() - jours(MARGE_RELEVE_JOURS)));
-  const releve = debutDuDossier < depuisMarge ? debutDuDossier : depuisMarge;
-  return { releve, virements: jourIso(new Date(maintenant.getTime() - jours(FENETRE_VIREMENTS_JOURS))) };
+export async function lireAuPlusProfond<T>(
+  lire: (joursDHistorique: number) => Promise<({ ok: true } & T) | RefusBanque>,
+  niveaux: readonly number[] = NIVEAUX_D_HISTORIQUE_JOURS
+): Promise<({ ok: true; joursLus: number; refusDesPlusProfonds: string | null } & T) | RefusBanque> {
+  let premierRefus: string | null = null;
+  let dernier: RefusBanque | null = null;
+  for (const jours of niveaux) {
+    const r = await lire(jours);
+    if (r.ok) return { ...r, joursLus: jours, refusDesPlusProfonds: premierRefus };
+    dernier = r;
+    const periodeRefusee = r.statut !== undefined && r.statut >= 400 && r.statut < 500 && r.statut !== 401 && r.statut !== 429;
+    if (!periodeRefusee) return r;
+    premierRefus ??= r.raison;
+  }
+  return dernier!;
 }
 
 /** Une page de relevé telle que la banque la rend, avec la suite à demander. */
@@ -147,7 +174,7 @@ export type PageReleve = { transactions: Transaction[]; continuation_key?: strin
  * Pages au plus pour un compte. Au-delà, la banque rend davantage que prévu :
  * on refuse plutôt que de garder une partie du relevé et de la marquer complète.
  */
-export const PAGES_MAX_PAR_COMPTE = 100;
+export const PAGES_MAX_PAR_COMPTE = 1000;
 
 /**
  * Toutes les pages d'un compte, dans l'ordre. **Tout ou rien** : une page en

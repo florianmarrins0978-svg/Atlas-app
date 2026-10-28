@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { fenetresDeLecture, lireToutesLesPages, lireTransactions, virementsDesMouvements, type PageReleve, type Transaction } from "../src/lib/releve-bancaire";
+import { debutDuReleve, fenetreDeVirements, lireAuPlusProfond, lireToutesLesPages, lireTransactions, NIVEAUX_D_HISTORIQUE_JOURS, virementsDesMouvements, type PageReleve, type RefusBanque, type Transaction } from "../src/lib/releve-bancaire";
 
 // POUR MON COMPTABLE, LOT 1 — sa remarque du 24 octobre 2026 : *« e-banking
 // permet de lire les virements entrants, mais pas les sortants »*.
@@ -124,33 +124,73 @@ test("les virements reçus se déduisent du relevé, les sorties en sont écart�
   assert.equal(v[0].cle, releve[0].cle);
 });
 
-test("la fenêtre de relevé part du début du dossier en cours, et jamais d'une date de lecture", () => {
-  // Le dossier du 1er janvier doit être lu depuis le 1er janvier : une fenêtre
-  // de 90 jours y laissait janvier à juillet sans jamais les relire.
-  const f = fenetresDeLecture(new Date("2026-10-24T12:00:00Z"), "2026-01-01");
-  assert.equal(f.releve, "2026-01-01");
+test("le relevé demandé remonte à la profondeur maximale, pas à la dernière lecture", () => {
+  // Un dossier commencé le 1er janvier ne doit plus borner la lecture : le
+  // patron veut chaque ligne que la banque rend, en commençant par la plus
+  // profonde.
+  assert.equal(debutDuReleve(new Date("2026-10-28T12:00:00Z"), 1826), "2021-10-28");
 });
 
-test("la fenêtre ne dépend d'aucune date de dernière lecture : une lecture en échec ne peut plus creuser un trou", () => {
-  // Avant : chaque tentative, même refusée, avançait la date de lecture, et la
-  // suivante ne remontait que trois jours avant elle. Les jours entre la
-  // dernière lecture réussie et la reprise étaient perdus.
-  // Dossier commencé le 1er octobre, aujourd'hui le 24 : la marge de trente
-  // jours remonte plus tôt que le dossier, et c'est elle qui fixe le début.
-  const f = fenetresDeLecture(new Date("2026-10-24T12:00:00Z"), "2026-10-01");
-  assert.equal(f.releve, "2026-09-24");
-});
-
-test("le relevé remonte d'au moins trente jours, pour rattraper une opération inscrite avec retard", () => {
-  // Une fin de dossier récente : la marge de trente jours ramène quand même la
-  // lecture avant la date de début, et le recouvrement est sans effet (clé).
-  const f = fenetresDeLecture(new Date("2026-10-24T12:00:00Z"), "2026-10-20");
-  assert.equal(f.releve, "2026-09-24");
+test("les niveaux de profondeur vont du plus profond au plus court, et finissent à 90 jours", () => {
+  assert.deepEqual([...NIVEAUX_D_HISTORIQUE_JOURS], [1826, 730, 90]);
 });
 
 test("les virements à répondre : trente jours, toujours depuis aujourd'hui", () => {
-  const f = fenetresDeLecture(new Date("2026-10-24T12:00:00Z"), "2026-01-01");
-  assert.equal(f.virements, "2026-09-24");
+  assert.equal(fenetreDeVirements(new Date("2026-10-24T12:00:00Z")), "2026-09-24");
+});
+
+test("la banque accepte le niveau le plus profond : aucun avertissement", async () => {
+  const r = await lireAuPlusProfond(async (jours) => ({ ok: true, jours }));
+  assert.equal(r.ok, true);
+  if (r.ok) {
+    assert.equal(r.joursLus, 1826);
+    assert.equal(r.refusDesPlusProfonds, null);
+  }
+});
+
+test("la banque refuse le plus profond : on lit au niveau suivant, et le refus est gardé pour l'expliquer", async () => {
+  const r = await lireAuPlusProfond(async (jours): Promise<{ ok: true; jours: number } | RefusBanque> =>
+    jours > 730 ? { ok: false, raison: "Enable Banking a refusé (400). Période trop ancienne.", statut: 400 } : { ok: true, jours }
+  );
+  assert.equal(r.ok, true);
+  if (r.ok) {
+    assert.equal(r.joursLus, 730);
+    assert.equal(r.refusDesPlusProfonds, "Enable Banking a refusé (400). Période trop ancienne.");
+  }
+});
+
+test("la banque refuse tous les niveaux : la lecture échoue avec le dernier refus, rien n'est lu", async () => {
+  const r = await lireAuPlusProfond(async () => ({ ok: false as const, raison: "refus final", statut: 400 }));
+  assert.equal(r.ok, false);
+  if (!r.ok) assert.equal(r.raison, "refus final");
+});
+
+test("une limite de débit (429) arrête tout : pas de nouvel essai qui brûlerait le quota", async () => {
+  let appels = 0;
+  const r = await lireAuPlusProfond(async () => {
+    appels++;
+    return { ok: false as const, raison: "trop de lectures", statut: 429 };
+  });
+  assert.equal(appels, 1);
+  assert.equal(r.ok, false);
+});
+
+test("un accès expiré (401) arrête tout : un autre niveau ne le répare pas", async () => {
+  let appels = 0;
+  await lireAuPlusProfond(async () => {
+    appels++;
+    return { ok: false as const, raison: "session expirée", statut: 401 };
+  });
+  assert.equal(appels, 1);
+});
+
+test("une panne sans réponse (pas de statut) arrête tout", async () => {
+  let appels = 0;
+  await lireAuPlusProfond(async () => {
+    appels++;
+    return { ok: false as const, raison: "Enable Banking ne répond pas." };
+  });
+  assert.equal(appels, 1);
 });
 
 test("deux opérations identiques le même jour, sans référence, restent DEUX lignes", () => {

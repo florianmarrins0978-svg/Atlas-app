@@ -8,6 +8,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { estProprietaire } from "@/server/autorisation";
 import { banquesFrancaises, cleDeposee } from "@/server/banque/enable-banking";
 import { lireLaBanque } from "@/server/banque/lecture";
+import { debutDuReleve, NIVEAUX_D_HISTORIQUE_JOURS } from "@/lib/releve-bancaire";
 import { facturesARapprocher } from "@/server/banque/questions";
 import { liaisonDeLEntreprise, virementsDepuis, type VirementLuEnBase } from "@/server/repositories/banque";
 import { adresseDeRetour, retourConfigure } from "@/server/paiement/retour";
@@ -99,6 +100,13 @@ export default async function BanquePage({
           {lecture && !lecture.ok && (
             <p role="alert" className="text-[13.5px] leading-[1.5]" style={{ color: colors.alert }}>
               {lecture.raison}
+            </p>
+          )}
+
+          {liaison && liaison.historiqueJours !== null && liaison.historiqueJours < NIVEAUX_D_HISTORIQUE_JOURS[0] && (
+            <p data-atlas="historique-limite" role="status" className="text-[13.5px] leading-[1.5]" style={{ color: colors.inkSoft }}>
+              La banque ne rend que {liaison.historiqueJours} jours, depuis le {jourFrancais(debutDuReleve(maintenant, liaison.historiqueJours))}.
+              {liaison.historiqueRefus ? ` Elle refuse davantage : ${liaison.historiqueRefus}` : ""}
             </p>
           )}
 
@@ -326,4 +334,10 @@ async function VirementsRecus({ maintenant }: { maintenant: Date }) {
       )}
     </section>
   );
+}
+
+/** `AAAA-MM-JJ` → `JJ/MM/AAAA`, pour l'écran. */
+function jourFrancais(iso: string): string {
+  const [annee, mois, jour] = iso.split("-");
+  return `${jour}/${mois}/${annee}`;
 }
