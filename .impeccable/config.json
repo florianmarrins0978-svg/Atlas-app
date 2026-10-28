@@ -404,6 +404,15 @@
         ],
         "createdAt": "2026-10-27T23:27:41.916Z",
         "reason": "Le .cadre est le téléphone de kit.css, commun à toutes les planches : l'écran y est posé bord à bord exprès"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "appli/soignee/clients-importer.html"
+        ],
+        "createdAt": "2026-10-28T20:25:58.624Z",
+        "reason": "user confirmed 28 Oct 2026: rubriques in the app gold (#B98B47, 2.8:1 on cream) and the old button green (#7d9a6d, 3.0:1) kept by his answers on fondations.html; measured in browser, nothing else under 4.5:1 in Origine, Brume, Nuit, Sylve"
       }
     ]
   }

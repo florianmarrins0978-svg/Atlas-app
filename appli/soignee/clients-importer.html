@@ -1,0 +1,541 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Importer vos clients, soigné</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  IMPORTER VOS CLIENTS (CSV), la planche soignée, 28 octobre 2026.
+
+  Sa demande : « il faut qu'elle importe du CSV, qu'on puisse importer une
+  année de clients et qu'elle les range en créant des fiches clients », puis,
+  devant une première planche faite sur l'ancienne allure : « refais la
+  planche avec la planche client qui a été refaite dans le sommaire ».
+
+  D'OÙ ELLE PART : le bouton « Importer » au bout de Vos clients
+  (clients.html) menait déjà ici, à une page qui n'existait pas. Ce qui suit
+  est donc la suite de SA planche des clients : mêmes initiales, mêmes
+  plages par lettre, même compte sous le titre, même or pour ce qui mène
+  ailleurs.
+
+  CE QUI EST REPRIS TEL QUEL de l'import des devis qu'il a validé le
+  22 octobre (importer-ancienne-appli.html, codé dans src/app/clients/importer) :
+  rien n'est créé avant son appui ; un nom absent ne crée rien, la ligne
+  attend qu'il le tape ; le bouton compte ce qui partira ; « Vous pouvez
+  fermer l'appli » quand le serveur travaille seul ; Annuler après coup
+  plutôt qu'une question avant.
+
+  CE QUI EST PROPRE AU CSV, et pourquoi :
+    - LES COLONNES SE MONTRENT. Chaque ancienne appli nomme les siennes
+      (« Client », « Raison sociale », « Tél. »). Atlas propose, il corrige
+      d'un appui, et la première valeur lue s'écrit dessous pour qu'il voie
+      tout de suite si c'est la bonne. Une colonne inconnue n'est reprise
+      nulle part plutôt que devinée (docs/AGENT.md §3).
+    - UN CLIENT DÉJÀ LÀ N'EST PAS TOUCHÉ : le fichier ne réécrit jamais une
+      fiche qu'il a peut-être corrigée depuis. Point laissé à trancher.
+    - UNE LIGNE EN DOUBLE (le même client facturé trois fois dans l'année)
+      ne crée qu'une fiche.
+    - UN FICHIER EXCEL est refusé en disant comment l'enregistrer en CSV.
+    - LE GROS FICHIER : un CSV de dix ans pèse quelques centaines de Ko et
+      part en une seconde ; c'est la CRÉATION des fiches qui prend du temps,
+      sur le serveur. Il peut fermer l'appli.
+
+  LES LIBELLÉS DE RUBRIQUE sont en or, à 13 px : sa réponse du 28 octobre
+  sur « Ce qui change partout » (« seulement l'or, avec la taille
+  proposée »).
+
+  Noms et adresses d'exemple. Rien ne part nulle part.
+*/
+.portes-import { padding: 2px 16px; }
+.porte-import { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 76px; padding: 12px 0;
+                text-align: left; text-decoration: none; color: inherit; }
+.porte-import + .porte-import { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.porte-import .ligne-fin .ico { color: var(--atlas-or); }
+
+.fichier { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 68px; padding: 10px 0; text-align: left; }
+.fichier + .fichier { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.fichier .pastille-ico { width: 44px; height: 44px; }
+
+.bilan { display: flex; flex-wrap: wrap; gap: 8px; margin: -6px 0 4px; }
+
+.colonne { position: relative; display: grid; grid-template-columns: 104px minmax(0, 1fr); align-items: center; gap: 4px 12px;
+           padding: 10px 0; }
+.colonne + .colonne::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
+.colonne label { font-size: 14.5px; font-weight: 600; color: var(--atlas-inkSoft); }
+.colonne select { appearance: none; -webkit-appearance: none; width: 100%; min-height: 44px; padding: 0 36px 0 12px; border: 0;
+                  border-radius: 10px; font: 400 17px/1.2 var(--serif); color: var(--atlas-ink); background: var(--atlas-cream); }
+.colonne select:focus { outline: none; box-shadow: inset 0 0 0 2px var(--atlas-or); }
+.colonne .choisir { position: relative; }
+.colonne .choisir .ico { position: absolute; right: 10px; top: 50%; width: 18px; height: 18px; margin-top: -9px;
+                         color: var(--atlas-or); pointer-events: none; }
+.colonne small { grid-column: 2; padding-left: 12px; font-size: 13.5px; color: var(--atlas-inkSoft);
+                 white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.colonne.vide select { color: var(--atlas-inkSoft); font: 400 15px/1.2 var(--sans); }
+
+.groupe { padding: 2px 16px; }
+.client { display: flex; align-items: center; gap: 12px; min-height: 72px; padding: 12px 0; width: 100%; text-align: left;
+          text-decoration: none; color: inherit; }
+.client + .client { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.initiales { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%;
+             font: 400 17px/1 var(--serif); background: var(--atlas-rustTint); color: var(--atlas-rust); }
+.client-corps { flex: 1; min-width: 0; }
+.client-nom { display: block; font: 400 18.5px/1.25 var(--serif); }
+.client-nom.manque { color: var(--atlas-inkSoft); }
+.client-lieu { display: block; margin-top: 2px; font-size: 14px; color: var(--atlas-inkSoft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.client .etat { margin-top: 6px; }
+.client .champ-saisie { margin-top: 8px; min-height: 48px; padding: 11px 13px; }
+.client-bas { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 8px; margin-top: 4px; }
+.client-piece { font-size: 14px; color: var(--atlas-inkSoft); white-space: nowrap; }
+.du { flex: none; display: inline-flex; align-items: center; min-height: 26px; padding: 0 10px; border-radius: 13px; font-size: 14px; font-weight: 700;
+      font-variant-numeric: tabular-nums lining-nums; background: var(--atlas-carteRougeFond); color: var(--atlas-carteRougeTexte); white-space: nowrap; }
+.client > .ico { width: 20px; height: 20px; color: var(--atlas-chevron); stroke-width: 2; flex: none; }
+.autres { margin: 14px 2px 0; font-size: 14.5px; color: var(--atlas-inkSoft); }
+
+/* Les nouveaux arrivent dans la liste : un voile d'or qui s'efface. */
+.client.neuf { animation: arrivee 1.8s var(--courbe) both; }
+@keyframes arrivee { from { background: color-mix(in srgb, var(--atlas-or) 22%, transparent); } to { background: transparent; } }
+
+.lettre { margin: 0; padding: 14px 0 2px; font: 400 17px/1 var(--serif); color: var(--atlas-inkSoft); }
+.bloc-lettre + .bloc-lettre { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.bloc-lettre .client { min-height: 66px; padding: 8px 0 12px; }
+
+.jauge { height: 6px; border-radius: 3px; overflow: hidden; background: var(--atlas-rustTint); }
+.jauge i { display: block; height: 100%; width: 0; border-radius: 3px; background: var(--atlas-plein); transition: width 300ms var(--courbe); }
+.compte-grand { margin-top: 18px; font: 400 34px/1.1 var(--serif); font-variant-numeric: tabular-nums lining-nums; }
+.compte-grand small { font: 400 16px var(--sans); color: var(--atlas-inkSoft); }
+.consigne { margin: 24px 0 0; font: 400 21px/1.35 var(--serif); }
+
+.en-cours { display: block; width: 100%; margin: 0 0 14px; text-align: left; }
+.en-cours b { display: block; font: 400 18px/1.25 var(--serif); }
+.en-cours .second { display: block; margin: 2px 0 10px; }
+.en-cours.fini .jauge { display: none; }
+.en-cours.fini .second { margin-bottom: 0; }
+
+.importer { margin-top: 28px; color: var(--atlas-or); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 70%, transparent); }
+.importer .ico { color: var(--atlas-or); }
+
+.refus-texte { margin: 0 0 20px; font-size: 16px; line-height: 1.5; color: var(--atlas-inkSoft); }
+
+@media (prefers-reduced-motion: reduce) { .client.neuf { animation: none; } }
+</style>
+</head>
+<body class="pl pl-pilules">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">Importer vos clients</h1>
+  <p class="pl-verdict">Un fichier CSV d'une année devient vos fiches clients. <b>Atlas montre les colonnes qu'il a comprises et chaque client avant de créer quoi que ce soit.</b></p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats">
+        <button type="button" data-etat="importer" aria-pressed="true">Importer</button>
+        <button type="button" data-etat="lecture">Les clients lus</button>
+        <button type="button" data-etat="creation">Dix ans de clients</button>
+        <button type="button" data-etat="clients">Fiches créées</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre" data-etat="importer" id="ecran-import">
+          <div class="defile" id="defile">
+
+            <div class="rang-espace" style="margin-top:4px" data-si-etat="importer lecture">
+              <a class="rond-creux" href="clients.html" aria-label="Retour à vos clients" data-si-etat="importer"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+              <button class="rond-creux" type="button" aria-label="Retour à importer" data-va-etat="importer" data-si-etat="lecture"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+            </div>
+            <div class="rang-espace" style="margin-top:4px" data-si-etat="clients">
+              <a class="rond-creux" href="accueil.html" aria-label="Retour à la liste des chantiers"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+            </div>
+
+            <header class="tete" style="margin:12px 0 0">
+              <h1 class="tete-titre" data-si-etat="importer">Importer</h1>
+              <h1 class="tete-titre" data-si-etat="lecture" id="titre-lecture">214 clients lus</h1>
+              <h1 class="tete-titre" data-si-etat="creation">Création</h1>
+              <h1 class="tete-titre" data-si-etat="clients">Vos clients</h1>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-si-etat="importer lecture clients"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </header>
+            <p class="tete-situation" style="margin:4px 0 18px" id="situation">Vos clients</p>
+
+            <!-- 1. Importer : deux portes, celle d'aujourd'hui et la nouvelle -->
+            <div data-si-etat="importer">
+              <div class="plage portes-import">
+                <a class="porte-import touche" href="../importer-ancienne-appli.html">
+                  <span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-facture"/></svg></span>
+                  <span class="ligne-corps"><span class="ligne-nom">Vos devis et factures</span><span class="ligne-situation">PDF, photos ou dossier .zip, jusqu'à 2 000 documents par envoi.</span></span>
+                  <span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>
+                </a>
+                <button class="porte-import touche" type="button" data-ouvre="feuille-fichiers">
+                  <span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-client"/></svg></span>
+                  <span class="ligne-corps"><span class="ligne-nom">Votre liste de clients</span><span class="ligne-situation">Un fichier CSV, exporté de votre ancienne appli ou d'Excel.</span></span>
+                  <span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 2. Lecture : ce qu'Atlas a compris, puis chaque client -->
+            <div data-si-etat="lecture">
+              <div class="bilan" id="bilan"></div>
+              <p class="rubrique rubrique-or">Colonnes</p>
+              <div class="plage plage-serree" id="colonnes"></div>
+              <p class="rubrique rubrique-or">Clients</p>
+              <div class="plage groupe" id="clients-lus"></div>
+              <p class="autres" id="autres"></p>
+            </div>
+
+            <!-- 3. Dix ans : la création se fait sans lui -->
+            <div data-si-etat="creation">
+              <div class="jauge" style="margin-top:8px"><i id="jauge"></i></div>
+              <p class="compte-grand" id="compte-creation"></p>
+              <p class="consigne">Vous pouvez fermer l'appli. Les fiches se créent sans vous.</p>
+              <p class="second mt-8">Vos clients apparaîtront au fil de la création.</p>
+            </div>
+
+            <!-- 4. Vos clients, avec les nouveaux -->
+            <div data-si-etat="clients">
+              <div class="plage en-cours" id="en-cours" hidden></div>
+              <div class="plage groupe" id="liste"></div>
+              <a class="bouton bouton-creux importer touche" href="#" data-va-etat="importer"><svg class="ico" aria-hidden="true"><use href="#i-importer"/></svg>Importer clients, devis, factures</a>
+            </div>
+          </div>
+
+          <div class="action-bas" data-si-etat="lecture">
+            <button class="bouton bouton-plein" type="button" id="creer">Créer</button>
+          </div>
+          <div class="action-bas" data-si-etat="creation">
+            <button class="bouton bouton-creux" type="button" id="fermer">Fermer</button>
+          </div>
+
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html" aria-current="page">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html">Terminés</a>
+              <a class="barre-onglet" href="paysage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+
+          <section class="feuille" id="feuille-fichiers" aria-hidden="true" aria-label="Vos fichiers">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans" id="choix-fichier">
+              <h2 class="feuille-titre">Vos fichiers</h2>
+              <button class="fichier touche" type="button" data-lot="annee">
+                <span class="pastille-ico" data-ton="vert"><svg class="ico" aria-hidden="true"><use href="#i-document"/></svg></span>
+                <span class="ligne-corps"><span class="ligne-nom">Clients 2025.csv</span><span class="ligne-situation">214 lignes, 31 Ko</span></span>
+              </button>
+              <button class="fichier touche" type="button" data-lot="dix">
+                <span class="pastille-ico" data-ton="vert"><svg class="ico" aria-hidden="true"><use href="#i-document"/></svg></span>
+                <span class="ligne-corps"><span class="ligne-nom">Clients 2016 à 2025.csv</span><span class="ligne-situation">1 870 lignes, 262 Ko</span></span>
+              </button>
+              <button class="fichier touche" type="button" data-lot="excel">
+                <span class="pastille-ico" data-ton="bleu"><svg class="ico" aria-hidden="true"><use href="#i-document"/></svg></span>
+                <span class="ligne-corps"><span class="ligne-nom">Clients.xlsx</span><span class="ligne-situation">Tableau Excel, 48 Ko</span></span>
+              </button>
+            </div>
+            <div class="feuille-dedans" id="refus-excel" hidden>
+              <h2 class="feuille-titre">Ce fichier est un tableau Excel</h2>
+              <p class="refus-texte">Dans Excel : Fichier, Enregistrer sous, puis choisissez CSV. Importez ensuite ce fichier.</p>
+              <div class="pile">
+                <button class="bouton bouton-plein" type="button" id="autre">Choisir un autre fichier</button>
+                <button class="bouton bouton-texte" type="button" data-ferme style="width:100%;justify-content:center;color:var(--atlas-inkSoft)">Fermer</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>Le bouton au bout de Vos clients mène à deux portes : vos devis et factures, comme aujourd'hui, et votre liste de clients.</li>
+      <li>Atlas montre les colonnes qu'il a comprises, avec la première valeur lue dessous. Une colonne mal comprise se change d'un appui.</li>
+      <li>Chaque client se montre avant d'être créé : nouveau, déjà client, ou sans nom. Un nom absent se tape sur la ligne.</li>
+      <li>Une ligne en double ne crée qu'une fiche. Le bouton compte ce qui sera créé.</li>
+      <li>Dix ans de clients : les fiches se créent sans vous, vous pouvez fermer l'appli.</li>
+      <li>Un fichier Excel est refusé, avec la marche à suivre pour l'enregistrer en CSV.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>L'import de vos devis et factures, tel que vous l'avez validé le 22 octobre.</li>
+      <li>Vos clients, comme sur sa planche : les initiales, les plages par lettre, l'or pour ce qui mène ailleurs.</li>
+      <li>Rien n'est créé avant votre appui, et Annuler défait tout juste après.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>Un client déjà dans Atlas n'est pas touché. Si vous voulez que le fichier complète ce qui manque sur sa fiche (un téléphone, un e-mail), dites-le.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="clients.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Vos clients</a>
+  <a href="client.html">La fiche d'un client<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+  (function () {
+    var ecran = document.getElementById("ecran-import");
+    var $ = function (id) { return document.getElementById(id); };
+    var n = function (x) { return x.toLocaleString("fr-FR"); };
+
+    /* Les clients déjà dans Atlas : ceux de la planche Vos clients. */
+    var DEJA = [
+      { nom: "Mme Aubry" },
+      { nom: "M. Bernard", piece: "Facture du 17 oct.", du: "312,00 € dus" },
+      { nom: "Mme Costa", piece: "Facture du 22 oct." },
+      { nom: "M. Faucher", piece: "Facture du 10 oct." },
+      { nom: "Mme Garnier", lieu: "18 rue des Lilas, 49100 Angers", piece: "Facture du 14 oct.", du: "2 016,00 € dus" },
+      { nom: "M. Lefèvre", lieu: "7 allée du Parc, 49130 Les Ponts-de-Cé", piece: "Devis du 2 oct." },
+      { nom: "M. et Mme Roux", lieu: "3 impasse des Saules, 49070 Beaucouzé", piece: "Facture du 7 oct." }
+    ];
+    /* Les colonnes du fichier, telles que l'ancienne appli les nomme. */
+    var COLONNES = ["Client", "Adresse", "CP", "Ville", "Tél.", "Mail", "SIRET", "Remarques"];
+    var CHAMPS = [
+      { champ: "Nom", col: "Client" }, { champ: "Adresse", col: "Adresse" }, { champ: "Code postal", col: "CP" },
+      { champ: "Ville", col: "Ville" }, { champ: "Téléphone", col: "Tél." }, { champ: "E-mail", col: "Mail" }, { champ: "SIRET", col: "SIRET" }
+    ];
+    /* Les lignes montrées. `Client` vide : la case est vide dans le fichier. */
+    var LIGNES = [
+      { "Client": "Mme Lenoir", "Adresse": "14 rue Paul Bert", "CP": "44100", "Ville": "Nantes", "Tél.": "06 12 48 30 77", "Mail": "lenoir.c@orange.fr", "SIRET": "", "Remarques": "portail vert" },
+      { "Client": "M. Guérin", "Adresse": "2 chemin des Vignes", "CP": "44120", "Ville": "Vertou", "Tél.": "06 70 21 55 12", "Mail": "", "SIRET": "", "Remarques": "" },
+      { "Client": "M. Bernard", "Adresse": "12 rue des Lilas", "CP": "44000", "Ville": "Nantes", "Tél.": "06 33 18 90 41", "Mail": "", "SIRET": "", "Remarques": "" },
+      { "Client": "SCI Les Hêtres", "Adresse": "40 bd Victor Hugo", "CP": "44200", "Ville": "Nantes", "Tél.": "02 40 11 22 33", "Mail": "gestion@leshetres.fr", "SIRET": "812 345 678 00021", "Remarques": "" },
+      { "Client": "Mme Le Goff", "Adresse": "7 impasse du Lavoir", "CP": "44400", "Ville": "Rezé", "Tél.": "", "Mail": "", "SIRET": "", "Remarques": "" },
+      { "Client": "", "Adresse": "9 rue de la Gare", "CP": "44230", "Ville": "Saint-Sébastien-sur-Loire", "Tél.": "06 81 44 02 19", "Mail": "", "SIRET": "", "Remarques": "" },
+      { "Client": "M. Rivière", "Adresse": "", "CP": "", "Ville": "", "Tél.": "07 45 61 23 08", "Mail": "", "SIRET": "", "Remarques": "" },
+      { "Client": "Mme Tessier", "Adresse": "3 place du Marché", "CP": "44115", "Ville": "Basse-Goulaine", "Tél.": "06 52 77 14 90", "Mail": "", "SIRET": "", "Remarques": "" },
+      { "Client": "", "Adresse": "", "CP": "", "Ville": "", "Tél.": "06 14 25 36 47", "Mail": "", "SIRET": "", "Remarques": "" }
+    ];
+    var LOTS = {
+      annee: { fichier: "Clients 2025.csv", lignes: 214, doubles: 12 },
+      dix: { fichier: "Clients 2016 à 2025.csv", lignes: 1870, doubles: 58 }
+    };
+
+    var lot = LOTS.annee, mapping = {}, tapes = {}, clients = [], avant = null, minuteur = null;
+
+    function initiales(nom) {
+      var mots = nom.replace(/\bet\b/g, "").split(/\s+/).filter(Boolean);
+      if (mots.length === 1) return mots[0][0].toUpperCase();
+      return (mots[0][0] + mots[mots.length - 1][0]).toUpperCase();
+    }
+    function cle(nom) { return nom.replace(/^(M\. et Mme|M\.|Mme|SCI)\s+/, ""); }
+    function valeur(r, champ) { var c = mapping[champ]; return c ? (r[c] || "") : ""; }
+    function nomDe(r, i) { return valeur(r, "Nom") || tapes[i] || ""; }
+    function lieuDe(r) {
+      var rue = valeur(r, "Adresse"), cp = valeur(r, "Code postal"), ville = valeur(r, "Ville");
+      var bout = [cp, ville].filter(Boolean).join(" ");
+      return [rue, bout].filter(Boolean).join(", ");
+    }
+    function etatDe(r, i) {
+      if (!mapping["Nom"]) return "sans";
+      var nom = nomDe(r, i);
+      if (!nom) return "sans";
+      return DEJA.some(function (c) { return c.nom.toLowerCase() === nom.toLowerCase(); }) ? "deja" : "nouveau";
+    }
+    function horsMontrees() { return lot.lignes - lot.doubles - LIGNES.length; }
+    function aCreer() {
+      if (!mapping["Nom"]) return 0;
+      return LIGNES.filter(function (r, i) { return etatDe(r, i) === "nouveau"; }).length + horsMontrees();
+    }
+
+    function aller(etat) {
+      Kit.appliquerEtat(ecran, etat);
+      document.querySelectorAll(".pl-etats button").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-etat") === etat ? "true" : "false"); });
+      $("defile").scrollTop = 0;
+    }
+
+    /* ─── Les colonnes ─── */
+    function dessinerColonnes() {
+      $("colonnes").innerHTML = CHAMPS.map(function (c) {
+        var pris = mapping[c.champ];
+        var options = '<option value=""' + (pris ? "" : " selected") + ">Pas repris</option>" +
+          COLONNES.map(function (col) { return "<option" + (col === pris ? " selected" : "") + ">" + col + "</option>"; }).join("");
+        var exemple = pris ? (LIGNES.map(function (r) { return r[pris]; }).filter(Boolean)[0] || "Vide dans le fichier") : "";
+        var id = "c-" + c.champ.replace(/\W/g, "");
+        return '<div class="colonne' + (pris ? "" : " vide") + '"><label for="' + id + '">' + c.champ + '</label>' +
+          '<span class="choisir"><select id="' + id + '" data-champ="' + c.champ + '">' + options + '</select><svg class="ico" aria-hidden="true"><use href="#i-bas"/></svg></span>' +
+          (exemple ? "<small>" + exemple + "</small>" : "") + "</div>";
+      }).join("");
+    }
+    $("colonnes").addEventListener("change", function (e) {
+      mapping[e.target.getAttribute("data-champ")] = e.target.value;
+      dessinerColonnes();
+      dessinerLus();
+    });
+
+    /* ─── Les clients lus ─── */
+    function dessinerLus() {
+      $("clients-lus").innerHTML = LIGNES.map(function (r, i) {
+        var etat = etatDe(r, i);
+        var lieu = [lieuDe(r), valeur(r, "Téléphone")].filter(Boolean).join(", ") || "Sans coordonnées";
+        if (etat === "sans") {
+          return '<div class="client"><span class="initiales">?</span><span class="client-corps"><span class="client-nom manque">Sans nom</span>' +
+            '<span class="client-lieu">' + lieu + '</span><span class="etat" data-ton="ambre">Nom absent du fichier</span>' +
+            '<input class="champ-saisie" data-tape="' + i + '" value="' + (tapes[i] || "") + '" placeholder="Nom du client" autocomplete="off" enterkeyhint="done" aria-label="Nom du client"></span></div>';
+        }
+        var nom = nomDe(r, i);
+        var mot = etat === "deja" ? '<span class="etat">Déjà client, sa fiche ne change pas</span>' : '<span class="etat" data-ton="vert">Nouveau client</span>';
+        return '<div class="client"><span class="initiales">' + initiales(nom) + '</span><span class="client-corps"><span class="client-nom">' + nom + '</span>' +
+          '<span class="client-lieu">' + lieu + "</span>" + mot + "</span></div>";
+      }).join("");
+      $("autres").textContent = "Et " + n(horsMontrees()) + " autres, tous nouveaux.";
+      majBilan();
+    }
+    /* Taper un nom ne redessine pas la liste : le doigt garde sa case. */
+    $("clients-lus").addEventListener("input", function (e) {
+      var i = e.target.getAttribute("data-tape");
+      if (i === null) return;
+      tapes[i] = e.target.value.trim();
+      majBilan();
+    });
+    $("clients-lus").addEventListener("change", function (e) { if (e.target.hasAttribute("data-tape")) dessinerLus(); });
+
+    function majBilan() {
+      var sans = LIGNES.filter(function (r, i) { return etatDe(r, i) === "sans"; }).length;
+      var deja = LIGNES.filter(function (r, i) { return etatDe(r, i) === "deja"; }).length;
+      var morceaux = ['<span class="etat" data-ton="vert">' + n(aCreer()) + " nouveaux</span>"];
+      if (deja) morceaux.push('<span class="etat">' + deja + " déjà client" + (deja > 1 ? "s" : "") + "</span>");
+      if (lot.doubles) morceaux.push('<span class="etat">' + lot.doubles + " en double</span>");
+      if (sans && mapping["Nom"]) morceaux.push('<span class="etat" data-ton="ambre">' + sans + " sans nom</span>");
+      $("bilan").innerHTML = morceaux.join("");
+      var b = $("creer");
+      if (!mapping["Nom"]) { b.textContent = "Choisissez la colonne du nom"; b.disabled = true; return; }
+      b.disabled = aCreer() === 0;
+      b.textContent = "Créer " + n(aCreer()) + " fiches";
+    }
+
+    function lire(cleLot) {
+      lot = LOTS[cleLot];
+      tapes = {};
+      mapping = {};
+      CHAMPS.forEach(function (c) { mapping[c.champ] = c.col; });
+      $("titre-lecture").textContent = n(lot.lignes) + " clients lus";
+      $("situation").textContent = lot.fichier;
+      dessinerColonnes();
+      dessinerLus();
+      aller("lecture");
+    }
+
+    /* ─── Le choix du fichier ─── */
+    document.querySelectorAll("[data-lot]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        if (b.getAttribute("data-lot") === "excel") { $("choix-fichier").hidden = true; $("refus-excel").hidden = false; return; }
+        Kit.fermerFeuilles(ecran);
+        setTimeout(function () { lire(b.getAttribute("data-lot")); }, 260);
+      });
+    });
+    $("autre").addEventListener("click", function () { $("refus-excel").hidden = true; $("choix-fichier").hidden = false; });
+    ecran.addEventListener("click", function (e) {
+      if (e.target.closest("[data-ouvre='feuille-fichiers']")) { $("refus-excel").hidden = true; $("choix-fichier").hidden = false; }
+    }, true);
+
+    /* ─── Vos clients, avec ce qui vient d'arriver ─── */
+    function dessinerListe(neufs) {
+      var tous = DEJA.concat(clients).slice().sort(function (a, b) { return cle(a.nom).localeCompare(cle(b.nom), "fr"); });
+      var html = "", lettre = "", ouvert = false;
+      tous.forEach(function (c) {
+        var l = cle(c.nom)[0].toUpperCase();
+        if (l !== lettre) { if (ouvert) html += "</div>"; html += '<div class="bloc-lettre"><p class="lettre">' + l + "</p>"; lettre = l; ouvert = true; }
+        var neuf = neufs.indexOf(c.nom) >= 0;
+        html += '<a class="client touche' + (neuf ? " neuf" : "") + '" href="client.html"><span class="initiales">' + initiales(c.nom) + '</span><span class="client-corps"><span class="client-nom">' + c.nom + "</span>" +
+          (c.lieu ? '<span class="client-lieu">' + c.lieu + "</span>" : "") +
+          (c.piece ? '<span class="client-bas"><span class="client-piece">' + c.piece + "</span>" + (c.du ? '<span class="du">' + c.du + "</span>" : "") + "</span>" : "") +
+          '</span><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></a>';
+      });
+      if (ouvert) html += "</div>";
+      $("liste").innerHTML = html;
+      /* Les nouveaux se rangent à leur lettre : la liste descend jusqu'au
+         premier, sinon il ne voit que ses anciens clients. */
+      var premier = $("liste").querySelector(".client.neuf");
+      if (premier) setTimeout(function () {
+        var d = $("defile");
+        d.scrollTo({ top: premier.getBoundingClientRect().top - d.getBoundingClientRect().top + d.scrollTop - 140, behavior: "smooth" });
+      }, 420);
+    }
+    function nouveauxMontres() {
+      return LIGNES.map(function (r, i) { return { r: r, i: i }; })
+        .filter(function (x) { return etatDe(x.r, x.i) === "nouveau"; })
+        .map(function (x) { return { nom: nomDe(x.r, x.i), lieu: lieuDe(x.r) }; });
+    }
+
+    $("creer").addEventListener("click", function () {
+      var nombre = aCreer();
+      var neufs = nouveauxMontres();
+      avant = clients.slice();
+      clearInterval(minuteur);
+      if (lot.lignes < 1000) {
+        clients = clients.concat(neufs);
+        dessinerListe(neufs.map(function (c) { return c.nom; }));
+        $("en-cours").hidden = true;
+        $("situation").textContent = n(DEJA.length + nombre) + " clients";
+        aller("clients");
+        Kit.tiroir(ecran, n(nombre) + " fiches créées.", function () {
+          clients = avant;
+          dessinerListe([]);
+          $("situation").textContent = n(DEJA.length) + " clients";
+        });
+        return;
+      }
+      $("situation").textContent = lot.fichier;
+      aller("creation");
+      var faites = 0;
+      minuteur = setInterval(function () {
+        faites = Math.min(nombre, faites + 41);
+        var pct = (faites / nombre) * 100 + "%";
+        $("jauge").style.width = pct;
+        $("compte-creation").innerHTML = n(faites) + " <small>sur " + n(nombre) + "</small>";
+        var e = $("en-cours");
+        e.hidden = false;
+        e.classList.remove("fini");
+        e.innerHTML = "<b>Création de vos fiches</b><span class=\"second\">" + n(faites) + " sur " + n(nombre) + '</span><span class="jauge"><i style="width:' + pct + '"></i></span>';
+        if (ecran.getAttribute("data-etat") === "clients") $("situation").textContent = n(DEJA.length + faites) + " clients";
+        if (faites >= nombre) {
+          clearInterval(minuteur);
+          clients = clients.concat(neufs);
+          dessinerListe(ecran.getAttribute("data-etat") === "clients" ? neufs.map(function (c) { return c.nom; }) : []);
+          e.classList.add("fini");
+          e.innerHTML = "<b>" + n(nombre) + " fiches créées</b><span class=\"second\">" + lot.fichier + "</span>";
+          if (ecran.getAttribute("data-etat") !== "importer") $("situation").textContent = n(DEJA.length + nombre) + " clients";
+          if (ecran.getAttribute("data-etat") === "creation") aller("clients");
+        }
+      }, 110);
+    });
+    $("fermer").addEventListener("click", function () {
+      dessinerListe([]);
+      aller("clients");
+    });
+
+    /* Les boutons d'état de la planche : chaque état s'ouvre rempli, comme si
+       on y était arrivé par le geste. */
+    new MutationObserver(function () {
+      var etat = ecran.getAttribute("data-etat");
+      if (etat === "importer") $("situation").textContent = "Vos clients";
+      if (etat === "lecture" && !$("colonnes").children.length) lire("annee");
+      if (etat === "creation" && !$("compte-creation").textContent) {
+        lot = LOTS.dix; mapping = {}; CHAMPS.forEach(function (c) { mapping[c.champ] = c.col; });
+        $("situation").textContent = lot.fichier;
+        $("jauge").style.width = "32%";
+        $("compte-creation").innerHTML = "592 <small>sur 1 809</small>";
+      }
+      if (etat === "clients" && !$("liste").children.length) {
+        lot = LOTS.annee; mapping = {}; CHAMPS.forEach(function (c) { mapping[c.champ] = c.col; });
+        var neufs = nouveauxMontres();
+        clients = neufs;
+        dessinerListe(neufs.map(function (c) { return c.nom; }));
+        $("situation").textContent = n(DEJA.length + aCreer()) + " clients";
+      }
+    }).observe(ecran, { attributes: true, attributeFilter: ["data-etat"] });
+  })();
+</script>
+</body>
+</html>
