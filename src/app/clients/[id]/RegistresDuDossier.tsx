@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { colors } from "@/lib/design-tokens";
 import type { PieceDuClient } from "@/lib/documents-du-client";
-import { piecesQuiRepondent, rienNeRepond } from "@/lib/recherche-piece";
+import { AIDE_DE_LA_LOUPE, piecesQuiRepondent, rienNeRepond } from "@/lib/recherche-piece";
 import { ChampRecherche } from "@/components/atlas/ChampRecherche";
 import PieceDuDossier from "./PieceDuDossier";
 
@@ -62,8 +62,20 @@ export type Registre = {
   rien: string;
 };
 
-export default function RegistresDuDossier({ registres, nomClient }: { registres: Registre[]; nomClient: string }) {
-  const [actif, setActif] = useState(0);
+export default function RegistresDuDossier({
+  registres,
+  nomClient,
+  ouvert,
+}: {
+  registres: Registre[];
+  nomClient: string;
+  /**
+   * L'onglet ouvert à l'arrivée (`cle`) : une facture trouvée par la loupe de
+   * Vos clients ouvre la fiche sur ses factures. Inconnu ou absent : le premier.
+   */
+  ouvert?: string;
+}) {
+  const [actif, setActif] = useState(() => Math.max(0, registres.findIndex((r) => r.cle === ouvert)));
   const [saisie, setSaisie] = useState("");
   const enRecherche = saisie.trim() !== "";
   const unePiece = registres.some((r) => r.pieces.length > 0);
@@ -114,8 +126,8 @@ export default function RegistresDuDossier({ registres, nomClient }: { registres
           <ChampRecherche
             valeur={saisie}
             onChange={setSaisie}
-            placeholder="Chercher un nom, un titre, un montant"
-            ariaLabel="Chercher un nom, un titre, un montant"
+            placeholder={AIDE_DE_LA_LOUPE}
+            ariaLabel={AIDE_DE_LA_LOUPE}
             dataAtlas="chercher-piece"
             className="max-[380px]:[&_input::placeholder]:text-[15px]"
           />

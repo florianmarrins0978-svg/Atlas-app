@@ -1,7 +1,15 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { estUnMontant, montantRepond, piecesQuiRepondent, rienNeRepond } from "../src/lib/recherche-piece";
+import {
+  AIDE_DE_LA_LOUPE,
+  compteDesPieces,
+  estUnMontant,
+  montantRepond,
+  piecesQuiRepondent,
+  registreDeLaPiece,
+  rienNeRepond,
+} from "../src/lib/recherche-piece";
 
 // **LA LOUPE DES PIÈCES D'UN CLIENT.**
 //
@@ -78,11 +86,28 @@ dire(montantRepond("1380.00", "1380.") , "une virgule laissée en fin de frappe 
 
 dire(rienNeRepond("  haie rosiers ") === "Rien ne répond à « haie rosiers ».", "rien trouvé : la phrase cite ce qui a été tapé");
 
+// ── Vos clients : ce que la loupe annonce, et où mène une pièce trouvée ─────
+const [d24, d12, f14, f04, x1] = pieces;
+dire(compteDesPieces([d24]) === "1 devis", "un devis");
+dire(compteDesPieces([d24, d12, x1]) === "3 devis", "des devis seuls");
+dire(compteDesPieces([f14]) === "1 facture", "une facture");
+dire(compteDesPieces([f14, f04]) === "2 factures", "des factures seules");
+dire(compteDesPieces([d24, f14, f04]) === "3 devis et factures", "les deux mêlés");
+dire(registreDeLaPiece(d24) === "devis" && registreDeLaPiece(f14) === "factures", "une pièce trouvée ouvre la fiche sur SON onglet");
+dire(registreDeLaPiece({ href: "/api/pieces-importees/facture/i/pdf" }) === "factures", "une facture importée aussi");
+// **Sur Vos clients, le nom ne rend pas les pièces** : le client sort déjà
+// dans la liste, ses quarante pièces derrière lui la noieraient.
+dire(piecesQuiRepondent(pieces, "costa", "").length === 0, "sans nom donné, le nom du client ne fait sortir aucune pièce");
+dire(AIDE_DE_LA_LOUPE === "Chercher un nom, un titre, un montant", "la phrase qu'il a dictée, mot pour mot");
+
 // ── La règle ne se réécrit pas dans l'écran ─────────────────────────────────
 // Le jour où un `.includes()` reviendra dans le composant, « octobre » cessera
 // de trouver « 8 oct. », et rien d'autre ne le verrait (`CLAUDE.md` §3).
 const ecran = readFileSync(path.join(__dirname, "..", "src/app/clients/[id]/RegistresDuDossier.tsx"), "utf8");
 dire(ecran.includes("piecesQuiRepondent("), "le dossier du client filtre par cette règle, et pas par la sienne");
+const liste = readFileSync(path.join(__dirname, "..", "src/app/clients/ListeClients.tsx"), "utf8");
+dire(liste.includes("piecesQuiRepondent("), "Vos clients cherche les pièces par la même règle");
+dire(liste.includes("AIDE_DE_LA_LOUPE") && ecran.includes("AIDE_DE_LA_LOUPE"), "les deux loupes portent la même phrase, écrite une fois");
 
 console.log(echecs === 0 ? "\n✅ 0 échec." : `\n❌ ${echecs} échec(s).`);
 if (echecs > 0) process.exit(1);

@@ -12,7 +12,7 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 ---
 ## LA FICHE D'UN CLIENT : TITRE, MONTANT ET LOUPE (28 octobre 2026)
 
-**Le piège :** `PieceDuClient.titre` désigne la pièce et nomme son fichier ; le titre d'un devis va dans `objet`, jamais dans `titre` (`ARCHITECTURE.md` §528). La loupe filtre avec `piecesQuiRepondent` ; la loupe de Vos clients doit reprendre la même règle, pas en écrire une seconde. Pour REGARDER la fiche ici, `npm run voir` ne se connecte plus (il remplit le formulaire avant qu'il soit prêt et l'action reçoit un formulaire vide) : attendre `networkidle` avant de taper.
+**Le piège :** `PieceDuClient.titre` désigne la pièce et nomme son fichier ; le titre d'un devis va dans `objet`, jamais dans `titre` (`ARCHITECTURE.md` §528). Les deux loupes filtrent avec `piecesQuiRepondent` ; une pièce de la liste et de la fiche se compose par les mêmes fonctions en tête de `fiche-client.ts`. Pour REGARDER la fiche ici, `npm run voir` ne se connecte plus (il remplit le formulaire avant qu'il soit prêt et l'action reçoit un formulaire vide) : attendre `networkidle` avant de taper.
 
 ---
 ## L'ATTESTATION DU COMPTABLE (27 octobre 2026)

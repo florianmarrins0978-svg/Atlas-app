@@ -6,7 +6,7 @@ dernière migration `drizzle/0152_retours_du_comptable.sql`
 ---
 ## LA FICHE D'UN CLIENT : TITRE, MONTANT, PREMIÈRE TÂCHE ET LOUPE, SUR LA BRANCHE (28 octobre 2026)
 
-Branche `claude/quatre-planches-atlas-6hi21h`, d'après `appli/soignee/client.html` (*« tu peux coder, ne lance pas de batterie »*). Écran : `src/app/clients/[id]/` ; lecture : `fiche-client.ts` ; règles : `lignesDeLaPiece`, `src/lib/recherche-piece.ts` (`ARCHITECTURE.md` §528). Suites de domaine vertes, dont la loupe au navigateur ; **niveau 3, batterie non jouée, pas sur `main`**. Reste : la loupe de Vos clients, l'import CSV et Excel (`TODO.md`).
+Branche `claude/quatre-planches-atlas-6hi21h`, d'après `appli/soignee/client.html` (*« tu peux coder, ne lance pas de batterie »*). Écran : `src/app/clients/[id]/` ; lecture : `fiche-client.ts` ; règles : `lignesDeLaPiece`, `src/lib/recherche-piece.ts` (`ARCHITECTURE.md` §528). La loupe de Vos clients cherche aussi titres et montants (`ListeClients.tsx`, `listerFichesClients`). Suites de domaine et treize suites navigateur des écrans clients vertes ; **niveau 3, batterie non jouée, pas sur `main`**. Reste : l'import CSV et Excel (`TODO.md`).
 
 ---
 ## L'ATTESTATION DU COMPTABLE ET LE RENVOI À CORRIGER, SUR `main` (28 octobre 2026)

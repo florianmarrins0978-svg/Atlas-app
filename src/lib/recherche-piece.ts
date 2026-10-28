@@ -1,5 +1,5 @@
 import { normaliserPourRecherche } from "./recherche-client";
-import type { PieceDuClient } from "./documents-du-client";
+import { natureDeLaPiece, type PieceDuClient } from "./documents-du-client";
 import { dateCitee } from "./mois";
 
 /**
@@ -10,10 +10,13 @@ import { dateCitee } from "./mois";
  * case, *« Chercher un nom, un titre, un montant »*. Planches
  * `appli/soignee/client.html` et `appli/soignee/clients-importer.html`.
  *
- * **Règle pure** (`CLAUDE.md` §3) : la fiche d'un client s'en sert, et la loupe
- * de Vos clients s'en servira sans la réécrire. Deux loupes qui ne trouvent pas
- * la même chose, c'est lui qui le verrait.
+ * **Règle pure** (`CLAUDE.md` §3) : la fiche d'un client et Vos clients s'en
+ * servent, sans la réécrire. Deux loupes qui ne trouvent pas la même chose,
+ * c'est lui qui le verrait.
  */
+
+/** Sa phrase du 28 octobre 2026, la même dans les deux loupes. */
+export const AIDE_DE_LA_LOUPE = "Chercher un nom, un titre, un montant";
 
 /**
  * Ce qu'il tape est un montant : des chiffres, et rien que ce qui s'écrit dans
@@ -77,4 +80,18 @@ export function piecesQuiRepondent<T extends PieceCherchable>(pieces: readonly T
 /** Rien ne répond : la phrase cite ce qu'il a tapé, et la faute de frappe se voit. */
 export function rienNeRepond(saisie: string): string {
   return `Rien ne répond à « ${saisie.trim()} ».`;
+}
+
+/** Le titre au-dessus des pièces trouvées : « 3 devis », « 1 facture », « 4 devis et factures ». */
+export function compteDesPieces(pieces: readonly Pick<PieceDuClient, "href">[]): string {
+  const factures = pieces.filter((p) => natureDeLaPiece(p.href) === "facture").length;
+  const devis = pieces.length - factures;
+  if (devis === 0) return `${factures} facture${factures > 1 ? "s" : ""}`;
+  if (factures === 0) return `${devis} devis`;
+  return `${pieces.length} devis et factures`;
+}
+
+/** L'onglet de la fiche qu'ouvre une pièce trouvée sur Vos clients. */
+export function registreDeLaPiece(piece: Pick<PieceDuClient, "href">): "devis" | "factures" {
+  return natureDeLaPiece(piece.href) === "facture" ? "factures" : "devis";
 }

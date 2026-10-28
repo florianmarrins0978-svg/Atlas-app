@@ -26,11 +26,11 @@ import { creerEntreprise } from "../src/server/repositories/entreprises";
 import { creerChantier, planifierChantier, supprimerChantier } from "../src/server/repositories/chantiers";
 import { creerClient } from "../src/server/repositories/clients";
 import { ajouterLignePrix } from "../src/server/repositories/lignes-prix";
-import { getOuCreerDevisBrouillon, envoyerDevis } from "../src/server/repositories/devis";
+import { getOuCreerDevisBrouillon, envoyerDevis, mettreAJourEnTeteDevis } from "../src/server/repositories/devis";
 import { terminerChantier, emettreFacture, getFacturePourChantier } from "../src/server/repositories/factures";
 import { noterPaiement } from "../src/server/repositories/paiements-facture";
 import { jourIso } from "../src/lib/jour";
-import { listerFichesClients } from "../src/server/repositories/fiche-client";
+import { listerFichesClients, chargerFicheClient } from "../src/server/repositories/fiche-client";
 
 let echecs = 0;
 async function essai(nom: string, verifier: () => Promise<void>) {
@@ -250,6 +250,50 @@ async function main() {
     // c'est de la semaine dernière ou de l'an dernier, et c'est exactement ce
     // qu'il vient chercher sur cette ligne.
     assert.match(vu.derniere?.jour ?? "", /^\d{4}-\d{2}-\d{2}$/, "le jour du devis manque");
+  });
+
+  // ── LA LOUPE DE VOS CLIENTS — sa demande du 28 octobre 2026 ─────────────
+  //
+  // *« Rajouter la loupe pour faire une recherche par nom ou montant. »* La
+  // liste porte donc les pièces de chaque client, et **ce sont celles de sa
+  // fiche** : la loupe annonce un devis qu'on retrouve en ouvrant.
+  await essai("chaque client porte les devis et factures de sa fiche, titres et montants compris", async () => {
+    await nettoyerBase();
+    const ctx = await monterEntreprise("Essai loupe");
+    const client = await creerClient(ctx, { nom: "Mme Costa" });
+    const c = await creerChantier(ctx, { nom: "Haie", clientId: client.id });
+    await ajouterLignePrix(ctx, c.id, "Taille de haie", "1150.00");
+    const v1 = await getOuCreerDevisBrouillon(ctx, c.id);
+    await mettreAJourEnTeteDevis(ctx, v1.id, { titre: "Taille de haie de thuyas" });
+    await envoyerDevis(ctx, v1.id);
+    // Une révision renvoyée sous le même numéro : UNE pièce, la dernière.
+    const v2 = await getOuCreerDevisBrouillon(ctx, c.id);
+    await envoyerDevis(ctx, v2.id);
+    await terminerChantier(ctx, c.id);
+    const f = await getFacturePourChantier(ctx, c.id);
+    await emettreFacture(ctx, f!.facture.id);
+
+    const [vu] = await listerFichesClients(ctx);
+    const fiche = await chargerFicheClient(ctx, client.id);
+    const forme = (p: { id: string; titre: string; objet?: string | null; montant?: string | null; href: string }) =>
+      `${p.id} ${p.titre} ${p.objet ?? "-"} ${p.montant ?? "-"} ${p.href}`;
+    const surLaFiche = [...fiche!.pieces.devis, ...fiche!.pieces.factures].map(forme).sort();
+    assert.deepEqual(vu.pieces.map(forme).sort(), surLaFiche, "la liste ne porte pas les pièces que la fiche montre");
+    assert.equal(vu.pieces.filter((p) => p.href.startsWith("/api/devis/")).length, 1, "une révision fait deux pièces");
+    assert.ok(vu.pieces.some((p) => p.objet === "Taille de haie de thuyas" && p.montant === "1380.00"), "le titre ou le TTC manque");
+  });
+
+  await essai("la loupe d'une entreprise ne trouve JAMAIS une pièce d'une autre", async () => {
+    await nettoyerBase();
+    const ctxA = await monterEntreprise("Maison A");
+    const ctxB = await monterEntreprise("Maison B");
+    const deA = await creerClient(ctxA, { nom: "Mme Costa" });
+    const deB = await creerClient(ctxB, { nom: "Mme Costa" });
+    await chantierFacture(ctxA, deA.id, "Élagage", "1000.00");
+    await chantierFacture(ctxB, deB.id, "Élagage", "900.00");
+    const chezA = await listerFichesClients(ctxA);
+    const montants = chezA.flatMap((c) => c.pieces.map((p) => p.montant));
+    assert.deepEqual(montants.sort(), ["1200.00", "1200.00"], `A lit les montants : ${montants.join(", ")}`);
   });
 
   console.log(`\n${echecs === 0 ? "✅" : "❌"} La liste des clients — ${echecs} échec(s).`);

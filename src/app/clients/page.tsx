@@ -130,12 +130,12 @@ export default async function ClientsPage({
               // forme vit dans `enEuros`, appelée une seule fois, à l'écran.
               facture: c.facture ?? null,
               du: c.du ?? null,
+              pieces: c.pieces,
             }))}
           >
             <EnTeteEcran retour={retour} titre={mots.titre} precision={<CompteClients categorie={categorie} />} />
             {portes && <Portes />}
             <ListeClients
-              categorie={categorie}
               sousLaRecherche={
                 importe ? (
                   <>

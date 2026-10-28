@@ -932,6 +932,30 @@ async function main() {
     assert.match(await page.locator("body").innerText(), new RegExp(nomClient.split(" ")[0]));
   });
 
+  // ── La loupe de Vos clients — sa demande du 28 octobre 2026 ──────────────
+  //
+  // Un montant tapé dans la liste trouve la pièce, et la pièce ouvre la fiche
+  // de son client SUR SON ONGLET. Le chemin qu'il prend : taper, toucher.
+  await cas("un montant tapé dans Vos clients trouve le devis, qui ouvre sa fiche sur Devis", async () => {
+    await page.goto(`${BASE}/clients`, { waitUntil: "networkidle" });
+    const loupe = page.locator('[data-atlas="chercher-client"]');
+    assert.equal(await loupe.getAttribute("placeholder"), "Chercher un nom, un titre, un montant");
+    // 340 € HT de taille de haie : 408 € TTC.
+    await loupe.fill("408,00");
+    const trouvee = page.locator('[data-atlas="piece-trouvee"]', { hasText: nomClient });
+    await trouvee.first().waitFor({ timeout: 15_000 });
+    assert.equal(await trouvee.count(), 1, "le devis de 408 € n'est pas sorti une fois, et une seule");
+    assert.match(await trouvee.innerText(), /Devis/, "la pièce trouvée ne dit pas qu'elle est un devis");
+    await trouvee.click();
+    await page.waitForURL(/\/clients\/[0-9a-f-]{36}\?registre=devis/, { timeout: 15_000 });
+    await page.locator('[data-atlas="registre"][aria-selected="true"]').waitFor({ timeout: 30_000 });
+    assert.equal(
+      (await page.locator('[data-atlas="registre"][aria-selected="true"]').innerText()).trim(),
+      "Devis",
+      "la fiche ne s'ouvre pas sur l'onglet de la pièce trouvée"
+    );
+  });
+
   await cas("la barre du bas n'a pas gagné d'onglet", async () => {
     // **CE CONTRÔLE ATTENDAIT QUATRE ONGLETS, ET IL EST DEVENU FAUX LE 17 AOÛT**
     // — le jour où le cinquième, « Paysage », a été posé sur sa décision

@@ -503,17 +503,18 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
     id: "clients-chercher",
     ecran: "Vos clients",
     ou: "« Chantiers » dans la barre du bas, puis « Vos clients »",
-    intitule: "Chercher un client par son nom",
-    motsCles: ["chercher", "rechercher", "client", "nom", "trouver", "retrouver", "filtrer"],
-    geste: "En haut de « Vos clients », tapez une partie de son nom dans « Chercher un client ».",
+    intitule: "Chercher un client, un devis ou une facture",
+    motsCles: ["chercher", "rechercher", "client", "nom", "trouver", "retrouver", "filtrer", "titre", "montant", "devis", "facture"],
+    geste:
+      "En haut de « Vos clients », tapez une partie de son nom, le titre d'un devis ou un montant dans « Chercher un nom, un titre, un montant ». Une pièce trouvée ouvre la fiche du client sur son onglet.",
     // Ses entreprises vivent derrière leur porte depuis le 4 octobre 2026.
     reserve:
-      "La recherche porte sur le nom du client. Une entreprise se cherche dans « Vos entreprises », une mairie dans « Services publics ».",
+      "Un montant se tape en chiffres : « 640 » trouve 640 € et 6 400 €, « 640,00 » le montant exact. Une entreprise se cherche dans « Vos entreprises », une mairie dans « Services publics ».",
     source: "src/app/clients/ListeClients.tsx",
-    preuves: ["MOTS_DE_LA_CATEGORIE[categorie].chercher", "filtrerClientsParNom(dansLeTri, saisie)"],
+    preuves: ["placeholder={AIDE_DE_LA_LOUPE}", "filtrerClientsParNom(dansLeTri, saisie)", "piecesQuiRepondent(c.pieces, saisie"],
     ailleurs: [
       { source: "src/app/EcranChantiers.tsx", preuves: ['href="/clients"', "Vos clients"] },
-      { source: "src/lib/civilite.ts", preuves: ['"Chercher un client"', '"Chercher une entreprise"', '"Chercher un service public"'] },
+      { source: "src/lib/recherche-piece.ts", preuves: ['"Chercher un nom, un titre, un montant"'] },
     ],
   },
   {
