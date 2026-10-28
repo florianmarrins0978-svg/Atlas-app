@@ -140,7 +140,7 @@ cas("le nom porte déjà le client : on ne le répète pas", () => {
 cas("un nom donné à la main reçoit le client devant", () => {
   assert.equal(
     intituleDuChantier("M. Bernard", "Abattage de chêne"),
-    "M. Bernard — Abattage de chêne"
+    "M. Bernard, Abattage de chêne"
   );
 });
 

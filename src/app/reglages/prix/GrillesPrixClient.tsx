@@ -316,7 +316,7 @@ function Section({
                           nature={nature.cle}
                           cle={cle}
                           libelle={diametre.libelle}
-                          contexte={`${nature.titre} — ${rangee.titre}`}
+                          contexte={`${nature.titre}, ${rangee.titre}`}
                           posee={cases.get(`${nature.cle}|${cle}`)}
                           onPoser={onPoser}
                           surRetrait={{
@@ -760,7 +760,7 @@ function Champ({
       )}
       <input
         id={identifiant}
-        aria-label={`${contexte} — ${libelle}`}
+        aria-label={`${contexte}, ${libelle}`}
         type="text"
         inputMode="decimal"
         defaultValue={posee ? String(Number(posee.prix)) : ""}

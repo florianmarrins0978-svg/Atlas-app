@@ -447,7 +447,7 @@ export function composerMessageFacture(params: {
     params;
   const numero = acquittee ? `${numeroFacture} acquittée` : numeroFacture;
   return {
-    objet: `Votre facture ${numero} — ${entrepriseNom}`,
+    objet: `Votre facture ${numero}, ${entrepriseNom}`,
     corps: rendreMessage(modele?.trim() || MESSAGES_PAR_DEFAUT.facture, {
       client: nommer(clientNom, clientCivilite),
       document: motDuDocument("facture"),

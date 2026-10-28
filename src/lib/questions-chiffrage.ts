@@ -494,5 +494,5 @@ export function libelleEnrichi(libelle: string, precisionsLisibles: readonly str
     .map((p) => p.trim())
     .filter((p) => p !== "" && !base.toLowerCase().includes(p.toLowerCase()));
   if (aAjouter.length === 0) return base;
-  return `${base} — ${aAjouter.join(", ")}`;
+  return `${base} (${aAjouter.join(", ")})`;
 }

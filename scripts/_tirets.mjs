@@ -44,6 +44,39 @@ export const MILIEU = new RegExp(`[${MOT_AVANT}]\\s*[${SIGNES}]\\s+[${MOT_APRES}
 export const DEBUT = new RegExp(`^\\s*[${SIGNES}]\\s+[${MOT_APRES}]`, "u");
 /** « Créer : ${a} — » : le morceau finit par le tiret, le mot est après. */
 export const FIN = new RegExp(`[${MOT_AVANT}]\\s+[${SIGNES}]\\s*$`, "u");
+/**
+ * « {r.nom} · {montant} » : le signe SEUL entre deux valeurs (27 octobre 2026).
+ *
+ * Les trois motifs d'au-dessus cherchent un mot collé au signe ; quand le
+ * signe se tient seul entre deux expressions, il n'y a de mot d'aucun côté
+ * du morceau, et « Copropriété Les Tilleuls · 4 608,00 € » passait à l'écran.
+ * Les espaces des deux côtés le distinguent du tiret d'une case vide, qui se
+ * tient seul SANS espace (`<td>—</td>`).
+ */
+export const SEUL = new RegExp(`^\\s+[${SIGNES}]\\s*$|^\\s*[${SIGNES}]\\s+$`, "u");
+
+/**
+ * Le morceau touche-t-il quelque chose qui s'affiche, d'un côté au moins ?
+ *
+ * Un côté suffit : « {image.legende} — </span> » coupe la phrase aussi
+ * sûrement que « {a} · {b} ». Seul le signe qui ne touche rien, dans sa case,
+ * reste un montant absent.
+ */
+function aCoteDUneValeur(n) {
+  const freres = n.parent?.children;
+  if (!freres) return false;
+  const i = freres.indexOf(n);
+  const plein = (x) => x && !(ts.isJsxText(x) && x.text.trim() === "");
+  return plein(freres[i - 1]) || plein(freres[i + 1]);
+}
+
+/** « a + " · " + b », ou « liste.join(" · ") » : une chaîne qui sert de séparateur. */
+function chaineQuiSepare(n) {
+  const p = n.parent;
+  if (!p) return false;
+  if (ts.isBinaryExpression(p) && p.operatorToken.kind === ts.SyntaxKind.PlusToken) return true;
+  return ts.isCallExpression(p) && ts.isPropertyAccessExpression(p.expression) && p.expression.name.text === "join";
+}
 
 /**
  * Les phrases fautives d'un bout de code, avec leur ligne.
@@ -61,17 +94,19 @@ export function fautesDansDuCode(source, { tsx = true } = {}) {
     tsx ? ts.ScriptKind.TSX : ts.ScriptKind.TS
   );
   const fautes = [];
-  const regarder = (brut, noeud, morceau) => {
+  const regarder = (brut, noeud, morceau, separateur = false) => {
     const texte = String(brut).replace(/\s+/g, " ");
-    const touche = MILIEU.test(texte) || (morceau && (DEBUT.test(texte) || FIN.test(texte)));
+    const touche =
+      MILIEU.test(texte) || (morceau && (DEBUT.test(texte) || FIN.test(texte))) || (separateur && SEUL.test(texte));
     if (!touche) return;
     const { line } = arbre.getLineAndCharacterOfPosition(noeud.getStart());
     fautes.push({ ligne: line + 1, texte: texte.trim() });
   };
   const visiter = (n) => {
-    if (ts.isStringLiteral(n) || ts.isNoSubstitutionTemplateLiteral(n)) regarder(n.text, n, false);
-    else if (ts.isTemplateHead(n) || ts.isTemplateMiddle(n) || ts.isTemplateTail(n)) regarder(n.text, n, true);
-    else if (ts.isJsxText(n)) regarder(n.text, n, true);
+    if (ts.isStringLiteral(n) || ts.isNoSubstitutionTemplateLiteral(n)) regarder(n.text, n, false, chaineQuiSepare(n));
+    else if (ts.isTemplateHead(n) || ts.isTemplateTail(n)) regarder(n.text, n, true);
+    else if (ts.isTemplateMiddle(n)) regarder(n.text, n, true, true);
+    else if (ts.isJsxText(n)) regarder(n.text, n, true, aCoteDUneValeur(n));
     ts.forEachChild(n, visiter);
   };
   visiter(arbre);
@@ -103,8 +138,15 @@ export function fautesDansDuHtml(source) {
 
 /** Là où le texte finit sous ses yeux. Le reste ne s'affiche pas. */
 const DOSSIERS_VUS = [/^src\//, /^appli\//, /^public\//];
-/** Une suite n'est pas une page : `appli/tests/` nomme ses cas comme il veut. */
-const DOSSIERS_MUETS = [/^appli\/tests\//];
+/**
+ * Une suite n'est pas une page : `appli/tests/` nomme ses cas comme il veut.
+ *
+ * **Et `src/app/design/` n'existe pas en production** (constat F12) : sa mise
+ * en page rend `notFound()` hors du développement, et ces maquettes gelées
+ * depuis le 1er août 2026 ne sont plus relues (`design/layout.tsx`). Même
+ * exclusion que `test-geste-retour-partout.ts`, et pour la même raison.
+ */
+const DOSSIERS_MUETS = [/^appli\/tests\//, /^src\/app\/design\//];
 const EXTENSIONS_VUES = /\.(ts|tsx|html|js|jsx)$/;
 
 /**

@@ -176,7 +176,7 @@ export default function EnAttenteDePaiement({
         /* Ses mots, et pas de tiret : *« à la place du tiret »*. Le montant est
            celui qui vient d'entrer au relevé — le reste dû, pas le total. */
         <p key={r.id} data-atlas="rentree-au-releve" className="mt-3 text-[14px] leading-[1.5]" style={{ color: colors.inkSoft }}>
-          {r.nom} · <span className="tabular-nums" style={{ color: colors.inkSoft }}>{euros(r.montant)}</span> est rentrée au
+          {r.nom}, <span className="tabular-nums" style={{ color: colors.inkSoft }}>{euros(r.montant)}</span> est rentrée au
           relevé.
         </p>
       ))}

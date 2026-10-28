@@ -253,7 +253,7 @@ const ECRIT = construireVevenement({
   uid: "atlas-abc",
   debut: new Date("2026-08-12T06:00:00Z"),
   fin: new Date("2026-08-12T11:00:00Z"),
-  intitule: "Taille de haie — M. Bernard",
+  intitule: "Taille de haie, M. Bernard",
   lieu: "12, rue des Lilas, Angers",
   description: "Posé par Atlas.",
   ecritLe: new Date("2026-08-12T05:00:00Z"),
@@ -263,7 +263,7 @@ cas("ce qui est écrit se relit — et rend les mêmes bornes", () => {
   const [p] = lireEvenementsIcs(ECRIT);
   assert.equal(p.debut.toISOString(), "2026-08-12T06:00:00.000Z");
   assert.equal(p.fin.toISOString(), "2026-08-12T11:00:00.000Z");
-  assert.equal(p.intitule, "Taille de haie — M. Bernard");
+  assert.equal(p.intitule, "Taille de haie, M. Bernard");
 });
 
 cas("le chantier écrit OCCUPE, il ne se déclare pas disponible", () => {

@@ -254,7 +254,7 @@ export function AjoutDunClient({
         <p data-atlas="client-retenu" className="mt-2 text-[13px]" style={{ color: colors.inkSoft }}>
           {retenu.nom}
           <span className="block" style={{ color: colors.muted }}>
-            {retenu.telephone || "sans numéro"} · {retenu.adresse || "sans adresse"}
+            {retenu.telephone || "sans numéro"}, {retenu.adresse || "sans adresse"}
           </span>
         </p>
       ) : trouves.length > 0 ? (

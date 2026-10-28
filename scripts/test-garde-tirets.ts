@@ -56,6 +56,37 @@ cas("le texte d'un écran, entre deux balises", () => {
   }));
 });
 
+// **Le signe SEUL entre deux valeurs** (27 octobre 2026) : « Copropriété Les
+// Tilleuls · 4 608,00 € est rentrée au relevé » passait à l'écran, aucun mot
+// n'étant collé au point dans le morceau que TypeScript rend.
+cas("un point médian seul entre deux valeurs d'un écran", () => {
+  assert.ok(decider("Edit", {
+    file_path: "src/app/termines/tva/EnAttenteDePaiement.tsx",
+    new_string: "<p>{r.nom} · <span>{euros(r.montant)}</span> est rentrée au relevé.</p>",
+  }));
+});
+
+cas("un tiret seul après une valeur, au bout du morceau", () => {
+  assert.ok(decider("Edit", {
+    file_path: "src/app/paysage/diagnostic/page.tsx",
+    new_string: "<span>{image.legende} — </span>",
+  }));
+});
+
+cas("un tiret seul entre deux valeurs d'un gabarit", () => {
+  assert.ok(decider("Edit", {
+    file_path: "src/lib/nom-chantier.ts",
+    new_string: "return `${client} — ${nomChantier}`;",
+  }));
+});
+
+cas("une liste jointe par un point médian", () => {
+  assert.ok(decider("Edit", {
+    file_path: "src/app/planning/TiroirDuBas.tsx",
+    new_string: 'const phrase = morceaux.join(" · ");',
+  }));
+});
+
 cas("une maquette publiée", () => {
   assert.ok(decider("Write", {
     file_path: "appli/une-planche.html",

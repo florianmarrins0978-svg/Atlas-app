@@ -526,7 +526,7 @@ export function bornesDuChantier(
  * **Rien n'est inventé** : un chantier sans client garde son seul nom.
  */
 export function intituleChantier(c: { nom: string; clientNom: string | null }): string {
-  return c.clientNom ? `${c.nom} — ${c.clientNom}` : c.nom;
+  return c.clientNom ? `${c.nom}, ${c.clientNom}` : c.nom;
 }
 
 /**

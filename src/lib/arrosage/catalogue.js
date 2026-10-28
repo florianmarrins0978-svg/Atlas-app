@@ -1730,7 +1730,7 @@ CATALOGUE.referenceDe = function (cle) {
 CATALOGUE.tousLesProduits = function () {
   var out = [];
   CATALOGUE.buses.forEach(function (b) {
-    out.push({ ref:b.ref, nom:'Buse ' + b.nom + ' — ' + (b.marque || 'Rain Bird'),
+    out.push({ ref:b.ref, nom:'Buse ' + b.nom + ' (' + (b.marque || 'Rain Bird') + ')',
                detail:'rayon ' + String(b.rayon).replace('.', ',') + ' m à ' +
                       String(b.pression).replace('.', ',') + ' bar' +
                       (b.livreeAvecLArroseur ? ', livrée avec l\'arroseur' : ', par ' + b.colisage),

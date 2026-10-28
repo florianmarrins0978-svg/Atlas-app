@@ -289,7 +289,7 @@ cas("la réponse se relit sur le devis, en clair", () => {
 cas("la précision s'écrit sur la prestation, telle qu'il la relira", () => {
   assert.equal(
     libelleEnrichi("Abattage d'un chêne mort", ["démontage avec rétention", "⌀ 70 cm"]),
-    "Abattage d'un chêne mort — démontage avec rétention, ⌀ 70 cm"
+    "Abattage d'un chêne mort (démontage avec rétention, ⌀ 70 cm)"
   );
 });
 

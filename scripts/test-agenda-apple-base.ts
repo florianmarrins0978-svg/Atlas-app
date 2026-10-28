@@ -136,7 +136,7 @@ async function main() {
   await test("l'intitulé porte le client quand il existe, et rien d'inventé sinon", async () => {
     assert.equal(
       intituleChantier({ nom: "Taille de haie", clientNom: "M. Bernard" }),
-      "Taille de haie — M. Bernard"
+      "Taille de haie, M. Bernard"
     );
     assert.equal(intituleChantier({ nom: "Taille de haie", clientNom: null }), "Taille de haie");
   });

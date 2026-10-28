@@ -130,7 +130,7 @@ export function moisDuNumero(periodicite: PeriodiciteTva, numero: number): strin
   if (periodicite === "mensuelle") return null;
   const courts = ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."];
   const premier = (numero - 1) * 3;
-  return `${courts[premier]} – ${courts[premier + 2]}`;
+  return `${courts[premier]} à ${courts[premier + 2]}`;
 }
 
 /**

@@ -286,8 +286,8 @@ function PhotosDeReference({
               style={{ border: `1px solid ${colors.line}` }}
             />
             <figcaption className="mt-[6px] text-[11.5px] leading-[1.5]" style={{ color: colors.muted }}>
-              {image.legende && <span style={{ color: colors.inkSoft }}>{image.legende} — </span>}
-              {image.credit} · {image.licence}
+              {image.legende && <span style={{ color: colors.inkSoft }}>{image.legende}. </span>}
+              {image.credit}, sous licence {image.licence}.
             </figcaption>
           </figure>
         ))}
