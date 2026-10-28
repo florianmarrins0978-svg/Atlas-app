@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-28
+
+- **Créer un devis : Public ouvre le SIRET et le code service, et « Chantier » devient « Adresse »** (ses réponses devant `appli/soignee/creer-un-devis.html` : il garde l'écran d'aujourd'hui). Vu à l'écran : Entreprise ouvrait le SIRET et le n° TVA, Public n'ouvrait rien, alors que sa fiche demande le SIRET et le code service qu'attend la facture d'une mairie sur Chorus Pro. La feuille et l'enregistrement lisaient « entreprise » seule ; ils lisent désormais la règle de la fiche, `casesDuClient`. **Ce que ça évite** : une mairie créée par Créer un devis partait sans les numéros de sa facture. Rouge d'abord dans `test-entreprises-et-sous-traitance-e2e.ts`.
+
 ## 2026-10-27
 
 - **L'assistant joint le document qu'il a trouvé** (sa demande du 27 octobre, planche B). Une ligne de devis arrive avec son devis à toucher ; la facture, le ticket de carburant ou de restaurant, le bilan et les photos aussi. Le modèle ne voit qu'une clé par document et ne peut citer que ce que ses outils ont lu pendant la question : aucune adresse ne vient de lui (`ARCHITECTURE.md` §525). Un ticket s'ouvre désormais sans être rapproché d'une ligne de banque (`/termines/tva/ticket/[id]`). La visionneuse photo prend des adresses. Le 28 octobre, sur sa réponse *« il faut qu'il puisse nous donner tous les documents »* : le dossier d'un client (devis et factures importés compris, avoirs, rapports d'entretien, contrat), les PDF d'un chantier (feuille sans les prix, fiche chantier, fiche de sécurité), les pièces des fournisseurs et les papiers des véhicules. Éprouvé par `test-pieces-de-l-assistant.ts`, `test-assistant-joint-les-pieces-db.ts` (sous la RLS, et rouge sans le contrôle du dossier des tickets) et `test-assistant-joint-le-devis-e2e.ts` (la phrase, la ligne, le doigt, le PDF ; rouge sans l'affichage). **Non éprouvé sur le vrai modèle** (aucune clé ici) : que Claude cite bien les clés se voit sur son espace.
