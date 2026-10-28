@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { MOT_DE_LA_CONCLUSION, type Conclusion } from "@/lib/attestation-comptable";
 import Attestation from "./Attestation";
 import Renvoi from "./Renvoi";
+import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
 
 export type PieceAffichee =
   | {
@@ -329,9 +330,9 @@ export default function Verification({
                     </b>
                     {attestation.signee}
                   </span>
-                  <a href={`/comptable/${jeton}/attestation/pdf?telecharger=1`} className="flex min-h-[44px] items-center px-2 text-[15px] font-medium" style={{ color: colors.ink }}>
+                  <BoutonTelechargerDocument fichier={`/comptable/${jeton}/attestation/pdf`} nom="Attestation de vérification.pdf" className="flex min-h-[44px] items-center px-2 text-[15px] font-medium" style={{ color: colors.ink }}>
                     Télécharger
-                  </a>
+                  </BoutonTelechargerDocument>
                 </div>
               ) : (
                 <div className="mx-auto flex w-full max-w-[560px] flex-col gap-2">

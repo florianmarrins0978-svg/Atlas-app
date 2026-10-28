@@ -20,6 +20,7 @@ import {
 import { jourIso } from "@/lib/jour";
 import { signerAttestationAction } from "./actions";
 import Icone from "@/components/atlas/IconeTrait";
+import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
 import Tampon from "./Tampon";
 import { VIDE, garderLeSignataire, signataireGarde, type Saisie } from "./appareil";
 
@@ -163,7 +164,7 @@ export default function Attestation({
         <div className="mx-auto w-full max-w-[560px] px-5 pb-8 pt-3">
           {etape !== "envoyee" && (
             <div className="flex items-center justify-between">
-              <button type="button" onClick={retour[etape]} aria-label="Retour" className="flex h-12 w-12 items-center justify-center rounded-full" style={{ boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
+              <button type="button" onClick={retour[etape]} aria-label="Retour" data-geste-retour="" className="flex h-12 w-12 items-center justify-center rounded-full" style={{ boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
                 <Icone nom="retour" />
               </button>
               {rang && (
@@ -276,7 +277,7 @@ export default function Attestation({
                     <span className="mb-[7px] block text-[14.5px] font-semibold" style={{ color: colors.inkSoft }}>
                       Fonction
                     </span>
-                    <div className="flex gap-1 rounded-xl p-1" style={{ backgroundColor: voile(colors.ink, 0.06) }} role="radiogroup" aria-label="Fonction">
+                    <div className="flex gap-1 rounded-full p-1" style={{ backgroundColor: voile(colors.ink, 0.06) }} role="radiogroup" aria-label="Fonction">
                       {FONCTIONS.map((f) => (
                         <button
                           key={f}
@@ -284,7 +285,7 @@ export default function Attestation({
                           role="radio"
                           aria-checked={saisie.fonction === f}
                           onClick={() => setSaisie({ ...saisie, fonction: f })}
-                          className="min-h-[44px] flex-auto whitespace-nowrap rounded-[9px] px-2 text-[14px] font-semibold"
+                          className="min-h-[44px] flex-auto whitespace-nowrap rounded-full px-2 text-[14px] font-semibold"
                           style={saisie.fonction === f ? { backgroundColor: colors.card, color: colors.ink } : { color: colors.inkSoft }}
                         >
                           {NOM_DE_LA_FONCTION[f]}
@@ -454,10 +455,10 @@ export default function Attestation({
           )}
           {etape === "envoyee" && (
             <>
-              <a href={`/comptable/${jeton}/attestation/pdf?telecharger=1`} className={creux} style={{ boxShadow: `inset 0 0 0 1.5px ${colors.line}`, color: colors.ink }} data-atlas="telecharger-attestation">
+              <BoutonTelechargerDocument fichier={`/comptable/${jeton}/attestation/pdf`} nom="Attestation de vérification.pdf" className={creux} style={{ boxShadow: `inset 0 0 0 1.5px ${colors.line}`, color: colors.ink }} dataAtlas="telecharger-attestation">
                 <Icone nom="telecharger" taille={21} />
                 Télécharger le PDF
-              </a>
+              </BoutonTelechargerDocument>
               <button type="button" onClick={fermer} className="min-h-[46px] text-[16px] font-medium" style={{ color: colors.inkSoft }}>
                 Revenir au dossier
               </button>

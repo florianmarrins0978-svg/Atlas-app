@@ -79,7 +79,7 @@ export default function Renvoi({
             </div>
           ) : (
             <>
-              <button type="button" onClick={fermer} aria-label="Retour" className="flex h-12 w-12 items-center justify-center rounded-full" style={{ boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
+              <button type="button" onClick={fermer} aria-label="Retour" data-geste-retour="" className="flex h-12 w-12 items-center justify-center rounded-full" style={{ boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
                 <Icone nom="retour" />
               </button>
               <h2 className="mt-1.5 text-[28px] leading-[1.08]" style={{ fontFamily: font.display }}>

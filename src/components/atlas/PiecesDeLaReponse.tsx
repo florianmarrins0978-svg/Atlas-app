@@ -33,7 +33,7 @@ export default function PiecesDeLaReponse({
           type="button"
           data-atlas="piece-assistant"
           onClick={() => onOuvrir(p)}
-          className="block w-full rounded-[8px] px-3 py-2.5 text-left"
+          className="block w-full rounded-full px-4 py-2.5 text-left"
           style={{ backgroundColor: colors.cream, boxShadow: `inset 0 0 0 1px ${colors.line}`, color: colors.ink }}
         >
           <span className="flex justify-between gap-2.5 text-[15px] font-semibold">
