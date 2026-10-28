@@ -9,6 +9,7 @@ import * as clientsRepo from "../src/server/repositories/clients";
 import * as chantiersRepo from "../src/server/repositories/chantiers";
 import * as prixRepo from "../src/server/repositories/lignes-prix";
 import * as devisRepo from "../src/server/repositories/devis";
+import { texteDuPdf } from "./_lecteur-pdf-protege";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // MR, MME OU ENTREPRISE ; VOS ENTREPRISES ; LE DEVIS EN SOUS-TRAITANCE
@@ -169,6 +170,41 @@ async function principal() {
     assert.equal(r.rows[0]?.civilite, "public", `la mairie n'est pas rangée comme service public : ${JSON.stringify(r.rows)}`);
     assert.equal(r.rows[0]?.siret, "214 903 535 00018", "le SIRET de la mairie n'est pas sur sa fiche");
     assert.equal(r.rows[0]?.code_service, "ESPACES-VERTS", "le code service n'est pas sur sa fiche");
+  });
+
+  // Sa question du 28 octobre 2026 : « tu as bien vérifié que, lorsqu'on crée
+  // la facture, ça apparaît aussi ? ». Par SA porte : Terminés, « Faire la
+  // facture », la mairie tapée sur la fiche qui facture, puis l'écran de la
+  // facture et son PDF, celui qui se dépose sur Chorus Pro.
+  await cas("par « Faire la facture », le SIRET et le code service d'une mairie arrivent sur sa facture et son PDF", async () => {
+    await page.goto(`${BASE}/chantiers/nouveau?facture=1`, { waitUntil: "domcontentloaded" });
+    const pastille = page.locator('[data-atlas="civilite-public"]');
+    await pastille.waitFor({ timeout: DELAI_PAR_DEFAUT_MS });
+    await pastille.click();
+    const nom = `Mairie facturée ${Date.now()}`;
+    await page.locator('input[aria-label="Nom du client"]').fill(nom);
+    await page.locator('input[aria-label="SIRET"]').fill("21490353500018");
+    await page.locator('input[aria-label="Code service"]').fill("ESPACES-VERTS");
+    await page.locator('[data-atlas="action-facture-directe"]').click();
+    await page.waitForURL(/\/chantiers\/[^/]+\/facture$/, { timeout: DELAI_PAR_DEFAUT_MS });
+    const chantierId = page.url().split("/chantiers/")[1].split("/")[0];
+
+    const service = page.locator('[data-atlas="code-service-facture"]');
+    await service.waitFor({ timeout: DELAI_PAR_DEFAUT_MS });
+    assert.equal(await service.inputValue(), "ESPACES-VERTS", "le code service n'est pas repris sur la facture");
+    await page.screenshot({ path: "/tmp/facture-de-la-mairie.png", fullPage: true });
+    const f = await pool.query<{ id: string; client_siret: string | null; client_code_service: string | null }>(
+      "SELECT id, client_siret, client_code_service FROM factures WHERE chantier_id = $1",
+      [chantierId]
+    );
+    assert.equal(f.rows[0]?.client_siret, "214 903 535 00018", "le SIRET n'est pas sur la facture");
+    assert.equal(f.rows[0]?.client_code_service, "ESPACES-VERTS");
+
+    const pdf = await page.request.get(`${BASE}/api/factures/${f.rows[0].id}/pdf`);
+    assert.equal(pdf.status(), 200, "l'aperçu du PDF ne répond pas");
+    const texte = texteDuPdf(new Uint8Array(await pdf.body())).replace(/\s+/g, " ");
+    assert.match(texte, /SIRET 214 903 535 00018/, "le SIRET manque au PDF");
+    assert.match(texte, /Code service ESPACES-VERTS/, "le code service manque au PDF");
   });
 
   await cas("le devis d'une entreprise : la sous-traitance est là, décochée ; allumée, plus de TVA", async () => {
