@@ -161,6 +161,10 @@
 .champ-recherche input { flex: 1; min-width: 0; height: 48px; border: 0; background: transparent; outline: none;
                          font: 400 17px/1 var(--sans); color: var(--atlas-ink); }
 .champ-recherche input::placeholder { color: var(--atlas-muted); }
+/* « Chercher un nom, un titre, un montant », sa phrase : 306 px à 17 px, et la
+   case n'en a que 282 sur un téléphone de 360. Seule l'aide rétrécit ; ce
+   qu'il tape garde ses 17 px (sous 16, l'iPhone agrandirait la page). */
+@media (max-width: 380px) { .champ-recherche input::placeholder { font-size: 15px; } }
 /* Le soulignement doré dit déjà que la case est prise : le cadre de la boîte
    commune (.ecran :focus-visible) s'y ajoutait, deux traits pour une case. */
 .champ-recherche input:focus-visible { outline: none; }
@@ -301,7 +305,7 @@ mark { background: color-mix(in srgb, var(--atlas-or) 30%, transparent); color: 
               <div class="plage en-cours" id="en-cours" hidden></div>
               <label class="champ-recherche">
                 <svg class="ico" aria-hidden="true"><use href="#i-recherche"/></svg>
-                <input type="search" id="cherche" placeholder="Chercher un nom ou un montant" autocomplete="off" aria-label="Chercher un nom ou un montant">
+                <input type="search" id="cherche" placeholder="Chercher un nom, un titre, un montant" autocomplete="off" aria-label="Chercher un nom, un titre, un montant">
                 <button class="effacer" type="button" id="effacer" hidden aria-label="Effacer la recherche"><svg class="ico ico-p" aria-hidden="true"><use href="#i-croix"/></svg></button>
               </label>
               <div id="resultats" hidden></div>
@@ -323,7 +327,7 @@ mark { background: color-mix(in srgb, var(--atlas-or) 30%, transparent); color: 
               <div class="repartir" id="repartir"></div>
               <label class="champ-recherche loupe-fiche">
                 <svg class="ico" aria-hidden="true"><use href="#i-recherche"/></svg>
-                <input type="search" id="cherche-piece" placeholder="Chercher un titre ou un montant" autocomplete="off" aria-label="Chercher un titre ou un montant">
+                <input type="search" id="cherche-piece" placeholder="Chercher un nom, un titre, un montant" autocomplete="off" aria-label="Chercher un nom, un titre, un montant">
                 <button class="effacer" type="button" id="effacer-piece" hidden aria-label="Effacer la recherche"><svg class="ico ico-p" aria-hidden="true"><use href="#i-croix"/></svg></button>
               </label>
               <section class="dossier" aria-label="Son dossier">
@@ -409,7 +413,7 @@ mark { background: color-mix(in srgb, var(--atlas-or) 30%, transparent); color: 
       <li>Sur la fiche, devis et factures se rangent par date, chacun avec son titre et son montant TTC, le numéro dessous. Touchés, ils disent ce que le tableau donnait : il n'y a pas de PDF.</li>
       <li>Dix ans de pièces : le rangement continue sans vous, vous pouvez fermer l'appli.</li>
       <li>La loupe de Vos clients cherche un nom, un titre de devis ou de facture, ou un montant : « 960 » trouve la facture de 960,00 €. Une pièce trouvée ouvre sa fiche, sur son onglet.</li>
-      <li>Sur une fiche, une loupe au-dessus des onglets cherche un titre ou un montant parmi les pièces de ce client.</li>
+      <li>Sur une fiche, une loupe au-dessus des onglets cherche un nom, un titre, un montant parmi les pièces de ce client.</li>
       <li>Excel se lit comme un CSV, .xlsx comme .xls. Les PDF arrivent au même écran, groupés par client.</li>
     </ul>
     <h2>Ce qui ne bouge pas</h2>
@@ -926,7 +930,7 @@ mark { background: color-mix(in srgb, var(--atlas-or) 30%, transparent); color: 
       $("effacer-piece").hidden = !q;
       document.querySelector(".onglets-dossier").hidden = !!q;
       if (q) {
-        var trouvees = piecesDe(ouvert).filter(function (x) { return x.type !== "fiche" && (/^[\d\s\u00a0,.€]+$/.test(q) ? montantRepond(x.ttc, q) : plat(x.objet || x.num).indexOf(plat(q)) >= 0); })
+        var trouvees = piecesDe(ouvert).filter(function (x) { return x.type !== "fiche" && (/^[\d\s\u00a0,.€]+$/.test(q) ? montantRepond(x.ttc, q) : plat(x.objet || x.num).indexOf(plat(q)) >= 0 || plat(ouvert.nom).indexOf(plat(q)) >= 0); })
           .sort(function (a, b) { return b.date.localeCompare(a.date); });
         $("registre").innerHTML = trouvees.length ? trouvees.map(function (x) {
           return '<button class="piece touche" type="button" data-num="' + x.num + '"><span class="piece-corps"><span class="piece-haut"><span class="piece-titre">' + surligner(x.objet || "n° " + x.num, q) + "</span>" +

@@ -100,6 +100,10 @@ a.coordonnee { text-decoration: none; }
                          font: 400 17px/1 var(--sans); color: var(--atlas-ink); }
 .champ-recherche input:focus-visible { outline: none; }
 .champ-recherche input::placeholder { color: var(--atlas-muted); }
+/* « Chercher un nom, un titre, un montant », sa phrase : 306 px à 17 px, et la
+   case n'en a que 282 sur un téléphone de 360. Seule l'aide rétrécit ; ce
+   qu'il tape garde ses 17 px (sous 16, l'iPhone agrandirait la page). */
+@media (max-width: 380px) { .champ-recherche input::placeholder { font-size: 15px; } }
 .champ-recherche input::-webkit-search-cancel-button { display: none; }
 .effacer { width: 40px; height: 40px; display: grid; place-items: center; color: var(--atlas-inkSoft); }
 .effacer .ico { color: var(--atlas-inkSoft); }
@@ -178,7 +182,7 @@ a.coordonnee { text-decoration: none; }
 
             <label class="champ-recherche" data-si-etat="complet">
                 <svg class="ico" aria-hidden="true"><use href="#i-recherche"/></svg>
-                <input type="search" id="cherche-piece" placeholder="Chercher un titre ou un montant" autocomplete="off" aria-label="Chercher un titre ou un montant">
+                <input type="search" id="cherche-piece" placeholder="Chercher un nom, un titre, un montant" autocomplete="off" aria-label="Chercher un nom, un titre, un montant">
                 <button class="effacer" type="button" id="effacer-piece" hidden aria-label="Effacer la recherche"><svg class="ico ico-p" aria-hidden="true"><use href="#i-croix"/></svg></button>
               </label>
               <section class="dossier" aria-label="Son dossier">
@@ -307,7 +311,7 @@ a.coordonnee { text-decoration: none; }
   <section class="pl-notes">
     <h2>Ce qui change</h2>
     <ul>
-      <li>Une loupe au-dessus des onglets cherche un titre ou un montant parmi ses devis et ses factures : « thuyas », « 640 ».</li>
+      <li>Une loupe au-dessus des onglets cherche un nom, un titre, un montant parmi ses devis et ses factures : « thuyas », « 640 ».</li>
       <li>Chaque devis et chaque facture montre son titre et son montant TTC ; le numéro et la date passent dessous. Votre demande du 28 octobre.</li>
       <li>Plus d'encadré doré autour du client.</li>
       <li>Dernier devis, Nouveau devis et Contrat d'entretien restent à leur place, avec leur dessin et leur mot, sans encadré : le premier en vert, les deux autres en doré.</li>
@@ -377,8 +381,10 @@ a.coordonnee { text-decoration: none; }
         if (/[,.]\d/.test(net)) return c === Math.round(Number(net.replace(",", ".")) * 100);
         return String(Math.floor(c / 100)).indexOf(net.replace(/[,.]$/, "")) === 0;
       }
-      return platP(titre).indexOf(platP(q)) >= 0;
+      /* Le nom du client répond aussi : la loupe dit « un nom ». */
+      return platP(titre).indexOf(platP(q)) >= 0 || platP(nomClient()).indexOf(platP(q)) >= 0;
     }
+    var nomClient = function () { var n = [...document.querySelectorAll(".client-nom")].find(function (e) { return !e.hidden; }); return n ? n.textContent : ""; };
     var champ = document.getElementById("cherche-piece"), effacer = document.getElementById("effacer-piece");
     var onglets = document.querySelector(".onglets-dossier");
     var panneaux = document.querySelectorAll("[data-registre-panneau]");
