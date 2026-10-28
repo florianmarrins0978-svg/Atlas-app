@@ -395,6 +395,17 @@ const HORS_CHARTE: Array<{
     pourquoi: "plage qui se touche tout entière, à 6 px comme les autres plages",
   },
   {
+    // **LES QUATRE CASES DE LA PISTE « Salarié absent ? »** (sa planche C du
+    // 27 octobre 2026, `appli/soignee/salarie-absent.html`, codée telle
+    // quelle) : Présent, Matin, Après-midi, Journée, dans une piste à 14 px
+    // sous un curseur à 10 px qui glisse de l'une à l'autre. La case est
+    // transparente : ce qu'on voit, c'est le curseur, et la case suit son
+    // rayon. En capsule, son contour au clavier déborderait du curseur.
+    motif: /^src[/\\]app[/\\]planning[/\\]PisteAbsence\.tsx$/,
+    seulement: /data-atlas="piste-quand"/,
+    pourquoi: "case transparente sous le curseur de la piste, à 10 px comme sa planche C",
+  },
+  {
     // **LA CARTE DE CHOIX DES RÉGLAGES SOIGNÉS** (`CarteChoix`, planches du 25
     // et du 26 octobre 2026) : franchise ou assujettie, la police d'un devis.
     // Deux choix qu'on lit côte à côte, chacun avec sa pastille, un titre et
