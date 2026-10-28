@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Quatre planches à faire arriver dans l'appli, 28 octobre 2026</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="quatre-planches-à-faire-arriver-dans-lappli-28-octobre-2026">Quatre planches à faire arriver dans l'appli, 28 octobre 2026</h1>
+<p>Le brief disait que quatre planches attendaient leur code. <strong>Les quatre sont déjà sur <code>main</code>.</strong> La troisième y est dans la variante que le patron a choisie le 23 octobre (A), pas dans celle que le brief annonce (B). Vérifié dans le code et à l'écran, pas dans les titres.</p>
+<p>Branche : <code>claude/quatre-planches-atlas-6hi21h</code>. Aucune ligne de <code>src/</code> n'y change : seulement la documentation. Rien n'est poussé sur <code>main</code>.</p>
+<h2 id="le-verdict-point-par-point">Le verdict, point par point</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Point</th>
+<th>Planche</th>
+<th>État trouvé</th>
+<th>Fait ici</th>
+<th>Vérifié par</th>
+</tr></thead><tbody>
+<tr>
+<td>1. Vos chantiers</td>
+<td><code>appli/soignee/accueil.html</code></td>
+<td><strong>codé et sur <code>main</code></strong> (<code>c20c6da7</code>, <code>076bbfb5</code>, lot <code>lot/accueil-soigne</code>). Le brief disait « rien dans <code>src/</code> » : faux</td>
+<td>rien, voir « Ce qui a été essayé »</td>
+<td>capture de l'accueil ; mesure au navigateur, planche et écran côte à côte ; <code>test-dashboard-e2e</code> et <code>test-devis-qui-tarde-e2e</code> verts</td>
+</tr>
+<tr>
+<td>2. Accueil soigné</td>
+<td>la même : <code>accueil.html</code></td>
+<td><strong>c'est la même planche que le point 1.</strong> <code>appli/soignee/index.html</code> n'a qu'une entrée qui y mène, intitulée « Vos chantiers »</td>
+<td>rien</td>
+<td><code>index.html</code>, ligne 46</td>
+</tr>
+<tr>
+<td>3. Le numéro dans le virement</td>
+<td><code>appli/banque-numero-et-termines.html</code> (aussi sur <code>main</code>)</td>
+<td><strong>codé et sur <code>main</code> en variante A</strong> (Oui ou Non dans Ma TVA), migration 0140 déjà passée. Le choix A est écrit dans <code>TODO.md</code> (« SES CHOIX DU 23 OCTOBRE 2026 ») et dans <code>EnAttenteDePaiement.tsx</code></td>
+<td>rien, voir « À trancher »</td>
+<td>17 cas verts dans <code>scripts/test-rapprochement-bancaire.ts</code> ; un virement d'essai « VIR SEPA F2026-000002 » posé dans la base locale : la question sort sur l'accueil (« C'est la facture F2026-000002 ? ») et dans Ma TVA (« Ce virement paie-t-il cette facture ? »), comme sur la planche A</td>
+</tr>
+<tr>
+<td>4. Ma TVA, bouton et « Payé par »</td>
+<td><code>appli/soignee/termines-tva.html</code></td>
+<td><strong>codé et sur <code>main</code></strong> (<code>151fd58f</code>, <code>cb11d343</code>, lot <code>lot/ma-tva-soignee</code>). La branche <code>claude/paye-par-bouts-ronds</code> du brief n'existe pas sur le dépôt</td>
+<td>rien</td>
+<td>capture de Ma TVA avec deux factures en attente : « J'ai reçu le paiement » en bouts ronds sur toute la largeur, « Payé par » à gauche de son choix</td>
+</tr>
+</tbody></table></div>
+<h2 id="ce-qui-a-été-essayé-puis-défait">Ce qui a été essayé, puis défait</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Mesurées au navigateur à la largeur d'un iPhone 13, deux marges de l'écran ne sont pas celles de la planche :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>planche</th>
+<th>écran</th>
+</tr></thead><tbody>
+<tr>
+<td>de « Créer un devis » à la réponse du client</td>
+<td>25 px</td>
+<td>33 px</td>
+</tr>
+<tr>
+<td>du nom du chantier aux mots du client</td>
+<td>0 px</td>
+<td>8 px</td>
+</tr>
+</tbody></table></div>
+<p><strong>Les deux ont été retirées, puis remises.</strong> La planche ne dessine pas ce que le fil de l'appli porte : un fondu de 18 px en haut, et une accroche qui ramène la carte sous ce fondu quand on fait défiler.</p>
+<ul>
+<li>Sans les 8 px du haut, la carte commence dans le fondu : son bord s'estompe au repos.</li>
+<li>Sans les 8 px de la citation, la carte raccourcie ne se raccroche plus après un petit défilement : elle s'arrête coupée, seuls ses gestes visibles. C'est le défaut de sa capture du 16 août, et <code>test-devis-qui-tarde-e2e</code> l'a attrapé deux fois sur deux (vert sans le changement).</li>
+</ul>
+<p><strong>Ce qui a été dit dans ce lot et qui était faux</strong> : j'ai d'abord écrit que ces 8 px venaient d'une planche mal lue. Ils sont voulus. C'est écrit dans <code>ARCHITECTURE.md</code> §504 pour qu'aucune session ne refasse l'essai.</p>
+<h2 id="ce-qui-reste-et-pourquoi-ce-nest-pas-fait">Ce qui reste, et pourquoi ce n'est pas fait</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Pourquoi</th>
+<th>Qui tranche</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>La barre du bas en mots</strong> (« Chantiers », « Planning »… au lieu des capitales)</td>
+<td>la planche la montre, mais elle relève de « Ce qui change partout » (<code>appli/soignee/fondations.html</code>) : la toucher change tous les écrans. Déjà écrit dans <code>ARCHITECTURE.md</code> §504</td>
+<td>le patron, sur <code>fondations.html</code></td>
+</tr>
+<tr>
+<td><strong>4 px par carte</strong> : interligne du titre (1,3 contre 1,45) et du nom (1,2 contre 1,3)</td>
+<td><code>TitreDeCarte</code> est commun à toutes les cartes de l'accueil ; les changer déplacerait des cartes qu'aucune planche ne touche, et la carte plus haute changerait l'accroche du fil</td>
+<td>le patron, s'il le voit</td>
+</tr>
+<tr>
+<td><strong>A ou B pour le virement dans Ma TVA</strong></td>
+<td>voir ci-dessous</td>
+<td>le patron</td>
+</tr>
+</tbody></table></div>
+<h2 id="à-trancher--a-ou-b">À trancher : A ou B</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Le brief dit « le patron a choisi B ». Le dépôt dit A, et le code fait A :</p>
+<blockquote><code>appli/banque-numero-et-termines.html</code> : [...] Dans Terminés, Ma TVA : <strong>variante A</strong>, « Oui / Non » à la place des deux boutons de la ligne. (<code>TODO.md</code>, « SES CHOIX DU 23 OCTOBRE 2026 »)</blockquote>
+<p>Rien n'a été recodé. Si le patron veut vraiment B (garder « J'ai reçu le paiement » et « J'ai reçu une partie », remplis avec la date et le montant de la banque) :</p>
+<ul>
+<li><strong>aucune migration n'est nécessaire</strong> : <code>virements_recus</code> porte déjà le jour, le montant et la facture. La migration de cette planche est la 0140, déjà passée ;</li>
+<li>ce serait revenir sur sa réponse du 23 octobre, et l'accueil garderait son Oui ou Non : les deux endroits ne poseraient plus la même question.</li>
+</ul>
+<h2 id="ce-qui-a-été-joué">Ce qui a été joué</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li>Types, lint, tirets et pansements : verts.</li>
+<li>Deux suites navigateur seules (<code>--seulement</code>), pas la batterie : <code>test-dashboard-e2e</code> et <code>test-devis-qui-tarde-e2e</code>, vertes sur l'état de <code>main</code>.</li>
+<li><strong>Aucune batterie</strong>, à la demande du brief. Le lot ne touche que de la documentation (niveau 1).</li>
+</ul>
+</main>
+</body>
+</html>
