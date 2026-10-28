@@ -259,7 +259,7 @@ export default function Pellicule({
           doré ne bouge pas (sa consigne du 31 août). */}
       {photoOuverte && (
         <VisionneusePhoto
-          photos={visibles.map((p) => p.storageKey)}
+          photos={visibles.map((p) => `/api/fichiers/${p.storageKey}`)}
           rang={rangOuvert}
           onRang={(r) => {
             const p = visibles[r];

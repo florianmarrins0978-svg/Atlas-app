@@ -36335,3 +36335,18 @@ Trois choix faits en codant : la vignette d'une pièce passe de 88 à 72 (`taill
 **La règle.** Le format d'un dossier bâti appartient à la version de Next qui l'a écrit. À chaque construction réussie, le banc note ce Next (`atlas-next-batie.txt`, à côté du commit) ; `servableParCeNext` ne laisse servir une version bâtie que si ce Next est celui installé. Non noté (version d'avant la règle) : on ne sert pas, mode développement le temps d'une construction. `doitRebatir` rebâtit aussi quand le Next a changé.
 
 **Ce qui reste fragile, et n'est pas traité ici** : un serveur qui meurt pendant la construction arrête encore le banc et la construction. Avec cette règle, plus rien de connu ne le fait mourir ; si une autre cause apparaît, la ligne « Banc » la montrera de la même façon.
+
+
+## §523 : L'assistant joint les documents qu'il a lus, jamais une adresse qu'il écrit
+
+**Sa demande du 27 octobre 2026** : une ligne trouvée dans un devis doit arriver avec le PDF du devis, à toucher ; puis *« pareil pour chaque document demandé : la facture, la fiche d'inter, le bilan comptable, un ticket de carburant, un ticket resto »*. Planche `appli/assistant-ouvre-le-devis.html`, **B** : la ligne trouvée est elle-même le bouton.
+
+**La règle.** Une adresse ne vient jamais du modèle. Les outils fabriquent la pièce depuis la base (`creerPiece`, `src/lib/pieces-de-l-assistant.ts`, qui la marque d'un symbole et refuse toute adresse hors de l'application). `rangerLesPieces` la retire du résultat avant qu'il parte au modèle et n'y laisse qu'une clé, « P1 ». Le modèle cite « [[P1]] » dans sa phrase ; `piecesCitees` ne rend que les clés rangées pendant CE tour, une fois chacune, et efface les clés du texte. Une clé inventée ne mène à rien ; un objet recopié qui ressemble à une pièce n'en est pas une. La route qui sert le fichier garde ses propres contrôles : la pièce évite de chercher, elle n'ouvre aucune porte.
+
+**Ce qui porte une pièce** : `RechercherLignesDevis` (la ligne, qui ouvre son devis), `LireDevis`, `LireFactures`, et trois outils neufs : `RechercherTickets` (achats par nature, commerçant, période ; un achat saisi sans photo n'a rien à joindre), `LireBilans`, `LirePhotos`.
+
+**Un ticket s'ouvre par l'identifiant de l'ACHAT** (`/termines/tva/ticket/[id]`, `photoDuTicket`). Avant, il ne s'ouvrait que rapproché d'une ligne de banque. La route est sous `/termines/tva`, donc fermée par `exigerOuverture` à qui n'ouvre pas cet écran, et la clé se revérifie sur le préfixe des tickets de l'entreprise.
+
+**Un PDF s'ouvre dans la visionneuse** (le panneau se ferme, la flèche ramène). **Une photo s'ouvre par-dessus le panneau**, dans `VisionneusePhoto`, qui prend désormais des ADRESSES et non des clés : une photo de chantier et un ticket ne se servent pas par la même route, et c'est l'écran qui le sait.
+
+**Ce qui n'est pas tenu.** Les pièces ne survivent pas au rechargement du fil (`messages_assistant` ne garde que le texte) : le garder demande une colonne, donc une migration, hors de ce lot. Les factures reçues des fournisseurs et les pièces importées n'ont pas encore d'outil.

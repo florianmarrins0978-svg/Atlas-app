@@ -105,6 +105,28 @@ export const fournisseurLLMDev: FournisseurLLM = {
       }
     }
 
+    // --- Retrouver une ligne d'un devis, et la joindre (27 octobre 2026) -----
+    //
+    // « Donne-moi la ligne de coupe du devis de Bernard » : il la veut à
+    // toucher, pas recopiée. Le vrai modèle cite la clé de la pièce
+    // (`pieces-de-l-assistant.ts`) ; celui-ci aussi, pour que l'écran se
+    // regarde sans clé.
+    const estRechercheDeLigne =
+      !estSuppression &&
+      !estModification &&
+      /\b(cherche|trouve|donne|sors|ressors|montre|retrouve)/i.test(texteMinuscule) &&
+      /\b(ligne|prestation|poste)\b/i.test(texteMinuscule) &&
+      /\bdevis\b/i.test(texteMinuscule) &&
+      outils.some((o) => o.nom === "RechercherLignesDevis");
+    if (estRechercheDeLigne) {
+      if (dernier && dernier.role === "outil" && dernier.outil === "RechercherLignesDevis") {
+        return { succes: true, type: "texte", texte: lignesTrouvees(dernier.resultat) };
+      }
+      if (!dernier || dernier.role !== "outil") {
+        return unAppel("RechercherLignesDevis", { motCle: motCleDeLaLigne(texte), client: clientDeLaLigne(texte) });
+      }
+    }
+
     // --- Orchestrateur (lot IA-08) : workflow complet, ou questions de suivi.
     // Aucune mémoire persistante : une question de suivi (autre échange)
     // retrouve la demande d'origine dans l'historique de conversation déjà
@@ -606,6 +628,14 @@ function expliquerModeEmploi(resultat: unknown): string {
   const lignes = [`**${f.intitule}** — ${f.ecran}`, f.geste];
   if (f.reserve) lignes.push(f.reserve);
   return lignes.join("\n");
+}
+
+/** Les lignes trouvées, chacune avec la clé de sa pièce. */
+function lignesTrouvees(resultat: unknown): string {
+  const r = resultat as { trouve?: boolean; lignes?: { libelle: string; numeroDevis: string; piece?: string }[] };
+  if (!r.trouve || !r.lignes?.length) return "Aucune ligne de devis ne correspond.";
+  const dites = r.lignes.map((l) => `« ${l.libelle} », devis ${l.numeroDevis}${l.piece ? ` [[${l.piece}]]` : ""}`);
+  return `${r.lignes.length === 1 ? "Une ligne trouvée" : `${r.lignes.length} lignes trouvées`} : ${dites.join(" ; ")}.`;
 }
 
 /** Le mot du libellé cherché : « la ligne d'élagage » → « élagage ». */

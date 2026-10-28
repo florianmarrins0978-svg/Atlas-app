@@ -6,6 +6,9 @@ import { colors, font, surPlein } from "@/lib/design-tokens";
 import { useAssistant } from "./assistant-contexte";
 import { rendreMarkdownSimple } from "./rendreMarkdownSimple";
 import OndeDeVoix from "./OndeDeVoix";
+import PiecesDeLaReponse from "./PiecesDeLaReponse";
+import VisionneusePhoto from "./VisionneusePhoto";
+import type { PieceJointe } from "@/lib/pieces-de-l-assistant";
 import { poserQuestionAction, lireFilAction, viderFilAction, dicterQuestionAction, regarderPhotoAction } from "@/app/assistant/actions";
 import { appliquerPropositionsAction } from "@/app/chantiers/[id]/informations/actions";
 import type { ResultatApplicationProposition, ResultatConfirmation } from "@/server/ai/propositions";
@@ -17,6 +20,7 @@ type Message = {
   role: "user" | "assistant";
   contenu: string;
   sources?: string[];
+  pieces?: PieceJointe[];
   propositions?: PropositionAvecEtat[];
   statutPropositions?: "en_attente" | "appliquee" | "annulee";
   resultats?: ResultatApplicationProposition[];
@@ -40,6 +44,7 @@ export default function AssistantSidebar() {
   const assistant = useAssistant();
   const ouvert = assistant?.ouvert ?? false;
   const [messages, setMessages] = useState<Message[]>([]);
+  const [photosOuvertes, setPhotosOuvertes] = useState<{ photos: string[]; rang: number } | null>(null);
   const [saisie, setSaisie] = useState("");
   const [enCours, setEnCours] = useState(false);
   // Un ref, pas un état : relire le fil ne doit pas provoquer un rendu de plus.
@@ -249,6 +254,7 @@ export default function AssistantSidebar() {
             role: "assistant",
             contenu: reponse.texte,
             sources: reponse.sources,
+            pieces: reponse.pieces,
             propositions: reponse.propositions?.map((p) => ({ proposition: p, coche: true })),
             statutPropositions: reponse.propositions && reponse.propositions.length > 0 ? "en_attente" : undefined,
           },
@@ -261,6 +267,21 @@ export default function AssistantSidebar() {
     } finally {
       setEnCours(false);
     }
+  }
+
+  /**
+   * Un PDF s'ouvre dans la visionneuse, qui est un écran : le panneau se ferme.
+   * Une photo s'ouvre PAR-DESSUS le panneau, et l'on revient à la discussion
+   * en la fermant. Les photos de la même réponse se feuillettent ensemble.
+   */
+  function ouvrirPiece(piece: PieceJointe, pieces: PieceJointe[]) {
+    if (piece.format === "photo") {
+      const photos = pieces.filter((p) => p.format === "photo").map((p) => p.adresse);
+      setPhotosOuvertes({ photos, rang: Math.max(0, photos.indexOf(piece.adresse)) });
+      return;
+    }
+    assistant?.fermer();
+    router.push(piece.adresse);
   }
 
   function basculerCase(indexMessage: number, indexProposition: number) {
@@ -388,6 +409,8 @@ export default function AssistantSidebar() {
                     }}
                   >
                     <div className="flex flex-col gap-1">{rendreMarkdownSimple(m.contenu)}</div>
+
+                    {m.pieces && m.pieces.length > 0 && <PiecesDeLaReponse pieces={m.pieces} onOuvrir={(p) => ouvrirPiece(p, m.pieces ?? [])} />}
 
                     {m.propositions && m.propositions.length > 0 && (
                       <div className="mt-2 flex flex-col gap-1.5 border-t pt-2" style={{ borderColor: colors.line }}>
@@ -610,6 +633,14 @@ export default function AssistantSidebar() {
           </div>
         </div>
       )}
+      {photosOuvertes && (
+        <VisionneusePhoto
+          photos={photosOuvertes.photos}
+          rang={photosOuvertes.rang}
+          onRang={(rang) => setPhotosOuvertes((cur) => (cur ? { ...cur, rang } : cur))}
+          onFermer={() => setPhotosOuvertes(null)}
+        />
+      )}
     </>
   );
 }
@@ -625,6 +656,9 @@ function libelleSource(nomOutil: string): string {
     LireTarifs: "Tarifs",
     RechercherModeEmploi: "Mode d'emploi",
     RechercherLignesDevis: "Devis des autres clients",
+    RechercherTickets: "Tickets",
+    LireBilans: "Bilans",
+    LirePhotos: "Photos",
   };
   return libelles[nomOutil] ?? nomOutil;
 }

@@ -10,6 +10,10 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## L'ASSISTANT JOINT LES DOCUMENTS (27 octobre 2026)
+
+Un outil qui veut joindre un document met `piece: pieceDu…()` dans son résultat (`src/lib/pieces-de-l-assistant.ts`) ; rien d'autre à brancher. Ne jamais fabriquer une pièce à la main ni laisser le modèle écrire une adresse (§523). Une photo se donne à `VisionneusePhoto` par son ADRESSE.
+
 ## POUR MON COMPTABLE : UN VIREMENT REÇU SE RÈGLE DANS SA LIGNE (26 octobre 2026)
 
 Une entrée se justifie par sa facture d'Atlas (`confirmerLaLigneRecue`, qui écrit la réponse de l'accueil dans la même transaction), par une facture faite hors d'Atlas (`facture_hors_atlas`, 0150) ou par une réponse de son sens (`MOTIFS_RECUS`). **Les pièges :** toute pose passe par `poser`, qui lit la ligne VERROUILLÉE et compare la pièce dans la même transaction (`refusDEcart`) : une nouvelle façon de justifier qui écrirait à côté échapperait au contrôle du montant. Le ticket photographié depuis sa ligne se compare AVANT d'être rangé (`ecartAvecLaLigne`). Le fichier d'une facture hors d'Atlas remplacée revient en `pieceRetiree` : l'action l'efface, après l'écriture. La contrainte de cohérence de 0150 est NOT VALID : ne la valider qu'après avoir compté les lignes qui ne la tiennent pas sur sa base (`ARCHITECTURE.md` §515).

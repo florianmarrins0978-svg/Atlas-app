@@ -58,7 +58,14 @@ export default function VisionneusePhoto({
   onFermer,
   children,
 }: {
-  /** Les clés de stockage, dans l'ordre où les vignettes sont à l'écran. */
+  /**
+   * Les adresses des photos, dans l'ordre où les vignettes sont à l'écran.
+   *
+   * **Des adresses, plus des clés** (27 octobre 2026) : une photo de chantier
+   * se sert par `/api/fichiers`, un ticket par sa propre route, gardée par
+   * son rôle. La visionneuse n'a pas à savoir laquelle ; l'écran qui l'ouvre
+   * le sait.
+   */
   photos: string[];
   /** Celle qu'on regarde, de 0 à `photos.length - 1`. */
   rang: number;
@@ -101,8 +108,8 @@ export default function VisionneusePhoto({
   // côtés.
   if (typeof document === "undefined") return null;
 
-  const cle = photos[rang];
-  if (cle === undefined) return null;
+  const adresse = photos[rang];
+  if (adresse === undefined) return null;
   const plusieurs = photos.length > 1;
 
   return createPortal(
@@ -151,7 +158,7 @@ export default function VisionneusePhoto({
             appartiennent : ce serait un second chemin vers des photos de
             chantier. */}
         <img
-          src={`/api/fichiers/${cle}`}
+          src={adresse}
           alt=""
           data-atlas="photo-ouverte"
           className="max-h-[60vh] max-w-full rounded-[12px] object-contain"
@@ -209,7 +216,7 @@ export default function VisionneusePhoto({
                   boxShadow: i === rang ? `0 0 0 2px ${colors.orSurEncre}` : undefined,
                 }}
               >
-                <img src={`/api/fichiers/${p}`} alt="" className="h-full w-full object-cover" />
+                <img src={p} alt="" className="h-full w-full object-cover" />
               </button>
             ))}
           </div>

@@ -362,7 +362,7 @@ function Carte({ retour }: { retour: RetourEnListe }) {
           l'écran qui sert à le vérifier. */}
       {enGrand !== null && (
         <VisionneusePhoto
-          photos={retour.photos.map((p) => p.storageKey)}
+          photos={retour.photos.map((p) => `/api/fichiers/${p.storageKey}`)}
           rang={enGrand}
           onRang={setEnGrand}
           onFermer={() => setEnGrand(null)}

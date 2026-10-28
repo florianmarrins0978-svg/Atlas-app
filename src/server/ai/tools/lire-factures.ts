@@ -4,6 +4,7 @@ import { facturesAvecPaiements } from "../../repositories/paiements-facture";
 import { listerFacturesNonPayees } from "../../repositories/factures-non-payees";
 import { totalRecu } from "@/lib/acomptes-facture";
 import { bilanDeLaPeriode } from "@/lib/bilan-periode";
+import { pieceDeLaFacture } from "@/lib/pieces-de-l-assistant";
 
 const JOUR = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -89,6 +90,13 @@ export const lireFactures: Outil = {
       totalResteDu: totalRecu(retenues.map((f) => ({ montant: f.reste }))),
       factures: retenues.slice(0, LIMITE).map((f) => ({
         numero: f.numeroCommercial,
+        piece: pieceDeLaFacture({
+          factureId: f.id,
+          numero: f.numeroCommercial,
+          date: f.dateEmission,
+          montant: f.totalTtc,
+          client: f.clientNom,
+        }),
         dateEmission: f.dateEmission,
         client: f.clientNom,
         chantierId: f.chantierId,

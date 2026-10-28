@@ -12,6 +12,7 @@ import { NOM_OUTIL_PROPOSITION, TYPES_ACTION_PROPOSEE } from "../propositions";
 import { enregistrerPropositions } from "../../repositories/propositions-ia";
 import { logger } from "../../logger";
 import { horsPerimetre, REPONSE_HORS_PERIMETRE } from "../../../lib/perimetre-assistant";
+import { nouveauRegistre, piecesCitees, rangerLesPieces, type PieceJointe } from "../../../lib/pieces-de-l-assistant";
 
 export type MessageAssistant = { role: "user" | "assistant"; contenu: string };
 
@@ -22,7 +23,7 @@ export type MessageAssistant = { role: "user" | "assistant"; contenu: string };
 export type PropositionAvecId = ActionProposee & { id: string };
 
 export type ReponseAssistant =
-  | { succes: true; texte: string; sources: string[]; propositions?: PropositionAvecId[] }
+  | { succes: true; texte: string; sources: string[]; propositions?: PropositionAvecId[]; pieces?: PieceJointe[] }
   | { succes: false; erreur: string };
 
 // Outil réservé, reconnu par l'orchestrateur (pas par les fournisseurs) : le
@@ -90,6 +91,13 @@ LA RÈGLE QUI TIENT CE PÉRIMÈTRE : tu ne dis que ce que tes outils t'ont rendu
 question, pas de réponse. C'est déjà la règle pour les prix ; elle vaut pour tout. Un chiffre, un
 horaire, un fait que tu tiens de ta seule mémoire n'a pas sa place ici, il aurait l'air d'une donnée
 de l'entreprise, et c'est ainsi qu'on fait confiance à une information fausse.
+
+LES DOCUMENTS SE TOUCHENT. Quand un outil rend un champ "piece" (une clé comme "P3"), c'est un document
+qu'il peut ouvrir : le devis, la facture, la fiche, le ticket, le bilan, la photo. Dès que ta réponse parle
+de ce document ou de ce qu'il contient, écris sa clé entre doubles crochets à la fin de la phrase : [[P3]].
+Elle s'affiche comme un bouton qui ouvre le document ; le texte de la clé, lui, ne se voit pas. Une clé par
+document dont tu parles, seulement celles que les outils t'ont rendues pendant cette question. N'écris
+jamais une adresse ni un lien toi-même.
 
 TU EXPLIQUES AUSSI L'APPLICATION. Devant une question du type "comment je fais pour...", "où est...",
 "où sont rangés...", "je cherche le bouton...", "à quoi sert...", et devant toute question sur la façon
@@ -265,6 +273,9 @@ export async function poserQuestion(
 
   const sources: string[] = [];
   let corrections = 0;
+  // Les documents lus pendant CE tour : seuls eux peuvent s'afficher
+  // (`pieces-de-l-assistant.ts`).
+  const registre = nouveauRegistre();
 
   for (let etape = 0; etape < MAX_APPELS_OUTILS; etape++) {
     const resultat = await fournisseur.genererAvecOutils(consigneDuJour(jourIso(new Date())), historique, definitions);
@@ -274,7 +285,8 @@ export async function poserQuestion(
     }
 
     if (resultat.type === "texte") {
-      return { succes: true, texte: resultat.texte, sources };
+      const { texte, pieces } = piecesCitees(resultat.texte, registre);
+      return { succes: true, texte, sources, ...(pieces.length > 0 ? { pieces } : {}) };
     }
 
     // **Chaque appel du tour est servi, dans l'ordre**, et chacun reçoit son
@@ -410,7 +422,13 @@ export async function poserQuestion(
       sources.push(outil.nom);
       historique = [
         ...historique,
-        { role: "outil", id: appel.id, outil: outil.nom, parametres: appel.parametres, resultat: resultatOutil },
+        {
+          role: "outil",
+          id: appel.id,
+          outil: outil.nom,
+          parametres: appel.parametres,
+          resultat: rangerLesPieces(resultatOutil, registre),
+        },
       ];
   
     }

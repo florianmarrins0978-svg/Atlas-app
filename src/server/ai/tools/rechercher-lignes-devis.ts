@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { Outil } from "./types";
 import { rechercherLignesDevisEntreprise } from "../../repositories/devis";
+import { pieceDuDevis } from "@/lib/pieces-de-l-assistant";
 
 /**
  * Chercher une ligne dans les devis de TOUS les clients.
@@ -39,6 +40,17 @@ export const rechercherLignesDevis: Outil = {
     }
     const lignes = await rechercherLignesDevisEntreprise(ctx, { motCle, client });
     if (lignes.length === 0) return { trouve: false, raison: "Aucune ligne de devis ne correspond." };
-    return { trouve: true, lignes };
+    // **La ligne est la pièce** (planche B du 27 octobre 2026) : c'est elle
+    // qu'il touche, et elle ouvre le devis où elle est écrite.
+    return {
+      trouve: true,
+      lignes: lignes.map(({ devisId, ...l }) => ({
+        ...l,
+        piece: pieceDuDevis(
+          { devisId, numero: l.numeroDevis, date: l.dateEmission },
+          { titre: l.libelle, montant: l.montant }
+        ),
+      })),
+    };
   },
 };

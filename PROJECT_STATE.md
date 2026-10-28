@@ -4,6 +4,10 @@
 dernière migration `drizzle/0150_virement_recu_regle_au_dossier.sql`
 
 ---
+## L'ASSISTANT JOINT LES DOCUMENTS QU'IL TROUVE, CODÉ (27 octobre 2026)
+
+Planche B retenue. Devis (et la ligne trouvée), factures, tickets, bilans, photos : à toucher sous la réponse. `ARCHITECTURE.md` §523. Reste : la « fiche d'inter » (à lui demander), la mémoire des pièces au rechargement, les factures reçues (`TODO.md`).
+
 ## ARROSAGE : SON CROQUIS DU 27 OCTOBRE (27 octobre 2026)
 
 Coins tirés retirés des zones (`formes-du-dessin.ts`, `dessin-du-plan.ts`,

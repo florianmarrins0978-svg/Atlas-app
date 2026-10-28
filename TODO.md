@@ -1,5 +1,12 @@
 # Prochaines tâches
 
+## L'ASSISTANT JOINT LES DOCUMENTS : CE QUI RESTE (27 octobre 2026)
+
+- **« La fiche d'inter »** : à l'écran c'est le bloc du planning, pas un PDF. Lui demander lequel il veut voir joint (la feuille sans les prix, la fiche de sécurité, ou la fiche chantier) avant de l'ajouter.
+- **Les pièces disparaissent au rechargement du fil** : `messages_assistant` ne garde que le texte. Une colonne `pieces` (jsonb, nullable, expand) les garderait.
+- **Factures reçues des fournisseurs, pièces importées** : pas encore d'outil. La route des factures reçues est réservée au propriétaire et ne finit pas par `/pdf`.
+- **Sur son espace** : vérifier que le vrai modèle cite bien les clés (« [[P1]] »). Sans clé ici, seul le fournisseur `dev` l'a fait.
+
 ## ⏳ DES PLANCHES À REGARDER : L'APPLI SOIGNÉE, ÉCRAN PAR ÉCRAN (25 octobre 2026)
 
 **Sa demande :** *« reprends toutes les pages de l'application et améliore-moi le
