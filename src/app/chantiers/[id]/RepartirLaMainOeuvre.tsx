@@ -358,7 +358,7 @@ export default function RepartirLaMainOeuvre({
               return (
                 <div key={t.cle} className="py-2.5" style={separe}>
                   <div className="flex items-center justify-between gap-3 text-[15px]">
-                    <span className="min-w-0 line-through" style={{ color: colors.muted }}>
+                    <span className="min-w-0 line-clamp-2 line-through" style={{ color: colors.muted }}>
                       {t.libelle}
                     </span>
                     <button
@@ -400,7 +400,15 @@ export default function RepartirLaMainOeuvre({
                     style={{ width: 12, height: 12, backgroundColor: teinte(t.cle), boxShadow: `inset 0 0 0 1px ${voile(colors.ink, 0.16)}` }}
                   />
                 )}
-                <span className="min-w-0 flex-1 text-[17px] leading-[1.25]" style={{ color: colors.ink, fontFamily: font.display }}>
+                {/* **Le début de l'intitulé, deux lignes au plus** : sa question
+                    du 28 octobre 2026, « il faut qu'ils reprennent que le
+                    début ». Une phrase longue s'étalait sur sept lignes et
+                    repoussait la barre hors de l'écran ; le devis, lui, garde
+                    l'intitulé entier. */}
+                <span
+                  className="line-clamp-2 min-w-0 flex-1 text-[17px] leading-[1.25]"
+                  style={{ color: colors.ink, fontFamily: font.display }}
+                >
                   {t.libelle}
                 </span>
                 {reparti &&

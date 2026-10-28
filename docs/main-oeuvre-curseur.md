@@ -43,6 +43,13 @@ qui a de quoi.
 Trouvé par la suite navigateur à son premier passage, rouge sur « la poignée
 n'a rien déplacé » ; la règle a ses tests, rouges d'abord.
 
+**Un intitulé long s'étalait sur sept lignes.** Sa question du 28 octobre :
+*« est-ce que tu as vérifié si l'intitulé des lignes fait 4-5 lignes ? il faut
+qu'ils reprennent que le début »*. Ce n'était pas vérifié. Sous la barre, chaque
+travail garde désormais le début de son intitulé, deux lignes au plus ; le
+devis, lui, garde l'intitulé entier. La suite navigateur rougissait à trois
+lignes avant la correction.
+
 ## Ce qui a été fait autrement que la planche
 
 | | la planche | le code | pourquoi |
