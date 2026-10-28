@@ -325,8 +325,11 @@ export function joindreFactureRecue(ctx: Ctx, mouvementId: string, factureRecueI
 }
 
 /**
- * Une facture faite hors d'Atlas pour un virement reçu : son fichier est déjà
- * rangé (`deposerFactureHorsAtlasAction`), son total lu dessus ou tapé par lui.
+ * Une facture photographiée ou en PDF pour une ligne de banque : faite hors
+ * d'Atlas pour un virement reçu, ou facture d'un fournisseur pour un virement
+ * envoyé (sa remarque du 27 octobre 2026 : la carte d'un virement envoyé ne
+ * proposait que les factures déjà rangées). Son fichier est déjà rangé
+ * (`deposerFactureHorsAtlasAction`), son total lu dessus ou tapé par lui.
  * Un total illisible ne se compare pas, et ne se devine pas : il reste vide.
  */
 export function joindreFactureHorsAtlas(
@@ -341,8 +344,7 @@ export function joindreFactureHorsAtlas(
     { ...VIDE, justification: "facture_hors_atlas", pieceCle: piece.cle, pieceNature: piece.nature, pieceTotal: piece.total, reliePar: "patron", justifieLe: new Date() },
     {
       controle: async (ligne, tx) => {
-        if (ligne.sens !== "entree") return { ok: false, raison: "Une facture faite hors d'Atlas justifie un virement reçu." };
-        if (await factureConfirmee(tx, ligne.cle)) return { ok: false, raison: "Ce virement paie déjà une facture d'Atlas." };
+        if (ligne.sens === "entree" && (await factureConfirmee(tx, ligne.cle))) return { ok: false, raison: "Ce virement paie déjà une facture d'Atlas." };
         return refusDEcart(ligne, piece.total, malgreEcart);
       },
     }
@@ -396,6 +398,15 @@ export async function ligneRecue(ctx: Ctx, mouvementId: string): Promise<{ monta
     const [l] = await tx.select().from(mouvementsBancaires).where(and(eq(mouvementsBancaires.id, mouvementId), eq(mouvementsBancaires.sens, "entree"))).limit(1);
     if (!l) return null;
     return { montant: l.montant, justifiee: l.justification !== null || (await factureConfirmee(tx, l.cle)) };
+  });
+}
+
+/** La ligne, quel que soit son sens, avant d'y ranger une facture photographiée ou en PDF. */
+export async function ligneDeposable(ctx: Ctx, mouvementId: string): Promise<{ montant: string; justifiee: boolean } | null> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [l] = await tx.select().from(mouvementsBancaires).where(eq(mouvementsBancaires.id, mouvementId)).limit(1);
+    if (!l) return null;
+    return { montant: l.montant, justifiee: l.justification !== null || (l.sens === "entree" && (await factureConfirmee(tx, l.cle))) };
   });
 }
 

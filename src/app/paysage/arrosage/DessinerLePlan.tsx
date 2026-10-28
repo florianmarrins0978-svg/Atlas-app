@@ -10,6 +10,7 @@ import {
   croquisDuDessin,
   empriseDesDalles,
   lignesDeLaZone,
+  placeDuNom,
   lireLeDessin,
   morceauxDe,
   NOMS_DES_ZONES,
@@ -549,14 +550,27 @@ export default function DessinerLePlan({
     // Coupée, la zone porte son nom dans son plus grand morceau : au centre, il
     // tombait sous la rangée ou la maison.
     const grand = parts.length > 1 ? parts.reduce((g, q) => (q.L * q.l > g.L * g.l ? q : g)) : { x: z.x, y: z.y, L: z.L, l: z.l };
-    const cx = grand.x + grand.L / 2, cy = grand.y + grand.l / 2;
+    const nom = nomDe(z);
+    // Le nom se pousse là où ni la nourrice ni le piquage ne sont posés (« la A »,
+    // 27 octobre 2026). Leur place, en mètres, est celle qu'ils prennent à l'écran.
+    const largeurTexte = (t: string, taille: number) => tient(t, taille) * t.length * 0.56;
+    const demi = (deuxLignes ? Math.max(largeurTexte(nom, 11), largeurTexte(cotes, 10)) : largeurTexte(`${nom}, ${cotes}`, 10)) / 2;
+    const boite = deuxLignes ? { gauche: demi, droite: demi, haut: px(13), bas: px(14) } : { gauche: demi, droite: demi, haut: px(5), bas: px(6) };
+    const gene = [
+      ...(nourrice ? [{ x: nourrice.x - px(22), y: nourrice.y - px(9), L: px(44), l: px(33) }] : []),
+      ...(piquagePlace
+        ? [cadre && piquagePlace.x > cadre.L / 2
+          ? { x: piquagePlace.x - px(70), y: piquagePlace.y - px(10), L: px(80), l: px(20) }
+          : { x: piquagePlace.x - px(10), y: piquagePlace.y - px(10), L: px(80), l: px(20) }]
+        : []),
+    ];
+    const { x: cx, y: cy } = placeDuNom(grand, boite, gene);
     const bord = {
       fill: remplissage(z.type),
       stroke: aRevoir ? colors.alert : est ? colors.ink : colors.rustDeep,
       strokeWidth: px(est ? 3 : 1.5),
       strokeDasharray: aRevoir ? `${px(5)} ${px(4)}` : undefined,
     };
-    const nom = nomDe(z);
     return (
       <g key={z.id} data-objet={z.id} style={{ cursor: "grab" }}>
         {formeLibre(z) ? <path d={cheminDe(z)} {...bord} /> : <rect x={z.x} y={z.y} width={z.L} height={z.l} rx={px(2.5)} {...bord} />}

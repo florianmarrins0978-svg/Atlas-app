@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas : l’assistant ouvre le devis</title>
+<style>
+  /*
+    Sa demande du 27 octobre 2026 : « quand je lui demande d'aller me chercher
+    une ligne dans un devis, qu'il me sorte le PDF du devis dans la
+    discussion. Comme ça, j'ai juste à cliquer et je peux ouvrir le devis. »
+
+    Le panneau est repris de AssistantSidebar.tsx tel qu'il le voit sur sa
+    capture : titre « Assistant », « Oublier », la croix, les bulles. Deux
+    places pour le devis trouvé, A et B. Rien n'est codé.
+  */
+  :root{
+    --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+    --ink:#1c1c1a; --soft:#4a4a44; --muted:#6b665b;
+    --pine:#2f3b2f; --or:#B98B47; --line:rgba(28,28,26,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bone:#171613; --cream:#1e1c18; --paper:#262420; --ink:#e9e5dc;
+           --soft:#c9c4b8; --muted:#a39e92; --or:#C9A15E; --pine:#8fa88a;
+           --line:rgba(233,229,220,.16); }
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{background:var(--bone);color:var(--ink);
+       font:16px/1.5 -apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+
+  .choix{position:sticky;top:0;z-index:5;display:flex;gap:8px;padding:12px 16px;
+         background:var(--bone);border-bottom:1px solid var(--line)}
+  .choix button{flex:1;border:none;border-radius:999px;padding:10px 8px;font:600 14px/1 inherit;
+                background:var(--paper);color:var(--ink);cursor:pointer}
+  .choix button[aria-pressed="true"]{background:var(--pine);color:var(--cream)}
+
+  .panneau{max-width:440px;margin:0 auto;min-height:calc(100% - 60px);background:var(--cream);
+           display:flex;flex-direction:column}
+  .entete{display:flex;align-items:center;justify-content:space-between;padding:18px 16px;
+          border-bottom:1px solid var(--line)}
+  .entete .t{font:700 22px/1 Georgia,serif}
+  .entete .d{display:flex;align-items:center;gap:14px;color:var(--muted);font-size:15px}
+  .croix{width:44px;height:44px;border-radius:999px;background:var(--bone);display:flex;
+         align-items:center;justify-content:center;font-size:22px;color:var(--ink)}
+
+  .fil{flex:1;padding:16px;display:flex;flex-direction:column;gap:12px}
+  .moi{align-self:flex-end;max-width:85%;background:var(--paper);border-radius:6px;padding:12px 14px;font-size:15px}
+  .lui{align-self:flex-start;max-width:90%;background:var(--bone);border-radius:6px;padding:12px 14px;font-size:15px}
+  .lui p{margin:0 0 8px}
+  .lui p:last-child{margin:0}
+
+  /* A : une carte par devis, sous la réponse */
+  .carte{display:flex;align-items:center;gap:12px;width:100%;margin-top:10px;padding:12px;
+         border:none;border-radius:8px;background:var(--cream);box-shadow:inset 0 0 0 1px var(--line);
+         text-align:left;cursor:pointer;color:var(--ink);font:inherit}
+  .carte:active{background:var(--paper)}
+  .pdf{flex-shrink:0;width:36px;height:44px;border-radius:4px;background:var(--paper);
+       display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;
+       font:700 11px/1 inherit;letter-spacing:.04em;color:var(--or);box-shadow:inset 0 0 0 1px var(--line)}
+  .carte .n{font-weight:600;font-size:15px}
+  .carte .s{font-size:13px;color:var(--muted)}
+
+  /* B : la ligne trouvée est elle même le bouton */
+  .ligne{display:block;width:100%;margin-top:10px;padding:12px;border:none;border-radius:8px;
+         background:var(--cream);box-shadow:inset 0 0 0 1px var(--line);text-align:left;cursor:pointer;
+         color:var(--ink);font:inherit}
+  .ligne:active{background:var(--paper)}
+  .ligne .haut{display:flex;justify-content:space-between;gap:10px;font-weight:600;font-size:15px}
+  .ligne .bas{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:13px;color:var(--muted)}
+  .ligne .bas b{color:var(--or);font-weight:700;font-size:11px;letter-spacing:.04em}
+
+  .pied{border-top:1px solid var(--line);padding:12px 16px;display:flex;gap:10px;align-items:center}
+  .champ{flex:1;border-radius:6px;background:var(--bone);padding:12px 14px;font-size:15px;color:var(--muted)}
+  .envoyer{width:48px;height:48px;border-radius:999px;background:var(--pine);opacity:.45}
+
+  /* Le PDF ouvert */
+  .voile{position:fixed;inset:0;z-index:20;background:#2a2926;display:none;flex-direction:column}
+  .voile.ouvert{display:flex}
+  .barre{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;color:#fff;font-size:15px}
+  .barre button{border:none;background:none;color:#fff;font:600 15px/1 inherit;cursor:pointer;padding:8px}
+  .page{flex:1;overflow:auto;padding:0 16px 24px}
+  .feuille{max-width:420px;margin:0 auto;background:#fff;color:#1c1c1a;border-radius:4px;padding:24px 20px;font-size:12px}
+  .feuille .m{font:22px Georgia,serif}
+  .feuille .r{display:flex;justify-content:space-between;color:#8a8578;border-top:1px solid #e5e2da;margin-top:12px;padding-top:8px}
+  .feuille .T{font:24px Georgia,serif;text-align:center;margin:18px 0}
+  .feuille table{width:100%;border-collapse:collapse;border-top:2px solid #1c1c1a}
+  .feuille td{padding:8px 0;border-bottom:1px solid #eee}
+  .feuille td:last-child{text-align:right}
+  .feuille 
+</style>
+</head>
+<body>
+
+<div class="choix" role="group" aria-label="Choisir une proposition">
+  <button aria-pressed="true" data-v="a">A : le devis</button>
+  <button aria-pressed="false" data-v="b">B : la ligne</button>
+</div>
+
+<div class="panneau">
+  <div class="entete">
+    <span class="t">Assistant</span>
+    <span class="d">Oublier <span class="croix">×</span></span>
+  </div>
+
+  <div class="fil">
+    <div class="moi">Donne moi le numéro du devis de Bernard où j’ai fait une coupe de cheveux, et le prix de la ligne</div>
+
+    <div class="lui" data-variante="a">
+      <p>Devis 2026-0009 de Monsieur Bernard : « Coupe de cheveux », 25 €.</p>
+      <button class="carte" onclick="ouvrir()">
+        <span class="pdf">PDF</span>
+        <span>
+          <span class="n">Devis 2026-0009</span><br>
+          <span class="s">Monsieur Bernard, 14 mars 2026</span>
+        </span>
+      </button>
+    </div>
+
+    <div class="lui" data-variante="b" hidden>
+      <p>Une ligne trouvée chez Monsieur Bernard.</p>
+      <button class="ligne" onclick="ouvrir()">
+        <span class="haut"><span>Coupe de cheveux</span><span>25 €</span></span>
+        <span class="bas"><b>PDF</b> Devis 2026-0009, 14 mars 2026</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="pied">
+    <span class="champ">Votre question…</span>
+    <span class="envoyer"></span>
+  </div>
+</div>
+
+<div class="voile" id="voile" onclick="if(event.target===this)fermer()">
+  <div class="barre">
+    <span>Devis 2026-0009</span>
+    <button onclick="fermer()">Fermer</button>
+  </div>
+  <div class="page">
+    <div class="feuille">
+      <div class="m">Atlas</div>
+      <div class="r"><span>Devis n° 2026-0009</span><span>14/03/2026</span></div>
+      <div class="T">DEVIS</div>
+      <p style="margin:0 0 14px;line-height:1.6">Monsieur Bernard<br>12 rue des Lilas, 78200 Mantes-la-Jolie</p>
+      <table>
+        <tr><td>Taille de haie de thuyas (15 ml)</td><td>180 €</td></tr>
+        <tr><td>Coupe de cheveux</td><td>25 €</td></tr>
+        <tr><td>Évacuation des déchets verts</td><td>45 €</td></tr>
+        <tr><td><b>Total HT</b></td><td><b>250 €</b></td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  const boutons = document.querySelectorAll(".choix button");
+  boutons.forEach(b => b.addEventListener("click", () => {
+    boutons.forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    document.querySelectorAll("[data-variante]").forEach(el => { el.hidden = el.dataset.variante !== b.dataset.v; });
+  }));
+  function ouvrir(){ document.getElementById("voile").classList.add("ouvert"); }
+  function fermer(){ document.getElementById("voile").classList.remove("ouvert"); }
+</script>
+</body>
+</html>

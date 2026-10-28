@@ -154,7 +154,24 @@ async function main() {
     lien = ((await bloc.getAttribute("data-lien")) ?? "").trim();
     assert.match(lien, /\/comptable\/[A-Za-z0-9_-]{40,}$/);
     assert.match((await bloc.locator('[data-atlas="envoyer-par-email"]').getAttribute("href")) ?? "", /^mailto:/);
-    assert.equal(await bloc.locator('[data-atlas="voir-la-page-du-comptable"]').getAttribute("href"), lien);
+    // Sa remarque du 27 octobre 2026 : la page qu'il ouvre pour voir ce que voit
+    // son comptable n'avait aucun retour. Elle s'ouvre dans l'onglet, en aperçu.
+    assert.equal(await bloc.locator('[data-atlas="voir-la-page-du-comptable"]').getAttribute("href"), `${lien}?apercu=1`);
+    assert.equal(await bloc.locator('[data-atlas="voir-la-page-du-comptable"]').getAttribute("target"), null, "la page s'ouvre dans un autre onglet : le retour se perd");
+  });
+
+  await test("l'aperçu du patron porte un bouton Fermer qui le ramène à ses dossiers, et la page du comptable n'en porte pas", async () => {
+    await page.goto(`${lien.replace(/^https?:\/\/[^/]+/, BASE)}?apercu=1`, { waitUntil: "networkidle" });
+    const fermer = page.locator('[data-atlas="fermer-apercu"]');
+    assert.equal(await fermer.count(), 1, "l'aperçu n'a pas de bouton Fermer");
+    assert.equal(await fermer.getAttribute("href"), "/termines/comptable/dossiers");
+    const boite = await fermer.boundingBox();
+    assert.ok(boite && boite.width > 0 && boite.height >= 44, `le bouton Fermer ne se touche pas : ${JSON.stringify(boite)}`);
+    await fermer.click();
+    await page.waitForURL(`${BASE}/termines/comptable/dossiers`, { timeout: 30_000 });
+    // Le comptable, lui, n'a nulle part où « fermer » : l'adresse nue n'en montre pas.
+    await page.goto(lien.replace(/^https?:\/\/[^/]+/, BASE), { waitUntil: "networkidle" });
+    assert.equal(await page.locator('[data-atlas="fermer-apercu"]').count(), 0);
   });
 
   await test("le comptable l'ouvre sans compte : ses lignes, et pas la barre d'Atlas", async () => {

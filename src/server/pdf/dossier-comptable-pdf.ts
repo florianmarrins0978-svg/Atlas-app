@@ -60,7 +60,7 @@ export type PieceDeLaLigne =
   | { genre: "facture"; societe: string; nom: string; totalTtc: string | null; fichier: Fichier | null }
   | { genre: "facture-emise"; numero: string }
   /** Un virement reçu qui paie une facture faite hors d'Atlas (migration 0150) : son total lu, ou tapé, et son fichier. */
-  | { genre: "facture-hors-atlas"; totalTtc: string | null; fichier: Fichier | null };
+  | { genre: "facture-hors-atlas"; sortie?: boolean; totalTtc: string | null; fichier: Fichier | null };
 
 export type Fichier = { octets: Uint8Array; nature: "image" | "pdf" };
 
@@ -349,7 +349,7 @@ function rangsDeLaPiece(piece: PieceDeLaLigne, p: Polices): Rang[] | null {
     case "facture":
       return [nom(piece.societe), { genre: "titre", t: piece.nom, police: p.sans, taille: 8, teinte: GRIS, h: 10.6 }, { genre: "blanc", h: 5 }, totalTtc(piece.totalTtc)];
     case "facture-hors-atlas":
-      return [nom("Facture faite hors d'Atlas"), { genre: "blanc", h: 5 }, totalTtc(piece.totalTtc)];
+      return [nom(piece.sortie ? "Facture du fournisseur" : "Facture faite hors d'Atlas"), { genre: "blanc", h: 5 }, totalTtc(piece.totalTtc)];
     case "facture-emise":
       return null;
   }
@@ -396,7 +396,7 @@ function nomDeLaPiece(piece: PieceDeLaLigne): string {
     case "facture":
       return `Facture ${piece.societe}`;
     case "facture-hors-atlas":
-      return "Facture faite hors d'Atlas";
+      return piece.sortie ? "Facture du fournisseur" : "Facture faite hors d'Atlas";
     case "facture-emise":
       return `Facture ${piece.numero}`;
   }
@@ -667,12 +667,13 @@ function couverture(c: Composition, d: DonneesDossier, mois: string[], pageDuMoi
 
   // Ce que contient le dossier. La page des tickets perdus n'est connue qu'au
   // bout : la phrase se mesure avec le plus long numéro, et s'écrit à la fin.
-  const n = (genres: PieceDeLaLigne["genre"][]) => d.lignes.filter((l) => l.piece && genres.includes(l.piece.genre)).length;
+  const n = (genres: PieceDeLaLigne["genre"][], sens?: LignePourLeDossier["sens"]) => d.lignes.filter((l) => l.piece && genres.includes(l.piece.genre) && (!sens || l.sens === sens)).length;
   const contient = (pagePerdus: number | null) =>
     [
       n(["ticket"]) && pluriel(n(["ticket"]), "ticket", "tickets"),
-      n(["facture"]) && pluriel(n(["facture"]), "facture de fournisseur", "factures de fournisseur"),
-      n(["facture-emise", "facture-hors-atlas"]) && pluriel(n(["facture-emise", "facture-hors-atlas"]), "virement reçu et sa facture", "virements reçus et leur facture"),
+      n(["facture"]) + n(["facture-hors-atlas"], "sortie") > 0 &&
+        pluriel(n(["facture"]) + n(["facture-hors-atlas"], "sortie"), "facture de fournisseur", "factures de fournisseur"),
+      n(["facture-emise", "facture-hors-atlas"], "entree") && pluriel(n(["facture-emise", "facture-hors-atlas"], "entree"), "virement reçu et sa facture", "virements reçus et leur facture"),
       perdus.length && `${pluriel(perdus.length, "ticket perdu déclaré", "tickets perdus déclarés")}${pagePerdus === null ? "" : ` (page ${pagePerdus})`}`,
     ]
       .filter((t): t is string => typeof t === "string")

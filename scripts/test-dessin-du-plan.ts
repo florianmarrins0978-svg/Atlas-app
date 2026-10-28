@@ -38,6 +38,7 @@ import {
   lignesDeLaZone,
   morceauxDe,
   phrasesDuDessin,
+  placeDuNom,
   redressee,
   zonesQuiDebordent,
   type DessinDuPlan,
@@ -272,6 +273,22 @@ dire(morceauxDe(pelouseEtMassif.zones[1], pelouseEtMassif).parts.length === 1, "
 dire(phrasesDuDessin(pelouseEtMassif).includes("Goutte à goutte coupe Arroseurs en 3 parts."), `et l'écran le dit (${phrasesDuDessin(pelouseEtMassif).join(" | ")})`);
 const deuxPelouses: DessinDuPlan = { ...pelouseEtMassif, zones: [pelouseEtMassif.zones[0], { type: "gazon", nom: "Pelouse 2", L: 3, l: 6, x: 0, y: 2 }] };
 dire(morceauxDe(deuxPelouses.zones[0], deuxPelouses).parts.length === 1, "une pelouse ne découpe pas une autre pelouse");
+
+// **Le nom d'une zone se pousse là où rien n'est posé** — « la A », sa
+// réponse du 27 octobre 2026 devant `appli/arrosage-nom-et-nourrice.html`. Sa
+// capture : la nourrice, posée au milieu du massif, cachait « Goutte à goutte ».
+const massifDuCroquis = { x: 1, y: 4.5, L: 3, l: 6 };
+const etiquette = { gauche: 1.2, droite: 1.2, haut: 0.5, bas: 0.7 };
+const nourriceAuMilieu = { x: 2.1, y: 7.2, L: 0.8, l: 1 };
+const seul = placeDuNom(massifDuCroquis, etiquette, []);
+dire(seul.x === 2.5 && seul.y === 7.5, "sans rien dessus, le nom reste au milieu de la zone");
+const pousse = placeDuNom(massifDuCroquis, etiquette, [nourriceAuMilieu]);
+const boiteDuNom = { x: pousse.x - etiquette.gauche, y: pousse.y - etiquette.haut, L: etiquette.gauche + etiquette.droite, l: etiquette.haut + etiquette.bas };
+const seCoupent = (a: typeof boiteDuNom, b: typeof boiteDuNom) => a.x < b.x + b.L && a.x + a.L > b.x && a.y < b.y + b.l && a.y + a.l > b.y;
+dire(!seCoupent(boiteDuNom, nourriceAuMilieu), `la nourrice ne cache plus le nom (nom en ${pousse.x} ; ${pousse.y})`);
+dire(boiteDuNom.y >= massifDuCroquis.y - 1e-9 && boiteDuNom.y + boiteDuNom.l <= massifDuCroquis.y + massifDuCroquis.l + 1e-9, "et le nom reste dans sa zone");
+const sansPlace = placeDuNom({ x: 0, y: 0, L: 2.4, l: 1.2 }, etiquette, [{ x: 0, y: 0, L: 2.4, l: 1.2 }]);
+dire(sansPlace.x === 1.2 && sansPlace.y === 0.6, "quand la zone n'a pas de place libre, le nom reste au milieu");
 
 // ── 7. Ce qui arrive du téléphone se relit, bornes comprises ───────────────
 const brut2 = { ...brut, maisons: [], dalles: [] };

@@ -91,7 +91,9 @@ export default function LigneFaceId() {
           throw erreur;
         }
         const nom = erreur instanceof Error ? erreur.name : null;
-        console.error("[face-id] ouverture refusée par le navigateur", nom, erreur);
+        // Un abandon garde sa trace, en avertissement : `console.error` ouvre le
+        // cadre rouge de Next en mode développement, et ce n'est pas une panne.
+        (estAbandon(nom) ? console.warn : console.error)("[face-id] ouverture refusée par le navigateur", nom, erreur);
         // **Rien à l'écran quand il a simplement fermé la fenêtre.**
         setRefus(estAbandon(nom) ? null : messageRefusCle("panne"));
       }

@@ -322,6 +322,11 @@ potager) posé dans une pelouse la coupe en morceaux, chacun arrosé aux
 turbines ; les têtes se posent donc autour du massif, jamais dessus. Une
 pelouse ne coupe pas une autre pelouse (`coupeursDe`).
 
+**LE NOM D'UNE ZONE SE POUSSE, LA NOURRICE NE BOUGE PAS — « la A », sa
+réponse du 27 octobre 2026** devant `appli/arrosage-nom-et-nourrice.html`. Sur
+« Dessiner le plan », un nom qui tomberait sous la nourrice ou le piquage se
+pousse dans la partie libre de sa zone, jamais dehors (`placeDuNom`).
+
 **UNE COTE ÉCRITE PASSE AVANT TOUTE DÉDUCTION** (même jour). Son massif coté
 6 m, dessiné dans la pelouse de 10 m, avait été lu 10 m : la consigne donnait en
 exemple d'étendre une bande « sur toute la hauteur de la pelouse ». On ne déduit

@@ -386,6 +386,24 @@
         ],
         "createdAt": "2026-10-27T21:20:50.630Z",
         "reason": "la planche recopie la charte de l'application (globals.css, chartes.ts) : une maquette doit montrer l'écran tel qu'il est"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/creer-un-devis.html"
+        ],
+        "createdAt": "2026-10-27T23:27:41.907Z",
+        "reason": "Planche reproduit la charte de l'application Atlas (cream #f5f3ee, card #faf9f5, src/lib/design-tokens.ts)"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "appli/soignee/creer-un-devis.html"
+        ],
+        "createdAt": "2026-10-27T23:27:41.916Z",
+        "reason": "Le .cadre est le téléphone de kit.css, commun à toutes les planches : l'écran y est posé bord à bord exprès"
       }
     ]
   }
