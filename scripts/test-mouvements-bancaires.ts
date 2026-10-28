@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { fenetresDeLecture, lireTransactions, virementsDesMouvements, type Transaction } from "../src/lib/releve-bancaire";
+import { debutDuReleve, fenetreDeVirements, lireAuPlusProfond, lireToutesLesPages, lireTransactions, NIVEAUX_D_HISTORIQUE_JOURS, virementsDesMouvements, type PageReleve, type RefusBanque, type Transaction } from "../src/lib/releve-bancaire";
 
 // POUR MON COMPTABLE, LOT 1 — sa remarque du 24 octobre 2026 : *« e-banking
 // permet de lire les virements entrants, mais pas les sortants »*.
@@ -16,16 +16,22 @@ import { fenetresDeLecture, lireTransactions, virementsDesMouvements, type Trans
 
 let passed = 0;
 let failed = 0;
-function test(nom: string, fn: () => void) {
-  try {
-    fn();
-    console.log(`✅ ${nom}`);
-    passed++;
-  } catch (err) {
-    console.error(`❌ ${nom}`);
-    console.error(`   ${err instanceof Error ? err.message : err}`);
-    failed++;
-  }
+// Un test peut être asynchrone : sans l'attendre, un rejet non géré passerait
+// pour un vert, et la suite mentirait.
+const enCours: Promise<void>[] = [];
+function test(nom: string, fn: () => void | Promise<void>) {
+  const verdict = async () => {
+    try {
+      await fn();
+      console.log(`✅ ${nom}`);
+      passed++;
+    } catch (err) {
+      console.error(`❌ ${nom}`);
+      console.error(`   ${err instanceof Error ? err.message : err}`);
+      failed++;
+    }
+  };
+  enCours.push(verdict());
 }
 
 const credit = (o: Partial<Transaction> = {}): Transaction => ({
@@ -118,23 +124,128 @@ test("les virements reçus se déduisent du relevé, les sorties en sont écart�
   assert.equal(v[0].cle, releve[0].cle);
 });
 
-test("première lecture : 90 jours de relevé, 30 de virements", () => {
-  const f = fenetresDeLecture(new Date("2026-10-24T12:00:00Z"), null);
-  assert.equal(f.releve, "2026-07-26");
-  assert.equal(f.virements, "2026-09-24");
+test("le relevé demandé remonte à la profondeur maximale, pas à la dernière lecture", () => {
+  // Un dossier commencé le 1er janvier ne doit plus borner la lecture : le
+  // patron veut chaque ligne que la banque rend, en commençant par la plus
+  // profonde.
+  assert.equal(debutDuReleve(new Date("2026-10-28T12:00:00Z"), 1826), "2021-10-28");
 });
 
-test("lecture suivante : depuis la dernière, moins trois jours, pour les deux", () => {
-  const f = fenetresDeLecture(new Date("2026-10-24T12:00:00Z"), new Date("2026-10-20T12:00:00Z"));
-  assert.equal(f.releve, "2026-10-17");
-  assert.equal(f.virements, "2026-10-17");
+test("les niveaux de profondeur vont du plus profond au plus court, et finissent à 90 jours", () => {
+  assert.deepEqual([...NIVEAUX_D_HISTORIQUE_JOURS], [1826, 730, 90]);
 });
 
-test("une dernière lecture très ancienne ne fait pas remonter plus loin que la première fenêtre", () => {
-  const f = fenetresDeLecture(new Date("2026-10-24T12:00:00Z"), new Date("2026-01-01T12:00:00Z"));
-  assert.equal(f.releve, "2026-07-26");
-  assert.equal(f.virements, "2026-09-24");
+test("les virements à répondre : trente jours, toujours depuis aujourd'hui", () => {
+  assert.equal(fenetreDeVirements(new Date("2026-10-24T12:00:00Z")), "2026-09-24");
 });
 
-console.log(`\n${passed} réussi(s), ${failed} échoué(s)`);
-if (failed > 0) process.exit(1);
+test("la banque accepte le niveau le plus profond : aucun avertissement", async () => {
+  const r = await lireAuPlusProfond(async (jours) => ({ ok: true, jours }));
+  assert.equal(r.ok, true);
+  if (r.ok) {
+    assert.equal(r.joursLus, 1826);
+    assert.equal(r.refusDesPlusProfonds, null);
+  }
+});
+
+test("la banque refuse le plus profond : on lit au niveau suivant, et le refus est gardé pour l'expliquer", async () => {
+  const r = await lireAuPlusProfond(async (jours): Promise<{ ok: true; jours: number } | RefusBanque> =>
+    jours > 730 ? { ok: false, raison: "Enable Banking a refusé (400). Période trop ancienne.", statut: 400 } : { ok: true, jours }
+  );
+  assert.equal(r.ok, true);
+  if (r.ok) {
+    assert.equal(r.joursLus, 730);
+    assert.equal(r.refusDesPlusProfonds, "Enable Banking a refusé (400). Période trop ancienne.");
+  }
+});
+
+test("la banque refuse tous les niveaux : la lecture échoue avec le dernier refus, rien n'est lu", async () => {
+  const r = await lireAuPlusProfond(async () => ({ ok: false as const, raison: "refus final", statut: 400 }));
+  assert.equal(r.ok, false);
+  if (!r.ok) assert.equal(r.raison, "refus final");
+});
+
+test("une limite de débit (429) arrête tout : pas de nouvel essai qui brûlerait le quota", async () => {
+  let appels = 0;
+  const r = await lireAuPlusProfond(async () => {
+    appels++;
+    return { ok: false as const, raison: "trop de lectures", statut: 429 };
+  });
+  assert.equal(appels, 1);
+  assert.equal(r.ok, false);
+});
+
+test("un accès expiré (401) arrête tout : un autre niveau ne le répare pas", async () => {
+  let appels = 0;
+  await lireAuPlusProfond(async () => {
+    appels++;
+    return { ok: false as const, raison: "session expirée", statut: 401 };
+  });
+  assert.equal(appels, 1);
+});
+
+test("une panne sans réponse (pas de statut) arrête tout", async () => {
+  let appels = 0;
+  await lireAuPlusProfond(async () => {
+    appels++;
+    return { ok: false as const, raison: "Enable Banking ne répond pas." };
+  });
+  assert.equal(appels, 1);
+});
+
+test("deux opérations identiques le même jour, sans référence, restent DEUX lignes", () => {
+  // Deux pleins d'essence au même montant, même libellé, même jour : la clé
+  // d'empreinte était la même, et la base n'en gardait qu'une.
+  const plein = debit({ transaction_amount: { amount: "12.50", currency: "EUR" }, remittance_information: ["CB STATION"] });
+  const lues = lireTransactions("compte-1", [plein, { ...plein }]);
+  assert.equal(lues.length, 2);
+  assert.equal(new Set(lues.map((m) => m.cle)).size, 2);
+});
+
+test("la première occurrence garde la clé d'avant, seule la répétition reçoit un rang", () => {
+  const plein = debit({ transaction_amount: { amount: "12.50", currency: "EUR" }, remittance_information: ["CB STATION"] });
+  const [unique] = lireTransactions("compte-1", [plein]);
+  const [premier] = lireTransactions("compte-1", [plein, { ...plein }]);
+  assert.equal(premier.cle, unique.cle);
+});
+
+test("les lignes identiques restent distinctes d'une lecture à l'autre, dans le même ordre", () => {
+  const plein = debit({ transaction_amount: { amount: "12.50", currency: "EUR" }, remittance_information: ["CB STATION"] });
+  const premiere = lireTransactions("compte-1", [plein, { ...plein }]).map((m) => m.cle);
+  assert.equal(new Set(premiere).size, 2);
+  const seconde = lireTransactions("compte-1", [plein, { ...plein }, debit({ booking_date: "2026-10-22" })]).map((m) => m.cle);
+  assert.deepEqual(seconde.slice(0, 2), premiere);
+});
+
+test("toutes les pages sont lues, dans l'ordre, sans en perdre une", async () => {
+  const pages: Record<string, PageReleve> = {
+    "": { transactions: [debit({ entry_reference: "A" })], continuation_key: "p2" },
+    p2: { transactions: [debit({ entry_reference: "B" })], continuation_key: "p3" },
+    p3: { transactions: [debit({ entry_reference: "C" })], continuation_key: null },
+  };
+  const r = await lireToutesLesPages(async (suite) => ({ ok: true, ...pages[suite ?? ""] }));
+  assert.equal(r.ok, true);
+  if (r.ok) assert.deepEqual(r.transactions.map((t) => t.entry_reference), ["A", "B", "C"]);
+});
+
+test("une banque qui ne finit jamais de paginer fait échouer la lecture, au lieu de rendre une partie", async () => {
+  // Avant : dix pages puis arrêt silencieux, et la lecture était marquée faite.
+  const r = await lireToutesLesPages(async () => ({ ok: true, transactions: [debit()], continuation_key: "encore" }));
+  assert.equal(r.ok, false);
+});
+
+test("une erreur en cours de pagination ne rend aucune partie du relevé", async () => {
+  let appel = 0;
+  const r = await lireToutesLesPages(async () => {
+    appel++;
+    if (appel === 1) return { ok: true, transactions: [debit()], continuation_key: "p2" };
+    return { ok: false, raison: "Enable Banking a refusé (500)." };
+  });
+  assert.equal(r.ok, false);
+  assert.equal("transactions" in r, false);
+});
+
+Promise.all(enCours).then(() => {
+  console.log(`\n${passed} réussi(s), ${failed} échoué(s)`);
+  if (failed > 0) process.exit(1);
+});

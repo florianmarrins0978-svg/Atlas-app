@@ -2,7 +2,7 @@ import { createSign } from "node:crypto";
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { logger } from "../logger";
-import { lireTransactions, type MouvementLu, type Transaction } from "@/lib/releve-bancaire";
+import { debutDuReleve, lireAuPlusProfond, lireToutesLesPages, lireTransactions, type MouvementLu, type RefusBanque, type Transaction } from "@/lib/releve-bancaire";
 
 /**
  * LIRE LES VIREMENTS REÇUS, PAR ENABLE BANKING — l'essai du 22 octobre 2026.
@@ -31,7 +31,7 @@ const API = "https://api.enablebanking.com";
 const DOSSIER_CLE = "cles-banque";
 const NOM_DE_CLE = /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.pem$/i;
 
-export type Refus = { ok: false; raison: string };
+export type Refus = RefusBanque;
 
 type Cle = { appId: string; pem: string };
 
@@ -96,7 +96,7 @@ async function appeler<T>(methode: "GET" | "POST", chemin: string, corps?: unkno
     // Le corps part au journal tel quel : c'est lui qui dit « clé inconnue »
     // ou « adresse de retour non déclarée », et l'écran ne peut pas le deviner.
     logger.error("Enable Banking a refusé", { chemin, statut: reponse.status, reponse: texte.slice(0, 600) });
-    return { ok: false, raison: `Enable Banking a refusé (${reponse.status}). ${raisonLisible(texte)}` };
+    return { ok: false, raison: `Enable Banking a refusé (${reponse.status}). ${raisonLisible(texte)}`, statut: reponse.status };
   }
   try {
     return { ok: true, donnees: JSON.parse(texte) as T };
@@ -176,26 +176,41 @@ export async function ouvrirSession(code: string): Promise<({ ok: true } & Liais
   };
 }
 
-/** Toutes les lignes du relevé depuis `depuis`, sur tous les comptes reliés, la plus récente d'abord. */
-export async function mouvementsBancaires(liaison: Liaison, depuis: string): Promise<({ ok: true; mouvements: MouvementLu[] }) | Refus> {
-  const mouvements: MouvementLu[] = [];
-  for (const compte of liaison.comptes) {
-    let suite: string | undefined;
-    // Dix pages au plus : une banque qui renverrait toujours une suite ne doit
-    // pas faire tourner l'écran sans fin.
-    for (let page = 0; page < 10; page++) {
-      const parametres = new URLSearchParams({ date_from: depuis });
-      if (suite) parametres.set("continuation_key", suite);
-      const r = await appeler<{ transactions: Transaction[]; continuation_key?: string | null }>(
-        "GET",
-        `/accounts/${encodeURIComponent(compte)}/transactions?${parametres}`
-      );
-      if (!r.ok) return r;
-      mouvements.push(...lireTransactions(compte, r.donnees.transactions));
-      suite = r.donnees.continuation_key ?? undefined;
-      if (!suite) break;
+/**
+ * Toutes les lignes du relevé, sur tous les comptes reliés, la plus récente d'abord.
+ *
+ * **Le plus profond que la banque accepte** (`lireAuPlusProfond`) : on demande
+ * d'abord la profondeur maximale, puis on descend si elle refuse la période.
+ * `joursLus` dit ce qui a été réellement lu ; `refusDesPlusProfonds` dit
+ * pourquoi on lit moins.
+ *
+ * **Tout ou rien** : un compte dont une page échoue fait échouer la lecture
+ * entière, et rien n'est rangé à moitié.
+ */
+export async function mouvementsBancaires(
+  liaison: Liaison,
+  maintenant: Date
+): Promise<({ ok: true; mouvements: MouvementLu[]; joursLus: number; refusDesPlusProfonds: string | null }) | Refus> {
+  const r = await lireAuPlusProfond(async (joursDHistorique): Promise<({ ok: true; mouvements: MouvementLu[] }) | Refus> => {
+    const mouvements: MouvementLu[] = [];
+    const depuis = debutDuReleve(maintenant, joursDHistorique);
+    for (const compte of liaison.comptes) {
+      // Les pages d'un compte sont lues ENSEMBLE avant d'être rangées : les
+      // répétitions sans référence se comptent sur tout le compte, pas page par page.
+      const pages = await lireToutesLesPages((suite) => {
+        const parametres = new URLSearchParams({ date_from: depuis });
+        if (suite) parametres.set("continuation_key", suite);
+        return appeler<{ transactions: Transaction[]; continuation_key?: string | null }>(
+          "GET",
+          `/accounts/${encodeURIComponent(compte)}/transactions?${parametres}`
+        ).then((x) => (x.ok ? { ok: true as const, ...x.donnees } : x));
+      });
+      if (!pages.ok) return pages;
+      mouvements.push(...lireTransactions(compte, pages.transactions));
     }
-  }
-  mouvements.sort((a, b) => b.date.localeCompare(a.date));
-  return { ok: true, mouvements };
+    return { ok: true, mouvements };
+  });
+  if (!r.ok) return r;
+  r.mouvements.sort((a, b) => b.date.localeCompare(a.date));
+  return r;
 }

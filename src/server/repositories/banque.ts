@@ -23,13 +23,23 @@ export type LiaisonEnregistree = {
   banque: string;
   accordJusquAu: Date;
   luLe: Date | null;
+  historiqueJours: number | null;
+  historiqueRefus: string | null;
 };
 
 export async function liaisonDeLEntreprise(ctx: Ctx): Promise<LiaisonEnregistree | null> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [l] = await tx.select().from(liaisonsBancaires).limit(1);
     if (!l) return null;
-    return { session: l.sessionId, comptes: l.comptes, banque: l.banque ?? "", accordJusquAu: l.accordJusquAu, luLe: l.luLe };
+    return {
+      session: l.sessionId,
+      comptes: l.comptes,
+      banque: l.banque ?? "",
+      accordJusquAu: l.accordJusquAu,
+      luLe: l.luLe,
+      historiqueJours: l.historiqueJours,
+      historiqueRefus: l.historiqueRefus,
+    };
   });
 }
 
@@ -45,6 +55,8 @@ export async function enregistrerLiaison(
       banque: l.banque || null,
       accordJusquAu: l.accordJusquAu,
       luLe: null,
+      historiqueJours: null,
+      historiqueRefus: null,
     };
     await tx
       .insert(liaisonsBancaires)
@@ -66,6 +78,13 @@ export async function supprimerLiaison(ctx: Ctx): Promise<void> {
 export async function marquerBanqueLue(ctx: Ctx, quand: Date): Promise<void> {
   await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     await tx.update(liaisonsBancaires).set({ luLe: quand });
+  });
+}
+
+/** La profondeur qu'une lecture réussie a atteinte, et le refus qui l'a limitée s'il y en a eu un. */
+export async function noterProfondeurLue(ctx: Ctx, jours: number, refus: string | null): Promise<void> {
+  await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    await tx.update(liaisonsBancaires).set({ historiqueJours: jours, historiqueRefus: refus });
   });
 }
 
