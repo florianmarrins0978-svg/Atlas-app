@@ -20,7 +20,7 @@ const BASE = ADRESSE;
 // poignée, et le devis porte au centime ce que la barre lui a montré. Avant ce
 // lot, 297 € écrits devenaient 300 € en route, sans que rien ne le dise.
 
-const DICTEE = `Alors il y a une taille de haie de laurier, vingt mètres de long, un chêne mort à abattre, de vingt mètres de haut. On coupe le bois en cinquante centimètres, on le laisse sur place, on le fend. Pour ce faire, on aura besoin d'un camion, un broyeur et une fendeuse. J'estime le temps de travail à deux jours deux hommes.`;
+const DICTEE = `Alors il y a une taille de haie de laurier, vingt mètres de long, un chêne mort à abattre, de vingt mètres de haut. On coupe le bois en cinquante centimètres, on le laisse sur place, on le fend. Pour ce faire, on aura besoin d'un camion, un broyeur et une fendeuse. On évacue tous les déchets verts du jardin jusqu'à la déchetterie de la commune voisine avec la remorque deux fois dans la journée. J'estime le temps de travail à deux jours deux hommes.`;
 
 /** Un chantier À ELLE : récrire celui du seed abîmerait la suite d'une autre. */
 async function preparerChantier(): Promise<string> {
@@ -102,6 +102,20 @@ async function main() {
     console.log(`   au départ : ${depart.map((v) => `${v.nom} ${v.montant}`).join(", ")} sur ${totalAffiche} €`);
     assert.ok(depart.length >= 2, `il faut deux travaux pour répartir, la carte en montre ${depart.length}`);
     assert.equal(await carte.locator('[data-atlas="poignee-main-oeuvre"]').count(), depart.length - 1, "une poignée par joint");
+    // **Un intitulé long ne garde que son début** : deux lignes au plus. Sa
+    // question du 28 octobre 2026, « est-ce que tu as vérifié si l'intitulé
+    // des lignes fait 4-5 lignes ? il faut qu'ils reprennent que le début ».
+    // La phrase de l'évacuation, dans la dictée ci-dessus, en prenait sept.
+    const hauteurs = await lignes.evaluateAll((ls) =>
+      ls.map((l) => {
+        const nom = l.querySelectorAll("span")[1] as HTMLElement;
+        return { texte: nom.textContent ?? "", lignes: nom.getBoundingClientRect().height / parseFloat(getComputedStyle(nom).lineHeight) };
+      })
+    );
+    assert.ok(hauteurs.every((h) => h.lignes > 0), `un intitulé n'a pas de hauteur : la mesure ne mesure rien (${JSON.stringify(hauteurs)})`);
+    const tropLongs = hauteurs.filter((h) => h.lignes > 2.2);
+    assert.equal(tropLongs.length, 0, `un intitulé prend plus de deux lignes : ${tropLongs.map((h) => `${Math.round(h.lignes)} pour « ${h.texte} »`).join(", ")}`);
+
     // Les pourcentages sont partis avec l'ancien curseur : ils faisaient 101 %.
     assert.doesNotMatch(await carte.innerText(), /\d\s*%/, "un pourcentage s'affiche encore");
 
