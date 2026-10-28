@@ -1,4 +1,6 @@
 import type { ReceptionLisible } from "./reception-facture";
+import { adresseDeLaVisionneuse } from "./visionneuse-pdf";
+import { rapportDansLAppli } from "./rapport-dans-l-appli";
 
 /**
  * Les pièces d'un client, rangées — la règle, sans base.
@@ -309,4 +311,24 @@ export function jourDeLaLigne(iso: string, aujourdHui: string): string {
   // rogne alors rien du tout, plutôt que d'amputer une chaîne inconnue.
   if (!complet.endsWith(` ${anneeDuJour}`)) return complet;
   return complet.slice(0, -(anneeDuJour.length + 1));
+}
+
+/** Ce que l'en-tête de la visionneuse écrit au-dessus du numéro. */
+export const NATURE_LISIBLE = { facture: "Facture", avoir: "Avoir", devis: "Devis", "fiche-chantier": "Fiche de chantier" } as const;
+
+/**
+ * L'adresse qui OUVRE une pièce dans l'application : la visionneuse pour un
+ * PDF, l'application pour un rapport d'entretien, jamais un onglet à part.
+ *
+ * **Une seule règle pour la fiche du client et pour l'assistant** (27 octobre
+ * 2026). Elle vivait dans `PieceDuDossier.tsx` ; l'assistant joint désormais
+ * les mêmes pièces, et deux façons de les ouvrir finiraient par diverger
+ * (`CLAUDE.md` §3).
+ */
+export function adresseOuvrirLaPiece(piece: Pick<PieceDuClient, "href" | "titre" | "format">): string {
+  if (piece.format === "page") return rapportDansLAppli(piece.href) ?? piece.href;
+  return adresseDeLaVisionneuse(piece.href, {
+    surtitre: NATURE_LISIBLE[natureDeLaPiece(piece.href)],
+    titre: numeroDeLaPiece(piece.titre) ?? piece.titre,
+  });
 }

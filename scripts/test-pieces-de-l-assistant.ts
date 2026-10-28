@@ -18,7 +18,10 @@ import {
   piecesCitees,
   pieceDuDevis,
   pieceDeLaFacture,
+  pieceDuFournisseur,
+  pieceDuVehicule,
 } from "../src/lib/pieces-de-l-assistant";
+import { fichierDemandeALaVisionneuse } from "../src/lib/visionneuse-pdf";
 
 let passed = 0;
 let failed = 0;
@@ -96,6 +99,17 @@ test("UNE RÉPONSE SANS CLÉ RESTE TELLE QUELLE", () => {
   const { texte, pieces } = piecesCitees("Rien trouvé.", registre);
   assert.equal(texte, "Rien trouvé.");
   assert.equal(pieces.length, 0);
+});
+
+test("UN PDF DE FOURNISSEUR OU DE VÉHICULE PASSE LA VISIONNEUSE, UNE PHOTO N'Y VA PAS", () => {
+  const pdf = pieceDuFournisseur({ recuId: "r1", nom: "Facture Point P", societe: "Point P", genre: "facture", nature: "pdf", montant: "120.00", date: "2026-10-01" });
+  assert.ok(pdf && fichierDemandeALaVisionneuse(pdf.adresse), "la visionneuse refuserait la facture du fournisseur");
+  const photo = pieceDuFournisseur({ recuId: "r2", nom: "x", societe: "Point P", genre: "devis", nature: "photo", montant: null, date: null });
+  assert.equal(photo?.adresse, "/reglages/fournisseurs/devis/r2");
+  assert.equal(pieceDuFournisseur({ recuId: "r3", nom: "x", societe: "y", genre: "devis", nature: "tableur", montant: null, date: null }), null);
+  const carte = pieceDuVehicule({ vehiculeId: "v1", vehicule: "Master", nature: "carte_grise", format: "pdf", date: "2026-01-02" });
+  assert.ok(fichierDemandeALaVisionneuse(carte.adresse), "la visionneuse refuserait la carte grise");
+  assert.equal(carte.titre, "Carte grise, Master");
 });
 
 console.log(`\n${passed} test(s) réussi(s), ${failed} échec(s)`);

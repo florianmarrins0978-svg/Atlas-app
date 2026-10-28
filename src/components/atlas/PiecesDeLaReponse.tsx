@@ -4,6 +4,9 @@ import { colors } from "@/lib/design-tokens";
 import type { PieceJointe } from "@/lib/pieces-de-l-assistant";
 import { formatEuros } from "@/lib/termines-par-mois";
 
+/** Ce que la pièce est, en un mot, devant la ligne grise. */
+const ETIQUETTE = { pdf: "PDF", photo: "PHOTO", page: "PAGE" } as const;
+
 /**
  * Les documents que l'assistant a trouvés, à toucher pour les ouvrir.
  *
@@ -39,7 +42,7 @@ export default function PiecesDeLaReponse({
           </span>
           <span className="mt-1 flex items-center gap-1.5 text-[13px]" style={{ color: colors.muted }}>
             <b className="text-[11px] font-bold tracking-[.04em]" style={{ color: colors.rust }}>
-              {p.format === "pdf" ? "PDF" : "PHOTO"}
+              {ETIQUETTE[p.format]}
             </b>
             {p.detail}
           </span>

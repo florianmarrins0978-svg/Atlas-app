@@ -3,9 +3,7 @@
 import { useState } from "react";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import { colors, font, surPlein } from "@/lib/design-tokens";
-import { natureDeLaPiece, nomDuFichierDeLaPiece, numeroDeLaPiece, type PieceDuClient } from "@/lib/documents-du-client";
-import { adresseDeLaVisionneuse } from "@/lib/visionneuse-pdf";
-import { rapportDansLAppli } from "@/lib/rapport-dans-l-appli";
+import { adresseOuvrirLaPiece, nomDuFichierDeLaPiece, type PieceDuClient } from "@/lib/documents-du-client";
 import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
 
 /**
@@ -43,8 +41,6 @@ import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocum
  * a suivi le 24 septembre 2026 : il se relit dans l'application
  * (`src/lib/rapport-dans-l-appli.ts`), jamais sur la page du client.
  */
-/** Ce que l'en-tête de la visionneuse écrit au-dessus du numéro. */
-const NATURE_LISIBLE = { facture: "Facture", avoir: "Avoir", devis: "Devis", "fiche-chantier": "Fiche de chantier" } as const;
 
 export default function PieceDuDossier({
   piece,
@@ -95,18 +91,11 @@ export default function PieceDuDossier({
   }
 
   // L'adresse que « Ouvrir » sert : la visionneuse pour un PDF, l'application
-  // pour un rapport d'entretien (jamais un onglet à part, voir plus haut).
-  const adresseOuvrir = estUnFichier
-    ? adresseDeLaVisionneuse(piece.href, {
-        surtitre: NATURE_LISIBLE[natureDeLaPiece(piece.href)],
-        titre: numeroDeLaPiece(piece.titre) ?? piece.titre,
-      })
-    // **Plus d'onglet neuf — 24 septembre 2026.** Il y tombait sur la page de
-    // son client, sans flèche : *« j'ai aucun moyen de faire retour ! »*. Le
-    // rapport se relit dans l'application (`rapport-dans-l-appli.ts`) ;
-    // « Partager » garde l'adresse publique, la seule que le client puisse
-    // ouvrir.
-    : (rapportDansLAppli(piece.href) ?? piece.href);
+  // pour un rapport d'entretien. **Plus d'onglet neuf, 24 septembre 2026** :
+  // il y tombait sur la page de son client, sans flèche, *« j'ai aucun moyen
+  // de faire retour ! »*. La règle vit dans `documents-du-client.ts`, que
+  // l'assistant emploie aussi.
+  const adresseOuvrir = adresseOuvrirLaPiece(piece);
 
   return (
     <>

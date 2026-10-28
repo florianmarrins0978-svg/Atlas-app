@@ -84,6 +84,18 @@ async function main() {
     if (reponse.status() !== 200) throw new Error(`le PDF répond ${reponse.status()}`);
   });
 
+  await cas("les PDF des fournisseurs et des véhicules ont leur adresse en /pdf, gardée comme l'autre", async () => {
+    // Un identifiant qui n'existe pas : la ROUTE doit répondre « Introuvable »
+    // en JSON. Une page 404 de Next voudrait dire que l'adresse n'existe pas,
+    // et la visionneuse n'aurait rien à peindre.
+    const zero = "00000000-0000-0000-0000-000000000000";
+    for (const adresse of [`/reglages/fournisseurs/devis/${zero}/pdf`, `/reglages/vehicules/${zero}/document/carte_grise/pdf`]) {
+      const r = await page.request.get(`${BASE}${adresse}`);
+      const corps = await r.text();
+      if (r.status() !== 404 || !corps.includes("Introuvable")) throw new Error(`${adresse} répond ${r.status()} : ${corps.slice(0, 80)}`);
+    }
+  });
+
   await navigateur.close();
   await pool.end();
   if (echecs > 0) {

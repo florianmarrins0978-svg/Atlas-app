@@ -209,6 +209,43 @@ async function main() {
     assert.equal(chezB.trouve, false);
   });
 
+  await cas("LE DOSSIER DU CLIENT REND SES DEVIS ET FACTURES, OUVERTS COMME SUR SA FICHE", async () => {
+    const r = (await getOutil("LireDossierClient")!.executer({ ctx: A, chantierId: null }, { clientId: bernard.id })) as {
+      devis: { piece: { adresse: string } }[];
+      factures: { piece: { adresse: string; titre: string } }[];
+    };
+    assert.equal(r.devis.length, 1);
+    assert.match(decodeURIComponent(r.devis[0].piece.adresse), new RegExp(`fichier=/api/devis/${devis.id}/pdf`));
+    assert.equal(r.factures.length, 1);
+    assert.match(r.factures[0].piece.titre, /M\. Bernard/);
+    const chezB = (await getOutil("LireDossierClient")!.executer({ ctx: B, chantierId: null }, { clientId: bernard.id })) as {
+      trouve: boolean;
+    };
+    assert.equal(chezB.trouve, false, "B lit le dossier d'un client de A");
+  });
+
+  await cas("LES PDF DU CHANTIER : FEUILLE ET FICHE, LA FICHE DE SÉCURITÉ SEULEMENT SI ELLE EXISTE", async () => {
+    const r = (await getOutil("LireDocumentsChantier")!.executer({ ctx: A, chantierId: chantier.id }, {})) as {
+      feuilleDeChantier: { piece: { adresse: string } };
+      ficheChantier: { piece: { adresse: string } };
+      ficheDeSecurite: unknown;
+    };
+    assert.match(decodeURIComponent(r.feuilleDeChantier.piece.adresse), new RegExp(`/api/chantiers/${chantier.id}/feuille/pdf`));
+    assert.match(decodeURIComponent(r.ficheChantier.piece.adresse), new RegExp(`/api/chantiers/${chantier.id}/fiche/pdf`));
+    assert.equal(r.ficheDeSecurite, null);
+    const chezB = (await getOutil("LireDocumentsChantier")!.executer({ ctx: B, chantierId: chantier.id }, {})) as {
+      trouve: boolean;
+    };
+    assert.equal(chezB.trouve, false, "B ouvre les PDF d'un chantier de A");
+  });
+
+  await cas("SANS PIÈCE REÇUE NI PAPIER DE VÉHICULE, IL LE DIT", async () => {
+    const f = (await getOutil("RechercherPiecesFournisseurs")!.executer({ ctx: A, chantierId: null }, {})) as { trouve: boolean };
+    const v = (await getOutil("LirePapiersVehicules")!.executer({ ctx: A, chantierId: null }, {})) as { trouve: boolean };
+    assert.equal(f.trouve, false);
+    assert.equal(v.trouve, false);
+  });
+
   await cas("SANS BILAN DÉPOSÉ, IL LE DIT", async () => {
     const r = (await getOutil("LireBilans")!.executer({ ctx: A, chantierId: null }, {})) as { trouve: boolean };
     assert.equal(r.trouve, false);

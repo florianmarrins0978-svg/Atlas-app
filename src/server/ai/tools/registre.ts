@@ -28,6 +28,10 @@ import { lireDiagnostics } from "./lire-diagnostics";
 import { rechercherTickets } from "./rechercher-tickets";
 import { lireBilans } from "./lire-bilans";
 import { lirePhotos } from "./lire-photos";
+import { lireDossierClient } from "./lire-dossier-client";
+import { lireDocumentsChantier } from "./lire-documents-chantier";
+import { rechercherPiecesFournisseurs } from "./rechercher-pieces-fournisseurs";
+import { lirePapiersVehicules } from "./lire-papiers-vehicules";
 
 export const outilsDisponibles: Outil[] = [
   // **En tête, et ce n'est pas un rangement.** C'est par lui qu'on entre quand
@@ -70,6 +74,10 @@ export const outilsDisponibles: Outil[] = [
   rechercherTickets,
   lireBilans,
   lirePhotos,
+  lireDossierClient,
+  lireDocumentsChantier,
+  rechercherPiecesFournisseurs,
+  lirePapiersVehicules,
 ];
 
 export function getOutil(nom: string): Outil | undefined {
