@@ -85,6 +85,9 @@ const veilleur = spawn("bash", [VEILLEUR, dossier], {
     // part se bloquer dans `npm run banc`.
     PORT: "59999",
     JOURNAL: path.join(dossier, "journal.log"),
+    // Un verrou de banc À NOUS : le veilleur arrête le banc qu'il y lit, et le vrai
+    // banc de cette machine ne doit jamais l'être par une suite.
+    ATLAS_VERROU_BANC: path.join(dossier, "banc.pid"),
     ATLAS_INTERVALLE_RAPPORT: "2",
     // ═══════════════════════════════════════════════════════════════════════
     // **UN MOTIF QUI NE PEUT DÉSIGNER QUE CE MONTAGE — 31 août 2026.**

@@ -10,6 +10,7 @@ import {
   croquisDuDessin,
   empriseDesDalles,
   lignesDeLaZone,
+  placeDuNom,
   lireLeDessin,
   morceauxDe,
   NOMS_DES_ZONES,
@@ -27,7 +28,6 @@ import {
   auPas,
   cadreDe,
   cheminDe,
-  COINS,
   COTES,
   cotesAuxBords,
   dallesDeLaRangee,
@@ -37,12 +37,9 @@ import {
   pointDuCote,
   poigneesRangee,
   rangeeDansLeTerrain,
-  sommetsDe,
   surLaRangee,
-  tirerCoin,
   tirerCote,
   tirerRangee,
-  type Coin,
   type Cote,
   type Rangee,
   type Rectangle,
@@ -67,7 +64,7 @@ import { phraseDuManque, type AVerifier, type PlanLu } from "@/lib/arrosage/plan
  * | les dalles | deux touches, la distance préécrite, puis une dalle ; « On les arrose ? » : celles qu'on n'arrose pas coupent la zone |
  * | la maison | « oui, tu peux l'ajouter » : elle ne s'arrose pas, et coupe ce qu'elle chevauche |
  * | les cotes | « un compteur qui décompte » : l'objet tenu porte ses quatre distances aux bords, le doigt avance par pas |
- * | les courbes | « que ça crée une courbure », « un dallage en S », les coins qu'on rabat, et « Forme d'origine » |
+ * | les courbes | « que ça crée une courbure », « un dallage en S », et « Forme d'origine ». Les coins tirés, retirés le 27 octobre 2026 : « on va retirer la possibilité de faire des coins tirés pour la pelouse et les massifs » |
  *
  * **Le piquage ne se contredit pas** : « Compteur » ou « Robinet » posé ici
  * règle aussi « Le piquage se fait… » au-dessus, qui commande le débit.
@@ -134,7 +131,7 @@ type Feuille =
 type Prise =
   | { quoi: "objet"; id: string; depart: PointMetres; bouge: boolean; avant: Zone | Arbre | Dalles | PointMetres }
   | { quoi: "plan"; toucher: string | null; bouge: boolean; cx: number; cy: number; sl: number; st: number }
-  | { quoi: "forme"; id: string; genre: "cote" | "coin" | "rangee"; cle: string };
+  | { quoi: "forme"; id: string; genre: "cote" | "rangee"; cle: string };
 
 export default function DessinerLePlan({
   piquage,
@@ -270,9 +267,9 @@ export default function DessinerLePlan({
   function appui(e: React.PointerEvent<SVGSVGElement>) {
     if (!cadre || (e.button !== undefined && e.button !== 0)) return;
     const p = dansLeTerrain(enMetres(e));
-    const tire = (e.target as Element).closest("[data-courbe],[data-coin],[data-rangee]");
+    const tire = (e.target as Element).closest("[data-courbe],[data-rangee]");
     if (tire && !outil) {
-      const genre = tire.hasAttribute("data-coin") ? "coin" : tire.hasAttribute("data-rangee") ? "rangee" : "cote";
+      const genre = tire.hasAttribute("data-rangee") ? "rangee" : "cote";
       const [id, cle] = (tire.getAttribute(`data-${genre === "cote" ? "courbe" : genre}`) ?? "").split(":");
       prise.current = { quoi: "forme", id, genre, cle };
       e.currentTarget.setPointerCapture(e.pointerId);
@@ -344,7 +341,7 @@ export default function DessinerLePlan({
       } else {
         setZones((zs) => zs.map((z) => {
           if (z.id !== pr.id) return z;
-          return pr.genre === "coin" ? { ...z, coins: tirerCoin(z, pr.cle as Coin, p, cadre) } : { ...z, courbes: tirerCote(z, pr.cle as Cote, p, cadre) };
+          return { ...z, courbes: tirerCote(z, pr.cle as Cote, p, cadre) };
         }));
       }
       return;
@@ -446,9 +443,9 @@ export default function DessinerLePlan({
     setFeuille(null);
   }
 
-  /** « Forme d'origine » : les côtés droits, les coins à leur place. */
+  /** « Forme d'origine » : les côtés droits. */
   function formeDOrigine(id: string) {
-    setZones((zs) => zs.map((z) => (z.id === id ? { ...z, courbes: undefined, coins: undefined } : z)));
+    setZones((zs) => zs.map((z) => (z.id === id ? { ...z, courbes: undefined } : z)));
     setDalles((ds) => ds.map((d) => (d.id === id ? { ...d, courbe: undefined } : d)));
   }
 
@@ -464,7 +461,6 @@ export default function DessinerLePlan({
             ...(z.lignes !== undefined ? { lignes: z.lignes } : {}),
             ...(z.ecartLignes !== undefined ? { ecartLignes: z.ecartLignes } : {}),
             ...(z.courbes ? { courbes: z.courbes } : {}),
-            ...(z.coins ? { coins: z.coins } : {}),
           })),
         maisons: zones.filter((z) => z.type === "maison").map((z) => ({ nom: z.nom, L: z.L, l: z.l, x: z.x, y: z.y })),
         // Les dalles qu'on arrose ne changent rien au plan : elles ne partent pas.
@@ -531,15 +527,11 @@ export default function DessinerLePlan({
   const styleChamp = { backgroundColor: colors.cream, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` };
   const texteDetache = { stroke: colors.card, strokeWidth: px(2.6), paintOrder: "stroke" as const, strokeLinejoin: "round" as const };
 
-  /** Un point à tirer : petit à l'œil, large sous le doigt. Rond au milieu d'un côté, carré au coin. */
-  const aTirer = (q: PointMetres, attr: Record<string, string>, carre = false) => (
+  /** Un point à tirer, au milieu d'un côté : petit à l'œil, large sous le doigt. */
+  const aTirer = (q: PointMetres, attr: Record<string, string>) => (
     <g key={Object.values(attr)[0]} {...attr} transform={`translate(${q.x} ${q.y}) scale(${px(1)})`} style={{ cursor: "move" }}>
       <circle r={20} fill="transparent" />
-      {carre ? (
-        <rect x={-6.5} y={-6.5} width={13} height={13} rx={1.8} fill={colors.card} stroke={colors.plein} strokeWidth={3} />
-      ) : (
-        <circle r={7} fill={colors.card} stroke={colors.plein} strokeWidth={3} />
-      )}
+      <circle r={7} fill={colors.card} stroke={colors.plein} strokeWidth={3} />
     </g>
   );
 
@@ -558,14 +550,27 @@ export default function DessinerLePlan({
     // Coupée, la zone porte son nom dans son plus grand morceau : au centre, il
     // tombait sous la rangée ou la maison.
     const grand = parts.length > 1 ? parts.reduce((g, q) => (q.L * q.l > g.L * g.l ? q : g)) : { x: z.x, y: z.y, L: z.L, l: z.l };
-    const cx = grand.x + grand.L / 2, cy = grand.y + grand.l / 2;
+    const nom = nomDe(z);
+    // Le nom se pousse là où ni la nourrice ni le piquage ne sont posés (« la A »,
+    // 27 octobre 2026). Leur place, en mètres, est celle qu'ils prennent à l'écran.
+    const largeurTexte = (t: string, taille: number) => tient(t, taille) * t.length * 0.56;
+    const demi = (deuxLignes ? Math.max(largeurTexte(nom, 11), largeurTexte(cotes, 10)) : largeurTexte(`${nom}, ${cotes}`, 10)) / 2;
+    const boite = deuxLignes ? { gauche: demi, droite: demi, haut: px(13), bas: px(14) } : { gauche: demi, droite: demi, haut: px(5), bas: px(6) };
+    const gene = [
+      ...(nourrice ? [{ x: nourrice.x - px(22), y: nourrice.y - px(9), L: px(44), l: px(33) }] : []),
+      ...(piquagePlace
+        ? [cadre && piquagePlace.x > cadre.L / 2
+          ? { x: piquagePlace.x - px(70), y: piquagePlace.y - px(10), L: px(80), l: px(20) }
+          : { x: piquagePlace.x - px(10), y: piquagePlace.y - px(10), L: px(80), l: px(20) }]
+        : []),
+    ];
+    const { x: cx, y: cy } = placeDuNom(grand, boite, gene);
     const bord = {
       fill: remplissage(z.type),
       stroke: aRevoir ? colors.alert : est ? colors.ink : colors.rustDeep,
       strokeWidth: px(est ? 3 : 1.5),
       strokeDasharray: aRevoir ? `${px(5)} ${px(4)}` : undefined,
     };
-    const nom = nomDe(z);
     return (
       <g key={z.id} data-objet={z.id} style={{ cursor: "grab" }}>
         {formeLibre(z) ? <path d={cheminDe(z)} {...bord} /> : <rect x={z.x} y={z.y} width={z.L} height={z.l} rx={px(2.5)} {...bord} />}
@@ -582,7 +587,6 @@ export default function DessinerLePlan({
         {est && z.type !== "maison" && (
           <>
             {COTES.map((c) => aTirer(pointDuCote(z, c), { "data-courbe": `${z.id}:${c}` }))}
-            {COINS.map((c) => aTirer(sommetsDe(z)[c], { "data-coin": `${z.id}:${c}` }, true))}
           </>
         )}
       </g>

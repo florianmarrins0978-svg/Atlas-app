@@ -118,6 +118,16 @@ export const LIMITES = {
    */
   verdictComptable: { max: 120, fenetreMs: 60 * 1000 },
   verdictComptableParSource: { max: 600, fenetreMs: 60 * 1000 },
+  /**
+   * L'ATTESTATION SIGNÉE, depuis le même lien (27 octobre 2026). Étroite, à
+   * l'inverse des verdicts : une signature compose un PDF et le range, et un
+   * comptable n'en signe qu'une par dossier, deux s'il reprend une ligne.
+   */
+  attestationComptable: { max: 6, fenetreMs: 10 * 60 * 1000 },
+  attestationComptableParSource: { max: 30, fenetreMs: 10 * 60 * 1000 },
+  /** LE RENVOI À CORRIGER (27 octobre 2026) : un avis part chez le patron à chaque fois, donc étroit comme la signature. */
+  retourComptable: { max: 6, fenetreMs: 10 * 60 * 1000 },
+  retourComptableParSource: { max: 30, fenetreMs: 10 * 60 * 1000 },
   assistant: { max: 20, fenetreMs: 60 * 1000 }, // 20 requêtes IA / minute / entreprise
   confirmationProposition: { max: 30, fenetreMs: 60 * 1000 },
   televersementFichier: { max: 20, fenetreMs: 60 * 1000 },

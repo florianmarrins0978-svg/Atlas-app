@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Salarié absent, A, B ou C</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  SALARIÉ ABSENT, A, B OU C (src/app/planning/PasLaCeJour.tsx, BasculeDuMoment.tsx).
+
+  Sa demande du 27 octobre 2026 : la planche du planning (planning.html)
+  ouvrait, sur « Salarié absent ? », une feuille avec un interrupteur par
+  salarié ; le lot du 26 octobre ne l'a pas codée. La feuille dessinée ne
+  connaît que la journée, alors que l'appli sait poser un matin ou un
+  après-midi seul (son choix du 8 septembre, D2). Il a demandé à voir les deux,
+  puis, le soir même : « lis la planche salarié absent et propose mieux ».
+
+  A : la feuille, et sous un salarié passé Absent, Matin, Après-midi, Journée.
+  B : la feuille telle que dessinée ; l'absence vaut la journée.
+  C : ni interrupteur ni second temps. Une piste par salarié, Présent, Matin,
+      Après-midi, Journée : un appui dit qui manque et quand. Les trois moments
+      sont les mots de l'appli (BasculeDuMoment) ; « Présent » est visible,
+      pour qu'une absence se défasse sans geste à deviner (sa règle du
+      5 septembre, « rien de caché »). Sa demande du soir : « plus jolie ».
+      Puis : le curseur se glisse au doigt, et dès qu'il quitte la première
+      case, « Présent » y devient « Absent ».
+
+  CE QUE LA RELECTURE DE A ET B A MONTRÉ :
+    deux gestes pour une seule question (qui manque, et quand) ;
+    un interrupteur VERT qui veut dire ABSENT : sur cette appli, le vert dit
+      « oui, c'est bon » ;
+    la première version de cette planche écrivait « Julien absent » sur les
+      lignes Matin et Après-midi : l'appli ne le fait pas, elles disent les
+      chantiers ou « libre ». Corrigé ici dans les trois ;
+    UNE ABSENCE DE PLUSIEURS JOURS (Réglages, Équipe) : sur le planning
+      d'aujourd'hui, retirer Julien d'un jour efface TOUTE la période
+      (rouvrirLeJour → retirerAbsenceAction : la ligne entière est retirée,
+      premier_jour à dernier_jour). Lu dans le code, pas rejoué. C montre
+      la période et ne touche qu'au jour regardé.
+
+  Ce qui ne bouge pas, dans les trois : « + Salarié absent ? » à côté de la
+  date ; sous la date, ce qui est posé (Absent, le nom, le moment, la croix
+  noire qui retire) ; seul sans salarié, « Absent ? » reste un seul appui.
+*/
+.fiche { border-radius: var(--r-plage); background: var(--atlas-card); padding: 6px 18px 8px; margin-top: 8px; }
+.fiche-tete { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.fiche-date b { display: block; font: 400 26px/1.15 var(--serif); color: var(--atlas-or); margin-top: 14px; }
+.fiche-date span { font-size: 15px; color: var(--atlas-inkSoft); }
+.absent { display: inline-flex; align-items: center; gap: 5px; min-height: 44px; flex: none; font-size: 15px; font-weight: 600; color: var(--atlas-or); }
+.absent .ico { stroke-width: 2.2; }
+
+.posee { display: flex; align-items: center; gap: 12px; min-height: 48px; }
+.posee-mot { width: 72px; flex: none; font-size: 13px; color: var(--atlas-muted); }
+.posee-nom { flex: 1; min-width: 0; font-size: 15px; color: var(--atlas-ink); }
+.posee-quand { flex: none; font-size: 14px; color: var(--atlas-muted); }
+.posee-croix { width: 44px; height: 44px; margin-right: -12px; flex: none; display: grid; place-items: center; color: var(--atlas-ink); font-size: 15px; }
+
+.moments { margin: 4px 0 0; }
+.moment { display: flex; align-items: center; gap: 12px; min-height: 48px; }
+.moment-etat { width: 12px; height: 12px; flex: none; border-radius: 3px; background: var(--atlas-vertPale); }
+.moment-nom { width: 100px; flex: none; font-size: 15px; font-weight: 700; color: var(--atlas-inkSoft); }
+.moment-qui { flex: 1; min-width: 0; font-size: 14px; color: var(--atlas-muted); text-align: right; }
+.ajouter { display: inline-flex; align-items: center; gap: 8px; min-height: 52px; font-size: 16px; font-weight: 600; color: var(--atlas-or); }
+.ajouter .ico { stroke-width: 2.2; }
+
+.absent-rang { padding: 4px 0; }
+.absent-rang + .absent-rang { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.absent-ligne { display: flex; align-items: center; gap: 14px; min-height: 60px; }
+.absent-ligne .ligne-nom { flex: 1; font-size: 17px; color: var(--atlas-ink); }
+.absent-ligne .second { min-width: 62px; text-align: right; font-size: 15px; color: var(--atlas-inkSoft); }
+.quand { display: flex; flex-wrap: wrap; gap: 0 20px; margin: -6px 0 6px; }
+.quand button, .rang-c .mots button { min-height: 44px; font-size: 15px; font-weight: 600; color: var(--atlas-or); }
+.quand button[aria-pressed="true"], .rang-c .mots button[aria-pressed="true"] {
+  color: var(--atlas-ink); text-decoration: underline; text-decoration-color: var(--atlas-or);
+  text-decoration-thickness: 2px; text-underline-offset: 6px; }
+.fermer { width: 100%; justify-content: center; margin-top: 8px; color: var(--atlas-inkSoft); }
+
+/* C : chaque salarié, ses initiales (celles de Vos clients), puis une piste de
+   quatre choix. « Présent » est un choix visible : défaire une absence ne
+   demande pas de deviner qu'un mot se retouche. Le curseur glisse sous le choix
+   retenu ; ambre quand il manque quelqu'un (les jetons carteAmbre, lisibles
+   sur les huit chartes), carte claire quand il est là. */
+.pers { padding: 14px 0 16px; }
+.pers + .pers { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.pers-tete { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+.pers .initiales { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%;
+                   font: 400 18px/1 var(--serif); background: var(--atlas-rustTint); color: var(--atlas-rust);
+                   transition: background-color 240ms ease-out, color 240ms ease-out; }
+.pers[data-absent="true"] .initiales { background: var(--atlas-carteAmbreFond); color: var(--atlas-carteAmbreTexte); }
+.pers-corps { flex: 1; min-width: 0; }
+.pers-nom { display: block; font: 400 21px/1.2 var(--serif); color: var(--atlas-ink); }
+.periode { display: block; margin-top: 2px; font-size: 14px; color: var(--atlas-inkSoft); }
+.periode:empty { display: none; }
+
+.piste { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 4px;
+         border-radius: 14px; background: var(--atlas-rustTint);
+         touch-action: pan-y; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+/* Pendant le glissé, le curseur colle au doigt : sa course ne s'anime qu'au lâcher. */
+.piste.glisse .curseur { transition: background-color 240ms ease-out; }
+/* Absent : la première case garde le mot, en ambre, sous le curseur parti. */
+.pers[data-absent="true"] .piste button:first-of-type { color: var(--atlas-carteAmbreTexte); }
+.curseur { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc((100% - 8px) / 4); border-radius: 10px;
+           background: var(--atlas-card); box-shadow: 0 1px 2px rgba(28,28,26,0.10), 0 2px 8px rgba(28,28,26,0.08);
+           transform: translateX(calc(var(--i, 0) * 100%));
+           transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1), background-color 240ms ease-out; }
+.pers[data-absent="true"] .curseur { background: var(--atlas-carteAmbreFond);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--atlas-carteAmbreTexte) 30%, transparent), 0 2px 8px rgba(28,28,26,0.08); }
+.piste button { position: relative; z-index: 1; min-height: 48px; padding: 0 2px; border-radius: 10px;
+                font-size: 14.5px; font-weight: 600; letter-spacing: -0.005em; white-space: nowrap; color: var(--atlas-inkSoft);
+                transition: color 200ms ease-out; }
+.piste button[aria-checked="true"] { color: var(--atlas-ink); }
+.pers[data-absent="true"] .piste button[aria-checked="true"] { color: var(--atlas-carteAmbreTexte); }
+.piste button:focus-visible { outline: 2px solid var(--atlas-or); outline-offset: -2px; }
+/* Un téléphone de 360 px garde « Après-midi » entier dans sa case. */
+@media (max-width: 370px) { .piste button { font-size: 13.5px; } }
+@media (prefers-reduced-motion: reduce) { .curseur, .piste button, .pers .initiales { transition: none; } }
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">Salarié absent</h1>
+  <p class="pl-verdict">Touchez <b>Salarié absent ?</b>. <b>A</b> : l’interrupteur, puis le moment. <b>B</b> : l’interrupteur seul, la journée. <b>C</b> : glissez le curseur ou touchez une case. Dès qu’il quitte Présent, la case dit Absent.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <div data-vue-panneau="C">
+      <p class="pl-legende">C, un seul appui</p>
+      <div class="pl-etats" data-ecran=".ecran[data-version='C']">
+        <button type="button" data-etat="jour" aria-pressed="true">Un jour</button>
+        <button type="button" data-etat="semaine">Antoine absent toute la semaine</button>
+      </div>
+      <div class="cadre"><div class="ecran avec-barre" data-version="C"></div></div>
+    </div>
+
+    <div data-vue-panneau="A">
+      <p class="pl-legende">A, avec la demi-journée</p>
+      <div class="cadre"><div class="ecran avec-barre" data-version="A"></div></div>
+    </div>
+
+    <div data-vue-panneau="B">
+      <p class="pl-legende">B, la journée seule</p>
+      <div class="cadre"><div class="ecran avec-barre" data-version="B"></div></div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce que je propose : C</h2>
+    <ul>
+      <li>Le curseur se glisse au doigt, ou l’on touche une case. Dès qu’il quitte la première, Présent devient Absent : la ligne se lit « Julien, absent, matin ».</li>
+      <li>Pour annuler, on ramène le curseur sur Absent, qui redevient Présent.</li>
+      <li>Plus d’interrupteur vert qui veut dire absent : sur l’appli, le vert veut dire « c’est bon ».</li>
+      <li>Les initiales de Vos clients, et l’ambre quand quelqu’un manque. Matin, Après-midi et Journée sont les mots de l’appli.</li>
+      <li>Un congé de plusieurs jours noté dans Réglages, Équipe, se lit sous le nom. Retirer Antoine ce jour-là ne touche qu’à ce jour.</li>
+    </ul>
+    <h2>Trouvé dans l’appli en relisant</h2>
+    <ul class="a-trancher">
+      <li>Aujourd’hui, sur le planning, retirer un salarié d’un seul jour efface tout son congé : la semaine entière disparaît. Lu dans le code, pas encore rejoué. C le corrige ; à corriger aussi si vous gardez A ou B.</li>
+    </ul>
+    <h2>Ce qui reste comme dans l’appli</h2>
+    <ul class="garde">
+      <li>Salarié absent ? à côté de la date.</li>
+      <li>Sous la date, ce qui est posé : Absent, le nom, le moment, et la petite croix noire qui retire.</li>
+      <li>Seul, sans salarié, Absent ? reste un seul appui, sans feuille.</li>
+    </ul>
+  </section>
+</main>
+
+<script src="kit.js"></script>
+<script>
+(function () {
+  "use strict";
+  var EQUIPE = ["Julien", "Antoine"];
+  var MOMENTS = [["matin", "Matin", "matin"], ["apres_midi", "Après-midi", "après-midi"], ["journee", "Journée", "journée"]];
+  /* La semaine regardée : du lundi 26 au vendredi 30 octobre, aujourd'hui le mardi 27. */
+  var AUJOURDHUI = 27;
+  var SEMAINE = [26, 27, 28, 29, 30];
+  var JOURS = { 26: "lundi 26", 27: "mardi 27", 28: "mercredi 28", 29: "jeudi 29", 30: "vendredi 30" };
+
+  function dit(m) { return MOMENTS.filter(function (x) { return x[0] === m; })[0][2]; }
+  function ico(nom) { return '<svg class="ico ico-p" aria-hidden="true"><use href="#i-' + nom + '"/></svg>'; }
+
+  /* Les jours d'absence d'une période, en mots : « le 26, et du 28 au 30 ». */
+  function enMots(jours) {
+    var blocs = [], debut = null, prec = null;
+    jours.forEach(function (j) {
+      if (debut === null) { debut = j; prec = j; return; }
+      if (j === prec + 1) { prec = j; return; }
+      blocs.push([debut, prec]); debut = j; prec = j;
+    });
+    if (debut !== null) blocs.push([debut, prec]);
+    return blocs.map(function (b) { return b[0] === b[1] ? "le " + b[0] : "du " + b[0] + " au " + b[1]; }).join(", et ") + " octobre";
+  }
+
+  document.querySelectorAll(".ecran[data-version]").forEach(function (ecran) {
+    var version = ecran.getAttribute("data-version");
+    var id = "feuille-" + version;
+    /* absents[nom] = le moment d'aujourd'hui ; conges[nom] = les AUTRES jours
+       d'une période notée dans Réglages, Équipe. */
+    var absents = {};
+    var conges = {};
+
+    ecran.innerHTML =
+      '<div class="defile">' +
+        '<header class="tete"><h1 class="tete-titre moyen">Planning</h1></header>' +
+        '<div class="fiche"></div>' +
+      '</div>' +
+      '<nav class="barre" aria-label="Navigation principale"><div class="barre-onglets">' +
+        '<a class="barre-onglet" href="accueil.html">Chantiers</a>' +
+        '<a class="barre-onglet" href="planning.html" aria-current="page">Planning</a>' +
+        '<a class="barre-onglet" href="termines.html">Terminés</a>' +
+        '<a class="barre-onglet" href="paysage.html">Paysage</a>' +
+        '<a class="barre-onglet" href="reglages.html">Réglages</a>' +
+        '<span class="barre-trait" aria-hidden="true"><span></span></span>' +
+      '</div></nav>' +
+      '<section class="feuille" id="' + id + '" aria-hidden="true" aria-label="Salarié absent">' +
+        '<div class="feuille-poignee"></div><div class="feuille-dedans"></div>' +
+      '</section>';
+
+    var fiche = ecran.querySelector(".fiche");
+    var dedans = ecran.querySelector("#" + id + " .feuille-dedans");
+
+    function peindreFiche() {
+      var poses = EQUIPE.filter(function (n) { return absents[n]; }).map(function (n) {
+        return '<div class="posee"><span class="posee-mot">Absent</span><span class="posee-nom">' + n + '</span>' +
+          '<span class="posee-quand">' + dit(absents[n]) + '</span>' +
+          '<button type="button" class="posee-croix" data-retirer="' + n + '" aria-label="Supprimer l’absence de ' + n + '">✕</button></div>';
+      }).join("");
+      fiche.innerHTML =
+        '<div class="fiche-tete"><div class="fiche-date"><b>Aujourd’hui</b><span>mardi 27 octobre</span></div>' +
+        '<button type="button" class="absent" data-ouvrir>' + ico("plus") + 'Salarié absent ?</button></div>' +
+        poses +
+        '<div class="moments">' +
+          '<div class="moment"><span class="moment-etat"></span><span class="moment-nom">Matin</span><span class="moment-qui">libre</span></div>' +
+          '<div class="moment"><span class="moment-etat"></span><span class="moment-nom">Après-midi</span><span class="moment-qui">libre</span></div>' +
+        '</div>' +
+        '<button type="button" class="ajouter">' + ico("plus") + 'Ajouter</button>';
+    }
+
+    function rangAvecInterrupteur(n, i) {
+      var oui = !!absents[n];
+      var lib = "absent-" + version + "-" + i;
+      var quand = (version === "A" && oui)
+        ? '<div class="quand">' + MOMENTS.map(function (m) {
+            return '<button type="button" data-qui="' + n + '" data-quand="' + m[0] + '" aria-pressed="' + (absents[n] === m[0]) + '">' + m[1] + '</button>';
+          }).join("") + '</div>'
+        : "";
+      return '<div class="absent-rang"><div class="absent-ligne"><span class="ligne-nom">' + n + '</span>' +
+        '<span class="second" id="' + lib + '">' + (oui ? "Absent" : "Présent") + '</span>' +
+        '<button type="button" class="bascule" role="switch" aria-checked="' + oui + '" aria-label="' + n + ' absent" aria-describedby="' + lib + '" data-oui="Absent" data-non="Présent" data-nom="' + n + '"></button></div>' +
+        quand + '</div>';
+    }
+
+    var CHOIX_C = [["present", "Présent"]].concat(MOMENTS);
+
+    function periodeDe(n) {
+      if (!conges[n]) return "";
+      // La période se dit entière tant que le jour regardé en fait partie ;
+      // sinon, les jours qui restent, sans rien inventer.
+      return absents[n] === "journee"
+        ? "Du " + JOURS[26] + " au " + JOURS[30] + " octobre"
+        : (absents[n] ? "Absent aussi " : "Absent ") + enMots(conges[n]);
+    }
+
+    function indexC(n) {
+      var cle = absents[n] || "present";
+      for (var i = 0; i < CHOIX_C.length; i++) if (CHOIX_C[i][0] === cle) return i;
+      return 0;
+    }
+
+    function rangC(n) {
+      var i = indexC(n);
+      return '<div class="pers" data-pers="' + n + '" data-absent="' + !!absents[n] + '">' +
+        '<div class="pers-tete"><span class="initiales" aria-hidden="true">' + n.charAt(0) + '</span>' +
+        '<span class="pers-corps"><span class="pers-nom">' + n + '</span><span class="periode">' + periodeDe(n) + '</span></span></div>' +
+        '<div class="piste" role="radiogroup" aria-label="' + n + ', le mardi 27 octobre" style="--i:' + i + '">' +
+          '<span class="curseur" aria-hidden="true"></span>' +
+          CHOIX_C.map(function (c, k) {
+            return '<button type="button" role="radio" data-qui="' + n + '" data-quand="' + c[0] + '" aria-checked="' + (k === i) + '">' + (k === 0 && i > 0 ? "Absent" : c[1]) + '</button>';
+          }).join("") +
+        '</div></div>';
+    }
+
+    /* Ce que la piste montre pour la case i : sa demande du 27 octobre, « à
+       partir du moment où on passe sur le premier, le message présent doit
+       devenir absent ». La première case dit l'état du salarié, les trois
+       autres quand il manque : la ligne se lit « Julien, absent, matin ». */
+    function montrerC(rang, i) {
+      rang.setAttribute("data-absent", String(i > 0));
+      rang.querySelectorAll(".piste button").forEach(function (b, k) { b.setAttribute("aria-checked", String(k === i)); });
+      rang.querySelector(".piste button").textContent = i > 0 ? "Absent" : "Présent";
+    }
+
+    /* Changer un choix sans repeindre la feuille : c'est ce qui laisse le
+       curseur glisser au lieu de sauter. */
+    function majRangC(n) {
+      var rang = dedans.querySelector('.pers[data-pers="' + n + '"]');
+      if (!rang) return;
+      var i = indexC(n);
+      montrerC(rang, i);
+      rang.querySelector(".piste").style.setProperty("--i", i);
+      rang.querySelector(".periode").textContent = periodeDe(n);
+    }
+
+    function choisirC(n, i) {
+      if (i === 0) delete absents[n]; else absents[n] = CHOIX_C[i][0];
+      peindreFiche(); majRangC(n);
+    }
+
+    /* ─── Le curseur se glisse au doigt, ou la case se touche ─────────────
+       Sa demande du 27 octobre : « pouvoir déplacer le bouton en le slidant en
+       restant appuyé, ou en cliquant ». Le curseur suit le doigt, les mots
+       suivent la case qu'il survole, et le choix s'écrit au lâcher. pan-y
+       laisse la feuille défiler quand le doigt monte ou descend. */
+    var glisse = null;
+    var lacheA = 0;
+
+    function caseSous(piste, x) {
+      var r = piste.getBoundingClientRect(), large = (r.width - 8) / 4;
+      return { gauche: r.left + 4, large: large, i: Math.max(0, Math.min(3, Math.floor((x - r.left - 4) / large))) };
+    }
+
+    dedans.addEventListener("pointerdown", function (e) {
+      var piste = version === "C" && e.target.closest(".piste");
+      if (!piste || (e.pointerType === "mouse" && e.button !== 0)) return;
+      var rang = piste.closest(".pers");
+      glisse = { piste: piste, rang: rang, n: rang.getAttribute("data-pers"), id: e.pointerId, x0: e.clientX, bouge: false, i: indexC(rang.getAttribute("data-pers")) };
+      piste.setPointerCapture(e.pointerId);
+    });
+
+    dedans.addEventListener("pointermove", function (e) {
+      if (!glisse || e.pointerId !== glisse.id) return;
+      if (!glisse.bouge && Math.abs(e.clientX - glisse.x0) < 6) return;
+      glisse.bouge = true;
+      glisse.piste.classList.add("glisse");
+      var c = caseSous(glisse.piste, e.clientX);
+      var pos = Math.max(0, Math.min(3 * c.large, e.clientX - c.gauche - c.large / 2));
+      glisse.piste.querySelector(".curseur").style.transform = "translateX(" + pos + "px)";
+      var i = Math.round(pos / c.large);
+      if (i !== glisse.i) { glisse.i = i; montrerC(glisse.rang, i); }
+    });
+
+    function lacher(e, annule) {
+      if (!glisse || e.pointerId !== glisse.id) return;
+      var g = glisse; glisse = null; lacheA = Date.now();
+      g.piste.classList.remove("glisse");
+      g.piste.querySelector(".curseur").style.transform = "";
+      if (annule) { majRangC(g.n); return; }
+      choisirC(g.n, g.bouge ? g.i : caseSous(g.piste, e.clientX).i);
+    }
+    dedans.addEventListener("pointerup", function (e) { lacher(e, false); });
+    dedans.addEventListener("pointercancel", function (e) { lacher(e, true); });
+
+    dedans.addEventListener("keydown", function (e) {
+      var b = version === "C" && e.target.closest(".piste button");
+      if (!b || (e.key !== "ArrowRight" && e.key !== "ArrowLeft")) return;
+      e.preventDefault();
+      var n = b.getAttribute("data-qui");
+      var i = Math.max(0, Math.min(3, indexC(n) + (e.key === "ArrowRight" ? 1 : -1)));
+      choisirC(n, i);
+      dedans.querySelectorAll('.pers[data-pers="' + n + '"] .piste button')[i].focus();
+    });
+
+    function peindreFeuille() {
+      dedans.innerHTML = '<h2 class="feuille-titre">Absent le mardi 27 octobre ?</h2>' +
+        EQUIPE.map(function (n, i) { return version === "C" ? rangC(n) : rangAvecInterrupteur(n, i); }).join("") +
+        '<button type="button" class="bouton bouton-texte fermer" data-fermer>Fermer</button>';
+    }
+
+    function poserLeCas(cas) {
+      absents = {}; conges = {};
+      if (cas === "semaine") {
+        absents.Antoine = "journee";
+        conges.Antoine = SEMAINE.filter(function (j) { return j !== AUJOURDHUI; });
+      }
+      Kit.fermerFeuilles(ecran);
+      peindreFiche();
+    }
+
+    ecran.addEventListener("click", function (e) {
+      if (e.target.closest("[data-ouvrir]")) { peindreFeuille(); Kit.ouvrirFeuille(id, e.target.closest("[data-ouvrir]")); return; }
+      var croix = e.target.closest("[data-retirer]");
+      if (croix) { delete absents[croix.getAttribute("data-retirer")]; peindreFiche(); return; }
+      if (e.target.closest("[data-fermer]")) { Kit.fermerFeuilles(ecran); return; }
+      var bascule = e.target.closest(".bascule[data-nom]");
+      if (bascule) {
+        // L'écran écoute avant le kit (il est plus près du doigt) : la feuille
+        // se repeint ici, et le kit ne doit pas rebasculer un bouton disparu.
+        e.stopPropagation();
+        var nom = bascule.getAttribute("data-nom");
+        if (absents[nom]) delete absents[nom]; else absents[nom] = "journee";
+        peindreFiche(); peindreFeuille();
+        var b = dedans.querySelector('.bascule[data-nom="' + nom + '"]');
+        if (b) b.focus({ preventScroll: true });
+        return;
+      }
+      var quand = e.target.closest("[data-quand]");
+      if (quand) {
+        var qui = quand.getAttribute("data-qui"), m = quand.getAttribute("data-quand");
+        if (version === "C") {
+          // Le doigt a déjà choisi au lâcher ; ce clic-là n'en est que l'écho.
+          // Reste celui du clavier (Entrée, Espace), qui n'a pas de doigt.
+          if (Date.now() - lacheA < 500) return;
+          choisirC(qui, CHOIX_C.map(function (c) { return c[0]; }).indexOf(m));
+          return;
+        }
+        absents[qui] = m;
+        peindreFiche(); peindreFeuille();
+        var r = dedans.querySelector('[data-qui="' + qui + '"][data-quand="' + m + '"]');
+        if (r) r.focus({ preventScroll: true });
+      }
+    });
+
+    var groupe = document.querySelector('.pl-etats[data-ecran=".ecran[data-version=\'' + version + '\']"]');
+    if (groupe) groupe.querySelectorAll("button[data-etat]").forEach(function (b) {
+      b.addEventListener("click", function () { poserLeCas(b.getAttribute("data-etat")); });
+    });
+    peindreFiche();
+  });
+})();
+</script>
+</body>
+</html>

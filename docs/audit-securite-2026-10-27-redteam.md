@@ -94,7 +94,7 @@ Fichier : `src/app/api/fichiers/[...key]/route.ts`.
 - `scripts/test-fichiers-cross-entreprise-e2e.ts` — sous le rôle e2e, le même scénario, sur le logo
   ET la photo.
 
-Détail dans `ARCHITECTURE.md` §520.
+Détail dans `ARCHITECTURE.md` §527.
 
 ## 4. Ce qui a été traité par ailleurs, pendant cette campagne
 
@@ -182,5 +182,5 @@ npx tsx scripts/verifier-rouge-prealable.ts   # compare contre une copie propre 
 ---
 
 *Pour toute question sur ce document : relire `docs/audit-securite-2026-10-27-resume-simple.md`
-pour le résumé en langage courant, ou `ARCHITECTURE.md` §509-§520 pour le détail des décisions
+pour le résumé en langage courant, ou `ARCHITECTURE.md` §509-§512 et §527 pour le détail des décisions
 d'architecture.*

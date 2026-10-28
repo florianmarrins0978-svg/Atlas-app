@@ -126,7 +126,7 @@ async function main() {
     // 97,39 € à 20 % contiennent 16,23 € de TVA — le chiffre imprimé sur son
     // ticket. Le piège du TTC (`src/lib/achat-tva.ts`) est éprouvé à part ; ici,
     // on vérifie qu'il arrive jusqu'au champ.
-    const lu = await page.getByPlaceholder("calculée").inputValue();
+    const lu = await page.getByLabel("TVA du ticket").inputValue();
     assert.equal(lu, TVA_ATTENDUE, `le champ TVA affiche « ${lu} »`);
   });
 

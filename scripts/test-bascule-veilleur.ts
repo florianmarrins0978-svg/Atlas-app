@@ -133,7 +133,11 @@ cas("veiller.sh consulte le drapeau AVANT de conclure à une mort", () => {
   // satisfaisait, et il restait vert alors que la consultation avait été
   // remplacée par `if false`. Vu en le dégradant, pas en le relisant.
   const consulte = lignes.findIndex((l) => /\bif\s+bash\s+"\$BASCULE"/.test(l));
-  const conclut = lignes.findIndex((l) => l.includes("api/health/live"));
+  // Dans la BOUCLE : au démarrage, le veilleur interroge aussi la santé pour
+  // juger un banc précédent, et il y consulte le drapeau à sa façon.
+  const boucle = lignes.findIndex((l) => /^while true/.test(l));
+  const conclut = lignes.findIndex((l, i) => i > boucle && l.includes("api/health/live"));
+  assert.notEqual(boucle, -1, "veiller.sh n'a plus de boucle : ce contrôle n'éprouve plus rien");
   assert.notEqual(consulte, -1, "veiller.sh ne consulte pas le drapeau : il relancera un banc pendant la bascule");
   assert.notEqual(conclut, -1, "veiller.sh n'interroge plus la santé : ce contrôle n'éprouve plus rien");
   assert.ok(

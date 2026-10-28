@@ -159,10 +159,19 @@ export function tarifAvecSonHomme(intitule: string): boolean {
 }
 
 /**
- * La main d'œuvre partagée entre les travaux, à la dizaine (« en HT on fait
- * des prix ronds »). Le DERNIER prend l'écart d'arrondi : la somme tombe
- * toujours juste sur le total, sinon le devis dirait autre chose que la
- * main d'œuvre dictée.
+ * La main d'œuvre partagée entre les travaux.
+ *
+ * **Des parts qui font juste le total SONT des montants, et s'écrivent telles
+ * quelles** : ce sont ses gestes sur la barre, ou le prix de sa grille posé par
+ * `partsDeDepart`. Sa réponse du 27 octobre 2026, *« si la main d'œuvre c'est
+ * 397, ça pourra pas être arrondi à 10 »* : 197 € écrits à la main restaient
+ * 197 € à l'écran et devenaient 200 € sur le devis, et la haie de sa grille à
+ * 250 € pouvait sortir à 247 €.
+ *
+ * **Tout autre partage est calculé, donc à la dizaine** (« en HT on fait des
+ * prix ronds », sa règle du 5 août 2026) : parts égales, un travail retiré, un
+ * total qui a changé depuis ses gestes. L'écart d'arrondi va au dernier travail
+ * qui a une part, jamais à un travail à zéro : il sortait à −5 € sur le devis.
  */
 export function repartirMainOeuvre(
   total: string,
@@ -170,15 +179,111 @@ export function repartirMainOeuvre(
   parts: Readonly<Record<string, number>>
 ): Record<string, string> {
   if (cles.length === 0) return {};
+  const t = new Decimal(total);
+  const exactes = cles.map((c) => parts[c]);
+  if (
+    exactes.every((p) => p !== undefined && Number.isFinite(p) && p >= 0 && new Decimal(p).decimalPlaces() <= 2) &&
+    exactes.reduce((s, p) => s.plus(p), new Decimal(0)).equals(t)
+  ) {
+    return Object.fromEntries(cles.map((c, i) => [c, new Decimal(exactes[i]).toFixed(2)]));
+  }
   const poids = cles.map((c) => (parts[c] !== undefined && parts[c] >= 0 ? parts[c] : 1));
   const somme = poids.reduce((s, p) => s + p, 0);
-  const t = new Decimal(total);
   const montants = poids.map((p) =>
     somme > 0 ? t.times(p).div(somme).div(10).toDecimalPlaces(0, Decimal.ROUND_HALF_UP).times(10) : new Decimal(0)
   );
   const ecart = t.minus(montants.reduce((s, m) => s.plus(m), new Decimal(0)));
-  montants[montants.length - 1] = montants[montants.length - 1].plus(ecart);
-  return Object.fromEntries(cles.map((c, i) => [c, montants[i].toFixed(2)]));
+  const porteur = montants.findLastIndex((m) => m.greaterThan(0));
+  const i = porteur >= 0 ? porteur : montants.length - 1;
+  montants[i] = montants[i].plus(ecart);
+  return Object.fromEntries(cles.map((c, k) => [c, montants[k].toFixed(2)]));
+}
+
+/** Le pas d'une poignée de la barre, celui des prix ronds. */
+export const PAS_DE_LA_POIGNEE = 10;
+/** Ce qu'un travail garde sous le doigt : à zéro, il serait « à chiffrer », et c'est la croix qui le décide. */
+export const PART_MINIMUM = 10;
+
+// En centimes : 0,1 + 0,2 ne fait pas 0,3 en virgule flottante, et un total
+// à 397,50 € doit retomber juste après cent gestes.
+const enCentimes = (euros: number) => Math.round(euros * 100);
+const enEuros = (centimes: number) => centimes / 100;
+
+/**
+ * La poignée entre le travail `k` et le suivant, tirée jusqu'à `voulu` euros
+ * pour le travail de gauche. **Seuls ces deux-là changent**, de 10 € en 10 €,
+ * et chacun garde au moins 10 € (sa planche du 27 octobre 2026). Le voisin de
+ * droite garde l'impair d'un total qui n'est pas rond.
+ */
+export function glisserLeJoint(montants: readonly number[], k: number, voulu: number): number[] {
+  const c = montants.map(enCentimes);
+  if (k < 0 || k >= c.length - 1 || !Number.isFinite(voulu)) return [...montants];
+  const paire = c[k] + c[k + 1];
+  const pas = PAS_DE_LA_POIGNEE * 100;
+  const mini = PART_MINIMUM * 100;
+  if (paire < 2 * mini) return [...montants];
+  const gauche = Math.max(mini, Math.min(paire - mini, Math.round(voulu / PAS_DE_LA_POIGNEE) * pas));
+  c[k] = gauche;
+  c[k + 1] = paire - gauche;
+  return c.map(enEuros);
+}
+
+/**
+ * La poignée que le doigt tire vraiment, quand plusieurs sont empilées.
+ *
+ * Un travail à 0 € (« à chiffrer », `partsDeDepart`) ou de quelques euros n'a
+ * pas de largeur à l'écran : les poignées qui le bordent tombent au même
+ * endroit, et le doigt attrapait celle du dessus, qui sépare parfois deux
+ * travaux vides. Rien ne bougeait (trouvé par `test-main-oeuvre-barre-e2e.ts`
+ * le 27 octobre 2026). Vers la gauche, c'est la première poignée de la pile
+ * qui part ; vers la droite, la dernière. `seuil` est la largeur, en euros,
+ * sous laquelle un morceau ne sépare plus deux poignées.
+ */
+export function jointATirer(montants: readonly number[], k: number, sens: -1 | 1, seuil: number): number {
+  let j = k;
+  if (sens < 0) while (j > 0 && montants[j] < seuil) j--;
+  else while (j < montants.length - 2 && montants[j + 1] < seuil) j++;
+  return j;
+}
+
+/**
+ * Le montant du travail `i`, écrit à la main : **à l'euro près**, comme il l'a
+ * tapé (sa réponse du 27 octobre 2026). Le travail d'à côté prend la
+ * différence (le suivant, ou celui du dessus pour le dernier) ; s'il n'a pas
+ * assez, le suivant complète, puis le suivant. Un montant écrit est tenu,
+ * jamais plafonné en silence : seul ce que les autres peuvent donner l'arrête.
+ *
+ * `touches` dit quels travaux ont payé ou reçu, pour que l'écran les montre.
+ */
+export function ecrireUnMontant(
+  montants: readonly number[],
+  i: number,
+  voulu: number
+): { montants: number[]; touches: number[] } {
+  const c = montants.map(enCentimes);
+  const payeurs = [...c.keys()].slice(i + 1).concat([...c.keys()].slice(0, i).reverse());
+  if (i < 0 || i >= c.length || payeurs.length === 0 || !Number.isFinite(voulu)) {
+    return { montants: [...montants], touches: [] };
+  }
+  const mini = PART_MINIMUM * 100;
+  const plafond = c[i] + payeurs.reduce((s, j) => s + Math.max(0, c[j] - mini), 0);
+  const v = Math.max(mini, Math.min(plafond, Math.round(voulu) * 100));
+  let ecart = v - c[i];
+  c[i] = v;
+  const touches: number[] = [];
+  if (ecart < 0) {
+    c[payeurs[0]] -= ecart;
+    touches.push(payeurs[0]);
+  }
+  for (const j of payeurs) {
+    if (ecart <= 0) break;
+    const pris = Math.min(ecart, c[j] - mini);
+    if (pris <= 0) continue;
+    c[j] -= pris;
+    ecart -= pris;
+    touches.push(j);
+  }
+  return { montants: c.map(enEuros), touches };
 }
 
 /** Le libellé de la ligne Main d'œuvre : les travaux qu'elle couvre, nommés. */

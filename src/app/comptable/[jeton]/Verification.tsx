@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Fragment, useMemo, useState, useTransition, type ReactNode } from "react";
 import { colors, couleursDocument, font, surPlein, voile } from "@/lib/design-tokens";
 import { COULEUR_CATEGORIE, NOM_CATEGORIE } from "@/lib/couleurs-comptable";
@@ -7,6 +8,11 @@ import { avancementDeLaVerification, libellePeriode, type Categorie, type EtatDe
 import { moisSeul } from "@/lib/termines-par-mois";
 import { poserVerdictAction } from "./actions";
 import Icone, { type NomIcone } from "@/components/atlas/IconeTrait";
+import { useRouter } from "next/navigation";
+import { MOT_DE_LA_CONCLUSION, type Conclusion } from "@/lib/attestation-comptable";
+import Attestation from "./Attestation";
+import Renvoi from "./Renvoi";
+import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
 
 export type PieceAffichee =
   | {
@@ -23,7 +29,7 @@ export type PieceAffichee =
     }
   | { genre: "facture"; nom: string; detail: string; total: string | null; original: "photo" | "pdf" | null }
   /** Un virement reçu qui paie une facture faite hors d'Atlas (migration 0150). */
-  | { genre: "hors_atlas"; total: string | null; original: "photo" | "pdf" }
+  | { genre: "hors_atlas"; sortie: boolean; total: string | null; original: "photo" | "pdf" }
   | { genre: "emise"; numero: string; total: string }
   | { genre: "perdu" }
   | { genre: "motif"; libelle: string }
@@ -36,6 +42,8 @@ export type LigneAVerifier = {
   jourLong: string;
   libelle: string;
   montant: string;
+  /** Le montant tel qu'en base, positif : l'attestation le relit et le signe elle-même. */
+  montantBrut: string;
   sens: "entree" | "sortie";
   categorie: Categorie;
   piece: PieceAffichee;
@@ -94,6 +102,10 @@ export default function Verification({
   envoye,
   entreprise,
   lignes: depart,
+  dossier,
+  attestation,
+  renvoye,
+  apercu = false,
 }: {
   jeton: string;
   titre: string;
@@ -101,7 +113,17 @@ export default function Verification({
   envoye: string;
   entreprise: string;
   lignes: LigneAVerifier[];
+  dossier: { du: string; au: string; empreinte: string };
+  /** La dernière attestation signée sur ce lien, et si le dossier n'a pas bougé depuis. */
+  attestation: { conclusion: Conclusion; signee: string; aJour: boolean } | null;
+  /** « Renvoyé le 27 octobre. », le dernier renvoi à corriger, ou rien. */
+  renvoye: string | null;
+  /** Ouverte par le patron pour voir ce que voit son comptable : un bouton Fermer le ramène à ses dossiers. */
+  apercu?: boolean;
 }) {
+  const router = useRouter();
+  const [signer, setSigner] = useState(false);
+  const [renvoyer, setRenvoyer] = useState(false);
   const [lignes, setLignes] = useState(depart);
   const mois = useMemo(() => [...new Set(depart.map((l) => l.jour.slice(0, 7)))], [depart]);
   // Un exercice décalé court sur deux années : le mois seul ne dirait plus lequel.
@@ -115,7 +137,11 @@ export default function Verification({
   const [enCours, demarrer] = useTransition();
 
   const tout = avancementDeLaVerification(lignes.map((l) => l.verification));
-  const duMois = lignes.filter((l) => l.jour.startsWith(moisChoisi));
+  // Les lignes « corrigées » passent en tête de leur mois : c'est ce qu'il
+  // revient revoir (sa planche du 27 octobre). Le tri est stable : le reste
+  // garde l'ordre des jours.
+  const duMois = lignes.filter((l) => l.jour.startsWith(moisChoisi)).sort((x, y) => Number(y.verification.etat === "corrigee") - Number(x.verification.etat === "corrigee"));
+  const corrigees = lignes.filter((l) => l.verification.etat === "corrigee");
   const a = avancementDeLaVerification(duMois.map((l) => l.verification));
   const ligne = ouvert ? lignes.find((l) => l.id === ouvert) ?? null : null;
   const index = ligne ? duMois.findIndex((l) => l.id === ligne.id) : -1;
@@ -164,6 +190,12 @@ export default function Verification({
     <div className="flex min-h-dvh items-start" style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body }}>
       <main className="min-w-0 flex-1 px-4 pb-12 pt-5 md:px-6 lg:px-8 lg:pt-6" data-atlas="verification-comptable">
         <div className="mx-auto max-w-[1116px]">
+          {apercu && (
+            <Link href="/termines/comptable/dossiers" className="-ml-2 mb-2 inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-3 text-[15px] font-medium" style={{ boxShadow: `inset 0 0 0 1.5px ${colors.line}`, backgroundColor: colors.card, color: colors.ink }} data-atlas="fermer-apercu">
+              <Icone nom="croix" taille={19} epaisseur={2} />
+              Fermer
+            </Link>
+          )}
           <div className="flex flex-col gap-1 md:flex-row md:items-baseline md:justify-between md:gap-4">
             <h1 className="m-0 text-[26px] leading-[1.12] md:text-[28px]" style={{ fontFamily: font.display }}>
               {titre}
@@ -196,6 +228,29 @@ export default function Verification({
               <i className="transition-[width] duration-300" style={{ width: `${tout.total ? (tout.rejetees / tout.total) * 100 : 0}%`, backgroundColor: colors.montantSortie }} />
             </div>
           </div>
+
+          {corrigees.length > 0 && (
+            <div className="mt-4 flex items-center gap-3 rounded-xl py-2 pl-3.5 pr-2" style={{ backgroundColor: colors.carteAmbreFond, color: colors.carteAmbreTexte }} data-atlas="lignes-corrigees">
+              <span className="min-w-0 flex-1 text-[14.5px] leading-[1.4]">
+                <b className="block text-[15.5px] font-bold">
+                  {corrigees.length === 1 ? "1 ligne corrigée, à revoir" : `${corrigees.length} lignes corrigées, à revoir`}
+                </b>
+                Par {entreprise}. En tête de leur mois.
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setMoisChoisi(corrigees[0].jour.slice(0, 7));
+                  ouvrir(corrigees[0].id);
+                }}
+                className="min-h-[44px] flex-none rounded-full px-4 text-[15px] font-semibold"
+                style={{ boxShadow: `inset 0 0 0 1.5px ${voile(colors.carteAmbreTexte, 0.5)}` }}
+                data-atlas="revoir-les-corrigees"
+              >
+                Revoir
+              </button>
+            </div>
+          )}
 
           <div className="mt-[18px] flex gap-1.5 overflow-x-auto pb-0.5 [scrollbar-width:none]" role="group" aria-label="Mois">
             {mois.map((m) => {
@@ -258,8 +313,86 @@ export default function Verification({
               {refus}
             </p>
           )}
+
+          {/*
+            TERMINER ET SIGNER — sa planche du 27 octobre 2026. Le bouton naît
+            avec la dernière ligne vérifiée, jamais avant : une attestation porte
+            sur le dossier entier. Signée et rien n'a bougé depuis, la barre dit
+            la conclusion et donne le PDF ; un verdict changé la rend à signer.
+          */}
+          {!ligne && tout.total > 0 && (tout.verifiees === tout.total || tout.rejetees > 0) && (
+            <div className="sticky bottom-0 -mx-4 mt-4 px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-3 md:-mx-6 md:px-6" style={{ background: `linear-gradient(to top, ${colors.cream} 78%, ${voile(colors.cream, 0)})` }} data-atlas="fin-de-verification">
+              {tout.verifiees === tout.total && attestation?.aJour ? (
+                <div className="flex items-center gap-3 rounded-[14px] py-1 pl-4 pr-2" style={{ backgroundColor: colors.card }} data-atlas="attestation-signee">
+                  <span className="min-w-0 flex-1 py-2 text-[14px]" style={{ color: colors.inkSoft }}>
+                    <b className="block text-[15px] font-semibold" style={{ color: colors.ink }}>
+                      {MOT_DE_LA_CONCLUSION[attestation.conclusion]}
+                    </b>
+                    {attestation.signee}
+                  </span>
+                  <BoutonTelechargerDocument fichier={`/comptable/${jeton}/attestation/pdf`} nom="Attestation de vérification.pdf" className="flex min-h-[44px] items-center px-2 text-[15px] font-medium" style={{ color: colors.ink }}>
+                    Télécharger
+                  </BoutonTelechargerDocument>
+                </div>
+              ) : (
+                <div className="mx-auto flex w-full max-w-[560px] flex-col gap-2">
+                  {tout.verifiees === tout.total && (
+                    <button type="button" onClick={() => setSigner(true)} className="flex min-h-[56px] w-full items-center justify-center rounded-full px-5 text-[17px] font-semibold" style={{ backgroundColor: colors.plein, color: surPlein }} data-atlas="terminer-et-signer">
+                      Terminer et signer
+                    </button>
+                  )}
+                  {/* Comme le client qui demande une correction de devis : dès
+                      qu'une ligne est rejetée, sans attendre la dernière. */}
+                  {tout.rejetees > 0 && (
+                    <button type="button" onClick={() => setRenvoyer(true)} className="flex min-h-[52px] w-full items-center justify-center gap-2.5 rounded-full px-5 text-[16px] font-medium" style={{ boxShadow: `inset 0 0 0 1.5px ${colors.line}`, backgroundColor: colors.card, color: colors.ink }} data-atlas="renvoyer-a-corriger">
+                      <Icone nom="annuler" taille={21} />
+                      Renvoyer à corriger
+                    </button>
+                  )}
+                  {renvoye && tout.rejetees > 0 && (
+                    <p className="text-center text-[13.5px]" style={{ color: colors.inkSoft }} data-atlas="deja-renvoye">
+                      {renvoye}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </main>
+
+      {renvoyer && (
+        <Renvoi
+          jeton={jeton}
+          entreprise={entreprise}
+          lignes={lignes
+            .filter((l) => l.verification.etat === "rejete")
+            .map((l) => ({ id: l.id, jour: l.jour, libelle: l.libelle, montant: l.montantBrut, sens: l.sens, note: l.verification.etat === "rejete" ? l.verification.note : null }))}
+          fermer={() => setRenvoyer(false)}
+          renvoye={() => router.refresh()}
+        />
+      )}
+
+      {signer && (
+        <Attestation
+          jeton={jeton}
+          entreprise={entreprise}
+          du={dossier.du}
+          au={dossier.au}
+          empreinte={dossier.empreinte}
+          lignes={lignes.map((l) => ({
+            id: l.id,
+            jour: l.jour,
+            libelle: l.libelle,
+            montant: l.montantBrut,
+            sens: l.sens,
+            verdict: l.verification.etat === "rejete" ? "rejete" : "valide",
+            note: l.verification.etat === "rejete" ? l.verification.note : null,
+          }))}
+          fermer={() => setSigner(false)}
+          signee={() => router.refresh()}
+        />
+      )}
 
       {ligne && (
         // Trois étages : le haut, ce qui défile, et le bas où vivent les
@@ -644,7 +777,7 @@ function Reconstituee({ piece: p, entreprise }: { piece: PieceAffichee; entrepri
     case "hors_atlas":
       // Son total a été lu sur la facture ou tapé par le patron : le papier
       // ne dit que ce qui est sûr, l'original est à l'onglet d'à côté.
-      return facture(nom(entreprise), "Facture faite hors d’Atlas", p.total, null);
+      return facture(nom(entreprise), p.sortie ? "Facture du fournisseur" : "Facture faite hors d’Atlas", p.total, null);
     case "emise":
       return facture(
         <div className="flex justify-between gap-2">

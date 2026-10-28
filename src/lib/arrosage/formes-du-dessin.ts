@@ -1,12 +1,19 @@
 /**
- * LES FORMES DU PLAN DESSINÉ : les côtés courbes, les coins tirés, les rangées
- * en S, le pas du doigt et les cotes jusqu'aux bords.
+ * LES FORMES DU PLAN DESSINÉ : les côtés courbes, les rangées en S, le pas du
+ * doigt et les cotes jusqu'aux bords.
  *
  * *Sa demande du 19 octobre 2026 :* « si je reste appuyé au milieu d'un carré
  * de pelouse et que je le décale vers l'intérieur ou l'extérieur, que ça crée
  * une courbure ; pareil pour le dallage, ça peut créer un dallage en S ». Puis
  * « le bout en pointe de la pelouse, si je veux le rabattre, je ne peux pas » :
- * chaque coin se tire aussi.
+ * chaque coin se tirait aussi.
+ *
+ * **Les coins tirés sont RETIRÉS le 27 octobre 2026**, à sa demande : *« on va
+ * retirer la possibilité de faire des coins tirés pour la pelouse et les
+ * massifs »*. Un coin attrapé en glissant sa zone d'arroseurs l'avait étirée de
+ * 12 à 15,06 m sans que les cotes affichées bougent, et le plan était calculé
+ * sur 15,06. Un coin rendait la zone plus grande que ce qu'il avait tapé ; une
+ * courbe, elle, se voit et se dit (`phrasesDuDessin`).
  *
  * **Sa règle, le même soir :** « il faut juste qu'ils l'expliquent, mais qu'ils
  * ne refusent pas ». Le calcul ne connaît que des rectangles : une zone courbe y
@@ -20,9 +27,9 @@ export type PointMetres = { x: number; y: number };
 export type Rectangle = { x: number; y: number; L: number; l: number };
 
 export type Cote = "haut" | "droite" | "bas" | "gauche";
-export type Coin = "hg" | "hd" | "bd" | "bg";
+type Coin = "hg" | "hd" | "bd" | "bg";
 export const COTES: readonly Cote[] = ["haut", "droite", "bas", "gauche"];
-export const COINS: readonly Coin[] = ["hg", "hd", "bd", "bg"];
+const COINS: readonly Coin[] = ["hg", "hd", "bd", "bg"];
 
 /**
  * Un côté courbé, gardé RELATIF au côté : `u` le long (en part du côté), `v` en
@@ -31,11 +38,9 @@ export const COINS: readonly Coin[] = ["hg", "hd", "bd", "bg"];
  */
 export type Courbure = { u: number; v: number };
 
-/** Ce qui se courbe et se tire : une zone, posée par son rectangle tapé. */
+/** Ce qui se courbe : une zone, posée par son rectangle tapé. */
 export type Forme = Rectangle & {
   courbes?: Partial<Record<Cote, Courbure>>;
-  /** Un coin tiré, en mètres depuis le coin du rectangle. */
-  coins?: Partial<Record<Coin, PointMetres>>;
 };
 
 /** Reposé à moins de 5 cm de sa place, un point tiré y reste. */
@@ -45,18 +50,13 @@ function borne(v: number, max: number): number {
   return Math.max(0, Math.min(max, v));
 }
 
-export function sommetsDe(f: Forme): Record<Coin, PointMetres> {
-  const base: Record<Coin, PointMetres> = {
+function sommetsDe(f: Forme): Record<Coin, PointMetres> {
+  return {
     hg: { x: f.x, y: f.y },
     hd: { x: f.x + f.L, y: f.y },
     bd: { x: f.x + f.L, y: f.y + f.l },
     bg: { x: f.x, y: f.y + f.l },
   };
-  for (const c of COINS) {
-    const o = f.coins?.[c];
-    if (o) base[c] = { x: base[c].x + o.x, y: base[c].y + o.y };
-  }
-  return base;
 }
 
 /** Les côtés tournent dans le sens des aiguilles : la normale sort de la zone. */
@@ -83,9 +83,9 @@ function bez2(p0: PointMetres, k: PointMetres, p1: PointMetres, t: number): Poin
   return { x: m * m * p0.x + 2 * m * t * k.x + t * t * p1.x, y: m * m * p0.y + 2 * m * t * k.y + t * t * p1.y };
 }
 
-/** Une forme qui n'est plus le rectangle tapé : un côté courbe, ou un coin tiré. */
+/** Une forme qui n'est plus le rectangle tapé : un côté courbe. */
 export function formeLibre(f: Forme): boolean {
-  return COTES.some((c) => f.courbes?.[c]) || COINS.some((c) => f.coins?.[c]);
+  return COTES.some((c) => f.courbes?.[c]);
 }
 
 /** Les points qui tiennent la forme : ses coins et ses points de contrôle. Une
@@ -159,16 +159,6 @@ export function tirerCote(f: Forme, c: Cote, h: PointMetres, terrain: { L: numbe
   if (Math.abs(v) < RETOUR_M) delete courbes[c];
   else courbes[c] = { u, v };
   return courbes;
-}
-
-/** Tirer un coin : il suit le doigt, dans le terrain. C'est ce qui rabat une pointe. */
-export function tirerCoin(f: Forme, c: Coin, h: PointMetres, terrain: { L: number; l: number }): Forme["coins"] {
-  const base = { hg: [f.x, f.y], hd: [f.x + f.L, f.y], bd: [f.x + f.L, f.y + f.l], bg: [f.x, f.y + f.l] }[c];
-  const dx = borne(h.x, terrain.L) - base[0], dy = borne(h.y, terrain.l) - base[1];
-  const coins = { ...f.coins };
-  if (Math.hypot(dx, dy) < RETOUR_M) delete coins[c];
-  else coins[c] = { x: dx, y: dy };
-  return coins;
 }
 
 /* ── Les rangées de dalles ────────────────────────────────────────────── */

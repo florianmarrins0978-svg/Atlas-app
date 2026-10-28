@@ -250,3 +250,26 @@ export async function completerRepasAchat(
     return row;
   });
 }
+
+/**
+ * La photo d'un ticket, par l'identifiant de l'ACHAT, relue sous la RLS.
+ *
+ * **On sert par identifiant, jamais par clé** (la règle de
+ * `/api/phyto/image/[id]`) : c'est ce qui permet à l'assistant de joindre un
+ * ticket sans qu'aucune clé de stockage ne passe par le navigateur.
+ *
+ * **Et le préfixe se revérifie** : une clé posée avant le contrôle du
+ * 29 août 2026 (`termines/tva/actions.ts`) pouvait viser un autre dossier.
+ * Une clé hors des tickets de l'entreprise ne s'ouvre pas.
+ */
+export async function photoDuTicket(ctx: Ctx, achatId: string): Promise<string | null> {
+  const [ligne] = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+    tx
+      .select({ photoCle: achatsTva.photoCle })
+      .from(achatsTva)
+      .where(and(eq(achatsTva.id, achatId), isNull(achatsTva.deletedAt)))
+      .limit(1)
+  );
+  const cle = ligne?.photoCle ?? null;
+  return cle && cle.startsWith(`entreprises/${ctx.entrepriseId}/tickets/`) ? cle : null;
+}

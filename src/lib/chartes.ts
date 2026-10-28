@@ -475,14 +475,18 @@ function famillesDesCartes(plage: string, encre: string, sens: 1 | -1) {
  * si elle ne se lit pas ; sur Nuit et Sylve, elle remonte.
  */
 const COULEURS_DU_COMPTABLE = {
-  catCarburant: "#3d6e9e",
-  catRepas: "#4f8a3c",
-  catMateriel: "#b9732a",
-  catHotel: "#7a5aa6",
-  catTransport: "#2b8586",
+  // Une famille de couleur par catégorie, sans en répéter : bleu nuit, orange,
+  // moutarde, violet, cyan, rose, vert, gris (sa validation du 27 octobre 2026,
+  // `appli/comptable-couleurs-distinctes.html`). Le vert est celui du virement
+  // reçu, et de lui seul.
+  catCarburant: "#1e3a8a",
+  catRepas: "#ea580c",
+  catMateriel: "#ca8a04",
+  catHotel: "#a855f7",
+  catTransport: "#0891b2",
   catAutre: "#8a8578",
-  catVirement: "#a3506b",
-  catRecu: "#2f3b2f",
+  catVirement: "#db2777",
+  catRecu: "#12a150",
   montantEntree: "#1f7a45",
   montantSortie: "#b3392b",
 } as const;

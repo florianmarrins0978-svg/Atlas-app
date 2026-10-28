@@ -1,5 +1,19 @@
 # Prochaines tâches
 
+## L'ATTESTATION DU COMPTABLE : SUR `main` LE 28 OCTOBRE, CE QUI RESTE À TRANCHER
+
+**Livrée sur `main` le 28 octobre 2026**, avec le renvoi à corriger, par la batterie commune des quatre lots (`ARCHITECTURE.md` §523, §524).
+
+**À trancher par lui, écrit sur la planche :**
+- **Ce que le document vaut** : une attestation de vérification des justificatifs, signature électronique simple. Elle ne remplace pas l'attestation de présentation des comptes.
+- **Être prévenu en cours de route** : seulement à la signature aujourd'hui. S'il veut savoir dès qu'une ligne est rejetée, ce sera une carte de plus.
+- **Le PDF joint au courriel et la copie au comptable**, montrés sur la planche, ne partent pas : le service d'envoi ne transporte qu'un avis. Le comptable télécharge son exemplaire à la fin. À rouvrir s'il le demande, en sachant ce que ça envoie chez Brevo.
+
+## L'ASSISTANT JOINT LES DOCUMENTS : CE QUI RESTE (27 octobre 2026)
+
+- **Les pièces disparaissent au rechargement du fil** : `messages_assistant` ne garde que le texte. Une colonne `pieces` (jsonb, nullable, expand) les garderait.
+- **Sur son espace** : vérifier que le vrai modèle cite bien les clés (« [[P1]] »). Sans clé ici, seul le fournisseur `dev` l'a fait.
+
 ## ⏳ DES PLANCHES À REGARDER : L'APPLI SOIGNÉE, ÉCRAN PAR ÉCRAN (25 octobre 2026)
 
 **Sa demande :** *« reprends toutes les pages de l'application et améliore-moi le
@@ -25,6 +39,16 @@ teintées et carré du jour), Vos chantiers. Les seize rubriques des Réglages s
 `correction-reglages` (voir plus bas) ; le reste n'est pas codé. ~~**Branche
 morte laissée :** l'allure « ample » de `EnTeteEcran`~~ retirée le 26 octobre
 par le lot des Réglages, qui touche l'en-tête.
+
+**⏳ SALARIÉ ABSENT, A, B OU C (27 octobre 2026) :** le lot du planning soigné (§514) n'a pas codé la feuille de `appli/soignee/planning.html` (« Absent le … ? », un interrupteur par salarié) : `PasLaCeJour.tsx` garde la liste « Julien, Antoine, annuler ». Oubli, pas un choix. Planche `appli/soignee/salarie-absent.html` : **A** la feuille, et Matin, Après-midi, Journée sous celui qui manque ; **B** la journée seule (perd la demi-journée de septembre) ; **C**, proposée le soir même sur sa demande « propose mieux », puis rendue « plus jolie » : ni interrupteur, une piste par salarié, Présent, Matin, Après-midi, Journée (les moments de `BasculeDuMoment`), un curseur qui se glisse au doigt ou se pose d'un appui (sa demande du même soir), et dès qu'il quitte la première case « Présent » y devient « Absent » ; ambre (`carteAmbre`) quand il manque, les initiales de Vos clients ; une absence de plusieurs jours (Réglages, Équipe) se lit sous le nom, et le geste ne touche qu'au jour regardé. Attend sa réponse. Avant de la lui redemander, chercher `Absent le` dans `src/app/planning/`.
+
+**CRÉER UN DEVIS, LA FICHE CLIENT (27 octobre 2026), CODÉ LE 28 OCTOBRE 2026 sur `lot/creation-public-et-adresse` :** planche `appli/soignee/creer-un-devis.html`. **Sa réponse** : *« on conserve celle d'aujourd'hui, je la préfère ; change juste chantier par adresse »*, et *« regarde si dans entreprise ou public tout est bon »*. Codé : l'intitulé « Chantier » devient « Adresse » ; Public ouvre le SIRET et le code service à la création, et l'enregistrement les range sur sa fiche (`casesDuClient` dans `FormulaireNouveauChantier.tsx` et `src/app/chantiers/nouveau/actions.ts`, `completerLaFiche` accepte le code service). Entreprise était juste (SIRET, n° TVA) ; le numéro d'engagement de Chorus Pro se donne sur chaque facture, pas sur la fiche. **Livré** sur `main` le 28 octobre, batterie commune verte. **Trouvé en passant, pas corrigé ici** : si un chantier naît sur cet écran par une photo ou la dictée AVANT que le SIRET soit tapé, « Je rédige à la main » enregistre par `reprendreChantierAction`, qui ne connaît ni le SIRET, ni le n° TVA, ni le code service ; ils se perdent sans rien dire, pour une entreprise comme pour une mairie (déjà vrai avant ce lot).
+
+**RÉPARTIR LA MAIN D'ŒUVRE, LE CURSEUR (27 octobre 2026), CODÉ LE 27 OCTOBRE 2026 sur `lot/main-oeuvre-curseur`, sans batterie à sa demande :** il a tranché le soir même, la palette Jardin (« la première ») et l'euro près pour un montant écrit (« si la main d'œuvre c'est 397, ça pourra pas être arrondi à 10 »). **Reste** : la batterie commune du 28 octobre, verte, et `main` ; la suite `test-main-oeuvre-barre-e2e.ts` joue son geste jusqu'au devis. Historique de la planche : sa demande, « propose-moi quelque chose de plus joli, de mieux pour le curseur » de `RepartirLaMainOeuvre.tsx`. Planche `appli/soignee/main-oeuvre-curseur.html` : une seule barre pour le total, un morceau par travail (teintes du vert pin mêlé à la carte), une poignée par joint qui ne change que les deux travaux voisins, de 10 € en 10 € (le pas de `repartirMainOeuvre`), une bulle au-dessus du doigt, plus de pourcentage. **Refaite plus jolie le même soir** (« c'est pas mal, tu peux faire mieux ? ») : la répartition sur sa plage claire, des poignées rondes accrochées sous le joint, la bulle qui pointe la poignée tenue, les noms en écriture de titre, le total en bas ; la première reste en vue « Première ». **Et le montant se touche pour s'écrire** (sa réponse du même soir) : le travail d'à côté prend la différence, le suivant complète s'il n'a pas assez, d'abord arrondi à 10 €, puis à l'euro près (sa réponse). **Les couleurs, refaites le même soir** (« vraiment à chier ») : vert, doré, bleu, sarcelle, rose, des jetons de l'appli, en « vives » ou « douces », **puis en pastel à sa demande** (« mets des couleurs pastel, fais plusieurs propositions ») : quatre palettes fixes, Jardin, Provence, Bord de mer, Verger, à coder en jetons qui ne suivent pas la charte (comme les couleurs du planning) ; l'écriture du montant se choisit sur la couleur peinte. **Puis un cran moins pastel**, devant sa capture à cinq travaux où un seul montant restait dans la barre : un seuil fixe de 62 px taisait tout montant sous 350 €, le montant s'écrit désormais s'il tient, mesuré sur son texte, en plus petit avant de se taire. Vu sur le vrai composant (`aujourdhui/main-oeuvre.jpg`, rendu hors serveur) : les trois pourcentages font 101 %, le pas de 1 % (16 € sur 1 600 €) fait avancer les montants de 10 puis de 20, et `deplacer` fait bouger tous les autres curseurs. Le codage touche au devis : niveau 3.
+
+**⚠ DÉFAUT LU DANS LE CODE, PAS REJOUÉ (27 octobre 2026) : retirer un salarié d'UN jour du planning efface TOUTE son absence.** `PasLaCeJour` (« Julien, annuler », la croix, et `poserLeMoment` qui retire puis repose) appelle `rouvrirLeJour(id)` → `retirerAbsenceAction` → `retirerAbsenceEquipe`, qui retire la ligne entière (`premier_jour` à `dernier_jour`). Une semaine notée dans Réglages, Équipe disparaît d'un appui sur un seul jour, sans le dire, et ses dates redeviennent proposables au client. À reproduire d'abord (test rouge), puis corriger à la racine : le geste d'un jour découpe la période. Niveau 3 (écriture en base). Corrigé par C si elle est retenue ; à corriger quand même avec A ou B.
+
+**Vos clients soignée (`appli/soignee/clients.html`) : PAS CODÉE.** Seule la fiche d'un client l'a été le 25 octobre ; « Livrées » plus haut veut dire dessinée. Le 27 octobre il a posé sa condition : « est-ce qu'on peut importer un fichier CSV ? Si oui, tu peux la coder ». Réponse : non, l'appli n'importe aucune liste de clients (« Importer devis / facture » prend PDF, ZIP et photos ; la fiche du mode d'emploi `clients-importer` le dit), et la planche n'en montre pas. Codage en attente de sa réponse.
 
 **Ma TVA, SES CHOIX DU 26 OCTOBRE, CODÉS SUR `lot/ma-tva-soignee` :** vert et sable pour « Scanner un ticket » et « Écrire à la main » (`AchatsTva.tsx`), chiffres de l'addition bleu (collectée) et vert (déductible) (`LigneMontant.tsx`, `teinte`), bouts ronds (déjà la forme de l'appli, « Ajouter aux achats » compris), nom et montant d'une facture en attente en gras, « Payé par » dans la saisie d'un règlement partiel (`EnAttenteDePaiement.tsx`). Types et style verts. **Niveau 3 (argent), batterie pas jouée à sa demande** : sans elle, `garde-fusion-main` refuse `main`, le lot attend sur sa branche. Pas regardé à l'écran ici (ni base ni serveur montés). Puis, à sa demande, le reste de Proposé : « Ma TVA » en clair sous le mois (posé dans `page.tsx`, `EnTeteEcran` partagé n'est pas touché), les mois de la frise en entier à 15,5 px, les libellés de l'addition en mots (`LigneMontant`), « Copié » écrit à la place du carré (`test-tva-calculette-e2e` suit), rien sous 13 px, second plan à l'encre douce, noms en serif 18 px, « J'ai reçu le paiement » sur toute la largeur avec « J'ai reçu une partie » dessous. Les suites qui MESURENT l'écran (`test-tva-en-tete-e2e`) n'ont pas été rejouées : la batterie le dira.
 
@@ -76,7 +100,7 @@ trouvé en ATTAQUANT (pas en relisant) :
 **`photos` et `notes_vocales`, dans `/api/fichiers/[...key]`, gagnent le même second rempart que le
 logo** (fait, sur `main` après fusion) — un scénario e2e A-contre-B a vu A recevoir, pour de vrai,
 la photo d'un chantier de B, sous le rôle qui traverse la RLS (celui des suites e2e, par
-construction) ; non reproduit sous le rôle réel (`atlas_app`). `ARCHITECTURE.md` §520. Batterie
+construction) ; non reproduit sous le rôle réel (`atlas_app`). `ARCHITECTURE.md` §527. Batterie
 complète rejouée après la fusion : 513/513 base, 196/197 navigateur (le seul rouge,
 `test-dossiers-comptables-e2e.ts`, est déjà rouge sur `main` par ailleurs, sans rapport avec ce lot).
 
@@ -343,6 +367,21 @@ une longue batterie, ou d'un état laissé par une suite voisine. | nous |
 - **Deux vannes de goutte-à-goutte** : le rail de chacune montre toutes les
   couronnes du jardin (`postes.ts`), donc la liste les compterait deux fois.
   Cas rare, non vu chez lui ; à corriger quand il se présente à l'essai.
+
+## ⏳ ARROSAGE : SON CROQUIS DU 27 OCTOBRE, CE QUI RESTE (27 octobre 2026)
+
+Fait le 27 : coins tirés retirés des zones, consigne de lecture corrigée (cote
+écrite avant déduction, bande cotée en deux fois, zone dans une autre).
+Reste :
+
+1. **`npm run verifier:croquis` sur son espace** : le second croquis (massif
+   6 × 3 dans la pelouse, bande GAG 7,50 + 4,50) doit sortir en 6 × 3, 12 m,
+   pelouse 12 × 10, massif dedans. Propriétaire : lui (une commande), puis nous.
+2. ~~Un massif DANS la pelouse : le découper ?~~ Sa réponse du 27 octobre,
+   « oui » : codé le même jour (`coupeursDe`, `dessin-du-plan.ts`).
+3. ~~La nourrice recouvre le nom d'une zone~~ « La A », sa réponse du
+   27 octobre (`appli/arrosage-nom-et-nourrice.html`) : codé le même jour
+   (`placeDuNom`, `dessin-du-plan.ts`).
 
 ## ⏳ ARROSAGE : LA LECTURE QUI DÉDUIT LES COTES, À ÉPROUVER SUR SA PHOTO (21 octobre 2026)
 

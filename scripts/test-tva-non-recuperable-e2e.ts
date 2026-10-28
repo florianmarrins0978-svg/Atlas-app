@@ -79,7 +79,7 @@ async function ecrire(page: Page, fournisseur: string, total: string, taux: stri
   await page.waitForSelector("text=À la main", { timeout: 10_000 });
   await page.getByPlaceholder("Station, magasin…").fill(fournisseur);
   await page.getByPlaceholder("0,00 €").fill(total);
-  await page.getByPlaceholder("20").fill(taux);
+  await page.getByLabel("Taux").fill(taux);
 }
 
 async function ligne(page: Page, fournisseur: string) {

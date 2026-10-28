@@ -801,7 +801,7 @@ export default function FormulaireFicheDeSecurite({
               </label>
             </div>
             {rangOuvert !== null && (
-              <VisionneusePhoto photos={sesPhotos.map((p) => p.storageKey)} rang={rangOuvert} onRang={setRangOuvert} onFermer={() => setRangOuvert(null)}>
+              <VisionneusePhoto photos={sesPhotos.map((p) => `/api/fichiers/${p.storageKey}`)} rang={rangOuvert} onRang={setRangOuvert} onFermer={() => setRangOuvert(null)}>
                 {signeeLe === null && sesPhotos[rangOuvert] && (
                   <button type="button" data-atlas="retirer-photo-de-la-fiche" onClick={() => void retirerLaPhoto(sesPhotos[rangOuvert]!.id)} aria-label="Retirer cette photo" className="flex h-11 items-center justify-center rounded-full px-4 text-[11px] font-semibold uppercase" style={{ backgroundColor: voile(surPlein, 0.12), color: colors.orSurEncre, letterSpacing: "0.26em" }}>
                     Retirer

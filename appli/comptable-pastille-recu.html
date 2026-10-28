@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pastille du virement reçu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/*
+  LA PASTILLE DU VIREMENT REÇU — 27 octobre 2026
+
+  CE QU'IL A DIT : « La pastille du virement reçu est très foncée, elle tire sur
+  le gris. Une couleur un peu plus vive, qu'on sache tout de suite que c'est un
+  virement qu'on a reçu. »
+
+  Aujourd'hui : #2f3b2f, un vert presque noir. Les quatre propositions sont
+  posées à côté de « Repas » (vert) et « Train, taxi » (turquoise), les deux
+  couleurs dont elle ne doit pas se rapprocher. Sur les chartes Nuit et Sylve,
+  la teinte choisie remonte toute seule, comme les autres catégories.
+*/
+:root{
+  --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44; --scene:#e6e3dc;
+  --trait:rgba(28,28,26,.12); --vert:#1f7a45; --rouge:#b3392b;
+  --repas:#4f8a3c; --transport:#2b8586; --virement:#a3506b; --autre:#8a8578;
+  --serif:"Playfair Display",ui-serif,Georgia,serif;
+  --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --recu:#2f3b2f;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 var(--sans);color:var(--encre);-webkit-text-size-adjust:100%}
+button{font-family:inherit;-webkit-tap-highlight-color:transparent;cursor:pointer;color:inherit}
+:focus-visible{outline:2px solid #B98B47;outline-offset:2px}
+
+.choix{position:sticky;top:0;z-index:20;background:var(--scene);padding:12px 16px;border-bottom:1px solid var(--trait);display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.choix button{min-height:46px;border-radius:999px;border:0;background:transparent;box-shadow:inset 0 0 0 1px var(--trait);font-size:15px;font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:9px;white-space:nowrap}
+.choix button[aria-pressed=true]{box-shadow:inset 0 0 0 2px var(--encre);font-weight:600}
+.choix i{width:14px;height:14px;border-radius:50%;display:inline-block}
+
+.ecran{max-width:430px;margin:0 auto;background:var(--fond);min-height:100vh;padding:20px 0 40px}
+h1{font:400 30px/1.15 var(--serif);margin:6px 24px 0}
+.sous{margin:2px 24px 0;color:var(--encre-douce);font-size:15px}
+.legende{margin:16px 24px 0;display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px;color:var(--encre-douce)}
+.legende span{display:inline-flex;align-items:center;gap:7px}
+.legende i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.jour{margin:22px 24px 2px;font-size:15px;font-weight:700}
+.ligne{margin:0 24px;padding:12px 0;border-top:1px solid var(--trait);display:flex;gap:12px;align-items:flex-start}
+.point{width:10px;height:10px;border-radius:50%;margin-top:7px;flex:none}
+.corps{flex:1;min-width:0}
+.nom{display:block;font-size:16px;font-weight:500;overflow-wrap:anywhere}
+.cat{display:block;font-size:14px;color:var(--encre-douce)}
+.montant{flex:none;font:400 17px/1.3 var(--serif);font-variant-numeric:tabular-nums;white-space:nowrap}
+.entree{color:var(--vert)}.sortie{color:var(--rouge)}
+.barre{display:flex;height:10px;gap:2px;margin:18px 24px 0}
+.barre i{display:block;border-radius:999px}
+.note{margin:22px 24px 0;font-size:14px;color:var(--encre-douce)}
+</style>
+</head>
+<body>
+
+<div class="choix" role="group" aria-label="Couleur">
+  <button type="button" data-c="#2f3b2f" aria-pressed="true"><i style="background:#2f3b2f"></i>Actuelle</button>
+  <button type="button" data-c="#12a150" aria-pressed="false"><i style="background:#12a150"></i>Vert vif</button>
+  <button type="button" data-c="#0aa37f" aria-pressed="false"><i style="background:#0aa37f"></i>Émeraude</button>
+  <button type="button" data-c="#2fb344" aria-pressed="false"><i style="background:#2fb344"></i>Vert franc</button>
+</div>
+
+<main class="ecran">
+  <p class="sous">Pour mon comptable</p>
+  <h1>Octobre 2026</h1>
+
+  <div class="legende">
+    <span><i style="background:var(--repas)"></i>Repas</span>
+    <span><i style="background:var(--transport)"></i>Train, taxi</span>
+    <span><i style="background:var(--virement)"></i>Virement envoyé</span>
+    <span><i style="background:var(--autre)"></i>Autre</span>
+    <span><i style="background:var(--recu)"></i>Virement reçu</span>
+  </div>
+
+  <h2 class="jour">27 octobre</h2>
+  <div class="ligne"><span class="point" style="background:var(--recu)"></span><span class="corps"><span class="nom">VIR M DUPONT FACTURE F-2026-014</span><span class="cat">Virement reçu</span></span><span class="montant entree">+864,00 €</span></div>
+  <div class="ligne"><span class="point" style="background:var(--repas)"></span><span class="corps"><span class="nom">CB BOULANGERIE DU PORT</span><span class="cat">Repas</span></span><span class="montant sortie">−12,40 €</span></div>
+  <h2 class="jour">24 octobre</h2>
+  <div class="ligne"><span class="point" style="background:var(--virement)"></span><span class="corps"><span class="nom">PRLV SEPA BOUYGUES TELECOM</span><span class="cat">Virement envoyé</span></span><span class="montant sortie">−30,99 €</span></div>
+  <div class="ligne"><span class="point" style="background:var(--recu)"></span><span class="corps"><span class="nom">VIR MME COSTA ACOMPTE</span><span class="cat">Virement reçu</span></span><span class="montant entree">+1 728,00 €</span></div>
+  <div class="ligne"><span class="point" style="background:var(--transport)"></span><span class="corps"><span class="nom">SNCF TRAIN</span><span class="cat">Train, taxi</span></span><span class="montant sortie">−48,00 €</span></div>
+  <div class="ligne"><span class="point" style="background:var(--autre)"></span><span class="corps"><span class="nom">PAIEMENT CB ZOOPLUS</span><span class="cat">Autre</span></span><span class="montant sortie">−69,34 €</span></div>
+
+  <p class="note">Touchez une couleur en haut : toutes les pastilles du virement reçu changent.</p>
+</main>
+
+<script>
+document.querySelector(".choix").addEventListener("click", function (e) {
+  var b = e.target.closest("button"); if (!b) return;
+  document.documentElement.style.setProperty("--recu", b.getAttribute("data-c"));
+  document.querySelectorAll(".choix button").forEach(function (x) { x.setAttribute("aria-pressed", x === b); });
+});
+</script>
+</body>
+</html>

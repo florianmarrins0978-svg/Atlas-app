@@ -12,6 +12,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { logger } from "@/server/logger";
 import { marquerReponseVue } from "@/server/repositories/envois-devis";
 import { marquerReceptionVue } from "@/server/repositories/envois-factures";
+import { marquerAttestationVue, marquerRetourVu } from "@/server/repositories/verification-comptable";
 import { getOuCreerDevisBrouillon } from "@/server/repositories/devis";
 import { repousserRappelFacture, marquerRappelVu } from "@/server/repositories/rappels";
 import { retirerContratDeLaListe } from "@/server/repositories/contrats-entretien";
@@ -48,6 +49,30 @@ export async function marquerReceptionVueAction(envoiId: string) {
   await marquerReceptionVue(ctx, envoiId);
   revalidatePath("/");
   revalidatePath("/termines/tva");
+}
+
+/**
+ * « J'ai vu » sur l'attestation du comptable (sa planche du 27 octobre 2026) :
+ * la carte quitte l'accueil. L'attestation, elle, reste dans Mes dossiers.
+ */
+export async function marquerAttestationVueAction(attestationId: string) {
+  const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/termines/comptable", "marquer une attestation comme vue");
+  if (!/^[0-9a-f-]{36}$/i.test(attestationId)) return;
+  await marquerAttestationVue(ctx, attestationId);
+  revalidatePath("/");
+}
+
+/**
+ * « J'ai vu » sur la correction demandée par le comptable (sa planche du
+ * 27 octobre 2026) : la carte quitte l'accueil, la demande reste dans Mes dossiers.
+ */
+export async function marquerRetourVuAction(retourId: string) {
+  const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/termines/comptable", "marquer une correction demandée comme vue");
+  if (!/^[0-9a-f-]{36}$/i.test(retourId)) return;
+  await marquerRetourVu(ctx, retourId);
+  revalidatePath("/");
 }
 
 /**

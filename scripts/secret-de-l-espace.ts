@@ -110,7 +110,15 @@ export async function assurerLeSecretDeLEspace(): Promise<{ etat: "deja-la" | "c
 
   const adresse = process.env.DATABASE_SUPER_URL;
   if (!adresse) return { etat: "echec", raison: "DATABASE_SUPER_URL absent : impossible de re-chiffrer, l'ancienne clé reste" };
-  const client = new pg.Client({ connectionString: adresse, connectionTimeoutMillis: 10_000 });
+  // **Renoncer plutôt qu'attendre — 27 octobre 2026.** Cette étape se joue avant
+  // le lancement du serveur : une table verrouillée ailleurs la faisait attendre
+  // sans fin, et son application ne revenait jamais. Passé ces délais, la
+  // requête échoue, la transaction se défait, et l'ancienne clé sert encore.
+  const client = new pg.Client({
+    connectionString: adresse,
+    connectionTimeoutMillis: 10_000,
+    options: "-c lock_timeout=5000 -c statement_timeout=20000",
+  });
   try {
     await client.connect();
 

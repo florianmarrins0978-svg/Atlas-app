@@ -13,6 +13,8 @@ import {
   corrigerDevisAction,
   repousserRappelFactureAction,
   marquerRappelVuAction,
+  marquerAttestationVueAction,
+  marquerRetourVuAction,
 } from "./actions";
 import type { GenreRappel, GenreVu } from "@/lib/rappels";
 import { couleurDuGeste, couleursDuTon, type TonCarte } from "@/lib/ton-des-cartes";
@@ -20,6 +22,7 @@ import TitreDeCarte from "@/components/atlas/TitreDeCarte";
 import type { QuestionDeVirement } from "@/lib/virement-en-mots";
 import ReponseVirement from "./ReponseVirement";
 import type { NotificationPatron, EnvoiCaduc } from "@/server/repositories/envois-devis";
+import { MOT_DE_LA_CONCLUSION, TON_DE_LA_CONCLUSION, texteDeLaCarte, type Conclusion } from "@/lib/attestation-comptable";
 
 /** Un rappel, déjà mis en mots par le serveur — voir `src/lib/rappels.ts`. */
 export type RappelAffiche = {
@@ -445,11 +448,26 @@ export type AccordBancaireAffiche = {
   quand: number;
 };
 
-/** Ce que l'accueil range : une carte, une question de virement, ou l'accord bancaire. */
+/** L'attestation que le comptable vient de signer (sa planche du 27 octobre 2026). */
+export type AttestationAffichee = {
+  id: string;
+  conclusion: Conclusion;
+  signataireNom: string;
+  lignes: number;
+  rejetees: number;
+  quand: number;
+};
+
+/** Le comptable renvoie le dossier à corriger (sa planche du 27 octobre 2026). */
+export type RetourAffiche = { id: string; message: string | null; rejetees: number; quand: number };
+
+/** Ce que l'accueil range : une carte, une question de virement, l'accord bancaire, ou ce que dit le comptable. */
 type Element =
   | { sorte: "carte"; carte: Carte; quand: number }
   | { sorte: "virement"; question: QuestionDeVirement; quand: number }
-  | { sorte: "accord"; accord: AccordBancaireAffiche; quand: number };
+  | { sorte: "accord"; accord: AccordBancaireAffiche; quand: number }
+  | { sorte: "attestation"; attestation: AttestationAffichee; quand: number }
+  | { sorte: "retour"; retour: RetourAffiche; quand: number };
 
 export default function Notifications({
   initiales,
@@ -458,6 +476,8 @@ export default function Notifications({
   receptions = [],
   virements = [],
   accord = null,
+  attestations = [],
+  retours = [],
 }: {
   initiales: NotificationPatron[];
   caducs: EnvoiCaduc[];
@@ -469,6 +489,10 @@ export default function Notifications({
   virements?: QuestionDeVirement[];
   /** La fin de l'accord bancaire, quand elle approche. */
   accord?: AccordBancaireAffiche | null;
+  /** Les attestations du comptable qu'il n'a pas encore vues. */
+  attestations?: AttestationAffichee[];
+  /** Les corrections que son comptable demande, pas encore vues. */
+  retours?: RetourAffiche[];
 }) {
   // Retirée à l'écran dès l'appui, sans attendre le serveur : le patron a fait
   // son geste, lui laisser la carte sous les yeux le ferait douter.
@@ -526,7 +550,11 @@ export default function Notifications({
     lesRappels.map(enElement),
     lesReponses.map(enElement),
     virements.map((question) => ({ sorte: "virement" as const, question, quand: question.quand })),
-    accord ? [{ sorte: "accord" as const, accord, quand: accord.quand }] : []
+    accord ? [{ sorte: "accord" as const, accord, quand: accord.quand }] : [],
+    attestations
+      .filter((a) => !masquees.includes(`attestation-${a.id}`))
+      .map((attestation) => ({ sorte: "attestation" as const, attestation, quand: attestation.quand })),
+    retours.filter((r) => !masquees.includes(`retour-${r.id}`)).map((retour) => ({ sorte: "retour" as const, retour, quand: retour.quand }))
   );
   if (restantes.length === 0) return null;
 
@@ -632,6 +660,36 @@ export default function Notifications({
       {visibles.map((e) => {
         if (e.sorte === "virement") return <CarteVirement key={`virement-${e.question.virementId}`} question={e.question} />;
         if (e.sorte === "accord") return <CarteAccord key="accord-bancaire" accord={e.accord} />;
+        if (e.sorte === "retour") {
+          const id = e.retour.id;
+          return (
+            <CarteRetour
+              key={`retour-${id}`}
+              retour={e.retour}
+              vu={() => {
+                setMasquees((v) => [...v, `retour-${id}`]);
+                demarrer(() => {
+                  void marquerRetourVuAction(id);
+                });
+              }}
+            />
+          );
+        }
+        if (e.sorte === "attestation") {
+          const id = e.attestation.id;
+          return (
+            <CarteAttestation
+              key={`attestation-${id}`}
+              attestation={e.attestation}
+              vu={() => {
+                setMasquees((v) => [...v, `attestation-${id}`]);
+                demarrer(() => {
+                  void marquerAttestationVueAction(id);
+                });
+              }}
+            />
+          );
+        }
         const n = e.carte;
         const couleurs = couleursDuTon(n.ton);
         return (
@@ -879,6 +937,68 @@ function CarteAccord({ accord }: { accord: AccordBancaireAffiche }) {
         <Link href="/reglages/banque" className="inline-flex min-h-[48px] items-center px-2 text-[16px] font-bold" style={{ color: couleurDuGeste("ambre") }}>
           Renouveler
         </Link>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * « Votre comptable a signé » — sa planche du 27 octobre 2026. La couleur est
+ * celle de la conclusion : vert conforme, ambre avec réserves, rouge non
+ * conforme. Une seule carte par signature, jamais une par ligne cochée.
+ */
+function CarteAttestation({ attestation: a, vu }: { attestation: AttestationAffichee; vu: () => void }) {
+  const ton = TON_DE_LA_CONCLUSION[a.conclusion];
+  const couleurs = couleursDuTon(ton);
+  return (
+    <div data-atlas="carte-attestation" data-atlas-ton={ton} className="rounded-[18px] px-5 pb-1 pt-3.5" style={{ backgroundColor: couleurs.fond }}>
+      <TitreDeCarte ton={ton}>Votre comptable a signé</TitreDeCarte>
+      <p className="mt-1 text-[20px] leading-[1.2]" style={{ fontFamily: font.display, color: colors.ink }}>
+        {MOT_DE_LA_CONCLUSION[a.conclusion]}
+      </p>
+      <p className="mt-1 text-[15px] leading-[1.45]" style={{ color: colors.ink }}>
+        {texteDeLaCarte({ nom: a.signataireNom, lignes: a.lignes, rejetees: a.rejetees })}
+      </p>
+      <div className="-mx-2 mt-1 flex items-center gap-[22px]">
+        <Link href="/termines/comptable/dossiers" className="inline-flex min-h-[48px] items-center px-2 text-[16px] font-bold" style={{ color: couleurDuGeste(ton) }}>
+          {a.rejetees > 0 ? "Reprendre les lignes" : "Ouvrir l’attestation"}
+        </Link>
+        <button type="button" onClick={vu} className="inline-flex min-h-[48px] items-center px-2 text-[16px] font-medium" style={{ color: colors.inkSoft }}>
+          J’ai vu
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * « Correction demandée » par son comptable — sa planche du 27 octobre 2026,
+ * la même carte que le client qui demande une correction de devis : ambre,
+ * son mot dessus, et ce qu'il y a à reprendre.
+ */
+function CarteRetour({ retour: r, vu }: { retour: RetourAffiche; vu: () => void }) {
+  const couleurs = couleursDuTon("ambre");
+  return (
+    <div data-atlas="carte-correction-comptable" data-atlas-ton="ambre" className="rounded-[18px] px-5 pb-1 pt-3.5" style={{ backgroundColor: couleurs.fond }}>
+      <TitreDeCarte ton="ambre">Correction demandée</TitreDeCarte>
+      <p className="mt-1 text-[20px] leading-[1.2]" style={{ fontFamily: font.display, color: colors.ink }}>
+        Votre dossier justifié
+      </p>
+      {r.message && (
+        <p className="mt-2 text-[17px] italic leading-[1.4]" style={{ fontFamily: font.display, color: colors.ink }}>
+          «&nbsp;{r.message}&nbsp;»
+        </p>
+      )}
+      <p className="mt-1 text-[15px] leading-[1.45]" style={{ color: colors.ink }}>
+        Votre comptable a rejeté {r.rejetees === 1 ? "1 ligne" : `${r.rejetees} lignes`}.
+      </p>
+      <div className="-mx-2 mt-1 flex items-center gap-[22px]">
+        <Link href="/termines/comptable/dossiers" className="inline-flex min-h-[48px] items-center px-2 text-[16px] font-bold" style={{ color: couleurDuGeste("ambre") }}>
+          Corriger les lignes
+        </Link>
+        <button type="button" onClick={vu} className="inline-flex min-h-[48px] items-center px-2 text-[16px] font-medium" style={{ color: colors.inkSoft }}>
+          J’ai vu
+        </button>
       </div>
     </div>
   );

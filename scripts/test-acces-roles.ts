@@ -107,6 +107,9 @@ const OUVERT_AU_SALARIE = [
   "/reglages/vehicules",
   "/reglages/vehicules/xxxx",
   "/reglages/vehicules/xxxx/document/xxxx",
+  // Le PDF du même document, que l'assistant joint (28 octobre 2026) : le
+  // salarié lit déjà sa page, le fichier n'en dit pas plus.
+  "/reglages/vehicules/xxxx/document/xxxx/pdf",
   // La carte du point GPS de la fiche de sécurité, qu'il remplit sur place.
   "/api/carte/adresse",
   "/api/carte/tuile",
@@ -234,6 +237,8 @@ essai("le commercial atteint l'application, sauf les adresses nommées", () => {
     // dossier montre chaque ligne de banque et ses montants. La pièce d'une
     // ligne (ticket, facture) se sert par sa propre route, fermée de même.
     "/termines/comptable",
+    // L'attestation signée du comptable (27 octobre 2026), fermée comme son dossier.
+    "/termines/comptable/attestations/xxxx/pdf",
     "/termines/comptable/bilans/xxxx/xxxx",
     "/termines/comptable/dossiers",
     "/termines/comptable/dossiers/xxxx/pdf",
@@ -252,6 +257,9 @@ essai("le commercial atteint l'application, sauf les adresses nommées", () => {
     // comme Ma TVA : le commercial n'a « ni les factures, ni la TVA ».
     "/termines/tva/collectee",
     "/termines/tva/deductible",
+    // La photo d'un ticket, que l'assistant joint à sa réponse (28 octobre
+    // 2026) : c'est une dépense, fermée comme le reste de la TVA.
+    "/termines/tva/ticket/xxxx",
   ]);
 });
 

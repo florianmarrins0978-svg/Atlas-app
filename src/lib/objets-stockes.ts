@@ -182,9 +182,9 @@ export const COLONNES_OBJET: readonly ColonneObjet[] = [
   {
     table: "mouvements_bancaires",
     colonne: "piece_cle",
-    quoi: "la facture faite hors d'Atlas qui justifie un virement reçu",
+    quoi: "la facture photographiée ou en PDF qui justifie un virement",
     absenceNormale: true,
-    raisonAbsence: "seul un virement justifié par une facture faite hors d'Atlas en porte une",
+    raisonAbsence: "seul un virement justifié par une facture jointe en porte une",
   },
   // Les trois papiers d'un véhicule (migration 0131, 14 octobre 2026).
   {
@@ -238,6 +238,14 @@ export const COLONNES_OBJET: readonly ColonneObjet[] = [
     table: "bilans_comptables",
     colonne: "fichier_cle",
     quoi: "le bilan rendu par le comptable",
+    absenceNormale: false,
+  },
+  // L'attestation signée par le comptable (migration 0151, 27 octobre 2026) :
+  // elle naît avec son PDF (NOT NULL), son absence est une perte.
+  {
+    table: "attestations_comptable",
+    colonne: "fichier_cle",
+    quoi: "l'attestation signée par le comptable",
     absenceNormale: false,
   },
   {

@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Voir le dossier en PDF</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/*
+  VOIR LE DOSSIER EN PDF — 27 octobre 2026
+
+  CE QU'IL A DIT : « Ça serait bien qu'on voie le dossier en PDF. Il y a
+  marqué Ouvrir, mais on ne sait pas, il n'y a pas de nom de dossier, il n'y a
+  pas de dossier. Moi, je lis ça, je ne sais pas où est le dossier. »
+
+  Aujourd'hui, la carte d'un dossier rangé ne montre que trois boutons : le
+  fichier lui-même n'est nulle part. Trois façons de le montrer :
+
+    · ACTUEL : ce qu'il voit aujourd'hui.
+    · A : une ligne « fichier » (icône PDF, nom, taille), qui s'ouvre d'un appui.
+    · B : la première page en miniature à côté du nom, qui s'ouvre d'un appui.
+
+  La miniature de B demande qu'Atlas dessine la première page du PDF : plus
+  de travail que A, et le résultat est plus parlant. Les noms, dates et
+  nombres ci-dessous sont un exemple.
+*/
+:root{
+  --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --plein:#7d9a6d; --or:#B98B47; --trait:rgba(28,28,26,.12);
+  --scene:#e6e3dc; --serif:"Playfair Display",ui-serif,Georgia,serif;
+  --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 var(--sans);color:var(--encre);-webkit-text-size-adjust:100%}
+button,a{font-family:inherit;-webkit-tap-highlight-color:transparent;cursor:pointer;color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+[hidden]{display:none!important}
+
+.choix{position:sticky;top:0;z-index:20;background:var(--scene);padding:12px 16px;border-bottom:1px solid var(--trait);display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.choix button{min-height:46px;border-radius:999px;border:0;background:transparent;box-shadow:inset 0 0 0 1px var(--trait);font-size:14px;padding:0 6px;font-weight:500;white-space:nowrap}
+.choix button[aria-pressed=true]{box-shadow:inset 0 0 0 2px var(--encre);font-weight:600}
+
+.ecran{max-width:430px;margin:0 auto;background:var(--fond);min-height:100vh;padding:24px 0 40px}
+h1{font:400 32px/1.15 var(--serif);margin:6px 24px 0}
+.sous{margin:6px 24px 0;color:var(--encre-douce);font-size:15px}
+.rub{margin:28px 24px 0;font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:var(--encre-douce)}
+.annee{margin:12px 24px 0;background:var(--carte);border-radius:22px;text-align:center;font:400 40px/1.2 var(--serif);padding:14px 0}
+.compte{margin:10px 24px 0;text-align:center;color:var(--encre-douce);font-size:16px}
+.nom{margin:22px 24px 0;font:400 22px/1.25 var(--serif)}
+.detail{margin:6px 24px 0;font-size:14.5px;color:var(--encre-douce);line-height:1.45}
+.creux{margin:14px 24px 0;display:flex;min-height:52px;width:calc(100% - 48px);align-items:center;justify-content:center;gap:10px;border-radius:999px;border:0;background:var(--carte);box-shadow:inset 0 0 0 1.5px var(--trait);font-size:16px;font-weight:500}
+.verif{margin:14px 24px 0;display:inline-flex;gap:8px;align-items:center;padding:4px 12px;border-radius:999px;background:#e4eadf;color:#3f6b3a;font-size:14px;font-weight:600}
+.verif i{width:7px;height:7px;border-radius:50%;background:currentColor}
+
+/* A : la ligne fichier */
+.fichier{margin:16px 24px 0;display:flex;gap:14px;align-items:center;width:calc(100% - 48px);padding:12px 14px;border-radius:18px;border:0;background:var(--carte);box-shadow:inset 0 0 0 1.5px var(--trait);text-align:left}
+.tuile{flex:none;width:46px;height:56px;border-radius:8px;background:#fff;box-shadow:inset 0 0 0 1px var(--trait);display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;font:700 11px/1 var(--sans);letter-spacing:.06em;color:#a8552f;position:relative}
+.tuile::before{content:"";position:absolute;top:0;right:0;width:14px;height:14px;background:linear-gradient(225deg,var(--fond) 50%,#e8e5dc 50%);border-bottom-left-radius:6px}
+.fichier .corps{flex:1;min-width:0}
+.fichier .titre{display:block;font-size:16px;font-weight:600;overflow-wrap:anywhere;line-height:1.3}
+.fichier .meta{display:block;font-size:14px;color:var(--encre-douce);margin-top:2px}
+.fichier .ouvrir{flex:none;color:var(--or)}
+
+/* B : la miniature */
+.mini{margin:16px 24px 0;display:flex;gap:16px;align-items:stretch;width:calc(100% - 48px);padding:14px;border-radius:18px;border:0;background:var(--carte);box-shadow:inset 0 0 0 1.5px var(--trait);text-align:left}
+.page{flex:none;width:108px;aspect-ratio:1/1.414;background:#fff;border-radius:4px;box-shadow:0 1px 0 var(--trait),0 6px 16px rgba(28,28,26,.14);padding:9px 8px;overflow:hidden;position:relative}
+.page b{display:block;font:500 8.5px/1.2 var(--serif);color:var(--encre)}
+.page small{display:block;font-size:5.5px;line-height:1.3;color:var(--gris);margin-top:2px}
+.page i{display:block;height:3px;border-radius:2px;background:#ddd9cf;margin-top:5px}
+.page i:nth-child(n+5){margin-top:3px}
+.page .kpi{display:flex;gap:4px;margin-top:8px}
+.page .kpi span{flex:1;height:14px;border-radius:2px;background:#efece4}
+.mini .corps{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}
+.mini .titre{font-size:16px;font-weight:600;line-height:1.3;overflow-wrap:anywhere}
+.mini .meta{font-size:14px;color:var(--encre-douce);margin-top:4px}
+.mini .voir{margin-top:10px;display:inline-flex;align-items:center;gap:6px;font-size:15px;font-weight:600;color:var(--or)}
+
+.trois{margin:14px 24px 0;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.geste{min-height:76px;border-radius:22px;border:0;background:var(--carte);box-shadow:inset 0 0 0 1.5px var(--trait);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px 4px;font-size:14px;font-weight:600;line-height:1.2;text-align:center}
+.geste svg{color:var(--or)}
+.fait{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:60;background:var(--encre);color:var(--fond);padding:12px 18px;border-radius:14px;font-size:15px}
+</style>
+</head>
+<body>
+
+<div class="choix" role="group" aria-label="Variante">
+  <button type="button" data-v="actuel" aria-pressed="true">Actuel</button>
+  <button type="button" data-v="a" aria-pressed="false">A. Ligne fichier</button>
+  <button type="button" data-v="b" aria-pressed="false">B. Miniature</button>
+</div>
+
+<main class="ecran">
+  <h1>Mes dossiers justifiés</h1>
+  <p class="sous">Gardés dix ans avec leur bilan, puis effacés.</p>
+  <p class="rub">Rangés</p>
+  <div class="annee">2026</div>
+  <p class="compte">1 dossier, aucun bilan du comptable</p>
+
+  <p class="nom">Du 1<sup>er</sup> janvier 2026 au 27 octobre 2026</p>
+  <p class="detail">Rangé le 27 octobre 2026, gardé jusqu’au 27 octobre 2036, 774 Ko</p>
+
+  <!-- A -->
+  <button type="button" class="fichier" data-ouvre hidden id="va">
+    <span class="tuile" aria-hidden="true">PDF</span>
+    <span class="corps">
+      <span class="titre">Dossier justifié, du 1er janvier au 27 octobre 2026.pdf</span>
+      <span class="meta">774 Ko, 60 lignes</span>
+    </span>
+    <span class="ouvrir" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5H5V6h5"/></svg></span>
+  </button>
+
+  <!-- B -->
+  <button type="button" class="mini" data-ouvre hidden id="vb">
+    <span class="page" aria-hidden="true">
+      <b>Dossier justifié</b><small>Du 1er janvier 2026<br>au 27 octobre 2026</small>
+      <span class="kpi"><span></span><span></span><span></span></span>
+      <i></i><i style="width:80%"></i><i style="width:90%"></i><i style="width:60%"></i><i></i><i style="width:75%"></i><i></i><i style="width:85%"></i><i style="width:50%"></i>
+    </span>
+    <span class="corps">
+      <span class="titre">Dossier justifié, du 1er janvier au 27 octobre 2026</span>
+      <span class="meta">PDF, 774 Ko, 60 lignes</span>
+      <span class="voir">Ouvrir le dossier
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5H5V6h5"/></svg></span>
+    </span>
+  </button>
+
+  <button type="button" class="creux">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+    Ajouter le bilan du comptable</button>
+  <span class="verif"><i></i>Vérifié par votre comptable : 0 sur 60</span>
+
+  <div class="trois">
+    <button type="button" class="geste" id="g-ouvrir" data-ouvre>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h8l4 4v14H6zM14 3v5h4M9 13h6M9 17h6"/></svg>Ouvrir</button>
+    <button type="button" class="geste">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>Télécharger</button>
+    <button type="button" class="geste">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 3 3 11l7 3 3 7zM10 14l11-11"/></svg>Envoyer au comptable</button>
+  </div>
+</main>
+<div id="fait" class="fait" role="status" hidden>Le PDF s’ouvre ici.</div>
+
+<script>
+var v = "actuel";
+function montrer() {
+  document.getElementById("va").hidden = v !== "a";
+  document.getElementById("vb").hidden = v !== "b";
+  // Avec la ligne fichier ou la miniature, le bouton « Ouvrir » fait double emploi : il s'efface.
+  document.getElementById("g-ouvrir").hidden = v !== "actuel";
+  document.querySelector(".trois").style.gridTemplateColumns = v === "actuel" ? "repeat(3,1fr)" : "repeat(2,1fr)";
+  document.querySelectorAll(".choix button").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-v") === v); });
+}
+document.querySelector(".choix").addEventListener("click", function (e) {
+  var b = e.target.closest("button"); if (!b) return; v = b.getAttribute("data-v"); montrer();
+});
+document.addEventListener("click", function (e) {
+  if (!e.target.closest("[data-ouvre]")) return;
+  var f = document.getElementById("fait"); f.hidden = false; clearTimeout(window.__m); window.__m = setTimeout(function () { f.hidden = true; }, 2200);
+});
+montrer();
+</script>
+</body>
+</html>

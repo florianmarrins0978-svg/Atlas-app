@@ -109,6 +109,15 @@ async function main() {
     assert.equal(await page.locator('[data-atlas="ligne-a-regarder"]', { hasText: "12,34" }).count(), 1);
   });
 
+  // Sa remarque du 27 octobre 2026 : le descriptif des mois passe en tête, les
+  // lignes à justifier viennent ensuite.
+  await test("les mois viennent avant les lignes à justifier", async () => {
+    const mois = await page.locator('[data-atlas="periodes"]').boundingBox();
+    const aJustifier = await page.locator('[data-atlas="a-regarder"]').boundingBox();
+    assert.ok(mois && aJustifier && mois.width > 0 && aJustifier.width > 0, "un des deux blocs ne se mesure pas : la comparaison ne dit rien");
+    assert.ok(mois.y < aJustifier.y, `les mois sont à ${Math.round(mois.y)} px, les lignes à justifier à ${Math.round(aJustifier.y)} px`);
+  });
+
   await test("le Check up relie le ticket qui tombe juste, et dit ce qu'il a fait", async () => {
     await page.click('[data-atlas="check-up"]');
     const bilan = await page.locator('[data-atlas="bilan-check-up"]').textContent({ timeout: 30_000 });
@@ -172,6 +181,19 @@ async function main() {
     assert.doesNotMatch(texte, /CB BOULANGERIE E2E/);
   });
 
+  // Sa demande du 27 octobre 2026 (option B de la planche) : la ligne à
+  // justifier du relevé porte ses gestes dessous, sans remonter au dossier.
+  await test("une ligne à justifier du relevé porte ses gestes dessous, et les autres non", async () => {
+    const ligne = page.locator('[data-atlas="releve"] li', { hasText: "CB SANS PIECE E2E" });
+    const gestes = ligne.locator('[data-atlas="gestes-de-la-ligne"]');
+    assert.equal(await gestes.count(), 1, "la ligne à justifier ne porte pas ses gestes");
+    assert.equal(await gestes.locator('[data-atlas="photographier-ticket"]').count(), 1, "« Photographier le ticket » manque sous la ligne");
+    // Le nom et le montant ne se répètent pas : la ligne les porte déjà.
+    assert.equal(await gestes.locator("text=CB SANS PIECE E2E").count(), 0, "la carte redit le nom de la ligne");
+    await page.click('[data-atlas="filtre-a-justifier"]');
+    assert.equal(await page.locator('[data-atlas="releve"] li', { hasText: "CB STATION E2E" }).count(), 0);
+  });
+
   await test("une période illisible et une pièce inconnue ne s'ouvrent pas", async () => {
     // Le statut ne dit rien ici : l'écran de chargement a déjà répondu 200
     // quand la page refuse. On regarde donc ce qui est AFFICHÉ.
@@ -223,6 +245,8 @@ async function main() {
     await page.goto(`${BASE}/termines/comptable`, { waitUntil: "networkidle" });
     const carte = page.locator('[data-atlas="ligne-a-regarder"]', { hasText: "VIR SARL ECART E2E" });
     await carte.locator('[data-atlas="joindre-facture"]').click();
+    // Sa remarque du 27 octobre 2026 : la photo ou le fichier se proposent aussi.
+    assert.equal(await carte.locator('[data-atlas="facture-hors-atlas"]').count(), 1, "la photo ou le fichier de la facture n'est pas proposé");
     await carte.locator('[data-atlas="choix-facture"]', { hasText: `${MARQUE} Motoculture` }).click();
     const encart = carte.locator('[data-atlas="ecart-de-montant"]');
     await encart.waitFor({ timeout: 30_000 });

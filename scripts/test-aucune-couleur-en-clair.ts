@@ -60,6 +60,9 @@ const SURVEILLES = [
   "src/app/clients/[id]/RepartirDeCeClient.tsx",
   // Les dates du mois dans le tiroir du planning (27 septembre 2026).
   "src/app/planning/DatesDuMois.tsx",
+  // La barre de la main d'œuvre (27 octobre 2026) : ses cinq pastels sont des
+  // jetons fixes (`pastelsMainOeuvre`), ses ombres des voiles d'encre.
+  "src/app/chantiers/[id]/RepartirLaMainOeuvre.tsx",
 ];
 
 /**

@@ -6,6 +6,7 @@
 // doit compter aucune tentative, et ne doit jamais murer un compte.
 
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import {
   CLES_MAX,
   NOM_APPAREIL_MAX,
@@ -184,6 +185,23 @@ essai("la borne du nombre de clés est annoncée dans son propre message", () =>
 
 essai("la borne reste au-dessus de ce qu'un artisan possède", () => {
   assert.ok(CLES_MAX >= 5, "un téléphone, une tablette, l'ordinateur du bureau, et de la marge");
+});
+
+// **27 octobre 2026 : un cadre rouge sur l'écran de connexion.** Il avait fermé
+// la fenêtre de Face ID ; le code l'écrivait en `console.error`, que Next
+// affiche en plein écran en mode développement. Un abandon garde sa trace
+// (le navigateur nomme pareil un vrai refus, `estAbandon`), mais en
+// avertissement : ce n'est pas une panne.
+essai("un abandon de Face ID ne s'écrit jamais comme une erreur", () => {
+  for (const fichier of ["src/app/login/LigneFaceId.tsx", "src/app/reglages/connexion/useActiverFaceId.ts"]) {
+    const code = readFileSync(fichier, "utf8");
+    assert.doesNotMatch(
+      code,
+      /^\s*console\.error\("\[face-id\]/m,
+      `${fichier} écrit tout refus en erreur : un simple abandon affiche le cadre rouge de Next`
+    );
+    assert.match(code, /estAbandon\(nom\)\s*\?\s*console\.warn\s*:\s*console\.error/, `${fichier} ne trie plus abandon et panne`);
+  }
 });
 
 console.log("");

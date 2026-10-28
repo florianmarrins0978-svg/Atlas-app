@@ -87,7 +87,8 @@ export function useActiverFaceId(onCles: (cles: CleAppareil[]) => void) {
         // **Le journal d'abord.** Le navigateur nomme la vraie cause —
         // `SecurityError` quand le domaine ne s'accorde pas — et sans elle on
         // répare une panne imaginée (`AGENTS.md`).
-        console.error("[face-id] activation refusée par le navigateur", nom, erreur);
+        // Un abandon en avertissement : `console.error` ouvre le cadre rouge de Next.
+        (estAbandon(nom) ? console.warn : console.error)("[face-id] activation refusée par le navigateur", nom, erreur);
         if (nom === "InvalidStateError") setRefus(messageRefusCle("deja-enregistree"));
         // **« panne-activation », et non « panne ».** On est DÉJÀ entré ici :
         // « entrez votre mot de passe » demanderait un geste qu'il vient de

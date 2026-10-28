@@ -10,6 +10,22 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## L'ATTESTATION DU COMPTABLE (27 octobre 2026)
+
+Le comptable signe, sur son lien, une attestation qui se range avec le dossier (`ARCHITECTURE.md` §523). **Les pièges :** une attestation ne se réécrit jamais (la base ne rend que `vu_le`) : une nouvelle signature fait une nouvelle ligne, et c'est la dernière qui compte. Les comptes se refont au serveur sur les verdicts ; ne jamais les prendre du navigateur. Le courriel passe par Brevo et ne doit RIEN porter du dossier (ni libellé, ni montant, ni PDF) : `test-attestation-comptable.ts` le refuse. Pour regarder la page du comptable sur un serveur de développement, passer par `localhost` : sur `127.0.0.1`, Next refuse ses scripts et la page ne s'hydrate pas (aucun bouton ne répond).
+
+**Le renvoi à corriger** (`ARCHITECTURE.md` §524) : les lignes renvoyées sont les REJETS relus au serveur, jamais une liste du navigateur ; un renvoi ne se réécrit pas (seul `vu_le`). **Atlas n'écrit jamais au comptable** : « Prévenir mon comptable » est un `mailto:` vers l'adresse qu'il a laissée, et doit le rester (sa règle, rien ne part sans son geste). L'avis Brevo au patron ne porte ni ligne, ni montant, ni le mot du comptable : `test-retour-comptable.ts` et la suite base le refusent. Pour l'éprouver au navigateur, une ligne de CARTE (« CB … ») : seule elle offre « Ticket perdu ».
+
+---
+## L'ASSISTANT JOINT LES DOCUMENTS (27 octobre 2026)
+
+Un outil qui veut joindre un document met `piece: pieceDu…()` dans son résultat (`src/lib/pieces-de-l-assistant.ts`) ; rien d'autre à brancher. Ne jamais fabriquer une pièce à la main ni laisser le modèle écrire une adresse (§525). Une photo se donne à `VisionneusePhoto` par son ADRESSE.
+
+---
+## LA BARRE DE LA MAIN D'ŒUVRE (27 octobre 2026, sur `main` le 28)
+
+`RepartirLaMainOeuvre.tsx` porte la planche `appli/soignee/main-oeuvre-curseur.html` (vue « Proposé », palette Jardin), codée sans batterie à sa demande. **Les pièges :** l'écran ne calcule rien, il appelle `jointATirer`, `glisserLeJoint` et `ecrireUnMontant` (`src/lib/main-oeuvre-dictee.ts`) et enregistre les montants obtenus comme parts ; `repartirMainOeuvre` écrit telles quelles des parts qui font juste le total, et repartage à la dizaine tout le reste. Changer l'une des trois sans les deux autres refait diverger la barre et le devis. Les teintes sont des jetons FIXES (`pastelsMainOeuvre`) et leur encre aussi : ne pas les dériver de la charte. Le montant d'un morceau se mesure dans un effet, sur le DOM, et ne passe pas par l'état (la règle `set-state-in-effect`). **Reste** : `npm run verifier:avant-livraison` (niveau 3), puis `main` (`ARCHITECTURE.md` §526, `docs/main-oeuvre-curseur.md`).
+
 ## POUR MON COMPTABLE : UN VIREMENT REÇU SE RÈGLE DANS SA LIGNE (26 octobre 2026)
 
 Une entrée se justifie par sa facture d'Atlas (`confirmerLaLigneRecue`, qui écrit la réponse de l'accueil dans la même transaction), par une facture faite hors d'Atlas (`facture_hors_atlas`, 0150) ou par une réponse de son sens (`MOTIFS_RECUS`). **Les pièges :** toute pose passe par `poser`, qui lit la ligne VERROUILLÉE et compare la pièce dans la même transaction (`refusDEcart`) : une nouvelle façon de justifier qui écrirait à côté échapperait au contrôle du montant. Le ticket photographié depuis sa ligne se compare AVANT d'être rangé (`ecartAvecLaLigne`). Le fichier d'une facture hors d'Atlas remplacée revient en `pieceRetiree` : l'action l'efface, après l'écriture. La contrainte de cohérence de 0150 est NOT VALID : ne la valider qu'après avoir compté les lignes qui ne la tiennent pas sur sa base (`ARCHITECTURE.md` §515).

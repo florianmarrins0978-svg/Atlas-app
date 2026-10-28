@@ -33,6 +33,7 @@ import path from "node:path";
 import { randomBytes } from "node:crypto";
 import { annoncePrete } from "./annonce-adresse.mjs";
 import { prendreVerrouBanc, libererVerrouBanc } from "./verrou-banc.mjs";
+import { noterEtape } from "./etape-du-banc.mjs";
 import { peutPrechauffer, memoireDisponibleMo } from "./memoire-prechauffage.mjs";
 import {
   versionEpinglee,
@@ -45,7 +46,7 @@ import {
   attendreLaConstructionEnCours,
   detenteursDuVerrou,
 } from "./verrou-construction.mjs";
-import { quoiServir, echangerLesDossiers } from "./relais-version-batie.mjs";
+import { quoiServir, echangerLesDossiers, servableParCeNext } from "./relais-version-batie.mjs";
 import { portLibre } from "./port-libre.mjs";
 
 const PORT = process.env.PORT ?? "3000";
@@ -129,6 +130,24 @@ const DIST_VIEILLE = `.next-batie${SUFFIXE_PORT}-vieille`;
 
 const temoinBatiDans = (dossier) => `${dossier}/atlas-version-batie.txt`;
 const TEMOIN_BATI = temoinBatiDans(DIST);
+// Le Next qui a bâti, à côté du commit : sans lui, une version bâtie par un
+// autre Next se servait et tombait aussitôt (27 octobre 2026).
+const temoinNextDans = (dossier) => `${dossier}/atlas-next-batie.txt`;
+// Relu à chaque question : `reinstallerSiDesaccordees` peut changer Next en route.
+const nextInstalle = () => {
+  try {
+    return JSON.parse(readFileSync("node_modules/next/package.json", "utf8")).version;
+  } catch {
+    return null; // Next absent : `reinstallerSiDesaccordees` le dira plus bas
+  }
+};
+const nextQuiABati = (dossier) => {
+  try {
+    return readFileSync(temoinNextDans(dossier), "utf8").trim() || null;
+  } catch {
+    return null; // non noté : version bâtie d'avant cette règle
+  }
+};
 
 // **Le témoin d'une construction EN COURS, et il porte son pid.**
 //
@@ -426,6 +445,8 @@ function versionDuCode() {
  */
 function doitRebatir(version) {
   if (!existsSync(`${DIST}/BUILD_ID`)) return "aucune version bâtie";
+  if (!servableParCeNext({ buildPresent: true, nextBati: nextQuiABati(DIST), nextInstalle: nextInstalle() }))
+    return "le Next installé n'est pas celui qui a bâti";
   if (!version) return null; // Hors git : on ne peut pas comparer, on garde.
   try {
     const bati = readFileSync(TEMOIN_BATI, "utf8").trim();
@@ -593,6 +614,7 @@ if (!verrou.pris) {
   process.exit(0);
 }
 process.on("exit", () => libererVerrouBanc());
+noterEtape("démarrage");
 
 // **Un orphelin d'hier soir ne doit pas condamner ce démarrage.**
 //
@@ -631,7 +653,7 @@ const { servirDavant, modeDeveloppement, dossierDeConstruction: DIST_CONSTRUCTIO
   // `BUILD_ID` et non le dossier : `next build` crée sa destination dès la
   // première seconde, et un dossier à demi rempli ne se sert pas. Ce fichier-là
   // n'est écrit qu'à la fin d'une construction réussie.
-  versionDavantUtilisable: existsSync(`${DIST}/BUILD_ID`),
+  versionDavantUtilisable: servableParCeNext({ buildPresent: existsSync(`${DIST}/BUILD_ID`), nextBati: nextQuiABati(DIST), nextInstalle: nextInstalle() }),
   dist: DIST,
   neuve: DIST_NEUVE,
 });
@@ -932,6 +954,7 @@ async function annoncerDesQueCaRepond(bati, davant = false) {
 // lancé, sortie 1 sans un mot après « Réinstallation avant de bâtir ».
 //
 // Ne coûte rien quand tout va bien : deux `package.json` lus, aucune commande.
+noterEtape("dépendances");
 await reinstallerSiDesaccordees();
 
 // **La clé de session DE SON ESPACE, jamais celle du dépôt** (audit du
@@ -942,10 +965,15 @@ await reinstallerSiDesaccordees();
 // fichier, jamais la clé. S'il échoue (base pas encore debout), l'ancienne clé
 // continue de servir et l'on retentera au prochain allumage : un banc qui ne
 // démarre plus ferait pire que la faille.
+noterEtape("clé de l'espace");
 try {
+  // Borné : quoi qu'il arrive dans cette étape, le serveur doit partir. Un
+  // dépassement lève, et l'ancienne clé sert (27 octobre 2026, un serveur qui
+  // ne revenait plus).
   const chemin = execFileSync(process.execPath, ["node_modules/tsx/dist/cli.mjs", "scripts/secret-de-l-espace.ts", "--chemin"], {
     encoding: "utf8",
     stdio: ["ignore", "pipe", "inherit"],
+    timeout: 90_000,
   }).trim();
   const cle = chemin && existsSync(chemin) ? readFileSync(chemin, "utf8").trim() : "";
   if (cle) process.env.AUTH_SECRET = cle;
@@ -967,6 +995,7 @@ try {
 }
 
 let serveur = modeDeveloppement ? lancerDev() : lancerBati();
+noterEtape("serveur lancé");
 let enBascule = false;
 // Ce qui SERT réellement, à cet instant — pas ce qu'on espérait servir. La
 // bascule peut échouer (le port n'est pas rendu) : l'annonce doit alors dire
@@ -1281,6 +1310,8 @@ if (raison) {
       // échoue, elle le dirait pour toujours.
       mkdirSync(DIST_CONSTRUCTION, { recursive: true });
       writeFileSync(temoinBatiDans(DIST_CONSTRUCTION), version ?? "inconnue");
+      const nextQuiVientDeBatir = nextInstalle();
+      if (nextQuiVientDeBatir) writeFileSync(temoinNextDans(DIST_CONSTRUCTION), nextQuiVientDeBatir);
       // Un échec d'hier ne doit pas accuser la construction d'aujourd'hui : le
       // témoin d'échec ne survit pas à une réussite.
       rmSync(TEMOIN_ECHEC, { force: true });

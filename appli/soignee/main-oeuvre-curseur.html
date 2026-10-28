@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Répartir la main d’œuvre</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  RÉPARTIR LA MAIN D'ŒUVRE, LE CURSEUR (src/app/chantiers/[id]/RepartirLaMainOeuvre.tsx,
+  src/lib/main-oeuvre-dictee.ts).
+
+  Sa demande du 27 octobre 2026 : « va regarder le curseur qui existe pour la
+  main d'œuvre pour les lignes du devis ; on la déplace pour augmenter ou
+  diminuer le prix qui se répartit entre les lignes ; propose-moi quelque chose
+  de plus joli, de mieux pour le curseur ». Puis, devant la première
+  proposition : « c'est pas mal, tu peux faire mieux ? plus jolie ? ».
+
+  CE QUE MONTRE L'ÉCRAN D'AUJOURD'HUI (le vrai composant, rendu avec la vraie
+  feuille de style, aujourdhui/main-oeuvre.jpg) :
+    un curseur natif par travail, pour UN seul total : tirer l'un fait bouger
+      tous les autres (deplacer : les autres se partagent le reste au prorata) ;
+    un trait de 6 px et une poignée de 28 px : petite cible, au soleil ;
+    un pourcentage à côté de chaque montant, et les trois font 101 % ;
+    un pas de 1 %, soit 16 € sur 1 600 €, pour des montants arrondis à 10 €.
+
+  LA PREMIÈRE PROPOSITION (vue « Première ») : une seule barre pour le total,
+  une poignée entre deux travaux, qui ne change que ces deux-là, de 10 € en
+  10 € (le pas de repartirMainOeuvre), et une bulle au-dessus du doigt.
+
+  LA NOUVELLE (vue « Proposé ») garde exactement ce geste et soigne le dessin :
+    la répartition sur sa propre plage claire, dans la carte Avant de chiffrer ;
+    la barre plus haute, ses morceaux séparés d'un filet de carte ;
+    des poignées rondes, sur le joint, qui se reconnaissent sans mot ;
+    la bulle pointe la poignée tenue ;
+    les poignées accrochées sous le joint, qui ne couvrent aucun montant ;
+    les noms des travaux dans l'écriture des titres de l'appli, le montant à
+      droite en chiffres alignés, une pastille ronde de la couleur du morceau ;
+    le total en bas, dans l'écriture des titres ;
+    retirer ou remettre un travail fait couler les morceaux, au lieu de sauter ;
+    et, sa réponse du même soir, le montant se touche pour s'écrire : le
+      travail d'à côté prend la différence (le suivant complète s'il n'a pas
+      assez), à l'euro près, sa réponse du même soir (« si la main d'œuvre
+      c'est 397, ça pourra pas être arrondi à 10 »).
+
+  LES COULEURS (sa remarque du même soir, « vraiment à chier », puis « mets des
+  couleurs pastel, fais plusieurs propositions ») : quatre palettes pastel,
+  voir PASTELS. La première garde ses gris, pour comparer.
+
+  Les teintes de la première : le vert pin de la charte (--atlas-rust) mêlé à la carte. Le
+  premier morceau est foncé, écrit en clair ; les suivants sont clairs, écrits
+  à l'encre. Ces quatre dosages tiennent le contraste sur les chartes claires
+  ET sombres (vérifié sur Origine et Nuit) ; un dosage du milieu, lui, ne le
+  tiendrait sur aucune des deux à la fois.
+*/
+.carte-mo { border-radius: 4px; padding: 16px; background: var(--atlas-rustTint); }
+.carte-titre { margin: 0; font-size: 13px; font-weight: 500; color: var(--atlas-rust); }
+.q-quoi { margin: 16px 0 0; font-size: 12px; color: var(--atlas-muted); }
+.q-question { margin: 2px 0 0; font-size: 15px; font-weight: 500; color: var(--atlas-ink); }
+.q-detail { margin: 6px 0 0; font-size: 12px; color: var(--atlas-muted); }
+.modes { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.modes button { border-radius: 999px; padding: 10px 16px; text-align: left; font-size: 14px; font-weight: 500;
+                background: var(--atlas-card); color: var(--atlas-ink); }
+.modes button[aria-pressed="true"] { background: var(--atlas-plein); color: var(--sur-plein); }
+
+/* ─── Commun aux deux versions ────────────────────────────────────────── */
+.barre-mo { position: relative; touch-action: pan-y; -webkit-user-select: none; user-select: none; }
+.morceaux { position: absolute; inset: 0; display: flex; overflow: hidden; }
+.morceau { flex: none; display: grid; place-items: center; min-width: 0; overflow: hidden;
+           font-size: 15px; font-weight: 650; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.morceau span { white-space: nowrap; transition: opacity 150ms ease-out; }
+.morceau[data-etroit="true"] span, .morceau[data-illisible="true"] span { opacity: 0; }
+/* Un morceau étroit écrit son montant plus petit avant de le taire. */
+.morceau[data-serre="true"] { font-size: 13px; letter-spacing: -0.02em; }
+.poignee { position: absolute; top: 50%; width: 48px; height: 64px; margin: -32px 0 0 -24px; display: grid; place-items: center;
+           cursor: ew-resize; touch-action: none; -webkit-tap-highlight-color: transparent; }
+.poignee:focus-visible { outline: none; }
+.bulle { position: absolute; bottom: calc(100% + 12px); z-index: 3; display: flex; align-items: center; gap: 10px;
+         padding: 7px 12px; border-radius: 10px; white-space: nowrap; transform: translateX(-50%);
+         background: var(--atlas-ink); color: var(--atlas-card); font-size: 15px; font-weight: 650;
+         font-variant-numeric: tabular-nums; box-shadow: 0 4px 14px rgba(28,28,26,0.22); pointer-events: none; }
+.bulle[hidden] { display: none; }
+.bulle i { width: 1px; height: 16px; background: color-mix(in srgb, var(--atlas-card) 40%, transparent); }
+.travail { display: flex; align-items: center; gap: 12px; min-height: 52px; }
+.travail + .travail { box-shadow: inset 0 1px 0 var(--atlas-line); }
+/* Le début de l'intitulé, deux lignes au plus (sa question du 28 octobre). */
+.travail-nom { flex: 1; min-width: 0; color: var(--atlas-ink);
+               display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+.travail-prix { flex: none; font-size: 17px; font-weight: 650; font-variant-numeric: tabular-nums; color: var(--atlas-ink);
+                transition: color 150ms ease-out; }
+.travail.bouge .travail-prix { color: var(--atlas-rust); }
+.croix { width: 40px; height: 40px; margin-right: -10px; flex: none; display: grid; place-items: center; color: var(--atlas-muted); }
+.croix svg { width: 16px; height: 16px; }
+.sorti { padding: 10px 0; }
+.sorti + .travail, .travail + .sorti, .sorti + .sorti { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.sorti-tete { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 15px; }
+.sorti-nom { min-width: 0; text-decoration: line-through; color: var(--atlas-muted); }
+.remettre { min-height: 40px; font-size: 14px; font-weight: 600; color: var(--atlas-rust); }
+.sorti p { margin: 2px 0 0; font-size: 13px; color: var(--atlas-rust); }
+
+/* ─── La première proposition, telle qu'il l'a vue ────────────────────── */
+[data-style="premiere"] .barre-mo { margin: 20px 0 4px; height: 56px; }
+[data-style="premiere"] .morceaux { gap: 3px; border-radius: 14px; }
+[data-style="premiere"] .poignee::before { content: ""; width: 22px; height: 44px; border-radius: 11px; background: var(--atlas-card);
+  box-shadow: 0 1px 2px rgba(28,28,26,0.18), 0 3px 10px rgba(28,28,26,0.14); transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1); }
+[data-style="premiere"] .poignee::after { content: ""; position: absolute; width: 6px; height: 16px;
+  border-left: 2px solid var(--atlas-muted); border-right: 2px solid var(--atlas-muted); }
+[data-style="premiere"] .poignee.tenue::before { transform: scale(1.12); }
+[data-style="premiere"] .poignee:focus-visible::before { box-shadow: 0 0 0 3px var(--atlas-or), 0 3px 10px rgba(28,28,26,0.14); }
+[data-style="premiere"] .travaux { margin-top: 12px; }
+[data-style="premiere"] .travail-nom { font-size: 15px; }
+[data-style="premiere"] .pastille-mo { width: 14px; height: 14px; flex: none; border-radius: 4px; }
+[data-style="premiere"] .total-mo { display: flex; justify-content: space-between; margin-top: 4px; padding-top: 10px; font-size: 13px;
+  font-variant-numeric: tabular-nums; color: var(--atlas-muted); box-shadow: inset 0 1px 0 var(--atlas-line); }
+
+/* ─── La nouvelle ─────────────────────────────────────────────────────── */
+[data-style="jolie"] .repartition { margin-top: 16px; padding: 18px 16px 6px; border-radius: 16px; background: var(--atlas-card);
+  box-shadow: 0 1px 2px rgba(28,28,26,0.05), 0 6px 18px rgba(28,28,26,0.06); }
+[data-style="jolie"] .barre-mo { height: 64px; }
+/* Un filet de carte entre deux morceaux : le joint se lit sans bordure. */
+[data-style="jolie"] .morceaux { gap: 2px; border-radius: 16px; background: var(--atlas-card); }
+[data-style="jolie"] .morceau { transition: width 280ms cubic-bezier(0.16, 1, 0.3, 1), background-color 200ms ease-out; }
+[data-style="jolie"] .barre-mo.glisse .morceau { transition: background-color 200ms ease-out; }
+[data-style="jolie"] .morceau:first-child { border-radius: 16px 0 0 16px; }
+[data-style="jolie"] .morceau:last-child { border-radius: 0 16px 16px 0; }
+/* La poignée : un rond de carte accroché sous le joint, à cheval sur le bord,
+   deux traits pour le doigt. Posée au milieu de la barre, elle couvrait le
+   montant d'un morceau étroit (400 € sur 1 600 €). */
+[data-style="jolie"] .poignee { top: 100%; }
+[data-style="jolie"] .poignee::before { content: ""; width: 34px; height: 34px; border-radius: 50%; background: var(--atlas-card);
+  box-shadow: 0 0 0 1px rgba(28,28,26,0.06), 0 2px 4px rgba(28,28,26,0.14), 0 6px 14px rgba(28,28,26,0.12);
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 180ms ease-out; }
+[data-style="jolie"] .poignee::after { content: ""; position: absolute; width: 7px; height: 12px;
+  border-left: 2px solid var(--atlas-inkSoft); border-right: 2px solid var(--atlas-inkSoft); border-radius: 1px; }
+[data-style="jolie"] .barre-mo[data-poignees="0"] .poignee { display: none; }
+[data-style="jolie"] .poignee.tenue::before { transform: scale(1.16);
+  box-shadow: 0 0 0 2px var(--atlas-or), 0 4px 10px rgba(28,28,26,0.16), 0 10px 24px rgba(28,28,26,0.14); }
+[data-style="jolie"] .poignee:focus-visible::before { box-shadow: 0 0 0 3px var(--atlas-or), 0 2px 4px rgba(28,28,26,0.14); }
+/* La bulle pointe la poignée qu'on tient. */
+[data-style="jolie"] .bulle::after { content: ""; position: absolute; left: var(--pointe, 50%); bottom: -5px; width: 10px; height: 10px;
+  margin-left: -5px; background: var(--atlas-ink); transform: rotate(45deg); border-radius: 2px; }
+[data-style="jolie"] .travaux { margin-top: 26px; }
+[data-style="jolie"] .travail-nom { font: 400 17px/1.25 var(--serif); }
+[data-style="jolie"] .pastille-mo { width: 12px; height: 12px; flex: none; border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(28,28,26,0.16); }
+/* Le montant se touche pour s'écrire : souligné d'or, comme ce qui s'appuie
+   dans l'appli, et 44 px de haut pour le doigt. */
+[data-style="jolie"] .travail-prix { min-height: 44px; display: inline-flex; align-items: center; padding: 0 2px;
+  text-decoration: underline dotted var(--atlas-or); text-decoration-thickness: 2px; text-underline-offset: 6px; cursor: text; }
+[data-style="jolie"] .saisie-prix { display: inline-flex; align-items: center; gap: 4px; flex: none; min-height: 44px;
+  padding: 0 10px; border-radius: 10px; background: var(--atlas-cream); box-shadow: inset 0 0 0 2px var(--atlas-or); }
+[data-style="jolie"] .saisie-prix input { width: 4.6ch; border: 0; background: transparent; outline: none; text-align: right;
+  font-family: inherit; font-size: 17px; font-weight: 650; line-height: 1; font-variant-numeric: tabular-nums; color: var(--atlas-ink); caret-color: var(--atlas-or); }
+[data-style="jolie"] .saisie-prix span { font-size: 17px; font-weight: 650; color: var(--atlas-inkSoft); }
+/* La ligne qui bouge s'éclaire de la couleur de son morceau. */
+[data-style="jolie"] .travail.bouge { --voile: color-mix(in srgb, var(--teinte, var(--atlas-rustTint)) 14%, var(--atlas-card));
+  background: linear-gradient(var(--voile), var(--voile)) no-repeat center / calc(100% + 16px) 100%; }
+[data-style="jolie"] .travail.bouge .travail-prix { color: var(--atlas-ink); }
+[data-style="jolie"] .total-mo { display: flex; align-items: baseline; justify-content: space-between; margin-top: 2px;
+  padding: 12px 0 10px; box-shadow: inset 0 1px 0 var(--atlas-line); }
+[data-style="jolie"] .total-mo span:first-child { font-size: 13px; color: var(--atlas-muted); }
+[data-style="jolie"] .total-mo span:last-child { font: 400 22px/1 var(--serif); font-variant-numeric: tabular-nums; color: var(--atlas-ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-style] .morceau, [data-style] .morceau span, [data-style] .poignee::before, [data-style] .travail-prix { transition: none; }
+}
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">Répartir la main d’œuvre</h1>
+  <p class="pl-verdict">Une seule barre pour tout le total. <b>Tirez une poignée</b> : seuls les deux travaux qui la bordent changent, de 10 € en 10 €. <b>Ou touchez un montant</b> pour l’écrire.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats" data-ecran=".ecran[data-style='jolie']">
+        <button type="button" data-etat="trois" aria-pressed="true">Trois travaux</button>
+        <button type="button" data-etat="deux">Deux travaux</button>
+        <button type="button" data-etat="cinq">Cinq travaux</button>
+      </div>
+      <div class="pl-etats" id="palettes">
+        <button type="button" data-palette="jardin" aria-pressed="true">Jardin</button>
+        <button type="button" data-palette="provence">Provence</button>
+        <button type="button" data-palette="mer">Bord de mer</button>
+        <button type="button" data-palette="verger">Verger</button>
+      </div>
+      <div class="cadre"><div class="ecran" data-style="jolie"></div></div>
+    </div>
+
+    <div data-vue-panneau="Première">
+      <p class="pl-legende">La première proposition</p>
+      <div class="cadre"><div class="ecran" data-style="premiere"></div></div>
+    </div>
+
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre">
+        <div class="cadre-capture"><img src="aujourdhui/main-oeuvre.jpg" alt="La carte Avant de chiffrer d'aujourd'hui : un curseur par travail, avec son montant et son pourcentage"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change avec la première</h2>
+    <ul>
+      <li>Une seule barre, qui est le total. Chaque travail en est un morceau, son montant écrit dedans.</li>
+      <li>Une poignée entre deux travaux. La tirer ne change que ces deux-là : aujourd’hui, tirer un curseur fait bouger tous les autres.</li>
+      <li>Les montants avancent de 10 € en 10 €, comme le devis les écrit. Aujourd’hui, ils avancent de 10 puis de 20.</li>
+      <li>Plus de pourcentage. Aujourd’hui, les trois font 101 %.</li>
+    </ul>
+    <h2>Ce que la nouvelle soigne</h2>
+    <ul>
+      <li>La répartition a sa propre plage claire dans la carte, et la barre est plus haute.</li>
+      <li>Des poignées rondes accrochées sous le joint, qui ne cachent aucun montant, et la bulle qui pointe celle qu’on tient.</li>
+      <li>Les noms des travaux dans l’écriture des titres, le montant à droite, une pastille ronde de la couleur du morceau.</li>
+      <li>Le total en bas, dans l’écriture des titres. Retirer ou remettre un travail fait couler la barre.</li>
+      <li>Touchez un montant pour l’écrire, au clavier des chiffres. Le travail d’à côté prend la différence et s’éclaire, pour qu’on voie lequel a bougé ; s’il n’a pas assez, le suivant complète. Pour le dernier travail, c’est celui du dessus.</li>
+    </ul>
+    <h2>Les couleurs</h2>
+    <ul>
+      <li>Quatre palettes pastel, à essayer en haut : <b>Jardin</b> (sauge, sable, bleu ciel, menthe, rose poudré), <b>Provence</b> (lavande, olive, abricot, ciel, rose), <b>Bord de mer</b> (brume, sable, écume, corail, ardoise), <b>Verger</b> (pêche, pistache, citron, framboise, lilas).</li>
+      <li>« Cinq travaux » montre les cinq couleurs d’une palette.</li>
+      <li>Les pastels restent les mêmes sur les huit chartes. Le montant s’écrit en foncé, toujours lisible.</li>
+    </ul>
+    <h2>Ce qui reste comme dans l’appli</h2>
+    <ul class="garde">
+      <li>La carte Avant de chiffrer, la question, Sur une ligne Main d’œuvre ou Répartis sur les travaux.</li>
+      <li>La croix qui rend un travail à sa grille, Remettre, et la phrase qui le dit.</li>
+    </ul>
+    <h2>Tranché le 27 octobre</h2>
+    <ul>
+      <li>La palette <b>Jardin</b>.</li>
+      <li>Un montant écrit reste <b>à l’euro près</b> : « si la main d’œuvre c’est 397, ça pourra pas être arrondi à 10 ».</li>
+    </ul>
+    <h2>Ce que montre Aujourd’hui</h2>
+    <ul class="a-trancher">
+      <li>Le vrai composant, rendu ici dans Chrome. Sur l’iPhone, le curseur est celui de Safari : même trait fin, poignée blanche.</li>
+    </ul>
+  </section>
+</main>
+
+<script src="kit.js"></script>
+<script>
+(function () {
+  "use strict";
+  var CAS = {
+    trois: [
+      { cle: "abattage", nom: "Abattage du chêne", poids: 62.5, grille: 650 },
+      { cle: "fente", nom: "Fente et rangement du bois", poids: 25, grille: 280 },
+      { cle: "evacuation", nom: "Évacuation des branches", poids: 12.5, grille: null }
+    ],
+    deux: [
+      { cle: "taille", nom: "Taille de la haie", poids: 70, grille: 420 },
+      { cle: "ramassage", nom: "Ramassage des déchets verts", poids: 30, grille: null }
+    ],
+    cinq: [
+      { cle: "haie", nom: "Taille de la haie", poids: 30, grille: 420 },
+      { cle: "tonte", nom: "Tonte de la pelouse", poids: 25, grille: 120 },
+      { cle: "massifs", nom: "Désherbage des massifs", poids: 20, grille: null },
+      { cle: "plantation", nom: "Plantation des arbustes", poids: 15, grille: 260 },
+      { cle: "dechets", nom: "Évacuation des déchets verts", poids: 10, grille: null }
+    ]
+  };
+  var TOTAL = 1600, PAS = 10, MINI = PAS;
+  /* La première : le vert pin mêlé à la carte, et l'encre qui se lit dessus. */
+  var GRIS = [[100, "card"], [72, "card"], [50, "ink"], [32, "ink"], [18, "ink"]];
+  /*
+   * LES COULEURS. Sa remarque du 27 octobre 2026 : « les couleurs, elles sont
+   * vraiment à chier, ça donne pas envie d'aller voir le devis », puis, devant
+   * les couleurs franches : « mets des couleurs pastel, fais plusieurs
+   * propositions ». Quatre palettes, à son choix.
+   *
+   * DES TEINTES FIXES, ET C'EST DÉLIBÉRÉ. Un pastel est clair par nature :
+   * dérivé de chaque charte, il deviendrait sombre et terne sur Nuit et Sylve.
+   * Elles ne suivent donc pas la charte, comme les quatre couleurs du planning
+   * (design-tokens.ts) ; codées, elles seront des jetons, jamais du clair dans
+   * un écran. L'écriture du montant se choisit sur la couleur peinte (l'encre
+   * ou la carte, celle qui se lit le mieux) : sur une charte sombre, c'est la
+   * carte sombre qui s'écrit sur le pastel.
+   */
+  var PASTELS = {
+    // Un cran moins pastel, sa demande du même soir devant sa capture : « mets
+    // les couleurs un peu moins pastel ».
+    jardin: { nom: "Jardin", teintes: ["#9fc48a", "#e3c88f", "#93bde0", "#8fd1bd", "#e8a9b7"] },
+    provence: { nom: "Provence", teintes: ["#b5a6e3", "#c3d08f", "#f2b884", "#9cc7ea", "#eea6a6"] },
+    mer: { nom: "Bord de mer", teintes: ["#9cc0d8", "#e8d29e", "#9ed8ca", "#f0a893", "#adb6cb"] },
+    verger: { nom: "Verger", teintes: ["#f2ae8c", "#b6d68e", "#ecd97a", "#ea9fb4", "#c9b0e2"] }
+  };
+  var palette = "jardin";
+
+  function euros(n) { return n.toLocaleString("fr-FR") + " €"; }
+
+  function monter(ecran) {
+    var style = ecran.getAttribute("data-style");
+    var joint = style === "jolie" ? 2 : 3;
+    ecran.innerHTML = '<div class="defile"><div class="carte-mo"></div></div>';
+    var carte = ecran.querySelector(".carte-mo");
+    var travaux = [], retires = {}, montants = {}, mode = "reparti", tenue = null;
+
+    function teinte(k) {
+      if (style === "premiere") {
+        var g = GRIS[Math.min(k, GRIS.length - 1)];
+        return { fond: "color-mix(in srgb, var(--atlas-rust) " + g[0] + "%, var(--atlas-card))", encre: "var(--atlas-" + g[1] + ")" };
+      }
+      var t = PASTELS[palette].teintes;
+      return { fond: t[k % t.length], encre: null };
+    }
+    function dedans() { return travaux.filter(function (t) { return !retires[t.cle]; }); }
+    function barre() { return carte.querySelector(".barre-mo"); }
+
+    /* La règle de repartirMainOeuvre, recopiée pour la planche : au prorata des
+       poids, arrondi à 10 €, le dernier prend l'écart. */
+    function repartir() {
+      var d = dedans(), somme = d.reduce(function (s, t) { return s + t.poids; }, 0), cumul = 0;
+      montants = {};
+      d.forEach(function (t, i) {
+        var m = Math.round((TOTAL * t.poids / somme) / PAS) * PAS;
+        if (i === d.length - 1) m = TOTAL - cumul;
+        montants[t.cle] = m; cumul += m;
+      });
+    }
+
+    function peindre() {
+      var d = dedans();
+      var html = '<p class="carte-titre">Avant de chiffrer</p>' +
+        '<p class="q-quoi">Main d’œuvre</p>' +
+        '<p class="q-question">Où mettre les ' + euros(TOTAL) + ' de main d’œuvre ?</p>' +
+        '<p class="q-detail">2 hommes pendant 2 jours, 400 € le jour par homme</p>' +
+        '<div class="modes">' +
+          '<button type="button" data-mode="ligne" aria-pressed="' + (mode === "ligne") + '">Sur une ligne Main d’œuvre</button>' +
+          '<button type="button" data-mode="reparti" aria-pressed="' + (mode === "reparti") + '">Répartis sur les travaux</button>' +
+        '</div><div class="repartition">';
+      if (mode === "reparti" && d.length) {
+        html += '<div class="barre-mo" data-poignees="' + (d.length - 1) + '"><div class="morceaux">' +
+          travaux.map(function (t) {
+            if (retires[t.cle]) return "";
+            var c = teinte(d.indexOf(t));
+            return '<div class="morceau" data-cle="' + t.cle + '" style="background:' + c.fond + (c.encre ? ';color:' + c.encre : "") + '"><span>' + euros(montants[t.cle]) + '</span></div>';
+          }).join("") + '</div>' +
+          d.slice(0, -1).map(function (t, k) {
+            return '<div class="poignee" role="slider" tabindex="0" data-k="' + k + '" aria-label="Entre ' + t.nom + ' et ' + d[k + 1].nom + '"></div>';
+          }).join("") + '<div class="bulle" hidden></div></div>';
+      }
+      html += '<div class="travaux">' + travaux.map(function (t) {
+        if (retires[t.cle]) {
+          return '<div class="sorti"><div class="sorti-tete"><span class="sorti-nom">' + t.nom + '</span>' +
+            '<button type="button" class="remettre" data-remettre="' + t.cle + '">Remettre</button></div>' +
+            '<p>' + (t.grille !== null ? "Atlas va se référer à votre grille tarifaire : " + euros(t.grille) + "." : "Pas de prix dans votre grille, cette ligne sera à chiffrer.") + '</p></div>';
+        }
+        var k = d.indexOf(t);
+        return '<div class="travail" data-cle="' + t.cle + '"' + (mode === "reparti" ? ' style="--teinte:' + teinte(k).fond + '"' : "") + '>' +
+          (mode === "reparti" ? '<span class="pastille-mo" style="background:' + teinte(k).fond + '"></span>' : "") +
+          '<span class="travail-nom">' + t.nom + '</span>' +
+          (mode === "reparti"
+            ? (style === "jolie"
+                ? '<button type="button" class="travail-prix" data-ecrire="' + t.cle + '" aria-label="Écrire le montant de ' + t.nom + '">' + euros(montants[t.cle]) + '</button>'
+                : '<span class="travail-prix">' + euros(montants[t.cle]) + '</span>')
+            : "") +
+          '<button type="button" class="croix" data-retirer="' + t.cle + '" aria-label="Retirer ' + t.nom + ' de la main d’œuvre">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>';
+      }).join("") + '</div>' +
+      '<div class="total-mo"><span>Total main d’œuvre</span><span>' + euros(TOTAL) + '</span></div></div>';
+      carte.innerHTML = html;
+      if (style === "jolie") choisirLesEncres();
+      placer();
+    }
+
+    /* L'encre ou la carte, celle qui se lit le mieux sur la couleur peinte. */
+    function luminance(css) {
+      var n = css.match(/[\d.]+/g).map(Number), v = css.indexOf("color(") === 0 ? n.slice(0, 3) : n.slice(0, 3).map(function (x) { return x / 255; });
+      v = v.map(function (x) { return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); });
+      return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
+    }
+    function contraste(a, b) { return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05); }
+    function choisirLesEncres() {
+      var s = getComputedStyle(ecran), sonde = document.createElement("i");
+      ecran.appendChild(sonde);
+      sonde.style.color = s.getPropertyValue("--atlas-ink"); var ink = luminance(getComputedStyle(sonde).color);
+      sonde.style.color = s.getPropertyValue("--atlas-card"); var card = luminance(getComputedStyle(sonde).color);
+      sonde.remove();
+      carte.querySelectorAll(".morceau").forEach(function (m) {
+        var fond = luminance(getComputedStyle(m).backgroundColor);
+        var parInk = contraste(fond, ink), parCard = contraste(fond, card);
+        m.style.color = parInk >= parCard ? "var(--atlas-ink)" : "var(--atlas-card)";
+        m.setAttribute("data-illisible", String(Math.max(parInk, parCard) < 4.5));
+      });
+    }
+
+    /* Les largeurs suivent les montants ; les poignées se posent sur les joints. */
+    function placer() {
+      var b = barre();
+      if (!b) return;
+      var d = dedans(), utile = b.clientWidth - joint * (d.length - 1), x = 0;
+      d.forEach(function (t, k) {
+        var w = utile * montants[t.cle] / TOTAL;
+        var m = b.querySelector('.morceau[data-cle="' + t.cle + '"]');
+        m.style.width = w + "px";
+        m.querySelector("span").textContent = euros(montants[t.cle]);
+        // **Le montant s'écrit s'il TIENT, mesuré sur son texte.** Un seuil fixe
+        // de 62 px taisait tout montant sous 350 € sur la barre de son
+        // téléphone (283 px), et avec cinq travaux il ne restait qu'un chiffre
+        // (sa capture du 27 octobre 2026). D'abord à 15 px, puis à 13 px, sinon
+        // il se tait et reste sur sa ligne.
+        var texte = m.querySelector("span");
+        m.removeAttribute("data-serre");
+        var tient = texte.offsetWidth + 10 <= w;
+        if (!tient) { m.setAttribute("data-serre", "true"); tient = texte.offsetWidth + 6 <= w; }
+        if (!tient) m.removeAttribute("data-serre");
+        m.setAttribute("data-etroit", String(!tient));
+        x += w;
+        var p = b.querySelector('.poignee[data-k="' + k + '"]');
+        if (p) {
+          p.style.left = (x + joint / 2) + "px";
+          p.setAttribute("aria-valuetext", t.nom + " " + euros(montants[t.cle]) + ", " + d[k + 1].nom + " " + euros(montants[d[k + 1].cle]));
+        }
+        x += joint;
+      });
+      carte.querySelectorAll(".travail").forEach(function (ligne) {
+        var prix = ligne.querySelector(".travail-prix");
+        if (prix) prix.textContent = euros(montants[ligne.getAttribute("data-cle")]);
+      });
+    }
+
+    /* Déplacer le joint k : seuls les deux travaux qui le bordent changent. */
+    function bouger(k, gauche) {
+      var d = dedans(), a = d[k], b = d[k + 1];
+      var paire = montants[a.cle] + montants[b.cle];
+      var v = Math.max(MINI, Math.min(paire - MINI, Math.round(gauche / PAS) * PAS));
+      if (v === montants[a.cle]) return;
+      montants[a.cle] = v; montants[b.cle] = paire - v;
+      // Le poids suit le montant : la croix et Remettre repartent de ce qu'il a réglé.
+      d.forEach(function (t) { t.poids = montants[t.cle]; });
+      placer();
+      montrerBulle(k);
+    }
+
+    /* ÉCRIRE UN MONTANT. Sa réponse du 27 octobre 2026, « tu peux rajouter la
+       possibilité de toucher le montant pour l'écrire ». Le travail d'à côté
+       (le suivant, ou celui du dessus pour le dernier) prend la différence :
+       c'est le même échange qu'une poignée, écrit au lieu d'être glissé. */
+    function voisinDe(cle) {
+      var d = dedans(), i = d.findIndex(function (t) { return t.cle === cle; });
+      return d[i + 1] || d[i - 1] || null;
+    }
+    /* Si le voisin n'a pas assez, le suivant complète, puis le suivant : un
+       montant écrit est un montant tenu, jamais plafonné en silence. Seul le
+       total l'arrête (chaque autre travail garde au moins 10 €). */
+    function ecrire(cle, voulu) {
+      var d = dedans(), i = d.findIndex(function (t) { return t.cle === cle; });
+      var payeurs = d.slice(i + 1).concat(d.slice(0, i).reverse());
+      if (!payeurs.length || !Number.isFinite(voulu)) return [];
+      var v = Math.max(MINI, Math.min(TOTAL - MINI * payeurs.length, Math.round(voulu)));
+      var ecart = v - montants[cle], touches = [];
+      montants[cle] = v;
+      if (ecart < 0) { montants[payeurs[0].cle] -= ecart; touches.push(payeurs[0].cle); }
+      payeurs.forEach(function (t) {
+        if (ecart <= 0) return;
+        var pris = Math.min(ecart, montants[t.cle] - MINI);
+        if (pris <= 0) return;
+        montants[t.cle] -= pris; ecart -= pris; touches.push(t.cle);
+      });
+      d.forEach(function (t) { t.poids = montants[t.cle]; });
+      return touches;
+    }
+    function ouvrirLaSaisie(bouton) {
+      var cle = bouton.getAttribute("data-ecrire");
+      if (!voisinDe(cle)) return;
+      var nom = travaux.filter(function (t) { return t.cle === cle; })[0].nom;
+      var boite = document.createElement("span");
+      boite.className = "saisie-prix";
+      boite.innerHTML = '<input type="text" inputmode="numeric" pattern="[0-9]*" enterkeyhint="done" aria-label="Montant de ' + nom + ', en euros" value="' + montants[cle] + '"><span>€</span>';
+      bouton.replaceWith(boite);
+      var champ = boite.querySelector("input");
+      champ.focus();
+      champ.select();
+      var fini = false;
+      function finir(garder) {
+        if (fini) return;
+        fini = true;
+        var touches = garder && champ.value.trim() ? ecrire(cle, Number(champ.value.replace(/[^0-9]/g, ""))) : [];
+        peindre();
+        touches.forEach(function (c) {
+          var l = carte.querySelector('.travail[data-cle="' + c + '"]');
+          if (l) { l.classList.add("bouge"); setTimeout(function () { l.classList.remove("bouge"); }, 1200); }
+        });
+      }
+      champ.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") { e.preventDefault(); finir(true); }
+        if (e.key === "Escape") { e.preventDefault(); finir(false); }
+      });
+      champ.addEventListener("blur", function () { finir(true); });
+    }
+
+    function montrerBulle(k) {
+      var b = barre(), bulle = b && b.querySelector(".bulle"), p = b && b.querySelector('.poignee[data-k="' + k + '"]');
+      if (!bulle || !p || !tenue) return;
+      var d = dedans();
+      bulle.innerHTML = euros(montants[d[k].cle]) + "<i></i>" + euros(montants[d[k + 1].cle]);
+      bulle.hidden = false;
+      // La bulle reste dans la barre ; sa pointe, elle, reste sur la poignée.
+      var demi = bulle.offsetWidth / 2, ici = parseFloat(p.style.left);
+      var x = Math.max(demi, Math.min(b.clientWidth - demi, ici));
+      bulle.style.left = x + "px";
+      bulle.style.setProperty("--pointe", (ici - x + demi) + "px");
+    }
+
+    carte.addEventListener("pointerdown", function (e) {
+      var p = e.target.closest(".poignee");
+      if (!p) return;
+      e.preventDefault();
+      var d = dedans(), k = Number(p.getAttribute("data-k"));
+      tenue = { p: p, k: k, id: e.pointerId, x0: e.clientX, depart: montants[d[k].cle] };
+      p.setPointerCapture(e.pointerId);
+      p.classList.add("tenue");
+      barre().classList.add("glisse");
+      carte.querySelectorAll('.travail[data-cle="' + d[k].cle + '"], .travail[data-cle="' + d[k + 1].cle + '"]').forEach(function (l) { l.classList.add("bouge"); });
+      montrerBulle(k);
+    });
+    carte.addEventListener("pointermove", function (e) {
+      if (!tenue || e.pointerId !== tenue.id) return;
+      var eurosParPx = TOTAL / (barre().clientWidth - joint * (dedans().length - 1));
+      bouger(tenue.k, tenue.depart + (e.clientX - tenue.x0) * eurosParPx);
+    });
+    function lacher(e) {
+      if (!tenue || e.pointerId !== tenue.id) return;
+      tenue.p.classList.remove("tenue");
+      barre().classList.remove("glisse");
+      barre().querySelector(".bulle").hidden = true;
+      carte.querySelectorAll(".travail.bouge").forEach(function (l) { l.classList.remove("bouge"); });
+      tenue = null;
+    }
+    carte.addEventListener("pointerup", lacher);
+    carte.addEventListener("pointercancel", lacher);
+
+    carte.addEventListener("keydown", function (e) {
+      var p = e.target.closest(".poignee");
+      if (!p || (e.key !== "ArrowRight" && e.key !== "ArrowLeft")) return;
+      e.preventDefault();
+      var k = Number(p.getAttribute("data-k"));
+      bouger(k, montants[dedans()[k].cle] + (e.key === "ArrowRight" ? PAS : -PAS));
+    });
+
+    /* Retirer ou remettre un travail : la barre reste en place et ses morceaux
+       coulent vers leur nouvelle largeur, au lieu d'être redessinés d'un coup. */
+    function changerLaListe() {
+      var avant = {};
+      if (style === "jolie" && barre()) {
+        barre().querySelectorAll(".morceau").forEach(function (m) { avant[m.getAttribute("data-cle")] = m.style.width; });
+      }
+      repartir(); peindre();
+      if (style !== "jolie" || !barre()) return;
+      var b = barre();
+      b.querySelectorAll(".morceau").forEach(function (m) {
+        var cible = m.style.width;
+        m.style.transition = "none";
+        m.style.width = avant[m.getAttribute("data-cle")] || "0px";
+        m.getBoundingClientRect();
+        m.style.transition = "";
+        m.style.width = cible;
+      });
+    }
+
+    carte.addEventListener("click", function (e) {
+      var ec = e.target.closest("[data-ecrire]");
+      if (ec) { ouvrirLaSaisie(ec); return; }
+      var m = e.target.closest("[data-mode]");
+      if (m) { mode = m.getAttribute("data-mode"); peindre(); return; }
+      var r = e.target.closest("[data-retirer]");
+      if (r) { retires[r.getAttribute("data-retirer")] = true; changerLaListe(); return; }
+      var re = e.target.closest("[data-remettre]");
+      if (re) { delete retires[re.getAttribute("data-remettre")]; changerLaListe(); }
+    });
+
+    function poserLeCas(cas) {
+      travaux = CAS[cas].map(function (t) { return Object.assign({}, t); });
+      retires = {}; mode = "reparti";
+      repartir(); peindre();
+    }
+    var groupe = document.querySelector('.pl-etats[data-ecran=".ecran[data-style=\'' + style + '\']"]');
+    if (groupe) groupe.querySelectorAll("button[data-etat]").forEach(function (b) {
+      b.addEventListener("click", function () { poserLeCas(b.getAttribute("data-etat")); });
+    });
+    if (style === "jolie") document.querySelectorAll("#palettes [data-palette]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        palette = b.getAttribute("data-palette");
+        document.querySelectorAll("#palettes [data-palette]").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+        peindre();
+      });
+    });
+    window.addEventListener("resize", placer);
+    /* Une vue cachée a une largeur nulle : on replace en la montrant. */
+    document.addEventListener("click", function (e) { if (e.target.closest(".pl-onglets")) setTimeout(placer, 0); });
+    poserLeCas("trois");
+  }
+
+  document.querySelectorAll(".ecran[data-style]").forEach(monter);
+})();
+</script>
+</body>
+</html>

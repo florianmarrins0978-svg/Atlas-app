@@ -251,6 +251,8 @@ function nettoyerJpeg(octets: Uint8Array): ResultatNettoyage {
 
     if (JPEG_SEGMENTS_A_RETIRER.has(marqueur)) {
       retires.push(nomSegmentJpeg(marqueur));
+      const orientation = marqueur === 0xe1 ? orientationExif(octets.subarray(i + 4, fin)) : null;
+      if (orientation !== null) morceaux.push(segmentOrientation(orientation));
     } else {
       morceaux.push(octets.subarray(i, fin));
     }
@@ -258,6 +260,62 @@ function nettoyerJpeg(octets: Uint8Array): ResultatNettoyage {
   }
 
   return { octets: concatener(morceaux), nettoye: true, retires };
+}
+
+// ── L'ORIENTATION, seule rescapée de l'APP1 ──────────────────────────────
+//
+// Un téléphone range les pixels comme le capteur les voit, et écrit dans
+// l'EXIF de quel côté tenir l'image. Retirer l'APP1 entier retirait ce mot-là
+// aussi : chaque photo prise en portrait s'affichait couchée (sa photo de
+// profil, 27 octobre 2026). L'orientation ne dit rien de personne ; elle
+// renaît seule dans un APP1 neuf, écrit ici octet par octet, et rien de
+// l'ancien n'est recopié. Tourner les pixels demanderait de réencoder, ce que
+// ce fichier refuse plus haut.
+
+const ORIENTATION_TAG = 0x0112;
+
+/** L'orientation d'un APP1 EXIF (2 à 8), ou null : absente, droite, ou illisible. */
+function orientationExif(app1: Uint8Array): number | null {
+  if (app1.length < 14 || String.fromCharCode(...app1.subarray(0, 6)) !== "Exif\0\0") return null;
+  const tiff = app1.subarray(6);
+  const ordre = String.fromCharCode(tiff[0], tiff[1]);
+  if (ordre !== "II" && ordre !== "MM") return null;
+  const petit = ordre === "II";
+  const vue = new DataView(tiff.buffer, tiff.byteOffset, tiff.byteLength);
+  const ifd = vue.getUint32(4, petit);
+  if (ifd + 2 > tiff.length) return null;
+  const entrees = vue.getUint16(ifd, petit);
+  for (let k = 0; k < entrees; k++) {
+    const e = ifd + 2 + k * 12;
+    if (e + 12 > tiff.length) return null;
+    if (vue.getUint16(e, petit) !== ORIENTATION_TAG) continue;
+    const v = vue.getUint16(e + 8, petit);
+    return v >= 2 && v <= 8 ? v : null;
+  }
+  return null;
+}
+
+/** Un APP1 qui ne porte que l'orientation, grand-boutiste, une seule entrée. */
+function segmentOrientation(orientation: number): Uint8Array {
+  const charge = [
+    ...Array.from("Exif\0\0", (c) => c.charCodeAt(0)),
+    0x4d, 0x4d, 0x00, 0x2a, 0x00, 0x00, 0x00, 0x08,
+    0x00, 0x01,
+    0x01, 0x12, 0x00, 0x03, 0x00, 0x00, 0x00, 0x01, 0x00, orientation, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00,
+  ];
+  const longueur = charge.length + 2;
+  return new Uint8Array([0xff, 0xe1, longueur >> 8, longueur & 0xff, ...charge]);
+}
+
+/** Vrai si le segment commençant en `i` est exactement celui que `segmentOrientation` écrit. */
+function estSegmentOrientationSeul(octets: Uint8Array, i: number): boolean {
+  if (octets[i + 1] !== 0xe1) return false;
+  const v = octets[i + 2 + 2 + 6 + 8 + 2 + 9];
+  if (v < 2 || v > 8) return false;
+  const attendu = segmentOrientation(v);
+  if (i + attendu.length > octets.length) return false;
+  return attendu.every((o, k) => octets[i + k] === o);
 }
 
 // ── PNG ────────────────────────────────────────────────────────────────────
@@ -386,7 +444,7 @@ export function porteEncoreDesMetadonnees(octets: Uint8Array, mimeType: string):
         i += 2;
         continue;
       }
-      if (JPEG_SEGMENTS_A_RETIRER.has(marqueur)) return true;
+      if (JPEG_SEGMENTS_A_RETIRER.has(marqueur) && !estSegmentOrientationSeul(octets, i)) return true;
       const longueur = (octets[i + 2] << 8) | octets[i + 3];
       if (longueur < 2) return false;
       i += 2 + longueur;

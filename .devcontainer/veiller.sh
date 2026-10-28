@@ -116,18 +116,40 @@ PROCHAINE_RELANCE=$(( $(date +%s) + RELANCE_APRES ))
 # serveur. On regarde donc ce que le processus EXÉCUTE ; quand sa ligne de
 # commande ne se lit pas (hors Linux), on garde le refus, plus sûr que deux
 # veilleurs.
-est_un_veilleur() {
+execute() {
   [ -r "/proc/$1/cmdline" ] || return 0
-  tr '\0' ' ' < "/proc/$1/cmdline" 2>/dev/null | grep -q 'veiller\.sh'
+  tr '\0' ' ' < "/proc/$1/cmdline" 2>/dev/null | grep -q "$2"
 }
 if [ -f "$VERROU" ]; then
   ANCIEN="$(cat "$VERROU" 2>/dev/null || true)"
-  if [ -n "$ANCIEN" ] && kill -0 "$ANCIEN" 2>/dev/null && est_un_veilleur "$ANCIEN"; then
+  if [ -n "$ANCIEN" ] && kill -0 "$ANCIEN" 2>/dev/null && execute "$ANCIEN" 'veiller\.sh'; then
     echo "veilleur déjà en place (pid $ANCIEN)"
     exit 0
   fi
 fi
 echo $$ > "$VERROU"
+
+# **Le banc d'un veilleur précédent, quand il ne sert rien — 27 octobre 2026.**
+# `demarrer.sh` remplace le veilleur après une mise à jour, mais le banc que
+# l'ancien avait lancé lui survit, avec l'ancien code, et garde le verrou du
+# banc. Bloqué avant de servir, il fermait la porte à tous les suivants : le
+# banc neuf sortait sur « déjà en train de se construire », sans fin, et
+# l'application ne revenait jamais. Un banc qui sert répond à la santé : on
+# n'y touche pas. Sinon on l'arrête, par son numéro, jamais par motif.
+# Chemin ABSOLU : il sert aussi après le `cd "$DEPOT"` plus bas.
+BASCULE="$(cd "$(dirname "$0")" && pwd)/bascule-en-cours.sh"
+VERROU_BANC="${ATLAS_VERROU_BANC:-/tmp/atlas-banc.pid}"
+BANC="$(cat "$VERROU_BANC" 2>/dev/null || true)"
+# Pendant une bascule, un banc sain se tait un instant : on ne le prend pas
+# pour bloqué (voir `bascule-en-cours.sh`).
+if [ -n "$BANC" ] && kill -0 "$BANC" 2>/dev/null && execute "$BANC" 'banc\.mjs' \
+   && ! bash "$BASCULE" 2>/dev/null \
+   && ! curl -fsS -o /dev/null --max-time 10 "http://127.0.0.1:${PORT}/api/health/live" 2>/dev/null; then
+  echo "$(date '+%d/%m %H:%M:%S') — un banc précédent (pid $BANC) tient sa place sans servir : arrêté" >> "$JOURNAL"
+  # SIGKILL : bloqué dans un appel synchrone, il ne lirait jamais un SIGTERM.
+  kill -9 "$BANC" 2>/dev/null
+  rm -f "$VERROU_BANC"
+fi
 
 cd "$DEPOT" || exit 0
 
@@ -202,8 +224,6 @@ VEILLEUR=$$
 # ne pose l'environnement du veilleur sur l'espace du patron.
 # ═══════════════════════════════════════════════════════════════════════════
 MOTIF="${ATLAS_MOTIF_SERVEUR:-[n]ext(-server| dev| start)}"
-
-BASCULE="$(dirname "$0")/bascule-en-cours.sh"
 
 while true; do
   # **Ne pas prendre une bascule pour une mort.** Quand `banc.mjs` remplace son

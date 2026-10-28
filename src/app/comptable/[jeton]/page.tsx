@@ -2,7 +2,7 @@ import { colors, font } from "@/lib/design-tokens";
 import { enEuros } from "@/lib/euros";
 import { ligneDuTotal } from "@/lib/ticket-imprime";
 import { libelleMotif, categorieDeLaLigne, ecartSignale, jourComplet, jourEnMots, suiteDeLaPiece } from "@/lib/pour-mon-comptable";
-import { dossierParJeton, type LignePourLeComptable } from "@/server/repositories/verification-comptable";
+import { attestationParJeton, dernierRetourParJeton, dossierParJeton, type LignePourLeComptable } from "@/server/repositories/verification-comptable";
 import Verification, { type LigneAVerifier, type PieceAffichee } from "./Verification";
 import { jourIso } from "@/lib/jour";
 import { garderLaPage } from "@/server/garde-page";
@@ -54,7 +54,7 @@ function piece(l: LignePourLeComptable): PieceAffichee {
   if (l.justification === "facture_hors_atlas" && l.pieceJointe) {
     // Un total illisible reste vide (`joindreFactureHorsAtlas`) : il s'écrit
     // « non lu », jamais deviné.
-    return { genre: "hors_atlas", total: l.pieceJointe.total ? enEuros(l.pieceJointe.total) : null, original: l.pieceJointe.nature };
+    return { genre: "hors_atlas", sortie: l.sens === "sortie", total: l.pieceJointe.total ? enEuros(l.pieceJointe.total) : null, original: l.pieceJointe.nature };
   }
   if (l.justification === "ticket_perdu") return { genre: "perdu" };
   if (l.justification === "motif" && l.motif) return { genre: "motif", libelle: libelleMotif(l.motif, l.sens) };
@@ -70,7 +70,7 @@ function etiquette(p: PieceAffichee): string {
     case "facture":
       return "Facture";
     case "hors_atlas":
-      return "Facture faite hors d’Atlas";
+      return p.sortie ? "Facture du fournisseur" : "Facture faite hors d’Atlas";
     case "emise":
       return `Facture ${p.numero}`;
     case "perdu":
@@ -103,10 +103,20 @@ function ecartAffiche(p: PieceAffichee, suite: string, signale: boolean): LigneA
   };
 }
 
-export default async function PageDuComptable({ params }: { params: Promise<{ jeton: string }> }) {
+export default async function PageDuComptable({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ jeton: string }>;
+  searchParams: Promise<{ apercu?: string }>;
+}) {
   await garderLaPage();
   const { jeton } = await params;
-  const dossier = await dossierParJeton(jeton);
+  // Le patron qui « voit la page qu'il ouvre » arrive avec `?apercu=1` : il a
+  // alors un bouton Fermer vers ses dossiers. Le comptable, lui, ouvre
+  // l'adresse nue et n'a rien à fermer (sa remarque du 27 octobre 2026).
+  const apercu = (await searchParams).apercu === "1";
+  const [dossier, attestation, retour] = await Promise.all([dossierParJeton(jeton), attestationParJeton(jeton), dernierRetourParJeton(jeton)]);
 
   if (!dossier) {
     return (
@@ -136,6 +146,7 @@ export default async function PageDuComptable({ params }: { params: Promise<{ je
       jourLong: jourComplet(l.jour),
       libelle: l.libelle || (l.contrepartie ?? ""),
       montant: `${l.sens === "entree" ? "+" : "−"}${enEuros(l.montant)}`,
+      montantBrut: l.montant,
       sens: l.sens,
       categorie: categorieDeLaLigne({ sens: l.sens, libelle: l.libelle, natureDuTicket: l.ticket?.nature ?? null, justification: l.justification }),
       piece: p,
@@ -153,6 +164,14 @@ export default async function PageDuComptable({ params }: { params: Promise<{ je
       envoye={`Envoyé le ${jourEnMots(jourIso(dossier.envoyeLe))}`}
       entreprise={dossier.entreprise}
       lignes={lignes}
+      dossier={{ du: dossier.du, au: dossier.au, empreinte: dossier.empreinte }}
+      attestation={
+        attestation
+          ? { conclusion: attestation.conclusion, signee: `Signée le ${jourEnMots(jourIso(attestation.signeLe))}`, aJour: attestation.aJour }
+          : null
+      }
+      renvoye={retour ? `Renvoyé le ${jourEnMots(jourIso(retour.renvoyeLe))}.` : null}
+      apercu={apercu}
     />
   );
 }

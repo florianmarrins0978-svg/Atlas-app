@@ -18,12 +18,24 @@ export type DossierAffiche = {
   nom: string;
   annee: number;
   detail: string;
+  /** « 774 Ko » : la taille du PDF, dite sur sa ligne de fichier. */
+  taille: string;
   /** Le jour de son effacement, quand il approche (trois mois). */
   echeance: string | null;
   bilans: { id: string; nature: "photo" | "pdf"; nom: string; ajoute: string }[];
   /** Où en est son comptable (rien tant qu'aucun lien n'est parti), et ce qu'il a rejeté. */
   verification: { texte: string | null; rejets: ARegarder[] };
+  /** La dernière attestation que le comptable a signée, et si elle vaut encore. */
+  attestation: { id: string; ton: "vert" | "ambre" | "rouge"; detail: string; perimee: boolean } | null;
+  /** Son renvoi à corriger : la demande tant qu'un rejet reste, puis de quoi le prévenir. */
+  retour: { etat: "demande"; titre: string; message: string | null; texte: string } | { etat: "corrige"; mailto: string } | null;
 };
+
+const TEINTE_DU_TON = {
+  vert: { fond: colors.carteVertFond, texte: colors.carteVertTexte },
+  ambre: { fond: colors.carteAmbreFond, texte: colors.carteAmbreTexte },
+  rouge: { fond: colors.carteRougeFond, texte: colors.carteRougeTexte },
+} as const;
 
 const creux = "inline-flex min-h-[52px] w-full items-center justify-center gap-2.5 rounded-full px-5 text-[16px] font-medium disabled:opacity-60";
 const styleCreux = { boxShadow: `inset 0 0 0 1.5px ${colors.line}`, backgroundColor: colors.card, color: colors.ink };
@@ -275,13 +287,89 @@ function Dossier({ d, factures, premier }: { d: DossierAffiche; factures: Factur
         </p>
       )}
 
-      <div className="mt-3.5 grid grid-cols-3 gap-2">
-        <Link href={adresseDeLaVisionneuse(pdfDuDossier(d.id), { surtitre: "Dossier justifié", titre: d.nom })} className={geste} style={styleCreux} data-atlas="ouvrir-dossier">
-          <span style={{ color: colors.or }}>
-            <Icone nom="document" taille={22} />
+      {/* L'attestation sous le compte du comptable : la seule ligne que sa
+          planche du 27 octobre ajoute. Le reste garde sa place (sa règle du
+          11 septembre : on change le texte, jamais la place). */}
+      {d.attestation && (
+        <div className="mt-2.5 flex items-center gap-3 rounded-[14px] py-1 pl-3 pr-2" style={{ backgroundColor: colors.card }} data-atlas="attestation-du-comptable">
+          <span className="flex h-10 w-10 flex-none items-center justify-center rounded-xl" style={{ backgroundColor: TEINTE_DU_TON[d.attestation.ton].fond, color: TEINTE_DU_TON[d.attestation.ton].texte }}>
+            <Icone nom="document" taille={21} />
           </span>
-          Ouvrir
-        </Link>
+          <span className="min-w-0 flex-1 py-2 text-[14px]" style={{ color: colors.inkSoft }}>
+            <b className="block text-[15px] font-semibold" style={{ color: colors.ink }}>
+              Attestation du comptable
+            </b>
+            {d.attestation.detail}
+            {d.attestation.perimee && (
+              <span className="block font-semibold" style={{ color: colors.carteAmbreTexte }}>
+                Le dossier a changé depuis.
+              </span>
+            )}
+          </span>
+          <Link href={adresseDeLaVisionneuse(`/termines/comptable/attestations/${d.attestation.id}/pdf`, { surtitre: "Attestation du comptable", titre: d.nom })} className="flex min-h-[44px] items-center px-2 text-[15px] font-medium" style={{ color: colors.ink }} data-atlas="ouvrir-attestation">
+            Ouvrir
+          </Link>
+        </div>
+      )}
+
+      {/* Le renvoi à corriger, sous le compte du comptable comme l'attestation
+          (sa planche du 27 octobre 2026). C'est connecté : ce qu'il corrige
+          ici repasse sur le lien du comptable ; seul le prévenir se fait. */}
+      {d.retour?.etat === "demande" && (
+        <div className="mt-2.5 rounded-[14px] px-4 pb-3.5 pt-3" style={{ backgroundColor: colors.carteAmbreFond }} data-atlas="correction-demandee">
+          <p className="flex items-center gap-2 text-[14.5px] font-bold" style={{ color: colors.carteAmbreTexte }}>
+            <i className="inline-block h-[7px] w-[7px] rounded-full" style={{ backgroundColor: "currentColor" }} />
+            {d.retour.titre}
+          </p>
+          {d.retour.message && (
+            <p className="mt-1.5 text-[17px] italic leading-[1.4]" style={{ fontFamily: font.display, color: colors.ink }}>
+              «&nbsp;{d.retour.message}&nbsp;»
+            </p>
+          )}
+          <p className="mt-1 text-[14px]" style={{ color: colors.inkSoft }}>
+            {d.retour.texte}
+          </p>
+        </div>
+      )}
+      {d.retour?.etat === "corrige" && (
+        <div className="mt-2.5 rounded-[18px] px-5 pb-[18px] pt-3.5" style={{ backgroundColor: colors.carteVertFond }} data-atlas="tout-corrige">
+          <p className="flex items-center gap-2 text-[15px] font-bold" style={{ color: colors.carteVertTexte }}>
+            <i className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: "currentColor" }} />
+            Tout est corrigé
+          </p>
+          <p className="mt-1.5 text-[15px] leading-[1.45]" style={{ color: colors.ink }}>
+            Vos corrections sont déjà sur son lien.
+          </p>
+          <a href={d.retour.mailto} className="atlas-plein mt-3.5 inline-flex min-h-[54px] w-full items-center justify-center gap-2.5 rounded-full px-5 text-[16px] font-medium" style={{ backgroundColor: colors.plein, color: colors.card }} data-atlas="prevenir-mon-comptable">
+            <Icone nom="email" taille={21} />
+            Prévenir mon comptable
+          </a>
+        </div>
+      )}
+
+      {/* Le fichier se MONTRE : son nom, sa taille, et un appui l'ouvre (sa remarque du
+          27 octobre 2026 : « je ne sais pas où est le dossier »). */}
+      <Link
+        href={adresseDeLaVisionneuse(pdfDuDossier(d.id), { surtitre: "Dossier justifié", titre: d.nom })}
+        className="mt-3.5 flex min-h-[72px] items-center gap-3.5 rounded-[18px] px-3.5 py-3"
+        style={styleCreux}
+        data-atlas="ouvrir-dossier"
+      >
+        <span className="flex h-[56px] w-[46px] flex-none items-end justify-center rounded-[8px] pb-1.5 text-[11px] font-bold tracking-[0.06em]" style={{ backgroundColor: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}`, color: colors.alert }} aria-hidden="true">
+          PDF
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[16px] font-semibold leading-[1.3] [overflow-wrap:anywhere]">{`Dossier justifié, ${d.nom}.pdf`}</span>
+          <span className="mt-0.5 block text-[14px]" style={{ color: colors.inkSoft }}>
+            {`PDF, ${d.taille}`}
+          </span>
+        </span>
+        <span style={{ color: colors.chevron }}>
+          <Icone nom="suivant" taille={20} epaisseur={2} />
+        </span>
+      </Link>
+
+      <div className="mt-2.5 grid grid-cols-2 gap-2">
         <BoutonTelechargerDocument fichier={pdfDuDossier(d.id)} nom={`Dossier justifié, ${d.nom}.pdf`} className={geste} style={styleCreux} dataAtlas="telecharger-dossier">
           <span style={{ color: colors.or }}>
             <Icone nom="telecharger" taille={22} />
@@ -316,7 +404,7 @@ function Dossier({ d, factures, premier }: { d: DossierAffiche; factures: Factur
             <button type="button" onClick={() => copier(lien)} className={texte} style={{ color: colors.inkSoft }} data-atlas="copier-lien">
               {copie ? "Lien copié" : "Copier le lien"}
             </button>
-            <a href={lien} target="_blank" rel="noreferrer" className={`flex items-center justify-center ${texte}`} style={{ color: colors.inkSoft }} data-atlas="voir-la-page-du-comptable">
+            <a href={`${lien}?apercu=1`} className={`flex items-center justify-center ${texte}`} style={{ color: colors.inkSoft }} data-atlas="voir-la-page-du-comptable">
               Voir la page qu’il ouvre
             </a>
           </div>

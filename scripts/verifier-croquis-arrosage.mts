@@ -87,6 +87,37 @@ const CROQUIS = `
   </div>
 </div>`;
 
+/**
+ * **Son croquis du 27 octobre 2026, redessiné** : un massif de goutte-à-goutte
+ * DANS la pelouse, coté 6 m sur 3 m, et une bande « GAG » sur tout le haut,
+ * le long d'un bord coté « 7,50 » puis « 4,50 ». Le modèle avait rendu le
+ * massif en 9 × 10 (il l'avait étendu « sur toute la hauteur de la pelouse »,
+ * l'exemple même que lui donnait sa consigne) et la bande en 7 m (la première
+ * cote seule). Ce gabarit tient les deux pièges, sans porter son jardin.
+ */
+const CROQUIS_DANS_LA_PELOUSE = `
+<div style="font-family: Georgia, serif; background:#fff; width:760px; padding:28px">
+  <div style="position:relative; width:560px; height:470px; margin-left:60px">
+    <div style="position:absolute; top:0; left:0; width:520px; height:46px; border:3px solid #222"></div>
+    <div style="position:absolute; top:8px; left:200px; font-size:22px">GAG</div>
+    <div style="position:absolute; top:56px; left:120px; font-size:19px">7,50</div>
+    <div style="position:absolute; top:56px; left:400px; font-size:19px">4,50</div>
+    <div style="position:absolute; top:86px; left:0; width:520px; height:360px; border:3px solid #222"></div>
+    <div style="position:absolute; top:240px; left:300px; font-size:22px">ARROSEUR</div>
+    <div style="position:absolute; top:250px; left:534px; font-size:19px">10 m</div>
+    <div style="position:absolute; top:452px; left:250px; font-size:19px">12</div>
+    <div style="position:absolute; top:150px; left:3px; width:130px; height:220px; border:3px solid #222; border-radius:0 40px 40px 0"></div>
+    <div style="position:absolute; top:200px; left:12px; font-size:16px">Goutte à goutte</div>
+    <div style="position:absolute; top:250px; left:20px; font-size:17px">6 m</div>
+    <div style="position:absolute; top:290px; left:20px; font-size:15px">H 0,30</div>
+    <div style="position:absolute; top:376px; left:50px; font-size:17px">3 m</div>
+    <div style="position:absolute; top:100px; left:200px; width:26px; height:34px; border:3px solid #222; background:#fff"></div>
+    <div style="position:absolute; top:104px; left:234px; font-size:15px">NOURRICE</div>
+    <div style="position:absolute; top:4px; left:530px; width:22px; height:22px; border-radius:50%; border:3px solid #222"></div>
+    <div style="position:absolute; top:30px; left:528px; font-size:15px">COMPTEUR</div>
+  </div>
+</div>`;
+
 let echecs = 0;
 async function cas(nom: string, verifier: () => Promise<void> | void): Promise<void> {
   try {
@@ -201,8 +232,57 @@ async function main() {
     assert.equal(zones.length, 4, `${zones.length} zones au lieu de 4 : ${zones.map((z) => z.type).join(", ")}`);
   });
 
-  console.log(`\n${echecs === 0 ? "✅" : "❌"} Le croquis lu par le modèle — ${echecs} échec(s).`);
+  await lireLeSecond();
+
+  console.log(`\n${echecs === 0 ? "✅" : "❌"} Les croquis lus par le modèle — ${echecs} échec(s).`);
   process.exit(echecs === 0 ? 0 : 1);
+}
+
+/** Le second croquis : un massif dans la pelouse, une bande cotée en deux fois. */
+async function lireLeSecond() {
+  console.log("\n=== Un massif dessiné DANS la pelouse ===\n");
+  const navigateur = await lancerNavigateur();
+  const page = await (await navigateur.newContext({ viewport: { width: 820, height: 620 } })).newPage();
+  await page.setContent(CROQUIS_DANS_LA_PELOUSE);
+  const png = await page.locator("div").first().screenshot();
+  await navigateur.close();
+
+  const lu = await lireCroquis(png.toString("base64"), "image/png");
+  assert.equal(lu.ok, true, `la lecture a échoué : ${lu.ok ? "" : lu.raison}`);
+  if (!lu.ok) return;
+  console.log(`  Ce que le modèle a rendu :\n${JSON.stringify(lu.croquis, null, 2).replace(/^/gm, "    ")}\n`);
+  const zones = lu.croquis.zones;
+  const tailles = (z: (typeof zones)[number]) => [z.L, z.l].sort((a, b) => (b ?? 0) - (a ?? 0));
+
+  await cas("la pelouse fait 12 × 10 : 7,50 et 4,50 bout à bout", () => {
+    const g = zones.filter((z) => z.type === "gazon");
+    assert.equal(g.length, 1, `${g.length} pelouse(s) au lieu d'une`);
+    assert.deepEqual(tailles(g[0]), [12, 10], "les cotes de la pelouse");
+  });
+
+  // **La cote écrite passe avant la déduction** : le massif ne longe pas toute
+  // la pelouse, il porte « 6 m ». L'étendre à 10 m faisait poser 16 lignes.
+  await cas("le massif garde ses cotes écrites, 6 × 3, et non la hauteur de la pelouse", () => {
+    const m = zones.filter((z) => z.type === "massif");
+    assert.equal(m.length, 1, `${m.length} massif(s) au lieu d'un : ${zones.map((z) => `${z.type} ${z.L}×${z.l}`).join(", ")}`);
+    assert.deepEqual(tailles(m[0]), [6, 3], "les cotes du massif");
+  });
+
+  await cas("la bande GAG mesure la somme des cotes de son bord, 12 m", () => {
+    const h = zones.filter((z) => z.type === "haie");
+    assert.equal(h.length, 1, `${h.length} bande(s) au lieu d'une`);
+    assert.equal(h[0].ml, 12, `${h[0].ml} m au lieu de 12`);
+  });
+
+  // **Le massif est DANS la pelouse** : son centre tombe dans le cadre qu'elle
+  // occupe. Le posé côte à côte gonflait le terrain à 33,5 × 31 m.
+  await cas("le massif est lu à l'intérieur de la pelouse", () => {
+    const g = zones.find((z) => z.type === "gazon");
+    const m = zones.find((z) => z.type === "massif");
+    assert.ok(g && m && g.x !== null && g.y !== null && m.x !== null && m.y !== null, "une place manque");
+    const dedans = (v: number, c: number, t: number | null) => t !== null && Math.abs(v - c) <= t / 2 + 0.02;
+    assert.ok(dedans(m!.x!, g!.x!, g!.largeurFraction) && dedans(m!.y!, g!.y!, g!.hauteurFraction), `massif en (${m!.x}, ${m!.y}), pelouse en (${g!.x}, ${g!.y})`);
+  });
 }
 
 main().catch((e) => {

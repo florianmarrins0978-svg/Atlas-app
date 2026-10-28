@@ -4294,6 +4294,55 @@ export const verdictsComptable = pgTable("verdicts_comptable", {
 });
 
 /**
+ * L'attestation que le comptable signe sur son lien (migration 0151, sa planche
+ * du 27 octobre 2026) : sa conclusion, qui il est, les comptes faits au serveur
+ * et le PDF signé. **Jamais réécrite** : la base ne rend que `vu_le`.
+ */
+export const attestationsComptable = pgTable("attestations_comptable", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  entrepriseId: uuid("entreprise_id")
+    .notNull()
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  dossierId: uuid("dossier_id").notNull(),
+  conclusion: text("conclusion", { enum: ["conforme", "reserves", "non_conforme"] }).notNull(),
+  observations: text("observations"),
+  lignes: integer("lignes").notNull(),
+  validees: integer("validees").notNull(),
+  rejetees: integer("rejetees").notNull(),
+  signataireNom: text("signataire_nom").notNull(),
+  signataireFonction: text("signataire_fonction", { enum: ["expert_comptable", "comptable", "autre"] }).notNull(),
+  signataireSociete: text("signataire_societe").notNull(),
+  signataireOrdre: text("signataire_ordre"),
+  signataireSiren: text("signataire_siren"),
+  signataireAdresse: text("signataire_adresse"),
+  signataireEmail: text("signataire_email").notNull(),
+  signataireTelephone: text("signataire_telephone"),
+  fichierCle: text("fichier_cle").notNull(),
+  tailleOctets: integer("taille_octets").notNull(),
+  empreinte: text("empreinte").notNull(),
+  signeLe: timestamp("signe_le", { withTimezone: true }).notNull().defaultNow(),
+  vuLe: timestamp("vu_le", { withTimezone: true }),
+});
+
+/**
+ * Le comptable renvoie le dossier à corriger (migration 0152, sa planche du
+ * 27 octobre 2026) : le geste seul, son mot et son adresse. Les lignes à
+ * reprendre sont ses rejets. **Jamais réécrit** : la base ne rend que `vu_le`.
+ */
+export const retoursComptable = pgTable("retours_comptable", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  entrepriseId: uuid("entreprise_id")
+    .notNull()
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  dossierId: uuid("dossier_id").notNull(),
+  message: text("message"),
+  email: text("email"),
+  rejetees: integer("rejetees").notNull(),
+  renvoyeLe: timestamp("renvoye_le", { withTimezone: true }).notNull().defaultNow(),
+  vuLe: timestamp("vu_le", { withTimezone: true }),
+});
+
+/**
  * Les crédits IA du mois : ce qu'une entreprise a dépensé, en micro-euros
  * estimés (`drizzle/0148_consommation_ia.sql`, `src/lib/credits-ia.ts`).
  */

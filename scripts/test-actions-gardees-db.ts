@@ -271,6 +271,15 @@ const EXEMPTIONS: Record<string, string> = {
     "La page du comptable s'ouvre par un jeton, sans compte (24 octobre 2026) : le comptable n'a pas de rôle. " +
     "Le jeton EST la garde — 256 bits, dont la base ne garde que l'empreinte (migration 0145), et qui n'ouvre " +
     "que les lignes de SON dossier (`poserVerdictParJeton`). La cadence est bornée (LIMITES.verdictComptable).",
+  "src/app/comptable/[jeton]/actions.ts#signerAttestationAction":
+    "Même porte et même serrure que le verdict (27 octobre 2026) : le comptable signe l'attestation de SON dossier, " +
+    "sans compte. Le jeton n'ouvre que ce dossier, la signature est refusée tant qu'une ligne reste à vérifier, " +
+    "les comptes sont refaits au serveur sur les verdicts, et la base ne laisse jamais réécrire une attestation " +
+    "(migration 0151). La cadence est étroite (LIMITES.attestationComptable).",
+  "src/app/comptable/[jeton]/actions.ts#renvoyerAction":
+    "Même porte et même serrure (27 octobre 2026) : le comptable renvoie SON dossier à corriger, sans compte. " +
+    "Le jeton n'ouvre que ce dossier, le renvoi est refusé sans ligne rejetée, il ne touche à aucune ligne " +
+    "(il note un geste, jamais réécrit, migration 0152), et la cadence est étroite (LIMITES.retourComptable).",
   "src/app/factures/[jeton]/actions.ts#accuserReceptionAction":
     "Même raison, et même serrure. Un porteur du jeton ne peut poser QUE la confirmation " +
     "de SA facture, une seule fois : le garde IS NULL en base refuse d'écraser la première date.",

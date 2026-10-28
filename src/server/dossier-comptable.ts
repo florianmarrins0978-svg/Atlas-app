@@ -57,7 +57,7 @@ async function pourLeDossier(l: LigneDuReleve): Promise<LignePourLeDossier> {
       : l.justification === "facture" && l.factureRecue
         ? { genre: "facture", societe: l.factureRecue.societe, nom: l.factureRecue.nom, totalTtc: l.factureRecue.totalTtc, fichier: await lire(l) }
         : l.justification === "facture_hors_atlas" && l.pieceJointe
-          ? { genre: "facture-hors-atlas", totalTtc: l.pieceJointe.total, fichier: await lire(l) }
+          ? { genre: "facture-hors-atlas", sortie: l.sens === "sortie", totalTtc: l.pieceJointe.total, fichier: await lire(l) }
           : l.factureEmise
             ? { genre: "facture-emise", numero: l.factureEmise.numero }
             : null;

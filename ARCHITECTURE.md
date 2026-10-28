@@ -36304,7 +36304,103 @@ Trois choix faits en codant : la vignette d'une pièce passe de 88 à 72 (`taill
 
 **À côté.** `demarrer.sh` publie une première fiche juste après le lancement du veilleur : la publication d'allumage vivait derrière la mise à jour, `npm ci` et les migrations, et arrivait huit minutes après le rallumage.
 
-## §520 : `photos` et `notes_vocales` gagnent le second rempart que `entreprises` avait déjà
+## §520 : Ce qui précède le lancement du serveur est borné, et la fiche dit l'étape du banc
+
+**Le 27 octobre 2026**, après §519, son espace rallumé avec le correctif servait toujours une page blanche. `banc.mjs` joue, avant `lancerDev`/`lancerBati`, l'étape de la clé de l'espace (`secret-de-l-espace.ts`, audit E1) par un `execFileSync` **sans délai**, et ses requêtes n'en avaient pas non plus : une table `double_verification` ou `agendas_externes` verrouillée ailleurs la fait attendre sans fin, et le serveur ne part jamais (reproduit). Son commentaire promettait pourtant l'inverse : *« un banc qui ne démarre plus ferait pire que la faille »*.
+
+**Ce qui change.** La connexion porte `lock_timeout=5s` et `statement_timeout=20s` ; l'appel dans `banc.mjs`, 90 s. Un dépassement est un échec ordinaire : transaction défaite, ancienne clé.
+
+**Rendre la panne bavarde.** La fiche ne publie pas le journal (dépôt public), et « Serveur : ABSENT » ne disait pas à quelle étape le banc restait. `etape-du-banc.mjs` note, dans une liste fermée (`démarrage`, `dépendances`, `clé de l'espace`, `serveur lancé`), où en est le banc ; `diagnostiquer-espace.mjs` l'écrit (« Banc : étape … depuis N min »). Un mot hors liste ne s'écrit ni ne se relit : rien de secret ne peut partir.
+
+**Non prouvé chez lui** : ni ce verrou, ni celui de §519 n'ont été lus sur sa machine. La ligne « Banc » de la prochaine fiche le dira.
+
+## §521 : Un veilleur neuf arrête le banc orphelin de l'ancien
+
+**Le 27 octobre 2026, 12 h 55**, son espace rallumé avec §519 : `Veilleur : en place` (vrai, désormais vérifié), `Serveur : ABSENT`, aucune construction, 2,3 Go utilisés. Rien de Next ne tournait, et pourtant aucun banc ne partait.
+
+**Le chemin.** À l'allumage, `demarrer.sh` lance d'abord le veilleur de l'ANCIEN code, qui lance aussitôt un banc (ancien code). Puis la mise à jour arrive : `demarrer.sh` tue le veilleur et Next, réinstalle, relance un veilleur neuf. **Le banc de l'ancien survivait**, avec le verrou du banc, et un processus vivant qui exécute bien `banc.mjs` : §519 le jugeait légitime. Bloqué avant de servir (l'étape de la clé, §520, en est un chemin), il fermait la porte à tout banc neuf, qui sortait en 0 sur « déjà en train de se construire ».
+
+**Ce qui change.** En prenant son verrou, `veiller.sh` lit celui du banc (`ATLAS_VERROU_BANC`, même nom que `verrou-banc.mjs`) ; un banc vivant qui ne répond pas à la santé, hors bascule, est arrêté par son numéro (`kill -9` : bloqué dans un appel synchrone, il ne lirait pas un SIGTERM) et son verrou retiré. Un banc qui sert n'est jamais touché. Le chemin du drapeau de bascule devient absolu : il sert avant et après le `cd`.
+
+**Les suites ne touchent jamais le vrai banc** : celles qui lancent `veiller.sh` posent leur propre `ATLAS_VERROU_BANC`.
+
+**Non prouvé chez lui** non plus ; la ligne « Banc » (§520) dira, au prochain allumage, si le banc neuf part.
+
+## §522 : Une version bâtie ne se sert qu'avec le Next qui l'a bâtie
+
+**La racine du 27 octobre 2026**, enfin nommée. §519 à §521 ont retiré trois obstacles réels ; aucun n'était celui-là. La ligne « Banc » (§520) a dit, à 16 h 44 puis 16 h 54 : « étape serveur lancé, depuis 0 min ». Le banc lançait donc bien son serveur, et recommençait sans cesse.
+
+**Ce qui se passait.** Sa dernière version bâtie (`017cfb5`, 24 octobre) l'avait été par Next 16.3.8. Le 25, l'application passe à 16.4.2 (`a968ebe`, avis de sécurité). Au démarrage, `quoiServir` sert la version d'avant pendant que la neuve se construit (`relais-version-batie.mjs`) : `next start` 16.4.2 sur un dossier écrit par 16.3.8 tombe en deux secondes, `ENOENT … server/preview-props.json`. Le serveur mort arrête le banc (`surSortie`), et avec lui la construction neuve ; le veilleur relance, et ainsi de suite. **Reproduit** dans les deux sens : banc d'avant, même erreur et sortie 1 ; banc corrigé, réponse en 27 s.
+
+**La règle.** Le format d'un dossier bâti appartient à la version de Next qui l'a écrit. À chaque construction réussie, le banc note ce Next (`atlas-next-batie.txt`, à côté du commit) ; `servableParCeNext` ne laisse servir une version bâtie que si ce Next est celui installé. Non noté (version d'avant la règle) : on ne sert pas, mode développement le temps d'une construction. `doitRebatir` rebâtit aussi quand le Next a changé.
+
+**Ce qui reste fragile, et n'est pas traité ici** : un serveur qui meurt pendant la construction arrête encore le banc et la construction. Avec cette règle, plus rien de connu ne le fait mourir ; si une autre cause apparaît, la ligne « Banc » la montrera de la même façon.
+
+## §523 : L'attestation du comptable se signe sur elle-même, et ne se réécrit pas
+
+**Sa remarque du 27 octobre 2026**, après avoir joué le comptable : *« j'ai coché vert, rouge, et ensuite aucun moyen d'arrêter le document, de le signer »*. Puis, devant sa page : *« 0 sur 60 »* alors que tout était coché. Sa planche du même jour (`appli/soignee/comptable-attestation.html`), approuvée par *« tu peux coder »*.
+
+**Le geste.** La dernière ligne vérifiée fait paraître « Terminer et signer ». Trois étapes : la conclusion (conforme, avec réserves, non conforme ; Atlas propose « avec réserves » dès un rejet, jamais « non conforme »), qui signe (gardé sur l'appareil du comptable, `localStorage`), puis l'attestation relue et signée au doigt ou à la souris, SUR le document. Le tampon du cabinet s'y pose (son nom, la conclusion, la date) ; c'est le seul mouvement.
+
+**Une seule règle pour l'écran et le PDF** (`src/lib/attestation-comptable.ts`) : le contenu, le tampon, le courriel et la carte de l'accueil en sortent. `contenuDeLAttestation` fait les comptes sur les verdicts RELUS au serveur, jamais sur ce que l'écran a cru. Le PDF a son propre moteur (`src/server/pdf/attestation-comptable-pdf.ts`, Inter et EB Garamond embarquées, protégé contre la modification), comme la mise en demeure.
+
+**Ce que la base tient** (migration 0151, `attestations_comptable`) : FORCE RLS, l'écriture du comptable passe par l'isolation ordinaire (son jeton ouvre son envoi, qui pose l'entreprise), et **ni UPDATE ni DELETE** sauf `vu_le` (« J'ai vu » sur l'accueil). Signer est refusé tant qu'une ligne reste à vérifier, et refusé si un verdict a bougé entre la lecture et le rangement (`etatDesVerdicts`) ; le PDF d'une signature refusée s'efface. L'attestation cite l'empreinte du PDF du dossier : elle se lie au fichier exact.
+
+**Périmée, elle le dit.** Un verdict posé ou une ligne justifiée à nouveau APRÈS la signature (`attestationAJour`) : Mes dossiers écrit « Le dossier a changé depuis », et la page du comptable propose de signer à nouveau. Une nouvelle signature fait une nouvelle ligne ; l'ancienne reste.
+
+**Le courriel ne transporte rien du dossier.** `brevo.ts` n'envoie qu'un avis (« ce module sert un code de six chiffres ») : le courriel au patron dit qui a signé, la période et la conclusion, sans une ligne de banque, sans montant, sans pièce jointe. L'attestation se lit dans Atlas, et le comptable télécharge son exemplaire à la fin. **Écart avec la planche**, qui montrait le PDF joint et une copie au comptable : c'est une décision de sécurité, dite au patron, à rouvrir s'il le demande (`TODO.md`).
+
+**Le « 0 sur 60 » n'était pas un défaut de comptage** : sa page était ouverte avant que le comptable ne coche, et rien ne la relisait. Mes dossiers porte désormais `VeilleDesNouvelles`, le veilleur de l'accueil (relecture au retour sur l'écran, puis toutes les trente secondes).
+
+**Ce que ce document vaut**, écrit au pied du PDF : une attestation de vérification des justificatifs présentés dans Atlas, signée d'une signature électronique simple. Elle ne remplace pas l'attestation de présentation des comptes de l'expert-comptable.
+
+## §524 : Le comptable renvoie à corriger ; seul l'appui du patron le prévient
+
+**Sa demande du 27 octobre 2026** : *« qu'il puisse nous le retourner à corriger si besoin, un peu comme pour un devis. Et nous on le corrige, on lui renvoie corrigé, ou c'est connecté ? »* Puis, devant la planche (`appli/soignee/comptable-retour.html`) : *« un e-mail ne peut pas partir sans mon geste dans l'appli »*, et *« tu peux coder ça, pas de batterie »*.
+
+**C'était déjà connecté, et rien ne change de ce côté.** Une ligne rejetée que le patron reprend dans Mes dossiers repasse sur le lien du comptable, « Corrigée depuis votre rejet », à vérifier de nouveau (0145, `test-verification-comptable-e2e.ts`). Ce lot n'ajoute que ce qui manquait : le GESTE du renvoi, sa carte chez le patron, et de quoi prévenir le comptable.
+
+**Le renvoi ne porte que le geste** (migration 0152, `retours_comptable`) : quand, combien de lignes rejetées, son mot, l'adresse où il veut être prévenu. Les lignes à reprendre sont ses rejets, relus au serveur, jamais une liste envoyée par le navigateur. Refusé sans ligne rejetée. FORCE RLS sous l'isolation ordinaire (le jeton ouvre son envoi, qui pose l'entreprise), **ni UPDATE ni DELETE** sauf `vu_le` (« J'ai vu »). La cadence est étroite : `LIMITES.retourComptable` (6 par dix minutes et par lien) et `retourComptableParSource`.
+
+**Quand Mes dossiers montre quoi** (`etatDuRetour`, `src/lib/retour-comptable.ts`) : « Correction demandée » tant qu'un rejet reste ; « Tout est corrigé » quand il n'en reste plus et que des lignes attendent le comptable ; rien sinon. Une attestation signée APRÈS le renvoi le clôt : le comptable a repris la main.
+
+**Atlas n'écrit jamais au comptable.** « Prévenir mon comptable » est un `mailto:` : la messagerie DU PATRON s'ouvre, le message prêt (`messageAuComptable`), adressé à l'e-mail que le comptable a laissé. Le lien n'y est pas (la base n'en garde que l'empreinte, et le comptable a le sien). C'est sa règle, *rien ne part sans mon geste*, et `CLAUDE.md` §4.
+
+**L'avis au patron** passe par Brevo, comme celui de l'attestation (§523), et ne porte rien du dossier : ni ligne, ni montant, ni le mot du comptable, qui peut citer des libellés de banque. Le mot se lit dans Atlas, sur la carte de l'accueil et dans Mes dossiers.
+
+**Ce que la capture a attrapé, et aucun test** : la carte de l'accueil disait « Votre comptable a rejeté 1 ligne. 1 ligne à reprendre. » (la seconde phrase est partie), et le « » » final tombait seul à la ligne (espaces insécables autour du mot). La suite navigateur, elle, a attrapé la phrase d'aide de l'e-mail posée DANS l'étiquette : le champ s'annonçait « Votre e-mail Pour recevoir un mot… ». Elle est sortie de l'étiquette et rattachée par `aria-describedby`.
+
+## §525 : L'assistant joint les documents qu'il a lus, jamais une adresse qu'il écrit
+
+**Sa demande du 27 octobre 2026** : une ligne trouvée dans un devis doit arriver avec le PDF du devis, à toucher ; puis *« pareil pour chaque document demandé : la facture, la fiche d'inter, le bilan comptable, un ticket de carburant, un ticket resto »*. Planche `appli/assistant-ouvre-le-devis.html`, **B** : la ligne trouvée est elle-même le bouton.
+
+**La règle.** Une adresse ne vient jamais du modèle. Les outils fabriquent la pièce depuis la base (`creerPiece`, `src/lib/pieces-de-l-assistant.ts`, qui la marque d'un symbole et refuse toute adresse hors de l'application). `rangerLesPieces` la retire du résultat avant qu'il parte au modèle et n'y laisse qu'une clé, « P1 ». Le modèle cite « [[P1]] » dans sa phrase ; `piecesCitees` ne rend que les clés rangées pendant CE tour, une fois chacune, et efface les clés du texte. Une clé inventée ne mène à rien ; un objet recopié qui ressemble à une pièce n'en est pas une. La route qui sert le fichier garde ses propres contrôles : la pièce évite de chercher, elle n'ouvre aucune porte.
+
+**Ce qui porte une pièce** : `RechercherLignesDevis` (la ligne, qui ouvre son devis), `LireDevis`, `LireFactures`, et sept outils neufs : `RechercherTickets` (achats par nature, commerçant, période ; un achat saisi sans photo n'a rien à joindre), `LireBilans`, `LirePhotos`, `LireDossierClient` (devis et factures, importés compris, avoirs, rapports d'entretien, contrat : la lecture même de sa fiche, `chargerFicheClient`), `LireDocumentsChantier` (feuille sans les prix, fiche chantier, fiche de sécurité si elle existe ; sa réponse du 28 octobre à « la fiche d'inter, c'est laquelle ? » : *« il faut qu'il puisse nous donner tous les documents »*), `RechercherPiecesFournisseurs` (un tableur n'a pas de pièce), `LirePapiersVehicules`.
+
+**La règle qui ouvre une pièce du dossier client est descendue dans `src/lib/`** (`adresseOuvrirLaPiece`, `documents-du-client.ts`) : elle vivait dans `PieceDuDossier.tsx`, et l'assistant ouvre désormais les mêmes pièces. **Les factures reçues et les papiers de véhicule ont une adresse en `/pdf`** (`…/[id]/pdf`, qui réexporte la route d'à côté) : la visionneuse n'accepte qu'un fichier dont l'adresse finit ainsi, et cette règle-là ne se relâche pas.
+
+**Un ticket s'ouvre par l'identifiant de l'ACHAT** (`/termines/tva/ticket/[id]`, `photoDuTicket`). Avant, il ne s'ouvrait que rapproché d'une ligne de banque. La route est sous `/termines/tva`, donc fermée par `exigerOuverture` à qui n'ouvre pas cet écran, et la clé se revérifie sur le préfixe des tickets de l'entreprise.
+
+**Un PDF s'ouvre dans la visionneuse** (le panneau se ferme, la flèche ramène). **Une photo s'ouvre par-dessus le panneau**, dans `VisionneusePhoto`, qui prend désormais des ADRESSES et non des clés : une photo de chantier et un ticket ne se servent pas par la même route, et c'est l'écran qui le sait.
+
+**Ce qui n'est pas tenu.** Les pièces ne survivent pas au rechargement du fil (`messages_assistant` ne garde que le texte) : le garder demande une colonne, donc une migration, hors de ce lot. Les notes vocales ne se joignent pas : ce sont des sons, pas des documents.
+
+## §526 : Des parts qui font juste le total sont des montants, et le devis les écrit telles quelles
+
+**Sa réponse du 27 octobre 2026**, devant la planche de la barre de la main d'œuvre (`appli/soignee/main-oeuvre-curseur.html`) : *« si la main d'œuvre c'est 397, ça pourra pas être arrondi à 10 »*. Un montant qu'il ÉCRIT reste donc à l'euro près.
+
+**Le défaut que cela a montré.** `repartirMainOeuvre` repassait toutes les parts à la dizaine, même celles qu'il avait réglées : 297 € écrits à l'écran devenaient 300 € sur le devis, et la haie de sa grille à 250 € pouvait sortir à 247 € selon l'ordre des travaux. L'écart d'arrondi allait au DERNIER travail, même à zéro : 395 € pour un travail qui pesait tout et un autre qui ne pesait rien donnaient 400 € et −5 € (rouges d'abord dans `test-repartir-main-oeuvre.ts` et `test-main-oeuvre-dictee-db.ts`).
+
+**La règle.** Des parts toutes connues, positives, au centime, et dont la somme vaut le total SONT des montants : elles s'écrivent telles quelles. C'est ce que la barre enregistre après chaque geste, et ce que `partsDeDepart` pose depuis sa grille. Tout autre partage est calculé (parts égales, un travail retiré, un total changé depuis ses gestes), donc à la dizaine, sa règle du 5 août ; l'écart va au dernier travail qui a une part. Des pourcentages enregistrés par l'ancien curseur ne font pas le total : ils restent des poids.
+
+**Les gestes vivent dans `src/lib`**, et l'écran ne décide de rien : `glisserLeJoint` (seuls les deux voisins d'une poignée changent, de 10 € en 10 €, chacun garde 10 €) et `ecrireUnMontant` (à l'euro près ; le voisin prend la différence, le suivant complète ; un travail à zéro ne paie pas). Les deux comptent en centimes : un total à 397,50 € retombe juste après cent gestes.
+
+**Des poignées empilées se départagent au sens du doigt** (`jointATirer`). Un travail à 0 € ou de quelques euros n'a pas de largeur : les poignées qui le bordent tombent au même endroit, et le doigt attrapait celle du dessus, qui pouvait séparer deux travaux vides. Rien ne bougeait, sur son cas le plus courant (l'abattage prend tout, la fente et l'évacuation sont « à chiffrer »). Trouvé par `test-main-oeuvre-barre-e2e.ts` à son premier passage. Vers la gauche, la première poignée de la pile part ; vers la droite, la dernière ; une pile, c'est moins de 24 px entre deux poignées.
+
+**Les cinq teintes sont fixes** (`pastelsMainOeuvre`, palette « Jardin », son choix du même soir), comme `surPhoto` : un pastel dérivé de chaque charte deviendrait sombre sur Nuit et Sylve. Leur encre aussi, mesurée à 4,5 ou plus sur chacune. Le montant s'écrit dans son morceau s'il tient, mesuré sur son texte (15 px, puis 13 px, sinon il se tait et reste sur sa ligne) : un seuil fixe de 62 px taisait tout montant sous 350 € sur son téléphone.
+
+## §527 : `photos` et `notes_vocales` gagnent le second rempart que `entreprises` avait déjà
 
 *27 octobre 2026, campagne red team (RT-6, `docs/audit-securite-2026-10-27-redteam.md`). Trouvé en
 ATTAQUANT, pas en relisant : un scénario e2e A-contre-B a vu A recevoir la photo d'un chantier de B.*

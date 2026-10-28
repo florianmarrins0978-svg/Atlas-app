@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Justifier depuis le relevé</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/*
+  JUSTIFIER DEPUIS LE RELEVÉ DU MOIS — 27 octobre 2026
+
+  CE QU'IL A DIT : « Quand je vais dans la catégorie du mois et sur la section
+  à justifier, ce qui serait bien, c'est que là, on puisse ajouter aussi photos
+  et documents PDF pour pouvoir les justifier. »
+
+  Aujourd'hui, le relevé du mois montre « Sans ticket » et s'arrête : il faut
+  remonter au dossier pour agir. Deux façons de poser le geste, au choix.
+  Les boutons sont de vrais sélecteurs de fichier : sur le téléphone, l'appareil
+  photo, la photothèque et les fichiers PDF s'offrent d'eux-mêmes.
+*/
+:root{
+  --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --plein:#7d9a6d; --trait:rgba(28,28,26,.12);
+  --scene:#e6e3dc; --alerte:#a8552f; --vert:#3f6b3a; --virement:#a3506b; --autre:#8a8578;
+  --serif:"Playfair Display",ui-serif,Georgia,serif;
+  --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 var(--sans);color:var(--encre);-webkit-text-size-adjust:100%}
+button{font-family:inherit;-webkit-tap-highlight-color:transparent;cursor:pointer;color:inherit}
+:focus-visible{outline:2px solid #B98B47;outline-offset:2px}
+[hidden]{display:none!important}
+
+.choix{position:sticky;top:0;z-index:20;background:var(--scene);padding:12px 16px;border-bottom:1px solid var(--trait);display:flex;gap:8px}
+.choix button{flex:1;white-space:nowrap;min-height:46px;border-radius:999px;border:0;background:transparent;box-shadow:inset 0 0 0 1px var(--trait);font-size:15px;font-weight:500}
+.choix button[aria-pressed=true]{box-shadow:inset 0 0 0 2px var(--encre);font-weight:600}
+
+.ecran{max-width:430px;margin:0 auto;background:var(--fond);min-height:100vh;padding:20px 0 40px;position:relative}
+h1{font:400 30px/1.15 var(--serif);margin:6px 24px 0}
+.sous{margin:2px 24px 0;color:var(--encre-douce);font-size:15px}
+.totaux{margin:16px 24px 0;background:var(--carte);border-radius:18px;padding:16px 18px;display:flex;gap:20px}
+.totaux small{display:block;color:var(--encre-douce);font-size:14px}
+.totaux b{font:400 22px/1.2 var(--serif);font-variant-numeric:tabular-nums}
+.t-sortie{color:#a23b2d}.t-entree{color:var(--vert)}
+.filtres{display:flex;gap:8px;margin:14px 0 0;padding:0 24px;overflow-x:auto}
+.filtres span{flex:none;min-height:44px;display:inline-flex;align-items:center;gap:7px;padding:0 15px;border-radius:999px;font-size:15px;color:var(--encre-douce);box-shadow:inset 0 0 0 1px var(--trait)}
+.filtres span.on{color:var(--encre);font-weight:600;box-shadow:inset 0 0 0 2px var(--encre)}
+.filtres i{width:10px;height:10px;border-radius:50%;background:var(--alerte)}
+
+.jour{margin:22px 24px 2px;font-size:15px;font-weight:700}
+.ligne{margin:0 24px;padding:12px 0;border-top:1px solid var(--trait);display:flex;gap:12px;align-items:flex-start;width:calc(100% - 48px);background:none;border-left:0;border-right:0;border-bottom:0;text-align:left}
+.ligne:first-of-type{border-top:0}
+.point{width:10px;height:10px;border-radius:50%;margin-top:7px;flex:none}
+.corps{flex:1;min-width:0}
+.nom{display:block;font-size:16px;font-weight:500;overflow-wrap:anywhere}
+.cat{display:block;font-size:14px;color:var(--encre-douce)}
+.etat{display:flex;gap:6px;align-items:flex-start;margin-top:5px;font-size:14.5px;font-weight:600;color:var(--alerte)}
+.etat.ok{color:var(--encre-douce);font-weight:400}
+.etat.ok svg{color:var(--vert)}
+.montant{flex:none;font:400 17px/1.3 var(--serif);color:#a23b2d;font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* B : les boutons sous la ligne */
+.gestes{display:flex;gap:8px;margin-top:10px}
+.gestes label,.gestes button{white-space:nowrap;min-height:44px;display:inline-flex;align-items:center;gap:8px;padding:0 16px;border-radius:999px;border:0;background:var(--carte);box-shadow:inset 0 0 0 1.5px var(--trait);font-size:15px;font-weight:500}
+
+/* A : la feuille qui monte */
+.voile{position:fixed;inset:0;background:rgba(28,28,26,.35);z-index:40}
+.feuille{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:100%;max-width:430px;z-index:50;background:var(--carte);border-radius:22px 22px 0 0;padding:18px 20px calc(22px + env(safe-area-inset-bottom))}
+.feuille .qui{font:400 19px/1.25 var(--serif)}
+.feuille .combien{font:400 22px/1.1 var(--serif);color:#a23b2d}
+.feuille .tete{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+.feuille .gros{display:flex;margin-top:16px;min-height:52px;width:100%;align-items:center;justify-content:center;gap:10px;border-radius:999px;background:var(--plein);color:#fff;font-size:16px;font-weight:500;border:0}
+.feuille .texte{display:block;width:100%;min-height:46px;margin-top:4px;border:0;background:none;font-size:16px;font-weight:500;color:var(--encre-douce)}
+.feuille label.gros{cursor:pointer}
+input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+
+.note{margin:22px 24px 0;font-size:14px;color:var(--encre-douce)}
+.fait{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:60;background:var(--encre);color:var(--fond);padding:12px 18px;border-radius:14px;font-size:15px}
+</style>
+</head>
+<body>
+
+<div class="choix" role="group" aria-label="Variante">
+  <button type="button" id="va" aria-pressed="true">A. Toucher la ligne</button>
+  <button type="button" id="vb" aria-pressed="false">B. Sous la ligne</button>
+</div>
+
+<main class="ecran">
+  <p class="sous">Pour mon comptable</p>
+  <h1>Octobre 2026</h1>
+  <div class="totaux">
+    <div><small>Sorties</small><b class="t-sortie">2 304,15 €</b></div>
+    <div><small>Entrées</small><b class="t-entree">1 880,16 €</b></div>
+    <div><small>À justifier</small><b id="reste">3</b></div>
+  </div>
+  <div class="filtres"><span>Tout</span><span class="on"><i></i>À justifier</span><span>Virement</span><span>Autre</span></div>
+
+  <div id="liste"></div>
+  <p class="note" id="note"></p>
+</main>
+
+<div id="voile" class="voile" hidden></div>
+<div id="feuille" class="feuille" role="dialog" aria-modal="true" hidden>
+  <div class="tete"><span class="qui" id="f-qui"></span><span class="combien" id="f-montant"></span></div>
+  <label class="gros"><input type="file" id="f-fichier" accept="image/*,application/pdf">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+    <span id="f-gros">Photographier ou choisir un fichier</span></label>
+  <button type="button" class="texte" id="f-autre">C’est autre chose</button>
+  <button type="button" class="texte" id="f-annuler">Annuler</button>
+</div>
+<div id="fait" class="fait" role="status" hidden></div>
+
+<script>
+var LIGNES = [
+  { id: 1, jour: "27 octobre", nom: "PAIEMENT CB 2210 MUNCHEN ZOOPLUS SE CARTE 3861", cat: "Autre", montant: "−69,34 €", couleur: "var(--autre)", manque: "Sans ticket", gros: "Photographier le ticket" },
+  { id: 2, jour: "19 octobre", nom: "PRLV SEPA BOUYGUES TELECOM PAGP0110H9OS2O 09XXXXX347", cat: "Virement envoyé", montant: "−30,99 €", couleur: "var(--virement)", manque: "Aucune facture jointe", gros: "Photographier la facture" },
+  { id: 3, jour: "15 octobre", nom: "PRLV SEPA DIRECTION GENERALE DE 1E087000078108M IMPOT", cat: "Virement envoyé", montant: "−140,00 €", couleur: "var(--virement)", manque: "Aucune facture jointe", gros: "Photographier la facture" }
+];
+var variante = "A", ouverte = null, faites = {};
+var ICONE_ALERTE = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2.5 20h19z"/><path d="M12 10v5M12 18v.01"/></svg>';
+var ICONE_COCHE = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>';
+var ICONE_PHOTO = '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>';
+
+function dessiner() {
+  var h = "", dernier = "";
+  LIGNES.forEach(function (l) {
+    if (l.jour !== dernier) { h += '<h3 class="jour">' + l.jour + "</h3>"; dernier = l.jour; }
+    var ok = faites[l.id];
+    var etat = ok
+      ? '<span class="etat ok">' + ICONE_COCHE + "<span>" + ok + "</span></span>"
+      : '<span class="etat">' + ICONE_ALERTE + "<span>" + l.manque + "</span></span>";
+    var corps =
+      '<span class="point" style="background:' + l.couleur + '"></span>' +
+      '<span class="corps"><span class="nom">' + l.nom + '</span><span class="cat">' + l.cat + "</span>" + etat;
+    if (variante === "B" && !ok) {
+      corps +=
+        '<span class="gestes"><label><input type="file" accept="image/*,application/pdf" data-id="' + l.id + '">' + ICONE_PHOTO +
+        "Photo ou fichier</label><button type=\"button\" data-autre=\"" + l.id + '">Autre chose</button></span>';
+    }
+    corps += '</span><span class="montant">' + l.montant + "</span>";
+    h += variante === "A" && !ok
+      ? '<button type="button" class="ligne" data-ouvrir="' + l.id + '">' + corps + "</button>"
+      : '<div class="ligne">' + corps + "</div>";
+  });
+  document.getElementById("liste").innerHTML = h;
+  document.getElementById("reste").textContent = LIGNES.length - Object.keys(faites).length;
+  document.getElementById("note").textContent = variante === "A"
+    ? "Toucher une ligne à justifier ouvre la feuille : photo, fichier PDF, ou autre chose."
+    : "Chaque ligne à justifier porte ses boutons : un seul appui pour la photo ou le fichier.";
+}
+function ligne(id) { return LIGNES.filter(function (l) { return l.id == id; })[0]; }
+function annoncer(t) {
+  var f = document.getElementById("fait"); f.textContent = t; f.hidden = false;
+  clearTimeout(annoncer.m); annoncer.m = setTimeout(function () { f.hidden = true; }, 2500);
+}
+function justifier(id, texte) { faites[id] = texte; fermer(); dessiner(); annoncer("Ligne justifiée."); }
+function ouvrir(id) {
+  ouverte = ligne(id);
+  document.getElementById("f-qui").textContent = ouverte.nom.split(" ").slice(0, 3).join(" ");
+  document.getElementById("f-montant").textContent = ouverte.montant;
+  document.getElementById("f-gros").textContent = ouverte.gros + " ou un fichier";
+  document.getElementById("voile").hidden = false; document.getElementById("feuille").hidden = false;
+}
+function fermer() { ouverte = null; document.getElementById("voile").hidden = true; document.getElementById("feuille").hidden = true; }
+
+document.getElementById("liste").addEventListener("click", function (e) {
+  var o = e.target.closest("[data-ouvrir]"); if (o) return ouvrir(o.getAttribute("data-ouvrir"));
+  var a = e.target.closest("[data-autre]"); if (a) ouvrir(a.getAttribute("data-autre"));
+});
+document.getElementById("liste").addEventListener("change", function (e) {
+  if (e.target.matches("input[type=file]") && e.target.files[0]) justifier(e.target.getAttribute("data-id"), "Pièce jointe, " + e.target.files[0].name);
+});
+document.getElementById("f-fichier").addEventListener("change", function (e) {
+  if (e.target.files[0] && ouverte) { var n = e.target.files[0].name; e.target.value = ""; justifier(ouverte.id, "Pièce jointe, " + n); }
+});
+document.getElementById("f-autre").addEventListener("click", function () { if (ouverte) justifier(ouverte.id, "Justifiée, autre chose"); });
+document.getElementById("f-annuler").addEventListener("click", fermer);
+document.getElementById("voile").addEventListener("click", fermer);
+["va", "vb"].forEach(function (id) {
+  document.getElementById(id).addEventListener("click", function () {
+    variante = id === "va" ? "A" : "B"; faites = {}; fermer();
+    document.getElementById("va").setAttribute("aria-pressed", variante === "A");
+    document.getElementById("vb").setAttribute("aria-pressed", variante === "B");
+    dessiner();
+  });
+});
+dessiner();
+</script>
+</body>
+</html>

@@ -21,7 +21,8 @@ import {
   type ReconnaissanceClient,
 } from "@/server/repositories/clients";
 import { nomDuChantier } from "@/lib/nom-chantier";
-import type { CiviliteClient } from "@/lib/civilite";
+import { casesDuClient, type CiviliteClient } from "@/lib/civilite";
+import { referenceChorusLue } from "@/lib/facture-publique";
 import { jourIso } from "@/lib/jour";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { preparerAudioEntrant } from "@/server/audio-entrant";
@@ -50,9 +51,11 @@ export type CreerChantierInput = {
   civilite?: CiviliteClient;
   telephone?: string;
   email?: string;
-  /** Pour une entreprise cliente (4 octobre 2026) : complètent sa fiche s'ils sont valables. */
+  /** Pour une entreprise ou un service public (4 et 27 octobre 2026) : complètent sa fiche s'ils sont valables. */
   siret?: string;
   numeroTva?: string;
+  /** Pour un service public : le code service que Chorus Pro attend. */
+  codeService?: string;
   /** Canal convenu avec le client pour recevoir son devis (docs/AGENT.md §2.1). */
   canal?: CanalClient;
   adresseChantier?: string;
@@ -148,14 +151,19 @@ export async function creerChantierAction(data: CreerChantierInput): Promise<{ i
   }
 
   // **Le SIRET et le n° TVA d'une entreprise** (sa demande du 4 octobre 2026),
-  // par la même porte que le reste : `completerLaFiche`, le vide seul. Une
+  // **le SIRET et le code service d'un service public** (27 octobre 2026), par
+  // la même porte que le reste : `completerLaFiche`, le vide seul. Les cases
+  // sont celles de sa fiche (`casesDuClient`) : ce test lisait « entreprise »
+  // seule, et une mairie créée ici perdait ce que sa facture Chorus attend. Une
   // valeur qui n'en est pas une ne s'écrit pas ; l'écran l'a déjà signalée
   // sous sa case, par la même lecture (`siretLu`, `numeroTvaLu`).
-  const siret = siretLu(data.siret) || undefined;
-  const numeroTva = numeroTvaLu(data.numeroTva) ?? undefined;
-  if (clientId && data.civilite === "entreprise" && (siret || numeroTva)) {
+  const cases = casesDuClient(data.civilite);
+  const siret = (cases.siret && siretLu(data.siret)) || undefined;
+  const numeroTva = (cases.numeroTva && numeroTvaLu(data.numeroTva)) || undefined;
+  const codeService = (cases.codeService && referenceChorusLue(data.codeService ?? "")) || undefined;
+  if (clientId && (siret || numeroTva || codeService)) {
     const fiche = await getClient(ctx, clientId);
-    if (fiche) await completerLaFiche(ctx, { ...fiche, creeLe: fiche.createdAt }, { siret, numeroTva });
+    if (fiche) await completerLaFiche(ctx, { ...fiche, creeLe: fiche.createdAt }, { siret, numeroTva, codeService });
   }
 
   // Le nom se DÉDUIT de ce que le patron a donné : il n'a plus à en trouver un.

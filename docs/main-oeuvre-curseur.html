@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — La barre de la main d'œuvre : ce qui est codé</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="la-barre-de-la-main-dœuvre--ce-qui-est-codé">La barre de la main d'œuvre : ce qui est codé</h1>
+<p><em>27 octobre 2026. Ses réponses : « si la main d'œuvre c'est 397, ça pourra pas être arrondi à 10 », « je choisis la première », « ne lance pas de batterie ».</em></p>
+<h2 id="le-verdict">Le verdict</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>la barre</strong></td>
+<td>une seule barre pour tout le total, un morceau par travail, aux couleurs <strong>Jardin</strong> (sauge, sable, bleu ciel, menthe, rose poudré)</td>
+</tr>
+<tr>
+<td><strong>la poignée</strong></td>
+<td>entre deux travaux, elle ne change qu'eux deux, de 10 € en 10 €, chacun garde au moins 10 € ; une bulle au-dessus du doigt dit les deux montants</td>
+</tr>
+<tr>
+<td><strong>le montant écrit</strong></td>
+<td>il se touche, il s'écrit <strong>à l'euro près</strong> ; le travail d'à côté prend la différence, le suivant complète s'il n'a pas assez</td>
+</tr>
+<tr>
+<td><strong>dans la barre</strong></td>
+<td>chaque montant s'écrit dans son morceau s'il tient, en plus petit avant de se taire</td>
+</tr>
+<tr>
+<td><strong>le devis</strong></td>
+<td>il écrit au centime ce que la barre a montré</td>
+</tr>
+<tr>
+<td><strong>ce qui part</strong></td>
+<td>le curseur par travail, le pas de 16 €, les pourcentages qui faisaient 101 %</td>
+</tr>
+<tr>
+<td><strong>où</strong></td>
+<td>branche <code>lot/main-oeuvre-curseur</code>, <strong>pas sur <code>main</code></strong> : la batterie n'a pas été jouée</td>
+</tr>
+</tbody></table></div>
+<h2 id="ce-que-sa-réponse-sur-larrondi-a-fait-trouver-et-qui-est-corrigé">Ce que sa réponse sur l'arrondi a fait trouver, et qui est corrigé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Le devis réécrivait à la dizaine ce qu'il avait réglé.</strong> 297 € écrits à l'écran devenaient 300 € sur le devis, sans que rien ne le dise. La haie de sa grille à 250 € pouvait sortir à 247 €, selon l'ordre des travaux. C'était déjà vrai avec l'ancien curseur.</p>
+<p><strong>Un écart d'arrondi pouvait écrire un travail à −5 €.</strong> 395 € de main d'œuvre, un travail qui pesait tout et un autre qui ne pesait rien : 400 € et −5 €.</p>
+<p>Reproduits avant de corriger, rouges sur l'ancien code (<code>test-repartir-main-oeuvre.ts</code>, <code>test-main-oeuvre-dictee-db.ts</code>). La règle maintenant : ce qu'il a réglé s'écrit tel quel ; ce que l'outil partage seul (parts égales, un travail retiré) reste à la dizaine, sa règle du 5 août, et l'écart ne va jamais sur un travail à zéro.</p>
+<h2 id="trouvé-en-jouant-le-geste-et-corrigé">Trouvé en jouant le geste, et corrigé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Une poignée tirée ne bougeait rien quand des travaux étaient à chiffrer.</strong> Un travail à 0 € n'a pas de largeur : ses poignées s'empilent au même endroit, et le doigt attrapait celle du dessus, qui sépare deux travaux vides. C'est le cas le plus courant : l'abattage prend toute la main d'œuvre, la fente et l'évacuation attendent leur prix. Maintenant, tirer vers la gauche donne au premier travail de la pile, tirer vers la droite prend au premier travail qui a de quoi.</p>
+<p>Trouvé par la suite navigateur à son premier passage, rouge sur « la poignée n'a rien déplacé » ; la règle a ses tests, rouges d'abord.</p>
+<p><strong>Un intitulé long s'étalait sur sept lignes.</strong> Sa question du 28 octobre : <em>« est-ce que tu as vérifié si l'intitulé des lignes fait 4-5 lignes ? il faut qu'ils reprennent que le début »</em>. Ce n'était pas vérifié. Sous la barre, chaque travail garde désormais le début de son intitulé, deux lignes au plus ; le devis, lui, garde l'intitulé entier. La suite navigateur rougissait à trois lignes avant la correction.</p>
+<h2 id="ce-qui-a-été-fait-autrement-que-la-planche">Ce qui a été fait autrement que la planche</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>la planche</th>
+<th>le code</th>
+<th>pourquoi</th>
+</tr></thead><tbody>
+<tr>
+<td>un travail sans part</td>
+<td>« 0 € »</td>
+<td>« À chiffrer »</td>
+<td>c'est ce que le devis écrira : un zéro se lirait « gratuit »</td>
+</tr>
+<tr>
+<td>retirer ou remettre</td>
+<td>les poignées sautaient</td>
+<td>elles suivent les morceaux qui coulent</td>
+<td>sinon, pendant un quart de seconde, la poignée n'est plus sur son joint</td>
+</tr>
+<tr>
+<td>l'écriture sur les couleurs</td>
+<td>choisie à chaque fois entre l'encre et la carte</td>
+<td>une encre fixe</td>
+<td>les couleurs sont fixes, leur encre aussi ; mesurée lisible sur les cinq</td>
+</tr>
+</tbody></table></div>
+<h2 id="ce-qui-a-été-éprouvé-ici">Ce qui a été éprouvé ici</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>règle pure (<code>test-repartir-main-oeuvre.ts</code>)</td>
+<td>23 sur 23</td>
+</tr>
+<tr>
+<td>devis sous la RLS (<code>test-main-oeuvre-dictee-db.ts</code>)</td>
+<td>10 sur 10</td>
+</tr>
+<tr>
+<td>chiffrage voisin (grilles, proposition de prix, corrections, identité, leçons, questions)</td>
+<td>verts</td>
+</tr>
+<tr>
+<td>types, style, tirets, flèches, couleurs en clair, pansements, code mort, couches, chartes</td>
+<td>verts</td>
+</tr>
+<tr>
+<td>le composant dans un navigateur, en Origine, Nuit et Sylve</td>
+<td>regardé : glissé au doigt, flèches du clavier, croix, Remettre, montant écrit, Échap, une ligne</td>
+</tr>
+<tr>
+<td>suite navigateur du geste (<code>test-main-oeuvre-barre-e2e.ts</code>)</td>
+<td>verte : montant écrit à l'euro près, poignée du dessus de la pile tirée, le devis porte les mêmes montants ; rouge avant la correction des poignées empilées</td>
+</tr>
+<tr>
+<td>suite navigateur des questions (<code>test-questions-chiffrage-e2e.ts</code>)</td>
+<td>verte</td>
+</tr>
+</tbody></table></div>
+<h2 id="ce-qui-reste">Ce qui reste</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>qui</th>
+</tr></thead><tbody>
+<tr>
+<td>la batterie (niveau 3 : le devis), puis <code>main</code></td>
+<td>lui, pour le feu vert</td>
+</tr>
+<tr>
+<td>la regarder sur son téléphone, une fois sur <code>main</code></td>
+<td>lui</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>

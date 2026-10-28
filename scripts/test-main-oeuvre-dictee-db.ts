@@ -158,6 +158,27 @@ async function main() {
     ]);
   });
 
+  await test("un montant écrit à l'euro près arrive au devis tel quel : 297 € et 503 €, pas 300 € et 500 €", async () => {
+    // Sa réponse du 27 octobre 2026 : « si la main d'œuvre c'est 397, ça pourra
+    // pas être arrondi à 10 ». La barre montrait 297 €, le devis écrivait 300 €.
+    const A = await sonEntreprise("ecrit");
+    const c = await chantierDicte(A, {
+      prestations: [
+        { ...base, libelle: "Taille de haie de laurier", nature: "haie", quantite: "20", unite: "ml" },
+        { ...base, libelle: "Taille de cohabitation avec la maison" },
+      ],
+      dureePrevue: "1 jour",
+      tailleEquipe: "2 hommes",
+    });
+    const { question } = await questionMainOeuvre(A, c.id);
+    const cle = (motif: RegExp) => question!.mainOeuvre!.travaux.find((t) => motif.test(t.libelle))!.cle;
+    await repondre(A, c.id, { mode: "reparti", parts: { [cle(/haie/)]: 297, [cle(/cohabitation/)]: 503 }, retires: [] });
+    assert.deepEqual(await lignes(A, c.id), [
+      ["Taille de haie de laurier", 297],
+      ["Taille de cohabitation avec la maison", 503],
+    ]);
+  });
+
   await test("« sur une ligne Main d'œuvre » : une seule ligne qui nomme les travaux, 2 jour/homme × 400 €", async () => {
     const A = await sonEntreprise("ligne");
     const c = await chantierDicte(A, {
