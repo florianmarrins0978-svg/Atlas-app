@@ -169,6 +169,8 @@
 .effacer .ico { color: var(--atlas-inkSoft); }
 .resultats-titre { margin: 18px 2px 6px; font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--atlas-or); }
 .resultats-titre:first-child { margin-top: 4px; }
+.loupe-fiche { margin: 18px 0 0; }
+.piece-type { color: var(--atlas-or); font-weight: 600; }
 .piece-client { display: block; margin-top: 2px; font-size: 14px; font-weight: 600; color: var(--atlas-ink); }
 mark { background: color-mix(in srgb, var(--atlas-or) 30%, transparent); color: inherit; border-radius: 3px; }
 .rien-trouve { padding: 22px 4px; text-align: center; font-size: 15.5px; color: var(--atlas-inkSoft); }
@@ -319,6 +321,11 @@ mark { background: color-mix(in srgb, var(--atlas-or) 30%, transparent); color: 
                 </div>
               </div>
               <div class="repartir" id="repartir"></div>
+              <label class="champ-recherche loupe-fiche">
+                <svg class="ico" aria-hidden="true"><use href="#i-recherche"/></svg>
+                <input type="search" id="cherche-piece" placeholder="Chercher un titre ou un montant" autocomplete="off" aria-label="Chercher un titre ou un montant">
+                <button class="effacer" type="button" id="effacer-piece" hidden aria-label="Effacer la recherche"><svg class="ico ico-p" aria-hidden="true"><use href="#i-croix"/></svg></button>
+              </label>
               <section class="dossier" aria-label="Son dossier">
                 <div class="onglets-dossier" role="tablist">
                   <button type="button" role="tab" data-registre="devis">Devis</button>
@@ -402,6 +409,7 @@ mark { background: color-mix(in srgb, var(--atlas-or) 30%, transparent); color: 
       <li>Sur la fiche, devis et factures se rangent par date, chacun avec son titre et son montant TTC, le numéro dessous. Touchés, ils disent ce que le tableau donnait : il n'y a pas de PDF.</li>
       <li>Dix ans de pièces : le rangement continue sans vous, vous pouvez fermer l'appli.</li>
       <li>La loupe de Vos clients cherche un nom, un titre de devis ou de facture, ou un montant : « 960 » trouve la facture de 960,00 €. Une pièce trouvée ouvre sa fiche, sur son onglet.</li>
+      <li>Sur une fiche, une loupe au-dessus des onglets cherche un titre ou un montant parmi les pièces de ce client.</li>
       <li>Excel se lit comme un CSV, .xlsx comme .xls. Les PDF arrivent au même écran, groupés par client.</li>
     </ul>
     <h2>Ce qui ne bouge pas</h2>
@@ -903,12 +911,30 @@ mark { background: color-mix(in srgb, var(--atlas-or) 30%, transparent); color: 
       $("repartir").innerHTML = (ouvert.natif ? '<span class="tuile-geste tuile-pleine touche"><svg class="ico" aria-hidden="true"><use href="#i-annuler"/></svg>Dernier devis</span>' : "") +
         '<span class="tuile-geste tuile-or touche"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Nouveau devis</span>' +
         '<span class="tuile-geste tuile-or touche"><svg class="ico" aria-hidden="true"><use href="#i-calendrier"/></svg>Contrat d\'entretien</span>';
+      $("cherche-piece").value = "";
       var p = piecesDe(ouvert);
       registre = surRegistre || (p.some(function (x) { return x.type === "devis"; }) ? "devis" : p.length ? "factures" : "devis");
       dessinerRegistre();
       aller("fiche");
     }
+    /* La loupe de la fiche : tant qu'elle cherche, devis et factures répondent
+       ensemble, chacun avec son mot, et les onglets s'effacent. */
+    $("cherche-piece").addEventListener("input", function () { dessinerRegistre(); });
+    $("effacer-piece").addEventListener("click", function (e) { e.preventDefault(); $("cherche-piece").value = ""; dessinerRegistre(); $("cherche-piece").focus(); });
     function dessinerRegistre() {
+      var q = $("cherche-piece").value.trim();
+      $("effacer-piece").hidden = !q;
+      document.querySelector(".onglets-dossier").hidden = !!q;
+      if (q) {
+        var trouvees = piecesDe(ouvert).filter(function (x) { return x.type !== "fiche" && (/^[\d\s\u00a0,.€]+$/.test(q) ? montantRepond(x.ttc, q) : plat(x.objet || x.num).indexOf(plat(q)) >= 0); })
+          .sort(function (a, b) { return b.date.localeCompare(a.date); });
+        $("registre").innerHTML = trouvees.length ? trouvees.map(function (x) {
+          return '<button class="piece touche" type="button" data-num="' + x.num + '"><span class="piece-corps"><span class="piece-haut"><span class="piece-titre">' + surligner(x.objet || "n° " + x.num, q) + "</span>" +
+            (x.ttc ? '<span class="piece-somme">' + x.ttc + " €</span>" : "") + '</span><span class="piece-date"><span class="piece-type">' + (x.type === "facture" ? "Facture" : "Devis") + "</span> n° " + x.num + ", " + jour(x.date) + "</span>" +
+            (x.chantier ? '<span class="piece-chantier">Chantier au ' + x.chantier + "</span>" : "") + '</span><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></button>';
+        }).join("") : '<p class="registre-vide">Rien ne répond à « ' + echapper(q) + " ».</p>";
+        return;
+      }
       var rang = ["devis", "factures", "fiches"].indexOf(registre);
       document.querySelectorAll(".onglets-dossier [data-registre]").forEach(function (b) { b.setAttribute("aria-selected", b.getAttribute("data-registre") === registre ? "true" : "false"); });
       document.querySelector(".trait-dossier").style.setProperty("--rang", rang);

@@ -88,6 +88,22 @@ a.coordonnee { text-decoration: none; }
 .piece-reception b { color: var(--atlas-ink); }
 .piece-reception .ico { width: 16px; height: 16px; color: var(--atlas-carteVertTexte); stroke-width: 2.2; }
 .piece > .ico { width: 20px; height: 20px; color: var(--atlas-chevron); stroke-width: 2; flex: none; }
+/* La loupe de la fiche : un titre ou un montant parmi SES pièces. Sa demande
+   du 28 octobre, « la loupe pour faire une recherche par nom ou montant ».
+   Tant qu'elle cherche, les onglets s'effacent : devis et factures répondent
+   ensemble, chacun avec son mot. */
+.champ-recherche { display: flex; align-items: center; gap: 10px; min-height: 52px; margin: 18px 0 0;
+                   box-shadow: inset 0 -1.5px 0 var(--atlas-line); transition: box-shadow 200ms var(--courbe); }
+.champ-recherche:focus-within { box-shadow: inset 0 -2px 0 var(--atlas-or); }
+.champ-recherche .ico { color: var(--atlas-or); }
+.champ-recherche input { flex: 1; min-width: 0; height: 48px; border: 0; background: transparent; outline: none;
+                         font: 400 17px/1 var(--sans); color: var(--atlas-ink); }
+.champ-recherche input:focus-visible { outline: none; }
+.champ-recherche input::placeholder { color: var(--atlas-muted); }
+.champ-recherche input::-webkit-search-cancel-button { display: none; }
+.effacer { width: 40px; height: 40px; display: grid; place-items: center; color: var(--atlas-inkSoft); }
+.effacer .ico { color: var(--atlas-inkSoft); }
+.piece-type { color: var(--atlas-or); font-weight: 600; }
 .registre-vide { padding: 22px 0; text-align: center; font-size: 15px; color: var(--atlas-inkSoft); }
 
 .supprimer-client { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 52px; margin-top: 34px;
@@ -160,7 +176,12 @@ a.coordonnee { text-decoration: none; }
               </ul>
             </div>
 
-            <section class="dossier" aria-label="Son dossier">
+            <label class="champ-recherche" data-si-etat="complet">
+                <svg class="ico" aria-hidden="true"><use href="#i-recherche"/></svg>
+                <input type="search" id="cherche-piece" placeholder="Chercher un titre ou un montant" autocomplete="off" aria-label="Chercher un titre ou un montant">
+                <button class="effacer" type="button" id="effacer-piece" hidden aria-label="Effacer la recherche"><svg class="ico ico-p" aria-hidden="true"><use href="#i-croix"/></svg></button>
+              </label>
+              <section class="dossier" aria-label="Son dossier">
               <div class="onglets-dossier" role="tablist">
                 <button type="button" role="tab" aria-selected="true" data-registre="0">Devis</button>
                 <button type="button" role="tab" aria-selected="false" data-registre="1">Factures</button>
@@ -286,6 +307,7 @@ a.coordonnee { text-decoration: none; }
   <section class="pl-notes">
     <h2>Ce qui change</h2>
     <ul>
+      <li>Une loupe au-dessus des onglets cherche un titre ou un montant parmi ses devis et ses factures : « thuyas », « 640 ».</li>
       <li>Chaque devis et chaque facture montre son titre et son montant TTC ; le numéro et la date passent dessous. Votre demande du 28 octobre.</li>
       <li>Plus d'encadré doré autour du client.</li>
       <li>Dernier devis, Nouveau devis et Contrat d'entretien restent à leur place, avec leur dessin et leur mot, sans encadré : le premier en vert, les deux autres en doré.</li>
@@ -343,6 +365,58 @@ a.coordonnee { text-decoration: none; }
       Kit.fermerFeuilles(ecran);
       Kit.note(ecran, "Sur la planche, rien n'est supprimé.");
     });
+  })();
+  (function () {
+    /* Un titre (lettres) ou un montant (chiffres : « 960 », « 4 180 », avec
+       centimes le montant exact). La même règle que la loupe de Vos clients. */
+    var platP = function (t) { return (t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); };
+    function pieceRepond(titre, somme, q) {
+      if (/^[\d\s\u00a0,.€]+$/.test(q)) {
+        var t = (somme || "").replace(/[^\d,]/g, "").replace(",", "."); if (!t) return false;
+        var c = Math.round(Number(t) * 100), net = q.replace(/[\s\u00a0€]/g, "");
+        if (/[,.]\d/.test(net)) return c === Math.round(Number(net.replace(",", ".")) * 100);
+        return String(Math.floor(c / 100)).indexOf(net.replace(/[,.]$/, "")) === 0;
+      }
+      return platP(titre).indexOf(platP(q)) >= 0;
+    }
+    var champ = document.getElementById("cherche-piece"), effacer = document.getElementById("effacer-piece");
+    var onglets = document.querySelector(".onglets-dossier");
+    var panneaux = document.querySelectorAll("[data-registre-panneau]");
+    var rien = document.createElement("p");
+    rien.className = "registre-vide"; rien.hidden = true;
+    onglets.parentNode.appendChild(rien);
+    /* Le mot de chaque pièce trouvée (Devis, Facture) : sans onglet, il dit de quoi il s'agit. */
+    document.querySelectorAll("[data-registre-panneau='0'] .piece-date, [data-registre-panneau='1'] .piece-date").forEach(function (d) {
+      var mot = d.closest("[data-registre-panneau]").getAttribute("data-registre-panneau") === "0" ? "Devis " : "Facture ";
+      d.insertAdjacentHTML("afterbegin", '<span class="piece-type" hidden>' + mot + "</span>");
+    });
+    function chercher() {
+      var q = champ.value.trim();
+      effacer.hidden = !q;
+      onglets.hidden = !!q;
+      document.querySelectorAll(".piece-type").forEach(function (t) { t.hidden = !q; });
+      if (!q) {
+        var rang = onglets.querySelector("[aria-selected='true']").getAttribute("data-registre");
+        panneaux.forEach(function (p) { p.hidden = p.getAttribute("data-registre-panneau") !== rang; p.querySelectorAll(".piece").forEach(function (x) { x.hidden = false; }); });
+        rien.hidden = true;
+        return;
+      }
+      var vus = 0;
+      panneaux.forEach(function (p) {
+        var cherchable = p.getAttribute("data-registre-panneau") !== "2";
+        var ici = 0;
+        p.querySelectorAll(".piece").forEach(function (x) {
+          var titre = x.querySelector(".piece-titre"), somme = x.querySelector(".piece-somme");
+          var oui = cherchable && pieceRepond(titre && titre.textContent, somme && somme.textContent, q);
+          x.hidden = !oui; if (oui) ici++;
+        });
+        p.hidden = !ici; vus += ici;
+      });
+      rien.hidden = vus > 0;
+      rien.textContent = "Rien ne répond à « " + q + " ».";
+    }
+    champ.addEventListener("input", chercher);
+    effacer.addEventListener("click", function (e) { e.preventDefault(); champ.value = ""; chercher(); champ.focus(); });
   })();
 </script>
 </body>
