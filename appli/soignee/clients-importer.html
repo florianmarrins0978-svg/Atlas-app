@@ -33,11 +33,12 @@
   seul ; Annuler après coup.
 
   CE QUI EST PROPRE AU TABLEAU, et pourquoi :
-    - LES COLONNES SE MONTRENT, avec la première valeur lue dessous. Chaque
-      ancienne appli nomme les siennes ; une colonne inconnue n'est reprise
-      nulle part plutôt que devinée (docs/AGENT.md §3). Le client, le type,
-      le numéro et la date sont exigés : sans eux, on ne sait ni à qui ni où
-      ranger.
+    - LES COLONNES NE SE MONTRENT PAS. Elles se montraient, chacune avec un
+      déroulant, et sa question l'a tranché : « pourquoi je peux modifier les
+      libellés ? ». Ce n'est pas à lui de vérifier ce qu'Atlas a compris.
+      Atlas les reconnaît seul, et ne pose une question que s'il HÉSITE
+      (deux colonnes de dates), avec un exemple de chacune. Une colonne
+      inconnue n'est reprise nulle part plutôt que devinée (docs/AGENT.md §3).
     - LES PIÈCES SE GROUPENT PAR CLIENT, du plus récent au plus ancien, pour
       qu'il voie avant de ranger ce que chaque fiche recevra.
     - UN NUMÉRO EN DOUBLE ne se range qu'une fois.
@@ -58,18 +59,10 @@
 
 .bilan { display: flex; flex-wrap: wrap; gap: 8px; margin: -6px 0 4px; }
 
-.colonne { position: relative; display: grid; grid-template-columns: 104px minmax(0, 1fr); align-items: center; gap: 4px 12px; padding: 10px 0; }
-.colonne + .colonne::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
-.colonne label { font-size: 14.5px; font-weight: 600; color: var(--atlas-inkSoft); }
-.colonne select { appearance: none; -webkit-appearance: none; width: 100%; min-height: 44px; padding: 0 36px 0 12px; border: 0;
-                  border-radius: 10px; font: 400 17px/1.2 var(--serif); color: var(--atlas-ink); background: var(--atlas-cream); }
-.colonne select:focus { outline: none; box-shadow: inset 0 0 0 2px var(--atlas-or); }
-.colonne .choisir { position: relative; }
-.colonne .choisir .ico { position: absolute; right: 10px; top: 50%; width: 18px; height: 18px; margin-top: -9px; color: var(--atlas-or); pointer-events: none; }
-.colonne small { grid-column: 2; padding-left: 12px; font-size: 13.5px; color: var(--atlas-inkSoft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.colonne.vide select { color: var(--atlas-inkSoft); font: 400 15px/1.2 var(--sans); }
-.colonne.exigee.vide label { color: var(--atlas-carteAmbreTexte); }
-
+/* La boîte commune serre une rubrique qui ouvre son bloc ; sous les pastilles, elle garde son air. */
+#par-client > .rubrique:first-child { margin-top: 28px; }
+.question { margin-top: 14px; padding: 6px 16px 4px; }
+.question-titre { margin: 8px 0 4px; font: 400 19px/1.3 var(--serif); }
 .groupe { padding: 2px 16px; }
 .client { display: flex; align-items: center; gap: 12px; min-height: 72px; padding: 12px 0; width: 100%; text-align: left; text-decoration: none; color: inherit; }
 .client + .client { box-shadow: inset 0 1px 0 var(--atlas-line); }
@@ -175,6 +168,7 @@
       <div class="pl-etats">
         <button type="button" data-etat="importer" aria-pressed="true">Importer</button>
         <button type="button" data-etat="lecture">Le tableau lu</button>
+        <button type="button" data-etat="doute">Deux dates</button>
         <button type="button" data-etat="rangement">Dix ans</button>
         <button type="button" data-etat="clients">Rangés</button>
         <button type="button" data-etat="fiche">La fiche</button>
@@ -212,11 +206,18 @@
             <!-- 2. Le tableau lu : les colonnes, puis chaque client et ses pièces -->
             <div data-si-etat="lecture">
               <div class="bilan" id="bilan"></div>
-              <p class="rubrique rubrique-or">Colonnes</p>
-              <div class="plage plage-serree" id="colonnes"></div>
-              <p class="rubrique rubrique-or">Par client</p>
-              <div class="plage groupe" id="clients-lus"></div>
-              <p class="autres" id="autres"></p>
+              <div class="plage question" id="question" hidden>
+                <p class="question-titre">Deux colonnes de dates. Laquelle est la date de la pièce ?</p>
+                <div data-un-seul id="choix-date">
+                  <button class="radio" type="button" data-choix="Date" aria-pressed="false"><span class="coche-ronde"></span><span><b>Date 1</b><small>03/04/2025, 28/04/2025, 17/02/2025</small></span></button>
+                  <button class="radio" type="button" data-choix="Échéance" aria-pressed="false"><span class="coche-ronde"></span><span><b>Date 2</b><small>03/05/2025, 28/05/2025, 19/03/2025</small></span></button>
+                </div>
+              </div>
+              <div id="par-client">
+                <p class="rubrique rubrique-or">Par client</p>
+                <div class="plage groupe" id="clients-lus"></div>
+                <p class="autres" id="autres"></p>
+              </div>
             </div>
 
             <!-- 3. Dix ans : le rangement se fait sans lui -->
@@ -289,10 +290,14 @@
                 <span class="pastille-ico" data-ton="vert"><svg class="ico" aria-hidden="true"><use href="#i-liste"/></svg></span>
                 <span class="ligne-corps"><span class="ligne-nom">Devis et factures 2016 à 2025.csv</span><span class="ligne-situation">5 120 lignes, 690 Ko</span></span>
               </button>
-              <a class="fichier touche" href="../importer-ancienne-appli.html">
+              <button class="fichier touche" type="button" data-lot="doute">
+                <span class="pastille-ico" data-ton="vert"><svg class="ico" aria-hidden="true"><use href="#i-liste"/></svg></span>
+                <span class="ligne-corps"><span class="ligne-nom">Export ancienne appli.csv</span><span class="ligne-situation">486 lignes, 71 Ko</span></span>
+              </button>
+              <button class="fichier touche" type="button" data-note="Les PDF suivent l'import d'aujourd'hui, validé le 22 octobre : rien ne change pour eux.">
                 <span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-document"/></svg></span>
                 <span class="ligne-corps"><span class="ligne-nom">6 PDF</span><span class="ligne-situation">Factures et devis récents, 1,4 Mo</span></span>
-              </a>
+              </button>
               <button class="fichier touche" type="button" data-lot="excel">
                 <span class="pastille-ico" data-ton="bleu"><svg class="ico" aria-hidden="true"><use href="#i-liste"/></svg></span>
                 <span class="ligne-corps"><span class="ligne-nom">Devis et factures.xlsx</span><span class="ligne-situation">Tableau Excel, 82 Ko</span></span>
@@ -328,7 +333,7 @@
     <h2>Ce qui change</h2>
     <ul>
       <li>Importer devis / facture prend aussi un tableau CSV : sur l'écran, seul « ou tableau CSV » s'ajoute.</li>
-      <li>Atlas montre les colonnes qu'il a comprises, avec la première valeur lue dessous. Une colonne mal comprise se change d'un appui.</li>
+      <li>Atlas reconnaît les colonnes seul. Il ne pose une question que s'il hésite : deux colonnes de dates, par exemple.</li>
       <li>Les pièces se groupent par client, la plus récente d'abord : vous voyez ce que chaque fiche recevra avant de ranger.</li>
       <li>Un client qui n'existe pas encore est créé avec l'adresse et le téléphone lus dans le tableau. Une pièce sans nom attend qu'on le tape.</li>
       <li>Sur la fiche, devis et factures se rangent par date, comme les autres. Touchés, ils montrent leur montant : le tableau ne donne pas de PDF.</li>
@@ -376,18 +381,16 @@
       { nom: "M. et Mme Roux", lieu: "3 impasse des Saules, 49070 Beaucouzé", piece: "Facture du 7 oct.", pieces: [{ type: "facture", num: "F2026-000009", date: "2026-10-07" }] }
     ];
 
-    /* Le tableau, tel que l'ancienne appli l'exporte : une ligne par pièce. */
-    var COLONNES = ["Type", "N°", "Date", "Client", "Adresse", "CP", "Ville", "Tél.", "Total TTC", "Statut"];
-    var CHAMPS = [
-      { champ: "Client", col: "Client", exige: true }, { champ: "Type", col: "Type", exige: true },
-      { champ: "Numéro", col: "N°", exige: true }, { champ: "Date", col: "Date", exige: true },
-      { champ: "Adresse", col: "Adresse" }, { champ: "Code postal", col: "CP" }, { champ: "Ville", col: "Ville" },
-      { champ: "Téléphone", col: "Tél." }, { champ: "Montant TTC", col: "Total TTC" }
-    ];
+    /* Le tableau, tel que l'ancienne appli l'exporte : une ligne par pièce.
+       Atlas reconnaît ses colonnes ; « Date » peut rester vide quand il
+       hésite entre deux. */
+    var RECONNUES = { "Client": "Client", "Type": "Type", "Numéro": "N°", "Date": "Date", "Adresse": "Adresse",
+                      "Code postal": "CP", "Ville": "Ville", "Téléphone": "Tél.", "Montant TTC": "Total TTC" };
     var ligne = function (type, num, date, client, adresse, cp, ville, tel, ttc) {
-      var d = date.split("-");
-      return { "Type": type, "N°": num, "Date": d[2] + "/" + d[1] + "/" + d[0], "_iso": date, "Client": client, "Adresse": adresse, "CP": cp,
-               "Ville": ville, "Tél.": tel, "Total TTC": ttc, "Statut": type === "Facture" ? "Payée" : "Envoyé" };
+      var echeance = new Date(date + "T12:00:00");
+      echeance.setMonth(echeance.getMonth() + 1);
+      return { "Type": type, "N°": num, "_iso": date, "_ech": echeance.toISOString().slice(0, 10), "Client": client, "Adresse": adresse, "CP": cp,
+               "Ville": ville, "Tél.": tel, "Total TTC": ttc };
     };
     var LIGNES = [
       ligne("Devis", "D2025-0201", "2025-04-03", "Mme Lenoir", "14 rue Paul Bert", "44100", "Nantes", "06 12 48 30 77", "1 250,00"),
@@ -404,7 +407,8 @@
     /* Ce que le reste du fichier porte, au-delà des lignes montrées. */
     var LOTS = {
       annee: { fichier: "Devis et factures 2025.csv", lignes: 486, devis: 214, factures: 272, doubles: 6, clients: 168 },
-      dix: { fichier: "Devis et factures 2016 à 2025.csv", lignes: 5120, devis: 2310, factures: 2810, doubles: 40, clients: 1240 }
+      dix: { fichier: "Devis et factures 2016 à 2025.csv", lignes: 5120, devis: 2310, factures: 2810, doubles: 40, clients: 1240 },
+      doute: { fichier: "Export ancienne appli.csv", lignes: 486, devis: 214, factures: 272, doubles: 6, clients: 168, hesite: true }
     };
 
     var lot = LOTS.annee, mapping = {}, tapes = {}, crees = [], ajouts = {}, avant = null, minuteur = null, ouvert = null, registre = "devis";
@@ -415,7 +419,12 @@
     }
     function cle(nom) { return nom.replace(/^(M\. et Mme|M\.|Mme|SCI)\s+/, ""); }
     function lu(r, champ) { var c = mapping[champ]; return c ? (r[c] || "") : ""; }
-    function exigeesManquantes() { return CHAMPS.filter(function (c) { return c.exige && !mapping[c.champ]; }).map(function (c) { return c.champ.toLowerCase(); }); }
+    function dateDe(r) { return mapping["Date"] === "Échéance" ? r._ech : r._iso; }
+    function reconnaitre() {
+      mapping = {};
+      for (var k in RECONNUES) mapping[k] = RECONNUES[k];
+      if (lot.hesite) mapping["Date"] = "";
+    }
     function nomDe(r, i) { return lu(r, "Client") || tapes[i] || ""; }
     function lieuDe(r) { return [lu(r, "Adresse"), [lu(r, "Code postal"), lu(r, "Ville")].filter(Boolean).join(" ")].filter(Boolean).join(", "); }
     function dejaNomme(nom) { return DEJA.filter(function (c) { return c.nom.toLowerCase() === nom.toLowerCase(); })[0] || null; }
@@ -431,50 +440,39 @@
         groupes[k].lignes.push(i);
       });
       var liste = ordre.map(function (k) { return groupes[k]; }).sort(function (a, b) { return cle(a.nom).localeCompare(cle(b.nom), "fr"); });
-      liste.forEach(function (g) { g.lignes.sort(function (a, b) { return LIGNES[b]._iso.localeCompare(LIGNES[a]._iso); }); });
+      liste.forEach(function (g) { g.lignes.sort(function (a, b) { return dateDe(LIGNES[b]).localeCompare(dateDe(LIGNES[a])); }); });
       return { groupes: liste, sans: sans };
     }
-    function aller(etat) {
+    function aller(etat, presse) {
       Kit.appliquerEtat(ecran, etat);
       Kit.fermerFeuilles(ecran);
       /* « N documents rangés, Annuler » appartient à Vos clients : sur une
          fiche, il cacherait la première pièce. */
       var tiroir = ecran.querySelector(".tiroir-flottant");
       if (tiroir && etat !== "clients") tiroir.remove();
-      document.querySelectorAll(".pl-etats button").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-etat") === etat ? "true" : "false"); });
+      document.querySelectorAll(".pl-etats button").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-etat") === (presse || etat) ? "true" : "false"); });
       $("defile").scrollTop = 0;
     }
 
-    /* ─── Les colonnes ─── */
-    function dessinerColonnes() {
-      $("colonnes").innerHTML = CHAMPS.map(function (c) {
-        var pris = mapping[c.champ];
-        var options = '<option value=""' + (pris ? "" : " selected") + ">Pas repris</option>" +
-          COLONNES.map(function (col) { return "<option" + (col === pris ? " selected" : "") + ">" + col + "</option>"; }).join("");
-        var exemple = pris ? (LIGNES.map(function (r) { return r[pris]; }).filter(Boolean)[0] || "Vide dans le tableau") : (c.exige ? "Nécessaire pour ranger" : "");
-        var id = "c-" + c.champ.replace(/\W/g, "");
-        return '<div class="colonne' + (pris ? "" : " vide") + (c.exige ? " exigee" : "") + '"><label for="' + id + '">' + c.champ + "</label>" +
-          '<span class="choisir"><select id="' + id + '" data-champ="' + c.champ + '">' + options + '</select><svg class="ico" aria-hidden="true"><use href="#i-bas"/></svg></span>' +
-          (exemple ? "<small>" + exemple + "</small>" : "") + "</div>";
-      }).join("");
-    }
-    $("colonnes").addEventListener("change", function (e) {
-      mapping[e.target.getAttribute("data-champ")] = e.target.value;
-      dessinerColonnes();
+    /* ─── La seule question possible : laquelle des deux dates ─── */
+    $("choix-date").addEventListener("kit:choix", function (e) {
+      mapping["Date"] = e.detail.choix;
       dessinerLus();
     });
 
     /* ─── Par client : la pièce la plus récente d'abord ─── */
     function pieceLue(r) {
-      var type = lu(r, "Type") || "Pièce", num = lu(r, "Numéro"), date = mapping["Date"] ? jour(r._iso) : "";
+      var type = lu(r, "Type") || "Pièce", num = lu(r, "Numéro"), date = jour(dateDe(r));
       var ttc = lu(r, "Montant TTC");
       return '<div class="piece-lue"><b>' + type + (num ? " n° " + num : "") + "</b><span>" + (date || "Sans date") + "</span>" + (ttc ? "<i>" + ttc + " €</i>" : "") + "</div>";
     }
     function dessinerLus() {
-      var manque = exigeesManquantes();
+      var hesite = !mapping["Date"];
+      $("question").hidden = !lot.hesite;
+      $("par-client").hidden = hesite;
       var g = grouper();
       var html = "";
-      if (!manque.length) {
+      if (!hesite) {
         g.groupes.forEach(function (gr) {
           var r0 = LIGNES[gr.lignes[0]];
           var etat = dejaNomme(gr.nom) ? '<span class="etat">Déjà client, ses pièces s\'ajoutent</span>' : '<span class="etat" data-ton="vert">Nouveau client</span>';
@@ -491,7 +489,7 @@
             '<input class="champ-saisie" data-tape="' + i + '" value="' + (tapes[i] || "") + '" placeholder="Nom du client" autocomplete="off" enterkeyhint="done" aria-label="Nom du client"></div>';
         });
       }
-      $("clients-lus").innerHTML = html || '<p class="registre-vide">Choisissez la colonne : ' + manque.join(", ") + ".</p>";
+      $("clients-lus").innerHTML = html;
       majBilan();
     }
     /* Taper un nom ne redessine pas la liste : le doigt garde sa case. */
@@ -518,11 +516,9 @@
     }
     function majBilan() {
       var b = $("ranger");
-      var manque = exigeesManquantes();
-      if (manque.length) {
-        $("bilan").innerHTML = '<span class="etat" data-ton="ambre">Une colonne manque</span>';
-        $("autres").textContent = "";
-        b.textContent = "Choisissez la colonne : " + manque[0];
+      if (!mapping["Date"]) {
+        $("bilan").innerHTML = '<span class="etat">' + n(lot.devis) + ' devis</span><span class="etat">' + n(lot.factures) + " factures</span>";
+        b.textContent = "Choisissez la date";
         b.disabled = true;
         return;
       }
@@ -541,13 +537,12 @@
     function lire(cleLot) {
       lot = LOTS[cleLot];
       tapes = {};
-      mapping = {};
-      CHAMPS.forEach(function (c) { mapping[c.champ] = c.col; });
+      reconnaitre();
+      document.querySelectorAll("#choix-date [data-choix]").forEach(function (x) { x.setAttribute("aria-pressed", "false"); });
       $("titre-lecture").textContent = n(lot.lignes) + " lignes lues";
       $("situation").textContent = lot.fichier;
-      dessinerColonnes();
       dessinerLus();
-      aller("lecture");
+      aller("lecture", cleLot === "doute" ? "doute" : "lecture");
     }
 
     /* ─── Le choix du fichier ─── */
@@ -572,7 +567,7 @@
       g.groupes.forEach(function (gr) {
         var pieces = gr.lignes.map(function (i) {
           var r = LIGNES[i];
-          return { type: lu(r, "Type").toLowerCase() === "facture" ? "facture" : "devis", num: lu(r, "Numéro"), date: r._iso, ttc: lu(r, "Montant TTC"), source: lot.fichier };
+          return { type: lu(r, "Type").toLowerCase() === "facture" ? "facture" : "devis", num: lu(r, "Numéro"), date: dateDe(r), ttc: lu(r, "Montant TTC"), source: lot.fichier };
         });
         var deja = dejaNomme(gr.nom);
         if (deja) { ajouts[deja.nom] = pieces; return; }
@@ -709,11 +704,15 @@
 
     /* Les boutons d'état de la planche : chaque état s'ouvre rempli, comme si
        on y était arrivé par le geste. */
-    function preparerAnnee() { lot = LOTS.annee; mapping = {}; CHAMPS.forEach(function (c) { mapping[c.champ] = c.col; }); }
+    /* « Le tableau lu », touché sur la planche, rouvre le fichier sans hésitation. */
+    var demandeAnnee = false;
+    document.querySelector(".pl-etats [data-etat=lecture]").addEventListener("click", function () { demandeAnnee = true; });
+    function preparerAnnee() { lot = LOTS.annee; reconnaitre(); }
     new MutationObserver(function () {
       var etat = ecran.getAttribute("data-etat");
       if (etat === "importer") $("situation").textContent = "Vos clients";
-      if (etat === "lecture" && !$("colonnes").children.length) lire("annee");
+      if (etat === "doute") { lire("doute"); return; }
+      if (etat === "lecture" && demandeAnnee) { demandeAnnee = false; lire("annee"); return; }
       if (etat === "rangement" && !$("compte-rangement").textContent) {
         lot = LOTS.dix;
         $("situation").textContent = lot.fichier;
