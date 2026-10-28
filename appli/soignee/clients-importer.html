@@ -51,6 +51,13 @@
       montre les deux, avec le nombre de pièces de chacune, et propose
       aussi « ce sont deux clients différents » (deux homonymes). Le client
       passe en tête de liste, et « Ranger » attend sa réponse.
+    - UNE SECONDE ADRESSE EST SOUVENT CELLE D'UN CHANTIER, sa remarque du même
+      soir : « des fois ça peut être l'adresse du client plus l'adresse du
+      chantier, qui ne sont pas au même endroit ». Il dit laquelle est la
+      sienne (elle va sur sa fiche) ; les autres restent sur les pièces,
+      « Chantier au … ». Rien ne se perd. Un tableau qui a une colonne pour
+      le chantier (« Lieu intervention ») la voit reconnue : chaque adresse
+      va à sa place sans question.
     - LES PIÈCES SE GROUPENT PAR CLIENT, du plus récent au plus ancien, pour
       qu'il voie avant de ranger ce que chaque fiche recevra.
     - UN NUMÉRO EN DOUBLE ne se range qu'une fois.
@@ -125,6 +132,8 @@
 .piece-lue b { font: 400 16px/1.3 var(--serif); font-variant-numeric: lining-nums; }
 .piece-lue span { grid-column: 1; font-size: 13.5px; color: var(--atlas-inkSoft); }
 .piece-lue i { grid-column: 2; grid-row: 1 / span 2; align-self: center; font-style: normal; font-size: 14.5px; font-variant-numeric: tabular-nums lining-nums; color: var(--atlas-ink); }
+.piece-chantier { display: block; grid-column: 1; margin-top: 1px; font-size: 13.5px; color: var(--atlas-inkSoft); }
+.piece-lue .piece-chantier { color: var(--atlas-ink); }
 .lu .champ-saisie { margin: 0 0 14px 56px; width: calc(100% - 56px); min-height: 48px; padding: 11px 13px; }
 .autres { margin: 14px 2px 0; font-size: 14.5px; color: var(--atlas-inkSoft); }
 
@@ -356,7 +365,8 @@
     <ul>
       <li>Importer devis / facture prend aussi un tableau CSV : sur l'écran, seul « ou tableau CSV » s'ajoute.</li>
       <li>Atlas reconnaît les colonnes seul. S'il hésite (deux colonnes de dates, par exemple), les libellés reviennent, modifiables, la colonne douteuse en ambre.</li>
-      <li>Une adresse ne se choisit jamais à votre place. Deux adresses pour un même nom, ou une adresse qui n'est pas celle de sa fiche : vous choisissez, ou vous dites que ce sont deux clients différents.</li>
+      <li>Une adresse ne se choisit jamais à votre place. Deux adresses pour un même nom : vous dites laquelle est la sienne, l'autre reste sur ses pièces comme adresse du chantier. Ou ce sont deux clients différents.</li>
+      <li>Un tableau qui a une colonne pour le chantier : Atlas la reconnaît, l'adresse du client va sur sa fiche, celle du chantier sur la pièce.</li>
       <li>Rien ne se range tant qu'une adresse ou une colonne attend votre réponse.</li>
       <li>Les pièces se groupent par client, la plus récente d'abord : vous voyez ce que chaque fiche recevra avant de ranger.</li>
       <li>Un client qui n'existe pas encore est créé avec l'adresse et le téléphone lus dans le tableau. Une pièce sans nom attend qu'on le tape.</li>
@@ -408,12 +418,13 @@
     ];
 
     /* Ce qu'Atlas reconnaît d'office dans un tableau ordinaire. */
-    var CHAMPS = ["Client", "Type", "Numéro", "Date", "Adresse", "Code postal", "Ville", "Téléphone", "Montant TTC"];
+    var CHAMPS = ["Client", "Type", "Numéro", "Date", "Adresse", "Code postal", "Ville", "Adresse du chantier", "Téléphone", "Montant TTC"];
     var RECONNUES = { "Client": "Client", "Type": "Type", "Numéro": "N°", "Date": "Date", "Adresse": "Adresse",
                       "Code postal": "CP", "Ville": "Ville", "Téléphone": "Tél.", "Montant TTC": "Total TTC" };
     var COLONNES = ["Type", "N°", "Date", "Client", "Adresse", "CP", "Ville", "Tél.", "Total TTC"];
-    /* L'export qui fait hésiter : deux colonnes de dates, sans nom qui tranche. */
-    var COLONNES_DOUTE = ["Type", "N°", "Date 1", "Date 2", "Client", "Adresse", "CP", "Ville", "Tél.", "Total TTC"];
+    /* L'export qui fait hésiter : deux colonnes de dates, sans nom qui tranche.
+       Il porte aussi le lieu de chaque chantier, qu'Atlas reconnaît. */
+    var COLONNES_DOUTE = ["Type", "N°", "Date 1", "Date 2", "Client", "Adresse", "CP", "Ville", "Lieu intervention", "Tél.", "Total TTC"];
     var COLONNES_DATE = { "Date": "_iso", "Date 1": "_iso", "Date 2": "_ech" };
 
     var ligne = function (type, num, date, client, adresse, cp, ville, tel, ttc) {
@@ -436,6 +447,14 @@
       ligne("Devis", "D2025-0310", "2025-10-08", "Mme Le Goff", "7 impasse du Lavoir", "44400", "Rezé", "", "780,00"),
       ligne("Facture", "F2024-0097", "2024-10-09", "", "9 rue de la Gare", "44230", "Saint-Sébastien-sur-Loire", "06 81 44 02 19", "310,00")
     ];
+    /* Le même export, avec la colonne du chantier : le 12 rue de la Paix de
+       SCI Les Hêtres y est le lieu d'une intervention, et sa ligne garde
+       l'adresse du client. Plus rien n'est à trancher pour elle. */
+    var TABLEAU_DOUTE = TABLEAU.map(function (r) {
+      var c = Object.assign({}, r, { "Lieu intervention": "" });
+      if (r["N°"] === "F2025-0277") { c["Adresse"] = "40 bd Victor Hugo"; c["CP"] = "44200"; c["Lieu intervention"] = "12 rue de la Paix, 44000 Nantes"; }
+      return c;
+    });
     /* Ce que les 6 PDF disent, lus un par un (l'import du 22 octobre). */
     var PDFS = [
       ligne("Facture", "F2025-0148", "2025-03-12", "M. Martins", "8 rue du Port", "44120", "Vertou", "07 11 22 33 44", "480,00"),
@@ -449,7 +468,7 @@
     var LOTS = {
       annee: { fichier: "Devis et factures 2025.csv", nb: 486, devis: 214, factures: 272, doubles: 6, clients: 168, lignes: TABLEAU, colonnes: COLONNES },
       dix: { fichier: "Devis et factures 2016 à 2025.xlsx", nb: 5120, devis: 2310, factures: 2810, doubles: 40, clients: 1240, lignes: TABLEAU, colonnes: COLONNES },
-      doute: { fichier: "Export ancienne appli.xls", nb: 486, devis: 214, factures: 272, doubles: 6, clients: 168, lignes: TABLEAU, colonnes: COLONNES_DOUTE, hesite: ["Date"] },
+      doute: { fichier: "Export ancienne appli.xls", nb: 486, devis: 214, factures: 272, doubles: 6, clients: 168, lignes: TABLEAU_DOUTE, colonnes: COLONNES_DOUTE, hesite: ["Date"], reconnues: { "Adresse du chantier": "Lieu intervention" } },
       pdf: { fichier: "6 PDF", nb: 6, devis: 2, factures: 4, doubles: 0, clients: 4, lignes: PDFS, pdf: true }
     };
 
@@ -471,6 +490,19 @@
       return (" " + a.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ") + " ")
         .replace(/ bd /g, " boulevard ").replace(/ av /g, " avenue ").replace(/ pl /g, " place ").replace(/ imp /g, " impasse ")
         .replace(/\s+/g, " ").trim();
+    }
+    /* L'adresse du chantier d'une pièce : la colonne du tableau quand elle
+       existe ; sinon, une fois qu'il a dit laquelle est la sienne, toute
+       autre adresse de ses pièces. Avant sa réponse, rien. */
+    function chantierDe(g, i) {
+      var r = LIGNES[i];
+      var colonne = lu(r, "Adresse du chantier");
+      if (colonne) return colonne;
+      var lieu = lieuDe(r);
+      if (!lieu || !g) return "";
+      if (typeof g.choix === "number" && normaliser(lieu) !== g.adresses[g.choix].norme) return lieu;
+      if (g.conflit === "fiche" && g.choix === "meme") return lieu;
+      return "";
     }
     function dejaNomme(nom) { return DEJA.filter(function (c) { return c.nom.toLowerCase() === nom.toLowerCase(); })[0] || null; }
     function hesitation() { return (lot.hesite || []).filter(function (champ) { return champ === "Date" ? !dateDe(LIGNES[0]) : !mapping[champ]; }); }
@@ -502,9 +534,11 @@
         else g.conflit = null;
         g.choix = choix[g.cle];
       });
-      /* Ce qui attend une réponse passe en tête : il le voit sans chercher. */
+      /* Ce qui demande une réponse passe en tête, et y RESTE une fois répondu :
+         le client qui glissait à sa lettre après l'appui emportait la réponse
+         hors de sa vue (vu au navigateur, 28 octobre). */
       liste.sort(function (a, b) {
-        var x = a.conflit && a.choix === undefined ? 0 : 1, y = b.conflit && b.choix === undefined ? 0 : 1;
+        var x = a.conflit ? 0 : 1, y = b.conflit ? 0 : 1;
         return x - y || cle(a.nom).localeCompare(cle(b.nom), "fr");
       });
       return { groupes: liste, sans: sans };
@@ -531,7 +565,10 @@
         var hesite = doute.indexOf(champ) >= 0;
         var options = '<option value=""' + (pris ? "" : " selected") + ">" + (hesite ? "À choisir" : "Pas repris") + "</option>" +
           lot.colonnes.map(function (col) { return "<option" + (col === pris ? " selected" : "") + ">" + col + "</option>"; }).join("");
-        var exemple = hesite ? "Date 1 ou Date 2 ? Choisissez." : pris ? (valeur(LIGNES[0], pris) || "Vide dans le tableau") : "";
+        /* La première valeur vraiment lue : la première ligne peut être vide pour
+           cette colonne, et « vide » ferait croire la colonne inutile. */
+        var lue = pris ? LIGNES.map(function (r) { return valeur(r, pris); }).filter(Boolean)[0] : "";
+        var exemple = hesite ? "Date 1 ou Date 2 ? Choisissez." : pris ? (lue || "Vide dans le tableau") : "";
         var id = "c-" + champ.replace(/\W/g, "");
         return '<div class="colonne' + (pris ? "" : " vide") + (hesite ? " hesite" : "") + '"><label for="' + id + '">' + champ + "</label>" +
           '<span class="choisir"><select id="' + id + '" data-champ="' + champ + '">' + options + '</select><svg class="ico" aria-hidden="true"><use href="#i-bas"/></svg></span>' +
@@ -546,23 +583,30 @@
     });
 
     /* ─── Par client : ce qui attend d'abord, puis chaque pièce par date ─── */
-    function pieceLue(r) {
+    function pieceLue(r, chantier) {
       var type = lu(r, "Type") || "Pièce", num = lu(r, "Numéro"), d = dateDe(r), ttc = lu(r, "Montant TTC");
-      return '<div class="piece-lue"><b>' + type + (num ? " n° " + num : "") + "</b><span>" + (d ? jour(d) : "Sans date") + "</span>" + (ttc ? "<i>" + ttc + " €</i>" : "") + "</div>";
+      return '<div class="piece-lue"><b>' + type + (num ? " n° " + num : "") + "</b><span>" + (d ? jour(d) : "Sans date") + "</span>" +
+        (chantier ? '<span class="piece-chantier">Chantier au ' + chantier + "</span>" : "") + (ttc ? "<i>" + ttc + " €</i>" : "") + "</div>";
     }
     function radio(g, valeurChoix, titre, sous) {
       return '<button class="radio" type="button" data-groupe="' + g.cle + '" data-adresse="' + valeurChoix + '" aria-pressed="' + (String(g.choix) === String(valeurChoix) ? "true" : "false") + '">' +
         '<span class="coche-ronde"></span><span><b>' + titre + "</b>" + (sous ? "<small>" + sous + "</small>" : "") + "</span></button>";
     }
+    /* Sa remarque du 28 octobre : « des fois ça peut être l'adresse du client
+       plus l'adresse du chantier, qui ne sont pas au même endroit ». Une
+       seconde adresse n'est donc ni effacée ni prise pour un autre client
+       d'office : il dit laquelle est la sienne, l'autre reste sur ses pièces
+       comme adresse du chantier. */
     function blocAdresse(g) {
       if (g.conflit === "deux") {
-        return '<div class="choix-adresse"><p class="choix-adresse-titre">' + g.adresses.length + " adresses pour ce nom. Laquelle va sur sa fiche ?</p>" +
-          g.adresses.map(function (a, k) { return radio(g, k, a.lieu, a.lignes.length + (a.lignes.length > 1 ? " pièces" : " pièce")); }).join("") +
-          radio(g, "deux", "Ce sont " + g.adresses.length + " clients différents", "Une fiche par adresse, chacune avec ses pièces") + "</div>";
+        var autres = g.adresses.length > 2 ? "Les autres restent sur ses pièces, comme adresses des chantiers" : "L'autre reste sur ses pièces, comme adresse du chantier";
+        return '<div class="choix-adresse"><p class="choix-adresse-titre">' + g.adresses.length + " adresses pour ce nom. Laquelle est la sienne ?</p>" +
+          g.adresses.map(function (a, k) { return radio(g, k, a.lieu, a.lignes.length + (a.lignes.length > 1 ? " pièces. " : " pièce. ") + autres + "."); }).join("") +
+          radio(g, "deux", "Ce sont " + g.adresses.length + " clients différents", "Une fiche par adresse, chacune avec ses pièces.") + "</div>";
       }
       return '<div class="choix-adresse"><p class="choix-adresse-titre">Sa fiche dit ' + g.deja.lieu + ". Le tableau dit " + g.adresses[0].lieu + ".</p>" +
-        radio(g, "meme", "C'est le même client", "Ses pièces s'ajoutent, sa fiche garde son adresse") +
-        radio(g, "autre", "C'est un autre client", "Une nouvelle fiche, à l'adresse du tableau") + "</div>";
+        radio(g, "meme", "C'est le même client", "Sa fiche garde son adresse. " + g.adresses[0].lieu + " reste sur ses pièces, comme adresse du chantier.") +
+        radio(g, "autre", "C'est un autre client", "Une nouvelle fiche, à l'adresse du tableau.") + "</div>";
     }
     function dessinerLus() {
       var doute = hesitation();
@@ -584,13 +628,13 @@
           html += '<div class="lu"><div class="client"><span class="initiales">' + initiales(gr.nom) + '</span><span class="client-corps"><span class="client-nom">' + gr.nom + "</span>" +
             (lieu ? '<span class="client-lieu">' + lieu + "</span>" : "") + etat + "</span></div>" +
             (gr.conflit ? blocAdresse(gr) : "") +
-            '<div class="pieces-lues">' + gr.lignes.map(function (i) { return pieceLue(LIGNES[i]); }).join("") + "</div></div>";
+            '<div class="pieces-lues">' + gr.lignes.map(function (i) { return pieceLue(LIGNES[i], chantierDe(gr, i)); }).join("") + "</div></div>";
         });
         g.sans.forEach(function (i) {
           var r = LIGNES[i];
           html += '<div class="lu"><div class="client"><span class="initiales">?</span><span class="client-corps"><span class="client-nom manque">Sans nom</span>' +
             '<span class="client-lieu">' + ([lieuDe(r), lu(r, "Téléphone")].filter(Boolean).join(", ") || "Sans coordonnées") + '</span><span class="etat" data-ton="ambre">' + (lot.pdf ? "Nom illisible" : "Nom absent du tableau") + "</span></span></div>" +
-            '<div class="pieces-lues">' + pieceLue(r) + "</div>" +
+            '<div class="pieces-lues">' + pieceLue(r, chantierDe(null, i)) + "</div>" +
             '<input class="champ-saisie" data-tape="' + i + '" value="' + (tapes[i] || "") + '" placeholder="Nom du client" autocomplete="off" enterkeyhint="done" aria-label="Nom du client"></div>';
         });
       }
@@ -671,6 +715,7 @@
       choix = {};
       mapping = {};
       for (var k in RECONNUES) mapping[k] = RECONNUES[k];
+      for (var k2 in (lot.reconnues || {})) mapping[k2] = lot.reconnues[k2];
       (lot.hesite || []).forEach(function (champ) { mapping[champ] = ""; });
       $("titre-lecture").textContent = n(lot.nb) + (lot.pdf ? " documents lus" : " lignes lues");
       $("situation").textContent = lot.fichier;
@@ -691,21 +736,23 @@
     }, true);
 
     /* ─── Ranger : ce que chaque fiche reçoit ─── */
-    function pieceDe(r) {
-      return { type: lu(r, "Type").toLowerCase() === "facture" ? "facture" : "devis", num: lu(r, "Numéro"), date: dateDe(r), ttc: lu(r, "Montant TTC"), source: lot.fichier, pdf: !!lot.pdf };
+    function pieceDe(g, i) {
+      var r = LIGNES[i];
+      return { type: lu(r, "Type").toLowerCase() === "facture" ? "facture" : "devis", num: lu(r, "Numéro"), date: dateDe(r), ttc: lu(r, "Montant TTC"),
+               chantier: chantierDe(g, i), source: lot.fichier, pdf: !!lot.pdf };
     }
     function rangerMontrees() {
       var g = grouper();
       crees = []; ajouts = {};
-      var nouveau = function (nom, lieu, tel, lignes) {
-        crees.push({ id: "c" + crees.length, nom: nom, lieu: lieu, tel: tel, pieces: lignes.map(function (i) { return pieceDe(LIGNES[i]); }) });
+      var nouveau = function (gr, lieu, tel, lignes) {
+        crees.push({ id: "c" + crees.length, nom: gr.nom, lieu: lieu, tel: tel, pieces: lignes.map(function (i) { return pieceDe(gr.choix === "deux" ? null : gr, i); }) });
       };
       g.groupes.forEach(function (gr) {
         var r0 = LIGNES[gr.lignes[0]];
-        if (gr.deja && gr.choix !== "autre") { ajouts[gr.deja.id] = gr.lignes.map(function (i) { return pieceDe(LIGNES[i]); }); return; }
-        if (gr.choix === "deux") { gr.adresses.forEach(function (a) { nouveau(gr.nom, a.lieu, lu(LIGNES[a.lignes[0]], "Téléphone"), a.lignes); }); return; }
+        if (gr.deja && gr.choix !== "autre") { ajouts[gr.deja.id] = gr.lignes.map(function (i) { return pieceDe(gr, i); }); return; }
+        if (gr.choix === "deux") { gr.adresses.forEach(function (a) { nouveau(gr, a.lieu, lu(LIGNES[a.lignes[0]], "Téléphone"), a.lignes); }); return; }
         var lieu = typeof gr.choix === "number" ? gr.adresses[gr.choix].lieu : gr.adresses.length ? gr.adresses[0].lieu : "";
-        nouveau(gr.nom, lieu, lu(r0, "Téléphone"), gr.lignes);
+        nouveau(gr, lieu, lu(r0, "Téléphone"), gr.lignes);
       });
     }
 
@@ -765,7 +812,7 @@
       var liste = piecesDe(ouvert).filter(function (x) { return x.type === type; }).sort(function (a, b) { return b.date.localeCompare(a.date); });
       var vide = { devis: "Aucun devis parti", factures: "Aucune facture émise", fiches: "Aucune fiche envoyée" }[registre];
       $("registre").innerHTML = liste.length ? liste.map(function (x) {
-        return '<button class="piece touche" type="button" data-num="' + x.num + '"><span class="piece-corps"><span class="piece-titre">n° ' + x.num + '</span><span class="piece-date">' + jour(x.date) + '</span></span><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></button>';
+        return '<button class="piece touche" type="button" data-num="' + x.num + '"><span class="piece-corps"><span class="piece-titre">n° ' + x.num + '</span><span class="piece-date">' + jour(x.date) + "</span>" + (x.chantier ? '<span class="piece-chantier">Chantier au ' + x.chantier + "</span>" : "") + '</span><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></button>';
       }).join("") : '<p class="registre-vide">' + vide + "</p>";
     }
     document.querySelector(".onglets-dossier").addEventListener("click", function (e) {
@@ -782,7 +829,7 @@
       $("piece-titre").textContent = (x.type === "facture" ? "Facture" : "Devis") + " n° " + x.num;
       $("piece-jour").textContent = jour(x.date);
       $("piece-montant").textContent = x.ttc ? x.ttc + " € TTC" : "Montant absent du tableau";
-      $("piece-source").textContent = "Pas de PDF : le tableau ne donnait que ces chiffres.";
+      $("piece-source").textContent = (x.chantier ? "Chantier au " + x.chantier + ". " : "") + "Pas de PDF : le tableau ne donnait que ces chiffres.";
       Kit.ouvrirFeuille("feuille-piece", b);
     });
 
