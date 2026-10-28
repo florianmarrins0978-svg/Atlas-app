@@ -33,7 +33,7 @@ import ChoixCivilite from "@/components/atlas/ChoixCivilite";
 import Pellicule, { type VignettePhoto } from "../[id]/Pellicule";
 import AnneauNoteVocale from "../[id]/AnneauNoteVocale";
 import DevisDepuisDictee from "../[id]/DevisDepuisDictee";
-import type { CiviliteClient } from "@/lib/civilite";
+import { casesDuClient, type CiviliteClient } from "@/lib/civilite";
 import { espacerNumero, numeroEnregistre, telephoneLu } from "@/lib/numero-telephone";
 import { siretLu } from "@/lib/siren";
 import { DEBUT_NUMERO_TVA, numeroTvaLu, numeroTvaVide } from "@/lib/autoliquidation";
@@ -231,6 +231,8 @@ export default function FormulaireNouveauChantier({
   // (sa demande du 4 octobre 2026, « faut ajouter le siret aussi »).
   const [siret, setSiret] = useState("");
   const [numeroTva, setNumeroTva] = useState(DEBUT_NUMERO_TVA);
+  // Un service public : son code service, pour Chorus Pro (22 octobre 2026).
+  const [codeService, setCodeService] = useState("");
   const [canalChoisi, setCanalChoisi] = useState<"sms" | "email" | null>(depart?.canal ?? null);
   const [adresseChantier, setAdresseChantier] = useState(reprise?.adresseChantier ?? "");
   // **L'adresse du CLIENT sert d'adresse de chantier par défaut quand on vient
@@ -326,13 +328,18 @@ export default function FormulaireNouveauChantier({
   // donné doit joindre quelqu'un. La phrase se lit sous la case, et chaque
   // sortie (les deux boutons, la flèche, le micro) refuse la même : une seule
   // lecture, celle du serveur (`telephoneLu`, `siretLu`, `numeroTvaLu`).
-  const avecSesNumeros = civilite === "entreprise" && !reprise;
+  //
+  // **Les cases d'une entreprise ET d'un service public, par la règle de sa
+  // fiche** (`casesDuClient`). Vu à l'écran le 27 octobre 2026 : cette ligne
+  // lisait « entreprise » seule, et Public n'ouvrait ni le SIRET ni le code
+  // service qu'attend la facture d'une mairie, alors que sa fiche les demande.
+  const cases = reprise ? { siret: false, numeroTva: false, codeService: false } : casesDuClient(civilite);
   const saisieFausse =
     telephoneLu(telephone) === null
       ? "Le téléphone a 10 chiffres."
-      : avecSesNumeros && siretLu(siret) === null
+      : cases.siret && siretLu(siret) === null
         ? "Le SIRET a 14 chiffres."
-        : avecSesNumeros && !numeroTvaVide(numeroTva) && numeroTvaLu(numeroTva) === null
+        : cases.numeroTva && !numeroTvaVide(numeroTva) && numeroTvaLu(numeroTva) === null
           ? "Le n° TVA : FR suivi de 11 chiffres."
           : null;
 
@@ -588,6 +595,7 @@ export default function FormulaireNouveauChantier({
       email,
       siret,
       numeroTva,
+      codeService,
       canal: canal ?? undefined,
       adresseChantier,
       adresseClient,
@@ -1151,15 +1159,16 @@ export default function FormulaireNouveauChantier({
             <ClientsProposes liste={propositions} onChoisir={choisirLeClient} />
           )}
 
-          {/* **Entreprise : le SIRET et le n° TVA, sur une seule rangée** — sa
-              demande du 4 octobre 2026, les mêmes cases que sa fiche. Une
-              rangée et non deux : l'écran doit tenir dans une page (sa règle du
-              30 août), et il ne grandit que pour une entreprise. Un numéro mal
-              tapé se signale sous sa case, par la même lecture que le serveur,
-              qui ne l'écrit pas. **À la création seulement** : en reprise, cet
-              écran enregistre par une autre porte, qui ne les connaît pas ;
-              ils se corrigent alors sur sa fiche (« Ses coordonnées »). */}
-          {avecSesNumeros && (
+          {/* **Entreprise : le SIRET et le n° TVA ; Public : le SIRET et le
+              code service, sur une seule rangée** — sa demande du 4 octobre
+              2026, les mêmes cases que sa fiche (`casesDuClient`). Une rangée
+              et non deux : l'écran doit tenir dans une page (sa règle du
+              30 août), et il ne grandit que pour eux. Un numéro mal tapé se
+              signale sous sa case, par la même lecture que le serveur, qui ne
+              l'écrit pas. **À la création seulement** : en reprise, cet écran
+              enregistre par une autre porte, qui ne les connaît pas ; ils se
+              corrigent alors sur sa fiche (« Ses coordonnées »). */}
+          {cases.siret && (
             <div>
               <div className="flex gap-3">
                 <div className="min-w-0 flex-1">
@@ -1168,20 +1177,36 @@ export default function FormulaireNouveauChantier({
                   </div>
                   <Field label="SIRET" placeholder="812 345 678 00021" value={siret} onChange={setSiret} sansLibelle />
                 </div>
-                <div className="min-w-0 flex-1">
-                  <div className={`mb-1 ${libelleCaps}`} style={{ color: colors.muted }}>
-                    N° TVA
+                {cases.numeroTva && (
+                  <div className="min-w-0 flex-1">
+                    <div className={`mb-1 ${libelleCaps}`} style={{ color: colors.muted }}>
+                      N° TVA
+                    </div>
+                    <Field
+                      label="N° TVA intracommunautaire"
+                      placeholder="FR00812345678"
+                      value={numeroTva}
+                      onChange={setNumeroTva}
+                      sansLibelle
+                    />
                   </div>
-                  <Field
-                    label="N° TVA intracommunautaire"
-                    placeholder="FR00812345678"
-                    value={numeroTva}
-                    onChange={setNumeroTva}
-                    sansLibelle
-                  />
-                </div>
+                )}
+                {cases.codeService && (
+                  <div className="min-w-0 flex-1">
+                    <div className={`mb-1 ${libelleCaps}`} style={{ color: colors.muted }}>
+                      Code service
+                    </div>
+                    <Field
+                      label="Code service"
+                      placeholder="Sur la commande"
+                      value={codeService}
+                      onChange={setCodeService}
+                      sansLibelle
+                    />
+                  </div>
+                )}
               </div>
-              <AvisNumeroTva siret={siret} numeroTva={numeroTva} onMettre={setNumeroTva} />
+              {cases.numeroTva && <AvisNumeroTva siret={siret} numeroTva={numeroTva} onMettre={setNumeroTva} />}
             </div>
           )}
           {saisieFausse && (
@@ -1232,12 +1257,15 @@ export default function FormulaireNouveauChantier({
             {/* **« + CLIENT » VIT AU BOUT DE L'INTITULÉ, plus sur sa propre
                 rangée.** C'est là qu'on y pense — en écrivant l'adresse — et
                 cela rend vingt-huit pixels à l'écran. Les deux mots ne se
-                coupent jamais : « Chantier » et « + Client » tiennent sur une
+                coupent jamais : « Adresse » et « + Client » tiennent sur une
                 ligne à 390 px, là où « Adresse du chantier » et « + Adresse
-                client » se brisaient tous les deux (vu à la capture). */}
+                client » se brisaient tous les deux (vu à la capture).
+                **« Adresse » et non plus « Chantier »** : son choix du
+                28 octobre 2026, devant `appli/soignee/creer-un-devis.html`
+                (« change juste chantier par adresse »). */}
             <div className="mb-1 flex items-baseline justify-between gap-2.5">
               <span className={`whitespace-nowrap ${libelleCaps}`} style={{ color: colors.muted }}>
-                Chantier
+                Adresse
               </span>
               {!adresseClientVisible && (
                 <button
