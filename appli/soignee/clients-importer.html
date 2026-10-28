@@ -188,6 +188,10 @@
 .piece-corps { flex: 1; min-width: 0; }
 .piece-titre { display: block; font: 400 18.5px/1.25 var(--serif); font-variant-numeric: lining-nums; }
 .piece-date { display: block; margin-top: 2px; font-size: 14px; color: var(--atlas-inkSoft); }
+/* Le titre et le montant d'un coup d'œil, comme sur la fiche d'un client. */
+.piece-haut { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.piece-haut .piece-titre { min-width: 0; }
+.piece-somme { flex: none; font-size: 15.5px; font-weight: 600; font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; color: var(--atlas-ink); }
 .piece > .ico { width: 20px; height: 20px; color: var(--atlas-chevron); stroke-width: 2; flex: none; }
 .registre-vide { padding: 22px 0; text-align: center; font-size: 15px; color: var(--atlas-inkSoft); }
 .supprimer-client { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 52px; margin-top: 34px;
@@ -370,7 +374,7 @@
       <li>Rien ne se range tant qu'une adresse ou une colonne attend votre réponse.</li>
       <li>Les pièces se groupent par client, la plus récente d'abord : vous voyez ce que chaque fiche recevra avant de ranger.</li>
       <li>Un client qui n'existe pas encore est créé avec l'adresse et le téléphone lus dans le tableau. Une pièce sans nom attend qu'on le tape.</li>
-      <li>Sur la fiche, devis et factures se rangent par date, comme les autres. Touchés, ils montrent leur montant : le tableau ne donne pas de PDF.</li>
+      <li>Sur la fiche, devis et factures se rangent par date, chacun avec son titre et son montant TTC, le numéro dessous. Touchés, ils disent ce que le tableau donnait : il n'y a pas de PDF.</li>
       <li>Dix ans de pièces : le rangement continue sans vous, vous pouvez fermer l'appli.</li>
       <li>Excel se lit comme un CSV, .xlsx comme .xls. Les PDF arrivent au même écran, groupés par client.</li>
     </ul>
@@ -408,23 +412,23 @@
     var DEJA = [
       { id: "d0", nom: "Mme Aubry", pieces: [] },
       { id: "d1", nom: "M. Bernard", lieu: "21 quai de la Fosse, 44000 Nantes", piece: "Facture du 17 oct.", du: "312,00 € dus", natif: true,
-        pieces: [{ type: "devis", num: "2026-000046", date: "2026-09-29" }, { type: "devis", num: "2026-0012", date: "2026-08-16" }, { type: "facture", num: "F2026-000031", date: "2026-10-17" }] },
+        pieces: [{ type: "devis", num: "2026-000046", date: "2026-09-29", objet: "Haie de laurier", ttc: "1 140,00" }, { type: "devis", num: "2026-0012", date: "2026-08-16", objet: "Taille de haie", ttc: "420,00" }, { type: "facture", num: "F2026-000031", date: "2026-10-17", objet: "Taille de haie", ttc: "312,00" }] },
       { id: "d2", nom: "Mme Costa", piece: "Facture du 22 oct.", natif: true, lieu: "12 chemin des Vignes, 49800 Trélazé", tel: "06 39 98 45 14",
-        pieces: [{ type: "devis", num: "2026-000024", date: "2026-10-03" }, { type: "devis", num: "2026-000012", date: "2026-06-02" }, { type: "facture", num: "F2026-000014", date: "2026-10-22" }, { type: "facture", num: "F2026-000004", date: "2026-06-19" }] },
-      { id: "d3", nom: "M. Faucher", piece: "Facture du 10 oct.", pieces: [{ type: "facture", num: "F2026-000011", date: "2026-10-10" }] },
-      { id: "d4", nom: "Mme Garnier", lieu: "18 rue des Lilas, 49100 Angers", piece: "Facture du 14 oct.", du: "2 016,00 € dus", pieces: [{ type: "facture", num: "F2026-000012", date: "2026-10-14" }] },
-      { id: "d5", nom: "M. Lefèvre", lieu: "7 allée du Parc, 49130 Les Ponts-de-Cé", piece: "Devis du 2 oct.", natif: true, pieces: [{ type: "devis", num: "2026-000022", date: "2026-10-02" }] },
-      { id: "d6", nom: "M. et Mme Roux", lieu: "3 impasse des Saules, 49070 Beaucouzé", piece: "Facture du 7 oct.", pieces: [{ type: "facture", num: "F2026-000009", date: "2026-10-07" }] }
+        pieces: [{ type: "devis", num: "2026-000024", date: "2026-10-03", objet: "Taille de haie de thuyas", ttc: "1 380,00" }, { type: "devis", num: "2026-000012", date: "2026-06-02", objet: "Entretien de printemps", ttc: "640,00" }, { type: "facture", num: "F2026-000014", date: "2026-10-22", objet: "Taille de haie de thuyas", ttc: "1 380,00" }, { type: "facture", num: "F2026-000004", date: "2026-06-19", objet: "Entretien de printemps", ttc: "640,00" }] },
+      { id: "d3", nom: "M. Faucher", piece: "Facture du 10 oct.", pieces: [{ type: "facture", num: "F2026-000011", date: "2026-10-10", objet: "Élagage", ttc: "850,00" }] },
+      { id: "d4", nom: "Mme Garnier", lieu: "18 rue des Lilas, 49100 Angers", piece: "Facture du 14 oct.", du: "2 016,00 € dus", pieces: [{ type: "facture", num: "F2026-000012", date: "2026-10-14", objet: "Aménagement jardin", ttc: "2 016,00" }] },
+      { id: "d5", nom: "M. Lefèvre", lieu: "7 allée du Parc, 49130 Les Ponts-de-Cé", piece: "Devis du 2 oct.", natif: true, pieces: [{ type: "devis", num: "2026-000022", date: "2026-10-02", objet: "Création de massifs", ttc: "1 760,00" }] },
+      { id: "d6", nom: "M. et Mme Roux", lieu: "3 impasse des Saules, 49070 Beaucouzé", piece: "Facture du 7 oct.", pieces: [{ type: "facture", num: "F2026-000009", date: "2026-10-07", objet: "Tonte et débroussaillage", ttc: "280,00" }] }
     ];
 
     /* Ce qu'Atlas reconnaît d'office dans un tableau ordinaire. */
-    var CHAMPS = ["Client", "Type", "Numéro", "Date", "Adresse", "Code postal", "Ville", "Adresse du chantier", "Téléphone", "Montant TTC"];
-    var RECONNUES = { "Client": "Client", "Type": "Type", "Numéro": "N°", "Date": "Date", "Adresse": "Adresse",
+    var CHAMPS = ["Client", "Type", "Numéro", "Objet", "Date", "Adresse", "Code postal", "Ville", "Adresse du chantier", "Téléphone", "Montant TTC"];
+    var RECONNUES = { "Client": "Client", "Type": "Type", "Numéro": "N°", "Objet": "Objet", "Date": "Date", "Adresse": "Adresse",
                       "Code postal": "CP", "Ville": "Ville", "Téléphone": "Tél.", "Montant TTC": "Total TTC" };
-    var COLONNES = ["Type", "N°", "Date", "Client", "Adresse", "CP", "Ville", "Tél.", "Total TTC"];
+    var COLONNES = ["Type", "N°", "Objet", "Date", "Client", "Adresse", "CP", "Ville", "Tél.", "Total TTC"];
     /* L'export qui fait hésiter : deux colonnes de dates, sans nom qui tranche.
        Il porte aussi le lieu de chaque chantier, qu'Atlas reconnaît. */
-    var COLONNES_DOUTE = ["Type", "N°", "Date 1", "Date 2", "Client", "Adresse", "CP", "Ville", "Lieu intervention", "Tél.", "Total TTC"];
+    var COLONNES_DOUTE = ["Type", "N°", "Objet", "Date 1", "Date 2", "Client", "Adresse", "CP", "Ville", "Lieu intervention", "Tél.", "Total TTC"];
     var COLONNES_DATE = { "Date": "_iso", "Date 1": "_iso", "Date 2": "_ech" };
 
     var ligne = function (type, num, date, client, adresse, cp, ville, tel, ttc) {
@@ -447,6 +451,12 @@
       ligne("Devis", "D2025-0310", "2025-10-08", "Mme Le Goff", "7 impasse du Lavoir", "44400", "Rezé", "", "780,00"),
       ligne("Facture", "F2024-0097", "2024-10-09", "", "9 rue de la Gare", "44230", "Saint-Sébastien-sur-Loire", "06 81 44 02 19", "310,00")
     ];
+    /* Le titre de chaque pièce, la colonne « Objet » du tableau (ou ce que le
+       PDF porte en tête) : sur la fiche, il se lit avant le numéro. */
+    var OBJETS = { "D2025-0201": "Aménagement jardin", "F2025-0163": "Aménagement jardin", "D2025-0187": "Élagage", "F2025-0201": "Élagage",
+                   "F2025-0122": "Taille de haie", "D2025-0244": "Entretien des espaces verts", "F2025-0230": "Entretien des espaces verts",
+                   "F2025-0277": "Création de massifs", "D2025-0310": "Création d'une pelouse", "F2024-0097": "Débroussaillage", "F2025-0148": "Élagage et rognage" };
+    TABLEAU.forEach(function (r) { r["Objet"] = OBJETS[r["N°"]] || ""; });
     /* Le même export, avec la colonne du chantier : le 12 rue de la Paix de
        SCI Les Hêtres y est le lieu d'une intervention, et sa ligne garde
        l'adresse du client. Plus rien n'est à trancher pour elle. */
@@ -464,6 +474,7 @@
       ligne("Facture", "F2025-0122", "2025-01-06", "M. Bernard", "12 rue des Lilas", "44000", "Nantes", "06 33 18 90 41", "195,00"),
       ligne("Facture", "F2024-0097", "2024-10-09", "", "", "", "", "", "310,00")
     ];
+    PDFS.forEach(function (r) { r["Objet"] = OBJETS[r["N°"]] || ""; });
     /* Chaque fichier : ce qu'il porte en tout, et les lignes montrées. */
     var LOTS = {
       annee: { fichier: "Devis et factures 2025.csv", nb: 486, devis: 214, factures: 272, doubles: 6, clients: 168, lignes: TABLEAU, colonnes: COLONNES },
@@ -584,8 +595,9 @@
 
     /* ─── Par client : ce qui attend d'abord, puis chaque pièce par date ─── */
     function pieceLue(r, chantier) {
-      var type = lu(r, "Type") || "Pièce", num = lu(r, "Numéro"), d = dateDe(r), ttc = lu(r, "Montant TTC");
-      return '<div class="piece-lue"><b>' + type + (num ? " n° " + num : "") + "</b><span>" + (d ? jour(d) : "Sans date") + "</span>" +
+      var type = lu(r, "Type") || "Pièce", num = lu(r, "Numéro"), d = dateDe(r), ttc = lu(r, "Montant TTC"), objet = lu(r, "Objet");
+      var ref = type + (num ? " n° " + num : "");
+      return '<div class="piece-lue"><b>' + (objet || ref) + "</b><span>" + (objet ? ref + ", " : "") + (d ? jour(d) : "Sans date") + "</span>" +
         (chantier ? '<span class="piece-chantier">Chantier au ' + chantier + "</span>" : "") + (ttc ? "<i>" + ttc + " €</i>" : "") + "</div>";
     }
     function radio(g, valeurChoix, titre, sous) {
@@ -738,7 +750,7 @@
     /* ─── Ranger : ce que chaque fiche reçoit ─── */
     function pieceDe(g, i) {
       var r = LIGNES[i];
-      return { type: lu(r, "Type").toLowerCase() === "facture" ? "facture" : "devis", num: lu(r, "Numéro"), date: dateDe(r), ttc: lu(r, "Montant TTC"),
+      return { type: lu(r, "Type").toLowerCase() === "facture" ? "facture" : "devis", num: lu(r, "Numéro"), objet: lu(r, "Objet"), date: dateDe(r), ttc: lu(r, "Montant TTC"),
                chantier: chantierDe(g, i), source: lot.fichier, pdf: !!lot.pdf };
     }
     function rangerMontrees() {
@@ -812,7 +824,10 @@
       var liste = piecesDe(ouvert).filter(function (x) { return x.type === type; }).sort(function (a, b) { return b.date.localeCompare(a.date); });
       var vide = { devis: "Aucun devis parti", factures: "Aucune facture émise", fiches: "Aucune fiche envoyée" }[registre];
       $("registre").innerHTML = liste.length ? liste.map(function (x) {
-        return '<button class="piece touche" type="button" data-num="' + x.num + '"><span class="piece-corps"><span class="piece-titre">n° ' + x.num + '</span><span class="piece-date">' + jour(x.date) + "</span>" + (x.chantier ? '<span class="piece-chantier">Chantier au ' + x.chantier + "</span>" : "") + '</span><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></button>';
+        /* Le titre et le montant d'abord, sa demande du 28 octobre ; le numéro
+           et la date dessous. Sans titre, le numéro reprend la première ligne. */
+        return '<button class="piece touche" type="button" data-num="' + x.num + '"><span class="piece-corps"><span class="piece-haut"><span class="piece-titre">' + (x.objet || "n° " + x.num) + "</span>" +
+          (x.ttc ? '<span class="piece-somme">' + x.ttc + " €</span>" : "") + '</span><span class="piece-date">' + (x.objet ? "n° " + x.num + ", " : "") + jour(x.date) + "</span>" + (x.chantier ? '<span class="piece-chantier">Chantier au ' + x.chantier + "</span>" : "") + '</span><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></button>';
       }).join("") : '<p class="registre-vide">' + vide + "</p>";
     }
     document.querySelector(".onglets-dossier").addEventListener("click", function (e) {
@@ -827,7 +842,7 @@
       var x = piecesDe(ouvert).filter(function (p) { return p.num === b.getAttribute("data-num"); })[0];
       if (!x.source || x.pdf) { Kit.note(ecran, x.pdf ? "Ici s'ouvre le PDF importé. Sur la planche, il ne s'ouvre pas." : "Sur la planche, la pièce ne s'ouvre pas."); return; }
       $("piece-titre").textContent = (x.type === "facture" ? "Facture" : "Devis") + " n° " + x.num;
-      $("piece-jour").textContent = jour(x.date);
+      $("piece-jour").textContent = (x.objet ? x.objet + ", " : "") + jour(x.date);
       $("piece-montant").textContent = x.ttc ? x.ttc + " € TTC" : "Montant absent du tableau";
       $("piece-source").textContent = (x.chantier ? "Chantier au " + x.chantier + ". " : "") + "Pas de PDF : le tableau ne donnait que ces chiffres.";
       Kit.ouvrirFeuille("feuille-piece", b);

@@ -78,6 +78,12 @@ a.coordonnee { text-decoration: none; }
 .piece-corps { flex: 1; min-width: 0; }
 .piece-titre { display: block; font: 400 18.5px/1.25 var(--serif); font-variant-numeric: lining-nums; }
 .piece-date { display: block; margin-top: 2px; font-size: 14px; color: var(--atlas-inkSoft); }
+/* Le titre et le montant d'un coup d'œil, sa demande du 28 octobre devant la
+   liste d'une autre appli : « le titre du devis visible, le montant ». Le
+   numéro et la date passent dessous. Le montant est TTC, comme dans Terminés. */
+.piece-haut { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.piece-haut .piece-titre { min-width: 0; }
+.piece-somme { flex: none; font-size: 15.5px; font-weight: 600; font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; color: var(--atlas-ink); }
 .piece-reception { display: flex; align-items: center; gap: 5px; margin-top: 3px; font-size: 14px; color: var(--atlas-inkSoft); }
 .piece-reception b { color: var(--atlas-ink); }
 .piece-reception .ico { width: 16px; height: 16px; color: var(--atlas-carteVertTexte); stroke-width: 2.2; }
@@ -165,11 +171,11 @@ a.coordonnee { text-decoration: none; }
               <div class="registre" data-registre-panneau="0">
                 <div data-si-etat="complet">
                   <button class="piece touche" type="button" data-ouvre="feuille-piece" data-titre="n° 2026-000024" data-jour="3 octobre 2026">
-                    <span class="piece-corps"><span class="piece-titre">n° 2026-000024</span><span class="piece-date">3 octobre 2026</span></span>
+                    <span class="piece-corps"><span class="piece-haut"><span class="piece-titre">Taille de haie de thuyas</span><span class="piece-somme">1 380,00 €</span></span><span class="piece-date">n° 2026-000024, 3 octobre 2026</span></span>
                     <svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg>
                   </button>
                   <button class="piece touche" type="button" data-ouvre="feuille-piece" data-titre="n° 2026-000012" data-jour="2 juin 2026">
-                    <span class="piece-corps"><span class="piece-titre">n° 2026-000012</span><span class="piece-date">2 juin 2026</span></span>
+                    <span class="piece-corps"><span class="piece-haut"><span class="piece-titre">Entretien de printemps</span><span class="piece-somme">640,00 €</span></span><span class="piece-date">n° 2026-000012, 2 juin 2026</span></span>
                     <svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg>
                   </button>
                 </div>
@@ -179,12 +185,12 @@ a.coordonnee { text-decoration: none; }
               <div class="registre" data-registre-panneau="1" hidden>
                 <div data-si-etat="complet">
                   <button class="piece touche" type="button" data-ouvre="feuille-piece" data-titre="n° F2026-000014" data-jour="22 octobre 2026">
-                    <span class="piece-corps"><span class="piece-titre">n° F2026-000014</span><span class="piece-date">22 octobre 2026</span>
+                    <span class="piece-corps"><span class="piece-haut"><span class="piece-titre">Taille de haie de thuyas</span><span class="piece-somme">1 380,00 €</span></span><span class="piece-date">n° F2026-000014, 22 octobre 2026</span>
                       <span class="piece-reception"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg>Réception confirmée le <b>22/10</b></span></span>
                     <svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg>
                   </button>
                   <button class="piece touche" type="button" data-ouvre="feuille-piece" data-titre="n° F2026-000004" data-jour="19 juin 2026">
-                    <span class="piece-corps"><span class="piece-titre">n° F2026-000004</span><span class="piece-date">19 juin 2026</span>
+                    <span class="piece-corps"><span class="piece-haut"><span class="piece-titre">Entretien de printemps</span><span class="piece-somme">640,00 €</span></span><span class="piece-date">n° F2026-000004, 19 juin 2026</span>
                       <span class="piece-reception">Ouverte le <b>20/06</b></span></span>
                     <svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg>
                   </button>
@@ -280,6 +286,7 @@ a.coordonnee { text-decoration: none; }
   <section class="pl-notes">
     <h2>Ce qui change</h2>
     <ul>
+      <li>Chaque devis et chaque facture montre son titre et son montant TTC ; le numéro et la date passent dessous. Votre demande du 28 octobre.</li>
       <li>Plus d'encadré doré autour du client.</li>
       <li>Dernier devis, Nouveau devis et Contrat d'entretien restent à leur place, avec leur dessin et leur mot, sans encadré : le premier en vert, les deux autres en doré.</li>
       <li>Toucher le téléphone lance l'appel, toucher l'adresse ouvre le plan.</li>
