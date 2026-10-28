@@ -36,7 +36,7 @@
 // final, pas un point de départ.
 
 import { lireCaracteristiques } from "./prestation-structuree";
-import { libelleEnrichi } from "./questions-chiffrage";
+import { debutsDUnLibelleEnrichi } from "./questions-chiffrage";
 
 /** Une prestation déjà en base, réduite à ce qui sert au rapprochement. */
 export type PrestationExistante = {
@@ -59,8 +59,11 @@ export type PrestationExistante = {
  * La prestation déjà écrite qui correspond à ce libellé, ou `null`.
  *
  * **Le séparateur reconnu est celui de `libelleEnrichi`**, et il n'est pas
- * recopié ici : deux écritures du même tiret finiraient par diverger, et le
- * rapprochement cesserait de fonctionner sans qu'aucune erreur ne le dise.
+ * recopié ici : deux écritures du même séparateur finiraient par diverger, et
+ * le rapprochement cesserait de fonctionner sans qu'aucune erreur ne le dise.
+ * C'est arrivé le 28 octobre 2026 : le préfixe se déduisait en coupant le
+ * dernier caractère du libellé enrichi, et le passage du tiret aux
+ * parenthèses l'a rendu faux sans un mot.
  */
 export function prestationCorrespondante(
   libelle: string,
@@ -69,14 +72,13 @@ export function prestationCorrespondante(
   const cherche = libelle.trim().toLowerCase();
   if (!cherche) return null;
 
-  // Le préfixe d'enrichissement, demandé à la source qui l'écrit.
-  const avecTiret = libelleEnrichi(libelle, ["·"]).trim().toLowerCase();
-  const prefixe = avecTiret.slice(0, avecTiret.length - 1); // « … — »
+  // Les débuts d'un libellé enrichi, demandés à la source qui l'écrit.
+  const debuts = debutsDUnLibelleEnrichi(libelle).map((d) => d.toLowerCase());
 
   return (
     existantes.find((p) => {
       const actuel = p.libelle.trim().toLowerCase();
-      return actuel === cherche || actuel.startsWith(prefixe);
+      return actuel === cherche || debuts.some((d) => actuel.startsWith(d));
     }) ?? null
   );
 }

@@ -470,7 +470,7 @@ function precisionLisibleParId(
 /**
  * Le libellé de la prestation, augmenté de ce qu'il a répondu.
  *
- *     Abattage d'un chêne mort — démontage avec rétention, ⌀ 70 cm
+ *     Abattage d'un chêne mort (démontage avec rétention, ⌀ 70 cm)
  *
  * **Sans ça, l'arrêt ne laisserait aucune trace visible.** Une précision
  * obtenue puis rangée dans un coin de la base ne changerait rien à ce qu'il
@@ -495,4 +495,15 @@ export function libelleEnrichi(libelle: string, precisionsLisibles: readonly str
     .filter((p) => p !== "" && !base.toLowerCase().includes(p.toLowerCase()));
   if (aAjouter.length === 0) return base;
   return `${base} (${aAjouter.join(", ")})`;
+}
+
+/**
+ * Comment commence un libellé que `libelleEnrichi` a augmenté : la forme
+ * d'aujourd'hui, et celle d'avant le 28 octobre 2026 (« base — précisions »),
+ * quittée pour sa règle des tirets. Ces libellés-là vivent encore en base : un
+ * rejeu qui ne les reconnaîtrait plus créerait un second arbre pour le même.
+ */
+export function debutsDUnLibelleEnrichi(libelle: string): string[] {
+  const base = libelle.trim();
+  return [`${base} (`, `${base} — `];
 }
