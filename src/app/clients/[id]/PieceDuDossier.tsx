@@ -3,7 +3,12 @@
 import { useState } from "react";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import { colors, font, surPlein } from "@/lib/design-tokens";
-import { adresseOuvrirLaPiece, nomDuFichierDeLaPiece, type PieceDuClient } from "@/lib/documents-du-client";
+import {
+  adresseOuvrirLaPiece,
+  lignesDeLaPiece,
+  nomDuFichierDeLaPiece,
+  type PieceDuClient,
+} from "@/lib/documents-du-client";
 import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
 
 /**
@@ -45,10 +50,13 @@ import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocum
 export default function PieceDuDossier({
   piece,
   premiere = false,
+  enRecherche = false,
 }: {
   piece: PieceDuClient;
   /** La première pièce du registre : pas de filet, les onglets en ont déjà un. */
   premiere?: boolean;
+  /** La loupe est tapée : les onglets sont partis, la ligne dit sa nature. */
+  enRecherche?: boolean;
 }) {
   const [feuilleOuverte, setFeuilleOuverte] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
@@ -96,6 +104,7 @@ export default function PieceDuDossier({
   // de faire retour ! »*. La règle vit dans `documents-du-client.ts`, que
   // l'assistant emploie aussi.
   const adresseOuvrir = adresseOuvrirLaPiece(piece);
+  const lignes = lignesDeLaPiece(piece);
 
   return (
     <>
@@ -126,21 +135,44 @@ export default function PieceDuDossier({
         }}
       >
         <span className="min-w-0 flex-1">
-          <span
-            data-atlas="piece-titre"
-            className="block truncate text-[18.5px] leading-[1.25]"
-            style={{ fontFamily: font.display, fontVariantNumeric: "lining-nums" }}
-          >
-            {piece.titre}
+          {/* **LE TITRE ET LE MONTANT — 28 octobre 2026**, sur sa planche
+              `appli/soignee/client.html` : *« le titre du devis visible, le
+              montant »*. Le titre en gras, le TTC à droite, le numéro descend
+              avec la date (`lignesDeLaPiece`). Un titre long passe à la ligne
+              plutôt que de se couper : il est ce qu'il vient lire. */}
+          <span className="flex items-baseline justify-between gap-3">
+            <span
+              data-atlas="piece-titre"
+              className="block min-w-0 break-words text-[18.5px] leading-[1.25]"
+              style={{ fontFamily: font.display, fontVariantNumeric: "lining-nums" }}
+            >
+              {lignes.gras}
+            </span>
+            {lignes.montant && (
+              <span
+                data-atlas="piece-montant"
+                className="flex-none whitespace-nowrap text-[15.5px] font-semibold"
+                style={{ color: colors.ink, fontVariantNumeric: "tabular-nums lining-nums" }}
+              >
+                {lignes.montant}
+              </span>
+            )}
           </span>
           {/* **UNE DATE NE SE MET JAMAIS EN CAPITALES**, et elle s'écrit d'une
-              seule façon sur cet écran (`test-fiche-client-e2e`). */}
-          {piece.precision && (
+              seule façon sur cet écran (`test-fiche-client-e2e`). Pendant une
+              recherche, le mot doré devant dit de quoi il s'agit : les onglets
+              ne sont plus là pour le dire. */}
+          {(lignes.dessous || enRecherche) && (
             <span
               className="mt-0.5 block text-[14px] leading-[1.4]"
               style={{ color: colors.inkSoft, fontVariantNumeric: "tabular-nums" }}
             >
-              {piece.precision}
+              {enRecherche && (
+                <span data-atlas="piece-nature" style={{ color: colors.or, fontWeight: 600 }}>
+                  {lignes.mot}{" "}
+                </span>
+              )}
+              {lignes.dessous}
             </span>
           )}
           {/* **CE QUE LE CLIENT A FAIT DE SA FACTURE — sa réponse du 9 septembre

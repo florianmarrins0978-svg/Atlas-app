@@ -4,6 +4,11 @@
 dernière migration `drizzle/0152_retours_du_comptable.sql`
 
 ---
+## LA FICHE D'UN CLIENT : TITRE, MONTANT, PREMIÈRE TÂCHE ET LOUPE, SUR LA BRANCHE (28 octobre 2026)
+
+Branche `claude/quatre-planches-atlas-6hi21h`, d'après `appli/soignee/client.html` (*« tu peux coder, ne lance pas de batterie »*). Écran : `src/app/clients/[id]/` ; lecture : `fiche-client.ts` ; règles : `lignesDeLaPiece`, `src/lib/recherche-piece.ts` (`ARCHITECTURE.md` §528). Suites de domaine vertes, dont la loupe au navigateur ; **niveau 3, batterie non jouée, pas sur `main`**. Reste : la loupe de Vos clients, l'import CSV et Excel (`TODO.md`).
+
+---
 ## L'ATTESTATION DU COMPTABLE ET LE RENVOI À CORRIGER, SUR `main` (28 octobre 2026)
 
 Branche `claude/accountant-document-signature-2redc5`, d'après sa planche `appli/soignee/comptable-attestation.html` (*« tu peux coder, pas de batterie »*). Migration `drizzle/0151_attestations_du_comptable.sql` (expand : une table neuve, FORCE RLS, ni réécriture ni effacement). Règle : `src/lib/attestation-comptable.ts`. Serveur : `src/server/attestation-comptable.ts`, `src/server/pdf/attestation-comptable-pdf.ts`, `verification-comptable.ts`. Écrans : `src/app/comptable/[jeton]/` (`Attestation.tsx`, `Tampon.tsx`, la barre de `Verification.tsx`, la route `attestation/pdf`), Mes dossiers (la ligne de l'attestation, `VeilleDesNouvelles`), l'accueil (`CarteAttestation` dans `Notifications.tsx`), la route `termines/comptable/attestations/[id]/pdf`. Suites vertes ici : la règle (9), la base (8), le navigateur (7), et les deux suites voisines du comptable (14 et 7). **Sur `main` le 28 octobre**, batterie commune verte. `ARCHITECTURE.md` §523.

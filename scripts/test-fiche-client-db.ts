@@ -28,7 +28,7 @@ import { creerChantier, supprimerChantier } from "../src/server/repositories/cha
 import { creerClient } from "../src/server/repositories/clients";
 import { ajouterLignePrix } from "../src/server/repositories/lignes-prix";
 import { ajouterPrestation } from "../src/server/repositories/prestations";
-import { getOuCreerDevisBrouillon, envoyerDevis } from "../src/server/repositories/devis";
+import { getOuCreerDevisBrouillon, envoyerDevis, mettreAJourEnTeteDevis } from "../src/server/repositories/devis";
 import { terminerChantier, emettreFacture, getFacturePourChantier } from "../src/server/repositories/factures";
 import { noterPaiement } from "../src/server/repositories/paiements-facture";
 import { chargerFicheClient } from "../src/server/repositories/fiche-client";
@@ -232,6 +232,56 @@ async function main() {
       "1 prestation",
       `la fiche annonce « ${fiches[0].precision} » au lieu de ce qu'elle porte`
     );
+  });
+
+  // ── SA DEMANDE DU 28 OCTOBRE 2026 ────────────────────────────────────────
+  //
+  // Photo d'une autre appli à l'appui : *« le titre du devis visible, le
+  // montant »*, puis *« faut faire pareil pour les factures »*, et pour une
+  // fiche *« met la première tâche »*. Planche `appli/soignee/client.html`.
+  //
+  // **Lu en base, sous la RLS** : le titre et le montant sont ceux du papier
+  // ENVOYÉ, et la tâche celle que la fiche porte cochée. Un montage qui les
+  // poserait à la main passerait au vert sur une requête qui ne les lit pas.
+  await essai("chaque pièce porte son titre et son TTC, chaque fiche sa première tâche cochée", async () => {
+    await nettoyerBase();
+    const ctx = await monterEntreprise("Essai titres");
+    const client = await creerClient(ctx, { nom: "Mme Costa" });
+    const c = await creerChantier(ctx, { nom: "Haie", clientId: client.id });
+    await ajouterLignePrix(ctx, c.id, "Taille de haie de thuyas sur trois faces", "1150.00");
+    const d = await getOuCreerDevisBrouillon(ctx, c.id);
+    await mettreAJourEnTeteDevis(ctx, d.id, { titre: "Taille de haie de thuyas" });
+    await envoyerDevis(ctx, d.id);
+    await terminerChantier(ctx, c.id);
+    const f = await getFacturePourChantier(ctx, c.id);
+    await emettreFacture(ctx, f!.facture.id);
+    const sansTitre = await chantierFacture(ctx, client.id, "Tonte", [["Tonte", "100.00"]]);
+    const saFiche = await ficheEnvoyee(ctx, client.id, "2026-10-08", 2);
+
+    const fiche = await chargerFicheClient(ctx, client.id);
+    assert.ok(fiche, "la fiche est introuvable");
+    const leDevis = fiche.pieces.devis.find((p) => p.id === d.id);
+    assert.ok(leDevis, "le devis titré n'est pas dans la colonne");
+    assert.equal(leDevis.objet, "Taille de haie de thuyas", "le titre du devis ne monte pas jusqu'à la fiche");
+    assert.equal(leDevis.montant, "1380.00", "le TTC du devis ne monte pas jusqu'à la fiche");
+    // Le numéro reste ce qui DÉSIGNE la pièce : il nomme le fichier téléchargé.
+    assert.match(leDevis.titre, /^n° /, "le titre a pris la place du numéro");
+
+    const laFacture = fiche.pieces.factures.find((p) => p.id === f!.facture.id);
+    assert.ok(laFacture, "la facture titrée n'est pas dans la colonne");
+    assert.equal(laFacture.objet, "Taille de haie de thuyas", "le titre recopié sur la facture ne s'y lit pas");
+    assert.equal(laFacture.montant, "1380.00", "le TTC de la facture ne s'y lit pas");
+
+    // **Sans titre, rien ne s'invente** (migration 0092 : « jamais d'office »).
+    const autre = fiche.pieces.factures.find((p) => p.id === sansTitre.factureId);
+    assert.equal(autre?.objet ?? null, null, "un titre a été inventé pour une facture qui n'en a pas");
+    assert.equal(autre?.montant, "120.00");
+
+    const passage = await lirePassage(ctx, saFiche.id);
+    const premiere = passage!.lignes.filter((l) => l.faite)[0]?.libelle;
+    assert.ok(premiere, "le montage n'a coché aucune tâche");
+    assert.equal(fiche.pieces.fiches[0].objet, premiere, `la fiche ne porte pas sa première tâche (${fiche.pieces.fiches[0].objet})`);
+    assert.equal(fiche.pieces.fiches[0].montant ?? null, null, "une fiche n'a pas de prix");
   });
 
   // ── SA RÈGLE DU 23 AOÛT 2026 ─────────────────────────────────────────────

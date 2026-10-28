@@ -262,6 +262,7 @@ export default async function FicheClientPage({
           Ses trois catégories et son ordre du 20 août au soir, Devis, Facture,
           Fiche chantier. Le pourquoi entier est dans `RegistresDuDossier`. */}
       <RegistresDuDossier
+        nomClient={fiche.client.nom}
         registres={[
           { cle: "devis", libelle: "Devis", pieces: devis, rien: "Aucun devis parti" },
           { cle: "factures", libelle: "Factures", pieces: factures, rien: "Aucune facture émise" },

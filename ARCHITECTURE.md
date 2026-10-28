@@ -36441,3 +36441,17 @@ quatre points (migration 0149 pour E10, actions GitHub épinglées par empreinte
 §512). Les correctifs redondants de cette session (une seconde implémentation de `CRON_SECRET`, un
 second resserrement des permissions de `pages.yml`) ont été retirés au moment de la fusion plutôt
 que gardés en double — `main` n'a qu'une seule version de chacun.
+
+---
+## §528 : Ce qu'une pièce dit d'elle-même vit à côté de ce qui la désigne
+
+**Ses réponses du 28 octobre 2026**, devant `appli/soignee/client.html` : le titre et le TTC de chaque devis et facture sur la fiche d'un client, la première tâche cochée pour titre d'une fiche, et une loupe « Chercher un nom, un titre, un montant ».
+
+**`PieceDuClient.titre` n'a pas changé de sens, et c'est le point.** Il DÉSIGNE la pièce (« n° 2026-000024 », ou le jour d'une fiche) : `nomDuFichierDeLaPiece` en tire le nom du fichier téléchargé, `adresseOuvrirLaPiece` l'en-tête de la visionneuse, la feuille son titre. Y verser « Taille de haie » aurait fait arriver `devis.pdf` dans son téléphone, sans numéro. Ce que la pièce DIT d'elle-même passe donc par deux champs à part, `objet` et `montant`, et une seule règle les met en ligne (`lignesDeLaPiece`, `src/lib/documents-du-client.ts`) : l'objet en gras, le montant à droite, le titre et la précision dessous. Sans objet, la ligne d'avant, rien d'inventé (un devis n'a de titre que s'il en a donné un, migration 0092).
+
+**La loupe est une règle pure**, `src/lib/recherche-piece.ts`, pour la fiche et, demain, pour Vos clients : un texte se cherche mot à mot dans l'objet, le numéro et le nom du client (la case dit « un nom ») ; un montant (des chiffres seuls) par le début de ses euros, ou exactement s'il porte des centimes ; une fiche aussi par son jour écrit en entier (`dateCitee`), parce que l'écran porte « 8 oct. » et qu'il tape « octobre ». L'écran filtre avec elle, et `test-recherche-piece.ts` lit le composant pour s'en assurer.
+
+**La date garde sa forme courte** (« 3 oct. 2026 »), contre la planche qui écrivait le mois en entier : `test-fiche-client-e2e` tient une seule façon d'écrire une date sur cet écran.
+
+**La première tâche se lit dans la même requête que le compte des prestations**, par une sous-requête corrélée écrite `passages_entretien.id` en toutes lettres, pour la raison que le compte donne déjà : sans jointure, Drizzle rend `id` nu et la condition ne serait jamais vraie.
+

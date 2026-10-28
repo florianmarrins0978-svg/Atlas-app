@@ -138,6 +138,16 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
           select count(*)::int from ${lignesPassage} l
            where l.passage_id = passages_entretien.id and l.faite
         )`,
+        // **Sa première tâche cochée, son titre sur la fiche** (28 octobre
+        // 2026, « met la première tâche »). Le même ordre que la fiche reçue
+        // par le client (`lirePassage`), et le même nom écrit en toutes lettres
+        // que le compte juste au-dessus, pour la même raison.
+        premiere: sql<string | null>`(
+          select l.libelle from ${lignesPassage} l
+           where l.passage_id = passages_entretien.id and l.faite
+           order by l.ordre, l.libelle
+           limit 1
+        )`,
       })
       .from(passagesEntretien)
       .where(
@@ -160,6 +170,7 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
         // passages du même mois mieux que ne le ferait le nom du client, qui
         // est déjà celui de la fiche qu'on regarde.
         precision: `${f.faites} prestation${f.faites > 1 ? "s" : ""}`,
+        objet: f.premiere,
         // **L'adresse que le client a reçue**, et non un PDF : ce rapport n'est
         // figé nulle part en fichier. `format` le dit à la vignette.
         href: `/entretien/${f.jeton}`,
@@ -180,6 +191,7 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
         genre: piecesImportees.genre,
         numero: piecesImportees.numero,
         jour: piecesImportees.jour,
+        montantTtc: piecesImportees.montantTtc,
       })
       .from(piecesImportees)
       .where(and(eq(piecesImportees.clientId, clientId), eq(piecesImportees.statut, "rangee")));
@@ -189,6 +201,8 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
       titre: p.numero ? `n° ${p.numero}` : p.jour ? jourCourt(p.jour) : "Sans numéro",
       precision: p.jour ? jourCourt(p.jour) : null,
       jour: p.jour,
+      // Le TTC lu sur le PDF ; aucun titre, l'import n'en lit pas.
+      montant: p.montantTtc,
       href: `/api/pieces-importees/${p.genre}/${p.id}/pdf`,
     });
     const devisImportes = importees.filter((p) => p.genre === "devis").map(enPiece);
@@ -235,6 +249,7 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
           totalHt: factures.totalHt,
           totalTva: factures.totalTva,
           totalTtc: factures.totalTtc,
+          titre: factures.titre,
         })
         .from(factures)
         .where(and(inArray(factures.chantierId, ids), eq(factures.statut, "emise"))),
@@ -253,6 +268,8 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
           numero: devis.numeroCommercial,
           version: devis.numeroVersion,
           jour: devis.dateEmission,
+          titre: devis.titre,
+          totalTtc: devis.totalTtc,
         })
         .from(devis)
         .where(and(inArray(devis.chantierId, ids), eq(devis.statut, "envoye"))),
@@ -383,6 +400,9 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
         // dont la colonne porte déjà la date en titre.
         precision: jourCourt(d.jour),
         jour: d.jour,
+        // Ceux de la version envoyée, celle que le client a entre les mains.
+        objet: d.titre,
+        montant: d.totalTtc,
         href: `/api/devis/${d.id}/pdf`,
       })),
     ]);
@@ -414,6 +434,8 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
         titre: `n° ${f.numeroCommercial}`,
         precision: jourCourt(f.dateEmission),
         jour: f.dateEmission,
+        objet: f.titre,
+        montant: f.totalTtc,
         href: `/api/factures/${f.id}/pdf`,
         // Absente quand la facture n’est jamais partie : sans lien, il n’y a
         // rien à ouvrir, et « pas encore ouverte » accuserait le client d’un

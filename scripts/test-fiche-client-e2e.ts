@@ -753,6 +753,51 @@ async function main() {
     assert.equal(mesures.petits, 0, `${mesures.petits} cible(s) de moins de 28 px de haut : on les rate au doigt`);
   });
 
+  // ── La loupe du dossier — sa demande du 28 octobre 2026 ──────────────────
+  //
+  // *« Il faut rajouter la loupe pour faire une recherche par nom ou
+  // montant »*. **Par où il arrive** (`CLAUDE.md` §5 quater) : il tape dans la
+  // case, et lit ce qui reste. La règle elle-même est éprouvée sans écran
+  // (`test-recherche-piece.ts`) ; ici, c'est le geste.
+  await cas("la loupe trouve un montant, une fiche par sa tâche, et dit quand rien ne répond", async () => {
+    await page.goto(ficheDuClientMonte, { waitUntil: "networkidle" });
+    const loupe = page.locator('[data-atlas="chercher-piece"]');
+    assert.equal(await loupe.getAttribute("placeholder"), "Chercher un nom, un titre, un montant");
+    const lignes = () =>
+      page.evaluate(() =>
+        // `innerText` et non `textContent` : le titre, le montant et la ligne
+        // grise sont trois boîtes, que `textContent` collerait en un mot.
+        [...document.querySelectorAll<HTMLElement>('[role="tabpanel"]:not([hidden]) [data-atlas="piece"]')].map((b) =>
+          b.innerText.replace(/\s+/g, " ").trim()
+        )
+      );
+
+    // 340 € HT de taille de haie : 408 € TTC, et c'est le TTC qu'il lit.
+    await loupe.fill("408");
+    await attendre("la loupe filtre sur « 408 »", async () => (await lignes()).length === 1);
+    const [trouvee] = await lignes();
+    assert.match(trouvee, /408,00/, `« 408 » rend : ${trouvee}`);
+    assert.match(trouvee, /^n° .*Devis du /, `la ligne trouvée ne dit pas qu'elle est un devis : ${trouvee}`);
+    assert.equal(await page.locator('[data-atlas="registre"]').first().isVisible(), false, "les onglets restent pendant la recherche");
+
+    // La fiche d'entretien a pour titre sa première tâche cochée, celle que le
+    // montage a cochée : on la lit, plutôt que de supposer le modèle du jeu.
+    const tache = passageLu!.lignes[0].libelle;
+    await loupe.fill(tache);
+    await attendre(`la loupe filtre sur « ${tache} »`, async () => (await lignes()).length === 1);
+    const fiche = (await lignes())[0];
+    assert.ok(fiche.startsWith(`${tache} Fiche du 18 juin 2026`), `« ${tache} » rend : ${fiche}`);
+
+    await loupe.fill("introuvable");
+    await attendre("la phrase de l'absence", async () => (await page.locator('[data-atlas="rien-ne-repond"]').count()) === 1);
+    assert.equal(await page.locator('[data-atlas="rien-ne-repond"]').innerText(), "Rien ne répond à « introuvable ».");
+
+    // Effacer rend le dossier tel qu'il était : ses onglets, et son registre.
+    await page.locator('[data-atlas="effacer-recherche"]').click();
+    await attendre("les onglets reviennent", async () => page.locator('[data-atlas="registre"]').first().isVisible());
+    assert.ok((await lignes()).length >= 1, "le registre ouvert est vide après la recherche");
+  });
+
   // ── Le PDF de fiche chantier, le troisième document ───────────────────────
   //
   // **Ouvert POUR DE BON, pas seulement listé.** Un lien qui rend une erreur 500

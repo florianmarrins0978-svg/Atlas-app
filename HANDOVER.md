@@ -10,6 +10,11 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## LA FICHE D'UN CLIENT : TITRE, MONTANT ET LOUPE (28 octobre 2026)
+
+**Le piège :** `PieceDuClient.titre` désigne la pièce et nomme son fichier ; le titre d'un devis va dans `objet`, jamais dans `titre` (`ARCHITECTURE.md` §528). La loupe filtre avec `piecesQuiRepondent` ; la loupe de Vos clients doit reprendre la même règle, pas en écrire une seconde. Pour REGARDER la fiche ici, `npm run voir` ne se connecte plus (il remplit le formulaire avant qu'il soit prêt et l'action reçoit un formulaire vide) : attendre `networkidle` avant de taper.
+
+---
 ## L'ATTESTATION DU COMPTABLE (27 octobre 2026)
 
 Le comptable signe, sur son lien, une attestation qui se range avec le dossier (`ARCHITECTURE.md` §523). **Les pièges :** une attestation ne se réécrit jamais (la base ne rend que `vu_le`) : une nouvelle signature fait une nouvelle ligne, et c'est la dernière qui compte. Les comptes se refont au serveur sur les verdicts ; ne jamais les prendre du navigateur. Le courriel passe par Brevo et ne doit RIEN porter du dossier (ni libellé, ni montant, ni PDF) : `test-attestation-comptable.ts` le refuse. Pour regarder la page du comptable sur un serveur de développement, passer par `localhost` : sur `127.0.0.1`, Next refuse ses scripts et la page ne s'hydrate pas (aucun bouton ne répond).

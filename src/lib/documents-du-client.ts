@@ -1,6 +1,7 @@
 import type { ReceptionLisible } from "./reception-facture";
 import { adresseDeLaVisionneuse } from "./visionneuse-pdf";
 import { rapportDansLAppli } from "./rapport-dans-l-appli";
+import { enEuros } from "./euros";
 
 /**
  * Les pièces d'un client, rangées — la règle, sans base.
@@ -64,6 +65,21 @@ export type PieceDuClient = {
    * Absent vaut `"pdf"` : les devis et les factures ne changent pas.
    */
   format?: "pdf" | "page";
+  /**
+   * **Ce que la pièce dit d'elle-même** : le titre d'un devis ou d'une facture
+   * (migration 0092), la première tâche cochée d'une fiche. Sa demande du
+   * 28 octobre 2026, photo d'une autre appli à l'appui : *« le titre du devis
+   * visible, le montant »*.
+   *
+   * **À part de `titre`, et c'est voulu** : `titre` désigne la pièce (son
+   * numéro, ou son jour) et nomme le fichier qu'il télécharge
+   * (`nomDuFichierDeLaPiece`). Y verser « Taille de haie » ferait arriver un
+   * `devis.pdf` sans numéro dans son téléphone. Absent ou vide : la ligne garde
+   * son numéro en gras, comme avant.
+   */
+  objet?: string | null;
+  /** Le TTC, en décimal (« 1380.00 »). Absent : rien ne s'écrit à droite. */
+  montant?: string | null;
 };
 
 /**
@@ -312,6 +328,48 @@ export function jourDeLaLigne(iso: string, aujourdHui: string): string {
   if (!complet.endsWith(` ${anneeDuJour}`)) return complet;
   return complet.slice(0, -(anneeDuJour.length + 1));
 }
+
+/** Ce que la ligne d'une pièce montre, de haut en bas. */
+export type LignesDeLaPiece = {
+  /** La ligne en gras : son titre s'il en a un, sinon ce qui la désigne. */
+  gras: string;
+  /** Le montant écrit, à droite du gras. `null` : une fiche, ou un avoir. */
+  montant: string | null;
+  /** La ligne grise dessous. */
+  dessous: string | null;
+  /**
+   * Le mot que la loupe pose devant la ligne grise : sans onglet, c'est lui qui
+   * dit de quoi il s'agit (« Devis n° 2026-000024 », « Fiche du 8 oct. 2026 »).
+   */
+  mot: string;
+};
+
+/**
+ * La ligne d'une pièce sur la fiche du client, planche `appli/soignee/client.html`
+ * retenue le 28 octobre 2026 : le titre en gras, le montant à droite, le numéro
+ * et la date dessous ; pour une fiche, la première tâche, puis la date et le
+ * nombre de prestations.
+ *
+ * **Le numéro descend, il ne part pas** : c'est lui qu'on lui dicte au
+ * téléphone, et la loupe le trouve encore.
+ */
+export function lignesDeLaPiece(
+  piece: Pick<PieceDuClient, "titre" | "precision" | "href" | "objet" | "montant" | "format">
+): LignesDeLaPiece {
+  const objet = piece.objet?.trim() || null;
+  const nature = piece.format === "page" ? "fiche-chantier" : natureDeLaPiece(piece.href);
+  // La date suit le mot quand la ligne grise commence par elle : « Devis du
+  // 2 juin 2026 », mais « Devis n° 2026-000024, 3 oct. 2026 ».
+  const parLaDate = objet ? nature === "fiche-chantier" : nature !== "fiche-chantier";
+  return {
+    gras: objet ?? piece.titre,
+    montant: piece.montant ? enEuros(piece.montant) : null,
+    dessous: objet ? [piece.titre, piece.precision].filter(Boolean).join(", ") : piece.precision,
+    mot: `${MOT_DE_LA_LOUPE[nature]}${parLaDate ? " du" : ""}`,
+  };
+}
+
+const MOT_DE_LA_LOUPE = { facture: "Facture", avoir: "Avoir", devis: "Devis", "fiche-chantier": "Fiche" } as const;
 
 /** Ce que l'en-tête de la visionneuse écrit au-dessus du numéro. */
 export const NATURE_LISIBLE = { facture: "Facture", avoir: "Avoir", devis: "Devis", "fiche-chantier": "Fiche de chantier" } as const;

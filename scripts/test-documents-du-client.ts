@@ -6,6 +6,7 @@ import {
   jourCourt,
   jourDeLaLigne,
   nomDuFichierDeLaPiece,
+  lignesDeLaPiece,
   type PieceDuClient,
 } from "../src/lib/documents-du-client";
 
@@ -272,6 +273,52 @@ dire(
   jourDeLaLigne("pas-une-date", "2026-09-09") === "pas-une-date",
   "ce qui n'est pas une date ne se rogne pas",
 );
+
+// ─── CE QUE LA LIGNE D'UNE PIÈCE MONTRE ─────────────────────────────────────
+//
+// **Sa demande du 28 octobre 2026**, photo d'une autre appli à l'appui : *« le
+// titre du devis visible, le montant »*, puis *« faut faire pareil pour les
+// factures »*, et pour une fiche *« met la première tâche »*. Planche
+// `appli/soignee/client.html`.
+const devisTitre = {
+  titre: "n° 2026-000024",
+  precision: "3 oct. 2026",
+  href: "/api/devis/x/pdf",
+  objet: "Taille de haie de thuyas",
+  montant: "1380.00",
+};
+const lu = lignesDeLaPiece(devisTitre);
+dire(lu.gras === "Taille de haie de thuyas", "le titre du devis se lit en gras, à la place du numéro");
+dire(lu.montant === "1\u00a0380,00\u00a0€", `le montant TTC à droite, écrit comme partout (${lu.montant})`);
+dire(lu.dessous === "n° 2026-000024, 3 oct. 2026", "le numéro passe dessous, avec la date");
+dire(lu.mot === "Devis", "la loupe le dit devis");
+
+// **Un devis sans titre garde sa ligne d'aujourd'hui.** Le titre n'est jamais
+// mis d'office (migration 0092) : en inventer un, ce serait écrire sur la fiche
+// ce que le papier du client ne porte pas.
+const sansTitre = lignesDeLaPiece({ titre: "n° 2026-000012", precision: "2 juin 2026", href: "/api/devis/y/pdf", montant: "640.00" });
+dire(sansTitre.gras === "n° 2026-000012", "sans titre, le numéro reste en gras");
+dire(sansTitre.dessous === "2 juin 2026", "et la date dessous, sans redire le numéro");
+dire(sansTitre.montant === "640,00\u00a0€", "le montant s'y lit quand même");
+dire(sansTitre.mot === "Devis du", "la loupe dit « Devis du 2 juin 2026 »");
+
+// Un titre fait d'espaces n'est pas un titre.
+dire(lignesDeLaPiece({ ...devisTitre, objet: "   " }).gras === "n° 2026-000024", "un titre vide ne remplace pas le numéro");
+
+const fiche = lignesDeLaPiece({
+  titre: "8 oct. 2026",
+  precision: "6 prestations",
+  href: "/entretien/abc",
+  format: "page",
+  objet: "Tonte de la pelouse",
+});
+dire(fiche.gras === "Tonte de la pelouse", "une fiche a pour titre sa première tâche");
+dire(fiche.dessous === "8 oct. 2026, 6 prestations", "la date et le nombre de prestations dessous");
+dire(fiche.montant === null, "une fiche n'a pas de montant");
+dire(fiche.mot === "Fiche du", "la loupe dit « Fiche du 8 oct. 2026 »");
+
+const facture = lignesDeLaPiece({ titre: "n° F2026-000014", precision: "22 oct. 2026", href: "/api/factures/z/pdf", objet: "Taille de haie de thuyas", montant: "1380" });
+dire(facture.mot === "Facture" && facture.dessous === "n° F2026-000014, 22 oct. 2026", "une facture se lit comme un devis");
 
 console.log(echecs === 0 ? "\n✅ 0 échec." : `\n❌ ${echecs} échec(s).`);
 if (echecs > 0) process.exit(1);

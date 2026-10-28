@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { colors } from "@/lib/design-tokens";
 import type { PieceDuClient } from "@/lib/documents-du-client";
+import { piecesQuiRepondent, rienNeRepond } from "@/lib/recherche-piece";
+import { ChampRecherche } from "@/components/atlas/ChampRecherche";
 import PieceDuDossier from "./PieceDuDossier";
 
 /**
@@ -60,8 +62,15 @@ export type Registre = {
   rien: string;
 };
 
-export default function RegistresDuDossier({ registres }: { registres: Registre[] }) {
+export default function RegistresDuDossier({ registres, nomClient }: { registres: Registre[]; nomClient: string }) {
   const [actif, setActif] = useState(0);
+  const [saisie, setSaisie] = useState("");
+  const enRecherche = saisie.trim() !== "";
+  const unePiece = registres.some((r) => r.pieces.length > 0);
+  // Pendant une recherche, chaque registre ne garde que ce qui répond, dans son
+  // ordre ; un registre sans réponse ne se montre pas.
+  const trouves = registres.map((r) => piecesQuiRepondent(r.pieces, saisie, nomClient));
+  const rienTrouve = enRecherche && trouves.every((t) => t.length === 0);
   const onglets = useRef<(HTMLButtonElement | null)[]>([]);
   const trait = useRef<HTMLSpanElement>(null);
   const premier = useRef(true);
@@ -90,9 +99,34 @@ export default function RegistresDuDossier({ registres }: { registres: Registre[
 
   return (
     <>
+      {/* ─── LA LOUPE — 28 octobre 2026 ─────────────────────────────────────
+          *« Il faut rajouter la loupe pour faire une recherche par nom ou
+          montant »*, et la phrase qu'il a dictée pour la case. Au-dessus des
+          onglets, sur sa planche `appli/soignee/client.html` ; le champ est
+          celui de toutes les recherches d'Atlas. Pas de loupe sur un dossier
+          vide : il n'y aurait rien à chercher.
+
+          Sous 380 px, l'aide passe à 15 px : à 17 elle déborde la case d'un
+          téléphone de 360. Ce qu'il tape garde ses 17 px (sous 16, l'iPhone
+          agrandirait la page). */}
+      {unePiece && (
+        <div className="px-[22px] pt-[18px]">
+          <ChampRecherche
+            valeur={saisie}
+            onChange={setSaisie}
+            placeholder="Chercher un nom, un titre, un montant"
+            ariaLabel="Chercher un nom, un titre, un montant"
+            dataAtlas="chercher-piece"
+            className="max-[380px]:[&_input::placeholder]:text-[15px]"
+          />
+        </div>
+      )}
+
       {/* L'air au-dessus des onglets vaut les 42 px de la maquette : les 32 px
-          que l'onglet se réserve au-dessus de son mot en font déjà partie. */}
-      <div className="px-[22px] pt-4">
+          que l'onglet se réserve au-dessus de son mot en font déjà partie.
+          Pendant une recherche, les onglets s'effacent : tout le dossier
+          répond d'un coup, et chaque ligne dit sa nature. */}
+      <div className="px-[22px] pt-4" hidden={enRecherche}>
         <div
           className="relative flex"
           role="tablist"
@@ -146,7 +180,7 @@ export default function RegistresDuDossier({ registres }: { registres: Registre[
           id={`registre-${r.cle}`}
           role="tabpanel"
           aria-labelledby={`onglet-${r.cle}`}
-          hidden={i !== actif}
+          hidden={enRecherche ? trouves[i].length === 0 : i !== actif}
           className="px-[22px]"
         >
           {r.pieces.length === 0 ? (
@@ -154,10 +188,22 @@ export default function RegistresDuDossier({ registres }: { registres: Registre[
               {r.rien}
             </p>
           ) : (
-            r.pieces.map((piece, rang) => <PieceDuDossier key={piece.id} piece={piece} premiere={rang === 0} />)
+            trouves[i].map((piece, rang) => (
+              <PieceDuDossier key={piece.id} piece={piece} premiere={rang === 0} enRecherche={enRecherche} />
+            ))
           )}
         </div>
       ))}
+
+      {rienTrouve && (
+        <p
+          data-atlas="rien-ne-repond"
+          className="px-[22px] py-6 text-center text-[15px] leading-[1.5]"
+          style={{ color: colors.inkSoft }}
+        >
+          {rienNeRepond(saisie)}
+        </p>
+      )}
     </>
   );
 }
