@@ -153,6 +153,25 @@
 .en-cours .second { display: block; margin: 2px 0 10px; }
 .en-cours.fini .jauge { display: none; }
 .en-cours.fini .second { margin-bottom: 0; }
+/* La loupe de Vos clients (clients.html), au trait près. */
+.champ-recherche { display: flex; align-items: center; gap: 10px; min-height: 52px; margin: 0 0 14px;
+                   box-shadow: inset 0 -1.5px 0 var(--atlas-line); transition: box-shadow 200ms var(--courbe); }
+.champ-recherche:focus-within { box-shadow: inset 0 -2px 0 var(--atlas-or); }
+.champ-recherche .ico { color: var(--atlas-or); }
+.champ-recherche input { flex: 1; min-width: 0; height: 48px; border: 0; background: transparent; outline: none;
+                         font: 400 17px/1 var(--sans); color: var(--atlas-ink); }
+.champ-recherche input::placeholder { color: var(--atlas-muted); }
+/* Le soulignement doré dit déjà que la case est prise : le cadre de la boîte
+   commune (.ecran :focus-visible) s'y ajoutait, deux traits pour une case. */
+.champ-recherche input:focus-visible { outline: none; }
+.champ-recherche input::-webkit-search-cancel-button { display: none; }
+.effacer { width: 40px; height: 40px; display: grid; place-items: center; color: var(--atlas-inkSoft); }
+.effacer .ico { color: var(--atlas-inkSoft); }
+.resultats-titre { margin: 18px 2px 6px; font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--atlas-or); }
+.resultats-titre:first-child { margin-top: 4px; }
+.piece-client { display: block; margin-top: 2px; font-size: 14px; font-weight: 600; color: var(--atlas-ink); }
+mark { background: color-mix(in srgb, var(--atlas-or) 30%, transparent); color: inherit; border-radius: 3px; }
+.rien-trouve { padding: 22px 4px; text-align: center; font-size: 15.5px; color: var(--atlas-inkSoft); }
 .importer { margin-top: 28px; color: var(--atlas-or); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 70%, transparent); }
 .importer .ico { color: var(--atlas-or); }
 
@@ -278,6 +297,12 @@
             <!-- 4. Vos clients, avec les nouveaux -->
             <div data-si-etat="clients">
               <div class="plage en-cours" id="en-cours" hidden></div>
+              <label class="champ-recherche">
+                <svg class="ico" aria-hidden="true"><use href="#i-recherche"/></svg>
+                <input type="search" id="cherche" placeholder="Chercher un nom ou un montant" autocomplete="off" aria-label="Chercher un nom ou un montant">
+                <button class="effacer" type="button" id="effacer" hidden aria-label="Effacer la recherche"><svg class="ico ico-p" aria-hidden="true"><use href="#i-croix"/></svg></button>
+              </label>
+              <div id="resultats" hidden></div>
               <div class="plage groupe" id="liste"></div>
               <a class="bouton bouton-creux importer touche" href="#" data-va-etat="importer"><svg class="ico" aria-hidden="true"><use href="#i-importer"/></svg>Importer devis / facture</a>
             </div>
@@ -376,6 +401,7 @@
       <li>Un client qui n'existe pas encore est créé avec l'adresse et le téléphone lus dans le tableau. Une pièce sans nom attend qu'on le tape.</li>
       <li>Sur la fiche, devis et factures se rangent par date, chacun avec son titre et son montant TTC, le numéro dessous. Touchés, ils disent ce que le tableau donnait : il n'y a pas de PDF.</li>
       <li>Dix ans de pièces : le rangement continue sans vous, vous pouvez fermer l'appli.</li>
+      <li>La loupe de Vos clients cherche un nom, un titre de devis ou de facture, ou un montant : « 960 » trouve la facture de 960,00 €. Une pièce trouvée ouvre sa fiche, sur son onglet.</li>
       <li>Excel se lit comme un CSV, .xlsx comme .xls. Les PDF arrivent au même écran, groupés par client.</li>
     </ul>
     <h2>Ce qui ne bouge pas</h2>
@@ -798,9 +824,75 @@
       ouvrirFiche(a.getAttribute("data-client"));
     });
 
+    /* ─── La loupe : un nom, un titre, ou un montant ───
+       Sa demande du 28 octobre : « il faut rajouter la loupe pour faire une
+       recherche par nom ou montant ». Des lettres cherchent dans les noms
+       des clients et les titres des pièces ; des chiffres, dans les montants
+       (« 960 » trouve 960,00 € ; « 4180 » ou « 4 180 » trouve 4 180,00 € ;
+       avec des centimes, le montant exact). */
+    var plat = function (t) { return (t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); };
+    var echapper = function (t) { return t.replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
+    function surligner(texte, q) {
+      var i = plat(texte).indexOf(plat(q));
+      if (!q || i < 0) return echapper(texte);
+      return echapper(texte.slice(0, i)) + "<mark>" + echapper(texte.slice(i, i + q.length)) + "</mark>" + echapper(texte.slice(i + q.length));
+    }
+    function centimes(m) { var t = (m || "").replace(/[\s ]/g, "").replace(",", "."); return t ? Math.round(Number(t) * 100) : null; }
+    function montantRepond(ttc, q) {
+      var c = centimes(ttc); if (c === null) return false;
+      var net = q.replace(/[\s €]/g, "");
+      if (/[,.]\d/.test(net)) return c === Math.round(Number(net.replace(",", ".")) * 100);
+      return String(Math.floor(c / 100)).indexOf(net.replace(/[,.]$/, "")) === 0;
+    }
+    function chercher() {
+      var q = $("cherche").value.trim();
+      $("effacer").hidden = !q;
+      $("liste").hidden = !!q;
+      $("resultats").hidden = !q;
+      if (!q) return;
+      var chiffres = /^[\d\s ,.€]+$/.test(q);
+      var clientsTrouves = [], piecesTrouvees = [];
+      tousLesClients().forEach(function (c) {
+        if (!chiffres && plat(c.nom).indexOf(plat(q)) >= 0) clientsTrouves.push(c);
+        piecesDe(c).forEach(function (x) {
+          var oui = chiffres ? montantRepond(x.ttc, q) : plat(x.objet).indexOf(plat(q)) >= 0;
+          if (oui) piecesTrouvees.push({ client: c, piece: x });
+        });
+      });
+      piecesTrouvees.sort(function (a, b) { return b.piece.date.localeCompare(a.piece.date); });
+      var html = "";
+      if (clientsTrouves.length) {
+        html += '<p class="resultats-titre">' + clientsTrouves.length + (clientsTrouves.length > 1 ? " clients" : " client") + '</p><div class="plage groupe">' +
+          clientsTrouves.map(function (c) {
+            return '<a class="client touche" href="#" data-client="' + c.id + '"><span class="initiales">' + initiales(c.nom) + '</span><span class="client-corps"><span class="client-nom">' + surligner(c.nom, q) + "</span>" +
+              (c.lieu ? '<span class="client-lieu">' + echapper(c.lieu) + "</span>" : "") + '</span><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></a>';
+          }).join("") + "</div>";
+      }
+      if (piecesTrouvees.length) {
+        var nbFactures = piecesTrouvees.filter(function (t) { return t.piece.type === "facture"; }).length, nbDevis = piecesTrouvees.length - nbFactures;
+        var compte = !nbDevis ? nbFactures + (nbFactures > 1 ? " factures" : " facture") : !nbFactures ? nbDevis + " devis" : piecesTrouvees.length + " devis et factures";
+        html += '<p class="resultats-titre">' + compte + '</p><div class="plage groupe">' +
+          piecesTrouvees.map(function (t) {
+            var x = t.piece, ref = (x.type === "facture" ? "Facture" : "Devis") + " n° " + x.num + ", " + jour(x.date);
+            return '<button class="piece touche" type="button" data-client-piece="' + t.client.id + '" data-type="' + x.type + '"><span class="piece-corps"><span class="piece-haut"><span class="piece-titre">' +
+              (chiffres ? echapper(x.objet || ref) : surligner(x.objet || ref, q)) + "</span>" + (x.ttc ? '<span class="piece-somme">' + (chiffres ? "<mark>" + echapper(x.ttc) + " €</mark>" : echapper(x.ttc) + " €") + "</span>" : "") +
+              '</span><span class="piece-date">' + echapper(ref) + '</span><span class="piece-client">' + echapper(t.client.nom) + '</span></span><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></button>';
+          }).join("") + "</div>";
+      }
+      $("resultats").innerHTML = html || '<p class="rien-trouve">Rien ne répond à « ' + echapper(q) + " ».</p>";
+    }
+    $("cherche").addEventListener("input", chercher);
+    $("effacer").addEventListener("click", function (e) { e.preventDefault(); $("cherche").value = ""; chercher(); $("cherche").focus(); });
+    $("resultats").addEventListener("click", function (e) {
+      var c = e.target.closest("[data-client]");
+      if (c) { e.preventDefault(); ouvrirFiche(c.getAttribute("data-client")); return; }
+      var p = e.target.closest("[data-client-piece]");
+      if (p) ouvrirFiche(p.getAttribute("data-client-piece"), p.getAttribute("data-type") === "facture" ? "factures" : "devis");
+    });
+
     /* ─── La fiche : ses pièces, la plus récente d'abord ─── */
     function piecesDe(c) { return (c.pieces || []).concat(ajouts[c.id] || []); }
-    function ouvrirFiche(id) {
+    function ouvrirFiche(id, surRegistre) {
       ouvert = tousLesClients().filter(function (c) { return c.id === id; })[0];
       $("fiche-nom").textContent = ouvert.nom;
       $("fiche-coord").innerHTML = (ouvert.lieu ? '<span class="coordonnee"><svg class="ico" aria-hidden="true"><use href="#i-lieu"/></svg>' + ouvert.lieu + "</span>" : "") +
@@ -812,7 +904,7 @@
         '<span class="tuile-geste tuile-or touche"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Nouveau devis</span>' +
         '<span class="tuile-geste tuile-or touche"><svg class="ico" aria-hidden="true"><use href="#i-calendrier"/></svg>Contrat d\'entretien</span>';
       var p = piecesDe(ouvert);
-      registre = p.some(function (x) { return x.type === "devis"; }) ? "devis" : p.length ? "factures" : "devis";
+      registre = surRegistre || (p.some(function (x) { return x.type === "devis"; }) ? "devis" : p.length ? "factures" : "devis");
       dessinerRegistre();
       aller("fiche");
     }
