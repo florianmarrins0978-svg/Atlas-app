@@ -217,7 +217,7 @@ async function main() {
     const restantes = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => tx.select().from(piecesImportees));
     assert.deepEqual(restantes, [], "la pièce importée a survécu à son client");
     const enFile = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) =>
-      tx.select().from(fichiersAPurger).where(inArray(fichiersAPurger.storageKey, [avant.cle]))
+      tx.select().from(fichiersAPurger).where(inArray(fichiersAPurger.storageKey, [avant.cle ?? ""]))
     );
     assert.equal(enFile.length, 1, "le fichier de la pièce n'est pas mis en file de purge");
   });

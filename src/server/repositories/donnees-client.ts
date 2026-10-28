@@ -357,8 +357,9 @@ export async function effacerClient(
       .delete(piecesImportees)
       .where(and(eq(piecesImportees.clientId, clientId), eq(piecesImportees.entrepriseId, ctx.entrepriseId)))
       .returning({ cle: piecesImportees.fichierCle });
+    // Une ligne de tableau n'a pas de fichier à purger (migration 0154).
     for (const { cle } of importees) {
-      await tx.insert(fichiersAPurger).values({ storageKey: cle });
+      if (cle) await tx.insert(fichiersAPurger).values({ storageKey: cle });
     }
     detail.piecesImportees = importees.length;
 

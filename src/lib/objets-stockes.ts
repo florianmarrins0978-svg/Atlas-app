@@ -222,7 +222,9 @@ export const COLONNES_OBJET: readonly ColonneObjet[] = [
     table: "pieces_importees",
     colonne: "fichier_cle",
     quoi: "un devis ou une facture importés d'un autre logiciel",
-    // Une pièce importée naît avec son fichier (NOT NULL) : son absence est une perte.
+    // Une pièce importée en PDF naît avec son fichier : son absence est une
+    // perte. Une ligne de tableau n'en a aucun (NULL, migration 0154), et une
+    // clé vide n'est pas relevée (`requeteDesCles`).
     absenceNormale: false,
   },
   // Le dossier du comptable rangé et son bilan (migration 0144, 24 octobre

@@ -4111,6 +4111,14 @@ export const envoisPieces = pgTable("envois_pieces", {
   attendues: integer("attendues").notNull(),
   clientsCrees: uuid("clients_crees").array().notNull().default(sql`'{}'::uuid[]`),
   rangeLe: timestamp("range_le", { withTimezone: true }),
+  /**
+   * Ce qu'un tableau a écrit dans des cases VIDES de fiches déjà là (migration
+   * 0154), pour qu'« Annuler » les vide à nouveau si personne n'y a touché.
+   */
+  casesCompletees: jsonb("cases_completees")
+    .$type<{ clientId: string; champ: "adresse" | "telephone"; valeur: string }[]>()
+    .notNull()
+    .default(sql`'[]'::jsonb`),
   createdBy: uuid("created_by").references(() => users.id),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -4124,7 +4132,8 @@ export const piecesImportees = pgTable("pieces_importees", {
     .references(() => entreprises.id, { onDelete: "cascade" }),
   envoiId: uuid("envoi_id").notNull(),
   empreinte: text("empreinte").notNull(),
-  fichierCle: text("fichier_cle").notNull(),
+  /** `null` : une ligne de tableau, sans PDF (migration 0154). */
+  fichierCle: text("fichier_cle"),
   fichierNom: text("fichier_nom"),
   statut: text("statut", { enum: STATUTS_PIECE_IMPORTEE }).notNull().default("a_lire"),
   lectureCommenceeLe: timestamp("lecture_commencee_le", { withTimezone: true }),
@@ -4133,6 +4142,10 @@ export const piecesImportees = pgTable("pieces_importees", {
   jour: date("jour"),
   montantTtc: numeric("montant_ttc", { precision: 12, scale: 2 }),
   nomLu: text("nom_lu"),
+  /** Le titre lu dans la colonne « Objet » d'un tableau (migration 0154). */
+  objet: text("objet"),
+  /** L'adresse de son chantier, quand elle n'est pas celle du client (migration 0154). */
+  adresseChantier: text("adresse_chantier"),
   clientId: uuid("client_id"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
