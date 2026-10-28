@@ -19,9 +19,9 @@ import type { NomCharte } from "@/lib/chartes";
 import CouleursDuPlanning from "./CouleursDuPlanning";
 import { cleCreneau, type Creneau, type JourIso } from "@/lib/disponibilites";
 import { demiJourneesAPoser } from "@/lib/creneaux-chantier";
-import { fusionnerAbsences } from "@/lib/absences-equipe";
+import { autourDuJour, fusionnerAbsences, gesteDuJour, type MomentDuJour } from "@/lib/absences-equipe";
 import { cocheRefusee, joursDeLaPastille, type ChantierPourAbsence } from "@/lib/equipe-absente";
-import { noterAbsenceAction, retirerAbsenceAction } from "@/app/reglages/actions";
+import { absenceDuJourAction } from "@/app/reglages/actions";
 import { masquerRappelAgendaAction } from "@/app/reglages/agenda/actions";
 import type { BandeauAgenda } from "@/lib/agenda-externe";
 import { jourAbrege, jourLisibleCourt, MOIS_LONGS } from "@/lib/mois";
@@ -550,46 +550,63 @@ export default function PlanningClient({
   );
 
   /**
-   * Fermer une journée pour une personne — une absence d'UN jour.
+   * L'état d'une personne pour UN jour : présente, ou absente le matin,
+   * l'après-midi ou la journée — la feuille « Salarié absent », sa planche C
+   * du 27 octobre 2026.
+   *
+   * **Seul ce jour bouge.** La version d'avant fermait par une absence d'un
+   * jour et rouvrait en retirant la LIGNE : une semaine notée dans Réglages,
+   * Équipe disparaissait d'un appui sur un seul jour, et ses dates
+   * redevenaient proposables au client. L'écran devance le serveur avec la
+   * même règle que lui (`gesteDuJour`), puis prend les lignes qu'il a écrites.
    *
    * **Optimiste, comme le reste du planning** : le doigt doit voir tout de
-   * suite. Si le serveur refuse, on retire la ligne posée d'avance plutôt que
-   * de laisser un jour barré qui ne l'est pas — un jour qu'il croit fermé et
-   * qui part chez un client est exactement ce qu'on cherche à éviter.
+   * suite. Si le serveur refuse, on remet ce qui était là plutôt que de
+   * laisser un jour barré qui ne l'est pas — un jour qu'il croit fermé et qui
+   * part chez un client est exactement ce qu'on cherche à éviter.
    */
-  const fermerLeJour = useCallback(
-    async (jour: JourIso, rang: number, quand: "matin" | "apres_midi" | null = null) => {
-      const provisoire: AbsenceDuPlanning = {
-        id: `provisoire-${rang}-${jour}`,
-        equipeId: `provisoire-${rang}`,
+  const poserLeJour = useCallback(
+    async (jour: JourIso, rang: number, moment: MomentDuJour | null) => {
+      const siennes = absencesVues.filter((a) => a.rang === rang);
+      const { aRetirer, aPoser } = gesteDuJour(siennes, jour, moment);
+      const retirees = new Set(aRetirer);
+      const avant = siennes.filter((a) => retirees.has(a.id));
+      const provisoires: AbsenceDuPlanning[] = aPoser.map((p, i) => ({
+        id: `provisoire-${rang}-${jour}-${i}-${Date.now()}`,
+        equipeId: p.depuis?.equipeId ?? `provisoire-${rang}`,
         rang,
-        premierJour: jour,
-        dernierJour: jour,
-        // **Une demi-journée n'occupe qu'une moitié**, y compris pendant la
-        // seconde où l'écran devance le serveur : sans ces deux bornes, la
-        // journée entière se barrerait puis se corrigerait sous ses yeux.
-        premierDemi: quand ?? "matin",
-        dernierDemi: quand ?? "apres_midi",
-      };
-      setAbsencesVues((v) => [...v, provisoire]);
+        premierJour: p.premierJour,
+        dernierJour: p.dernierJour,
+        premierDemi: p.premierDemi,
+        dernierDemi: p.dernierDemi,
+      }));
+      const idsProvisoires = new Set(provisoires.map((a) => a.id));
+      setAbsencesVues((v) => [...v.filter((a) => !retirees.has(a.id)), ...provisoires]);
 
-      const formulaire = new FormData();
-      formulaire.set("rang", String(rang));
-      formulaire.set("premierJour", jour);
-      formulaire.set("dernierJour", jour);
-      // Rien à envoyer pour une journée entière : le serveur met ses valeurs
-      // par défaut, et le geste courant reste exactement ce qu'il était.
-      if (quand) {
-        formulaire.set("premierDemi", quand);
-        formulaire.set("dernierDemi", quand);
+      const r = await absenceDuJourAction(rang, jour, moment);
+
+      if (!r.ok) {
+        setAbsencesVues((v) => [
+          ...v.filter((a) => !idsProvisoires.has(a.id)),
+          ...avant.filter((a) => !v.some((x) => x.id === a.id)),
+        ]);
+        return;
       }
-      const r = await noterAbsenceAction(formulaire);
-
-      setAbsencesVues((v) =>
-        r.ok
-          ? v.map((a) => (a.id === provisoire.id ? { ...a, id: r.id } : a))
-          : v.filter((a) => a.id !== provisoire.id)
-      );
+      // Ce que le serveur a retiré part aussi : un geste suivant, parti avant
+      // cette réponse, a pu prendre les lignes provisoires pour les siennes.
+      const parties = new Set([...idsProvisoires, ...r.retirees]);
+      setAbsencesVues((v) => [
+        ...v.filter((a) => !parties.has(a.id)),
+        ...r.posees.map((a) => ({
+          id: a.id,
+          equipeId: a.equipeId,
+          rang: a.rang,
+          premierJour: a.premierJour,
+          dernierJour: a.dernierJour,
+          premierDemi: a.premierDemi,
+          dernierDemi: a.dernierDemi,
+        })),
+      ]);
 
       // ─── CE QUE LE CONGÉ VIENT DE DÉFAIRE SE REPEINT ICI ────────────────
       // **Sans cette ligne, l'écran MENT jusqu'au prochain rechargement.** Le
@@ -604,7 +621,7 @@ export default function PlanningClient({
       // expliquerait ce que l'écran montre déjà (`CLAUDE.md` §3). Aux
       // Réglages, où rien de tout cela n'est visible, c'est l'inverse — et
       // c'est là que la phrase est écrite.
-      if (r.ok && r.chantiersLiberes.length > 0) {
+      if (r.chantiersLiberes.length > 0) {
         const liberes = new Set(r.chantiersLiberes.map((c) => c.id));
         setChantiers((liste) =>
           liste.map((c) =>
@@ -622,18 +639,12 @@ export default function PlanningClient({
         );
       }
     },
-    []
+    [absencesVues]
   );
 
-  /** Rouvrir : on retire la ligne, et on la remet si le serveur n'a pas suivi. */
-  const rouvrirLeJour = useCallback(
-    async (id: string) => {
-      const retiree = absencesVues.find((a) => a.id === id);
-      if (!retiree) return;
-      setAbsencesVues((v) => v.filter((a) => a.id !== id));
-      const r = await retirerAbsenceAction(id);
-      if (!r.ok) setAbsencesVues((v) => [...v, retiree]);
-    },
+  /** Ce qui touche le jour ou ses deux voisins : la période écrite sous un nom. */
+  const absencesAutourDuJour = useCallback(
+    (jour: JourIso) => autourDuJour(absencesVues, jour),
     [absencesVues]
   );
 
@@ -1392,8 +1403,8 @@ export default function PlanningClient({
     absencesDuJour,
     cocheRefuseeDe,
     joursDeLaPastilleDe,
-    fermerLeJour,
-    rouvrirLeJour,
+    absencesAutourDuJour,
+    poserLeJour,
     ouvert,
     setOuvert,
     feuille,

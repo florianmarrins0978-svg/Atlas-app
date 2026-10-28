@@ -16,8 +16,13 @@ import { nommerEquipe, poserPhotoSalarie } from "@/server/repositories/equipes";
 import { enregistrerObjet, supprimerObjet } from "@/server/storage";
 import { preparerPhotoEntrante } from "@/server/photo-entrante";
 import { logger } from "@/server/logger";
-import { noterAbsenceEquipe, retirerAbsenceEquipe } from "@/server/repositories/absences-equipe";
-import { phraseDuRefus, refusDeLAbsence } from "@/lib/absences-equipe";
+import {
+  absenceDuJour,
+  noterAbsenceEquipe,
+  retirerAbsenceEquipe,
+  type AbsenceEnregistree,
+} from "@/server/repositories/absences-equipe";
+import { phraseDuRefus, refusDeLAbsence, type MomentDuJour } from "@/lib/absences-equipe";
 import { versionExecutee } from "@/server/version-executee";
 import { issueApresMiseAJour, lireIssueMigrations } from "@/lib/issue-mise-a-jour";
 import { estBancDEssai } from "@/profil-banc";
@@ -437,6 +442,38 @@ export async function retirerAbsenceAction(id: string): Promise<{ ok: boolean }>
   await exigerFonction(ctx, "absences", "retirer l'absence d'une équipe");
   const ligne = await retirerAbsenceEquipe(ctx, id);
   return { ok: Boolean(ligne) };
+}
+
+/**
+ * L'état d'une personne pour UN jour du planning — la feuille « Salarié
+ * absent », sa planche C du 27 octobre 2026.
+ *
+ * **Seul ce jour bouge** : une période qui le traverse se coupe autour de lui
+ * (`absenceDuJour`). Les refus se rendent, comme pour `noterAbsenceAction`.
+ */
+export type ResultatAbsenceDuJour =
+  | { ok: true; retirees: string[]; posees: AbsenceEnregistree[]; chantiersLiberes: { id: string; nom: string }[] }
+  | { ok: false; raison: string };
+
+const MOMENTS_DU_JOUR = ["matin", "apres_midi", "journee"] as const;
+
+export async function absenceDuJourAction(
+  rang: number,
+  jour: string,
+  moment: MomentDuJour | null
+): Promise<ResultatAbsenceDuJour> {
+  const refus = refusDeLAbsence(jour, jour);
+  if (refus) return { ok: false, raison: phraseDuRefus(refus) };
+  // Un écran n'est pas une garde : un moment inconnu ne devient pas une journée.
+  if (moment !== null && !MOMENTS_DU_JOUR.includes(moment)) return { ok: false, raison: "Ce moment n\u2019existe pas." };
+
+  const ctx = await getCurrentCtx();
+  await exigerProprietaire(ctx, "noter l'absence d'une équipe");
+  await exigerFonction(ctx, "absences", "noter l'absence d'une équipe");
+
+  const r = await absenceDuJour(ctx, { rang, jour, moment });
+  if (!r) return { ok: false, raison: "Cette équipe n\u2019existe pas." };
+  return { ok: true, ...r };
 }
 
 /**

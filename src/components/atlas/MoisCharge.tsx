@@ -229,6 +229,12 @@ export default function MoisCharge({
 
   const saisir = (e: PointerEvent<HTMLDivElement>) => {
     if (e.pointerType === "mouse" && e.button !== 0) return;
+    // **Le rail ne glisse que sous un doigt posé SUR lui.** Une feuille montée
+    // sous `<body>` depuis une fiche du jour reste dans son arbre React, et
+    // ses appuis remontent jusqu'ici : le curseur de « Salarié absent ? »,
+    // glissé de côté, faisait tourner les mois et refermait la feuille
+    // (27 octobre 2026).
+    if (!(e.target instanceof Node) || !e.currentTarget.contains(e.target)) return;
     // Une bascule en cours : on ne reprend pas le rail au vol, sinon le mois
     // qu'on croit tenir n'est plus celui qui arrivera.
     if (enVol.current !== 0) return;

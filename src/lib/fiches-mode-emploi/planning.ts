@@ -16,6 +16,7 @@ const RELANCES = "src/app/planning/RelancesDuDevis.tsx";
 const ELEMENTS = "src/app/planning/ElementsDuPlanning.tsx";
 const ABSENCE = "src/app/planning/PasLaCeJour.tsx";
 const MOMENT = "src/app/planning/BasculeDuMoment.tsx";
+const PISTE = "src/app/planning/PisteAbsence.tsx";
 const FS = "src/app/planning/FicheDeSecurite.tsx";
 const FORM = "src/app/planning/fiche-de-securite/[chantierId]/FormulaireFicheDeSecurite.tsx";
 const TRAVAUX = "src/app/planning/TravauxAFaire.tsx";
@@ -256,14 +257,14 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
     intitule: "Noter qu'un salarié, ou soi même, est absent un jour",
     motsCles: ["absent", "absence", "malade", "conge", "vacances", "salarie", "repos", "indisponible", "manque"],
     geste:
-      "Ouvrez le jour, appuyez sur « Salarié absent ? » puis sur son nom. Il est absent toute la journée : " +
-      "touchez « Matin » ou « Après-midi » pour réduire.",
+      "Ouvrez le jour et appuyez sur « Salarié absent ? ». Sous son nom, glissez le curseur, ou touchez " +
+      "« Matin », « Après-midi » ou « Journée ».",
     reserve:
-      "Seul, sans salarié, le bouton s'appelle « Absent ? ». Pour plusieurs jours d'affilée : Réglages, Équipe.",
+      "Seul, sans salarié, le bouton s'appelle « Absent ? » et pose la journée d'un appui. Pour plusieurs jours d'affilée : Réglages, Équipe.",
     source: ABSENCE,
     // L'écran écrit une espace insécable avant le point d'interrogation.
-    preuves: ['"Salarié absent ?"', '"Absent ?"', 'data-atlas="qui-nest-pas-la"'],
-    ailleurs: [{ source: MOMENT, preuves: ['mot: "Journée"'] }],
+    preuves: ['"Salarié absent ?"', '"Absent ?"', 'data-atlas="feuille-absent"'],
+    ailleurs: [{ source: PISTE, preuves: ['mot: "Journée"', 'mot: "Présent"'] }, { source: MOMENT, preuves: ['mot: "Journée"'] }],
   },
   {
     id: "planning-absence-retirer",
@@ -273,9 +274,9 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
     motsCles: ["absence", "absent", "enlever", "supprimer", "annuler", "erreur", "revient", "present"],
     geste:
       "Ouvrez le jour : sur la ligne « Absent », appuyez sur la croix à droite. " +
-      "Ou « Salarié absent ? » puis « son nom, annuler ».",
+      "Ou « Salarié absent ? », puis ramenez le curseur sur la première case. Seul ce jour change.",
     source: ABSENCE,
-    preuves: ['data-atlas="retirer-absence"', "Supprimer l’absence de", ", annuler", "Absent"],
+    preuves: ['data-atlas="retirer-absence"', "Supprimer l’absence de", "Absent"],
   },
   {
     id: "planning-salarie-lecture",

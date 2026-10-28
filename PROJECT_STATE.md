@@ -20,6 +20,10 @@ Planche B retenue. Tous ses documents, à toucher sous la réponse : devis (et l
 Branche `lot/main-oeuvre-curseur`, d'après sa planche `appli/soignee/main-oeuvre-curseur.html` (palette Jardin, montant écrit à l'euro près). Écran : `src/app/chantiers/[id]/RepartirLaMainOeuvre.tsx`. Règles : `src/lib/main-oeuvre-dictee.ts` (`repartirMainOeuvre` garde les montants qu'il a réglés, `glisserLeJoint`, `ecrireUnMontant`). Jetons : `pastelsMainOeuvre`. Suites : `test-repartir-main-oeuvre.ts`, `test-main-oeuvre-dictee-db.ts`, `test-main-oeuvre-barre-e2e.ts`. **Sur `main` le 28 octobre**, batterie commune verte. `ARCHITECTURE.md` §526, `docs/main-oeuvre-curseur.md`.
 
 ---
+## SALARIÉ ABSENT, LA C, CODÉE (27 octobre 2026), PAS ENCORE SUR `main`
+
+Fait sur `lot/salarie-absent-c` : la feuille, la piste glissable, le geste d'un jour qui ne touche qu'à ce jour. Reste : la batterie entière (niveau 3), avec son accord, puis `main`. `ARCHITECTURE.md` §528.
+
 ## ARROSAGE : SON CROQUIS DU 27 OCTOBRE (27 octobre 2026)
 
 Coins tirés retirés des zones (`formes-du-dessin.ts`, `dessin-du-plan.ts`,

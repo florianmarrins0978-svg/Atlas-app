@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
 import { ADRESSE } from "./_adresse";
 import { MOIS_A_L_ECRAN } from "./_calendrier-e2e";
+import { pool } from "../src/server/db/client";
 
 // FERMER UN JOUR DEPUIS LE PLANNING — sa demande du 6 septembre 2026.
 //
@@ -21,6 +22,12 @@ import { MOIS_A_L_ECRAN } from "./_calendrier-e2e";
 // l'écran et non ce que la base porte — et un jour qu'il croit fermé et qui
 // part chez un client est exactement ce qu'on cherche à éviter.
 //
+// **DEPUIS LE 27 OCTOBRE 2026, LA FEUILLE C** (`appli/soignee/salarie-absent.html`) :
+// « Salarié absent ? » ouvre une feuille, une piste par salarié (Présent,
+// Matin, Après-midi, Journée), qui se touche ou se glisse. Et le geste d'un
+// jour ne touche qu'à ce jour : une semaine notée ailleurs garde ses autres
+// jours (le défaut qu'elle a trouvé, tenu aussi par `test-absence-d-un-jour-repo`).
+//
 // Usage : npm run test:e2e -- --seulement pas-la-ce-jour
 
 const BASE = ADRESSE;
@@ -39,6 +46,9 @@ async function cas(nom: string, verifier: () => Promise<void>) {
 /** Un jour à venir, choisi loin devant pour ne croiser aucun chantier de démonstration. */
 const dansCinqJours = new Date(Date.now() + 5 * 86_400_000).toISOString().slice(0, 10);
 const hier = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+const decale = (jours: number) => new Date(Date.parse(`${dansCinqJours}T00:00:00Z`) + jours * 86_400_000).toISOString().slice(0, 10);
+/** Le motif qui marque la semaine posée par cette suite, pour la retirer à coup sûr. */
+const MOTIF = "Semaine d'essai, suite pas-la-ce-jour";
 
 async function main() {
   const navigateur = await lancerNavigateur();
@@ -88,28 +98,30 @@ async function main() {
    * Une suite qui salit la base accuse la suivante (`CLAUDE.md` §5).
    */
   const rendreLeJourOuvert = async () => {
+    await pool.query(`DELETE FROM absences_equipe WHERE motif = $1`, [MOTIF]);
     await ouvrirLeJour(dansCinqJours);
-    // **On annule PAR OÙ IL ANNULE** — depuis le 10 septembre 2026, « Annuler »
-    // vit derrière le +, jamais à demeure à côté d'une absence posée. Entrer
-    // par une autre porte laisserait ce chemin-là sans contrôle.
-    const rouvrirIci = page.locator('[data-atlas="rouvrir-le-jour"]');
-    const posees = page.locator('[data-atlas="absence-posee"]');
-    for (let garde = 0; garde < 6 && (await posees.count()) > 0; garde++) {
-      if ((await rouvrirIci.count()) === 0) {
-        await page.locator('[data-atlas="fermer-le-jour"]').first().click();
-        await page.waitForTimeout(400);
-      }
-      if ((await rouvrirIci.count()) === 0) break;
-      await rouvrirIci.first().click();
+    for (let garde = 0; garde < 6 && (await posee.count()) > 0; garde++) {
+      await page.locator('[data-atlas="retirer-absence"]').first().click();
       await page.waitForTimeout(900);
     }
   };
 
   const fermer = page.locator('[data-atlas="fermer-le-jour"]');
-  const rouvrir = page.locator('[data-atlas="rouvrir-le-jour"]');
-  const qui = page.locator('[data-atlas="qui-nest-pas-la"]');
-  /** La ligne d'une absence déjà écrite : « Julien absent · matin ». */
+  const feuille = page.locator('[data-atlas="feuille-absent"]');
+  /** La ligne d'une absence déjà écrite : « Absent Julien matin ». */
   const posee = page.locator('[data-atlas="absence-posee"]');
+  const premierSalarie = page.locator('[data-atlas="salarie-du-jour"]').first();
+  const caseDe = (quand: string) => premierSalarie.locator(`[data-atlas="piste-quand"][data-quand="${quand}"]`);
+  const fermerLaFeuille = async () => {
+    await feuille.getByRole("button", { name: "Fermer", exact: true }).click();
+    await page.waitForTimeout(400);
+  };
+
+  // **Deux salariés, sinon la feuille n'existe pas** : seul, « Absent ? » pose
+  // la journée d'un appui (le dernier cas). Le réglage est posé ici plutôt que
+  // supposé, une autre suite le déplaçant, et il est rendu à la fin.
+  const avant = (await pool.query(`SELECT nombre_equipes, nombre_salaries FROM entreprises LIMIT 1`)).rows[0];
+  await pool.query(`UPDATE entreprises SET nombre_equipes = 2, nombre_salaries = 2`);
 
   await rendreLeJourOuvert();
 
@@ -194,115 +206,124 @@ async function main() {
     assert.ok(allure.hauteur >= 44, `le geste ne fait que ${Math.round(allure.hauteur)} px de haut`);
   });
 
-  let idFerme = false;
-
-  await cas("un appui ferme le jour, et le serveur l'a bien écrit", async () => {
+  await cas("le geste ouvre la feuille, une piste par salarié, Présent d'office", async () => {
+    await ouvrirLeJour(dansCinqJours);
     await fermer.click();
     await page.waitForTimeout(500);
-    // Avec au moins un salarié, Atlas demande QUI — c'est son mot du 6 septembre :
-    // « c'est pas les équipes, c'est le nom des salariés ».
-    if ((await qui.count()) > 0) {
-      const noms = await qui.allTextContents();
-      assert.ok(
-        noms.every((n) => n.trim().length > 0),
-        "un choix sans nom : l'écran propose un bouton muet"
-      );
-      await qui.first().click();
-    }
-    await page.waitForTimeout(1200);
-    assert.equal(
-      await posee.count(),
-      1,
-      "le jour ne s'annonce pas fermé après l'appui"
-    );
-    idFerme = true;
-
-    // LE point : on recharge, et la fermeture tient.
-    await ouvrirLeJour(dansCinqJours);
-    assert.equal(
-      await posee.count(),
-      1,
-      "rechargé, le jour est rouvert : l'écran l'avait barré sans que le serveur l'écrive"
-    );
+    assert.equal(await feuille.count(), 1, "« Salarié absent ? » n'ouvre pas la feuille");
+    const salaries = await page.locator('[data-atlas="salarie-du-jour"]').count();
+    assert.ok(salaries >= 2, `${salaries} salarié(s) dans la feuille : rien n'est mesuré`);
+    assert.equal(await caseDe("present").getAttribute("aria-checked"), "true", "le salarié n'est pas Présent d'office");
+    assert.equal((await caseDe("present").innerText()).trim(), "Présent");
+    // **Elle tient dans l'écran** (27 octobre 2026) : posée dans le rail des
+    // mois, elle se mesurait sur lui et sortait du téléphone par la gauche.
+    const boite = await page.locator('[data-atlas="feuille-absent"]').boundingBox();
+    const large = page.viewportSize()?.width ?? 0;
+    assert.ok(boite && boite.width > 100, "la feuille n'a pas de boîte mesurable : rien n'est mesuré");
+    assert.ok(boite.x >= 0 && boite.x + boite.width <= large, `la feuille sort de l'écran : de ${Math.round(boite.x)} à ${Math.round(boite.x + boite.width)} px sur ${large}`);
+    await fermerLaFeuille();
   });
 
-  // ─── L'INTERRUPTEUR, ET CE QU'IL ÉCRIT — 10 septembre 2026 ───────────────
-  //
-  // Sa demande : *« remets le bouton matin / aprem / journée ; une fois choisi,
-  // le bouton se cache »*, et *« à côté de Julien absent on marque matin, aprem
-  // ou journée en fonction de la sélection »*.
-  //
-  // **On entre par SA porte** (`CLAUDE.md` §5 quater) : on repose l'absence
-  // depuis le +, comme lui, plutôt que d'appeler la fonction qui restreint.
-  await cas("l'interrupteur restreint l'absence à une demi-journée, puis s'efface", async () => {
-    // **On repart d'un jour ouvert, puis on refait SON geste en entier.**
-    // L'interrupteur ne vit qu'à côté de l'absence qu'il vient de poser : le
-    // rouvrir demande donc de reposer, comme lui.
-    await rendreLeJourOuvert();
-    // **On recharge avant de refaire le geste.** Le ménage ci-dessus a ouvert
-    // la liste pour y trouver « Annuler » : appuyer sur le + la refermerait au
-    // lieu de poser, et l'on mesurerait un écran qu'il ne voit jamais.
+  await cas("un appui sur Journée ferme le jour, et le serveur l'a bien écrit", async () => {
     await ouvrirLeJour(dansCinqJours);
     await fermer.click();
     await page.waitForTimeout(500);
-    // **Avec des salariés, le + ouvre la liste et c'est le nom qui pose ; seul,
-    // le + pose directement.** Les deux chemins mènent au même interrupteur,
-    // et cette suite doit tenir sur les deux — le compte de démonstration n'a
-    // aucun salarié, celui du patron en a deux.
-    if ((await qui.count()) > 0) {
-      await qui.first().click();
-      await page.waitForTimeout(1200);
+    await caseDe("journee").click();
+    await page.waitForTimeout(1200);
+    assert.equal((await caseDe("present").innerText()).trim(), "Absent", "la première case dit encore Présent");
+    await fermerLaFeuille();
+    assert.equal(await posee.count(), 1, "le jour ne s'annonce pas fermé après l'appui");
+
+    await ouvrirLeJour(dansCinqJours);
+    assert.equal(await posee.count(), 1, "rechargé, le jour est rouvert : l'écran l'avait barré sans que le serveur l'écrive");
+    assert.equal(await posee.first().getAttribute("data-quand"), "journee");
+  });
+
+  await cas("le curseur se GLISSE au doigt jusqu'à l'après-midi", async () => {
+    await ouvrirLeJour(dansCinqJours);
+    await fermer.click();
+    await page.waitForTimeout(600);
+    // Du Présent... jusqu'à l'Après-midi, en restant appuyé : son geste du 27 octobre.
+    await caseDe("present").click();
+    await page.waitForTimeout(900);
+    const depart = await caseDe("present").boundingBox();
+    const arrivee = await caseDe("apres_midi").boundingBox();
+    assert.ok(depart && arrivee && depart.width > 20, "la piste n'a pas de boîte mesurable : rien n'est mesuré");
+    const y = depart.y + depart.height / 2;
+    await page.mouse.move(depart.x + depart.width / 2, y);
+    await page.mouse.down();
+    for (let i = 1; i <= 12; i++) {
+      await page.mouse.move(depart.x + depart.width / 2 + ((arrivee.x - depart.x) * i) / 12, y);
     }
-
-    const bascule = page.locator('[data-atlas="quand-absent"]');
-    assert.equal(await bascule.count(), 3, "l'interrupteur ne propose pas ses trois positions");
-    assert.equal(
-      await page.locator('[data-atlas="quand-absent"][data-quand="journee"]').getAttribute("aria-pressed"),
-      "true",
-      "l'interrupteur n'est pas allumé sur ce qui vient d'être écrit"
-    );
-
-    await page.locator('[data-atlas="quand-absent"][data-quand="matin"]').click();
+    assert.equal((await caseDe("present").innerText()).trim(), "Absent", "pendant le glissé, la première case ne dit pas Absent");
+    await page.mouse.up();
     await page.waitForTimeout(1400);
+    assert.equal(await caseDe("apres_midi").getAttribute("aria-checked"), "true", "le lâcher n'a pas retenu l'après-midi");
+    await fermerLaFeuille();
 
-    // **Il s'efface une fois choisi** : c'est sa demande, mot pour mot.
-    assert.equal(await bascule.count(), 0, "l'interrupteur reste après le choix");
-    // **Et la ligne DIT quand** — sinon le choix n'est visible nulle part.
-    assert.equal(
-      await posee.first().getAttribute("data-quand"),
-      "matin",
-      "la ligne de l'absence n'annonce pas la demi-journée choisie"
-    );
-    assert.match(
-      (await posee.first().innerText()).trim(),
-      /matin/,
-      "le moment n'est pas écrit à côté du nom"
-    );
-
-    // Et le serveur l'a écrit : on recharge.
     await ouvrirLeJour(dansCinqJours);
-    assert.equal(
-      await posee.first().getAttribute("data-quand"),
-      "matin",
-      "rechargé, l'absence a repris la journée entière"
-    );
+    assert.equal(await posee.first().getAttribute("data-quand"), "apres_midi", "rechargé, l'absence n'est pas l'après-midi");
+    assert.match((await posee.first().innerText()).trim(), /après-midi/, "le moment n'est pas écrit à côté du nom");
   });
 
-  // **ANNULER SE TROUVE DERRIÈRE LE +, et nulle part ailleurs** — sa demande du
-  // 10 septembre. Le mot ne reste plus sous les yeux à côté d'une absence
-  // posée ; ce contrôle prouve qu'on peut quand même défaire.
-  await cas("annuler se retrouve derrière le +, et le jour se rouvre", async () => {
-    if (!idFerme) throw new Error("le jour n'a jamais été fermé : rien à rouvrir");
+  await cas("ramener le curseur sur la première case le rend présent", async () => {
     await ouvrirLeJour(dansCinqJours);
-    assert.equal(await rouvrir.count(), 0, "« Annuler » traîne à l'écran sans qu'on ait ouvert le +");
     await fermer.click();
-    await page.waitForTimeout(400);
-    assert.ok((await rouvrir.count()) >= 1, "le + n'ouvre pas la liste où l'on annule");
-    await rouvrir.first().click();
+    await page.waitForTimeout(500);
+    await caseDe("present").click();
     await page.waitForTimeout(1200);
+    await fermerLaFeuille();
     await ouvrirLeJour(dansCinqJours);
     assert.equal(await posee.count(), 0, "rechargé, le jour est toujours fermé");
-    assert.equal(await fermer.count(), 1, "le geste de fermeture n'est pas revenu");
+  });
+
+  await cas("UNE SEMAINE notée ailleurs ne perd que CE jour", async () => {
+    // Le défaut du 27 octobre 2026 : « Julien, annuler » un mercredi effaçait
+    // toute sa semaine. On pose la semaine comme Réglages, Équipe la pose, sur
+    // le salarié de la première ligne, puis on le rend présent ce jour-là.
+    await ouvrirLeJour(dansCinqJours);
+    await fermer.click();
+    await page.waitForTimeout(500);
+    const rang = Number(await premierSalarie.getAttribute("data-rang"));
+    await caseDe("journee").click();
+    await page.waitForTimeout(1200);
+    await fermerLaFeuille();
+    const { rowCount } = await pool.query(
+      `UPDATE absences_equipe a SET premier_jour = $1, dernier_jour = $2, motif = $3
+         FROM equipes e
+        WHERE e.id = a.equipe_id AND e.rang = $4 AND a.deleted_at IS NULL
+          AND a.premier_jour = $5 AND a.dernier_jour = $5`,
+      [decale(-2), decale(2), MOTIF, rang, dansCinqJours]
+    );
+    assert.equal(rowCount, 1, `${rowCount} ligne(s) étendues à la semaine au lieu d'une : rien n'est mesuré`);
+
+    await ouvrirLeJour(dansCinqJours);
+    await fermer.click();
+    await page.waitForTimeout(500);
+    const periode = (await premierSalarie.locator('[data-atlas="periode-absent"]').innerText()).trim();
+    assert.match(periode, /^Du /, `la feuille ne dit pas la semaine : « ${periode} »`);
+    await caseDe("present").click();
+    await page.waitForTimeout(1400);
+
+    const { rows } = await pool.query(
+      `SELECT to_char(premier_jour, 'YYYY-MM-DD') AS premier, to_char(dernier_jour, 'YYYY-MM-DD') AS dernier
+         FROM absences_equipe a JOIN equipes e ON e.id = a.equipe_id
+        WHERE e.rang = $1 AND a.deleted_at IS NULL AND a.motif = $2
+        ORDER BY premier_jour`,
+      [rang, MOTIF]
+    );
+    assert.deepEqual(
+      rows,
+      [
+        { premier: decale(-2), dernier: decale(-1) },
+        { premier: decale(1), dernier: decale(2) },
+      ],
+      `la semaine n'a pas survécu au geste d'un seul jour : ${JSON.stringify(rows)}`
+    );
+    const reste = (await premierSalarie.locator('[data-atlas="periode-absent"]').innerText()).trim();
+    assert.match(reste, /^Absent /, `la feuille ne dit pas ce qui reste de la semaine : « ${reste} »`);
+    await fermerLaFeuille();
+    await pool.query(`DELETE FROM absences_equipe WHERE motif = $1`, [MOTIF]);
   });
 
   await cas("un jour PASSÉ ne se ferme pas", async () => {
@@ -310,13 +331,28 @@ async function main() {
     // pas (planche 98). Un geste possible est un geste qu'on fait par erreur.
     await ouvrirLeJour(hier);
     assert.equal(await fermer.count(), 0, "on peut fermer un jour déjà passé");
-    assert.equal(await qui.count(), 0, "on peut désigner un absent sur un jour déjà passé");
   });
 
   // On rend la base comme on l'a trouvée, quoi qu'il soit arrivé au-dessus.
+  await cas("SEUL, « Absent ? » pose la journée d'un appui, sans feuille, et la croix la retire", async () => {
+    await pool.query(`UPDATE entreprises SET nombre_salaries = 0`);
+    await ouvrirLeJour(dansCinqJours);
+    await fermer.click();
+    await page.waitForTimeout(1200);
+    assert.equal(await feuille.count(), 0, "seul, une feuille s'ouvre pour un appui qui n'a personne à désigner");
+    assert.equal(await posee.count(), 1, "seul, l'appui n'a pas fermé le jour");
+    assert.equal(await page.locator('[data-atlas="quand-absent"]').count(), 3, "seul, le choix du moment n'apparaît pas sous la ligne");
+    await page.locator('[data-atlas="retirer-absence"]').first().click();
+    await page.waitForTimeout(1200);
+    await ouvrirLeJour(dansCinqJours);
+    assert.equal(await posee.count(), 0, "seul, la croix n'a pas rouvert le jour");
+  });
+
+  await pool.query(`UPDATE entreprises SET nombre_equipes = $1, nombre_salaries = $2`, [avant?.nombre_equipes ?? 1, avant?.nombre_salaries ?? 0]);
   await rendreLeJourOuvert();
 
   await navigateur.close();
+  await pool.end();
   if (echecs > 0) {
     console.error(`\n❌ Fermer un jour — ${echecs} échec(s).`);
     process.exit(1);
