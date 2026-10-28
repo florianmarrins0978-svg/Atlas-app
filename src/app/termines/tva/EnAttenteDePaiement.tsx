@@ -660,7 +660,7 @@ function PayePar({ moyen, choisir }: { moyen: MoyenDePaiement; choisir: (m: Moye
       <span className="text-[14.5px] font-semibold" style={{ color: colors.inkSoft }}>
         Payé par
       </span>
-      <span className="relative block rounded-[4px]" style={{ backgroundColor: colors.cream }}>
+      <span className="relative block rounded-full" style={{ backgroundColor: colors.cream }}>
         <span
           aria-hidden
           className="flex min-h-[48px] items-center justify-between gap-2 px-3.5"
