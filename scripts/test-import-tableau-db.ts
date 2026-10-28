@@ -98,6 +98,14 @@ async function main() {
     const massifs = pieces.find((p) => p.numero === "F2025-0277")!;
     assert.equal(massifs.adresseChantier, "12 rue de la Paix, 44000 Nantes");
     assert.equal(pieces.find((p) => p.numero === "D2025-0244")!.adresseChantier, null);
+
+    // **Sur sa fiche, la pièce s'ouvre sur ses chiffres** : pas de PDF, son
+    // titre, son montant, son chantier (planche `clients-importer.html`).
+    const surLaFiche = ficheB!.pieces.factures[0];
+    assert.equal(surLaFiche.format, "tableau", "une ligne de tableau s'annonce comme un PDF qu'elle n'est pas");
+    assert.equal(surLaFiche.objet, "Taille de haie");
+    assert.equal(surLaFiche.montant, "195.00");
+    assert.equal(surLaFiche.chantier, "12 rue des Lilas, 44000 Nantes");
   });
 
   await essai("le même tableau une seconde fois ne double rien, et ne crée aucune fiche vide", async () => {

@@ -151,14 +151,20 @@ function pieceImportee(p: {
   numero: string | null;
   jour: string | null;
   montantTtc: string | null;
+  fichierCle: string | null;
+  objet: string | null;
+  adresseChantier: string | null;
 }): PieceDuClient {
   return {
+    // Une ligne de tableau n'a pas de PDF (migration 0154) : la fiche l'ouvre
+    // sur ses chiffres, avec son titre et son chantier.
+    ...(p.fichierCle ? {} : { format: "tableau" as const, objet: p.objet, chantier: p.adresseChantier }),
     id: p.id,
     // Un numéro qu'on n'a pas lu ne s'invente pas : la pièce porte alors son jour.
     titre: p.numero ? `n° ${p.numero}` : p.jour ? jourCourt(p.jour) : "Sans numéro",
     precision: p.jour ? jourCourt(p.jour) : null,
     jour: p.jour,
-    // Le TTC lu sur le PDF ; aucun titre, l'import n'en lit pas.
+    // Le TTC lu sur le PDF, ou celui de la ligne du tableau.
     montant: p.montantTtc,
     href: `/api/pieces-importees/${p.genre}/${p.id}/pdf`,
   };
@@ -278,6 +284,9 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
         numero: piecesImportees.numero,
         jour: piecesImportees.jour,
         montantTtc: piecesImportees.montantTtc,
+        fichierCle: piecesImportees.fichierCle,
+        objet: piecesImportees.objet,
+        adresseChantier: piecesImportees.adresseChantier,
       })
       .from(piecesImportees)
       .where(and(eq(piecesImportees.clientId, clientId), eq(piecesImportees.statut, "rangee")));
@@ -725,6 +734,9 @@ export async function listerFichesClients(ctx: Ctx): Promise<ClientEnListe[]> {
           numero: piecesImportees.numero,
           jour: piecesImportees.jour,
           montantTtc: piecesImportees.montantTtc,
+          fichierCle: piecesImportees.fichierCle,
+          objet: piecesImportees.objet,
+          adresseChantier: piecesImportees.adresseChantier,
         })
         .from(piecesImportees)
         .where(and(eq(piecesImportees.entrepriseId, ctx.entrepriseId), eq(piecesImportees.statut, "rangee"))),

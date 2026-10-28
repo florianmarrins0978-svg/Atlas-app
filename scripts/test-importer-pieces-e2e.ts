@@ -22,7 +22,11 @@ import { fichierDemandeALaVisionneuse } from "../src/lib/visionneuse-pdf";
 //   5. **« Annuler » défait le rangement**, la fiche créée s'en va, et l'import
 //      reprend la relecture pour ranger à nouveau ;
 //   6. **supprimer ce client** pose la question de la sauvegarde, puis
-//      emporte ses pièces importées.
+//      emporte ses pièces importées ;
+//   7. **un tableau CSV** (28 octobre 2026) se lit par client, attend sa
+//      réponse sur deux adresses, range ses pièces sans PDF, et s'annule en
+//      entier (`test-import-tableau.ts` et `test-import-tableau-db.ts` tiennent
+//      la règle).
 
 const BASE = ADRESSE;
 // Des lettres seules : le lecteur arrête un nom au premier chiffre (un
@@ -165,6 +169,58 @@ async function main() {
     await page.waitForURL(`${BASE}/clients`, { timeout: 30_000 });
     await page.goto(`${BASE}/clients`, { waitUntil: "networkidle" });
     assert.equal(await page.getByText(NOM, { exact: true }).count(), 0, "le client est resté");
+  });
+
+  // ── Un tableau CSV — ses demandes du 28 octobre 2026 ────────────────────
+  const CLIENT = `Mme Tableau${marque}`;
+  const csv = [
+    "Type;N°;Objet;Date;Client;Adresse;CP;Ville;Total TTC",
+    `Devis;D-${marque}-1;Entretien des espaces verts;20/05/2025;${CLIENT};40 bd Victor Hugo;44200;Nantes;4 180,00`,
+    `Facture;F-${marque}-2;Création de massifs;03/09/2025;${CLIENT};12 rue de la Paix;44000;Nantes;960,00`,
+    `Facture;F-${marque}-3;Débroussaillage;09/10/2024;;9 rue de la Gare;44230;Saint-Sébastien-sur-Loire;310,00`,
+  ].join("\n");
+
+  await cas("un tableau se lit par client, et rien ne se range avant sa réponse sur deux adresses", async () => {
+    await page.goto(`${BASE}/clients/importer`, { waitUntil: "networkidle" });
+    await page.setInputFiles('[data-atlas="choisir-pieces"]', { name: "devis-factures.csv", mimeType: "text/csv", buffer: Buffer.from(csv, "utf8") });
+    await page.locator('[data-atlas="import-tableau"]').waitFor({ state: "visible", timeout: 60_000 });
+    const ranger = page.locator('[data-atlas="ranger-tableau"]');
+    assert.equal((await ranger.textContent())?.trim(), "Vérifiez 1 adresse");
+    assert.ok(await ranger.isDisabled(), "« Ranger » s'ouvre alors qu'une adresse attend sa réponse");
+    // La sienne est la première ; l'autre restera sur sa pièce, comme chantier.
+    await page.locator('[data-atlas="choix-adresse"]').getByRole("radio").first().click();
+    await page.locator('[data-atlas="nom-ligne"]').fill(CLIENT);
+    assert.equal((await ranger.textContent())?.trim(), "Ranger 3 documents");
+    await ranger.click();
+    await page.waitForURL(`${BASE}/clients`, { timeout: 60_000 });
+    await page.locator('[data-atlas="bandeau-rangement"]').waitFor({ state: "visible", timeout: 20_000 });
+  });
+
+  await cas("la pièce d'un tableau s'ouvre sur ses chiffres et son chantier, sans PDF à télécharger", async () => {
+    await page.goto(`${BASE}/clients`, { waitUntil: "networkidle" });
+    await page.getByText(CLIENT, { exact: true }).first().click();
+    await page.locator('[data-atlas="registre"]').first().waitFor({ state: "visible", timeout: 20_000 });
+    await page.locator('[data-atlas="registre"]:text-is("Factures")').click();
+    const piece = page.locator('[role="tabpanel"]:not([hidden]) [data-atlas="piece"]', { hasText: "Création de massifs" });
+    assert.match((await piece.innerText()).replace(/\s+/g, " "), /960,00.*Chantier au 12 rue de la Paix/);
+    await piece.click();
+    const feuille = page.locator('[data-atlas="piece-du-tableau"]');
+    await feuille.waitFor({ state: "visible", timeout: 15_000 });
+    assert.match((await feuille.innerText()).replace(/\s+/g, " "), /960,00 € TTC.*Pas de PDF/);
+    assert.equal(await page.locator('[data-atlas="piece-enregistrer"]').count(), 0, "« Télécharger » propose un PDF qui n'existe pas");
+    await feuille.getByRole("button", { name: "Fermer" }).click();
+  });
+
+  await cas("« Annuler » défait le tableau en entier : la fiche part, rien ne reste à relire", async () => {
+    await page.goto(`${BASE}/clients`, { waitUntil: "networkidle" });
+    const bandeau = page.locator('[data-atlas="bandeau-rangement"]');
+    await bandeau.waitFor({ state: "visible", timeout: 20_000 });
+    await bandeau.getByRole("button", { name: "Annuler" }).click();
+    await bandeau.waitFor({ state: "hidden", timeout: 20_000 });
+    await page.goto(`${BASE}/clients`, { waitUntil: "networkidle" });
+    assert.equal(await page.getByText(CLIENT, { exact: true }).count(), 0, "la fiche créée par le tableau est restée");
+    await page.goto(`${BASE}/clients/importer`, { waitUntil: "networkidle" });
+    assert.equal(await page.locator('[data-atlas="relecture-import"]').count(), 0, "un tableau annulé se propose à la relecture");
   });
 
   await navigateur.close();

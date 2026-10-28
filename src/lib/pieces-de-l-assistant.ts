@@ -225,14 +225,28 @@ export function pieceDeLaPhoto(photo: { storageKey: string; nom: string | null; 
  * Une pièce du dossier d'un client, telle que sa fiche la range : devis
  * (importés compris), factures, avoirs, rapports d'entretien. Elle s'ouvre par
  * la MÊME règle que sur la fiche (`adresseOuvrirLaPiece`).
+ *
+ * **Une ligne de tableau importé n'a pas de PDF** (migration 0154) : elle
+ * mène à la fiche du client, ouverte sur son onglet, où ses chiffres se lisent.
  */
 export function pieceDuDossier(
   genre: "devis" | "facture" | "avoir" | "rapport",
   piece: PieceDuClient,
-  client: string
+  client: string,
+  clientId: string
 ): PieceJointe {
   const nom = { devis: "Devis", facture: "Facture", avoir: "Avoir", rapport: "Rapport d'entretien" }[genre];
   const numero = piece.titre.replace(/^n[°o]\s*/i, "");
+  if (piece.format === "tableau") {
+    return creerPiece({
+      genre,
+      adresse: `/clients/${clientId}?registre=${genre === "facture" ? "factures" : "devis"}`,
+      titre: `${nom} ${numero}, ${client}`,
+      montant: piece.montant ?? null,
+      detail: avecLeJour(nom, piece.jour),
+      format: "page",
+    });
+  }
   return creerPiece({
     genre,
     adresse: adresseOuvrirLaPiece(piece),

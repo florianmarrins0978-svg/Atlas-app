@@ -29,10 +29,10 @@ export const lireDossierClient: Outil = {
     return {
       trouve: true,
       client,
-      devis: fiche.pieces.devis.map((p) => ({ titre: p.titre, jour: p.jour, piece: pieceDuDossier("devis", p, client) })),
-      factures: fiche.pieces.factures.map((p) => ({ titre: p.titre, jour: p.jour, piece: pieceDuDossier("facture", p, client) })),
-      avoirs: fiche.pieces.avoirs.map((p) => ({ titre: p.titre, jour: p.jour, piece: pieceDuDossier("avoir", p, client) })),
-      rapportsEntretien: fiche.pieces.fiches.map((p) => ({ jour: p.jour, piece: pieceDuDossier("rapport", p, client) })),
+      devis: fiche.pieces.devis.map((p) => ({ titre: p.titre, jour: p.jour, piece: pieceDuDossier("devis", p, client, clientId) })),
+      factures: fiche.pieces.factures.map((p) => ({ titre: p.titre, jour: p.jour, piece: pieceDuDossier("facture", p, client, clientId) })),
+      avoirs: fiche.pieces.avoirs.map((p) => ({ titre: p.titre, jour: p.jour, piece: pieceDuDossier("avoir", p, client, clientId) })),
+      rapportsEntretien: fiche.pieces.fiches.map((p) => ({ jour: p.jour, piece: pieceDuDossier("rapport", p, client, clientId) })),
       contrat: contrat
         ? {
             statut: contrat.statut,

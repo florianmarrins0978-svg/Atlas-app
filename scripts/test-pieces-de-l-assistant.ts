@@ -17,6 +17,7 @@ import {
   rangerLesPieces,
   piecesCitees,
   pieceDuDevis,
+  pieceDuDossier,
   pieceDeLaFacture,
   pieceDuFournisseur,
   pieceDuVehicule,
@@ -110,6 +111,27 @@ test("UN PDF DE FOURNISSEUR OU DE VÉHICULE PASSE LA VISIONNEUSE, UNE PHOTO N'Y 
   const carte = pieceDuVehicule({ vehiculeId: "v1", vehicule: "Master", nature: "carte_grise", format: "pdf", date: "2026-01-02" });
   assert.ok(fichierDemandeALaVisionneuse(carte.adresse), "la visionneuse refuserait la carte grise");
   assert.equal(carte.titre, "Carte grise, Master");
+});
+
+test("UNE LIGNE DE TABLEAU IMPORTÉ MÈNE À LA FICHE, PAS À UN PDF QUI N'EXISTE PAS", () => {
+  const ligne = pieceDuDossier(
+    "facture",
+    { id: "p1", titre: "n° F2025-0163", jour: "2025-04-28", precision: "28 avr. 2025", href: "/api/pieces-importees/facture/p1/pdf", format: "tableau", montant: "1250.00" },
+    "Mme Lenoir",
+    "22222222-2222-2222-2222-222222222222"
+  );
+  assert.equal(ligne.adresse, "/clients/22222222-2222-2222-2222-222222222222?registre=factures");
+  assert.equal(ligne.format, "page");
+  assert.equal(ligne.montant, "1250.00");
+  assert.equal(fichierDemandeALaVisionneuse(ligne.adresse), null, "la visionneuse ouvrirait un PDF absent");
+  // Le PDF importé, lui, s'ouvre toujours dans la visionneuse.
+  const pdf = pieceDuDossier(
+    "facture",
+    { id: "p2", titre: "n° F2025-0148", jour: "2025-03-12", precision: null, href: "/api/pieces-importees/facture/p2/pdf" },
+    "M. Martins",
+    "22222222-2222-2222-2222-222222222222"
+  );
+  assert.ok(fichierDemandeALaVisionneuse(pdf.adresse), "le PDF importé ne s'ouvre plus");
 });
 
 console.log(`\n${passed} test(s) réussi(s), ${failed} échec(s)`);

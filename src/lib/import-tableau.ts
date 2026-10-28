@@ -536,7 +536,7 @@ export type Lecture = {
   lignes: LigneLue[];
   /** Le même numéro deux fois : rangé une fois. */
   doubles: number;
-  /** Ni devis ni facture : un avoir, une ligne de total, un mot inconnu. */
+  /** Ni devis ni facture : un avoir, une ligne de total, un mot inconnu, une ligne de carnet d'adresses. */
   ignorees: number;
   devis: number;
   factures: number;
@@ -579,6 +579,13 @@ export function lireLignes(grille: readonly (readonly string[])[], reglages: Reg
       telephone: borne(champ("Téléphone"), 40),
       chantier: borne(champ("Adresse du chantier"), 300),
     };
+    // Ni numéro, ni date, ni montant : une ligne de carnet d'adresses, pas une
+    // pièce. La ranger comme facture inventerait un document que personne n'a
+    // émis (« que des factures » ne vaut que pour un tableau de pièces).
+    if (!lue.numero && !lue.jour && !lue.montant) {
+      lecture.ignorees++;
+      continue;
+    }
     const cle = cleDeLaPiece(lue);
     if (vues.has(cle)) {
       lecture.doubles++;
@@ -678,6 +685,46 @@ export function grouperParClient(
   return { groupes, sansNom };
 }
 
+/**
+ * L'adresse que la fiche portera après le rangement : celle de sa fiche si elle
+ * en a une et qu'il a dit « le même », sinon celle qu'il a choisie, sinon la
+ * seule que le tableau donne.
+ */
+function adresseRetenueDuGroupe(g: Groupe): string | null {
+  const choisie = typeof g.choix === "number" ? g.adresses[g.choix].lieu : (g.adresses[0]?.lieu ?? null);
+  if (g.deja && g.choix !== "autre") return g.deja.adresse?.trim() || choisie;
+  return choisie;
+}
+
+/**
+ * L'adresse du chantier d'une pièce : la colonne du tableau quand elle existe ;
+ * sinon, une fois les adresses tranchées, celle de la pièce si ce n'est pas
+ * celle du client. **Avant sa réponse, rien** : on ne sait pas encore laquelle
+ * est la sienne. L'écran la montre, le rangement l'écrit : la même fonction.
+ */
+export function chantierDeLaLigne(g: Groupe, l: LigneLue): string | null {
+  if (l.chantier) return l.chantier;
+  if (!l.adresse || (g.conflit && g.choix === undefined) || g.choix === "deux") return null;
+  const sienne = adresseRetenueDuGroupe(g);
+  return sienne && normaliserAdresse(l.adresse) !== normaliserAdresse(sienne) ? l.adresse : null;
+}
+
+/**
+ * Les pastilles du haut : combien de fiches naîtront, combien reçoivent des
+ * pièces, combien attendent sa réponse. « Ce sont deux clients » en fait naître
+ * autant que d'adresses.
+ */
+export function compteDesClients(groupes: readonly Groupe[]): { nouveaux: number; deja: number; aVerifier: number } {
+  const compte = { nouveaux: 0, deja: 0, aVerifier: 0 };
+  for (const g of groupes) {
+    if (g.conflit && g.choix === undefined) compte.aVerifier++;
+    else if (g.choix === "deux") compte.nouveaux += g.adresses.length;
+    else if (g.deja && g.choix !== "autre") compte.deja++;
+    else compte.nouveaux++;
+  }
+  return compte;
+}
+
 // ─── Ce que le rangement écrira ─────────────────────────────────────────────
 
 export type PieceAPoser = {
@@ -739,9 +786,7 @@ export function planDeRangement(
   const clients: ClientAPoser[] = [];
   /** L'adresse que chaque fiche portera : c'est contre elle qu'un chantier se reconnaît. */
   const adresseRetenue = new Map<ClientAPoser, string | null>();
-  const poser = (l: LigneLue, nom: string, client: ClientAPoser) => {
-    const sienne = adresseRetenue.get(client) ?? null;
-    const ailleurs = l.adresse && sienne && normaliserAdresse(l.adresse) !== normaliserAdresse(sienne) ? l.adresse : null;
+  const poser = (l: LigneLue, nom: string, client: ClientAPoser, chantier: string | null) => {
     client.pieces.push({
       genre: l.genre,
       numero: l.numero,
@@ -749,7 +794,7 @@ export function planDeRangement(
       jour: l.jour,
       montant: l.montant,
       nom,
-      chantier: l.chantier ?? ailleurs,
+      chantier,
       cle: cleDeLaPiece(l),
     });
   };
@@ -768,7 +813,7 @@ export function planDeRangement(
         const siennes = g.lignes.filter((l) => l.adresse && normaliserAdresse(l.adresse) === a.norme);
         const estLaFiche = g.deja?.adresse?.trim() && normaliserAdresse(g.deja.adresse) === a.norme;
         const c = estLaFiche ? ouvrir(g.deja, g.nom, null, telDe(siennes)) : ouvrir(null, g.nom, a.lieu, telDe(siennes));
-        for (const l of siennes) poser(l, l.nom ?? g.nom, c);
+        for (const l of siennes) poser(l, l.nom ?? g.nom, c, chantierDeLaLigne(g, l));
       }
       aPart += g.lignes.filter((l) => !l.adresse).length;
       continue;
@@ -778,7 +823,7 @@ export function planDeRangement(
     // Devant « Sa fiche dit… », il a dit « le même » : la fiche garde la sienne,
     // rien ne la complète.
     const c = garde ? ouvrir(g.deja, g.nom, g.conflit === "fiche" ? null : choisie, telDe(g.lignes)) : ouvrir(null, g.nom, choisie, telDe(g.lignes));
-    for (const l of g.lignes) poser(l, l.nom ?? g.nom, c);
+    for (const l of g.lignes) poser(l, l.nom ?? g.nom, c, chantierDeLaLigne(g, l));
   }
 
   let restent = 0;
@@ -800,7 +845,11 @@ export function planDeRangement(
       const deja = verdict.type === "reutiliser" ? (connus.find((c) => c.id === verdict.id) ?? null) : null;
       cible = ouvrir(deja, nom, l.adresse, l.telephone);
     }
-    poser(l, nom, cible);
+    // Un nom tapé ne soulève pas de question : son adresse, si ce n'est pas
+    // celle de la fiche, reste sur la pièce.
+    const sienne = adresseRetenue.get(cible) ?? null;
+    const ailleurs = l.adresse && sienne && normaliserAdresse(l.adresse) !== normaliserAdresse(sienne) ? l.adresse : null;
+    poser(l, nom, cible, l.chantier ?? ailleurs);
   }
 
   for (const c of clients) c.pieces.sort((a, b) => (b.jour ?? "").localeCompare(a.jour ?? ""));

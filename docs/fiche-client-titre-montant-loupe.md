@@ -22,7 +22,7 @@ pas été jouée, à sa demande.
 | La loupe de la fiche | **codé** : au-dessus des onglets ; les onglets s'effacent, chaque ligne dit « Devis », « Facture », « Fiche du » ; « Rien ne répond à « … ». » | `RegistresDuDossier.tsx`, `src/lib/recherche-piece.ts` | `test-recherche-piece` (40 cas), `test-fiche-client-e2e` (la loupe au navigateur) |
 | La loupe de Vos clients | **codé** : sous les clients trouvés, « 2 devis et factures », titre, montant, référence et client ; un appui ouvre la fiche sur l'onglet de la pièce | `src/app/clients/ListeClients.tsx`, `listerFichesClients` | `test-liste-clients` (dont l'isolation entre entreprises), `test-fiche-client-e2e`, capture |
 | La phrase de la case | **codé**, mot pour mot, dans les deux loupes | `AIDE_DE_LA_LOUPE` | `test-recherche-piece`, `test-entreprises-et-sous-traitance-e2e` |
-| Importer un tableau CSV ou Excel | **pas codé** : il faut ses réponses, voir plus bas | | |
+| Importer un tableau CSV ou Excel | **codé ensuite**, après ses trois réponses : son document à part, `docs/importer-un-tableau.md` | | |
 
 ## Ce qui a été fait autrement que la planche, et pourquoi
 
@@ -73,7 +73,5 @@ d'avant, puis verts.
 | | Qui |
 |---|---|
 | Jouer la batterie, puis pousser sur `main` | lui, quand ses autres sessions le permettent |
-| **Importer un tableau CSV ou Excel** : une pièce lue dans un tableau n'a pas de fichier, et la table des pièces importées en exige un. Il faut une migration (rendre le fichier facultatif, ajouter le titre et l'adresse du chantier). Elle n'efface rien, mais la règle du dépôt veut qu'on la lui demande | lui |
-| **Lire un Excel** demande une bibliothèque de plus. Le vieux format `.xls` ne se lit qu'avec une seule (SheetJS), dont la version publiée sur npm porte des failles connues ; la version corrigée se prend chez l'éditeur | lui |
-| Un client déjà dans Atlas sans adresse : le tableau la complète-t-il ? | lui |
+| Importer un tableau : ses trois réponses sont venues (migration oui, SheetJS corrigé, cases vides complétées), et c'est codé : `docs/importer-un-tableau.md` | fait |
 | Le défaut « (20 ml) (20 ml) » de la dernière prestation, vu sur sa capture | à chercher, `TODO.md` |

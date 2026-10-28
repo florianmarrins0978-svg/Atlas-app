@@ -317,6 +317,11 @@ dire(fiche.dessous === "8 oct. 2026, 6 prestations", "la date et le nombre de pr
 dire(fiche.montant === null, "une fiche n'a pas de montant");
 dire(fiche.mot === "Fiche du", "la loupe dit « Fiche du 8 oct. 2026 »");
 
+// Une ligne d'un tableau importé : son chantier se lit sous elle.
+const duTableau = lignesDeLaPiece({ titre: "n° F2025-0277", precision: "3 sept. 2025", href: "/api/pieces-importees/facture/x/pdf", format: "tableau", objet: "Création de massifs", montant: "960", chantier: "12 rue de la Paix, 44000 Nantes" });
+dire(duTableau.chantier === "Chantier au 12 rue de la Paix, 44000 Nantes", "le chantier d'une pièce de tableau se lit dessous");
+dire(lu.chantier === null, "une pièce sans chantier n'en écrit pas");
+
 const facture = lignesDeLaPiece({ titre: "n° F2026-000014", precision: "22 oct. 2026", href: "/api/factures/z/pdf", objet: "Taille de haie de thuyas", montant: "1380" });
 dire(facture.mot === "Facture" && facture.dessous === "n° F2026-000014, 22 oct. 2026", "une facture se lit comme un devis");
 

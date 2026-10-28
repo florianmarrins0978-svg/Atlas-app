@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import {
   CHAMPS_DU_TABLEAU,
   cleDeLaPiece,
+  compteDesClients,
   entetePuisLignes,
   formatDuTableau,
   reglagesDesDecisions,
@@ -206,6 +207,17 @@ cas("une ligne ni devis ni facture n'est pas reprise, et se compte", () => {
   assert.equal(l.lignes.length, 1);
   assert.equal(l.ignorees, 1);
 });
+// **Une simple liste de clients n'est pas un tableau de pièces** : sans
+// numéro, sans date et sans montant, une ligne ne devient pas une facture,
+// même s'il a répondu « que des factures ». Ce serait inventer un document.
+cas("une ligne sans numéro, sans date ni montant n'est pas une pièce", () => {
+  const g = [["Client", "Adresse"], ["M. Contact", "1 rue Basse"], ["Mme Voisine", "2 rue Haute"]];
+  const r = reglagesDesDecisions(g, { genreFixe: "facture" });
+  assert.ok(r.ok);
+  if (!r.ok) return;
+  const l = lireLignes(g, r.reglages);
+  assert.deepEqual([l.lignes.length, l.ignorees], [0, 2]);
+});
 cas("un code postal perdu par Excel (1000 pour 01000) retrouve son zéro", () => {
   const l = lire([ENTETES, ["Devis", "D1", "", "01/01/2025", "M. Ain", "3 rue Haute", "1000", "Bourg", "", "10,00"]]);
   assert.equal(l.lignes[0].adresse, "3 rue Haute, 01000 Bourg");
@@ -367,6 +379,15 @@ cas("le format se lit au nom ; le .xls est reconnu, pour être refusé en le dis
   assert.equal(formatDuTableau("2025.xlsx"), "xlsx");
   assert.equal(formatDuTableau("vieux.xls"), "xls");
   assert.equal(formatDuTableau("facture.pdf"), null);
+});
+
+cas("les pastilles comptent les fiches qui naîtront, celles qui reçoivent, celles qui attendent", () => {
+  const lignes = lire().lignes;
+  const avant = compteDesClients(grouperParClient(lignes, [BERNARD], {}).groupes);
+  assert.deepEqual(avant, { nouveaux: 3, deja: 0, aVerifier: 2 }, "Lenoir, Guérin, Le Goff ; Bernard et Les Hêtres attendent");
+  const { groupes } = grouperParClient(lignes, [BERNARD], {});
+  const choix = Object.fromEntries(groupes.filter((g) => g.conflit).map((g) => [g.cle, g.conflit === "deux" ? "deux" : "meme"])) as Record<string, "deux" | "meme">;
+  assert.deepEqual(compteDesClients(grouperParClient(lignes, [BERNARD], choix).groupes), { nouveaux: 5, deja: 1, aVerifier: 0 });
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Importer un tableau — ${echecs} échec(s).`);

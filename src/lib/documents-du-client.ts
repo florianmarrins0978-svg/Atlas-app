@@ -63,8 +63,14 @@ export type PieceDuClient = {
    * sens.
    *
    * Absent vaut `"pdf"` : les devis et les factures ne changent pas.
+   *
+   * **`"tableau"` : une ligne d'un tableau importé** (migration 0154). Elle n'a
+   * pas de fichier : elle s'ouvre sur ce que le tableau en dit, et rien ne
+   * propose de la télécharger.
    */
-  format?: "pdf" | "page";
+  format?: "pdf" | "page" | "tableau";
+  /** L'adresse de son chantier, quand ce n'est pas celle du client (un tableau importé). */
+  chantier?: string | null;
   /**
    * **Ce que la pièce dit d'elle-même** : le titre d'un devis ou d'une facture
    * (migration 0092), la première tâche cochée d'une fiche. Sa demande du
@@ -337,6 +343,8 @@ export type LignesDeLaPiece = {
   montant: string | null;
   /** La ligne grise dessous. */
   dessous: string | null;
+  /** « Chantier au … », quand la pièce le sait. */
+  chantier: string | null;
   /**
    * Le mot que la loupe pose devant la ligne grise : sans onglet, c'est lui qui
    * dit de quoi il s'agit (« Devis n° 2026-000024 », « Fiche du 8 oct. 2026 »).
@@ -354,7 +362,7 @@ export type LignesDeLaPiece = {
  * téléphone, et la loupe le trouve encore.
  */
 export function lignesDeLaPiece(
-  piece: Pick<PieceDuClient, "titre" | "precision" | "href" | "objet" | "montant" | "format">
+  piece: Pick<PieceDuClient, "titre" | "precision" | "href" | "objet" | "montant" | "format" | "chantier">
 ): LignesDeLaPiece {
   const objet = piece.objet?.trim() || null;
   const nature = piece.format === "page" ? "fiche-chantier" : natureDeLaPiece(piece.href);
@@ -365,6 +373,7 @@ export function lignesDeLaPiece(
     gras: objet ?? piece.titre,
     montant: piece.montant ? enEuros(piece.montant) : null,
     dessous: objet ? [piece.titre, piece.precision].filter(Boolean).join(", ") : piece.precision,
+    chantier: piece.chantier ? `Chantier au ${piece.chantier}` : null,
     mot: `${MOT_DE_LA_LOUPE[nature]}${parLaDate ? " du" : ""}`,
   };
 }

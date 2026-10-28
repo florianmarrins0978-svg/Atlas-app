@@ -6,7 +6,9 @@ import { colors, font, libelleCaps } from "@/lib/design-tokens";
 import { entreeAIgnorer, formatDuFichier, LIMITES_IMPORT, refusDeLEnvoi } from "@/lib/import-pieces";
 import { entreesDuZip, lireEntree, ZipIllisible } from "@/lib/lire-zip";
 import { jourCourt } from "@/lib/documents-du-client";
+import { formatDuTableau, REFUS_XLS, type ClientConnu } from "@/lib/import-tableau";
 import { piecesAVerifierAction, rangerAction, type PieceAVerifier } from "./actions";
+import ImporterTableau from "./ImporterTableau";
 
 /**
  * IMPORTER DEVIS ET FACTURES — l'écran, d'après la maquette qu'il a essayée
@@ -45,7 +47,9 @@ type Phase =
   | { quoi: "preparer" }
   | { quoi: "envoi"; nom: string; total: number; faits: number }
   | { quoi: "lecture"; lues: number; recues: number }
-  | { quoi: "relecture"; etat: Etat; pieces: PieceAVerifier[] };
+  | { quoi: "relecture"; etat: Etat; pieces: PieceAVerifier[] }
+  /** Un tableau CSV ou Excel : lu au serveur, montré par client (28 octobre 2026). */
+  | { quoi: "tableau"; fichier: File; grille: string[][]; connus: ClientConnu[] };
 
 /** Quelques pièces à la fois : assez pour remplir le réseau, pas assez pour l'étouffer. */
 const PAQUET = 8;
@@ -121,8 +125,41 @@ export default function ImporterPieces({ repriseEnvoiId }: { repriseEnvoiId: str
     };
   }, [phase.quoi, suivre]);
 
+  /**
+   * **Un tableau part seul, et tout de suite** : il ne pèse rien, et c'est le
+   * serveur qui le lit (`lire-tableau.ts`) avec le lecteur maison déjà durci.
+   * Mêlé à des PDF, il est refusé : ce sont deux chemins, et l'un ne doit pas
+   * avaler l'autre en silence.
+   */
+  async function lireTableau(f: File) {
+    if (formatDuTableau(f.name) === "xls") {
+      setPhase({ quoi: "choisir", refus: REFUS_XLS });
+      return;
+    }
+    setPhase({ quoi: "preparer" });
+    const corps = new FormData();
+    corps.set("fichier", f);
+    const r = await fetch("/api/pieces-importees/tableau", { method: "POST", body: corps })
+      .then((x) => x.json() as Promise<{ ok: boolean; raison?: string; grille?: string[][]; connus?: ClientConnu[] }>)
+      .catch(() => ({ ok: false, raison: "Le réseau ne répond pas. Réessayez." }) as { ok: boolean; raison?: string; grille?: string[][]; connus?: ClientConnu[] });
+    if (!r.ok || !r.grille || !r.connus) {
+      setPhase({ quoi: "choisir", refus: r.raison ?? "Ce tableau ne s'est pas lu. Réessayez." });
+      return;
+    }
+    setPhase({ quoi: "tableau", fichier: f, grille: r.grille, connus: r.connus });
+  }
+
   async function choisis(fichiers: FileList | null) {
     if (!fichiers || fichiers.length === 0) return;
+    const tableaux = Array.from(fichiers).filter((f) => formatDuTableau(f.name));
+    if (tableaux.length > 0) {
+      if (fichiers.length > 1) {
+        setPhase({ quoi: "choisir", refus: "Un tableau se choisit seul. Importez-le, puis vos PDF dans un second envoi." });
+        return;
+      }
+      await lireTableau(tableaux[0]);
+      return;
+    }
     setPhase({ quoi: "preparer" });
     const sources: Source[] = [];
     const ecartes: Refuse[] = [];
@@ -258,6 +295,17 @@ export default function ImporterPieces({ repriseEnvoiId }: { repriseEnvoiId: str
     </p>
   );
 
+  if (phase.quoi === "tableau") {
+    return (
+      <ImporterTableau
+        fichier={phase.fichier}
+        grille={phase.grille}
+        connus={phase.connus}
+        autreFichier={() => setPhase({ quoi: "choisir" })}
+      />
+    );
+  }
+
   if (phase.quoi === "choisir" || phase.quoi === "preparer") {
     return (
       <section className="mx-[26px] mt-[26px]">
@@ -268,7 +316,7 @@ export default function ImporterPieces({ repriseEnvoiId }: { repriseEnvoiId: str
           ref={choix}
           type="file"
           multiple
-          accept=".pdf,.zip,.jpg,.jpeg,.png,application/pdf,application/zip,image/jpeg,image/png"
+          accept=".pdf,.zip,.jpg,.jpeg,.png,.csv,.xlsx,.xls,application/pdf,application/zip,image/jpeg,image/png,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
           className="hidden"
           data-atlas="choisir-pieces"
           onChange={(e) => {
@@ -286,9 +334,9 @@ export default function ImporterPieces({ repriseEnvoiId }: { repriseEnvoiId: str
           {phase.quoi === "preparer" ? "Un instant…" : "Choisir mes fichiers"}
         </button>
         <p className="mt-[12px] text-[14.5px] leading-[1.5]" style={{ color: colors.inkSoft }}>
-          PDF, photos ou dossier .zip.
+          PDF, photos, dossier .zip, tableau CSV ou Excel.
           <br />
-          Jusqu’à {nombre(LIMITES_IMPORT.documentsParEnvoi)} documents par envoi.
+          Jusqu’à {nombre(LIMITES_IMPORT.documentsParEnvoi)} PDF par envoi.
         </p>
         {phase.quoi === "choisir" && phase.refus && (
           <p data-atlas="refus-import" className="mt-[18px] text-[15px] leading-[1.55]" style={{ color: colors.alert }}>

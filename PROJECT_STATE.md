@@ -1,7 +1,12 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-10-27, branche `claude/accountant-document-signature-2redc5`,
-dernière migration `drizzle/0152_retours_du_comptable.sql`
+**Dernière mise à jour :** 2026-10-28, branche `claude/quatre-planches-atlas-6hi21h`,
+dernière migration `drizzle/0154_pieces_importees_d_un_tableau.sql` (0153 attend sur `claude/banque-lecture-dossier-complet`)
+
+---
+## IMPORTER UN TABLEAU DE DEVIS ET FACTURES, SUR LA BRANCHE (28 octobre 2026)
+
+Même branche. Écran `src/app/clients/importer/ImporterTableau.tsx`, route `/api/pieces-importees/tableau`, rangement `rangerTableau`, règles `src/lib/import-tableau.ts` (`ARCHITECTURE.md` §529), migration `0154` (dernière migration). Suites de règles, de base et du parcours au navigateur vertes ; **niveau 3, batterie non jouée, pas sur `main`**. Reste : le `.xls` (SheetJS, réseau), les PDF au même écran par client (`TODO.md`).
 
 ---
 ## LA FICHE D'UN CLIENT : TITRE, MONTANT, PREMIÈRE TÂCHE ET LOUPE, SUR LA BRANCHE (28 octobre 2026)
@@ -1328,7 +1333,7 @@ d'avant sont **dérivées**, jamais écrites à la main.
 créneau écrit » vaut le bloc calculé, dans une seule fonction (`creneauxPoses`).
 
 Détail : `ARCHITECTURE.md` §322.
-**Dernière mise à jour :** 2026-09-11 · branche `session-2`
+**Dernière mise à jour :** 2026-10-28, branche `claude/quatre-planches-atlas-6hi21h`,
 · dernière migration `drizzle/0086_facture_sans_devis.sql`
 
 ---

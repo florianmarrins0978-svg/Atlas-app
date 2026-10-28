@@ -10,6 +10,11 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## IMPORTER UN TABLEAU (28 octobre 2026)
+
+**Les pièges :** l'écran et la route refont le même plan (`planDeRangement`) ; une règle ajoutée d'un côté seulement ferait ranger autre chose que ce qu'il a vu. Une pièce importée peut n'avoir AUCUN fichier (`fichier_cle` NULL, `format: "tableau"`) : tout ce qui lit `fichierCle` doit le supporter. Pour l'essayer ici, `scratchpad` n'est pas versionné : un CSV de la planche se recompose depuis `scripts/test-import-tableau-db.ts`. Ne jamais arrêter le serveur de développement par son nom (`pkill`, `kill $(pgrep …)`) : la session le refuse, à raison ; le chercher, puis viser son numéro.
+
+---
 ## LA FICHE D'UN CLIENT : TITRE, MONTANT ET LOUPE (28 octobre 2026)
 
 **Le piège :** `PieceDuClient.titre` désigne la pièce et nomme son fichier ; le titre d'un devis va dans `objet`, jamais dans `titre` (`ARCHITECTURE.md` §528). Les deux loupes filtrent avec `piecesQuiRepondent` ; une pièce de la liste et de la fiche se compose par les mêmes fonctions en tête de `fiche-client.ts`. Pour REGARDER la fiche ici, `npm run voir` ne se connecte plus (il remplit le formulaire avant qu'il soit prêt et l'action reçoit un formulaire vide) : attendre `networkidle` avant de taper.
