@@ -9,6 +9,11 @@
 - **Être prévenu en cours de route** : seulement à la signature aujourd'hui. S'il veut savoir dès qu'une ligne est rejetée, ce sera une carte de plus.
 - **Le PDF joint au courriel et la copie au comptable**, montrés sur la planche, ne partent pas : le service d'envoi ne transporte qu'un avis. Le comptable télécharge son exemplaire à la fin. À rouvrir s'il le demande, en sachant ce que ça envoie chez Brevo.
 
+## L'ASSISTANT JOINT LES DOCUMENTS : CE QUI RESTE (27 octobre 2026)
+
+- **Les pièces disparaissent au rechargement du fil** : `messages_assistant` ne garde que le texte. Une colonne `pieces` (jsonb, nullable, expand) les garderait.
+- **Sur son espace** : vérifier que le vrai modèle cite bien les clés (« [[P1]] »). Sans clé ici, seul le fournisseur `dev` l'a fait.
+
 ## ⏳ DES PLANCHES À REGARDER : L'APPLI SOIGNÉE, ÉCRAN PAR ÉCRAN (25 octobre 2026)
 
 **Sa demande :** *« reprends toutes les pages de l'application et améliore-moi le

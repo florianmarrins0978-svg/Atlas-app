@@ -27,12 +27,19 @@
  * **Il n'y a donc plus qu'une phrase, et elle vit ici.** Un service qui l'oublie
  * se voit (`test-metier-atlas.ts`), et le jour où le métier s'élargit, il
  * s'élargit à un seul endroit (`CLAUDE.md` §3).
+ *
+ * **Le métier lève une ambiguïté, il ne refuse rien** (27 octobre 2026). La
+ * phrase disait « tout ce qu'on te donne vient de ce métier » : l'assistant a
+ * donc refusé de chercher une ligne « coupe de cheveux » que le patron avait
+ * écrite lui-même sur un devis. *« On ne fait pas une appli pour les
+ * paysagistes, on la fait pour les artisans ! »*
  */
-export const METIER_ATLAS = `Atlas est l'application d'un artisan des ESPACES VERTS français : paysagiste,
-élagueur, jardinier d'entretien. Tout ce qu'on te donne à lire ou à écrire vient de ce métier : désherbage,
-débroussaillage, tonte, taille de haie, élagage, abattage, dessouchage, paillage, engazonnement, massifs,
-arrosage automatique, évacuation des déchets verts. Quand un mot est ambigu, c'est le sens du métier qui
-l'emporte, jamais le sens le plus courant de la langue.`;
+export const METIER_ATLAS = `Atlas est une application pour les artisans. Son métier d'origine est celui des ESPACES VERTS
+français : paysagiste, élagueur, jardinier d'entretien (désherbage, débroussaillage, tonte, taille de haie,
+élagage, abattage, dessouchage, paillage, engazonnement, massifs, arrosage automatique, évacuation des déchets
+verts). Quand un mot est ambigu, c'est le sens de ce métier qui l'emporte, jamais le sens le plus courant de
+la langue. Mais un artisan vend ce qu'il veut : un mot qui n'appartient pas à ce métier n'est jamais une raison
+de refuser, ni de le corriger. Tu le prends tel qu'il est écrit, et tu le cherches dans ses données.`;
 
 /**
  * La même chose en une ligne, pour les consignes qui n'ont pas la place.
@@ -41,5 +48,6 @@ l'emporte, jamais le sens le plus courant de la langue.`;
  * les services qui rendent du JSON court n'ont pas de quoi porter cinq lignes.
  */
 export const METIER_ATLAS_COURT =
-  "Atlas est l'application d'un artisan des ESPACES VERTS français (paysagiste, élagueur, jardinier). " +
-  "Devant un mot ambigu, retiens le sens de ce métier, jamais le sens le plus courant de la langue.";
+  "Atlas est une application pour les artisans, née dans les ESPACES VERTS français (paysagiste, élagueur, jardinier). " +
+  "Devant un mot ambigu, retiens le sens de ce métier, jamais le sens le plus courant de la langue ; " +
+  "un mot hors de ce métier n'est jamais une raison de refuser : prends-le tel qu'il est écrit.";

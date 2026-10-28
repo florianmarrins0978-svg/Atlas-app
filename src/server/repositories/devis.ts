@@ -1171,6 +1171,7 @@ async function devisÀImprimer(tx: DbOrTx, chantierId: string) {
  */
 export type LigneDevisAilleurs = {
   ligneId: string;
+  devisId: string;
   libelle: string;
   montant: string;
   quantite: string;
@@ -1216,6 +1217,7 @@ export async function rechercherLignesDevisEntreprise(
     const lignes = await tx
       .select({
         ligneId: lignesDevis.id,
+        devisId: devis.id,
         libelle: lignesDevis.libelle,
         montant: lignesDevis.montant,
         quantite: lignesDevis.quantite,

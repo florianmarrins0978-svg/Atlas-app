@@ -11,6 +11,10 @@ Branche `claude/accountant-document-signature-2redc5`, d'après sa planche `appl
 **Et le renvoi à corriger, codé le même jour sur la même branche** (sa planche `appli/soignee/comptable-retour.html`, *« tu peux coder ça, pas de batterie »*). Migration `drizzle/0152_retours_du_comptable.sql` (expand : une table neuve, FORCE RLS, seul `vu_le` bouge). Règle : `src/lib/retour-comptable.ts`. Serveur : `renvoyerParJeton`, `retoursAMontrer`, `marquerRetourVu` dans `verification-comptable.ts`. Écrans : `Renvoi.tsx` et la barre de `Verification.tsx` chez le comptable ; Mes dossiers (« Correction demandée », « Tout est corrigé » et son `mailto:`) ; l'accueil (`CarteRetour`). Suites vertes ici : la règle (6), la base (7), le navigateur (8), et les deux voisines (14 et 7). **Reste** : la batterie (niveau 3), puis `main`. `ARCHITECTURE.md` §524.
 
 ---
+## L'ASSISTANT JOINT LES DOCUMENTS QU'IL TROUVE, CODÉ (27 octobre 2026)
+
+Planche B retenue. Tous ses documents, à toucher sous la réponse : devis (et la ligne trouvée), factures, avoirs, rapports d'entretien, contrats, feuille et fiches d'un chantier, tickets, bilans, photos, pièces des fournisseurs, papiers des véhicules. `ARCHITECTURE.md` §525. Reste : la mémoire des pièces au rechargement (`TODO.md`).
+
 ## ARROSAGE : SON CROQUIS DU 27 OCTOBRE (27 octobre 2026)
 
 Coins tirés retirés des zones (`formes-du-dessin.ts`, `dessin-du-plan.ts`,

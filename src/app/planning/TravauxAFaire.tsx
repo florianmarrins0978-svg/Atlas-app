@@ -615,7 +615,7 @@ export default function TravauxAFaire({
                 </div>
                 {rangOuvert !== null && photos[rangOuvert] && (
                   <VisionneusePhoto
-                    photos={photos.map((p) => p.storageKey)}
+                    photos={photos.map((p) => `/api/fichiers/${p.storageKey}`)}
                     rang={rangOuvert}
                     onRang={setRangOuvert}
                     onFermer={() => setRangOuvert(null)}

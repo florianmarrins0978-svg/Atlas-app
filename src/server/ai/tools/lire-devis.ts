@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { Outil } from "./types";
 import { CHAMP_CHANTIER_VISE, chantierVise } from "./chantier-vise";
 import { getLignesDevis, listerVersionsDevis, lireVersionDevis } from "../../repositories/devis";
+import { pieceDuDevis } from "@/lib/pieces-de-l-assistant";
 
 /**
  * Lire un devis — **celui qu'on demande, pas seulement le dernier**.
@@ -69,6 +70,7 @@ export const lireDevis: Outil = {
       // d'affirmer qu'il n'y en a qu'une — l'erreur servie au patron.
       versionsDisponibles: versions,
       numeroCommercial: devis.numeroCommercial,
+      piece: pieceDuDevis({ devisId: devis.id, numero: devis.numeroCommercial, date: devis.dateEmission }),
       numeroVersion: devis.numeroVersion,
       statut: devis.statut,
       totalHt: devis.totalHt,
