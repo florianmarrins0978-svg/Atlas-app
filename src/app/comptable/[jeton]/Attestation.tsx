@@ -407,9 +407,28 @@ export default function Attestation({
               <h2 className="mt-[18px] text-[28px] leading-[1.08]" style={{ fontFamily: font.display }}>
                 Attestation envoyée
               </h2>
-              <p className="mt-2.5 max-w-[34ch] text-[15.5px] leading-[1.45]" style={{ color: colors.inkSoft }}>
-                {entreprise} la reçoit dans Atlas, rangée avec son dossier.
-              </p>
+              {/* **À qui elle est partie**, sa planche : le patron avec le dossier,
+                  et la copie du comptable, le PDF joint aux deux (29 octobre 2026). */}
+              <ul className="mt-4 w-full max-w-[400px] text-left" data-atlas="destinataires">
+                {[
+                  { icone: "email" as const, nom: entreprise, dessous: "Avec le dossier" },
+                  { icone: "copier" as const, nom: "Une copie pour vous", dessous: saisie.email.trim() },
+                ].map((d, i) => (
+                  <li key={d.nom} className="flex items-center gap-3.5 py-3" style={i > 0 ? { boxShadow: `inset 0 1px 0 ${colors.lineSoft}` } : undefined}>
+                    <span style={{ color: colors.or }}>
+                      <Icone nom={d.icone} taille={22} />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-[18px] leading-[1.25]" style={{ fontFamily: font.display }}>
+                        {d.nom}
+                      </span>
+                      <span className="block truncate text-[14.5px] leading-[1.4]" style={{ color: colors.inkSoft }}>
+                        {d.dessous}
+                      </span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
 

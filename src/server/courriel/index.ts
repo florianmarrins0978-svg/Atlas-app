@@ -23,6 +23,12 @@ export type Courriel = {
   objet: string;
   /** Texte brut. Un code à recopier n'a pas besoin de HTML, et le texte passe partout. */
   texte: string;
+  /**
+   * Un document joint, et un seul : l'attestation signée du comptable, ses
+   * deux « oui » du 29 octobre 2026 (le PDF joint au patron, une copie au
+   * comptable). Il savait ce que cela fait passer par Brevo.
+   */
+  pieceJointe?: { nom: string; contenu: Uint8Array };
 };
 
 export type ResultatEnvoi = { ok: true } | { ok: false; raison: string };

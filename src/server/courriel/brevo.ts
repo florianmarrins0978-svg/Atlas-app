@@ -9,9 +9,9 @@ import type { Courriel, ResultatEnvoi } from "./index";
  * (Expéditeurs) : sans cela Brevo répond 400 et rien ne part — c'est pourquoi
  * `env.ts` refuse une clé sans `COURRIEL_EXPEDITEUR`.
  *
- * **Ce qui sort d'ici : une adresse, un objet, un texte.** Jamais le contenu
- * d'un chantier, jamais une donnée client : ce module sert un code de six
- * chiffres. Une réponse qui n'est pas 2xx est un échec dit à l'appelant, pas
+ * **Ce qui sort d'ici : une adresse, un objet, un texte**, et le seul document
+ * qu'il a accepté d'y faire passer : l'attestation signée de son comptable
+ * (29 octobre 2026). Jamais le contenu d'un chantier, jamais une donnée client. Une réponse qui n'est pas 2xx est un échec dit à l'appelant, pas
  * une exception — l'écran doit pouvoir proposer « Renvoyer ».
  */
 const ADRESSE_BREVO = "https://api.brevo.com/v3/smtp/email";
@@ -35,6 +35,9 @@ export async function envoyerParBrevo(
         to: [{ email: courriel.a }],
         subject: courriel.objet,
         textContent: courriel.texte,
+        ...(courriel.pieceJointe
+          ? { attachment: [{ name: courriel.pieceJointe.nom, content: Buffer.from(courriel.pieceJointe.contenu).toString("base64") }] }
+          : {}),
       }),
       signal: controleur.signal,
     });

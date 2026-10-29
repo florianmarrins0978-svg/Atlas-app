@@ -1,5 +1,6 @@
 import { PDFDocument } from "pdf-lib";
-import { contenuDeLAttestation, courrielDeLAttestation, texteDuTampon, type SaisieLue } from "@/lib/attestation-comptable";
+import { contenuDeLAttestation, courrielDeLAttestation, courrielDeLaCopie, nomDuPdfDeLAttestation, texteDuTampon, type SaisieLue } from "@/lib/attestation-comptable";
+import type { Courriel } from "./courriel";
 import { jourIso } from "@/lib/jour";
 import { logger } from "./logger";
 import { enregistrerObjet, supprimerObjet } from "./storage";
@@ -20,7 +21,7 @@ import { dossierASignerParJeton, rangerAttestationParJeton, type AttestationDuDo
 const SIGNATURE_MAX_OCTETS = 400_000;
 
 export type ResultatSignature =
-  | { ok: true; attestation: AttestationDuDossier; courriel: { a: string; objet: string; texte: string } | null }
+  | { ok: true; attestation: AttestationDuDossier; courriels: Courriel[] }
   | { ok: false; raison: string };
 
 /**
@@ -78,9 +79,13 @@ export async function signerLAttestation(jeton: string, saisie: SaisieLue, signa
     await supprimerObjet(objet.storageKey);
     return r;
   }
-  return {
-    ok: true,
-    attestation: r.attestation,
-    courriel: d.email ? { a: d.email, ...courrielDeLAttestation({ nom: saisie.signataire.nom, societe: saisie.signataire.societe, du: d.du, au: d.au, conclusion: saisie.conclusion }) } : null,
-  };
+  // **Le PDF part avec les deux courriels** (ses « oui » du 29 octobre 2026) :
+  // celui qui vient d'être rangé, octet pour octet, et pas un second rendu.
+  const pieceJointe = { nom: nomDuPdfDeLAttestation(d.entreprise), contenu: pdf };
+  const courriels: Courriel[] = [];
+  if (d.email) {
+    courriels.push({ a: d.email, pieceJointe, ...courrielDeLAttestation({ nom: saisie.signataire.nom, societe: saisie.signataire.societe, du: d.du, au: d.au, conclusion: saisie.conclusion }) });
+  }
+  courriels.push({ a: saisie.signataire.email, pieceJointe, ...courrielDeLaCopie({ entreprise: d.entreprise, du: d.du, au: d.au, conclusion: saisie.conclusion }) });
+  return { ok: true, attestation: r.attestation, courriels };
 }

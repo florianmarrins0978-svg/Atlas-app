@@ -52,7 +52,8 @@ const SIGNATURE_MAX_CARACTERES = 560_000;
  * comme le verdict : le jeton est la garde, la cadence est bornée, et tout ce
  * que le navigateur envoie se relit (`lireLaSaisie`, `signerLAttestation`).
  *
- * L'avis au patron part après le rangement, et son échec ne défait rien :
+ * Les deux courriels (le patron, et la copie du comptable, le PDF joint aux
+ * deux) partent après le rangement, et leur échec ne défait rien :
  * l'attestation est déjà dans Mes dossiers et sur son accueil.
  */
 export async function signerAttestationAction(
@@ -77,9 +78,9 @@ export async function signerAttestationAction(
   try {
     const r = await signerLAttestation(jeton, lue.valeur, new Uint8Array(Buffer.from(signature.slice(prefixe.length), "base64")), new Date());
     if (!r.ok) return r;
-    if (r.courriel) {
-      const envoi = await envoyerCourriel(r.courriel);
-      if (!envoi.ok) logger.warn("L'avis de l'attestation n'est pas parti chez le patron", { raison: envoi.raison });
+    for (const courriel of r.courriels) {
+      const envoi = await envoyerCourriel(courriel);
+      if (!envoi.ok) logger.warn("Un courriel de l'attestation n'est pas parti", { raison: envoi.raison });
     }
     return { ok: true, conclusion: r.attestation.conclusion, signeLe: r.attestation.signeLe.toISOString() };
   } catch (err) {

@@ -14,6 +14,7 @@ export async function envoyerEnDev(courriel: Courriel): Promise<ResultatEnvoi> {
     a: courriel.a,
     objet: courriel.objet,
     texte: courriel.texte,
+    pieceJointe: courriel.pieceJointe ? `${courriel.pieceJointe.nom}, ${courriel.pieceJointe.contenu.length} octets` : null,
   });
   return { ok: true };
 }

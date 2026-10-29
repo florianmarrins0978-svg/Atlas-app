@@ -122,12 +122,22 @@ async function main() {
     attestationId = r.attestation.id;
     assert.equal(r.attestation.conclusion, "reserves");
     assert.deepEqual([r.attestation.lignes, r.attestation.validees, r.attestation.rejetees], [2, 1, 1]);
-    assert.equal(r.courriel?.a, "contact@jardins-a.test");
-    assert.ok(!r.courriel!.texte.includes("CB POSTE"), "une ligne de banque est partie dans le courriel");
+    // **Ses deux « oui » du 29 octobre 2026** (planche `comptable-attestation.html`) :
+    // le PDF part joint au courriel du patron, et une copie chez le comptable.
+    assert.deepEqual(r.courriels.map((c) => c.a), ["contact@jardins-a.test", "claire@cabinet-bernard.fr"]);
+    for (const c of r.courriels) {
+      assert.ok(!c.texte.includes("CB POSTE"), "une ligne de banque est partie dans le texte du courriel");
+      assert.match(c.texte, /jointe/, `le courriel à ${c.a} ne dit pas que l'attestation est jointe`);
+    }
     const cle = await fichierDeLAttestationParJeton(jeton, MAINTENANT);
     assert.ok(cle);
     const pdf = await lireObjet(cle.cle);
     assert.equal(pdf.subarray(0, 5).toString("latin1"), "%PDF-");
+    for (const c of r.courriels) {
+      assert.ok(c.pieceJointe, `aucun PDF joint au courriel à ${c.a}`);
+      assert.match(c.pieceJointe.nom, /\.pdf$/);
+      assert.ok(Buffer.from(c.pieceJointe.contenu).equals(pdf), "le PDF joint n'est pas celui qui est rangé avec le dossier");
+    }
   });
 
   await test("le comptable retrouve son attestation, à jour", async () => {

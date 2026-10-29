@@ -258,8 +258,24 @@ export function courrielDeLAttestation(d: { nom: string; societe: string; du: st
     objet: `Votre dossier est vérifié : ${mot}`,
     texte:
       `Bonjour,\n\n${d.nom}, ${d.societe}, a vérifié votre dossier justifié du ${jourComplet(d.du)} au ${jourComplet(d.au)} et signé l’attestation : ${mot}.\n\n` +
-      "Elle est rangée avec le dossier dans Atlas : Terminés, Pour mon comptable, Mes dossiers justifiés.\n\nAtlas",
+      "L’attestation signée est jointe, et rangée avec le dossier dans Atlas : Terminés, Pour mon comptable, Mes dossiers justifiés.\n\nAtlas",
   };
+}
+
+/** La copie que le comptable reçoit de ce qu'il vient de signer, à l'adresse qu'il a donnée. */
+export function courrielDeLaCopie(d: { entreprise: string; du: string; au: string; conclusion: Conclusion }): { objet: string; texte: string } {
+  const mot = MOT_DE_LA_CONCLUSION[d.conclusion].toLowerCase();
+  return {
+    objet: `Votre attestation pour ${d.entreprise} : ${mot}`,
+    texte:
+      `Bonjour,\n\nVoici une copie de l’attestation que vous avez signée pour ${d.entreprise}, sur le dossier du ${jourComplet(d.du)} au ${jourComplet(d.au)} : ${mot}.\n\n` +
+      "L’attestation signée est jointe.\n\nAtlas",
+  };
+}
+
+/** Le nom du PDF joint : celui que le patron et le comptable verront dans leur messagerie. */
+export function nomDuPdfDeLAttestation(entreprise: string): string {
+  return `Attestation ${entreprise.replace(/[\\/:*?"<>|]/g, " ").trim()}.pdf`;
 }
 
 /** La carte de l'accueil : qui a signé, et ce qui reste à reprendre. */

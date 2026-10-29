@@ -14,7 +14,7 @@
 **À trancher par lui, écrit sur la planche :**
 - **Ce que le document vaut** : une attestation de vérification des justificatifs, signature électronique simple. Elle ne remplace pas l'attestation de présentation des comptes.
 - **Être prévenu en cours de route** : seulement à la signature aujourd'hui. S'il veut savoir dès qu'une ligne est rejetée, ce sera une carte de plus.
-- **Le PDF joint au courriel et la copie au comptable**, montrés sur la planche, ne partent pas : le service d'envoi ne transporte qu'un avis. Le comptable télécharge son exemplaire à la fin. À rouvrir s'il le demande, en sachant ce que ça envoie chez Brevo.
+- ~~**Le PDF joint au courriel et la copie au comptable**~~ **CODÉS LE 29 OCTOBRE 2026**, ses deux « oui » : le courriel sait porter un PDF (`Courriel.pieceJointe`, Brevo `attachment`), et la signature envoie le PDF rangé au patron et une copie au comptable, à l'adresse qu'il a donnée.
 
 ## L'ASSISTANT JOINT LES DOCUMENTS : CE QUI RESTE (27 octobre 2026)
 
