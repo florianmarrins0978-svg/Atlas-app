@@ -6,6 +6,11 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-29
+
+- **Salarié absent C, la lecture bancaire à profondeur maximale (migration 0153) et les points médians sont sur `main`**, ensemble, après la batterie entière (sa demande : *« une fois vert tu peux fusionner, tu es autonome »*). La batterie a trouvé trois défauts dans ces lots, corrigés avant la poussée : rejouer une dictée créait un second arbre (le rapprochement ne reconnaissait plus un libellé enrichi depuis que les tirets sont devenus des parenthèses, `ARCHITECTURE.md` §530), la piste Salarié absent passait pour un bouton carré, et la suite de la grille des prix cherchait encore l'ancien nom à tirets. Ce que ça évite : un devis qui gonfle d'une prestation à chaque rejeu.
+- **La batterie qui se coupait toute seule** : lancée par `nohup … &`, elle mourait avec le conteneur mis en veille à la fin du tour ; et sur les postes du nuage, le chemin de Chromium écrit dans le dépôt n'existe plus, ce qui faisait tomber toutes les suites navigateur. La marche à suivre est dans `CLAUDE.md` §5. Détail : `docs/integration-28-octobre.md`.
+
 ## 2026-10-28
 
 - **Plus aucun point médian ni tiret entre deux valeurs à l'écran**, sur sa demande : *« fais une vérification qu'il n'y ait pas de · ou de — à changer dans l'appli »*. Le contrôle (`scripts/_tirets.mjs`) ne voyait le signe que collé à un mot ; seul entre deux valeurs (« {r.nom} · {montant} », « `${a} — ${b}` », « .join(" · ") », « {legende} — </span> »), il passait. Il le voit désormais, et `test-aucun-tiret.ts` lit la même liste de fichiers que le garde-fou d'écriture au lieu de la sienne. Vingt-trois phrases corrigées : le message du relevé de Ma TVA, le nom d'un chantier (« M. Roux, Taille de haie »), l'objet du courriel d'une facture, les rendez-vous de son agenda, le libellé enrichi d'une ligne de devis (« Abattage d'un chêne (démontage, ⌀ 70 cm) »), les mois d'un trimestre (« juil. à sept. »), la légende d'une photo du diagnostic (« Photo de X, sous licence Y. »), les buses du catalogue (« Buse 15-VAN (Rain Bird) »), la ligne de la base dans Réglages, et six autres. Les maquettes gelées de `src/app/design/`, qui n'existent pas en production, sont déclarées hors du produit.

@@ -1,9 +1,21 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-10-27, branche `claude/accountant-document-signature-2redc5`,
-dernière migration `drizzle/0152_retours_du_comptable.sql`
+**Dernière mise à jour :** 2026-10-29, `main` (`5d9c8d13`),
+dernière migration `drizzle/0153_banque_profondeur_lue.sql`
 
 ---
+## L'INTÉGRATION DU 28 OCTOBRE, SUR `main` (29 octobre 2026)
+
+Salarié absent C (`lot/salarie-absent-c`), la lecture bancaire à profondeur
+maximale (`claude/banque-lecture-dossier-complet`, migration 0153, expand
+seule) et les points médians et tirets (`lot/points-et-tirets`), fusionnés
+ensemble, plus trois corrections trouvées par la batterie : le rapprochement
+d'une prestation enrichie (`ARCHITECTURE.md` §530), la forme de la piste
+Salarié absent, le nom de la case de la grille des prix. Terminés y était
+déjà depuis le 25 octobre. Payé par (bouts ronds) et le rond « Tout » de Vos
+clients restent sur deux branches locales d'une autre session (`TODO.md`).
+Le détail : `docs/integration-28-octobre.md`.
+
 ## L'ATTESTATION DU COMPTABLE ET LE RENVOI À CORRIGER, SUR `main` (28 octobre 2026)
 
 Branche `claude/accountant-document-signature-2redc5`, d'après sa planche `appli/soignee/comptable-attestation.html` (*« tu peux coder, pas de batterie »*). Migration `drizzle/0151_attestations_du_comptable.sql` (expand : une table neuve, FORCE RLS, ni réécriture ni effacement). Règle : `src/lib/attestation-comptable.ts`. Serveur : `src/server/attestation-comptable.ts`, `src/server/pdf/attestation-comptable-pdf.ts`, `verification-comptable.ts`. Écrans : `src/app/comptable/[jeton]/` (`Attestation.tsx`, `Tampon.tsx`, la barre de `Verification.tsx`, la route `attestation/pdf`), Mes dossiers (la ligne de l'attestation, `VeilleDesNouvelles`), l'accueil (`CarteAttestation` dans `Notifications.tsx`), la route `termines/comptable/attestations/[id]/pdf`. Suites vertes ici : la règle (9), la base (8), le navigateur (7), et les deux suites voisines du comptable (14 et 7). **Sur `main` le 28 octobre**, batterie commune verte. `ARCHITECTURE.md` §523.
@@ -20,9 +32,9 @@ Planche B retenue. Tous ses documents, à toucher sous la réponse : devis (et l
 Branche `lot/main-oeuvre-curseur`, d'après sa planche `appli/soignee/main-oeuvre-curseur.html` (palette Jardin, montant écrit à l'euro près). Écran : `src/app/chantiers/[id]/RepartirLaMainOeuvre.tsx`. Règles : `src/lib/main-oeuvre-dictee.ts` (`repartirMainOeuvre` garde les montants qu'il a réglés, `glisserLeJoint`, `ecrireUnMontant`). Jetons : `pastelsMainOeuvre`. Suites : `test-repartir-main-oeuvre.ts`, `test-main-oeuvre-dictee-db.ts`, `test-main-oeuvre-barre-e2e.ts`. **Sur `main` le 28 octobre**, batterie commune verte. `ARCHITECTURE.md` §526, `docs/main-oeuvre-curseur.md`.
 
 ---
-## SALARIÉ ABSENT, LA C, CODÉE (27 octobre 2026), PAS ENCORE SUR `main`
+## SALARIÉ ABSENT, LA C, SUR `main` (27 octobre 2026, livrée le 29)
 
-Fait sur `lot/salarie-absent-c` : la feuille, la piste glissable, le geste d'un jour qui ne touche qu'à ce jour. Reste : la batterie entière (niveau 3), avec son accord, puis `main`. `ARCHITECTURE.md` §528.
+La feuille, la piste glissable, le geste d'un jour qui ne touche qu'à ce jour. Sur `main` par l'intégration du 28 octobre (`5d9c8d13`), après la batterie entière. `ARCHITECTURE.md` §528.
 
 ## ARROSAGE : SON CROQUIS DU 27 OCTOBRE (27 octobre 2026)
 

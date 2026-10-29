@@ -1011,6 +1011,19 @@ chantiers évaporés. **Une demi-heure à soupçonner du code juste.**
 La batterie est une machine à un seul occupant : on la lance, et on attend. Pour
 diagnostiquer en parallèle, il faut une AUTRE base — pas la sienne.
 
+**DANS UNE SESSION DU NUAGE, LA BATTERIE SE LANCE EN TÂCHE SUIVIE — payé la
+nuit du 28 octobre 2026.** Une session l'a lancée trois fois par `nohup … &`
+dans une commande ordinaire : l'outil ne la suivait pas, le conteneur s'est
+mis en veille à la fin de son tour, et la batterie est morte avec lui au bout
+de cinq à sept minutes, sans un mot dans son journal. Ce n'était ni le délai
+de trente minutes, ni la mémoire, ni le disque.
+
+| | |
+|---|---|
+| **le lancement** | une tâche d'arrière-plan de l'outil (`run_in_background`, `timeout` de 7 200 000 ms), sortie vers un fichier ; jamais `nohup … &`, jamais au premier plan (coupé à deux minutes) |
+| **Chromium** | `PLAYWRIGHT_EXECUTABLE_PATH=/opt/pw-browsers/chromium CHROMIUM_PATH=/opt/pw-browsers/chromium` : le chemin écrit dans le dépôt (`chromium-1194`) n'existe plus sur ces postes, et sans eux **toutes** les suites navigateur tombent sans défaut du produit (`TODO.md`) |
+| **les rouges rejoués sur `main`** | `verifier-rouge-prealable.ts` hérite de l'environnement : lui donner celui de la batterie (`REDIS_URL`, `DATABASE_URL` du rôle `postgres`, `AUTH_SECRET`, `CRON_SECRET`, `LLM_PROVIDER=dev`), sans quoi il rend « illisible » des deux côtés |
+
 **Ne jamais la faire passer par `tail`.** Elle écrit son verdict à la fin, mais
 le nom de la suite tombée, lui, est écrit au milieu — parmi les cinquante-huit.
 Tronquée à ses dernières lignes, elle annonce « 57/58 » sans dire laquelle, et

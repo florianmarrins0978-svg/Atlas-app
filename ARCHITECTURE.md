@@ -36465,3 +36465,13 @@ que gardés en double — `main` n'a qu'une seule version de chacun.
 **Ce qui se voit au patron quand il voit moins.** La profondeur atteinte et le premier refus sont gardés sur la liaison (`historique_jours`, `historique_refus`, migration 0153). Ma banque affiche alors « La banque ne rend que N jours, depuis le JJ/MM/AAAA. Elle refuse davantage : … ». Le message reste tant qu'une lecture réussie ne le change pas, y compris après une lecture retenue par le délai de demi-heure.
 
 **Ce qui reste hors de portée ici.** La profondeur que la banque accepte réellement, et le texte de son refus, ne se mesurent qu'avec une clé Enable Banking et un compte réel. Le nombre de pages par lecture, et son effet sur le quota de la banque, sont inconnus : le plafond est de mille pages par compte, au-delà duquel la lecture est refusée et rien n'est rangé.
+
+## §530 : Un libellé enrichi se reconnaît par la source qui l'écrit, sous ses deux formes
+
+*29 octobre 2026, trouvé par la batterie de l'intégration du 28 octobre.*
+
+**Le défaut.** Le lot des tirets a fait passer `libelleEnrichi` de « base — précisions » à « base (précisions) ». `prestationCorrespondante` demandait bien le séparateur à la source, mais en coupant le dernier caractère d'un libellé enrichi fabriqué pour l'occasion : la recette supposait que la précision finissait le libellé. Avec les parenthèses, le préfixe obtenu était faux, et plus rien ne se reconnaissait. Rejouer une dictée créait un second arbre sur le chantier (`test-prestation-structuree-db`, R23).
+
+**La règle.** `questions-chiffrage.ts` dit elle-même comment commence un libellé qu'elle a augmenté (`debutsDUnLibelleEnrichi`) : la forme d'aujourd'hui, et celle d'avant le 28 octobre, que portent encore les libellés déjà en base. Le rapprochement n'a plus de recette à lui. Changer l'écriture d'un libellé enrichi oblige à changer cette fonction juste en dessous, et l'ancienne forme y reste tant qu'une base peut la porter.
+
+**Ce qui a été écarté.** Réécrire en base les anciens libellés au nouveau format : une migration de données sous FORCE RLS pour un gain nul, puisque l'ancienne forme se lit en une ligne.

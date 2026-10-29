@@ -25,9 +25,9 @@ Un outil qui veut joindre un document met `piece: pieceDu…()` dans son résult
 ## LA BARRE DE LA MAIN D'ŒUVRE (27 octobre 2026, sur `main` le 28)
 
 `RepartirLaMainOeuvre.tsx` porte la planche `appli/soignee/main-oeuvre-curseur.html` (vue « Proposé », palette Jardin), codée sans batterie à sa demande. **Les pièges :** l'écran ne calcule rien, il appelle `jointATirer`, `glisserLeJoint` et `ecrireUnMontant` (`src/lib/main-oeuvre-dictee.ts`) et enregistre les montants obtenus comme parts ; `repartirMainOeuvre` écrit telles quelles des parts qui font juste le total, et repartage à la dizaine tout le reste. Changer l'une des trois sans les deux autres refait diverger la barre et le devis. Les teintes sont des jetons FIXES (`pastelsMainOeuvre`) et leur encre aussi : ne pas les dériver de la charte. Le montant d'un morceau se mesure dans un effet, sur le DOM, et ne passe pas par l'état (la règle `set-state-in-effect`). **Reste** : `npm run verifier:avant-livraison` (niveau 3), puis `main` (`ARCHITECTURE.md` §526, `docs/main-oeuvre-curseur.md`).
-## SALARIÉ ABSENT, LA C, SUR `lot/salarie-absent-c` (27 octobre 2026)
+## SALARIÉ ABSENT, LA C (27 octobre 2026, sur `main` le 29)
 
-Codée à sa demande, **batterie pas jouée** (« pas de batterie ») : le lot n'est pas sur `main`. La feuille « Salarié absent ? » (`PasLaCeJour.tsx`, `PisteAbsence.tsx`) et le geste d'un jour (`absenceDuJour`, `gesteDuJour`), qui corrige la semaine effacée par un seul jour. Pour livrer : dans le dossier du lot, `npm run verifier:avant-livraison` avec son accord, puis `git push origin HEAD:main`. Détail : `ARCHITECTURE.md` §528, `docs/salarie-absent-c.md`.
+Sur `main` depuis le 29 octobre 2026, avec la banque (0153) et les points médians, après la batterie entière (`docs/integration-28-octobre.md`). La feuille « Salarié absent ? » (`PasLaCeJour.tsx`, `PisteAbsence.tsx`) et le geste d'un jour (`absenceDuJour`, `gesteDuJour`), qui corrige la semaine effacée par un seul jour. Détail : `ARCHITECTURE.md` §528, `docs/salarie-absent-c.md`.
 
 ## POUR MON COMPTABLE : UN VIREMENT REÇU SE RÈGLE DANS SA LIGNE (26 octobre 2026)
 

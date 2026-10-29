@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — La batterie d'intégration du 28 octobre 2026</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="la-batterie-dintégration-du-28-octobre-2026">La batterie d'intégration du 28 octobre 2026</h1>
+<p>Sa demande, la nuit du 28 au 29 : vérifier le prompt d'une session qui n'arrivait pas à jouer la batterie des planches « pas sur <code>main</code> », parce que <em>« la batterie s'est coupée deux fois toute seule, bizarrement, ça n'est jamais arrivé »</em>, puis <em>« une fois vert tu peux fusionner, tu es autonome »</em>.</p>
+<h2 id="ce-que-le-prompt-affirmait-et-ce-qui-était-vrai">Ce que le prompt affirmait, et ce qui était vrai</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Affirmation du prompt</th>
+<th>Verdict</th>
+<th>Ce qui le fonde</th>
+</tr></thead><tbody>
+<tr>
+<td>La branche <code>claude/integration-planches-28-octobre</code> existe</td>
+<td><strong>faux ailleurs que chez elle</strong> : jamais poussée, elle n'existait que dans le conteneur de l'autre session</td>
+<td><code>git ls-remote origin</code> ; le journal de la session « Dernière correction » ne porte aucun <code>git push</code></td>
+</tr>
+<tr>
+<td>Terminés n'est pas sur <code>main</code></td>
+<td><strong>faux</strong> : <code>37b60127</code> est sur <code>main</code> depuis le 25 octobre</td>
+<td><code>git merge-base --is-ancestor 37b60127 origin/main</code></td>
+</tr>
+<tr>
+<td>Salarié absent C n'est pas sur <code>main</code></td>
+<td><strong>vrai</strong> (<code>lot/salarie-absent-c</code>, 1 commit)</td>
+<td></td>
+</tr>
+<tr>
+<td>Le lot banque, renuméroté 0153</td>
+<td><strong>vrai</strong> (<code>claude/banque-lecture-dossier-complet</code>, 3 commits, migration expand seule)</td>
+<td></td>
+</tr>
+<tr>
+<td>Points médians et tirets (<code>3f3071e3</code>)</td>
+<td><strong>vrai</strong> (<code>lot/points-et-tirets</code>)</td>
+<td></td>
+</tr>
+<tr>
+<td>Payé par (bouts ronds), Vos clients (rond « Tout »)</td>
+<td><strong>codés, mais sur deux branches LOCALES de l'autre session</strong>, jamais poussées : <code>claude/paye-par-bouts-ronds</code> (2ceda082), <code>claude/tout-cocher-au-dessus-de-a</code> (9ebeb010). Elle refuse de les pousser sans son accord, et elle a raison</td>
+<td>son journal ; ma demande du 28 octobre, 23 h 27</td>
+</tr>
+<tr>
+<td>Les conflits de documentation gardent la version de <code>main</code></td>
+<td><strong>refait autrement</strong> : les deux côtés sont gardés. Effacer le paragraphe d'un lot laisse son code sans son pourquoi</td>
+<td></td>
+</tr>
+<tr>
+<td>« Coupée à 30 minutes »</td>
+<td><strong>faux</strong> : voir plus bas</td>
+<td></td>
+</tr>
+</tbody></table></div>
+<h2 id="pourquoi-la-batterie-sest-coupée-deux-fois">Pourquoi la batterie s'est coupée deux fois</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Ni le délai de 30 minutes, ni « Stop tout », ni la mémoire, ni le disque.</strong> La session lançait la batterie par <code>nohup … &amp;</code> dans une commande ordinaire : l'outil ne la suivait pas (<code>tasks: []</code>). Son tour fini, le conteneur s'est mis en veille, et la batterie est morte avec lui, au bout de 7 puis 5 minutes. Le journal le montre : « Allocating sandbox » à 20 h 06, puis un nouveau démarrage 25 secondes après la dernière ligne de la deuxième batterie.</p>
+<p><strong>Et une troisième cause, que personne n'avait vue</strong> : sur ces postes, toutes les suites navigateur tombaient. Le dépôt cherche Chromium à <code>/opt/pw-browsers/chromium-1194</code>, qui n'existe plus ici (c'est <code>chromium-1243</code>, lien stable <code>/opt/pw-browsers/chromium</code>). Même jouée jusqu'au bout, sa batterie aurait rendu 88 suites rouges sans aucun défaut du produit.</p>
+<p><strong>Ce qui marche</strong> : une tâche d'arrière-plan suivie par l'outil (2 heures autorisées), et <code>PLAYWRIGHT_EXECUTABLE_PATH=/opt/pw-browsers/chromium CHROMIUM_PATH=/opt/pw-browsers/chromium</code>. Trois batteries sont allées au bout cette nuit ainsi.</p>
+<h2 id="les-défauts-que-la-batterie-a-trouvés-dans-les-lots">Les défauts que la batterie a trouvés dans les lots</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Défaut</th>
+<th>D'où il venait</th>
+<th>Correction</th>
+</tr></thead><tbody>
+<tr>
+<td>Rejouer une dictée créait un <strong>second arbre</strong> sur le chantier</td>
+<td>le lot des tirets a fait passer le libellé enrichi de « base — précisions » à « base (précisions) » ; le rapprochement coupait le dernier caractère pour trouver son préfixe, et ne reconnaissait plus rien, ni le neuf ni l'ancien déjà en base</td>
+<td>la source dit elle-même comment commence un libellé enrichi, sous ses deux formes (<code>debutsDUnLibelleEnrichi</code>) ; le découpage disparaît. Test rouge puis vert, deux cas</td>
+</tr>
+<tr>
+<td>Un « bouton carré » dans la piste Salarié absent</td>
+<td>c'est la forme de sa planche C : une case transparente sous un curseur à 10 px</td>
+<td>exception nommée, bornée à <code>data-atlas="piste-quand"</code> ; un autre bouton carré du fichier fait toujours rougir (vérifié)</td>
+</tr>
+<tr>
+<td>La suite de la grille des prix attendait 45 s</td>
+<td>elle cherchait encore l'ancien nom à tirets de la case</td>
+<td>la suite suit son nom sans tiret (§5 bis : on ne remet pas le tiret)</td>
+</tr>
+</tbody></table></div>
+<h2 id="les-chiffres">Les chiffres</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Contrôle</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td>Types, lint, construction, mémoire du dépôt</td>
+<td>verts</td>
+</tr>
+<tr>
+<td>Suites base de données</td>
+<td><strong>535 / 535</strong></td>
+</tr>
+<tr>
+<td>Suites navigateur</td>
+<td><strong>200 / 202</strong></td>
+</tr>
+<tr>
+<td>Connexion derrière un proxy</td>
+<td>verte</td>
+</tr>
+<tr>
+<td>Les deux rouges navigateur (<code>test-poser-une-date-e2e</code>, <code>test-le-client-s-est-trompe-e2e</code>)</td>
+<td><strong>rouges à l'identique sur <code>main</code></strong> (<code>verifier-rouge-prealable.ts</code>) : ce lot n'en est pas la cause, la fusion était ouverte. Elles dépendent de la date, en fin de mois (<code>TODO.md</code>)</td>
+</tr>
+<tr>
+<td>La feuille « Salarié absent ? », regardée à 390 px</td>
+<td>conforme à la planche C ; la première case dit « Absent » au premier appui ; rien ne déborde</td>
+</tr>
+<tr>
+<td><strong>Sur <code>main</code></strong></td>
+<td><strong><code>58cdac65..5d9c8d13</code></strong>, le 29 octobre vers 2 h 50 ; le garde-fou l'a laissée passer</td>
+</tr>
+</tbody></table></div>
+<h2 id="ce-qui-a-été-dit-cette-nuit-et-qui-était-faux">Ce qui a été dit cette nuit et qui était faux</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li>J'ai d'abord écrit que la branche d'intégration « n'existait que dans le conteneur de l'autre session » sans savoir si Payé par et Vos clients étaient perdus : ils ne le sont pas, ils attendent sur deux branches locales.</li>
+<li>La première batterie de cette session a été arrêtée exprès à mi-course : ses suites navigateur tombaient toutes faute de Chromium, son verdict ne valait rien. La deuxième a trouvé la suite de la grille des prix ; la troisième, complète, est celle qui a ouvert <code>main</code>.</li>
+</ul>
+<h2 id="ce-qui-reste-et-qui-tranche">Ce qui reste, et qui tranche</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Qui</th>
+</tr></thead><tbody>
+<tr>
+<td>Pousser <code>claude/paye-par-bouts-ronds</code> et <code>claude/tout-cocher-au-dessus-de-a</code> : écrire « oui, pousse les deux branches » dans la session « Dernière correction »</td>
+<td>lui</td>
+</tr>
+<tr>
+<td>Leur batterie, puis <code>main</code> (Payé par touche l'argent : niveau 3)</td>
+<td>une session, après</td>
+</tr>
+<tr>
+<td>Le chemin de Chromium en dur dans le dépôt</td>
+<td>un lot d'outillage</td>
+</tr>
+<tr>
+<td>Les deux suites qui tombent en fin de mois</td>
+<td>un lot de décor</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>
