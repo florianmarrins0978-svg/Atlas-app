@@ -26,7 +26,7 @@
   dus » d'un seul tenant ; l'import, geste rare, descend au bout de la liste.
 */
 .recherche { display: flex; align-items: center; gap: 10px; }
-.champ-recherche { flex: 1; display: flex; align-items: center; gap: 10px; min-height: 52px;
+.champ-recherche { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; min-height: 52px;
                    box-shadow: inset 0 -1.5px 0 var(--atlas-line); transition: box-shadow 200ms var(--courbe); }
 .champ-recherche:focus-within { box-shadow: inset 0 -2px 0 var(--atlas-or); }
 .champ-recherche .ico { color: var(--atlas-or); }
@@ -146,7 +146,6 @@
                   <input type="search" id="cherche" placeholder="Chercher un client" autocomplete="off" aria-label="Chercher un client">
                   <button class="effacer" type="button" id="effacer" hidden aria-label="Effacer la recherche"><svg class="ico ico-p" aria-hidden="true"><use href="#i-croix"/></svg></button>
                 </label>
-                <button class="tout" type="button" id="tout"><span class="coche-ronde"></span>Tout</button>
                 <button class="filtre touche" type="button" data-ouvre="feuille-tri"><svg class="ico" aria-hidden="true"><use href="#i-filtre"/></svg>Filtre</button>
               </div>
             </div>
@@ -165,6 +164,7 @@
               <button type="button" data-va-etat="rempli" aria-label="Revenir de A à Z"><svg class="ico ico-p" aria-hidden="true"><use href="#i-croix"/></svg></button>
             </div>
 
+            <button class="tout" type="button" id="tout" style="margin: 6px 0 4px 10px;"><span class="coche-ronde"></span>Tout</button>
             <div id="liste" class="plage groupe liste-une" data-si-etat="rempli choix">
               <div class="bloc-lettre"><p class="lettre">A</p>
                 <a class="client touche" href="client.html" data-nom="Mme Aubry"><span class="coche-ronde"></span><span class="initiales">MA</span><span class="client-corps"><span class="client-nom">Mme Aubry</span></span><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></a>

@@ -279,24 +279,7 @@ export default function ListeClients({
         {/* **« Tout » n'existe que pendant le choix** — sa demande du
             23 octobre 2026. Sur la liste normale, rien ne permet de tout cocher
             d'un doigt : il faut d'abord rester appuyé sur un client. */}
-        <div className={`mt-[10px] flex ${choix ? "justify-between" : "justify-end"}`}>
-          {choix && (
-            <button
-              type="button"
-              data-atlas="tout-cocher"
-              aria-pressed={toutCoche}
-              onClick={() => choisir(toutCoche ? new Set() : new Set(visibles.map((c) => c.id)))}
-              // **Le rond des clients, dans leur colonne** — sa correction du
-              // 23 octobre 2026 : *« juste tout avec le rond comme pour les
-              // clients ; on coche, décoche »*. Il se lit comme une ligne de
-              // plus, celle qui les coche toutes.
-              className="flex min-h-11 items-center gap-[14px] text-[15px]"
-              style={{ background: "transparent", color: colors.ink, WebkitTapHighlightColor: "transparent" }}
-            >
-              <CaseCochee cochee={toutCoche} />
-              Tout
-            </button>
-          )}
+        <div className="mt-[10px] flex justify-end">
           <BoutonFiltre onClick={() => setVolet(true)} />
         </div>
         {tri.cle !== "nom" && titre && (
@@ -329,6 +312,23 @@ export default function ListeClients({
         }}
       />
 
+      {/* **« Tout » se pose au-dessus de la première lettre, à gauche** —
+          sa planche du 28 octobre 2026 (`appli/supprimer-plusieurs-clients.html`) :
+          le rond est dans la colonne des noms, avant le A. Au-dessus des deux
+          listes, pour rester là quand un mois filtré remplace les lettres. */}
+      {choix && visibles.length > 0 && (
+        <button
+          type="button"
+          data-atlas="tout-cocher"
+          aria-pressed={toutCoche}
+          onClick={() => choisir(toutCoche ? new Set() : new Set(visibles.map((c) => c.id)))}
+          className="mx-[26px] mt-[6px] flex min-h-11 items-center gap-[14px] text-[15px]"
+          style={{ background: "transparent", color: colors.ink, WebkitTapHighlightColor: "transparent" }}
+        >
+          <CaseCochee cochee={toutCoche} />
+          Tout
+        </button>
+      )}
       {visibles.length === 0 ? (
         <p
           className="mx-[26px] mt-[22px] max-w-[31ch] text-[13px] leading-[1.6]"
