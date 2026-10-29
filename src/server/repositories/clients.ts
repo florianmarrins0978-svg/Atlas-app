@@ -35,11 +35,12 @@ export type CanalClient = "sms" | "email";
  *
  * **Une seule liste, et c'est le point.** Elle sert à l'enregistrement
  * (`trouverOuCreerClient`) ET à la reconnaissance pendant qu'il tape
- * (`reconnaitreLeClient`). Deux requêtes finiraient par diverger sur un
- * `effaceLe` oublié — l'écran annoncerait alors un homme que l'enregistrement
- * ne retrouve pas, ou l'inverse (`CLAUDE.md` §3).
+ * (`reconnaitreLeClient`), et à l'import d'un tableau (28 octobre 2026). Deux
+ * requêtes finiraient par diverger sur un `effaceLe` oublié — l'écran
+ * annoncerait alors un homme que l'enregistrement ne retrouve pas, ou
+ * l'inverse (`CLAUDE.md` §3).
  */
-function clientsQuOnPeutReconnaitre(ctx: Ctx) {
+export function clientsQuOnPeutReconnaitre(ctx: Ctx) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
     tx
       .select({

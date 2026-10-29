@@ -3,7 +3,15 @@
 import { useState } from "react";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import { colors, font, surPlein } from "@/lib/design-tokens";
-import { adresseOuvrirLaPiece, nomDuFichierDeLaPiece, type PieceDuClient } from "@/lib/documents-du-client";
+import {
+  adresseOuvrirLaPiece,
+  lignesDeLaPiece,
+  NATURE_LISIBLE,
+  natureDeLaPiece,
+  nomDuFichierDeLaPiece,
+  type PieceDuClient,
+} from "@/lib/documents-du-client";
+import { enEuros } from "@/lib/euros";
 import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
 
 /**
@@ -45,10 +53,13 @@ import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocum
 export default function PieceDuDossier({
   piece,
   premiere = false,
+  enRecherche = false,
 }: {
   piece: PieceDuClient;
   /** La première pièce du registre : pas de filet, les onglets en ont déjà un. */
   premiere?: boolean;
+  /** La loupe est tapée : les onglets sont partis, la ligne dit sa nature. */
+  enRecherche?: boolean;
 }) {
   const [feuilleOuverte, setFeuilleOuverte] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
@@ -96,6 +107,7 @@ export default function PieceDuDossier({
   // de faire retour ! »*. La règle vit dans `documents-du-client.ts`, que
   // l'assistant emploie aussi.
   const adresseOuvrir = adresseOuvrirLaPiece(piece);
+  const lignes = lignesDeLaPiece(piece);
 
   return (
     <>
@@ -126,21 +138,44 @@ export default function PieceDuDossier({
         }}
       >
         <span className="min-w-0 flex-1">
-          <span
-            data-atlas="piece-titre"
-            className="block truncate text-[18.5px] leading-[1.25]"
-            style={{ fontFamily: font.display, fontVariantNumeric: "lining-nums" }}
-          >
-            {piece.titre}
+          {/* **LE TITRE ET LE MONTANT — 28 octobre 2026**, sur sa planche
+              `appli/soignee/client.html` : *« le titre du devis visible, le
+              montant »*. Le titre en gras, le TTC à droite, le numéro descend
+              avec la date (`lignesDeLaPiece`). Un titre long passe à la ligne
+              plutôt que de se couper : il est ce qu'il vient lire. */}
+          <span className="flex items-baseline justify-between gap-3">
+            <span
+              data-atlas="piece-titre"
+              className="block min-w-0 break-words text-[18.5px] leading-[1.25]"
+              style={{ fontFamily: font.display, fontVariantNumeric: "lining-nums" }}
+            >
+              {lignes.gras}
+            </span>
+            {lignes.montant && (
+              <span
+                data-atlas="piece-montant"
+                className="flex-none whitespace-nowrap text-[15.5px] font-semibold"
+                style={{ color: colors.ink, fontVariantNumeric: "tabular-nums lining-nums" }}
+              >
+                {lignes.montant}
+              </span>
+            )}
           </span>
           {/* **UNE DATE NE SE MET JAMAIS EN CAPITALES**, et elle s'écrit d'une
-              seule façon sur cet écran (`test-fiche-client-e2e`). */}
-          {piece.precision && (
+              seule façon sur cet écran (`test-fiche-client-e2e`). Pendant une
+              recherche, le mot doré devant dit de quoi il s'agit : les onglets
+              ne sont plus là pour le dire. */}
+          {(lignes.dessous || enRecherche) && (
             <span
               className="mt-0.5 block text-[14px] leading-[1.4]"
               style={{ color: colors.inkSoft, fontVariantNumeric: "tabular-nums" }}
             >
-              {piece.precision}
+              {enRecherche && (
+                <span data-atlas="piece-nature" style={{ color: colors.or, fontWeight: 600 }}>
+                  {lignes.mot}{" "}
+                </span>
+              )}
+              {lignes.dessous}
             </span>
           )}
           {/* **CE QUE LE CLIENT A FAIT DE SA FACTURE — sa réponse du 9 septembre
@@ -149,6 +184,13 @@ export default function PieceDuDossier({
               vérifier quand un client prétend n'avoir rien reçu. La phrase se
               décide dans `src/lib/reception-facture.ts`, pas ici ; la date est
               en gras, sa demande du 11 septembre. */}
+          {/* Le chantier d'une pièce importée d'un tableau, quand ce n'est pas
+              l'adresse du client (sa remarque du 28 octobre 2026). */}
+          {lignes.chantier && (
+            <span data-atlas="piece-chantier" className="mt-[1px] block text-[14px] leading-[1.4]" style={{ color: colors.ink }}>
+              {lignes.chantier}
+            </span>
+          )}
           {piece.reception && (
             <span data-atlas="piece-reception" className="mt-[3px] block text-[14px] leading-[1.4]" style={{ color: colors.inkSoft }}>
               {piece.reception.avant}
@@ -164,89 +206,127 @@ export default function PieceDuDossier({
       </button>
 
       <BottomSheet open={feuilleOuverte} onBackdropClick={() => setFeuilleOuverte(false)}>
-        <p className="text-[26px] leading-[1.15]" style={{ fontFamily: font.display, color: colors.ink }}>
-          {piece.titre}
-        </p>
-        {piece.precision && (
-          <p className="mt-1 text-[15px]" style={{ color: colors.inkSoft }}>
-            {piece.precision}
-          </p>
+        {piece.format === "tableau" ? (
+          <ChiffresDuTableau piece={piece} fermer={() => setFeuilleOuverte(false)} />
+        ) : (
+          <>
+            <p className="text-[26px] leading-[1.15]" style={{ fontFamily: font.display, color: colors.ink }}>
+              {piece.titre}
+            </p>
+            {piece.precision && (
+              <p className="mt-1 text-[15px]" style={{ color: colors.inkSoft }}>
+                {piece.precision}
+              </p>
+            )}
+
+            {/* **« Télécharger » en tête, et c'est le geste qu'il est venu chercher.**
+                Le mot était « Enregistrer » ; il a demandé « Télécharger » le
+                23 octobre 2026, capture à l'appui. La feuille ne se referme qu'une
+                fois le document parti : refermée à l'appui, elle emportait le
+                message d'un refus.
+
+                **Sauf pour une fiche d'entretien**, qui n'est pas un fichier : elle
+                n'a rien à enregistrer, et « Ouvrir » devient alors le geste plein. */}
+            {estUnFichier && (
+              <BoutonTelechargerDocument
+                fichier={piece.href}
+                nom={nomFichier}
+                onFini={() => setFeuilleOuverte(false)}
+                dataAtlas="piece-enregistrer"
+                className={`atlas-plein mt-5 ${GESTE_DE_LA_FEUILLE}`}
+                style={{ backgroundColor: colors.plein, color: surPlein }}
+              >
+                <IconeDeLaFeuille d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14" />
+                Télécharger
+              </BoutonTelechargerDocument>
+            )}
+
+            {/* **Ouvrir et Partager côte à côte, creux** quand Télécharger porte
+                l'aplat ; pour une fiche, Ouvrir le prend et Partager suit dessous.
+                « Surtout pas ceux qui sont creux » (31 août) : un bouton creux ne
+                reçoit jamais la classe de l'aplat. */}
+            <div className={estUnFichier ? "mt-2.5 flex gap-2.5" : "mt-5"}>
+              <a
+                href={adresseOuvrir}
+                onClick={() => setFeuilleOuverte(false)}
+                data-atlas="piece-ouvrir"
+                className={estUnFichier ? `flex-1 ${GESTE_DE_LA_FEUILLE}` : `atlas-plein ${GESTE_DE_LA_FEUILLE}`}
+                style={
+                  estUnFichier
+                    ? { color: colors.ink, boxShadow: `inset 0 0 0 1.5px ${colors.line}` }
+                    : { backgroundColor: colors.plein, color: surPlein }
+                }
+              >
+                <IconeDeLaFeuille d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+                Ouvrir
+              </a>
+
+              {/* **« Partager » vit ici**, après avoir disparu de l'écran d'envoi le
+                  21 août au matin : c'est le seul chemin vers WhatsApp. */}
+              <button
+                type="button"
+                onClick={partager}
+                data-atlas="piece-partager"
+                className={estUnFichier ? `flex-1 ${GESTE_DE_LA_FEUILLE}` : `mt-2.5 ${GESTE_DE_LA_FEUILLE}`}
+                style={{ color: colors.ink, boxShadow: `inset 0 0 0 1.5px ${colors.line}` }}
+              >
+                <IconeDeLaFeuille d="M12 15V4M8 7.5L12 3.5l4 4M6 11.5H5v9h14v-9h-1" />
+                Partager
+              </button>
+            </div>
+
+            {/* Un refus se lit dans le rouge des refus, et non plus dans le vert pin
+                de la charte, qui est la voix de ce qu'on fait. */}
+            {erreur && (
+              <p role="alert" className="mt-3 text-center text-[14px]" style={{ color: colors.alert }}>
+                {erreur}
+              </p>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setFeuilleOuverte(false)}
+              className="mt-2 block min-h-[48px] w-full text-center text-[15px]"
+              style={{ color: colors.inkSoft }}
+            >
+              Annuler
+            </button>
+          </>
         )}
-
-        {/* **« Télécharger » en tête, et c'est le geste qu'il est venu chercher.**
-            Le mot était « Enregistrer » ; il a demandé « Télécharger » le
-            23 octobre 2026, capture à l'appui. La feuille ne se referme qu'une
-            fois le document parti : refermée à l'appui, elle emportait le
-            message d'un refus.
-
-            **Sauf pour une fiche d'entretien**, qui n'est pas un fichier : elle
-            n'a rien à enregistrer, et « Ouvrir » devient alors le geste plein. */}
-        {estUnFichier && (
-          <BoutonTelechargerDocument
-            fichier={piece.href}
-            nom={nomFichier}
-            onFini={() => setFeuilleOuverte(false)}
-            dataAtlas="piece-enregistrer"
-            className={`atlas-plein mt-5 ${GESTE_DE_LA_FEUILLE}`}
-            style={{ backgroundColor: colors.plein, color: surPlein }}
-          >
-            <IconeDeLaFeuille d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14" />
-            Télécharger
-          </BoutonTelechargerDocument>
-        )}
-
-        {/* **Ouvrir et Partager côte à côte, creux** quand Télécharger porte
-            l'aplat ; pour une fiche, Ouvrir le prend et Partager suit dessous.
-            « Surtout pas ceux qui sont creux » (31 août) : un bouton creux ne
-            reçoit jamais la classe de l'aplat. */}
-        <div className={estUnFichier ? "mt-2.5 flex gap-2.5" : "mt-5"}>
-          <a
-            href={adresseOuvrir}
-            onClick={() => setFeuilleOuverte(false)}
-            data-atlas="piece-ouvrir"
-            className={estUnFichier ? `flex-1 ${GESTE_DE_LA_FEUILLE}` : `atlas-plein ${GESTE_DE_LA_FEUILLE}`}
-            style={
-              estUnFichier
-                ? { color: colors.ink, boxShadow: `inset 0 0 0 1.5px ${colors.line}` }
-                : { backgroundColor: colors.plein, color: surPlein }
-            }
-          >
-            <IconeDeLaFeuille d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
-            Ouvrir
-          </a>
-
-          {/* **« Partager » vit ici**, après avoir disparu de l'écran d'envoi le
-              21 août au matin : c'est le seul chemin vers WhatsApp. */}
-          <button
-            type="button"
-            onClick={partager}
-            data-atlas="piece-partager"
-            className={estUnFichier ? `flex-1 ${GESTE_DE_LA_FEUILLE}` : `mt-2.5 ${GESTE_DE_LA_FEUILLE}`}
-            style={{ color: colors.ink, boxShadow: `inset 0 0 0 1.5px ${colors.line}` }}
-          >
-            <IconeDeLaFeuille d="M12 15V4M8 7.5L12 3.5l4 4M6 11.5H5v9h14v-9h-1" />
-            Partager
-          </button>
-        </div>
-
-        {/* Un refus se lit dans le rouge des refus, et non plus dans le vert pin
-            de la charte, qui est la voix de ce qu'on fait. */}
-        {erreur && (
-          <p role="alert" className="mt-3 text-center text-[14px]" style={{ color: colors.alert }}>
-            {erreur}
-          </p>
-        )}
-
-        <button
-          type="button"
-          onClick={() => setFeuilleOuverte(false)}
-          className="mt-2 block min-h-[48px] w-full text-center text-[15px]"
-          style={{ color: colors.inkSoft }}
-        >
-          Annuler
-        </button>
       </BottomSheet>
     </>
+  );
+}
+
+/**
+ * UNE PIÈCE VENUE D'UN TABLEAU — planche `appli/soignee/clients-importer.html`,
+ * 28 octobre 2026. **Pas de PDF** : le tableau ne donnait que des chiffres. La
+ * feuille les montre, et le dit ; rien ne propose de télécharger un fichier
+ * qui n'existe pas.
+ */
+function ChiffresDuTableau({ piece, fermer }: { piece: PieceDuClient; fermer: () => void }) {
+  const nature = NATURE_LISIBLE[natureDeLaPiece(piece.href)];
+  return (
+    <div data-atlas="piece-du-tableau">
+      <p className="text-[26px] leading-[1.15]" style={{ fontFamily: font.display, color: colors.ink }}>
+        {nature} {piece.titre}
+      </p>
+      <p className="mt-1 text-[15px]" style={{ color: colors.inkSoft }}>
+        {[piece.objet, piece.precision].filter(Boolean).join(", ")}
+      </p>
+      <p
+        className="mt-[14px] text-[34px] leading-[1.1]"
+        style={{ fontFamily: font.display, color: colors.ink, fontVariantNumeric: "tabular-nums lining-nums" }}
+      >
+        {piece.montant ? `${enEuros(piece.montant)} TTC` : "Montant absent du tableau"}
+      </p>
+      <p className="mt-[16px] text-[15px] leading-[1.5]" style={{ color: colors.inkSoft }}>
+        {piece.chantier ? `Chantier au ${piece.chantier}. ` : ""}Pas de PDF : le tableau ne donnait que ces chiffres.
+      </p>
+      <button type="button" onClick={fermer} className="mt-4 block min-h-[48px] w-full text-center text-[15px]" style={{ color: colors.inkSoft }}>
+        Fermer
+      </button>
+    </div>
   );
 }
 

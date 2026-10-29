@@ -100,7 +100,7 @@ export default async function FicheClientPage({
   // **D'où l'on vient décide où la flèche ramène** — sa remarque du 20 août
   // 2026 : « ça ne me fait pas un retour, mais deux ». La règle vit dans
   // `src/lib/retour-fiche-client.ts`, et l'écran ne la refait pas.
-  const de = (await searchParams).de;
+  const { de, registre } = await searchParams;
   const retour = retourFicheClient(Array.isArray(de) ? de[0] : de);
   const ctx = await getCurrentCtx();
   const fiche = await chargerFicheClient(ctx, id);
@@ -262,6 +262,9 @@ export default async function FicheClientPage({
           Ses trois catégories et son ordre du 20 août au soir, Devis, Facture,
           Fiche chantier. Le pourquoi entier est dans `RegistresDuDossier`. */}
       <RegistresDuDossier
+        nomClient={fiche.client.nom}
+        // Une pièce trouvée par la loupe de Vos clients ouvre SON onglet.
+        ouvert={typeof registre === "string" ? registre : undefined}
         registres={[
           { cle: "devis", libelle: "Devis", pieces: devis, rien: "Aucun devis parti" },
           { cle: "factures", libelle: "Factures", pieces: factures, rien: "Aucune facture émise" },

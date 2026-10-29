@@ -36084,6 +36084,8 @@ l'écran, plus le contour.
 
 **Ce qui n'est PAS dans ce lot.** La barre du bas en 12,5 px que montre la planche relève de « Ce qui change partout » (`appli/soignee/fondations.html`), qu'il n'a pas encore tranché : la toucher ici l'aurait changée sur tous les écrans à la fois.
 
+**Mesuré contre la planche le 28 octobre 2026 : deux écarts de 8 px, GARDÉS, et pourquoi.** Relevé au navigateur à la largeur d'un iPhone 13, même réponse de client des deux côtés : entre « Créer un devis » et la carte, 33 px à l'écran pour 25 sur la planche ; entre le nom du chantier et les mots du client, 8 px à l'écran pour 0 (la feuille de la planche en prévoit 8, mais `.reponse p { margin: 0 }` les annule). **Les deux ont été retirés, puis remis**, parce que la planche ne dessine ni le fondu de 18 px en haut du fil ni son accroche (`.atlas-fil-defile`, `scroll-margin-top: 24px`, `globals.css`) : sans le `mt-2` de la pile des cartes (`Notifications.tsx`), la carte commence à 10 px du haut du fil, donc dans le fondu qui court jusqu'à 18 px, et son haut s'estompe au repos (déduit de la géométrie du masque, pas d'une suite) ; sans le `mt-2` de la citation, la carte raccourcie ne se raccroche plus après un défilement de 70 px et se repose à −119 px, ses seuls gestes visibles : le défaut du 16 août, que `test-devis-qui-tarde-e2e` attrape (rouge deux fois sur deux, vert sans le changement). Une planche de l'accueil ne se recopie donc pas au pixel près sur ces deux marges ; les modifier demanderait de revoir l'accroche du fil, ce qu'aucune planche ne demande. Restent aussi 4 px par carte d'interligne (titre 1,3 contre 1,45, nom 1,2 contre 1,3), dans `TitreDeCarte` et le nom communs à toutes les cartes de l'accueil : non touchés, pour la même raison de périmètre.
+
 ## §507 : Donner, changer ou retirer un accès redemande une identité récente
 
 *26 octobre 2026, audit de sécurité (E11, `docs/audit-2026-10-etape-3-inventaire.md`).*
@@ -36487,3 +36489,36 @@ que gardés en double — `main` n'a qu'une seule version de chacun.
 **La case de « Payé par ».** Elle prenait le fond crème de la page : sur des lignes sans plage, elle se fondait. Les factures reprennent leur plage (la vue « Proposé » de sa planche Ma TVA, la seule qu'il ait prise), et les trois cases de la facture se dessinent d'un filet (`CASE`). La retouche « Payé par en pilule » (`claude/paye-par-bouts-ronds`) n'est pas reprise : elle lisait sa remarque sur le bouton comme une remarque sur le champ, et le champ de sa planche est une case à 6 px.
 
 **Écarté.** Garder la A et ajouter la B en réglage : deux façons de répondre au même virement sur le même écran, ce que le §3 refuse.
+
+---
+## §532 : Ce qu'une pièce dit d'elle-même vit à côté de ce qui la désigne
+
+**Ses réponses du 28 octobre 2026**, devant `appli/soignee/client.html` : le titre et le TTC de chaque devis et facture sur la fiche d'un client, la première tâche cochée pour titre d'une fiche, et une loupe « Chercher un nom, un titre, un montant ».
+
+**`PieceDuClient.titre` n'a pas changé de sens, et c'est le point.** Il DÉSIGNE la pièce (« n° 2026-000024 », ou le jour d'une fiche) : `nomDuFichierDeLaPiece` en tire le nom du fichier téléchargé, `adresseOuvrirLaPiece` l'en-tête de la visionneuse, la feuille son titre. Y verser « Taille de haie » aurait fait arriver `devis.pdf` dans son téléphone, sans numéro. Ce que la pièce DIT d'elle-même passe donc par deux champs à part, `objet` et `montant`, et une seule règle les met en ligne (`lignesDeLaPiece`, `src/lib/documents-du-client.ts`) : l'objet en gras, le montant à droite, le titre et la précision dessous. Sans objet, la ligne d'avant, rien d'inventé (un devis n'a de titre que s'il en a donné un, migration 0092).
+
+**La loupe est une règle pure**, `src/lib/recherche-piece.ts`, pour la fiche et, demain, pour Vos clients : un texte se cherche mot à mot dans l'objet, le numéro et le nom du client (la case dit « un nom ») ; un montant (des chiffres seuls) par le début de ses euros, ou exactement s'il porte des centimes ; une fiche aussi par son jour écrit en entier (`dateCitee`), parce que l'écran porte « 8 oct. » et qu'il tape « octobre ». L'écran filtre avec elle, et `test-recherche-piece.ts` lit le composant pour s'en assurer.
+
+**La date garde sa forme courte** (« 3 oct. 2026 »), contre la planche qui écrivait le mois en entier : `test-fiche-client-e2e` tient une seule façon d'écrire une date sur cet écran.
+
+**La première tâche se lit dans la même requête que le compte des prestations**, par une sous-requête corrélée écrite `passages_entretien.id` en toutes lettres, pour la raison que le compte donne déjà : sans jointure, Drizzle rend `id` nu et la condition ne serait jamais vraie.
+
+**Vos clients cherche les pièces dans le navigateur, comme les noms.** `listerFichesClients` porte, pour chaque client, les devis et factures de sa fiche (`pieces`), composés par les mêmes fonctions que la fiche (`pieceDeDevis`, `pieceDeFacture`, `pieceImportee`, `dernieresVersions`, en tête de `fiche-client.ts`) : la liste annonce ce qu'on retrouve en ouvrant. Trois requêtes pour toute la liste, jamais une par client. **Ce que ce choix coûte** : environ cent octets par pièce à chaque ouverture de la liste ; pour quelques centaines de pièces, rien. Le jour où l'import d'un tableau (dix ans, des milliers de lignes) sera codé, la recherche des pièces passera au serveur, une route qui filtre par la même `piecesQuiRepondent` ; c'est le même seuil que `ListeClients.tsx` écrit pour les noms. **Sur Vos clients, le nom ne fait sortir aucune pièce** (`nomClient` vide) : le client sort déjà dans la liste ; sur sa fiche, au contraire, son nom rend tout son dossier. Les trois listes portent la même phrase (`AIDE_DE_LA_LOUPE`) : la case de chacune cherche aussi un titre ou un montant, et « Chercher une entreprise » ne le disait plus.
+
+---
+## §533 : Un tableau se lit au serveur, se montre par client, et se range d'un seul tenant
+
+**Ses demandes du 28 octobre 2026** et sa règle, *« il faut zéro erreur ! Faut pas se tromper sur une adresse »* ; planche `appli/soignee/clients-importer.html` ; ses trois réponses du soir (la migration oui, SheetJS corrigé lu dans le téléphone, les cases vides complétées).
+
+**Une seule règle, deux lecteurs** (`src/lib/import-tableau.ts`) : l'écran calcule le plan pour le montrer, la route (`/api/pieces-importees/tableau`) relit le MÊME fichier et refait le MÊME plan avant de ranger, et refuse ce qui attend encore une réponse. L'écran ne renvoie pas ses lignes : il renvoie le fichier et ses réponses. Une route plutôt qu'une action serveur : dix ans de pièces dépassent la borne de corps d'une action.
+
+**Aucune bibliothèque Office au serveur.** Le CSV se lit par `lireCsv` (UTF-8, sinon Windows-1252 ; séparateur déduit ; guillemets), le `.xlsx` par `lireClasseur`, déjà durci (bombe de décompression, références forgées). SheetJS, sa réponse, n'est prévu que pour le `.xls`, et seulement dans le téléphone : un fichier piégé n'y abîme que l'onglet de qui l'a choisi. Il n'est pas installé (`cdn.sheetjs.com` refusé par le réseau de la session), et le `.xls` est refusé en le disant.
+
+**Ce qu'Atlas demande, et seulement cela** : une colonne que deux en-têtes se disputent, un Total qui pourrait être HT, l'absence de client ou de type (« que des factures » répond pour un tableau sans colonne Type), une date qui se lit dans les deux sens (déduite de la colonne entière : un « 28 » ne peut être qu'un jour) ; puis, par client, deux vraies adresses ou une adresse qui n'est pas celle de sa fiche. Une adresse écrite autrement reste la même (`normaliserAdresse`). Le client déjà là se reconnaît par `rapprocherClient`, la règle de toute l'appli : un même nom avec un autre téléphone est quelqu'un d'autre.
+
+**Une seconde adresse n'est jamais perdue** : `chantierDeLaLigne` la garde sur la pièce, la même fonction pour l'écran et le rangement. **Une fiche déjà là ne perd rien** : `complementsPourFiche` n'écrit que dans le vide, et l'envoi note ce qu'il a écrit (`cases_completees`) pour qu'« Annuler » le vide à nouveau, si personne n'y a touché depuis. **Rien ne s'invente** : une ligne sans numéro, sans date ni montant (un carnet d'adresses) n'est pas une pièce, même sous « que des factures ».
+
+**D'un seul tenant** : `rangerTableau` crée les fiches, complète, pose les pièces dans une transaction ; une pièce déjà importée (même empreinte de ligne, ou même numéro qu'un PDF importé) ne se range pas deux fois, et une fiche qui n'aurait plus aucune pièce ne se crée pas. « Annuler » retire les pièces sans fichier et l'envoi vidé. Mesuré : 5 120 lignes, 1 240 clients, lus et planifiés en 0,13 s, rangés en 1,3 s, annulés en 3,8 s ; l'écran « Dix ans » de la planche (« vous pouvez fermer l'appli ») n'a donc pas été codé.
+
+**Une pièce de tableau n'a pas de fichier** (`fichier_cle` NULL, migration 0154) : `format: "tableau"` sur la fiche, qui l'ouvre sur ses chiffres et son chantier ; l'assistant la joint vers la fiche du client, sur son onglet, jamais vers un PDF absent ; la route du PDF et l'effacement d'un client ne supposent plus un fichier.
+

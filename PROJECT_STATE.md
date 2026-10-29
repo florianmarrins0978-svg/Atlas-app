@@ -1,7 +1,17 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-10-29, `main` (`5d9c8d13`),
-dernière migration `drizzle/0153_banque_profondeur_lue.sql`
+**Dernière mise à jour :** 2026-10-29, branche `claude/planches-tva-chantiers-virement`,
+dernière migration `drizzle/0154_pieces_importees_d_un_tableau.sql`
+
+---
+## IMPORTER UN TABLEAU DE DEVIS ET FACTURES, SUR LA BRANCHE (28 octobre 2026)
+
+Même branche. Écran `src/app/clients/importer/ImporterTableau.tsx`, route `/api/pieces-importees/tableau`, rangement `rangerTableau`, règles `src/lib/import-tableau.ts` (`ARCHITECTURE.md` §533), migration `0154` (dernière migration). Suites de règles, de base et du parcours au navigateur vertes ; **niveau 3, batterie non jouée, pas sur `main`**. Reste : le `.xls` (SheetJS, réseau), les PDF au même écran par client (`TODO.md`).
+
+---
+## LA FICHE D'UN CLIENT : TITRE, MONTANT, PREMIÈRE TÂCHE ET LOUPE, SUR LA BRANCHE (28 octobre 2026)
+
+Branche `claude/quatre-planches-atlas-6hi21h`, d'après `appli/soignee/client.html` (*« tu peux coder, ne lance pas de batterie »*). Écran : `src/app/clients/[id]/` ; lecture : `fiche-client.ts` ; règles : `lignesDeLaPiece`, `src/lib/recherche-piece.ts` (`ARCHITECTURE.md` §532). La loupe de Vos clients cherche aussi titres et montants (`ListeClients.tsx`, `listerFichesClients`). Suites de domaine et treize suites navigateur des écrans clients vertes ; **niveau 3, batterie non jouée, pas sur `main`**. Reste : l'import CSV et Excel (`TODO.md`).
 
 ---
 ## L'INTÉGRATION DU 28 OCTOBRE, SUR `main` (29 octobre 2026)
@@ -1339,7 +1349,7 @@ d'avant sont **dérivées**, jamais écrites à la main.
 créneau écrit » vaut le bloc calculé, dans une seule fonction (`creneauxPoses`).
 
 Détail : `ARCHITECTURE.md` §322.
-**Dernière mise à jour :** 2026-09-11 · branche `session-2`
+**Dernière mise à jour :** 2026-10-28, branche `claude/quatre-planches-atlas-6hi21h`,
 · dernière migration `drizzle/0086_facture_sans_devis.sql`
 
 ---

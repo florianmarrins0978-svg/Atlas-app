@@ -4,7 +4,6 @@ import path from "node:path";
 import {
   normaliserPourRecherche,
   filtrerClientsParNom,
-  aucunClientTrouve,
   morceauxSurlignes,
 } from "../src/lib/recherche-client";
 
@@ -106,11 +105,6 @@ cas("un nom qui n'existe pas ne rend RIEN — le contrôle qui empêche de tout 
   // Sans ce cas, une recherche qui rendrait toujours la liste entière passerait
   // pour correcte : elle « trouve » toujours le client cherché.
   assert.equal(filtrerClientsParNom(SES_CLIENTS, "lefebvre").length, 0);
-});
-
-cas("le message d'échec CITE ce qu'il a tapé — la faute de frappe se voit", () => {
-  const dit = aucunClientTrouve("  martns ");
-  assert.match(dit, /martns/, "le message ne cite pas la frappe : « aucun résultat » laisse croire à une panne");
 });
 
 cas("la ponctuation ne sépare pas : « (test) » n'empêche pas de trouver Moreau", () => {

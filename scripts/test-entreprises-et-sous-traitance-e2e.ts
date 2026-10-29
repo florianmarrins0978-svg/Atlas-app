@@ -86,9 +86,11 @@ async function principal() {
     const noms = await page.locator('[data-atlas="nom-client"]').allInnerTexts();
     assert.ok(noms.some((n) => n.includes(entreprise.nom)), "l'entreprise manque derrière la porte");
     assert.ok(!noms.some((n) => n.includes(particulier.nom)), "un particulier est rangé chez les entreprises");
+    // La loupe cherche aussi un titre ou un montant depuis le 28 octobre 2026 :
+    // derrière chaque porte, elle porte sa phrase, celle de Vos clients.
     assert.equal(
       await page.locator('[data-atlas="chercher-client"]').getAttribute("placeholder"),
-      "Chercher une entreprise"
+      "Chercher un nom, un titre, un montant"
     );
   });
 

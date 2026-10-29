@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — La fiche d'un client et les deux loupes, 28 octobre 2026</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="la-fiche-dun-client-et-les-deux-loupes-28-octobre-2026">La fiche d'un client et les deux loupes, 28 octobre 2026</h1>
+<p>Ses réponses du soir devant <code>appli/soignee/client.html</code> et <code>appli/soignee/clients-importer.html</code> : <em>« le titre du devis visible, le montant »</em>, <em>« faut faire pareil pour les factures »</em>, <em>« rajouter la loupe pour faire une recherche par nom ou montant »</em>, la phrase <em>« Chercher un nom, un titre, un montant »</em>, <em>« mets la première tâche »</em>, puis <em>« tu peux coder, ne lance pas de batterie »</em>.</p>
+<p>Branche : <code>claude/quatre-planches-atlas-6hi21h</code>. <strong>Rien n'est sur <code>main</code></strong> : le lot est de niveau 3 (<code>npm run niveau</code>), et la batterie qui l'autoriserait n'a pas été jouée, à sa demande.</p>
+<h2 id="le-verdict-point-par-point">Le verdict, point par point</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Point</th>
+<th>Fait</th>
+<th>Où</th>
+<th>Vérifié par</th>
+</tr></thead><tbody>
+<tr>
+<td>Titre et montant TTC des devis sur la fiche</td>
+<td><strong>codé</strong> : le titre en gras, le TTC à droite, le numéro et la date dessous</td>
+<td><code>src/app/clients/[id]/PieceDuDossier.tsx</code>, <code>lignesDeLaPiece</code> (<code>src/lib/documents-du-client.ts</code>)</td>
+<td><code>test-documents-du-client</code>, <code>test-fiche-client-db</code>, capture de la fiche à 390 et 360 px</td>
+</tr>
+<tr>
+<td>Pareil pour les factures</td>
+<td><strong>codé</strong> : le titre recopié du devis, le TTC de la facture</td>
+<td><code>src/server/repositories/fiche-client.ts</code></td>
+<td>les mêmes</td>
+</tr>
+<tr>
+<td>Une pièce importée</td>
+<td><strong>son montant lu</strong> s'affiche ; elle n'a pas de titre, l'import n'en lit pas</td>
+<td><code>fiche-client.ts</code></td>
+<td><code>test-pieces-importees-db</code></td>
+</tr>
+<tr>
+<td>Les fiches : la première tâche</td>
+<td><strong>codé</strong> : la première tâche cochée en titre, « 8 oct. 2026, 6 prestations » dessous</td>
+<td><code>fiche-client.ts</code></td>
+<td><code>test-fiche-client-db</code>, capture</td>
+</tr>
+<tr>
+<td>La loupe de la fiche</td>
+<td><strong>codé</strong> : au-dessus des onglets ; les onglets s'effacent, chaque ligne dit « Devis », « Facture », « Fiche du » ; « Rien ne répond à « … ». »</td>
+<td><code>RegistresDuDossier.tsx</code>, <code>src/lib/recherche-piece.ts</code></td>
+<td><code>test-recherche-piece</code> (40 cas), <code>test-fiche-client-e2e</code> (la loupe au navigateur)</td>
+</tr>
+<tr>
+<td>La loupe de Vos clients</td>
+<td><strong>codé</strong> : sous les clients trouvés, « 2 devis et factures », titre, montant, référence et client ; un appui ouvre la fiche sur l'onglet de la pièce</td>
+<td><code>src/app/clients/ListeClients.tsx</code>, <code>listerFichesClients</code></td>
+<td><code>test-liste-clients</code> (dont l'isolation entre entreprises), <code>test-fiche-client-e2e</code>, capture</td>
+</tr>
+<tr>
+<td>La phrase de la case</td>
+<td><strong>codé</strong>, mot pour mot, dans les deux loupes</td>
+<td><code>AIDE_DE_LA_LOUPE</code></td>
+<td><code>test-recherche-piece</code>, <code>test-entreprises-et-sous-traitance-e2e</code></td>
+</tr>
+<tr>
+<td>Importer un tableau CSV ou Excel</td>
+<td><strong>codé ensuite</strong>, après ses trois réponses : son document à part, <code>docs/importer-un-tableau.md</code></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table></div>
+<h2 id="ce-qui-a-été-fait-autrement-que-la-planche-et-pourquoi">Ce qui a été fait autrement que la planche, et pourquoi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li><strong>La date reste courte</strong> : « 3 oct. 2026 », pas « 3 octobre 2026 ». Une suite tient une seule façon d'écrire une date sur cet écran. La loupe trouve quand même « octobre ».</li>
+<li><strong>Un devis sans titre garde son numéro en gras.</strong> Un titre n'est jamais mis d'office : en inventer un (le nom du chantier, par exemple) écrirait sur la fiche ce que le papier du client ne porte pas. C'est le choix pris faute de sa réponse ; il se change en une ligne.</li>
+<li><strong>Le titre ne prend pas la place du numéro dans les données.</strong> Le numéro nomme le fichier qu'il télécharge ; sans cela, un devis arrivait dans son téléphone sous le nom <code>devis.pdf</code> (<code>ARCHITECTURE.md</code> §532).</li>
+<li><strong>Vos entreprises et Services publics</strong> portent la même phrase que Vos clients : leur loupe cherche aussi un titre ou un montant, et « Chercher une entreprise » ne le disait plus.</li>
+<li><strong>La loupe cherche aussi un numéro</strong> (« 2026-000024 ») : la planche ne le montrait pas, mais une loupe qui ne retrouve pas le numéro imprimé sur le papier passerait pour cassée.</li>
+<li><strong>Sur Vos clients, taper un nom ne fait pas sortir ses pièces</strong> : le client sort déjà dans la liste. Sur sa fiche, au contraire, son nom rend tout son dossier, comme sur la planche.</li>
+</ul>
+<h2 id="ce-qui-a-été-dit-dans-ce-lot-et-qui-était-faux">Ce qui a été dit dans ce lot et qui était faux</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li>Mon premier contrôle navigateur supposait que la première tâche d'une fiche d'essai s'appelait « Tonte » ; le jeu d'essai la nomme « Tonte et ébarbage ». L'écran était juste, le contrôle lit maintenant la tâche cochée.</li>
+<li>J'ai tenté d'arrêter mon serveur d'essai par son nom ; c'est interdit (<code>CLAUDE.md</code> §6) et la session l'a refusé. Arrêté ensuite par son numéro.</li>
+</ul>
+<h2 id="les-chiffres">Les chiffres</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Contrôle</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td>Types, style (fichiers touchés)</td>
+<td>verts</td>
+</tr>
+<tr>
+<td>Suites sans base : <code>test-recherche-piece</code>, <code>test-recherche-client</code>, <code>test-documents-du-client</code>, <code>test-mode-emploi</code>, tirets, flèches, pansements, couches, code mort, titres de <code>TODO.md</code></td>
+<td>vertes</td>
+</tr>
+<tr>
+<td>Suites base : <code>test-fiche-client-db</code>, <code>test-liste-clients</code>, <code>test-pieces-importees-db</code>, <code>test-documents-en-regle-db</code>, <code>test-dossier-client-db</code>, <code>test-assistant-explique-l-appli</code></td>
+<td>vertes</td>
+</tr>
+<tr>
+<td>Suites navigateur des écrans clients, jouées seules (<code>--seulement</code>)</td>
+<td><strong>13 sur 13</strong></td>
+</tr>
+<tr>
+<td>Mémoire du dépôt</td>
+<td>verte</td>
+</tr>
+<tr>
+<td><strong>La batterie entière</strong></td>
+<td><strong>pas jouée</strong>, à sa demande. Elle est obligatoire avant <code>main</code></td>
+</tr>
+</tbody></table></div>
+<p>Les deux nouveaux contrôles de la liste ont été vus <strong>rouges</strong> sur le code d'avant, puis verts.</p>
+<h2 id="ce-qui-reste-ouvert-et-qui-tranche">Ce qui reste ouvert, et qui tranche</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Qui</th>
+</tr></thead><tbody>
+<tr>
+<td>Jouer la batterie, puis pousser sur <code>main</code></td>
+<td>lui, quand ses autres sessions le permettent</td>
+</tr>
+<tr>
+<td>Importer un tableau : ses trois réponses sont venues (migration oui, SheetJS corrigé, cases vides complétées), et c'est codé : <code>docs/importer-un-tableau.md</code></td>
+<td>fait</td>
+</tr>
+<tr>
+<td>Le défaut « (20 ml) (20 ml) » de la dernière prestation, vu sur sa capture</td>
+<td>à chercher, <code>TODO.md</code></td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>

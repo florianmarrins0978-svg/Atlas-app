@@ -220,14 +220,20 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
     id: "clients-importer",
     ecran: "Vos clients",
     ou: "« Chantiers » dans la barre du bas, puis « Vos clients »",
-    intitule: "Importer sa liste de clients depuis un fichier",
-    motsCles: ["importer", "import", "excel", "csv", "fichier", "liste", "clients", "carnet", "contacts"],
+    intitule: "Importer ses clients depuis un tableau de devis et factures",
+    motsCles: ["importer", "import", "excel", "csv", "fichier", "liste", "clients", "carnet", "contacts", "tableau", "ancien", "logiciel"],
     geste:
-      "Atlas ne sait pas encore importer une liste de clients : un client naît avec son chantier. " +
-      "Seuls les tarifs s'importent, dans Réglages.",
-    source: "src/lib/civilite.ts",
-    preuves: ["Ils naissent avec vos chantiers."],
-    absences: ["importerClients", "ImporterClients"],
+      "Dans « Vos clients », touchez « Importer devis / facture » et choisissez le tableau CSV ou Excel (.xlsx) " +
+      "exporté de votre ancien logiciel, une ligne par devis ou facture. Atlas crée les fiches et range chaque pièce " +
+      "sur la sienne, par date ; quand une colonne ou une adresse le fait hésiter, il vous demande avant de ranger. " +
+      "« Annuler » défait tout, juste après.",
+    // Sa demande du 28 octobre 2026 ; le .xls attend sa bibliothèque (`TODO.md`).
+    reserve:
+      "Une liste de clients seule, sans devis ni factures, ne s'importe pas : un client naît avec son chantier ou sa pièce. " +
+      "Le vieux format .xls ne se lit pas encore : enregistrez-le en .xlsx ou en CSV depuis Excel.",
+    source: "src/app/clients/importer/ImporterTableau.tsx",
+    preuves: ['data-atlas="import-tableau"', "Choisir un autre fichier"],
+    ailleurs: [{ source: "src/app/clients/importer/ImporterPieces.tsx", preuves: ["tableau CSV ou Excel"] }],
   },
   {
     id: "ia-se-trompe",

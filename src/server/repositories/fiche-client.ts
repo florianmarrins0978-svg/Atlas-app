@@ -78,6 +78,98 @@ export type FicheClientComplete = FicheClient & {
 /** Les trois colonnes vides — un client sans aucun chantier. */
 const AUCUNE_PIECE = { devis: [], fiches: [], factures: [], avoirs: [] };
 
+// ─── D'une ligne lue à une pièce ─────────────────────────────────────────
+//
+// **Écrites une fois, pour la fiche ET pour Vos clients** : la loupe de la
+// liste annonce ce que la fiche montre (28 octobre 2026). Deux façons de
+// composer la même pièce finiraient par écrire deux numéros ou deux montants
+// différents d'un écran à l'autre (`CLAUDE.md` §3).
+
+type DevisLu = { id: string; numero: string; version: number; jour: string; titre: string | null; totalTtc: string };
+
+/**
+ * **UNE pièce par devis, sa dernière version envoyée.**
+ *
+ * Trouvé par `test-fiche-client-e2e.ts`, et invisible à la lecture : le
+ * numéro commercial est STABLE à travers les versions (`schema.ts`). Un
+ * devis révisé puis renvoyé produisait donc deux lignes portant le même
+ * « n° 2026-0003 », à la même date, impossibles à distinguer — le patron
+ * aurait dû ouvrir les deux pour savoir laquelle il tenait.
+ *
+ * La dernière version est celle qui vaut : c'est le devis, pour lui comme
+ * pour son client. Les révisions restent en base, et l'écran du chantier
+ * les porte.
+ */
+function dernieresVersions<T extends Pick<DevisLu, "numero" | "version">>(lus: T[]): T[] {
+  const dernierParNumero = new Map<string, T>();
+  for (const d of lus) {
+    const connu = dernierParNumero.get(d.numero);
+    if (!connu || d.version > connu.version) dernierParNumero.set(d.numero, d);
+  }
+  return [...dernierParNumero.values()];
+}
+
+function pieceDeDevis(d: DevisLu): PieceDuClient {
+  return {
+    id: d.id,
+    titre: `n° ${d.numero}`,
+    // **La date, et non le nom du chantier.** Sur 97 px de colonne, un
+    // « Rénovation de la salle de bain » se coupe à « Rénovation de… » et
+    // n'apprend rien ; la date, elle, tient en entier et c'est par elle
+    // qu'il cherche. Le nom du chantier reste sur la fiche de chantier,
+    // dont la colonne porte déjà la date en titre.
+    precision: jourCourt(d.jour),
+    jour: d.jour,
+    // Ceux de la version envoyée, celle que le client a entre les mains.
+    objet: d.titre,
+    montant: d.totalTtc,
+    href: `/api/devis/${d.id}/pdf`,
+  };
+}
+
+function pieceDeFacture(f: {
+  id: string;
+  numeroCommercial: string;
+  dateEmission: string;
+  titre: string | null;
+  totalTtc: string;
+}): PieceDuClient {
+  return {
+    id: f.id,
+    titre: `n° ${f.numeroCommercial}`,
+    precision: jourCourt(f.dateEmission),
+    jour: f.dateEmission,
+    objet: f.titre,
+    montant: f.totalTtc,
+    href: `/api/factures/${f.id}/pdf`,
+  };
+}
+
+function pieceImportee(p: {
+  id: string;
+  genre: "devis" | "facture" | null;
+  numero: string | null;
+  jour: string | null;
+  montantTtc: string | null;
+  fichierCle: string | null;
+  objet: string | null;
+  adresseChantier: string | null;
+}): PieceDuClient {
+  return {
+    // Une ligne de tableau n'a pas de PDF (migration 0154) : la fiche l'ouvre
+    // sur ses chiffres, avec son titre et son chantier.
+    ...(p.fichierCle ? {} : { format: "tableau" as const, objet: p.objet, chantier: p.adresseChantier }),
+    id: p.id,
+    // Un numéro qu'on n'a pas lu ne s'invente pas : la pièce porte alors son jour.
+    titre: p.numero ? `n° ${p.numero}` : p.jour ? jourCourt(p.jour) : "Sans numéro",
+    precision: p.jour ? jourCourt(p.jour) : null,
+    jour: p.jour,
+    // Le TTC lu sur le PDF, ou celui de la ligne du tableau.
+    montant: p.montantTtc,
+    href: `/api/pieces-importees/${p.genre}/${p.id}/pdf`,
+  };
+}
+
 export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<FicheClientComplete | null> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [client] = await tx.select().from(clients).where(eq(clients.id, clientId)).limit(1);
@@ -138,6 +230,16 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
           select count(*)::int from ${lignesPassage} l
            where l.passage_id = passages_entretien.id and l.faite
         )`,
+        // **Sa première tâche cochée, son titre sur la fiche** (28 octobre
+        // 2026, « met la première tâche »). Le même ordre que la fiche reçue
+        // par le client (`lirePassage`), et le même nom écrit en toutes lettres
+        // que le compte juste au-dessus, pour la même raison.
+        premiere: sql<string | null>`(
+          select l.libelle from ${lignesPassage} l
+           where l.passage_id = passages_entretien.id and l.faite
+           order by l.ordre, l.libelle
+           limit 1
+        )`,
       })
       .from(passagesEntretien)
       .where(
@@ -160,6 +262,7 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
         // passages du même mois mieux que ne le ferait le nom du client, qui
         // est déjà celui de la fiche qu'on regarde.
         precision: `${f.faites} prestation${f.faites > 1 ? "s" : ""}`,
+        objet: f.premiere,
         // **L'adresse que le client a reçue**, et non un PDF : ce rapport n'est
         // figé nulle part en fichier. `format` le dit à la vignette.
         href: `/entretien/${f.jeton}`,
@@ -180,19 +283,15 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
         genre: piecesImportees.genre,
         numero: piecesImportees.numero,
         jour: piecesImportees.jour,
+        montantTtc: piecesImportees.montantTtc,
+        fichierCle: piecesImportees.fichierCle,
+        objet: piecesImportees.objet,
+        adresseChantier: piecesImportees.adresseChantier,
       })
       .from(piecesImportees)
       .where(and(eq(piecesImportees.clientId, clientId), eq(piecesImportees.statut, "rangee")));
-    const enPiece = (p: (typeof importees)[number]): PieceDuClient => ({
-      id: p.id,
-      // Un numéro qu'on n'a pas lu ne s'invente pas : la pièce porte alors son jour.
-      titre: p.numero ? `n° ${p.numero}` : p.jour ? jourCourt(p.jour) : "Sans numéro",
-      precision: p.jour ? jourCourt(p.jour) : null,
-      jour: p.jour,
-      href: `/api/pieces-importees/${p.genre}/${p.id}/pdf`,
-    });
-    const devisImportes = importees.filter((p) => p.genre === "devis").map(enPiece);
-    const facturesImportees = importees.filter((p) => p.genre === "facture").map(enPiece);
+    const devisImportes = importees.filter((p) => p.genre === "devis").map(pieceImportee);
+    const facturesImportees = importees.filter((p) => p.genre === "facture").map(pieceImportee);
 
     if (sesChantiers.length === 0) {
       return {
@@ -235,6 +334,7 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
           totalHt: factures.totalHt,
           totalTva: factures.totalTva,
           totalTtc: factures.totalTtc,
+          titre: factures.titre,
         })
         .from(factures)
         .where(and(inArray(factures.chantierId, ids), eq(factures.statut, "emise"))),
@@ -253,6 +353,8 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
           numero: devis.numeroCommercial,
           version: devis.numeroVersion,
           jour: devis.dateEmission,
+          titre: devis.titre,
+          totalTtc: devis.totalTtc,
         })
         .from(devis)
         .where(and(inArray(devis.chantierId, ids), eq(devis.statut, "envoye"))),
@@ -354,38 +456,8 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
     // trois. Il a dit « le même ordre » : trois tris écrits séparément
     // finiraient par diverger, et c'est lui qui verrait une colonne remonter le
     // temps pendant que les deux autres la descendent (`CLAUDE.md` §3).
-    // **UNE pièce par devis, sa dernière version envoyée.**
-    //
-    // Trouvé par `test-fiche-client-e2e.ts`, et invisible à la lecture : le
-    // numéro commercial est STABLE à travers les versions (`schema.ts`). Un
-    // devis révisé puis renvoyé produisait donc deux lignes portant le même
-    // « n° 2026-0003 », à la même date, impossibles à distinguer — le patron
-    // aurait dû ouvrir les deux pour savoir laquelle il tenait.
-    //
-    // La dernière version est celle qui vaut : c'est le devis, pour lui comme
-    // pour son client. Les révisions restent en base, et l'écran du chantier
-    // les porte.
-    const dernierParNumero = new Map<string, (typeof sesDevis)[number]>();
-    for (const d of sesDevis) {
-      const connu = dernierParNumero.get(d.numero);
-      if (!connu || d.version > connu.version) dernierParNumero.set(d.numero, d);
-    }
-
-    const piecesDevis = rangerDuPlusRecent([
-      ...devisImportes,
-      ...[...dernierParNumero.values()].map((d) => ({
-        id: d.id,
-        titre: `n° ${d.numero}`,
-        // **La date, et non le nom du chantier.** Sur 97 px de colonne, un
-        // « Rénovation de la salle de bain » se coupe à « Rénovation de… » et
-        // n'apprend rien ; la date, elle, tient en entier et c'est par elle
-        // qu'il cherche. Le nom du chantier reste sur la fiche de chantier,
-        // dont la colonne porte déjà la date en titre.
-        precision: jourCourt(d.jour),
-        jour: d.jour,
-        href: `/api/devis/${d.id}/pdf`,
-      })),
-    ]);
+    // Une pièce par devis, sa dernière version envoyée (`dernieresVersions`).
+    const piecesDevis = rangerDuPlusRecent([...devisImportes, ...dernieresVersions(sesDevis).map(pieceDeDevis)]);
 
     /**
      * **Le chantier du DERNIER DEVIS — ce qui allume « Dernier devis ».**
@@ -410,11 +482,7 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
     const piecesFactures = rangerDuPlusRecent([
       ...facturesImportees,
       ...sesFactures.map((f) => ({
-        id: f.id,
-        titre: `n° ${f.numeroCommercial}`,
-        precision: jourCourt(f.dateEmission),
-        jour: f.dateEmission,
-        href: `/api/factures/${f.id}/pdf`,
+        ...pieceDeFacture(f),
         // Absente quand la facture n’est jamais partie : sans lien, il n’y a
         // rien à ouvrir, et « pas encore ouverte » accuserait le client d’un
         // envoi qui n’a pas eu lieu.
@@ -537,6 +605,12 @@ export type ClientEnListe = {
   du: string | null;
   /** Le dernier jour DÉJÀ PASSÉ chez lui (`jourDeRangement`) : il départage deux homonymes. */
   dernierJour: string | null;
+  /**
+   * Ses devis et ses factures, ceux que sa fiche montre, pour la loupe de Vos
+   * clients (28 octobre 2026) : un titre ou un montant tapé dans la liste
+   * trouve la pièce, et mène à sa fiche.
+   */
+  pieces: PieceDuClient[];
 };
 
 /**
@@ -589,6 +663,8 @@ export async function listerFichesClients(ctx: Ctx): Promise<ClientEnListe[]> {
               totalHt: factures.totalHt,
               totalTva: factures.totalTva,
               totalTtc: factures.totalTtc,
+              numeroCommercial: factures.numeroCommercial,
+              titre: factures.titre,
             })
             .from(factures)
             .where(and(inArray(factures.chantierId, ids), eq(factures.statut, "emise"))),
@@ -623,13 +699,21 @@ export async function listerFichesClients(ctx: Ctx): Promise<ClientEnListe[]> {
     // envoyée. C'est ce qui permet à la ligne d'annoncer ce que la fiche
     // contient — deux jeux de conditions finiraient par se contredire, et
     // c'est lui qui verrait la différence d'un écran à l'autre.
-    const [sesDevis, sesFiches] = await Promise.all([
+    const [sesDevis, sesFiches, sesImportees] = await Promise.all([
       ids.length
         ? tx
-            .select({ chantierId: devis.chantierId, jour: devis.dateEmission })
+            .select({
+              id: devis.id,
+              chantierId: devis.chantierId,
+              jour: devis.dateEmission,
+              numero: devis.numeroCommercial,
+              version: devis.numeroVersion,
+              titre: devis.titre,
+              totalTtc: devis.totalTtc,
+            })
             .from(devis)
             .where(and(inArray(devis.chantierId, ids), eq(devis.statut, "envoye")))
-        : Promise.resolve([] as { chantierId: string; jour: string }[]),
+        : Promise.resolve([] as (DevisLu & { chantierId: string })[]),
       tx
         .select({ clientId: passagesEntretien.clientId, jour: passagesEntretien.jour })
         .from(passagesEntretien)
@@ -640,6 +724,22 @@ export async function listerFichesClients(ctx: Ctx): Promise<ClientEnListe[]> {
             isNotNull(passagesEntretien.jeton)
           )
         ),
+      // Les pièces importées rangées : elles sont sur la fiche, la loupe les
+      // trouve aussi (les mêmes conditions que `chargerFicheClient`).
+      tx
+        .select({
+          id: piecesImportees.id,
+          clientId: piecesImportees.clientId,
+          genre: piecesImportees.genre,
+          numero: piecesImportees.numero,
+          jour: piecesImportees.jour,
+          montantTtc: piecesImportees.montantTtc,
+          fichierCle: piecesImportees.fichierCle,
+          objet: piecesImportees.objet,
+          adresseChantier: piecesImportees.adresseChantier,
+        })
+        .from(piecesImportees)
+        .where(and(eq(piecesImportees.entrepriseId, ctx.entrepriseId), eq(piecesImportees.statut, "rangee"))),
     ]);
 
     const clientDuChantier = new Map(sesChantiers.map((c) => [c.id, c.clientId]));
@@ -691,6 +791,26 @@ export async function listerFichesClients(ctx: Ctx): Promise<ClientEnListe[]> {
       lignesParChantier.set(l.chantierId, liste);
     }
 
+    // Ses pièces, client par client, composées comme sur sa fiche.
+    const piecesParClient = new Map<string, PieceDuClient[]>();
+    const ranger = (clientId: string | null | undefined, piece: PieceDuClient) => {
+      if (!clientId) return;
+      const liste = piecesParClient.get(clientId) ?? [];
+      liste.push(piece);
+      piecesParClient.set(clientId, liste);
+    };
+    const devisParClient = new Map<string, (typeof sesDevis)[number][]>();
+    for (const d of sesDevis) {
+      const clientId = clientDuChantier.get(d.chantierId);
+      if (!clientId) continue;
+      const lus = devisParClient.get(clientId) ?? [];
+      lus.push(d);
+      devisParClient.set(clientId, lus);
+    }
+    for (const [clientId, lus] of devisParClient) for (const d of dernieresVersions(lus)) ranger(clientId, pieceDeDevis(d));
+    for (const f of sesFactures) ranger(clientDuChantier.get(f.chantierId), pieceDeFacture(f));
+    for (const p of sesImportees) ranger(p.clientId, pieceImportee(p));
+
     const aujourdHui = jourIso(new Date());
     const liste = sesClients.map((client) => {
       const aLui = sesChantiers.filter((c) => c.clientId === client.id);
@@ -733,6 +853,7 @@ export async function listerFichesClients(ctx: Ctx): Promise<ClientEnListe[]> {
           ],
           aujourdHui
         ),
+        pieces: rangerDuPlusRecent(piecesParClient.get(client.id) ?? []),
       };
     });
 

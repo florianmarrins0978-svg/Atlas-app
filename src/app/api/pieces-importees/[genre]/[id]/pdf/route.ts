@@ -29,6 +29,9 @@ export async function GET(requete: Request, { params }: { params: Promise<{ genr
   // Le genre de l'adresse doit être celui de la base : c'est sur l'adresse que
   // `exigerOuverture` a refusé (ou non) la facture à un commercial.
   if (!piece || piece.genre !== genre) return introuvable;
+  // Une ligne de tableau n'a pas de PDF (migration 0154) : la fiche ne propose
+  // pas de l'ouvrir, et une adresse forgée trouve porte close.
+  if (!piece.fichierCle) return introuvable;
   try {
     const octets = await lireObjet(piece.fichierCle);
     const nom = `${piece.genre ?? "piece"}-${(piece.numero ?? piece.jour ?? "importee").replace(/[^\w-]+/g, "-")}.pdf`;

@@ -312,14 +312,13 @@ export function categorieDuClient(nom: string | null | undefined, civilite?: Civ
 /** Les mots de chaque liste : une table, pour que les trois écrans parlent pareil. */
 export const MOTS_DE_LA_CATEGORIE: Record<
   CategorieClient,
-  { titre: string; un: string; des: string; trouve: string; chercher: string; aucun: string }
+  { titre: string; un: string; des: string; trouve: string; aucun: string }
 > = {
   particulier: {
     titre: "Vos clients",
     un: "client",
     des: "clients",
     trouve: "trouvé",
-    chercher: "Chercher un client",
     aucun: "Aucun client pour l'instant. Ils naissent avec vos chantiers.",
   },
   entreprise: {
@@ -327,7 +326,6 @@ export const MOTS_DE_LA_CATEGORIE: Record<
     un: "entreprise",
     des: "entreprises",
     trouve: "trouvée",
-    chercher: "Chercher une entreprise",
     aucun: "Aucune entreprise pour l'instant.",
   },
   public: {
@@ -335,7 +333,6 @@ export const MOTS_DE_LA_CATEGORIE: Record<
     un: "service public",
     des: "services publics",
     trouve: "trouvé",
-    chercher: "Chercher un service public",
     aucun: "Aucun service public pour l'instant.",
   },
 };

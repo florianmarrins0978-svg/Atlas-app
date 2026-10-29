@@ -164,6 +164,9 @@ async function main() {
     const ficheMartins = await chargerFicheClient(ctx, martins.id);
     assert.deepEqual(ficheMartins?.pieces.factures.map((p) => p.titre), ["n° F2025-0148"]);
     assert.match(ficheMartins!.pieces.factures[0].href, /^\/api\/pieces-importees\/facture\//);
+    // Son montant lu se voit sur la ligne, comme celui d'une facture d'Atlas
+    // (sa demande du 28 octobre 2026 : « le titre du devis visible, le montant »).
+    assert.equal(ficheMartins!.pieces.factures[0].montant, "480.00", "le montant lu n'arrive pas sur la fiche");
 
     const tous = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => tx.select().from(clients));
     const lenoir = tous.find((c) => c.nom === "Mme Lenoir");
@@ -214,7 +217,7 @@ async function main() {
     const restantes = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => tx.select().from(piecesImportees));
     assert.deepEqual(restantes, [], "la pièce importée a survécu à son client");
     const enFile = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) =>
-      tx.select().from(fichiersAPurger).where(inArray(fichiersAPurger.storageKey, [avant.cle]))
+      tx.select().from(fichiersAPurger).where(inArray(fichiersAPurger.storageKey, [avant.cle ?? ""]))
     );
     assert.equal(enFile.length, 1, "le fichier de la pièce n'est pas mis en file de purge");
   });

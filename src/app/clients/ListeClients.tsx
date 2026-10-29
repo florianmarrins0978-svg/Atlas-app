@@ -13,7 +13,21 @@ import { oublierCetEcran } from "@/components/atlas/journal-navigateur";
 import { supprimerClientAction } from "./[id]/actions";
 import { apercuSuppressionClientsAction } from "./actions";
 import { grouperEnBandes } from "@/lib/bandes-clients";
-import { jourDeLaLigne, type TraceDuClient } from "@/lib/documents-du-client";
+import {
+  jourDeLaLigne,
+  lignesDeLaPiece,
+  rangerDuPlusRecent,
+  type PieceDuClient,
+  type TraceDuClient,
+} from "@/lib/documents-du-client";
+import {
+  AIDE_DE_LA_LOUPE,
+  compteDesPieces,
+  estUnMontant,
+  piecesQuiRepondent,
+  registreDeLaPiece,
+  rienNeRepond,
+} from "@/lib/recherche-piece";
 import { MOTS_DE_LA_CATEGORIE, type CategorieClient } from "@/lib/civilite";
 import {
   CLES_TRI_CLIENTS,
@@ -24,11 +38,7 @@ import {
   type DateDeTri,
   type TriClients,
 } from "@/lib/tri-clients";
-import {
-  filtrerClientsParNom,
-  aucunClientTrouve,
-  morceauxSurlignes,
-} from "@/lib/recherche-client";
+import { filtrerClientsParNom, morceauxSurlignes } from "@/lib/recherche-client";
 
 /**
  * La liste des clients, et le champ qui les retrouve.
@@ -89,7 +99,12 @@ export type FicheClientListee = {
   joursFactures: string[];
   facture: string | number | null;
   du: string | number | null;
+  /** Ses devis et ses factures, ceux de sa fiche : la loupe y cherche un titre ou un montant. */
+  pieces: PieceDuClient[];
 };
+
+/** Une pièce que la loupe a trouvée, et le client chez qui elle mène. */
+type PieceTrouvee = PieceDuClient & { client: { id: string; nom: string } };
 
 /**
  * ─── POURQUOI UN CONTEXTE, POUR UN SEUL CHAMP DE SAISIE ──────────────────────
@@ -109,6 +124,12 @@ type EtatRecherche = {
   poser: (valeur: string) => void;
   total: number;
   visibles: FicheClientListee[];
+  /**
+   * Les devis et factures qui répondent à la loupe, du plus récent au plus
+   * ancien (28 octobre 2026, planche `appli/soignee/clients-importer.html`).
+   * Vide quand rien n'est tapé.
+   */
+  piecesTrouvees: PieceTrouvee[];
   aujourdHui: string;
   /** Le Filtre (22 octobre 2026) : de A à Z, ou les pièces d'un mois. */
   tri: TriClients;
@@ -163,9 +184,23 @@ export function FournisseurClients({
     [clients, tri]
   );
   const visibles = useMemo(() => filtrerClientsParNom(dansLeTri, saisie), [dansLeTri, saisie]);
+  // **Le nom ne fait pas sortir de pièce ici** (`""` pour le nom) : le client
+  // sort déjà dans la liste, et ses quarante pièces derrière lui la noieraient.
+  // Sur sa fiche, au contraire, taper son nom rend tout son dossier.
+  const piecesTrouvees = useMemo(
+    () =>
+      saisie.trim()
+        ? rangerDuPlusRecent(
+            dansLeTri.flatMap((c) =>
+              piecesQuiRepondent(c.pieces, saisie, "").map((p) => ({ ...p, client: { id: c.id, nom: c.nom } }))
+            )
+          )
+        : [],
+    [dansLeTri, saisie]
+  );
   const valeur = useMemo(
-    () => ({ saisie, poser, total: dansLeTri.length, visibles, aujourdHui, tri, trier, choix, choisir }),
-    [saisie, dansLeTri.length, visibles, aujourdHui, tri, choix]
+    () => ({ saisie, poser, total: dansLeTri.length, visibles, piecesTrouvees, aujourdHui, tri, trier, choix, choisir }),
+    [saisie, dansLeTri.length, visibles, piecesTrouvees, aujourdHui, tri, choix]
   );
   return <Contexte.Provider value={valeur}>{children}</Contexte.Provider>;
 }
@@ -205,14 +240,12 @@ export function CompteClients({ categorie = "particulier" }: { categorie?: Categ
 }
 
 export default function ListeClients({
-  categorie = "particulier",
   sousLaRecherche = null,
 }: {
-  categorie?: CategorieClient;
   /** Ce qui se pose sous la recherche, et ne colle pas avec elle : la porte de l'import. */
   sousLaRecherche?: React.ReactNode;
 }) {
-  const { saisie, poser, visibles, aujourdHui, tri, trier, choix, choisir, total } = useRecherche();
+  const { saisie, poser, visibles, piecesTrouvees, aujourdHui, tri, trier, choix, choisir, total } = useRecherche();
   const cherche = saisie.trim().length > 0;
   const [volet, setVolet] = useState(false);
   // « Tout » ne coche que ce qui est À L'ÉCRAN : une recherche ou un
@@ -267,8 +300,8 @@ export default function ListeClients({
         <ChampRecherche
           valeur={saisie}
           onChange={poser}
-          placeholder={MOTS_DE_LA_CATEGORIE[categorie].chercher}
-          ariaLabel="Chercher un client"
+          placeholder={AIDE_DE_LA_LOUPE}
+          ariaLabel={AIDE_DE_LA_LOUPE}
           dataAtlas="chercher-client"
         />
         {/* **LE FILTRE DE TERMINÉS, sa demande du 22 octobre 2026**
@@ -329,7 +362,9 @@ export default function ListeClients({
           Tout
         </button>
       )}
-      {visibles.length === 0 ? (
+      {/* **Des pièces trouvées, et aucun nom** (« 640 ») : la liste se tait, les
+          pièces parlent juste en dessous. */}
+      {visibles.length === 0 && cherche && !choix && piecesTrouvees.length > 0 ? null : visibles.length === 0 ? (
         <p
           className="mx-[26px] mt-[22px] max-w-[31ch] text-[13px] leading-[1.6]"
           // **`inkSoft`, et non le gris des méta.** Mesuré : `muted` tient 3,32
@@ -338,7 +373,7 @@ export default function ListeClients({
           // l'écran, et elle doit se lire.
           style={{ color: colors.inkSoft }}
         >
-          {cherche || tri.cle === "nom" ? aucunClientTrouve(saisie) : aucunePieceDuMois(tri)}
+          {cherche || tri.cle === "nom" ? rienNeRepond(saisie) : aucunePieceDuMois(tri)}
         </p>
       ) : tri.cle !== "nom" ? (
         // Trié par date, aucune bande de lettre : la liste suit les jours.
@@ -386,10 +421,102 @@ export default function ListeClients({
         </div>
       )}
 
+      {/* Le temps du choix, une ligne coche un client : une pièce, elle, ne se
+          coche pas, elle se tait. */}
+      {cherche && !choix && piecesTrouvees.length > 0 && (
+        <PiecesTrouvees pieces={piecesTrouvees} saisie={saisie} />
+      )}
+
       {choix && <BarreDuChoix choix={choix} choisir={choisir} total={total} />}
     </>
   );
 }
+
+/**
+ * LES DEVIS ET FACTURES QUE LA LOUPE A TROUVÉS — sa demande du 28 octobre 2026.
+ *
+ * *« Il faut rajouter la loupe pour faire une recherche par nom ou montant »*,
+ * planche `appli/soignee/clients-importer.html` : sous les clients trouvés, les
+ * pièces, chacune avec son titre, son montant, sa référence et son client. Un
+ * appui ouvre la fiche du client sur l'onglet de la pièce.
+ */
+function PiecesTrouvees({ pieces, saisie }: { pieces: PieceTrouvee[]; saisie: string }) {
+  const montant = estUnMontant(saisie);
+  return (
+    <section className="mx-[26px] mt-[18px]" data-atlas="pieces-trouvees">
+      <p className="mb-[6px] text-[13px] font-semibold uppercase tracking-[0.12em]" style={{ color: colors.or }}>
+        {compteDesPieces(pieces)}
+      </p>
+      <ul className="flex flex-col">
+        {pieces.map((p, i) => {
+          const lignes = lignesDeLaPiece(p);
+          return (
+            <li key={p.id}>
+              <Link
+                href={`/clients/${p.client.id}?registre=${registreDeLaPiece(p)}`}
+                data-atlas="piece-trouvee"
+                className="flex min-h-[68px] items-center gap-3 py-2.5"
+                style={{ borderTop: i === 0 ? "none" : `1px solid ${colors.line}`, WebkitTapHighlightColor: "transparent" }}
+              >
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-baseline justify-between gap-3">
+                    <span
+                      className="block min-w-0 break-words text-[18.5px] leading-[1.25]"
+                      style={{ fontFamily: font.display, color: colors.ink, fontVariantNumeric: "lining-nums" }}
+                    >
+                      {montant ? lignes.gras : <Surligne texte={lignes.gras} saisie={saisie} />}
+                    </span>
+                    {lignes.montant && (
+                      <span
+                        className="flex-none whitespace-nowrap text-[15.5px] font-semibold"
+                        style={{ color: colors.ink, fontVariantNumeric: "tabular-nums lining-nums" }}
+                      >
+                        {montant ? <mark style={STYLE_MARQUE}>{lignes.montant}</mark> : lignes.montant}
+                      </span>
+                    )}
+                  </span>
+                  <span className="mt-0.5 block text-[14px] leading-[1.4]" style={{ color: colors.inkSoft }}>
+                    {lignes.mot} {lignes.dessous}
+                  </span>
+                  <span className="mt-0.5 block truncate text-[14px] font-semibold leading-[1.4]" style={{ color: colors.ink }}>
+                    {p.client.nom}
+                  </span>
+                </span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={colors.chevron} strokeWidth="2" aria-hidden="true" className="flex-none">
+                  <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
+/** Ce qui a été trouvé, marqué de la même encre que le nom d'un client. */
+function Surligne({ texte, saisie }: { texte: string; saisie: string }) {
+  return (
+    <>
+      {morceauxSurlignes(texte, saisie).map((m, i) =>
+        m.trouve ? (
+          <mark key={i} style={STYLE_MARQUE}>
+            {m.texte}
+          </mark>
+        ) : (
+          <span key={i}>{m.texte}</span>
+        )
+      )}
+    </>
+  );
+}
+
+const STYLE_MARQUE = {
+  backgroundColor: voile(colors.or, 0.24),
+  color: "inherit",
+  borderRadius: 2,
+  padding: "0 1px",
+} as const;
 
 /**
  * Le bouton rouge et sa sortie, au-dessus des onglets, le temps du choix.
@@ -549,7 +676,6 @@ function LigneClient({
 }) {
   const { choix, choisir } = useRecherche();
   const appui = useAppuiLong(() => choisir(new Set([client.id])));
-  const morceaux = morceauxSurlignes(client.nom, saisie);
   // **Le compte de chantiers a quitté cette ligne le 9 septembre 2026.** Il
   // était juste — tous les chantiers ouverts — et c'est ce qui le rendait
   // trompeur : *« certains clients ont 8 chantiers, on s'attend à avoir 8 devis
@@ -587,26 +713,10 @@ function LigneClient({
           data-atlas="nom-client"
           style={{ fontFamily: font.display, color: colors.ink }}
         >
-          {morceaux.map((m, i) =>
-            m.trouve ? (
-              // **Ce qui a été trouvé se voit.** Sur quatre clients qui
-              // s'appellent Martins, une recherche sans marque ressemble à une
-              // recherche qui n'a pas filtré.
-              <mark
-                key={i}
-                style={{
-                  backgroundColor: voile(colors.or, 0.24),
-                  color: "inherit",
-                  borderRadius: 2,
-                  padding: "0 1px",
-                }}
-              >
-                {m.texte}
-              </mark>
-            ) : (
-              <span key={i}>{m.texte}</span>
-            )
-          )}
+          {/* **Ce qui a été trouvé se voit.** Sur quatre clients qui
+              s'appellent Martins, une recherche sans marque ressemble à une
+              recherche qui n'a pas filtré. */}
+          <Surligne texte={client.nom} saisie={saisie} />
         </span>
         {/* **Rien à dire, rien à l'écran — et pas même la place.** Un client
             sans adresse ET sans document laissait une seconde ligne VIDE sous
