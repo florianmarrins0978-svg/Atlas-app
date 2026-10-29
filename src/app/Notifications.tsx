@@ -900,7 +900,8 @@ function ChevronDuPli({ ouvert }: { ouvert: boolean }) {
  *
  * Le montant se lit avant le reste, puis ce que la banque écrit, puis POURQUOI
  * cette facture : le numéro lu, le nom, ou le seul montant. La réponse est la
- * même que dans Ma TVA (`ReponseVirement`).
+ * même que dans Ma banque (`ReponseVirement`) ; dans Ma TVA, la ligne de la
+ * facture garde ses deux boutons, remplis par la banque (sa B du 28 octobre).
  */
 function CarteVirement({ question }: { question: QuestionDeVirement }) {
   const couleurs = couleursDuTon("vert");

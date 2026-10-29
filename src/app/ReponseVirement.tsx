@@ -11,15 +11,17 @@ import {
 } from "./reponses-virements";
 
 /**
- * LA RÉPONSE À UN VIREMENT REÇU — la même sur l'accueil et dans Ma TVA.
+ * LA RÉPONSE À UN VIREMENT REÇU — la même sur l'accueil et dans Ma banque.
+ * (Ma TVA a pris la B le 28 octobre 2026 : ses deux boutons, remplis par la
+ * banque, à la place de la question.)
  *
  * Ses choix du 23 octobre 2026 (`appli/banque-numero-et-termines.html`,
  * variante A) : « Oui » ou « Non », et quand deux factures font le montant,
  * la liste des deux. Après la réponse, ce qui s'est passé s'écrit, avec
  * « Annuler » : une erreur de doigt se rattrape (sa règle du 5 septembre).
  *
- * **`relire`** : Ma TVA se relit après la réponse, pour que la facture quitte
- * l'attente et que le relevé bouge. L'accueil, lui, garde la phrase sous les
+ * **`relire`** : Ma banque se relit après la réponse, pour que la ligne quitte
+ * les virements à relier. L'accueil, lui, garde la phrase sous les
  * yeux ; sa relecture habituelle (`VeilleDesNouvelles`) range la carte ensuite.
  */
 export default function ReponseVirement({

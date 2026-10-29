@@ -36475,3 +36475,15 @@ que gardés en double — `main` n'a qu'une seule version de chacun.
 **La règle.** `questions-chiffrage.ts` dit elle-même comment commence un libellé qu'elle a augmenté (`debutsDUnLibelleEnrichi`) : la forme d'aujourd'hui, et celle d'avant le 28 octobre, que portent encore les libellés déjà en base. Le rapprochement n'a plus de recette à lui. Changer l'écriture d'un libellé enrichi oblige à changer cette fonction juste en dessous, et l'ancienne forme y reste tant qu'une base peut la porter.
 
 **Ce qui a été écarté.** Réécrire en base les anciens libellés au nouveau format : une migration de données sous FORCE RLS pour un gain nul, puisque l'ancienne forme se lit en une ligne.
+
+## §531 : Dans Ma TVA, le virement vu par la banque garde les deux boutons (la B)
+
+*29 octobre 2026, sa réponse « La B » devant `appli/banque-numero-et-termines.html` (« A ou B, dans Terminés »), et sa remarque sur Ma TVA : « tu vois l'encadré là pour les factures ».*
+
+**Ce qui change.** La A (codée le 24 octobre) remplaçait les deux boutons d'une facture par la question « Oui ou Non ». La B les garde : « J'ai reçu le paiement » et « J'ai reçu une partie », remplis de ce que la banque a inscrit. `virementsParFacture` (`src/lib/virement-en-mots.ts`) ne porte plus de question, seulement ce que la banque a vu : le jour, le montant, et si le virement solde la facture (`enUneFois`).
+
+**La règle qui tient la carte de l'accueil.** Un appui qui correspond au virement range CE virement (`confirmerVirementAction`), jamais un paiement tapé à côté : sinon l'accueil reposerait la question d'un virement déjà noté, et un oui là-bas le noterait deux fois. « J'ai reçu le paiement » le range quand il solde la facture ; sinon il est éteint, parce qu'il solderait plus que ce qui est arrivé. La saisie d'une partie le range si sa date, son montant et « Virement » sont restés ceux de la banque ; changés, c'est un règlement à la main.
+
+**La case de « Payé par ».** Elle prenait le fond crème de la page : sur des lignes sans plage, elle se fondait. Les factures reprennent leur plage (la vue « Proposé » de sa planche Ma TVA, la seule qu'il ait prise), et les trois cases de la facture se dessinent d'un filet (`CASE`). La retouche « Payé par en pilule » (`claude/paye-par-bouts-ronds`) n'est pas reprise : elle lisait sa remarque sur le bouton comme une remarque sur le champ, et le champ de sa planche est une case à 6 px.
+
+**Écarté.** Garder la A et ajouter la B en réglage : deux façons de répondre au même virement sur le même écran, ce que le §3 refuse.

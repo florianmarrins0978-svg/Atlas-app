@@ -39,6 +39,9 @@ export type QuestionDeVirement = {
   /** Le payeur, ou « Sans nom » quand la banque ne le donne pas. */
   qui: string;
   montant: string;
+  /** « 2026-10-21 » et « 120.00 » : ce que la banque a inscrit, pour remplir sans réécrire. */
+  jour: string;
+  montantRecu: string;
   /** « Le 21 octobre, VIR M LALA F2026-000028. » */
   quandEtLibelle: string;
   /** Pourquoi cette facture : le numéro lu, le nom, ou le seul montant. */
@@ -94,6 +97,8 @@ export function questionsDesVirements(
       quand: new Date(`${v.date}T12:00:00Z`).getTime(),
       qui: v.payeur ?? "Sans nom",
       montant: enEuros(montant / 100),
+      jour: v.date,
+      montantRecu: v.montant,
       quandEtLibelle: v.libelle ? `Le ${jourEtMois(v.date)}, ${v.libelle}.` : `Le ${jourEtMois(v.date)}.`,
       raison: raisonDe(p),
       question: questionDe(p, montant),
@@ -111,44 +116,49 @@ export function vuSurLaBanque(q: QuestionDeVirement): string {
   return `Vu sur votre banque le ${jour}, ${q.montant}.`;
 }
 
-/** La question posée sur la ligne d'UNE facture, dans Ma TVA (variante A). */
-export type QuestionSurLaFacture = {
+/**
+ * Ce que la banque a vu pour UNE facture, sur sa ligne de Ma TVA.
+ *
+ * **Sa B du 28 octobre 2026** (`appli/banque-numero-et-termines.html`, « A ou
+ * B, dans Terminés ») : pas de question à cet endroit. La ligne garde ses deux
+ * boutons, et ils partent remplis de ce que la banque a inscrit.
+ */
+export type VirementSurLaFacture = {
   virementId: string;
   /** « Vu sur votre banque le 21 octobre, VIR M LALA, 120,00 €. » */
   vu: string;
   raison: string;
-  question: string;
-  oui: string;
-  choix: ChoixDeFacture;
+  jour: string;
+  montantRecu: string;
+  /**
+   * Le virement solde la facture (ou la dépasse) : « J'ai reçu le paiement »
+   * le range d'un appui. Une partie ne se range que par « J'ai reçu une
+   * partie », sans quoi l'appui solderait plus que ce qui est arrivé.
+   */
+  enUneFois: boolean;
 };
 
 /**
- * Les questions de virement, rangées par facture — pour Ma TVA.
+ * Les virements, rangés par facture : pour Ma TVA.
  *
- * Sur la ligne d'une facture, la question parle de CETTE facture : « Ce
- * virement paie-t-il cette facture ? » plutôt que son numéro, déjà écrit
- * juste au-dessus. Quand deux virements désignent la même facture, le plus
- * récent l'emporte : l'autre reste une question sur l'accueil.
+ * Quand deux virements désignent la même facture, le plus récent l'emporte :
+ * l'autre reste une question sur l'accueil. Quand deux factures font le même
+ * montant, le virement s'écrit sur les deux lignes, et c'est le bouton touché
+ * qui dit laquelle il paie.
  */
-export function questionsParFacture(questions: readonly QuestionDeVirement[]): Record<string, QuestionSurLaFacture> {
-  const parFacture: Record<string, QuestionSurLaFacture> = {};
+export function virementsParFacture(questions: readonly QuestionDeVirement[]): Record<string, VirementSurLaFacture> {
+  const parFacture: Record<string, VirementSurLaFacture> = {};
   const recentes = [...questions].sort((a, b) => b.quand - a.quand);
   for (const q of recentes) {
     for (const c of q.choix) {
       if (parFacture[c.factureId]) continue;
-      const question =
-        q.genre === "partie"
-          ? "Une partie de cette facture ?"
-          : q.genre === "trop"
-            ? `Cette facture ? Le virement fait ${q.montant}, plus que ce qu'elle attend.`
-            : "Ce virement paie-t-il cette facture ?";
       parFacture[c.factureId] = {
         virementId: q.virementId,
         vu: vuSurLaBanque(q),
         raison: q.raison,
-        question,
-        oui: q.oui,
-        choix: c,
+        jour: q.jour,
+        montantRecu: q.montantRecu,
+        enUneFois: q.genre !== "partie",
       };
     }
   }

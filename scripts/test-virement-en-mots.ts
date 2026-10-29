@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { questionsDesVirements, questionsParFacture, type VirementAQuestionner } from "../src/lib/virement-en-mots";
+import { questionsDesVirements, virementsParFacture, type VirementAQuestionner } from "../src/lib/virement-en-mots";
 import { accordEnMots, PREVENIR_JOURS_AVANT } from "../src/lib/accord-bancaire";
 import type { FactureARapprocher } from "../src/lib/rapprochement-bancaire";
 
@@ -74,16 +74,28 @@ test("un virement déjà répondu, oui ou non, ne redevient pas une question", (
   assert.equal(questionsDesVirements([v("v1", "VIR F2026-000028", "120.00", "ecarte")], [LALA]).length, 0);
 });
 
-test("Ma TVA : la question sur la ligne parle de CETTE facture", () => {
+// **Sa B du 28 octobre 2026** (`appli/banque-numero-et-termines.html`, « A ou
+// B, dans Terminés ») : la ligne garde « J'ai reçu le paiement » et « J'ai reçu
+// une partie », déjà remplis avec la date et le montant de la banque. Plus de
+// question à cet endroit : ce qu'il faut à l'écran, c'est ce que la banque a vu.
+test("Ma TVA : la ligne porte ce que la banque a vu, le jour et le montant reçus", () => {
   const qs = questionsDesVirements([v("v1", "VIR F2026-000028", "120.00", "nouveau", "M LALA")], [LALA]);
-  const parFacture = questionsParFacture(qs);
-  assert.equal(parFacture.f28?.question, "Ce virement paie-t-il cette facture ?");
+  const parFacture = virementsParFacture(qs);
   assert.match(parFacture.f28?.vu ?? "", /^Vu sur votre banque le 21 octobre, VIR F2026-000028, 120,00/);
+  assert.equal(parFacture.f28?.jour, "2026-10-21");
+  assert.equal(parFacture.f28?.montantRecu, "120.00");
+  assert.equal(parFacture.f28?.enUneFois, true, "le virement paie la facture : « J'ai reçu le paiement » doit le ranger");
   sansTypographieDeRapport(parFacture.f28?.vu ?? "");
 });
 
+test("Ma TVA : un virement qui n'en paie qu'une partie ne se range pas d'un appui", () => {
+  const parFacture = virementsParFacture(questionsDesVirements([v("v1", "VIR F2026-000020", "300.00")], [FRED]));
+  assert.equal(parFacture.f20?.enUneFois, false, "« J'ai reçu le paiement » solderait 780 € sur un virement de 300 €");
+  assert.equal(parFacture.f20?.montantRecu, "300.00");
+});
+
 test("Ma TVA : deux factures pareilles, la question est posée sur les DEUX lignes", () => {
-  const parFacture = questionsParFacture(questionsDesVirements([v("v1", "VIREMENT SEPA RECU", "120.00")], [LALA, MARTINS]));
+  const parFacture = virementsParFacture(questionsDesVirements([v("v1", "VIREMENT SEPA RECU", "120.00")], [LALA, MARTINS]));
   assert.ok(parFacture.f28 && parFacture.f25, "une des deux lignes n'a pas sa question");
   assert.equal(parFacture.f28.virementId, parFacture.f25.virementId);
 });

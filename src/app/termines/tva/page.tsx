@@ -23,7 +23,7 @@ import RythmeTva from "./RythmeTva";
 import AchatsTva from "./AchatsTva";
 import EnAttenteDePaiement from "./EnAttenteDePaiement";
 import { after } from "next/server";
-import { questionsParFacture } from "@/lib/virement-en-mots";
+import { virementsParFacture } from "@/lib/virement-en-mots";
 import { lireLaBanque } from "@/server/banque/lecture";
 import { questionsEnAttente } from "@/server/banque/questions";
 import { receptionsDesFactures } from "@/server/repositories/envois-factures";
@@ -272,7 +272,7 @@ export default async function ReleveTvaPage({
             relevé. Placé AVANT les deux preuves : c'est ce qui reste à faire,
             et ça se lit avant ce qui est fait. */}
         <EnAttenteDePaiement
-          virements={questionsParFacture(virements)}
+          virements={virementsParFacture(virements)}
           aPrevenir={aPrevenir}
           receptions={receptions}
           regime={releve.regime}

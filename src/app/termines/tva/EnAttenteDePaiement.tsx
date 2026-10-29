@@ -12,8 +12,8 @@ import { noterPaiementAction, remettrePaiementAction, retirerPaiementAction, sol
 import { MarqueAncienIban } from "@/components/atlas/AlerteAncienIban";
 import { prevenirAction } from "@/app/prevenir-du-nouvel-iban";
 import type { FactureAPrevenir } from "@/server/repositories/factures";
-import ReponseVirement from "../../ReponseVirement";
-import type { QuestionSurLaFacture } from "@/lib/virement-en-mots";
+import { confirmerVirementAction } from "@/app/reponses-virements";
+import type { VirementSurLaFacture } from "@/lib/virement-en-mots";
 import type { ReceptionLisible } from "@/lib/reception-facture";
 
 export type FactureAttendue = {
@@ -75,12 +75,12 @@ export default function EnAttenteDePaiement({
 }: {
   factures: FactureAttendue[];
   /**
-   * **Le virement que la banque a vu pour cette facture** — ses choix du
-   * 23 octobre 2026 (`appli/banque-numero-et-termines.html`, variante A) : la
-   * même question que sur l'accueil, à la place des deux boutons, et une
-   * réponse donnée ici vaut pour l'accueil.
+   * **Le virement que la banque a vu pour cette facture** — sa B du 28 octobre
+   * 2026 (`appli/banque-numero-et-termines.html`, « A ou B, dans Terminés ») :
+   * les deux boutons restent, remplis de ce que la banque a inscrit, et un
+   * paiement rangé ici répond aussi à la carte de l'accueil.
    */
-  virements?: Record<string, QuestionSurLaFacture | undefined>;
+  virements?: Record<string, VirementSurLaFacture | undefined>;
   /**
    * **Ce que le client a fait de chaque facture** — sa demande du 9 septembre
    * 2026, et la réponse à sa question sur le litige.
@@ -132,7 +132,10 @@ export default function EnAttenteDePaiement({
     setEnCours(id);
     setErreur(null);
     try {
-      const r = await soldeFactureAction(id, aujourdHui, moyenDe(id));
+      // Le virement vu par la banque se range LUI-MÊME, et non un paiement
+      // tapé à côté : sans quoi l'accueil le reposerait comme une question.
+      const v = virements[id];
+      const r = v?.enUneFois ? await confirmerVirementAction(v.virementId, id) : await soldeFactureAction(id, aujourdHui, moyenDe(id));
       if (!r.ok) setErreur(r.raison);
       else {
         const f = factures.find((x) => x.id === id);
@@ -186,14 +189,13 @@ export default function EnAttenteDePaiement({
           Tout est réglé. Rien n&apos;attend son paiement.
         </p>
       ) : (
-        /* **Des lignes, plus des cartes — 3 septembre 2026.** Six plages
-           arrondies empilées faisaient de cet écran une grille de tableau de
-           bord, ce que le patron refuse. Un cheveu suffit à séparer deux
-           factures, et le montant retrouve la colonne de droite que partagent
-           tous les montants de l'écran. */
-        <ul className="mt-1 flex flex-col">
+        /* **Une plage par facture — sa planche Ma TVA soignée, vue
+           « Proposé », et sa remarque du 28 octobre 2026 :** *« tu vois
+           l'encadré là pour les factures »*. Les lignes séparées d'un cheveu
+           (3 septembre) étaient la vue « Plus loin », qu'il n'a pas prise. */
+        <ul className="mt-3 flex flex-col gap-2.5">
           {(toutes ? factures : factures.slice(0, QUELQUES)).map((f) => (
-            <li key={f.id} className="py-3.5" style={{ borderTop: `1px solid ${colors.lineSoft}` }}>
+            <li key={f.id} className="rounded-[6px] p-[18px]" style={{ backgroundColor: colors.card }}>
               {/* **La zone du client ouvre la facture envoyée**, sa demande du
                   24 septembre 2026 (`appli/ouvrir-la-facture-depuis-la-tva.html`) :
                   le nom, le numéro, le montant. Les gestes de paiement en
@@ -220,7 +222,7 @@ export default function EnAttenteDePaiement({
 
                       Le jour court, comme la trace de réception juste en
                       dessous : une seule façon d'écrire un jour sur cet écran. */}
-                  <p className="text-[14px] leading-[1.45]" style={{ color: colors.inkSoft }}>
+                  <p className="text-[14.5px] leading-[1.45]" style={{ color: colors.inkSoft }}>
                     {f.numeroCommercial}, émise le {jourCourt(f.dateEmission, aujourdHui)}
                   </p>
                 </div>
@@ -276,14 +278,10 @@ export default function EnAttenteDePaiement({
                   la facture, pas sur son règlement. */}
               <CeQueLeClientEnAFait reception={receptions[f.id]} facture={visionneuseDeLaFacture(f)} />
 
-              {/* **La banque a vu un virement pour cette facture : la question
-                  prend la place des deux boutons, sans rien déplacer d'autre**
-                  (variante A, sa règle du texte et non de la place). « Non »
-                  les rend, à la relecture. */}
-              {virements[f.id] ? (
-                <VirementSurLaFacture q={virements[f.id]} />
-              ) : (
-              <>
+              {/* **La banque a vu un virement pour cette facture : on le dit, et
+                  les deux boutons restent** (sa B du 28 octobre 2026). */}
+              <VuSurLaBanque v={virements[f.id]} />
+
               {/* **« Payé par » suit la saisie d'un règlement partiel** — sa
                   remarque du 26 octobre 2026 : il a noté une partie par
                   virement sans voir que le moyen se choisissait AU-DESSUS.
@@ -304,9 +302,11 @@ export default function EnAttenteDePaiement({
                 <button
                   type="button"
                   data-atlas="solder-la-facture"
-                  disabled={enCours === f.id}
+                  // Un virement qui ne paie qu'une partie ne solde pas d'un
+                  // appui : il passe par « J'ai reçu une partie », déjà remplie.
+                  disabled={enCours === f.id || virements[f.id]?.enUneFois === false}
                   onClick={() => solder(f.id)}
-                  className="atlas-plein min-h-[52px] w-full rounded-full px-5 py-2 text-[16px] font-semibold disabled:opacity-40"
+                  className="atlas-plein min-h-[56px] w-full rounded-full px-5 py-2 text-[17px] font-semibold disabled:opacity-40"
                   style={{ backgroundColor: colors.plein, color: colors.card }}
                 >
                   {enCours === f.id ? "…" : "J'ai reçu le paiement"}
@@ -316,16 +316,22 @@ export default function EnAttenteDePaiement({
                   data-atlas="noter-un-reglement"
                   onClick={() => setOuverte(ouverte === f.id ? null : f.id)}
                   aria-expanded={ouverte === f.id}
-                  className="min-h-[44px] px-2 py-2 text-[15px] font-semibold"
+                  className="min-h-[48px] px-2 py-2 text-[16px] font-semibold"
                   style={{ color: colors.rust }}
                 >
                   J&apos;ai reçu une partie
                 </button>
+                {virements[f.id] && ouverte !== f.id && (
+                  <p className="text-center text-[14.5px] leading-[1.45]" style={{ color: colors.inkSoft }}>
+                    Date et montant de la banque déjà remplis.
+                  </p>
+                )}
               </div>
 
               {ouverte === f.id && (
                 <SaisieDuReglement
                   facture={f}
+                  virement={virements[f.id]}
                   moyen={moyenDe(f.id)}
                   choisirMoyen={(m) => setMoyens((t) => ({ ...t, [f.id]: m }))}
                   aujourdHui={aujourdHui}
@@ -335,8 +341,6 @@ export default function EnAttenteDePaiement({
                     router.refresh();
                   }}
                 />
-              )}
-              </>
               )}
 
               {(f.paiements.length > 0 || f.retires.length > 0) && (
@@ -472,6 +476,7 @@ export default function EnAttenteDePaiement({
  */
 function SaisieDuReglement({
   facture,
+  virement,
   moyen,
   choisirMoyen,
   aujourdHui,
@@ -479,24 +484,32 @@ function SaisieDuReglement({
   onFini,
 }: {
   facture: FactureAttendue;
+  virement: VirementSurLaFacture | undefined;
   moyen: MoyenDePaiement;
   choisirMoyen: (m: MoyenDePaiement) => void;
   aujourdHui: string;
   onErreur: (m: string | null) => void;
   onFini: () => void;
 }) {
-  const [date, setDate] = useState(aujourdHui < facture.dateEmission ? facture.dateEmission : aujourdHui);
-  // **La case part VIDE — sa demande du 11 septembre 2026 :** *« le montant doit
-  // être le chiffre qu'on a écrit »*. Elle arrivait remplie du solde entier, si
-  // bien qu'il lisait un chiffre qu'il n'avait pas tapé. Solder d'un doigt reste
-  // possible : c'est « J'ai reçu le paiement », juste au-dessus.
-  const [montant, setMontant] = useState("");
+  // **Ce que la banque a inscrit remplit la saisie** — sa B du 28 octobre
+  // 2026 : la date et le montant du virement, qu'il n'a plus qu'à relire.
+  const parLaBanque = virement && virement.jour >= facture.dateEmission ? virement : undefined;
+  const montantDeLaBanque = parLaBanque ? parLaBanque.montantRecu.replace(".", ",") : "";
+  const [date, setDate] = useState(
+    parLaBanque ? parLaBanque.jour : aujourdHui < facture.dateEmission ? facture.dateEmission : aujourdHui
+  );
+  // **Sans virement, la case part VIDE — sa demande du 11 septembre 2026 :**
+  // *« le montant doit être le chiffre qu'on a écrit »*. Elle arrivait remplie
+  // du solde entier, si bien qu'il lisait un chiffre qu'il n'avait pas tapé.
+  // Le montant de la banque, lui, est un chiffre lu, pas inventé.
+  const [montant, setMontant] = useState(montantDeLaBanque);
   const [enCours, setEnCours] = useState(false);
   // La virgule du clavier français compte autant que le point.
   const rien = !(Number(montant.replace(",", ".")) > 0);
 
   return (
-    <div className="mt-2.5 flex flex-col gap-2">
+    // Un filet la sépare des deux boutons du dessus, comme sur sa planche.
+    <div className="mt-3 flex flex-col gap-2 pt-3" style={{ boxShadow: `inset 0 1px 0 ${colors.line}` }}>
       <PayePar moyen={moyen} choisir={choisirMoyen} />
       <div className="flex items-end gap-2">
         <label className="flex min-w-0 flex-1 flex-col gap-1.5">
@@ -516,7 +529,7 @@ function SaisieDuReglement({
               posé transparent PAR-DESSUS notre propre texte, qui, lui, passe
               par `jourNumerique` — la seule façon d'écrire une date dans ce
               dépôt. */}
-          <span className="relative block rounded-[4px]" style={{ backgroundColor: colors.cream }}>
+          <span className="relative block rounded-[6px]" style={CASE}>
             <span
               aria-hidden
               className="flex items-center justify-between gap-2 px-3 py-2.5"
@@ -556,8 +569,8 @@ function SaisieDuReglement({
             inputMode="decimal"
             placeholder="0,00"
             aria-label="Montant reçu, en euros"
-            className="w-28 rounded-[4px] border-0 px-3 py-2.5 text-right outline-none"
-            style={{ backgroundColor: colors.cream, color: colors.ink, fontSize: "16px" }}
+            className="w-28 rounded-[6px] border-0 px-3 py-2.5 text-right outline-none"
+            style={{ ...CASE, color: colors.ink, fontSize: "16px" }}
           />
         </label>
         <span className="pb-3 text-[13px]" style={{ color: colors.muted }}>
@@ -573,7 +586,13 @@ function SaisieDuReglement({
           setEnCours(true);
           onErreur(null);
           try {
-            const r = await noterPaiementAction(facture.id, date, montant, moyen);
+            // Rien de changé à ce que la banque a inscrit : c'est CE virement
+            // qui se range, et la carte de l'accueil reçoit sa réponse.
+            const leVirement =
+              parLaBanque && date === parLaBanque.jour && montant === montantDeLaBanque && moyen === "virement";
+            const r = leVirement
+              ? await confirmerVirementAction(parLaBanque.virementId, facture.id)
+              : await noterPaiementAction(facture.id, date, montant, moyen);
             if (!r.ok) onErreur(r.raison);
             else onFini();
           } catch {
@@ -583,8 +602,14 @@ function SaisieDuReglement({
             setEnCours(false);
           }
         }}
-        className="atlas-plein min-h-[48px] self-start rounded-full px-5 py-2.5 text-[16px] font-semibold disabled:opacity-40"
-        style={{ backgroundColor: colors.plein, color: colors.card }}
+        // Un bouton creux sur toute la largeur, sa planche : « J'ai reçu le
+        // paiement » reste le seul plein de la facture.
+        className="mt-2 min-h-[56px] w-full rounded-full px-5 text-[17px] font-semibold"
+        style={
+          enCours || rien
+            ? { backgroundColor: colors.line, color: colors.inkSoft }
+            : { boxShadow: `inset 0 0 0 1.5px ${colors.line}`, color: colors.ink }
+        }
       >
         Enregistrer ce règlement
       </button>
@@ -620,9 +645,9 @@ function SaisieDuReglement({
 function CeQueLeClientEnAFait({ reception, facture }: { reception: ReceptionLisible | undefined; facture: string }) {
   if (!reception) return null;
   return (
-    <Link href={facture} tabIndex={-1} className="mt-2 block text-[14px] leading-[1.5]" style={{ color: colors.inkSoft }}>
+    <Link href={facture} tabIndex={-1} className="block text-[14.5px] leading-[1.45]" style={{ color: colors.inkSoft }}>
       {reception.avant}
-      {reception.date && <strong style={{ color: colors.inkSoft }}>{reception.date}</strong>}
+      {reception.date && <strong style={{ color: colors.ink }}>{reception.date}</strong>}
     </Link>
   );
 }
@@ -637,6 +662,14 @@ function CeQueLeClientEnAFait({ reception, facture }: { reception: ReceptionLisi
 function enClair(iso: string): string {
   return `${jourEtMois(iso)} ${iso.slice(0, 4)}`;
 }
+
+/**
+ * Une case à remplir, posée sur la plage de la facture : la couleur de la
+ * plage, et un filet qui la dessine, comme le champ de sa planche. Sur le fond
+ * crème de la page, sans plage, la case se fondait : « le mot virement n'est
+ * pas dans un encadré » (28 octobre 2026).
+ */
+const CASE = { backgroundColor: colors.card, boxShadow: `inset 0 0 0 1px ${colors.lineSoft}` } as const;
 
 /** Le format de tout le dépôt, espace des milliers comprise (`euros.ts`). */
 function euros(montant: string): string {
@@ -660,7 +693,7 @@ function PayePar({ moyen, choisir }: { moyen: MoyenDePaiement; choisir: (m: Moye
       <span className="text-[14.5px] font-semibold" style={{ color: colors.inkSoft }}>
         Payé par
       </span>
-      <span className="relative block rounded-[4px]" style={{ backgroundColor: colors.cream }}>
+      <span className="relative block rounded-[6px]" style={CASE}>
         <span
           aria-hidden
           className="flex min-h-[48px] items-center justify-between gap-2 px-3.5"
@@ -690,15 +723,12 @@ function PayePar({ moyen, choisir }: { moyen: MoyenDePaiement; choisir: (m: Moye
   );
 }
 
-/** Ce que la banque a vu pour cette facture, et la même question que l'accueil. */
-function VirementSurLaFacture({ q }: { q: QuestionSurLaFacture | undefined }) {
-  if (!q) return null;
+/** Ce que la banque a vu pour cette facture, au-dessus de ses deux boutons. */
+function VuSurLaBanque({ v }: { v: VirementSurLaFacture | undefined }) {
+  if (!v) return null;
   return (
-    <div data-atlas="virement-sur-la-facture">
-      <p className="mt-2 text-[14px] leading-[1.45]" style={{ color: colors.orTexte }}>
-        {q.vu} {q.raison}
-      </p>
-      <ReponseVirement virementId={q.virementId} question={q.question} oui={q.oui} choix={[q.choix]} relire />
-    </div>
+    <p data-atlas="virement-sur-la-facture" className="mt-2 text-[14px] leading-[1.45]" style={{ color: colors.orTexte }}>
+      {v.vu} {v.raison}
+    </p>
   );
 }
