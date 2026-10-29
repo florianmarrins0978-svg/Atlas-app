@@ -152,13 +152,15 @@ export default function AbonnementClient({
               confusion se paierait par un appel affolé un soir de trimestre.
               Rangé sous la seule ligne qui parle des factures d'Atlas (planche
               du 26 octobre 2026) : posé sous les formules, il contredisait
-              « Devis et factures illimités », qui parle des siennes. */}
-          <div className="mt-2">
-            <PlageTon ton="bleu">
-              <b style={{ color: colors.ink }}>Attention au mot.</b> Ici, « factures » désigne celles qu&apos;Atlas vous
-              envoie. Celles de vos clients sont dans « Terminés ».
-            </PlageTon>
-          </div>
+              « Devis et factures illimités », qui parle des siennes. Une simple
+              ligne, sans encadré : l'encadré bleu faisait « un peu trop
+              enfantin » (même planche, retenue le 29 octobre). */}
+          <p data-atlas="attention-au-mot" className="mt-2.5 text-[14.5px] leading-[1.45]" style={{ color: colors.inkSoft }}>
+            <b className="font-semibold" style={{ color: colors.ink }}>
+              Attention au mot.
+            </b>{" "}
+            Ici, « factures » désigne celles qu&apos;Atlas vous envoie. Celles de vos clients sont dans « Terminés ».
+          </p>
 
           {/* Résilier se fait ICI, et non chez le prestataire : « Avant de
               partir » propose une formule moins chère et demande pourquoi

@@ -144,6 +144,18 @@ async function main() {
     assert.equal((await listerDossiers(ctx)).length, 2);
   });
 
+  await test("chaque dossier compte ses lignes de relevé, et seulement les siennes (« 60 lignes »)", async () => {
+    // Une ligne de l'autre entreprise, dans la même période : la RLS ne doit
+    // pas la laisser grossir le compte.
+    await ajouterMouvements(autre, [sortie("AUTRE", "2026-03-11", "9.00")]);
+    const parId = new Map((await listerDossiers(ctx)).map((d) => [d.id, d]));
+    assert.equal(parId.get(premierId)?.lignes, 2, "le premier dossier couvre GASOIL et ROUEN");
+    const second = [...parId.values()].find((d) => d.id !== premierId);
+    assert.equal(second?.lignes, 0, "aucun mouvement entre juillet et septembre");
+    const verif = await lignesDuReleve(ctx, "2026-02-01", "2026-06-30");
+    assert.equal(parId.get(premierId)?.lignes, verif.length, "le compte et la vérification du comptable divergent");
+  });
+
   let bilanId = "";
   await test("le bilan du comptable se range avec son dossier", async () => {
     const r = await ajouterBilan(ctx, { dossierId: premierId, fichierCle: "entreprises/x/bilans/b.pdf", fichierNom: "Bilan 2026.pdf", nature: "pdf", tailleOctets: 1200, empreinte: "1".repeat(64) });

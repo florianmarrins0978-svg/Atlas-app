@@ -142,9 +142,11 @@ async function main() {
     assert.equal(await page.locator('[data-atlas="dossier-range"]').count(), 1);
     assert.match(texte, /Rangé le .*, gardé jusqu’au .* \d{4}/);
     // Sa remarque du 27 octobre 2026 : « je ne sais pas où est le dossier ».
-    // Le fichier se montre : son nom en .pdf, sa taille, et il s'ouvre d'un appui.
+    // Le fichier se montre : son nom en .pdf, sa taille et ses lignes (planche A,
+    // « 774 Ko, 60 lignes »), et il s'ouvre d'un appui. Une seule ligne du
+    // relevé tombe dans ce dossier : la QUINCAILLERIE.
     const fichier = page.locator('[data-atlas="ouvrir-dossier"]');
-    assert.match(await fichier.innerText(), /Dossier justifié, Du .* \d{4}\.pdf[\s\S]*PDF, [\d,]+ (Ko|Mo)/);
+    assert.match(await fichier.innerText(), /Dossier justifié, Du .* \d{4}\.pdf\s+[\d,]+ (Ko|Mo), 1 ligne$/);
     const boite = await fichier.boundingBox();
     assert.ok(boite && boite.height >= 56, `la ligne du fichier ne se touche pas : ${JSON.stringify(boite)}`);
     assert.match(await page.locator("body").innerText(), /Gardés dix ans avec leur bilan, puis effacés\./);

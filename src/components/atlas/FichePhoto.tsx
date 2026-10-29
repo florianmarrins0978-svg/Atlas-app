@@ -9,7 +9,7 @@ import TeteRonde from "./TeteRonde";
 type Resultat<T> = ({ ok: true } & T) | { ok: false; raison: string };
 
 /**
- * La fiche d'une photo : la tête en grand, et trois gestes.
+ * La fiche d'une photo : la tête en grand, trois gestes, et « Annuler ».
  *
  * *Sa réponse B du 27 septembre 2026*, planche `appli/photo-des-salaries.html`,
  * puis *« chaque personne doit pouvoir mettre et changer sa photo de
@@ -125,6 +125,19 @@ export default function FichePhoto({
             Retirer la photo
           </button>
         ) : null}
+        {/* « Annuler » en simple mot, comme la feuille de Se déconnecter (sa
+            planche Mon compte du 26 octobre 2026, retenue le 29) : la poignée
+            et le voile referment aussi, mais rien ne le disait. */}
+        <button
+          type="button"
+          data-atlas="annuler-photo"
+          disabled={enCours}
+          onClick={onFermer}
+          className="mt-1.5 min-h-[48px] w-full px-1 text-[16px] font-semibold"
+          style={{ color: colors.inkSoft }}
+        >
+          Annuler
+        </button>
         {refus ? (
           <p role="alert" className="mt-3 text-center text-[13px] leading-[1.5]" style={{ color: colors.alert }}>
             {refus}

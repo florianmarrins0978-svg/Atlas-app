@@ -1,6 +1,7 @@
-import { asc, desc, eq } from "drizzle-orm";
+import { asc, count, desc, eq } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
-import { bilansComptables, dossiersComptables } from "../db/schema";
+import { bilansComptables, dossiersComptables, mouvementsBancaires } from "../db/schema";
+import { lignesDeLaPeriode } from "./pour-mon-comptable";
 import { periodeDuDossierEnCours } from "@/lib/pour-mon-comptable";
 import type { Ctx } from "./context";
 
@@ -29,6 +30,8 @@ export type DossierRange = {
   du: string;
   au: string;
   tailleOctets: number;
+  /** Ses lignes de relevé, celles que son comptable vérifie (« 60 lignes »). */
+  lignes: number;
   gardeJusquAu: string;
   arreteLe: Date;
   bilans: { id: string; fichierNom: string | null; nature: "photo" | "pdf"; ajouteLe: Date }[];
@@ -39,11 +42,19 @@ export async function listerDossiers(ctx: Ctx): Promise<DossierRange[]> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const dossiers = await tx.select().from(dossiersComptables).orderBy(desc(dossiersComptables.au));
     const bilans = await tx.select().from(bilansComptables).orderBy(asc(bilansComptables.ajouteLe));
-    return dossiers.map((d) => ({
+    // Compté ici, sous la même isolation que le reste : une ligne d'une autre
+    // entreprise ne peut pas grossir le compte.
+    const lignes: number[] = [];
+    for (const d of dossiers) {
+      const [{ n }] = await tx.select({ n: count() }).from(mouvementsBancaires).where(lignesDeLaPeriode(d.du, d.au));
+      lignes.push(n);
+    }
+    return dossiers.map((d, i) => ({
       id: d.id,
       du: d.du,
       au: d.au,
       tailleOctets: d.tailleOctets,
+      lignes: lignes[i],
       gardeJusquAu: d.gardeJusquAu,
       arreteLe: d.arreteLe,
       bilans: bilans

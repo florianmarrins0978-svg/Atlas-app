@@ -15,6 +15,7 @@ import {
   echeanceProche,
   jourComplet,
   tailleLisible,
+  tailleEtLignes,
   etatDeVerification,
   noteDuRejet,
   avancementDeLaVerification,
@@ -287,6 +288,12 @@ test("le nom d'un dossier et sa taille se lisent", () => {
   assert.equal(tailleLisible(42_000), "42 Ko");
   assert.equal(tailleLisible(300), "1 Ko", "un fichier n'a jamais l'air vide");
   assert.equal(tailleLisible(3_450_000), "3,5 Mo");
+});
+
+test("la ligne du fichier dit sa taille et ses lignes, comme la planche A du 27 octobre", () => {
+  assert.equal(tailleEtLignes(774_000, 60), "774 Ko, 60 lignes");
+  assert.equal(tailleEtLignes(42_000, 1), "42 Ko, 1 ligne");
+  assert.equal(tailleEtLignes(42_000, 0), "42 Ko, aucune ligne");
 });
 
 // ─── Lot 4 : le verdict du comptable ─────────────────────────────────────────
