@@ -309,26 +309,29 @@ export default function ListeClients({
           transition: "box-shadow 180ms ease-out",
         }}
       >
-        <ChampRecherche
-          valeur={saisie}
-          onChange={poser}
-          placeholder={AIDE_DE_LA_LOUPE}
-          ariaLabel={AIDE_DE_LA_LOUPE}
-          dataAtlas="chercher-client"
-        />
         {/* **LE FILTRE DE TERMINÉS, sa demande du 22 octobre 2026**
             (`appli/facture-mairie-chorus.html`) : retrouver un devis de 2017
             dans dix ans de dossiers. Ses couleurs ne changent pas quand il
             agit (*« pas vert »*) : c'est le titre du mois qui le dit.
 
-            **Il reste SOUS la recherche, contre la planche soignée** (qui le
-            met sur sa ligne) : la loupe porte depuis le 28 octobre sa phrase
-            entière, « Chercher un nom, un titre, un montant », et à côté du
-            Filtre elle se coupait à « un titre, u » sur 390 px. La phrase
-            apprend que la loupe trouve un montant ; la place du Filtre est à
-            lui de la trancher. */}
-        <div className="mt-[10px] flex justify-end">
-          <BoutonFiltre onClick={() => setVolet(true)} />
+            **Sur la ligne de la recherche, comme sa planche soignée** (sa
+            demande du 31 octobre 2026 : *« j'aimais bien que l'icône du filtre
+            soit sur la même ligne »*). Son signe seul : avec le mot, la phrase
+            de la loupe se coupait à « un titre, u » sur 390 px. */}
+        <div className="flex items-end gap-2.5">
+          <div className="min-w-0 flex-1">
+            <ChampRecherche
+              valeur={saisie}
+              onChange={poser}
+              placeholder={AIDE_DE_LA_LOUPE}
+              ariaLabel={AIDE_DE_LA_LOUPE}
+              dataAtlas="chercher-client"
+              // Mesuré : la phrase fait 252 px à 14 px, la case en offre 259 à
+              // 390 px de large, et 229 à 360 px, d'où 12,5 px en dessous de 380.
+              className="[&_input::placeholder]:text-[14px] max-[380px]:[&_input::placeholder]:text-[12.5px]"
+            />
+          </div>
+          <BoutonFiltre signeSeul onClick={() => setVolet(true)} />
         </div>
         {tri.cle !== "nom" && titre && (
           <OuvrirLeCalendrier

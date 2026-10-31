@@ -15,13 +15,19 @@ import { colors } from "@/lib/design-tokens";
  * d'origine. Ses listes de clients ne s'en servent pas : il y garde ses
  * couleurs, sa capture du 22 octobre (*« pas vert »*), et c'est le titre du
  * mois, au-dessus de la liste, qui dit que l'ordre a changé.
+ *
+ * `signeSeul` ne garde que les trois traits, nommés pour le lecteur d'écran :
+ * sur Vos clients, il partage la ligne de la recherche (sa demande du
+ * 31 octobre 2026), et le mot coupait la phrase de la loupe.
  */
 export default function BoutonFiltre({
   actif = false,
+  signeSeul = false,
   onClick,
   dataAtlas = "bouton-filtre",
 }: {
   actif?: boolean;
+  signeSeul?: boolean;
   onClick: () => void;
   dataAtlas?: string;
 }) {
@@ -31,7 +37,12 @@ export default function BoutonFiltre({
       onClick={onClick}
       data-atlas={dataAtlas}
       data-actif={actif ? "" : undefined}
-      className="flex min-h-11 items-center gap-[7px] whitespace-nowrap rounded-full px-[13px] text-[12.5px]"
+      aria-label={signeSeul ? "Filtre" : undefined}
+      className={
+        signeSeul
+          ? "flex h-11 w-11 flex-none items-center justify-center rounded-full"
+          : "flex min-h-11 items-center gap-[7px] whitespace-nowrap rounded-full px-[13px] text-[12.5px]"
+      }
       style={{
         backgroundColor: actif ? colors.ink : colors.card,
         color: actif ? colors.cream : colors.inkSoft,
@@ -42,7 +53,7 @@ export default function BoutonFiltre({
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
         <path d="M2 4h12M4.5 8h7M7 12h2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
       </svg>
-      Filtre
+      {!signeSeul && "Filtre"}
     </button>
   );
 }

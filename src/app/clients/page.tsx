@@ -227,7 +227,9 @@ function Porte({
       className="flex min-h-[64px] min-w-0 items-center gap-[10px] rounded-[10px] px-3 py-[10px]"
       style={{ color: colors.or, boxShadow: `inset 0 0 0 1.5px ${voile(colors.or, 0.7)}`, WebkitTapHighlightColor: "transparent" }}
     >
-      <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="flex-none">
+      {/* Sous 380 px, le dessin cède sa place : « partenaires » ne se coupe
+          pas, et à 360 px il venait toucher la flèche (mesuré). */}
+      <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="flex-none max-[380px]:hidden">
         <path d={dessin} />
       </svg>
       <span className="min-w-0 flex-1">
