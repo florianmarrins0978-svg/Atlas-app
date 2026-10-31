@@ -1,7 +1,7 @@
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import BoutonAssistant from "@/components/atlas/BoutonAssistant";
 import { colors, font } from "@/lib/design-tokens";
-import { checkUp, echeanceProche, jourComplet, jourEnMots, tailleLisible } from "@/lib/pour-mon-comptable";
+import { checkUp, echeanceProche, jourComplet, jourEnMots, tailleEtLignes } from "@/lib/pour-mon-comptable";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { listerDossiers } from "@/server/repositories/dossiers-comptables";
 import { facturesRecuesLibres, ticketsLibres, type TicketDeLaLigne } from "@/server/repositories/pour-mon-comptable";
@@ -41,7 +41,7 @@ export default async function PageMesDossiers() {
     nom: `Du ${jourComplet(d.du)} au ${jourComplet(d.au)}`,
     annee: Number(d.au.slice(0, 4)),
     detail: `Rangé le ${jourComplet(jourIso(d.arreteLe))}, gardé jusqu’au ${jourComplet(d.gardeJusquAu)}`,
-    taille: tailleLisible(d.tailleOctets),
+    fichier: tailleEtLignes(d.tailleOctets, d.lignes),
     echeance: echeanceProche(d.gardeJusquAu, aujourdhui) ? jourComplet(d.gardeJusquAu) : null,
     verification: verificationAffichee(verificationDe.get(d.id), tickets, enAttente),
     attestation: attestationAffichee(verificationDe.get(d.id)),

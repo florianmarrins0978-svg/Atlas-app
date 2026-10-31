@@ -446,6 +446,16 @@ export function tailleLisible(octets: number): string {
   return `${(octets / 1_000_000).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} Mo`;
 }
 
+/**
+ * « 774 Ko, 60 lignes » : la ligne du fichier d'un dossier rangé (planche A du
+ * 27 octobre 2026, `appli/comptable-voir-le-dossier-pdf.html`). Les lignes
+ * sont celles du relevé, les mêmes que son comptable vérifie.
+ */
+export function tailleEtLignes(octets: number, lignes: number): string {
+  const compte = lignes === 0 ? "aucune ligne" : `${lignes} ${lignes > 1 ? "lignes" : "ligne"}`;
+  return `${tailleLisible(octets)}, ${compte}`;
+}
+
 /** « 1ᵉʳ janvier 2026 » : le jour avec son année, pour le nom d'un dossier. */
 export function jourComplet(jour: string): string {
   return `${jourEnMots(jour)} ${jour.slice(0, 4)}`;

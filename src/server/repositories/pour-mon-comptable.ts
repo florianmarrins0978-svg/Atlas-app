@@ -87,6 +87,17 @@ export async function lignesDuReleve(ctx: Ctx, du: string, au: string): Promise<
 }
 
 /**
+ * Les lignes d'un dossier : les mouvements du relevé entre deux jours compris.
+ * **Une seule définition**, lue par la page du comptable (`lireLesLignes`) et
+ * par le compte de « Mes dossiers » (`listerDossiers`) : le « 60 lignes » de la
+ * ligne du fichier et le « 0 sur 60 » de sa vérification ne doivent jamais
+ * diverger.
+ */
+export function lignesDeLaPeriode(du: string, au: string) {
+  return and(gte(mouvementsBancaires.jour, du), lte(mouvementsBancaires.jour, au));
+}
+
+/**
  * La lecture elle-même, dans une transaction dont l'entreprise est DÉJÀ posée :
  * par `withEntreprise` pour le patron, par le jeton pour la page du comptable
  * (`verification-comptable.ts`). Une seule lecture : le comptable voit
@@ -96,7 +107,7 @@ export async function lireLesLignes(tx: DbOrTx, du: string, au: string): Promise
   const lignes = await tx
     .select()
     .from(mouvementsBancaires)
-    .where(and(gte(mouvementsBancaires.jour, du), lte(mouvementsBancaires.jour, au)))
+    .where(lignesDeLaPeriode(du, au))
     .orderBy(asc(mouvementsBancaires.jour), asc(mouvementsBancaires.createdAt));
   if (lignes.length === 0) return [];
 

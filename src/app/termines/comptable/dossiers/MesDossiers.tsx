@@ -18,8 +18,8 @@ export type DossierAffiche = {
   nom: string;
   annee: number;
   detail: string;
-  /** « 774 Ko » : la taille du PDF, dite sur sa ligne de fichier. */
-  taille: string;
+  /** « 774 Ko, 60 lignes » : ce que dit sa ligne de fichier. */
+  fichier: string;
   /** Le jour de son effacement, quand il approche (trois mois). */
   echeance: string | null;
   bilans: { id: string; nature: "photo" | "pdf"; nom: string; ajoute: string }[];
@@ -361,7 +361,7 @@ function Dossier({ d, factures, premier }: { d: DossierAffiche; factures: Factur
         <span className="min-w-0 flex-1">
           <span className="block text-[16px] font-semibold leading-[1.3] [overflow-wrap:anywhere]">{`Dossier justifié, ${d.nom}.pdf`}</span>
           <span className="mt-0.5 block text-[14px]" style={{ color: colors.inkSoft }}>
-            {`PDF, ${d.taille}`}
+            {d.fichier}
           </span>
         </span>
         <span style={{ color: colors.chevron }}>

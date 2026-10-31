@@ -44,6 +44,7 @@ export type NomPicto =
   | "couronne"
   | "alerte"
   | "liste"
+  | "pause"
   | "annuler"
   | "note"
   | "oeil"
@@ -152,6 +153,7 @@ const TRACES: Record<NomPicto, React.ReactNode> = {
     </>
   ),
   liste: <path d="M8.5 6.5H20M8.5 12H20M8.5 17.5H20M4 6.5h.6M4 12h.6M4 17.5h.6" />,
+  pause: <path d="M8.5 5.5v13M15.5 5.5v13" />,
   annuler: (
     <>
       <path d="M9 6.5L4.5 11 9 15.5" />

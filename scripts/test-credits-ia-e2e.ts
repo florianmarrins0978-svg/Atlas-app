@@ -84,16 +84,31 @@ async function main() {
       assert.equal(l.valeur, "100");
       assert.match(l.texte, /Crédits IA épuisés/);
       assert.match(l.texte, /tout s'écrit à la main/);
-      const rouge = await page.locator('[data-atlas="credits-ia"] [role="meter"] span').evaluate((s) => getComputedStyle(s).backgroundColor);
-      const alerte = await page.evaluate(() => {
+      const bloc = page.locator('[data-atlas="credits-ia"]');
+      const rouge = await bloc.locator('[role="meter"] span').evaluate((s) => getComputedStyle(s).backgroundColor);
+      const pause = await bloc.locator('[data-atlas="credits-ia-pastille"]').evaluate((s) => getComputedStyle(s).color);
+      // Le rouge des cartes, celui de sa planche « en rouge » du 29 octobre 2026.
+      const rougeDesCartes = await page.evaluate(() => {
         const t = document.createElement("span");
-        t.style.color = "var(--atlas-alerte, #9C3B2E)";
+        t.style.color = "var(--atlas-carteRougeTexte, #9c3b2e)";
         document.body.appendChild(t);
         const c = getComputedStyle(t).color;
         t.remove();
         return c;
       });
-      assert.equal(rouge, alerte, "l'épuisé n'est pas dans le rouge de l'alerte");
+      assert.equal(rouge, rougeDesCartes, "la barre de l'épuisé n'est pas dans le rouge des cartes");
+      assert.equal(pause, rougeDesCartes, "la pastille de l'épuisé n'est pas rouge");
+    });
+
+    await cas("la barre tient sur une plage, sous l'état de l'abonnement, sa pastille posée", async () => {
+      const bloc = page.locator('[data-atlas="credits-ia"]');
+      const fond = await bloc.evaluate((s) => getComputedStyle(s).backgroundColor);
+      assert.notEqual(fond, "rgba(0, 0, 0, 0)", "la barre n'a pas de plage");
+      const pastille = await bloc.locator('[data-atlas="credits-ia-pastille"]').boundingBox();
+      assert.ok(pastille && pastille.width >= 50 && pastille.height >= 50, `pastille introuvable ou trop petite : ${JSON.stringify(pastille)}`);
+      const etat = await page.locator('[data-atlas="etat-abonnement"]').boundingBox();
+      const plage = await bloc.boundingBox();
+      assert.ok(etat && plage && plage.y > etat.y + etat.height, "la plage des crédits n'est pas sous l'état de l'abonnement");
     });
   } finally {
     await pool.query(`DELETE FROM consommation_ia WHERE entreprise_id = $1`, [entreprise]);

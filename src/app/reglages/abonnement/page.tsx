@@ -97,11 +97,12 @@ export default async function AbonnementPage({
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <EnTeteEcran allure="soignee" titre="Abonnement" retour={{ href: "/reglages", libelle: "Retour aux réglages" }} />
 
+      {/* Les crédits IA tiennent dans le paquet de l'abonnement, une plage
+          sous son état (planche du 26 octobre 2026). */}
       <Paquet titre="Votre abonnement" sansPlage>
         <EtatDeLAbonnement etat={etat} />
+        <CreditsIA credits={credits} />
       </Paquet>
-
-      <CreditsIA credits={credits} />
 
       {/* Pendant l'essai, aucune formule n'est « actuelle » : il S'ABONNE, il ne
           change pas — il n'y a pas d'abonnement Stripe à faire évoluer au prorata. */}
