@@ -115,7 +115,9 @@ export default function ImporterTableau({
   const colDate = colonnes["Date"] === undefined ? reconnaissance.colonnes["Date"] : (colonnes["Date"] ?? undefined);
   const datesDouteuses = colDate !== undefined && ordreDesDates(grille.slice(1).map((l) => l[colDate] ?? "")) === "doute";
   const exempleDate = datesDouteuses ? grille.slice(1).map((l) => l[colDate!] ?? "").find((v) => jourDuTableau(v, "jma") && jourDuTableau(v, "mja")) : undefined;
-  const montrerColonnes = reconnaissance.hesite.length > 0 || datesDouteuses;
+  // Des PDF n'ont pas de colonnes : sans cellules, la reconnaissance « hésite »
+  // sur chaque champ, et l'écran tombait en dessinant des en-têtes absents.
+  const montrerColonnes = lot.quoi === "tableau" && (reconnaissance.hesite.length > 0 || datesDouteuses);
 
   const aRanger = plan?.ok ? plan.clients.reduce((t, c) => t + c.pieces.length, 0) : 0;
   const bouton = !decision.ok

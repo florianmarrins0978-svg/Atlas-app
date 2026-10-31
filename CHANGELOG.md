@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-31
+
+- **Les PDF importés se rangent par client, comme un tableau** (sa demande : *« que ça soit un CSV, Excel ou un PDF, il faut que ça soit la même chose ; il faut qu'ils se débrouillent tout seuls pour me les ranger en client »*). Une fois lus, les PDF arrivent au même écran « Par client » qu'un tableau : leurs clients groupés, l'adresse et le téléphone lus sur la pièce, deux adresses d'un même nom montrées avant de ranger, un nom illisible à taper, un PDF dont on ne sait pas s'il est un devis ou une facture à dire. La lecture garde l'adresse du client (après son nom, jamais l'en-tête de l'artisan ; deux adresses différentes, le texte ne choisit pas et l'IA lit le texte) et le lieu des travaux. L'ancienne relecture des PDF part. Migration `0155` (expand seul). `ARCHITECTURE.md` §534, `docs/pdf-par-client.md`.
+
 ## 2026-10-29
 
 - **L'attestation du comptable part en PDF, chez le patron et en copie chez le comptable** (ses deux « oui » du 29 octobre devant `appli/soignee/comptable-attestation.html`). Le service d'envoi ne portait qu'un texte ; il porte désormais un document joint, le PDF rangé avec le dossier, octet pour octet. L'écran « Attestation envoyée » dit à qui elle est partie. Ce que ça évite : un comptable qui signe sans garder trace de ce qu'il a signé.

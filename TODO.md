@@ -105,7 +105,7 @@ qui sert de modèle. Le jeu de démonstration ne pose aucun chantier au planning
 **Ce qui reste :**
 
 - **le `.xls`** : SheetJS corrigé ne s'installe que depuis `cdn.sheetjs.com`, que le réseau de cette session refuse. Il est refusé à l'écran avec la marche à suivre (l'enregistrer en `.xlsx` ou CSV) jusqu'à ce qu'une session qui joint ce site l'ajoute, lu dans le téléphone seulement ;
-- **les PDF au même écran « Par client »** (sa réponse du soir sur la planche) : le chemin des PDF garde sa relecture du 22 octobre ;
+- ~~**les PDF au même écran « Par client »**~~ : codé le 31 octobre 2026 sur sa demande (« que ça soit la même chose »), `ARCHITECTURE.md` §534. Un PDF lu avant la migration 0155 n'a pas d'adresse et se range sans ;
 - **l'écran « Dix ans »** de la planche (« vous pouvez fermer l'appli ») n'est pas codé : le rangement de dix ans prend 1,3 s, le bouton dit « Rangement… » le temps qu'il faut ;
 - **la batterie**, niveau 3, avant `main`.
 

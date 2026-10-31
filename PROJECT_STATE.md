@@ -4,6 +4,10 @@
 dernière migration `drizzle/0154_pieces_importees_d_un_tableau.sql`
 
 ---
+## LES PDF RANGÉS PAR CLIENT, COMME UN TABLEAU, CODÉS (31 octobre 2026), PAS ENCORE SUR `main`
+
+Sa demande du 31 octobre : CSV, Excel ou PDF, la même chose. Branche `lot/pdf-par-client` (poussée sur `claude/quatre-planches-atlas-6hi21h`). Les PDF lus passent par l'écran « Par client » et la règle des tableaux ; la lecture garde l'adresse, le téléphone et le lieu des travaux (migration 0155, expand). Suites du domaine vertes, écran regardé. **Reste : la batterie entière (il a dit de ne pas la lancer le 31), puis `main`.** `ARCHITECTURE.md` §534, `docs/pdf-par-client.md`.
+
 ## LE RELEVÉ DU 29 OCTOBRE, SUR `main` (31 octobre 2026)
 
 Sur ses réponses du 29 octobre, poussé sur `main` le 31 (`ec0a53bc`) : l'attestation du comptable part en PDF joint, au patron et en copie au comptable ; Abonnement, « Attention au mot » sans encadré ; Crédits IA, sa carte et sa pastille, épuisé en rouge ; « Annuler » dans la feuille de la photo ; Voir le dossier, A (« 774 Ko, 60 lignes ») ; Vos clients soignée, avec le Filtre en son signe seul sur la ligne de la recherche. Batterie : 541/541 suites base, 202/203 navigateur ; le rouge (`test-poser-une-date-e2e`, fin de mois) l'est aussi sur `main` (`verifier-rouge-prealable.ts`). Retour : `docs/releve-29-octobre.md`.
