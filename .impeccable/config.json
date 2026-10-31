@@ -440,6 +440,42 @@
         ],
         "createdAt": "2026-10-31T21:37:49.341Z",
         "reason": "Fond crème de la charte d'Arborea, identité d'Atlas relevée dans PRODUCT.md et src/lib/chartes.ts ; la planche reprend le kit commun appli/soignee/kit.css"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/client-coordonnees.html"
+        ],
+        "createdAt": "2026-10-31T21:50:57.121Z",
+        "reason": "Fond crème de la charte d'Arborea, identité d'Atlas relevée dans PRODUCT.md et src/lib/chartes.ts ; la planche reprend le kit commun appli/soignee/kit.css"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/client-contrat.html"
+        ],
+        "createdAt": "2026-10-31T21:50:57.143Z",
+        "reason": "Fond crème de la charte d'Arborea, identité d'Atlas relevée dans PRODUCT.md et src/lib/chartes.ts ; la planche reprend le kit commun appli/soignee/kit.css"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/termines-non-payees.html"
+        ],
+        "createdAt": "2026-10-31T21:50:57.173Z",
+        "reason": "Fond crème de la charte d'Arborea, identité d'Atlas relevée dans PRODUCT.md et src/lib/chartes.ts ; la planche reprend le kit commun appli/soignee/kit.css"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/termines-retours.html"
+        ],
+        "createdAt": "2026-10-31T21:50:57.191Z",
+        "reason": "Fond crème de la charte d'Arborea, identité d'Atlas relevée dans PRODUCT.md et src/lib/chartes.ts ; la planche reprend le kit commun appli/soignee/kit.css"
       }
     ]
   }
