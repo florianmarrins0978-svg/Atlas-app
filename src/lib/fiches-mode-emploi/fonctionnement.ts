@@ -220,14 +220,15 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
     id: "clients-importer",
     ecran: "Vos clients",
     ou: "« Chantiers » dans la barre du bas, puis « Vos clients »",
-    intitule: "Importer ses clients depuis un tableau de devis et factures",
-    motsCles: ["importer", "import", "excel", "csv", "fichier", "liste", "clients", "carnet", "contacts", "tableau", "ancien", "logiciel"],
+    intitule: "Importer ses clients depuis ses devis et factures, en PDF ou en tableau",
+    motsCles: ["importer", "import", "excel", "csv", "pdf", "zip", "fichier", "liste", "clients", "carnet", "contacts", "tableau", "ancien", "logiciel"],
     geste:
-      "Dans « Vos clients », touchez « Importer devis / facture » et choisissez le tableau CSV ou Excel (.xlsx) " +
-      "exporté de votre ancien logiciel, une ligne par devis ou facture. Atlas crée les fiches et range chaque pièce " +
-      "sur la sienne, par date ; quand une colonne ou une adresse le fait hésiter, il vous demande avant de ranger. " +
-      "« Annuler » défait tout, juste après.",
-    // Sa demande du 28 octobre 2026 ; le .xls attend sa bibliothèque (`TODO.md`).
+      "Dans « Vos clients », touchez « Importer devis / facture » et choisissez vos PDF, un dossier .zip, ou le " +
+      "tableau CSV ou Excel (.xlsx) exporté de votre ancien logiciel. Atlas lit chaque pièce, crée les fiches avec " +
+      "leur adresse et range chaque pièce sur la sienne, par date ; quand un nom, une colonne ou une adresse le fait " +
+      "hésiter, il vous demande avant de ranger. « Annuler » défait tout, juste après.",
+    // Ses demandes du 28 octobre 2026 (le tableau) et du 31 (les PDF au même
+    // écran) ; le .xls attend sa bibliothèque (`TODO.md`).
     reserve:
       "Une liste de clients seule, sans devis ni factures, ne s'importe pas : un client naît avec son chantier ou sa pièce. " +
       "Le vieux format .xls ne se lit pas encore : enregistrez-le en .xlsx ou en CSV depuis Excel.",

@@ -728,6 +728,8 @@ export function compteDesClients(groupes: readonly Groupe[]): { nouveaux: number
 // ─── Ce que le rangement écrira ─────────────────────────────────────────────
 
 export type PieceAPoser = {
+  /** Sa ligne : pour un PDF, ce qui ramène à son fichier (`lignesDesPdf`). */
+  rang: number;
   genre: "devis" | "facture";
   numero: string | null;
   objet: string | null;
@@ -788,6 +790,7 @@ export function planDeRangement(
   const adresseRetenue = new Map<ClientAPoser, string | null>();
   const poser = (l: LigneLue, nom: string, client: ClientAPoser, chantier: string | null) => {
     client.pieces.push({
+      rang: l.rang,
       genre: l.genre,
       numero: l.numero,
       objet: l.objet,

@@ -12,11 +12,13 @@ import {
   deposerPiece,
   empreintesConnues,
   envoiEnCours,
-  nommerPiece,
-  piecesAVerifier,
+  piecesLuesDeLEnvoi,
   prendrePiecesALire,
-  rangerEnvoi,
+  rangerEnvoiSelonLePlan,
 } from "../src/server/repositories/pieces-importees";
+import { clientsQuOnPeutReconnaitre } from "../src/server/repositories/clients";
+import { lignesDesPdf } from "../src/lib/import-pieces";
+import { grouperParClient, planDeRangement, type ChoixAdresse } from "../src/lib/import-tableau";
 import { traiterPiecesEnAttente } from "../src/server/import/traiter-pieces";
 import { enregistrerObjet } from "../src/server/storage";
 import { _reinitialiserFabriqueLLM } from "../src/server/ai/providers/llm/fabrique";
@@ -80,14 +82,41 @@ const iaDeSuite = (reponse: string): FournisseurLLM => ({
   },
 });
 
-const FACTURE_MARTINS = ["Jardins Eden", "FACTURE n° F2025-0148", "Date 12/03/2025", "Client : M. Martins", "Total TTC 480,00"];
-const DEVIS_LENOIR = ["Jardins Eden", "DEVIS n° D2025-0201", "03/04/2025", "Pour Mme Lenoir", "Total TTC 1 250,00"];
-const SANS_NOM = ["Jardins Eden", "FACTURE n° F2024-0097", "09/10/2024", "SARL Les Tilleuls", "Total TTC 310,00"];
+// Des PDF comme un logiciel les imprime : l'artisan en tête, puis le client,
+// son adresse et son téléphone (sa demande du 31 octobre 2026 : les PDF se
+// rangent par client comme un tableau, adresse comprise).
+const EN_TETE = ["Jardins Eden", "3 rue du Moulin 44100 Nantes", "02 40 00 00 00"];
+const FACTURE_MARTINS = [...EN_TETE, "FACTURE n° F2025-0148", "Date 12/03/2025", "Client : M. Martins", "8 rue du Port 44120 Vertou", "07 11 22 33 44", "Total TTC 480,00"];
+const DEVIS_LENOIR = [...EN_TETE, "DEVIS n° D2025-0201", "03/04/2025", "Pour Mme Lenoir", "14 rue Paul Bert 44100 Nantes", "Total TTC 1 250,00"];
+const FACTURE_LENOIR_AILLEURS = [...EN_TETE, "FACTURE n° F2025-0163", "28/04/2025", "Pour Mme Lenoir", "2 chemin des Vignes 44120 Vertou", "Total TTC 1 250,00"];
+const SANS_ADRESSE = [...EN_TETE, "FACTURE n° F2025-0170", "02/05/2025", "Client : M. Guérin", "Total TTC 90,00"];
+const SANS_NOM = [...EN_TETE, "FACTURE n° F2024-0097", "09/10/2024", "SARL Les Tilleuls", "Total TTC 310,00"];
+
+/**
+ * Le geste de l'écran, tel que l'action le refait : les pièces relues en base,
+ * la règle des tableaux, puis le rangement. Les noms tapés arrivent par
+ * l'identifiant de la pièce.
+ */
+async function ranger(
+  ctx: Ctx,
+  envoiId: string,
+  reponses: { choix?: Record<string, ChoixAdresse>; tapes?: Record<string, string>; genres?: Record<string, "devis" | "facture"> } = {}
+) {
+  const pieces = await piecesLuesDeLEnvoi(ctx, envoiId);
+  const { lignes, idDuRang } = lignesDesPdf(pieces, reponses.genres ?? {});
+  const tapes: Record<number, string> = {};
+  for (const [rang, id] of idDuRang) if (reponses.tapes?.[id]) tapes[rang] = reponses.tapes[id];
+  const plan = planDeRangement(lignes, await clientsQuOnPeutReconnaitre(ctx), reponses.choix ?? {}, tapes);
+  if (!plan.ok) return { plan, rangees: 0 };
+  return { plan, ...(await rangerEnvoiSelonLePlan(ctx, envoiId, plan.clients, idDuRang)) };
+}
+
+const tousLesClients = (ctx: Ctx) => withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => tx.select().from(clients));
 
 async function main() {
   console.log("=== Importer devis et factures, en base ===\n");
 
-  await essai("une pièce dont le texte dit tout se lit SANS appel à l'IA", async () => {
+  await essai("une pièce dont le texte dit tout, adresse comprise, se lit SANS appel à l'IA", async () => {
     await nettoyerBase();
     appelsIA = 0;
     _reinitialiserFabriqueLLM(iaDeSuite("{}"));
@@ -98,12 +127,27 @@ async function main() {
     const lues = await traiterPiecesEnAttente(ctx);
     assert.equal(lues, 2, "les deux pièces n'ont pas été lues");
     assert.equal(appelsIA, 0, `${appelsIA} appel(s) à l'IA pour des pièces que le texte suffisait à lire`);
-    const etat = await envoiEnCours(ctx);
-    assert.ok(etat);
-    assert.deepEqual([etat.recues, etat.lues, etat.pretes, etat.aVerifier], [2, 2, 2, 0]);
+    const pieces = await piecesLuesDeLEnvoi(ctx, envoi.id);
+    const martins = pieces.find((p) => p.nomLu === "M. Martins");
+    assert.equal(martins?.adresseLue, "8 rue du Port, 44120 Vertou", "l'adresse du client n'est pas gardée");
+    assert.equal(martins?.telephoneLu, "07 11 22 33 44", "le téléphone du client n'est pas gardé");
   });
 
-  await essai("un client sans civilité passe par l'IA, et à défaut, à vérifier sans rien deviner", async () => {
+  await essai("sans adresse dans le texte, l'IA lit le TEXTE, et ce qu'elle rend complète la pièce", async () => {
+    await nettoyerBase();
+    appelsIA = 0;
+    _reinitialiserFabriqueLLM(iaDeSuite('{"genre":null,"numero":null,"date":null,"montant_ttc":null,"client":null,"adresse":"5 impasse des Roses, 44300 Nantes","telephone":null,"chantier":null}'));
+    const ctx = await monter("Essai sans adresse");
+    const envoi = await creerEnvoi(ctx, "lot.zip", 1);
+    await deposer(ctx, envoi.id, await pdfAvecTexte(SANS_ADRESSE));
+    await traiterPiecesEnAttente(ctx);
+    assert.equal(appelsIA, 1, "l'IA n'a pas été appelée alors que l'adresse manquait");
+    const [p] = await piecesLuesDeLEnvoi(ctx, envoi.id);
+    assert.equal(p.nomLu, "M. Guérin", "le nom lu dans le texte a été perdu");
+    assert.equal(p.adresseLue, "5 impasse des Roses, 44300 Nantes");
+  });
+
+  await essai("un client sans civilité passe par l'IA, et à défaut, attend son nom sans rien deviner", async () => {
     await nettoyerBase();
     appelsIA = 0;
     // L'IA répond n'importe quoi : la pièce ne doit PAS recevoir un nom inventé.
@@ -113,23 +157,13 @@ async function main() {
     await deposer(ctx, envoi.id, await pdfAvecTexte(SANS_NOM));
     await traiterPiecesEnAttente(ctx);
     assert.equal(appelsIA, 1, "l'IA n'a pas été appelée alors que le nom manquait");
-    const aVoir = await piecesAVerifier(ctx, envoi.id);
-    assert.equal(aVoir.length, 1);
-    assert.equal(aVoir[0].nomLu, null, "un nom a été inventé");
-    assert.equal(aVoir[0].genre, "facture");
-    assert.equal(aVoir[0].numero, "F2024-0097");
-    assert.equal(aVoir[0].montantTtc, "310.00");
-  });
-
-  await essai("ce que l'IA lit complète le texte, sans l'écraser", async () => {
-    await nettoyerBase();
-    _reinitialiserFabriqueLLM(iaDeSuite('{"genre":"facture","numero":"AUTRE","date":null,"montant_ttc":null,"client":"SARL Les Tilleuls"}'));
-    const ctx = await monter("Essai IA");
-    const envoi = await creerEnvoi(ctx, "lot.zip", 1);
-    await deposer(ctx, envoi.id, await pdfAvecTexte(SANS_NOM));
-    await traiterPiecesEnAttente(ctx);
-    const etat = await envoiEnCours(ctx);
-    assert.equal(etat?.pretes, 1, "la pièce nommée par l'IA n'est pas prête");
+    const [p] = await piecesLuesDeLEnvoi(ctx, envoi.id);
+    assert.equal(p.nomLu, null, "un nom a été inventé");
+    assert.equal(p.genre, "facture");
+    assert.equal(p.numero, "F2024-0097");
+    assert.equal(p.montantTtc, "310.00");
+    const { plan } = await ranger(ctx, envoi.id);
+    assert.ok(plan.ok && plan.sansNom === 1 && plan.clients.length === 0, "une pièce sans nom a été rangée");
   });
 
   await essai("le même fichier deux fois ne fait qu'une pièce", async () => {
@@ -145,7 +179,7 @@ async function main() {
     assert.deepEqual(await empreintesConnues(ctx, [premier.empreinte, "0".repeat(64)]), [premier.empreinte]);
   });
 
-  await essai("ranger retrouve le client connu, crée l'inconnu, et la fiche montre les pièces", async () => {
+  await essai("ranger retrouve le client connu, crée l'inconnu avec son adresse et son téléphone, et la fiche montre les pièces", async () => {
     await nettoyerBase();
     _reinitialiserFabriqueLLM(iaDeSuite("Je ne sais pas."));
     const ctx = await monter("Essai rangement");
@@ -153,13 +187,11 @@ async function main() {
     const envoi = await creerEnvoi(ctx, "lot.zip", 3);
     await deposer(ctx, envoi.id, await pdfAvecTexte(FACTURE_MARTINS));
     await deposer(ctx, envoi.id, await pdfAvecTexte(DEVIS_LENOIR));
-    await deposer(ctx, envoi.id, await pdfAvecTexte(SANS_NOM));
+    const { piece: tilleuls } = await deposer(ctx, envoi.id, await pdfAvecTexte(SANS_NOM));
     await traiterPiecesEnAttente(ctx);
 
-    const [aVoir] = await piecesAVerifier(ctx, envoi.id);
-    assert.ok(await nommerPiece(ctx, aVoir.id, "Mme Roux", null), "le nom tapé n'a pas été pris");
-    const r = await rangerEnvoi(ctx, envoi.id);
-    assert.deepEqual([r.rangees, r.clientsCrees], [3, 2], "rangement inattendu");
+    const r = await ranger(ctx, envoi.id, { tapes: { [tilleuls!.id]: "SARL Les Tilleuls" } });
+    assert.deepEqual([r.rangees, "clientsCrees" in r ? r.clientsCrees : -1], [3, 2], "rangement inattendu");
 
     const ficheMartins = await chargerFicheClient(ctx, martins.id);
     assert.deepEqual(ficheMartins?.pieces.factures.map((p) => p.titre), ["n° F2025-0148"]);
@@ -168,11 +200,42 @@ async function main() {
     // (sa demande du 28 octobre 2026 : « le titre du devis visible, le montant »).
     assert.equal(ficheMartins!.pieces.factures[0].montant, "480.00", "le montant lu n'arrive pas sur la fiche");
 
-    const tous = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => tx.select().from(clients));
+    const tous = await tousLesClients(ctx);
+    // Une fiche déjà là voit ses cases VIDES complétées, comme par un tableau.
+    const martinsApres = tous.find((c) => c.id === martins.id);
+    assert.equal(martinsApres?.adresse, "8 rue du Port, 44120 Vertou", "la case vide de sa fiche n'a pas été complétée");
     const lenoir = tous.find((c) => c.nom === "Mme Lenoir");
     assert.ok(lenoir, "Mme Lenoir n'a pas été créée");
+    assert.equal(lenoir.adresse, "14 rue Paul Bert, 44100 Nantes", "la fiche neuve n'a pas l'adresse lue sur le PDF");
     const ficheLenoir = await chargerFicheClient(ctx, lenoir.id);
     assert.deepEqual(ficheLenoir?.pieces.devis.map((p) => p.titre), ["n° D2025-0201"], "le devis n'est pas sur la fiche d'un client sans chantier");
+    assert.ok(tous.find((c) => c.nom === "SARL Les Tilleuls"), "le nom tapé n'a pas créé sa fiche");
+  });
+
+  await essai("deux adresses pour un même nom : rien ne se range avant sa réponse, puis l'autre va sur la pièce", async () => {
+    await nettoyerBase();
+    _reinitialiserFabriqueLLM(iaDeSuite("{}"));
+    const ctx = await monter("Essai deux adresses");
+    const envoi = await creerEnvoi(ctx, "lot.zip", 2);
+    await deposer(ctx, envoi.id, await pdfAvecTexte(DEVIS_LENOIR));
+    await deposer(ctx, envoi.id, await pdfAvecTexte(FACTURE_LENOIR_AILLEURS));
+    await traiterPiecesEnAttente(ctx);
+    const avant = await ranger(ctx, envoi.id);
+    assert.deepEqual(avant.plan, { ok: false, adresses: 1 }, "deux adresses ont été tranchées sans lui");
+    assert.equal((await tousLesClients(ctx)).length, 0, "une fiche est née avant sa réponse");
+
+    // La clé du client et le rang de l'adresse viennent de la règle elle-même,
+    // comme l'écran les montre.
+    const { groupes } = grouperParClient(lignesDesPdf(await piecesLuesDeLEnvoi(ctx, envoi.id), {}).lignes, [], {});
+    const sienne = groupes[0].adresses.findIndex((x) => x.lieu === "14 rue Paul Bert, 44100 Nantes");
+    const apres = await ranger(ctx, envoi.id, { choix: { [groupes[0].cle]: sienne } });
+    assert.equal(apres.rangees, 2, "sa réponse n'a pas rangé les deux pièces");
+    const [lenoir] = await tousLesClients(ctx);
+    assert.equal(lenoir.adresse, "14 rue Paul Bert, 44100 Nantes");
+    const ailleurs = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) =>
+      tx.select({ c: piecesImportees.adresseChantier }).from(piecesImportees).where(eq(piecesImportees.numero, "F2025-0163"))
+    );
+    assert.equal(ailleurs[0].c, "2 chemin des Vignes, 44120 Vertou", "l'autre adresse n'est pas restée sur la pièce");
   });
 
   await essai("annuler remet les pièces et retire les seules fiches que le rangement a créées", async () => {
@@ -184,12 +247,12 @@ async function main() {
     await deposer(ctx, envoi.id, await pdfAvecTexte(FACTURE_MARTINS));
     await deposer(ctx, envoi.id, await pdfAvecTexte(DEVIS_LENOIR));
     await traiterPiecesEnAttente(ctx);
-    await rangerEnvoi(ctx, envoi.id);
+    await ranger(ctx, envoi.id);
     assert.ok(await annulerRangement(ctx, envoi.id));
-    const noms = (await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => tx.select().from(clients))).map((c) => c.nom).sort();
-    assert.deepEqual(noms, ["M. Martins"], "l'annulation a laissé une fiche créée, ou retiré une fiche connue");
-    const etat = await envoiEnCours(ctx);
-    assert.equal(etat?.pretes, 2, "les pièces ne sont pas redevenues prêtes");
+    const tous = await tousLesClients(ctx);
+    assert.deepEqual(tous.map((c) => c.nom).sort(), ["M. Martins"], "l'annulation a laissé une fiche créée, ou retiré une fiche connue");
+    assert.equal(tous[0].adresse, null, "la case complétée par le rangement ne s'est pas vidée");
+    assert.equal((await piecesLuesDeLEnvoi(ctx, envoi.id)).length, 2, "les pièces ne sont pas redevenues à ranger");
   });
 
   await essai("supprimer un client emporte ses pièces importées, après la même prévention", async () => {
@@ -202,8 +265,8 @@ async function main() {
     const envoi = await creerEnvoi(ctx, "lot.zip", 1);
     await deposer(ctx, envoi.id, await pdfAvecTexte(DEVIS_LENOIR));
     await traiterPiecesEnAttente(ctx);
-    await rangerEnvoi(ctx, envoi.id);
-    const lenoir = (await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => tx.select().from(clients))).find((c) => c.nom === "Mme Lenoir");
+    await ranger(ctx, envoi.id);
+    const lenoir = (await tousLesClients(ctx)).find((c) => c.nom === "Mme Lenoir");
     assert.ok(lenoir, "Mme Lenoir n'a pas été créée");
 
     const apercu = await apercuSuppressionClient(ctx, lenoir.id);
@@ -229,10 +292,15 @@ async function main() {
     const b = await monter("Entreprise B");
     const envoi = await creerEnvoi(a, "lot.zip", 1);
     const { empreinte } = await deposer(a, envoi.id, await pdfAvecTexte(FACTURE_MARTINS));
+    await traiterPiecesEnAttente(a);
     assert.equal(await envoiEnCours(b), null, "B voit l'envoi de A");
     assert.deepEqual(await prendrePiecesALire(b, 10), [], "B a pris une pièce de A à lire");
     assert.deepEqual(await empreintesConnues(b, [empreinte]), [], "B connaît une empreinte de A");
-    assert.deepEqual(await piecesAVerifier(b, envoi.id), []);
+    assert.deepEqual(await piecesLuesDeLEnvoi(b, envoi.id), [], "B lit les pièces de A");
+    // B qui range l'envoi de A ne touche à rien : la RLS cache les pièces.
+    const r = await ranger(b, envoi.id);
+    assert.equal(r.rangees, 0);
+    assert.equal((await piecesLuesDeLEnvoi(a, envoi.id)).length, 1, "le rangement de B a touché les pièces de A");
   });
 
   _reinitialiserFabriqueLLM(null);
