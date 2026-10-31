@@ -71,7 +71,7 @@ async function principal() {
   const page = await (await nav.newContext()).newPage();
   await seConnecter(page);
 
-  await cas("« Vos clients » : les particuliers, et la porte « Vos entreprises »", async () => {
+  await cas("« Vos clients » : les particuliers, et la porte « Vos partenaires »", async () => {
     await page.goto(`${BASE}/clients`, { waitUntil: "domcontentloaded" });
     await page.locator('[data-atlas="porte-entreprises"]').waitFor({ timeout: DELAI_PAR_DEFAUT_MS });
     const noms = await page.locator('[data-atlas="nom-client"]').allInnerTexts();
@@ -79,10 +79,11 @@ async function principal() {
     assert.ok(!noms.some((n) => n.includes(entreprise.nom)), "l'entreprise est mêlée aux particuliers");
   });
 
-  await cas("la porte ouvre « Vos entreprises », et la flèche ramène aux clients", async () => {
+  await cas("la porte ouvre « Vos partenaires », et la flèche ramène aux clients", async () => {
     await page.click('[data-atlas="porte-entreprises"]');
     await page.waitForURL(/\/clients\?vue=entreprises/, { timeout: DELAI_PAR_DEFAUT_MS });
-    await page.locator("h1", { hasText: "Vos entreprises" }).waitFor({ timeout: DELAI_PAR_DEFAUT_MS });
+    // « Vos entreprises » s'appelle « Vos partenaires » depuis sa planche soignée (29 octobre 2026).
+    await page.locator("h1", { hasText: "Vos partenaires" }).waitFor({ timeout: DELAI_PAR_DEFAUT_MS });
     const noms = await page.locator('[data-atlas="nom-client"]').allInnerTexts();
     assert.ok(noms.some((n) => n.includes(entreprise.nom)), "l'entreprise manque derrière la porte");
     assert.ok(!noms.some((n) => n.includes(particulier.nom)), "un particulier est rangé chez les entreprises");

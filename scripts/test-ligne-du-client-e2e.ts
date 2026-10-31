@@ -27,6 +27,10 @@ import type { Page } from "playwright";
  * Les deux sont invisibles à la lecture du code, et invisibles à un test qui ne
  * regarde que le texte : il faut **mesurer des boîtes**. D'où cette suite.
  *
+ * **Depuis Vos clients soignée (29 octobre 2026)**, l'adresse et la pièce ont
+ * chacune leur ligne (`adresse-client`, `piece-client`) : la règle défendue ne
+ * change pas, c'est l'adresse qui se rogne, jamais la pièce.
+ *
  * **Elle refuse de conclure sur ce qu'elle ne peut pas mesurer** : sans un
  * client à adresse longue, « rien n'est coupé » serait vrai de toute façon, et
  * le vert ne prouverait rien.
@@ -109,27 +113,26 @@ async function poserDeuxClients(): Promise<{ longue: string; nu: string }> {
   return { longue, nu };
 }
 
-/** La boîte de la situation d'un client, et celle de ses deux morceaux. */
+/**
+ * Les deux lignes sous le nom d'un client : son adresse, et sa dernière pièce.
+ *
+ * **Aucune fonction nommée dans le corps envoyé à la page** : `tsx` les habille
+ * d'un auxiliaire `__name` qui n'existe pas dans le navigateur (vu rouge le
+ * 31 octobre 2026, « __name is not defined »).
+ */
 async function mesurer(page: Page, nom: string) {
   return page.evaluate((cherche: string) => {
     const noms = [...document.querySelectorAll('[data-atlas="nom-client"]')];
     const cible = noms.find((n) => (n as HTMLElement).innerText.trim() === cherche);
     if (!cible) return null;
     const ligne = cible.closest("a");
-    const situation = ligne?.querySelector('[data-atlas="situation-client"]') as HTMLElement | null;
-    if (!situation) return { situation: null };
-    const morceaux = [...situation.children].map((el) => ({
-      texte: (el as HTMLElement).innerText,
-      coupe: el.scrollWidth > el.clientWidth + 1,
-      largeur: (el as HTMLElement).getBoundingClientRect().width,
-    }));
-    return {
-      situation: {
-        texte: situation.innerText.replace(/\s+/g, " ").trim(),
-        largeur: situation.getBoundingClientRect().width,
-        morceaux,
-      },
-    };
+    const [adresse, piece] = ["adresse-client", "piece-client"].map((repere) => {
+      const el = ligne?.querySelector(`[data-atlas="${repere}"]`) as HTMLElement | null;
+      return el
+        ? { texte: el.innerText, coupe: el.scrollWidth > el.clientWidth + 1, largeur: el.getBoundingClientRect().width }
+        : null;
+    });
+    return { adresse, piece };
   }, nom);
 }
 
@@ -173,36 +176,29 @@ async function principal() {
   });
 
   await cas("la ligne mesure quelque chose — sinon elle ne prouve rien", async () => {
-    assert.ok(vuLongue?.situation, "le client à adresse longue n'a aucune ligne de situation");
+    assert.ok(vuLongue?.adresse, "le client à adresse longue n'a pas de ligne d'adresse");
+    assert.ok(vuLongue?.piece, "le client à adresse longue n'a pas de ligne de pièce");
     assert.ok(
-      (vuLongue!.situation!.largeur ?? 0) > 100,
-      `boîte de ${Math.round(vuLongue!.situation!.largeur)} px : la mise en page n'est pas posée`
+      vuLongue!.adresse!.largeur > 100,
+      `boîte de ${Math.round(vuLongue!.adresse!.largeur)} px : la mise en page n'est pas posée`
     );
   });
 
   await cas("L'ADRESSE SE ROGNE, LA DATE JAMAIS", async () => {
-    const morceaux = vuLongue!.situation!.morceaux;
-    assert.equal(morceaux.length, 2, "l'adresse et la date doivent être deux morceaux séparés");
-    const [adresse, quand] = morceaux;
-    // L'adresse est celle qui déborde — c'est le cas qu'on éprouve.
-    assert.ok(
-      adresse.coupe,
-      "l'adresse longue ne déborde pas : ce contrôle ne mesure alors plus rien"
-    );
-    assert.ok(!quand.coupe, `la date est coupée : « ${quand.texte} »`);
+    const { adresse, piece } = vuLongue!;
+    // L'adresse est celle qui déborde : c'est le cas qu'on éprouve.
+    assert.ok(adresse!.coupe, "l'adresse longue ne déborde pas : ce contrôle ne mesure alors plus rien");
+    assert.ok(!piece!.coupe, `la pièce est coupée : « ${piece!.texte} »`);
     assert.match(
-      quand.texte,
-      /(Devis|Facture|Fiche|·)/,
-      `le second morceau ne porte pas ce qui s'est produit : « ${quand.texte} »`
+      piece!.texte,
+      /^(Devis|Facture|Fiche) du /,
+      `la ligne de pièce ne dit pas ce qui s'est produit : « ${piece!.texte} »`
     );
   });
 
   await cas("un client sans rien à dire n'a PAS de seconde ligne vide", async () => {
-    assert.equal(
-      vuNu!.situation,
-      null,
-      "un trou de dix-huit pixels sous son nom se lit comme un défaut d'affichage"
-    );
+    assert.equal(vuNu!.adresse, null, "une ligne d'adresse vide sous son nom se lit comme un défaut d'affichage");
+    assert.equal(vuNu!.piece, null, "une ligne de pièce vide sous son nom se lit comme un défaut d'affichage");
   });
 
   await cas("le compte de chantiers a bien quitté la liste", async () => {

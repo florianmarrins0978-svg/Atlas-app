@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { colors, font, libelleCaps } from "@/lib/design-tokens";
+import { colors, font, voile } from "@/lib/design-tokens";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { listerFichesClients } from "@/server/repositories/fiche-client";
 import { jourIso } from "@/lib/jour";
 import { MOTS_DE_LA_CATEGORIE, type CategorieClient } from "@/lib/civilite";
-import ListeClients, { CompteClients, FournisseurClients } from "./ListeClients";
+import ListeClients, { CompteClients, FournisseurClients, HorsDuChoix } from "./ListeClients";
+import { compteDeLaPorte } from "@/lib/ligne-du-client";
 import BandeImport from "./BandeImport";
 import { estProprietaire } from "@/server/autorisation";
 import { garderLaPage } from "@/server/garde-page";
@@ -66,6 +67,16 @@ import { garderLaPage } from "@/server/garde-page";
 // constamment, même s'il n'y en a pas encore »*. Une porte qui n'apparaît
 // qu'au premier client caché ne se trouve pas le jour où l'on cherche où le
 // ranger.
+//
+// **VOS CLIENTS SOIGNÉE — sa planche `appli/soignee/clients.html`, retenue le
+// 29 octobre 2026** (« oui » ; sa condition du 27, importer un tableau, était
+// remplie le jour même). Ce qui change ICI : l'en-tête prend la grammaire des
+// écrans soignés (le compte en bas de casse sous le titre) ; les deux portes
+// deviennent deux cartes dorées côte à côte, chacune avec son nombre, et
+// « Vos entreprises » s'appelle « Vos partenaires » ; l'import, geste rare,
+// descend au bout de la liste en bouton creux doré. La bande qui suit un
+// import en cours reste sous la recherche : elle dit ce qui se passe MAINTENANT.
+// Le reste vit dans `ListeClients.tsx`.
 
 export const dynamic = "force-dynamic";
 
@@ -85,7 +96,12 @@ export default async function ClientsPage({
   const tous = await listerFichesClients(ctx);
   const clients = tous.filter((c) => c.categorie === categorie);
   // Les portes ne se montrent que sur la liste d'office, celle des particuliers.
-  const portes = categorie === "particulier";
+  const portes = categorie === "particulier" && (
+    <Portes
+      partenaires={tous.filter((c) => c.categorie === "entreprise").length}
+      publics={tous.filter((c) => c.categorie === "public").length}
+    />
+  );
   // **« Importer devis / facture » est un geste du patron** (`import/garde.ts`) :
   // les autres rôles ne voient ni la porte ni la bande.
   const importe = categorie === "particulier" && (await estProprietaire(ctx));
@@ -99,22 +115,22 @@ export default async function ClientsPage({
       <div className="pb-[86px]">
         {clients.length === 0 ? (
           <>
-            <EnTeteEcran retour={retour} titre={mots.titre} />
-            {portes && <Portes />}
-            {/* **L'écran vide est celui qui importe le plus** : un artisan qui
-                arrive sur Atlas n'a encore aucun client. */}
-            {importe && <PorteImport />}
+            <EnTeteEcran allure="soignee" retour={retour} titre={mots.titre} />
+            <div className="mt-[18px]">{portes}</div>
             {importe && <BandeImport />}
-            {/* **Deux phrases, plus trois.** La troisième — « le premier que
-                vous créerez apparaîtra ici » — redisait la deuxième avec
+            {/* **Deux phrases, plus trois.** La troisième (« le premier que
+                vous créerez apparaîtra ici ») redisait la deuxième avec
                 d'autres mots. Ce qui reste enseigne ce qui ne se devine pas :
                 on ne crée pas un client, il naît d'un chantier. */}
             <p
-              className="mx-[26px] mt-[26px] max-w-[31ch] text-[13px] leading-[1.6]"
+              className="mx-[22px] px-1 py-[26px] text-center text-[15.5px] leading-[1.5]"
               style={{ color: colors.inkSoft }}
             >
               {mots.aucun}
             </p>
+            {/* **L'écran vide est celui qui importe le plus** : un artisan qui
+                arrive sur Atlas n'a encore aucun client. */}
+            {importe && <PorteImport />}
           </>
         ) : (
           <FournisseurClients
@@ -127,21 +143,32 @@ export default async function ClientsPage({
               joursDevis: c.joursDevis,
               joursFactures: c.joursFactures,
               // Les montants voyagent tels que le dépôt les rend : leur mise en
-              // forme vit dans `enEuros`, appelée une seule fois, à l'écran.
+              // forme vit dans `src/lib/ligne-du-client.ts`, appelée à l'écran.
               facture: c.facture ?? null,
               du: c.du ?? null,
               pieces: c.pieces,
             }))}
           >
-            <EnTeteEcran retour={retour} titre={mots.titre} precision={<CompteClients categorie={categorie} />} />
-            {portes && <Portes />}
+            <EnTeteEcran
+              allure="soignee"
+              retour={retour}
+              titre={mots.titre}
+              precision={<CompteClients categorie={categorie} />}
+            />
+            {/* Le temps du choix ou d'un mois filtré, les portes s'effacent :
+                elles mènent ailleurs, et l'on est en train de faire autre chose. */}
+            {portes && (
+              <HorsDuChoix>
+                <div className="mt-[18px]">{portes}</div>
+              </HorsDuChoix>
+            )}
             <ListeClients
-              sousLaRecherche={
+              sousLaRecherche={importe ? <BandeImport /> : null}
+              auBout={
                 importe ? (
-                  <>
+                  <HorsDuChoix>
                     <PorteImport />
-                    <BandeImport />
-                  </>
+                  </HorsDuChoix>
                 ) : null
               }
             />
@@ -152,66 +179,89 @@ export default async function ClientsPage({
   );
 }
 
-/** Les deux portes, l'une sous l'autre, toujours là (22 octobre 2026). */
-function Portes() {
+/**
+ * Les deux portes, deux cartes côte à côte, toujours là (22 octobre 2026),
+ * chacune avec son nombre depuis la planche soignée : savoir qu'il n'y a
+ * « Aucun » partenaire évite de toucher pour rien.
+ */
+function Portes({ partenaires, publics }: { partenaires: number; publics: number }) {
   return (
-    <>
-      <Porte href="/clients?vue=entreprises" repere="porte-entreprises">
-        Vos entreprises
+    <div className="mx-[22px] grid grid-cols-2 gap-[10px]">
+      <Porte href="/clients?vue=entreprises" repere="porte-entreprises" nombre={partenaires} dessin={DESSIN_PARTENAIRES}>
+        Vos partenaires
       </Porte>
-      <Porte href="/clients?vue=publics" repere="porte-services-publics">
+      <Porte href="/clients?vue=publics" repere="porte-services-publics" nombre={publics} dessin={DESSIN_PUBLICS}>
         Services publics
       </Porte>
-    </>
-  );
-}
-
-/**
- * « IMPORTER DEVIS / FACTURE » — sa demande du 22 octobre 2026, à la place que
- * la maquette lui a montrée : sous la recherche, dans la voix de « Modifier ses
- * coordonnées » (l'or, en capitales espacées). Le nom est le sien : « pas
- * importer de l'ancienne appli, importer devis facture ».
- */
-function PorteImport() {
-  return (
-    <div className="px-[26px]">
-      <Link
-        href="/clients/importer"
-        data-atlas="porte-import"
-        className={`inline-flex min-h-[44px] items-center gap-[10px] ${libelleCaps}`}
-        style={{ color: colors.orTexte }}
-      >
-        <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 15V4m-4.5 4.5L12 4l4.5 4.5M5 14v4.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V14" />
-        </svg>
-        Importer devis / facture
-      </Link>
     </div>
   );
 }
 
+/** Un immeuble, et des colonnes : les dessins de la planche, au trait. */
+const DESSIN_PARTENAIRES = "M5 20.5V4.5h9v16M14 9.5h5v11M3.5 20.5h17M8 8h3M8 11.5h3M8 15h3";
+const DESSIN_PUBLICS = "M3.5 9.5L12 4.5l8.5 5M5.5 9.5v8M9.8 9.5v8M14.2 9.5v8M18.5 9.5v8M3.5 19.5h17";
+
 /**
- * « VOS ENTREPRISES › », « SERVICES PUBLICS › » — la porte de « Vos clients › » sur l'écran Chantiers,
- * trait pour trait : le mot doré en capitales espacées, le chevron qui dit
- * qu'il mène ailleurs, 44 px de cible pour un pouce ganté.
+ * Une porte : l'or, parce que sur cette page l'or ne fait qu'une chose, ce qui
+ * MÈNE AILLEURS (sa consigne du 25 octobre, « conserve le code couleur de la
+ * page pour le doré »). Une carte qu'on parcourt, à 10 px : en capsule, deux
+ * lignes de texte s'y rogneraient.
  */
-function Porte({ href, repere, children }: { href: string; repere: string; children: React.ReactNode }) {
+function Porte({
+  href,
+  repere,
+  nombre,
+  dessin,
+  children,
+}: {
+  href: string;
+  repere: string;
+  nombre: number;
+  dessin: string;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="px-[26px]">
-      <Link
-        href={href}
-        data-atlas={repere}
-        className="inline-flex min-h-[44px] items-center text-[11px] font-medium uppercase"
-        style={{ color: colors.or, letterSpacing: "0.28em" }}
-      >
-        {children}
-        <span
-          aria-hidden="true"
-          className="ml-[5px] text-[19px] font-bold leading-none"
-          style={{ letterSpacing: 0, position: "relative", top: -1 }}
-        >
-          ›
+    <Link
+      href={href}
+      data-atlas={repere}
+      className="flex min-h-[64px] min-w-0 items-center gap-[10px] rounded-[10px] px-3 py-[10px]"
+      style={{ color: colors.or, boxShadow: `inset 0 0 0 1.5px ${voile(colors.or, 0.7)}`, WebkitTapHighlightColor: "transparent" }}
+    >
+      <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="flex-none">
+        <path d={dessin} />
+      </svg>
+      <span className="min-w-0 flex-1">
+        <span className="block text-[15px] font-bold leading-[1.2]">{children}</span>
+        <span className="mt-[2px] block text-[13.5px] font-medium" data-atlas="compte-de-la-porte" style={{ color: colors.inkSoft }}>
+          {compteDeLaPorte(nombre)}
         </span>
+      </span>
+      <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="flex-none">
+        <path d="M9 5l7 7-7 7" />
+      </svg>
+    </Link>
+  );
+}
+
+/**
+ * « IMPORTER DEVIS / FACTURE » — sa demande du 22 octobre 2026. Le nom est le
+ * sien : « pas importer de l'ancienne appli, importer devis facture ». Geste
+ * rare, il descend au bout de la liste depuis la planche soignée, en bouton
+ * creux doré : il mène ailleurs.
+ */
+function PorteImport() {
+  return (
+    <div className="mx-[22px] mt-[28px]">
+      <Link
+        href="/clients/importer"
+        data-atlas="porte-import"
+        className="flex min-h-[56px] w-full items-center justify-center gap-[10px] rounded-full px-[22px] text-[17px] font-semibold"
+        style={{ color: colors.or, boxShadow: `inset 0 0 0 1.5px ${voile(colors.or, 0.7)}`, WebkitTapHighlightColor: "transparent" }}
+      >
+        <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 15V4M7.5 8.5L12 4l4.5 4.5M5 19.5h14" />
+        </svg>
+        Importer devis / facture
       </Link>
     </div>
   );

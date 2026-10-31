@@ -439,6 +439,17 @@ const HORS_CHARTE: Array<{
     pourquoi: "miniature du papier du devis, qu'on touche pour ouvrir l'exemple",
   },
   {
+    // **LES DEUX PORTES DE VOS CLIENTS, DEUX CARTES CÔTE À CÔTE** (Vos clients
+    // soignée, planche `appli/soignee/clients.html`, retenue le 29 octobre
+    // 2026) : une icône, deux lignes (« Vos partenaires », « Aucun ») et un
+    // chevron, au rayon de 10 px de la planche. Des cartes qu'on parcourt, comme
+    // celles de Terminés : en capsule, les deux lignes se rogneraient aux bouts.
+    // L'import, lui, est un geste : il reste en capsule.
+    motif: /^src[/\\]app[/\\]clients[/\\]page\.tsx$/,
+    seulement: /data-atlas=\{repere\}/,
+    pourquoi: "les deux portes de Vos clients, cartes côte à côte de la planche soignée du 29 octobre 2026",
+  },
+  {
     // **LES HUIT CHARTES EN PETITS ÉCRANS** (Réglages soignés, planche du
     // 26 octobre 2026, `appli/soignee/reglages-apparence.html`) : deux cartes
     // par rangée, chacune portant un petit écran à ses couleurs, son nom, sa

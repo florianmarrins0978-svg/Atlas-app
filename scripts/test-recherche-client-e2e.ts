@@ -300,7 +300,9 @@ async function principal() {
 
   await cas("chaque nom porte une ligne qui dit LEQUEL c'est", async () => {
     await taperEtAttendre(page, "");
-    const situations = page.locator('[data-atlas="situation-client"]');
+    // Depuis Vos clients soignée (29 octobre 2026), l'adresse et la dernière
+    // pièce ont chacune leur ligne : ce sont elles qui disent lequel c'est.
+    const situations = page.locator('[data-atlas="adresse-client"], [data-atlas="piece-client"]');
     const combien = await situations.count();
     const noms = (await nomsAffiches(page)).length;
     // **UNE LIGNE PAR CLIENT QUI A QUELQUE CHOSE À DIRE — pas une par nom.**
@@ -315,7 +317,7 @@ async function principal() {
     // Ce qui reste vrai, et c'est tout le sujet : **il y en a**, elles se
     // lisent, et aucune n'est vide — sans quoi quatre Martins se ressemblent.
     assert.ok(
-      combien > 0 && combien <= noms,
+      combien > 0 && combien <= 2 * noms,
       `${combien} lignes de situation pour ${noms} noms : un client sans rien sous son nom ` +
         "est indistinguable de son homonyme"
     );

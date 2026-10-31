@@ -321,12 +321,14 @@ export const MOTS_DE_LA_CATEGORIE: Record<
     trouve: "trouvé",
     aucun: "Aucun client pour l'instant. Ils naissent avec vos chantiers.",
   },
+  // « Vos partenaires » depuis sa planche soignée du 25 octobre 2026, retenue
+  // le 29 : la catégorie reste « entreprise » en base, seul le nom change.
   entreprise: {
-    titre: "Vos entreprises",
-    un: "entreprise",
-    des: "entreprises",
-    trouve: "trouvée",
-    aucun: "Aucune entreprise pour l'instant.",
+    titre: "Vos partenaires",
+    un: "partenaire",
+    des: "partenaires",
+    trouve: "trouvé",
+    aucun: "Aucun partenaire pour l'instant.",
   },
   public: {
     titre: "Services publics",

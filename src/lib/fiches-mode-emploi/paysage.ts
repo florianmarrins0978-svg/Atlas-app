@@ -509,7 +509,7 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
       "En haut de « Vos clients », tapez une partie de son nom, le titre d'un devis ou un montant dans « Chercher un nom, un titre, un montant ». Une pièce trouvée ouvre la fiche du client sur son onglet.",
     // Ses entreprises vivent derrière leur porte depuis le 4 octobre 2026.
     reserve:
-      "Un montant se tape en chiffres : « 640 » trouve 640 € et 6 400 €, « 640,00 » le montant exact. Une entreprise se cherche dans « Vos entreprises », une mairie dans « Services publics ».",
+      "Un montant se tape en chiffres : « 640 » trouve 640 € et 6 400 €, « 640,00 » le montant exact. Une entreprise se cherche dans « Vos partenaires », une mairie dans « Services publics ».",
     source: "src/app/clients/ListeClients.tsx",
     preuves: ["placeholder={AIDE_DE_LA_LOUPE}", "filtrerClientsParNom(dansLeTri, saisie)", "piecesQuiRepondent(c.pieces, saisie"],
     ailleurs: [
@@ -521,7 +521,7 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
     // Sa demande du 22 octobre 2026 : retrouver un devis de 2017 dans dix ans de dossiers.
     id: "clients-filtre-date",
     ecran: "Vos clients",
-    ou: "« Chantiers » dans la barre du bas, puis « Vos clients », « Vos entreprises » ou « Services publics »",
+    ou: "« Chantiers » dans la barre du bas, puis « Vos clients », « Vos partenaires » ou « Services publics »",
     intitule: "Retrouver un client par la date de son devis ou de sa facture",
     motsCles: ["date", "ancien", "annee", "mois", "calendrier", "filtre", "trier", "2017"],
     geste:
