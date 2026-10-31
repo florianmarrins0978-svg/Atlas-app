@@ -431,6 +431,15 @@
         ],
         "createdAt": "2026-10-28T20:27:53.376Z",
         "reason": "measured in browser 28 Oct 2026: flagged boxes are list rows whose only boundary is a top hairline; text sits 12px or more inside plages padded 16px, same layout as the validated clients.html planche"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/client-recoit.html"
+        ],
+        "createdAt": "2026-10-31T21:37:49.341Z",
+        "reason": "Fond crème de la charte d'Arborea, identité d'Atlas relevée dans PRODUCT.md et src/lib/chartes.ts ; la planche reprend le kit commun appli/soignee/kit.css"
       }
     ]
   }
