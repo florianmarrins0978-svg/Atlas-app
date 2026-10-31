@@ -476,6 +476,33 @@
         ],
         "createdAt": "2026-10-31T21:50:57.191Z",
         "reason": "Fond crème de la charte d'Arborea, identité d'Atlas relevée dans PRODUCT.md et src/lib/chartes.ts ; la planche reprend le kit commun appli/soignee/kit.css"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/chantier.html"
+        ],
+        "createdAt": "2026-10-31T22:05:02.317Z",
+        "reason": "Fond des planches soignées, charte Arborea relevée au navigateur (PRODUCT.md, kit.css body.pl)"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "appli/soignee/chantier.html"
+        ],
+        "createdAt": "2026-10-31T22:05:02.338Z",
+        "reason": "Le cadre du téléphone des planches : l'écran le remplit par construction (kit.css .cadre)"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "appli/soignee/chantier.html"
+        ],
+        "createdAt": "2026-10-31T22:05:02.367Z",
+        "reason": "Seul signalement : crème sur le vert des boutons #7d9a6d, choisi par le patron le 3 septembre 2026 ; le cran plus sombre lui est proposé sur fondations.html"
       }
     ]
   }

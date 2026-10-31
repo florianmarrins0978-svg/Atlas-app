@@ -1,0 +1,1097 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le chantier, soigné</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  LE CHANTIER : les écrans qu'il traverse entre la dictée et le devis parti.
+    la note vocale       src/app/chantiers/[id]/note-vocale/NoteVocaleClient.tsx
+    la transcription     src/app/chantiers/[id]/transcription/page.tsx, TexteDicte.tsx
+    les informations     src/app/chantiers/[id]/informations/InformationsClient.tsx, BrouillonSection.tsx
+    le prix              src/app/chantiers/[id]/prix/PrixClient.tsx, PropositionPrixSection.tsx
+    le devis complet     src/app/chantiers/[id]/devis-complet/DevisCompletClient.tsx
+    le devis envoyé      src/app/chantiers/[id]/export/ExportClient.tsx (l'adresse /export)
+
+  Sa demande du 31 octobre 2026, sur la liste des écrans du chantier pas
+  encore refaits : « fais moi une planche pour les 8 premiers, l'idée c'est de
+  les améliorer et de les rendre plus jolis ».
+
+  DEUX DES HUIT N'ONT PAS D'ÉCRAN À DESSINER, et la planche le dit :
+    la fiche du chantier n'existe plus depuis le 4 septembre 2026 (sa décision,
+      src/app/chantiers/[id]/page.tsx) : l'adresse renvoie là où le travail
+      s'est arrêté ;
+    les coordonnées sont l'écran de création rouvert, le même
+      FormulaireNouveauChantier : il a sa planche, creer-un-devis.html.
+
+  À CÔTÉ, LES VRAIS ÉCRANS : ouverts le 31 octobre sur le poste, jeu de
+  démonstration, à 390 × 664 (aujourdhui/chantier-*.jpg). Le devis de Reprise
+  de toiture y a reçu ses prix unitaires : le jeu de démo ne pose que le
+  montant, et l'écran affichait 0,00 € partout (TODO.md).
+
+  CE QUE LA CAPTURE A MONTRÉ, et qu'aucune lecture du code ne disait :
+    sur Prix, le montant de chaque ligne du détail passe SOUS son libellé et
+      se fait couper à mi-hauteur. La rangée « flex » est posée sur
+      l'enveloppe de LigneRetirable, pas autour des deux cases ; la hauteur
+      bornée à 70 px coupe la seconde. Non corrigé ici (TODO.md).
+
+  CE QUE LA PROPOSITION GARDE : les mêmes gestes, aux mêmes noms ; un seul
+  bouton plein, en bas ; le geste Retirer et son tiroir ; la feuille du devis
+  comme une page ; la barre du bas cachée sur le devis complet ; les huit
+  chartes (essayez Nuit). Les fondations soignées (fondations.html) partout.
+
+  Aucune donnée réelle : noms, lignes et montants du jeu de démonstration.
+*/
+
+/* ═══ LA PLANCHE ═══════════════════════════════════════════════════════════ */
+.rangee-pages { margin-bottom: 6px; }
+.rangee-pages button[aria-pressed="true"] { background: #2f3b2f; color: #faf9f5; font-weight: 600; }
+.etats-page button[aria-pressed="true"] { background: #4a4a44; }
+.capture-quoi { margin: 0 auto 6px; max-width: 390px; text-align: center; font-size: 13.5px; color: #4a4a44; }
+.page-notes[hidden] { display: none; }
+.deux-absents { max-width: 1080px; margin: 0 auto; padding: 4px var(--gouttiere) 0; }
+.deux-absents p { margin: 0; padding: 12px 16px; border-radius: 12px; background: #faf9f5; font-size: 15px; line-height: 1.5;
+                  color: #4a4a44; box-shadow: inset 0 0 0 1px rgba(28,28,26,0.08); }
+.deux-absents b { color: #1c1c1a; font-weight: 600; }
+.deux-absents a { color: #2f3b2f; font-weight: 600; text-underline-offset: 3px; }
+@media (max-width: 480px) {
+  .rangee-pages, .etats-page { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; scrollbar-width: none;
+                               padding: 10px var(--gouttiere) 2px; margin: 0 0 4px; }
+  .rangee-pages::-webkit-scrollbar, .etats-page::-webkit-scrollbar { display: none; }
+  .rangee-pages button, .etats-page button { flex: none; white-space: nowrap; }
+  .capture-quoi { padding: 0 var(--gouttiere); }
+}
+
+/* ═══ CE QUE LES SIX ÉCRANS PARTAGENT ═════════════════════════════════════ */
+.ecran[hidden] { display: none; }
+.ecran .tete-titre { margin-top: 2px; }
+/* Le chantier et son client sous le titre, en encre douce : aujourd'hui des
+   capitales dorées de 11 px, espacées, qui se lisent à 2,8 de contraste. */
+.ecran .tete-situation { margin: 6px 0 22px; font-size: 15px; }
+.ecran .tete-situation b { font-weight: 600; color: var(--atlas-ink); }
+
+/* Le geste du bas : le plein, puis au plus une phrase et une sortie écrite. */
+.action-bas .sous-plein { margin: 8px 0 0; text-align: center; font-size: 14px; color: var(--atlas-inkSoft); }
+.action-bas .bouton-texte { display: flex; width: 100%; justify-content: center; min-height: 44px; margin-top: 2px; }
+.action-bas .bouton-texte.or { color: var(--atlas-or); }
+.ecran.bas-haut .defile { padding-bottom: 236px; }
+.plein-long { padding: 0 14px; white-space: nowrap; letter-spacing: 0; }
+.ecran.bas-moyen .defile { padding-bottom: 200px; }
+
+/* Une liste qu'on écrit soi-même, dans une seule plage : un filet entre deux
+   lignes, plutôt qu'une plage par ligne (aujourd'hui, six cartes qui flottent). */
+.liste-champs { padding: 0 0 0 16px; overflow: hidden; }
+.champ-ligne { position: relative; }
+.champ-ligne + .champ-ligne::before, .champ-ligne + .ajout-ligne::before, .ligne-prix + .ligne-prix::before, .ligne-prix + .ajout-ligne::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); z-index: 1; }
+.ligne-glisse { background: var(--atlas-card); transition: transform 260ms var(--courbe); }
+.champ-ligne-saisie { display: block; width: 100%; min-height: 58px; padding: 16px 16px 16px 0; border: 0; outline: none; background: transparent;
+                      font: 400 17.5px/1.3 var(--serif); color: var(--atlas-ink); }
+.champ-ligne-saisie:focus { box-shadow: inset 0 -2px 0 var(--atlas-rust); }
+.ajout-ligne { position: relative; display: flex; align-items: center; gap: 10px; width: 100%; min-height: 56px; padding-right: 16px;
+               font-size: 16px; font-weight: 600; color: var(--atlas-or); text-align: left; }
+.ajout-ligne .ico { width: 22px; height: 22px; color: var(--atlas-or); }
+.vide-liste { margin: 0; padding: 16px 16px 14px 0; font-size: 15px; color: var(--atlas-inkSoft); }
+
+/* ═══ LA NOTE VOCALE ══════════════════════════════════════════════════════ */
+.voix-centre { display: flex; flex-direction: column; align-items: center; text-align: center; padding-top: 34px; }
+/* Le micro : le même rond plein que la fiche client, en plus grand, et un
+   anneau d'or autour (planche validée note-vocale-cercle-dore.html). */
+.micro-grand { position: relative; width: 132px; height: 132px; display: grid; place-items: center; border-radius: 50%;
+               background: var(--atlas-plein); color: var(--sur-plein); transition: transform 160ms var(--courbe); }
+.micro-grand::before { content: ""; position: absolute; inset: -11px; border-radius: 50%;
+                       border: 2px solid color-mix(in srgb, var(--atlas-or) 75%, transparent); }
+.micro-grand:active { transform: scale(0.97); }
+.micro-grand .ico { width: 44px; height: 44px; stroke-width: 1.6; }
+.micro-grand .carre-stop { width: 34px; height: 34px; border-radius: 7px; background: currentColor; }
+.ecran[data-etat="enregistrement"] .micro-grand::before { animation: souffle 1.6s var(--courbe) infinite; }
+@keyframes souffle { 0% { transform: scale(1); opacity: 1; } 70% { transform: scale(1.16); opacity: 0; } 100% { transform: scale(1.16); opacity: 0; } }
+.voix-titre { margin: 32px 0 0; font: 400 24px/1.2 var(--serif); }
+.voix-sous { max-width: 19em; margin: 8px 0 0; font-size: 15.5px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.voix-temps { margin: 30px 0 0; font: 400 46px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; letter-spacing: -0.01em; }
+.voix-centre .etat { margin-top: 12px; }
+.fichier-audio { margin-top: 26px; }
+
+.lecteur { display: flex; align-items: center; gap: 16px; padding: 18px; }
+.lecteur .rond { width: 60px; height: 60px; }
+.lecteur .rond .ico { width: 26px; height: 26px; fill: currentColor; stroke: none; margin-left: 3px; }
+.lecteur-corps { flex: 1; min-width: 0; }
+.lecteur-nom { display: block; font: 400 20px/1.2 var(--serif); }
+.lecteur-rang { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+.lecteur-piste { flex: 1; height: 4px; border-radius: 2px; background: var(--atlas-line); overflow: hidden; }
+.lecteur-piste span { display: block; width: 34%; height: 100%; background: var(--atlas-or); }
+.lecteur-duree { font-size: 14px; font-weight: 600; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
+
+/* ═══ LA TRANSCRIPTION ════════════════════════════════════════════════════ */
+/* Ses mots en serif, à la taille d'une lettre : c'est un texte qu'on relit. */
+.dictee { padding: 20px 20px 10px; }
+.dictee-texte { margin: 0; font: 400 18.5px/1.6 var(--serif); color: var(--atlas-ink); overflow-wrap: anywhere; }
+.dictee-pied { display: flex; justify-content: flex-end; margin-top: 6px; }
+.points { display: inline-flex; gap: 8px; margin-top: 18px; }
+.points span { width: 10px; height: 10px; border-radius: 50%; background: var(--atlas-or); animation: point 1.2s var(--courbe) infinite; }
+.points span:nth-child(2) { animation-delay: .18s; } .points span:nth-child(3) { animation-delay: .36s; }
+@keyframes point { 0%, 100% { opacity: .25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-4px); } }
+.attente { padding: 52px 8px 0; text-align: center; }
+.attente-titre { margin: 0; font: 400 24px/1.2 var(--serif); }
+.attente .second { margin: 8px 0 0; }
+
+/* ═══ LES INFORMATIONS ════════════════════════════════════════════════════ */
+.dictee-source { padding: 16px; }
+.dictee-source p { margin: 0; }
+.dictee-source .bouton-petit { width: 100%; margin: 14px 0 4px; }
+.dictee-source .bouton-texte { display: flex; min-height: 44px; }
+.dictee-source .bouton-texte.or { color: var(--atlas-or); }
+.dictee-source .bouton-texte:not(.or) { color: var(--atlas-inkSoft); }
+/* La durée se compte au doigt : la même liste que la case d'aujourd'hui
+   (½ journée, 1 journée, 2 jours…), un cran à la fois. */
+.petit-compteur { display: flex; align-items: center; gap: 8px; flex: none; }
+.petit-compteur button { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; color: var(--atlas-ink);
+                         box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
+.petit-compteur button[disabled] { color: var(--atlas-chevron); cursor: default; }
+.reglage-valeur.vide-valeur { color: var(--atlas-carteAmbreTexte); }
+.reglage.manque .reglage-valeur::placeholder { color: var(--atlas-carteAmbreTexte); opacity: 1; }
+
+/* ═══ LE PRIX ═════════════════════════════════════════════════════════════ */
+.total-prix { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 22px; }
+.total-prix .rubrique { margin: 0 0 6px; }
+.proposition { padding: 16px 18px 10px; }
+.prop-tete { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.prop-titre { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; color: var(--atlas-or); }
+.prop-titre .ico { width: 20px; height: 20px; color: var(--atlas-or); }
+.prop-montant { margin: 10px 0 2px; }
+.prop-montant small { margin-left: 4px; font: 600 13px/1 var(--sans); letter-spacing: .06em; color: var(--atlas-inkSoft); }
+.prop-lignes { margin: 10px 0 0; padding: 0; list-style: none; }
+.prop-lignes li { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 8px 0; font-size: 15.5px; line-height: 1.35; }
+.prop-lignes li + li { box-shadow: inset 0 1px 0 var(--atlas-lineSoft); }
+.prop-lignes .chiffre { white-space: nowrap; }
+.a-chiffrer { white-space: nowrap; font-size: 14px; font-weight: 600; color: var(--atlas-carteAmbreTexte); }
+.proposition .second { margin: 10px 0 0; }
+.proposition .bouton { margin-top: 14px; }
+.prop-gestes { display: flex; justify-content: space-between; gap: 8px; margin-top: 2px; }
+.prop-gestes .bouton-texte { font-size: 15px; color: var(--atlas-inkSoft); }
+.prop-repliee { padding: 4px 16px; margin-bottom: 4px; }
+.prop-repliee .ligne { min-height: 60px; }
+
+.ligne-prix { position: relative; }
+.ligne-prix .ligne-glisse { display: flex; align-items: center; gap: 10px; padding-right: 10px; }
+.ligne-prix-libelle { flex: 1; min-width: 0; min-height: 60px; padding: 18px 0; border: 0; outline: none; background: transparent; resize: none;
+                      font: 400 17px/1.3 var(--serif); color: var(--atlas-ink); field-sizing: content; }
+/* Le montant TIENT sur la ligne de son libellé : aujourd'hui il passe dessous
+   et la hauteur de la ligne le coupe en deux. */
+.ligne-prix-montant { width: 104px; flex: none; min-height: 44px; padding: 0 12px; border: 0; border-radius: 8px; outline: none; text-align: right;
+                      background: var(--atlas-cream); color: var(--atlas-ink); font: 600 16px/1 var(--sans); font-variant-numeric: tabular-nums; }
+.ligne-prix-montant:focus { box-shadow: inset 0 0 0 2px var(--atlas-rust); }
+.ligne-prix-montant.attend { background: var(--atlas-carteAmbreFond); }
+.ligne-prix-montant.attend::placeholder { color: var(--atlas-carteAmbreTexte); font-weight: 600; }
+.raison { margin-bottom: 10px; }
+.raison p { margin: 0; }
+.raison .bouton-texte { min-height: 40px; margin-top: 2px; color: var(--atlas-carteAmbreTexte); }
+
+/* ═══ LE DEVIS COMPLET ════════════════════════════════════════════════════ */
+.tete-devis { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; }
+.tete-devis .espace { flex: 1; }
+/* La page du devis : sa plage, ses filets, sa serif. On la lit comme le PDF. */
+.feuille-devis { padding: 20px 16px 18px; border-radius: 10px; }
+.emetteur-nom { margin: 0; font: 400 21px/1.2 var(--serif); }
+.emetteur-coord { margin: 4px 0 0; font-size: 14px; line-height: 1.5; color: var(--atlas-inkSoft); }
+.meta-devis { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; margin: 16px 0 0; border-radius: 8px; overflow: hidden;
+              background: var(--atlas-line); }
+.meta-devis div { padding: 9px 11px; background: var(--atlas-card); }
+.meta-devis dt { font-size: 12.5px; font-weight: 600; letter-spacing: .04em; color: var(--atlas-inkSoft); }
+.meta-devis dd { margin: 2px 0 0; font-size: 15px; line-height: 1.3; font-variant-numeric: tabular-nums; }
+.devis-mot { margin: 22px 0 0; text-align: center; font: 400 28px/1.1 var(--serif); letter-spacing: .02em; }
+.devis-titre { display: block; width: 100%; margin-top: 4px; border: 0; outline: none; background: transparent; text-align: center;
+               font: italic 400 17px/1.3 var(--serif); color: var(--atlas-ink); }
+.devis-titre::placeholder { color: var(--atlas-inkSoft); opacity: .75; }
+.mini-libelle { display: block; margin: 20px 0 4px; font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+                color: var(--atlas-inkSoft); }
+.destinataire-nom { margin: 0; font: 400 19px/1.25 var(--serif); }
+.destinataire p { margin: 0; }
+.destinataire .champ-doux { display: block; width: 100%; min-height: 36px; padding: 6px 0; border: 0; outline: none; background: transparent;
+                            font: 400 16px/1.35 var(--sans); color: var(--atlas-ink); }
+/* Une coordonnée qui manque se lit en ambre, comme dans les réglages : un
+   mot gris en place de l'adresse ressemble à une adresse. */
+.destinataire .champ-doux.manque { box-shadow: inset 0 -1.5px 0 color-mix(in srgb, var(--atlas-carteAmbreTexte) 55%, transparent); }
+.destinataire .champ-doux.manque::placeholder { color: var(--atlas-carteAmbreTexte); font-weight: 600; }
+
+.entete-lignes { display: flex; justify-content: space-between; margin: 22px 0 0; padding-bottom: 6px; font-size: 12.5px; font-weight: 600;
+                 letter-spacing: .04em; color: var(--atlas-inkSoft); box-shadow: inset 0 -1.5px 0 var(--atlas-ink); }
+.lignes-devis { margin: 0; padding: 0; list-style: none; }
+.ligne-devis { padding: 12px 0 10px; }
+.ligne-devis + .ligne-devis { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.ld-haut { display: flex; align-items: flex-start; gap: 6px; }
+.ld-libelle { flex: 1; min-width: 0; padding: 0; border: 0; outline: none; background: transparent; resize: none; field-sizing: content;
+              font: 400 17px/1.3 var(--serif); color: var(--atlas-ink); }
+.ld-retirer { width: 36px; height: 36px; margin: -8px -8px 0 0; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-inkSoft); }
+.ld-retirer .ico { width: 18px; height: 18px; }
+/* Une ligne se lit comme sur un devis : « 12 m² × 18,00 € », et son montant à
+   droite. Aujourd'hui, quatre rangées étiquetées par ligne (170 points). */
+.ld-bas { display: flex; align-items: center; gap: 4px; margin-top: 6px; }
+.ld-case { min-width: 0; height: 36px; padding: 0 6px; border: 0; border-radius: 6px; outline: none; text-align: center;
+           background: var(--atlas-cream); color: var(--atlas-ink); font: 400 16px/1 var(--sans); font-variant-numeric: tabular-nums; }
+.ld-case:focus { box-shadow: inset 0 0 0 2px var(--atlas-rust); }
+.ld-qte { width: 44px; } .ld-unite { width: 58px; } .ld-pu { width: 70px; text-align: right; }
+.ld-pu.attend { background: var(--atlas-carteAmbreFond); }
+.ld-pu.attend::placeholder { color: var(--atlas-carteAmbreTexte); }
+.ld-fois { padding: 0 1px; font-size: 15px; color: var(--atlas-inkSoft); }
+.ld-montant { margin-left: auto; font-weight: 600; font-size: 16px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ld-montant.attend { font-size: 14px; color: var(--atlas-carteAmbreTexte); }
+
+.ajouts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.puce-ajout { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px 0 10px; border-radius: 20px;
+              font-size: 15px; font-weight: 600; color: var(--atlas-ink); box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
+.puce-ajout .ico { width: 18px; height: 18px; }
+.puce-ajout.or { color: var(--atlas-or); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 60%, transparent); }
+.puce-ajout.or .ico { color: var(--atlas-or); }
+
+.totaux { margin-top: 18px; padding-top: 4px; box-shadow: inset 0 1px 0 var(--atlas-line); }
+.tot { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 36px; font-size: 16px;
+       font-variant-numeric: tabular-nums; }
+.tot-taux { display: inline-flex; align-items: center; gap: 4px; }
+.tot-taux input { width: 44px; height: 32px; border: 0; border-radius: 6px; outline: none; text-align: center; background: var(--atlas-cream);
+                  color: var(--atlas-ink); font: 400 16px/1 var(--sans); }
+/* Le total que le client lira en premier, sur une bande dorée (Ma TVA). */
+.tot.ttc { margin: 6px -16px 0; padding: 12px 16px; min-height: 0;
+           background: color-mix(in srgb, var(--atlas-or) 14%, transparent); }
+.tot.ttc span:first-child { font-weight: 700; }
+.tot.ttc span:last-child { font: 400 26px/1 var(--serif); letter-spacing: -0.01em; }
+.zone-notes { display: block; width: 100%; min-height: 60px; padding: 0; border: 0; outline: none; background: transparent; resize: none;
+              field-sizing: content; font: 400 16px/1.45 var(--sans); color: var(--atlas-ink); }
+.paiement p { margin: 0; font-size: 16px; line-height: 1.45; }
+.paiement .iban { font-size: 15px; letter-spacing: 0; word-spacing: .05em; }
+.mentions { margin: 18px 0 0; font-size: 13px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.signature { display: flex; align-items: flex-end; justify-content: center; height: 84px; margin-top: 12px; padding-bottom: 8px; border-radius: 8px;
+             font-size: 13px; color: var(--atlas-inkSoft); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.apercu { margin-top: 14px; }
+.parti-bandeau { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px; }
+.parti-bandeau .ico { flex: none; margin-top: 1px; }
+.parti-bandeau p { margin: 0; }
+.parti-bandeau .bouton-texte { min-height: 40px; margin-top: 2px; color: var(--atlas-carteBleuTexte); }
+.action-bas .raison { margin: 0 0 10px; }
+.action-bas .raison .bouton-petit { margin-top: 10px; width: 100%; color: var(--atlas-carteAmbreTexte);
+                                    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-carteAmbreTexte) 50%, transparent); }
+/* Parti chez le client : la page se lit, elle ne s'écrit plus. */
+.ecran[data-etat="parti"] .modifiable { display: none !important; }
+.ecran[data-etat="parti"] .ld-case, .ecran[data-etat="parti"] .tot-taux input { background: transparent; pointer-events: none; padding: 0 2px; }
+.ecran[data-etat="parti"] .ld-qte, .ecran[data-etat="parti"] .ld-unite { width: auto; field-sizing: content; }
+.ecran[data-etat="parti"] :is(.ld-libelle, .devis-titre, .champ-doux, .zone-notes) { pointer-events: none; }
+.ecran[data-etat="parti"] .champ-doux.manque { display: none; }
+
+/* ═══ LE DEVIS ENVOYÉ ═════════════════════════════════════════════════════ */
+.suivi { padding: 16px 18px 18px; }
+.suivi-phrase { margin: 10px 0 0; font-size: 15.5px; line-height: 1.45; color: var(--atlas-inkSoft); }
+/* Le message du client, mot pour mot : une plage dorée, sa phrase en serif,
+   et non plus un filet de couleur à gauche. */
+.message-client { margin: 14px 0 0; padding: 14px 16px; border-radius: var(--r-plage); background: color-mix(in srgb, var(--atlas-or) 13%, transparent);
+                  font: 400 18px/1.45 var(--serif); color: var(--atlas-ink); }
+.message-client cite { display: block; margin-top: 6px; font: 600 13.5px/1.3 var(--sans); font-style: normal; color: var(--atlas-inkSoft); }
+.dates-client { margin: 10px 0 0; font-size: 15.5px; }
+.resume-devis { margin-top: 30px; text-align: center; }
+.resume-devis p { margin: 0; }
+.resume-devis .montant-grand { margin-top: 8px; font-size: 44px; }
+.resume-devis .second { margin-top: 8px; }
+.resume-devis .rang-boutons { flex-direction: column; align-items: center; gap: 8px; margin-top: 20px; }
+.resume-devis .rang-boutons .bouton { flex: none; min-width: 236px; }
+.resume-devis .bouton-texte.alerte { margin-top: 8px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ecran[data-etat="enregistrement"] .micro-grand::before, .points span { animation: none; }
+}
+</style>
+</head>
+<body class="pl pl-pilules">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">Le chantier</h1>
+  <p class="pl-verdict">De la dictée au devis parti, six écrans. <b>Les mêmes gestes, aux mêmes noms : des mots qui se lisent, un seul bouton plein en bas, et le devis qui se lit comme un devis.</b> À côté, les vrais écrans.</p>
+</header>
+
+<div class="deux-absents">
+  <p><b>Deux écrans de votre liste n'ont rien à dessiner.</b> La fiche du chantier n'existe plus depuis le 4 septembre, votre décision : l'adresse renvoie là où le travail s'est arrêté. Les coordonnées sont l'écran de création rouvert, déjà sur sa planche : <a href="creer-un-devis.html">Créer un devis, la fiche client</a>.</p>
+</div>
+
+<main class="pl-scene">
+  <div>
+    <div class="pl-etats rangee-pages" role="group" aria-label="L'écran">
+      <button type="button" data-page="note" aria-pressed="true">Note vocale</button>
+      <button type="button" data-page="transcription">Transcription</button>
+      <button type="button" data-page="informations">Informations</button>
+      <button type="button" data-page="prix">Prix</button>
+      <button type="button" data-page="devis">Devis complet</button>
+      <button type="button" data-page="envoye">Devis envoyé</button>
+    </div>
+    <div class="pl-etats etats-page" id="etats-page" role="group" aria-label="Son état"></div>
+
+    <div class="pl-ecrans">
+      <div data-vue-panneau="propose">
+        <p class="pl-legende">Proposé</p>
+        <div class="cadre">
+
+          <!-- ═══ LA NOTE VOCALE ═════════════════════════════════════════ -->
+          <div class="ecran avec-barre bas-haut" data-page-ecran="note" id="ecran-note">
+            <div class="defile">
+              <div class="tete-ronds">
+                <a class="rond-creux" href="#" aria-label="Retour à la liste des chantiers" data-note="Sur la planche, on reste ici."><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+                <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-note="Sur la planche, l'assistant ne s'ouvre pas."><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              </div>
+              <h2 class="tete-titre">Note vocale</h2>
+              <p class="tete-situation" data-si-etat="vide enregistrement"><b>Pose de clôture</b>, Mme Aubry</p>
+              <p class="tete-situation" data-si-etat="enregistree"><b>Rénovation salle de bain</b>, M. Bernard</p>
+
+              <div class="voix-centre" data-si-etat="vide">
+                <button class="micro-grand touche" type="button" aria-label="Enregistrer une note vocale" data-va-etat="enregistrement"><svg class="ico" aria-hidden="true"><use href="#i-micro"/></svg></button>
+                <p class="voix-titre">Enregistrer une note vocale</p>
+                <p class="voix-sous">Décrivez les prestations, la durée, l'équipe et le matériel nécessaire.</p>
+                <button class="bouton bouton-creux bouton-petit fichier-audio touche" type="button" data-note="Sur la planche, aucun fichier ne s'ouvre."><svg class="ico ico-p" aria-hidden="true"><use href="#i-importer"/></svg>Ajouter un fichier audio</button>
+              </div>
+
+              <div class="voix-centre" data-si-etat="enregistrement">
+                <button class="micro-grand touche" type="button" aria-label="Arrêter l'enregistrement" data-va-etat="enregistree"><span class="carre-stop" aria-hidden="true"></span></button>
+                <p class="voix-temps chiffre" id="chrono">0:42</p>
+                <span class="etat" data-ton="rouge">Enregistrement en cours</span>
+                <p class="voix-sous">Parlez naturellement. Vous pourrez modifier les informations ensuite.</p>
+              </div>
+
+              <div data-si-etat="enregistree">
+                <div class="plage lecteur" data-retirable>
+                  <div class="ligne-glisse lecteur" style="padding:0;flex:1;display:flex;align-items:center;gap:16px">
+                    <button class="rond" type="button" aria-label="Écouter la note" data-note="Sur la planche, rien ne se lit."><svg class="ico" aria-hidden="true"><use href="#i-lecture"/></svg></button>
+                    <div class="lecteur-corps">
+                      <span class="lecteur-nom">Note enregistrée</span>
+                      <div class="lecteur-rang"><span class="lecteur-piste"><span></span></span><span class="lecteur-duree">0:12</span></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="plage plage-serree mt-16">
+                  <ul class="liste">
+                    <li><a class="ligne touche" href="#" data-vers-page="transcription">
+                      <span class="ligne-icone or"><svg class="ico" aria-hidden="true"><use href="#i-document"/></svg></span>
+                      <span class="ligne-corps"><span class="ligne-nom">Voir le texte</span><span class="ligne-situation">Transcription disponible</span></span>
+                      <span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                    <li><button class="ligne touche" type="button" data-note="Sur la planche, rien ne s'enregistre.">
+                      <span class="ligne-icone"><svg class="ico" aria-hidden="true"><use href="#i-micro"/></svg></span>
+                      <span class="ligne-corps"><span class="ligne-nom">Reprendre, j'avais oublié quelque chose</span></span></button></li>
+                    <li><button class="ligne touche" type="button" data-ouvre="feuille-remplacer">
+                      <span class="ligne-icone"><svg class="ico" aria-hidden="true"><use href="#i-annuler"/></svg></span>
+                      <span class="ligne-corps"><span class="ligne-nom">Remplacer la note</span></span></button></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="action-bas" data-si-etat="enregistree">
+              <a class="bouton bouton-plein plein-long touche" href="#" data-vers-page="devis">Créer le devis à partir de ma dictée</a>
+              <p class="sous-plein">Rien ne part au client.</p>
+              <a class="bouton-texte or touche" href="#" data-vers-page="devis">Ou rédiger le devis à la main</a>
+            </div>
+
+            <div class="feuille" id="feuille-remplacer" aria-hidden="true" role="dialog" aria-label="Remplacer cette note vocale">
+              <div class="feuille-poignee"></div>
+              <div class="feuille-dedans">
+                <p class="feuille-titre">Remplacer cette note vocale ?</p>
+                <p class="second" style="margin:-6px 0 20px">La note actuelle sera conservée jusqu'à l'enregistrement de la nouvelle.</p>
+                <button class="bouton bouton-plein touche" type="button" data-va-etat="vide">Remplacer</button>
+                <button class="bouton bouton-creux touche mt-8" type="button" data-ferme>Annuler</button>
+              </div>
+            </div>
+
+            <nav class="barre" aria-label="Navigation principale">
+              <div class="barre-onglets">
+                <a class="barre-onglet" href="accueil.html" aria-current="page">Chantiers</a>
+                <a class="barre-onglet" href="planning.html">Planning</a>
+                <a class="barre-onglet" href="termines.html">Terminés</a>
+                <a class="barre-onglet" href="paysage.html">Paysage</a>
+                <a class="barre-onglet" href="reglages.html">Réglages</a>
+                <span class="barre-trait" aria-hidden="true"><span></span></span>
+              </div>
+            </nav>
+          </div>
+
+          <!-- ═══ LA TRANSCRIPTION ═══════════════════════════════════════ -->
+          <div class="ecran avec-barre bas-haut" data-page-ecran="transcription" id="ecran-transcription" hidden>
+            <div class="defile">
+              <div class="tete-ronds">
+                <a class="rond-creux" href="#" aria-label="Retour à la liste des chantiers" data-note="Sur la planche, on reste ici."><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+                <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-note="Sur la planche, l'assistant ne s'ouvre pas."><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              </div>
+              <h2 class="tete-titre">Transcription</h2>
+              <p class="tete-situation"><b>Rénovation salle de bain</b>, M. Bernard</p>
+
+              <div data-si-etat="transcrite">
+                <section class="plage dictee">
+                  <p class="dictee-texte">Alors pour la salle de bain de monsieur Bernard, on va devoir déposer l'ancien carrelage complètement, poser la nouvelle faïence sur les murs, et changer la robinetterie qui est vraiment vétuste. Je pense deux jours de travail avec deux gars sur le chantier. Le client fournit son carrelage, nous on prend la colle flex et le joint gris anthracite.</p>
+                  <div class="dictee-pied"><button class="bouton-texte touche" type="button" data-note="Sur la planche, le texte ne s'ouvre pas."><svg class="ico ico-p" aria-hidden="true"><use href="#i-crayon"/></svg>Corriger le texte à la main</button></div>
+                </section>
+              </div>
+
+              <div class="attente" data-si-etat="en-cours">
+                <p class="attente-titre">Transcription en cours.</p>
+                <p class="second">L'écran se met à jour tout seul.</p>
+                <span class="points" aria-hidden="true"><span></span><span></span><span></span></span>
+              </div>
+
+              <div data-si-etat="echec">
+                <section class="plage-ton" data-ton="rouge">
+                  <span class="etat" data-ton="rouge" style="background:transparent;padding:0">Échec</span>
+                  <p style="margin:6px 0 0;color:var(--atlas-ink)">La transcription a échoué. Votre enregistrement est intact.</p>
+                </section>
+                <button class="bouton bouton-creux touche mt-16" type="button" data-note="Sur la planche, la case ne s'ouvre pas."><svg class="ico ico-p" aria-hidden="true"><use href="#i-crayon"/></svg>Écrire ce que j'ai dit</button>
+              </div>
+
+              <div class="vide" data-si-etat="aucune">
+                <svg class="ico" aria-hidden="true"><use href="#i-micro"/></svg>
+                <p class="vide-titre">Aucune note vocale pour ce chantier.</p>
+              </div>
+            </div>
+
+            <div class="action-bas" data-si-etat="transcrite">
+              <a class="bouton bouton-plein plein-long touche" href="#" data-vers-page="devis">Créer le devis à partir de ma dictée</a>
+              <p class="sous-plein">Rien ne part au client.</p>
+              <a class="bouton-texte touche" href="#" data-vers-page="informations">Ou vérifier les informations une par une</a>
+            </div>
+            <div class="action-bas" data-si-etat="echec">
+              <a class="bouton bouton-plein touche" href="#" data-vers-page="note"><svg class="ico" aria-hidden="true"><use href="#i-micro"/></svg>Relancer depuis la note vocale</a>
+            </div>
+            <div class="action-bas" data-si-etat="aucune">
+              <a class="bouton bouton-plein touche" href="#" data-vers-page="note"><svg class="ico" aria-hidden="true"><use href="#i-micro"/></svg>Enregistrer une note vocale</a>
+            </div>
+
+            <nav class="barre" aria-label="Navigation principale">
+              <div class="barre-onglets">
+                <a class="barre-onglet" href="accueil.html" aria-current="page">Chantiers</a>
+                <a class="barre-onglet" href="planning.html">Planning</a>
+                <a class="barre-onglet" href="termines.html">Terminés</a>
+                <a class="barre-onglet" href="paysage.html">Paysage</a>
+                <a class="barre-onglet" href="reglages.html">Réglages</a>
+                <span class="barre-trait" aria-hidden="true"><span></span></span>
+              </div>
+            </nav>
+          </div>
+
+          <!-- ═══ LES INFORMATIONS ═══════════════════════════════════════ -->
+          <div class="ecran avec-barre bas-moyen" data-page-ecran="informations" id="ecran-informations" hidden>
+            <div class="defile">
+              <div class="tete-ronds">
+                <a class="rond-creux" href="#" aria-label="Retour à la liste des chantiers" data-note="Sur la planche, on reste ici."><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+                <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-note="Sur la planche, l'assistant ne s'ouvre pas."><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              </div>
+              <h2 class="tete-titre">Informations</h2>
+              <p class="tete-situation"><b>Rénovation salle de bain</b>, M. Bernard</p>
+
+              <section class="plage-ton dictee-source" data-ton="or" data-si-etat="dictee rempli">
+                <p>Proposé à partir de votre dictée, à vérifier avant de continuer.</p>
+                <button class="bouton bouton-creux bouton-petit touche" type="button" data-note="Sur la planche, le brouillon ne se génère pas.">Générer le brouillon</button>
+                <a class="bouton-texte or touche" href="#" data-vers-page="devis"><svg class="ico ico-p" aria-hidden="true"><use href="#i-etincelle"/></svg>Aller jusqu'au devis d'un seul geste</a>
+                <a class="bouton-texte touche" href="#" data-vers-page="transcription"><svg class="ico ico-p" aria-hidden="true"><use href="#i-document"/></svg>Voir la transcription</a>
+              </section>
+              <p class="second" data-si-etat="sans" style="margin:0">Aucune dictée n'a encore alimenté cet écran : les informations ci-dessous sont celles que vous saisissez.</p>
+
+              <p class="rubrique">Prestations</p>
+              <div class="plage liste-champs">
+                <div data-si-etat="dictee rempli">
+                  <div class="champ-ligne" data-retirable><div class="ligne-glisse"><input class="champ-ligne-saisie" value="Dépose ancien carrelage" aria-label="Prestation"></div></div>
+                  <div class="champ-ligne" data-retirable><div class="ligne-glisse"><input class="champ-ligne-saisie" value="Pose faïence murale" aria-label="Prestation"></div></div>
+                  <div class="champ-ligne" data-retirable><div class="ligne-glisse"><input class="champ-ligne-saisie" value="Remplacement robinetterie" aria-label="Prestation"></div></div>
+                </div>
+                <p class="vide-liste" data-si-etat="sans">Aucune prestation pour l'instant.</p>
+                <button class="ajout-ligne touche" type="button" data-note="Sur la planche, rien ne s'ajoute."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter une prestation</button>
+              </div>
+
+              <p class="rubrique">Durée et équipe</p>
+              <div class="plage reglages">
+                <div class="reglage reglage-rang" id="reglage-duree">
+                  <div>
+                    <span class="reglage-libelle">Ce chantier prend</span>
+                    <span class="reglage-valeur" id="duree-valeur">2 jours</span>
+                  </div>
+                  <div class="petit-compteur" id="duree-compteur">
+                    <button type="button" aria-label="Moins long" data-duree="-1"><svg class="ico" aria-hidden="true"><use href="#i-moins"/></svg></button>
+                    <button type="button" aria-label="Plus long" data-duree="1"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg></button>
+                  </div>
+                </div>
+                <label class="reglage" id="reglage-equipe">
+                  <span class="reglage-libelle">Équipe</span>
+                  <input class="reglage-valeur" id="equipe-valeur" value="2 personnes" placeholder="Non précisée">
+                </label>
+              </div>
+
+              <p class="rubrique">Matériel</p>
+              <div class="plage liste-champs">
+                <div data-si-etat="dictee rempli">
+                  <div class="champ-ligne" data-retirable><div class="ligne-glisse"><input class="champ-ligne-saisie" value="Carrelage 60×60 (fourni client)" aria-label="Matériel"></div></div>
+                  <div class="champ-ligne" data-retirable><div class="ligne-glisse"><input class="champ-ligne-saisie" value="Colle flex" aria-label="Matériel"></div></div>
+                  <div class="champ-ligne" data-retirable><div class="ligne-glisse"><input class="champ-ligne-saisie" value="Joint gris anthracite" aria-label="Matériel"></div></div>
+                </div>
+                <p class="vide-liste" data-si-etat="sans">Aucun matériel pour l'instant.</p>
+                <button class="ajout-ligne touche" type="button" data-note="Sur la planche, rien ne s'ajoute."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter un matériel</button>
+              </div>
+            </div>
+
+            <div class="action-bas">
+              <a class="bouton bouton-plein touche" href="#" data-vers-page="prix">Valider et calculer le prix</a>
+              <a class="bouton-texte or touche" href="#" data-vers-page="devis">Écrire le devis</a>
+            </div>
+
+            <nav class="barre" aria-label="Navigation principale">
+              <div class="barre-onglets">
+                <a class="barre-onglet" href="accueil.html" aria-current="page">Chantiers</a>
+                <a class="barre-onglet" href="planning.html">Planning</a>
+                <a class="barre-onglet" href="termines.html">Terminés</a>
+                <a class="barre-onglet" href="paysage.html">Paysage</a>
+                <a class="barre-onglet" href="reglages.html">Réglages</a>
+                <span class="barre-trait" aria-hidden="true"><span></span></span>
+              </div>
+            </nav>
+          </div>
+
+          <!-- ═══ LE PRIX ════════════════════════════════════════════════ -->
+          <div class="ecran avec-barre avec-action" data-page-ecran="prix" id="ecran-prix" hidden>
+            <div class="defile">
+              <div class="tete-ronds">
+                <a class="rond-creux" href="#" aria-label="Retour" data-vers-page="informations"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+                <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-note="Sur la planche, l'assistant ne s'ouvre pas."><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              </div>
+              <h2 class="tete-titre">Prix</h2>
+              <p class="tete-situation"><b>Rénovation salle de bain</b>, M. Bernard</p>
+
+              <section class="total-prix">
+                <div>
+                  <p class="rubrique">Total HT</p>
+                  <p class="montant-grand" style="margin:0" data-si-etat="proposition">0,00&nbsp;€</p>
+                  <p class="montant-grand" style="margin:0" data-si-etat="a-chiffrer">942,00&nbsp;€</p>
+                  <p class="montant-grand" style="margin:0" data-si-etat="pret">1&#8239;222,00&nbsp;€</p>
+                </div>
+                <span class="etat" data-ton="ambre" data-si-etat="a-chiffrer">1 attend son prix</span>
+                <span class="etat" data-ton="vert" data-si-etat="pret">Tout est chiffré</span>
+              </section>
+
+              <section class="plage proposition" data-si-etat="proposition">
+                <div class="prop-tete">
+                  <span class="prop-titre"><svg class="ico" aria-hidden="true"><use href="#i-etincelle"/></svg>Proposition</span>
+                  <span class="etat" data-ton="or">Tarif de l'entreprise</span>
+                </div>
+                <p class="montant prop-montant">1&#8239;143,00&nbsp;€<small>HT</small></p>
+                <ul class="prop-lignes">
+                  <li><span>Dépose ancien carrelage</span><span class="chiffre">18,00&nbsp;€</span></li>
+                  <li><span>Pose faïence murale</span><span class="chiffre">45,00&nbsp;€</span></li>
+                  <li><span>Remplacement robinetterie</span><span class="a-chiffrer">à chiffrer</span></li>
+                  <li><span>Carrelage 60×60 (fourni client)</span><span class="chiffre">1&#8239;080,00&nbsp;€</span></li>
+                  <li><span>Colle flex</span><span class="a-chiffrer">à chiffrer</span></li>
+                  <li><span>Joint gris anthracite</span><span class="a-chiffrer">à chiffrer</span></li>
+                </ul>
+                <p class="second">Ces prix viennent de vos tarifs et de votre grille. Ils n'ont pas été calculés.</p>
+                <button class="bouton bouton-creux or touche" type="button" data-va-etat="a-chiffrer"><svg class="ico ico-p" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter au détail</button>
+                <div class="prop-gestes">
+                  <button class="bouton-texte touche" type="button" data-note="Sur la planche, le calcul ne s'ouvre pas.">Voir le détail</button>
+                  <button class="bouton-texte touche" type="button" data-note="Sur la planche, rien ne se recalcule."><svg class="ico ico-p" aria-hidden="true"><use href="#i-annuler"/></svg>Relancer le calcul</button>
+                </div>
+              </section>
+
+              <section class="plage prop-repliee" data-si-etat="a-chiffrer pret">
+                <button class="ligne touche" type="button" data-va-etat="proposition">
+                  <span class="ligne-icone or"><svg class="ico" aria-hidden="true"><use href="#i-etincelle"/></svg></span>
+                  <span class="ligne-corps"><span class="ligne-nom">Voir la proposition de prix</span><span class="ligne-situation">1&#8239;143,00&nbsp;€ HT, tarif de l'entreprise</span></span>
+                  <span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-bas"/></svg></span>
+                </button>
+              </section>
+
+              <p class="rubrique">Détail</p>
+              <div class="plage liste-champs">
+                <div data-si-etat="a-chiffrer pret">
+                  <div class="ligne-prix" data-retirable><div class="ligne-glisse"><textarea class="ligne-prix-libelle" rows="1" aria-label="Description de la ligne">Dépose de l'ancien carrelage</textarea><input class="ligne-prix-montant" inputmode="decimal" value="216,00" aria-label="Montant de la ligne, en euros"></div></div>
+                  <div class="ligne-prix" data-retirable><div class="ligne-glisse"><textarea class="ligne-prix-libelle" rows="1" aria-label="Description de la ligne">Pose de faïence murale</textarea><input class="ligne-prix-montant" inputmode="decimal" value="630,00" aria-label="Montant de la ligne, en euros"></div></div>
+                  <div class="ligne-prix" data-retirable data-si-etat="a-chiffrer"><div class="ligne-glisse"><textarea class="ligne-prix-libelle" rows="1" aria-label="Description de la ligne">Remplacement de la robinetterie</textarea><input class="ligne-prix-montant attend" inputmode="decimal" placeholder="à chiffrer" aria-label="Montant de la ligne, en euros"></div></div>
+                  <div class="ligne-prix" data-retirable data-si-etat="pret"><div class="ligne-glisse"><textarea class="ligne-prix-libelle" rows="1" aria-label="Description de la ligne">Remplacement de la robinetterie</textarea><input class="ligne-prix-montant" inputmode="decimal" value="280,00" aria-label="Montant de la ligne, en euros"></div></div>
+                  <div class="ligne-prix" data-retirable><div class="ligne-glisse"><textarea class="ligne-prix-libelle" rows="1" aria-label="Description de la ligne">Colle flex et joint gris anthracite</textarea><input class="ligne-prix-montant" inputmode="decimal" value="96,00" aria-label="Montant de la ligne, en euros"></div></div>
+                </div>
+                <p class="vide-liste" data-si-etat="proposition">Aucune ligne pour l'instant.</p>
+                <button class="ajout-ligne touche" type="button" data-note="Sur la planche, rien ne s'ajoute."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter une ligne</button>
+              </div>
+
+              <section class="plage-ton raison mt-16" data-ton="ambre" data-si-etat="proposition">
+                <p><b style="color:inherit">Ce devis n'a aucune ligne : il partirait à 0,00&nbsp;€.</b></p>
+                <a class="bouton-texte touche" href="reglages-tarifs.html">Ouvrir mes tarifs</a>
+              </section>
+              <section class="plage-ton raison mt-16" data-ton="ambre" data-si-etat="a-chiffrer">
+                <p>« Remplacement de la robinetterie » attend son prix : cette ligne n'est pas gratuite, elle n'est pas chiffrée.</p>
+                <button class="bouton-texte touche" type="button" data-note="Sur la planche, la case du montant attend votre doigt.">Poser les montants</button>
+              </section>
+            </div>
+
+            <div class="action-bas">
+              <button class="bouton bouton-plein touche" type="button" data-si-etat="pret" data-vers-page="devis"><svg class="ico" aria-hidden="true"><use href="#i-document"/></svg>Préparer le devis</button>
+              <button class="bouton bouton-plein" type="button" aria-disabled="true" data-si-etat="proposition a-chiffrer">Préparer le devis</button>
+            </div>
+
+            <nav class="barre" aria-label="Navigation principale">
+              <div class="barre-onglets">
+                <a class="barre-onglet" href="accueil.html" aria-current="page">Chantiers</a>
+                <a class="barre-onglet" href="planning.html">Planning</a>
+                <a class="barre-onglet" href="termines.html">Terminés</a>
+                <a class="barre-onglet" href="paysage.html">Paysage</a>
+                <a class="barre-onglet" href="reglages.html">Réglages</a>
+                <span class="barre-trait" aria-hidden="true"><span></span></span>
+              </div>
+            </nav>
+          </div>
+
+          <!-- ═══ LE DEVIS COMPLET ═══════════════════════════════════════ -->
+          <div class="ecran avec-action bas-moyen" data-page-ecran="devis" id="ecran-devis" hidden>
+            <div class="defile">
+              <div class="tete-devis">
+                <a class="rond-creux" href="#" aria-label="Retour" data-note="Sur la planche, on reste ici."><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+                <span class="espace"></span>
+                <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-note="Sur la planche, l'assistant ne s'ouvre pas."><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+                <button class="rond-creux modifiable" type="button" aria-label="Dicter dans le devis" data-note="Sur la planche, rien ne s'enregistre."><svg class="ico" aria-hidden="true"><use href="#i-micro"/></svg></button>
+              </div>
+
+              <section class="plage-ton parti-bandeau" data-ton="bleu" data-si-etat="parti">
+                <svg class="ico" aria-hidden="true"><use href="#i-cadenas"/></svg>
+                <div>
+                  <p style="color:var(--atlas-ink)">Ce devis est parti chez votre client : il ne se modifie plus.</p>
+                  <button class="bouton-texte touche" type="button" data-va-etat="en-cours">Le corriger et le renvoyer</button>
+                </div>
+              </section>
+
+              <article class="plage feuille-devis">
+                <p class="emetteur-nom">Atelier Démo</p>
+                <p class="emetteur-coord">10 rue des Artisans, Nantes<br>02 40 00 00 00, contact@atelier-demo.fr<br><span class="chiffre">123&#8239;456 789 00012</span></p>
+
+                <dl class="meta-devis">
+                  <div><dt>Devis n°</dt><dd>2026&#8209;000002</dd></div>
+                  <div><dt>Date</dt><dd>31/10/2026</dd></div>
+                  <div><dt>Validité</dt><dd>30 jours</dd></div>
+                  <div><dt>Début des travaux</dt><dd>sous 30 jours après l'accord</dd></div>
+                </dl>
+
+                <h3 class="devis-mot">DEVIS</h3>
+                <input class="devis-titre" placeholder="Titre (optionnel)" aria-label="Titre du devis">
+
+                <div class="destinataire">
+                  <span class="mini-libelle">Client</span>
+                  <p class="destinataire-nom">M. Bernard</p>
+                  <input class="champ-doux manque" placeholder="Adresse" aria-label="Adresse du client">
+                  <input class="champ-doux manque" placeholder="E-mail" aria-label="E-mail du client">
+                  <input class="champ-doux" value="06 12 34 56 78" aria-label="Téléphone du client">
+                </div>
+
+                <div class="entete-lignes"><span>Quantité × prix unitaire HT</span><span>Montant HT</span></div>
+                <ol class="lignes-devis">
+                  <li class="ligne-devis">
+                    <div class="ld-haut"><textarea class="ld-libelle" rows="1" aria-label="Libellé">Dépose de l'ancien carrelage</textarea><button class="ld-retirer modifiable" type="button" aria-label="Retirer la ligne" data-note="Retiré à l'instant."><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></button></div>
+                    <div class="ld-bas"><input class="ld-case ld-qte" value="12" aria-label="Quantité"><input class="ld-case ld-unite" value="m²" aria-label="Unité"><span class="ld-fois">×</span><input class="ld-case ld-pu" value="18,00" aria-label="Prix unitaire HT"><span class="ld-montant">216,00&nbsp;€</span></div>
+                  </li>
+                  <li class="ligne-devis">
+                    <div class="ld-haut"><textarea class="ld-libelle" rows="1" aria-label="Libellé">Pose de faïence murale</textarea><button class="ld-retirer modifiable" type="button" aria-label="Retirer la ligne" data-note="Retiré à l'instant."><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></button></div>
+                    <div class="ld-bas"><input class="ld-case ld-qte" value="14" aria-label="Quantité"><input class="ld-case ld-unite" value="m²" aria-label="Unité"><span class="ld-fois">×</span><input class="ld-case ld-pu" value="45,00" aria-label="Prix unitaire HT"><span class="ld-montant">630,00&nbsp;€</span></div>
+                  </li>
+                  <li class="ligne-devis">
+                    <div class="ld-haut"><textarea class="ld-libelle" rows="1" aria-label="Libellé">Remplacement de la robinetterie</textarea><button class="ld-retirer modifiable" type="button" aria-label="Retirer la ligne" data-note="Retiré à l'instant."><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></button></div>
+                    <div class="ld-bas" data-si-etat="en-cours"><input class="ld-case ld-qte" value="1" aria-label="Quantité"><input class="ld-case ld-unite" value="u" aria-label="Unité"><span class="ld-fois">×</span><input class="ld-case ld-pu attend" placeholder="0,00" aria-label="Prix unitaire HT" id="pu-attend"><span class="ld-montant attend">à chiffrer</span></div>
+                    <div class="ld-bas" data-si-etat="pret parti"><input class="ld-case ld-qte" value="1" aria-label="Quantité"><input class="ld-case ld-unite" value="u" aria-label="Unité"><span class="ld-fois">×</span><input class="ld-case ld-pu" value="280,00" aria-label="Prix unitaire HT"><span class="ld-montant">280,00&nbsp;€</span></div>
+                  </li>
+                  <li class="ligne-devis">
+                    <div class="ld-haut"><textarea class="ld-libelle" rows="1" aria-label="Libellé">Colle flex et joint gris anthracite</textarea><button class="ld-retirer modifiable" type="button" aria-label="Retirer la ligne" data-note="Retiré à l'instant."><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></button></div>
+                    <div class="ld-bas"><input class="ld-case ld-qte" value="1" aria-label="Quantité"><input class="ld-case ld-unite" value="forfait" aria-label="Unité"><span class="ld-fois">×</span><input class="ld-case ld-pu" value="96,00" aria-label="Prix unitaire HT"><span class="ld-montant">96,00&nbsp;€</span></div>
+                  </li>
+                </ol>
+                <div class="ajouts modifiable">
+                  <button class="puce-ajout touche" type="button" data-note="Sur la planche, rien ne s'ajoute."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter une ligne</button>
+                  <button class="puce-ajout or touche" type="button" data-note="La répartition de la main d'œuvre a sa planche : main-oeuvre-curseur.html."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Main d’œuvre</button>
+                  <button class="puce-ajout or touche" type="button" data-note="Sur la planche, rien ne s'ajoute."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter une TVA</button>
+                </div>
+
+                <div class="totaux">
+                  <div class="tot"><span>Total HT</span><span data-si-etat="en-cours">942,00&nbsp;€</span><span data-si-etat="pret parti">1&#8239;222,00&nbsp;€</span></div>
+                  <div class="tot"><span class="tot-taux">TVA <input value="20" inputmode="decimal" aria-label="Taux de TVA"> %</span><span data-si-etat="en-cours">188,40&nbsp;€</span><span data-si-etat="pret parti">244,40&nbsp;€</span></div>
+                  <div class="tot ttc"><span>Total TTC</span><span data-si-etat="en-cours">1&#8239;130,40&nbsp;€</span><span data-si-etat="pret parti">1&#8239;466,40&nbsp;€</span></div>
+                </div>
+                <div class="ajouts modifiable">
+                  <button class="puce-ajout or touche" type="button" data-note="Sur la planche, rien ne s'ajoute."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter un acompte</button>
+                  <button class="puce-ajout or touche" type="button" data-note="Sur la planche, rien ne s'ajoute."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Remise</button>
+                </div>
+
+                <span class="mini-libelle">Notes / conditions</span>
+                <textarea class="zone-notes" rows="2" aria-label="Notes et conditions">Accès par le portail de gauche, cour à dégager la veille. Devis gratuit et sans engagement.</textarea>
+                <div class="paiement">
+                  <span class="mini-libelle">Modalités de paiement</span>
+                  <p>Paiement par virement bancaire</p>
+                  <p class="chiffre iban">FR76 3000 1000 0000 0000 0000 000</p>
+                </div>
+                <p class="mentions">Devis établi par Atelier Démo, valable 30 jours. Bon pour accord précédé de la mention manuscrite, daté et signé par le client.</p>
+                <div class="signature">Bon pour accord, signature du client</div>
+              </article>
+
+              <button class="bouton bouton-creux apercu touche" type="button" data-note="Sur la planche, le PDF ne s'ouvre pas."><svg class="ico" aria-hidden="true"><use href="#i-document"/></svg>Aperçu du PDF</button>
+            </div>
+
+            <div class="action-bas" data-si-etat="en-cours">
+              <section class="plage-ton raison" data-ton="ambre">
+                <p>« Remplacement de la robinetterie » attend son prix : cette ligne n'est pas gratuite, elle n'est pas chiffrée.</p>
+                <button class="bouton bouton-creux bouton-petit touche" type="button" id="poser-prix">Poser le prix</button>
+              </section>
+            </div>
+            <div class="action-bas" data-si-etat="pret">
+              <button class="bouton bouton-plein touche" type="button" data-vers-page="envoye"><svg class="ico" aria-hidden="true"><use href="#i-calendrier"/></svg>Choisir la date</button>
+            </div>
+          </div>
+
+          <!-- ═══ LE DEVIS ENVOYÉ ════════════════════════════════════════ -->
+          <div class="ecran avec-barre bas-moyen" data-page-ecran="envoye" id="ecran-envoye" hidden>
+            <div class="defile">
+              <div class="tete-ronds">
+                <a class="rond-creux" href="#" aria-label="Retour à la liste des chantiers" data-note="Sur la planche, on reste ici."><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+                <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-note="Sur la planche, l'assistant ne s'ouvre pas."><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              </div>
+              <h2 class="tete-titre">Devis</h2>
+              <p class="tete-situation"><b>Reprise de toiture</b>, M. Faucher</p>
+
+              <section class="plage suivi">
+                <span class="etat" data-ton="ambre" data-si-etat="corriger">Correction demandée</span>
+                <span class="etat" data-ton="bleu" data-si-etat="attente">En attente de réponse</span>
+                <span class="etat" data-ton="vert" data-si-etat="accepte">Devis accepté</span>
+                <p class="suivi-phrase" data-si-etat="corriger">Le client a signalé quelque chose à corriger. Son message est ci-dessous.</p>
+                <p class="suivi-phrase" data-si-etat="attente">Le client choisit sa date. Le chantier attend sa réponse.</p>
+                <p class="suivi-phrase" data-si-etat="accepte">Le client a accepté. La date est retenue.</p>
+                <blockquote class="message-client" data-si-etat="corriger">« Pouvez-vous retirer l'évacuation des gravats ? Je m'en occupe. »<cite>M. Faucher</cite></blockquote>
+              </section>
+
+              <section class="resume-devis">
+                <p class="second" style="margin:0">Devis nº 2026&#8209;000001</p>
+                <p class="montant-grand">1&#8239;990,80&nbsp;€</p>
+                <p class="second">TTC, envoyé le 25 juillet</p>
+                <div class="rang-boutons">
+                  <button class="bouton bouton-creux bouton-petit touche" type="button" data-si-etat="corriger accepte" data-note="Sur la planche, rien ne se télécharge."><svg class="ico ico-p" aria-hidden="true"><use href="#i-telecharger"/></svg>Télécharger le PDF</button>
+                  <button class="bouton bouton-creux bouton-petit touche" type="button" data-si-etat="attente accepte" data-note="Sur la planche, le devis ne s'ouvre pas."><svg class="ico ico-p" aria-hidden="true"><use href="#i-crayon"/></svg>Modifier mon devis</button>
+                </div>
+                <button class="bouton-texte alerte touche" type="button" data-si-etat="accepte" data-note="Sur la planche, rien ne se défait.">Le client s’est trompé</button>
+              </section>
+            </div>
+
+            <div class="action-bas" data-si-etat="corriger">
+              <button class="bouton bouton-plein touche" type="button" data-vers-page="devis"><svg class="ico" aria-hidden="true"><use href="#i-crayon"/></svg>Corriger et renvoyer</button>
+            </div>
+            <div class="action-bas" data-si-etat="attente">
+              <button class="bouton bouton-plein touche" type="button" data-note="Sur la planche, aucun SMS ne part."><svg class="ico" aria-hidden="true"><use href="#i-envoyer"/></svg>Rouvrir le SMS</button>
+              <button class="bouton-texte touche" type="button" data-note="Sur la planche, aucun e-mail ne part.">Plutôt par e-mail</button>
+            </div>
+
+            <nav class="barre" aria-label="Navigation principale">
+              <div class="barre-onglets">
+                <a class="barre-onglet" href="accueil.html" aria-current="page">Chantiers</a>
+                <a class="barre-onglet" href="planning.html">Planning</a>
+                <a class="barre-onglet" href="termines.html">Terminés</a>
+                <a class="barre-onglet" href="paysage.html">Paysage</a>
+                <a class="barre-onglet" href="reglages.html">Réglages</a>
+                <span class="barre-trait" aria-hidden="true"><span></span></span>
+              </div>
+            </nav>
+          </div>
+
+        </div>
+      </div>
+
+      <div data-vue-panneau="aujourdhui">
+        <p class="pl-legende">Aujourd'hui</p>
+        <div class="cadre"><div class="cadre-capture" id="cadre-capture"><img id="capture" src="aujourdhui/chantier-note-vocale.jpg" alt="L'écran tel qu'il est aujourd'hui"></div></div>
+        <p class="capture-quoi" id="capture-quoi"></p>
+      </div>
+    </div>
+  </div>
+
+  <section class="pl-notes">
+    <div class="page-notes" data-notes="commun">
+      <h2>Partout</h2>
+      <ul>
+        <li>Sous le titre, le chantier et son client en clair, au lieu de capitales dorées de 11 points.</li>
+        <li>Un seul bouton plein, toujours en bas, au même endroit ; la sortie de secours écrite juste dessous.</li>
+        <li>Les phrases qui expliquent le bouton d'à côté partent (votre règle du 25 août). Celles qui rassurent restent : « Rien ne part au client. »</li>
+      </ul>
+    </div>
+
+    <div class="page-notes" data-notes="note">
+      <h2>La note vocale</h2>
+      <ul>
+        <li>Un grand micro au milieu, cerclé d'or, le même que sur la fiche client : on le trouve sans chercher, d'un doigt.</li>
+        <li>Pendant l'enregistrement, le temps en grand et l'anneau qui respire.</li>
+        <li>Une fois enregistrée : le lecteur, puis trois lignes rangées (le texte, reprendre, remplacer) au lieu de cinq gestes empilés de tailles différentes.</li>
+        <li>« Ajouter un fichier audio » devient un vrai bouton ; aujourd'hui, des capitales de 9,5 points.</li>
+      </ul>
+      <h2>Ce qui ne bouge pas</h2>
+      <ul class="garde">
+        <li>Créer le devis à partir de ma dictée, en plein ; Ou rédiger le devis à la main ; la feuille de Remplacer et sa phrase.</li>
+        <li>Le geste Retirer sur la note, et son tiroir.</li>
+      </ul>
+    </div>
+
+    <div class="page-notes" data-notes="transcription" hidden>
+      <h2>La transcription</h2>
+      <ul>
+        <li>Vos mots en serif, à la taille d'une lettre : c'est un texte qu'on relit.</li>
+        <li>« Corriger le texte à la main » se pose sous le texte qu'il corrige, avec un crayon.</li>
+        <li>L'échec a sa plage, et « Écrire ce que j'ai dit » devient un vrai bouton.</li>
+      </ul>
+      <h2>Ce qui ne bouge pas</h2>
+      <ul class="garde">
+        <li>Créer le devis à partir de ma dictée ; Ou vérifier les informations une par une ; chaque phrase des états.</li>
+      </ul>
+    </div>
+
+    <div class="page-notes" data-notes="informations" hidden>
+      <h2>Les informations</h2>
+      <ul>
+        <li>Tout ce qui vient de la dictée dans une plage dorée : d'où ça vient, le brouillon, la transcription, le devis d'un seul geste.</li>
+        <li>Prestations et matériel dans une seule plage chacun, un filet entre deux lignes, au lieu d'une carte par ligne.</li>
+        <li>La durée se compte au doigt avec moins et plus, dans la même liste qu'aujourd'hui (½ journée, 1 journée, 2 jours…) ; essayez.</li>
+        <li>Ce qui manque se lit en ambre, à la place de la valeur : « Non précisé ». Aujourd'hui, une case vide qui ne dit rien.</li>
+      </ul>
+      <h2>Ce qui ne bouge pas</h2>
+      <ul class="garde">
+        <li>Valider et calculer le prix, en plein ; Écrire le devis, en or, dessous.</li>
+        <li>Retirer une ligne en la faisant glisser, et son tiroir.</li>
+      </ul>
+      <h2>Pas encore dessiné</h2>
+      <ul class="a-trancher">
+        <li>Le brouillon une fois généré, avec ses propositions à confirmer : il viendra sur sa propre planche si vous voulez.</li>
+      </ul>
+    </div>
+
+    <div class="page-notes" data-notes="prix" hidden>
+      <h2>Le prix</h2>
+      <ul>
+        <li>Le montant de chaque ligne tient sur sa ligne. <b>Aujourd'hui il passe dessous et se fait couper en deux</b> : regardez la capture.</li>
+        <li>« Total HT » en grand, avec à côté ce qui manque : « 1 attend son prix ».</li>
+        <li>La proposition dit sa source en pastille au lieu de capitales coupées sur deux lignes. Une fois ajoutée au détail, elle se replie en une ligne : il n'y a plus deux grands montants l'un sous l'autre.</li>
+        <li>Ce qui bloque se lit au-dessus de Préparer le devis, là où l'on appuie.</li>
+      </ul>
+      <h2>Ce qui ne bouge pas</h2>
+      <ul class="garde">
+        <li>Ajouter au détail, Voir le détail, Relancer le calcul, Ouvrir mes tarifs, Préparer le devis.</li>
+        <li>La phrase qui dit que ces prix n'ont pas été calculés.</li>
+      </ul>
+      <h2>À trancher</h2>
+      <ul class="a-trancher">
+        <li>Replier la proposition dès que le détail a des lignes : aujourd'hui elle reste ouverte. « Voir la proposition de prix » la rouvre.</li>
+      </ul>
+    </div>
+
+    <div class="page-notes" data-notes="devis" hidden>
+      <h2>Le devis complet</h2>
+      <ul>
+        <li>Chaque ligne se lit comme sur un devis : son libellé, puis « 12 m² × 18,00&nbsp;€ » et le montant à droite. Aujourd'hui, quatre rangées étiquetées par ligne : le même devis tient en deux fois moins de place.</li>
+        <li>Vos coordonnées tiennent en trois lignes, les quatre dates dans un carré : les lignes du devis arrivent plus haut.</li>
+        <li>Une adresse ou un e-mail qui manque se lit en ambre ; aujourd'hui le mot gris « Adresse » ressemble à une adresse.</li>
+        <li>Le total TTC sur une bande dorée. Les ajouts (ligne, main d'œuvre, TVA, acompte, remise) en vraies pastilles.</li>
+        <li>Parti chez le client, la page se lit sans case ni croix.</li>
+      </ul>
+      <h2>Ce qui ne bouge pas</h2>
+      <ul class="garde">
+        <li>La page du devis, dans l'ordre du PDF ; la barre du bas cachée ; l'assistant et le micro en haut.</li>
+        <li>Choisir la date en bas ; la ligne qui attend son prix arrête tout, avec Poser le prix.</li>
+        <li>La répartition de la main d'œuvre, sur sa planche (main-oeuvre-curseur.html), codée le 28 octobre.</li>
+      </ul>
+    </div>
+
+    <div class="page-notes" data-notes="envoye" hidden>
+      <h2>Le devis envoyé</h2>
+      <ul>
+        <li>L'état en pastille de couleur avec sa phrase ; le message du client sur une plage dorée, en serif, et son nom dessous.</li>
+        <li>Sous le montant, la date d'envoi, que l'appli connaît déjà.</li>
+        <li>Télécharger le PDF et Modifier mon devis deviennent de vrais boutons, côte à côte.</li>
+      </ul>
+      <h2>Ce qui ne bouge pas</h2>
+      <ul class="garde">
+        <li>Le signet d'or que vous avez choisi : l'état, le montant seul au centre, le geste en bas.</li>
+        <li>Corriger et renvoyer ; Rouvrir le SMS et Plutôt par e-mail ; Le client s’est trompé, en rouge.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="main-oeuvre-curseur.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Répartir la main d’œuvre</a>
+  <a href="index.html">Sommaire<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* Chaque écran, ses états, et la vraie page qui leur répond. */
+  var PAGES = {
+    note: {
+      etats: [["vide", "Sans note"], ["enregistrement", "Enregistrement"], ["enregistree", "Enregistrée"]],
+      captures: {
+        vide: ["chantier-note-vocale-vide.jpg", "Aujourd'hui, sans note."],
+        enregistrement: ["chantier-note-vocale-vide.jpg", "Aujourd'hui, sans note : l'enregistrement remplace le bouton par Arrêter."],
+        enregistree: ["chantier-note-vocale.jpg", "Aujourd'hui, une note enregistrée et transcrite."]
+      }
+    },
+    transcription: {
+      etats: [["transcrite", "Transcrite"], ["en-cours", "En cours"], ["echec", "Échec"], ["aucune", "Sans note"]],
+      captures: {
+        transcrite: ["chantier-transcription.jpg", "Aujourd'hui, une dictée transcrite."],
+        "en-cours": ["chantier-transcription.jpg", "Aujourd'hui, une dictée transcrite (les autres états, dans le code)."],
+        echec: ["chantier-transcription.jpg", "Aujourd'hui, une dictée transcrite (les autres états, dans le code)."],
+        aucune: ["chantier-transcription.jpg", "Aujourd'hui, une dictée transcrite (les autres états, dans le code)."]
+      }
+    },
+    informations: {
+      etats: [["dictee", "Repris de la dictée"], ["rempli", "Tout rempli"], ["sans", "Sans dictée"]],
+      captures: {
+        dictee: ["chantier-informations.jpg", "Aujourd'hui, repris de la dictée : la durée et l'équipe sont vides."],
+        rempli: ["chantier-informations.jpg", "Aujourd'hui, repris de la dictée."],
+        sans: ["chantier-informations.jpg", "Aujourd'hui, repris de la dictée."]
+      }
+    },
+    prix: {
+      etats: [["proposition", "La proposition"], ["a-chiffrer", "Une ligne à chiffrer"], ["pret", "Prêt"]],
+      captures: {
+        proposition: ["chantier-prix.jpg", "Aujourd'hui, une ligne à chiffrer. Regardez le Détail : les montants sont coupés."],
+        "a-chiffrer": ["chantier-prix.jpg", "Aujourd'hui, une ligne à chiffrer. Regardez le Détail : les montants sont coupés."],
+        pret: ["chantier-prix.jpg", "Aujourd'hui, une ligne à chiffrer. Regardez le Détail : les montants sont coupés."]
+      }
+    },
+    devis: {
+      etats: [["en-cours", "Une ligne à chiffrer"], ["pret", "Prêt"], ["parti", "Parti chez le client"]],
+      captures: {
+        "en-cours": ["chantier-devis.jpg", "Aujourd'hui, le même devis, une ligne à chiffrer."],
+        pret: ["chantier-devis.jpg", "Aujourd'hui, le même devis, une ligne à chiffrer."],
+        parti: ["chantier-devis-parti.jpg", "Aujourd'hui, un devis parti chez le client."]
+      }
+    },
+    envoye: {
+      etats: [["corriger", "Correction demandée"], ["attente", "En attente"], ["accepte", "Accepté"]],
+      captures: {
+        corriger: ["chantier-devis-envoye.jpg", "Aujourd'hui, une correction demandée."],
+        attente: ["chantier-devis-envoye.jpg", "Aujourd'hui, une correction demandée."],
+        accepte: ["chantier-devis-envoye.jpg", "Aujourd'hui, une correction demandée."]
+      }
+    }
+  };
+
+  var pageCourante = "note";
+  var etatsDuGroupe = document.getElementById("etats-page");
+  var capture = document.getElementById("capture");
+  var captureQuoi = document.getElementById("capture-quoi");
+  var cadreCapture = document.getElementById("cadre-capture");
+
+  function montrerCapture(page, etat) {
+    var c = PAGES[page].captures[etat];
+    if (!c) return;
+    var src = "aujourdhui/" + c[0];
+    if (capture.getAttribute("src") !== src) { capture.setAttribute("src", src); cadreCapture.scrollTop = 0; }
+    captureQuoi.textContent = c[1];
+  }
+
+  function choisirEtat(etat) {
+    var ecran = document.querySelector('[data-page-ecran="' + pageCourante + '"]');
+    Kit.appliquerEtat(ecran, etat);
+    etatsDuGroupe.querySelectorAll("button").forEach(function (b) {
+      b.setAttribute("aria-pressed", b.getAttribute("data-etat-page") === etat ? "true" : "false");
+    });
+    var defile = ecran.querySelector(".defile");
+    if (defile) defile.scrollTop = 0;
+    montrerCapture(pageCourante, etat);
+    if (pageCourante === "informations") poserDuree(etat === "dictee" ? 0 : 3);
+  }
+
+  function choisirPage(page, etat) {
+    pageCourante = page;
+    document.querySelectorAll("[data-page-ecran]").forEach(function (e) { e.hidden = e.getAttribute("data-page-ecran") !== page; });
+    document.querySelectorAll(".rangee-pages button").forEach(function (b) {
+      b.setAttribute("aria-pressed", b.getAttribute("data-page") === page ? "true" : "false");
+    });
+    document.querySelectorAll("[data-notes]").forEach(function (n) {
+      var quoi = n.getAttribute("data-notes");
+      n.hidden = !(quoi === "commun" || quoi === page);
+    });
+    etatsDuGroupe.innerHTML = "";
+    PAGES[page].etats.forEach(function (e) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.setAttribute("data-etat-page", e[0]);
+      b.textContent = e[1];
+      b.addEventListener("click", function () { choisirEtat(e[0]); });
+      etatsDuGroupe.appendChild(b);
+    });
+    choisirEtat(etat || PAGES[page].etats[0][0]);
+    try { history.replaceState(null, "", "?ecran=" + page + window.location.hash); } catch (e) { /* une adresse figée : la planche marche sans */ }
+  }
+
+  document.querySelectorAll(".rangee-pages button").forEach(function (b) {
+    b.addEventListener("click", function () { choisirPage(b.getAttribute("data-page")); });
+  });
+
+  /* Un geste qui mène à l'écran suivant du parcours, sur la même planche. */
+  document.addEventListener("click", function (e) {
+    var vers = e.target.closest("[data-vers-page]");
+    if (vers) { e.preventDefault(); choisirPage(vers.getAttribute("data-vers-page")); window.scrollTo({ top: 0, behavior: "smooth" }); return; }
+    var note = e.target.closest("[data-note]");
+    if (note) { e.preventDefault(); Kit.note(note, note.getAttribute("data-note")); }
+  });
+
+  /* Un état qui change depuis l'écran (le micro, Ajouter au détail…) suit
+     la rangée des états. */
+  document.querySelectorAll("[data-va-etat]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var etat = b.getAttribute("data-va-etat");
+      setTimeout(function () { choisirEtat(etat); }, 0);
+    });
+  });
+
+  /* Le chrono de l'enregistrement, pour qu'on le voie avancer. */
+  var secondes = 42;
+  setInterval(function () {
+    var ecran = document.getElementById("ecran-note");
+    if (ecran.getAttribute("data-etat") !== "enregistrement" || ecran.hidden) return;
+    secondes += 1;
+    document.getElementById("chrono").textContent = Math.floor(secondes / 60) + ":" + String(secondes % 60).padStart(2, "0");
+  }, 1000);
+
+  /* La durée, un cran à la fois, dans la liste de la case d'aujourd'hui
+     (src/lib/durees-chantier.ts, DUREES) ; le rang 0 dit « non précisé ». */
+  var DUREES = ["Non précisé", "½ journée", "1 journée"];
+  for (var j = 2; j <= 200; j++) DUREES.push(j + " jours");
+  var rangDuree = 3;
+  function poserDuree(rang) {
+    rangDuree = Math.max(0, Math.min(DUREES.length - 1, rang));
+    var manque = rangDuree === 0;
+    document.getElementById("duree-valeur").textContent = DUREES[rangDuree];
+    document.getElementById("duree-valeur").classList.toggle("vide-valeur", manque);
+    document.getElementById("reglage-duree").classList.toggle("manque", manque);
+    document.querySelector('[data-duree="-1"]').disabled = rangDuree === 0;
+    var etat = document.getElementById("ecran-informations").getAttribute("data-etat");
+    var equipe = document.getElementById("equipe-valeur");
+    var sansEquipe = etat === "dictee" || etat === "sans";
+    if (etat) {
+      equipe.value = sansEquipe ? "" : "2 personnes";
+      document.getElementById("reglage-equipe").classList.toggle("manque", sansEquipe);
+    }
+  }
+  document.getElementById("duree-compteur").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-duree]");
+    if (b && !b.disabled) poserDuree(rangDuree + Number(b.getAttribute("data-duree")));
+  });
+  document.getElementById("equipe-valeur").addEventListener("input", function (e) {
+    var vide = !e.target.value.trim();
+    document.getElementById("reglage-equipe").classList.toggle("manque", vide);
+  });
+
+  /* « Poser le prix » mène à la case qui attend. */
+  document.getElementById("poser-prix").addEventListener("click", function () {
+    var c = document.getElementById("pu-attend");
+    c.scrollIntoView({ block: "center", behavior: "smooth" });
+    setTimeout(function () { c.focus({ preventScroll: true }); }, 380);
+  });
+
+  var demandee = new URLSearchParams(window.location.search).get("ecran");
+  choisirPage(PAGES[demandee] ? demandee : "note");
+})();
+</script>
+</body>
+</html>
