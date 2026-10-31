@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Non payées, soignées</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  NON PAYÉES : la liste qu'ouvre « Non payées » sur Terminés
+  (src/app/termines/non-payees/page.tsx, listerFacturesNonPayees).
+
+  Sa demande du 31 octobre 2026 : « puis terminé (2) », « dans la même
+  dynamique, plus jolie ».
+
+  À CÔTÉ, LE VRAI ÉCRAN : ouvert le 31 octobre sur le poste, compte de
+  démonstration, trois factures déclarées non payées
+  (aujourdhui/termines-non-payees.jpg).
+
+  CE QUI EST GARDÉ : une ligne par facture, la plus récemment déclarée en
+  haut ; le chantier, le client, le numéro, « depuis le … », le reste à
+  payer ; toucher une ligne ouvre la facture du chantier ; « Aucune facture
+  non payée. » quand il n'y en a pas.
+
+  CE QUI CHANGE : le total de ce qui reste à recevoir, en tête, sur une
+  bande dorée (comme Ma TVA) : la somme des restes, rien d'autre ; la ligne
+  à 68 points avec son chevron ; la date sur sa propre ligne.
+*/
+.bande { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 16px 18px; border-radius: var(--r-plage);
+         background: color-mix(in srgb, var(--atlas-or) 13%, transparent); }
+.bande-mot { font-size: 15px; font-weight: 600; color: var(--atlas-ink); }
+.bande-mot small { display: block; margin-top: 2px; font-size: 14px; font-weight: 400; color: var(--atlas-inkSoft); }
+.bande .montant-grand { font-size: 34px; }
+.ligne-montant { font: 400 19px/1.2 var(--serif); font-variant-numeric: tabular-nums lining-nums; color: var(--atlas-ink); white-space: nowrap; }
+.ligne-situation + .ligne-situation { margin-top: 1px; }
+/* Le montant sur la ligne du chantier : la phrase du client garde toute la largeur. */
+.nom-montant { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="termines.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Terminés</a>
+  <h1 class="pl-titre">Non payées</h1>
+  <p class="pl-verdict">La liste qu'ouvre « Non payées » sur Terminés. <b>Ce qui reste à recevoir en tête, puis une ligne par facture</b>, la plus récente en haut.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats">
+        <button type="button" data-etat="trois" aria-pressed="true">Trois factures</button>
+        <button type="button" data-etat="aucune">Aucune</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre" id="ecran">
+          <div class="defile">
+            <div class="tete-ronds">
+              <a class="rond-creux" href="termines.html" aria-label="Retour aux chantiers terminés"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </div>
+            <div class="tete"><h2 class="tete-titre">Non payées</h2></div>
+
+            <div data-si-etat="trois">
+              <div class="bande">
+                <span class="bande-mot">Reste à recevoir<small>3 factures</small></span>
+                <span class="montant-grand">4 270,80 €</span>
+              </div>
+
+              <section class="plage plage-serree mt-16"><ul class="liste">
+                <li><a class="ligne touche" href="#" data-note-planche="Ouvre la facture du chantier.">
+                  <span class="ligne-corps">
+                    <span class="ligne-nom nom-montant"><span>Taille de haies</span><span class="ligne-montant">1 140,00 €</span></span>
+                    <span class="ligne-situation">Groupiron, facture F2026&#8209;000003</span>
+                    <span class="ligne-situation">Depuis le jeudi 22 octobre</span>
+                  </span>
+                  <span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>
+                </a></li>
+                <li><a class="ligne touche" href="#" data-note-planche="Ouvre la facture du chantier.">
+                  <span class="ligne-corps">
+                    <span class="ligne-nom nom-montant"><span>Taille de haies</span><span class="ligne-montant">1 140,00 €</span></span>
+                    <span class="ligne-situation">Groupiron, facture F2026&#8209;000002</span>
+                    <span class="ligne-situation">Depuis le samedi 10 octobre</span>
+                  </span>
+                  <span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>
+                </a></li>
+                <li><a class="ligne touche" href="#" data-note-planche="Ouvre la facture du chantier.">
+                  <span class="ligne-corps">
+                    <span class="ligne-nom nom-montant"><span>Reprise de toiture</span><span class="ligne-montant">1 990,80 €</span></span>
+                    <span class="ligne-situation">M. Faucher, facture F2026&#8209;000001</span>
+                    <span class="ligne-situation">Depuis le dimanche 27 septembre</span>
+                  </span>
+                  <span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>
+                </a></li>
+              </ul></section>
+            </div>
+
+            <div class="vide" data-si-etat="aucune">
+              <svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg>
+              <p class="vide-titre">Aucune facture non payée.</p>
+            </div>
+          </div>
+
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html" aria-current="page">Terminés</a>
+              <a class="barre-onglet" href="arrosage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html">Réglages</a>
+              <span class="barre-trait" aria-hidden="true" style="--rang:2"><span></span></span>
+            </div>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre"><div class="cadre-capture"><img src="aujourdhui/termines-non-payees.jpg" alt="Non payées telle qu'elle est aujourd'hui"></div></div>
+    </div>
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>En tête, ce qui reste à recevoir : la somme des restes, sur une bande dorée comme Ma TVA.</li>
+      <li>Chaque facture dans une plage, avec son chevron : on voit qu'elle s'ouvre.</li>
+      <li>« Depuis le… » passe sur sa propre ligne, en encre douce et non plus en gris.</li>
+      <li>Rien à recevoir : un signe et la même phrase, au milieu.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>La plus récemment déclarée en haut, le chantier en titre, le client et le numéro, le reste à payer à droite.</li>
+      <li>Toucher une ligne ouvre la facture du chantier.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="termines.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Terminés</a>
+  <a href="termines-retours.html">Retours d'intervention<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+document.addEventListener("click", function (e) {
+  var n = e.target.closest("[data-note-planche]");
+  if (n) { e.preventDefault(); Kit.note(n, n.getAttribute("data-note-planche")); }
+});
+</script>
+</body>
+</html>

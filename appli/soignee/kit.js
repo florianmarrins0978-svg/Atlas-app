@@ -301,7 +301,8 @@
     "reglages-identite", "reglages-equipe", "reglages-vehicules", "reglages-organigramme", "reglages-tarifs", "reglages-documents",
     "reglages-fournisseurs", "reglages-ia", "reglages-agenda", "reglages-abonnement", "reglages-donnees", "reglages-compte",
     "reglages-notifications", "reglages-connexion", "reglages-connexion-double-verification", "reglages-apparence",
-    "arrosage", "abonnement-credits-ia", "creer-un-compte", "clients-importer", "client-recoit"];
+    "arrosage", "abonnement-credits-ia", "creer-un-compte", "clients-importer", "client-recoit",
+    "client-coordonnees", "client-contrat", "termines-non-payees", "termines-retours"];
 
   function planchePrete(href) {
     if (!href || /^(https?:|#|mailto:|tel:|\.\.\/)/.test(href)) return true;
