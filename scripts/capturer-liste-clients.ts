@@ -227,7 +227,7 @@ async function principal() {
   const mesures = await page.evaluate(`(function () {
     var lignes = Array.prototype.slice.call(document.querySelectorAll('a[href^="/clients/"]'));
     var noms = Array.prototype.slice.call(document.querySelectorAll('[data-atlas="nom-client"]'));
-    var dits = Array.prototype.slice.call(document.querySelectorAll('[data-atlas="situation-client"]'));
+    var dits = Array.prototype.slice.call(document.querySelectorAll('[data-atlas="piece-client"]'));
     var textes = noms.concat(dits);
     var coupes = [], zero = 0, hauteurs = [];
     for (var i = 0; i < textes.length; i++) {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { initialesDuClient } from "@/lib/ligne-du-client";
 import { useRouter } from "next/navigation";
 import { colors, font, voile } from "@/lib/design-tokens";
 import CocheRonde from "@/components/atlas/reglages/CocheRonde";
@@ -48,13 +49,6 @@ import {
 const MONTRES = 30;
 
 const nombre = (n: number) => n.toLocaleString("fr-FR");
-
-/** « ML » pour Mme Lenoir, comme sur la planche. */
-function initiales(nom: string): string {
-  const mots = nom.replace(/\bet\b/g, "").split(/\s+/).filter(Boolean);
-  if (mots.length === 0) return "?";
-  return (mots.length === 1 ? mots[0][0] : mots[0][0] + mots[mots.length - 1][0]).toUpperCase();
-}
 
 export default function ImporterTableau({
   fichier,
@@ -452,7 +446,7 @@ function EnTeteClient({ nom, lieu, etat, manque = false }: { nom: string; lieu: 
         className="grid h-[44px] w-[44px] flex-none place-items-center rounded-full text-[17px]"
         style={{ backgroundColor: colors.rustTint, color: colors.rust, fontFamily: font.display }}
       >
-        {manque ? "?" : initiales(nom)}
+        {manque ? "?" : initialesDuClient(nom)}
       </span>
       <span className="min-w-0 flex-1">
         <span className="block text-[18.5px] leading-[1.25]" style={{ fontFamily: font.display, color: manque ? colors.inkSoft : colors.ink }}>

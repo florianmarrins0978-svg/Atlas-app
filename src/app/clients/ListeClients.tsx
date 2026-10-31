@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState, useTra
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { colors, font, libelleCaps, surPlein, voile } from "@/lib/design-tokens";
-import { enEuros } from "@/lib/euros";
+import { initialesDuClient, phraseDeLaDerniere, resteDuDeLaLigne } from "@/lib/ligne-du-client";
 import { ChampRecherche } from "@/components/atlas/ChampRecherche";
 import BoutonFiltre from "@/components/atlas/BoutonFiltre";
 import BottomSheet from "@/components/atlas/BottomSheet";
@@ -14,7 +14,6 @@ import { supprimerClientAction } from "./[id]/actions";
 import { apercuSuppressionClientsAction } from "./actions";
 import { grouperEnBandes } from "@/lib/bandes-clients";
 import {
-  jourDeLaLigne,
   lignesDeLaPiece,
   rangerDuPlusRecent,
   type PieceDuClient,
@@ -220,7 +219,7 @@ export function CompteClients({ categorie = "particulier" }: { categorie?: Categ
   // qu'on a besoin de lire en haut, avant d'appuyer sur le rouge.
   if (choix) {
     return (
-      <span className="block min-h-[14px]" data-atlas="compte-clients" style={{ color: colors.ink }}>
+      <span className="block min-h-[1.45em]" data-atlas="compte-clients" style={{ color: colors.ink }}>
         {choix.size === 0 ? "Aucun choisi" : choix.size === 1 ? "1 choisi" : `${choix.size} choisis`}
       </span>
     );
@@ -233,17 +232,30 @@ export function CompteClients({ categorie = "particulier" }: { categorie?: Categ
   const accord = mots.trouve;
   const texte = cherche && n === 0 ? "" : cherche ? `${mot} ${accord}${n > 1 ? "s" : ""}` : mot;
   return (
-    <span className="block min-h-[14px]" data-atlas="compte-clients">
+    <span className="block min-h-[1.45em]" data-atlas="compte-clients">
       {texte}
     </span>
   );
 }
 
+/**
+ * Ce qui s'efface le temps du choix ou d'un mois filtré : les portes, et
+ * l'import au bout de la liste (sa planche soignée du 25 octobre 2026). On y
+ * fait autre chose qu'aller ailleurs, et la liste remonte d'autant sous le doigt.
+ */
+export function HorsDuChoix({ children }: { children: React.ReactNode }) {
+  const { choix, tri } = useRecherche();
+  return choix || tri.cle !== "nom" ? null : <>{children}</>;
+}
+
 export default function ListeClients({
   sousLaRecherche = null,
+  auBout = null,
 }: {
-  /** Ce qui se pose sous la recherche, et ne colle pas avec elle : la porte de l'import. */
+  /** Ce qui se pose sous la recherche, et ne colle pas avec elle : la bande d'un import en cours. */
   sousLaRecherche?: React.ReactNode;
+  /** Ce qui se pose au bout de la liste : la porte de l'import, geste rare. */
+  auBout?: React.ReactNode;
 }) {
   const { saisie, poser, visibles, piecesTrouvees, aujourdHui, tri, trier, choix, choisir, total } = useRecherche();
   const cherche = saisie.trim().length > 0;
@@ -290,7 +302,7 @@ export default function ListeClients({
           noms on descend ; l'outil qui sert à remonter ne doit pas être resté
           en haut de la page. */}
       <div
-        className="sticky top-0 z-[5] px-[26px] pb-[14px] pt-[18px]"
+        className="sticky top-0 z-[5] px-[22px] pb-[14px] pt-[14px]"
         style={{
           backgroundColor: colors.cream,
           boxShadow: posee ? `0 1px 0 ${colors.line}` : "none",
@@ -306,12 +318,15 @@ export default function ListeClients({
         />
         {/* **LE FILTRE DE TERMINÉS, sa demande du 22 octobre 2026**
             (`appli/facture-mairie-chorus.html`) : retrouver un devis de 2017
-            dans dix ans de dossiers. Sous la recherche, à droite, comme sur
-            Terminés ; ses couleurs ne changent pas quand il agit (*« pas
-            vert »*) : c'est le titre du mois qui le dit. */}
-        {/* **« Tout » n'existe que pendant le choix** — sa demande du
-            23 octobre 2026. Sur la liste normale, rien ne permet de tout cocher
-            d'un doigt : il faut d'abord rester appuyé sur un client. */}
+            dans dix ans de dossiers. Ses couleurs ne changent pas quand il
+            agit (*« pas vert »*) : c'est le titre du mois qui le dit.
+
+            **Il reste SOUS la recherche, contre la planche soignée** (qui le
+            met sur sa ligne) : la loupe porte depuis le 28 octobre sa phrase
+            entière, « Chercher un nom, un titre, un montant », et à côté du
+            Filtre elle se coupait à « un titre, u » sur 390 px. La phrase
+            apprend que la loupe trouve un montant ; la place du Filtre est à
+            lui de la trancher. */}
         <div className="mt-[10px] flex justify-end">
           <BoutonFiltre onClick={() => setVolet(true)} />
         </div>
@@ -355,7 +370,7 @@ export default function ListeClients({
           data-atlas="tout-cocher"
           aria-pressed={toutCoche}
           onClick={() => choisir(toutCoche ? new Set() : new Set(visibles.map((c) => c.id)))}
-          className="mx-[26px] mt-[6px] flex min-h-11 items-center gap-[14px] text-[15px]"
+          className="mx-[32px] mb-[4px] mt-[6px] flex min-h-11 items-center gap-[8px] text-[15px] font-semibold"
           style={{ background: "transparent", color: colors.ink, WebkitTapHighlightColor: "transparent" }}
         >
           <CaseCochee cochee={toutCoche} />
@@ -366,7 +381,7 @@ export default function ListeClients({
           pièces parlent juste en dessous. */}
       {visibles.length === 0 && cherche && !choix && piecesTrouvees.length > 0 ? null : visibles.length === 0 ? (
         <p
-          className="mx-[26px] mt-[22px] max-w-[31ch] text-[13px] leading-[1.6]"
+          className="mx-[22px] px-1 py-[26px] text-center text-[15.5px] leading-[1.5]"
           // **`inkSoft`, et non le gris des méta.** Mesuré : `muted` tient 3,32
           // de contraste sur le fond crème — sous le seuil de lecture, et c'est
           // la première chose qui s'efface au soleil. C'est la seule phrase de
@@ -377,42 +392,35 @@ export default function ListeClients({
         </p>
       ) : tri.cle !== "nom" ? (
         // Trié par date, aucune bande de lettre : la liste suit les jours.
-        <ul className="mx-[26px] mt-[6px] flex flex-col">
+        <ul className="mx-[22px] mt-[14px] flex flex-col rounded-[6px] px-4 py-[2px]" style={{ backgroundColor: colors.card }}>
           {visibles.map((c, i) => (
-            <li key={c.id}>
-              <LigneClient client={c} saisie={saisie} aujourdHui={aujourdHui} dernier={i === visibles.length - 1} />
+            <li key={c.id} style={i > 0 ? { boxShadow: `inset 0 1px 0 ${colors.line}` } : undefined}>
+              <LigneClient client={c} saisie={saisie} aujourdHui={aujourdHui} />
             </li>
           ))}
         </ul>
       ) : (
-        <div className="mt-[6px]">
+        // **Chaque lettre range ses clients dans UNE plage** (sa planche
+        // soignée) : la carte claire porte la liste, la lettre en serif ouvre
+        // chaque groupe, un filet sépare les lettres et les clients.
+        <div className="mx-[22px] rounded-[6px] px-4 py-[2px]" style={{ backgroundColor: colors.card }} data-atlas="plage-des-clients">
           {bandes.map((groupe, iBande) => (
-            <section key={groupe.bande}>
-              {/* **Pendant une recherche, aucune bande.** Sur quatre lignes
-                  trouvées, un titre de lettre au-dessus de chacune serait le
-                  bruit que le repère devait réduire. */}
+            <section key={groupe.bande} style={iBande > 0 ? { boxShadow: `inset 0 1px 0 ${colors.line}` } : undefined}>
+              {/* **Pendant une recherche, aucune lettre.** Sur quatre lignes
+                  trouvées, une lettre au-dessus de chacune serait le bruit que
+                  le repère devait réduire. */}
               {!cherche && (
                 <p
-                  className={`mx-[26px] mb-[2px] ${iBande === 0 ? "mt-[14px]" : "mt-[24px]"} ${libelleCaps}`}
-                  style={{ color: colors.muted }}
+                  className="pb-[2px] pt-[14px] text-[17px] leading-none"
+                  style={{ fontFamily: font.display, color: colors.inkSoft }}
                 >
                   {groupe.bande}
                 </p>
               )}
-              <ul className="mx-[26px] flex flex-col">
-                {groupe.clients.map((c) => (
-                  <li key={c.id}>
-                    <LigneClient
-                      client={c}
-                      saisie={saisie}
-                      aujourdHui={aujourdHui}
-                      // Le filet ferme chaque ligne sauf la toute dernière de
-                      // l'écran : un trait au ras du vide n'y sépare rien.
-                      dernier={
-                        iBande === bandes.length - 1 &&
-                        c.id === groupe.clients[groupe.clients.length - 1].id
-                      }
-                    />
+              <ul className="flex flex-col">
+                {groupe.clients.map((c, i) => (
+                  <li key={c.id} style={i > 0 ? { boxShadow: `inset 0 1px 0 ${colors.line}` } : undefined}>
+                    <LigneClient client={c} saisie={saisie} aujourdHui={aujourdHui} dansUneLettre={!cherche} />
                   </li>
                 ))}
               </ul>
@@ -426,6 +434,8 @@ export default function ListeClients({
       {cherche && !choix && piecesTrouvees.length > 0 && (
         <PiecesTrouvees pieces={piecesTrouvees} saisie={saisie} />
       )}
+
+      {auBout}
 
       {choix && <BarreDuChoix choix={choix} choisir={choisir} total={total} />}
     </>
@@ -443,7 +453,7 @@ export default function ListeClients({
 function PiecesTrouvees({ pieces, saisie }: { pieces: PieceTrouvee[]; saisie: string }) {
   const montant = estUnMontant(saisie);
   return (
-    <section className="mx-[26px] mt-[18px]" data-atlas="pieces-trouvees">
+    <section className="mx-[22px] mt-[18px]" data-atlas="pieces-trouvees">
       <p className="mb-[6px] text-[13px] font-semibold uppercase tracking-[0.12em]" style={{ color: colors.or }}>
         {compteDesPieces(pieces)}
       </p>
@@ -666,13 +676,14 @@ function LigneClient({
   client,
   saisie,
   aujourdHui,
-  dernier,
+  dansUneLettre = false,
 }: {
   client: FicheClientListee;
   saisie: string;
   /** Le jour tel que le SERVEUR le compte — voir `FournisseurClients`. */
   aujourdHui: string;
-  dernier: boolean;
+  /** Sous une lettre, la ligne se resserre : la lettre lui prend déjà sa marge du haut. */
+  dansUneLettre?: boolean;
 }) {
   const { choix, choisir } = useRecherche();
   const appui = useAppuiLong(() => choisir(new Set([client.id])));
@@ -682,15 +693,13 @@ function LigneClient({
   // alors qu'il y en a 0 »*. Un chantier naît d'une dictée, bien avant le
   // moindre document. Ce qui le remplace annonce ce que la fiche CONTIENT.
   //
-  // Le lieu d'abord, parce que c'est lui qu'on cherche du regard quand quatre
-  // clients s'appellent Martins ; ce qui s'est passé ensuite. **L'un ou l'autre
-  // peut manquer** — un client saisi à la volée n'a pas d'adresse, un client
-  // tout neuf n'a rien envoyé —, et la ligne se tait alors plutôt que
-  // d'annoncer un manque qu'il n'a pas demandé à combler.
-  const quandQuoi = client.derniere
-    ? `${client.derniere.quoi} ${jourDeLaLigne(client.derniere.jour, aujourdHui)}`
-    : null;
-  const du = client.du !== null && Number(client.du) > 0 ? client.du : null;
+  // **L'adresse et la pièce ont chacune LEUR ligne depuis la planche soignée.**
+  // Collées sur une seule, il fallait choisir laquelle rogner (c'était
+  // l'adresse, jamais la date) ; séparées, seule l'adresse peut encore se
+  // rogner, et la pièce ne se coupe plus. **L'une ou l'autre peut manquer** :
+  // la ligne se tait plutôt que d'annoncer un manque.
+  const piece = phraseDeLaDerniere(client.derniere, aujourdHui);
+  const du = resteDuDeLaLigne(client.du);
 
   const contenu = (
     <>
@@ -699,7 +708,7 @@ function LigneClient({
           encore, et l'on lâche trop tôt. */}
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute inset-y-0 -left-[26px] -right-[26px] -z-10 origin-left"
+        className="pointer-events-none absolute inset-y-0 -left-4 -right-4 -z-10 origin-left"
         style={{
           backgroundColor: colors.rustTint,
           transform: appui.tenu ? "scaleX(1)" : "scaleX(0)",
@@ -707,9 +716,17 @@ function LigneClient({
         }}
       />
       {choix && <CaseCochee cochee={choix.has(client.id)} />}
+      {/* Les initiales : un visage pour chaque nom, dans le ton des plages. */}
+      <span
+        aria-hidden="true"
+        className="grid h-11 w-11 flex-none place-items-center rounded-full text-[17px]"
+        style={{ fontFamily: font.display, backgroundColor: colors.rustTint, color: colors.rust }}
+      >
+        {initialesDuClient(client.nom)}
+      </span>
       <span className="min-w-0 flex-1">
         <span
-          className="block truncate text-[17.5px] leading-[1.25]"
+          className="block text-[18.5px] leading-[1.25] [overflow-wrap:anywhere]"
           data-atlas="nom-client"
           style={{ fontFamily: font.display, color: colors.ink }}
         >
@@ -718,82 +735,58 @@ function LigneClient({
               recherche qui n'a pas filtré. */}
           <Surligne texte={client.nom} saisie={saisie} />
         </span>
-        {/* **Rien à dire, rien à l'écran — et pas même la place.** Un client
-            sans adresse ET sans document laissait une seconde ligne VIDE sous
-            son nom : un trou de dix-huit pixels qui se lit comme un défaut
-            d'affichage. Trouvé à la capture le 9 septembre 2026, jamais par un
-            test — la cinquième fois dans ce dépôt (`CLAUDE.md` §5). */}
-        {(client.adresse || quandQuoi) && (
+        {/* `inkSoft`, et non le gris des méta : `muted` tient 3,32 de
+            contraste sur le fond crème, et c'est cette ligne-ci qui répond à
+            « lequel des quatre Martins ? ». */}
+        {client.adresse && (
           <span
-            className="mt-[3px] flex items-baseline text-[12.5px] leading-[1.45]"
-            data-atlas="situation-client"
-            // Voir plus haut : `muted` ne tient pas la lecture au soleil, et
-            // c'est cette ligne-ci qui répond à « lequel des quatre Martins ? ».
+            className="mt-[2px] block truncate text-[14px]"
+            data-atlas="adresse-client"
             style={{ color: colors.inkSoft }}
           >
-            {/* **C'EST L'ADRESSE QUI SE ROGNE, JAMAIS LA DATE — mesuré, pas
-                supposé.** Sur les 316 px de sa ligne, « 10 Rue de Nantes 77400
-                Lagny-sur-Marne, Devis 7 sept. » déborde de trois caractères.
-                Écrits d'un seul tenant, ce sont les DERNIERS mots qui tombent :
-                la date disparaîtrait exactement chez les clients dont l'adresse
-                est longue, c'est-à-dire là où l'on ajoutait quelque chose.
-                Séparés, l'adresse perd sa fin — sa ville — et garde son numéro
-                et sa rue, qui sont ce qui distingue quatre Martins. */}
-            {client.adresse && <span className="min-w-0 truncate">{client.adresse}</span>}
-            {quandQuoi && (
-              // **La virgule se COLLE à l'adresse, donc plus aucune marge.**
-              // Le point du milieu portait une marge de 5 px, parce qu'une
-              // boîte flexible mange le blanc qui la commence et qu'on lisait
-              // « 44300 Nantes· Devis 5 sept. ». Une virgule, elle, ne se
-              // décolle pas du mot qu'elle suit : la marge la ferait flotter.
-              <span className="flex-none whitespace-nowrap">
-                {client.adresse ? `, ${quandQuoi}` : quandQuoi}
+            {client.adresse}
+          </span>
+        )}
+        {(piece || du) && (
+          <span className="mt-[4px] flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+            {piece && (
+              <span className="whitespace-nowrap text-[14px]" data-atlas="piece-client" style={{ color: colors.inkSoft }}>
+                {piece}
+              </span>
+            )}
+            {/* Ce qui reste dû, d'un seul tenant et en rouge : c'est la seule
+                chose qui demande un geste. Absent quand rien n'est dû. */}
+            {du && (
+              <span
+                className="inline-flex min-h-[26px] flex-none items-center whitespace-nowrap rounded-full px-[10px] text-[14px] font-bold"
+                data-atlas="reste-du"
+                style={{
+                  backgroundColor: colors.carteRougeFond,
+                  color: colors.carteRougeTexte,
+                  // Les chiffres d'une colonne s'alignent : « 740,00 € » et
+                  // « 1 260,00 € » doivent tomber sur la même virgule.
+                  fontVariantNumeric: "tabular-nums lining-nums",
+                }}
+              >
+                {du}
               </span>
             )}
           </span>
         )}
       </span>
 
-      {/* Ce qui reste dû passe avant tout le reste : c'est la seule chose qui
-          demande un geste. Absent quand rien n'est dû — un « 0 € » en face de
-          chaque nom ferait un tableau de bord, exactement ce qu'il refuse. */}
-      {du !== null && (
-        <span className="flex-none text-right" data-atlas="reste-du">
-          <span
-            className="block text-[16px] font-medium leading-[1.15]"
-            style={{
-              color: colors.alert,
-              // Les chiffres d'une colonne s'alignent : « 740,00 € » et
-              // « 1 260,00 € » doivent tomber sur la même virgule.
-              fontVariantNumeric: "tabular-nums",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {enEuros(du)}
-          </span>
-          <span className={`mt-[3px] block ${libelleCaps}`} style={{ color: colors.alert }}>
-            dus
-          </span>
-        </span>
-      )}
-
       {/* Pendant le choix, la ligne ne mène plus nulle part : le chevron
           qui promet une fiche s'efface. */}
       {!choix && (
-        <span
-          aria-hidden="true"
-          className="h-2 w-2 rotate-45"
-          style={{
-            flex: "none",
-            borderRight: `1.5px solid ${colors.chevron}`,
-            borderTop: `1.5px solid ${colors.chevron}`,
-          }}
-        />
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={colors.chevron} strokeWidth="2" aria-hidden="true" className="flex-none">
+          <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
       )}
     </>
   );
-  const forme = "relative isolate flex min-h-[64px] w-full items-center gap-[14px] py-[13px] text-left";
-  const trait = { borderBottom: dernier ? undefined : `1px solid ${colors.line}` };
+  const forme = `relative isolate flex w-full items-center gap-3 text-left ${
+    dansUneLettre ? "min-h-[66px] pb-3 pt-2" : "min-h-[72px] py-3"
+  }`;
 
   // **Pendant le choix, toucher une ligne la coche.** Elle devient un bouton :
   // un lien qui ne mènerait nulle part tromperait le lecteur d'écran.
@@ -811,7 +804,7 @@ function LigneClient({
           choisir(suivant);
         }}
         className={forme}
-        style={{ ...trait, WebkitTapHighlightColor: "transparent" }}
+        style={{ WebkitTapHighlightColor: "transparent" }}
       >
         {contenu}
       </button>
@@ -819,7 +812,7 @@ function LigneClient({
   }
 
   return (
-    <Link href={`/clients/${client.id}`} className={forme} style={{ ...trait, ...APPUI_SANS_MENU }} {...appui.gestes}>
+    <Link href={`/clients/${client.id}`} className={forme} style={APPUI_SANS_MENU} {...appui.gestes}>
       {contenu}
     </Link>
   );
