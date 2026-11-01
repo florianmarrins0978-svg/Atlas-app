@@ -258,6 +258,20 @@
 .resultat .gros { margin-top: 4px; font: 400 28px/1.1 var(--serif); font-variant-numeric: tabular-nums lining-nums; }
 .resultat .gros small { margin-left: 6px; font: 600 13px/1 var(--sans); letter-spacing: .06em; color: var(--atlas-inkSoft); }
 .feuille .bouton-plein { margin-top: 16px; }
+/* Le chiffre se TAPE (sa consigne du 1er novembre : « je dois pouvoir écrire
+   ce que je veux ») ; les valeurs toutes prêtes ne sont que des raccourcis. */
+.case-taux { display: flex; align-items: baseline; justify-content: flex-end; gap: 8px; height: 68px; padding: 0 18px; border-radius: 14px;
+             background: var(--atlas-card); box-shadow: inset 0 0 0 1.5px var(--atlas-line); cursor: text; }
+.case-taux:focus-within { box-shadow: inset 0 0 0 2px var(--atlas-rust); }
+.case-taux input { flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; outline: none; background: transparent; text-align: right;
+                   font: 400 36px/1 var(--serif); color: var(--atlas-ink); font-variant-numeric: tabular-nums lining-nums; caret-color: var(--atlas-rust); }
+.case-taux span { font: 400 26px/1 var(--serif); color: var(--atlas-inkSoft); }
+.case-taux.refuse { box-shadow: inset 0 0 0 2px var(--atlas-carteAmbreTexte); }
+.raccourcis { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.raccourcis button { min-height: 40px; padding: 0 14px; border-radius: 20px; font-size: 15px; font-weight: 600; color: var(--atlas-inkSoft);
+                     box-shadow: inset 0 0 0 1.5px var(--atlas-line); font-variant-numeric: tabular-nums; }
+.raccourcis button[aria-pressed="true"] { color: var(--atlas-ink); box-shadow: inset 0 0 0 2px var(--atlas-rust); }
+.refus-saisie { margin: 8px 2px 0; font-size: 14.5px; font-weight: 600; color: var(--atlas-carteAmbreTexte); }
 .feuille .bouton-texte.annuler { display: flex; width: 100%; justify-content: center; margin-top: 4px; color: var(--atlas-inkSoft); }
 
 /* ═══ LE DEVIS ENVOYÉ ═════════════════════════════════════════════════════ */
@@ -526,12 +540,14 @@
               <div class="feuille-dedans">
                 <p class="feuille-titre">Ajouter une TVA</p>
                 <p class="second" style="margin:-6px 0 14px">Le devis est déjà à 20 %.</p>
-                <div class="choix-gros" data-un-seul id="tva-choix">
-                  <button type="button" data-choix="10" aria-pressed="true">10 %</button>
-                  <button type="button" data-choix="5,5" aria-pressed="false">5,5 %</button>
-                  <button type="button" data-choix="0" aria-pressed="false">0 %</button>
+                <label class="case-taux"><input id="tva-saisie" inputmode="decimal" value="10" aria-label="Taux de TVA, en pourcentage" data-quoi="tva"><span>%</span></label>
+                <div class="raccourcis" data-pour="tva-saisie">
+                  <button type="button" data-valeur="10" aria-pressed="true">10 %</button>
+                  <button type="button" data-valeur="5,5" aria-pressed="false">5,5 %</button>
+                  <button type="button" data-valeur="0" aria-pressed="false">0 %</button>
                 </div>
-                <button class="bouton bouton-plein" type="button" data-ajoute="tva" id="tva-bouton">Ajouter la TVA à 10 %</button>
+                <p class="refus-saisie" id="tva-refus" hidden></p>
+                <button class="bouton bouton-plein" type="button" data-ajoute="tva" data-bouton-saisie id="tva-bouton">Ajouter la TVA à 10 %</button>
                 <button class="bouton-texte annuler" type="button" data-ferme>Annuler</button>
               </div>
             </div>
@@ -542,11 +558,13 @@
               <div class="feuille-dedans">
                 <p class="feuille-titre">Ajouter un acompte</p>
                 <p class="rubrique">Combien</p>
-                <div class="choix-gros" data-un-seul id="acompte-taux">
-                  <button type="button" data-choix="30" aria-pressed="true">30 %<small>Votre réglage</small></button>
-                  <button type="button" data-choix="40" aria-pressed="false">40 %</button>
-                  <button type="button" data-choix="50" aria-pressed="false">50 %</button>
+                <label class="case-taux"><input id="acompte-saisie" inputmode="decimal" value="30" aria-label="Acompte, en pourcentage du total TTC" data-quoi="acompte"><span>%</span></label>
+                <div class="raccourcis" data-pour="acompte-saisie">
+                  <button type="button" data-valeur="30" aria-pressed="true">30 %, votre réglage</button>
+                  <button type="button" data-valeur="40" aria-pressed="false">40 %</button>
+                  <button type="button" data-valeur="50" aria-pressed="false">50 %</button>
                 </div>
+                <p class="refus-saisie" id="acompte-refus" hidden></p>
                 <p class="rubrique">Quand</p>
                 <div class="choix-mots" data-un-seul id="acompte-quand">
                   <button type="button" data-choix="à la signature" aria-pressed="true">À la signature</button>
@@ -558,7 +576,7 @@
                   <p class="gros" id="acompte-total">339,12&nbsp;€</p>
                   <p class="calcul" id="acompte-reste">Reste à régler : 791,28 €</p>
                 </div>
-                <button class="bouton bouton-plein" type="button" data-ajoute="acompte">Ajouter l’acompte</button>
+                <button class="bouton bouton-plein" type="button" data-ajoute="acompte" data-bouton-saisie>Ajouter l’acompte</button>
                 <button class="bouton-texte annuler" type="button" data-ferme>Annuler</button>
               </div>
             </div>
@@ -568,17 +586,19 @@
               <div class="feuille-poignee"></div>
               <div class="feuille-dedans">
                 <p class="feuille-titre">Remise</p>
-                <div class="choix-gros" data-un-seul id="remise-taux">
-                  <button type="button" data-choix="5" aria-pressed="true">5 %</button>
-                  <button type="button" data-choix="10" aria-pressed="false">10 %</button>
-                  <button type="button" data-choix="15" aria-pressed="false">15 %</button>
+                <label class="case-taux"><input id="remise-saisie" inputmode="decimal" value="5" aria-label="Remise, en pourcentage du total HT" data-quoi="remise"><span>%</span></label>
+                <div class="raccourcis" data-pour="remise-saisie">
+                  <button type="button" data-valeur="5" aria-pressed="true">5 %</button>
+                  <button type="button" data-valeur="10" aria-pressed="false">10 %</button>
+                  <button type="button" data-valeur="15" aria-pressed="false">15 %</button>
                 </div>
+                <p class="refus-saisie" id="remise-refus" hidden></p>
                 <div class="resultat">
                   <p class="calcul" id="remise-calcul">5 % de 942,00 € HT</p>
                   <p class="gros" id="remise-total">−&nbsp;47,10&nbsp;€</p>
                   <p class="calcul" id="remise-apres">Total HT après remise : 894,90 €</p>
                 </div>
-                <button class="bouton bouton-plein" type="button" data-ajoute="remise">Appliquer la remise</button>
+                <button class="bouton bouton-plein" type="button" data-ajoute="remise" data-bouton-saisie>Appliquer la remise</button>
                 <button class="bouton-texte annuler" type="button" data-ferme>Annuler</button>
               </div>
             </div>
@@ -682,9 +702,9 @@
         <li><b>La page reste celle de l'appli</b> : mêmes lignes et mêmes cases (Qté, Unité, Prix unitaire, Montant), mêmes totaux, même ordre.</li>
         <li>Les cinq ajouts deviennent de vraies pastilles, aux mêmes places : sous les lignes (une ligne, la main d'œuvre, une TVA), sous le total (un acompte, une remise). Aujourd'hui, des liens de 14 points en deux couleurs.</li>
         <li><b>Main d'œuvre</b> s'ouvre sur son calcul : les hommes et la durée repris de votre dictée, votre prix du jour par homme, et le total avant d'ajouter. C'est le calcul d'« Avant de chiffrer », déjà dans l'appli. Aujourd'hui, une ligne vide où taper un montant. Sans tarif enregistré, la case reste vide : rien ne s'invente.</li>
-        <li><b>Une TVA</b> : on touche son taux (10, 5,5 ou 0 %) au lieu de le taper dans la bande grise.</li>
-        <li><b>Un acompte</b> : combien (30, 40 ou 50 %) et quand (à la signature, à mi-parcours, à l'avancement), avec le montant et le reste à régler avant d'ajouter.</li>
-        <li><b>Une remise</b> : 5, 10 ou 15 %, et ce qu'elle retire avant de l'appliquer.</li>
+        <li><b>Une TVA, un acompte, une remise : vous tapez le chiffre que vous voulez</b> (votre réponse du 1er novembre), en grand, au pavé de chiffres. Les valeurs courantes ne sont que des raccourcis dessous : 10, 5,5 et 0 % pour la TVA ; 30 % (votre réglage), 40 et 50 % pour l'acompte ; 5, 10 et 15 % pour la remise.</li>
+        <li>L'acompte dit aussi quand (à la signature, à mi-parcours, à l'avancement), et montre le montant et le reste à régler avant d'ajouter.</li>
+        <li>La remise montre ce qu'elle retire avant de l'appliquer. Un chiffre qui n'en est pas un se dit en ambre et éteint le bouton, comme l'appli le refuse déjà.</li>
         <li>Ce qui vient d'être ajouté s'éclaire un instant dans le devis : on le voit arriver. La croix remplace le « − » doré pour retirer, et le tiroir rend la main.</li>
       </ul>
       <h2>Ce qui ne bouge pas</h2>
@@ -695,7 +715,7 @@
       <h2>À trancher</h2>
       <ul class="a-trancher">
         <li>Main d'œuvre « Répartie sur les travaux » : la feuille mène à la barre de répartition (sa planche, codée le 28 octobre). Ou seulement la ligne ?</li>
-        <li>Les valeurs proposées : 30 % est votre réglage d'acompte, 5 % la remise que l'appli pose aujourd'hui ; 40, 50, 10 et 15 % sont à vous de dire.</li>
+        <li>Les raccourcis sous chaque case : 30 % est votre réglage d'acompte, 5 % la remise que l'appli pose aujourd'hui ; 40, 50, 10 et 15 % sont à vous de dire, ou à retirer.</li>
       </ul>
     </div>
 
@@ -921,12 +941,12 @@
     ecrire("t-tva2-mot", "TVA (" + tvaTaux + " %)");
     ecrire("t-ht", euros(t.ht));
     ecrire("t-mo", euros(t.mo));
-    ecrire("t-remise-mot", "Remise de " + remiseTaux + " %");
+    ecrire("t-remise-mot", "Remise de " + enMots(remiseTaux) + " %");
     ecrire("t-remise", "− " + euros(t.remise));
     ecrire("t-ht-apres", euros(t.htApres));
     ecrire("t-tva", euros(t.tva));
     ecrire("t-ttc", euros(t.ttc));
-    ecrire("t-acompte-mot", "Acompte " + acompteTaux + " %");
+    ecrire("t-acompte-mot", "Acompte " + enMots(acompteTaux) + " %");
     ecrire("t-acompte-quand", acompteQuand);
     ecrire("t-acompte", euros(t.acompte));
     ecrire("t-reste", euros(t.reste));
@@ -944,12 +964,12 @@
     ecrire("tva-bouton", "Ajouter la TVA à " + tvaTaux + " %");
     var sansAcompte = totaux({ mo: ajouts.mo, tva: ajouts.tva, remise: ajouts.remise, acompte: false });
     var acompte = arrondi(sansAcompte.ttc * acompteTaux / 100);
-    ecrire("acompte-calcul", acompteTaux + " % de " + euros(sansAcompte.ttc) + " TTC, " + acompteQuand);
+    ecrire("acompte-calcul", enMots(acompteTaux) + " % de " + euros(sansAcompte.ttc) + " TTC, " + acompteQuand);
     ecrire("acompte-total", euros(acompte));
     ecrire("acompte-reste", "Reste à régler : " + euros(arrondi(sansAcompte.ttc - acompte)));
     var sansRemise = totaux({ mo: ajouts.mo, tva: ajouts.tva, remise: false, acompte: false });
     var remise = arrondi(sansRemise.ht * remiseTaux / 100);
-    ecrire("remise-calcul", remiseTaux + " % de " + euros(sansRemise.ht) + " HT");
+    ecrire("remise-calcul", enMots(remiseTaux) + " % de " + euros(sansRemise.ht) + " HT");
     ecrire("remise-total", "− " + euros(remise));
     ecrire("remise-apres", "Total HT après remise : " + euros(arrondi(sansRemise.ht - remise)));
   }
@@ -1013,10 +1033,55 @@
   function surChoix(id, poser) {
     document.getElementById(id).addEventListener("kit:choix", function (e) { poser(e.detail.choix); rendre(); });
   }
-  surChoix("tva-choix", function (c) { tvaTaux = c; });
-  surChoix("acompte-taux", function (c) { acompteTaux = Number(c); });
   surChoix("acompte-quand", function (c) { acompteQuand = c; });
-  surChoix("remise-taux", function (c) { remiseTaux = Number(c); });
+
+  /* Le chiffre tapé, lu comme l'appli le lit (reduction-devis.ts :
+     tauxTvaValide, pourcentValide ; acomptes-devis.ts : tauxCumuleValide) :
+     une virgule ou un point, deux décimales, ramené à 100 au-delà. Ce qui
+     n'est pas un nombre éteint le bouton et le dit, en ambre. */
+  function lireTaux(texte) {
+    var brut = String(texte).replace(",", ".").replace(/\s|%/g, "");
+    if (!/^\d+(\.\d+)?$/.test(brut)) return null;
+    return Math.min(100, Math.round(Number(brut) * 100) / 100);
+  }
+  function enMots(n) { return String(n).replace(".", ","); }
+  var REFUS = {
+    tva: function (n) { return n === null ? "Un nombre, par exemple 7,5." : n === 20 ? "Le devis est déjà à 20 %." : null; },
+    acompte: function (n) { return n === null ? "Un nombre, par exemple 25." : n <= 0 ? "Un acompte au-dessus de 0 %." : null; },
+    remise: function (n) { return n === null ? "Un nombre, par exemple 7,5." : n <= 0 ? "Une remise au-dessus de 0 %." : null; }
+  };
+  function lireSaisie(champ) {
+    var quoi = champ.getAttribute("data-quoi");
+    var n = lireTaux(champ.value);
+    var refus = REFUS[quoi](n);
+    var feuille = champ.closest(".feuille");
+    champ.closest(".case-taux").classList.toggle("refuse", !!refus);
+    var p = document.getElementById(quoi + "-refus");
+    p.hidden = !refus; p.textContent = refus || "";
+    feuille.querySelector("[data-bouton-saisie]").disabled = !!refus;
+    feuille.querySelector("[data-bouton-saisie]").setAttribute("aria-disabled", refus ? "true" : "false");
+    feuille.querySelectorAll(".raccourcis button").forEach(function (b) {
+      b.setAttribute("aria-pressed", n !== null && lireTaux(b.getAttribute("data-valeur")) === n ? "true" : "false");
+    });
+    if (!refus) {
+      if (quoi === "tva") tvaTaux = enMots(n);
+      if (quoi === "acompte") acompteTaux = n;
+      if (quoi === "remise") remiseTaux = n;
+    }
+    rendre();
+  }
+  ecranDevis.querySelectorAll(".case-taux input").forEach(function (champ) {
+    champ.addEventListener("input", function () { lireSaisie(champ); });
+  });
+  ecranDevis.querySelectorAll(".raccourcis").forEach(function (rang) {
+    rang.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-valeur]");
+      if (!b) return;
+      var champ = document.getElementById(rang.getAttribute("data-pour"));
+      champ.value = b.getAttribute("data-valeur");
+      lireSaisie(champ);
+    });
+  });
 
   var demandee = new URLSearchParams(window.location.search).get("ecran");
   choisirPage(PAGES[demandee] ? demandee : "note");
