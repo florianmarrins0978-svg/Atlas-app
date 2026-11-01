@@ -78,12 +78,19 @@ export default function ChampUnite({
           onChange(retenue);
           onFini(retenue);
         }}
-        className="w-16 border-0 bg-transparent px-1 text-right outline-none focus:bg-[var(--voile-champ)] sm:w-full"
-        style={{
-          color: colors.ink,
-          fontSize: "16px",
-          minHeight: 44,
-        }}
+        // **La case suit la longueur de l'unité** : 64 px coupaient « jour/homme »
+        // en « jour/hoı », l'unité que la préparation du devis et la feuille de
+        // la main d'œuvre écrivent (capture du 1er novembre 2026). Quatre
+        // caractères au moins, pour qu'on la touche du doigt.
+        className="w-[var(--largeur-unite)] border-0 bg-transparent px-1 text-right outline-none focus:bg-[var(--voile-champ)] sm:w-full"
+        style={
+          {
+            color: colors.ink,
+            fontSize: "16px",
+            minHeight: 44,
+            "--largeur-unite": `calc(${Math.max(4, affichee.length + 1)}ch + 0.5rem)`,
+          } as React.CSSProperties
+        }
       />
       {ouvert && !fige && (
         <div className="mt-1 flex flex-wrap justify-end gap-1.5 sm:justify-start" data-atlas="unites-usuelles">

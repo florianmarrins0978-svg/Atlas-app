@@ -34,13 +34,13 @@ export default function PastilleAjout({
       type="button"
       onClick={onClick}
       data-atlas={repere}
-      className="inline-flex min-h-[44px] items-center gap-2 rounded-full pl-3.5 pr-[18px] text-[14.5px] font-semibold active:scale-[0.98]"
+      className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full pl-3 pr-4 text-[14.5px] font-semibold active:scale-[0.98]"
       style={{
         color: or ? colors.or : colors.ink,
         boxShadow: `inset 0 0 0 1.5px ${or ? voile(colors.or, 0.6) : colors.line}`,
       }}
     >
-      {icone && <IconeTrait nom={icone} taille={18} />}
+      {icone && <IconeTrait nom={icone} taille={17} />}
       {plus && (
         <span
           className="text-[20px] font-light leading-none"

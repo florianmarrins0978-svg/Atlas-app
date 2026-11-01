@@ -1542,7 +1542,7 @@ export default function DevisCompletClient(props: Props) {
             (`appli/devis-main-d-oeuvre-par-tva.html`) : la main d'œuvre naît
             au taux de la catégorie où il a appuyé, 10 % comme 20 %. */}
         {!fige && (
-          <div className="mt-4 flex flex-wrap gap-2.5">
+          <div className="mt-4 flex flex-wrap gap-2">
             <PastilleAjout plus libelle="Ajouter une ligne" onClick={() => void ajouter(plusieursTva ? categorie.taux : null)} />
             <PastilleAjout
               or
