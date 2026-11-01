@@ -1,7 +1,12 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-10-29, `main` (`bdea976e`, batterie verte hors deux suites de fin de mois rouges sur `main` aussi),
-dernière migration `drizzle/0154_pieces_importees_d_un_tableau.sql`
+dernière migration `drizzle/0155_cles_composites_effacent_comme_leur_lien.sql`
+
+---
+## SUPPRIMER UN CLIENT REMARCHE SUR SA BASE (1er novembre 2026)
+
+La suppression d'un client tombait sur une clé composite de 0149 posée sans règle d'effacement (`ARCHITECTURE.md` §535). Migration `0155` : les vingt-six clés composites effacent comme le lien qu'elles doublent. Aucune donnée lue ni écrite. Niveau 3 (une migration).
 
 ---
 ## LES NEUF PLANCHES DU 31 OCTOBRE, CODÉES (1er novembre 2026)

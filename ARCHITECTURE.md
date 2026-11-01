@@ -36534,3 +36534,13 @@ que gardés en double — `main` n'a qu'une seule version de chacun.
 
 **Les règles neuves sont pures** : `joursSurDeuxLignes` et `moisAbrege` (`src/lib/jour.ts`, la table des mois abrégés n'existe plus qu'ici), `sommeDesMontants` (`src/lib/euros.ts`, en décimal : trois factures en flottants rendent 4 270,799999). Aucune lecture neuve en base : la pellicule de « Ses coordonnées », un temps posée sur le dernier chantier du client, a été retirée le jour même, sur sa décision (*« ajouter des photos est inutile »*).
 
+## §535 : Une clé qui en double une autre efface comme elle
+
+**La panne du 1er novembre 2026** : il ne pouvait plus supprimer aucun client (« La suppression n'a pas abouti », six fois). La migration 0149 avait doublé vingt-six liens d'une clé composite `(colonne, entreprise_id)` posée sans `ON DELETE`, donc en NO ACTION, à côté de l'ancien lien en CASCADE ou SET NULL. Son en-tête disait « la seconde n'agit qu'à l'écriture » : c'est faux, une clé étrangère agit aussi quand on efface la ligne qu'elle vise.
+
+**Pourquoi c'était vert partout sauf chez lui.** PostgreSQL tire les déclencheurs d'une même ligne dans l'ordre alphabétique de leur nom, `RI_ConstraintTrigger_a_<numéro d'objet>`. Sur une base neuve, l'ancien lien a un plus petit numéro du même nombre de chiffres : la cascade passe d'abord, la clé composite ne trouve plus rien. Sur une base qui a vécu, le numéro peut avoir gagné un chiffre entre les deux (`a_100231` passe avant `a_18235`) : la clé composite parle la première, voit le créneau encore là, et refuse. Une règle qui dépend de cet ordre est fausse, même quand elle passe.
+
+**La règle** (migration 0155) : une clé composite qui double un lien porte **la même règle d'effacement** que lui, et une mise à vide ne vise que la colonne du lien (`SET NULL (client_id)`, jamais `entreprise_id`). Deux cascades ou deux mises à vide donnent le même résultat dans n'importe quel ordre. L'ancien lien reste tant que la clé composite n'est pas validée sur les lignes anciennes : c'est lui qui garantit qu'aucune ligne ancienne ne reste orpheline (TODO.md).
+
+**Ce qui la tient** : `test-liens-dans-l-entreprise-db.ts` compare, dans le catalogue, l'effacement de chaque clé composite à celui du lien qu'elle double (vu rouge sur les vingt-six), et supprime un client par `effacerClient` après avoir recréé les anciens liens pour que leur déclencheur parte le dernier, comme sur sa base. Sans cette étape, l'essai serait vert par hasard.
+

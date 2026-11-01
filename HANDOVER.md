@@ -10,6 +10,11 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## SUPPRIMER UN CLIENT, ET L'ORDRE DES DÉCLENCHEURS (1er novembre 2026)
+
+**Le piège :** une base neuve ne montre pas tout. PostgreSQL tire les déclencheurs des clés étrangères dans l'ordre alphabétique de leur nom, qui porte un numéro interne ; sur sa base, cet ordre peut être l'inverse de celui des essais. Une clé qui en double une autre doit donc effacer comme elle (`ARCHITECTURE.md` §535), et une nouvelle clé composite se pose avec le `ON DELETE` du lien qu'elle double. `test-liens-dans-l-entreprise-db.ts` refuse le contraire, et rejoue la suppression d'un client dans le pire ordre.
+
+---
 ## LES PLANCHES DU 31 OCTOBRE, CODÉES (1er novembre 2026)
 
 **Les pièges :** les pages du client ne reçoivent aucune charte (`estPageDuClient`) : leurs jetons retombent sur Arborea, ne jamais y écrire une couleur en clair. Le mot pour l'artisan du devis n'existe dans le document qu'une fois ouvert (`data-atlas="ouvrir-le-mot"`) : une suite qui remplit `#precision` l'ouvre d'abord, comme le client. Le succès du contrat rend la DÉCISION (`{ succes: "accepte" | "refuse" }`) et c'est la page qui écrit la phrase. « Ses coordonnées » (Vos clients, le client, « Modifier ses coordonnées ») n'a PAS de photos, sa décision du 1er novembre : ne pas les y remettre. Le serveur de développement garde parfois l'ancienne version d'un module après un export ajouté (« … is not a function ») : le relancer par son numéro de processus.

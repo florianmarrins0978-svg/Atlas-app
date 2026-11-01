@@ -13,6 +13,7 @@ import assert from "node:assert/strict";
 import { Pool } from "pg";
 import { pool } from "../src/server/db/client";
 import * as entreprisesRepo from "../src/server/repositories/entreprises";
+import { effacerClient } from "../src/server/repositories/donnees-client";
 
 const SUPER = new Pool({
   connectionString: (() => {
@@ -47,6 +48,55 @@ const LIENS_SANS_ENTREPRISE = `
                 AND c.conkey <@ s.conkey
                 AND EXISTS (SELECT 1 FROM unnest(s.conkey) k JOIN pg_attribute a ON a.attrelid = s.conrelid AND a.attnum = k WHERE a.attname = 'entreprise_id'))
          ORDER BY 1, 2`;
+
+/**
+ * Chaque paire « ancien lien, clé composite qui le double », avec leurs deux
+ * façons de réagir à l'effacement de la ligne visée.
+ *
+ * `confdelsetcols` vide veut dire « toutes les colonnes du lien » : pour la
+ * clé composite, ce serait aussi `entreprise_id`, et l'on comparerait deux
+ * choses différentes. D'où le `coalesce` sur les colonnes du lien lui-même.
+ */
+const PAIRES = `
+        SELECT c.conrelid::regclass::text AS enfant,
+               c.conname AS composite, s.conname AS ancien,
+               pg_get_constraintdef(s.oid) AS definition_ancien,
+               c.confdeltype::text AS action_composite, s.confdeltype::text AS action_ancien,
+               coalesce(c.confdelsetcols, c.conkey) = coalesce(s.confdelsetcols, s.conkey) AS memes_colonnes
+          FROM pg_constraint c
+          JOIN pg_constraint s
+            ON s.contype = 'f' AND s.conrelid = c.conrelid AND s.confrelid = c.confrelid
+           AND s.oid <> c.oid AND s.conkey <@ c.conkey
+         WHERE c.contype = 'f'
+           AND EXISTS (SELECT 1 FROM unnest(c.conkey) k JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = k WHERE a.attname = 'entreprise_id')
+           AND NOT EXISTS (SELECT 1 FROM unnest(s.conkey) k JOIN pg_attribute a ON a.attrelid = s.conrelid AND a.attnum = k WHERE a.attname = 'entreprise_id')
+         ORDER BY 1, 2`;
+
+type Paire = {
+  enfant: string;
+  composite: string;
+  ancien: string;
+  definition_ancien: string;
+  action_composite: string;
+  action_ancien: string;
+  memes_colonnes: boolean;
+};
+
+function desaccords(paires: Paire[]): string[] {
+  return paires
+    .filter((p) => p.action_composite !== p.action_ancien || (p.action_ancien === "n" && !p.memes_colonnes))
+    .map((p) => `${p.enfant}.${p.composite} (${p.action_composite}) contre ${p.ancien} (${p.action_ancien})`);
+}
+
+/**
+ * Le nom du déclencheur que PostgreSQL tire à l'effacement de la ligne visée.
+ * Ils partent dans l'ordre ALPHABÉTIQUE de ces noms, qui portent un numéro
+ * interne : c'est de là que vient la panne, et c'est ce qu'on vérifie.
+ */
+const DECLENCHEUR_D_EFFACEMENT = `
+        SELECT t.tgname FROM pg_trigger t JOIN pg_proc p ON p.oid = t.tgfoid
+         WHERE t.tgconstraint = (SELECT oid FROM pg_constraint WHERE conname = $1 AND conrelid = $2::regclass)
+           AND p.proname LIKE 'RI_FKey_%_del'`;
 
 async function sousA<T>(entrepriseId: string, fn: (c: import("pg").PoolClient) => Promise<T>): Promise<T> {
   const c = await pool.connect();
@@ -98,6 +148,97 @@ async function main() {
       );
     });
 
+    await essai("chaque clé composite réagit à l'effacement comme le lien qu'elle double", async () => {
+      // **La panne du 1er novembre 2026** : la clé composite de 0149 était en
+      // NO ACTION à côté d'un lien en CASCADE. Elle refuse alors l'effacement
+      // d'un chantier qui porte un créneau, si son déclencheur part AVANT celui
+      // de la cascade, et cet ordre dépend d'un numéro interne propre à chaque
+      // base. Une seule règle tient sur toutes les bases : les deux font pareil.
+      const { rows } = await SUPER.query<Paire>(PAIRES);
+      assert.ok(rows.length >= 26, `seulement ${rows.length} paire(s) lue(s) : le catalogue n'a pas été lu, rien n'est prouvé`);
+      assert.deepEqual(
+        desaccords(rows),
+        [],
+        "Ces clés composites n'effacent pas comme le lien qu'elles doublent : leur ON DELETE doit être le même (modèle : drizzle/0155)"
+      );
+    });
+
+    await essai("le contrôle des actions sait échouer : une clé composite remise en NO ACTION est dénoncée", async () => {
+      const c = await SUPER.connect();
+      try {
+        await c.query("BEGIN");
+        await c.query(`ALTER TABLE creneaux_chantier DROP CONSTRAINT creneaux_chantier_chantier_id_meme_entreprise`);
+        await c.query(
+          `ALTER TABLE creneaux_chantier ADD CONSTRAINT creneaux_chantier_chantier_id_meme_entreprise
+             FOREIGN KEY (chantier_id, entreprise_id) REFERENCES chantiers (id, entreprise_id) NOT VALID`
+        );
+        const { rows } = await c.query<Paire>(PAIRES);
+        assert.deepEqual(desaccords(rows), [
+          "creneaux_chantier.creneaux_chantier_chantier_id_meme_entreprise (a) contre creneaux_chantier_chantier_id_fkey (c)",
+        ]);
+      } finally {
+        await c.query("ROLLBACK");
+        c.release();
+      }
+    });
+
+    await essai("supprimer un client se fait même quand la clé composite parle AVANT la cascade", async () => {
+      // **Le geste du patron, dans l'ordre de SA base.** On recrée chaque ancien
+      // lien à l'identique : il reçoit un numéro plus grand, donc son
+      // déclencheur part APRÈS celui de la clé composite. C'est l'ordre qu'une
+      // base vieille de plusieurs mois peut avoir, et que la base neuve des
+      // essais n'a jamais : sans cette étape, l'essai serait vert par hasard.
+      const { rows: paires } = await SUPER.query<Paire>(PAIRES);
+      const c = await SUPER.connect();
+      try {
+        await c.query("BEGIN");
+        for (const p of paires) {
+          await c.query(`ALTER TABLE ${p.enfant} DROP CONSTRAINT ${p.ancien}`);
+          await c.query(`ALTER TABLE ${p.enfant} ADD CONSTRAINT ${p.ancien} ${p.definition_ancien}`);
+        }
+        await c.query("COMMIT");
+      } catch (e) {
+        await c.query("ROLLBACK");
+        throw e;
+      } finally {
+        c.release();
+      }
+      for (const lien of ["creneaux_chantier_chantier_id", "rappels_vus_chantier_id", "passages_entretien_client_id"]) {
+        const table = lien.replace(/_(chantier|client)_id$/, "");
+        const [composite] = (await SUPER.query(DECLENCHEUR_D_EFFACEMENT, [`${lien}_meme_entreprise`, table])).rows;
+        const [ancien] = (await SUPER.query(DECLENCHEUR_D_EFFACEMENT, [`${lien}_fkey`, table])).rows;
+        assert.ok(
+          composite && ancien && String(composite.tgname) < String(ancien.tgname),
+          `l'ordre voulu n'a pas pu être posé pour ${lien} : l'essai ne prouverait rien`
+        );
+      }
+
+      const e = A.entreprise.id;
+      const ctx = { utilisateurId: A.utilisateurId, entrepriseId: e };
+      const client = (await SUPER.query(`INSERT INTO clients (entreprise_id, nom) VALUES ($1, 'Balba') RETURNING id`, [e]))
+        .rows[0].id as string;
+      const ch = (
+        await SUPER.query(`INSERT INTO chantiers (entreprise_id, nom, client_id) VALUES ($1, 'Chez Balba', $2) RETURNING id`, [
+          e,
+          client,
+        ])
+      ).rows[0].id as string;
+      await SUPER.query(`INSERT INTO creneaux_chantier (entreprise_id, chantier_id, jour, demi) VALUES ($1, $2, '2026-11-02', 'matin')`, [e, ch]);
+      await SUPER.query(`INSERT INTO rappels_vus (entreprise_id, chantier_id, genre) VALUES ($1, $2, 'chantier-sans-devis')`, [e, ch]);
+      await SUPER.query(`INSERT INTO retours_intervention (entreprise_id, chantier_id) VALUES ($1, $2)`, [e, ch]);
+      await SUPER.query(`INSERT INTO passages_entretien (entreprise_id, jour, client_id) VALUES ($1, '2026-11-02', $2)`, [e, client]);
+
+      const rapport = await effacerClient(ctx, client);
+      assert.equal(rapport?.disparu, true, "le client aurait dû disparaître");
+      const restes = await SUPER.query(
+        `SELECT (SELECT count(*) FROM clients WHERE id = $1)::int AS clients,
+                (SELECT count(*) FROM chantiers WHERE id = $2)::int AS chantiers,
+                (SELECT count(*) FROM creneaux_chantier WHERE chantier_id = $2)::int AS creneaux`,
+        [client, ch]
+      );
+      assert.deepEqual(restes.rows[0], { clients: 0, chantiers: 0, creneaux: 0 });
+    });
+
     await essai("le contrôle du catalogue sait échouer : la clé composite retirée, le lien est dénoncé", async () => {
       const c = await SUPER.connect();
       try {
@@ -111,7 +252,13 @@ async function main() {
       }
     });
   } finally {
-    for (const e of [A.entreprise.id, B.entreprise.id]) await SUPER.query(`DELETE FROM chantiers WHERE entreprise_id = $1`, [e]);
+    // Les enfants d'abord : si l'essai de l'effacement a rougi, effacer le
+    // chantier ici rougirait de la même façon, et masquerait sa raison.
+    for (const e of [A.entreprise.id, B.entreprise.id]) {
+      for (const table of ["creneaux_chantier", "rappels_vus", "retours_intervention", "passages_entretien", "chantiers", "clients"]) {
+        await SUPER.query(`DELETE FROM ${table} WHERE entreprise_id = $1`, [e]);
+      }
+    }
     await SUPER.end();
     await pool.end();
   }
