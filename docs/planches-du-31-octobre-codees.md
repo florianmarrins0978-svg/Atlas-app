@@ -40,7 +40,8 @@ Neuf écrans, chacun sur la vue « Proposé » de sa planche. Rien d'autre n'a �
 | Écrans regardés | les neuf, au format de ton téléphone, chacun dans ses états (dates proches, calendrier ouvert, correction sans mot, contrat accepté, retour ouvert…) |
 | Suites neuves | `test-jours-sur-deux-lignes`, `test-somme-des-montants`, `test-dernier-chantier-du-client-db` (vue rouge avant le code) |
 | Suites adaptées | six suites lisaient un mot que tes planches ont changé (« Pour Mme », « 1 sur 2 », la prestation sur la page du contrat, « + Ajouter une prestation », le champ du mot ouvert d'office) : elles visent maintenant la même règle autrement |
-| Batterie | *à remplir après la batterie* |
+| Batterie | types, lint, mémoire, construction et connexion réelle au vert ; suites base 543 sur 545, suites navigateur 202 sur 203 après correction d'une suite (la date lointaine, une majuscule) |
+| Les trois rouges | rejoués sur `main` seule, rouges pareil : ils ne viennent pas de ce lot (`verifier-rouge-prealable.ts`). Deux étaient déjà notés hier ; le troisième (`test-pas-la-ce-jour-e2e`) cherche « hier » dans le mois en cours, et hier était le 31 octobre |
 
 ## Ce qui reste ouvert
 
