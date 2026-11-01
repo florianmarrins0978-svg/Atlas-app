@@ -12,6 +12,7 @@ import { marquerTransmiseAction } from "@/app/planning/fiche-securite-actions";
 import { transmettreLePdf } from "@/components/atlas/transmettre-le-pdf";
 import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
 import FiltreDeDate from "@/components/atlas/FiltreDeDate";
+import { ChampRecherche } from "@/components/atlas/ChampRecherche";
 
 /**
  * LES FICHES DE SÉCURITÉ, DANS PAYSAGE — sa décision du 21 septembre 2026 :
@@ -26,8 +27,8 @@ import FiltreDeDate from "@/components/atlas/FiltreDeDate";
  *
  * **Et un nom se cherche, par-dessus le mois** — sa demande du 22 septembre
  * 2026 : *« faut pouvoir faire une recherche par nom aussi et il te sort toutes
- * les fiches de ce client »*. Le champ est celui de Clients, loupe et croix
- * comprises : la même recherche, le même dessin.
+ * les fiches de ce client »*. Le champ est `ChampRecherche`, celui de tous
+ * les écrans où l'on cherche.
  *
  * Sur chaque fiche : ouvrir, **enregistrer** (dans les fichiers du téléphone),
  * transmettre. Et la date jusqu'à laquelle elle est gardée : deux ans.
@@ -84,31 +85,17 @@ export default function ListeDesFiches({ fiches, periode }: { fiches: FicheEnLis
           téléphone s'ouvre au toucher. */}
       <FiltreDeDate periode={periode} choisir={(p) => router.push(`/paysage/fiches-securite?periode=${p}`)} />
 
-      <div className="relative mx-[22px] mt-3 flex items-center rounded-[10px] pl-[44px] pr-[46px] focus-within:shadow-[inset_0_0_0_1.5px_var(--atlas-or,#B98B47)]" style={{ backgroundColor: colors.rustTint, minHeight: 50 }}>
-        <svg aria-hidden="true" width="19" height="19" viewBox="0 0 20 20" fill="none" stroke={colors.muted} strokeWidth="1.6" className="pointer-events-none absolute left-[15px] top-1/2 -translate-y-1/2">
-          <circle cx="8.2" cy="8.2" r="6.2" />
-          <path d="M12.8 12.8L18 18" strokeLinecap="round" />
-        </svg>
-        {/* `type="text"` et 16 px, pour les raisons écrites dans ListeClients :
-            ni la croix bleue du navigateur, ni le zoom de Safari au premier appui. */}
-        <input
-          type="text"
-          inputMode="search"
-          autoComplete="off"
-          value={saisie}
-          onChange={(e) => setSaisie(e.target.value)}
-          placeholder="Chercher un client"
-          aria-label="Chercher un client"
-          data-atlas="chercher-une-fiche"
-          className="w-full border-0 bg-transparent py-[13px] outline-none"
-          style={{ color: colors.ink, fontSize: 16, caretColor: colors.or }}
-        />
-        {saisie && (
-          <button type="button" onClick={() => setSaisie("")} aria-label="Effacer la recherche" className="absolute right-0 top-0 flex h-full w-[46px] items-center justify-center" style={{ color: colors.muted, fontSize: 19, lineHeight: 1 }}>
-            ✕
-          </button>
-        )}
-      </div>
+      {/* **La barre de l'appli, pas une plage teintée** : sa règle du
+          1er novembre 2026, *« je veux vraiment garder la même que celle dans
+          l'application »* (`scripts/test-une-seule-recherche.ts`). */}
+      <ChampRecherche
+        valeur={saisie}
+        onChange={setSaisie}
+        placeholder="Chercher un client"
+        ariaLabel="Chercher un client"
+        dataAtlas="chercher-une-fiche"
+        className="mx-[22px] mt-3"
+      />
 
       {groupes.length === 0 ? (
         <p className="mx-[22px] mt-7 text-center text-[13.5px] leading-[1.65]" style={{ color: colors.muted }}>

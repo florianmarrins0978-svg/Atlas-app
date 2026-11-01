@@ -18,9 +18,10 @@
    | l'appli (`src/`) | un champ `type="search"` ou `inputMode="search"` hors de `ChampRecherche.tsx` |
    | les planches (`appli/soignee/`) | un champ de recherche hors de `.champ-recherche`, la barre du kit, ou mis dans une case en boîte |
 
-   **Deux écrans y échappaient le 1er novembre**, nommés plus bas avec leur
-   raison et inscrits dans `TODO.md`. Une exception qui n'est plus vraie fait
-   rougir : la liste ne peut que raccourcir.
+   **Deux écrans y échappaient le 1er novembre** (la feuille des pièces
+   d'arrosage, la liste des fiches de sécurité) : passés sur `ChampRecherche`
+   le même jour, sur son « oui ». La liste est vide, et une exception qui
+   s'y ajouterait ferait reculer sa règle.
    ======================================================================= */
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync, statSync } from "node:fs";
@@ -31,12 +32,7 @@ const RACINE = path.join(__dirname, "..");
 const LE_CHAMP = "src/components/atlas/ChampRecherche.tsx";
 
 /** Ce qui y échappe encore, chacun avec sa raison. Elle ne doit que raccourcir. */
-const ECHAPPENT_ENCORE: Record<string, string> = {
-  "src/app/paysage/arrosage/FeuillePiece.tsx":
-    "la feuille des pièces d'arrosage garde sa case blanche en boîte : à passer sur ChampRecherche (TODO.md, 1er novembre 2026)",
-  "src/app/paysage/fiches-securite/ListeDesFiches.tsx":
-    "la liste des fiches de sécurité garde sa plage teintée : à passer sur ChampRecherche (TODO.md, 1er novembre 2026)",
-};
+const ECHAPPENT_ENCORE: Record<string, string> = {};
 
 const CHAMP_DE_RECHERCHE_TSX = /\b(?:type="search"|inputMode="search")/;
 

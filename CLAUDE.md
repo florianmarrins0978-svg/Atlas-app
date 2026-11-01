@@ -536,8 +536,9 @@ retransmet — un document périmé le ferait travailler sur une version disparu
   passe à l'or. Un écran prend `ChampRecherche`, une planche prend
   `.champ-recherche` du kit (`appli/soignee/kit.css`) ; ni l'un ni l'autre ne
   la redessine, même pour la « soigner ». `scripts/test-une-seule-recherche.ts`
-  refuse tout autre dessin, des deux côtés ; les deux écrans qui y échappaient
-  le 1er novembre y sont nommés, et la liste ne peut que raccourcir.
+  refuse tout autre dessin, des deux côtés, et sa liste d'exceptions est
+  vide : les deux écrans qui y échappaient (pièces d'arrosage, fiches de
+  sécurité) y sont passés le 1er novembre, sur son « oui ».
 - **Aucun écran propre à l'ordinateur.** Sa règle du 3 octobre 2026 : *« les
   pages doivent être EXACTEMENT les mêmes »*, et *« quand je fais une modif sur
   l'appli tel, qu'elle s'applique automatiquement sur l'appli PC »*. Au-delà de

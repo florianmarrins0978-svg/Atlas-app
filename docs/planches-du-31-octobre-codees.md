@@ -46,4 +46,4 @@ Neuf écrans, chacun sur la vue « Proposé » de sa planche. Rien d'autre n'a �
 
 | Point | Qui tranche |
 |---|---|
-| Passer la recherche des pièces d'arrosage et des fiches de sécurité sur la barre de l'appli | toi |
+| ~~Passer la recherche des pièces d'arrosage et des fiches de sécurité sur la barre de l'appli~~ | fait le 1er novembre, sur ton « oui » |
