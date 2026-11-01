@@ -132,6 +132,13 @@ function LigneLibre({
  * ouvrir le tiroir, toucher le morceau, refermer, ouvrir le jour d'accueil,
  * Poser ici. Maintenant : Déplacer, le jour, le moment.
  *
+ * **Puis trois sont devenus deux — 1er novembre 2026.** *« Que ça le déplace
+ * en un clic »*, et *« si c'est un chantier d'une journée, pas besoin de me
+ * demander si je veux déplacer le matin ou l'aprem »*. Le moment ne se demande
+ * plus : ce que le jour porte arrive tel quel (`momentQuiPart`), et le jour
+ * touché déplace aussitôt (`toucherLeJour`). Ce bloc ne porte donc plus que la
+ * consigne et sa sortie. Planche : `appli/deplacer-en-un-appui.html`, la A.
+ *
  * **Il vit DANS LA FICHE, et nulle part ailleurs** — la planche le montrait
  * ainsi, et c'est enfin tenable depuis le 17 septembre 2026 : pendant le
  * geste, le mois passe entier au-dessus et la fiche descend dessous
@@ -143,108 +150,39 @@ function LigneLibre({
  * pastille à contour a la forme des pastilles d'équipe, qui ouvrent une liste ;
  * ici ce sont des gestes.
  */
-function BandeauDeplacement({
-  chantier,
-  jourSource,
-  vers,
-  onChoisir,
-  onAnnuler,
-}: {
-  chantier: ChantierPlanning | undefined;
-  jourSource: JourIso;
-  /** Le jour d'accueil touché, ou `null` tant qu'il n'a pas choisi. */
-  vers: JourIso | null;
-  /**
-   * **IL N'Y A PLUS QU'UNE PLACE — 17 septembre 2026.**
-   *
-   * Ce bloc était monté à deux endroits : dans la fiche du jour, et en repli
-   * sous le calendrier. Le second n'existait que parce que la fiche vivait
-   * DANS la semaine du jour ouvert et disparaissait au premier mois tourné —
-   * or tourner le mois est exactement ce qu'il fait pour atteindre son jour.
-   *
-   * Depuis que le mois passe entier au-dessus pendant le geste (`voletDetache`
-   * de `MoisCharge`), la fiche survit au mois tourné : le repli est devenu du
-   * code mort, et il est parti avec sa prop (`CLAUDE.md` §4 quinquies). Une
-   * seule place, une seule phrase — et le nom du chantier n'a plus à être
-   * redit, puisqu'il est toujours en titre trois lignes plus haut.
-   */
-  onChoisir: (moment: MomentDArrivee) => void;
-  onAnnuler: () => void;
-}) {
-  if (!chantier) return null;
-  // **Ce qui part commande ce qui peut arriver**, et la règle est dans `lib` :
-  // une demi-journée ne devient pas une journée, une journée ne tient pas sur
-  // une demi-journée. L'écran ne fait que montrer ce qu'elle autorise.
-  const partants = ceQueLeJourPorte(
-    {
-      jour: chantier.datePlanifiee as JourIso | null,
-      moment: chantier.creneauDebut,
-      dureeDemiJournees: chantier.dureeDemiJournees,
-    },
-    (chantier.creneaux ?? []) as readonly Creneau[],
-    jourSource
-  );
-  const moments = momentsOfferts(partants.length);
-
+function BandeauDeplacement({ onAnnuler }: { onAnnuler: () => void }) {
   return (
-    <div data-atlas="deplacement-en-cours" data-vers={vers ?? undefined} className="mt-2.5">
-      {vers ? (
-        <>
-          <span className="block text-[12.5px]" style={{ color: colors.or }}>
-            {`${jourLisibleCourt(vers).toLowerCase()}. Quel moment ?`}
-          </span>
-          <div className="mt-1 flex flex-wrap items-center gap-x-[18px] gap-y-1">
-            {moments.map((m) => (
-              <MotDuGeste key={m} data-atlas={`vers-${m}`} onClick={() => onChoisir(m)}>
-                {MOT_ARRIVEE[m]}
-              </MotDuGeste>
-            ))}
-            <MotDuGeste data-atlas="annuler-deplacer" onClick={onAnnuler}>
-              Annuler
-            </MotDuGeste>
-          </div>
-        </>
-      ) : (
-        /* ─── « ANNULER » SUR LA LIGNE DE LA CONSIGNE ────────────────────
-           **Sa retouche du 17 septembre 2026 :** *« le Annuler tu le mets en
-           noir gras à droite de "touchez le jour au-dessus", genre 2 cm sur sa
-           droite »*. Il était gris pâle, sur la ligne du dessous : on le
-           cherchait. Il prend l'encre des deux gestes qu'il remplace le temps
-           du déplacement.
+    <div data-atlas="deplacement-en-cours" className="mt-2.5">
+      {/* ─── « ANNULER » SUR LA LIGNE DE LA CONSIGNE ────────────────────
+          **Sa retouche du 17 septembre 2026 :** *« le Annuler tu le mets en
+          noir gras à droite de "touchez le jour au-dessus", genre 2 cm sur sa
+          droite »*. Il était gris pâle, sur la ligne du dessous : on le
+          cherchait. Il prend l'encre des deux gestes qu'il remplace le temps
+          du déplacement.
 
-           **2 cm RÉELS, et c'est pourquoi ce n'est pas `2cm`** : l'unité `cm`
-           d'une feuille de style vaut 96 dpi nominaux, soit 1,25 cm sous la
-           règle sur son téléphone. Son écran fait ~61 px par centimètre.
+          **2 cm RÉELS, et c'est pourquoi ce n'est pas `2cm`** : l'unité `cm`
+          d'une feuille de style vaut 96 dpi nominaux, soit 1,25 cm sous la
+          règle sur son téléphone. Son écran fait ~61 px par centimètre.
 
-           **L'écart se COMPRIME plutôt que de pousser le bouton dehors.**
-           Mesuré sur 320 px de large : à 122 px fixes, « Annuler » finissait
-           pile sur le bord, zéro marge — un nom plus long et il sortait.
-
-           **La ligne ne vaut que pour le choix du JOUR** : au moment suivant,
-           trois mots s'ajoutent et ne tiennent pas à côté de la phrase. */
-        <div className="flex items-baseline">
-          {/* La phrase ne se coupe PAS : elle est ce qu'il lit, et l'écart est
-              ce qui doit céder. Sans cela elle rendait « Touchez le jour au- /
-              dessus » sur deux lignes — vu à l'écran, jamais par un test. */}
-          <span className="whitespace-nowrap text-[12.5px]" style={{ color: colors.or }}>
-            Touchez le jour au-dessus
-          </span>
-          <span aria-hidden className="min-w-[18px] flex-[0_1_122px]" />
-          <MotDuGeste data-atlas="annuler-deplacer" onClick={onAnnuler}>
-            Annuler
-          </MotDuGeste>
-        </div>
-      )}
+          **L'écart se COMPRIME plutôt que de pousser le bouton dehors.**
+          Mesuré sur 320 px de large : à 122 px fixes, « Annuler » finissait
+          pile sur le bord, zéro marge — un nom plus long et il sortait. */}
+      <div className="flex items-baseline">
+        {/* La phrase ne se coupe PAS : elle est ce qu'il lit, et l'écart est
+            ce qui doit céder. Sans cela elle rendait « Touchez le jour au- /
+            dessus » sur deux lignes — vu à l'écran, jamais par un test. */}
+        <span className="whitespace-nowrap text-[12.5px]" style={{ color: colors.or }}>
+          Touchez le jour au-dessus
+        </span>
+        <span aria-hidden className="min-w-[18px] flex-[0_1_122px]" />
+        <MotDuGeste data-atlas="annuler-deplacer" onClick={onAnnuler}>
+          Annuler
+        </MotDuGeste>
+      </div>
     </div>
   );
 }
 
-/** Les trois mots d'arrivée, écrits une fois. */
-const MOT_ARRIVEE: Record<MomentDArrivee, string> = {
-  matin: "Matin",
-  apres_midi: "Après-midi",
-  journee: "Journée",
-};
 
 /**
  * UN MOT QUI FAIT UN GESTE — en gras, sans contour.
@@ -647,7 +585,7 @@ export function CarteDuJour({
           // touché son jour d'accueil — deux gestes offerts pendant qu'un
           // troisième attend sa réponse. Vu à l'écran, jamais par un test.
           const choixDeplacer =
-            (ouvert?.quoi === "deplacer" || ouvert?.quoi === "deplacer-quand") &&
+            ouvert?.quoi === "deplacer" &&
             ouvert.cle === cle &&
             ouvert.chantierId === c.id;
 
@@ -916,16 +854,7 @@ export function CarteDuJour({
                        moment. Le bloc est celui du repli sous le calendrier,
                        écrit une seule fois. */
                     <div className="w-full">
-                      <BandeauDeplacement
-                        chantier={c}
-                        jourSource={ouvert.jourSource}
-                        vers={ouvert.quoi === "deplacer-quand" ? ouvert.vers : null}
-                        onChoisir={(moment) =>
-                          ouvert.quoi === "deplacer-quand" &&
-                          deplacerLeJour(c.id, ouvert.jourSource, ouvert.vers, moment)
-                        }
-                        onAnnuler={() => setOuvert(null)}
-                      />
+                      <BandeauDeplacement onAnnuler={() => setOuvert(null)} />
                     </div>
                   ) : (
                     <>
