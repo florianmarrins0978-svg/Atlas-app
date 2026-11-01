@@ -14,6 +14,8 @@ import {
   ecarterVirement,
   enregistrerLiaison,
   liaisonDeLEntreprise,
+  noterLectureRefusee,
+  noterProfondeurLue,
   supprimerLiaison,
   virementsDepuis,
 } from "../src/server/repositories/banque";
@@ -182,6 +184,19 @@ async function main() {
     assert.equal(r.ok, false, "le virement a payé la facture d'une autre entreprise");
     const apres = (await virementsDepuis(ctx, aujourdhui)).find((x) => x.id === v.id);
     assert.equal(apres?.etat, "nouveau", "le refus a quand même marqué le virement");
+  });
+
+  // Migration 0155, trouvée le 1er novembre 2026 : `luLe` est posé avant
+  // l'appel à la banque, et rien ne gardait qu'une tentative avait échoué.
+  // Rouverte dans la demi-heure, Ma banque disait « Lue ».
+  await test("un refus de lecture est gardé, et la lecture réussie suivante l'efface", async () => {
+    assert.equal((await liaisonDeLEntreprise(ctx))?.lectureRefusee, null);
+    await noterLectureRefusee(ctx, "Enable Banking ne répond pas. Réessayez dans un moment.");
+    assert.equal((await liaisonDeLEntreprise(ctx))?.lectureRefusee, "Enable Banking ne répond pas. Réessayez dans un moment.");
+    await noterProfondeurLue(ctx, 1826, null);
+    const apres = await liaisonDeLEntreprise(ctx);
+    assert.equal(apres?.lectureRefusee, null);
+    assert.equal(apres?.historiqueJours, 1826);
   });
 
   await test("délier garde les virements et leurs réponses", async () => {

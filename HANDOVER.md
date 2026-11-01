@@ -10,6 +10,11 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## MA BANQUE SOIGNÉE (1er novembre 2026), sur `lot/ma-banque-soignee`
+
+**Les pièges :** `lu_le` est posé AVANT l'appel à la banque ; il ne dit jamais si la lecture a réussi. C'est `lecture_refusee` (0155) qui le dit, et `etatDeLaLecture` qui décide de la pastille : ne jamais afficher « Lue » à partir de `lu_le` seul. Ma banque n'entre dans le sommaire que reliée (`rubriquesReglages(role, banqueReliee)`), parce que sans contrat Enable Banking la porte refuse chez les autres artisans. Les boutons Oui et Non viennent de `ReponseVirement`, partagé avec l'accueil et Ma TVA : les retoucher change trois écrans (`ARCHITECTURE.md` §536).
+
+---
 ## LES PLANCHES DU 31 OCTOBRE, CODÉES (1er novembre 2026)
 
 **Les pièges :** les pages du client ne reçoivent aucune charte (`estPageDuClient`) : leurs jetons retombent sur Arborea, ne jamais y écrire une couleur en clair. Le mot pour l'artisan du devis n'existe dans le document qu'une fois ouvert (`data-atlas="ouvrir-le-mot"`) : une suite qui remplit `#precision` l'ouvre d'abord, comme le client. Le succès du contrat rend la DÉCISION (`{ succes: "accepte" | "refuse" }`) et c'est la page qui écrit la phrase. « Ses coordonnées » (Vos clients, le client, « Modifier ses coordonnées ») n'a PAS de photos, sa décision du 1er novembre : ne pas les y remettre. Le serveur de développement garde parfois l'ancienne version d'un module après un export ajouté (« … is not a function ») : le relancer par son numéro de processus.

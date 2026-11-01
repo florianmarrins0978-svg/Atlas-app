@@ -153,6 +153,11 @@ function Ligne({ rubrique, derniere, enPaquet = false }: { rubrique: Rubrique; d
         >
           {rubrique.nom}
         </span>
+        {rubrique.situation && (
+          <span className="mt-[3px] block text-[14.5px] leading-[1.4]" style={{ color: colors.inkSoft }}>
+            {rubrique.situation}
+          </span>
+        )}
       </span>
       {aVenir ? (
         <span className={libelleCaps} style={{ color: colors.or, opacity: 0.9, flex: "none" }}>

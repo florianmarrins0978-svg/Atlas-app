@@ -306,5 +306,27 @@ essai("toutes les adresses restent dans les réglages ou le catalogue", () => {
   }
 });
 
+// Ma banque, sa planche du 1er novembre 2026 : dans le sommaire SEULEMENT
+// reliée. Sans contrat Enable Banking, une ligne visible de tous ouvrirait une
+// porte qui refuse ; reliée, elle prouve que la porte s'ouvre chez lui.
+essai("Ma banque n'entre dans le sommaire que reliée, en tête de L'entreprise, avec sa situation", () => {
+  const sans = rubriquesReglages("proprietaire").flatMap((e) => e.rubriques);
+  assert.ok(!sans.some((r) => r.href === "/reglages/banque"), "Ma banque sort sans banque reliée");
+  const entreprise = rubriquesReglages("proprietaire", { situation: "Crédit Mutuel, lue aujourd'hui" }).find((e) => e.titre === "L'entreprise");
+  assert.deepEqual(entreprise?.rubriques[0], {
+    nom: "Ma banque",
+    icone: "banque",
+    href: "/reglages/banque",
+    situation: "Crédit Mutuel, lue aujourd'hui",
+  });
+});
+
+// Le sommaire obéit à `cheminAutorise` : le commercial n'ouvre pas la banque,
+// donc même reliée sa ligne ne doit pas sortir chez lui.
+essai("reliée, Ma banque ne sort pas chez le commercial", () => {
+  const chezLui = rubriquesReglages("commercial", { situation: "Crédit Mutuel" }).flatMap((e) => e.rubriques);
+  assert.ok(!chezLui.some((r) => r.href === "/reglages/banque"));
+});
+
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Rubriques des réglages — ${echecs} échec(s).`);
 process.exit(echecs === 0 ? 0 : 1);

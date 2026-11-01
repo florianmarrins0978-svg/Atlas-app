@@ -53,6 +53,12 @@ export type Rubrique = {
   icone: NomIcone;
   /** Où elle mène. `null` tant qu'elle n'est pas codée. */
   href: string | null;
+  /**
+   * Un ÉTAT, jamais une explication (la règle de `nom` ci-dessus tient) : ce
+   * que la rubrique sait aujourd'hui, « Crédit Mutuel, lue aujourd'hui ». Une
+   * seule s'en sert, Ma banque.
+   */
+  situation?: string;
 };
 
 /**
@@ -245,7 +251,18 @@ const L_APPLICATION: Rubrique[] = [
  * Rien de l'entreprise n'en sort — ni grisé, ni masqué, ni rendu puis caché par
  * une feuille de style.
  */
-export function rubriquesReglages(role: RoleReglages | null): EnsembleRubriques[] {
+export function rubriquesReglages(
+  role: RoleReglages | null,
+  /**
+   * **Ma banque n'entre que si une banque EST reliée** — sa planche du
+   * 1er novembre 2026 (`appli/soignee/reglages-banque.html`), « code ça ».
+   * Sans contrat Enable Banking (`docs/A-FAIRE.md` §13), seuls les comptes du
+   * propriétaire de l'application se relient : une ligne visible chez chaque
+   * artisan ouvrirait une porte qui refuse. Reliée, la banque prouve que la
+   * porte s'ouvre chez lui. `situation` vient de `situationDeLaBanque`.
+   */
+  banqueReliee: { situation: string } | null = null
+): EnsembleRubriques[] {
   /**
    * **Un rôle illisible est traité comme un SALARIÉ**, jamais comme rien.
    *
@@ -289,7 +306,13 @@ export function rubriquesReglages(role: RoleReglages | null): EnsembleRubriques[
   // lit comme une panne.
   const entreprise: EnsembleRubriques[] = [
     { titre: "", cote: "entreprise" as const, carte: true, rubriques: garder(CARTE) },
-    { titre: "L'entreprise", cote: "entreprise" as const, rubriques: garder(ENTREPRISE) },
+    {
+      titre: "L'entreprise",
+      cote: "entreprise" as const,
+      rubriques: garder(
+        banqueReliee ? [{ nom: "Ma banque", icone: "banque", href: "/reglages/banque", situation: banqueReliee.situation }, ...ENTREPRISE] : ENTREPRISE
+      ),
+    },
     { titre: "Pour les devis", cote: "entreprise" as const, rubriques: garder(POUR_LES_DEVIS) },
     { titre: "L'application", cote: "entreprise" as const, rubriques: garder(L_APPLICATION) },
   ].filter((e) => e.rubriques.length > 0);

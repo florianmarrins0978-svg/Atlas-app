@@ -50,7 +50,9 @@ export type NomIcone =
   /** Les véhicules, 14 octobre 2026 : un camion de profil. */
   | "camion"
   /** Fournisseurs et partenaires, 19 octobre 2026 : le carton qu'on achète. */
-  | "carton";
+  | "carton"
+  /** Ma banque, 1er novembre 2026 : le fronton à colonnes, celui de `Picto`. */
+  | "banque";
 
 const TRACES: Record<NomIcone, React.ReactNode> = {
   carton: (
@@ -159,6 +161,7 @@ const TRACES: Record<NomIcone, React.ReactNode> = {
   puzzle: (
     <path d="M9.2 3.6a2.1 2.1 0 0 1 4.2 0c0 .8-.5 1.2-.5 1.7 0 .5.4.8.9.8h2.6a1 1 0 0 1 1 1v2.7c0 .5.3.9.8.9.5 0 .9-.5 1.7-.5a2.1 2.1 0 0 1 0 4.2c-.8 0-1.2-.5-1.7-.5-.5 0-.8.4-.8.9V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7.1a1 1 0 0 1 1-1h2.8c.5 0 .9-.3.9-.8 0-.5-.5-.9-.5-1.7Z" />
   ),
+  banque: <path d="M3.5 9.5L12 4.5l8.5 5M5.5 9.5v8M9.8 9.5v8M14.2 9.5v8M18.5 9.5v8M3.5 19.5h17" />,
   couronne: (
     <>
       <path d="M3.2 7.8 6.6 15.4h10.8l3.4-7.6-4.6 3-4.2-6.6-4.2 6.6z" />

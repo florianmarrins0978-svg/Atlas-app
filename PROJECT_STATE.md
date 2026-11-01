@@ -1,9 +1,13 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-10-29, `main` (`bdea976e`, batterie verte hors deux suites de fin de mois rouges sur `main` aussi),
-dernière migration `drizzle/0154_pieces_importees_d_un_tableau.sql`
+dernière migration `drizzle/0154_pieces_importees_d_un_tableau.sql` sur `main` ; `0155_banque_lecture_refusee.sql` attend sur `lot/ma-banque-soignee`
 
 ---
+## MA BANQUE SOIGNÉE, CODÉE (1er novembre 2026), PAS SUR `main`
+
+Branche `lot/ma-banque-soignee`, d'après `appli/soignee/reglages-banque.html` (*« code ça, pas de batterie »*). Écran `src/app/reglages/banque/page.tsx`, règles `src/lib/ma-banque-en-mots.ts`, Ma banque dans le sommaire seulement reliée (`rubriquesReglages`), migration `0155` (refus de lecture gardé, expand seule) (`ARCHITECTURE.md` §536). Suites du domaine vertes, écrans regardés ici sur données de démonstration ; **niveau 3 (argent, migration), batterie non jouée à sa demande : pas sur `main`**. Retour : `docs/ma-banque-soignee-codee.md`.
+
 ## LES NEUF PLANCHES DU 31 OCTOBRE, CODÉES (1er novembre 2026)
 
 Le devis, la facture, le contrat, les dates du mois et le compte rendu que reçoit le client ; Non payées, les retours d'intervention, le contrat d'entretien et Ses coordonnées chez l'artisan. Chaque écran suit la vue Proposé de sa planche (`appli/soignee/client-recoit.html`, `client-contrat.html`, `client-coordonnees.html`, `termines-non-payees.html`, `termines-retours.html`). Niveau 3 (devis, facture, une lecture en base). Retour : `docs/planches-du-31-octobre-codees.md`.
