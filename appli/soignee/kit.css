@@ -212,7 +212,12 @@ body.pl ::selection { background: rgba(185,139,71,0.28); }
          font: 400 var(--t-corps)/1.45 var(--sans); overflow: hidden;
          -webkit-font-smoothing: antialiased; }
 .ecran ::selection { background: color-mix(in srgb, var(--atlas-or) 30%, transparent); }
-.ecran :focus-visible { outline: 2px solid var(--atlas-or); outline-offset: 2px; border-radius: 6px; }
+/* Le cadre doré du doigt, à poids nul (:where) : une case qui dessine son propre
+   cadre écrit « outline: none », et c'est elle qui décide. À poids plein, ce
+   cadre passait par-dessus toutes les cases des planches, décalé de 2 px de
+   leur bord (sa capture du 1er novembre, la remise du devis) ; cinq planches
+   l'avaient éteint chacune pour soi. */
+:where(.ecran) :focus-visible { outline: 2px solid var(--atlas-or); outline-offset: 2px; border-radius: 6px; }
 .ecran input, .ecran textarea, .ecran select { caret-color: var(--atlas-rust); }
 
 .defile { flex: 1; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none;
@@ -431,7 +436,6 @@ textarea.champ-saisie { min-height: 110px; resize: vertical; }
 .champ-recherche > .ico { width: 21px; height: 21px; flex: none; color: var(--atlas-or); stroke-width: 1.8; pointer-events: none; }
 .champ-recherche input { flex: 1; min-width: 0; padding: 11px 0; border: 0; background: transparent; outline: none; box-shadow: none;
                          font: 400 17px/1.3 var(--sans); color: var(--atlas-ink); caret-color: var(--atlas-or); }
-.champ-recherche input:focus-visible { outline: none; }
 .champ-recherche input::placeholder { color: var(--atlas-inkSoft); opacity: 0.85; }
 .champ-recherche .effacer { width: 40px; height: 44px; flex: none; display: grid; place-items: center; color: var(--atlas-muted); }
 
