@@ -512,6 +512,15 @@
         ],
         "createdAt": "2026-11-01T07:21:36.799Z",
         "reason": "« Facture » en or au-dessus du numéro : c'est la page d'aujourd'hui (src/app/factures/[jeton]/page.tsx, sa demande du 8 septembre 2026), et sa réponse du 1er novembre demande d'en garder l'esprit"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "appli/soignee/client-contrat.html"
+        ],
+        "createdAt": "2026-11-01T09:35:14.821Z",
+        "reason": "Planche reproduit la charte de l'application (src/lib/design-tokens.ts) : l'or des intitulés, le vert des boutons sous texte clair, le gris des exemples ; les changer est une décision de charte, pas de planche"
       }
     ]
   }
