@@ -259,6 +259,30 @@
 .dc .action-bas .raison p { margin: 0; }
 .dc .action-bas .raison .bouton-texte { min-height: 36px; padding: 0; margin-top: 4px; color: var(--atlas-ink); text-decoration: underline; text-underline-offset: 3px; }
 
+/* La répartition : la barre de l'appli (RepartirLaMainOeuvre.tsx, codée le
+   28 octobre), ses cinq pastels (pastelsMainOeuvre, design-tokens.ts), les
+   mêmes dans toutes les chartes, et leur encre fixe. */
+.repartition { margin-top: 14px; }
+.barre-mo { position: relative; height: 50px; margin: 6px 0 4px; touch-action: none; user-select: none; }
+.barre-mo-fond { display: flex; height: 100%; border-radius: 12px; overflow: hidden; box-shadow: inset 0 0 0 1px var(--atlas-lineSoft); }
+.morceau { display: grid; place-items: center; min-width: 0; overflow: hidden; font: 650 15px/1 var(--sans); color: #1c1c1a;
+           font-variant-numeric: tabular-nums; white-space: nowrap; transition: flex-basis 80ms linear; }
+.morceau + .morceau { box-shadow: inset 1px 0 0 rgba(28,28,26,0.18); }
+.poignee { position: absolute; top: 50%; width: 30px; height: 40px; margin-left: -15px; transform: translateY(-50%); display: grid; place-items: center;
+           border-radius: 10px; background: var(--atlas-card); box-shadow: 0 1px 2px rgba(28,28,26,0.14), 0 4px 10px rgba(28,28,26,0.12); cursor: ew-resize; }
+.poignee::before { content: ""; width: 7px; height: 13px; border-left: 2px solid var(--atlas-inkSoft); border-right: 2px solid var(--atlas-inkSoft); }
+.poignee:active, .poignee.tiree { box-shadow: 0 0 0 2px var(--atlas-or), 0 6px 16px rgba(28,28,26,0.18); }
+.parts { margin: 8px 0 0; padding: 0; list-style: none; }
+.parts li { display: flex; align-items: center; gap: 10px; min-height: 44px; font-size: 15.5px; }
+.parts li + li { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.parts .point { width: 12px; height: 12px; flex: none; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(28,28,26,0.16); }
+.parts .nom { flex: 1; min-width: 0; font: 400 16px/1.3 var(--serif); }
+.parts .part { font-weight: 650; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.parts .total { font-size: 14.5px; color: var(--atlas-inkSoft); }
+.parts .total .part { color: var(--atlas-ink); font: 400 19px/1 var(--serif); }
+/* Dans le devis : la part de chaque ligne se dit sous elle. */
+.dc-dont { margin: 0 0 8px; font-size: 13.5px; color: var(--atlas-inkSoft); text-align: right; font-variant-numeric: tabular-nums; }
+
 /* Les feuilles des ajouts : de grands choix, le calcul en clair, un geste. */
 .feuille .feuille-dedans { padding-bottom: 20px; }
 .feuille .rubrique { margin: 18px 0 8px; }
@@ -467,36 +491,43 @@
 
                 <div class="dc-bande" data-si-ajout="tva"><span class="dc-cap">TVA</span><b>20 %</b></div>
 
-                <div class="dc-ligne">
+                <div class="dc-ligne" data-cle="depose">
                   <div class="dc-ligne-haut"><span>Dépose de l'ancien carrelage</span><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></div>
                   <div class="dc-rang"><span class="dc-cap">Qté</span><span>12</span></div>
                   <div class="dc-rang"><span class="dc-cap">Unité</span><span>m²</span></div>
                   <div class="dc-rang"><span class="dc-cap">Prix unitaire HT</span><span>18</span></div>
-                  <div class="dc-rang"><span class="dc-cap">Montant HT</span><span>216,00&nbsp;€</span></div>
+                  <div class="dc-rang"><span class="dc-cap">Montant HT</span><span id="montant-depose">216,00&nbsp;€</span></div>
+                  <p class="dc-dont" id="dont-depose" hidden></p>
                 </div>
-                <div class="dc-ligne">
+                <div class="dc-ligne" data-cle="pose">
                   <div class="dc-ligne-haut"><span>Pose de faïence murale</span><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></div>
                   <div class="dc-rang"><span class="dc-cap">Qté</span><span>14</span></div>
                   <div class="dc-rang"><span class="dc-cap">Unité</span><span>m²</span></div>
                   <div class="dc-rang"><span class="dc-cap">Prix unitaire HT</span><span>45</span></div>
-                  <div class="dc-rang"><span class="dc-cap">Montant HT</span><span>630,00&nbsp;€</span></div>
+                  <div class="dc-rang"><span class="dc-cap">Montant HT</span><span id="montant-pose">630,00&nbsp;€</span></div>
+                  <p class="dc-dont" id="dont-pose" hidden></p>
                 </div>
-                <div class="dc-ligne">
+                <div class="dc-ligne" data-cle="robinet">
                   <div class="dc-ligne-haut"><span>Remplacement de la robinetterie</span><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></div>
                   <div class="dc-rang"><span class="dc-cap">Qté</span><span>1</span></div>
                   <div class="dc-rang"><span class="dc-cap">Unité</span><span>u</span></div>
                   <div class="dc-rang"><span class="dc-cap">Prix unitaire HT</span><span class="gris">0,00</span></div>
-                  <div class="dc-rang"><span class="dc-cap">Montant HT</span><span class="attend">à chiffrer</span></div>
+                  <div class="dc-rang"><span class="dc-cap">Montant HT</span><span id="montant-robinet" class="attend">à chiffrer</span></div>
+                  <p class="dc-dont" id="dont-robinet" hidden></p>
                 </div>
-                <div class="dc-ligne">
+                <div class="dc-ligne" data-cle="colle">
                   <div class="dc-ligne-haut"><span>Colle flex et joint gris anthracite</span><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></div>
                   <div class="dc-rang"><span class="dc-cap">Qté</span><span>1</span></div>
                   <div class="dc-rang"><span class="dc-cap">Unité</span><span>forfait</span></div>
                   <div class="dc-rang"><span class="dc-cap">Prix unitaire HT</span><span>96</span></div>
-                  <div class="dc-rang"><span class="dc-cap">Montant HT</span><span>96,00&nbsp;€</span></div>
+                  <div class="dc-rang"><span class="dc-cap">Montant HT</span><span id="montant-colle">96,00&nbsp;€</span></div>
+                  <p class="dc-dont" id="dont-colle" hidden></p>
                 </div>
                 <div class="dc-ligne" id="ligne-mo" data-si-ajout="mo">
-                  <div class="dc-ligne-haut"><span id="ligne-mo-libelle">Main d’œuvre, 2 hommes × 2 jours</span><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></div>
+                  <div class="dc-ligne-haut"><span>Main d’œuvre</span><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></div>
+                  <div class="dc-rang"><span class="dc-cap">Qté</span><span id="ligne-mo-qte">4</span></div>
+                  <div class="dc-rang"><span class="dc-cap">Unité</span><span>jour/homme</span></div>
+                  <div class="dc-rang"><span class="dc-cap">Prix unitaire HT</span><span id="ligne-mo-pu">280</span></div>
                   <div class="dc-rang"><span class="dc-cap">Montant HT</span><span id="ligne-mo-montant">1&#8239;120,00&nbsp;€</span></div>
                 </div>
 
@@ -550,7 +581,10 @@
               </article>
             </div>
 
-            <div class="action-bas">
+            <div class="action-bas" id="bas-pret" hidden>
+              <button class="bouton bouton-plein" type="button" data-vers-page="envoye"><svg class="ico" aria-hidden="true"><use href="#i-calendrier"/></svg>Choisir la date</button>
+            </div>
+            <div class="action-bas" id="bas-attend">
               <section class="raison">
                 <p>« Remplacement de la robinetterie » attend son prix : cette ligne n'est pas gratuite, elle n'est pas chiffrée.</p>
                 <button class="bouton-texte" type="button" data-note="Sur la planche, la case du prix attend votre doigt.">Poser le prix</button>
@@ -579,11 +613,15 @@
                   <p class="gros" id="mo-total">1&#8239;120,00&nbsp;€<small>HT</small></p>
                 </div>
                 <p class="rubrique">Où la mettre</p>
-                <div class="choix-mots" data-un-seul style="grid-template-columns:1fr 1fr">
+                <div class="choix-mots" data-un-seul id="mo-mode" style="grid-template-columns:1fr 1fr">
                   <button type="button" data-choix="ligne" aria-pressed="true">Sur une ligne Main d’œuvre</button>
-                  <button type="button" data-choix="repartie" aria-pressed="false" data-note="Répartie sur les travaux : la barre de sa planche, main-oeuvre-curseur.html.">Répartie sur les travaux</button>
+                  <button type="button" data-choix="repartie" aria-pressed="false">Répartie sur les travaux</button>
                 </div>
-                <button class="bouton bouton-plein" type="button" data-ajoute="mo">Ajouter la main d’œuvre</button>
+                <div class="repartition" id="mo-repartition" hidden>
+                  <div class="barre-mo" id="barre-mo"><div class="barre-mo-fond" id="barre-mo-fond"></div></div>
+                  <ul class="parts" id="parts-mo"></ul>
+                </div>
+                <button class="bouton bouton-plein" type="button" data-ajoute="mo" id="mo-bouton">Ajouter la main d’œuvre</button>
                 <button class="bouton-texte annuler" type="button" data-ferme>Annuler</button>
               </div>
             </div>
@@ -758,7 +796,7 @@
       <ul>
         <li><b>La page reste celle de l'appli</b> : mêmes lignes et mêmes cases (Qté, Unité, Prix unitaire, Montant), mêmes totaux, même ordre.</li>
         <li>Les cinq ajouts deviennent de vraies pastilles, aux mêmes places : sous les lignes (une ligne, la main d'œuvre, une TVA), sous le total (un acompte, une remise). Aujourd'hui, des liens de 14 points en deux couleurs.</li>
-        <li><b>Main d'œuvre</b> s'ouvre sur son calcul : les hommes et la durée repris de votre dictée, votre prix du jour par homme, et le total avant d'ajouter. C'est le calcul d'« Avant de chiffrer », déjà dans l'appli. Aujourd'hui, une ligne vide où taper un montant. Sans tarif enregistré, la case reste vide : rien ne s'invente.</li>
+        <li><b>Main d'œuvre</b> s'ouvre sur son calcul : les hommes et la durée repris de votre dictée, votre prix du jour par homme, et le total avant d'ajouter. C'est le calcul d'« Avant de chiffrer », déjà dans l'appli. En ligne, elle s'écrit comme l'appli l'écrit : des jours d'homme au prix du jour. Répartie, c'est la barre de l'appli : parts égales à la dizaine, une poignée entre deux travaux, de 10 € en 10 €. Aujourd'hui, une ligne vide où taper un montant. Sans tarif enregistré, la case reste vide : rien ne s'invente.</li>
         <li><b>Une TVA, un acompte, une remise : vous tapez le chiffre que vous voulez</b> (votre réponse du 1er novembre), en grand, au pavé de chiffres. Les valeurs courantes ne sont que des raccourcis dessous : 10, 5,5 et 0 % pour la TVA ; 30 % (votre réglage), 40 et 50 % pour l'acompte ; 5, 10 et 15 % pour la remise.</li>
         <li>L'acompte dit aussi quand (à la signature, à mi-parcours, à l'avancement), et montre le montant et le reste à régler avant d'ajouter.</li>
         <li>La remise montre ce qu'elle retire avant de l'appliquer. Un chiffre qui n'en est pas un se dit en ambre et éteint le bouton, comme l'appli le refuse déjà.</li>
@@ -771,7 +809,7 @@
       </ul>
       <h2>À trancher</h2>
       <ul class="a-trancher">
-        <li>Main d'œuvre « Répartie sur les travaux » : la feuille mène à la barre de répartition (sa planche, codée le 28 octobre). Ou seulement la ligne ?</li>
+        <li><b>Main d'œuvre répartie sur un devis déjà écrit.</b> Dans l'appli, la répartition n'existe aujourd'hui qu'au moment où Atlas prépare le devis (« Avant de chiffrer ») ; « + Main d'œuvre » ajoute toujours une ligne. La planche la propose aussi ici : la même barre, et chaque ligne reçoit sa part en le disant (« dont 150 € de main d'œuvre »). À garder ?</li>
         <li>Les raccourcis sous chaque case : 30 % est votre réglage d'acompte, 5 % la remise que l'appli pose aujourd'hui ; 40, 50, 10 et 15 % sont à vous de dire, ou à retirer.</li>
       </ul>
     </div>
@@ -1001,13 +1039,49 @@
   var DUREES = [["½ journée", 0.5], ["1 journée", 1]];
   for (var j = 2; j <= 200; j++) DUREES.push([j + " jours", j]);
   var ajouts = { mo: false, tva: false, remise: false, acompte: false };
-  var mo = { hommes: 2, rang: 2, tarif: 280 };
+  var mo = { hommes: 2, rang: 2, tarif: 280, mode: "ligne", parts: null };
+  /* Les travaux qui reçoivent la main d'œuvre, dans l'ordre du devis. */
+  var TRAVAUX = [
+    { cle: "depose", nom: "Dépose de l'ancien carrelage", base: 216 },
+    { cle: "pose", nom: "Pose de faïence murale", base: 630 },
+    { cle: "robinet", nom: "Remplacement de la robinetterie", base: 0 },
+    { cle: "colle", nom: "Colle flex et joint gris anthracite", base: 96 }
+  ];
+  var PASTELS = ["#9fc48a", "#e3c88f", "#93bde0", "#8fd1bd", "#e8a9b7"];
+  /* repartirMainOeuvre (main-oeuvre-dictee.ts) : des parts qui font le total
+     s'écrivent telles quelles ; sinon, au prorata, à la dizaine, l'écart au
+     dernier travail qui a une part. */
+  function repartir(total, poids) {
+    var p = poids || TRAVAUX.map(function () { return 1; });
+    var somme = p.reduce(function (a, b) { return a + b; }, 0);
+    if (poids && Math.round(somme * 100) === Math.round(total * 100)) return poids.slice();
+    var m = p.map(function (x) { return somme > 0 ? Math.round(total * x / somme / 10) * 10 : 0; });
+    var ecart = Math.round((total - m.reduce(function (a, b) { return a + b; }, 0)) * 100) / 100;
+    var i = m.length - 1; while (i > 0 && m[i] <= 0) i--;
+    m[i] = Math.round((m[i] + ecart) * 100) / 100;
+    return m;
+  }
+  /* glisserLeJoint : seuls les deux voisins changent, de 10 € en 10 €, et
+     chacun garde au moins 10 €. */
+  function glisserLeJoint(m, k, voulu) {
+    var c = m.map(function (x) { return Math.round(x * 100); });
+    var paire = c[k] + c[k + 1];
+    if (paire < 2000) return m.slice();
+    var gauche = Math.max(1000, Math.min(paire - 1000, Math.round(voulu / 10) * 1000));
+    c[k] = gauche; c[k + 1] = paire - gauche;
+    return c.map(function (x) { return x / 100; });
+  }
+  function partsCourantes() {
+    mo.parts = repartir(montantMo(), mo.parts);
+    return mo.parts;
+  }
   var tvaTaux = "10", remiseTaux = 5, acompteTaux = 30, acompteQuand = "à la signature";
 
   var format = new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   function euros(n) { return format.format(n) + " €"; }
   function arrondi(n) { return Math.round(n * 100) / 100; }
   function montantMo() { return arrondi(mo.hommes * DUREES[mo.rang][1] * mo.tarif); }
+  function journees() { return arrondi(mo.hommes * DUREES[mo.rang][1]); }
   function libelleMo() { return mo.hommes + (mo.hommes > 1 ? " hommes" : " homme") + " × " + DUREES[mo.rang][0]; }
 
   function totaux(avec) {
@@ -1027,8 +1101,25 @@
     ecranDevis.querySelectorAll("[data-si-ajout]").forEach(function (el) { el.hidden = !ajouts[el.getAttribute("data-si-ajout")]; });
     document.getElementById("puce-remise").hidden = ajouts.remise;
     var t = totaux();
-    ecrire("ligne-mo-libelle", "Main d’œuvre, " + libelleMo());
+    var reparti = ajouts.mo && mo.mode === "repartie";
+    var parts = reparti ? partsCourantes() : null;
+    document.getElementById("ligne-mo").hidden = !ajouts.mo || reparti;
+    ecrire("ligne-mo-qte", String(journees()).replace(".", ","));
+    ecrire("ligne-mo-pu", String(mo.tarif).replace(".", ","));
     ecrire("ligne-mo-montant", euros(t.mo));
+    var attend = false;
+    TRAVAUX.forEach(function (tr, i) {
+      var part = parts ? parts[i] : 0;
+      var montant = document.getElementById("montant-" + tr.cle);
+      var dont = document.getElementById("dont-" + tr.cle);
+      var vaut = tr.base + part;
+      if (vaut > 0) { montant.textContent = euros(vaut); montant.classList.remove("attend"); }
+      else { montant.textContent = "à chiffrer"; montant.classList.add("attend"); attend = true; }
+      dont.hidden = !part;
+      dont.textContent = part ? "dont " + euros(part) + " de main d’œuvre" : "";
+    });
+    document.getElementById("bas-attend").hidden = !attend;
+    document.getElementById("bas-pret").hidden = attend;
     ecrire("sous-total-20", euros(t.ht));
     ecrire("bande-taux", tvaTaux + " %");
     ecrire("t-tva2-mot", "TVA (" + tvaTaux + " %)");
@@ -1047,7 +1138,48 @@
   }
 
   /* Les feuilles montrent le résultat du choix AVANT qu'on l'ajoute. */
+  function rendreRepartition() {
+    var bloc = document.getElementById("mo-repartition");
+    bloc.hidden = mo.mode !== "repartie";
+    ecrire("mo-bouton", mo.mode === "repartie" ? "Répartir la main d’œuvre" : "Ajouter la main d’œuvre");
+    if (bloc.hidden) return;
+    var parts = partsCourantes(), total = montantMo();
+    var fond = document.getElementById("barre-mo-fond");
+    var barre = document.getElementById("barre-mo");
+    var largeur = barre.clientWidth || 300;
+    fond.innerHTML = "";
+    barre.querySelectorAll(".poignee").forEach(function (p) { p.remove(); });
+    var cumul = 0;
+    TRAVAUX.forEach(function (tr, i) {
+      var m = document.createElement("span");
+      m.className = "morceau";
+      var frac = total > 0 ? parts[i] / total : 1 / TRAVAUX.length;
+      m.style.flex = "0 0 " + (frac * 100) + "%";
+      m.style.background = PASTELS[i % PASTELS.length];
+      /* Le montant s'écrit dans son morceau s'il tient, sinon il reste sur sa ligne. */
+      m.textContent = frac * largeur >= 64 ? format.format(parts[i]).replace(/,00$/, "") + "\u00a0€" : "";
+      fond.appendChild(m);
+      cumul += frac;
+      if (i < TRAVAUX.length - 1) {
+        var p = document.createElement("span");
+        p.className = "poignee";
+        p.setAttribute("role", "slider");
+        p.setAttribute("aria-label", "Entre " + tr.nom + " et " + TRAVAUX[i + 1].nom);
+        p.setAttribute("aria-valuenow", String(parts[i]));
+        p.setAttribute("data-joint", String(i));
+        p.style.left = (cumul * 100) + "%";
+        barre.appendChild(p);
+      }
+    });
+    var liste = document.getElementById("parts-mo");
+    liste.innerHTML = TRAVAUX.map(function (tr, i) {
+      return '<li><span class="point" style="background:' + PASTELS[i % PASTELS.length] + '"></span><span class="nom"></span><span class="part">' + euros(parts[i]) + '</span></li>';
+    }).join("") + '<li class="total"><span class="nom" style="font:inherit">Total main d’œuvre</span><span class="part">' + euros(total) + '</span></li>';
+    liste.querySelectorAll("li:not(.total) .nom").forEach(function (n, i) { n.textContent = TRAVAUX[i].nom; });
+  }
+
   function rendreFeuilles() {
+    rendreRepartition();
     ecrire("mo-hommes", String(mo.hommes));
     ecrire("mo-jours", DUREES[mo.rang][0]);
     ecrire("mo-calcul", libelleMo() + " × " + mo.tarif + " €");
@@ -1067,6 +1199,9 @@
     ecrire("remise-apres", "Total HT après remise : " + euros(arrondi(sansRemise.ht - remise)));
   }
 
+  function remettreChoix(id, choix) {
+    document.getElementById(id).querySelectorAll("[data-choix]").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-choix") === choix ? "true" : "false"); });
+  }
   function eclairer(el) {
     if (!el) return;
     var defile = ecranDevis.querySelector(".defile");
@@ -1082,6 +1217,7 @@
     Kit.fermerFeuilles(ecranDevis);
     var defile = ecranDevis.querySelector(".defile");
     if (etat === "devis") { ajouts = { mo: false, tva: false, remise: false, acompte: false }; }
+    if (etat === "devis" || etat === "tout") { mo.mode = "ligne"; mo.parts = null; remettreChoix("mo-mode", "ligne"); }
     if (etat === "tout") { ajouts = { mo: true, tva: true, remise: true, acompte: true }; }
     rendre();
     var ancre = document.getElementById(etat === "tout" ? "ancre-totaux" : "ancre-ajouts");
@@ -1098,7 +1234,11 @@
       ajouts[quoi] = true;
       Kit.fermerFeuilles(ecranDevis);
       rendre();
-      setTimeout(function () { eclairer(document.getElementById(CIBLE[quoi])); }, 260);
+      var cible = quoi === "mo" && mo.mode === "repartie" ? document.getElementById("dont-depose").closest(".dc-ligne") : document.getElementById(CIBLE[quoi]);
+      setTimeout(function () {
+        eclairer(cible);
+        if (quoi === "mo" && mo.mode === "repartie") ecranDevis.querySelectorAll(".dc-dont:not([hidden])").forEach(function (d) { d.closest(".dc-ligne").classList.add("vient-d-arriver"); });
+      }, 260);
       return;
     }
     var retire = e.target.closest("[data-retire]");
@@ -1116,6 +1256,37 @@
       if (compte === "hommes") mo.hommes = Math.max(1, Math.min(20, mo.hommes + n));
       else mo.rang = Math.max(0, Math.min(DUREES.length - 1, mo.rang + n));
       rendre();
+    }
+  });
+  (function () {
+    var barre = document.getElementById("barre-mo"), joint = null;
+    barre.addEventListener("pointerdown", function (e) {
+      var p = e.target.closest(".poignee");
+      if (!p) return;
+      joint = Number(p.getAttribute("data-joint"));
+      p.classList.add("tiree");
+      barre.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    });
+    barre.addEventListener("pointermove", function (e) {
+      if (joint === null) return;
+      var r = barre.getBoundingClientRect(), total = montantMo(), parts = partsCourantes();
+      var avant = 0; for (var i = 0; i < joint; i++) avant += parts[i];
+      var x = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * total;
+      mo.parts = glisserLeJoint(parts, joint, x - avant);
+      rendre();
+      var p = barre.querySelector('[data-joint="' + joint + '"]'); if (p) p.classList.add("tiree");
+    });
+    function lacher() { joint = null; barre.querySelectorAll(".poignee").forEach(function (p) { p.classList.remove("tiree"); }); }
+    barre.addEventListener("pointerup", lacher);
+    barre.addEventListener("pointercancel", lacher);
+  })();
+  document.getElementById("mo-mode").addEventListener("kit:choix", function (e) {
+    mo.mode = e.detail.choix;
+    rendre();
+    if (mo.mode === "repartie") {
+      var dedans = document.querySelector("#f-mo .feuille-dedans");
+      setTimeout(function () { dedans.scrollTo({ top: dedans.scrollHeight, behavior: "smooth" }); }, 60);
     }
   });
   document.getElementById("mo-tarif").addEventListener("input", function (e) {
