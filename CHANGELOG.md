@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-11-01
+
+- **Ce que reçoit le client, ses trois réponses** (`appli/soignee/client-recoit.html`). Le contrat ne déroule plus ses prestations sur la page : le total, le nombre de prestations et de passages, le détail dans le PDF, comme le devis. Accepté, il a son écran de retour au lieu de la même page avec une ligne changée. La facture reprend la carte centrée d'aujourd'hui (Facture en or, le numéro, Pour régler, l'accusé), avec des pilules à copier lisibles et l'échéance en pastille. Rien dans `src/`.
+
 ## 2026-10-31
 
 - **Planche « Ce que reçoit le client »** (`appli/soignee/client-recoit.html`, sa demande du 31 octobre : *« fais moi ce que reçoit le client en planche, améliorer, plus jolie »*). Les cinq pages publiques (devis, facture, contrat, dates du mois, compte rendu), chacune à côté de sa vraie page, capturée le 31 octobre par de vrais jetons (`aujourdhui/recoit-*.jpg`). **Ce que la lecture a trouvé :** trois pages sur cinq écrivent leurs couleurs en dur (`#F4EFE8`, `bg-white` : le contrat, les dates, le compte rendu), d'où un fond blanc sur trois pages et crème sur deux ; deux serif différentes selon la page. **Le devis tient dans 390 × 664 dans tous les cas mesurés** (pire : 657 px, rétractation et correction sans mot), la planche mesure sa propre hauteur ; ce qui l'a permis : le HT et la TVA sur une ligne, les deux dates côte à côte, la liste repliée sur une autre date retenue (comme `listeRepliee` aujourd'hui), la case du message qui s'ouvre au doigt, et « Une correction » et « Je ne donne pas suite » côte à côte. Rien dans `src/`.

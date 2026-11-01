@@ -169,43 +169,48 @@ body .pl-barre .pl-charte-bouton, body .pl-barre .pl-chartes { display: none; }
 .retour .bouton { margin-top: 24px; }
 .retour .qui-retour { margin-top: 26px; font-size: 14px; }
 
-/* ═══ LA FACTURE ═════════════════════════════════════════════════════════ */
-.statut { margin-top: 12px; }
-.facture .bouton-telecharger { margin-top: 18px; }
-.bouton-avoir { margin-top: 10px; }
-.facon { display: flex; gap: 12px; align-items: flex-start; }
-.facon p { margin: 0; font-size: 15.5px; line-height: 1.5; color: var(--atlas-inkSoft); }
-.facon p b { font-weight: 600; color: var(--atlas-ink); }
-.a-copier { position: relative; display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; padding: 10px 0; text-align: left; }
-.a-copier::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
-.a-copier-quoi { display: block; font-size: 13px; font-weight: 600; color: var(--atlas-inkSoft); }
-.a-copier-valeur { display: block; margin-top: 2px; font: 400 18px/1.3 var(--serif); font-variant-numeric: tabular-nums lining-nums; letter-spacing: 0.01em; overflow-wrap: anywhere; }
-.a-copier-geste { display: inline-flex; align-items: center; gap: 6px; flex: none; min-height: 40px; padding: 0 14px; border-radius: 20px;
-                  font-size: 15px; font-weight: 600; color: var(--atlas-rust); box-shadow: inset 0 0 0 1.5px var(--atlas-line);
-                  transition: color 180ms var(--courbe), box-shadow 180ms var(--courbe); }
+/* ═══ LA FACTURE : l'esprit d'aujourd'hui, une carte au centre, soignée ══ */
+/* Sa réponse du 1er novembre : « garder un peu le même esprit que celui
+   d'aujourd'hui, mais amélioré et plus jolie ». Donc la carte centrée, le
+   mot Facture en or au-dessus du numéro, puis Pour régler et l'accusé, dans
+   le même ordre ; ce qui change, c'est ce qui se lit et ce qui se touche. */
+.facture .defile { padding: 16px 14px 28px; }
+.carte-facture { border-radius: 22px; background: var(--atlas-card); padding: 30px 22px 22px; text-align: center; }
+.facture-mot { margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase; color: var(--atlas-or); }
+.facture-numero { margin: 10px 0 0; font: 400 33px/1.1 var(--serif); letter-spacing: -0.01em; font-variant-numeric: tabular-nums lining-nums; }
+.facture-qui { margin: 6px 0 0; font-size: 16px; color: var(--atlas-inkSoft); }
+.facture .statut { margin-top: 16px; }
+.facture .bouton-telecharger { margin-top: 22px; min-height: 58px; font: 400 19px/1 var(--serif); }
+/* L'or sur le trait, le mot en encre, comme aujourd'hui : il se lit au soleil et tient sur une ligne. */
+.facture .bouton-avoir { margin-top: 10px; min-height: 50px; font-size: 15.5px; color: var(--atlas-ink); }
+.filet-carte { height: 1px; margin: 24px 0 20px; background: var(--atlas-line); }
+.pour-regler { text-align: left; }
+.pour-regler-mot { margin: 0 0 10px; font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--atlas-inkSoft); }
+.phrase { margin: 0; font-size: 15.5px; line-height: 1.55; color: var(--atlas-inkSoft); text-align: left; }
+.phrase b { font-weight: 600; color: var(--atlas-ink); }
+/* Les deux choses à recopier : une pilule chacune, son nom lisible, Copier au pouce. */
+.pilule-copier { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; margin-top: 10px; padding: 8px 8px 8px 20px;
+                 border-radius: 999px; text-align: left; background: var(--atlas-rustTint);
+                 transition: box-shadow 180ms var(--courbe); }
+.pilule-copier[data-copie] { box-shadow: inset 0 0 0 1.5px var(--atlas-carteVertTexte); }
+.pilule-copier-quoi { display: block; font-size: 13px; font-weight: 600; color: var(--atlas-inkSoft); }
+.pilule-copier-valeur { display: block; margin-top: 1px; font: 400 18px/1.3 var(--serif); font-variant-numeric: tabular-nums lining-nums; letter-spacing: 0.01em; overflow-wrap: anywhere; }
+.a-copier-geste { display: inline-flex; align-items: center; gap: 6px; flex: none; min-height: 46px; padding: 0 16px; border-radius: 999px;
+                  font-size: 15px; font-weight: 600; color: var(--atlas-rust); background: var(--atlas-card);
+                  transition: color 180ms var(--courbe); }
 .a-copier-geste .ico { width: 18px; height: 18px; }
-.a-copier[data-copie] .a-copier-geste { color: var(--atlas-carteVertTexte); box-shadow: inset 0 0 0 1.5px var(--atlas-carteVertTexte); }
-.recu { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 68px; padding: 12px 16px; border-radius: var(--r-plage);
-        text-align: left; background: var(--atlas-card); transition: background-color 200ms var(--courbe); }
-.recu b { display: block; font: 400 18px/1.25 var(--serif); }
+.pilule-copier[data-copie] .a-copier-geste { color: var(--atlas-carteVertTexte); }
+.recu { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 68px; padding: 12px 20px; border-radius: 999px;
+        text-align: left; background: var(--atlas-rustTint); transition: background-color 200ms var(--courbe), box-shadow 200ms var(--courbe); }
+.recu b { display: block; font: 400 17.5px/1.25 var(--serif); }
 .recu small { display: block; margin-top: 2px; font-size: 14px; color: var(--atlas-inkSoft); }
 .recu[aria-pressed="true"] { background: var(--atlas-carteVertFond); }
 .recu[aria-pressed="true"] small { color: var(--atlas-carteVertTexte); font-weight: 600; }
-.recu .carre { box-shadow: inset 0 0 0 1.5px var(--atlas-chevron); }
+.recu .carre { background: var(--atlas-card); box-shadow: inset 0 0 0 1.5px var(--atlas-chevron); }
 .recu[aria-pressed="true"] .carre { background: var(--atlas-carteVertTexte); color: var(--atlas-card); box-shadow: none; }
 
-/* ═══ LE CONTRAT ═════════════════════════════════════════════════════════ */
-.prestation { position: relative; display: flex; gap: 12px; padding: 13px 0; }
-.prestation + .prestation::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
-.prestation-corps { flex: 1; min-width: 0; }
-.prestation-nom { display: block; font: 400 17.5px/1.25 var(--serif); }
-.prestation-rythme { display: block; margin-top: 2px; font-size: 14px; line-height: 1.4; color: var(--atlas-inkSoft); }
-.prestation-prix { flex: none; text-align: right; }
-.prestation-prix b { display: block; font: 400 17.5px/1.25 var(--serif); font-weight: 400; font-variant-numeric: tabular-nums lining-nums; }
-.prestation-prix small { display: block; margin-top: 2px; font-size: 13.5px; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.contrat .total { padding-top: 2px; }
-.reponse-faite { display: flex; align-items: center; gap: 12px; }
-.reponse-faite .ico { width: 24px; height: 24px; flex: none; }
+/* ═══ LE CONTRAT : l'essentiel, le détail dans le PDF ════════════════════ */
+.contrat .bouton-telecharger { margin-top: 12px; }
 
 /* ═══ LES DATES DU MOIS ══════════════════════════════════════════════════ */
 .passage { position: relative; display: flex; align-items: flex-start; gap: 14px; padding: 14px 0; }
@@ -382,96 +387,86 @@ body .pl-barre .pl-charte-bouton, body .pl-barre .pl-chartes { display: none; }
           <!-- ═══ LA FACTURE ═════════════════════════════════════════════ -->
           <div class="ecran facture" data-sans-charte data-page-ecran="facture" id="ecran-facture" hidden>
             <div class="defile">
-              <div class="tete-doc">
-                <h2 class="titre-doc">Facture F2026&#8209;000001</h2>
-                <span class="monogramme" aria-hidden="true">AD</span>
-              </div>
-              <p class="qui"><b>Atelier Démo EI</b></p>
-              <div class="statut">
-                <span class="etat" data-ton="ambre" data-si-etat="aregler avoir">À régler avant le lundi 30 novembre</span>
-                <span class="etat" data-ton="vert" data-si-etat="acquittee">Acquittée le 12/11/2026</span>
-              </div>
+              <section class="carte-facture">
+                <p class="facture-mot">Facture</p>
+                <h2 class="facture-numero">F2026&#8209;000001</h2>
+                <p class="facture-qui">Atelier Démo EI</p>
+                <div class="statut">
+                  <span class="etat" data-ton="ambre" data-si-etat="aregler avoir">À régler avant le lundi 30 novembre</span>
+                  <span class="etat" data-ton="vert" data-si-etat="acquittee">Acquittée le 12/11/2026</span>
+                </div>
 
-              <a class="bouton bouton-plein pilule bouton-telecharger" href="#" data-geste="telecharger"><svg class="ico ico-p" aria-hidden="true"><use href="#i-telecharger"/></svg>Télécharger ma facture</a>
-              <a class="bouton bouton-creux or pilule bouton-avoir" href="#" data-geste="telecharger" data-si-etat="avoir">Télécharger l'avoir A2026&#8209;000001</a>
+                <a class="bouton bouton-plein bouton-telecharger" href="#" data-geste="telecharger"><svg class="ico ico-p" aria-hidden="true"><use href="#i-telecharger"/></svg>Télécharger ma facture</a>
+                <a class="bouton bouton-creux or bouton-avoir" href="#" data-geste="telecharger" data-si-etat="avoir">Télécharger l'avoir A2026&#8209;000001</a>
 
-              <div data-si-etat="aregler avoir">
-                <p class="rubrique" style="margin-top:28px">Pour régler</p>
-                <section class="plage" style="padding-bottom:6px">
-                  <div class="facon">
-                    <span class="pastille-ico" aria-hidden="true"><svg class="ico ico-p"><use href="#i-banque"/></svg></span>
-                    <p>Par virement, indiquez <b>F2026&#8209;000001</b> dans le libellé. Sans ce numéro, votre règlement ne peut pas être rattaché à cette facture.</p>
-                  </div>
-                  <div style="margin-top:12px">
-                    <button type="button" class="a-copier" data-copier>
-                      <span class="ligne-corps"><span class="a-copier-quoi">Numéro de facture</span><span class="a-copier-valeur">F2026&#8209;000001</span></span>
-                      <span class="a-copier-geste"><svg class="ico" aria-hidden="true"><use href="#i-copier"/></svg><span>Copier</span></span>
-                    </button>
-                    <button type="button" class="a-copier" data-copier>
-                      <span class="ligne-corps"><span class="a-copier-quoi">IBAN</span><span class="a-copier-valeur">FR76 3000 1000 0000 0000 0000 000</span></span>
-                      <span class="a-copier-geste"><svg class="ico" aria-hidden="true"><use href="#i-copier"/></svg><span>Copier</span></span>
-                    </button>
-                  </div>
-                </section>
-                <section class="plage">
-                  <div class="facon">
-                    <span class="pastille-ico" aria-hidden="true"><svg class="ico ico-p"><use href="#i-crayon"/></svg></span>
-                    <p>Par chèque, à l'ordre de : <b>Atelier Démo</b>.</p>
-                  </div>
-                </section>
-              </div>
+                <div class="pour-regler" data-si-etat="aregler avoir">
+                  <div class="filet-carte"></div>
+                  <p class="pour-regler-mot">Pour régler</p>
+                  <p class="phrase">Par virement, indiquez <b>F2026&#8209;000001</b> dans le libellé. Sans ce numéro, votre règlement ne peut pas être rattaché à cette facture.</p>
+                  <button type="button" class="pilule-copier" data-copier>
+                    <span class="ligne-corps"><span class="pilule-copier-quoi">Numéro de facture</span><span class="pilule-copier-valeur">F2026&#8209;000001</span></span>
+                    <span class="a-copier-geste"><svg class="ico" aria-hidden="true"><use href="#i-copier"/></svg><span>Copier</span></span>
+                  </button>
+                  <button type="button" class="pilule-copier" data-copier>
+                    <span class="ligne-corps"><span class="pilule-copier-quoi">IBAN</span><span class="pilule-copier-valeur">FR76 3000 1000 0000 0000 0000 000</span></span>
+                    <span class="a-copier-geste"><svg class="ico" aria-hidden="true"><use href="#i-copier"/></svg><span>Copier</span></span>
+                  </button>
+                  <div class="filet-carte"></div>
+                  <p class="phrase">Par chèque, à l'ordre de : Atelier Démo.</p>
+                </div>
 
-              <button type="button" class="recu mt-24" id="recu" aria-pressed="false">
-                <span class="carre" aria-hidden="true"><svg class="ico"><use href="#i-coche"/></svg></span>
-                <span><b>J'ai bien reçu cette facture</b><small id="recu-sous">Votre artisan en sera informé.</small></span>
-              </button>
+                <div class="filet-carte"></div>
+                <button type="button" class="recu" id="recu" aria-pressed="false">
+                  <span class="carre" aria-hidden="true"><svg class="ico"><use href="#i-coche"/></svg></span>
+                  <span><b>J'ai bien reçu cette facture</b><small id="recu-sous">Votre artisan en sera informé.</small></span>
+                </button>
+              </section>
             </div>
           </div>
 
           <!-- ═══ LE CONTRAT ═════════════════════════════════════════════ -->
           <div class="ecran contrat" data-sans-charte data-page-ecran="contrat" id="ecran-contrat" hidden>
             <div class="defile">
-              <div class="tete-doc">
-                <h2 class="titre-doc">Contrat d'entretien</h2>
-                <span class="monogramme" aria-hidden="true">AD</span>
-              </div>
-              <p class="qui"><b>Atelier Démo EI</b>, pour M. Bernard</p>
-              <p class="qui">Du 1er novembre 2026 au 31 octobre 2027, reconduit à son terme.</p>
+              <div data-si-etat="arepondre">
+                <div class="tete-doc">
+                  <h2 class="titre-doc">Contrat d'entretien</h2>
+                  <span class="monogramme" aria-hidden="true">AD</span>
+                </div>
+                <p class="qui"><b>Atelier Démo EI</b>, pour M. Bernard</p>
+                <p class="qui">Du 1er novembre 2026 au 31 octobre 2027, reconduit à son terme.</p>
 
-              <section class="plage plage-serree" style="margin-top:16px">
-                <div class="prestation">
-                  <span class="prestation-corps"><span class="prestation-nom">Tonte et ébarbage</span><span class="prestation-rythme">2 passages par mois, d'avril à octobre</span></span>
-                  <span class="prestation-prix"><b>630,00 €</b><small>14 × 45,00 €</small></span>
-                </div>
-                <div class="prestation">
-                  <span class="prestation-corps"><span class="prestation-nom">Taille de haie</span><span class="prestation-rythme">en juin et novembre</span></span>
-                  <span class="prestation-prix"><b>360,00 €</b><small>2 × 180,00 €</small></span>
-                </div>
-                <div class="prestation">
-                  <span class="prestation-corps"><span class="prestation-nom">Ramassage des feuilles</span><span class="prestation-rythme">2 passages par mois, en novembre</span></span>
-                  <span class="prestation-prix"><b>120,00 €</b><small>2 × 60,00 €</small></span>
-                </div>
-              </section>
-              <section class="plage">
-                <div class="total">
-                  <span class="total-mot">Total TTC</span>
-                  <span class="total-chiffre">1 332,00 €</span>
-                </div>
-                <p class="total-detail">1 110,00 € HT et 222,00 € de TVA à 20 %</p>
-              </section>
-              <p class="plage-ton mt-16" data-ton="or">Chaque passage est facturé une fois fait. Un passage qui n'a pas lieu n'est pas facturé. Les passages sont fixés d'un mois à l'autre selon la météo.</p>
+                <!-- Sa remarque du 1er novembre : « si le contrat fait 20 pages,
+                     faut pas tout mettre ». L'essentiel ici, comme le devis ;
+                     chaque prestation et son prix vivent dans le PDF. -->
+                <section class="plage" style="margin-top:16px">
+                  <div class="total">
+                    <span class="total-mot">Total TTC</span>
+                    <span class="total-chiffre">1 332,00 €</span>
+                  </div>
+                  <p class="total-detail">3 prestations, 18 passages. 1 110,00 € HT et 222,00 € de TVA à 20 %.</p>
+                  <a class="bouton bouton-plein pilule bouton-telecharger" href="#" data-geste="telecharger"><svg class="ico ico-p" aria-hidden="true"><use href="#i-telecharger"/></svg>Télécharger mon contrat</a>
+                </section>
+                <p class="plage-ton mt-16" data-ton="or">Chaque passage est facturé une fois fait. Un passage qui n'a pas lieu n'est pas facturé. Les passages sont fixés d'un mois à l'autre selon la météo.</p>
 
-              <a class="bouton bouton-plein pilule mt-24" href="#" data-geste="telecharger"><svg class="ico ico-p" aria-hidden="true"><use href="#i-telecharger"/></svg>Télécharger mon contrat</a>
+                <div class="issues" style="margin-top:16px">
+                  <button type="button" class="bouton bouton-plein pilule" data-va="accepte" style="font:400 19px/1 var(--serif)">J'accepte le contrat</button>
+                  <button type="button" class="bouton bouton-creux pilule doux" data-ouvre="feuille-refus-contrat">Je ne donne pas suite</button>
+                </div>
+              </div>
 
-              <div class="issues" data-si-etat="arepondre" style="margin-top:12px">
-                <button type="button" class="bouton bouton-plein pilule" data-va="accepte" style="font:400 19px/1 var(--serif)">J'accepte le contrat</button>
-                <button type="button" class="bouton bouton-creux pilule doux" data-ouvre="feuille-refus-contrat">Je ne donne pas suite</button>
+              <div class="retour" data-si-etat="accepte">
+                <span class="retour-signe" aria-hidden="true"><svg class="ico"><use href="#i-coche"/></svg></span>
+                <h2>Contrat accepté</h2>
+                <p>Les passages sont fixés d'un mois à l'autre selon la météo.</p>
+                <a class="bouton bouton-plein pilule" href="#" data-geste="telecharger"><svg class="ico ico-p" aria-hidden="true"><use href="#i-telecharger"/></svg>Télécharger mon contrat</a>
+                <p class="qui qui-retour"><b>Atelier Démo EI</b>, contrat d'entretien</p>
               </div>
-              <div class="plage-ton reponse-faite mt-16" data-ton="vert" data-si-etat="accepte">
-                <svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg><span>Vous avez accepté ce contrat.</span>
-              </div>
-              <div class="plage-ton reponse-faite mt-16" data-ton="or" data-si-etat="refuse">
-                <svg class="ico" aria-hidden="true"><use href="#i-info"/></svg><span>Vous avez refusé ce contrat.</span>
+
+              <div class="retour" data-si-etat="refuse">
+                <span class="retour-signe or" aria-hidden="true"><svg class="ico"><use href="#i-coche"/></svg></span>
+                <h2>Réponse enregistrée</h2>
+                <p>Vous avez refusé ce contrat.</p>
+                <p class="qui qui-retour"><b>Atelier Démo EI</b>, contrat d'entretien</p>
               </div>
             </div>
 
@@ -576,7 +571,7 @@ body .pl-barre .pl-charte-bouton, body .pl-barre .pl-chartes { display: none; }
     <div class="page-notes" data-notes="commun">
       <h2>Partout</h2>
       <ul>
-        <li>Les cinq pages se ressemblent : votre nom et vos initiales en tête, un grand titre, des plages sans ombre ni cadre. Aujourd'hui, trois sont sur fond blanc et deux sur fond crème.</li>
+        <li>Le devis, le contrat, les dates et le compte rendu se ressemblent : votre nom et vos initiales en tête, un grand titre, des plages sans ombre ni cadre. La facture garde sa carte au centre, comme aujourd'hui. Aujourd'hui, trois pages sont sur fond blanc et deux sur fond crème.</li>
         <li>Les petits mots se lisent : rien sous 13 points, en encre douce et non plus en gris.</li>
         <li>Les couleurs ne suivent pas votre charte, comme aujourd'hui : un devis ne part pas en noir chez le client.</li>
       </ul>
@@ -607,15 +602,15 @@ body .pl-barre .pl-charte-bouton, body .pl-barre .pl-chartes { display: none; }
     <div class="page-notes" data-notes="facture" hidden>
       <h2>La facture</h2>
       <ul>
+        <li>Votre réponse du 1er novembre : l'esprit d'aujourd'hui, la carte au centre, dans le même ordre.</li>
         <li>« À régler avant le… » devient une pastille ambre ; payée, elle passe en vert avec sa date.</li>
-        <li>Le numéro et l'IBAN se lisent en grand ; « Copier » est un vrai bouton, qui dit « Copié ».</li>
-        <li>Virement et chèque ont chacun leur plage et leur dessin.</li>
-        <li>« J'ai bien reçu cette facture » se coche en entier, et se teinte de vert une fois fait.</li>
+        <li>Le numéro et l'IBAN se lisent en grand dans leurs pilules, leur nom n'est plus en capitales de 9 points, et « Copier » est un vrai bouton qui dit « Copié ».</li>
+        <li>« J'ai bien reçu cette facture » garde sa pilule, et se teinte de vert une fois fait.</li>
       </ul>
       <h2>Ce qui ne bouge pas</h2>
       <ul class="garde">
         <li>Aucun montant sur la page : il faut ouvrir la facture (votre demande du 8 septembre).</li>
-        <li>Télécharger ma facture en plein, l'avoir en doré dessous.</li>
+        <li>Facture en or au-dessus du numéro, Télécharger ma facture en plein, l'avoir en doré dessous.</li>
         <li>La phrase du virement, celle du chèque, l'accusé en bas.</li>
       </ul>
     </div>
@@ -623,14 +618,14 @@ body .pl-barre .pl-charte-bouton, body .pl-barre .pl-chartes { display: none; }
     <div class="page-notes" data-notes="contrat" hidden>
       <h2>Le contrat</h2>
       <ul>
-        <li>Chaque prestation : son nom en grand, son rythme dessous, son montant à droite et le calcul en petit.</li>
-        <li>Le total TTC en grand, comme sur le devis ; aujourd'hui il est en gras sans serif.</li>
+        <li>Votre remarque du 1er novembre : un contrat de vingt prestations ne se déroule pas sur la page. L'essentiel seulement, comme le devis : le total, le nombre de prestations et de passages ; le détail est dans le PDF.</li>
+        <li>Accepté, ce n'est plus la même page : un signe vert, une phrase, et son contrat à télécharger. Aujourd'hui seule la dernière ligne change.</li>
         <li>La façon de payer se lit dans une plage dorée, au lieu d'un paragraphe gris.</li>
-        <li>Accepté ou refusé, la réponse reste écrite dans une plage verte ou dorée.</li>
       </ul>
       <h2>Ce qui ne bouge pas</h2>
       <ul class="garde">
         <li>Télécharger mon contrat, J'accepte le contrat, Je ne donne pas suite, et sa feuille.</li>
+        <li>La période, la reconduction, la phrase de la facturation.</li>
       </ul>
     </div>
 
@@ -698,8 +693,8 @@ body .pl-barre .pl-charte-bouton, body .pl-barre .pl-chartes { display: none; }
       etats: [["arepondre", "À répondre"], ["accepte", "Accepté"]],
       captures: {
         arepondre: ["recoit-contrat.jpg", "Aujourd'hui, un contrat à accepter."],
-        accepte: ["recoit-contrat.jpg", "Aujourd'hui, un contrat à accepter."],
-        refuse: ["recoit-contrat.jpg", "Aujourd'hui, un contrat à accepter."]
+        accepte: ["recoit-contrat.jpg", "Aujourd'hui, accepté : la même page, et « Vous avez accepté ce contrat. » à la place des boutons."],
+        refuse: ["recoit-contrat.jpg", "Aujourd'hui, refusé : la même page, et « Vous avez refusé ce contrat. » à la place des boutons."]
       }
     },
     dates: {
