@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-01
 
+- **Ses coordonnées, refaite sur la vraie Fiche client** (sa correction : *« tu t'es basé sur une page qui est fausse »*). La première version copiait la planche « Créer un devis » du 27 octobre, qu'il n'avait pas retenue. Elle reprend maintenant la Fiche client ouverte à l'écran : pastilles, petites capitales, cases teintées, nom et téléphone côte à côte. Entreprise et Public : les numéros côte à côte (le SIRET un peu plus large, son exemple était coupé), et le n° TVA tiré du SIRET proposé d'un appui. La planche Non payées dit où elle paraît : sur Terminés, seulement quand une facture est déclarée « il ne paiera pas ».
 - **Ce que reçoit le client, ses trois réponses** (`appli/soignee/client-recoit.html`). Le contrat ne déroule plus ses prestations sur la page : le total, le nombre de prestations et de passages, le détail dans le PDF, comme le devis. Accepté, il a son écran de retour au lieu de la même page avec une ligne changée. La facture reprend la carte centrée d'aujourd'hui (Facture en or, le numéro, Pour régler, l'accusé), avec des pilules à copier lisibles et l'échéance en pastille. Rien dans `src/`.
 
 ## 2026-10-31
