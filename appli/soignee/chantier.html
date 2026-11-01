@@ -289,6 +289,35 @@
 /* Dans le devis : la part de chaque ligne se dit sous elle. */
 .dc-dont { margin: 0 0 8px; font-size: 13.5px; color: var(--atlas-inkSoft); text-align: right; font-variant-numeric: tabular-nums; }
 
+/* « Mes partenaires » : une petite pastille à droite du titre, sa demande du
+   1er novembre. Leurs prix et leur marge viennent de leur fiche (Réglages,
+   Fournisseurs et partenaires : societes_achat, prix_achat, marges_achat). */
+.mo-tete { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 6px 0 12px; }
+.mo-tete .feuille-titre { margin: 0; }
+.puce-partenaires { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 13px 0 10px; border-radius: 20px;
+                    font-size: 14.5px; font-weight: 600; color: var(--atlas-or); white-space: nowrap;
+                    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 60%, transparent); }
+.puce-partenaires .ico { width: 18px; height: 18px; }
+.puce-partenaires[aria-pressed="true"] { color: var(--sur-plein); background: var(--atlas-or); box-shadow: none; }
+.qui-travaille { display: flex; align-items: center; gap: 10px; padding: 10px 8px 10px 12px; margin-bottom: 4px; border-radius: 12px;
+                 background: color-mix(in srgb, var(--atlas-or) 13%, transparent); }
+.initiales-or { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border-radius: 50%;
+                font: 400 14px/1 var(--serif); color: var(--atlas-or); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 60%, transparent); }
+.qui-travaille .qui-mots { flex: 1; min-width: 0; }
+.qui-travaille b { display: block; font: 400 17px/1.2 var(--serif); }
+.qui-travaille small { display: block; font-size: 13.5px; color: var(--atlas-inkSoft); }
+.qui-retirer { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-inkSoft); }
+.qui-retirer .ico { width: 20px; height: 20px; }
+.liste-partenaires { margin: 0; padding: 0; list-style: none; }
+.liste-partenaires > li + li { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.partenaire-nom { display: flex; align-items: center; gap: 10px; padding: 12px 0 2px; }
+.partenaire-nom b { flex: 1; font: 400 18px/1.2 var(--serif); }
+.marge-du-partenaire { font-size: 14px; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
+.prix-partenaire { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 52px; padding: 6px 4px 6px 46px;
+                   text-align: left; font-size: 15.5px; border-radius: 10px; }
+.prix-partenaire b { font-weight: 650; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.prix-partenaire:active { background: color-mix(in srgb, var(--atlas-ink) 5%, transparent); }
+
 /* Les feuilles des ajouts : de grands choix, le calcul en clair, un geste. */
 .feuille .feuille-dedans { padding-bottom: 20px; }
 .feuille .rubrique { margin: 18px 0 8px; }
@@ -512,9 +541,9 @@
                   <p class="dc-dont" id="dont-colle" hidden></p>
                 </div>
                 <div class="dc-ligne" id="ligne-mo" data-si-ajout="mo">
-                  <div class="dc-ligne-haut"><span>Main d’œuvre</span><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></div>
+                  <div class="dc-ligne-haut"><span id="ligne-mo-libelle">Main d’œuvre</span><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></div>
                   <div class="dc-rang"><span class="dc-cap">Qté</span><span id="ligne-mo-qte">4</span></div>
-                  <div class="dc-rang"><span class="dc-cap">Unité</span><span>jour/homme</span></div>
+                  <div class="dc-rang"><span class="dc-cap">Unité</span><span id="ligne-mo-unite">jour/homme</span></div>
                   <div class="dc-rang"><span class="dc-cap">Prix unitaire HT</span><span id="ligne-mo-pu">280</span></div>
                   <div class="dc-rang"><span class="dc-cap">Montant HT</span><span id="ligne-mo-montant">1&#8239;120,00&nbsp;€</span></div>
                 </div>
@@ -583,18 +612,39 @@
             <div class="feuille" id="f-mo" aria-hidden="true" role="dialog" aria-label="Main d’œuvre">
               <div class="feuille-poignee"></div>
               <div class="feuille-dedans">
-                <p class="feuille-titre">Main d’œuvre</p>
-                <div class="rang-compte">
+                <div class="mo-tete">
+                  <p class="feuille-titre">Main d’œuvre</p>
+                  <button class="puce-partenaires" type="button" id="puce-partenaires" aria-pressed="false"><svg class="ico" aria-hidden="true"><use href="#i-equipe"/></svg>Mes partenaires</button>
+                </div>
+
+                <!-- Ses partenaires et leurs prix : on touche un prix, il est choisi. -->
+                <div id="mo-liste" hidden>
+                  <ul class="liste-partenaires" id="liste-partenaires"></ul>
+                  <button class="bouton bouton-creux mt-16" type="button" id="mon-equipe">Mon équipe</button>
+                </div>
+
+                <div id="mo-corps">
+                <div class="qui-travaille" id="qui-travaille" hidden>
+                  <span class="initiales-or" id="qui-initiales">CM</span>
+                  <div class="qui-mots"><b id="qui-nom">Carrelage Morin</b><small id="qui-prix">Pose de faïence, 380 € la journée</small></div>
+                  <button class="qui-retirer" type="button" id="revenir-equipe" aria-label="Revenir à mon équipe"><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></button>
+                </div>
+                <div class="rang-compte" id="rang-hommes">
                   <div><b>Hommes</b><small>Repris de votre dictée</small></div>
                   <div class="petit-compteur" data-compte="hommes"><button type="button" aria-label="Un homme de moins" data-pas="-1"><svg class="ico" aria-hidden="true"><use href="#i-moins"/></svg></button><output id="mo-hommes">2</output><button type="button" aria-label="Un homme de plus" data-pas="1"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg></button></div>
                 </div>
                 <div class="rang-compte">
-                  <div><b>Durée</b><small>Repris de votre dictée</small></div>
+                  <div><b id="mo-qte-mot">Durée</b><small id="mo-qte-sous">Repris de votre dictée</small></div>
                   <div class="petit-compteur" data-compte="jours"><button type="button" aria-label="Moins long" data-pas="-1"><svg class="ico" aria-hidden="true"><use href="#i-moins"/></svg></button><output id="mo-jours">2 jours</output><button type="button" aria-label="Plus long" data-pas="1"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg></button></div>
+                  <input class="case-euros" id="mo-qte-case" inputmode="decimal" hidden aria-label="Quantité">
                 </div>
-                <div class="rang-compte">
+                <div class="rang-compte" id="rang-tarif">
                   <div><b>Le jour par homme</b><small>Vos tarifs</small></div>
                   <input class="case-euros" id="mo-tarif" inputmode="decimal" value="280 €" aria-label="Prix du jour par homme, en euros">
+                </div>
+                <div class="rang-compte" id="rang-marge" hidden>
+                  <div><b>Votre marge</b><small id="marge-sous">Main d’œuvre, sur leur prix</small></div>
+                  <b id="marge-valeur" style="font:400 19px/1 var(--serif)">× 1,20</b>
                 </div>
                 <div class="resultat">
                   <p class="calcul" id="mo-calcul">2 hommes × 2 jours × 280 €</p>
@@ -611,6 +661,7 @@
                 </div>
                 <button class="bouton bouton-plein" type="button" data-ajoute="mo" id="mo-bouton">Ajouter la main d’œuvre</button>
                 <button class="bouton-texte annuler" type="button" data-ferme>Annuler</button>
+                </div>
               </div>
             </div>
 
@@ -733,6 +784,7 @@
         <li><b>La page reste celle de l'appli</b> : mêmes lignes et mêmes cases (Qté, Unité, Prix unitaire, Montant), mêmes totaux, même ordre.</li>
         <li>Les cinq ajouts deviennent de vraies pastilles, aux mêmes places : sous les lignes (une ligne, la main d'œuvre, une TVA), sous le total (un acompte, une remise). Aujourd'hui, des liens de 14 points en deux couleurs.</li>
         <li><b>Main d'œuvre</b> s'ouvre sur son calcul : les hommes et la durée repris de votre dictée, votre prix du jour par homme, et le total avant d'ajouter. C'est le calcul d'« Avant de chiffrer », déjà dans l'appli. En ligne, elle s'écrit comme l'appli l'écrit : des jours d'homme au prix du jour. Répartie, c'est la barre de l'appli : parts égales à la dizaine, une poignée entre deux travaux, de 10 € en 10 €. Aujourd'hui, une ligne vide où taper un montant. Sans tarif enregistré, la case reste vide : rien ne s'invente.</li>
+        <li><b>« Mes partenaires »</b>, une petite pastille à droite du titre de la main d'œuvre (votre idée du 1er novembre) : on la touche, on choisit le prix d'un partenaire (à la journée, à l'heure, au mètre, au forfait), et le calcul prend son prix avec votre marge, la sienne s'il en a une. La ligne du devis dit son nom. Aujourd'hui, un partenaire n'entre que par les mots de la dictée.</li>
         <li><b>Une TVA, un acompte, une remise : vous tapez le chiffre que vous voulez</b> (votre réponse du 1er novembre), en grand, au pavé de chiffres. Les valeurs courantes ne sont que des raccourcis dessous : 10, 5,5 et 0 % pour la TVA ; 30 % (votre réglage), 40 et 50 % pour l'acompte ; 5, 10 et 15 % pour la remise.</li>
         <li>L'acompte dit aussi quand (à la signature, à mi-parcours, à l'avancement), et montre le montant et le reste à régler avant d'ajouter.</li>
         <li>La remise montre ce qu'elle retire avant de l'appliquer. Un chiffre qui n'en est pas un se dit en ambre et éteint le bouton, comme l'appli le refuse déjà.</li>
@@ -953,7 +1005,20 @@
   var DUREES = [["½ journée", 0.5], ["1 journée", 1]];
   for (var j = 2; j <= 200; j++) DUREES.push([j + " jours", j]);
   var ajouts = { mo: false, tva: false, remise: false, acompte: false };
-  var mo = { hommes: 2, rang: 2, tarif: 280, mode: "ligne", parts: null };
+  var mo = { hommes: 2, rang: 2, tarif: 280, mode: "ligne", parts: null, qui: null, qte: 2 };
+  /* Ses partenaires, comme sur la planche des Réglages : un nom, des prix
+     relevés dans une des unités de la rubrique (heure, journée, m, m²,
+     forfait), une marge propre ou celle de la main d'œuvre (prix-achat.ts). */
+  var MARGE_MAIN_OEUVRE = 1.2;
+  var PARTENAIRES = [
+    { nom: "Carrelage Morin", marge: null, prix: [{ nom: "Pose de faïence", unite: "journée", prix: 380 }, { nom: "Pose de faïence", unite: "m²", prix: 32 }] },
+    { nom: "Pilou", marge: null, prix: [{ nom: "Pose de clôture", unite: "m", prix: 10 }] },
+    { nom: "Élagage Durand", marge: 1.35, prix: [{ nom: "Élagage", unite: "journée", prix: 450 }, { nom: "Élagage", unite: "heure", prix: 60 }] }
+  ];
+  function initiales(nom) { return nom.split(/\s+/).slice(0, 2).map(function (m) { return m.charAt(0).toUpperCase(); }).join(""); }
+  function margeDe(p) { return p.marge || MARGE_MAIN_OEUVRE; }
+  /* prixDepuisAchat (prix-achat.ts) : leur prix × votre marge. */
+  function prixVendu(choix) { return Math.round(choix.prix.prix * margeDe(choix.societe) * 100) / 100; }
   /* Les travaux qui reçoivent la main d'œuvre, dans l'ordre du devis. */
   var TRAVAUX = [
     { cle: "depose", nom: "Dépose de l'ancien carrelage", base: 216 },
@@ -994,7 +1059,7 @@
   var format = new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   function euros(n) { return format.format(n) + " €"; }
   function arrondi(n) { return Math.round(n * 100) / 100; }
-  function montantMo() { return arrondi(mo.hommes * DUREES[mo.rang][1] * mo.tarif); }
+  function montantMo() { return mo.qui ? arrondi(mo.qte * prixVendu(mo.qui)) : arrondi(mo.hommes * DUREES[mo.rang][1] * mo.tarif); }
   function journees() { return arrondi(mo.hommes * DUREES[mo.rang][1]); }
   function libelleMo() { return mo.hommes + (mo.hommes > 1 ? " hommes" : " homme") + " × " + DUREES[mo.rang][0]; }
 
@@ -1018,8 +1083,10 @@
     var reparti = ajouts.mo && mo.mode === "repartie";
     var parts = reparti ? partsCourantes() : null;
     document.getElementById("ligne-mo").hidden = !ajouts.mo || reparti;
-    ecrire("ligne-mo-qte", String(journees()).replace(".", ","));
-    ecrire("ligne-mo-pu", String(mo.tarif).replace(".", ","));
+    ecrire("ligne-mo-libelle", mo.qui ? "Main d’œuvre : " + mo.qui.societe.nom : "Main d’œuvre");
+    ecrire("ligne-mo-qte", String(mo.qui ? mo.qte : journees()).replace(".", ","));
+    ecrire("ligne-mo-unite", mo.qui ? mo.qui.prix.unite : "jour/homme");
+    ecrire("ligne-mo-pu", String(mo.qui ? prixVendu(mo.qui) : mo.tarif).replace(".", ","));
     ecrire("ligne-mo-montant", euros(t.mo));
     var attend = false;
     TRAVAUX.forEach(function (tr, i) {
@@ -1092,6 +1159,54 @@
     liste.querySelectorAll("li:not(.total) .nom").forEach(function (n, i) { n.textContent = TRAVAUX[i].nom; });
   }
 
+  function enUnite(u, n) { return u === "journée" ? (n > 1 ? "jours" : "jour") : u === "heure" ? (n > 1 ? "heures" : "heure") : u === "forfait" ? (n > 1 ? "forfaits" : "forfait") : u; }
+  function prixEnMots(pr) {
+    var euros = format.format(pr.prix).replace(/,00$/, "") + " €";
+    return euros + ({ "journée": " la journée", "heure": " l’heure", "forfait": " le forfait" }[pr.unite] || " le " + pr.unite);
+  }
+  function rendrePartenaire() {
+    var p = mo.qui;
+    document.getElementById("puce-partenaires").setAttribute("aria-pressed", p ? "true" : "false");
+    document.getElementById("qui-travaille").hidden = !p;
+    document.getElementById("rang-hommes").hidden = !!p;
+    document.getElementById("rang-tarif").hidden = !!p;
+    document.getElementById("rang-marge").hidden = !p;
+    if (!p) { ecranDevis.querySelector('[data-compte="jours"]').hidden = false; document.getElementById("mo-qte-case").hidden = true; ecrire("mo-qte-mot", "Durée"); ecrire("mo-qte-sous", "Repris de votre dictée"); return; }
+    ecrire("qui-initiales", initiales(p.societe.nom));
+    ecrire("qui-nom", p.societe.nom);
+    ecrire("qui-prix", p.prix.nom + ", " + prixEnMots(p.prix));
+    ecrire("marge-valeur", "× " + format.format(margeDe(p.societe)));
+    ecrire("marge-sous", p.societe.marge ? "La sienne, sur sa fiche" : "Main d’œuvre, sur leur prix");
+    ecrire("mo-qte-mot", { "journée": "Durée", "heure": "Heures", "forfait": "Forfaits" }[p.prix.unite] || "Quantité, en " + p.prix.unite);
+    ecrire("mo-qte-sous", tape ? "À taper" : "À poser");
+    var tape = p.prix.unite !== "journée";
+    ecranDevis.querySelector('[data-compte="jours"]').hidden = tape;
+    document.getElementById("mo-qte-case").hidden = !tape;
+    ecrire("mo-jours", mo.qte + " " + enUnite(p.prix.unite, mo.qte));
+    ecrire("mo-calcul", String(mo.qte).replace(".", ",") + " " + enUnite(p.prix.unite, mo.qte) + " × " + format.format(p.prix.prix).replace(/,00$/, "") + " € × " + format.format(margeDe(p.societe)));
+    ecranDevis.querySelector('[data-compte="jours"] [data-pas="-1"]').disabled = mo.qte <= 1;
+  }
+  function rendreListe() {
+    var ul = document.getElementById("liste-partenaires");
+    ul.innerHTML = "";
+    PARTENAIRES.forEach(function (soc, i) {
+      var li = document.createElement("li");
+      li.innerHTML = '<div class="partenaire-nom"><span class="initiales-or"></span><b></b><small class="marge-du-partenaire"></small></div>';
+      li.querySelector(".initiales-or").textContent = initiales(soc.nom);
+      li.querySelector("b").textContent = soc.nom;
+      li.querySelector(".marge-du-partenaire").textContent = "× " + format.format(margeDe(soc));
+      soc.prix.forEach(function (pr, k) {
+        var b = document.createElement("button");
+        b.type = "button"; b.className = "prix-partenaire touche"; b.setAttribute("data-partenaire", i + ":" + k);
+        b.innerHTML = "<span></span><b></b>";
+        b.querySelector("span").textContent = pr.nom;
+        b.querySelector("b").textContent = prixEnMots(pr);
+        li.appendChild(b);
+      });
+      ul.appendChild(li);
+    });
+  }
+
   function rendreFeuilles() {
     rendreRepartition();
     ecrire("mo-hommes", String(mo.hommes));
@@ -1100,6 +1215,7 @@
     document.getElementById("mo-total").firstChild.textContent = euros(montantMo());
     ecranDevis.querySelector('[data-compte="hommes"] [data-pas="-1"]').disabled = mo.hommes <= 1;
     ecranDevis.querySelector('[data-compte="jours"] [data-pas="-1"]').disabled = mo.rang <= 0;
+    rendrePartenaire();
     ecrire("tva-bouton", "Ajouter la TVA à " + tvaTaux + " %");
     var sansAcompte = totaux({ mo: ajouts.mo, tva: ajouts.tva, remise: ajouts.remise, acompte: false });
     var acompte = arrondi(sansAcompte.ttc * acompteTaux / 100);
@@ -1131,7 +1247,7 @@
     Kit.fermerFeuilles(ecranDevis);
     var defile = ecranDevis.querySelector(".defile");
     if (etat === "devis") { ajouts = { mo: false, tva: false, remise: false, acompte: false }; }
-    if (etat === "devis" || etat === "tout") { mo.mode = "ligne"; mo.parts = null; remettreChoix("mo-mode", "ligne"); }
+    if (etat === "devis" || etat === "tout") { mo.mode = "ligne"; mo.parts = null; mo.qui = null; remettreChoix("mo-mode", "ligne"); montrerListe(false); }
     if (etat === "tout") { ajouts = { mo: true, tva: true, remise: true, acompte: true }; }
     rendre();
     var ancre = document.getElementById(etat === "tout" ? "ancre-totaux" : "ancre-ajouts");
@@ -1168,6 +1284,7 @@
       var compte = pas.closest(".petit-compteur").getAttribute("data-compte");
       var n = Number(pas.getAttribute("data-pas"));
       if (compte === "hommes") mo.hommes = Math.max(1, Math.min(20, mo.hommes + n));
+      else if (mo.qui) mo.qte = Math.max(1, Math.min(999, mo.qte + n));
       else mo.rang = Math.max(0, Math.min(DUREES.length - 1, mo.rang + n));
       rendre();
     }
@@ -1203,6 +1320,33 @@
       setTimeout(function () { dedans.scrollTo({ top: dedans.scrollHeight, behavior: "smooth" }); }, 60);
     }
   });
+  function montrerListe(oui) {
+    document.getElementById("mo-liste").hidden = !oui;
+    document.getElementById("mo-corps").hidden = oui;
+    if (oui) rendreListe();
+  }
+  document.getElementById("puce-partenaires").addEventListener("click", function () { montrerListe(document.getElementById("mo-liste").hidden); });
+  document.getElementById("liste-partenaires").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-partenaire]");
+    if (!b) return;
+    var ik = b.getAttribute("data-partenaire").split(":").map(Number);
+    mo.qui = { societe: PARTENAIRES[ik[0]], prix: PARTENAIRES[ik[0]].prix[ik[1]] };
+    mo.qte = mo.qui.prix.unite === "journée" ? Math.max(1, Math.round(DUREES[mo.rang][1])) : 1;
+    mo.parts = null;
+    document.getElementById("mo-qte-case").value = mo.qte + " " + mo.qui.prix.unite;
+    montrerListe(false);
+    rendre();
+  });
+  document.getElementById("mo-qte-case").addEventListener("input", function (e) {
+    var n = Number(e.target.value.replace(/[^\d,.]/g, "").replace(",", "."));
+    if (!(n > 0)) return;
+    mo.qte = Math.min(99999, n);
+    mo.parts = null;
+    rendre();
+  });
+  function revenirEquipe() { mo.qui = null; mo.parts = null; montrerListe(false); rendre(); }
+  document.getElementById("mon-equipe").addEventListener("click", revenirEquipe);
+  document.getElementById("revenir-equipe").addEventListener("click", revenirEquipe);
   document.getElementById("mo-tarif").addEventListener("input", function (e) {
     var v = parseFloat(String(e.target.value).replace(",", ".").replace(/[^\d.]/g, ""));
     mo.tarif = isFinite(v) ? v : 0;
