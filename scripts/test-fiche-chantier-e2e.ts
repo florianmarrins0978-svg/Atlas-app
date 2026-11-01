@@ -444,7 +444,9 @@ async function main() {
 
     // Sa décision « B » du 16 août : le client lit ce qui a été FAIT chez lui.
     // Trois lignes cochées sur vingt : les dix-sept autres n'ont rien à y faire.
-    const coches = (texte.match(/✓/g) ?? []).length;
+    // Les LIGNES, et non plus le caractère « ✓ » : la coche est un dessin
+    // depuis la planche du 31 octobre 2026 (`RapportEntretien`).
+    const coches = await pageClient.locator('[data-atlas="ligne-faite"]').count();
     assert.equal(coches, 3, `${coches} lignes affichées au client, au lieu des 3 cochées`);
 
     // Et la barre de navigation du patron n'a rien à faire au bas de la page

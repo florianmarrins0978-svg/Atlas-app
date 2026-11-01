@@ -53,6 +53,7 @@ export default function RapportEntretien({ rapport }: { rapport: RapportPublic }
             {groupe.lignes.map((l, i) => (
               <li
                 key={l.libelle}
+                data-atlas="ligne-faite"
                 className={`flex min-h-11 items-center gap-3 py-1.5 text-[16px] leading-[1.35] ${i > 0 ? "border-t" : ""}`}
                 style={{ borderColor: colors.lineSoft }}
               >
