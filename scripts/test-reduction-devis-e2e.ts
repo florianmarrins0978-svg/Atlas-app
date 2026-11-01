@@ -151,9 +151,10 @@ async function main() {
   });
 
   await cas("le chemin pour en poser une existe, et il est discret", async () => {
-    const bouton = page.getByRole("button", { name: /^\+ Remise$/ });
+    const bouton = page.locator('[data-atlas="poser-prix-accorde"]');
     assert.equal(await bouton.count(), 1, "aucun moyen d'accorder un prix sans dicter");
     await bouton.click();
+    await page.locator('[data-atlas="feuille-remise-valider"]').click();
     await page.waitForTimeout(900);
   });
 
@@ -260,7 +261,8 @@ async function main() {
   // pendant que la base, elle, n'en portait plus aucune. L'écran affirmait donc
   // une remise que le PDF n'imprimait pas.
   await cas("écrire 0 % la retire pour de bon, à l'écran comme en base", async () => {
-    await page.getByRole("button", { name: /^\+ Remise$/ }).click();
+    await page.locator('[data-atlas="poser-prix-accorde"]').click();
+    await page.locator('[data-atlas="feuille-remise-valider"]').click();
     await page.waitForTimeout(900);
 
     const champ = page.locator('input[aria-label="Remise, en pourcentage"]');
@@ -307,7 +309,8 @@ async function main() {
   const moins = () => page.getByRole("button", { name: /Retirer la remise/i });
 
   await cas("le « − » existe, et se touche : 26 px", async () => {
-    await page.getByRole("button", { name: /^\+ Remise$/ }).click();
+    await page.locator('[data-atlas="poser-prix-accorde"]').click();
+    await page.locator('[data-atlas="feuille-remise-valider"]').click();
     // **On attend la TRACE, jamais un délai** — et c'est le cas SUIVANT qui
     // paie quand on l'oublie : il lit la base juste après le « − » et exige d'y
     // trouver les 5 % que ce bouton vient de poser. Sous la charge de la CI,

@@ -36546,3 +36546,34 @@ que gardés en double — `main` n'a qu'une seule version de chacun.
 
 **Un appui dans la première seconde n'envoie rien** (`envoyerLaNote`). L'avion tombe sous le doigt qui vient de lancer la dictée : sans cette garde, un double appui enverrait une note d'une demi-seconde et la chaîne écrirait un devis à partir de rien. `test-anneau-dictee-e2e` l'éprouve, avec la place du disque à deux pixels près et les deux mots.
 
+
+## §536 : Les ajouts du devis s'ouvrent en feuilles : le chiffre tapé, le calcul montré avant
+
+**Sa décision du 1er novembre 2026 au soir**, devant la planche
+`appli/soignee/chantier.html?ecran=devis` : *« laisse comme tu as fait,
+ensuite code ça »*. Les cinq ajouts du devis deviennent des pastilles
+(`PastilleAjout.tsx`) ; la TVA, l'acompte et la remise s'ouvrent sur une
+grande case au pavé de chiffres (`FeuilleDuTaux.tsx`, sa réponse *« je dois
+pouvoir écrire ce que je veux »*), la main d'œuvre sur son calcul
+(`FeuilleMainDoeuvre.tsx`).
+
+**Ce qui a été décidé, et pourquoi :**
+
+| | |
+|---|---|
+| la feuille ne juge rien elle-même | l'écran lui passe `lire`, qui appelle `tauxTvaValide`, `pourcentValide`, `tauxCumuleValide` : les fonctions que le serveur oppose ensuite (§3, une seule règle) |
+| l'aperçu prend les totaux de l'écran | la remise montrée avant d'être posée passe par `totauxAvecReduction`, l'acompte par `echeancierDevis` : le chiffre montré est celui qui sera posé |
+| **le moment de l'acompte se lit, il ne se choisit pas** | la planche proposait trois moments ; en base, le moment SUIT le rang (`momentAcompte`), et sa correction du 12 septembre interdit qu'un troisième soit la fin du chantier. Un choix libre aurait permis un premier acompte « à mi-parcours » |
+| raccourcis | TVA 10, 5,5, 0 ; acompte : son réglage, 40, 50 (le premier seulement, les suivants sont des cumuls) ; remise 5, 10, 15 |
+| **le prix de la main d'œuvre se recalcule au serveur** | `ajouterMainDoeuvreChoisieAction` reçoit un choix (son équipe, ou l'identifiant d'un prix de partenaire et une quantité), jamais un prix ; elle rejoue `ligneDeSonEquipe` / `ligneDeSonPartenaire` sur ses prix et ses marges lus en base. Le tarif de son équipe vaut comme un prix tapé sur une ligne, et il arrive tel que la feuille l'a montré : effacé, la ligne arrive à chiffrer, jamais reprise d'office |
+| partenaire | `prixDesPartenaires` réutilise `prixDepuisAchat` : le même calcul qu'une ligne dictée. Sans marge, à chiffrer |
+| **les unités de la main d'œuvre tiennent** | `uniteAdmise` connaissait sept unités ; « jour/homme », écrit par la préparation du devis depuis le 21 octobre, retombait en « u » dès qu'on touchait la case. Elle admet maintenant « jour/homme », « jour » (journée) et « m » (lu « ml »), sans les ajouter aux pastilles de la case |
+| une ligne de main d'œuvre en une case | seulement au forfait, une fois (la forme du 13 octobre) ; en jours d'homme ou à l'heure, ses quatre cases, sans quoi le prix du jour se lirait comme le montant |
+
+**Ce qui n'est pas encore codé, et pourquoi :** la main d'œuvre RÉPARTIE sur un
+devis écrit. Ajouter chaque part au prix des lignes sans la garder ferait
+perdre « dont main d'œuvre HT » (la répartition de la préparation a déjà ce
+défaut : `appliquer-proposition.ts` ne pose pas le drapeau). La part de chaque
+ligne doit vivre en base (une colonne, en deux temps : invariant 9 de `CLAUDE.md`),
+jusqu'au papier et à la facture. La croix qui remplace le « − » doré et la
+ligne qui s'éclaire à l'arrivée attendent avec elle (`TODO.md`).

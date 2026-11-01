@@ -535,7 +535,13 @@ export type PoseAcompte =
   | { ok: true; acomptes: AcompteDevis[] }
   | { ok: false; raison: string };
 
-export async function poserAcompteSuivant(ctx: Ctx, devisId: string): Promise<PoseAcompte> {
+/**
+ * `taux` : le chiffre qu'il a tapé dans la feuille de l'acompte (sa réponse du
+ * 1er novembre 2026, *« je dois pouvoir écrire ce que je veux »*). Absent, la
+ * valeur d'office. Illisible, un refus en mots : jamais un acompte d'office
+ * posé à la place de celui qu'il a écrit.
+ */
+export async function poserAcompteSuivant(ctx: Ctx, devisId: string, taux?: string): Promise<PoseAcompte> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [d] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
     if (!d) return { ok: false, raison: "Ce devis est introuvable. Rechargez l'écran." };
@@ -556,7 +562,12 @@ export async function poserAcompteSuivant(ctx: Ctx, devisId: string): Promise<Po
             : "Les acomptes posés règlent déjà la totalité du devis.",
       };
     }
-    return { ok: true, acomptes: await ecrireAcomptes(tx, ctx.entrepriseId, devisId, [...actuels, suivant]) };
+    const tape = taux === undefined ? null : tauxCumuleValide(taux);
+    if (taux !== undefined && (tape === null || Number(tape) === 0)) {
+      return { ok: false, raison: "Écrivez un pourcentage, par exemple 30." };
+    }
+    const pose = tape === null ? suivant : { ...suivant, tauxCumule: tape };
+    return { ok: true, acomptes: await ecrireAcomptes(tx, ctx.entrepriseId, devisId, [...actuels, pose]) };
   });
 }
 

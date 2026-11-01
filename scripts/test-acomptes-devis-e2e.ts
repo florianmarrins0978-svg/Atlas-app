@@ -148,8 +148,10 @@ async function main() {
     const bouton = page.getByRole("button", { name: /Ajouter un acompte/ });
     assert.equal(await bouton.count(), 1, "le geste manque");
     await bouton.click();
+    await page.locator('[data-atlas="feuille-acompte-valider"]').click();
     await page.waitForTimeout(900);
     await bouton.click();
+    await page.locator('[data-atlas="feuille-acompte-valider"]').click();
     await page.waitForTimeout(900);
 
     const texte = lisible(await totaux().innerText());

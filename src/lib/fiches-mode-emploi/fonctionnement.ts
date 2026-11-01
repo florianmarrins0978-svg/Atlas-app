@@ -283,7 +283,7 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
       "Atlas ne fait pas encore de facture de situation. Pour être payé en plusieurs fois, demandez un acompte " +
       "sur le devis : la facture le reprend dans ses règlements reçus.",
     source: "src/app/chantiers/[id]/devis-complet/DevisCompletClient.tsx",
-    preuves: ["+ Ajouter un acompte"],
+    preuves: ['libelle="Ajouter un acompte"'],
     ailleurs: [{ source: "src/app/chantiers/[id]/facture/ReglementsRecus.tsx", preuves: ['aria-label="Ce que ce règlement est"'] }],
     absences: ["factureDeSituation", "facture de situation"],
   },

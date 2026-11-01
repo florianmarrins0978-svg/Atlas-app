@@ -114,7 +114,7 @@ export const FICHES_DEVIS: FicheModeEmploi[] = [
     geste: "Appuyez sur « + Ajouter une ligne » sous les lignes, puis écrivez la description, la quantité et le prix.",
     reserve: "Avec plusieurs TVA, chaque catégorie a son bouton : la ligne arrive dans celle où vous appuyez.",
     source: DC,
-    preuves: ["+ Ajouter une ligne"],
+    preuves: ['libelle="Ajouter une ligne"'],
   },
   {
     id: "devis-ligne-modifier",
@@ -177,9 +177,9 @@ export const FICHES_DEVIS: FicheModeEmploi[] = [
     ou: "un chantier, écran Devis, sous les lignes",
     intitule: "Mettre deux taux de TVA sur un même devis",
     motsCles: ["tva", "deux", "plusieurs", "taux", "categorie", "ajouter", "mixte"],
-    geste: "Appuyez sur « + Ajouter une TVA » : une catégorie s'ouvre, touchez son taux pour le changer.",
+    geste: "Appuyez sur « + Ajouter une TVA », tapez le taux ou touchez 10, 5,5 ou 0 %, puis « Ajouter la TVA ». Le taux se corrige ensuite en touchant le titre de la catégorie.",
     source: DC,
-    preuves: ["+ Ajouter une TVA", "Taux de TVA de la catégorie"],
+    preuves: ['libelle="Ajouter une TVA"', "Ajouter la TVA à", "Taux de TVA de la catégorie"],
   },
   {
     id: "devis-ligne-changer-tva",
@@ -209,10 +209,15 @@ export const FICHES_DEVIS: FicheModeEmploi[] = [
     ou: "un chantier, écran Devis, sous les lignes de chaque TVA",
     intitule: "Ajouter de la main d'œuvre au devis",
     motsCles: ["main", "oeuvre", "doeuvre", "credit", "impot", "services", "personne", "part"],
-    geste: "Appuyez sur « + Main d’œuvre », à côté de « + Ajouter une ligne » dans la TVA voulue, puis tapez le montant. Il s’ajoute au total, et la ligne « dont main d’œuvre HT » le reprend toute seule.",
+    geste: "Appuyez sur « Main d’œuvre », à côté de « + Ajouter une ligne » dans la TVA voulue : le calcul se montre, avec les hommes, la durée et votre prix du jour par homme. « Mes partenaires », à droite du titre, prend le prix d’un partenaire avec votre marge. « Ajouter la main d’œuvre » pose la ligne, et « dont main d’œuvre HT » la reprend toute seule.",
+    reserve: "Sans prix du jour par homme ni marge sur la main d’œuvre, la ligne arrive à chiffrer.",
     source: DC,
-    preuves: ["+ Main d’œuvre"],
+    preuves: ['libelle="Main d’œuvre"', 'setFeuille("mo")'],
     ailleurs: [
+      {
+        source: "src/app/chantiers/[id]/devis-complet/FeuilleMainDoeuvre.tsx",
+        preuves: ["Mes partenaires", "Ajouter la main d’œuvre", "Le jour par homme"],
+      },
       { source: "src/lib/main-doeuvre-devis.ts", preuves: ["dont main d’œuvre HT", "Main d’œuvre"] },
     ],
   },
@@ -222,10 +227,10 @@ export const FICHES_DEVIS: FicheModeEmploi[] = [
     ou: "un chantier, écran Devis, sous le Total TTC",
     intitule: "Demander un acompte sur le devis",
     motsCles: ["acompte", "avance", "arrhes", "paiement", "echeance", "pourcentage", "commande", "commencer"],
-    geste: "Appuyez sur « + Ajouter un acompte », puis touchez le pourcentage pour le changer. Le « − » devant l'acompte le retire.",
-    reserve: "Le reste à régler se calcule sous les acomptes. Le bouton disparaît quand il n'y a plus d'acompte à poser.",
+    geste: "Appuyez sur « Ajouter un acompte », tapez le pourcentage ou touchez un raccourci : le montant et le reste à régler se montrent avant d'ajouter. Le « − » devant l'acompte le retire.",
+    reserve: "Le moment suit l'ordre des acomptes : à la signature, à mi-parcours, à l'avancement. Le bouton disparaît quand il n'y a plus d'acompte à poser.",
     source: DC,
-    preuves: ["+ Ajouter un acompte"],
+    preuves: ['libelle="Ajouter un acompte"', "Ajouter l’acompte", "momentAcompte(acompteAProposer.rang)"],
     ailleurs: [
       { source: "src/app/chantiers/[id]/devis-complet/LigneAcompte.tsx", preuves: ["Retirer l'acompte "] },
       { source: "src/lib/acomptes-devis.ts", preuves: ["Reste à régler après acompte"] },
@@ -612,13 +617,14 @@ export const FICHES_DEVIS: FicheModeEmploi[] = [
       "accorde",
       "facture",
     ],
-    geste: "Appuyez sur « + Remise », puis renseignez le pourcentage.",
+    geste: "Appuyez sur « + Remise », ou « Remise » sous le total du devis, puis renseignez le pourcentage. Sur le devis, la feuille montre ce qu'elle retire avant de l'appliquer.",
     // **La pièce commune, et non plus l'écran du devis** : le geste est monté
     // par les deux écrans depuis qu'il l'a demandé sur la facture. Ancrée sur
     // un seul des deux, cette fiche rougirait au premier déménagement — c'est
     // ce qui vient d'arriver.
     source: "src/components/atlas/Remise.tsx",
     preuves: ["Remise, en pourcentage", "+ {LIBELLE_REDUCTION}"],
+    ailleurs: [{ source: DC, preuves: ["Appliquer la remise", 'libelle="Remise"'] }],
   },
   {
     id: "devis-apercu",

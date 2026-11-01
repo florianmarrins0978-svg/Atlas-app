@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { ADRESSE } from "./_adresse";
+import { poserUneJourneeA } from "./_main-oeuvre-e2e";
 
 /**
  * ─── SES TROIS ACOMPTES SURVIVENT À LA REMISE ET À LA MAIN D'ŒUVRE ──────────
@@ -106,6 +107,7 @@ async function main() {
   await cas("les trois acomptes se posent — 30, 50, 75", async () => {
     for (const _ of [1, 2]) {
       await boutonAcompte().click();
+      await page.locator('[data-atlas="feuille-acompte-valider"]').click();
       await page.waitForTimeout(900);
     }
     assert.deepEqual(await quandLaBasePorte(3), ["30.00", "50.00", "75.00"]);
@@ -113,7 +115,8 @@ async function main() {
 
   // ── SA SÉQUENCE, dans son ordre : la remise, puis la main d'œuvre ─────────
   await cas("la remise de 5 % ne touche PAS aux acomptes", async () => {
-    await page.getByRole("button", { name: /^\+ Remise$/ }).click();
+    await page.locator('[data-atlas="poser-prix-accorde"]').click();
+    await page.locator('[data-atlas="feuille-remise-valider"]').click();
     const champ = page.locator('input[aria-label*="emise"]').first();
     await champ.fill("5");
     await page.keyboard.press("Tab");
@@ -127,10 +130,7 @@ async function main() {
 
   await cas("la main d'œuvre ne touche PAS aux acomptes", async () => {
     await page.locator('[data-atlas="poser-main-doeuvre"]').first().click();
-    const champ = page.locator('input[aria-label*="Montant de la main d’œuvre"]');
-    await champ.waitFor({ timeout: 10_000 });
-    await champ.fill("2546");
-    await page.keyboard.press("Tab");
+    await poserUneJourneeA(page, "2546");
     await page.waitForTimeout(1200);
     assert.deepEqual(
       await quandLaBasePorte(3),
@@ -143,6 +143,7 @@ async function main() {
   // (20 % et 10 %), et la ligne de 42 € est arrivée entre les deux captures.
   await cas("une seconde TVA, et sa ligne, ne touchent PAS aux acomptes", async () => {
     await page.getByRole("button", { name: /Ajouter une TVA/ }).click();
+    await page.locator('[data-atlas="feuille-tva-valider"]').click();
     await page.waitForTimeout(1000);
     const zones = page.locator('textarea[aria-label*="escription"]');
     const rang = (await zones.count()) - 1;
@@ -183,6 +184,7 @@ async function main() {
     for (const _ of [1, 2]) {
       assert.equal(await boutonAcompte().count(), 1, "le geste d'ajout a disparu alors qu'il reste un moment");
       await boutonAcompte().click();
+      await page.locator('[data-atlas="feuille-acompte-valider"]').click();
       await page.waitForTimeout(900);
     }
     assert.deepEqual(
@@ -206,9 +208,10 @@ async function main() {
     }
     assert.deepEqual(await quandLaBasePorte(0), [], "le retrait n'a pas tout enlevé");
 
-    const bouton = boutonAcompte();
-    await bouton.click();
-    await bouton.click();
+    // Depuis la feuille du 1er novembre 2026, le geste qui POSE est son
+    // bouton : c'est lui que le doigt frappe deux fois.
+    await boutonAcompte().click();
+    await page.locator('[data-atlas="feuille-acompte-valider"]').dblclick();
     await page.waitForTimeout(1500);
     const enBase2 = await enBase();
     const aLEcran = await page.locator('input[data-atlas="taux-acompte"]').count();

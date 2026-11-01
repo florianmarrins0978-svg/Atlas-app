@@ -139,6 +139,7 @@ async function main() {
     const bouton = page.getByRole("button", { name: "+ Ajouter une TVA" });
     assert.equal(await bouton.count(), 1, "aucun moyen d'ajouter une TVA");
     await bouton.click();
+    await page.locator('[data-atlas="feuille-tva-valider"]').click();
     await page.waitForTimeout(1200);
 
     const titres = page.locator('input[aria-label*="Taux de TVA de la catégorie"]');
