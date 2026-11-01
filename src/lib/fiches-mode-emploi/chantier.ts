@@ -201,7 +201,7 @@ export const FICHES_CHANTIER: FicheModeEmploi[] = [
     geste: "Touchez « Je rédige à la main », en bas de la fiche client : le devis s'ouvre, vide.",
     reserve: "Le bouton disparaît pendant qu'on dicte.",
     source: FICHE,
-    preuves: ["Je rédige à la main", "!dicteeEnCours"],
+    preuves: ["Je rédige à la main", "dicteeEnCours ? \"invisible\""],
   },
   {
     id: "chantier-civilite",
