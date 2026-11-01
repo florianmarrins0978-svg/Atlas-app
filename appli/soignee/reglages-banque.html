@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ma banque, soignée</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  MA BANQUE (src/app/reglages/banque/page.tsx, src/lib/accord-bancaire.ts,
+  src/lib/virement-en-mots.ts, src/server/banque/lecture.ts).
+
+  Sa demande du 1er novembre 2026, devant la planche du 23 octobre
+  (appli/banque-a-essayer.html) : « tu penses pouvoir l'améliorer, la rendre
+  plus jolie ? ». La planche du 23 octobre EST l'écran d'aujourd'hui, codé tel
+  quel ; la soigner seule n'aurait rien changé chez lui. Cette planche-ci
+  rejoint donc les seize rubriques des Réglages soignés, à côté de la capture
+  du vrai écran (aujourdhui/reglages-banque.jpg, prise sur des données de
+  démonstration : ses vraies lignes ne vont pas dans un dépôt public).
+
+  Ce qui l'a fait naître, le même soir : il a scanné, rien n'est venu, et rien
+  sur Ma banque ne disait quand la banque avait été lue ni jusqu'où. La planche
+  le dit, avec ce que la base garde déjà (liaisons_bancaires.lu_le,
+  historique_jours, historique_refus ; mouvements_bancaires par sens).
+
+  Les mots qui viennent d'une règle gardent ceux de la règle : l'accord
+  (accordEnMots), la question du virement (questionDe, raisonDe), la profondeur
+  refusée (page.tsx), le refus d'Enable Banking (enable-banking.ts).
+*/
+
+/* Le compte : la banque en serif, son état en pastille, puis ses trois faits. */
+.compte { padding: 0 18px; overflow: hidden; }
+.compte-tete { display: flex; align-items: center; gap: 14px; padding: 18px 0 16px; }
+.compte-tete .ligne-nom { font-size: 21px; }
+.compte-tete .etat { margin-top: 6px; }
+.compte .reglage-valeur { font-size: 18px; }
+.compte .reglage.manque .reglage-valeur { color: var(--atlas-carteAmbreTexte); }
+.compte .reglage.refus .reglage-libelle, .compte .reglage.refus .reglage-sous { color: var(--atlas-carteRougeTexte); }
+.compte .reglage.refus .reglage-sous { font-weight: 600; }
+
+/* Le relevé depuis le début du dossier : deux colonnes, un filet entre elles. */
+.releve { padding: 0 18px; overflow: hidden; }
+.releve-chiffres { display: grid; grid-template-columns: 1fr 1fr; padding: 16px 0 14px; }
+.releve-chiffres > div { padding-right: 12px; }
+.releve-chiffres > div + div { padding: 0 0 0 16px; box-shadow: inset 1px 0 0 var(--atlas-line); }
+.releve-mot { display: block; font-size: 14px; font-weight: 600; color: var(--atlas-inkSoft); }
+.releve-nombre { display: block; margin-top: 2px; font: 400 22px/1.2 var(--serif); font-variant-numeric: tabular-nums lining-nums; }
+.releve-somme { display: block; margin-top: 2px; font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums lining-nums; }
+.releve .ligne { min-height: 60px; }
+.releve .ligne::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
+.releve .ligne-nom { font-size: 17px; }
+.releve .ligne-fin .ico { color: var(--atlas-or); }
+
+/* Les virements reçus : le jour en grand, le nom, le montant en vert. */
+.virements-tete { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 28px 0 10px; }
+.virements-tete .rubrique, .virements-tete .discret { margin: 0; }
+.virements { padding: 0 18px; }
+.virement { align-items: flex-start; padding: 16px 0; }
+.virement .jour { margin-top: 2px; }
+.virement-nom { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.virement-nom .ligne-nom { font-size: 17.5px; }
+.virement-nom .sans-nom { font: 500 15px/1.35 var(--sans); letter-spacing: 0.01em; }
+.virement-montant { flex: none; font: 400 18px/1.3 var(--serif); font-variant-numeric: tabular-nums lining-nums;
+                    color: var(--atlas-montantEntree); }
+/* Le libellé de la banque, entier sur deux lignes : coupé à une, il ne disait rien. */
+.libelle-banque { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+                  margin-top: 4px; font-size: 13.5px; line-height: 1.4; color: var(--atlas-inkSoft); overflow-wrap: anywhere; }
+.virement .etat { margin-top: 10px; }
+
+/* La question d'un virement : la carte verte de l'accueil, sa planche A du 23 octobre. */
+.question { margin-top: 4px; }
+.question .carte-ton-texte b { font-weight: 400; color: var(--atlas-montantEntree); }
+.question-raison { margin: 8px 0 0; font-size: 14.5px; line-height: 1.45; color: var(--atlas-carteVertTexte); }
+.question-demande { margin: 12px 0 0; font: 400 19px/1.3 var(--serif); }
+.question .carte-ton-pied .bouton { min-height: 52px; }
+
+/* Ce qu'Atlas fait, et ne fait pas, sur ce compte : trois lignes et leur dessin. */
+.confiance { padding: 0 18px; }
+.confiance .ligne { min-height: 58px; padding: 10px 0; }
+.confiance .ligne-nom { font: 400 15.5px/1.4 var(--sans); }
+.confiance .ico { color: var(--atlas-or); }
+
+/* Un titre de rubrique premier de son bloc garde sa respiration : le kit la
+   retire au premier enfant, pensé pour le haut de l'écran seulement. */
+[data-ecran-panneau="banque"] [data-si-etat] > .rubrique:first-child { margin-top: 28px; }
+.compte sup { font-size: 0.6em; line-height: 0; }
+.pl-notes sup { font-size: 0.6em; line-height: 0; }
+
+.delier { display: flex; justify-content: center; margin-top: 20px; }
+
+/* Choisir sa banque, quand aucune n'est reliée. */
+.choisir select.champ-saisie { appearance: none; -webkit-appearance: none; font: 400 18px/1.3 var(--serif); }
+.porte-entreprise { margin-top: 6px; font-size: 14.5px; color: var(--atlas-inkSoft); }
+.porte-entreprise summary { min-height: 48px; display: flex; align-items: center; cursor: pointer;
+                            text-decoration: underline; text-underline-offset: 3px; list-style: none; }
+.porte-entreprise summary::-webkit-details-marker { display: none; }
+.porte-entreprise label { display: flex; align-items: center; gap: 10px; min-height: 48px; color: var(--atlas-ink); }
+.porte-entreprise input { width: 20px; height: 20px; accent-color: var(--atlas-plein); }
+
+/* Le sommaire des Réglages, recopié de reglages.html, avec Ma banque à sa place. */
+.identite { display: flex; align-items: center; gap: 14px; }
+.identite-sceau { width: 52px; height: 52px; flex: none; display: grid; place-items: center; border-radius: 50%;
+                  box-shadow: inset 0 0 0 1.5px var(--atlas-or); font: 400 22px/1 var(--serif); color: var(--atlas-or); }
+.identite .ligne-nom { font-size: 21px; }
+.paquet { padding: 0 18px; }
+.paquet .ligne { min-height: 60px; }
+.paquet .ligne .ico.rubrique-ico { color: var(--atlas-or); }
+.paquet .ligne-fin .ico, .identite .ligne-fin .ico { color: var(--atlas-or); }
+.paquet .neuve { background: color-mix(in srgb, var(--atlas-or) 10%, transparent); margin: 0 -18px; padding-left: 18px; padding-right: 18px; }
+.reserve { padding-top: 56px; }
+</style>
+</head>
+<body class="pl pl-pilules">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="reglages.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Réglages</a>
+  <h1 class="pl-titre">Ma banque</h1>
+  <p class="pl-verdict">Ma banque dit enfin <b>quand la banque a été lue, et jusqu'où</b>. Le relevé du dossier en cours se compte en entrées et en sorties, et chaque virement porte son état en couleur.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <!-- ═══ PROPOSÉ ═══ -->
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats">
+        <button type="button" data-etat="relie" aria-pressed="true">Reliée</button>
+        <button type="button" data-etat="question">Un client a payé</button>
+        <button type="button" data-etat="bientot">Accord bientôt fini</button>
+        <button type="button" data-etat="refus">La banque refuse</button>
+        <button type="button" data-etat="pas-relie">Pas encore reliée</button>
+        <button type="button" data-etat="salarie">Un salarié</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre" data-etat="relie" id="ecran-propose">
+          <div class="defile">
+
+            <div data-ecran-panneau="banque">
+              <div class="tete-ronds">
+                <button class="rond-creux" type="button" data-vers="reglages" aria-label="Retour aux réglages"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+                <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              </div>
+              <header class="tete" style="margin-top:0"><h1 class="tete-titre">Ma banque</h1></header>
+
+              <!-- ─── Le compte relié ─── -->
+              <div data-si-etat="relie question bientot refus">
+                <div class="plage compte">
+                  <div class="compte-tete">
+                    <span class="pastille-ico" data-ton="vert" data-si-etat="relie question"><svg class="ico" aria-hidden="true"><use href="#i-banque"/></svg></span>
+                    <span class="pastille-ico" data-ton="ambre" data-si-etat="bientot"><svg class="ico" aria-hidden="true"><use href="#i-banque"/></svg></span>
+                    <span class="pastille-ico" data-ton="rouge" data-si-etat="refus"><svg class="ico" aria-hidden="true"><use href="#i-banque"/></svg></span>
+                    <span class="ligne-corps">
+                      <span class="ligne-nom">Crédit Mutuel</span>
+                      <span class="etat" data-ton="vert" data-si-etat="relie question">Reliée</span>
+                      <span class="etat" data-ton="ambre" data-si-etat="bientot">Accord à renouveler</span>
+                      <span class="etat" data-ton="rouge" data-si-etat="refus">Pas lue</span>
+                    </span>
+                  </div>
+
+                  <div class="reglage" data-si-etat="relie question bientot">
+                    <span class="reglage-libelle">Dernière lecture</span>
+                    <span class="reglage-valeur">Aujourd'hui à 20 h 24</span>
+                    <span class="reglage-sous">Prochaine lecture possible à 20 h 54.</span>
+                  </div>
+                  <div class="reglage refus" data-si-etat="refus">
+                    <span class="reglage-libelle">Dernière lecture</span>
+                    <span class="reglage-valeur">Aujourd'hui à 20 h 24, sans réponse</span>
+                    <span class="reglage-sous">Enable Banking ne répond pas. Réessayez dans un moment.</span>
+                  </div>
+
+                  <div class="reglage" data-si-etat="relie question bientot">
+                    <span class="reglage-libelle">Relevé lu depuis</span>
+                    <span class="reglage-valeur">Le 1<sup>er</sup> novembre 2021</span>
+                  </div>
+                  <div class="reglage manque" data-si-etat="refus">
+                    <span class="reglage-libelle">Relevé lu depuis</span>
+                    <span class="reglage-valeur">Le 3 août 2026</span>
+                    <span class="reglage-sous">La banque ne rend que 90 jours. Elle refuse davantage.</span>
+                  </div>
+
+                  <div class="reglage" data-si-etat="relie question refus">
+                    <span class="reglage-libelle">Votre accord</span>
+                    <span class="reglage-valeur">Jusqu'au 25 janvier</span>
+                  </div>
+                  <div class="reglage manque" data-si-etat="bientot">
+                    <span class="reglage-libelle">Votre accord</span>
+                    <span class="reglage-valeur">Jusqu'au 6 novembre</span>
+                    <span class="reglage-sous">Après, les paiements se noteront à la main.</span>
+                  </div>
+                </div>
+                <button class="bouton bouton-plein mt-16" type="button" data-si-etat="bientot" data-note="Sur la planche, rien ne part chez la banque.">Renouveler l'accord</button>
+              </div>
+
+              <!-- ─── Le relevé du dossier en cours ─── -->
+              <div data-si-etat="relie question bientot refus">
+                <p class="rubrique rubrique-or">Le relevé</p>
+                <div class="plage releve">
+                  <div class="releve-chiffres">
+                    <div>
+                      <span class="releve-mot">Entrées</span>
+                      <span class="releve-nombre">1</span>
+                      <span class="releve-somme entree">1 240,00 €</span>
+                    </div>
+                    <div>
+                      <span class="releve-mot">Sorties</span>
+                      <span class="releve-nombre">2</span>
+                      <span class="releve-somme sortie">141,30 €</span>
+                    </div>
+                  </div>
+                  <a class="ligne touche" href="termines-comptable.html">
+                    <span class="ligne-corps">
+                      <span class="ligne-nom">Pour mon comptable</span>
+                      <span class="ligne-situation">Dossier en cours depuis le 28 octobre</span>
+                    </span>
+                    <span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>
+                  </a>
+                </div>
+              </div>
+
+              <!-- ─── Un client a payé : la même question qu'à l'accueil ─── -->
+              <div data-si-etat="question" class="question">
+                <p class="rubrique rubrique-or">À répondre</p>
+                <div class="carte-ton" data-ton="vert">
+                  <p class="carte-ton-titre">Virement reçu</p>
+                  <p class="carte-ton-texte">M. et Mme Roux, <b>1 240,00 €</b></p>
+                  <p class="question-raison">Le numéro de la facture est écrit sur le virement.</p>
+                  <p class="question-demande">C'est la facture F2026-000031 ?</p>
+                  <div class="carte-ton-pied rang-boutons">
+                    <button class="bouton bouton-plein" type="button" data-va-etat="relie">Oui</button>
+                    <button class="bouton bouton-creux" type="button" data-note="Noté comme sans facture.">Non</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ─── Les virements reçus ─── -->
+              <div data-si-etat="relie question bientot refus">
+                <div class="virements-tete">
+                  <p class="rubrique rubrique-or">Virements reçus</p>
+                  <p class="discret">30 derniers jours</p>
+                </div>
+                <div class="plage virements">
+                  <ul class="liste">
+                    <li><div class="ligne virement">
+                      <span class="jour"><b>30</b><span>oct.</span></span>
+                      <span class="ligne-corps">
+                        <span class="virement-nom"><span class="ligne-nom">M. et Mme Roux</span><span class="virement-montant">1 240,00 €</span></span>
+                        <span class="libelle-banque">VIR SEPA M ET MME ROUX FACTURE F2026 000031</span>
+                        <span class="etat" data-ton="vert" data-si-etat="relie bientot refus">Noté sur une facture</span>
+                        <span class="etat" data-ton="ambre" data-si-etat="question">À répondre</span>
+                      </span>
+                    </div></li>
+                    <li><div class="ligne virement">
+                      <span class="jour"><b>22</b><span>oct.</span></span>
+                      <span class="ligne-corps">
+                        <span class="virement-nom"><span class="ligne-nom sans-nom">DUPONT ENTRETIEN HAIE OCTOBRE</span><span class="virement-montant">360,00 €</span></span>
+                        <span class="etat">Noté comme sans facture</span>
+                      </span>
+                    </div></li>
+                    <li><div class="ligne virement">
+                      <span class="jour"><b>14</b><span>oct.</span></span>
+                      <span class="ligne-corps">
+                        <span class="virement-nom"><span class="ligne-nom sans-nom">MUTUALITE SOCIALE AGRICO VIR NORM</span><span class="virement-montant">18,05 €</span></span>
+                        <span class="etat">Noté comme sans facture</span>
+                      </span>
+                    </div></li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- ─── Aucune banque reliée ─── -->
+              <div data-si-etat="pas-relie">
+                <div class="plage choisir">
+                  <label class="champ">
+                    <span class="champ-libelle">Votre banque</span>
+                    <select class="champ-saisie">
+                      <option>Crédit Mutuel</option>
+                      <option>Crédit Agricole</option>
+                      <option>Banque Populaire</option>
+                      <option>Caisse d'Épargne</option>
+                      <option>LCL</option>
+                      <option>BNP Paribas</option>
+                      <option>Société Générale</option>
+                      <option>La Banque Postale</option>
+                    </select>
+                  </label>
+                  <button class="bouton bouton-plein mt-16" type="button" data-note="Sur la planche, rien ne part chez la banque.">Relier ma banque</button>
+                  <details class="porte-entreprise">
+                    <summary>Votre banque vous a donné un accès entreprise à carte ?</summary>
+                    <label><input type="checkbox">Utiliser l'accès entreprise</label>
+                  </details>
+                </div>
+              </div>
+
+              <!-- ─── Ce qu'Atlas fait sur ce compte ─── -->
+              <div data-si-etat="relie question bientot refus pas-relie">
+                <p class="rubrique rubrique-or">Sur ce compte</p>
+                <div class="plage confiance">
+                  <ul class="liste">
+                    <li><div class="ligne"><svg class="ico" aria-hidden="true"><use href="#i-oeil"/></svg><span class="ligne-corps"><span class="ligne-nom">Atlas lit les entrées et les sorties.</span></span></div></li>
+                    <li><div class="ligne"><svg class="ico" aria-hidden="true"><use href="#i-cadenas"/></svg><span class="ligne-corps"><span class="ligne-nom">Il ne peut ni payer, ni déplacer de l'argent.</span></span></div></li>
+                    <li><div class="ligne"><svg class="ico" aria-hidden="true"><use href="#i-document"/></svg><span class="ligne-corps"><span class="ligne-nom">Il ne met rien au relevé de TVA sans votre oui.</span></span></div></li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="delier" data-si-etat="relie question bientot refus">
+                <button class="bouton-texte alerte" type="button" data-note="Sur la planche, la banque reste reliée.">Délier ma banque</button>
+              </div>
+
+              <div class="vide reserve" data-si-etat="salarie">
+                <svg class="ico" aria-hidden="true"><use href="#i-cadenas"/></svg>
+                <p class="vide-titre">Ces réglages appartiennent au patron de l'entreprise.</p>
+                <p class="vide-texte">Le compte relié appartient au patron.</p>
+              </div>
+            </div>
+
+            <!-- ─── Le sommaire des Réglages, Ma banque à sa place ─── -->
+            <div data-ecran-panneau="reglages" hidden>
+              <header class="tete">
+                <h1 class="tete-titre">Réglages</h1>
+                <button class="rond" type="button" aria-label="L'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              </header>
+
+              <a class="plage identite touche" href="reglages-identite.html" style="text-decoration:none;color:inherit">
+                <span class="identite-sceau" aria-hidden="true">J</span>
+                <span class="ligne-corps">
+                  <span class="ligne-nom">Jardins Démo</span>
+                  <span class="ligne-situation">Mon entreprise</span>
+                </span>
+                <span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>
+              </a>
+
+              <p class="rubrique rubrique-or">L'entreprise</p>
+              <div class="plage paquet">
+                <ul class="liste">
+                  <li class="neuve"><button class="ligne touche" type="button" data-vers="banque"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-banque"/></svg><span class="ligne-corps"><span class="ligne-nom">Ma banque</span><span class="ligne-situation">Crédit Mutuel, lue aujourd'hui</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></button></li>
+                  <li><a class="ligne touche" href="reglages-equipe.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-equipe"/></svg><span class="ligne-corps"><span class="ligne-nom">Équipe</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                  <li><a class="ligne touche" href="reglages-vehicules.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-vehicule"/></svg><span class="ligne-corps"><span class="ligne-nom">Véhicules</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                  <li><a class="ligne touche" href="reglages-organigramme.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-organigramme"/></svg><span class="ligne-corps"><span class="ligne-nom">Organigramme</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                </ul>
+              </div>
+              <p class="rubrique rubrique-or">Pour les devis</p>
+              <div class="plage paquet">
+                <ul class="liste">
+                  <li><a class="ligne touche" href="reglages-tarifs.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-etiquette"/></svg><span class="ligne-corps"><span class="ligne-nom">Tarifs &amp; catalogue</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                  <li><a class="ligne touche" href="reglages-documents.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-document"/></svg><span class="ligne-corps"><span class="ligne-nom">Devis &amp; factures</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                  <li><a class="ligne touche" href="reglages-fournisseurs.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-carton"/></svg><span class="ligne-corps"><span class="ligne-nom">Fournisseurs et partenaires</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                </ul>
+              </div>
+              <p class="rubrique rubrique-or">L'application</p>
+              <div class="plage paquet">
+                <ul class="liste">
+                  <li><a class="ligne touche" href="reglages-ia.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-etincelle"/></svg><span class="ligne-corps"><span class="ligne-nom">Atlas IA</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                  <li><a class="ligne touche" href="reglages-agenda.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-calendrier"/></svg><span class="ligne-corps"><span class="ligne-nom">Mon agenda</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                  <li><a class="ligne touche" href="reglages-abonnement.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-couronne"/></svg><span class="ligne-corps"><span class="ligne-nom">Abonnement</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                  <li><a class="ligne touche" href="reglages-donnees.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-bouclier-coche"/></svg><span class="ligne-corps"><span class="ligne-nom">Mes données</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                </ul>
+              </div>
+            </div>
+
+          </div>
+
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html">Terminés</a>
+              <a class="barre-onglet" href="paysage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html" aria-current="page">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ AUJOURD'HUI ═══ -->
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre">
+        <div class="cadre-capture"><img src="aujourdhui/reglages-banque.jpg" alt="L'écran Ma banque tel qu'il est aujourd'hui, sur des données de démonstration"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>La dernière lecture de la banque se lit ici, avec l'heure où la suivante devient possible. C'est ce qui manquait le 1<sup>er</sup> novembre : un scan qui ne trouve rien ne disait pas si la banque avait été relue.</li>
+      <li>Jusqu'où la banque a rendu le relevé : cinq ans quand elle accepte, sinon la date et son refus, en ambre. Touchez « La banque refuse ».</li>
+      <li>Le relevé du dossier en cours se compte : les entrées en vert, les sorties en rouge. Un appui ouvre Pour mon comptable.</li>
+      <li>La phrase fausse est corrigée : Atlas lit les entrées ET les sorties depuis le 27 octobre.</li>
+      <li>Chaque virement : le jour en grand, le montant en vert, son état sur une pastille. Le libellé de la banque s'écrit entier au lieu d'être coupé, et ne se redit pas quand il sert déjà de nom.</li>
+      <li>Un client qui paie fait naître la même carte verte qu'à l'accueil, avec Oui ou Non. Touchez « Un client a payé », puis Oui.</li>
+      <li>Délier part tout en bas, en rouge, loin des autres gestes. Plus de libellé doré sous le titre, comme les seize autres rubriques.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>La question du virement et les refus de la banque gardent les mots de l'appli. La date de l'accord ne se dit plus qu'une fois.</li>
+      <li>La banque se lit au plus une fois par demi-heure : c'est la règle des banques, quatre lectures par jour sans vous.</li>
+      <li>Atlas lit, il ne paie rien et ne met rien à la TVA sans votre oui.</li>
+      <li>Ma banque reste réservée au patron. Touchez « Un salarié ».</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>Ma banque dans les Réglages. Aujourd'hui elle n'y est pas, exprès : sans contrat avec Enable Banking, seuls vos propres comptes peuvent être reliés, et une ligne visible chez chaque artisan ouvrirait une porte qui refuse. Proposé : la ligne apparaît dans L'entreprise dès qu'une banque est reliée, et seulement là. Touchez le retour en haut à gauche.</li>
+      <li>Le nom d'un virement sans payeur : le libellé de la banque sans « VIR INST » ni « VIR SEPA » devant, comme sur la planche ? Atlas n'invente aucun nom.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="reglages-donnees.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Mes données</a>
+  <a href="reglages-compte.html">Mon compte<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var ecran = document.getElementById("ecran-propose");
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-note]");
+    if (b) { Kit.note(b, b.getAttribute("data-note")); return; }
+
+    /* Une puce du haut ramène toujours sur Ma banque. */
+    if (e.target.closest(".pl-etats button[data-etat]")) {
+      ecran.querySelectorAll("[data-ecran-panneau]").forEach(function (p) { p.hidden = p.getAttribute("data-ecran-panneau") !== "banque"; });
+    }
+  });
+});
+</script>
+</body>
+</html>

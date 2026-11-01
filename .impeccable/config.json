@@ -530,6 +530,15 @@
         ],
         "createdAt": "2026-11-01T17:17:01.528Z",
         "reason": "Le point rouge du chrono pendant la dictée : celui de l'appli (globals.css .atlas-pastille, atlas-battre-pastille), lié à un enregistrement réellement en cours"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "appli/soignee/reglages-banque.html"
+        ],
+        "createdAt": "2026-11-01T19:39:29.932Z",
+        "reason": "Décisions du patron des 25 et 28 octobre 2026 (kit.css, TODO.md) : vert des boutons #7d9a6d gardé, titres de rubrique dans l'or de l'appli"
       }
     ]
   }
