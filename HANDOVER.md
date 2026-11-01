@@ -12,7 +12,7 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 ---
 ## LES PLANCHES DU 31 OCTOBRE, CODÉES (1er novembre 2026)
 
-**Les pièges :** les pages du client ne reçoivent aucune charte (`estPageDuClient`) : leurs jetons retombent sur Arborea, ne jamais y écrire une couleur en clair. Le mot pour l'artisan du devis n'existe dans le document qu'une fois ouvert (`data-atlas="ouvrir-le-mot"`) : une suite qui remplit `#precision` l'ouvre d'abord, comme le client. Le succès du contrat rend la DÉCISION (`{ succes: "accepte" | "refuse" }`) et c'est la page qui écrit la phrase. Les photos de Ses coordonnées vont sur le DERNIER chantier du client (`dernierChantierDuClient`), rien s'il n'en a pas. Le serveur de développement garde parfois l'ancienne version d'un module après un export ajouté (« … is not a function ») : le relancer par son numéro de processus.
+**Les pièges :** les pages du client ne reçoivent aucune charte (`estPageDuClient`) : leurs jetons retombent sur Arborea, ne jamais y écrire une couleur en clair. Le mot pour l'artisan du devis n'existe dans le document qu'une fois ouvert (`data-atlas="ouvrir-le-mot"`) : une suite qui remplit `#precision` l'ouvre d'abord, comme le client. Le succès du contrat rend la DÉCISION (`{ succes: "accepte" | "refuse" }`) et c'est la page qui écrit la phrase. « Ses coordonnées » (Vos clients, le client, « Modifier ses coordonnées ») n'a PAS de photos, sa décision du 1er novembre : ne pas les y remettre. Le serveur de développement garde parfois l'ancienne version d'un module après un export ajouté (« … is not a function ») : le relancer par son numéro de processus.
 
 ---
 ## IMPORTER UN TABLEAU (28 octobre 2026)

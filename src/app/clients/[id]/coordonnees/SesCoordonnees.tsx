@@ -9,7 +9,6 @@ import AvisNumeroTva from "@/components/atlas/AvisNumeroTva";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import type React from "react";
 import { colors, libelleCaps } from "@/lib/design-tokens";
-import Pellicule, { type VignettePhoto } from "@/app/chantiers/[id]/Pellicule";
 import { casesDuClient, type CiviliteClient } from "@/lib/civilite";
 import { DEBUT_NUMERO_TVA } from "@/lib/autoliquidation";
 import { enregistrerSesCoordonneesAction } from "./actions";
@@ -24,8 +23,11 @@ import { enregistrerSesCoordonneesAction } from "./actions";
  * pas la même chose. Il porte l'adresse des TRAVAUX et le micro du chantier,
  * et le client y reprend l'adresse du chantier quand il n'en a pas à lui. Le
  * rouvrir ici aurait demandé un chantier qui n'existe pas. Ce qui est commun
- * depuis le 1er novembre 2026, c'est sa MISE EN PAGE, et la pellicule de son
- * dernier chantier, sous Enregistrer.
+ * depuis le 1er novembre 2026, c'est sa MISE EN PAGE.
+ *
+ * **Pas de photos ici — sa décision du 1er novembre 2026**, une fois l'écran
+ * vu dans l'appli : *« ajouter des photos est inutile »*. On y corrige les
+ * coordonnées d'un client ; les photos vivent sur ses chantiers.
  *
  * Ce qui est commun reste commun : les pastilles de civilité
  * (`ChoixCivilite`), la case d'adresse et ses suggestions (`ChampAdresse`), la
@@ -36,7 +38,6 @@ export default function SesCoordonnees({
   clientId,
   depart,
   retour,
-  photos,
 }: {
   clientId: string;
   depart: {
@@ -50,8 +51,6 @@ export default function SesCoordonnees({
     codeService: string;
   };
   retour: { href: string; libelle: string };
-  /** Son dernier chantier et ses photos ; `null` sans chantier. */
-  photos: { chantierId: string; initiales: VignettePhoto[] } | null;
 }) {
   const router = useRouter();
   const [nom, setNom] = useState(depart.nom);
@@ -190,18 +189,6 @@ export default function SesCoordonnees({
         </div>
       </form>
 
-      {/* **SOUS Enregistrer, la pellicule de l'appli — sa consigne du
-          1er novembre 2026 :** *« en dessous d'Enregistrer, tu laisses ce qui
-          se trouve dans l'appli, le plus pour les photos »*. La même
-          `Pellicule` que sa fiche client et son chantier : le « + » en
-          pointillé d'or, puis les vignettes. Hors du formulaire : une photo
-          s'enregistre à l'instant, elle n'attend pas « Enregistrer ». */}
-      {photos && (
-        <div className="mt-6 px-6" role="group" aria-label="Photos de son dernier chantier">
-          <Intitule>Photos</Intitule>
-          <Pellicule chantierId={photos.chantierId} initiales={photos.initiales} />
-        </div>
-      )}
     </div>
   );
 }

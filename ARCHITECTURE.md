@@ -36532,5 +36532,5 @@ que gardés en double — `main` n'a qu'une seule version de chacun.
 
 **Le devis tient toujours dans 390 × 664** (`test-devis-client-e2e`) : les deux dates côte à côte gagnent une ligne chacune, le mot pour l'artisan ne s'ouvre qu'au doigt, et les deux dernières issues partagent une rangée. Le rond de choix reste un vrai bouton radio (`appearance-none`), pour que le formulaire envoie ce qu'il a toujours envoyé.
 
-**Les règles neuves sont pures** : `joursSurDeuxLignes` et `moisAbrege` (`src/lib/jour.ts`, la table des mois abrégés n'existe plus qu'ici), `sommeDesMontants` (`src/lib/euros.ts`, en décimal : trois factures en flottants rendent 4 270,799999). **La seule lecture neuve en base** est `dernierChantierDuClient` (`withEntreprise`, éprouvée sous `atlas_app`) : les photos de « Ses coordonnées » vont sur le dernier chantier du client, puisqu'une photo appartient à un chantier.
+**Les règles neuves sont pures** : `joursSurDeuxLignes` et `moisAbrege` (`src/lib/jour.ts`, la table des mois abrégés n'existe plus qu'ici), `sommeDesMontants` (`src/lib/euros.ts`, en décimal : trois factures en flottants rendent 4 270,799999). Aucune lecture neuve en base : la pellicule de « Ses coordonnées », un temps posée sur le dernier chantier du client, a été retirée le jour même, sur sa décision (*« ajouter des photos est inutile »*).
 
