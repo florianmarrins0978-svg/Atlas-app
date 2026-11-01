@@ -168,7 +168,6 @@
                   <div class="reglage" data-si-etat="relie question bientot">
                     <span class="reglage-libelle">Dernière lecture</span>
                     <span class="reglage-valeur">Aujourd'hui à 20 h 24</span>
-                    <span class="reglage-sous">Prochaine lecture possible à 20 h 54.</span>
                   </div>
                   <div class="reglage refus" data-si-etat="refus">
                     <span class="reglage-libelle">Dernière lecture</span>
@@ -176,14 +175,10 @@
                     <span class="reglage-sous">Enable Banking ne répond pas. Réessayez dans un moment.</span>
                   </div>
 
-                  <div class="reglage" data-si-etat="relie question bientot">
-                    <span class="reglage-libelle">Relevé lu depuis</span>
-                    <span class="reglage-valeur">Le 1<sup>er</sup> novembre 2021</span>
-                  </div>
+                  <!-- Seulement quand la banque refuse l'historique : sinon rien à dire
+                       (sa remarque du 1er novembre, « beaucoup de texte pour pas grand chose »). -->
                   <div class="reglage manque" data-si-etat="refus">
-                    <span class="reglage-libelle">Relevé lu depuis</span>
-                    <span class="reglage-valeur">Le 3 août 2026</span>
-                    <span class="reglage-sous">Votre banque ne donne pas les lignes plus anciennes.</span>
+                    <span class="reglage-sous" style="margin-top:0">Votre banque ne donne pas les lignes d'avant le 3 août.</span>
                   </div>
 
                   <div class="reglage" data-si-etat="relie question refus">
@@ -390,8 +385,8 @@
   <section class="pl-notes">
     <h2>Ce qui change</h2>
     <ul>
-      <li>La dernière lecture de la banque se lit ici, avec l'heure où la suivante devient possible. C'est ce qui manquait le 1<sup>er</sup> novembre : un scan qui ne trouve rien ne disait pas si la banque avait été relue.</li>
-      <li>Depuis quand Atlas voit vos lignes : cinq ans quand la banque les donne, sinon la date, en ambre, et que la banque ne donne pas les plus anciennes. Touchez « La banque refuse ».</li>
+      <li>L'heure de la dernière lecture de la banque se lit ici. C'est ce qui manquait le 1<sup>er</sup> novembre : un scan qui ne trouve rien ne disait pas si la banque avait été relue.</li>
+      <li>Quand la banque ne donne pas les anciennes lignes, une phrase le dit, en ambre. Sinon, rien. Touchez « La banque refuse ».</li>
       <li>Le relevé du dossier en cours se compte : les entrées en vert, les sorties en rouge. Un appui ouvre Pour mon comptable.</li>
       <li>La phrase fausse est corrigée : Atlas lit les entrées ET les sorties depuis le 27 octobre.</li>
       <li>Chaque virement : le jour en grand, le montant en vert, son état sur une pastille. Le libellé de la banque s'écrit entier au lieu d'être coupé, et ne se redit pas quand il sert déjà de nom.</li>
