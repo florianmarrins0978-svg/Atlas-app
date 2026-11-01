@@ -154,6 +154,9 @@ export default async function PageDevisClient({ params }: { params: Promise<{ je
   return (
     <div className="min-h-dvh px-[18px] pt-2.5 pb-2" style={{ backgroundColor: colors.cream, color: colors.ink }}>
       <div className="mx-auto flex w-full max-w-md flex-col">
+        {/* L'en-tête du document : qui écrit, pour qui, combien, et la pièce
+            à emporter. Les suites y cherchent le téléchargement. */}
+        <header>
         {/* **PAS D'INTERTITRE « DEVIS » ICI, contrairement à la facture.**
             Retiré le 8 septembre 2026 : quatorze pixels pour un mot que
             « Devis n° » dit déjà, sur un écran qui n'en a aucun à perdre. */}
@@ -219,6 +222,7 @@ export default async function PageDevisClient({ params }: { params: Promise<{ je
             Télécharger mon devis
           </BoutonTelechargerDocument>
         </section>
+        </header>
 
         <FormulaireReponse envoi={envoi} aujourdHui={aujourdHuiIso()} />
 
