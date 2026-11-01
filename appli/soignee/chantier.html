@@ -12,7 +12,6 @@
                          montée par src/app/chantiers/nouveau/FormulaireNouveauChantier.tsx
     le devis complet     src/app/chantiers/[id]/devis-complet/DevisCompletClient.tsx,
                          LigneMainDoeuvre.tsx, LigneAcompte.tsx, src/components/atlas/Remise.tsx
-    le devis envoyé      src/app/chantiers/[id]/export/ExportClient.tsx (l'adresse /export)
 
   Sa demande du 31 octobre 2026, sur la liste des écrans du chantier pas
   encore refaits : « fais moi une planche pour les 8 premiers, l'idée c'est de
@@ -33,6 +32,13 @@
       ne s'atteignent plus que par des portes de secours : une préparation du
       devis qui échoue (« Compléter la durée et l'équipe »), un devis vide au
       moment de choisir la date (« Poser mes prix »). Retirés de la planche.
+
+    « ça va remplacer quoi ça ? va vraiment regarder dans l'appli » (le devis
+      envoyé) : regardé dans l'appli, par son chemin. Une correction se lit
+      sur la carte de l'accueil, et « Corriger le devis » ouvre le devis ; le
+      chantier, touché dans la liste, mène au Planning. L'écran /export ne
+      s'atteint que par une notification sur un devis sans réponse ou par
+      « Le corriger et le renvoyer » en haut d'un devis figé. Retiré.
 
   Ni la fiche du chantier (supprimée le 4 septembre 2026) ni les coordonnées
   (sa planche creer-un-devis.html) n'avaient rien à dessiner.
@@ -330,23 +336,6 @@
 .refus-saisie { margin: 8px 2px 0; font-size: 14.5px; font-weight: 600; color: var(--atlas-carteAmbreTexte); }
 .feuille .bouton-texte.annuler { display: flex; width: 100%; justify-content: center; margin-top: 4px; color: var(--atlas-inkSoft); }
 
-/* ═══ LE DEVIS ENVOYÉ ═════════════════════════════════════════════════════ */
-.suivi { padding: 16px 18px 18px; }
-.suivi-phrase { margin: 10px 0 0; font-size: 15.5px; line-height: 1.45; color: var(--atlas-inkSoft); }
-/* Le message du client, mot pour mot : une plage dorée, sa phrase en serif,
-   et non plus un filet de couleur à gauche. */
-.message-client { margin: 14px 0 0; padding: 14px 16px; border-radius: var(--r-plage); background: color-mix(in srgb, var(--atlas-or) 13%, transparent);
-                  font: 400 18px/1.45 var(--serif); color: var(--atlas-ink); }
-.message-client cite { display: block; margin-top: 6px; font: 600 13.5px/1.3 var(--sans); font-style: normal; color: var(--atlas-inkSoft); }
-.dates-client { margin: 10px 0 0; font-size: 15.5px; }
-.resume-devis { margin-top: 30px; text-align: center; }
-.resume-devis p { margin: 0; }
-.resume-devis .montant-grand { margin-top: 8px; font-size: 44px; }
-.resume-devis .second { margin-top: 8px; }
-.resume-devis .rang-boutons { flex-direction: column; align-items: center; gap: 8px; margin-top: 20px; }
-.resume-devis .rang-boutons .bouton { flex: none; min-width: 236px; }
-.resume-devis .bouton-texte.alerte { margin-top: 8px; }
-
 @media (prefers-reduced-motion: reduce) {
   .dictee-temps::before, .points span, .vient-d-arriver { animation: none; }
 }
@@ -358,11 +347,11 @@
 <header class="pl-tete">
   <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
   <h1 class="pl-titre">Le chantier</h1>
-  <p class="pl-verdict">De la dictée au devis parti, les trois écrans que vous traversez. <b>Ce que vous gardez reste tel quel ; la dictée, les ajouts du devis et le devis envoyé se soignent.</b> À côté, les vrais écrans.</p>
+  <p class="pl-verdict">De la dictée au devis, les deux écrans que vous traversez. <b>Ce que vous gardez reste tel quel ; la dictée et les ajouts du devis se soignent.</b> À côté, les vrais écrans.</p>
 </header>
 
 <div class="hors-planche">
-  <p><b>Ce que la planche ne montre pas.</b> La fiche du chantier n'existe plus depuis le 4 septembre. Les coordonnées ont leur planche : <a href="creer-un-devis.html">Créer un devis, la fiche client</a>. Transcription, Informations et Prix sont hors de votre chemin : on n'y arrive que si la préparation du devis échoue, ou si un devis part vide.</p>
+  <p><b>Ce que la planche ne montre pas.</b> La fiche du chantier n'existe plus depuis le 4 septembre. Les coordonnées ont leur planche : <a href="creer-un-devis.html">Créer un devis, la fiche client</a>. Transcription, Informations et Prix sont hors de votre chemin : on n'y arrive que si la préparation du devis échoue, ou si un devis part vide. Le devis envoyé aussi : une correction passe par la carte de l'accueil, qui ouvre le devis, et le chantier mène au Planning.</p>
 </div>
 
 <main class="pl-scene">
@@ -370,7 +359,6 @@
     <div class="pl-etats rangee-pages" role="group" aria-label="L'écran">
       <button type="button" data-page="note" aria-pressed="true">Note vocale</button>
       <button type="button" data-page="devis">Devis complet</button>
-      <button type="button" data-page="envoye">Devis envoyé</button>
     </div>
     <div class="pl-etats etats-page" id="etats-page" role="group" aria-label="Son état"></div>
 
@@ -582,7 +570,7 @@
             </div>
 
             <div class="action-bas" id="bas-pret" hidden>
-              <button class="bouton bouton-plein" type="button" data-vers-page="envoye"><svg class="ico" aria-hidden="true"><use href="#i-calendrier"/></svg>Choisir la date</button>
+              <button class="bouton bouton-plein" type="button" data-note="La feuille du choix de la date s'ouvre, comme aujourd'hui."><svg class="ico" aria-hidden="true"><use href="#i-calendrier"/></svg>Choisir la date</button>
             </div>
             <div class="action-bas" id="bas-attend">
               <section class="raison">
@@ -696,58 +684,6 @@
             </div>
           </div>
 
-          <!-- ═══ LE DEVIS ENVOYÉ ════════════════════════════════════════ -->
-          <div class="ecran avec-barre bas-moyen" data-page-ecran="envoye" id="ecran-envoye" hidden>
-            <div class="defile">
-              <div class="tete-ronds">
-                <a class="rond-creux" href="#" aria-label="Retour à la liste des chantiers" data-note="Sur la planche, on reste ici."><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
-                <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-note="Sur la planche, l'assistant ne s'ouvre pas."><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
-              </div>
-              <h2 class="tete-titre">Devis</h2>
-              <p class="tete-situation"><b>Reprise de toiture</b>, M. Faucher</p>
-
-              <section class="plage suivi">
-                <span class="etat" data-ton="ambre" data-si-etat="corriger">Correction demandée</span>
-                <span class="etat" data-ton="bleu" data-si-etat="attente">En attente de réponse</span>
-                <span class="etat" data-ton="vert" data-si-etat="accepte">Devis accepté</span>
-                <p class="suivi-phrase" data-si-etat="corriger">Le client a signalé quelque chose à corriger. Son message est ci-dessous.</p>
-                <p class="suivi-phrase" data-si-etat="attente">Le client choisit sa date. Le chantier attend sa réponse.</p>
-                <p class="suivi-phrase" data-si-etat="accepte">Le client a accepté. La date est retenue.</p>
-                <blockquote class="message-client" data-si-etat="corriger">« Pouvez-vous retirer l'évacuation des gravats ? Je m'en occupe. »<cite>M. Faucher</cite></blockquote>
-              </section>
-
-              <section class="resume-devis">
-                <p class="second" style="margin:0">Devis nº 2026&#8209;000001</p>
-                <p class="montant-grand">1&#8239;990,80&nbsp;€</p>
-                <p class="second">TTC, envoyé le 25 juillet</p>
-                <div class="rang-boutons">
-                  <button class="bouton bouton-creux bouton-petit touche" type="button" data-si-etat="corriger accepte" data-note="Sur la planche, rien ne se télécharge."><svg class="ico ico-p" aria-hidden="true"><use href="#i-telecharger"/></svg>Télécharger le PDF</button>
-                  <button class="bouton bouton-creux bouton-petit touche" type="button" data-si-etat="attente accepte" data-note="Sur la planche, le devis ne s'ouvre pas."><svg class="ico ico-p" aria-hidden="true"><use href="#i-crayon"/></svg>Modifier mon devis</button>
-                </div>
-                <button class="bouton-texte alerte touche" type="button" data-si-etat="accepte" data-note="Sur la planche, rien ne se défait.">Le client s’est trompé</button>
-              </section>
-            </div>
-
-            <div class="action-bas" data-si-etat="corriger">
-              <button class="bouton bouton-plein touche" type="button" data-vers-page="devis"><svg class="ico" aria-hidden="true"><use href="#i-crayon"/></svg>Corriger et renvoyer</button>
-            </div>
-            <div class="action-bas" data-si-etat="attente">
-              <button class="bouton bouton-plein touche" type="button" data-note="Sur la planche, aucun SMS ne part."><svg class="ico" aria-hidden="true"><use href="#i-envoyer"/></svg>Rouvrir le SMS</button>
-              <button class="bouton-texte touche" type="button" data-note="Sur la planche, aucun e-mail ne part.">Plutôt par e-mail</button>
-            </div>
-
-            <nav class="barre" aria-label="Navigation principale">
-              <div class="barre-onglets">
-                <a class="barre-onglet" href="accueil.html" aria-current="page">Chantiers</a>
-                <a class="barre-onglet" href="planning.html">Planning</a>
-                <a class="barre-onglet" href="termines.html">Terminés</a>
-                <a class="barre-onglet" href="paysage.html">Paysage</a>
-                <a class="barre-onglet" href="reglages.html">Réglages</a>
-                <span class="barre-trait" aria-hidden="true"><span></span></span>
-              </div>
-            </nav>
-          </div>
-
         </div>
       </div>
 
@@ -814,20 +750,6 @@
       </ul>
     </div>
 
-    <div class="page-notes" data-notes="envoye" hidden>
-      <h2>Le devis envoyé</h2>
-      <ul>
-        <li>Sous le titre, le chantier et son client en clair, au lieu de capitales dorées de 11 points.</li>
-        <li>L'état en pastille de couleur avec sa phrase ; le message du client sur une plage dorée, en serif, et son nom dessous.</li>
-        <li>Sous le montant, la date d'envoi, que l'appli connaît déjà.</li>
-        <li>Télécharger le PDF et Modifier mon devis deviennent de vrais boutons, côte à côte.</li>
-      </ul>
-      <h2>Ce qui ne bouge pas</h2>
-      <ul class="garde">
-        <li>Le signet d'or que vous avez choisi : l'état, le montant seul au centre, le geste en bas.</li>
-        <li>Corriger et renvoyer ; Rouvrir le SMS et Plutôt par e-mail ; Le client s’est trompé, en rouge.</li>
-      </ul>
-    </div>
   </section>
 </main>
 
@@ -863,14 +785,6 @@
         acompte: ["chantier-devis-acompte.jpg", "Aujourd'hui, l'acompte se pose à 30 % sous le total ; le taux se tape."],
         remise: ["chantier-devis-remise.jpg", "Aujourd'hui, la remise se pose à 5 % ; le taux se tape."],
         tout: ["chantier-devis-acompte.jpg", "Aujourd'hui, la main d’œuvre, deux TVA et l'acompte posés."]
-      }
-    },
-    envoye: {
-      etats: [["corriger", "Correction demandée"], ["attente", "En attente"], ["accepte", "Accepté"]],
-      captures: {
-        corriger: ["chantier-devis-envoye.jpg", "Aujourd'hui, une correction demandée."],
-        attente: ["chantier-devis-envoye.jpg", "Aujourd'hui, une correction demandée."],
-        accepte: ["chantier-devis-envoye.jpg", "Aujourd'hui, une correction demandée."]
       }
     }
   };
