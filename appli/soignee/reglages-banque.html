@@ -33,6 +33,12 @@
 .compte-tete { display: flex; align-items: center; gap: 14px; padding: 18px 0 16px; }
 .compte-tete .ligne-nom { font-size: 21px; }
 .compte-tete .etat { margin-top: 6px; }
+/* L'échéance de l'accord à côté de sa pastille, sa demande du 1er novembre :
+   le quand se lit avec le quoi, pas trois lignes plus bas. */
+.compte-etat { display: flex; align-items: center; flex-wrap: wrap; column-gap: 10px; margin-top: 6px; }
+.compte-etat .etat { margin-top: 0; }
+.compte-quand { font-size: 15px; font-weight: 600; color: var(--atlas-carteAmbreTexte); white-space: nowrap; }
+.compte-suite { margin: 6px 0 0; font-size: 14px; line-height: 1.4; color: var(--atlas-carteAmbreTexte); }
 .compte .reglage-valeur { font-size: 18px; }
 .compte .reglage.manque .reglage-valeur { color: var(--atlas-carteAmbreTexte); }
 .compte .reglage.refus .reglage-libelle, .compte .reglage.refus .reglage-sous { color: var(--atlas-carteRougeTexte); }
@@ -153,7 +159,8 @@
                     <span class="ligne-corps">
                       <span class="ligne-nom">Crédit Mutuel</span>
                       <span class="etat" data-ton="vert" data-si-etat="relie question">Reliée</span>
-                      <span class="etat" data-ton="ambre" data-si-etat="bientot">Accord à renouveler</span>
+                      <span class="compte-etat" data-si-etat="bientot"><span class="etat" data-ton="ambre">À renouveler</span><span class="compte-quand">dans 5 jours</span></span>
+                      <span class="compte-suite" data-si-etat="bientot">Le 6 novembre. Après, les paiements se noteront à la main.</span>
                       <span class="etat" data-ton="rouge" data-si-etat="refus">Pas lue</span>
                     </span>
                   </div>
@@ -182,11 +189,6 @@
                   <div class="reglage" data-si-etat="relie question refus">
                     <span class="reglage-libelle">Votre accord</span>
                     <span class="reglage-valeur">Jusqu'au 25 janvier</span>
-                  </div>
-                  <div class="reglage manque" data-si-etat="bientot">
-                    <span class="reglage-libelle">Votre accord</span>
-                    <span class="reglage-valeur">Jusqu'au 6 novembre</span>
-                    <span class="reglage-sous">Après, les paiements se noteront à la main.</span>
                   </div>
                 </div>
                 <button class="bouton bouton-plein mt-16" type="button" data-si-etat="bientot" data-note="Sur la planche, rien ne part chez la banque.">Renouveler l'accord</button>
