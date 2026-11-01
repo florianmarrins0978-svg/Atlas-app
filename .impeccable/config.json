@@ -503,6 +503,15 @@
         ],
         "createdAt": "2026-10-31T22:05:02.367Z",
         "reason": "Seul signalement : crème sur le vert des boutons #7d9a6d, choisi par le patron le 3 septembre 2026 ; le cran plus sombre lui est proposé sur fondations.html"
+      },
+      {
+        "rule": "kicker-above-heading",
+        "value": "*",
+        "files": [
+          "appli/soignee/client-recoit.html"
+        ],
+        "createdAt": "2026-11-01T07:21:36.799Z",
+        "reason": "« Facture » en or au-dessus du numéro : c'est la page d'aujourd'hui (src/app/factures/[jeton]/page.tsx, sa demande du 8 septembre 2026), et sa réponse du 1er novembre demande d'en garder l'esprit"
       }
     ]
   }
