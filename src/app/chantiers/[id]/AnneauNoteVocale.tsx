@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { colors } from "@/lib/design-tokens";
+import { colors, font } from "@/lib/design-tokens";
 import { useMagnetophone, formulaireDeNote } from "./magnetophone";
 import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
 import { envoyerNoteVocale } from "@/lib/envoi-note-vocale";
@@ -41,56 +41,34 @@ import { envoyerNoteVocale } from "@/lib/envoi-note-vocale";
  * c'est-à-dire au moment précis où l'on veut parler — le cœur du produit était
  * donc caché derrière autre chose.
  *
- * Sans enregistrement, l'anneau devient un micro : un appui commence à dicter,
- * un second arrête et enregistre. Avec un enregistrement, il redevient le
- * lecteur. Même objet, deux états — jamais deux boutons.
+ * Sans enregistrement, l'anneau est un micro : un appui commence à dicter.
+ * Pendant la dictée, le même disque porte l'avion (la dictée B, 1er novembre
+ * 2026) : un appui envoie, la poubelle à gauche jette. Même objet, deux états —
+ * jamais deux boutons.
  */
 /**
- * Combien de barreaux l'onde de la dictée porte à la fois.
+ * Les trois cercles d'or qui écoutent — la dictée B, son choix du 1er novembre
+ * 2026 (`appli/soignee/chantier.html`, « Dictée B, l'anneau qui écoute »).
  *
- * Un nombre fixe plutôt qu'une mesure de la largeur : le conteneur masque ce
- * qui déborde, et une onde qui se recompterait à chaque redimensionnement
- * sauterait sous le doigt pour rien.
- */
-const BARREAUX_ONDE = 64;
-
-/**
- * La largeur du repère du trait. Elle est ARBITRAIRE et c'est voulu : le SVG
- * s'étire à la largeur réelle (`preserveAspectRatio="none"`), donc ce chiffre
- * ne fixe que la finesse du pas, jamais une taille à l'écran. Une largeur
- * mesurée obligerait à recompter à chaque redimensionnement, pour un dessin
- * qui n'y gagne rien.
- */
-const LARGEUR_TRAIT = 260;
-
-/**
- * Le contour fermé du trait, à partir des mesures de voix.
+ * Ils entourent le disque de 80 px (rayon 40) qui a pris la place du micro, et
+ * s'ouvrent avec la voix RÉELLEMENT captée (`magnetophone.niveau`) : un dessin
+ * tiré au sort serait un décor, le reproche qu'il a déjà fait à un anneau qui
+ * battait sans rien lire.
  *
- * **Pourquoi un contour et pas un trait épaissi** : la largeur d'un tracé SVG
- * vaut pour toute sa longueur — elle ne peut pas suivre la voix. On dessine
- * donc le dessus, puis le dessous en sens inverse, et l'on referme.
- *
- * **Le plancher de 0,35 px n'est pas décoratif** : à zéro, le trait
- * disparaîtrait tout à fait et l'écran paraîtrait figé au premier silence. Il
- * reste un filet, comme un stylo posé sur la ligne.
+ * **Bornés pour ne rien toucher** : au plus 54 px de rayon, 14 px au-dessus du
+ * disque, l'écart qui le sépare de « Devis à la voix ». **Au silence, ils se
+ * resserrent sans disparaître** : un dessin qui s'éteint ferait croire à un
+ * micro muet.
  *
  * Fonction PURE, hors du composant : elle s'éprouve sans navigateur
  * (`CLAUDE.md` §3), et c'est elle qui porte la règle du dessin.
  */
-export function contourDuTrait(mesures: number[]): string {
-  if (mesures.length < 2) return "";
-  const milieu = 13;
-  const dessus: string[] = [];
-  const dessous: string[] = [];
-  for (let i = 0; i < mesures.length; i++) {
-    const x = (i * LARGEUR_TRAIT) / (mesures.length - 1);
-    // Bornée : une mesure aberrante ne doit pas déborder de la bande de 26 px.
-    const force = Math.max(0, Math.min(1, mesures[i]));
-    const demi = 0.35 + force * 9;
-    dessus.push(`${x.toFixed(1)} ${(milieu - demi).toFixed(2)}`);
-    dessous.push(`${x.toFixed(1)} ${(milieu + demi).toFixed(2)}`);
-  }
-  return `M${dessus.join(" L")} L${dessous.reverse().join(" L")} Z`;
+export function cerclesDeLaVoix(niveau: number): { rayon: number; opacite: number }[] {
+  const n = Number.isFinite(niveau) ? Math.max(0, Math.min(1, niveau)) : 0;
+  return [1, 2, 3].map((k) => ({
+    rayon: Number((41 + k * 2.5 + n * (1 + 1.3 * k)).toFixed(1)),
+    opacite: Number(((0.8 - k * 0.2) * (0.5 + n * 0.5)).toFixed(2)),
+  }));
 }
 
 function IconeMicro() {
@@ -127,11 +105,11 @@ function IconePoubelle() {
  * L'avion en papier — le geste d'envoi, et **pas une flèche décorative** : il
  * EST le bouton, il ne suit aucun libellé (`CLAUDE.md` §3).
  */
-function IconeAvion() {
+function IconeAvion({ taille = 21 }: { taille?: number }) {
   return (
     <svg
-      width="21"
-      height="21"
+      width={taille}
+      height={taille}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -282,7 +260,7 @@ export default function AnneauNoteVocale({
     if (envoi) return;
     magnetophone.jeter();
     magnetophone.setErreur(null);
-    remettreLOnde();
+    remettreLeNiveau();
     onDictee?.(false);
   }
 
@@ -296,8 +274,14 @@ export default function AnneauNoteVocale({
   async function envoyerLaNote() {
     if (envoi) return;
     if (!magnetophone.enregistre) return;
+    // **Un appui dans la première seconde ne part pas — la dictée B, 1er
+    // novembre 2026.** L'avion tombe EXACTEMENT sous le doigt qui vient de
+    // lancer la dictée : un double appui enverrait une note d'une
+    // demi-seconde, et la chaîne écrirait un devis à partir de rien.
+    // `test-anneau-dictee-e2e` l'éprouve.
+    if (magnetophone.secondes < 1) return;
     const capte = await magnetophone.arreter();
-    remettreLOnde();
+    remettreLeNiveau();
     if (!capte) {
       // Rien n'a été capté : l'écran retrouve son bouton, sinon il resterait
       // amputé de sa seule autre issue.
@@ -329,30 +313,29 @@ export default function AnneauNoteVocale({
   /** Le chrono de la dictée : « 1:07 ». */
   const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 
-  // ─── L'onde de la dictée : elle se déroule au volume réel ───────────────
+  // ─── La voix de la dictée : un niveau, lissé ─────────────────────────────
   //
-  // **Elle part PLEINE, à plat.** Sans cela les deux premières secondes montrent
-  // un trait qui pousse dans le vide, et la barre paraît mal cadrée — mesuré sur
-  // capture. Un barreau naît toutes les 95 ms à droite, les plus vieux tombent.
-  const [onde, setOnde] = useState<number[]>(() => Array(BARREAUX_ONDE).fill(0));
+  // **Lissé, pour que les cercles respirent sans trembler** : chaque mesure ne
+  // fait que la moitié du chemin vers elle. Une mesure toutes les 95 ms.
+  const [niveau, setNiveau] = useState(0);
   useEffect(() => {
     if (!magnetophone.enregistre) return;
     const t = setInterval(() => {
       const mesure = magnetophone.niveau();
       // `null` veut dire « on ne sait pas » — pas « silence ». Sans Web Audio on
-      // garde un dessin vraisemblable plutôt qu'une ligne plate qui ferait
+      // garde un dessin vraisemblable plutôt que des cercles figés qui feraient
       // croire à un micro muet.
       const force = mesure === null ? 0.15 + Math.random() * 0.6 : mesure;
-      setOnde((precedente) => [...precedente.slice(1), force]);
+      setNiveau((precedent) => precedent + (force - precedent) * 0.45);
     }, 95);
     return () => clearInterval(t);
   }, [magnetophone.enregistre, magnetophone]);
 
-  // **L'onde se rend à son repos DANS LE GESTE, pas dans un effet.** Poser
+  // **La voix se rend à son repos DANS LE GESTE, pas dans un effet.** Poser
   // l'état depuis un effet déclenche un second rendu en cascade — le lint le
   // refuse, et il a raison : ici, jeter et envoyer savent tous deux qu'ils
-  // terminent. `remettreLOnde` est donc appelée par eux.
-  const remettreLOnde = () => setOnde(Array(BARREAUX_ONDE).fill(0));
+  // terminent. `remettreLeNiveau` est donc appelée par eux.
+  const remettreLeNiveau = () => setNiveau(0);
 
   // ═══════════════════════════════════════════════════════════════════════
   // LA DICTÉE — le dessin qu'il a choisi le 30 août 2026.
@@ -419,83 +402,61 @@ export default function AnneauNoteVocale({
           </span>
         )}
 
-        {/* ─── LA DICTÉE : une ligne, deux gestes ───────────────────────────
-            Sa décision du 31 août 2026, planche `appli/dictee-la-ligne.html`,
-            onglet « Avec le rond ». Ce qui a disparu et pourquoi :
+        {/* ─── LA DICTÉE B : l'anneau qui écoute — son choix du 1er novembre 2026 ───
+            Planche `appli/soignee/chantier.html`, « Dictée B ». Le disque du
+            micro reste à SA place et l'avion y remplace le micro : même objet,
+            deux états, sa règle du 11 août. Trois cercles d'or s'ouvrent autour
+            avec la voix ; Jeter à gauche, le temps à droite, et un mot sous
+            chaque geste.
 
-            · **le gros disque de 76 px et le rond d'envoi plein** — deux aplats
-              vert pin, ~7 950 px², là où le reste de la fiche n'en porte aucun.
-              C'est sa plainte du matin : « ça dénature l'appli ». Il n'en reste
-              que 64 px², la pastille du chrono ;
-            · **la pause** — « supprime le rond avec le carré dedans ». On parle,
-              puis on jette ou on envoie ;
-            · **les trois axes** — le chrono à gauche, l'onde à droite et le
-              disque au milieu ne s'alignaient sur rien. Tout est sur la ligne. */}
+            Ses règles du 31 août tiennent : pas de pause (« supprime le rond
+            avec le carré dedans »), et jamais deux disques verts à la fois (« ça
+            dénature l'appli ») — le seul aplat est celui du micro, qu'il avait
+            déjà sous le doigt. Le trait du 2 septembre part avec la ligne : la
+            voix se lit désormais dans les cercles. */}
         {magnetophone.enregistre && (
-          <div className="atlas-ligne-dictee">
+          <div className="atlas-ecoute">
             <button
               type="button"
               onClick={jeterLaNote}
               aria-label="Supprimer la note"
               className="atlas-jeter"
-              style={{ color: colors.muted }}
+              style={{ color: colors.inkSoft }}
               data-atlas="dictee-jeter"
             >
-              <IconePoubelle />
+              <span className="atlas-jeter-rond">
+                <IconePoubelle />
+              </span>
+              Jeter
             </button>
 
-            <span className="atlas-compteur" style={{ color: colors.or }}>
-              <span className="atlas-pastille" style={{ backgroundColor: colors.alert }} />
-              {mmss(magnetophone.secondes)}
-            </span>
-
-            {/* **LE TRAIT — son choix du 2 septembre 2026**, planche
-                `appli/note-vocale-tasse-et-envoi.html`, après l'avoir essayé au
-                micro : *« j'aimerais essayer le trait à la voix, voir comment il
-                augmente »*.
-
-                Il suit le volume RÉELLEMENT capté (`magnetophone.niveau`) :
-                une onde tirée au sort serait un décor, et c'est le reproche
-                qu'il a déjà fait à un anneau qui battait sans rien lire.
-
-                **Un seul contour fermé** — aller par le dessus, retour par le
-                dessous — plutôt qu'un trait épaissi : la largeur d'un trait SVG
-                est la même sur toute sa longueur, elle ne peut pas suivre la
-                voix. C'est donc un ruban, et son épaisseur est la mesure. */}
-            <span className="atlas-trait" aria-hidden="true">
-              <svg viewBox={`0 0 ${LARGEUR_TRAIT} 26`} preserveAspectRatio="none">
-                <path d={contourDuTrait(onde)} fill={colors.or} />
-              </svg>
-            </span>
-
-            {/* **Un ROND, et son dedans est le fond de la page.** Sa correction
-                du 31 août : « je veux un rond, pas un ovale », et « la couleur
-                du fond de la page ».
-
-                `transparent` plutôt qu'un beige écrit : ce composant sert aussi
-                l'écran d'un chantier neuf, et sept chartes changent ce fond —
-                dont deux sombres. Une teinte posée en dur serait juste sur un
-                écran et visible comme une pastille sur l'autre. Le vide, lui,
-                EST le fond de la page, quelle qu'elle soit. */}
             <button
               type="button"
               onClick={envoyerLaNote}
               disabled={envoi}
               aria-label="Envoyer la note et préparer le devis"
-              // **PLUS DE STYLE EN LIGNE ICI, ET C'EST UN DÉFAUT QUI A ÉTÉ VU
-              // À LA CAPTURE.** Le fond et le liseré vivaient en style en
-              // ligne ; ils écrasaient les trois anneaux de la tasse et la
-              // flèche revenait à un disque vert nu. Pire, l'écrasement était
-              // PARTIEL — `backgroundColor` ne touche pas `background-image`,
-              // si bien que le dégradé passait et que seuls les anneaux
-              // disparaissaient. Ni les types ni le lint ne voient cela.
-              //
-              // La matière entière vit désormais dans `.atlas-envoyer`.
+              // Le fond, le cercle d'or clair et le signe blanc vivent dans
+              // `.atlas-disque-envoi` (`globals.css`), comme ceux du micro :
+              // posés ici, ce seraient des couleurs en clair dans un `.tsx`.
               className="atlas-envoyer"
+              style={{ color: colors.ink }}
               data-atlas="dictee-envoyer"
             >
-              <IconeAvion />
+              <svg className="atlas-cercles" viewBox="0 0 120 120" aria-hidden="true">
+                {cerclesDeLaVoix(niveau).map((c, k) => (
+                  <circle key={k} cx="60" cy="60" r={c.rayon} opacity={c.opacite} />
+                ))}
+              </svg>
+              <span className="atlas-disque-envoi">
+                <IconeAvion taille={28} />
+              </span>
+              Envoyer
             </button>
+
+            <span className="atlas-compteur" style={{ color: colors.ink, fontFamily: font.display }}>
+              <span className="atlas-pastille" style={{ backgroundColor: colors.alert }} />
+              {mmss(magnetophone.secondes)}
+            </span>
           </div>
         )}
         {/* **Rien à dire pendant qu'on parle** : sa planche efface l'indice dès

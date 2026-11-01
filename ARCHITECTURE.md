@@ -20832,6 +20832,8 @@ l'écran est faux.
 
 ### Le trait de la dictée : ce sont les mesures qui avancent, pas une image
 
+> **Remplacé le 1er novembre 2026** par la dictée B, l'anneau qui écoute (§535) : le trait et `contourDuTrait` sont partis avec la ligne. Ce qui suit reste pour le pourquoi.
+
 Les barreaux découpaient la voix en morceaux ; le trait la garde d'un seul
 tenant. Deux choix portent tout le reste :
 
@@ -36533,4 +36535,14 @@ que gardés en double — `main` n'a qu'une seule version de chacun.
 **Le devis tient toujours dans 390 × 664** (`test-devis-client-e2e`) : les deux dates côte à côte gagnent une ligne chacune, le mot pour l'artisan ne s'ouvre qu'au doigt, et les deux dernières issues partagent une rangée. Le rond de choix reste un vrai bouton radio (`appearance-none`), pour que le formulaire envoie ce qu'il a toujours envoyé.
 
 **Les règles neuves sont pures** : `joursSurDeuxLignes` et `moisAbrege` (`src/lib/jour.ts`, la table des mois abrégés n'existe plus qu'ici), `sommeDesMontants` (`src/lib/euros.ts`, en décimal : trois factures en flottants rendent 4 270,799999). Aucune lecture neuve en base : la pellicule de « Ses coordonnées », un temps posée sur le dernier chantier du client, a été retirée le jour même, sur sa décision (*« ajouter des photos est inutile »*).
+
+## §535 : La dictée B, l'anneau qui écoute : le même disque, l'avion dedans
+
+**Son choix du 1er novembre 2026** sur la planche `appli/soignee/chantier.html` (« la B pour la dictée »), après sa demande du même jour : *« sur la note vocale, une fois qu'on appuie dessus, fais moi quelque chose de mieux, plus joli »*.
+
+**Le disque du micro ne bouge pas** (`AnneauNoteVocale.tsx`, `.atlas-ecoute`) : pendant la dictée, l'avion prend sa place dans le même disque de 80 px, Jeter s'écrit à gauche sous un rond de 52 px, le temps à droite, et « Envoyer » sous le disque. Même objet, deux états, sa règle du 11 août. Ses règles du 31 août tiennent : pas de pause, et un seul aplat vert, celui qu'il avait déjà sous le doigt.
+
+**La voix se lit dans trois cercles d'or** (`cerclesDeLaVoix`, fonction pure) : leur rayon et leur netteté suivent `magnetophone.niveau`, lissé à mi-chemin à chaque mesure ; bornés à 54 px pour ne pas toucher « Devis à la voix », et visibles au silence pour qu'un micro calme ne paraisse pas muet. Le trait du 2 septembre (`contourDuTrait`) et ses règles CSS sont partis avec la ligne.
+
+**Un appui dans la première seconde n'envoie rien** (`envoyerLaNote`). L'avion tombe sous le doigt qui vient de lancer la dictée : sans cette garde, un double appui enverrait une note d'une demi-seconde et la chaîne écrirait un devis à partir de rien. `test-anneau-dictee-e2e` l'éprouve, avec la place du disque à deux pixels près et les deux mots.
 

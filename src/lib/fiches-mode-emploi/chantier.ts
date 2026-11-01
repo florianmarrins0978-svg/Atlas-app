@@ -272,7 +272,7 @@ export const FICHES_CHANTIER: FicheModeEmploi[] = [
     intitule: "Dicter le chantier pour qu'Atlas écrive le devis",
     motsCles: ["dicter", "dictee", "dictant", "vocal", "vocale", "note", "micro", "parler", "enregistrer", "voix", "transforme", "ecrit"],
     geste:
-      "Touchez le micro au centre, décrivez le chantier, puis touchez l'avion à droite : " +
+      "Touchez le micro au centre, décrivez le chantier, puis touchez l'avion qui a pris sa place : " +
       "Atlas prépare le devis et l'ouvre.",
     source: ANNEAU,
     preuves: ['aria-label="Dicter une note vocale"', 'aria-label="Envoyer la note et préparer le devis"', "Appuyez et décrivez le chantier"],
@@ -284,7 +284,7 @@ export const FICHES_CHANTIER: FicheModeEmploi[] = [
     ou: OU_FICHE_CLIENT,
     intitule: "Jeter une dictée en cours pour recommencer",
     motsCles: ["jeter", "poubelle", "annuler", "recommencer", "dictee", "effacer", "supprimer", "rate"],
-    geste: "Pendant la dictée, touchez la poubelle à gauche du chrono.",
+    geste: "Pendant la dictée, touchez « Jeter », à gauche de l'avion.",
     source: ANNEAU,
     preuves: ['aria-label="Supprimer la note"'],
   },
