@@ -521,6 +521,15 @@
         ],
         "createdAt": "2026-11-01T09:35:14.821Z",
         "reason": "Planche reproduit la charte de l'application (src/lib/design-tokens.ts) : l'or des intitulés, le vert des boutons sous texte clair, le gris des exemples ; les changer est une décision de charte, pas de planche"
+      },
+      {
+        "rule": "pulsing-dot",
+        "value": "*",
+        "files": [
+          "appli/soignee/chantier.html"
+        ],
+        "createdAt": "2026-11-01T17:17:01.528Z",
+        "reason": "Le point rouge du chrono pendant la dictée : celui de l'appli (globals.css .atlas-pastille, atlas-battre-pastille), lié à un enregistrement réellement en cours"
       }
     ]
   }
