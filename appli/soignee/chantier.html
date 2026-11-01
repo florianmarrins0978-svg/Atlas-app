@@ -146,7 +146,39 @@
 .dictee-suite .points span { width: 8px; height: 8px; }
 .dictee-sous { margin: 6px 0 0; font-size: 14px; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
 .fc-a-la-main { width: auto; min-width: 220px; margin: 8px auto 0; }
-.ecran[data-etat="dictee"] .fc-a-la-main, .ecran[data-etat="transcription"] .fc-a-la-main, .ecran[data-etat="preparation"] .fc-a-la-main { visibility: hidden; }
+.ecran[data-etat^="dictee"] .fc-a-la-main, .ecran[data-etat="transcription"] .fc-a-la-main, .ecran[data-etat="preparation"] .fc-a-la-main { visibility: hidden; }
+
+/* ═══ PENDANT LA DICTÉE : trois façons, à choisir (sa demande du 1er novembre :
+   « une fois qu'on appuie dessus, fais moi quelque chose de mieux, plus joli »).
+   Ses règles du 31 août tiennent dans les trois : pas de pause, pas de second
+   disque vert, le dessin suit la vraie voix (magnetophone.niveau). */
+
+/* B, l'anneau qui écoute : le même disque que le micro, à la même place.
+   L'avion y remplace le micro (même objet, deux états : sa règle du 11 août),
+   et des cercles d'or s'ouvrent autour, à la mesure de la voix. */
+.dictee-b { display: grid; grid-template-columns: 1fr auto 1fr; align-items: start; width: 100%; margin-top: 22px; }
+.dictee-b .geste-dictee, .dictee-b .temps-b { margin-top: 13px; }
+.dictee-b .geste-dictee { justify-self: center; }
+.anneau-ecoute { position: relative; display: flex; flex-direction: column; align-items: center; gap: 26px; font-size: 13px; font-weight: 600; color: var(--atlas-ink); }
+.anneau-ecoute .ondes { position: absolute; left: 50%; top: 42px; width: 168px; height: 168px; transform: translate(-50%, -50%); pointer-events: none; overflow: visible; }
+.anneau-ecoute .ondes circle { fill: none; stroke: var(--atlas-or); stroke-width: 1.6; transition: r 120ms linear, opacity 120ms linear; }
+.anneau-ecoute .disque { position: relative; width: 84px; height: 84px; display: grid; place-items: center; border-radius: 50%; background: var(--atlas-plein);
+                         color: var(--sur-plein); box-shadow: inset 0 0 0 2px var(--atlas-orClair); transition: transform 160ms var(--courbe); }
+.anneau-ecoute:active .disque { transform: scale(0.97); }
+.anneau-ecoute .disque .ico { width: 30px; height: 30px; }
+.temps-b { justify-self: center; display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 14px; }
+.temps-b .dictee-temps { font: 400 26px/1 var(--serif); }
+
+/* C, la plage d'écoute : le temps et la voix dans une plage, et deux vrais
+   boutons écrits dessous. Le plus clair pour qui ne connaît pas les dessins. */
+.plage-ecoute { width: 100%; padding: 12px 14px 14px; border-radius: 18px; background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-lineSoft); }
+.ecoute-rang { display: flex; align-items: center; gap: 12px; height: 46px; }
+.ecoute-rang .dictee-temps { font: 400 24px/1 var(--serif); }
+.barres { flex: 1; min-width: 0; height: 40px; }
+.barres rect { fill: var(--atlas-or); }
+.plage-ecoute .rang-boutons { margin-top: 10px; }
+.plage-ecoute .bouton { min-height: 50px; font-size: 16px; }
+.plage-ecoute .bouton .ico { width: 20px; height: 20px; }
 
 /* Les trois points qui soufflent, ceux de PointsQuiSoufflent.tsx. */
 .points { display: inline-flex; gap: 8px; margin-top: 18px; }
@@ -364,6 +396,28 @@
                     <button class="geste-dictee envoi" type="button" aria-label="Envoyer la note et préparer le devis" data-va-etat="transcription">
                       <span class="envoyer"><svg class="ico" aria-hidden="true"><use href="#i-envoyer"/></svg></span>Envoyer
                     </button>
+                  </div>
+
+                  <div class="dictee-b" data-si-etat="dictee-b">
+                    <button class="geste-dictee" type="button" aria-label="Supprimer la note" data-va-etat="repos">
+                      <span class="rond-creux"><svg class="ico" aria-hidden="true"><use href="#i-corbeille"/></svg></span>Jeter
+                    </button>
+                    <button class="anneau-ecoute" type="button" aria-label="Envoyer la note et préparer le devis" data-va-etat="transcription">
+                      <svg class="ondes" viewBox="0 0 168 168" aria-hidden="true"><circle id="onde-1" cx="84" cy="84" r="49"/><circle id="onde-2" cx="84" cy="84" r="53"/><circle id="onde-3" cx="84" cy="84" r="57"/></svg>
+                      <span class="disque"><svg class="ico" aria-hidden="true"><use href="#i-envoyer"/></svg></span>Envoyer
+                    </button>
+                    <span class="temps-b"><span class="dictee-temps" id="chrono-b">0:42</span></span>
+                  </div>
+
+                  <div class="plage-ecoute" data-si-etat="dictee-c">
+                    <div class="ecoute-rang">
+                      <span class="dictee-temps" id="chrono-c">0:42</span>
+                      <svg class="barres" id="barres" viewBox="0 0 240 40" preserveAspectRatio="none" aria-hidden="true"></svg>
+                    </div>
+                    <div class="rang-boutons">
+                      <button class="bouton bouton-creux bouton-petit" type="button" data-va-etat="repos" aria-label="Supprimer la note"><svg class="ico" aria-hidden="true"><use href="#i-corbeille"/></svg>Jeter</button>
+                      <button class="bouton bouton-plein bouton-petit" type="button" data-va-etat="transcription" aria-label="Envoyer la note et préparer le devis"><svg class="ico" aria-hidden="true"><use href="#i-envoyer"/></svg>Envoyer</button>
+                    </div>
                   </div>
 
                   <div data-si-etat="transcription" style="text-align:center">
@@ -681,17 +735,20 @@
       <ul>
         <li>C'est la dictée de la fiche client, celle qui s'ouvre sur Créer un devis. <b>La fiche reste celle d'aujourd'hui</b> (votre choix du 28 octobre) : seule la dictée change.</li>
         <li>Au repos, « Appuyez et décrivez le chantier » se lit : 15 points en encre douce, au lieu de 11 en gris.</li>
-        <li>Pendant la dictée, tout reste sur une ligne (votre planche du 31 août). La poubelle passe de 32 à 52 points, l'avion de 46 à 58 ; le temps s'écrit en 18 points, en noir.</li>
+        <li><b>Pendant la dictée, trois façons à choisir</b> (votre demande du 1er novembre : « quelque chose de mieux, plus joli ») :
+          <b>A, la ligne</b> : celle d'aujourd'hui, soignée ; la poubelle passe de 32 à 52 points, l'avion de 46 à 58, le temps en noir.
+          <b>B, l'anneau qui écoute</b> : le disque du micro reste à sa place, l'avion y remplace le micro, et des cercles d'or s'ouvrent autour avec votre voix ; Jeter à gauche, le temps à droite.
+          <b>C, la plage</b> : le temps et la voix en barres d'or dans une plage, et deux vrais boutons écrits, Jeter et Envoyer.</li>
         <li>Envoyée : « Transcription », puis « Atlas prépare votre devis », en 16 points au lieu de 13. La zone garde sa hauteur : rien ne saute.</li>
       </ul>
       <h2>Ce qui ne bouge pas</h2>
       <ul class="garde">
-        <li>Le micro et son anneau d'or ; le trait d'or qui suit la voix ; pas de pause ; la poubelle à gauche, l'avion à droite.</li>
+        <li>Le micro et son anneau d'or ; le dessin qui suit la vraie voix ; pas de pause ; jamais deux disques verts à la fois (votre remarque du 31 août) ; la poubelle à gauche, l'envoi à droite ou au centre.</li>
         <li>L'invite qui disparaît pendant la dictée ; Je rédige à la main, qui s'efface le temps de l'envoi.</li>
       </ul>
       <h2>À trancher</h2>
       <ul class="a-trancher">
-        <li>Un mot sous chaque rond, « Jeter » et « Envoyer » : aujourd'hui, deux dessins sans mot.</li>
+        <li><b>A, B ou C</b> pendant la dictée. Dans les trois, un mot sous chaque geste, « Jeter » et « Envoyer » : aujourd'hui, deux dessins sans mot.</li>
         <li>L'ancien écran Note vocale (celui que je vous avais montré par erreur) existe encore : la Transcription y mène par « Relancer depuis la note vocale » et « Enregistrer une note vocale ». Deux enregistreurs pour une même note. Je propose que ces liens ouvrent la fiche client, et que l'ancien écran parte.</li>
       </ul>
     </div>
@@ -749,10 +806,12 @@
   /* Chaque écran, ses états, et la vraie page qui leur répond. */
   var PAGES = {
     note: {
-      etats: [["repos", "Au repos"], ["dictee", "Pendant la dictée"], ["transcription", "Envoyée"], ["preparation", "Le devis se prépare"]],
+      etats: [["repos", "Au repos"], ["dictee", "Dictée A, la ligne"], ["dictee-b", "Dictée B, l'anneau qui écoute"], ["dictee-c", "Dictée C, la plage"], ["transcription", "Envoyée"], ["preparation", "Le devis se prépare"]],
       captures: {
         repos: ["chantier-dictee-repos.jpg", "Aujourd'hui, la fiche client ouverte par Créer un devis."],
         dictee: ["chantier-dictee-en-cours.jpg", "Aujourd'hui, pendant la dictée."],
+        "dictee-b": ["chantier-dictee-en-cours.jpg", "Aujourd'hui, pendant la dictée."],
+        "dictee-c": ["chantier-dictee-en-cours.jpg", "Aujourd'hui, pendant la dictée."],
         transcription: ["chantier-dictee-envoi.jpg", "Aujourd'hui, la note envoyée."],
         preparation: ["chantier-dictee-envoi.jpg", "Aujourd'hui, la note envoyée : ensuite « Atlas prépare votre devis », puis le devis s'ouvre."]
       }
@@ -864,17 +923,51 @@
   }
   var t0 = 64;
   document.getElementById("trait-voix").setAttribute("d", contourDuTrait(onde));
+
+  /* B : trois cercles d'or qui s'ouvrent avec la voix, lissés pour ne pas
+     trembler ; au silence, ils se resserrent contre le disque. */
+  var niveau = 0;
+  function dessinerAnneau() {
+    var cible = (onde[onde.length - 1] + onde[onde.length - 2] + onde[onde.length - 3]) / 3;
+    niveau += (cible - niveau) * 0.45;
+    [1, 2, 3].forEach(function (k) {
+      var c = document.getElementById("onde-" + k);
+      c.setAttribute("r", (45 + k * 4 + niveau * (3 + 2 * k)).toFixed(1));
+      c.setAttribute("opacity", ((0.75 - k * 0.2) * (0.35 + niveau * 0.65)).toFixed(2));
+    });
+  }
+  /* C : quarante barres, la plus récente à droite. */
+  var svgBarres = document.getElementById("barres");
+  for (var b = 0; b < 40; b++) {
+    var r = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    r.setAttribute("x", String(b * 6 + 1)); r.setAttribute("width", "3.4"); r.setAttribute("rx", "1.7");
+    svgBarres.appendChild(r);
+  }
+  function dessinerBarres() {
+    var barres = svgBarres.querySelectorAll("rect");
+    for (var i = 0; i < 40; i++) {
+      var v = Math.max(0.06, onde[onde.length - 40 + i] || 0);
+      var h = 3 + v * 34;
+      barres[i].setAttribute("y", (20 - h / 2).toFixed(1));
+      barres[i].setAttribute("height", h.toFixed(1));
+    }
+  }
+  dessinerAnneau(); dessinerBarres();
   setInterval(function () {
     var ecran = document.getElementById("ecran-note");
-    if (ecran.getAttribute("data-etat") !== "dictee" || ecran.hidden) return;
+    var etatNote = ecran.getAttribute("data-etat") || "";
+    if (etatNote.indexOf("dictee") !== 0 || ecran.hidden) return;
     t0 += 1;
     var parle = Math.sin(t0 / 5) > -0.35;
     onde.shift();
     onde.push(parle ? 0.25 + Math.abs(Math.sin(t0 * 1.7) * Math.cos(t0 * 0.6)) * 0.75 : 0.02);
     document.getElementById("trait-voix").setAttribute("d", contourDuTrait(onde));
+    dessinerAnneau();
+    dessinerBarres();
     if (t0 % 8 === 0) {
       secondes += 1;
-      document.getElementById("chrono").textContent = Math.floor(secondes / 60) + ":" + String(secondes % 60).padStart(2, "0");
+      var temps = Math.floor(secondes / 60) + ":" + String(secondes % 60).padStart(2, "0");
+      ["chrono", "chrono-b", "chrono-c"].forEach(function (id) { document.getElementById(id).textContent = temps; });
     }
   }, 125);
 
