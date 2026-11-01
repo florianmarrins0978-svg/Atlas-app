@@ -33,11 +33,8 @@
 .mois-choix button { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-or); }
 .mois-choix button[disabled] { color: var(--atlas-chevron); }
 .mois-choix b { min-width: 170px; text-align: center; font: 400 23px/1.2 var(--serif); }
-.cherche { position: relative; }
-.cherche .ico { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--atlas-or); pointer-events: none; }
-.cherche .champ-saisie { padding-left: 46px; }
-/* Sans libellé au-dessus, l'exemple tient lieu de nom : il se lit en encre douce. */
-.cherche .champ-saisie::placeholder { color: var(--atlas-inkSoft); }
+/* La barre de recherche est celle de l'appli, prise dans le kit (sa règle). */
+.retours-cherche { margin-top: 12px; }
 .groupe-tete { display: flex; align-items: baseline; justify-content: space-between; margin: 24px 0 8px; }
 .groupe-tete b { font: 400 21px/1.2 var(--serif); }
 .retour { position: relative; }
@@ -94,7 +91,11 @@
               <b>Octobre 2026</b>
               <button type="button" aria-label="Mois suivant" disabled><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></button>
             </div>
-            <label class="cherche"><svg class="ico" aria-hidden="true"><use href="#i-recherche"/></svg><input class="champ-saisie" placeholder="Un nom de client" aria-label="Chercher un client"></label>
+            <div class="champ-recherche retours-cherche">
+              <svg class="ico" aria-hidden="true"><use href="#i-loupe"/></svg>
+              <input type="text" inputmode="search" autocomplete="off" placeholder="Un nom de client" aria-label="Chercher un client" id="cherche">
+              <button type="button" class="effacer" id="effacer" hidden aria-label="Effacer la recherche"><svg class="ico ico-p" aria-hidden="true"><use href="#i-croix"/></svg></button>
+            </div>
 
             <div data-si-etat="liste ouvert">
               <div class="groupe-tete"><b>Mme Costa</b><span class="second">2 retours</span></div>
@@ -182,7 +183,8 @@
     </ul>
     <h2>Ce qui ne bouge pas</h2>
     <ul class="garde">
-      <li>Le mois et ses deux flèches, la recherche d'un client, le rangement par client.</li>
+      <li>La barre de recherche, exactement celle de l'appli : votre règle du 1er novembre, pour toutes les planches.</li>
+      <li>Le mois et ses deux flèches, le rangement par client.</li>
       <li>Le point d'or d'un retour pas encore lu, qui s'éteint quand on l'ouvre.</li>
       <li>L'ouverture sur place, les photos en deux colonnes, Replier.</li>
     </ul>
@@ -209,6 +211,9 @@
   }
   retour.querySelector(".retour-ligne").addEventListener("click", function () { ouvrir(!retour.hasAttribute("data-ouvert")); });
   retour.querySelector("[data-replier]").addEventListener("click", function () { ouvrir(false); });
+  var cherche = document.getElementById("cherche"), effacer = document.getElementById("effacer");
+  cherche.addEventListener("input", function () { effacer.hidden = cherche.value === ""; });
+  effacer.addEventListener("click", function () { cherche.value = ""; effacer.hidden = true; cherche.focus(); });
   document.querySelectorAll("#etats [data-etat]").forEach(function (b) {
     b.addEventListener("click", function () {
       var e = b.getAttribute("data-etat");
