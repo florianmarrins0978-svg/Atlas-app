@@ -37,8 +37,11 @@
    le quand se lit avec le quoi, pas trois lignes plus bas. */
 .compte-etat { display: flex; align-items: center; flex-wrap: wrap; column-gap: 10px; margin-top: 6px; }
 .compte-etat .etat { margin-top: 0; }
-.compte-quand { font-size: 15px; font-weight: 600; color: var(--atlas-carteAmbreTexte); white-space: nowrap; }
-.compte-suite { margin: 6px 0 0; font-size: 14px; line-height: 1.4; color: var(--atlas-carteAmbreTexte); }
+.compte-quand { font-size: 15px; font-weight: 600; white-space: nowrap; }
+.compte-etat[data-ton="vert"] .compte-quand { color: var(--atlas-carteVertTexte); }
+.compte-etat[data-ton="ambre"] .compte-quand, .compte-suite[data-ton="ambre"] { color: var(--atlas-carteAmbreTexte); }
+.compte-etat[data-ton="rouge"] .compte-quand, .compte-suite[data-ton="rouge"] { color: var(--atlas-carteRougeTexte); }
+.compte-suite { margin: 6px 0 0; font-size: 14px; line-height: 1.4; }
 .compte .reglage-valeur { font-size: 18px; }
 .compte .reglage.manque .reglage-valeur { color: var(--atlas-carteAmbreTexte); }
 .compte .reglage.refus .reglage-libelle, .compte .reglage.refus .reglage-sous { color: var(--atlas-carteRougeTexte); }
@@ -158,22 +161,16 @@
                     <span class="pastille-ico" data-ton="rouge" data-si-etat="refus"><svg class="ico" aria-hidden="true"><use href="#i-banque"/></svg></span>
                     <span class="ligne-corps">
                       <span class="ligne-nom">Crédit Mutuel</span>
-                      <span class="etat" data-ton="vert" data-si-etat="relie question">Reliée</span>
-                      <span class="compte-etat" data-si-etat="bientot"><span class="etat" data-ton="ambre">À renouveler</span><span class="compte-quand">dans 5 jours</span></span>
-                      <span class="compte-suite" data-si-etat="bientot">Le 6 novembre. Après, les paiements se noteront à la main.</span>
-                      <span class="etat" data-ton="rouge" data-si-etat="refus">Pas lue</span>
+                      <!-- Chaque pastille porte son heure à côté d'elle, sa demande du
+                           1er novembre (« fais pareil pour pas lue ») : la lecture comme l'accord. -->
+                      <span class="compte-etat" data-ton="vert" data-si-etat="relie question bientot"><span class="etat" data-ton="vert">Lue</span><span class="compte-quand">aujourd'hui à 20 h 24</span></span>
+                      <span class="compte-etat" data-ton="ambre" data-si-etat="bientot"><span class="etat" data-ton="ambre">À renouveler</span><span class="compte-quand">dans 5 jours</span></span>
+                      <span class="compte-suite" data-ton="ambre" data-si-etat="bientot">Le 6 novembre. Après, les paiements se noteront à la main.</span>
+                      <span class="compte-etat" data-ton="rouge" data-si-etat="refus"><span class="etat" data-ton="rouge">Pas lue</span><span class="compte-quand">à 20 h 24</span></span>
+                      <span class="compte-suite" data-ton="rouge" data-si-etat="refus">Enable Banking ne répond pas. Réessayez dans un moment.</span>
                     </span>
                   </div>
 
-                  <div class="reglage" data-si-etat="relie question bientot">
-                    <span class="reglage-libelle">Dernière lecture</span>
-                    <span class="reglage-valeur">Aujourd'hui à 20 h 24</span>
-                  </div>
-                  <div class="reglage refus" data-si-etat="refus">
-                    <span class="reglage-libelle">Dernière lecture</span>
-                    <span class="reglage-valeur">Aujourd'hui à 20 h 24, sans réponse</span>
-                    <span class="reglage-sous">Enable Banking ne répond pas. Réessayez dans un moment.</span>
-                  </div>
 
                   <!-- Seulement quand la banque refuse l'historique : sinon rien à dire
                        (sa remarque du 1er novembre, « beaucoup de texte pour pas grand chose »). -->
@@ -385,7 +382,7 @@
   <section class="pl-notes">
     <h2>Ce qui change</h2>
     <ul>
-      <li>L'heure de la dernière lecture de la banque se lit ici. C'est ce qui manquait le 1<sup>er</sup> novembre : un scan qui ne trouve rien ne disait pas si la banque avait été relue.</li>
+      <li>L'heure de la dernière lecture se lit à côté de sa pastille : « Lue » en vert, « Pas lue » en rouge. C'est ce qui manquait le 1<sup>er</sup> novembre : un scan qui ne trouve rien ne disait pas si la banque avait été relue.</li>
       <li>Quand la banque ne donne pas les anciennes lignes, une phrase le dit, en ambre. Sinon, rien. Touchez « La banque refuse ».</li>
       <li>Le relevé du dossier en cours se compte : les entrées en vert, les sorties en rouge. Un appui ouvre Pour mon comptable.</li>
       <li>La phrase fausse est corrigée : Atlas lit les entrées ET les sorties depuis le 27 octobre.</li>
