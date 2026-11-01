@@ -8,7 +8,8 @@
 <style>
 /*
   LE CHANTIER : les écrans qu'il traverse entre la dictée et le devis parti.
-    la note vocale       src/app/chantiers/[id]/note-vocale/NoteVocaleClient.tsx
+    la note vocale       la dictée de la fiche client : src/app/chantiers/[id]/AnneauNoteVocale.tsx,
+                         montée par src/app/chantiers/nouveau/FormulaireNouveauChantier.tsx
     la transcription     src/app/chantiers/[id]/transcription/page.tsx, TexteDicte.tsx
     les informations     src/app/chantiers/[id]/informations/InformationsClient.tsx, BrouillonSection.tsx
     le prix              src/app/chantiers/[id]/prix/PrixClient.tsx, PropositionPrixSection.tsx
@@ -18,6 +19,14 @@
   Sa demande du 31 octobre 2026, sur la liste des écrans du chantier pas
   encore refaits : « fais moi une planche pour les 8 premiers, l'idée c'est de
   les améliorer et de les rendre plus jolis ».
+
+  CORRIGÉ LE 1er NOVEMBRE, sa remarque : « la note vocale dans l'appli n'est
+  pas du tout celle que tu me montres ! ». La première version dessinait
+  l'écran de l'adresse /note-vocale (NoteVocaleClient.tsx), choisi sur son
+  nom. Ce n'est pas celui qu'il emploie : sa note vocale est l'anneau de la
+  fiche client, et l'on ne tombe sur l'ancien écran que par deux liens de la
+  Transcription. Le panneau est refait sur l'anneau, photographié avec un
+  faux micro dans le navigateur (aujourdhui/chantier-dictee-*.jpg).
 
   DEUX DES HUIT N'ONT PAS D'ÉCRAN À DESSINER, et la planche le dit :
     la fiche du chantier n'existe plus depuis le 4 septembre 2026 (sa décision,
@@ -95,34 +104,84 @@
 .ajout-ligne .ico { width: 22px; height: 22px; color: var(--atlas-or); }
 .vide-liste { margin: 0; padding: 16px 16px 14px 0; font-size: 15px; color: var(--atlas-inkSoft); }
 
-/* ═══ LA NOTE VOCALE ══════════════════════════════════════════════════════ */
-.voix-centre { display: flex; flex-direction: column; align-items: center; text-align: center; padding-top: 34px; }
-/* Le micro : le même rond plein que la fiche client, en plus grand, et un
-   anneau d'or autour (planche validée note-vocale-cercle-dore.html). */
-.micro-grand { position: relative; width: 132px; height: 132px; display: grid; place-items: center; border-radius: 50%;
-               background: var(--atlas-plein); color: var(--sur-plein); transition: transform 160ms var(--courbe); }
-.micro-grand::before { content: ""; position: absolute; inset: -11px; border-radius: 50%;
-                       border: 2px solid color-mix(in srgb, var(--atlas-or) 75%, transparent); }
-.micro-grand:active { transform: scale(0.97); }
-.micro-grand .ico { width: 44px; height: 44px; stroke-width: 1.6; }
-.micro-grand .carre-stop { width: 34px; height: 34px; border-radius: 7px; background: currentColor; }
-.ecran[data-etat="enregistrement"] .micro-grand::before { animation: souffle 1.6s var(--courbe) infinite; }
-@keyframes souffle { 0% { transform: scale(1); opacity: 1; } 70% { transform: scale(1.16); opacity: 0; } 100% { transform: scale(1.16); opacity: 0; } }
-.voix-titre { margin: 32px 0 0; font: 400 24px/1.2 var(--serif); }
-.voix-sous { max-width: 19em; margin: 8px 0 0; font-size: 15.5px; line-height: 1.45; color: var(--atlas-inkSoft); }
-.voix-temps { margin: 30px 0 0; font: 400 46px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; letter-spacing: -0.01em; }
-.voix-centre .etat { margin-top: 12px; }
-.fichier-audio { margin-top: 26px; }
+/* ═══ LA NOTE VOCALE : la dictée de la fiche client ═══════════════════════
+   La note vocale qu'il emploie vit dans la fiche client que « Créer un
+   devis » fait monter (FormulaireNouveauChantier.tsx, AnneauNoteVocale.tsx).
+   La fiche reste celle d'aujourd'hui, sa réponse du 28 octobre devant
+   creer-un-devis.html : elle est recopiée de la capture, et seule la dictée
+   change. */
+.fc .derriere { position: absolute; inset: 0; padding: 14px var(--gouttiere); background: var(--atlas-cream); }
+.fc .derriere h2 { margin: 0; font: 400 34px/1.05 var(--serif); letter-spacing: -0.012em; }
+.fc .derriere-voile { position: absolute; inset: 0; background: color-mix(in srgb, #0d0e0c 30%, transparent); }
+.fc-feuille { position: absolute; left: 0; right: 0; top: 30px; bottom: 0; display: flex; flex-direction: column;
+              border-radius: var(--r-feuille) var(--r-feuille) 0 0; background: var(--atlas-cream); overflow: hidden; }
+.fc-feuille .defile { padding: 6px 12px 28px; }
+.fc-tete { display: grid; grid-template-columns: 40px 1fr 44px; align-items: center; min-height: 52px; margin-bottom: 6px; }
+.fc-tete h2 { margin: 0; text-align: center; font: 400 26px/1.1 var(--serif); }
+.fc-tete .retour-nu { width: 40px; height: 44px; display: grid; place-items: center; color: var(--atlas-ink); }
+.fc-tete .retour-nu .ico { width: 20px; height: 20px; }
+.fc-tete .rond-creux { width: 44px; height: 44px; }
+.fc-tete .rond-creux .ico { width: 20px; height: 20px; }
+.fc-pastilles { display: flex; gap: 6px; }
+.fc-pastilles span { flex: 1 1 auto; display: grid; place-items: center; height: 38px; padding: 0 10px; border-radius: 19px; font-size: 15.5px;
+                     box-shadow: inset 0 0 0 1px var(--atlas-line); }
+/* Les libellés d'aujourd'hui, gardés : capitales de 11 px, espacées. */
+.fc-lib { display: flex; justify-content: space-between; margin: 8px 0 3px; font-size: 11px; font-weight: 500; letter-spacing: .2em;
+          text-transform: uppercase; color: var(--atlas-inkSoft); }
+.fc-lib b { font-weight: 600; color: var(--atlas-ink); letter-spacing: .14em; }
+.fc-case { display: flex; align-items: center; height: 44px; padding: 0 14px; border-radius: 8px; background: var(--atlas-rustTint);
+           font-size: 16px; color: var(--atlas-muted); }
+.fc-deux { display: grid; grid-template-columns: 1.2fr 1fr; gap: 8px; }
+.fc-deux > div:last-child .fc-case { justify-content: flex-end; }
+.fc-filet { height: 1px; margin: 12px 0 6px; background: var(--atlas-line); }
+.fc-envoi { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+.fc-envoi span:last-child { display: flex; gap: 22px; font-size: 14px; color: var(--atlas-muted); letter-spacing: 0; text-transform: none; }
+.fc-photo { width: 56px; height: 56px; display: grid; place-items: center; border-radius: 6px; color: var(--atlas-or);
+            border: 1.5px dashed color-mix(in srgb, var(--atlas-or) 70%, transparent); }
+.fc-photo .ico { width: 18px; height: 18px; }
+.fc-voix-lib { margin: 14px 0 0; text-align: center; font-size: 11px; font-weight: 500; letter-spacing: .2em; text-transform: uppercase;
+               color: var(--atlas-inkSoft); }
 
-.lecteur { display: flex; align-items: center; gap: 16px; padding: 18px; }
-.lecteur .rond { width: 60px; height: 60px; }
-.lecteur .rond .ico { width: 26px; height: 26px; fill: currentColor; stroke: none; margin-left: 3px; }
-.lecteur-corps { flex: 1; min-width: 0; }
-.lecteur-nom { display: block; font: 400 20px/1.2 var(--serif); }
-.lecteur-rang { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
-.lecteur-piste { flex: 1; height: 4px; border-radius: 2px; background: var(--atlas-line); overflow: hidden; }
-.lecteur-piste span { display: block; width: 34%; height: 100%; background: var(--atlas-or); }
-.lecteur-duree { font-size: 14px; font-weight: 600; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
+/* La dictée, soignée : le même objet, à la même place, dans ses quatre états.
+   Une hauteur fixe pour la zone : passer d'un état à l'autre ne fait rien
+   sauter, ni la fiche au-dessus, ni « Je rédige à la main » en dessous. */
+.dictee-zone { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+               min-height: 132px; margin-top: 6px; }
+/* Au repos : son micro (80 px, l'or clair en anneau), et l'invite qui se lit. */
+.fc-micro { width: 84px; height: 84px; display: grid; place-items: center; border-radius: 50%; background: var(--atlas-plein); color: var(--sur-plein);
+            box-shadow: inset 0 0 0 2px var(--atlas-orClair); transition: transform 160ms var(--courbe); }
+.fc-micro:active { transform: scale(0.97); }
+.fc-micro .ico { width: 32px; height: 32px; stroke-width: 1.7; }
+.fc-invite { margin: 10px 0 0; font-size: 15px; color: var(--atlas-inkSoft); }
+/* Pendant la dictée : tout sur une ligne (sa planche du 31 août), mais des
+   cibles pour le pouce et un mot sous chacune des deux. */
+.ligne-dictee { display: flex; align-items: flex-start; gap: 10px; width: 100%; padding: 0 2px; }
+.geste-dictee { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: none; font-size: 13px; font-weight: 600;
+                color: var(--atlas-inkSoft); }
+.geste-dictee .rond-creux { width: 52px; height: 52px; margin: 3px 0; color: var(--atlas-inkSoft); }
+.geste-dictee .rond-creux .ico { width: 22px; height: 22px; }
+.geste-dictee .envoyer { width: 58px; height: 58px; display: grid; place-items: center; border-radius: 50%; background: var(--atlas-plein);
+                         color: var(--sur-plein); box-shadow: inset 0 0 0 1.5px var(--atlas-orClair); }
+.geste-dictee .envoyer .ico { width: 24px; height: 24px; }
+.geste-dictee.envoi { color: var(--atlas-ink); }
+.dictee-milieu { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; height: 58px; }
+.dictee-temps { display: inline-flex; align-items: center; gap: 7px; flex: none; font: 600 18px/1 var(--sans); font-variant-numeric: tabular-nums;
+                color: var(--atlas-ink); }
+.dictee-temps::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--atlas-alerte); animation: battre 1.3s ease-in-out infinite; }
+@keyframes battre { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
+/* Le trait d'or qui suit la voix (sa planche note-vocale-tasse-et-envoi) :
+   ici un relevé fixe, dans l'appli le volume réellement capté. */
+.dictee-trait { flex: 1; min-width: 0; height: 30px;
+                -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+                mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
+.dictee-trait svg { display: block; width: 100%; height: 100%; }
+/* Envoyée : ce qui se passe, en mots qui se lisent, et l'or qui souffle. */
+.dictee-suite { display: flex; align-items: center; gap: 10px; font-size: 16px; color: var(--atlas-ink); }
+.dictee-suite .points { margin: 0; gap: 6px; }
+.dictee-suite .points span { width: 8px; height: 8px; }
+.dictee-sous { margin: 6px 0 0; font-size: 14px; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
+.fc-a-la-main { width: auto; min-width: 220px; margin: 8px auto 0; }
+.ecran[data-etat="dictee"] .fc-a-la-main, .ecran[data-etat="transcription"] .fc-a-la-main, .ecran[data-etat="preparation"] .fc-a-la-main { visibility: hidden; }
 
 /* ═══ LA TRANSCRIPTION ════════════════════════════════════════════════════ */
 /* Ses mots en serif, à la taille d'une lettre : c'est un texte qu'on relit. */
@@ -297,11 +356,12 @@
 .resume-devis .bouton-texte.alerte { margin-top: 8px; }
 
 @media (prefers-reduced-motion: reduce) {
-  .ecran[data-etat="enregistrement"] .micro-grand::before, .points span { animation: none; }
+  .dictee-temps::before, .points span { animation: none; }
 }
 </style>
 </head>
 <body class="pl pl-pilules">
+<svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden"><symbol id="i-corbeille" viewBox="0 0 24 24"><path d="M4 7h16M10 4h4a1 1 0 0 1 1 1v2H9V5a1 1 0 0 1 1-1zM6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/></symbol></svg>
 
 <header class="pl-tete">
   <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
@@ -330,84 +390,62 @@
         <p class="pl-legende">Proposé</p>
         <div class="cadre">
 
-          <!-- ═══ LA NOTE VOCALE ═════════════════════════════════════════ -->
-          <div class="ecran avec-barre bas-haut" data-page-ecran="note" id="ecran-note">
-            <div class="defile">
-              <div class="tete-ronds">
-                <a class="rond-creux" href="#" aria-label="Retour à la liste des chantiers" data-note="Sur la planche, on reste ici."><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
-                <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-note="Sur la planche, l'assistant ne s'ouvre pas."><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
-              </div>
-              <h2 class="tete-titre">Note vocale</h2>
-              <p class="tete-situation" data-si-etat="vide enregistrement"><b>Pose de clôture</b>, Mme Aubry</p>
-              <p class="tete-situation" data-si-etat="enregistree"><b>Rénovation salle de bain</b>, M. Bernard</p>
+          <!-- ═══ LA NOTE VOCALE : la dictée de la fiche client ══════════ -->
+          <div class="ecran fc" data-page-ecran="note" id="ecran-note">
+            <div class="derriere" aria-hidden="true"><h2>Vos chantiers</h2></div>
+            <div class="derriere-voile" aria-hidden="true"></div>
+            <section class="fc-feuille" aria-label="Fiche client">
+              <div class="defile">
+                <div class="fc-tete">
+                  <button class="retour-nu" type="button" aria-label="Fermer" data-note="Sur la planche, la fiche reste ouverte."><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+                  <h2>Fiche client</h2>
+                  <button class="rond-creux" type="button" aria-label="Dicter les coordonnées" data-note="Sur la planche, rien ne s'enregistre."><svg class="ico" aria-hidden="true"><use href="#i-micro"/></svg></button>
+                </div>
+                <div class="fc-pastilles" aria-hidden="true"><span>Mr</span><span>Mme</span><span>Entreprise</span><span>Public</span></div>
+                <div class="fc-deux">
+                  <div><p class="fc-lib">Nom du client</p><div class="fc-case">Bernard</div></div>
+                  <div><p class="fc-lib" style="justify-content:flex-end">Téléphone</p><div class="fc-case">06 12 34 56 78</div></div>
+                </div>
+                <p class="fc-lib">E-mail</p><div class="fc-case">bernard@exemple.fr</div>
+                <p class="fc-lib"><span>Adresse</span><b>+ Client</b></p><div class="fc-case">12 rue des Lilas, Nantes</div>
+                <div class="fc-filet"></div>
+                <p class="fc-lib fc-envoi"><span>Envoi</span><span>SMS<span>E-mail</span></span></p>
+                <p class="fc-lib">Photos</p>
+                <span class="fc-photo" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg></span>
 
-              <div class="voix-centre" data-si-etat="vide">
-                <button class="micro-grand touche" type="button" aria-label="Enregistrer une note vocale" data-va-etat="enregistrement"><svg class="ico" aria-hidden="true"><use href="#i-micro"/></svg></button>
-                <p class="voix-titre">Enregistrer une note vocale</p>
-                <p class="voix-sous">Décrivez les prestations, la durée, l'équipe et le matériel nécessaire.</p>
-                <button class="bouton bouton-creux bouton-petit fichier-audio touche" type="button" data-note="Sur la planche, aucun fichier ne s'ouvre."><svg class="ico ico-p" aria-hidden="true"><use href="#i-importer"/></svg>Ajouter un fichier audio</button>
-              </div>
+                <p class="fc-voix-lib">Devis à la voix</p>
+                <div class="dictee-zone">
+                  <div data-si-etat="repos" style="display:flex;flex-direction:column;align-items:center">
+                    <button class="fc-micro" type="button" aria-label="Dicter une note vocale" data-va-etat="dictee"><svg class="ico" aria-hidden="true"><use href="#i-micro"/></svg></button>
+                    <p class="fc-invite">Appuyez et décrivez le chantier</p>
+                  </div>
 
-              <div class="voix-centre" data-si-etat="enregistrement">
-                <button class="micro-grand touche" type="button" aria-label="Arrêter l'enregistrement" data-va-etat="enregistree"><span class="carre-stop" aria-hidden="true"></span></button>
-                <p class="voix-temps chiffre" id="chrono">0:42</p>
-                <span class="etat" data-ton="rouge">Enregistrement en cours</span>
-                <p class="voix-sous">Parlez naturellement. Vous pourrez modifier les informations ensuite.</p>
-              </div>
-
-              <div data-si-etat="enregistree">
-                <div class="plage lecteur" data-retirable>
-                  <div class="ligne-glisse lecteur" style="padding:0;flex:1;display:flex;align-items:center;gap:16px">
-                    <button class="rond" type="button" aria-label="Écouter la note" data-note="Sur la planche, rien ne se lit."><svg class="ico" aria-hidden="true"><use href="#i-lecture"/></svg></button>
-                    <div class="lecteur-corps">
-                      <span class="lecteur-nom">Note enregistrée</span>
-                      <div class="lecteur-rang"><span class="lecteur-piste"><span></span></span><span class="lecteur-duree">0:12</span></div>
+                  <div class="ligne-dictee" data-si-etat="dictee">
+                    <button class="geste-dictee" type="button" aria-label="Supprimer la note" data-va-etat="repos">
+                      <span class="rond-creux"><svg class="ico" aria-hidden="true"><use href="#i-corbeille"/></svg></span>Jeter
+                    </button>
+                    <div class="dictee-milieu">
+                      <span class="dictee-temps" id="chrono">0:42</span>
+                      <span class="dictee-trait" aria-hidden="true"><svg viewBox="0 0 260 30" preserveAspectRatio="none"><path id="trait-voix" fill="var(--atlas-or)"/></svg></span>
                     </div>
+                    <button class="geste-dictee envoi" type="button" aria-label="Envoyer la note et préparer le devis" data-va-etat="transcription">
+                      <span class="envoyer"><svg class="ico" aria-hidden="true"><use href="#i-envoyer"/></svg></span>Envoyer
+                    </button>
+                  </div>
+
+                  <div data-si-etat="transcription" style="text-align:center">
+                    <p class="dictee-suite" style="margin:0;justify-content:center">Transcription<span class="points" aria-hidden="true"><span></span><span></span><span></span></span></p>
+                    <p class="dictee-sous">&nbsp;</p>
+                  </div>
+
+                  <div data-si-etat="preparation" style="text-align:center">
+                    <p class="dictee-suite" style="margin:0;justify-content:center">Atlas prépare votre devis<span class="points" aria-hidden="true"><span></span><span></span><span></span></span></p>
+                    <p class="dictee-sous" id="prepa-sous">&nbsp;</p>
                   </div>
                 </div>
-                <div class="plage plage-serree mt-16">
-                  <ul class="liste">
-                    <li><a class="ligne touche" href="#" data-vers-page="transcription">
-                      <span class="ligne-icone or"><svg class="ico" aria-hidden="true"><use href="#i-document"/></svg></span>
-                      <span class="ligne-corps"><span class="ligne-nom">Voir le texte</span><span class="ligne-situation">Transcription disponible</span></span>
-                      <span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
-                    <li><button class="ligne touche" type="button" data-note="Sur la planche, rien ne s'enregistre.">
-                      <span class="ligne-icone"><svg class="ico" aria-hidden="true"><use href="#i-micro"/></svg></span>
-                      <span class="ligne-corps"><span class="ligne-nom">Reprendre, j'avais oublié quelque chose</span></span></button></li>
-                    <li><button class="ligne touche" type="button" data-ouvre="feuille-remplacer">
-                      <span class="ligne-icone"><svg class="ico" aria-hidden="true"><use href="#i-annuler"/></svg></span>
-                      <span class="ligne-corps"><span class="ligne-nom">Remplacer la note</span></span></button></li>
-                  </ul>
-                </div>
+                <button class="bouton bouton-creux bouton-petit fc-a-la-main" type="button" data-vers-page="devis">Je rédige à la main</button>
               </div>
-            </div>
-
-            <div class="action-bas" data-si-etat="enregistree">
-              <a class="bouton bouton-plein plein-long touche" href="#" data-vers-page="devis">Créer le devis à partir de ma dictée</a>
-              <p class="sous-plein">Rien ne part au client.</p>
-              <a class="bouton-texte or touche" href="#" data-vers-page="devis">Ou rédiger le devis à la main</a>
-            </div>
-
-            <div class="feuille" id="feuille-remplacer" aria-hidden="true" role="dialog" aria-label="Remplacer cette note vocale">
-              <div class="feuille-poignee"></div>
-              <div class="feuille-dedans">
-                <p class="feuille-titre">Remplacer cette note vocale ?</p>
-                <p class="second" style="margin:-6px 0 20px">La note actuelle sera conservée jusqu'à l'enregistrement de la nouvelle.</p>
-                <button class="bouton bouton-plein touche" type="button" data-va-etat="vide">Remplacer</button>
-                <button class="bouton bouton-creux touche mt-8" type="button" data-ferme>Annuler</button>
-              </div>
-            </div>
-
-            <nav class="barre" aria-label="Navigation principale">
-              <div class="barre-onglets">
-                <a class="barre-onglet" href="accueil.html" aria-current="page">Chantiers</a>
-                <a class="barre-onglet" href="planning.html">Planning</a>
-                <a class="barre-onglet" href="termines.html">Terminés</a>
-                <a class="barre-onglet" href="paysage.html">Paysage</a>
-                <a class="barre-onglet" href="reglages.html">Réglages</a>
-                <span class="barre-trait" aria-hidden="true"><span></span></span>
-              </div>
-            </nav>
+            </section>
           </div>
 
           <!-- ═══ LA TRANSCRIPTION ═══════════════════════════════════════ -->
@@ -796,7 +834,7 @@
 
       <div data-vue-panneau="aujourdhui">
         <p class="pl-legende">Aujourd'hui</p>
-        <div class="cadre"><div class="cadre-capture" id="cadre-capture"><img id="capture" src="aujourdhui/chantier-note-vocale.jpg" alt="L'écran tel qu'il est aujourd'hui"></div></div>
+        <div class="cadre"><div class="cadre-capture" id="cadre-capture"><img id="capture" src="aujourdhui/chantier-dictee-repos.jpg" alt="L'écran tel qu'il est aujourd'hui"></div></div>
         <p class="capture-quoi" id="capture-quoi"></p>
       </div>
     </div>
@@ -815,15 +853,20 @@
     <div class="page-notes" data-notes="note">
       <h2>La note vocale</h2>
       <ul>
-        <li>Un grand micro au milieu, cerclé d'or, le même que sur la fiche client : on le trouve sans chercher, d'un doigt.</li>
-        <li>Pendant l'enregistrement, le temps en grand et l'anneau qui respire.</li>
-        <li>Une fois enregistrée : le lecteur, puis trois lignes rangées (le texte, reprendre, remplacer) au lieu de cinq gestes empilés de tailles différentes.</li>
-        <li>« Ajouter un fichier audio » devient un vrai bouton ; aujourd'hui, des capitales de 9,5 points.</li>
+        <li>C'est la dictée de la fiche client, celle qui s'ouvre sur Créer un devis. <b>La fiche reste celle d'aujourd'hui</b> (votre choix du 28 octobre) : seule la dictée change.</li>
+        <li>Au repos, « Appuyez et décrivez le chantier » se lit : 15 points en encre douce, au lieu de 11 en gris.</li>
+        <li>Pendant la dictée, tout reste sur une ligne (votre planche du 31 août). La poubelle passe de 32 à 52 points, l'avion de 46 à 58 ; le temps s'écrit en 18 points, en noir.</li>
+        <li>Envoyée : « Transcription », puis « Atlas prépare votre devis », en 16 points au lieu de 13. La zone garde sa hauteur : rien ne saute.</li>
       </ul>
       <h2>Ce qui ne bouge pas</h2>
       <ul class="garde">
-        <li>Créer le devis à partir de ma dictée, en plein ; Ou rédiger le devis à la main ; la feuille de Remplacer et sa phrase.</li>
-        <li>Le geste Retirer sur la note, et son tiroir.</li>
+        <li>Le micro et son anneau d'or ; le trait d'or qui suit la voix ; pas de pause ; la poubelle à gauche, l'avion à droite.</li>
+        <li>L'invite qui disparaît pendant la dictée ; Je rédige à la main, qui s'efface le temps de l'envoi.</li>
+      </ul>
+      <h2>À trancher</h2>
+      <ul class="a-trancher">
+        <li>Un mot sous chaque rond, « Jeter » et « Envoyer » : aujourd'hui, deux dessins sans mot.</li>
+        <li>L'ancien écran Note vocale (celui que je vous avais montré par erreur) existe encore : la Transcription y mène par « Relancer depuis la note vocale » et « Enregistrer une note vocale ». Deux enregistreurs pour une même note. Je propose que ces liens ouvrent la fiche client, et que l'ancien écran parte.</li>
       </ul>
     </div>
 
@@ -924,11 +967,12 @@
   /* Chaque écran, ses états, et la vraie page qui leur répond. */
   var PAGES = {
     note: {
-      etats: [["vide", "Sans note"], ["enregistrement", "Enregistrement"], ["enregistree", "Enregistrée"]],
+      etats: [["repos", "Au repos"], ["dictee", "Pendant la dictée"], ["transcription", "Envoyée"], ["preparation", "Le devis se prépare"]],
       captures: {
-        vide: ["chantier-note-vocale-vide.jpg", "Aujourd'hui, sans note."],
-        enregistrement: ["chantier-note-vocale-vide.jpg", "Aujourd'hui, sans note : l'enregistrement remplace le bouton par Arrêter."],
-        enregistree: ["chantier-note-vocale.jpg", "Aujourd'hui, une note enregistrée et transcrite."]
+        repos: ["chantier-dictee-repos.jpg", "Aujourd'hui, la fiche client ouverte par Créer un devis."],
+        dictee: ["chantier-dictee-en-cours.jpg", "Aujourd'hui, pendant la dictée."],
+        transcription: ["chantier-dictee-envoi.jpg", "Aujourd'hui, la note envoyée."],
+        preparation: ["chantier-dictee-envoi.jpg", "Aujourd'hui, la note envoyée : ensuite « Atlas prépare votre devis », puis le devis s'ouvre."]
       }
     },
     transcription: {
@@ -998,6 +1042,7 @@
     if (defile) defile.scrollTop = 0;
     montrerCapture(pageCourante, etat);
     if (pageCourante === "informations") poserDuree(etat === "dictee" ? 0 : 3);
+    if (pageCourante === "note") suivreLEnvoi();
   }
 
   function choisirPage(page, etat) {
@@ -1044,13 +1089,53 @@
     });
   });
 
-  /* Le chrono de l'enregistrement, pour qu'on le voie avancer. */
-  var secondes = 42;
+  /* Pendant la dictée : le temps avance, et le trait d'or bouge comme une
+     voix (un relevé simulé ici ; dans l'appli, le volume réellement capté,
+     contourDuTrait dans AnneauNoteVocale.tsx). */
+  var secondes = 42, onde = [];
+  for (var k = 0; k < 64; k++) onde.push(Math.sin(k / 5) > -0.35 ? 0.25 + Math.abs(Math.sin(k * 1.7) * Math.cos(k * 0.6)) * 0.75 : 0.02);
+  function contourDuTrait(m) {
+    var dessus = [], dessous = [];
+    for (var i = 0; i < m.length; i++) {
+      var x = (i * 260) / (m.length - 1), demi = 0.35 + Math.max(0, Math.min(1, m[i])) * 9;
+      dessus.push(x.toFixed(1) + " " + (15 - demi).toFixed(2));
+      dessous.push(x.toFixed(1) + " " + (15 + demi).toFixed(2));
+    }
+    return "M" + dessus.join(" L") + " L" + dessous.reverse().join(" L") + " Z";
+  }
+  var t0 = 64;
+  document.getElementById("trait-voix").setAttribute("d", contourDuTrait(onde));
   setInterval(function () {
     var ecran = document.getElementById("ecran-note");
-    if (ecran.getAttribute("data-etat") !== "enregistrement" || ecran.hidden) return;
-    secondes += 1;
-    document.getElementById("chrono").textContent = Math.floor(secondes / 60) + ":" + String(secondes % 60).padStart(2, "0");
+    if (ecran.getAttribute("data-etat") !== "dictee" || ecran.hidden) return;
+    t0 += 1;
+    var parle = Math.sin(t0 / 5) > -0.35;
+    onde.shift();
+    onde.push(parle ? 0.25 + Math.abs(Math.sin(t0 * 1.7) * Math.cos(t0 * 0.6)) * 0.75 : 0.02);
+    document.getElementById("trait-voix").setAttribute("d", contourDuTrait(onde));
+    if (t0 % 8 === 0) {
+      secondes += 1;
+      document.getElementById("chrono").textContent = Math.floor(secondes / 60) + ":" + String(secondes % 60).padStart(2, "0");
+    }
+  }, 125);
+
+  /* Envoyée : la transcription, puis le devis qui se prépare et son compteur
+     (passé quinze secondes, la phrase dit « toujours », DevisDepuisDictee.tsx). */
+  var suite = null, attente = 12;
+  function suivreLEnvoi() {
+    var ecran = document.getElementById("ecran-note");
+    clearTimeout(suite);
+    if (ecran.getAttribute("data-etat") === "transcription") {
+      suite = setTimeout(function () { if (ecran.getAttribute("data-etat") === "transcription" && pageCourante === "note") choisirEtat("preparation"); }, 2600);
+    }
+  }
+  setInterval(function () {
+    var ecran = document.getElementById("ecran-note");
+    if (ecran.getAttribute("data-etat") !== "preparation" || ecran.hidden) { attente = 12; return; }
+    attente += 1;
+    var phrase = ecran.querySelector('[data-si-etat="preparation"] .dictee-suite');
+    phrase.firstChild.textContent = attente < 15 ? "Atlas prépare votre devis" : "Atlas prépare toujours votre devis";
+    document.getElementById("prepa-sous").textContent = attente < 15 ? "\u00a0" : attente + " s";
   }, 1000);
 
   /* La durée, un cran à la fois, dans la liste de la case d'aujourd'hui
