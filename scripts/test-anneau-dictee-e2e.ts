@@ -135,33 +135,38 @@ async function main() {
     await bouton.click();
     const envoyer = page.locator('[data-atlas="dictee-envoyer"]');
     await envoyer.waitFor({ state: "visible", timeout: 10_000 });
-    await envoyer.click();
-    await page.waitForTimeout(400);
-    assert.ok(
-      await envoyer.isVisible(),
-      "un second appui dans la première seconde a envoyé la note : le double appui part chez Atlas"
-    );
-
-    const disque = await page.locator('[data-atlas="dictee-envoyer"] .atlas-disque-envoi').boundingBox();
-    assert.ok(avant && disque, "le micro ou le disque d'envoi n'a pas de boîte : rien à mesurer");
-    // Une boîte de zéro pixel n'est pas une mesure (`CLAUDE.md` §5).
-    assert.ok(disque.width >= 76, `le disque d'envoi fait ${disque.width} px : ce n'est plus le disque du micro`);
-    const ecart = Math.hypot(
-      avant.x + avant.width / 2 - (disque.x + disque.width / 2),
-      avant.y + avant.height / 2 - (disque.y + disque.height / 2)
-    );
-    assert.ok(ecart <= 2, `l'avion est à ${ecart.toFixed(1)} px du micro : le doigt ne le trouve plus où il était`);
-
-    for (const mot of ["Jeter", "Envoyer"]) {
+    // La dictée est JETÉE quoi qu'il arrive : une assertion qui casse ne doit
+    // pas laisser le micro ouvert, et faire tomber les cas suivants avec elle.
+    try {
+      await envoyer.click();
+      await page.waitForTimeout(400);
       assert.ok(
-        await anneau.getByText(mot, { exact: true }).isVisible(),
-        `« ${mot} » ne s'écrit pas sous son geste : un dessin sans mot ne se devine pas`
+        await envoyer.isVisible(),
+        "un second appui dans la première seconde a envoyé la note : le double appui part chez Atlas"
       );
-    }
 
-    // Jeter ramène au micro : le cas suivant redicte depuis le repos.
-    await page.locator('[data-atlas="dictee-jeter"]').click();
-    await bouton.waitFor({ state: "visible", timeout: 5_000 });
+      const disque = await page.locator('[data-atlas="dictee-envoyer"] .atlas-disque-envoi').boundingBox();
+      assert.ok(avant && disque, "le micro ou le disque d'envoi n'a pas de boîte : rien à mesurer");
+      // Une boîte de zéro pixel n'est pas une mesure (`CLAUDE.md` §5).
+      assert.ok(disque.width >= 76, `le disque d'envoi fait ${disque.width} px : ce n'est plus le disque du micro`);
+      const ecart = Math.hypot(
+        avant.x + avant.width / 2 - (disque.x + disque.width / 2),
+        avant.y + avant.height / 2 - (disque.y + disque.height / 2)
+      );
+      assert.ok(ecart <= 2, `l'avion est à ${ecart.toFixed(1)} px du micro : le doigt ne le trouve plus où il était`);
+
+      for (const mot of ["Jeter", "Envoyer"]) {
+        assert.ok(
+          await anneau.getByText(mot, { exact: true }).isVisible(),
+          `« ${mot} » ne s'écrit pas sous son geste : un dessin sans mot ne se devine pas`
+        );
+      }
+    } finally {
+      // Jeter ramène au micro : le cas suivant redicte depuis le repos.
+      const jeter = page.locator('[data-atlas="dictee-jeter"]');
+      if (await jeter.isVisible()) await jeter.click();
+      await bouton.waitFor({ state: "visible", timeout: 5_000 });
+    }
   });
 
   await cas("un appui dicte, l'avion envoie — et la note existe", async () => {
