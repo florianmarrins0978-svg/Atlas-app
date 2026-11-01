@@ -79,9 +79,13 @@
 .total-mot { font: 400 18px/1.2 var(--serif); }
 .total-chiffre { font: 400 30px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; letter-spacing: -0.01em; }
 .total-detail { margin: 6px 0 0; font-size: 14.5px; line-height: 1.45; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
-/* Envoyer et ce qui manque, sur un fond plein : rien ne passe dessous en transparence. */
-.ecran .action-bas { background: var(--atlas-cream); box-shadow: inset 0 1px 0 var(--atlas-line); padding-top: 10px; }
-.manque { margin: 0 0 8px; text-align: center; font-size: 14px; font-weight: 600; color: var(--atlas-carteAmbreTexte); }
+/* L'envoi d'aujourd'hui (ChoixCanal en réglage, puis le bouton, puis le refus) : on n'y touche pas. */
+.canal { display: flex; justify-content: center; gap: 22px; margin-top: 26px; }
+.canal button { padding: 8px 14px; font-size: 16px; color: var(--atlas-muted); box-shadow: inset 0 -2px 0 transparent; }
+.canal button[aria-pressed="true"] { color: var(--atlas-ink); box-shadow: inset 0 -2px 0 var(--atlas-or); }
+.envoyer-app { margin-top: 12px; font: 400 19px/1 var(--serif); }
+.ecran .envoyer-app[aria-disabled="true"] { background: var(--atlas-plein); color: var(--sur-plein); opacity: 0.45; }
+.manque { margin: 10px 0 0; text-align: center; font-size: 14px; color: var(--atlas-alerte); }
 
 /* La feuille du catalogue : une ligne par prestation, rangées par famille. */
 .feuille-recherche { display: flex; gap: 8px; }
@@ -107,7 +111,7 @@
 <header class="pl-tete">
   <a class="pl-sommaire" href="client.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>La fiche d'un client</a>
   <h1 class="pl-titre">Son contrat d'entretien</h1>
-  <p class="pl-verdict">L'écran qu'ouvre « Contrat d'entretien » sur sa fiche. <b>Les mois en toutes lettres, le catalogue dans une feuille, le total en grand, Envoyer toujours sous le pouce.</b></p>
+  <p class="pl-verdict">L'écran qu'ouvre « Contrat d'entretien » sur sa fiche. <b>Les mois en toutes lettres, le catalogue dans une feuille, le total en grand, l'envoi tel qu'aujourd'hui.</b></p>
 </header>
 
 <main class="pl-scene">
@@ -180,12 +184,14 @@
                 <a class="bouton-texte" href="#" data-note-planche="Le PDF s'ouvre dans la visionneuse." style="margin-top:6px"><svg class="ico ico-p" aria-hidden="true"><use href="#i-document"/></svg>Aperçu du PDF</a>
               </section>
 
-              <p class="rubrique rubrique-or">Envoi</p>
-              <div class="choix" role="group" aria-label="Par où l'envoyer">
+              <!-- L'envoi, tel qu'il est dans l'appli : sa consigne du 1er novembre,
+                   « l'envoi, tu laisses ce qui existe déjà dans l'appli ». -->
+              <div class="canal" role="group" aria-label="Par où l'envoyer">
                 <button type="button" aria-pressed="true">Par SMS</button>
                 <button type="button" aria-pressed="false">Par e-mail</button>
               </div>
-              <div style="height:130px"></div>
+              <button type="button" class="bouton bouton-plein envoyer-app" id="envoyer">Envoyer à Mme Costa</button>
+              <p class="manque" id="manque"></p>
             </div>
 
             <!-- ═══ ENVOYÉ, ACCEPTÉ ═══ -->
@@ -211,10 +217,6 @@
             </div>
           </div>
 
-          <div class="action-bas" data-si-etat="ecrire">
-            <p class="manque" id="manque"></p>
-            <button type="button" class="bouton bouton-plein" id="envoyer">Envoyer à Mme Costa</button>
-          </div>
 
           <div class="feuille" id="feuille-catalogue" aria-hidden="true" role="dialog" aria-label="Ajouter une prestation">
             <div class="feuille-poignee"></div>
@@ -255,13 +257,13 @@
       <li>« Ajouter une prestation » ouvre le catalogue dans une feuille. Aujourd'hui il se déplie dans la page et repousse la suite de deux écrans.</li>
       <li>Une prestation ajoutée sans mois se teinte d'ambre et le dit sous ses mois : on voit où toucher.</li>
       <li>Le total TTC en grand, le nombre de passages et le HT sur une ligne dessous.</li>
-      <li>Envoyer reste collé en bas, avec ce qui manque juste au-dessus.</li>
       <li>Le contrat parti dit où il en est dans une pastille : en attente en ambre, accepté en vert.</li>
     </ul>
     <h2>Ce qui ne bouge pas</h2>
     <ul class="garde">
       <li>Prestations, Durée, Facturation, totaux, envoi, dans cet ordre.</li>
-      <li>A et B, « Envoyer la facture avec le compte rendu », Reconduit à la fin, Aperçu du PDF, Par SMS ou Par e-mail.</li>
+      <li>L'envoi, tel qu'il est dans l'appli (votre consigne du 1er novembre) : Par SMS ou Par e-mail, Envoyer à…, et ce qui manque dessous.</li>
+      <li>A et B, « Envoyer la facture avec le compte rendu », Reconduit à la fin, Aperçu du PDF.</li>
       <li>Chaque règle de calcul : passages, montants, période, mensualité.</li>
     </ul>
   </section>
@@ -407,6 +409,11 @@
   document.getElementById("bascule-cr").addEventListener("click", function () {
     var oui = this.getAttribute("aria-checked") === "true";
     document.getElementById("compte-rendu-sous").textContent = oui ? "Un seul geste : le compte rendu part, la facture part avec." : "Vous l'envoyez vous-même après chaque passage.";
+  });
+  ecran.querySelectorAll(".canal button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      ecran.querySelectorAll(".canal button").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+    });
   });
   document.getElementById("ajouter-ecrite").addEventListener("click", function () {
     var v = document.getElementById("ecrire").value.trim();

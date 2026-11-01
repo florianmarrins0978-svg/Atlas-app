@@ -67,6 +67,13 @@
 .faux .bouton { width: auto; flex: none; }
 
 .enregistrer { margin-top: 18px; }
+/* Les photos, au chiffre près de la Fiche client : la tuile en pointillés d'or, puis les vignettes. */
+.photos-fiche { margin-top: 22px; }
+.rang-photos { display: flex; gap: 10px; flex-wrap: wrap; }
+.photo-ajout { width: 58px; height: 58px; display: grid; place-items: center; border-radius: 8px; color: var(--atlas-or);
+               box-shadow: none; outline: 1.5px dashed var(--atlas-or); outline-offset: -1.5px; }
+.photo-ajout .ico { width: 22px; height: 22px; }
+.vignette { width: 58px; height: 58px; border-radius: 8px; }
 .enregistrer .bouton { font: 400 19px/1 var(--serif); }
 .proposition { outline: 2px dashed color-mix(in srgb, var(--atlas-or) 70%, transparent); outline-offset: 4px; border-radius: 12px; }
 </style>
@@ -129,6 +136,18 @@
             </div>
 
             <div class="enregistrer"><button type="button" class="bouton bouton-plein" id="enregistrer">Enregistrer</button></div>
+
+            <!-- Sa consigne du 1er novembre : sous Enregistrer, ce qui est dans
+                 l'appli, « le plus pour les photos », sans le vocal. Les mêmes
+                 tuiles que la Fiche client ; une photo va sur son dernier chantier. -->
+            <div class="photos-fiche" data-si-chantier>
+              <span class="case-mot">Photos</span>
+              <div class="rang-photos">
+                <button type="button" class="photo-ajout touche" aria-label="Ajouter une photo" id="photo-ajout"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg></button>
+                <span class="vignette" style="background:linear-gradient(135deg,#5b6b4a,#7a8a63)"></span>
+                <span class="vignette" style="background:linear-gradient(135deg,#a48e6b,#c6ad86)"></span>
+              </div>
+            </div>
           </div>
 
           <nav class="barre" aria-label="Navigation principale">
@@ -159,6 +178,7 @@
       <li>Entreprise : SIRET et n° TVA côte à côte, comme sur la Fiche client. Aujourd'hui ils sont l'un sous l'autre, en pleine largeur.</li>
       <li>Public : SIRET et code service côte à côte, de la même façon ; l'exemple du code devient « Sur la commande », celui de la Fiche client, qui tient dans sa case.</li>
       <li>Le SIRET prend un peu plus de place que son voisin : sur la Fiche client, son exemple est coupé (« 812 345 678 0002 »), il manque un chiffre.</li>
+      <li>Sous Enregistrer, les photos de la Fiche client, sans le vocal (votre consigne du 1er novembre) : le « + » et ses photos. Une photo ajoutée ici va sur son dernier chantier ; un client sans chantier n'a pas de « + ».</li>
       <li>Proposé, en pointillés : dès que les 14 chiffres du SIRET sont tapés et que le n° TVA est vide, Atlas le calcule et propose « Le mettre ». Il ne le met jamais seul, une entreprise sans TVA n'en a pas.</li>
     </ul>
     <h2>Ce qui ne bouge pas</h2>
@@ -247,6 +267,7 @@
     });
   });
   document.getElementById("enregistrer").addEventListener("click", function () { Kit.note(this, "Enregistré. L'appli ramène à sa fiche."); });
+  document.getElementById("photo-ajout").addEventListener("click", function () { Kit.note(this, "L'appareil photo s'ouvre ; la photo va sur son dernier chantier."); });
   document.querySelectorAll("#etats [data-etat]").forEach(function (b) {
     b.addEventListener("click", function () { remplir(b.getAttribute("data-etat")); });
   });
