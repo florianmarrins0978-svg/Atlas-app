@@ -1,9 +1,10 @@
 "use client";
 
+import type React from "react";
 import { useActionState, useRef, useState } from "react";
 import { repondreAction } from "./actions";
 import type { EnvoiPourClient } from "@/server/repositories/envois-devis";
-import { joursEnToutesLettres, dansDelaiRetractation } from "@/lib/jour";
+import { joursEnToutesLettres, joursSurDeuxLignes, dansDelaiRetractation } from "@/lib/jour";
 import { DROIT_DE_RETRACTATION } from "@/lib/retractation";
 import {
   libelleAutreDate,
@@ -14,7 +15,8 @@ import {
 import { toucherUnJourDuClient } from "@/lib/propositions-de-jours";
 import Calendrier from "@/components/atlas/Calendrier";
 import BottomSheet from "@/components/atlas/BottomSheet";
-import { colors, font, voile } from "@/lib/design-tokens";
+import { colors, font, surPlein, voile } from "@/lib/design-tokens";
+import { CocheFaite } from "@/components/atlas/LettreDuClient";
 
 export default function FormulaireReponse({
   envoi,
@@ -127,6 +129,7 @@ export default function FormulaireReponse({
    * seule la phrase est ici.
    */
   const [refus, setRefus] = useState<string | null>(null);
+  const [messageOuvert, setMessageOuvert] = useState(false);
   const champMessage = useRef<HTMLTextAreaElement>(null);
 
   const joursDe = (d: string) => envoi.joursProposes?.[envoi.datesProposees.indexOf(d)] ?? [d];
@@ -188,63 +191,44 @@ export default function FormulaireReponse({
 
   if (etat && "succes" in etat) {
     return (
-      <div
-        className="rounded-2xl p-6 text-center"
-        style={{
-          backgroundColor: colors.card,
-          border: `1px solid ${colors.line}`,
-          boxShadow: "0 8px 24px rgba(20,18,14,0.08)",
-        }}
-      >
-        <p className="text-[17px]" style={{ fontFamily: font.display, color: colors.ink }}>
+      <div className="mt-1.5 rounded-md px-4 py-5 text-center" style={{ backgroundColor: colors.card }}>
+        <span className="mx-auto mb-2.5 grid w-fit">
+          <CocheFaite taille={40} />
+        </span>
+        <p className="text-[19px] leading-snug" style={{ fontFamily: font.display, color: colors.ink }}>
           {etat.succes}
         </p>
-        <p className="mt-2 text-[14px]" style={{ color: colors.muted }}>
+        <p className="mt-1.5 text-[14px]" style={{ color: colors.inkSoft }}>
           Vous pouvez fermer cette page.
         </p>
-        {/* **PLUS DE BOUTON ICI — sa correction du 9 septembre 2026 :** *« il y
-            a marqué deux fois télécharger, garde celui sous le TTC »*.
-
-            Il en portait un, à deux centimètres de celui du devis juste
-            au-dessus : deux boutons identiques sur un même écran font hésiter
-            — est-ce le même fichier ? — et celui du haut ne bouge pas quand
-            on répond. **L’écran de RETOUR, lui, le garde** : quand le client
-            rouvre son SMS le lendemain, la carte du devis n’est plus là
-            (`page.tsx`, le cadre « C’est noté »). */}
+        {/* **PAS DE BOUTON ICI — sa correction du 9 septembre 2026 :** *« il y
+            a marqué deux fois télécharger, garde celui sous le TTC »*. Celui
+            du haut reste ; l'écran de RETOUR, quand il rouvre son SMS le
+            lendemain, porte le sien (`page.tsx`). */}
       </div>
     );
   }
 
-  // **4 px entre les blocs, et non 6 — 14 septembre 2026.** Cette page n'a plus
-  // un pixel de marge depuis qu'il a fait reprendre les espacements le
-  // 4 septembre : au pire cas — une date dans les quatorze jours, donc la case
-  // de rétractation dépliée — elle repassait au-dessus de l'écran. Deux pixels
-  // par couture, et rien d'autre ne bouge.
+  const erreur = refus ?? (etat && "erreur" in etat ? etat.erreur : null);
+
   return (
-    <form action={action} className="flex flex-col gap-1">
+    <form action={action} className="mt-1.5 flex flex-col">
       <input type="hidden" name="jeton" value={envoi.jeton} />
 
-      <section className="rounded-2xl p-2.5"
-        style={{
-          backgroundColor: colors.card,
-          border: `1px solid ${colors.line}`,
-          boxShadow: "0 4px 14px rgba(20,18,14,0.06)",
-        }}>
+      <section className="rounded-md px-3 py-[9px]" style={{ backgroundColor: colors.card }}>
         {/* **Des JOURS, jamais des demi-journées** — sa consigne, tenue par
-            `test-creneaux-planning.ts`. Depuis le 18 septembre 2026, chaque
-            proposition porte ses jours (« le vendredi 18 septembre et le mardi
-            22 septembre ») : le client lit où l'artisan viendra, et choisit
-            entre les deux si deux lui sont offertes. Sa règle du même jour pour
-            les mois : `joursEnToutesLettres`. La valeur du bouton reste le
-            PREMIER jour — c'est par lui que le serveur retrouve la liste. */}
+            `test-creneaux-planning.ts`. Chaque proposition porte ses jours :
+            le client lit où l'artisan viendra, et choisit entre les deux si
+            deux lui sont offertes. La valeur du bouton reste le PREMIER jour —
+            c'est par lui que le serveur retrouve la liste. */}
         {envoi.joursFixes ? (
-          /* **SES JOURS SONT DÉJÀ POSÉS — son choix B du 7 octobre 2026.** Le
-             client n'arrivait pas à choisir : son artisan l'a posé au
-             planning. Plus rien à choisir ici, seulement à accepter. Le champ
-             caché n'est qu'une forme : le serveur prend les jours du
-             planning, quoi qu'on lui poste (`enregistrerReponse`). */
+          /* **Les jours FIXÉS par l'artisan — 22 septembre 2026.** Le client
+             n'arrivait pas à choisir : son artisan l'a posé au planning. Plus
+             rien à choisir ici, seulement à accepter. Le champ caché n'est
+             qu'une forme : le serveur prend les jours du planning, quoi qu'on
+             lui poste (`enregistrerReponse`). */
           <>
-            <h2 className="text-[16px]" style={{ fontFamily: font.display, color: colors.ink }}>
+            <h2 className="text-[18px] leading-tight" style={{ fontFamily: font.display, color: colors.ink }}>
               Votre intervention
             </h2>
             <p data-atlas="jours-fixes" className="mt-0.5 text-[15px] first-letter:uppercase" style={{ color: colors.ink }}>
@@ -254,401 +238,384 @@ export default function FormulaireReponse({
           </>
         ) : (
           <>
-            <h2 className="text-[16px]" style={{ fontFamily: font.display, color: colors.ink }}>
+            <h2 id="question-date" className="text-[18px] leading-tight" style={{ fontFamily: font.display, color: colors.ink }}>
               {plusieursJours ? <>Quels jours vous arrangent&nbsp;?</> : <>Quelle date vous arrange&nbsp;?</>}
             </h2>
 
-            {/* **LE NOMBRE DE JOURS SE LIT ICI, SUR LA PAGE — sa quatrième demande
-                du 20 septembre 2026, qu'il a dû redire :** *« en dessous de "quels
-                jours vous arrangent ?" et au-dessus de la touche pour valider,
-                écris le nombre de jours »*.
-
-                Posée d'abord dans la feuille du calendrier, elle ne se lisait que
-                si le client l'ouvrait — c'est-à-dire seulement quand les dates
-                proposées ne lui convenaient pas. Il lisait quatre dates sans jamais
-                savoir que le chantier en prend quatre, au moment précis où il
-                choisit. */}
+            {/* **LE NOMBRE DE JOURS SE LIT ICI, SUR LA PAGE — sa demande du
+                20 septembre 2026, redite :** *« en dessous de "quels jours
+                vous arrangent ?" et au-dessus de la touche pour valider, écris
+                le nombre de jours »*. Posée dans la feuille seulement, elle ne
+                se lisait que si le client cherchait une autre date. */}
             {phraseDuree && (
-              <p className="mt-0.5 text-[13px]" style={{ color: colors.inkSoft }}>
+              <p className="mt-px text-[13.5px]" style={{ color: colors.inkSoft }}>
                 {phraseDuree}
               </p>
             )}
 
-            <div className="mt-1.5 flex flex-col gap-0.5">
-              {/* Repliée, la liste ne rend plus qu'une ligne : les jours retenus, et
-                  de quoi revenir. Voir `listeRepliee` pour le pourquoi. */}
-              {listeRepliee && (
-                <div className="flex items-baseline justify-between gap-3">
-                  <span className="text-[15px]" style={{ color: colors.ink }}>
-                    {joursEnToutesLettres(joursAutres)}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setListeDepliee(true)}
-                    className="shrink-0 text-[13px] underline underline-offset-4"
-                    style={{ color: colors.inkSoft }}
-                  >
-                    changer
-                  </button>
-                </div>
-              )}
-              {/* Repliés, les boutons radio quittent le document — et avec eux le
-                  choix que le formulaire envoie. Ce champ prend leur place. */}
-              {listeRepliee && <input type="hidden" name="choixDate" value="autre" />}
-
-              {!listeRepliee && envoi.datesProposees.map((d) => (
-                <label key={d} className="flex items-center gap-3 text-[15px]" style={{ color: colors.ink }}>
-                  <input
-                    type="radio"
-                    name="choixDate"
-                    value={d}
-                    checked={choixDate === d}
-                    onChange={(e) => setChoixDate(e.target.value)}
-                    onClick={() => devalider(d)}
-                    className="h-5 w-5"
-                  />
-                  <span>{libelleProposition(d)}</span>
-                </label>
-              ))}
-
-              {/* **« Je propose » n'apparaît que si l'artisan l'a permis**
-                  (17 août 2026, sa demande : *« il faut que l'utilisateur puisse
-                  choisir avant d'envoyer s'il autorise ou non le client à choisir
-                  une date »*). Le choix est FIGÉ dans l'envoi : cet écran dira
-                  demain ce qu'il dit aujourd'hui.
-
-                  **Cacher ne suffit pas** : cette page est publique et son
-                  formulaire se rejoue. Le serveur refuse la contre-proposition de
-                  son côté (`enregistrerReponse`, motif `autre_date_refusee`) — une
-                  règle tenue à un seul endroit, jamais deux. */}
-              {envoi.autreDateAutorisee && !listeRepliee && (
-                <label className="flex items-center gap-3 text-[15px]" style={{ color: colors.ink }}>
-                  <input
-                    type="radio"
-                    name="choixDate"
-                    value="autre"
-                    checked={choixDate === "autre"}
-                    onClick={() => devalider("autre")}
-                    // La feuille s'ouvre sur la SÉLECTION, jamais sur l'appui :
-                    // `onChange` ne part pas quand la case est déjà cochée, donc
-                    // le geste qui la décoche ne la rouvre pas dans la foulée.
-                    onChange={(e) => {
-                      setChoixDate(e.target.value);
-                      setFeuilleOuverte(true);
-                    }}
-                    className="h-5 w-5"
-                  />
-                  <span>{libelleAutreDate(nombreDeJours)}</span>
-                </label>
-              )}
-
-              {/* **Le champ caché vit DEHORS.** Il est ce qui part au serveur : le
-                  poser dans la feuille le ferait disparaître du formulaire dès
-                  qu'elle se referme, et les jours choisis ne seraient jamais
-                  envoyés. Des jours séparés par des virgules : le serveur les
-                  revérifie un à un de toute façon. */}
-              {envoi.autreDateAutorisee && (
-                <input type="hidden" name="joursAutres" value={joursAutres.join(",")} />
-              )}
-
-              {envoi.autreDateAutorisee && !listeRepliee && choixDate === "autre" && joursAutres.length > 0 && (
+            {/* Repliée, la liste ne rend plus qu'une ligne : les jours retenus, et
+                de quoi revenir. Voir `listeRepliee` pour le pourquoi. */}
+            {listeRepliee && (
+              <div className="mt-1 flex min-h-10 items-center justify-between gap-3">
+                <span className="text-[16.5px] leading-snug first-letter:uppercase" style={{ fontFamily: font.display, color: colors.ink }}>
+                  {joursEnToutesLettres(joursAutres)}
+                </span>
                 <button
                   type="button"
-                  onClick={() => setFeuilleOuverte(true)}
-                  className="mt-0.5 self-start text-[13px] underline underline-offset-4"
-                  style={{ color: colors.inkSoft }}
+                  onClick={() => setListeDepliee(true)}
+                  className="min-h-10 shrink-0 px-1 text-[14px] font-semibold"
+                  style={{ color: colors.rust }}
                 >
-                  {joursEnToutesLettres(joursAutres)}, changer
+                  changer
                 </button>
-              )}
+              </div>
+            )}
+            {/* Repliés, les boutons radio quittent le document — et avec eux le
+                choix que le formulaire envoie. Ce champ prend leur place. */}
+            {listeRepliee && <input type="hidden" name="choixDate" value="autre" />}
 
-              <BottomSheet
-                open={envoi.autreDateAutorisee && feuilleOuverte}
-                /* **Refermer sans avoir choisi DÉFAIT le choix.** Sinon le client
-                   reste sur « je propose » sans jour, et son acceptation est
-                   refusée par le serveur — un refus qu'il ne comprendrait pas,
-                   puisque rien à l'écran ne dit qu'il manque quelque chose. */
-                onBackdropClick={() => {
-                  setFeuilleOuverte(false);
-                  setRefus(null);
-                  if (joursAutres.length === 0) setChoixDate("");
-                }}
+            {/* **Deux dates côte à côte, en grandes cases au pouce — sa planche
+                du 31 octobre 2026.** Le jour en mot, la date en serif
+                (`joursSurDeuxLignes`) : une phrase entière par ligne prenait
+                deux lignes chacune, et la case ne se visait qu'au rond. Toute
+                la case répond, le rond reste un vrai bouton radio. */}
+            {!listeRepliee && (
+              <div
+                role="radiogroup"
+                aria-labelledby="question-date"
+                className={`mt-2 grid gap-2 ${envoi.datesProposees.length === 2 ? "grid-cols-2" : "grid-cols-1"}`}
               >
-                <div className="flex flex-col gap-0.5">
-                  {/* **Un calendrier, et non plus le sélecteur du téléphone.**
-                      Sa demande du 8 août 2026 : « qu'il ait accès au calendrier
-                      pour pouvoir proposer une date, avec un système pour qu'il
-                      n'ait pas accès aux dates déjà prises par un autre client. »
+                {envoi.datesProposees.map((d) => {
+                  const lignes = joursSurDeuxLignes(joursDe(d));
+                  const choisie = choixDate === d;
+                  return (
+                    <label
+                      key={d}
+                      className="flex min-h-[50px] cursor-pointer items-center gap-2 rounded-xl px-[9px] py-1.5 transition-[box-shadow,background-color] duration-200"
+                      style={{
+                        backgroundColor: choisie ? colors.card : colors.cream,
+                        boxShadow: `inset 0 0 0 ${choisie ? 2 : 1}px ${choisie ? colors.rust : colors.line}`,
+                      }}
+                    >
+                      <input
+                        type="radio"
+                        name="choixDate"
+                        value={d}
+                        checked={choisie}
+                        onChange={(e) => setChoixDate(e.target.value)}
+                        onClick={() => devalider(d)}
+                        aria-label={libelleProposition(d)}
+                        className={ROND_DE_CHOIX}
+                        style={styleRond}
+                      />
+                      <span className="min-w-0">
+                        <span className="block text-[13px] font-semibold leading-tight" style={{ color: colors.inkSoft }}>
+                          {lignes.jours}
+                        </span>
+                        <span className="block text-[17px] leading-[1.18] tabular-nums" style={{ fontFamily: font.display, color: colors.ink }}>
+                          {lignes.dates}
+                        </span>
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            )}
 
-                      `<input type="date">` accepte bien une fenêtre, mais il ne sait
-                      pas griser des jours au milieu : le client choisissait un jour
-                      déjà pris et ne l'apprenait qu'après coup, par un refus. Ici
-                      les jours pris sont barrés et ne répondent pas.
+            {/* **« Je propose » n'apparaît que si l'artisan l'a permis**
+                (17 août 2026). Le choix est FIGÉ dans l'envoi : cet écran dira
+                demain ce qu'il dit aujourd'hui. Le serveur refuse la
+                contre-proposition de son côté (`enregistrerReponse`, motif
+                `autre_date_refusee`) — une règle tenue à un seul endroit. */}
+            {envoi.autreDateAutorisee && !listeRepliee && (
+              <label className="mt-1 flex min-h-10 cursor-pointer items-center gap-2.5 px-0.5 text-[14px] leading-tight" style={{ color: colors.ink }}>
+                <input
+                  type="radio"
+                  name="choixDate"
+                  value="autre"
+                  checked={choixDate === "autre"}
+                  onClick={() => devalider("autre")}
+                  onChange={(e) => {
+                    setChoixDate(e.target.value);
+                    setFeuilleOuverte(true);
+                  }}
+                  className={ROND_DE_CHOIX}
+                  style={styleRond}
+                />
+                <span>{libelleAutreDate(nombreDeJours)}</span>
+              </label>
+            )}
 
-                      Le champ caché reste : c'est lui qui part au serveur, et le
-                      serveur revérifie de toute façon — l'affichage n'est qu'un
-                      instantané, deux clients peuvent viser le même jour. */}
-                  {/* `dureeDemiJournees={null}` : le client n'apprend rien du
-                      découpage du planning de son artisan — ni créneau, ni durée.
-                      Consigne du patron, tenue par `test-creneaux-planning.ts`. Sa
-                      phrase sous le calendrier reste vraie sans rien chiffrer.
+            {/* **Le champ caché vit DEHORS.** Il est ce qui part au serveur : le
+                poser dans la feuille le ferait disparaître du formulaire dès
+                qu'elle se referme. Des jours séparés par des virgules : le
+                serveur les revérifie un à un de toute façon. */}
+            {envoi.autreDateAutorisee && (
+              <input type="hidden" name="joursAutres" value={joursAutres.join(",")} />
+            )}
 
-                      **Les jours barrés lui arrivent DÉJÀ prêts** : `joursOccupes`
-                      est la liste des jours où CE chantier, de SA durée, ne peut
-                      pas commencer (`lireParJeton`). Rien à recalculer ici, et
-                      rien de plus à lui apprendre. */}
-                  <Calendrier
-                    debut={envoi.fenetre.debut}
-                    fin={envoi.fenetre.fin}
-                    occupes={envoi.joursOccupes}
-                    retenus={joursAutres}
-                    aujourdHui={aujourdHui}
-                    dureeDemiJournees={null}
-                    onBasculer={(jour) =>
-                      setJoursAutres((actuels) => toucherUnJourDuClient(actuels, jour, nombreDeJours))
-                    }
-                  />
-                  {/* **Le compte se relit ICI aussi**, au moment où les jours
-                      s'allument : la feuille recouvre la carte, et la phrase de la
-                      page est alors hors de vue. Les deux ne se lisent jamais en
-                      même temps. */}
-                  {phraseDuree && (
-                    <p className="mt-2 text-center text-[13px]" style={{ color: colors.inkSoft }}>
-                      {phraseDuree}
-                    </p>
-                  )}
-                  {/* Le bouton ne s'éteint pas faute de jours : il répond, et c'est
-                      sa réponse qui dit ce qui manque — la même règle que les trois
-                      issues plus bas, et que l'écran d'envoi du patron. */}
-                  {/* **La phrase se lit DANS la feuille.** Celle du formulaire vit
-                      plus bas, donc derrière elle : un refus posé là serait caché
-                      par ce qui vient de le provoquer. */}
-                  {refus && (
-                    <p role="alert" className="mt-2 text-[14px]" style={{ color: colors.alert }}>
-                      {refus}
-                    </p>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      /* **Elle ne retient pas moins de jours que le chantier n'en
-                         prend.** Trois jours pour un chantier de quatre partaient
-                         sans un mot, et l'artisan n'aurait pas eu de quoi faire le
-                         travail. */
-                      const manque = refusDesJoursRetenus(joursAutres.length, nombreDeJours);
-                      if (manque) return setRefus(manque);
-                      setRefus(null);
-                      setFeuilleOuverte(false);
-                      // Ce qu'elle vient de retenir devient la ligne ; le reste se replie.
-                      setListeDepliee(false);
-                    }}
-                    // Le vert des BOUTONS (`colors.plein`), tranché le 3 septembre
-                    // 2026 sur `appli/boutons-verts.html` — et non le vert pin, qui
-                    // est celui des textes et des liserés.
-                    className="atlas-plein mt-3 rounded-full py-3 text-[16px] font-medium"
-                    style={{ backgroundColor: colors.plein, color: colors.card }}
-                  >
-                    {libelleRetenir(nombreDeJours)}
-                  </button>
-                </div>
-              </BottomSheet>
-            </div>
+            {envoi.autreDateAutorisee && !listeRepliee && choixDate === "autre" && joursAutres.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setFeuilleOuverte(true)}
+                className="min-h-10 self-start text-left text-[14px]"
+                style={{ color: colors.inkSoft }}
+              >
+                {joursEnToutesLettres(joursAutres)},{" "}
+                <span className="font-semibold" style={{ color: colors.rust }}>changer</span>
+              </button>
+            )}
+
+            <BottomSheet
+              open={envoi.autreDateAutorisee && feuilleOuverte}
+              /* Refermée sans rien retenir, la feuille rend la main : sans quoi
+                 le client reste sur « je propose » sans jour, et son
+                 acceptation est refusée par le serveur sans que rien à l'écran
+                 ne dise ce qui manque. */
+              onBackdropClick={() => {
+                setFeuilleOuverte(false);
+                setRefus(null);
+                if (joursAutres.length === 0) setChoixDate("");
+              }}
+            >
+              <div className="flex flex-col gap-0.5">
+                {/* **Un calendrier, et non plus le sélecteur du téléphone** (8 août
+                    2026) : les jours déjà pris sont barrés et ne répondent pas.
+                    `dureeDemiJournees={null}` : le client n'apprend rien du
+                    découpage du planning de son artisan (`test-creneaux-planning.ts`).
+                    `joursOccupes` est la liste des jours où CE chantier ne peut
+                    pas commencer (`lireParJeton`) ; le serveur revérifie. */}
+                <Calendrier
+                  debut={envoi.fenetre.debut}
+                  fin={envoi.fenetre.fin}
+                  occupes={envoi.joursOccupes}
+                  retenus={joursAutres}
+                  aujourdHui={aujourdHui}
+                  dureeDemiJournees={null}
+                  onBasculer={(jour) =>
+                    setJoursAutres((actuels) => toucherUnJourDuClient(actuels, jour, nombreDeJours))
+                  }
+                />
+                {/* Le compte se relit ICI aussi : la feuille recouvre la phrase de la page. */}
+                {phraseDuree && (
+                  <p className="mt-2 text-center text-[13.5px]" style={{ color: colors.inkSoft }}>
+                    {phraseDuree}
+                  </p>
+                )}
+                {/* **La phrase se lit DANS la feuille** : posée plus bas, elle
+                    serait cachée par ce qui vient de la provoquer. */}
+                {refus && (
+                  <p role="alert" className="mt-2 text-center text-[14px] font-semibold" style={{ color: colors.alert }}>
+                    {refus}
+                  </p>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    /* **Autant de jours que le chantier en prend.** Trois jours
+                       pour un chantier de quatre partaient sans un mot. */
+                    const manque = refusDesJoursRetenus(joursAutres.length, nombreDeJours);
+                    if (manque) return setRefus(manque);
+                    setRefus(null);
+                    setFeuilleOuverte(false);
+                    setListeDepliee(false);
+                  }}
+                  className="atlas-plein mt-3 min-h-[52px] rounded-full text-[17px] font-semibold"
+                  style={{ backgroundColor: colors.plein, color: surPlein }}
+                >
+                  {libelleRetenir(nombreDeJours)}
+                </button>
+              </div>
+            </BottomSheet>
           </>
         )}
 
-        {/* **Le message vit dans la MÊME carte que la date**, depuis le 31 août
-            2026. Il avait la sienne : trente-deux pixels de marges et huit de
-            gouttière pour séparer deux choses qui se répondent — la date qu'on
-            retient, et le mot qu'on laisse. Réunies, elles tiennent dans
-            l'écran ; séparées, le dernier bouton passait sous le pli.
+        {/* **Le mot pour l'artisan, dans la MÊME plage que la date** (31 août
+            2026), et il ne s'ouvre qu'au doigt — sa planche du 31 octobre. Sa
+            phrase se lit d'emblée ; la case, ouverte, prenait cinquante pixels
+            à un écran qui n'en a aucun à perdre, pour un client sur dix.
 
-            Le champ existait déjà, intitulé « Une précision ? (facultatif) », et
-            le client y écrivait — « Le devis comprend une fautes ». Deux défauts
-            s'y cachaient : son intitulé ne laissait pas deviner qu'on pouvait y
-            signaler une erreur, et surtout **rien ne l'affichait jamais** au
-            patron. Le message partait dans le vide.
-
-            **L'invitation tient en une ligne.** Elle en occupait deux : une
-            question, puis une phrase disant qu'on avait le droit d'y répondre —
-            celle-là, le patron l'avait demandée le 13 août, et elle n'est pas
-            perdue : « votre artisan la lira » la porte, et le nomme. Un client qui repère une faute et
-            n'ose pas l'écrire touche « Je ne donne pas suite », et le patron lit
-            un refus là où il n'y avait qu'une coquille. */}
-        <label className="mt-2.5 block text-[13px] font-medium" style={{ color: colors.inkSoft }} htmlFor="precision">
-          Une erreur&nbsp;? Écrivez-la, votre artisan la lira.
-        </label>
-        <textarea
-          id="precision"
-          name="precision"
-          ref={champMessage}
-          /* Une ligne, pas deux : 23 px des 53 qui manquaient. Le champ
-             continue d'accepter autant de texte — il défile. */
-          rows={1}
-          maxLength={500}
-          value={precision}
-          onChange={(e) => {
-            setPrecision(e.target.value);
-            if (e.target.value.trim() !== "") setRefus(null);
-          }}
-          placeholder="« Mon nom est mal écrit », « plutôt le matin »…"
-          className="mt-1.5 w-full resize-y rounded-xl px-3 py-2 text-[15px]"
-          style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.card, color: colors.ink }}
-        />
+            La phrase INVITE à écrire, et nomme l'artisan (13 août 2026) : un
+            client qui repère une faute et n'ose pas l'écrire touche « Je ne
+            donne pas suite », et le patron lit un refus là où il n'y avait
+            qu'une coquille. Le message part avec la réponse, quelle qu'elle
+            soit, et le patron le lit. */}
+        {messageOuvert ? (
+          <>
+            <label
+              htmlFor="precision"
+              className="mt-0.5 block border-t pt-2 text-[13.5px] font-semibold leading-snug"
+              style={{ color: colors.rust, borderColor: colors.line }}
+            >
+              {INVITE_AU_MOT}
+            </label>
+            <textarea
+              id="precision"
+              name="precision"
+              ref={champMessage}
+              /* Ouverte par son geste : le curseur y est déjà. */
+              autoFocus
+              rows={1}
+              maxLength={500}
+              value={precision}
+              onChange={(e) => {
+                setPrecision(e.target.value);
+                if (e.target.value.trim() !== "") setRefus(null);
+              }}
+              placeholder="« Mon nom est mal écrit », « plutôt le matin »…"
+              className="mt-1 block max-h-[120px] min-h-[42px] w-full resize-none rounded-[10px] border-0 px-3 py-2.5 text-[16px] leading-snug outline-none [field-sizing:content] placeholder:text-[13.5px]"
+              style={{ backgroundColor: colors.cream, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
+            />
+          </>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setMessageOuvert(true)}
+            aria-expanded={false}
+            data-atlas="ouvrir-le-mot"
+            className="mt-0.5 block min-h-10 w-full border-t px-0.5 pt-1 text-left text-[13.5px] font-semibold leading-snug"
+            style={{ color: colors.rust, borderColor: colors.line }}
+          >
+            {INVITE_AU_MOT}
+          </button>
+        )}
       </section>
 
-      {/* **Le cadre de rétractation quitte le terre cuite du 3 août.**
-          `#B5502F` a été abandonné le 3 août 2026 ; il vivait encore ici, faute
-          d'être passé par les jetons. `colors.alert` est la teinte d'alerte du
-          produit, et elle s'éclaircit sur les deux chartes sombres pour rester
-          lisible (`chartes.ts`, `detacher`).
+      {/* **Son droit, dit là où il accepte** — choix du 3 octobre 2026
+          (L221-5). La phrase et la case ne s'empilent JAMAIS : la case dit
+          déjà le délai, et la page tient dans un écran sans un pixel de marge.
+          Ni l'une ni l'autre en sous-traitance (migration 0119).
 
           **Le délai se compte sur le PREMIER jour** : c'est celui où les
           travaux commencent, et le seul qui puisse tomber avant la fin des
           quatorze jours. */}
-      {/* **Son droit, dit là où il accepte** — choix du 3 octobre 2026
-          (L221-5). La phrase et la case ne s'empilent JAMAIS : la case dit
-          déjà le délai, et la page tient dans un écran sans un pixel de marge
-          (`test-devis-client-e2e`, sa règle du 31 août). Posée sous le
-          bouton de téléchargement, la phrase poussait la page de 40 px.
-          Ni l'une ni l'autre en sous-traitance (migration 0119). */}
       {!montrerRetractation && !envoi.devis.autoliquidation && (
-        <p className="text-[12.5px] leading-snug" style={{ color: colors.muted }}>
+        <p className="mx-0.5 mt-1.5 text-[13px] leading-[1.36]" style={{ color: colors.inkSoft }}>
           {DROIT_DE_RETRACTATION}
         </p>
       )}
       {montrerRetractation && (
-        <section
-          className="rounded-2xl p-2"
-          style={{
-            border: `1px solid ${voile(colors.alert, 0.25)}`,
-            backgroundColor: voile(colors.alert, 0.05),
-          }}
+        <label
+          className="mt-1.5 flex cursor-pointer items-start gap-2.5 rounded-[10px] px-2.5 py-2 text-[13px] leading-[1.32]"
+          style={{ backgroundColor: colors.carteAmbreFond, color: colors.ink }}
         >
-          <label className="flex items-start gap-3 text-[14px] leading-relaxed" style={{ color: colors.ink }}>
-            {/* Jamais pré-cochée : c'est cette demande, et elle seule, qui
-                autorise l'artisan à intervenir avant la fin du délai légal. */}
-            <input
-              type="checkbox"
-              name="demarrageAnticipe"
-              value="oui"
-              className="mt-0.5 h-5 w-5 shrink-0"
-            />
-            <span>
-              Cette date se situe dans mon délai de rétractation de 14 jours.
-              <strong> Je demande expressément que les travaux commencent avant sa fin.</strong>
-            </span>
-          </label>
-        </section>
+          {/* Jamais pré-cochée : c'est cette demande, et elle seule, qui
+              autorise l'artisan à intervenir avant la fin du délai légal. */}
+          <input
+            type="checkbox"
+            name="demarrageAnticipe"
+            value="oui"
+            className="mt-px h-5 w-5 shrink-0"
+            style={{ accentColor: colors.carteAmbreTexte }}
+          />
+          <span>
+            Cette date se situe dans mon délai de rétractation de 14 jours.
+            <strong className="font-semibold"> Je demande expressément que les travaux commencent avant sa fin.</strong>
+          </span>
+        </label>
       )}
 
       {/* Elle se tait pendant qu'une feuille est ouverte : celle du calendrier
-          porte sa propre phrase, et deux fois la même à deux endroits ne se lit
-          pas. */}
-      {!feuilleOuverte && !confirmationRefus && (refus ?? (etat && "erreur" in etat ? etat.erreur : null)) && (
-        <p role="alert" className="text-[14px]" style={{ color: colors.alert }}>
-          {refus ?? (etat && "erreur" in etat ? etat.erreur : null)}
+          porte sa propre phrase, et deux fois la même ne se lit pas. */}
+      {!feuilleOuverte && !confirmationRefus && erreur && (
+        <p role="alert" className="mx-0.5 mt-1 text-[14px] font-semibold" style={{ color: colors.alert }}>
+          {erreur}
         </p>
       )}
 
-      {/* Trois issues, et non deux.
-          Un client qui repère une faute ne veut ni accepter ni renoncer : il
-          veut le même devis, corrigé. Sans cette voie, il touchait « Je ne
-          donne pas suite » — et le patron lisait un refus là où il n'y avait
-          qu'une coquille. C'est un chantier perdu pour une faute de frappe.
+      {/* **Trois issues, et non deux**, dans leur ordre : accepter, corriger,
+          ne pas donner suite. Un client qui repère une faute veut le même
+          devis, corrigé ; sans cette voie il touchait « Je ne donne pas
+          suite ». **Les deux dernières côte à côte, sous l'accord** — sa
+          planche du 31 octobre : la voie normale reste la plus grande, et le
+          dernier geste remonte d'une ligne entière.
 
-          Le bouton reste discret, au milieu : la voie normale est d'accepter,
-          et un client hésitant ne doit pas être poussé vers la correction.
-
-          **Il n'est plus éteint, et il ne porte plus sa phrase grise.** Un
-          bouton désactivé oblige à écrire dessous pourquoi — trente pixels de
-          plus, sur un écran qui doit tenir d'un seul tenant — et sans cette
-          phrase il se lit comme une application cassée. Il répond donc, et
-          c'est sa réponse qui dit ce qui manque, au moment où cela mord
-          (`CLAUDE.md` §217, la même leçon sur l'écran de connexion). */}
-      <div className="flex flex-col gap-1.5">
+          La correction n'est jamais éteinte : elle répond, et c'est sa
+          réponse qui dit ce qui manque, au moment où cela mord. */}
+      <div className="mt-2 flex flex-col gap-1.5">
         <button
           type="submit"
           name="decision"
           value="accepte"
           disabled={enCours}
-          className="atlas-plein rounded-full py-3 text-[17px] disabled:opacity-50"
-          style={{ backgroundColor: colors.plein, color: colors.card, fontFamily: font.display }}
+          className="atlas-plein min-h-12 rounded-full text-[19px] disabled:opacity-50"
+          style={{ backgroundColor: colors.plein, color: surPlein, fontFamily: font.display }}
         >
           {enCours ? "Envoi…" : "J'accepte ce devis"}
         </button>
-        <button
-          type="submit"
-          name="decision"
-          value="correction"
-          disabled={enCours}
-          onClick={(e) => {
-            if (precision.trim() !== "") return;
-            // Rien n'est envoyé : le client est renvoyé au champ, curseur
-            // dedans, plutôt qu'à un refus venu du serveur trois secondes plus
-            // tard.
-            e.preventDefault();
-            setRefus("Écrivez d'abord ce qui doit être corrigé.");
-            champMessage.current?.focus();
-          }}
-          className="rounded-full py-2.5 text-[14px] font-medium disabled:opacity-40"
-          style={{ color: colors.rust, boxShadow: `inset 0 0 0 1px ${voile(colors.rust, 0.3)}` }}
-        >
-          Une correction avant d&apos;accepter
-        </button>
-        {/* **Ce bouton n'envoie plus rien par lui-même** : il ouvre la feuille.
-            C'est tout ce que sa sécurité du 20 septembre demande, et cela ne
-            coûte pas un pixel à la page. */}
-        <button
-          type="button"
-          /* **Le repère existe pour les suites, et il a une raison.** Celle
-             qui mesure « tout tient dans un écran » visait
-             `button[value="refuse"]` : ce bouton n'envoie plus rien par
-             lui-même, le `value` est parti dans la feuille, et la mesure
-             rendait ZÉRO — un vert qui ne mesure rien (`CLAUDE.md` §5). Un
-             repère survit à la prochaine réécriture de ce bouton. */
-          data-atlas="ne-pas-donner-suite"
-          disabled={enCours}
-          onClick={() => {
-            setRefus(null);
-            setConfirmationRefus(true);
-          }}
-          className="rounded-full py-2.5 text-[14px] disabled:opacity-50"
-          style={{ color: colors.muted, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
-        >
-          Je ne donne pas suite
-        </button>
+        <div className="grid grid-cols-2 gap-1.5">
+          <button
+            type="submit"
+            name="decision"
+            value="correction"
+            disabled={enCours}
+            onClick={(e) => {
+              if (precision.trim() !== "") return;
+              // Rien n'est envoyé : le client est renvoyé au champ, curseur
+              // dedans, plutôt qu'à un refus venu du serveur trois secondes
+              // plus tard. Fermé, le champ s'ouvre — et prend le curseur.
+              e.preventDefault();
+              setRefus("Écrivez d'abord ce qui doit être corrigé.");
+              if (messageOuvert) champMessage.current?.focus();
+              else setMessageOuvert(true);
+            }}
+            className="min-h-[50px] rounded-full px-3 py-1 text-[14.5px] font-semibold leading-tight [text-wrap:balance] disabled:opacity-40"
+            style={{ color: colors.ink, boxShadow: `inset 0 0 0 1.5px ${colors.line}` }}
+          >
+            Une correction avant d&apos;accepter
+          </button>
+          {/* **Ce bouton n'envoie rien par lui-même** : il ouvre la feuille de
+              confirmation (20 septembre 2026). Son repère sert aux suites qui
+              mesurent « tout tient dans un écran » : un repère survit à la
+              prochaine réécriture du bouton, un `value` parti dans la feuille
+              faisait mesurer ZÉRO (`CLAUDE.md` §5). */}
+          <button
+            type="button"
+            data-atlas="ne-pas-donner-suite"
+            disabled={enCours}
+            onClick={() => {
+              setRefus(null);
+              setConfirmationRefus(true);
+            }}
+            className="min-h-[50px] rounded-full px-3 py-1 text-[14.5px] font-medium leading-tight [text-wrap:balance] disabled:opacity-50"
+            style={{ color: colors.inkSoft, boxShadow: `inset 0 0 0 1.5px ${colors.line}` }}
+          >
+            Je ne donne pas suite
+          </button>
+        </div>
       </div>
 
       {/* **La feuille de confirmation vit DANS le formulaire**, et c'est ce qui
-          permet à son bouton d'être un vrai `submit` : posée ailleurs dans la
-          page, elle enverrait un formulaire vide. `BottomSheet` ne déplace rien
-          dans le document — il se pose en `fixed` là où il est écrit. */}
+          permet à son bouton d'être un vrai `submit` : posée ailleurs, elle
+          enverrait un formulaire vide. `BottomSheet` se pose en `fixed` là où
+          il est écrit. */}
       <BottomSheet open={confirmationRefus} onBackdropClick={() => setConfirmationRefus(false)}>
-        <h2 className="text-center text-[17px]" style={{ fontFamily: font.display, color: colors.ink }}>
-          Vous ne donnez pas suite&nbsp;?
-        </h2>
-        <p className="mt-1.5 text-center text-[14px]" style={{ color: colors.muted }}>
-          Votre artisan en sera prévenu.
-        </p>
-        <div className="mt-4 flex flex-col gap-1.5">
-          {/* **Le geste définitif reste discret, le geste sûr porte l'encre.**
-              C'est l'ordre des issues de la page, et il tient ici : celui qui
-              revient doit se trouver du premier coup d'œil. */}
+        <div className="text-center">
+          <h2 className="text-[26px] leading-tight" style={{ fontFamily: font.display, color: colors.ink }}>
+            Vous ne donnez pas suite&nbsp;?
+          </h2>
+          <p className="mt-1.5 text-[15px]" style={{ color: colors.inkSoft }}>
+            Votre artisan en sera prévenu.
+          </p>
+        </div>
+        <div className="mt-5 flex flex-col gap-2">
+          {/* **Le geste définitif reste discret, le geste sûr porte l'encre** :
+              celui qui revient doit se trouver du premier coup d'œil. */}
           <button
             type="submit"
             name="decision"
             value="refuse"
             disabled={enCours}
-            className="rounded-full py-2.5 text-[14px] disabled:opacity-50"
-            style={{ color: colors.muted, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
+            className="min-h-[52px] rounded-full text-[15px] font-medium disabled:opacity-50"
+            style={{ color: colors.inkSoft, boxShadow: `inset 0 0 0 1.5px ${colors.line}` }}
           >
             {enCours ? "Envoi…" : "Oui, je ne donne pas suite"}
           </button>
           <button
             type="button"
             onClick={() => setConfirmationRefus(false)}
-            className="rounded-full py-2.5 text-[15px] font-semibold"
-            style={{ color: colors.ink, boxShadow: `inset 0 0 0 1px ${voile(colors.ink, 0.45)}` }}
+            className="min-h-[52px] rounded-full text-[16px] font-semibold"
+            style={{ color: colors.ink, boxShadow: `inset 0 0 0 1.5px ${voile(colors.ink, 0.45)}` }}
           >
             Revenir au devis
           </button>
@@ -657,3 +624,11 @@ export default function FormulaireReponse({
     </form>
   );
 }
+
+/** La phrase qui invite au mot : la même, fermée ou ouverte. */
+const INVITE_AU_MOT = "Une erreur\u00a0? Écrivez-la, votre artisan la lira.";
+
+/** Le rond de choix des planches : un anneau, plein d'or une fois choisi. Un vrai bouton radio. */
+const ROND_DE_CHOIX =
+  "h-[22px] w-[22px] flex-none cursor-pointer appearance-none rounded-full shadow-[inset_0_0_0_1.5px_var(--anneau)] transition-shadow duration-200 checked:shadow-[inset_0_0_0_7px_var(--choisi)] focus-visible:outline-2 focus-visible:outline-offset-2";
+const styleRond = { "--anneau": colors.chevron, "--choisi": colors.or } as React.CSSProperties;

@@ -17,6 +17,7 @@
 // chercher. D'où `aFacturerPartout`, qui ignore délibérément le mois affiché.
 
 import { detacherCivilite } from "./civilite";
+import { moisAbrege } from "./jour";
 
 /** Ce que l'écran reçoit du dépôt, réduit à ce dont la règle a besoin. */
 export type LigneTerminee = {
@@ -431,11 +432,6 @@ export function libelleDateChantier(jour: string | null, anneeCourante: string):
   return annee === anneeCourante ? `${numero} ${mois}` : `${numero} ${mois} ${annee}`;
 }
 
-const MOIS_ABREGES = [
-  "janv.", "févr.", "mars", "avr.", "mai", "juin",
-  "juil.", "août", "sept.", "oct.", "nov.", "déc.",
-];
-
 /**
  * Le carré de gauche d'une rangée : le jour du chantier en grand, son mois
  * abrégé, et l'année seulement quand ce n'est plus celle du jour.
@@ -453,7 +449,7 @@ export function carreDuJour(
   const date = l.dateDuChantier;
   if (!date) return null;
   const jour = Number(date.slice(8, 10));
-  const mois = MOIS_ABREGES[Number(date.slice(5, 7)) - 1];
+  const mois = moisAbrege(date);
   if (!jour || !mois) return null;
   const annee = date.slice(0, 4);
   return { jour, mois, annee: annee === anneeCourante ? null : annee };

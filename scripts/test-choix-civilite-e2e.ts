@@ -200,8 +200,10 @@ async function main() {
   await cas("et la page qu'elle ouvre la nomme de la même façon", async () => {
     await page.goto(`${BASE}/devis/${envoi[0].jeton}`, { waitUntil: "networkidle" });
     const ecran = await page.locator("body").innerText();
-    if (!ecran.includes(`Pour Mme ${CLIENTE}`)) {
-      const vu = /Pour\s+.*/.exec(ecran)?.[0] ?? "(aucune ligne « Pour … »)";
+    // « Atelier Démo EI, pour Mme … » depuis la lettre du 1er novembre 2026 :
+    // la minuscule suit la virgule, la civilité reste celle qu'elle a choisie.
+    if (!ecran.includes(`pour Mme ${CLIENTE}`) && !ecran.includes(`Pour Mme ${CLIENTE}`)) {
+      const vu = /[Pp]our\s+.*/.exec(ecran)?.[0] ?? "(aucune ligne « pour … »)";
       throw new Error(`la page dit « ${vu} »`);
     }
   });

@@ -140,7 +140,9 @@ async function main() {
       const source = readFileSync(fichier, "utf8");
       assert.match(
         source,
-        /<h1[\s\S]{0,300}?numeroCommercial[\s\S]{0,120}?<\/h1>/,
+        // Le titre du devis passe par `TeteDeLettre` depuis le 1er novembre
+        // 2026 : c'est lui qui pose le <h1>, le numéro lui est confié.
+        /<(?:h1|TeteDeLettre)\b[\s\S]{0,300}?numeroCommercial/,
         `${fichier} n'affiche plus son numéro nu dans un titre : ` +
           "soit l'écran a changé, soit ce contrôle garde désormais le vide"
       );

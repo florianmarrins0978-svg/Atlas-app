@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import { colors, surPlein } from "@/lib/design-tokens";
+import { colors, font } from "@/lib/design-tokens";
+import IconeTrait from "@/components/atlas/IconeTrait";
 import { accuserReceptionAction, noterOuvertureAction } from "./actions";
 
 /**
@@ -80,39 +81,36 @@ export default function AccuseDeReception({
   const fait = confirmeLe !== null;
 
   return (
-    <div className="mt-5 border-t pt-4 text-left" style={{ borderColor: colors.line }}>
+    <div className="text-left">
+      {/* **Une pilule, la phrase en serif — sa planche du 1er novembre 2026.**
+          Confirmée, elle passe au vert de l'appli : le client voit d'un coup
+          d'œil qu'il l'a déjà fait, sans relire la ligne du dessous. */}
       <button
         type="button"
         onClick={confirmer}
         disabled={fait || enCours}
-        // `aria-pressed` plutôt qu'une vraie case : le geste est irréversible,
-        // et une case à cocher promet qu'on peut la décocher.
         aria-pressed={fait}
-        className="flex w-full items-start gap-3 rounded-full px-4 py-3 text-left transition-transform active:scale-[0.995] disabled:active:scale-100"
-        style={{
-          backgroundColor: colors.rustTint,
-          boxShadow: `inset 0 0 0 ${fait ? "1.5px" : "1px"} ${fait ? colors.plein : colors.line}`,
-          minHeight: 52,
-        }}
+        className="flex min-h-[68px] w-full items-center gap-3.5 rounded-full px-5 py-3 text-left transition-[transform,background-color] duration-200 active:scale-[0.995] disabled:active:scale-100"
+        style={{ backgroundColor: fait ? colors.carteVertFond : colors.rustTint }}
       >
         <span
           aria-hidden="true"
-          className="mt-0.5 flex h-[22px] w-[22px] flex-none items-center justify-center rounded-md text-[13px] leading-none"
+          className="grid h-[22px] w-[22px] flex-none place-items-center rounded-md"
           style={{
-            backgroundColor: fait ? colors.plein : colors.card,
-            boxShadow: fait ? "none" : `inset 0 0 0 1.5px ${colors.line}`,
-            color: fait ? surPlein : "transparent",
+            backgroundColor: fait ? colors.carteVertTexte : colors.card,
+            boxShadow: fait ? "none" : `inset 0 0 0 1.5px ${colors.chevron}`,
+            color: fait ? colors.card : "transparent",
           }}
         >
-          ✓
+          <IconeTrait nom="coche" taille={16} epaisseur={2.4} />
         </span>
         <span className="min-w-0">
-          <span className="block text-[14.5px] leading-[1.45]" style={{ color: colors.ink }}>
+          <span className="block text-[17.5px] leading-[1.25]" style={{ color: colors.ink, fontFamily: font.display }}>
             J&apos;ai bien reçu cette facture
           </span>
           <span
-            className="mt-0.5 block text-[13px] leading-[1.45]"
-            style={{ color: fait ? colors.plein : colors.muted }}
+            className={`mt-0.5 block text-[14px] leading-[1.4] ${fait ? "font-semibold" : ""}`}
+            style={{ color: fait ? colors.carteVertTexte : colors.inkSoft }}
           >
             {fait
               ? `Confirmé le ${enClair(confirmeLe)}. Merci.`
@@ -122,7 +120,6 @@ export default function AccuseDeReception({
           </span>
         </span>
       </button>
-
       {/* Le refus se lit sous le geste qui l'a provoqué. Ailleurs, il se
           cherche ; absent, il se devine. */}
       {refus && (

@@ -36522,3 +36522,15 @@ que gardés en double — `main` n'a qu'une seule version de chacun.
 
 **Une pièce de tableau n'a pas de fichier** (`fichier_cle` NULL, migration 0154) : `format: "tableau"` sur la fiche, qui l'ouvre sur ses chiffres et son chantier ; l'assistant la joint vers la fiche du client, sur son onglet, jamais vers un PDF absent ; la route du PDF et l'effacement d'un client ne supposent plus un fichier.
 
+## §534 : La lettre de l'artisan, et ce que les écrans du client partagent
+
+**Ses planches du 31 octobre 2026, codées le 1er novembre** sur sa consigne, *« tu peux tout coder »*.
+
+**Une seule tête et un seul écran de retour** (`src/components/atlas/LettreDuClient.tsx`) : `TeteDeLettre` (le titre en serif, `Monogramme`, ses initiales à l'or), `EcranDeRetour` (un signe, une phrase, le geste qui reste, qui écrit) et `CocheFaite`. Le devis, le contrat, les dates du mois et le compte rendu s'ouvrent pareil ; devis accepté, correction demandée, réponse enregistrée, lien expiré, contrat accepté ou refusé se ressemblent. Chacun dessinait sa carte à ombre, et trois pages sur cinq leurs couleurs en dur : elles passent toutes par les jetons, qui retombent sur la charte d'origine faute de variables (`estPageDuClient`).
+
+**La réponse au contrat remplace la page** : `repondreContratAction` rend `{ succes: "accepte" | "refuse" }`, et `ReponseContrat` enveloppe la page pour lui substituer l'écran de retour que le client retrouvera en rouvrant son lien. Une phrase rendue par l'action aurait fait deux textes pour un même état.
+
+**Le devis tient toujours dans 390 × 664** (`test-devis-client-e2e`) : les deux dates côte à côte gagnent une ligne chacune, le mot pour l'artisan ne s'ouvre qu'au doigt, et les deux dernières issues partagent une rangée. Le rond de choix reste un vrai bouton radio (`appearance-none`), pour que le formulaire envoie ce qu'il a toujours envoyé.
+
+**Les règles neuves sont pures** : `joursSurDeuxLignes` et `moisAbrege` (`src/lib/jour.ts`, la table des mois abrégés n'existe plus qu'ici), `sommeDesMontants` (`src/lib/euros.ts`, en décimal : trois factures en flottants rendent 4 270,799999). **La seule lecture neuve en base** est `dernierChantierDuClient` (`withEntreprise`, éprouvée sous `atlas_app`) : les photos de « Ses coordonnées » vont sur le dernier chantier du client, puisqu'une photo appartient à un chantier.
+

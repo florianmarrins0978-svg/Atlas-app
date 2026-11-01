@@ -165,6 +165,27 @@ export async function getChantier(ctx: Ctx, id: string) {
   });
 }
 
+/**
+ * Le chantier le plus récent d'un client, `null` s'il n'en a aucun.
+ *
+ * **Là où vont les photos posées depuis « Ses coordonnées »** — sa planche du
+ * 1er novembre 2026 : une photo appartient à un chantier, et c'est le dernier
+ * en date qui est celui dont on parle quand il est chez le client. Un chantier
+ * supprimé ne reçoit plus rien.
+ */
+export async function dernierChantierDuClient(ctx: Ctx, clientId: string): Promise<string | null> {
+  if (!UUID_RE.test(clientId)) return null;
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const rows = await tx
+      .select({ id: chantiers.id })
+      .from(chantiers)
+      .where(and(eq(chantiers.clientId, clientId), isNull(chantiers.deletedAt)))
+      .orderBy(desc(chantiers.createdAt))
+      .limit(1);
+    return rows[0]?.id ?? null;
+  });
+}
+
 // Pour la fiche chantier (hub) : chantier + client + agrégats photos/note vocale
 // en une seule requête (même motif que listerChantiersPourAffichage — pas de
 // requêtes en cascade). Retourne null si le chantier n'existe pas, est supprimé,

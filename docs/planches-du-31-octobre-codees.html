@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Les planches du 31 octobre, codées</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="les-planches-du-31-octobre-codées">Les planches du 31 octobre, codées</h1>
+<p><strong>Ta consigne du 1er novembre 2026 :</strong> <em>« une fois que t'as fait ça tu peux tout coder, une fois vert tu fusionnes »</em>.</p>
+<p>Neuf écrans, chacun sur la vue « Proposé » de sa planche. Rien d'autre n'a été touché.</p>
+<h2 id="ce-qui-est-fait-écran-par-écran">Ce qui est fait, écran par écran</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Écran</th>
+<th>Ce qui change</th>
+<th>Où</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Le devis du client</strong></td>
+<td>Le numéro en grand titre, tes initiales en or, « Atelier Démo EI, pour Mme X ». Le TTC en grand, HT et TVA sur une ligne. Les deux dates côte à côte en grandes cases (le jour en mot, la date en serif). Le mot pour toi s'ouvre au doigt. « Une correction » et « Je ne donne pas suite » côte à côte. <strong>Tient toujours dans l'écran sans défiler</strong>, case de rétractation comprise.</td>
+<td><code>src/app/devis/[jeton]/page.tsx</code>, <code>formulaire.tsx</code></td>
+</tr>
+<tr>
+<td><strong>La facture du client</strong></td>
+<td>La carte centrée d'aujourd'hui, soignée : Facture en or, le numéro en grand, l'échéance en pastille, Télécharger en plein, les pilules à copier (64 points, « Copier » au pouce), l'accusé de réception en pilule qui passe au vert. Toujours aucun montant.</td>
+<td><code>src/app/factures/[jeton]/</code></td>
+</tr>
+<tr>
+<td><strong>Le contrat du client</strong></td>
+<td>Le total, « 3 prestations, 18 passages », le détail dans le PDF. Accepté ou refusé : un écran de retour, comme le devis.</td>
+<td><code>src/app/contrat/[jeton]/</code></td>
+</tr>
+<tr>
+<td><strong>Les dates du mois</strong></td>
+<td>Le jour en grand à gauche, « Votre date » en or quand il en change une, le calendrier dans une feuille qui monte.</td>
+<td><code>src/app/contrat/dates/[jeton]/</code></td>
+</tr>
+<tr>
+<td><strong>Le compte rendu</strong></td>
+<td>« Retour d'intervention » en grand titre, une coche verte par ligne, le temps passé et ton mot en serif.</td>
+<td><code>src/components/atlas/RapportEntretien.tsx</code></td>
+</tr>
+<tr>
+<td><strong>Non payées</strong></td>
+<td>« Reste à recevoir » en tête sur la bande dorée, une plage par facture avec son chevron.</td>
+<td><code>src/app/termines/non-payees/page.tsx</code></td>
+</tr>
+<tr>
+<td><strong>Retours d'intervention</strong></td>
+<td>Rangés par client avec leur nombre, le jour en grand, « 2 tâches sur 3 », « À signaler » dès la liste, « Pas fait » en ambre. La barre de recherche et le mois n'ont pas bougé.</td>
+<td><code>src/app/termines/retours/ListeDesRetours.tsx</code></td>
+</tr>
+<tr>
+<td><strong>Son contrat d'entretien</strong></td>
+<td>Les mois écrits (« Janv. », six par rangée), le catalogue dans une feuille, ce qui manque en ambre sous les mois, le TTC en grand. <strong>L'envoi n'a pas bougé</strong> (ta consigne). Envoyé : une pastille « En attente de sa réponse ».</td>
+<td><code>src/app/clients/[id]/contrat/ContratClient.tsx</code></td>
+</tr>
+<tr>
+<td><strong>Ses coordonnées</strong></td>
+<td>La mise en page de ta Fiche client : pastilles, nom et téléphone côte à côte, les numéros d'une entreprise côte à côte, le n° TVA tiré du SIRET proposé (jamais écrit seul). <strong>Sous Enregistrer, le « + » des photos de l'appli</strong> : la photo va sur son dernier chantier. Pas de vocal.</td>
+<td><code>src/app/clients/[id]/coordonnees/</code></td>
+</tr>
+</tbody></table></div>
+<h2 id="ce-qui-a-été-fait-autrement-que-la-planche-et-pourquoi">Ce qui a été fait autrement que la planche, et pourquoi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Point</th>
+<th>Ce qui a été fait</th>
+<th>Pourquoi</th>
+</tr></thead><tbody>
+<tr>
+<td>La date du compte rendu</td>
+<td>Le jour reste <strong>en gras et en noir</strong> (« <strong>Jeudi 29 octobre 2026</strong> chez M. Bernard »)</td>
+<td>Ta demande du 22 septembre. La planche l'avait mise en gris sans le dire.</td>
+</tr>
+<tr>
+<td>Le compte rendu dans l'appli (« Rapport envoyé »)</td>
+<td>Il suit ta charte, comme tous tes écrans</td>
+<td>Il avait des couleurs fixes. La page de ton client, elle, garde les couleurs d'Atlas.</td>
+</tr>
+<tr>
+<td>Contrat accepté, chez toi</td>
+<td>La phrase « Ses passages arrivent dans Sans date… » en vert, sans pastille</td>
+<td>Trop longue pour une pastille sur un téléphone : elle sortait de l'écran.</td>
+</tr>
+<tr>
+<td>La ligne d'un retour</td>
+<td>Le nombre de photos n'y est plus</td>
+<td>Comme sur la planche : les photos se voient en l'ouvrant.</td>
+</tr>
+<tr>
+<td>Ses coordonnées sans chantier</td>
+<td>Pas de « + » du tout</td>
+<td>Une photo appartient à un chantier : sans chantier, elle n'aurait nulle part où aller.</td>
+</tr>
+</tbody></table></div>
+<h2 id="ce-qui-a-été-trouvé-et-corrigé-en-passant">Ce qui a été trouvé et corrigé en passant</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li>Le contrat, les dates du mois et le compte rendu écrivaient leurs couleurs <strong>en dur</strong>, et une autre police de titre que le devis : les cinq pages du client parlent maintenant d'une même voix.</li>
+<li>Le total de Non payées s'additionne <strong>au centime</strong> (une addition en virgule flottante rendait 4 270,799999 sur trois factures).</li>
+</ul>
+<h2 id="les-contrôles">Les contrôles</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>Écrans regardés</td>
+<td>les neuf, au format de ton téléphone, chacun dans ses états (dates proches, calendrier ouvert, correction sans mot, contrat accepté, retour ouvert…)</td>
+</tr>
+<tr>
+<td>Suites neuves</td>
+<td><code>test-jours-sur-deux-lignes</code>, <code>test-somme-des-montants</code>, <code>test-dernier-chantier-du-client-db</code> (vue rouge avant le code)</td>
+</tr>
+<tr>
+<td>Suites adaptées</td>
+<td>six suites lisaient un mot que tes planches ont changé (« Pour Mme », « 1 sur 2 », la prestation sur la page du contrat, « + Ajouter une prestation », le champ du mot ouvert d'office) : elles visent maintenant la même règle autrement</td>
+</tr>
+<tr>
+<td>Batterie</td>
+<td><em>à remplir après la batterie</em></td>
+</tr>
+</tbody></table></div>
+<h2 id="ce-qui-reste-ouvert">Ce qui reste ouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Point</th>
+<th>Qui tranche</th>
+</tr></thead><tbody>
+<tr>
+<td>Passer la recherche des pièces d'arrosage et des fiches de sécurité sur la barre de l'appli</td>
+<td>toi</td>
+</tr>
+<tr>
+<td>La photo ajoutée depuis Ses coordonnées : vue à l'écran, pas envoyée pour de vrai ici</td>
+<td>à essayer sur ton espace</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>

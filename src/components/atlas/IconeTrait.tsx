@@ -28,6 +28,8 @@ const TRACES = {
   oeil: <><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" /><circle cx="12" cy="12" r="3" /></>,
   // La zone de signature et « Modifier » ses coordonnées (l'attestation du comptable, 27 octobre 2026).
   crayon: <><path d="M4.5 19.5l1-4.3L15.6 5.1a2.1 2.1 0 0 1 3 3L8.5 18.5z" /><path d="M13.5 7.2l3 3" /></>,
+  // Le temps passé du retour d'intervention (planche du 31 octobre 2026).
+  horloge: <><circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 2" /></>,
 } as const;
 
 export type NomIcone = keyof typeof TRACES;

@@ -100,6 +100,51 @@ export function joursEnToutesLettres(jours: readonly string[], aujourdHui: Date 
   return lisibles.slice(0, -1).join(", ") + " et " + lisibles[lisibles.length - 1];
 }
 
+export const MOIS_ABREGES = [
+  "janv.", "févr.", "mars", "avr.", "mai", "juin",
+  "juil.", "août", "sept.", "oct.", "nov.", "déc.",
+] as const;
+
+/**
+ * Le mois abrégé d'un jour, « nov. », pour le carré d'une rangée : le jour en
+ * grand, son mois dessous. `null` sur une date illisible : on n'invente pas.
+ */
+export function moisAbrege(iso: string): string | null {
+  return MOIS_ABREGES[Number(iso.slice(5, 7)) - 1] ?? null;
+}
+
+/**
+ * LES JOURS D'UNE PROPOSITION, SUR DEUX LIGNES — la planche du 31 octobre 2026
+ * (`appli/soignee/client-recoit.html`), codée sur sa réponse du 1er novembre :
+ * deux dates côte à côte, le jour de la semaine dessus, la date dessous.
+ *
+ * Les mêmes mots que `joursEnToutesLettres`, et la même règle du mois : un
+ * seul mois s'écrit une fois, à la fin ; deux mois s'écrivent chacun.
+ *
+ *   ["2026-11-18"]               → « Mercredi » / « 18 novembre »
+ *   ["2026-11-18", "2026-11-19"] → « Mercredi et jeudi » / « 18 et 19 novembre »
+ *   ["2026-09-29", "2026-10-01"] → « Mardi et jeudi » / « 29 septembre et 1er octobre »
+ */
+export function joursSurDeuxLignes(
+  jours: readonly string[],
+  aujourdHui: Date = new Date()
+): { jours: string; dates: string } {
+  const tries = [...new Set(jours)].sort().filter((j) => /^\d{4}-\d{2}-\d{2}$/.test(j));
+  if (tries.length === 0) return { jours: "", dates: "" };
+  const enListe = (mots: string[]) =>
+    mots.length === 1 ? mots[0] : mots.slice(0, -1).join(", ") + " et " + mots[mots.length - 1];
+  const parties = tries.map((j) => j.split("-").map(Number));
+  const semaine = enListe(parties.map(([a, m, d]) => JOURS[new Date(Date.UTC(a, m - 1, d)).getUTCDay()]));
+  const memeMois = tries.every((j) => j.slice(0, 7) === tries[0].slice(0, 7));
+  const numero = (d: number) => (d === 1 ? "1er" : String(d));
+  const dernier = parties[parties.length - 1];
+  const annee = dernier[0] === aujourdHui.getUTCFullYear() ? "" : ` ${dernier[0]}`;
+  const dates = memeMois
+    ? `${enListe(parties.map(([, , d]) => numero(d)))} ${MOIS[dernier[1] - 1]}${annee}`
+    : `${enListe(parties.map(([, m, d]) => `${numero(d)} ${MOIS[m - 1]}`))}${annee}`;
+  return { jours: semaine.charAt(0).toUpperCase() + semaine.slice(1), dates };
+}
+
 export function jourNumerique(iso: string): string {
   const [a, m, j] = iso.split("-");
   if (!a || !m || !j) return iso;

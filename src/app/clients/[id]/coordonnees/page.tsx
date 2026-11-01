@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getClient } from "@/server/repositories/clients";
+import { dernierChantierDuClient } from "@/server/repositories/chantiers";
+import { listerPhotosHorsFicheDeSecurite } from "@/server/repositories/photos";
 import { detacherCivilite } from "@/lib/civilite";
 import SesCoordonnees from "./SesCoordonnees";
 import { garderLaPage } from "@/server/garde-page";
@@ -33,6 +35,11 @@ export default async function SesCoordonneesPage({
   // devant lui à l'affichage — « M. M. Bernard ». La règle vit dans `lib`, et
   // c'est celle que la dictée emploie déjà.
   const lu = detacherCivilite(client.nom);
+  // **Les photos, sous Enregistrer — sa planche du 1er novembre 2026** : celles
+  // de son dernier chantier, où va aussi celle qu'il ajoute. Sans chantier, une
+  // photo n'aurait nulle part où aller : rien ne s'affiche.
+  const dernier = await dernierChantierDuClient(ctx, client.id);
+  const photos = dernier ? await listerPhotosHorsFicheDeSecurite(ctx, dernier) : [];
 
   return (
     <SesCoordonnees
@@ -48,6 +55,7 @@ export default async function SesCoordonneesPage({
         codeService: client.codeService ?? "",
       }}
       retour={{ href: `/clients/${client.id}`, libelle: "Retour à sa fiche" }}
+      photos={dernier ? { chantierId: dernier, initiales: photos.map((ph) => ({ id: ph.id, storageKey: ph.storageKey })) } : null}
     />
   );
 }

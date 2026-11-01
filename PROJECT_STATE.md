@@ -4,6 +4,10 @@
 dernière migration `drizzle/0154_pieces_importees_d_un_tableau.sql`
 
 ---
+## LES NEUF PLANCHES DU 31 OCTOBRE, CODÉES (1er novembre 2026)
+
+Le devis, la facture, le contrat, les dates du mois et le compte rendu que reçoit le client ; Non payées, les retours d'intervention, le contrat d'entretien et Ses coordonnées chez l'artisan. Chaque écran suit la vue Proposé de sa planche (`appli/soignee/client-recoit.html`, `client-contrat.html`, `client-coordonnees.html`, `termines-non-payees.html`, `termines-retours.html`). Niveau 3 (devis, facture, une lecture en base). Retour : `docs/planches-du-31-octobre-codees.md`.
+
 ## LE RELEVÉ DU 29 OCTOBRE, SUR `main` (31 octobre 2026)
 
 Sur ses réponses du 29 octobre, poussé sur `main` le 31 (`ec0a53bc`) : l'attestation du comptable part en PDF joint, au patron et en copie au comptable ; Abonnement, « Attention au mot » sans encadré ; Crédits IA, sa carte et sa pastille, épuisé en rouge ; « Annuler » dans la feuille de la photo ; Voir le dossier, A (« 774 Ko, 60 lignes ») ; Vos clients soignée, avec le Filtre en son signe seul sur la ligne de la recherche. Batterie : 541/541 suites base, 202/203 navigateur ; le rouge (`test-poser-une-date-e2e`, fin de mois) l'est aussi sur `main` (`verifier-rouge-prealable.ts`). Retour : `docs/releve-29-octobre.md`.

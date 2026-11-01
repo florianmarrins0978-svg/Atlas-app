@@ -263,7 +263,10 @@ async function main() {
   await page.goto(`${BASE}/devis/${correction.jeton}`, { waitUntil: "networkidle" });
   // **Le bouton de correction reste éteint tant que rien n'est écrit** — une
   // demande sans message obligerait le patron à rappeler. On écrit donc d'abord.
-  await page.locator("textarea").first().fill("Le devis comprend une faute sur le diamètre.");
+  // Le mot pour l'artisan s'ouvre au doigt depuis le 1er novembre 2026 (sa
+  // planche `client-recoit.html`) : on l'ouvre, comme le client.
+  await page.locator('[data-atlas="ouvrir-le-mot"]').click();
+  await page.locator("#precision").fill("Le devis comprend une faute sur le diamètre.");
   await page.getByRole("button", { name: /Une correction avant d'accepter/i }).click();
   await page.waitForSelector("text=/artisan/i", { timeout: 20_000 }).catch(() => undefined);
   await page.waitForTimeout(1500);

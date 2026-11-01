@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { colors, libelleCaps } from "@/lib/design-tokens";
+import { colors, font } from "@/lib/design-tokens";
+import IconeTrait from "@/components/atlas/IconeTrait";
 
 /**
  * UNE VALEUR QU'ON TOUCHE POUR LA COPIER — sa demande du 8 septembre 2026 :
@@ -76,25 +77,34 @@ export default function PastilleACopier({
       // sa règle du 12 août 2026 veut la même forme pour tout ce qui s'appuie,
       // et une pastille qui se touche est un bouton. La maquette portait un
       // coin de douze pixels ; c'est elle qui avait tort.
-      className="mt-2.5 flex w-full items-center justify-between gap-3 rounded-full px-4 py-2 text-left transition-transform active:scale-[0.995]"
+      className="mt-2.5 flex min-h-16 w-full items-center gap-3 rounded-full py-2 pr-2 pl-5 text-left transition-[transform,box-shadow] duration-200 active:scale-[0.995]"
       style={{
         backgroundColor: colors.rustTint,
-        boxShadow: `inset 0 0 0 ${copie ? "1.5px" : "1px"} ${copie ? colors.plein : colors.line}`,
-        minHeight: 52,
+        boxShadow: copie ? `inset 0 0 0 1.5px ${colors.carteVertTexte}` : "none",
       }}
     >
-      <span className="min-w-0">
-        <span className={`block ${libelleCaps}`} style={{ color: colors.muted, fontSize: 9.5 }}>
+      {/* **Son nom se LIT — sa planche du 1er novembre 2026.** Il était en
+          capitales de 9,5 points, en gris : le client cherchait lequel des
+          deux était l'IBAN. Treize points, l'encre douce, et la valeur en
+          serif, comme ce qu'on recopie sur un papier. */}
+      <span className="min-w-0 flex-1">
+        <span className="block text-[13px] font-semibold" style={{ color: colors.inkSoft }}>
           {quoi}
         </span>
-        <span className="mt-0.5 block text-[16px] leading-[1.35]" style={{ color: colors.ink }}>
+        <span
+          className="mt-px block text-[18px] leading-[1.3] tabular-nums [overflow-wrap:anywhere]"
+          style={{ color: colors.ink, fontFamily: font.display, letterSpacing: "0.01em" }}
+        >
           {affiche}
         </span>
       </span>
+      {/* « Copier » au pouce : une pastille de 46 points, et non plus un mot
+          de 13 au bout de la ligne. */}
       <span
-        className="flex-none text-[13px] font-medium"
-        style={{ color: copie ? colors.plein : colors.rust }}
+        className="inline-flex min-h-[46px] flex-none items-center gap-1.5 rounded-full px-4 text-[15px] font-semibold transition-colors duration-200"
+        style={{ backgroundColor: colors.card, color: copie ? colors.carteVertTexte : colors.rust }}
       >
+        <IconeTrait nom={copie ? "coche" : "copier"} taille={18} epaisseur={1.8} />
         {copie ? "Copié" : "Copier"}
       </span>
     </button>

@@ -98,14 +98,14 @@ essai("rien ne manque : la phrase est vide", () => {
 });
 
 // ── Ce que le patron lit ───────────────────────────────────────────────
-essai("« 2 sur 3 » — ce qui reste se lit dans le compte", () => {
+essai("« 2 tâches sur 3 » : ce qui reste se lit dans le compte", () => {
   assert.equal(
     compteDesTaches([
       { libelle: "a", faite: true },
       { libelle: "b", faite: true },
       { libelle: "c", faite: false },
     ]),
-    "2 sur 3"
+    "2 tâches sur 3"
   );
 });
 
@@ -114,15 +114,17 @@ essai("« 2 sur 3 » — ce qui reste se lit dans le compte", () => {
 // pas ce qui a été fait »*. Un compte se vérifie, un résumé se croit — et une
 // suite qui réclame le mot qu’il a fait retirer rend son écran impossible à
 // changer (`CLAUDE.md` §5 bis).
-essai("tout coché se dit « 2 sur 2 », jamais « tout fait »", () => {
+essai("tout coché se dit « 2 tâches sur 2 », jamais « tout fait »", () => {
   assert.equal(
     compteDesTaches([{ libelle: "a", faite: true }, { libelle: "b", faite: true }]),
-    "2 sur 2"
+    "2 tâches sur 2"
   );
 });
 
 essai("aucune tâche : rien à compter, et surtout pas « 0 sur 0 »", () => {
   assert.equal(compteDesTaches([]), "");
+  // Une seule faite : le mot reste au singulier.
+  assert.equal(compteDesTaches([{ libelle: "a", faite: true }, { libelle: "b", faite: false }]), "1 tâche sur 2");
 });
 
 // ── La recherche ───────────────────────────────────────────────────────

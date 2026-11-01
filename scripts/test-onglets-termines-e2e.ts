@@ -478,7 +478,7 @@ async function main() {
     // **Le compte, et non un résumé** : « tout fait » a été retiré le
     // 9 septembre, parce qu’il ne pouvait pas le vérifier.
     const dit = await carte.innerText();
-    assert.match(dit, /1 sur 2/, "la carte ne porte pas le compte des tâches");
+    assert.match(dit, /1 tâche sur 2/, "la carte ne porte pas le compte des tâches");
     assert.doesNotMatch(dit, /tout fait/);
 
     assert.equal(await page.locator("[data-atlas='retour-deplie']").count(), 0, "la carte est déjà ouverte");
@@ -490,7 +490,8 @@ async function main() {
     // facturer un travail qui n’a pas eu lieu.
     const dedans = await feuille.innerText();
     assert.match(dedans, /Tonte et ébarbage/);
-    assert.match(dedans, /pas fait/, "ce qui reste à faire ne se lit pas");
+    // « Pas fait » est une pastille depuis la planche du 31 octobre 2026.
+    assert.match(dedans, /pas fait/i, "ce qui reste à faire ne se lit pas");
     assert.match(dedans, /Chantier fini/, "son mot n’est pas rendu");
     assert.equal(await page.locator("[data-atlas='tache-pas-faite']").count(), 1);
 
