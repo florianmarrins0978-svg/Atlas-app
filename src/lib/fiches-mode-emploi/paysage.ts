@@ -17,6 +17,7 @@ const DOSSIER = "src/app/clients/[id]/page.tsx";
 const MOTS = "src/app/catalogue/MesMots.tsx";
 const FILTRE = "src/components/atlas/FiltreDeDate.tsx";
 const TIROIR = "src/components/atlas/TiroirDesRetires.tsx";
+const CHAMP = "src/components/atlas/ChampRecherche.tsx";
 
 export const FICHES_PAYSAGE: FicheModeEmploi[] = [
   // --- Paysage : l'écran ----------------------------------------------------
@@ -313,7 +314,10 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
     motsCles: ["chercher", "rechercher", "client", "nom", "trouver", "securite", "fiche"],
     geste: "Tapez le nom dans « Chercher un client ». La croix efface la recherche.",
     source: SECU,
-    preuves: ['placeholder="Chercher un client"', 'aria-label="Effacer la recherche"'],
+    // La croix vit dans la barre de l'appli depuis le 1er novembre 2026 : elle
+    // se prouve là où elle est écrite.
+    preuves: ['placeholder="Chercher un client"', "<ChampRecherche"],
+    ailleurs: [{ source: CHAMP, preuves: ['aria-label="Effacer la recherche"'] }],
   },
   // --- Fiche de chantier ----------------------------------------------------
   {
