@@ -1,0 +1,643 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La facture, soignée</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  LA FACTURE ET CE QUI LA SUIT : les huit écrans suivants de sa liste du
+  31 octobre 2026 (« fais moi une planche pour les 8 premiers, l'idée c'est de
+  les améliorer et de les rendre plus jolis »), puis le 2 novembre : « donne
+  moi les liens des 8 écrans ».
+  À CÔTÉ, LES VRAIS ÉCRANS : ouverts le 2 novembre sur le poste, compte de
+  démonstration, trois chantiers neufs (une facture envoyée avec un avoir, une
+  déclarée « il ne paiera pas », un brouillon) : aujourdhui/chantier-facture*,
+  chantier-paiement*, chantier-non-payee, chantier-impaye,
+  chantier-mise-en-demeure*, chantier-avoir*, chantier-travaux-supplementaires*.
+  Les routes : src/app/chantiers/[id]/facture/ (page, paiement, non-payee,
+  impaye, mise-en-demeure, avoir, avoir/[avoirId], travaux-supplementaires).
+  CE QUI EST GARDÉ : les écrans, leur ordre, leurs mots (« Il vous a payé »,
+  « Que voulez-vous faire ? », « C'est noté », « C'est fait »), la lettre de
+  mise en demeure, les montants et leur calcul.
+*/
+.fa .tete-situation { text-transform: none; letter-spacing: 0; }
+.carte-doc { background: var(--atlas-card); border-radius: var(--r-plage); padding: 18px; }
+.carte-doc + .carte-doc { margin-top: 12px; }
+.doc-numero { font: 400 22px/1.2 var(--serif); color: var(--atlas-ink); }
+.doc-titre { margin-top: 2px; font: italic 400 18px/1.3 var(--serif); color: var(--atlas-inkSoft); }
+.pastilles-doc { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.rang-ligne { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; padding: 10px 0; }
+.rang-ligne + .rang-ligne { box-shadow: inset 0 1px 0 var(--atlas-lineSoft); }
+.rang-ligne .nom { flex: 1; min-width: 0; font-size: 16px; color: var(--atlas-ink); }
+.rang-ligne .nom small { display: block; margin-top: 2px; font-size: 14px; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
+.rang-ligne .prix { font-size: 16px; color: var(--atlas-ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.etiquette-en-plus { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 10px; font-size: 12.5px; font-weight: 600;
+                     color: var(--atlas-or); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--atlas-or) 55%, transparent); vertical-align: 2px; }
+.totaux .rang-ligne { padding: 6px 0; box-shadow: none; }
+.totaux .rang-ligne .nom, .totaux .rang-ligne .prix { font-size: 15.5px; color: var(--atlas-inkSoft); }
+.ttc { margin-top: 10px; padding-top: 14px; box-shadow: inset 0 1px 0 var(--atlas-line); text-align: center; }
+.ttc p { font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--atlas-inkSoft); }
+.ttc .montant-grand { color: var(--atlas-or); margin-top: 6px; }
+.pilules { display: flex; flex-wrap: wrap; gap: 8px; }
+.pilule { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 16px 0 13px; border-radius: 22px; font-size: 14.5px; font-weight: 600;
+          color: var(--atlas-ink); box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
+.pilule.or { color: var(--atlas-or); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 60%, transparent); }
+.pilule .ico { width: 18px; height: 18px; }
+.pilule[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--atlas-ink); }
+.net { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.net b { font-size: 17px; }
+.net .montant { font-size: 26px; }
+.reglement-avoir { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0 12px; font-size: 15.5px; color: var(--atlas-inkSoft); }
+.ligne-bascule-doc { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; padding: 12px 14px; border-radius: 12px;
+                     box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 60%, transparent); }
+.envoi-doc { text-align: center; }
+.envoi-doc .discret { margin-bottom: 12px; }
+.lien-calme { display: inline-block; margin-top: 14px; min-height: 44px; font-size: 15px; font-weight: 600; color: var(--atlas-inkSoft); }
+/* Une case de montant, grande, au pavé de chiffres : celle des feuilles du devis. */
+.case-euros-grande { display: flex; align-items: baseline; justify-content: flex-end; gap: 8px; height: 68px; padding: 0 18px; border-radius: 14px;
+                     background: var(--atlas-card); box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
+.case-euros-grande input { flex: 1; min-width: 0; height: 100%; border: 0; outline: none; background: transparent; text-align: right;
+                           font: 400 40px/68px var(--serif); color: var(--atlas-ink); font-variant-numeric: tabular-nums lining-nums; }
+.case-euros-grande span { font: 400 26px/1 var(--serif); color: var(--atlas-inkSoft); }
+.case-euros-grande:focus-within { box-shadow: inset 0 0 0 2px var(--atlas-rust); }
+.resultat { margin-top: 14px; padding: 14px 16px; border-radius: 10px; background: color-mix(in srgb, var(--atlas-or) 13%, transparent); }
+.resultat p { font-size: 14.5px; color: var(--atlas-inkSoft); }
+.resultat .gros { margin-top: 4px; font: 400 28px/1.1 var(--serif); color: var(--atlas-ink); font-variant-numeric: tabular-nums lining-nums; }
+.champ-doc { margin-top: 16px; }
+.champ-doc .rubrique { margin-top: 0; }
+.case-doc { width: 100%; min-height: 52px; padding: 13px 15px; border: 0; border-radius: 10px; outline: none; font-size: 16px; color: var(--atlas-ink);
+            background: var(--atlas-card); box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
+.case-doc:focus { box-shadow: inset 0 0 0 2px var(--atlas-rust); }
+.choix-ligne { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 8px 4px; text-align: left; font-size: 16px; color: var(--atlas-ink); }
+.choix-ligne + .choix-ligne { box-shadow: inset 0 1px 0 var(--atlas-lineSoft); }
+.choix-ligne .rond-choix { width: 22px; height: 22px; flex: none; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--atlas-chevron); }
+.choix-ligne[aria-pressed="true"] .rond-choix { box-shadow: inset 0 0 0 7px var(--atlas-ink); }
+.choix-ligne .prix { margin-left: auto; font-variant-numeric: tabular-nums; }
+.reste-grand { text-align: center; padding: 24px 18px; }
+.reste-grand p { font-size: 15px; color: var(--atlas-inkSoft); }
+.reste-grand .montant-grand { margin-top: 6px; }
+.coche-faite { display: grid; place-items: center; width: 64px; height: 64px; margin: 6px auto 14px; border-radius: 50%;
+               color: var(--atlas-carteVertTexte); background: var(--atlas-carteVertFond); }
+.coche-faite .ico { width: 30px; height: 30px; }
+.phrase-faite { text-align: center; font: 400 22px/1.3 var(--serif); color: var(--atlas-ink); }
+.phrase-faite + p { margin-top: 8px; text-align: center; font-size: 15px; color: var(--atlas-inkSoft); }
+.lettre { background: #fffdf8; color: #1c1c1a; border-radius: 6px; padding: 20px 18px; font-size: 13px; line-height: 1.5;
+          box-shadow: 0 1px 2px rgba(28,28,26,0.08), 0 8px 24px rgba(28,28,26,0.08); }
+.lettre .entete { display: flex; justify-content: space-between; gap: 12px; }
+.lettre .entete b { font-family: var(--serif); font-size: 15px; font-weight: 400; }
+.lettre .objet { margin: 14px 0 10px; display: flex; justify-content: space-between; font-size: 12px; }
+.lettre .objet span:first-child { color: var(--atlas-or); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
+.lettre p + p { margin-top: 8px; }
+.alerte-ambre { margin-bottom: 14px; padding: 12px 14px; border-radius: 12px; font-size: 14.5px;
+                color: var(--atlas-carteAmbreTexte); background: var(--atlas-carteAmbreFond); }
+.action-bas .bouton-texte { display: block; width: 100%; text-align: center; }
+/* Le Total TTC : « en plus gros », puis « trop gros, juste milieu » (2 novembre).
+   40 au départ, 54 de trop : 46. */
+.ttc .montant-grand { font-size: 46px; }
+/* « Non payée, montant trop petit » : ce qu'il doit, en très grand. */
+.reste-grand .montant-grand { font-size: 56px; margin-top: 10px; }
+/* Choisir d'un appui : une carte par choix, une icône, un mot ; la carte prise
+   se borde d'or et porte sa coche (sa remarque : « fais quelque chose de plus
+   joli pour choisir le mode de règlement », puis « pareil » pour l'avoir). */
+.cartes-a-choisir { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.carte-a-choisir { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; min-height: 96px; padding: 14px;
+                   border-radius: 16px; text-align: left; background: var(--atlas-card); box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
+.carte-a-choisir .rond-icone { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%;
+                               color: var(--atlas-or); background: color-mix(in srgb, var(--atlas-or) 13%, transparent); }
+.carte-a-choisir .rond-icone .ico { width: 21px; height: 21px; }
+.carte-a-choisir b { font: 400 17px/1.2 var(--serif); color: var(--atlas-ink); }
+.carte-a-choisir small { display: block; margin-top: 2px; font-size: 13.5px; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
+.carte-a-choisir .coche { position: absolute; top: 12px; right: 12px; display: none; place-items: center; width: 24px; height: 24px; border-radius: 50%;
+                          color: var(--atlas-card); background: var(--atlas-or); }
+.carte-a-choisir .coche .ico { width: 15px; height: 15px; }
+.carte-a-choisir[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--atlas-or); background: color-mix(in srgb, var(--atlas-or) 7%, var(--atlas-card)); }
+.carte-a-choisir[aria-pressed="true"] .coche { display: grid; }
+/* LE RÈGLEMENT, DEUX FAÇONS À CHOISIR — les cartes « c'est nul, change ».
+   A, la barre : un seul ruban, quatre cases, l'or glisse sous celle prise.
+   B, la liste : une plage, une ligne par moyen, le rond coché à droite,
+   comme les listes des Réglages. */
+.ruban { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); padding: 4px; border-radius: 18px;
+         background: color-mix(in srgb, var(--atlas-ink) 6%, transparent); }
+.ruban .glisse { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc((100% - 8px) / 4); border-radius: 14px;
+                 background: var(--atlas-card); box-shadow: 0 1px 2px rgba(28,28,26,0.08), 0 4px 12px rgba(28,28,26,0.08);
+                 transform: translateX(calc(var(--rang, 1) * 100%)); transition: transform 240ms var(--courbe); }
+.ruban button { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+                min-height: 74px; font-size: 13.5px; font-weight: 600; color: var(--atlas-inkSoft); }
+.ruban button .ico { width: 22px; height: 22px; }
+.ruban button[aria-pressed="true"] { color: var(--atlas-ink); }
+.ruban button[aria-pressed="true"] .ico { color: var(--atlas-or); }
+@media (prefers-reduced-motion: reduce) { .ruban .glisse { transition: none; } }
+.liste-moyens { padding: 4px 16px; }
+.liste-moyens button { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 60px; text-align: left; font-size: 16.5px; color: var(--atlas-ink); }
+.liste-moyens button + button { box-shadow: inset 0 1px 0 var(--atlas-lineSoft); }
+.liste-moyens .ico-moyen { width: 22px; height: 22px; color: var(--atlas-or); flex: none; }
+.liste-moyens .rond-choix { margin-left: auto; width: 24px; height: 24px; flex: none; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--atlas-chevron); }
+.liste-moyens button[aria-pressed="true"] .rond-choix { box-shadow: inset 0 0 0 7px var(--atlas-or); }
+.ts-chantier { font-size: 14.5px; color: var(--atlas-inkSoft); }
+</style>
+</head>
+<body class="pl pl-pilules">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">La facture</h1>
+  <p class="pl-verdict">Les huit écrans qui suivent le chantier fini : la facture, le paiement, l'impayé et ses deux issues, l'avoir, la mise en demeure, les travaux en plus. <b>Mêmes écrans, même ordre, mêmes mots ; les montants se lisent mieux, et les défauts vus en les ouvrant sont corrigés.</b> À côté, les vrais écrans.</p>
+</header>
+
+<main class="pl-scene">
+  <div>
+    <div class="pl-etats rangee-pages" role="group" aria-label="L'écran">
+      <button type="button" data-page="facture" aria-pressed="true">Facture</button>
+      <button type="button" data-page="paiement">Paiement</button>
+      <button type="button" data-page="impaye">Impayé</button>
+      <button type="button" data-page="nonpayee">Non payée</button>
+      <button type="button" data-page="avoir">Avoir</button>
+      <button type="button" data-page="avoirfait">Détail d’un avoir</button>
+      <button type="button" data-page="demeure">Mise en demeure</button>
+      <button type="button" data-page="ts">Travaux en plus</button>
+    </div>
+    <div class="pl-etats etats-page" id="etats-page" role="group" aria-label="Son état"></div>
+
+    <div class="pl-ecrans">
+      <div data-vue-panneau="propose">
+        <p class="pl-legende">Proposé</p>
+        <div class="cadre">
+
+          <!-- ═══ 1. LA FACTURE ══════════════════════════════════════════ -->
+          <div class="ecran fa avec-barre avec-action" data-page-ecran="facture">
+            <div class="defile">
+              <div class="tete-ronds">
+                <button class="rond-creux" type="button" aria-label="Retour"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+                <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              </div>
+              <div class="tete"><h2 class="tete-titre">Facture</h2></div>
+              <p class="tete-situation">Mme Vasseur</p>
+
+              <section class="carte-doc">
+                <p class="doc-numero">F2026&#8209;000001</p>
+                <p class="doc-titre">Aménagement du jardin</p>
+                <div class="pastilles-doc">
+                  <span class="etat" data-ton="ambre">À régler avant le mercredi 2 décembre</span>
+                  <span class="etat" data-ton="vert" data-si-etat="envoyee">Envoyée le 2 novembre</span>
+                  <span class="etat" data-ton="bleu" data-si-etat="brouillon">Brouillon</span>
+                </div>
+                <p class="discret mt-8">Travaux réalisés le vendredi 30 octobre</p>
+              </section>
+
+              <section class="carte-doc">
+                <p class="rubrique" style="margin-top:0">Devis 2026&#8209;000005</p>
+                <div class="rang-ligne"><span class="nom">Terrassement et préparation du sol<small>1 forfait</small></span><span class="prix">380,00&nbsp;€</span></div>
+                <div class="rang-ligne"><span class="nom">Fourniture et pose de gazon en rouleau<small>120 m² à 6,50&nbsp;€</small></span><span class="prix">780,00&nbsp;€</span></div>
+                <div class="rang-ligne"><span class="nom">Bordures acier corten<small>24 ml à 18,00&nbsp;€</small></span><span class="prix">432,00&nbsp;€</span></div>
+                <div class="rang-ligne"><span class="nom">Dessouchage d’un vieux laurier<span class="etiquette-en-plus">En plus</span><small>1 forfait</small></span><span class="prix">180,00&nbsp;€</span></div>
+                <div class="mt-16" data-si-etat="brouillon">
+                  <button class="pilule or" type="button" data-vers-page="ts"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Travaux en plus</button>
+                </div>
+              </section>
+
+              <section class="carte-doc totaux">
+                <div class="rang-ligne"><span class="nom">Total HT</span><span class="prix">1&#8239;772,00&nbsp;€</span></div>
+                <div class="rang-ligne"><span class="nom">dont main d’œuvre HT</span><span class="prix">380,00&nbsp;€</span></div>
+                <div class="rang-ligne"><span class="nom">TVA 20 %</span><span class="prix">354,40&nbsp;€</span></div>
+                <div class="ttc">
+                  <p>Total TTC</p>
+                  <p class="montant-grand">2&#8239;126,40&nbsp;€</p>
+                </div>
+                <div class="pilules mt-16" style="justify-content:center">
+                  <button class="pilule" type="button" data-note="Ouvre la facture dans la visionneuse de l'appli."><svg class="ico" aria-hidden="true"><use href="#i-oeil"/></svg>Voir le PDF</button>
+                  <button class="pilule" type="button" data-note="Enregistre F2026-000001.pdf sur le téléphone."><svg class="ico" aria-hidden="true"><use href="#i-telecharger"/></svg>Télécharger</button>
+                </div>
+              </section>
+
+              <section class="carte-doc" data-si-etat="envoyee">
+                <p class="rubrique" style="margin-top:0">Règlements reçus</p>
+                <div class="reglement-avoir"><span>Avoir A2026&#8209;000001, le 2 novembre</span><span>moins 100,00&nbsp;€</span></div>
+                <div class="net"><b>Net à payer</b><span class="montant">2&#8239;026,40&nbsp;€</span></div>
+                <div class="ligne-bascule-doc">
+                  <span>Facture acquittée</span>
+                  <button class="bascule" type="button" role="switch" aria-checked="false" aria-label="Facture acquittée"></button>
+                </div>
+              </section>
+
+              <section class="envoi-doc mt-24" data-si-etat="envoyee">
+                <p class="discret">Facture F2026&#8209;000001 arrêtée.</p>
+                <a class="lien-calme" href="#" data-vers-page="impaye">Mon client ne me paie pas</a>
+              </section>
+            </div>
+            <div class="action-bas">
+              <div data-si-etat="envoyee">
+                <button class="bouton bouton-plein" type="button" data-vers-page="paiement">Il m’a payé</button>
+                <button class="bouton-texte" type="button" data-note="Le SMS part avec le lien de la facture. Par e-mail, juste en dessous.">Renvoyer par SMS ou e-mail</button>
+              </div>
+              <div data-si-etat="brouillon">
+                <button class="bouton bouton-plein" type="button" data-note="Arrête la facture et l'envoie au canal de sa fiche.">Envoyer la facture</button>
+              </div>
+            </div>
+            <nav class="barre" aria-label="Navigation principale">
+              <div class="barre-onglets">
+                <a class="barre-onglet" href="#" aria-current="page">Chantiers</a><a class="barre-onglet" href="#">Planning</a><a class="barre-onglet" href="#">Terminés</a><a class="barre-onglet" href="#">Paysage</a><a class="barre-onglet" href="#">Réglages</a>
+                <span class="barre-trait" aria-hidden="true" style="--rang:0"><span></span></span>
+              </div>
+            </nav>
+          </div>
+
+          <!-- ═══ 2. IL VOUS A PAYÉ ══════════════════════════════════════ -->
+          <div class="ecran fa avec-action" data-page-ecran="paiement" hidden>
+            <div class="defile">
+              <div class="tete-ronds">
+                <button class="rond-creux" type="button" aria-label="Retour" data-vers-page="facture"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+              </div>
+              <div class="tete"><h2 class="tete-titre">Il vous a payé</h2></div>
+              <p class="tete-situation">Mme Vasseur, facture F2026&#8209;000001</p>
+
+              <p class="rubrique" style="margin-top:4px">Comment</p>
+              <div data-si-etat="ruban">
+                <div class="ruban moyens" style="--rang:1">
+                  <span class="glisse" aria-hidden="true"></span>
+                  <button type="button" data-moyen="virement" aria-pressed="false"><svg class="ico" aria-hidden="true"><use href="#i-banque"/></svg>Virement</button>
+                  <button type="button" data-moyen="cheque" aria-pressed="true"><svg class="ico" aria-hidden="true"><use href="#i-crayon"/></svg>Chèque</button>
+                  <button type="button" data-moyen="especes" aria-pressed="false"><svg class="ico" aria-hidden="true"><use href="#i-euro"/></svg>Espèces</button>
+                  <button type="button" data-moyen="carte" aria-pressed="false"><svg class="ico" aria-hidden="true"><use href="#i-carte"/></svg>Carte</button>
+                </div>
+              </div>
+              <div data-si-etat="liste">
+                <div class="carte-doc liste-moyens moyens">
+                  <button type="button" data-moyen="virement" aria-pressed="false"><svg class="ico ico-moyen" aria-hidden="true"><use href="#i-banque"/></svg>Virement<span class="rond-choix"></span></button>
+                  <button type="button" data-moyen="cheque" aria-pressed="true"><svg class="ico ico-moyen" aria-hidden="true"><use href="#i-crayon"/></svg>Chèque<span class="rond-choix"></span></button>
+                  <button type="button" data-moyen="especes" aria-pressed="false"><svg class="ico ico-moyen" aria-hidden="true"><use href="#i-euro"/></svg>Espèces<span class="rond-choix"></span></button>
+                  <button type="button" data-moyen="carte" aria-pressed="false"><svg class="ico ico-moyen" aria-hidden="true"><use href="#i-carte"/></svg>Carte bancaire<span class="rond-choix"></span></button>
+                </div>
+              </div>
+              <div class="champ-doc" id="champ-cheque">
+                <p class="rubrique">N° de chèque</p>
+                <input class="case-doc" inputmode="numeric" placeholder="Facultatif" aria-label="Numéro du chèque">
+              </div>
+              <div class="champ-doc">
+                <p class="rubrique">Le</p>
+                <input class="case-doc" value="lundi 2 novembre" aria-label="Date du paiement">
+              </div>
+              <div class="champ-doc">
+                <p class="rubrique">Combien</p>
+                <label class="case-euros-grande"><input inputmode="decimal" value="2 026,40" aria-label="Montant reçu, en euros"><span>€</span></label>
+                <div class="pilules mt-8"><button class="pilule" type="button" aria-pressed="true">Tout le reste, 2&#8239;026,40&nbsp;€</button></div>
+              </div>
+            </div>
+            <div class="action-bas"><button class="bouton bouton-plein" type="button" data-vers-page="facture">C’est noté</button></div>
+          </div>
+
+          <!-- ═══ 3. QUE VOULEZ-VOUS FAIRE ? ═════════════════════════════ -->
+          <div class="ecran fa" data-page-ecran="impaye" hidden>
+            <div class="defile">
+              <div class="tete-ronds">
+                <button class="rond-creux" type="button" aria-label="Retour" data-vers-page="facture"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+              </div>
+              <div class="tete"><h2 class="tete-titre">Que voulez-vous faire&nbsp;?</h2></div>
+              <p class="tete-situation">Mme Vasseur, 2&#8239;126,40&nbsp;€ à régler avant le 2 décembre</p>
+              <div class="cartes-choix" style="grid-template-columns:1fr">
+                <button class="carte-choix touche" type="button" data-vers-page="avoir"><b>Je fais un avoir</b><span>Vous retirez une partie de la facture.</span></button>
+                <button class="carte-choix touche" type="button" data-vers-page="nonpayee"><b>Il ne me paiera pas</b><span>La facture reste due. Atlas arrête de vous la rappeler.</span></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══ 4. IL NE VOUS PAIERA PAS ═══════════════════════════════ -->
+          <div class="ecran fa avec-action" data-page-ecran="nonpayee" hidden>
+            <div class="defile">
+              <div class="tete-ronds">
+                <button class="rond-creux" type="button" aria-label="Retour" data-vers-page="impaye"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+              </div>
+              <div class="tete"><h2 class="tete-titre">Il ne vous paiera pas</h2></div>
+              <p class="tete-situation">Mme Vasseur, facture F2026&#8209;000001</p>
+              <section class="carte-doc reste-grand">
+                <p>Il vous doit toujours</p>
+                <p class="montant-grand">2&#8239;126,40&nbsp;€</p>
+              </section>
+              <p class="discret mt-16" style="text-align:center">Rien ne part chez lui. La facture passe dans Non payées, et Atlas arrête de vous la rappeler.</p>
+              <p style="text-align:center"><a class="lien-calme" href="#" data-vers-page="demeure">Lui envoyer une mise en demeure</a></p>
+            </div>
+            <div class="action-bas"><button class="bouton bouton-plein" type="button" data-vers-page="facture">C’est noté</button></div>
+          </div>
+
+          <!-- ═══ 5. VOUS LUI ENLEVEZ COMBIEN ? ══════════════════════════ -->
+          <div class="ecran fa avec-action" data-page-ecran="avoir" hidden>
+            <div class="defile">
+              <div class="tete-ronds">
+                <button class="rond-creux" type="button" aria-label="Retour" data-vers-page="impaye"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+              </div>
+              <div class="tete"><h2 class="tete-titre">Vous lui enlevez combien&nbsp;?</h2></div>
+              <p class="tete-situation">Mme Vasseur, facture de 2&#8239;126,40&nbsp;€ TTC</p>
+
+              <p class="rubrique" style="margin-top:4px">Sur</p>
+              <div class="cartes-a-choisir" id="sur">
+                <button class="carte-a-choisir" type="button" data-sur="tout" aria-pressed="true"><span class="rond-icone"><svg class="ico" aria-hidden="true"><use href="#i-facture"/></svg></span><span><b>Toute la facture</b><small>2&#8239;126,40&nbsp;€ TTC</small></span><span class="coche"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span></button>
+                <button class="carte-a-choisir" type="button" data-sur="ligne" aria-pressed="false"><span class="rond-icone"><svg class="ico" aria-hidden="true"><use href="#i-liste"/></svg></span><span><b>Une ligne</b><small>Vous la choisissez</small></span><span class="coche"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span></button>
+              </div>
+              <div class="carte-doc mt-8" id="lignes-avoir" hidden>
+                <button class="choix-ligne" type="button" data-ligne="380" aria-pressed="false"><span class="rond-choix"></span>Terrassement et préparation du sol<span class="prix">380,00&nbsp;€</span></button>
+                <button class="choix-ligne" type="button" data-ligne="780" aria-pressed="false"><span class="rond-choix"></span>Pose de gazon en rouleau<span class="prix">780,00&nbsp;€</span></button>
+                <button class="choix-ligne" type="button" data-ligne="432" aria-pressed="true"><span class="rond-choix"></span>Bordures acier corten<span class="prix">432,00&nbsp;€</span></button>
+                <button class="choix-ligne" type="button" data-ligne="180" aria-pressed="false"><span class="rond-choix"></span>Dessouchage d’un vieux laurier<span class="prix">180,00&nbsp;€</span></button>
+              </div>
+
+              <div class="champ-doc">
+                <p class="rubrique">L’avoir, TTC</p>
+                <label class="case-euros-grande"><input id="avoir-montant" inputmode="decimal" value="100" aria-label="Montant de l'avoir, TTC, en euros"><span>€</span></label>
+              </div>
+              <div class="resultat">
+                <p>Nouveau montant TTC</p>
+                <p class="gros" id="avoir-reste">2&#8239;026,40&nbsp;€</p>
+              </div>
+
+              <div class="champ-doc">
+                <p class="rubrique">Pourquoi</p>
+                <div class="cartes-a-choisir" id="motif">
+                  <button class="carte-a-choisir" type="button" data-motif="geste" aria-pressed="false"><span class="rond-icone"><svg class="ico" aria-hidden="true"><use href="#i-etiquette"/></svg></span><b>Geste commercial</b><span class="coche"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span></button>
+                  <button class="carte-a-choisir" type="button" data-motif="autre" aria-pressed="true"><span class="rond-icone"><svg class="ico" aria-hidden="true"><use href="#i-crayon"/></svg></span><b>Un autre motif</b><span class="coche"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span></button>
+                </div>
+                <input class="case-doc mt-8" id="motif-case" value="Bordures posées sur 20 ml au lieu de 24." aria-label="Motif de l'avoir">
+              </div>
+            </div>
+            <div class="action-bas"><button class="bouton bouton-plein" type="button" data-vers-page="avoirfait">Faire l’avoir</button></div>
+          </div>
+
+          <!-- ═══ 6. C'EST FAIT ══════════════════════════════════════════ -->
+          <div class="ecran fa avec-action" data-page-ecran="avoirfait" hidden>
+            <div class="defile">
+              <div class="tete-ronds">
+                <button class="rond-creux" type="button" aria-label="Retour" data-vers-page="facture"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+              </div>
+              <div class="coche-faite" style="margin-top:28px"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></div>
+              <p class="phrase-faite">Mme Vasseur ne doit plus que 2&#8239;026,40&nbsp;€.</p>
+              <p>Avoir A2026&#8209;000001 de 100,00&nbsp;€ sur la facture F2026&#8209;000001, pour « Bordures posées sur 20 ml au lieu de 24. »</p>
+              <p style="text-align:center"><button class="pilule mt-16" type="button" data-note="Ouvre l'avoir en PDF dans la visionneuse."><svg class="ico" aria-hidden="true"><use href="#i-oeil"/></svg>Voir l’avoir</button></p>
+            </div>
+            <div class="action-bas">
+              <button class="bouton bouton-plein" type="button" data-note="Le SMS part avec le lien de l'avoir.">Lui envoyer par SMS</button>
+              <button class="bouton-texte" type="button" data-note="L'e-mail part avec l'avoir en pièce jointe.">Par e-mail</button>
+            </div>
+          </div>
+
+          <!-- ═══ 7. MISE EN DEMEURE ═════════════════════════════════════ -->
+          <div class="ecran fa avec-action" data-page-ecran="demeure" hidden>
+            <div class="defile">
+              <div class="tete-ronds">
+                <button class="rond-creux" type="button" aria-label="Retour" data-vers-page="nonpayee"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+              </div>
+              <div class="tete"><h2 class="tete-titre">Mise en demeure</h2></div>
+              <p class="tete-situation">Mme Vasseur, facture F2026&#8209;000001</p>
+              <p class="alerte-ambre" data-si-etat="tot">L’échéance tombe le mercredi 2 décembre. Avant, la facture n’est pas impayée : la lettre attend ce jour-là.</p>
+              <article class="lettre">
+                <div class="entete">
+                  <div><b>Atelier Démo EI</b><br>10 rue des Artisans, Nantes<br>02 40 00 00 00<br>SIRET 123 456 789 00012</div>
+                  <div style="text-align:right">Mme Vasseur<br>14 chemin des Vignes<br>44300 Nantes</div>
+                </div>
+                <p style="text-align:right;margin-top:12px">Le <span data-si-etat="echue">3 décembre 2026</span><span data-si-etat="tot">2 novembre 2026</span><br><b>Lettre recommandée avec accusé de réception</b></p>
+                <div class="objet"><span>Mise en demeure</span><span>Facture n° F2026&#8209;000001</span></div>
+                <p>Madame Vasseur,</p>
+                <p>Le 2 novembre 2026, je vous ai adressé la facture n° F2026&#8209;000001 pour les travaux réalisés au 14 chemin des Vignes, 44300 Nantes, d’un montant de <b>2&#8239;126,40&nbsp;€ TTC</b>, payable avant le 2 décembre 2026.</p>
+                <p>À ce jour, elle reste impayée. Je vous mets en demeure de me régler cette somme sous huit jours à réception de la présente.</p>
+              </article>
+            </div>
+            <div class="action-bas">
+              <div data-si-etat="echue"><button class="bouton bouton-plein" type="button" data-note="Enregistre la lettre en PDF, à imprimer et envoyer en recommandé.">Télécharger la lettre</button></div>
+              <div data-si-etat="tot"><button class="bouton bouton-plein" type="button" disabled>Télécharger la lettre</button></div>
+            </div>
+          </div>
+
+          <!-- ═══ 8. TRAVAUX EN PLUS ═════════════════════════════════════ -->
+          <div class="ecran fa avec-action" data-page-ecran="ts" hidden>
+            <div class="defile">
+              <div class="tete-ronds">
+                <button class="rond-creux" type="button" aria-label="Retour" data-vers-page="facture"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+              </div>
+              <div class="tete"><h2 class="tete-titre">Travaux en plus</h2></div>
+              <p class="tete-situation">Mme Vasseur, 14 chemin des Vignes, 44300 Nantes</p>
+
+              <section class="carte-doc">
+                <p class="rubrique" style="margin-top:0">Le devis 2026&#8209;000005</p>
+                <div class="rang-ligne"><span class="nom">Terrassement et préparation du sol<small>1 forfait à 380,00&nbsp;€</small></span><span class="prix">380,00&nbsp;€</span></div>
+                <div class="rang-ligne"><span class="nom">Fourniture et pose de gazon en rouleau<small>120 m² à 6,50&nbsp;€</small></span><span class="prix">780,00&nbsp;€</span></div>
+                <div class="rang-ligne"><span class="nom">Bordures acier corten<small>24 ml à 18,00&nbsp;€</small></span><span class="prix">432,00&nbsp;€</span></div>
+              </section>
+
+              <section class="carte-doc">
+                <p class="rubrique" style="margin-top:0">En plus</p>
+                <div class="rang-ligne"><span class="nom">Dessouchage d’un vieux laurier<small>1 forfait à 180,00&nbsp;€</small></span><span class="prix">180,00&nbsp;€</span></div>
+                <div class="mt-16"><button class="pilule or" type="button" data-note="Ouvre une ligne vide : description, quantité, unité, prix."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter un travail</button></div>
+              </section>
+
+              <section class="carte-doc totaux">
+                <div class="rang-ligne"><span class="nom">Total HT</span><span class="prix">1&#8239;772,00&nbsp;€</span></div>
+                <div class="rang-ligne"><span class="nom">TVA 20 %</span><span class="prix">354,40&nbsp;€</span></div>
+                <div class="ttc"><p>Total TTC</p><p class="montant-grand">2&#8239;126,40&nbsp;€</p></div>
+              </section>
+            </div>
+            <div class="action-bas"><button class="bouton bouton-plein" type="button" data-vers-page="facture">Revenir à la facture</button></div>
+          </div>
+
+        </div>
+      </div>
+
+      <div data-vue-panneau="aujourdhui">
+        <p class="pl-legende">Aujourd'hui</p>
+        <div class="cadre"><div class="cadre-capture" id="cadre-capture"><img id="capture" src="aujourdhui/chantier-facture.jpg" alt="L'écran tel qu'il est aujourd'hui"></div></div>
+        <p class="capture-quoi" id="capture-quoi"></p>
+      </div>
+    </div>
+  </div>
+
+  <section class="pl-notes">
+    <div class="page-notes" data-notes="commun">
+      <h2>Partout</h2>
+      <ul>
+        <li>Les mots de l’appli restent : « Il vous a payé », « Que voulez-vous faire&nbsp;? », « C’est noté », « C’est fait ».</li>
+        <li>Le client garde sa civilité : « Mme Vasseur », jamais « VASSEUR » ni « Vasseur ne doit plus… ».</li>
+        <li>Un seul bouton plein par écran, en bas ; les montants en chiffres de la même police, avec leur espace des milliers.</li>
+      </ul>
+    </div>
+    <div class="page-notes" data-notes="facture">
+      <h2>La facture</h2>
+      <ul>
+        <li>Le numéro en grand, l’échéance et l’envoi en pastilles.</li>
+        <li>Le Total TTC un peu plus grand qu’aujourd’hui (« juste milieu », 2 novembre), ici comme sur les travaux en plus.</li>
+        <li>Les travaux en plus rejoignent les lignes du devis, marqués « En plus », avec leur quantité et leur prix dessous.</li>
+        <li>Envoyée, le bouton plein devient « Il m’a payé » : c’est le geste qui reste à faire. Renvoyer passe dessous.</li>
+        <li><b>Défauts corrigés :</b> « Total HT 1772,00&nbsp;€ » sans son espace ; « dont main d’œuvre » sans ses centimes ; l’avoir écrit « - 100,00&nbsp;€ » ; au brouillon, le bouton flottant « Ajouter des travaux supplémentaires » qui couvrait la dernière ligne et l’interrupteur. Il devient une pastille sous les lignes.</li>
+      </ul>
+    </div>
+    <div class="page-notes" data-notes="paiement">
+      <h2>Le paiement</h2>
+      <ul>
+        <li><b>Deux façons de choisir le moyen, à vous de dire</b> (les cartes : « c’est nul, change »). A, la barre : un ruban de quatre cases, la case prise se soulève et son icône passe en or. B, la liste : une ligne par moyen, le rond coché à droite, comme les listes des Réglages.</li>
+        <li>Le numéro de chèque n’apparaît que pour un chèque.</li>
+        <li>Le montant en grand, déjà rempli de ce qui reste ; « Tout le reste » le remet d’un appui.</li>
+      </ul>
+    </div>
+    <div class="page-notes" data-notes="impaye">
+      <h2>L’impayé</h2>
+      <ul>
+        <li>Les deux issues en cartes, chacune avec ce qu’elle fait, au lieu de deux boutons muets.</li>
+      </ul>
+    </div>
+    <div class="page-notes" data-notes="nonpayee">
+      <h2>Il ne vous paiera pas</h2>
+      <ul>
+        <li>Ce qu’il doit en très grand, au milieu (votre remarque : « montant trop petit »).</li>
+        <li>La mise en demeure s’atteint d’ici, sans repasser par la facture.</li>
+      </ul>
+    </div>
+    <div class="page-notes" data-notes="avoir">
+      <h2>L’avoir</h2>
+      <ul>
+        <li>« Sur » en deux cartes, comme le moyen de paiement ; « Une ligne » montre les lignes, on en touche une.</li>
+        <li>Le motif aussi : « Geste commercial » d’un appui, ou « Un autre motif », qui ouvre la case.</li>
+        <li>Le montant en grand, et le nouveau total se recalcule à chaque chiffre.</li>
+        <li>Le bouton dit ce qu’il fait : « Faire l’avoir » (aujourd’hui « C’est bon »).</li>
+        <li><b>Défaut corrigé :</b> un motif long était coupé à gauche dans sa case.</li>
+      </ul>
+    </div>
+    <div class="page-notes" data-notes="avoirfait">
+      <h2>L’avoir fait</h2>
+      <ul>
+        <li>Une coche, la phrase avec sa civilité, et l’avoir résumé en une ligne.</li>
+        <li>« Voir l’avoir » en pastille ; l’envoi par SMS en bouton plein, l’e-mail dessous.</li>
+      </ul>
+    </div>
+    <div class="page-notes" data-notes="demeure">
+      <h2>La mise en demeure</h2>
+      <ul>
+        <li>La lettre reste celle d’aujourd’hui, sur son papier.</li>
+        <li><b>Défaut corrigé :</b> aujourd’hui, la lettre se télécharge avant l’échéance et dit pourtant « reste impayée ». Avant le jour, elle attend, et l’écran dit pourquoi (état « Pas encore échue »).</li>
+      </ul>
+    </div>
+    <div class="page-notes" data-notes="ts">
+      <h2>Les travaux en plus</h2>
+      <ul>
+        <li>Les lignes du devis en lecture, compactes : la quantité et le prix sur une ligne sous le nom.</li>
+        <li>« Ajouter un travail » en pastille, comme sur le devis.</li>
+        <li><b>Défauts corrigés :</b> un prix unitaire à décimales s’affichait « 0,00&nbsp;€ » (le gazon, 6,50&nbsp;€ en base) ; un tiret dans l’adresse du chantier.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="chantier.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Le chantier</a>
+  <a href="index.html">Sommaire<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+(function () {
+  "use strict";
+  var PAGES = {
+    facture: { etats: [["envoyee", "Envoyée"], ["brouillon", "Brouillon"]], captures: {
+      envoyee: ["chantier-facture.jpg", "Aujourd'hui, une facture envoyée (le haut). Le bas de la page : Règlements reçus, l'interrupteur, l'envoi."],
+      brouillon: ["chantier-facture-brouillon.jpg", "Aujourd'hui, une facture encore en brouillon."] } },
+    paiement: { etats: [["ruban", "A, la barre"], ["liste", "B, la liste"]], captures: {
+      ruban: ["chantier-paiement.jpg", "Aujourd'hui, le moyen dans une liste déroulante, le montant dans une petite case."],
+      liste: ["chantier-paiement.jpg", "Aujourd'hui, le moyen dans une liste déroulante, le montant dans une petite case."] } },
+    impaye: { etats: [["impaye", "Que voulez-vous faire ?"]], captures: { impaye: ["chantier-impaye.jpg", "Aujourd'hui, deux boutons, sans rien dessous."] } },
+    nonpayee: { etats: [["nonpayee", "Il ne vous paiera pas"]], captures: { nonpayee: ["chantier-non-payee.jpg", "Aujourd'hui."] } },
+    avoir: { etats: [["avoir", "Vous lui enlevez combien ?"]], captures: { avoir: ["chantier-avoir.jpg", "Aujourd'hui, « Sur » dans une liste, le montant dans une petite case."] } },
+    avoirfait: { etats: [["fait", "C'est fait"]], captures: { fait: ["chantier-avoir-detail.jpg", "Aujourd'hui, « Vasseur ne doit plus que… », sans sa civilité."] } },
+    demeure: { etats: [["echue", "Échue"], ["tot", "Pas encore échue"]], captures: {
+      echue: ["chantier-mise-en-demeure.jpg", "Aujourd'hui, la lettre, puis « Télécharger la lettre »."],
+      tot: ["chantier-mise-en-demeure.jpg", "Aujourd'hui, la même lettre se télécharge avant l'échéance, et dit « reste impayée »."] } },
+    ts: { etats: [["ts", "Travaux en plus"]], captures: { ts: ["chantier-travaux-supplementaires.jpg", "Aujourd'hui, le gazon à 6,50 € s'affiche « 0,00 € », et un tiret coupe l'adresse."] } }
+  };
+  var pageCourante = "facture";
+  var etatsDuGroupe = document.getElementById("etats-page");
+  var capture = document.getElementById("capture");
+  var captureQuoi = document.getElementById("capture-quoi");
+  var cadreCapture = document.getElementById("cadre-capture");
+
+  function choisirEtat(etat) {
+    var ecran = document.querySelector('[data-page-ecran="' + pageCourante + '"]');
+    Kit.appliquerEtat(ecran, etat);
+    etatsDuGroupe.querySelectorAll("button").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-etat-page") === etat ? "true" : "false"); });
+    var defile = ecran.querySelector(".defile");
+    if (defile) defile.scrollTop = 0;
+    var c = PAGES[pageCourante].captures[etat];
+    if (c) {
+      var src = "aujourdhui/" + c[0];
+      if (capture.getAttribute("src") !== src) { capture.setAttribute("src", src); cadreCapture.scrollTop = 0; }
+      captureQuoi.textContent = c[1];
+    }
+  }
+
+  function choisirPage(page, etat) {
+    pageCourante = page;
+    document.querySelectorAll("[data-page-ecran]").forEach(function (e) { e.hidden = e.getAttribute("data-page-ecran") !== page; });
+    document.querySelectorAll(".rangee-pages button").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-page") === page ? "true" : "false"); });
+    document.querySelectorAll("[data-notes]").forEach(function (n) { var q = n.getAttribute("data-notes"); n.hidden = !(q === "commun" || q === page); });
+    etatsDuGroupe.innerHTML = "";
+    PAGES[page].etats.forEach(function (e) {
+      var b = document.createElement("button");
+      b.type = "button"; b.setAttribute("data-etat-page", e[0]); b.textContent = e[1];
+      b.addEventListener("click", function () { choisirEtat(e[0]); });
+      etatsDuGroupe.appendChild(b);
+    });
+    choisirEtat(etat || PAGES[page].etats[0][0]);
+    try { history.replaceState(null, "", "?ecran=" + page); } catch (e) { /* une adresse figée : la planche marche sans */ }
+  }
+
+  document.querySelectorAll(".rangee-pages button").forEach(function (b) { b.addEventListener("click", function () { choisirPage(b.getAttribute("data-page")); }); });
+
+  document.addEventListener("click", function (e) {
+    var vers = e.target.closest("[data-vers-page]");
+    if (vers) { e.preventDefault(); choisirPage(vers.getAttribute("data-vers-page")); return; }
+    var note = e.target.closest("[data-note]");
+    if (note) { e.preventDefault(); Kit.note(note, note.getAttribute("data-note")); return; }
+    var bascule = e.target.closest(".bascule");
+    if (bascule) { bascule.setAttribute("aria-checked", bascule.getAttribute("aria-checked") === "true" ? "false" : "true"); }
+  });
+
+  /* Le paiement : le moyen se touche, le n° de chèque suit le chèque. */
+  document.getElementById("motif").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-motif]");
+    if (!b) return;
+    this.querySelectorAll("[data-motif]").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+    document.getElementById("motif-case").hidden = b.getAttribute("data-motif") !== "autre";
+  });
+  var RANGS = { virement: 0, cheque: 1, especes: 2, carte: 3 };
+  document.querySelectorAll(".moyens").forEach(function (groupe) {
+    groupe.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-moyen]");
+      if (!b) return;
+      var m = b.getAttribute("data-moyen");
+      document.querySelectorAll("[data-moyen]").forEach(function (x) { x.setAttribute("aria-pressed", x.getAttribute("data-moyen") === m ? "true" : "false"); });
+      document.querySelectorAll(".ruban").forEach(function (r) { r.style.setProperty("--rang", RANGS[m]); });
+      document.getElementById("champ-cheque").hidden = m !== "cheque";
+    });
+  });
+
+  /* L'avoir : « Une ligne » montre les lignes ; le nouveau total suit le montant. */
+  var TTC = 2126.40;
+  var format = new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  function majReste() {
+    var v = Number(String(document.getElementById("avoir-montant").value).replace(/\s/g, "").replace(",", "."));
+    var reste = isFinite(v) && v > 0 ? Math.max(0, TTC - v) : TTC;
+    document.getElementById("avoir-reste").textContent = format.format(reste) + " €";
+  }
+  document.getElementById("avoir-montant").addEventListener("input", majReste);
+  document.getElementById("sur").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-sur]");
+    if (!b) return;
+    this.querySelectorAll("[data-sur]").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+    document.getElementById("lignes-avoir").hidden = b.getAttribute("data-sur") !== "ligne";
+  });
+  document.getElementById("lignes-avoir").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-ligne]");
+    if (!b) return;
+    this.querySelectorAll("[data-ligne]").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+  });
+
+  var demandee = new URLSearchParams(window.location.search).get("ecran");
+  choisirPage(PAGES[demandee] ? demandee : "facture");
+})();
+</script>
+</body>
+</html>
