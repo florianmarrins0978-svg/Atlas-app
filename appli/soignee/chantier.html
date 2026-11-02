@@ -7,40 +7,41 @@
 <link rel="stylesheet" href="kit.css">
 <style>
 /*
-  LE CHANTIER : les écrans qu'il traverse entre la dictée et le devis parti.
-    la note vocale       src/app/chantiers/[id]/note-vocale/NoteVocaleClient.tsx
-    la transcription     src/app/chantiers/[id]/transcription/page.tsx, TexteDicte.tsx
-    les informations     src/app/chantiers/[id]/informations/InformationsClient.tsx, BrouillonSection.tsx
-    le prix              src/app/chantiers/[id]/prix/PrixClient.tsx, PropositionPrixSection.tsx
-    le devis complet     src/app/chantiers/[id]/devis-complet/DevisCompletClient.tsx
-    le devis envoyé      src/app/chantiers/[id]/export/ExportClient.tsx (l'adresse /export)
+  LE CHANTIER : les écrans qu'il traverse, de la dictée au devis parti.
+    la note vocale       la dictée de la fiche client : src/app/chantiers/[id]/AnneauNoteVocale.tsx,
+                         montée par src/app/chantiers/nouveau/FormulaireNouveauChantier.tsx
+    le devis complet     src/app/chantiers/[id]/devis-complet/DevisCompletClient.tsx,
+                         LigneMainDoeuvre.tsx, LigneAcompte.tsx, src/components/atlas/Remise.tsx
 
   Sa demande du 31 octobre 2026, sur la liste des écrans du chantier pas
   encore refaits : « fais moi une planche pour les 8 premiers, l'idée c'est de
   les améliorer et de les rendre plus jolis ».
 
-  DEUX DES HUIT N'ONT PAS D'ÉCRAN À DESSINER, et la planche le dit :
-    la fiche du chantier n'existe plus depuis le 4 septembre 2026 (sa décision,
-      src/app/chantiers/[id]/page.tsx) : l'adresse renvoie là où le travail
-      s'est arrêté ;
-    les coordonnées sont l'écran de création rouvert, le même
-      FormulaireNouveauChantier : il a sa planche, creer-un-devis.html.
+  CE QUE SES RÉPONSES DU 1er NOVEMBRE ONT CORRIGÉ, noir sur blanc :
+    « la note vocale dans l'appli n'est pas du tout celle que tu me montres ! »
+      La première version dessinait l'écran /note-vocale, choisi sur le nom
+      de son adresse. Sa note vocale est l'anneau de la fiche client. Refaite
+      sur lui, photographiée avec un faux micro (aujourdhui/chantier-dictee-*).
+    « le devis je veux conserver celui de l'appli, mais tu peux me proposer
+      une version améliorée pour tout ce qu'on peut ajouter, la TVA, la main
+      d'œuvre par exemple » : la page du devis est recopiée de l'appli, seuls
+      les cinq ajouts changent (aujourdhui/chantier-devis-*).
+    « Transcription c'est pareil, je ne le vois pas dans l'appli » : vérifié
+      dans le code. Depuis le 21 août, une dictée mène au devis d'un seul
+      tenant (src/lib/chantier-etat.ts). Transcription, Informations et Prix
+      ne s'atteignent plus que par des portes de secours : une préparation du
+      devis qui échoue (« Compléter la durée et l'équipe »), un devis vide au
+      moment de choisir la date (« Poser mes prix »). Retirés de la planche.
 
-  À CÔTÉ, LES VRAIS ÉCRANS : ouverts le 31 octobre sur le poste, jeu de
-  démonstration, à 390 × 664 (aujourdhui/chantier-*.jpg). Le devis de Reprise
-  de toiture y a reçu ses prix unitaires : le jeu de démo ne pose que le
-  montant, et l'écran affichait 0,00 € partout (TODO.md).
+    « ça va remplacer quoi ça ? va vraiment regarder dans l'appli » (le devis
+      envoyé) : regardé dans l'appli, par son chemin. Une correction se lit
+      sur la carte de l'accueil, et « Corriger le devis » ouvre le devis ; le
+      chantier, touché dans la liste, mène au Planning. L'écran /export ne
+      s'atteint que par une notification sur un devis sans réponse ou par
+      « Le corriger et le renvoyer » en haut d'un devis figé. Retiré.
 
-  CE QUE LA CAPTURE A MONTRÉ, et qu'aucune lecture du code ne disait :
-    sur Prix, le montant de chaque ligne du détail passe SOUS son libellé et
-      se fait couper à mi-hauteur. La rangée « flex » est posée sur
-      l'enveloppe de LigneRetirable, pas autour des deux cases ; la hauteur
-      bornée à 70 px coupe la seconde. Non corrigé ici (TODO.md).
-
-  CE QUE LA PROPOSITION GARDE : les mêmes gestes, aux mêmes noms ; un seul
-  bouton plein, en bas ; le geste Retirer et son tiroir ; la feuille du devis
-  comme une page ; la barre du bas cachée sur le devis complet ; les huit
-  chartes (essayez Nuit). Les fondations soignées (fondations.html) partout.
+  Ni la fiche du chantier (supprimée le 4 septembre 2026) ni les coordonnées
+  (sa planche creer-un-devis.html) n'avaient rien à dessiner.
 
   Aucune donnée réelle : noms, lignes et montants du jeu de démonstration.
 */
@@ -51,11 +52,11 @@
 .etats-page button[aria-pressed="true"] { background: #4a4a44; }
 .capture-quoi { margin: 0 auto 6px; max-width: 390px; text-align: center; font-size: 13.5px; color: #4a4a44; }
 .page-notes[hidden] { display: none; }
-.deux-absents { max-width: 1080px; margin: 0 auto; padding: 4px var(--gouttiere) 0; }
-.deux-absents p { margin: 0; padding: 12px 16px; border-radius: 12px; background: #faf9f5; font-size: 15px; line-height: 1.5;
+.hors-planche { max-width: 1080px; margin: 0 auto; padding: 4px var(--gouttiere) 0; }
+.hors-planche p { margin: 0; padding: 12px 16px; border-radius: 12px; background: #faf9f5; font-size: 15px; line-height: 1.5;
                   color: #4a4a44; box-shadow: inset 0 0 0 1px rgba(28,28,26,0.08); }
-.deux-absents b { color: #1c1c1a; font-weight: 600; }
-.deux-absents a { color: #2f3b2f; font-weight: 600; text-underline-offset: 3px; }
+.hors-planche b { color: #1c1c1a; font-weight: 600; }
+.hors-planche a { color: #2f3b2f; font-weight: 600; text-underline-offset: 3px; }
 @media (max-width: 480px) {
   .rangee-pages, .etats-page { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; scrollbar-width: none;
                                padding: 10px var(--gouttiere) 2px; margin: 0 0 4px; }
@@ -64,264 +65,329 @@
   .capture-quoi { padding: 0 var(--gouttiere); }
 }
 
-/* ═══ CE QUE LES SIX ÉCRANS PARTAGENT ═════════════════════════════════════ */
+/* ═══ CE QUE LES ÉCRANS PARTAGENT ═════════════════════════════════════════ */
 .ecran[hidden] { display: none; }
 .ecran .tete-titre { margin-top: 2px; }
 /* Le chantier et son client sous le titre, en encre douce : aujourd'hui des
    capitales dorées de 11 px, espacées, qui se lisent à 2,8 de contraste. */
 .ecran .tete-situation { margin: 6px 0 22px; font-size: 15px; }
 .ecran .tete-situation b { font-weight: 600; color: var(--atlas-ink); }
-
-/* Le geste du bas : le plein, puis au plus une phrase et une sortie écrite. */
-.action-bas .sous-plein { margin: 8px 0 0; text-align: center; font-size: 14px; color: var(--atlas-inkSoft); }
 .action-bas .bouton-texte { display: flex; width: 100%; justify-content: center; min-height: 44px; margin-top: 2px; }
-.action-bas .bouton-texte.or { color: var(--atlas-or); }
-.ecran.bas-haut .defile { padding-bottom: 236px; }
-.plein-long { padding: 0 14px; white-space: nowrap; letter-spacing: 0; }
 .ecran.bas-moyen .defile { padding-bottom: 200px; }
 
-/* Une liste qu'on écrit soi-même, dans une seule plage : un filet entre deux
-   lignes, plutôt qu'une plage par ligne (aujourd'hui, six cartes qui flottent). */
-.liste-champs { padding: 0 0 0 16px; overflow: hidden; }
-.champ-ligne { position: relative; }
-.champ-ligne + .champ-ligne::before, .champ-ligne + .ajout-ligne::before, .ligne-prix + .ligne-prix::before, .ligne-prix + .ajout-ligne::before {
-  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); z-index: 1; }
-.ligne-glisse { background: var(--atlas-card); transition: transform 260ms var(--courbe); }
-.champ-ligne-saisie { display: block; width: 100%; min-height: 58px; padding: 16px 16px 16px 0; border: 0; outline: none; background: transparent;
-                      font: 400 17.5px/1.3 var(--serif); color: var(--atlas-ink); }
-.champ-ligne-saisie:focus { box-shadow: inset 0 -2px 0 var(--atlas-rust); }
-.ajout-ligne { position: relative; display: flex; align-items: center; gap: 10px; width: 100%; min-height: 56px; padding-right: 16px;
-               font-size: 16px; font-weight: 600; color: var(--atlas-or); text-align: left; }
-.ajout-ligne .ico { width: 22px; height: 22px; color: var(--atlas-or); }
-.vide-liste { margin: 0; padding: 16px 16px 14px 0; font-size: 15px; color: var(--atlas-inkSoft); }
+/* ═══ LA NOTE VOCALE : la dictée de la fiche client ═══════════════════════
+   La note vocale qu'il emploie vit dans la fiche client que « Créer un
+   devis » fait monter (FormulaireNouveauChantier.tsx, AnneauNoteVocale.tsx).
+   La fiche reste celle d'aujourd'hui, sa réponse du 28 octobre devant
+   creer-un-devis.html : elle est recopiée de la capture, et seule la dictée
+   change. */
+.fc .derriere { position: absolute; inset: 0; padding: 14px var(--gouttiere); background: var(--atlas-cream); }
+.fc .derriere h2 { margin: 0; font: 400 34px/1.05 var(--serif); letter-spacing: -0.012em; }
+.fc .derriere-voile { position: absolute; inset: 0; background: color-mix(in srgb, #0d0e0c 30%, transparent); }
+.fc-feuille { position: absolute; left: 0; right: 0; top: 30px; bottom: 0; display: flex; flex-direction: column;
+              border-radius: var(--r-feuille) var(--r-feuille) 0 0; background: var(--atlas-cream); overflow: hidden; }
+.fc-feuille .defile { padding: 6px 12px 28px; }
+.fc-tete { display: grid; grid-template-columns: 40px 1fr 44px; align-items: center; min-height: 52px; margin-bottom: 6px; }
+.fc-tete h2 { margin: 0; text-align: center; font: 400 26px/1.1 var(--serif); }
+.fc-tete .retour-nu { width: 40px; height: 44px; display: grid; place-items: center; color: var(--atlas-ink); }
+.fc-tete .retour-nu .ico { width: 20px; height: 20px; }
+.fc-tete .rond-creux { width: 44px; height: 44px; }
+.fc-tete .rond-creux .ico { width: 20px; height: 20px; }
+.fc-pastilles { display: flex; gap: 6px; }
+.fc-pastilles span { flex: 1 1 auto; display: grid; place-items: center; height: 38px; padding: 0 10px; border-radius: 19px; font-size: 15.5px;
+                     box-shadow: inset 0 0 0 1px var(--atlas-line); }
+/* Les libellés d'aujourd'hui, gardés : capitales de 11 px, espacées. */
+.fc-lib { display: flex; justify-content: space-between; margin: 8px 0 3px; font-size: 11px; font-weight: 500; letter-spacing: .2em;
+          text-transform: uppercase; color: var(--atlas-inkSoft); }
+.fc-lib b { font-weight: 600; color: var(--atlas-ink); letter-spacing: .14em; }
+.fc-case { display: flex; align-items: center; height: 44px; padding: 0 14px; border-radius: 8px; background: var(--atlas-rustTint);
+           font-size: 16px; color: var(--atlas-muted); }
+.fc-deux { display: grid; grid-template-columns: 1.2fr 1fr; gap: 8px; }
+.fc-deux > div:last-child .fc-case { justify-content: flex-end; }
+.fc-filet { height: 1px; margin: 12px 0 6px; background: var(--atlas-line); }
+.fc-envoi { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+.fc-envoi span:last-child { display: flex; gap: 22px; font-size: 14px; color: var(--atlas-muted); letter-spacing: 0; text-transform: none; }
+.fc-photo { width: 56px; height: 56px; display: grid; place-items: center; border-radius: 6px; color: var(--atlas-or);
+            border: 1.5px dashed color-mix(in srgb, var(--atlas-or) 70%, transparent); }
+.fc-photo .ico { width: 18px; height: 18px; }
+.fc-voix-lib { margin: 14px 0 0; text-align: center; font-size: 11px; font-weight: 500; letter-spacing: .2em; text-transform: uppercase;
+               color: var(--atlas-inkSoft); }
 
-/* ═══ LA NOTE VOCALE ══════════════════════════════════════════════════════ */
-.voix-centre { display: flex; flex-direction: column; align-items: center; text-align: center; padding-top: 34px; }
-/* Le micro : le même rond plein que la fiche client, en plus grand, et un
-   anneau d'or autour (planche validée note-vocale-cercle-dore.html). */
-.micro-grand { position: relative; width: 132px; height: 132px; display: grid; place-items: center; border-radius: 50%;
-               background: var(--atlas-plein); color: var(--sur-plein); transition: transform 160ms var(--courbe); }
-.micro-grand::before { content: ""; position: absolute; inset: -11px; border-radius: 50%;
-                       border: 2px solid color-mix(in srgb, var(--atlas-or) 75%, transparent); }
-.micro-grand:active { transform: scale(0.97); }
-.micro-grand .ico { width: 44px; height: 44px; stroke-width: 1.6; }
-.micro-grand .carre-stop { width: 34px; height: 34px; border-radius: 7px; background: currentColor; }
-.ecran[data-etat="enregistrement"] .micro-grand::before { animation: souffle 1.6s var(--courbe) infinite; }
-@keyframes souffle { 0% { transform: scale(1); opacity: 1; } 70% { transform: scale(1.16); opacity: 0; } 100% { transform: scale(1.16); opacity: 0; } }
-.voix-titre { margin: 32px 0 0; font: 400 24px/1.2 var(--serif); }
-.voix-sous { max-width: 19em; margin: 8px 0 0; font-size: 15.5px; line-height: 1.45; color: var(--atlas-inkSoft); }
-.voix-temps { margin: 30px 0 0; font: 400 46px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; letter-spacing: -0.01em; }
-.voix-centre .etat { margin-top: 12px; }
-.fichier-audio { margin-top: 26px; }
+/* La dictée, soignée : le même objet, à la même place, dans ses quatre états.
+   Une hauteur fixe pour la zone : passer d'un état à l'autre ne fait rien
+   sauter, ni la fiche au-dessus, ni « Je rédige à la main » en dessous. */
+.dictee-zone { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+               min-height: 132px; margin-top: 6px; }
+/* Au repos : son micro (80 px, l'or clair en anneau), et l'invite qui se lit. */
+.fc-micro { width: 84px; height: 84px; display: grid; place-items: center; border-radius: 50%; background: var(--atlas-plein); color: var(--sur-plein);
+            box-shadow: inset 0 0 0 2px var(--atlas-orClair); transition: transform 160ms var(--courbe); }
+.fc-micro:active { transform: scale(0.97); }
+.fc-micro .ico { width: 32px; height: 32px; stroke-width: 1.7; }
+.fc-invite { margin: 10px 0 0; font-size: 15px; color: var(--atlas-inkSoft); }
+/* Pendant la dictée : tout sur une ligne (sa planche du 31 août), mais des
+   cibles pour le pouce et un mot sous chacune des deux. */
+.ligne-dictee { display: flex; align-items: flex-start; gap: 10px; width: 100%; padding: 0 2px; }
+.geste-dictee { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: none; font-size: 13px; font-weight: 600;
+                color: var(--atlas-inkSoft); }
+.geste-dictee .rond-creux { width: 52px; height: 52px; margin: 3px 0; color: var(--atlas-inkSoft); }
+.geste-dictee .rond-creux .ico { width: 22px; height: 22px; }
+.geste-dictee .envoyer { width: 58px; height: 58px; display: grid; place-items: center; border-radius: 50%; background: var(--atlas-plein);
+                         color: var(--sur-plein); box-shadow: inset 0 0 0 1.5px var(--atlas-orClair); }
+.geste-dictee .envoyer .ico { width: 24px; height: 24px; }
+.geste-dictee.envoi { color: var(--atlas-ink); }
+.dictee-milieu { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; height: 58px; }
+.dictee-temps { display: inline-flex; align-items: center; gap: 7px; flex: none; font: 600 18px/1 var(--sans); font-variant-numeric: tabular-nums;
+                color: var(--atlas-ink); }
+.dictee-temps::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--atlas-alerte); animation: battre 1.3s ease-in-out infinite; }
+@keyframes battre { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
+/* Le trait d'or qui suit la voix (sa planche note-vocale-tasse-et-envoi) :
+   ici un relevé fixe, dans l'appli le volume réellement capté. */
+.dictee-trait { flex: 1; min-width: 0; height: 30px;
+                -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+                mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
+.dictee-trait svg { display: block; width: 100%; height: 100%; }
+/* Envoyée : ce qui se passe, en mots qui se lisent, et l'or qui souffle. */
+.dictee-suite { display: flex; align-items: center; gap: 10px; font-size: 16px; color: var(--atlas-ink); }
+.dictee-suite .points { margin: 0; gap: 6px; }
+.dictee-suite .points span { width: 8px; height: 8px; }
+.dictee-sous { margin: 6px 0 0; font-size: 14px; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
+.fc-a-la-main { width: auto; min-width: 220px; margin: 8px auto 0; }
+.ecran[data-etat^="dictee"] .fc-a-la-main, .ecran[data-etat="transcription"] .fc-a-la-main, .ecran[data-etat="preparation"] .fc-a-la-main { visibility: hidden; }
 
-.lecteur { display: flex; align-items: center; gap: 16px; padding: 18px; }
-.lecteur .rond { width: 60px; height: 60px; }
-.lecteur .rond .ico { width: 26px; height: 26px; fill: currentColor; stroke: none; margin-left: 3px; }
-.lecteur-corps { flex: 1; min-width: 0; }
-.lecteur-nom { display: block; font: 400 20px/1.2 var(--serif); }
-.lecteur-rang { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
-.lecteur-piste { flex: 1; height: 4px; border-radius: 2px; background: var(--atlas-line); overflow: hidden; }
-.lecteur-piste span { display: block; width: 34%; height: 100%; background: var(--atlas-or); }
-.lecteur-duree { font-size: 14px; font-weight: 600; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
+/* ═══ PENDANT LA DICTÉE : trois façons, à choisir (sa demande du 1er novembre :
+   « une fois qu'on appuie dessus, fais moi quelque chose de mieux, plus joli »).
+   Ses règles du 31 août tiennent dans les trois : pas de pause, pas de second
+   disque vert, le dessin suit la vraie voix (magnetophone.niveau). */
 
-/* ═══ LA TRANSCRIPTION ════════════════════════════════════════════════════ */
-/* Ses mots en serif, à la taille d'une lettre : c'est un texte qu'on relit. */
-.dictee { padding: 20px 20px 10px; }
-.dictee-texte { margin: 0; font: 400 18.5px/1.6 var(--serif); color: var(--atlas-ink); overflow-wrap: anywhere; }
-.dictee-pied { display: flex; justify-content: flex-end; margin-top: 6px; }
+/* B, l'anneau qui écoute : le même disque que le micro, à la même place.
+   L'avion y remplace le micro (même objet, deux états : sa règle du 11 août),
+   et des cercles d'or s'ouvrent autour, à la mesure de la voix. */
+.dictee-b { display: grid; grid-template-columns: 1fr auto 1fr; align-items: start; width: 100%; margin-top: 22px; }
+.dictee-b .geste-dictee, .dictee-b .temps-b { margin-top: 13px; }
+.dictee-b .geste-dictee { justify-self: center; }
+.anneau-ecoute { position: relative; display: flex; flex-direction: column; align-items: center; gap: 26px; font-size: 13px; font-weight: 600; color: var(--atlas-ink); }
+.anneau-ecoute .ondes { position: absolute; left: 50%; top: 42px; width: 168px; height: 168px; transform: translate(-50%, -50%); pointer-events: none; overflow: visible; }
+.anneau-ecoute .ondes circle { fill: none; stroke: var(--atlas-or); stroke-width: 1.6; transition: r 120ms linear, opacity 120ms linear; }
+.anneau-ecoute .disque { position: relative; width: 84px; height: 84px; display: grid; place-items: center; border-radius: 50%; background: var(--atlas-plein);
+                         color: var(--sur-plein); box-shadow: inset 0 0 0 2px var(--atlas-orClair); transition: transform 160ms var(--courbe); }
+.anneau-ecoute:active .disque { transform: scale(0.97); }
+.anneau-ecoute .disque .ico { width: 30px; height: 30px; }
+.temps-b { justify-self: center; display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 14px; }
+.temps-b .dictee-temps { font: 400 26px/1 var(--serif); }
+
+/* C, la plage d'écoute : le temps et la voix dans une plage, et deux vrais
+   boutons écrits dessous. Le plus clair pour qui ne connaît pas les dessins. */
+.plage-ecoute { width: 100%; padding: 12px 14px 14px; border-radius: 18px; background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-lineSoft); }
+.ecoute-rang { display: flex; align-items: center; gap: 12px; height: 46px; }
+.ecoute-rang .dictee-temps { font: 400 24px/1 var(--serif); }
+.barres { flex: 1; min-width: 0; height: 40px; }
+.barres rect { fill: var(--atlas-or); }
+.plage-ecoute .rang-boutons { margin-top: 10px; }
+.plage-ecoute .bouton { min-height: 50px; font-size: 16px; }
+.plage-ecoute .bouton .ico { width: 20px; height: 20px; }
+
+/* Les trois points qui soufflent, ceux de PointsQuiSoufflent.tsx. */
 .points { display: inline-flex; gap: 8px; margin-top: 18px; }
 .points span { width: 10px; height: 10px; border-radius: 50%; background: var(--atlas-or); animation: point 1.2s var(--courbe) infinite; }
 .points span:nth-child(2) { animation-delay: .18s; } .points span:nth-child(3) { animation-delay: .36s; }
 @keyframes point { 0%, 100% { opacity: .25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-4px); } }
-.attente { padding: 52px 8px 0; text-align: center; }
-.attente-titre { margin: 0; font: 400 24px/1.2 var(--serif); }
-.attente .second { margin: 8px 0 0; }
 
-/* ═══ LES INFORMATIONS ════════════════════════════════════════════════════ */
-.dictee-source { padding: 16px; }
-.dictee-source p { margin: 0; }
-.dictee-source .bouton-petit { width: 100%; margin: 14px 0 4px; }
-.dictee-source .bouton-texte { display: flex; min-height: 44px; }
-.dictee-source .bouton-texte.or { color: var(--atlas-or); }
-.dictee-source .bouton-texte:not(.or) { color: var(--atlas-inkSoft); }
-/* La durée se compte au doigt : la même liste que la case d'aujourd'hui
-   (½ journée, 1 journée, 2 jours…), un cran à la fois. */
-.petit-compteur { display: flex; align-items: center; gap: 8px; flex: none; }
-.petit-compteur button { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; color: var(--atlas-ink);
-                         box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
-.petit-compteur button[disabled] { color: var(--atlas-chevron); cursor: default; }
-.reglage-valeur.vide-valeur { color: var(--atlas-carteAmbreTexte); }
-.reglage.manque .reglage-valeur::placeholder { color: var(--atlas-carteAmbreTexte); opacity: 1; }
+/* ═══ LE DEVIS COMPLET : celui de l'appli, et ce qu'on y ajoute ═══════════
+   Sa consigne du 1er novembre : « le devis je veux conserver celui de
+   l'appli, mais tu peux me proposer une version améliorée pour tout ce qu'on
+   peut ajouter, la TVA, la main d'œuvre par exemple ». La page du devis est
+   donc recopiée de la capture (DevisCompletClient.tsx) : ses lignes en quatre
+   cases, ses totaux, leur ordre. Seuls changent les cinq ajouts. */
+.dc .defile { padding: 8px 14px 150px; }
+.dc-tete { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; }
+.dc-tete .espace { flex: 1; }
+.dc-tete .retour-nu { width: 40px; height: 44px; display: grid; place-items: center; color: var(--atlas-ink); }
+.dc-tete .retour-nu .ico { width: 22px; height: 22px; }
+.dc-feuille { padding: 22px 18px 20px; border-radius: 14px; background: var(--atlas-card); }
+.dc-emetteur { margin: 0; font: 400 20px/1.25 var(--serif); }
+.dc-coord { margin: 6px 0 0; font-size: 15px; line-height: 1.6; }
+.dc-meta { margin: 14px 0 0; }
+.dc-meta div { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; box-shadow: inset 0 -1px 0 var(--atlas-line); font-size: 15px; }
+.dc-cap { font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--atlas-inkSoft); }
+.dc-regle { height: 2px; margin: 20px 0 0; background: var(--atlas-ink); }
+.dc-mot { margin: 22px 0 0; text-align: center; font: 400 26px/1.1 var(--serif); }
+.dc-titre { margin: 8px 0 0; text-align: center; font: italic 400 17px/1.3 var(--serif); color: var(--atlas-inkSoft); opacity: .75; }
+.dc-client { margin-top: 22px; }
+.dc-client p { margin: 4px 0 0; font-size: 16px; line-height: 1.4; }
+.dc-client .vide-gris { color: var(--atlas-muted); }
+/* La bande d'une TVA, comme aujourd'hui ; la croix remplace le « − » doré. */
+.dc-bande { display: flex; align-items: center; gap: 10px; margin: 20px 0 4px; padding: 8px 8px 8px 12px; border-radius: 8px; background: var(--atlas-rustTint); }
+.dc-bande b { font: 600 17px/1 var(--sans); }
+.dc-bande .espace { flex: 1; }
+.dc-bande .croix-ronde { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-inkSoft); }
+.dc-bande .croix-ronde .ico { width: 18px; height: 18px; }
+.dc-ligne { padding: 12px 0 4px; box-shadow: inset 0 -1px 0 var(--atlas-line); }
+.dc-ligne-haut { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; font-size: 16px; line-height: 1.35; }
+.dc-ligne-haut .ico { width: 16px; height: 16px; margin-top: 3px; color: var(--atlas-inkSoft); flex: none; }
+.dc-ligne-haut .exemple { color: var(--atlas-muted); }
+.dc-rang { display: flex; justify-content: space-between; align-items: center; min-height: 40px; font-size: 16px; font-variant-numeric: tabular-nums; }
+.dc-rang .gris { color: var(--atlas-muted); }
+.dc-rang .attend { color: var(--atlas-or); }
+.dc-sous-total { display: flex; justify-content: flex-end; gap: 14px; margin-top: 8px; font-size: 13.5px; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
+.dc-sous-total b { font-weight: 400; color: var(--atlas-ink); }
 
-/* ═══ LE PRIX ═════════════════════════════════════════════════════════════ */
-.total-prix { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 22px; }
-.total-prix .rubrique { margin: 0 0 6px; }
-.proposition { padding: 16px 18px 10px; }
-.prop-tete { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.prop-titre { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; color: var(--atlas-or); }
-.prop-titre .ico { width: 20px; height: 20px; color: var(--atlas-or); }
-.prop-montant { margin: 10px 0 2px; }
-.prop-montant small { margin-left: 4px; font: 600 13px/1 var(--sans); letter-spacing: .06em; color: var(--atlas-inkSoft); }
-.prop-lignes { margin: 10px 0 0; padding: 0; list-style: none; }
-.prop-lignes li { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 8px 0; font-size: 15.5px; line-height: 1.35; }
-.prop-lignes li + li { box-shadow: inset 0 1px 0 var(--atlas-lineSoft); }
-.prop-lignes .chiffre { white-space: nowrap; }
-.a-chiffrer { white-space: nowrap; font-size: 14px; font-weight: 600; color: var(--atlas-carteAmbreTexte); }
-.proposition .second { margin: 10px 0 0; }
-.proposition .bouton { margin-top: 14px; }
-.prop-gestes { display: flex; justify-content: space-between; gap: 8px; margin-top: 2px; }
-.prop-gestes .bouton-texte { font-size: 15px; color: var(--atlas-inkSoft); }
-.prop-repliee { padding: 4px 16px; margin-bottom: 4px; }
-.prop-repliee .ligne { min-height: 60px; }
-
-.ligne-prix { position: relative; }
-.ligne-prix .ligne-glisse { display: flex; align-items: center; gap: 10px; padding-right: 10px; }
-.ligne-prix-libelle { flex: 1; min-width: 0; min-height: 60px; padding: 18px 0; border: 0; outline: none; background: transparent; resize: none;
-                      font: 400 17px/1.3 var(--serif); color: var(--atlas-ink); field-sizing: content; }
-/* Le montant TIENT sur la ligne de son libellé : aujourd'hui il passe dessous
-   et la hauteur de la ligne le coupe en deux. */
-.ligne-prix-montant { width: 104px; flex: none; min-height: 44px; padding: 0 12px; border: 0; border-radius: 8px; outline: none; text-align: right;
-                      background: var(--atlas-cream); color: var(--atlas-ink); font: 600 16px/1 var(--sans); font-variant-numeric: tabular-nums; }
-.ligne-prix-montant:focus { box-shadow: inset 0 0 0 2px var(--atlas-rust); }
-.ligne-prix-montant.attend { background: var(--atlas-carteAmbreFond); }
-.ligne-prix-montant.attend::placeholder { color: var(--atlas-carteAmbreTexte); font-weight: 600; }
-.raison { margin-bottom: 10px; }
-.raison p { margin: 0; }
-.raison .bouton-texte { min-height: 40px; margin-top: 2px; color: var(--atlas-carteAmbreTexte); }
-
-/* ═══ LE DEVIS COMPLET ════════════════════════════════════════════════════ */
-.tete-devis { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; }
-.tete-devis .espace { flex: 1; }
-/* La page du devis : sa plage, ses filets, sa serif. On la lit comme le PDF. */
-.feuille-devis { padding: 20px 16px 18px; border-radius: 10px; }
-.emetteur-nom { margin: 0; font: 400 21px/1.2 var(--serif); }
-.emetteur-coord { margin: 4px 0 0; font-size: 14px; line-height: 1.5; color: var(--atlas-inkSoft); }
-.meta-devis { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; margin: 16px 0 0; border-radius: 8px; overflow: hidden;
-              background: var(--atlas-line); }
-.meta-devis div { padding: 9px 11px; background: var(--atlas-card); }
-.meta-devis dt { font-size: 12.5px; font-weight: 600; letter-spacing: .04em; color: var(--atlas-inkSoft); }
-.meta-devis dd { margin: 2px 0 0; font-size: 15px; line-height: 1.3; font-variant-numeric: tabular-nums; }
-.devis-mot { margin: 22px 0 0; text-align: center; font: 400 28px/1.1 var(--serif); letter-spacing: .02em; }
-.devis-titre { display: block; width: 100%; margin-top: 4px; border: 0; outline: none; background: transparent; text-align: center;
-               font: italic 400 17px/1.3 var(--serif); color: var(--atlas-ink); }
-.devis-titre::placeholder { color: var(--atlas-inkSoft); opacity: .75; }
-.mini-libelle { display: block; margin: 20px 0 4px; font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
-                color: var(--atlas-inkSoft); }
-.destinataire-nom { margin: 0; font: 400 19px/1.25 var(--serif); }
-.destinataire p { margin: 0; }
-.destinataire .champ-doux { display: block; width: 100%; min-height: 36px; padding: 6px 0; border: 0; outline: none; background: transparent;
-                            font: 400 16px/1.35 var(--sans); color: var(--atlas-ink); }
-/* Une coordonnée qui manque se lit en ambre, comme dans les réglages : un
-   mot gris en place de l'adresse ressemble à une adresse. */
-.destinataire .champ-doux.manque { box-shadow: inset 0 -1.5px 0 color-mix(in srgb, var(--atlas-carteAmbreTexte) 55%, transparent); }
-.destinataire .champ-doux.manque::placeholder { color: var(--atlas-carteAmbreTexte); font-weight: 600; }
-
-.entete-lignes { display: flex; justify-content: space-between; margin: 22px 0 0; padding-bottom: 6px; font-size: 12.5px; font-weight: 600;
-                 letter-spacing: .04em; color: var(--atlas-inkSoft); box-shadow: inset 0 -1.5px 0 var(--atlas-ink); }
-.lignes-devis { margin: 0; padding: 0; list-style: none; }
-.ligne-devis { padding: 12px 0 10px; }
-.ligne-devis + .ligne-devis { box-shadow: inset 0 1px 0 var(--atlas-line); }
-.ld-haut { display: flex; align-items: flex-start; gap: 6px; }
-.ld-libelle { flex: 1; min-width: 0; padding: 0; border: 0; outline: none; background: transparent; resize: none; field-sizing: content;
-              font: 400 17px/1.3 var(--serif); color: var(--atlas-ink); }
-.ld-retirer { width: 36px; height: 36px; margin: -8px -8px 0 0; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-inkSoft); }
-.ld-retirer .ico { width: 18px; height: 18px; }
-/* Une ligne se lit comme sur un devis : « 12 m² × 18,00 € », et son montant à
-   droite. Aujourd'hui, quatre rangées étiquetées par ligne (170 points). */
-.ld-bas { display: flex; align-items: center; gap: 4px; margin-top: 6px; }
-.ld-case { min-width: 0; height: 36px; padding: 0 6px; border: 0; border-radius: 6px; outline: none; text-align: center;
-           background: var(--atlas-cream); color: var(--atlas-ink); font: 400 16px/1 var(--sans); font-variant-numeric: tabular-nums; }
-.ld-case:focus { box-shadow: inset 0 0 0 2px var(--atlas-rust); }
-.ld-qte { width: 44px; } .ld-unite { width: 58px; } .ld-pu { width: 70px; text-align: right; }
-.ld-pu.attend { background: var(--atlas-carteAmbreFond); }
-.ld-pu.attend::placeholder { color: var(--atlas-carteAmbreTexte); }
-.ld-fois { padding: 0 1px; font-size: 15px; color: var(--atlas-inkSoft); }
-.ld-montant { margin-left: auto; font-weight: 600; font-size: 16px; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.ld-montant.attend { font-size: 14px; color: var(--atlas-carteAmbreTexte); }
-
-.ajouts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-.puce-ajout { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px 0 10px; border-radius: 20px;
-              font-size: 15px; font-weight: 600; color: var(--atlas-ink); box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
+/* Les ajouts : de vraies pastilles, aux places d'aujourd'hui. */
+.ajouts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.puce-ajout { display: inline-flex; align-items: center; gap: 5px; min-height: 44px; padding: 0 13px 0 9px; border-radius: 22px;
+              font-size: 14.5px; font-weight: 600; color: var(--atlas-ink); box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
 .puce-ajout .ico { width: 18px; height: 18px; }
 .puce-ajout.or { color: var(--atlas-or); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 60%, transparent); }
 .puce-ajout.or .ico { color: var(--atlas-or); }
 
-.totaux { margin-top: 18px; padding-top: 4px; box-shadow: inset 0 1px 0 var(--atlas-line); }
-.tot { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 36px; font-size: 16px;
-       font-variant-numeric: tabular-nums; }
-.tot-taux { display: inline-flex; align-items: center; gap: 4px; }
-.tot-taux input { width: 44px; height: 32px; border: 0; border-radius: 6px; outline: none; text-align: center; background: var(--atlas-cream);
-                  color: var(--atlas-ink); font: 400 16px/1 var(--sans); }
-/* Le total que le client lira en premier, sur une bande dorée (Ma TVA). */
-.tot.ttc { margin: 6px -16px 0; padding: 12px 16px; min-height: 0;
-           background: color-mix(in srgb, var(--atlas-or) 14%, transparent); }
-.tot.ttc span:first-child { font-weight: 700; }
-.tot.ttc span:last-child { font: 400 26px/1 var(--serif); letter-spacing: -0.01em; }
-.zone-notes { display: block; width: 100%; min-height: 60px; padding: 0; border: 0; outline: none; background: transparent; resize: none;
-              field-sizing: content; font: 400 16px/1.45 var(--sans); color: var(--atlas-ink); }
-.paiement p { margin: 0; font-size: 16px; line-height: 1.45; }
-.paiement .iban { font-size: 15px; letter-spacing: 0; word-spacing: .05em; }
-.mentions { margin: 18px 0 0; font-size: 13px; line-height: 1.45; color: var(--atlas-inkSoft); }
-.signature { display: flex; align-items: flex-end; justify-content: center; height: 84px; margin-top: 12px; padding-bottom: 8px; border-radius: 8px;
-             font-size: 13px; color: var(--atlas-inkSoft); box-shadow: inset 0 0 0 1px var(--atlas-line); }
-.apercu { margin-top: 14px; }
-.parti-bandeau { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px; }
-.parti-bandeau .ico { flex: none; margin-top: 1px; }
-.parti-bandeau p { margin: 0; }
-.parti-bandeau .bouton-texte { min-height: 40px; margin-top: 2px; color: var(--atlas-carteBleuTexte); }
-.action-bas .raison { margin: 0 0 10px; }
-.action-bas .raison .bouton-petit { margin-top: 10px; width: 100%; color: var(--atlas-carteAmbreTexte);
-                                    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-carteAmbreTexte) 50%, transparent); }
-/* Parti chez le client : la page se lit, elle ne s'écrit plus. */
-.ecran[data-etat="parti"] .modifiable { display: none !important; }
-.ecran[data-etat="parti"] .ld-case, .ecran[data-etat="parti"] .tot-taux input { background: transparent; pointer-events: none; padding: 0 2px; }
-.ecran[data-etat="parti"] .ld-qte, .ecran[data-etat="parti"] .ld-unite { width: auto; field-sizing: content; }
-.ecran[data-etat="parti"] :is(.ld-libelle, .devis-titre, .champ-doux, .zone-notes) { pointer-events: none; }
-.ecran[data-etat="parti"] .champ-doux.manque { display: none; }
+.dc-totaux { margin-top: 26px; }
+.dc-tot { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 36px; font-size: 15.5px; font-variant-numeric: tabular-nums; }
+.dc-tot.doux { color: var(--atlas-inkSoft); }
+.dc-tot.remise { color: var(--atlas-or); }
+.dc-tot .avec-croix { display: inline-flex; align-items: center; gap: 6px; }
+.dc-tot .croix-ronde { width: 32px; height: 32px; margin-left: -6px; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-inkSoft); }
+.dc-tot .croix-ronde .ico { width: 16px; height: 16px; }
+.dc-tot.ttc { margin-top: 6px; padding-top: 10px; box-shadow: inset 0 2px 0 var(--atlas-ink); font-weight: 700; font-size: 17px; }
+.dc-tot.ttc span:last-child { font: 700 19px/1 var(--serif); }
+.dc-tot.acompte { color: var(--atlas-ink); }
+.dc-tot.acompte small { display: block; font-size: 13.5px; color: var(--atlas-inkSoft); font-weight: 400; }
+.dc-tot.reste { font-weight: 600; }
+.dc-notes { margin-top: 24px; }
+.dc-notes p { margin: 6px 0 0; font-size: 16px; line-height: 1.45; }
+.dc-mentions { margin: 22px 0 0; font-size: 13px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.dc-signature { display: flex; align-items: flex-end; justify-content: center; height: 80px; margin-top: 12px; padding-bottom: 8px; border-radius: 8px;
+                font-size: 13px; color: var(--atlas-inkSoft); border: 1px dashed var(--atlas-line); }
+.dc-apercu { display: block; width: 100%; margin-top: 18px; padding: 12px 0 4px; text-align: center; font-size: 15px; font-weight: 600; box-shadow: inset 0 1px 0 var(--atlas-line); }
+/* Ce qui vient d'être ajouté s'éclaire un instant : on le voit arriver. */
+@keyframes arrive { 0% { background-color: color-mix(in srgb, var(--atlas-or) 26%, transparent); } 100% { background-color: transparent; } }
+.vient-d-arriver { animation: arrive 1.8s var(--courbe) both; border-radius: 6px; }
+/* La ligne qui attend son prix arrête tout, comme aujourd'hui. */
+.dc .action-bas .raison { margin: 0; padding: 14px 16px; border-radius: 12px; background: var(--atlas-rustTint); font-size: 14.5px; line-height: 1.4; }
+.dc .action-bas .raison p { margin: 0; }
+.dc .action-bas .raison .bouton-texte { min-height: 36px; padding: 0; margin-top: 4px; color: var(--atlas-ink); text-decoration: underline; text-underline-offset: 3px; }
 
-/* ═══ LE DEVIS ENVOYÉ ═════════════════════════════════════════════════════ */
-.suivi { padding: 16px 18px 18px; }
-.suivi-phrase { margin: 10px 0 0; font-size: 15.5px; line-height: 1.45; color: var(--atlas-inkSoft); }
-/* Le message du client, mot pour mot : une plage dorée, sa phrase en serif,
-   et non plus un filet de couleur à gauche. */
-.message-client { margin: 14px 0 0; padding: 14px 16px; border-radius: var(--r-plage); background: color-mix(in srgb, var(--atlas-or) 13%, transparent);
-                  font: 400 18px/1.45 var(--serif); color: var(--atlas-ink); }
-.message-client cite { display: block; margin-top: 6px; font: 600 13.5px/1.3 var(--sans); font-style: normal; color: var(--atlas-inkSoft); }
-.dates-client { margin: 10px 0 0; font-size: 15.5px; }
-.resume-devis { margin-top: 30px; text-align: center; }
-.resume-devis p { margin: 0; }
-.resume-devis .montant-grand { margin-top: 8px; font-size: 44px; }
-.resume-devis .second { margin-top: 8px; }
-.resume-devis .rang-boutons { flex-direction: column; align-items: center; gap: 8px; margin-top: 20px; }
-.resume-devis .rang-boutons .bouton { flex: none; min-width: 236px; }
-.resume-devis .bouton-texte.alerte { margin-top: 8px; }
+/* La répartition : la barre de l'appli (RepartirLaMainOeuvre.tsx, codée le
+   28 octobre), ses cinq pastels (pastelsMainOeuvre, design-tokens.ts), les
+   mêmes dans toutes les chartes, et leur encre fixe. */
+.repartition { margin-top: 14px; }
+.barre-mo { position: relative; height: 50px; margin: 6px 0 4px; touch-action: none; user-select: none; }
+.barre-mo-fond { display: flex; height: 100%; border-radius: 12px; overflow: hidden; box-shadow: inset 0 0 0 1px var(--atlas-lineSoft); }
+.morceau { display: grid; place-items: center; min-width: 0; overflow: hidden; font: 650 15px/1 var(--sans); color: #1c1c1a;
+           font-variant-numeric: tabular-nums; white-space: nowrap; transition: flex-basis 80ms linear; }
+.morceau + .morceau { box-shadow: inset 1px 0 0 rgba(28,28,26,0.18); }
+.poignee { position: absolute; top: 50%; width: 30px; height: 40px; margin-left: -15px; transform: translateY(-50%); display: grid; place-items: center;
+           border-radius: 10px; background: var(--atlas-card); box-shadow: 0 1px 2px rgba(28,28,26,0.14), 0 4px 10px rgba(28,28,26,0.12); cursor: ew-resize; }
+.poignee::before { content: ""; width: 7px; height: 13px; border-left: 2px solid var(--atlas-inkSoft); border-right: 2px solid var(--atlas-inkSoft); }
+.poignee:active, .poignee.tiree { box-shadow: 0 0 0 2px var(--atlas-or), 0 6px 16px rgba(28,28,26,0.18); }
+.parts { margin: 8px 0 0; padding: 0; list-style: none; }
+.parts li { display: flex; align-items: center; gap: 10px; min-height: 44px; font-size: 15.5px; }
+.parts li + li { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.parts .point { width: 12px; height: 12px; flex: none; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(28,28,26,0.16); }
+.parts .nom { flex: 1; min-width: 0; font: 400 16px/1.3 var(--serif); }
+.parts .part { font-weight: 650; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.parts .total { font-size: 14.5px; color: var(--atlas-inkSoft); }
+.parts .total .part { color: var(--atlas-ink); font: 400 19px/1 var(--serif); }
+/* Dans le devis : la part de chaque ligne se dit sous elle. */
+.dc-dont { margin: 0 0 8px; font-size: 13.5px; color: var(--atlas-inkSoft); text-align: right; font-variant-numeric: tabular-nums; }
+
+/* « Mes partenaires » : une petite pastille à droite du titre, sa demande du
+   1er novembre. Leurs prix et leur marge viennent de leur fiche (Réglages,
+   Fournisseurs et partenaires : societes_achat, prix_achat, marges_achat). */
+.mo-tete { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 6px 0 12px; }
+.mo-tete .feuille-titre { margin: 0; }
+.puce-partenaires { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 13px 0 10px; border-radius: 20px;
+                    font-size: 14.5px; font-weight: 600; color: var(--atlas-or); white-space: nowrap;
+                    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 60%, transparent); }
+.puce-partenaires .ico { width: 18px; height: 18px; }
+.puce-partenaires[aria-pressed="true"] { color: var(--sur-plein); background: var(--atlas-or); box-shadow: none; }
+.qui-travaille { display: flex; align-items: center; gap: 10px; padding: 10px 8px 10px 12px; margin-bottom: 4px; border-radius: 12px;
+                 background: color-mix(in srgb, var(--atlas-or) 13%, transparent); }
+.initiales-or { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border-radius: 50%;
+                font: 400 14px/1 var(--serif); color: var(--atlas-or); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 60%, transparent); }
+.qui-travaille .qui-mots { flex: 1; min-width: 0; }
+.qui-travaille b { display: block; font: 400 17px/1.2 var(--serif); }
+.qui-travaille small { display: block; font-size: 13.5px; color: var(--atlas-inkSoft); }
+.qui-retirer { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-inkSoft); }
+.qui-retirer .ico { width: 20px; height: 20px; }
+.liste-partenaires { margin: 0; padding: 0; list-style: none; }
+.liste-partenaires > li + li { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.partenaire-nom { display: flex; align-items: center; gap: 10px; padding: 12px 0 2px; }
+.partenaire-nom b { flex: 1; font: 400 18px/1.2 var(--serif); }
+.marge-du-partenaire { font-size: 14px; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
+.prix-partenaire { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 52px; padding: 6px 4px 6px 46px;
+                   text-align: left; font-size: 15.5px; border-radius: 10px; }
+.prix-partenaire b { font-weight: 650; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.prix-partenaire:active { background: color-mix(in srgb, var(--atlas-ink) 5%, transparent); }
+
+/* Les feuilles des ajouts : de grands choix, le calcul en clair, un geste. */
+.feuille .feuille-dedans { padding-bottom: 20px; }
+.feuille .rubrique { margin: 18px 0 8px; }
+.feuille .rubrique:first-of-type { margin-top: 0; }
+.choix-gros { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.choix-gros button { min-height: 56px; border-radius: 14px; font: 400 21px/1 var(--serif); color: var(--atlas-ink); background: var(--atlas-card);
+                     box-shadow: inset 0 0 0 1.5px var(--atlas-lineSoft); font-variant-numeric: lining-nums; }
+.choix-gros button small { display: block; margin-top: 4px; font: 500 12.5px/1.2 var(--sans); color: var(--atlas-inkSoft); }
+.choix-gros button[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--atlas-rust); background: var(--atlas-card); }
+.choix-mots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.choix-mots button { min-height: 52px; padding: 6px 6px; border-radius: 14px; font-size: 14px; font-weight: 600; line-height: 1.2; color: var(--atlas-ink);
+                     background: var(--atlas-card); box-shadow: inset 0 0 0 1.5px var(--atlas-lineSoft); }
+.choix-mots button[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--atlas-rust); }
+.rang-compte { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 58px; }
+.rang-compte + .rang-compte { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.rang-compte b { display: block; font: 400 18px/1.25 var(--serif); }
+.rang-compte small { display: block; margin-top: 2px; font-size: 13.5px; color: var(--atlas-inkSoft); }
+.petit-compteur { display: flex; align-items: center; gap: 8px; flex: none; }
+.petit-compteur button { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; color: var(--atlas-ink);
+                         box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
+.petit-compteur button[disabled] { color: var(--atlas-chevron); cursor: default; }
+.petit-compteur output { min-width: 84px; text-align: center; font: 400 19px/1.1 var(--serif); font-variant-numeric: tabular-nums lining-nums; }
+.case-euros { width: 104px; height: 44px; padding: 0 12px; border: 0; border-radius: 10px; outline: none; text-align: right; background: var(--atlas-card);
+              box-shadow: inset 0 0 0 1.5px var(--atlas-lineSoft); color: var(--atlas-ink); font: 400 19px/1 var(--serif); font-variant-numeric: tabular-nums; }
+.case-euros:focus { box-shadow: inset 0 0 0 2px var(--atlas-rust); }
+.resultat { margin-top: 12px; padding: 14px 16px; border-radius: var(--r-plage); background: color-mix(in srgb, var(--atlas-or) 13%, transparent); }
+.resultat p { margin: 0; }
+.resultat .calcul { font-size: 14.5px; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
+.resultat .gros { margin-top: 4px; font: 400 28px/1.1 var(--serif); font-variant-numeric: tabular-nums lining-nums; }
+.resultat .gros small { margin-left: 6px; font: 600 13px/1 var(--sans); letter-spacing: .06em; color: var(--atlas-inkSoft); }
+.feuille .bouton-plein { margin-top: 16px; }
+/* Le chiffre se TAPE (sa consigne du 1er novembre : « je dois pouvoir écrire
+   ce que je veux ») ; les valeurs toutes prêtes ne sont que des raccourcis. */
+.case-taux { display: flex; align-items: baseline; justify-content: flex-end; gap: 8px; height: 68px; padding: 0 18px; border-radius: 14px;
+             background: var(--atlas-card); box-shadow: inset 0 0 0 1.5px var(--atlas-line); cursor: text; }
+.case-taux:focus-within { box-shadow: inset 0 0 0 2px var(--atlas-rust); }
+.case-taux input { flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; outline: none; background: transparent; text-align: right;
+                   font: 400 36px/1 var(--serif); color: var(--atlas-ink); font-variant-numeric: tabular-nums lining-nums; caret-color: var(--atlas-rust); }
+.case-taux span { font: 400 26px/1 var(--serif); color: var(--atlas-inkSoft); }
+.case-taux.refuse { box-shadow: inset 0 0 0 2px var(--atlas-carteAmbreTexte); }
+.raccourcis { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.raccourcis button { min-height: 40px; padding: 0 14px; border-radius: 20px; font-size: 15px; font-weight: 600; color: var(--atlas-inkSoft);
+                     box-shadow: inset 0 0 0 1.5px var(--atlas-line); font-variant-numeric: tabular-nums; }
+.raccourcis button[aria-pressed="true"] { color: var(--atlas-ink); box-shadow: inset 0 0 0 2px var(--atlas-rust); }
+.refus-saisie { margin: 8px 2px 0; font-size: 14.5px; font-weight: 600; color: var(--atlas-carteAmbreTexte); }
+.feuille .bouton-texte.annuler { display: flex; width: 100%; justify-content: center; margin-top: 4px; color: var(--atlas-inkSoft); }
 
 @media (prefers-reduced-motion: reduce) {
-  .ecran[data-etat="enregistrement"] .micro-grand::before, .points span { animation: none; }
+  .dictee-temps::before, .points span, .vient-d-arriver { animation: none; }
 }
 </style>
 </head>
 <body class="pl pl-pilules">
+<svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden"><symbol id="i-corbeille" viewBox="0 0 24 24"><path d="M4 7h16M10 4h4a1 1 0 0 1 1 1v2H9V5a1 1 0 0 1 1-1zM6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/></symbol></svg>
 
 <header class="pl-tete">
   <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
   <h1 class="pl-titre">Le chantier</h1>
-  <p class="pl-verdict">De la dictée au devis parti, six écrans. <b>Les mêmes gestes, aux mêmes noms : des mots qui se lisent, un seul bouton plein en bas, et le devis qui se lit comme un devis.</b> À côté, les vrais écrans.</p>
+  <p class="pl-verdict">De la dictée au devis, les deux écrans que vous traversez. <b>Ce que vous gardez reste tel quel ; la dictée et les ajouts du devis se soignent.</b> À côté, les vrais écrans.</p>
 </header>
 
-<div class="deux-absents">
-  <p><b>Deux écrans de votre liste n'ont rien à dessiner.</b> La fiche du chantier n'existe plus depuis le 4 septembre, votre décision : l'adresse renvoie là où le travail s'est arrêté. Les coordonnées sont l'écran de création rouvert, déjà sur sa planche : <a href="creer-un-devis.html">Créer un devis, la fiche client</a>.</p>
+<div class="hors-planche">
+  <p><b>Ce que la planche ne montre pas.</b> La fiche du chantier n'existe plus depuis le 4 septembre. Les coordonnées ont leur planche : <a href="creer-un-devis.html">Créer un devis, la fiche client</a>. Transcription, Informations et Prix sont hors de votre chemin : on n'y arrive que si la préparation du devis échoue, ou si un devis part vide. Le devis envoyé aussi : une correction passe par la carte de l'accueil, qui ouvre le devis, et le chantier mène au Planning.</p>
 </div>
 
 <main class="pl-scene">
   <div>
     <div class="pl-etats rangee-pages" role="group" aria-label="L'écran">
       <button type="button" data-page="note" aria-pressed="true">Note vocale</button>
-      <button type="button" data-page="transcription">Transcription</button>
-      <button type="button" data-page="informations">Informations</button>
-      <button type="button" data-page="prix">Prix</button>
       <button type="button" data-page="devis">Devis complet</button>
-      <button type="button" data-page="envoye">Devis envoyé</button>
     </div>
     <div class="pl-etats etats-page" id="etats-page" role="group" aria-label="Son état"></div>
 
@@ -330,465 +396,343 @@
         <p class="pl-legende">Proposé</p>
         <div class="cadre">
 
-          <!-- ═══ LA NOTE VOCALE ═════════════════════════════════════════ -->
-          <div class="ecran avec-barre bas-haut" data-page-ecran="note" id="ecran-note">
-            <div class="defile">
-              <div class="tete-ronds">
-                <a class="rond-creux" href="#" aria-label="Retour à la liste des chantiers" data-note="Sur la planche, on reste ici."><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
-                <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-note="Sur la planche, l'assistant ne s'ouvre pas."><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
-              </div>
-              <h2 class="tete-titre">Note vocale</h2>
-              <p class="tete-situation" data-si-etat="vide enregistrement"><b>Pose de clôture</b>, Mme Aubry</p>
-              <p class="tete-situation" data-si-etat="enregistree"><b>Rénovation salle de bain</b>, M. Bernard</p>
+          <!-- ═══ LA NOTE VOCALE : la dictée de la fiche client ══════════ -->
+          <div class="ecran fc" data-page-ecran="note" id="ecran-note">
+            <div class="derriere" aria-hidden="true"><h2>Vos chantiers</h2></div>
+            <div class="derriere-voile" aria-hidden="true"></div>
+            <section class="fc-feuille" aria-label="Fiche client">
+              <div class="defile">
+                <div class="fc-tete">
+                  <button class="retour-nu" type="button" aria-label="Fermer" data-note="Sur la planche, la fiche reste ouverte."><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+                  <h2>Fiche client</h2>
+                  <button class="rond-creux" type="button" aria-label="Dicter les coordonnées" data-note="Sur la planche, rien ne s'enregistre."><svg class="ico" aria-hidden="true"><use href="#i-micro"/></svg></button>
+                </div>
+                <div class="fc-pastilles" aria-hidden="true"><span>Mr</span><span>Mme</span><span>Entreprise</span><span>Public</span></div>
+                <div class="fc-deux">
+                  <div><p class="fc-lib">Nom du client</p><div class="fc-case">Bernard</div></div>
+                  <div><p class="fc-lib" style="justify-content:flex-end">Téléphone</p><div class="fc-case">06 12 34 56 78</div></div>
+                </div>
+                <p class="fc-lib">E-mail</p><div class="fc-case">bernard@exemple.fr</div>
+                <p class="fc-lib"><span>Adresse</span><b>+ Client</b></p><div class="fc-case">12 rue des Lilas, Nantes</div>
+                <div class="fc-filet"></div>
+                <p class="fc-lib fc-envoi"><span>Envoi</span><span>SMS<span>E-mail</span></span></p>
+                <p class="fc-lib">Photos</p>
+                <span class="fc-photo" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg></span>
 
-              <div class="voix-centre" data-si-etat="vide">
-                <button class="micro-grand touche" type="button" aria-label="Enregistrer une note vocale" data-va-etat="enregistrement"><svg class="ico" aria-hidden="true"><use href="#i-micro"/></svg></button>
-                <p class="voix-titre">Enregistrer une note vocale</p>
-                <p class="voix-sous">Décrivez les prestations, la durée, l'équipe et le matériel nécessaire.</p>
-                <button class="bouton bouton-creux bouton-petit fichier-audio touche" type="button" data-note="Sur la planche, aucun fichier ne s'ouvre."><svg class="ico ico-p" aria-hidden="true"><use href="#i-importer"/></svg>Ajouter un fichier audio</button>
-              </div>
+                <p class="fc-voix-lib">Devis à la voix</p>
+                <div class="dictee-zone">
+                  <div data-si-etat="repos" style="display:flex;flex-direction:column;align-items:center">
+                    <button class="fc-micro" type="button" aria-label="Dicter une note vocale" data-va-etat="dictee"><svg class="ico" aria-hidden="true"><use href="#i-micro"/></svg></button>
+                    <p class="fc-invite">Appuyez et décrivez le chantier</p>
+                  </div>
 
-              <div class="voix-centre" data-si-etat="enregistrement">
-                <button class="micro-grand touche" type="button" aria-label="Arrêter l'enregistrement" data-va-etat="enregistree"><span class="carre-stop" aria-hidden="true"></span></button>
-                <p class="voix-temps chiffre" id="chrono">0:42</p>
-                <span class="etat" data-ton="rouge">Enregistrement en cours</span>
-                <p class="voix-sous">Parlez naturellement. Vous pourrez modifier les informations ensuite.</p>
-              </div>
+                  <div class="ligne-dictee" data-si-etat="dictee">
+                    <button class="geste-dictee" type="button" aria-label="Supprimer la note" data-va-etat="repos">
+                      <span class="rond-creux"><svg class="ico" aria-hidden="true"><use href="#i-corbeille"/></svg></span>Jeter
+                    </button>
+                    <div class="dictee-milieu">
+                      <span class="dictee-temps" id="chrono">0:42</span>
+                      <span class="dictee-trait" aria-hidden="true"><svg viewBox="0 0 260 30" preserveAspectRatio="none"><path id="trait-voix" fill="var(--atlas-or)"/></svg></span>
+                    </div>
+                    <button class="geste-dictee envoi" type="button" aria-label="Envoyer la note et préparer le devis" data-va-etat="transcription">
+                      <span class="envoyer"><svg class="ico" aria-hidden="true"><use href="#i-envoyer"/></svg></span>Envoyer
+                    </button>
+                  </div>
 
-              <div data-si-etat="enregistree">
-                <div class="plage lecteur" data-retirable>
-                  <div class="ligne-glisse lecteur" style="padding:0;flex:1;display:flex;align-items:center;gap:16px">
-                    <button class="rond" type="button" aria-label="Écouter la note" data-note="Sur la planche, rien ne se lit."><svg class="ico" aria-hidden="true"><use href="#i-lecture"/></svg></button>
-                    <div class="lecteur-corps">
-                      <span class="lecteur-nom">Note enregistrée</span>
-                      <div class="lecteur-rang"><span class="lecteur-piste"><span></span></span><span class="lecteur-duree">0:12</span></div>
+                  <div class="dictee-b" data-si-etat="dictee-b">
+                    <button class="geste-dictee" type="button" aria-label="Supprimer la note" data-va-etat="repos">
+                      <span class="rond-creux"><svg class="ico" aria-hidden="true"><use href="#i-corbeille"/></svg></span>Jeter
+                    </button>
+                    <button class="anneau-ecoute" type="button" aria-label="Envoyer la note et préparer le devis" data-va-etat="transcription">
+                      <svg class="ondes" viewBox="0 0 168 168" aria-hidden="true"><circle id="onde-1" cx="84" cy="84" r="49"/><circle id="onde-2" cx="84" cy="84" r="53"/><circle id="onde-3" cx="84" cy="84" r="57"/></svg>
+                      <span class="disque"><svg class="ico" aria-hidden="true"><use href="#i-envoyer"/></svg></span>Envoyer
+                    </button>
+                    <span class="temps-b"><span class="dictee-temps" id="chrono-b">0:42</span></span>
+                  </div>
+
+                  <div class="plage-ecoute" data-si-etat="dictee-c">
+                    <div class="ecoute-rang">
+                      <span class="dictee-temps" id="chrono-c">0:42</span>
+                      <svg class="barres" id="barres" viewBox="0 0 240 40" preserveAspectRatio="none" aria-hidden="true"></svg>
+                    </div>
+                    <div class="rang-boutons">
+                      <button class="bouton bouton-creux bouton-petit" type="button" data-va-etat="repos" aria-label="Supprimer la note"><svg class="ico" aria-hidden="true"><use href="#i-corbeille"/></svg>Jeter</button>
+                      <button class="bouton bouton-plein bouton-petit" type="button" data-va-etat="transcription" aria-label="Envoyer la note et préparer le devis"><svg class="ico" aria-hidden="true"><use href="#i-envoyer"/></svg>Envoyer</button>
                     </div>
                   </div>
-                </div>
-                <div class="plage plage-serree mt-16">
-                  <ul class="liste">
-                    <li><a class="ligne touche" href="#" data-vers-page="transcription">
-                      <span class="ligne-icone or"><svg class="ico" aria-hidden="true"><use href="#i-document"/></svg></span>
-                      <span class="ligne-corps"><span class="ligne-nom">Voir le texte</span><span class="ligne-situation">Transcription disponible</span></span>
-                      <span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
-                    <li><button class="ligne touche" type="button" data-note="Sur la planche, rien ne s'enregistre.">
-                      <span class="ligne-icone"><svg class="ico" aria-hidden="true"><use href="#i-micro"/></svg></span>
-                      <span class="ligne-corps"><span class="ligne-nom">Reprendre, j'avais oublié quelque chose</span></span></button></li>
-                    <li><button class="ligne touche" type="button" data-ouvre="feuille-remplacer">
-                      <span class="ligne-icone"><svg class="ico" aria-hidden="true"><use href="#i-annuler"/></svg></span>
-                      <span class="ligne-corps"><span class="ligne-nom">Remplacer la note</span></span></button></li>
-                  </ul>
-                </div>
-              </div>
-            </div>
 
-            <div class="action-bas" data-si-etat="enregistree">
-              <a class="bouton bouton-plein plein-long touche" href="#" data-vers-page="devis">Créer le devis à partir de ma dictée</a>
-              <p class="sous-plein">Rien ne part au client.</p>
-              <a class="bouton-texte or touche" href="#" data-vers-page="devis">Ou rédiger le devis à la main</a>
-            </div>
-
-            <div class="feuille" id="feuille-remplacer" aria-hidden="true" role="dialog" aria-label="Remplacer cette note vocale">
-              <div class="feuille-poignee"></div>
-              <div class="feuille-dedans">
-                <p class="feuille-titre">Remplacer cette note vocale ?</p>
-                <p class="second" style="margin:-6px 0 20px">La note actuelle sera conservée jusqu'à l'enregistrement de la nouvelle.</p>
-                <button class="bouton bouton-plein touche" type="button" data-va-etat="vide">Remplacer</button>
-                <button class="bouton bouton-creux touche mt-8" type="button" data-ferme>Annuler</button>
-              </div>
-            </div>
-
-            <nav class="barre" aria-label="Navigation principale">
-              <div class="barre-onglets">
-                <a class="barre-onglet" href="accueil.html" aria-current="page">Chantiers</a>
-                <a class="barre-onglet" href="planning.html">Planning</a>
-                <a class="barre-onglet" href="termines.html">Terminés</a>
-                <a class="barre-onglet" href="paysage.html">Paysage</a>
-                <a class="barre-onglet" href="reglages.html">Réglages</a>
-                <span class="barre-trait" aria-hidden="true"><span></span></span>
-              </div>
-            </nav>
-          </div>
-
-          <!-- ═══ LA TRANSCRIPTION ═══════════════════════════════════════ -->
-          <div class="ecran avec-barre bas-haut" data-page-ecran="transcription" id="ecran-transcription" hidden>
-            <div class="defile">
-              <div class="tete-ronds">
-                <a class="rond-creux" href="#" aria-label="Retour à la liste des chantiers" data-note="Sur la planche, on reste ici."><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
-                <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-note="Sur la planche, l'assistant ne s'ouvre pas."><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
-              </div>
-              <h2 class="tete-titre">Transcription</h2>
-              <p class="tete-situation"><b>Rénovation salle de bain</b>, M. Bernard</p>
-
-              <div data-si-etat="transcrite">
-                <section class="plage dictee">
-                  <p class="dictee-texte">Alors pour la salle de bain de monsieur Bernard, on va devoir déposer l'ancien carrelage complètement, poser la nouvelle faïence sur les murs, et changer la robinetterie qui est vraiment vétuste. Je pense deux jours de travail avec deux gars sur le chantier. Le client fournit son carrelage, nous on prend la colle flex et le joint gris anthracite.</p>
-                  <div class="dictee-pied"><button class="bouton-texte touche" type="button" data-note="Sur la planche, le texte ne s'ouvre pas."><svg class="ico ico-p" aria-hidden="true"><use href="#i-crayon"/></svg>Corriger le texte à la main</button></div>
-                </section>
-              </div>
-
-              <div class="attente" data-si-etat="en-cours">
-                <p class="attente-titre">Transcription en cours.</p>
-                <p class="second">L'écran se met à jour tout seul.</p>
-                <span class="points" aria-hidden="true"><span></span><span></span><span></span></span>
-              </div>
-
-              <div data-si-etat="echec">
-                <section class="plage-ton" data-ton="rouge">
-                  <span class="etat" data-ton="rouge" style="background:transparent;padding:0">Échec</span>
-                  <p style="margin:6px 0 0;color:var(--atlas-ink)">La transcription a échoué. Votre enregistrement est intact.</p>
-                </section>
-                <button class="bouton bouton-creux touche mt-16" type="button" data-note="Sur la planche, la case ne s'ouvre pas."><svg class="ico ico-p" aria-hidden="true"><use href="#i-crayon"/></svg>Écrire ce que j'ai dit</button>
-              </div>
-
-              <div class="vide" data-si-etat="aucune">
-                <svg class="ico" aria-hidden="true"><use href="#i-micro"/></svg>
-                <p class="vide-titre">Aucune note vocale pour ce chantier.</p>
-              </div>
-            </div>
-
-            <div class="action-bas" data-si-etat="transcrite">
-              <a class="bouton bouton-plein plein-long touche" href="#" data-vers-page="devis">Créer le devis à partir de ma dictée</a>
-              <p class="sous-plein">Rien ne part au client.</p>
-              <a class="bouton-texte touche" href="#" data-vers-page="informations">Ou vérifier les informations une par une</a>
-            </div>
-            <div class="action-bas" data-si-etat="echec">
-              <a class="bouton bouton-plein touche" href="#" data-vers-page="note"><svg class="ico" aria-hidden="true"><use href="#i-micro"/></svg>Relancer depuis la note vocale</a>
-            </div>
-            <div class="action-bas" data-si-etat="aucune">
-              <a class="bouton bouton-plein touche" href="#" data-vers-page="note"><svg class="ico" aria-hidden="true"><use href="#i-micro"/></svg>Enregistrer une note vocale</a>
-            </div>
-
-            <nav class="barre" aria-label="Navigation principale">
-              <div class="barre-onglets">
-                <a class="barre-onglet" href="accueil.html" aria-current="page">Chantiers</a>
-                <a class="barre-onglet" href="planning.html">Planning</a>
-                <a class="barre-onglet" href="termines.html">Terminés</a>
-                <a class="barre-onglet" href="paysage.html">Paysage</a>
-                <a class="barre-onglet" href="reglages.html">Réglages</a>
-                <span class="barre-trait" aria-hidden="true"><span></span></span>
-              </div>
-            </nav>
-          </div>
-
-          <!-- ═══ LES INFORMATIONS ═══════════════════════════════════════ -->
-          <div class="ecran avec-barre bas-moyen" data-page-ecran="informations" id="ecran-informations" hidden>
-            <div class="defile">
-              <div class="tete-ronds">
-                <a class="rond-creux" href="#" aria-label="Retour à la liste des chantiers" data-note="Sur la planche, on reste ici."><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
-                <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-note="Sur la planche, l'assistant ne s'ouvre pas."><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
-              </div>
-              <h2 class="tete-titre">Informations</h2>
-              <p class="tete-situation"><b>Rénovation salle de bain</b>, M. Bernard</p>
-
-              <section class="plage-ton dictee-source" data-ton="or" data-si-etat="dictee rempli">
-                <p>Proposé à partir de votre dictée, à vérifier avant de continuer.</p>
-                <button class="bouton bouton-creux bouton-petit touche" type="button" data-note="Sur la planche, le brouillon ne se génère pas.">Générer le brouillon</button>
-                <a class="bouton-texte or touche" href="#" data-vers-page="devis"><svg class="ico ico-p" aria-hidden="true"><use href="#i-etincelle"/></svg>Aller jusqu'au devis d'un seul geste</a>
-                <a class="bouton-texte touche" href="#" data-vers-page="transcription"><svg class="ico ico-p" aria-hidden="true"><use href="#i-document"/></svg>Voir la transcription</a>
-              </section>
-              <p class="second" data-si-etat="sans" style="margin:0">Aucune dictée n'a encore alimenté cet écran : les informations ci-dessous sont celles que vous saisissez.</p>
-
-              <p class="rubrique">Prestations</p>
-              <div class="plage liste-champs">
-                <div data-si-etat="dictee rempli">
-                  <div class="champ-ligne" data-retirable><div class="ligne-glisse"><input class="champ-ligne-saisie" value="Dépose ancien carrelage" aria-label="Prestation"></div></div>
-                  <div class="champ-ligne" data-retirable><div class="ligne-glisse"><input class="champ-ligne-saisie" value="Pose faïence murale" aria-label="Prestation"></div></div>
-                  <div class="champ-ligne" data-retirable><div class="ligne-glisse"><input class="champ-ligne-saisie" value="Remplacement robinetterie" aria-label="Prestation"></div></div>
-                </div>
-                <p class="vide-liste" data-si-etat="sans">Aucune prestation pour l'instant.</p>
-                <button class="ajout-ligne touche" type="button" data-note="Sur la planche, rien ne s'ajoute."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter une prestation</button>
-              </div>
-
-              <p class="rubrique">Durée et équipe</p>
-              <div class="plage reglages">
-                <div class="reglage reglage-rang" id="reglage-duree">
-                  <div>
-                    <span class="reglage-libelle">Ce chantier prend</span>
-                    <span class="reglage-valeur" id="duree-valeur">2 jours</span>
+                  <div data-si-etat="transcription" style="text-align:center">
+                    <p class="dictee-suite" style="margin:0;justify-content:center">Transcription<span class="points" aria-hidden="true"><span></span><span></span><span></span></span></p>
+                    <p class="dictee-sous">&nbsp;</p>
                   </div>
-                  <div class="petit-compteur" id="duree-compteur">
-                    <button type="button" aria-label="Moins long" data-duree="-1"><svg class="ico" aria-hidden="true"><use href="#i-moins"/></svg></button>
-                    <button type="button" aria-label="Plus long" data-duree="1"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg></button>
+
+                  <div data-si-etat="preparation" style="text-align:center">
+                    <p class="dictee-suite" style="margin:0;justify-content:center">Atlas prépare votre devis<span class="points" aria-hidden="true"><span></span><span></span><span></span></span></p>
+                    <p class="dictee-sous" id="prepa-sous">&nbsp;</p>
                   </div>
                 </div>
-                <label class="reglage" id="reglage-equipe">
-                  <span class="reglage-libelle">Équipe</span>
-                  <input class="reglage-valeur" id="equipe-valeur" value="2 personnes" placeholder="Non précisée">
-                </label>
+                <button class="bouton bouton-creux bouton-petit fc-a-la-main" type="button" data-vers-page="devis">Je rédige à la main</button>
               </div>
-
-              <p class="rubrique">Matériel</p>
-              <div class="plage liste-champs">
-                <div data-si-etat="dictee rempli">
-                  <div class="champ-ligne" data-retirable><div class="ligne-glisse"><input class="champ-ligne-saisie" value="Carrelage 60×60 (fourni client)" aria-label="Matériel"></div></div>
-                  <div class="champ-ligne" data-retirable><div class="ligne-glisse"><input class="champ-ligne-saisie" value="Colle flex" aria-label="Matériel"></div></div>
-                  <div class="champ-ligne" data-retirable><div class="ligne-glisse"><input class="champ-ligne-saisie" value="Joint gris anthracite" aria-label="Matériel"></div></div>
-                </div>
-                <p class="vide-liste" data-si-etat="sans">Aucun matériel pour l'instant.</p>
-                <button class="ajout-ligne touche" type="button" data-note="Sur la planche, rien ne s'ajoute."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter un matériel</button>
-              </div>
-            </div>
-
-            <div class="action-bas">
-              <a class="bouton bouton-plein touche" href="#" data-vers-page="prix">Valider et calculer le prix</a>
-              <a class="bouton-texte or touche" href="#" data-vers-page="devis">Écrire le devis</a>
-            </div>
-
-            <nav class="barre" aria-label="Navigation principale">
-              <div class="barre-onglets">
-                <a class="barre-onglet" href="accueil.html" aria-current="page">Chantiers</a>
-                <a class="barre-onglet" href="planning.html">Planning</a>
-                <a class="barre-onglet" href="termines.html">Terminés</a>
-                <a class="barre-onglet" href="paysage.html">Paysage</a>
-                <a class="barre-onglet" href="reglages.html">Réglages</a>
-                <span class="barre-trait" aria-hidden="true"><span></span></span>
-              </div>
-            </nav>
+            </section>
           </div>
 
-          <!-- ═══ LE PRIX ════════════════════════════════════════════════ -->
-          <div class="ecran avec-barre avec-action" data-page-ecran="prix" id="ecran-prix" hidden>
+          <!-- ═══ LE DEVIS COMPLET : celui de l'appli, et ses ajouts ═════ -->
+          <div class="ecran dc avec-action" data-page-ecran="devis" id="ecran-devis" hidden>
             <div class="defile">
-              <div class="tete-ronds">
-                <a class="rond-creux" href="#" aria-label="Retour" data-vers-page="informations"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
-                <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-note="Sur la planche, l'assistant ne s'ouvre pas."><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
-              </div>
-              <h2 class="tete-titre">Prix</h2>
-              <p class="tete-situation"><b>Rénovation salle de bain</b>, M. Bernard</p>
-
-              <section class="total-prix">
-                <div>
-                  <p class="rubrique">Total HT</p>
-                  <p class="montant-grand" style="margin:0" data-si-etat="proposition">0,00&nbsp;€</p>
-                  <p class="montant-grand" style="margin:0" data-si-etat="a-chiffrer">942,00&nbsp;€</p>
-                  <p class="montant-grand" style="margin:0" data-si-etat="pret">1&#8239;222,00&nbsp;€</p>
-                </div>
-                <span class="etat" data-ton="ambre" data-si-etat="a-chiffrer">1 attend son prix</span>
-                <span class="etat" data-ton="vert" data-si-etat="pret">Tout est chiffré</span>
-              </section>
-
-              <section class="plage proposition" data-si-etat="proposition">
-                <div class="prop-tete">
-                  <span class="prop-titre"><svg class="ico" aria-hidden="true"><use href="#i-etincelle"/></svg>Proposition</span>
-                  <span class="etat" data-ton="or">Tarif de l'entreprise</span>
-                </div>
-                <p class="montant prop-montant">1&#8239;143,00&nbsp;€<small>HT</small></p>
-                <ul class="prop-lignes">
-                  <li><span>Dépose ancien carrelage</span><span class="chiffre">18,00&nbsp;€</span></li>
-                  <li><span>Pose faïence murale</span><span class="chiffre">45,00&nbsp;€</span></li>
-                  <li><span>Remplacement robinetterie</span><span class="a-chiffrer">à chiffrer</span></li>
-                  <li><span>Carrelage 60×60 (fourni client)</span><span class="chiffre">1&#8239;080,00&nbsp;€</span></li>
-                  <li><span>Colle flex</span><span class="a-chiffrer">à chiffrer</span></li>
-                  <li><span>Joint gris anthracite</span><span class="a-chiffrer">à chiffrer</span></li>
-                </ul>
-                <p class="second">Ces prix viennent de vos tarifs et de votre grille. Ils n'ont pas été calculés.</p>
-                <button class="bouton bouton-creux or touche" type="button" data-va-etat="a-chiffrer"><svg class="ico ico-p" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter au détail</button>
-                <div class="prop-gestes">
-                  <button class="bouton-texte touche" type="button" data-note="Sur la planche, le calcul ne s'ouvre pas.">Voir le détail</button>
-                  <button class="bouton-texte touche" type="button" data-note="Sur la planche, rien ne se recalcule."><svg class="ico ico-p" aria-hidden="true"><use href="#i-annuler"/></svg>Relancer le calcul</button>
-                </div>
-              </section>
-
-              <section class="plage prop-repliee" data-si-etat="a-chiffrer pret">
-                <button class="ligne touche" type="button" data-va-etat="proposition">
-                  <span class="ligne-icone or"><svg class="ico" aria-hidden="true"><use href="#i-etincelle"/></svg></span>
-                  <span class="ligne-corps"><span class="ligne-nom">Voir la proposition de prix</span><span class="ligne-situation">1&#8239;143,00&nbsp;€ HT, tarif de l'entreprise</span></span>
-                  <span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-bas"/></svg></span>
-                </button>
-              </section>
-
-              <p class="rubrique">Détail</p>
-              <div class="plage liste-champs">
-                <div data-si-etat="a-chiffrer pret">
-                  <div class="ligne-prix" data-retirable><div class="ligne-glisse"><textarea class="ligne-prix-libelle" rows="1" aria-label="Description de la ligne">Dépose de l'ancien carrelage</textarea><input class="ligne-prix-montant" inputmode="decimal" value="216,00" aria-label="Montant de la ligne, en euros"></div></div>
-                  <div class="ligne-prix" data-retirable><div class="ligne-glisse"><textarea class="ligne-prix-libelle" rows="1" aria-label="Description de la ligne">Pose de faïence murale</textarea><input class="ligne-prix-montant" inputmode="decimal" value="630,00" aria-label="Montant de la ligne, en euros"></div></div>
-                  <div class="ligne-prix" data-retirable data-si-etat="a-chiffrer"><div class="ligne-glisse"><textarea class="ligne-prix-libelle" rows="1" aria-label="Description de la ligne">Remplacement de la robinetterie</textarea><input class="ligne-prix-montant attend" inputmode="decimal" placeholder="à chiffrer" aria-label="Montant de la ligne, en euros"></div></div>
-                  <div class="ligne-prix" data-retirable data-si-etat="pret"><div class="ligne-glisse"><textarea class="ligne-prix-libelle" rows="1" aria-label="Description de la ligne">Remplacement de la robinetterie</textarea><input class="ligne-prix-montant" inputmode="decimal" value="280,00" aria-label="Montant de la ligne, en euros"></div></div>
-                  <div class="ligne-prix" data-retirable><div class="ligne-glisse"><textarea class="ligne-prix-libelle" rows="1" aria-label="Description de la ligne">Colle flex et joint gris anthracite</textarea><input class="ligne-prix-montant" inputmode="decimal" value="96,00" aria-label="Montant de la ligne, en euros"></div></div>
-                </div>
-                <p class="vide-liste" data-si-etat="proposition">Aucune ligne pour l'instant.</p>
-                <button class="ajout-ligne touche" type="button" data-note="Sur la planche, rien ne s'ajoute."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter une ligne</button>
-              </div>
-
-              <section class="plage-ton raison mt-16" data-ton="ambre" data-si-etat="proposition">
-                <p><b style="color:inherit">Ce devis n'a aucune ligne : il partirait à 0,00&nbsp;€.</b></p>
-                <a class="bouton-texte touche" href="reglages-tarifs.html">Ouvrir mes tarifs</a>
-              </section>
-              <section class="plage-ton raison mt-16" data-ton="ambre" data-si-etat="a-chiffrer">
-                <p>« Remplacement de la robinetterie » attend son prix : cette ligne n'est pas gratuite, elle n'est pas chiffrée.</p>
-                <button class="bouton-texte touche" type="button" data-note="Sur la planche, la case du montant attend votre doigt.">Poser les montants</button>
-              </section>
-            </div>
-
-            <div class="action-bas">
-              <button class="bouton bouton-plein touche" type="button" data-si-etat="pret" data-vers-page="devis"><svg class="ico" aria-hidden="true"><use href="#i-document"/></svg>Préparer le devis</button>
-              <button class="bouton bouton-plein" type="button" aria-disabled="true" data-si-etat="proposition a-chiffrer">Préparer le devis</button>
-            </div>
-
-            <nav class="barre" aria-label="Navigation principale">
-              <div class="barre-onglets">
-                <a class="barre-onglet" href="accueil.html" aria-current="page">Chantiers</a>
-                <a class="barre-onglet" href="planning.html">Planning</a>
-                <a class="barre-onglet" href="termines.html">Terminés</a>
-                <a class="barre-onglet" href="paysage.html">Paysage</a>
-                <a class="barre-onglet" href="reglages.html">Réglages</a>
-                <span class="barre-trait" aria-hidden="true"><span></span></span>
-              </div>
-            </nav>
-          </div>
-
-          <!-- ═══ LE DEVIS COMPLET ═══════════════════════════════════════ -->
-          <div class="ecran avec-action bas-moyen" data-page-ecran="devis" id="ecran-devis" hidden>
-            <div class="defile">
-              <div class="tete-devis">
-                <a class="rond-creux" href="#" aria-label="Retour" data-note="Sur la planche, on reste ici."><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+              <div class="dc-tete">
+                <button class="retour-nu" type="button" aria-label="Retour" data-note="Sur la planche, on reste ici."><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
                 <span class="espace"></span>
                 <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-note="Sur la planche, l'assistant ne s'ouvre pas."><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
-                <button class="rond-creux modifiable" type="button" aria-label="Dicter dans le devis" data-note="Sur la planche, rien ne s'enregistre."><svg class="ico" aria-hidden="true"><use href="#i-micro"/></svg></button>
+                <button class="rond-creux" type="button" aria-label="Dicter dans le devis" data-note="Sur la planche, rien ne s'enregistre."><svg class="ico" aria-hidden="true"><use href="#i-micro"/></svg></button>
               </div>
 
-              <section class="plage-ton parti-bandeau" data-ton="bleu" data-si-etat="parti">
-                <svg class="ico" aria-hidden="true"><use href="#i-cadenas"/></svg>
-                <div>
-                  <p style="color:var(--atlas-ink)">Ce devis est parti chez votre client : il ne se modifie plus.</p>
-                  <button class="bouton-texte touche" type="button" data-va-etat="en-cours">Le corriger et le renvoyer</button>
+              <article class="dc-feuille">
+                <p class="dc-emetteur">Atelier Démo</p>
+                <p class="dc-coord">10 rue des Artisans, Nantes<br>02 40 00 00 00<br>contact@atelier-demo.fr<br>123 456 789 00012</p>
+                <div class="dc-meta">
+                  <div><span class="dc-cap">Devis n°</span><span>2026&#8209;000002</span></div>
+                  <div><span class="dc-cap">Date</span><span>31/10/2026</span></div>
+                  <div><span class="dc-cap">Validité</span><span>30 jours</span></div>
+                  <div><span class="dc-cap">Début des travaux</span><span>sous 30 jours après l'accord</span></div>
                 </div>
-              </section>
-
-              <article class="plage feuille-devis">
-                <p class="emetteur-nom">Atelier Démo</p>
-                <p class="emetteur-coord">10 rue des Artisans, Nantes<br>02 40 00 00 00, contact@atelier-demo.fr<br><span class="chiffre">123&#8239;456 789 00012</span></p>
-
-                <dl class="meta-devis">
-                  <div><dt>Devis n°</dt><dd>2026&#8209;000002</dd></div>
-                  <div><dt>Date</dt><dd>31/10/2026</dd></div>
-                  <div><dt>Validité</dt><dd>30 jours</dd></div>
-                  <div><dt>Début des travaux</dt><dd>sous 30 jours après l'accord</dd></div>
-                </dl>
-
-                <h3 class="devis-mot">DEVIS</h3>
-                <input class="devis-titre" placeholder="Titre (optionnel)" aria-label="Titre du devis">
-
-                <div class="destinataire">
-                  <span class="mini-libelle">Client</span>
-                  <p class="destinataire-nom">M. Bernard</p>
-                  <input class="champ-doux manque" placeholder="Adresse" aria-label="Adresse du client">
-                  <input class="champ-doux manque" placeholder="E-mail" aria-label="E-mail du client">
-                  <input class="champ-doux" value="06 12 34 56 78" aria-label="Téléphone du client">
+                <div class="dc-regle"></div>
+                <p class="dc-mot">DEVIS</p>
+                <p class="dc-titre">Titre (optionnel)</p>
+                <div class="dc-client">
+                  <span class="dc-cap">Client</span>
+                  <p>M. Bernard</p>
+                  <p class="vide-gris">Adresse</p>
+                  <p class="vide-gris">E-mail</p>
+                  <p>06 12 34 56 78</p>
                 </div>
 
-                <div class="entete-lignes"><span>Quantité × prix unitaire HT</span><span>Montant HT</span></div>
-                <ol class="lignes-devis">
-                  <li class="ligne-devis">
-                    <div class="ld-haut"><textarea class="ld-libelle" rows="1" aria-label="Libellé">Dépose de l'ancien carrelage</textarea><button class="ld-retirer modifiable" type="button" aria-label="Retirer la ligne" data-note="Retiré à l'instant."><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></button></div>
-                    <div class="ld-bas"><input class="ld-case ld-qte" value="12" aria-label="Quantité"><input class="ld-case ld-unite" value="m²" aria-label="Unité"><span class="ld-fois">×</span><input class="ld-case ld-pu" value="18,00" aria-label="Prix unitaire HT"><span class="ld-montant">216,00&nbsp;€</span></div>
-                  </li>
-                  <li class="ligne-devis">
-                    <div class="ld-haut"><textarea class="ld-libelle" rows="1" aria-label="Libellé">Pose de faïence murale</textarea><button class="ld-retirer modifiable" type="button" aria-label="Retirer la ligne" data-note="Retiré à l'instant."><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></button></div>
-                    <div class="ld-bas"><input class="ld-case ld-qte" value="14" aria-label="Quantité"><input class="ld-case ld-unite" value="m²" aria-label="Unité"><span class="ld-fois">×</span><input class="ld-case ld-pu" value="45,00" aria-label="Prix unitaire HT"><span class="ld-montant">630,00&nbsp;€</span></div>
-                  </li>
-                  <li class="ligne-devis">
-                    <div class="ld-haut"><textarea class="ld-libelle" rows="1" aria-label="Libellé">Remplacement de la robinetterie</textarea><button class="ld-retirer modifiable" type="button" aria-label="Retirer la ligne" data-note="Retiré à l'instant."><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></button></div>
-                    <div class="ld-bas" data-si-etat="en-cours"><input class="ld-case ld-qte" value="1" aria-label="Quantité"><input class="ld-case ld-unite" value="u" aria-label="Unité"><span class="ld-fois">×</span><input class="ld-case ld-pu attend" placeholder="0,00" aria-label="Prix unitaire HT" id="pu-attend"><span class="ld-montant attend">à chiffrer</span></div>
-                    <div class="ld-bas" data-si-etat="pret parti"><input class="ld-case ld-qte" value="1" aria-label="Quantité"><input class="ld-case ld-unite" value="u" aria-label="Unité"><span class="ld-fois">×</span><input class="ld-case ld-pu" value="280,00" aria-label="Prix unitaire HT"><span class="ld-montant">280,00&nbsp;€</span></div>
-                  </li>
-                  <li class="ligne-devis">
-                    <div class="ld-haut"><textarea class="ld-libelle" rows="1" aria-label="Libellé">Colle flex et joint gris anthracite</textarea><button class="ld-retirer modifiable" type="button" aria-label="Retirer la ligne" data-note="Retiré à l'instant."><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></button></div>
-                    <div class="ld-bas"><input class="ld-case ld-qte" value="1" aria-label="Quantité"><input class="ld-case ld-unite" value="forfait" aria-label="Unité"><span class="ld-fois">×</span><input class="ld-case ld-pu" value="96,00" aria-label="Prix unitaire HT"><span class="ld-montant">96,00&nbsp;€</span></div>
-                  </li>
-                </ol>
-                <div class="ajouts modifiable">
-                  <button class="puce-ajout touche" type="button" data-note="Sur la planche, rien ne s'ajoute."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter une ligne</button>
-                  <button class="puce-ajout or touche" type="button" data-note="La répartition de la main d'œuvre a sa planche : main-oeuvre-curseur.html."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Main d’œuvre</button>
-                  <button class="puce-ajout or touche" type="button" data-note="Sur la planche, rien ne s'ajoute."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter une TVA</button>
+                <div class="dc-bande" data-si-ajout="tva"><span class="dc-cap">TVA</span><b>20 %</b></div>
+
+                <div class="dc-ligne" data-cle="depose">
+                  <div class="dc-ligne-haut"><span>Dépose de l'ancien carrelage</span><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></div>
+                  <div class="dc-rang"><span class="dc-cap">Qté</span><span>12</span></div>
+                  <div class="dc-rang"><span class="dc-cap">Unité</span><span>m²</span></div>
+                  <div class="dc-rang"><span class="dc-cap">Prix unitaire HT</span><span>18</span></div>
+                  <div class="dc-rang"><span class="dc-cap">Montant HT</span><span id="montant-depose">216,00&nbsp;€</span></div>
+                  <p class="dc-dont" id="dont-depose" hidden></p>
+                </div>
+                <div class="dc-ligne" data-cle="pose">
+                  <div class="dc-ligne-haut"><span>Pose de faïence murale</span><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></div>
+                  <div class="dc-rang"><span class="dc-cap">Qté</span><span>14</span></div>
+                  <div class="dc-rang"><span class="dc-cap">Unité</span><span>m²</span></div>
+                  <div class="dc-rang"><span class="dc-cap">Prix unitaire HT</span><span>45</span></div>
+                  <div class="dc-rang"><span class="dc-cap">Montant HT</span><span id="montant-pose">630,00&nbsp;€</span></div>
+                  <p class="dc-dont" id="dont-pose" hidden></p>
+                </div>
+                <div class="dc-ligne" data-cle="robinet">
+                  <div class="dc-ligne-haut"><span>Remplacement de la robinetterie</span><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></div>
+                  <div class="dc-rang"><span class="dc-cap">Qté</span><span>1</span></div>
+                  <div class="dc-rang"><span class="dc-cap">Unité</span><span>u</span></div>
+                  <div class="dc-rang"><span class="dc-cap">Prix unitaire HT</span><span class="gris">0,00</span></div>
+                  <div class="dc-rang"><span class="dc-cap">Montant HT</span><span id="montant-robinet" class="attend">à chiffrer</span></div>
+                  <p class="dc-dont" id="dont-robinet" hidden></p>
+                </div>
+                <div class="dc-ligne" data-cle="colle">
+                  <div class="dc-ligne-haut"><span>Colle flex et joint gris anthracite</span><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></div>
+                  <div class="dc-rang"><span class="dc-cap">Qté</span><span>1</span></div>
+                  <div class="dc-rang"><span class="dc-cap">Unité</span><span>forfait</span></div>
+                  <div class="dc-rang"><span class="dc-cap">Prix unitaire HT</span><span>96</span></div>
+                  <div class="dc-rang"><span class="dc-cap">Montant HT</span><span id="montant-colle">96,00&nbsp;€</span></div>
+                  <p class="dc-dont" id="dont-colle" hidden></p>
+                </div>
+                <div class="dc-ligne" id="ligne-mo" data-si-ajout="mo">
+                  <div class="dc-ligne-haut"><span id="ligne-mo-libelle">Main d’œuvre</span><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></div>
+                  <div class="dc-rang"><span class="dc-cap">Qté</span><span id="ligne-mo-qte">4</span></div>
+                  <div class="dc-rang"><span class="dc-cap">Unité</span><span id="ligne-mo-unite">jour/homme</span></div>
+                  <div class="dc-rang"><span class="dc-cap">Prix unitaire HT</span><span id="ligne-mo-pu">280</span></div>
+                  <div class="dc-rang"><span class="dc-cap">Montant HT</span><span id="ligne-mo-montant">1&#8239;120,00&nbsp;€</span></div>
                 </div>
 
-                <div class="totaux">
-                  <div class="tot"><span>Total HT</span><span data-si-etat="en-cours">942,00&nbsp;€</span><span data-si-etat="pret parti">1&#8239;222,00&nbsp;€</span></div>
-                  <div class="tot"><span class="tot-taux">TVA <input value="20" inputmode="decimal" aria-label="Taux de TVA"> %</span><span data-si-etat="en-cours">188,40&nbsp;€</span><span data-si-etat="pret parti">244,40&nbsp;€</span></div>
-                  <div class="tot ttc"><span>Total TTC</span><span data-si-etat="en-cours">1&#8239;130,40&nbsp;€</span><span data-si-etat="pret parti">1&#8239;466,40&nbsp;€</span></div>
+                <div class="ajouts" id="ancre-ajouts">
+                  <button class="puce-ajout" type="button" data-note="Une ligne vide s'ajoute au bout du devis, comme aujourd'hui."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter une ligne</button>
+                  <button class="puce-ajout or" type="button" data-ouvre="f-mo"><svg class="ico" aria-hidden="true"><use href="#i-equipe"/></svg>Main d’œuvre</button>
                 </div>
-                <div class="ajouts modifiable">
-                  <button class="puce-ajout or touche" type="button" data-note="Sur la planche, rien ne s'ajoute."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter un acompte</button>
-                  <button class="puce-ajout or touche" type="button" data-note="Sur la planche, rien ne s'ajoute."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Remise</button>
+                <div class="dc-sous-total" data-si-ajout="tva"><span>Sous-total HT</span><b id="sous-total-20">2&#8239;062,00&nbsp;€</b></div>
+
+                <div data-si-ajout="tva" id="bloc-tva">
+                  <div class="dc-bande"><span class="dc-cap">TVA</span><b id="bande-taux">10 %</b><span class="espace"></span><button class="croix-ronde" type="button" aria-label="Retirer cette TVA" data-retire="tva"><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></button></div>
+                  <div class="dc-ligne">
+                    <div class="dc-ligne-haut"><span class="exemple">Ex : Élagage d'un tilleul, taille architecturée</span><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></div>
+                    <div class="dc-rang"><span class="dc-cap">Qté</span><span>1</span></div>
+                    <div class="dc-rang"><span class="dc-cap">Unité</span><span>u</span></div>
+                    <div class="dc-rang"><span class="dc-cap">Prix unitaire HT</span><span class="gris">0,00</span></div>
+                    <div class="dc-rang"><span class="dc-cap">Montant HT</span><span>0,00&nbsp;€</span></div>
+                  </div>
+                  <div class="ajouts">
+                    <button class="puce-ajout" type="button" data-note="Une ligne vide s'ajoute sous cette TVA, comme aujourd'hui."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter une ligne</button>
+                    <button class="puce-ajout or" type="button" data-ouvre="f-mo"><svg class="ico" aria-hidden="true"><use href="#i-equipe"/></svg>Main d’œuvre</button>
+                  </div>
+                  <div class="dc-sous-total"><span>Sous-total HT</span><b>0,00&nbsp;€</b></div>
                 </div>
 
-                <span class="mini-libelle">Notes / conditions</span>
-                <textarea class="zone-notes" rows="2" aria-label="Notes et conditions">Accès par le portail de gauche, cour à dégager la veille. Devis gratuit et sans engagement.</textarea>
-                <div class="paiement">
-                  <span class="mini-libelle">Modalités de paiement</span>
-                  <p>Paiement par virement bancaire</p>
-                  <p class="chiffre iban">FR76 3000 1000 0000 0000 0000 000</p>
+                <div class="ajouts">
+                  <button class="puce-ajout or" type="button" data-ouvre="f-tva"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter une TVA</button>
                 </div>
-                <p class="mentions">Devis établi par Atelier Démo, valable 30 jours. Bon pour accord précédé de la mention manuscrite, daté et signé par le client.</p>
-                <div class="signature">Bon pour accord, signature du client</div>
+
+                <div class="dc-totaux" id="ancre-totaux">
+                  <div class="dc-tot"><span>Total HT</span><span id="t-ht">942,00&nbsp;€</span></div>
+                  <div class="dc-tot doux" data-si-ajout="mo"><span>dont main d’œuvre HT</span><span id="t-mo">1&#8239;120,00&nbsp;€</span></div>
+                  <div class="dc-tot remise" data-si-ajout="remise" id="ligne-remise"><span class="avec-croix"><button class="croix-ronde" type="button" aria-label="Retirer la remise" data-retire="remise"><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></button><span id="t-remise-mot">Remise de 5 %</span></span><span id="t-remise">−&nbsp;103,10&nbsp;€</span></div>
+                  <div class="dc-tot" data-si-ajout="remise"><span>Total HT après remise</span><span id="t-ht-apres">1&#8239;958,90&nbsp;€</span></div>
+                  <div class="dc-tot"><span>TVA (20 %)</span><span id="t-tva">188,40&nbsp;€</span></div>
+                  <div class="dc-tot" data-si-ajout="tva"><span id="t-tva2-mot">TVA (10 %)</span><span>0,00&nbsp;€</span></div>
+                  <div class="dc-tot ttc"><span>Total TTC</span><span id="t-ttc">1&#8239;130,40&nbsp;€</span></div>
+                  <div class="dc-tot acompte" data-si-ajout="acompte" id="ligne-acompte"><span class="avec-croix"><button class="croix-ronde" type="button" aria-label="Retirer l'acompte" data-retire="acompte"><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></button><span><span id="t-acompte-mot">Acompte 30 %</span><small id="t-acompte-quand">à la signature</small></span></span><span id="t-acompte">705,20&nbsp;€</span></div>
+                  <div class="dc-tot reste" data-si-ajout="acompte"><span>Reste à régler après acompte</span><span id="t-reste">1&#8239;645,48&nbsp;€</span></div>
+                </div>
+                <div class="ajouts">
+                  <button class="puce-ajout or" type="button" data-ouvre="f-acompte"><svg class="ico" aria-hidden="true"><use href="#i-euro"/></svg>Ajouter un acompte</button>
+                  <button class="puce-ajout or" type="button" data-ouvre="f-remise" id="puce-remise"><svg class="ico" aria-hidden="true"><use href="#i-etiquette"/></svg>Remise</button>
+                </div>
+
+                <div class="dc-notes"><span class="dc-cap">Notes / conditions</span><p>Accès par le portail de gauche, cour à dégager la veille. Devis gratuit et sans engagement.</p></div>
+                <div class="dc-notes"><span class="dc-cap">Modalités de paiement</span><p>Paiement par virement bancaire<br>FR76 3000 1000 0000 0000 0000 000</p></div>
+                <p class="dc-mentions">Devis établi par Atelier Démo, valable 30 jours. Bon pour accord précédé de la mention manuscrite, daté et signé par le client.</p>
+                <div class="dc-signature">Bon pour accord, signature du client</div>
+                <button class="dc-apercu" type="button" data-note="Sur la planche, le PDF ne s'ouvre pas.">Aperçu du PDF</button>
               </article>
-
-              <button class="bouton bouton-creux apercu touche" type="button" data-note="Sur la planche, le PDF ne s'ouvre pas."><svg class="ico" aria-hidden="true"><use href="#i-document"/></svg>Aperçu du PDF</button>
             </div>
 
-            <div class="action-bas" data-si-etat="en-cours">
-              <section class="plage-ton raison" data-ton="ambre">
+            <div class="action-bas" id="bas-pret" hidden>
+              <button class="bouton bouton-plein" type="button" data-note="La feuille du choix de la date s'ouvre, comme aujourd'hui."><svg class="ico" aria-hidden="true"><use href="#i-calendrier"/></svg>Choisir la date</button>
+            </div>
+            <div class="action-bas" id="bas-attend">
+              <section class="raison">
                 <p>« Remplacement de la robinetterie » attend son prix : cette ligne n'est pas gratuite, elle n'est pas chiffrée.</p>
-                <button class="bouton bouton-creux bouton-petit touche" type="button" id="poser-prix">Poser le prix</button>
+                <button class="bouton-texte" type="button" data-note="Sur la planche, la case du prix attend votre doigt.">Poser le prix</button>
               </section>
             </div>
-            <div class="action-bas" data-si-etat="pret">
-              <button class="bouton bouton-plein touche" type="button" data-vers-page="envoye"><svg class="ico" aria-hidden="true"><use href="#i-calendrier"/></svg>Choisir la date</button>
-            </div>
-          </div>
 
-          <!-- ═══ LE DEVIS ENVOYÉ ════════════════════════════════════════ -->
-          <div class="ecran avec-barre bas-moyen" data-page-ecran="envoye" id="ecran-envoye" hidden>
-            <div class="defile">
-              <div class="tete-ronds">
-                <a class="rond-creux" href="#" aria-label="Retour à la liste des chantiers" data-note="Sur la planche, on reste ici."><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
-                <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-note="Sur la planche, l'assistant ne s'ouvre pas."><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
-              </div>
-              <h2 class="tete-titre">Devis</h2>
-              <p class="tete-situation"><b>Reprise de toiture</b>, M. Faucher</p>
-
-              <section class="plage suivi">
-                <span class="etat" data-ton="ambre" data-si-etat="corriger">Correction demandée</span>
-                <span class="etat" data-ton="bleu" data-si-etat="attente">En attente de réponse</span>
-                <span class="etat" data-ton="vert" data-si-etat="accepte">Devis accepté</span>
-                <p class="suivi-phrase" data-si-etat="corriger">Le client a signalé quelque chose à corriger. Son message est ci-dessous.</p>
-                <p class="suivi-phrase" data-si-etat="attente">Le client choisit sa date. Le chantier attend sa réponse.</p>
-                <p class="suivi-phrase" data-si-etat="accepte">Le client a accepté. La date est retenue.</p>
-                <blockquote class="message-client" data-si-etat="corriger">« Pouvez-vous retirer l'évacuation des gravats ? Je m'en occupe. »<cite>M. Faucher</cite></blockquote>
-              </section>
-
-              <section class="resume-devis">
-                <p class="second" style="margin:0">Devis nº 2026&#8209;000001</p>
-                <p class="montant-grand">1&#8239;990,80&nbsp;€</p>
-                <p class="second">TTC, envoyé le 25 juillet</p>
-                <div class="rang-boutons">
-                  <button class="bouton bouton-creux bouton-petit touche" type="button" data-si-etat="corriger accepte" data-note="Sur la planche, rien ne se télécharge."><svg class="ico ico-p" aria-hidden="true"><use href="#i-telecharger"/></svg>Télécharger le PDF</button>
-                  <button class="bouton bouton-creux bouton-petit touche" type="button" data-si-etat="attente accepte" data-note="Sur la planche, le devis ne s'ouvre pas."><svg class="ico ico-p" aria-hidden="true"><use href="#i-crayon"/></svg>Modifier mon devis</button>
+            <!-- La main d'œuvre : le calcul d'« Avant de chiffrer », avant d'ajouter. -->
+            <div class="feuille" id="f-mo" aria-hidden="true" role="dialog" aria-label="Main d’œuvre">
+              <div class="feuille-poignee"></div>
+              <div class="feuille-dedans">
+                <div class="mo-tete">
+                  <p class="feuille-titre">Main d’œuvre</p>
+                  <button class="puce-partenaires" type="button" id="puce-partenaires" aria-pressed="false"><svg class="ico" aria-hidden="true"><use href="#i-equipe"/></svg>Mes partenaires</button>
                 </div>
-                <button class="bouton-texte alerte touche" type="button" data-si-etat="accepte" data-note="Sur la planche, rien ne se défait.">Le client s’est trompé</button>
-              </section>
-            </div>
 
-            <div class="action-bas" data-si-etat="corriger">
-              <button class="bouton bouton-plein touche" type="button" data-vers-page="devis"><svg class="ico" aria-hidden="true"><use href="#i-crayon"/></svg>Corriger et renvoyer</button>
-            </div>
-            <div class="action-bas" data-si-etat="attente">
-              <button class="bouton bouton-plein touche" type="button" data-note="Sur la planche, aucun SMS ne part."><svg class="ico" aria-hidden="true"><use href="#i-envoyer"/></svg>Rouvrir le SMS</button>
-              <button class="bouton-texte touche" type="button" data-note="Sur la planche, aucun e-mail ne part.">Plutôt par e-mail</button>
-            </div>
+                <!-- Ses partenaires et leurs prix : on touche un prix, il est choisi. -->
+                <div id="mo-liste" hidden>
+                  <ul class="liste-partenaires" id="liste-partenaires"></ul>
+                  <button class="bouton bouton-creux mt-16" type="button" id="mon-equipe">Mon équipe</button>
+                </div>
 
-            <nav class="barre" aria-label="Navigation principale">
-              <div class="barre-onglets">
-                <a class="barre-onglet" href="accueil.html" aria-current="page">Chantiers</a>
-                <a class="barre-onglet" href="planning.html">Planning</a>
-                <a class="barre-onglet" href="termines.html">Terminés</a>
-                <a class="barre-onglet" href="paysage.html">Paysage</a>
-                <a class="barre-onglet" href="reglages.html">Réglages</a>
-                <span class="barre-trait" aria-hidden="true"><span></span></span>
+                <div id="mo-corps">
+                <div class="qui-travaille" id="qui-travaille" hidden>
+                  <span class="initiales-or" id="qui-initiales">CM</span>
+                  <div class="qui-mots"><b id="qui-nom">Carrelage Morin</b><small id="qui-prix">Pose de faïence, 380 € la journée</small></div>
+                  <button class="qui-retirer" type="button" id="revenir-equipe" aria-label="Revenir à mon équipe"><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></button>
+                </div>
+                <div class="rang-compte" id="rang-hommes">
+                  <div><b>Hommes</b><small>Repris de votre dictée</small></div>
+                  <div class="petit-compteur" data-compte="hommes"><button type="button" aria-label="Un homme de moins" data-pas="-1"><svg class="ico" aria-hidden="true"><use href="#i-moins"/></svg></button><output id="mo-hommes">2</output><button type="button" aria-label="Un homme de plus" data-pas="1"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg></button></div>
+                </div>
+                <div class="rang-compte">
+                  <div><b id="mo-qte-mot">Durée</b><small id="mo-qte-sous">Repris de votre dictée</small></div>
+                  <div class="petit-compteur" data-compte="jours"><button type="button" aria-label="Moins long" data-pas="-1"><svg class="ico" aria-hidden="true"><use href="#i-moins"/></svg></button><output id="mo-jours">2 jours</output><button type="button" aria-label="Plus long" data-pas="1"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg></button></div>
+                  <input class="case-euros" id="mo-qte-case" inputmode="decimal" hidden aria-label="Quantité">
+                </div>
+                <div class="rang-compte" id="rang-tarif">
+                  <div><b>Le jour par homme</b><small>Vos tarifs</small></div>
+                  <input class="case-euros" id="mo-tarif" inputmode="decimal" value="280 €" aria-label="Prix du jour par homme, en euros">
+                </div>
+                <div class="rang-compte" id="rang-marge" hidden>
+                  <div><b>Votre marge</b><small id="marge-sous">Main d’œuvre, sur leur prix</small></div>
+                  <b id="marge-valeur" style="font:400 19px/1 var(--serif)">× 1,20</b>
+                </div>
+                <div class="resultat">
+                  <p class="calcul" id="mo-calcul">2 hommes × 2 jours × 280 €</p>
+                  <p class="gros" id="mo-total">1&#8239;120,00&nbsp;€<small>HT</small></p>
+                </div>
+                <p class="rubrique">Où la mettre</p>
+                <div class="choix-mots" data-un-seul id="mo-mode" style="grid-template-columns:1fr 1fr">
+                  <button type="button" data-choix="ligne" aria-pressed="true">Sur une ligne Main d’œuvre</button>
+                  <button type="button" data-choix="repartie" aria-pressed="false">Répartie sur les travaux</button>
+                </div>
+                <div class="repartition" id="mo-repartition" hidden>
+                  <div class="barre-mo" id="barre-mo"><div class="barre-mo-fond" id="barre-mo-fond"></div></div>
+                  <ul class="parts" id="parts-mo"></ul>
+                </div>
+                <button class="bouton bouton-plein" type="button" data-ajoute="mo" id="mo-bouton">Ajouter la main d’œuvre</button>
+                <button class="bouton-texte annuler" type="button" data-ferme>Annuler</button>
+                </div>
               </div>
-            </nav>
+            </div>
+
+            <!-- Une TVA : le taux se touche, au lieu de se taper. -->
+            <div class="feuille" id="f-tva" aria-hidden="true" role="dialog" aria-label="Ajouter une TVA">
+              <div class="feuille-poignee"></div>
+              <div class="feuille-dedans">
+                <p class="feuille-titre">Ajouter une TVA</p>
+                <p class="second" style="margin:-6px 0 14px">Le devis est déjà à 20 %.</p>
+                <label class="case-taux"><input id="tva-saisie" inputmode="decimal" value="10" aria-label="Taux de TVA, en pourcentage" data-quoi="tva"><span>%</span></label>
+                <div class="raccourcis" data-pour="tva-saisie">
+                  <button type="button" data-valeur="10" aria-pressed="true">10 %</button>
+                  <button type="button" data-valeur="5,5" aria-pressed="false">5,5 %</button>
+                  <button type="button" data-valeur="0" aria-pressed="false">0 %</button>
+                </div>
+                <p class="refus-saisie" id="tva-refus" hidden></p>
+                <button class="bouton bouton-plein" type="button" data-ajoute="tva" data-bouton-saisie id="tva-bouton">Ajouter la TVA à 10 %</button>
+                <button class="bouton-texte annuler" type="button" data-ferme>Annuler</button>
+              </div>
+            </div>
+
+            <!-- Un acompte : combien, quand, et ce qu'il reste avant d'ajouter. -->
+            <div class="feuille" id="f-acompte" aria-hidden="true" role="dialog" aria-label="Ajouter un acompte">
+              <div class="feuille-poignee"></div>
+              <div class="feuille-dedans">
+                <p class="feuille-titre">Ajouter un acompte</p>
+                <p class="rubrique">Combien</p>
+                <label class="case-taux"><input id="acompte-saisie" inputmode="decimal" value="30" aria-label="Acompte, en pourcentage du total TTC" data-quoi="acompte"><span>%</span></label>
+                <div class="raccourcis" data-pour="acompte-saisie">
+                  <button type="button" data-valeur="30" aria-pressed="true">30 %, votre réglage</button>
+                  <button type="button" data-valeur="40" aria-pressed="false">40 %</button>
+                  <button type="button" data-valeur="50" aria-pressed="false">50 %</button>
+                </div>
+                <p class="refus-saisie" id="acompte-refus" hidden></p>
+                <p class="rubrique">Quand</p>
+                <div class="choix-mots" data-un-seul id="acompte-quand">
+                  <button type="button" data-choix="à la signature" aria-pressed="true">À la signature</button>
+                  <button type="button" data-choix="à mi-parcours" aria-pressed="false">À mi&#8209;parcours</button>
+                  <button type="button" data-choix="à l'avancement" aria-pressed="false">À l'avancement</button>
+                </div>
+                <div class="resultat">
+                  <p class="calcul" id="acompte-calcul">30 % de 1&#8239;130,40 € TTC, à la signature</p>
+                  <p class="gros" id="acompte-total">339,12&nbsp;€</p>
+                  <p class="calcul" id="acompte-reste">Reste à régler : 791,28 €</p>
+                </div>
+                <button class="bouton bouton-plein" type="button" data-ajoute="acompte" data-bouton-saisie>Ajouter l’acompte</button>
+                <button class="bouton-texte annuler" type="button" data-ferme>Annuler</button>
+              </div>
+            </div>
+
+            <!-- Une remise : ce qu'elle retire, avant de l'appliquer. -->
+            <div class="feuille" id="f-remise" aria-hidden="true" role="dialog" aria-label="Remise">
+              <div class="feuille-poignee"></div>
+              <div class="feuille-dedans">
+                <p class="feuille-titre">Remise</p>
+                <label class="case-taux"><input id="remise-saisie" inputmode="decimal" value="5" aria-label="Remise, en pourcentage du total HT" data-quoi="remise"><span>%</span></label>
+                <div class="raccourcis" data-pour="remise-saisie">
+                  <button type="button" data-valeur="5" aria-pressed="true">5 %</button>
+                  <button type="button" data-valeur="10" aria-pressed="false">10 %</button>
+                  <button type="button" data-valeur="15" aria-pressed="false">15 %</button>
+                </div>
+                <p class="refus-saisie" id="remise-refus" hidden></p>
+                <div class="resultat">
+                  <p class="calcul" id="remise-calcul">5 % de 942,00 € HT</p>
+                  <p class="gros" id="remise-total">−&nbsp;47,10&nbsp;€</p>
+                  <p class="calcul" id="remise-apres">Total HT après remise : 894,90 €</p>
+                </div>
+                <button class="bouton bouton-plein" type="button" data-ajoute="remise" data-bouton-saisie>Appliquer la remise</button>
+                <button class="bouton-texte annuler" type="button" data-ferme>Annuler</button>
+              </div>
+            </div>
           </div>
 
         </div>
@@ -796,7 +740,7 @@
 
       <div data-vue-panneau="aujourdhui">
         <p class="pl-legende">Aujourd'hui</p>
-        <div class="cadre"><div class="cadre-capture" id="cadre-capture"><img id="capture" src="aujourdhui/chantier-note-vocale.jpg" alt="L'écran tel qu'il est aujourd'hui"></div></div>
+        <div class="cadre"><div class="cadre-capture" id="cadre-capture"><img id="capture" src="aujourdhui/chantier-dictee-repos.jpg" alt="L'écran tel qu'il est aujourd'hui"></div></div>
         <p class="capture-quoi" id="capture-quoi"></p>
       </div>
     </div>
@@ -806,108 +750,58 @@
     <div class="page-notes" data-notes="commun">
       <h2>Partout</h2>
       <ul>
-        <li>Sous le titre, le chantier et son client en clair, au lieu de capitales dorées de 11 points.</li>
-        <li>Un seul bouton plein, toujours en bas, au même endroit ; la sortie de secours écrite juste dessous.</li>
-        <li>Les phrases qui expliquent le bouton d'à côté partent (votre règle du 25 août). Celles qui rassurent restent : « Rien ne part au client. »</li>
+        <li>Ce que vous avez choisi de garder reste tel quel : la fiche client (28 octobre), la page du devis (1er novembre).</li>
+        <li>Un seul bouton plein par écran, en bas ; plus rien sous 14 points, en encre douce et non plus en gris.</li>
       </ul>
     </div>
 
     <div class="page-notes" data-notes="note">
       <h2>La note vocale</h2>
       <ul>
-        <li>Un grand micro au milieu, cerclé d'or, le même que sur la fiche client : on le trouve sans chercher, d'un doigt.</li>
-        <li>Pendant l'enregistrement, le temps en grand et l'anneau qui respire.</li>
-        <li>Une fois enregistrée : le lecteur, puis trois lignes rangées (le texte, reprendre, remplacer) au lieu de cinq gestes empilés de tailles différentes.</li>
-        <li>« Ajouter un fichier audio » devient un vrai bouton ; aujourd'hui, des capitales de 9,5 points.</li>
+        <li>C'est la dictée de la fiche client, celle qui s'ouvre sur Créer un devis. <b>La fiche reste celle d'aujourd'hui</b> (votre choix du 28 octobre) : seule la dictée change.</li>
+        <li>Au repos, « Appuyez et décrivez le chantier » se lit : 15 points en encre douce, au lieu de 11 en gris.</li>
+        <li><b>Pendant la dictée, trois façons à choisir</b> (votre demande du 1er novembre : « quelque chose de mieux, plus joli ») :
+          <b>A, la ligne</b> : celle d'aujourd'hui, soignée ; la poubelle passe de 32 à 52 points, l'avion de 46 à 58, le temps en noir.
+          <b>B, l'anneau qui écoute</b> : le disque du micro reste à sa place, l'avion y remplace le micro, et des cercles d'or s'ouvrent autour avec votre voix ; Jeter à gauche, le temps à droite.
+          <b>C, la plage</b> : le temps et la voix en barres d'or dans une plage, et deux vrais boutons écrits, Jeter et Envoyer.</li>
+        <li>Envoyée : « Transcription », puis « Atlas prépare votre devis », en 16 points au lieu de 13. La zone garde sa hauteur : rien ne saute.</li>
       </ul>
       <h2>Ce qui ne bouge pas</h2>
       <ul class="garde">
-        <li>Créer le devis à partir de ma dictée, en plein ; Ou rédiger le devis à la main ; la feuille de Remplacer et sa phrase.</li>
-        <li>Le geste Retirer sur la note, et son tiroir.</li>
-      </ul>
-    </div>
-
-    <div class="page-notes" data-notes="transcription" hidden>
-      <h2>La transcription</h2>
-      <ul>
-        <li>Vos mots en serif, à la taille d'une lettre : c'est un texte qu'on relit.</li>
-        <li>« Corriger le texte à la main » se pose sous le texte qu'il corrige, avec un crayon.</li>
-        <li>L'échec a sa plage, et « Écrire ce que j'ai dit » devient un vrai bouton.</li>
-      </ul>
-      <h2>Ce qui ne bouge pas</h2>
-      <ul class="garde">
-        <li>Créer le devis à partir de ma dictée ; Ou vérifier les informations une par une ; chaque phrase des états.</li>
-      </ul>
-    </div>
-
-    <div class="page-notes" data-notes="informations" hidden>
-      <h2>Les informations</h2>
-      <ul>
-        <li>Tout ce qui vient de la dictée dans une plage dorée : d'où ça vient, le brouillon, la transcription, le devis d'un seul geste.</li>
-        <li>Prestations et matériel dans une seule plage chacun, un filet entre deux lignes, au lieu d'une carte par ligne.</li>
-        <li>La durée se compte au doigt avec moins et plus, dans la même liste qu'aujourd'hui (½ journée, 1 journée, 2 jours…) ; essayez.</li>
-        <li>Ce qui manque se lit en ambre, à la place de la valeur : « Non précisé ». Aujourd'hui, une case vide qui ne dit rien.</li>
-      </ul>
-      <h2>Ce qui ne bouge pas</h2>
-      <ul class="garde">
-        <li>Valider et calculer le prix, en plein ; Écrire le devis, en or, dessous.</li>
-        <li>Retirer une ligne en la faisant glisser, et son tiroir.</li>
-      </ul>
-      <h2>Pas encore dessiné</h2>
-      <ul class="a-trancher">
-        <li>Le brouillon une fois généré, avec ses propositions à confirmer : il viendra sur sa propre planche si vous voulez.</li>
-      </ul>
-    </div>
-
-    <div class="page-notes" data-notes="prix" hidden>
-      <h2>Le prix</h2>
-      <ul>
-        <li>Le montant de chaque ligne tient sur sa ligne. <b>Aujourd'hui il passe dessous et se fait couper en deux</b> : regardez la capture.</li>
-        <li>« Total HT » en grand, avec à côté ce qui manque : « 1 attend son prix ».</li>
-        <li>La proposition dit sa source en pastille au lieu de capitales coupées sur deux lignes. Une fois ajoutée au détail, elle se replie en une ligne : il n'y a plus deux grands montants l'un sous l'autre.</li>
-        <li>Ce qui bloque se lit au-dessus de Préparer le devis, là où l'on appuie.</li>
-      </ul>
-      <h2>Ce qui ne bouge pas</h2>
-      <ul class="garde">
-        <li>Ajouter au détail, Voir le détail, Relancer le calcul, Ouvrir mes tarifs, Préparer le devis.</li>
-        <li>La phrase qui dit que ces prix n'ont pas été calculés.</li>
+        <li>Le micro et son anneau d'or ; le dessin qui suit la vraie voix ; pas de pause ; jamais deux disques verts à la fois (votre remarque du 31 août) ; la poubelle à gauche, l'envoi à droite ou au centre.</li>
+        <li>L'invite qui disparaît pendant la dictée ; Je rédige à la main, qui s'efface le temps de l'envoi.</li>
       </ul>
       <h2>À trancher</h2>
       <ul class="a-trancher">
-        <li>Replier la proposition dès que le détail a des lignes : aujourd'hui elle reste ouverte. « Voir la proposition de prix » la rouvre.</li>
+        <li><b>Tranché le 1er novembre : la B</b>, codée dans l'appli le jour même. Un appui dans la première seconde n'envoie rien : l'avion tombe sous le doigt qui vient de lancer la dictée.</li>
+        <li>L'ancien écran Note vocale (celui que je vous avais montré par erreur) existe encore : la Transcription y mène par « Relancer depuis la note vocale » et « Enregistrer une note vocale ». Deux enregistreurs pour une même note. Je propose que ces liens ouvrent la fiche client, et que l'ancien écran parte.</li>
       </ul>
     </div>
 
     <div class="page-notes" data-notes="devis" hidden>
       <h2>Le devis complet</h2>
       <ul>
-        <li>Chaque ligne se lit comme sur un devis : son libellé, puis « 12 m² × 18,00&nbsp;€ » et le montant à droite. Aujourd'hui, quatre rangées étiquetées par ligne : le même devis tient en deux fois moins de place.</li>
-        <li>Vos coordonnées tiennent en trois lignes, les quatre dates dans un carré : les lignes du devis arrivent plus haut.</li>
-        <li>Une adresse ou un e-mail qui manque se lit en ambre ; aujourd'hui le mot gris « Adresse » ressemble à une adresse.</li>
-        <li>Le total TTC sur une bande dorée. Les ajouts (ligne, main d'œuvre, TVA, acompte, remise) en vraies pastilles.</li>
-        <li>Parti chez le client, la page se lit sans case ni croix.</li>
+        <li><b>La page reste celle de l'appli</b> : mêmes lignes et mêmes cases (Qté, Unité, Prix unitaire, Montant), mêmes totaux, même ordre.</li>
+        <li>Les cinq ajouts deviennent de vraies pastilles, aux mêmes places : sous les lignes (une ligne, la main d'œuvre, une TVA), sous le total (un acompte, une remise). Aujourd'hui, des liens de 14 points en deux couleurs.</li>
+        <li><b>Main d'œuvre</b> s'ouvre sur son calcul : les hommes et la durée repris de votre dictée, votre prix du jour par homme, et le total avant d'ajouter. C'est le calcul d'« Avant de chiffrer », déjà dans l'appli. En ligne, elle s'écrit comme l'appli l'écrit : des jours d'homme au prix du jour. Répartie, c'est la barre de l'appli : parts égales à la dizaine, une poignée entre deux travaux, de 10 € en 10 €. Aujourd'hui, une ligne vide où taper un montant. Sans tarif enregistré, la case reste vide : rien ne s'invente.</li>
+        <li><b>« Mes partenaires »</b>, une petite pastille à droite du titre de la main d'œuvre (votre idée du 1er novembre) : on la touche, on choisit le prix d'un partenaire (à la journée, à l'heure, au mètre, au forfait), et le calcul prend son prix avec votre marge, la sienne s'il en a une. La ligne du devis dit son nom. Aujourd'hui, un partenaire n'entre que par les mots de la dictée.</li>
+        <li><b>Une TVA, un acompte, une remise : vous tapez le chiffre que vous voulez</b> (votre réponse du 1er novembre), en grand, au pavé de chiffres. Les valeurs courantes ne sont que des raccourcis dessous : 10, 5,5 et 0 % pour la TVA ; 30 % (votre réglage), 40 et 50 % pour l'acompte ; 5, 10 et 15 % pour la remise.</li>
+        <li>L'acompte dit aussi quand (à la signature, à mi-parcours, à l'avancement), et montre le montant et le reste à régler avant d'ajouter.</li>
+        <li>La remise montre ce qu'elle retire avant de l'appliquer. Un chiffre qui n'en est pas un se dit en ambre et éteint le bouton, comme l'appli le refuse déjà.</li>
+        <li>Ce qui vient d'être ajouté s'éclaire un instant dans le devis : on le voit arriver. La croix remplace le « − » doré pour retirer, et le tiroir rend la main.</li>
       </ul>
       <h2>Ce qui ne bouge pas</h2>
       <ul class="garde">
-        <li>La page du devis, dans l'ordre du PDF ; la barre du bas cachée ; l'assistant et le micro en haut.</li>
-        <li>Choisir la date en bas ; la ligne qui attend son prix arrête tout, avec Poser le prix.</li>
-        <li>La répartition de la main d'œuvre, sur sa planche (main-oeuvre-curseur.html), codée le 28 octobre.</li>
+        <li>Les lignes, les totaux et leur ordre ; « dont main d'œuvre HT » ; la bande de chaque TVA et son sous-total.</li>
+        <li>La ligne qui attend son prix arrête tout, avec Poser le prix ; Aperçu du PDF ; Choisir la date.</li>
+      </ul>
+      <h2>À trancher</h2>
+      <ul class="a-trancher">
+        <li><b>Main d'œuvre répartie sur un devis déjà écrit.</b> Dans l'appli, la répartition n'existe aujourd'hui qu'au moment où Atlas prépare le devis (« Avant de chiffrer ») ; « + Main d'œuvre » ajoute toujours une ligne. La planche la propose aussi ici : la même barre, et chaque ligne reçoit sa part en le disant (« dont 150 € de main d'œuvre »). À garder ?</li>
+        <li>Les raccourcis sous chaque case : 30 % est votre réglage d'acompte, 5 % la remise que l'appli pose aujourd'hui ; 40, 50, 10 et 15 % sont à vous de dire, ou à retirer.</li>
       </ul>
     </div>
 
-    <div class="page-notes" data-notes="envoye" hidden>
-      <h2>Le devis envoyé</h2>
-      <ul>
-        <li>L'état en pastille de couleur avec sa phrase ; le message du client sur une plage dorée, en serif, et son nom dessous.</li>
-        <li>Sous le montant, la date d'envoi, que l'appli connaît déjà.</li>
-        <li>Télécharger le PDF et Modifier mon devis deviennent de vrais boutons, côte à côte.</li>
-      </ul>
-      <h2>Ce qui ne bouge pas</h2>
-      <ul class="garde">
-        <li>Le signet d'or que vous avez choisi : l'état, le montant seul au centre, le geste en bas.</li>
-        <li>Corriger et renvoyer ; Rouvrir le SMS et Plutôt par e-mail ; Le client s’est trompé, en rouge.</li>
-      </ul>
-    </div>
   </section>
 </main>
 
@@ -924,52 +818,25 @@
   /* Chaque écran, ses états, et la vraie page qui leur répond. */
   var PAGES = {
     note: {
-      etats: [["vide", "Sans note"], ["enregistrement", "Enregistrement"], ["enregistree", "Enregistrée"]],
+      etats: [["repos", "Au repos"], ["dictee", "Dictée A, la ligne"], ["dictee-b", "Dictée B, choisie"], ["dictee-c", "Dictée C, la plage"], ["transcription", "Envoyée"], ["preparation", "Le devis se prépare"]],
       captures: {
-        vide: ["chantier-note-vocale-vide.jpg", "Aujourd'hui, sans note."],
-        enregistrement: ["chantier-note-vocale-vide.jpg", "Aujourd'hui, sans note : l'enregistrement remplace le bouton par Arrêter."],
-        enregistree: ["chantier-note-vocale.jpg", "Aujourd'hui, une note enregistrée et transcrite."]
-      }
-    },
-    transcription: {
-      etats: [["transcrite", "Transcrite"], ["en-cours", "En cours"], ["echec", "Échec"], ["aucune", "Sans note"]],
-      captures: {
-        transcrite: ["chantier-transcription.jpg", "Aujourd'hui, une dictée transcrite."],
-        "en-cours": ["chantier-transcription.jpg", "Aujourd'hui, une dictée transcrite (les autres états, dans le code)."],
-        echec: ["chantier-transcription.jpg", "Aujourd'hui, une dictée transcrite (les autres états, dans le code)."],
-        aucune: ["chantier-transcription.jpg", "Aujourd'hui, une dictée transcrite (les autres états, dans le code)."]
-      }
-    },
-    informations: {
-      etats: [["dictee", "Repris de la dictée"], ["rempli", "Tout rempli"], ["sans", "Sans dictée"]],
-      captures: {
-        dictee: ["chantier-informations.jpg", "Aujourd'hui, repris de la dictée : la durée et l'équipe sont vides."],
-        rempli: ["chantier-informations.jpg", "Aujourd'hui, repris de la dictée."],
-        sans: ["chantier-informations.jpg", "Aujourd'hui, repris de la dictée."]
-      }
-    },
-    prix: {
-      etats: [["proposition", "La proposition"], ["a-chiffrer", "Une ligne à chiffrer"], ["pret", "Prêt"]],
-      captures: {
-        proposition: ["chantier-prix.jpg", "Aujourd'hui, une ligne à chiffrer. Regardez le Détail : les montants sont coupés."],
-        "a-chiffrer": ["chantier-prix.jpg", "Aujourd'hui, une ligne à chiffrer. Regardez le Détail : les montants sont coupés."],
-        pret: ["chantier-prix.jpg", "Aujourd'hui, une ligne à chiffrer. Regardez le Détail : les montants sont coupés."]
+        repos: ["chantier-dictee-repos.jpg", "Aujourd'hui, la fiche client ouverte par Créer un devis."],
+        dictee: ["chantier-dictee-en-cours.jpg", "Aujourd'hui, pendant la dictée."],
+        "dictee-b": ["chantier-dictee-en-cours.jpg", "Aujourd'hui, pendant la dictée."],
+        "dictee-c": ["chantier-dictee-en-cours.jpg", "Aujourd'hui, pendant la dictée."],
+        transcription: ["chantier-dictee-envoi.jpg", "Aujourd'hui, la note envoyée."],
+        preparation: ["chantier-dictee-envoi.jpg", "Aujourd'hui, la note envoyée : ensuite « Atlas prépare votre devis », puis le devis s'ouvre."]
       }
     },
     devis: {
-      etats: [["en-cours", "Une ligne à chiffrer"], ["pret", "Prêt"], ["parti", "Parti chez le client"]],
+      etats: [["devis", "Le devis"], ["mo", "Main d’œuvre"], ["tva", "Une TVA"], ["acompte", "Un acompte"], ["remise", "Une remise"], ["tout", "Tout ajouté"]],
       captures: {
-        "en-cours": ["chantier-devis.jpg", "Aujourd'hui, le même devis, une ligne à chiffrer."],
-        pret: ["chantier-devis.jpg", "Aujourd'hui, le même devis, une ligne à chiffrer."],
-        parti: ["chantier-devis-parti.jpg", "Aujourd'hui, un devis parti chez le client."]
-      }
-    },
-    envoye: {
-      etats: [["corriger", "Correction demandée"], ["attente", "En attente"], ["accepte", "Accepté"]],
-      captures: {
-        corriger: ["chantier-devis-envoye.jpg", "Aujourd'hui, une correction demandée."],
-        attente: ["chantier-devis-envoye.jpg", "Aujourd'hui, une correction demandée."],
-        accepte: ["chantier-devis-envoye.jpg", "Aujourd'hui, une correction demandée."]
+        devis: ["chantier-devis.jpg", "Aujourd'hui, le devis entier : les ajouts sont des liens de 14 points."],
+        mo: ["chantier-devis-main-oeuvre.jpg", "Aujourd'hui, + Main d’œuvre ajoute une ligne qui n'a qu'un montant, à taper."],
+        tva: ["chantier-devis-tva.jpg", "Aujourd'hui, + Ajouter une TVA ouvre une bande grise à 10 % ; le taux se tape."],
+        acompte: ["chantier-devis-acompte.jpg", "Aujourd'hui, l'acompte se pose à 30 % sous le total ; le taux se tape."],
+        remise: ["chantier-devis-remise.jpg", "Aujourd'hui, la remise se pose à 5 % ; le taux se tape."],
+        tout: ["chantier-devis-acompte.jpg", "Aujourd'hui, la main d’œuvre, deux TVA et l'acompte posés."]
       }
     }
   };
@@ -997,7 +864,8 @@
     var defile = ecran.querySelector(".defile");
     if (defile) defile.scrollTop = 0;
     montrerCapture(pageCourante, etat);
-    if (pageCourante === "informations") poserDuree(etat === "dictee" ? 0 : 3);
+    if (pageCourante === "note") suivreLEnvoi();
+    if (pageCourante === "devis") etatDuDevis(etat);
   }
 
   function choisirPage(page, etat) {
@@ -1035,8 +903,7 @@
     if (note) { e.preventDefault(); Kit.note(note, note.getAttribute("data-note")); }
   });
 
-  /* Un état qui change depuis l'écran (le micro, Ajouter au détail…) suit
-     la rangée des états. */
+  /* Un état qui change depuis l'écran (le micro, l'avion…) suit la rangée des états. */
   document.querySelectorAll("[data-va-etat]").forEach(function (b) {
     b.addEventListener("click", function () {
       var etat = b.getAttribute("data-va-etat");
@@ -1044,49 +911,498 @@
     });
   });
 
-  /* Le chrono de l'enregistrement, pour qu'on le voie avancer. */
-  var secondes = 42;
-  setInterval(function () {
-    var ecran = document.getElementById("ecran-note");
-    if (ecran.getAttribute("data-etat") !== "enregistrement" || ecran.hidden) return;
-    secondes += 1;
-    document.getElementById("chrono").textContent = Math.floor(secondes / 60) + ":" + String(secondes % 60).padStart(2, "0");
-  }, 1000);
+  /* Pendant la dictée : le temps avance, et le trait d'or bouge comme une
+     voix (un relevé simulé ici ; dans l'appli, le volume réellement capté,
+     contourDuTrait dans AnneauNoteVocale.tsx). */
+  var secondes = 42, onde = [];
+  for (var k = 0; k < 64; k++) onde.push(Math.sin(k / 5) > -0.35 ? 0.25 + Math.abs(Math.sin(k * 1.7) * Math.cos(k * 0.6)) * 0.75 : 0.02);
+  function contourDuTrait(m) {
+    var dessus = [], dessous = [];
+    for (var i = 0; i < m.length; i++) {
+      var x = (i * 260) / (m.length - 1), demi = 0.35 + Math.max(0, Math.min(1, m[i])) * 9;
+      dessus.push(x.toFixed(1) + " " + (15 - demi).toFixed(2));
+      dessous.push(x.toFixed(1) + " " + (15 + demi).toFixed(2));
+    }
+    return "M" + dessus.join(" L") + " L" + dessous.reverse().join(" L") + " Z";
+  }
+  var t0 = 64;
+  document.getElementById("trait-voix").setAttribute("d", contourDuTrait(onde));
 
-  /* La durée, un cran à la fois, dans la liste de la case d'aujourd'hui
-     (src/lib/durees-chantier.ts, DUREES) ; le rang 0 dit « non précisé ». */
-  var DUREES = ["Non précisé", "½ journée", "1 journée"];
-  for (var j = 2; j <= 200; j++) DUREES.push(j + " jours");
-  var rangDuree = 3;
-  function poserDuree(rang) {
-    rangDuree = Math.max(0, Math.min(DUREES.length - 1, rang));
-    var manque = rangDuree === 0;
-    document.getElementById("duree-valeur").textContent = DUREES[rangDuree];
-    document.getElementById("duree-valeur").classList.toggle("vide-valeur", manque);
-    document.getElementById("reglage-duree").classList.toggle("manque", manque);
-    document.querySelector('[data-duree="-1"]').disabled = rangDuree === 0;
-    var etat = document.getElementById("ecran-informations").getAttribute("data-etat");
-    var equipe = document.getElementById("equipe-valeur");
-    var sansEquipe = etat === "dictee" || etat === "sans";
-    if (etat) {
-      equipe.value = sansEquipe ? "" : "2 personnes";
-      document.getElementById("reglage-equipe").classList.toggle("manque", sansEquipe);
+  /* B : trois cercles d'or qui s'ouvrent avec la voix, lissés pour ne pas
+     trembler ; au silence, ils se resserrent contre le disque. */
+  var niveau = 0;
+  function dessinerAnneau() {
+    var cible = (onde[onde.length - 1] + onde[onde.length - 2] + onde[onde.length - 3]) / 3;
+    niveau += (cible - niveau) * 0.45;
+    [1, 2, 3].forEach(function (k) {
+      var c = document.getElementById("onde-" + k);
+      c.setAttribute("r", (45 + k * 4 + niveau * (3 + 2 * k)).toFixed(1));
+      c.setAttribute("opacity", ((0.75 - k * 0.2) * (0.35 + niveau * 0.65)).toFixed(2));
+    });
+  }
+  /* C : quarante barres, la plus récente à droite. */
+  var svgBarres = document.getElementById("barres");
+  for (var b = 0; b < 40; b++) {
+    var r = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    r.setAttribute("x", String(b * 6 + 1)); r.setAttribute("width", "3.4"); r.setAttribute("rx", "1.7");
+    svgBarres.appendChild(r);
+  }
+  function dessinerBarres() {
+    var barres = svgBarres.querySelectorAll("rect");
+    for (var i = 0; i < 40; i++) {
+      var v = Math.max(0.06, onde[onde.length - 40 + i] || 0);
+      var h = 3 + v * 34;
+      barres[i].setAttribute("y", (20 - h / 2).toFixed(1));
+      barres[i].setAttribute("height", h.toFixed(1));
     }
   }
-  document.getElementById("duree-compteur").addEventListener("click", function (e) {
-    var b = e.target.closest("[data-duree]");
-    if (b && !b.disabled) poserDuree(rangDuree + Number(b.getAttribute("data-duree")));
-  });
-  document.getElementById("equipe-valeur").addEventListener("input", function (e) {
-    var vide = !e.target.value.trim();
-    document.getElementById("reglage-equipe").classList.toggle("manque", vide);
-  });
+  dessinerAnneau(); dessinerBarres();
+  setInterval(function () {
+    var ecran = document.getElementById("ecran-note");
+    var etatNote = ecran.getAttribute("data-etat") || "";
+    if (etatNote.indexOf("dictee") !== 0 || ecran.hidden) return;
+    t0 += 1;
+    var parle = Math.sin(t0 / 5) > -0.35;
+    onde.shift();
+    onde.push(parle ? 0.25 + Math.abs(Math.sin(t0 * 1.7) * Math.cos(t0 * 0.6)) * 0.75 : 0.02);
+    document.getElementById("trait-voix").setAttribute("d", contourDuTrait(onde));
+    dessinerAnneau();
+    dessinerBarres();
+    if (t0 % 8 === 0) {
+      secondes += 1;
+      var temps = Math.floor(secondes / 60) + ":" + String(secondes % 60).padStart(2, "0");
+      ["chrono", "chrono-b", "chrono-c"].forEach(function (id) { document.getElementById(id).textContent = temps; });
+    }
+  }, 125);
 
-  /* « Poser le prix » mène à la case qui attend. */
-  document.getElementById("poser-prix").addEventListener("click", function () {
-    var c = document.getElementById("pu-attend");
-    c.scrollIntoView({ block: "center", behavior: "smooth" });
-    setTimeout(function () { c.focus({ preventScroll: true }); }, 380);
+  /* Envoyée : la transcription, puis le devis qui se prépare et son compteur
+     (passé quinze secondes, la phrase dit « toujours », DevisDepuisDictee.tsx). */
+  var suite = null, attente = 12;
+  function suivreLEnvoi() {
+    var ecran = document.getElementById("ecran-note");
+    clearTimeout(suite);
+    if (ecran.getAttribute("data-etat") === "transcription") {
+      suite = setTimeout(function () { if (ecran.getAttribute("data-etat") === "transcription" && pageCourante === "note") choisirEtat("preparation"); }, 2600);
+    }
+  }
+  setInterval(function () {
+    var ecran = document.getElementById("ecran-note");
+    if (ecran.getAttribute("data-etat") !== "preparation" || ecran.hidden) { attente = 12; return; }
+    attente += 1;
+    var phrase = ecran.querySelector('[data-si-etat="preparation"] .dictee-suite');
+    phrase.firstChild.textContent = attente < 15 ? "Atlas prépare votre devis" : "Atlas prépare toujours votre devis";
+    document.getElementById("prepa-sous").textContent = attente < 15 ? "\u00a0" : attente + " s";
+  }, 1000);
+
+
+  /* ═══ LE DEVIS : ses ajouts, et les totaux qui les suivent ═══════════════
+     Les règles sont celles de l'appli, recopiées ici pour la planche : la
+     remise se retire du HT avant la TVA, l'acompte se prend sur le TTC
+     (reduction-devis.ts, acomptes-devis.ts) ; la main d'œuvre vaut hommes ×
+     jours × prix du jour par homme (main-oeuvre-dictee.ts, tarif-main-oeuvre.ts). */
+  var ecranDevis = document.getElementById("ecran-devis");
+  var LIGNES_HT = 942;
+  var DUREES = [["½ journée", 0.5], ["1 journée", 1]];
+  for (var j = 2; j <= 200; j++) DUREES.push([j + " jours", j]);
+  var ajouts = { mo: false, tva: false, remise: false, acompte: false };
+  var mo = { hommes: 2, rang: 2, tarif: 280, mode: "ligne", parts: null, qui: null, qte: 2 };
+  /* Ses partenaires, comme sur la planche des Réglages : un nom, des prix
+     relevés dans une des unités de la rubrique (heure, journée, m, m²,
+     forfait), une marge propre ou celle de la main d'œuvre (prix-achat.ts). */
+  var MARGE_MAIN_OEUVRE = 1.2;
+  var PARTENAIRES = [
+    { nom: "Carrelage Morin", marge: null, prix: [{ nom: "Pose de faïence", unite: "journée", prix: 380 }, { nom: "Pose de faïence", unite: "m²", prix: 32 }] },
+    { nom: "Pilou", marge: null, prix: [{ nom: "Pose de clôture", unite: "m", prix: 10 }] },
+    { nom: "Élagage Durand", marge: 1.35, prix: [{ nom: "Élagage", unite: "journée", prix: 450 }, { nom: "Élagage", unite: "heure", prix: 60 }] }
+  ];
+  function initiales(nom) { return nom.split(/\s+/).slice(0, 2).map(function (m) { return m.charAt(0).toUpperCase(); }).join(""); }
+  function margeDe(p) { return p.marge || MARGE_MAIN_OEUVRE; }
+  /* prixDepuisAchat (prix-achat.ts) : leur prix × votre marge. */
+  function prixVendu(choix) { return Math.round(choix.prix.prix * margeDe(choix.societe) * 100) / 100; }
+  /* Les travaux qui reçoivent la main d'œuvre, dans l'ordre du devis. */
+  var TRAVAUX = [
+    { cle: "depose", nom: "Dépose de l'ancien carrelage", base: 216 },
+    { cle: "pose", nom: "Pose de faïence murale", base: 630 },
+    { cle: "robinet", nom: "Remplacement de la robinetterie", base: 0 },
+    { cle: "colle", nom: "Colle flex et joint gris anthracite", base: 96 }
+  ];
+  var PASTELS = ["#9fc48a", "#e3c88f", "#93bde0", "#8fd1bd", "#e8a9b7"];
+  /* repartirMainOeuvre (main-oeuvre-dictee.ts) : des parts qui font le total
+     s'écrivent telles quelles ; sinon, au prorata, à la dizaine, l'écart au
+     dernier travail qui a une part. */
+  function repartir(total, poids) {
+    var p = poids || TRAVAUX.map(function () { return 1; });
+    var somme = p.reduce(function (a, b) { return a + b; }, 0);
+    if (poids && Math.round(somme * 100) === Math.round(total * 100)) return poids.slice();
+    var m = p.map(function (x) { return somme > 0 ? Math.round(total * x / somme / 10) * 10 : 0; });
+    var ecart = Math.round((total - m.reduce(function (a, b) { return a + b; }, 0)) * 100) / 100;
+    var i = m.length - 1; while (i > 0 && m[i] <= 0) i--;
+    m[i] = Math.round((m[i] + ecart) * 100) / 100;
+    return m;
+  }
+  /* glisserLeJoint : seuls les deux voisins changent, de 10 € en 10 €, et
+     chacun garde au moins 10 €. */
+  function glisserLeJoint(m, k, voulu) {
+    var c = m.map(function (x) { return Math.round(x * 100); });
+    var paire = c[k] + c[k + 1];
+    if (paire < 2000) return m.slice();
+    var gauche = Math.max(1000, Math.min(paire - 1000, Math.round(voulu / 10) * 1000));
+    c[k] = gauche; c[k + 1] = paire - gauche;
+    return c.map(function (x) { return x / 100; });
+  }
+  function partsCourantes() {
+    mo.parts = repartir(montantMo(), mo.parts);
+    return mo.parts;
+  }
+  var tvaTaux = "10", remiseTaux = 5, acompteTaux = 30, acompteQuand = "à la signature";
+
+  var format = new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  function euros(n) { return format.format(n) + " €"; }
+  function arrondi(n) { return Math.round(n * 100) / 100; }
+  function montantMo() { return mo.qui ? arrondi(mo.qte * prixVendu(mo.qui)) : arrondi(mo.hommes * DUREES[mo.rang][1] * mo.tarif); }
+  function journees() { return arrondi(mo.hommes * DUREES[mo.rang][1]); }
+  function libelleMo() { return mo.hommes + (mo.hommes > 1 ? " hommes" : " homme") + " × " + DUREES[mo.rang][0]; }
+
+  function totaux(avec) {
+    var a = avec || ajouts;
+    var moM = a.mo ? montantMo() : 0;
+    var ht = arrondi(LIGNES_HT + moM);
+    var remise = a.remise ? arrondi(ht * remiseTaux / 100) : 0;
+    var htApres = arrondi(ht - remise);
+    var tva = arrondi(htApres * 0.2);
+    var ttc = arrondi(htApres + tva);
+    var acompte = a.acompte ? arrondi(ttc * acompteTaux / 100) : 0;
+    return { mo: moM, ht: ht, remise: remise, htApres: htApres, tva: tva, ttc: ttc, acompte: acompte, reste: arrondi(ttc - acompte) };
+  }
+  function ecrire(id, texte) { var el = document.getElementById(id); if (el) el.textContent = texte; }
+
+  function rendre() {
+    ecranDevis.querySelectorAll("[data-si-ajout]").forEach(function (el) { el.hidden = !ajouts[el.getAttribute("data-si-ajout")]; });
+    document.getElementById("puce-remise").hidden = ajouts.remise;
+    var t = totaux();
+    var reparti = ajouts.mo && mo.mode === "repartie";
+    var parts = reparti ? partsCourantes() : null;
+    document.getElementById("ligne-mo").hidden = !ajouts.mo || reparti;
+    ecrire("ligne-mo-libelle", mo.qui ? "Main d’œuvre : " + mo.qui.societe.nom : "Main d’œuvre");
+    ecrire("ligne-mo-qte", String(mo.qui ? mo.qte : journees()).replace(".", ","));
+    ecrire("ligne-mo-unite", mo.qui ? mo.qui.prix.unite : "jour/homme");
+    ecrire("ligne-mo-pu", String(mo.qui ? prixVendu(mo.qui) : mo.tarif).replace(".", ","));
+    ecrire("ligne-mo-montant", euros(t.mo));
+    var attend = false;
+    TRAVAUX.forEach(function (tr, i) {
+      var part = parts ? parts[i] : 0;
+      var montant = document.getElementById("montant-" + tr.cle);
+      var dont = document.getElementById("dont-" + tr.cle);
+      var vaut = tr.base + part;
+      if (vaut > 0) { montant.textContent = euros(vaut); montant.classList.remove("attend"); }
+      else { montant.textContent = "à chiffrer"; montant.classList.add("attend"); attend = true; }
+      dont.hidden = !part;
+      dont.textContent = part ? "dont " + euros(part) + " de main d’œuvre" : "";
+    });
+    document.getElementById("bas-attend").hidden = !attend;
+    document.getElementById("bas-pret").hidden = attend;
+    ecrire("sous-total-20", euros(t.ht));
+    ecrire("bande-taux", tvaTaux + " %");
+    ecrire("t-tva2-mot", "TVA (" + tvaTaux + " %)");
+    ecrire("t-ht", euros(t.ht));
+    ecrire("t-mo", euros(t.mo));
+    ecrire("t-remise-mot", "Remise de " + enMots(remiseTaux) + " %");
+    ecrire("t-remise", "− " + euros(t.remise));
+    ecrire("t-ht-apres", euros(t.htApres));
+    ecrire("t-tva", euros(t.tva));
+    ecrire("t-ttc", euros(t.ttc));
+    ecrire("t-acompte-mot", "Acompte " + enMots(acompteTaux) + " %");
+    ecrire("t-acompte-quand", acompteQuand);
+    ecrire("t-acompte", euros(t.acompte));
+    ecrire("t-reste", euros(t.reste));
+    rendreFeuilles();
+  }
+
+  /* Les feuilles montrent le résultat du choix AVANT qu'on l'ajoute. */
+  function rendreRepartition() {
+    var bloc = document.getElementById("mo-repartition");
+    bloc.hidden = mo.mode !== "repartie";
+    ecrire("mo-bouton", mo.mode === "repartie" ? "Répartir la main d’œuvre" : "Ajouter la main d’œuvre");
+    if (bloc.hidden) return;
+    var parts = partsCourantes(), total = montantMo();
+    var fond = document.getElementById("barre-mo-fond");
+    var barre = document.getElementById("barre-mo");
+    var largeur = barre.clientWidth || 300;
+    fond.innerHTML = "";
+    barre.querySelectorAll(".poignee").forEach(function (p) { p.remove(); });
+    var cumul = 0;
+    TRAVAUX.forEach(function (tr, i) {
+      var m = document.createElement("span");
+      m.className = "morceau";
+      var frac = total > 0 ? parts[i] / total : 1 / TRAVAUX.length;
+      m.style.flex = "0 0 " + (frac * 100) + "%";
+      m.style.background = PASTELS[i % PASTELS.length];
+      /* Le montant s'écrit dans son morceau s'il tient, sinon il reste sur sa ligne. */
+      m.textContent = frac * largeur >= 64 ? format.format(parts[i]).replace(/,00$/, "") + "\u00a0€" : "";
+      fond.appendChild(m);
+      cumul += frac;
+      if (i < TRAVAUX.length - 1) {
+        var p = document.createElement("span");
+        p.className = "poignee";
+        p.setAttribute("role", "slider");
+        p.setAttribute("aria-label", "Entre " + tr.nom + " et " + TRAVAUX[i + 1].nom);
+        p.setAttribute("aria-valuenow", String(parts[i]));
+        p.setAttribute("data-joint", String(i));
+        p.style.left = (cumul * 100) + "%";
+        barre.appendChild(p);
+      }
+    });
+    var liste = document.getElementById("parts-mo");
+    liste.innerHTML = TRAVAUX.map(function (tr, i) {
+      return '<li><span class="point" style="background:' + PASTELS[i % PASTELS.length] + '"></span><span class="nom"></span><span class="part">' + euros(parts[i]) + '</span></li>';
+    }).join("") + '<li class="total"><span class="nom" style="font:inherit">Total main d’œuvre</span><span class="part">' + euros(total) + '</span></li>';
+    liste.querySelectorAll("li:not(.total) .nom").forEach(function (n, i) { n.textContent = TRAVAUX[i].nom; });
+  }
+
+  function enUnite(u, n) { return u === "journée" ? (n > 1 ? "jours" : "jour") : u === "heure" ? (n > 1 ? "heures" : "heure") : u === "forfait" ? (n > 1 ? "forfaits" : "forfait") : u; }
+  function prixEnMots(pr) {
+    var euros = format.format(pr.prix).replace(/,00$/, "") + " €";
+    return euros + ({ "journée": " la journée", "heure": " l’heure", "forfait": " le forfait" }[pr.unite] || " le " + pr.unite);
+  }
+  function rendrePartenaire() {
+    var p = mo.qui;
+    document.getElementById("puce-partenaires").setAttribute("aria-pressed", p ? "true" : "false");
+    document.getElementById("qui-travaille").hidden = !p;
+    document.getElementById("rang-hommes").hidden = !!p;
+    document.getElementById("rang-tarif").hidden = !!p;
+    document.getElementById("rang-marge").hidden = !p;
+    if (!p) { ecranDevis.querySelector('[data-compte="jours"]').hidden = false; document.getElementById("mo-qte-case").hidden = true; ecrire("mo-qte-mot", "Durée"); ecrire("mo-qte-sous", "Repris de votre dictée"); return; }
+    ecrire("qui-initiales", initiales(p.societe.nom));
+    ecrire("qui-nom", p.societe.nom);
+    ecrire("qui-prix", p.prix.nom + ", " + prixEnMots(p.prix));
+    ecrire("marge-valeur", "× " + format.format(margeDe(p.societe)));
+    ecrire("marge-sous", p.societe.marge ? "La sienne, sur sa fiche" : "Main d’œuvre, sur leur prix");
+    ecrire("mo-qte-mot", { "journée": "Durée", "heure": "Heures", "forfait": "Forfaits" }[p.prix.unite] || "Quantité, en " + p.prix.unite);
+    ecrire("mo-qte-sous", tape ? "À taper" : "À poser");
+    var tape = p.prix.unite !== "journée";
+    ecranDevis.querySelector('[data-compte="jours"]').hidden = tape;
+    document.getElementById("mo-qte-case").hidden = !tape;
+    ecrire("mo-jours", mo.qte + " " + enUnite(p.prix.unite, mo.qte));
+    ecrire("mo-calcul", String(mo.qte).replace(".", ",") + " " + enUnite(p.prix.unite, mo.qte) + " × " + format.format(p.prix.prix).replace(/,00$/, "") + " € × " + format.format(margeDe(p.societe)));
+    ecranDevis.querySelector('[data-compte="jours"] [data-pas="-1"]').disabled = mo.qte <= 1;
+  }
+  function rendreListe() {
+    var ul = document.getElementById("liste-partenaires");
+    ul.innerHTML = "";
+    PARTENAIRES.forEach(function (soc, i) {
+      var li = document.createElement("li");
+      li.innerHTML = '<div class="partenaire-nom"><span class="initiales-or"></span><b></b><small class="marge-du-partenaire"></small></div>';
+      li.querySelector(".initiales-or").textContent = initiales(soc.nom);
+      li.querySelector("b").textContent = soc.nom;
+      li.querySelector(".marge-du-partenaire").textContent = "× " + format.format(margeDe(soc));
+      soc.prix.forEach(function (pr, k) {
+        var b = document.createElement("button");
+        b.type = "button"; b.className = "prix-partenaire touche"; b.setAttribute("data-partenaire", i + ":" + k);
+        b.innerHTML = "<span></span><b></b>";
+        b.querySelector("span").textContent = pr.nom;
+        b.querySelector("b").textContent = prixEnMots(pr);
+        li.appendChild(b);
+      });
+      ul.appendChild(li);
+    });
+  }
+
+  function rendreFeuilles() {
+    rendreRepartition();
+    ecrire("mo-hommes", String(mo.hommes));
+    ecrire("mo-jours", DUREES[mo.rang][0]);
+    ecrire("mo-calcul", libelleMo() + " × " + mo.tarif + " €");
+    document.getElementById("mo-total").firstChild.textContent = euros(montantMo());
+    ecranDevis.querySelector('[data-compte="hommes"] [data-pas="-1"]').disabled = mo.hommes <= 1;
+    ecranDevis.querySelector('[data-compte="jours"] [data-pas="-1"]').disabled = mo.rang <= 0;
+    rendrePartenaire();
+    ecrire("tva-bouton", "Ajouter la TVA à " + tvaTaux + " %");
+    var sansAcompte = totaux({ mo: ajouts.mo, tva: ajouts.tva, remise: ajouts.remise, acompte: false });
+    var acompte = arrondi(sansAcompte.ttc * acompteTaux / 100);
+    ecrire("acompte-calcul", enMots(acompteTaux) + " % de " + euros(sansAcompte.ttc) + " TTC, " + acompteQuand);
+    ecrire("acompte-total", euros(acompte));
+    ecrire("acompte-reste", "Reste à régler : " + euros(arrondi(sansAcompte.ttc - acompte)));
+    var sansRemise = totaux({ mo: ajouts.mo, tva: ajouts.tva, remise: false, acompte: false });
+    var remise = arrondi(sansRemise.ht * remiseTaux / 100);
+    ecrire("remise-calcul", enMots(remiseTaux) + " % de " + euros(sansRemise.ht) + " HT");
+    ecrire("remise-total", "− " + euros(remise));
+    ecrire("remise-apres", "Total HT après remise : " + euros(arrondi(sansRemise.ht - remise)));
+  }
+
+  function remettreChoix(id, choix) {
+    document.getElementById(id).querySelectorAll("[data-choix]").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-choix") === choix ? "true" : "false"); });
+  }
+  function eclairer(el) {
+    if (!el) return;
+    var defile = ecranDevis.querySelector(".defile");
+    var haut = el.getBoundingClientRect().top - defile.getBoundingClientRect().top + defile.scrollTop - 140;
+    defile.scrollTo({ top: Math.max(0, haut), behavior: "smooth" });
+    el.classList.remove("vient-d-arriver");
+    void el.offsetWidth;
+    el.classList.add("vient-d-arriver");
+  }
+  var CIBLE = { mo: "ligne-mo", tva: "bloc-tva", remise: "ligne-remise", acompte: "ligne-acompte" };
+
+  function etatDuDevis(etat) {
+    Kit.fermerFeuilles(ecranDevis);
+    var defile = ecranDevis.querySelector(".defile");
+    if (etat === "devis") { ajouts = { mo: false, tva: false, remise: false, acompte: false }; }
+    if (etat === "devis" || etat === "tout") { mo.mode = "ligne"; mo.parts = null; mo.qui = null; remettreChoix("mo-mode", "ligne"); montrerListe(false); }
+    if (etat === "tout") { ajouts = { mo: true, tva: true, remise: true, acompte: true }; }
+    rendre();
+    var ancre = document.getElementById(etat === "tout" ? "ancre-totaux" : "ancre-ajouts");
+    defile.scrollTop = Math.max(0, ancre.offsetTop - (etat === "tout" ? 70 : 260));
+    var feuille = { mo: "f-mo", tva: "f-tva", acompte: "f-acompte", remise: "f-remise" }[etat];
+    if (etat === "acompte" || etat === "remise") defile.scrollTop = Math.max(0, document.getElementById("ancre-totaux").offsetTop - 200);
+    if (feuille) setTimeout(function () { Kit.ouvrirFeuille(feuille); }, 60);
+  }
+
+  ecranDevis.addEventListener("click", function (e) {
+    var ajoute = e.target.closest("[data-ajoute]");
+    if (ajoute) {
+      var quoi = ajoute.getAttribute("data-ajoute");
+      ajouts[quoi] = true;
+      Kit.fermerFeuilles(ecranDevis);
+      rendre();
+      var cible = quoi === "mo" && mo.mode === "repartie" ? document.getElementById("dont-depose").closest(".dc-ligne") : document.getElementById(CIBLE[quoi]);
+      setTimeout(function () {
+        eclairer(cible);
+        if (quoi === "mo" && mo.mode === "repartie") ecranDevis.querySelectorAll(".dc-dont:not([hidden])").forEach(function (d) { d.closest(".dc-ligne").classList.add("vient-d-arriver"); });
+      }, 260);
+      return;
+    }
+    var retire = e.target.closest("[data-retire]");
+    if (retire) {
+      var lequel = retire.getAttribute("data-retire");
+      ajouts[lequel] = false;
+      rendre();
+      Kit.tiroir(ecranDevis, "Retiré à l'instant.", function () { ajouts[lequel] = true; rendre(); });
+      return;
+    }
+    var pas = e.target.closest(".petit-compteur [data-pas]");
+    if (pas && !pas.disabled) {
+      var compte = pas.closest(".petit-compteur").getAttribute("data-compte");
+      var n = Number(pas.getAttribute("data-pas"));
+      if (compte === "hommes") mo.hommes = Math.max(1, Math.min(20, mo.hommes + n));
+      else if (mo.qui) mo.qte = Math.max(1, Math.min(999, mo.qte + n));
+      else mo.rang = Math.max(0, Math.min(DUREES.length - 1, mo.rang + n));
+      rendre();
+    }
+  });
+  (function () {
+    var barre = document.getElementById("barre-mo"), joint = null;
+    barre.addEventListener("pointerdown", function (e) {
+      var p = e.target.closest(".poignee");
+      if (!p) return;
+      joint = Number(p.getAttribute("data-joint"));
+      p.classList.add("tiree");
+      barre.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    });
+    barre.addEventListener("pointermove", function (e) {
+      if (joint === null) return;
+      var r = barre.getBoundingClientRect(), total = montantMo(), parts = partsCourantes();
+      var avant = 0; for (var i = 0; i < joint; i++) avant += parts[i];
+      var x = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * total;
+      mo.parts = glisserLeJoint(parts, joint, x - avant);
+      rendre();
+      var p = barre.querySelector('[data-joint="' + joint + '"]'); if (p) p.classList.add("tiree");
+    });
+    function lacher() { joint = null; barre.querySelectorAll(".poignee").forEach(function (p) { p.classList.remove("tiree"); }); }
+    barre.addEventListener("pointerup", lacher);
+    barre.addEventListener("pointercancel", lacher);
+  })();
+  document.getElementById("mo-mode").addEventListener("kit:choix", function (e) {
+    mo.mode = e.detail.choix;
+    rendre();
+    if (mo.mode === "repartie") {
+      var dedans = document.querySelector("#f-mo .feuille-dedans");
+      setTimeout(function () { dedans.scrollTo({ top: dedans.scrollHeight, behavior: "smooth" }); }, 60);
+    }
+  });
+  function montrerListe(oui) {
+    document.getElementById("mo-liste").hidden = !oui;
+    document.getElementById("mo-corps").hidden = oui;
+    if (oui) rendreListe();
+  }
+  document.getElementById("puce-partenaires").addEventListener("click", function () { montrerListe(document.getElementById("mo-liste").hidden); });
+  document.getElementById("liste-partenaires").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-partenaire]");
+    if (!b) return;
+    var ik = b.getAttribute("data-partenaire").split(":").map(Number);
+    mo.qui = { societe: PARTENAIRES[ik[0]], prix: PARTENAIRES[ik[0]].prix[ik[1]] };
+    mo.qte = mo.qui.prix.unite === "journée" ? Math.max(1, Math.round(DUREES[mo.rang][1])) : 1;
+    mo.parts = null;
+    document.getElementById("mo-qte-case").value = mo.qte + " " + mo.qui.prix.unite;
+    montrerListe(false);
+    rendre();
+  });
+  document.getElementById("mo-qte-case").addEventListener("input", function (e) {
+    var n = Number(e.target.value.replace(/[^\d,.]/g, "").replace(",", "."));
+    if (!(n > 0)) return;
+    mo.qte = Math.min(99999, n);
+    mo.parts = null;
+    rendre();
+  });
+  function revenirEquipe() { mo.qui = null; mo.parts = null; montrerListe(false); rendre(); }
+  document.getElementById("mon-equipe").addEventListener("click", revenirEquipe);
+  document.getElementById("revenir-equipe").addEventListener("click", revenirEquipe);
+  document.getElementById("mo-tarif").addEventListener("input", function (e) {
+    var v = parseFloat(String(e.target.value).replace(",", ".").replace(/[^\d.]/g, ""));
+    mo.tarif = isFinite(v) ? v : 0;
+    rendre();
+  });
+  function surChoix(id, poser) {
+    document.getElementById(id).addEventListener("kit:choix", function (e) { poser(e.detail.choix); rendre(); });
+  }
+  surChoix("acompte-quand", function (c) { acompteQuand = c; });
+
+  /* Le chiffre tapé, lu comme l'appli le lit (reduction-devis.ts :
+     tauxTvaValide, pourcentValide ; acomptes-devis.ts : tauxCumuleValide) :
+     une virgule ou un point, deux décimales, ramené à 100 au-delà. Ce qui
+     n'est pas un nombre éteint le bouton et le dit, en ambre. */
+  function lireTaux(texte) {
+    var brut = String(texte).replace(",", ".").replace(/\s|%/g, "");
+    if (!/^\d+(\.\d+)?$/.test(brut)) return null;
+    return Math.min(100, Math.round(Number(brut) * 100) / 100);
+  }
+  function enMots(n) { return String(n).replace(".", ","); }
+  var REFUS = {
+    tva: function (n) { return n === null ? "Un nombre, par exemple 7,5." : n === 20 ? "Le devis est déjà à 20 %." : null; },
+    acompte: function (n) { return n === null ? "Un nombre, par exemple 25." : n <= 0 ? "Un acompte au-dessus de 0 %." : null; },
+    remise: function (n) { return n === null ? "Un nombre, par exemple 7,5." : n <= 0 ? "Une remise au-dessus de 0 %." : null; }
+  };
+  function lireSaisie(champ) {
+    var quoi = champ.getAttribute("data-quoi");
+    var n = lireTaux(champ.value);
+    var refus = REFUS[quoi](n);
+    var feuille = champ.closest(".feuille");
+    champ.closest(".case-taux").classList.toggle("refuse", !!refus);
+    var p = document.getElementById(quoi + "-refus");
+    p.hidden = !refus; p.textContent = refus || "";
+    feuille.querySelector("[data-bouton-saisie]").disabled = !!refus;
+    feuille.querySelector("[data-bouton-saisie]").setAttribute("aria-disabled", refus ? "true" : "false");
+    feuille.querySelectorAll(".raccourcis button").forEach(function (b) {
+      b.setAttribute("aria-pressed", n !== null && lireTaux(b.getAttribute("data-valeur")) === n ? "true" : "false");
+    });
+    if (!refus) {
+      if (quoi === "tva") tvaTaux = enMots(n);
+      if (quoi === "acompte") acompteTaux = n;
+      if (quoi === "remise") remiseTaux = n;
+    }
+    rendre();
+  }
+  ecranDevis.querySelectorAll(".case-taux input").forEach(function (champ) {
+    champ.addEventListener("input", function () { lireSaisie(champ); });
+  });
+  ecranDevis.querySelectorAll(".raccourcis").forEach(function (rang) {
+    rang.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-valeur]");
+      if (!b) return;
+      var champ = document.getElementById(rang.getAttribute("data-pour"));
+      champ.value = b.getAttribute("data-valeur");
+      lireSaisie(champ);
+    });
   });
 
   var demandee = new URLSearchParams(window.location.search).get("ecran");

@@ -1229,36 +1229,21 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
   overflow-x: clip;
 }
 
-/* ─── LA LIGNE DE DICTÉE — sa décision du 31 août 2026 ───────────────────
+/* ─── LA DICTÉE B : L'ANNEAU QUI ÉCOUTE — son choix du 1er novembre 2026 ────
  *
- * Planche `appli/dictee-la-ligne.html`, onglet « Avec le rond ». Elle remplace
- * le trio (poubelle · disque · avion) et la rangée chrono + onde qui vivait
- * dessous.
+ * Planche `appli/soignee/chantier.html`, « Dictée B ». Trois colonnes : Jeter,
+ * le disque, le temps. La colonne du milieu porte le disque du micro, à SA
+ * place, l'avion dedans : le doigt le retrouve où il l'a laissé. Elle remplace
+ * la ligne du 31 août (poubelle, chrono, trait, avion), dont les règles sont
+ * parties avec elle ; l'historique git la garde.
  *
- * **Ce que le trio avait de faux, et qui se mesurait** — sa plainte du matin,
- * « ça dénature l'appli » :
- *
- *   · deux aplats vert pin (76 px et 46 px), ~7 950 px² de sombre, là où le
- *     reste de la fiche n'en porte AUCUN. Il en reste 64 : la pastille ;
- *   · rien ne tenait les trois boutons ensemble — ils flottaient sur le fond ;
- *   · le chrono à gauche, l'onde à droite et le disque au milieu : trois
- *     objets sur trois axes.
- *
- * Le trait du haut est ce qui les tient désormais, et il suffit : la ligne ne
- * porte plus d'objet, elle traverse l'écran. */
-.atlas-ligne-dictee {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+ * `align-items: start` et des marges qui CENTRENT Jeter et le temps sur le
+ * disque : le mot sous le disque ne doit pas les faire descendre. */
+.atlas-ecoute {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: start;
   width: 100%;
-  /* **PLUS DE TRAIT AU-DESSUS** — sa demande du 1ᵉʳ septembre 2026 : *« supprime
-   * le trait gris qu'il y a au-dessus »*. Il tenait la ligne au moment où elle
-   * remplaçait un objet centré ; une fois l'aplat parti, c'était un trait de
-   * plus sur un écran qui n'en porte nulle part ailleurs.
-   *
-   * **L'espace, lui, RESTE** : c'est lui qui sépare la dictée du reste, et le
-   * retirer avec le trait ferait remonter la ligne contre la fiche. */
-  padding-top: 14px;
   animation: atlas-venir 0.26s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
 /* Les deux gestes ne partagent PAS un bloc commun, et ce n'est pas une
@@ -1267,14 +1252,28 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
  * tous les écrans qui la portent. Six lignes en double coûtent moins qu'un
  * groupe qu'on croit sûr. */
 .atlas-jeter {
+  justify-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-top: 14px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 16px;
+  -webkit-tap-highlight-color: transparent;
+}
+/* 52 px : on vise mal avec un doigt épais, sur un écran sale (PRODUCT.md). La
+ * poubelle reste un simple trait cerclé, et c'est délibéré : elle jette, ce
+ * n'est pas le geste qu'on veut donner envie de faire. */
+.atlas-jeter-rond {
+  width: 52px;
+  height: 52px;
+  border-radius: 99px;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex: 0 0 auto;
-  width: 32px;
-  height: 32px;
-  border-radius: 99px;
-  -webkit-tap-highlight-color: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--atlas-line, rgba(28, 28, 26, 0.12));
 }
 /* **La poubelle ne rougit QUE sous le doigt** — `.jeter:active` de sa planche.
  * Rouge au repos, elle mettrait en garde avant qu'on ait rien fait ; ici elle
@@ -1284,39 +1283,65 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
   from { opacity: 0; transform: scale(0.7); }
   to { opacity: 1; transform: none; }
 }
-/* **UN ROND, ET NON UN OVALE** — sa correction du 31 août au soir, après avoir
- * vu trois aplatissements proposés (44 × 44, 48 × 40, 52 × 36) : *« autour de
- * la flèche envoyer je veux un rond, pas un ovale »*. Largeur et hauteur sont
- * la même mesure, et le fond vient de la page (posé `transparent` dans le
- * composant) : c'est ce qu'il a demandé, et c'est ce qui tient sur les sept
- * chartes sans qu'aucun beige soit écrit en dur. */
-/* **LA FLÈCHE, COMME LE MICRO — sa demande du 14 septembre 2026 :** *« et
- * quand on appuie, la touche d'envoi à droite »* traitée de même. Le même
- * disque plein, à 46 px, le signe blanc, et son cercle d'or clair — un peu
- * plus fin, à proportion (`appli/note-vocale-cercle-dore.html`).
- *
- * **La poubelle, elle, reste un simple trait, et c'est délibéré.** Elle jette ;
- * ce n'est pas le geste qu'on veut donner envie de faire. */
+/* L'ENVOI — le bouton entier : les cercles, le disque, et « Envoyer » dessous.
+ * Il ne porte pas `atlas-plein` (ce n'est pas un bouton à texte) : l'appui se
+ * sent sur le disque seul, à la force du micro. */
 .atlas-envoyer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 16px;
+  -webkit-tap-highlight-color: transparent;
+}
+/* **Le disque du micro, trait pour trait** — son choix du 16 septembre 2026
+ * (`appli/note-vocale-cercle-dore.html`) : le vert des boutons, le signe
+ * blanc, un cercle d'or clair. Le 14 septembre il avait déjà demandé que la
+ * touche d'envoi soit « traitée de même » ; elle en a désormais la taille et
+ * la place. */
+.atlas-disque-envoi {
+  position: relative;
+  z-index: 2;
+  width: 80px;
+  height: 80px;
+  border-radius: 99px;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex: 0 0 auto;
-  width: 46px;
-  height: 46px;
-  border-radius: 99px;
-  -webkit-tap-highlight-color: transparent;
   color: #ffffff;
   background: var(--atlas-plein, #7d9a6d);
-  box-shadow: inset 0 0 0 1.5px var(--atlas-orClair, #C9A15E);
-  transition: transform 0.18s cubic-bezier(0.22, 0.61, 0.36, 1);
+  box-shadow: inset 0 0 0 2px var(--atlas-orClair, #C9A15E);
+  transition: transform 0.2s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
-/* **0,96 — le geste « discret », sa décision du 31 août.** La touche d'envoi
- * ne porte pas `atlas-plein` (elle n'est pas un bouton à texte) : elle prend
- * le geste seul, à la même force que les pleins — deux forces dans le même
- * écran se sentiraient. */
-.atlas-envoyer:active {
-  transform: scale(0.96);
+.atlas-envoyer:active .atlas-disque-envoi {
+  transform: scale(0.97);
+}
+/* Les cercles se centrent sur le disque (40 px sous le haut du bouton), et
+ * leurs rayons viennent de `cerclesDeLaVoix` : la règle vit dans une fonction
+ * pure, le dessin ici. Au calme demandé par le téléphone, ils se taisent : le
+ * temps qui avance dit seul que l'on enregistre. */
+.atlas-cercles {
+  position: absolute;
+  left: 50%;
+  top: 40px;
+  width: 120px;
+  height: 120px;
+  transform: translate(-50%, -50%);
+  overflow: visible;
+  pointer-events: none;
+}
+.atlas-cercles circle {
+  fill: none;
+  stroke: var(--atlas-or, #B98B47);
+  stroke-width: 1.6;
+}
+@media (prefers-reduced-motion: reduce) {
+  .atlas-cercles {
+    display: none;
+  }
 }
 
 /* L'OBJET — un disque plein, son micro, ses deux souffles. Il ne change jamais
@@ -1387,12 +1412,14 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
  * `scripts/test-classes-atlas-uniques.ts` le tient désormais. */
 
 .atlas-compteur {
+  justify-self: center;
   display: flex;
   align-items: center;
-  gap: 7px;
-  font-size: 14px;
+  gap: 8px;
+  margin-top: 26px;
+  font-size: 24px;
+  line-height: 28px;
   font-variant-numeric: tabular-nums;
-  flex: 0 0 auto;
 }
 .atlas-pastille {
   width: 8px;
@@ -1403,42 +1430,6 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
 @keyframes atlas-battre-pastille {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.25; }
-}
-
-/* L'onde part PLEINE, à plat : sinon les deux premières secondes montrent un
- * trait qui pousse dans le vide, et la barre paraît mal cadrée. */
-/* ═══ LE TRAIT — son choix du 2 septembre 2026 ════════════════════════════
- *
- * Il remplace les barreaux. Sa demande : *« pour la dictée j'aimerais essayer
- * le trait à la voix, voir comment il augmente »*.
- *
- * **Un trait continu garde la voix d'un seul tenant** là où des barreaux la
- * découpent en morceaux. C'est la même information — la force du son —, écrite
- * à la plume plutôt qu'en bâtons.
- *
- * **ET IL NE DÉFILE PAS PAR UNE ANIMATION : ce sont les MESURES qui avancent.**
- * Le composant tient soixante cases ; à chaque tour il pousse la mesure du
- * moment à droite et tout glisse d'un cran. Ce qu'il a dit il y a deux
- * secondes reste donc mince à gauche — le trait garde sa voix au lieu de la
- * rejouer. Une animation CSS ferait passer un motif figé sous ses yeux, ce qui
- * est exactement le contraire de « voir comment il augmente ».
- *
- * Le fondu des deux bords évite que le trait ne bute contre le chrono à
- * gauche et contre la flèche à droite. */
-.atlas-trait {
-  flex: 1;
-  min-width: 0;
-  height: 26px;
-  position: relative;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
-}
-.atlas-trait svg {
-  position: absolute;
-  inset: 0;
-  display: block;
-  width: 100%;
-  height: 26px;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
