@@ -301,7 +301,7 @@ export default function TransmettreLaFacture({
               par `PrimaryButton`, jamais par un dessin recopié ici : c'est très
               exactement le défaut qu'on répare, et le repeindre à la main le
               ferait revenir au prochain changement de charte. */}
-          <PrimaryButton
+          <PrimaryButton pleineLargeur
             href={adresse(destinataire)}
             onClick={() => marquerDepartMessagerie(quoi, clientNom)}
             repere={`transmission-${canalChoisi}`}
@@ -334,7 +334,7 @@ export default function TransmettreLaFacture({
               Votre client ne l&apos;a pas encore reçue.
             </p>
           )}
-          <PrimaryButton disabled={enCours} onClick={envoyer} secondaire={secondaire}>
+          <PrimaryButton pleineLargeur disabled={enCours} onClick={envoyer} secondaire={secondaire}>
             {enCours
               ? "Préparation…"
               : avoir
@@ -357,7 +357,7 @@ export default function TransmettreLaFacture({
             className="w-full rounded-[4px] border-0 px-4 py-3 outline-none"
             style={{ backgroundColor: colors.cream, color: colors.ink, fontSize: "16px" }}
           />
-          <PrimaryButton onClick={enregistrerEtOuvrir} disabled={enCours || saisie.trim() === ""} secondaire={secondaire}>
+          <PrimaryButton pleineLargeur onClick={enregistrerEtOuvrir} disabled={enCours || saisie.trim() === ""} secondaire={secondaire}>
             {enCours ? "Enregistrement…" : "Enregistrer et ouvrir le message"}
           </PrimaryButton>
         </div>

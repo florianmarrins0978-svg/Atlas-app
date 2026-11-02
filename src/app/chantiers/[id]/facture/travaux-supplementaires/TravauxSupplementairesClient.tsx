@@ -901,7 +901,7 @@ export default function TravauxSupplementairesClient({
       </section>
 
       <div className="mx-[22px] mt-6">
-        <PrimaryButton onClick={() => router.push(`/chantiers/${chantierId}/facture`)} repere="revenir-a-la-facture">
+        <PrimaryButton pleineLargeur onClick={() => router.push(`/chantiers/${chantierId}/facture`)} repere="revenir-a-la-facture">
           Revenir à la facture
         </PrimaryButton>
         {/* **Rien à rassurer quand il n'y a pas de devis.** Cette ligne existe

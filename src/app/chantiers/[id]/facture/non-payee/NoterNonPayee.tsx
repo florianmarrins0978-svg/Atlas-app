@@ -33,7 +33,7 @@ export default function NoterNonPayee({ factureId }: { factureId: string }) {
         </p>
       )}
       <div className="mt-6">
-        <PrimaryButton onClick={agir} disabled={enCours} repere="noter-non-payee">
+        <PrimaryButton pleineLargeur onClick={agir} disabled={enCours} repere="noter-non-payee">
           C&apos;est noté
         </PrimaryButton>
       </div>

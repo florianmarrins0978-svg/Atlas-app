@@ -1,5 +1,6 @@
 "use client";
 
+import { destinataireLisible } from "@/lib/numero-lisible";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { colors, font, smallCaps, voile } from "@/lib/design-tokens";
@@ -548,7 +549,7 @@ export default function FactureClient({
             {erreur}
           </p>
         )}
-        <PrimaryButton disabled={enCours} onClick={terminer}>
+        <PrimaryButton pleineLargeur disabled={enCours} onClick={terminer}>
           {enCours ? "Préparation…" : "Créer la facture"}
         </PrimaryButton>
       </div>
@@ -796,7 +797,7 @@ export default function FactureClient({
             les montants d&apos;avant.
           </p>
           <div className="mt-2">
-            <PrimaryButton
+            <PrimaryButton pleineLargeur
               secondaire
               disabled={repriseEnCours}
               onClick={reprendreLeDevis}
@@ -1273,7 +1274,7 @@ export default function FactureClient({
           </fieldset>
           <p className="text-center text-[12.5px]" style={{ color: colors.muted }}>
             {destinataire
-              ? `${canalEnvoi === "sms" ? "Au" : "À"} ${destinataire}`
+              ? `${canalEnvoi === "sms" ? "Au" : "À"} ${destinataireLisible(canalEnvoi, destinataire)}`
               : "Aucune coordonnée pour ce canal."}
           </p>
           </>
@@ -1334,7 +1335,7 @@ export default function FactureClient({
               </p>
             </div>
           ) : (
-          <PrimaryButton
+          <PrimaryButton pleineLargeur
             disabled={enCours || !destinataire || !verdictEnvoi.possible}
             onClick={envoyerLaFacture}
             // **Un repère stable, pour que le contrôle accuse le bon coupable.**

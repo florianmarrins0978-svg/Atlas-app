@@ -211,7 +211,7 @@ export default function PaiementClient({
         </p>
       )}
       <div className="mt-7">
-        <PrimaryButton onClick={noter} disabled={enCours} repere="paiement-noter">
+        <PrimaryButton pleineLargeur onClick={noter} disabled={enCours} repere="paiement-noter">
           C&apos;est noté
         </PrimaryButton>
       </div>

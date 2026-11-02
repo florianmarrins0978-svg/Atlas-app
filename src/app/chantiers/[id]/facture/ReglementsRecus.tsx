@@ -5,7 +5,7 @@ import { colors, font, smallCaps } from "@/lib/design-tokens";
 import { enEuros } from "@/lib/euros";
 import { ttcApresAvoirs } from "@/lib/avoir";
 import { adresseDeLaVisionneuse } from "@/lib/visionneuse-pdf";
-import { jourIso, jourNumerique } from "@/lib/jour";
+import { jourIso, jourLisible, jourNumerique } from "@/lib/jour";
 import {
   LIBELLES_MOYEN,
   MOYENS_PROPOSES,
@@ -320,7 +320,7 @@ export default function ReglementsRecus({
           <span>
             Avoir {a.numero}
             <small className="block text-[12px]" style={{ color: colors.muted }}>
-              {jourNumerique(a.dateEmission)}
+              {jourLisible(a.dateEmission)}
             </small>
           </span>
           {/* **« moins », écrit en toutes lettres** — sa planche du 2 novembre
@@ -353,7 +353,7 @@ export default function ReglementsRecus({
         <span className="text-[17px] font-semibold" style={{ color: colors.ink }}>
           Net à payer
         </span>
-        <span className="text-[20px] font-semibold" style={{ fontFamily: font.display, color: colors.ink }} data-atlas="net-a-payer">
+        <span className="text-[26px]" style={{ fontFamily: font.display, color: colors.ink }} data-atlas="net-a-payer">
           {enEuros(net)}
         </span>
       </div>
