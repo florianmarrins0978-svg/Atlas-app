@@ -566,8 +566,9 @@ export const FICHES_FACTURE: FicheModeEmploi[] = [
     // 28 septembre 2026, où l'on proposait d'annuler une suppression).
     motsCles: ["avoir", "avoirs", "rembourser", "remboursement", "rembourse", "annuler", "annulation", "supprimer", "trompe", "erreur", "fausse", "corriger"],
     geste:
-      "Touchez « Terminés », la ligne du chantier facturé, puis « Je fais un avoir ». Choisissez la ligne, " +
-      "écrivez le montant et le motif, et validez. Sur l'écran suivant, « Envoyer par SMS » ou par e-mail le transmet au client.",
+      "Touchez « Terminés », la ligne du chantier facturé, puis « Je fais un avoir ». Touchez « Toute la facture » ou « Une ligne », " +
+      "écrivez le montant, choisissez « Geste commercial » ou « Un autre motif », puis « Faire l'avoir ». " +
+      "Sur l'écran suivant, « Lui envoyer par SMS » ou « Par e-mail » le transmet au client.",
     reserve:
       "Une facture envoyée ne se supprime pas : c'est l'avoir qui la corrige ou l'annule. " +
       "Vos avoirs se retrouvent sous la facture, et dans l'onglet « Avoirs » de la fiche du client.",
@@ -576,6 +577,9 @@ export const FICHES_FACTURE: FicheModeEmploi[] = [
     ailleurs: [
       { source: "src/app/clients/[id]/page.tsx", preuves: ['libelle: "Avoirs"'] },
       { source: "src/app/chantiers/[id]/facture/avoir/[avoirId]/page.tsx", preuves: ["<TransmettreLaFacture"] },
+      { source: "src/app/chantiers/[id]/facture/avoir/AvoirClient.tsx", preuves: ['titre="Toute la facture"', 'titre="Une ligne"', "Faire l'avoir"] },
+      { source: "src/app/chantiers/[id]/facture/avoir/ChoixDuMotif.tsx", preuves: ['titre="Geste commercial"', 'titre="Un autre motif"'] },
+      { source: "src/app/chantiers/[id]/facture/TransmettreLaFacture.tsx", preuves: ['lui: "Lui envoyer par SMS"', 'court: "Par e-mail"'] },
     ],
     lieu: true,
   },

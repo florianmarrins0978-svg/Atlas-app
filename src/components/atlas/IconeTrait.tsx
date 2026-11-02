@@ -33,6 +33,9 @@ const TRACES = {
   // Les espèces et la carte du ruban « Comment » (planche de la facture, 2 novembre 2026).
   euro: <path d="M16.5 7.2A6 6 0 1 0 16.5 16.8M5.5 10.5h8M5.5 13.5h8" />,
   carte: <><rect x="3" y="6" width="18" height="12" rx="2" /><path d="M3 10h18M7 14.5h3" /></>,
+  // « Geste commercial » et « Une ligne » de l'avoir (planche de la facture, 2 novembre 2026).
+  etiquette: <><path d="M3.5 12.5V4.5h8l9 9-8 8z" /><circle cx="8" cy="8.5" r="1.5" /></>,
+  liste: <path d="M8.5 6.5H20M8.5 12H20M8.5 17.5H20M4 6.5h.6M4 12h.6M4 17.5h.6" />,
 } as const;
 
 export type NomIcone = keyof typeof TRACES;

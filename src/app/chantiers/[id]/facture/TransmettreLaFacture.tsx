@@ -36,7 +36,7 @@ import { preparerLienAcquitteAction, preparerLienFactureAction } from "./actions
 
 const LIBELLE: Record<
   CanalClient,
-  { bouton: string; bascule: string; champ: string; exemple: string; manque: string; invite: string }
+  { bouton: string; bascule: string; lui: string; court: string; champ: string; exemple: string; manque: string; invite: string }
 > = {
   sms: {
     // **Sa demande du 24 août 2026 :** *« corrige en envoyer par SMS, retire la
@@ -44,6 +44,11 @@ const LIBELLE: Record<
     // s'ouvre — au lieu du geste. Et la flèche promettait un écran de plus.
     bouton: "Envoyer par SMS",
     bascule: "Envoyer par SMS",
+    // **Les mots de l'avoir** (planche de la facture, 2 novembre 2026) : le
+    // plein dit à qui il part, « Lui envoyer par SMS », et l'autre voie se
+    // réduit à « Par e-mail » juste dessous. La facture garde les siens.
+    lui: "Lui envoyer par SMS",
+    court: "Par SMS",
     champ: "Numéro de téléphone",
     exemple: "06 12 34 56 78",
     manque: "n'a pas de numéro enregistré",
@@ -52,6 +57,8 @@ const LIBELLE: Record<
   email: {
     bouton: "Envoyer par e-mail",
     bascule: "Envoyer par e-mail",
+    lui: "Lui envoyer par e-mail",
+    court: "Par e-mail",
     champ: "Adresse e-mail",
     exemple: "client@exemple.fr",
     manque: "n'a pas d'adresse e-mail enregistrée",
@@ -290,7 +297,7 @@ export default function TransmettreLaFacture({
             onClick={() => marquerDepartMessagerie(quoi, clientNom)}
             repere={`transmission-${canalChoisi}`}
           >
-            {acquittee ? "Envoyer la facture acquittée" : LIBELLE[canalChoisi].bouton}
+            {acquittee ? "Envoyer la facture acquittée" : avoir ? LIBELLE[canalChoisi].lui : LIBELLE[canalChoisi].bouton}
           </PrimaryButton>
           {/* **Le destinataire et le lien qui vivaient ici sont RETIRÉS** — sa
               demande du 24 août 2026 : *« pareil sous ouvrir le SMS tout prêt »*,
@@ -372,7 +379,7 @@ export default function TransmettreLaFacture({
           className="mt-2 block w-full text-center text-[15px] font-bold"
           style={{ color: colors.or }}
         >
-          {LIBELLE[autre].bascule}
+          {avoir ? LIBELLE[autre].court : LIBELLE[autre].bascule}
         </a>
       ) : (
         <button
@@ -382,7 +389,7 @@ export default function TransmettreLaFacture({
           className="mt-2 block w-full text-center text-[15px] font-bold"
           style={{ color: colors.or }}
         >
-          {LIBELLE[autre].bascule}
+          {avoir ? LIBELLE[autre].court : LIBELLE[autre].bascule}
         </button>
       )}
 

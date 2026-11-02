@@ -227,6 +227,9 @@ export async function preparerAvoir(ctx: Ctx, chantierId: string) {
     return {
       factureId: f.id,
       clientNom: f.clientNom,
+      // Le sous-titre dit « Mme Vasseur », jamais « VASSEUR » (planche du
+      // 2 novembre 2026) : la civilité figée sur la facture, pas devinée.
+      clientCivilite: f.clientCivilite,
       facture: {
         numero: f.numeroCommercial,
         totalHt: f.totalHt,

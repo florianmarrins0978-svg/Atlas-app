@@ -123,8 +123,14 @@ async function main() {
     await ouvrirLeVolet(page, nomAvoir);
     await page.click('[data-atlas="volet-avoir"]');
     await page.waitForSelector('[data-atlas="avoir-montant"]');
-    await page.click('[data-atlas="avoir-portee"]');
-    await page.locator("button", { hasText: "Taille de haie de thuyas" }).first().click();
+    // « Sur » en deux cartes depuis la planche du 2 novembre 2026 : « Une
+    // ligne » montre les lignes, on en touche une. Chacune annonce ce qu'elle
+    // permet encore, et c'est le plafond même du refus qui suit.
+    await page.click('[data-atlas="avoir-sur-ligne"]');
+    const haie = page.locator('[data-atlas="avoir-ligne"]', { hasText: "Taille de haie de thuyas" });
+    await haie.click();
+    assert.equal(await haie.getAttribute("aria-pressed"), "true", "la ligne touchée n'est pas prise");
+    assert.match(await haie.innerText(), /547,20/);
     await page.fill('[data-atlas="avoir-montant"]', "600");
     assert.match(await page.locator('[role="alert"]').first().innerText(), /547,20/);
     assert.equal(await page.locator('[data-atlas="avoir-valider"]').isDisabled(), true);
@@ -132,6 +138,8 @@ async function main() {
     assert.match(await page.locator('[data-atlas="avoir-nouveau"]').innerText(), /1\s340,00/);
     await page.click('[data-atlas="avoir-valider"]');
     await page.waitForSelector('[data-atlas="avoir-fait"]', { timeout: 30_000 });
+    assert.match(await page.locator('[data-atlas="avoir-fait"]').innerText(), /ne doit plus que 1\s340,00/);
+    assert.equal(await page.locator('[data-atlas="avoir-voir-pdf"]').count(), 1, "« Voir l'avoir » manque à « C'est fait »");
     adresseAvoirFait = page.url();
     await page.goto(`${BASE}/chantiers/${chantierAvoir}/facture`, { waitUntil: "networkidle" });
     assert.equal(await page.locator('[data-atlas="avoir-de-la-facture"]').count(), 1);

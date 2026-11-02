@@ -6,7 +6,14 @@
  * 1 200,00 € HT, TVA 20 %, 1 440,00 € TTC.
  */
 import assert from "node:assert/strict";
-import { calculerAvoir, type FacturePourAvoir } from "../src/lib/avoir";
+import {
+  MOTIF_GESTE_COMMERCIAL,
+  calculerAvoir,
+  motifDeLAvoir,
+  ttcApresAvoirs,
+  ttcRestantSurLaLigne,
+  type FacturePourAvoir,
+} from "../src/lib/avoir";
 
 let echecs = 0;
 function cas(nom: string, fn: () => void) {
@@ -131,6 +138,44 @@ cas("une remise de 10 % : la ligne ne vaut plus que ce que le client a payé", (
   // 456 € HT − 10 % = 410,40 € HT, soit 492,48 € TTC.
   assert.match(refus(calculerAvoir(remisee, [], { portee: "l1", montantTtc: "492.49", motif: "x" }))!, /492,48/);
   assert.equal(avoir(calculerAvoir(remisee, [], { portee: "l1", montantTtc: "492.48", motif: "x" })).totalTtc, "492.48");
+});
+
+// La planche du 2 novembre 2026 (`appli/soignee/facture.html`, « Vous lui
+// enlevez combien ? ») montre ce que chaque ligne permet encore, et le nouveau
+// total à chaque chiffre. Ce que l'écran affiche doit être le plafond même du
+// refus, et ce que l'avoir laisse doit être le « Net à payer » de la facture
+// d'après : une seule règle, éprouvée ici des deux côtés.
+console.log("\n=== Ce que l'écran lit avant de valider ===");
+
+cas("ce qu'une ligne permet encore est le plafond du refus : 547,20 €, puis 447,20 € après un avoir de 100 €", () => {
+  const thuyas = FACTURE.lignes[0]!;
+  assert.equal(ttcRestantSurLaLigne(FACTURE, [], thuyas), "547.20");
+  const deja = [{ ligneFactureId: "l1", totalTtc: "100.00" }];
+  assert.equal(ttcRestantSurLaLigne(FACTURE, deja, thuyas), "447.20");
+  assert.match(refus(calculerAvoir(FACTURE, deja, { portee: "l1", montantTtc: "447.21", motif: "x" }))!, /447,20/);
+  assert.equal(avoir(calculerAvoir(FACTURE, deja, { portee: "l1", montantTtc: "447.20", motif: "x" })).totalTtc, "447.20");
+});
+
+cas("un avoir sur toute la facture ne touche pas ce qu'une ligne permet", () => {
+  assert.equal(ttcRestantSurLaLigne(FACTURE, [{ ligneFactureId: null, totalTtc: "100.00" }], FACTURE.lignes[0]!), "547.20");
+});
+
+cas("la remise du document entre dans ce que la ligne permet : 492,48 €", () => {
+  assert.equal(ttcRestantSurLaLigne({ ...FACTURE, reductionPourcent: "10" }, [], FACTURE.lignes[0]!), "492.48");
+});
+
+cas("le nouveau montant après 100 € est celui que la facture affichera : 1 340,00 €", () => {
+  const a = avoir(calculerAvoir(FACTURE, [], { portee: "l1", montantTtc: "100", motif: "x" }));
+  assert.equal(ttcApresAvoirs(FACTURE.totalTtc, [a]), "1340.00");
+  assert.equal(ttcApresAvoirs(FACTURE.totalTtc, [{ totalTtc: "40.00" }, a]), "1300.00");
+});
+
+cas("« Geste commercial » envoie le motif d'avant la planche, mot pour mot ; « Un autre motif » envoie ce qu'il écrit", () => {
+  assert.equal(motifDeLAvoir("geste", "Bordures posées sur 20 ml"), "Geste commercial");
+  assert.equal(MOTIF_GESTE_COMMERCIAL, "Geste commercial");
+  assert.equal(motifDeLAvoir("autre", "Bordures posées sur 20 ml au lieu de 24."), "Bordures posées sur 20 ml au lieu de 24.");
+  // Rien d'écrit sous « Un autre motif » : le refus de la loi, pas un motif deviné.
+  assert.match(refus(calculerAvoir(FACTURE, [], { portee: null, montantTtc: "100", motif: motifDeLAvoir("autre", "") }))!, /motif/);
 });
 
 console.log(`\n${echecs === 0 ? "✅ Toutes les vérifications passent." : `❌ ${echecs} échec(s).`}`);

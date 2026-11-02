@@ -415,6 +415,16 @@ const HORS_CHARTE: Array<{
     pourquoi: "carte de choix lue côte à côte, la forme des cartes du rôle et de la TVA",
   },
   {
+    // **« SUR » ET « POURQUOI » DE L'AVOIR** — sa planche de la facture du
+    // 2 novembre 2026 (`appli/soignee/facture.html`, `.carte-a-choisir`) : deux
+    // cartes côte à côte, une icône dans un rond, un titre et une ligne, la
+    // prise bordée d'or et cochée. Une capsule de deux lignes deviendrait un
+    // galet. Le fichier ne tient que cette carte ; « Faire l'avoir » est la
+    // capsule du bas.
+    motif: /^src[/\\]app[/\\]chantiers[/\\]\[id\][/\\]facture[/\\]avoir[/\\]CarteAChoisir\.tsx$/,
+    pourquoi: "carte de choix de l'avoir, côte à côte comme sur sa planche de la facture",
+  },
+  {
     // **LES CARTES DES FORMULES** (Abonnement soigné, même série) : une carte
     // par formule, qui se touche pour se choisir et porte son prix et ce qui
     // la distingue. Le geste, « S'abonner à … », est la capsule du bas.
