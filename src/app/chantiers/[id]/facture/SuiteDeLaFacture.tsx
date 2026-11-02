@@ -75,7 +75,9 @@ export default async function SuiteDeLaFacture({ ctx, chantierId, factureId }: {
           >
             Mon client ne me paie pas
           </Link>
-          <div className="mt-3">
+          {/* Toute la largeur, comme la planche : centré par son parent, le
+              conteneur se serrait sur le mot et le bouton restait une pilule. */}
+          <div className="mt-3 w-full">
             <PrimaryButton pleineLargeur href={`/chantiers/${chantierId}/facture/paiement`} repere="il-m-a-paye">
               Il m’a payé
             </PrimaryButton>
