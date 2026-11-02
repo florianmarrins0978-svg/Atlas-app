@@ -93,6 +93,26 @@
 .alerte-ambre { margin-bottom: 14px; padding: 12px 14px; border-radius: 12px; font-size: 14.5px;
                 color: var(--atlas-carteAmbreTexte); background: var(--atlas-carteAmbreFond); }
 .action-bas .bouton-texte { display: block; width: 100%; text-align: center; }
+/* Le Total TTC en plus grand : sa remarque du 2 novembre, « total TTC en plus gros ». */
+.ttc .montant-grand { font-size: 54px; }
+/* « Non payée, montant trop petit » : ce qu'il doit, en très grand. */
+.reste-grand .montant-grand { font-size: 56px; margin-top: 10px; }
+/* Choisir d'un appui : une carte par choix, une icône, un mot ; la carte prise
+   se borde d'or et porte sa coche (sa remarque : « fais quelque chose de plus
+   joli pour choisir le mode de règlement », puis « pareil » pour l'avoir). */
+.cartes-a-choisir { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.carte-a-choisir { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; min-height: 96px; padding: 14px;
+                   border-radius: 16px; text-align: left; background: var(--atlas-card); box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
+.carte-a-choisir .rond-icone { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%;
+                               color: var(--atlas-or); background: color-mix(in srgb, var(--atlas-or) 13%, transparent); }
+.carte-a-choisir .rond-icone .ico { width: 21px; height: 21px; }
+.carte-a-choisir b { font: 400 17px/1.2 var(--serif); color: var(--atlas-ink); }
+.carte-a-choisir small { display: block; margin-top: 2px; font-size: 13.5px; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
+.carte-a-choisir .coche { position: absolute; top: 12px; right: 12px; display: none; place-items: center; width: 24px; height: 24px; border-radius: 50%;
+                          color: var(--atlas-card); background: var(--atlas-or); }
+.carte-a-choisir .coche .ico { width: 15px; height: 15px; }
+.carte-a-choisir[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--atlas-or); background: color-mix(in srgb, var(--atlas-or) 7%, var(--atlas-card)); }
+.carte-a-choisir[aria-pressed="true"] .coche { display: grid; }
 .ts-chantier { font-size: 14.5px; color: var(--atlas-inkSoft); }
 </style>
 </head>
@@ -211,11 +231,11 @@
               <p class="tete-situation">Mme Vasseur, facture F2026&#8209;000001</p>
 
               <p class="rubrique" style="margin-top:4px">Comment</p>
-              <div class="pilules" id="moyens">
-                <button class="pilule" type="button" data-moyen="virement" aria-pressed="false">Virement</button>
-                <button class="pilule" type="button" data-moyen="cheque" aria-pressed="true">Chèque</button>
-                <button class="pilule" type="button" data-moyen="especes" aria-pressed="false">Espèces</button>
-                <button class="pilule" type="button" data-moyen="carte" aria-pressed="false">Carte</button>
+              <div class="cartes-a-choisir" id="moyens">
+                <button class="carte-a-choisir" type="button" data-moyen="virement" aria-pressed="false"><span class="rond-icone"><svg class="ico" aria-hidden="true"><use href="#i-banque"/></svg></span><b>Virement</b><span class="coche"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span></button>
+                <button class="carte-a-choisir" type="button" data-moyen="cheque" aria-pressed="true"><span class="rond-icone"><svg class="ico" aria-hidden="true"><use href="#i-crayon"/></svg></span><b>Chèque</b><span class="coche"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span></button>
+                <button class="carte-a-choisir" type="button" data-moyen="especes" aria-pressed="false"><span class="rond-icone"><svg class="ico" aria-hidden="true"><use href="#i-euro"/></svg></span><b>Espèces</b><span class="coche"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span></button>
+                <button class="carte-a-choisir" type="button" data-moyen="carte" aria-pressed="false"><span class="rond-icone"><svg class="ico" aria-hidden="true"><use href="#i-carte"/></svg></span><b>Carte</b><span class="coche"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span></button>
               </div>
               <div class="champ-doc" id="champ-cheque">
                 <p class="rubrique">N° de chèque</p>
@@ -277,9 +297,9 @@
               <p class="tete-situation">Mme Vasseur, facture de 2&#8239;126,40&nbsp;€ TTC</p>
 
               <p class="rubrique" style="margin-top:4px">Sur</p>
-              <div class="pilules" id="sur">
-                <button class="pilule" type="button" data-sur="tout" aria-pressed="true">Toute la facture</button>
-                <button class="pilule" type="button" data-sur="ligne" aria-pressed="false">Une ligne</button>
+              <div class="cartes-a-choisir" id="sur">
+                <button class="carte-a-choisir" type="button" data-sur="tout" aria-pressed="true"><span class="rond-icone"><svg class="ico" aria-hidden="true"><use href="#i-facture"/></svg></span><span><b>Toute la facture</b><small>2&#8239;126,40&nbsp;€ TTC</small></span><span class="coche"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span></button>
+                <button class="carte-a-choisir" type="button" data-sur="ligne" aria-pressed="false"><span class="rond-icone"><svg class="ico" aria-hidden="true"><use href="#i-liste"/></svg></span><span><b>Une ligne</b><small>Vous la choisissez</small></span><span class="coche"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span></button>
               </div>
               <div class="carte-doc mt-8" id="lignes-avoir" hidden>
                 <button class="choix-ligne" type="button" data-ligne="380" aria-pressed="false"><span class="rond-choix"></span>Terrassement et préparation du sol<span class="prix">380,00&nbsp;€</span></button>
@@ -299,8 +319,11 @@
 
               <div class="champ-doc">
                 <p class="rubrique">Pourquoi</p>
-                <input class="case-doc" value="Bordures posées sur 20 ml au lieu de 24." aria-label="Motif de l'avoir">
-                <div class="pilules mt-8"><button class="pilule" type="button" data-note="Écrit « Geste commercial » dans le motif.">Geste commercial</button></div>
+                <div class="cartes-a-choisir" id="motif">
+                  <button class="carte-a-choisir" type="button" data-motif="geste" aria-pressed="false"><span class="rond-icone"><svg class="ico" aria-hidden="true"><use href="#i-etiquette"/></svg></span><b>Geste commercial</b><span class="coche"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span></button>
+                  <button class="carte-a-choisir" type="button" data-motif="autre" aria-pressed="true"><span class="rond-icone"><svg class="ico" aria-hidden="true"><use href="#i-crayon"/></svg></span><b>Un autre motif</b><span class="coche"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span></button>
+                </div>
+                <input class="case-doc mt-8" id="motif-case" value="Bordures posées sur 20 ml au lieu de 24." aria-label="Motif de l'avoir">
               </div>
             </div>
             <div class="action-bas"><button class="bouton bouton-plein" type="button" data-vers-page="avoirfait">Faire l’avoir</button></div>
@@ -405,6 +428,7 @@
       <h2>La facture</h2>
       <ul>
         <li>Le numéro en grand, l’échéance et l’envoi en pastilles.</li>
+        <li>Le Total TTC en plus grand (votre remarque du 2 novembre), ici comme sur les travaux en plus.</li>
         <li>Les travaux en plus rejoignent les lignes du devis, marqués « En plus », avec leur quantité et leur prix dessous.</li>
         <li>Envoyée, le bouton plein devient « Il m’a payé » : c’est le geste qui reste à faire. Renvoyer passe dessous.</li>
         <li><b>Défauts corrigés :</b> « Total HT 1772,00&nbsp;€ » sans son espace ; « dont main d’œuvre » sans ses centimes ; l’avoir écrit « - 100,00&nbsp;€ » ; au brouillon, le bouton flottant « Ajouter des travaux supplémentaires » qui couvrait la dernière ligne et l’interrupteur. Il devient une pastille sous les lignes.</li>
@@ -413,7 +437,7 @@
     <div class="page-notes" data-notes="paiement">
       <h2>Le paiement</h2>
       <ul>
-        <li>Le moyen se touche au lieu de se chercher dans une liste ; le numéro de chèque n’apparaît que pour un chèque.</li>
+        <li>Le moyen en quatre cartes, chacune son icône ; celle choisie se borde d’or et porte sa coche (votre remarque du 2 novembre). Le numéro de chèque n’apparaît que pour un chèque.</li>
         <li>Le montant en grand, déjà rempli de ce qui reste ; « Tout le reste » le remet d’un appui.</li>
       </ul>
     </div>
@@ -426,14 +450,15 @@
     <div class="page-notes" data-notes="nonpayee">
       <h2>Il ne vous paiera pas</h2>
       <ul>
-        <li>Ce qu’il doit en grand, au milieu.</li>
+        <li>Ce qu’il doit en très grand, au milieu (votre remarque : « montant trop petit »).</li>
         <li>La mise en demeure s’atteint d’ici, sans repasser par la facture.</li>
       </ul>
     </div>
     <div class="page-notes" data-notes="avoir">
       <h2>L’avoir</h2>
       <ul>
-        <li>« Sur » en deux pastilles ; « Une ligne » montre les lignes, on en touche une.</li>
+        <li>« Sur » en deux cartes, comme le moyen de paiement ; « Une ligne » montre les lignes, on en touche une.</li>
+        <li>Le motif aussi : « Geste commercial » d’un appui, ou « Un autre motif », qui ouvre la case.</li>
         <li>Le montant en grand, et le nouveau total se recalcule à chaque chiffre.</li>
         <li>Le bouton dit ce qu’il fait : « Faire l’avoir » (aujourd’hui « C’est bon »).</li>
         <li><b>Défaut corrigé :</b> un motif long était coupé à gauche dans sa case.</li>
@@ -535,6 +560,12 @@
   });
 
   /* Le paiement : le moyen se touche, le n° de chèque suit le chèque. */
+  document.getElementById("motif").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-motif]");
+    if (!b) return;
+    this.querySelectorAll("[data-motif]").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+    document.getElementById("motif-case").hidden = b.getAttribute("data-motif") !== "autre";
+  });
   document.getElementById("moyens").addEventListener("click", function (e) {
     var b = e.target.closest("[data-moyen]");
     if (!b) return;

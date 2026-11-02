@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-02
 
+- **Planche « La facture », ses retouches** (ses remarques : *« total TTC en plus gros »*, *« paiement : fais quelque chose de plus joli pour choisir le mode de règlement »*, *« non payée, montant trop petit »*, *« avoir, sur, fais quelque chose de plus joli, et pareil pour geste commercial »*). Le Total TTC passe à 54 points sur la facture et les travaux en plus ; ce qu'il doit, à 56 sur « Il ne vous paiera pas » ; le moyen de paiement, « Sur » et le motif de l'avoir deviennent des cartes à choisir, une icône et un mot, bordées d'or et cochées quand elles sont prises. Rien dans `src/`.
 - **Planche « La facture, et ce qui la suit »** (`appli/soignee/facture.html`, sa demande : *« donne moi les liens des 8 écrans »*). Les huit écrans suivants de sa liste du 31 octobre, chacun à côté du vrai écran ouvert le 2 novembre sur trois chantiers neufs : la facture (envoyée, brouillon), le paiement (le moyen se touche, le montant en grand), l'impayé (deux cartes qui disent ce qu'elles font), « Il ne vous paiera pas », l'avoir (le montant en grand, le nouveau total recalculé), son détail, la mise en demeure (elle attend l'échéance), les travaux en plus. Dix défauts du code vus en chemin, dont un prix unitaire affiché « 0,00 € », sont dans `TODO.md`. Rien dans `src/`.
 
 ## 2026-11-01
