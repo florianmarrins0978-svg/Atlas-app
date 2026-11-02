@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-11-02
+
+- **Planche « La facture, et ce qui la suit »** (`appli/soignee/facture.html`, sa demande : *« donne moi les liens des 8 écrans »*). Les huit écrans suivants de sa liste du 31 octobre, chacun à côté du vrai écran ouvert le 2 novembre sur trois chantiers neufs : la facture (envoyée, brouillon), le paiement (le moyen se touche, le montant en grand), l'impayé (deux cartes qui disent ce qu'elles font), « Il ne vous paiera pas », l'avoir (le montant en grand, le nouveau total recalculé), son détail, la mise en demeure (elle attend l'échéance), les travaux en plus. Dix défauts du code vus en chemin, dont un prix unitaire affiché « 0,00 € », sont dans `TODO.md`. Rien dans `src/`.
+
 ## 2026-11-01
 
 - **La dictée B dans l'appli** (son choix : *« la B pour la dictée »*, planche `appli/soignee/chantier.html`). Pendant la dictée, le disque du micro reste à sa place et l'avion y remplace le micro ; trois cercles d'or s'ouvrent autour avec la voix réelle ; « Jeter » à gauche sous un rond de 52 px (32 avant), le temps à droite en serif, « Envoyer » sous le disque. **Ce que ça évite**, et qu'aucune planche ne montrait : l'avion tombant sous le doigt qui vient de lancer la dictée, un double appui aurait envoyé une note d'une demi-seconde ; un appui dans la première seconde ne part plus. Le trait et la ligne du 31 août sont retirés (`contourDuTrait`, `.atlas-ligne-dictee`, `.atlas-trait`). Le mode d'emploi dit où est l'avion. Rouge d'abord dans `test-anneau-dictee-e2e` (le double appui envoyait la note), §535.
