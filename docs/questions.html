@@ -103,6 +103,7 @@
 <li><a href="#29-mon-client-peut-il-modifier-le-devis-ou-la-facture-quil-reçoit-">Mon client peut-il modifier le devis ou la facture qu'il reçoit ?</a></li>
 <li><a href="#30-combien-de-temps-dois-je-garder-mes-factures-et-atlas-les-garde-t-il-">Combien de temps dois-je garder mes factures, et Atlas les garde-t-il ?</a></li>
 <li><a href="#31-si-je-facture-une-entreprise-ou-une-mairie-la-tva-disparaît-elle-de-la-facture-">Si je facture une entreprise ou une mairie, la TVA disparaît-elle de la facture ?</a></li>
+<li><a href="#32-si-je-supprime-un-client-où-reste-sa-facture-">Si je supprime un client, où reste sa facture ?</a></li>
 </ol>
 <hr>
 <h2 id="1-le-compte-développeur-apple--qui-paie-et-combien-de-temps-">1. Le compte développeur Apple : qui paie, et combien de temps ?</h2>
@@ -1562,7 +1563,7 @@
 </tr>
 <tr>
 <td>Effacer un client (RGPD)</td>
-<td>tenu : ses factures et devis acceptés restent, et l'écran le dit</td>
+<td>tenu : ses factures et devis acceptés restent, et l'écran le dit. <strong>Complété le 2 novembre 2026</strong> : les contrats d'entretien acceptés et les factures en brouillon restent aussi (voir la question 32)</td>
 <td><code>src/server/retention.ts</code>, <code>donnees-client.ts</code></td>
 </tr>
 <tr>
@@ -1656,6 +1657,36 @@
 </ol>
 <p><strong>À savoir aussi :</strong> la facture électronique entre entreprises devient obligatoire à l'émission pour les petites entreprises le 1er septembre 2027. Depuis le 1er septembre 2026, toutes doivent déjà savoir en recevoir.</p>
 <p><strong>Ce qu'Atlas ne fait pas encore (vérifié le 28 septembre 2026) :</strong> la fiche client ne distingue pas particulier, entreprise et mairie, et ne porte pas de SIRET (<code>src/server/db/schema.ts</code>, table <code>clients</code>) ; aucune mention d'autoliquidation ; pas d'envoi vers Chorus Pro. La maquette <code>appli/tva-entreprise-et-mairie.html</code> propose de quoi le faire, sur vos vrais écrans. <strong>Votre décision du 2 octobre 2026</strong> : un seul bouton sur la facture, « Sous-traitance, sans TVA », sans rien changer à la fiche client. En attendant, une mairie se facture dans Atlas à 20 %, et le PDF se dépose à la main sur chorus-pro.gouv.fr.</p>
+<hr>
+<h2 id="32-si-je-supprime-un-client-où-reste-sa-facture-">32. Si je supprime un client, où reste sa facture ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>Votre question du 2 novembre 2026, après avoir demandé que la suppression aboutisse dès que la case « J'ai sauvegardé ces documents ailleurs » est cochée.</em></p>
+<h3 id="la-réponse-courte">La réponse courte</h3>
+<p>La facture ne bouge pas. Elle reste dans Atlas, intacte, avec son numéro et le nom du client. La base refuse même de l'effacer : la loi oblige à la garder dix ans (question 30).</p>
+<h3 id="ce-qui-part-ce-qui-reste">Ce qui part, ce qui reste</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce qui part</th>
+<th>Ce qui reste</th>
+</tr></thead><tbody>
+<tr>
+<td>le client dans « Vos clients »</td>
+<td>la facture, avec son numéro et le nom du client</td>
+</tr>
+<tr>
+<td>son téléphone, son e-mail, son adresse</td>
+<td>le chantier qui la porte</td>
+</tr>
+<tr>
+<td>ses devis jamais acceptés, ses photos, ses notes</td>
+<td>ses devis acceptés et ses contrats d'entretien acceptés</td>
+</tr>
+</tbody></table></div>
+<h3 id="où-vous-la-retrouvez">Où vous la retrouvez</h3>
+<p>Dans <strong>Terminés</strong>, sur son chantier, avec le nom du client. Le PDF s'ouvre de là. Elle part aussi dans l'export complet de votre entreprise, et la fiche du client reste ouverte derrière elle.</p>
+<h3 id="le-cas-de-la-facture-en-brouillon">Le cas de la facture en brouillon</h3>
+<p>Un chantier terminé mais pas encore facturé porte une facture en brouillon. Dans Atlas, elle reçoit son numéro dès sa création. L'effacer laisserait un trou dans la suite de vos numéros de facture, et c'est ce qu'un contrôle fiscal regarde. Elle reste donc, comme une facture émise, et la feuille de suppression le dit sous « Conservé par la loi ».</p>
+<h3 id="ce-qui-nest-pas-encore-vérifié">Ce qui n'est pas encore vérifié</h3>
+<p>Ce qui précède a été lu dans le code, pas regardé à l'écran. Et ces corrections ne sont pas encore chez vous : elles attendent la batterie avant d'aller sur <code>main</code>. Une fois livrées, le geste qui le prouve : supprimer un client qui a une facture, vérifier qu'il quitte « Vos clients », puis ouvrir sa facture depuis Terminés.</p>
 </main>
 </body>
 </html>

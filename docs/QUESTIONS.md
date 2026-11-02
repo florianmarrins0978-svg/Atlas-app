@@ -54,6 +54,7 @@ relues à chaque session) :
 29. [Mon client peut-il modifier le devis ou la facture qu'il reçoit ?](#29-mon-client-peut-il-modifier-le-devis-ou-la-facture-quil-reçoit-)
 30. [Combien de temps dois-je garder mes factures, et Atlas les garde-t-il ?](#30-combien-de-temps-dois-je-garder-mes-factures-et-atlas-les-garde-t-il-)
 31. [Si je facture une entreprise ou une mairie, la TVA disparaît-elle de la facture ?](#31-si-je-facture-une-entreprise-ou-une-mairie-la-tva-disparaît-elle-de-la-facture-)
+32. [Si je supprime un client, où reste sa facture ?](#32-si-je-supprime-un-client-où-reste-sa-facture-)
 
 ---
 
@@ -2001,7 +2002,7 @@ pour votre cas.
 | Une facture émise ne se modifie plus | tenu : ses lignes ne se retirent qu'en brouillon ; une erreur se corrige par un avoir | idem, `factureEncoreEnBrouillon` |
 | Le PDF de la facture reste celui envoyé | tenu : il est archivé à l'émission, jamais reconstruit, avec l'identité de l'entreprise figée ce jour là | idem |
 | Un achat supprimé (TVA déductible) | tenu : il est masqué, pas effacé, et sa photo reste | `src/server/repositories/achats-tva.ts` |
-| Effacer un client (RGPD) | tenu : ses factures et devis acceptés restent, et l'écran le dit | `src/server/retention.ts`, `donnees-client.ts` |
+| Effacer un client (RGPD) | tenu : ses factures et devis acceptés restent, et l'écran le dit. **Complété le 2 novembre 2026** : les contrats d'entretien acceptés et les factures en brouillon restent aussi (voir la question 32) | `src/server/retention.ts`, `donnees-client.ts` |
 | Rien ne s'efface tout seul avec le temps | tenu : les purges automatiques ne visent que l'audio des dictées, les photos de diagnostic et les fichiers orphelins | `src/server/retention.ts` |
 | Remonter aux années précédentes à l'écran | tenu : le calendrier de la TVA recule sans limite (sur iPhone, il ne s'ouvrait pas avant le correctif du 26 septembre) | `CalendrierPeriodes.tsx` |
 
@@ -2105,3 +2106,48 @@ d'autoliquidation ; pas d'envoi vers Chorus Pro. La maquette
 écrans. **Votre décision du 2 octobre 2026** : un seul bouton sur la facture,
 « Sous-traitance, sans TVA », sans rien changer à la fiche client. En attendant, une mairie se facture dans Atlas à 20 %, et le PDF
 se dépose à la main sur chorus-pro.gouv.fr.
+
+---
+
+## 32. Si je supprime un client, où reste sa facture ?
+
+*Votre question du 2 novembre 2026, après avoir demandé que la suppression
+aboutisse dès que la case « J'ai sauvegardé ces documents ailleurs » est
+cochée.*
+
+### La réponse courte
+
+La facture ne bouge pas. Elle reste dans Atlas, intacte, avec son numéro et
+le nom du client. La base refuse même de l'effacer : la loi oblige à la
+garder dix ans (question 30).
+
+### Ce qui part, ce qui reste
+
+| Ce qui part | Ce qui reste |
+|---|---|
+| le client dans « Vos clients » | la facture, avec son numéro et le nom du client |
+| son téléphone, son e-mail, son adresse | le chantier qui la porte |
+| ses devis jamais acceptés, ses photos, ses notes | ses devis acceptés et ses contrats d'entretien acceptés |
+
+### Où vous la retrouvez
+
+Dans **Terminés**, sur son chantier, avec le nom du client. Le PDF s'ouvre de
+là. Elle part aussi dans l'export complet de votre entreprise, et la fiche du
+client reste ouverte derrière elle.
+
+### Le cas de la facture en brouillon
+
+Un chantier terminé mais pas encore facturé porte une facture en brouillon.
+Dans Atlas, elle reçoit son numéro dès sa création. L'effacer laisserait un
+trou dans la suite de vos numéros de facture, et c'est ce qu'un contrôle
+fiscal regarde. Elle reste donc, comme une facture émise, et la feuille de
+suppression le dit sous « Conservé par la loi ».
+
+### Ce qui n'est pas encore vérifié
+
+Ce qui précède a été lu dans le code, pas regardé à l'écran. Et ces
+corrections ne sont pas encore chez vous : elles attendent la batterie avant
+d'aller sur `main`. Une fois livrées, le geste qui le prouve : supprimer un
+client qui a une facture, vérifier qu'il quitte « Vos clients », puis ouvrir
+sa facture depuis Terminés.
+
