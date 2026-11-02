@@ -548,6 +548,15 @@
         ],
         "createdAt": "2026-11-02T18:01:13.114Z",
         "reason": "Crème sur le vert des boutons #7d9a6d, choisi par le patron le 3 septembre 2026 ; libellés en doré #B98B47, sa consigne du 25 octobre 2026 (jamais orTexte dans les planches)"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/facture.html"
+        ],
+        "createdAt": "2026-11-02T22:15:18.101Z",
+        "reason": "Fond des planches soignées, charte Arborea relevée au navigateur (PRODUCT.md, kit.css body.pl), comme chantier.html"
       }
     ]
   }
