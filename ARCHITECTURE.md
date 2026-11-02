@@ -36554,3 +36554,13 @@ que gardés en double — `main` n'a qu'une seule version de chacun.
 
 **La pièce dit son nom entier** (`PieceConservee.designation`) : « n° F2026-000007 » pour une facture ou un devis, « Contrat d'entretien d'avril 2026 » pour un contrat (le mois par `moisDuJour`, l'élision par `deOuD`). L'écran écrivait « n° » devant un numéro ; il recopie désormais la désignation, et ne décide de rien.
 
+## §537 : Ce qu'il coche, il le supprime
+
+**Sa règle du 2 novembre 2026** : *« à partir du moment où je veux supprimer un client, le message de prévention s'affiche, si je le coche, il faut que je puisse le supprimer »*. Une suppression ne tombe donc plus sur un refus de la base : tout ce qui retient un client se lit AVANT (`cequiDoitRester`) et se dit sous « Conservé par la loi ».
+
+**Le relevé** (catalogue, clés en RESTRICT ou NO ACTION sous ce que l'effacement retire) : un devis et une facture retiennent leur chantier, une facture retient son devis, un contrat retient son client et ses passages. Le devis accepté, la facture et le contrat accepté étaient déjà lus, sauf **la facture en brouillon**.
+
+**Le brouillon se garde, il ne s'efface pas.** Il prend son numéro à sa création (`attribuerNumeroFacture`) : l'effacer laisserait un trou dans la suite des factures émises, ce qu'un contrôle fiscal relève. Le garder ne coûte que sa ligne, et le client réduit à son nom.
+
+**Supprimé veut dire hors de la liste**, même retenu : `listerFichesClients` filtre `clients.deletedAt` comme `listerClients`. La fiche reste ouverte derrière ses pièces (`chargerFicheClient` ne filtre pas) : c'est par elle qu'on retrouve une facture conservée.
+

@@ -184,29 +184,30 @@ async function cequiDoitRester(
 
   if (chantierIds.length === 0) return { pieces, devisAConserver, chantiersAConserver };
 
-  // ─── Les factures ÉMISES — dix ans, Code de commerce L123-22 ──────────────
+  // ─── TOUTES les factures, émises ou en brouillon ──────────────────────────
   //
   // **Ce n'est pas Atlas qui refuse, c'est la base ET la loi.** La clé
   // étrangère `factures_chantier_entreprise_fk` est en RESTRICT : un chantier
   // qui porte une facture ne se supprime pas, quoi qu'on demande. Le lire ici
   // permet de le DIRE avant, plutôt que de laisser tomber une erreur brute.
-  const facturesEmises = await tx
+  //
+  // **Le brouillon aussi, depuis le 2 novembre 2026.** Seules les émises
+  // étaient lues : un chantier terminé et pas encore facturé faisait tomber la
+  // suppression sur cette clé, sans un mot. Un brouillon a déjà PRIS son numéro
+  // (`attribuerNumeroFacture`, à sa création) : l'effacer trouerait la suite
+  // des factures, ce qu'un contrôle relève. Il reste donc, comme une émise.
+  const facturesNumerotees = await tx
     .select({
       id: factures.id,
       chantierId: factures.chantierId,
       devisId: factures.devisId,
       numero: factures.numeroCommercial,
+      statut: factures.statut,
       emiseLe: factures.emiseLe,
     })
     .from(factures)
-    .where(
-      and(
-        inArray(factures.chantierId, chantierIds),
-        eq(factures.entrepriseId, ctx.entrepriseId),
-        eq(factures.statut, "emise")
-      )
-    );
-  for (const f of facturesEmises) {
+    .where(and(inArray(factures.chantierId, chantierIds), eq(factures.entrepriseId, ctx.entrepriseId)));
+  for (const f of facturesNumerotees) {
     chantiersAConserver.add(f.chantierId);
     // **Nul sur une facture directe** (migration 0086) : il n'y a pas de devis
     // à retenir, seulement la facture elle-même — déjà inscrite juste en
@@ -217,7 +218,10 @@ async function cequiDoitRester(
     pieces.push({
       quoi: "facture",
       designation: `n° ${f.numero}`,
-      pourquoi: "Une facture émise se conserve dix ans.",
+      pourquoi:
+        f.statut === "emise"
+          ? "Une facture émise se conserve dix ans."
+          : "Une facture déjà numérotée reste : ses numéros doivent se suivre.",
       jusquAu: echeanceConservation(f.emiseLe ?? maintenant, CONSERVATION_LEGALE.facturesAns)
         .toISOString()
         .slice(0, 10),
