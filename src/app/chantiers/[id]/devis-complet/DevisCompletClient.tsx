@@ -1537,17 +1537,19 @@ export default function DevisCompletClient(props: Props) {
               ) : (
                 <span className="text-[16px]">{enEuros(montantDeLaLigne(l))}</span>
               )}
-              {/* La part répartie se DIT sous son travail (la planche du 1er
-                  novembre 2026) : sans ce mot, un prix monté de 150 € d'un coup
-                  ne s'expliquerait plus. La même règle que « dont » (bornée au
-                  montant de la ligne). */}
-              {!l.mainDoeuvre && mainDoeuvreDeLaLigne({ montant: montantDeLaLigne(l), partMainDoeuvre: l.partMainDoeuvre }).greaterThan(0) && (
-                <span className="block text-[13px]" style={{ color: colors.inkSoft }} data-atlas="part-main-doeuvre">
-                  dont {enEuros(mainDoeuvreDeLaLigne({ montant: montantDeLaLigne(l), partMainDoeuvre: l.partMainDoeuvre }).toNumber())} de main d’œuvre
-                </span>
-              )}
             </Cellule>
             </>
+            )}
+
+            {/* La part répartie se DIT sous son travail (la planche du 1er
+                novembre 2026) : sans ce mot, un prix monté de 150 € d'un coup
+                ne s'expliquerait plus. La même règle que « dont » (bornée au
+                montant de la ligne). Sur SA ligne, sous le montant : posée
+                dans la cellule, elle écrasait le libellé « Montant HT ». */}
+            {!l.mainDoeuvre && mainDoeuvreDeLaLigne({ montant: montantDeLaLigne(l), partMainDoeuvre: l.partMainDoeuvre }).greaterThan(0) && (
+              <p className="text-right text-[13px] sm:col-span-5" style={{ color: colors.inkSoft, marginTop: -6, marginBottom: 6 }} data-atlas="part-main-doeuvre">
+                dont {enEuros(mainDoeuvreDeLaLigne({ montant: montantDeLaLigne(l), partMainDoeuvre: l.partMainDoeuvre }).toNumber())} de main d’œuvre
+              </p>
             )}
 
             {/* Ce que l'agent a retenu la dernière fois, sur un travail
