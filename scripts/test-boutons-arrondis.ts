@@ -425,6 +425,14 @@ const HORS_CHARTE: Array<{
     pourquoi: "carte de choix de l'avoir, côte à côte comme sur sa planche de la facture",
   },
   {
+    // Les deux issues de l'impayé : des cartes de deux lignes (un titre, ce
+    // qu'elle fait), comme sur sa planche de la facture validée le 2 novembre
+    // 2026. En capsule, deux lignes feraient un galet ; le bouton plein de
+    // l'écran reste, lui, une capsule.
+    motif: /^src[/\\]app[/\\]chantiers[/\\]\[id\][/\\]facture[/\\]impaye[/\\]page\.tsx$/,
+    pourquoi: "cartes des deux issues de l'impayé, comme sur sa planche de la facture",
+  },
+  {
     // **LES CARTES DES FORMULES** (Abonnement soigné, même série) : une carte
     // par formule, qui se touche pour se choisir et porte son prix et ce qui
     // la distingue. Le geste, « S'abonner à … », est la capsule du bas.
