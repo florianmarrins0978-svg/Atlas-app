@@ -54,7 +54,7 @@ import RepriseDuDevis from "./RepriseDuDevis";
 import { memeValeur } from "@/lib/hausse-du-devis";
 import LigneAcompte from "./LigneAcompte";
 import LigneMainDoeuvre from "./LigneMainDoeuvre";
-import { mainDoeuvreDesLignes } from "@/lib/main-doeuvre-devis";
+import { mainDoeuvreDeLaLigne, mainDoeuvreDesLignes } from "@/lib/main-doeuvre-devis";
 import ChampUnite from "./ChampUnite";
 import {
   acompteSuivantPropose,
@@ -83,6 +83,7 @@ import {
   majLigneAction,
   ajouterLigneAction,
   ajouterMainDoeuvreChoisieAction,
+  repartirMainDoeuvreAction,
   type ChoixDeMainOeuvre,
   retirerLigneAction,
   majEnTeteDevisAction,
@@ -134,6 +135,8 @@ type Ligne = {
   prixGrille?: string | null;
   /** Une ligne de main d'œuvre (migration 0130) : elle se dit en un montant. */
   mainDoeuvre?: boolean | null;
+  /** La main d'œuvre répartie sur ce travail (migration 0155), comprise dans son prix. */
+  partMainDoeuvre?: string | null;
 };
 
 /**
@@ -547,7 +550,11 @@ export default function DevisCompletClient(props: Props) {
   // brut avec une remise, net sans —, d'où une seule définition pour les deux
   // branches du rendu.
   const dontMainDoeuvre = mainDoeuvreDesLignes(
-    lignesVisibles.map((l) => ({ mainDoeuvre: l.mainDoeuvre, montant: montantDeLaLigne(l).toFixed(2) }))
+    lignesVisibles.map((l) => ({
+      mainDoeuvre: l.mainDoeuvre,
+      montant: montantDeLaLigne(l).toFixed(2),
+      partMainDoeuvre: l.partMainDoeuvre,
+    }))
   );
   const ligneMainDoeuvre =
     dontMainDoeuvre === null ? null : <LigneMainDoeuvre montant={sansZerosInutiles(dontMainDoeuvre)} fige />;
@@ -791,6 +798,28 @@ export default function DevisCompletClient(props: Props) {
    */
   const [tauxDeLaMainOeuvre, setTauxDeLaMainOeuvre] = useState<string | null>(null);
   const [refusMainOeuvre, setRefusMainOeuvre] = useState<string | null>(null);
+
+  /**
+   * « Répartis sur les travaux » : chaque travail reçoit sa part dans son prix.
+   * L'écran reprend ce que le serveur a POSÉ (prix, montant, part au centime),
+   * jamais ce qu'il avait prévu : c'est ce chiffre que le client lira.
+   */
+  async function repartirMainDoeuvre(choix: ChoixDeMainOeuvre, parts: Record<string, number>) {
+    setFeuille(null);
+    setRefusMainOeuvre(null);
+    const pose = await aLaSuite(() => repartirMainDoeuvreAction(props.chantierId, choix, parts));
+    if (!pose) return;
+    if (!pose.ok) {
+      setRefusMainOeuvre(pose.raison);
+      return;
+    }
+    setLignes((cur) =>
+      cur.map((l) => {
+        const r = pose.lignes.find((x) => x.id === l.id);
+        return r ? { ...l, prixUnitaire: r.prixUnitaire, montant: r.montant, partMainDoeuvre: r.partMainDoeuvre } : l;
+      })
+    );
+  }
 
   async function ajouterMainDoeuvre(choix: ChoixDeMainOeuvre) {
     setFeuille(null);
@@ -1508,6 +1537,15 @@ export default function DevisCompletClient(props: Props) {
               ) : (
                 <span className="text-[16px]">{enEuros(montantDeLaLigne(l))}</span>
               )}
+              {/* La part répartie se DIT sous son travail (la planche du 1er
+                  novembre 2026) : sans ce mot, un prix monté de 150 € d'un coup
+                  ne s'expliquerait plus. La même règle que « dont » (bornée au
+                  montant de la ligne). */}
+              {!l.mainDoeuvre && mainDoeuvreDeLaLigne({ montant: montantDeLaLigne(l), partMainDoeuvre: l.partMainDoeuvre }).greaterThan(0) && (
+                <span className="block text-[13px]" style={{ color: colors.inkSoft }} data-atlas="part-main-doeuvre">
+                  dont {enEuros(mainDoeuvreDeLaLigne({ montant: montantDeLaLigne(l), partMainDoeuvre: l.partMainDoeuvre }).toNumber())} de main d’œuvre
+                </span>
+              )}
             </Cellule>
             </>
             )}
@@ -1823,7 +1861,19 @@ export default function DevisCompletClient(props: Props) {
       <FeuilleMainDoeuvre
         ouverte={feuille === "mo"}
         donnees={props.mainOeuvre}
+        // Les travaux de la TVA où il a appuyé, qui ont leur prix : la main
+        // d'œuvre répartie prend le taux de chaque travail, donc celui-là.
+        travaux={lignesVisibles
+          .filter(
+            (l) =>
+              !l.mainDoeuvre &&
+              !estLigneOuverte(l.id) &&
+              montantDeLaLigne(l) > 0 &&
+              (tauxDeLaMainOeuvre === null || tauxDeLaLigne({ tauxTva: l.tauxTva }, tauxDuDevis) === tauxDeLaMainOeuvre)
+          )
+          .map((l) => ({ id: l.id, libelle: l.libelle.trim() || "Sans description" }))}
         onValider={(choix) => void ajouterMainDoeuvre(choix)}
+        onRepartir={(choix, parts) => void repartirMainDoeuvre(choix, parts)}
         onFermer={() => setFeuille(null)}
       />
       <FeuilleDuTaux

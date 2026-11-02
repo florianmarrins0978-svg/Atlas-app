@@ -189,6 +189,90 @@ async function main() {
       assert.equal(l.a_chiffrer, true, "une main d'œuvre sans prix ne retient pas le devis");
       assert.equal(Number(l.montant), 0);
     });
+
+    // ── RÉPARTIE SUR LES TRAVAUX — la même feuille, l'autre choix ───────────
+    await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
+    await page.fill('input[placeholder="Bernard"]', `M. Reparti ${marque}`);
+    const url2 = `${BASE}/chantiers/${await creerPuisFiche(page)}`;
+    const chantier2 = url2.split("/").pop()!;
+    await page.goto(`${url2}/devis-complet`, { waitUntil: "networkidle" });
+    const travaux = [
+      ["Taille de la haie", "2", "100"],
+      ["Broyage des branches", "1", "180"],
+    ];
+    for (const [rang, [libelle, qte, pu]] of travaux.entries()) {
+      const zones = page.locator('textarea[aria-label*="escription"]');
+      if ((await zones.count()) <= rang) await page.click('button:has-text("Ajouter une ligne")');
+      for (const essai of [1, 2, 3, 4, 5]) {
+        if ((await zones.count()) > rang) break;
+        await page.waitForTimeout(essai * 300);
+      }
+      await zones.nth(rang).fill(libelle);
+      await page.locator('input[aria-label*="Quantité"]').nth(rang).fill(qte);
+      await page.locator('input[aria-label*="Prix unitaire"]').nth(rang).fill(pu);
+      await page.keyboard.press("Tab");
+      await page.waitForTimeout(500);
+    }
+    for (const essai of [1, 2, 3, 4]) {
+      await page.goto(`${url2}/devis-complet`, { waitUntil: "networkidle" });
+      if ((await page.locator("body").innerText()).includes("380,00")) break;
+      await page.waitForTimeout(essai * 500);
+    }
+    const lignes2 = async () =>
+      (
+        await pool.query(
+          `SELECT libelle, quantite::text, prix_unitaire::text, montant::text, part_main_doeuvre::text AS part, main_doeuvre
+             FROM lignes_prix WHERE chantier_id = $1 AND libelle <> '' ORDER BY ordre`,
+          [chantier2]
+        )
+      ).rows as { libelle: string; quantite: string; prix_unitaire: string; montant: string; part: string | null; main_doeuvre: boolean }[];
+
+    await cas("répartie : la barre de l'appli s'ouvre dans la feuille, sur les travaux chiffrés", async () => {
+      await ouvrir();
+      await regler("mo-hommes", "1");
+      await regler("mo-duree", "1 journée");
+      await page.fill('[data-atlas="mo-tarif"]', "280");
+      await page.getByRole("button", { name: "Répartis sur les travaux" }).click();
+      await page.locator('[data-atlas="barre-main-oeuvre"]').waitFor();
+      const noms = await page.locator('[data-atlas="mo-ou"]').innerText();
+      assert.ok(noms.includes("Taille de la haie") && noms.includes("Broyage des branches"), `les travaux manquent :\n${noms}`);
+      assert.equal(await texte('[data-atlas="mo-valider"]'), "Répartir la main d’œuvre");
+      assert.deepEqual(
+        (await lignes2()).map((l) => l.part),
+        [null, null],
+        "une part posée avant l'appui"
+      );
+    });
+
+    await cas("chaque travail reçoit sa part DANS son prix, la quantité ne bouge pas, et la base la garde", async () => {
+      await page.click('[data-atlas="mo-valider"]');
+      let l = await lignes2();
+      for (const essai of [1, 2, 3, 4, 5, 6]) {
+        if (l.every((x) => x.part !== null)) break;
+        await page.waitForTimeout(essai * 500);
+        l = await lignes2();
+      }
+      assert.deepEqual(
+        l.map((x) => ({ q: Number(x.quantite), pu: Number(x.prix_unitaire), montant: Number(x.montant), part: Number(x.part), mo: x.main_doeuvre })),
+        [
+          { q: 2, pu: 170, montant: 340, part: 140, mo: false },
+          { q: 1, pu: 320, montant: 320, part: 140, mo: false },
+        ]
+      );
+    });
+
+    await cas("le devis dit la part sous chaque travail, et « dont main d'œuvre HT » la compte", async () => {
+      await page.goto(`${url2}/devis-complet`, { waitUntil: "networkidle" });
+      const parts = await page.locator('[data-atlas="part-main-doeuvre"]').allInnerTexts();
+      assert.deepEqual(
+        parts.map((p) => p.replace(/\s+/g, " ")),
+        ["dont 140,00 € de main d’œuvre", "dont 140,00 € de main d’œuvre"]
+      );
+      const totaux = (await page.locator("section").filter({ hasText: "Total TTC" }).last().innerText()).replace(/\s+/g, " ");
+      assert.ok(totaux.includes("660,00"), `le total HT n'a pas pris la main d'œuvre :\n${totaux}`);
+      assert.match(totaux, /dont main d’œuvre HT/);
+      assert.equal(await page.locator('[data-atlas="montant-main-doeuvre"]').inputValue(), "280", "« dont » ne compte pas la main d'œuvre répartie");
+    });
   } finally {
     await contexte.close();
     await navigateur.close();

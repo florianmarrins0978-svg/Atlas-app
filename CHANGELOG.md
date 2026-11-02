@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-11-02
+
+- **La main d'œuvre répartie sur un devis écrit** (sa consigne : *« code le, pas de batterie »*). Dans la feuille « Main d'œuvre », « Répartis sur les travaux » ouvre la barre d'« Avant de chiffrer » sur les travaux chiffrés de la TVA où il a appuyé ; chacun reçoit sa part dans son prix unitaire, sa quantité ne bouge pas, et le devis l'écrit sous la ligne (« dont 140,00 € de main d'œuvre »). La part se garde sur la ligne (migration 0155, nullable, aucune ligne réécrite) et « dont main d'œuvre HT » la compte, bornée au montant de la ligne. Rouge d'abord : l'ancienne somme rendait 500 € au lieu de 650 € sur une ligne de main d'œuvre plus une part répartie. Pas sur `main` : batterie non jouée (`ARCHITECTURE.md` §536).
+
 ## 2026-11-01
 
 - **Le devis de la planche, codé : les ajouts en pastilles et en feuilles** (sa décision : *« laisse comme tu as fait, ensuite code ça »*). La TVA, l'acompte et la remise s'ouvrent sur le chiffre qu'il tape, avec des raccourcis dessous (10, 5,5 et 0 % ; son réglage, 40 et 50 % ; 5, 10 et 15 %) ; un chiffre qui n'en est pas un se dit en ambre et éteint le bouton ; la remise montre ce qu'elle retire, l'acompte son montant, son moment et le reste à régler, avant d'ajouter. « Main d'œuvre » ouvre son calcul : les hommes et la durée repris de sa dictée, son prix du jour par homme, ou, par « Mes partenaires », le prix d'un partenaire multiplié par sa marge ; la ligne arrive en jours d'homme, ou au nom du partenaire dans son unité. Le prix se recalcule au serveur sur ses tarifs et ses marges. Fait autrement que la planche : le moment de l'acompte se lit (il suit l'ordre des acomptes) au lieu de se choisir. Corrigé en chemin : « jour/homme » retombait en « u » dès que la case de l'unité était touchée. Pas encore codé : la main d'œuvre répartie sur un devis écrit, la croix à la place du « − » doré, la ligne qui s'éclaire (`ARCHITECTURE.md` §536).

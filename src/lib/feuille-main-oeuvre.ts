@@ -128,3 +128,64 @@ export function quantiteTapee(saisie: string): number | null {
   const n = Number(brut);
   return n > 0 && n <= 99999 ? Math.round(n * 100) / 100 : null;
 }
+
+// ── RÉPARTIE SUR LES TRAVAUX — la même feuille, l'autre choix ───────────────
+
+/** Un travail du devis qui peut recevoir une part : chiffré, et pas la main d'œuvre elle-même. */
+export type TravailQuiRecoit = {
+  id: string;
+  quantite: string;
+  prixUnitaire: string;
+  partMainDoeuvre: string | null;
+};
+
+export type TravailRepris = {
+  id: string;
+  prixUnitaire: string;
+  montant: string;
+  /** Ce que la ligne porte de main d'œuvre APRÈS : l'ancienne part, plus la nouvelle. */
+  partMainDoeuvre: string;
+  /** La part réellement posée par CETTE répartition, au centime. */
+  partPosee: string;
+};
+
+/**
+ * Ce que chaque travail devient quand il reçoit sa part.
+ *
+ * **La part entre dans le prix unitaire, la quantité ne bouge pas** : « 12 m²
+ * à 18 € » reçoit 150 € et devient « 12 m² à 30,50 € ». Le client garde sa
+ * quantité et son unité ; la préparation du devis, elle, réécrit la ligne au
+ * forfait, ce qui effacerait ici ce qu'il a déjà écrit.
+ *
+ * **La part posée est celle que le prix rend, au centime près** : un prix
+ * unitaire n'a que deux décimales, donc 150 € sur 7 m² font 149,99 €. C'est
+ * CE chiffre qui est gardé et compté dans « dont main d'œuvre HT », jamais le
+ * voulu : la somme dite au client tombe juste avec ses lignes.
+ */
+export function partsAppliquees(
+  travaux: readonly TravailQuiRecoit[],
+  parts: Readonly<Record<string, string>>
+): TravailRepris[] {
+  return travaux.flatMap((t) => {
+    const voulu = parts[t.id];
+    if (voulu === undefined) return [];
+    const q = new Decimal(t.quantite || "0");
+    const pu = new Decimal(t.prixUnitaire || "0");
+    const part = new Decimal(voulu);
+    if (!q.greaterThan(0) || !part.greaterThan(0)) return [];
+    const avant = q.times(pu).toDecimalPlaces(2);
+    const nouveauPu = avant.plus(part).div(q).toDecimalPlaces(2);
+    const apres = q.times(nouveauPu).toDecimalPlaces(2);
+    const posee = apres.minus(avant);
+    const ancienne = new Decimal(t.partMainDoeuvre || "0");
+    return [
+      {
+        id: t.id,
+        prixUnitaire: nouveauPu.toFixed(2),
+        montant: apres.toFixed(2),
+        partMainDoeuvre: ancienne.plus(posee).toFixed(2),
+        partPosee: posee.toFixed(2),
+      },
+    ];
+  });
+}

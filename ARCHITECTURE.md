@@ -36570,10 +36570,19 @@ pouvoir écrire ce que je veux »*), la main d'œuvre sur son calcul
 | **les unités de la main d'œuvre tiennent** | `uniteAdmise` connaissait sept unités ; « jour/homme », écrit par la préparation du devis depuis le 21 octobre, retombait en « u » dès qu'on touchait la case. Elle admet maintenant « jour/homme », « jour » (journée) et « m » (lu « ml »), sans les ajouter aux pastilles de la case |
 | une ligne de main d'œuvre en une case | seulement au forfait, une fois (la forme du 13 octobre) ; en jours d'homme ou à l'heure, ses quatre cases, sans quoi le prix du jour se lirait comme le montant |
 
-**Ce qui n'est pas encore codé, et pourquoi :** la main d'œuvre RÉPARTIE sur un
-devis écrit. Ajouter chaque part au prix des lignes sans la garder ferait
-perdre « dont main d'œuvre HT » (la répartition de la préparation a déjà ce
-défaut : `appliquer-proposition.ts` ne pose pas le drapeau). La part de chaque
-ligne doit vivre en base (une colonne, en deux temps : invariant 9 de `CLAUDE.md`),
-jusqu'au papier et à la facture. La croix qui remplace le « − » doré et la
-ligne qui s'éclaire à l'arrivée attendent avec elle (`TODO.md`).
+**La main d'œuvre RÉPARTIE sur un devis écrit (2 novembre 2026, sa consigne
+« code le, pas de batterie ») :**
+
+| | |
+|---|---|
+| la barre | celle d'« Avant de chiffrer » (`RepartirLaMainOeuvre.tsx`), réutilisée telle quelle dans la feuille : une seconde barre aurait fini par répartir autrement |
+| sur quels travaux | ceux de la TVA où il a appuyé, qui ont leur prix, hors main d'œuvre : la part prend le taux de son travail |
+| **la part entre dans le prix unitaire, la quantité reste** | « 12 m² à 18 € » qui reçoit 150 € devient « 12 m² à 30,50 € ». La préparation du devis réécrit au forfait ; ici, ce serait effacer ce qu'il a écrit |
+| **la part gardée est celle que le prix rend** | deux décimales au prix unitaire : 150 € sur 7 m² posent 150,01 €. C'est ce chiffre qui est gardé et compté (`partsAppliquees`), jamais le voulu |
+| **gardée sur la ligne** | `lignes_prix.part_main_doeuvre`, recopiée sur `lignes_devis` (migration 0155, nullable, aucun `UPDATE`) ; `mainDoeuvreDeLaLigne` la compte dans « dont main d'œuvre HT », bornée au montant de la ligne s'il baisse son prix ensuite |
+| au serveur | `repartirMainDoeuvreAction` recalcule le total comme pour une ligne, partage avec `repartirMainOeuvre`, et `poserLesPartsDeMainDoeuvre` écrit tout ou rien, sur les prix lus en base |
+
+**Ce qui reste, et n'est pas codé :** la croix à la place du « − » doré, la
+ligne qui s'éclaire à l'arrivée (`TODO.md`). La répartition de la
+préparation (`appliquer-proposition.ts`) ne pose toujours ni drapeau ni part :
+sa main d'œuvre répartie échappe encore à « dont ».

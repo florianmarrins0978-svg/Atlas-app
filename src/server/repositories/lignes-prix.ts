@@ -3,7 +3,7 @@ import { seulement } from "@/lib/champs-permis";
 import Decimal from "decimal.js";
 import { withEntreprise } from "../db/with-entreprise";
 import type { DbOrTx } from "../db/client";
-import { and, asc as _asc } from "drizzle-orm";
+import { and, asc as _asc, inArray } from "drizzle-orm";
 import { chantiers, lignesPrix, lignesPrixPrestations, prestations } from "../db/schema";
 import type { Ctx } from "./context";
 import { membresDuLibelle } from "../../lib/lignes-vendables";
@@ -13,6 +13,7 @@ import { montantDeLaLigne } from "../../lib/montant-de-ligne";
 import { memeValeur } from "../../lib/hausse-du-devis";
 import { uniteAdmise } from "../../lib/unite-de-ligne";
 import { nombreDeLigneAdmis } from "../../lib/montant-ecrivable";
+import { partsAppliquees, type TravailRepris } from "../../lib/feuille-main-oeuvre";
 import { ActionRefuseeError } from "../garde-action";
 
 /** Refuse avant toute écriture un nombre qu'aucun écran n'envoie (`nombreDeLigneAdmis`). */
@@ -599,5 +600,53 @@ export async function proposerLaGrilleDuJour(ctx: Ctx, chantierId: string): Prom
         })
         .where(eq(lignesPrix.id, l.id));
     }
+  });
+}
+
+/**
+ * La main d'œuvre RÉPARTIE sur des travaux du devis (migration 0155) — la
+ * feuille « Main d'œuvre », sa planche du 1er novembre 2026.
+ *
+ * Chaque travail reçoit sa part dans son prix unitaire, et la garde dans
+ * `part_main_doeuvre` pour que « dont main d'œuvre HT » la compte. Le calcul
+ * est celui que l'écran a montré (`partsAppliquees`), rejoué ici sur les
+ * quantités et les prix LUS EN BASE, jamais sur ceux que l'écran renvoie.
+ *
+ * **Tout ou rien, dans une seule transaction** : une main d'œuvre posée sur
+ * deux travaux sur trois ferait un devis dont le total ne correspond plus à
+ * ce qu'il a vu. Un refus se rend en mots, sans rien écrire.
+ */
+export async function poserLesPartsDeMainDoeuvre(
+  ctx: Ctx,
+  chantierId: string,
+  parts: Readonly<Record<string, string>>
+): Promise<{ ok: true; lignes: TravailRepris[] } | { ok: false; raison: string }> {
+  const ids = Object.keys(parts);
+  if (ids.length === 0) return { ok: false, raison: "Aucun travail ne reçoit de main d'œuvre." };
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const lues = await tx
+      .select()
+      .from(lignesPrix)
+      .where(and(eq(lignesPrix.chantierId, chantierId), inArray(lignesPrix.id, ids)));
+    if (lues.length !== ids.length) {
+      return { ok: false, raison: "Un des travaux n'est plus sur le devis. Rechargez l'écran." };
+    }
+    if (lues.some((l) => l.mainDoeuvre || !(Number(l.montant) > 0))) {
+      return { ok: false, raison: "La main d'œuvre se répartit sur des travaux qui ont leur prix. Rechargez l'écran." };
+    }
+    const repris = partsAppliquees(
+      lues.map((l) => ({ id: l.id, quantite: l.quantite, prixUnitaire: l.prixUnitaire, partMainDoeuvre: l.partMainDoeuvre })),
+      parts
+    );
+    if (repris.some((r) => !nombreDeLigneAdmis(r.montant) || !nombreDeLigneAdmis(r.prixUnitaire))) {
+      return { ok: false, raison: "Cette main d'œuvre ferait un prix démesuré. Vérifiez le calcul." };
+    }
+    for (const r of repris) {
+      await tx
+        .update(lignesPrix)
+        .set({ prixUnitaire: r.prixUnitaire, montant: r.montant, partMainDoeuvre: r.partMainDoeuvre, updatedAt: new Date() })
+        .where(eq(lignesPrix.id, r.id));
+    }
+    return { ok: true, lignes: repris };
   });
 }

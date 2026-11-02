@@ -377,6 +377,7 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
             // déjà partie. Nul quand il n'a qu'un taux — le devis commande.
             tauxTva: l.tauxTva,
             mainDoeuvre: l.mainDoeuvre,
+            partMainDoeuvre: l.partMainDoeuvre,
             ordre: i,
           }))
         );
@@ -426,6 +427,7 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
           aChiffrer: l.aChiffrer,
           tauxTva: l.tauxTva,
           mainDoeuvre: l.mainDoeuvre,
+          partMainDoeuvre: l.partMainDoeuvre,
           ordre: i,
         }))
       );

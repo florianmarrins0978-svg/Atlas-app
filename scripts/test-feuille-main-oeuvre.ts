@@ -12,12 +12,14 @@ import {
   ligneDeSonEquipe,
   ligneDeSonPartenaire,
   montantDeLaMainOeuvre,
+  partsAppliquees,
   prixDesPartenaires,
   quantiteTapee,
   rangDeLaDuree,
 } from "../src/lib/feuille-main-oeuvre";
 import type { PrixAchatCandidat } from "../src/lib/prix-achat";
 import { uniteAdmise } from "../src/lib/unite-de-ligne";
+import { mainDoeuvreDesLignes } from "../src/lib/main-doeuvre-devis";
 
 let echecs = 0;
 function cas(nom: string, fn: () => void) {
@@ -121,6 +123,47 @@ cas("les unités de la main d'œuvre tiennent en base, au lieu de retomber en «
   assert.equal(uniteAdmise("heure"), "h");
   assert.equal(uniteAdmise("m²"), "m²");
   assert.equal(uniteAdmise("tonne"), null);
+});
+
+cas("répartie : la part entre dans le prix unitaire, la quantité ne bouge pas", () => {
+  const [r] = partsAppliquees([{ id: "a", quantite: "12", prixUnitaire: "18", partMainDoeuvre: null }], { a: "150.00" });
+  assert.deepEqual(r, { id: "a", prixUnitaire: "30.50", montant: "366.00", partMainDoeuvre: "150.00", partPosee: "150.00" });
+});
+
+cas("une part qui ne tombe pas juste se garde AU CENTIME que le prix rend", () => {
+  const [r] = partsAppliquees([{ id: "a", quantite: "7", prixUnitaire: "10", partMainDoeuvre: null }], { a: "150" });
+  // 70 + 150 = 220 sur 7 m² : 31,43 € le m², donc 220,01 €, donc 150,01 € posés.
+  assert.equal(r.prixUnitaire, "31.43");
+  assert.equal(r.montant, "220.01");
+  assert.equal(r.partPosee, "150.01");
+});
+
+cas("une seconde répartition s'ajoute à la première", () => {
+  const [r] = partsAppliquees([{ id: "a", quantite: "1", prixUnitaire: "300", partMainDoeuvre: "100.00" }], { a: "50" });
+  assert.equal(r.partMainDoeuvre, "150.00");
+  assert.equal(r.montant, "350.00");
+});
+
+cas("une ligne sans quantité, ou une part nulle, ne reçoit rien", () => {
+  assert.deepEqual(partsAppliquees([{ id: "a", quantite: "0", prixUnitaire: "10", partMainDoeuvre: null }], { a: "50" }), []);
+  assert.deepEqual(partsAppliquees([{ id: "a", quantite: "2", prixUnitaire: "10", partMainDoeuvre: null }], { a: "0" }), []);
+  assert.deepEqual(partsAppliquees([{ id: "a", quantite: "2", prixUnitaire: "10", partMainDoeuvre: null }], {}), []);
+});
+
+cas("« dont main d'œuvre HT » compte les parts réparties, comme les lignes de main d'œuvre", () => {
+  assert.equal(
+    mainDoeuvreDesLignes([
+      { mainDoeuvre: true, montant: "500" },
+      { mainDoeuvre: false, montant: "366", partMainDoeuvre: "150" },
+      { mainDoeuvre: false, montant: "96" },
+    ]),
+    "650.00"
+  );
+});
+
+cas("une part ne compte jamais plus que la ligne, si le prix a baissé depuis", () => {
+  assert.equal(mainDoeuvreDesLignes([{ mainDoeuvre: false, montant: "80", partMainDoeuvre: "150" }]), "80.00");
+  assert.equal(mainDoeuvreDesLignes([{ mainDoeuvre: false, montant: "80", partMainDoeuvre: "-5" }]), null);
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} La feuille de la main d'œuvre — ${echecs} échec(s).`);

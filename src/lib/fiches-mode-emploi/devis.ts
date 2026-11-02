@@ -209,14 +209,14 @@ export const FICHES_DEVIS: FicheModeEmploi[] = [
     ou: "un chantier, écran Devis, sous les lignes de chaque TVA",
     intitule: "Ajouter de la main d'œuvre au devis",
     motsCles: ["main", "oeuvre", "doeuvre", "credit", "impot", "services", "personne", "part"],
-    geste: "Appuyez sur « Main d’œuvre », à côté de « + Ajouter une ligne » dans la TVA voulue : le calcul se montre, avec les hommes, la durée et votre prix du jour par homme. « Mes partenaires », à droite du titre, prend le prix d’un partenaire avec votre marge. « Ajouter la main d’œuvre » pose la ligne, et « dont main d’œuvre HT » la reprend toute seule.",
+    geste: "Appuyez sur « Main d’œuvre », à côté de « + Ajouter une ligne » dans la TVA voulue : le calcul se montre, avec les hommes, la durée et votre prix du jour par homme. « Mes partenaires », à droite du titre, prend le prix d’un partenaire avec votre marge. « Ajouter la main d’œuvre » pose la ligne ; « Répartis sur les travaux » la partage sur vos travaux, chacun la reçoit dans son prix. « dont main d’œuvre HT » la reprend toute seule.",
     reserve: "Sans prix du jour par homme ni marge sur la main d’œuvre, la ligne arrive à chiffrer.",
     source: DC,
     preuves: ['libelle="Main d’œuvre"', 'setFeuille("mo")'],
     ailleurs: [
       {
         source: "src/app/chantiers/[id]/devis-complet/FeuilleMainDoeuvre.tsx",
-        preuves: ["Mes partenaires", "Ajouter la main d’œuvre", "Le jour par homme"],
+        preuves: ["Mes partenaires", "Ajouter la main d’œuvre", "Le jour par homme", "Répartir la main d’œuvre"],
       },
       { source: "src/lib/main-doeuvre-devis.ts", preuves: ["dont main d’œuvre HT", "Main d’œuvre"] },
     ],

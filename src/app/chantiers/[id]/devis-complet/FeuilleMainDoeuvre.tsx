@@ -15,7 +15,9 @@ import {
   rangDeLaDuree,
   type PrixDePartenaire,
 } from "@/lib/feuille-main-oeuvre";
+import { ecrireChoix, lireChoix, repartirMainOeuvre, type QuestionMainOeuvre } from "@/lib/main-oeuvre-dictee";
 import type { ChoixDeMainOeuvre } from "./actions";
+import RepartirLaMainOeuvre from "../RepartirLaMainOeuvre";
 
 /**
  * ─── LA FEUILLE « MAIN D'ŒUVRE » — sa planche du 1er novembre 2026 ───────────
@@ -37,7 +39,10 @@ export type DonneesMainOeuvre = {
 type Props = {
   ouverte: boolean;
   donnees: DonneesMainOeuvre;
+  /** Les travaux de la TVA où il a appuyé qui ont leur prix : ceux qui peuvent recevoir une part. */
+  travaux: readonly { id: string; libelle: string }[];
   onValider: (choix: ChoixDeMainOeuvre) => void;
+  onRepartir: (choix: ChoixDeMainOeuvre, parts: Record<string, number>) => void;
   onFermer: () => void;
 };
 
@@ -156,13 +161,17 @@ function Rang({ titre, sous, children }: { titre: string; sous: string; children
   );
 }
 
-function Contenu({ donnees, onValider, onFermer }: Props) {
+function Contenu({ donnees, travaux, onValider, onRepartir, onFermer }: Props) {
   const [vue, setVue] = useState<"calcul" | "liste">("calcul");
   const [qui, setQui] = useState<PrixDePartenaire | null>(null);
   const [hommes, setHommes] = useState(Math.min(20, Math.max(1, donnees.hommes ?? 1)));
   const [rang, setRang] = useState(rangDeLaDuree(donnees.jours));
   const [tarif, setTarif] = useState(donnees.tarifJour ? virgule(Number(donnees.tarifJour)) : "");
   const [quantite, setQuantite] = useState("1");
+  // « Où la mettre » : la barre de l'appli, celle d'« Avant de chiffrer »
+  // (`RepartirLaMainOeuvre`), et non une seconde barre. Sur une ligne d'abord,
+  // comme la planche : répartir est un choix, pas l'habitude.
+  const [ou, setOu] = useState(ecrireChoix({ mode: "ligne", parts: {}, retires: [] }));
 
   const alaJournee = qui !== null && (qui.unite === "journée" || qui.unite === "jour");
   const tarifLu = quantiteTapee(tarif);
@@ -174,6 +183,25 @@ function Contenu({ donnees, onValider, onFermer }: Props) {
         ? null
         : ligneDeSonPartenaire(qui, quantitePartenaire);
   const montant = ligne ? montantDeLaMainOeuvre(ligne) : null;
+  const choixDeLaFeuille: ChoixDeMainOeuvre | null =
+    ligne === null
+      ? null
+      : qui === null
+        ? { qui: "equipe", hommes, jours: DUREES_MAIN_OEUVRE[rang].jours, tarif: tarifLu === null ? null : String(tarifLu) }
+        : { qui: "partenaire", prixId: qui.id, quantite: quantitePartenaire ?? 0 };
+  // Répartir demande un montant : une main d'œuvre « à chiffrer » n'a rien à partager.
+  const peutRepartir = travaux.length > 0 && montant !== null && Number(montant) > 0;
+  const lu = lireChoix(ou);
+  const dedans = travaux.filter((t) => !(lu?.retires ?? []).includes(t.id));
+  const reparti = peutRepartir && lu?.mode === "reparti" && dedans.length > 0;
+  const question: QuestionMainOeuvre = {
+    total: montant ?? "0",
+    detail: "",
+    prixJourHomme: tarifLu === null ? "" : String(tarifLu),
+    travaux: travaux.map((t) => ({ cle: t.id, libelle: t.libelle, part: 0, grille: null })),
+    engins: [],
+    hommes,
+  };
 
   const calcul =
     qui === null
@@ -373,21 +401,34 @@ function Contenu({ donnees, onValider, onFermer }: Props) {
             </p>
           </div>
 
+          {peutRepartir && (
+            <div className="mt-4" data-atlas="mo-ou">
+              <RepartirLaMainOeuvre question={question} valeur={ou} onChange={setOu} />
+            </div>
+          )}
+
           <div className="mt-5">
             <PrimaryButton
-              disabled={ligne === null}
+              disabled={choixDeLaFeuille === null}
               repere="mo-valider"
               pleineLargeur
               onClick={() => {
-                if (ligne === null) return;
-                onValider(
-                  qui === null
-                    ? { qui: "equipe", hommes, jours: DUREES_MAIN_OEUVRE[rang].jours, tarif: tarifLu === null ? null : String(tarifLu) }
-                    : { qui: "partenaire", prixId: qui.id, quantite: quantitePartenaire ?? 0 }
-                );
+                if (choixDeLaFeuille === null) return;
+                if (reparti && montant !== null) {
+                  // Les parts telles que la barre les montre : la même règle,
+                  // que le serveur rejoue avant d'écrire.
+                  const parts = repartirMainOeuvre(
+                    montant,
+                    dedans.map((t) => t.id),
+                    lu?.parts ?? {}
+                  );
+                  onRepartir(choixDeLaFeuille, Object.fromEntries(Object.entries(parts).map(([k, v]) => [k, Number(v)])));
+                } else {
+                  onValider(choixDeLaFeuille);
+                }
               }}
             >
-              Ajouter la main d’œuvre
+              {reparti ? "Répartir la main d’œuvre" : "Ajouter la main d’œuvre"}
             </PrimaryButton>
           </div>
           <button
