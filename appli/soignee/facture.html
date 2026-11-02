@@ -93,8 +93,9 @@
 .alerte-ambre { margin-bottom: 14px; padding: 12px 14px; border-radius: 12px; font-size: 14.5px;
                 color: var(--atlas-carteAmbreTexte); background: var(--atlas-carteAmbreFond); }
 .action-bas .bouton-texte { display: block; width: 100%; text-align: center; }
-/* Le Total TTC en plus grand : sa remarque du 2 novembre, « total TTC en plus gros ». */
-.ttc .montant-grand { font-size: 54px; }
+/* Le Total TTC : « en plus gros », puis « trop gros, juste milieu » (2 novembre).
+   40 au départ, 54 de trop : 46. */
+.ttc .montant-grand { font-size: 46px; }
 /* « Non payée, montant trop petit » : ce qu'il doit, en très grand. */
 .reste-grand .montant-grand { font-size: 56px; margin-top: 10px; }
 /* Choisir d'un appui : une carte par choix, une icône, un mot ; la carte prise
@@ -113,6 +114,27 @@
 .carte-a-choisir .coche .ico { width: 15px; height: 15px; }
 .carte-a-choisir[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--atlas-or); background: color-mix(in srgb, var(--atlas-or) 7%, var(--atlas-card)); }
 .carte-a-choisir[aria-pressed="true"] .coche { display: grid; }
+/* LE RÈGLEMENT, DEUX FAÇONS À CHOISIR — les cartes « c'est nul, change ».
+   A, la barre : un seul ruban, quatre cases, l'or glisse sous celle prise.
+   B, la liste : une plage, une ligne par moyen, le rond coché à droite,
+   comme les listes des Réglages. */
+.ruban { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); padding: 4px; border-radius: 18px;
+         background: color-mix(in srgb, var(--atlas-ink) 6%, transparent); }
+.ruban .glisse { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc((100% - 8px) / 4); border-radius: 14px;
+                 background: var(--atlas-card); box-shadow: 0 1px 2px rgba(28,28,26,0.08), 0 4px 12px rgba(28,28,26,0.08);
+                 transform: translateX(calc(var(--rang, 1) * 100%)); transition: transform 240ms var(--courbe); }
+.ruban button { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+                min-height: 74px; font-size: 13.5px; font-weight: 600; color: var(--atlas-inkSoft); }
+.ruban button .ico { width: 22px; height: 22px; }
+.ruban button[aria-pressed="true"] { color: var(--atlas-ink); }
+.ruban button[aria-pressed="true"] .ico { color: var(--atlas-or); }
+@media (prefers-reduced-motion: reduce) { .ruban .glisse { transition: none; } }
+.liste-moyens { padding: 4px 16px; }
+.liste-moyens button { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 60px; text-align: left; font-size: 16.5px; color: var(--atlas-ink); }
+.liste-moyens button + button { box-shadow: inset 0 1px 0 var(--atlas-lineSoft); }
+.liste-moyens .ico-moyen { width: 22px; height: 22px; color: var(--atlas-or); flex: none; }
+.liste-moyens .rond-choix { margin-left: auto; width: 24px; height: 24px; flex: none; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--atlas-chevron); }
+.liste-moyens button[aria-pressed="true"] .rond-choix { box-shadow: inset 0 0 0 7px var(--atlas-or); }
 .ts-chantier { font-size: 14.5px; color: var(--atlas-inkSoft); }
 </style>
 </head>
@@ -231,11 +253,22 @@
               <p class="tete-situation">Mme Vasseur, facture F2026&#8209;000001</p>
 
               <p class="rubrique" style="margin-top:4px">Comment</p>
-              <div class="cartes-a-choisir" id="moyens">
-                <button class="carte-a-choisir" type="button" data-moyen="virement" aria-pressed="false"><span class="rond-icone"><svg class="ico" aria-hidden="true"><use href="#i-banque"/></svg></span><b>Virement</b><span class="coche"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span></button>
-                <button class="carte-a-choisir" type="button" data-moyen="cheque" aria-pressed="true"><span class="rond-icone"><svg class="ico" aria-hidden="true"><use href="#i-crayon"/></svg></span><b>Chèque</b><span class="coche"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span></button>
-                <button class="carte-a-choisir" type="button" data-moyen="especes" aria-pressed="false"><span class="rond-icone"><svg class="ico" aria-hidden="true"><use href="#i-euro"/></svg></span><b>Espèces</b><span class="coche"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span></button>
-                <button class="carte-a-choisir" type="button" data-moyen="carte" aria-pressed="false"><span class="rond-icone"><svg class="ico" aria-hidden="true"><use href="#i-carte"/></svg></span><b>Carte</b><span class="coche"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span></button>
+              <div data-si-etat="ruban">
+                <div class="ruban moyens" style="--rang:1">
+                  <span class="glisse" aria-hidden="true"></span>
+                  <button type="button" data-moyen="virement" aria-pressed="false"><svg class="ico" aria-hidden="true"><use href="#i-banque"/></svg>Virement</button>
+                  <button type="button" data-moyen="cheque" aria-pressed="true"><svg class="ico" aria-hidden="true"><use href="#i-crayon"/></svg>Chèque</button>
+                  <button type="button" data-moyen="especes" aria-pressed="false"><svg class="ico" aria-hidden="true"><use href="#i-euro"/></svg>Espèces</button>
+                  <button type="button" data-moyen="carte" aria-pressed="false"><svg class="ico" aria-hidden="true"><use href="#i-carte"/></svg>Carte</button>
+                </div>
+              </div>
+              <div data-si-etat="liste">
+                <div class="carte-doc liste-moyens moyens">
+                  <button type="button" data-moyen="virement" aria-pressed="false"><svg class="ico ico-moyen" aria-hidden="true"><use href="#i-banque"/></svg>Virement<span class="rond-choix"></span></button>
+                  <button type="button" data-moyen="cheque" aria-pressed="true"><svg class="ico ico-moyen" aria-hidden="true"><use href="#i-crayon"/></svg>Chèque<span class="rond-choix"></span></button>
+                  <button type="button" data-moyen="especes" aria-pressed="false"><svg class="ico ico-moyen" aria-hidden="true"><use href="#i-euro"/></svg>Espèces<span class="rond-choix"></span></button>
+                  <button type="button" data-moyen="carte" aria-pressed="false"><svg class="ico ico-moyen" aria-hidden="true"><use href="#i-carte"/></svg>Carte bancaire<span class="rond-choix"></span></button>
+                </div>
               </div>
               <div class="champ-doc" id="champ-cheque">
                 <p class="rubrique">N° de chèque</p>
@@ -428,7 +461,7 @@
       <h2>La facture</h2>
       <ul>
         <li>Le numéro en grand, l’échéance et l’envoi en pastilles.</li>
-        <li>Le Total TTC en plus grand (votre remarque du 2 novembre), ici comme sur les travaux en plus.</li>
+        <li>Le Total TTC un peu plus grand qu’aujourd’hui (« juste milieu », 2 novembre), ici comme sur les travaux en plus.</li>
         <li>Les travaux en plus rejoignent les lignes du devis, marqués « En plus », avec leur quantité et leur prix dessous.</li>
         <li>Envoyée, le bouton plein devient « Il m’a payé » : c’est le geste qui reste à faire. Renvoyer passe dessous.</li>
         <li><b>Défauts corrigés :</b> « Total HT 1772,00&nbsp;€ » sans son espace ; « dont main d’œuvre » sans ses centimes ; l’avoir écrit « - 100,00&nbsp;€ » ; au brouillon, le bouton flottant « Ajouter des travaux supplémentaires » qui couvrait la dernière ligne et l’interrupteur. Il devient une pastille sous les lignes.</li>
@@ -437,7 +470,8 @@
     <div class="page-notes" data-notes="paiement">
       <h2>Le paiement</h2>
       <ul>
-        <li>Le moyen en quatre cartes, chacune son icône ; celle choisie se borde d’or et porte sa coche (votre remarque du 2 novembre). Le numéro de chèque n’apparaît que pour un chèque.</li>
+        <li><b>Deux façons de choisir le moyen, à vous de dire</b> (les cartes : « c’est nul, change »). A, la barre : un ruban de quatre cases, la case prise se soulève et son icône passe en or. B, la liste : une ligne par moyen, le rond coché à droite, comme les listes des Réglages.</li>
+        <li>Le numéro de chèque n’apparaît que pour un chèque.</li>
         <li>Le montant en grand, déjà rempli de ce qui reste ; « Tout le reste » le remet d’un appui.</li>
       </ul>
     </div>
@@ -502,7 +536,9 @@
     facture: { etats: [["envoyee", "Envoyée"], ["brouillon", "Brouillon"]], captures: {
       envoyee: ["chantier-facture.jpg", "Aujourd'hui, une facture envoyée (le haut). Le bas de la page : Règlements reçus, l'interrupteur, l'envoi."],
       brouillon: ["chantier-facture-brouillon.jpg", "Aujourd'hui, une facture encore en brouillon."] } },
-    paiement: { etats: [["paiement", "Il vous a payé"]], captures: { paiement: ["chantier-paiement.jpg", "Aujourd'hui, le moyen dans une liste, le montant dans une petite case."] } },
+    paiement: { etats: [["ruban", "A, la barre"], ["liste", "B, la liste"]], captures: {
+      ruban: ["chantier-paiement.jpg", "Aujourd'hui, le moyen dans une liste déroulante, le montant dans une petite case."],
+      liste: ["chantier-paiement.jpg", "Aujourd'hui, le moyen dans une liste déroulante, le montant dans une petite case."] } },
     impaye: { etats: [["impaye", "Que voulez-vous faire ?"]], captures: { impaye: ["chantier-impaye.jpg", "Aujourd'hui, deux boutons, sans rien dessous."] } },
     nonpayee: { etats: [["nonpayee", "Il ne vous paiera pas"]], captures: { nonpayee: ["chantier-non-payee.jpg", "Aujourd'hui."] } },
     avoir: { etats: [["avoir", "Vous lui enlevez combien ?"]], captures: { avoir: ["chantier-avoir.jpg", "Aujourd'hui, « Sur » dans une liste, le montant dans une petite case."] } },
@@ -566,11 +602,16 @@
     this.querySelectorAll("[data-motif]").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
     document.getElementById("motif-case").hidden = b.getAttribute("data-motif") !== "autre";
   });
-  document.getElementById("moyens").addEventListener("click", function (e) {
-    var b = e.target.closest("[data-moyen]");
-    if (!b) return;
-    this.querySelectorAll("[data-moyen]").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
-    document.getElementById("champ-cheque").hidden = b.getAttribute("data-moyen") !== "cheque";
+  var RANGS = { virement: 0, cheque: 1, especes: 2, carte: 3 };
+  document.querySelectorAll(".moyens").forEach(function (groupe) {
+    groupe.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-moyen]");
+      if (!b) return;
+      var m = b.getAttribute("data-moyen");
+      document.querySelectorAll("[data-moyen]").forEach(function (x) { x.setAttribute("aria-pressed", x.getAttribute("data-moyen") === m ? "true" : "false"); });
+      document.querySelectorAll(".ruban").forEach(function (r) { r.style.setProperty("--rang", RANGS[m]); });
+      document.getElementById("champ-cheque").hidden = m !== "cheque";
+    });
   });
 
   /* L'avoir : « Une ligne » montre les lignes ; le nouveau total suit le montant. */
