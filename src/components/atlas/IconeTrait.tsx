@@ -30,6 +30,9 @@ const TRACES = {
   crayon: <><path d="M4.5 19.5l1-4.3L15.6 5.1a2.1 2.1 0 0 1 3 3L8.5 18.5z" /><path d="M13.5 7.2l3 3" /></>,
   // Le temps passé du retour d'intervention (planche du 31 octobre 2026).
   horloge: <><circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 2" /></>,
+  // Les espèces et la carte du ruban « Comment » (planche de la facture, 2 novembre 2026).
+  euro: <path d="M16.5 7.2A6 6 0 1 0 16.5 16.8M5.5 10.5h8M5.5 13.5h8" />,
+  carte: <><rect x="3" y="6" width="18" height="12" rx="2" /><path d="M3 10h18M7 14.5h3" /></>,
 } as const;
 
 export type NomIcone = keyof typeof TRACES;

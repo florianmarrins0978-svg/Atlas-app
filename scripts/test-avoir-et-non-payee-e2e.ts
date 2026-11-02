@@ -56,6 +56,33 @@ async function factureDe(chantierId: string): Promise<string> {
   return rows[0]!.id as string;
 }
 
+/**
+ * L'échéance qui passe, comme elle passerait chez lui. Une facture émise est
+ * immuable (trigger) et part avec trente jours devant elle : aucun geste de
+ * l'écran ne peut la rendre échue. Le verrou ne se lève que dans CETTE
+ * transaction de montage (`session_replication_role`, réservé au rôle de test,
+ * comme `vieillirLaFacture` de `test-facture-impayee-e2e.ts`), jamais dans le
+ * produit. Elle DOIT toucher sa ligne, sinon la suite accuserait l'écran.
+ */
+async function echoirLaFacture(chantierId: string) {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query("SET LOCAL session_replication_role = replica");
+    const r = await client.query(
+      "UPDATE factures SET date_emission = CURRENT_DATE - 31, date_echeance = CURRENT_DATE - 1 WHERE chantier_id = $1 AND statut = 'emise'",
+      [chantierId]
+    );
+    if (r.rowCount !== 1) throw new Error(`Montage : ${r.rowCount} facture(s) émise(s) échue(s) au lieu d'une.`);
+    await client.query("COMMIT");
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
+  }
+}
+
 async function seConnecter(page: Page) {
   await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
   await page.fill('input[name="email"]', "demo@atlas.local");
@@ -155,7 +182,23 @@ async function main() {
     await page.click('[data-atlas="mise-en-demeure"]');
     await page.waitForSelector('[data-atlas="lettre-mise-en-demeure"]', { timeout: 30_000 });
     assert.match(await page.locator('[data-atlas="lettre-mise-en-demeure"]').innerText(), /la somme de 1\s440,00\s€/);
-    const lettre = await page.request.get(page.url().replace(/\/chantiers\/.*/, "") + `/api/factures/${await factureDe(chantierImpaye)}/mise-en-demeure`);
+
+    // **Avant le lendemain de l'échéance, la lettre attend** (défaut du
+    // 2 novembre 2026) : la facture vient de partir, elle n'est pas impayée.
+    // L'écran le dit et éteint le bouton ; la route refuse, en clair.
+    const adresseDuPdf = page.url().replace(/\/chantiers\/.*/, "") + `/api/factures/${await factureDe(chantierImpaye)}/mise-en-demeure`;
+    assert.match(await page.locator('[data-atlas="mise-en-demeure-attend"]').innerText(), /L'échéance tombe le .*la lettre attend le lendemain/);
+    assert.equal(await page.locator('[data-atlas="telecharger-mise-en-demeure"]').isDisabled(), true, "la lettre se télécharge avant l'échéance");
+    const tropTot = await page.request.get(adresseDuPdf);
+    assert.equal(tropTot.status(), 409, "la route produit la lettre avant l'échéance");
+    assert.match(String((await tropTot.json()).error), /la lettre attend le lendemain/);
+
+    // L'échéance passée, la même page s'allume et la lettre part.
+    await echoirLaFacture(chantierImpaye);
+    await page.reload({ waitUntil: "networkidle" });
+    assert.equal(await page.locator('[data-atlas="mise-en-demeure-attend"]').count(), 0, "la phrase d'attente reste après l'échéance");
+    assert.equal(await page.locator('[data-atlas="telecharger-mise-en-demeure"]').isDisabled(), false, "le bouton reste éteint après l'échéance");
+    const lettre = await page.request.get(adresseDuPdf);
     assert.equal(lettre.status(), 200, "le PDF de la lettre ne se télécharge pas");
     assert.equal((await lettre.body()).subarray(0, 4).toString(), "%PDF");
     await page.goBack();
@@ -169,8 +212,14 @@ async function main() {
     await pool.query("UPDATE chantiers SET date_planifiee = $1 WHERE id = $2", [ilYADeuxMois.toISOString().slice(0, 10), chantierImpaye]);
 
     await page.click('[data-atlas="recu-le-paiement"]');
-    await page.click('[data-atlas="paiement-moyen"]');
-    await page.locator("button", { hasText: "Chèque" }).last().click();
+    // Le ruban de sa planche du 2 novembre 2026 : le montant arrive rempli de
+    // ce qui reste, et le numéro n'existe que pour un chèque.
+    await page.waitForSelector('[data-atlas="paiement-montant"]');
+    assert.match(await page.inputValue('[data-atlas="paiement-montant"]'), /^1\s440,00$/);
+    await page.click('[data-atlas="paiement-moyen-virement"]');
+    assert.equal(await page.locator('[data-atlas="paiement-numero"]').count(), 0, "le n° de chèque reste pour un virement");
+    await page.click('[data-atlas="paiement-moyen-cheque"]');
+    assert.equal(await page.getAttribute('[data-atlas="paiement-moyen-cheque"]', "aria-pressed"), "true");
     await page.fill('[data-atlas="paiement-numero"]', "5800755");
     await page.click('[data-atlas="paiement-noter"]');
     // **Sa demande du 25 septembre 2026 :** *« une fois validé, on quitte la

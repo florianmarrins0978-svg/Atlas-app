@@ -602,6 +602,9 @@ export const FICHES_FACTURE: FicheModeEmploi[] = [
     geste:
       "Dans « Terminés », ouvrez « Non payées », puis la facture, puis « Mise en demeure ». " +
       "Relisez la lettre, touchez « Télécharger la lettre » et envoyez-la en recommandé avec accusé de réception.",
+    // La règle de `quandLaMiseEnDemeure` (2 novembre 2026) : sans cette ligne,
+    // la fiche promettrait un bouton que l'écran éteint jusqu'au lendemain.
+    reserve: "La lettre attend le lendemain de l'échéance : avant, la facture n'est pas impayée.",
     source: "src/app/chantiers/[id]/facture/SuiteDeLaFacture.tsx",
     preuves: ["Mise en demeure"],
     ailleurs: [{ source: "src/app/chantiers/[id]/facture/mise-en-demeure/page.tsx", preuves: ["Télécharger la lettre"] }],
