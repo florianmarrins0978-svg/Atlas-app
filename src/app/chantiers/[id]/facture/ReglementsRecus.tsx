@@ -147,7 +147,8 @@ export default function ReglementsRecus({
 
   return (
     <div
-      className={carte ? "rounded-[4px] px-5 py-5" : ""}
+      // La carte des écrans soignés (sa planche de la facture, 2 novembre 2026).
+      className={carte ? "rounded-[6px] p-[18px]" : ""}
       style={carte ? { backgroundColor: colors.card } : undefined}
       data-atlas="reglements-recus"
     >
@@ -322,7 +323,10 @@ export default function ReglementsRecus({
               {jourNumerique(a.dateEmission)}
             </small>
           </span>
-          <span className="whitespace-nowrap">- {enEuros(a.totalTtc)}</span>
+          {/* **« moins », écrit en toutes lettres** — sa planche du 2 novembre
+              2026 relevait « - 100,00 € » : un trait d'union collé à un montant
+              se lit mal, et passe pour un tiret de liste. */}
+          <span className="whitespace-nowrap">moins {enEuros(a.totalTtc)}</span>
         </a>
       ))}
 

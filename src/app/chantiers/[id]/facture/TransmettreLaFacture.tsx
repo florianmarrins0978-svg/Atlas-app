@@ -83,6 +83,7 @@ export default function TransmettreLaFacture({
   avoir = null,
   acquittee = false,
   jetonAcquitteInitial = null,
+  secondaire = false,
 }: {
   factureId: string;
   clientId: string | null;
@@ -122,6 +123,14 @@ export default function TransmettreLaFacture({
   acquittee?: boolean;
   /** Le lien d'exemplaire acquitté qui vaut encore (`jetonAcquitteVivant`). */
   jetonAcquitteInitial?: string | null;
+  /**
+   * **Les capsules cèdent le plein** — sa planche de la facture du 2 novembre
+   * 2026 : une facture envoyée et encore due a « Il m'a payé » pour bouton
+   * plein, et le renvoi passe dessous. Un écran n'a qu'un seul plein ; c'est la
+   * même capsule, creuse (`PrimaryButton`, `secondaire`). L'écran de l'avoir,
+   * lui, garde son plein : l'envoi y est le geste.
+   */
+  secondaire?: boolean;
 }) {
   // **Qui marque le départ monte le retour.** Il vivait seulement dans
   // `FactureClient` : l'écran « C'est fait » de l'avoir, qui porte ce composant
@@ -296,6 +305,7 @@ export default function TransmettreLaFacture({
             href={adresse(destinataire)}
             onClick={() => marquerDepartMessagerie(quoi, clientNom)}
             repere={`transmission-${canalChoisi}`}
+            secondaire={secondaire}
           >
             {acquittee ? "Envoyer la facture acquittée" : avoir ? LIBELLE[canalChoisi].lui : LIBELLE[canalChoisi].bouton}
           </PrimaryButton>
@@ -314,7 +324,8 @@ export default function TransmettreLaFacture({
               d'adresse e-mail enregistré — saisissez-le » cumulait deux fautes
               d'accord. Le patron relève ce genre de chose, et il a raison. */}
           {clientNom || "Ce client"} {LIBELLE[canalChoisi].manque}
-          {clientId ? ` — ${LIBELLE[canalChoisi].invite}` : "."}
+          {/* Une virgule, pas un tiret : sa règle du 22 septembre 2026 (`CLAUDE.md` §3). */}
+          {clientId ? `, ${LIBELLE[canalChoisi].invite}` : "."}
         </p>
       ) : (
         <>
@@ -323,7 +334,7 @@ export default function TransmettreLaFacture({
               Votre client ne l&apos;a pas encore reçue.
             </p>
           )}
-          <PrimaryButton disabled={enCours} onClick={envoyer}>
+          <PrimaryButton disabled={enCours} onClick={envoyer} secondaire={secondaire}>
             {enCours
               ? "Préparation…"
               : avoir
@@ -346,7 +357,7 @@ export default function TransmettreLaFacture({
             className="w-full rounded-[4px] border-0 px-4 py-3 outline-none"
             style={{ backgroundColor: colors.cream, color: colors.ink, fontSize: "16px" }}
           />
-          <PrimaryButton onClick={enregistrerEtOuvrir} disabled={enCours || saisie.trim() === ""}>
+          <PrimaryButton onClick={enregistrerEtOuvrir} disabled={enCours || saisie.trim() === ""} secondaire={secondaire}>
             {enCours ? "Enregistrement…" : "Enregistrer et ouvrir le message"}
           </PrimaryButton>
         </div>

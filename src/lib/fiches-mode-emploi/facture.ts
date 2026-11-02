@@ -21,7 +21,7 @@ const PUB = "src/app/factures/[jeton]/page.tsx";
 
 const OU_FACTURE = "« Terminés » dans la barre du bas, puis la ligne du chantier, écran Facture";
 const OU_REMPLIR =
-  "« Terminés » dans la barre du bas, la ligne du chantier, puis « Remplir la facture » ou « Ajouter des travaux supplémentaires »";
+  "« Terminés » dans la barre du bas, la ligne du chantier, puis « Remplir la facture » ou « Travaux en plus »";
 const OU_TVA = "« Terminés » dans la barre du bas, puis « Ma TVA à déclarer »";
 
 export const FICHES_FACTURE: FicheModeEmploi[] = [
@@ -67,13 +67,13 @@ export const FICHES_FACTURE: FicheModeEmploi[] = [
     intitule: "Ajouter des travaux supplémentaires sur la facture",
     motsCles: ["supplementaire", "supplementaires", "supplement", "rajouter", "ajouter", "travaux", "plus", "extra", "ligne"],
     geste:
-      "En bas de la facture, appuyez sur « Ajouter des travaux supplémentaires », puis « + Ajouter des travaux supplémentaires » : " +
+      "Sous les lignes de la facture, appuyez sur « Travaux en plus », puis « Ajouter un travail » : " +
       "écrivez la description, la quantité, l'unité et le prix. Finissez par « Revenir à la facture ».",
     reserve:
-      "Seulement tant que la facture n'est pas envoyée. Le devis d'origine ne bouge pas : les lignes s'ajoutent sous « Travaux supplémentaires ».",
+      "Seulement tant que la facture n'est pas envoyée. Le devis d'origine ne bouge pas : les lignes s'ajoutent sous « En plus », et la facture les marque « En plus ».",
     source: F,
-    preuves: ['"Ajouter des travaux supplémentaires"', "reprise.aJour &&"],
-    ailleurs: [{ source: S, preuves: ['"+ Ajouter des travaux supplémentaires"', "Revenir à la facture", '"Travaux supplémentaires"'] }],
+    preuves: ['"Travaux en plus"', "reprise.aJour &&", "En plus"],
+    ailleurs: [{ source: S, preuves: ['"Ajouter un travail"', "Revenir à la facture", '"En plus"'] }],
   },
   {
     id: "facture-remplir-sans-devis",
@@ -82,12 +82,12 @@ export const FICHES_FACTURE: FicheModeEmploi[] = [
     intitule: "Écrire les lignes d'une facture faite sans devis",
     motsCles: ["remplir", "lignes", "ligne", "sans", "devis", "depannage", "ecrire", "saisir", "prestation"],
     geste:
-      "Appuyez sur « Remplir la facture » en bas de l'écran, puis « + Ajouter une ligne » : écrivez la description, la quantité, l'unité et le prix. " +
+      "Appuyez sur « Remplir la facture », sous les lignes, puis « Ajouter une ligne » : écrivez la description, la quantité, l'unité et le prix. " +
       "Finissez par « Revenir à la facture ».",
     reserve: "Une facture sans ligne ou à 0,00 € ne peut pas être envoyée.",
     source: F,
     preuves: ['"Remplir la facture"', "initialFacture.devisId === null"],
-    ailleurs: [{ source: S, preuves: ['"+ Ajouter une ligne"', "Revenir à la facture", "Ex : dessouchage de la haie"] }],
+    ailleurs: [{ source: S, preuves: ['"Ajouter une ligne"', "Revenir à la facture", "Ex : dessouchage de la haie"] }],
   },
   {
     id: "facture-lignes-tva",
@@ -214,10 +214,10 @@ export const FICHES_FACTURE: FicheModeEmploi[] = [
     ou: OU_FACTURE,
     intitule: "Télécharger la facture, la garder sur le téléphone",
     motsCles: ["telecharger", "enregistrer", "garder", "sauvegarder", "fichier", "pdf", "partager", "ranger"],
-    geste: "Sous « Voir la facture en PDF », appuyez sur « Télécharger » : le fichier porte le numéro de la facture.",
+    geste: "Sous le Total TTC, à côté de « Voir le PDF », appuyez sur « Télécharger » : le fichier porte le numéro de la facture.",
     reserve: "Avant l'envoi, le fichier finit par brouillon.",
     source: F,
-    preuves: ["Télécharger (", "-brouillon.pdf", "Voir la facture en PDF"],
+    preuves: ['dataAtlas="telecharger-facture"', "Télécharger", "-brouillon.pdf", 'libelle="Voir le PDF"'],
   },
   {
     id: "facture-envoyer",
@@ -259,11 +259,15 @@ export const FICHES_FACTURE: FicheModeEmploi[] = [
     ou: "« Terminés » dans la barre du bas, puis la ligne du chantier déjà facturé",
     intitule: "Renvoyer une facture déjà envoyée, ou l'envoyer par l'autre moyen",
     motsCles: ["renvoyer", "relancer", "nouveau", "encore", "sms", "email", "mail", "autre", "recu"],
-    geste: "Sous « Facture arrêtée », appuyez sur « Envoyer par SMS » ou « Envoyer par e-mail » : le même message se rouvre.",
-    reserve: "Si le lien n'est pas encore prêt, le bouton s'appelle « Envoyer la facture au client ».",
+    geste:
+      "Sous « Il m’a payé », appuyez sur « Renvoyer par SMS ou e-mail », puis « Envoyer par SMS » ou « Envoyer par e-mail » : le même message se rouvre.",
+    reserve: "Si le lien n'est pas encore prêt, le message est déjà ouvert, et le bouton s'appelle « Envoyer la facture au client ».",
     source: T,
     preuves: ['bouton: "Envoyer par SMS"', 'bouton: "Envoyer par e-mail"', "Envoyer la facture au client"],
-    ailleurs: [{ source: F, preuves: ["arrêtée.", "<TransmettreLaFacture"] }],
+    ailleurs: [
+      { source: F, preuves: ["arrêtée.", "<TransmettreLaFacture", "Renvoyer par SMS ou e-mail"] },
+      { source: "src/app/chantiers/[id]/facture/SuiteDeLaFacture.tsx", preuves: ["Il m’a payé"] },
+    ],
   },
   {
     id: "facture-coordonnee-manquante",
@@ -286,11 +290,11 @@ export const FICHES_FACTURE: FicheModeEmploi[] = [
     intitule: "Modifier ou corriger une facture",
     motsCles: ["modifier", "corriger", "changer", "erreur", "rectifier", "facture", "montant"],
     geste:
-      "Avant l'envoi, appuyez sur « Ajouter des travaux supplémentaires » ou « Remplir la facture » en bas de l'écran. " +
+      "Avant l'envoi, appuyez sur « Travaux en plus » ou « Remplir la facture », sous les lignes. " +
       "Une fois envoyée, elle ne se modifie plus.",
     reserve: "Une correction après l'envoi passerait par un avoir.",
     source: F,
-    preuves: ['"Remplir la facture"', '"Ajouter des travaux supplémentaires"', "Une correction passerait par un avoir."],
+    preuves: ['"Remplir la facture"', '"Travaux en plus"', "Une correction passerait par un avoir."],
   },
   // --- Page de la facture côté client -----------------------------------------
   {
@@ -630,7 +634,7 @@ export const FICHES_FACTURE: FicheModeEmploi[] = [
     ou: "l'écran de la facture, tant qu'elle est brouillon",
     intitule: "Changer la date d'échéance d'une facture",
     motsCles: ["echeance", "date", "regler", "delai", "paiement", "avant", "changer"],
-    geste: "Appuyez sur la date sous « À régler avant le » et choisissez-en une autre.",
+    geste: "Appuyez sur la pastille « À régler avant le », sous le numéro, et choisissez une autre date.",
     reserve: "Une facture arrêtée fige son échéance : elle ne se corrige plus.",
     source: "src/app/chantiers/[id]/facture/FactureClient.tsx",
     preuves: ["À régler avant le"],
@@ -641,9 +645,9 @@ export const FICHES_FACTURE: FicheModeEmploi[] = [
     ou: "l'écran de la facture",
     intitule: "Voir la facture en PDF",
     motsCles: ["pdf", "facture", "voir", "apercu", "imprimer"],
-    geste: "Appuyez sur « Voir la facture en PDF ».",
+    geste: "Sous le Total TTC, appuyez sur « Voir le PDF ».",
     source: "src/app/chantiers/[id]/facture/FactureClient.tsx",
-    preuves: ["Voir la facture en PDF"],
+    preuves: ['libelle="Voir le PDF"'],
   },
   // --- Terminés et TVA ------------------------------------------------------
   {

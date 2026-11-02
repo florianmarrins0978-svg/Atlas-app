@@ -61,7 +61,6 @@ export default async function TravauxSupplementairesPage({
       chantierNom={chantier.nom}
       adresseChantier={chantier.adresseChantier}
       factureId={existante.facture.id}
-      numeroFacture={existante.facture.numeroCommercial}
       // Pour la ligne ouverte d'avance, et pour elle seule : une facture
       // arrêtée ne s'ouvre pas avec une case de plus (`ligne-ouverte-devis.ts`).
       statutFacture={existante.facture.statut}

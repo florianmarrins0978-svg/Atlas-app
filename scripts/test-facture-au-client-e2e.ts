@@ -170,10 +170,16 @@ async function main() {
    * Un contrôle accroché au texte serait mort sur une demande exaucée, et l'on
    * aurait été tenté de rétablir le mot pour le faire taire (`CLAUDE.md` §5 bis).
    * C'est le même repère que celui du point 2 plus bas.
+   *
+   * **Et depuis sa planche du 2 novembre 2026, le message tout prêt se
+   * DÉPLIE** : envoyée, le bouton plein devient « Il m'a payé », et
+   * « Renvoyer par SMS ou e-mail » passe dessous. Ce troisième visage dit
+   * encore la même chose — le renvoi est à portée de doigt, par son repère.
    */
   const encoreAEnvoyer =
     /ne l'a pas encore reçue/i.test(ecran) ||
-    (await page.locator("a[data-atlas^='transmission-']").count()) > 0;
+    (await page.locator("a[data-atlas^='transmission-']").count()) > 0 ||
+    (await page.locator('[data-atlas="renvoyer-la-facture"]').count()) > 0;
   assert.ok(
     encoreAEnvoyer,
     `L'écran laisse croire que la facture est partie alors que rien ne la porte au client. Écran :\n${ecran.slice(0, 800)}`
@@ -191,6 +197,12 @@ async function main() {
   // flèche »*. Un contrôle accroché au texte serait mort sur une demande
   // exaucée, et l'on aurait été tenté de rétablir le mot pour le faire taire
   // (`CLAUDE.md` §5 bis). Ce repère-ci survit au prochain changement de mot.
+  // Le renvoi se déplie d'un appui, comme il le fera (sa planche du
+  // 2 novembre 2026). Attendu par son repère : l'écran se relit après l'envoi,
+  // et le bouton n'existe qu'une fois le lien préparé.
+  const renvoyer = page.locator('[data-atlas="renvoyer-la-facture"]');
+  await renvoyer.waitFor({ state: "visible", timeout: 20_000 }).catch(() => undefined);
+  if (await renvoyer.count()) await renvoyer.click();
   const lien = page.locator("a[data-atlas^='transmission-']");
   // **Attendre le lien, jamais un délai fixe.** Ce contrôle a échoué une fois
   // au milieu de la batterie complète, et passé seul dans la foulée : sous
