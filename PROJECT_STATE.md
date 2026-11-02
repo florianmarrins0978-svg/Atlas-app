@@ -8,6 +8,8 @@ dernière migration `drizzle/0155_cles_composites_effacent_comme_leur_lien.sql`
 
 La suppression d'un client tombait sur une clé composite de 0149 posée sans règle d'effacement (`ARCHITECTURE.md` §535). Migration `0155` : les vingt-six clés composites effacent comme le lien qu'elles doublent. Aucune donnée lue ni écrite. Niveau 3 (une migration).
 
+Le 2 novembre, même lot : un client sous contrat d'entretien se supprime, le contrat accepté le retient et se nomme sous « Conservé par la loi » (§536). **Batterie non jouée, à sa demande (« ne lance pas de batterie ») : pas sur `main`.**
+
 ---
 ## LES NEUF PLANCHES DU 31 OCTOBRE, CODÉES (1er novembre 2026)
 

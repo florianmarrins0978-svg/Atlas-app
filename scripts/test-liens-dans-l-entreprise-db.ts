@@ -183,15 +183,34 @@ async function main() {
     });
 
     await essai("supprimer un client se fait même quand la clé composite parle AVANT la cascade", async () => {
-      // **Le geste du patron, dans l'ordre de SA base.** On recrée chaque ancien
-      // lien à l'identique : il reçoit un numéro plus grand, donc son
-      // déclencheur part APRÈS celui de la clé composite. C'est l'ordre qu'une
-      // base vieille de plusieurs mois peut avoir, et que la base neuve des
-      // essais n'a jamais : sans cette étape, l'essai serait vert par hasard.
+      // **Le geste du patron, dans l'ordre de SA base.** On recrée chaque paire
+      // à l'identique, la clé composite d'abord, l'ancien lien ensuite : les
+      // deux reçoivent des numéros du même nombre de chiffres, l'ancien le plus
+      // grand, donc son déclencheur part APRÈS celui de la clé composite. C'est
+      // l'ordre qu'une base vieille de plusieurs mois peut avoir, et que la
+      // base neuve des essais n'a jamais : sans cette étape, l'essai serait vert
+      // par hasard.
+      //
+      // **Recréer l'ancien seul ne suffisait pas**, vu le 2 novembre 2026 : la
+      // base d'essai avait passé 100 000 dans la journée, l'ancien a reçu
+      // `a_159050`, qui passe AVANT `a_20217`. L'essai l'a refusé plutôt que de
+      // conclure, et c'est la panne même qu'il éprouve.
       const { rows: paires } = await SUPER.query<Paire>(PAIRES);
+      const definitions = new Map(
+        (
+          await SUPER.query<{ conname: string; definition: string }>(
+            `SELECT conname, pg_get_constraintdef(oid) AS definition FROM pg_constraint WHERE conname = ANY($1)`,
+            [paires.map((p) => p.composite)]
+          )
+        ).rows.map((r) => [r.conname, r.definition])
+      );
       const c = await SUPER.connect();
       try {
         await c.query("BEGIN");
+        for (const p of paires) {
+          await c.query(`ALTER TABLE ${p.enfant} DROP CONSTRAINT ${p.composite}`);
+          await c.query(`ALTER TABLE ${p.enfant} ADD CONSTRAINT ${p.composite} ${definitions.get(p.composite)}`);
+        }
         for (const p of paires) {
           await c.query(`ALTER TABLE ${p.enfant} DROP CONSTRAINT ${p.ancien}`);
           await c.query(`ALTER TABLE ${p.enfant} ADD CONSTRAINT ${p.ancien} ${p.definition_ancien}`);

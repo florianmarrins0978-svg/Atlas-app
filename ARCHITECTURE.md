@@ -36544,3 +36544,13 @@ que gardés en double — `main` n'a qu'une seule version de chacun.
 
 **Ce qui la tient** : `test-liens-dans-l-entreprise-db.ts` compare, dans le catalogue, l'effacement de chaque clé composite à celui du lien qu'elle double (vu rouge sur les vingt-six), et supprime un client par `effacerClient` après avoir recréé les anciens liens pour que leur déclencheur parte le dernier, comme sur sa base. Sans cette étape, l'essai serait vert par hasard.
 
+## §536 : Un contrat d'entretien accepté retient son client, comme une facture
+
+**Sa décision du 2 novembre 2026**, un « oui » à : un contrat accepté se garde comme une facture (le client reste nommé dessus, tout le reste part) ; un contrat jamais accepté part avec lui. Avant, `contrats_entretien_client_entreprise_fk` (sans cascade, délibérément) faisait tomber la suppression sur une erreur que l'écran rendait en « n'a pas abouti ».
+
+**Une seule règle, deux emplois** (`cequiDoitRester`) : l'aperçu et l'effacement lisent les contrats acceptés du client, par son identifiant (un contrat ne vise pas un chantier : ses passages en sont). Les autres partent après les chantiers, parce qu'un passage est un chantier qui vise son contrat et que cette clé ne cède pas. `envois_dates_contrat` suit en cascade.
+
+**Dix ans à compter de la fin de la période promise** (`CONSERVATION_LEGALE.contratAccepteAns`, Code de la consommation L213-1 et D213-2 : contrat conclu par voie électronique, 120 euros ou plus). Rien ne purge sur cette date ; elle ne sert qu'à dire jusqu'à quand.
+
+**La pièce dit son nom entier** (`PieceConservee.designation`) : « n° F2026-000007 » pour une facture ou un devis, « Contrat d'entretien d'avril 2026 » pour un contrat (le mois par `moisDuJour`, l'élision par `deOuD`). L'écran écrivait « n° » devant un numéro ; il recopie désormais la désignation, et ne décide de rien.
+

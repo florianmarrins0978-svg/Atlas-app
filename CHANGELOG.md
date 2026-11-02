@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-11-02
+
+- **Un client sous contrat d'entretien se supprime, sa décision du 2 novembre** (*« oui »* à : un contrat accepté se garde comme une facture, un contrat jamais accepté part avec lui). Avant, la clé du contrat refusait la suppression et l'écran ne disait que « n'a pas abouti ». Le contrat accepté se nomme désormais sous « Conservé par la loi » (« Contrat d'entretien d'avril 2026 : Un contrat accepté vaut engagement : il se conserve 10 ans. ») et retient le client, réduit à son nom ; brouillons, envoyés sans réponse et refusés partent avec lui, après ses chantiers. Une pièce conservée porte maintenant sa désignation entière (`designation`, « n° F2026-000007 ») : l'écran écrivait « n° » devant, et un contrat n'a pas de numéro. Éprouvé au navigateur, dans le pire ordre des déclencheurs : Balba (un créneau) disparaît, Mme Roux (un contrat accepté) reste nommée, sans téléphone.
+
 ## 2026-11-01
 
 - **Supprimer des clients refusait tout, six fois sur six** (sa capture : « La suppression n'a pas abouti. Rien n'a été retiré. Réessayez. » pour chacun). La racine était dans la base, pas dans l'écran : la migration 0149 (audit du 25 octobre, E10) avait doublé vingt-six liens d'une clé composite **sans règle d'effacement**, en croyant qu'elle « n'agit qu'à l'écriture ». Elle agit aussi quand on efface la ligne visée : un chantier qui porte un créneau du planning était refusé si le déclencheur de la clé composite partait avant celui de la cascade, et cet ordre suit un numéro interne propre à chaque base. Vert sur toute base neuve (essais, CI), rouge sur la sienne. La migration 0155 donne à chaque clé composite la règle de l'ancien lien (cascade ou mise à vide de la seule colonne du lien) : l'ordre ne compte plus. `test-liens-dans-l-entreprise-db.ts` le tient dans le pire ordre, celui de sa base (vu rouge sur le refus exact, `creneaux_chantier_chantier_id_meme_entreprise`), et refuse toute clé composite qui n'efface pas comme son lien.
