@@ -357,7 +357,7 @@ export function estControleVehicule(valeur: string): valeur is ControleVehicule 
  * ait une petite case J'ai vu, je peux cliquer pour l'enlever. »* Rappelé de ce
  * qu'un contrôle oublié coûte au bord de la route, il a choisi : « J'ai vu »
  * fait partir la carte tout de suite, et si le contrôle n'est toujours pas fait
- * à l'échéance, elle revient en rouge.
+ * le jour de l'échéance, elle revient.
  *
  * **Le « vu » retient la DATE LIMITE qu'il a vue** (migration 0159), pas
  * l'instant du geste : il vaut pour cette échéance-là et pour elle seule. Un
@@ -373,12 +373,15 @@ export const CHAMP_VU_DU_CONTROLE: Record<ControleVehicule, ChampVuVehicule> = {
 };
 
 /**
- * « J'ai vu » se propose avant l'échéance, jamais après. Dépassé, c'est une
- * amende et un camion immobilisé : la carte reste jusqu'au procès-verbal ajouté
- * ou à la date tapée, comme avant le 3 novembre.
+ * « J'ai vu » se propose AVANT le jour de l'échéance, jamais ce jour-là ni
+ * après. Sa réponse du 3 novembre 2026 : *« si le contrôle n'est toujours pas
+ * fait le jour de l'échéance, elle revient »* : le dernier jour, il est encore
+ * temps de le passer, et la carte doit être sous ses yeux. Dépassé, c'est une
+ * amende et un camion immobilisé : dans les deux cas, la carte reste jusqu'au
+ * procès-verbal ajouté ou à la date tapée.
  */
 export function vuPossible(e: Echeance): boolean {
-  return e.ton !== "depasse";
+  return e.joursRestants > 0;
 }
 
 /**
@@ -394,7 +397,10 @@ export function refusDuVu(
   if (dateEnBase !== avantVu) return "Cette date a changé. Rechargez l’écran.";
   const e = echeance(avantVu, jour, controle === "contre_visite");
   if (!e) return "Ce rappel n’a plus lieu d’être. Rechargez l’écran.";
-  if (!vuPossible(e)) return "Ce contrôle est dépassé. La carte part quand le procès‑verbal est ajouté, ou la date tapée.";
+  if (!vuPossible(e)) {
+    const quand = e.ton === "depasse" ? "Ce contrôle est dépassé." : "C’est son dernier jour.";
+    return `${quand} La carte part quand le procès‑verbal est ajouté, ou la date tapée.`;
+  }
   return null;
 }
 
@@ -426,8 +432,8 @@ export function rappelsDesVehicules(
 
 /**
  * Les cartes de l'accueil : les rappels, moins ceux qu'il a vus pour leur date
- * limite. Vu, un rappel se tait tant que cette date n'est pas dépassée ;
- * dépassée, il revient, et `vuPossible` ne le laisse plus repartir.
+ * limite. Vu, un rappel se tait jusqu'à la veille de cette date ; son dernier
+ * jour, il revient, et `vuPossible` ne le laisse plus repartir.
  *
  * **La liste et la fiche des véhicules n'y passent pas** : elles disent l'état
  * du camion (`rappelsDesVehicules`), et un « J'ai vu » touché sur l'accueil ne

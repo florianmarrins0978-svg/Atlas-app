@@ -99,7 +99,8 @@ async function main() {
     assert.deepEqual(await marquerRappelVehiculeVu(A, amarok.id, "controle_technique", "2026-11-05", "2026-11-03"), { ok: true });
     assert.equal((await getVehicule(A, amarok.id))?.controleTechniqueVuPour, "2026-11-05");
     assert.deepEqual(await controlesDeA("2026-11-03"), ["pollution:proche:vu possible"]);
-    assert.deepEqual(await controlesDeA("2026-11-05"), ["pollution:proche:vu possible"]);
+    // Son dernier jour, la carte vue revient, et rien n'y propose plus « J'ai vu ».
+    assert.deepEqual(await controlesDeA("2026-11-05"), ["controle_technique:proche:sans vu", "pollution:proche:sans vu"]);
   });
 
   await test("une autre entreprise ne peut pas le poser sur ce véhicule, et ne voit pas celui de A", async () => {

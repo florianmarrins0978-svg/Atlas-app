@@ -126,8 +126,13 @@ cas("vu à deux jours : la carte part tout de suite, l'autre contrôle reste", (
 cas("la veille de l'échéance : toujours partie", () => {
   assert.deepEqual(controlesDu("2026-11-04"), ["pollution"]);
 });
-cas("le jour de l'échéance, encore valable : toujours partie", () => {
-  assert.deepEqual(controlesDu("2026-11-05"), ["pollution"]);
+cas("le jour de l'échéance, pas encore fait : elle revient, « Dernier jour », sans « J'ai vu »", () => {
+  // Sa réponse du 3 novembre 2026 : « si le contrôle n'est toujours pas fait le
+  // jour de l'échéance, elle revient ». Ce jour-là, il est encore temps.
+  assert.deepEqual(controlesDu("2026-11-05"), ["controle_technique", "pollution"]);
+  const r = rappelsDeLAccueil([vuLe3], "2026-11-05").find((x) => x.controle === "controle_technique");
+  assert.equal(r?.echeance.texte, "Dernier jour aujourd’hui");
+  assert.equal(r?.vuPossible, false);
 });
 cas("le lendemain, toujours pas fait : elle revient, en rouge, sans « J'ai vu »", () => {
   const r = rappelsDeLAccueil([vuLe3], "2026-11-06").find((x) => x.controle === "controle_technique");
@@ -139,6 +144,7 @@ cas("vu deux mois avant : elle ne revient pas à quinze jours", () => {
   const v = { ...amarok, controleTechniqueAvant: "2026-12-20", pollutionAvant: null, controleTechniqueVuPour: "2026-12-20" };
   assert.deepEqual(controlesDu("2026-10-25", v), []);
   assert.deepEqual(controlesDu("2026-12-10", v), []);
+  assert.deepEqual(controlesDu("2026-12-20", v), ["controle_technique"]);
   assert.deepEqual(controlesDu("2026-12-21", v), ["controle_technique"]);
 });
 cas("une nouvelle date remet le rappel à neuf : le « J'ai vu » valait pour l'ancienne", () => {
@@ -156,14 +162,15 @@ cas("la liste et la fiche des véhicules disent toujours l'état du camion, vu o
     ["controle_technique", "pollution"]
   );
 });
-cas("« J'ai vu » se propose avant l'échéance, jamais après", () => {
+cas("« J'ai vu » se propose avant l'échéance, jamais le jour même ni après", () => {
   assert.equal(vuPossible(echeance("2026-11-30", "2026-10-14")!), true);
-  assert.equal(vuPossible(echeance("2026-11-30", "2026-11-30")!), true);
+  assert.equal(vuPossible(echeance("2026-11-30", "2026-11-29")!), true);
+  assert.equal(vuPossible(echeance("2026-11-30", "2026-11-30")!), false);
   assert.equal(vuPossible(echeance("2026-11-30", "2026-12-01")!), false);
 });
 cas("le serveur refait la même règle : dépassé, ou date changée, se refuse", () => {
   assert.equal(refusDuVu("2026-11-05", "2026-11-05", "controle_technique", "2026-11-03"), null);
-  assert.equal(refusDuVu("2026-11-05", "2026-11-05", "controle_technique", "2026-11-05"), null);
+  assert.match(refusDuVu("2026-11-05", "2026-11-05", "controle_technique", "2026-11-05") ?? "", /dernier jour/i);
   assert.match(refusDuVu("2026-11-05", "2026-11-05", "controle_technique", "2026-11-06") ?? "", /dépassé/);
   assert.match(refusDuVu("2028-11-05", "2026-11-05", "controle_technique", "2026-11-03") ?? "", /Rechargez/);
   assert.match(refusDuVu(null, "2026-11-05", "controle_technique", "2026-11-03") ?? "", /Rechargez/);

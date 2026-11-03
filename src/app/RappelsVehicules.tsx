@@ -35,9 +35,9 @@ function cleDuRappel(r: RappelVehicule): string {
  * celle de l'Amarok : *« c'est bien le rappel, mais j'ai aucun moyen de
  * l'enlever. Il faut qu'il y ait une petite case J'ai vu, je peux cliquer pour
  * l'enlever. »* Rappelé de ce risque, il a choisi : « J'ai vu » fait partir la
- * carte tout de suite ; si le contrôle n'est toujours pas fait à l'échéance,
- * elle revient en rouge, et sans « J'ai vu » cette fois. Elle part alors au
- * procès-verbal ajouté ou à la date tapée. L'écran ne décide de rien : ce qui
+ * carte tout de suite ; si le contrôle n'est toujours pas fait le jour de
+ * l'échéance, elle revient, sans « J'ai vu » cette fois, et rouge dès le
+ * lendemain. Elle part alors au procès-verbal ajouté ou à la date tapée. L'écran ne décide de rien : ce qui
  * revient, et ce qui se range, vient du serveur (`rappelsDeLAccueil`,
  * `vuPossible`), qui rejoue la règle au geste (`refusDuVu`).
  *

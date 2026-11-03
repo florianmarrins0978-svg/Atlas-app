@@ -4,7 +4,7 @@
 
 Codé le 3 novembre (`ARCHITECTURE.md` §546), migration `0159_rappels_vehicules_vus.sql`. **Pas sur `main`** : niveau 3 (plancher `drizzle/`), la batterie entière reste à jouer avec les autres lots.
 
-- **À lui de dire** : une carte vue revient le LENDEMAIN de sa date limite (« Dépassé depuis 1 jour », en rouge), pas le jour même, où elle dirait « Dernier jour aujourd'hui » en ambre. Il a dit « le jour de l'échéance, elle revient en rouge » ; le rouge n'existe qu'une fois la date passée. S'il la veut dès son dernier jour, c'est une condition dans `rappelsDeLAccueil` et un cas de `test-vehicules`. Qui : lui, puis nous.
+- ~~**À lui de dire** : le jour du retour~~. **Tranché par sa réponse, le 3 novembre** (*« si le contrôle n'est toujours pas fait le jour de l'échéance, elle revient »*) : une carte vue revient le jour même, « Dernier jour aujourd'hui » en ambre, sans « J'ai vu », et passe au rouge le lendemain (`vuPossible`, §546). Le rouge dès le dernier jour changerait toutes les cartes proches, vues ou non : à lui seulement s'il le demande.
 - **0159 doit être passée avant que ce code soit servi** : sans elle, l'accueil du patron et l'écran Véhicules tombent (la lecture nomme les trois colonnes). `demarrer.sh` l'applique à l'allumage.
 - **Pas vérifiable ICI** : le geste sur son iPhone (joué dans Chromium, à la taille d'un iPhone 13).
 

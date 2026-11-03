@@ -19,7 +19,9 @@ import { jourIso } from "../src/lib/jour";
  *
  *   1. la carte « Plus que 2 jours » porte « J'ai vu », et le toucher la fait
  *      partir AVANT la réponse du serveur, puis pour de bon au rechargement ;
- *   2. vue puis dépassée, elle revient rouge, et sans « J'ai vu » ;
+ *   2. vue, elle revient le JOUR de l'échéance, sans « J'ai vu » (sa réponse du
+ *      3 novembre : *« si le contrôle n'est toujours pas fait le jour de
+ *      l'échéance, elle revient »*), puis rouge une fois la date passée ;
  *   3. une nouvelle date la remet à neuf, avec son « J'ai vu » ;
  *   4. un refus du serveur (la date a changé derrière l'écran) fait revenir la
  *      carte AVEC sa phrase, jamais un geste avalé.
@@ -97,7 +99,19 @@ async function main() {
     assert.equal(await carte.count(), 0, "la carte vue est revenue au rechargement");
     console.log("  ✓ « J'ai vu » fait partir la carte tout de suite, et pour de bon");
 
-    // 2. Vue quand elle était proche, l'échéance est passée sans contrôle.
+    // 2. Vue quand elle était proche, c'est aujourd'hui son dernier jour : elle
+    //    revient, quand il est encore temps de passer le contrôle.
+    await pool.query(
+      `UPDATE vehicules SET controle_technique_avant = $2, controle_technique_vu_pour = $2 WHERE id = $1`,
+      [id, aujourdhui]
+    );
+    await page.reload({ waitUntil: "networkidle" });
+    await carte.waitFor({ timeout: 15_000 });
+    assert.match(await carte.innerText(), /Dernier jour aujourd’hui/);
+    assert.equal(await jaiVu.count(), 0, "le dernier jour propose encore « J'ai vu »");
+    console.log("  ✓ vue, elle revient le jour de l'échéance, sans « J'ai vu »");
+
+    // Puis l'échéance est passée sans contrôle.
     const hier = decaler(aujourdhui, -1);
     await pool.query(
       `UPDATE vehicules SET controle_technique_avant = $2, controle_technique_vu_pour = $2 WHERE id = $1`,
