@@ -575,6 +575,15 @@
         ],
         "createdAt": "2026-11-03T22:12:25.531Z",
         "reason": "Charte Origine du dépôt (src/lib/chartes.ts, recopiée dans appli/soignee/kit.js) : la planche montre l'écran de l'appli et le papier réel du PDF, elle ne choisit pas sa couleur"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "appli/soignee/devis-mise-en-page.html"
+        ],
+        "createdAt": "2026-11-03T22:37:09.244Z",
+        "reason": "Claude : .cadre est le cadre du téléphone de la planche (kit.css), l'écran y est posé bord à bord exprès et porte sa propre gouttière ; même exception que planning.html et accueil.html"
       }
     ]
   }
