@@ -36602,5 +36602,15 @@ pouvoir écrire ce que je veux »*), la main d'œuvre sur son calcul
 | ce qui n'en porte pas | un prix dicté, un tarif nommé, un engin avec son homme, un travail sorti par la croix (sa grille) : leur prix ne vient pas de la main d'œuvre dictée |
 | le contrôle | deux cas de `test-main-oeuvre-dictee-db.ts`, de la proposition jusqu'au `mainDoeuvreHt` du devis figé |
 
-**Ce qui reste, et n'est pas codé :** la croix à la place du « − » doré, la
-ligne qui s'éclaire à l'arrivée (`TODO.md`).
+**La croix qui retire (2 novembre 2026, la planche : « La croix remplace le « − » doré pour retirer, et le tiroir rend la main ») :**
+
+| | |
+|---|---|
+| un seul dessin | `CroixRetirer.tsx` : le tracé `croix` d'`IconeTrait`, l'encre douce (l'or dit ce qui est consenti, la croix n'est qu'un geste), 16 px dessinés et 18 sur la bande d'une TVA, comme la planche |
+| 44 px au doigt | la zone grandit (26 px avant) ; `-my-[9px]` rend à la rangée la hauteur que le « − » lui donnait, `-ml-[14px]` pose le dessin au bord et laisse le libellé à sa place |
+| la facture | `LigneRemise` est la même pièce sur Travaux en plus : elle y prend la croix. Les deux autres « − » de cet écran (catégorie de travaux en plus, main d'œuvre) attendent sa planche |
+| **le tiroir, PAS pour tous** | la remise y passait déjà (`useRetraits`). L'acompte et la TVA se retirent toujours tout de suite : changer leur comportement sortait de ce lot |
+| ce qui ne change pas | les noms lus (« Retirer la remise », « Retirer l'acompte … », « Retirer la TVA à … ») et les repères (`retirer-prix-accorde`, `retirer-acompte`) |
+
+**Ce qui reste, et n'est pas codé :** la ligne qui s'éclaire à l'arrivée
+(`TODO.md`) ; le tiroir pour l'acompte et la TVA.

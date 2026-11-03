@@ -147,16 +147,16 @@ async function main() {
     // 10 % : le taux qu'il a donné en exemple, celui de ses végétaux.
     assert.equal(await titres.nth(1).inputValue(), "10", "la catégorie neuve n'est pas à 10 %");
 
-    // **La catégorie d'ACCUEIL ne porte pas de « − ».** C'est là que tout
+    // **La catégorie d'ACCUEIL ne porte pas de croix.** C'est là que tout
     // retombe : le dépôt refuse de la retirer, donc un bouton sur elle serait un
     // bouton qui ne fait rien. Défaut vu à la capture — « 20 » comparé à
     // « 20.00 » — et invisible aux totaux, qui étaient justes.
     const retraits = page.getByRole("button", { name: /Retirer la TVA à/ });
-    assert.equal(await retraits.count(), 1, "le « − » s'affiche sur la catégorie d'accueil");
+    assert.equal(await retraits.count(), 1, "la croix s'affiche sur la catégorie d'accueil");
     assert.match(
       (await retraits.first().getAttribute("aria-label")) ?? "",
       /10 %/,
-      "le « − » ne vise pas la bonne catégorie"
+      "la croix ne vise pas la bonne catégorie"
     );
   });
 

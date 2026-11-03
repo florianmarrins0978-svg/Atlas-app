@@ -3,6 +3,7 @@
 import { colors } from "@/lib/design-tokens";
 import { enEuros } from "@/lib/euros";
 import { LIBELLE_REDUCTION } from "@/lib/reduction-devis";
+import CroixRetirer from "./CroixRetirer";
 
 /**
  * ─── LA REMISE — UNE SEULE FOIS, POUR LES DEUX PIÈCES ─────────────────────
@@ -24,10 +25,10 @@ import { LIBELLE_REDUCTION } from "@/lib/reduction-devis";
  * grammaire des TVA et la case du prix, toutes deux corrigées d'un seul côté.
  * Le geste vit donc ici, et le devis comme la facture le montent.
  *
- * Ce qui vient du devis, sans un pixel de changement : l'or, le « − » de 26 px
- * (sa proposition B du 17 août 2026 — en dessous de 24 px on le rate au doigt),
- * le champ de 36 px collé au libellé, le « % » qui le suit, et le montant écrit
- * en négatif à droite.
+ * Ce qui vient du devis, sans un pixel de changement : l'or, la croix qui la
+ * retire (`CroixRetirer`, la planche du devis du 1er novembre 2026 ; avant, un
+ * « − » doré de 26 px), le champ de 36 px collé au libellé, le « % » qui le
+ * suit, et le montant écrit en négatif à droite.
  */
 
 /**
@@ -42,7 +43,7 @@ export const REMISE_PAR_DEFAUT = "5";
 /**
  * La ligne dorée : ce qui est consenti, entre le prix plein et le net.
  *
- * `onRetirer` absent — document figé — retire le « − » et rend le champ
+ * `onRetirer` absent — document figé — retire la croix et rend le champ
  * illisible : une pièce partie ne se corrige plus.
  */
 export function LigneRemise({
@@ -87,17 +88,15 @@ export function LigneRemise({
   return (
     <div className="flex items-center justify-between py-1.5" style={{ color: colors.or }}>
       <span className="flex items-center gap-1 text-[15px]">
+        {/* `-ml-[14px]` pose le dessin au bord, et le libellé reste où le
+            « − » le laissait. */}
         {!fige && onRetirer && (
-          <button
-            type="button"
-            aria-label={`Retirer la ${LIBELLE_REDUCTION.toLowerCase()}`}
-            data-atlas="retirer-prix-accorde"
+          <CroixRetirer
+            libelle={`Retirer la ${LIBELLE_REDUCTION.toLowerCase()}`}
+            repere="retirer-prix-accorde"
             onClick={onRetirer}
-            className="mr-1 flex h-[26px] w-[26px] flex-none items-center justify-center rounded-full text-[15px] leading-none"
-            style={{ border: `1px solid ${colors.or}`, color: colors.or }}
-          >
-            −
-          </button>
+            className="-ml-[14px]"
+          />
         )}
         {LIBELLE_REDUCTION} de
         <input

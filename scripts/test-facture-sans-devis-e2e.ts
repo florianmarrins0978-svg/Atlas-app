@@ -516,7 +516,7 @@ async function main() {
       `le montant retiré ne correspond pas aux 5 % de ${avant} €`
     );
 
-    // Et le « − » du devis est là, au même endroit, avec les mêmes mots.
+    // Et la croix du devis est là, au même endroit, avec les mêmes mots.
     assert.strictEqual(
       await page.locator('[data-atlas="retirer-prix-accorde"]').count(),
       1,

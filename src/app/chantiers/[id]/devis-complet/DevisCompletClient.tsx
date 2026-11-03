@@ -53,6 +53,7 @@ import DicterDansLeDevis from "./DicterDansLeDevis";
 import RepriseDuDevis from "./RepriseDuDevis";
 import { memeValeur } from "@/lib/hausse-du-devis";
 import LigneAcompte from "./LigneAcompte";
+import CroixRetirer from "@/components/atlas/CroixRetirer";
 import LigneMainDoeuvre from "./LigneMainDoeuvre";
 import { mainDoeuvreDeLaLigne, mainDoeuvreDesLignes } from "@/lib/main-doeuvre-devis";
 import ChampUnite from "./ChampUnite";
@@ -1331,20 +1332,17 @@ export default function DevisCompletClient(props: Props) {
               />
               %
             </span>
-            {/* **Le « − », comme celui du prix accordé** (sa proposition B du
-                17 août 2026) : 26 px, sans quoi on le rate au doigt. Il ne
+            {/* **La croix, comme celle de la remise** (la planche du devis du
+                1er novembre 2026 ; avant, un « − » doré de 26 px). Elle ne
                 s'affiche pas sur la catégorie d'accueil — c'est là que les
                 lignes retombent, elle n'a nulle part où aller. */}
             {!fige && categorie.taux !== tauxDuDevis && (
-              <button
-                type="button"
-                aria-label={`Retirer la TVA à ${tauxLisible(categorie.taux)} %`}
+              <CroixRetirer
+                libelle={`Retirer la TVA à ${tauxLisible(categorie.taux)} %`}
                 onClick={() => void retirerLaTva(categorie.taux)}
-                className="flex h-[26px] w-[26px] flex-none items-center justify-center rounded-full text-[15px] leading-none"
-                style={{ border: `1px solid ${colors.or}`, color: colors.or }}
-              >
-                −
-              </button>
+                taille={18}
+                className="-mr-2"
+              />
             )}
           </div>
         )}

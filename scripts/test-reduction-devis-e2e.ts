@@ -301,18 +301,20 @@ async function main() {
     assert.equal(rows[0].total_ht, "870.00");
   });
 
-  // **LE « − » EN FACE DE LA LIGNE — sa proposition B, retenue le 17 août 2026.**
+  // **LE GESTE EN FACE DE LA LIGNE — sa proposition B, retenue le 17 août 2026.**
   //
   // *« Tout comme on ajoute une ligne avec un petit plus, il faudrait qu'on ait
   // un petit moins pour supprimer la ligne de la réduction. »*
-  // `docs/maquettes/68-retirer-le-prix-accorde.html`.
+  // `docs/maquettes/68-retirer-le-prix-accorde.html`. Depuis la planche du
+  // devis du 1er novembre 2026, c'est une croix (`CroixRetirer`) : le contrôle
+  // fixe la RÈGLE, un bouton qui se touche au doigt, pas le dessin.
   const moins = () => page.getByRole("button", { name: /Retirer la remise/i });
 
-  await cas("le « − » existe, et se touche : 26 px", async () => {
+  await cas("la croix existe, et se touche : 44 px", async () => {
     await page.locator('[data-atlas="poser-prix-accorde"]').click();
     await page.locator('[data-atlas="feuille-remise-valider"]').click();
     // **On attend la TRACE, jamais un délai** — et c'est le cas SUIVANT qui
-    // paie quand on l'oublie : il lit la base juste après le « − » et exige d'y
+    // paie quand on l'oublie : il lit la base juste après la croix et exige d'y
     // trouver les 5 % que ce bouton vient de poser. Sous la charge de la CI,
     // 900 ms ne suffisaient pas, et le contrôle accusait alors le produit
     // d'avoir effacé une remise qui n'était simplement pas encore écrite —
@@ -326,12 +328,12 @@ async function main() {
       "5.00",
       `les 5 % du « + » ne sont pas arrivés en base : ${JSON.stringify(posee[0])}`
     );
-    assert.equal(await moins().count(), 1, "aucun « − » en face de la ligne");
+    assert.equal(await moins().count(), 1, "aucune croix en face de la ligne");
     const b = await moins().boundingBox();
     // Une boîte de zéro pixel ne prouve rien : refuser de conclure plutôt que
     // de rendre un vert vide (`CLAUDE.md` §5).
-    assert.ok(b && b.width > 0, "le « − » n'occupe aucune place : rien à mesurer");
-    assert.ok(b!.width >= 24 && b!.height >= 24, `le « − » fait ${Math.round(b!.width)} × ${Math.round(b!.height)} px — au doigt, il en faut 24`);
+    assert.ok(b && b.width > 0, "la croix n'occupe aucune place : rien à mesurer");
+    assert.ok(b!.width >= 44 && b!.height >= 44, `la croix fait ${Math.round(b!.width)} × ${Math.round(b!.height)} px : au doigt, il en faut 44`);
   });
 
   await cas("un appui rend le prix plein TOUT DE SUITE, avant toute écriture", async () => {

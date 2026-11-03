@@ -130,7 +130,7 @@ export const FICHES_FACTURE: FicheModeEmploi[] = [
     intitule: "Faire une remise sur la facture",
     motsCles: ["remise", "reduction", "rabais", "ristourne", "geste", "commercial", "pourcentage", "facture"],
     geste:
-      "Sous le Total TTC, appuyez sur « + Remise » : 5 % s'inscrit, touchez le chiffre pour le changer. Le « − » rond la retire.",
+      "Sous le Total TTC, appuyez sur « + Remise » : 5 % s'inscrit, touchez le chiffre pour le changer. La croix la retire.",
     source: S,
     preuves: ["<BoutonRemise", "REMISE_PAR_DEFAUT"],
     ailleurs: [
