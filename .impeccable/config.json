@@ -566,6 +566,15 @@
         ],
         "createdAt": "2026-11-01T17:25:17.841Z",
         "reason": "charte de l'application Atlas (fond #f5f3ee), reprise des planches existantes comme deplacer-sur-le-calendrier.html"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/devis-mise-en-page.html"
+        ],
+        "createdAt": "2026-11-03T22:12:25.531Z",
+        "reason": "Charte Origine du dépôt (src/lib/chartes.ts, recopiée dans appli/soignee/kit.js) : la planche montre l'écran de l'appli et le papier réel du PDF, elle ne choisit pas sa couleur"
       }
     ]
   }
