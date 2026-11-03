@@ -45,6 +45,19 @@
           color: var(--atlas-ink); box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
 .pilule.or { color: var(--atlas-or); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 60%, transparent); }
 .pilule .ico { width: 18px; height: 18px; }
+/* Les ajouts, aux mesures de ceux du devis (`.puce-ajout` de chantier.html).
+   Une pastille passe à la ligne entière, jamais son texte coupé en deux. */
+.pilules.ajouts-devis { gap: 8px; }
+.pilules.ajouts-devis .pilule { gap: 5px; padding: 0 13px 0 9px; white-space: nowrap; }
+/* L'envoi d'un client supprimé : la rangée « Envoi » de l'appli, et la case
+   de saisie de l'appli (celle de « Renvoyer », TransmettreLaFacture). */
+.envoi-rang { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.envoi-canaux { display: flex; gap: 6px; }
+.envoi-canal { min-height: 44px; padding: 0 12px; font: inherit; font-size: 15px; color: var(--atlas-inkSoft); background: none; border: 0; box-shadow: inset 0 -1.5px 0 transparent; }
+.envoi-canal[aria-pressed="true"] { color: var(--atlas-ink); box-shadow: inset 0 -1.5px 0 var(--atlas-or); }
+.case-envoi { display: block; margin-top: 12px; }
+.case-envoi-lib { display: block; font-size: 13px; color: var(--atlas-inkSoft); margin-bottom: 6px; }
+.case-envoi input { width: 100%; min-height: 48px; padding: 0 16px; border: 0; border-radius: 6px; background: var(--atlas-cream); color: var(--atlas-ink); font: inherit; font-size: 16px; }
 .pilule[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--atlas-ink); }
 .net { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .net b { font-size: 17px; }
@@ -181,7 +194,7 @@
                 <div class="pastilles-doc">
                   <span class="etat" data-ton="ambre">À régler avant le mercredi 2 décembre</span>
                   <span class="etat" data-ton="vert" data-si-etat="envoyee">Envoyée le 2 novembre</span>
-                  <span class="etat" data-ton="bleu" data-si-etat="brouillon">Brouillon</span>
+                  <span class="etat" data-ton="bleu" data-si-etat="brouillon supprime">Brouillon</span>
                 </div>
                 <p class="discret mt-8">Travaux réalisés le vendredi 30 octobre</p>
               </section>
@@ -192,7 +205,7 @@
                 <div class="rang-ligne"><span class="nom">Fourniture et pose de gazon en rouleau<small>120 m² à 6,50&nbsp;€</small></span><span class="prix">780,00&nbsp;€</span></div>
                 <div class="rang-ligne"><span class="nom">Bordures acier corten<small>24 ml à 18,00&nbsp;€</small></span><span class="prix">432,00&nbsp;€</span></div>
                 <div class="rang-ligne"><span class="nom">Dessouchage d’un vieux laurier<span class="etiquette-en-plus">En plus</span><small>1 forfait</small></span><span class="prix">180,00&nbsp;€</span></div>
-                <div class="mt-16" data-si-etat="brouillon">
+                <div class="mt-16" data-si-etat="brouillon supprime">
                   <button class="pilule or" type="button" data-vers-page="ts"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Travaux en plus</button>
                 </div>
               </section>
@@ -221,6 +234,23 @@
                 </div>
               </section>
 
+              <!-- Un client supprimé, sa facture pas encore partie (sa demande du
+                   3 novembre 2026) : la case prend la place de « Aucune
+                   coordonnée pour ce canal », et sert à cet envoi seulement. -->
+              <section class="carte-doc envoi-supprime" data-si-etat="supprime">
+                <div class="envoi-rang">
+                  <p class="rubrique" style="margin:0">Envoi</p>
+                  <div class="envoi-canaux" role="group" aria-label="Comment lui envoyer sa facture ?">
+                    <button type="button" class="envoi-canal" aria-pressed="false" data-canal="sms">SMS</button>
+                    <button type="button" class="envoi-canal" aria-pressed="true" data-canal="email">E-mail</button>
+                  </div>
+                </div>
+                <label class="case-envoi">
+                  <span class="case-envoi-lib" id="case-envoi-lib">Son e-mail</span>
+                  <input type="email" inputmode="email" id="case-envoi" placeholder="son.adresse@exemple.fr" autocomplete="off">
+                </label>
+              </section>
+
               <section class="envoi-doc mt-24" data-si-etat="envoyee">
                 <p class="discret">Facture F2026&#8209;000001 arrêtée.</p>
                 <a class="lien-calme" href="#" data-vers-page="impaye">Mon client ne me paie pas</a>
@@ -231,8 +261,8 @@
                 <button class="bouton bouton-plein" type="button" data-vers-page="paiement">Il m’a payé</button>
                 <button class="bouton-texte" type="button" data-note="Le SMS part avec le lien de la facture. Par e-mail, juste en dessous.">Renvoyer par SMS ou e-mail</button>
               </div>
-              <div data-si-etat="brouillon">
-                <button class="bouton bouton-plein" type="button" data-note="Arrête la facture et l'envoie au canal de sa fiche.">Envoyer la facture</button>
+              <div data-si-etat="brouillon supprime">
+                <button class="bouton bouton-plein" type="button" data-note="Arrête la facture et l'envoie au canal de sa fiche ; pour un client supprimé, à ce que vous venez de taper.">Envoyer la facture</button>
               </div>
             </div>
             <nav class="barre" aria-label="Navigation principale">
@@ -412,10 +442,10 @@
               <div class="tete-ronds">
                 <button class="rond-creux" type="button" aria-label="Retour" data-vers-page="facture"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
               </div>
-              <div class="tete"><h2 class="tete-titre">Travaux en plus</h2></div>
+              <div class="tete"><h2 class="tete-titre"><span data-si-etat="ts">Travaux en plus</span><span data-si-etat="sansdevis">Facture</span></h2></div>
               <p class="tete-situation">Mme Vasseur, 14 chemin des Vignes, 44300 Nantes</p>
 
-              <section class="carte-doc">
+              <section class="carte-doc" data-si-etat="ts">
                 <p class="rubrique" style="margin-top:0">Le devis 2026&#8209;000005</p>
                 <div class="rang-ligne"><span class="nom">Terrassement et préparation du sol<small>1 forfait à 380,00&nbsp;€</small></span><span class="prix">380,00&nbsp;€</span></div>
                 <div class="rang-ligne"><span class="nom">Fourniture et pose de gazon en rouleau<small>120 m² à 6,50&nbsp;€</small></span><span class="prix">780,00&nbsp;€</span></div>
@@ -423,15 +453,35 @@
               </section>
 
               <section class="carte-doc">
-                <p class="rubrique" style="margin-top:0">En plus</p>
+                <p class="rubrique" style="margin-top:0"><span data-si-etat="ts">En plus</span><span data-si-etat="sansdevis">Les lignes</span></p>
                 <div class="rang-ligne"><span class="nom">Dessouchage d’un vieux laurier<small>1 forfait à 180,00&nbsp;€</small></span><span class="prix">180,00&nbsp;€</span></div>
-                <div class="mt-16"><button class="pilule or" type="button" data-note="Ouvre une ligne vide : description, quantité, unité, prix."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter un travail</button></div>
+                <div class="rang-ligne" data-si-etat="sansdevis"><span class="nom">Taille de la haie<small>1 forfait à 400,00&nbsp;€</small></span><span class="prix">400,00&nbsp;€</span></div>
+                <!-- Les pastilles du devis, mot pour mot (planche « Le chantier »,
+                     écran Devis, choisie le 1er novembre 2026) : mêmes pièces,
+                     mêmes feuilles. Aujourd'hui : « + Ajouter une TVA » et
+                     « + Main d'œuvre » en liens dorés de 14 points. -->
+                <div class="pilules ajouts-devis mt-16">
+                  <button class="pilule or" type="button" data-note="Ouvre une ligne vide : description, quantité, unité, prix."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg><span data-si-etat="ts">Ajouter un travail</span><span data-si-etat="sansdevis">Ajouter une ligne</span></button>
+                  <button class="pilule or" type="button" data-note="La feuille de la main d'œuvre du devis : votre équipe (hommes, durée, votre prix du jour) ou vos partenaires, le calcul montré avant d'ajouter."><svg class="ico" aria-hidden="true"><use href="#i-equipe"/></svg>Main d’œuvre</button>
+                  <button class="pilule or" type="button" data-note="La feuille de la TVA du devis : le taux que vous tapez, 10, 5,5 et 0 % en raccourcis."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter une TVA</button>
+                </div>
               </section>
 
               <section class="carte-doc totaux">
-                <div class="rang-ligne"><span class="nom">Total HT</span><span class="prix">1&#8239;772,00&nbsp;€</span></div>
-                <div class="rang-ligne"><span class="nom">TVA 20 %</span><span class="prix">354,40&nbsp;€</span></div>
-                <div class="ttc"><p>Total TTC</p><p class="montant-grand">2&#8239;126,40&nbsp;€</p></div>
+                <div class="rang-ligne"><span class="nom">Total HT</span><span class="prix"><span data-si-etat="ts">1&#8239;772,00&nbsp;€</span><span data-si-etat="sansdevis">580,00&nbsp;€</span></span></div>
+                <div class="rang-ligne"><span class="nom">TVA 20 %</span><span class="prix"><span data-si-etat="ts">354,40&nbsp;€</span><span data-si-etat="sansdevis">116,00&nbsp;€</span></span></div>
+                <div class="ttc"><p>Total TTC</p><p class="montant-grand"><span data-si-etat="ts">2&#8239;126,40&nbsp;€</span><span data-si-etat="sansdevis">696,00&nbsp;€</span></p></div>
+                <div class="pilules mt-16">
+                  <button class="pilule or" type="button" data-note="La feuille de la remise du devis : le pourcentage que vous tapez, ce qu'il retire montré avant de l'appliquer."><svg class="ico" aria-hidden="true"><use href="#i-etiquette"/></svg>Remise</button>
+                </div>
+              </section>
+
+              <section class="carte-doc">
+                <p class="rubrique" style="margin-top:0">Règlements reçus</p>
+                <div class="pilules">
+                  <button class="pilule or" type="button" data-note="Le même geste qu'aujourd'hui (« + Règlement reçu »), en pastille : à choisir."><svg class="ico" aria-hidden="true"><use href="#i-euro"/></svg>Règlement reçu</button>
+                </div>
+                <div class="net"><b>Net à payer</b><span class="montant"><span data-si-etat="ts">2&#8239;126,40&nbsp;€</span><span data-si-etat="sansdevis">696,00&nbsp;€</span></span></div>
               </section>
             </div>
             <div class="action-bas"><button class="bouton bouton-plein" type="button" data-vers-page="facture">Revenir à la facture</button></div>
@@ -465,6 +515,7 @@
         <li>Les travaux en plus rejoignent les lignes du devis, marqués « En plus », avec leur quantité et leur prix dessous.</li>
         <li>Envoyée, le bouton plein devient « Il m’a payé » : c’est le geste qui reste à faire. Renvoyer passe dessous.</li>
         <li><b>Défauts corrigés :</b> « Total HT 1772,00&nbsp;€ » sans son espace ; « dont main d’œuvre » sans ses centimes ; l’avoir écrit « - 100,00&nbsp;€ » ; au brouillon, le bouton flottant « Ajouter des travaux supplémentaires » qui couvrait la dernière ligne et l’interrupteur. Il devient une pastille sous les lignes.</li>
+        <li><b>À choisir (3 novembre) : un client supprimé, sa facture pas encore partie</b> (l’état « Client supprimé »). La case « Son e-mail » ou « Son numéro » prend la place de « Aucune coordonnée pour ce canal », et « Envoyer la facture » s’allume. Ce que vous tapez sert à cet envoi seulement (votre choix) : le client reste supprimé, hors de votre liste.</li>
       </ul>
     </div>
     <div class="page-notes" data-notes="paiement">
@@ -517,6 +568,8 @@
       <ul>
         <li>Les lignes du devis en lecture, compactes : la quantité et le prix sur une ligne sous le nom.</li>
         <li>« Ajouter un travail » en pastille, comme sur le devis.</li>
+        <li><b>À choisir (3 novembre) : les ajouts du devis, ici aussi.</b> « Main d’œuvre », « Ajouter une TVA » et « Remise » en pastilles, qui ouvrent les mêmes feuilles que le devis : votre équipe ou vos partenaires, le taux que vous tapez, la remise montrée avant de l’appliquer. Aujourd’hui, des liens dorés de 14 points. Même chose sur la facture sans devis (l’état « Facture sans devis »), qui passe par cet écran.</li>
+        <li><b>À choisir aussi :</b> « Règlement reçu » en pastille, au lieu du lien « + Règlement reçu ».</li>
         <li><b>Défauts corrigés :</b> un prix unitaire à décimales s’affichait « 0,00&nbsp;€ » (le gazon, 6,50&nbsp;€ en base) ; un tiret dans l’adresse du chantier.</li>
       </ul>
     </div>
@@ -533,9 +586,10 @@
 (function () {
   "use strict";
   var PAGES = {
-    facture: { etats: [["envoyee", "Envoyée"], ["brouillon", "Brouillon"]], captures: {
+    facture: { etats: [["envoyee", "Envoyée"], ["brouillon", "Brouillon"], ["supprime", "Client supprimé"]], captures: {
       envoyee: ["chantier-facture.jpg", "Aujourd'hui, une facture envoyée (le haut). Le bas de la page : Règlements reçus, l'interrupteur, l'envoi."],
-      brouillon: ["chantier-facture-brouillon.jpg", "Aujourd'hui, une facture encore en brouillon."] } },
+      brouillon: ["chantier-facture-brouillon.jpg", "Aujourd'hui, une facture encore en brouillon."],
+      supprime: ["chantier-facture-brouillon.jpg", "Aujourd'hui, son client supprimé : « Aucune coordonnée pour ce canal » et « Envoyer la facture » éteint, rien pour taper son e-mail."] } },
     paiement: { etats: [["ruban", "A, la barre, choisie"], ["liste", "B, la liste"]], captures: {
       ruban: ["chantier-paiement.jpg", "Aujourd'hui, le moyen dans une liste déroulante, le montant dans une petite case."],
       liste: ["chantier-paiement.jpg", "Aujourd'hui, le moyen dans une liste déroulante, le montant dans une petite case."] } },
@@ -546,7 +600,9 @@
     demeure: { etats: [["echue", "Échue"], ["tot", "Pas encore échue"]], captures: {
       echue: ["chantier-mise-en-demeure.jpg", "Aujourd'hui, la lettre, puis « Télécharger la lettre »."],
       tot: ["chantier-mise-en-demeure.jpg", "Aujourd'hui, la même lettre se télécharge avant l'échéance, et dit « reste impayée »."] } },
-    ts: { etats: [["ts", "Travaux en plus"]], captures: { ts: ["chantier-travaux-supplementaires.jpg", "Aujourd'hui, le gazon à 6,50 € s'affiche « 0,00 € », et un tiret coupe l'adresse."] } }
+    ts: { etats: [["ts", "Travaux en plus"], ["sansdevis", "Facture sans devis"]], captures: {
+      ts: ["chantier-travaux-supplementaires.jpg", "Aujourd'hui, « + Ajouter une TVA », « + Main d’œuvre » et « + Remise » sont des liens dorés, sans feuille."],
+      sansdevis: ["chantier-travaux-supplementaires.jpg", "Aujourd'hui, sans devis, le même écran : les mêmes liens dorés."] } }
   };
   var pageCourante = "facture";
   var etatsDuGroupe = document.getElementById("etats-page");
@@ -593,6 +649,19 @@
     if (note) { e.preventDefault(); Kit.note(note, note.getAttribute("data-note")); return; }
     var bascule = e.target.closest(".bascule");
     if (bascule) { bascule.setAttribute("aria-checked", bascule.getAttribute("aria-checked") === "true" ? "false" : "true"); }
+  });
+
+  /* L'envoi d'un client supprimé : SMS ou e-mail, la case suit. */
+  document.querySelectorAll(".envoi-canal").forEach(function (b) {
+    b.addEventListener("click", function () {
+      document.querySelectorAll(".envoi-canal").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+      var sms = b.getAttribute("data-canal") === "sms";
+      document.getElementById("case-envoi-lib").textContent = sms ? "Son numéro" : "Son e-mail";
+      var c = document.getElementById("case-envoi");
+      c.type = sms ? "tel" : "email"; c.inputMode = sms ? "tel" : "email";
+      c.placeholder = sms ? "06 12 34 56 78" : "son.adresse@exemple.fr";
+      c.value = "";
+    });
   });
 
   /* Le paiement : le moyen se touche, le n° de chèque suit le chèque. */
