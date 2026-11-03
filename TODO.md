@@ -6,6 +6,17 @@
 - **Sur son espace, à regarder** : ses trois devis restés (une même cliente, sans nom lisible) devraient paraître dans la bande de « Vos clients » (« 3 documents lus », « 3 à vérifier »), et l'import les reprendre. Pas vérifiable ICI sur sa base ; regardé sur la base d'essai.
 - **À lui de dire** : tant que des pièces restent à ranger, l'import s'ouvre sur elles. Des PDF s'importent quand même (l'envoi neuf les emporte) ; un tableau, non, tant qu'elles ne sont pas rangées. Faut-il un geste pour les mettre de côté ?
 - **Le nom non lu de ses trois devis** : on attend son fichier pour voir pourquoi la lecture ne le trouve pas. Hors de ce lot.
+## LE NOM DU CLIENT SUR SES ANCIENS DEVIS : CE QUI RESTE (3 novembre 2026)
+
+Codé le 3 novembre (`ARCHITECTURE.md` §545) : toutes les écritures des civilités, les entreprises et les collectivités, le haut de la pièce seul, jamais l'artisan. **Pas sur `main`** : batterie à jouer.
+
+- **Le cas Sanchez n'est pas reproduit.** Sur le texte recopié de son devis, la règle lisait déjà « Mme Sanchez Emmanuelle », avant comme après ce lot. Ce qui se passe chez lui ne se saura qu'avec son fichier : le texte que pdfjs en tire (`extraireTexte`). Pistes non vérifiées : des lettres posées une à une (« M m e S a n c h e z »), une police sans table de caractères, un ordre des éléments qui sépare « Mme » de son nom. Qui : lui (le PDF), puis nous.
+- **Le nom de l'IA passe devant celui des règles** (`fusionnerLectures`). Quand l'adresse ne se lit pas (« Rue Saint Roch » sans numéro, « Hameau du Saut du Loup le Breuil »), l'IA est appelée et son nom remplace « Mr. Bertrand », dans son écriture à elle. À décider : les règles d'abord pour le nom, ou rien quand les deux lectures ne s'accordent pas. Qui : nous, en le lui disant.
+- **L'adresse sans numéro ne se lit pas** (`ADRESSE` veut un numéro) : c'est elle qui fait appeler l'IA sur ces deux devis.
+- **La civilité reste dans le nom rangé** (« Mr. Bertrand ») : la fiche créée par l'import n'a pas sa pastille (`ficheDuPlan`). Sa règle du 7 septembre veut le nom seul et la pastille allumée. Touche le serveur et `test-pieces-importees-db`.
+- **Seul le nom de son entreprise est exclu**, pas celui de son compte (prénom et nom). Un en-tête « M. Florian Marrins » sous une entreprise nommée autrement fait douter quand un autre nom est lu (rien n'est rangé) ; seul lisible, il serait pris pour le client. Lire aussi les noms des comptes de l'entreprise le fermerait.
+- **Des initiales de société écrites comme une civilité** (« MR Rénovation », « MM Services ») se liraient comme une personne. Aucun cas réel vu.
+- **Une école privée sans forme juridique** (« École Sainte-Marie ») passe pour publique tant qu'il n'a rien choisi ; la pastille la corrige.
 
 ## SUPPRIMER UN CLIENT : CE QUI RESTE (1er novembre 2026)
 

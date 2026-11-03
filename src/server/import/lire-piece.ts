@@ -95,15 +95,18 @@ async function demanderAuScan(octets: Uint8Array): Promise<ChampsLus | null> {
  * Ce qu'on sait d'une pièce. Une panne de l'IA ne fait pas tomber la lecture :
  * elle se journalise, et la pièce passe en « à vérifier » avec ce que le texte
  * a dit.
+ *
+ * `artisan` : le nom de son entreprise dans Atlas. L'en-tête de ses pièces
+ * l'imprime, souvent avec sa forme juridique, et ce n'est jamais le client.
  */
-export async function lirePiece(octets: Uint8Array): Promise<ChampsLus> {
+export async function lirePiece(octets: Uint8Array, artisan: string | null = null): Promise<ChampsLus> {
   let texte = "";
   try {
     texte = await extraireTexte(octets);
   } catch (err) {
     logger.warn("Texte d'une pièce importée illisible", { erreur: err instanceof Error ? err.message : String(err) });
   }
-  const parLeTexte = texte.trim().length > 50 ? lireChampsDuTexte(texte) : RIEN_LU;
+  const parLeTexte = texte.trim().length > 50 ? lireChampsDuTexte(texte, artisan) : RIEN_LU;
   if (texteSuffit(parLeTexte)) return parLeTexte;
 
   try {

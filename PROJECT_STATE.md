@@ -7,6 +7,9 @@ dernière migration `drizzle/0158_cles_composites_effacent_comme_leur_lien.sql` 
 ## L'IMPORT : « ANNULER » SIX SECONDES, CE QUI RESTE SE REPREND (3 novembre 2026)
 
 Sa capture : « 48 documents rangés, Annuler » ne partait jamais. Le bandeau part désormais après six secondes comptées au serveur (`ANNULER_PENDANT_MS`, `src/lib/delai-annuler.ts`, la durée de `useRetraits`) ; ce qui n'a pas pu se ranger reprend sa place dans la bande et l'import le reprend (`envoiAReprendre`). Un envoi ne connaît qu'un rangement (`emporterLesRestes`) : « Annuler » ne défait que le dernier, et le serveur le refuse hors de sa fenêtre. Sans migration. `ARCHITECTURE.md` §544. Suites ciblées vertes (`test-pieces-importees-db`, `test-import-tableau-db`, `test-delai-annuler`, `test-importer-pieces-e2e`) ; **pas sur `main`, batterie à jouer**.
+## LE NOM DU CLIENT SUR SES ANCIENS DEVIS, CODÉ (3 novembre 2026), PAS SUR `main`
+
+Sa demande : *« il faut juste reconnaître le nom à chaque fois »*. L'import lit le nom sous toutes les écritures des civilités (MM et Mm pour Madame, sa règle), les couples, les particules, les entreprises et les collectivités, en haut de la pièce seulement, jamais l'artisan (`clientDuTexte`, `src/lib/import-pieces.ts` ; `civilite.ts` ; `ARCHITECTURE.md` §545). Suites pures vertes, vues rouges d'abord ; **batterie non jouée**. Le cas Sanchez n'est pas reproduit (`TODO.md`).
 
 ---
 ## SUPPRIMER UN CLIENT REMARCHE SUR SA BASE (1er novembre 2026)
