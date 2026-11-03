@@ -186,6 +186,17 @@ async function main() {
     await page.locator('[data-atlas="non-payee"]', { hasText: nomImpaye }).click();
     await page.waitForSelector('[data-atlas="facture-non-payee"]');
 
+    // **La carte « Non payée » a la largeur des autres cartes** — défaut vu le
+    // 2 novembre 2026 en ouvrant les écrans : elle débordait de 24 px de chaque
+    // côté. Mesurée contre la carte des règlements, une fois la page posée ;
+    // une boîte de zéro pixel ne prouverait rien (`CLAUDE.md` §5).
+    await page.waitForLoadState("networkidle");
+    const largeur = async (repere: string) => (await page.locator(`[data-atlas="${repere}"]`).first().boundingBox())?.width ?? 0;
+    const lNonPayee = await largeur("facture-non-payee");
+    const lReglements = await largeur("reglements-recus");
+    assert.ok(lNonPayee > 100 && lReglements > 100, `mesure impossible : ${lNonPayee} et ${lReglements} px`);
+    assert.ok(Math.abs(lNonPayee - lReglements) <= 1, `la carte Non payée fait ${lNonPayee} px, les règlements ${lReglements} px`);
+
     // La mise en demeure s'atteint d'ici, et sa lettre réclame le reste dû.
     await page.click('[data-atlas="mise-en-demeure"]');
     await page.waitForSelector('[data-atlas="lettre-mise-en-demeure"]', { timeout: 30_000 });
