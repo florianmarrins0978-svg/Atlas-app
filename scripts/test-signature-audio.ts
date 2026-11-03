@@ -48,7 +48,6 @@ import {
   temoinFausseSynchroAac,
 } from "./_temoins-audio";
 import { reconnaitreAudio, decrireAudioEntrant } from "../src/lib/signature-audio";
-import { TYPES_AUDIO_AUTORISES } from "../src/server/upload-limits";
 
 let echecs = 0;
 function essai(nom: string, fn: () => void) {
@@ -188,18 +187,11 @@ function main() {
 
   // ─── L'ACCORD AVEC LE RESTE DU DÉPÔT ──────────────────────────────────────
 
-  essai("chaque MIME rangé figure dans la liste blanche de l'application", () => {
-    // Sans cela, Atlas rangerait un type que ses propres écrans refusent — et
-    // le défaut ne se verrait qu'au fichier suivant.
-    for (const [, octets] of vrais) {
-      const r = decrireAudioEntrant(octets, "");
-      if (!r.ok) continue;
-      assert.ok(
-        TYPES_AUDIO_AUTORISES.includes(r.mime),
-        `« ${r.mime} » est rangé alors que la liste blanche l'ignore`
-      );
-    }
-  });
+  // « chaque MIME rangé figure dans la liste blanche de l'application » est
+  // parti le 3 novembre 2026, avec la liste : elle ne servait plus qu'à
+  // l'attribut `accept` de l'écran Note vocale, retiré ce jour-là
+  // (`src/server/upload-limits.ts`). Ce que le serveur range, il le décide
+  // seul ; le cas suivant tient ce qui en dépend encore, le type servi.
 
   essai("chaque extension rangée est connue de typeDepuisCle", () => {
     // La route qui sert les fichiers dérive le type de l'extension. Une
@@ -219,17 +211,16 @@ function main() {
 
   // ─── LE CONTRÔLE QUI PARLERA DANS SIX MOIS ────────────────────────────────
 
-  essai("LES QUATRE CHEMINS AUDIO passent par la porte commune, et eux seuls", () => {
+  essai("LES TROIS CHEMINS AUDIO passent par la porte commune, et eux seuls", () => {
     /**
      * **C'est la leçon de M3, appliquée à l'audio.** Là-bas, cinq chemins
      * d'image devaient traverser une porte unique, et trois contrôles
      * structurels empêchent qu'un sixième fasse sa propre cuisine. Ici, le
-     * risque est le même : la cinquième dictée, écrite dans six mois, lira
+     * risque est le même : la quatrième dictée, écrite dans six mois, lira
      * `fichier.arrayBuffer()` toute seule et le défaut reviendra en silence.
      */
     const chemins = [
       "src/server/services/note-vocale-entrante.ts",
-      "src/app/chantiers/[id]/note-vocale/actions.ts",
       "src/app/chantiers/[id]/devis-complet/actions.ts",
       "src/app/chantiers/nouveau/actions.ts",
     ];

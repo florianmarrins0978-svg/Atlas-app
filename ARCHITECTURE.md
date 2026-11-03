@@ -36648,3 +36648,17 @@ par `destinataireLisible` (« Au 06 79 98 45 14 »), comme l'envoi du devis. La
 carte « Non payée » a la largeur des règlements (346 px chacune, mesurée le
 3 novembre) ; `test-avoir-et-non-payee-e2e` la mesure, et la mesure a été vue
 rougir sur une carte élargie.
+
+## §538 : Une dictée qui échoue se reprend sur la fiche client ; l'écran Note vocale part
+
+**Sa réponse du 3 novembre 2026** sur la planche `appli/soignee/chantier.html?ecran=note`, état « Échec, Réessayer » : *« Oui, réessayer comme ça me va, tu peux coder »*, et son accord du même jour pour retirer l'écran `/chantiers/[id]/note-vocale`. Deux enregistreurs vivaient pour une même note ; seul l'anneau de la fiche client sert.
+
+**« Réessayer » vit dans `DevisDepuisDictee`, sous la phrase rouge, et sur la fiche client seulement** (`auto` et pas `surLeDevis`). L'état `message` porte `reprise` : vrai après une panne (transcription, fournisseur, réponse perdue), faux quand il n'y a rien à reprendre (aucune dictée, texte simulé). Le geste relance `lancer()` ; la chaîne retranscrit d'elle-même ce qui manque. Ailleurs, le bouton du devis reste au-dessus de la phrase (Transcription, Informations) ; sur le devis, relancer la chaîne par-dessus des lignes qu'il a commencé à écrire n'a pas été dessiné, et ne se fait donc pas.
+
+**La racine, trouvée en codant : une transcription qui échoue n'est pas une dictée absente.** `executerChaineDevis` lançait la transcription manquante puis relisait le brouillon ; un échec y retombait en `transcription_absente`, et l'écran disait *« il n'y a rien à reprendre »* à celui qui venait de dicter. « Réessayer » n'aurait jamais paru dans le cas même que la planche dessine. La chaîne rend maintenant `{ statut: "echec", erreur: "La transcription n'a pas abouti. <raison du fournisseur>" }`, et le son reste sur la note pour être repris.
+
+**La phrase dit ce qui s'est passé ; le geste dit quoi faire.** Les échecs écrits par l'écran lui-même ont perdu « Réessayez » et « reprenez « Mon devis » » (ce bouton, la variante `anneau`, n'est monté nulle part) : le premier doublait le bouton posé dessous, le second nommait un bouton absent. Un texte venu de la chaîne n'en porte pas.
+
+**L'écran Transcription relance SUR PLACE** (`RelancerLaTranscription.tsx`, dans la voix du lien qu'il remplace) : renvoyer vers la fiche client n'aurait pas suffi, elle ne montre l'échec et « Réessayer » que le temps de la dictée qu'on vient d'envoyer. Le bouton ne s'offre pas sans son (audio purgé après une transcription réussie). `lancerTranscriptionAction` vit dans `src/app/chantiers/[id]/transcription/actions.ts`, `supprimerNoteVocaleAction` dans `src/app/chantiers/[id]/coordonnees/actions.ts` : chacune avec l'écran qui l'appelle.
+
+**L'adresse survit en renvoi**, pour la même raison que la fiche du chantier (§254) : `src/app/chantiers/[id]/note-vocale/page.tsx` rend `notFound()` pour un chantier invisible, sinon renvoie à `/coordonnees`. Partis avec l'écran : « Ajouter un fichier audio », la réécoute (elle n'existait que là), le complément de note (`completerNoteVocaleAction` et son service), `TYPES_AUDIO_AUTORISES` et `ACCEPT_AUDIO` (l'attribut `accept` de cet import, rien d'autre). Les suites qui l'ouvraient postent sur la route de l'anneau ; `test-reessayer-la-dictee-e2e.ts` tient les deux gestes par son chemin, l'échec provoqué en égarant le fichier de la note entre son rangement et le départ de la chaîne.

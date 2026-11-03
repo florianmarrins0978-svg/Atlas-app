@@ -127,7 +127,7 @@ async function main() {
       .first()
       .getAttribute("href");
     if (cible === null) throw new Error("le nom du chantier ne mène nulle part");
-    const reprisesPossibles = /\/chantiers\/[0-9a-f-]{36}(\/coordonnees|\/devis-complet|\/prix|\/note-vocale)?$|^\/planning/;
+    const reprisesPossibles = /\/chantiers\/[0-9a-f-]{36}(\/coordonnees|\/devis-complet|\/prix)?$|^\/planning/;
     if (!reprisesPossibles.test(cible)) {
       throw new Error(`la ligne mène à « ${cible} » : ce n'est aucun écran de reprise`);
     }

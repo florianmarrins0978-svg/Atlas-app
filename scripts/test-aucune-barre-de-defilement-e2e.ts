@@ -125,7 +125,8 @@ async function ecrans(): Promise<Array<[string, string]>> {
       // devant un 404. L'écran qui porte désormais les photos et l'anneau est
       // la fiche client, et c'est lui qu'il faut mesurer.
       ["sa fiche client", `/chantiers/${chantier}/coordonnees`],
-      ["sa note vocale", `/chantiers/${chantier}/note-vocale`],
+      // « sa note vocale » est partie le 3 novembre 2026 : l'écran est retiré,
+      // son adresse renvoie sur la fiche client, mesurée juste au-dessus.
       ["son devis à la main", `/chantiers/${chantier}/devis-complet`]
     );
   }

@@ -3,7 +3,25 @@
 import { exigerEcran } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getNoteVocale, enregistrerSuccesTranscription } from "@/server/repositories/notes-vocales";
+import { lancerTranscription } from "@/server/ai/services/transcription-service";
 import { revalidatePath } from "next/cache";
+
+/**
+ * Lancer, ou relancer, la transcription de la note du chantier.
+ *
+ * **Elle vit ici depuis le 3 novembre 2026**, avec l'écran qui l'appelle :
+ * l'écran Note vocale, qui la portait, est retiré (son accord du même jour), et
+ * la Transcription relance désormais sur place au lieu d'y renvoyer.
+ *
+ * Simple déclencheur : la logique vit dans le service
+ * (`src/server/ai/services/transcription-service.ts`), que la chaîne de la
+ * dictée au devis appelle aussi.
+ */
+export async function lancerTranscriptionAction(chantierId: string) {
+  const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "lancer une transcription");
+  return lancerTranscription(ctx, chantierId);
+}
 
 // Le patron écrit lui-même ce qu'il a dicté.
 //

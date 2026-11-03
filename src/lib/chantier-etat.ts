@@ -302,8 +302,8 @@ export function getNextActionHref(id: string, action: NextAction): string {
     //
     // **La clé garde son nom parce qu'elle nomme l'ÉTAPE, pas l'écran** :
     // « enregistrer une note vocale » reste ce qui manque, même si le geste a
-    // changé de page. L'écran `/note-vocale` n'est pas supprimé pour autant —
-    // il reste joignable par son adresse, comme les quatre autres.
+    // changé de page. L'écran `/note-vocale` est retiré le 3 novembre 2026 :
+    // son adresse ne rend plus qu'un renvoi vers cette même fiche client.
     case "photos":
     case "note-vocale":
       return `/chantiers/${id}/coordonnees`;

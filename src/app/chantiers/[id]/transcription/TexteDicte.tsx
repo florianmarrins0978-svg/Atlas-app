@@ -28,7 +28,7 @@ type Props = {
    * Où se pose ce bouton tant qu'il est fermé.
    *
    * **Vu en capture, et invisible autrement :** dans l'état « échec », il
-   * s'affichait CENTRÉ juste sous « Relancer depuis la note vocale », qui est
+   * s'affichait CENTRÉ juste sous « Relancer la transcription », qui est
    * aligné à gauche. Deux gestes de même rang, deux alignements — c'est
    * exactement le genre de détail qu'aucun test ne voit et que l'œil accroche.
    * Sous les actions centrées de l'état « écoutée », en revanche, le centre est

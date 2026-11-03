@@ -24,10 +24,13 @@ import { ADRESSE } from "./_adresse";
 //   2. **un enregistrement vide est refusé, pas rangé.** Un micro qui rend zéro
 //      octet posait jusqu'ici une note muette, et l'écran annonçait une réussite.
 //
-// Il passe par l'import de fichier, qui emprunte la MÊME route que l'anneau et
-// que l'écran de dictée (`/api/notes-vocales/<chantier>`) : c'est le seul chemin
-// où une suite peut choisir ce qu'elle envoie. Éprouver la route, c'est éprouver
-// les trois.
+// **Il poste directement sur la route de l'anneau** (`/api/notes-vocales/<chantier>`)
+// depuis le 3 novembre 2026. Il passait par « Ajouter un fichier audio », le seul
+// endroit où une suite pouvait choisir ce qu'elle envoie ; cet import est parti
+// avec l'écran Note vocale, et l'anneau ne sait envoyer que ce que le micro
+// enregistre. La route reste la porte unique : l'éprouver, c'est éprouver
+// toutes les dictées. Ce qui part avec l'écran, c'est sa façon d'afficher le
+// refus ; la phrase, elle, est celle que l'anneau montre (`envoi-note-vocale.ts`).
 
 const BASE = ADRESSE;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -68,58 +71,42 @@ async function main() {
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
   const chantier = idChantier;
 
-  /** Dépose un fichier sur l'écran de dictée et rend ce que l'écran répond. */
+  /** Poste un fichier sur la route des dictées et rend la raison qu'elle donne. */
   async function deposer(nom: string, mimeType: string, octets: Buffer): Promise<string> {
-    await page.goto(`${BASE}/chantiers/${chantier}/note-vocale`, { waitUntil: "networkidle" });
-    await page.waitForTimeout(700);
-    const entree = page.locator('input[type="file"]');
-    // **Le contrôle doit savoir qu'il a bien agi.** Sans cette vérification, un
-    // écran qui n'offrirait plus l'import le rendrait vert en silence.
-    if ((await entree.count()) === 0) {
-      throw new Error("aucun champ de fichier sur l'écran de dictée — rien n'a été éprouvé");
+    const reponse = await page.request.post(`${BASE}/api/notes-vocales/${chantier}`, {
+      multipart: { fichier: { name: nom, mimeType, buffer: octets } },
+    });
+    // **Le contrôle doit savoir qu'il a bien agi** : un refus se rend avec un
+    // corps qui le dit. Une page de connexion ou une réponse vide ne prouverait
+    // rien, et ne doit pas passer pour un refus lisible.
+    const corps = (await reponse.json().catch(() => null)) as { ok?: boolean; raison?: string } | null;
+    if (!corps || corps.ok !== false || typeof corps.raison !== "string") {
+      throw new Error(`la route n'a pas rendu de refus lisible (HTTP ${reponse.status()}) : rien n'a été éprouvé`);
     }
-    await entree.setInputFiles({ name: nom, mimeType, buffer: octets });
-
-    // **Attendre que l'écran ait FINI, pas deux secondes et demie.** Le 12 août
-    // 2026 au soir, en batterie : le contrôle lisait « Ajout en cours… » et
-    // concluait que le format refusé n'était pas nommé. Il l'était — l'écran
-    // n'avait simplement pas encore répondu. Le message accusait donc le
-    // produit d'un défaut qui n'existait pas, ce qui coûte plus cher que pas
-    // d'erreur du tout (`AGENTS.md`).
-    await page
-      .getByRole("button", { name: /Ajout en cours/i })
-      .waitFor({ state: "hidden" })
-      .catch(() => {
-        // Le bouton peut n'être jamais passé par cet état si le refus est
-        // immédiat : ce n'est pas une panne, et lever ici masquerait le vrai
-        // verdict que l'appelant s'apprête à rendre.
-      });
-    return await page.locator("body").innerText();
+    return corps.raison;
   }
 
   {
     await cas("un format refusé nomme le format reçu", async () => {
-      const ecran = await deposer("photo.pdf", "application/pdf", Buffer.from("%PDF-1.4 rien"));
-      if (!/application\/pdf/.test(ecran)) {
+      const raison = await deposer("photo.pdf", "application/pdf", Buffer.from("%PDF-1.4 rien"));
+      if (!/application\/pdf/.test(raison)) {
         throw new Error(
-          "l'écran ne dit pas QUEL format a été refusé. Le patron ne peut donc pas " +
+          "le refus ne dit pas QUEL format a été refusé. Le patron ne peut donc pas " +
             "signaler le format que son téléphone produit, et personne ne peut le " +
-            `deviner. Écran :\n      ` +
-            ecran.split("\n").filter((l) => l.trim()).slice(0, 12).join("\n      ")
+            `deviner. Raison rendue : ${raison}`
         );
       }
     });
 
     await cas("un enregistrement vide est refusé, pas rangé", async () => {
-      const ecran = await deposer("note.webm", "audio/webm", Buffer.alloc(0));
-      if (!/vide/i.test(ecran)) {
+      const raison = await deposer("note.webm", "audio/webm", Buffer.alloc(0));
+      if (!/vide/i.test(raison)) {
         throw new Error(
           "un fichier de zéro octet n'est pas refusé en toutes lettres. Il descend " +
             "jusqu'à la base, qui le rejette — et ce qui remonte alors n'est plus un " +
             "refus lisible mais une panne. Confronté à l'ancien code, l'écran " +
             "affichait la requête SQL entière, noms de tables et identifiant " +
-            `d'entreprise compris. Écran :\n      ` +
-            ecran.split("\n").filter((l) => l.trim()).slice(0, 12).join("\n      ").slice(0, 900)
+            `d'entreprise compris. Raison rendue : ${raison.slice(0, 900)}`
         );
       }
       const { rows: notes } = await pool.query(
@@ -129,7 +116,7 @@ async function main() {
       if (notes.length > 0) {
         throw new Error(
           `une note a été rangée en base malgré le refus (${notes[0].taille_octets} octets) : ` +
-            "l'écran et la base ne disent pas la même chose."
+            "la route et la base ne disent pas la même chose."
         );
       }
     });

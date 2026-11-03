@@ -123,15 +123,14 @@ const dicte = page.url().replace(/(\/chantiers\/[0-9a-f-]{36}).*$/, "$1");
 await page.goto(`${dicte}/transcription`, { waitUntil: "networkidle" });
 await photographier(page, "transcription", "Continuer vers les informations", "Continuer vers les informations →", "lien", /Continuer vers les informations/);
 await photographier(page, "transcription", "Ou vérifier les informations une par une", "Ou vérifier les informations une par une →", "lien", /vérifier les informations une par une/);
-await photographier(page, "transcription", "Aller à la note vocale", "Aller à la note vocale →", "lien", /Aller à la note vocale/);
 
 /* « Ouvrir mes tarifs » ne s'affiche qu'avec une proposition de tarif, que
    seul le chantier de démonstration porte — d'où cette visite ici. */
 await page.goto(`${dicte}/prix`, { waitUntil: "networkidle" });
 await photographier(page, "prix", "Ouvrir mes tarifs", "Ouvrir mes tarifs →", "lien", /Ouvrir mes tarifs/);
 
-await page.goto(`${dicte}/note-vocale`, { waitUntil: "networkidle" });
-await photographier(page, "note-vocale", "Ou rédiger le devis à la main", "Ou rédiger le devis à la main →", "lien", /rédiger le devis à la main/);
+// L'écran Note vocale et son « Aller à la note vocale » sont retirés le
+// 3 novembre 2026 : il n'y a plus rien à y photographier.
 
 await page.goto(dicte, { waitUntil: "networkidle" });
 await photographier(page, "fiche", "Mon devis", "Mon devis →", "bouton", /^Mon devis$/);

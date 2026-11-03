@@ -160,16 +160,6 @@ const APLATS_DECLARES: { fichier: string; motif: RegExp; pourquoi: string }[] = 
     pourquoi: "l'interrupteur « Facture acquittée » (sa planche du 14 septembre 2026) : un état, pas un bouton",
   },
   {
-    fichier: "src/app/chantiers/[id]/note-vocale/NoteVocaleClient.tsx",
-    motif: /animate-pulse/,
-    pourquoi: "la pastille qui bat pendant l'enregistrement — un témoin, pas un bouton",
-  },
-  {
-    fichier: "src/app/chantiers/[id]/note-vocale/NoteVocaleClient.tsx",
-    motif: /width: `\$\{progression\}%`/,
-    pourquoi: "la barre d'avancement de l'envoi",
-  },
-  {
     fichier: "src/components/atlas/FeuilleSuppressionClients.tsx",
     motif: /cochee \? colors\.rust/,
     pourquoi: "la coche ronde (sauvegardé ailleurs, un client, « Tout ») : une marque, pas un aplat de bouton",

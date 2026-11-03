@@ -261,8 +261,10 @@ export default function BrouillonSection({
         <p className={texteSituation} style={{ color: colors.muted }}>
           Enregistrez une note vocale et lancez sa transcription pour obtenir un brouillon d&apos;informations.
         </p>
+        {/* La fiche client porte l'anneau de la dictée : l'écran Note vocale
+            où menait ce lien est retiré le 3 novembre 2026. */}
         <a
-          href={`/chantiers/${chantierId}/note-vocale`}
+          href={`/chantiers/${chantierId}/coordonnees`}
           className={`self-start ${libelleCaps}`}
           style={{ color: colors.rust }}
         >

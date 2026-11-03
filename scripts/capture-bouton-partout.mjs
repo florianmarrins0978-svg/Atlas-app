@@ -67,7 +67,6 @@ const ECRANS = [
   ["prix", "Prix", `${BASE}/chantiers/${neuf}/prix`],
   ["transcription", "Transcription", `${BASE}/chantiers/${neuf}/transcription`],
   ["photos", "Photos", `${BASE}/chantiers/${neuf}/photos`],
-  ["note-vocale", "Note vocale", `${BASE}/chantiers/${neuf}/note-vocale`],
   ["devis", "Devis à envoyer", `${BASE}/chantiers/${neuf}/export`],
   ["facture", "Facture", `${BASE}/chantiers/${neuf}/facture`],
 ];

@@ -172,7 +172,8 @@ async function ecrans(): Promise<Array<[string, string]>> {
       // redirection, et rien ne recouvre rien sur une redirection. Les photos
       // et l'anneau vivent sur la fiche client : c'est elle qu'on mesure.
       ["sa fiche client", `/chantiers/${chantier}/coordonnees`],
-      ["sa note vocale", `/chantiers/${chantier}/note-vocale`],
+      // « sa note vocale » est partie le 3 novembre 2026 : l'écran est retiré,
+      // son adresse renvoie sur la fiche client, mesurée juste au-dessus.
       ["ses informations", `/chantiers/${chantier}/informations`],
       ["son prix", `/chantiers/${chantier}/prix`],
       ["son devis à la main", `/chantiers/${chantier}/devis-complet`]

@@ -10,12 +10,12 @@ import { getNoteVocale } from "@/server/repositories/notes-vocales";
 import { estTranscriptionSimulee } from "@/server/ai/providers/transcription/dev";
 import TexteDicte from "./TexteDicte";
 import RafraichirPendantTranscription from "./RafraichirPendantTranscription";
+import RelancerLaTranscription from "./RelancerLaTranscription";
 import DevisDepuisDictee from "../DevisDepuisDictee";
 import { garderLaPage } from "@/server/garde-page";
 
-// Consultation seule : le lancement et la relance de la transcription vivent sur
-// l'écran Note vocale, jamais en double ici. Le modèle ne porte qu'une
-// transcription par chantier — aucun historique n'est affiché.
+// Le modèle ne porte qu'une transcription par chantier : aucun historique
+// n'est affiché.
 export const dynamic = "force-dynamic";
 
 /**
@@ -37,8 +37,11 @@ export const dynamic = "force-dynamic";
  * page, avec le geste qui débloque. C'est le cadre lui-même qui dit ce qu'il
  * porte, sans une phrase de plus (planche `appli/relire-sa-dictee.html`).
  *
- * **Ce qui n'est PAS revenu ici :** lancer ou relancer la transcription. Deux
- * endroits pour le même geste, c'est un de trop — l'écran Note vocale le tient.
+ * **Lancer et relancer la transcription SONT revenus ici le 3 novembre 2026.**
+ * Ils vivaient sur l'écran Note vocale, pour n'avoir qu'un endroit par geste ;
+ * cet écran est retiré (son accord du même jour), et ses trois liens d'ici y
+ * renvoyaient. Le geste prend leur place, dans leur voix
+ * (`RelancerLaTranscription`). Dicter, lui, se fait sur la fiche client.
  */
 export default async function TranscriptionPage({ params }: { params: Promise<{ id: string }> }) {
   await garderLaPage();
@@ -135,13 +138,12 @@ export default async function TranscriptionPage({ params }: { params: Promise<{ 
             <p className="mt-2 text-[15px] leading-relaxed" style={{ color: colors.ink }}>
               {note?.transcriptionErreur ?? "Erreur inconnue"}. Votre enregistrement est intact.
             </p>
-            <a
-              href={`/chantiers/${id}/note-vocale`}
-              className={`mt-5 block ${libelleCaps}`}
-              style={{ color: colors.rust }}
-            >
-              Relancer depuis la note vocale
-            </a>
+            {/* Sans son, il n'y a rien à retranscrire : l'enregistrement a été
+                purgé après une transcription réussie (`docs/RGPD.md` §4). Un
+                geste qui ne peut que rééchouer ne s'offre pas. */}
+            {note?.storageKey && (
+              <RelancerLaTranscription chantierId={id} libelle="Relancer la transcription" />
+            )}
           </div>
         )}
         {etat === "echouee" && (
@@ -173,13 +175,9 @@ export default async function TranscriptionPage({ params }: { params: Promise<{ 
               <p className="text-[15px] leading-relaxed" style={{ color: colors.ink }}>
                 Cette dictée n&apos;a pas encore été transcrite.
               </p>
-              <a
-                href={`/chantiers/${id}/note-vocale`}
-                className={`mt-5 block ${libelleCaps}`}
-                style={{ color: colors.rust }}
-              >
-                Aller à la note vocale
-              </a>
+              {note?.storageKey && (
+                <RelancerLaTranscription chantierId={id} libelle="Lancer la transcription" />
+              )}
             </div>
             <TexteDicte chantierId={id} texteActuel="" ouvrir={false} libelleFerme="Écrire ce que j'ai dit" aligne="gauche" />
           </>
@@ -189,7 +187,8 @@ export default async function TranscriptionPage({ params }: { params: Promise<{ 
             Un seul geste possible : il prend la place du bouton principal
             plutôt que de se cacher en petits caractères. Écrire un texte ici
             serait refusé de toute façon — il n'y a aucune note à quoi le
-            rattacher (`actions.ts`). */}
+            rattacher (`actions.ts`). Il mène à la fiche client, où vit
+            l'anneau de la dictée (`lienDeReprise`, clé « note-vocale »). */}
         {etat === "aucune_note" && (
           <div className="mt-7 px-6">
             {/* **La phrase de la planche disait « Aucune dictée sur ce
@@ -201,7 +200,7 @@ export default async function TranscriptionPage({ params }: { params: Promise<{ 
               Aucune note vocale pour ce chantier.
             </p>
             <div className="mt-6">
-              <PrimaryButton href={`/chantiers/${id}/note-vocale`}>Enregistrer une note vocale</PrimaryButton>
+              <PrimaryButton href={`/chantiers/${id}/coordonnees`}>Enregistrer une note vocale</PrimaryButton>
             </div>
           </div>
         )}

@@ -4,6 +4,11 @@
 dernière migration `drizzle/0154_pieces_importees_d_un_tableau.sql` sur `main` ; `0155_part_de_main_doeuvre_sur_la_ligne.sql` dans le lot du devis ci-dessous, pas encore sur `main`
 
 ---
+## « RÉESSAYER » SUR LA FICHE CLIENT, L'ÉCRAN NOTE VOCALE RETIRÉ (3 novembre 2026)
+
+Sa réponse sur la planche (*« Oui, réessayer comme ça me va, tu peux coder »*) et son accord du même jour. Une dictée dont la chaîne échoue se reprend sous la phrase rouge, sans redicter (`DevisDepuisDictee`) ; la chaîne dit désormais l'échec de transcription au lieu de nier la dictée (`devis-depuis-dictee.ts`). La Transcription relance sur place (`RelancerLaTranscription.tsx`) ; `/chantiers/[id]/note-vocale` ne rend plus qu'un renvoi vers la fiche client. Partis : « Ajouter un fichier audio », la réécoute, le complément de note. `ARCHITECTURE.md` §538. Suites ciblées vertes (dont `test-reessayer-la-dictee-e2e`, vue rouge sur le code d'avant) ; **niveau 3, batterie non jouée (lot réuni), pas sur `main`**.
+
+---
 ## LE DEVIS ET LA FACTURE DE LA PLANCHE, SUR `main` (3 novembre 2026)
 
 Sa décision : *« laisse comme tu as fait, ensuite code ça »*, puis *« code le, pas de batterie »*. Les cinq ajouts du devis en pastilles ; la TVA, l'acompte et la remise sur le chiffre qu'il tape (`FeuilleDuTaux.tsx`) ; la main d'œuvre sur son calcul, son équipe ou ses partenaires, en ligne ou RÉPARTIE sur ses travaux (`FeuilleMainDoeuvre.tsx`, la barre d'« Avant de chiffrer » réutilisée). La part répartie se garde sur la ligne (migration 0155, nullable) et « dont main d'œuvre HT » la compte (`mainDoeuvreDeLaLigne`). `ARCHITECTURE.md` §536. Suites ciblées vertes, écrans regardés ; **sur `main` le 3 novembre**, réuni avec la facture en un seul lot à sa demande (*« on peut pas tout faire d'un coup ? »*) : batterie verte, 205 suites navigateur sur 205, 546 suites base sur 548, les deux rouges l'étant déjà sur `main`. Migration 0155, la dernière. Codé le 2 novembre aussi : la croix à la place du « − » doré, ce qui vient d'être ajouté qui s'éclaire, la main d'œuvre dictée comptée dans « dont », et le devis qui part dans l'ordre de l'écran (défaut trouvé en chemin). Reste : le retrait de l'acompte et d'une TVA par le tiroir.

@@ -148,7 +148,10 @@ export const ECRANS_A_PRECHAUFFER = [
  * Ce sont les plus lourds — et ceux qu'il ouvre en premier, puisque
  * l'application s'ouvre sur la liste des chantiers.
  */
-export const ECRANS_DE_CHANTIER = ["", "/informations", "/note-vocale", "/prix", "/devis-complet"];
+// **« /coordonnees » a pris la place de « /note-vocale » le 3 novembre 2026** :
+// l'écran Note vocale est retiré, son adresse ne rend plus qu'un renvoi, et
+// c'est sur la fiche client qu'il dicte.
+export const ECRANS_DE_CHANTIER = ["", "/informations", "/coordonnees", "/prix", "/devis-complet"];
 
 /**
  * Les routes d'API d'un chantier qu'il faut compiler D'AVANCE.

@@ -156,7 +156,21 @@ async function executerChaineDevis(
   if (generation.statut === "transcription_absente") {
     const note = await getNoteVocale(ctx, chantierId);
     if (!note?.storageKey) return { statut: "transcription_absente" };
-    await lancerTranscription(ctx, chantierId);
+    const transcrite = await lancerTranscription(ctx, chantierId);
+    // **UNE TRANSCRIPTION QUI ÉCHOUE N'EST PAS UNE DICTÉE ABSENTE — 3 novembre
+    // 2026.** Elle retombait dans « transcription_absente », et la fiche client
+    // disait *« Aucune dictée transcrite sur ce chantier : il n'y a rien à
+    // reprendre »* à celui qui venait de dicter. C'était faux deux fois : la
+    // dictée est là, son son aussi, et la reprendre est exactement ce que fait
+    // « Réessayer » (sa planche du 3 novembre). L'échec se rend donc comme un
+    // échec, avec la raison que le fournisseur a donnée.
+    if (transcrite?.transcriptionStatut === "echouee") {
+      const raison = transcrite.transcriptionErreur?.trim();
+      return {
+        statut: "echec",
+        erreur: raison ? `La transcription n'a pas abouti. ${raison}` : "La transcription n'a pas abouti.",
+      };
+    }
     generation = await genererBrouillon(ctx, chantierId, { remplacer: options.remplacer });
   }
   if (generation.statut === "transcription_absente") return { statut: "transcription_absente" };

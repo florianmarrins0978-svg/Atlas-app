@@ -324,7 +324,7 @@ async function main() {
     assert.deepEqual(ecrans, [
       "/chantiers/5be0e3fe-0449-4bdc-ad8e-91d9658cd77b",
       "/chantiers/5be0e3fe-0449-4bdc-ad8e-91d9658cd77b/informations",
-      "/chantiers/5be0e3fe-0449-4bdc-ad8e-91d9658cd77b/note-vocale",
+      "/chantiers/5be0e3fe-0449-4bdc-ad8e-91d9658cd77b/coordonnees",
       "/chantiers/5be0e3fe-0449-4bdc-ad8e-91d9658cd77b/prix",
       "/chantiers/5be0e3fe-0449-4bdc-ad8e-91d9658cd77b/devis-complet",
       "/api/chantiers/5be0e3fe-0449-4bdc-ad8e-91d9658cd77b/feuille/pdf",
