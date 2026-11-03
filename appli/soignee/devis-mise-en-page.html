@@ -11,61 +11,80 @@
   et de la facture ; l'aperçu : « Aperçu du PDF », en bas de l'écran du devis).
 
   Sa demande du 3 novembre 2026, devant son devis 2026-000072 : les modalités
-  de paiement seules en page 2, un grand vide, puis la signature. « Est-ce
-  qu'on ne pourrait pas avoir des boutons pour faire des sauts de page ? »
+  seules en page 2 sous un grand vide. Puis, devant la première planche (un
+  devis de 4 lignes) : « ça marche sur un devis qui comporte pas beaucoup de
+  lignes, mais 20 lignes, 30 lignes ? Il faut que l'utilisateur puisse
+  déplacer les choses comme il le souhaite : dire à tel endroit, hop, là je
+  décide de sauter. »
 
-  Ce qui a été MESURÉ, pas supposé. Son devis est recomposé à l'identique
-  (lignes, montants, acompte, conditions), l'identité de l'artisan remplacée
-  par celle de démonstration : le dépôt est public. Chaque page affichée ici
-  est le vrai PDF, rendu par le générateur d'aujourd'hui (onglet Aujourd'hui)
-  ou par une copie modifiée hors du dépôt (A et B), puis photographié.
+  COMMENT LA PLANCHE EST FAITE, et pourquoi on peut la croire. Trois devis
+  (4, 20 et 30 lignes, identité de démonstration : le dépôt est public) sont
+  composés par le VRAI générateur, puis photographiés page par page
+  (devis-mise-en-page/). La planche ne dessine aucune ligne : elle découpe
+  ces photos en morceaux (l'en-tête, l'en-tête du tableau, chaque ligne, les
+  totaux, les notes, les modalités, le pied) et les recompose selon une
+  règle. Les hauteurs viennent du code (une ligne : 11 points par ligne de
+  libellé + 19 ; les totaux se vérifient sur 128 et en prennent 138 ; les
+  notes 86 et 98 ; les modalités 38) et les positions de la trace du PDF.
 
-  La cause : PLANCHER garde vides les 114 points du bas de CHAQUE page pour le
-  pied (mention légale, cadre de signature), alors que ce pied n'est dessiné
-  qu'une fois, sur la dernière page, et qu'il occupe 38 points de moins que ce
-  qu'on lui réserve. Ses modalités (38 points) manquaient de 15,5 points en
-  page 1, soit 5 millimètres.
+  Contrôle : la règle d'AUJOURD'HUI, rejouée par ce moteur, retombe sur le
+  vrai PDF ligne pour ligne, page pour page, au point près, sur les trois
+  devis (vérifié hors du dépôt ; le résultat est dans TODO.md).
 
-  A : le pied ne garde que la place qu'il prend (ses lignes comptées), et les
-      notes accompagnent les modalités quand celles-ci ne tiennent plus.
-  B : sa proposition, des sauts posés à la main dans l'aperçu, sur la règle
-      d'aujourd'hui.
+  PROPOSÉ :
+    les pages du milieu se remplissent jusqu'au numéro de page : la place de
+      la signature (114 points aujourd'hui, sur CHAQUE page) ne se garde que
+      sur la dernière, et seulement ce qu'elle prend (38 points de moins) ;
+    les notes ne laissent jamais les modalités seules avec la signature ;
+    et lui coupe où il veut : une ligne, les totaux, les notes, les
+      modalités. Le saut se pose DEVANT un élément, pas à une hauteur : s'il
+      ajoute des lignes au-dessus, son saut reste devant la même ligne.
 */
 
-.mesure { margin: 0 auto 8px; max-width: 390px; text-align: center; font-size: 14px; font-weight: 600; color: #4a4a44; }
-.mesure[data-ton="bien"] { color: #506f44; }
-.mesure[data-ton="mal"] { color: #9C3B2E; }
+.mesure { margin: 0 auto 8px; max-width: 390px; min-height: 38px; padding: 0 16px; text-align: center; font-size: 14px;
+          line-height: 1.35; font-weight: 600; color: #4a4a44; }
 
-.surtitre { margin: -12px 0 18px; font-size: 13px; font-weight: 600; letter-spacing: 0.24em;
+.surtitre { margin: -12px 0 14px; font-size: 13px; font-weight: 600; letter-spacing: 0.24em;
             text-transform: uppercase; color: var(--atlas-or); }
 
-/* Les pages du PDF, empilées comme dans l'aperçu de l'appli. */
+/* Les pages, recomposées à partir des vraies photos du PDF. */
 .pages { display: grid; gap: 14px; }
-.page img { display: block; width: 100%; height: auto; border-radius: 2px;
-            box-shadow: 0 1px 3px rgba(28,28,26,0.16), 0 0 0 1px rgba(28,28,26,0.06); }
+.page { position: relative; aspect-ratio: 595.28 / 841.89; overflow: hidden; container-type: inline-size;
+        background: #FAF9F5; border-radius: 2px;
+        box-shadow: 0 1px 3px rgba(28,28,26,0.16), 0 0 0 1px rgba(28,28,26,0.06); }
+.morceau { position: absolute; left: 0; right: 0; overflow: hidden; }
+.morceau img { position: absolute; left: 0; width: 100%; height: auto; display: block; }
+.numero { position: absolute; left: 0; right: 0; bottom: calc(27.5 / 595.28 * 100cqw); text-align: center;
+          font: 400 calc(7.5 / 595.28 * 100cqw)/1 Helvetica, Arial, sans-serif; color: #8a8578; }
+.fin-annexe { margin: 2px 0 0; text-align: center; font-size: 13.5px; color: var(--atlas-inkSoft); }
 
-/* B : la page s'ouvre là où l'on peut couper. Le bouton vit DANS l'écart, et
-   ne cache aucune ligne du devis (posé sur la page, il recouvrait le total).
-   Une tranche montre sa part de la même image : la marge du haut se compte en
-   largeur, et un point de hauteur vaut 1,4145 point de largeur sur une A4. */
-.tranche { overflow: hidden; border-radius: 2px;
-           box-shadow: 0 1px 3px rgba(28,28,26,0.16), 0 0 0 1px rgba(28,28,26,0.06); }
-.tranche img { box-shadow: none; border-radius: 0; }
-.couper { display: flex; align-items: center; gap: 8px; margin: 6px -4px; }
-.couper::before, .couper::after { content: ""; flex: 1; border-top: 1.5px dashed var(--atlas-or); }
-.couper button { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 14px;
-                 border-radius: 18px; font-size: 14px; font-weight: 600; color: var(--atlas-orTexte);
-                 background: var(--atlas-card); box-shadow: inset 0 0 0 1.5px var(--atlas-or), 0 1px 4px rgba(28,28,26,0.14); }
-.couper .ico { width: 16px; height: 16px; }
+/* Ce qu'on touche pour couper : une ligne, un bloc. */
+[data-touchable] .morceau[data-cle]:not([data-cle="tete"]):not([data-cle="entete"]):not([data-cle="pied"]) { cursor: pointer; }
+.morceau.choisi::after { content: ""; position: absolute; inset: 0;
+                         background: color-mix(in srgb, var(--atlas-or) 22%, transparent);
+                         box-shadow: inset 0 0 0 2px var(--atlas-or); }
 
-/* B : le saut posé, entre les deux pages qu'il sépare. */
+/* Le saut posé, entre les deux pages qu'il sépare. */
 .saut-entre { display: flex; justify-content: center; margin: -4px 0; }
-.saut { display: inline-flex;
-        align-items: center; gap: 4px; min-height: 36px; padding: 0 6px 0 14px; border-radius: 18px;
-        font-size: 14px; font-weight: 600; color: var(--sur-plein); background: var(--atlas-plein);
+.saut { display: inline-flex; align-items: center; gap: 4px; min-height: 36px; padding: 0 6px 0 14px;
+        border-radius: 18px; font-size: 14px; font-weight: 600; color: var(--sur-plein); background: var(--atlas-plein);
         box-shadow: 0 1px 4px rgba(28,28,26,0.2); white-space: nowrap; }
 .saut button { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; color: inherit; }
 .saut .ico { width: 16px; height: 16px; }
+
+/* L'action, en bas de l'écran, une fois une ligne choisie. */
+.action-coupe { position: absolute; left: 12px; right: 12px; bottom: 86px; z-index: 7; display: flex; gap: 8px;
+                align-items: center; padding: 8px; border-radius: 18px; background: var(--atlas-card);
+                box-shadow: 0 6px 24px rgba(28,28,26,0.22), 0 0 0 1px var(--atlas-line); }
+.action-coupe[hidden] { display: none; }
+.action-coupe .bouton-plein { flex: 1; min-height: 48px; font-size: 16px; }
+.action-coupe .bouton-plein[hidden], .action-coupe .deja[hidden] { display: none; }
+.action-coupe .deja { flex: 1; margin: 0; padding: 0 8px; font-size: 14.5px; color: var(--atlas-inkSoft); }
+.action-coupe .fermer { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%;
+                        color: var(--atlas-ink); }
+.tout-remettre { display: block; margin: 0 auto 12px; min-height: 40px; padding: 0 14px; font-size: 14.5px;
+                 font-weight: 600; color: var(--atlas-rust); }
+.tout-remettre[hidden] { display: none; }
 </style>
 </head>
 <body class="pl pl-pilules">
@@ -73,36 +92,30 @@
 <header class="pl-tete">
   <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
   <h1 class="pl-titre">La mise en page du devis</h1>
-  <p class="pl-verdict">Le bas de chaque page reste vide pour la signature, même là où elle ne va pas, et plus grand qu'elle. <b>Tes modalités manquaient de 5 millimètres en page 1.</b> A le corrige pour tous les devis ; B, ton idée, te laisse couper à la main.</p>
+  <p class="pl-verdict">Touche une ligne ou un bloc de l'aperçu, puis <b>« Nouvelle page ici »</b> : il passe en haut de la page suivante, avec tout ce qui le suit. Sans rien toucher, les pages se remplissent déjà jusqu'en bas.</p>
 </header>
 
 <main class="pl-scene">
   <div class="pl-etats" data-ecran=".apercu">
-    <button type="button" data-etat="ton" aria-pressed="true">Ton devis</button>
-    <button type="button" data-etat="plus">Avec une ligne de plus</button>
+    <button type="button" data-etat="4" aria-pressed="true">Ton devis</button>
+    <button type="button" data-etat="20">20 lignes</button>
+    <button type="button" data-etat="30">30 lignes</button>
   </div>
 
   <div class="pl-ecrans">
 
-    <!-- ═══ A ═══ -->
-    <div data-vue-panneau="A">
-      <p class="pl-legende">A, automatique</p>
-      <p class="mesure" data-ton="bien" data-si-mesure="ton">1 page, puis tes conditions générales.</p>
-      <p class="mesure" data-ton="bien" data-si-mesure="plus" hidden>2 pages : tes notes partent avec les modalités.</p>
+    <!-- ═══ PROPOSÉ ═══ -->
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <p class="mesure" data-mesure="propose"></p>
       <div class="cadre">
-        <div class="ecran apercu avec-barre" data-apercu="a">
+        <div class="ecran apercu avec-barre" data-apercu="propose" data-touchable>
           <div class="defile"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ═══ B ═══ -->
-    <div data-vue-panneau="B">
-      <p class="pl-legende">B, à la main</p>
-      <p class="mesure" id="mesure-b">2 pages.</p>
-      <div class="cadre">
-        <div class="ecran apercu avec-barre" data-apercu="b">
-          <div class="defile"></div>
+          <div class="action-coupe" hidden>
+            <button type="button" class="bouton-plein" data-couper>Nouvelle page ici</button>
+            <p class="deja" hidden>Déjà en haut d'une page.</p>
+            <button type="button" class="fermer" data-fermer aria-label="Fermer"><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></button>
+          </div>
         </div>
       </div>
     </div>
@@ -110,8 +123,7 @@
     <!-- ═══ AUJOURD'HUI ═══ -->
     <div data-vue-panneau="aujourdhui">
       <p class="pl-legende">Aujourd'hui</p>
-      <p class="mesure" data-ton="mal" data-si-mesure="ton">2 pages : les modalités seules en page 2.</p>
-      <p class="mesure" data-si-mesure="plus" hidden>2 pages.</p>
+      <p class="mesure" data-mesure="aujourdhui"></p>
       <div class="cadre">
         <div class="ecran apercu avec-barre" data-apercu="aujourdhui">
           <div class="defile"></div>
@@ -122,23 +134,22 @@
   </div>
 
   <section class="pl-notes">
-    <h2>A, automatique</h2>
+    <h2>Sans rien toucher</h2>
     <ul>
-      <li>La signature ne garde en bas que la place qu'elle prend : ton devis tient sur une page.</li>
-      <li>Quand la fin ne tient plus, tes notes partent avec les modalités : jamais un bout seul au-dessus de la signature. Touche « Avec une ligne de plus ».</li>
-      <li>Rien à faire, sur aucun devis. La facture suit la même règle.</li>
-      <li>Un devis déjà envoyé garde le PDF enregistré à son envoi.</li>
+      <li>Les pages du milieu se remplissent jusqu'au numéro de page. La place de la signature ne se garde qu'en dernière page, et seulement celle qu'elle prend.</li>
+      <li>Tes notes ne laissent jamais les modalités seules avec la signature.</li>
+      <li>Ton devis de 4 lignes tient sur une page. À 30 lignes, les totaux restent avec le tableau.</li>
     </ul>
-    <h2>B, à la main</h2>
+    <h2>Quand tu veux couper</h2>
     <ul>
-      <li>Dans l'aperçu, touche « Couper ici » : la suite passe à la page d'après.</li>
-      <li>Un saut ne fait que pousser vers le bas : ton devis ne tient jamais sur une page.</li>
-      <li>Ajoute une ligne, puis coupe avant les modalités : elles partent seules sur une troisième page.</li>
-      <li>Chaque saut se pose devis par devis, et se refait quand le devis change.</li>
+      <li>Touche une ligne, les totaux, les notes ou les modalités, puis « Nouvelle page ici ».</li>
+      <li>Le saut se retire d'un appui sur sa croix. « Tout remettre » les retire tous.</li>
+      <li>Le saut reste devant la ligne choisie : si tu ajoutes des lignes au-dessus, il la suit.</li>
+      <li>Une fois le devis envoyé, il part avec ses sauts, et ne bouge plus.</li>
     </ul>
     <h2>À trancher</h2>
     <ul class="a-trancher">
-      <li>A seule ; B seule ; ou A maintenant, et B plus tard si une mise en page te déplaît encore.</li>
+      <li>« Sauter une ligne » : passer à la page suivante, comme ici, ou aussi laisser un espace sans changer de page ?</li>
     </ul>
   </section>
 </main>
@@ -149,34 +160,105 @@
 
 <script src="kit.js"></script>
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-  var DOSSIER = "devis-mise-en-page/";
+/* ─── MOTEUR : la mise en page, en points, comme le générateur ─────────────── */
+var MISE_EN_PAGE = (function () {
+  "use strict";
+  var H = 841.89, M = 31.2;
+  var HAUT_SUITE = H - M - 20;            /* pageSuivante() */
+  var PLANCHER_AUJOURDHUI = M + 114;      /* PLANCHER, sur chaque page */
+  var PLANCHER_MILIEU = M + 14;           /* au-dessus du numéro de page */
+  var PLANCHER_DERNIERE = M + 54 + 22;    /* le pied mesuré, posé au-dessus du numéro */
+  var BLOCS = {
+    totaux: { verifie: 128, prend: 138, hauteur: 138 },
+    notes: { verifie: 86, prend: 98, hauteur: 98 },
+    modalites: { verifie: 38, prend: 38, hauteur: 41 }
+  };
 
-  /* Les pages de chaque variante, rendues depuis le vrai générateur. */
-  var PAGES = {
-    aujourdhui: { ton: ["aujourdhui-1", "aujourdhui-2"], plus: ["plus-aujourdhui-1", "plus-aujourdhui-2"] },
-    a: { ton: ["a-1"], plus: ["plus-a-1", "plus-a-2"] },
-    b: {
-      ton: { aucun: ["aujourdhui-1", "aujourdhui-2"], total: ["b-total-1", "b-total-2"], notes: ["b-notes-1", "b-notes-2"] },
-      plus: { aucun: ["plus-aujourdhui-1", "plus-aujourdhui-2"], total: ["plus-b-total-1", "plus-b-total-2"], modalites: ["plus-b-modalites-1", "plus-b-modalites-2", "plus-b-modalites-3"] }
+  function mettreEnPage(src, regle, sauts) {
+    var pages = [];
+    var page, y;
+    function nouvelle(cle) { page = { el: [], saut: cle && sauts[cle] ? cle : null }; pages.push(page); y = HAUT_SUITE; }
+    function poserTete() {
+      page.el.push({ cle: "entete", page: 1, haut: src.th + 11, h: 26, dest: y + 11 });
+      y -= 26;
     }
-  };
+    page = { el: [], saut: null };
+    pages.push(page);
+    page.el.push({ cle: "tete", page: 1, haut: H, h: H - (src.th + 11), dest: H });
+    y = src.th;
+    poserTete();
 
-  /* Où couper, en pourcentage de la hauteur de la page : la frontière entre
-     deux blocs, lue dans la trace du générateur (y en points sur 841,89). */
-  var COUPES = {
-    ton: [
-      { cle: "total", page: 0, haut: 52.7, ouvre: 1 },
-      { cle: "notes", page: 0, haut: 68.4, ouvre: 1 }
-    ],
-    plus: [
-      { cle: "total", page: 0, haut: 56.3, ouvre: 1 },
-      { cle: "modalites", page: 1, haut: 16.3, ouvre: 2 }
-    ]
-  };
+    var plancherLignes = regle === "aujourdhui" ? PLANCHER_AUJOURDHUI : PLANCHER_MILIEU;
+    src.rangs.forEach(function (r, i) {
+      var h = 11 * r[2] + 19, cle = "ligne-" + i;
+      if (sauts[cle] || y - h < plancherLignes) { nouvelle(cle); poserTete(); }
+      page.el.push({ cle: cle, page: r[0], haut: r[1] + 11, h: h, dest: y + 11 });
+      y -= h;
+    });
 
-  var etat = "ton";
-  var coupe = "aucun";
+    var fin = ["totaux", "notes", "modalites"];
+    function poser(cle) {
+      var b = BLOCS[cle];
+      page.el.push({ cle: cle, page: src[cle][0], haut: src[cle][1] + 11, h: b.hauteur, dest: y + 11 });
+      y -= b.prend;
+    }
+    function tient(de, a, plancher) {
+      var yy = y;
+      for (var i = de; i <= a; i++) {
+        if (yy - BLOCS[fin[i]].verifie < plancher) return false;
+        yy -= BLOCS[fin[i]].prend;
+      }
+      return true;
+    }
+
+    if (regle === "aujourdhui") {
+      fin.forEach(function (cle) {
+        if (sauts[cle] || y - BLOCS[cle].verifie < PLANCHER_AUJOURDHUI) nouvelle(cle);
+        poser(cle);
+      });
+    } else {
+      var j = 0;
+      while (j < 3) {
+        if (sauts[fin[j]]) nouvelle(fin[j]);
+        var k = j;
+        while (k + 1 < 3 && !sauts[fin[k + 1]]) k++;
+        var plancher = k === 2 ? PLANCHER_DERNIERE : PLANCHER_MILIEU;
+        if (tient(j, k, plancher)) {
+          for (var i = j; i <= k; i++) poser(fin[i]);
+          j = k + 1;
+          continue;
+        }
+        /* Les totaux restent avec le tableau s'ils tiennent ; les notes, elles,
+           partent avec les modalités. */
+        if (j === 0 && tient(0, 0, PLANCHER_MILIEU)) {
+          poser("totaux");
+          nouvelle(null);
+          j = 1;
+          continue;
+        }
+        if (page.el.length) nouvelle(null);
+        for (var n = j; n <= k; n++) poser(fin[n]);
+        j = k + 1;
+      }
+    }
+
+    var piedHaut = regle === "aujourdhui" ? 152 : 114;
+    page.el.push({ cle: "pied", page: src.pied, haut: 152, h: 72, dest: piedHaut });
+    return pages;
+  }
+
+  return { mettreEnPage: mettreEnPage, H: H };
+})();
+/* ─── FIN MOTEUR ────────────────────────────────────────────────────────────── */
+
+document.addEventListener("DOMContentLoaded", function () {
+  var SOURCES = {"4":{"pagesDevis":2,"pages":3,"th":537.69,"rangs":[[1,511.69,1],[1,481.69,1],[1,451.69,1],[1,421.69,1]],"totaux":[1,391.69],"notes":[1,253.69],"modalites":[2,790.69],"pied":2},"20":{"pagesDevis":2,"pages":3,"th":537.69,"rangs":[[1,511.69,1],[1,481.69,1],[1,451.69,1],[1,421.69,1],[1,391.69,2],[1,350.69,1],[1,320.69,1],[1,290.69,1],[1,260.69,1],[1,230.69,1],[1,200.69,2],[2,764.69,1],[2,734.69,1],[2,704.69,1],[2,674.69,1],[2,644.69,1],[2,614.69,1],[2,584.69,1],[2,554.69,1],[2,524.69,1]],"totaux":[2,494.69],"notes":[2,356.69],"modalites":[2,258.69],"pied":2},"30":{"pagesDevis":3,"pages":4,"th":537.69,"rangs":[[1,511.69,1],[1,481.69,1],[1,451.69,1],[1,421.69,1],[1,391.69,2],[1,350.69,1],[1,320.69,1],[1,290.69,1],[1,260.69,1],[1,230.69,1],[1,200.69,2],[2,764.69,1],[2,734.69,1],[2,704.69,1],[2,674.69,1],[2,644.69,1],[2,614.69,1],[2,584.69,1],[2,554.69,1],[2,524.69,1],[2,494.69,1],[2,464.69,1],[2,434.69,1],[2,404.69,1],[2,374.69,1],[2,344.69,1],[2,314.69,2],[2,273.69,1],[2,243.69,1],[2,213.69,1]],"totaux":[3,790.69],"notes":[3,652.69],"modalites":[3,554.69],"pied":3}};
+  var H = MISE_EN_PAGE.H;
+  var NOMS = { totaux: "totaux", notes: "notes", modalites: "modalités", pied: "signature" };
+
+  var etat = "4";
+  var sauts = {};
+  var choisi = null;
 
   function tete() {
     return '<div class="tete-ronds">' +
@@ -194,63 +276,100 @@ document.addEventListener("DOMContentLoaded", function () {
       '<span class="barre-trait" aria-hidden="true" style="--rang:0"><span></span></span></div></nav>';
   }
 
-  var HAUT_SUR_LARGE = 1075 / 760;
-
-  function image(nom, i) {
-    return '<img src="' + DOSSIER + nom + '.jpg" alt="Page ' + (i + 1) + ' du devis" width="760" height="1075">';
+  function morceau(e) {
+    var top = (H - e.dest) / H * 100;
+    var hauteur = e.h / H * 100;
+    var decalage = (H - e.haut) / e.h * 100;
+    return '<div class="morceau' + (choisi === e.cle ? " choisi" : "") + '" data-cle="' + e.cle + '" style="top:' + top.toFixed(3) + '%;height:' + hauteur.toFixed(3) + '%">' +
+      '<img src="devis-mise-en-page/devis-' + etat + '-lignes-page-' + e.page + '.jpg" alt="" style="top:-' + decalage.toFixed(3) + '%"></div>';
   }
 
-  /* Une part de la page, de `de` à `a` (en % de sa hauteur). */
-  function tranche(nom, i, de, a) {
-    return '<div class="tranche" style="aspect-ratio:760/' + (1075 * (a - de) / 100).toFixed(1) + '">' +
-      image(nom, i).replace("<img ", '<img style="margin-top:-' + (de * HAUT_SUR_LARGE).toFixed(3) + '%" ') + '</div>';
-  }
-
-  function pages(noms, avecB) {
-    var posee = avecB && coupe !== "aucun" ? COUPES[etat].filter(function (c) { return c.cle === coupe; })[0] : null;
-    return '<div class="pages">' + noms.map(function (nom, i) {
-      var avant = "";
-      if (posee && posee.ouvre === i) {
-        avant = '<div class="saut-entre"><span class="saut">Saut de page<button type="button" data-retirer aria-label="Retirer le saut de page">' +
-          '<svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></button></span></div>';
-      }
-      var coupes = avecB && coupe === "aucun" ? COUPES[etat].filter(function (c) { return c.page === i; }) : [];
-      if (!coupes.length) return avant + '<div class="page">' + image(nom, i) + '</div>';
-      var html = "";
-      var de = 0;
-      coupes.forEach(function (c) {
-        html += tranche(nom, i, de, c.haut) + '<div class="couper"><button type="button" data-couper="' + c.cle + '">' +
-          '<svg class="ico" aria-hidden="true"><use href="#i-moins"/></svg>Couper ici</button></div>';
-        de = c.haut;
-      });
-      return avant + '<div class="page">' + html + tranche(nom, i, de, 100) + '</div>';
-    }).join("") + '</div>';
+  function resume(pages) {
+    var derniere = pages[pages.length - 1].el;
+    var lignes = derniere.filter(function (e) { return e.cle.indexOf("ligne-") === 0; }).length;
+    var quoi = [];
+    if (lignes) quoi.push(lignes === 1 ? "1 ligne" : lignes + " lignes");
+    derniere.forEach(function (e) { if (NOMS[e.cle]) quoi.push(NOMS[e.cle]); });
+    return pages.length > 1
+      ? pages.length + " pages. La dernière : " + quoi.join(", ") + "."
+      : "1 page : " + quoi.join(", ") + ".";
   }
 
   function peindre() {
+    var src = SOURCES[etat];
     document.querySelectorAll("[data-apercu]").forEach(function (ecran) {
-      var cle = ecran.getAttribute("data-apercu");
-      var noms = cle === "b" ? PAGES.b[etat][coupe] : PAGES[cle][etat];
-      ecran.querySelector(".defile").innerHTML = tete() + pages(noms, cle === "b");
+      var regle = ecran.getAttribute("data-apercu");
+      var mesSauts = regle === "propose" ? sauts : {};
+      var pages = MISE_EN_PAGE.mettreEnPage(src, regle, mesSauts);
+      var total = pages.length + (src.pages - src.pagesDevis);
+      var html = tete();
+      if (regle === "propose") {
+        html += '<button type="button" class="tout-remettre" data-tout-remettre' + (Object.keys(sauts).length ? "" : " hidden") + '>Tout remettre</button>';
+      }
+      html += '<div class="pages">' + pages.map(function (p, i) {
+        var avant = p.saut ? '<div class="saut-entre"><span class="saut">Saut de page<button type="button" data-retirer="' + p.saut + '" aria-label="Retirer le saut de page">' +
+          '<svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></button></span></div>' : "";
+        return avant + '<div class="page">' + p.el.map(morceau).join("") +
+          '<span class="numero">Page ' + (i + 1) + ' / ' + total + '</span></div>';
+      }).join("") + '</div>';
+      html += '<p class="fin-annexe">Puis tes conditions générales, page ' + total + '.</p>';
+      var defile = ecran.querySelector(".defile");
+      var garde = defile.scrollTop;
+      defile.innerHTML = html;
+      defile.scrollTop = garde;
       if (!ecran.querySelector(".barre")) ecran.insertAdjacentHTML("beforeend", barre());
+      document.querySelector('[data-mesure="' + regle + '"]').textContent = resume(pages);
+      if (regle === "propose") peindreAction(pages);
     });
-    document.querySelectorAll("[data-si-mesure]").forEach(function (p) {
-      p.hidden = p.getAttribute("data-si-mesure") !== etat;
+  }
+
+  function peindreAction(pages) {
+    var action = document.querySelector(".action-coupe");
+    if (!choisi) { action.hidden = true; return; }
+    action.hidden = false;
+    var bouton = action.querySelector("[data-couper]");
+    var deja = action.querySelector(".deja");
+    var enHaut = pages.some(function (p) {
+      var premier = p.el.filter(function (e) { return e.cle !== "tete" && e.cle !== "entete"; })[0];
+      return premier && premier.cle === choisi;
     });
-    var n = PAGES.b[etat][coupe].length;
-    var mesureB = document.getElementById("mesure-b");
-    mesureB.textContent = coupe === "aucun"
-      ? n + " pages. Touche « Couper ici »."
-      : n + " pages, avec ton saut.";
-    mesureB.dataset.ton = n > 2 ? "mal" : "";
+    if (sauts[choisi]) {
+      bouton.hidden = false; deja.hidden = true;
+      bouton.textContent = "Retirer le saut de page";
+    } else if (enHaut) {
+      bouton.hidden = true; deja.hidden = false;
+    } else {
+      bouton.hidden = false; deja.hidden = true;
+      bouton.textContent = "Nouvelle page ici";
+    }
   }
 
   document.addEventListener("click", function (e) {
     var etatChoisi = e.target.closest(".pl-etats button[data-etat]");
-    if (etatChoisi) { etat = etatChoisi.getAttribute("data-etat"); coupe = "aucun"; peindre(); return; }
-    var c = e.target.closest("[data-couper]");
-    if (c) { coupe = c.getAttribute("data-couper"); peindre(); return; }
-    if (e.target.closest("[data-retirer]")) { coupe = "aucun"; peindre(); }
+    if (etatChoisi) {
+      etat = etatChoisi.getAttribute("data-etat");
+      sauts = {}; choisi = null;
+      document.querySelectorAll(".defile").forEach(function (d) { d.scrollTop = 0; });
+      peindre();
+      return;
+    }
+    var retirer = e.target.closest("[data-retirer]");
+    if (retirer) { delete sauts[retirer.getAttribute("data-retirer")]; choisi = null; peindre(); return; }
+    if (e.target.closest("[data-tout-remettre]")) { sauts = {}; choisi = null; peindre(); return; }
+    if (e.target.closest("[data-fermer]")) { choisi = null; peindre(); return; }
+    if (e.target.closest("[data-couper]")) {
+      if (sauts[choisi]) delete sauts[choisi]; else sauts[choisi] = true;
+      choisi = null;
+      peindre();
+      return;
+    }
+    var m = e.target.closest("[data-touchable] .morceau[data-cle]");
+    if (m) {
+      var cle = m.getAttribute("data-cle");
+      if (cle === "tete" || cle === "entete" || cle === "pied") return;
+      choisi = choisi === cle ? null : cle;
+      peindre();
+    }
   });
 
   peindre();
