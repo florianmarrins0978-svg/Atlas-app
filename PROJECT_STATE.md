@@ -6,7 +6,7 @@ dernière migration `drizzle/0154_pieces_importees_d_un_tableau.sql` sur `main` 
 ---
 ## « RÉESSAYER » SUR LA FICHE CLIENT, L'ÉCRAN NOTE VOCALE RETIRÉ (3 novembre 2026)
 
-Sa réponse sur la planche (*« Oui, réessayer comme ça me va, tu peux coder »*) et son accord du même jour. Une dictée dont la chaîne échoue se reprend sous la phrase rouge, sans redicter (`DevisDepuisDictee`) ; la chaîne dit désormais l'échec de transcription au lieu de nier la dictée (`devis-depuis-dictee.ts`). La Transcription relance sur place (`RelancerLaTranscription.tsx`) ; `/chantiers/[id]/note-vocale` ne rend plus qu'un renvoi vers la fiche client. Partis : « Ajouter un fichier audio », la réécoute, le complément de note. `ARCHITECTURE.md` §538. Suites ciblées vertes (dont `test-reessayer-la-dictee-e2e`, vue rouge sur le code d'avant) ; **niveau 3, batterie non jouée (lot réuni), pas sur `main`**.
+Sa réponse sur la planche (*« Oui, réessayer comme ça me va, tu peux coder »*) et son accord du même jour. Une dictée dont la chaîne échoue se reprend sous la phrase rouge, sans redicter (`DevisDepuisDictee`) ; la chaîne dit désormais l'échec de transcription au lieu de nier la dictée (`devis-depuis-dictee.ts`). La Transcription relance sur place (`RelancerLaTranscription.tsx`) ; `/chantiers/[id]/note-vocale` ne rend plus qu'un renvoi vers la fiche client. Partis : « Ajouter un fichier audio », la réécoute, le complément de note. `ARCHITECTURE.md` §543. Suites ciblées vertes (dont `test-reessayer-la-dictee-e2e`, vue rouge sur le code d'avant) ; **niveau 3, batterie non jouée (lot réuni), pas sur `main`**.
 
 ---
 ## LE DEVIS ET LA FACTURE DE LA PLANCHE, SUR `main` (3 novembre 2026)

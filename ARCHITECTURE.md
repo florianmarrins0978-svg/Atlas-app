@@ -36649,7 +36649,7 @@ carte « Non payée » a la largeur des règlements (346 px chacune, mesurée le
 3 novembre) ; `test-avoir-et-non-payee-e2e` la mesure, et la mesure a été vue
 rougir sur une carte élargie.
 
-## §538 : Une dictée qui échoue se reprend sur la fiche client ; l'écran Note vocale part
+## §543 : Une dictée qui échoue se reprend sur la fiche client ; l'écran Note vocale part
 
 **Sa réponse du 3 novembre 2026** sur la planche `appli/soignee/chantier.html?ecran=note`, état « Échec, Réessayer » : *« Oui, réessayer comme ça me va, tu peux coder »*, et son accord du même jour pour retirer l'écran `/chantiers/[id]/note-vocale`. Deux enregistreurs vivaient pour une même note ; seul l'anneau de la fiche client sert.
 
