@@ -18,6 +18,7 @@ import {
 } from "../src/server/repositories/pieces-importees";
 import { clientsQuOnPeutReconnaitre } from "../src/server/repositories/clients";
 import { lignesDesPdf } from "../src/lib/import-pieces";
+import { CIVILITES } from "../src/lib/civilite";
 import { grouperParClient, planDeRangement, type ChoixAdresse } from "../src/lib/import-tableau";
 import { traiterPiecesEnAttente } from "../src/server/import/traiter-pieces";
 import { enregistrerObjet } from "../src/server/storage";
@@ -128,7 +129,8 @@ async function main() {
     assert.equal(lues, 2, "les deux pièces n'ont pas été lues");
     assert.equal(appelsIA, 0, `${appelsIA} appel(s) à l'IA pour des pièces que le texte suffisait à lire`);
     const pieces = await piecesLuesDeLEnvoi(ctx, envoi.id);
-    const martins = pieces.find((p) => p.nomLu === "M. Martins");
+    // Le nom rangé prend l'écriture de l'appli (« Mr. », migration 0037).
+    const martins = pieces.find((p) => p.nomLu === `${CIVILITES.mr} Martins`);
     assert.equal(martins?.adresseLue, "8 rue du Port, 44120 Vertou", "l'adresse du client n'est pas gardée");
     assert.equal(martins?.telephoneLu, "07 11 22 33 44", "le téléphone du client n'est pas gardé");
   });
@@ -143,7 +145,7 @@ async function main() {
     await traiterPiecesEnAttente(ctx);
     assert.equal(appelsIA, 1, "l'IA n'a pas été appelée alors que l'adresse manquait");
     const [p] = await piecesLuesDeLEnvoi(ctx, envoi.id);
-    assert.equal(p.nomLu, "M. Guérin", "le nom lu dans le texte a été perdu");
+    assert.equal(p.nomLu, `${CIVILITES.mr} Guérin`, "le nom lu dans le texte a été perdu");
     assert.equal(p.adresseLue, "5 impasse des Roses, 44300 Nantes");
   });
 
@@ -164,6 +166,24 @@ async function main() {
     assert.equal(p.montantTtc, "310.00");
     const { plan } = await ranger(ctx, envoi.id);
     assert.ok(plan.ok && plan.sansNom === 1 && plan.clients.length === 0, "une pièce sans nom a été rangée");
+  });
+
+  await essai("le nom de son entreprise, lu en base, écarte son en-tête imprimé après le client", async () => {
+    // Sa demande du 3 novembre 2026 : les entreprises se lisent aussi, et le
+    // piège est la sienne. Ici son en-tête vient APRÈS le cadre du client :
+    // seul son nom, que `traiterPiecesEnAttente` lit dans Atlas, l'écarte.
+    await nettoyerBase();
+    _reinitialiserFabriqueLLM(iaDeSuite("Je ne sais pas."));
+    const ctx = await monter("Jardins du Moulin");
+    const envoi = await creerEnvoi(ctx, "lot.zip", 1);
+    await deposer(
+      ctx,
+      envoi.id,
+      await pdfAvecTexte(["DEVIS n° D2025-0300", "03/04/2025", "Pour Mme Lenoir", "14 rue Paul Bert 44100 Nantes", "EURL Jardins du Moulin", "3 rue du Moulin 44100 Nantes", "Total TTC 1 250,00"])
+    );
+    await traiterPiecesEnAttente(ctx);
+    const [p] = await piecesLuesDeLEnvoi(ctx, envoi.id);
+    assert.equal(p.nomLu, `${CIVILITES.mme} Lenoir`, "son propre en-tête a fait douter du client, ou a été pris pour lui");
   });
 
   await essai("le même fichier deux fois ne fait qu'une pièce", async () => {

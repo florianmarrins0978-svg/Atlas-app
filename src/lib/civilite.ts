@@ -146,11 +146,20 @@ export const CIVILITE_PAR_DEFAUT = CIVILITES.mr;
  *
  * `null` plutôt qu'une absence de la liste : « retirer, sans rien allumer » est
  * une décision, pas un oubli, et elle doit se lire comme telle.
+ *
+ * ── « MM » EST MADAME, ET C'EST LUI QUI L'A TRANCHÉ (3 novembre 2026) ───────
+ *
+ * L'usage officiel écrit « MM. » pour Messieurs. Ses mots, devant l'import de
+ * ses anciens devis : *« MM pour madame ou Mm ou M ou M. »*. Sur ses pièces,
+ * « MM Dupont » est une cliente : c'est donc Madame, avec ou sans point, et
+ * « Messieurs » en toutes lettres reste Monsieur. Ce qui compte pour ranger
+ * une pièce, c'est le nom ; une civilité fausse se corrige d'un appui sur la
+ * fiche, un nom faux range la facture chez quelqu'un d'autre.
  */
 const CIVILITES_A_RETIRER: Record<string, Civilite | null> = {
   m: "mr",
   mr: "mr",
-  mm: "mr",
+  mm: "mme",
   monsieur: "mr",
   messieurs: "mr",
   mme: "mme",
@@ -178,6 +187,23 @@ const CIVILITES_A_RETIRER: Record<string, Civilite | null> = {
  * divergence se serait vue sur un devis, pas ici.
  */
 const CIVILITES_CONNUES = Object.keys(CIVILITES_A_RETIRER);
+
+/**
+ * La pastille qu'UN mot désigne, lu dans un texte : « MME » et « Madame »
+ * désignent Mme, « M. » et « MONSIEUR » Mr. `null` pour tout autre mot, et
+ * pour les titres (Dr, Me), qui n'en désignent aucune.
+ *
+ * C'est la même liste que celle qui détache la civilité d'un nom dicté :
+ * l'import de ses anciens devis (`src/lib/import-pieces.ts`) la lit par ici,
+ * et une graphie apprise d'un côté l'est de l'autre.
+ *
+ * **`Object.hasOwn` et non `in`** : un mot du texte comme « constructor »
+ * trouverait sinon une valeur dans le prototype de l'objet.
+ */
+export function pastilleDuMot(mot: string): Civilite | null {
+  const cle = aplati(mot.trim().replace(/\.$/, ""));
+  return Object.hasOwn(CIVILITES_A_RETIRER, cle) ? CIVILITES_A_RETIRER[cle] : null;
+}
 
 /**
  * Marqueurs de raison sociale. Courte à dessein : chaque entrée est un mot
@@ -294,7 +320,30 @@ const MARQUEURS_PUBLICS = [
   "sivu",
   "ccas",
   "prefecture",
+  // Sa demande du 3 novembre 2026, pour l'import de ses anciennes pièces :
+  // « les collectivités, les services publics, c'est pareil ». Le conseil
+  // départemental ou régional, le syndicat intercommunal, l'école, le collège,
+  // le lycée, l'hôpital, l'office public de l'habitat.
+  "departemental",
+  "regional",
+  "intercommunal",
+  "intercommunale",
+  "ecole",
+  "college",
+  "lycee",
+  "hopital",
+  "public",
 ];
+
+/**
+ * Les formes juridiques d'une SOCIÉTÉ : une collectivité n'en porte jamais.
+ *
+ * Elles l'emportent sur les mots publics depuis que l'école et l'hôpital en
+ * sont (3 novembre 2026) : « Auto-école Martin SARL » ou « Clinique de
+ * l'Hôpital SAS » sont des entreprises, et rangées chez les services publics
+ * elles auraient reçu les règles de Chorus Pro.
+ */
+const FORMES_DE_SOCIETE = ["sarl", "sas", "sasu", "sa", "eurl", "sci", "scp", "snc", "ei", "eirl", "scop", "gaec"];
 
 /**
  * LES TROIS LISTES DE SES CLIENTS — sa demande du 22 octobre 2026 : les
@@ -364,6 +413,7 @@ export function estUnClientPublic(nom: string | null | undefined, civilite?: Civ
   if (civilite === "public") return true;
   if (civilite) return false;
   const mots = aplati((nom ?? "").trim()).split(/[^0-9a-z]+/).filter(Boolean);
+  if (mots.some((mot) => FORMES_DE_SOCIETE.includes(mot))) return false;
   return mots.some((mot) => MARQUEURS_PUBLICS.includes(mot));
 }
 

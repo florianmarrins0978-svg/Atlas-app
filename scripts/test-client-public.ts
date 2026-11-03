@@ -58,6 +58,18 @@ cas("sans choix, le nom d'une collectivité suffit", () => {
     "Département de Loire-Atlantique",
     "SIVOM de la Loire",
     "CCAS de Rezé",
+    // Sa demande du 3 novembre 2026, pour l'import de ses anciennes pièces :
+    // « les collectivités, les services publics, c'est pareil ».
+    "Conseil départemental des Yvelines",
+    "Conseil régional des Pays de la Loire",
+    "Région Bretagne",
+    "Communauté d'agglomération Clisson Sèvre et Maine",
+    "Syndicat intercommunal des eaux de la Mauldre",
+    "École Jean Moulin",
+    "Collège Jean Moulin",
+    "Lycée Hoche",
+    "Hôpital de Versailles",
+    "Office public de l'habitat des Yvelines",
   ]) {
     assert.equal(estUnClientPublic(nom, null), true, nom);
   }
@@ -66,6 +78,16 @@ cas("sans choix, le nom d'une collectivité suffit", () => {
 cas("sans choix, un particulier ou une société n'est pas public", () => {
   for (const nom of ["Martins", "SARL Untel", "Villeneuve Paysage", "Jardins Ribault", ""]) {
     assert.equal(estUnClientPublic(nom, null), false, nom);
+  }
+});
+
+cas("une forme juridique de société l'emporte sur un mot public (« Auto-école Martin SARL »)", () => {
+  // Depuis que l'école et l'hôpital disent « public » (3 novembre 2026), une
+  // auto-école ou une clinique en société serait partie chez les services
+  // publics, avec les règles de Chorus Pro. Une collectivité n'a pas de SARL.
+  for (const nom of ["Auto-école Martin SARL", "SAS Clinique de l'Hôpital", "SARL Ville Verte"]) {
+    assert.equal(estUnClientPublic(nom, null), false, nom);
+    assert.equal(estUneEntreprise(nom, null), true, nom);
   }
 });
 

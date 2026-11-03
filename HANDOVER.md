@@ -10,6 +10,10 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## LE NOM DU CLIENT SUR SES ANCIENS DEVIS (3 novembre 2026), pas sur `main`
+
+Le cœur est `clientDuTexte` (`src/lib/import-pieces.ts`) : le haut de la pièce (avant le titre du tableau), les civilités par `pastilleDuMot` et les catégories par `categorieDuClient` (`src/lib/civilite.ts`, une seule règle), le nom de son entreprise passé par `traiterPiecesEnAttente`. Le piège à connaître : **« M », « MR » et « MM » sans point sont aussi des unités**, et ne comptent que suivis d'une adresse ; **et l'en-tête de l'artisan porte sa propre forme juridique**, tenu par trois conditions (une adresse avant, une adresse après, pas de SIRET derrière). Chaque garde est tenue par un cas de `test-import-pieces.ts` qui rougit sans elle (vérifié en retirant chacune). Ce qui reste : `TODO.md`, première entrée. §544.
+
 ## LE DEVIS ET LA FACTURE DE LA PLANCHE, SUR `main` (3 novembre 2026)
 
 Un seul lot, à sa demande : les feuilles du devis (TVA, acompte, remise, main d'œuvre, partenaires, répartition), la croix, l'éclairage de ce qui arrive, l'ordre des lignes, et les huit écrans de la facture (`ARCHITECTURE.md` §536 et §537). Migration 0155 (`part_main_doeuvre`, nullable). Une seule pastille pour les deux (`src/components/atlas/PastilleAjout.tsx`). **Ce qui attend :** rien de lui sur la note vocale. Son « Réessayer » est codé sur la fiche client et l'ancien écran `/note-vocale` est retiré (son adresse renvoie à la fiche client, `ARCHITECTURE.md` §543) ; reste la batterie entière du lot réuni, puis `main`. **Les pièges :** une transcription qui échoue rend `echec` (« La transcription n'a pas abouti. … »), jamais `transcription_absente`, sinon « Réessayer » ne paraît pas ; une phrase d'échec de `DevisDepuisDictee` dit ce qui s'est passé, jamais « Réessayez », le geste est dessous. Pour poster un son dans une suite, la route `/api/notes-vocales/[chantierId]` (l'import de fichier est parti). Plus aucun écran ne fait réécouter une note : la question est ouverte dans `TODO.md` (« écouter sa note depuis la fiche client ? »).

@@ -15,6 +15,7 @@ import {
   statutApresLecture,
 } from "../src/lib/import-pieces";
 import { planDeRangement } from "../src/lib/import-tableau";
+import { CIVILITES, categorieDuClient } from "../src/lib/civilite";
 import { entreesDuZip, lireEntree, ZipIllisible } from "../src/lib/lire-zip";
 import { ecrireArchiveZip } from "../src/lib/archive-zip";
 import { crc32 } from "../src/lib/archive-zip";
@@ -28,6 +29,12 @@ import { refusDuPdfImporte } from "../src/server/import/lire-piece";
 // ses titres en capitales espacées) et de PDF d'autres logiciels tels qu'on
 // les rencontre. Ce qui compte surtout : **ne jamais inventer un client**, et
 // ne jamais coller la ligne suivante au nom (« M. Martins Total »).
+
+// Le mot que l'appli écrit devant le nom, lu dans `civilite.ts` et jamais
+// recopié : « Mr. » est sa forme (migration 0037), et la règle du nom rangé
+// est celle de toute l'appli.
+const MR = CIVILITES.mr;
+const MME = CIVILITES.mme;
 
 const echecs: string[] = [];
 async function cas(nom: string, f: () => void | Promise<void>) {
@@ -107,7 +114,7 @@ async function main() {
       numero: "F2026-000001",
       jour: "2026-04-01",
       montantTtc: "1080.00",
-      nomLu: "M. Vasseur",
+      nomLu: `${MR} Vasseur`,
       adresseLue: null,
       telephoneLu: "06 22 00 00 22",
       chantierLu: null,
@@ -115,21 +122,21 @@ async function main() {
   });
 
   await cas("la ligne suivante ne se colle pas au nom (« M. Martins Total »)", () => {
-    assert.equal(lireChampsDuTexte("FACTURE n° F1 12/03/2025 Client : M. Martins Total TTC 480,00").nomLu, "M. Martins");
+    assert.equal(lireChampsDuTexte("FACTURE n° F1 12/03/2025 Client : M. Martins Total TTC 480,00").nomLu, `${MR} Martins`);
     assert.equal(lireChampsDuTexte("DEVIS N° D-12 Madame Lenoir Adresse 3 rue X").nomLu, "Mme Lenoir");
   });
 
   await cas("le titre du tableau ne se colle pas au nom (« M. Bernard DÉSIGNATION »)", () => {
     const t = "D E V I S n° 2026-000001 C L I E N T L I E U D E S T R A V A U X M. Bernard D É S I G N A T I O N Q T É";
-    assert.equal(lireChampsDuTexte(t).nomLu, "M. Bernard");
+    assert.equal(lireChampsDuTexte(t).nomLu, `${MR} Bernard`);
   });
 
   await cas("un prénom se garde, la civilité se normalise", () => {
-    assert.equal(lireChampsDuTexte("Devis n° 7 Monsieur Jean Dupont 12 rue").nomLu, "M. Jean Dupont");
+    assert.equal(lireChampsDuTexte("Devis n° 7 Monsieur Jean Dupont 12 rue").nomLu, `${MR} Jean Dupont`);
     assert.equal(lireChampsDuTexte("Facture n° 8 Mme DUPONT Marie").nomLu, "Mme DUPONT Marie");
   });
 
-  await cas("un client sans civilité n'est PAS deviné", () => {
+  await cas("une société sans adresse derrière elle n'est PAS devinée : rien ne dit qu'elle est le client", () => {
     assert.equal(lireChampsDuTexte("FACTURE n° F2024-0097 09/10/2024 SARL Les Tilleuls Total TTC 310,00").nomLu, null);
   });
 
@@ -141,6 +148,202 @@ async function main() {
     assert.equal(montantLu("1 250,00"), "1250.00");
     assert.equal(montantLu("1.250,00"), "1250.00");
     assert.equal(montantLu("12,5"), null);
+  });
+
+  console.log("\nLe nom du client, quelle que soit son écriture (3 novembre 2026)");
+
+  // Sa demande : *« Il faut que M tout court fonctionne. Il faut que MR
+  // fonctionne. Il faut que monsieur fonctionne. Pareil pour madame. […] Et
+  // pour les collectivités, et puis pour les entreprises et les services
+  // publics, c'est pareil. […] il faut juste reconnaître le nom à chaque
+  // fois. »* Puis : *« MM pour madame ou Mm ou M ou M. »*, et *« dans la partie
+  // désignation, il n'y aura jamais le nom. Le nom se situe souvent en haut, à
+  // côté du nom de l'entreprise. »*
+  //
+  // Chaque texte est celui que pdfjs rend : les éléments bout à bout, l'en-tête
+  // de l'artisan d'abord, le cadre du client, puis le tableau des lignes.
+
+  const EDEN = "Jardins Eden 3 rue du Moulin 44100 Nantes 02 40 00 00 00";
+  // Son en-tête à lui, recopié de ses devis : sa propre forme juridique, le
+  // piège principal d'une lecture des entreprises.
+  const ARBRE = "L'R de L'ARBRE EURL L'R DE L'ARBRE 2 B GRANDE RUE 78770 Auteuil - France Tél. 06 12 34 56 78 SIRET 123 456 789 00012";
+  const SON_ENTREPRISE = "L'R de l'Arbre";
+  const TABLEAU = "Réf. Désignation Qté P.U. HT Total HT 1,00 U Taille de haie 220,00 220,00 Total TTC 264,00";
+  const CHEZ_LUI = "12 rue des Lilas 44000 Nantes";
+  const devisPour = (client: string, enTete = EDEN) => `${enTete} DEVIS N° D-2025-031 Date 12/05/2025 ${client} ${TABLEAU}`;
+  const nomDe = (client: string, enTete = EDEN, artisan: string | null = null) => lireChampsDuTexte(devisPour(client, enTete), artisan).nomLu;
+  /** Toutes les écritures d'un coup : le rouge dit lesquelles manquent, pas seulement la première. */
+  const ecarts = (attendus: readonly (readonly [string, string | null])[], lire: (ecrit: string) => string | null) =>
+    attendus.flatMap(([ecrit, veut]) => {
+      const lu = lire(ecrit);
+      return lu === veut ? [] : [`« ${ecrit} » : ${lu === null ? "rien" : `« ${lu} »`} au lieu de ${veut === null ? "rien" : `« ${veut} »`}`];
+    });
+
+  await cas("Monsieur sous toutes ses écritures : M, M., Mr, MR, Mr., Monsieur, MONSIEUR, Messieurs", () => {
+    const formes = ["M", "M.", "Mr", "MR", "Mr.", "Monsieur", "MONSIEUR", "Messieurs"];
+    assert.deepEqual(ecarts(formes.map((f) => [`${f} Dupont ${CHEZ_LUI}`, `${MR} Dupont`] as const), (e) => nomDe(e)), []);
+  });
+
+  await cas("Madame sous toutes ses écritures, MM et Mm compris (sa règle, contre l'usage qui en fait des Messieurs)", () => {
+    const formes = ["Mme", "MME", "Mme.", "Madame", "MADAME", "Mlle", "Melle", "Mademoiselle", "Mmes", "Mesdames", "MM", "Mm", "MM."];
+    const attendus = formes.map((f) => [`${f} Dupont ${CHEZ_LUI}`, `${MME} Dupont`] as const);
+    assert.deepEqual(ecarts([...attendus, [`MM DUPONT ${CHEZ_LUI}`, `${MME} DUPONT`]], (e) => nomDe(e)), []);
+  });
+
+  await cas("un couple garde ses deux civilités, dans l'écriture de l'appli", () => {
+    const couple = `${MR} et ${MME}`;
+    assert.deepEqual(
+      ecarts(
+        [
+          [`M. et Mme Durand ${CHEZ_LUI}`, `${couple} Durand`],
+          [`M et Mme Durand ${CHEZ_LUI}`, `${couple} Durand`],
+          [`Mr et Mme Durand ${CHEZ_LUI}`, `${couple} Durand`],
+          [`Monsieur et Madame Durand ${CHEZ_LUI}`, `${couple} Durand`],
+          [`MONSIEUR ET MADAME DURAND ${CHEZ_LUI}`, `${couple} DURAND`],
+          [`Mme et M. Durand ${CHEZ_LUI}`, `${MME} et ${MR} Durand`],
+        ],
+        (e) => nomDe(e)
+      ),
+      []
+    );
+  });
+
+  await cas("le nom en capitales, le prénom avant ou après, les particules et les noms composés", () => {
+    assert.deepEqual(
+      ecarts(
+        [
+          [`Mme SANCHEZ Emmanuelle ${CHEZ_LUI}`, `${MME} SANCHEZ Emmanuelle`],
+          [`MME SANCHEZ EMMANUELLE ${CHEZ_LUI}`, `${MME} SANCHEZ EMMANUELLE`],
+          [`Monsieur Jean Dupont ${CHEZ_LUI}`, `${MR} Jean Dupont`],
+          [`Mme Le Gall ${CHEZ_LUI}`, `${MME} Le Gall`],
+          [`M. LE GALL ${CHEZ_LUI}`, `${MR} LE GALL`],
+          [`M. De la Fontaine ${CHEZ_LUI}`, `${MR} De la Fontaine`],
+          [`M. Jean de La Fontaine ${CHEZ_LUI}`, `${MR} Jean de La Fontaine`],
+          [`Mme Dupont-Moreau ${CHEZ_LUI}`, `${MME} Dupont-Moreau`],
+          [`Mme Marie-Claire Le Gall ${CHEZ_LUI}`, `${MME} Marie-Claire Le Gall`],
+          [`Mme D'Arc ${CHEZ_LUI}`, `${MME} D'Arc`],
+        ],
+        (e) => nomDe(e)
+      ),
+      []
+    );
+  });
+
+  await cas("un lieu-dit qui suit le nom n'entre pas dans le nom (« Mme Dupont Le Bourg 78490 Méré »)", () => {
+    assert.equal(nomDe("Mme Dupont Le Bourg 78490 Méré"), `${MME} Dupont`);
+  });
+
+  await cas("le devis Sanchez, tel que recopié : le nom seul au-dessus et la personne sont une seule cliente", () => {
+    const t = `${ARBRE} DEVIS N° D-2025-044 Date 15/05/2025 Sanchez Mme Sanchez Emmanuelle Hameau du Saut du Loup le Breuil 78890 Garancières France Réf. Désignation Qté P.U. HT 1,00 M Grillage rigide 25,00 25,00 Total TTC 30,00`;
+    assert.equal(lireChampsDuTexte(t).nomLu, `${MME} Sanchez Emmanuelle`);
+    assert.equal(lireChampsDuTexte(t, SON_ENTREPRISE).nomLu, `${MME} Sanchez Emmanuelle`);
+  });
+
+  await cas("« M Bertrand » sans point, sous son en-tête en EURL, se lit Mr. Bertrand", () => {
+    const recopie = `${ARBRE} DEVIS N° D-2025-031 Date 12/05/2025 M Bertrand Rue Saint Roch 78490 Méré Réf. Désignation Qté P.U. HT 1,00 U 220,00 220,00 Total TTC 264,00`;
+    const serre = "L'R de L'ARBRE EURL L'R DE L'ARBRE 2 B GRANDE RUE 78770 Auteuil - France M Bertrand Rue Saint Roch 78490 Méré Réf. Désignation Qté 1,00 U 220,00";
+    for (const t of [recopie, serre]) {
+      assert.equal(lireChampsDuTexte(t).nomLu, `${MR} Bertrand`, t.slice(0, 60));
+      assert.equal(lireChampsDuTexte(t, SON_ENTREPRISE).nomLu, `${MR} Bertrand`, t.slice(0, 60));
+    }
+  });
+
+  await cas("une mairie, une collectivité, un service public : le nom se lit, et va dans « Services publics »", () => {
+    const publics = [
+      "Mairie de Méré",
+      "Commune de Bouguenais",
+      "Ville de Nantes",
+      "Conseil départemental des Yvelines",
+      "Communauté de communes Sud Estuaire",
+      "Communauté d'agglomération Clisson Sèvre et Maine",
+      "Syndicat intercommunal des eaux",
+      "CCAS de Rezé",
+      "Collège Jean Moulin",
+      "Lycée Hoche",
+      "Hôpital de Versailles",
+    ];
+    assert.deepEqual(ecarts(publics.map((n) => [`${n} 2 rue de la Mairie 78490 Méré`, n] as const), (e) => nomDe(e, ARBRE, SON_ENTREPRISE)), []);
+    for (const n of publics) assert.equal(categorieDuClient(n), "public", `« ${n} » n'irait pas dans « Services publics »`);
+  });
+
+  await cas("une entreprise cliente, forme juridique avant ou après, sous l'en-tête d'un artisan en EURL", () => {
+    const entreprises = [
+      "SARL Les Jardins du Lac",
+      "Les Jardins du Lac SARL",
+      "SAS Paysages Dupont",
+      "SASU Vert Horizon",
+      "EURL Martin Élagage",
+      "SA Bâtiments de l'Ouest",
+      "SCI Les Chênes",
+      "SNC Dupont et Fils",
+      "EI Paul Martin",
+      "EIRL Martin",
+      "Association Sportive de Méré",
+      "Copropriété Les Tilleuls",
+      "Syndic Gestion Martin",
+    ];
+    const lus = entreprises.map((n) => [`${n} 5 rue des Lilas 78490 Méré`, n] as const);
+    // Son nom connu d'Atlas, ou non : l'en-tête reste le sien dans les deux cas.
+    assert.deepEqual(ecarts(lus, (e) => nomDe(e, ARBRE, SON_ENTREPRISE)), []);
+    assert.deepEqual(ecarts(lus, (e) => nomDe(e, ARBRE, null)), []);
+    for (const n of entreprises) assert.equal(categorieDuClient(n), "entreprise", `« ${n} » n'irait pas dans « Vos partenaires »`);
+  });
+
+  await cas("l'adresse d'une entreprise cliente se lit après son nom, jamais celle de l'artisan", () => {
+    const c = lireChampsDuTexte(devisPour("SARL Les Jardins du Lac 5 rue des Lilas 78490 Méré", ARBRE), SON_ENTREPRISE);
+    assert.equal(c.nomLu, "SARL Les Jardins du Lac");
+    assert.equal(c.adresseLue, "5 rue des Lilas, 78490 Méré");
+  });
+
+  console.log("\nLes pièges : zéro nom faux");
+
+  await cas("son en-tête seul, en EURL, n'est jamais le client, même sans client lisible", () => {
+    const t = `${ARBRE} DEVIS N° D-2025-060 Date 20/05/2025 Réf. Désignation Qté P.U. HT 1,00 M Grillage rigide 25,00 25,00 Total TTC 30,00`;
+    assert.equal(lireChampsDuTexte(t).nomLu, null);
+    assert.equal(lireChampsDuTexte(t, SON_ENTREPRISE).nomLu, null);
+  });
+
+  await cas("« 1,00 M Grillage », « 12 ML », « M2 », « 12 MM » sont des unités, jamais un nom", () => {
+    const sansEntete = `${EDEN} DEVIS N° D-7 Date 12/05/2025 1,00 M Grillage rigide 25,00 25,00 12 ML Bordure 4,00 48,00 2,50 M2 Gazon 8,00 20,00 12 MM Gravier 3,00 36,00 Total TTC 87,60`;
+    assert.equal(lireChampsDuTexte(sansEntete).nomLu, null);
+    assert.equal(lireChampsDuTexte(`${EDEN} DEVIS N° D-7 Date 12/05/2025 ${TABLEAU.replace("1,00 U Taille de haie", "1,00 M Grillage")}`).nomLu, null);
+    // Sans titre de tableau, une ligne qui cite le lieu ressemble au cadre d'un
+    // client : c'est la quantité devant le « M » qui la trahit.
+    assert.equal(lireChampsDuTexte(`${EDEN} DEVIS N° D-7 Date 12/05/2025 1,00 M Grillage posé Rue des Lilas 78490 Méré 25,00 Total TTC 30,00`).nomLu, null);
+  });
+
+  await cas("un second en-tête de l'artisan, suivi de son SIRET, n'est pas le client", () => {
+    const t = "L'R de L'ARBRE 2 B GRANDE RUE 78770 Auteuil EURL L'R DE L'ARBRE 2 B GRANDE RUE 78770 Auteuil SIRET 123 456 789 00012 DEVIS N° D-2025-061 Date 20/05/2025 " + TABLEAU;
+    assert.equal(lireChampsDuTexte(t).nomLu, null);
+  });
+
+  await cas("son entreprise imprimée APRÈS le cadre du client : son nom connu d'Atlas l'écarte", () => {
+    const t = `DEVIS N° D-2025-062 Date 20/05/2025 Mme Lenoir 14 rue Paul Bert 44100 Nantes EURL L'R DE L'ARBRE 2 B GRANDE RUE 78770 Auteuil ${TABLEAU}`;
+    assert.equal(lireChampsDuTexte(t, SON_ENTREPRISE).nomLu, `${MME} Lenoir`);
+    // Sans son nom, rien ne dit laquelle des deux est la cliente.
+    assert.equal(lireChampsDuTexte(t).nomLu, null);
+  });
+
+  await cas("un troisième mot fait douter : « M. Jean Pierre Dupont » n'est pas coupé en « Mr. Jean Pierre »", () => {
+    assert.equal(nomDe(`M. Jean Pierre Dupont ${CHEZ_LUI}`), null);
+  });
+
+  await cas("un nom écrit dans les lignes du tableau n'est jamais le client", () => {
+    const t = `${EDEN} DEVIS N° D-8 Date 12/05/2025 Désignation Qté P.U. HT 1,00 U Taille de haie chez Mme Dupont ${CHEZ_LUI} 220,00 Total TTC 264,00`;
+    assert.equal(lireChampsDuTexte(t).nomLu, null);
+  });
+
+  await cas("deux noms qui ne s'accordent pas : rien, l'IA ou lui trancheront", () => {
+    assert.equal(nomDe("Mme Lenoir 14 rue Paul Bert 44100 Nantes M. Durand 2 chemin des Vignes 44120 Vertou"), null);
+    // Une personne dans le cadre d'une entreprise : laquelle des deux est le client ?
+    assert.equal(nomDe("SARL Les Jardins du Lac M. Dupont 5 rue des Lilas 78490 Méré", ARBRE, SON_ENTREPRISE), null);
+  });
+
+  await cas("l'artisan qui signe de son nom (M. Florian Marrins) n'est pas son propre client", () => {
+    const t = `M. Florian Marrins 2 rue de la Gare 78000 Versailles DEVIS N° D-9 Date 12/05/2025 Mme Lenoir 14 rue Paul Bert 44100 Nantes ${TABLEAU}`;
+    assert.equal(lireChampsDuTexte(t, "Florian Marrins").nomLu, `${MME} Lenoir`);
+    // Sans son nom, deux personnes : rien plutôt que le mauvais.
+    assert.equal(lireChampsDuTexte(t).nomLu, null);
   });
 
   console.log("\nCe que l'IA rend, relu");
@@ -205,8 +408,9 @@ async function main() {
     assert.equal(lireChampsDuTexte("Devis n° 3 M. Guérin 2 chemin des Vignes 44115 Basse-Goulaine Objet").adresseLue, "2 chemin des Vignes, 44115 Basse-Goulaine");
   });
 
-  await cas("un nom sans civilité ne donne ni adresse ni téléphone : rien ne dit où commence le client", () => {
+  await cas("une société en tête du texte, sans en-tête avant elle, ne donne ni nom ni adresse : c'est peut-être l'artisan", () => {
     const c = lireChampsDuTexte("FACTURE n° F2024-0097 SARL Les Tilleuls 5 rue X 44000 Nantes 06 12 34 56 78");
+    assert.equal(c.nomLu, null);
     assert.equal(c.adresseLue, null);
     assert.equal(c.telephoneLu, null);
   });

@@ -4,6 +4,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import { ADRESSE } from "./_adresse";
 import { ecrireArchiveZip } from "../src/lib/archive-zip";
 import { fichierDemandeALaVisionneuse } from "../src/lib/visionneuse-pdf";
+import { CIVILITES } from "../src/lib/civilite";
 
 // IMPORTER DEVIS ET FACTURES, par SON geste — 22 octobre 2026.
 //
@@ -33,7 +34,10 @@ const BASE = ADRESSE;
 // Des lettres seules : le lecteur arrête un nom au premier chiffre (un
 // téléphone collé au nom), et « M. Importé4y2 » se lirait « M. Importé ».
 const marque = Date.now().toString(26).replace(/[0-9]/g, (c) => "klmnopqrst"[Number(c)]);
-const NOM = `M. Importé${marque}`;
+// Écrit « M. » sur le PDF, rangé « Mr. » : l'écriture de l'appli (migration
+// 0037), que l'écran montre et que la fiche porte.
+const ECRIT = `M. Importé${marque}`;
+const NOM = `${CIVILITES.mr} Importé${marque}`;
 
 let echecs = 0;
 async function cas(nom: string, fn: () => Promise<void>) {
@@ -57,8 +61,8 @@ async function pdfAvecTexte(lignes: string[]): Promise<Uint8Array> {
 async function leZip(): Promise<Buffer> {
   // La marque rend chaque pièce neuve : une empreinte déjà connue serait
   // écartée comme doublon, et la suite ne mesurerait rien la seconde fois.
-  const facture = await pdfAvecTexte(["Jardins Eden", `FACTURE n° FI-${marque}`, "Date 12/03/2025", `Client : ${NOM}`, "8 rue du Port 44120 Vertou", "Total TTC 480,00"]);
-  const devis = await pdfAvecTexte(["Jardins Eden", `DEVIS n° DI-${marque}`, "03/04/2025", `Pour ${NOM}`, "8 rue du Port 44120 Vertou", "Total TTC 1 250,00"]);
+  const facture = await pdfAvecTexte(["Jardins Eden", `FACTURE n° FI-${marque}`, "Date 12/03/2025", `Client : ${ECRIT}`, "8 rue du Port 44120 Vertou", "Total TTC 480,00"]);
+  const devis = await pdfAvecTexte(["Jardins Eden", `DEVIS n° DI-${marque}`, "03/04/2025", `Pour ${ECRIT}`, "8 rue du Port 44120 Vertou", "Total TTC 1 250,00"]);
   const morceaux: Uint8Array[] = [];
   for await (const m of ecrireArchiveZip(
     [
