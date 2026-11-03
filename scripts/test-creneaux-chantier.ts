@@ -5,6 +5,7 @@ import {
   creneauxOccupes,
   demiJourneesAPoser,
   deplacerCeQueLeJourPorte,
+  momentQuiPart,
   momentsOfferts,
   resumeDesCreneaux,
 } from "../src/lib/creneaux-chantier";
@@ -255,6 +256,35 @@ essai("on ne propose que ce qui peut aboutir", () => {
   assert.deepEqual(momentsOfferts(1), ["matin", "apres_midi"]);
   assert.deepEqual(momentsOfferts(2), ["matin", "apres_midi", "journee"]);
   assert.deepEqual(momentsOfferts(0), []);
+});
+
+// ─── DÉPLACER EN UN APPUI — sa demande du 1er novembre 2026 ──────────────────
+//
+// *« Si c'est un chantier d'une journée, pas besoin de me demander si je veux
+// déplacer le matin ou l'aprem. »* Le moment ne se demande plus : ce qui part
+// garde sa forme, une journée arrive en journée, une moitié garde sa moitié.
+essai("une journée part en journée, sans question", () => {
+  assert.equal(momentQuiPart([c("2026-11-09", "matin"), c("2026-11-09", "apres_midi")]), "journee");
+});
+
+essai("une demi-journée garde son moment", () => {
+  assert.equal(momentQuiPart([c("2026-11-09", "apres_midi")]), "apres_midi");
+  assert.equal(momentQuiPart([c("2026-11-09", "matin")]), "matin");
+});
+
+essai("un jour vide n'a rien à faire partir", () => {
+  assert.equal(momentQuiPart([]), null);
+});
+
+essai("le moment déduit est toujours un moment que la règle accepte", () => {
+  for (const partants of [
+    [c("2026-11-09", "matin")],
+    [c("2026-11-09", "apres_midi")],
+    [c("2026-11-09", "matin"), c("2026-11-09", "apres_midi")],
+  ]) {
+    const m = momentQuiPart(partants);
+    assert.ok(m && momentsOfferts(partants.length).includes(m));
+  }
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Où un chantier est posé — ${echecs} échec(s).`);

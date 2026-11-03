@@ -349,7 +349,7 @@ async function main() {
     // **Ce jour-là, le chantier occupe la journée entière** : quatre
     // demi-journées sur deux jours prennent forcément matin ET après-midi. Un
     // seul mot doit donc être offert — « Matin » perdrait l'autre moitié.
-    const moments = await page.locator('[data-atlas^="vers-"], [data-atlas="annuler-deplacer"]').count();
+    const moments = await page.locator('[data-atlas="annuler-deplacer"]').count();
     if (moments === 0) {
       throw new Error("le geste s'est ouvert sans aucune sortie");
     }
@@ -375,15 +375,9 @@ async function main() {
     if (!accueil) throw new Error("aucun jour d'accueil ouvrable au calendrier");
     await page.click(`[data-atlas="grille-mois"] [data-jour="${accueil}"]`);
     await page.waitForTimeout(400);
-    const mots = await page.locator('[data-atlas^="vers-"]').allInnerTexts();
-    if (mots.join("|") !== "Matin|Après-midi|Journée") {
-      throw new Error(
-        `les mots offerts sont « ${mots.join(", ")} » : il ne peut plus choisir la moitié qui part`
-      );
-    }
-    // **« Journée » emmène tout ce que le jour porte** — c'est le cas qui doit
-    // garder les quatre demi-journées du chantier.
-    await page.locator('[data-atlas="vers-journee"]').click();
+    // **Le jour touché déplace aussitôt — 1er novembre 2026.** Plus de « Quel
+    // moment ? » : ce jour-là le chantier occupe la journée entière, et c'est
+    // tout ce que le jour porte qui part, ce que ce cas défend.
 
     // **ATTENDRE QUE LA BASE LE DISE, JAMAIS UN DÉLAI FIXE.** Ce contrôle
     // patientait 1,5 s puis lisait : joué seul il passait, mais dans la

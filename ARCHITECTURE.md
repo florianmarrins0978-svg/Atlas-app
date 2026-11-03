@@ -36649,6 +36649,64 @@ carte « Non payée » a la largeur des règlements (346 px chacune, mesurée le
 3 novembre) ; `test-avoir-et-non-payee-e2e` la mesure, et la mesure a été vue
 rougir sur une carte élargie.
 
+## §538 : Un PDF importé passe par la règle des tableaux
+
+*31 octobre 2026, sa demande : « que ça soit un CSV, Excel ou un PDF, il faut que ça soit la même chose ; il faut qu'ils se débrouillent tout seuls pour me les ranger en client ». Planche `appli/soignee/clients-importer.html` (« Les PDF arrivent au même écran, groupés par client »).*
+
+**Ce qui était faux.** Les PDF avaient leur propre relecture (22 octobre) : un nom par pièce, puis un rangement par nom (`rangerEnvoi`, `trouverOuCreerClient`). Aucune adresse n'était lue : une fiche naissait sans adresse, et deux clients du même nom à deux adresses se fondaient en un seul sans question, ce que sa règle « zéro erreur sur une adresse » interdit pour un tableau.
+
+**La règle.** Un PDF lu devient une ligne de tableau (`lignesDesPdf`, `src/lib/import-pieces.ts`) et passe par `grouperParClient` et `planDeRangement`, les mêmes fonctions, à l'écran comme au serveur. L'écran est `ImporterTableau`, qui prend un `LotAImporter` (un tableau, ou les PDF d'un envoi). L'ancienne relecture, `rangerEnvoi`, `nommerPiece` et `piecesAVerifier` sont partis : deux règles de rangement ne rangeraient plus pareil (`CLAUDE.md` §3). L'écriture d'une fiche (`ficheDuPlan`) est commune au tableau et aux PDF.
+
+**Le rang ne voyage pas.** Le rang d'une pièce est sa place dans `piecesLuesDeLEnvoi` (arrivée, puis identifiant). L'écran envoie les noms tapés et les genres répondus par l'identifiant de la pièce ; le serveur relit les pièces en base, refait le plan, et ramène chaque pièce du plan à son PDF par `idDuRang`. Un plan venu de l'écran n'est jamais cru.
+
+**L'adresse se lit après le nom, et le texte ne choisit jamais entre deux.** Un devis imprime côte à côte le client et le lieu des travaux, et le texte d'un PDF les entremêle. Le texte (`coordonneesApresLeNom`) ne garde une adresse que si une seule, distincte de celles de l'en-tête de l'artisan, suit le nom ; le téléphone, que s'il suit le nom de près (160 caractères) et n'est pas celui de l'en-tête. Un faux téléphone séparerait deux fois le même client (`rapprocherClient`). Sans adresse lue, l'IA lit le TEXTE (`texteSuffit`), jamais l'image d'un PDF qui en a un ; c'est elle qui rend le lieu des travaux (`chantier`), écarté s'il redit l'adresse du client. Le regex de l'adresse est sans drapeau `i` : avec `iu`, `\p{Lu}` prend les minuscules, et la ville avalait la phrase suivante.
+
+**Trois colonnes de lecture (migration 0156, expand seul) :** `adresse_lue`, `telephone_lu`, `chantier_lu`. `adresse_chantier` garde ce que le rangement a DÉCIDÉ ; y écrire la lecture l'aurait polluée au premier « Annuler ».
+
+**Ce qui n'est pas tenu.** Un PDF déjà lu avant la migration n'a pas d'adresse : il se range sans, comme avant. Le même numéro dans deux PDF différents se range deux fois (deux fichiers, deux pièces), à l'inverse d'une ligne de tableau en double.
+
+## §539 : Ma banque soignée, chaque pastille avec son heure, et le refus de lecture gardé
+
+**Sa planche du 1er novembre 2026** (`appli/soignee/reglages-banque.html`), retouchée trois fois le même soir puis *« code ça, pas de batterie »*. L'écran (`src/app/reglages/banque/page.tsx`) prend les pièces des Réglages soignés (`Paquet`, `EtatEcrit`, `PastilleIcone`, `LigneReglage`) ; ses mots viennent de `src/lib/ma-banque-en-mots.ts`, fonctions pures éprouvées par `scripts/test-ma-banque-en-mots.ts`.
+
+**Chaque pastille porte son heure à côté d'elle**, sa règle du soir : *« la temporalité du renouvellement doit se situer à côté de la pastille »*, puis *« fais pareil pour pas lue »*. « Lue aujourd'hui à 20 h 24 », « Pas lue à 20 h 24 » avec la phrase du refus dessous, « À renouveler dans 5 jours » avec `accord.consequence` dessous. Ce qui suit la pastille est court pour tenir sur sa ligne dès 360 px (« avant le 6 novembre » n'y tenait pas) ; s'il ne tient pas, il passe dessous (`flex-wrap`), jamais hors de l'écran. Les lignes « Dernière lecture » et « Relevé lu depuis » sont parties : la seconde ne parle plus que quand la banque refuse l'historique (`lignesDAvant`), en une phrase, parce que *« ça fait beaucoup de texte pour pas grand chose »*.
+
+**Le refus de lecture se garde en base** (migration 0157, `liaisons_bancaires.lecture_refusee`, expand seule). `lu_le` est posé AVANT l'appel à la banque (`marquerBanqueLue`), pour que les relectures de l'accueil ne brûlent pas les quatre lectures permises par jour. Après un refus, une page rouverte dans la demi-heure ne relit pas : rien ne disait que la tentative avait échoué, et l'écran affichait « Lue » à l'heure d'une lecture ratée. Vu en éprouvant l'écran codé, sur le cas même qui l'avait fait douter ce soir-là (*« quand je scanne, il ne me trouve pas de nouvelles lignes »*). `noterLectureRefusee` écrit la phrase, `noterProfondeurLue` l'efface dans la même écriture que la profondeur ; `etatDeLaLecture` fait primer le refus de la lecture en cours, puis celui gardé, et se tait quand l'accord est terminé (sa pastille parle seule).
+
+**Ma banque entre dans le sommaire des Réglages, seulement reliée et chez le patron** (`rubriquesReglages(role, banqueReliee)`, `src/app/reglages/page.tsx`). Elle en était absente exprès : sans contrat Enable Banking (`docs/A-FAIRE.md` §13), seuls les comptes du propriétaire de l'application se relient, et une ligne visible de tous ouvrirait une porte qui refuse. Reliée, la banque prouve que la porte s'ouvre. La ligne porte un état (`Rubrique.situation`, « Crédit Mutuel, lue aujourd'hui »), jamais une explication : la règle du `nom` tient. `scripts/test-rubriques-reglages.ts` refuse qu'elle sorte sans banque reliée ou chez le commercial.
+
+**Ce qui n'a pas bougé, et pourquoi** : les boutons Oui et Non de la carte « Virement reçu » gardent la forme de l'accueil (`ReponseVirement`, partagé avec l'accueil et Ma TVA ; la planche les dessinait pleins sur toute la largeur). Le nom d'un virement sans payeur est le libellé de la banque sans « VIR », « VIR INST » ou « VIR SEPA » devant (`nomDuVirement`) : rien ne s'invente, ce qui reste est ce que la banque a écrit.
+
+## §540 : Une clé qui en double une autre efface comme elle
+
+**La panne du 1er novembre 2026** : il ne pouvait plus supprimer aucun client (« La suppression n'a pas abouti », six fois). La migration 0149 avait doublé vingt-six liens d'une clé composite `(colonne, entreprise_id)` posée sans `ON DELETE`, donc en NO ACTION, à côté de l'ancien lien en CASCADE ou SET NULL. Son en-tête disait « la seconde n'agit qu'à l'écriture » : c'est faux, une clé étrangère agit aussi quand on efface la ligne qu'elle vise.
+
+**Pourquoi c'était vert partout sauf chez lui.** PostgreSQL tire les déclencheurs d'une même ligne dans l'ordre alphabétique de leur nom, `RI_ConstraintTrigger_a_<numéro d'objet>`. Sur une base neuve, l'ancien lien a un plus petit numéro du même nombre de chiffres : la cascade passe d'abord, la clé composite ne trouve plus rien. Sur une base qui a vécu, le numéro peut avoir gagné un chiffre entre les deux (`a_100231` passe avant `a_18235`) : la clé composite parle la première, voit le créneau encore là, et refuse. Une règle qui dépend de cet ordre est fausse, même quand elle passe.
+
+**La règle** (migration 0158) : une clé composite qui double un lien porte **la même règle d'effacement** que lui, et une mise à vide ne vise que la colonne du lien (`SET NULL (client_id)`, jamais `entreprise_id`). Deux cascades ou deux mises à vide donnent le même résultat dans n'importe quel ordre. L'ancien lien reste tant que la clé composite n'est pas validée sur les lignes anciennes : c'est lui qui garantit qu'aucune ligne ancienne ne reste orpheline (TODO.md).
+
+**Ce qui la tient** : `test-liens-dans-l-entreprise-db.ts` compare, dans le catalogue, l'effacement de chaque clé composite à celui du lien qu'elle double (vu rouge sur les vingt-six), et supprime un client par `effacerClient` après avoir recréé les anciens liens pour que leur déclencheur parte le dernier, comme sur sa base. Sans cette étape, l'essai serait vert par hasard.
+
+## §541 : Un contrat d'entretien accepté retient son client, comme une facture
+
+**Sa décision du 2 novembre 2026**, un « oui » à : un contrat accepté se garde comme une facture (le client reste nommé dessus, tout le reste part) ; un contrat jamais accepté part avec lui. Avant, `contrats_entretien_client_entreprise_fk` (sans cascade, délibérément) faisait tomber la suppression sur une erreur que l'écran rendait en « n'a pas abouti ».
+
+**Une seule règle, deux emplois** (`cequiDoitRester`) : l'aperçu et l'effacement lisent les contrats acceptés du client, par son identifiant (un contrat ne vise pas un chantier : ses passages en sont). Les autres partent après les chantiers, parce qu'un passage est un chantier qui vise son contrat et que cette clé ne cède pas. `envois_dates_contrat` suit en cascade.
+
+**Dix ans à compter de la fin de la période promise** (`CONSERVATION_LEGALE.contratAccepteAns`, Code de la consommation L213-1 et D213-2 : contrat conclu par voie électronique, 120 euros ou plus). Rien ne purge sur cette date ; elle ne sert qu'à dire jusqu'à quand.
+
+**La pièce dit son nom entier** (`PieceConservee.designation`) : « n° F2026-000007 » pour une facture ou un devis, « Contrat d'entretien d'avril 2026 » pour un contrat (le mois par `moisDuJour`, l'élision par `deOuD`). L'écran écrivait « n° » devant un numéro ; il recopie désormais la désignation, et ne décide de rien.
+
+## §542 : Ce qu'il coche, il le supprime
+
+**Sa règle du 2 novembre 2026** : *« à partir du moment où je veux supprimer un client, le message de prévention s'affiche, si je le coche, il faut que je puisse le supprimer »*. Une suppression ne tombe donc plus sur un refus de la base : tout ce qui retient un client se lit AVANT (`cequiDoitRester`) et se dit sous « Conservé par la loi ».
+
+**Le relevé** (catalogue, clés en RESTRICT ou NO ACTION sous ce que l'effacement retire) : un devis et une facture retiennent leur chantier, une facture retient son devis, un contrat retient son client et ses passages. Le devis accepté, la facture et le contrat accepté étaient déjà lus, sauf **la facture en brouillon**.
+
+**Le brouillon se garde, il ne s'efface pas.** Il prend son numéro à sa création (`attribuerNumeroFacture`) : l'effacer laisserait un trou dans la suite des factures émises, ce qu'un contrôle fiscal relève. Le garder ne coûte que sa ligne, et le client réduit à son nom.
+
+**Supprimé veut dire hors de la liste**, même retenu : `listerFichesClients` filtre `clients.deletedAt` comme `listerClients`. La fiche reste ouverte derrière ses pièces (`chargerFicheClient` ne filtre pas) : c'est par elle qu'on retrouve une facture conservée.
+
 ## §543 : Une dictée qui échoue se reprend sur la fiche client ; l'écran Note vocale part
 
 **Sa réponse du 3 novembre 2026** sur la planche `appli/soignee/chantier.html?ecran=note`, état « Échec, Réessayer » : *« Oui, réessayer comme ça me va, tu peux coder »*, et son accord du même jour pour retirer l'écran `/chantiers/[id]/note-vocale`. Deux enregistreurs vivaient pour une même note ; seul l'anneau de la fiche client sert.

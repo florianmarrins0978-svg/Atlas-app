@@ -21,7 +21,8 @@ import { colors, font, surPlein } from "@/lib/design-tokens";
  * La question de la sauvegarde n'apparaît donc **que** s'il y a des documents.
  */
 export type PieceGardee = {
-  numero: string;
+  /** « n° F2026-000007 », « Contrat d'entretien de mars 2026 » : écrit par le serveur. */
+  designation: string;
   pourquoi: string;
   /** Le client qui la porte, quand la feuille en vise plusieurs. */
   nom?: string;
@@ -114,7 +115,7 @@ export default function FeuilleSuppressionClients({
             <p key={pourquoi} className="mt-2 text-[13.5px] leading-[1.55]" style={{ color: colors.ink }}>
               {conserve
                 .filter((p) => p.pourquoi === pourquoi)
-                .map((p) => (plusieurs && p.nom ? `n° ${p.numero} (${p.nom})` : `n° ${p.numero}`))
+                .map((p) => (plusieurs && p.nom ? `${p.designation} (${p.nom})` : p.designation))
                 .join(", ")}{" "}
               : {pourquoi}
             </p>

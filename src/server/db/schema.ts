@@ -4154,6 +4154,10 @@ export const piecesImportees = pgTable("pieces_importees", {
   objet: text("objet"),
   /** L'adresse de son chantier, quand elle n'est pas celle du client (migration 0154). */
   adresseChantier: text("adresse_chantier"),
+  /** Ce que la lecture d'un PDF a trouvé du client et du lieu des travaux (migration 0156). */
+  adresseLue: text("adresse_lue"),
+  telephoneLu: text("telephone_lu"),
+  chantierLu: text("chantier_lu"),
   clientId: uuid("client_id"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -4182,6 +4186,9 @@ export const liaisonsBancaires = pgTable("liaisons_bancaires", {
   historiqueJours: integer("historique_jours"),
   // Le refus de la banque pour la période plus profonde, NULL si elle a tout accepté.
   historiqueRefus: text("historique_refus"),
+  // Le refus de la dernière tentative (0157), NULL quand elle a réussi : `luLe`
+  // est posé avant l'appel, il ne dit pas si la lecture a abouti.
+  lectureRefusee: text("lecture_refusee"),
   createdBy: uuid("created_by").references(() => users.id),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

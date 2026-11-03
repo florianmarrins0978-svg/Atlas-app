@@ -11,6 +11,8 @@
  * finiraient par se contredire (`CLAUDE.md` §3).
  */
 
+import { normaliserAdresse, type LigneLue } from "./import-tableau";
+
 /**
  * **2 000 documents ou 1 Go par envoi.** Ce qui borne vraiment, c'est l'envoi :
  * il demande l'appli ouverte, et 1 Go en 4G prend 15 à 30 minutes. Dix ans
@@ -80,9 +82,27 @@ export type ChampsLus = {
   /** « 1250.00 » */
   montantTtc: string | null;
   nomLu: string | null;
+  /**
+   * Ce qu'un tableau donne en colonnes, pour que le PDF passe par le même écran
+   * « Par client » et la même règle d'adresse (sa demande du 31 octobre 2026) :
+   * « 8 rue du Port, 44120 Vertou », « 07 11 22 33 44 », et le lieu des travaux
+   * quand il est écrit à part.
+   */
+  adresseLue: string | null;
+  telephoneLu: string | null;
+  chantierLu: string | null;
 };
 
-export const RIEN_LU: ChampsLus = { genre: null, numero: null, jour: null, montantTtc: null, nomLu: null };
+export const RIEN_LU: ChampsLus = {
+  genre: null,
+  numero: null,
+  jour: null,
+  montantTtc: null,
+  nomLu: null,
+  adresseLue: null,
+  telephoneLu: null,
+  chantierLu: null,
+};
 
 /**
  * Les titres en capitales espacées (« F A C T U R E ») redeviennent des mots :
@@ -119,6 +139,11 @@ const CIVILITES: Record<string, string> = { m: "M.", monsieur: "M.", mme: "Mme",
  * devine pas ici : il reste vide, et l'IA ou le patron le donnera.
  */
 function nomAvecCivilite(texte: string): string | null {
+  return nomEtPlace(texte)?.nom ?? null;
+}
+
+/** Le nom du client, et où il finit dans le texte : son adresse se cherche APRÈS. */
+function nomEtPlace(texte: string): { nom: string; debut: number; fin: number } | null {
   const m = /(?:^|[\s,;:(])(M\.|Mme|Mlle|Monsieur|Madame|Mademoiselle)\s+((?:\p{Lu}[\p{Ll}'’-]+|\p{Lu}{2,})(?:\s+(?:\p{Lu}[\p{Ll}'’-]+|\p{Lu}{2,}))?)/u.exec(texte);
   if (!m) return null;
   const civilite = CIVILITES[m[1].replace(".", "").toLowerCase()] ?? m[1];
@@ -129,7 +154,120 @@ function nomAvecCivilite(texte: string): string | null {
   const [nom, second] = m[2].trim().split(/\s+/);
   if (MOTS_DE_FACTURE.has(nom.toLowerCase())) return null;
   const garde = second && !MOTS_DE_FACTURE.has(second.toLowerCase()) ? `${nom} ${second}` : nom;
-  return `${civilite} ${garde}`;
+  const debut = m.index + m[0].indexOf(m[1]);
+  // La fin du nom GARDÉ : un « Total » écarté reste à lire après lui.
+  const fin = texte.indexOf(garde, debut) + garde.length;
+  return { nom: `${civilite} ${garde}`, debut, fin };
+}
+
+// ─── L'adresse et le téléphone du client, sans IA ──────────────────────────
+
+const VOIES = [
+  "rue", "avenue", "av.", "av", "boulevard", "bd", "bld", "chemin", "ch.", "allée", "allee", "impasse", "imp.", "place", "pl.",
+  "route", "rte", "quai", "cours", "square", "faubourg", "fbg", "lieu-dit", "lotissement", "résidence", "residence", "hameau",
+  "sentier", "passage", "mail", "esplanade", "promenade", "rond-point", "voie", "parc", "domaine", "clos", "cité", "cite",
+];
+
+/**
+ * **Sans le drapeau `i`, et c'est le piège évité** : avec `iu`, `\p{Lu}` prend
+ * aussi les minuscules, et la ville avalait toute la phrase qui la suit. Les
+ * voies s'écrivent donc sous leurs trois formes (« rue », « Rue », « RUE »).
+ */
+const VOIES_ECRITES = VOIES.flatMap((v) => [v, v[0].toUpperCase() + v.slice(1), v.toUpperCase()])
+  .map((v) => v.replace(/\./g, "\\."))
+  .join("|");
+
+/** « 8 rue du Port 44120 Vertou » : un numéro, une voie, un code postal, une ville. */
+const ADRESSE = new RegExp(
+  `(\\d{1,4}(?:\\s?(?:bis|ter|b|t))?,?\\s+(?:${VOIES_ECRITES})\\s+[\\p{L}'’.\\- ]{2,70}?),?\\s+(\\d{5})\\s+(\\p{Lu}[\\p{L}'’]*(?:[\\s-]+(?:\\p{Lu}[\\p{L}'’]*|sur|sous|en|le|la|les|de|du|des|lès|lez|et))*)`,
+  "gu"
+);
+
+/**
+ * La ville s'arrête au premier mot qui n'en est pas un : « Nantes Total TTC »,
+ * « Nantes D É S I G N A T I O N » (une lettre seule), « Vertou Objet ».
+ */
+function villeSeule(brut: string): string | null {
+  const mots = brut.split(/(\s+|-)/);
+  const garde: string[] = [];
+  for (const m of mots) {
+    if (/^(\s+|-)$/.test(m)) {
+      garde.push(m);
+      continue;
+    }
+    const bas = m.toLowerCase();
+    if (MOTS_DE_FACTURE.has(bas) || MOTS_APRES_LA_VILLE.has(bas) || (m.length === 1 && /\p{Lu}/u.test(m))) break;
+    garde.push(m);
+  }
+  const ville = garde.join("").replace(/[\s-]+$/, "").trim();
+  // Un mot de liaison ne finit pas une ville (« Saint-Julien de », coupé).
+  return ville.replace(/(?:[\s-]+(?:sur|sous|en|le|la|les|de|du|des|lès|lez|et))+$/i, "").trim() || null;
+}
+
+/** Ce qu'un devis imprime après la ville, et que la ville ne doit pas avaler. */
+const MOTS_APRES_LA_VILLE = new Set(["france", "portable", "mobile", "fixe", "intervention", "travaux", "chantier", "qté", "qte", "quantité", "prix", "unité", "unite"]);
+
+/** Toutes les adresses d'un morceau de texte, écrites comme sur une fiche. */
+function adressesDe(texte: string): string[] {
+  const vues: string[] = [];
+  for (const m of texte.matchAll(ADRESSE)) {
+    const ville = villeSeule(m[3]);
+    if (!ville) continue;
+    vues.push(`${m[1].replace(/\s+/g, " ").replace(/,\s*$/, "").trim()}, ${m[2]} ${ville}`);
+  }
+  return vues;
+}
+
+const TELEPHONE = /(?<!\d)(?:\+33\s?|0)([1-9])(?:[\s.\-]?(\d{2})){4}(?!\d)/g;
+
+/** « 0711223344 », « +33 7 11 22 33 44 » : « 07 11 22 33 44 ». */
+function telephoneEcrit(brut: string): string {
+  const chiffres = brut.replace(/\D/g, "").replace(/^33/, "0");
+  return chiffres.replace(/(\d{2})(?=\d)/g, "$1 ");
+}
+
+/**
+ * Jusqu'où, après le nom, on cherche le téléphone : le bloc du client. Au-delà
+ * vient le corps du document, puis le pied, qui porte celui de l'artisan.
+ */
+const BLOC_DU_TELEPHONE = 160;
+
+/**
+ * L'adresse et le téléphone du client, lus APRÈS son nom, jamais devinés.
+ *
+ * **Zéro erreur sur une adresse** (sa règle du 28 octobre) : un devis imprime
+ * côte à côte le client et le lieu des travaux, et le texte d'un PDF les
+ * entremêle. Une seule adresse après le nom (ou deux fois la même) est la
+ * sienne ; deux différentes, le texte ne choisit pas, et l'IA ou le patron le
+ * diront. Ce qui précède le nom est l'en-tête de l'artisan : ni son adresse ni
+ * son téléphone ne sont jamais ceux du client.
+ */
+function coordonneesApresLeNom(texte: string): { adresseLue: string | null; telephoneLu: string | null } {
+  const place = nomEtPlace(texte);
+  if (!place) return { adresseLue: null, telephoneLu: null };
+  const avant = texte.slice(0, place.debut);
+  const apres = texte.slice(place.fin);
+
+  const deLArtisan = new Set(adressesDe(avant).map(normaliserAdresse));
+  const distinctes = new Map<string, string>();
+  for (const a of adressesDe(apres)) {
+    const n = normaliserAdresse(a);
+    if (!deLArtisan.has(n) && !distinctes.has(n)) distinctes.set(n, a);
+  }
+  const adresseLue = distinctes.size === 1 ? [...distinctes.values()][0] : null;
+
+  const telsDeLArtisan = new Set([...avant.matchAll(TELEPHONE)].map((m) => telephoneEcrit(m[0])));
+  const proche = [...apres.slice(0, BLOC_DU_TELEPHONE).matchAll(TELEPHONE)].map((m) => telephoneEcrit(m[0])).find((t) => !telsDeLArtisan.has(t));
+  return { adresseLue, telephoneLu: proche ?? null };
+}
+
+/**
+ * Le texte suffit quand il dit ce qu'est la pièce, à qui elle va, et où ce
+ * client habite. Sans l'adresse, l'IA lit le TEXTE (jamais l'image d'un PDF
+ * qui a du texte) : c'est elle qui sait séparer le client du lieu des travaux.
+ */
+export function texteSuffit(c: ChampsLus): boolean {
+  return !!(c.genre && c.numero && c.nomLu && c.adresseLue);
 }
 
 /** Les mots qu'un devis ou une facture imprime juste après le nom du client. */
@@ -170,7 +308,7 @@ export function lireChampsDuTexte(brut: string): ChampsLus {
   // d'un titre de tableau (« D É S I G N A T I O N ») deviennent un mot qui se
   // colle au nom (« M. Bernard DÉSIGNATION », 22 octobre 2026). Espacées, ce
   // ne sont que des lettres seules, qu'aucun nom ne prend.
-  return { genre, numero, jour, montantTtc, nomLu: nomAvecCivilite(plat) };
+  return { genre, numero, jour, montantTtc, nomLu: nomAvecCivilite(plat), ...coordonneesApresLeNom(plat), chantierLu: null };
 }
 
 /**
@@ -185,6 +323,9 @@ export function fusionnerLectures(ia: ChampsLus | null, texte: ChampsLus): Champ
     jour: ia.jour ?? texte.jour,
     montantTtc: ia.montantTtc ?? texte.montantTtc,
     nomLu: ia.nomLu ?? texte.nomLu,
+    adresseLue: ia.adresseLue ?? texte.adresseLue,
+    telephoneLu: ia.telephoneLu ?? texte.telephoneLu,
+    chantierLu: ia.chantierLu ?? texte.chantierLu,
   };
 }
 
@@ -215,11 +356,78 @@ export function relireReponseIA(texte: string): ChampsLus | null {
   const jourBrut = chaine(o.date, 10);
   const jour = jourBrut && /^\d{4}-\d{2}-\d{2}$/.test(jourBrut) ? jourIsoDe(jourBrut.slice(8), jourBrut.slice(5, 7), jourBrut.slice(0, 4)) : null;
   const montant = chaine(o.montant_ttc, 20);
+  const telephone = chaine(o.telephone, 30);
+  const adresse = chaine(o.adresse, 300);
+  const chantier = chaine(o.chantier, 300);
   return {
     genre,
     numero: chaine(o.numero, 40),
     jour,
     montantTtc: montant ? montantLu(montant) : null,
     nomLu: chaine(o.client, 120),
+    adresseLue: adresse,
+    // Un numéro qui n'en est pas un ne rapproche personne : il en séparerait deux.
+    telephoneLu: telephone && /^(?:\+33\s?|0)[1-9](?:[\s.\-]?\d{2}){4}$/.test(telephone) ? telephoneEcrit(telephone) : null,
+    // Le lieu des travaux qui redit l'adresse du client n'en est pas un autre.
+    chantierLu: chantier && (!adresse || normaliserAdresse(chantier) !== normaliserAdresse(adresse)) ? chantier : null,
   };
+}
+
+// ─── Les PDF au même écran que les tableaux (31 octobre 2026) ──────────────
+
+/** Ce que la lecture a gardé d'un PDF : ce que l'écran « Par client » reçoit. */
+export type PieceLueDuPdf = {
+  id: string;
+  genre: "devis" | "facture" | null;
+  numero: string | null;
+  jour: string | null;
+  montantTtc: string | null;
+  nomLu: string | null;
+  adresseLue: string | null;
+  telephoneLu: string | null;
+  chantierLu: string | null;
+};
+
+/**
+ * Des PDF lus deviennent des lignes de tableau, pour passer par LA MÊME règle
+ * (`grouperParClient`, `planDeRangement`) : sa demande du 31 octobre 2026,
+ * *« que ça soit un CSV, Excel ou un PDF, il faut que ça soit la même chose »*.
+ * Deux règles de rangement finiraient par ne plus ranger pareil (`CLAUDE.md` §3).
+ *
+ * **Le rang est la place dans la liste reçue** : l'écran et le serveur
+ * appellent cette fonction sur les mêmes pièces dans le même ordre, et
+ * `idDuRang` ramène chaque pièce du plan à son PDF.
+ *
+ * Un PDF dont le genre ne s'est pas lu attend sa réponse (`genres`) : une ligne
+ * de tableau est toujours un devis ou une facture, et ne se range pas sans.
+ */
+export function lignesDesPdf(
+  pieces: readonly PieceLueDuPdf[],
+  genres: Readonly<Record<string, "devis" | "facture">>
+): { lignes: LigneLue[]; sansGenre: PieceLueDuPdf[]; idDuRang: Map<number, string> } {
+  const lignes: LigneLue[] = [];
+  const sansGenre: PieceLueDuPdf[] = [];
+  const idDuRang = new Map<number, string>();
+  pieces.forEach((p, i) => {
+    const rang = i + 1;
+    idDuRang.set(rang, p.id);
+    const genre = p.genre ?? genres[p.id] ?? null;
+    if (!genre) {
+      sansGenre.push(p);
+      return;
+    }
+    lignes.push({
+      rang,
+      genre,
+      numero: p.numero,
+      objet: null,
+      jour: p.jour,
+      montant: p.montantTtc,
+      nom: p.nomLu,
+      adresse: p.adresseLue,
+      telephone: p.telephoneLu,
+      chantier: p.chantierLu,
+    });
+  });
+  return { lignes, sansGenre, idDuRang };
 }

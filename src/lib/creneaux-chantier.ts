@@ -181,6 +181,24 @@ export function momentsOfferts(combienPartent: number): MomentDArrivee[] {
   return [];
 }
 
+/**
+ * LE MOMENT D'ARRIVÉE SE DÉDUIT DE CE QUI PART — sa demande du 1er novembre 2026.
+ *
+ * *« Quand je clique sur déplacer, je voudrais cliquer sur le jour et que ça le
+ * déplace en un clic »*, puis : *« si c'est un chantier d'une journée, pas
+ * besoin de me demander si je veux déplacer le matin ou l'aprem »*. La question
+ * « Quel moment ? » du 17 septembre a donc disparu de l'écran : une journée
+ * arrive en journée, une moitié garde sa moitié (`appli/deplacer-en-un-appui.html`,
+ * la A). Ce qui en résulte passe encore par `deplacerCeQueLeJourPorte`, qui
+ * revalide : la réponse d'ici est toujours un moment que `momentsOfferts`
+ * accepte, et la suite le tient.
+ */
+export function momentQuiPart(partants: readonly Creneau[]): MomentDArrivee | null {
+  if (partants.length >= 2) return "journee";
+  if (partants.length === 1) return partants[0].moment;
+  return null;
+}
+
 /** Ce que le chantier occupe CE jour-là — ce qui partira, et rien d'autre. */
 export function ceQueLeJourPorte(
   chantier: ChantierPose,

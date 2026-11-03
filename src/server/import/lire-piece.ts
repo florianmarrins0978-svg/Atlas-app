@@ -6,6 +6,7 @@ import {
   lireChampsDuTexte,
   relireReponseIA,
   RIEN_LU,
+  texteSuffit,
   type ChampsLus,
 } from "../../lib/import-pieces";
 
@@ -14,8 +15,8 @@ import {
  *
  * **Le texte, sans IA.** Un PDF sorti d'un logiciel porte son texte : on le lit
  * en 77 ms, gratuitement (`docs/importer-devis-factures.md`). Quand ce texte
- * dit déjà le genre, le numéro, la date, le montant et le client, aucun appel
- * ne part.
+ * dit déjà le genre, le numéro, le client et son adresse (`texteSuffit`),
+ * aucun appel ne part.
  *
  * **L'IA sur le TEXTE quand il manque un champ** (la mise en page d'un autre
  * logiciel cache le nom du client sans civilité), et **sur l'IMAGE seulement
@@ -28,9 +29,12 @@ import {
 
 const SYSTEME = `Tu lis un devis ou une facture qu'un artisan a envoyé à son client.
 Tu réponds UNIQUEMENT par un objet JSON, sans phrase avant ni après, sans balises de code :
-{"genre": "devis"|"facture"|null, "numero": string|null, "date": "AAAA-MM-JJ"|null, "montant_ttc": string|null, "client": string|null}
+{"genre": "devis"|"facture"|null, "numero": string|null, "date": "AAAA-MM-JJ"|null, "montant_ttc": string|null, "client": string|null, "adresse": string|null, "telephone": string|null, "chantier": string|null}
 Règles :
 - client : le nom du client destinataire tel qu'il est écrit (« Mme Aubry », « SARL Les Jardins »), jamais celui de l'artisan qui émet le document.
+- adresse : l'adresse du client destinataire, rue, code postal et ville (« 8 rue du Port, 44120 Vertou »), jamais celle de l'artisan, ni le lieu des travaux quand il est écrit à part.
+- telephone : le téléphone du client, jamais celui de l'artisan.
+- chantier : le lieu des travaux (ou d'intervention) quand il est écrit à part et diffère de l'adresse du client, sinon null.
 - montant_ttc : le total TTC à payer, avec la virgule ou le point tel quel.
 - date : la date du document, pas l'échéance.
 - Tu ne DEVINES jamais : une valeur illisible ou absente vaut null.`;
@@ -100,8 +104,7 @@ export async function lirePiece(octets: Uint8Array): Promise<ChampsLus> {
     logger.warn("Texte d'une pièce importée illisible", { erreur: err instanceof Error ? err.message : String(err) });
   }
   const parLeTexte = texte.trim().length > 50 ? lireChampsDuTexte(texte) : RIEN_LU;
-  const complet = parLeTexte.genre && parLeTexte.numero && parLeTexte.nomLu;
-  if (complet) return parLeTexte;
+  if (texteSuffit(parLeTexte)) return parLeTexte;
 
   try {
     const ia = texte.trim().length > 50 ? await demanderAuTexte(texte) : await demanderAuScan(octets);
