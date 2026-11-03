@@ -54,6 +54,7 @@ import RepriseDuDevis from "./RepriseDuDevis";
 import { memeValeur } from "@/lib/hausse-du-devis";
 import LigneAcompte from "./LigneAcompte";
 import CroixRetirer from "@/components/atlas/CroixRetirer";
+import { arrivee, useArrivee } from "@/components/atlas/useArrivee";
 import LigneMainDoeuvre from "./LigneMainDoeuvre";
 import { mainDoeuvreDeLaLigne, mainDoeuvreDesLignes } from "@/lib/main-doeuvre-devis";
 import ChampUnite from "./ChampUnite";
@@ -466,12 +467,23 @@ export default function DevisCompletClient(props: Props) {
    */
   const [feuille, setFeuille] = useState<null | "tva" | "acompte" | "remise" | "mo">(null);
 
+  /**
+   * Ce qu'une feuille vient de poser défile sous ses yeux et s'éclaire un
+   * instant (la planche : « on le voit arriver »). Chaque ajout annonce le
+   * repère de ce qu'il crée, posé plus bas par `arrivee`.
+   */
+  const annoncer = useArrivee();
+
   async function ajouterUnAcompte(taux?: string) {
     setRefusAcompte(null);
     const pose = await aLaSuite(() => ajouterAcompteAction(props.devisId, taux));
     if (!pose) return;
-    if (pose.ok) setAcomptes(pose.acomptes);
-    else setRefusAcompte(pose.raison);
+    if (pose.ok) {
+      setAcomptes(pose.acomptes);
+      // Le nouveau est le dernier rang : les acomptes ne s'ajoutent qu'au bout.
+      const nouveau = pose.acomptes[pose.acomptes.length - 1];
+      if (nouveau) annoncer(`acompte:${nouveau.rang}`);
+    } else setRefusAcompte(pose.raison);
   }
 
   async function changerAcompte(rang: number, tauxDuChamp: string) {
@@ -820,6 +832,7 @@ export default function DevisCompletClient(props: Props) {
         return r ? { ...l, prixUnitaire: r.prixUnitaire, montant: r.montant, partMainDoeuvre: r.partMainDoeuvre } : l;
       })
     );
+    annoncer(...pose.lignes.map((r) => `ligne:${r.id}`));
   }
 
   async function ajouterMainDoeuvre(choix: ChoixDeMainOeuvre) {
@@ -852,6 +865,7 @@ export default function DevisCompletClient(props: Props) {
         mainDoeuvre: true,
       },
     ]);
+    annoncer(`ligne:${creee.id}`);
   }
 
   /**
@@ -886,6 +900,8 @@ export default function DevisCompletClient(props: Props) {
         tauxTva: creee.tauxTva ?? propose,
       },
     ]);
+    // Le bloc entier, sa bande et sa première ligne : sa clé est celle qui groupe.
+    annoncer(`tva:${tauxDeLaLigne({ tauxTva: creee.tauxTva ?? propose }, tauxDuDevis)}`);
   }
 
   /** Le taux d'une catégorie change : toutes ses lignes suivent, d'un geste. */
@@ -1305,7 +1321,7 @@ export default function DevisCompletClient(props: Props) {
         )}
 
         {categories.map((categorie) => (
-        <div key={categorie.taux}>
+        <div key={categorie.taux} {...arrivee(`tva:${categorie.taux}`)}>
 
         {/* **Le titre de la catégorie — seulement s'il y en a plusieurs.**
             Sa demande du 1er septembre 2026 : le taux se pose par catégorie, pas
@@ -1383,6 +1399,7 @@ export default function DevisCompletClient(props: Props) {
               borderRadius: ligneSaisie === l.id ? 6 : undefined,
               transition: "background-color .18s, transform .18s",
             }}
+            {...arrivee(`ligne:${l.id}`)}
             {...appuiLong.pour(() => setADeplacer(l), {
               // **Rien à proposer tant qu'il n'a qu'une TVA** : une feuille qui
               // s'ouvrirait sur un seul choix — celui où la ligne est déjà —
@@ -1715,16 +1732,18 @@ export default function DevisCompletClient(props: Props) {
                   confort** : « reprends exactement celle du devis — couleur,
                   forme, mots » (11 septembre 2026). Recopiée, elle aurait
                   divergé au premier ajustement. */}
-              <LigneRemise
-                pourcent={reduction}
-                montantRetire={totaux.reductionMontant}
-                fige={fige}
-                onChange={setReduction}
-                onFini={(duChamp) => void enregistrerRemise(duChamp)}
-                onRetirer={() =>
-                  retraits.retirer(CLE_REDUCTION, `le ${LIBELLE_REDUCTION.toLowerCase()}`)
-                }
-              />
+              <div {...arrivee("remise")}>
+                <LigneRemise
+                  pourcent={reduction}
+                  montantRetire={totaux.reductionMontant}
+                  fige={fige}
+                  onChange={setReduction}
+                  onFini={(duChamp) => void enregistrerRemise(duChamp)}
+                  onRetirer={() =>
+                    retraits.retirer(CLE_REDUCTION, `le ${LIBELLE_REDUCTION.toLowerCase()}`)
+                  }
+                />
+              </div>
               <div className="flex items-center justify-between py-1.5">
                 <span className="text-[15px]">
                   {totaux.reductionPourcent === null ? "Total HT" : "Total HT après remise"}
@@ -1800,17 +1819,18 @@ export default function DevisCompletClient(props: Props) {
           {echeancier.lignes.length > 0 && (
             <div className="mt-1.5" data-atlas="echeancier-devis">
               {echeancier.lignes.map((ligne) => (
-                <LigneAcompte
-                  key={ligne.rang}
-                  ligne={ligne}
-                  tauxSaisi={acomptes.find((a) => a.rang === ligne.rang)?.tauxCumule ?? ligne.tauxCumule}
-                  fige={fige}
-                  onChange={(v) =>
-                    setAcomptes((cur) => cur.map((a) => (a.rang === ligne.rang ? { ...a, tauxCumule: v } : a)))
-                  }
-                  onFini={(duChamp) => void changerAcompte(ligne.rang, duChamp)}
-                  onRetirer={() => void retirerUnAcompte(ligne.rang)}
-                />
+                <div key={ligne.rang} {...arrivee(`acompte:${ligne.rang}`)}>
+                  <LigneAcompte
+                    ligne={ligne}
+                    tauxSaisi={acomptes.find((a) => a.rang === ligne.rang)?.tauxCumule ?? ligne.tauxCumule}
+                    fige={fige}
+                    onChange={(v) =>
+                      setAcomptes((cur) => cur.map((a) => (a.rang === ligne.rang ? { ...a, tauxCumule: v } : a)))
+                    }
+                    onFini={(duChamp) => void changerAcompte(ligne.rang, duChamp)}
+                    onRetirer={() => void retirerUnAcompte(ligne.rang)}
+                  />
+                </div>
               ))}
               <div className="flex items-center justify-between py-1.5">
                 <span className="text-[15px]">{echeancier.libelleReste}</span>
@@ -1980,6 +2000,7 @@ export default function DevisCompletClient(props: Props) {
           setFeuille(null);
           setRemiseOuverte(true);
           setReduction(tauxLisible(taux));
+          annoncer("remise");
           // Le même écrivain que la saisie et que le retrait : une remise n'a
           // qu'une façon d'arriver en base.
           void enregistrerRemise(taux);

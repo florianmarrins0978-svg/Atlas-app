@@ -36612,5 +36612,16 @@ pouvoir écrire ce que je veux »*), la main d'œuvre sur son calcul
 | **le tiroir, PAS pour tous** | la remise y passait déjà (`useRetraits`). L'acompte et la TVA se retirent toujours tout de suite : changer leur comportement sortait de ce lot |
 | ce qui ne change pas | les noms lus (« Retirer la remise », « Retirer l'acompte … », « Retirer la TVA à … ») et les repères (`retirer-prix-accorde`, `retirer-acompte`) |
 
-**Ce qui reste, et n'est pas codé :** la ligne qui s'éclaire à l'arrivée
-(`TODO.md`) ; le tiroir pour l'acompte et la TVA.
+**Ce qui vient d'être ajouté s'éclaire (2 novembre 2026, la planche : « on le voit arriver ») :**
+
+| | |
+|---|---|
+| le mécanisme | `useArrivee.ts` : l'écran pose `arrivee("…")` (un `data-arrivee`) sur ce qui peut arriver, et chaque ajout annonce le repère de ce qu'il crée. L'effet, joué après chaque rendu, éclaire au premier rendu où le repère existe : la ligne n'est peinte qu'après la réponse du serveur |
+| les repères | `ligne:<id>` (main d'œuvre, chaque travail d'une répartition), `tva:<taux>` (le bloc entier, clé de `tauxDeLaLigne`, celle qui groupe), `acompte:<rang>` (le dernier rang), `remise` |
+| l'éclat | `element.animate`, du doré pâle (`voile(colors.or, 0.26)`, celui de la planche) au transparent en 1,8 s, la durée de `.vient-d-arriver`. **Le doré est résolu avant l'animation** (`dorePale`) : un `var()` dans une clé d'animation n'est pas lu par tous les moteurs. Rien dans `globals.css`, et aucun style posé par l'écran n'est touché |
+| le défilement | le premier élément dans la page (pas le premier annoncé) vient au milieu ; « moins de mouvement » : défilement immédiat, sans éclat |
+| la patience | 4 s : passé ce délai, l'annonce tombe sans rien éclairer, pour qu'un ajout refusé n'allume pas, au rendu suivant, un bloc qui existait déjà |
+| ce qui n'est pas éprouvé ici | le vrai devis (serveur interdit à ce lot) : le banc isolé de Chromium a vu l'animation sur le seul élément ajouté, effacée à la fin, et aucune sous « moins de mouvement » |
+
+**Ce qui reste, et n'est pas codé :** le tiroir pour l'acompte et la TVA
+(`TODO.md`).
