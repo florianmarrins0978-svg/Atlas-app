@@ -106,6 +106,15 @@
 .ligne-montant { flex: none; font: 700 19px/1.25 var(--serif); color: var(--atlas-or); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
 .ligne-etat { display: block; margin-top: 4px; font-size: 15px; line-height: 1.4; color: var(--atlas-inkSoft); }
 .ligne-etat b { color: var(--atlas-or); }
+/* Le nom du client sur chaque ligne (sa remarque du 3 novembre 2026 : « la date,
+   la désignation, le montant, mais à aucun moment le nom du client »).
+   A : son nom en titre, la désignation dessous ; B : la désignation en titre,
+   son nom dessous. Une seule des deux écritures se montre à chaque place. */
+.ligne-sous { display: block; margin-top: 2px; font-size: 15px; line-height: 1.35; color: var(--atlas-ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ecran[data-client="a"] .ligne-nom .v-chantier, .ecran[data-client="a"] .ligne-sous .v-client { display: none; }
+.ecran[data-client="b"] .ligne-nom .v-client, .ecran[data-client="b"] .ligne-sous .v-chantier { display: none; }
+.ecran[data-client="a"] .ligne-sous { color: var(--atlas-inkSoft); }
+.ecran[data-client="b"] .ligne-sous { font-weight: 600; }
 .ligne-attend { align-items: center; }
 .ligne-attend .jour-bloc { align-self: center; background: var(--atlas-plein); color: var(--sur-plein); }
 .ligne-attend .jour-bloc span { color: var(--sur-plein); }
@@ -183,8 +192,12 @@
         <button type="button" data-variante="a" aria-pressed="true">Trier par : A, la liste</button>
         <button type="button" data-variante="b" aria-pressed="false">B, les pastilles</button>
       </div>
+      <div class="pl-etats pl-filtre" id="variantes-client" aria-label="Le nom du client">
+        <button type="button" data-client="a" aria-pressed="true">Le client : A, en titre</button>
+        <button type="button" data-client="b" aria-pressed="false">B, sous la désignation</button>
+      </div>
       <div class="cadre">
-        <div class="ecran avec-barre" data-etat="rempli">
+        <div class="ecran avec-barre" data-client="a" data-etat="rempli">
           <div class="defile">
             <header class="tete">
               <h1 class="tete-titre">Terminés</h1>
@@ -241,61 +254,61 @@
                 <div data-si-etat="rempli nonpayee">
                 <button class="ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Taille des haies de thuyas" data-detail="Facture n° 14, 864,00 €">
                   <span class="jour-bloc"><b>21</b><span>oct.</span></span>
-                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom">Taille des haies de thuyas</span><span class="ligne-montant">864,00 €</span></span><span class="ligne-etat"><b>Facturé</b> le 22 octobre, Facture n° 14</span></span>
+                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom"><span class="v-chantier">Taille des haies de thuyas</span><span class="v-client">Mme Vasseur</span></span><span class="ligne-montant">864,00 €</span></span><span class="ligne-sous"><span class="v-client">Mme Vasseur</span><span class="v-chantier">Taille des haies de thuyas</span></span><span class="ligne-etat"><b>Facturé</b> le 22 octobre, Facture n° 14</span></span>
                 </button>
                 <a class="ligne ligne-attend touche" href="chantier-facture.html">
                   <span class="jour-bloc"><b>20</b><span>oct.</span></span>
-                  <span class="ligne-corps"><span class="ligne-nom">Élagage du tilleul</span><span class="ligne-etat">1 764,00 € prévus</span></span>
+                  <span class="ligne-corps"><span class="ligne-nom"><span class="v-chantier">Élagage du tilleul</span><span class="v-client">Mr. Bernard</span></span><span class="ligne-sous"><span class="v-client">Mr. Bernard</span><span class="v-chantier">Élagage du tilleul</span></span><span class="ligne-etat">1 764,00 € prévus</span></span>
                   <span class="capsule-facturer">À facturer</span>
                 </a>
                 <button class="ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Tonte et ramassage des feuilles" data-detail="Facture n° 13, 312,00 €">
                   <span class="jour-bloc"><b>16</b><span>oct.</span></span>
-                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom">Tonte et ramassage des feuilles</span><span class="ligne-montant">312,00 €</span></span><span class="ligne-etat"><b>Facturé</b> le 17 octobre, Facture n° 13</span></span>
+                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom"><span class="v-chantier">Tonte et ramassage des feuilles</span><span class="v-client">Mme Costa</span></span><span class="ligne-montant">312,00 €</span></span><span class="ligne-sous"><span class="v-client">Mme Costa</span><span class="v-chantier">Tonte et ramassage des feuilles</span></span><span class="ligne-etat"><b>Facturé</b> le 17 octobre, Facture n° 13</span></span>
                 </button>
                 <button class="ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Création d'un massif de vivaces et de graminées le long de la terrasse" data-detail="Facture n° 12, 1 776,00 €">
                   <span class="jour-bloc"><b>13</b><span>oct.</span></span>
-                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom">Création d'un massif de vivaces et de graminées le long de la terrasse</span><span class="ligne-montant">1 776,00 €</span></span><span class="ligne-etat"><b>Facturé</b> le 14 octobre, Facture n° 12</span></span>
+                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom"><span class="v-chantier">Création d'un massif de vivaces et de graminées le long de la terrasse</span><span class="v-client">Mr. Faucher</span></span><span class="ligne-montant">1 776,00 €</span></span><span class="ligne-sous"><span class="v-client">Mr. Faucher</span><span class="v-chantier">Création d'un massif de vivaces et de graminées le long de la terrasse</span></span><span class="ligne-etat"><b>Facturé</b> le 14 octobre, Facture n° 12</span></span>
                 </button>
                 <button class="ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Pose de gazon en rouleau" data-detail="Facture n° 11, 2 940,00 €" data-payee>
                   <span class="jour-bloc"><b>9</b><span>oct.</span></span>
-                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom">Pose de gazon en rouleau</span><span class="ligne-montant">2 940,00 €</span></span><span class="ligne-etat"><b>Facturé</b> le 10 octobre, Facture n° 11</span></span>
+                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom"><span class="v-chantier">Pose de gazon en rouleau</span><span class="v-client">Mme Aubry</span></span><span class="ligne-montant">2 940,00 €</span></span><span class="ligne-sous"><span class="v-client">Mme Aubry</span><span class="v-chantier">Pose de gazon en rouleau</span></span><span class="ligne-etat"><b>Facturé</b> le 10 octobre, Facture n° 11</span></span>
                 </button>
                 <button class="ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Entretien d'automne" data-detail="Facture n° 10, 420,00 €" data-payee>
                   <span class="jour-bloc"><b>6</b><span>oct.</span></span>
-                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom">Entretien d'automne</span><span class="ligne-montant">420,00 €</span></span><span class="ligne-etat"><b>Facturé</b> le 7 octobre, Facture n° 10</span></span>
+                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom"><span class="v-chantier">Entretien d'automne</span><span class="v-client">Mr. Martin</span></span><span class="ligne-montant">420,00 €</span></span><span class="ligne-sous"><span class="v-client">Mr. Martin</span><span class="v-chantier">Entretien d'automne</span></span><span class="ligne-etat"><b>Facturé</b> le 7 octobre, Facture n° 10</span></span>
                 </button>
                 </div>
                 <div data-si-etat="septembre">
                 <a class="ligne ligne-attend touche" href="chantier-facture.html">
                   <span class="jour-bloc"><b>26</b><span>sept.</span></span>
-                  <span class="ligne-corps"><span class="ligne-nom">Débroussaillage du talus</span></span>
+                  <span class="ligne-corps"><span class="ligne-nom"><span class="v-chantier">Débroussaillage du talus</span><span class="v-client">Mme Lenoir</span></span><span class="ligne-sous"><span class="v-client">Mme Lenoir</span><span class="v-chantier">Débroussaillage du talus</span></span></span>
                   <span class="capsule-facturer">À facturer</span>
                 </a>
                 <button class="ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Plantation d'une haie champêtre" data-detail="Facture n° 9, 3 828,00 €" data-payee>
                   <span class="jour-bloc"><b>18</b><span>sept.</span></span>
-                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom">Plantation d'une haie champêtre</span><span class="ligne-montant">3 828,00 €</span></span><span class="ligne-etat"><b>Facturé</b> le 19 septembre, Facture n° 9</span></span>
+                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom"><span class="v-chantier">Plantation d'une haie champêtre</span><span class="v-client">Mr. Guérin</span></span><span class="ligne-montant">3 828,00 €</span></span><span class="ligne-sous"><span class="v-client">Mr. Guérin</span><span class="v-chantier">Plantation d'une haie champêtre</span></span><span class="ligne-etat"><b>Facturé</b> le 19 septembre, Facture n° 9</span></span>
                 </button>
                 <button class="ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Arrosage automatique du jardin de devant" data-detail="Facture n° 8, 2 412,00 €" data-payee>
                   <span class="jour-bloc"><b>10</b><span>sept.</span></span>
-                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom">Arrosage automatique du jardin de devant</span><span class="ligne-montant">2 412,00 €</span></span><span class="ligne-etat"><b>Facturé</b> le 11 septembre, Facture n° 8</span></span>
+                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom"><span class="v-chantier">Arrosage automatique du jardin de devant</span><span class="v-client">Mme Roux</span></span><span class="ligne-montant">2 412,00 €</span></span><span class="ligne-sous"><span class="v-client">Mme Roux</span><span class="v-chantier">Arrosage automatique du jardin de devant</span></span><span class="ligne-etat"><b>Facturé</b> le 11 septembre, Facture n° 8</span></span>
                 </button>
                 </div>
                 <div data-si-etat="aout">
                 <button class="ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Taille de la glycine" data-detail="Facture n° 7, 540,00 €">
                   <span class="jour-bloc"><b>27</b><span>août</span></span>
-                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom">Taille de la glycine</span><span class="ligne-montant">540,00 €</span></span><span class="ligne-etat"><b>Facturé</b> le 28 août, Facture n° 7</span></span>
+                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom"><span class="v-chantier">Taille de la glycine</span><span class="v-client">Mr. Dupuis</span></span><span class="ligne-montant">540,00 €</span></span><span class="ligne-sous"><span class="v-client">Mr. Dupuis</span><span class="v-chantier">Taille de la glycine</span></span><span class="ligne-etat"><b>Facturé</b> le 28 août, Facture n° 7</span></span>
                 </button>
                 </div>
               </div>
               <div data-liste="attente">
                 <a class="ligne ligne-attend touche" href="chantier-facture.html">
                   <span class="jour-bloc"><b>20</b><span>oct.</span></span>
-                  <span class="ligne-corps"><span class="ligne-nom">Élagage du tilleul</span><span class="ligne-etat">1 764,00 € prévus</span></span>
+                  <span class="ligne-corps"><span class="ligne-nom"><span class="v-chantier">Élagage du tilleul</span><span class="v-client">Mme Leclerc</span></span><span class="ligne-sous"><span class="v-client">Mme Leclerc</span><span class="v-chantier">Élagage du tilleul</span></span><span class="ligne-etat">1 764,00 € prévus</span></span>
                   <span class="capsule-facturer">À facturer</span>
                 </a>
                 <a class="ligne ligne-attend touche" href="chantier-facture.html">
                   <span class="jour-bloc"><b>26</b><span>sept.</span></span>
-                  <span class="ligne-corps"><span class="ligne-nom">Débroussaillage du talus</span></span>
+                  <span class="ligne-corps"><span class="ligne-nom"><span class="v-chantier">Débroussaillage du talus</span><span class="v-client">Mr. Morel</span></span><span class="ligne-sous"><span class="v-client">Mr. Morel</span><span class="v-chantier">Débroussaillage du talus</span></span></span>
                   <span class="capsule-facturer">À facturer</span>
                 </a>
               </div>
@@ -379,6 +392,7 @@
       <li>Non payées, quand elle existe, s'écrit en rouge sous les deux boutons.</li>
       <li><b>À choisir (3 novembre) : le Filtre, une fois un tri posé.</b> Aujourd’hui il passe en noir. A, le vert pâle de « Pour mon comptable » ; B, le beige de « Ma TVA » ; C, un contour vert. « Sans tri » : le Filtre au repos, comme aujourd’hui.</li>
         <li><b>À choisir aussi : « Trier par », en plus joli</b> (votre remarque du 3 novembre : « c’est moche »). A, la liste : une seule carte, une ligne par tri avec son dessin doré, la coche verte au bout de celui choisi. B, les pastilles : les tris côte à côte, celui choisi en vert plein. Dans les deux, le sens se choisit sur la barre qui glisse, celle du moyen de paiement que vous avez prise sur la facture. Aujourd’hui, cinq grands boutons empilés, celui choisi en noir.</li>
+        <li><b>À choisir (3 novembre) : le nom du client sur chaque ligne</b> (votre remarque : « la date, la désignation, le montant, mais à aucun moment le nom du client »). A : son nom en titre, la désignation dessous en encre douce. B : la désignation en titre, son nom dessous. Un chantier sans titre porte déjà le nom de son client : il ne s’écrit alors qu’une fois.</li>
       </ul>
     <h2>Ce qui revient comme dans l'appli</h2>
     <ul class="garde">
@@ -445,6 +459,12 @@ document.querySelectorAll("#teintes-filtre button").forEach(function (b) {
     b.addEventListener("click", function () {
       sens.forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
       ruban.style.setProperty("--rang", b.getAttribute("data-rang"));
+    });
+  });
+  document.querySelectorAll("#variantes-client button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      document.querySelectorAll("#variantes-client button").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+      document.querySelectorAll(".ecran[data-client]").forEach(function (e) { e.setAttribute("data-client", b.getAttribute("data-client")); });
     });
   });
   document.querySelectorAll("#variantes-tri button").forEach(function (b) {
