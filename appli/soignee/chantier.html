@@ -152,6 +152,14 @@
 .dictee-suite .points span { width: 8px; height: 8px; }
 .dictee-sous { margin: 6px 0 0; font-size: 14px; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
 .fc-a-la-main { width: auto; min-width: 220px; margin: 8px auto 0; }
+/* Après un échec (son accord du 3 novembre 2026 sur l'ancien écran Note vocale) :
+   la ligne « Votre dictée » et la phrase rouge sont celles de l'appli, à leur
+   place ; seul « Réessayer » s'ajoute sous la phrase. */
+.fc-votre-dictee { margin-top: 16px; padding: 16px 20px; border-radius: 6px; background: var(--atlas-card);
+                   font-size: 14px; color: var(--atlas-ink); }
+.dictee-echec { margin: 14px 0 0; text-align: center; font-size: 14.5px; line-height: 1.45; color: var(--atlas-alerte); }
+.dictee-reessayer { margin: 10px auto 0; }
+.capture-vide { margin: 0; padding: 45% 28px 0; text-align: center; font-size: 15px; line-height: 1.5; color: var(--atlas-inkSoft); }
 .ecran[data-etat^="dictee"] .fc-a-la-main, .ecran[data-etat="transcription"] .fc-a-la-main, .ecran[data-etat="preparation"] .fc-a-la-main { visibility: hidden; }
 
 /* ═══ PENDANT LA DICTÉE : trois façons, à choisir (sa demande du 1er novembre :
@@ -421,9 +429,9 @@
 
                 <p class="fc-voix-lib">Devis à la voix</p>
                 <div class="dictee-zone">
-                  <div data-si-etat="repos" style="display:flex;flex-direction:column;align-items:center">
+                  <div data-si-etat="repos echec" style="display:flex;flex-direction:column;align-items:center">
                     <button class="fc-micro" type="button" aria-label="Dicter une note vocale" data-va-etat="dictee"><svg class="ico" aria-hidden="true"><use href="#i-micro"/></svg></button>
-                    <p class="fc-invite">Appuyez et décrivez le chantier</p>
+                    <p class="fc-invite" data-si-etat="repos">Appuyez et décrivez le chantier</p>
                   </div>
 
                   <div class="ligne-dictee" data-si-etat="dictee">
@@ -470,6 +478,11 @@
                     <p class="dictee-suite" style="margin:0;justify-content:center">Atlas prépare votre devis<span class="points" aria-hidden="true"><span></span><span></span><span></span></span></p>
                     <p class="dictee-sous" id="prepa-sous">&nbsp;</p>
                   </div>
+                </div>
+                <div data-si-etat="echec">
+                  <div class="fc-votre-dictee">Votre dictée</div>
+                  <p class="dictee-echec">La transcription n'a pas abouti.</p>
+                  <button class="bouton bouton-creux or bouton-petit dictee-reessayer" type="button" data-va-etat="preparation">Réessayer</button>
                 </div>
                 <button class="bouton bouton-creux bouton-petit fc-a-la-main" type="button" data-vers-page="devis">Je rédige à la main</button>
               </div>
@@ -740,7 +753,7 @@
 
       <div data-vue-panneau="aujourdhui">
         <p class="pl-legende">Aujourd'hui</p>
-        <div class="cadre"><div class="cadre-capture" id="cadre-capture"><img id="capture" src="aujourdhui/chantier-dictee-repos.jpg" alt="L'écran tel qu'il est aujourd'hui"></div></div>
+        <div class="cadre"><div class="cadre-capture" id="cadre-capture"><img id="capture" src="aujourdhui/chantier-dictee-repos.jpg" alt="L'écran tel qu'il est aujourd'hui"><p class="capture-vide" id="capture-vide" hidden>Pas de capture : un échec ne se provoque pas ici.</p></div></div>
         <p class="capture-quoi" id="capture-quoi"></p>
       </div>
     </div>
@@ -774,7 +787,8 @@
       <h2>À trancher</h2>
       <ul class="a-trancher">
         <li><b>Tranché le 1er novembre : la B</b>, codée dans l'appli le jour même. Un appui dans la première seconde n'envoie rien : l'avion tombe sous le doigt qui vient de lancer la dictée.</li>
-        <li>L'ancien écran Note vocale (celui que je vous avais montré par erreur) existe encore : la Transcription y mène par « Relancer depuis la note vocale » et « Enregistrer une note vocale ». Deux enregistreurs pour une même note. Je propose que ces liens ouvrent la fiche client, et que l'ancien écran parte.</li>
+        <li><b>À choisir : « Réessayer » après un échec</b> (l'état « Échec, Réessayer »). Il relance la transcription et le devis sur la même dictée, sans redicter. C'est le seul geste de l'ancien écran Note vocale qui manque à la fiche client. « Reprendre, j'avais oublié quelque chose » existe déjà sur le devis : le micro en haut à droite (votre demande du 15 août).</li>
+        <li>Une fois choisi : les liens de la Transcription ouvrent la fiche client, et l'ancien écran Note vocale part, avec « Ajouter un fichier audio » (votre accord du 3 novembre).</li>
       </ul>
     </div>
 
@@ -818,14 +832,15 @@
   /* Chaque écran, ses états, et la vraie page qui leur répond. */
   var PAGES = {
     note: {
-      etats: [["repos", "Au repos"], ["dictee", "Dictée A, la ligne"], ["dictee-b", "Dictée B, choisie"], ["dictee-c", "Dictée C, la plage"], ["transcription", "Envoyée"], ["preparation", "Le devis se prépare"]],
+      etats: [["repos", "Au repos"], ["dictee", "Dictée A, la ligne"], ["dictee-b", "Dictée B, choisie"], ["dictee-c", "Dictée C, la plage"], ["transcription", "Envoyée"], ["preparation", "Le devis se prépare"], ["echec", "Échec, Réessayer"]],
       captures: {
         repos: ["chantier-dictee-repos.jpg", "Aujourd'hui, la fiche client ouverte par Créer un devis."],
         dictee: ["chantier-dictee-en-cours.jpg", "Aujourd'hui, pendant la dictée."],
         "dictee-b": ["chantier-dictee-en-cours.jpg", "Aujourd'hui, pendant la dictée."],
         "dictee-c": ["chantier-dictee-en-cours.jpg", "Aujourd'hui, pendant la dictée."],
         transcription: ["chantier-dictee-envoi.jpg", "Aujourd'hui, la note envoyée."],
-        preparation: ["chantier-dictee-envoi.jpg", "Aujourd'hui, la note envoyée : ensuite « Atlas prépare votre devis », puis le devis s'ouvre."]
+        preparation: ["chantier-dictee-envoi.jpg", "Aujourd'hui, la note envoyée : ensuite « Atlas prépare votre devis », puis le devis s'ouvre."],
+        echec: [null, "Aujourd'hui, la phrase rouge s'affiche seule sous « Votre dictée », sans geste pour recommencer."]
       }
     },
     devis: {
@@ -850,6 +865,10 @@
   function montrerCapture(page, etat) {
     var c = PAGES[page].captures[etat];
     if (!c) return;
+    capture.hidden = c[0] === null;
+    document.getElementById("capture-vide").hidden = c[0] !== null;
+    captureQuoi.textContent = c[1];
+    if (c[0] === null) return;
     var src = "aujourdhui/" + c[0];
     if (capture.getAttribute("src") !== src) { capture.setAttribute("src", src); cadreCapture.scrollTop = 0; }
     captureQuoi.textContent = c[1];
@@ -862,7 +881,7 @@
       b.setAttribute("aria-pressed", b.getAttribute("data-etat-page") === etat ? "true" : "false");
     });
     var defile = ecran.querySelector(".defile");
-    if (defile) defile.scrollTop = 0;
+    if (defile) defile.scrollTop = etat === "echec" ? defile.scrollHeight : 0;
     montrerCapture(pageCourante, etat);
     if (pageCourante === "note") suivreLEnvoi();
     if (pageCourante === "devis") etatDuDevis(etat);

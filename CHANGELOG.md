@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-11-03
+
+- **Planche « Le chantier » : « Réessayer » après un échec, sur la fiche client** (son accord : supprimer l'ancien écran Note vocale, *« planche d'abord »*). L'état « Échec, Réessayer » de `appli/soignee/chantier.html` pose « Réessayer » sous la phrase rouge, à sa place : il relance la transcription et le devis sur la même dictée, sans redicter. C'était le seul geste de l'ancien écran qui manquait à la fiche ; « Reprendre, j'avais oublié quelque chose » existe déjà sur le devis (le micro en haut à droite, 15 août). Une fois choisi, les liens de la Transcription ouvriront la fiche client et l'ancien écran partira, avec « Ajouter un fichier audio ». Rien dans `src/`.
+
 ## 2026-11-02
 
 - **La main d'œuvre répartie sur un devis écrit** (sa consigne : *« code le, pas de batterie »*). Dans la feuille « Main d'œuvre », « Répartis sur les travaux » ouvre la barre d'« Avant de chiffrer » sur les travaux chiffrés de la TVA où il a appuyé ; chacun reçoit sa part dans son prix unitaire, sa quantité ne bouge pas, et le devis l'écrit sous la ligne (« dont 140,00 € de main d'œuvre »). La part se garde sur la ligne (migration 0155, nullable, aucune ligne réécrite) et « dont main d'œuvre HT » la compte, bornée au montant de la ligne. Rouge d'abord : l'ancienne somme rendait 500 € au lieu de 650 € sur une ligne de main d'œuvre plus une part répartie. Pas sur `main` : batterie non jouée (`ARCHITECTURE.md` §536).
