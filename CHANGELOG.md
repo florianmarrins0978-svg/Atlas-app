@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-11-03
+
+- **Planche « Le chantier » : « Réessayer » après un échec, sur la fiche client** (son accord : supprimer l'ancien écran Note vocale, *« planche d'abord »*). L'état « Échec, Réessayer » de `appli/soignee/chantier.html` pose « Réessayer » sous la phrase rouge, à sa place : il relance la transcription et le devis sur la même dictée, sans redicter. C'était le seul geste de l'ancien écran qui manquait à la fiche ; « Reprendre, j'avais oublié quelque chose » existe déjà sur le devis (le micro en haut à droite, 15 août). Une fois choisi, les liens de la Transcription ouvriront la fiche client et l'ancien écran partira, avec « Ajouter un fichier audio ». Rien dans `src/`.
+
 ## 2026-11-02
 
 - **Planche « La facture » : le règlement en deux façons, le TTC au juste milieu** (ses remarques : *« paiement, comment c'est nul, change »*, *« facture, le montant est trop gros, juste milieu »*). Les cartes du moyen de paiement partent : A, un ruban de quatre cases où la case prise se soulève ; B, une liste comme celles des Réglages, le rond coché à droite. Le Total TTC passe de 54 à 46 points (40 aujourd'hui). Rien dans `src/`.
