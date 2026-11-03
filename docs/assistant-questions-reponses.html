@@ -58,8 +58,8 @@
 <body>
 <main>
 <h1 id="ce-que-lassistant-sait-répondre">Ce que l'assistant sait répondre</h1>
-<p><em>Engendré le 2026-09-30 par <code>npx tsx scripts/engendrer-questions-reponses.ts</code>. Ne pas corriger à la main : corriger la fiche, puis relancer.</em></p>
-<p><strong>412 questions</strong>, posées comme un artisan les pose. Pour chacune, la réponse est la fiche que l'assistant trouve et récite. Chaque fiche est confrontée au code de l'application : le jour où un bouton change de nom, le contrôle rougit au lieu de laisser l'assistant enseigner un geste mort.</p>
+<p><em>Engendré le 2026-11-03 par <code>npx tsx scripts/engendrer-questions-reponses.ts</code>. Ne pas corriger à la main : corriger la fiche, puis relancer.</em></p>
+<p><strong>418 questions</strong>, posées comme un artisan les pose. Pour chacune, la réponse est la fiche que l'assistant trouve et récite. Chaque fiche est confrontée au code de l'application : le jour où un bouton change de nom, le contrôle rougit au lieu de laisser l'assistant enseigner un geste mort.</p>
 <p>Ce qui n'est pas dans cette liste, il le cherche dans le sommaire de ses fiches. S'il ne trouve rien, il le dit, et donne l'adresse à qui écrire. Il répond aussi sur vos données (qui vous doit, ce que vous avez encaissé, votre planning), qu'il lit dans l'application : ces réponses-là changent chaque jour, elles ne sont donc pas ici.</p>
 <h2 id="comment-fonctionne-un-écran">Comment fonctionne un écran</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -78,6 +78,7 @@
 <li>Poser un client sans date depuis la liste du bas</li>
 <li>Annuler la pose qu'on vient de faire</li>
 <li>Supprimer un chantier qui attend une date</li>
+<li>Supprimer un chantier posé sur un jour, par exemple un devis accepté par erreur</li>
 <li>Reposer une demi-journée de chantier qui attend</li>
 <li>Voir les clients qui choisissent eux-mêmes leur date</li>
 <li>Choisir quels salariés vont sur un chantier</li>
@@ -86,15 +87,16 @@
 <li>Pourquoi un salarié ne peut pas modifier le planning</li>
 <li>Ouvrir le devis, la fiche client ou la facture d'un chantier depuis le planning</li>
 <li>Facturer un chantier fini depuis le planning</li>
-<li>La phrase de l'agenda en haut du planning, et la masquer</li>
+<li>Relier son agenda depuis le planning, et masquer la proposition</li>
 <li>Envoyer le retour d'intervention du jour : ce qui est fait, photos, remarques</li>
 <li>Ouvrir la fiche d'intervention d'un chantier</li>
 <li>Remplir et signer la fiche de sécurité avant les travaux</li>
 <li>Poser un chantier sur un jour</li>
+<li>Poser un client qui n'arrive pas à choisir ses dates sur son lien</li>
 <li>Laisser une note sur une journée</li>
 <li>Y aller, appeler le client, copier l'adresse</li>
 <li>Voir les sept jours d'avant ou d'après</li>
-<li>Passer de la journée aux sept jours</li>
+<li>Voir les sept jours sous le calendrier</li>
 </ul>
 <h3 id="-comment-fonctionnent-les-chantiers--">« Comment fonctionnent les chantiers ? »</h3>
 <p>Il présente l'écran Chantiers, geste par geste, puis détaille celui qu'on lui redemande :</p>
@@ -118,10 +120,12 @@
 <h3 id="-comment-fonctionne-le-devis--">« Comment fonctionne le devis ? »</h3>
 <p>Il présente l'écran Devis, geste par geste, puis détaille celui qu'on lui redemande :</p>
 <ul>
+<li>Ajouter quelque chose à une dictée déjà faite</li>
 <li>Changer le taux de TVA d'un devis</li>
 <li>Proposer une ou deux dates d'intervention au client</li>
 <li>Envoyer le devis au client</li>
 <li>Modifier un devis déjà envoyé</li>
+<li>Défaire un devis que le client a accepté par erreur</li>
 <li>Télécharger le PDF d'un devis envoyé</li>
 <li>Ajouter une ligne au devis</li>
 <li>Corriger la description, la quantité ou le prix d'une ligne</li>
@@ -132,7 +136,7 @@
 <li>Mettre deux taux de TVA sur un même devis</li>
 <li>Passer une ligne d'une TVA à l'autre</li>
 <li>Retirer une catégorie de TVA</li>
-<li>Indiquer la part de main d'œuvre</li>
+<li>Ajouter de la main d'œuvre au devis</li>
 <li>Demander un acompte sur le devis</li>
 <li>Corriger le nom, l'adresse, l'e-mail ou le téléphone du client sur le devis</li>
 <li>Rattacher un client à un devis qui n'en a pas</li>
@@ -169,6 +173,7 @@
 <li>Marquer la facture acquittée, tout est déjà payé</li>
 <li>Télécharger la facture, la garder sur le téléphone</li>
 <li>Envoyer la facture au client</li>
+<li>Facturer une mairie, un département : Chorus Pro, numéro d'engagement, code service</li>
 <li>Renvoyer une facture déjà envoyée, ou l'envoyer par l'autre moyen</li>
 <li>Envoyer la facture à un client sans numéro ou sans e-mail</li>
 <li>Modifier ou corriger une facture</li>
@@ -244,7 +249,7 @@
 </tr>
 <tr>
 <td>Est-ce qu'il y a une double authentification</td>
-<td>Atlas n'a pas encore de code en deux étapes. Ce qui protège en plus du mot de passe : Face ID sur vos appareils, et « Me déconnecter partout » si un téléphone est perdu.</td>
+<td>Allumez Double vérification, ajoutez Atlas à votre appli d'authentification (Google Authenticator, par exemple), tapez le premier code qu'elle affiche, puis gardez vos codes de secours. Ensuite, chaque connexion par mot de passe demande le code de l'appli. Face ID entre sans code.</td>
 </tr>
 <tr>
 <td>Mes concurrents peuvent-ils voir mes clients</td>
@@ -276,11 +281,11 @@
 </tr>
 <tr>
 <td>Mes dictées sont-elles écoutées par quelqu'un</td>
-<td>Pour transcrire une dictée, rédiger un devis ou regarder une photo, Atlas envoie ce contenu à ses fournisseurs d'intelligence artificielle. Ne dictez pas ce que vous ne voulez pas voir transmis, comme une information de santé. L'enregistrement reste sur la fiche du chantier : vous pouvez le réécouter ou le remplacer.</td>
+<td>Pour transcrire une dictée, rédiger un devis ou regarder une photo, Atlas envoie ce contenu à ses fournisseurs d'intelligence artificielle. Ne dictez pas ce que vous ne voulez pas voir transmis, comme une information de santé. Une dictée se retire depuis la fiche client du chantier : glissez « Votre dictée », puis « Retirer ».</td>
 </tr>
 <tr>
 <td>Que devient l'enregistrement audio de ma dictée</td>
-<td>Pour transcrire une dictée, rédiger un devis ou regarder une photo, Atlas envoie ce contenu à ses fournisseurs d'intelligence artificielle. Ne dictez pas ce que vous ne voulez pas voir transmis, comme une information de santé. L'enregistrement reste sur la fiche du chantier : vous pouvez le réécouter ou le remplacer.</td>
+<td>Pour transcrire une dictée, rédiger un devis ou regarder une photo, Atlas envoie ce contenu à ses fournisseurs d'intelligence artificielle. Ne dictez pas ce que vous ne voulez pas voir transmis, comme une information de santé. Une dictée se retire depuis la fiche client du chantier : glissez « Votre dictée », puis « Retirer ».</td>
 </tr>
 </tbody></table></div>
 <h2 id="vos-données">Vos données</h2>
@@ -311,7 +316,7 @@
 </tr>
 <tr>
 <td>Est-ce que mes dictées partent chez une intelligence artificielle</td>
-<td>Pour transcrire une dictée, rédiger un devis ou regarder une photo, Atlas envoie ce contenu à ses fournisseurs d'intelligence artificielle. Ne dictez pas ce que vous ne voulez pas voir transmis, comme une information de santé. L'enregistrement reste sur la fiche du chantier : vous pouvez le réécouter ou le remplacer.</td>
+<td>Pour transcrire une dictée, rédiger un devis ou regarder une photo, Atlas envoie ce contenu à ses fournisseurs d'intelligence artificielle. Ne dictez pas ce que vous ne voulez pas voir transmis, comme une information de santé. Une dictée se retire depuis la fiche client du chantier : glissez « Votre dictée », puis « Retirer ».</td>
 </tr>
 </tbody></table></div>
 <h2 id="tirer-le-maximum-datlas">Tirer le maximum d'Atlas</h2>
@@ -322,11 +327,11 @@
 </tr></thead><tbody>
 <tr>
 <td>Comment l'appli transforme ma dictée en devis</td>
-<td><em>« Chantiers » dans la barre du bas, « Créer un devis » : écran Fiche client.</em> Touchez le micro au centre, décrivez le chantier, puis touchez l'avion à droite : Atlas prépare le devis et l'ouvre.</td>
+<td><em>« Chantiers » dans la barre du bas, « Créer un devis » : écran Fiche client.</em> Touchez le micro au centre, décrivez le chantier, puis touchez l'avion qui a pris sa place : Atlas prépare le devis et l'ouvre.</td>
 </tr>
 <tr>
 <td>Comment faire un devis en dictant seulement</td>
-<td><em>« Chantiers » dans la barre du bas, « Créer un devis » : écran Fiche client.</em> Touchez le micro au centre, décrivez le chantier, puis touchez l'avion à droite : Atlas prépare le devis et l'ouvre.</td>
+<td><em>« Chantiers » dans la barre du bas, « Créer un devis » : écran Fiche client.</em> Touchez le micro au centre, décrivez le chantier, puis touchez l'avion qui a pris sa place : Atlas prépare le devis et l'ouvre.</td>
 </tr>
 <tr>
 <td>Comment passer du devis à la facture</td>
@@ -378,7 +383,7 @@
 </tr>
 <tr>
 <td>Comment atlas écrit mon devis</td>
-<td><em>« Chantiers » dans la barre du bas, « Créer un devis » : écran Fiche client.</em> Touchez le micro au centre, décrivez le chantier, puis touchez l'avion à droite : Atlas prépare le devis et l'ouvre.</td>
+<td><em>« Chantiers » dans la barre du bas, « Créer un devis » : écran Fiche client.</em> Touchez le micro au centre, décrivez le chantier, puis touchez l'avion qui a pris sa place : Atlas prépare le devis et l'ouvre.</td>
 </tr>
 <tr>
 <td>Quels conseils pour bien utiliser atlas</td>
@@ -390,7 +395,7 @@
 </tr>
 <tr>
 <td>Comment faire payer un acompte avant de commencer</td>
-<td>Appuyez sur « + Ajouter un acompte », puis touchez le pourcentage pour le changer. Le « − » devant l'acompte le retire. Le reste à régler se calcule sous les acomptes. Le bouton disparaît quand il n'y a plus d'acompte à poser.</td>
+<td>Appuyez sur « Ajouter un acompte », tapez le pourcentage ou touchez un raccourci : le montant et le reste à régler se montrent avant d'ajouter. La croix devant l'acompte le retire. Le moment suit l'ordre des acomptes : à la signature, à mi-parcours, à l'avancement. Le bouton disparaît quand il n'y a plus d'acompte à poser.</td>
 </tr>
 <tr>
 <td>Est-ce que je peux travailler depuis mon ordinateur au bureau</td>
@@ -421,11 +426,11 @@
 </tr>
 <tr>
 <td>Comment mettre un salarié absent</td>
-<td><em>« Planning » dans la barre du bas, puis le jour.</em> Ouvrez le jour, appuyez sur « Salarié absent ? » puis sur son nom. Il est absent toute la journée : touchez « Matin » ou « Après-midi » pour réduire. Seul, sans salarié, le bouton s'appelle « Absent ? ». Pour plusieurs jours d'affilée : Réglages, Équipe.</td>
+<td><em>« Planning » dans la barre du bas, puis le jour.</em> Ouvrez le jour et appuyez sur « Salarié absent ? ». Sous son nom, glissez le curseur, ou touchez « Matin », « Après-midi » ou « Journée ». Seul, sans salarié, le bouton s'appelle « Absent ? » et pose la journée d'un appui. Pour plusieurs jours d'affilée : Réglages, Équipe.</td>
 </tr>
 <tr>
 <td>Comment enlever un salarié des absences</td>
-<td><em>« Planning » dans la barre du bas, puis le jour.</em> Ouvrez le jour : sur la ligne « Absent », appuyez sur la croix à droite. Ou « Salarié absent ? » puis « son nom, annuler ».</td>
+<td><em>« Planning » dans la barre du bas, puis le jour.</em> Ouvrez le jour : sur la ligne « Absent », appuyez sur la croix à droite. Ou « Salarié absent ? », puis ramenez le curseur sur la première case. Seul ce jour change.</td>
 </tr>
 <tr>
 <td>Comment affilier un salarié à un chantier</td>
@@ -472,7 +477,7 @@
 </tr>
 <tr>
 <td>Combien coûte l'abonnement</td>
-<td><em>« Réglages » dans la barre du bas, puis Abonnement.</em> Ouvrez « Abonnement », choisissez « Au mois » ou « À l’année, 2 mois offerts », puis « S’abonner » ou « Passer à cette formule » sous la formule voulue. Réservé au patron. Artisan : 39 € HT par mois, ou 390 € HT par an. Entreprise : 59 € HT par mois, ou 590 € HT par an. Illimité : 159 € HT par mois, ou 1590 € HT par an.</td>
+<td><em>« Réglages » dans la barre du bas, puis Abonnement.</em> Ouvrez « Abonnement », choisissez « Au mois » ou « À l’année, 2 mois offerts », touchez la formule voulue, puis le bouton du bas : « S’abonner à » elle, ou « Passer à » elle une fois abonné. Réservé au patron. Artisan : 39 € HT par mois, ou 390 € HT par an. Entreprise : 59 € HT par mois, ou 590 € HT par an. Illimité : 159 € HT par mois, ou 1590 € HT par an.</td>
 </tr>
 <tr>
 <td>Est-ce qu'il y a un essai gratuit</td>
@@ -500,7 +505,7 @@
 </tr>
 <tr>
 <td>Je suis auto-entrepreneur sans tva comment je fais</td>
-<td><em>« Réglages » dans la barre du bas, puis Mon entreprise, bloc Votre régime de TVA.</em> Dans « Votre régime de TVA », touchez « Franchise en base » ou « Assujettie ». Assujettie : écrivez votre numéro de TVA intracommunautaire dessous.</td>
+<td><em>« Réglages » dans la barre du bas, puis Mon entreprise, paquet Votre TVA.</em> Dans « Votre TVA », touchez « Franchise en base » ou « Assujettie ». Assujettie : écrivez votre numéro de TVA intracommunautaire dessous.</td>
 </tr>
 <tr>
 <td>Le client peut signer le devis en ligne ?</td>
@@ -508,11 +513,11 @@
 </tr>
 <tr>
 <td>Comment supprimer une facture</td>
-<td>Touchez « Terminés », la ligne du chantier facturé, puis « Je fais un avoir ». Choisissez la ligne, écrivez le montant et le motif, et validez. Sur l'écran suivant, « Envoyer par SMS » ou par e-mail le transmet au client. Une facture envoyée ne se supprime pas : c'est l'avoir qui la corrige ou l'annule. Vos avoirs se retrouvent sous la facture, et dans l'onglet « Avoirs » de la fiche du client.</td>
+<td>Touchez « Terminés », la ligne du chantier facturé, puis « Je fais un avoir ». Touchez « Toute la facture » ou « Une ligne », écrivez le montant, choisissez « Geste commercial » ou « Un autre motif », puis « Faire l'avoir ». Sur l'écran suivant, « Lui envoyer par SMS » ou « Par e-mail » le transmet au client. Une facture envoyée ne se supprime pas : c'est l'avoir qui la corrige ou l'annule. Vos avoirs se retrouvent sous la facture, et dans l'onglet « Avoirs » de la fiche du client.</td>
 </tr>
 <tr>
 <td>Comment annuler une facture</td>
-<td>Touchez « Terminés », la ligne du chantier facturé, puis « Je fais un avoir ». Choisissez la ligne, écrivez le montant et le motif, et validez. Sur l'écran suivant, « Envoyer par SMS » ou par e-mail le transmet au client. Une facture envoyée ne se supprime pas : c'est l'avoir qui la corrige ou l'annule. Vos avoirs se retrouvent sous la facture, et dans l'onglet « Avoirs » de la fiche du client.</td>
+<td>Touchez « Terminés », la ligne du chantier facturé, puis « Je fais un avoir ». Touchez « Toute la facture » ou « Une ligne », écrivez le montant, choisissez « Geste commercial » ou « Un autre motif », puis « Faire l'avoir ». Sur l'écran suivant, « Lui envoyer par SMS » ou « Par e-mail » le transmet au client. Une facture envoyée ne se supprime pas : c'est l'avoir qui la corrige ou l'annule. Vos avoirs se retrouvent sous la facture, et dans l'onglet « Avoirs » de la fiche du client.</td>
 </tr>
 <tr>
 <td>Comment faire un contrat d'entretien</td>
@@ -524,7 +529,7 @@
 </tr>
 <tr>
 <td>Comment importer mes clients depuis excel</td>
-<td>Atlas ne sait pas encore importer une liste de clients : un client naît avec son chantier. Seuls les tarifs s'importent, dans Réglages.</td>
+<td><em>« Chantiers » dans la barre du bas, puis « Vos clients ».</em> Dans « Vos clients », touchez « Importer devis / facture » et choisissez le tableau CSV ou Excel (.xlsx) exporté de votre ancien logiciel, une ligne par devis ou facture. Atlas crée les fiches et range chaque pièce sur la sienne, par date ; quand une colonne ou une adresse le fait hésiter, il vous demande avant de ranger. « Annuler » défait tout, juste après. Une liste de clients seule, sans devis ni factures, ne s'importe pas : un client naît avec son chantier ou sa pièce. Le vieux format .xls ne se lit pas encore : enregistrez-le en .xlsx ou en CSV depuis Excel.</td>
 </tr>
 <tr>
 <td>Est-ce que l'ia peut se tromper</td>
@@ -560,7 +565,7 @@
 </tr>
 <tr>
 <td>C'est quoi le prix d'atlas</td>
-<td><em>« Réglages » dans la barre du bas, puis Abonnement.</em> Ouvrez « Abonnement », choisissez « Au mois » ou « À l’année, 2 mois offerts », puis « S’abonner » ou « Passer à cette formule » sous la formule voulue. Réservé au patron. Artisan : 39 € HT par mois, ou 390 € HT par an. Entreprise : 59 € HT par mois, ou 590 € HT par an. Illimité : 159 € HT par mois, ou 1590 € HT par an.</td>
+<td><em>« Réglages » dans la barre du bas, puis Abonnement.</em> Ouvrez « Abonnement », choisissez « Au mois » ou « À l’année, 2 mois offerts », touchez la formule voulue, puis le bouton du bas : « S’abonner à » elle, ou « Passer à » elle une fois abonné. Réservé au patron. Artisan : 39 € HT par mois, ou 390 € HT par an. Entreprise : 59 € HT par mois, ou 590 € HT par an. Illimité : 159 € HT par mois, ou 1590 € HT par an.</td>
 </tr>
 <tr>
 <td>J'ai un souci avec l'appli à qui je m'adresse</td>
@@ -572,11 +577,11 @@
 </tr>
 <tr>
 <td>Je me suis trompé sur une facture envoyée</td>
-<td>Touchez « Terminés », la ligne du chantier facturé, puis « Je fais un avoir ». Choisissez la ligne, écrivez le montant et le motif, et validez. Sur l'écran suivant, « Envoyer par SMS » ou par e-mail le transmet au client. Une facture envoyée ne se supprime pas : c'est l'avoir qui la corrige ou l'annule. Vos avoirs se retrouvent sous la facture, et dans l'onglet « Avoirs » de la fiche du client.</td>
+<td>Touchez « Terminés », la ligne du chantier facturé, puis « Je fais un avoir ». Touchez « Toute la facture » ou « Une ligne », écrivez le montant, choisissez « Geste commercial » ou « Un autre motif », puis « Faire l'avoir ». Sur l'écran suivant, « Lui envoyer par SMS » ou « Par e-mail » le transmet au client. Une facture envoyée ne se supprime pas : c'est l'avoir qui la corrige ou l'annule. Vos avoirs se retrouvent sous la facture, et dans l'onglet « Avoirs » de la fiche du client.</td>
 </tr>
 <tr>
 <td>J'ai pas de tva comment je le dis</td>
-<td><em>« Réglages » dans la barre du bas, puis Mon entreprise, bloc Votre régime de TVA.</em> Dans « Votre régime de TVA », touchez « Franchise en base » ou « Assujettie ». Assujettie : écrivez votre numéro de TVA intracommunautaire dessous.</td>
+<td><em>« Réglages » dans la barre du bas, puis Mon entreprise, paquet Votre TVA.</em> Dans « Votre TVA », touchez « Franchise en base » ou « Assujettie ». Assujettie : écrivez votre numéro de TVA intracommunautaire dessous.</td>
 </tr>
 <tr>
 <td>L'intelligence artificielle est fiable ?</td>
@@ -584,7 +589,7 @@
 </tr>
 <tr>
 <td>Qui a accès à mes devis</td>
-<td><em>« Réglages » dans la barre du bas, puis Équipe.</em> Ouvrez « Équipe », puis « Donner un accès ». Remplissez nom, adresse e-mail, mot de passe et sa confirmation, choisissez le rôle, puis « Créer le compte ».</td>
+<td><em>« Réglages » dans la barre du bas, puis Équipe.</em> Ouvrez « Équipe », puis « Donner un accès ». Choisissez d'abord son rôle, puis remplissez nom, adresse e-mail, mot de passe et sa confirmation, et touchez « Créer le compte ».</td>
 </tr>
 <tr>
 <td>Comment ajouter mon numéro de siret</td>
@@ -659,7 +664,7 @@
 </tr>
 <tr>
 <td>Comment mettre madame au lieu de monsieur</td>
-<td><em>« Chantiers » dans la barre du bas, « Créer un devis » : écran Fiche client.</em> Touchez « Mr » ou « Mme », au-dessus du nom du client.</td>
+<td><em>« Chantiers » dans la barre du bas, « Créer un devis » : écran Fiche client.</em> Touchez « Mr », « Mme », « Entreprise » ou « Public », au-dessus du nom du client. « Public » : une mairie, un département. Sa facture se dépose sur Chorus Pro.</td>
 </tr>
 <tr>
 <td>Mettre une adresse client différente du chantier</td>
@@ -679,11 +684,11 @@
 </tr>
 <tr>
 <td>Comment dicter une note vocale pour le devis</td>
-<td><em>« Chantiers » dans la barre du bas, « Créer un devis » : écran Fiche client.</em> Touchez le micro au centre, décrivez le chantier, puis touchez l'avion à droite : Atlas prépare le devis et l'ouvre.</td>
+<td><em>« Chantiers » dans la barre du bas, « Créer un devis » : écran Fiche client.</em> Touchez le micro au centre, décrivez le chantier, puis touchez l'avion qui a pris sa place : Atlas prépare le devis et l'ouvre.</td>
 </tr>
 <tr>
 <td>Jeter la dictée à la poubelle pour recommencer</td>
-<td>Pendant la dictée, touchez la poubelle à gauche du chrono.</td>
+<td>Pendant la dictée, touchez « Jeter », à gauche de l'avion.</td>
 </tr>
 <tr>
 <td>Supprimer la dictée pour redicter</td>
@@ -722,28 +727,32 @@
 <td>Touchez « Conserver mes corrections » pour garder le devis, ou « Repartir de la dictée » pour le refaire. Repartir de la dictée efface vos corrections.</td>
 </tr>
 <tr>
+<td>Ma dictée n'a pas abouti, comment réessayer</td>
+<td>Sous la phrase rouge, touchez « Réessayer » : Atlas reprend la même dictée, sans la redicter. « Réessayer » n'apparaît pas quand il n'y a rien à reprendre, sans dictée enregistrée.</td>
+</tr>
+<tr>
 <td>Où est l'écran de la note vocale</td>
-<td><em>« Chantiers » dans la barre du bas, puis le chantier : écran Transcription ou Informations.</em> Sur l'écran Transcription ou Informations du chantier, touchez « Aller à la note vocale ». Ce lien n'apparaît que tant que la dictée n'est pas transcrite.</td>
+<td>La dictée vit sur la fiche client, sous « Devis à la voix ». Sur un devis déjà écrit, le micro en haut à droite du devis ajoute à la voix.</td>
 </tr>
 <tr>
 <td>Enregistrer une note vocale et l'arrêter</td>
-<td>Touchez « Enregistrer une note vocale », parlez, puis « Arrêter l'enregistrement ».</td>
+<td><em>« Chantiers » dans la barre du bas, « Créer un devis » : écran Fiche client.</em> Touchez le micro au centre, décrivez le chantier, puis touchez l'avion qui a pris sa place : Atlas prépare le devis et l'ouvre.</td>
 </tr>
 <tr>
 <td>Comment réécouter ma note vocale</td>
-<td>Touchez le rond de lecture à gauche de la note. Touchez-le à nouveau pour la pause. Une fois transcrit, l'audio est effacé : l'écran dit « Enregistrement effacé » et le texte reste.</td>
+<td>Une dictée ne se réécoute pas dans Atlas : il en garde le texte. Relisez-le sur l'écran Transcription.</td>
 </tr>
 <tr>
 <td>Supprimer la note vocale</td>
-<td>Glissez la note de droite à gauche, puis « Retirer ». « Annuler » reste quelques secondes en bas de l'écran.</td>
+<td><em>« Chantiers » dans la barre du bas, « Créer un devis » : écran Fiche client.</em> Glissez la ligne « Votre dictée » de droite à gauche, puis « Retirer ». Vous pouvez redicter. « Annuler » reste quelques secondes pour revenir en arrière.</td>
 </tr>
 <tr>
 <td>Relancer la transcription de la note</td>
-<td>Touchez « Lancer la transcription ». Si elle échoue, touchez « Réessayer ».</td>
+<td>Touchez « Lancer la transcription », ou « Relancer la transcription » si elle a échoué. Ses mots s'affichent sur place. Le bouton n'apparaît pas quand l'enregistrement a été effacé après une transcription réussie.</td>
 </tr>
 <tr>
 <td>Créer le devis à partir de la note vocale</td>
-<td>Touchez « Créer le devis à partir de ma dictée ». « voir le texte » ouvre la transcription, « Ou rédiger le devis à la main » ouvre le devis vide. Le bouton du devis n'apparaît qu'une fois la transcription faite.</td>
+<td><em>« Chantiers » dans la barre du bas, « Créer un devis » : écran Fiche client.</em> Touchez le micro au centre, décrivez le chantier, puis touchez l'avion qui a pris sa place : Atlas prépare le devis et l'ouvre.</td>
 </tr>
 <tr>
 <td>Où je relis le texte de ma dictée</td>
@@ -755,7 +764,7 @@
 </tr>
 <tr>
 <td>La transcription a échoué, que faire</td>
-<td>Touchez « Relancer depuis la note vocale », ou « Écrire ce que j'ai dit » et tapez-le, puis « Enregistrer le texte ». L'enregistrement reste intact.</td>
+<td>Touchez « Relancer la transcription », ou « Écrire ce que j'ai dit » et tapez-le, puis « Enregistrer le texte ». L'enregistrement reste intact.</td>
 </tr>
 <tr>
 <td>Générer le brouillon depuis la dictée</td>
@@ -822,11 +831,11 @@
 </tr>
 <tr>
 <td>Comment j'envoie le devis au client</td>
-<td><em>un chantier, écran Devis, bouton « Choisir la date » en bas.</em> Appuyez sur « Choisir la date », touchez la date, puis « Envoyer le devis ». Votre messagerie s'ouvre avec le message tout prêt : c'est vous qui l'envoyez. Tant qu'une ligne est à chiffrer, « Choisir la date » est remplacé par « Poser le prix ». Si la messagerie ne s'ouvre pas, rouvrez le chantier et appuyez sur « Relancer par SMS » ou « Relancer par e-mail ».</td>
+<td><em>un chantier, écran Devis, bouton « Choisir la date » en bas.</em> Appuyez sur « Choisir la date », touchez la date, puis « Envoyer le devis ». Votre messagerie s'ouvre avec le message tout prêt : c'est vous qui l'envoyez. Tant qu'une ligne est à chiffrer, « Choisir la date » est remplacé par « Poser le prix ». Si la messagerie ne s'ouvre pas, rouvrez le chantier et appuyez sur « Rouvrir le SMS » ou « Rouvrir l’e-mail ».</td>
 </tr>
 <tr>
 <td>Je veux transmettre mon devis par sms</td>
-<td><em>un chantier, écran Devis, bouton « Choisir la date » en bas.</em> Appuyez sur « Choisir la date », touchez la date, puis « Envoyer le devis ». Votre messagerie s'ouvre avec le message tout prêt : c'est vous qui l'envoyez. Tant qu'une ligne est à chiffrer, « Choisir la date » est remplacé par « Poser le prix ». Si la messagerie ne s'ouvre pas, rouvrez le chantier et appuyez sur « Relancer par SMS » ou « Relancer par e-mail ».</td>
+<td><em>un chantier, écran Devis, bouton « Choisir la date » en bas.</em> Appuyez sur « Choisir la date », touchez la date, puis « Envoyer le devis ». Votre messagerie s'ouvre avec le message tout prêt : c'est vous qui l'envoyez. Tant qu'une ligne est à chiffrer, « Choisir la date » est remplacé par « Poser le prix ». Si la messagerie ne s'ouvre pas, rouvrez le chantier et appuyez sur « Rouvrir le SMS » ou « Rouvrir l’e-mail ».</td>
 </tr>
 <tr>
 <td>Comment je modifie un devis deja envoye</td>
@@ -878,7 +887,7 @@
 </tr>
 <tr>
 <td>Comment mettre deux taux de tva sur un devis</td>
-<td>Appuyez sur « + Ajouter une TVA » : une catégorie s'ouvre, touchez son taux pour le changer.</td>
+<td>Appuyez sur « + Ajouter une TVA », tapez le taux ou touchez 10, 5,5 ou 0 %, puis « Ajouter la TVA ». Le taux se corrige ensuite en touchant le titre de la catégorie.</td>
 </tr>
 <tr>
 <td>Comment deplacer une ligne vers l'autre tva</td>
@@ -886,23 +895,23 @@
 </tr>
 <tr>
 <td>Comment supprimer une categorie de tva</td>
-<td>Appuyez sur le « − » à droite du titre de la catégorie : ses lignes reviennent dans la TVA principale. La première catégorie n'a pas de « − ».</td>
+<td>Appuyez sur la croix à droite du titre de la catégorie : ses lignes reviennent dans la TVA principale. La première catégorie n'a pas de croix.</td>
 </tr>
 <tr>
 <td>Ou je mets la main d'oeuvre pour le credit d'impot</td>
-<td>Appuyez sur « + Main d’œuvre », puis tapez le montant sur la ligne « dont main d’œuvre HT ». Le « − » devant la retire.</td>
+<td>Appuyez sur « Main d’œuvre », à côté de « + Ajouter une ligne » dans la TVA voulue : le calcul se montre, avec les hommes, la durée et votre prix du jour par homme. « Mes partenaires », à droite du titre, prend le prix d’un partenaire avec votre marge. « Ajouter la main d’œuvre » pose la ligne ; « Répartis sur les travaux » la partage sur vos travaux, chacun la reçoit dans son prix. « dont main d’œuvre HT » la reprend toute seule. Sans prix du jour par homme ni marge sur la main d’œuvre, la ligne arrive à chiffrer.</td>
 </tr>
 <tr>
 <td>Comment demander un acompte</td>
-<td>Appuyez sur « + Ajouter un acompte », puis touchez le pourcentage pour le changer. Le « − » devant l'acompte le retire. Le reste à régler se calcule sous les acomptes. Le bouton disparaît quand il n'y a plus d'acompte à poser.</td>
+<td>Appuyez sur « Ajouter un acompte », tapez le pourcentage ou touchez un raccourci : le montant et le reste à régler se montrent avant d'ajouter. La croix devant l'acompte le retire. Le moment suit l'ordre des acomptes : à la signature, à mi-parcours, à l'avancement. Le bouton disparaît quand il n'y a plus d'acompte à poser.</td>
 </tr>
 <tr>
 <td>Je veux 30 % d'acompte a la commande</td>
-<td>Appuyez sur « + Ajouter un acompte », puis touchez le pourcentage pour le changer. Le « − » devant l'acompte le retire. Le reste à régler se calcule sous les acomptes. Le bouton disparaît quand il n'y a plus d'acompte à poser.</td>
+<td>Appuyez sur « Ajouter un acompte », tapez le pourcentage ou touchez un raccourci : le montant et le reste à régler se montrent avant d'ajouter. La croix devant l'acompte le retire. Le moment suit l'ordre des acomptes : à la signature, à mi-parcours, à l'avancement. Le bouton disparaît quand il n'y a plus d'acompte à poser.</td>
 </tr>
 <tr>
 <td>Comment enlever la remise</td>
-<td><em>sous le Total HT, ligne « Remise de ».</em> Appuyez sur le « − » devant « Remise de ». La ligne tombe et « Annuler » reste quelques secondes en bas pour la remettre.</td>
+<td><em>sous le Total HT, ligne « Remise de ».</em> Appuyez sur la croix devant « Remise de ». La ligne tombe et « Annuler » reste quelques secondes en bas pour la remettre.</td>
 </tr>
 <tr>
 <td>Comment corriger l'adresse du client sur le devis</td>
@@ -974,7 +983,7 @@
 </tr>
 <tr>
 <td>Comment relancer un client qui ne repond pas</td>
-<td>Appuyez sur « Relancer par SMS » ou « Relancer par e-mail » : le message s'ouvre avec le lien du devis. Le bouton n'est là que tant que le client n'a pas répondu.</td>
+<td>Appuyez sur « Rouvrir le SMS » ou « Rouvrir l’e-mail » : le message s'ouvre avec le lien du devis. Le bouton n'est là que tant que le client n'a pas répondu.</td>
 </tr>
 <tr>
 <td>Envoyer par mail plutot que par sms</td>
@@ -1033,7 +1042,7 @@
 </tr>
 <tr>
 <td>Comment faire une mise en demeure</td>
-<td>Dans « Terminés », ouvrez « Non payées », puis la facture, puis « Mise en demeure ». Relisez la lettre, touchez « Télécharger la lettre » et envoyez-la en recommandé avec accusé de réception.</td>
+<td>Dans « Terminés », ouvrez « Non payées », puis la facture, puis « Mise en demeure ». Relisez la lettre, touchez « Télécharger la lettre » et envoyez-la en recommandé avec accusé de réception. La lettre attend le lendemain de l'échéance : avant, la facture n'est pas impayée.</td>
 </tr>
 <tr>
 <td>Comment je fais la facture d'un chantier fini</td>
@@ -1053,59 +1062,63 @@
 </tr>
 <tr>
 <td>Comment rajouter des travaux supplémentaires sur la facture</td>
-<td>En bas de la facture, appuyez sur « Ajouter des travaux supplémentaires », puis « + Ajouter des travaux supplémentaires » : écrivez la description, la quantité, l'unité et le prix. Finissez par « Revenir à la facture ». Seulement tant que la facture n'est pas envoyée. Le devis d'origine ne bouge pas : les lignes s'ajoutent sous « Travaux supplémentaires ».</td>
+<td><em>« Terminés » dans la barre du bas, puis la ligne du chantier, écran Facture.</em> Sous les lignes de la facture, appuyez sur « Travaux en plus », puis « Ajouter un travail » : écrivez la description, la quantité, l'unité et le prix. Finissez par « Revenir à la facture ». Seulement tant que la facture n'est pas envoyée. Le devis d'origine ne bouge pas : les lignes s'ajoutent sous « En plus », et la facture les marque « En plus ».</td>
 </tr>
 <tr>
 <td>Où j'écris les lignes d'une facture sans devis</td>
-<td><em>« Terminés » dans la barre du bas, puis la ligne du chantier, écran Facture.</em> Appuyez sur « Remplir la facture » en bas de l'écran, puis « + Ajouter une ligne » : écrivez la description, la quantité, l'unité et le prix. Finissez par « Revenir à la facture ». Une facture sans ligne ou à 0,00 € ne peut pas être envoyée.</td>
+<td><em>« Terminés » dans la barre du bas, puis la ligne du chantier, écran Facture.</em> Appuyez sur « Remplir la facture », sous les lignes, puis « Ajouter une ligne » : écrivez la description, la quantité, l'unité et le prix. Finissez par « Revenir à la facture ». Une facture sans ligne ou à 0,00 € ne peut pas être envoyée.</td>
 </tr>
 <tr>
 <td>Comment mettre de la tva à 10 sur une ligne de la facture</td>
-<td><em>« Terminés » dans la barre du bas, la ligne du chantier, puis « Remplir la facture » ou « Ajouter des travaux supplémentaires ».</em> Appuyez sur « + Ajouter une TVA » : une ligne s'ouvre sous un nouveau taux. Touchez le chiffre à côté de « TVA » pour le changer.</td>
+<td><em>« Terminés » dans la barre du bas, la ligne du chantier, puis « Remplir la facture » ou « Travaux en plus ».</em> Appuyez sur « + Ajouter une TVA » : une ligne s'ouvre sous un nouveau taux. Touchez le chiffre à côté de « TVA » pour le changer.</td>
 </tr>
 <tr>
 <td>Comment supprimer les travaux supplémentaires</td>
-<td><em>« Terminés » dans la barre du bas, la ligne du chantier, puis « Remplir la facture » ou « Ajouter des travaux supplémentaires ».</em> Appuyez sur le « − » rond, à droite du bandeau de la catégorie : toutes ses lignes partent. Il retire la catégorie entière, avec toutes ses lignes. Seulement avant l'envoi de la facture.</td>
+<td><em>« Terminés » dans la barre du bas, la ligne du chantier, puis « Remplir la facture » ou « Travaux en plus ».</em> Appuyez sur le « − » rond, à droite du bandeau de la catégorie : toutes ses lignes partent. Il retire la catégorie entière, avec toutes ses lignes. Seulement avant l'envoi de la facture.</td>
 </tr>
 <tr>
 <td>Comment j'indique la main d'oeuvre sur la facture</td>
-<td><em>« Terminés » dans la barre du bas, la ligne du chantier, puis « Remplir la facture » ou « Ajouter des travaux supplémentaires ».</em> Appuyez sur « + Main d’œuvre » et tapez le montant HT : il s'écrit « dont main d’œuvre HT » sous le Total HT. Le « − » rond la retire.</td>
+<td><em>« Terminés » dans la barre du bas, la ligne du chantier, puis « Remplir la facture » ou « Travaux en plus ».</em> Appuyez sur « + Main d’œuvre » et tapez le montant HT : il s'écrit « dont main d’œuvre HT » sous le Total HT. Le « − » rond la retire.</td>
 </tr>
 <tr>
 <td>Comment faire une remise sur une facture</td>
-<td><em>« Terminés » dans la barre du bas, la ligne du chantier, puis « Remplir la facture » ou « Ajouter des travaux supplémentaires ».</em> Sous le Total TTC, appuyez sur « + Remise » : 5 % s'inscrit, touchez le chiffre pour le changer. Le « − » rond la retire.</td>
+<td><em>« Terminés » dans la barre du bas, la ligne du chantier, puis « Remplir la facture » ou « Travaux en plus ».</em> Sous le Total TTC, appuyez sur « + Remise » : 5 % s'inscrit, touchez le chiffre pour le changer. La croix la retire.</td>
 </tr>
 <tr>
 <td>Le client m'a versé un acompte, je le mets où sur la facture</td>
-<td><em>« Terminés » dans la barre du bas, la ligne du chantier, puis « Remplir la facture » ou « Ajouter des travaux supplémentaires ».</em> Sous le Total TTC, appuyez sur « + Règlement reçu » : une ligne se pose avec le montant proposé. Touchez la date ou le montant pour les corriger. Le net à payer se recalcule. Grisé quand le net à payer est à zéro. Sur l'écran de la facture, les règlements se lisent seulement.</td>
+<td><em>« Terminés » dans la barre du bas, la ligne du chantier, puis « Remplir la facture » ou « Travaux en plus ».</em> Sous le Total TTC, appuyez sur « + Règlement reçu » : une ligne se pose avec le montant proposé. Touchez la date ou le montant pour les corriger. Le net à payer se recalcule. Grisé quand le net à payer est à zéro. Sur l'écran de la facture, les règlements se lisent seulement.</td>
 </tr>
 <tr>
 <td>Comment je mets qu'il a payé par chèque et le numéro du chèque</td>
-<td><em>« Terminés » dans la barre du bas, la ligne du chantier, puis « Remplir la facture » ou « Ajouter des travaux supplémentaires ».</em> Sur la ligne du règlement, touchez « Chèque » et choisissez Virement, Espèces ou Carte. Pour un chèque, tapez son numéro dans la case « n° ». La case du numéro n'existe que pour un chèque.</td>
+<td><em>« Terminés » dans la barre du bas, la ligne du chantier, puis « Remplir la facture » ou « Travaux en plus ».</em> Sur la ligne du règlement, touchez « Chèque » et choisissez Virement, Espèces ou Carte. Pour un chèque, tapez son numéro dans la case « n° ». La case du numéro n'existe que pour un chèque.</td>
 </tr>
 <tr>
 <td>Je veux écrire arrhes au lieu d'acompte</td>
-<td><em>« Terminés » dans la barre du bas, la ligne du chantier, puis « Remplir la facture » ou « Ajouter des travaux supplémentaires ».</em> Touchez le nom à gauche de la ligne, par exemple « Acompte 30 % », et écrivez ce que c'est. Vidé, il reprend le nom proposé.</td>
+<td><em>« Terminés » dans la barre du bas, la ligne du chantier, puis « Remplir la facture » ou « Travaux en plus ».</em> Touchez le nom à gauche de la ligne, par exemple « Acompte 30 % », et écrivez ce que c'est. Vidé, il reprend le nom proposé.</td>
 </tr>
 <tr>
 <td>Comment enlever un règlement que j'ai mis par erreur sur la facture</td>
-<td><em>« Terminés » dans la barre du bas, la ligne du chantier, puis « Remplir la facture » ou « Ajouter des travaux supplémentaires ».</em> Appuyez sur le « − » rond au début de la ligne du règlement. Seulement là où l'on remplit la facture, avant son envoi.</td>
+<td><em>« Terminés » dans la barre du bas, la ligne du chantier, puis « Remplir la facture » ou « Travaux en plus ».</em> Appuyez sur le « − » rond au début de la ligne du règlement. Seulement là où l'on remplit la facture, avant son envoi.</td>
 </tr>
 <tr>
 <td>Comment je mets facture acquittée</td>
-<td><em>« Terminés » dans la barre du bas, puis la ligne du chantier, écran Facture.</em> Sous « Net à payer », allumez « Facture acquittée » : le reste est compté reçu à la date du jour, et la facture porte « Acquittée le » avec la date. Il s'allume tout seul quand les règlements couvrent tout. Seulement avant l'envoi : après, le paiement se note dans « Ma TVA à déclarer ».</td>
+<td><em>« Terminés » dans la barre du bas, puis la ligne du chantier, écran Facture.</em> Sous « Net à payer », allumez « Facture acquittée » : le reste est compté reçu à la date du jour, et la facture porte « Acquittée le » avec la date. Il s'allume tout seul quand les règlements couvrent tout. Après l'envoi aussi : il demande alors comment le client a payé, puis « Envoyer la facture acquittée » lui renvoie la même facture avec la mention.</td>
 </tr>
 <tr>
 <td>Comment télécharger la facture sur mon téléphone</td>
-<td><em>« Terminés » dans la barre du bas, puis la ligne du chantier, écran Facture.</em> Sous « Voir la facture en PDF », appuyez sur « Télécharger » : le fichier porte le numéro de la facture. Avant l'envoi, le fichier finit par brouillon.</td>
+<td><em>« Terminés » dans la barre du bas, puis la ligne du chantier, écran Facture.</em> Sous le Total TTC, à côté de « Voir le PDF », appuyez sur « Télécharger » : le fichier porte le numéro de la facture. Avant l'envoi, le fichier finit par brouillon.</td>
 </tr>
 <tr>
 <td>Comment j'envoie la facture au client par sms</td>
 <td><em>« Terminés » dans la barre du bas, la ligne du chantier, puis le bas de l'écran Facture.</em> À côté de « Envoi », touchez SMS ou E-mail, puis « Envoyer la facture » : votre messagerie s'ouvre avec le message et le lien tout prêts. Grisé si le client n'a pas de coordonnée pour ce canal, ou si la facture est vide. En l'envoyant, vous l'arrêtez : une correction passerait par un avoir.</td>
 </tr>
 <tr>
+<td>Comment je facture une mairie sur chorus</td>
+<td><em>« Terminés » dans la barre du bas, la ligne du chantier, puis le bas de l'écran Facture.</em> Sur la fiche du client, touchez « Public » et notez son code service. Sur la facture, tapez le n° d'engagement de son bon de commande, puis « Télécharger pour Chorus Pro », et déposez le PDF sur chorus-pro.gouv.fr. Une mairie ne paie qu'une facture déposée sur Chorus Pro : ni SMS ni e-mail pour elle. Le code service se change sur la facture si un autre service a commandé. Le numéro peut rester vide si la mairie n'en donne pas. L'échéance ne dépasse pas 30 jours.</td>
+</tr>
+<tr>
 <td>Comment je renvoie une facture déjà envoyée par mail</td>
-<td><em>« Terminés » dans la barre du bas, puis la ligne du chantier déjà facturé.</em> Sous « Facture arrêtée », appuyez sur « Envoyer par SMS » ou « Envoyer par e-mail » : le même message se rouvre. Si le lien n'est pas encore prêt, le bouton s'appelle « Envoyer la facture au client ».</td>
+<td><em>« Terminés » dans la barre du bas, puis la ligne du chantier déjà facturé.</em> Sous « Il m’a payé », appuyez sur « Renvoyer par SMS ou e-mail », puis « Envoyer par SMS » ou « Envoyer par e-mail » : le même message se rouvre. Si le lien n'est pas encore prêt, le message est déjà ouvert, et le bouton s'appelle « Envoyer la facture au client ».</td>
 </tr>
 <tr>
 <td>Le client n'a pas de numéro, comment je lui envoie la facture</td>
@@ -1113,7 +1126,7 @@
 </tr>
 <tr>
 <td>Comment je corrige une facture</td>
-<td>Avant l'envoi, appuyez sur « Ajouter des travaux supplémentaires » ou « Remplir la facture » en bas de l'écran. Une fois envoyée, elle ne se modifie plus. Une correction après l'envoi passerait par un avoir.</td>
+<td>Avant l'envoi, appuyez sur « Travaux en plus » ou « Remplir la facture », sous les lignes. Une fois envoyée, elle ne se modifie plus. Une correction après l'envoi passerait par un avoir.</td>
 </tr>
 <tr>
 <td>Qu'est-ce que le client voit quand il ouvre le lien de la facture</td>
@@ -1145,7 +1158,7 @@
 </tr>
 <tr>
 <td>Voir les retours du mois dernier</td>
-<td><em>« Terminés » dans la barre du bas, puis « Retours d'intervention ».</em> Dans la date en haut, touchez le jour, le mois ou l'année : la liste suit. Le chevron ouvre la roue pour choisir un autre jour.</td>
+<td>En haut, les chevrons passent au mois d'avant ou d'après. Touchez le mois pour choisir un jour ; « Tout le mois » y revient.</td>
 </tr>
 <tr>
 <td>Comment voir la tva du trimestre précédent</td>
@@ -1248,7 +1261,15 @@
 </tr>
 <tr>
 <td>Comment supprimer définitivement un chantier sans date</td>
-<td>Ouvrez la barre du bas, glissez la ligne du chantier de droite à gauche, puis appuyez sur « Retirer ». « Annuler » reste six secondes. Un chantier facturé ne se supprime pas : sa facture figure au relevé de TVA.</td>
+<td>Ouvrez la barre du bas, glissez la ligne du chantier de droite à gauche, appuyez sur « Retirer », puis sur « Supprimer » pour confirmer. « Annuler » reste six secondes. Un chantier facturé ne se supprime pas : sa facture figure au relevé de TVA.</td>
+</tr>
+<tr>
+<td>Un client a accepté le devis par erreur, comment le supprimer du planning</td>
+<td>Ouvrez le jour, appuyez sur « Supprimer » sous le chantier, puis sur « Supprimer » pour confirmer. « Annuler » reste six secondes dans la barre du bas. Le client reste dans vos clients. Un chantier facturé ne se supprime pas.</td>
+</tr>
+<tr>
+<td>Le client s'est trompé en acceptant le devis, comment l'annuler</td>
+<td>Appuyez sur « Le client s’est trompé » sous le montant, puis choisissez : une autre date (le devis repart en attente, le client répond avec le même lien) ou plus de devis (noté refusé). « Annuler » reste six secondes. Dans les deux cas, le chantier quitte le planning. Un chantier facturé ne se défait pas.</td>
 </tr>
 <tr>
 <td>Comment reposer la demi journée qui attend</td>
@@ -1264,11 +1285,11 @@
 </tr>
 <tr>
 <td>Comment noter qu'un salarié est absent</td>
-<td><em>« Planning » dans la barre du bas, puis le jour.</em> Ouvrez le jour, appuyez sur « Salarié absent ? » puis sur son nom. Il est absent toute la journée : touchez « Matin » ou « Après-midi » pour réduire. Seul, sans salarié, le bouton s'appelle « Absent ? ». Pour plusieurs jours d'affilée : Réglages, Équipe.</td>
+<td><em>« Planning » dans la barre du bas, puis le jour.</em> Ouvrez le jour et appuyez sur « Salarié absent ? ». Sous son nom, glissez le curseur, ou touchez « Matin », « Après-midi » ou « Journée ». Seul, sans salarié, le bouton s'appelle « Absent ? » et pose la journée d'un appui. Pour plusieurs jours d'affilée : Réglages, Équipe.</td>
 </tr>
 <tr>
 <td>Comment enlever une absence mise par erreur</td>
-<td><em>« Planning » dans la barre du bas, puis le jour.</em> Ouvrez le jour : sur la ligne « Absent », appuyez sur la croix à droite. Ou « Salarié absent ? » puis « son nom, annuler ».</td>
+<td><em>« Planning » dans la barre du bas, puis le jour.</em> Ouvrez le jour : sur la ligne « Absent », appuyez sur la croix à droite. Ou « Salarié absent ? », puis ramenez le curseur sur la première case. Seul ce jour change.</td>
 </tr>
 <tr>
 <td>Pourquoi mon salarié ne peut pas modifier le planning</td>
@@ -1284,7 +1305,7 @@
 </tr>
 <tr>
 <td>C'est quoi le bandeau agenda en pause en haut du planning</td>
-<td>« Vous pouvez relier votre agenda » : « Ouvrir » mène à « Mon agenda », « Masquer » l'enlève pour toujours. « Votre agenda n'est plus lu » : « Ouvrir », puis « Rebrancher ». Réservé au patron. Rien ne s'affiche quand l'agenda est relié et lu, ni quand il est en pause. L'alerte d'un agenda qui ne se lit plus ne se masque pas.</td>
+<td>En bas du planning, « Relier votre agenda » mène à « Mon agenda », « Masquer » l'enlève pour toujours. En haut, en rouge, « Votre agenda n'est plus lu » : « Ouvrir », puis « Rebrancher ». Réservé au patron. Rien ne s'affiche quand l'agenda est relié et lu, ni quand il est en pause. L'alerte d'un agenda qui ne se lit plus ne se masque pas.</td>
 </tr>
 <tr>
 <td>Comment envoyer le retour d'intervention du soir</td>
@@ -1296,7 +1317,7 @@
 </tr>
 <tr>
 <td>Comment relever la position gps du chantier</td>
-<td><em>fiche de sécurité, étape « Le chantier ».</em> Sur place, appuyez sur « Relever ici ». Si le téléphone refuse, un champ apparaît pour écrire les coordonnées à la main.</td>
+<td><em>fiche de sécurité, étape « Le chantier ».</em> Sur place, appuyez sur « Relever ici » : la carte s'ouvre sur le point, et l'adresse au point s'affiche. Si le point n'est pas au bon endroit, touchez la carte à l'endroit exact du chantier. Si le téléphone refuse, écrivez l'adresse dans « Chercher une adresse » et touchez-la dans la liste : la carte y va. Les coordonnées peuvent aussi s'écrire à la main.</td>
 </tr>
 <tr>
 <td>Comment dire que le donneur d'ordre est un syndic</td>
@@ -1316,7 +1337,7 @@
 </tr>
 <tr>
 <td>Comment signer la fiche de sécurité</td>
-<td>À la dernière étape, signez dans le cadre au doigt, puis « Signer la fiche ». « Effacer » recommence la signature. La liste « Encore vide » montre ce qui manque : touchez une ligne pour y aller. Rien n'empêche de signer.</td>
+<td>À la dernière étape, signez dans le cadre au doigt, puis « Signer la fiche ». « Effacer » recommence la signature. Tant que manque ce que la loi exige, la signature est refusée : « Pour pouvoir signer » dit quoi, et chaque ligne emmène où le remplir. Ensuite, chaque personne de l'équipe signe l'avoir lue, puis « Enregistrer ».</td>
 </tr>
 <tr>
 <td>Comment envoyer la fiche de sécurité par whatsapp</td>
@@ -1359,11 +1380,11 @@
 </tr>
 <tr>
 <td>Il y a combien de reseaux et quelle buse</td>
-<td><em>« Paysage », Plan d'arrosage automatique, sous le plan.</em> Sous le dessin, une carte par réseau : la zone arrosée, le matériel et sa buse avec sa portée, puis le compte des arroseurs, tés, coudes et mètres de tuyau.</td>
+<td>À « Les réseaux », un plan par réseau, les autres en pâle : la zone arrosée, le matériel et sa buse avec sa portée, « bridée à » quand la vis la réduit, et les mètres de tuyau. Plus bas, à « Les pièces des réseaux », chaque pièce à sa place sur le plan.</td>
 </tr>
 <tr>
 <td>C'est quoi les points rouges sous le plan</td>
-<td>Lisez les lignes marquées d'un point rouge juste sous le dessin : c'est ce que le calcul n'a pas pu compter ou a dû supposer.</td>
+<td>Lisez les lignes marquées d'un point rouge sous la liste des pièces : c'est ce que le calcul n'a pas pu compter ou a dû supposer.</td>
 </tr>
 <tr>
 <td>Le rond et le carre sur le plan ca veut dire quoi</td>
@@ -1371,11 +1392,11 @@
 </tr>
 <tr>
 <td>A partir de combien de metres je passe en 32</td>
-<td><em>« Paysage », Plan d'arrosage automatique, sous les réseaux.</em> Sous les cartes des réseaux, une ligne dit jusqu'à combien de mètres le Ø25 tient, et le Ø32 au-delà. Quand le débit est trop fort pour le Ø25, elle dit Ø32 d'office.</td>
+<td><em>« Paysage », Plan d'arrosage automatique, sous le piquage.</em> Sous les pièces du piquage, une ligne dit jusqu'à combien de mètres le Ø25 tient, et le Ø32 au-delà. Quand même le Ø32 perd trop de pression, elle le dit en rouge.</td>
 </tr>
 <tr>
 <td>Ou est la liste des pieces a commander</td>
-<td><em>« Paysage », Plan d'arrosage automatique, sous le plan.</em> Sous les réseaux, à « Le détail des pièces » : ce qui va du compteur à la nourrice, ce qui est dans le regard, puis ce qui part au jardin. « à mesurer » : la longueur ne se lit pas sur le croquis, relevez-la sur place.</td>
+<td>À « La liste » : ce qui va du compteur à la nourrice, la nourrice, puis chaque réseau. « Modifier ma liste » retire ou ajoute une ligne ; « Envoyer la liste au fournisseur » écrit le message, tout additionné, sans prix. « à mesurer » : la longueur ne se lit pas sur le croquis, relevez-la sur place.</td>
 </tr>
 <tr>
 <td>Comment je change la marque des arroseurs sur le plan</td>
@@ -1383,7 +1404,7 @@
 </tr>
 <tr>
 <td>Je peux faire une terrasse bois</td>
-<td>« Terrasse bois » est dans « Paysage », marquée « Bientôt » : l'outil n'est pas encore disponible.</td>
+<td>« Paysage » dit sous la liste des outils que la terrasse bois arrive bientôt : l'outil n'est pas encore disponible.</td>
 </tr>
 <tr>
 <td>Ou je vois le traitement pour la maladie</td>
@@ -1419,7 +1440,7 @@
 </tr>
 <tr>
 <td>Je veux voir les fiches de securite du mois dernier</td>
-<td>En haut, touchez le jour, le mois ou l'année pour ne voir que cette période. Le petit chevron à côté ouvre la roue pour choisir une autre date.</td>
+<td>En haut, les chevrons passent au mois d'avant ou d'après. Touchez le mois pour choisir un jour ; « Tout le mois » y revient.</td>
 </tr>
 <tr>
 <td>Chercher une fiche de securite d'un client</td>
@@ -1451,15 +1472,15 @@
 </tr>
 <tr>
 <td>Supprimer une fiche brouillon</td>
-<td><em>« Paysage », Fiche de chantier, liste En cours.</em> Sous « En cours », touchez la croix au bout de la ligne. « Annuler » reste quelques secondes en bas pour se raviser. Seules les fiches marquées « Brouillon » se suppriment ; un rapport envoyé reste.</td>
+<td><em>« Paysage », Fiche de chantier, liste En cours.</em> Sous « En cours », touchez « Retirer » au bout de la ligne. « Annuler » reste quelques secondes en bas pour se raviser. Seules les fiches sous « En cours » se retirent ; un rapport envoyé reste.</td>
 </tr>
 <tr>
 <td>Reprendre une fiche commencee</td>
-<td><em>« Paysage », Fiche de chantier, liste En cours.</em> Sous « En cours », touchez la ligne marquée « Brouillon ».</td>
+<td><em>« Paysage », Fiche de chantier, liste En cours.</em> Sous « En cours », touchez la ligne de la fiche.</td>
 </tr>
 <tr>
 <td>Ou sont les rapports envoyes</td>
-<td>Descendez à « Rapports envoyés » : touchez le jour, le mois ou l'année pour choisir la période, ou tapez un nom de client, puis touchez la ligne.</td>
+<td>Descendez à « Rapports envoyés » : les chevrons changent de mois, le mois touché choisit un jour, ou tapez un nom de client, puis touchez la ligne.</td>
 </tr>
 <tr>
 <td>Ou est composer ma fiche</td>
@@ -1479,15 +1500,19 @@
 </tr>
 <tr>
 <td>Enlever une prestation de ma fiche</td>
-<td><em>« Paysage », Fiche de chantier, puis Composer ma fiche.</em> Touchez la croix au bout de la prestation. « Annuler » reste quelques secondes en bas pour se raviser.</td>
+<td><em>« Paysage », Fiche de chantier, puis Composer ma fiche.</em> Touchez « Retirer » au bout de la prestation. « Annuler » reste quelques secondes en bas pour se raviser.</td>
 </tr>
 <tr>
 <td>Supprimer toute une famille</td>
-<td><em>« Paysage », Fiche de chantier, puis Composer ma fiche.</em> À côté du nom de la famille, touchez « Retirer la famille ». « Annuler » reste quelques secondes en bas pour se raviser. Toutes ses prestations partent avec elle.</td>
+<td>Au pied de la carte de la famille, touchez « Retirer la famille ». « Annuler » reste quelques secondes en bas pour se raviser. Toutes ses prestations partent avec elle.</td>
 </tr>
 <tr>
 <td>Chercher un client</td>
-<td>En haut de « Vos clients », tapez une partie de son nom dans « Chercher un client ». La recherche porte sur le nom du client.</td>
+<td>En haut de « Vos clients », tapez une partie de son nom, le titre d'un devis ou un montant dans « Chercher un nom, un titre, un montant ». Une pièce trouvée ouvre la fiche du client sur son onglet. Un montant se tape en chiffres : « 640 » trouve 640 € et 6 400 €, « 640,00 » le montant exact. Une entreprise se cherche dans « Vos partenaires », une mairie dans « Services publics ».</td>
+</tr>
+<tr>
+<td>Retrouver un devis de 2017 par la date</td>
+<td><em>« Chantiers » dans la barre du bas, puis « Vos clients », « Vos partenaires » ou « Services publics ».</em> Touchez « Filtre » sous la recherche, puis « Date du devis » ou « Date de facturation » : le calendrier s'ouvre. Choisissez un jour, la liste montre les clients qui ont une pièce ce mois-là. Touchez le titre du mois pour rouvrir le calendrier. « Nom du client » remet la liste de A à Z.</td>
 </tr>
 <tr>
 <td>Comment je cree un client</td>
@@ -1511,15 +1536,19 @@
 </tr>
 <tr>
 <td>Partager une facture par whatsapp</td>
-<td><em>« Chantiers », « Vos clients », puis son nom.</em> Sur sa fiche, choisissez l'onglet « Devis », « Factures » ou « Fiches », touchez le document, puis « Ouvrir », « Enregistrer » ou « Partager ». « Enregistrer » n'apparaît pas quand le document est une page plutôt qu'un PDF.</td>
+<td><em>« Chantiers », « Vos clients », puis son nom.</em> Sur sa fiche, choisissez l'onglet « Devis », « Factures » ou « Fiches », touchez le document, puis « Ouvrir », « Télécharger » ou « Partager ». « Télécharger » n'apparaît pas quand le document est une page plutôt qu'un PDF.</td>
 </tr>
 <tr>
 <td>Supprimer un client</td>
 <td>Tout en bas de sa fiche, touchez « Supprimer ce client ». S'il a des documents, cochez « J’ai sauvegardé ces documents ailleurs », puis « Supprimer ». C'est définitif : ses devis, photos et notes sont détruits. Les factures que la loi oblige à garder restent, sous « Conservé par la loi ».</td>
 </tr>
 <tr>
+<td>Supprimer plusieurs clients d'un coup</td>
+<td><em>« Chantiers », puis « Vos clients ».</em> Dans « Vos clients », restez appuyé sur un client : il se coche. Touchez les autres, ou « Tout » en haut, puis le bouton rouge en bas. La même question qu'un client seul : s'ils ont des documents, cochez « J’ai sauvegardé ces documents ailleurs ». « Annuler » ressort sans rien supprimer.</td>
+</tr>
+<tr>
 <td>Apprendre un mot a atlas</td>
-<td><em>« Réglages » dans la barre du bas, puis Tarifs &amp; catalogue, puis Le catalogue.</em> Sous la prestation ou le matériel, touchez « + mon mot », écrivez le mot tel que vous le dites, puis « Ajouter ». Vos mots s'ajoutent à la ligne « Aussi appelé ».</td>
+<td><em>« Réglages » dans la barre du bas, puis Tarifs &amp; catalogue, puis Le catalogue.</em> Sous la prestation ou le matériel, touchez « Ajouter un mot », écrivez le mot tel que vous le dites, puis « Ajouter ». Vos mots s'ajoutent sous la carte, un par ligne.</td>
 </tr>
 <tr>
 <td>Ou est le catalogue</td>
@@ -1527,11 +1556,11 @@
 </tr>
 <tr>
 <td>Ajouter un materiel au catalogue</td>
-<td><em>« Réglages », Tarifs &amp; catalogue, puis Le catalogue.</em> Sous « Prestations » ou « Matériels », touchez « + Nouvelle prestation » ou « + Nouveau matériel », écrivez son nom, puis « Créer ».</td>
+<td><em>« Réglages », Tarifs &amp; catalogue, puis Le catalogue.</em> Sous « Prestations » ou « Matériels », touchez « Nouvelle prestation » ou « Nouveau matériel », écrivez son nom, puis « Créer ».</td>
 </tr>
 <tr>
 <td>Retirer un mot que j'ai ajoute</td>
-<td><em>« Réglages », Tarifs &amp; catalogue, puis Le catalogue.</em> Dans la ligne « Aussi appelé », touchez la croix à côté de votre mot. Seuls vos mots portent une croix, pas ceux du catalogue commun.</td>
+<td><em>« Réglages », Tarifs &amp; catalogue, puis Le catalogue.</em> Sous la carte, touchez « Retirer » au bout de la ligne de votre mot. Seuls vos mots ont « Retirer », pas ceux du catalogue commun.</td>
 </tr>
 <tr>
 <td>Atlas me propose un mot, je fais quoi</td>
@@ -1554,7 +1583,7 @@
 </tr>
 <tr>
 <td>J'ai pas reçu le code par mail</td>
-<td>Tapez le code reçu par e-mail, puis « Continuer ». Pas reçu ? Touchez « Renvoyer le code ».</td>
+<td>Tapez les six chiffres reçus par e-mail, puis « Continuer ». Pas reçu, ou le code a expiré ? Touchez « Renvoyer le code ».</td>
 </tr>
 <tr>
 <td>Comment je me connecte</td>
@@ -1570,7 +1599,7 @@
 </tr>
 <tr>
 <td>Comment accepter les conditions pour entrer</td>
-<td>Touchez « Lire le texte » pour le lire, cochez « J'ai lu et j'accepte » sous chaque document, puis « Continuer ». Atlas ne s'ouvre pas tant que chaque document n'est pas coché.</td>
+<td>Touchez un document pour le lire en entier, « Fermer » pour revenir, puis « Accepter ». Pour partir sans accepter, « Se déconnecter ». Déjà client, « Refuser » mène à vos données, puis à la résiliation remboursée. Atlas ne s'ouvre pas tant que les documents ne sont pas acceptés.</td>
 </tr>
 <tr>
 <td>Comment je me déconnecte</td>
@@ -1590,15 +1619,15 @@
 </tr>
 <tr>
 <td>Comment ajouter un tarif</td>
-<td><em>« Réglages » dans la barre du bas, puis Tarifs &amp; catalogue.</em> Touchez « + Ajouter un tarif », écrivez l'intitulé et le prix, puis touchez la case de l'unité. Pour retirer un tarif : glissez sa ligne de droite à gauche, puis « Retirer ». Chaque case s'enregistre dès que vous la quittez. Après un retrait, « Annuler » reste un instant en bas.</td>
+<td><em>« Réglages » dans la barre du bas, puis Tarifs &amp; catalogue.</em> Touchez « Ajouter un tarif », écrivez le nom et le prix, puis touchez l'unité. Pour corriger un tarif, touchez sa ligne : elle s'ouvre. « Retirer » est en bas de la ligne ouverte, « Fermer » la replie. Chaque case s'enregistre dès que vous la quittez. Après un retrait, « Annuler » reste un instant en bas.</td>
 </tr>
 <tr>
 <td>Supprimer un tarif</td>
-<td><em>« Réglages » dans la barre du bas, puis Tarifs &amp; catalogue.</em> Touchez « + Ajouter un tarif », écrivez l'intitulé et le prix, puis touchez la case de l'unité. Pour retirer un tarif : glissez sa ligne de droite à gauche, puis « Retirer ». Chaque case s'enregistre dès que vous la quittez. Après un retrait, « Annuler » reste un instant en bas.</td>
+<td><em>« Réglages » dans la barre du bas, puis Tarifs &amp; catalogue.</em> Touchez « Ajouter un tarif », écrivez le nom et le prix, puis touchez l'unité. Pour corriger un tarif, touchez sa ligne : elle s'ouvre. « Retirer » est en bas de la ligne ouverte, « Fermer » la replie. Chaque case s'enregistre dès que vous la quittez. Après un retrait, « Annuler » reste un instant en bas.</td>
 </tr>
 <tr>
 <td>Importer mes prix depuis un fichier excel</td>
-<td><em>« Réglages » dans la barre du bas, puis Tarifs &amp; catalogue.</em> Sous « J'ai déjà mes prix ailleurs », touchez « Choisir un fichier ». Vérifiez ce qu'Atlas ajouterait, puis « Enregistrer ces tarifs ». Rien n'est enregistré avant « Enregistrer ces tarifs ». « Annuler » laisse vos tarifs tels quels.</td>
+<td><em>« Réglages » dans la barre du bas, puis Tarifs &amp; catalogue.</em> Sous « Ajouter un tarif », touchez « Reprendre mes prix d'un fichier Excel ou CSV ». Vérifiez ce qu'Atlas ajouterait, puis « Enregistrer ces tarifs ». Rien n'est enregistré avant « Enregistrer ces tarifs ». « Annuler » laisse vos tarifs tels quels.</td>
 </tr>
 <tr>
 <td>Remplir un prix dans la grille du dessouchage</td>
@@ -1622,19 +1651,19 @@
 </tr>
 <tr>
 <td>Où s'impriment les mentions légales</td>
-<td><em>« Réglages » dans la barre du bas, puis Mon entreprise, bloc Mentions légales.</em> Dans « Mentions légales », touchez « Sous le nom », « En bas, avec le SIRET » ou « Ne pas les imprimer ».</td>
+<td><em>« Réglages » dans la barre du bas, puis Mon entreprise, paquet Sur vos papiers.</em> Dans « Sur vos papiers », touchez « Sous le nom » ou « En bas, avec le SIRET ». Le choix ne se montre que pour une société. Elles s'impriment toujours : la loi les exige.</td>
 </tr>
 <tr>
 <td>Je suis en franchise de tva</td>
-<td><em>« Réglages » dans la barre du bas, puis Mon entreprise, bloc Votre régime de TVA.</em> Dans « Votre régime de TVA », touchez « Franchise en base » ou « Assujettie ». Assujettie : écrivez votre numéro de TVA intracommunautaire dessous.</td>
+<td><em>« Réglages » dans la barre du bas, puis Mon entreprise, paquet Votre TVA.</em> Dans « Votre TVA », touchez « Franchise en base » ou « Assujettie ». Assujettie : écrivez votre numéro de TVA intracommunautaire dessous.</td>
 </tr>
 <tr>
 <td>Déclarer la tva tous les trimestres</td>
-<td><em>« Réglages » dans la barre du bas, puis Mon entreprise, sous Votre régime de TVA.</em> Sous votre régime de TVA, touchez « Tous les mois » ou « Tous les trimestres ».</td>
+<td><em>« Réglages » dans la barre du bas, puis Mon entreprise, paquet Votre TVA.</em> Dans « Votre TVA », touchez « Tous les mois » ou « Tous les trimestres ». Seulement pour une entreprise assujettie.</td>
 </tr>
 <tr>
 <td>Tva sur les encaissements ou les débits</td>
-<td><em>« Réglages » dans la barre du bas, puis Mon entreprise, sous Votre régime de TVA.</em> Sous « Je reverse ma TVA aux impôts », touchez « Le mois où mon client me paie » ou « Le mois où j'envoie la facture ». Ce choix doit correspondre à ce que les impôts savent de vous : votre comptable vous le dit.</td>
+<td><em>« Réglages » dans la barre du bas, puis Mon entreprise, paquet Votre TVA.</em> Sous « Je reverse ma TVA aux impôts », touchez « Le mois où mon client me paie » ou « Le mois où j'envoie la facture ». Ce choix doit correspondre à ce que les impôts savent de vous : votre comptable vous le dit.</td>
 </tr>
 <tr>
 <td>Changer l'indicatif du téléphone</td>
@@ -1678,11 +1707,11 @@
 </tr>
 <tr>
 <td>Mettre mes conditions générales de vente</td>
-<td>Allumez « Conditions générales de vente et de règlement » : un texte est proposé, corrigez-le dans la case. Les crochets restants se remplissent depuis Mon entreprise. Elles s'impriment après le bon pour accord.</td>
+<td>Allumez « Conditions générales de vente et de règlement » : un texte est proposé. Touchez « Lire et modifier » pour le corriger. Les crochets restants se remplissent depuis Mon entreprise. Elles s'impriment après le bon pour accord.</td>
 </tr>
 <tr>
 <td>Changer le message envoyé avec le devis</td>
-<td><em>« Réglages » dans la barre du bas, puis Devis &amp; factures, puis Mon message au client.</em> Ouvrez « Mon message au client », corrigez le texte sous le document voulu, puis « Enregistrer ». « Remettre le message d'Atlas » revient au texte d'origine. Les mots en doré se remplissent seuls. Le lien et le mot du document ne peuvent pas être retirés.</td>
+<td><em>« Réglages » dans la barre du bas, puis Devis &amp; factures, puis Mon message au client.</em> Ouvrez « Mon message au client », touchez le document voulu : son message s'ouvre. Corrigez-le, puis « Enregistrer ». « Remettre le message d'Atlas » revient au texte d'origine. Les mots en doré se remplissent seuls. Le lien et le mot du document ne peuvent pas être retirés.</td>
 </tr>
 <tr>
 <td>Changer la numérotation des factures</td>
@@ -1698,11 +1727,11 @@
 </tr>
 <tr>
 <td>Donner un accès à un salarié</td>
-<td><em>« Réglages » dans la barre du bas, puis Équipe.</em> Ouvrez « Équipe », puis « Donner un accès ». Remplissez nom, adresse e-mail, mot de passe et sa confirmation, choisissez le rôle, puis « Créer le compte ».</td>
+<td><em>« Réglages » dans la barre du bas, puis Équipe.</em> Ouvrez « Équipe », puis « Donner un accès ». Choisissez d'abord son rôle, puis remplissez nom, adresse e-mail, mot de passe et sa confirmation, et touchez « Créer le compte ».</td>
 </tr>
 <tr>
 <td>Changer le rôle d'un salarié en facturation</td>
-<td><em>« Réglages » dans la barre du bas, puis Équipe, Accès.</em> Dans « Accès », touchez la personne, puis le rôle voulu : Patron, Facturation, Commercial ou Salarié. Sous les rôles, la liste dit ce que ce rôle peut faire et ce qu'il ne peut plus.</td>
+<td><em>« Réglages » dans la barre du bas, puis Équipe, Accès.</em> Dans « Accès », touchez la personne, puis le rôle voulu : Patron, Facturation, Commercial ou Salarié. Sous les rôles, deux plages disent ce que la personne pourra faire, et ce qu'elle ne pourra pas.</td>
 </tr>
 <tr>
 <td>Limiter ce que le salarié voit du planning</td>
@@ -1734,7 +1763,7 @@
 </tr>
 <tr>
 <td>Couper le rappel devis sans réponse</td>
-<td><em>« Réglages » dans la barre du bas, puis Notifications.</em> Touchez l'interrupteur à droite du rappel. Allumé, réglez « Au bout de » en jours. La réponse d'un client à un devis et le lien de devis expiré sont toujours signalés.</td>
+<td><em>« Réglages » dans la barre du bas, puis Notifications.</em> Touchez l'interrupteur à droite du rappel. Allumé, réglez « Au bout de » avec moins et plus. La réponse d'un client à un devis et le lien de devis expiré sont toujours signalés.</td>
 </tr>
 <tr>
 <td>Relier mon agenda google</td>
@@ -1770,11 +1799,11 @@
 </tr>
 <tr>
 <td>Résilier mon abonnement</td>
-<td><em>« Réglages » dans la barre du bas, puis Abonnement.</em> Ouvrez « Abonnement », puis « Gérer mon abonnement ». Réservé au patron, et seulement une fois abonné. Les factures de vos clients sont dans « Terminés ».</td>
+<td><em>« Réglages » dans la barre du bas, puis Abonnement.</em> Ouvrez « Abonnement ». « Gérer mon abonnement » pour la carte et les factures, « Résilier » pour partir. Réservé au patron, et seulement une fois abonné. Les factures de vos clients sont dans « Terminés ».</td>
 </tr>
 <tr>
 <td>Changer de formule d'abonnement</td>
-<td><em>« Réglages » dans la barre du bas, puis Abonnement.</em> Ouvrez « Abonnement », choisissez « Au mois » ou « À l’année, 2 mois offerts », puis « S’abonner » ou « Passer à cette formule » sous la formule voulue. Réservé au patron. Artisan : 39 € HT par mois, ou 390 € HT par an. Entreprise : 59 € HT par mois, ou 590 € HT par an. Illimité : 159 € HT par mois, ou 1590 € HT par an.</td>
+<td><em>« Réglages » dans la barre du bas, puis Abonnement.</em> Ouvrez « Abonnement », choisissez « Au mois » ou « À l’année, 2 mois offerts », touchez la formule voulue, puis le bouton du bas : « S’abonner à » elle, ou « Passer à » elle une fois abonné. Réservé au patron. Artisan : 39 € HT par mois, ou 390 € HT par an. Entreprise : 59 € HT par mois, ou 590 € HT par an. Illimité : 159 € HT par mois, ou 1590 € HT par an.</td>
 </tr>
 <tr>
 <td>Changer mon prénom</td>
@@ -1790,7 +1819,7 @@
 </tr>
 <tr>
 <td>Retirer face id d'un ancien téléphone</td>
-<td><em>« Réglages » dans la barre du bas, puis Mot de passe, bloc Ouvrir avec Face ID.</em> Sous « Ouvrir avec Face ID », touchez « Retirer » à côté de l'appareil. Votre mot de passe marche toujours. Atlas peut vous le redemander avant.</td>
+<td><em>« Réglages » dans la barre du bas, puis Mot de passe, ligne de l'appareil.</em> Touchez « Retirer » sur la ligne de l'appareil. Votre mot de passe marche toujours. Atlas peut vous le redemander avant.</td>
 </tr>
 <tr>
 <td>J'ai perdu mon téléphone, me déconnecter partout</td>
@@ -1849,15 +1878,15 @@
 </tr>
 <tr>
 <td>Comment compléter ma note vocale j'avais oublié quelque chose</td>
-<td>Appuyez sur « Reprendre, j'avais oublié quelque chose », puis parlez.</td>
+<td>Sur le devis, touchez le micro en haut à droite et dites ce qui manque. Décochez ce qui ne va pas, puis « Appliquer ce changement ».</td>
 </tr>
 <tr>
 <td>Comment remplacer la note vocale</td>
-<td>Appuyez sur « Remplacer la note », confirmez, puis réenregistrez.</td>
+<td><em>« Chantiers » dans la barre du bas, « Créer un devis » : écran Fiche client.</em> Glissez la ligne « Votre dictée » de droite à gauche, puis « Retirer ». Vous pouvez redicter. « Annuler » reste quelques secondes pour revenir en arrière.</td>
 </tr>
 <tr>
 <td>J'ai un fichier audio comment l'envoyer</td>
-<td>Appuyez sur « Ajouter un fichier audio » et choisissez l'enregistrement.</td>
+<td>Atlas ne prend pas de fichier audio : dictez sur la fiche client, au micro de « Devis à la voix ».</td>
 </tr>
 <tr>
 <td>Comment corriger le texte de la dictée</td>
@@ -1873,7 +1902,7 @@
 </tr>
 <tr>
 <td>Comment retirer une ligne du devis</td>
-<td>Glissez la ligne de droite à gauche, puis appuyez sur « Retirer ». La ligne tombe et « Annuler » reste six secondes en bas de l'écran. Un devis déjà parti chez le client ne se modifie plus : il faut le reprendre (voir « Corriger un devis envoyé »).</td>
+<td>Appuyez sur la croix, en haut à droite de la ligne. La ligne tombe et « Annuler » reste six secondes en bas de l'écran. Un devis déjà parti chez le client ne se modifie plus : il faut le reprendre (voir « Corriger un devis envoyé »).</td>
 </tr>
 <tr>
 <td>Comment voir l'aperçu du devis en pdf</td>
@@ -1881,11 +1910,11 @@
 </tr>
 <tr>
 <td>Comment changer l'échéance de la facture</td>
-<td>Appuyez sur la date sous « À régler avant le » et choisissez-en une autre. Une facture arrêtée fige son échéance : elle ne se corrige plus.</td>
+<td>Appuyez sur la pastille « À régler avant le », sous le numéro, et choisissez une autre date. Une facture arrêtée fige son échéance : elle ne se corrige plus.</td>
 </tr>
 <tr>
 <td>Comment voir la facture en pdf</td>
-<td>Appuyez sur « Voir la facture en PDF ».</td>
+<td>Sous le Total TTC, appuyez sur « Voir le PDF ».</td>
 </tr>
 <tr>
 <td>Où sont les chantiers pas encore facturés</td>
@@ -1909,7 +1938,7 @@
 </tr>
 <tr>
 <td>Comment passer de la journée aux sept jours</td>
-<td>Balayez la liste du doigt, ou appuyez sur l'un des deux points. L'écran s'ouvre toujours sur la journée du jour.</td>
+<td>Les sept jours s'affichent d'office sous le calendrier, à partir d'aujourd'hui ; les flèches passent aux sept jours d'avant ou d'après. Pour une seule journée, touchez son jour dans le calendrier.</td>
 </tr>
 <tr>
 <td>Comment faire un diagnostic d'un arbre malade</td>
