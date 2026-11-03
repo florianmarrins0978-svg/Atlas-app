@@ -428,6 +428,14 @@ async function main() {
     // le SMS tout prêt ». Un contrôle accroché au mot serait mort sur une
     // demande exaucée, et l'on aurait été tenté de rétablir le mot pour le
     // faire taire (`CLAUDE.md` §5 bis).
+    //
+    // **Le message tout prêt se DÉPLIE depuis le 2 novembre 2026** — sa planche
+    // de la facture : envoyée, le bouton plein devient « Il m'a payé », et le
+    // renvoi passe dessous. On appuie donc sur le renvoi, comme lui ; la règle
+    // éprouvée reste la même : le message tout prêt est à portée de doigt.
+    const renvoyer = page.locator('[data-atlas="renvoyer-la-facture"]');
+    await renvoyer.waitFor({ state: "visible", timeout: 15000 });
+    await renvoyer.click();
     await page.waitForSelector("a[data-atlas^='transmission-']", { timeout: 15000 });
 
     const { rows } = await inspecter(
@@ -480,8 +488,15 @@ async function main() {
     await page.click("text=Créer la facture");
     await page.waitForSelector('[data-atlas="ajouter-travaux-supplementaires"]', { timeout: 15000 });
 
-    const groupee = await page.locator("li", { hasText: "Abattage d'un chêne mort" }).first().boundingBox();
-    const seule = await page.locator("li", { hasText: "Fendage du bois" }).first().boundingBox();
+    // **Le NOM se mesure, pas la ligne entière** : depuis sa planche du
+    // 2 novembre 2026, chaque ligne porte en petit sa quantité et son prix
+    // sous son nom, et cette seconde ligne grandit les deux boîtes d'autant.
+    // Ce qui doit rester vrai, c'est que trois travaux s'empilent sur trois
+    // lignes au lieu d'être écrasés sur une.
+    const nomDe = (texte: string) =>
+      page.locator("li", { hasText: texte }).first().locator('[data-atlas="libelle-de-ligne"]');
+    const groupee = await nomDe("Abattage d'un chêne mort").boundingBox();
+    const seule = await nomDe("Fendage du bois").boundingBox();
     assert.ok(groupee && seule, "les lignes de la facture sont introuvables");
     assert.ok(
       groupee.height > seule.height * 2,

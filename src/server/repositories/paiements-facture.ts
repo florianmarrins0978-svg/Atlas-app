@@ -15,6 +15,7 @@ import {
 import { estUnMoyenDePaiement, netAPayer, refusDuReglementRecu, type MoyenDePaiement, type ReglementRecu } from "../../lib/acomptes-facture";
 import { totauxAvecReduction } from "../../lib/reduction-devis";
 import type { DbOrTx } from "../db/client";
+import type { CiviliteClient } from "../../lib/civilite";
 import { avoirsDesFactures } from "./avoirs";
 
 /**
@@ -44,6 +45,12 @@ export type FactureEnAttente = {
   id: string;
   numeroCommercial: string;
   dateEmission: string;
+  /**
+   * L'échéance IMPRIMÉE (`null` : aucun délai, due à réception). L'écran
+   * « Que voulez-vous faire ? » la redit sous son titre (planche du
+   * 2 novembre 2026, `appli/soignee/facture.html`).
+   */
+  dateEcheance: string | null;
   clientNom: string | null;
   chantierId: string;
   totalHt: string;
@@ -66,7 +73,10 @@ export type FactureEnAttente = {
   entrepriseNom: string;
   clientTelephone: string | null;
   clientEmail: string | null;
-  clientCivilite: string | null;
+  // **Le type de la colonne, pas `string`** : « Mme Vasseur » se compose avec
+  // `avecCivilite` sous le titre de quatre écrans, et une chaîne quelconque
+  // aurait demandé un transtypage à chacun d'eux.
+  clientCivilite: CiviliteClient | null;
   /** Ce qui reste à recevoir. */
   reste: string;
   etat: EtatPaiement;
@@ -113,6 +123,7 @@ export async function facturesAvecPaiements(ctx: Ctx): Promise<FactureEnAttente[
           id: factures.id,
           numeroCommercial: factures.numeroCommercial,
           dateEmission: factures.dateEmission,
+          dateEcheance: factures.dateEcheance,
           clientNom: factures.clientNom,
           chantierId: factures.chantierId,
           totalHt: factures.totalHt,

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { colors, font, surPlein } from "@/lib/design-tokens";
 import { jourLisible, jourIso } from "@/lib/jour";
 import type { Ctx } from "@/server/repositories/context";
@@ -10,10 +11,12 @@ import { listerFacturesNonPayees } from "@/server/repositories/factures-non-paye
  * 2026, `appli/avoir.html` et `appli/il-ne-paiera-pas.html`) :
  *   - rangée « Non payée » : l'encadré, « J'ai reçu le paiement », et la mise
  *     en demeure (`appli/mise-en-demeure.html`) ;
- *   - encore due : le lien doré « Mon client ne me paie pas ».
+ *   - encore due : « Mon client ne me paie pas », lien calme, puis « Il m'a
+ *     payé », le bouton plein de l'écran (sa planche du 2 novembre 2026).
  *
  * Composant serveur : il lit, il ne décide de rien (`src/lib/avoir.ts` et
- * `src/lib/exigibilite-tva.ts` ont déjà décidé).
+ * `src/lib/exigibilite-tva.ts` ont déjà décidé). L'écran de la facture le pose
+ * sous « Facture … arrêtée. », au-dessus du renvoi.
  */
 export default async function SuiteDeLaFacture({ ctx, chantierId, factureId }: { ctx: Ctx; chantierId: string; factureId: string }) {
   const [avecPaiements, nonPayees] = await Promise.all([
@@ -25,11 +28,10 @@ export default async function SuiteDeLaFacture({ ctx, chantierId, factureId }: {
   const nonPayee = nonPayees.find((n) => n.factureId === factureId);
   const due = f.etat !== "soldee";
 
-  const carte = "mx-3 mt-4 rounded-[10px] px-5 py-5";
   return (
-    <div data-atlas="suite-de-la-facture">
+    <div data-atlas="suite-de-la-facture" className="flex w-full flex-col items-center">
       {nonPayee && (
-        <section className={carte} style={{ backgroundColor: colors.card }} data-atlas="facture-non-payee">
+        <section className="mt-4 w-full rounded-[6px] p-[18px]" style={{ backgroundColor: colors.card }} data-atlas="facture-non-payee">
           <div className="rounded-[4px] px-3.5 py-3 text-center" style={{ boxShadow: `inset 0 0 0 1px ${colors.or}` }}>
             <p className="text-[11.5px] font-semibold uppercase" style={{ letterSpacing: "0.18em", color: colors.or }}>
               Non payée
@@ -57,15 +59,30 @@ export default async function SuiteDeLaFacture({ ctx, chantierId, factureId }: {
         </section>
       )}
 
+      {/* ─── ENCORE DUE — sa planche du 2 novembre 2026 ───────────────────────
+          *« Envoyée, le bouton plein devient « Il m'a payé » : c'est le geste
+          qui reste à faire. »* Il mène à l'écran du paiement, qui refuse de
+          lui-même une facture soldée ; « encore due » est donc lu ici à la
+          même source que lui (`facturesAvecPaiements`). « Mon client ne me
+          paie pas » reste là, en lien calme : c'est l'exception. */}
       {due && !nonPayee && (
-        <Link
-          href={`/chantiers/${chantierId}/facture/impaye`}
-          className="mx-auto mt-5 block w-fit px-2.5 py-1.5 text-[14.5px] underline underline-offset-4"
-          style={{ color: colors.or }}
-          data-atlas="mon-client-ne-paie-pas"
-        >
-          Mon client ne me paie pas
-        </Link>
+        <>
+          <Link
+            href={`/chantiers/${chantierId}/facture/impaye`}
+            className="mt-3 inline-flex min-h-[44px] items-center px-2 text-[15px] font-semibold"
+            style={{ color: colors.inkSoft }}
+            data-atlas="mon-client-ne-paie-pas"
+          >
+            Mon client ne me paie pas
+          </Link>
+          {/* Toute la largeur, comme la planche : centré par son parent, le
+              conteneur se serrait sur le mot et le bouton restait une pilule. */}
+          <div className="mt-3 w-full">
+            <PrimaryButton pleineLargeur href={`/chantiers/${chantierId}/facture/paiement`} repere="il-m-a-paye">
+              Il m’a payé
+            </PrimaryButton>
+          </div>
+        </>
       )}
     </div>
   );

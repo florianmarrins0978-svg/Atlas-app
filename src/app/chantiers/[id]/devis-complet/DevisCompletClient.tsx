@@ -9,7 +9,7 @@ import {
   ligneOuverteAEcrire,
   ligneOuverteAPoser,
 } from "@/lib/ligne-ouverte-devis";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { colors, font, voile } from "@/lib/design-tokens";
 import {
@@ -44,20 +44,28 @@ import {
   tauxTvaValide,
   totauxAvecReduction,
 } from "@/lib/reduction-devis";
-import {
-  BoutonRemise,
-  LigneRemise,
-  REMISE_PAR_DEFAUT,
-} from "@/components/atlas/Remise";
+import { LigneRemise, REMISE_PAR_DEFAUT } from "@/components/atlas/Remise";
+import FeuilleDuTaux from "./FeuilleDuTaux";
+import FeuilleMainDoeuvre, { type DonneesMainOeuvre } from "./FeuilleMainDoeuvre";
+import PastilleAjout from "@/components/atlas/PastilleAjout";
 import { useEcrituresALaSuite } from "@/components/atlas/useEcrituresALaSuite";
 import DicterDansLeDevis from "./DicterDansLeDevis";
 import RepriseDuDevis from "./RepriseDuDevis";
 import { memeValeur } from "@/lib/hausse-du-devis";
 import LigneAcompte from "./LigneAcompte";
+import CroixRetirer from "@/components/atlas/CroixRetirer";
+import { arrivee, useArrivee } from "@/components/atlas/useArrivee";
 import LigneMainDoeuvre from "./LigneMainDoeuvre";
-import { mainDoeuvreDesLignes } from "@/lib/main-doeuvre-devis";
+import { mainDoeuvreDeLaLigne, mainDoeuvreDesLignes } from "@/lib/main-doeuvre-devis";
 import ChampUnite from "./ChampUnite";
-import { acompteSuivantPropose, echeancierDevis, phrasesAcomptesDuDevis, type AcompteDevis } from "@/lib/acomptes-devis";
+import {
+  acompteSuivantPropose,
+  echeancierDevis,
+  momentAcompte,
+  phrasesAcomptesDuDevis,
+  tauxCumuleValide,
+  type AcompteDevis,
+} from "@/lib/acomptes-devis";
 import { lignesConditionsDevis, lireConditions, type ConditionsLues } from "@/lib/conditions-documents";
 import BoutonAssistant from "@/components/atlas/BoutonAssistant";
 import FlecheRetour from "@/components/atlas/FlecheRetour";
@@ -76,7 +84,9 @@ import {
   majAdresseChantierAction,
   majLigneAction,
   ajouterLigneAction,
-  ajouterMainDoeuvreAction,
+  ajouterMainDoeuvreChoisieAction,
+  repartirMainDoeuvreAction,
+  type ChoixDeMainOeuvre,
   retirerLigneAction,
   majEnTeteDevisAction,
   ajouterCategorieTvaAction,
@@ -127,6 +137,8 @@ type Ligne = {
   prixGrille?: string | null;
   /** Une ligne de main d'œuvre (migration 0130) : elle se dit en un montant. */
   mainDoeuvre?: boolean | null;
+  /** La main d'œuvre répartie sur ce travail (migration 0155), comprise dans son prix. */
+  partMainDoeuvre?: string | null;
 };
 
 /**
@@ -219,6 +231,8 @@ type Props = {
   acomptesInitiaux: AcompteDevis[];
   /** Le réglage recopié à la création — ce que « + Ajouter un acompte » propose d'abord. */
   acompteReglage: string | null;
+  /** La feuille « Main d'œuvre » : sa dictée, son prix du jour par homme, ses partenaires. */
+  mainOeuvre: DonneesMainOeuvre;
   /** Les cinq conditions figées sur ce devis (migration 0064) : ce que le PDF écrira sous ses notes. */
   conditionsReglees: ConditionsLues;
   conditionsPaiement: string;
@@ -446,12 +460,30 @@ export default function DevisCompletClient(props: Props) {
    */
   const [refusAcompte, setRefusAcompte] = useState<string | null>(null);
 
-  async function ajouterUnAcompte() {
+  /**
+   * La feuille d'ajout ouverte — la planche du devis, choisie le 1er novembre
+   * 2026. Une seule à la fois : TVA, acompte et remise s'ouvrent chacune sur le
+   * chiffre qu'il tape, et rien n'arrive au devis avant son appui sur le bouton.
+   */
+  const [feuille, setFeuille] = useState<null | "tva" | "acompte" | "remise" | "mo">(null);
+
+  /**
+   * Ce qu'une feuille vient de poser défile sous ses yeux et s'éclaire un
+   * instant (la planche : « on le voit arriver »). Chaque ajout annonce le
+   * repère de ce qu'il crée, posé plus bas par `arrivee`.
+   */
+  const annoncer = useArrivee();
+
+  async function ajouterUnAcompte(taux?: string) {
     setRefusAcompte(null);
-    const pose = await aLaSuite(() => ajouterAcompteAction(props.devisId));
+    const pose = await aLaSuite(() => ajouterAcompteAction(props.devisId, taux));
     if (!pose) return;
-    if (pose.ok) setAcomptes(pose.acomptes);
-    else setRefusAcompte(pose.raison);
+    if (pose.ok) {
+      setAcomptes(pose.acomptes);
+      // Le nouveau est le dernier rang : les acomptes ne s'ajoutent qu'au bout.
+      const nouveau = pose.acomptes[pose.acomptes.length - 1];
+      if (nouveau) annoncer(`acompte:${nouveau.rang}`);
+    } else setRefusAcompte(pose.raison);
   }
 
   async function changerAcompte(rang: number, tauxDuChamp: string) {
@@ -531,7 +563,11 @@ export default function DevisCompletClient(props: Props) {
   // brut avec une remise, net sans —, d'où une seule définition pour les deux
   // branches du rendu.
   const dontMainDoeuvre = mainDoeuvreDesLignes(
-    lignesVisibles.map((l) => ({ mainDoeuvre: l.mainDoeuvre, montant: montantDeLaLigne(l).toFixed(2) }))
+    lignesVisibles.map((l) => ({
+      mainDoeuvre: l.mainDoeuvre,
+      montant: montantDeLaLigne(l).toFixed(2),
+      partMainDoeuvre: l.partMainDoeuvre,
+    }))
   );
   const ligneMainDoeuvre =
     dontMainDoeuvre === null ? null : <LigneMainDoeuvre montant={sansZerosInutiles(dontMainDoeuvre)} fige />;
@@ -768,39 +804,69 @@ export default function DevisCompletClient(props: Props) {
   }
 
   /**
-   * « + Main d'œuvre », dans la catégorie où il a appuyé — sa demande du
-   * 13 octobre 2026. Une ligne comme celle d'« + Ajouter une ligne », mais déjà
-   * nommée, et le doigt arrive dans son montant : c'est le seul chiffre à dire.
+   * « Main d'œuvre », dans la catégorie où il a appuyé — sa demande du 13 octobre
+   * 2026 —, ouvre désormais SA feuille (planche du 1er novembre 2026) : le calcul
+   * se montre avant d'ajouter, et la ligne arrive chiffrée, en jours d'homme ou
+   * au prix d'un partenaire. Avant, une ligne vide où taper un montant.
    */
-  async function ajouterMainDoeuvre(tauxDeLaCategorie?: string | null) {
+  const [tauxDeLaMainOeuvre, setTauxDeLaMainOeuvre] = useState<string | null>(null);
+  const [refusMainOeuvre, setRefusMainOeuvre] = useState<string | null>(null);
+
+  /**
+   * « Répartis sur les travaux » : chaque travail reçoit sa part dans son prix.
+   * L'écran reprend ce que le serveur a POSÉ (prix, montant, part au centime),
+   * jamais ce qu'il avait prévu : c'est ce chiffre que le client lira.
+   */
+  async function repartirMainDoeuvre(choix: ChoixDeMainOeuvre, parts: Record<string, number>) {
+    setFeuille(null);
+    setRefusMainOeuvre(null);
+    const pose = await aLaSuite(() => repartirMainDoeuvreAction(props.chantierId, choix, parts));
+    if (!pose) return;
+    if (!pose.ok) {
+      setRefusMainOeuvre(pose.raison);
+      return;
+    }
+    setLignes((cur) =>
+      cur.map((l) => {
+        const r = pose.lignes.find((x) => x.id === l.id);
+        return r ? { ...l, prixUnitaire: r.prixUnitaire, montant: r.montant, partMainDoeuvre: r.partMainDoeuvre } : l;
+      })
+    );
+    annoncer(...pose.lignes.map((r) => `ligne:${r.id}`));
+  }
+
+  async function ajouterMainDoeuvre(choix: ChoixDeMainOeuvre) {
+    setFeuille(null);
+    setRefusMainOeuvre(null);
+    // Comme pour « + Ajouter une ligne » : la ligne ouverte garde son rang.
     const ouverte = lignes.find((l) => estLigneOuverte(l.id));
-    const creee = await aLaSuite(async () => {
+    const pose = await aLaSuite(async () => {
       if (ouverte) await idEnBase(ouverte);
-      return ajouterMainDoeuvreAction(props.chantierId, tauxDeLaCategorie ?? null);
+      return ajouterMainDoeuvreChoisieAction(props.chantierId, tauxDeLaMainOeuvre, choix);
     });
+    if (!pose) return;
+    if (!pose.ok) {
+      setRefusMainOeuvre(pose.raison);
+      return;
+    }
+    const creee = pose.ligne;
     setLignes((cur) => [
       ...cur,
       {
         id: creee.id,
         libelle: creee.libelle,
-        quantite: "1",
-        prixUnitaire: "",
-        montant: "0.00",
+        quantite: creee.quantite,
+        // À chiffrer, la case du prix arrive VIDE : un zéro s'y lirait gratuit.
+        prixUnitaire: creee.aChiffrer ? "" : creee.prixUnitaire,
+        montant: creee.montant,
         unite: creee.unite,
         aChiffrer: creee.aChiffrer,
         tauxTva: creee.tauxTva ?? null,
         mainDoeuvre: true,
       },
     ]);
-    setMontantAOuvrir(creee.id);
+    annoncer(`ligne:${creee.id}`);
   }
-  // Le champ n'existe qu'au rendu qui suit l'ajout : c'est là qu'on le prend.
-  const [montantAOuvrir, setMontantAOuvrir] = useState<string | null>(null);
-  useEffect(() => {
-    if (montantAOuvrir === null) return;
-    document.querySelector<HTMLInputElement>(`[data-prix-ligne="${montantAOuvrir}"]`)?.focus();
-    setMontantAOuvrir(null);
-  }, [montantAOuvrir, lignes]);
 
   /**
    * « Ajouter une TVA » — sa demande du 1er septembre 2026.
@@ -814,10 +880,9 @@ export default function DevisCompletClient(props: Props) {
    * S'il en veut un autre, le champ du titre se corrige d'un doigt — proposer
    * une liste de taux aurait fait un écran de plus avant le premier mot écrit.
    */
-  async function ajouterUneTva() {
+  async function ajouterUneTva(propose: string = tauxNeuf) {
     // Comme pour « + Ajouter une ligne » : la ligne ouverte garde son rang.
     const ouverte = lignes.find((l) => estLigneOuverte(l.id));
-    const propose = tauxNeuf;
     const creee = await aLaSuite(async () => {
       if (ouverte) await idEnBase(ouverte);
       return ajouterCategorieTvaAction(props.chantierId, propose);
@@ -835,6 +900,8 @@ export default function DevisCompletClient(props: Props) {
         tauxTva: creee.tauxTva ?? propose,
       },
     ]);
+    // Le bloc entier, sa bande et sa première ligne : sa clé est celle qui groupe.
+    annoncer(`tva:${tauxDeLaLigne({ tauxTva: creee.tauxTva ?? propose }, tauxDuDevis)}`);
   }
 
   /** Le taux d'une catégorie change : toutes ses lignes suivent, d'un geste. */
@@ -1254,7 +1321,7 @@ export default function DevisCompletClient(props: Props) {
         )}
 
         {categories.map((categorie) => (
-        <div key={categorie.taux}>
+        <div key={categorie.taux} {...arrivee(`tva:${categorie.taux}`)}>
 
         {/* **Le titre de la catégorie — seulement s'il y en a plusieurs.**
             Sa demande du 1er septembre 2026 : le taux se pose par catégorie, pas
@@ -1281,20 +1348,17 @@ export default function DevisCompletClient(props: Props) {
               />
               %
             </span>
-            {/* **Le « − », comme celui du prix accordé** (sa proposition B du
-                17 août 2026) : 26 px, sans quoi on le rate au doigt. Il ne
+            {/* **La croix, comme celle de la remise** (la planche du devis du
+                1er novembre 2026 ; avant, un « − » doré de 26 px). Elle ne
                 s'affiche pas sur la catégorie d'accueil — c'est là que les
                 lignes retombent, elle n'a nulle part où aller. */}
             {!fige && categorie.taux !== tauxDuDevis && (
-              <button
-                type="button"
-                aria-label={`Retirer la TVA à ${tauxLisible(categorie.taux)} %`}
+              <CroixRetirer
+                libelle={`Retirer la TVA à ${tauxLisible(categorie.taux)} %`}
                 onClick={() => void retirerLaTva(categorie.taux)}
-                className="flex h-[26px] w-[26px] flex-none items-center justify-center rounded-full text-[15px] leading-none"
-                style={{ border: `1px solid ${colors.or}`, color: colors.or }}
-              >
-                −
-              </button>
+                taille={18}
+                className="-mr-2"
+              />
             )}
           </div>
         )}
@@ -1335,6 +1399,7 @@ export default function DevisCompletClient(props: Props) {
               borderRadius: ligneSaisie === l.id ? 6 : undefined,
               transition: "background-color .18s, transform .18s",
             }}
+            {...arrivee(`ligne:${l.id}`)}
             {...appuiLong.pour(() => setADeplacer(l), {
               // **Rien à proposer tant qu'il n'a qu'une TVA** : une feuille qui
               // s'ouvrirait sur un seul choix — celui où la ligne est déjà —
@@ -1389,13 +1454,18 @@ export default function DevisCompletClient(props: Props) {
               )}
             </div>
 
-            {l.mainDoeuvre ? (
+            {l.mainDoeuvre && Number(l.quantite) === 1 && (l.unite ?? "forfait") === "forfait" ? (
               <>
                 {/* **Une main d'œuvre se dit en un montant** — sa demande du
                     13 octobre 2026 : « main d'œuvre 500 € ». En base, c'est une
                     fois au forfait, et ce montant est son prix unitaire : la
                     multiplication reste celle de toutes les lignes. Les trois
-                    cases vides gardent l'alignement du tableau sur grand écran. */}
+                    cases vides gardent l'alignement du tableau sur grand écran.
+
+                    **Seulement au forfait, une fois** : la feuille du 1er
+                    novembre 2026 pose des jours d'homme (4 jour/homme à 280 €)
+                    ou les heures d'un partenaire. Une case unique y prendrait
+                    le prix du jour pour le montant, et cacherait le calcul. */}
                 <div className="hidden sm:block" />
                 <div className="hidden sm:block" />
                 <div className="hidden sm:block" />
@@ -1486,6 +1556,17 @@ export default function DevisCompletClient(props: Props) {
             </>
             )}
 
+            {/* La part répartie se DIT sous son travail (la planche du 1er
+                novembre 2026) : sans ce mot, un prix monté de 150 € d'un coup
+                ne s'expliquerait plus. La même règle que « dont » (bornée au
+                montant de la ligne). Sur SA ligne, sous le montant : posée
+                dans la cellule, elle écrasait le libellé « Montant HT ». */}
+            {!l.mainDoeuvre && mainDoeuvreDeLaLigne({ montant: montantDeLaLigne(l), partMainDoeuvre: l.partMainDoeuvre }).greaterThan(0) && (
+              <p className="text-right text-[13px] sm:col-span-5" style={{ color: colors.inkSoft, marginTop: -6, marginBottom: 6 }} data-atlas="part-main-doeuvre">
+                dont {enEuros(mainDoeuvreDeLaLigne({ montant: montantDeLaLigne(l), partMainDoeuvre: l.partMainDoeuvre }).toNumber())} de main d’œuvre
+              </p>
+            )}
+
             {/* Ce que l'agent a retenu la dernière fois, sur un travail
                 comparable. Discret et sous la ligne : c'est un rappel, pas une
                 consigne — il regarde s'il veut, il ignore s'il sait mieux. */}
@@ -1516,24 +1597,18 @@ export default function DevisCompletClient(props: Props) {
             (`appli/devis-main-d-oeuvre-par-tva.html`) : la main d'œuvre naît
             au taux de la catégorie où il a appuyé, 10 % comme 20 %. */}
         {!fige && (
-          <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2">
-            <button
-              type="button"
-              onClick={() => void ajouter(plusieursTva ? categorie.taux : null)}
-              className="text-[14px] font-medium"
-              style={{ color: colors.rust }}
-            >
-              + Ajouter une ligne
-            </button>
-            <button
-              type="button"
-              data-atlas="poser-main-doeuvre"
-              onClick={() => void ajouterMainDoeuvre(plusieursTva ? categorie.taux : null)}
-              className="text-[14px] font-medium"
-              style={{ color: colors.or }}
-            >
-              + Main d’œuvre
-            </button>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <PastilleAjout plus libelle="Ajouter une ligne" onClick={() => void ajouter(plusieursTva ? categorie.taux : null)} />
+            <PastilleAjout
+              or
+              icone="equipe"
+              libelle="Main d’œuvre"
+              repere="poser-main-doeuvre"
+              onClick={() => {
+                setTauxDeLaMainOeuvre(plusieursTva ? categorie.taux : null);
+                setFeuille("mo");
+              }}
+            />
           </div>
         )}
 
@@ -1559,14 +1634,17 @@ export default function DevisCompletClient(props: Props) {
             le tableau, même vocabulaire que « + Ajouter une ligne ». */}
         {/* En sous-traitance, il n'y a aucune TVA à ajouter. */}
         {!fige && !props.sousTraitance && (
-          <button
-            type="button"
-            onClick={() => void ajouterUneTva()}
-            className="mt-5 block text-[14px] font-medium"
-            style={{ color: colors.or }}
-          >
-            + Ajouter une TVA
-          </button>
+          <div className="mt-2.5">
+            <PastilleAjout or plus libelle="Ajouter une TVA" onClick={() => setFeuille("tva")} />
+          </div>
+        )}
+
+        {/* Le refus du serveur, sous les gestes : un appui sans effet et sans
+            un mot se lit comme une panne (le même parti que l'acompte). */}
+        {refusMainOeuvre && (
+          <p role="alert" data-atlas="refus-main-doeuvre" className="mt-2 text-[13px] leading-[1.45]" style={{ color: colors.alert }}>
+            {refusMainOeuvre}
+          </p>
         )}
 
         <TiroirDesRetires
@@ -1654,16 +1732,18 @@ export default function DevisCompletClient(props: Props) {
                   confort** : « reprends exactement celle du devis — couleur,
                   forme, mots » (11 septembre 2026). Recopiée, elle aurait
                   divergé au premier ajustement. */}
-              <LigneRemise
-                pourcent={reduction}
-                montantRetire={totaux.reductionMontant}
-                fige={fige}
-                onChange={setReduction}
-                onFini={(duChamp) => void enregistrerRemise(duChamp)}
-                onRetirer={() =>
-                  retraits.retirer(CLE_REDUCTION, `le ${LIBELLE_REDUCTION.toLowerCase()}`)
-                }
-              />
+              <div {...arrivee("remise")}>
+                <LigneRemise
+                  pourcent={reduction}
+                  montantRetire={totaux.reductionMontant}
+                  fige={fige}
+                  onChange={setReduction}
+                  onFini={(duChamp) => void enregistrerRemise(duChamp)}
+                  onRetirer={() =>
+                    retraits.retirer(CLE_REDUCTION, `le ${LIBELLE_REDUCTION.toLowerCase()}`)
+                  }
+                />
+              </div>
               <div className="flex items-center justify-between py-1.5">
                 <span className="text-[15px]">
                   {totaux.reductionPourcent === null ? "Total HT" : "Total HT après remise"}
@@ -1739,17 +1819,18 @@ export default function DevisCompletClient(props: Props) {
           {echeancier.lignes.length > 0 && (
             <div className="mt-1.5" data-atlas="echeancier-devis">
               {echeancier.lignes.map((ligne) => (
-                <LigneAcompte
-                  key={ligne.rang}
-                  ligne={ligne}
-                  tauxSaisi={acomptes.find((a) => a.rang === ligne.rang)?.tauxCumule ?? ligne.tauxCumule}
-                  fige={fige}
-                  onChange={(v) =>
-                    setAcomptes((cur) => cur.map((a) => (a.rang === ligne.rang ? { ...a, tauxCumule: v } : a)))
-                  }
-                  onFini={(duChamp) => void changerAcompte(ligne.rang, duChamp)}
-                  onRetirer={() => void retirerUnAcompte(ligne.rang)}
-                />
+                <div key={ligne.rang} {...arrivee(`acompte:${ligne.rang}`)}>
+                  <LigneAcompte
+                    ligne={ligne}
+                    tauxSaisi={acomptes.find((a) => a.rang === ligne.rang)?.tauxCumule ?? ligne.tauxCumule}
+                    fige={fige}
+                    onChange={(v) =>
+                      setAcomptes((cur) => cur.map((a) => (a.rang === ligne.rang ? { ...a, tauxCumule: v } : a)))
+                    }
+                    onFini={(duChamp) => void changerAcompte(ligne.rang, duChamp)}
+                    onRetirer={() => void retirerUnAcompte(ligne.rang)}
+                  />
+                </div>
               ))}
               <div className="flex items-center justify-between py-1.5">
                 <span className="text-[15px]">{echeancier.libelleReste}</span>
@@ -1763,16 +1844,19 @@ export default function DevisCompletClient(props: Props) {
           {/* « + Ajouter un acompte » — même vocabulaire que « + Ajouter une
               TVA », et il se tait dès qu'il n'y a plus rien à poser : trois
               acomptes, ou un devis déjà réglé à 100 %. */}
-          {!fige && acompteAProposer && (
-            <button
-              type="button"
-              data-atlas="ajouter-acompte"
-              onClick={() => void ajouterUnAcompte()}
-              className="mt-2.5 block text-[13.5px]"
-              style={{ color: colors.or }}
-            >
-              + Ajouter un acompte
-            </button>
+          {/* L'acompte et la remise côte à côte, sous le total : les deux
+              gestes qui touchent à ce que le client paie. */}
+          {!fige && (acompteAProposer || !remiseOuverte) && (
+            <div className="mt-3 flex flex-wrap gap-2.5">
+              {acompteAProposer && (
+                <PastilleAjout or icone="euro" libelle="Ajouter un acompte" repere="ajouter-acompte" onClick={() => setFeuille("acompte")} />
+              )}
+              {/* Seulement quand il n'y en a pas : un devis qui porte déjà sa
+                  remise n'a pas besoin qu'on lui propose d'en poser une. */}
+              {!remiseOuverte && (
+                <PastilleAjout or icone="etiquette" libelle="Remise" repere="poser-prix-accorde" onClick={() => setFeuille("remise")} />
+              )}
+            </div>
           )}
           {/* **Le refus du serveur, sous le geste** — 17 septembre 2026. Un
               appui sans effet et sans un mot se lit comme une panne, et il
@@ -1788,21 +1872,141 @@ export default function DevisCompletClient(props: Props) {
             </p>
           )}
 
-          {/* Discret, et seulement quand il n'y en a pas : un devis qui porte
-              déjà sa remise n'a pas besoin qu'on lui propose d'en poser une. */}
-          {!fige && !remiseOuverte && (
-            <BoutonRemise
-              onPoser={() => {
-                setRemiseOuverte(true);
-                setReduction(REMISE_PAR_DEFAUT);
-                // Le même écrivain que la saisie et que le retrait : une remise
-                // n'a qu'une façon d'arriver en base.
-                void enregistrerRemise(REMISE_PAR_DEFAUT);
-              }}
-            />
-          )}
         </div>
       </section>
+
+      {/* ── LES TROIS FEUILLES : le chiffre qu'il tape — 1er novembre 2026 ───
+          Chacune juge avec la fonction pure que le serveur oppose ensuite, et
+          montre ce que l'ajout produira avec les totaux de cet écran. */}
+      <FeuilleMainDoeuvre
+        ouverte={feuille === "mo"}
+        donnees={props.mainOeuvre}
+        // Les travaux de la TVA où il a appuyé, qui ont leur prix : la main
+        // d'œuvre répartie prend le taux de chaque travail, donc celui-là.
+        travaux={lignesVisibles
+          .filter(
+            (l) =>
+              !l.mainDoeuvre &&
+              !estLigneOuverte(l.id) &&
+              montantDeLaLigne(l) > 0 &&
+              (tauxDeLaMainOeuvre === null || tauxDeLaLigne({ tauxTva: l.tauxTva }, tauxDuDevis) === tauxDeLaMainOeuvre)
+          )
+          .map((l) => ({ id: l.id, libelle: l.libelle.trim() || "Sans description" }))}
+        onValider={(choix) => void ajouterMainDoeuvre(choix)}
+        onRepartir={(choix, parts) => void repartirMainDoeuvre(choix, parts)}
+        onFermer={() => setFeuille(null)}
+      />
+      <FeuilleDuTaux
+        ouverte={feuille === "tva"}
+        titre="Une TVA"
+        nomDeLaCase="Taux de la TVA à ajouter, en pourcentage"
+        valeurInitiale={tauxNeuf}
+        raccourcis={["10", "5.5", "0"]}
+        lire={(saisie) => {
+          const taux = tauxTvaValide(saisie);
+          if (taux === null) return { refus: "Écrivez un taux, par exemple 10." };
+          if (categories.some((c) => c.taux === taux)) {
+            return { refus: `Une TVA à ${tauxLisible(taux)} % est déjà sur ce devis.` };
+          }
+          return { taux };
+        }}
+        bouton={(taux) => `Ajouter la TVA à ${tauxLisible(taux)} %`}
+        repere="feuille-tva"
+        onValider={(taux) => {
+          setFeuille(null);
+          void ajouterUneTva(taux);
+        }}
+        onFermer={() => setFeuille(null)}
+      />
+      {acompteAProposer && (
+        <FeuilleDuTaux
+          ouverte={feuille === "acompte"}
+          titre="Un acompte"
+          nomDeLaCase="Acompte, en pourcentage du total TTC"
+          valeurInitiale={acompteAProposer.tauxCumule}
+          // Le premier : son réglage, puis 40 et 50 (la planche). Les suivants
+          // sont des CUMULS (50 puis 75 d'office) : un raccourci de premier
+          // acompte n'y voudrait rien dire.
+          raccourcis={
+            acompteAProposer.rang === 1
+              ? [...new Set([tauxCumuleValide(props.acompteReglage) ?? "30", "40", "50"])]
+              : []
+          }
+          // **Le moment se LIT, il ne se choisit pas** : il suit le rang en base
+          // (`momentAcompte`), et c'est sa correction du 12 septembre, le
+          // troisième n'est pas la fin du chantier. Le laisser choisir ici
+          // aurait permis un premier acompte « à mi-parcours ».
+          precision={`Versé ${momentAcompte(acompteAProposer.rang)}`}
+          lire={(saisie) => {
+            const taux = tauxCumuleValide(saisie);
+            if (taux === null || Number(taux) === 0) return { refus: "Écrivez un pourcentage, par exemple 30." };
+            const avant = acomptes.length ? Number(acomptes[acomptes.length - 1].tauxCumule) : 0;
+            if (Number(taux) <= avant) {
+              return { refus: `Au-dessus de ${tauxLisible(String(avant))} %, ce que les acomptes d'avant règlent déjà.` };
+            }
+            return { taux };
+          }}
+          apercu={(taux) => {
+            const ttc = (totalHt + totalTva).toFixed(2);
+            const suite = echeancierDevis([...acomptes, { rang: acompteAProposer.rang, tauxCumule: taux }], ttc);
+            const pose = suite.lignes[suite.lignes.length - 1];
+            if (!pose) return null;
+            return {
+              calcul:
+                acompteAProposer.rang === 1
+                  ? `${tauxLisible(taux)} % de ${enEuros(ttc)} TTC`
+                  : `${tauxLisible(taux)} % au total, de ${enEuros(ttc)} TTC`,
+              montant: enEuros(pose.montant),
+              dessous: `Reste à régler : ${enEuros(suite.reste)}`,
+            };
+          }}
+          bouton={() => "Ajouter l’acompte"}
+          repere="feuille-acompte"
+          onValider={(taux) => {
+            setFeuille(null);
+            void ajouterUnAcompte(taux);
+          }}
+          onFermer={() => setFeuille(null)}
+        />
+      )}
+      <FeuilleDuTaux
+        ouverte={feuille === "remise"}
+        titre="Remise"
+        nomDeLaCase="Remise à poser, en pourcentage du total HT"
+        valeurInitiale={REMISE_PAR_DEFAUT}
+        raccourcis={[REMISE_PAR_DEFAUT, "10", "15"]}
+        lire={(saisie) => {
+          const taux = pourcentValide(saisie);
+          return taux === null ? { refus: "Écrivez un pourcentage au-dessus de zéro, par exemple 5." } : { taux };
+        }}
+        apercu={(taux) => {
+          // Les totaux de l'écran, la remise en plus : la même règle que le
+          // devis posé (`totauxAvecReduction`), donc le même chiffre ensuite.
+          const avec = totauxAvecReduction(
+            lignesVisibles.map((l) => ({ montant: montantDeLaLigne(l).toFixed(2), tauxTva: l.tauxTva })),
+            String(nombre(tauxTva)),
+            taux
+          );
+          const retire = Number(avec.brutHt) - Number(avec.totalHt);
+          return {
+            calcul: `${tauxLisible(taux)} % de ${enEuros(avec.brutHt)} HT`,
+            montant: `− ${enEuros(retire)}`,
+            dessous: `Total HT après remise : ${enEuros(avec.totalHt)}`,
+          };
+        }}
+        bouton={() => "Appliquer la remise"}
+        repere="feuille-remise"
+        onValider={(taux) => {
+          setFeuille(null);
+          setRemiseOuverte(true);
+          setReduction(tauxLisible(taux));
+          annoncer("remise");
+          // Le même écrivain que la saisie et que le retrait : une remise n'a
+          // qu'une façon d'arriver en base.
+          void enregistrerRemise(taux);
+        }}
+        onFermer={() => setFeuille(null)}
+      />
 
       {/* --- Notes, modalités --------------------------------------------- */}
       <section className="mt-9">

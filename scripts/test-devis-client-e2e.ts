@@ -504,6 +504,17 @@ async function main() {
     // l'intitulé le 31 août 2026, pour que l'écran tienne d'un seul tenant. Il
     // vise donc ce qu'il défend : que le libellé du champ INVITE à écrire, et
     // qu'il soit au-dessus (`CLAUDE.md` §5 bis).
+    // **Fermée, la phrase invite déjà** — le champ ne s'ouvre qu'au doigt
+    // depuis sa planche du 31 octobre 2026 (`client-recoit.html`) : c'est
+    // la ligne qu'on lit avant de toucher qui doit dire qu'on peut écrire.
+    const ligne = page.locator('[data-atlas="ouvrir-le-mot"]');
+    assert.strictEqual(await ligne.count(), 1, "la ligne qui ouvre le mot pour l'artisan a disparu");
+    assert.ok(
+      /écriv|dites|laissez/.test((await ligne.innerText()).toLowerCase()),
+      `la ligne fermée ne dit pas au client qu'il peut écrire : « ${await ligne.innerText()} »`
+    );
+    await ligne.click();
+
     const invite = page.locator('label[for="precision"]');
     assert.strictEqual(await invite.count(), 1, "le champ de message n'a plus d'intitulé");
     const texte = (await invite.first().innerText()).toLowerCase();

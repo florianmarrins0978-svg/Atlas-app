@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ses coordonnées, soignées</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  SES COORDONNÉES : l'écran qu'ouvre « Modifier ses coordonnées » sur la
+  fiche d'un client (src/app/clients/[id]/coordonnees/SesCoordonnees.tsx).
+
+  Sa correction du 1er novembre 2026 : « tu t'es basé sur une page qui est
+  fausse », « la première page client, je veux pas y toucher, elle est
+  vraiment bien ; base-toi là-dessus, même pour le style et la mise en
+  page », « va regarder pour entreprise et public si on peut améliorer ».
+
+  CE QUI ÉTAIT FAUX dans la première version de cette planche : elle copiait
+  la planche « Créer un devis » du 27 octobre (creer-un-devis.html), alors
+  que le 28 octobre il a gardé l'écran d'aujourd'hui. La référence est donc
+  la vraie Fiche client, ouverte le 1er novembre sur le poste par « Créer un
+  devis » (src/app/chantiers/nouveau/FormulaireNouveauChantier.tsx) :
+    les quatre pastilles (ChoixCivilite), les libellés en petites capitales
+      (libelleCaps : 11 points, 0,28 em, muted), les cases teintées
+      (.atlas-case : 44 points, rayon 12, rustTint), le nom et le téléphone
+      côte à côte, le téléphone calé à droite, SIRET et n° TVA (ou code
+      service) côte à côte sous eux.
+  Les valeurs sont recopiées du code, pas approchées à l'œil.
+
+  À CÔTÉ, LE VRAI ÉCRAN : /clients/…/coordonnees, ouvert depuis la fiche de
+  Mme Costa par « Modifier ses coordonnées », en Mme, Entreprise et Public
+  (aujourdhui/client-coordonnees*.jpg).
+*/
+.ecran .defile { padding-top: 8px; }
+
+/* La tête de la Fiche client : le retour, le titre au milieu, le rond à droite. */
+.tete-fiche { display: grid; grid-template-columns: 48px 1fr 48px; align-items: center; min-height: 64px; margin: 0 -6px 8px; }
+.tete-fiche h2 { margin: 0; text-align: center; font: 400 30px/1.05 var(--serif); letter-spacing: -0.012em; }
+.tete-fiche .tete-retour { margin: 0; }
+
+/* Les quatre pastilles, au chiffre près (ChoixCivilite.tsx). */
+.civilite { display: flex; gap: 8px; }
+.civilite button { flex: 1 1 auto; padding: 7px 10px; border-radius: 999px; font-size: 16px; color: var(--atlas-ink);
+                   background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.civilite button[aria-pressed="true"] { background: var(--atlas-rustTint); box-shadow: inset 0 0 0 1px var(--atlas-or); }
+
+/* Les cases, au chiffre près (.atlas-case, libelleCaps). */
+.cases { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+.rangee { display: flex; gap: 12px; }
+.rangee > .case { flex: 1; min-width: 0; }
+.case-mot { display: block; margin-bottom: 4px; font-size: 11px; font-weight: 500; letter-spacing: 0.28em; text-transform: uppercase; color: var(--atlas-muted); white-space: nowrap; }
+.case-saisie { display: block; width: 100%; min-height: 46px; padding: 11px 14px; border: 0; border-radius: 12px; outline: none;
+               background: var(--atlas-rustTint); color: var(--atlas-ink); font: 400 16px/1.4 var(--sans); }
+.case-saisie::placeholder { color: var(--atlas-muted); }
+.case-saisie:focus { box-shadow: inset 0 0 0 1.5px var(--atlas-or); }
+.a-droite .case-mot, .a-droite .case-saisie { text-align: right; }
+
+/* Ce qui est proposé pour une entreprise et un service public. */
+/* Le SIRET a 17 signes, le n° TVA 13 : la place suit, et les deux exemples se lisent en entier. */
+.rangee.numeros > .case:first-child { flex: 1.12; }
+.numeros .case-saisie { font-variant-numeric: tabular-nums; padding-left: 10px; padding-right: 10px; }
+.tire { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: -2px; padding: 8px 12px; border-radius: 12px;
+        font-size: 14px; color: var(--atlas-inkSoft); background: color-mix(in srgb, var(--atlas-or) 12%, transparent); }
+.tire b { color: var(--atlas-ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+.tire .bouton-texte { min-height: 40px; padding: 0 4px; font-size: 15px; flex: none; }
+.faux { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: -2px; font-size: 13.5px; color: var(--atlas-alerte); }
+.faux .bouton { width: auto; flex: none; }
+
+.enregistrer { margin-top: 18px; }
+/* Les photos, au chiffre près de la Fiche client : la tuile en pointillés d'or, puis les vignettes. */
+.photos-fiche { margin-top: 22px; }
+.rang-photos { display: flex; gap: 10px; flex-wrap: wrap; }
+.photo-ajout { width: 58px; height: 58px; display: grid; place-items: center; border-radius: 8px; color: var(--atlas-or);
+               box-shadow: none; outline: 1.5px dashed var(--atlas-or); outline-offset: -1.5px; }
+.photo-ajout .ico { width: 22px; height: 22px; }
+.vignette { width: 58px; height: 58px; border-radius: 8px; }
+.enregistrer .bouton { font: 400 19px/1 var(--serif); }
+.proposition { outline: 2px dashed color-mix(in srgb, var(--atlas-or) 70%, transparent); outline-offset: 4px; border-radius: 12px; }
+</style>
+</head>
+<body class="pl pl-pilules">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="client.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>La fiche d'un client</a>
+  <h1 class="pl-titre">Ses coordonnées</h1>
+  <p class="pl-verdict"><b>Refaite sur la vraie Fiche client</b>, celle de « Créer un devis » : ses pastilles, ses petites capitales, ses cases teintées, le nom et le téléphone côte à côte. Pour une entreprise et un service public, deux choses en plus, entourées de pointillés.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats" id="etats">
+        <button type="button" data-etat="particulier" aria-pressed="true">Mme Costa</button>
+        <button type="button" data-etat="entreprise">Une entreprise</button>
+        <button type="button" data-etat="public">Un service public</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre" id="ecran">
+          <div class="defile">
+            <div class="tete-fiche">
+              <a class="tete-retour touche" href="client.html" aria-label="Retour à sa fiche"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+              <h2>Ses coordonnées</h2>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </div>
+
+            <div class="civilite" role="group" aria-label="Civilité du client">
+              <button type="button" data-civilite="mr" aria-pressed="false">Mr</button>
+              <button type="button" data-civilite="mme" aria-pressed="false">Mme</button>
+              <button type="button" data-civilite="entreprise" aria-pressed="false">Entreprise</button>
+              <button type="button" data-civilite="public" aria-pressed="false">Public</button>
+            </div>
+
+            <div class="cases">
+              <div class="rangee">
+                <label class="case"><span class="case-mot">Nom du client</span><input class="case-saisie" id="nom" placeholder="Bernard" autocomplete="off"></label>
+                <label class="case a-droite"><span class="case-mot">Téléphone</span><input class="case-saisie" id="telephone" inputmode="tel" placeholder="06 12 34 56 78" autocomplete="off"></label>
+              </div>
+
+              <div class="rangee numeros" id="numeros" hidden>
+                <label class="case"><span class="case-mot">SIRET</span><input class="case-saisie" id="siret" inputmode="numeric" placeholder="812 345 678 00021" autocomplete="off"></label>
+                <label class="case" id="case-tva"><span class="case-mot">N° TVA</span><input class="case-saisie" id="tva" placeholder="FR00812345678" autocomplete="off"></label>
+                <label class="case" id="case-service" hidden><span class="case-mot">Code service</span><input class="case-saisie" placeholder="Sur la commande" autocomplete="off"></label>
+              </div>
+              <div class="tire proposition" id="tire" hidden>
+                <span>N° TVA tiré du SIRET : <b id="tire-numero">FR25812345678</b></span>
+                <button type="button" class="bouton-texte" id="mettre-tire">Le mettre</button>
+              </div>
+              <div class="faux" id="faux" role="alert" hidden>
+                <span>Ce n° TVA n'est pas celui de ce SIRET.</span>
+                <button type="button" class="bouton bouton-creux bouton-petit" id="mettre-faux">Mettre FR25812345678</button>
+              </div>
+
+              <label class="case"><span class="case-mot">E-mail</span><input class="case-saisie" id="email" inputmode="email" placeholder="bernard@exemple.fr" autocomplete="off"></label>
+              <label class="case"><span class="case-mot">Son adresse</span><input class="case-saisie" id="adresse" placeholder="12 rue des Lilas, Nantes" autocomplete="off"></label>
+            </div>
+
+            <div class="enregistrer"><button type="button" class="bouton bouton-plein" id="enregistrer">Enregistrer</button></div>
+
+            <!-- Sa consigne du 1er novembre : sous Enregistrer, ce qui est dans
+                 l'appli, « le plus pour les photos », sans le vocal. Les mêmes
+                 tuiles que la Fiche client ; une photo va sur son dernier chantier. -->
+            <div class="photos-fiche" data-si-chantier>
+              <span class="case-mot">Photos</span>
+              <div class="rang-photos">
+                <button type="button" class="photo-ajout touche" aria-label="Ajouter une photo" id="photo-ajout"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg></button>
+                <span class="vignette" style="background:linear-gradient(135deg,#5b6b4a,#7a8a63)"></span>
+                <span class="vignette" style="background:linear-gradient(135deg,#a48e6b,#c6ad86)"></span>
+              </div>
+            </div>
+          </div>
+
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html" aria-current="page">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html">Terminés</a>
+              <a class="barre-onglet" href="arrosage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre"><div class="cadre-capture" id="cadre-capture"><img id="capture" src="aujourdhui/client-coordonnees.jpg" alt="Ses coordonnées telles qu'elles sont aujourd'hui"></div></div>
+      <p class="pl-legende" style="margin-top:4px" id="capture-quoi">L'écran d'aujourd'hui, ouvert par « Modifier ses coordonnées ».</p>
+    </div>
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>L'écran prend la mise en page de la Fiche client : le titre au milieu, le nom et le téléphone côte à côte, le téléphone calé à droite. Aujourd'hui chaque case est seule sur sa ligne et l'écran défile.</li>
+      <li>Entreprise : SIRET et n° TVA côte à côte, comme sur la Fiche client. Aujourd'hui ils sont l'un sous l'autre, en pleine largeur.</li>
+      <li>Public : SIRET et code service côte à côte, de la même façon ; l'exemple du code devient « Sur la commande », celui de la Fiche client, qui tient dans sa case.</li>
+      <li>Le SIRET prend un peu plus de place que son voisin : sur la Fiche client, son exemple est coupé (« 812 345 678 0002 »), il manque un chiffre.</li>
+      <li>Sous Enregistrer, les photos de la Fiche client, sans le vocal (votre consigne du 1er novembre) : le « + » et ses photos. Une photo ajoutée ici va sur son dernier chantier ; un client sans chantier n'a pas de « + ».</li>
+      <li>Proposé, en pointillés : dès que les 14 chiffres du SIRET sont tapés et que le n° TVA est vide, Atlas le calcule et propose « Le mettre ». Il ne le met jamais seul, une entreprise sans TVA n'en a pas.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>La Fiche client elle-même : on n'y touche pas.</li>
+      <li>Les quatre pastilles, chaque case et son exemple, le rond de l'assistant, Enregistrer en bas, qui ramène à sa fiche.</li>
+      <li>L'avis rouge quand le n° TVA ne va pas avec le SIRET, et son bouton « Mettre ».</li>
+      <li>Revenir à Mr ou Mme cache les numéros sans rien effacer.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>Le n° TVA tiré du SIRET, proposé d'un appui : oui ou non. S'il dit oui, la Fiche client du devis peut le proposer de la même façon.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="client.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>La fiche d'un client</a>
+  <a href="client-contrat.html">Son contrat d'entretien<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+(function () {
+  "use strict";
+  var FICHES = {
+    particulier: { civilite: "mme", nom: "Costa", telephone: "06 98 76 54 32", email: "", adresse: "5 allée des Tilleuls, Nantes", siret: "", tva: "", capture: "client-coordonnees.jpg", quoi: "L'écran d'aujourd'hui, ouvert par « Modifier ses coordonnées »." },
+    entreprise: { civilite: "entreprise", nom: "SARL Les Jardins du Val", telephone: "02 41 00 00 00", email: "contact@jardinsduval.test", adresse: "4 rue de la Gare, Angers", siret: "812 345 678 00021", tva: "", capture: "client-coordonnees-entreprise.jpg", quoi: "Aujourd'hui, Entreprise touché : SIRET et n° TVA l'un sous l'autre." },
+    public: { civilite: "public", nom: "Mairie de Trélazé", telephone: "02 41 33 74 74", email: "", adresse: "Parc du Vissoir, Trélazé", siret: "214 903 527 00017", tva: "", capture: "client-coordonnees-public.jpg", quoi: "Aujourd'hui, Public touché : SIRET et code service l'un sous l'autre." }
+  };
+  var ecran = document.getElementById("ecran");
+  var capture = document.getElementById("capture");
+
+  /* La clé du n° TVA d'une entreprise française se calcule sur son SIREN :
+     FR, puis (12 + 3 × (SIREN mod 97)) mod 97 sur deux chiffres, puis le SIREN
+     (src/lib/autoliquidation.ts, la même formule). */
+  function tvaDuSiret(siret) {
+    var c = siret.replace(/\D/g, "");
+    if (c.length !== 14) return null;
+    var siren = Number(c.slice(0, 9));
+    var cle = (12 + 3 * (siren % 97)) % 97;
+    return "FR" + (cle < 10 ? "0" : "") + cle + c.slice(0, 9);
+  }
+
+  function poserCivilite(cle) {
+    ecran.querySelectorAll("[data-civilite]").forEach(function (p) { p.setAttribute("aria-pressed", String(p.getAttribute("data-civilite") === cle)); });
+    var numeros = cle === "entreprise" || cle === "public";
+    document.getElementById("numeros").hidden = !numeros;
+    document.getElementById("case-tva").hidden = cle !== "entreprise";
+    document.getElementById("case-service").hidden = cle !== "public";
+    document.getElementById("nom").placeholder = cle === "entreprise" ? "SARL Les Jardins" : cle === "public" ? "Mairie de Nantes" : "Bernard";
+    majAvis();
+  }
+
+  function majAvis() {
+    var entreprise = !document.getElementById("case-tva").hidden && !document.getElementById("numeros").hidden;
+    var juste = tvaDuSiret(document.getElementById("siret").value);
+    var tva = document.getElementById("tva").value.replace(/\s/g, "").toUpperCase();
+    var vide = tva === "" || tva === "FR";
+    document.getElementById("tire").hidden = !(entreprise && juste && vide);
+    document.getElementById("faux").hidden = !(entreprise && juste && /^FR\d{11}$/.test(tva) && tva !== juste);
+    if (juste) {
+      document.getElementById("tire-numero").textContent = juste;
+      document.getElementById("mettre-faux").textContent = "Mettre " + juste;
+    }
+  }
+
+  function remplir(etat) {
+    var f = FICHES[etat];
+    ["nom", "telephone", "email", "adresse", "siret", "tva"].forEach(function (k) { document.getElementById(k).value = f[k]; });
+    poserCivilite(f.civilite);
+    capture.src = "aujourdhui/" + f.capture;
+    document.getElementById("capture-quoi").textContent = f.quoi;
+    document.getElementById("cadre-capture").scrollTop = 0;
+  }
+
+  ecran.addEventListener("click", function (e) {
+    var p = e.target.closest("[data-civilite]");
+    if (p) poserCivilite(p.getAttribute("aria-pressed") === "true" ? null : p.getAttribute("data-civilite"));
+  });
+  ecran.addEventListener("input", majAvis);
+  ["mettre-tire", "mettre-faux"].forEach(function (id) {
+    document.getElementById(id).addEventListener("click", function () {
+      document.getElementById("tva").value = tvaDuSiret(document.getElementById("siret").value) || "";
+      majAvis();
+    });
+  });
+  document.getElementById("enregistrer").addEventListener("click", function () { Kit.note(this, "Enregistré. L'appli ramène à sa fiche."); });
+  document.getElementById("photo-ajout").addEventListener("click", function () { Kit.note(this, "L'appareil photo s'ouvre ; la photo va sur son dernier chantier."); });
+  document.querySelectorAll("#etats [data-etat]").forEach(function (b) {
+    b.addEventListener("click", function () { remplir(b.getAttribute("data-etat")); });
+  });
+  remplir("particulier");
+})();
+</script>
+</body>
+</html>

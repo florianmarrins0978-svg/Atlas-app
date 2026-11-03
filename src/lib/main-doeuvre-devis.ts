@@ -33,12 +33,38 @@ export const LIBELLE_LIGNE_MAIN_DOEUVRE = "Main d’œuvre";
  * l'appelle sur les lignes qu'il affiche, le dépôt sur celles qu'il fige.
  */
 export function mainDoeuvreDesLignes(
-  lignes: readonly { mainDoeuvre?: boolean | null; montant: string | number }[]
+  lignes: readonly { mainDoeuvre?: boolean | null; montant: string | number; partMainDoeuvre?: string | number | null }[]
 ): string | null {
-  const somme = lignes
-    .filter((l) => l.mainDoeuvre === true)
-    .reduce((s, l) => s.plus(new Decimal(String(l.montant || "0"))), new Decimal(0));
+  const somme = lignes.reduce((s, l) => s.plus(mainDoeuvreDeLaLigne(l)), new Decimal(0));
   return somme.greaterThan(0) ? somme.toDecimalPlaces(2).toFixed(2) : null;
+}
+
+/**
+ * Ce qu'une ligne porte de main d'œuvre : toute la ligne quand elle EST la main
+ * d'œuvre (migration 0130), sinon la part répartie sur ce travail (migration
+ * 0155, la feuille du 1er novembre 2026).
+ *
+ * **Jamais plus que la ligne** : il peut baisser son prix après coup, et
+ * « dont » ne doit pas annoncer plus de main d'œuvre que le travail ne coûte.
+ * Une part négative ou illisible ne vaut rien.
+ */
+export function mainDoeuvreDeLaLigne(l: {
+  mainDoeuvre?: boolean | null;
+  montant: string | number;
+  partMainDoeuvre?: string | number | null;
+}): Decimal {
+  const montant = lisible(l.montant);
+  if (l.mainDoeuvre === true) return montant;
+  const part = Decimal.max(0, lisible(l.partMainDoeuvre));
+  return Decimal.min(part, Decimal.max(0, montant));
+}
+
+function lisible(v: string | number | null | undefined): Decimal {
+  try {
+    return new Decimal(String(v ?? "0") || "0");
+  } catch {
+    return new Decimal(0);
+  }
 }
 
 /**

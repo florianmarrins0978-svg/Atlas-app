@@ -1,5 +1,6 @@
 import { lireRapportParJeton } from "@/server/repositories/passages-entretien";
-import { couleursDocument } from "@/lib/design-tokens";
+import { colors } from "@/lib/design-tokens";
+import { EcranDeRetour } from "@/components/atlas/LettreDuClient";
 import RapportEntretien from "@/components/atlas/RapportEntretien";
 import { garderLaPage } from "@/server/garde-page";
 
@@ -27,24 +28,6 @@ export const dynamic = "force-dynamic";
 // Un compte rendu de passage n'a rien à faire dans un moteur de recherche.
 export const metadata = { robots: { index: false, follow: false } };
 
-function Cadre({ titre, texte }: { titre: string; texte: string }) {
-  return (
-    <div className="flex min-h-dvh items-center justify-center bg-[#F4EFE8] p-6">
-      <div className="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-sm">
-        <h1
-          className="text-[18px] font-semibold"
-          style={{ fontFamily: "ui-serif, Georgia, serif", color: couleursDocument.encre }}
-        >
-          {titre}
-        </h1>
-        <p className="mt-2 text-[14px] leading-relaxed" style={{ color: couleursDocument.etiquette }}>
-          {texte}
-        </p>
-      </div>
-    </div>
-  );
-}
-
 export default async function PageRapportClient({
   params,
 }: {
@@ -58,7 +41,9 @@ export default async function PageRapportClient({
   // deux apprendrait à un visiteur au hasard qu'un jeton a existé.
   if (!rapport) {
     return (
-      <Cadre
+      <EcranDeRetour
+        signe="sablier"
+        ton="or"
         titre="Ce lien n'est plus valable"
         texte="Contactez votre artisan pour en recevoir un nouveau."
       />
@@ -66,7 +51,7 @@ export default async function PageRapportClient({
   }
 
   return (
-    <div className="min-h-dvh bg-[#F4EFE8] px-5 py-8">
+    <div className="min-h-dvh px-[18px] pt-4 pb-8" style={{ backgroundColor: colors.cream }}>
       <RapportEntretien rapport={rapport} />
     </div>
   );

@@ -20832,6 +20832,8 @@ l'écran est faux.
 
 ### Le trait de la dictée : ce sont les mesures qui avancent, pas une image
 
+> **Remplacé le 1er novembre 2026** par la dictée B, l'anneau qui écoute (§535) : le trait et `contourDuTrait` sont partis avec la ligne. Ce qui suit reste pour le pourquoi.
+
 Les barreaux découpaient la voix en morceaux ; le trait la garde d'un seul
 tenant. Deux choix portent tout le reste :
 
@@ -36522,7 +36524,132 @@ que gardés en double — `main` n'a qu'une seule version de chacun.
 
 **Une pièce de tableau n'a pas de fichier** (`fichier_cle` NULL, migration 0154) : `format: "tableau"` sur la fiche, qui l'ouvre sur ses chiffres et son chantier ; l'assistant la joint vers la fiche du client, sur son onglet, jamais vers un PDF absent ; la route du PDF et l'effacement d'un client ne supposent plus un fichier.
 
-## §534 : Un PDF importé passe par la règle des tableaux
+## §534 : La lettre de l'artisan, et ce que les écrans du client partagent
+
+**Ses planches du 31 octobre 2026, codées le 1er novembre** sur sa consigne, *« tu peux tout coder »*.
+
+**Une seule tête et un seul écran de retour** (`src/components/atlas/LettreDuClient.tsx`) : `TeteDeLettre` (le titre en serif, `Monogramme`, ses initiales à l'or), `EcranDeRetour` (un signe, une phrase, le geste qui reste, qui écrit) et `CocheFaite`. Le devis, le contrat, les dates du mois et le compte rendu s'ouvrent pareil ; devis accepté, correction demandée, réponse enregistrée, lien expiré, contrat accepté ou refusé se ressemblent. Chacun dessinait sa carte à ombre, et trois pages sur cinq leurs couleurs en dur : elles passent toutes par les jetons, qui retombent sur la charte d'origine faute de variables (`estPageDuClient`).
+
+**La réponse au contrat remplace la page** : `repondreContratAction` rend `{ succes: "accepte" | "refuse" }`, et `ReponseContrat` enveloppe la page pour lui substituer l'écran de retour que le client retrouvera en rouvrant son lien. Une phrase rendue par l'action aurait fait deux textes pour un même état.
+
+**Le devis tient toujours dans 390 × 664** (`test-devis-client-e2e`) : les deux dates côte à côte gagnent une ligne chacune, le mot pour l'artisan ne s'ouvre qu'au doigt, et les deux dernières issues partagent une rangée. Le rond de choix reste un vrai bouton radio (`appearance-none`), pour que le formulaire envoie ce qu'il a toujours envoyé.
+
+**Les règles neuves sont pures** : `joursSurDeuxLignes` et `moisAbrege` (`src/lib/jour.ts`, la table des mois abrégés n'existe plus qu'ici), `sommeDesMontants` (`src/lib/euros.ts`, en décimal : trois factures en flottants rendent 4 270,799999). Aucune lecture neuve en base : la pellicule de « Ses coordonnées », un temps posée sur le dernier chantier du client, a été retirée le jour même, sur sa décision (*« ajouter des photos est inutile »*).
+
+## §535 : La dictée B, l'anneau qui écoute : le même disque, l'avion dedans
+
+**Son choix du 1er novembre 2026** sur la planche `appli/soignee/chantier.html` (« la B pour la dictée »), après sa demande du même jour : *« sur la note vocale, une fois qu'on appuie dessus, fais moi quelque chose de mieux, plus joli »*.
+
+**Le disque du micro ne bouge pas** (`AnneauNoteVocale.tsx`, `.atlas-ecoute`) : pendant la dictée, l'avion prend sa place dans le même disque de 80 px, Jeter s'écrit à gauche sous un rond de 52 px, le temps à droite, et « Envoyer » sous le disque. Même objet, deux états, sa règle du 11 août. Ses règles du 31 août tiennent : pas de pause, et un seul aplat vert, celui qu'il avait déjà sous le doigt.
+
+**La voix se lit dans trois cercles d'or** (`cerclesDeLaVoix`, fonction pure) : leur rayon et leur netteté suivent `magnetophone.niveau`, lissé à mi-chemin à chaque mesure ; bornés à 54 px pour ne pas toucher « Devis à la voix », et visibles au silence pour qu'un micro calme ne paraisse pas muet. Le trait du 2 septembre (`contourDuTrait`) et ses règles CSS sont partis avec la ligne.
+
+**Un appui dans la première seconde n'envoie rien** (`envoyerLaNote`). L'avion tombe sous le doigt qui vient de lancer la dictée : sans cette garde, un double appui enverrait une note d'une demi-seconde et la chaîne écrirait un devis à partir de rien. `test-anneau-dictee-e2e` l'éprouve, avec la place du disque à deux pixels près et les deux mots.
+
+
+## §536 : Les ajouts du devis s'ouvrent en feuilles : le chiffre tapé, le calcul montré avant
+
+**Sa décision du 1er novembre 2026 au soir**, devant la planche
+`appli/soignee/chantier.html?ecran=devis` : *« laisse comme tu as fait,
+ensuite code ça »*. Les cinq ajouts du devis deviennent des pastilles
+(`PastilleAjout.tsx`) ; la TVA, l'acompte et la remise s'ouvrent sur une
+grande case au pavé de chiffres (`FeuilleDuTaux.tsx`, sa réponse *« je dois
+pouvoir écrire ce que je veux »*), la main d'œuvre sur son calcul
+(`FeuilleMainDoeuvre.tsx`).
+
+**Ce qui a été décidé, et pourquoi :**
+
+| | |
+|---|---|
+| la feuille ne juge rien elle-même | l'écran lui passe `lire`, qui appelle `tauxTvaValide`, `pourcentValide`, `tauxCumuleValide` : les fonctions que le serveur oppose ensuite (§3, une seule règle) |
+| l'aperçu prend les totaux de l'écran | la remise montrée avant d'être posée passe par `totauxAvecReduction`, l'acompte par `echeancierDevis` : le chiffre montré est celui qui sera posé |
+| **le moment de l'acompte se lit, il ne se choisit pas** | la planche proposait trois moments ; en base, le moment SUIT le rang (`momentAcompte`), et sa correction du 12 septembre interdit qu'un troisième soit la fin du chantier. Un choix libre aurait permis un premier acompte « à mi-parcours » |
+| raccourcis | TVA 10, 5,5, 0 ; acompte : son réglage, 40, 50 (le premier seulement, les suivants sont des cumuls) ; remise 5, 10, 15 |
+| **le prix de la main d'œuvre se recalcule au serveur** | `ajouterMainDoeuvreChoisieAction` reçoit un choix (son équipe, ou l'identifiant d'un prix de partenaire et une quantité), jamais un prix ; elle rejoue `ligneDeSonEquipe` / `ligneDeSonPartenaire` sur ses prix et ses marges lus en base. Le tarif de son équipe vaut comme un prix tapé sur une ligne, et il arrive tel que la feuille l'a montré : effacé, la ligne arrive à chiffrer, jamais reprise d'office |
+| partenaire | `prixDesPartenaires` réutilise `prixDepuisAchat` : le même calcul qu'une ligne dictée. Sans marge, à chiffrer |
+| **les unités de la main d'œuvre tiennent** | `uniteAdmise` connaissait sept unités ; « jour/homme », écrit par la préparation du devis depuis le 21 octobre, retombait en « u » dès qu'on touchait la case. Elle admet maintenant « jour/homme », « jour » (journée) et « m » (lu « ml »), sans les ajouter aux pastilles de la case |
+| une ligne de main d'œuvre en une case | seulement au forfait, une fois (la forme du 13 octobre) ; en jours d'homme ou à l'heure, ses quatre cases, sans quoi le prix du jour se lirait comme le montant |
+
+**La main d'œuvre RÉPARTIE sur un devis écrit (2 novembre 2026, sa consigne
+« code le, pas de batterie ») :**
+
+| | |
+|---|---|
+| la barre | celle d'« Avant de chiffrer » (`RepartirLaMainOeuvre.tsx`), réutilisée telle quelle dans la feuille : une seconde barre aurait fini par répartir autrement |
+| sur quels travaux | ceux de la TVA où il a appuyé, qui ont leur prix, hors main d'œuvre : la part prend le taux de son travail |
+| **la part entre dans le prix unitaire, la quantité reste** | « 12 m² à 18 € » qui reçoit 150 € devient « 12 m² à 30,50 € ». La préparation du devis réécrit au forfait ; ici, ce serait effacer ce qu'il a écrit |
+| **la part gardée est celle que le prix rend** | deux décimales au prix unitaire : 150 € sur 7 m² posent 150,01 €. C'est ce chiffre qui est gardé et compté (`partsAppliquees`), jamais le voulu |
+| **gardée sur la ligne** | `lignes_prix.part_main_doeuvre`, recopiée sur `lignes_devis` (migration 0155, nullable, aucun `UPDATE`) ; `mainDoeuvreDeLaLigne` la compte dans « dont main d'œuvre HT », bornée au montant de la ligne s'il baisse son prix ensuite |
+| au serveur | `repartirMainDoeuvreAction` recalcule le total comme pour une ligne, partage avec `repartirMainOeuvre`, et `poserLesPartsDeMainDoeuvre` écrit tout ou rien, sur les prix lus en base |
+
+**L'ordre des lignes du devis (2 novembre 2026, trouvé en codant la planche) :**
+
+| | |
+|---|---|
+| le défaut | `getOuCreerDevisBrouillon` lisait `lignes_prix` sans `ORDER BY` et recopiait `ordre: i` : le devis du client prenait l'ordre du disque. Un `UPDATE` qui ne tient plus dans sa page écrit la ligne ailleurs, et l'index la range au bout : la ligne retouchée passait derrière les autres, l'écran la montrant en tête |
+| une seule définition | `ORDRE_DES_LIGNES_PRIX` (`lignes-prix.ts`) sert l'écran (`listerLignesPrix`) et le devis : le rang, puis la naissance, puis l'identifiant. Deux lignes partagent un rang après un retrait (`ajouterLignePrix` compte les lignes) : la dernière posée reste au bout, et deux lectures ne tranchent jamais différemment |
+| le PDF | l'aperçu, l'envoi, la feuille sans prix et `getLignesDevis` passent par `lignesDuDevis`, trié par rang. Aucun geste ne réécrit une ligne de devis aujourd'hui : l'ordre du disque y tombait juste par accident |
+| la facture | rien à changer : elle recopie le devis par rang et `donneesFacture` trie avant le papier |
+| le contrôle | `test-ordre-des-lignes-du-devis-db.ts` remplit la page avant de retoucher : sur une table presque vide, la mise à jour reste dans sa page (« HOT »), garde sa place dans l'index, et la première version était verte sur le défaut. Chaque cas vérifie que le piège est posé (`ORDER BY ctid`) |
+
+**La main d'œuvre DICTÉE dans « dont » (2 novembre 2026) :**
+
+| | |
+|---|---|
+| le défaut | `propositionAvecMainOeuvre` écrivait la ligne « Main d'œuvre : … » sans drapeau, et fondait chaque part répartie dans le prix du travail : `appliquer-proposition.ts` n'avait rien à garder, et « dont main d'œuvre HT » restait vide sur un devis fait de main d'œuvre |
+| en ligne | `LigneProposee.mainDoeuvre` : la ligne compte entière, comme celle de « + Main d'œuvre » |
+| réparti | `LigneProposee.partMainDoeuvre` : la part que CE travail a reçue, qui est tout son prix (les jours couvrent le chantier, la grille ne donnait que la position de départ des curseurs). Recopiée sur `lignes_prix.part_main_doeuvre`, comme la feuille ; bornée au montant s'il baisse le prix ensuite |
+| ce qui n'en porte pas | un prix dicté, un tarif nommé, un engin avec son homme, un travail sorti par la croix (sa grille) : leur prix ne vient pas de la main d'œuvre dictée |
+| le contrôle | deux cas de `test-main-oeuvre-dictee-db.ts`, de la proposition jusqu'au `mainDoeuvreHt` du devis figé |
+
+**La croix qui retire (2 novembre 2026, la planche : « La croix remplace le « − » doré pour retirer, et le tiroir rend la main ») :**
+
+| | |
+|---|---|
+| un seul dessin | `CroixRetirer.tsx` : le tracé `croix` d'`IconeTrait`, l'encre douce (l'or dit ce qui est consenti, la croix n'est qu'un geste), 16 px dessinés et 18 sur la bande d'une TVA, comme la planche |
+| 44 px au doigt | la zone grandit (26 px avant) ; `-my-[9px]` rend à la rangée la hauteur que le « − » lui donnait, `-ml-[14px]` pose le dessin au bord et laisse le libellé à sa place |
+| la facture | `LigneRemise` est la même pièce sur Travaux en plus : elle y prend la croix. Les deux autres « − » de cet écran (catégorie de travaux en plus, main d'œuvre) attendent sa planche |
+| **le tiroir, PAS pour tous** | la remise y passait déjà (`useRetraits`). L'acompte et la TVA se retirent toujours tout de suite : changer leur comportement sortait de ce lot |
+| ce qui ne change pas | les noms lus (« Retirer la remise », « Retirer l'acompte … », « Retirer la TVA à … ») et les repères (`retirer-prix-accorde`, `retirer-acompte`) |
+
+**Ce qui vient d'être ajouté s'éclaire (2 novembre 2026, la planche : « on le voit arriver ») :**
+
+| | |
+|---|---|
+| le mécanisme | `useArrivee.ts` : l'écran pose `arrivee("…")` (un `data-arrivee`) sur ce qui peut arriver, et chaque ajout annonce le repère de ce qu'il crée. L'effet, joué après chaque rendu, éclaire au premier rendu où le repère existe : la ligne n'est peinte qu'après la réponse du serveur |
+| les repères | `ligne:<id>` (main d'œuvre, chaque travail d'une répartition), `tva:<taux>` (le bloc entier, clé de `tauxDeLaLigne`, celle qui groupe), `acompte:<rang>` (le dernier rang), `remise` |
+| l'éclat | `element.animate`, du doré pâle (`voile(colors.or, 0.26)`, celui de la planche) au transparent en 1,8 s, la durée de `.vient-d-arriver`. **Le doré est résolu avant l'animation** (`dorePale`) : un `var()` dans une clé d'animation n'est pas lu par tous les moteurs. Rien dans `globals.css`, et aucun style posé par l'écran n'est touché |
+| le défilement | le premier élément dans la page (pas le premier annoncé) vient au milieu ; « moins de mouvement » : défilement immédiat, sans éclat |
+| la patience | 4 s : passé ce délai, l'annonce tombe sans rien éclairer, pour qu'un ajout refusé n'allume pas, au rendu suivant, un bloc qui existait déjà |
+| ce qui n'est pas éprouvé ici | le vrai devis (serveur interdit à ce lot) : le banc isolé de Chromium a vu l'animation sur le seul élément ajouté, effacée à la fin, et aucune sous « moins de mouvement » |
+
+**Ce qui reste, et n'est pas codé :** le tiroir pour l'acompte et la TVA
+(`TODO.md`).
+
+## §537 : La facture et ce qui la suit, recodées sur leur planche
+
+**Sa planche du 2 novembre 2026** (`appli/soignee/facture.html`), validée en
+entier (*« tout me va »*), puis *« code ça, ne lance pas de batterie »*. Huit
+écrans sous `src/app/chantiers/[id]/facture/` : la facture, le paiement,
+l'impayé, « Il ne vous paiera pas », l'avoir et son détail, la mise en
+demeure, les travaux en plus. Codés en trois parties, rassemblées en un lot.
+
+| | |
+|---|---|
+| **la mise en demeure attend l'échéance** | `quandLaMiseEnDemeure` (`src/lib/mise-en-demeure.ts`) : possible le LENDEMAIN de l'échéance, jour de l'atelier (`jourIso`), la règle des rappels d'impayé ; sans échéance, la date de la facture. L'écran éteint le téléchargement et dit pourquoi ; la route du PDF répond 409 avec la même phrase. Avant, la lettre se produisait avant l'échéance et disait pourtant « reste impayée » |
+| **le détail d'une ligne** | `src/lib/detail-de-ligne.ts` écrit « 120 m² à 6,50 € » ; la cause du « 0,00 € » des travaux en plus : l'écran mettait toutes les lignes au format de la case (« 6,5 »), que `enEuros` ne relit pas. Seules les lignes modifiables prennent ce format |
+| **le nouveau total de l'avoir** | `ttcApresAvoirs`, la fonction de « Net à payer » ; le plafond d'une ligne et son montant affiché partagent `ttcRestantSurLaLigne`. Le motif « Geste commercial » passe par `motifDeLAvoir`, qui envoie exactement ce qu'envoyait l'appli |
+| **les moyens de paiement** | les quatre que l'écran proposait (virement, chèque, espèces, carte) ; « autre » existe en base, aucun écran ne l'a jamais offert, il n'est pas ajouté |
+| **les boutons pleins** | dans la page, pas collés en bas : collés, ils recouvraient les lignes au défilement (le défaut du brouillon) |
+| **une seule pastille** | `src/components/atlas/PastilleAjout.tsx`, pour le devis comme pour la facture : chaque lot en portait une copie identique, réunies le 3 novembre à la fusion des deux lots |
+
+**Les deux derniers défauts du relevé, refermés.** Le numéro du client passe
+par `destinataireLisible` (« Au 06 79 98 45 14 »), comme l'envoi du devis. La
+carte « Non payée » a la largeur des règlements (346 px chacune, mesurée le
+3 novembre) ; `test-avoir-et-non-payee-e2e` la mesure, et la mesure a été vue
+rougir sur une carte élargie.
+
+## §538 : Un PDF importé passe par la règle des tableaux
 
 *31 octobre 2026, sa demande : « que ça soit un CSV, Excel ou un PDF, il faut que ça soit la même chose ; il faut qu'ils se débrouillent tout seuls pour me les ranger en client ». Planche `appli/soignee/clients-importer.html` (« Les PDF arrivent au même écran, groupés par client »).*
 
@@ -36534,7 +36661,7 @@ que gardés en double — `main` n'a qu'une seule version de chacun.
 
 **L'adresse se lit après le nom, et le texte ne choisit jamais entre deux.** Un devis imprime côte à côte le client et le lieu des travaux, et le texte d'un PDF les entremêle. Le texte (`coordonneesApresLeNom`) ne garde une adresse que si une seule, distincte de celles de l'en-tête de l'artisan, suit le nom ; le téléphone, que s'il suit le nom de près (160 caractères) et n'est pas celui de l'en-tête. Un faux téléphone séparerait deux fois le même client (`rapprocherClient`). Sans adresse lue, l'IA lit le TEXTE (`texteSuffit`), jamais l'image d'un PDF qui en a un ; c'est elle qui rend le lieu des travaux (`chantier`), écarté s'il redit l'adresse du client. Le regex de l'adresse est sans drapeau `i` : avec `iu`, `\p{Lu}` prend les minuscules, et la ville avalait la phrase suivante.
 
-**Trois colonnes de lecture (migration 0155, expand seul) :** `adresse_lue`, `telephone_lu`, `chantier_lu`. `adresse_chantier` garde ce que le rangement a DÉCIDÉ ; y écrire la lecture l'aurait polluée au premier « Annuler ».
+**Trois colonnes de lecture (migration 0156, expand seul) :** `adresse_lue`, `telephone_lu`, `chantier_lu`. `adresse_chantier` garde ce que le rangement a DÉCIDÉ ; y écrire la lecture l'aurait polluée au premier « Annuler ».
 
 **Ce qui n'est pas tenu.** Un PDF déjà lu avant la migration n'a pas d'adresse : il se range sans, comme avant. Le même numéro dans deux PDF différents se range deux fois (deux fichiers, deux pièces), à l'inverse d'une ligne de tableau en double.
 

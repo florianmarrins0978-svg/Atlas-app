@@ -19,6 +19,8 @@ import FactureClient from "./FactureClient";
 import SuiteDeLaFacture from "./SuiteDeLaFacture";
 import { avoirsDeLaFacture } from "@/server/repositories/avoirs";
 import { PARAM_PROVENANCE, retourDepuisLePlanning } from "@/lib/retour-au-planning";
+import { avecCivilite } from "@/lib/civilite";
+import { jourIso } from "@/lib/jour";
 import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
@@ -108,10 +110,21 @@ export default async function FacturePage({
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <div className="pb-16">
+        {/* **L'en-tête des écrans soignés** — sa planche du 2 novembre 2026 :
+            le retour cerné et l'assistant sur une ligne, le titre seul dessous,
+            puis le client AVEC sa civilité (« Mme Vasseur », jamais le nom
+            seul ni en capitales). C'est le nom recopié sur la facture qui fait
+            foi ; avant qu'elle existe, celui du chantier. Un client sans nom se
+            dit tel quel : c'est une mention qui manquera au départ. */}
         <EnTeteEcran
+          allure="soignee"
           retour={retour}
-          surtitre={chantier.nom}
           titre="Facture"
+          precision={
+            existante
+              ? avecCivilite(existante.facture.clientNom, existante.facture.clientCivilite) || "Client non renseigné"
+              : chantier.nom
+          }
         />
 
         <FactureClient
@@ -144,6 +157,16 @@ export default async function FacturePage({
           jetonDejaPrepare={envoiDejaFait?.jeton ?? null}
           jetonAcquittePrepare={jetonAcquitte}
           avoirs={avoirs}
+          envoyeeLe={envoiDejaFait ? jourIso(envoiDejaFait.envoyeAt) : null}
+          // Ce qui suit une facture PARTIE : ses avoirs, et ce qu'il fait quand
+          // le client ne paie pas (planches du 24 septembre 2026). Rendu ici,
+          // au serveur, et posé par l'écran sous « arrêtée » (sa planche du
+          // 2 novembre 2026).
+          suite={
+            existante?.facture.statut === "emise" ? (
+              <SuiteDeLaFacture ctx={ctx} chantierId={id} factureId={existante.facture.id} />
+            ) : null
+          }
           initialFacture={
             existante
               ? {
@@ -182,6 +205,11 @@ export default async function FacturePage({
                     id: l.id,
                     libelle: l.libelle,
                     montant: l.montant,
+                    // Sous le nom, en petit : « 120 m² à 6,50 € » (sa planche
+                    // du 2 novembre 2026, `detailDeLaLigne`).
+                    quantite: l.quantite,
+                    unite: l.unite,
+                    prixUnitaire: l.prixUnitaire,
                     // Le taux de sa catégorie, comme sur le papier
                     // (migration 0073) : sans lui, l'écran ventilait tout sur
                     // le taux du document.
@@ -197,10 +225,6 @@ export default async function FacturePage({
               : null
           }
         />
-
-        {/* Ce qui suit une facture PARTIE : ses avoirs, et ce qu'il fait quand
-            le client ne paie pas (planches du 24 septembre 2026). */}
-        {existante?.facture.statut === "emise" && <SuiteDeLaFacture ctx={ctx} chantierId={id} factureId={existante.facture.id} />}
       </div>
     </div>
   );

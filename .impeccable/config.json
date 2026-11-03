@@ -431,6 +431,132 @@
         ],
         "createdAt": "2026-10-28T20:27:53.376Z",
         "reason": "measured in browser 28 Oct 2026: flagged boxes are list rows whose only boundary is a top hairline; text sits 12px or more inside plages padded 16px, same layout as the validated clients.html planche"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/client-recoit.html"
+        ],
+        "createdAt": "2026-10-31T21:37:49.341Z",
+        "reason": "Fond crème de la charte d'Arborea, identité d'Atlas relevée dans PRODUCT.md et src/lib/chartes.ts ; la planche reprend le kit commun appli/soignee/kit.css"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/client-coordonnees.html"
+        ],
+        "createdAt": "2026-10-31T21:50:57.121Z",
+        "reason": "Fond crème de la charte d'Arborea, identité d'Atlas relevée dans PRODUCT.md et src/lib/chartes.ts ; la planche reprend le kit commun appli/soignee/kit.css"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/client-contrat.html"
+        ],
+        "createdAt": "2026-10-31T21:50:57.143Z",
+        "reason": "Fond crème de la charte d'Arborea, identité d'Atlas relevée dans PRODUCT.md et src/lib/chartes.ts ; la planche reprend le kit commun appli/soignee/kit.css"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/termines-non-payees.html"
+        ],
+        "createdAt": "2026-10-31T21:50:57.173Z",
+        "reason": "Fond crème de la charte d'Arborea, identité d'Atlas relevée dans PRODUCT.md et src/lib/chartes.ts ; la planche reprend le kit commun appli/soignee/kit.css"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/termines-retours.html"
+        ],
+        "createdAt": "2026-10-31T21:50:57.191Z",
+        "reason": "Fond crème de la charte d'Arborea, identité d'Atlas relevée dans PRODUCT.md et src/lib/chartes.ts ; la planche reprend le kit commun appli/soignee/kit.css"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/chantier.html"
+        ],
+        "createdAt": "2026-10-31T22:05:02.317Z",
+        "reason": "Fond des planches soignées, charte Arborea relevée au navigateur (PRODUCT.md, kit.css body.pl)"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "appli/soignee/chantier.html"
+        ],
+        "createdAt": "2026-10-31T22:05:02.338Z",
+        "reason": "Le cadre du téléphone des planches : l'écran le remplit par construction (kit.css .cadre)"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "appli/soignee/chantier.html"
+        ],
+        "createdAt": "2026-10-31T22:05:02.367Z",
+        "reason": "Seul signalement : crème sur le vert des boutons #7d9a6d, choisi par le patron le 3 septembre 2026 ; le cran plus sombre lui est proposé sur fondations.html"
+      },
+      {
+        "rule": "kicker-above-heading",
+        "value": "*",
+        "files": [
+          "appli/soignee/client-recoit.html"
+        ],
+        "createdAt": "2026-11-01T07:21:36.799Z",
+        "reason": "« Facture » en or au-dessus du numéro : c'est la page d'aujourd'hui (src/app/factures/[jeton]/page.tsx, sa demande du 8 septembre 2026), et sa réponse du 1er novembre demande d'en garder l'esprit"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "appli/soignee/client-contrat.html"
+        ],
+        "createdAt": "2026-11-01T09:35:14.821Z",
+        "reason": "Planche reproduit la charte de l'application (src/lib/design-tokens.ts) : l'or des intitulés, le vert des boutons sous texte clair, le gris des exemples ; les changer est une décision de charte, pas de planche"
+      },
+      {
+        "rule": "pulsing-dot",
+        "value": "*",
+        "files": [
+          "appli/soignee/chantier.html"
+        ],
+        "createdAt": "2026-11-01T17:17:01.528Z",
+        "reason": "Le point rouge du chrono pendant la dictée : celui de l'appli (globals.css .atlas-pastille, atlas-battre-pastille), lié à un enregistrement réellement en cours"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "appli/soignee/reglages-banque.html"
+        ],
+        "createdAt": "2026-11-01T19:39:29.932Z",
+        "reason": "Décisions du patron des 25 et 28 octobre 2026 (kit.css, TODO.md) : vert des boutons #7d9a6d gardé, titres de rubrique dans l'or de l'appli"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "appli/soignee/facture.html"
+        ],
+        "createdAt": "2026-11-02T18:01:13.114Z",
+        "reason": "Crème sur le vert des boutons #7d9a6d, choisi par le patron le 3 septembre 2026 ; libellés en doré #B98B47, sa consigne du 25 octobre 2026 (jamais orTexte dans les planches)"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/facture.html"
+        ],
+        "createdAt": "2026-11-02T22:15:18.101Z",
+        "reason": "Fond des planches soignées, charte Arborea relevée au navigateur (PRODUCT.md, kit.css body.pl), comme chantier.html"
       }
     ]
   }

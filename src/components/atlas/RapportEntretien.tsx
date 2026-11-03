@@ -2,7 +2,9 @@ import type { RapportPublic } from "@/server/repositories/passages-entretien";
 import { libelleMinutes } from "@/lib/passage-entretien";
 import { parFamilles } from "@/lib/prestations-entretien";
 import { jourEnTitre } from "@/lib/jour";
-import { couleursDocument } from "@/lib/design-tokens";
+import { colors, font, voile } from "@/lib/design-tokens";
+import { CocheFaite, TeteDeLettre } from "./LettreDuClient";
+import IconeTrait from "./IconeTrait";
 
 /**
  * Le rapport de passage, tel que le CLIENT le reçoit.
@@ -11,78 +13,80 @@ import { couleursDocument } from "@/lib/design-tokens";
  * (`/entretien/<jeton>`) et celle où l'artisan le relit dans l'application
  * (`rapport-dans-l-appli.ts`). Recopiée, la carte de l'artisan aurait fini par
  * montrer autre chose que ce que son client a lu (`CLAUDE.md` §3).
+ *
+ * **La lettre de l'artisan — sa planche du 31 octobre 2026**
+ * (`appli/soignee/client-recoit.html`) : « Retour d'intervention » passe du
+ * surtitre doré au grand titre, ses initiales à côté, comme le devis et le
+ * contrat. Ce qui a été fait se lit par famille, une coche verte par ligne ;
+ * le temps passé et les observations ferment la page. Les couleurs passent par
+ * les jetons : la page du client n'en reçoit aucune et retombe sur celles
+ * d'Atlas, l'écran de l'artisan suit sa charte.
  */
 export default function RapportEntretien({ rapport }: { rapport: RapportPublic }) {
   const familles = parFamilles(rapport.faites);
 
   return (
-    <div
-      className="mx-auto w-full max-w-md rounded-2xl bg-white px-6 py-7 shadow-sm"
-      data-atlas="rapport-entretien"
-      style={{ color: couleursDocument.encre }}
-    >
-      {/* Centré et doré, sa demande du 22 septembre 2026 : l'or des
-          documents (`couleursDocument.accent`), pas celui de la charte, qui
-          changerait avec les réglages de l'artisan. */}
-      <p
-        className="text-center text-[11px] font-semibold uppercase tracking-[0.18em]"
-        style={{ color: couleursDocument.accent }}
-      >
-        Retour d&apos;intervention
-      </p>
-      <h1 className="mt-2 text-[21px]" style={{ fontFamily: "ui-serif, Georgia, serif" }}>
-        {rapport.entrepriseNom}
-      </h1>
+    <div className="mx-auto w-full max-w-md" data-atlas="rapport-entretien" style={{ color: colors.ink }}>
+      <TeteDeLettre titre="Retour d'intervention" nom={rapport.entrepriseNom} />
+      <p className="mt-1.5 text-[14.5px] font-semibold leading-[1.4]">{rapport.entrepriseNom}</p>
       {/* **Une phrase, en noir, le jour en gras** — sa demande du
           22 septembre 2026 : plus de point médian entre la date et le nom
-          (`CLAUDE.md` §3, « ni point médian, ni tiret : des phrases »).
-          **L'année y est toujours** (25 septembre 2026, « ça serait bien
-          d'avoir l'année aussi ») : le client garde ce rapport, et le relit
-          l'année suivante, où « jeudi 17 septembre » ne désigne plus rien. */}
-      <p className="mt-1 text-[14px]" style={{ color: couleursDocument.encre }}>
-        <b>{jourEnTitre(rapport.jour)}</b>
+          (`CLAUDE.md` §3). **L'année s'écrit toujours** (25 septembre 2026) :
+          le client garde ce rapport, et le relit l'année suivante, où « jeudi
+          17 septembre » ne désigne plus rien. */}
+      <p className="mt-px text-[14.5px] leading-[1.4]">
+        <b className="font-semibold">{jourEnTitre(rapport.jour)}</b>
         {rapport.clientNom ? ` chez ${rapport.clientNom}` : ""}
       </p>
 
-      <div className="mt-6">
-        {familles.map((groupe) => (
-          <section key={groupe.famille} className="mt-5 first:mt-0">
-            <h2
-              className="text-[11px] font-semibold uppercase tracking-[0.18em]"
-              style={{ color: couleursDocument.etiquette }}
-            >
-              {groupe.famille}
-            </h2>
-            <ul className="mt-2">
-              {groupe.lignes.map((l) => (
-                <li key={l.libelle} className="flex gap-2 py-[5px] text-[15px] leading-[1.4]">
-                  <span aria-hidden="true" style={{ color: couleursDocument.etiquette }}>
-                    ✓
-                  </span>
-                  <span>{l.libelle}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))}
-      </div>
+      {familles.map((groupe, rang) => (
+        <section key={groupe.famille}>
+          <h2
+            className={`${rang === 0 ? "mt-[26px]" : "mt-7"} mb-2.5 text-[13px] font-semibold uppercase tracking-[0.12em]`}
+            /* Un h2 prend la serif des titres par défaut : la rubrique est un mot
+               de rangement, pas un titre. */
+            style={{ color: colors.inkSoft, fontFamily: font.body }}
+          >
+            {groupe.famille}
+          </h2>
+          <ul className="rounded-md px-[18px] py-1" style={{ backgroundColor: colors.card }}>
+            {groupe.lignes.map((l, i) => (
+              <li
+                key={l.libelle}
+                data-atlas="ligne-faite"
+                className={`flex min-h-11 items-center gap-3 py-1.5 text-[16px] leading-[1.35] ${i > 0 ? "border-t" : ""}`}
+                style={{ borderColor: colors.lineSoft }}
+              >
+                <CocheFaite />
+                <span>{l.libelle}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
 
       {rapport.minutes !== null && (
-        <p
-          className="mt-6 border-t pt-4 text-[14px]"
-          style={{ borderColor: "rgba(28,28,26,0.12)", color: couleursDocument.etiquette }}
-        >
-          Temps passé&nbsp;: <b style={{ color: couleursDocument.encre }}>{libelleMinutes(rapport.minutes)}</b>
+        <p className="mt-6 flex items-center gap-3 rounded-md p-[18px]" style={{ backgroundColor: colors.card }}>
+          <span style={{ color: colors.or }}>
+            <IconeTrait nom="horloge" taille={22} epaisseur={1.8} />
+          </span>
+          <span className="flex-1 text-[15px]" style={{ color: colors.inkSoft }}>
+            Temps passé
+          </span>
+          <b className="text-[22px] font-normal leading-none" style={{ fontFamily: font.display, fontVariantNumeric: "tabular-nums lining-nums" }}>
+            {libelleMinutes(rapport.minutes)}
+          </b>
         </p>
       )}
-
+      {/* Les observations, sur une plage dorée et en serif : c'est le mot de
+          l'artisan, la seule chose de la page qu'il a écrite lui-même. */}
       {rapport.observations && (
-        <div
-          className="mt-4 rounded-xl px-4 py-3 text-[14px] leading-[1.6]"
-          style={{ backgroundColor: "#F7F5F0" }}
+        <p
+          className="mt-4 rounded-md px-4 py-[13px] text-[17px] leading-[1.55]"
+          style={{ backgroundColor: voile(colors.or, 0.13), fontFamily: font.display }}
         >
           {rapport.observations}
-        </div>
+        </p>
       )}
     </div>
   );

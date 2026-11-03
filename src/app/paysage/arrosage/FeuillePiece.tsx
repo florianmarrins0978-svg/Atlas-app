@@ -12,6 +12,7 @@ import { enregistrerLaDemandeAction } from "./actions-fournisseurs";
 import { reglerContactAction } from "@/app/reglages/fournisseurs/actions";
 import type { SonFournisseur } from "./LePlanDuJardin";
 import EnregistrerLaDemande from "./EnregistrerLaDemande";
+import { ChampRecherche } from "@/components/atlas/ChampRecherche";
 
 /**
  * LES DEUX FEUILLES QUI MONTENT DU BAS — le menu d'une pièce, et le choix d'une
@@ -108,15 +109,15 @@ export function ChoisirUnePiece({
   const vues: Choix[] = piecesVisibles(categorie, recherche);
   return (
     <Feuille titre={titre} onFermer={onFermer} repere="choisir-piece">
-      {/* 16 px au moins : en dessous, iOS agrandit la page à la mise au point. */}
-      <input
-        type="search"
-        value={recherche}
-        onChange={(e) => setRecherche(e.target.value)}
+      {/* La barre de l'appli, pas une case en boîte : sa règle du 1er novembre
+          2026 (`scripts/test-une-seule-recherche.ts`). */}
+      <ChampRecherche
+        valeur={recherche}
+        onChange={setRecherche}
         placeholder="Chercher une pièce"
-        aria-label="Chercher une pièce"
-        className="mt-3 block w-full rounded-[10px] border-0 px-3 py-3 text-[16px]"
-        style={{ backgroundColor: colors.card, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
+        ariaLabel="Chercher une pièce"
+        dataAtlas="chercher-une-piece"
+        className="mt-3"
       />
       <div className="mt-3 flex flex-wrap gap-1.5">
         {CATEGORIES.map(([cle, libelle]) => {

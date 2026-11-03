@@ -16,6 +16,7 @@
  */
 import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
 import { colors, surPlein } from "@/lib/design-tokens";
+import IconeTrait from "@/components/atlas/IconeTrait";
 
 export default function BoutonTelechargerDevis({ jeton }: { jeton: string }) {
   return (
@@ -28,9 +29,10 @@ export default function BoutonTelechargerDevis({ jeton }: { jeton: string }) {
          chartes, illisible sur les deux sombres, et hors de la sienne partout
          (`CLAUDE.md` §3). C’est ce qu’il a vu — *« ce n’est pas aux couleurs
          de l’appli »*. */
-      className="mt-4 block w-full rounded-full py-3 text-center text-[15px] font-medium"
+      className="mt-6 flex min-h-[52px] w-full items-center justify-center gap-2.5 rounded-full text-center text-[16px] font-semibold"
       style={{ backgroundColor: colors.plein, color: surPlein }}
     >
+      <IconeTrait nom="telecharger" taille={19} epaisseur={1.8} />
       Télécharger mon devis
     </BoutonTelechargerDocument>
   );

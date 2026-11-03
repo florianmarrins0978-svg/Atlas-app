@@ -1261,6 +1261,12 @@ export const lignesPrix = pgTable(
      * HT », que le libellé ne peut pas porter : il le change au doigt.
      */
     mainDoeuvre: boolean("main_doeuvre").notNull().default(false),
+    /**
+     * La part de main d'œuvre RÉPARTIE sur ce travail (migration 0155) : la
+     * feuille « Main d'œuvre » du devis l'ajoute à son prix, et « dont main
+     * d'œuvre HT » la compte. Nulle : aucune part.
+     */
+    partMainDoeuvre: numeric("part_main_doeuvre", { precision: 12, scale: 2 }),
     ordre: integer("ordre").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -1575,6 +1581,8 @@ export const lignesDevis = pgTable(
     tauxTva: numeric("taux_tva", { precision: 5, scale: 2 }),
     /** Recopié de la ligne de prix (migration 0130), comme le taux. */
     mainDoeuvre: boolean("main_doeuvre").notNull().default(false),
+    /** Recopiée de la ligne de prix (migration 0155), comme le drapeau. */
+    partMainDoeuvre: numeric("part_main_doeuvre", { precision: 12, scale: 2 }),
     ordre: integer("ordre").notNull().default(0),
   },
   (t) => [
@@ -4146,7 +4154,7 @@ export const piecesImportees = pgTable("pieces_importees", {
   objet: text("objet"),
   /** L'adresse de son chantier, quand elle n'est pas celle du client (migration 0154). */
   adresseChantier: text("adresse_chantier"),
-  /** Ce que la lecture d'un PDF a trouvé du client et du lieu des travaux (migration 0155). */
+  /** Ce que la lecture d'un PDF a trouvé du client et du lieu des travaux (migration 0156). */
   adresseLue: text("adresse_lue"),
   telephoneLu: text("telephone_lu"),
   chantierLu: text("chantier_lu"),

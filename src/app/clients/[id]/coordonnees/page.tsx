@@ -34,6 +34,7 @@ export default async function SesCoordonneesPage({
   // c'est celle que la dictée emploie déjà.
   const lu = detacherCivilite(client.nom);
 
+
   return (
     <SesCoordonnees
       clientId={client.id}

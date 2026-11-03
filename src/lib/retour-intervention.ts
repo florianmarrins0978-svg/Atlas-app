@@ -268,7 +268,7 @@ export function phraseDeCeQuiManque(
 }
 
 /**
- * « 2 sur 3 faites » — ce que le patron lit en premier, sur la liste.
+ * « 2 tâches sur 3 » — ce que le patron lit en premier, sur la liste.
  *
  * **« Tout fait » quand rien ne manque**, plutôt que « 3 sur 3 » : c'est
  * l'information qu'il cherche, et un rapport de deux nombres égaux se relit
@@ -291,7 +291,10 @@ export function phraseDeCeQuiManque(
 export function compteDesTaches(taches: readonly TacheDuRetour[]): string {
   if (taches.length === 0) return "";
   const faites = taches.filter((t) => t.faite).length;
-  return `${faites} sur ${taches.length}`;
+  // « 2 tâches sur 3 » depuis sa planche du 31 octobre 2026
+  // (`appli/soignee/termines-retours.html`) : « 2 sur 3 » laissait deviner de
+  // quoi. Le mot s'accorde au nombre de faites, qui est ce qu'on lit d'abord.
+  return `${faites} tâche${faites > 1 ? "s" : ""} sur ${taches.length}`;
 }
 
 /** Un retour, tel que la page du patron le reçoit. */

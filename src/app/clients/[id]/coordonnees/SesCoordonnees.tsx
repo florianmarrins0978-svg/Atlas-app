@@ -7,7 +7,8 @@ import ChoixCivilite from "@/components/atlas/ChoixCivilite";
 import ChampAdresse from "@/components/atlas/ChampAdresse";
 import AvisNumeroTva from "@/components/atlas/AvisNumeroTva";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
-import { colors, smallCaps } from "@/lib/design-tokens";
+import type React from "react";
+import { colors, libelleCaps } from "@/lib/design-tokens";
 import { casesDuClient, type CiviliteClient } from "@/lib/civilite";
 import { DEBUT_NUMERO_TVA } from "@/lib/autoliquidation";
 import { enregistrerSesCoordonneesAction } from "./actions";
@@ -19,10 +20,14 @@ import { enregistrerSesCoordonneesAction } from "./actions";
  *
  * **Pourquoi ce n'est PAS le formulaire du chantier**, alors que le dépôt
  * refuse deux écrans pour une même saisie (`CLAUDE.md` §3) : celui-là n'écrit
- * pas la même chose. Il porte l'adresse des TRAVAUX, les photos et le micro du
- * chantier, et le client y reprend l'adresse du chantier quand il n'en a pas à
- * lui. Le rouvrir ici aurait demandé un chantier qui n'existe pas, et aurait
- * traîné trois champs qui ne concernent pas le client.
+ * pas la même chose. Il porte l'adresse des TRAVAUX et le micro du chantier,
+ * et le client y reprend l'adresse du chantier quand il n'en a pas à lui. Le
+ * rouvrir ici aurait demandé un chantier qui n'existe pas. Ce qui est commun
+ * depuis le 1er novembre 2026, c'est sa MISE EN PAGE.
+ *
+ * **Pas de photos ici — sa décision du 1er novembre 2026**, une fois l'écran
+ * vu dans l'appli : *« ajouter des photos est inutile »*. On y corrige les
+ * coordonnées d'un client ; les photos vivent sur ses chantiers.
  *
  * Ce qui est commun reste commun : les pastilles de civilité
  * (`ChoixCivilite`), la case d'adresse et ses suggestions (`ChampAdresse`), la
@@ -88,8 +93,16 @@ export default function SesCoordonnees({
     <div className="pb-[86px]">
       <EnTeteEcran retour={retour} titre="Ses coordonnées" />
 
+      {/* **La mise en page de sa fiche client — sa planche du 1er novembre
+          2026** (`appli/soignee/client-coordonnees.html`) : *« la première
+          page client, je veux pas y toucher, elle est vraiment bien, tu peux
+          te baser là-dessus, même pour le style et la mise en page »*. Donc
+          les pastilles, le nom et le téléphone sur une rangée, les numéros
+          d'une entreprise côte à côte, des intitulés courts au-dessus, les
+          cases de `FormulaireNouveauChantier`. Sans vocal : on corrige une
+          fiche, on ne la dicte pas. */}
       <form
-        className="flex flex-col gap-[10px] px-6 pt-4"
+        className="flex flex-col gap-3 px-6 pt-4"
         onSubmit={(e) => {
           e.preventDefault();
           enregistrer();
@@ -97,72 +110,99 @@ export default function SesCoordonnees({
       >
         <ChoixCivilite valeur={civilite} onChange={setCivilite} sansLegende />
 
-        <Case libelle="Nom du client" valeur={nom} onChange={setNom} placeholder="Bernard" />
-        {/* **Entreprise : deux cases de plus**, sous son nom — sa demande du
-            4 octobre 2026, *« des lignes en plus pour remplir ce qu'il faut »*.
-            Elles s'impriment sous le nom du client, sur le devis et la facture.
-            Repassé sur Mr ou Mme, elles se cachent sans rien effacer : un appui
-            de travers ne perd pas un numéro. */}
-        {/* **Public : le SIRET et le code service** (22 octobre 2026), les
-            deux numéros que Chorus Pro vérifie. Pas de n° de TVA : la
-            sous-traitance ne vaut pas pour une mairie (`casesDuClient`). */}
+        <div>
+          <div aria-hidden="true" className={`mb-1 flex items-end gap-[9px] ${libelleCaps}`} style={{ color: colors.muted }}>
+            <span className="min-w-0 flex-1 leading-[1.35]">Nom du client</span>
+            <span className="w-[152px] flex-shrink-0 text-right leading-[1.35]">Téléphone</span>
+          </div>
+          <div className="flex gap-[9px]">
+            <div className="min-w-0 flex-1">
+              <Case libelle="Nom du client" valeur={nom} onChange={setNom} placeholder="Bernard" />
+            </div>
+            {/* Le numéro à largeur FIXE, le nom prend ce qui reste : un nom
+                trop long se tronque sans rien coûter, un numéro tronqué ne se
+                rappelle pas (la mesure de sa fiche, 152 px). */}
+            <div className="w-[152px] flex-shrink-0">
+              <Case libelle="Téléphone" valeur={telephone} onChange={setTelephone} placeholder="06 12 34 56 78" type="tel" aDroite />
+            </div>
+          </div>
+        </div>
+
+        {/* **Entreprise : le SIRET et le n° TVA ; Public : le SIRET et le code
+            service, sur UNE rangée** — comme sa fiche (`casesDuClient`). Ils
+            s'impriment sous le nom du client, sur le devis et la facture.
+            Repassé sur Mr ou Mme, ils se cachent sans rien effacer. Le SIRET a
+            un peu plus de place : il a quatorze chiffres. Pas de n° de TVA pour
+            une mairie : la sous-traitance ne vaut pas pour elle. */}
         {cases.siret && (
-          <Case libelle="SIRET" valeur={siret} onChange={setSiret} placeholder="812 345 678 00021" repere="siret-client" />
+          <div>
+            <div className="flex gap-3">
+              <div className="min-w-0 flex-[1.12]">
+                <Intitule>SIRET</Intitule>
+                <Case libelle="SIRET" valeur={siret} onChange={setSiret} placeholder="812 345 678 00021" repere="siret-client" />
+              </div>
+              {cases.numeroTva && (
+                <div className="min-w-0 flex-1">
+                  <Intitule>N° TVA</Intitule>
+                  <Case
+                    libelle="N° TVA intracommunautaire"
+                    valeur={numeroTva}
+                    onChange={setNumeroTva}
+                    placeholder="FR00812345678"
+                    repere="tva-client-fiche"
+                  />
+                </div>
+              )}
+              {cases.codeService && (
+                <div className="min-w-0 flex-1">
+                  <Intitule>Code service</Intitule>
+                  <Case libelle="Code service" valeur={codeService} onChange={setCodeService} placeholder="Sur la commande" repere="code-service-client" />
+                </div>
+              )}
+            </div>
+            {/* Le numéro tiré du SIRET se PROPOSE, il ne s'écrit jamais seul :
+                « Le mettre » est son geste (`AvisNumeroTva`). */}
+            {cases.numeroTva && <AvisNumeroTva siret={siret} numeroTva={numeroTva} onMettre={setNumeroTva} />}
+          </div>
         )}
-        {cases.numeroTva && (
-          <>
-            <Case
-              libelle="N° TVA intracommunautaire"
-              valeur={numeroTva}
-              onChange={setNumeroTva}
-              placeholder="FR suivi de 11 chiffres"
-              repere="tva-client-fiche"
-            />
-            <AvisNumeroTva siret={siret} numeroTva={numeroTva} onMettre={setNumeroTva} />
-          </>
-        )}
-        {cases.codeService && (
-          <Case libelle="Code service" valeur={codeService} onChange={setCodeService} placeholder="Sur son bon de commande" repere="code-service-client" />
-        )}
-        <Case
-          libelle="Téléphone"
-          valeur={telephone}
-          onChange={setTelephone}
-          placeholder="06 12 34 56 78"
-          type="tel"
-        />
-        <Case
-          libelle="E-mail"
-          valeur={email}
-          onChange={setEmail}
-          placeholder="bernard@exemple.fr"
-          type="email"
-        />
-        <ChampAdresse
-          label="Son adresse"
-          placeholder="12 rue des Lilas, Nantes"
-          value={adresse}
-          onChange={setAdresse}
-        />
+
+        <div>
+          <Intitule>E-mail</Intitule>
+          <Case libelle="E-mail" valeur={email} onChange={setEmail} placeholder="bernard@exemple.fr" type="email" />
+        </div>
+        <div>
+          <Intitule>Son adresse</Intitule>
+          <ChampAdresse label="Son adresse" placeholder="12 rue des Lilas, Nantes" value={adresse} onChange={setAdresse} sansLibelle />
+        </div>
 
         {/* Un refus se lit là où le geste se fait, et il porte sa raison. */}
         {refus && (
-          <p role="alert" className="text-[14px]" style={{ color: colors.alert }}>
+          <p role="alert" className="text-[14px] font-semibold" style={{ color: colors.alert }}>
             {refus}
           </p>
         )}
 
-        <div className="mt-3">
+        <div className="mt-2">
           <PrimaryButton onClick={enregistrer} disabled={enCours} pleineLargeur repere="enregistrer-coordonnees">
             {enCours ? "Enregistrement…" : "Enregistrer"}
           </PrimaryButton>
         </div>
       </form>
+
     </div>
   );
 }
 
-/** Une case étiquetée — la grammaire de la fiche client, sans son chantier. */
+/** L'intitulé court au-dessus d'une case, celui de sa fiche client. */
+function Intitule({ children }: { children: React.ReactNode }) {
+  return (
+    <div aria-hidden="true" className={`mb-1 ${libelleCaps}`} style={{ color: colors.muted }}>
+      {children}
+    </div>
+  );
+}
+
+/** Une case, celle de sa fiche client : son nom se lit au lecteur d'écran, l'intitulé est au-dessus. */
 function Case({
   libelle,
   valeur,
@@ -170,6 +210,7 @@ function Case({
   placeholder,
   type = "text",
   repere,
+  aDroite = false,
 }: {
   libelle: string;
   valeur: string;
@@ -177,21 +218,21 @@ function Case({
   placeholder: string;
   type?: "text" | "tel" | "email";
   repere?: string;
+  aDroite?: boolean;
 }) {
   return (
-    <label className="flex flex-col gap-1.5">
-      <span className={smallCaps} style={{ color: colors.muted }}>
-        {libelle}
-      </span>
-      <input
-        type={type}
-        value={valeur}
-        placeholder={placeholder}
-        onChange={(e) => onChange(e.target.value)}
-        data-atlas={repere}
-        className="atlas-case"
-        style={{ color: colors.ink }}
-      />
-    </label>
+    <input
+      type={type}
+      value={valeur}
+      placeholder={placeholder}
+      aria-label={libelle}
+      onChange={(e) => onChange(e.target.value)}
+      data-atlas={repere}
+      className="atlas-case"
+      style={{
+        color: colors.ink,
+        ...(aDroite ? { textAlign: "right" as const, fontVariantNumeric: "tabular-nums" } : null),
+      }}
+    />
   );
 }

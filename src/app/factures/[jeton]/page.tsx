@@ -3,7 +3,10 @@ import { jourLisible } from "@/lib/jour";
 import { motDuTampon } from "@/lib/acomptes-facture";
 import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
 import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
-import { colors, font, libelleCaps, surPlein } from "@/lib/design-tokens";
+import { colors, font, surPlein, voile } from "@/lib/design-tokens";
+import { EcranDeRetour } from "@/components/atlas/LettreDuClient";
+import IconeTrait from "@/components/atlas/IconeTrait";
+import EtatEcrit from "@/components/atlas/reglages/EtatEcrit";
 import { LIBELLE_AVANT, LIBELLE_APRES, phraseDuCheque } from "@/lib/modalites-paiement";
 import PastilleACopier from "./PastilleACopier";
 import AccuseDeReception from "./AccuseDeReception";
@@ -75,29 +78,6 @@ export const dynamic = "force-dynamic";
 // Une facture n'a rien à faire dans un moteur de recherche.
 export const metadata = { robots: { index: false, follow: false } };
 
-const SERIF = "ui-serif, Georgia, serif";
-
-function Cadre({ titre, texte }: { titre: string; texte: string }) {
-  return (
-    <div
-      className="flex min-h-dvh items-center justify-center p-6"
-      style={{ backgroundColor: colors.cream, color: colors.ink }}
-    >
-      <div
-        className="w-full max-w-sm rounded-2xl p-6 text-center shadow-sm"
-        style={{ backgroundColor: colors.card, border: `1px solid ${colors.line}` }}
-      >
-        <h1 className="text-[18px] font-semibold" style={{ fontFamily: SERIF }}>
-          {titre}
-        </h1>
-        <p className="mt-2 text-[14px] leading-relaxed" style={{ color: colors.muted }}>
-          {texte}
-        </p>
-      </div>
-    </div>
-  );
-}
-
 export default async function PageFactureClient({ params }: { params: Promise<{ jeton: string }> }) {
   await garderLaPage();
   const { jeton } = await params;
@@ -107,7 +87,9 @@ export default async function PageFactureClient({ params }: { params: Promise<{ 
   // apprendrait à un visiteur au hasard qu'un jeton a existé.
   if (!facture) {
     return (
-      <Cadre
+      <EcranDeRetour
+        signe="sablier"
+        ton="or"
         titre="Ce lien n'est plus valable"
         texte="Contactez votre artisan pour en recevoir un nouveau."
       />
@@ -116,62 +98,69 @@ export default async function PageFactureClient({ params }: { params: Promise<{ 
 
   const { modalites } = facture;
 
+  /* **L'esprit d'aujourd'hui, soigné — sa réponse du 1er novembre 2026 :**
+     *« pour la facture j'aurais aimé garder un peu le même esprit que celui
+     d'aujourd'hui, mais en amélioré et plus jolie »* (planche
+     `appli/soignee/client-recoit.html`). Donc la carte au centre, le mot
+     Facture en or au-dessus du numéro, puis Pour régler et l'accusé, dans le
+     même ordre. Ce qui change : ce qui se lit (le numéro en grand, l'échéance
+     en pastille, des mots à 13 points au lieu de 9,5) et ce qui se touche
+     (des pilules de 64 points, « Copier » au pouce). L'ombre et la bordure de
+     la carte s'en vont : une plage claire sur le fond suffit, comme dans
+     l'appli. */
   return (
-    <div
-      className="flex min-h-dvh items-center justify-center p-6"
-      style={{ backgroundColor: colors.cream, color: colors.ink }}
-    >
-      <div
-        className="w-full max-w-sm rounded-2xl p-6 text-center"
-        style={{
-          backgroundColor: colors.card,
-          border: `1px solid ${colors.line}`,
-          boxShadow: "0 8px 24px rgba(20,18,14,0.08)",
-        }}
-      >
-        <p className={libelleCaps} style={{ color: colors.or }}>
+    <div className="min-h-dvh px-3.5 pt-4 pb-7" style={{ backgroundColor: colors.cream, color: colors.ink }}>
+      <div className="mx-auto w-full max-w-md rounded-[22px] px-[22px] pt-[30px] pb-[22px] text-center" style={{ backgroundColor: colors.card }}>
+        <p className="text-[13px] font-bold uppercase tracking-[0.24em]" style={{ color: colors.or }}>
           Facture
         </p>
-        <h1 className="mt-2.5 text-[24px]" style={{ fontFamily: font.display }}>
+        <h1 className="mt-2.5 text-[33px] leading-[1.1] tabular-nums" style={{ fontFamily: font.display, letterSpacing: "-0.01em" }}>
           <NumeroDeDocument valeur={facture.numeroCommercial} />
         </h1>
-        <p className="mt-1.5 text-[14.5px]" style={{ color: colors.muted }}>
+        <p className="mt-1.5 text-[16px]" style={{ color: colors.inkSoft }}>
           {facture.entrepriseNom}
         </p>
 
-        {/* L'exemplaire acquitté dit son tampon, en or comme sur le papier,
-            à la place de l'échéance (sa demande du 23 octobre 2026). */}
+        {/* L'exemplaire acquitté dit son tampon à la place de l'échéance (sa
+            demande du 23 octobre 2026). L'un et l'autre en pastille : un
+            point ET un mot, jamais la couleur seule. */}
         {facture.acquitteeLe ? (
-          <p className={`mt-3.5 ${libelleCaps}`} style={{ color: colors.or }} data-atlas="facture-acquittee">
-            {motDuTampon(facture.acquitteeLe)}
-          </p>
+          <div className="mt-4">
+            <EtatEcrit ton="vert" dataAtlas="facture-acquittee">
+              {motDuTampon(facture.acquitteeLe)}
+            </EtatEcrit>
+          </div>
         ) : (
           facture.echeanceLe && (
-            <p className="mt-3.5 text-[14.5px]" style={{ color: colors.inkSoft }}>
-              À régler avant le {jourLisible(facture.echeanceLe)}
-            </p>
+            <div className="mt-4">
+              <EtatEcrit ton="ambre">À régler avant le {jourLisible(facture.echeanceLe)}</EtatEcrit>
+            </div>
           )
         )}
 
+        {/* **PAS DE MONTANT sur cette page — sa demande du 8 septembre 2026 :**
+            *« le montant ne doit pas apparaître, ça incitera le client à
+            ouvrir sa facture »*. Le geste qui l'ouvre est donc le plus fort. */}
         <BoutonTelechargerDocument
           fichier={`/factures/${encodeURIComponent(jeton)}/pdf`}
           nom={`${facture.numeroCommercial}.pdf`}
-          className="atlas-plein mt-5 block w-full rounded-full px-5 py-[15px] text-[17px]"
+          className="atlas-plein mt-[22px] flex min-h-[58px] w-full items-center justify-center gap-2.5 rounded-full px-5 text-[19px]"
           style={{ backgroundColor: colors.plein, color: surPlein, fontFamily: font.display }}
         >
+          <IconeTrait nom="telecharger" taille={19} epaisseur={1.8} />
           Télécharger ma facture
         </BoutonTelechargerDocument>
 
         {/* **L'avoir se trouve SOUS la facture qu'il corrige** — il part avec
-            son lien (`composerMessageAvoir`). Un bouton par avoir, au trait
-            doré : c'est une seconde pièce, pas le geste principal de la page. */}
+            son lien (`composerMessageAvoir`). Au trait doré, le mot en encre :
+            c'est une seconde pièce, pas le geste principal de la page. */}
         {facture.avoirs.map((a) => (
           <BoutonTelechargerDocument
             key={a.id}
             fichier={`/factures/${encodeURIComponent(jeton)}/avoirs/${a.id}/pdf`}
             nom={`${a.numero}.pdf`}
-            className="mt-3 block w-full rounded-full px-5 py-[13px] text-[16px]"
-            style={{ border: `1.5px solid ${colors.or}`, color: colors.ink, fontFamily: font.display }}
+            className="mt-2.5 flex min-h-[50px] w-full items-center justify-center rounded-full px-5 text-[15.5px] font-semibold"
+            style={{ boxShadow: `inset 0 0 0 1.5px ${voile(colors.or, 0.7)}`, color: colors.ink }}
             dataAtlas="telecharger-avoir"
           >
             Télécharger l&apos;avoir {a.numero}
@@ -180,48 +169,43 @@ export default async function PageFactureClient({ params }: { params: Promise<{ 
 
         {/* **« Pour régler » est séparé par un FILET, jamais par une seconde
             carte.** Deux cadres emboîtés font lire deux documents là où il n'y
-            en a qu'un — vu sur la planche avant de coder. */}
+            en a qu'un. */}
         {!facture.acquitteeLe && (
-        <div className="mt-5 border-t pt-4 text-left" style={{ borderColor: colors.line }}>
-          <p className={`mb-3 ${libelleCaps}`} style={{ color: colors.muted }}>
-            Pour régler
-          </p>
-
-          {/* La consigne du libellé vaut même sans IBAN réglé : elle porte sur le
-              virement, pas sur le compte. Le numéro est en gras AU MILIEU de la
-              phrase — c'est ce que le client doit recopier, et l'œil doit
-              l'attraper sans lire. */}
-          <p className="text-[14.5px] leading-[1.55]" style={{ color: colors.inkSoft }}>
-            {LIBELLE_AVANT}{" "}
-            <b className="font-medium" style={{ color: colors.ink }}>
-              {facture.numeroCommercial}
-            </b>{" "}
-            {LIBELLE_APRES}
-          </p>
-
-          <PastilleACopier
-            quoi="Numéro de facture"
-            affiche={facture.numeroCommercial}
-            aCopier={facture.numeroCommercial}
-          />
-
-          {/* **Rien ne s'affiche quand l'IBAN n'est pas réglé** — jamais une case
-              vide, jamais un « IBAN : ». Un champ sans source reste vide et se
-              tait (`CLAUDE.md` §4). Le reste du pavé, lui, garde tout son sens. */}
-          {modalites.ibanLisible && modalites.ibanACopier && (
+          <div className="text-left">
+            <Filet />
+            <p className="mb-2.5 text-[13px] font-semibold uppercase tracking-[0.14em]" style={{ color: colors.inkSoft }}>
+              Pour régler
+            </p>
+            {/* La consigne du libellé vaut même sans IBAN réglé : elle porte sur
+                le virement, pas sur le compte. Le numéro est en gras AU MILIEU
+                de la phrase : c'est ce que le client doit recopier. */}
+            <p className="text-[15.5px] leading-[1.55]" style={{ color: colors.inkSoft }}>
+              {LIBELLE_AVANT}{" "}
+              <b className="font-semibold" style={{ color: colors.ink }}>
+                {facture.numeroCommercial}
+              </b>{" "}
+              {LIBELLE_APRES}
+            </p>
             <PastilleACopier
-              quoi="IBAN"
-              affiche={modalites.ibanLisible}
-              aCopier={modalites.ibanACopier}
+              quoi="Numéro de facture"
+              affiche={facture.numeroCommercial}
+              aCopier={facture.numeroCommercial}
             />
-          )}
-
-          <div className="mt-4 border-t pt-4" style={{ borderColor: colors.line }}>
-            <p className="text-[14.5px] leading-[1.55]" style={{ color: colors.inkSoft }}>
+            {/* **Rien ne s'affiche quand l'IBAN n'est pas réglé** — jamais une
+                case vide, jamais un « IBAN : ». Un champ sans source se tait
+                (`CLAUDE.md` §4). */}
+            {modalites.ibanLisible && modalites.ibanACopier && (
+              <PastilleACopier
+                quoi="IBAN"
+                affiche={modalites.ibanLisible}
+                aCopier={modalites.ibanACopier}
+              />
+            )}
+            <Filet />
+            <p className="text-[15.5px] leading-[1.55]" style={{ color: colors.inkSoft }}>
               {phraseDuCheque(modalites.ordreDuCheque)}
             </p>
           </div>
-        </div>
         )}
 
         {/* **La dernière chose de la page, et c'est voulu** — sa demande du
@@ -229,6 +213,7 @@ export default async function PageFactureClient({ params }: { params: Promise<{ 
             lirait comme une condition pour ouvrir le document ; ici, personne
             ne peut s'y tromper. Elle porte aussi la date d'ouverture, notée
             depuis le navigateur : voir `AccuseDeReception`. */}
+        <Filet />
         <AccuseDeReception
           jeton={jeton}
           dejaConfirmeLe={facture.accuseLe ? facture.accuseLe.toISOString() : null}
@@ -236,4 +221,9 @@ export default async function PageFactureClient({ params }: { params: Promise<{ 
       </div>
     </div>
   );
+}
+
+/** Le filet qui sépare les parties de la carte : une seule pièce, jamais deux cadres. */
+function Filet() {
+  return <div aria-hidden="true" className="mt-6 mb-5 h-px" style={{ backgroundColor: colors.line }} />;
 }

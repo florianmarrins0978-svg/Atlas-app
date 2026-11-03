@@ -5,6 +5,8 @@ import { jourLisible, joursEnToutesLettres } from "@/lib/jour";
 import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import { avecCivilite } from "@/lib/civilite";
 import { colors, font, surPlein } from "@/lib/design-tokens";
+import { EcranDeRetour, TeteDeLettre } from "@/components/atlas/LettreDuClient";
+import IconeTrait from "@/components/atlas/IconeTrait";
 import BoutonTelechargerDevis from "./BoutonTelechargerDevis";
 import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
 import { garderLaPage } from "@/server/garde-page";
@@ -44,40 +46,6 @@ export const metadata = { robots: { index: false, follow: false } };
 const euros = (montant: string) =>
   `${Number(montant).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
 
-function Cadre({
-  titre,
-  texte,
-  enDessous,
-}: {
-  titre: string;
-  texte: string;
-  enDessous?: React.ReactNode;
-}) {
-  return (
-    <div
-      className="flex min-h-dvh items-center justify-center p-6"
-      style={{ backgroundColor: colors.cream, color: colors.ink }}
-    >
-      <div
-        className="w-full max-w-sm rounded-2xl p-6 text-center"
-        style={{
-          backgroundColor: colors.card,
-          border: `1px solid ${colors.line}`,
-          boxShadow: "0 8px 24px rgba(20,18,14,0.08)",
-        }}
-      >
-        <h1 className="text-[21px]" style={{ fontFamily: font.display }}>
-          {titre}
-        </h1>
-        <p className="mt-2.5 text-[14.5px] leading-relaxed" style={{ color: colors.muted }}>
-          {texte}
-        </p>
-        {enDessous}
-      </div>
-    </div>
-  );
-}
-
 export default async function PageDevisClient({ params }: { params: Promise<{ jeton: string }> }) {
   await garderLaPage();
   const { jeton } = await params;
@@ -87,18 +55,32 @@ export default async function PageDevisClient({ params }: { params: Promise<{ je
   // apprendrait à un visiteur au hasard qu'un jeton a existé.
   if (!envoi || envoi.expire) {
     return (
-      <Cadre
+      <EcranDeRetour
+        signe="sablier"
+        ton="or"
         titre="Ce lien n'est plus valable"
         texte="Contactez votre artisan pour en recevoir un nouveau."
       />
     );
   }
 
+  // Qui écrit, sous chaque écran de retour : le client qui rouvre son SMS une
+  // semaine plus tard doit savoir de quel artisan et de quel devis il s'agit.
+  const signature = (
+    <>
+      <b className="font-semibold" style={{ color: colors.ink }}>{envoi.devis.entrepriseNom}</b>, devis n°{" "}
+      <NumeroDeDocument valeur={envoi.devis.numeroCommercial} />
+    </>
+  );
+
   // Écran de retour : le client revient souvent pour vérifier la date qu'il a
   // retenue. La lui redonner ici lui évite de rappeler son artisan pour ça.
   if (envoi.reponse === "acceptee") {
     return (
-      <Cadre
+      <EcranDeRetour
+        signe="coche"
+        ton="vert"
+        signature={signature}
         titre="Devis accepté"
         /* **TOUS SES JOURS, pas seulement le premier** — depuis le
            20 septembre 2026, elle en retient autant que le chantier en prend.
@@ -129,7 +111,10 @@ export default async function PageDevisClient({ params }: { params: Promise<{ je
   }
   if (envoi.reponse === "refusee") {
     return (
-      <Cadre
+      <EcranDeRetour
+        signe="coche"
+        ton="or"
+        signature={signature}
         titre="Réponse enregistrée"
         texte="Vous avez indiqué ne pas donner suite à ce devis."
       />
@@ -140,7 +125,10 @@ export default async function PageDevisClient({ params }: { params: Promise<{ je
   // à remplir de nouveau, et croirait sa correction perdue.
   if (envoi.reponse === "correction") {
     return (
-      <Cadre
+      <EcranDeRetour
+        signe="crayon"
+        ton="or"
+        signature={signature}
         titre="Correction demandée"
         texte="Votre artisan a reçu votre message. Il corrigera le devis et vous en enverra une nouvelle version."
       />
@@ -155,130 +143,90 @@ export default async function PageDevisClient({ params }: { params: Promise<{ je
 
      Ce que cela commande ici : des marges resserrées, aucune phrase qui
      explique le champ d'à côté, et rien de décoratif. La mesure est tenue par
-     `scripts/test-devis-client-e2e.ts`, sur son écran de 390 × 664 — sans quoi
-     la page regrossit au premier ajout, et personne ne le voit. */
+     `scripts/test-devis-client-e2e.ts`, sur son écran de 390 × 664, dans le
+     pire cas (deux dates, calendrier ouvert, case de rétractation) — sans
+     quoi la page regrossit au premier ajout, et personne ne le voit.
+
+     **La lettre de l'artisan — sa planche du 31 octobre 2026**
+     (`appli/soignee/client-recoit.html`) : le numéro en grand titre, ses
+     initiales à l'or, puis qui écrit et pour qui. La carte à ombre a laissé
+     la place à deux plages, comme dans l'appli. */
   return (
-    /* **Les marges sont resserrées, et c'est mesuré — 4 septembre 2026.**
-       Sa demande : garder la case de rétractation dans la page, et prendre
-       ailleurs les 53 px qui manquaient. Ils viennent tous des espacements :
-       aucune phrase n'a été retirée. Le détail des gains est en
-       `ARCHITECTURE.md` §250. */
-    <div className="min-h-dvh px-4 pt-1 pb-0.5" style={{ backgroundColor: colors.cream, color: colors.ink }}>
-      <div className="mx-auto flex w-full max-w-md flex-col gap-0.5">
-        <header
-          className="rounded-2xl p-2.5"
-          style={{
-            backgroundColor: colors.card,
-            border: `1px solid ${colors.line}`,
-            boxShadow: "0 4px 14px rgba(20,18,14,0.06)",
-          }}
-        >
-          {/* **PAS D'INTERTITRE « DEVIS » ICI, contrairement à la facture.**
-              Il a été ajouté le 8 septembre 2026 puis retiré le jour même : la
-              suite a mesuré la page à 713 px pour 664 d'écran, cadre de
-              rétractation compris. Quatorze pixels pour un mot que « Devis n° »
-              disait déjà — c'est exactement la phrase inutile que `CLAUDE.md`
-              §3 fait supprimer, et sa règle du 31 août l'a tranché pour nous. */}
-          {/* Le nom de l'entreprise sur la MÊME ligne que le numéro : il occupait
-              la sienne, pour trois mots que l'œil lit de toute façon d'un bloc
-              avec le titre. Dix-huit pixels rendus à l'écran. */}
-          <div className="flex flex-wrap items-baseline justify-between gap-x-3">
-            <h1 className="text-[19px]" style={{ fontFamily: font.display }}>
-              Devis n° <NumeroDeDocument valeur={d.numeroCommercial} />
-            </h1>
-            <p className="shrink-0 text-[12px] uppercase tracking-wider" style={{ color: colors.muted }}>
-              {d.entrepriseNom}
-            </p>
-          </div>
-          {/* **La même civilité que partout ailleurs** (`src/lib/civilite.ts`).
-              Le client lit « Bonjour Mr. Martins » dans le message qui lui
-              apporte ce lien : trouver « Pour Martins » en tête de la page
-              qu'il ouvre juste après ferait douter qu'elle lui soit
-              destinée. */}
-          {d.clientNom && (
-            <p className="mt-0.5 text-[14px]" style={{ color: colors.inkSoft }}>
-              Pour {avecCivilite(d.clientNom, d.clientCivilite)}
-            </p>
-          )}
-          {d.adresseChantier && (
-            <p className="text-[13px]" style={{ color: colors.muted }}>
-              {d.adresseChantier}
-            </p>
-          )}
+    <div className="min-h-dvh px-[18px] pt-2.5 pb-2" style={{ backgroundColor: colors.cream, color: colors.ink }}>
+      <div className="mx-auto flex w-full max-w-md flex-col">
+        {/* L'en-tête du document : qui écrit, pour qui, combien, et la pièce
+            à emporter. Les suites y cherchent le téléchargement. */}
+        <header>
+        {/* **PAS D'INTERTITRE « DEVIS » ICI, contrairement à la facture.**
+            Retiré le 8 septembre 2026 : quatorze pixels pour un mot que
+            « Devis n° » dit déjà, sur un écran qui n'en a aucun à perdre. */}
+        <TeteDeLettre titre={<>Devis n° <NumeroDeDocument valeur={d.numeroCommercial} /></>} nom={d.entrepriseNom} taille={24} rond={30} />
+        {/* **La même civilité que partout ailleurs** (`src/lib/civilite.ts`).
+            Le client lit « Bonjour Mr. Martins » dans le message qui lui
+            apporte ce lien : trouver « Pour Martins » en tête de la page
+            ferait douter qu'elle lui soit destinée. */}
+        <p className="mt-0.5 text-[14px] leading-[1.34]" style={{ color: colors.inkSoft }}>
+          <b className="font-semibold" style={{ color: colors.ink }}>{d.entrepriseNom}</b>
+          {d.clientNom && <>, pour {avecCivilite(d.clientNom, d.clientCivilite)}</>}
+        </p>
+        {d.adresseChantier && (
+          <p className="text-[14px] leading-[1.34]" style={{ color: colors.inkSoft }}>
+            {d.adresseChantier}
+          </p>
+        )}
 
-          <dl className="mt-1.5 border-t pt-1 text-[14px]" style={{ borderColor: colors.line }}>
-            <div className="flex justify-between" style={{ color: colors.muted }}>
-              <dt>Total HT</dt>
-              <dd className="tabular-nums">{euros(d.totalHt)}</dd>
-            </div>
-            {/* En sous-traitance, la TVA est due par l'entreprise qui le
-                sous-traite : pas de ligne, la mention du papier suffit. */}
-            {!d.autoliquidation && (
-              <div className="flex justify-between" style={{ color: colors.muted }}>
-                <dt>TVA ({Number(d.tauxTva)} %)</dt>
-                <dd className="tabular-nums">{euros(d.totalTva)}</dd>
-              </div>
-            )}
-            {/* **Le TTC est le chiffre sur lequel il s'engage** : il doit être
-                le plus fort de la carte. En gris et en corps courant, il se
-                lisait comme une ligne de détail — vu sur la planche. */}
-            <div
-              className="flex justify-between text-[16px]"
-              style={{ fontFamily: font.display, color: colors.ink }}
+        <section className="mt-2 rounded-md px-3 py-[9px]" style={{ backgroundColor: colors.card }}>
+          {/* **Le TTC est le chiffre sur lequel il s'engage** : le plus fort de
+              la page, en serif. Le hors taxe et la TVA tiennent en une ligne
+              dessous, au lieu de deux lignes de détail. */}
+          <div className="flex items-baseline justify-between gap-3">
+            <span className="text-[17px] leading-tight" style={{ fontFamily: font.display }}>
+              {d.autoliquidation ? "Total à payer" : "Total TTC"}
+            </span>
+            <span
+              className="whitespace-nowrap text-[27px] leading-none tabular-nums"
+              style={{ fontFamily: font.display, letterSpacing: "-0.01em" }}
             >
-              <dt>{d.autoliquidation ? "Total à payer" : "Total TTC"}</dt>
-              <dd className="tabular-nums">{euros(d.totalTtc)}</dd>
-            </div>
-          </dl>
+              {euros(d.totalTtc)}
+            </span>
+          </div>
+          {/* En sous-traitance, la TVA est due par l'entreprise qui le
+              sous-traite : pas de détail, la mention du papier suffit. */}
+          {!d.autoliquidation && (
+            <p className="mt-0.5 text-[13.5px] leading-snug tabular-nums" style={{ color: colors.inkSoft }}>
+              {euros(d.totalHt)} HT et {euros(d.totalTva)} de TVA à {Number(d.tauxTva)}&nbsp;%
+            </p>
+          )}
 
-          {/* **UN VRAI BOUTON, ET NON PLUS UN LIEN SOULIGNÉ DE 13 PX.**
+          {/* **UN VRAI BOUTON, ET EN PLEIN — 8 et 9 septembre 2026.**
 
-              Sa question du 8 septembre 2026 : *« pour la page du devis
-              j'hésite à faire comme pour la facture, ne pas afficher le montant
-              pour les obliger à télécharger leur devis, tu en penses quoi ? »*
-
-              **Refusé, et c'est le seul endroit où ce l'est franchement.** Sur
-              la facture, le client DOIT déjà l'argent : cacher le montant ne
-              change rien à sa dette. Ici il DÉCIDE — le bouton juste dessous
-              dit « J'accepte ce devis », et un accord donné sans voir le prix
-              n'en est pas un. C'est aussi la première chose qu'un litige
-              regarderait. S'y ajoutent trois coûts : les chantiers perdus par
-              ceux qui ne téléchargent pas, l'effet « vendeur qui cache son
-              prix », et ceux qui ne savent pas ouvrir un PDF (`PRODUCT.md`).
-
-              **Mais son inquiétude est juste, et elle est traitée ici.** Un
-              client qui accepte sur un total sans lire le détail rappelle en
-              juillet. Le bon levier n'est pas de cacher le prix : c'est que le
+              Sa question du 8 septembre : cacher le montant pour obliger à
+              télécharger, comme sur la facture. **Refusé** : sur la facture le
+              client DOIT déjà l'argent ; ici il DÉCIDE, et un accord donné sans
+              voir le prix n'en est pas un — c'est la première chose qu'un
+              litige regarderait. Son inquiétude, elle, est traitée : le
               téléchargement cesse d'être invisible.
 
-              **Le mot reste le sien** — « Télécharger », choisi le 31 août
-              précisément pour que le libellé dise ce qui se passe : le geste
-              EMPORTE le fichier, il ne l'ouvre pas. Seul « (PDF) » tombe, le
-              format n'intéressant personne.
-
-              Le détail des prestations vit dans ce fichier, et nulle part
-              ailleurs : sans lui, le client accepterait un total sans pouvoir
-              consulter ce qu'il paie. Le patron le croyait joint au mail — il
-              ne l'est pas, un `mailto:` ne porte aucune pièce. */}
+              « Télécharger », son mot du 31 août : le geste EMPORTE le
+              fichier, il ne l'ouvre pas. Le détail des prestations vit dans ce
+              fichier et nulle part ailleurs (un `mailto:` ne porte aucune
+              pièce). */}
           <BoutonTelechargerDocument
             fichier={`/devis/${envoi.jeton}/pdf`}
             nom="devis.pdf"
             dataAtlas="telecharger-devis"
-            /* **En PLEIN depuis le 9 septembre 2026, à sa demande** : c’est le
-               seul geste de cet écran avant de répondre, et le creux le mettait
-               au même rang que le texte qui l’entoure. */
-            className="mt-1.5 block w-full rounded-full py-2.5 text-center text-[14.5px] font-medium"
+            className="mt-2 flex min-h-11 w-full items-center justify-center gap-2.5 rounded-full text-center text-[16px] font-semibold"
             style={{ backgroundColor: colors.plein, color: surPlein }}
           >
+            <IconeTrait nom="telecharger" taille={19} epaisseur={1.8} />
             Télécharger mon devis
           </BoutonTelechargerDocument>
+        </section>
         </header>
 
         <FormulaireReponse envoi={envoi} aujourdHui={aujourdHuiIso()} />
 
-        {/* La mention de preuve, ramenée à une ligne : elle disait la même
-            chose en trois, sur un écran qui doit tenir d'un seul tenant. */}
-        <p className="text-center text-[11px] leading-snug" style={{ color: colors.muted }}>
+        <p className="mt-1 text-center text-[13px] leading-snug" style={{ color: colors.inkSoft }}>
           Votre accord est horodaté et conservé avec le devis.
         </p>
       </div>

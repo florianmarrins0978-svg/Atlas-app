@@ -123,6 +123,52 @@ async function main() {
   // Ce que ce cas défendait de vivant — la rédaction à la main reste
   // atteignable — est tenu sur son écran à lui, `test-devis-a-la-main-e2e.ts`.
 
+  // ─── LA DICTÉE B — son choix du 1er novembre 2026 ──────────────────────────
+  //
+  // Planche `appli/soignee/chantier.html`, « Dictée B, l'anneau qui écoute » :
+  // le disque du micro reste à sa place et l'avion y remplace le micro ; Jeter
+  // et Envoyer s'écrivent sous leur geste. Ce qui le rend sûr, et qu'aucune
+  // planche ne montre : l'avion tombe EXACTEMENT sous le doigt qui vient de
+  // lancer la dictée, donc un double appui enverrait une note d'une demi-seconde.
+  await cas("l'avion prend la place exacte du micro, chaque geste porte son mot, et un double appui n'envoie rien", async () => {
+    const avant = await bouton.boundingBox();
+    await bouton.click();
+    const envoyer = page.locator('[data-atlas="dictee-envoyer"]');
+    await envoyer.waitFor({ state: "visible", timeout: 10_000 });
+    // La dictée est JETÉE quoi qu'il arrive : une assertion qui casse ne doit
+    // pas laisser le micro ouvert, et faire tomber les cas suivants avec elle.
+    try {
+      await envoyer.click();
+      await page.waitForTimeout(400);
+      assert.ok(
+        await envoyer.isVisible(),
+        "un second appui dans la première seconde a envoyé la note : le double appui part chez Atlas"
+      );
+
+      const disque = await page.locator('[data-atlas="dictee-envoyer"] .atlas-disque-envoi').boundingBox();
+      assert.ok(avant && disque, "le micro ou le disque d'envoi n'a pas de boîte : rien à mesurer");
+      // Une boîte de zéro pixel n'est pas une mesure (`CLAUDE.md` §5).
+      assert.ok(disque.width >= 76, `le disque d'envoi fait ${disque.width} px : ce n'est plus le disque du micro`);
+      const ecart = Math.hypot(
+        avant.x + avant.width / 2 - (disque.x + disque.width / 2),
+        avant.y + avant.height / 2 - (disque.y + disque.height / 2)
+      );
+      assert.ok(ecart <= 2, `l'avion est à ${ecart.toFixed(1)} px du micro : le doigt ne le trouve plus où il était`);
+
+      for (const mot of ["Jeter", "Envoyer"]) {
+        assert.ok(
+          await anneau.getByText(mot, { exact: true }).isVisible(),
+          `« ${mot} » ne s'écrit pas sous son geste : un dessin sans mot ne se devine pas`
+        );
+      }
+    } finally {
+      // Jeter ramène au micro : le cas suivant redicte depuis le repos.
+      const jeter = page.locator('[data-atlas="dictee-jeter"]');
+      if (await jeter.isVisible()) await jeter.click();
+      await bouton.waitFor({ state: "visible", timeout: 5_000 });
+    }
+  });
+
   await cas("un appui dicte, l'avion envoie — et la note existe", async () => {
     await bouton.click();
     await page.waitForTimeout(700);

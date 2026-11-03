@@ -3,10 +3,12 @@ import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
 import { colors, font, surPlein } from "@/lib/design-tokens";
 import { jourIso } from "@/lib/jour";
+import { phraseDeLAttente } from "@/lib/mise-en-demeure";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { facturesAvecPaiements } from "@/server/repositories/paiements-facture";
 import { miseEnDemeure } from "@/server/repositories/factures-non-payees";
 import { garderLaPage } from "@/server/garde-page";
+import SituationDeLaFacture from "../SituationDeLaFacture";
 
 /**
  * « Mise en demeure » — planche `appli/mise-en-demeure.html`, dernier écran :
@@ -14,6 +16,12 @@ import { garderLaPage } from "@/server/garde-page";
  *
  * L'aperçu et le PDF lisent la MÊME lettre (`lettreDeMiseEnDemeure`) : ce qu'il
  * relit ici est ce qui part en recommandé.
+ *
+ * **Avant le lendemain de l'échéance, la lettre attend** (défaut du 2 novembre
+ * 2026, planche `appli/soignee/facture.html`, état « Pas encore échue ») : elle
+ * se relit, mais « Télécharger la lettre » est éteint, et la phrase ambre dit
+ * pourquoi. La règle est celle que la route du PDF oppose
+ * (`quandLaMiseEnDemeure`, lue par `miseEnDemeure`).
  */
 export const dynamic = "force-dynamic";
 
@@ -23,23 +31,33 @@ export default async function PageMiseEnDemeure({ params }: { params: Promise<{ 
   const ctx = await getCurrentCtx();
   const f = (await facturesAvecPaiements(ctx)).find((x) => x.chantierId === id);
   if (!f || f.etat === "soldee") redirect(`/chantiers/${id}/facture`);
-  const r = await miseEnDemeure(ctx, f.id, jourIso(new Date()));
+  const aujourdHui = jourIso(new Date());
+  const r = await miseEnDemeure(ctx, f.id, aujourdHui);
   if (!r.ok) redirect(`/chantiers/${id}/facture`);
-  const { lettre, entete } = r;
+  const { lettre, entete, quand } = r;
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <EnTeteEcran
+        allure="soignee"
         titre="Mise en demeure"
-        surtitre={`${f.numeroCommercial}${f.clientNom ? `, ${f.clientNom}` : ""}`}
+        precision={<SituationDeLaFacture clientNom={f.clientNom} clientCivilite={f.clientCivilite} numero={f.numeroCommercial} />}
         retour={{ href: `/chantiers/${id}/facture`, libelle: "Retour à la facture" }}
-        allure="commune"
       />
-      <div className="px-3 pb-10">
+      <div className="px-[22px] pb-10 pt-5">
+        {!quand.possible && (
+          <p
+            className="mb-3.5 rounded-[12px] px-3.5 py-3 text-[14.5px] leading-[1.45]"
+            style={{ backgroundColor: colors.carteAmbreFond, color: colors.carteAmbreTexte }}
+            data-atlas="mise-en-demeure-attend"
+          >
+            {phraseDeLAttente(quand.echeance, aujourdHui)}
+          </p>
+        )}
         {/* Le papier, pas une carte d'écran : il se lit comme la lettre qu'il
             glissera dans l'enveloppe. */}
         <article
-          className="mt-5 rounded-[4px] px-5 py-6 text-[13px] leading-[1.55]"
+          className="rounded-[4px] px-5 py-6 text-[13px] leading-[1.55]"
           style={{ backgroundColor: colors.card, color: colors.ink, boxShadow: "0 6px 18px rgba(20,18,14,0.08)" }}
           data-atlas="lettre-mise-en-demeure"
         >
@@ -77,18 +95,23 @@ export default async function PageMiseEnDemeure({ params }: { params: Promise<{ 
           <p className="mt-6 text-right font-semibold">{lettre.signature}</p>
         </article>
 
+        {/* Éteint, le bouton reste à sa place et garde son repère : on voit
+            qu'il existe, et la phrase ambre au-dessus dit le jour où il
+            s'allume. Le même élément dans les deux états, pas deux boutons. */}
         <BoutonTelechargerDocument
           fichier={`/api/factures/${f.id}/mise-en-demeure`}
           nom={`mise-en-demeure-${f.numeroCommercial}.pdf`}
-          className="atlas-plein mx-auto mt-7 flex min-h-[56px] w-[78%] items-center justify-center rounded-full"
-          style={{ backgroundColor: colors.plein, color: surPlein, fontFamily: font.display, fontSize: 20 }}
+          disabled={!quand.possible}
+          className={`mx-auto mt-7 flex min-h-[56px] w-[78%] items-center justify-center rounded-full ${quand.possible ? "atlas-plein" : "cursor-not-allowed"}`}
+          style={
+            quand.possible
+              ? { backgroundColor: colors.plein, color: surPlein, fontFamily: font.display, fontSize: 20 }
+              : { backgroundColor: colors.line, color: colors.muted, fontFamily: font.display, fontSize: 20 }
+          }
           dataAtlas="telecharger-mise-en-demeure"
         >
           Télécharger la lettre
         </BoutonTelechargerDocument>
-        <p className="mt-3 text-center text-[13.5px]" style={{ color: colors.muted }}>
-          À envoyer en recommandé avec accusé de réception.
-        </p>
       </div>
     </div>
   );

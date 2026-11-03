@@ -12,6 +12,8 @@ import { preparerPropositionPrix, questionMainOeuvre } from "../src/server/chiff
 import { brouillonVide, type PropositionExtraction } from "../src/server/ai/schemas/extraction";
 import { ecrireChoix, SUJET_MAIN_OEUVRE, type ChoixMainOeuvre } from "../src/lib/main-oeuvre-dictee";
 import { appliquerPropositionPrix } from "../src/server/chiffrage/appliquer-proposition";
+import { getOuCreerDevisBrouillon } from "../src/server/repositories/devis";
+import { listerLignesPrix } from "../src/server/repositories/lignes-prix";
 import { questionsRestantes } from "../src/server/services/devis-depuis-dictee";
 import { fermerLimiteur } from "../src/server/rate-limit";
 import { nettoyerBase } from "./_test-db";
@@ -192,6 +194,74 @@ async function main() {
       p.lignes.map((l) => [l.libelle, Number(l.montant), l.quantite, l.unite]),
       [["Main d'œuvre : taille de haie de laurier", 800, "2", "jour/homme"]]
     );
+  });
+
+  // **« dont main d'œuvre HT » voit la main d'œuvre DICTÉE** (2 novembre 2026).
+  // La préparation du devis écrivait la ligne « Main d'œuvre : … » sans son
+  // drapeau, et les parts réparties fondues dans le prix de chaque travail :
+  // le devis portait 800 € de main d'œuvre et n'en annonçait aucune sous le
+  // total, ce que le client lit pour son crédit d'impôt.
+  await test("« sur une ligne Main d'œuvre » : la ligne est de la main d'œuvre, et « dont » la compte", async () => {
+    const A = await sonEntreprise("ligne-dont");
+    const c = await chantierDicte(A, {
+      prestations: [{ ...base, libelle: "Taille de haie de laurier", nature: "haie", quantite: "20", unite: "ml" }],
+      dureePrevue: "1 jour",
+      tailleEquipe: "2 hommes",
+    });
+    await repondre(A, c.id, { mode: "ligne", parts: {}, retires: [] });
+    const p = (await preparerPropositionPrix(A, c.id))!;
+    assert.deepEqual(
+      p.lignes.map((l) => [l.libelle, l.mainDoeuvre === true, l.partMainDoeuvre ?? null]),
+      [["Main d'œuvre : taille de haie de laurier", true, null]]
+    );
+    assert.ok((await appliquerPropositionPrix(A, c.id)).succes);
+    const [ligne] = await listerLignesPrix(A, c.id);
+    assert.equal(ligne.mainDoeuvre, true, "la ligne écrite n'est pas une ligne de main d'œuvre");
+    const d = await getOuCreerDevisBrouillon(A, c.id);
+    assert.equal(d.mainDoeuvreHt, "800.00", "« dont main d'œuvre HT » ne voit pas la ligne");
+  });
+
+  await test("réparti : chaque travail garde SA part, « dont » compte toute la main d'œuvre et pas la grille d'un travail sorti", async () => {
+    const A = await sonEntreprise("reparti-dont");
+    const c = await chantierDicte(A, {
+      prestations: [
+        { ...base, libelle: "Taille de haie de laurier", nature: "haie", quantite: "20", unite: "ml" },
+        { ...base, libelle: "Taille de cohabitation avec la maison" },
+        { ...base, libelle: "Démontage d'un érable", nature: "abattage" },
+      ],
+      dureePrevue: "1 jour",
+      tailleEquipe: "2 hommes",
+    });
+    const { question } = await questionMainOeuvre(A, c.id);
+    const cle = (motif: RegExp) => question!.mainOeuvre!.travaux.find((t) => motif.test(t.libelle))!.cle;
+    // La haie sort par la croix : elle prend sa grille (300 €), qui n'est pas de la main d'œuvre dictée.
+    await repondre(A, c.id, {
+      mode: "reparti",
+      parts: { [cle(/cohabitation/)]: 297, [cle(/érable/)]: 503 },
+      retires: [cle(/haie/)],
+    });
+    const p = (await preparerPropositionPrix(A, c.id))!;
+    assert.deepEqual(
+      p.lignes.map((l) => [l.libelle, Number(l.montant), l.mainDoeuvre === true, l.partMainDoeuvre ?? null]),
+      [
+        ["Démontage d'un érable", 503, false, "503.00"],
+        ["Taille de haie de laurier", 300, false, null],
+        ["Taille de cohabitation avec la maison", 297, false, "297.00"],
+      ]
+    );
+    assert.ok((await appliquerPropositionPrix(A, c.id)).succes);
+    const ecrites = await listerLignesPrix(A, c.id);
+    assert.deepEqual(
+      ecrites.map((l) => [l.libelle, l.mainDoeuvre, l.partMainDoeuvre]),
+      [
+        ["Démontage d'un érable", false, "503.00"],
+        ["Taille de haie de laurier", false, null],
+        ["Taille de cohabitation avec la maison", false, "297.00"],
+      ]
+    );
+    const d = await getOuCreerDevisBrouillon(A, c.id);
+    assert.equal(d.totalHt, "1100.00");
+    assert.equal(d.mainDoeuvreHt, "800.00", "« dont main d'œuvre HT » ne compte pas les parts réparties");
   });
 
   await test("la croix rend un travail à sa grille, ou le laisse à chiffrer et le dit", async () => {

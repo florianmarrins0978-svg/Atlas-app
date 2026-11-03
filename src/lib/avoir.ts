@@ -110,6 +110,48 @@ function ttcDeLaLigne(ligne: LigneFacturePourAvoir, facture: FacturePourAvoir): 
 }
 
 /**
+ * Ce qu'un avoir peut encore retirer de cette ligne, en TTC.
+ *
+ * **L'écran l'affiche à côté de la ligne, le refus s'en sert comme plafond** :
+ * la planche du 2 novembre 2026 (`appli/soignee/facture.html`) montre les lignes
+ * à toucher avec leur montant, et ce montant doit être celui au-delà duquel
+ * « C'est plus que cette ligne » tombe. Deux calculs, et il lirait 547,20 €
+ * pour se voir refuser 547,20 €.
+ *
+ * En TTC, comme la case qu'il remplit juste dessous : un HT à côté d'une case
+ * TTC l'aurait fait retirer 456 € d'une ligne qui en vaut 547,20, en croyant
+ * l'avoir annulée entière.
+ */
+export function ttcRestantSurLaLigne(
+  facture: FacturePourAvoir,
+  dejaFaits: readonly AvoirDejaFait[],
+  ligne: LigneFacturePourAvoir
+): string {
+  const dejaSurLaLigne = dejaFaits
+    .filter((a) => a.ligneFactureId === ligne.id)
+    .reduce((acc, a) => acc.plus(new Decimal(a.totalTtc)), new Decimal(0));
+  return ttcDeLaLigne(ligne, facture).minus(dejaSurLaLigne).toFixed(2);
+}
+
+/** Le motif d'un geste commercial, tel que l'avoir l'imprime depuis le 24 septembre 2026. */
+export const MOTIF_GESTE_COMMERCIAL = "Geste commercial";
+
+/** Les deux cartes « Pourquoi » de la planche du 2 novembre 2026. */
+export type ChoixDuMotif = "geste" | "autre";
+
+/**
+ * Le motif qui part, selon la carte touchée.
+ *
+ * **« Geste commercial » envoie exactement ce que l'écran envoyait avant les
+ * cartes** : le même mot sur l'avoir imprimé, le même mot dans le relevé. Et
+ * « Un autre motif » envoie ce qu'il a écrit, rien d'autre ; vide, c'est le
+ * refus de `calculerAvoir` qui parle, jamais un motif deviné à sa place.
+ */
+export function motifDeLAvoir(choix: ChoixDuMotif, ecrit: string): string {
+  return choix === "geste" ? MOTIF_GESTE_COMMERCIAL : ecrit;
+}
+
+/**
  * Le HT et la TVA d'un TTC, à un taux donné.
  *
  * **La TVA est la DIFFÉRENCE, jamais un second calcul.** Deux arrondis séparés
@@ -144,8 +186,9 @@ export function calculerAvoir(
   if (ttc === null) return { ok: false, refus: "Ce montant ne se lit pas. Exemple : 300 ou 250,50." };
   if (ttc.lessThanOrEqualTo(0)) return { ok: false, refus: "Un avoir de 0 € ne change rien." };
 
-  const dejaSurLaFacture = dejaFaits.reduce((acc, a) => acc.plus(new Decimal(a.totalTtc)), new Decimal(0));
-  const resteSurLaFacture = new Decimal(facture.totalTtc).minus(dejaSurLaFacture);
+  // Le même total que l'écran annonce sur « Toute la facture » : ce qu'il lit
+  // est ce au-delà de quoi le refus tombe.
+  const resteSurLaFacture = new Decimal(ttcApresAvoirs(facture.totalTtc, dejaFaits));
   if (ttc.greaterThan(resteSurLaFacture)) {
     return { ok: false, refus: `C'est plus que la facture : ${formatEuros(resteSurLaFacture.toNumber())} au plus.` };
   }
@@ -154,10 +197,7 @@ export function calculerAvoir(
   if (demande.portee !== null) {
     const ligne = facture.lignes.find((l) => l.id === demande.portee);
     if (!ligne) return { ok: false, refus: "Cette ligne n'est pas sur la facture." };
-    const dejaSurLaLigne = dejaFaits
-      .filter((a) => a.ligneFactureId === ligne.id)
-      .reduce((acc, a) => acc.plus(new Decimal(a.totalTtc)), new Decimal(0));
-    const resteSurLaLigne = ttcDeLaLigne(ligne, facture).minus(dejaSurLaLigne);
+    const resteSurLaLigne = new Decimal(ttcRestantSurLaLigne(facture, dejaFaits, ligne));
     if (ttc.greaterThan(resteSurLaLigne)) {
       return { ok: false, refus: `C'est plus que cette ligne : ${formatEuros(resteSurLaLigne.toNumber())} au plus.` };
     }

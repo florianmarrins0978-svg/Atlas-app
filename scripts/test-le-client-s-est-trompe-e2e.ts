@@ -45,8 +45,10 @@ async function leClientAccepte(navigateur: Browser) {
   const page = await contexte.newPage();
   await page.goto(`${BASE}/devis/${JETON}`, { waitUntil: "networkidle" });
   await page.locator("text=Quelle date vous arrange").waitFor({ timeout: 30_000 });
-  // Le premier jour que sa page lui propose, par son libellé (« le samedi 10 octobre »).
-  await page.getByText(/^le (lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche) \d+ /).first().click();
+  // Le premier jour que sa page lui propose, par son nom (« le samedi 10 octobre ») :
+  // depuis la planche du 31 octobre 2026, la case l'écrit sur deux lignes
+  // (« Samedi », « 10 octobre »), et le bouton garde la phrase entière.
+  await page.getByRole("radio", { name: /^le (lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche) \d+ / }).first().check();
   // Un jour dans ses 14 jours demande sa demande écrite : il la coche, comme lui.
   const demande = page.getByText(/Je demande expressément/);
   if (await demande.count()) await demande.click();

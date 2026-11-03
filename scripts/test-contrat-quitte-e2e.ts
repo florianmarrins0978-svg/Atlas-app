@@ -72,7 +72,9 @@ async function main() {
   await page.locator('[data-atlas="geste-contrat"]').click();
   await page.waitForSelector('[data-atlas="ecran-contrat-entretien"]');
   const prestation = `Tonte ${Date.now()}`;
-  await page.getByRole("button", { name: "+ Ajouter une prestation" }).click();
+  // Le « + » est un dessin depuis la planche du 31 octobre 2026 : le nom du
+  // bouton est ce qu'il lit, « Ajouter une prestation ».
+  await page.getByRole("button", { name: "Ajouter une prestation", exact: true }).click();
   await page.getByLabel("Écrire une prestation").fill(prestation);
   // **Une prestation écrite entre aussi dans sa fiche** (sa demande du
   // 29 septembre 2026, `ContratClient.tsx`) : « Ajouter » attend qu'une famille
@@ -188,7 +190,11 @@ async function main() {
     const pageClient = await cotClient.newPage();
     const r = await pageClient.goto(`${BASE}/contrat/${jeton}`, { waitUntil: "networkidle" });
     assert.equal(r?.status(), 200);
-    assert.match(await pageClient.locator("body").innerText(), new RegExp(prestation));
+    // **Il reconnaît SON contrat par son nom**, et non plus par la liste des
+    // prestations : sa remarque du 1er novembre 2026, *« si le contrat fait
+    // 20 pages, faut pas tout mettre »*, a laissé le détail au PDF
+    // (`CLAUDE.md` §5 bis : le contrôle suit la règle, pas le libellé).
+    assert.match(await pageClient.locator("body").innerText(), new RegExp(nom));
     // Le bouton du devis, en plein (sa demande du 3 octobre 2026) : un lien
     // souligné se perdait dans le texte.
     const telecharger = pageClient.locator('[data-atlas="telecharger-contrat"]');

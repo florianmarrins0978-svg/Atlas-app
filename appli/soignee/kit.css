@@ -212,7 +212,12 @@ body.pl ::selection { background: rgba(185,139,71,0.28); }
          font: 400 var(--t-corps)/1.45 var(--sans); overflow: hidden;
          -webkit-font-smoothing: antialiased; }
 .ecran ::selection { background: color-mix(in srgb, var(--atlas-or) 30%, transparent); }
-.ecran :focus-visible { outline: 2px solid var(--atlas-or); outline-offset: 2px; border-radius: 6px; }
+/* Le cadre doré du doigt, à poids nul (:where) : une case qui dessine son propre
+   cadre écrit « outline: none », et c'est elle qui décide. À poids plein, ce
+   cadre passait par-dessus toutes les cases des planches, décalé de 2 px de
+   leur bord (sa capture du 1er novembre, la remise du devis) ; cinq planches
+   l'avaient éteint chacune pour soi. */
+:where(.ecran) :focus-visible { outline: 2px solid var(--atlas-or); outline-offset: 2px; border-radius: 6px; }
 .ecran input, .ecran textarea, .ecran select { caret-color: var(--atlas-rust); }
 
 .defile { flex: 1; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none;
@@ -413,6 +418,26 @@ textarea.champ-saisie { min-height: 110px; resize: vertical; }
 .vide .ico { width: 40px; height: 40px; color: var(--atlas-or); stroke-width: 1.4; margin: 0 auto 14px; }
 .vide-titre { margin: 0; font: 400 22px/1.25 var(--serif); }
 .vide-texte { margin: 8px auto 20px; max-width: 26em; font-size: 15px; color: var(--atlas-inkSoft); }
+
+/* ─── LA barre de recherche : celle de l'appli, et aucune autre ────────────
+   Sa règle du 22 septembre 2026 (src/components/atlas/ChampRecherche.tsx),
+   redite le 1er novembre devant une planche qui l'avait mise en boîte :
+   « je veux vraiment garder la même que celle dans l'application. Et ça doit
+   être une règle ». Recopiée au chiffre près : aucune boîte, la loupe au trait
+   dans l'or (21 points), le mot en encre douce, un filet de 1,5 point dessous
+   qui passe à l'or quand on écrit, la croix seulement s'il y a à effacer.
+   Une planche ne la redessine pas : elle écrit
+     <div class="champ-recherche"><svg class="ico"><use href="#i-loupe"/></svg>
+       <input type="text" inputmode="search" placeholder="…" aria-label="…"></div>
+   et scripts/test-une-seule-recherche.ts refuse tout autre dessin. */
+.champ-recherche { position: relative; display: flex; align-items: center; gap: 12px;
+                   border-bottom: 1.5px solid var(--atlas-muted); transition: border-color 160ms var(--courbe); }
+.champ-recherche:focus-within { border-bottom-color: var(--atlas-or); }
+.champ-recherche > .ico { width: 21px; height: 21px; flex: none; color: var(--atlas-or); stroke-width: 1.8; pointer-events: none; }
+.champ-recherche input { flex: 1; min-width: 0; padding: 11px 0; border: 0; background: transparent; outline: none; box-shadow: none;
+                         font: 400 17px/1.3 var(--sans); color: var(--atlas-ink); caret-color: var(--atlas-or); }
+.champ-recherche input::placeholder { color: var(--atlas-inkSoft); opacity: 0.85; }
+.champ-recherche .effacer { width: 40px; height: 44px; flex: none; display: grid; place-items: center; color: var(--atlas-muted); }
 
 /* ─── Les petits outils de mise en page ───────────────────────────────────── */
 .pile > * + * { margin-top: 12px; }

@@ -10,6 +10,15 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## LE DEVIS ET LA FACTURE DE LA PLANCHE, SUR `main` (3 novembre 2026)
+
+Un seul lot, à sa demande : les feuilles du devis (TVA, acompte, remise, main d'œuvre, partenaires, répartition), la croix, l'éclairage de ce qui arrive, l'ordre des lignes, et les huit écrans de la facture (`ARCHITECTURE.md` §536 et §537). Migration 0155 (`part_main_doeuvre`, nullable). Une seule pastille pour les deux (`src/components/atlas/PastilleAjout.tsx`). **Ce qui attend :** son choix sur l'état « Échec, Réessayer » de `appli/soignee/chantier.html?ecran=note` ; choisi, il se code sur la fiche client, et l'ancien écran `/note-vocale` part (son accord du 3 novembre ; il porte encore le fichier audio, « Reprendre » et « Réessayer », et une vingtaine de suites l'ouvrent).
+
+## LES PLANCHES DU 31 OCTOBRE, CODÉES (1er novembre 2026)
+
+**Les pièges :** les pages du client ne reçoivent aucune charte (`estPageDuClient`) : leurs jetons retombent sur Arborea, ne jamais y écrire une couleur en clair. Le mot pour l'artisan du devis n'existe dans le document qu'une fois ouvert (`data-atlas="ouvrir-le-mot"`) : une suite qui remplit `#precision` l'ouvre d'abord, comme le client. Le succès du contrat rend la DÉCISION (`{ succes: "accepte" | "refuse" }`) et c'est la page qui écrit la phrase. « Ses coordonnées » (Vos clients, le client, « Modifier ses coordonnées ») n'a PAS de photos, sa décision du 1er novembre : ne pas les y remettre. Le serveur de développement garde parfois l'ancienne version d'un module après un export ajouté (« … is not a function ») : le relancer par son numéro de processus.
+
+---
 ## IMPORTER UN TABLEAU (28 octobre 2026)
 
 **Les pièges :** l'écran et la route refont le même plan (`planDeRangement`) ; une règle ajoutée d'un côté seulement ferait ranger autre chose que ce qu'il a vu. Une pièce importée peut n'avoir AUCUN fichier (`fichier_cle` NULL, `format: "tableau"`) : tout ce qui lit `fichierCle` doit le supporter. Pour l'essayer ici, `scratchpad` n'est pas versionné : un CSV de la planche se recompose depuis `scripts/test-import-tableau-db.ts`. Ne jamais arrêter le serveur de développement par son nom (`pkill`, `kill $(pgrep …)`) : la session le refuse, à raison ; le chercher, puis viser son numéro.

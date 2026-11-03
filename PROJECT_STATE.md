@@ -1,12 +1,24 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-10-29, `main` (`bdea976e`, batterie verte hors deux suites de fin de mois rouges sur `main` aussi),
-dernière migration `drizzle/0154_pieces_importees_d_un_tableau.sql`
+dernière migration `drizzle/0154_pieces_importees_d_un_tableau.sql` sur `main` ; `0155_part_de_main_doeuvre_sur_la_ligne.sql` dans le lot du devis ci-dessous, pas encore sur `main`
 
 ---
-## LES PDF RANGÉS PAR CLIENT, COMME UN TABLEAU, CODÉS (31 octobre 2026), PAS ENCORE SUR `main`
+## LE DEVIS ET LA FACTURE DE LA PLANCHE, SUR `main` (3 novembre 2026)
 
-Sa demande du 31 octobre : CSV, Excel ou PDF, la même chose. Branche `lot/pdf-par-client` (poussée sur `claude/quatre-planches-atlas-6hi21h`). Les PDF lus passent par l'écran « Par client » et la règle des tableaux ; la lecture garde l'adresse, le téléphone et le lieu des travaux (migration 0155, expand). Suites du domaine vertes, écran regardé. **Reste : la batterie entière (il a dit de ne pas la lancer le 31), puis `main`.** `ARCHITECTURE.md` §534, `docs/pdf-par-client.md`.
+Sa décision : *« laisse comme tu as fait, ensuite code ça »*, puis *« code le, pas de batterie »*. Les cinq ajouts du devis en pastilles ; la TVA, l'acompte et la remise sur le chiffre qu'il tape (`FeuilleDuTaux.tsx`) ; la main d'œuvre sur son calcul, son équipe ou ses partenaires, en ligne ou RÉPARTIE sur ses travaux (`FeuilleMainDoeuvre.tsx`, la barre d'« Avant de chiffrer » réutilisée). La part répartie se garde sur la ligne (migration 0155, nullable) et « dont main d'œuvre HT » la compte (`mainDoeuvreDeLaLigne`). `ARCHITECTURE.md` §536. Suites ciblées vertes, écrans regardés ; **sur `main` le 3 novembre**, réuni avec la facture en un seul lot à sa demande (*« on peut pas tout faire d'un coup ? »*) : batterie verte, 205 suites navigateur sur 205, 546 suites base sur 548, les deux rouges l'étant déjà sur `main`. Migration 0155, la dernière. Codé le 2 novembre aussi : la croix à la place du « − » doré, ce qui vient d'être ajouté qui s'éclaire, la main d'œuvre dictée comptée dans « dont », et le devis qui part dans l'ordre de l'écran (défaut trouvé en chemin). Reste : le retrait de l'acompte et d'une TVA par le tiroir.
+
+**La facture et ce qui la suit** (planche du 2 novembre, `ARCHITECTURE.md` §537), dans le même lot : le paiement sur la barre A, l'impayé, « Il ne vous paiera pas », l'avoir et son détail, la mise en demeure qui attend le lendemain de l'échéance, les travaux en plus. Les deux lots portaient chacun une copie de la pastille : une seule reste (`src/components/atlas/PastilleAjout.tsx`).
+
+---
+## LES NEUF PLANCHES DU 31 OCTOBRE, CODÉES (1er novembre 2026)
+
+Le devis, la facture, le contrat, les dates du mois et le compte rendu que reçoit le client ; Non payées, les retours d'intervention, le contrat d'entretien et Ses coordonnées chez l'artisan. Chaque écran suit la vue Proposé de sa planche (`appli/soignee/client-recoit.html`, `client-contrat.html`, `client-coordonnees.html`, `termines-non-payees.html`, `termines-retours.html`). Niveau 3 (devis, facture, une lecture en base). Retour : `docs/planches-du-31-octobre-codees.md`.
+
+---
+## LES PDF RANGÉS PAR CLIENT, COMME UN TABLEAU, SUR `main` SANS BATTERIE (sa demande du 3 novembre 2026)
+
+Sa demande du 31 octobre : CSV, Excel ou PDF, la même chose. Branche `lot/pdf-par-client` (poussée sur `claude/quatre-planches-atlas-6hi21h`). Les PDF lus passent par l'écran « Par client » et la règle des tableaux ; la lecture garde l'adresse, le téléphone et le lieu des travaux (migration 0156, expand). Suites du domaine vertes, écran regardé. **Poussé sur `main` le 3 novembre sans batterie, sur sa demande (« pousse ta branche sans batterie ») : la batterie entière reste due.** `ARCHITECTURE.md` §538, `docs/pdf-par-client.md`.
 
 ## LE RELEVÉ DU 29 OCTOBRE, SUR `main` (31 octobre 2026)
 

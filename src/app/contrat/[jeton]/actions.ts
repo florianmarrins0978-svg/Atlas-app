@@ -8,7 +8,12 @@ import { horsProductionReelle, sourceDuVisiteur } from "@/server/source-visiteur
 import { SOURCE_NON_ETABLIE } from "@/lib/source-visiteur";
 import { adresseClient } from "@/lib/adresse-client";
 
-export type EtatReponseContrat = { erreur: string } | { succes: string } | undefined;
+export type EtatReponseContrat =
+  | { erreur: string }
+  // Le succès rend la décision : c'est l'écran de retour qui dit la phrase
+  // (`page.tsx`), le même que celui qu'il retrouve en rouvrant son lien.
+  | { succes: "accepte" | "refuse" }
+  | undefined;
 
 /**
  * LA RÉPONSE DU CLIENT À SON CONTRAT, sans compte ni session.
@@ -60,10 +65,5 @@ export async function repondreContratAction(
     };
   }
   logger.info(decision === "accepte" ? "Contrat d'entretien accepté par le client" : "Contrat d'entretien refusé par le client");
-  return {
-    succes:
-      decision === "accepte"
-        ? "Merci, votre contrat est accepté."
-        : "Votre réponse est transmise à votre artisan.",
-  };
+  return { succes: decision };
 }

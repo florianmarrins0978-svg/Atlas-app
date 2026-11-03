@@ -19,6 +19,7 @@ const TRACES = {
   scanner: <path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16M7 12h10" />,
   retour: <path d="M15 5l-7 7 7 7" />,
   plus: <path d="M12 5v14M5 12h14" />,
+  moins: <path d="M5 12h14" />,
   envoyer: <><path d="M20.5 3.5l-17 7 7 3 3 7z" /><path d="M10.5 13.5l10-10" /></>,
   telecharger: <path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14" />,
   info: <><circle cx="12" cy="12" r="8.5" /><path d="M12 11v5.5M12 7.8v.4" /></>,
@@ -28,6 +29,18 @@ const TRACES = {
   oeil: <><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" /><circle cx="12" cy="12" r="3" /></>,
   // La zone de signature et « Modifier » ses coordonnées (l'attestation du comptable, 27 octobre 2026).
   crayon: <><path d="M4.5 19.5l1-4.3L15.6 5.1a2.1 2.1 0 0 1 3 3L8.5 18.5z" /><path d="M13.5 7.2l3 3" /></>,
+  // Le temps passé du retour d'intervention (planche du 31 octobre 2026).
+  horloge: <><circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 2" /></>,
+  // Les pastilles des ajouts du devis (planche du chantier, 1er novembre 2026) :
+  // la main d'œuvre, l'acompte, la remise. Mêmes traits que la planche. La
+  // facture (planche du 2 novembre 2026) reprend l'euro et l'étiquette pour les
+  // espèces du ruban « Comment » et le geste commercial de l'avoir.
+  equipe: <><circle cx="9" cy="8.5" r="3" /><path d="M3.5 19.5a5.5 5.5 0 0 1 11 0M15.8 5.8a3 3 0 0 1 0 5.4M17.5 19.5a5.6 5.6 0 0 0-2.4-4.6" /></>,
+  euro: <path d="M16.5 7.2A6 6 0 1 0 16.5 16.8M5.5 10.5h8M5.5 13.5h8" />,
+  etiquette: <><path d="M3.5 12.5V4.5h8l9 9-8 8z" /><circle cx="8" cy="8.5" r="1.5" /></>,
+  // La carte du ruban « Comment », et « Une ligne » de l'avoir (planche de la facture).
+  carte: <><rect x="3" y="6" width="18" height="12" rx="2" /><path d="M3 10h18M7 14.5h3" /></>,
+  liste: <path d="M8.5 6.5H20M8.5 12H20M8.5 17.5H20M4 6.5h.6M4 12h.6M4 17.5h.6" />,
 } as const;
 
 export type NomIcone = keyof typeof TRACES;

@@ -207,9 +207,11 @@ async function main() {
   const vueClient = await pageClient.locator("body").innerText();
   // La même lecture qu'au contrôle précédent, et le même `enClair` : la page du
   // client rend `jourLisible`, on la lit avec la fonction qui l'écrit. Les
-  // espaces sont normalisés parce qu'un retour à la ligne peut couper la date.
+  // espaces sont normalisés parce qu'un retour à la ligne peut couper la date,
+  // et la casse aussi : depuis la planche du 31 octobre 2026, la case écrit le
+  // jour en tête de sa ligne (« Lundi », puis « 3 mai 2027 »).
   assert.ok(
-    vueClient.replace(/\s+/g, " ").includes(enClair),
+    vueClient.replace(/\s+/g, " ").toLowerCase().includes(enClair.toLowerCase()),
     `Le client ne voit pas la date proposée (« ${enClair} »). Lu : « ${vueClient.replace(/\s+/g, " ").slice(0, 400)} »`
   );
   console.log("  ✓ le client la voit sur sa page, en toutes lettres");

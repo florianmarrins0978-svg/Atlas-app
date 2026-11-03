@@ -528,6 +528,17 @@ retransmet — un document périmé le ferait travailler sur une version disparu
   facture → » : vingt-huit libellés en portaient encore une. La règle ne vit
   donc plus seulement ici — `scripts/test-aucune-fleche.ts` les refuse, et une
   flèche qui porte une vraie fonction s'y déclare **avec sa raison**.
+- **Une seule barre de recherche : celle de l'appli.** Sa règle du
+  22 septembre 2026 (`src/components/atlas/ChampRecherche.tsx`), redite le
+  1er novembre devant une planche qui l'avait mise en boîte : *« je veux
+  vraiment garder la même que celle dans l'application. Et ça doit être une
+  règle. »* Aucune boîte, la loupe au trait dans l'or, un filet dessous qui
+  passe à l'or. Un écran prend `ChampRecherche`, une planche prend
+  `.champ-recherche` du kit (`appli/soignee/kit.css`) ; ni l'un ni l'autre ne
+  la redessine, même pour la « soigner ». `scripts/test-une-seule-recherche.ts`
+  refuse tout autre dessin, des deux côtés, et sa liste d'exceptions est
+  vide : les deux écrans qui y échappaient (pièces d'arrosage, fiches de
+  sécurité) y sont passés le 1er novembre, sur son « oui ».
 - **Aucun écran propre à l'ordinateur.** Sa règle du 3 octobre 2026 : *« les
   pages doivent être EXACTEMENT les mêmes »*, et *« quand je fais une modif sur
   l'appli tel, qu'elle s'applique automatiquement sur l'appli PC »*. Au-delà de

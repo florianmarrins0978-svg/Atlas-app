@@ -1686,15 +1686,22 @@ export default function FormulaireNouveauChantier({
 
                  **Il DISPARAÎT, il ne se grise pas** : un bouton éteint reste
                  un bouton — on l'appuie, il ne répond pas, et l'on croit
-                 l'écran cassé. Sa place n'est pas réservée non plus : il est le
-                 dernier de la page, donc rien au-dessus ne bouge, et l'écran
-                 se raccourcit sans que rien ne saute sous le doigt.
+                 l'écran cassé.
+
+                 **SA PLACE, ELLE, RESTE — mesuré le 1er novembre 2026.** On le
+                 croyait sans effet au-dessus, puisqu'il est le dernier de la
+                 page. Faux : la page passait alors sous la hauteur de l'écran,
+                 la fiche se redistribuait, et le micro descendait de 3,6 px à
+                 l'instant même où l'on appuie. Avec la dictée B, l'avion se
+                 pose à la place exacte du micro (`test-anneau-dictee-e2e`) :
+                 rien ne doit bouger sous le doigt. Invisible, hors du parcours
+                 au clavier et des lecteurs d'écran, il garde sa hauteur.
 
                  **66 % de large** — sa proposition 4, choisie sur planche parmi
                  quatre (`appli/note-vocale-choix.html`). */
-              !dicteeEnCours && (
+              <div className={dicteeEnCours ? "invisible" : undefined} aria-hidden={dicteeEnCours || undefined} inert={dicteeEnCours || undefined}>
                 <PrimaryButton
-                  disabled={!peutCreer}
+                  disabled={!peutCreer || dicteeEnCours}
                   onClick={() => creerPuisAller("devis")}
                   repere="action-ecrire"
                   pleineLargeur
@@ -1703,7 +1710,7 @@ export default function FormulaireNouveauChantier({
                 >
                   {enCoursVers === "devis" ? (reprise ? "Enregistrement…" : "Création…") : "Je rédige à la main"}
                 </PrimaryButton>
-              )
+              </div>
             )}
           </div>
           {/* **Cette ligne ne parle plus que quand il y a quelque chose à dire.**

@@ -5,6 +5,7 @@ import { miseEnDemeure } from "@/server/repositories/factures-non-payees";
 import { genererPdfMiseEnDemeure } from "@/server/pdf/mise-en-demeure-pdf";
 import { enTetesDeRemise, veutTelecharger } from "@/lib/remise-de-fichier";
 import { jourIso } from "@/lib/jour";
+import { phraseDeLAttente } from "@/lib/mise-en-demeure";
 
 // La lettre de mise en demeure, à télécharger puis envoyer en recommandé
 // (planche `appli/mise-en-demeure.html`, 24 septembre 2026).
@@ -24,10 +25,20 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const refus = await exigerOuverture(ctx);
   if (refus) return refus;
 
-  const r = await miseEnDemeure(ctx, id, jourIso(new Date()));
+  const aujourdHui = jourIso(new Date());
+  const r = await miseEnDemeure(ctx, id, aujourdHui);
   if (!r.ok) {
     console.error("[mise en demeure] refusée", { factureId: id, refus: r.refus });
     return NextResponse.json({ error: r.refus }, { status: 404 });
+  }
+  // **Avant le lendemain de l'échéance, la lettre ne se produit pas** (défaut du
+  // 2 novembre 2026) : elle écrirait « reste impayée » d'une facture qui ne
+  // l'est pas encore. L'écran éteint déjà son bouton ; la route l'oppose aussi,
+  // avec la même règle et la même phrase, à qui viendrait par l'adresse.
+  if (!r.quand.possible) {
+    const refus = phraseDeLAttente(r.quand.echeance, aujourdHui);
+    console.error("[mise en demeure] refusée", { factureId: id, refus });
+    return NextResponse.json({ error: refus }, { status: 409 });
   }
   const pdf = await genererPdfMiseEnDemeure(r.lettre, r.entete);
   return new NextResponse(new Uint8Array(pdf), {

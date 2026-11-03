@@ -12,7 +12,7 @@
 | **dans la barre** | chaque montant s'écrit dans son morceau s'il tient, en plus petit avant de se taire |
 | **le devis** | il écrit au centime ce que la barre a montré |
 | **ce qui part** | le curseur par travail, le pas de 16 €, les pourcentages qui faisaient 101 % |
-| **où** | branche `lot/main-oeuvre-curseur`, **pas sur `main`** : la batterie n'a pas été jouée |
+| **où** | **sur `main` depuis le 28 octobre 2026**, avec la batterie commune de ce jour-là (`458428c`). Ce document disait « pas sur `main` » jusqu'au 31 octobre |
 
 ## Ce que sa réponse sur l'arrondi a fait trouver, et qui est corrigé
 

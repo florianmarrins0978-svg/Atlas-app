@@ -1,7 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { colors, font, libelleCaps, surPlein } from "@/lib/design-tokens";
+import type React from "react";
+import { colors, font } from "@/lib/design-tokens";
+import IconeTrait from "@/components/atlas/IconeTrait";
+import EtatEcrit from "@/components/atlas/reglages/EtatEcrit";
+import { CocheFaite } from "@/components/atlas/LettreDuClient";
+import { jourIso, moisAbrege } from "@/lib/jour";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import VisionneusePhoto from "@/components/atlas/VisionneusePhoto";
 import { ChampRecherche } from "@/components/atlas/ChampRecherche";
@@ -63,23 +68,36 @@ export default function ListeDesRetours({ retours }: { retours: RetourEnListe[] 
       />
 
       {groupes.length === 0 ? (
-        <p className="mx-[22px] mt-7 text-[13.5px] leading-[1.65]" style={{ color: colors.muted }}>
-          {retours.length === 0
-            ? "Rien encore. Un retour arrive ici quand un salarié pose « c'est fini » sur sa fiche."
-            : "Aucun retour ne correspond."}
-        </p>
+        <div className="px-[30px] pt-11 pb-6 text-center">
+          <span className="mx-auto mb-3.5 grid w-fit" style={{ color: colors.or }}>
+            <IconeTrait nom="document" taille={40} epaisseur={1.4} />
+          </span>
+          <p className="mx-auto max-w-[26em] text-[15px] leading-normal" style={{ color: colors.inkSoft }}>
+            {retours.length === 0
+              ? "Rien encore. Un retour arrive ici quand un salarié pose « c'est fini » sur sa fiche."
+              : "Aucun retour ne correspond."}
+          </p>
+        </div>
       ) : (
         groupes.map((groupe) => (
-          <section key={groupe.client} className="mt-6" data-atlas="groupe-de-retours">
-            <p
-              className="mx-[22px] mb-0 text-[19px] leading-[1.2]"
-              style={{ fontFamily: font.display }}
-            >
-              {groupe.client}
-            </p>
-            {groupe.retours.map((r) => (
-              <Carte key={r.id} retour={r} />
-            ))}
+          <section key={groupe.client} className="mx-[22px]" data-atlas="groupe-de-retours">
+            {/* **Rangés par client, avec leur nombre — sa planche du
+                31 octobre 2026** (`appli/soignee/termines-retours.html`). Les
+                cartes bordées deviennent une plage par client, les retours
+                séparés d'un filet, comme partout dans l'appli. */}
+            <div className="mt-6 mb-2 flex items-baseline justify-between gap-3">
+              <b className="text-[21px] font-normal leading-[1.2]" style={{ fontFamily: font.display }}>
+                {groupe.client}
+              </b>
+              <span className="flex-none text-[14.5px]" style={{ color: colors.inkSoft }}>
+                {groupe.retours.length} retour{groupe.retours.length > 1 ? "s" : ""}
+              </span>
+            </div>
+            <div className="rounded-md px-[18px] py-1" style={{ backgroundColor: colors.card }}>
+              {groupe.retours.map((r, rang) => (
+                <Carte key={r.id} retour={r} premier={rang === 0} />
+              ))}
+            </div>
           </section>
         ))
       )}
@@ -107,43 +125,23 @@ export default function ListeDesRetours({ retours }: { retours: RetourEnListe[] 
  * qu'il a tout lu — en haut, il faudrait remonter pour refermer ce qu'on vient
  * de parcourir.
  */
-function Carte({ retour }: { retour: RetourEnListe }) {
+function Carte({ retour, premier }: { retour: RetourEnListe; premier: boolean }) {
   const [ouvert, setOuvert] = useState(false);
-  /**
-   * **La pastille s’éteint sous le doigt, pas quand le serveur répond.**
-   *
-   * Ouvrir EST la lecture : rien ne peut la refuser. Attendre l’aller-retour
-   * ferait clignoter la pastille sur un réseau de chantier, et il croirait
-   * avoir mal appuyé. Si l’appel échoue, le retour reste non lu — le bon côté
-   * de l’erreur : il le rouvrira.
-   */
   const [lu, setLu] = useState(retour.vu);
-  /**
-   * **La photo qu'il regarde en grand.** Sa demande du 11 septembre 2026,
-   * capture à l'appui : *« ce qui serait bien, c'est qu'on puisse cliquer
-   * dessus pour qu'elle apparaisse en grand »*. Deux colonnes de 132 pixels
-   * disent qu'il y a eu une photo ; elles ne disent pas si la haie est taillée
-   * droit — et c'est sur cette image qu'il décide de facturer.
-   *
-   * **Le RANG, pas la clé** : la visionneuse feuillette les photos du retour
-   * (sa demande du soir même — *« des flèches de chaque côté pour aller voir
-   * les suivantes »*), et il lui faut la liste pour connaître la suivante.
-   */
   const [enGrand, setEnGrand] = useState<number | null>(null);
   const compte = compteDesTaches(retour.taches);
-  const jour = new Date(retour.poseLe).toLocaleDateString("fr-FR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+  // Le jour de SON fuseau : un retour posé à 23 h 30 appartient à ce jour-là.
+  const jour = jourIso(new Date(retour.poseLe));
+  const semaine = new Date(`${jour}T12:00:00Z`).toLocaleDateString("fr-FR", { weekday: "long", timeZone: "UTC" });
+  // Le mois du haut dit l'année ; elle ne se répète que si ce n'est plus celle-ci.
+  const annee = jour.slice(0, 4) === jourIso(new Date()).slice(0, 4) ? null : jour.slice(0, 4);
 
   return (
-    <div className="mx-[22px] mt-2.5">
-      {/* **CE N'EST PLUS UN BLOC MUET, ET CE N'EST PAS UN LIEN NON PLUS.** Il
-          ouvre ce qu'il porte, ici même : le chantier, lui, s'atteint par des
-          règles d'accès qui vivent déjà dans `portesDuPlanning`, et les
-          recopier ferait la seconde vérité que `CLAUDE.md` §3 interdit. */}
+    <div className={premier ? "" : "border-t"} style={{ borderColor: colors.line }}>
+      {/* **CE N'EST NI UN BLOC MUET, NI UN LIEN.** Il ouvre ce qu'il porte, ici
+          même : le chantier, lui, s'atteint par des règles d'accès qui vivent
+          déjà dans `portesDuPlanning`, et les recopier ferait la seconde
+          vérité que `CLAUDE.md` §3 interdit. */}
       <button
         type="button"
         onClick={() => {
@@ -156,39 +154,30 @@ function Carte({ retour }: { retour: RetourEnListe }) {
         }}
         data-atlas="carte-de-retour"
         aria-expanded={ouvert}
-        className="flex w-full items-start gap-3 px-3.5 py-3 text-left"
-        style={{
-          backgroundColor: colors.card,
-          color: colors.ink,
-          boxShadow: `inset 0 0 0 1px ${colors.line}`,
-          borderRadius: ouvert ? "13px 13px 0 0" : 13,
-          WebkitTapHighlightColor: "transparent",
-        }}
+        className="flex min-h-[72px] w-full items-center gap-3.5 py-3 text-left"
+        style={{ color: colors.ink, WebkitTapHighlightColor: "transparent" }}
       >
-        <span
-          aria-hidden="true"
-          className="grid h-[26px] w-[26px] flex-none place-items-center rounded-full"
-          style={{ backgroundColor: colors.rustTint, color: colors.orTexte }}
-        >
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-            <path
-              d="M3 8.4 6.3 11.7 13 5"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+        {/* **Le jour en grand à gauche**, comme les dates du mois du client :
+            l'œil descend la colonne des jours avant de lire les noms. */}
+        <span className="w-12 flex-none text-center leading-none" aria-hidden="true">
+          <b className="block text-[25px] font-normal" style={{ fontFamily: font.display, fontVariantNumeric: "lining-nums" }}>
+            {Number(jour.slice(8, 10))}
+          </b>
+          <span className="mt-1 block text-[12px] font-semibold uppercase tracking-[0.08em]" style={{ color: colors.inkSoft }}>
+            {moisAbrege(jour)}
+          </span>
+          {annee && (
+            <span className="mt-[3px] block text-[11px] font-semibold" style={{ color: colors.inkSoft }}>
+              {annee}
+            </span>
+          )}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="flex items-center gap-2">
+          <span className="flex items-center gap-2 text-[17.5px] leading-[1.25]" style={{ fontFamily: font.display }}>
             {/* **LA PASTILLE DES NON-LUS — sa demande du 9 septembre 2026 :**
-                *« comme pour les SMS sur notre téléphone »*. Elle vit AVANT le
-                jour, sur la colonne que l’œil descend : placée à droite, il
-                faudrait lire chaque ligne en entier pour la trouver.
-
-                Elle est en `or` et non en `alert` : un retour non lu n’est pas
-                un incident, c’est du courrier. */}
+                *« comme pour les SMS »*. À gauche du nom, sur la colonne que
+                l'œil descend. En `or` et non en `alert` : un retour non lu
+                n'est pas un incident, c'est du courrier. */}
             {!lu && (
               <span
                 aria-hidden="true"
@@ -197,110 +186,61 @@ function Carte({ retour }: { retour: RetourEnListe }) {
                 style={{ backgroundColor: colors.or }}
               />
             )}
-            <span
-              className="block text-[14px] leading-[1.3]"
-              style={{ fontWeight: lu ? 500 : 600 }}
-            >
-              {jour}
-            </span>
+            <span className={lu ? "" : "font-semibold"}>{retour.posePar}</span>
           </span>
-          <span className="mt-[3px] block text-[12.5px] leading-[1.45]" style={{ color: colors.muted }}>
-            {[retour.posePar, compte, phrasePhotos(retour.photos.length)].filter(Boolean).join(", ")}
+          <span className="mt-[3px] flex flex-wrap items-center gap-x-2 gap-y-1.5 text-[14.5px]" style={{ color: colors.inkSoft }}>
+            <span className="first-letter:uppercase">{[semaine, compte].filter(Boolean).join(", ")}</span>
+            {/* **Ce qui est à signaler se dit dès la liste**, sans ouvrir : un
+                mot de son salarié ne doit pas attendre qu'il pense à déplier. */}
+            {retour.aSignaler && <EtatEcrit ton="ambre">À signaler</EtatEcrit>}
           </span>
         </span>
         <span
           aria-hidden="true"
-          className="mt-1.5 flex-none"
-          style={{
-            color: colors.muted,
-            transform: ouvert ? "rotate(90deg)" : "none",
-            transition: "transform .18s cubic-bezier(.22,.9,.3,1)",
-          }}
+          className="flex-none transition-transform duration-200"
+          style={{ color: colors.chevron, transform: ouvert ? "rotate(90deg)" : "none" }}
         >
-          <svg width="9" height="15" viewBox="0 0 9 15" fill="none">
-            <path
-              d="m1.5 1.5 6 6-6 6"
-              stroke="currentColor"
-              strokeWidth="1.7"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <IconeTrait nom="suivant" taille={20} epaisseur={2} />
         </span>
       </button>
-
       {ouvert && (
-        <div
-          data-atlas="retour-deplie"
-          className="px-3.5 pb-3.5 pt-0.5"
-          style={{
-            backgroundColor: colors.card,
-            boxShadow: `inset 0 0 0 1px ${colors.line}`,
-            borderRadius: "0 0 13px 13px",
-          }}
-        >
+        <div data-atlas="retour-deplie" className="pb-3.5">
           {retour.taches.length > 0 && (
             <>
-              <p className={`mt-3 ${libelleCaps}`} style={{ color: colors.muted }}>
-                Ce qui a été fait
-              </p>
-              <ul className="m-0 mt-2 list-none p-0">
+              <Rubrique premiere>Ce qui a été fait</Rubrique>
+              <ul className="m-0 list-none p-0">
                 {retour.taches.map((t, rang) => (
                   <li
                     key={`${t.libelle}-${rang}`}
-                    className="flex items-start gap-2.5 py-[5px] text-[13.5px] leading-[1.35]"
+                    className="flex min-h-10 items-center gap-3 text-[16px] leading-[1.35]"
+                    style={{ color: t.faite ? colors.ink : colors.inkSoft }}
                     data-atlas={t.faite ? "tache-faite" : "tache-pas-faite"}
                   >
-                    <span
-                      aria-hidden="true"
-                      className="mt-[1px] grid h-[17px] w-[17px] flex-none place-items-center rounded-[5px]"
-                      style={
-                        t.faite
-                          ? { backgroundColor: colors.plein, color: surPlein }
-                          : { boxShadow: `inset 0 0 0 1.5px ${colors.line}` }
-                      }
-                    >
-                      {t.faite && (
-                        <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
-                          <path
-                            d="M2 6.3 4.7 9 10 3"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      )}
-                    </span>
-                    <span style={{ color: t.faite ? colors.ink : colors.muted }}>
-                      {t.libelle}
-                      {/* **Ce qui n'a pas été fait le DIT.** Une case vide se lit
-                          comme un oubli de lecture ; ces deux mots l'arrêtent
-                          avant de facturer un travail qui n'a pas eu lieu. */}
-                      {!t.faite && <span style={{ color: colors.orTexte }}>, pas fait</span>}
-                    </span>
+                    {t.faite ? (
+                      <CocheFaite taille={24} />
+                    ) : (
+                      <span aria-hidden="true" className="h-6 w-6 flex-none rounded-full" style={{ boxShadow: `inset 0 0 0 1.5px ${colors.chevron}` }} />
+                    )}
+                    <span className="min-w-0 flex-1">{t.libelle}</span>
+                    {/* **Ce qui n'a pas été fait le DIT.** Une case vide se lit
+                        comme un oubli de lecture ; ces deux mots l'arrêtent
+                        avant de facturer un travail qui n'a pas eu lieu. */}
+                    {!t.faite && <EtatEcrit ton="ambre">Pas fait</EtatEcrit>}
                   </li>
                 ))}
               </ul>
             </>
           )}
-
           {retour.photos.length > 0 && (
             <>
-              <p className={`mt-4 ${libelleCaps}`} style={{ color: colors.muted }}>
-                Photos
-              </p>
+              <Rubrique premiere={retour.taches.length === 0}>Photos</Rubrique>
               {/* **EN GRAND, et c'est sa demande.** Des vignettes de 62 px ne
                   montrent pas si la haie est taillée ; deux colonnes le font.
-
-                  **Conservé en `<img>`, comme la pellicule des chantiers** :
                   `next/image` réécrit le `src` via `/_next/image`, or ces
                   fichiers sortent d'une route gardée qui vérifie à qui ils
-                  appartiennent. Les faire passer par l'optimiseur, c'est
-                  poser un second chemin vers des photos de chantier — et une
-                  photo visible par le mauvais jeton est le défaut de plus
-                  haute priorité de ce produit. */}
-              <div className="mt-2 grid grid-cols-2 gap-2">
+                  appartiennent : les faire passer par l'optimiseur poserait un
+                  second chemin vers des photos de chantier. */}
+              <div className="grid grid-cols-2 gap-2">
                 {retour.photos.map((photo, rang) => (
                   <button
                     key={photo.id}
@@ -308,7 +248,7 @@ function Carte({ retour }: { retour: RetourEnListe }) {
                     onClick={() => setEnGrand(rang)}
                     aria-label="Voir la photo en grand"
                     data-atlas="ouvrir-la-photo"
-                    className="block h-[132px] w-full overflow-hidden rounded-[11px] p-0"
+                    className="block h-[132px] w-full overflow-hidden rounded-md p-0"
                     style={{ backgroundColor: colors.rustTint, WebkitTapHighlightColor: "transparent" }}
                   >
                     <img
@@ -322,44 +262,35 @@ function Carte({ retour }: { retour: RetourEnListe }) {
               </div>
             </>
           )}
-
           {retour.aSignaler && (
             <>
-              <p className={`mt-4 ${libelleCaps}`} style={{ color: colors.muted }}>
-                À signaler
-              </p>
+              <Rubrique premiere={retour.taches.length === 0 && retour.photos.length === 0}>À signaler</Rubrique>
               <p
-                className="mt-2 rounded-[12px] px-3 py-2.5 text-[13.5px] leading-[1.45]"
-                style={{ backgroundColor: colors.rustTint, color: colors.inkSoft }}
+                className="rounded-md px-4 py-[13px] text-[14.5px] leading-[1.45]"
+                style={{ backgroundColor: colors.carteAmbreFond, color: colors.carteAmbreTexte }}
               >
                 « {retour.aSignaler} »
               </p>
             </>
           )}
-
-          <button
-            type="button"
-            onClick={() => setOuvert(false)}
-            data-atlas="replier-le-retour"
-            className="mt-3.5 h-[42px] w-full rounded-full text-[13.5px]"
-            style={{
-              color: colors.orTexte,
-              boxShadow: `inset 0 0 0 1px ${colors.orTexte}`,
-              WebkitTapHighlightColor: "transparent",
-            }}
-          >
-            Replier
-          </button>
+          <div className="mt-1.5 flex justify-center">
+            <button
+              type="button"
+              onClick={() => setOuvert(false)}
+              data-atlas="replier-le-retour"
+              className="min-h-12 px-1 text-[16px] font-semibold"
+              style={{ color: colors.rust, WebkitTapHighlightColor: "transparent" }}
+            >
+              Replier
+            </button>
+          </div>
         </div>
       )}
-
       {/* **La visionneuse est celle de la pellicule des chantiers**, sortie
           dans `components/atlas/VisionneusePhoto.tsx` plutôt que recopiée : une
-          seule façon de regarder une photo, une seule façon d'en sortir.
-
-          **Sans « Retirer » ici, et c'est délibéré** : un retour est le compte
-          rendu d'un salarié. Ce qu'il a photographié n'est pas à effacer depuis
-          l'écran qui sert à le vérifier. */}
+          seule façon de regarder une photo, une seule façon d'en sortir. Elle
+          n'offre pas de supprimer : ce qu'un salarié a photographié n'est pas
+          à effacer depuis l'écran qui sert à le vérifier. */}
       {enGrand !== null && (
         <VisionneusePhoto
           photos={retour.photos.map((p) => `/api/fichiers/${p.storageKey}`)}
@@ -372,8 +303,14 @@ function Carte({ retour }: { retour: RetourEnListe }) {
   );
 }
 
-/** « 3 photos », « 1 photo », ou rien du tout. */
-function phrasePhotos(combien: number): string {
-  if (combien === 0) return "";
-  return combien === 1 ? "1 photo" : `${combien} photos`;
+/** Le mot de rangement d'une partie dépliée : « Ce qui a été fait », « Photos ». */
+function Rubrique({ premiere, children }: { premiere: boolean; children: React.ReactNode }) {
+  return (
+    <p
+      className={`${premiere ? "mt-1.5" : "mt-5"} mb-2.5 text-[13px] font-semibold uppercase tracking-[0.12em]`}
+      style={{ color: colors.inkSoft }}
+    >
+      {children}
+    </p>
+  );
 }

@@ -1,0 +1,1142 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ce que reçoit le client, soigné</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  CE QUE REÇOIT LE CLIENT : les cinq pages publiques qu'il ouvre depuis le
+  lien reçu par SMS ou par e-mail, sans compte.
+    le devis           src/app/devis/[jeton]/page.tsx, formulaire.tsx
+    la facture         src/app/factures/[jeton]/page.tsx, PastilleACopier.tsx, AccuseDeReception.tsx
+    le contrat         src/app/contrat/[jeton]/page.tsx, ReponseContrat.tsx
+    les dates du mois  src/app/contrat/dates/[jeton]/page.tsx, ValiderLesDates.tsx
+    le compte rendu    src/app/entretien/[jeton]/page.tsx, src/components/atlas/RapportEntretien.tsx
+      (le même composant sert « Rapport envoyé » chez le patron, /documents/entretien)
+
+  Sa demande du 31 octobre 2026 : « fais moi ce que reçoit le client en
+  planche, améliorer, plus jolie ».
+
+  À CÔTÉ, LES VRAIES PAGES : ouvertes le 31 octobre sur le poste, par de vrais
+  jetons (jeu de démonstration), à 390 × 664 (aujourdhui/recoit-*.jpg).
+
+  CE QUE LA LECTURE A TROUVÉ, et qu'aucune capture ne montre :
+    trois pages sur cinq écrivent leurs couleurs EN DUR (#F4EFE8, bg-white,
+      #7d9a6d, #9C3B2E) : le contrat, les dates du mois et le compte rendu.
+      Le devis et la facture passent par les jetons depuis le 8 septembre.
+      D'où un fond blanc sur trois pages et crème sur deux ;
+    le compte rendu et les dates écrivent le titre en ui-serif, Georgia, les
+      deux autres en font.display : deux serif différentes selon la page ;
+    le TTC du contrat est en gras sans serif, celui du devis en serif ;
+    les petits mots sont à 9,5, 11 et 12 points, en gris (contraste 3,3).
+
+  CE QUI EST GARDÉ, ses décisions relevées dans le code :
+    la page du client ne suit PAS la charte de l'artisan (data-sans-charte) ;
+    le devis tient dans 390 × 664 sans défiler, dans le pire cas (deux dates,
+      case de rétractation, sa règle du 31 août) : la planche le MESURE ;
+    « Télécharger mon devis » en plein (9 septembre), et sous le TTC ;
+    pas de montant sur la page de la facture (8 septembre) ;
+    les trois issues du devis, dans leur ordre, et la feuille du refus ;
+    l'IBAN et le numéro à copier, l'accusé de réception en bas ;
+    le calendrier dans une feuille qui monte (4 septembre) ;
+    chaque mot des pages, sauf ce que les notes disent.
+
+  Aucune donnée réelle : les noms et montants sont ceux du jeu de démonstration.
+*/
+
+/* Ces pages partent chez le client : la charte essayée ne s'y applique pas. */
+body .pl-barre .pl-charte-bouton, body .pl-barre .pl-chartes { display: none; }
+/* Deux téléphones côte à côte : les notes passent dessous, à leur largeur de lecture. */
+@media (min-width: 900px) {
+  body .pl-scene { grid-template-columns: minmax(0, 1fr); }
+  body .pl-notes { margin: 8px auto 0; }
+}
+
+.rangee-pages { margin-bottom: 6px; }
+.rangee-pages button[aria-pressed="true"] { background: #2f3b2f; color: #faf9f5; font-weight: 600; }
+.etats-page button[aria-pressed="true"] { background: #4a4a44; }
+.mesure { margin: 0 auto 4px; max-width: 390px; text-align: center; font-size: 14px; font-weight: 600; color: #4a4a44; }
+.mesure[data-tient="non"] { color: #9C3B2E; }
+.mesure[data-tient="oui"] { color: #506f44; }
+.capture-quoi { margin: 0 auto 6px; max-width: 390px; text-align: center; font-size: 13.5px; color: #4a4a44; }
+.page-notes[hidden] { display: none; }
+
+/* ═══ LA LETTRE DE L'ARTISAN : la même tête sur les cinq pages ════════════ */
+.ecran .defile { padding-top: 16px; }
+.tete-doc { display: flex; align-items: flex-start; gap: 12px; }
+.titre-doc { flex: 1; min-width: 0; margin: 0; font: 400 29px/1.12 var(--serif); letter-spacing: -0.012em;
+             font-variant-numeric: lining-nums; text-wrap: balance; }
+/* Ses initiales en tête, à l'or de l'appli : le client reconnaît d'abord
+   qui lui écrit. Le nom entier suit dans la ligne d'en dessous. */
+.monogramme { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: 50%;
+              font: 400 15px/1 var(--serif); letter-spacing: 0.04em; color: var(--atlas-or);
+              box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 65%, transparent); }
+.qui { margin: 6px 0 0; font-size: 14.5px; line-height: 1.4; color: var(--atlas-inkSoft); }
+.qui b { font-weight: 600; color: var(--atlas-ink); }
+.qui + .qui { margin-top: 1px; }
+
+/* Le total : le chiffre sur lequel il s'engage, en grand ; le reste en une ligne. */
+.total { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.total-mot { font: 400 17px/1.2 var(--serif); }
+.total-chiffre { font: 400 27px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; letter-spacing: -0.01em; white-space: nowrap; }
+.total-detail { margin: 2px 0 0; font-size: 13.5px; line-height: 1.35; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
+
+/* ═══ LE DEVIS : tout dans 390 × 664 ═════════════════════════════════════ */
+.devis .defile { padding: 10px 18px 8px; }
+.devis .titre-doc { font-size: 24px; }
+.devis .monogramme { width: 30px; height: 30px; font-size: 12.5px; }
+.devis .qui { margin-top: 2px; font-size: 14px; line-height: 1.34; }
+.devis .plage { padding: 9px 12px; }
+.devis .plage + .plage { margin-top: 6px; }
+.devis .bouton-telecharger { min-height: 44px; margin-top: 8px; font-size: 16px; }
+.question { margin: 0; font: 400 18px/1.2 var(--serif); }
+.duree { margin: 1px 0 0; font-size: 13.5px; color: var(--atlas-inkSoft); }
+
+/* Deux dates d'un jour : côte à côte, le jour en mot, la date en serif.
+   Plusieurs jours : une ligne chacune, la phrase entière. */
+.dates { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.date { position: relative; display: flex; align-items: center; gap: 8px; min-height: 50px; padding: 6px 9px;
+        border-radius: 12px; text-align: left; background: var(--atlas-cream);
+        box-shadow: inset 0 0 0 1px var(--atlas-line);
+        transition: box-shadow 180ms var(--courbe), background-color 180ms var(--courbe); }
+.date[aria-checked="true"] { box-shadow: inset 0 0 0 2px var(--atlas-rust); background: var(--atlas-card); }
+.date-mots { min-width: 0; }
+.date-jour { display: block; font-size: 13px; font-weight: 600; line-height: 1.2; color: var(--atlas-inkSoft); }
+.date-quand { display: block; font: 400 17px/1.18 var(--serif); font-variant-numeric: lining-nums; }
+.autre { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 40px; margin-top: 4px; padding: 2px 2px;
+         text-align: left; font-size: 14px; line-height: 1.25; color: var(--atlas-ink); }
+.autre .coche-ronde { margin: 0 2px 0 0; }
+.autre-retenue { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 40px; margin-top: 4px; }
+.autre-retenue span { font: 400 16.5px/1.25 var(--serif); }
+
+/* Le mot pour l'artisan : sa phrase se lit, la case s'ouvre au doigt. */
+.erreur-ligne { display: block; width: 100%; min-height: 40px; margin-top: 2px; padding: 4px 2px 0;
+                text-align: left; font-size: 13.5px; font-weight: 600; line-height: 1.3; color: var(--atlas-rust);
+                border-top: 1px solid var(--atlas-line); }
+.erreur-case { display: block; width: 100%; min-height: 42px; max-height: 120px; field-sizing: content; margin-top: 4px; padding: 10px 12px; border: 0; border-radius: 10px;
+               resize: none; background: var(--atlas-cream); color: var(--atlas-ink); font: 400 16px/1.35 var(--sans);
+               box-shadow: inset 0 0 0 1px var(--atlas-line); outline: none; }
+.erreur-case:focus { box-shadow: inset 0 0 0 2px var(--atlas-rust); }
+/* Ses deux exemples tiennent sur une ligne : coupés, ils ne disent plus rien. */
+.erreur-case::placeholder { color: var(--atlas-inkSoft); font-size: 13.5px; }
+
+.retractation-phrase { margin: 6px 2px 0; font-size: 13px; line-height: 1.36; color: var(--atlas-inkSoft); }
+.retractation-case { display: flex; align-items: flex-start; gap: 9px; width: 100%; margin-top: 6px; padding: 8px 10px; border-radius: 10px; text-wrap: pretty;
+                     text-align: left; font-size: 13px; line-height: 1.32; background: var(--atlas-carteAmbreFond); color: var(--atlas-ink); }
+.retractation-case b { font-weight: 600; }
+.carre { width: 21px; height: 21px; flex: none; margin-top: 1px; border-radius: 6px; display: grid; place-items: center;
+         background: var(--atlas-card); box-shadow: inset 0 0 0 1.5px var(--atlas-carteAmbreTexte); color: transparent; }
+.carre .ico { width: 16px; height: 16px; stroke-width: 2.4; }
+[aria-checked="true"] > .carre { background: var(--atlas-carteAmbreTexte); color: var(--atlas-card); box-shadow: none; }
+
+.issues { display: grid; gap: 6px; margin-top: 8px; }
+.devis .issues .bouton-plein { min-height: 48px; font: 400 19px/1 var(--serif); }
+/* Les deux autres issues côte à côte, sous l'accord : l'ordre reste le sien
+   (accepter, corriger, ne pas donner suite), de gauche à droite. */
+.issues-bas { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.devis .issues-bas .bouton-creux { min-height: 50px; padding: 4px 12px; font-size: 14.5px; line-height: 1.2; text-wrap: balance; }
+.bouton-creux.doux { color: var(--atlas-inkSoft); font-weight: 500; }
+.refus-devis { margin: 4px 2px 0; font-size: 14px; font-weight: 600; color: var(--atlas-alerte); }
+.horodatage { margin: 4px 0 0; text-align: center; font-size: 13px; line-height: 1.3; color: var(--atlas-inkSoft); }
+
+/* Le calendrier de la feuille : le mois en titre, les jours barrés se taisent. */
+.mois-tete { display: flex; align-items: center; justify-content: space-between; margin: 2px 0 10px; }
+.mois-tete .feuille-titre { margin: 0; font-size: 23px; }
+.mois-tete button { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-ink); }
+.mois-tete button[disabled] { color: var(--atlas-chevron); }
+.semaine, .grille { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; text-align: center; }
+.semaine span { font-size: 12.5px; font-weight: 600; color: var(--atlas-inkSoft); padding-bottom: 4px; }
+.jour-c { height: 44px; border-radius: 50%; font-size: 16px; font-variant-numeric: tabular-nums; color: var(--atlas-ink);
+          background: color-mix(in srgb, var(--atlas-ink) 5%, transparent); }
+.jour-c.hors { background: transparent; color: color-mix(in srgb, var(--atlas-inkSoft) 45%, transparent); }
+.jour-c.pris { background: transparent; color: color-mix(in srgb, var(--atlas-inkSoft) 70%, transparent); text-decoration: line-through; cursor: default; }
+.jour-c[aria-pressed="true"] { background: var(--atlas-plein); color: var(--sur-plein); font-weight: 700; }
+.legende-cal { margin: 10px 0 0; text-align: center; font-size: 13.5px; color: var(--atlas-inkSoft); }
+.feuille .bouton { margin-top: 14px; }
+.feuille-centre { text-align: center; }
+.feuille-centre p { margin: 6px 0 0; font-size: 15px; color: var(--atlas-inkSoft); }
+
+/* ═══ LES ÉCRANS DE RETOUR : une phrase, un geste, au milieu ═════════════ */
+.retour { min-height: 100%; display: flex; flex-direction: column; justify-content: center; text-align: center; padding: 24px 6px; }
+.retour-signe { width: 56px; height: 56px; margin: 0 auto 16px; display: grid; place-items: center; border-radius: 50%;
+                background: var(--atlas-carteVertFond); color: var(--atlas-carteVertTexte); }
+.retour-signe .ico { width: 28px; height: 28px; stroke-width: 2; }
+.retour-signe.or { background: color-mix(in srgb, var(--atlas-or) 14%, transparent); color: var(--atlas-or); }
+.retour h2 { margin: 0; font: 400 27px/1.15 var(--serif); }
+.retour p { margin: 10px auto 0; max-width: 21em; font-size: 16px; line-height: 1.5; color: var(--atlas-inkSoft); }
+.retour .bouton { margin-top: 24px; }
+.retour .qui-retour { margin-top: 26px; font-size: 14px; }
+
+/* ═══ LA FACTURE : l'esprit d'aujourd'hui, une carte au centre, soignée ══ */
+/* Sa réponse du 1er novembre : « garder un peu le même esprit que celui
+   d'aujourd'hui, mais amélioré et plus jolie ». Donc la carte centrée, le
+   mot Facture en or au-dessus du numéro, puis Pour régler et l'accusé, dans
+   le même ordre ; ce qui change, c'est ce qui se lit et ce qui se touche. */
+.facture .defile { padding: 16px 14px 28px; }
+.carte-facture { border-radius: 22px; background: var(--atlas-card); padding: 30px 22px 22px; text-align: center; }
+.facture-mot { margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase; color: var(--atlas-or); }
+.facture-numero { margin: 10px 0 0; font: 400 33px/1.1 var(--serif); letter-spacing: -0.01em; font-variant-numeric: tabular-nums lining-nums; }
+.facture-qui { margin: 6px 0 0; font-size: 16px; color: var(--atlas-inkSoft); }
+.facture .statut { margin-top: 16px; }
+.facture .bouton-telecharger { margin-top: 22px; min-height: 58px; font: 400 19px/1 var(--serif); }
+/* L'or sur le trait, le mot en encre, comme aujourd'hui : il se lit au soleil et tient sur une ligne. */
+.facture .bouton-avoir { margin-top: 10px; min-height: 50px; font-size: 15.5px; color: var(--atlas-ink); }
+.filet-carte { height: 1px; margin: 24px 0 20px; background: var(--atlas-line); }
+.pour-regler { text-align: left; }
+.pour-regler-mot { margin: 0 0 10px; font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--atlas-inkSoft); }
+.phrase { margin: 0; font-size: 15.5px; line-height: 1.55; color: var(--atlas-inkSoft); text-align: left; }
+.phrase b { font-weight: 600; color: var(--atlas-ink); }
+/* Les deux choses à recopier : une pilule chacune, son nom lisible, Copier au pouce. */
+.pilule-copier { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; margin-top: 10px; padding: 8px 8px 8px 20px;
+                 border-radius: 999px; text-align: left; background: var(--atlas-rustTint);
+                 transition: box-shadow 180ms var(--courbe); }
+.pilule-copier[data-copie] { box-shadow: inset 0 0 0 1.5px var(--atlas-carteVertTexte); }
+.pilule-copier-quoi { display: block; font-size: 13px; font-weight: 600; color: var(--atlas-inkSoft); }
+.pilule-copier-valeur { display: block; margin-top: 1px; font: 400 18px/1.3 var(--serif); font-variant-numeric: tabular-nums lining-nums; letter-spacing: 0.01em; overflow-wrap: anywhere; }
+.a-copier-geste { display: inline-flex; align-items: center; gap: 6px; flex: none; min-height: 46px; padding: 0 16px; border-radius: 999px;
+                  font-size: 15px; font-weight: 600; color: var(--atlas-rust); background: var(--atlas-card);
+                  transition: color 180ms var(--courbe); }
+.a-copier-geste .ico { width: 18px; height: 18px; }
+.pilule-copier[data-copie] .a-copier-geste { color: var(--atlas-carteVertTexte); }
+.recu { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 68px; padding: 12px 20px; border-radius: 999px;
+        text-align: left; background: var(--atlas-rustTint); transition: background-color 200ms var(--courbe), box-shadow 200ms var(--courbe); }
+.recu b { display: block; font: 400 17.5px/1.25 var(--serif); }
+.recu small { display: block; margin-top: 2px; font-size: 14px; color: var(--atlas-inkSoft); }
+.recu[aria-pressed="true"] { background: var(--atlas-carteVertFond); }
+.recu[aria-pressed="true"] small { color: var(--atlas-carteVertTexte); font-weight: 600; }
+.recu .carre { background: var(--atlas-card); box-shadow: inset 0 0 0 1.5px var(--atlas-chevron); }
+.recu[aria-pressed="true"] .carre { background: var(--atlas-carteVertTexte); color: var(--atlas-card); box-shadow: none; }
+
+/* ═══ LE CONTRAT : l'essentiel, le détail dans le PDF ════════════════════ */
+.contrat .bouton-telecharger { margin-top: 12px; }
+
+/* ═══ LES DATES DU MOIS ══════════════════════════════════════════════════ */
+.passage { position: relative; display: flex; align-items: flex-start; gap: 14px; padding: 14px 0; }
+.passage + .passage::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
+.passage .jour { margin-top: 2px; }
+.passage .jour b { transition: color 200ms var(--courbe); }
+.passage-corps { flex: 1; min-width: 0; }
+.passage-quoi { display: block; font: 400 18px/1.25 var(--serif); }
+.passage-quand { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 3px; font-size: 15px; color: var(--atlas-inkSoft); }
+.passage[data-change] .passage-quand > span:first-child { color: var(--atlas-ink); font-weight: 600; }
+.passage[data-change] .jour b { color: var(--atlas-or); }
+.passage .bouton-texte { min-height: 40px; margin-top: 2px; padding: 0; font-size: 15px; }
+
+/* ═══ LE COMPTE RENDU ════════════════════════════════════════════════════ */
+.fait { display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 6px 0; font-size: 16px; line-height: 1.35; }
+.fait + .fait { border-top: 1px solid var(--atlas-lineSoft); }
+.fait-signe { width: 26px; height: 26px; flex: none; display: grid; place-items: center; border-radius: 50%;
+              background: var(--atlas-carteVertFond); color: var(--atlas-carteVertTexte); }
+.fait-signe .ico { width: 16px; height: 16px; stroke-width: 2.4; }
+.temps { display: flex; align-items: center; gap: 12px; }
+.temps .ico { color: var(--atlas-or); }
+.temps span { flex: 1; font-size: 15px; color: var(--atlas-inkSoft); }
+.temps b { font: 400 22px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; }
+.observations { margin: 0; font: 400 17px/1.55 var(--serif); color: var(--atlas-ink); }
+
+/* Sur son téléphone : les pages et leurs états sur une ligne chacun, qui
+   glisse, plutôt que cinq rangées qui repoussent l'écran sous le pli. */
+@media (max-width: 480px) {
+  .rangee-pages, .etats-page { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; scrollbar-width: none;
+                               padding: 10px var(--gouttiere) 2px; margin: 0 0 4px; }
+  .rangee-pages::-webkit-scrollbar, .etats-page::-webkit-scrollbar { display: none; }
+  .rangee-pages button, .etats-page button { flex: none; white-space: nowrap; }
+  .mesure, .capture-quoi { padding: 0 var(--gouttiere); }
+}
+</style>
+</head>
+<body class="pl pl-pilules">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">Ce que reçoit le client</h1>
+  <p class="pl-verdict">Les cinq pages qu'il ouvre depuis votre SMS ou votre e-mail. <b>Une même lettre partout : votre nom en tête, un grand titre, des gestes sous le pouce.</b> À côté, les vraies pages.</p>
+</header>
+
+<main class="pl-scene">
+  <div>
+    <div class="pl-etats rangee-pages" role="group" aria-label="La page">
+      <button type="button" data-page="devis" aria-pressed="true">Le devis</button>
+      <button type="button" data-page="facture">La facture</button>
+      <button type="button" data-page="contrat">Le contrat</button>
+      <button type="button" data-page="dates">Les dates du mois</button>
+      <button type="button" data-page="rapport">Le compte rendu</button>
+    </div>
+    <div class="pl-etats etats-page" id="etats-page" role="group" aria-label="Son état"></div>
+
+    <div class="pl-ecrans">
+      <div data-vue-panneau="propose">
+        <p class="pl-legende">Proposé</p>
+        <div class="cadre">
+
+          <!-- ═══ LE DEVIS ═══════════════════════════════════════════════ -->
+          <div class="ecran devis" data-sans-charte data-page-ecran="devis" id="ecran-devis">
+            <div class="defile">
+
+              <div data-si-etat="deux plusieurs proche">
+                <div class="tete-doc">
+                  <h2 class="titre-doc">Devis n° 2026&#8209;000002</h2>
+                  <span class="monogramme" aria-hidden="true">AD</span>
+                </div>
+                <p class="qui"><b>Atelier Démo EI</b>, pour Mme Groupiron</p>
+                <p class="qui">12 rue des Tilleuls 49000 Angers</p>
+
+                <section class="plage" style="margin-top:8px">
+                  <div class="total">
+                    <span class="total-mot">Total TTC</span>
+                    <span class="total-chiffre">1 140,00 €</span>
+                  </div>
+                  <p class="total-detail">950,00 € HT et 190,00 € de TVA à 20 %</p>
+                  <a class="bouton bouton-plein pilule bouton-telecharger" href="#" data-geste="telecharger"><svg class="ico ico-p" aria-hidden="true"><use href="#i-telecharger"/></svg>Télécharger mon devis</a>
+                </section>
+
+                <section class="plage">
+                  <p class="question" id="q-date">Quelle date vous arrange ?</p>
+                  <p class="duree" data-si-etat="plusieurs">Les travaux sont prévus sur 2 jours.</p>
+                  <div class="dates" role="radiogroup" aria-labelledby="q-date" id="dates-devis"></div>
+                  <button type="button" class="autre" role="radio" aria-checked="false" id="autre-devis" data-ouvre="feuille-calendrier">
+                    <span class="coche-ronde" aria-hidden="true"></span><span id="autre-mot">Cette date ne me convient pas ? Je propose</span>
+                  </button>
+                  <div class="autre-retenue" id="autre-retenue" hidden>
+                    <span id="autre-retenue-mot"></span>
+                    <button type="button" class="bouton-texte" id="changer-autre">changer</button>
+                  </div>
+                  <button type="button" class="erreur-ligne" id="erreur-ligne" aria-expanded="false">Une erreur ? Écrivez-la, votre artisan la lira.</button>
+                  <textarea class="erreur-case" id="erreur-case" rows="1" maxlength="500" hidden
+                    placeholder="« Mon nom est mal écrit », « plutôt le matin »…" aria-labelledby="erreur-ligne"></textarea>
+                </section>
+
+                <p class="retractation-phrase" id="retractation-phrase">Vous pouvez vous rétracter pendant 14 jours après votre accord. Le formulaire est à la fin de votre devis.</p>
+                <button type="button" class="retractation-case" id="retractation-case" role="checkbox" aria-checked="false" hidden>
+                  <span class="carre" aria-hidden="true"><svg class="ico"><use href="#i-coche"/></svg></span>
+                  <span>Cette date se situe dans mon délai de rétractation de 14 jours. <b>Je demande expressément que les travaux commencent avant sa fin.</b></span>
+                </button>
+                <p class="refus-devis" id="refus-devis" role="alert" hidden></p>
+
+                <div class="issues">
+                  <button type="button" class="bouton bouton-plein pilule" id="accepter-devis">J'accepte ce devis</button>
+                  <div class="issues-bas">
+                    <button type="button" class="bouton bouton-creux pilule" id="corriger-devis">Une correction avant d'accepter</button>
+                    <button type="button" class="bouton bouton-creux pilule doux" data-ouvre="feuille-refus">Je ne donne pas suite</button>
+                  </div>
+                </div>
+                <p class="horodatage">Votre accord est horodaté et conservé avec le devis.</p>
+              </div>
+
+              <div class="retour" data-si-etat="accepte">
+                <span class="retour-signe" aria-hidden="true"><svg class="ico"><use href="#i-coche"/></svg></span>
+                <h2>Devis accepté</h2>
+                <p id="accepte-phrase">Intervention prévue le mercredi 18 novembre. Votre artisan vous recontactera si besoin.</p>
+                <a class="bouton bouton-plein pilule" href="#" data-geste="telecharger"><svg class="ico ico-p" aria-hidden="true"><use href="#i-telecharger"/></svg>Télécharger mon devis</a>
+                <p class="qui qui-retour"><b>Atelier Démo EI</b>, devis n° 2026&#8209;000002</p>
+              </div>
+
+              <div class="retour" data-si-etat="corrige">
+                <span class="retour-signe or" aria-hidden="true"><svg class="ico"><use href="#i-crayon"/></svg></span>
+                <h2>Correction demandée</h2>
+                <p>Votre artisan a reçu votre message. Il corrigera le devis et vous en enverra une nouvelle version.</p>
+                <p class="qui qui-retour"><b>Atelier Démo EI</b>, devis n° 2026&#8209;000002</p>
+              </div>
+
+              <div class="retour" data-si-etat="refuse">
+                <span class="retour-signe or" aria-hidden="true"><svg class="ico"><use href="#i-coche"/></svg></span>
+                <h2>Réponse enregistrée</h2>
+                <p>Vous avez indiqué ne pas donner suite à ce devis.</p>
+                <p class="qui qui-retour"><b>Atelier Démo EI</b>, devis n° 2026&#8209;000002</p>
+              </div>
+
+              <div class="retour" data-si-etat="perime">
+                <span class="retour-signe or" aria-hidden="true"><svg class="ico"><use href="#i-horloge-sable"/></svg></span>
+                <h2>Ce lien n'est plus valable</h2>
+                <p>Contactez votre artisan pour en recevoir un nouveau.</p>
+              </div>
+            </div>
+
+            <div class="feuille" id="feuille-calendrier" aria-hidden="true" role="dialog" aria-label="Une autre date">
+              <div class="feuille-poignee"></div>
+              <div class="feuille-dedans">
+                <div class="mois-tete">
+                  <button type="button" disabled aria-label="Mois précédent"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+                  <h3 class="feuille-titre">Novembre 2026</h3>
+                  <button type="button" aria-label="Mois suivant"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></button>
+                </div>
+                <div class="semaine" aria-hidden="true"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+                <div class="grille" id="grille-devis"></div>
+                <p class="duree" data-si-etat="plusieurs" style="text-align:center;margin-top:10px">Les travaux sont prévus sur 2 jours.</p>
+                <p class="legende-cal">Les jours barrés ne peuvent pas accueillir votre chantier.</p>
+                <p class="refus-devis" id="refus-calendrier" role="alert" hidden style="text-align:center"></p>
+                <button type="button" class="bouton bouton-plein pilule" id="retenir-devis">Retenir cette date</button>
+              </div>
+            </div>
+
+            <div class="feuille" id="feuille-refus" aria-hidden="true" role="dialog" aria-label="Ne pas donner suite">
+              <div class="feuille-poignee"></div>
+              <div class="feuille-dedans feuille-centre">
+                <h3 class="feuille-titre" style="margin-bottom:0">Vous ne donnez pas suite ?</h3>
+                <p>Votre artisan en sera prévenu.</p>
+                <div class="issues" style="margin-top:18px">
+                  <button type="button" class="bouton bouton-creux pilule doux" data-va="refuse">Oui, je ne donne pas suite</button>
+                  <button type="button" class="bouton bouton-creux pilule" data-ferme style="box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-ink) 45%, transparent)">Revenir au devis</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══ LA FACTURE ═════════════════════════════════════════════ -->
+          <div class="ecran facture" data-sans-charte data-page-ecran="facture" id="ecran-facture" hidden>
+            <div class="defile">
+              <section class="carte-facture">
+                <p class="facture-mot">Facture</p>
+                <h2 class="facture-numero">F2026&#8209;000001</h2>
+                <p class="facture-qui">Atelier Démo EI</p>
+                <div class="statut">
+                  <span class="etat" data-ton="ambre" data-si-etat="aregler avoir">À régler avant le lundi 30 novembre</span>
+                  <span class="etat" data-ton="vert" data-si-etat="acquittee">Acquittée le 12/11/2026</span>
+                </div>
+
+                <a class="bouton bouton-plein bouton-telecharger" href="#" data-geste="telecharger"><svg class="ico ico-p" aria-hidden="true"><use href="#i-telecharger"/></svg>Télécharger ma facture</a>
+                <a class="bouton bouton-creux or bouton-avoir" href="#" data-geste="telecharger" data-si-etat="avoir">Télécharger l'avoir A2026&#8209;000001</a>
+
+                <div class="pour-regler" data-si-etat="aregler avoir">
+                  <div class="filet-carte"></div>
+                  <p class="pour-regler-mot">Pour régler</p>
+                  <p class="phrase">Par virement, indiquez <b>F2026&#8209;000001</b> dans le libellé. Sans ce numéro, votre règlement ne peut pas être rattaché à cette facture.</p>
+                  <button type="button" class="pilule-copier" data-copier>
+                    <span class="ligne-corps"><span class="pilule-copier-quoi">Numéro de facture</span><span class="pilule-copier-valeur">F2026&#8209;000001</span></span>
+                    <span class="a-copier-geste"><svg class="ico" aria-hidden="true"><use href="#i-copier"/></svg><span>Copier</span></span>
+                  </button>
+                  <button type="button" class="pilule-copier" data-copier>
+                    <span class="ligne-corps"><span class="pilule-copier-quoi">IBAN</span><span class="pilule-copier-valeur">FR76 3000 1000 0000 0000 0000 000</span></span>
+                    <span class="a-copier-geste"><svg class="ico" aria-hidden="true"><use href="#i-copier"/></svg><span>Copier</span></span>
+                  </button>
+                  <div class="filet-carte"></div>
+                  <p class="phrase">Par chèque, à l'ordre de : Atelier Démo.</p>
+                </div>
+
+                <div class="filet-carte"></div>
+                <button type="button" class="recu" id="recu" aria-pressed="false">
+                  <span class="carre" aria-hidden="true"><svg class="ico"><use href="#i-coche"/></svg></span>
+                  <span><b>J'ai bien reçu cette facture</b><small id="recu-sous">Votre artisan en sera informé.</small></span>
+                </button>
+              </section>
+            </div>
+          </div>
+
+          <!-- ═══ LE CONTRAT ═════════════════════════════════════════════ -->
+          <div class="ecran contrat" data-sans-charte data-page-ecran="contrat" id="ecran-contrat" hidden>
+            <div class="defile">
+              <div data-si-etat="arepondre">
+                <div class="tete-doc">
+                  <h2 class="titre-doc">Contrat d'entretien</h2>
+                  <span class="monogramme" aria-hidden="true">AD</span>
+                </div>
+                <p class="qui"><b>Atelier Démo EI</b>, pour M. Bernard</p>
+                <p class="qui">Du 1er novembre 2026 au 31 octobre 2027, reconduit à son terme.</p>
+
+                <!-- Sa remarque du 1er novembre : « si le contrat fait 20 pages,
+                     faut pas tout mettre ». L'essentiel ici, comme le devis ;
+                     chaque prestation et son prix vivent dans le PDF. -->
+                <section class="plage" style="margin-top:16px">
+                  <div class="total">
+                    <span class="total-mot">Total TTC</span>
+                    <span class="total-chiffre">1 332,00 €</span>
+                  </div>
+                  <p class="total-detail">3 prestations, 18 passages. 1 110,00 € HT et 222,00 € de TVA à 20 %.</p>
+                  <a class="bouton bouton-plein pilule bouton-telecharger" href="#" data-geste="telecharger"><svg class="ico ico-p" aria-hidden="true"><use href="#i-telecharger"/></svg>Télécharger mon contrat</a>
+                </section>
+                <p class="plage-ton mt-16" data-ton="or">Chaque passage est facturé une fois fait. Un passage qui n'a pas lieu n'est pas facturé. Les passages sont fixés d'un mois à l'autre selon la météo.</p>
+
+                <div class="issues" style="margin-top:16px">
+                  <button type="button" class="bouton bouton-plein pilule" data-va="accepte" style="font:400 19px/1 var(--serif)">J'accepte le contrat</button>
+                  <button type="button" class="bouton bouton-creux pilule doux" data-ouvre="feuille-refus-contrat">Je ne donne pas suite</button>
+                </div>
+              </div>
+
+              <div class="retour" data-si-etat="accepte">
+                <span class="retour-signe" aria-hidden="true"><svg class="ico"><use href="#i-coche"/></svg></span>
+                <h2>Contrat accepté</h2>
+                <p>Les passages sont fixés d'un mois à l'autre selon la météo.</p>
+                <a class="bouton bouton-plein pilule" href="#" data-geste="telecharger"><svg class="ico ico-p" aria-hidden="true"><use href="#i-telecharger"/></svg>Télécharger mon contrat</a>
+                <p class="qui qui-retour"><b>Atelier Démo EI</b>, contrat d'entretien</p>
+              </div>
+
+              <div class="retour" data-si-etat="refuse">
+                <span class="retour-signe or" aria-hidden="true"><svg class="ico"><use href="#i-coche"/></svg></span>
+                <h2>Réponse enregistrée</h2>
+                <p>Vous avez refusé ce contrat.</p>
+                <p class="qui qui-retour"><b>Atelier Démo EI</b>, contrat d'entretien</p>
+              </div>
+            </div>
+
+            <div class="feuille" id="feuille-refus-contrat" aria-hidden="true" role="dialog" aria-label="Ne pas donner suite">
+              <div class="feuille-poignee"></div>
+              <div class="feuille-dedans feuille-centre">
+                <h3 class="feuille-titre" style="margin-bottom:0">Vous ne donnez pas suite ?</h3>
+                <p>Votre artisan en sera prévenu.</p>
+                <div class="issues" style="margin-top:18px">
+                  <button type="button" class="bouton bouton-creux pilule doux" data-va="refuse">Oui, je ne donne pas suite</button>
+                  <button type="button" class="bouton bouton-creux pilule" data-ferme style="box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-ink) 45%, transparent)">Revenir au contrat</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══ LES DATES DU MOIS ══════════════════════════════════════ -->
+          <div class="ecran dates-mois" data-sans-charte data-page-ecran="dates" id="ecran-dates" hidden>
+            <div class="defile">
+              <div class="tete-doc">
+                <h2 class="titre-doc">Vos passages de novembre</h2>
+                <span class="monogramme" aria-hidden="true">AD</span>
+              </div>
+              <p class="qui"><b>Atelier Démo EI</b></p>
+              <p class="qui">M. Faucher, voici les dates prévues.</p>
+
+              <section class="plage plage-serree" style="margin-top:16px" id="passages"></section>
+
+              <button type="button" class="bouton bouton-plein pilule mt-24" data-si-etat="avalider" data-va="validees" style="font:400 19px/1 var(--serif)">Ces dates me vont</button>
+              <div class="plage-ton reponse-faite mt-24" data-ton="vert" data-si-etat="validees">
+                <svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg><span>Merci, vos dates sont retenues.</span>
+              </div>
+            </div>
+
+            <div class="feuille" id="feuille-calendrier-dates" aria-hidden="true" role="dialog" aria-label="Une autre date">
+              <div class="feuille-poignee"></div>
+              <div class="feuille-dedans">
+                <p class="second" id="cal-dates-quoi" style="margin:4px 0 0;text-align:center"></p>
+                <div class="mois-tete">
+                  <button type="button" disabled aria-label="Mois précédent"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+                  <h3 class="feuille-titre">Novembre 2026</h3>
+                  <button type="button" disabled aria-label="Mois suivant"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></button>
+                </div>
+                <div class="semaine" aria-hidden="true"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+                <div class="grille" id="grille-dates"></div>
+                <p class="legende-cal">Les jours barrés ne peuvent pas accueillir votre chantier.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══ LE COMPTE RENDU ════════════════════════════════════════ -->
+          <div class="ecran rapport" data-sans-charte data-page-ecran="rapport" id="ecran-rapport" hidden>
+            <div class="defile">
+              <div class="tete-doc">
+                <h2 class="titre-doc">Retour d'intervention</h2>
+                <span class="monogramme" aria-hidden="true">AD</span>
+              </div>
+              <p class="qui"><b>Atelier Démo</b></p>
+              <p class="qui">Jeudi 29 octobre 2026 chez M. Bernard</p>
+
+              <p class="rubrique" style="margin-top:26px">Pelouse</p>
+              <section class="plage plage-serree">
+                <div class="fait"><span class="fait-signe" aria-hidden="true"><svg class="ico"><use href="#i-coche"/></svg></span>Tonte</div>
+                <div class="fait"><span class="fait-signe" aria-hidden="true"><svg class="ico"><use href="#i-coche"/></svg></span>Ébarbage des bordures</div>
+                <div class="fait"><span class="fait-signe" aria-hidden="true"><svg class="ico"><use href="#i-coche"/></svg></span>Ramassage de l'herbe</div>
+              </section>
+              <p class="rubrique">Massifs</p>
+              <section class="plage plage-serree">
+                <div class="fait"><span class="fait-signe" aria-hidden="true"><svg class="ico"><use href="#i-coche"/></svg></span>Désherbage manuel</div>
+                <div class="fait"><span class="fait-signe" aria-hidden="true"><svg class="ico"><use href="#i-coche"/></svg></span>Taille des vivaces</div>
+              </section>
+              <p class="rubrique">Entretien</p>
+              <section class="plage plage-serree">
+                <div class="fait"><span class="fait-signe" aria-hidden="true"><svg class="ico"><use href="#i-coche"/></svg></span>Ramassage des feuilles</div>
+                <div class="fait"><span class="fait-signe" aria-hidden="true"><svg class="ico"><use href="#i-coche"/></svg></span>Évacuation des déchets verts</div>
+              </section>
+
+              <section class="plage mt-24 temps">
+                <svg class="ico" aria-hidden="true"><use href="#i-horloge"/></svg>
+                <span>Temps passé</span>
+                <b>2 h 30</b>
+              </section>
+              <section class="plage-ton mt-16" data-ton="or">
+                <p class="observations">Le massif du fond manque d'eau : pensez à arroser le soir si la semaine reste sèche. Les feuilles du noyer reviendront au prochain passage.</p>
+              </section>
+            </div>
+          </div>
+
+        </div>
+        <p class="mesure" id="mesure" aria-live="polite"></p>
+      </div>
+
+      <div data-vue-panneau="aujourdhui">
+        <p class="pl-legende">Aujourd'hui</p>
+        <div class="cadre"><div class="cadre-capture" id="cadre-capture"><img id="capture" src="aujourdhui/recoit-devis.jpg" alt="La page du devis telle que le client la voit aujourd'hui"></div></div>
+        <p class="capture-quoi" id="capture-quoi"></p>
+      </div>
+    </div>
+  </div>
+
+  <section class="pl-notes">
+    <div class="page-notes" data-notes="commun">
+      <h2>Partout</h2>
+      <ul>
+        <li>Le devis, le contrat, les dates et le compte rendu se ressemblent : votre nom et vos initiales en tête, un grand titre, des plages sans ombre ni cadre. La facture garde sa carte au centre, comme aujourd'hui. Aujourd'hui, trois pages sont sur fond blanc et deux sur fond crème.</li>
+        <li>Les petits mots se lisent : rien sous 13 points, en encre douce et non plus en gris.</li>
+        <li>Les couleurs ne suivent pas votre charte, comme aujourd'hui : un devis ne part pas en noir chez le client.</li>
+      </ul>
+    </div>
+
+    <div class="page-notes" data-notes="devis">
+      <h2>Le devis</h2>
+      <ul>
+        <li>Le total TTC en grand ; le HT et la TVA tiennent sur une ligne dessous.</li>
+        <li>Les deux dates se posent côte à côte, en grandes cases au pouce : le jour en mot, la date en serif. Sur plusieurs jours aussi (« Mercredi et jeudi, 18 et 19 novembre »).</li>
+        <li>« Une erreur ? Écrivez-la » reste écrit ; la case s'ouvre au doigt, ou d'elle-même sur « Une correction avant d'accepter ».</li>
+        <li>La case de rétractation passe en ambre : c'est une demande, pas une erreur.</li>
+        <li>Une correction et Je ne donne pas suite se posent côte à côte sous J'accepte : le même ordre, et la place rendue aux mots.</li>
+        <li>Les écrans de retour (accepté, correction, refus, lien expiré) ont un signe, une phrase, et rappellent votre nom.</li>
+      </ul>
+      <h2>Ce qui ne bouge pas</h2>
+      <ul class="garde">
+        <li>Tout tient dans son écran de 390 × 664, sans défiler : le chiffre sous le téléphone est mesuré, pas écrit.</li>
+        <li>Télécharger mon devis en plein, sous le TTC ; le calendrier dans une feuille ; les trois issues dans leur ordre.</li>
+        <li>Chaque phrase de la page, mot pour mot.</li>
+      </ul>
+      <h2>À trancher</h2>
+      <ul class="a-trancher">
+        <li>Pour tenir dans l'écran avec des mots plus grands, la case du message ne s'ouvre qu'au doigt. Aujourd'hui elle est toujours ouverte.</li>
+      </ul>
+    </div>
+
+    <div class="page-notes" data-notes="facture" hidden>
+      <h2>La facture</h2>
+      <ul>
+        <li>Votre réponse du 1er novembre : l'esprit d'aujourd'hui, la carte au centre, dans le même ordre.</li>
+        <li>« À régler avant le… » devient une pastille ambre ; payée, elle passe en vert avec sa date.</li>
+        <li>Le numéro et l'IBAN se lisent en grand dans leurs pilules, leur nom n'est plus en capitales de 9 points, et « Copier » est un vrai bouton qui dit « Copié ».</li>
+        <li>« J'ai bien reçu cette facture » garde sa pilule, et se teinte de vert une fois fait.</li>
+      </ul>
+      <h2>Ce qui ne bouge pas</h2>
+      <ul class="garde">
+        <li>Aucun montant sur la page : il faut ouvrir la facture (votre demande du 8 septembre).</li>
+        <li>Facture en or au-dessus du numéro, Télécharger ma facture en plein, l'avoir en doré dessous.</li>
+        <li>La phrase du virement, celle du chèque, l'accusé en bas.</li>
+      </ul>
+    </div>
+
+    <div class="page-notes" data-notes="contrat" hidden>
+      <h2>Le contrat</h2>
+      <ul>
+        <li>Votre remarque du 1er novembre : un contrat de vingt prestations ne se déroule pas sur la page. L'essentiel seulement, comme le devis : le total, le nombre de prestations et de passages ; le détail est dans le PDF.</li>
+        <li>Accepté, ce n'est plus la même page : un signe vert, une phrase, et son contrat à télécharger. Aujourd'hui seule la dernière ligne change.</li>
+        <li>La façon de payer se lit dans une plage dorée, au lieu d'un paragraphe gris.</li>
+      </ul>
+      <h2>Ce qui ne bouge pas</h2>
+      <ul class="garde">
+        <li>Télécharger mon contrat, J'accepte le contrat, Je ne donne pas suite, et sa feuille.</li>
+        <li>La période, la reconduction, la phrase de la facturation.</li>
+      </ul>
+    </div>
+
+    <div class="page-notes" data-notes="dates" hidden>
+      <h2>Les dates du mois</h2>
+      <ul>
+        <li>Chaque passage a son jour en grand à gauche, comme sur votre planning.</li>
+        <li>« Une autre date ? » ouvre le calendrier dans une feuille, comme sur le devis. Aujourd'hui il s'ouvre dans la page et la fait déborder.</li>
+        <li>Une date qu'il change prend son jour en or et le mot « Votre date » : la couleur seule ne se voit pas au soleil.</li>
+      </ul>
+      <h2>Ce qui ne bouge pas</h2>
+      <ul class="garde">
+        <li>Ces dates me vont, en bas ; les jours barrés ; la date à venir quand le passage n'est pas posé.</li>
+      </ul>
+    </div>
+
+    <div class="page-notes" data-notes="rapport" hidden>
+      <h2>Le compte rendu</h2>
+      <ul>
+        <li>Ce qui a été fait, rangé par famille, chaque ligne cochée d'un rond vert au lieu d'un « ✓ » gris.</li>
+        <li>Le temps passé a sa ligne, les observations leur plage dorée.</li>
+        <li>Le même dessin sert « Rapport envoyé » chez vous : vous voyez ce que voit le client.</li>
+      </ul>
+      <h2>Ce qui ne bouge pas</h2>
+      <ul class="garde">
+        <li>Le jour avec l'année, le nom du client, chaque ligne faite, le temps s'il est montré.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="client.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>La fiche d'un client</a>
+  <a href="index.html">Sommaire<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* Chaque page, ses états, et la vraie page qui leur répond. */
+  var PAGES = {
+    devis: {
+      etats: [["deux", "Deux dates"], ["plusieurs", "Sur deux jours"], ["proche", "Date dans 14 jours"], ["accepte", "Accepté"], ["perime", "Lien expiré"]],
+      captures: {
+        deux: ["recoit-devis.jpg", "Aujourd'hui, deux dates proposées."],
+        plusieurs: ["recoit-devis.jpg", "Aujourd'hui, deux dates proposées (même écran sur plusieurs jours)."],
+        proche: ["recoit-devis-proche.jpg", "Aujourd'hui, des dates dans les 14 jours."],
+        accepte: ["recoit-devis-retour.jpg", "Aujourd'hui, le devis accepté, rouvert depuis le SMS."],
+        perime: ["recoit-lien-perime.jpg", "Aujourd'hui, un lien expiré."],
+        "feuille-calendrier": ["recoit-devis-autre-date.jpg", "Aujourd'hui, Je propose une autre date."],
+        "feuille-refus": ["recoit-devis-refus.jpg", "Aujourd'hui, Je ne donne pas suite."]
+      }
+    },
+    facture: {
+      etats: [["aregler", "À régler"], ["avoir", "Avec un avoir"], ["acquittee", "Acquittée"]],
+      captures: {
+        aregler: ["recoit-facture.jpg", "Aujourd'hui, une facture à régler."],
+        avoir: ["recoit-facture.jpg", "Aujourd'hui, une facture à régler (le bouton de l'avoir s'ajoute dessous)."],
+        acquittee: ["recoit-facture.jpg", "Aujourd'hui, une facture à régler (acquittée, la date remplace l'échéance)."]
+      }
+    },
+    contrat: {
+      etats: [["arepondre", "À répondre"], ["accepte", "Accepté"]],
+      captures: {
+        arepondre: ["recoit-contrat.jpg", "Aujourd'hui, un contrat à accepter."],
+        accepte: ["recoit-contrat.jpg", "Aujourd'hui, accepté : la même page, et « Vous avez accepté ce contrat. » à la place des boutons."],
+        refuse: ["recoit-contrat.jpg", "Aujourd'hui, refusé : la même page, et « Vous avez refusé ce contrat. » à la place des boutons."]
+      }
+    },
+    dates: {
+      etats: [["avalider", "À valider"], ["validees", "Validées"]],
+      captures: {
+        avalider: ["recoit-dates.jpg", "Aujourd'hui, les passages de novembre."],
+        validees: ["recoit-dates.jpg", "Aujourd'hui, les passages de novembre."],
+        "feuille-calendrier-dates": ["recoit-dates-autre.jpg", "Aujourd'hui, Une autre date ? ouvre le calendrier dans la page."]
+      }
+    },
+    rapport: {
+      etats: [["envoye", "Envoyé"]],
+      captures: { envoye: ["recoit-rapport.jpg", "Aujourd'hui, le compte rendu d'un passage."] }
+    }
+  };
+
+  var pageCourante = "devis";
+  var etatCourant = {};
+  var capture = document.getElementById("capture");
+  var captureQuoi = document.getElementById("capture-quoi");
+  var etatsPage = document.getElementById("etats-page");
+  var mesure = document.getElementById("mesure");
+
+  function ecranDe(page) { return document.getElementById("ecran-" + page); }
+
+  function montrerCapture(cle) {
+    var c = PAGES[pageCourante].captures[cle];
+    if (!c) return;
+    capture.src = "aujourdhui/" + c[0];
+    captureQuoi.textContent = c[1];
+    var cadre = document.getElementById("cadre-capture");
+    if (cadre) cadre.scrollTop = 0;
+  }
+
+  function construireEtats() {
+    etatsPage.innerHTML = "";
+    var etats = PAGES[pageCourante].etats;
+    etatsPage.hidden = etats.length < 2;
+    etats.forEach(function (e) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.setAttribute("data-etat-page", e[0]);
+      b.setAttribute("aria-pressed", e[0] === etatCourant[pageCourante] ? "true" : "false");
+      b.textContent = e[1];
+      b.addEventListener("click", function () { choisirEtat(e[0]); });
+      etatsPage.appendChild(b);
+    });
+  }
+
+  function choisirEtat(etat) {
+    etatCourant[pageCourante] = etat;
+    var ecran = ecranDe(pageCourante);
+    Kit.fermerFeuilles(ecran);
+    Kit.appliquerEtat(ecran, etat);
+    etatsPage.querySelectorAll("button").forEach(function (b) {
+      b.setAttribute("aria-pressed", b.getAttribute("data-etat-page") === etat ? "true" : "false");
+    });
+    if (pageCourante === "devis") preparerDevis(etat);
+    if (pageCourante === "dates" && etat === "avalider") preparerDates();
+    if (pageCourante === "facture") preparerFacture();
+    var defile = ecran.querySelector(".defile");
+    if (defile) defile.scrollTop = 0;
+    montrerCapture(etat);
+    mesurer();
+  }
+
+  function choisirPage(page) {
+    pageCourante = page;
+    document.querySelectorAll("[data-page-ecran]").forEach(function (e) { e.hidden = e.getAttribute("data-page-ecran") !== page; });
+    document.querySelectorAll(".rangee-pages button").forEach(function (b) {
+      b.setAttribute("aria-pressed", b.getAttribute("data-page") === page ? "true" : "false");
+    });
+    document.querySelectorAll("[data-notes]").forEach(function (n) {
+      var q = n.getAttribute("data-notes");
+      n.hidden = q !== "commun" && q !== page;
+    });
+    if (!etatCourant[page]) etatCourant[page] = PAGES[page].etats[0][0];
+    construireEtats();
+    choisirEtat(etatCourant[page]);
+  }
+
+  /* ─── La mesure : le devis doit tenir dans 390 × 664 ───────────────────
+     On mesure la hauteur réelle du contenu, pas celle du cadre : sur un
+     téléphone, le cadre prend tout l'écran et ne dit rien de la page. */
+  function mesurer() {
+    if (pageCourante !== "devis") { mesure.textContent = ""; mesure.removeAttribute("data-tient"); return; }
+    var defile = ecranDe("devis").querySelector(".defile");
+    var bloc = null;
+    defile.querySelectorAll(":scope > [data-si-etat]").forEach(function (el) { if (!el.hidden) bloc = el; });
+    /* Un écran de retour remplit le téléphone par construction : rien à mesurer. */
+    if (bloc && bloc.classList.contains("retour")) { mesure.textContent = ""; mesure.removeAttribute("data-tient"); return; }
+    var style = getComputedStyle(defile);
+    var h = bloc ? Math.ceil(bloc.getBoundingClientRect().height + parseFloat(style.paddingTop) + parseFloat(style.paddingBottom)) : 0;
+    if (!h) { mesure.textContent = "Mesure impossible."; mesure.removeAttribute("data-tient"); return; }
+    var tient = h <= 664;
+    mesure.setAttribute("data-tient", tient ? "oui" : "non");
+    mesure.textContent = tient
+      ? "Tient dans son écran : " + h + " px sur 664."
+      : "Ne tient pas : " + h + " px sur 664.";
+  }
+
+  /* ─── Le devis ─────────────────────────────────────────────────────── */
+  var DATES = {
+    deux: [["Mercredi", "18 novembre", "2026-11-18"], ["Mercredi", "25 novembre", "2026-11-25"]],
+    plusieurs: [["Mercredi et jeudi", "18 et 19 novembre", "2026-11-18"], ["Mercredi et jeudi", "25 et 26 novembre", "2026-11-25"]],
+    proche: [["Mardi", "3 novembre", "2026-11-03"], ["Mardi", "10 novembre", "2026-11-10"]]
+  };
+  var PRIS = { 6: 1, 13: 1, 20: 1 };
+  var choisie = null;
+  var autresJours = [];
+
+  function preparerDevis(etat) {
+    var liste = DATES[etat];
+    var conteneur = document.getElementById("dates-devis");
+    if (!liste) return;
+    conteneur.innerHTML = "";
+    liste.forEach(function (d) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "date";
+      b.setAttribute("role", "radio");
+      b.setAttribute("aria-checked", "false");
+      b.setAttribute("data-jour", d[2]);
+      b.innerHTML = '<span class="coche-ronde" aria-hidden="true"></span><span class="date-mots">' +
+'<span class="date-jour">' + d[0] + '</span><span class="date-quand">' + d[1] + "</span></span>";
+      conteneur.appendChild(b);
+    });
+    choisie = null;
+    autresJours = [];
+    document.getElementById("autre-devis").setAttribute("aria-checked", "false");
+    document.getElementById("autre-devis").hidden = false;
+    document.getElementById("autre-retenue").hidden = true;
+    document.getElementById("dates-devis").hidden = false;
+    document.getElementById("erreur-ligne").hidden = false;
+    document.getElementById("autre-mot").textContent = etat === "plusieurs" ? "Ces dates ne me conviennent pas ? Je propose" : "Cette date ne me convient pas ? Je propose";
+    document.getElementById("retenir-devis").textContent = etat === "plusieurs" ? "Retenir ces jours" : "Retenir cette date";
+    document.getElementById("erreur-case").hidden = true;
+    document.getElementById("erreur-case").value = "";
+    document.getElementById("erreur-ligne").setAttribute("aria-expanded", "false");
+    document.getElementById("refus-devis").hidden = true;
+    /* Dans les 14 jours, la case se montre dès qu'une date est prise : on la
+       prend pour lui, c'est le pire cas que la mesure doit tenir. */
+    if (etat === "proche") prendreDate(conteneur.querySelector(".date"));
+    else majRetractation();
+    construireGrille();
+  }
+
+  function prendreDate(bouton) {
+    document.querySelectorAll("#dates-devis .date").forEach(function (b) { b.setAttribute("aria-checked", b === bouton ? "true" : "false"); });
+    document.getElementById("autre-devis").setAttribute("aria-checked", "false");
+    choisie = bouton ? bouton.getAttribute("data-jour") : null;
+    majRetractation();
+  }
+
+  function majRetractation() {
+    var jour = choisie || autresJours[0] || null;
+    var proche = jour && jour < "2026-11-14";
+    document.getElementById("retractation-phrase").hidden = !!proche;
+    document.getElementById("retractation-case").hidden = !proche;
+    mesurer();
+  }
+
+  function construireGrille() {
+    var grille = document.getElementById("grille-devis");
+    grille.innerHTML = "";
+    var plusieurs = etatCourant.devis === "plusieurs";
+    for (var i = 26; i <= 31; i++) grille.appendChild(caseJour(i, "hors"));
+    for (var j = 1; j <= 30; j++) {
+      var b = caseJour(j, PRIS[j] || j < 2 ? "pris" : "");
+      b.setAttribute("aria-pressed", autresJours.indexOf(iso(j)) >= 0 ? "true" : "false");
+      if (!PRIS[j] && j >= 2) b.addEventListener("click", (function (jour) {
+        return function () {
+          var k = autresJours.indexOf(jour);
+          if (k >= 0) autresJours.splice(k, 1);
+          else if (plusieurs) { autresJours.push(jour); if (autresJours.length > 2) autresJours.shift(); }
+          else autresJours = [jour];
+          autresJours.sort();
+          document.getElementById("refus-calendrier").hidden = true;
+          construireGrille();
+        };
+      })(iso(j)));
+      grille.appendChild(b);
+    }
+    for (var k = 1; k <= 6; k++) grille.appendChild(caseJour(k, "hors"));
+  }
+
+  function caseJour(n, sorte) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "jour-c" + (sorte ? " " + sorte : "");
+    b.textContent = String(n);
+    if (sorte) { b.disabled = true; b.setAttribute("aria-disabled", "true"); }
+    return b;
+  }
+
+  function iso(j) { return "2026-11-" + (j < 10 ? "0" + j : String(j)); }
+
+  var NOMS_JOURS = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
+  function enLettres(jours) {
+    var mots = jours.map(function (d) {
+      var n = Number(d.slice(8));
+      return "le " + NOMS_JOURS[new Date(d + "T12:00:00Z").getUTCDay()] + " " + (n === 1 ? "1er" : n);
+    });
+    var phrase = mots.length === 1 ? mots[0] : mots.slice(0, -1).join(", ") + " et " + mots[mots.length - 1];
+    return phrase + " novembre";
+  }
+
+  function retenirAutre() {
+    var faut = etatCourant.devis === "plusieurs" ? 2 : 1;
+    if (autresJours.length < faut) {
+      var r = document.getElementById("refus-calendrier");
+      r.hidden = false;
+      r.textContent = faut === 1 ? "Touchez une date libre." : "Il manque " + (faut - autresJours.length) + " jour" + (faut - autresJours.length > 1 ? "s" : "") + " : les travaux en prennent " + faut + ".";
+      return;
+    }
+    var ecran = ecranDe("devis");
+    Kit.fermerFeuilles(ecran);
+    montrerCapture(etatCourant.devis);
+    document.querySelectorAll("#dates-devis .date").forEach(function (b) { b.setAttribute("aria-checked", "false"); });
+    choisie = null;
+    /* Une autre date retenue : la liste se replie sur elle, comme aujourd'hui
+       (listeRepliee, formulaire.tsx). C'est ce qui garde la page dans l'écran. */
+    document.getElementById("dates-devis").hidden = true;
+    var texte = enLettres(autresJours);
+    document.getElementById("autre-retenue-mot").textContent = texte.charAt(0).toUpperCase() + texte.slice(1);
+    document.getElementById("autre-devis").hidden = true;
+    document.getElementById("autre-retenue").hidden = false;
+    majRetractation();
+  }
+
+  function ouvrirErreur(avecRefus) {
+    var c = document.getElementById("erreur-case");
+    c.hidden = false;
+    /* La case prend la place de sa phrase, qui devient son nom : ouverte,
+       la page ne grandit que de quatre points. */
+    document.getElementById("erreur-ligne").setAttribute("aria-expanded", "true");
+    document.getElementById("erreur-ligne").hidden = true;
+    var r = document.getElementById("refus-devis");
+    if (avecRefus) { r.hidden = false; r.textContent = "Écrivez d'abord ce qui doit être corrigé."; }
+    setTimeout(function () { c.focus({ preventScroll: false }); }, 30);
+    mesurer();
+  }
+
+  document.getElementById("dates-devis").addEventListener("click", function (e) {
+    var b = e.target.closest(".date");
+    if (!b) return;
+    var oui = b.getAttribute("aria-checked") !== "true";
+    prendreDate(oui ? b : null);
+    if (oui) { autresJours = []; document.getElementById("autre-devis").hidden = false; document.getElementById("autre-retenue").hidden = true; majRetractation(); }
+  });
+  document.getElementById("retenir-devis").addEventListener("click", retenirAutre);
+  document.getElementById("changer-autre").addEventListener("click", function () {
+    document.getElementById("dates-devis").hidden = false;
+    document.getElementById("autre-retenue").hidden = true;
+    var autre = document.getElementById("autre-devis");
+    autre.hidden = false;
+    autre.setAttribute("aria-checked", "true");
+    document.getElementById("autre-mot").textContent = document.getElementById("autre-retenue-mot").textContent + ", changer";
+    mesurer();
+  });
+  document.getElementById("erreur-ligne").addEventListener("click", function () { ouvrirErreur(false); });
+  document.getElementById("erreur-case").addEventListener("input", function () { document.getElementById("refus-devis").hidden = true; });
+  document.getElementById("corriger-devis").addEventListener("click", function () {
+    if (document.getElementById("erreur-case").value.trim() === "") { ouvrirErreur(true); return; }
+    choisirEtat("corrige");
+  });
+  document.getElementById("accepter-devis").addEventListener("click", function () {
+    var jours = choisie ? [choisie] : autresJours;
+    if (!jours.length) {
+      var r = document.getElementById("refus-devis");
+      r.hidden = false;
+      r.textContent = "Choisissez d'abord une date.";
+      mesurer();
+      return;
+    }
+    var phrase = "Intervention prévue " + enLettres(etatCourant.devis === "plusieurs" && choisie ? [choisie, choisie.slice(0, 8) + String(Number(choisie.slice(8)) + 1)] : jours).replace(/^le /, "le ") + ". Votre artisan vous recontactera si besoin.";
+    document.getElementById("accepte-phrase").textContent = phrase;
+    choisirEtatSansReset("accepte");
+  });
+  document.getElementById("retractation-case").addEventListener("click", function () {
+    var b = this;
+    b.setAttribute("aria-checked", b.getAttribute("aria-checked") === "true" ? "false" : "true");
+  });
+
+  /* Un geste qui mène à un écran de retour sans repréparer le devis. */
+  function choisirEtatSansReset(etat) {
+    etatCourant[pageCourante] = etat;
+    var ecran = ecranDe(pageCourante);
+    Kit.fermerFeuilles(ecran);
+    Kit.appliquerEtat(ecran, etat);
+    etatsPage.querySelectorAll("button").forEach(function (b) {
+      b.setAttribute("aria-pressed", b.getAttribute("data-etat-page") === etat ? "true" : "false");
+    });
+    montrerCapture(etat);
+    mesurer();
+  }
+
+  /* ─── La facture ───────────────────────────────────────────────────── */
+  function preparerFacture() {
+    var recu = document.getElementById("recu");
+    recu.setAttribute("aria-pressed", "false");
+    document.getElementById("recu-sous").textContent = "Votre artisan en sera informé.";
+  }
+  document.getElementById("recu").addEventListener("click", function () {
+    if (this.getAttribute("aria-pressed") === "true") return;
+    this.setAttribute("aria-pressed", "true");
+    document.getElementById("recu-sous").textContent = "Confirmé le 31 octobre. Merci.";
+  });
+  document.querySelectorAll("[data-copier]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var mot = b.querySelector(".a-copier-geste span");
+      var ico = b.querySelector(".a-copier-geste use");
+      b.setAttribute("data-copie", "");
+      mot.textContent = "Copié";
+      ico.setAttribute("href", "#i-coche");
+      setTimeout(function () {
+        b.removeAttribute("data-copie");
+        mot.textContent = "Copier";
+        ico.setAttribute("href", "#i-copier");
+      }, 2000);
+    });
+  });
+
+  /* ─── Les dates du mois ─────────────────────────────────────────────── */
+  var PASSAGES = [
+    { id: "p1", quoi: "Taille de haie", jour: "2026-11-06" },
+    { id: "p2", quoi: "Ramassage des feuilles", jour: "2026-11-13" },
+    { id: "p3", quoi: "Ramassage des feuilles", jour: "2026-11-20" }
+  ];
+  var choixDates = {};
+  var enChoix = null;
+  var MOIS_COURT = "nov.";
+
+  function jourLisible(d) {
+    var n = Number(d.slice(8));
+    var nom = NOMS_JOURS[new Date(d + "T12:00:00Z").getUTCDay()];
+    return nom.charAt(0).toUpperCase() + nom.slice(1) + " " + (n === 1 ? "1er" : n) + " novembre";
+  }
+
+  function preparerDates() {
+    choixDates = {};
+    dessinerPassages();
+  }
+
+  function dessinerPassages() {
+    var boite = document.getElementById("passages");
+    boite.innerHTML = "";
+    var fait = etatCourant.dates === "validees";
+    PASSAGES.forEach(function (p) {
+      var jour = choixDates[p.id] || p.jour;
+      var change = !!choixDates[p.id] && choixDates[p.id] !== p.jour;
+      var ligne = document.createElement("div");
+      ligne.className = "passage";
+      if (change) ligne.setAttribute("data-change", "");
+      ligne.innerHTML =
+        '<span class="jour"><b>' + Number(jour.slice(8)) + "</b><span>" + MOIS_COURT + "</span></span>" +
+        '<span class="passage-corps"><span class="passage-quoi">' + p.quoi + "</span>" +
+        '<span class="passage-quand"><span>' + jourLisible(jour) + "</span>" + (change ? '<span class="etat" data-ton="or">Votre date</span>' : "") + "</span>" +
+        (fait ? "" : '<button type="button" class="bouton-texte" data-passage="' + p.id + '">Une autre date ?</button>') +
+        "</span>";
+      boite.appendChild(ligne);
+    });
+  }
+
+  document.getElementById("passages").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-passage]");
+    if (!b) return;
+    enChoix = b.getAttribute("data-passage");
+    var p = PASSAGES.filter(function (x) { return x.id === enChoix; })[0];
+    document.getElementById("cal-dates-quoi").textContent = p.quoi;
+    construireGrilleDates();
+    Kit.ouvrirFeuille("feuille-calendrier-dates", b);
+    montrerCapture("feuille-calendrier-dates");
+  });
+
+  function construireGrilleDates() {
+    var grille = document.getElementById("grille-dates");
+    grille.innerHTML = "";
+    var p = PASSAGES.filter(function (x) { return x.id === enChoix; })[0];
+    var actuel = choixDates[p.id] || p.jour;
+    var autres = {};
+    PASSAGES.forEach(function (x) { if (x.id !== p.id) autres[Number((choixDates[x.id] || x.jour).slice(8))] = 1; });
+    for (var i = 26; i <= 31; i++) grille.appendChild(caseJour(i, "hors"));
+    for (var j = 1; j <= 30; j++) {
+      var pris = autres[j] || j < 2;
+      var b = caseJour(j, pris ? "pris" : "");
+      b.setAttribute("aria-pressed", iso(j) === actuel ? "true" : "false");
+      if (!pris) b.addEventListener("click", (function (jour) {
+        return function () {
+          if (jour === p.jour) delete choixDates[p.id]; else choixDates[p.id] = jour;
+          Kit.fermerFeuilles(ecranDe("dates"));
+          montrerCapture(etatCourant.dates);
+          dessinerPassages();
+        };
+      })(iso(j)));
+      grille.appendChild(b);
+    }
+    for (var k = 1; k <= 6; k++) grille.appendChild(caseJour(k, "hors"));
+  }
+
+  /* ─── Les gestes qui mènent à un état ──────────────────────────────── */
+  document.addEventListener("click", function (e) {
+    var va = e.target.closest("[data-va]");
+    if (va) { e.preventDefault(); choisirEtatSansReset(va.getAttribute("data-va")); if (pageCourante === "dates") dessinerPassages(); return; }
+    var tel = e.target.closest("[data-geste='telecharger']");
+    if (tel) { e.preventDefault(); Kit.note(tel, "Le PDF se range dans les téléchargements."); return; }
+    var ouvre = e.target.closest("[data-ouvre]");
+    if (ouvre) {
+      var id = ouvre.getAttribute("data-ouvre");
+      if (id === "feuille-calendrier") {
+        document.getElementById("autre-devis").setAttribute("aria-checked", "true");
+        document.querySelectorAll("#dates-devis .date").forEach(function (b) { b.setAttribute("aria-checked", "false"); });
+        choisie = null;
+        construireGrille();
+      }
+      montrerCapture(id);
+    }
+    var ferme = e.target.closest("[data-ferme]") || e.target.closest(".voile");
+    if (ferme) setTimeout(function () { montrerCapture(etatCourant[pageCourante]); majApresFermeture(); }, 0);
+  }, true);
+
+  function majApresFermeture() {
+    if (pageCourante !== "devis") return;
+    if (!autresJours.length && document.getElementById("autre-retenue").hidden) {
+      document.getElementById("autre-devis").setAttribute("aria-checked", "false");
+    }
+    majRetractation();
+  }
+
+  document.querySelectorAll(".rangee-pages button").forEach(function (b) {
+    b.addEventListener("click", function () { choisirPage(b.getAttribute("data-page")); });
+  });
+
+  function demarrer() {
+    var demandee = (window.location.hash || "").slice(1);
+    choisirPage(PAGES[demandee] ? demandee : "devis");
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(mesurer);
+    window.addEventListener("resize", mesurer);
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", demarrer);
+  else demarrer();
+})();
+</script>
+</body>
+</html>

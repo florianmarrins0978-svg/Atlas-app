@@ -4,6 +4,7 @@ import { mkdirSync } from "node:fs";
 import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { ADRESSE } from "./_adresse";
+import { poserUneJourneeA } from "./_main-oeuvre-e2e";
 import { TEXTE_ORIGINE_CONDITIONS_GENERALES } from "../src/lib/conditions-generales";
 
 /**
@@ -134,21 +135,25 @@ async function main() {
       assert.equal(await page.locator('[data-atlas="poser-main-doeuvre"]').count(), 1);
     });
 
-    await cas("« + Main d’œuvre » pose une ligne « Main d’œuvre », le doigt dans son montant, vide", async () => {
+    // **Depuis la planche du 1er novembre 2026, « Main d'œuvre » ouvre SA
+    // feuille** : le calcul se montre, et rien n'arrive au devis avant l'appui
+    // sur « Ajouter la main d'œuvre ». Ce que ces cas défendent ne change pas :
+    // la ligne s'appelle « Main d'œuvre », elle s'additionne, « dont » la
+    // reprend, et elle naît au taux de la TVA où il a appuyé.
+    await cas("« Main d’œuvre » ouvre sa feuille, et rien n'arrive au devis avant l'appui", async () => {
       await page.click('[data-atlas="poser-main-doeuvre"]');
-      const champ = page.locator('input[aria-label*="Montant de la main d’œuvre"]');
-      await champ.waitFor({ timeout: 10_000 });
-      assert.equal(await champ.inputValue(), "", "un montant posé d'office");
-      const actif = await page.evaluate(() => document.activeElement?.getAttribute("aria-label") ?? "");
-      assert.match(actif, /Montant de la main d’œuvre/, `le doigt n'est pas dans le montant : ${actif}`);
-      const zones = page.locator('textarea[aria-label*="escription"]');
-      assert.equal(await zones.nth((await zones.count()) - 1).inputValue(), "Main d’œuvre");
+      await page.locator('[data-atlas="feuille-mo"]').waitFor({ timeout: 10_000 });
+      assert.deepEqual(await lignesDeMainDoeuvre(), [], "une ligne posée avant l'appui sur le bouton");
     });
 
-    await cas("500 tapé s'ADDITIONNE : total HT 1 660, TTC 1 992, et « dont main d’œuvre HT » sous le total", async () => {
-      const champ = page.locator('input[aria-label*="Montant de la main d’œuvre"]');
-      await champ.fill("500");
-      await page.keyboard.press("Tab");
+    await cas("500 posés s'ADDITIONNENT : total HT 1 660, TTC 1 992, et « dont main d’œuvre HT » sous le total", async () => {
+      await poserUneJourneeA(page, "500");
+      const zones = page.locator('textarea[aria-label*="escription"]');
+      for (const essai of [1, 2, 3, 4, 5]) {
+        if ((await zones.nth((await zones.count()) - 1).inputValue()) === "Main d’œuvre") break;
+        await page.waitForTimeout(essai * 300);
+      }
+      assert.equal(await zones.nth((await zones.count()) - 1).inputValue(), "Main d’œuvre");
       const texte = lisible(await totaux().innerText());
       assert.ok(texte.includes("1 660,00"), `le total HT n'a pas pris la main d'œuvre :\n${texte}`);
       assert.ok(texte.includes("1 992,00"), `le total TTC n'a pas pris la main d'œuvre :\n${texte}`);
@@ -171,19 +176,14 @@ async function main() {
 
     await cas("dans la TVA à 10 %, sa main d'œuvre naît à 10 % et compte à la TVA de 10 %", async () => {
       await page.getByRole("button", { name: /Ajouter une TVA/ }).click();
+      await page.locator('[data-atlas="feuille-tva-valider"]').click();
       const boutons = page.locator('[data-atlas="poser-main-doeuvre"]');
       for (const essai of [1, 2, 3, 4, 5]) {
         if ((await boutons.count()) > 1) break;
         await page.waitForTimeout(essai * 300);
       }
       await boutons.nth(1).click();
-      const champs = page.locator('input[aria-label*="Montant de la main d’œuvre"]');
-      for (const essai of [1, 2, 3, 4, 5]) {
-        if ((await champs.count()) > 1) break;
-        await page.waitForTimeout(essai * 300);
-      }
-      await champs.nth(1).fill("500");
-      await page.keyboard.press("Tab");
+      await poserUneJourneeA(page, "500");
       for (const essai of [0, 1, 2, 3, 4, 5]) {
         if ((await lignesDeMainDoeuvre()).length === 2 && (await lignesDeMainDoeuvre())[1].montant === "500.00") break;
         await page.waitForTimeout(400 * (essai + 1));
@@ -201,7 +201,8 @@ async function main() {
     });
 
     await cas("la remise se dit « Remise de 5 % » — plus « Prix accordé au client »", async () => {
-      await page.getByRole("button", { name: /^\+ Remise$/ }).click();
+      await page.locator('[data-atlas="poser-prix-accorde"]').click();
+      await page.locator('[data-atlas="feuille-remise-valider"]').click();
       await page.locator('input[aria-label="Remise, en pourcentage"]').waitFor({ timeout: 10_000 });
       const texte = lisible(await totaux().innerText());
       assert.match(texte, /Remise de/);

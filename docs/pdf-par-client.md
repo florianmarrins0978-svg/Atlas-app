@@ -28,7 +28,7 @@ L'IA ne lit l'image que pour un scan sans texte, comme avant : c'est ce qui coû
 
 - **Une seule règle de rangement.** Les PDF deviennent des lignes de tableau et passent par les mêmes fonctions (`lignesDesPdf`, `planDeRangement`). L'ancienne relecture et son rangement par nom sont supprimés.
 - **Le serveur ne croit pas l'écran.** Il relit les pièces en base et refait le plan avant de ranger.
-- **Migration 0155**, trois colonnes vides ajoutées, rien d'effacé.
+- **Migration 0156**, trois colonnes vides ajoutées, rien d'effacé.
 
 ## Trouvé en chemin, et corrigé
 
@@ -49,6 +49,6 @@ L'écran tombait (« Cette page n'a pas pu s'afficher ») à l'arrivée des PDF 
 
 | | Qui |
 |---|---|
-| La batterie entière, puis `main` (niveau 3 : la base et les fiches clients) | lui dit quand |
+| La batterie entière : le lot est sur `main` sans elle, à sa demande du 3 novembre | lui dit quand |
 | Un PDF lu avant la migration n'a pas d'adresse : il se range sans | rien à faire |
 | Le même numéro dans deux PDF différents se range deux fois | à trancher s'il le voit |

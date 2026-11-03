@@ -4,7 +4,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import ChoixCanal from "@/components/atlas/ChoixCanal";
-import { colors, font, surPlein } from "@/lib/design-tokens";
+import { colors, font, surPlein, voile } from "@/lib/design-tokens";
+import BottomSheet from "@/components/atlas/BottomSheet";
+import IconeTrait from "@/components/atlas/IconeTrait";
+import EtatEcrit from "@/components/atlas/reglages/EtatEcrit";
+import { MOIS_ABREGES } from "@/lib/jour";
 import { MOIS_LONGS } from "@/lib/mois";
 import { enEuros } from "@/lib/euros";
 import { memeLibelle, parFamilles } from "@/lib/prestations-entretien";
@@ -74,7 +78,9 @@ type Props = {
   aujourdhui: string;
 };
 
-const INITIALES = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
+/** « Janv. », « Févr. »… : sa planche du 31 octobre 2026. Douze initiales
+ *  faisaient lire J, M et A deux fois. */
+const MOIS_DES_CASES = MOIS_ABREGES.map((m) => m.charAt(0).toUpperCase() + m.slice(1));
 /** Le taux de la maquette tant que le contrat n'existe pas : le serveur pose celui des réglages. */
 const TAUX_AFFICHE_PAR_DEFAUT = "20.00";
 
@@ -331,21 +337,27 @@ function Editeur({
   const anneeCourante = Number(aujourdhui.slice(0, 4));
 
   return (
-    <div className="mx-[10px] mt-[18px] rounded-[10px] px-4 pb-6 pt-5" style={{ backgroundColor: colors.card }}>
-      <Intitule>Prestations</Intitule>
-      {lignes.map((l) => {
+    /* **Des plages sur le fond, et non plus une grande carte** — sa planche du
+       31 octobre 2026 (`appli/soignee/client-contrat.html`) : Prestations,
+       Durée, Facturation, le total et l'envoi, dans le même ordre, chacun sur
+       sa plage comme partout dans l'appli. */
+    <div className="mx-[22px] mt-[18px] pb-6">
+      <Intitule premier>Prestations</Intitule>
+      {lignes.length > 0 && (
+      <div className="rounded-md px-[18px] py-1" style={{ backgroundColor: colors.card }}>
+      {lignes.map((l, rang) => {
         const p = prestationsRelues.find((x) => x.libelle === l.libelle.trim()) ?? null;
         const n = p ? passagesDeLaPrestation(p, periode) : 0;
         const montant = p ? montantDeLaPrestation(p, periode) : null;
         return (
-          <div key={l.cle} className="py-4" style={{ borderBottom: `1px solid ${colors.lineSoft}` }} data-atlas="prestation-contrat">
+          <div key={l.cle} className={`pt-4 pb-3.5 ${rang > 0 ? "border-t" : ""}`} style={{ borderColor: colors.line }} data-atlas="prestation-contrat">
             <div className="flex items-start justify-between gap-2.5">
               <div className="min-w-0">
-                <p className="m-0 text-[18px] leading-[1.25]" style={{ fontFamily: font.display }}>
+                <p className="m-0 text-[19px] leading-[1.25]" style={{ fontFamily: font.display }}>
                   {l.libelle}
                 </p>
                 {l.famille && (
-                  <p className="m-0 mt-0.5 text-[12.5px]" style={{ color: colors.muted }}>
+                  <p className="m-0 mt-0.5 text-[14px]" style={{ color: colors.inkSoft }}>
                     {l.famille}
                   </p>
                 )}
@@ -354,14 +366,14 @@ function Editeur({
                 type="button"
                 aria-label={`Retirer ${l.libelle}`}
                 onClick={() => setLignes((ls) => ls.filter((x) => x.cle !== l.cle))}
-                className="h-7 w-7 flex-none rounded-full text-[15px] leading-none"
-                style={{ border: `1px solid ${colors.or}`, color: colors.or, background: "none" }}
+                className="-mt-1.5 -mr-2 grid h-10 w-10 flex-none place-items-center rounded-full text-[22px] leading-none"
+                style={{ color: colors.or, background: "none" }}
               >
                 −
               </button>
             </div>
-            <div className="mt-3 grid grid-cols-12 gap-[3px]">
-              {INITIALES.map((initiale, i) => {
+            <div className="mt-3 grid grid-cols-6 gap-1.5">
+              {MOIS_DES_CASES.map((nomCourt, i) => {
                 const m = i + 1;
                 const coche = l.mois.includes(m);
                 return (
@@ -375,14 +387,14 @@ function Editeur({
                         mois: coche ? l.mois.filter((x) => x !== m) : [...l.mois, m].sort((a, b) => a - b),
                       })
                     }
-                    className="h-[34px] rounded-[6px] p-0 text-[12px] font-semibold"
+                    className="min-h-10 rounded-[10px] p-0 text-[14px] font-semibold transition-colors duration-200"
                     style={
                       coche
                         ? { backgroundColor: colors.plein, color: surPlein }
-                        : { backgroundColor: colors.cream, color: colors.muted, boxShadow: `inset 0 0 0 1px ${colors.lineSoft}` }
+                        : { backgroundColor: colors.cream, color: colors.inkSoft, boxShadow: `inset 0 0 0 1px ${colors.line}` }
                     }
                   >
-                    {initiale}
+                    {nomCourt}
                   </button>
                 );
               })}
@@ -405,42 +417,59 @@ function Editeur({
                   placeholder="à chiffrer"
                   aria-label={`Prix du passage de ${l.libelle}`}
                   onChange={(e) => changer(l.cle, { prixSaisi: e.target.value })}
-                  className="w-[84px] border-0 bg-transparent px-0.5 py-1 text-right text-[16px] outline-none"
-                  style={{ borderBottom: `1px solid ${colors.lineSoft}`, color: colors.ink }}
+                  className="min-h-11 w-24 rounded-[10px] border-0 px-2.5 text-right text-[19px] tabular-nums outline-none placeholder:text-[15px] focus:shadow-[inset_0_0_0_2px_var(--atlas-rust)]"
+                  style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.display, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
                 />
-                <span className="text-[14px]" style={{ color: colors.inkSoft }}>
+                <span className="text-[16px]" style={{ color: colors.inkSoft }}>
                   €
                 </span>
               </span>
             </Rangee>
-            <p className="m-0 mt-2.5 text-right text-[13.5px]" style={{ color: n === 0 || montant === null ? colors.or : colors.inkSoft }}>
-              {l.mois.length === 0
-                ? "Aucun mois choisi"
-                : n === 0
-                  ? "Aucun de ces mois dans la période"
-                  : montant === null
-                    ? `${n} passage${n > 1 ? "s" : ""}, prix à chiffrer`
-                    : `${n} passage${n > 1 ? "s" : ""}, ${enEuros(montant)} HT`}
+            {/* **Ce qui manque se voit — sa planche du 31 octobre 2026** : une
+                prestation sans mois ou sans prix le dit dans une pastille
+                ambre, sous ses mois. Le total restait à zéro sans montrer où
+                toucher. */}
+            <p className="m-0 mt-2 text-right text-[14px]" style={{ color: colors.inkSoft }}>
+              {l.mois.length === 0 ? (
+                <EtatEcrit ton="ambre">Aucun mois choisi</EtatEcrit>
+              ) : n === 0 ? (
+                <EtatEcrit ton="ambre">Aucun de ces mois dans la période</EtatEcrit>
+              ) : montant === null ? (
+                <EtatEcrit ton="ambre">{`${n} passage${n > 1 ? "s" : ""}, prix à chiffrer`}</EtatEcrit>
+              ) : (
+                `${n} passage${n > 1 ? "s" : ""}, ${enEuros(montant)} HT`
+              )}
             </p>
           </div>
         );
       })}
+      </div>
+      )}
 
+      {/* L'or sur le trait et sur le dessin, le mot en encre : lisible au
+          soleil. Le catalogue monte dans une feuille : déplié dans la page, il
+          repoussait la durée et l'envoi de deux écrans. */}
       <button
         type="button"
-        onClick={() => setAjoutOuvert((o) => !o)}
-        className="mt-3.5 min-h-9 border-0 bg-transparent p-0 text-[14px] font-medium"
-        style={{ color: colors.rust }}
+        onClick={() => setAjoutOuvert(true)}
+        className="mt-2 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-full border-0 bg-transparent text-[16px] font-semibold"
+        style={{ color: colors.ink, boxShadow: `inset 0 0 0 1.5px ${voile(colors.or, 0.65)}` }}
       >
-        + Ajouter une prestation
+        <span style={{ color: colors.or }}>
+          <IconeTrait nom="plus" taille={19} epaisseur={1.8} />
+        </span>
+        Ajouter une prestation
       </button>
       {refusFiche && (
         <p className="m-0 mt-1 text-[13.5px]" style={{ color: colors.rust }} role="alert">
           {refusFiche}
         </p>
       )}
-      {ajoutOuvert && (
-        <div className="mt-2 rounded-[8px] px-3 pb-2.5 pt-1.5" style={{ backgroundColor: colors.rustTint }}>
+      <BottomSheet open={ajoutOuvert} onBackdropClick={() => setAjoutOuvert(false)}>
+        <div>
+          <h2 className="mb-3 text-[26px] leading-tight" style={{ fontFamily: font.display, color: colors.ink }}>
+            Ajouter une prestation
+          </h2>
           <form
             className="my-2.5 flex gap-2"
             onSubmit={(e) => {
@@ -527,39 +556,44 @@ function Editeur({
           )}
           {familles.map((f) => (
             <div key={f.famille}>
-              <p className="m-0 mb-1 mt-2.5 text-[10.5px] font-semibold uppercase tracking-[0.12em]" style={{ color: colors.muted }}>
+              <p className="m-0 mt-5 mb-1 text-[13px] font-semibold uppercase tracking-[0.1em]" style={{ color: colors.or }}>
                 {f.famille}
               </p>
-              {f.lignes.map((p) => (
+              {f.lignes.map((p, i) => (
                 <button
                   key={p.libelle}
                   type="button"
                   disabled={pris.has(p.libelle)}
                   onClick={() => ajouter(f.famille, p.libelle)}
-                  className="block w-full border-0 bg-transparent py-[9px] text-left text-[15px]"
+                  className={`flex min-h-[52px] w-full items-center justify-between gap-3 border-0 bg-transparent text-left text-[17px] leading-tight ${i > 0 ? "border-t" : ""}`}
                   style={{
-                    borderBottom: `1px solid ${colors.lineSoft}`,
-                    color: pris.has(p.libelle) ? colors.muted : colors.ink,
+                    borderColor: colors.line,
+                    color: pris.has(p.libelle) ? colors.inkSoft : colors.ink,
+                    fontFamily: font.display,
                   }}
                 >
                   {p.libelle}
+                  {/* Déjà dans le contrat : la coche verte au lieu du plus. */}
+                  <span style={{ color: pris.has(p.libelle) ? colors.carteVertTexte : colors.or }}>
+                    <IconeTrait nom={pris.has(p.libelle) ? "coche" : "plus"} taille={22} epaisseur={1.8} />
+                  </span>
                 </button>
               ))}
             </div>
           ))}
         </div>
-      )}
+      </BottomSheet>
 
-      <div className="mt-[26px]">
-        <Intitule>Durée</Intitule>
+      <Intitule>Durée</Intitule>
+      <div className="rounded-md px-[18px] pt-1 pb-3" style={{ backgroundColor: colors.card }}>
         <Rangee libelle={null} texte="Début">
           <span className="flex gap-1.5">
             <select
               aria-label="Mois de début"
               value={mois}
               onChange={(e) => setDebut(`${annee}-${e.target.value.padStart(2, "0")}-01`)}
-              className="h-[38px] rounded-[8px] border-0 px-2 text-[15px]"
-              style={{ backgroundColor: colors.card, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
+              className="min-h-11 rounded-[10px] border-0 px-3 text-[16px]"
+              style={{ backgroundColor: colors.cream, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
             >
               {MOIS_LONGS.map((nom, i) => (
                 <option key={nom} value={i + 1}>
@@ -571,8 +605,8 @@ function Editeur({
               aria-label="Année de début"
               value={annee}
               onChange={(e) => setDebut(`${e.target.value}-${String(mois).padStart(2, "0")}-01`)}
-              className="h-[38px] rounded-[8px] border-0 px-2 text-[15px]"
-              style={{ backgroundColor: colors.card, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
+              className="min-h-11 rounded-[10px] border-0 px-3 text-[16px]"
+              style={{ backgroundColor: colors.cream, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
             >
               {[anneeCourante - 1, anneeCourante, anneeCourante + 1, anneeCourante + 2].map((x) => (
                 <option key={x} value={x}>
@@ -592,7 +626,7 @@ function Editeur({
             quoi="mois"
           />
         </Rangee>
-        <p className="m-0 mt-0.5 text-[13.5px]" style={{ color: colors.inkSoft }}>
+        <p className="m-0 mt-1 text-[14.5px]" style={{ color: colors.inkSoft }}>
           {periodeEnLettres(periode)}.
         </p>
         <Rangee libelle={null} texte="Reconduit à la fin">
@@ -600,7 +634,7 @@ function Editeur({
         </Rangee>
       </div>
 
-      <div className="mt-[26px]">
+      <div>
         <Intitule>Facturation</Intitule>
         <div className="flex flex-col gap-2">
           <ChoixFacturation
@@ -634,7 +668,7 @@ function Editeur({
           />
         </div>
         {facturation === "passage" && (
-          <div className="mt-3">
+          <div className="mt-2.5 rounded-md px-[18px] pt-1 pb-3.5" style={{ backgroundColor: colors.card }}>
             <Rangee libelle={null} texte="Envoyer la facture avec le compte rendu">
               <Interrupteur
                 allume={avecCompteRendu}
@@ -651,29 +685,33 @@ function Editeur({
         )}
       </div>
 
-      <div className="mt-[26px]">
-        <Total libelle="Passages" valeur={String(totaux.passages)} />
-        <Total libelle="Total HT du contrat" valeur={enEuros(totaux.totalHt)} />
-        <Total libelle={`TVA ${Number(taux).toLocaleString("fr-FR")} %`} valeur={enEuros(totaux.totalTva)} />
-        <div className="mt-1.5 flex items-center justify-between pt-2.5" style={{ borderTop: `2px solid ${colors.ink}` }}>
-          <b className="text-[17px] font-semibold">Total TTC</b>
-          <span className="text-[20px] font-semibold" style={{ fontFamily: font.display, fontVariantNumeric: "tabular-nums" }}>
+      {/* **Le TTC en grand, le reste en une ligne** — sa planche du
+          31 octobre 2026 : quatre lignes de totaux se lisaient comme une
+          facture, pour un seul chiffre qu'il annonce à son client. */}
+      <section className="mt-6 rounded-md p-[18px]" style={{ backgroundColor: colors.card }}>
+        <div className="flex items-baseline justify-between gap-3">
+          <span className="text-[18px] leading-tight" style={{ fontFamily: font.display }}>
+            Total TTC
+          </span>
+          <span className="whitespace-nowrap text-[30px] leading-none tabular-nums" style={{ fontFamily: font.display, letterSpacing: "-0.01em" }}>
             {enEuros(totaux.totalTtc)}
           </span>
         </div>
-      </div>
-
-      <div className="mt-[30px] pt-5 text-center" style={{ borderTop: `1px solid ${colors.lineSoft}` }}>
+        <p className="m-0 mt-1.5 text-[14.5px] leading-[1.45] tabular-nums" style={{ color: colors.inkSoft }}>
+          {totaux.passages} passage{totaux.passages > 1 ? "s" : ""}. {enEuros(totaux.totalHt)} HT et {enEuros(totaux.totalTva)} de TVA
+          à {Number(taux).toLocaleString("fr-FR")}&nbsp;%.
+        </p>
         <button
           type="button"
           onClick={apercu}
           disabled={enCours || lignes.length === 0}
-          className="border-0 bg-transparent p-2 text-[14px] font-medium disabled:opacity-45"
+          className="mt-1.5 inline-flex min-h-12 items-center gap-1.5 border-0 bg-transparent px-1 text-[16px] font-semibold disabled:opacity-45"
           style={{ color: colors.rust }}
         >
+          <IconeTrait nom="document" taille={19} epaisseur={1.8} />
           Aperçu du PDF
         </button>
-      </div>
+      </section>
 
       {/* **En fin de feuille, pas collé en bas** : la barre d'onglets est posée
           par-dessus la page, et un bouton collant se glissait dessous. */}
@@ -712,56 +750,88 @@ function ContratParti({ contrat, repartir }: Props & { contrat: ContratRecu; rep
         ? `Refusé le ${jourDit((contrat.reponduLe ?? "").slice(0, 10))}`
         : `Envoyé le ${jourDit((contrat.envoyeLe ?? "").slice(0, 10))}`;
   return (
-    <div className="mx-[10px] mt-[18px] rounded-[10px] px-4 pb-6 pt-5" style={{ backgroundColor: colors.card }} data-atlas="contrat-parti">
-      <p className="m-0 text-[20px] leading-[1.25]" style={{ fontFamily: font.display }}>
-        {etat}
-      </p>
-      <p className="m-0 mt-1 text-[13.5px]" style={{ color: contrat.statut === "envoye" ? colors.orTexte : colors.inkSoft }}>
-        {contrat.statut === "envoye"
-          ? "En attente de sa réponse."
-          : contrat.statut === "accepte"
-            ? "Ses passages arrivent dans « Sans date » le 20 du mois d'avant."
-            : "Rien n'arrive au planning."}
-      </p>
-      <div className="mt-5">
-        {contrat.prestations.map((p) => {
+    <div className="mx-[22px] mt-[18px] pb-6" data-atlas="contrat-parti">
+      {/* **Où il en est, dans une pastille** — sa planche du 31 octobre 2026 :
+          en attente en ambre, accepté en vert. Un point ET un mot, jamais la
+          couleur seule. */}
+      <section className="rounded-md p-[18px]" style={{ backgroundColor: colors.card }}>
+        <p className="m-0 text-[20px] leading-[1.25]" style={{ fontFamily: font.display }}>
+          {etat}
+        </p>
+        <p className="m-0 mt-2">
+          {contrat.statut === "envoye" ? (
+            <EtatEcrit ton="ambre">En attente de sa réponse</EtatEcrit>
+          ) : contrat.statut === "accepte" ? (
+            <span className="text-[14.5px] leading-[1.45]" style={{ color: colors.carteVertTexte }}>
+              Ses passages arrivent dans « Sans date » le 20 du mois d&apos;avant.
+            </span>
+          ) : (
+            <EtatEcrit>Rien n&apos;arrive au planning</EtatEcrit>
+          )}
+        </p>
+      </section>
+      <section className="mt-3 rounded-md px-[18px] py-1" style={{ backgroundColor: colors.card }}>
+        {contrat.prestations.map((p, rang) => {
           const n = passagesDeLaPrestation(p, contrat.periode);
           return (
-            <div key={p.libelle} className="flex items-baseline justify-between gap-3 py-2.5" style={{ borderBottom: `1px solid ${colors.lineSoft}` }}>
-              <span className="min-w-0 text-[15px]">{p.libelle}</span>
-              <span className="flex-none text-[13.5px]" style={{ color: colors.inkSoft }}>
+            <div
+              key={p.libelle}
+              className={`flex items-baseline justify-between gap-3 py-[13px] ${rang > 0 ? "border-t" : ""}`}
+              style={{ borderColor: colors.line }}
+            >
+              <span className="min-w-0 text-[18px] leading-[1.25]" style={{ fontFamily: font.display }}>
+                {p.libelle}
+              </span>
+              <span className="flex-none whitespace-nowrap text-[16px]" style={{ color: colors.inkSoft }}>
                 {n} passage{n > 1 ? "s" : ""}
               </span>
             </div>
           );
         })}
-      </div>
-      <p className="m-0 mt-3 text-[13.5px]" style={{ color: colors.inkSoft }}>
-        {periodeEnLettres(contrat.periode)}.
-      </p>
-      <div className="mt-4">
-        <Total libelle="Total HT du contrat" valeur={enEuros(totaux.totalHt)} />
-        <Total libelle="Total TTC" valeur={enEuros(totaux.totalTtc)} />
-      </div>
-      <div className="mt-6 flex flex-col items-center gap-3">
-        <Link
-          href={adresseDeLaVisionneuse(`/api/contrats/${contrat.id}/pdf`, { surtitre: "Contrat d'entretien", titre: etat })}
-          className="text-[14px] font-medium"
-          style={{ color: colors.rust }}
-        >
-          Voir le contrat en PDF
-        </Link>
-        <button type="button" onClick={repartir} className="border-0 bg-transparent p-2 text-[14px] font-medium" style={{ color: colors.or }}>
-          + Nouveau contrat
-        </button>
-      </div>
+      </section>
+      <section className="mt-3 rounded-md p-[18px]" style={{ backgroundColor: colors.card }}>
+        <div className="flex items-baseline justify-between gap-3">
+          <span className="text-[18px] leading-tight" style={{ fontFamily: font.display }}>
+            Total TTC
+          </span>
+          <span className="whitespace-nowrap text-[30px] leading-none tabular-nums" style={{ fontFamily: font.display, letterSpacing: "-0.01em" }}>
+            {enEuros(totaux.totalTtc)}
+          </span>
+        </div>
+        <p className="m-0 mt-1.5 text-[14.5px] leading-[1.45] tabular-nums" style={{ color: colors.inkSoft }}>
+          {enEuros(totaux.totalHt)} HT. {periodeEnLettres(contrat.periode)}.
+        </p>
+      </section>
+      <Link
+        href={adresseDeLaVisionneuse(`/api/contrats/${contrat.id}/pdf`, { surtitre: "Contrat d'entretien", titre: etat })}
+        className="mt-4 flex min-h-14 w-full items-center justify-center gap-2.5 rounded-full text-[17px] font-semibold no-underline"
+        style={{ color: colors.ink, boxShadow: `inset 0 0 0 1.5px ${colors.line}` }}
+      >
+        <IconeTrait nom="document" taille={19} epaisseur={1.8} />
+        Voir le contrat en PDF
+      </Link>
+      <button
+        type="button"
+        onClick={repartir}
+        className="mx-auto mt-2.5 flex min-h-12 items-center gap-1.5 border-0 bg-transparent px-1 text-[16px] font-semibold"
+        style={{ color: colors.rust }}
+      >
+        <span style={{ color: colors.or }}>
+          <IconeTrait nom="plus" taille={19} epaisseur={1.8} />
+        </span>
+        Nouveau contrat
+      </button>
     </div>
   );
 }
 
-function Intitule({ children }: { children: React.ReactNode }) {
+/** Le mot de rangement d'une partie, en or comme sur la planche. */
+function Intitule({ premier = false, children }: { premier?: boolean; children: React.ReactNode }) {
   return (
-    <p className="m-0 mb-1.5 text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: colors.muted }}>
+    <p
+      className={`m-0 ${premier ? "mt-1" : "mt-7"} mb-2.5 text-[13px] font-semibold uppercase tracking-[0.12em]`}
+      style={{ color: colors.or }}
+    >
       {children}
     </p>
   );
@@ -769,9 +839,9 @@ function Intitule({ children }: { children: React.ReactNode }) {
 
 function Rangee({ libelle, texte, children }: { libelle: string | null; texte?: string; children: React.ReactNode }) {
   return (
-    <div className="mt-3 flex min-h-[38px] items-center justify-between gap-2.5">
+    <div className="mt-2 flex min-h-11 items-center justify-between gap-2.5">
       {libelle !== null ? (
-        <span className="text-[11px] font-semibold uppercase leading-[1.2] tracking-[0.1em]" style={{ color: colors.muted }}>
+        <span className="text-[15px] font-semibold leading-[1.2]" style={{ color: colors.inkSoft }}>
           {libelle}
         </span>
       ) : (
@@ -790,16 +860,16 @@ function Compteur(p: {
   auPlafond: boolean;
   quoi: string;
 }) {
-  const style = { backgroundColor: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}`, color: colors.ink };
+  const style = { boxShadow: `inset 0 0 0 1.5px ${colors.line}`, color: colors.ink };
   return (
-    <div className="flex items-center gap-1">
-      <button type="button" aria-label={`Un ${p.quoi} de moins`} disabled={p.auPlancher} onClick={p.moins} className="h-9 w-9 rounded-full border-0 text-[19px] disabled:opacity-50" style={style}>
+    <div className="flex items-center gap-3">
+      <button type="button" aria-label={`Un ${p.quoi} de moins`} disabled={p.auPlancher} onClick={p.moins} className="h-11 w-11 rounded-full border-0 bg-transparent text-[20px] disabled:opacity-40" style={style}>
         −
       </button>
-      <output className="min-w-8 text-center text-[17px] font-semibold" style={{ fontVariantNumeric: "tabular-nums" }}>
+      <output className="min-w-8 text-center text-[22px] leading-none" style={{ fontFamily: font.display, fontVariantNumeric: "tabular-nums lining-nums" }}>
         {p.valeur}
       </output>
-      <button type="button" aria-label={`Un ${p.quoi} de plus`} disabled={p.auPlafond} onClick={p.plus} className="h-9 w-9 rounded-full border-0 text-[19px] disabled:opacity-50" style={style}>
+      <button type="button" aria-label={`Un ${p.quoi} de plus`} disabled={p.auPlafond} onClick={p.plus} className="h-11 w-11 rounded-full border-0 bg-transparent text-[20px] disabled:opacity-40" style={style}>
         +
       </button>
     </div>
@@ -849,14 +919,5 @@ function ChoixFacturation(p: { lettre: string; titre: string; actif: boolean; ch
         {p.consequence}
       </span>
     </button>
-  );
-}
-
-function Total({ libelle, valeur }: { libelle: string; valeur: string }) {
-  return (
-    <div className="flex items-center justify-between gap-2.5 py-1.5 text-[15px]" style={{ fontVariantNumeric: "tabular-nums" }}>
-      <span>{libelle}</span>
-      <span>{valeur}</span>
-    </div>
   );
 }

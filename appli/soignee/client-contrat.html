@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Son contrat d'entretien, soigné</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  SON CONTRAT D'ENTRETIEN : l'écran qu'ouvre « Contrat d'entretien » sur la
+  fiche d'un client (src/app/clients/[id]/contrat/page.tsx, ContratClient.tsx).
+
+  Sa demande du 31 octobre 2026 : « fais moi la planche pour client (2) »,
+  « dans la même dynamique, plus jolie ».
+
+  À CÔTÉ, LE VRAI ÉCRAN : ouvert le 31 octobre sur le poste, compte de
+  démonstration ; Mme Costa sans contrat, puis Tonte et ébarbage ajoutée à
+  45 € ; M. Bernard, contrat envoyé (aujourdhui/client-contrat-*.jpg).
+
+  CE QUE LA CAPTURE A MONTRÉ :
+    « Ajouter une prestation » déplie tout le catalogue DANS la page : dix-neuf
+      lignes qui repoussent la durée et l'envoi de deux écrans ;
+    les mois sont douze initiales de 12 points dans des cases de 26 points de
+      large : J, J et M, M, A, A se confondent ;
+    une prestation ajoutée n'a aucun mois : « Aucun mois choisi », et le
+      total reste à 0,00 € sans que rien ne montre où toucher.
+
+  CE QUI EST GARDÉ : chaque réglage et sa règle (contrats-entretien.ts) ;
+    l'ordre Prestations, Durée, Facturation, totaux, envoi ; A et B ; « Envoyer
+    la facture avec le compte rendu » ; Aperçu du PDF ; Par SMS, Par e-mail ;
+    le refus qui dit ce qui manque ; l'écran du contrat parti et « Nouveau
+    contrat ».
+*/
+.tete-situation { margin-top: -10px; }
+.rubrique-or { color: var(--atlas-or); }
+
+/* Une prestation : son nom, sa famille, ses mois, son rythme, son prix. */
+.prest { position: relative; padding: 16px 0 14px; }
+.prest + .prest::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
+.prest-tete { display: flex; align-items: flex-start; gap: 10px; }
+.prest-nom { flex: 1; min-width: 0; margin: 0; font: 400 19px/1.25 var(--serif); }
+.prest-famille { display: block; margin-top: 2px; font-size: 14px; color: var(--atlas-inkSoft); font-family: var(--sans); }
+.retirer { width: 40px; height: 40px; margin: -6px -8px 0 0; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-or); }
+.retirer .ico { width: 22px; height: 22px; }
+/* Les mois en toutes lettres, six par rangée : un J ne se confond plus. */
+.mois { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; margin-top: 12px; }
+.mois button { min-height: 40px; border-radius: 10px; font-size: 14px; font-weight: 600; color: var(--atlas-inkSoft);
+               background: var(--atlas-cream); box-shadow: inset 0 0 0 1px var(--atlas-line);
+               transition: background-color 180ms var(--courbe), color 180ms var(--courbe); }
+.mois button[aria-pressed="true"] { background: var(--atlas-plein); color: var(--sur-plein); box-shadow: none; }
+.reglage-court { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; margin-top: 6px; }
+.reglage-court > span { font-size: 15px; color: var(--atlas-inkSoft); font-weight: 600; }
+.compteur-petit { display: flex; align-items: center; gap: 14px; }
+.compteur-petit button { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; color: var(--atlas-ink); box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
+.compteur-petit button[disabled] { color: var(--atlas-chevron); cursor: default; }
+.compteur-petit output { min-width: 26px; text-align: center; font: 400 24px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; }
+.prix { display: flex; align-items: center; gap: 6px; }
+.prix input { width: 96px; min-height: 44px; padding: 0 10px; border: 0; border-radius: 10px; text-align: right; outline: none;
+              background: var(--atlas-cream); color: var(--atlas-ink); font: 400 19px/1 var(--serif); font-variant-numeric: tabular-nums;
+              box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.prix input:focus { box-shadow: inset 0 0 0 2px var(--atlas-rust); }
+.prix input::placeholder { font: 400 15px/1 var(--sans); color: var(--atlas-muted); }
+.prix span { font-size: 16px; color: var(--atlas-inkSoft); }
+.prest-bilan { margin-top: 8px; text-align: right; }
+
+.ajouter { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 52px; margin-top: 6px;
+           border-radius: 999px; font-size: 16px; font-weight: 600; color: var(--atlas-ink);
+           box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 65%, transparent); }
+/* L'or sur le trait et le dessin ; le mot en encre, lisible au soleil. */
+.ajouter .ico, .nouveau .ico { color: var(--atlas-or); }
+
+.periode { margin: 4px 0 0; font-size: 14.5px; color: var(--atlas-inkSoft); }
+.mois-annee { display: flex; gap: 8px; }
+.mois-annee select { min-height: 44px; padding: 0 12px; border: 0; border-radius: 10px; font: 400 16px/1 var(--sans); color: var(--atlas-ink);
+                     background: var(--atlas-cream); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.cartes-choix .carte-choix b span { color: var(--atlas-or); margin-right: 4px; }
+
+.total { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.total-mot { font: 400 18px/1.2 var(--serif); }
+.total-chiffre { font: 400 30px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; letter-spacing: -0.01em; }
+.total-detail { margin: 6px 0 0; font-size: 14.5px; line-height: 1.45; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
+/* L'envoi d'aujourd'hui (ChoixCanal en réglage, puis le bouton, puis le refus) : on n'y touche pas. */
+.canal { display: flex; justify-content: center; gap: 22px; margin-top: 26px; }
+.canal button { padding: 8px 14px; font-size: 16px; color: var(--atlas-muted); box-shadow: inset 0 -2px 0 transparent; }
+.canal button[aria-pressed="true"] { color: var(--atlas-ink); box-shadow: inset 0 -2px 0 var(--atlas-or); }
+.envoyer-app { margin-top: 12px; font: 400 19px/1 var(--serif); }
+.ecran .envoyer-app[aria-disabled="true"] { background: var(--atlas-plein); color: var(--sur-plein); opacity: 0.45; }
+.manque { margin: 10px 0 0; text-align: center; font-size: 14px; color: var(--atlas-alerte); }
+
+/* La feuille du catalogue : une ligne par prestation, rangées par famille. */
+.feuille-recherche { display: flex; gap: 8px; }
+.feuille-recherche .champ-saisie { flex: 1; }
+.feuille-recherche .bouton { width: auto; }
+.cat-famille { margin: 20px 0 4px; font-size: 13px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--atlas-or); }
+.cat-ligne { position: relative; display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 52px; text-align: left;
+             font: 400 17px/1.25 var(--serif); }
+.cat-ligne + .cat-ligne::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
+.cat-ligne .ico { color: var(--atlas-or); width: 22px; height: 22px; }
+.cat-ligne[aria-disabled="true"] { color: var(--atlas-inkSoft); }
+.cat-ligne[aria-disabled="true"] .ico { color: var(--atlas-carteVertTexte); }
+
+/* Le contrat parti. */
+.parti-ligne { position: relative; display: flex; justify-content: space-between; gap: 12px; padding: 13px 0; font-size: 16px; }
+.parti-ligne + .parti-ligne::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
+.parti-ligne b { font: 400 18px/1.25 var(--serif); }
+.parti-ligne span { color: var(--atlas-inkSoft); white-space: nowrap; }
+</style>
+</head>
+<body class="pl pl-pilules">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="client.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>La fiche d'un client</a>
+  <h1 class="pl-titre">Son contrat d'entretien</h1>
+  <p class="pl-verdict">L'écran qu'ouvre « Contrat d'entretien » sur sa fiche. <b>Les mois en toutes lettres, le catalogue dans une feuille, le total en grand, l'envoi tel qu'aujourd'hui.</b></p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats" id="etats">
+        <button type="button" data-etat="ecrire" aria-pressed="true">À écrire</button>
+        <button type="button" data-etat="envoye">Envoyé</button>
+        <button type="button" data-etat="accepte">Accepté</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre" id="ecran">
+          <div class="defile">
+            <div class="tete-ronds">
+              <a class="rond-creux" href="client.html" aria-label="Retour à la fiche du client"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </div>
+            <div class="tete"><h2 class="tete-titre">Contrat d'entretien</h2></div>
+            <p class="tete-situation" data-si-etat="ecrire">Pour Mme Costa</p>
+            <p class="tete-situation" data-si-etat="envoye accepte">Pour M. Bernard</p>
+
+            <!-- ═══ À ÉCRIRE ═══ -->
+            <div data-si-etat="ecrire">
+              <p class="rubrique rubrique-or">Prestations</p>
+              <section class="plage plage-serree" id="prestations"></section>
+              <button type="button" class="ajouter touche" data-ouvre="feuille-catalogue"><svg class="ico ico-p" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter une prestation</button>
+
+              <p class="rubrique rubrique-or">Durée</p>
+              <section class="plage reglages">
+                <div class="reglage reglage-rang">
+                  <span class="reglage-libelle" style="font-size:15px">Début</span>
+                  <span class="mois-annee">
+                    <select aria-label="Mois de début"><option>novembre</option></select>
+                    <select aria-label="Année de début"><option>2026</option></select>
+                  </span>
+                </div>
+                <div class="reglage">
+                  <div class="reglage-rang">
+                    <span class="reglage-libelle" style="font-size:15px">Durée</span>
+                    <span class="compteur-petit">
+                      <button type="button" aria-label="Un mois de moins" data-duree="-1"><svg class="ico ico-p" aria-hidden="true"><use href="#i-moins"/></svg></button>
+                      <output id="duree" style="min-width:74px;font-size:22px">12 mois</output>
+                      <button type="button" aria-label="Un mois de plus" data-duree="1"><svg class="ico ico-p" aria-hidden="true"><use href="#i-plus"/></svg></button>
+                    </span>
+                  </div>
+                  <p class="periode" id="periode">Du 1er novembre 2026 au 31 octobre 2027.</p>
+                </div>
+                <div class="reglage reglage-rang">
+                  <span class="reglage-libelle" style="font-size:15px;color:var(--atlas-ink);font-weight:400">Reconduit à la fin</span>
+                  <button type="button" class="bascule" role="switch" aria-checked="true" aria-label="Reconduit à la fin"></button>
+                </div>
+              </section>
+
+              <p class="rubrique rubrique-or">Facturation</p>
+              <div class="cartes-choix" data-un-seul>
+                <button type="button" class="carte-choix" data-choix="mois" aria-pressed="false"><span class="coche-ronde" aria-hidden="true"></span><b><span>A</span>Chaque mois, le même montant</b><small id="conseq-mois">Rien à facturer.</small></button>
+                <button type="button" class="carte-choix" data-choix="passage" aria-pressed="true"><span class="coche-ronde" aria-hidden="true"></span><b><span>B</span>Après chaque passage</b><small id="conseq-passage">Rien à facturer.</small></button>
+              </div>
+              <section class="plage" style="margin-top:10px">
+                <div class="ligne-bascule" style="padding:0;min-height:0">
+                  <span class="ligne-corps"><b style="font-size:17px">Envoyer la facture avec le compte rendu</b><small id="compte-rendu-sous">Vous l'envoyez vous-même après chaque passage.</small></span>
+                  <button type="button" class="bascule" role="switch" aria-checked="false" aria-label="Envoyer la facture avec le compte rendu" id="bascule-cr"></button>
+                </div>
+              </section>
+
+              <section class="plage mt-24">
+                <div class="total"><span class="total-mot">Total TTC</span><span class="total-chiffre" id="ttc">0,00 €</span></div>
+                <p class="total-detail" id="detail">0 passage.</p>
+                <a class="bouton-texte" href="#" data-note-planche="Le PDF s'ouvre dans la visionneuse." style="margin-top:6px"><svg class="ico ico-p" aria-hidden="true"><use href="#i-document"/></svg>Aperçu du PDF</a>
+              </section>
+
+              <!-- L'envoi, tel qu'il est dans l'appli : sa consigne du 1er novembre,
+                   « l'envoi, tu laisses ce qui existe déjà dans l'appli ». -->
+              <div class="canal" role="group" aria-label="Par où l'envoyer">
+                <button type="button" aria-pressed="true">Par SMS</button>
+                <button type="button" aria-pressed="false">Par e-mail</button>
+              </div>
+              <button type="button" class="bouton bouton-plein envoyer-app" id="envoyer">Envoyer à Mme Costa</button>
+              <p class="manque" id="manque"></p>
+            </div>
+
+            <!-- ═══ ENVOYÉ, ACCEPTÉ ═══ -->
+            <div data-si-etat="envoye accepte">
+              <section class="plage">
+                <div class="rang-espace">
+                  <p class="titre-carte" data-si-etat="envoye">Envoyé le 31 octobre</p>
+                  <p class="titre-carte" data-si-etat="accepte">Accepté le 2 novembre</p>
+                </div>
+                <p style="margin:8px 0 0"><span class="etat" data-ton="ambre" data-si-etat="envoye">En attente de sa réponse</span><span class="etat" data-ton="vert" data-si-etat="accepte">Ses passages arrivent dans Sans date le 20 du mois d'avant</span></p>
+              </section>
+              <section class="plage plage-serree">
+                <div class="parti-ligne"><b>Tonte et ébarbage</b><span>14 passages</span></div>
+                <div class="parti-ligne"><b>Taille de haie</b><span>2 passages</span></div>
+                <div class="parti-ligne"><b>Ramassage des feuilles</b><span>2 passages</span></div>
+              </section>
+              <section class="plage">
+                <div class="total"><span class="total-mot">Total TTC</span><span class="total-chiffre">1 332,00 €</span></div>
+                <p class="total-detail">1 110,00 € HT. Du 1er novembre 2026 au 31 octobre 2027.</p>
+              </section>
+              <a class="bouton bouton-creux mt-16" href="#" data-note-planche="Le PDF s'ouvre dans la visionneuse."><svg class="ico ico-p" aria-hidden="true"><use href="#i-document"/></svg>Voir le contrat en PDF</a>
+              <button type="button" class="bouton-texte nouveau" style="margin:10px auto 0;display:flex" data-va-etat="ecrire"><svg class="ico ico-p" aria-hidden="true"><use href="#i-plus"/></svg>Nouveau contrat</button>
+            </div>
+          </div>
+
+
+          <div class="feuille" id="feuille-catalogue" aria-hidden="true" role="dialog" aria-label="Ajouter une prestation">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h3 class="feuille-titre">Ajouter une prestation</h3>
+              <div class="feuille-recherche">
+                <input class="champ-saisie" placeholder="Écrire une prestation" aria-label="Écrire une prestation" id="ecrire">
+                <button type="button" class="bouton bouton-plein bouton-petit" id="ajouter-ecrite">Ajouter</button>
+              </div>
+              <div id="catalogue"></div>
+            </div>
+          </div>
+
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html" aria-current="page">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html">Terminés</a>
+              <a class="barre-onglet" href="arrosage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre"><div class="cadre-capture" id="cadre-capture"><img id="capture" src="aujourdhui/client-contrat-rempli.jpg" alt="Le contrat d'entretien tel qu'il est aujourd'hui"></div></div>
+    </div>
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>Les mois s'écrivent (Janv., Févr., Mars…), six par rangée : aujourd'hui ce sont douze initiales, et J, M, A reviennent deux fois.</li>
+      <li>« Ajouter une prestation » ouvre le catalogue dans une feuille. Aujourd'hui il se déplie dans la page et repousse la suite de deux écrans.</li>
+      <li>Une prestation ajoutée sans mois se teinte d'ambre et le dit sous ses mois : on voit où toucher.</li>
+      <li>Le total TTC en grand, le nombre de passages et le HT sur une ligne dessous.</li>
+      <li>Le contrat parti dit où il en est dans une pastille : en attente en ambre, accepté en vert.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Prestations, Durée, Facturation, totaux, envoi, dans cet ordre.</li>
+      <li>L'envoi, tel qu'il est dans l'appli (votre consigne du 1er novembre) : Par SMS ou Par e-mail, Envoyer à…, et ce qui manque dessous.</li>
+      <li>A et B, « Envoyer la facture avec le compte rendu », Reconduit à la fin, Aperçu du PDF.</li>
+      <li>Chaque règle de calcul : passages, montants, période, mensualité.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="client-coordonnees.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Ses coordonnées</a>
+  <a href="termines-non-payees.html">Non payées<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+(function () {
+  "use strict";
+  var MOIS = ["Janv.", "Févr.", "Mars", "Avr.", "Mai", "Juin", "Juil.", "Août", "Sept.", "Oct.", "Nov.", "Déc."];
+  var CATALOGUE = [
+    ["Pelouse", ["Tonte et ébarbage", "Traitement pelouse", "Scarification", "Engrais"]],
+    ["Tailles", ["Taille arbuste automne", "Taille arbuste printemps", "Taille de haie printemps", "Taille des rosiers"]],
+    ["Massifs", ["Bêchage", "Bordures massifs", "Griffage massifs", "Désherbage massifs", "Coupe des fleurs fanées"]],
+    ["Propreté", ["Nettoyage pied de haies", "Désherbant allée", "Lierre, liseron, liane", "Démoussage voirie", "Ramassage des feuilles", "Évacuation des déchets"]]
+  ];
+  var lignes = [
+    { libelle: "Tonte et ébarbage", famille: "Pelouse", mois: [4, 5, 6, 7, 8, 9, 10], fois: 2, prix: "45" },
+    { libelle: "Taille de haie printemps", famille: "Tailles", mois: [], fois: 1, prix: "" }
+  ];
+  var duree = 12;
+  var ecran = document.getElementById("ecran");
+  var capture = document.getElementById("capture");
+
+  function euros(n) { return n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €"; }
+  function familleDe(nom) { for (var i = 0; i < CATALOGUE.length; i++) if (CATALOGUE[i][1].indexOf(nom) >= 0) return CATALOGUE[i][0]; return ""; }
+
+  /* Novembre 2026 pour départ : un mois compte s'il tombe dans la période. */
+  function moisDansPeriode() {
+    var liste = [];
+    for (var k = 0; k < duree; k++) liste.push(((10 + k) % 12) + 1);
+    return liste;
+  }
+  function passages(l) {
+    var p = moisDansPeriode();
+    return l.mois.reduce(function (n, m) { return n + p.filter(function (x) { return x === m; }).length * l.fois; }, 0);
+  }
+
+  function dessiner() {
+    var boite = document.getElementById("prestations");
+    boite.innerHTML = "";
+    if (!lignes.length) boite.innerHTML = '<p class="second" style="margin:16px 0">Aucune prestation pour l\'instant.</p>';
+    lignes.forEach(function (l, rang) {
+      var n = passages(l);
+      var prix = Number(String(l.prix).replace(",", "."));
+      var bilan = !l.mois.length ? '<span class="etat" data-ton="ambre">Aucun mois choisi</span>'
+        : n === 0 ? '<span class="etat" data-ton="ambre">Aucun de ces mois dans la période</span>'
+        : !l.prix ? '<span class="etat" data-ton="ambre">' + n + " passage" + (n > 1 ? "s" : "") + ", prix à chiffrer</span>"
+        : '<span class="second">' + n + " passage" + (n > 1 ? "s" : "") + ", " + euros(n * prix) + " HT</span>";
+      var d = document.createElement("div");
+      d.className = "prest";
+      d.innerHTML =
+        '<div class="prest-tete"><p class="prest-nom">' + l.libelle + (l.famille ? '<span class="prest-famille">' + l.famille + "</span>" : "") + "</p>" +
+        '<button type="button" class="retirer touche" aria-label="Retirer ' + l.libelle + '" data-retirer="' + rang + '"><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></button></div>' +
+        '<div class="mois" role="group" aria-label="Ses mois">' + MOIS.map(function (m, i) {
+          return '<button type="button" data-ligne="' + rang + '" data-mois="' + (i + 1) + '" aria-pressed="' + (l.mois.indexOf(i + 1) >= 0) + '">' + m + "</button>";
+        }).join("") + "</div>" +
+        '<div class="reglage-court"><span>Passages par mois</span><span class="compteur-petit">' +
+          '<button type="button" aria-label="Un passage de moins" data-fois="-1" data-ligne="' + rang + '"' + (l.fois <= 1 ? " disabled" : "") + '><svg class="ico ico-p" aria-hidden="true"><use href="#i-moins"/></svg></button>' +
+          "<output>" + l.fois + "</output>" +
+          '<button type="button" aria-label="Un passage de plus" data-fois="1" data-ligne="' + rang + '"' + (l.fois >= 4 ? " disabled" : "") + '><svg class="ico ico-p" aria-hidden="true"><use href="#i-plus"/></svg></button></span></div>' +
+        '<div class="reglage-court"><span>Prix du passage HT</span><span class="prix"><input inputmode="decimal" placeholder="à chiffrer" aria-label="Prix du passage de ' + l.libelle + '" data-prix="' + rang + '" value="' + l.prix + '"><span>€</span></span></div>' +
+        '<div class="prest-bilan">' + bilan + "</div>";
+      boite.appendChild(d);
+    });
+    totaux();
+  }
+
+  function totaux() {
+    var n = 0, ht = 0;
+    lignes.forEach(function (l) { var p = passages(l); n += p; ht += p * (Number(String(l.prix).replace(",", ".")) || 0); });
+    var ttc = Math.round(ht * 1.2 * 100) / 100;
+    document.getElementById("ttc").textContent = euros(ttc);
+    document.getElementById("detail").textContent = n + " passage" + (n > 1 ? "s" : "") + ", " + euros(ht) + " HT et " + euros(ttc - ht) + " de TVA à 20 %.";
+    document.getElementById("conseq-mois").textContent = ttc ? euros(Math.round(ttc / duree * 100) / 100) + " TTC le 1er de chaque mois." : "Rien à facturer.";
+    document.getElementById("conseq-passage").textContent = ttc ? "Chaque passage facturé une fois fait." : "Rien à facturer.";
+    var manque = !lignes.length ? "Ajoutez une prestation."
+      : lignes.filter(function (l) { return !l.mois.length || !l.prix; }).map(function (l) { return l.libelle; });
+    var texte = typeof manque === "string" ? manque : manque.length ? "À compléter : " + manque.join(", ") + "." : "";
+    document.getElementById("manque").textContent = texte;
+    document.getElementById("manque").hidden = !texte;
+    document.getElementById("envoyer").setAttribute("aria-disabled", texte ? "true" : "false");
+  }
+
+  function dessinerCatalogue() {
+    var c = document.getElementById("catalogue");
+    c.innerHTML = CATALOGUE.map(function (f) {
+      return '<p class="cat-famille">' + f[0] + "</p>" + f[1].map(function (nom) {
+        var deja = lignes.some(function (l) { return l.libelle === nom; });
+        return '<button type="button" class="cat-ligne" data-ajouter="' + nom + '"' + (deja ? ' aria-disabled="true"' : "") + ">" + nom +
+          '<svg class="ico" aria-hidden="true"><use href="#i-' + (deja ? "coche" : "plus") + '"/></svg></button>';
+      }).join("");
+    }).join("");
+  }
+
+  function ajouter(nom) {
+    if (!nom || lignes.some(function (l) { return l.libelle === nom; })) return;
+    lignes.push({ libelle: nom, famille: familleDe(nom), mois: [], fois: 1, prix: "" });
+    Kit.fermerFeuilles(ecran);
+    dessiner();
+    var d = ecran.querySelector(".defile");
+    var derniere = ecran.querySelectorAll(".prest");
+    if (derniere.length) d.scrollTo({ top: derniere[derniere.length - 1].offsetTop - 40, behavior: "smooth" });
+  }
+
+  ecran.addEventListener("click", function (e) {
+    var m = e.target.closest("[data-mois]");
+    if (m) {
+      var l = lignes[Number(m.getAttribute("data-ligne"))], mois = Number(m.getAttribute("data-mois"));
+      var k = l.mois.indexOf(mois);
+      if (k >= 0) l.mois.splice(k, 1); else l.mois.push(mois);
+      dessiner();
+      return;
+    }
+    var f = e.target.closest("[data-fois]");
+    if (f) { var lf = lignes[Number(f.getAttribute("data-ligne"))]; lf.fois = Math.min(4, Math.max(1, lf.fois + Number(f.getAttribute("data-fois")))); dessiner(); return; }
+    var r = e.target.closest("[data-retirer]");
+    if (r) { var parti = lignes.splice(Number(r.getAttribute("data-retirer")), 1)[0]; dessiner(); Kit.tiroir(ecran, "Retiré : " + parti.libelle + ".", function () { lignes.push(parti); dessiner(); }); return; }
+    var a = e.target.closest("[data-ajouter]");
+    if (a && a.getAttribute("aria-disabled") !== "true") { ajouter(a.getAttribute("data-ajouter")); return; }
+    var dd = e.target.closest("[data-duree]");
+    if (dd) {
+      duree = Math.min(36, Math.max(1, duree + Number(dd.getAttribute("data-duree"))));
+      document.getElementById("duree").textContent = duree + " mois";
+      var fin = new Date(Date.UTC(2026, 10 + duree, 0));
+      document.getElementById("periode").textContent = "Du 1er novembre 2026 au " + fin.getUTCDate() + " " + fin.toLocaleDateString("fr-FR", { month: "long", timeZone: "UTC" }) + " " + fin.getUTCFullYear() + ".";
+      dessiner();
+      return;
+    }
+    var n = e.target.closest("[data-note-planche]");
+    if (n) { e.preventDefault(); Kit.note(n, n.getAttribute("data-note-planche")); }
+  });
+  ecran.addEventListener("input", function (e) {
+    var p = e.target.closest("[data-prix]");
+    if (p) { lignes[Number(p.getAttribute("data-prix"))].prix = p.value; totaux(); }
+  });
+  ecran.addEventListener("change", function (e) { if (e.target.closest("[data-prix]")) dessiner(); });
+  document.getElementById("bascule-cr").addEventListener("click", function () {
+    var oui = this.getAttribute("aria-checked") === "true";
+    document.getElementById("compte-rendu-sous").textContent = oui ? "Un seul geste : le compte rendu part, la facture part avec." : "Vous l'envoyez vous-même après chaque passage.";
+  });
+  ecran.querySelectorAll(".canal button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      ecran.querySelectorAll(".canal button").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+    });
+  });
+  document.getElementById("ajouter-ecrite").addEventListener("click", function () {
+    var v = document.getElementById("ecrire").value.trim();
+    if (v) { ajouter(v); document.getElementById("ecrire").value = ""; }
+  });
+  document.querySelector("[data-ouvre='feuille-catalogue']").addEventListener("click", dessinerCatalogue);
+  document.getElementById("envoyer").addEventListener("click", function () {
+    if (this.getAttribute("aria-disabled") === "true") return;
+    Kit.appliquerEtat(ecran, "envoye");
+    document.querySelectorAll("#etats [data-etat]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-etat") === "envoye")); });
+    capture.src = "aujourdhui/client-contrat-envoye.jpg";
+  });
+
+  var CAPTURES = { ecrire: "client-contrat-rempli.jpg", envoye: "client-contrat-envoye.jpg", accepte: "client-contrat-envoye.jpg" };
+  document.querySelectorAll("#etats [data-etat]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      capture.src = "aujourdhui/" + CAPTURES[b.getAttribute("data-etat")];
+      document.getElementById("cadre-capture").scrollTop = 0;
+      ecran.querySelector(".defile").scrollTop = 0;
+    });
+  });
+  ecran.addEventListener("click", function (e) {
+    var va = e.target.closest("[data-va-etat]");
+    if (va) capture.src = "aujourdhui/" + CAPTURES[va.getAttribute("data-va-etat")];
+  });
+  dessiner();
+})();
+</script>
+</body>
+</html>

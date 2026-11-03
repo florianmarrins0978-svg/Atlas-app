@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Retours d'intervention, soignés</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  RETOURS D'INTERVENTION : la liste qu'ouvre « Retours d'intervention » sur
+  Terminés (src/app/termines/retours/ListeDesRetours.tsx,
+  src/lib/retour-intervention.ts).
+
+  Sa demande du 31 octobre 2026 : « puis terminé (2) », « dans la même
+  dynamique, plus jolie ».
+
+  À CÔTÉ, LE VRAI ÉCRAN : ouvert le 31 octobre sur le poste, compte de
+  démonstration, trois retours d'octobre, puis le premier ouvert
+  (aujourdhui/termines-retours*.jpg).
+
+  CE QUI EST GARDÉ : le mois avec ses deux flèches, la recherche d'un client,
+  les retours rangés par client, le point d'or d'un retour pas encore lu,
+  qui l'a posé et combien de tâches sont faites, l'ouverture sur place (ce
+  qui a été fait, « pas fait », à signaler, les photos), Replier.
+
+  CE QUI CHANGE : chaque retour porte son jour en grand à gauche, comme les
+  dates du mois du client ; « 2 sur 3 » devient « 2 tâches sur 3 » ; un
+  retour qui a quelque chose à signaler le dit dès la liste ; les cartes
+  bordées deviennent des plages.
+*/
+.tete-titre.moyen { font-size: 29px; }
+.mois-choix { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 2px 0 14px; }
+.mois-choix button { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-or); }
+.mois-choix button[disabled] { color: var(--atlas-chevron); }
+.mois-choix b { min-width: 170px; text-align: center; font: 400 23px/1.2 var(--serif); }
+/* La barre de recherche est celle de l'appli, prise dans le kit (sa règle). */
+.retours-cherche { margin-top: 12px; }
+.groupe-tete { display: flex; align-items: baseline; justify-content: space-between; margin: 24px 0 8px; }
+.groupe-tete b { font: 400 21px/1.2 var(--serif); }
+.retour { position: relative; }
+.retour + .retour::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); z-index: 1; }
+.retour-ligne { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 72px; padding: 12px 0; text-align: left; }
+.retour-ligne .jour b { font-size: 25px; }
+.retour-corps { flex: 1; min-width: 0; }
+.retour-qui { display: flex; align-items: center; gap: 8px; font: 400 17.5px/1.25 var(--serif); }
+.retour-qui .point { width: 9px; height: 9px; flex: none; border-radius: 50%; background: var(--atlas-or); }
+.retour[data-lu] .point { display: none; }
+.retour:not([data-lu]) .retour-qui { font-weight: 600; }
+.retour-quoi { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 8px; margin-top: 3px; font-size: 14.5px; color: var(--atlas-inkSoft); }
+.retour-fin .ico { width: 20px; height: 20px; color: var(--atlas-chevron); stroke-width: 2; transition: transform 220ms var(--courbe); }
+.retour[data-ouvert] .retour-fin .ico { transform: rotate(90deg); }
+.retour-deplie { padding: 0 0 14px; }
+.retour-deplie .rubrique { margin-top: 6px; }
+.tache { display: flex; align-items: center; gap: 12px; min-height: 40px; font-size: 16px; }
+.tache-signe { width: 24px; height: 24px; flex: none; display: grid; place-items: center; border-radius: 50%;
+               background: var(--atlas-carteVertFond); color: var(--atlas-carteVertTexte); }
+.tache-signe .ico { width: 15px; height: 15px; stroke-width: 2.4; }
+.tache.pas-faite { color: var(--atlas-inkSoft); }
+.tache.pas-faite .tache-signe { background: transparent; box-shadow: inset 0 0 0 1.5px var(--atlas-chevron); }
+.replier { display: flex; justify-content: center; margin-top: 6px; }
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="termines.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Terminés</a>
+  <h1 class="pl-titre">Retours d'intervention</h1>
+  <p class="pl-verdict">La liste qu'ouvre « Retours d'intervention » sur Terminés. <b>Chaque retour avec son jour en grand, ce qui est à signaler dès la liste</b>, et le détail qui s'ouvre sur place.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats" id="etats">
+        <button type="button" data-etat="liste" aria-pressed="true">Octobre</button>
+        <button type="button" data-etat="ouvert">Un retour ouvert</button>
+        <button type="button" data-etat="aucun">Aucun retour</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre" id="ecran">
+          <div class="defile">
+            <div class="tete-ronds">
+              <a class="rond-creux" href="termines.html" aria-label="Retour aux chantiers terminés"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </div>
+            <div class="tete"><h2 class="tete-titre moyen">Retours d'intervention</h2></div>
+
+            <div class="mois-choix">
+              <button type="button" aria-label="Mois précédent"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+              <b>Octobre 2026</b>
+              <button type="button" aria-label="Mois suivant" disabled><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></button>
+            </div>
+            <div class="champ-recherche retours-cherche">
+              <svg class="ico" aria-hidden="true"><use href="#i-loupe"/></svg>
+              <input type="text" inputmode="search" autocomplete="off" placeholder="Un nom de client" aria-label="Chercher un client" id="cherche">
+              <button type="button" class="effacer" id="effacer" hidden aria-label="Effacer la recherche"><svg class="ico ico-p" aria-hidden="true"><use href="#i-croix"/></svg></button>
+            </div>
+
+            <div data-si-etat="liste ouvert">
+              <div class="groupe-tete"><b>Mme Costa</b><span class="second">2 retours</span></div>
+              <section class="plage plage-serree">
+                <div class="retour" id="retour-1">
+                  <button type="button" class="retour-ligne" aria-expanded="false">
+                    <span class="jour"><b>29</b><span>oct.</span></span>
+                    <span class="retour-corps">
+                      <span class="retour-qui"><span class="point" aria-label="Pas encore lu"></span>Compte de démonstration</span>
+                      <span class="retour-quoi">Jeudi, 2 tâches sur 3<span class="etat" data-ton="ambre">À signaler</span></span>
+                    </span>
+                    <span class="retour-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>
+                  </button>
+                  <div class="retour-deplie" hidden>
+                    <p class="rubrique">Ce qui a été fait</p>
+                    <div class="tache"><span class="tache-signe" aria-hidden="true"><svg class="ico"><use href="#i-coche"/></svg></span>Poser les lambourdes</div>
+                    <div class="tache"><span class="tache-signe" aria-hidden="true"><svg class="ico"><use href="#i-coche"/></svg></span>Poser les lames</div>
+                    <div class="tache pas-faite"><span class="tache-signe" aria-hidden="true"></span>Huiler la terrasse<span class="etat" data-ton="ambre" style="margin-left:auto">Pas fait</span></div>
+                    <p class="rubrique">À signaler</p>
+                    <p class="plage-ton" data-ton="ambre" style="margin:0">« La lame du fond bouge encore, à revisser au prochain passage. »</p>
+                    <div class="replier"><button type="button" class="bouton-texte" data-replier>Replier</button></div>
+                  </div>
+                </div>
+                <div class="retour">
+                  <button type="button" class="retour-ligne" aria-expanded="false" data-note-planche="Il s'ouvre comme celui du 29.">
+                    <span class="jour"><b>22</b><span>oct.</span></span>
+                    <span class="retour-corps">
+                      <span class="retour-qui"><span class="point" aria-label="Pas encore lu"></span>Compte de démonstration</span>
+                      <span class="retour-quoi">Jeudi, 2 tâches sur 2</span>
+                    </span>
+                    <span class="retour-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>
+                  </button>
+                </div>
+              </section>
+
+              <div class="groupe-tete"><b>M. Bernard</b><span class="second">1 retour</span></div>
+              <section class="plage plage-serree">
+                <div class="retour" data-lu>
+                  <button type="button" class="retour-ligne" aria-expanded="false" data-note-planche="Il s'ouvre comme celui du 29.">
+                    <span class="jour"><b>27</b><span>oct.</span></span>
+                    <span class="retour-corps">
+                      <span class="retour-qui"><span class="point"></span>Compte de démonstration</span>
+                      <span class="retour-quoi">Mardi, 2 tâches sur 2</span>
+                    </span>
+                    <span class="retour-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>
+                  </button>
+                </div>
+              </section>
+            </div>
+
+            <div class="vide" data-si-etat="aucun">
+              <svg class="ico" aria-hidden="true"><use href="#i-document"/></svg>
+              <p class="vide-texte">Rien encore. Un retour arrive ici quand un salarié pose « c'est fini » sur sa fiche.</p>
+            </div>
+          </div>
+
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html" aria-current="page">Terminés</a>
+              <a class="barre-onglet" href="arrosage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html">Réglages</a>
+              <span class="barre-trait" aria-hidden="true" style="--rang:2"><span></span></span>
+            </div>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre"><div class="cadre-capture" id="cadre-capture"><img id="capture" src="aujourdhui/termines-retours.jpg" alt="Retours d'intervention tels qu'ils sont aujourd'hui"></div></div>
+    </div>
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>Chaque retour porte son jour en grand à gauche ; l'année ne se répète plus, le mois du haut la dit.</li>
+      <li>« 2 sur 3 » devient « 2 tâches sur 3 ».</li>
+      <li>Un retour qui a quelque chose à signaler le dit dès la liste, sans l'ouvrir.</li>
+      <li>Ouvert, une tâche faite a son rond vert, une tâche pas faite le mot « Pas fait » en ambre ; ce qui est à signaler, sa plage ambre.</li>
+      <li>Les cartes bordées deviennent des plages, rangées par client avec le nombre de retours.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>La barre de recherche, exactement celle de l'appli : votre règle du 1er novembre, pour toutes les planches.</li>
+      <li>Le mois et ses deux flèches, le rangement par client.</li>
+      <li>Le point d'or d'un retour pas encore lu, qui s'éteint quand on l'ouvre.</li>
+      <li>L'ouverture sur place, les photos en deux colonnes, Replier.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="termines-non-payees.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Non payées</a>
+  <a href="termines.html">Terminés<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+(function () {
+  "use strict";
+  var retour = document.getElementById("retour-1");
+  var capture = document.getElementById("capture");
+  function ouvrir(oui) {
+    retour.toggleAttribute("data-ouvert", oui);
+    if (oui) retour.setAttribute("data-lu", "");
+    retour.querySelector(".retour-ligne").setAttribute("aria-expanded", String(oui));
+    retour.querySelector(".retour-deplie").hidden = !oui;
+    capture.src = "aujourdhui/" + (oui ? "termines-retours-ouvert.jpg" : "termines-retours.jpg");
+  }
+  retour.querySelector(".retour-ligne").addEventListener("click", function () { ouvrir(!retour.hasAttribute("data-ouvert")); });
+  retour.querySelector("[data-replier]").addEventListener("click", function () { ouvrir(false); });
+  var cherche = document.getElementById("cherche"), effacer = document.getElementById("effacer");
+  cherche.addEventListener("input", function () { effacer.hidden = cherche.value === ""; });
+  effacer.addEventListener("click", function () { cherche.value = ""; effacer.hidden = true; cherche.focus(); });
+  document.querySelectorAll("#etats [data-etat]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var e = b.getAttribute("data-etat");
+      if (e === "ouvert") ouvrir(true);
+      else { ouvrir(false); retour.removeAttribute("data-lu"); }
+      document.getElementById("cadre-capture").scrollTop = 0;
+    });
+  });
+  document.addEventListener("click", function (e) {
+    var n = e.target.closest("[data-note-planche]");
+    if (n) { e.preventDefault(); Kit.note(n, n.getAttribute("data-note-planche")); }
+  });
+})();
+</script>
+</body>
+</html>

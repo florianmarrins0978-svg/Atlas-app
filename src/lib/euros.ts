@@ -3,6 +3,8 @@
 // Deux écrans en portaient déjà chacun leur copie, et le troisième — le rapport
 // « Devis préparé » — a commencé par afficher « 1674,00 € », sans l'espace des
 // milliers. Un montant qui ne se lit pas comme les autres se relit deux fois.
+import Decimal from "decimal.js";
+
 const FORMAT_EUROS = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
 
 /** Formate un montant décimal (chaîne « 1674.00 » ou nombre) en euros français. */
@@ -44,4 +46,16 @@ export function enMontant(montant: string | number): string {
 /** L'espace fine insécable d'`Intl`, remplacée par celle que WinAnsi connaît. */
 function sansEspaceFine(texte: string): string {
   return texte.replace(/\u202f/g, "\u00a0");
+}
+
+/**
+ * La somme de montants décimaux (« 1140.00 »), au centime près.
+ *
+ * Additionner des `Number` rend « 4270.799999 » sur trois factures : le total
+ * s'affiche juste après arrondi, mais il ment au centime dès qu'on le compare.
+ * Les montants du dépôt sont des chaînes décimales ; ils s'additionnent en
+ * décimal.
+ */
+export function sommeDesMontants(montants: readonly string[]): string {
+  return montants.reduce((total, m) => total.plus(new Decimal(m)), new Decimal(0)).toFixed(2);
 }

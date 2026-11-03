@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas : Déplacer en un appui</title>
+</head>
+<body>
+<style>
+  /*
+    DÉPLACER EN UN APPUI, maquette ESSAYABLE.
+
+    Sa demande du 1er novembre 2026, capture du planning à l'appui :
+    « quand je clique sur chantier déplacer, je voudrais pouvoir cliquer sur
+    le jour en question et que ça le déplace en un clic, et pour plusieurs
+    jours je clique sur le jour que je veux déplacer et je reclique sur le
+    jour à ajouter ».
+
+    Aujourd'hui : Déplacer, le jour, puis « Quel moment ? » (Matin, Après-midi,
+    Journée). Ici, le moment n'est plus demandé : ce qui part garde son moment
+    (une journée arrive en journée, un matin arrive le matin).
+
+    Ce qu'on perdrait : sa correction du 17 septembre, « un chantier d'une
+    journée, si je veux je dois pouvoir déplacer soit le matin, soit l'aprem
+    quand même » (`momentsOfferts`, src/lib/creneaux-chantier.ts). D'où deux
+    versions : A l'oublie, B la garde par un mot choisi AVANT le jour, déjà
+    réglé sur « Journée », donc sans appui de plus dans le cas courant.
+
+    Rien n'est codé dans l'application.
+  */
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pin:#2f3b2f; --pale:#b9c6b4; --papier:#ece9e1;
+    --or:#B98B47; --trait:rgba(28,28,26,.12); --bordeaux:#7A2F3A;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 52px}
+  ::selection{background:var(--or);color:#fff}
+
+  .bandeau{background:var(--encre);color:#f2efe8;padding:14px 18px;text-align:center;font-size:13px;line-height:1.55}
+  .bandeau b{color:#fff}
+  .choix{display:flex;justify-content:center;gap:10px;margin-top:12px}
+  .choix button{border:1px solid rgba(255,255,255,.35);background:transparent;color:#f2efe8;
+                border-radius:999px;padding:7px 16px;font:700 13px/1 ui-sans-serif,sans-serif;cursor:pointer}
+  .choix button[aria-pressed="true"]{background:#f2efe8;color:var(--encre);border-color:#f2efe8}
+
+  h2{max-width:430px;margin:34px auto 0;padding:0 28px;font:400 22px/1.2 ui-serif,Georgia,serif}
+  .sous{max-width:430px;margin:4px auto 0;padding:0 28px;font-size:13px;color:var(--encre-douce)}
+
+  .tel{max-width:430px;margin:14px auto 0;background:var(--fond);
+       border-radius:26px;overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.18);padding:6px 0 16px}
+
+  .mois{margin:10px 14px 0;padding:0 4px}
+  .nom-du-mois{text-align:center;font:700 14px/1 ui-sans-serif,sans-serif;padding:6px 0 10px}
+  .grille{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .jour{border:1px solid transparent;border-radius:10px;background:transparent;padding:6px 0 7px;
+        text-align:center;font:400 16px/1.1 ui-serif,Georgia,serif;color:var(--encre)}
+  .jour .barres{margin-top:4px;line-height:0}
+  .jour .barres span{display:block;width:22px;height:4px;margin:0 auto 2px;border-radius:2px;background:var(--papier)}
+  .jour .barres span.prise{background:var(--pin)}
+  .jour.repos{color:var(--gris);background:rgba(28,28,26,.035)}
+  .jour.vide{visibility:hidden}
+  .jour.ouvert{border-color:var(--encre)}
+  .jour.touchable{cursor:pointer;border-color:var(--trait)}
+  .jour.a-lui{border-color:var(--or)}
+  .jour.source{background:var(--or);border-color:var(--or);color:#fff}
+  .jour.source .barres span.prise{background:#fff}
+  .jour.arrive{animation:arrive .9s cubic-bezier(.16,1,.3,1)}
+  @keyframes arrive{0%{background:rgba(185,139,71,.35)}100%{background:transparent}}
+
+  .fiche{margin:14px 14px 0;background:var(--plage);border-radius:18px;padding:18px 18px 14px}
+  .date{font:400 21px/1.2 ui-serif,Georgia,serif}
+  .nom{margin:12px 0 0;font:400 21px/1.15 ui-serif,Georgia,serif}
+  .duree{margin:3px 0 0;font-size:14px;font-weight:700;color:var(--or)}
+  .demi{display:flex;align-items:center;gap:12px;margin-top:12px}
+  .demi .carre{width:13px;height:13px;border-radius:3px;background:var(--pale)}
+  .demi .mot{font-weight:700;font-size:15px;flex:0 0 100px}
+  .demi .qui{font-weight:700;font-size:15px}
+  .demi.libre .carre{background:transparent;border:1px solid var(--trait)}
+  .demi.libre .qui{color:var(--gris);font-weight:400}
+
+  .mots{display:flex;align-items:baseline;gap:20px;margin-top:14px;flex-wrap:wrap}
+  .mots.droite{justify-content:flex-end}
+  .mots button{border:0;background:transparent;padding:6px 0;cursor:pointer;
+               font:700 15px/1.2 ui-sans-serif,sans-serif;color:var(--encre)}
+  .mots button.moitie{color:var(--gris)}
+  .mots button.moitie[aria-pressed="true"]{color:var(--encre);text-decoration:underline;
+               text-decoration-color:var(--or);text-decoration-thickness:2px;text-underline-offset:5px}
+  .mots button:active{opacity:.55}
+  .mots button:focus-visible,.jour:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+  .consigne{font-size:13.5px;color:var(--or)}
+  .ecart{flex:1 1 auto}
+  .refus{margin-top:10px;font-size:13px;color:var(--bordeaux)}
+
+  .note{max-width:430px;margin:12px auto 0;padding:0 28px;font-size:12.5px;line-height:1.6;color:var(--encre-douce)}
+  .note b{color:var(--encre)}
+  .tranche{max-width:430px;margin:30px auto 0;padding:16px 20px;background:#fff;border:1px solid var(--trait);
+           border-radius:16px;font-size:13px;line-height:1.6;color:var(--encre-douce)}
+  .tranche b{color:var(--encre)}
+  .tranche p{margin:0 0 10px}
+  .tranche p:last-child{margin:0}
+</style>
+
+<div class="bandeau">
+  <b>Déplacer, puis le jour. C'est tout.</b><br>
+  Le moment n'est plus demandé : un matin arrive le matin, une journée arrive en journée.
+  <div class="choix" role="group" aria-label="Version">
+    <button type="button" data-version="A" aria-pressed="true">A</button>
+    <button type="button" data-version="B" aria-pressed="false">B</button>
+  </div>
+</div>
+
+<h2>Un chantier d'un jour</h2>
+<p class="sous">Mr. Lala, lundi 9. Touchez Déplacer, puis le 11.</p>
+<div class="tel" data-tel="lala"></div>
+
+<h2>Un chantier de plusieurs jours</h2>
+<p class="sous">Mr. Julien, du 2 au 5. Touchez Déplacer, le jour à déplacer, puis le nouveau jour. Recommencez pour un autre.</p>
+<div class="tel" data-tel="julien"></div>
+
+<div class="tranche">
+  <p><b>A</b> : un appui sur le jour, et le chantier y part tel quel.</p>
+  <p><b>B</b> : pareil, mais une journée peut ne partir qu'à moitié. Touchez « Matin » ou « Après-midi » avant le jour. Sans y toucher, c'est la journée qui part : rien de plus à appuyer.</p>
+  <p>Avec A, vous ne pourrez plus déplacer seulement le matin d'une journée, comme vous l'aviez demandé le 17 septembre. <b>A ou B ?</b></p>
+</div>
+
+<script>
+(function(){
+  var version = "A";
+  var NOMS_JOURS = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+  function lisible(j){ var d = new Date(Date.UTC(2026,10,j)); return NOMS_JOURS[d.getUTCDay()] + " " + j + " novembre"; }
+  function Majuscule(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+  function repos(j){ var w = new Date(Date.UTC(2026,10,j)).getUTCDay(); return w === 0 || w === 6; }
+
+  var DEPART = {
+    lala:   { nom:"Mr. Lala", ouvert:9, creneaux:{9:["matin","apres"]} },
+    julien: { nom:"Mr. Julien", ouvert:2, creneaux:{2:["matin","apres"],3:["matin","apres"],4:["matin","apres"],5:["matin"]} }
+  };
+  var etats = {};
+  function neuf(cle){
+    var d = DEPART[cle], c = {};
+    for (var j in d.creneaux) c[j] = d.creneaux[j].slice();
+    etats[cle] = { nom:d.nom, ouvert:d.ouvert, creneaux:c, mode:null, source:null, moitie:"journee", refus:null, arrive:null };
+  }
+  function jours(e){ return Object.keys(e.creneaux).map(Number).filter(function(j){ return e.creneaux[j].length; }); }
+  function plusieurs(e){ return jours(e).length > 1; }
+
+  function dessiner(cle){
+    var e = etats[cle], tel = document.querySelector('[data-tel="'+cle+'"]');
+    var choisitSource = e.mode && plusieurs(e) && e.source === null;
+    var choisitArrivee = e.mode && !choisitSource;
+    var h = '<div class="mois"><div class="nom-du-mois">novembre 2026</div><div class="grille">';
+    for (var v = 0; v < 6; v++) h += '<div class="jour vide"></div>';
+    for (var j = 1; j <= 30; j++){
+      var cl = ["jour"], porte = e.creneaux[j] || [];
+      if (repos(j)) cl.push("repos");
+      else if (choisitSource && porte.length) cl.push("touchable","a-lui");
+      else if (choisitArrivee && j !== e.source) cl.push("touchable");
+      if (e.mode && j === e.source) cl.push("source");
+      if (!e.mode && j === e.ouvert) cl.push("ouvert");
+      if (j === e.arrive) cl.push("arrive");
+      var touchable = cl.indexOf("touchable") >= 0;
+      h += '<div class="'+cl.join(" ")+'" data-j="'+j+'"'+(touchable?' role="button" tabindex="0"':'')+'>'+j+
+           '<div class="barres"><span class="'+(porte.indexOf("matin")>=0?"prise":"")+'"></span><span class="'+(porte.indexOf("apres")>=0?"prise":"")+'"></span></div></div>';
+    }
+    h += '</div></div>';
+
+    var jf = e.mode && e.source ? e.source : e.ouvert, p = e.creneaux[jf] || [];
+    h += '<div class="fiche"><div class="date">'+Majuscule(lisible(jf))+'</div>';
+    if (p.length){
+      var n = jours(e).length;
+      h += '<div class="nom">'+e.nom+'</div><div class="duree">'+(n>1? n+" jours" : p.length===2? "Une journée" : "Une demi-journée")+'</div>';
+      h += ligne("Matin", p.indexOf("matin")>=0) + ligne("Après-midi", p.indexOf("apres")>=0);
+    } else {
+      h += '<div class="nom" style="color:var(--gris)">Rien ce jour-là.</div>';
+    }
+
+    if (!e.mode){
+      if (p.length) h += '<div class="mots droite"><button data-geste="deplacer">Déplacer</button><button>Retirer</button></div>';
+    } else {
+      var phrase = choisitSource ? "Touchez le jour à déplacer" : "Touchez le nouveau jour";
+      var src = choisitArrivee ? (e.source !== null ? e.source : jours(e)[0]) : null;
+      if (version === "B" && src !== null && (e.creneaux[src]||[]).length === 2){
+        h += '<div class="mots">'+["journee","matin","apres"].map(function(m){
+          return '<button class="moitie" data-moitie="'+m+'" aria-pressed="'+(e.moitie===m)+'">'+({journee:"Journée",matin:"Matin",apres:"Après-midi"})[m]+'</button>';
+        }).join("")+'</div>';
+      }
+      h += '<div class="mots"><span class="consigne">'+phrase+'</span><span class="ecart"></span><button data-geste="fini">'+(cle==="julien"?"Fini":"Annuler")+'</button></div>';
+    }
+    if (e.refus) h += '<div class="refus">'+e.refus+'</div>';
+    h += '</div>';
+    tel.innerHTML = h;
+    e.arrive = null;
+  }
+  function ligne(mot, prise){
+    return '<div class="demi'+(prise?"":" libre")+'"><span class="carre"></span><span class="mot">'+mot+'</span><span class="qui">'+(prise?"Julien":"libre")+'</span></div>';
+  }
+
+  function deplacer(e, de, vers){
+    var part = e.creneaux[de] || [];
+    var partent = (version === "B" && part.length === 2 && e.moitie !== "journee") ? [e.moitie] : part.slice();
+    var la = e.creneaux[vers] || [];
+    if (partent.some(function(m){ return la.indexOf(m) >= 0; })){
+      e.refus = "Ce chantier occupe déjà ce moment-là.";
+      return false;
+    }
+    e.creneaux[de] = part.filter(function(m){ return partent.indexOf(m) < 0; });
+    e.creneaux[vers] = la.concat(partent).sort(function(a){ return a === "matin" ? -1 : 1; });
+    e.refus = null; e.arrive = vers;
+    return true;
+  }
+
+  function toucher(cle, j){
+    var e = etats[cle];
+    if (!e.mode) return;
+    e.refus = null;
+    if (plusieurs(e) && e.source === null){
+      if ((e.creneaux[j]||[]).length){ e.source = j; e.moitie = "journee"; }
+      return dessiner(cle);
+    }
+    var de = e.source !== null ? e.source : jours(e)[0];
+    if (j === de) return;
+    if (deplacer(e, de, j)){
+      if (cle === "julien"){ e.source = null; e.moitie = "journee"; e.ouvert = j; }
+      else { e.mode = null; e.source = null; e.ouvert = j; e.moitie = "journee"; }
+    }
+    dessiner(cle);
+  }
+
+  document.addEventListener("click", function(ev){
+    var vb = ev.target.closest("[data-version]");
+    if (vb){
+      version = vb.dataset.version;
+      document.querySelectorAll("[data-version]").forEach(function(b){ b.setAttribute("aria-pressed", b === vb); });
+      neuf("lala"); neuf("julien"); dessiner("lala"); dessiner("julien");
+      return;
+    }
+    var tel = ev.target.closest("[data-tel]"); if (!tel) return;
+    var cle = tel.dataset.tel, e = etats[cle];
+    var g = ev.target.closest("[data-geste]");
+    if (g){
+      if (g.dataset.geste === "deplacer"){ e.mode = "deplacer"; e.source = null; }
+      else { e.mode = null; e.source = null; e.refus = null; }
+      return dessiner(cle);
+    }
+    var mo = ev.target.closest("[data-moitie]");
+    if (mo){ e.moitie = mo.dataset.moitie; return dessiner(cle); }
+    var jd = ev.target.closest(".jour.touchable");
+    if (jd) toucher(cle, Number(jd.dataset.j));
+  });
+  document.addEventListener("keydown", function(ev){
+    if ((ev.key === "Enter" || ev.key === " ") && ev.target.classList && ev.target.classList.contains("touchable")){
+      ev.preventDefault(); ev.target.click();
+    }
+  });
+
+  neuf("lala"); neuf("julien"); dessiner("lala"); dessiner("julien");
+})();
+</script>
+</body>
+</html>

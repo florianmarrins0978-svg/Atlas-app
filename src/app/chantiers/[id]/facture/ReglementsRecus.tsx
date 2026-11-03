@@ -5,7 +5,7 @@ import { colors, font, smallCaps } from "@/lib/design-tokens";
 import { enEuros } from "@/lib/euros";
 import { ttcApresAvoirs } from "@/lib/avoir";
 import { adresseDeLaVisionneuse } from "@/lib/visionneuse-pdf";
-import { jourIso, jourNumerique } from "@/lib/jour";
+import { jourIso, jourLisible, jourNumerique } from "@/lib/jour";
 import {
   LIBELLES_MOYEN,
   MOYENS_PROPOSES,
@@ -147,7 +147,8 @@ export default function ReglementsRecus({
 
   return (
     <div
-      className={carte ? "rounded-[4px] px-5 py-5" : ""}
+      // La carte des écrans soignés (sa planche de la facture, 2 novembre 2026).
+      className={carte ? "rounded-[6px] p-[18px]" : ""}
       style={carte ? { backgroundColor: colors.card } : undefined}
       data-atlas="reglements-recus"
     >
@@ -319,10 +320,13 @@ export default function ReglementsRecus({
           <span>
             Avoir {a.numero}
             <small className="block text-[12px]" style={{ color: colors.muted }}>
-              {jourNumerique(a.dateEmission)}
+              {jourLisible(a.dateEmission)}
             </small>
           </span>
-          <span className="whitespace-nowrap">- {enEuros(a.totalTtc)}</span>
+          {/* **« moins », écrit en toutes lettres** — sa planche du 2 novembre
+              2026 relevait « - 100,00 € » : un trait d'union collé à un montant
+              se lit mal, et passe pour un tiret de liste. */}
+          <span className="whitespace-nowrap">moins {enEuros(a.totalTtc)}</span>
         </a>
       ))}
 
@@ -349,7 +353,7 @@ export default function ReglementsRecus({
         <span className="text-[17px] font-semibold" style={{ color: colors.ink }}>
           Net à payer
         </span>
-        <span className="text-[20px] font-semibold" style={{ fontFamily: font.display, color: colors.ink }} data-atlas="net-a-payer">
+        <span className="text-[26px]" style={{ fontFamily: font.display, color: colors.ink }} data-atlas="net-a-payer">
           {enEuros(net)}
         </span>
       </div>

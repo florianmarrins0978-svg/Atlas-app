@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { exigerGestionDevis } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
+import type { Ctx } from "@/server/repositories/context";
 import { retenirLecon } from "@/server/repositories/lecons-prix";
 import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
 import { PreuveRecenteExigeeError } from "@/server/preuve-recente";
@@ -13,6 +14,7 @@ import {
   modifierLignePrix,
   supprimerLignePrix,
   ajouterLignePrix,
+  poserLesPartsDeMainDoeuvre,
   listerLignesPrix,
   changerTauxCategorie,
   retirerCategorieTva,
@@ -30,7 +32,16 @@ import {
   majAutoliquidationDevis,
 } from "@/server/repositories/devis";
 import { logger } from "@/server/logger";
-import { LIBELLE_LIGNE_MAIN_DOEUVRE } from "@/lib/main-doeuvre-devis";
+import {
+  ligneDeSonEquipe,
+  ligneDeSonPartenaire,
+  montantDeLaMainOeuvre,
+  prixDesPartenaires,
+  type LigneDeMainOeuvre,
+  type TravailRepris,
+} from "@/lib/feuille-main-oeuvre";
+import { repartirMainOeuvre } from "@/lib/main-oeuvre-dictee";
+import { lireMarges, prixAchatCandidats } from "@/server/repositories/fournisseurs-partenaires";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { preparerAudioEntrant } from "@/server/audio-entrant";
 import { lireRetouchesDictees } from "@/server/ai/services/retouches-devis-service";
@@ -172,24 +183,88 @@ export async function ajouterLigneAction(chantierId: string, tauxTva?: string | 
 }
 
 /**
- * « + Main d'œuvre », dans une catégorie de TVA — sa demande du 13 octobre 2026.
+ * La feuille « Main d'œuvre » — sa planche du 1er novembre 2026, choisie le
+ * soir même. Son équipe (hommes × durée × prix du jour par homme), ou le prix
+ * d'un de ses partenaires multiplié par sa marge.
  *
- * Une ligne ORDINAIRE, une fois au forfait : elle s'additionne comme une tâche,
- * à son taux. **Elle naît « à chiffrer »** : un prix de main d'œuvre n'a pas de
- * valeur plausible (`docs/AGENT.md` §3), et c'est ce drapeau qui retient le
- * devis tant qu'il n'a pas tapé son montant. Il tombe de lui-même dès qu'un
- * montant est posé (`ligneAttendSonPrix`).
+ * **Le prix se recalcule ICI, jamais sur la parole de l'écran** : les mêmes
+ * fonctions qui ont construit la feuille (`ligneDeSonEquipe`,
+ * `ligneDeSonPartenaire`) revalident ce qu'elle renvoie, à partir de ses
+ * prix de ses partenaires lus en base (`CLAUDE.md` §3). Le tarif de son
+ * équipe vaut comme un prix tapé sur une ligne : c'est le sien.
+ *
+ * **Un refus se rend en valeur de retour** : le message d'une exception
+ * levée ici n'arriverait jamais jusqu'à lui (`AGENTS.md`).
  */
-export async function ajouterMainDoeuvreAction(chantierId: string, tauxTva?: string | null) {
+export type ChoixDeMainOeuvre =
+  | { qui: "equipe"; hommes: number; jours: number; tarif: string | null }
+  | { qui: "partenaire"; prixId: string; quantite: number };
+
+/** La ligne qu'un choix produit, recalculée sur ses prix ; un refus en mots sinon. */
+async function ligneDuChoix(ctx: Ctx, choix: ChoixDeMainOeuvre): Promise<LigneDeMainOeuvre | { raison: string }> {
+  if (choix.qui === "equipe") {
+    const hommes = Number(choix.hommes);
+    const jours = Number(choix.jours);
+    if (!(hommes > 0 && hommes <= 99 && jours > 0 && jours <= 365)) {
+      return { raison: "Le nombre d'hommes ou la durée ne se lit pas. Rechargez l'écran." };
+    }
+    // Le tarif est celui que la feuille portait au moment de l'appui : le sien
+    // repris, corrigé, ou effacé exprès (la ligne arrive alors à chiffrer).
+    // Le reprendre ici d'office contredirait ce qu'elle lui a montré.
+    return ligneDeSonEquipe(hommes, jours, choix.tarif);
+  }
+  const quantite = Number(choix.quantite);
+  if (!(quantite > 0 && quantite <= 99999)) return { raison: "Écrivez une quantité au-dessus de zéro." };
+  const [candidats, marges] = await Promise.all([prixAchatCandidats(ctx), lireMarges(ctx)]);
+  const prix = prixDesPartenaires(candidats, marges).find((p) => p.id === choix.prixId);
+  if (!prix) return { raison: "Ce prix de partenaire n'existe plus. Rechargez l'écran." };
+  return ligneDeSonPartenaire(prix, quantite);
+}
+
+export async function ajouterMainDoeuvreChoisieAction(
+  chantierId: string,
+  tauxTva: string | null,
+  choix: ChoixDeMainOeuvre
+): Promise<{ ok: true; ligne: Awaited<ReturnType<typeof ajouterLignePrix>> } | { ok: false; raison: string }> {
   const ctx = await getCurrentCtx();
   await exigerGestionDevis(ctx, "ajouter une main d'œuvre au devis");
-  return ajouterLignePrix(ctx, chantierId, LIBELLE_LIGNE_MAIN_DOEUVRE, "0.00", {
-    quantite: "1",
-    unite: "forfait",
-    aChiffrer: true,
-    tauxTva: tauxTva ?? null,
+  const ligne = await ligneDuChoix(ctx, choix);
+  if ("raison" in ligne) return { ok: false, raison: ligne.raison };
+  const montant = montantDeLaMainOeuvre(ligne);
+  const creee = await ajouterLignePrix(ctx, chantierId, ligne.libelle, montant ?? "0.00", {
+    quantite: ligne.quantite,
+    prixUnitaire: ligne.prixUnitaire ?? "0.00",
+    unite: ligne.unite,
+    // Sans prix, la ligne retient le devis tant qu'il n'a pas posé le sien —
+    // le même drapeau que « + Main d'œuvre » d'avant (`ligneAttendSonPrix`).
+    aChiffrer: ligne.prixUnitaire === null,
+    tauxTva,
     mainDoeuvre: true,
   });
+  return { ok: true, ligne: creee };
+}
+
+/**
+ * La même feuille, l'autre choix : « Répartis sur les travaux ». Le montant
+ * de la main d'œuvre se recalcule comme pour une ligne (`ligneDeSonEquipe`,
+ * `ligneDeSonPartenaire`), puis se partage avec la règle de la barre
+ * (`repartirMainOeuvre` : des parts qui font le total passent telles
+ * quelles, sinon au prorata) ; le dépôt les pose sur les prix lus en base.
+ */
+export async function repartirMainDoeuvreAction(
+  chantierId: string,
+  choix: ChoixDeMainOeuvre,
+  parts: Record<string, number>
+): Promise<{ ok: true; lignes: TravailRepris[] } | { ok: false; raison: string }> {
+  const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "répartir une main d'œuvre sur le devis");
+  const ligne = await ligneDuChoix(ctx, choix);
+  if ("raison" in ligne) return { ok: false, raison: ligne.raison };
+  const total = montantDeLaMainOeuvre(ligne);
+  if (total === null) return { ok: false, raison: "Sans prix, il n'y a rien à répartir : donnez le prix du jour, ou la marge." };
+  const ids = Object.keys(parts);
+  if (ids.length === 0) return { ok: false, raison: "Aucun travail ne reçoit de main d'œuvre." };
+  return poserLesPartsDeMainDoeuvre(ctx, chantierId, repartirMainOeuvre(total, ids, parts));
 }
 
 /**
@@ -413,10 +488,10 @@ function montantDeLaLigne(quantite: string, prixUnitaire: string): string {
 // règle commune (`tauxCumulesBornes`), et rend ce qu'il a écrit — c'est ce que
 // l'écran affiche, jamais ce qu'il a supposé.
 
-export async function ajouterAcompteAction(devisId: string) {
+export async function ajouterAcompteAction(devisId: string, taux?: string) {
   const ctx = await getCurrentCtx();
   await exigerGestionDevis(ctx, "ajouter un acompte au devis");
-  return poserAcompteSuivant(ctx, devisId);
+  return poserAcompteSuivant(ctx, devisId, taux);
 }
 
 export async function changerTauxAcompteAction(devisId: string, rang: number, taux: string) {

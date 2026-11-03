@@ -3,15 +3,17 @@
 import { colors } from "@/lib/design-tokens";
 import { enEuros } from "@/lib/euros";
 import type { LigneAcompte as LigneCalculee } from "@/lib/acomptes-devis";
+import CroixRetirer from "@/components/atlas/CroixRetirer";
 
 /**
  * ─── LA LIGNE D'UN ACOMPTE, SOUS LE TOTAL TTC ────────────────────────────────
  *
  * La même pièce que la remise (`Remise.tsx`) :
- * l'or, le « − » cerclé de 26 px (sa proposition B du 17 août 2026 — en dessous
- * de 24 px on le rate au doigt), le champ de 36 px collé au libellé, le
- * montant à droite. Seuls les MOTS changent — et le montant s'écrit en positif :
- * un acompte n'est pas une remise, c'est une part du total qui tombe ce jour-là.
+ * l'or, la croix qui la retire (`CroixRetirer`, la planche du devis du
+ * 1er novembre 2026 ; avant, un « − » cerclé de 26 px), le champ de 36 px
+ * collé au libellé, le montant à droite. Seuls les MOTS changent — et le
+ * montant s'écrit en positif : un acompte n'est pas une remise, c'est une part
+ * du total qui tombe ce jour-là.
  *
  * **Le champ porte le taux CUMULÉ** (sa décision du 12 septembre 2026) :
  * « Acompte à mi-parcours 50 % ». Le « (50 % réglés) » qui l'expliquait est parti
@@ -40,16 +42,12 @@ export default function LigneAcompte({
     <div className="flex items-start justify-between gap-3 py-1.5" style={{ color: colors.or }}>
       <span className="flex flex-wrap items-center gap-1 text-[15px]">
         {!fige && (
-          <button
-            type="button"
-            aria-label={`Retirer l'acompte ${ligne.moment}`}
-            data-atlas="retirer-acompte"
+          <CroixRetirer
+            libelle={`Retirer l'acompte ${ligne.moment}`}
+            repere="retirer-acompte"
             onClick={onRetirer}
-            className="mr-1 flex h-[26px] w-[26px] flex-none items-center justify-center rounded-full text-[15px] leading-none"
-            style={{ border: `1px solid ${colors.or}`, color: colors.or }}
-          >
-            −
-          </button>
+            className="-ml-[14px]"
+          />
         )}
         {premier ? "Acompte" : `Acompte ${ligne.moment}`}
         {/* Le champ et son « % » restent ensemble : « à mi-parcours » fait

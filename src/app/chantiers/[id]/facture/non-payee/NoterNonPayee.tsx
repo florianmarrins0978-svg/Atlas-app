@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { colors, font, surPlein } from "@/lib/design-tokens";
+import PrimaryButton from "@/components/atlas/PrimaryButton";
+import { colors } from "@/lib/design-tokens";
 import { declarerNonPayeeAction } from "../actions";
 
 /**
@@ -31,16 +32,11 @@ export default function NoterNonPayee({ factureId }: { factureId: string }) {
           {erreur}
         </p>
       )}
-      <button
-        type="button"
-        onClick={agir}
-        disabled={enCours}
-        className="atlas-plein mx-auto mt-6 flex min-h-[56px] w-[78%] items-center justify-center rounded-full disabled:opacity-40"
-        style={{ backgroundColor: colors.plein, color: surPlein, fontFamily: font.display, fontSize: 22 }}
-        data-atlas="noter-non-payee"
-      >
-        C&apos;est noté
-      </button>
+      <div className="mt-6">
+        <PrimaryButton pleineLargeur onClick={agir} disabled={enCours} repere="noter-non-payee">
+          C&apos;est noté
+        </PrimaryButton>
+      </div>
     </>
   );
 }
