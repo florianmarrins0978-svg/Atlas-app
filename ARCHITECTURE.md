@@ -36641,7 +36641,10 @@ demeure, les travaux en plus. Codés en trois parties, rassemblées en un lot.
 | **le nouveau total de l'avoir** | `ttcApresAvoirs`, la fonction de « Net à payer » ; le plafond d'une ligne et son montant affiché partagent `ttcRestantSurLaLigne`. Le motif « Geste commercial » passe par `motifDeLAvoir`, qui envoie exactement ce qu'envoyait l'appli |
 | **les moyens de paiement** | les quatre que l'écran proposait (virement, chèque, espèces, carte) ; « autre » existe en base, aucun écran ne l'a jamais offert, il n'est pas ajouté |
 | **les boutons pleins** | dans la page, pas collés en bas : collés, ils recouvraient les lignes au défilement (le défaut du brouillon) |
-| **une seule pastille** | `src/components/atlas/PastilleAjout.tsx` ; le devis en porte une copie dans son lot (`devis-complet/PastilleAjout.tsx`), à réunir quand les deux lots seront sur `main` |
+| **une seule pastille** | `src/components/atlas/PastilleAjout.tsx`, pour le devis comme pour la facture : chaque lot en portait une copie identique, réunies le 3 novembre à la fusion des deux lots |
 
-**Ce qui reste :** les téléphones écrits sans espaces, la carte « Non payée »
-plus large que les autres (`TODO.md`).
+**Les deux derniers défauts du relevé, refermés.** Le numéro du client passe
+par `destinataireLisible` (« Au 06 79 98 45 14 »), comme l'envoi du devis. La
+carte « Non payée » a la largeur des règlements (346 px chacune, mesurée le
+3 novembre) ; `test-avoir-et-non-payee-e2e` la mesure, et la mesure a été vue
+rougir sur une carte élargie.

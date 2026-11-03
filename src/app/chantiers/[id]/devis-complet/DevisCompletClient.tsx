@@ -47,7 +47,7 @@ import {
 import { LigneRemise, REMISE_PAR_DEFAUT } from "@/components/atlas/Remise";
 import FeuilleDuTaux from "./FeuilleDuTaux";
 import FeuilleMainDoeuvre, { type DonneesMainOeuvre } from "./FeuilleMainDoeuvre";
-import PastilleAjout from "./PastilleAjout";
+import PastilleAjout from "@/components/atlas/PastilleAjout";
 import { useEcrituresALaSuite } from "@/components/atlas/useEcrituresALaSuite";
 import DicterDansLeDevis from "./DicterDansLeDevis";
 import RepriseDuDevis from "./RepriseDuDevis";

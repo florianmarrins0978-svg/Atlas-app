@@ -1,12 +1,21 @@
+"use client";
+
 import { colors, voile } from "@/lib/design-tokens";
 import IconeTrait, { type NomIcone } from "./IconeTrait";
 
 /**
- * La pastille d'action des planches soignées (`.pilule` de
- * `appli/soignee/facture.html`, 2 novembre 2026) : un bouton arrondi, une icône
- * au trait, un mot. Une seule pièce pour toutes les pastilles de l'appli, sans
- * quoi chaque écran redessinerait la sienne et elles divergeraient
- * (`CLAUDE.md` §3).
+ * La pastille d'action des planches soignées : un bouton arrondi, une icône au
+ * trait, un mot. Née sur le devis (planche du chantier, choisie le 1er novembre
+ * 2026 : avant, des liens de 14 points qu'on ne reconnaissait pas comme des
+ * boutons), reprise par la facture (`.pilule` de `appli/soignee/facture.html`,
+ * 2 novembre 2026). Une seule pièce pour toutes les pastilles de l'appli : les
+ * deux lots en avaient chacun une copie, réunies ici le 3 novembre, sans quoi
+ * elles auraient divergé au premier ajustement (`CLAUDE.md` §3).
+ *
+ * **Le « + » reste un caractère, pas une icône**, quand il porte le nom du
+ * geste : « + Ajouter une ligne » et « + Ajouter une TVA » sont les noms que
+ * lisent un lecteur d'écran et trente-deux suites. Une icône muette les aurait
+ * renommés en silence.
  */
 export default function PastilleAjout({
   libelle,
