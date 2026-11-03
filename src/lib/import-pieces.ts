@@ -431,3 +431,25 @@ export function lignesDesPdf(
   });
   return { lignes, sansGenre, idDuRang };
 }
+
+// ─── Ce que l'écran d'import reprend (3 novembre 2026) ────────────────────
+
+/**
+ * L'envoi que l'écran d'import reprend en s'ouvrant, ou `null`.
+ *
+ * Un envoi arrivé en entier et pas encore rangé ; **ou ce qu'un rangement a
+ * laissé**, un nom illisible par exemple, une fois ses six secondes
+ * d'« Annuler » passées. Son import du 3 novembre 2026 avait rangé 48 pièces
+ * sur 51 : les trois devis restés n'avaient plus d'autre trace qu'un bandeau
+ * bloqué, parce que cet écran ne reprenait qu'un envoi jamais rangé.
+ *
+ * Les comptes sont ceux de ce qui RESTE (`envoiEnCours`) : les pièces déjà
+ * rangées n'y entrent plus. Pendant « Annuler », rien ne se reprend : le
+ * rangement n'est pas encore acquis.
+ */
+export function envoiAReprendre(
+  etat: { id: string; annulableMs: number | null; recues: number; attendues: number } | null
+): string | null {
+  if (!etat || etat.annulableMs !== null) return null;
+  return etat.recues > 0 && etat.recues >= etat.attendues ? etat.id : null;
+}

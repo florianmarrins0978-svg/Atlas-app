@@ -14,6 +14,9 @@ import { logger } from "@/server/logger";
 
 type Refus = { ok: false; raison: string };
 const INTROUVABLE: Refus = { ok: false, raison: "Cet envoi n'existe plus." };
+// Les six secondes passées, ou un envoi plus récent ouvert entre-temps
+// (`annulerRangement`) : le bandeau le dit à la place de son compte.
+const PLUS_ANNULABLE: Refus = { ok: false, raison: "Ce rangement ne peut plus s’annuler." };
 
 /**
  * Les PDF lus d'un envoi, et les clients déjà là : de quoi montrer l'écran
@@ -77,11 +80,14 @@ export async function annulerRangementAction(envoiId: string): Promise<{ ok: tru
   const ctx = await patronQuiImporte();
   if (!ctx) return INTROUVABLE;
   try {
-    if (!(await annulerRangement(ctx, envoiId))) return INTROUVABLE;
+    const r = await annulerRangement(ctx, envoiId);
+    if (!r.ok) return r.pourquoi === "introuvable" ? INTROUVABLE : PLUS_ANNULABLE;
     revalidatePath("/clients");
     return { ok: true };
   } catch (err) {
     logger.error("Annulation d'un rangement impossible", { erreur: err instanceof Error ? err.message : String(err) });
-    return { ok: false, raison: "Le rangement n’a pas pu être annulé. Réessayez." };
+    // Sans « Réessayez » : le bandeau part avec ses six secondes, et le
+    // bouton avec lui.
+    return { ok: false, raison: "Le rangement n’a pas pu être annulé." };
   }
 }

@@ -21,7 +21,7 @@
 | Lecture en arrière-plan, sans l'appli | fait : elle part après chaque envoi (`after`) et reprend à l'ouverture si le serveur a redémarré | `src/server/import/traiter-pieces.ts` |
 | Rien d'inventé | fait : sans civilité ni réponse sûre de l'IA, le nom reste vide et la pièce va « à vérifier » | `lireChampsDuTexte`, `relireReponseIA` |
 | Client retrouvé ou créé | fait, par le même chemin que le reste de l'appli | `trouverOuCreerClient` |
-| « Annuler » après rangement | fait : les pièces redeviennent à ranger, seules les fiches créées par ce rangement (et restées vides) s'en vont ; l'import reprend alors la relecture | `annulerRangement` |
+| « Annuler » après rangement | fait : les pièces redeviennent à ranger, seules les fiches créées par ce rangement (et restées vides) s'en vont ; l'import reprend alors la relecture. **Six secondes, puis le bandeau part seul** (3 novembre 2026) ; ce qui n'a pas pu se ranger reste dans la bande et l'import le reprend, et « Annuler » ne défait que le dernier rangement (`ARCHITECTURE.md` §544) | `annulerRangement`, `envoiEnCours`, `src/lib/delai-annuler.ts` |
 | Cloisonnement entre entreprises | fait, sous FORCE RLS, éprouvé sous `atlas_app` | `test-pieces-importees-db.ts` |
 | Export des données de l'entreprise | les pièces importées et leurs fichiers y sont | `export-entreprise.ts` |
 | Supprimer un client | **ses pièces importées partent avec lui**, après le même message et la même case « J’ai sauvegardé ces documents ailleurs » (sa décision du 22 octobre) ; leurs fichiers vont en file de purge | `effacerClient`, `apercuSuppressionClient` (`donnees-client.ts`) |

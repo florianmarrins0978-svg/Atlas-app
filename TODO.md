@@ -1,5 +1,12 @@
 # Prochaines tâches
 
+## L'IMPORT APRÈS UN RANGEMENT PARTIEL (3 novembre 2026)
+
+- **Pas sur `main`** : le bandeau qui part après six secondes et ce qui reste repris par l'import (`ARCHITECTURE.md` §544). Suites ciblées vertes ; la batterie entière reste à jouer.
+- **Sur son espace, à regarder** : ses trois devis restés (une même cliente, sans nom lisible) devraient paraître dans la bande de « Vos clients » (« 3 documents lus », « 3 à vérifier »), et l'import les reprendre. Pas vérifiable ICI sur sa base ; regardé sur la base d'essai.
+- **À lui de dire** : tant que des pièces restent à ranger, l'import s'ouvre sur elles. Des PDF s'importent quand même (l'envoi neuf les emporte) ; un tableau, non, tant qu'elles ne sont pas rangées. Faut-il un geste pour les mettre de côté ?
+- **Le nom non lu de ses trois devis** : on attend son fichier pour voir pourquoi la lecture ne le trouve pas. Hors de ce lot.
+
 ## SUPPRIMER UN CLIENT : CE QUI RESTE (1er novembre 2026)
 
 - ~~**Un client sous contrat d'entretien ne se supprime toujours pas**~~ **Codé le 2 novembre 2026** sur son « oui » : l'accepté se garde et retient le client, les autres partent (`ARCHITECTURE.md` §541).

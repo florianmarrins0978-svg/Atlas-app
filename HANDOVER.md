@@ -10,6 +10,11 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## L'IMPORT APRÈS UN RANGEMENT PARTIEL (3 novembre 2026)
+
+« Annuler » dure six secondes et ce qui reste se reprend (`ARCHITECTURE.md` §544). **Les pièges :** un envoi ne connaît qu'un rangement, ne jamais en ranger un second en place (`emporterLesRestes` : le second rangement, `creerEnvoi` et `rangerTableau` emportent ce qui reste dans l'envoi neuf) ; les comptes d'`envoiEnCours` disent ce qui RESTE, une pièce rangée n'y entre plus, et un envoi rangé n'attend que ce qu'il porte ; `annulerRangement` rend `{ ok }` ou `{ ok: false, pourquoi }`, et un `assert.ok` dessus passe toujours. Au navigateur, « Annuler » s'appuie dans ses six secondes : la fiche se regarde APRÈS. Pour voir une suite navigateur rouge avant de coder, une suite base aux types encore faux casse la construction (`next build` vérifie aussi `scripts/`) : la mettre de côté le temps de bâtir.
+
+---
 ## LE DEVIS ET LA FACTURE DE LA PLANCHE, SUR `main` (3 novembre 2026)
 
 Un seul lot, à sa demande : les feuilles du devis (TVA, acompte, remise, main d'œuvre, partenaires, répartition), la croix, l'éclairage de ce qui arrive, l'ordre des lignes, et les huit écrans de la facture (`ARCHITECTURE.md` §536 et §537). Migration 0155 (`part_main_doeuvre`, nullable). Une seule pastille pour les deux (`src/components/atlas/PastilleAjout.tsx`). **Ce qui attend :** rien de lui sur la note vocale. Son « Réessayer » est codé sur la fiche client et l'ancien écran `/note-vocale` est retiré (son adresse renvoie à la fiche client, `ARCHITECTURE.md` §543) ; reste la batterie entière du lot réuni, puis `main`. **Les pièges :** une transcription qui échoue rend `echec` (« La transcription n'a pas abouti. … »), jamais `transcription_absente`, sinon « Réessayer » ne paraît pas ; une phrase d'échec de `DevisDepuisDictee` dit ce qui s'est passé, jamais « Réessayez », le geste est dessous. Pour poster un son dans une suite, la route `/api/notes-vocales/[chantierId]` (l'import de fichier est parti). Plus aucun écran ne fait réécouter une note : la question est ouverte dans `TODO.md` (« écouter sa note depuis la fiche client ? »).

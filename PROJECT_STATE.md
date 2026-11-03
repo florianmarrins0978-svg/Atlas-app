@@ -4,6 +4,11 @@
 dernière migration `drizzle/0158_cles_composites_effacent_comme_leur_lien.sql` (réunie le 3 novembre pour la batterie commune, avec `0157_banque_lecture_refusee.sql` et `0156_pieces_importees_adresse_lue.sql`) ; `0155_part_de_main_doeuvre_sur_la_ligne.sql` (le devis) sur `main` depuis le 3 novembre
 
 ---
+## L'IMPORT : « ANNULER » SIX SECONDES, CE QUI RESTE SE REPREND (3 novembre 2026)
+
+Sa capture : « 48 documents rangés, Annuler » ne partait jamais. Le bandeau part désormais après six secondes comptées au serveur (`ANNULER_PENDANT_MS`, `src/lib/delai-annuler.ts`, la durée de `useRetraits`) ; ce qui n'a pas pu se ranger reprend sa place dans la bande et l'import le reprend (`envoiAReprendre`). Un envoi ne connaît qu'un rangement (`emporterLesRestes`) : « Annuler » ne défait que le dernier, et le serveur le refuse hors de sa fenêtre. Sans migration. `ARCHITECTURE.md` §544. Suites ciblées vertes (`test-pieces-importees-db`, `test-import-tableau-db`, `test-delai-annuler`, `test-importer-pieces-e2e`) ; **pas sur `main`, batterie à jouer**.
+
+---
 ## SUPPRIMER UN CLIENT REMARCHE SUR SA BASE (1er novembre 2026)
 
 La suppression d'un client tombait sur une clé composite de 0149 posée sans règle d'effacement (`ARCHITECTURE.md` §540). Migration `0158` : les vingt-six clés composites effacent comme le lien qu'elles doublent. Aucune donnée lue ni écrite. Niveau 3 (une migration).

@@ -625,7 +625,9 @@ export const FICHES_CHANTIER: FicheModeEmploi[] = [
     geste: "Appuyez sur « Annuler » dans le bandeau du bas. Il reste six secondes.",
     reserve: "Passé ce délai, la suppression est écrite et ne se défait plus.",
     source: "src/components/atlas/useRetraits.ts",
-    preuves: ["delaiMs = 6000", "annuler"],
+    preuves: ["delaiMs = ANNULER_PENDANT_MS", "annuler"],
+    // Les six secondes, une seule fois pour toute l'appli (3 novembre 2026).
+    ailleurs: [{ source: "src/lib/delai-annuler.ts", preuves: ["ANNULER_PENDANT_MS = 6000"] }],
   },
   {
     id: "chantiers-ouvrir",
