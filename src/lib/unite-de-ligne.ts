@@ -40,7 +40,25 @@ export function uniteDeLaLigne(unite: string | null | undefined): string {
 export const UNITES_USUELLES = ["u", "ml", "m²", "m³", "kg", "h", "forfait"] as const;
 
 /** Ce qu'on dit ou tape, ramené à la rangée. */
-const FORMES_DITES: readonly { dit: RegExp; valeur: (typeof UNITES_USUELLES)[number] }[] = [
+/**
+ * Les unités de la main d'œuvre, admises sans être proposées en pastille.
+ *
+ * **La préparation du devis écrit déjà « jour/homme »** (`propositionAvecMainOeuvre`)
+ * et la feuille « Main d'œuvre » du 1er novembre 2026 l'écrit aussi, comme les
+ * prix de ses partenaires (à la journée, au mètre). Refusées ici, elles
+ * retombaient en « u » dès que la case de l'unité était quittée : une ligne de
+ * quatre jours d'homme se lisait alors « 4 u » sur le papier du client.
+ */
+type UniteDeMainOeuvre = "jour/homme" | "jour";
+
+const FORMES_DITES: readonly {
+  dit: RegExp;
+  valeur: (typeof UNITES_USUELLES)[number] | UniteDeMainOeuvre;
+}[] = [
+  { dit: /^(jours?\s*\/?\s*hommes?|j\s*\/\s*h|journ(e|é)es?\s*\/?\s*hommes?)$/, valeur: "jour/homme" },
+  { dit: /^(j|jours?|journ(e|é)es?)$/, valeur: "jour" },
+  // « 10 € le m » chez un poseur de clôture : un mètre linéaire.
+  { dit: /^m$/, valeur: "ml" },
   { dit: /^(u|unit(e|é)s?)$/, valeur: "u" },
   { dit: /^(ml|m(e|è)tres?\s*lin(e|é)aires?|m\s*lin(e|é)aires?)$/, valeur: "ml" },
   { dit: /^(m2|m²|m(e|è)tres?\s*carr(e|é)s?)$/, valeur: "m²" },

@@ -36546,3 +36546,82 @@ que gardés en double — `main` n'a qu'une seule version de chacun.
 
 **Un appui dans la première seconde n'envoie rien** (`envoyerLaNote`). L'avion tombe sous le doigt qui vient de lancer la dictée : sans cette garde, un double appui enverrait une note d'une demi-seconde et la chaîne écrirait un devis à partir de rien. `test-anneau-dictee-e2e` l'éprouve, avec la place du disque à deux pixels près et les deux mots.
 
+
+## §536 : Les ajouts du devis s'ouvrent en feuilles : le chiffre tapé, le calcul montré avant
+
+**Sa décision du 1er novembre 2026 au soir**, devant la planche
+`appli/soignee/chantier.html?ecran=devis` : *« laisse comme tu as fait,
+ensuite code ça »*. Les cinq ajouts du devis deviennent des pastilles
+(`PastilleAjout.tsx`) ; la TVA, l'acompte et la remise s'ouvrent sur une
+grande case au pavé de chiffres (`FeuilleDuTaux.tsx`, sa réponse *« je dois
+pouvoir écrire ce que je veux »*), la main d'œuvre sur son calcul
+(`FeuilleMainDoeuvre.tsx`).
+
+**Ce qui a été décidé, et pourquoi :**
+
+| | |
+|---|---|
+| la feuille ne juge rien elle-même | l'écran lui passe `lire`, qui appelle `tauxTvaValide`, `pourcentValide`, `tauxCumuleValide` : les fonctions que le serveur oppose ensuite (§3, une seule règle) |
+| l'aperçu prend les totaux de l'écran | la remise montrée avant d'être posée passe par `totauxAvecReduction`, l'acompte par `echeancierDevis` : le chiffre montré est celui qui sera posé |
+| **le moment de l'acompte se lit, il ne se choisit pas** | la planche proposait trois moments ; en base, le moment SUIT le rang (`momentAcompte`), et sa correction du 12 septembre interdit qu'un troisième soit la fin du chantier. Un choix libre aurait permis un premier acompte « à mi-parcours » |
+| raccourcis | TVA 10, 5,5, 0 ; acompte : son réglage, 40, 50 (le premier seulement, les suivants sont des cumuls) ; remise 5, 10, 15 |
+| **le prix de la main d'œuvre se recalcule au serveur** | `ajouterMainDoeuvreChoisieAction` reçoit un choix (son équipe, ou l'identifiant d'un prix de partenaire et une quantité), jamais un prix ; elle rejoue `ligneDeSonEquipe` / `ligneDeSonPartenaire` sur ses prix et ses marges lus en base. Le tarif de son équipe vaut comme un prix tapé sur une ligne, et il arrive tel que la feuille l'a montré : effacé, la ligne arrive à chiffrer, jamais reprise d'office |
+| partenaire | `prixDesPartenaires` réutilise `prixDepuisAchat` : le même calcul qu'une ligne dictée. Sans marge, à chiffrer |
+| **les unités de la main d'œuvre tiennent** | `uniteAdmise` connaissait sept unités ; « jour/homme », écrit par la préparation du devis depuis le 21 octobre, retombait en « u » dès qu'on touchait la case. Elle admet maintenant « jour/homme », « jour » (journée) et « m » (lu « ml »), sans les ajouter aux pastilles de la case |
+| une ligne de main d'œuvre en une case | seulement au forfait, une fois (la forme du 13 octobre) ; en jours d'homme ou à l'heure, ses quatre cases, sans quoi le prix du jour se lirait comme le montant |
+
+**La main d'œuvre RÉPARTIE sur un devis écrit (2 novembre 2026, sa consigne
+« code le, pas de batterie ») :**
+
+| | |
+|---|---|
+| la barre | celle d'« Avant de chiffrer » (`RepartirLaMainOeuvre.tsx`), réutilisée telle quelle dans la feuille : une seconde barre aurait fini par répartir autrement |
+| sur quels travaux | ceux de la TVA où il a appuyé, qui ont leur prix, hors main d'œuvre : la part prend le taux de son travail |
+| **la part entre dans le prix unitaire, la quantité reste** | « 12 m² à 18 € » qui reçoit 150 € devient « 12 m² à 30,50 € ». La préparation du devis réécrit au forfait ; ici, ce serait effacer ce qu'il a écrit |
+| **la part gardée est celle que le prix rend** | deux décimales au prix unitaire : 150 € sur 7 m² posent 150,01 €. C'est ce chiffre qui est gardé et compté (`partsAppliquees`), jamais le voulu |
+| **gardée sur la ligne** | `lignes_prix.part_main_doeuvre`, recopiée sur `lignes_devis` (migration 0155, nullable, aucun `UPDATE`) ; `mainDoeuvreDeLaLigne` la compte dans « dont main d'œuvre HT », bornée au montant de la ligne s'il baisse son prix ensuite |
+| au serveur | `repartirMainDoeuvreAction` recalcule le total comme pour une ligne, partage avec `repartirMainOeuvre`, et `poserLesPartsDeMainDoeuvre` écrit tout ou rien, sur les prix lus en base |
+
+**L'ordre des lignes du devis (2 novembre 2026, trouvé en codant la planche) :**
+
+| | |
+|---|---|
+| le défaut | `getOuCreerDevisBrouillon` lisait `lignes_prix` sans `ORDER BY` et recopiait `ordre: i` : le devis du client prenait l'ordre du disque. Un `UPDATE` qui ne tient plus dans sa page écrit la ligne ailleurs, et l'index la range au bout : la ligne retouchée passait derrière les autres, l'écran la montrant en tête |
+| une seule définition | `ORDRE_DES_LIGNES_PRIX` (`lignes-prix.ts`) sert l'écran (`listerLignesPrix`) et le devis : le rang, puis la naissance, puis l'identifiant. Deux lignes partagent un rang après un retrait (`ajouterLignePrix` compte les lignes) : la dernière posée reste au bout, et deux lectures ne tranchent jamais différemment |
+| le PDF | l'aperçu, l'envoi, la feuille sans prix et `getLignesDevis` passent par `lignesDuDevis`, trié par rang. Aucun geste ne réécrit une ligne de devis aujourd'hui : l'ordre du disque y tombait juste par accident |
+| la facture | rien à changer : elle recopie le devis par rang et `donneesFacture` trie avant le papier |
+| le contrôle | `test-ordre-des-lignes-du-devis-db.ts` remplit la page avant de retoucher : sur une table presque vide, la mise à jour reste dans sa page (« HOT »), garde sa place dans l'index, et la première version était verte sur le défaut. Chaque cas vérifie que le piège est posé (`ORDER BY ctid`) |
+
+**La main d'œuvre DICTÉE dans « dont » (2 novembre 2026) :**
+
+| | |
+|---|---|
+| le défaut | `propositionAvecMainOeuvre` écrivait la ligne « Main d'œuvre : … » sans drapeau, et fondait chaque part répartie dans le prix du travail : `appliquer-proposition.ts` n'avait rien à garder, et « dont main d'œuvre HT » restait vide sur un devis fait de main d'œuvre |
+| en ligne | `LigneProposee.mainDoeuvre` : la ligne compte entière, comme celle de « + Main d'œuvre » |
+| réparti | `LigneProposee.partMainDoeuvre` : la part que CE travail a reçue, qui est tout son prix (les jours couvrent le chantier, la grille ne donnait que la position de départ des curseurs). Recopiée sur `lignes_prix.part_main_doeuvre`, comme la feuille ; bornée au montant s'il baisse le prix ensuite |
+| ce qui n'en porte pas | un prix dicté, un tarif nommé, un engin avec son homme, un travail sorti par la croix (sa grille) : leur prix ne vient pas de la main d'œuvre dictée |
+| le contrôle | deux cas de `test-main-oeuvre-dictee-db.ts`, de la proposition jusqu'au `mainDoeuvreHt` du devis figé |
+
+**La croix qui retire (2 novembre 2026, la planche : « La croix remplace le « − » doré pour retirer, et le tiroir rend la main ») :**
+
+| | |
+|---|---|
+| un seul dessin | `CroixRetirer.tsx` : le tracé `croix` d'`IconeTrait`, l'encre douce (l'or dit ce qui est consenti, la croix n'est qu'un geste), 16 px dessinés et 18 sur la bande d'une TVA, comme la planche |
+| 44 px au doigt | la zone grandit (26 px avant) ; `-my-[9px]` rend à la rangée la hauteur que le « − » lui donnait, `-ml-[14px]` pose le dessin au bord et laisse le libellé à sa place |
+| la facture | `LigneRemise` est la même pièce sur Travaux en plus : elle y prend la croix. Les deux autres « − » de cet écran (catégorie de travaux en plus, main d'œuvre) attendent sa planche |
+| **le tiroir, PAS pour tous** | la remise y passait déjà (`useRetraits`). L'acompte et la TVA se retirent toujours tout de suite : changer leur comportement sortait de ce lot |
+| ce qui ne change pas | les noms lus (« Retirer la remise », « Retirer l'acompte … », « Retirer la TVA à … ») et les repères (`retirer-prix-accorde`, `retirer-acompte`) |
+
+**Ce qui vient d'être ajouté s'éclaire (2 novembre 2026, la planche : « on le voit arriver ») :**
+
+| | |
+|---|---|
+| le mécanisme | `useArrivee.ts` : l'écran pose `arrivee("…")` (un `data-arrivee`) sur ce qui peut arriver, et chaque ajout annonce le repère de ce qu'il crée. L'effet, joué après chaque rendu, éclaire au premier rendu où le repère existe : la ligne n'est peinte qu'après la réponse du serveur |
+| les repères | `ligne:<id>` (main d'œuvre, chaque travail d'une répartition), `tva:<taux>` (le bloc entier, clé de `tauxDeLaLigne`, celle qui groupe), `acompte:<rang>` (le dernier rang), `remise` |
+| l'éclat | `element.animate`, du doré pâle (`voile(colors.or, 0.26)`, celui de la planche) au transparent en 1,8 s, la durée de `.vient-d-arriver`. **Le doré est résolu avant l'animation** (`dorePale`) : un `var()` dans une clé d'animation n'est pas lu par tous les moteurs. Rien dans `globals.css`, et aucun style posé par l'écran n'est touché |
+| le défilement | le premier élément dans la page (pas le premier annoncé) vient au milieu ; « moins de mouvement » : défilement immédiat, sans éclat |
+| la patience | 4 s : passé ce délai, l'annonce tombe sans rien éclairer, pour qu'un ajout refusé n'allume pas, au rendu suivant, un bloc qui existait déjà |
+| ce qui n'est pas éprouvé ici | le vrai devis (serveur interdit à ce lot) : le banc isolé de Chromium a vu l'animation sur le seul élément ajouté, effacée à la fin, et aucune sous « moins de mouvement » |
+
+**Ce qui reste, et n'est pas codé :** le tiroir pour l'acompte et la TVA
+(`TODO.md`).

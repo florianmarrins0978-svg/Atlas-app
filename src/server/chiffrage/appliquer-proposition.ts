@@ -119,6 +119,11 @@ export async function appliquerPropositionPrix(
       unite: proposee.unite,
       prixUnitaire: proposee.prixUnitaire,
       aChiffrer: proposee.montant === null,
+      // **La main d'œuvre dictée reste de la main d'œuvre sur le devis** :
+      // sans le drapeau ni la part, « dont main d'œuvre HT » ne la voyait pas
+      // (2 novembre 2026, `test-main-oeuvre-dictee-db.ts`).
+      mainDoeuvre: proposee.mainDoeuvre,
+      partMainDoeuvre: proposee.partMainDoeuvre,
     });
 
     // **On note quelles prestations cette ligne vend.** Sans ce lien, une ligne

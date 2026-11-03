@@ -22,6 +22,11 @@ import { retourDuDevis } from "@/lib/retour-du-devis";
 import { estUneEntreprise } from "@/lib/civilite";
 import PreparationDictee from "./PreparationDictee";
 import { garderLaPage } from "@/server/garde-page";
+import { listerTarifs } from "@/server/repositories/tarifs";
+import { lireMarges, prixAchatCandidats } from "@/server/repositories/fournisseurs-partenaires";
+import { parseNombreFrancais } from "@/server/chiffrage/parse";
+import { tarifJourHomme } from "@/lib/tarif-main-oeuvre";
+import { prixDesPartenaires } from "@/lib/feuille-main-oeuvre";
 
 // **Une page où il n'y a que le devis.**
 //
@@ -72,13 +77,18 @@ export default async function DevisCompletPage({
   // lecture seule — le consulter ne doit jamais ouvrir une nouvelle version.
   const devisRow = (await chargerDevisPourEcran(ctx, id)) ?? (await getOuCreerDevisBrouillon(ctx, id));
 
-  const [entreprise, client, lignes, brouillon, note, acomptes] = await Promise.all([
+  const [entreprise, client, lignes, brouillon, note, acomptes, tarifs, prixAchat, marges] = await Promise.all([
     getEntreprise(ctx),
     chantier.clientId ? getClient(ctx, chantier.clientId) : Promise.resolve(null),
     listerLignesPrix(ctx, id),
     getBrouillon(ctx, id),
     getNoteVocale(ctx, id),
     getAcomptesDevis(ctx, devisRow.id),
+    // La feuille « Main d'œuvre » (planche du 1er novembre 2026) : son prix du
+    // jour par homme, et les prix de ses partenaires avec sa marge.
+    listerTarifs(ctx),
+    prixAchatCandidats(ctx),
+    lireMarges(ctx),
   ]);
 
   // **Une dictée sans devis se traite ICI, à l'arrivée** — sa panne du 21 août
@@ -208,6 +218,7 @@ export default async function DevisCompletPage({
           prixAncien: l.prixAncien,
           prixGrille: l.prixGrille,
           mainDoeuvre: l.mainDoeuvre,
+          partMainDoeuvre: l.partMainDoeuvre,
         }))}
         tauxTva={devisRow.tauxTva}
         reductionPourcent={devisRow.reductionPourcent}
@@ -216,6 +227,14 @@ export default async function DevisCompletPage({
         hausseReprise={chantier.hausseReprise === null ? 0 : Number(chantier.hausseReprise)}
         acomptesInitiaux={acomptes}
         acompteReglage={devisRow.acomptePourcent}
+        mainOeuvre={{
+          // Repris de sa dictée quand elle les a dits (`chantiers.taille_equipe`,
+          // `duree_prevue`), comme « Avant de chiffrer » les lit.
+          hommes: parseNombreFrancais(chantier.tailleEquipe),
+          jours: parseNombreFrancais(chantier.dureePrevue),
+          tarifJour: tarifJourHomme(tarifs)?.prix ?? null,
+          partenaires: prixDesPartenaires(prixAchat, marges),
+        }}
         conditionsReglees={{
           acomptePourcent: devisRow.acomptePourcent,
           delaiPaiementJours: devisRow.delaiPaiementJours,

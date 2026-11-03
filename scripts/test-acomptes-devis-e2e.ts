@@ -14,7 +14,7 @@ import { ADRESSE } from "./_adresse";
  *     d'office »* — quand ses Réglages en portent un ;
  *   · « + Ajouter un acompte » pose 50 puis 75, cumulés, et l'écran montre ce
  *     qui tombe à chaque fois ;
- *   · le « − » retire la ligne des totaux et la base la perd, et la phrase
+ *   · la croix retire la ligne des totaux et la base la perd, et la phrase
  *     du réglage part des notes avec elle (sa décision du 7 octobre 2026) ;
  *   · la colonne Unité, après Qté, s'enregistre.
  *
@@ -148,8 +148,10 @@ async function main() {
     const bouton = page.getByRole("button", { name: /Ajouter un acompte/ });
     assert.equal(await bouton.count(), 1, "le geste manque");
     await bouton.click();
+    await page.locator('[data-atlas="feuille-acompte-valider"]').click();
     await page.waitForTimeout(900);
     await bouton.click();
+    await page.locator('[data-atlas="feuille-acompte-valider"]').click();
     await page.waitForTimeout(900);
 
     const texte = lisible(await totaux().innerText());
@@ -171,8 +173,8 @@ async function main() {
     assert.deepEqual(await quandLaBasePorte(["30.00", "50.00", "50.00"]), ["30.00", "50.00", "50.00"]);
   });
 
-  await cas("le − retire la ligne, et la phrase des Réglages part des notes", async () => {
-    // Trois « − » ; on retire tout, du dernier au premier.
+  await cas("la croix retire la ligne, et la phrase des Réglages part des notes", async () => {
+    // Trois croix ; on retire tout, du dernier au premier.
     for (let i = 0; i < 3; i++) {
       await page.locator('button[data-atlas="retirer-acompte"]').last().click();
       await page.waitForTimeout(700);

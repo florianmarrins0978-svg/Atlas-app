@@ -26,6 +26,7 @@ import { genererPdfDevis, type DevisPdfData } from "../pdf/devis-pdf";
 import { enregistrerObjet } from "../storage";
 import { ecrireNumero, repartChaqueAnnee } from "@/lib/numero-documents";
 import { lignesDuDocument, lignesEnAttenteDePrix } from "@/lib/preparation-devis";
+import { ORDRE_DES_LIGNES_PRIX } from "./lignes-prix";
 import { refusDuTravail, tachesDuDevis, travauxAffiches } from "@/lib/taches-du-devis";
 
 const TAUX_TVA_DEFAUT = "20.00";
@@ -191,10 +192,18 @@ export async function lireVersionDevis(ctx: Ctx, chantierId: string, version?: n
   });
 }
 
+/**
+ * Les lignes d'un devis, dans l'ordre où il les a figées : la seule lecture,
+ * pour l'aperçu, le PDF envoyé, la feuille sans prix et l'assistant. Sans
+ * `ORDER BY`, elles sortaient dans l'ordre du disque, juste par accident tant
+ * qu'aucun geste ne réécrit une ligne de devis.
+ */
+function lignesDuDevis(tx: DbOrTx, devisId: string) {
+  return tx.select().from(lignesDevis).where(eq(lignesDevis.devisId, devisId)).orderBy(asc(lignesDevis.ordre));
+}
+
 export async function getLignesDevis(ctx: Ctx, devisId: string) {
-  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
-    tx.select().from(lignesDevis).where(eq(lignesDevis.devisId, devisId))
-  );
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) => lignesDuDevis(tx, devisId));
 }
 
 // Utilisée par l'écran Devis/Export pour un simple affichage : si la dernière
@@ -242,8 +251,11 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
     // **Une ligne sans rien reste sur la feuille, jamais sur le devis**
     // (`lignesDuDocument`) : ni sur le PDF du client, ni dans ses totaux, ni sur
     // la fiche de l'équipe. Tous les gestes qui en posent une passent par ici.
+    //
+    // **Dans l'ordre de l'écran** (`ORDRE_DES_LIGNES_PRIX`) : le rang `i` posé
+    // plus bas est celui que le client lira.
     const lignesPrixActuelles = lignesDuDocument(
-      await tx.select().from(lignesPrix).where(eq(lignesPrix.chantierId, chantierId))
+      await tx.select().from(lignesPrix).where(eq(lignesPrix.chantierId, chantierId)).orderBy(...ORDRE_DES_LIGNES_PRIX)
     );
 
     const [dernier] = await tx
@@ -377,6 +389,7 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
             // déjà partie. Nul quand il n'a qu'un taux — le devis commande.
             tauxTva: l.tauxTva,
             mainDoeuvre: l.mainDoeuvre,
+            partMainDoeuvre: l.partMainDoeuvre,
             ordre: i,
           }))
         );
@@ -426,6 +439,7 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
           aChiffrer: l.aChiffrer,
           tauxTva: l.tauxTva,
           mainDoeuvre: l.mainDoeuvre,
+          partMainDoeuvre: l.partMainDoeuvre,
           ordre: i,
         }))
       );
@@ -535,7 +549,13 @@ export type PoseAcompte =
   | { ok: true; acomptes: AcompteDevis[] }
   | { ok: false; raison: string };
 
-export async function poserAcompteSuivant(ctx: Ctx, devisId: string): Promise<PoseAcompte> {
+/**
+ * `taux` : le chiffre qu'il a tapé dans la feuille de l'acompte (sa réponse du
+ * 1er novembre 2026, *« je dois pouvoir écrire ce que je veux »*). Absent, la
+ * valeur d'office. Illisible, un refus en mots : jamais un acompte d'office
+ * posé à la place de celui qu'il a écrit.
+ */
+export async function poserAcompteSuivant(ctx: Ctx, devisId: string, taux?: string): Promise<PoseAcompte> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [d] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
     if (!d) return { ok: false, raison: "Ce devis est introuvable. Rechargez l'écran." };
@@ -556,7 +576,12 @@ export async function poserAcompteSuivant(ctx: Ctx, devisId: string): Promise<Po
             : "Les acomptes posés règlent déjà la totalité du devis.",
       };
     }
-    return { ok: true, acomptes: await ecrireAcomptes(tx, ctx.entrepriseId, devisId, [...actuels, suivant]) };
+    const tape = taux === undefined ? null : tauxCumuleValide(taux);
+    if (taux !== undefined && (tape === null || Number(tape) === 0)) {
+      return { ok: false, raison: "Écrivez un pourcentage, par exemple 30." };
+    }
+    const pose = tape === null ? suivant : { ...suivant, tauxCumule: tape };
+    return { ok: true, acomptes: await ecrireAcomptes(tx, ctx.entrepriseId, devisId, [...actuels, pose]) };
   });
 }
 
@@ -775,7 +800,7 @@ export async function genererPdfPourApercu(ctx: Ctx, devisId: string): Promise<U
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [d] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
     if (!d) throw new Error("Devis introuvable");
-    const lignes = await tx.select().from(lignesDevis).where(eq(lignesDevis.devisId, devisId));
+    const lignes = await lignesDuDevis(tx, devisId);
     const habillage = await habillageDuDevis(tx, ctx.entrepriseId, d);
     return genererPdfDevis(
       donneesPdfDuDevis(
@@ -800,7 +825,7 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
     if (!avant) throw new Error("Devis introuvable");
     if (avant.statut === "envoye") throw new Error("Ce devis a déjà été envoyé.");
 
-    const lignes = await tx.select().from(lignesDevis).where(eq(lignesDevis.devisId, devisId));
+    const lignes = await lignesDuDevis(tx, devisId);
 
     // **Un devis dont une ligne attend son prix ne part pas.**
     //
@@ -944,7 +969,7 @@ export async function mettreAJourEnTeteDevis(
       valeurs.reductionPourcent = pourcentValide(data.reductionPourcent);
     }
 
-    const lignes = await tx.select().from(lignesDevis).where(eq(lignesDevis.devisId, devisId));
+    const lignes = await lignesDuDevis(tx, devisId);
     const totaux = calculerTotaux(
       lignes,
       valeurs.tauxTva ?? avant.tauxTva,
@@ -987,7 +1012,7 @@ export async function genererDevisSansPrix(
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const d = await devisÀImprimer(tx, chantierId);
     if (!d) return null;
-    const lignes = await tx.select().from(lignesDevis).where(eq(lignesDevis.devisId, d.id));
+    const lignes = await lignesDuDevis(tx, d.id);
     const habillage = await allureDesDocuments(tx, ctx.entrepriseId);
     // Les mêmes données que le devis chiffré : c'est `sansChiffrage` qui
     // décide de ce qui ne s'imprime pas (prix, totaux, acomptes, IBAN,

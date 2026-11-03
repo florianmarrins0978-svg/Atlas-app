@@ -1,7 +1,12 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-10-29, `main` (`bdea976e`, batterie verte hors deux suites de fin de mois rouges sur `main` aussi),
-dernière migration `drizzle/0154_pieces_importees_d_un_tableau.sql`
+dernière migration `drizzle/0154_pieces_importees_d_un_tableau.sql` sur `main` ; `0155_part_de_main_doeuvre_sur_la_ligne.sql` dans le lot du devis ci-dessous, pas encore sur `main`
+
+---
+## LE DEVIS DE LA PLANCHE, CODÉ (1er et 2 novembre 2026, PAS SUR `main`)
+
+Sa décision : *« laisse comme tu as fait, ensuite code ça »*, puis *« code le, pas de batterie »*. Les cinq ajouts du devis en pastilles ; la TVA, l'acompte et la remise sur le chiffre qu'il tape (`FeuilleDuTaux.tsx`) ; la main d'œuvre sur son calcul, son équipe ou ses partenaires, en ligne ou RÉPARTIE sur ses travaux (`FeuilleMainDoeuvre.tsx`, la barre d'« Avant de chiffrer » réutilisée). La part répartie se garde sur la ligne (migration 0155, nullable) et « dont main d'œuvre HT » la compte (`mainDoeuvreDeLaLigne`). `ARCHITECTURE.md` §536. Suites ciblées vertes, écrans regardés ; **niveau 3 (migration, argent), batterie NON jouée par sa consigne : rien n'est sur `main`**. Codé le 2 novembre aussi : la croix à la place du « − » doré, ce qui vient d'être ajouté qui s'éclaire, la main d'œuvre dictée comptée dans « dont », et le devis qui part dans l'ordre de l'écran (défaut trouvé en chemin). Reste : le retrait de l'acompte et d'une TVA par le tiroir.
 
 ---
 ## LES NEUF PLANCHES DU 31 OCTOBRE, CODÉES (1er novembre 2026)
