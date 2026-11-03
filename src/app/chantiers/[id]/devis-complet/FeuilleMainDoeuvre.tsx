@@ -278,7 +278,7 @@ function Contenu({ donnees, travaux, onValider, onRepartir, onFermer }: Props) {
                       type="button"
                       onClick={() => choisir(p)}
                       data-atlas={`mo-prix-${p.id}`}
-                      className="flex min-h-[52px] w-full items-center justify-between gap-2.5 rounded-[10px] py-1.5 pl-[46px] pr-1 text-left text-[15.5px]"
+                      className="flex min-h-[52px] w-full items-center justify-between gap-2.5 py-1.5 pl-[46px] pr-1 text-left text-[15.5px]"
                       style={{ color: colors.ink }}
                     >
                       <span>{p.nom}</span>
