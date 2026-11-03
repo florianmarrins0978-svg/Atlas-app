@@ -21,6 +21,9 @@ import { clientsQuOnPeutReconnaitre } from "../src/server/repositories/clients";
 import { envoiAReprendre, lignesDesPdf } from "../src/lib/import-pieces";
 import { ANNULER_PENDANT_MS, MARGE_RESEAU_ANNULER_MS } from "../src/lib/delai-annuler";
 import { CIVILITES } from "../src/lib/civilite";
+
+/** La fiche que le rangement crée pour lui : le nom lu s'écrit à la façon de l'appli (migration 0037). */
+const MARTINS_RANGE = `${CIVILITES.mr} Martins`;
 import { grouperParClient, planDeRangement, type ChoixAdresse } from "../src/lib/import-tableau";
 import { traiterPiecesEnAttente } from "../src/server/import/traiter-pieces";
 import { enregistrerObjet } from "../src/server/storage";
@@ -423,12 +426,12 @@ async function main() {
     const etat = await envoiEnCours(ctx);
     assert.equal(etat?.rangees, 1, "« N documents rangés » compte aussi le premier rangement");
     assert.ok(etat.annulableMs !== null, "le second rangement ne propose pas « Annuler »");
-    assert.deepEqual(await piecesParFiche(ctx), { "M. Martins": 1, "Mme Lenoir": 1, "SARL Les Tilleuls": 1 });
+    assert.deepEqual(await piecesParFiche(ctx), { [MARTINS_RANGE]: 1, "Mme Lenoir": 1, "SARL Les Tilleuls": 1 });
 
     assert.deepEqual(await annulerRangement(ctx, etat.id), { ok: true });
     assert.deepEqual(
       await piecesParFiche(ctx),
-      { "M. Martins": 1, "Mme Lenoir": 1 },
+      { [MARTINS_RANGE]: 1, "Mme Lenoir": 1 },
       "« Annuler » a défait le premier rangement avec le second, ou gardé la fiche du second"
     );
     const apres = await envoiEnCours(ctx);
@@ -445,7 +448,7 @@ async function main() {
     const tard = await rangementPartiel("Essai trop tard");
     await vieillir(tard.ctx, tard.envoi.id, ANNULER_PENDANT_MS + MARGE_RESEAU_ANNULER_MS + 1000);
     assert.deepEqual(await annulerRangement(tard.ctx, tard.envoi.id), { ok: false, pourquoi: "plus-annulable" });
-    assert.deepEqual(await piecesParFiche(tard.ctx), { "M. Martins": 1, "Mme Lenoir": 1 }, "un « Annuler » refusé a quand même défait le rangement");
+    assert.deepEqual(await piecesParFiche(tard.ctx), { [MARTINS_RANGE]: 1, "Mme Lenoir": 1 }, "un « Annuler » refusé a quand même défait le rangement");
   });
 
   await essai("un envoi neuf emporte ce qui reste du précédent, et « Annuler » derrière lui se refuse", async () => {
@@ -464,7 +467,7 @@ async function main() {
       { ok: false, pourquoi: "plus-annulable" },
       "« Annuler » derrière un envoi plus récent rendrait des pièces sans écran"
     );
-    assert.deepEqual(await piecesParFiche(ctx), { "M. Martins": 1, "Mme Lenoir": 1 });
+    assert.deepEqual(await piecesParFiche(ctx), { [MARTINS_RANGE]: 1, "Mme Lenoir": 1 });
   });
 
   await essai("un client du rangement supprimé : ce qui reste ne passe pas pour un envoi coupé", async () => {
@@ -504,7 +507,7 @@ async function main() {
     );
     assert.equal(envoiAReprendre(etat), bilan.envoiId);
     assert.deepEqual((await piecesLuesDeLEnvoi(ctx, bilan.envoiId!)).map((p) => p.id), [tilleuls.id]);
-    assert.deepEqual(await piecesParFiche(ctx), { "M. Martins": 1, "Mme Lenoir": 1 }, "le tableau annulé a laissé sa fiche, ou défait le rangement des PDF");
+    assert.deepEqual(await piecesParFiche(ctx), { [MARTINS_RANGE]: 1, "Mme Lenoir": 1 }, "le tableau annulé a laissé sa fiche, ou défait le rangement des PDF");
   });
 
   await essai("un tableau rangé emporte lui aussi ce qui reste", async () => {
