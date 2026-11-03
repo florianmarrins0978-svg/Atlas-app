@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La note, rappelée avant l'envoi</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  LA NOTE DU DEVIS, RAPPELÉE AU PATRON AVANT L'ENVOI
+  (src/app/chantiers/[id]/devis-complet/DevisCompletClient.tsx, la feuille
+  d'envoi : src/app/chantiers/[id]/export/EnvoiAuClient.tsx).
+
+  Sa demande du 3 novembre 2026, juste après « La note du devis, chez le
+  client » (devis-note-client.html) : *« au moment où il va l'envoyer au
+  client, une petite fenêtre pour lui montrer où le client pourra le lire ;
+  juste quelque chose qui apparaît 3 ou 4 secondes et qui disparaît »*.
+
+  POURQUOI À L'OUVERTURE DE LA FEUILLE, ET PAS SUR « ENVOYER LE DEVIS » : lu
+  dans le code, ce bouton ouvre AUSSITÔT sa messagerie (ouvrirLaMessagerie,
+  sa demande du 18 août : « tout de suite ça m'ouvre l'application »). Une
+  fenêtre posée à cet instant passerait derrière l'application SMS, sans être
+  lue. Elle se montre donc quand la feuille d'envoi s'ouvre, sur « Choisir la
+  date », c'est-à-dire juste avant d'envoyer.
+
+  Le fond du téléphone est la VRAIE feuille d'envoi, photographiée sur des
+  données de démonstration (aujourdhui/devis-feuille-envoi.jpg) : seule la
+  fenêtre est dessinée.
+*/
+body .pl-barre .pl-charte-bouton, body .pl-barre .pl-chartes { display: none; }
+
+.fond { position: absolute; inset: 0; }
+.fond img { width: 100%; height: auto; display: block; }
+
+/* LA FENÊTRE : sur l'encre, comme le tiroir de l'appli, pour se lire sur le
+   voile de la page ; une vignette de la page du client, la note en or ; un
+   trait d'or qui se vide en quatre secondes, pour qu'on sache qu'elle part. */
+.rappel { position: absolute; left: 12px; right: 12px; top: 14px; z-index: 30; display: flex; align-items: center; gap: 12px;
+          padding: 12px 14px 14px; border-radius: 16px; background: var(--atlas-ink); color: var(--atlas-cream); text-align: left;
+          box-shadow: 0 10px 28px -10px rgba(13,14,12,0.55);
+          opacity: 0; transform: translateY(-16px); pointer-events: none;
+          transition: opacity 260ms var(--courbe), transform 360ms cubic-bezier(0.16, 1, 0.3, 1); overflow: hidden; }
+.rappel.visible { opacity: 1; transform: none; pointer-events: auto; }
+.rappel-texte { margin: 0; font-size: 15px; line-height: 1.38; }
+.rappel-texte b { font-weight: 700; color: var(--atlas-orSurEncre); }
+.rappel-temps { position: absolute; left: 14px; right: 14px; bottom: 7px; height: 2px; border-radius: 1px;
+                background: color-mix(in srgb, var(--atlas-cream) 16%, transparent); overflow: hidden; }
+.rappel-temps span { display: block; height: 100%; background: var(--atlas-orSurEncre); transform-origin: left; transform: scaleX(1); }
+.rappel.visible .rappel-temps span { animation: vider var(--duree, 4s) linear forwards; }
+@keyframes vider { to { transform: scaleX(0); } }
+
+/* La vignette : la page du client en cinq traits, la note en or à SA place. */
+.vignette { width: 44px; height: 66px; flex: none; border-radius: 6px; padding: 5px 4px; display: grid; gap: 3px; align-content: start;
+            background: var(--atlas-cream); }
+.vignette i { display: block; height: 4px; border-radius: 2px; background: color-mix(in srgb, var(--atlas-ink) 22%, transparent); }
+.vignette i.court { width: 60%; }
+.vignette i.bloc { height: 9px; background: color-mix(in srgb, var(--atlas-ink) 9%, transparent); }
+.vignette i.note { height: 7px; background: var(--atlas-or); }
+.vignette i.oui { height: 6px; background: var(--atlas-plein); }
+
+/* L'autre idée : la même phrase, posée dans la feuille, qui ne part pas. */
+.reste { position: absolute; left: 24px; right: 24px; top: 452px; z-index: 5; display: flex; align-items: center; gap: 10px;
+         padding: 8px 12px; border-radius: var(--r-plage); background: color-mix(in srgb, var(--atlas-or) 16%, var(--atlas-card));
+         font-size: 14px; line-height: 1.35; color: var(--atlas-ink); }
+.reste .ico { width: 20px; height: 20px; color: var(--atlas-orTexte); }
+.reste b { color: var(--atlas-orTexte); }
+.ecran:not([data-etat="reste"]) .reste { display: none; }
+
+.rejouer { display: flex; justify-content: center; margin: 2px 0 6px; }
+.rejouer button { min-height: 40px; padding: 0 16px; border-radius: 20px; font-size: 14px; font-weight: 600; color: #2f3b2f;
+                  background: rgba(28,28,26,0.06); }
+
+@media (prefers-reduced-motion: reduce) {
+  .rappel { transition: opacity 1ms; transform: none; }
+  .rappel.visible .rappel-temps span { animation-duration: var(--duree, 4s); }
+}
+</style>
+</head>
+<body class="pl pl-pilules">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="devis-note-client.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>La note chez le client</a>
+  <h1 class="pl-titre">La note, rappelée avant l'envoi</h1>
+  <p class="pl-verdict">Tu touches « Choisir la date », la feuille d'envoi s'ouvre, et <b>pendant 4 secondes</b> une fenêtre te montre où ton client lira ta note.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <!-- ═══ PROPOSÉ ═══ -->
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats">
+        <button type="button" data-etat="a" aria-pressed="true">Note avant l'accord</button>
+        <button type="button" data-etat="b">Note sous le total</button>
+        <button type="button" data-etat="sans">Sans note</button>
+        <button type="button" data-etat="reste">Autre idée : elle reste</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran" data-sans-charte data-etat="a" id="ecran-propose">
+          <div class="fond"><img src="aujourdhui/devis-feuille-envoi.jpg" alt="La feuille d'envoi du devis, telle qu'elle est aujourd'hui"></div>
+
+          <button type="button" class="rappel" id="rappel" aria-live="polite" aria-label="Fermer">
+            <span class="vignette" aria-hidden="true" id="vignette"></span>
+            <p class="rappel-texte" id="rappel-texte"></p>
+            <span class="rappel-temps" aria-hidden="true"><span></span></span>
+          </button>
+
+          <div class="reste">
+            <svg class="ico" aria-hidden="true"><use href="#i-note"/></svg>
+            <span><b>Ta note :</b> Mme Groupiron la lira juste avant « J'accepte ce devis ».</span>
+          </div>
+        </div>
+      </div>
+      <div class="rejouer"><button type="button" id="rejouer">Revoir la fenêtre</button></div>
+    </div>
+
+    <!-- ═══ AUJOURD'HUI ═══ -->
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre">
+        <div class="cadre-capture"><img src="aujourdhui/devis-feuille-envoi.jpg" alt="La feuille d'envoi du devis aujourd'hui : rien ne parle de la note"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>Ton devis porte une note : quand tu touches « Choisir la date », la feuille d'envoi s'ouvre, et une fenêtre descend en haut de l'écran.</li>
+      <li>Elle montre la page de ton client en petit, la note en or à sa place, et une phrase : où il la lira.</li>
+      <li>Elle part seule au bout de 4 secondes ; le trait d'or dessous se vide pour le montrer. Un appui la ferme avant.</li>
+      <li>Sans note, rien n'apparaît. Touchez « Sans note ».</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>La feuille d'envoi elle-même : le fond du téléphone est la vraie, photographiée.</li>
+      <li>« Envoyer le devis » ouvre toujours ta messagerie tout de suite.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>Pourquoi pas sur « Envoyer le devis » : ce bouton ouvre aussitôt ton application SMS ou e-mail, et la fenêtre passerait derrière sans être lue. D'où l'ouverture de la feuille, juste avant.</li>
+      <li>L'appli suit une règle née de ta consigne du 5 septembre (des patrons qui lisent mal leur téléphone) : rien qui se referme tout seul, parce qu'on le manquerait. Ici elle ne demande aucun geste, donc la rater ne coûte rien. Si tu préfères, « Autre idée » pose la même phrase dans la feuille, et elle reste.</li>
+      <li>À chaque envoi d'un devis avec une note, ou seulement les premières fois ?</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="devis-note-client.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>La note chez le client</a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var ecran = document.getElementById("ecran-propose");
+  var rappel = document.getElementById("rappel");
+  var texte = document.getElementById("rappel-texte");
+  var vignette = document.getElementById("vignette");
+  var DUREE = 4000;
+  var minuteur = null;
+
+  /* La vignette suit la place choisie sur l'autre planche : avant l'accord (A)
+     ou sous le total (B). */
+  function dessiner(place) {
+    var traits = place === "b"
+      ? ["court", "", "bloc", "note", "bloc", "", "oui"]
+      : ["court", "", "bloc", "bloc", "note", "", "oui"];
+    vignette.innerHTML = traits.map(function (t) { return '<i class="' + t + '"></i>'; }).join("");
+    texte.innerHTML = place === "b"
+      ? "<b>Ta note :</b> Mme Groupiron la lira juste sous le total."
+      : "<b>Ta note :</b> Mme Groupiron la lira juste avant « J'accepte ce devis ».";
+  }
+
+  function montrer() {
+    clearTimeout(minuteur);
+    rappel.classList.remove("visible");
+    var etat = ecran.getAttribute("data-etat");
+    if (etat !== "a" && etat !== "b") return;
+    dessiner(etat);
+    rappel.style.setProperty("--duree", DUREE + "ms");
+    /* Une image de retard : sans elle, l'animation du trait ne repart pas. */
+    requestAnimationFrame(function () { requestAnimationFrame(function () { rappel.classList.add("visible"); }); });
+    minuteur = setTimeout(function () { rappel.classList.remove("visible"); }, DUREE);
+  }
+
+  document.addEventListener("click", function (e) {
+    if (e.target.closest("#rappel")) { clearTimeout(minuteur); rappel.classList.remove("visible"); return; }
+    if (e.target.closest("#rejouer")) { montrer(); return; }
+    if (e.target.closest(".pl-etats button[data-etat]")) setTimeout(montrer, 60);
+  });
+  setTimeout(montrer, 600);
+});
+</script>
+</body>
+</html>
