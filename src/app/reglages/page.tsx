@@ -12,6 +12,8 @@ import SeDeconnecter from "./SeDeconnecter";
 import Sommaire from "./Sommaire";
 import { derniereIssueMiseAJour } from "./actions";
 import { getEntreprise } from "@/server/repositories/entreprises";
+import { liaisonDeLEntreprise } from "@/server/repositories/banque";
+import { situationDeLaBanque } from "@/lib/ma-banque-en-mots";
 import { estBancDEssai } from "@/profil-banc";
 import { garderLaPage } from "@/server/garde-page";
 
@@ -47,10 +49,11 @@ export default async function ReglagesPage() {
   // n'interroge pas la base, il affiche ce qu'on lui donne (`CLAUDE.md` §4
   // sexies), et cette lecture-ci part avec les deux autres au lieu d'ajouter un
   // aller-retour.
-  const [role, etatVersion, entreprise] = await Promise.all([
+  const [role, etatVersion, entreprise, liaison] = await Promise.all([
     getRole(ctx),
     versionEtRetard(),
     getEntreprise(ctx),
+    liaisonDeLEntreprise(ctx),
   ]);
   const version = etatVersion.ligne;
 
@@ -68,7 +71,14 @@ export default async function ReglagesPage() {
   // Le rôle décide de ce que le SERVEUR rend, pas de ce que la feuille de style
   // cache : ce qu'un membre n'a pas le droit de voir ne sort pas d'ici
   // (`docs/QUESTIONS.md` §10).
-  const ensembles = rubriquesReglages(role);
+  //
+  // **Ma banque n'y entre que reliée, et chez le patron seul** : l'écran est à
+  // lui (`estProprietaire` dans `reglages/banque/page.tsx`), et ce qu'un autre
+  // rôle n'ouvre pas ne doit pas sortir d'ici, pas même le nom de la banque.
+  const ensembles = rubriquesReglages(
+    role,
+    role === "proprietaire" && liaison ? { situation: situationDeLaBanque(liaison.banque, liaison.luLe, new Date()) } : null
+  );
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>

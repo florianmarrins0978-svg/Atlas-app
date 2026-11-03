@@ -4182,6 +4182,9 @@ export const liaisonsBancaires = pgTable("liaisons_bancaires", {
   historiqueJours: integer("historique_jours"),
   // Le refus de la banque pour la période plus profonde, NULL si elle a tout accepté.
   historiqueRefus: text("historique_refus"),
+  // Le refus de la dernière tentative (0156), NULL quand elle a réussi : `luLe`
+  // est posé avant l'appel, il ne dit pas si la lecture a abouti.
+  lectureRefusee: text("lecture_refusee"),
   createdBy: uuid("created_by").references(() => users.id),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
