@@ -36582,6 +36582,16 @@ pouvoir écrire ce que je veux »*), la main d'œuvre sur son calcul
 | **gardée sur la ligne** | `lignes_prix.part_main_doeuvre`, recopiée sur `lignes_devis` (migration 0155, nullable, aucun `UPDATE`) ; `mainDoeuvreDeLaLigne` la compte dans « dont main d'œuvre HT », bornée au montant de la ligne s'il baisse son prix ensuite |
 | au serveur | `repartirMainDoeuvreAction` recalcule le total comme pour une ligne, partage avec `repartirMainOeuvre`, et `poserLesPartsDeMainDoeuvre` écrit tout ou rien, sur les prix lus en base |
 
+**L'ordre des lignes du devis (2 novembre 2026, trouvé en codant la planche) :**
+
+| | |
+|---|---|
+| le défaut | `getOuCreerDevisBrouillon` lisait `lignes_prix` sans `ORDER BY` et recopiait `ordre: i` : le devis du client prenait l'ordre du disque. Un `UPDATE` qui ne tient plus dans sa page écrit la ligne ailleurs, et l'index la range au bout : la ligne retouchée passait derrière les autres, l'écran la montrant en tête |
+| une seule définition | `ORDRE_DES_LIGNES_PRIX` (`lignes-prix.ts`) sert l'écran (`listerLignesPrix`) et le devis : le rang, puis la naissance, puis l'identifiant. Deux lignes partagent un rang après un retrait (`ajouterLignePrix` compte les lignes) : la dernière posée reste au bout, et deux lectures ne tranchent jamais différemment |
+| le PDF | l'aperçu, l'envoi, la feuille sans prix et `getLignesDevis` passent par `lignesDuDevis`, trié par rang. Aucun geste ne réécrit une ligne de devis aujourd'hui : l'ordre du disque y tombait juste par accident |
+| la facture | rien à changer : elle recopie le devis par rang et `donneesFacture` trie avant le papier |
+| le contrôle | `test-ordre-des-lignes-du-devis-db.ts` remplit la page avant de retoucher : sur une table presque vide, la mise à jour reste dans sa page (« HOT »), garde sa place dans l'index, et la première version était verte sur le défaut. Chaque cas vérifie que le piège est posé (`ORDER BY ctid`) |
+
 **Ce qui reste, et n'est pas codé :** la croix à la place du « − » doré, la
 ligne qui s'éclaire à l'arrivée (`TODO.md`). La répartition de la
 préparation (`appliquer-proposition.ts`) ne pose toujours ni drapeau ni part :

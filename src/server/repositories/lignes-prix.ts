@@ -23,9 +23,23 @@ function exigerNombresDeLigne(...nombres: (string | undefined)[]): void {
   }
 }
 
+/**
+ * L'ordre des lignes d'un chantier : celui que l'écran montre ET celui que le
+ * devis fige pour le client. Une seule définition, parce que le devis la
+ * lisait sans `ORDER BY` jusqu'au 2 novembre 2026 : il partait dans l'ordre où
+ * PostgreSQL rangeait les lignes sur le disque, et une ligne retouchée passait
+ * derrière les autres (`scripts/test-ordre-des-lignes-du-devis-db.ts`).
+ *
+ * **Deux lignes peuvent porter le même rang** : `ajouterLignePrix` compte les
+ * lignes, et après un retrait la nouvelle prend celui de la dernière. La date
+ * de naissance tranche alors (la dernière posée reste au bout), puis
+ * l'identifiant, pour que deux lectures ne tranchent jamais différemment.
+ */
+export const ORDRE_DES_LIGNES_PRIX = [asc(lignesPrix.ordre), asc(lignesPrix.createdAt), asc(lignesPrix.id)] as const;
+
 export async function listerLignesPrix(ctx: Ctx, chantierId: string) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
-    tx.select().from(lignesPrix).where(eq(lignesPrix.chantierId, chantierId)).orderBy(asc(lignesPrix.ordre))
+    tx.select().from(lignesPrix).where(eq(lignesPrix.chantierId, chantierId)).orderBy(...ORDRE_DES_LIGNES_PRIX)
   );
 }
 
