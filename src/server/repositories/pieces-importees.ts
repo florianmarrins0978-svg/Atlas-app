@@ -135,6 +135,8 @@ export async function noterLecture(ctx: Ctx, id: string, champs: ChampsLus): Pro
         adresseLue: champs.adresseLue?.slice(0, 300) ?? null,
         telephoneLu: champs.telephoneLu?.slice(0, 40) ?? null,
         chantierLu: champs.chantierLu?.slice(0, 300) ?? null,
+        objet: champs.objetLu?.slice(0, 200) ?? null,
+        objetChercheLe: new Date(),
         updatedAt: new Date(),
       })
       .where(and(eq(piecesImportees.id, id), eq(piecesImportees.statut, "en_lecture")));
@@ -224,6 +226,7 @@ export async function piecesLuesDeLEnvoi(ctx: Ctx, envoiId: string): Promise<Pie
         adresseLue: piecesImportees.adresseLue,
         telephoneLu: piecesImportees.telephoneLu,
         chantierLu: piecesImportees.chantierLu,
+        objetLu: piecesImportees.objet,
       })
       .from(piecesImportees)
       .where(and(eq(piecesImportees.envoiId, envoiId), inArray(piecesImportees.statut, ["lue", "a_verifier"])))
@@ -310,7 +313,7 @@ export async function rangerEnvoiSelonLePlan(
         if (!id) continue;
         const posee = await tx
           .update(piecesImportees)
-          .set({ clientId, statut: "rangee", nomLu: p.nom, genre: p.genre, adresseChantier: p.chantier, updatedAt: new Date() })
+          .set({ clientId, statut: "rangee", nomLu: p.nom, genre: p.genre, objet: p.objet, adresseChantier: p.chantier, updatedAt: new Date() })
           .where(and(eq(piecesImportees.id, id), eq(piecesImportees.envoiId, envoiId), inArray(piecesImportees.statut, ["lue", "a_verifier"])))
           .returning({ id: piecesImportees.id });
         // Une pièce rangée entre-temps par un autre onglet : tout s'annule,
@@ -494,6 +497,35 @@ export async function annulerRangement(ctx: Ctx, envoiId: string): Promise<boole
 }
 
 // ─── Sur la fiche du client ───────────────────────────────────────────────
+
+/** Les PDF d'un client dont l'objet n'a jamais été cherché (importés avant la migration 0159). */
+export async function pdfSansObjetCherche(ctx: Ctx, clientId: string, combien: number): Promise<{ id: string; fichierCle: string }[]> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const lignes = await tx
+      .select({ id: piecesImportees.id, fichierCle: piecesImportees.fichierCle })
+      .from(piecesImportees)
+      .where(
+        and(
+          eq(piecesImportees.clientId, clientId),
+          eq(piecesImportees.statut, "rangee"),
+          isNotNull(piecesImportees.fichierCle),
+          isNull(piecesImportees.objetChercheLe)
+        )
+      )
+      .limit(combien);
+    return lignes.map((l) => ({ id: l.id, fichierCle: l.fichierCle! }));
+  });
+}
+
+/** L'objet trouvé, ou rien : la pièce ne se relira plus. Un objet déjà là n'est jamais écrasé. */
+export async function noterObjetCherche(ctx: Ctx, id: string, objet: string | null): Promise<void> {
+  await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    await tx
+      .update(piecesImportees)
+      .set({ objet: sql`coalesce(${piecesImportees.objet}, ${objet ? objet.slice(0, 200) : null})`, objetChercheLe: new Date(), updatedAt: new Date() })
+      .where(eq(piecesImportees.id, id));
+  });
+}
 
 export async function piecesDuClient(ctx: Ctx, clientId: string): Promise<PieceEnBase[]> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) =>

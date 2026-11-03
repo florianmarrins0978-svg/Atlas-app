@@ -91,6 +91,12 @@ export type ChampsLus = {
   adresseLue: string | null;
   telephoneLu: string | null;
   chantierLu: string | null;
+  /**
+   * Le titre de la pièce, la ligne « Objet » (« Elagage ») : ce qu'un tableau
+   * donne dans sa colonne Objet. Sa remarque du 3 novembre 2026 : *« objet et
+   * titre, c'est la même chose »*, et la fiche ne montrait que le numéro.
+   */
+  objetLu: string | null;
 };
 
 export const RIEN_LU: ChampsLus = {
@@ -102,6 +108,7 @@ export const RIEN_LU: ChampsLus = {
   adresseLue: null,
   telephoneLu: null,
   chantierLu: null,
+  objetLu: null,
 };
 
 /**
@@ -261,6 +268,31 @@ function coordonneesApresLeNom(texte: string): { adresseLue: string | null; tele
   return { adresseLue, telephoneLu: proche ?? null };
 }
 
+/** Ce qu'un devis imprime juste après son objet : l'en-tête du tableau des lignes. */
+const APRES_L_OBJET = new Set([
+  "désignation", "designation", "description", "qté", "qte", "quantité", "quantite", "prix", "pu", "unité", "unite",
+  "total", "tva", "montant", "réf", "ref", "référence", "reference", "date", "client", "lieu", "n°", "article", "libellé", "libelle",
+]);
+
+/**
+ * L'objet, lu sur sa ligne « Objet : … ». Il s'arrête au premier mot qui
+ * n'en est plus (l'en-tête du tableau, « Désignation Qté ») ou à une lettre
+ * seule en capitale (un titre espacé, « D É S I G N A T I O N »).
+ * Huit mots au plus : au-delà, ce n'est plus un titre, c'est le devis.
+ */
+function objetDuTexte(plat: string): string | null {
+  const m = /\bobjet\s*:\s*(.+)/i.exec(plat);
+  if (!m) return null;
+  const garde: string[] = [];
+  for (const mot of m[1].split(/\s+/)) {
+    const bas = mot.toLowerCase().replace(/[:.,;]+$/, "");
+    if (APRES_L_OBJET.has(bas) || (mot.length === 1 && /\p{Lu}/u.test(mot)) || garde.length === 8) break;
+    garde.push(mot);
+  }
+  const objet = garde.join(" ").replace(/[\s,;:.-]+$/, "").trim();
+  return objet.length >= 2 ? objet.slice(0, 200) : null;
+}
+
 /**
  * Le texte suffit quand il dit ce qu'est la pièce, à qui elle va, et où ce
  * client habite. Sans l'adresse, l'IA lit le TEXTE (jamais l'image d'un PDF
@@ -308,7 +340,16 @@ export function lireChampsDuTexte(brut: string): ChampsLus {
   // d'un titre de tableau (« D É S I G N A T I O N ») deviennent un mot qui se
   // colle au nom (« M. Bernard DÉSIGNATION », 22 octobre 2026). Espacées, ce
   // ne sont que des lettres seules, qu'aucun nom ne prend.
-  return { genre, numero, jour, montantTtc, nomLu: nomAvecCivilite(plat), ...coordonneesApresLeNom(plat), chantierLu: null };
+  return {
+    genre,
+    numero,
+    jour,
+    montantTtc,
+    nomLu: nomAvecCivilite(plat),
+    ...coordonneesApresLeNom(plat),
+    chantierLu: null,
+    objetLu: objetDuTexte(plat),
+  };
 }
 
 /**
@@ -326,6 +367,7 @@ export function fusionnerLectures(ia: ChampsLus | null, texte: ChampsLus): Champ
     adresseLue: ia.adresseLue ?? texte.adresseLue,
     telephoneLu: ia.telephoneLu ?? texte.telephoneLu,
     chantierLu: ia.chantierLu ?? texte.chantierLu,
+    objetLu: ia.objetLu ?? texte.objetLu,
   };
 }
 
@@ -370,6 +412,7 @@ export function relireReponseIA(texte: string): ChampsLus | null {
     telephoneLu: telephone && /^(?:\+33\s?|0)[1-9](?:[\s.\-]?\d{2}){4}$/.test(telephone) ? telephoneEcrit(telephone) : null,
     // Le lieu des travaux qui redit l'adresse du client n'en est pas un autre.
     chantierLu: chantier && (!adresse || normaliserAdresse(chantier) !== normaliserAdresse(adresse)) ? chantier : null,
+    objetLu: chaine(o.objet, 200),
   };
 }
 
@@ -386,6 +429,7 @@ export type PieceLueDuPdf = {
   adresseLue: string | null;
   telephoneLu: string | null;
   chantierLu: string | null;
+  objetLu: string | null;
 };
 
 /**
@@ -420,7 +464,7 @@ export function lignesDesPdf(
       rang,
       genre,
       numero: p.numero,
-      objet: null,
+      objet: p.objetLu,
       jour: p.jour,
       montant: p.montantTtc,
       nom: p.nomLu,

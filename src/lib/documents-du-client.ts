@@ -69,7 +69,7 @@ export type PieceDuClient = {
    * propose de la télécharger.
    */
   format?: "pdf" | "page" | "tableau";
-  /** L'adresse de son chantier, quand ce n'est pas celle du client (un tableau importé). */
+  /** L'adresse de son chantier, quand ce n'est pas celle du client (une pièce importée). */
   chantier?: string | null;
   /**
    * **Ce que la pièce dit d'elle-même** : le titre d'un devis ou d'une facture
