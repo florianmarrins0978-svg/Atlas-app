@@ -200,9 +200,9 @@ export const FICHES_CHANTIER: FicheModeEmploi[] = [
     intitule: "Écrire son devis soi-même, sans dicter",
     motsCles: ["rediger", "ecrire", "main", "taper", "manuel", "manuellement", "sans dicter", "devis"],
     geste: "Touchez « Je rédige à la main », en bas de la fiche client : le devis s'ouvre, vide.",
-    reserve: "Le bouton disparaît pendant qu'on dicte.",
+    reserve: "Le bouton disparaît pendant qu'on dicte et pendant qu'Atlas prépare le devis. Il revient sous « Réessayer » si la préparation échoue.",
     source: FICHE,
-    preuves: ["Je rédige à la main", "dicteeEnCours ? \"invisible\""],
+    preuves: ["Je rédige à la main", "cacherLaMain ? \"invisible\"", "onEchec={() => setDicteeEnCours(false)}"],
   },
   {
     id: "chantier-civilite",
