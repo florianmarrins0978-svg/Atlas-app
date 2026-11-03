@@ -1,6 +1,7 @@
 import Decimal from "decimal.js";
 import { LIBELLE_LIGNE_MAIN_DOEUVRE } from "@/lib/main-doeuvre-devis";
 import { margeQuiVaut, prixDepuisAchat, type PrixAchatCandidat } from "@/lib/prix-achat";
+import { montantDeLaLigne } from "@/lib/montant-de-ligne";
 
 /**
  * ─── LA FEUILLE « MAIN D'ŒUVRE » DU DEVIS — sa planche du 1er novembre 2026 ───
@@ -115,10 +116,14 @@ export function ligneDeSonPartenaire(p: PrixDePartenaire, quantite: number): Lig
   };
 }
 
-/** Le total de la ligne, montré avant d'ajouter ; `null` quand elle arrivera à chiffrer. */
+/**
+ * Le total de la ligne, montré avant d'ajouter ; `null` quand elle arrivera à
+ * chiffrer. **La règle de toutes les lignes** (`montantDeLaLigne`) : ce que la
+ * feuille annonce est ce que le devis comptera, au centime.
+ */
 export function montantDeLaMainOeuvre(l: LigneDeMainOeuvre): string | null {
   if (l.prixUnitaire === null) return null;
-  return new Decimal(l.quantite).times(l.prixUnitaire).toDecimalPlaces(2).toFixed(2);
+  return montantDeLaLigne(l.quantite, l.prixUnitaire);
 }
 
 /** Une quantité tapée : virgule ou point, au-dessus de zéro. `null` sinon. */
@@ -170,12 +175,14 @@ export function partsAppliquees(
     const voulu = parts[t.id];
     if (voulu === undefined) return [];
     const q = new Decimal(t.quantite || "0");
-    const pu = new Decimal(t.prixUnitaire || "0");
     const part = new Decimal(voulu);
     if (!q.greaterThan(0) || !part.greaterThan(0)) return [];
-    const avant = q.times(pu).toDecimalPlaces(2);
+    // Avant et après : la règle de toutes les lignes, jamais une multiplication
+    // recopiée ici (`test-montant-de-ligne`, « la règle n'est écrite qu'à UN
+    // endroit »).
+    const avant = new Decimal(montantDeLaLigne(t.quantite, t.prixUnitaire));
     const nouveauPu = avant.plus(part).div(q).toDecimalPlaces(2);
-    const apres = q.times(nouveauPu).toDecimalPlaces(2);
+    const apres = new Decimal(montantDeLaLigne(t.quantite, nouveauPu.toFixed(2)));
     const posee = apres.minus(avant);
     const ancienne = new Decimal(t.partMainDoeuvre || "0");
     return [
