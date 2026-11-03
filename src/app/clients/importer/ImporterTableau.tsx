@@ -24,8 +24,11 @@ import {
   type ClientConnu,
   type Groupe,
   type LigneLue,
+  type Lecture,
   type OrdreDate,
 } from "@/lib/import-tableau";
+import { lignesDesPdf, type PieceLueDuPdf } from "@/lib/import-pieces";
+import { rangerLesPdfAction } from "./actions";
 
 /**
  * IMPORTER UN TABLEAU — l'écran de sa planche du 28 octobre 2026
@@ -43,6 +46,12 @@ import {
  * **Les règles ne vivent pas ici** (`src/lib/import-tableau.ts`) : le serveur
  * refait le même plan avec les mêmes fonctions avant de ranger, et refuse ce
  * que l'écran aurait laissé passer.
+ *
+ * **Les PDF arrivent ici aussi** (sa demande du 31 octobre 2026, *« que ça
+ * soit un CSV, Excel ou un PDF, il faut que ça soit la même chose »*) : lus,
+ * ils deviennent des lignes (`lignesDesPdf`) et passent par la même règle. Ils
+ * n'ont pas de colonnes à vérifier ; un PDF dont on ne sait pas s'il est un
+ * devis ou une facture attend sa réponse, un nom illisible se tape.
  */
 
 /** Combien de clients sans question se montrent : au-delà, une phrase les compte. */
@@ -50,29 +59,49 @@ const MONTRES = 30;
 
 const nombre = (n: number) => n.toLocaleString("fr-FR");
 
+/** Un tableau (le fichier et ses cellules), ou les PDF lus d'un envoi. */
+export type LotAImporter =
+  | { quoi: "tableau"; fichier: File; grille: string[][] }
+  | { quoi: "pdf"; envoiId: string; nom: string; pieces: PieceLueDuPdf[] };
+
+const SANS_CELLULES: string[][] = [];
+
 export default function ImporterTableau({
-  fichier,
-  grille,
+  lot,
   connus,
   autreFichier,
+  children,
 }: {
-  fichier: File;
-  grille: string[][];
+  lot: LotAImporter;
   connus: ClientConnu[];
   /** Revenir au choix du fichier. */
   autreFichier: () => void;
+  /** Sous la liste : les fichiers d'un envoi de PDF qui ne sont pas partis. */
+  children?: React.ReactNode;
 }) {
   const router = useRouter();
-  const reconnaissance = useMemo(() => reconnaitreColonnes(grille[0], grille.slice(1)), [grille]);
+  const grille = lot.quoi === "tableau" ? lot.grille : SANS_CELLULES;
+  const reconnaissance = useMemo(() => reconnaitreColonnes(grille[0] ?? [], grille.slice(1)), [grille]);
   const [colonnes, setColonnes] = useState<Partial<Record<ChampDuTableau, number | null>>>({});
   const [genreFixe, setGenreFixe] = useState<"devis" | "facture" | null>(null);
   const [ordreDate, setOrdreDate] = useState<OrdreDate | null>(null);
   const [choix, setChoix] = useState<Record<string, ChoixAdresse>>({});
   const [tapes, setTapes] = useState<Record<number, string>>({});
+  const [genres, setGenres] = useState<Record<string, "devis" | "facture">>({});
   const [envoi, setEnvoi] = useState<{ quoi: "pret" } | { quoi: "en-cours" } | { quoi: "refus"; raison: string }>({ quoi: "pret" });
 
-  const decision = useMemo(() => reglagesDesDecisions(grille, { colonnes, ordreDate, genreFixe }), [grille, colonnes, ordreDate, genreFixe]);
-  const lecture = useMemo(() => (decision.ok ? lireLignes(grille, decision.reglages) : null), [grille, decision]);
+  const decision = useMemo(
+    () => (lot.quoi === "pdf" ? ({ ok: true } as const) : reglagesDesDecisions(grille, { colonnes, ordreDate, genreFixe })),
+    [lot.quoi, grille, colonnes, ordreDate, genreFixe]
+  );
+  const pdf = useMemo(() => (lot.quoi === "pdf" ? lignesDesPdf(lot.pieces, genres) : null), [lot, genres]);
+  const lecture = useMemo<Lecture | null>(() => {
+    if (pdf) {
+      const factures = pdf.lignes.filter((l) => l.genre === "facture").length;
+      return { lignes: pdf.lignes, doubles: 0, ignorees: 0, devis: pdf.lignes.length - factures, factures };
+    }
+    return decision.ok && "reglages" in decision ? lireLignes(grille, decision.reglages) : null;
+  }, [pdf, grille, decision]);
   const { groupes, sansNom } = useMemo(
     () => (lecture ? grouperParClient(lecture.lignes, connus, choix) : { groupes: [] as Groupe[], sansNom: [] as LigneLue[] }),
     [lecture, connus, choix]
@@ -86,7 +115,9 @@ export default function ImporterTableau({
   const colDate = colonnes["Date"] === undefined ? reconnaissance.colonnes["Date"] : (colonnes["Date"] ?? undefined);
   const datesDouteuses = colDate !== undefined && ordreDesDates(grille.slice(1).map((l) => l[colDate] ?? "")) === "doute";
   const exempleDate = datesDouteuses ? grille.slice(1).map((l) => l[colDate!] ?? "").find((v) => jourDuTableau(v, "jma") && jourDuTableau(v, "mja")) : undefined;
-  const montrerColonnes = reconnaissance.hesite.length > 0 || datesDouteuses;
+  // Des PDF n'ont pas de colonnes : sans cellules, la reconnaissance « hésite »
+  // sur chaque champ, et l'écran tombait en dessinant des en-têtes absents.
+  const montrerColonnes = lot.quoi === "tableau" && (reconnaissance.hesite.length > 0 || datesDouteuses);
 
   const aRanger = plan?.ok ? plan.clients.reduce((t, c) => t + c.pieces.length, 0) : 0;
   const bouton = !decision.ok
@@ -99,8 +130,27 @@ export default function ImporterTableau({
   async function ranger() {
     if (!peutRanger) return;
     setEnvoi({ quoi: "en-cours" });
+    if (lot.quoi === "pdf") {
+      // Les noms tapés partent par l'identifiant de leur pièce, jamais par un rang.
+      const parId: Record<string, string> = {};
+      for (const [rang, nom] of Object.entries(tapes)) {
+        const id = pdf?.idDuRang.get(Number(rang));
+        if (id && nom.trim()) parId[id] = nom;
+      }
+      const r = await rangerLesPdfAction(lot.envoiId, { choix, tapes: parId, genres }).catch(() => ({
+        ok: false as const,
+        raison: "Le réseau ne répond pas. Réessayez.",
+      }));
+      if (!r.ok) {
+        setEnvoi({ quoi: "refus", raison: r.raison });
+        return;
+      }
+      router.push("/clients");
+      router.refresh();
+      return;
+    }
     const corps = new FormData();
-    corps.set("fichier", fichier);
+    corps.set("fichier", lot.fichier);
     corps.set("decisions", JSON.stringify({ colonnes, ordreDate, genreFixe, choix, tapes }));
     const r = await fetch("/api/pieces-importees/tableau", { method: "POST", body: corps })
       .then((x) => x.json() as Promise<{ ok: boolean; raison?: string; rangees?: number; dejaLa?: number }>)
@@ -126,10 +176,10 @@ export default function ImporterTableau({
   return (
     <section className="mx-[26px] mt-[10px] pb-[110px]" data-atlas="import-tableau">
       <p className="text-[13px] font-semibold uppercase tracking-[0.12em]" style={{ color: colors.muted }}>
-        {fichier.name}
+        {lot.quoi === "pdf" ? lot.nom : lot.fichier.name}
       </p>
       <p className="mt-[6px] text-[26px] leading-[1.15]" style={{ fontFamily: font.display }}>
-        {nombre(grille.length - 1)} lignes lues
+        {lot.quoi === "pdf" ? `${nombre(lot.pieces.length)} documents lus` : `${nombre(grille.length - 1)} lignes lues`}
       </p>
 
       {!lecture && (
@@ -159,6 +209,7 @@ export default function ImporterTableau({
               {compte.aVerifier} adresse{compte.aVerifier > 1 ? "s" : ""} à vérifier
             </Etat>
           )}
+          {pdf && pdf.sansGenre.length > 0 && <Etat ton="ambre">{nombre(pdf.sansGenre.length)} devis ou facture ?</Etat>}
           {/* Un nom tapé retire sa pièce du compte : elle se range (comme sur la planche). */}
           {sansNomRestant > 0 && <Etat ton="ambre">{nombre(sansNomRestant)} sans nom</Etat>}
           {lecture.ignorees > 0 && (
@@ -222,6 +273,46 @@ export default function ImporterTableau({
         </>
       )}
 
+      {pdf && pdf.sansGenre.length > 0 && (
+        <div data-atlas="genres-a-dire">
+          <Rubrique>Devis ou facture ?</Rubrique>
+          <div className="rounded-[14px] px-[16px] py-[2px]" style={{ backgroundColor: colors.card }}>
+            {pdf.sansGenre.map((p, rang) => (
+              <div
+                key={p.id}
+                className="flex min-h-[64px] flex-wrap items-center justify-between gap-x-3 gap-y-2 py-[10px]"
+                style={{ boxShadow: rang === 0 ? "none" : `inset 0 1px 0 ${colors.line}` }}
+              >
+                <span className="min-w-0">
+                  <span className="block text-[16.5px] leading-[1.25]" style={{ fontFamily: font.display }}>
+                    {p.nomLu ?? "Nom illisible"}
+                  </span>
+                  <span className="block text-[13.5px]" style={{ color: colors.inkSoft }}>
+                    {[p.numero ? `n° ${p.numero}` : null, p.jour ? jourCourt(p.jour) : null, p.montantTtc ? enEuros(p.montantTtc) : null].filter(Boolean).join(", ") || "Rien de lu"}
+                  </span>
+                </span>
+                <span className="flex gap-2" role="radiogroup" aria-label="Devis ou facture">
+                  {(["devis", "facture"] as const).map((g) => (
+                    <button
+                      key={g}
+                      type="button"
+                      role="radio"
+                      data-atlas="genre-piece"
+                      aria-checked={genres[p.id] === g}
+                      onClick={() => setGenres((x) => ({ ...x, [p.id]: g }))}
+                      className="min-h-[44px] rounded-full px-5 text-[15px]"
+                      style={{ boxShadow: `inset 0 0 0 1px ${colors.line}`, color: colors.ink }}
+                    >
+                      {g === "devis" ? "Devis" : "Facture"}
+                    </button>
+                  ))}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {lecture && (
         <div data-atlas="par-client">
           <Rubrique>Par client</Rubrique>
@@ -235,7 +326,7 @@ export default function ImporterTableau({
                   nom="Sans nom"
                   manque
                   lieu={[l.adresse, l.telephone].filter(Boolean).join(", ") || "Sans coordonnées"}
-                  etat={<Etat ton="ambre">Nom absent du tableau</Etat>}
+                  etat={<Etat ton="ambre">{lot.quoi === "pdf" ? "Nom illisible" : "Nom absent du tableau"}</Etat>}
                 />
                 <div className="mb-[8px] ml-[56px]">
                   <PieceLue ligne={l} chantier={l.chantier} />
@@ -276,14 +367,19 @@ export default function ImporterTableau({
         </p>
       )}
 
-      <button
-        type="button"
-        onClick={autreFichier}
-        className="mt-[18px] min-h-[44px] text-[15px]"
-        style={{ color: colors.inkSoft }}
-      >
-        Choisir un autre fichier
-      </button>
+      {/* Des PDF déjà arrivés restent à ranger : choisir un autre fichier les
+          laisserait sans écran. */}
+      {lot.quoi === "tableau" && (
+        <button
+          type="button"
+          onClick={autreFichier}
+          className="mt-[18px] min-h-[44px] text-[15px]"
+          style={{ color: colors.inkSoft }}
+        >
+          Choisir un autre fichier
+        </button>
+      )}
+      {children}
 
       {/* Le geste, sous le pouce, au-dessus de la barre du bas : la liste peut
           faire dix écrans. Il dit ce qui manque tant que rien ne peut se ranger. */}

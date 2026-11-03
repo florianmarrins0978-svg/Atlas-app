@@ -12,15 +12,16 @@ import { fichierDemandeALaVisionneuse } from "../src/lib/visionneuse-pdf";
 // suite tient :
 //
 //   1. **la porte existe** sur l'écran Clients, et mène à l'import ;
-//   2. **un zip choisi part, se lit et revient en relecture** : le zip s'ouvre
-//      dans le navigateur, les pièces partent une à une, la lecture tourne
-//      après la réponse (`after`), et l'écran la suit ;
+//   2. **un zip choisi part, se lit et arrive « Par client »**, le même écran
+//      qu'un tableau (sa demande du 31 octobre 2026) : le zip s'ouvre dans le
+//      navigateur, les pièces partent une à une, la lecture tourne après la
+//      réponse (`after`), et l'écran la suit ;
 //   3. **ce qui n'est pas un document se nomme** et ne part pas ;
 //   4. **ranger crée la fiche**, et la pièce s'y ouvre DANS la visionneuse :
 //      une adresse qui ne finit pas par `/pdf` y serait refusée, et « Ouvrir »
 //      ne peindrait rien (`visionneuse-pdf.ts`) ;
 //   5. **« Annuler » défait le rangement**, la fiche créée s'en va, et l'import
-//      reprend la relecture pour ranger à nouveau ;
+//      reprend « Par client » pour ranger à nouveau ;
 //   6. **supprimer ce client** pose la question de la sauvegarde, puis
 //      emporte ses pièces importées ;
 //   7. **un tableau CSV** (28 octobre 2026) se lit par client, attend sa
@@ -56,8 +57,8 @@ async function pdfAvecTexte(lignes: string[]): Promise<Uint8Array> {
 async function leZip(): Promise<Buffer> {
   // La marque rend chaque pièce neuve : une empreinte déjà connue serait
   // écartée comme doublon, et la suite ne mesurerait rien la seconde fois.
-  const facture = await pdfAvecTexte(["Jardins Eden", `FACTURE n° FI-${marque}`, "Date 12/03/2025", `Client : ${NOM}`, "Total TTC 480,00"]);
-  const devis = await pdfAvecTexte(["Jardins Eden", `DEVIS n° DI-${marque}`, "03/04/2025", `Pour ${NOM}`, "Total TTC 1 250,00"]);
+  const facture = await pdfAvecTexte(["Jardins Eden", `FACTURE n° FI-${marque}`, "Date 12/03/2025", `Client : ${NOM}`, "8 rue du Port 44120 Vertou", "Total TTC 480,00"]);
+  const devis = await pdfAvecTexte(["Jardins Eden", `DEVIS n° DI-${marque}`, "03/04/2025", `Pour ${NOM}`, "8 rue du Port 44120 Vertou", "Total TTC 1 250,00"]);
   const morceaux: Uint8Array[] = [];
   for await (const m of ecrireArchiveZip(
     [
@@ -92,20 +93,25 @@ async function main() {
     await page.waitForURL(/\/clients\/importer/, { timeout: 20_000 });
   });
 
-  await cas("un zip choisi se lit, et ce qui n'est pas un document se nomme", async () => {
+  await cas("un zip choisi se lit et arrive par client, comme un tableau, et ce qui n'est pas un document se nomme", async () => {
     await page.setInputFiles('[data-atlas="choisir-pieces"]', {
       name: "ancien-logiciel.zip",
       mimeType: "application/zip",
       buffer: await leZip(),
     });
-    const relecture = page.locator('[data-atlas="relecture-import"]');
-    await relecture.waitFor({ state: "visible", timeout: 120_000 });
-    const texte = ((await relecture.textContent()) ?? "").replace(/\s+/g, " ");
+    const ecran = page.locator('[data-atlas="import-tableau"]');
+    await ecran.waitFor({ state: "visible", timeout: 120_000 });
+    const texte = ((await ecran.textContent()) ?? "").replace(/\s+/g, " ");
+    assert.match(texte, /2 documents lus/, `le compte des PDF lus manque : ${texte.slice(0, 300)}`);
     assert.match(texte, /notes\.txt/, `le fichier écarté n'est pas nommé : ${texte.slice(0, 300)}`);
+    const client = page.locator('[data-atlas="client-lu"]', { hasText: NOM });
+    assert.match((await client.innerText()).replace(/\s+/g, " "), /8 rue du Port, 44120 Vertou/, "l'adresse lue sur le PDF n'est pas montrée");
+    assert.equal(await client.locator('[data-atlas="piece-lue"]').count(), 2, "les deux PDF ne sont pas sous leur client");
+    assert.equal((await page.locator('[data-atlas="ranger-tableau"]').textContent())?.trim(), "Ranger 2 documents");
   });
 
   await cas("ranger crée la fiche, et la pièce s'ouvre dans la visionneuse", async () => {
-    await page.click('[data-atlas="ranger-pieces"]');
+    await page.click('[data-atlas="ranger-tableau"]');
     await page.waitForURL(`${BASE}/clients`, { timeout: 60_000 });
     await page.locator('[data-atlas="bandeau-rangement"]').waitFor({ state: "visible", timeout: 20_000 });
 
@@ -140,13 +146,13 @@ async function main() {
     assert.equal(await page.getByText(NOM, { exact: true }).count(), 0, "la fiche créée par le rangement est restée");
   });
 
-  await cas("après « Annuler », l'import reprend la relecture, et se range à nouveau", async () => {
+  await cas("après « Annuler », l'import reprend « Par client », et se range à nouveau", async () => {
     // Annuler revient AVANT le rangement, pas avant l'envoi : les pièces sont
     // là, lues. Les laisser sans chemin de retour les rendrait invisibles, et
     // bloquerait l'envoi suivant, qui reprend le dernier envoi non rangé.
     await page.goto(`${BASE}/clients/importer`, { waitUntil: "networkidle" });
-    await page.locator('[data-atlas="relecture-import"]').waitFor({ state: "visible", timeout: 60_000 });
-    await page.click('[data-atlas="ranger-pieces"]');
+    await page.locator('[data-atlas="import-tableau"]').waitFor({ state: "visible", timeout: 60_000 });
+    await page.click('[data-atlas="ranger-tableau"]');
     await page.waitForURL(`${BASE}/clients`, { timeout: 60_000 });
     await page.goto(`${BASE}/clients`, { waitUntil: "networkidle" });
     assert.equal(await page.getByText(NOM, { exact: true }).count(), 1, "la fiche n'est pas revenue");
@@ -220,7 +226,8 @@ async function main() {
     await page.goto(`${BASE}/clients`, { waitUntil: "networkidle" });
     assert.equal(await page.getByText(CLIENT, { exact: true }).count(), 0, "la fiche créée par le tableau est restée");
     await page.goto(`${BASE}/clients/importer`, { waitUntil: "networkidle" });
-    assert.equal(await page.locator('[data-atlas="relecture-import"]').count(), 0, "un tableau annulé se propose à la relecture");
+    await page.locator('[data-atlas="choisir-pieces"]').waitFor({ state: "attached", timeout: 20_000 });
+    assert.equal(await page.locator('[data-atlas="import-tableau"]').count(), 0, "un tableau annulé se propose à ranger");
   });
 
   await navigateur.close();

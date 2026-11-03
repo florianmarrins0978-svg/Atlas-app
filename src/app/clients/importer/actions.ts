@@ -2,51 +2,69 @@
 
 import { revalidatePath } from "next/cache";
 import { patronQuiImporte } from "@/server/import/garde";
-import { annulerRangement, getEnvoi, nommerPiece, piecesAVerifier, rangerEnvoi } from "@/server/repositories/pieces-importees";
+import { annulerRangement, getEnvoi, piecesLuesDeLEnvoi, rangerEnvoiSelonLePlan } from "@/server/repositories/pieces-importees";
+import { clientsQuOnPeutReconnaitre } from "@/server/repositories/clients";
+import { lignesDesPdf, type PieceLueDuPdf } from "@/lib/import-pieces";
+import { planDeRangement, type ChoixAdresse, type ClientConnu } from "@/lib/import-tableau";
 import { logger } from "@/server/logger";
 
-// Relire, ranger, annuler. **Un refus se rend, il ne se lève pas** : le message
+// Lire, ranger, annuler. **Un refus se rend, il ne se lève pas** : le message
 // d'une exception levée par une action serveur n'arrive jamais jusqu'à l'écran
 // (`AGENTS.md`, « rendre le défaut bavard »).
 
 type Refus = { ok: false; raison: string };
 const INTROUVABLE: Refus = { ok: false, raison: "Cet envoi n'existe plus." };
 
-export type PieceAVerifier = {
-  id: string;
-  genre: "devis" | "facture" | null;
-  numero: string | null;
-  jour: string | null;
-  montantTtc: string | null;
-};
-
-export async function piecesAVerifierAction(envoiId: string): Promise<{ ok: true; pieces: PieceAVerifier[] } | Refus> {
+/**
+ * Les PDF lus d'un envoi, et les clients déjà là : de quoi montrer l'écran
+ * « Par client » des tableaux (sa demande du 31 octobre 2026, *« que ça soit
+ * un CSV, Excel ou un PDF, il faut que ça soit la même chose »*).
+ */
+export async function piecesDeLEnvoiAction(
+  envoiId: string
+): Promise<{ ok: true; pieces: PieceLueDuPdf[]; connus: ClientConnu[] } | Refus> {
   const ctx = await patronQuiImporte();
   if (!ctx || !(await getEnvoi(ctx, envoiId))) return INTROUVABLE;
-  const pieces = await piecesAVerifier(ctx, envoiId);
+  const [pieces, connus] = await Promise.all([piecesLuesDeLEnvoi(ctx, envoiId), clientsQuOnPeutReconnaitre(ctx)]);
   return {
     ok: true,
-    pieces: pieces.map((p) => ({ id: p.id, genre: p.genre, numero: p.numero, jour: p.jour, montantTtc: p.montantTtc })),
+    pieces,
+    connus: connus.map((c) => ({ id: c.id, nom: c.nom, telephone: c.telephone, email: c.email, adresse: c.adresse, creeLe: c.creeLe })),
   };
 }
 
+/** Une chaîne de l'écran, bornée : il ne fixe ni sa longueur ni sa forme. */
+const nomTape = (v: unknown) => (typeof v === "string" ? v.replace(/\s+/g, " ").trim().slice(0, 120) : "");
+
 /**
- * Les noms qu'il a tapés, puis le rangement de tout ce qui est prêt. Un nom se
- * relit ici : l'écran ne fixe ni sa longueur ni son genre.
+ * Ses réponses, puis le rangement. **Le serveur ne se fie pas au plan de
+ * l'écran** : il relit les pièces en base et refait le plan avec la même règle
+ * (`lignesDesPdf`, `planDeRangement`), comme pour un tableau, et refuse ce qui
+ * attend encore une réponse.
+ *
+ * Les noms tapés et les genres répondus arrivent par l'identifiant de la pièce,
+ * jamais par un rang que l'écran aurait calculé.
  */
-export async function rangerAction(
+export async function rangerLesPdfAction(
   envoiId: string,
-  noms: { id: string; nom: string; genre: "devis" | "facture" | null }[]
+  reponses: { choix: Record<string, ChoixAdresse>; tapes: Record<string, string>; genres: Record<string, "devis" | "facture"> }
 ): Promise<{ ok: true; rangees: number } | Refus> {
   const ctx = await patronQuiImporte();
   if (!ctx || !(await getEnvoi(ctx, envoiId))) return INTROUVABLE;
   try {
-    for (const n of noms.slice(0, 2000)) {
-      const nom = typeof n.nom === "string" ? n.nom.replace(/\s+/g, " ").trim().slice(0, 120) : "";
-      const genre = n.genre === "devis" || n.genre === "facture" ? n.genre : null;
-      if (nom) await nommerPiece(ctx, n.id, nom, genre);
+    const genres: Record<string, "devis" | "facture"> = {};
+    for (const [id, g] of Object.entries(reponses?.genres ?? {})) if (g === "devis" || g === "facture") genres[id] = g;
+    const [pieces, connus] = await Promise.all([piecesLuesDeLEnvoi(ctx, envoiId), clientsQuOnPeutReconnaitre(ctx)]);
+    const { lignes, idDuRang } = lignesDesPdf(pieces, genres);
+    const tapes: Record<number, string> = {};
+    for (const [rang, id] of idDuRang) {
+      const nom = nomTape(reponses?.tapes?.[id]);
+      if (nom) tapes[rang] = nom;
     }
-    const { rangees } = await rangerEnvoi(ctx, envoiId);
+    const choix = reponses?.choix && typeof reponses.choix === "object" ? reponses.choix : {};
+    const plan = planDeRangement(lignes, connus, choix, tapes);
+    if (!plan.ok) return { ok: false, raison: `Vérifiez ${plan.adresses} adresse${plan.adresses > 1 ? "s" : ""}.` };
+    const { rangees } = await rangerEnvoiSelonLePlan(ctx, envoiId, plan.clients, idDuRang);
     revalidatePath("/clients");
     return { ok: true, rangees };
   } catch (err) {

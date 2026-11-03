@@ -9,8 +9,12 @@ import {
   refusDeLEnvoi,
   relireReponseIA,
   RIEN_LU,
+  texteSuffit,
+  lignesDesPdf,
+  type PieceLueDuPdf,
   statutApresLecture,
 } from "../src/lib/import-pieces";
+import { planDeRangement } from "../src/lib/import-tableau";
 import { entreesDuZip, lireEntree, ZipIllisible } from "../src/lib/lire-zip";
 import { ecrireArchiveZip } from "../src/lib/archive-zip";
 import { crc32 } from "../src/lib/archive-zip";
@@ -98,7 +102,16 @@ async function main() {
 
   await cas("une facture d'Atlas : titre en capitales espacées, et le devis cité ne trompe pas", () => {
     const t = "Atelier Date 01/04/2026 Échéance 01/05/2026 Devis 2026-000001 F A C T U R E n° F2026-000001 C L I E N T L I E U D E S T R A V A U X M. Vasseur 0622000022 Total TTC 1 080,00 €";
-    assert.deepEqual(lireChampsDuTexte(t), { genre: "facture", numero: "F2026-000001", jour: "2026-04-01", montantTtc: "1080.00", nomLu: "M. Vasseur" });
+    assert.deepEqual(lireChampsDuTexte(t), {
+      genre: "facture",
+      numero: "F2026-000001",
+      jour: "2026-04-01",
+      montantTtc: "1080.00",
+      nomLu: "M. Vasseur",
+      adresseLue: null,
+      telephoneLu: "06 22 00 00 22",
+      chantierLu: null,
+    });
   });
 
   await cas("la ligne suivante ne se colle pas au nom (« M. Martins Total »)", () => {
@@ -139,7 +152,16 @@ async function main() {
 
   await cas("une date ou un montant hors forme sont écartés, le reste gardé", () => {
     const r = relireReponseIA('Voici : {"genre":"facture","numero":"F-1","date":"2025-13-40","montant_ttc":"abc","client":"SARL Les Tilleuls"}');
-    assert.deepEqual(r, { genre: "facture", numero: "F-1", jour: null, montantTtc: null, nomLu: "SARL Les Tilleuls" });
+    assert.deepEqual(r, {
+      genre: "facture",
+      numero: "F-1",
+      jour: null,
+      montantTtc: null,
+      nomLu: "SARL Les Tilleuls",
+      adresseLue: null,
+      telephoneLu: null,
+      chantierLu: null,
+    });
   });
 
   await cas("l'IA complète le texte sans l'écraser par du vide", () => {
@@ -148,6 +170,130 @@ async function main() {
     assert.deepEqual(fusionnerLectures(ia, texte), { ...texte, nomLu: "SARL X" });
     assert.equal(statutApresLecture(fusionnerLectures(ia, texte)), "lue");
     assert.equal(statutApresLecture(texte), "a_verifier");
+  });
+
+
+  console.log("\nL'adresse et le téléphone du client, pour le même écran que les tableaux (31 octobre 2026)");
+
+  await cas("une seule adresse après le nom : c'est la sienne, écrite comme sur une fiche", () => {
+    const t = "Jardins Démo 3 rue du Moulin 44100 Nantes 02 40 00 00 00 FACTURE n° F2025-0148 12/03/2025 Client M. Martins 8 rue du Port 44120 Vertou 07 11 22 33 44 Total TTC 480,00";
+    const c = lireChampsDuTexte(t);
+    assert.equal(c.adresseLue, "8 rue du Port, 44120 Vertou");
+    assert.equal(c.telephoneLu, "07 11 22 33 44");
+  });
+
+  await cas("l'adresse et le téléphone de l'artisan, en tête, ne sont jamais ceux du client", () => {
+    const t = "Jardins Démo 3 rue du Moulin 44100 Nantes 02 40 00 00 00 FACTURE n° F1 Client M. Martins Total TTC 480,00 Jardins Démo 02 40 00 00 00";
+    const c = lireChampsDuTexte(t);
+    assert.equal(c.adresseLue, null);
+    assert.equal(c.telephoneLu, null);
+  });
+
+  await cas("deux adresses différentes après le nom (client et lieu des travaux) : le texte ne choisit pas", () => {
+    const t = "D E V I S n° D2025-0201 C L I E N T L I E U D E S T R A V A U X Mme Lenoir 14 rue Paul Bert 44100 Nantes 2 chemin des Vignes 44120 Vertou Total TTC 1 250,00";
+    assert.equal(lireChampsDuTexte(t).adresseLue, null);
+  });
+
+  await cas("la même adresse écrite deux fois (client et lieu des travaux identiques) se garde", () => {
+    const t = "D E V I S n° D2025-0201 Mme Lenoir 14 rue Paul Bert 44100 Nantes 14 rue Paul Bert 44100 Nantes Total TTC 1 250,00";
+    assert.equal(lireChampsDuTexte(t).adresseLue, "14 rue Paul Bert, 44100 Nantes");
+  });
+
+  await cas("la ville s'arrête au mot suivant (« Nantes Total », « Nantes D É S I G N A T I O N »)", () => {
+    assert.equal(lireChampsDuTexte("Facture n° 9 M. Bernard 12 rue des Lilas 44000 Nantes Total TTC 195,00").adresseLue, "12 rue des Lilas, 44000 Nantes");
+    assert.equal(lireChampsDuTexte("Facture n° 9 M. Bernard 12 rue des Lilas 44000 Nantes D É S I G N A T I O N").adresseLue, "12 rue des Lilas, 44000 Nantes");
+    assert.equal(lireChampsDuTexte("Devis n° 3 M. Guérin 2 chemin des Vignes 44115 Basse-Goulaine Objet").adresseLue, "2 chemin des Vignes, 44115 Basse-Goulaine");
+  });
+
+  await cas("un nom sans civilité ne donne ni adresse ni téléphone : rien ne dit où commence le client", () => {
+    const c = lireChampsDuTexte("FACTURE n° F2024-0097 SARL Les Tilleuls 5 rue X 44000 Nantes 06 12 34 56 78");
+    assert.equal(c.adresseLue, null);
+    assert.equal(c.telephoneLu, null);
+  });
+
+  await cas("l'IA rend l'adresse, le téléphone et le lieu des travaux, relus", () => {
+    const r = relireReponseIA('{"genre":"devis","numero":"D1","date":null,"montant_ttc":null,"client":"Mme Lenoir","adresse":"14 rue Paul Bert, 44100 Nantes","telephone":"06 12 48 30 77","chantier":"2 chemin des Vignes, 44120 Vertou"}');
+    assert.equal(r?.adresseLue, "14 rue Paul Bert, 44100 Nantes");
+    assert.equal(r?.telephoneLu, "06 12 48 30 77");
+    assert.equal(r?.chantierLu, "2 chemin des Vignes, 44120 Vertou");
+  });
+
+  await cas("un lieu des travaux identique à l'adresse du client n'en est pas un", () => {
+    const r = relireReponseIA('{"genre":"devis","numero":"D1","date":null,"montant_ttc":null,"client":"Mme Lenoir","adresse":"14 rue Paul Bert, 44100 Nantes","telephone":null,"chantier":"14, rue Paul-Bert 44100 NANTES"}');
+    assert.equal(r?.chantierLu, null);
+  });
+
+  await cas("une pièce dont le texte dit tout sauf l'adresse demande encore l'IA", () => {
+    const sansAdresse = { ...RIEN_LU, genre: "facture" as const, numero: "F1", nomLu: "M. Martins" };
+    assert.equal(texteSuffit(sansAdresse), false);
+    assert.equal(texteSuffit({ ...sansAdresse, adresseLue: "8 rue du Port, 44120 Vertou" }), true);
+  });
+
+
+  console.log("\nLes PDF lus passent par la règle des tableaux (31 octobre 2026)");
+
+  const pdfLu = (id: string, champs: Partial<PieceLueDuPdf>): PieceLueDuPdf => ({
+    id,
+    genre: "facture",
+    numero: null,
+    jour: null,
+    montantTtc: null,
+    nomLu: null,
+    adresseLue: null,
+    telephoneLu: null,
+    chantierLu: null,
+    ...champs,
+  });
+
+  await cas("deux PDF du même client à la même adresse : une fiche, deux pièces, chacune retrouvée par son identifiant", () => {
+    const { lignes, idDuRang, sansGenre } = lignesDesPdf(
+      [
+        pdfLu("a", { numero: "F1", nomLu: "Mme Lenoir", adresseLue: "14 rue Paul Bert, 44100 Nantes", jour: "2025-04-28" }),
+        pdfLu("b", { genre: "devis", numero: "D1", nomLu: "Mme Lenoir", adresseLue: "14, rue Paul-Bert 44100 NANTES", jour: "2025-04-03" }),
+      ],
+      {}
+    );
+    assert.equal(sansGenre.length, 0);
+    const plan = planDeRangement(lignes, [], {}, {});
+    assert.ok(plan.ok);
+    if (!plan.ok) return;
+    assert.equal(plan.clients.length, 1);
+    assert.equal(plan.clients[0].adresse, "14 rue Paul Bert, 44100 Nantes");
+    assert.deepEqual(plan.clients[0].pieces.map((p) => idDuRang.get(p.rang)), ["a", "b"]);
+  });
+
+  await cas("deux vraies adresses pour un même nom : rien ne se range avant sa réponse, comme un tableau", () => {
+    const { lignes } = lignesDesPdf(
+      [
+        pdfLu("a", { numero: "F1", nomLu: "M. Bernard", adresseLue: "12 rue des Lilas, 44000 Nantes" }),
+        pdfLu("b", { numero: "F2", nomLu: "M. Bernard", adresseLue: "40 bd Victor Hugo, 44200 Nantes" }),
+      ],
+      {}
+    );
+    assert.deepEqual(planDeRangement(lignes, [], {}, {}), { ok: false, adresses: 1 });
+  });
+
+  await cas("le lieu des travaux lu sur le PDF va sur la pièce, sans question", () => {
+    const { lignes } = lignesDesPdf([pdfLu("a", { numero: "F1", nomLu: "M. Bernard", adresseLue: "12 rue des Lilas, 44000 Nantes", chantierLu: "2 chemin des Vignes, 44120 Vertou" })], {});
+    const plan = planDeRangement(lignes, [], {}, {});
+    assert.ok(plan.ok && plan.clients[0].pieces[0].chantier === "2 chemin des Vignes, 44120 Vertou");
+  });
+
+  await cas("un PDF dont on ne sait pas s'il est un devis ou une facture attend sa réponse, puis se range", () => {
+    const pieces = [pdfLu("a", { genre: null, numero: "123", nomLu: "M. Guérin" })];
+    const avant = lignesDesPdf(pieces, {});
+    assert.equal(avant.lignes.length, 0);
+    assert.deepEqual(avant.sansGenre.map((p) => p.id), ["a"]);
+    const apres = lignesDesPdf(pieces, { a: "devis" });
+    assert.equal(apres.lignes[0].genre, "devis");
+    assert.equal(apres.sansGenre.length, 0);
+  });
+
+  await cas("un nom illisible se tape, comme pour un tableau", () => {
+    const { lignes, idDuRang } = lignesDesPdf([pdfLu("a", { numero: "F9", montantTtc: "310.00" })], {});
+    const rang = [...idDuRang.entries()].find(([, id]) => id === "a")![0];
+    const plan = planDeRangement(lignes, [], {}, { [rang]: "SARL Les Tilleuls" });
+    assert.ok(plan.ok && plan.clients[0].nom === "SARL Les Tilleuls" && plan.sansNom === 0);
   });
 
   console.log("\nOuvrir un zip par morceaux");

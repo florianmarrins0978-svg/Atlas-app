@@ -36649,6 +36649,22 @@ carte « Non payée » a la largeur des règlements (346 px chacune, mesurée le
 3 novembre) ; `test-avoir-et-non-payee-e2e` la mesure, et la mesure a été vue
 rougir sur une carte élargie.
 
+## §538 : Un PDF importé passe par la règle des tableaux
+
+*31 octobre 2026, sa demande : « que ça soit un CSV, Excel ou un PDF, il faut que ça soit la même chose ; il faut qu'ils se débrouillent tout seuls pour me les ranger en client ». Planche `appli/soignee/clients-importer.html` (« Les PDF arrivent au même écran, groupés par client »).*
+
+**Ce qui était faux.** Les PDF avaient leur propre relecture (22 octobre) : un nom par pièce, puis un rangement par nom (`rangerEnvoi`, `trouverOuCreerClient`). Aucune adresse n'était lue : une fiche naissait sans adresse, et deux clients du même nom à deux adresses se fondaient en un seul sans question, ce que sa règle « zéro erreur sur une adresse » interdit pour un tableau.
+
+**La règle.** Un PDF lu devient une ligne de tableau (`lignesDesPdf`, `src/lib/import-pieces.ts`) et passe par `grouperParClient` et `planDeRangement`, les mêmes fonctions, à l'écran comme au serveur. L'écran est `ImporterTableau`, qui prend un `LotAImporter` (un tableau, ou les PDF d'un envoi). L'ancienne relecture, `rangerEnvoi`, `nommerPiece` et `piecesAVerifier` sont partis : deux règles de rangement ne rangeraient plus pareil (`CLAUDE.md` §3). L'écriture d'une fiche (`ficheDuPlan`) est commune au tableau et aux PDF.
+
+**Le rang ne voyage pas.** Le rang d'une pièce est sa place dans `piecesLuesDeLEnvoi` (arrivée, puis identifiant). L'écran envoie les noms tapés et les genres répondus par l'identifiant de la pièce ; le serveur relit les pièces en base, refait le plan, et ramène chaque pièce du plan à son PDF par `idDuRang`. Un plan venu de l'écran n'est jamais cru.
+
+**L'adresse se lit après le nom, et le texte ne choisit jamais entre deux.** Un devis imprime côte à côte le client et le lieu des travaux, et le texte d'un PDF les entremêle. Le texte (`coordonneesApresLeNom`) ne garde une adresse que si une seule, distincte de celles de l'en-tête de l'artisan, suit le nom ; le téléphone, que s'il suit le nom de près (160 caractères) et n'est pas celui de l'en-tête. Un faux téléphone séparerait deux fois le même client (`rapprocherClient`). Sans adresse lue, l'IA lit le TEXTE (`texteSuffit`), jamais l'image d'un PDF qui en a un ; c'est elle qui rend le lieu des travaux (`chantier`), écarté s'il redit l'adresse du client. Le regex de l'adresse est sans drapeau `i` : avec `iu`, `\p{Lu}` prend les minuscules, et la ville avalait la phrase suivante.
+
+**Trois colonnes de lecture (migration 0156, expand seul) :** `adresse_lue`, `telephone_lu`, `chantier_lu`. `adresse_chantier` garde ce que le rangement a DÉCIDÉ ; y écrire la lecture l'aurait polluée au premier « Annuler ».
+
+**Ce qui n'est pas tenu.** Un PDF déjà lu avant la migration n'a pas d'adresse : il se range sans, comme avant. Le même numéro dans deux PDF différents se range deux fois (deux fichiers, deux pièces), à l'inverse d'une ligne de tableau en double.
+
 ## §539 : Ma banque soignée, chaque pastille avec son heure, et le refus de lecture gardé
 
 **Sa planche du 1er novembre 2026** (`appli/soignee/reglages-banque.html`), retouchée trois fois le même soir puis *« code ça, pas de batterie »*. L'écran (`src/app/reglages/banque/page.tsx`) prend les pièces des Réglages soignés (`Paquet`, `EtatEcrit`, `PastilleIcone`, `LigneReglage`) ; ses mots viennent de `src/lib/ma-banque-en-mots.ts`, fonctions pures éprouvées par `scripts/test-ma-banque-en-mots.ts`.

@@ -3,9 +3,8 @@ import { and, asc, desc, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm
 import { withEntreprise } from "../db/with-entreprise";
 import { chantiers, clients, envoisPieces, piecesImportees } from "../db/schema";
 import type { Ctx } from "./context";
-import { trouverOuCreerClient } from "./clients";
 import type { ChampsLus } from "@/lib/import-pieces";
-import { statutApresLecture } from "@/lib/import-pieces";
+import { statutApresLecture, type PieceLueDuPdf } from "@/lib/import-pieces";
 import type { ClientAPoser } from "@/lib/import-tableau";
 import { complementsPourFiche } from "@/lib/rapprochement-client";
 import { logger } from "../logger";
@@ -133,6 +132,9 @@ export async function noterLecture(ctx: Ctx, id: string, champs: ChampsLus): Pro
         jour: champs.jour,
         montantTtc: champs.montantTtc,
         nomLu: champs.nomLu,
+        adresseLue: champs.adresseLue?.slice(0, 300) ?? null,
+        telephoneLu: champs.telephoneLu?.slice(0, 40) ?? null,
+        chantierLu: champs.chantierLu?.slice(0, 300) ?? null,
         updatedAt: new Date(),
       })
       .where(and(eq(piecesImportees.id, id), eq(piecesImportees.statut, "en_lecture")));
@@ -204,77 +206,125 @@ export async function envoiEnCours(ctx: Ctx): Promise<EtatEnvoi | null> {
   });
 }
 
-export async function piecesAVerifier(ctx: Ctx, envoiId: string): Promise<PieceEnBase[]> {
+/**
+ * Les pièces lues d'un envoi, à ranger : ce que l'écran « Par client » montre,
+ * et ce que le rangement relit. **Le même ordre des deux côtés** (arrivée, puis
+ * identifiant) : le rang d'une pièce est sa place ici (`lignesDesPdf`).
+ */
+export async function piecesLuesDeLEnvoi(ctx: Ctx, envoiId: string): Promise<PieceLueDuPdf[]> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) =>
     tx
-      .select()
+      .select({
+        id: piecesImportees.id,
+        genre: piecesImportees.genre,
+        numero: piecesImportees.numero,
+        jour: piecesImportees.jour,
+        montantTtc: piecesImportees.montantTtc,
+        nomLu: piecesImportees.nomLu,
+        adresseLue: piecesImportees.adresseLue,
+        telephoneLu: piecesImportees.telephoneLu,
+        chantierLu: piecesImportees.chantierLu,
+      })
       .from(piecesImportees)
-      .where(and(eq(piecesImportees.envoiId, envoiId), eq(piecesImportees.statut, "a_verifier")))
-      .orderBy(asc(piecesImportees.jour), asc(piecesImportees.createdAt))
+      .where(and(eq(piecesImportees.envoiId, envoiId), inArray(piecesImportees.statut, ["lue", "a_verifier"])))
+      .orderBy(asc(piecesImportees.createdAt), asc(piecesImportees.id))
   );
 }
 
-/** Le nom qu'il a tapé, et le genre s'il manquait. La pièce devient prête. */
-export async function nommerPiece(
+/** Ce qu'un rangement a écrit dans des cases vides, pour qu'« Annuler » les vide. */
+type CaseCompletee = { clientId: string; champ: "adresse" | "telephone"; valeur: string };
+
+/**
+ * La fiche que le plan désigne : celle qu'il a déjà, dont seules les cases
+ * VIDES se complètent (sa réponse du 28 octobre, `complementsPourFiche`), ou
+ * une fiche neuve. Une seule écriture pour les tableaux et les PDF.
+ */
+async function ficheDuPlan(
+  tx: Parameters<Parameters<typeof withEntreprise>[2]>[0],
   ctx: Ctx,
-  id: string,
-  nom: string,
-  genre: "devis" | "facture" | null
-): Promise<boolean> {
-  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    const [p] = await tx.select().from(piecesImportees).where(eq(piecesImportees.id, id)).limit(1);
-    if (!p || p.statut !== "a_verifier") return false;
-    const leGenre = p.genre ?? genre;
-    if (!leGenre) return false;
-    await tx
-      .update(piecesImportees)
-      .set({ nomLu: nom, genre: leGenre, statut: "lue", updatedAt: new Date() })
-      .where(eq(piecesImportees.id, id));
-    return true;
-  });
+  c: ClientAPoser,
+  crees: string[],
+  completees: CaseCompletee[]
+): Promise<string> {
+  if (c.existant) {
+    const [fiche] = await tx
+      .select({ id: clients.id, nom: clients.nom, telephone: clients.telephone, email: clients.email, adresse: clients.adresse, creeLe: clients.createdAt })
+      .from(clients)
+      .where(and(eq(clients.id, c.existant), isNull(clients.deletedAt), isNull(clients.effaceLe)))
+      .limit(1);
+    // Retirée entre la lecture et le rangement : tout s'annule, et la
+    // relecture la verra absente.
+    if (!fiche) throw new Error("Une fiche du rangement a disparu pendant le rangement.");
+    const plus = complementsPourFiche(fiche, { nom: fiche.nom, adresse: c.adresse, telephone: c.telephone });
+    if (plus.adresse || plus.telephone) {
+      await tx
+        .update(clients)
+        .set({ ...(plus.adresse ? { adresse: plus.adresse } : {}), ...(plus.telephone ? { telephone: plus.telephone } : {}), updatedAt: new Date() })
+        .where(eq(clients.id, fiche.id));
+      if (plus.adresse) completees.push({ clientId: fiche.id, champ: "adresse", valeur: plus.adresse });
+      if (plus.telephone) completees.push({ clientId: fiche.id, champ: "telephone", valeur: plus.telephone });
+    }
+    return fiche.id;
+  }
+  // Les colonnes de `creerClient`, et elles seules.
+  const [neuf] = await tx
+    .insert(clients)
+    .values({
+      entrepriseId: ctx.entrepriseId,
+      nom: c.nom,
+      ...(c.adresse ? { adresse: c.adresse } : {}),
+      ...(c.telephone ? { telephone: c.telephone } : {}),
+      createdBy: ctx.utilisateurId,
+    })
+    .returning({ id: clients.id });
+  crees.push(neuf.id);
+  return neuf.id;
 }
 
 /**
- * Range toutes les pièces prêtes de l'envoi : chaque nom est retrouvé parmi ses
- * clients, ou crée une fiche (`trouverOuCreerClient`, la même règle que la
- * création d'un chantier, éprouvée ailleurs). Les fiches créées sont notées
- * sur l'envoi, pour qu'« Annuler » sache lesquelles retirer.
+ * Range les PDF d'un envoi selon le plan que l'écran a montré
+ * (`planDeRangement` sur `lignesDesPdf`), **d'un seul tenant**, comme un
+ * tableau : les fiches, les cases complétées et les pièces réussissent
+ * ensemble ou pas du tout.
+ *
+ * Chaque pièce garde le nom tel qu'il est lu ou tapé, son genre (lu ou
+ * répondu) et l'adresse de son chantier. Ce que le plan ne range pas (un nom
+ * qui attend, deux clients d'un même nom sans adresse) reste à ranger.
  */
-export async function rangerEnvoi(ctx: Ctx, envoiId: string): Promise<{ rangees: number; clientsCrees: number }> {
-  const pretes = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) =>
-    tx
-      .select({ id: piecesImportees.id, nom: piecesImportees.nomLu })
-      .from(piecesImportees)
-      .where(and(eq(piecesImportees.envoiId, envoiId), eq(piecesImportees.statut, "lue")))
-  );
-  // Un nom, une recherche : dix factures de M. Bernard ne cherchent M. Bernard qu'une fois.
-  const parNom = new Map<string, string[]>();
-  for (const p of pretes) {
-    if (!p.nom) continue;
-    const cle = p.nom.trim().toLowerCase();
-    parNom.set(cle, [...(parNom.get(cle) ?? []), p.id]);
-  }
-  const crees: string[] = [];
-  let rangees = 0;
-  for (const ids of parNom.values()) {
-    const nom = pretes.find((p) => p.id === ids[0])!.nom!.trim();
-    const { client, reutilise } = await trouverOuCreerClient(ctx, { nom });
-    if (!reutilise) crees.push(client.id);
-    await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-      await tx
-        .update(piecesImportees)
-        .set({ clientId: client.id, statut: "rangee", updatedAt: new Date() })
-        .where(and(inArray(piecesImportees.id, ids), eq(piecesImportees.statut, "lue")));
-    });
-    rangees += ids.length;
-  }
-  await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+export async function rangerEnvoiSelonLePlan(
+  ctx: Ctx,
+  envoiId: string,
+  aPoser: readonly ClientAPoser[],
+  idDuRang: ReadonlyMap<number, string>
+): Promise<{ rangees: number; clientsCrees: number; completees: number }> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const crees: string[] = [];
+    const completees: CaseCompletee[] = [];
+    let rangees = 0;
+    for (const c of aPoser) {
+      const ids = c.pieces.map((p) => idDuRang.get(p.rang)).filter((id): id is string => !!id);
+      if (ids.length === 0) continue;
+      const clientId = await ficheDuPlan(tx, ctx, c, crees, completees);
+      for (const p of c.pieces) {
+        const id = idDuRang.get(p.rang);
+        if (!id) continue;
+        const posee = await tx
+          .update(piecesImportees)
+          .set({ clientId, statut: "rangee", nomLu: p.nom, genre: p.genre, adresseChantier: p.chantier, updatedAt: new Date() })
+          .where(and(eq(piecesImportees.id, id), eq(piecesImportees.envoiId, envoiId), inArray(piecesImportees.statut, ["lue", "a_verifier"])))
+          .returning({ id: piecesImportees.id });
+        // Une pièce rangée entre-temps par un autre onglet : tout s'annule,
+        // plutôt qu'une fiche créée sans ses pièces.
+        if (posee.length === 0) throw new Error("Une pièce du rangement a changé pendant le rangement.");
+        rangees++;
+      }
+    }
     await tx
       .update(envoisPieces)
-      .set({ clientsCrees: crees, rangeLe: new Date() })
+      .set({ clientsCrees: crees, casesCompletees: completees, rangeLe: new Date() })
       .where(eq(envoisPieces.id, envoiId));
+    return { rangees, clientsCrees: crees.length, completees: completees.length };
   });
-  return { rangees, clientsCrees: crees.length };
 }
 
 // ─── Un tableau (28 octobre 2026) ─────────────────────────────────────────
@@ -350,44 +400,10 @@ export async function rangerTableau(ctx: Ctx, nom: string, aPoser: readonly Clie
       .returning({ id: envoisPieces.id });
 
     const crees: string[] = [];
-    const completees: { clientId: string; champ: "adresse" | "telephone"; valeur: string }[] = [];
+    const completees: CaseCompletee[] = [];
     const lignes: (typeof piecesImportees.$inferInsert)[] = [];
     for (const c of retenus) {
-      let clientId: string;
-      if (c.existant) {
-        const [fiche] = await tx
-          .select({ id: clients.id, nom: clients.nom, telephone: clients.telephone, email: clients.email, adresse: clients.adresse, creeLe: clients.createdAt })
-          .from(clients)
-          .where(and(eq(clients.id, c.existant), isNull(clients.deletedAt), isNull(clients.effaceLe)))
-          .limit(1);
-        // Retirée entre la lecture et le rangement : tout s'annule, et la
-        // relecture du tableau la verra absente.
-        if (!fiche) throw new Error("Une fiche du tableau a disparu pendant le rangement.");
-        const plus = complementsPourFiche(fiche, { nom: fiche.nom, adresse: c.adresse, telephone: c.telephone });
-        if (plus.adresse || plus.telephone) {
-          await tx
-            .update(clients)
-            .set({ ...(plus.adresse ? { adresse: plus.adresse } : {}), ...(plus.telephone ? { telephone: plus.telephone } : {}), updatedAt: new Date() })
-            .where(eq(clients.id, fiche.id));
-          if (plus.adresse) completees.push({ clientId: fiche.id, champ: "adresse", valeur: plus.adresse });
-          if (plus.telephone) completees.push({ clientId: fiche.id, champ: "telephone", valeur: plus.telephone });
-        }
-        clientId = fiche.id;
-      } else {
-        // Les colonnes de `creerClient`, et elles seules.
-        const [neuf] = await tx
-          .insert(clients)
-          .values({
-            entrepriseId: ctx.entrepriseId,
-            nom: c.nom,
-            ...(c.adresse ? { adresse: c.adresse } : {}),
-            ...(c.telephone ? { telephone: c.telephone } : {}),
-            createdBy: ctx.utilisateurId,
-          })
-          .returning({ id: clients.id });
-        crees.push(neuf.id);
-        clientId = neuf.id;
-      }
+      const clientId = await ficheDuPlan(tx, ctx, c, crees, completees);
       for (const p of c.pieces) {
         lignes.push({
           entrepriseId: ctx.entrepriseId,

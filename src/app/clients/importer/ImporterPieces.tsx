@@ -5,10 +5,9 @@ import { useRouter } from "next/navigation";
 import { colors, font, libelleCaps } from "@/lib/design-tokens";
 import { entreeAIgnorer, formatDuFichier, LIMITES_IMPORT, refusDeLEnvoi } from "@/lib/import-pieces";
 import { entreesDuZip, lireEntree, ZipIllisible } from "@/lib/lire-zip";
-import { jourCourt } from "@/lib/documents-du-client";
 import { formatDuTableau, REFUS_XLS, type ClientConnu } from "@/lib/import-tableau";
-import { piecesAVerifierAction, rangerAction, type PieceAVerifier } from "./actions";
-import ImporterTableau from "./ImporterTableau";
+import { piecesDeLEnvoiAction } from "./actions";
+import ImporterTableau, { type LotAImporter } from "./ImporterTableau";
 
 /**
  * IMPORTER DEVIS ET FACTURES — l'écran, d'après la maquette qu'il a essayée
@@ -32,6 +31,7 @@ import ImporterTableau from "./ImporterTableau";
 type Source = { nom: string; taille: number; lire: () => Promise<Uint8Array> };
 type Refuse = { nom: string; raison: string };
 type Etat = {
+  nom: string;
   id: string;
   attendues: number;
   recues: number;
@@ -47,9 +47,11 @@ type Phase =
   | { quoi: "preparer" }
   | { quoi: "envoi"; nom: string; total: number; faits: number }
   | { quoi: "lecture"; lues: number; recues: number }
-  | { quoi: "relecture"; etat: Etat; pieces: PieceAVerifier[] }
-  /** Un tableau CSV ou Excel : lu au serveur, montré par client (28 octobre 2026). */
-  | { quoi: "tableau"; fichier: File; grille: string[][]; connus: ClientConnu[] };
+  /**
+   * Un tableau CSV ou Excel lu au serveur (28 octobre 2026), ou les PDF d'un
+   * envoi une fois lus (31 octobre 2026) : le même écran « Par client ».
+   */
+  | { quoi: "par-client"; lot: LotAImporter; connus: ClientConnu[] };
 
 /** Quelques pièces à la fois : assez pour remplir le réseau, pas assez pour l'étouffer. */
 const PAQUET = 8;
@@ -94,7 +96,6 @@ export default function ImporterPieces({ repriseEnvoiId }: { repriseEnvoiId: str
   // Un envoi déjà lu, pas encore rangé : l'écran s'ouvre sur la lecture, qui
   // passe d'elle-même à la relecture.
   const [phase, setPhase] = useState<Phase>(repriseEnvoiId ? { quoi: "lecture", lues: 0, recues: 0 } : { quoi: "choisir" });
-  const [envoiId, setEnvoiId] = useState<string | null>(repriseEnvoiId);
   const [refuses, setRefuses] = useState<Refuse[]>([]);
 
   // ── La lecture, suivie toutes les deux secondes ──
@@ -111,8 +112,10 @@ export default function ImporterPieces({ repriseEnvoiId }: { repriseEnvoiId: str
       const etat = await suivre();
       if (fini || !etat) return;
       if (etat.recues > 0 && etat.lues >= etat.recues) {
-        const r = await piecesAVerifierAction(etat.id);
-        if (!fini) setPhase({ quoi: "relecture", etat, pieces: r.ok ? r.pieces : [] });
+        const r = await piecesDeLEnvoiAction(etat.id);
+        if (fini) return;
+        if (r.ok) setPhase({ quoi: "par-client", lot: { quoi: "pdf", envoiId: etat.id, nom: etat.nom, pieces: r.pieces }, connus: r.connus });
+        else setPhase({ quoi: "choisir", refus: r.raison });
       } else {
         setPhase({ quoi: "lecture", lues: etat.lues, recues: etat.recues });
       }
@@ -146,7 +149,7 @@ export default function ImporterPieces({ repriseEnvoiId }: { repriseEnvoiId: str
       setPhase({ quoi: "choisir", refus: r.raison ?? "Ce tableau ne s'est pas lu. Réessayez." });
       return;
     }
-    setPhase({ quoi: "tableau", fichier: f, grille: r.grille, connus: r.connus });
+    setPhase({ quoi: "par-client", lot: { quoi: "tableau", fichier: f, grille: r.grille }, connus: r.connus });
   }
 
   async function choisis(fichiers: FileList | null) {
@@ -205,7 +208,6 @@ export default function ImporterPieces({ repriseEnvoiId }: { repriseEnvoiId: str
       return;
     }
     const id = ouvert.envoiId;
-    setEnvoiId(id);
     setPhase({ quoi: "envoi", nom: nomEnvoi, total: sources.length, faits: 0 });
 
     let faits = 0;
@@ -257,29 +259,6 @@ export default function ImporterPieces({ repriseEnvoiId }: { repriseEnvoiId: str
     setPhase({ quoi: "lecture", lues: 0, recues: 0 });
   }
 
-  // ── Relecture : les noms qu'il tape, le genre s'il manque ──
-  const [noms, setNoms] = useState<Record<string, string>>({});
-  const [genres, setGenres] = useState<Record<string, "devis" | "facture">>({});
-  const [enCours, setEnCours] = useState(false);
-  const [erreur, setErreur] = useState<string | null>(null);
-
-  async function ranger() {
-    if (phase.quoi !== "relecture" || !envoiId) return;
-    setEnCours(true);
-    setErreur(null);
-    const r = await rangerAction(
-      phase.etat.id,
-      phase.pieces.map((p) => ({ id: p.id, nom: noms[p.id] ?? "", genre: p.genre ?? genres[p.id] ?? null }))
-    );
-    setEnCours(false);
-    if (!r.ok) {
-      setErreur(r.raison);
-      return;
-    }
-    router.push("/clients");
-    router.refresh();
-  }
-
   const jauge = (fait: number, total: number) => (
     <div className="mt-[28px] h-[6px] overflow-hidden rounded-full" style={{ backgroundColor: colors.rustTint }}>
       <div
@@ -295,14 +274,11 @@ export default function ImporterPieces({ repriseEnvoiId }: { repriseEnvoiId: str
     </p>
   );
 
-  if (phase.quoi === "tableau") {
+  if (phase.quoi === "par-client") {
     return (
-      <ImporterTableau
-        fichier={phase.fichier}
-        grille={phase.grille}
-        connus={phase.connus}
-        autreFichier={() => setPhase({ quoi: "choisir" })}
-      />
+      <ImporterTableau lot={phase.lot} connus={phase.connus} autreFichier={() => setPhase({ quoi: "choisir" })}>
+        <Refuses refuses={refuses} />
+      </ImporterTableau>
     );
   }
 
@@ -388,89 +364,7 @@ export default function ImporterPieces({ repriseEnvoiId }: { repriseEnvoiId: str
     );
   }
 
-  // Relecture
-  const { etat, pieces } = phase;
-  const nommees = pieces.filter((p) => (noms[p.id] ?? "").trim() && (p.genre ?? genres[p.id])).length;
-  const aRanger = etat.pretes + nommees;
-  const reste = pieces.length - nommees;
-  return (
-    <section className="mx-[26px] mt-[10px]" data-atlas="relecture-import">
-      <p className={libelleCaps} style={{ color: colors.muted }}>
-        {nombre(etat.recues)} documents lus
-      </p>
-      <p className="mt-[14px] text-[16px] leading-[1.5]">
-        {nombre(etat.pretes)} prêts à ranger{pieces.length > 0 ? `, ${nombre(pieces.length)} à vérifier.` : "."}
-      </p>
-      <ul className="mt-[10px]">
-        {pieces.map((p) => (
-          <li key={p.id} className="py-[16px]" style={{ borderBottom: `1px solid ${colors.line}` }}>
-            <div className="flex items-baseline justify-between gap-3">
-              <span className="text-[17px]" style={{ fontFamily: font.display }}>
-                {p.numero ? `n° ${p.numero}` : "Sans numéro"}
-              </span>
-              {p.montantTtc && (
-                <span className="text-[14.5px]" style={{ fontVariantNumeric: "tabular-nums" }}>
-                  {Number(p.montantTtc).toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €
-                </span>
-              )}
-            </div>
-            {p.jour && (
-              <p className="text-[13px]" style={{ color: colors.muted }}>
-                {jourCourt(p.jour)}
-              </p>
-            )}
-            {!p.genre && (
-              <div className="mt-[10px] flex gap-2" role="radiogroup" aria-label="Devis ou facture">
-                {(["devis", "facture"] as const).map((g) => (
-                  <button
-                    key={g}
-                    type="button"
-                    role="radio"
-                    aria-checked={genres[p.id] === g}
-                    onClick={() => setGenres((x) => ({ ...x, [p.id]: g }))}
-                    className="min-h-[44px] rounded-full px-5 text-[15px]"
-                    style={
-                      genres[p.id] === g
-                        ? { backgroundColor: colors.plein, color: colors.cream }
-                        : { boxShadow: `inset 0 0 0 1px ${colors.line}` }
-                    }
-                  >
-                    {g === "devis" ? "Devis" : "Facture"}
-                  </button>
-                ))}
-              </div>
-            )}
-            <input
-              data-atlas="nom-piece"
-              value={noms[p.id] ?? ""}
-              onChange={(e) => setNoms((x) => ({ ...x, [p.id]: e.target.value }))}
-              placeholder="Nom du client"
-              autoComplete="off"
-              enterKeyHint="done"
-              className="mt-[10px] w-full rounded-[12px] px-[14px] py-[12px] text-[16px]"
-              style={{ backgroundColor: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}`, color: colors.ink }}
-            />
-          </li>
-        ))}
-      </ul>
-      {erreur && (
-        <p className="mt-[16px] text-[15px]" style={{ color: colors.alert }}>
-          {erreur}
-        </p>
-      )}
-      <button
-        type="button"
-        data-atlas="ranger-pieces"
-        disabled={enCours || aRanger === 0}
-        onClick={() => void ranger()}
-        className="atlas-plein mt-[24px] flex min-h-[54px] w-full items-center justify-center rounded-full text-[18px] disabled:opacity-45"
-        style={{ backgroundColor: colors.plein, color: colors.cream, fontFamily: font.display }}
-      >
-        {enCours ? "Un instant…" : reste > 0 ? `Ranger ${nombre(aRanger)} documents` : "Tout ranger"}
-      </button>
-      <Refuses refuses={refuses} />
-    </section>
-  );
+  return null;
 }
 
 /** Ce qui n'est pas parti, nommé : un dossier qui se tairait laisserait croire qu'il est complet. */
