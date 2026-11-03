@@ -8,12 +8,12 @@ dernière migration `drizzle/0158_cles_composites_effacent_comme_leur_lien.sql` 
 
 La suppression d'un client tombait sur une clé composite de 0149 posée sans règle d'effacement (`ARCHITECTURE.md` §540). Migration `0158` : les vingt-six clés composites effacent comme le lien qu'elles doublent. Aucune donnée lue ni écrite. Niveau 3 (une migration).
 
-Le 2 novembre, même lot : un client sous contrat d'entretien se supprime, le contrat accepté le retient et se nomme sous « Conservé par la loi » (§541). Même jour : la facture en brouillon ne bloque plus (elle se garde, numéro oblige), et un client supprimé quitte « Vos clients » (§542). **Batterie non jouée, à sa demande (« ne lance pas de batterie ») : pas sur `main`.**
+Le 2 novembre, même lot : un client sous contrat d'entretien se supprime, le contrat accepté le retient et se nomme sous « Conservé par la loi » (§541). Même jour : la facture en brouillon ne bloque plus (elle se garde, numéro oblige), et un client supprimé quitte « Vos clients » (§542). **Sur `main` le 3 novembre 2026, réuni avec les quatre autres lots du jour en une seule batterie (206 suites navigateur sur 206, 547 suites base sur 549, les deux rouges l'étant déjà sur `main`).**
 
 ---
 ## « RÉESSAYER » SUR LA FICHE CLIENT, L'ÉCRAN NOTE VOCALE RETIRÉ (3 novembre 2026)
 
-Sa réponse sur la planche (*« Oui, réessayer comme ça me va, tu peux coder »*) et son accord du même jour. Une dictée dont la chaîne échoue se reprend sous la phrase rouge, sans redicter (`DevisDepuisDictee`) ; la chaîne dit désormais l'échec de transcription au lieu de nier la dictée (`devis-depuis-dictee.ts`). La Transcription relance sur place (`RelancerLaTranscription.tsx`) ; `/chantiers/[id]/note-vocale` ne rend plus qu'un renvoi vers la fiche client. Partis : « Ajouter un fichier audio », la réécoute, le complément de note. `ARCHITECTURE.md` §543. Suites ciblées vertes (dont `test-reessayer-la-dictee-e2e`, vue rouge sur le code d'avant) ; **niveau 3, batterie non jouée (lot réuni), pas sur `main`**.
+Sa réponse sur la planche (*« Oui, réessayer comme ça me va, tu peux coder »*) et son accord du même jour. Une dictée dont la chaîne échoue se reprend sous la phrase rouge, sans redicter (`DevisDepuisDictee`) ; la chaîne dit désormais l'échec de transcription au lieu de nier la dictée (`devis-depuis-dictee.ts`). La Transcription relance sur place (`RelancerLaTranscription.tsx`) ; `/chantiers/[id]/note-vocale` ne rend plus qu'un renvoi vers la fiche client. Partis : « Ajouter un fichier audio », la réécoute, le complément de note. `ARCHITECTURE.md` §543. Suites ciblées vertes (dont `test-reessayer-la-dictee-e2e`, vue rouge sur le code d'avant) ; **sur `main` le 3 novembre 2026, réuni avec les quatre autres lots du jour en une seule batterie (206 suites navigateur sur 206, 547 suites base sur 549, les deux rouges l'étant déjà sur `main`)**.
 
 ---
 ## LE DEVIS ET LA FACTURE DE LA PLANCHE, SUR `main` (3 novembre 2026)
@@ -23,7 +23,7 @@ Sa décision : *« laisse comme tu as fait, ensuite code ça »*, puis *« code 
 **La facture et ce qui la suit** (planche du 2 novembre, `ARCHITECTURE.md` §537), dans le même lot : le paiement sur la barre A, l'impayé, « Il ne vous paiera pas », l'avoir et son détail, la mise en demeure qui attend le lendemain de l'échéance, les travaux en plus. Les deux lots portaient chacun une copie de la pastille : une seule reste (`src/components/atlas/PastilleAjout.tsx`).
 
 ---
-## MA BANQUE SOIGNÉE, CODÉE (1er novembre 2026), PAS SUR `main`
+## MA BANQUE SOIGNÉE, CODÉE (1er novembre 2026), SUR `main` le 3 novembre
 
 Branche `lot/ma-banque-soignee`, d'après `appli/soignee/reglages-banque.html` (*« code ça, pas de batterie »*). Écran `src/app/reglages/banque/page.tsx`, règles `src/lib/ma-banque-en-mots.ts`, Ma banque dans le sommaire seulement reliée (`rubriquesReglages`), migration `0157` (refus de lecture gardé, expand seule) (`ARCHITECTURE.md` §539). Suites du domaine vertes, écrans regardés ici sur données de démonstration ; **niveau 3 (argent, migration), batterie non jouée à sa demande : pas sur `main`**. Retour : `docs/ma-banque-soignee-codee.md`.
 
