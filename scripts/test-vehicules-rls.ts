@@ -6,9 +6,11 @@ import {
   documentsDuVehicule,
   getVehicule,
   listerVehicules,
+  marquerRappelVehiculeVu,
   mettreAJourVehicule,
   retirerVehicule,
 } from "../src/server/repositories/vehicules";
+import { rappelsDeLAccueil } from "../src/lib/vehicules";
 import { exporterEntreprise } from "../src/server/repositories/export-entreprise";
 import { fermerLimiteur } from "../src/server/rate-limit";
 import { nettoyerBase } from "./_test-db";
@@ -83,11 +85,56 @@ async function main() {
     assert.equal(v?.numeroContrat, "40 118 552 07", "la ligne a été touchée depuis l'autre entreprise");
   });
 
+  // **« J'ai vu » sur le rappel d'un contrôle** — sa demande du 3 novembre
+  // 2026 (migration 0159). Le jour se donne ici comme l'accueil le donne
+  // (`jourIso`), pour éprouver la veille, l'échéance et le lendemain.
+  const amarok = await creerVehicule(A, "Volkswagen Amarok");
+  await mettreAJourVehicule(A, amarok.id, { controleTechniqueAvant: "2026-11-05", pollutionAvant: "2026-11-05" });
+  const controlesDeA = async (jour: string) =>
+    rappelsDeLAccueil(await listerVehicules(A), jour)
+      .filter((r) => r.vehiculeId === amarok.id)
+      .map((r) => `${r.controle}:${r.echeance.ton}:${r.vuPossible ? "vu possible" : "sans vu"}`);
+
+  await test("« J'ai vu » s'enregistre pour la date vue, et la carte part de l'accueil", async () => {
+    assert.deepEqual(await marquerRappelVehiculeVu(A, amarok.id, "controle_technique", "2026-11-05", "2026-11-03"), { ok: true });
+    assert.equal((await getVehicule(A, amarok.id))?.controleTechniqueVuPour, "2026-11-05");
+    assert.deepEqual(await controlesDeA("2026-11-03"), ["pollution:proche:vu possible"]);
+    assert.deepEqual(await controlesDeA("2026-11-05"), ["pollution:proche:vu possible"]);
+  });
+
+  await test("une autre entreprise ne peut pas le poser sur ce véhicule, et ne voit pas celui de A", async () => {
+    const r = await marquerRappelVehiculeVu(B, amarok.id, "pollution", "2026-11-05", "2026-11-03");
+    assert.equal(r.ok, false, "B a rangé le rappel d'un véhicule de A");
+    assert.equal((await getVehicule(A, amarok.id))?.pollutionVuPour, null, "la ligne de A a été écrite depuis B");
+    assert.deepEqual(await listerVehicules(B), []);
+  });
+
+  await test("l'échéance dépassée : la carte revient en rouge, et le serveur refuse un nouveau « J'ai vu »", async () => {
+    assert.deepEqual(await controlesDeA("2026-11-06"), ["controle_technique:depasse:sans vu", "pollution:depasse:sans vu"]);
+    const r = await marquerRappelVehiculeVu(A, amarok.id, "pollution", "2026-11-05", "2026-11-06");
+    assert.equal(r.ok, false);
+    assert.match(r.ok ? "" : r.raison, /dépassé/);
+    assert.equal((await getVehicule(A, amarok.id))?.pollutionVuPour, null);
+  });
+
+  await test("une nouvelle date remet le rappel à neuf, et refuse le « J'ai vu » d'un écran resté sur l'ancienne", async () => {
+    await mettreAJourVehicule(A, amarok.id, { controleTechniqueAvant: "2028-11-05" });
+    assert.deepEqual(await controlesDeA("2028-10-01"), ["pollution:depasse:sans vu", "controle_technique:calme:vu possible"]);
+    const r = await marquerRappelVehiculeVu(A, amarok.id, "controle_technique", "2026-11-05", "2026-11-03");
+    assert.match(r.ok ? "" : r.raison, /Rechargez/);
+    assert.equal((await getVehicule(A, amarok.id))?.controleTechniqueVuPour, "2026-11-05");
+  });
+
+  await test("un contrôle inventé ne s'écrit nulle part", async () => {
+    const r = await marquerRappelVehiculeVu(A, amarok.id, "vidange", "2026-11-05", "2026-11-03");
+    assert.equal(r.ok, false);
+  });
+
   await test("un véhicule retiré sort de la liste, mais part dans la sauvegarde", async () => {
     assert.equal(await retirerVehicule(A, benne.id), true);
-    assert.deepEqual(await listerVehicules(A), []);
+    assert.deepEqual((await listerVehicules(A)).map((v) => v.id), [amarok.id]);
     const e = await exporterEntreprise(A);
-    assert.equal(e.tables.vehicules?.length, 1, "le véhicule manque à l'export");
+    assert.equal(e.tables.vehicules?.length, 2, "un véhicule manque à l'export");
     assert.ok(
       e.fichiers.some((f) => f.storageKey.endsWith("/vehicules/carte.pdf") && f.chemin.startsWith("fichiers/Véhicules/")),
       "la carte grise n'est pas rangée sous « Véhicules » dans l'archive"

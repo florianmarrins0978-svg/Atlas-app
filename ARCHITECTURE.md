@@ -34769,8 +34769,10 @@ EFFACE celle d'avant : son rappel ne doit pas survivre au papier qui la clôt.
 **Les seuils** : deux mois avant (la fenêtre où le passer ne fait perdre aucun
 jour), doré à quinze jours, rouge une fois dépassé ; une contre-visite se montre
 tout de suite. Une seule fonction (`echeance`) pour la liste, la fiche et
-l'accueil. Pas de « J'ai vu » sur ces cartes : elles partent quand la situation
-change (nouveau PV, date tapée), pas quand on les fait taire.
+l'accueil. ~~Pas de « J'ai vu » sur ces cartes : elles partent quand la
+situation change (nouveau PV, date tapée), pas quand on les fait taire.~~
+**Révisé par lui le 3 novembre 2026** : « J'ai vu » les fait partir, et une
+échéance passée sans contrôle les ramène en rouge (§546).
 
 **L'IA lit, elle ne décide pas.** `lire-document-vehicule.ts` (patron de
 `lire-attestation.ts`) rend une nature et des champs, relus par une fonction
@@ -36764,3 +36766,23 @@ rougir sur une carte élargie.
 **Les mots publics, étendus** (`MARQUEURS_PUBLICS`) : départemental, régional, intercommunal, école, collège, lycée, hôpital, public (l'office public de l'habitat). **Et une forme juridique de société l'emporte sur eux** (`FORMES_DE_SOCIETE`) : « Auto-école Martin SARL » est une entreprise ; sans cela, elle aurait reçu les règles de Chorus Pro. Le prix, assumé : une école privée sans forme juridique (« École Sainte-Marie ») passe pour publique tant qu'il n'a rien choisi ; la pastille la corrige.
 
 **Ce qui n'est pas tenu, et qu'il ne faut pas croire tenu** (`TODO.md`) : le nom que rend l'IA passe encore devant celui des règles (`fusionnerLectures`) ; la civilité reste dans le nom rangé au lieu d'aller sur la pastille de la fiche créée ; le nom du compte de l'artisan (son prénom et son nom) n'est pas exclu, seul celui de son entreprise ; des initiales de société écrites comme une civilité (« MR Rénovation ») se liraient comme une personne. **Et le cas Sanchez n'est pas reproduit** : sur son texte recopié, la règle lit déjà « Mme Sanchez Emmanuelle » ; la cause chez lui demande son fichier.
+
+## §546 : « J'ai vu » range le rappel d'un contrôle, l'échéance passée le ramène en rouge
+
+**Sa demande du 3 novembre 2026**, capture de l'accueil (« Contrôle technique », « Volkswagen Amarok », « Avant le 5 novembre. Plus que 2 jours. ») : *« c'est bien le rappel, mais j'ai aucun moyen de l'enlever. Il faut qu'il y ait une petite case J'ai vu, je peux cliquer pour l'enlever. »* Rappelé pourquoi il n'y en avait pas (§461 : un contrôle oublié se découvre au bord de la route), il a choisi : « J'ai vu » fait partir la carte tout de suite ; si le contrôle n'est toujours pas fait à l'échéance, elle revient en rouge.
+
+**Le « vu » retient la date limite vue, pas l'instant du geste** (migration 0159 : `controle_technique_vu_pour`, `pollution_vu_pour`, `contre_visite_vu_pour`, sur `vehicules`). Il vaut pour cette échéance seule : un nouveau procès-verbal ou une date tapée, et la date du contrôle n'est plus celle qui a été vue. Le rappel repart à neuf sans qu'aucune écriture efface l'ancien « vu ».
+
+**Dépassée, la carte revient quoi que dise la colonne, et sans « J'ai vu »** (`vuPossible`) : un contrôle dépassé, c'est une amende et un camion immobilisé. Elle part alors comme avant, au procès-verbal ajouté ou à la date tapée.
+
+**Le jour du retour est le lendemain de la date limite.** La date d'un contrôle est son dernier jour valable (« Dernier jour aujourd'hui », en ambre, `echeance`) ; une carte vue reste partie ce jour-là et revient le lendemain, « Dépassé depuis 1 jour », dans le rouge qu'il a nommé. Le jour se lit sur l'atelier (`jourIso`), comme le reste de l'accueil, jamais sur l'heure du téléphone.
+
+**Pourquoi pas `rappels_vus` (0071).** Sa cible est un chantier, en clé `NOT NULL`, et son « vu » se réveille au bout d'un délai réglé. Ici la cible est un véhicule et le réveil une date du calendrier : plier la table demandait de relâcher sa clé et de réécrire sa contrainte de genre, sur une table habitée. Sur la ligne du véhicule, le « vu » hérite de la FORCE RLS de 0131 et part avec lui dans la sauvegarde.
+
+**La liste et la fiche des véhicules n'en tiennent pas compte** : elles disent l'état du camion (`rappelsDesVehicules`). Seul l'accueil retire les cartes vues (`rappelsDeLAccueil`) ; un « J'ai vu » ne change rien à la date d'un contrôle.
+
+**Le serveur rejoue la règle au geste** (`refusDuVu`, sur la ligne verrouillée par `marquerRappelVehiculeVu`) : un écran ouvert la veille de l'échéance, ou une date changée entre l'affichage et le geste, se refuse, et la carte revient sous ses yeux avec la phrase. Elle part de l'écran avant la réponse, comme les autres « J'ai vu » ; `RappelsVehicules` est donc devenu un composant du navigateur, et son bouton est celui de `CarteAttestation`.
+
+Contrôles : `test-vehicules` (la règle : vu en ambre, la veille, le jour, le lendemain de l'échéance, une nouvelle date, la fiche qui ne bouge pas), `test-vehicules-rls` (sous `atlas_app` : le « vu » par entreprise, refusé depuis une autre, le retour dépassé, l'écran resté sur l'ancienne date), `test-rappel-vehicule-vu-e2e` (son geste : la carte part avant la réponse, revient rouge sans « J'ai vu », repart à neuf, un refus s'affiche).
+
+**Ce qui n'est pas tenu** : servi sur une base sans 0159, ce code fait tomber l'accueil du patron et l'écran Véhicules (la lecture nomme les trois colonnes). `demarrer.sh` applique les migrations à l'allumage ; rien n'empêche encore de servir après une migration en échec (`.claude/rules/deployment-safety.md`).

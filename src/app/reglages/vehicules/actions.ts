@@ -13,10 +13,12 @@ import {
   COLONNES_DU_DOCUMENT,
   creerVehicule,
   getVehicule,
+  marquerRappelVehiculeVu,
   mettreAJourVehicule,
   retirerVehicule,
   type VehiculeEnBase,
 } from "@/server/repositories/vehicules";
+import { jourIso } from "@/lib/jour";
 import {
   CHAMPS_VEHICULE,
   NATURES_DOCUMENT_VEHICULE,
@@ -253,5 +255,32 @@ export async function retirerVehiculeAction(vehiculeId: string): Promise<{ ok: t
       erreur: err instanceof Error ? err.message : String(err),
     });
     return { ok: false, raison: "Le véhicule n’a pas pu être retiré. Réessayez." };
+  }
+}
+
+/**
+ * « J'ai vu » sur le rappel d'un contrôle, depuis l'accueil — sa demande du
+ * 3 novembre 2026. La carte part de son écran avant la réponse ; un refus la
+ * fait revenir avec sa phrase (`RappelsVehicules`).
+ *
+ * Le jour est celui de l'atelier, pris ici et non dans le téléphone : c'est sur
+ * lui que l'accueil a décidé de montrer la carte.
+ */
+export async function marquerRappelVehiculeVuAction(
+  vehiculeId: string,
+  controle: string,
+  avant: string
+): Promise<{ ok: true } | Refus> {
+  const garde = await patron("ranger le rappel d'un contrôle");
+  if (!garde.ok) return garde;
+  try {
+    const r = await marquerRappelVehiculeVu(garde.ctx, vehiculeId, controle, avant, jourIso(new Date()));
+    if (r.ok) rafraichir(vehiculeId);
+    return r;
+  } catch (err) {
+    logger.error("Rappel d'un contrôle non rangé", {
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    return { ok: false, raison: "Impossible de ranger ce rappel pour l’instant. Réessayez." };
   }
 }

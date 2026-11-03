@@ -1,9 +1,12 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-10-29, `main` (`bdea976e`, batterie verte hors deux suites de fin de mois rouges sur `main` aussi),
-dernière migration `drizzle/0158_cles_composites_effacent_comme_leur_lien.sql` (réunie le 3 novembre pour la batterie commune, avec `0157_banque_lecture_refusee.sql` et `0156_pieces_importees_adresse_lue.sql`) ; `0155_part_de_main_doeuvre_sur_la_ligne.sql` (le devis) sur `main` depuis le 3 novembre
+dernière migration `drizzle/0158_cles_composites_effacent_comme_leur_lien.sql` (réunie le 3 novembre pour la batterie commune, avec `0157_banque_lecture_refusee.sql` et `0156_pieces_importees_adresse_lue.sql`) ; `0155_part_de_main_doeuvre_sur_la_ligne.sql` (le devis) sur `main` depuis le 3 novembre ; `0159_rappels_vehicules_vus.sql` (le « J'ai vu » des contrôles des véhicules) codée le 3 novembre, pas sur `main`
 
 ---
+## « J'AI VU » SUR LES CARTES DES CONTRÔLES DES VÉHICULES, CODÉ (3 novembre 2026), PAS SUR `main`
+
+Sa demande : *« il faut qu'il y ait une petite case J'ai vu »*, et son choix : la carte part tout de suite, et revient en rouge si le contrôle n'est pas fait à l'échéance. Le « vu » retient la date limite vue (migration 0159, trois colonnes vides sur `vehicules`) ; le lendemain de la date, la carte revient rouge, sans « J'ai vu ». La liste et la fiche des véhicules n'en tiennent pas compte. Règle `rappelsDeLAccueil`, `vuPossible`, `refusDuVu` (`src/lib/vehicules.ts`) ; `ARCHITECTURE.md` §546. Vues rouges puis vertes : `test-vehicules`, `test-vehicules-rls`, `test-rappel-vehicule-vu-e2e`. **Batterie non jouée.**
 ## L'IMPORT : « ANNULER » SIX SECONDES, CE QUI RESTE SE REPREND (3 novembre 2026)
 
 Sa capture : « 48 documents rangés, Annuler » ne partait jamais. Le bandeau part désormais après six secondes comptées au serveur (`ANNULER_PENDANT_MS`, `src/lib/delai-annuler.ts`, la durée de `useRetraits`) ; ce qui n'a pas pu se ranger reprend sa place dans la bande et l'import le reprend (`envoiAReprendre`). Un envoi ne connaît qu'un rangement (`emporterLesRestes`) : « Annuler » ne défait que le dernier, et le serveur le refuse hors de sa fenêtre. Sans migration. `ARCHITECTURE.md` §544. Suites ciblées vertes (`test-pieces-importees-db`, `test-import-tableau-db`, `test-delai-annuler`, `test-importer-pieces-e2e`) ; **pas sur `main`, batterie à jouer**.

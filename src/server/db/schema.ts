@@ -4005,6 +4005,10 @@ export const vehicules = pgTable("vehicules", {
   controleTechniqueAvant: date("controle_technique_avant"),
   pollutionAvant: date("pollution_avant"),
   contreVisiteAvant: date("contre_visite_avant"),
+  /** Migration 0159 : la date limite sur laquelle il a touché « J'ai vu » (`rappelsDesVehicules`). */
+  controleTechniqueVuPour: date("controle_technique_vu_pour"),
+  pollutionVuPour: date("pollution_vu_pour"),
+  contreVisiteVuPour: date("contre_visite_vu_pour"),
   sources: jsonb("sources").$type<SourcesVehicule>().notNull().default({}),
   carteGriseCle: text("carte_grise_cle"),
   carteGriseLe: timestamp("carte_grise_le", { withTimezone: true }),

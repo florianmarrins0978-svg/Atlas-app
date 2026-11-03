@@ -7,11 +7,14 @@ import {
   phraseDeLEcheance,
   phraseDeLecture,
   rangerLecture,
+  rappelsDeLAccueil,
   rappelsDesVehicules,
   refusDuDocumentVehicule,
+  refusDuVu,
   typeDuDocument,
   valeurAffichee,
   valeurDuChamp,
+  vuPossible,
   type LectureDocumentVehicule,
 } from "../src/lib/vehicules";
 import { lireReponseDocumentVehicule } from "../src/lib/document-vehicule-lu";
@@ -96,6 +99,76 @@ cas("le plus pressé en haut, tous véhicules confondus", () => {
 });
 cas("une date qui n'existe pas ne pose aucun rappel", () => {
   assert.equal(echeance("2026-02-31", "2026-02-01"), null);
+});
+
+console.log("— « J'ai vu » sur un rappel de contrôle (sa demande du 3 novembre 2026) —");
+
+// Sa capture : le contrôle technique de l'Amarok, « Avant le 5 novembre. Plus
+// que 2 jours. », regardé le 3 novembre.
+type VehiculeDeLAccueil = Parameters<typeof rappelsDeLAccueil>[0][number];
+const amarok: VehiculeDeLAccueil = {
+  id: "amarok",
+  nom: "Volkswagen Amarok",
+  controleTechniqueAvant: "2026-11-05",
+  pollutionAvant: "2026-11-05",
+  contreVisiteAvant: null,
+  controleTechniqueVuPour: null,
+  pollutionVuPour: null,
+  contreVisiteVuPour: null,
+};
+const vuLe3: VehiculeDeLAccueil = { ...amarok, controleTechniqueVuPour: "2026-11-05" };
+const controlesDu = (jour: string, v: VehiculeDeLAccueil = vuLe3) => rappelsDeLAccueil([v], jour).map((r) => r.controle);
+
+cas("vu à deux jours : la carte part tout de suite, l'autre contrôle reste", () => {
+  assert.deepEqual(controlesDu("2026-11-03", amarok), ["controle_technique", "pollution"]);
+  assert.deepEqual(controlesDu("2026-11-03"), ["pollution"]);
+});
+cas("la veille de l'échéance : toujours partie", () => {
+  assert.deepEqual(controlesDu("2026-11-04"), ["pollution"]);
+});
+cas("le jour de l'échéance, encore valable : toujours partie", () => {
+  assert.deepEqual(controlesDu("2026-11-05"), ["pollution"]);
+});
+cas("le lendemain, toujours pas fait : elle revient, en rouge, sans « J'ai vu »", () => {
+  const r = rappelsDeLAccueil([vuLe3], "2026-11-06").find((x) => x.controle === "controle_technique");
+  assert.ok(r, "la carte dépassée doit revenir malgré le « J'ai vu »");
+  assert.equal(r.echeance.ton, "depasse");
+  assert.equal(r.vuPossible, false);
+});
+cas("vu deux mois avant : elle ne revient pas à quinze jours", () => {
+  const v = { ...amarok, controleTechniqueAvant: "2026-12-20", pollutionAvant: null, controleTechniqueVuPour: "2026-12-20" };
+  assert.deepEqual(controlesDu("2026-10-25", v), []);
+  assert.deepEqual(controlesDu("2026-12-10", v), []);
+  assert.deepEqual(controlesDu("2026-12-21", v), ["controle_technique"]);
+});
+cas("une nouvelle date remet le rappel à neuf : le « J'ai vu » valait pour l'ancienne", () => {
+  // Le nouveau procès-verbal repousse le contrôle de deux ans ; la date tapée
+  // à la main corrige une frappe. Dans les deux cas, ce n'est plus l'échéance vue.
+  const nouveauPv = { ...vuLe3, controleTechniqueAvant: "2028-11-05", pollutionAvant: "2028-11-05" };
+  assert.deepEqual(controlesDu("2028-10-01", nouveauPv), ["controle_technique", "pollution"]);
+  const corrigee = { ...vuLe3, controleTechniqueAvant: "2026-11-07" };
+  const r = rappelsDeLAccueil([corrigee], "2026-11-03").find((x) => x.controle === "controle_technique");
+  assert.equal(r?.vuPossible, true);
+});
+cas("la liste et la fiche des véhicules disent toujours l'état du camion, vu ou non", () => {
+  assert.deepEqual(
+    rappelsDesVehicules([vuLe3], "2026-11-03").map((r) => r.controle),
+    ["controle_technique", "pollution"]
+  );
+});
+cas("« J'ai vu » se propose avant l'échéance, jamais après", () => {
+  assert.equal(vuPossible(echeance("2026-11-30", "2026-10-14")!), true);
+  assert.equal(vuPossible(echeance("2026-11-30", "2026-11-30")!), true);
+  assert.equal(vuPossible(echeance("2026-11-30", "2026-12-01")!), false);
+});
+cas("le serveur refait la même règle : dépassé, ou date changée, se refuse", () => {
+  assert.equal(refusDuVu("2026-11-05", "2026-11-05", "controle_technique", "2026-11-03"), null);
+  assert.equal(refusDuVu("2026-11-05", "2026-11-05", "controle_technique", "2026-11-05"), null);
+  assert.match(refusDuVu("2026-11-05", "2026-11-05", "controle_technique", "2026-11-06") ?? "", /dépassé/);
+  assert.match(refusDuVu("2028-11-05", "2026-11-05", "controle_technique", "2026-11-03") ?? "", /Rechargez/);
+  assert.match(refusDuVu(null, "2026-11-05", "controle_technique", "2026-11-03") ?? "", /Rechargez/);
+  // Une contre-visite se montre à plus de deux mois : elle se range aussi.
+  assert.equal(refusDuVu("2027-01-20", "2027-01-20", "contre_visite", "2026-11-03"), null);
 });
 
 console.log("— La plaque —");

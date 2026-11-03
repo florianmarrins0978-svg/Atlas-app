@@ -10,6 +10,11 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## « J'AI VU » SUR LES CONTRÔLES DES VÉHICULES (3 novembre 2026), pas sur `main`
+
+Le « vu » retient la DATE LIMITE vue (`controle_technique_vu_pour` et ses deux voisines, migration 0159), jamais l'instant du geste : la comparer à la date du contrôle suffit, et une nouvelle date le remet à neuf sans rien effacer (`ARCHITECTURE.md` §546). **Les pièges :** la liste et la fiche des véhicules lisent `rappelsDesVehicules`, sans filtre ; seul l'accueil passe par `rappelsDeLAccueil`. Mettre le filtre dans la première cacherait l'état du camion sur sa fiche. À l'écran, la clé d'une carte porte sa date (`cleDuRappel`) : revenue rouge, ou posée sur une nouvelle date, ce n'est plus la carte qu'il a fait partir. Le jour se prend au serveur (`jourIso` dans `marquerRappelVehiculeVuAction`), et `refusDuVu` rejoue la règle sur la ligne verrouillée. Suites : `test-vehicules` (la règle), `test-vehicules-rls` (sous `atlas_app`), `test-rappel-vehicule-vu-e2e` (son geste ; la date dépassée s'écrit en base, elle ne s'attend pas).
+
+---
 ## L'IMPORT APRÈS UN RANGEMENT PARTIEL (3 novembre 2026)
 
 « Annuler » dure six secondes et ce qui reste se reprend (`ARCHITECTURE.md` §544). **Les pièges :** un envoi ne connaît qu'un rangement, ne jamais en ranger un second en place (`emporterLesRestes` : le second rangement, `creerEnvoi` et `rangerTableau` emportent ce qui reste dans l'envoi neuf) ; les comptes d'`envoiEnCours` disent ce qui RESTE, une pièce rangée n'y entre plus, et un envoi rangé n'attend que ce qu'il porte ; `annulerRangement` rend `{ ok }` ou `{ ok: false, pourquoi }`, et un `assert.ok` dessus passe toujours. Au navigateur, « Annuler » s'appuie dans ses six secondes : la fiche se regarde APRÈS. Pour voir une suite navigateur rouge avant de coder, une suite base aux types encore faux casse la construction (`next build` vérifie aussi `scripts/`) : la mettre de côté le temps de bâtir.

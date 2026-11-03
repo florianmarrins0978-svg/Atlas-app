@@ -301,7 +301,8 @@ export const PROCHE_AVANT_JOURS = 15;
 
 export type ControleVehicule = "controle_technique" | "pollution" | "contre_visite";
 
-const CHAMP_DU_CONTROLE: Record<ControleVehicule, ChampVehicule> = {
+/** La colonne de la date limite de chaque contrôle. */
+export const CHAMP_DU_CONTROLE: Record<ControleVehicule, ChampVehiculeDate> = {
   contre_visite: "contreVisiteAvant",
   controle_technique: "controleTechniqueAvant",
   pollution: "pollutionAvant",
@@ -342,12 +343,69 @@ export function echeance(dateLimite: string | null, jour: string, toujours = fal
   return { ton: "calme", texte: "À passer dès maintenant", joursRestants: reste };
 }
 
+export const CONTROLES_VEHICULE: readonly ControleVehicule[] = ["contre_visite", "controle_technique", "pollution"];
+
+export function estControleVehicule(valeur: string): valeur is ControleVehicule {
+  return (CONTROLES_VEHICULE as readonly string[]).includes(valeur);
+}
+
+// ─── « J'AI VU » SUR UN RAPPEL ──────────────────────────────────────────────
+
+/**
+ * **Sa demande du 3 novembre 2026**, devant le contrôle technique de l'Amarok :
+ * *« c'est bien le rappel, mais j'ai aucun moyen de l'enlever. Il faut qu'il y
+ * ait une petite case J'ai vu, je peux cliquer pour l'enlever. »* Rappelé de ce
+ * qu'un contrôle oublié coûte au bord de la route, il a choisi : « J'ai vu »
+ * fait partir la carte tout de suite, et si le contrôle n'est toujours pas fait
+ * à l'échéance, elle revient en rouge.
+ *
+ * **Le « vu » retient la DATE LIMITE qu'il a vue** (migration 0159), pas
+ * l'instant du geste : il vaut pour cette échéance-là et pour elle seule. Un
+ * nouveau procès-verbal, une date retapée, et la date n'est plus celle qui a été
+ * vue : le rappel repart à neuf, sans qu'aucune écriture ait à l'effacer.
+ */
+export type ChampVuVehicule = "controleTechniqueVuPour" | "pollutionVuPour" | "contreVisiteVuPour";
+
+export const CHAMP_VU_DU_CONTROLE: Record<ControleVehicule, ChampVuVehicule> = {
+  contre_visite: "contreVisiteVuPour",
+  controle_technique: "controleTechniqueVuPour",
+  pollution: "pollutionVuPour",
+};
+
+/**
+ * « J'ai vu » se propose avant l'échéance, jamais après. Dépassé, c'est une
+ * amende et un camion immobilisé : la carte reste jusqu'au procès-verbal ajouté
+ * ou à la date tapée, comme avant le 3 novembre.
+ */
+export function vuPossible(e: Echeance): boolean {
+  return e.ton !== "depasse";
+}
+
+/**
+ * Pourquoi un « J'ai vu » se refuse, ou `null`. Le serveur la rejoue sur ce que
+ * la base porte : l'écran a pu être ouvert la veille, ou la date changée depuis.
+ */
+export function refusDuVu(
+  dateEnBase: string | null,
+  avantVu: string,
+  controle: ControleVehicule,
+  jour: string
+): string | null {
+  if (dateEnBase !== avantVu) return "Cette date a changé. Rechargez l’écran.";
+  const e = echeance(avantVu, jour, controle === "contre_visite");
+  if (!e) return "Ce rappel n’a plus lieu d’être. Rechargez l’écran.";
+  if (!vuPossible(e)) return "Ce contrôle est dépassé. La carte part quand le procès‑verbal est ajouté, ou la date tapée.";
+  return null;
+}
+
 export type RappelVehicule = {
   vehiculeId: string;
   vehiculeNom: string;
   controle: ControleVehicule;
   avant: string;
   echeance: Echeance;
+  /** Le geste « J'ai vu » se propose sur cette carte (`vuPossible`). */
+  vuPossible: boolean;
 };
 
 /** Les rappels de tous les véhicules, le plus pressé en haut. */
@@ -357,16 +415,35 @@ export function rappelsDesVehicules(
 ): RappelVehicule[] {
   const rappels: RappelVehicule[] = [];
   for (const v of vehicules) {
-    for (const controle of ["contre_visite", "controle_technique", "pollution"] as const) {
-      const avant = v[CHAMP_DU_CONTROLE[controle] as ChampVehiculeDate];
+    for (const controle of CONTROLES_VEHICULE) {
+      const avant = v[CHAMP_DU_CONTROLE[controle]];
       const e = echeance(avant, jour, controle === "contre_visite");
-      if (e && avant) rappels.push({ vehiculeId: v.id, vehiculeNom: v.nom, controle, avant, echeance: e });
+      if (e && avant) rappels.push({ vehiculeId: v.id, vehiculeNom: v.nom, controle, avant, echeance: e, vuPossible: vuPossible(e) });
     }
   }
   return rappels.sort((a, b) => a.avant.localeCompare(b.avant));
 }
 
-type ChampVehiculeDate = "controleTechniqueAvant" | "pollutionAvant" | "contreVisiteAvant";
+/**
+ * Les cartes de l'accueil : les rappels, moins ceux qu'il a vus pour leur date
+ * limite. Vu, un rappel se tait tant que cette date n'est pas dépassée ;
+ * dépassée, il revient, et `vuPossible` ne le laisse plus repartir.
+ *
+ * **La liste et la fiche des véhicules n'y passent pas** : elles disent l'état
+ * du camion (`rappelsDesVehicules`), et un « J'ai vu » touché sur l'accueil ne
+ * change rien à la date de son contrôle.
+ */
+export function rappelsDeLAccueil(
+  vehicules: readonly ({ id: string } & Pick<ValeursVehicule, "nom" | ChampVehiculeDate> & Record<ChampVuVehicule, string | null>)[],
+  jour: string
+): RappelVehicule[] {
+  const parId = new Map(vehicules.map((v) => [v.id, v]));
+  return rappelsDesVehicules(vehicules, jour).filter(
+    (r) => !(r.vuPossible && parId.get(r.vehiculeId)?.[CHAMP_VU_DU_CONTROLE[r.controle]] === r.avant)
+  );
+}
+
+export type ChampVehiculeDate = "controleTechniqueAvant" | "pollutionAvant" | "contreVisiteAvant";
 
 /** « Avant le 30 novembre. À passer dès maintenant. » — sous un titre qui nomme déjà le contrôle. */
 export function phraseDeLEcheance(r: Pick<RappelVehicule, "avant" | "echeance">): string {
