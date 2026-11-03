@@ -87,6 +87,19 @@ export type LigneProposee = {
    * la ligne à coups d'expressions régulières.
    */
   prestationIds: string[];
+  /**
+   * La ligne EST la main d'œuvre dictée (« sur une ligne Main d'œuvre ») :
+   * « dont main d'œuvre HT » la compte entière, comme une ligne posée par
+   * « + Main d'œuvre » (migration 0130). Absent : un travail.
+   */
+  mainDoeuvre?: true;
+  /**
+   * La part de la main d'œuvre dictée que CE travail a reçue (« réparti »),
+   * gardée sur sa ligne (migration 0155) pour que « dont main d'œuvre HT » la
+   * compte. Absente : rien de la main d'œuvre dictée, son prix vient d'ailleurs
+   * (prix dicté, tarif nommé, sa grille quand il l'a sorti par la croix).
+   */
+  partMainDoeuvre?: string;
 };
 
 export type PropositionPrix = {
@@ -834,6 +847,7 @@ async function propositionAvecMainOeuvre(
         unite: "jour/homme",
         prixUnitaire: new Decimal(mo.tarif.prix).toFixed(2),
         prestationIds: dedans.flatMap((x) => ids(x.vendable)),
+        mainDoeuvre: true,
       },
     });
   } else {
@@ -856,7 +870,17 @@ async function propositionAvecMainOeuvre(
       // quelle case manque.
       calcul.push(...x.grille.calcul);
       if (aChiffrer) donneesManquantes.push(...x.grille.donneesManquantes);
-      placees.push({ rang: x.rang, ligne: auForfait(x.vendable, aChiffrer ? null : part, x.grille) });
+      // **Sa part est TOUT son prix** : les jours couvrent le chantier, la
+      // grille ne s'ajoute pas (elle ne donnait que la position de départ des
+      // curseurs). La garder sur la ligne, c'est ce qui permet à « dont main
+      // d'œuvre HT » de la compter (2 novembre 2026) ; fondue dans le prix,
+      // elle disparaissait du total que le client lit pour son crédit d'impôt.
+      placees.push({
+        rang: x.rang,
+        ligne: aChiffrer
+          ? auForfait(x.vendable, null, x.grille)
+          : { ...auForfait(x.vendable, part, x.grille), partMainDoeuvre: part },
+      });
     }
     calcul.push({ libelle: "Répartition", detail: "La main d'œuvre est répartie sur les travaux, selon vos curseurs." });
   }

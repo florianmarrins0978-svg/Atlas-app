@@ -36592,7 +36592,15 @@ pouvoir écrire ce que je veux »*), la main d'œuvre sur son calcul
 | la facture | rien à changer : elle recopie le devis par rang et `donneesFacture` trie avant le papier |
 | le contrôle | `test-ordre-des-lignes-du-devis-db.ts` remplit la page avant de retoucher : sur une table presque vide, la mise à jour reste dans sa page (« HOT »), garde sa place dans l'index, et la première version était verte sur le défaut. Chaque cas vérifie que le piège est posé (`ORDER BY ctid`) |
 
+**La main d'œuvre DICTÉE dans « dont » (2 novembre 2026) :**
+
+| | |
+|---|---|
+| le défaut | `propositionAvecMainOeuvre` écrivait la ligne « Main d'œuvre : … » sans drapeau, et fondait chaque part répartie dans le prix du travail : `appliquer-proposition.ts` n'avait rien à garder, et « dont main d'œuvre HT » restait vide sur un devis fait de main d'œuvre |
+| en ligne | `LigneProposee.mainDoeuvre` : la ligne compte entière, comme celle de « + Main d'œuvre » |
+| réparti | `LigneProposee.partMainDoeuvre` : la part que CE travail a reçue, qui est tout son prix (les jours couvrent le chantier, la grille ne donnait que la position de départ des curseurs). Recopiée sur `lignes_prix.part_main_doeuvre`, comme la feuille ; bornée au montant s'il baisse le prix ensuite |
+| ce qui n'en porte pas | un prix dicté, un tarif nommé, un engin avec son homme, un travail sorti par la croix (sa grille) : leur prix ne vient pas de la main d'œuvre dictée |
+| le contrôle | deux cas de `test-main-oeuvre-dictee-db.ts`, de la proposition jusqu'au `mainDoeuvreHt` du devis figé |
+
 **Ce qui reste, et n'est pas codé :** la croix à la place du « − » doré, la
-ligne qui s'éclaire à l'arrivée (`TODO.md`). La répartition de la
-préparation (`appliquer-proposition.ts`) ne pose toujours ni drapeau ni part :
-sa main d'œuvre répartie échappe encore à « dont ».
+ligne qui s'éclaire à l'arrivée (`TODO.md`).

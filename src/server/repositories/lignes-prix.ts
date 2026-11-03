@@ -93,9 +93,11 @@ export async function ajouterLignePrix(
     prixGrille?: string | null;
     /** Une ligne de main d'œuvre (migration 0130) : « + Main d'œuvre » dans sa catégorie. */
     mainDoeuvre?: boolean;
+    /** La part de main d'œuvre comprise dans ce travail (migration 0155) : la répartition de la préparation du devis. */
+    partMainDoeuvre?: string;
   }
 ) {
-  exigerNombresDeLigne(montant, options?.quantite, options?.prixUnitaire);
+  exigerNombresDeLigne(montant, options?.quantite, options?.prixUnitaire, options?.partMainDoeuvre);
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const existantes = await tx.select().from(lignesPrix).where(eq(lignesPrix.chantierId, chantierId));
     const sansTva = await sansTvaSurLeChantier(tx, chantierId);
@@ -114,6 +116,7 @@ export async function ajouterLignePrix(
         prixAncien: options?.prixAncien ?? null,
         prixGrille: options?.prixGrille ?? null,
         mainDoeuvre: options?.mainDoeuvre ?? false,
+        partMainDoeuvre: options?.partMainDoeuvre ?? null,
         ordre: existantes.length,
       })
       .returning();
