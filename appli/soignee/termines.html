@@ -126,11 +126,33 @@
 .volet-choix + .volet-choix { margin-top: 10px; }
 .volet-choix[aria-pressed="true"] { background: var(--atlas-plein); color: var(--sur-plein); box-shadow: none; }
 .volet-sous { margin: -10px 0 16px; font-size: 15px; color: var(--atlas-inkSoft); }
-.tri-sens { display: flex; gap: 10px; margin-top: 14px; }
-.tri-sens button { flex: 1; min-height: 48px; border-radius: 12px; font-size: 15px; font-weight: 600; color: var(--atlas-inkSoft);
-                   box-shadow: inset 0 0 0 1px var(--atlas-line); }
-/* Ce qu'on choisit dans la feuille se dit en vert, la couleur de l'appli (3 novembre 2026). */
-.tri-sens button[aria-pressed="true"] { color: var(--atlas-carteVertTexte); box-shadow: inset 0 0 0 1.5px var(--atlas-plein); }
+/* Trier par, en plus joli (sa demande du 3 novembre 2026 : « j'ai l'impression
+   que c'est moche »). A, la liste ; B, les pastilles ; le sens dans la barre qui
+   glisse du moyen de paiement. Ce qu'on choisit se dit en vert. */
+.tri-liste { border-radius: 16px; background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); overflow: hidden; }
+.tri-rang { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 56px; padding: 0 16px; text-align: left;
+            font-size: 16px; color: var(--atlas-ink); background: none; border: 0; }
+.tri-rang + .tri-rang { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.tri-ico .ico { width: 20px; height: 20px; color: var(--atlas-or); }
+.tri-mot { flex: 1; }
+.tri-coche { width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; color: var(--sur-plein); background: var(--atlas-plein); opacity: 0; transform: scale(.6); transition: opacity 160ms, transform 200ms var(--courbe); }
+.tri-coche .ico { width: 15px; height: 15px; stroke-width: 2.4; }
+.tri-rang[aria-pressed="true"] { font-weight: 600; }
+.tri-rang[aria-pressed="true"] .tri-coche { opacity: 1; transform: scale(1); }
+.tri-pastilles { display: flex; flex-wrap: wrap; gap: 8px; }
+.tri-pastille { display: inline-flex; align-items: center; gap: 7px; min-height: 46px; padding: 0 16px 0 12px; border-radius: 23px; white-space: nowrap;
+                font-size: 15px; font-weight: 600; color: var(--atlas-ink); background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.tri-pastille .ico { width: 18px; height: 18px; color: var(--atlas-or); }
+.tri-pastille[aria-pressed="true"] { background: var(--atlas-plein); color: var(--sur-plein); box-shadow: none; }
+.tri-pastille[aria-pressed="true"] .ico { color: var(--sur-plein); }
+.tri-ruban { position: relative; display: grid; grid-template-columns: 1fr 1fr; margin-top: 16px; padding: 4px; border-radius: 16px;
+             background: color-mix(in srgb, var(--atlas-ink) 6%, transparent); }
+.tri-ruban .glisse { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc((100% - 8px) / 2); border-radius: 12px;
+                     background: var(--atlas-card); box-shadow: 0 1px 2px rgba(28,28,26,0.08), 0 4px 12px rgba(28,28,26,0.08);
+                     transform: translateX(calc(var(--rang, 1) * 100%)); transition: transform 240ms var(--courbe); }
+.tri-ruban button { position: relative; z-index: 1; min-height: 48px; font-size: 15px; font-weight: 600; color: var(--atlas-inkSoft); background: none; border: 0; }
+.tri-ruban button[aria-pressed="true"] { color: var(--atlas-carteVertTexte); }
+@media (prefers-reduced-motion: reduce) { .tri-ruban .glisse, .tri-coche { transition: none; } }
 </style>
 </head>
 <body class="pl">
@@ -156,6 +178,10 @@
         <button type="button" data-teinte="b" aria-pressed="false">B, beige</button>
         <button type="button" data-teinte="c" aria-pressed="false">C, contour vert</button>
         <button type="button" data-teinte="" aria-pressed="false">Sans tri</button>
+      </div>
+      <div class="pl-etats pl-filtre" id="variantes-tri" aria-label="Trier par">
+        <button type="button" data-variante="a" aria-pressed="true">Trier par : A, la liste</button>
+        <button type="button" data-variante="b" aria-pressed="false">B, les pastilles</button>
       </div>
       <div class="cadre">
         <div class="ecran avec-barre" data-etat="rempli">
@@ -303,16 +329,31 @@
             <div class="feuille-poignee"></div>
             <div class="feuille-dedans">
               <h2 class="feuille-titre">Trier par</h2>
-              <div class="tri-cles">
-                <button class="volet-choix" type="button" aria-pressed="true" data-sens="Du plus ancien|Du plus récent">Date du chantier</button>
-                <button class="volet-choix" type="button" aria-pressed="false" data-sens="Du plus ancien|Du plus récent">Date du devis</button>
-                <button class="volet-choix" type="button" aria-pressed="false" data-sens="Du plus ancien|Du plus récent">Date de facturation</button>
-                <button class="volet-choix" type="button" aria-pressed="false" data-sens="Du plus petit|Du plus grand">Montant</button>
-                <button class="volet-choix" type="button" aria-pressed="false" data-sens="De A à Z|De Z à A">Nom du client</button>
+              <!-- A, la liste : une seule carte, une ligne par tri, la coche verte au bout. -->
+              <div class="tri-variante" data-variante="a">
+                <div class="tri-liste">
+                  <button class="tri-rang" type="button" aria-pressed="true" data-sens="Du plus ancien|Du plus récent"><span class="tri-ico"><svg class="ico" aria-hidden="true"><use href="#i-calendrier"/></svg></span><span class="tri-mot">Date du chantier</span><span class="tri-coche"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span></button>
+                  <button class="tri-rang" type="button" aria-pressed="false" data-sens="Du plus ancien|Du plus récent"><span class="tri-ico"><svg class="ico" aria-hidden="true"><use href="#i-document"/></svg></span><span class="tri-mot">Date du devis</span><span class="tri-coche"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span></button>
+                  <button class="tri-rang" type="button" aria-pressed="false" data-sens="Du plus ancien|Du plus récent"><span class="tri-ico"><svg class="ico" aria-hidden="true"><use href="#i-facture"/></svg></span><span class="tri-mot">Date de facturation</span><span class="tri-coche"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span></button>
+                  <button class="tri-rang" type="button" aria-pressed="false" data-sens="Du plus petit|Du plus grand"><span class="tri-ico"><svg class="ico" aria-hidden="true"><use href="#i-euro"/></svg></span><span class="tri-mot">Montant</span><span class="tri-coche"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span></button>
+                  <button class="tri-rang" type="button" aria-pressed="false" data-sens="De A à Z|De Z à A"><span class="tri-ico"><svg class="ico" aria-hidden="true"><use href="#i-personne"/></svg></span><span class="tri-mot">Nom du client</span><span class="tri-coche"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span></button>
+                </div>
               </div>
-              <div class="tri-sens">
-                <button type="button" aria-pressed="false">Du plus ancien</button>
-                <button type="button" aria-pressed="true">Du plus récent</button>
+              <!-- B, les pastilles : les tris côte à côte, celui choisi en vert plein. -->
+              <div class="tri-variante" data-variante="b" hidden>
+                <div class="tri-pastilles">
+                  <button class="tri-pastille" type="button" aria-pressed="true" data-sens="Du plus ancien|Du plus récent"><svg class="ico" aria-hidden="true"><use href="#i-calendrier"/></svg>Date du chantier</button>
+                  <button class="tri-pastille" type="button" aria-pressed="false" data-sens="Du plus ancien|Du plus récent"><svg class="ico" aria-hidden="true"><use href="#i-document"/></svg>Date du devis</button>
+                  <button class="tri-pastille" type="button" aria-pressed="false" data-sens="Du plus ancien|Du plus récent"><svg class="ico" aria-hidden="true"><use href="#i-facture"/></svg>Date de facturation</button>
+                  <button class="tri-pastille" type="button" aria-pressed="false" data-sens="Du plus petit|Du plus grand"><svg class="ico" aria-hidden="true"><use href="#i-euro"/></svg>Montant</button>
+                  <button class="tri-pastille" type="button" aria-pressed="false" data-sens="De A à Z|De Z à A"><svg class="ico" aria-hidden="true"><use href="#i-personne"/></svg>Nom du client</button>
+                </div>
+              </div>
+              <!-- Le sens, dans la barre qui glisse du moyen de paiement (sa « A » du 2 novembre). -->
+              <div class="tri-ruban" role="group" aria-label="Dans quel sens" style="--rang:1">
+                <span class="glisse" aria-hidden="true"></span>
+                <button type="button" aria-pressed="false" data-rang="0">Du plus ancien</button>
+                <button type="button" aria-pressed="true" data-rang="1">Du plus récent</button>
               </div>
               <button class="bouton bouton-texte mt-8" type="button" data-ferme style="width:100%;justify-content:center;color:var(--atlas-inkSoft)">Fermer</button>
             </div>
@@ -337,7 +378,7 @@
       <li>Chaque chantier porte son jour en grand à gauche, dans un carré doré quand la facture est partie, vert plein quand elle attend.</li>
       <li>Non payées, quand elle existe, s'écrit en rouge sous les deux boutons.</li>
       <li><b>À choisir (3 novembre) : le Filtre, une fois un tri posé.</b> Aujourd’hui il passe en noir. A, le vert pâle de « Pour mon comptable » ; B, le beige de « Ma TVA » ; C, un contour vert. « Sans tri » : le Filtre au repos, comme aujourd’hui.</li>
-        <li><b>Dans la feuille « Trier par », ce qu’on choisit se dit en vert</b>, la couleur des boutons de l’appli : le tri en vert plein (aujourd’hui noir), « Du plus ancien » ou « Du plus récent » au contour vert (aujourd’hui doré).</li>
+        <li><b>À choisir aussi : « Trier par », en plus joli</b> (votre remarque du 3 novembre : « c’est moche »). A, la liste : une seule carte, une ligne par tri avec son dessin doré, la coche verte au bout de celui choisi. B, les pastilles : les tris côte à côte, celui choisi en vert plein. Dans les deux, le sens se choisit sur la barre qui glisse, celle du moyen de paiement que vous avez prise sur la facture. Aujourd’hui, cinq grands boutons empilés, celui choisi en noir.</li>
       </ul>
     <h2>Ce qui revient comme dans l'appli</h2>
     <ul class="garde">
@@ -388,17 +429,29 @@ document.querySelectorAll("#teintes-filtre button").forEach(function (b) {
     oeil.setAttribute("aria-pressed", ouvert ? "true" : "false");
     oeil.setAttribute("aria-label", ouvert ? "Tout montrer" : "Ne montrer que ce qui attend");
   });
-  /* Trier par : la clé choisie, et les deux sens dans ses propres mots. */
-  var sens = document.querySelectorAll(".tri-sens button");
-  document.querySelectorAll(".tri-cles .volet-choix").forEach(function (b) {
+  /* Trier par : la clé choisie (liste ou pastilles), et le sens dans ses propres mots. */
+  var ruban = document.querySelector(".tri-ruban");
+  var sens = ruban.querySelectorAll("button");
+  var cles = document.querySelectorAll(".tri-rang, .tri-pastille");
+  cles.forEach(function (b) {
     b.addEventListener("click", function () {
-      document.querySelectorAll(".tri-cles .volet-choix").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+      var mot = b.textContent.trim();
+      cles.forEach(function (x) { x.setAttribute("aria-pressed", x.textContent.trim() === mot ? "true" : "false"); });
       var mots = b.getAttribute("data-sens").split("|");
       sens[0].textContent = mots[0]; sens[1].textContent = mots[1];
     });
   });
   sens.forEach(function (b) {
-    b.addEventListener("click", function () { sens.forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); }); });
+    b.addEventListener("click", function () {
+      sens.forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+      ruban.style.setProperty("--rang", b.getAttribute("data-rang"));
+    });
+  });
+  document.querySelectorAll("#variantes-tri button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      document.querySelectorAll("#variantes-tri button").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+      document.querySelectorAll(".tri-variante").forEach(function (v) { v.hidden = v.getAttribute("data-variante") !== b.getAttribute("data-variante"); });
+    });
   });
 </script>
 </body>
