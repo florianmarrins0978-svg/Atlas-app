@@ -2,10 +2,10 @@
 
 ## SUPPRIMER UN CLIENT : CE QUI RESTE (1er novembre 2026)
 
-- ~~**Un client sous contrat d'entretien ne se supprime toujours pas**~~ **Codé le 2 novembre 2026** sur son « oui » : l'accepté se garde et retient le client, les autres partent (`ARCHITECTURE.md` §536).
-- **Le lot n'est pas sur `main`** : branche locale `lot/suppression-clients`, niveau 3 (migration 0155). Il a demandé de ne pas lancer la batterie le 2 novembre ; elle reste à jouer avant toute poussée.
-- ~~**Un client retenu par une pièce reste dans « Vos clients »**~~ **Codé le 2 novembre 2026** sur sa règle (*« si je le coche, il faut que je puisse le supprimer »*) : `listerFichesClients` filtre `deletedAt` (§537). **Pas regardé à l'écran** (il a demandé de ne rien lancer) : sur son espace, supprimer un client qui a une facture, vérifier qu'il quitte la liste, et que sa facture s'ouvre encore depuis Terminés.
-- **Retirer les vingt-six anciens liens à une seule colonne une fois les clés composites VALIDÉES** (l'entrée E10 ci-dessous). Depuis 0155 elles effacent pareil ; l'ancien lien ne sert plus qu'à garantir les lignes anciennes, ce que la validation fera à sa place.
+- ~~**Un client sous contrat d'entretien ne se supprime toujours pas**~~ **Codé le 2 novembre 2026** sur son « oui » : l'accepté se garde et retient le client, les autres partent (`ARCHITECTURE.md` §541).
+- **Le lot n'est pas sur `main`** : branche locale `lot/suppression-clients`, niveau 3 (migration 0158). Il a demandé de ne pas lancer la batterie le 2 novembre ; elle reste à jouer avant toute poussée.
+- ~~**Un client retenu par une pièce reste dans « Vos clients »**~~ **Codé le 2 novembre 2026** sur sa règle (*« si je le coche, il faut que je puisse le supprimer »*) : `listerFichesClients` filtre `deletedAt` (§542). **Pas regardé à l'écran** (il a demandé de ne rien lancer) : sur son espace, supprimer un client qui a une facture, vérifier qu'il quitte la liste, et que sa facture s'ouvre encore depuis Terminés.
+- **Retirer les vingt-six anciens liens à une seule colonne une fois les clés composites VALIDÉES** (l'entrée E10 ci-dessous). Depuis 0158 elles effacent pareil ; l'ancien lien ne sert plus qu'à garantir les lignes anciennes, ce que la validation fera à sa place.
 
 ## APRÈS L'INTÉGRATION DU 28 OCTOBRE : CE QUI RESTE (29 octobre 2026)
 

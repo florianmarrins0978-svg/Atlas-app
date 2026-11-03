@@ -159,7 +159,7 @@ async function main() {
       assert.deepEqual(
         desaccords(rows),
         [],
-        "Ces clés composites n'effacent pas comme le lien qu'elles doublent : leur ON DELETE doit être le même (modèle : drizzle/0155)"
+        "Ces clés composites n'effacent pas comme le lien qu'elles doublent : leur ON DELETE doit être le même (modèle : drizzle/0158)"
       );
     });
 
