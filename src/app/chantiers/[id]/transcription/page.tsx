@@ -136,7 +136,7 @@ export default async function TranscriptionPage({ params }: { params: Promise<{ 
               Échec
             </p>
             <p className="mt-2 text-[15px] leading-relaxed" style={{ color: colors.ink }}>
-              {note?.transcriptionErreur ?? "Erreur inconnue"}. Votre enregistrement est intact.
+              {note?.transcriptionErreur ?? "Erreur inconnue."} Votre enregistrement est intact.
             </p>
             {/* Sans son, il n'y a rien à retranscrire : l'enregistrement a été
                 purgé après une transcription réussie (`docs/RGPD.md` §4). Un

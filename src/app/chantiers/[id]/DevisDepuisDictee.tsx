@@ -79,6 +79,13 @@ type Props = {
    * (sa planche du 21 octobre 2026, réponse C).
    */
   onTravail?: (enCours: boolean) => void;
+  /**
+   * La préparation a échoué et peut se reprendre : la dictée, elle, est finie.
+   * La fiche client rend alors « Je rédige à la main », que la planche montre
+   * sous « Réessayer » (3 novembre 2026). Sans ce signal, la fiche ne savait
+   * que « dictée en cours », et le bouton restait caché devant un échec.
+   */
+  onEchec?: () => void;
 };
 
 type Etat =
@@ -137,6 +144,7 @@ export default function DevisDepuisDictee({
   auto = false,
   surLeDevis = auto,
   onTravail,
+  onEchec,
 }: Props) {
   const router = useRouter();
   const [etat, setEtat] = useState<Etat>({ type: "repos" });
@@ -144,6 +152,10 @@ export default function DevisDepuisDictee({
   useEffect(() => {
     onTravail?.(travaille);
   }, [travaille, onTravail]);
+  const echecRepris = etat.type === "message" && etat.reprise;
+  useEffect(() => {
+    if (echecRepris) onEchec?.();
+  }, [echecRepris, onEchec]);
 
   async function lancer(remplacer = false) {
     setEtat({ type: "encours" });
@@ -343,7 +355,14 @@ export default function DevisDepuisDictee({
       )}
 
       {etat.type === "message" && (
-        <p role="alert" data-atlas="echec-de-la-dictee" className="text-[13px]" style={{ color: colors.alert }}>
+        <p
+          role="alert"
+          data-atlas="echec-de-la-dictee"
+          // Sur la fiche client, la phrase et « Réessayer » se lisent ensemble,
+          // au centre, comme la planche (`.dictee-echec`, 14,5 points).
+          className={auto && !surLeDevis ? "text-center text-[14.5px] leading-snug" : "text-[13px]"}
+          style={{ color: colors.alert }}
+        >
           {etat.texte}
         </p>
       )}

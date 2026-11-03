@@ -541,6 +541,8 @@ export default function FormulaireNouveauChantier({
    * tromper ; il n'en reste qu'une pendant qu'on parle.
    */
   const [dicteeEnCours, setDicteeEnCours] = useState(false);
+  /** La dictée court, ou Atlas prépare le devis qu'elle a donné : la main attend. */
+  const cacherLaMain = dicteeEnCours || atlasTravaille;
   /**
    * LE chantier de cet écran — la promesse de sa création, gardée jusqu'au bout.
    *
@@ -1647,6 +1649,10 @@ export default function FormulaireNouveauChantier({
                 auto
                 surLeDevis={false}
                 onTravail={setAtlasTravaille}
+                // L'échec clôt la dictée : « Je rédige à la main » revient
+                // sous « Réessayer », et se recache pendant que la
+                // préparation relancée travaille (`atlasTravaille`).
+                onEchec={() => setDicteeEnCours(false)}
               />
             </div>
           )}
@@ -1696,9 +1702,9 @@ export default function FormulaireNouveauChantier({
 
                  **66 % de large** — sa proposition 4, choisie sur planche parmi
                  quatre (`appli/note-vocale-choix.html`). */
-              <div className={dicteeEnCours ? "invisible" : undefined} aria-hidden={dicteeEnCours || undefined} inert={dicteeEnCours || undefined}>
+              <div className={cacherLaMain ? "invisible" : undefined} aria-hidden={cacherLaMain || undefined} inert={cacherLaMain || undefined}>
                 <PrimaryButton
-                  disabled={!peutCreer || dicteeEnCours}
+                  disabled={!peutCreer || cacherLaMain}
                   onClick={() => creerPuisAller("devis")}
                   repere="action-ecrire"
                   pleineLargeur

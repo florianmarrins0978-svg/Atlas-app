@@ -119,6 +119,13 @@ async function main() {
     const boiteBouton = await reessayer.boundingBox();
     assert.ok(boitePhrase && boiteBouton, "la phrase ou le bouton n'a pas de place à l'écran");
     assert.ok(boiteBouton.y >= boitePhrase.y + boitePhrase.height - 1, "« Réessayer » n'est pas sous la phrase rouge");
+    // **La dictée est finie, la main revient** : la planche montre « Je rédige
+    // à la main » sous « Réessayer ». Il restait caché, le drapeau « dictée en
+    // cours » ne retombant jamais après un échec (3 novembre 2026).
+    const main = page.getByRole("button", { name: "Je rédige à la main" });
+    await main.waitFor({ state: "visible", timeout: 5_000 });
+    const boiteMain = await main.boundingBox();
+    assert.ok(boiteMain && boiteMain.y > boiteBouton.y, "« Je rédige à la main » n'est pas sous « Réessayer »");
   });
 
   await cas("« Réessayer » relance la transcription et le devis sur la même note, sans redicter", async () => {
@@ -205,6 +212,10 @@ async function main() {
     );
     await page.goto(transcription, { waitUntil: "networkidle" });
     assert.equal(await sesMots.count(), 0, "les mots sont déjà là : l'échec n'a pas été posé");
+    // **La raison se lit telle qu'elle est écrite** : elle porte déjà son
+    // point, l'écran en ajoutait un second (« indisponible.. »).
+    const raison = await page.getByText("Le fournisseur est momentanément indisponible.").first().innerText();
+    assert.doesNotMatch(raison, /\.\./, `deux points de suite : « ${raison} »`);
     await page.getByRole("button", { name: "Relancer la transcription" }).click({ timeout: 10_000 });
     await sesMots.waitFor({ state: "visible", timeout: 60_000 });
     assert.equal(page.url(), transcription, "le geste a quitté l'écran Transcription");
