@@ -186,7 +186,7 @@ async function main() {
     assert.equal(apres?.etat, "nouveau", "le refus a quand même marqué le virement");
   });
 
-  // Migration 0156, trouvée le 1er novembre 2026 : `luLe` est posé avant
+  // Migration 0157, trouvée le 1er novembre 2026 : `luLe` est posé avant
   // l'appel à la banque, et rien ne gardait qu'une tentative avait échoué.
   // Rouverte dans la demi-heure, Ma banque disait « Lue ».
   await test("un refus de lecture est gardé, et la lecture réussie suivante l'efface", async () => {

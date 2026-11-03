@@ -16,7 +16,7 @@ Un seul lot, à sa demande : les feuilles du devis (TVA, acompte, remise, main d
 
 ## MA BANQUE SOIGNÉE (1er novembre 2026), sur `lot/ma-banque-soignee`
 
-**Les pièges :** `lu_le` est posé AVANT l'appel à la banque ; il ne dit jamais si la lecture a réussi. C'est `lecture_refusee` (0156) qui le dit, et `etatDeLaLecture` qui décide de la pastille : ne jamais afficher « Lue » à partir de `lu_le` seul. Ma banque n'entre dans le sommaire que reliée (`rubriquesReglages(role, banqueReliee)`), parce que sans contrat Enable Banking la porte refuse chez les autres artisans. Les boutons Oui et Non viennent de `ReponseVirement`, partagé avec l'accueil et Ma TVA : les retoucher change trois écrans (`ARCHITECTURE.md` §538).
+**Les pièges :** `lu_le` est posé AVANT l'appel à la banque ; il ne dit jamais si la lecture a réussi. C'est `lecture_refusee` (0157) qui le dit, et `etatDeLaLecture` qui décide de la pastille : ne jamais afficher « Lue » à partir de `lu_le` seul. Ma banque n'entre dans le sommaire que reliée (`rubriquesReglages(role, banqueReliee)`), parce que sans contrat Enable Banking la porte refuse chez les autres artisans. Les boutons Oui et Non viennent de `ReponseVirement`, partagé avec l'accueil et Ma TVA : les retoucher change trois écrans (`ARCHITECTURE.md` §539).
 
 ---
 ## LES PLANCHES DU 31 OCTOBRE, CODÉES (1er novembre 2026)

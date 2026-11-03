@@ -25,7 +25,7 @@ export type LiaisonEnregistree = {
   luLe: Date | null;
   historiqueJours: number | null;
   historiqueRefus: string | null;
-  /** Le refus de la dernière tentative, NULL quand elle a réussi (0156). */
+  /** Le refus de la dernière tentative, NULL quand elle a réussi (0157). */
   lectureRefusee: string | null;
 };
 
@@ -97,7 +97,7 @@ export async function noterProfondeurLue(ctx: Ctx, jours: number, refus: string 
 
 /**
  * Une lecture refusée : sa phrase, gardée jusqu'à la prochaine réussite.
- * `luLe` ne suffit pas à le dire, il est posé avant l'appel (migration 0156).
+ * `luLe` ne suffit pas à le dire, il est posé avant l'appel (migration 0157).
  */
 export async function noterLectureRefusee(ctx: Ctx, raison: string): Promise<void> {
   await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {

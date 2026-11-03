@@ -1,7 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-10-29, `main` (`bdea976e`, batterie verte hors deux suites de fin de mois rouges sur `main` aussi),
-dernière migration `drizzle/0156_banque_lecture_refusee.sql` (Ma banque soignée, réunie le 3 novembre pour la batterie commune) ; `0155_part_de_main_doeuvre_sur_la_ligne.sql` (le devis) sur `main` depuis le 3 novembre
+dernière migration `drizzle/0157_banque_lecture_refusee.sql` (Ma banque soignée, réunie le 3 novembre pour la batterie commune) ; `0155_part_de_main_doeuvre_sur_la_ligne.sql` (le devis) sur `main` depuis le 3 novembre
 
 ---
 ## LE DEVIS ET LA FACTURE DE LA PLANCHE, SUR `main` (3 novembre 2026)
@@ -13,7 +13,7 @@ Sa décision : *« laisse comme tu as fait, ensuite code ça »*, puis *« code 
 ---
 ## MA BANQUE SOIGNÉE, CODÉE (1er novembre 2026), PAS SUR `main`
 
-Branche `lot/ma-banque-soignee`, d'après `appli/soignee/reglages-banque.html` (*« code ça, pas de batterie »*). Écran `src/app/reglages/banque/page.tsx`, règles `src/lib/ma-banque-en-mots.ts`, Ma banque dans le sommaire seulement reliée (`rubriquesReglages`), migration `0156` (refus de lecture gardé, expand seule) (`ARCHITECTURE.md` §538). Suites du domaine vertes, écrans regardés ici sur données de démonstration ; **niveau 3 (argent, migration), batterie non jouée à sa demande : pas sur `main`**. Retour : `docs/ma-banque-soignee-codee.md`.
+Branche `lot/ma-banque-soignee`, d'après `appli/soignee/reglages-banque.html` (*« code ça, pas de batterie »*). Écran `src/app/reglages/banque/page.tsx`, règles `src/lib/ma-banque-en-mots.ts`, Ma banque dans le sommaire seulement reliée (`rubriquesReglages`), migration `0157` (refus de lecture gardé, expand seule) (`ARCHITECTURE.md` §539). Suites du domaine vertes, écrans regardés ici sur données de démonstration ; **niveau 3 (argent, migration), batterie non jouée à sa demande : pas sur `main`**. Retour : `docs/ma-banque-soignee-codee.md`.
 
 ## LES NEUF PLANCHES DU 31 OCTOBRE, CODÉES (1er novembre 2026)
 

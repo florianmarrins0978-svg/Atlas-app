@@ -40,7 +40,7 @@ voyait seulement l'heure, et affichait « Lue ». C'est exactement ton cas de
 ce soir (« quand je scanne, il ne trouve pas de nouvelles lignes »).
 
 Corrigé : le refus de la banque est maintenant gardé en base (une colonne
-ajoutée, rien de réécrit, migration 0156) jusqu'à la prochaine lecture
+ajoutée, rien de réécrit, migration 0157) jusqu'à la prochaine lecture
 réussie. Je l'ai rejoué ici dans les vraies conditions : la lecture échoue à
 l'accueil, Ma banque rouverte affiche « Pas lue à 22 h 07 » et la raison.
 

@@ -69,7 +69,7 @@ export async function lireLaBanque(
   if (!r.ok) {
     logger.warn("La banque n'a pas pu être lue", { raison: r.raison });
     // Gardé : rouverte dans la demi-heure, Ma banque ne relit pas, et doit
-    // pourtant dire « Pas lue » (migration 0156).
+    // pourtant dire « Pas lue » (migration 0157).
     await noterLectureRefusee(ctx, r.raison);
     return r;
   }
