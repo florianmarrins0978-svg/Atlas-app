@@ -4158,6 +4158,11 @@ export const piecesImportees = pgTable("pieces_importees", {
   adresseLue: text("adresse_lue"),
   telephoneLu: text("telephone_lu"),
   chantierLu: text("chantier_lu"),
+  /**
+   * Quand l'objet d'un PDF a été cherché (migration 0156) : un PDF importé
+   * avant la lecture de l'objet se relit UNE fois, à l'ouverture de sa fiche.
+   */
+  objetChercheLe: timestamp("objet_cherche_le", { withTimezone: true }),
   clientId: uuid("client_id"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

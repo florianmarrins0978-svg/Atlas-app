@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-03
 
+- **Le titre d'un devis importé en PDF se voit sur la fiche** (sa remarque : *« objet et titre, c'est la même chose »*, sur son devis Beseme qui ne montrait que son numéro). La ligne « Objet » du PDF est lue à l'import ; les PDF importés avant la retrouvent à la première ouverture de leur fiche. `ARCHITECTURE.md` §538.
 - **Planche « Le chantier » : « Réessayer » après un échec, sur la fiche client** (son accord : supprimer l'ancien écran Note vocale, *« planche d'abord »*). L'état « Échec, Réessayer » de `appli/soignee/chantier.html` pose « Réessayer » sous la phrase rouge, à sa place : il relance la transcription et le devis sur la même dictée, sans redicter. C'était le seul geste de l'ancien écran qui manquait à la fiche ; « Reprendre, j'avais oublié quelque chose » existe déjà sur le devis (le micro en haut à droite, 15 août). Une fois choisi, les liens de la Transcription ouvriront la fiche client et l'ancien écran partira, avec « Ajouter un fichier audio ». Rien dans `src/`.
 
 ## 2026-11-02

@@ -36663,5 +36663,7 @@ rougir sur une carte élargie.
 
 **Trois colonnes de lecture (migration 0156, expand seul) :** `adresse_lue`, `telephone_lu`, `chantier_lu`. `adresse_chantier` garde ce que le rangement a DÉCIDÉ ; y écrire la lecture l'aurait polluée au premier « Annuler ».
 
+**Le titre d'un PDF, sa ligne « Objet » (3 novembre 2026).** Sa remarque, capture de son devis Beseme à l'appui : *« objet et titre, c'est la même chose »*, et la fiche n'en montrait que le numéro. L'objet se lit au texte (`objetDuTexte` : la ligne « Objet : », arrêtée à l'en-tête du tableau qui suit ou à un titre espacé, huit mots au plus) et par l'IA quand elle est appelée ; il va dans la colonne `objet` qu'un tableau remplit déjà, et la fiche le montre pour un PDF comme pour une ligne de tableau (`pieceImportee`). **Les PDF importés avant** se relisent UNE fois, au texte seul, à l'ouverture de leur fiche (`chercherLesObjets`, trente au plus par ouverture) ; `objet_cherche_le` (migration 0156) dit qu'ils l'ont été, qu'un objet ait été trouvé ou non. Jamais l'IA pour ce rattrapage : il la paierait pour un titre.
+
 **Ce qui n'est pas tenu.** Un PDF déjà lu avant la migration n'a pas d'adresse : il se range sans, comme avant. Le même numéro dans deux PDF différents se range deux fois (deux fichiers, deux pièces), à l'inverse d'une ligne de tableau en double.
 

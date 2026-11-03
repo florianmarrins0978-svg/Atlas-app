@@ -19,7 +19,7 @@ import {
 import { clientsQuOnPeutReconnaitre } from "../src/server/repositories/clients";
 import { lignesDesPdf } from "../src/lib/import-pieces";
 import { grouperParClient, planDeRangement, type ChoixAdresse } from "../src/lib/import-tableau";
-import { traiterPiecesEnAttente } from "../src/server/import/traiter-pieces";
+import { chercherLesObjets, traiterPiecesEnAttente } from "../src/server/import/traiter-pieces";
 import { enregistrerObjet } from "../src/server/storage";
 import { _reinitialiserFabriqueLLM } from "../src/server/ai/providers/llm/fabrique";
 import type { FournisseurLLM } from "../src/server/ai/providers/llm/interface";
@@ -87,7 +87,7 @@ const iaDeSuite = (reponse: string): FournisseurLLM => ({
 // rangent par client comme un tableau, adresse comprise).
 const EN_TETE = ["Jardins Eden", "3 rue du Moulin 44100 Nantes", "02 40 00 00 00"];
 const FACTURE_MARTINS = [...EN_TETE, "FACTURE n° F2025-0148", "Date 12/03/2025", "Client : M. Martins", "8 rue du Port 44120 Vertou", "07 11 22 33 44", "Total TTC 480,00"];
-const DEVIS_LENOIR = [...EN_TETE, "DEVIS n° D2025-0201", "03/04/2025", "Pour Mme Lenoir", "14 rue Paul Bert 44100 Nantes", "Total TTC 1 250,00"];
+const DEVIS_LENOIR = [...EN_TETE, "DEVIS n° D2025-0201", "03/04/2025", "Pour Mme Lenoir", "14 rue Paul Bert 44100 Nantes", "Objet : Elagage", "Désignation Qté PU HT", "Total TTC 1 250,00"];
 const FACTURE_LENOIR_AILLEURS = [...EN_TETE, "FACTURE n° F2025-0163", "28/04/2025", "Pour Mme Lenoir", "2 chemin des Vignes 44120 Vertou", "Total TTC 1 250,00"];
 const SANS_ADRESSE = [...EN_TETE, "FACTURE n° F2025-0170", "02/05/2025", "Client : M. Guérin", "Total TTC 90,00"];
 const SANS_NOM = [...EN_TETE, "FACTURE n° F2024-0097", "09/10/2024", "SARL Les Tilleuls", "Total TTC 310,00"];
@@ -209,7 +209,31 @@ async function main() {
     assert.equal(lenoir.adresse, "14 rue Paul Bert, 44100 Nantes", "la fiche neuve n'a pas l'adresse lue sur le PDF");
     const ficheLenoir = await chargerFicheClient(ctx, lenoir.id);
     assert.deepEqual(ficheLenoir?.pieces.devis.map((p) => p.titre), ["n° D2025-0201"], "le devis n'est pas sur la fiche d'un client sans chantier");
+    // Sa remarque du 3 novembre 2026 : « objet et titre, c'est la même chose ».
+    assert.equal(ficheLenoir?.pieces.devis[0].objet, "Elagage", "l'objet du PDF n'est pas le titre de sa ligne");
     assert.ok(tous.find((c) => c.nom === "SARL Les Tilleuls"), "le nom tapé n'a pas créé sa fiche");
+  });
+
+  await essai("un PDF importé avant que l'objet se lise le trouve à l'ouverture de la fiche, une seule fois", async () => {
+    await nettoyerBase();
+    _reinitialiserFabriqueLLM(iaDeSuite("{}"));
+    const ctx = await monter("Essai objet d'avant");
+    const envoi = await creerEnvoi(ctx, "lot.zip", 1);
+    await deposer(ctx, envoi.id, await pdfAvecTexte(DEVIS_LENOIR));
+    await traiterPiecesEnAttente(ctx);
+    await ranger(ctx, envoi.id);
+    // Comme une pièce rangée avant la migration 0156 : ni objet, ni recherche.
+    await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) =>
+      tx.update(piecesImportees).set({ objet: null, objetChercheLe: null })
+    );
+    const lenoir = (await tousLesClients(ctx)).find((c) => c.nom === "Mme Lenoir")!;
+    assert.equal((await chargerFicheClient(ctx, lenoir.id))?.pieces.devis[0].objet ?? null, null, "le décor n'a pas effacé l'objet");
+    await chercherLesObjets(ctx, lenoir.id);
+    assert.equal((await chargerFicheClient(ctx, lenoir.id))?.pieces.devis[0].objet, "Elagage", "l'objet n'a pas été relu");
+    // Une seconde ouverture ne relit rien : la recherche est notée.
+    await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => tx.update(piecesImportees).set({ objet: null }));
+    await chercherLesObjets(ctx, lenoir.id);
+    assert.equal((await chargerFicheClient(ctx, lenoir.id))?.pieces.devis[0].objet ?? null, null, "le PDF a été relu une seconde fois");
   });
 
   await essai("deux adresses pour un même nom : rien ne se range avant sa réponse, puis l'autre va sur la pièce", async () => {
