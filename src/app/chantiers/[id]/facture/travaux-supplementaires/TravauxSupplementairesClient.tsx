@@ -4,6 +4,8 @@ import { useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
+import PastilleAjout from "@/components/atlas/PastilleAjout";
+import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import { avecCivilite, type CiviliteClient } from "@/lib/civilite";
 import { ligneAttendSonPrix, prixAEcrire } from "@/lib/preparation-devis";
@@ -14,7 +16,6 @@ import {
   ligneOuverteAPoserSurLaFacture,
 } from "@/lib/ligne-ouverte-devis";
 import {
-  lignesParBloc,
   lignesParCategorie,
   tauxDeLaLigne,
   tauxLisible,
@@ -43,7 +44,7 @@ import {
 } from "@/components/atlas/Remise";
 import { useEcrituresALaSuite } from "@/components/atlas/useEcrituresALaSuite";
 import { montantDeLaLigne } from "@/lib/montant-de-ligne";
-import { uniteDeLaLigne } from "@/lib/unite-de-ligne";
+import { detailDeLaLigne } from "@/lib/detail-de-ligne";
 // Le formateur du dépôt, au lieu de la copie qui vivait ici : deux façons
 // d'écrire un euro finissent par s'écrire différemment (`CLAUDE.md` §3).
 import { enEuros } from "@/lib/euros";
@@ -113,7 +114,6 @@ export default function TravauxSupplementairesClient({
   chantierNom,
   adresseChantier,
   factureId,
-  numeroFacture,
   statutFacture,
   clientNom,
   clientCivilite,
@@ -130,7 +130,6 @@ export default function TravauxSupplementairesClient({
   chantierNom: string;
   adresseChantier: string | null;
   factureId: string;
-  numeroFacture: string;
   /**
    * L'état de la facture — « brouillon » tant qu'elle n'est pas partie.
    *
@@ -182,13 +181,25 @@ export default function TravauxSupplementairesClient({
    * **Et c'est une VALEUR DE DÉPART, pas un affichage recalculé à chaque
    * frappe** : dérivé au rendu, le champ se viderait au premier « 0 » tapé, et
    * « 0,50 » deviendrait impossible à écrire.
+   *
+   * **Les cases, et elles seules — 2 novembre 2026.** La conversion touchait
+   * TOUTES les lignes, celles du devis comprises, qui ne sont pas des cases
+   * mais du texte : leur « 6.50 » devenait « 6,5 », que le formateur des
+   * montants ne relisait plus, et le gazon s'affichait à « 0,00 € » (sa
+   * planche, `appli/soignee/facture.html`). Une ligne du devis garde la valeur
+   * de la base ; `ligneSeCorrige` dit laquelle est une case, la même règle que
+   * l'écriture (`scripts/test-detail-de-ligne.ts`).
    */
   const [lignes, setLignes] = useState<LigneEcran[]>(() => {
-    const ecrites = lignesInitiales.map((l) => ({
-      ...l,
-      quantite: sansZerosInutiles(l.quantite),
-      prixUnitaire: prixAEcrire(sansZerosInutiles(l.prixUnitaire)),
-    }));
+    const ecrites = lignesInitiales.map((l) =>
+      ligneSeCorrige({ devisId }, l)
+        ? {
+            ...l,
+            quantite: sansZerosInutiles(l.quantite),
+            prixUnitaire: prixAEcrire(sansZerosInutiles(l.prixUnitaire)),
+          }
+        : l
+    );
     // **LA FEUILLE S'OUVRE AVEC SA PREMIÈRE LIGNE — sa demande du 22 septembre
     // 2026 :** *« quand je crée une facture il devrait déjà avoir une ligne
     // d'ouverte ; je ne dois pas avoir besoin d'ajouter une ligne au début »*.
@@ -361,8 +372,6 @@ export default function TravauxSupplementairesClient({
     () => totauxAvecReduction(lignes, tauxTvaFacture, remiseOuverte ? reduction : null),
     [lignes, tauxTvaFacture, remiseOuverte, reduction]
   );
-  const blocs = useMemo(() => lignesParBloc(lignes, tauxTvaFacture), [lignes, tauxTvaFacture]);
-  const plusieursTaux = new Set(blocs.map((b) => b.taux)).size > 1;
 
   /** Ce que le serveur a refusé s'affiche ; le reste se tait. */
   function porter(r: { succes: boolean; erreur?: string }) {
@@ -524,36 +533,75 @@ export default function TravauxSupplementairesClient({
     });
   }
 
+  /**
+   * Sous le titre : le client AVEC sa civilité, puis l'adresse du chantier —
+   * « Mme Vasseur, 14 chemin des Vignes, 44300 Nantes ». Sa planche du
+   * 2 novembre 2026 relevait le tiret qui les collait (« — ») et le nom du
+   * chantier à la place du client ; une virgule les sépare, comme partout.
+   */
+  const situation = [avecCivilite(clientNom, clientCivilite) || chantierNom, adresseChantier]
+    .filter((morceau) => Boolean(morceau))
+    .join(", ");
+
   return (
     <main className="min-h-screen pb-24" style={{ backgroundColor: colors.cream }}>
       {/* **« Facture » quand il n'y a pas de devis** — le point 2 des trois
           qu'il a acceptés sur la planche : *« ça ouvre une page de FACTURE, du
           même dessin »*. Un écran qui dit « travaux en plus » sur la seule
-          chose qu'on facture se photographie et s'envoie au client. */}
+          chose qu'on facture se photographie et s'envoie au client.
+
+          **L'en-tête des écrans soignés** (sa planche du 2 novembre 2026) : le
+          retour cerné et l'assistant sur une ligne, le titre seul, la
+          situation dessous. Le numéro de la facture n'y est plus : il vit sur
+          la facture, d'où l'on vient et où l'on revient. */}
       <EnTeteEcran
-        surtitre={numeroFacture}
+        allure="soignee"
         titre={sansDevis ? "Facture" : "Travaux en plus"}
+        precision={situation}
         retour={{ href: `/chantiers/${chantierId}/facture`, libelle: "Retour à la facture" }}
       />
 
-      <section
-        className="mx-[12px] mt-[18px] rounded-[10px] px-5 py-7"
-        style={{ backgroundColor: colors.card }}
-      >
-        <p className="text-[13px]" style={{ color: colors.muted }}>
-          Chantier
-        </p>
-        <p className="mt-0.5 text-[15px]" style={{ color: colors.ink, fontFamily: font.display }}>
-          {chantierNom}
-          {adresseChantier ? ` — ${adresseChantier}` : ""}
-        </p>
-        <p className="mt-1 text-[12.5px]" style={{ color: colors.muted }}>
-          {avecCivilite(clientNom, clientCivilite)}
-          {numeroDevis ? `, devis ${numeroDevis}` : ""}
-        </p>
+      {/* ─── CE QUE LE CLIENT A ACCEPTÉ — du texte, jamais des champs ─────────
+          Compact, sa planche du 2 novembre 2026 : le nom, « 120 m² à 6,50 € »
+          dessous, le montant à droite. Les quatre cellules d'avant tenaient
+          quatre lignes par prestation pour ce qui ne se touche pas.
+          `detailDeLaLigne` lit la valeur de la BASE : c'est là que le gazon
+          s'écrivait « 0,00 € ». */}
+      {duDevis.length > 0 && (
+        <section className="mx-[22px] mt-5 rounded-[6px] p-[18px]" style={{ backgroundColor: colors.card }}>
+          <p className="mb-1 text-[13px] font-semibold uppercase tracking-[0.12em]" style={{ color: colors.inkSoft }}>
+            Le devis
+            {numeroDevis && (
+              <>
+                {" "}
+                <NumeroDeDocument valeur={numeroDevis} />
+              </>
+            )}
+          </p>
+          {duDevis.map((l, i) => (
+            <div
+              key={l.id}
+              data-atlas="ligne-du-devis"
+              className="flex items-baseline justify-between gap-[14px] py-2.5"
+              style={i > 0 ? { boxShadow: `inset 0 1px 0 ${colors.lineSoft}` } : undefined}
+            >
+              <span className="min-w-0 flex-1 text-[16px] leading-[1.4]" style={{ color: colors.ink }}>
+                <span className="whitespace-pre-line break-words">{l.libelle}</span>
+                <small className="mt-0.5 block text-[14px] tabular-nums" style={{ color: colors.inkSoft }}>
+                  {detailDeLaLigne(l, { prixToujours: true })}
+                </small>
+              </span>
+              <span className="flex-none whitespace-nowrap text-[16px] tabular-nums" style={{ color: colors.ink }}>
+                {enEuros(l.montant)}
+              </span>
+            </div>
+          ))}
+        </section>
+      )}
 
+      <section className="mx-[22px] mt-3 rounded-[6px] p-[18px]" style={{ backgroundColor: colors.card }}>
         <div
-          className="mt-7 hidden pb-2 sm:grid sm:grid-cols-[1fr_70px_84px_130px_130px] sm:gap-3"
+          className="hidden pb-2 sm:grid sm:grid-cols-[1fr_70px_84px_130px_130px] sm:gap-3"
           style={{ borderBottom: `1px solid ${colors.line}` }}
         >
           <Colonne>Description</Colonne>
@@ -567,50 +615,22 @@ export default function TravauxSupplementairesClient({
           <Colonne droite>Montant HT</Colonne>
         </div>
 
-        {/* ─── CE QUE LE CLIENT A ACCEPTÉ — du texte, jamais des champs ───── */}
-        {duDevis.map((l) => (
-          <div
-            key={l.id}
-            data-atlas="ligne-du-devis"
-            className="grid w-full gap-2 py-3 sm:grid-cols-[1fr_70px_84px_130px_130px] sm:items-start sm:gap-3"
-            style={{ borderBottom: `1px solid ${colors.lineSoft}` }}
-          >
-            <span className="text-[16px] leading-[1.45]" style={{ color: colors.ink }}>
-              {l.libelle}
-            </span>
-            <Cellule libelle="Qté">
-              <span className="text-[16px]">{l.quantite}</span>
-            </Cellule>
-            <Cellule libelle="Unité">
-              <span className="text-[16px]">{uniteDeLaLigne(l.unite)}</span>
-            </Cellule>
-            <Cellule libelle="Prix unitaire HT">
-              <span className="text-[16px]">{enEuros(l.prixUnitaire)}</span>
-            </Cellule>
-            <Cellule libelle="Montant HT">
-              <span className="text-[16px]">{enEuros(l.montant)}</span>
-            </Cellule>
-          </div>
-        ))}
-
-        {/* ─── LA CATÉGORIE, comme celle des TVA du devis ──────────────────
-            Sa demande : *« une catégorie comme pour l'ajout d'une TVA se crée
-            direct »*. C'est le même dessin — la plage teintée, les petites
-            capitales, le « − » cerclé d'or de 26 px —, seul le mot change. */}
         {/* ─── UNE CATÉGORIE PAR TAUX ──────────────────────────────────────
             Sa demande : *« une catégorie comme pour l'ajout d'une TVA se crée
             direct »* — et, le 11 septembre, *« je ne peux pas ajouter
-            plusieurs TVA »*. Le dessin est celui du devis : la plage teintée,
-            le taux réglable d'un doigt, le « − » qui retire.
+            plusieurs TVA »*. Le taux se règle d'un doigt, le « − » retire.
 
-            **Sans devis, la plage teintée disparaît, mais pas le réglage
-            qu'elle porte.** « Travaux supplémentaires » au-dessus de la seule
-            chose qu'on facture ne veut rien dire.
+            **Elle s'appelle « En plus »** depuis sa planche du 2 novembre
+            2026, le mot de la marque que ces lignes portent sur la facture.
+
+            **Sans devis, le mot disparaît, mais pas le réglage qu'il porte.**
+            « En plus » au-dessus de la seule chose qu'on facture ne veut rien
+            dire.
 
             **Le taux ne s'écrit que si la ligne en porte un.** Un titre
             « TVA 20 % » au-dessus d'un tableau qui n'a qu'un taux serait du
             bruit sur toutes ses factures — la règle du devis, mot pour mot. */}
-        {categories.map((categorie) => {
+        {categories.map((categorie, rang) => {
           const explicite = categorie.lignes.some((l) => l.tauxTva !== null);
           // **Dès qu'il y a deux taux, CHACUN se nomme — la première catégorie
           // comprise.** Sans cela, les lignes restées au taux de la facture
@@ -619,24 +639,20 @@ export default function TravauxSupplementairesClient({
           // C'est la règle du devis, mot pour mot (`plusieursTva`).
           const nomme = explicite || categories.length > 1;
           return (
-            <div key={categorie.taux}>
+            <div key={categorie.taux} className={rang > 0 ? "mt-5" : ""}>
               {(nomme || !sansDevis) && (
                 <div
                   data-atlas={sansDevis ? "categorie-lignes" : "categorie-supplement"}
-                  className="mt-5 flex items-center justify-between gap-3 rounded-md px-3 py-1.5"
-                  style={{ backgroundColor: sansDevis ? "transparent" : colors.rustTint }}
+                  className="flex min-h-[26px] items-center justify-between gap-3"
                 >
-                  <span
-                    className="text-[11px] font-semibold uppercase tracking-[0.12em]"
-                    style={{ color: colors.rust }}
-                  >
-                    {sansDevis ? "" : "Travaux supplémentaires"}
+                  <span className="text-[13px] font-semibold uppercase tracking-[0.12em]" style={{ color: colors.inkSoft }}>
+                    {sansDevis ? "" : "En plus"}
                   </span>
                   <span className="flex items-center gap-2">
                     {nomme && (
                       <span
-                        className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.12em]"
-                        style={{ color: colors.rust }}
+                        className="flex items-center gap-1 text-[13px] font-semibold uppercase tracking-[0.12em]"
+                        style={{ color: colors.inkSoft }}
                       >
                         TVA
                         <input
@@ -732,23 +748,23 @@ export default function TravauxSupplementairesClient({
               ))}
 
               {/* **Le geste dit CE QU'IL AJOUTE, pas « une ligne »** — sa
-                  correction du 9 septembre 2026 : *« il ne faut pas qu'il y ait
-                  marqué "ajouter une ligne" mais "ajouter travaux
-                  supplémentaires", en plus gros, le même doré que l'appli »*.
+                  correction du 9 septembre 2026, puis sa planche du 2 novembre :
+                  « Ajouter un travail » en pastille dorée, comme sur le devis.
+                  Sans devis, c'est bien une ligne qu'on ajoute, et le mot le dit.
 
                   **Il vit DANS sa catégorie** depuis le 11 septembre : avec
                   deux taux à l'écran, un bouton posé en dessous ne dirait pas
                   auquel des deux il ajoute — et poser la ligne au mauvais taux
                   ne se verrait qu'au total. */}
-              <button
-                type="button"
-                data-atlas="ajouter-ligne-supplement"
-                onClick={() => ajouterUneLigne(explicite ? categorie.taux : null)}
-                className="mt-5 text-[17px] font-semibold"
-                style={{ color: colors.or }}
-              >
-                {sansDevis ? "+ Ajouter une ligne" : "+ Ajouter des travaux supplémentaires"}
-              </button>
+              <div className="mt-4">
+                <PastilleAjout
+                  libelle={sansDevis ? "Ajouter une ligne" : "Ajouter un travail"}
+                  icone="plus"
+                  or
+                  onClick={() => ajouterUneLigne(explicite ? categorie.taux : null)}
+                  repere="ajouter-ligne-supplement"
+                />
+              </div>
             </div>
           );
         })}
@@ -785,82 +801,92 @@ export default function TravauxSupplementairesClient({
             {erreur}
           </p>
         )}
+      </section>
 
-        {/* ─── LES TOTAUX — une ligne par taux, comme sur le devis ────────── */}
-        <div className="mt-7 pt-4" style={{ borderTop: `1px solid ${colors.line}` }}>
-          {/* **Le prix plein d'abord, ce qui a été consenti dessous, puis le
-              net** — l'arrangement du devis, choisi le 16 août 2026 : c'est ce
-              qui permet au client de refaire le calcul. Sans remise, rien de
-              tout cela ne s'affiche : une ligne « Prix accordé au client — % »
-              sur une facture qui n'en porte pas contredirait le document. */}
-          <div className="flex items-center justify-between py-1.5">
-            <span className="text-[15px]">Total HT</span>
-            <span className="text-[15px]">
-              {enEuros(remiseOuverte ? totaux.brutHt : totaux.totalHt)}
-            </span>
-          </div>
-          {mainDoeuvreOuverte && (
-            <LigneMainDoeuvre
-              montant={mainDoeuvre}
-              fige={false}
-              onChange={setMainDoeuvre}
-              onFini={(v) => enregistrerMainDoeuvre(v)}
-              onRetirer={() => enregistrerMainDoeuvre("")}
+      {/* ─── LES TOTAUX — une ligne par taux, comme sur le devis ──────────── */}
+      <section className="mx-[22px] mt-3 rounded-[6px] p-[18px]" style={{ backgroundColor: colors.card }}>
+        {/* **Le prix plein d'abord, ce qui a été consenti dessous, puis le
+            net** — l'arrangement du devis, choisi le 16 août 2026 : c'est ce
+            qui permet au client de refaire le calcul. Sans remise, rien de
+            tout cela ne s'affiche : une ligne « Prix accordé au client — % »
+            sur une facture qui n'en porte pas contredirait le document. */}
+        <div className="flex items-center justify-between py-1.5 text-[15.5px]" style={{ color: colors.inkSoft }}>
+          <span>Total HT</span>
+          <span className="tabular-nums">{enEuros(remiseOuverte ? totaux.brutHt : totaux.totalHt)}</span>
+        </div>
+        {mainDoeuvreOuverte && (
+          <LigneMainDoeuvre
+            montant={mainDoeuvre}
+            fige={false}
+            onChange={setMainDoeuvre}
+            onFini={(v) => enregistrerMainDoeuvre(v)}
+            onRetirer={() => enregistrerMainDoeuvre("")}
+          />
+        )}
+        {remiseOuverte && (
+          <>
+            {/* La remise d'un devis se lit ici, elle se change sur le devis
+                (sa « A » du 7 octobre 2026) : seule une facture sans devis
+                en pose une. */}
+            <LigneRemise
+              pourcent={reduction}
+              montantRetire={totaux.reductionMontant}
+              fige={!sansDevis}
+              onChange={setReduction}
+              onFini={(duChamp) => enregistrerLaRemise(duChamp)}
+              onRetirer={sansDevis ? () => enregistrerLaRemise("") : undefined}
             />
-          )}
-          {remiseOuverte && (
-            <>
-              {/* La remise d'un devis se lit ici, elle se change sur le devis
-                  (sa « A » du 7 octobre 2026) : seule une facture sans devis
-                  en pose une. */}
-              <LigneRemise
-                pourcent={reduction}
-                montantRetire={totaux.reductionMontant}
-                fige={!sansDevis}
-                onChange={setReduction}
-                onFini={(duChamp) => enregistrerLaRemise(duChamp)}
-                onRetirer={sansDevis ? () => enregistrerLaRemise("") : undefined}
-              />
-              <div className="flex items-center justify-between py-1.5">
-                <span className="text-[15px]">
-                  {totaux.reductionPourcent === null ? "Total HT" : "Total HT après remise"}
-                </span>
-                <span className="text-[15px]">{enEuros(totaux.totalHt)}</span>
-              </div>
-            </>
-          )}
-          {totaux.parTaux.map((c) => (
-            <div key={c.taux} className="flex items-center justify-between py-1.5">
-              <span className="text-[15px]">
-                TVA ({tauxLisible(c.taux)} %){plusieursTaux ? "" : ""}
-              </span>
-              <span className="text-[15px]">{enEuros(c.tva)}</span>
+            <div className="flex items-center justify-between py-1.5 text-[15.5px]" style={{ color: colors.inkSoft }}>
+              <span>{totaux.reductionPourcent === null ? "Total HT" : "Total HT après remise"}</span>
+              <span className="tabular-nums">{enEuros(totaux.totalHt)}</span>
             </div>
-          ))}
-          <div
-            className="mt-1 flex items-center justify-between pt-2.5"
-            style={{ borderTop: `2px solid ${colors.ink}` }}
-          >
-            <span className="text-[17px] font-semibold">Total TTC</span>
-            <span
-              data-atlas="total-ttc"
-              className="text-[20px] font-semibold"
-              style={{ fontFamily: font.display }}
-            >
-              {enEuros(totaux.totalTtc)}
-            </span>
+          </>
+        )}
+        {totaux.parTaux.map((c) => (
+          <div key={c.taux} className="flex items-center justify-between py-1.5 text-[15.5px]" style={{ color: colors.inkSoft }}>
+            <span>TVA {tauxLisible(c.taux)} %</span>
+            <span className="tabular-nums">{enEuros(c.tva)}</span>
           </div>
+        ))}
+        {/* ─── LE TOTAL TTC, AU MILIEU, EN OR — sa planche du 2 novembre 2026 :
+            « en plus gros », puis « trop gros, juste milieu » : 46 px, ici
+            comme sur la facture. L'intitulé reste à l'encre (sa demande du
+            24 août 2026 sur la facture : en gris, il passait pour une mention
+            de bas de page). */}
+        <div className="mt-2.5 pt-3.5 text-center" style={{ boxShadow: `inset 0 1px 0 ${colors.line}` }}>
+          <p className="text-[13px] font-semibold uppercase tracking-[0.12em]" style={{ color: colors.ink }}>
+            Total TTC
+          </p>
+          <p
+            data-atlas="total-ttc"
+            className="mt-1.5 text-[46px] leading-none tabular-nums"
+            style={{ fontFamily: font.display, color: colors.or, letterSpacing: "-0.02em" }}
+          >
+            {enEuros(totaux.totalTtc)}
+          </p>
+        </div>
 
-          {!remiseOuverte && sansDevis && (
-            <BoutonRemise
-              onPoser={() => {
-                setRemiseOuverte(true);
-                setReduction(REMISE_PAR_DEFAUT);
-                enregistrerLaRemise(REMISE_PAR_DEFAUT);
-              }}
-            />
-          )}
+        {!remiseOuverte && sansDevis && (
+          <BoutonRemise
+            onPoser={() => {
+              setRemiseOuverte(true);
+              setReduction(REMISE_PAR_DEFAUT);
+              enregistrerLaRemise(REMISE_PAR_DEFAUT);
+            }}
+          />
+        )}
 
+        {/* ─── LES RÈGLEMENTS REÇUS, SOUS LE TOTAL TTC ───────────────────────
+            Sa correction du 21 septembre 2026 : « + Règlement reçu » et
+            l'interrupteur « Facture acquittée » vivent ici, avec le reste de
+            ce qu'il remplit. C'est la MÊME pièce que la page de la facture,
+            montée en saisie plutôt qu'en lecture — deux blocs jumeaux auraient
+            divergé au premier ajustement (`CLAUDE.md` §3).
+
+            **Le total qu'elle déduit est celui de CETTE feuille**, recalculé à
+            chaque frappe : le net à payer suit le prix qu'il vient de taper,
+            sans attendre un rechargement. */}
+        <div className="mt-6">
           <ReglementsRecus
             // Une facture en cours n'a pas d'avoir : il ne se fait que sur une facture partie.
             avoirs={[]}
@@ -874,20 +900,8 @@ export default function TravauxSupplementairesClient({
         </div>
       </section>
 
-      {/* ─── LES RÈGLEMENTS REÇUS, SOUS LE TOTAL TTC ─────────────────────────
-          Sa correction du 21 septembre 2026 : « + Règlement reçu » et
-          l'interrupteur « Facture acquittée » vivent ici, avec le reste de ce
-          qu'il remplit. C'est la MÊME pièce que la page de la facture, montée
-          en saisie plutôt qu'en lecture — deux blocs jumeaux auraient divergé
-          au premier ajustement (`CLAUDE.md` §3).
-
-          **Le total qu'elle déduit est celui de CETTE feuille**, recalculé à
-          chaque frappe : le net à payer suit le prix qu'il vient de taper,
-          sans attendre un rechargement. */}
-
-
-      <div className="mx-[26px] mt-6">
-        <PrimaryButton onClick={() => router.push(`/chantiers/${chantierId}/facture`)} repere="revenir-a-la-facture">
+      <div className="mx-[22px] mt-6">
+        <PrimaryButton pleineLargeur onClick={() => router.push(`/chantiers/${chantierId}/facture`)} repere="revenir-a-la-facture">
           Revenir à la facture
         </PrimaryButton>
         {/* **Rien à rassurer quand il n'y a pas de devis.** Cette ligne existe

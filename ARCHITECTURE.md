@@ -36625,3 +36625,23 @@ pouvoir écrire ce que je veux »*), la main d'œuvre sur son calcul
 
 **Ce qui reste, et n'est pas codé :** le tiroir pour l'acompte et la TVA
 (`TODO.md`).
+
+## §537 : La facture et ce qui la suit, recodées sur leur planche
+
+**Sa planche du 2 novembre 2026** (`appli/soignee/facture.html`), validée en
+entier (*« tout me va »*), puis *« code ça, ne lance pas de batterie »*. Huit
+écrans sous `src/app/chantiers/[id]/facture/` : la facture, le paiement,
+l'impayé, « Il ne vous paiera pas », l'avoir et son détail, la mise en
+demeure, les travaux en plus. Codés en trois parties, rassemblées en un lot.
+
+| | |
+|---|---|
+| **la mise en demeure attend l'échéance** | `quandLaMiseEnDemeure` (`src/lib/mise-en-demeure.ts`) : possible le LENDEMAIN de l'échéance, jour de l'atelier (`jourIso`), la règle des rappels d'impayé ; sans échéance, la date de la facture. L'écran éteint le téléchargement et dit pourquoi ; la route du PDF répond 409 avec la même phrase. Avant, la lettre se produisait avant l'échéance et disait pourtant « reste impayée » |
+| **le détail d'une ligne** | `src/lib/detail-de-ligne.ts` écrit « 120 m² à 6,50 € » ; la cause du « 0,00 € » des travaux en plus : l'écran mettait toutes les lignes au format de la case (« 6,5 »), que `enEuros` ne relit pas. Seules les lignes modifiables prennent ce format |
+| **le nouveau total de l'avoir** | `ttcApresAvoirs`, la fonction de « Net à payer » ; le plafond d'une ligne et son montant affiché partagent `ttcRestantSurLaLigne`. Le motif « Geste commercial » passe par `motifDeLAvoir`, qui envoie exactement ce qu'envoyait l'appli |
+| **les moyens de paiement** | les quatre que l'écran proposait (virement, chèque, espèces, carte) ; « autre » existe en base, aucun écran ne l'a jamais offert, il n'est pas ajouté |
+| **les boutons pleins** | dans la page, pas collés en bas : collés, ils recouvraient les lignes au défilement (le défaut du brouillon) |
+| **une seule pastille** | `src/components/atlas/PastilleAjout.tsx` ; le devis en porte une copie dans son lot (`devis-complet/PastilleAjout.tsx`), à réunir quand les deux lots seront sur `main` |
+
+**Ce qui reste :** les téléphones écrits sans espaces, la carte « Non payée »
+plus large que les autres (`TODO.md`).

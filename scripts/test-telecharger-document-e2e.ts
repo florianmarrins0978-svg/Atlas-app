@@ -106,7 +106,10 @@ async function main() {
 
   await cas("le libellé revient : le bouton ne reste pas sur « Un instant… »", async () => {
     const libelle = (await geste.innerText()).trim();
-    assert.match(libelle, /^Télécharger \(/, `le bouton dit « ${libelle} » une fois le fichier parti`);
+    // « Télécharger » tout court depuis sa planche du 2 novembre 2026 : la
+    // pastille ne porte plus le nom du fichier. La règle reste qu'il ne reste
+    // pas sur « Un instant… ».
+    assert.match(libelle, /^Télécharger/, `le bouton dit « ${libelle} » une fois le fichier parti`);
   });
 
   await cas("QUAND LA ROUTE REFUSE, L'ÉCRAN LE DIT — le silence d'avant", async () => {

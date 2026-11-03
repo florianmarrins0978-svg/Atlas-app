@@ -6,7 +6,13 @@
 import assert from "node:assert/strict";
 import type { PDFFont } from "pdf-lib";
 import { couperLaLettre, type Polices } from "../src/server/pdf/mise-en-demeure-pdf";
-import { lettreDeMiseEnDemeure, villeDeLAdresse, type FacturePourMiseEnDemeure } from "../src/lib/mise-en-demeure";
+import {
+  lettreDeMiseEnDemeure,
+  phraseDeLAttente,
+  quandLaMiseEnDemeure,
+  villeDeLAdresse,
+  type FacturePourMiseEnDemeure,
+} from "../src/lib/mise-en-demeure";
 
 let echecs = 0;
 function cas(nom: string, fn: () => void) {
@@ -82,6 +88,41 @@ cas("LE PAPIER GARDE L'ESPACE AVANT UN MOT EN GRAS, et colle la virgule qui le s
   assert.match(ligne(10_000), /montant de 1\s440,00\s€ TTC, payable/);
   // Coupé étroit, le montant ne se casse pas en deux lignes.
   assert.ok(ligne(120).split(" ").every((m) => !/^440/.test(m)), "le montant s'est coupé à son espace insécable");
+});
+
+// **AVANT L'ÉCHÉANCE, LA LETTRE ATTEND** — défaut vu le 2 novembre 2026 en
+// ouvrant le vrai écran (planche `appli/soignee/facture.html`, état « Pas
+// encore échue ») : la lettre se téléchargeait le jour même de l'envoi, et
+// disait pourtant « reste impayée ». Un client en retard l'est dès le
+// lendemain de l'échéance (`RAPPELS_PAR_DEFAUT.factureImpayeeJours`), pas
+// avant : le jour même, il peut encore payer sans être en faute.
+cas("AVANT L'ÉCHÉANCE, ET LE JOUR MÊME, LA LETTRE ATTEND ; LE LENDEMAIN, ELLE PART", () => {
+  assert.deepEqual(quandLaMiseEnDemeure(FACTURE, "2026-10-09"), { possible: false, echeance: "2026-10-24" });
+  assert.deepEqual(quandLaMiseEnDemeure(FACTURE, "2026-10-23"), { possible: false, echeance: "2026-10-24" });
+  assert.deepEqual(quandLaMiseEnDemeure(FACTURE, "2026-10-24"), { possible: false, echeance: "2026-10-24" });
+  assert.deepEqual(quandLaMiseEnDemeure(FACTURE, "2026-10-25"), { possible: true });
+  // Le passage d'un mois et d'une année ne se compte pas en chiffres.
+  assert.deepEqual(quandLaMiseEnDemeure({ ...FACTURE, dateEcheance: "2026-12-31" }, "2027-01-01"), { possible: true });
+  assert.equal(quandLaMiseEnDemeure({ ...FACTURE, dateEcheance: "2026-12-31" }, "2026-12-31").possible, false);
+});
+
+cas("SANS ÉCHÉANCE, C'EST LA DATE DE LA FACTURE QUI COMPTE (aucun délai : payable à réception)", () => {
+  const sans = { ...FACTURE, dateEcheance: null };
+  assert.deepEqual(quandLaMiseEnDemeure(sans, "2026-10-09"), { possible: false, echeance: "2026-10-09" });
+  assert.deepEqual(quandLaMiseEnDemeure(sans, "2026-10-10"), { possible: true });
+});
+
+cas("une date illisible ne fait pas partir la lettre : ne pas savoir n'est jamais « échue »", () => {
+  assert.equal(quandLaMiseEnDemeure({ ...FACTURE, dateEcheance: "24/10/2026" }, "2026-11-30").possible, false);
+  assert.equal(quandLaMiseEnDemeure(FACTURE, "").possible, false);
+});
+
+cas("la phrase de l'attente dit le jour, et l'année seulement si ce n'est pas la nôtre", () => {
+  assert.equal(
+    phraseDeLAttente("2026-12-02", "2026-11-02"),
+    "L'échéance tombe le mercredi 2 décembre. Jusque-là, la facture n'est pas impayée : la lettre attend le lendemain."
+  );
+  assert.match(phraseDeLAttente("2027-01-08", "2026-12-20"), /tombe le vendredi 8 janvier 2027\./);
 });
 
 console.log(`\n${echecs === 0 ? "✅ Toutes les vérifications passent." : `❌ ${echecs} échec(s).`}`);

@@ -4,7 +4,7 @@ import { withEntreprise } from "../db/with-entreprise";
 import { chantiers, factures, facturesNonPayees } from "../db/schema";
 import type { Ctx } from "./context";
 import { facturesAvecPaiements } from "./paiements-facture";
-import { lettreDeMiseEnDemeure, type LettreMiseEnDemeure } from "@/lib/mise-en-demeure";
+import { lettreDeMiseEnDemeure, quandLaMiseEnDemeure, type LettreMiseEnDemeure, type QuandLaMiseEnDemeure } from "@/lib/mise-en-demeure";
 import type { EnTeteLettre } from "../pdf/mise-en-demeure-pdf";
 
 /**
@@ -82,7 +82,15 @@ export async function listerFacturesNonPayees(ctx: Ctx): Promise<FactureNonPayee
 }
 
 export type ResultatMiseEnDemeure =
-  | { ok: true; lettre: LettreMiseEnDemeure; entete: EnTeteLettre; numero: string; chantierId: string }
+  | {
+      ok: true;
+      lettre: LettreMiseEnDemeure;
+      entete: EnTeteLettre;
+      numero: string;
+      chantierId: string;
+      /** Avant le lendemain de l'échéance, la lettre se relit mais ne part pas. */
+      quand: QuandLaMiseEnDemeure;
+    }
   | { ok: false; refus: string };
 
 /**
@@ -95,6 +103,10 @@ export type ResultatMiseEnDemeure =
  *
  * **Le montant est le reste dû** — celui que calculent déjà les rappels et la
  * catégorie « Non payées », par la même fonction (`facturesAvecPaiements`).
+ *
+ * **Quand elle peut partir se lit sur les dates FIGÉES de la facture**
+ * (`quandLaMiseEnDemeure`) : l'écran éteint son bouton avec, la route du PDF
+ * refuse avec. La lettre, elle, se compose toujours : il la relit avant le jour.
  */
 export async function miseEnDemeure(ctx: Ctx, factureId: string, aujourdHui: string): Promise<ResultatMiseEnDemeure> {
   const due = (await facturesAvecPaiements(ctx)).find((f) => f.id === factureId);
@@ -130,5 +142,12 @@ export async function miseEnDemeure(ctx: Ctx, factureId: string, aujourdHui: str
   ]
     .map((l) => l.trim())
     .filter(Boolean);
-  return { ok: true, lettre, entete: { entrepriseNom: nomAvecForme(f.entrepriseNom, f.entrepriseFormeJuridique), coordonnees }, numero: f.numeroCommercial, chantierId: f.chantierId };
+  return {
+    ok: true,
+    lettre,
+    entete: { entrepriseNom: nomAvecForme(f.entrepriseNom, f.entrepriseFormeJuridique), coordonnees },
+    numero: f.numeroCommercial,
+    chantierId: f.chantierId,
+    quand: quandLaMiseEnDemeure({ dateEmission: f.dateEmission, dateEcheance: f.dateEcheance ?? null }, aujourdHui),
+  };
 }

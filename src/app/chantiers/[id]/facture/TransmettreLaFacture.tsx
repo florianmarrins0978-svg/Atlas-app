@@ -36,7 +36,7 @@ import { preparerLienAcquitteAction, preparerLienFactureAction } from "./actions
 
 const LIBELLE: Record<
   CanalClient,
-  { bouton: string; bascule: string; champ: string; exemple: string; manque: string; invite: string }
+  { bouton: string; bascule: string; lui: string; court: string; champ: string; exemple: string; manque: string; invite: string }
 > = {
   sms: {
     // **Sa demande du 24 août 2026 :** *« corrige en envoyer par SMS, retire la
@@ -44,6 +44,11 @@ const LIBELLE: Record<
     // s'ouvre — au lieu du geste. Et la flèche promettait un écran de plus.
     bouton: "Envoyer par SMS",
     bascule: "Envoyer par SMS",
+    // **Les mots de l'avoir** (planche de la facture, 2 novembre 2026) : le
+    // plein dit à qui il part, « Lui envoyer par SMS », et l'autre voie se
+    // réduit à « Par e-mail » juste dessous. La facture garde les siens.
+    lui: "Lui envoyer par SMS",
+    court: "Par SMS",
     champ: "Numéro de téléphone",
     exemple: "06 12 34 56 78",
     manque: "n'a pas de numéro enregistré",
@@ -52,6 +57,8 @@ const LIBELLE: Record<
   email: {
     bouton: "Envoyer par e-mail",
     bascule: "Envoyer par e-mail",
+    lui: "Lui envoyer par e-mail",
+    court: "Par e-mail",
     champ: "Adresse e-mail",
     exemple: "client@exemple.fr",
     manque: "n'a pas d'adresse e-mail enregistrée",
@@ -76,6 +83,7 @@ export default function TransmettreLaFacture({
   avoir = null,
   acquittee = false,
   jetonAcquitteInitial = null,
+  secondaire = false,
 }: {
   factureId: string;
   clientId: string | null;
@@ -115,6 +123,14 @@ export default function TransmettreLaFacture({
   acquittee?: boolean;
   /** Le lien d'exemplaire acquitté qui vaut encore (`jetonAcquitteVivant`). */
   jetonAcquitteInitial?: string | null;
+  /**
+   * **Les capsules cèdent le plein** — sa planche de la facture du 2 novembre
+   * 2026 : une facture envoyée et encore due a « Il m'a payé » pour bouton
+   * plein, et le renvoi passe dessous. Un écran n'a qu'un seul plein ; c'est la
+   * même capsule, creuse (`PrimaryButton`, `secondaire`). L'écran de l'avoir,
+   * lui, garde son plein : l'envoi y est le geste.
+   */
+  secondaire?: boolean;
 }) {
   // **Qui marque le départ monte le retour.** Il vivait seulement dans
   // `FactureClient` : l'écran « C'est fait » de l'avoir, qui porte ce composant
@@ -285,12 +301,13 @@ export default function TransmettreLaFacture({
               par `PrimaryButton`, jamais par un dessin recopié ici : c'est très
               exactement le défaut qu'on répare, et le repeindre à la main le
               ferait revenir au prochain changement de charte. */}
-          <PrimaryButton
+          <PrimaryButton pleineLargeur
             href={adresse(destinataire)}
             onClick={() => marquerDepartMessagerie(quoi, clientNom)}
             repere={`transmission-${canalChoisi}`}
+            secondaire={secondaire}
           >
-            {acquittee ? "Envoyer la facture acquittée" : LIBELLE[canalChoisi].bouton}
+            {acquittee ? "Envoyer la facture acquittée" : avoir ? LIBELLE[canalChoisi].lui : LIBELLE[canalChoisi].bouton}
           </PrimaryButton>
           {/* **Le destinataire et le lien qui vivaient ici sont RETIRÉS** — sa
               demande du 24 août 2026 : *« pareil sous ouvrir le SMS tout prêt »*,
@@ -307,7 +324,8 @@ export default function TransmettreLaFacture({
               d'adresse e-mail enregistré — saisissez-le » cumulait deux fautes
               d'accord. Le patron relève ce genre de chose, et il a raison. */}
           {clientNom || "Ce client"} {LIBELLE[canalChoisi].manque}
-          {clientId ? ` — ${LIBELLE[canalChoisi].invite}` : "."}
+          {/* Une virgule, pas un tiret : sa règle du 22 septembre 2026 (`CLAUDE.md` §3). */}
+          {clientId ? `, ${LIBELLE[canalChoisi].invite}` : "."}
         </p>
       ) : (
         <>
@@ -316,7 +334,7 @@ export default function TransmettreLaFacture({
               Votre client ne l&apos;a pas encore reçue.
             </p>
           )}
-          <PrimaryButton disabled={enCours} onClick={envoyer}>
+          <PrimaryButton pleineLargeur disabled={enCours} onClick={envoyer} secondaire={secondaire}>
             {enCours
               ? "Préparation…"
               : avoir
@@ -339,7 +357,7 @@ export default function TransmettreLaFacture({
             className="w-full rounded-[4px] border-0 px-4 py-3 outline-none"
             style={{ backgroundColor: colors.cream, color: colors.ink, fontSize: "16px" }}
           />
-          <PrimaryButton onClick={enregistrerEtOuvrir} disabled={enCours || saisie.trim() === ""}>
+          <PrimaryButton pleineLargeur onClick={enregistrerEtOuvrir} disabled={enCours || saisie.trim() === ""} secondaire={secondaire}>
             {enCours ? "Enregistrement…" : "Enregistrer et ouvrir le message"}
           </PrimaryButton>
         </div>
@@ -372,7 +390,7 @@ export default function TransmettreLaFacture({
           className="mt-2 block w-full text-center text-[15px] font-bold"
           style={{ color: colors.or }}
         >
-          {LIBELLE[autre].bascule}
+          {avoir ? LIBELLE[autre].court : LIBELLE[autre].bascule}
         </a>
       ) : (
         <button
@@ -382,7 +400,7 @@ export default function TransmettreLaFacture({
           className="mt-2 block w-full text-center text-[15px] font-bold"
           style={{ color: colors.or }}
         >
-          {LIBELLE[autre].bascule}
+          {avoir ? LIBELLE[autre].court : LIBELLE[autre].bascule}
         </button>
       )}
 

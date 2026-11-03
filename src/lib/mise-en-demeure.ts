@@ -25,7 +25,7 @@
  * lettre entière qui devient contestable.
  */
 import Decimal from "decimal.js";
-import { jourDeLettre } from "./jour";
+import { jourDeLettre, jourLisible } from "./jour";
 import { enEuros } from "./euros";
 import { avecCivilite, detacherCivilite, porteDejaSonAppellation, type CiviliteChoisie } from "./civilite";
 
@@ -59,6 +59,58 @@ export type LettreMiseEnDemeure = {
   formule: string;
   signature: string;
 };
+
+/**
+ * LA LETTRE ATTEND LE LENDEMAIN DE L'ÉCHÉANCE — défaut vu le 2 novembre 2026
+ * en ouvrant le vrai écran, corrigé sur sa planche (`appli/soignee/facture.html`,
+ * état « Pas encore échue ») : la lettre se téléchargeait le jour même de
+ * l'envoi de la facture, et elle écrivait pourtant « À ce jour, cette somme
+ * reste impayée ». Envoyée en recommandé, c'est une affirmation fausse sur une
+ * pièce qu'on produit devant un juge.
+ *
+ * **Le lendemain, et pas le jour même** : c'est la règle des rappels d'impayé
+ * (`RAPPELS_PAR_DEFAUT.factureImpayeeJours`, « un client en retard l'est dès le
+ * premier jour »), et celle de L441-10 du Code de commerce, où les pénalités
+ * courent le jour qui suit la date de règlement. Le jour de l'échéance, le
+ * client peut encore payer sans être en faute.
+ *
+ * **Sans échéance, la date de la facture en tient lieu** : aucun délai, elle
+ * est due à réception (`echeanceFacture`, `src/lib/rappels.ts`, et le moteur des
+ * rappels qui relit la même chose).
+ *
+ * **Les deux jours sont ceux de l'atelier** (`jourIso`), jamais l'horloge du
+ * téléphone ni l'UTC : entre minuit et deux heures, l'été, l'UTC croit encore
+ * être la veille.
+ *
+ * L'écran s'en sert pour éteindre « Télécharger la lettre » et dire pourquoi ;
+ * la route du PDF, pour refuser. Une seule règle, deux lecteurs (`CLAUDE.md` §3).
+ */
+export type QuandLaMiseEnDemeure = { possible: true } | { possible: false; echeance: string };
+
+const JOUR = /^\d{4}-\d{2}-\d{2}$/;
+
+export function quandLaMiseEnDemeure(
+  f: Pick<FacturePourMiseEnDemeure, "dateEmission" | "dateEcheance">,
+  aujourdHui: string
+): QuandLaMiseEnDemeure {
+  const echeance = f.dateEcheance ?? f.dateEmission;
+  // Une date illisible ne conclut pas « échue » : ne pas savoir ne fait jamais
+  // partir une mise en demeure. Deux jours bien formés se comparent en texte,
+  // dans l'ordre du calendrier, sans passer par un instant et son fuseau.
+  if (!JOUR.test(echeance) || !JOUR.test(aujourdHui)) return { possible: false, echeance };
+  return aujourdHui > echeance ? { possible: true } : { possible: false, echeance };
+}
+
+/**
+ * Ce que l'écran dit, et ce que la route répond, tant que la lettre attend.
+ * Les mots de sa planche, à deux près : « Avant » devient « Jusque-là » et « ce
+ * jour-là » devient « le lendemain », sans quoi le jour même de l'échéance la
+ * phrase promettrait une lettre que le bouton refuse encore.
+ */
+export function phraseDeLAttente(echeance: string, aujourdHui: string): string {
+  const jour = jourLisible(echeance, new Date(`${aujourdHui}T00:00:00Z`));
+  return `L'échéance tombe le ${jour}. Jusque-là, la facture n'est pas impayée : la lettre attend le lendemain.`;
+}
 
 /**
  * La ville de l'entreprise, lue après son code postal — ou rien.

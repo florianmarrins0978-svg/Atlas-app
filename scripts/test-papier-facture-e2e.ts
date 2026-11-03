@@ -152,7 +152,11 @@ async function main() {
     // (`CLAUDE.md` §5 bis : on adapte le contrôle, on ne remet pas l'écran).
     await cas("la facture LIT le titre, la main d'œuvre et le net — elle ne les saisit plus", async () => {
       assert.equal(await page.locator('[data-atlas="titre-facture"]').inputValue(), "Aménagement du jardin");
-      assert.equal(await page.locator('[data-atlas="montant-main-doeuvre"]').inputValue(), "380");
+      // **Un montant LU, plus une case figée** — sa planche du 2 novembre 2026
+      // relevait « 380 € » sans ses centimes : la facture écrit la main d'œuvre
+      // comme tous ses montants. La règle reste : c'est bien 380 € qui arrive.
+      const mainDoeuvre = lisible(await page.locator('[data-atlas="montant-main-doeuvre"]').innerText());
+      assert.ok(mainDoeuvre.includes("380,00 €"), `la main d'œuvre se lit « ${mainDoeuvre} »`);
       assert.equal(await page.locator('[data-atlas="poser-main-doeuvre"]').count(), 0, "« + Main d’œuvre » est resté sur la facture");
       assert.equal(await page.locator('[data-atlas="poser-reglement"]').count(), 0, "« + Règlement reçu » est resté sur la facture");
       const net = lisible(await page.locator('[data-atlas="net-a-payer"]').innerText());
