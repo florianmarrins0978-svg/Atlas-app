@@ -1,5 +1,12 @@
 # Prochaines tâches
 
+## SUPPRIMER UN CLIENT : CE QUI RESTE (1er novembre 2026)
+
+- ~~**Un client sous contrat d'entretien ne se supprime toujours pas**~~ **Codé le 2 novembre 2026** sur son « oui » : l'accepté se garde et retient le client, les autres partent (`ARCHITECTURE.md` §541).
+- **Le lot n'est pas sur `main`** : branche locale `lot/suppression-clients`, niveau 3 (migration 0158). Il a demandé de ne pas lancer la batterie le 2 novembre ; elle reste à jouer avant toute poussée.
+- ~~**Un client retenu par une pièce reste dans « Vos clients »**~~ **Codé le 2 novembre 2026** sur sa règle (*« si je le coche, il faut que je puisse le supprimer »*) : `listerFichesClients` filtre `deletedAt` (§542). **Pas regardé à l'écran** (il a demandé de ne rien lancer) : sur son espace, supprimer un client qui a une facture, vérifier qu'il quitte la liste, et que sa facture s'ouvre encore depuis Terminés.
+- **Retirer les vingt-six anciens liens à une seule colonne une fois les clés composites VALIDÉES** (l'entrée E10 ci-dessous). Depuis 0158 elles effacent pareil ; l'ancien lien ne sert plus qu'à garantir les lignes anciennes, ce que la validation fera à sa place.
+
 ## APRÈS L'INTÉGRATION DU 28 OCTOBRE : CE QUI RESTE (29 octobre 2026)
 
 - **Validé, et pas entièrement codé : le relevé du 29 octobre** (trois relectures du code, planche par planche, depuis le vendredi 23 au soir). ~~*Abonnement* et *Crédits IA* : « Attention au mot » garde son encadré bleu. *Crédits IA* : la barre sans sa plage ni sa pastille. *Mon compte* : la feuille de la photo sans « Annuler ».~~ **Codés le 29 octobre** sur ses réponses du jour (« oui », « en rouge », « oui »), **sur `main` le 31 octobre (`ec0a53bc`, batterie verte sauf `test-poser-une-date-e2e`, rouge aussi sur `main`)**, avec *Voir le dossier, A*. *Fondations* : ses réponses du 28 octobre (libellés en or à 13 px, `texteSituation` à 14,5 px) ne sont pas codées. ~~*Voir le dossier, A* : « 60 lignes » ne s'affiche pas.~~ Codé le 29 octobre, même branche. ~~*Attestation* : le PDF joint au courriel et la copie au comptable attendent sa décision.~~ Sa réponse « oui et oui » du 29 octobre : codés, sur `main` le 31 octobre. ~~*Vos clients soignée* (les cartes « Vos partenaires ») : sa condition était le CSV, livré le 29.~~ Codée le 29 octobre sur son « oui ».

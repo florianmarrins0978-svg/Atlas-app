@@ -1,9 +1,10 @@
-import { and, eq, inArray, isNotNull, sql } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, ne, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import {
   brouillonsInformations,
   chantiers,
   clients,
+  contratsEntretien,
   devis,
   envoisDevis,
   factures,
@@ -19,6 +20,8 @@ import {
 } from "../db/schema";
 import type { Ctx } from "./context";
 import { CONSERVATION_LEGALE, echeanceConservation, motifConservation } from "../retention";
+import { moisDuJour } from "@/lib/jour";
+import { deOuD } from "@/lib/contrats-entretien";
 
 // Droits des personnes — voir docs/RGPD.md §5.
 //
@@ -109,10 +112,15 @@ export async function exporterClient(
  * est une phrase ; « la facture n° F2026-0009 est conservée dix ans » se
  * retrouve dans un classeur. Ce que le patron ne peut pas situer, il le croit
  * perdu.
+ *
+ * **La désignation est écrite ici, numéro compris** (2 novembre 2026). Un
+ * contrat d'entretien n'a pas de numéro : il se nomme par son premier mois.
+ * L'écran, qui écrivait « n° » devant, aurait affiché « n° Contrat… ».
  */
 export type PieceConservee = {
-  quoi: "facture" | "devis-accepte";
-  numero: string;
+  quoi: "facture" | "devis-accepte" | "contrat-accepte";
+  /** « n° F2026-000007 », « Contrat d'entretien de mars 2026 ». */
+  designation: string;
   /** Ce qu'on lui dit, dans ses mots. */
   pourquoi: string;
   /** Jusqu'à quand, au format « AAAA-MM-JJ ». */
@@ -130,37 +138,76 @@ export type PieceConservee = {
 async function cequiDoitRester(
   tx: Parameters<Parameters<typeof withEntreprise>[2]>[0],
   ctx: Ctx,
+  clientId: string,
   chantierIds: string[],
   maintenant: Date
 ): Promise<{ pieces: PieceConservee[]; devisAConserver: Set<string>; chantiersAConserver: Set<string> }> {
   const pieces: PieceConservee[] = [];
   const devisAConserver = new Set<string>();
   const chantiersAConserver = new Set<string>();
+
+  // ─── Les contrats d'entretien ACCEPTÉS — sa décision du 2 novembre 2026 ───
+  //
+  // *« Un contrat accepté se garde comme une facture ; un contrat jamais
+  // accepté part avec lui. »* La base le tenait déjà à sa façon : la clé
+  // `contrats_entretien_client_entreprise_fk` n'a pas de cascade. Mais rien ne
+  // le lisait ici, et la suppression tombait sur cette clé avec « n'a pas
+  // abouti », sans dire ce qui la retenait. Un contrat ne vise pas un chantier
+  // (ses passages en sont), il se lit donc par son client.
+  const contratsAcceptes = await tx
+    .select({ debut: contratsEntretien.debut, dureeMois: contratsEntretien.dureeMois, reponduLe: contratsEntretien.reponduLe })
+    .from(contratsEntretien)
+    .where(
+      and(
+        eq(contratsEntretien.clientId, clientId),
+        eq(contratsEntretien.entrepriseId, ctx.entrepriseId),
+        eq(contratsEntretien.statut, "accepte")
+      )
+    )
+    .orderBy(contratsEntretien.debut);
+  for (const c of contratsAcceptes) {
+    // **Les dix ans courent de la fin de ce qui a été promis**, pas de
+    // l'acceptation (Code de la consommation, D213-2) : un contrat de deux ans
+    // accepté aujourd'hui engage encore dix ans après son dernier passage. Une
+    // reconduction le prolonge encore ; rien ne purge sur cette date, elle
+    // ne sert qu'à le dire.
+    const fin = new Date(`${c.debut}T00:00:00Z`);
+    fin.setUTCMonth(fin.getUTCMonth() + c.dureeMois);
+    const depuis = c.reponduLe && c.reponduLe > fin ? c.reponduLe : fin;
+    pieces.push({
+      quoi: "contrat-accepte",
+      designation: `Contrat d'entretien ${deOuD(`${moisDuJour(c.debut)} ${c.debut.slice(0, 4)}`)}`,
+      pourquoi: `Un contrat accepté vaut engagement : il se conserve ${CONSERVATION_LEGALE.contratAccepteAns} ans.`,
+      jusquAu: echeanceConservation(depuis, CONSERVATION_LEGALE.contratAccepteAns).toISOString().slice(0, 10),
+    });
+  }
+
   if (chantierIds.length === 0) return { pieces, devisAConserver, chantiersAConserver };
 
-  // ─── Les factures ÉMISES — dix ans, Code de commerce L123-22 ──────────────
+  // ─── TOUTES les factures, émises ou en brouillon ──────────────────────────
   //
   // **Ce n'est pas Atlas qui refuse, c'est la base ET la loi.** La clé
   // étrangère `factures_chantier_entreprise_fk` est en RESTRICT : un chantier
   // qui porte une facture ne se supprime pas, quoi qu'on demande. Le lire ici
   // permet de le DIRE avant, plutôt que de laisser tomber une erreur brute.
-  const facturesEmises = await tx
+  //
+  // **Le brouillon aussi, depuis le 2 novembre 2026.** Seules les émises
+  // étaient lues : un chantier terminé et pas encore facturé faisait tomber la
+  // suppression sur cette clé, sans un mot. Un brouillon a déjà PRIS son numéro
+  // (`attribuerNumeroFacture`, à sa création) : l'effacer trouerait la suite
+  // des factures, ce qu'un contrôle relève. Il reste donc, comme une émise.
+  const facturesNumerotees = await tx
     .select({
       id: factures.id,
       chantierId: factures.chantierId,
       devisId: factures.devisId,
       numero: factures.numeroCommercial,
+      statut: factures.statut,
       emiseLe: factures.emiseLe,
     })
     .from(factures)
-    .where(
-      and(
-        inArray(factures.chantierId, chantierIds),
-        eq(factures.entrepriseId, ctx.entrepriseId),
-        eq(factures.statut, "emise")
-      )
-    );
-  for (const f of facturesEmises) {
+    .where(and(inArray(factures.chantierId, chantierIds), eq(factures.entrepriseId, ctx.entrepriseId)));
+  for (const f of facturesNumerotees) {
     chantiersAConserver.add(f.chantierId);
     // **Nul sur une facture directe** (migration 0086) : il n'y a pas de devis
     // à retenir, seulement la facture elle-même — déjà inscrite juste en
@@ -170,8 +217,11 @@ async function cequiDoitRester(
     if (f.devisId) devisAConserver.add(f.devisId);
     pieces.push({
       quoi: "facture",
-      numero: f.numero,
-      pourquoi: "Une facture émise se conserve dix ans.",
+      designation: `n° ${f.numero}`,
+      pourquoi:
+        f.statut === "emise"
+          ? "Une facture émise se conserve dix ans."
+          : "Une facture déjà numérotée reste : ses numéros doivent se suivre.",
       jusquAu: echeanceConservation(f.emiseLe ?? maintenant, CONSERVATION_LEGALE.facturesAns)
         .toISOString()
         .slice(0, 10),
@@ -204,7 +254,7 @@ async function cequiDoitRester(
     chantiersAConserver.add(a.chantierId);
     pieces.push({
       quoi: "devis-accepte",
-      numero: numeros.get(a.devisId) ?? "?",
+      designation: `n° ${numeros.get(a.devisId) ?? "?"}`,
       pourquoi: `Un devis accepté vaut engagement : il se conserve ${CONSERVATION_LEGALE.devisAccepteAns} ans.`,
       jusquAu: echeanceConservation(a.responduAt ?? maintenant, CONSERVATION_LEGALE.devisAccepteAns)
         .toISOString()
@@ -241,7 +291,7 @@ export async function apercuSuppressionClient(
       .from(chantiers)
       .where(and(eq(chantiers.clientId, clientId), eq(chantiers.entrepriseId, ctx.entrepriseId)));
     const chantierIds = desChantiers.map((c) => c.id);
-    const { pieces } = await cequiDoitRester(tx, ctx, chantierIds, maintenant);
+    const { pieces } = await cequiDoitRester(tx, ctx, clientId, chantierIds, maintenant);
 
     // **Le compte des documents décide de la phrase de prévention.** Un client
     // qui n'a rien reçu n'a pas besoin qu'on l'alarme ; c'est sa règle du
@@ -262,7 +312,23 @@ export async function apercuSuppressionClient(
       .select({ id: piecesImportees.id })
       .from(piecesImportees)
       .where(and(eq(piecesImportees.clientId, clientId), eq(piecesImportees.entrepriseId, ctx.entrepriseId)));
-    return { nom: client.nom, pieces, documents: documents + importees.length + pieces.length };
+    // Ses contrats jamais acceptés aussi : ils partent avec lui. Les acceptés
+    // sont déjà comptés, dans `pieces`.
+    const contrats = await tx
+      .select({ id: contratsEntretien.id })
+      .from(contratsEntretien)
+      .where(
+        and(
+          eq(contratsEntretien.clientId, clientId),
+          eq(contratsEntretien.entrepriseId, ctx.entrepriseId),
+          ne(contratsEntretien.statut, "accepte")
+        )
+      );
+    return {
+      nom: client.nom,
+      pieces,
+      documents: documents + importees.length + contrats.length + pieces.length,
+    };
   });
 }
 
@@ -344,6 +410,7 @@ export async function effacerClient(
     const { pieces, devisAConserver, chantiersAConserver } = await cequiDoitRester(
       tx,
       ctx,
+      clientId,
       chantierIds,
       maintenant
     );
@@ -457,6 +524,21 @@ export async function effacerClient(
         detail.chantiers = 0;
       }
     }
+
+    // **Ses contrats jamais acceptés partent avec lui**, et APRÈS ses
+    // chantiers : un passage de contrat est un chantier qui vise son contrat,
+    // et la clé ne cède pas. Les dates du mois envoyées partent en cascade.
+    // L'accepté reste : il est dans `pieces`, et retient le client plus bas.
+    const rContrats = (await tx
+      .delete(contratsEntretien)
+      .where(
+        and(
+          eq(contratsEntretien.clientId, clientId),
+          eq(contratsEntretien.entrepriseId, ctx.entrepriseId),
+          ne(contratsEntretien.statut, "accepte")
+        )
+      )) as { rowCount?: number };
+    detail.contrats = rContrats?.rowCount ?? 0;
 
     const echeance = pieces.length > 0 ? pieces.map((p) => p.jusquAu).sort().at(-1) ?? null : null;
     const motif = motifConservation(pieces.length, echeance ? new Date(`${echeance}T00:00:00Z`) : null);

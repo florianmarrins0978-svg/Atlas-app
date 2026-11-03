@@ -39,7 +39,7 @@ export default function SupprimerCeClient({
   /** Combien de documents ce client porte. Zéro : pas de prévention. */
   documents: number;
   /** Ce que la loi oblige à garder, déjà nommé — jamais deviné ici. */
-  conserve: { numero: string; pourquoi: string }[];
+  conserve: { designation: string; pourquoi: string }[];
 }) {
   const router = useRouter();
   const [ouverte, setOuverte] = useState(false);

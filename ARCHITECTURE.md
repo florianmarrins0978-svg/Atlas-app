@@ -36676,3 +36676,34 @@ rougir sur une carte élargie.
 **Ma banque entre dans le sommaire des Réglages, seulement reliée et chez le patron** (`rubriquesReglages(role, banqueReliee)`, `src/app/reglages/page.tsx`). Elle en était absente exprès : sans contrat Enable Banking (`docs/A-FAIRE.md` §13), seuls les comptes du propriétaire de l'application se relient, et une ligne visible de tous ouvrirait une porte qui refuse. Reliée, la banque prouve que la porte s'ouvre. La ligne porte un état (`Rubrique.situation`, « Crédit Mutuel, lue aujourd'hui »), jamais une explication : la règle du `nom` tient. `scripts/test-rubriques-reglages.ts` refuse qu'elle sorte sans banque reliée ou chez le commercial.
 
 **Ce qui n'a pas bougé, et pourquoi** : les boutons Oui et Non de la carte « Virement reçu » gardent la forme de l'accueil (`ReponseVirement`, partagé avec l'accueil et Ma TVA ; la planche les dessinait pleins sur toute la largeur). Le nom d'un virement sans payeur est le libellé de la banque sans « VIR », « VIR INST » ou « VIR SEPA » devant (`nomDuVirement`) : rien ne s'invente, ce qui reste est ce que la banque a écrit.
+
+## §540 : Une clé qui en double une autre efface comme elle
+
+**La panne du 1er novembre 2026** : il ne pouvait plus supprimer aucun client (« La suppression n'a pas abouti », six fois). La migration 0149 avait doublé vingt-six liens d'une clé composite `(colonne, entreprise_id)` posée sans `ON DELETE`, donc en NO ACTION, à côté de l'ancien lien en CASCADE ou SET NULL. Son en-tête disait « la seconde n'agit qu'à l'écriture » : c'est faux, une clé étrangère agit aussi quand on efface la ligne qu'elle vise.
+
+**Pourquoi c'était vert partout sauf chez lui.** PostgreSQL tire les déclencheurs d'une même ligne dans l'ordre alphabétique de leur nom, `RI_ConstraintTrigger_a_<numéro d'objet>`. Sur une base neuve, l'ancien lien a un plus petit numéro du même nombre de chiffres : la cascade passe d'abord, la clé composite ne trouve plus rien. Sur une base qui a vécu, le numéro peut avoir gagné un chiffre entre les deux (`a_100231` passe avant `a_18235`) : la clé composite parle la première, voit le créneau encore là, et refuse. Une règle qui dépend de cet ordre est fausse, même quand elle passe.
+
+**La règle** (migration 0158) : une clé composite qui double un lien porte **la même règle d'effacement** que lui, et une mise à vide ne vise que la colonne du lien (`SET NULL (client_id)`, jamais `entreprise_id`). Deux cascades ou deux mises à vide donnent le même résultat dans n'importe quel ordre. L'ancien lien reste tant que la clé composite n'est pas validée sur les lignes anciennes : c'est lui qui garantit qu'aucune ligne ancienne ne reste orpheline (TODO.md).
+
+**Ce qui la tient** : `test-liens-dans-l-entreprise-db.ts` compare, dans le catalogue, l'effacement de chaque clé composite à celui du lien qu'elle double (vu rouge sur les vingt-six), et supprime un client par `effacerClient` après avoir recréé les anciens liens pour que leur déclencheur parte le dernier, comme sur sa base. Sans cette étape, l'essai serait vert par hasard.
+
+## §541 : Un contrat d'entretien accepté retient son client, comme une facture
+
+**Sa décision du 2 novembre 2026**, un « oui » à : un contrat accepté se garde comme une facture (le client reste nommé dessus, tout le reste part) ; un contrat jamais accepté part avec lui. Avant, `contrats_entretien_client_entreprise_fk` (sans cascade, délibérément) faisait tomber la suppression sur une erreur que l'écran rendait en « n'a pas abouti ».
+
+**Une seule règle, deux emplois** (`cequiDoitRester`) : l'aperçu et l'effacement lisent les contrats acceptés du client, par son identifiant (un contrat ne vise pas un chantier : ses passages en sont). Les autres partent après les chantiers, parce qu'un passage est un chantier qui vise son contrat et que cette clé ne cède pas. `envois_dates_contrat` suit en cascade.
+
+**Dix ans à compter de la fin de la période promise** (`CONSERVATION_LEGALE.contratAccepteAns`, Code de la consommation L213-1 et D213-2 : contrat conclu par voie électronique, 120 euros ou plus). Rien ne purge sur cette date ; elle ne sert qu'à dire jusqu'à quand.
+
+**La pièce dit son nom entier** (`PieceConservee.designation`) : « n° F2026-000007 » pour une facture ou un devis, « Contrat d'entretien d'avril 2026 » pour un contrat (le mois par `moisDuJour`, l'élision par `deOuD`). L'écran écrivait « n° » devant un numéro ; il recopie désormais la désignation, et ne décide de rien.
+
+## §542 : Ce qu'il coche, il le supprime
+
+**Sa règle du 2 novembre 2026** : *« à partir du moment où je veux supprimer un client, le message de prévention s'affiche, si je le coche, il faut que je puisse le supprimer »*. Une suppression ne tombe donc plus sur un refus de la base : tout ce qui retient un client se lit AVANT (`cequiDoitRester`) et se dit sous « Conservé par la loi ».
+
+**Le relevé** (catalogue, clés en RESTRICT ou NO ACTION sous ce que l'effacement retire) : un devis et une facture retiennent leur chantier, une facture retient son devis, un contrat retient son client et ses passages. Le devis accepté, la facture et le contrat accepté étaient déjà lus, sauf **la facture en brouillon**.
+
+**Le brouillon se garde, il ne s'efface pas.** Il prend son numéro à sa création (`attribuerNumeroFacture`) : l'effacer laisserait un trou dans la suite des factures émises, ce qu'un contrôle fiscal relève. Le garder ne coûte que sa ligne, et le client réduit à son nom.
+
+**Supprimé veut dire hors de la liste**, même retenu : `listerFichesClients` filtre `clients.deletedAt` comme `listerClients`. La fiche reste ouverte derrière ses pièces (`chargerFicheClient` ne filtre pas) : c'est par elle qu'on retrouve une facture conservée.
+

@@ -18,6 +18,12 @@ Un seul lot, à sa demande : les feuilles du devis (TVA, acompte, remise, main d
 
 **Les pièges :** `lu_le` est posé AVANT l'appel à la banque ; il ne dit jamais si la lecture a réussi. C'est `lecture_refusee` (0157) qui le dit, et `etatDeLaLecture` qui décide de la pastille : ne jamais afficher « Lue » à partir de `lu_le` seul. Ma banque n'entre dans le sommaire que reliée (`rubriquesReglages(role, banqueReliee)`), parce que sans contrat Enable Banking la porte refuse chez les autres artisans. Les boutons Oui et Non viennent de `ReponseVirement`, partagé avec l'accueil et Ma TVA : les retoucher change trois écrans (`ARCHITECTURE.md` §539).
 
+## SUPPRIMER UN CLIENT, ET L'ORDRE DES DÉCLENCHEURS (1er novembre 2026)
+
+**Le piège :** une base neuve ne montre pas tout. PostgreSQL tire les déclencheurs des clés étrangères dans l'ordre alphabétique de leur nom, qui porte un numéro interne ; sur sa base, cet ordre peut être l'inverse de celui des essais. Une clé qui en double une autre doit donc effacer comme elle (`ARCHITECTURE.md` §540), et une nouvelle clé composite se pose avec le `ON DELETE` du lien qu'elle double. `test-liens-dans-l-entreprise-db.ts` refuse le contraire, et rejoue la suppression d'un client dans le pire ordre. Pour le poser, il recrée la clé composite PUIS l'ancien lien : recréer l'ancien seul ne suffit pas quand la base a passé un nombre de chiffres (`a_159050` passe avant `a_20217`, vu le 2 novembre sur la base d'essai elle-même).
+
+**Le contrat d'entretien accepté retient le client** (§541). **Une facture en brouillon aussi** : elle a déjà pris son numéro, l'effacer trouerait la suite (§542). Un client supprimé quitte « Vos clients » même retenu ; sa fiche reste ouverte derrière ses pièces. Une pièce conservée porte sa `designation` entière, « n° » compris : un écran qui l'affiche la recopie telle quelle.
+
 ---
 ## LES PLANCHES DU 31 OCTOBRE, CODÉES (1er novembre 2026)
 

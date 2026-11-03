@@ -1,7 +1,14 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-10-29, `main` (`bdea976e`, batterie verte hors deux suites de fin de mois rouges sur `main` aussi),
-dernière migration `drizzle/0157_banque_lecture_refusee.sql` (Ma banque soignée, réunie le 3 novembre pour la batterie commune) ; `0155_part_de_main_doeuvre_sur_la_ligne.sql` (le devis) sur `main` depuis le 3 novembre
+dernière migration `drizzle/0158_cles_composites_effacent_comme_leur_lien.sql` (réunie le 3 novembre pour la batterie commune, avec `0157_banque_lecture_refusee.sql` et `0156_pieces_importees_adresse_lue.sql`) ; `0155_part_de_main_doeuvre_sur_la_ligne.sql` (le devis) sur `main` depuis le 3 novembre
+
+---
+## SUPPRIMER UN CLIENT REMARCHE SUR SA BASE (1er novembre 2026)
+
+La suppression d'un client tombait sur une clé composite de 0149 posée sans règle d'effacement (`ARCHITECTURE.md` §540). Migration `0158` : les vingt-six clés composites effacent comme le lien qu'elles doublent. Aucune donnée lue ni écrite. Niveau 3 (une migration).
+
+Le 2 novembre, même lot : un client sous contrat d'entretien se supprime, le contrat accepté le retient et se nomme sous « Conservé par la loi » (§541). Même jour : la facture en brouillon ne bloque plus (elle se garde, numéro oblige), et un client supprimé quitte « Vos clients » (§542). **Batterie non jouée, à sa demande (« ne lance pas de batterie ») : pas sur `main`.**
 
 ---
 ## LE DEVIS ET LA FACTURE DE LA PLANCHE, SUR `main` (3 novembre 2026)

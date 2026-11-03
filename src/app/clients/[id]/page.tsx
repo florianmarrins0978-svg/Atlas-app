@@ -281,7 +281,7 @@ export default async function FicheClientPage({
         clientId={id}
         nom={fiche.client.nom}
         documents={apercu?.documents ?? 0}
-        conserve={(apercu?.pieces ?? []).map((p) => ({ numero: p.numero, pourquoi: p.pourquoi }))}
+        conserve={(apercu?.pieces ?? []).map((p) => ({ designation: p.designation, pourquoi: p.pourquoi }))}
       />
 
       {/* **Plus de phrase quand il n'y a aucun document — 26 août 2026 :**
