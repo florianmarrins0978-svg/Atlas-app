@@ -3,76 +3,71 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>La note, rappelée avant l'envoi</title>
+<title>La note, montrée au patron</title>
 <link rel="stylesheet" href="kit.css">
 <style>
 /*
-  LA NOTE DU DEVIS, RAPPELÉE AU PATRON AVANT L'ENVOI
-  (src/app/chantiers/[id]/devis-complet/DevisCompletClient.tsx, la feuille
-  d'envoi : src/app/chantiers/[id]/export/EnvoiAuClient.tsx).
+  LA NOTE DU DEVIS : MONTRER AU PATRON OÙ LE CLIENT LA LIRA
+  (le champ : src/app/chantiers/[id]/devis-complet/DevisCompletClient.tsx,
+  « Notes / conditions » ; la feuille d'envoi : export/EnvoiAuClient.tsx).
 
-  Sa demande du 3 novembre 2026, juste après « La note du devis, chez le
-  client » (devis-note-client.html) : *« au moment où il va l'envoyer au
-  client, une petite fenêtre pour lui montrer où le client pourra le lire ;
-  juste quelque chose qui apparaît 3 ou 4 secondes et qui disparaît »*.
+  Sa demande du 3 novembre 2026, puis sa retouche du même soir devant la
+  première version (une vignette dessinée, 4 secondes, à l'envoi) :
+    « il faut mettre la vraie photo, là on comprend rien sur le petit dessin » ;
+    « est-ce que c'est à ce moment-là, ou plutôt quand il remplit Notes et
+    conditions, ou quand il clique dessus » ;
+    « 8 secondes » ;
+    « qui montre exactement où le client pourra lire ».
 
-  POURQUOI À L'OUVERTURE DE LA FEUILLE, ET PAS SUR « ENVOYER LE DEVIS » : lu
-  dans le code, ce bouton ouvre AUSSITÔT sa messagerie (ouvrirLaMessagerie,
-  sa demande du 18 août : « tout de suite ça m'ouvre l'application »). Une
-  fenêtre posée à cet instant passerait derrière l'application SMS, sans être
-  lue. Elle se montre donc quand la feuille d'envoi s'ouvre, sur « Choisir la
-  date », c'est-à-dire juste avant d'envoyer.
+  Donc : la fenêtre se montre quand il TOUCHE le champ (proposé d'office ; à
+  l'envoi reste à comparer), 8 secondes, et elle porte l'image de la page du
+  client, la note entourée d'or à sa place. Cette image est celle de la
+  planche « La note du devis, chez le client » (devis-note-client.html) : la
+  note n'est pas encore sur la vraie page, c'est la plus vraie qui existe.
 
-  Le fond du téléphone est la VRAIE feuille d'envoi, photographiée sur des
-  données de démonstration (aujourdhui/devis-feuille-envoi.jpg) : seule la
-  fenêtre est dessinée.
+  Le fond du téléphone est le VRAI écran du devis, et la vraie feuille
+  d'envoi, photographiés sur des données de démonstration.
 */
 body .pl-barre .pl-charte-bouton, body .pl-barre .pl-chartes { display: none; }
 
 .fond { position: absolute; inset: 0; }
 .fond img { width: 100%; height: auto; display: block; }
+[data-fond][hidden] { display: none; }
 
-/* LA FENÊTRE : sur l'encre, comme le tiroir de l'appli, pour se lire sur le
-   voile de la page ; une vignette de la page du client, la note en or ; un
-   trait d'or qui se vide en quatre secondes, pour qu'on sache qu'elle part. */
-.rappel { position: absolute; left: 12px; right: 12px; top: 14px; z-index: 30; display: flex; align-items: center; gap: 12px;
-          padding: 12px 14px 14px; border-radius: 16px; background: var(--atlas-ink); color: var(--atlas-cream); text-align: left;
-          box-shadow: 0 10px 28px -10px rgba(13,14,12,0.55);
-          opacity: 0; transform: translateY(-16px); pointer-events: none;
-          transition: opacity 260ms var(--courbe), transform 360ms cubic-bezier(0.16, 1, 0.3, 1); overflow: hidden; }
+/* Le champ touché : le cadre que prend un champ quand on écrit dedans. */
+.champ-touche { position: absolute; left: 28px; top: 412px; width: 334px; height: 88px; z-index: 4; border-radius: 8px;
+                box-shadow: inset 0 0 0 2px var(--atlas-rust); opacity: 0; transition: opacity 200ms var(--courbe); }
+.champ-touche.visible { opacity: 1; }
+.zone-champ { position: absolute; left: 28px; top: 404px; width: 334px; height: 100px; z-index: 5; border-radius: 8px; }
+
+/* LA FENÊTRE : sur l'encre, comme le tiroir de l'appli ; une phrase, puis
+   l'image de la page du client, la note entourée d'or ; un trait d'or qui se
+   vide en huit secondes, pour qu'on sache qu'elle partira. */
+.rappel { position: absolute; left: 10px; right: 10px; top: 12px; z-index: 30; display: block; padding: 12px 12px 16px;
+          border-radius: 18px; background: var(--atlas-ink); color: var(--atlas-cream); text-align: left;
+          box-shadow: 0 12px 30px -10px rgba(13,14,12,0.6);
+          opacity: 0; transform: translateY(-18px); pointer-events: none;
+          transition: opacity 260ms var(--courbe), transform 380ms cubic-bezier(0.16, 1, 0.3, 1); overflow: hidden; }
 .rappel.visible { opacity: 1; transform: none; pointer-events: auto; }
-.rappel-texte { margin: 0; font-size: 15px; line-height: 1.38; }
+.rappel-texte { margin: 0 4px 10px; font-size: 15.5px; line-height: 1.38; }
 .rappel-texte b { font-weight: 700; color: var(--atlas-orSurEncre); }
-.rappel-temps { position: absolute; left: 14px; right: 14px; bottom: 7px; height: 2px; border-radius: 1px;
+.rappel-photo { display: block; width: 100%; height: auto; border-radius: 10px; }
+.rappel-temps { position: absolute; left: 16px; right: 16px; bottom: 7px; height: 3px; border-radius: 2px;
                 background: color-mix(in srgb, var(--atlas-cream) 16%, transparent); overflow: hidden; }
-.rappel-temps span { display: block; height: 100%; background: var(--atlas-orSurEncre); transform-origin: left; transform: scaleX(1); }
-.rappel.visible .rappel-temps span { animation: vider var(--duree, 4s) linear forwards; }
-@keyframes vider { to { transform: scaleX(0); } }
+.rappel-temps span { display: block; height: 100%; background: var(--atlas-orSurEncre); transform-origin: left; }
+.rappel.visible .rappel-temps span { animation: vider var(--duree, 8s) linear forwards; }
+@keyframes vider { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 
-/* La vignette : la page du client en cinq traits, la note en or à SA place. */
-.vignette { width: 44px; height: 66px; flex: none; border-radius: 6px; padding: 5px 4px; display: grid; gap: 3px; align-content: start;
-            background: var(--atlas-cream); }
-.vignette i { display: block; height: 4px; border-radius: 2px; background: color-mix(in srgb, var(--atlas-ink) 22%, transparent); }
-.vignette i.court { width: 60%; }
-.vignette i.bloc { height: 9px; background: color-mix(in srgb, var(--atlas-ink) 9%, transparent); }
-.vignette i.note { height: 7px; background: var(--atlas-or); }
-.vignette i.oui { height: 6px; background: var(--atlas-plein); }
-
-/* L'autre idée : la même phrase, posée dans la feuille, qui ne part pas. */
-.reste { position: absolute; left: 24px; right: 24px; top: 452px; z-index: 5; display: flex; align-items: center; gap: 10px;
-         padding: 8px 12px; border-radius: var(--r-plage); background: color-mix(in srgb, var(--atlas-or) 16%, var(--atlas-card));
-         font-size: 14px; line-height: 1.35; color: var(--atlas-ink); }
-.reste .ico { width: 20px; height: 20px; color: var(--atlas-orTexte); }
-.reste b { color: var(--atlas-orTexte); }
-.ecran:not([data-etat="reste"]) .reste { display: none; }
-
+/* Deux rangées de choix au-dessus du téléphone : le moment, puis la place. */
+.choix-planche { display: grid; gap: 6px; justify-content: center; margin: 0 0 10px; }
+.choix-planche .pl-etats { margin: 0; }
+.choix-planche p { margin: 0; text-align: center; font-size: 13px; font-weight: 600; color: #4a4a44; }
 .rejouer { display: flex; justify-content: center; margin: 2px 0 6px; }
 .rejouer button { min-height: 40px; padding: 0 16px; border-radius: 20px; font-size: 14px; font-weight: 600; color: #2f3b2f;
                   background: rgba(28,28,26,0.06); }
 
 @media (prefers-reduced-motion: reduce) {
   .rappel { transition: opacity 1ms; transform: none; }
-  .rappel.visible .rappel-temps span { animation-duration: var(--duree, 4s); }
 }
 </style>
 </head>
@@ -80,8 +75,8 @@ body .pl-barre .pl-charte-bouton, body .pl-barre .pl-chartes { display: none; }
 
 <header class="pl-tete">
   <a class="pl-sommaire" href="devis-note-client.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>La note chez le client</a>
-  <h1 class="pl-titre">La note, rappelée avant l'envoi</h1>
-  <p class="pl-verdict">Tu touches « Choisir la date », la feuille d'envoi s'ouvre, et <b>pendant 4 secondes</b> une fenêtre te montre où ton client lira ta note.</p>
+  <h1 class="pl-titre">La note, montrée au patron</h1>
+  <p class="pl-verdict">Tu touches « Notes / conditions », et <b>pendant 8 secondes</b> une fenêtre te montre la page de ton client, ta note entourée d'or, là où il la lira.</p>
 </header>
 
 <main class="pl-scene">
@@ -90,26 +85,31 @@ body .pl-barre .pl-charte-bouton, body .pl-barre .pl-chartes { display: none; }
     <!-- ═══ PROPOSÉ ═══ -->
     <div data-vue-panneau="propose">
       <p class="pl-legende">Proposé</p>
-      <div class="pl-etats">
-        <button type="button" data-etat="a" aria-pressed="true">Note avant l'accord</button>
-        <button type="button" data-etat="b">Note sous le total</button>
-        <button type="button" data-etat="sans">Sans note</button>
-        <button type="button" data-etat="reste">Autre idée : elle reste</button>
+      <div class="choix-planche">
+        <p>Quand</p>
+        <div class="pl-etats" id="choix-moment">
+          <button type="button" data-moment="champ" aria-pressed="true">Quand il touche le champ</button>
+          <button type="button" data-moment="envoi" aria-pressed="false">À l'envoi</button>
+        </div>
+        <p>Où le client la lit</p>
+        <div class="pl-etats" id="choix-place">
+          <button type="button" data-place="a" aria-pressed="true">A, avant l'accord</button>
+          <button type="button" data-place="b" aria-pressed="false">B, sous le total</button>
+        </div>
       </div>
       <div class="cadre">
-        <div class="ecran" data-sans-charte data-etat="a" id="ecran-propose">
-          <div class="fond"><img src="aujourdhui/devis-feuille-envoi.jpg" alt="La feuille d'envoi du devis, telle qu'elle est aujourd'hui"></div>
+        <div class="ecran" data-sans-charte id="ecran-propose">
+          <div class="fond" data-fond="champ"><img src="aujourdhui/devis-champ-notes.jpg" alt="L'écran du devis, le champ Notes / conditions en bas"></div>
+          <div class="fond" data-fond="envoi" hidden><img src="aujourdhui/devis-feuille-envoi.jpg" alt="La feuille d'envoi du devis"></div>
+
+          <span class="champ-touche" id="champ-touche" aria-hidden="true"></span>
+          <button type="button" class="zone-champ" id="zone-champ" aria-label="Toucher Notes / conditions"></button>
 
           <button type="button" class="rappel" id="rappel" aria-live="polite" aria-label="Fermer">
-            <span class="vignette" aria-hidden="true" id="vignette"></span>
             <p class="rappel-texte" id="rappel-texte"></p>
+            <img class="rappel-photo" id="rappel-photo" src="devis-note-photo-a.jpg" alt="La page du devis chez le client, la note entourée d'or">
             <span class="rappel-temps" aria-hidden="true"><span></span></span>
           </button>
-
-          <div class="reste">
-            <svg class="ico" aria-hidden="true"><use href="#i-note"/></svg>
-            <span><b>Ta note :</b> Mme Groupiron la lira juste avant « J'accepte ce devis ».</span>
-          </div>
         </div>
       </div>
       <div class="rejouer"><button type="button" id="rejouer">Revoir la fenêtre</button></div>
@@ -119,7 +119,7 @@ body .pl-barre .pl-charte-bouton, body .pl-barre .pl-chartes { display: none; }
     <div data-vue-panneau="aujourdhui">
       <p class="pl-legende">Aujourd'hui</p>
       <div class="cadre">
-        <div class="cadre-capture"><img src="aujourdhui/devis-feuille-envoi.jpg" alt="La feuille d'envoi du devis aujourd'hui : rien ne parle de la note"></div>
+        <div class="cadre-capture"><img src="aujourdhui/devis-champ-notes.jpg" alt="L'écran du devis aujourd'hui : rien ne dit où le client lira la note"></div>
       </div>
     </div>
 
@@ -128,21 +128,21 @@ body .pl-barre .pl-charte-bouton, body .pl-barre .pl-chartes { display: none; }
   <section class="pl-notes">
     <h2>Ce qui change</h2>
     <ul>
-      <li>Ton devis porte une note : quand tu touches « Choisir la date », la feuille d'envoi s'ouvre, et une fenêtre descend en haut de l'écran.</li>
-      <li>Elle montre la page de ton client en petit, la note en or à sa place, et une phrase : où il la lira.</li>
-      <li>Elle part seule au bout de 4 secondes ; le trait d'or dessous se vide pour le montrer. Un appui la ferme avant.</li>
-      <li>Sans note, rien n'apparaît. Touchez « Sans note ».</li>
+      <li>Tu touches « Notes / conditions » : une fenêtre descend en haut de l'écran, au-dessus du clavier qui s'ouvre.</li>
+      <li>Elle montre la page que ton client ouvre depuis le SMS, ta note entourée d'or à sa place, avec la phrase : il la lira ici, sur son téléphone.</li>
+      <li>Elle reste 8 secondes ; le trait d'or dessous se vide pour le montrer. Un appui la ferme avant.</li>
+      <li>Touchez le champ dans le téléphone, ou « Revoir la fenêtre ».</li>
     </ul>
-    <h2>Ce qui ne bouge pas</h2>
+    <h2>Pourquoi au toucher du champ</h2>
     <ul class="garde">
-      <li>La feuille d'envoi elle-même : le fond du téléphone est la vraie, photographiée.</li>
-      <li>« Envoyer le devis » ouvre toujours ta messagerie tout de suite.</li>
+      <li>Tu l'apprends au moment où tu écris : tu sais pour qui tu écris, et tu peux tourner ta phrase pour lui.</li>
+      <li>À l'envoi, la fenêtre arrive quand la note est déjà écrite. Elle ne peut pas venir sur « Envoyer le devis » lui-même : ce bouton ouvre aussitôt ta messagerie, et elle passerait derrière. Touchez « À l'envoi » pour comparer.</li>
     </ul>
     <h2>À trancher</h2>
     <ul class="a-trancher">
-      <li>Pourquoi pas sur « Envoyer le devis » : ce bouton ouvre aussitôt ton application SMS ou e-mail, et la fenêtre passerait derrière sans être lue. D'où l'ouverture de la feuille, juste avant.</li>
-      <li>L'appli suit une règle née de ta consigne du 5 septembre (des patrons qui lisent mal leur téléphone) : rien qui se referme tout seul, parce qu'on le manquerait. Ici elle ne demande aucun geste, donc la rater ne coûte rien. Si tu préfères, « Autre idée » pose la même phrase dans la feuille, et elle reste.</li>
-      <li>À chaque envoi d'un devis avec une note, ou seulement les premières fois ?</li>
+      <li>Au toucher du champ, ou à l'envoi ?</li>
+      <li>À chaque fois, ou seulement les premières fois que tu touches le champ ? Huit secondes à chaque devis finiraient par gêner.</li>
+      <li>A ou B : la place de la note sur la page du client, choisie sur la planche « La note du devis, chez le client ».</li>
     </ul>
   </section>
 </main>
@@ -154,43 +154,57 @@ body .pl-barre .pl-charte-bouton, body .pl-barre .pl-chartes { display: none; }
 <script src="kit.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-  var ecran = document.getElementById("ecran-propose");
   var rappel = document.getElementById("rappel");
   var texte = document.getElementById("rappel-texte");
-  var vignette = document.getElementById("vignette");
-  var DUREE = 4000;
+  var photo = document.getElementById("rappel-photo");
+  var touche = document.getElementById("champ-touche");
+  var zone = document.getElementById("zone-champ");
+  var DUREE = 8000;
   var minuteur = null;
+  var moment = "champ";
+  var place = "a";
 
-  /* La vignette suit la place choisie sur l'autre planche : avant l'accord (A)
-     ou sous le total (B). */
-  function dessiner(place) {
-    var traits = place === "b"
-      ? ["court", "", "bloc", "note", "bloc", "", "oui"]
-      : ["court", "", "bloc", "bloc", "note", "", "oui"];
-    vignette.innerHTML = traits.map(function (t) { return '<i class="' + t + '"></i>'; }).join("");
+  function choisir(groupe, attribut, valeur) {
+    document.querySelectorAll("#" + groupe + " button").forEach(function (b) {
+      b.setAttribute("aria-pressed", b.getAttribute(attribut) === valeur ? "true" : "false");
+    });
+  }
+
+  function poser() {
+    document.querySelectorAll("[data-fond]").forEach(function (f) { f.hidden = f.getAttribute("data-fond") !== moment; });
+    zone.hidden = moment !== "champ";
+    photo.src = "devis-note-photo-" + place + ".jpg";
     texte.innerHTML = place === "b"
-      ? "<b>Ta note :</b> Mme Groupiron la lira juste sous le total."
-      : "<b>Ta note :</b> Mme Groupiron la lira juste avant « J'accepte ce devis ».";
+      ? "<b>Ta note :</b> ton client la lira ici, juste sous le total."
+      : "<b>Ta note :</b> ton client la lira ici, juste avant « J'accepte ce devis ».";
+  }
+
+  function fermer() {
+    clearTimeout(minuteur);
+    rappel.classList.remove("visible");
+    touche.classList.remove("visible");
   }
 
   function montrer() {
-    clearTimeout(minuteur);
-    rappel.classList.remove("visible");
-    var etat = ecran.getAttribute("data-etat");
-    if (etat !== "a" && etat !== "b") return;
-    dessiner(etat);
+    fermer();
+    poser();
+    if (moment === "champ") touche.classList.add("visible");
     rappel.style.setProperty("--duree", DUREE + "ms");
-    /* Une image de retard : sans elle, l'animation du trait ne repart pas. */
+    /* Deux images de retard : sans elles, le trait d'or ne repart pas. */
     requestAnimationFrame(function () { requestAnimationFrame(function () { rappel.classList.add("visible"); }); });
-    minuteur = setTimeout(function () { rappel.classList.remove("visible"); }, DUREE);
+    minuteur = setTimeout(fermer, DUREE);
   }
 
   document.addEventListener("click", function (e) {
-    if (e.target.closest("#rappel")) { clearTimeout(minuteur); rappel.classList.remove("visible"); return; }
-    if (e.target.closest("#rejouer")) { montrer(); return; }
-    if (e.target.closest(".pl-etats button[data-etat]")) setTimeout(montrer, 60);
+    if (e.target.closest("#rappel")) { fermer(); return; }
+    if (e.target.closest("#rejouer") || e.target.closest("#zone-champ")) { montrer(); return; }
+    var m = e.target.closest("#choix-moment button");
+    if (m) { moment = m.getAttribute("data-moment"); choisir("choix-moment", "data-moment", moment); montrer(); return; }
+    var p = e.target.closest("#choix-place button");
+    if (p) { place = p.getAttribute("data-place"); choisir("choix-place", "data-place", place); montrer(); }
   });
-  setTimeout(montrer, 600);
+  poser();
+  setTimeout(montrer, 700);
 });
 </script>
 </body>
