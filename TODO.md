@@ -1,5 +1,10 @@
 # Prochaines tâches
 
+
+## LE DÉTAIL SOUS LA LIGNE DU DEVIS : PLANCHE, À TRANCHER PAR LUI (3 novembre 2026)
+
+Sa question, devant son devis du frêne : la rétention, le bois mort, l'allègement et les charpentières côté voisin, dictés, ne sont pas sur la ligne « Élagage d'un frêne ». **Cause lue dans le code** : la ligne porte l'intitulé du tarif ; les précisions restent sur la prestation (écran Informations), `src/server/services/devis-depuis-dictee.ts` (« Portée exacte »). Planche `appli/soignee/devis-detail-ligne.html` : le détail en une phrase sous le nom, modifiable, imprimé sous la désignation du PDF comme sur son ancien devis Beseme. **À trancher** : phrase rédigée ou ses mots tels quels ; « Repris de ta dictée » gardé ou non. Rien dans `src/` avant sa réponse ; il faudra une colonne de détail sur la ligne (migration expand).
+
 ## SUPPRIMER UN CLIENT : CE QUI RESTE (1er novembre 2026)
 
 - ~~**Un client sous contrat d'entretien ne se supprime toujours pas**~~ **Codé le 2 novembre 2026** sur son « oui » : l'accepté se garde et retient le client, les autres partent (`ARCHITECTURE.md` §541).

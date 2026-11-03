@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le détail sous la ligne du devis</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  LE DÉTAIL SOUS LA LIGNE DU DEVIS (src/app/chantiers/[id]/devis-complet/,
+  le PDF : src/server/pdf/devis-pdf.ts).
+
+  Sa question du 3 novembre 2026, devant son devis du frêne : « j'ai parlé de
+  rétention, de suppression de bois mort, d'allègement, de rétention de grosses
+  charpentières allant vers le voisin. Pourquoi tout ça n'a pas été écrit dans
+  la ligne élagage d'un frêne ? »
+
+  Ce qui a été LU, pas supposé : la ligne du devis porte l'intitulé du tarif
+  (« Élagage d'un frêne ») ; ce qu'il précise en dictant reste sur la
+  prestation, écran Informations, et ne descend jamais au devis
+  (src/server/services/devis-depuis-dictee.ts, « Portée exacte »). Son ancien
+  devis (Beseme) écrivait ce détail sous chaque ligne : c'est le modèle.
+
+  Aujourd'hui : capture de l'écran du devis sur les données de démonstration
+  (aujourdhui/devis-ligne-sans-detail.jpg). Noms et adresses de démonstration ;
+  les lignes et les montants sont ceux de son devis du frêne.
+*/
+
+/* LE DEVIS DANS L'APPLI : la carte d'une ligne, recopiée de la vraie. */
+.ecran .defile { padding: 14px 22px 30px; background: var(--atlas-card); }
+.dl-ligne { position: relative; padding: 16px 0 10px; box-shadow: inset 0 -1px 0 var(--atlas-line); }
+.dl-ligne + .dl-ligne { margin-top: 2px; }
+.dl-nom { margin: 0; padding-right: 30px; font-size: 17px; line-height: 1.35; color: var(--atlas-ink); }
+.dl-x { position: absolute; top: 12px; right: 0; width: 30px; height: 30px; display: grid; place-items: center; color: var(--atlas-inkSoft); font-size: 20px; }
+.dl-case { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; min-height: 44px; padding-top: 10px; }
+.dl-mot { font-size: 12.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--atlas-muted); }
+.dl-val { font-size: 17px; font-variant-numeric: tabular-nums lining-nums; color: var(--atlas-ink); }
+
+/* LE DÉTAIL : sous le nom, à la place de rien. Ses mots, rédigés en une
+   phrase ; il le corrige comme le nom, d'un appui. Plus clair que le nom, pour
+   que la ligne se reconnaisse toujours par son nom. */
+.detail { display: block; width: 100%; margin: 6px 0 2px; padding: 8px 10px; border-radius: var(--r-plage);
+          font: inherit; font-size: 15px; line-height: 1.42; text-align: left; color: var(--atlas-inkSoft);
+          background: color-mix(in srgb, var(--atlas-ink) 4%, transparent); resize: none; border: 0; }
+.detail:focus { outline: 2px solid color-mix(in srgb, var(--atlas-or) 60%, transparent); outline-offset: 0; color: var(--atlas-ink); }
+.detail-ajouter { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; margin-top: 2px; font-size: 15px; font-weight: 600; color: var(--atlas-orTexte); }
+.detail-source { margin: 2px 0 0; font-size: 13px; color: var(--atlas-muted); }
+
+/* LE PDF : une page de papier, comme celle qu'il reçoit (sa capture du
+   frêne), le détail sous la désignation, plus petit et plus clair. */
+.papier { background: #fff; color: #1c1c1a; padding: 18px 14px 22px; margin: 0 -8px; font: 400 9.5px/1.4 Helvetica, Arial, sans-serif;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+.papier h4 { margin: 0 0 2px; font: 400 15px/1.2 Georgia, serif; letter-spacing: 0.02em; }
+.papier .num { float: right; font-size: 10px; margin-top: 3px; }
+.papier .objet { margin: 6px 0 10px; font-style: italic; font-size: 10px; }
+.papier .bloc { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.papier .bloc b { display: block; font-size: 8px; letter-spacing: 0.08em; color: #8a6a35; margin-bottom: 2px; }
+.papier table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.papier th { font-size: 7.5px; letter-spacing: 0.06em; text-align: right; padding: 4px 2px; border-bottom: 1px solid #1c1c1a; font-weight: 700; }
+.papier th:first-child, .papier td:first-child { text-align: left; }
+.papier td { padding: 6px 2px; text-align: right; vertical-align: top; border-bottom: 1px solid #e6e3dc; }
+.papier td.design { width: 46%; }
+.papier .sous { display: block; margin-top: 2px; font-size: 8.5px; line-height: 1.38; color: #5b5a54; }
+.papier .totaux { margin: 10px 0 0 auto; width: 58%; }
+.papier .totaux div { display: flex; justify-content: space-between; padding: 2px 0; }
+.papier .totaux .ttc { font: 400 12px/1.3 Georgia, serif; border-top: 1.5px solid #1c1c1a; margin-top: 4px; padding-top: 5px; }
+
+.pl-notes figure { margin: 12px 0 0; }
+.pl-notes figure img { width: 100%; max-width: 390px; border-radius: 8px; box-shadow: 0 0 0 1px rgba(28,28,26,0.12); }
+.pl-notes figcaption { margin-top: 6px; font-size: 14px; color: #4a4a44; }
+</style>
+</head>
+<body class="pl pl-pilules">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">Le détail sous la ligne</h1>
+  <p class="pl-verdict">Ce que tu dis en dictant reste sur l'écran Informations, et la ligne du devis ne garde que le nom de ton tarif. <b>Ici, ton détail s'écrit sous la ligne, comme sur ton ancien devis.</b></p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <!-- ═══ PROPOSÉ ═══ -->
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats">
+        <button type="button" data-etat="appli" aria-pressed="true">Ton devis</button>
+        <button type="button" data-etat="pdf">Le PDF</button>
+        <button type="button" data-etat="sans">Sans détail</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran" data-etat="appli">
+          <div class="defile">
+
+            <!-- TON DEVIS, dans l'appli : la carte de la ligne, avec son détail. -->
+            <div data-si-etat="appli sans">
+              <div class="dl-ligne">
+                <p class="dl-nom">Taille de haie de laurier</p>
+                <span class="dl-x" aria-hidden="true">×</span>
+                <div class="dl-case"><span class="dl-mot">Qté</span><span class="dl-val">25</span></div>
+                <div class="dl-case"><span class="dl-mot">Unité</span><span class="dl-val">ml</span></div>
+                <div class="dl-case"><span class="dl-mot">Montant HT</span><span class="dl-val">600,00 €</span></div>
+              </div>
+
+              <div class="dl-ligne">
+                <p class="dl-nom">Élagage d'un frêne</p>
+                <span class="dl-x" aria-hidden="true">×</span>
+                <div data-si-etat="appli">
+                  <textarea class="detail" rows="3" aria-label="Détail de la ligne">Suppression du bois mort, allègement, rétention des grosses charpentières qui partent vers le voisin.</textarea>
+                  <p class="detail-source">Repris de ta dictée.</p>
+                </div>
+                <button type="button" class="detail-ajouter" data-si-etat="sans" data-note="Le champ s'ouvre sous le nom, vide.">Ajouter un détail</button>
+                <div class="dl-case"><span class="dl-mot">Qté</span><span class="dl-val">1</span></div>
+                <div class="dl-case"><span class="dl-mot">Unité</span><span class="dl-val">u</span></div>
+                <div class="dl-case"><span class="dl-mot">Montant HT</span><span class="dl-val">1 000,00 €</span></div>
+              </div>
+
+              <div class="dl-ligne">
+                <p class="dl-nom">Camion d'évacuation</p>
+                <span class="dl-x" aria-hidden="true">×</span>
+                <div class="dl-case"><span class="dl-mot">Qté</span><span class="dl-val">1</span></div>
+                <div class="dl-case"><span class="dl-mot">Unité</span><span class="dl-val">forfait</span></div>
+                <div class="dl-case"><span class="dl-mot">Montant HT</span><span class="dl-val">150,00 €</span></div>
+              </div>
+            </div>
+
+            <!-- LE PDF que reçoit le client. -->
+            <div class="papier" data-si-etat="pdf">
+              <span class="num">n° 2026-000072</span>
+              <h4>DEVIS</h4>
+              <p class="objet">Élagage frêne</p>
+              <div class="bloc">
+                <div><b>CLIENT</b>M. Bernard<br>12 rue des Lilas<br>44000 Nantes</div>
+                <div><b>LIEU DES TRAVAUX</b>12 rue des Lilas<br>44000 Nantes</div>
+              </div>
+              <table>
+                <thead><tr><th>Désignation</th><th>Qté</th><th>Unité</th><th>P.U. HT</th><th>Total TTC</th></tr></thead>
+                <tbody>
+                  <tr><td class="design">Taille de haie de laurier</td><td>25</td><td>ml</td><td>24,00 €</td><td>720,00 €</td></tr>
+                  <tr><td class="design">Élagage d'un frêne<span class="sous">Suppression du bois mort, allègement, rétention des grosses charpentières qui partent vers le voisin.</span></td><td>1</td><td>u</td><td>1 000,00 €</td><td>1 200,00 €</td></tr>
+                  <tr><td class="design">Camion d'évacuation</td><td>1</td><td>forfait</td><td>150,00 €</td><td>180,00 €</td></tr>
+                  <tr><td class="design">Broyeur</td><td>1</td><td>forfait</td><td>250,00 €</td><td>300,00 €</td></tr>
+                </tbody>
+              </table>
+              <div class="totaux">
+                <div><span>Total HT</span><span>2 000,00 €</span></div>
+                <div><span>TVA 20 %</span><span>400,00 €</span></div>
+                <div class="ttc"><span>Total TTC</span><span>2 400,00 €</span></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ AUJOURD'HUI ═══ -->
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre">
+        <div class="cadre-capture"><img src="aujourdhui/devis-ligne-sans-detail.jpg" alt="Une ligne du devis aujourd'hui : son nom, puis la quantité, l'unité et le prix, sans aucun détail"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>Ce que tu précises en dictant (la technique, ce qu'on garde, ce qu'on enlève) s'écrit sous la ligne, en une phrase. Le nom de la ligne et le prix ne bougent pas.</li>
+      <li>Tu le corriges comme le nom, d'un appui, avant d'envoyer. Touche le détail.</li>
+      <li>Le PDF l'imprime sous la désignation, plus petit, comme sur ton devis Beseme. Touche « Le PDF ».</li>
+      <li>Une ligne sans détail reste comme aujourd'hui ; « Ajouter un détail » permet d'en écrire un à la main. Touche « Sans détail ».</li>
+      <li>Rien n'est inventé : sans précision dans ta dictée, la ligne n'a pas de détail.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>Le détail rédigé en une phrase à partir de ta dictée, comme ici, ou tes mots tels que tu les as dits ?</li>
+      <li>« Repris de ta dictée » sous le détail : utile, ou à retirer ?</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+document.addEventListener("click", function (e) {
+  var b = e.target.closest("[data-note]");
+  if (b) { e.preventDefault(); Kit.note(b, b.getAttribute("data-note")); }
+});
+</script>
+</body>
+</html>
