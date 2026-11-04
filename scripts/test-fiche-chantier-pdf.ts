@@ -120,14 +120,26 @@ const dire = (bon: boolean, quoi: string) => {
 // arbre de travail séparé : sur 70 lignes, deux deviennent une, « légal est
 // exigible. Pas d'escompte pour paiement anticipé. », à la même place. Rien
 // d'autre ne bouge.
-const EMPREINTE_FACTURE = "fb23d34e9939f3466cfefde92e91eab94cb9e2d87958e0c17ad32070e371b3c8";
+//
+// **LES DEUX, RELEVÉES DE NOUVEAU LE 4 NOVEMBRE 2026**, après sa planche de la
+// mise en page (`appli/soignee/devis-mise-en-page.html`) : *« que ce soit
+// presque collé »*. Le pied (mention, cadre de signature, légende et leur
+// trait) suit désormais la dernière ligne écrite au lieu d'être ancré au bas
+// de la page (`ARCHITECTURE.md`, la mise en page du devis). Traces relevées ici
+// et sur `HEAD` sans la modification, comparées ligne à ligne : la facture
+// (82 lignes) et le devis (95 lignes) ne diffèrent QUE par le trait du pied,
+// ses lignes de mention, et, sur le devis, le cadre et sa légende, remontés
+// de 124 à 150 points sous l'IBAN ; aucune autre ligne ne bouge. Ce qui a
+// autorisé ce relevé, en plus : les deux pages rendues (pdftoppm) et
+// REGARDÉES, le pied collé sous les modalités sur l'une comme sur l'autre.
+const EMPREINTE_FACTURE = "28382e2d9e081874228f8641653280aebeefe77a0c4b4382291064c68b7e196f";
 // **RELEVÉ DE NOUVEAU LE 3 OCTOBRE 2026** (ses choix 2A, 4A, et le formulaire
 // de rétractation) : « Début des travaux » dans les références, la validité
 // nommée dans la mention, la page du formulaire. Le PDF a été REGARDÉ, rendu
 // en image, avant ce relevé ; c'est ce regard qui a trouvé le libellé et la
 // valeur superposés, corrigés dans `document-commun.ts`. La facture ne bouge
 // pas : son empreinte est inchangée.
-const EMPREINTE_DEVIS = "f0d12df75a3096fe79600a3712b383419aad94633844b9459ca4fa943be4fce6";
+const EMPREINTE_DEVIS = "d927d4756121b79cef445a950f385dcb1ebf1e7e875ca8e05b621e56fbd6a8d0";
 
 const DOCUMENT: FacturePdfData = {
   numeroCommercial: "F-2026-0004",

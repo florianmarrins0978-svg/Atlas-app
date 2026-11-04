@@ -385,7 +385,7 @@ async function main() {
       if (estDuPied) continue;
       assert.ok(
         t.y >= PIED_DEVIS.plancher,
-        `« ${t.contenu} » (page ${t.page}, y=${t.y.toFixed(1)}) descend sous le plancher ${PIED_DEVIS.plancher.toFixed(1)} réservé au pied.`
+        `« ${t.contenu} » (page ${t.page}, y=${t.y.toFixed(1)}) descend sous le plancher ${PIED_DEVIS.plancher.toFixed(1)}, sur le numéro de page.`
       );
     }
 

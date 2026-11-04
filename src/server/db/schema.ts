@@ -1546,6 +1546,14 @@ export const devis = pgTable(
 
     pdfStorageKey: text("pdf_storage_key"),
     pdfChecksum: text("pdf_checksum"),
+    /**
+     * Les sauts de page qu'il a posés dans l'aperçu (migration 0164) :
+     * `ligne:<id de la ligne de prix>`, `totaux`, `notes`, `modalites`. Ils
+     * partent avec le devis envoyé et passent à la version suivante.
+     */
+    sautsDePage: jsonb("sauts_de_page").$type<string[]>().notNull().default([]),
+    // Combien d'espaces devant chaque élément (sa réponse du 4 novembre 2026).
+    espacesDePage: jsonb("espaces_de_page").$type<Record<string, number>>().notNull().default({}),
 
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     createdBy: uuid("created_by").references(() => users.id),
@@ -1595,6 +1603,12 @@ export const lignesDevis = pgTable(
     mainDoeuvre: boolean("main_doeuvre").notNull().default(false),
     /** Recopiée de la ligne de prix (migration 0155), comme le drapeau. */
     partMainDoeuvre: numeric("part_main_doeuvre", { precision: 12, scale: 2 }),
+    /**
+     * La ligne de prix du chantier d'où elle vient (migration 0164). C'est elle
+     * qu'un saut de page désigne : la ligne du devis est réécrite à chaque
+     * modification, celle du chantier reste. Nulle sur les devis d'avant.
+     */
+    lignePrixId: uuid("ligne_prix_id"),
     ordre: integer("ordre").notNull().default(0),
   },
   (t) => [

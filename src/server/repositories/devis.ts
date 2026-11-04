@@ -22,7 +22,9 @@ import {
 } from "@/lib/acomptes-devis";
 import { AUCUNE_PROMESSE, type PromesseDuDevis } from "@/lib/acomptes-facture";
 import type { Ctx } from "./context";
-import { genererPdfDevis, type DevisPdfData } from "../pdf/devis-pdf";
+import { composerDevisPdf, genererPdfDevis, type DevisPdfData } from "../pdf/devis-pdf";
+import { basculerSaut, cleDeSaut, sansEspacesDevant, unEspaceDePlus } from "@/lib/sauts-de-page";
+import { PIED_DOCUMENT } from "../pdf/document-commun";
 import { enregistrerObjet } from "../storage";
 import { ecrireNumero, repartChaqueAnnee } from "@/lib/numero-documents";
 import { lignesDuDocument, lignesEnAttenteDePrix } from "@/lib/preparation-devis";
@@ -390,6 +392,7 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
             tauxTva: l.tauxTva,
             mainDoeuvre: l.mainDoeuvre,
             partMainDoeuvre: l.partMainDoeuvre,
+            lignePrixId: l.id,
             ordre: i,
           }))
         );
@@ -419,6 +422,10 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
         ...totaux,
         titre: dernier?.titre ?? null,
         conditionsPaiement: dernier?.conditionsPaiement ?? null,
+        // Ses sauts de page passent à la correction, comme son titre et ses
+        // notes : ils désignent des lignes de prix, qui sont les mêmes.
+        sautsDePage: dernier?.sautsDePage ?? [],
+        espacesDePage: dernier?.espacesDePage ?? {},
         // Ses lignes de main d'œuvre sont celles du chantier : elles passent
         // d'une version à l'autre avec les lignes, et « dont » les suit.
         mainDoeuvreHt: mainDoeuvreDesLignes(lignesPrixActuelles),
@@ -440,6 +447,9 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
           tauxTva: l.tauxTva,
           mainDoeuvre: l.mainDoeuvre,
           partMainDoeuvre: l.partMainDoeuvre,
+          // La ligne de prix d'où elle vient : c'est elle qu'un saut de page
+          // désigne, puisque cette ligne-ci sera réécrite (migration 0164).
+          lignePrixId: l.id,
           ordre: i,
         }))
       );
@@ -712,7 +722,12 @@ function donneesPdfDuDevis(
     totalTtc: d.totalTtc,
     reductionPourcent: d.reductionPourcent,
     reductionMontant: d.reductionMontant,
+    // Ses sauts de page, et ce qu'ils désignent : une ligne se reconnaît par sa
+    // ligne de prix, à défaut (devis d'avant la migration 0164) par elle-même.
+    sautsDePage: d.sautsDePage,
+    espacesDePage: d.espacesDePage,
     lignes: lignes.map((l) => ({
+      id: l.lignePrixId ?? l.id,
       libelle: l.libelle,
       quantite: l.quantite,
       prixUnitaire: l.prixUnitaire,
@@ -797,21 +812,145 @@ async function habillageDuDevis(
 // clé de stockage pour un brouillon (seul le PDF du devis réellement envoyé est
 // conservé comme référence officielle — voir envoyerDevis).
 export async function genererPdfPourApercu(ctx: Ctx, devisId: string): Promise<Uint8Array> {
+  return (await composerLApercu(ctx, devisId)).pdf;
+}
+
+/** L'aperçu composé, et sa trace : où chaque ligne et chaque bloc est tombé. */
+async function composerLApercu(ctx: Ctx, devisId: string) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [d] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
     if (!d) throw new Error("Devis introuvable");
-    const lignes = await lignesDuDevis(tx, devisId);
-    const habillage = await habillageDuDevis(tx, ctx.entrepriseId, d);
-    return genererPdfDevis(
-      donneesPdfDuDevis(
-        d,
-        lignes,
-        await lireAcomptes(tx, devisId),
-        d.statut as "brouillon" | "envoye",
-        await dureeEstimeeDuChantier(tx, d.chantierId)
-      ),
-      habillage
-    );
+    return { ...(await composerCeDevis(tx, ctx.entrepriseId, d)), devis: d };
+  });
+}
+
+/**
+ * Le PDF de `d` tel qu'il est passé, sans le relire : l'action d'un espace
+ * compose AVANT d'écrire, pour savoir si la page le tient.
+ */
+async function composerCeDevis(tx: DbOrTx, entrepriseId: string, d: typeof devis.$inferSelect) {
+  const lignes = await lignesDuDevis(tx, d.id);
+  const habillage = await habillageDuDevis(tx, entrepriseId, d);
+  return composerDevisPdf(
+    donneesPdfDuDevis(
+      d,
+      lignes,
+      await lireAcomptes(tx, d.id),
+      d.statut as "brouillon" | "envoye",
+      await dureeEstimeeDuChantier(tx, d.chantierId)
+    ),
+    habillage
+  );
+}
+
+/**
+ * Où chaque élément du devis est tombé, pour l'aperçu qu'il touche : sa planche
+ * du 3 novembre 2026, « Touchez une ligne pour commencer une nouvelle page à
+ * cet endroit ». **La mise en page se lit dans la trace du VRAI PDF**, celui
+ * que l'aperçu peint : l'écran ne la recalcule pas, il ne pourrait que se
+ * tromper d'une ligne.
+ *
+ * Un devis envoyé ne se met plus en page : il est parti tel quel, avec ses
+ * sauts (`modifiable` faux, aucun élément).
+ */
+export async function miseEnPageDuDevis(ctx: Ctx, devisId: string) {
+  const { trace, devis: d } = await composerLApercu(ctx, devisId);
+  const modifiable = d.statut === "brouillon";
+  return {
+    modifiable,
+    sauts: d.sautsDePage,
+    /** Ce qu'il a demandé ; `espaces` dit ce que les pages en ont tenu, et où. */
+    espacesDemandes: d.espacesDePage,
+    hauteurPage: PIED_DOCUMENT.hauteurPage,
+    elements: modifiable ? trace.elements.filter((e) => cleDeSaut(e.cle) !== null) : [],
+    espaces: modifiable ? trace.espaces : [],
+  };
+}
+
+/**
+ * Pose ou retire un saut de page devant un élément — « Nouvelle page ici » et
+ * sa croix. **Un devis envoyé refuse**, en valeur de retour : il est parti
+ * tel quel, et le déclencheur d'immuabilité le refuserait de toute façon.
+ */
+export async function basculerSautDePage(
+  ctx: Ctx,
+  devisId: string,
+  cle: string
+): Promise<{ ok: true; sauts: string[] } | { ok: false; raison: string }> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [d] = await tx
+      .select({ statut: devis.statut, sauts: devis.sautsDePage, espaces: devis.espacesDePage })
+      .from(devis)
+      .where(eq(devis.id, devisId))
+      .limit(1);
+    if (!d) return { ok: false as const, raison: "Ce devis n'existe plus." };
+    if (d.statut !== "brouillon") return { ok: false as const, raison: "Ce devis est envoyé : sa mise en page ne change plus." };
+    const sauts = basculerSaut(d.sauts, cle);
+    // Un saut posé devant un élément l'emporte sur ses espaces : il les retire,
+    // plutôt que de les laisser dormir et revenir quand il retire le saut.
+    const espaces = sauts.includes(cle) ? sansEspacesDevant(d.espaces, cle) : d.espaces;
+    await tx.update(devis).set({ sautsDePage: sauts, espacesDePage: espaces }).where(eq(devis.id, devisId));
+    return { ok: true as const, sauts };
+  });
+}
+
+/** « Tout remettre » : la mise en page d'Atlas, sans ses sauts ni ses espaces. */
+export async function retirerLesSautsDePage(
+  ctx: Ctx,
+  devisId: string
+): Promise<{ ok: true } | { ok: false; raison: string }> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [d] = await tx.select({ statut: devis.statut }).from(devis).where(eq(devis.id, devisId)).limit(1);
+    if (!d) return { ok: false as const, raison: "Ce devis n'existe plus." };
+    if (d.statut !== "brouillon") return { ok: false as const, raison: "Ce devis est envoyé : sa mise en page ne change plus." };
+    await tx.update(devis).set({ sautsDePage: [], espacesDePage: {} }).where(eq(devis.id, devisId));
+    return { ok: true as const };
+  });
+}
+
+/**
+ * « Un espace ici », puis « Encore un espace » : une ligne blanche de plus
+ * devant `cle`, sur la même page (sa réponse du 4 novembre 2026, « d'affilée »).
+ *
+ * **La page dit si elle le tient, et c'est le générateur qui répond** : le
+ * devis se compose avec l'espace de plus AVANT d'être écrit. Si l'espace n'y
+ * est pas posé (la page est pleine, ou la règle du pied a fait passer la fin à
+ * la suivante), rien ne s'écrit et il lit « Plus de place sur cette page. ».
+ * Une règle refaite ici à la main se serait trompée d'une ligne.
+ */
+export async function ajouterUnEspaceDevant(
+  ctx: Ctx,
+  devisId: string,
+  cle: string
+): Promise<{ ok: true } | { ok: false; raison: string }> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [d] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
+    if (!d) return { ok: false as const, raison: "Ce devis n'existe plus." };
+    if (d.statut !== "brouillon") return { ok: false as const, raison: "Ce devis est envoyé : sa mise en page ne change plus." };
+    const espaces = unEspaceDePlus(d.espacesDePage, cle);
+    if (!espaces) return { ok: false as const, raison: PLUS_DE_PLACE };
+    const { trace } = await composerCeDevis(tx, ctx.entrepriseId, { ...d, espacesDePage: espaces });
+    const pose = trace.espaces.find((e) => e.cle === cle);
+    if (!pose || pose.n < espaces[cle]) return { ok: false as const, raison: PLUS_DE_PLACE };
+    await tx.update(devis).set({ espacesDePage: espaces }).where(eq(devis.id, devisId));
+    return { ok: true as const };
+  });
+}
+
+const PLUS_DE_PLACE = "Plus de place sur cette page.";
+
+/** La croix de la puce des espaces : plus aucun devant `cle`. */
+export async function retirerLesEspacesDevant(
+  ctx: Ctx,
+  devisId: string,
+  cle: string
+): Promise<{ ok: true } | { ok: false; raison: string }> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [d] = await tx.select({ statut: devis.statut, espaces: devis.espacesDePage }).from(devis).where(eq(devis.id, devisId)).limit(1);
+    if (!d) return { ok: false as const, raison: "Ce devis n'existe plus." };
+    if (d.statut !== "brouillon") return { ok: false as const, raison: "Ce devis est envoyé : sa mise en page ne change plus." };
+    await tx.update(devis).set({ espacesDePage: sansEspacesDevant(d.espaces, cle) }).where(eq(devis.id, devisId));
+    return { ok: true as const };
   });
 }
 

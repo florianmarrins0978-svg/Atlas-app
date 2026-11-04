@@ -242,6 +242,7 @@ export default async function DevisCompletPage({
         dicteeAPreparer={aPreparer}
         lectureLitterale={brouillon?.lecture === "litterale"}
         rappels={rappels}
+        sautsDePage={devisRow.sautsDePage}
       />
     </div>
   );

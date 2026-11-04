@@ -11,6 +11,8 @@ import {
 } from "@/lib/ligne-ouverte-devis";
 import { useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { basculerSautDePageAction } from "@/app/documents/pdf/actions";
+import SautDuDevis from "./SautDuDevis";
 import { colors, font, voile } from "@/lib/design-tokens";
 import {
   Cellule,
@@ -268,6 +270,8 @@ type Props = {
    */
   rappels?: Record<string, { prix: string; phrase: string }>;
   lectureLitterale?: boolean;
+  /** Les sauts de page posés dans l'aperçu : ils se voient ici (`SautDuDevis`). */
+  sautsDePage: string[];
 };
 
 export default function DevisCompletClient(props: Props) {
@@ -460,6 +464,28 @@ export default function DevisCompletClient(props: Props) {
     // prochain devis, ce qui ne coûte qu'une fenêtre.
     void aideNoteDevisVueAction().catch((e) => console.error("La fenêtre de la note n'a pas été notée vue", e));
   };
+
+  // Les sauts posés dans l'aperçu se voient ici, et s'y retirent (question 2,
+  // « B », du 4 novembre 2026). Ils ne s'y posent pas : voir `SautDuDevis`.
+  const [sauts, setSauts] = useState(props.sautsDePage);
+  const [sautEnCours, setSautEnCours] = useState(false);
+  const [refusSaut, setRefusSaut] = useState<{ cle: string; raison: string } | null>(null);
+  const retirerLeSaut = async (cle: string) => {
+    setSautEnCours(true);
+    setRefusSaut(null);
+    const issue = await basculerSautDePageAction(props.devisId, cle);
+    setSautEnCours(false);
+    if (issue.ok) setSauts(issue.sauts);
+    else setRefusSaut({ cle, raison: issue.raison });
+  };
+  const sautDevant = (cle: string) =>
+    sauts.includes(cle) ? (
+      <SautDuDevis
+        onRetirer={fige ? undefined : () => void retirerLeSaut(cle)}
+        enCours={sautEnCours}
+        refus={refusSaut?.cle === cle ? refusSaut.raison : null}
+      />
+    ) : null;
 
   // Son titre — « Aménagement du jardin ». Jamais d'office ; vide, rien ne
   // s'imprime (sa demande du 14 septembre 2026).
@@ -1413,6 +1439,7 @@ export default function DevisCompletClient(props: Props) {
             // l'enveloppe la tronquerait au repos.
             style={{ maxHeight: 420 }}
           >
+          {sautDevant(`ligne:${l.id}`)}
           <div className="atlas-chute">
           <div
             className="grid w-full gap-2 py-3 sm:grid-cols-[1fr_70px_84px_130px_130px] sm:items-start sm:gap-3"
@@ -1726,6 +1753,7 @@ export default function DevisCompletClient(props: Props) {
       )}
 
       {/* --- Les totaux, alignés à droite comme sur le papier ---------------- */}
+      {sautDevant("totaux")}
       <section className="mt-8 flex justify-end">
         <div className="w-full sm:w-[320px]">
           {/* **Le prix accordé au client — arrangement B, choisi le 16 août 2026.**
@@ -2008,6 +2036,7 @@ export default function DevisCompletClient(props: Props) {
       <OuLeClientLiraLaNote ouverte={aideNoteOuverte} onFermer={fermerAideNote} />
 
       {/* --- Notes, modalités --------------------------------------------- */}
+      {sautDevant("notes")}
       <section className="mt-9">
         <Intertitre>Notes / conditions</Intertitre>
         <ZoneQuiGrandit
@@ -2034,6 +2063,7 @@ export default function DevisCompletClient(props: Props) {
         )}
       </section>
 
+      {sautDevant("modalites")}
       <section className="mt-7">
         <Intertitre>Modalités de paiement</Intertitre>
         <p className="text-[15px]">Paiement par virement bancaire</p>
@@ -2093,7 +2123,12 @@ export default function DevisCompletClient(props: Props) {
           ni en-tête ni flèche (`src/lib/visionneuse-pdf.ts`). */}
       <div className="mt-10 flex flex-col items-center" style={{ borderTop: `1px solid ${colors.lineSoft}` }}>
         <Link
-          href={adresseDeLaVisionneuse(`/api/devis/${props.devisId}/pdf`, { surtitre: "Devis", titre: props.numeroCommercial })}
+          href={adresseDeLaVisionneuse(
+            `/api/devis/${props.devisId}/pdf`,
+            { surtitre: "Devis", titre: props.numeroCommercial },
+            // Un brouillon se met en page dans son aperçu ; un devis parti, non.
+            { couper: !fige }
+          )}
           data-atlas="apercu-pdf"
           className="pt-6 text-[14px] font-medium"
           style={{ color: colors.rust }}

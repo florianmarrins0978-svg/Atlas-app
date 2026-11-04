@@ -10,6 +10,11 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## LA MISE EN PAGE DU DEVIS (4 novembre 2026), sur `lot/mise-en-page-devis`
+
+**Les pièges :** un saut se pose DEVANT un élément (`ligne:<id de la ligne de prix>`, `totaux`, `notes`, `modalites`), jamais à une hauteur ; et l'identifiant est celui de la LIGNE DE PRIX (`lignes_devis.ligne_prix_id`), parce que les lignes d'un brouillon sont effacées et recopiées à chaque synchronisation. Le PDF nomme ses lignes par elle (`l.lignePrixId ?? l.id`) : y remettre `l.id` détache tous les sauts sans un message. La route `mise-en-page` doit composer EXACTEMENT comme la route du PDF (brouillon resynchronisé d'abord), sinon il coupe la ligne voisine. `composerDocument` compose deux fois au plus (`sautQuiManque`), jamais en boucle. `atlas-plein` ne donne pas de fond : un bouton plein prend aussi `colors.plein` et `surPlein`. **Les espaces** : la page n'en prend que ce qu'elle tient, et c'est le générateur qui le dit (`ajouterUnEspaceDevant` compose AVANT d'écrire) ; ne jamais refaire ce calcul dans l'écran. Un saut posé devant un élément retire ses espaces. **0164 a reçu `espaces_de_page` en place** : une base d'essai qui avait déjà joué 0164 ne la rejoue pas (le lanceur reconnaît le nom), il faut y ajouter la colonne à la main ou la recréer. Batterie non jouée, à sa demande ; le lot attend sa décision pour `main` (`ARCHITECTURE.md` §553).
+
+---
 ## LA NOTE DU DEVIS (4 novembre 2026), sur `lot/note-du-devis`
 
 **Les pièges :** la note se lit dans `devis.conditions_paiement`, celui que le PDF imprimait déjà ; elle n'est pas un champ neuf. Sur la page du client, ne jamais faire basculer `NoteDuDevis` d'un `div` à un `button` : le texte mesuré serait remplacé et la note longue ne s'ouvrirait plus ; et un texte coupé par `line-clamp` se mesure la coupe levée. Côté patron, `users` n'accorde ses colonnes qu'une à une à `atlas_app` : toute colonne neuve de `users` demande son `GRANT` dans sa migration (0163 en est l'exemple). `ARCHITECTURE.md` §552.

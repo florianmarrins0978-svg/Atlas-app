@@ -27,11 +27,36 @@ export const CHEMIN_VISIONNEUSE = "/documents/pdf";
  * jamais celle qui porte `?telecharger=1` : ce que la visionneuse peint n'a pas
  * à descendre dans le dossier du téléphone.
  */
-export function adresseDeLaVisionneuse(fichier: string, entete: { surtitre: string; titre: string }): string {
+export function adresseDeLaVisionneuse(
+  fichier: string,
+  entete: { surtitre: string; titre: string },
+  options: { couper?: boolean } = {}
+): string {
   // Le surtitre porte la nature (« Facture »), le titre le numéro : en un seul
   // titre, « Devis 2026-000002 » passait à la ligne en 36 px sur son téléphone.
   const params = new URLSearchParams({ fichier, de: entete.surtitre, titre: entete.titre });
+  // **« couper » ouvre la mise en page** (sa planche du 3 novembre 2026) : posé
+  // par l'écran d'un devis brouillon, et lu seulement sur l'aperçu d'un devis
+  // (`devisAMettreEnPage`). Ce n'est pas un droit : la route et l'action le
+  // vérifient chacune, le rôle comme le statut.
+  if (options.couper) params.set("couper", "1");
   return `${CHEMIN_VISIONNEUSE}?${params.toString()}`;
+}
+
+const APERCU_DU_DEVIS = /^\/api\/devis\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/pdf$/;
+
+/**
+ * Le devis dont l'aperçu se met en page, ou `null` : seulement l'aperçu d'un
+ * devis, et seulement quand l'écran du devis l'a demandé.
+ */
+export function devisAMettreEnPage(fichier: string, couper: unknown): string | null {
+  if (couper !== "1") return null;
+  return APERCU_DU_DEVIS.exec(fichier)?.[1] ?? null;
+}
+
+/** Où l'aperçu lit la place de chaque ligne du devis. */
+export function adresseDeLaMiseEnPage(devisId: string): string {
+  return `/api/devis/${devisId}/mise-en-page`;
 }
 
 /**
