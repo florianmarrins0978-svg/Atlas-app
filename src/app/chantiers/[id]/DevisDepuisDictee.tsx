@@ -8,7 +8,8 @@ import { precisionLisible, type QuestionChiffrage } from "@/lib/questions-chiffr
 import { attendreLeDevis } from "@/lib/attente-devis";
 import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
 import PastilleAjout from "@/components/atlas/PastilleAjout";
-import RepartirLaMainOeuvre, { choixDeDepart } from "@/components/atlas/RepartirLaMainOeuvre";
+import { choixDeDepart } from "@/components/atlas/RepartirLaMainOeuvre";
+import MainOeuvreDeLaDictee from "./MainOeuvreDeLaDictee";
 
 // Le geste unique : de la dictée au devis.
 //
@@ -553,65 +554,70 @@ function QuestionsChiffrage({
           // règle du 21 octobre 2026) n'est pas une question de la grille :
           // la limite de quatre questions ne la compte pas.
           <div key={q.id} data-atlas="question-chiffrage" data-sorte={q.mainOeuvre ? "main-oeuvre" : "grille"}>
-            {/* La prestation ne se répète pas d'une question à l'autre : deux
-                questions sur le même arbre l'écrivaient deux fois de suite. */}
-            {q.libellePrestation !== questions[i - 1]?.libellePrestation && (
-              <p className="text-[12px]" style={{ color: colors.muted }}>
-                {q.libellePrestation}
-              </p>
-            )}
-            <p className="text-[15px] font-medium" style={{ color: colors.ink, marginTop: 2 }}>
-              {q.question}
-            </p>
-
+            {/* La main d'œuvre porte « Mes partenaires » à côté de son libellé,
+                et sa question suit le prix pris (son « B » du 4 novembre 2026). */}
             {q.mainOeuvre ? (
-              <div className="mt-2">
-                <RepartirLaMainOeuvre
-                  question={q.mainOeuvre}
-                  valeur={reponses[q.id] ?? ""}
-                  onChange={(v) => setReponses((r) => ({ ...r, [q.id]: v }))}
-                />
-              </div>
-            ) : q.options ? (
-              <div className="mt-2 flex flex-col gap-2">
-                {q.options.map((o) => {
-                  const choisie = reponses[q.id] === o.valeur;
-                  return (
-                    <button
-                      key={o.valeur}
-                      type="button"
-                      onClick={() => setReponses((r) => ({ ...r, [q.id]: o.valeur }))}
-                      // **Le vert des boutons, comme les pastilles d'équipe du
-                      // planning — 4 septembre 2026.** Une pastille retenue est un
-                      // aplat qu'on appuie : sa phrase du 3 septembre nommait ce
-                      // cas-là (« le choix des noms des équipes »), et celles-ci
-                      // avaient été manquées.
-                      className="rounded-full px-4 py-2.5 text-left text-[14px] font-medium"
-                      style={{
-                        backgroundColor: choisie ? colors.plein : colors.card,
-                        color: choisie ? colors.cream : colors.ink,
-                      }}
-                    >
-                      {o.libelle}
-                    </button>
-                  );
-                })}
-              </div>
+              <MainOeuvreDeLaDictee
+                libelle={q.libellePrestation !== questions[i - 1]?.libellePrestation ? q.libellePrestation : null}
+                mainOeuvre={q.mainOeuvre}
+                valeur={reponses[q.id] ?? ""}
+                onChange={(v) => setReponses((r) => ({ ...r, [q.id]: v }))}
+              />
             ) : (
-              <div className="mt-2 flex items-center gap-2">
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  aria-label={q.question}
-                  value={reponses[q.id] ?? ""}
-                  onChange={(e) => setReponses((r) => ({ ...r, [q.id]: e.target.value }))}
-                  className="w-28 rounded-[4px] px-3 py-2.5 text-[15px]"
-                  style={{ backgroundColor: colors.card, color: colors.ink }}
-                />
-                <span className="text-[14px]" style={{ color: colors.muted }}>
-                  {q.unite}
-                </span>
-              </div>
+              <>
+                {/* La prestation ne se répète pas d'une question à l'autre : deux
+                    questions sur le même arbre l'écrivaient deux fois de suite. */}
+                {q.libellePrestation !== questions[i - 1]?.libellePrestation && (
+                  <p className="text-[12px]" style={{ color: colors.muted }}>
+                    {q.libellePrestation}
+                  </p>
+                )}
+                <p className="text-[15px] font-medium" style={{ color: colors.ink, marginTop: 2 }}>
+                  {q.question}
+                </p>
+
+                {q.options ? (
+                  <div className="mt-2 flex flex-col gap-2">
+                    {q.options.map((o) => {
+                      const choisie = reponses[q.id] === o.valeur;
+                      return (
+                        <button
+                          key={o.valeur}
+                          type="button"
+                          onClick={() => setReponses((r) => ({ ...r, [q.id]: o.valeur }))}
+                          // **Le vert des boutons, comme les pastilles d'équipe du
+                          // planning — 4 septembre 2026.** Une pastille retenue est un
+                          // aplat qu'on appuie : sa phrase du 3 septembre nommait ce
+                          // cas-là (« le choix des noms des équipes »), et celles-ci
+                          // avaient été manquées.
+                          className="rounded-full px-4 py-2.5 text-left text-[14px] font-medium"
+                          style={{
+                            backgroundColor: choisie ? colors.plein : colors.card,
+                            color: choisie ? colors.cream : colors.ink,
+                          }}
+                        >
+                          {o.libelle}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="mt-2 flex items-center gap-2">
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      aria-label={q.question}
+                      value={reponses[q.id] ?? ""}
+                      onChange={(e) => setReponses((r) => ({ ...r, [q.id]: e.target.value }))}
+                      className="w-28 rounded-[4px] px-3 py-2.5 text-[15px]"
+                      style={{ backgroundColor: colors.card, color: colors.ink }}
+                    />
+                    <span className="text-[14px]" style={{ color: colors.muted }}>
+                      {q.unite}
+                    </span>
+                  </div>
+                )}
+              </>
             )}
           </div>
         ))}

@@ -11,12 +11,16 @@ import {
   DUREES_MAIN_OEUVRE,
   ligneDeSonEquipe,
   ligneDeSonPartenaire,
+  mainOeuvreDUnPartenaire,
   montantDeLaMainOeuvre,
   partsAppliquees,
   prixDesPartenaires,
+  prixEnMots,
+  quantiteDuPartenaire,
   quantiteTapee,
   rangDeLaDuree,
 } from "../src/lib/feuille-main-oeuvre";
+import { ecrireChoix, lireChoix, questionDeLaMainOeuvre } from "../src/lib/main-oeuvre-dictee";
 import type { PrixAchatCandidat } from "../src/lib/prix-achat";
 import { uniteAdmise } from "../src/lib/unite-de-ligne";
 import { mainDoeuvreApresUnAjout, mainDoeuvreDesLignes } from "../src/lib/main-doeuvre-devis";
@@ -182,6 +186,69 @@ cas("« dont » ne dépasse jamais le total HT, même après un ajout", () => {
 cas("une main d'œuvre à chiffrer ne change pas « dont » : rien ne s'invente", () => {
   assert.equal(mainDoeuvreApresUnAjout(null, null, "800.00"), null);
   assert.equal(mainDoeuvreApresUnAjout("380.00", null, "800.00"), "380.00");
+});
+
+// ── LE PARTENAIRE PRIS SUR LA QUESTION DE LA DICTÉE (son « B » du 4 novembre 2026) ──
+// Planche `appli/soignee/main-oeuvre-dictee-partenaires.html` : la carte
+// « Avant de chiffrer » et la feuille du devis lisent les MÊMES règles.
+
+const [durand] = prixDesPartenaires(
+  [candidat({ id: "d1", nom: "Démontage sur corde", unite: "journée", prixHt: "450", societeNom: "Élagage Durand", margePropre: "1.35" })],
+  { materiel: null, mainOeuvre: "1.20" }
+);
+const [aLHeure] = prixDesPartenaires(
+  [candidat({ id: "d2", nom: "Élagage", unite: "heure", prixHt: "60", societeNom: "Élagage Durand", margePropre: null })],
+  { materiel: null, mainOeuvre: "1.20" }
+);
+
+cas("à la journée, le partenaire prend les jours dictés, quoi que l'écran envoie", () => {
+  assert.equal(quantiteDuPartenaire(durand, 2, 99), 2);
+  assert.equal(quantiteDuPartenaire(durand, 0.5, null), 0.5);
+});
+
+cas("à l'heure ou au forfait, la quantité est celle qu'il tape, au-dessus de zéro", () => {
+  assert.equal(quantiteDuPartenaire(aLHeure, 2, 10), 10);
+  assert.equal(quantiteDuPartenaire(aLHeure, 2, 0), null);
+  assert.equal(quantiteDuPartenaire(aLHeure, 2, null), null);
+  assert.equal(quantiteDuPartenaire(aLHeure, 2, 100000), null);
+});
+
+cas("2 jours × 450 € × 1,35 font 1 215 €, sur la ligne qui dit son nom", () => {
+  const m = mainOeuvreDUnPartenaire(durand, 2);
+  assert.equal(m.montant, "1215.00");
+  assert.equal(m.ligne.libelle, "Main d’œuvre : Élagage Durand");
+  assert.equal(m.calcul.replace(/\s/g, " "), "2 jours × 450 € × 1,35");
+});
+
+cas("sans marge sur la main d'œuvre, la main d'œuvre arrive à chiffrer, et la phrase le dit", () => {
+  const [sansMarge] = prixDesPartenaires(
+    [candidat({ id: "d3", nom: "Élagage", unite: "heure", prixHt: "60", societeNom: "Élagage Durand", margePropre: null })],
+    { materiel: null, mainOeuvre: null }
+  );
+  const m = mainOeuvreDUnPartenaire(sansMarge, 4);
+  assert.equal(m.montant, null);
+  assert.match(m.calcul, /arrivera à chiffrer/);
+});
+
+cas("le prix se dit comme sur sa fiche", () => {
+  assert.equal(prixEnMots(durand).replace(/\s/g, " "), "450 € la journée");
+  assert.equal(prixEnMots(aLHeure).replace(/\s/g, " "), "60 € l’heure");
+});
+
+cas("son choix garde le partenaire, et ce qui ne se lit pas n'y entre pas", () => {
+  const lu = lireChoix(ecrireChoix({ mode: "ligne", parts: {}, retires: [], partenaire: { prixId: "d1", quantite: 2 } }));
+  assert.deepEqual(lu?.partenaire, { prixId: "d1", quantite: 2 });
+  for (const abime of [{ prixId: 4, quantite: 2 }, { prixId: "", quantite: 2 }, { prixId: "d1", quantite: -1 }, { prixId: "d1", quantite: "2" }, "d1"]) {
+    const l = lireChoix(JSON.stringify({ mode: "reparti", parts: {}, retires: [], partenaire: abime }));
+    assert.equal(l?.mode, "reparti", "le reste du choix se lit toujours");
+    assert.equal(l?.partenaire, undefined, `un partenaire abîmé est écarté : ${JSON.stringify(abime)}`);
+  }
+  assert.equal(lireChoix(ecrireChoix({ mode: "reparti", parts: {}, retires: [] }))?.partenaire, undefined);
+});
+
+cas("la question dit le total qu'elle partage, et se tait quand il n'y en a pas", () => {
+  assert.match(questionDeLaMainOeuvre("1215.00"), /^Où mettre les 1\s?215\s€ de main d'œuvre \?$/);
+  assert.equal(questionDeLaMainOeuvre(null), "Où mettre la main d'œuvre ?");
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} La feuille de la main d'œuvre — ${echecs} échec(s).`);

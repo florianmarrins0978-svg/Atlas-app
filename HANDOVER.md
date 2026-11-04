@@ -10,6 +10,11 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## « MES PARTENAIRES » SUR LA MAIN D'ŒUVRE DICTÉE (4 novembre 2026)
+
+**Les pièges :** le prix d'un partenaire se relit TOUJOURS au serveur (`partenaireDuChoix`, `src/server/chiffrage/proposition-prix.ts`) ; la réponse ne porte qu'un identifiant et une quantité, et la quantité d'un prix à la journée est remplacée par les jours dictés (`quantiteDuPartenaire`). La carte (`MainOeuvreDeLaDictee.tsx`) lit son total sur la réponse enregistrée, pas sur la case : c'est ce qui garde « ce qu'il voit est ce qui part ». La liste des partenaires est une pièce commune (`PartenairesDeLaMainOeuvre.tsx`) : la feuille du devis et la carte la montent, une retouche se fait là. `ARCHITECTURE.md` §551.
+
+---
 ## LA FACTURE ET TERMINÉS DE LA PLANCHE (4 novembre 2026), sur `main`
 
 **Les pièges :** les feuilles TVA, Main d'œuvre et Remise vivent dans `src/components/atlas/` et servent le devis ET la facture ; une retouche se fait là, jamais dans une copie (`ARCHITECTURE.md` §549). Sur la facture, `poserUneLigne` revalide le taux par `tauxTvaValide` et `ajouterMainDoeuvreDeFacture` refuse une facture arrêtée (`factureEncoreEnBrouillon`). « dont main d'œuvre HT » y reste un montant, il ne suit pas un prix changé ensuite (`TODO.md`). Le client supprimé : `coordonneeDeCetEnvoi` (`src/lib/coordonnee-de-cet-envoi.ts`) décide, l'adresse tapée n'est écrite que dans `envois_factures.destinataire` (0160), jamais sur la fiche (§548). Le ruban glissant d'un choix à deux ou trois cases est `RubanGlissant` (§547) : le paiement et le sens du tri le prennent, ne pas en redessiner un.

@@ -4,6 +4,11 @@
 dernière migration `drizzle/0158_cles_composites_effacent_comme_leur_lien.sql` (réunie le 3 novembre pour la batterie commune, avec `0157_banque_lecture_refusee.sql` et `0156_pieces_importees_adresse_lue.sql`) ; `0155_part_de_main_doeuvre_sur_la_ligne.sql` (le devis) sur `main` depuis le 3 novembre ; `0159_rappels_vehicules_vus.sql` (le « J'ai vu » des contrôles des véhicules) et `0160_envoi_facture_destinataire_tape.sql` (la facture d'un client supprimé) sur `main` le 4 novembre
 
 ---
+## « MES PARTENAIRES » SUR LA MAIN D'ŒUVRE DICTÉE, CODÉ (4 novembre 2026)
+
+Son « B » sur la planche `appli/soignee/main-oeuvre-dictee-partenaires.html` : sur la carte « Avant de chiffrer », la pastille « Mes partenaires » ouvre leurs prix, et un prix touché devient la main d'œuvre du devis, à son nom. Sans migration (la réponse garde le partenaire dans `precisions_chantier`). `ARCHITECTURE.md` §551. Suites vues rouges puis vertes : `test-feuille-main-oeuvre`, `test-main-oeuvre-dictee-db`, et `test-mo-dictee-partenaire-e2e` (neuve). **Pas sur `main`, batterie non jouée à sa demande** (« ne lance pas de batterie »).
+
+---
 ## LA FACTURE ET TERMINÉS DE LA PLANCHE, SUR `main` (4 novembre 2026)
 
 Ses « oui » du 4 novembre, un seul lot avec ceux du 3 : sur la facture sans devis et « Travaux en plus », les pastilles TVA, Main d'œuvre et Remise ouvrent les feuilles du devis (`ARCHITECTURE.md` §549 ; Remise sur la seule facture sans devis, sa A du 7 octobre) ; « Règlement reçu » en pastille ; la facture d'un client supprimé part vers l'e-mail ou le numéro tapé, pour cet envoi seulement, rien n'est réécrit sur la fiche (§548, migration 0160). Terminés : le Filtre posé et le tri choisi en vert pâle, « Trier par » en pastilles, le sens sur le ruban du paiement (`RubanGlissant`, §547). Ce qui reste est dans `TODO.md`.

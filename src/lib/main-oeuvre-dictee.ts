@@ -1,4 +1,5 @@
 import Decimal from "decimal.js";
+import type { PrixDePartenaire } from "./feuille-main-oeuvre";
 
 /**
  * La main d'œuvre qu'il DICTE : où elle va sur le devis, et combien.
@@ -30,6 +31,12 @@ export type ChoixMainOeuvre = {
   parts: Record<string, number>;
   /** Les travaux sortis de la main d'œuvre par la croix : leur grille, sinon à chiffrer. */
   retires: string[];
+  /**
+   * Le prix d'un de ses partenaires, pris à la place de son équipe : son « B »
+   * du 4 novembre 2026 (`appli/soignee/main-oeuvre-dictee-partenaires.html`).
+   * Absent : son équipe, à son tarif. Le prix se relit en base, jamais ici.
+   */
+  partenaire?: { prixId: string; quantite: number };
 };
 
 /** Ce que la carte « Avant de chiffrer » montre pour la main d'œuvre. */
@@ -44,7 +51,17 @@ export type QuestionMainOeuvre = {
   /** Les engins dictés qui partent avec leur conducteur. */
   engins: string[];
   hommes: number;
+  /** Les jours dictés : un partenaire à la journée les prend. */
+  jours: number;
+  /** Ses partenaires et leurs prix, pour la pastille « Mes partenaires ». */
+  partenaires: PrixDePartenaire[];
 };
+
+/** « Où mettre les 1 120 € de main d'œuvre ? » ; sans total, la question ne chiffre rien. */
+export function questionDeLaMainOeuvre(total: string | null): string {
+  if (total === null) return "Où mettre la main d'œuvre ?";
+  return `Où mettre les ${new Decimal(total).toNumber().toLocaleString("fr-FR")} € de main d'œuvre ?`;
+}
 
 /** Le choix par défaut, tant qu'il n'a rien dit : réparti, parts de sa grille. */
 export function choixParDefaut(mode: ModeMainOeuvre = "reparti"): ChoixMainOeuvre {
@@ -74,7 +91,13 @@ export function lireChoix(valeur: string | null | undefined): ChoixMainOeuvre | 
     }
   }
   const retires = Array.isArray(b.retires) ? b.retires.filter((r): r is string => typeof r === "string") : [];
-  return { mode: b.mode, parts, retires };
+  const p = b.partenaire as Record<string, unknown> | null | undefined;
+  const partenaire =
+    p && typeof p === "object" && typeof p.prixId === "string" && p.prixId !== "" &&
+    typeof p.quantite === "number" && Number.isFinite(p.quantite) && p.quantite > 0
+      ? { prixId: p.prixId, quantite: p.quantite }
+      : undefined;
+  return partenaire ? { mode: b.mode, parts, retires, partenaire } : { mode: b.mode, parts, retires };
 }
 
 /**

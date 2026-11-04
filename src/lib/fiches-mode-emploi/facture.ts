@@ -131,7 +131,8 @@ export const FICHES_FACTURE: FicheModeEmploi[] = [
     source: S,
     preuves: ['repere="poser-main-doeuvre"', 'setFeuille("mo")', "<FeuilleMainDoeuvre"],
     ailleurs: [
-      { source: "src/components/atlas/FeuilleMainDoeuvre.tsx", preuves: ["Mes partenaires", "Ajouter la main d’œuvre", "Le jour par homme"] },
+      { source: "src/components/atlas/FeuilleMainDoeuvre.tsx", preuves: ["<PastilleMesPartenaires", "Ajouter la main d’œuvre", "Le jour par homme"] },
+      { source: "src/components/atlas/PartenairesDeLaMainOeuvre.tsx", preuves: ["Mes partenaires"] },
       { source: "src/lib/main-doeuvre-devis.ts", preuves: ["export function mainDoeuvreApresUnAjout"] },
       { source: "src/app/chantiers/[id]/devis-complet/LigneMainDoeuvre.tsx", preuves: ['data-atlas="retirer-main-doeuvre"'] },
     ],

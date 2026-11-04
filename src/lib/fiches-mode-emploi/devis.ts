@@ -218,8 +218,9 @@ export const FICHES_DEVIS: FicheModeEmploi[] = [
     ailleurs: [
       {
         source: "src/components/atlas/FeuilleMainDoeuvre.tsx",
-        preuves: ["Mes partenaires", "Ajouter la main d’œuvre", "Le jour par homme", "Répartir la main d’œuvre"],
+        preuves: ["<PastilleMesPartenaires", "Ajouter la main d’œuvre", "Le jour par homme", "Répartir la main d’œuvre"],
       },
+      { source: "src/components/atlas/PartenairesDeLaMainOeuvre.tsx", preuves: ["Mes partenaires"] },
       { source: "src/lib/main-doeuvre-devis.ts", preuves: ["dont main d’œuvre HT", "Main d’œuvre"] },
     ],
   },
@@ -338,10 +339,12 @@ export const FICHES_DEVIS: FicheModeEmploi[] = [
     motsCles: ["questions", "chiffrer", "avant", "repondre", "preparation", "precision"],
     geste:
       "Touchez une réponse sous chaque question, puis « Continuer vers le devis ». " +
-      "Pour passer outre : « Continuer sans répondre à tout ».",
+      "Pour passer outre : « Continuer sans répondre à tout ». " +
+      "Sur la main d’œuvre dictée, « Mes partenaires » prend le prix d’un partenaire avec votre marge.",
     reserve: "Ces questions n'apparaissent que quand la dictée ne suffit pas pour chiffrer.",
     source: "src/app/chantiers/[id]/DevisDepuisDictee.tsx",
-    preuves: ["Avant de chiffrer", "Continuer vers le devis", "Continuer sans répondre à tout", "Revenir en arrière"],
+    preuves: ["Avant de chiffrer", "Continuer vers le devis", "Continuer sans répondre à tout", "Revenir en arrière", "<MainOeuvreDeLaDictee"],
+    ailleurs: [{ source: "src/app/chantiers/[id]/MainOeuvreDeLaDictee.tsx", preuves: ["<PastilleMesPartenaires", "<ListeDesPartenaires"] }],
   },
   // --- Le devis figé --------------------------------------------------------
   {

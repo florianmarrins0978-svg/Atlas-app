@@ -16,6 +16,7 @@ import { getOuCreerDevisBrouillon } from "../src/server/repositories/devis";
 import { listerLignesPrix } from "../src/server/repositories/lignes-prix";
 import { questionsRestantes } from "../src/server/services/devis-depuis-dictee";
 import { fermerLimiteur } from "../src/server/rate-limit";
+import { ajouterPrixAchat, creerSociete, reglerMarge, reglerMargeSociete } from "../src/server/repositories/fournisseurs-partenaires";
 import { nettoyerBase } from "./_test-db";
 
 // **La main d'œuvre qu'il dicte, au prix de SES tarifs** : ses messages du
@@ -194,6 +195,92 @@ async function main() {
       p.lignes.map((l) => [l.libelle, Number(l.montant), l.quantite, l.unite]),
       [["Main d'œuvre : taille de haie de laurier", 800, "2", "jour/homme"]]
     );
+  });
+
+  // **Le partenaire pris sur la question** : son « B » du 4 novembre 2026
+  // (`appli/soignee/main-oeuvre-dictee-partenaires.html`). Le prix se relit en
+  // base, jamais sur la parole de l'écran : une quantité mentie à la journée ne
+  // passe pas, et le prix d'une autre entreprise non plus.
+  const sesPartenaires = async (A: { entrepriseId: string; utilisateurId: string }) => {
+    await reglerMarge(A, "mainOeuvre", "1.20");
+    const durand = await creerSociete(A, "partenaire", "Élagage Durand");
+    await reglerMargeSociete(A, durand.id, "1.35");
+    const morel = await creerSociete(A, "partenaire", "Terrassement Morel");
+    const journee = await ajouterPrixAchat(A, durand.id, { nom: "Démontage sur corde", unite: "journée", prixHt: "450", source: "essai" });
+    const heure = await ajouterPrixAchat(A, morel.id, { nom: "Mini-pelle avec chauffeur", unite: "heure", prixHt: "60", source: "essai" });
+    return { journee, heure };
+  };
+
+  await test("la question porte ses partenaires et les jours dictés", async () => {
+    const A = await sonEntreprise("partenaires-question");
+    const { journee } = await sesPartenaires(A);
+    const c = await chantierDicte(A, {
+      prestations: [{ ...base, libelle: "Taille de haie de laurier", nature: "haie", quantite: "20", unite: "ml" }],
+      dureePrevue: "2 jours",
+      tailleEquipe: "2 hommes",
+    });
+    const mo = (await questionMainOeuvre(A, c.id)).question!.mainOeuvre!;
+    assert.equal(mo.jours, 2);
+    const p = mo.partenaires.find((x) => x.id === journee.id);
+    assert.ok(p, `le prix de son partenaire est dans la question : ${JSON.stringify(mo.partenaires)}`);
+    assert.equal(p!.venteHt, "607.50", "450 € × 1,35, sa marge à lui");
+  });
+
+  await test("un partenaire pris à la journée : 2 jours × 450 € × 1,35, sur une ligne qui dit son nom, quoi que l'écran envoie", async () => {
+    const A = await sonEntreprise("partenaire-ligne");
+    const { journee } = await sesPartenaires(A);
+    const c = await chantierDicte(A, {
+      prestations: [{ ...base, libelle: "Taille de haie de laurier", nature: "haie", quantite: "20", unite: "ml" }],
+      dureePrevue: "2 jours",
+      tailleEquipe: "2 hommes",
+    });
+    await repondre(A, c.id, { mode: "ligne", parts: {}, retires: [], partenaire: { prixId: journee.id, quantite: 99 } });
+    const p = (await preparerPropositionPrix(A, c.id))!;
+    assert.deepEqual(
+      p.lignes.map((l) => [l.libelle, Number(l.montant), l.quantite, l.unite, l.mainDoeuvre]),
+      [["Main d’œuvre : Élagage Durand", 1215, "2", "journée", true]]
+    );
+    assert.ok(
+      p.explication.calcul.some((x) => /Élagage Durand/.test(x.detail) && /2 jours × 450\s€ × 1,35/.test(x.detail)),
+      JSON.stringify(p.explication.calcul)
+    );
+  });
+
+  await test("un partenaire à l'heure, réparti : les travaux se partagent 10 h × 60 € × 1,20", async () => {
+    const A = await sonEntreprise("partenaire-reparti");
+    const { heure } = await sesPartenaires(A);
+    const c = await chantierDicte(A, {
+      prestations: [
+        { ...base, libelle: "Taille de haie de laurier", nature: "haie", quantite: "20", unite: "ml" },
+        { ...base, libelle: "Taille de cohabitation avec la maison" },
+      ],
+      dureePrevue: "1 jour",
+      tailleEquipe: "2 hommes",
+    });
+    await repondre(A, c.id, { mode: "reparti", parts: {}, retires: [], partenaire: { prixId: heure.id, quantite: 10 } });
+    const p = (await preparerPropositionPrix(A, c.id))!;
+    const total = p.lignes.reduce((s, l) => s + Number(l.montant ?? 0), 0);
+    assert.equal(total, 720, JSON.stringify(p.lignes));
+    assert.equal(
+      p.lignes.reduce((s, l) => s + Number(l.partMainDoeuvre ?? 0), 0),
+      720,
+      "« dont main d'œuvre » compte le prix du partenaire"
+    );
+  });
+
+  await test("le prix d'une autre entreprise ne passe pas : la main d'œuvre arrive à chiffrer, et la phrase le dit", async () => {
+    const A = await sonEntreprise("partenaire-etranger");
+    const B = await sonEntreprise("partenaire-autre");
+    const { journee: chezB } = await sesPartenaires(B);
+    const c = await chantierDicte(A, {
+      prestations: [{ ...base, libelle: "Taille de haie de laurier", nature: "haie", quantite: "20", unite: "ml" }],
+      dureePrevue: "2 jours",
+      tailleEquipe: "2 hommes",
+    });
+    await repondre(A, c.id, { mode: "ligne", parts: {}, retires: [], partenaire: { prixId: chezB.id, quantite: 2 } });
+    const p = (await preparerPropositionPrix(A, c.id))!;
+    assert.deepEqual(p.lignes.map((l) => l.montant), [null], JSON.stringify(p.lignes));
+    assert.ok(p.explication.donneesManquantes.some((m) => /partenaire/.test(m)), JSON.stringify(p.explication.donneesManquantes));
   });
 
   // **« dont main d'œuvre HT » voit la main d'œuvre DICTÉE** (2 novembre 2026).
