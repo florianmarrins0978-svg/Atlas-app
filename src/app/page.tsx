@@ -32,7 +32,7 @@ import { questionsEnAttente } from "@/server/banque/questions";
 import { liaisonDeLEntreprise } from "@/server/repositories/banque";
 import RappelsVehicules from "./RappelsVehicules";
 import { listerVehicules } from "@/server/repositories/vehicules";
-import { rappelsDesVehicules } from "@/lib/vehicules";
+import { rappelsDeLAccueil } from "@/lib/vehicules";
 import { receptionsASignaler } from "@/server/repositories/envois-factures";
 import { abonnementDeLEntreprise } from "@/server/repositories/abonnements";
 import { etatDeLAcces, phraseLectureSeule } from "@/lib/abonnements";
@@ -327,13 +327,16 @@ export default async function ChantiersPage() {
             )}
           />
           <RappelsVehicules
-            rappels={rappelsDesVehicules(
+            rappels={rappelsDeLAccueil(
               vehicules.map((v) => ({
                 id: v.id,
                 nom: v.nom,
                 controleTechniqueAvant: v.controleTechniqueAvant,
                 pollutionAvant: v.pollutionAvant,
                 contreVisiteAvant: v.contreVisiteAvant,
+                controleTechniqueVuPour: v.controleTechniqueVuPour,
+                pollutionVuPour: v.pollutionVuPour,
+                contreVisiteVuPour: v.contreVisiteVuPour,
               })),
               jourIso(maintenant)
             )}

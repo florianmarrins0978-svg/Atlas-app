@@ -14,7 +14,7 @@ import { repriseDuDevis } from "@/lib/facture-face-au-devis";
 import { getClient } from "@/server/repositories/clients";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import { exigibiliteDe } from "@/server/repositories/paiements-facture";
-import { dernierEnvoiFacture, jetonAcquitteVivant } from "@/server/repositories/envois-factures";
+import { dernierEnvoiFacture, jetonAcquitteVivant, situationDeLEnvoi } from "@/server/repositories/envois-factures";
 import FactureClient from "./FactureClient";
 import SuiteDeLaFacture from "./SuiteDeLaFacture";
 import { avoirsDeLaFacture } from "@/server/repositories/avoirs";
@@ -71,6 +71,10 @@ export default async function FacturePage({
   // le jour où sa messagerie refuse de s'ouvrir — précisément le jour où cet
   // écran doit le rattraper.
   const envoiDejaFait = existante ? await dernierEnvoiFacture(ctx, existante.facture.id) : null;
+  // **Son client supprimé, sa facture pas encore partie** (sa demande du
+  // 3 novembre 2026) : la case de l'envoi s'offre. La même lecture que celle
+  // du serveur au moment d'écrire le lien.
+  const situationEnvoi = existante ? await situationDeLEnvoi(ctx, existante.facture.id) : null;
   // L'exemplaire acquitté déjà préparé, s'il vaut encore (23 octobre 2026).
   const jetonAcquitte =
     existante?.facture.statut === "emise" ? await jetonAcquitteVivant(ctx, existante.facture.id) : null;
@@ -154,6 +158,7 @@ export default async function FacturePage({
           clientTelephone={client?.telephone ?? null}
           clientEmail={client?.email ?? null}
           canalClient={(client?.canalCommunication as "sms" | "email" | null) ?? null}
+          situationEnvoi={situationEnvoi}
           jetonDejaPrepare={envoiDejaFait?.jeton ?? null}
           jetonAcquittePrepare={jetonAcquitte}
           avoirs={avoirs}

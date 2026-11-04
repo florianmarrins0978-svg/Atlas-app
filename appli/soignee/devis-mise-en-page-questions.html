@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Deux questions sur la mise en page</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  DEUX QUESTIONS SUR LA MISE EN PAGE DU DEVIS, restées ouvertes quand la
+  planche devis-mise-en-page.html a été codée (4 novembre 2026, branche
+  lot/mise-en-page-devis ; ARCHITECTURE.md §544).
+
+  1. « Sauter une ligne » : sa phrase du 3 novembre, « dire à tel endroit,
+     hop, là je décide de sauter une ligne ». Codé : passer à la page
+     suivante. Ouvert : laisser aussi un espace, sur la même page (ProGBat,
+     Incwo et Sellsy aèrent par une ligne vide).
+  2. Le saut dans l'écran du devis : chez ProGBat ou VosFactures, le saut est
+     une ligne de l'écran de saisie. Codé : il se pose et se voit dans
+     l'aperçu seulement.
+
+  La première question rejoue le moteur de la planche de la règle
+  (devis-mise-en-page/moteur.js), sur les vraies pages du PDF de 20 lignes.
+  La seconde recopie l'écran du devis de la planche du chantier
+  (chantier.html?ecran=devis), lignes du même devis de 20 lignes.
+*/
+
+.question { margin: 0 auto 10px; max-width: 390px; padding: 0 16px; text-align: center;
+            font: 400 21px/1.25 var(--serif, Georgia, serif); color: #1c1c1a; text-wrap: balance; }
+.mesure { margin: 0 auto 8px; max-width: 390px; min-height: 38px; padding: 0 16px; text-align: center; font-size: 14px;
+          line-height: 1.35; font-weight: 600; color: #4a4a44; }
+.surtitre { margin: -12px 0 14px; font-size: 13px; font-weight: 600; letter-spacing: 0.24em;
+            text-transform: uppercase; color: var(--atlas-or); }
+
+/* ═══ QUESTION 1 : l'aperçu, ses pages recomposées des vraies photos ═══ */
+.pages { display: grid; gap: 14px; }
+.page { position: relative; aspect-ratio: 595.28 / 841.89; overflow: hidden; container-type: inline-size;
+        background: #FAF9F5; border-radius: 2px;
+        box-shadow: 0 1px 3px rgba(28,28,26,0.16), 0 0 0 1px rgba(28,28,26,0.06); }
+.morceau { position: absolute; left: 0; right: 0; overflow: hidden; }
+.morceau img { position: absolute; left: 0; width: 100%; height: auto; display: block; }
+.numero { position: absolute; left: 0; right: 0; bottom: calc(27.5 / 595.28 * 100cqw); text-align: center;
+          font: 400 calc(7.5 / 595.28 * 100cqw)/1 Helvetica, Arial, sans-serif; color: #8a8578; }
+[data-touchable] .morceau[data-cle^="ligne-"], [data-touchable] .morceau[data-cle="totaux"],
+[data-touchable] .morceau[data-cle="notes"], [data-touchable] .morceau[data-cle="modalites"] { cursor: pointer; }
+.morceau.choisi::after { content: ""; position: absolute; inset: 0;
+                         background: color-mix(in srgb, var(--atlas-or) 22%, transparent);
+                         box-shadow: inset 0 0 0 2px var(--atlas-or); }
+
+/* L'espace posé : blanc sur le PDF du client. Dans l'aperçu seulement, sa
+   puce pour le retirer, du doré des choses qu'on lit (la puce verte est
+   celle du saut, qui change de page). */
+.espace-pose { position: absolute; left: 0; right: 0; display: grid; place-items: center; }
+.espace-pose .puce { display: inline-flex; align-items: center; gap: 2px; height: calc(22 / 595.28 * 100cqw); min-height: 22px;
+                     padding: 0 2px 0 10px; border-radius: 999px; font-size: 12.5px; font-weight: 600; color: var(--atlas-orTexte);
+                     background: color-mix(in srgb, var(--atlas-or) 16%, var(--atlas-card)); white-space: nowrap; }
+.espace-pose .puce button { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; color: inherit; }
+.espace-pose .puce .ico { width: 14px; height: 14px; }
+
+.saut-entre { display: flex; justify-content: center; margin: -4px 0; }
+.saut { display: inline-flex; align-items: center; gap: 4px; min-height: 36px; padding: 0 6px 0 14px;
+        border-radius: 18px; font-size: 14px; font-weight: 600; color: var(--sur-plein); background: var(--atlas-plein);
+        box-shadow: 0 1px 4px rgba(28,28,26,0.2); white-space: nowrap; }
+.saut button { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; color: inherit; }
+.saut .ico { width: 16px; height: 16px; }
+
+.action-coupe { position: absolute; left: 12px; right: 12px; bottom: 86px; z-index: 7; display: flex; gap: 6px;
+                align-items: center; padding: 8px; border-radius: 999px; background: var(--atlas-card);
+                box-shadow: 0 6px 24px rgba(28,28,26,0.22), 0 0 0 1px var(--atlas-line); }
+.action-coupe[hidden], .action-coupe [hidden] { display: none; }
+.action-coupe .bouton { flex: 1 1 0; min-width: 0; min-height: 48px; padding: 0 12px; font-size: 15.5px; white-space: nowrap; }
+.action-coupe .deja { flex: 1; margin: 0; padding: 0 8px; font-size: 14.5px; color: var(--atlas-inkSoft); }
+.action-coupe .fermer { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%;
+                        color: var(--atlas-ink); }
+.tout-remettre { display: block; margin: 0 auto 12px; min-height: 40px; padding: 0 14px; font-size: 14.5px;
+                 font-weight: 600; color: var(--atlas-rust); }
+.tout-remettre[hidden] { display: none; }
+
+/* ═══ QUESTION 2 : l'écran du devis, recopié de la planche du chantier ═══ */
+.dc .defile { padding: 8px 14px 150px; }
+.dc-tete { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; }
+.dc-tete .espace { flex: 1; }
+.dc-tete .retour-nu { width: 40px; height: 44px; display: grid; place-items: center; color: var(--atlas-ink); }
+.dc-tete .retour-nu .ico { width: 22px; height: 22px; }
+.dc-feuille { padding: 22px 18px 20px; border-radius: 14px; background: var(--atlas-card); }
+.dc-cap { font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--atlas-inkSoft); }
+.dc-mot { margin: 4px 0 0; text-align: center; font: 400 26px/1.1 var(--serif); }
+.dc-client { margin: 20px 0 8px; }
+.dc-client p { margin: 4px 0 0; font-size: 16px; line-height: 1.4; }
+.dc-ligne { padding: 12px 0 4px; box-shadow: inset 0 -1px 0 var(--atlas-line); }
+.dc-ligne-haut { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; font-size: 16px; line-height: 1.35; }
+.dc-ligne-haut .ico { width: 16px; height: 16px; margin-top: 3px; color: var(--atlas-inkSoft); flex: none; }
+.dc-rang { display: flex; justify-content: space-between; align-items: center; min-height: 40px; font-size: 16px; font-variant-numeric: tabular-nums; }
+.dc-plus { margin: 14px 0 0; text-align: center; font-size: 14px; color: var(--atlas-inkSoft); }
+.ajouts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.puce-ajout { display: inline-flex; align-items: center; gap: 5px; min-height: 44px; padding: 0 13px 0 9px; border-radius: 22px;
+              font-size: 14.5px; font-weight: 600; color: var(--atlas-ink); box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
+.puce-ajout .ico { width: 18px; height: 18px; }
+.puce-ajout.or { color: var(--atlas-or); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 60%, transparent); }
+.dc-apercu { display: block; width: 100%; margin-top: 18px; padding: 12px 0 4px; text-align: center; font-size: 15px; font-weight: 600;
+             box-shadow: inset 0 1px 0 var(--atlas-line); color: var(--atlas-ink); }
+
+/* Le saut, entre deux lignes du devis : la même puce que dans l'aperçu, sur
+   un filet qui coupe la liste là où la page se tournera. */
+.dc-saut { position: relative; display: flex; justify-content: center; padding: 12px 0; }
+.dc-saut::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; border-top: 1.5px dashed color-mix(in srgb, var(--atlas-plein) 70%, transparent); }
+.dc-saut .saut { position: relative; }
+
+/* Le choix de la ligne, dans la feuille qui monte. */
+.choix-lignes { margin: 0; padding: 0; list-style: none; }
+.choix-lignes li + li { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.choix-lignes button { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 54px; padding: 0 4px; text-align: left;
+                       font: 400 17px/1.3 var(--serif); color: var(--atlas-ink); }
+.choix-lignes button .ico { width: 18px; height: 18px; margin-left: auto; color: var(--atlas-plein); }
+.choix-lignes button[aria-pressed="false"] .ico { visibility: hidden; }
+
+.pl-notes .conseil li::before { background: var(--atlas-plein, #7d9a6d); }
+</style>
+</head>
+<body class="pl pl-pilules">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">Deux questions sur la mise en page</h1>
+  <p class="pl-verdict">La mise en page du devis est codée. <b>Il reste deux choix, à essayer du doigt.</b></p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <!-- ═══ QUESTION 1 : UN ESPACE, SANS CHANGER DE PAGE ═══ -->
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Question 1</p>
+      <p class="question">1. Laisser aussi un espace, sans changer de page ?</p>
+      <div class="pl-etats" data-ecran="#q1">
+        <button type="button" data-etat="a" aria-pressed="true">A. Non</button>
+        <button type="button" data-etat="b">B. Oui</button>
+      </div>
+      <p class="mesure" data-mesure></p>
+      <div class="cadre">
+        <div class="ecran apercu avec-barre" id="q1" data-etat="a" data-touchable>
+          <div class="defile"></div>
+          <div class="action-coupe" hidden>
+            <button type="button" class="bouton bouton-plein" data-couper>Nouvelle page ici</button>
+            <button type="button" class="bouton bouton-creux" data-espacer hidden>Un espace ici</button>
+            <p class="deja" hidden>Déjà en haut d'une page.</p>
+            <button type="button" class="fermer" data-fermer aria-label="Fermer"><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ QUESTION 2 : LE SAUT DANS L'ÉCRAN DU DEVIS ═══ -->
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Question 2</p>
+      <p class="question">2. Le saut de page, aussi dans l'écran du devis ?</p>
+      <div class="pl-etats" data-ecran="#q2">
+        <button type="button" data-etat="a" aria-pressed="true">A. Non</button>
+        <button type="button" data-etat="b">B. Il s'y voit</button>
+        <button type="button" data-etat="c">C. Il s'y pose</button>
+      </div>
+      <p class="mesure" data-mesure-q2></p>
+      <div class="cadre">
+        <div class="ecran dc avec-barre" id="q2" data-etat="a">
+          <div class="defile">
+            <div class="dc-tete">
+              <button class="retour-nu" type="button" aria-label="Retour" data-note="Sur la planche, on reste ici."><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+              <span class="espace"></span>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-note="Sur la planche, l'assistant ne s'ouvre pas."><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </div>
+            <article class="dc-feuille">
+              <span class="dc-cap">Devis n° 2026&#8209;000072</span>
+              <p class="dc-mot">DEVIS</p>
+              <div class="dc-client">
+                <span class="dc-cap">Client</span>
+                <p>M. Bernard</p>
+              </div>
+              <div id="q2-lignes"></div>
+              <p class="dc-plus">Et 12 autres lignes</p>
+              <div class="ajouts">
+                <button class="puce-ajout" type="button" data-note="Une ligne vide s'ajoute au bout du devis, comme aujourd'hui."><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter une ligne</button>
+                <button class="puce-ajout or" type="button" data-note="La main d'œuvre, comme aujourd'hui."><svg class="ico" aria-hidden="true"><use href="#i-equipe"/></svg>Main d’œuvre</button>
+                <button class="puce-ajout or" type="button" data-si-etat="c" data-ouvre="f-saut"><svg class="ico" aria-hidden="true"><use href="#i-document"/></svg>Saut de page</button>
+              </div>
+              <a class="dc-apercu" href="devis-mise-en-page.html">Aperçu du PDF</a>
+            </article>
+          </div>
+
+          <section class="feuille" id="f-saut" aria-hidden="true" aria-label="Nouvelle page avant">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre">Nouvelle page avant</h2>
+              <ul class="choix-lignes" id="q2-choix"></ul>
+              <button class="bouton bouton-texte mt-8" type="button" data-ferme style="width:100%;justify-content:center;color:var(--atlas-inkSoft)">Fermer</button>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>1. Un espace</h2>
+    <ul>
+      <li><b>A.</b> Couper, c'est passer à la page suivante. C'est ce qui est codé.</li>
+      <li><b>B.</b> « Un espace ici » laisse la hauteur d'une ligne vide, sur la même page. Sur le PDF du client, c'est du blanc ; la puce dorée ne se voit que dans l'aperçu.</li>
+    </ul>
+    <ul class="conseil">
+      <li>Mon conseil : <b>A</b>. Un blanc au milieu des prix se lit comme une ligne oubliée chez le client, et les pages se remplissent déjà sans trou.</li>
+    </ul>
+    <h2>2. Dans l'écran du devis</h2>
+    <ul>
+      <li><b>A.</b> Le saut ne se voit que dans l'aperçu. C'est ce qui est codé.</li>
+      <li><b>B.</b> Il se voit aussi entre les lignes du devis, avec sa croix. Il se pose toujours dans l'aperçu.</li>
+      <li><b>C.</b> Il se pose aussi depuis le devis : « Saut de page », puis la ligne. C'est ce que font ProGBat et VosFactures.</li>
+    </ul>
+    <ul class="conseil">
+      <li>Mon conseil : <b>B</b>. Le devis ne montre pas où tombent les pages : poser un saut depuis là, c'est le poser à l'aveugle. Le voir, en revanche, évite la surprise quand tu reviens sur tes lignes.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="devis-mise-en-page.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>La mise en page du devis</a>
+</footer>
+
+<script src="kit.js"></script>
+<script src="devis-mise-en-page/moteur.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  /* Le devis de 20 lignes de la planche de la règle (trace du vrai PDF). */
+  var SRC = {"pagesDevis":2,"pages":3,"th":537.69,"rangs":[[1,511.69,1],[1,481.69,1],[1,451.69,1],[1,421.69,1],[1,391.69,2],[1,350.69,1],[1,320.69,1],[1,290.69,1],[1,260.69,1],[1,230.69,1],[1,200.69,2],[2,764.69,1],[2,734.69,1],[2,704.69,1],[2,674.69,1],[2,644.69,1],[2,614.69,1],[2,584.69,1],[2,554.69,1],[2,524.69,1]],"totaux":[2,494.69],"notes":[2,356.69],"modalites":[2,258.69],"pied":2};
+  var H = MISE_EN_PAGE.H;
+
+  /* ─── Question 1 ─────────────────────────────────────────────────────── */
+  var q1 = document.getElementById("q1");
+  var sauts = {}, espaces = {}, choisi = null;
+
+  function variante() { return q1.getAttribute("data-etat") || "a"; }
+
+  function tete() {
+    return '<div class="tete-ronds">' +
+      '<button class="rond-creux" type="button" aria-label="Retour"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>' +
+      '<button class="rond" type="button" aria-label="Ouvrir l\'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>' +
+      '</div><div class="tete"><h2 class="tete-titre">2026&#8209;000072</h2></div><p class="surtitre">Devis</p>';
+  }
+  function barre() {
+    return '<nav class="barre" aria-label="Navigation principale"><div class="barre-onglets">' +
+      '<a class="barre-onglet" href="#" aria-current="page">Chantiers</a><a class="barre-onglet" href="#">Planning</a>' +
+      '<a class="barre-onglet" href="#">Terminés</a><a class="barre-onglet" href="#">Paysage</a><a class="barre-onglet" href="#">Réglages</a>' +
+      '<span class="barre-trait" aria-hidden="true" style="--rang:0"><span></span></span></div></nav>';
+  }
+  function morceau(e) {
+    var top = (H - e.dest) / H * 100, hauteur = e.h / H * 100;
+    if (e.cle === "espace") {
+      return '<div class="espace-pose" style="top:' + top.toFixed(3) + '%;height:' + hauteur.toFixed(3) + '%">' +
+        '<span class="puce">Espace<button type="button" data-retirer-espace="' + e.de + '" aria-label="Retirer l\'espace">' +
+        '<svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></button></span></div>';
+    }
+    var decalage = (H - e.haut) / e.h * 100;
+    return '<div class="morceau' + (choisi === e.cle ? " choisi" : "") + '" data-cle="' + e.cle + '" style="top:' + top.toFixed(3) + '%;height:' + hauteur.toFixed(3) + '%">' +
+      '<img src="devis-mise-en-page/devis-20-lignes-page-' + e.page + '.jpg" alt="" style="top:-' + decalage.toFixed(3) + '%"></div>';
+  }
+
+  function peindre() {
+    var mesEspaces = variante() === "b" ? espaces : {};
+    var pages = MISE_EN_PAGE.mettreEnPage(SRC, "propose", sauts, mesEspaces);
+    var total = pages.length + (SRC.pages - SRC.pagesDevis);
+    var nb = Object.keys(sauts).length + Object.keys(mesEspaces).length;
+    var html = tete() + '<button type="button" class="tout-remettre" data-tout-remettre' + (nb ? "" : " hidden") + '>Tout remettre</button>';
+    html += '<div class="pages">' + pages.map(function (p, i) {
+      var avant = p.saut ? '<div class="saut-entre"><span class="saut">Saut de page<button type="button" data-retirer="' + p.saut + '" aria-label="Retirer le saut de page">' +
+        '<svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></button></span></div>' : "";
+      return avant + '<div class="page">' + p.el.map(morceau).join("") + '<span class="numero">Page ' + (i + 1) + ' / ' + total + '</span></div>';
+    }).join("") + '</div>';
+    var defile = q1.querySelector(".defile");
+    var garde = defile.scrollTop;
+    defile.innerHTML = html;
+    defile.scrollTop = garde;
+    if (!q1.querySelector(".barre")) q1.insertAdjacentHTML("beforeend", barre());
+    document.querySelector("[data-mesure]").textContent = variante() === "b"
+      ? "Touche une ligne, puis « Un espace ici »."
+      : "Touche une ligne : seulement « Nouvelle page ici ».";
+    peindreAction(pages);
+  }
+
+  function peindreAction(pages) {
+    var action = q1.querySelector(".action-coupe");
+    if (!choisi) { action.hidden = true; return; }
+    action.hidden = false;
+    var couper = action.querySelector("[data-couper]");
+    var espacer = action.querySelector("[data-espacer]");
+    var deja = action.querySelector(".deja");
+    var enHaut = pages.some(function (p, i) {
+      if (i === 0) return false;
+      var premier = p.el.filter(function (e) { return e.cle !== "entete"; })[0];
+      return premier && premier.cle === choisi;
+    });
+    var b = variante() === "b";
+    if (sauts[choisi]) {
+      couper.hidden = false; couper.textContent = "Retirer le saut"; espacer.hidden = true; deja.hidden = true;
+    } else if (enHaut) {
+      couper.hidden = true; espacer.hidden = true; deja.hidden = false;
+    } else {
+      couper.hidden = false; couper.textContent = b ? "Nouvelle page" : "Nouvelle page ici"; deja.hidden = true;
+      espacer.hidden = !b;
+      espacer.textContent = espaces[choisi] ? "Retirer l'espace" : "Un espace ici";
+    }
+  }
+
+  /* ─── Question 2 ─────────────────────────────────────────────────────── */
+  var q2 = document.getElementById("q2");
+  var LIGNES = [
+    ["Taille de haie de laurier", "25", "ml", "600,00"],
+    ["Élagage d'un frêne", "1", "u", "1 000,00"],
+    ["Camion d'évacuation", "1", "forfait", "150,00"],
+    ["Broyeur", "1", "forfait", "250,00"],
+    ["Abattage d'un thuya dépérissant", "1", "u", "450,00"],
+    ["Dessouchage à la rogneuse", "1", "u", "180,00"],
+    ["Tonte de la pelouse arrière", "1", "u", "90,00"],
+    ["Scarification et regarnissage du gazon", "1", "u", "320,00"]
+  ];
+  /* Un saut posé dans l'aperçu, devant le dessouchage. */
+  var sautsDevis = { 5: true };
+
+  function peindreDevis() {
+    var etat = q2.getAttribute("data-etat") || "a";
+    var html = LIGNES.map(function (l, i) {
+      var saut = sautsDevis[i] && etat !== "a"
+        ? '<div class="dc-saut"><span class="saut">Saut de page<button type="button" data-retirer-devis="' + i + '" aria-label="Retirer le saut de page">' +
+          '<svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></button></span></div>' : "";
+      return saut + '<div class="dc-ligne"><div class="dc-ligne-haut"><span>' + l[0] + '</span><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></div>' +
+        '<div class="dc-rang"><span class="dc-cap">Qté</span><span>' + l[1] + '</span></div>' +
+        '<div class="dc-rang"><span class="dc-cap">Unité</span><span>' + l[2] + '</span></div>' +
+        '<div class="dc-rang"><span class="dc-cap">Montant HT</span><span>' + l[3] + '&nbsp;€</span></div></div>';
+    }).join("");
+    document.getElementById("q2-lignes").innerHTML = html;
+    document.getElementById("q2-choix").innerHTML = LIGNES.slice(1).map(function (l, i) {
+      return '<li><button type="button" data-choisir-ligne="' + (i + 1) + '" aria-pressed="' + (sautsDevis[i + 1] ? "true" : "false") + '">' + l[0] +
+        '<svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></button></li>';
+    }).join("");
+    var nb = Object.keys(sautsDevis).length;
+    document.querySelector("[data-mesure-q2]").textContent = etat === "a"
+      ? (nb ? "Un saut est posé devant le dessouchage. Ici, rien ne le montre." : "Aucun saut.")
+      : etat === "b" ? "Le saut posé dans l'aperçu se voit ici, avec sa croix."
+      : "Touche « Saut de page », puis une ligne.";
+  }
+
+  /* ─── Les gestes ─────────────────────────────────────────────────────── */
+  document.addEventListener("click", function (e) {
+    var etat = e.target.closest(".pl-etats button[data-etat]");
+    if (etat) {
+      /* Le kit pose l'état sur l'écran ; on repeint juste après lui. */
+      setTimeout(function () {
+        if (etat.closest('[data-ecran="#q1"]')) { choisi = null; sauts = {}; espaces = {}; peindre(); }
+        else peindreDevis();
+      }, 0);
+      return;
+    }
+    if (e.target.closest("#q1")) {
+      var r = e.target.closest("[data-retirer]");
+      if (r) { delete sauts[r.getAttribute("data-retirer")]; choisi = null; peindre(); return; }
+      var re = e.target.closest("[data-retirer-espace]");
+      if (re) { delete espaces[re.getAttribute("data-retirer-espace")]; choisi = null; peindre(); return; }
+      if (e.target.closest("[data-tout-remettre]")) { sauts = {}; espaces = {}; choisi = null; peindre(); return; }
+      if (e.target.closest("[data-fermer]")) { choisi = null; peindre(); return; }
+      if (e.target.closest("[data-couper]")) {
+        if (sauts[choisi]) delete sauts[choisi]; else { sauts[choisi] = true; delete espaces[choisi]; }
+        choisi = null; peindre(); return;
+      }
+      if (e.target.closest("[data-espacer]")) {
+        if (espaces[choisi]) delete espaces[choisi]; else espaces[choisi] = true;
+        choisi = null; peindre(); return;
+      }
+      var m = e.target.closest("[data-touchable] .morceau[data-cle]");
+      if (m) {
+        var cle = m.getAttribute("data-cle");
+        if (cle === "tete" || cle === "entete" || cle === "pied") return;
+        choisi = choisi === cle ? null : cle;
+        peindre();
+      }
+      return;
+    }
+    var rd = e.target.closest("[data-retirer-devis]");
+    if (rd) { delete sautsDevis[rd.getAttribute("data-retirer-devis")]; peindreDevis(); return; }
+    var cl = e.target.closest("[data-choisir-ligne]");
+    if (cl) {
+      var i = cl.getAttribute("data-choisir-ligne");
+      if (sautsDevis[i]) delete sautsDevis[i]; else sautsDevis[i] = true;
+      peindreDevis();
+      Kit.fermerFeuilles && Kit.fermerFeuilles(q2);
+      return;
+    }
+    var n = e.target.closest("[data-note]");
+    if (n) { e.preventDefault(); Kit.note(n, n.getAttribute("data-note")); }
+  });
+
+  peindre();
+  peindreDevis();
+});
+</script>
+</body>
+</html>

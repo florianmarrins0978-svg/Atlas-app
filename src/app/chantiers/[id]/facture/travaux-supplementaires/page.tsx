@@ -4,6 +4,7 @@ import { getChantier } from "@/server/repositories/chantiers";
 import { getFacturePourChantier } from "@/server/repositories/factures";
 import { getPromesseDuDevis } from "@/server/repositories/devis";
 import { reglementsRecus } from "@/server/repositories/paiements-facture";
+import { donneesDeLaMainOeuvre } from "@/server/chiffrage/main-oeuvre-choisie";
 import TravauxSupplementairesClient from "./TravauxSupplementairesClient";
 import { garderLaPage } from "@/server/garde-page";
 
@@ -49,10 +50,13 @@ export default async function TravauxSupplementairesPage({
 
   // Ce que la feuille doit porter depuis le 21 septembre 2026 : les acomptes du
   // devis nomment chaque règlement, et les règlements déjà reçus se relisent.
-  // Les deux lectures partent ensemble — elles ne dépendent pas l'une de l'autre.
-  const [promesseDuDevis, reglements] = await Promise.all([
+  // Depuis le 4 novembre 2026, la feuille « Main d'œuvre » du devis : sa
+  // dictée, son prix du jour par homme, ses partenaires (la même lecture).
+  // Les trois partent ensemble : elles ne dépendent pas l'une de l'autre.
+  const [promesseDuDevis, reglements, mainOeuvre] = await Promise.all([
     getPromesseDuDevis(ctx, existante.facture.devisId),
     reglementsRecus(ctx, existante.facture.id),
+    donneesDeLaMainOeuvre(ctx, chantier),
   ]);
 
   return (
@@ -75,6 +79,7 @@ export default async function TravauxSupplementairesPage({
       tauxTvaFacture={existante.facture.tauxTva}
       reductionPourcent={existante.facture.reductionPourcent}
       mainDoeuvreHt={existante.facture.mainDoeuvreHt}
+      mainOeuvre={mainOeuvre}
       promesseDuDevis={promesseDuDevis}
       reglements={reglements}
       lignes={existante.lignes.map((l) => ({

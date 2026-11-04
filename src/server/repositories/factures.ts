@@ -34,10 +34,11 @@ import { datesDeLaFactureQuiPart, validerEcheance } from "../../lib/echeance-fac
 import { ALLURE_PAR_DEFAUT, allureDepuisColonnes } from "../../lib/allure-documents";
 import { repriseDuDevis } from "../../lib/facture-face-au-devis";
 import { factureNeeSansDevis } from "../../lib/lignes-corrigeables";
-import { pourcentValide, totauxAvecReduction, type LigneRemisable } from "../../lib/reduction-devis";
+import { pourcentValide, tauxTvaValide, totauxAvecReduction, type LigneRemisable } from "../../lib/reduction-devis";
 import { montantDeLaLigne } from "../../lib/montant-de-ligne";
 import { chiffreCanonique } from "../../lib/chiffre-saisi";
-import { montantMainDoeuvreValide } from "../../lib/main-doeuvre-devis";
+import { mainDoeuvreApresUnAjout, montantMainDoeuvreValide } from "../../lib/main-doeuvre-devis";
+import { montantDeLaMainOeuvre, type LigneDeMainOeuvre } from "../../lib/feuille-main-oeuvre";
 import { ongletDepuisJalons } from "../../lib/onglet-chantier";
 import { chantierAFacturer, type ChantierAFacturer } from "../../lib/chantier-a-facturer";
 import { ligneDuPassage, ttcDuPassage } from "../../lib/contrats-entretien";
@@ -1076,6 +1077,8 @@ export type LigneSupplementaire = {
   prixUnitaire: string;
   montant: string;
   tauxTva: string | null;
+  /** « jour/homme » pour la main d'œuvre que sa feuille pose ; `null` pour une ligne vide. */
+  unite: string | null;
   ordre: number;
   /**
    * **DANS QUEL BLOC ELLE TOMBE, dit par le SERVEUR** (migration 0086).
@@ -1135,6 +1138,70 @@ function seulesLesLignesCorrigeables(facture: { devisId: string | null }) {
   return factureNeeSansDevis(facture) ? [] : [eq(lignesFacture.supplement, true)];
 }
 
+/** Ce qu'une ligne neuve porte en naissant. */
+type ContenuDeLigne = {
+  libelle: string;
+  quantite: string;
+  prixUnitaire: string;
+  montant: string;
+  unite: string | null;
+};
+
+/**
+ * Pose une ligne neuve sur une facture encore en brouillon : son rang, son
+ * bloc, son taux. **Une seule écriture pour les deux gestes** (la ligne vide,
+ * la main d'œuvre de sa feuille), sans quoi le second rangerait autrement.
+ *
+ * **Le taux se relit ici** (`tauxTvaValide`, la fonction de la feuille de la
+ * TVA) : depuis le 4 novembre 2026, il le TAPE (« 8,5 »). PostgreSQL refusait
+ * la virgule par une exception, que l'écran n'aurait jamais pu dire ; un taux
+ * illisible se refuse maintenant avec ses mots. `null` : celui de la facture.
+ */
+async function poserUneLigne(
+  tx: DbOrTx,
+  ctx: Ctx,
+  factureId: string,
+  garde: { devisId: string | null; autoliquidation: boolean },
+  taux: string | null | undefined,
+  contenu: ContenuDeLigne
+): Promise<{ ok: true; ligne: LigneSupplementaire } | Refus> {
+  const tauxLu = taux === null || taux === undefined ? null : tauxTvaValide(taux);
+  if (taux !== null && taux !== undefined && tauxLu === null) {
+    return { ok: false, raison: `« ${String(taux).trim()} » n'est pas un taux de TVA.` };
+  }
+
+  // Le rang se prend APRÈS la dernière ligne de la facture, suppléments
+  // compris : deux lignes au même rang se rendraient dans un ordre que la
+  // base choisit, et il changerait d'un affichage à l'autre.
+  const [dernier] = await tx
+    .select({ ordre: lignesFacture.ordre })
+    .from(lignesFacture)
+    .where(eq(lignesFacture.factureId, factureId))
+    .orderBy(desc(lignesFacture.ordre))
+    .limit(1);
+
+  const [ligne] = await tx
+    .insert(lignesFacture)
+    .values({
+      entrepriseId: ctx.entrepriseId,
+      factureId,
+      ...contenu,
+      // Sous-traitance sans TVA : une ligne neuve naît sans TVA, quel que soit
+      // le taux de la catégorie où il l'ajoute (`src/lib/autoliquidation.ts`).
+      tauxTva: garde.autoliquidation ? TAUX_SANS_TVA : tauxLu,
+      ordre: (dernier?.ordre ?? 0) + 1,
+      // **Sur une facture directe, c'est une ligne ORDINAIRE** (migration
+      // 0085). La marquer « supplément » ferait imprimer au client le titre
+      // « TRAVAUX SUPPLÉMENTAIRES » au-dessus de la seule chose qu'on lui
+      // facture — supplémentaire à quoi ? La règle est celle de l'écran,
+      // appelée et non redite ici.
+      supplement: !factureNeeSansDevis(garde),
+    })
+    .returning();
+
+  return { ok: true, ligne };
+}
+
 /**
  * Ajoute une ligne vide, que le patron remplit sur place.
  *
@@ -1151,40 +1218,59 @@ export async function ajouterLigneDeFacture(
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const garde = await factureEncoreEnBrouillon(tx, factureId);
     if (!garde.ok) return garde;
+    return poserUneLigne(tx, ctx, factureId, garde, taux, {
+      libelle: "",
+      quantite: "1",
+      prixUnitaire: "0",
+      montant: "0",
+      unite: null,
+    });
+  });
+}
 
-    // Le rang se prend APRÈS la dernière ligne de la facture, suppléments
-    // compris : deux lignes au même rang se rendraient dans un ordre que la
-    // base choisit, et il changerait d'un affichage à l'autre.
-    const [dernier] = await tx
-      .select({ ordre: lignesFacture.ordre })
-      .from(lignesFacture)
-      .where(eq(lignesFacture.factureId, factureId))
-      .orderBy(desc(lignesFacture.ordre))
+/**
+ * LA MAIN D'ŒUVRE DE SA FEUILLE, SUR LA FACTURE — sa planche du 4 novembre
+ * 2026 (`appli/soignee/facture.html`, page « ts »).
+ *
+ * La ligne arrive comme sur le devis : « Main d'œuvre », en jours d'homme au
+ * prix du jour, ou au nom d'un partenaire, déjà RECALCULÉE au serveur par
+ * `ligneDuChoix` (jamais le prix que l'écran annonçait). Dans la TVA où il a
+ * appuyé ; sur une facture née d'un devis, c'est un travail en plus.
+ *
+ * **« dont main d'œuvre HT » la compte dans la même transaction**
+ * (`mainDoeuvreApresUnAjout`) : la facture garde un montant, pas la somme de
+ * lignes qu'elle ne sait pas reconnaître (§459). À chiffrer, il ne bouge pas.
+ */
+export async function ajouterMainDoeuvreDeFacture(
+  ctx: Ctx,
+  factureId: string,
+  taux: string | null,
+  mainOeuvre: LigneDeMainOeuvre
+): Promise<{ ok: true; ligne: LigneSupplementaire; mainDoeuvreHt: string | null } | Refus> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const garde = await factureEncoreEnBrouillon(tx, factureId);
+    if (!garde.ok) return garde;
+    const montant = montantDeLaMainOeuvre(mainOeuvre);
+    const pose = await poserUneLigne(tx, ctx, factureId, garde, taux, {
+      libelle: mainOeuvre.libelle,
+      quantite: mainOeuvre.quantite,
+      prixUnitaire: mainOeuvre.prixUnitaire ?? "0",
+      montant: montant ?? "0",
+      unite: uniteAdmise(mainOeuvre.unite),
+    });
+    if (!pose.ok) return pose;
+
+    const [f] = await tx
+      .select({ mainDoeuvreHt: factures.mainDoeuvreHt })
+      .from(factures)
+      .where(eq(factures.id, factureId))
       .limit(1);
-
-    const [ligne] = await tx
-      .insert(lignesFacture)
-      .values({
-        entrepriseId: ctx.entrepriseId,
-        factureId,
-        libelle: "",
-        quantite: "1",
-        prixUnitaire: "0",
-        montant: "0",
-        // Sous-traitance sans TVA : une ligne neuve naît sans TVA, quel que soit
-        // le taux de la catégorie où il l'ajoute (`src/lib/autoliquidation.ts`).
-        tauxTva: garde.autoliquidation ? TAUX_SANS_TVA : (taux ?? null),
-        ordre: (dernier?.ordre ?? 0) + 1,
-        // **Sur une facture directe, c'est une ligne ORDINAIRE** (migration
-        // 0085). La marquer « supplément » ferait imprimer au client le titre
-        // « TRAVAUX SUPPLÉMENTAIRES » au-dessus de la seule chose qu'on lui
-        // facture — supplémentaire à quoi ? La règle est celle de l'écran,
-        // appelée et non redite ici.
-        supplement: !factureNeeSansDevis(garde),
-      })
-      .returning();
-
-    return { ok: true, ligne };
+    const avant = f?.mainDoeuvreHt ?? null;
+    const mainDoeuvreHt = mainDoeuvreApresUnAjout(avant, montant, await brutHtDeLaFacture(tx, factureId));
+    if (mainDoeuvreHt !== avant) {
+      await tx.update(factures).set({ mainDoeuvreHt }).where(eq(factures.id, factureId));
+    }
+    return { ok: true, ligne: pose.ligne, mainDoeuvreHt };
   });
 }
 
@@ -1420,16 +1506,24 @@ export async function majMainDoeuvreDeFacture(
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const garde = await factureEncoreEnBrouillon(tx, factureId);
     if (!garde.ok) return garde;
-    const [f] = await tx.select({ tauxTva: factures.tauxTva }).from(factures).where(eq(factures.id, factureId)).limit(1);
-    const lignes = await tx
-      .select({ montant: lignesFacture.montant, tauxTva: lignesFacture.tauxTva })
-      .from(lignesFacture)
-      .where(eq(lignesFacture.factureId, factureId));
-    const brutHt = totauxAvecReduction(lignes, f?.tauxTva ?? TAUX_TVA_PAR_DEFAUT, null).brutHt;
-    const mainDoeuvreHt = montantMainDoeuvreValide(valeur, brutHt);
+    const mainDoeuvreHt = montantMainDoeuvreValide(valeur, await brutHtDeLaFacture(tx, factureId));
     await tx.update(factures).set({ mainDoeuvreHt }).where(eq(factures.id, factureId));
     return { ok: true, mainDoeuvreHt };
   });
+}
+
+/**
+ * Le plafond de « dont main d'œuvre HT » : ce que valent les lignes, avant
+ * remise, par la règle des totaux. **Une seule lecture** pour la saisie et
+ * pour la feuille, qui bornent au même chiffre.
+ */
+async function brutHtDeLaFacture(tx: DbOrTx, factureId: string): Promise<string> {
+  const [f] = await tx.select({ tauxTva: factures.tauxTva }).from(factures).where(eq(factures.id, factureId)).limit(1);
+  const lignes = await tx
+    .select({ montant: lignesFacture.montant, tauxTva: lignesFacture.tauxTva })
+    .from(lignesFacture)
+    .where(eq(lignesFacture.factureId, factureId));
+  return totauxAvecReduction(lignes, f?.tauxTva ?? TAUX_TVA_PAR_DEFAUT, null).brutHt;
 }
 
 /** Son titre sur la facture (migration 0092). Vide : aucun. */

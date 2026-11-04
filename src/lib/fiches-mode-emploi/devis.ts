@@ -179,7 +179,9 @@ export const FICHES_DEVIS: FicheModeEmploi[] = [
     motsCles: ["tva", "deux", "plusieurs", "taux", "categorie", "ajouter", "mixte"],
     geste: "Appuyez sur « + Ajouter une TVA », tapez le taux ou touchez 10, 5,5 ou 0 %, puis « Ajouter la TVA ». Le taux se corrige ensuite en touchant le titre de la catégorie.",
     source: DC,
-    preuves: ['libelle="Ajouter une TVA"', "Ajouter la TVA à", "Taux de TVA de la catégorie"],
+    preuves: ['libelle="Ajouter une TVA"', 'piece="ce devis"', "Taux de TVA de la catégorie"],
+    // La feuille vit avec la facture depuis le 4 novembre 2026 : la même pour les deux pièces.
+    ailleurs: [{ source: "src/components/atlas/FeuilleDeLaTva.tsx", preuves: ["Ajouter la TVA à", '"10", "5.5", "0"'] }],
   },
   {
     id: "devis-ligne-changer-tva",
@@ -215,7 +217,7 @@ export const FICHES_DEVIS: FicheModeEmploi[] = [
     preuves: ['libelle="Main d’œuvre"', 'setFeuille("mo")'],
     ailleurs: [
       {
-        source: "src/app/chantiers/[id]/devis-complet/FeuilleMainDoeuvre.tsx",
+        source: "src/components/atlas/FeuilleMainDoeuvre.tsx",
         preuves: ["Mes partenaires", "Ajouter la main d’œuvre", "Le jour par homme", "Répartir la main d’œuvre"],
       },
       { source: "src/lib/main-doeuvre-devis.ts", preuves: ["dont main d’œuvre HT", "Main d’œuvre"] },
@@ -617,14 +619,20 @@ export const FICHES_DEVIS: FicheModeEmploi[] = [
       "accorde",
       "facture",
     ],
-    geste: "Appuyez sur « + Remise », ou « Remise » sous le total du devis, puis renseignez le pourcentage. Sur le devis, la feuille montre ce qu'elle retire avant de l'appliquer.",
+    geste: "Appuyez sur « Remise » sous le total, tapez le pourcentage ou touchez 5, 10 ou 15 % : la feuille montre ce qu'elle retire avant de l'appliquer.",
     // **La pièce commune, et non plus l'écran du devis** : le geste est monté
     // par les deux écrans depuis qu'il l'a demandé sur la facture. Ancrée sur
     // un seul des deux, cette fiche rougirait au premier déménagement — c'est
     // ce qui vient d'arriver.
     source: "src/components/atlas/Remise.tsx",
-    preuves: ["Remise, en pourcentage", "+ {LIBELLE_REDUCTION}"],
-    ailleurs: [{ source: DC, preuves: ["Appliquer la remise", 'libelle="Remise"'] }],
+    preuves: ["Remise, en pourcentage", "Appliquer la remise", "export function FeuilleDeLaRemise"],
+    ailleurs: [
+      { source: DC, preuves: ["<FeuilleDeLaRemise", 'libelle="Remise"'] },
+      {
+        source: "src/app/chantiers/[id]/facture/travaux-supplementaires/TravauxSupplementairesClient.tsx",
+        preuves: ["<FeuilleDeLaRemise", 'libelle="Remise"'],
+      },
+    ],
   },
   {
     id: "devis-apercu",

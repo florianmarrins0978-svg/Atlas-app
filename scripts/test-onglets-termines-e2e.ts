@@ -402,6 +402,54 @@ async function main() {
     assert.equal(await page.locator(lignes).count(), avant, "refermé, l'œil ne rend pas la liste d'avant");
   });
 
+  await cas("LE TRI SE CHOISIT EN PASTILLE, et le Filtre posé passe au vert pâle", async () => {
+    // **Sa planche du 3 novembre 2026, « B pastille vert pâle »**, et le Filtre
+    // qu'il ne voulait plus noir. On le joue depuis l'œil ouvert : c'est là
+    // qu'il y a toujours des rangées, donc un Filtre à toucher.
+    await page.goto(`${BASE}/termines`, { waitUntil: "networkidle" });
+    await page.locator("[data-atlas='oeil-a-facturer']").click();
+    await page.waitForSelector("[data-atlas='tout-ce-qui-attend']", { timeout: 5000 });
+    const filtre = page.locator("[data-atlas='bouton-filtre']");
+    const fondDe = (l: ReturnType<typeof page.locator>) => l.evaluate((e) => getComputedStyle(e).backgroundColor);
+    const repos = await fondDe(filtre);
+    assert.equal(await filtre.getAttribute("data-actif"), null, "le Filtre se dit posé avant tout tri");
+
+    await filtre.click();
+    const montant = page.locator("[data-atlas='tri-montant']");
+    await montant.waitFor({ state: "visible", timeout: 5000 });
+    assert.equal(await page.locator("[data-atlas='tri-chantier']").getAttribute("aria-pressed"), "true", "le tri d'origine n'est pas celui que la pastille montre");
+    await montant.click();
+    assert.equal(await montant.getAttribute("aria-pressed"), "true", "la pastille touchée ne se dit pas choisie");
+    const vertPale = await page.locator("[data-atlas='volet-tri']").evaluate(() => {
+      const t = document.createElement("span");
+      t.style.backgroundColor = "var(--atlas-carteVertFond, #e1e8da)";
+      document.body.appendChild(t);
+      const c = getComputedStyle(t).backgroundColor;
+      t.remove();
+      return c;
+    });
+    assert.equal(await fondDe(montant), vertPale, "la pastille choisie n'est pas vert pâle");
+
+    // Le sens, sur le ruban : la case prise se dit prise.
+    const croissant = page.locator("[data-atlas='tri-croissant']");
+    await croissant.click();
+    assert.equal(await croissant.getAttribute("aria-pressed"), "true", "le sens touché ne se dit pas pris");
+
+    await page.mouse.click(20, 40);
+    await page.locator("[data-atlas='volet-tri']").waitFor({ state: "hidden", timeout: 5000 });
+    assert.equal(await filtre.getAttribute("data-actif"), "", "un tri posé laisse le Filtre au repos");
+    const pose = await fondDe(filtre);
+    assert.equal(pose, vertPale, `le Filtre posé n'est pas vert pâle (${pose})`);
+    assert.notEqual(pose, repos, "le Filtre posé ne se distingue pas du Filtre au repos");
+
+    // On rend le tri d'origine : il est gardé sur ce téléphone, et les cas
+    // suivants lisent la liste dans son ordre de départ.
+    await filtre.click();
+    await page.locator("[data-atlas='tri-chantier']").click();
+    await page.locator("[data-atlas='tri-decroissant']").click();
+    assert.equal(await filtre.getAttribute("data-actif"), null, "le tri d'origine n'a pas été rendu");
+  });
+
   // On rend le jeu de démonstration tel qu'on l'a pris : les suites voisines
   // comptent les retours de cette entreprise, et un de trop les ferait mentir.
   await cas("UN RETOUR NON LU PORTE SA PASTILLE, et la barre compte les non-lus", async () => {

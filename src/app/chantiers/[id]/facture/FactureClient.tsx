@@ -46,6 +46,7 @@ import { echeanceMaxJours, lignesChorus, referenceChorusLue } from "@/lib/factur
 import { jourIso } from "@/lib/jour";
 import { libelleReduction, lignesParBloc, tauxLisible, totauxAvecReduction } from "@/lib/reduction-devis";
 import type { EtatDeReprise } from "@/lib/facture-face-au-devis";
+import { coordonneeDeCetEnvoi, peutTaperSaCoordonnee, type SituationDeLEnvoi } from "@/lib/coordonnee-de-cet-envoi";
 
 // Arrêt 3 (docs/AGENT.md §2.3). Cet écran EST le contrôle : les montants du
 // devis sont déjà là, il n'y a rien à saisir. Franchissable en un geste quand
@@ -153,6 +154,7 @@ export default function FactureClient({
   clientTelephone,
   clientEmail,
   canalClient,
+  situationEnvoi,
   jetonDejaPrepare = null,
   jetonAcquittePrepare = null,
   regimeTva,
@@ -201,6 +203,12 @@ export default function FactureClient({
   clientTelephone: string | null;
   clientEmail: string | null;
   canalClient: CanalClient | null;
+  /**
+   * Son client est-il supprimé, sa facture déjà partie ? Lu au serveur
+   * (`situationDeLEnvoi`), par la lecture qu'il rejoue en écrivant le lien.
+   * `null` : pas encore de facture.
+   */
+  situationEnvoi: SituationDeLEnvoi | null;
   /**
    * Le lien du client, s'il a déjà été préparé.
    *
@@ -345,7 +353,28 @@ export default function FactureClient({
    * doigt sans quitter l'écran.
    */
   const [canalEnvoi, setCanalEnvoi] = useState<CanalClient>(canal);
-  const destinataire = (canalEnvoi === "sms" ? clientTelephone : clientEmail) ?? "";
+
+  /**
+   * **Son client supprimé, sa facture pas encore partie : il tape la
+   * coordonnée** (sa demande du 3 novembre 2026, son choix « pour cet envoi
+   * seulement », `appli/soignee/facture.html`, état « Client supprimé »). La
+   * fiche n'en a plus, et rien ne s'y écrit : ce qu'il tape part avec CET
+   * envoi, et le serveur le rejuge avant l'arrêt puis avant le lien. La case
+   * suit le canal : changer de canal la vide.
+   */
+  const saisissable = situationEnvoi !== null && peutTaperSaCoordonnee(situationEnvoi);
+  const [saisie, setSaisie] = useState("");
+  const tapee = situationEnvoi && saisissable ? coordonneeDeCetEnvoi(situationEnvoi, canalEnvoi, saisie) : null;
+  const destinataire = tapee
+    ? tapee.ok
+      ? tapee.destinataire
+      : ""
+    : ((canalEnvoi === "sms" ? clientTelephone : clientEmail) ?? "");
+
+  function choisirCanal(c: CanalClient) {
+    if (c !== canalEnvoi) setSaisie("");
+    setCanalEnvoi(c);
+  }
 
   const [repriseEnCours, setRepriseEnCours] = useState(false);
 
@@ -458,7 +487,10 @@ export default function FactureClient({
     setErreur(null);
     try {
       setManques([]);
-      const emission = await emettreFactureAction(initialFacture.id);
+      const emission = await emettreFactureAction(
+        initialFacture.id,
+        saisissable ? { canal: canalEnvoi, saisie } : null
+      );
       if (!emission.succes) {
         // Ce qui manque se LISTE, chaque ligne avec sa porte (son choix 1A) ;
         // la phrase seule l'enverrait chercher Réglages sans lien.
@@ -472,7 +504,7 @@ export default function FactureClient({
       }
       setEmise(true);
 
-      const lien = await preparerLienFactureAction(initialFacture.id, canalEnvoi);
+      const lien = await preparerLienFactureAction(initialFacture.id, canalEnvoi, saisissable ? saisie : null);
       if (!lien.succes) {
         // **La facture EST arrêtée, et il doit le savoir.** Taire l'émission
         // parce que le lien a manqué lui ferait croire que rien n'a eu lieu —
@@ -1223,7 +1255,12 @@ export default function FactureClient({
               **Un canal sans coordonnée reste inerte, et c'est sa règle :**
               *« refuse l'envoi : ça veut dire qu'il communique avec le client
               par SMS, donc il enverra par SMS »*. Aucun champ de saisie ici —
-              il a écarté l'idée. */}
+              il a écarté l'idée.
+
+              **Sauf pour un client supprimé** (sa demande du 3 novembre 2026) :
+              sa fiche n'a plus aucune coordonnée, et sa facture ne pouvait plus
+              partir. Les deux canaux s'offrent, et la case prend la place de
+              « Aucune coordonnée pour ce canal. ». */}
           {/* ─── LE MÊME RÉGLAGE QUE SUR LA FICHE CLIENT — 9 septembre 2026 ──
               Sa remarque, capture à l'appui : *« pour envoyer le message SMS ou
               e-mail, dans la fiche client c'est un trait en dessous, pas une
@@ -1260,23 +1297,54 @@ export default function FactureClient({
                 apparence="reglage"
                 libelle="SMS"
                 actif={canalEnvoi === "sms"}
-                disponible={Boolean(clientTelephone)}
-                onClick={() => setCanalEnvoi("sms")}
+                disponible={saisissable || Boolean(clientTelephone)}
+                onClick={() => choisirCanal("sms")}
               />
               <ChoixCanal
                 apparence="reglage"
                 libelle="E-mail"
                 actif={canalEnvoi === "email"}
-                disponible={Boolean(clientEmail)}
-                onClick={() => setCanalEnvoi("email")}
+                disponible={saisissable || Boolean(clientEmail)}
+                onClick={() => choisirCanal("email")}
               />
             </span>
           </fieldset>
-          <p className="text-center text-[12.5px]" style={{ color: colors.muted }}>
-            {destinataire
-              ? `${canalEnvoi === "sms" ? "Au" : "À"} ${destinataireLisible(canalEnvoi, destinataire)}`
-              : "Aucune coordonnée pour ce canal."}
-          </p>
+          {saisissable ? (
+            <>
+              {/* La case de « Renvoyer » (`TransmettreLaFacture`), sur le fond
+                  de la carte : posée à même la page, la crème de sa case s'y
+                  confondrait. Son nom au-dessus, comme sur sa planche. */}
+              <label className="block" data-atlas="case-de-cet-envoi">
+                <span className="mb-1.5 block text-[13px]" style={{ color: colors.inkSoft }}>
+                  {canalEnvoi === "sms" ? "Son numéro" : "Son e-mail"}
+                </span>
+                <input
+                  type={canalEnvoi === "sms" ? "tel" : "email"}
+                  inputMode={canalEnvoi === "sms" ? "tel" : "email"}
+                  autoComplete="off"
+                  value={saisie}
+                  onChange={(e) => setSaisie(e.target.value)}
+                  placeholder={canalEnvoi === "sms" ? "06 12 34 56 78" : "son.adresse@exemple.fr"}
+                  data-atlas="coordonnee-de-cet-envoi"
+                  className="w-full rounded-[4px] border-0 px-4 py-3 outline-none"
+                  style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "16px" }}
+                />
+              </label>
+              {/* Une case vide se tait (le bouton reste éteint) ; une forme
+                  fausse se dit sous elle, comme sur la fiche d'un chantier. */}
+              {tapee && !tapee.ok && tapee.motif === "forme" && (
+                <p role="alert" data-atlas="refus-de-cet-envoi" className="-mt-1 text-[12px]" style={{ color: colors.alert }}>
+                  {tapee.raison}
+                </p>
+              )}
+            </>
+          ) : (
+            <p className="text-center text-[12.5px]" style={{ color: colors.muted }}>
+              {destinataire
+                ? `${canalEnvoi === "sms" ? "Au" : "À"} ${destinataireLisible(canalEnvoi, destinataire)}`
+                : "Aucune coordonnée pour ce canal."}
+            </p>
+          )}
           </>
           )}
 

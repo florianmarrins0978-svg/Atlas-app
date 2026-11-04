@@ -11,10 +11,14 @@ import { colors } from "@/lib/design-tokens";
  * l'application, avec le signe, avec les trois traits »*) : deux copies du même
  * geste finissent par ne plus se ressembler (`CLAUDE.md` §3).
  *
- * `actif` le remplit d'encre, sur Terminés, quand l'ordre n'est plus celui
- * d'origine. Ses listes de clients ne s'en servent pas : il y garde ses
- * couleurs, sa capture du 22 octobre (*« pas vert »*), et c'est le titre du
- * mois, au-dessus de la liste, qui dit que l'ordre a changé.
+ * `actif` le pose en vert pâle, sur Terminés, quand l'ordre n'est plus celui
+ * d'origine : le fond et le texte de « Pour mon comptable », juste au-dessus.
+ * Il passait à l'encre jusqu'au 3 novembre 2026 ; sa demande, devant ce noir :
+ * *« un ton un peu plus clair ou plus foncé, pour que ça soit visible mais pas
+ * noir »*, puis son choix sur la planche (A, vert pâle,
+ * `appli/soignee/termines.html`). Ses listes de clients ne s'en servent pas :
+ * il y garde ses couleurs, sa capture du 22 octobre (*« pas vert »*), et c'est
+ * le titre du mois, au-dessus de la liste, qui dit que l'ordre a changé.
  *
  * `signeSeul` ne garde que les trois traits, nommés pour le lecteur d'écran :
  * sur Vos clients, il partage la ligne de la recherche (sa demande du
@@ -44,8 +48,8 @@ export default function BoutonFiltre({
           : "flex min-h-11 items-center gap-[7px] whitespace-nowrap rounded-full px-[13px] text-[12.5px]"
       }
       style={{
-        backgroundColor: actif ? colors.ink : colors.card,
-        color: actif ? colors.cream : colors.inkSoft,
+        backgroundColor: actif ? colors.carteVertFond : colors.card,
+        color: actif ? colors.carteVertTexte : colors.inkSoft,
         boxShadow: actif ? "none" : `inset 0 0 0 1px ${colors.line}`,
         WebkitTapHighlightColor: "transparent",
       }}

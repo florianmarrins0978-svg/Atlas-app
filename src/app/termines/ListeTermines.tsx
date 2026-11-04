@@ -5,6 +5,8 @@ import Link from "next/link";
 import { colors, font, surPlein } from "@/lib/design-tokens";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import BoutonFiltre from "@/components/atlas/BoutonFiltre";
+import IconeTrait, { type NomIcone } from "@/components/atlas/IconeTrait";
+import RubanGlissant, { CASE_DU_RUBAN } from "@/components/atlas/RubanGlissant";
 import {
   aFacturerPartout,
   bornesDuFeuilletage,
@@ -598,11 +600,28 @@ function retenirTri(tri: Tri): void {
   for (const prevenir of abonnesAuTri) prevenir();
 }
 
+/** Le dessin de chaque tri, pris au kit des planches (`appli/soignee/kit.js`). */
+const ICONE_DU_TRI: Record<CleDeTri, NomIcone> = {
+  chantier: "calendrier",
+  devis: "document",
+  facture: "facture",
+  montant: "euro",
+  client: "personne",
+};
+
 /**
  * Le volet du tri : cinq clés, puis le sens dans les mots de la clé.
  *
  * **Tout s'applique au toucher**, sans bouton « Valider » : la liste bouge
  * derrière le voile, et c'est ce qui dit que le geste a pris.
+ *
+ * **LES PASTILLES, 4 NOVEMBRE 2026.** Sa remarque devant cinq grands boutons
+ * empilés, celui choisi en noir : *« Trier par, tu peux pas me faire quelque
+ * chose de plus joli ? J'ai l'impression que c'est moche »*. Sur la planche
+ * (`appli/soignee/termines.html`), il a pris B, les tris côte à côte, avec sa
+ * retouche : *« pastille vert pâle »*, le vert du Filtre posé et de « Pour mon
+ * comptable », au lieu du vert plein dessiné. Le sens se choisit sur le ruban
+ * du paiement (`RubanGlissant`), comme la planche le montrait.
  */
 function VoletTri({
   ouvert,
@@ -619,35 +638,35 @@ function VoletTri({
   return (
     <BottomSheet open={ouvert} onBackdropClick={surFermer}>
       <div data-atlas="volet-tri">
-        <p
-          className="mb-2 text-center text-[11px] font-semibold uppercase"
-          style={{ letterSpacing: "0.18em", color: colors.muted }}
-        >
+        <p className="mb-4 text-[26px] leading-tight" style={{ fontFamily: font.display, color: colors.ink }}>
           Trier par
         </p>
-        {CLES_DE_TRI.map((c) => {
-          const active = c.cle === tri.cle;
-          return (
-            <button
-              key={c.cle}
-              type="button"
-              onClick={() => surTri({ ...tri, cle: c.cle })}
-              aria-pressed={active}
-              data-atlas={`tri-${c.cle}`}
-              className="mt-2 flex min-h-[54px] w-full items-center justify-center rounded-full"
-              style={{
-                fontFamily: font.display,
-                fontSize: 19,
-                color: active ? colors.cream : colors.ink,
-                backgroundColor: active ? colors.ink : colors.card,
-                boxShadow: active ? "none" : `inset 0 0 0 1px ${colors.line}`,
-              }}
-            >
-              {c.libelle}
-            </button>
-          );
-        })}
-        <div className="mt-[18px] flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          {CLES_DE_TRI.map((c) => {
+            const active = c.cle === tri.cle;
+            return (
+              <button
+                key={c.cle}
+                type="button"
+                onClick={() => surTri({ ...tri, cle: c.cle })}
+                aria-pressed={active}
+                data-atlas={`tri-${c.cle}`}
+                className="flex min-h-[46px] items-center gap-[7px] whitespace-nowrap rounded-full pl-3 pr-4 text-[15px] font-semibold"
+                style={{
+                  color: active ? colors.carteVertTexte : colors.ink,
+                  backgroundColor: active ? colors.carteVertFond : colors.card,
+                  boxShadow: active ? "none" : `inset 0 0 0 1px ${colors.line}`,
+                }}
+              >
+                <span style={{ color: active ? colors.carteVertTexte : colors.or }}>
+                  <IconeTrait nom={ICONE_DU_TRI[c.cle]} taille={18} />
+                </span>
+                {c.libelle}
+              </button>
+            );
+          })}
+        </div>
+        <RubanGlissant nombre={2} rang={tri.croissant ? 0 : 1} aria-label="Dans quel sens" className="mt-4">
           {[true, false].map((croissant, i) => {
             const actif = tri.croissant === croissant;
             return (
@@ -657,18 +676,14 @@ function VoletTri({
                 onClick={() => surTri({ ...tri, croissant })}
                 aria-pressed={actif}
                 data-atlas={croissant ? "tri-croissant" : "tri-decroissant"}
-                className="min-h-11 flex-1 rounded-full text-[13.5px]"
-                style={{
-                  color: actif ? colors.or : colors.inkSoft,
-                  fontWeight: actif ? 600 : 400,
-                  boxShadow: `inset 0 0 0 ${actif ? 1.5 : 1}px ${actif ? colors.or : colors.line}`,
-                }}
+                className={`${CASE_DU_RUBAN} min-h-12 text-[15px] font-semibold transition-colors duration-200 motion-reduce:transition-none`}
+                style={{ color: actif ? colors.carteVertTexte : colors.inkSoft }}
               >
                 {choisie.sens[i]}
               </button>
             );
           })}
-        </div>
+        </RubanGlissant>
         <button
           type="button"
           onClick={surFermer}

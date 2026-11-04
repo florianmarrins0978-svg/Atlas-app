@@ -1,5 +1,6 @@
 import type { Ctx } from "../repositories/context";
 import { noterIllisible, noterLecture, noterObjetCherche, pdfSansObjetCherche, prendrePiecesALire } from "../repositories/pieces-importees";
+import { getEntreprise } from "../repositories/entreprises";
 import { lireObjet } from "../storage";
 import { logger } from "../logger";
 import { extraireTexte, lirePiece } from "./lire-piece";
@@ -30,6 +31,9 @@ export async function traiterPiecesEnAttente(ctx: Ctx): Promise<number> {
   enCours.add(ctx.entrepriseId);
   let lues = 0;
   try {
+    // Le nom de son entreprise, que l'en-tête de ses pièces imprime : jamais
+    // celui du client (`lireChampsDuTexte`). Lu une fois pour tout l'envoi.
+    const artisan = (await getEntreprise(ctx))?.nom ?? null;
     for (;;) {
       const lot = await prendrePiecesALire(ctx, PAR_TOUR);
       if (lot.length === 0) break;
@@ -40,7 +44,7 @@ export async function traiterPiecesEnAttente(ctx: Ctx): Promise<number> {
             // Lancée par `after()`, la lecture n'a plus de requête pour dire
             // qui paie l'IA : on le pose (`compteur.ts`), sinon la production
             // refuse l'appel.
-            await noterLecture(ctx, p.id, await pourLeCompteDe(ctx, () => lirePiece(octets)));
+            await noterLecture(ctx, p.id, await pourLeCompteDe(ctx, () => lirePiece(octets, artisan)));
           } catch (err) {
             logger.error("Pièce importée illisible", { piece: p.id, erreur: err instanceof Error ? err.message : String(err) });
             await noterIllisible(ctx, p.id);
@@ -62,7 +66,7 @@ export async function traiterPiecesEnAttente(ctx: Ctx): Promise<number> {
 const OBJETS_PAR_OUVERTURE = 30;
 
 /**
- * Les PDF importés AVANT que l'objet se lise (migration 0159) n'ont que leur
+ * Les PDF importés AVANT que l'objet se lise (migration 0161) n'ont que leur
  * numéro sur la fiche. Sa remarque du 3 novembre 2026, sur son devis Beseme :
  * *« objet et titre, c'est la même chose »*. Chacun se relit UNE fois, au
  * texte seul : jamais l'IA, qu'il paierait pour un titre.

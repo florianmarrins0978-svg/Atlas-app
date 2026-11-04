@@ -93,3 +93,26 @@ export function montantMainDoeuvreValide(valeur: unknown, brutHt: string | numbe
   if (plafond.lessThanOrEqualTo(0)) return n.toDecimalPlaces(2).toFixed(2);
   return (n.greaterThan(plafond) ? plafond : n).toDecimalPlaces(2).toFixed(2);
 }
+
+/**
+ * « dont main d'œuvre HT » d'une FACTURE après qu'une main d'œuvre s'y est
+ * ajoutée par sa feuille (planche `appli/soignee/facture.html`, 4 novembre
+ * 2026) : l'ancien montant, plus la ligne posée, bornés comme une saisie.
+ *
+ * **Pourquoi une addition, et non la somme des lignes comme sur le devis.**
+ * `lignes_facture` ne porte pas le drapeau de la main d'œuvre (§459) : la
+ * facture ne sait pas reconnaître ses lignes de main d'œuvre, et son « dont »
+ * reste le montant gardé de la lecture B, repris du devis puis retouchable.
+ * La feuille y ajoute ce qu'elle vient de poser, au moment où elle le pose.
+ *
+ * **Une ligne à chiffrer n'y change rien** (`ajoutee` nul) : son prix n'existe
+ * pas encore, et un chiffre d'office s'imprimerait chez le client.
+ */
+export function mainDoeuvreApresUnAjout(
+  ancienne: string | null,
+  ajoutee: string | null,
+  brutHt: string | number
+): string | null {
+  if (ajoutee === null) return ancienne;
+  return montantMainDoeuvreValide(lisible(ancienne).plus(lisible(ajoutee)).toFixed(2), brutHt);
+}

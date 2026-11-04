@@ -129,7 +129,7 @@ async function main() {
     const etat = await envoiEnCours(ctx);
     assert.equal(etat?.rangees, 6, "la bande de Vos clients ne voit pas le rangement (« Annuler » n'y serait pas)");
 
-    assert.ok(await annulerRangement(ctx, bilan.envoiId));
+    assert.deepEqual(await annulerRangement(ctx, bilan.envoiId), { ok: true });
     const [pieces, fiches, envois] = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
       Promise.all([tx.select().from(piecesImportees), tx.select().from(clients), tx.select().from(envoisPieces)])
     );
@@ -149,7 +149,7 @@ async function main() {
     const leGoff = await creerClient(ctx, { nom: "Mme Le Goff" });
     const bilan = await rangerTableau(ctx, "t.csv", await planDe(ctx));
     await mettreAJourClient(ctx, leGoff.id, { telephone: "07 00 00 00 01" });
-    await annulerRangement(ctx, bilan.envoiId!);
+    assert.deepEqual(await annulerRangement(ctx, bilan.envoiId!), { ok: true });
     const [lg] = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) => tx.select().from(clients).where(eq(clients.id, leGoff.id)));
     assert.equal(lg.telephone, "07 00 00 00 01", "le numéro qu'il a tapé lui-même a été effacé");
     assert.equal(lg.adresse, null);

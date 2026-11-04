@@ -2,8 +2,10 @@
 
 import { colors } from "@/lib/design-tokens";
 import { enEuros } from "@/lib/euros";
-import { LIBELLE_REDUCTION } from "@/lib/reduction-devis";
+import { LIBELLE_REDUCTION, type LigneRemisable } from "@/lib/reduction-devis";
+import { apercuDeLaRemise, lireUneRemise } from "@/lib/feuilles-du-taux";
 import CroixRetirer from "./CroixRetirer";
+import FeuilleDuTaux from "./FeuilleDuTaux";
 
 /**
  * ─── LA REMISE — UNE SEULE FOIS, POUR LES DEUX PIÈCES ─────────────────────
@@ -32,7 +34,7 @@ import CroixRetirer from "./CroixRetirer";
  */
 
 /**
- * Le pourcentage que « + Remise » pose d'emblée.
+ * Le pourcentage que la feuille de la remise propose d'emblée.
  *
  * **Écrit ICI et nulle part ailleurs.** Il vivait en double dans le bouton du
  * devis — une fois pour l'écran, une fois pour le serveur — et deux chiffres
@@ -124,22 +126,45 @@ export function LigneRemise({
 }
 
 /**
- * Le chemin de secours pour en poser une à la main.
+ * ─── LA FEUILLE DE LA REMISE — le devis ET la facture ─────────────────────
  *
- * Discret, et seulement quand il n'y en a pas : une pièce qui porte déjà sa
- * remise n'a pas besoin qu'on lui propose d'en poser une. Il l'a d'abord
- * demandé à la VOIX ; ceci est ce qui reste quand on n'a pas envie de parler.
+ * Sur le devis depuis le 1er novembre 2026 (*« je dois pouvoir écrire ce que
+ * je veux »*), sur la facture sans devis depuis le 4 novembre : la pastille
+ * « Remise » ouvre cette feuille, le pourcentage se tape, et ce qu'il retire
+ * se montre AVANT d'être posé. Avant, sur la facture, « + Remise » posait 5 %
+ * d'office, sans rien montrer.
+ *
+ * **Montée une seule fois pour les deux pièces** : la case, les raccourcis,
+ * le refus et l'aperçu (`lireUneRemise`, `apercuDeLaRemise`) ne peuvent plus
+ * diverger. `lignes` et `tauxDuDocument` sont ceux des totaux de l'écran.
  */
-export function BoutonRemise({ onPoser }: { onPoser: () => void }) {
+export function FeuilleDeLaRemise({
+  ouverte,
+  lignes,
+  tauxDuDocument,
+  onAppliquer,
+  onFermer,
+}: {
+  ouverte: boolean;
+  lignes: readonly LigneRemisable[];
+  tauxDuDocument: string;
+  /** Le pourcentage relu (`pourcentValide`), tel que le serveur le relira. */
+  onAppliquer: (pourcent: string) => void;
+  onFermer: () => void;
+}) {
   return (
-    <button
-      type="button"
-      data-atlas="poser-prix-accorde"
-      onClick={onPoser}
-      className="mt-2.5 text-[13.5px]"
-      style={{ color: colors.or }}
-    >
-      + {LIBELLE_REDUCTION}
-    </button>
+    <FeuilleDuTaux
+      ouverte={ouverte}
+      titre="Remise"
+      nomDeLaCase="Remise à poser, en pourcentage du total HT"
+      valeurInitiale={REMISE_PAR_DEFAUT}
+      raccourcis={[REMISE_PAR_DEFAUT, "10", "15"]}
+      lire={lireUneRemise}
+      apercu={(taux) => apercuDeLaRemise(lignes, tauxDuDocument, taux)}
+      bouton={() => "Appliquer la remise"}
+      repere="feuille-remise"
+      onValider={onAppliquer}
+      onFermer={onFermer}
+    />
   );
 }

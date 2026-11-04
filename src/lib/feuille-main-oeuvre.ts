@@ -34,7 +34,28 @@ export function rangDeLaDuree(jours: number | null): number {
   return mieux;
 }
 
-/** Ce que la feuille pose sur le devis : une ligne de main d'œuvre, chiffrée ou à chiffrer. */
+/**
+ * Ce que la feuille renvoie quand il appuie : un CHOIX, jamais un prix.
+ *
+ * **Le prix se recalcule au serveur, jamais sur la parole de l'écran** : les
+ * mêmes fonctions qui ont construit la feuille (`ligneDeSonEquipe`,
+ * `ligneDeSonPartenaire`) revalident ce qu'elle renvoie, à partir des prix de
+ * ses partenaires lus en base (`CLAUDE.md` §3). Le tarif de son équipe vaut
+ * comme un prix tapé sur une ligne : c'est le sien.
+ */
+export type ChoixDeMainOeuvre =
+  | { qui: "equipe"; hommes: number; jours: number; tarif: string | null }
+  | { qui: "partenaire"; prixId: string; quantite: number };
+
+/** Ce que la feuille sait en s'ouvrant : sa dictée, son prix du jour, ses partenaires. */
+export type DonneesMainOeuvre = {
+  hommes: number | null;
+  jours: number | null;
+  tarifJour: string | null;
+  partenaires: PrixDePartenaire[];
+};
+
+/** Ce que la feuille pose sur la pièce : une ligne de main d'œuvre, chiffrée ou à chiffrer. */
 export type LigneDeMainOeuvre = {
   libelle: string;
   quantite: string;
