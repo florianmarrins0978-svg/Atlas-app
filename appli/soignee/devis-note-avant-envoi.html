@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La note, montrée au patron</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  LA NOTE DU DEVIS : MONTRER AU PATRON OÙ LE CLIENT LA LIRA
+  (le champ : src/app/chantiers/[id]/devis-complet/DevisCompletClient.tsx,
+  « Notes / conditions » ; la feuille d'envoi : export/EnvoiAuClient.tsx).
+
+  Sa demande du 3 novembre 2026, puis sa retouche du même soir devant la
+  première version (une vignette dessinée, 4 secondes, à l'envoi) :
+    « il faut mettre la vraie photo, là on comprend rien sur le petit dessin » ;
+    « est-ce que c'est à ce moment-là, ou plutôt quand il remplit Notes et
+    conditions, ou quand il clique dessus » ;
+    « 8 secondes » ;
+    « qui montre exactement où le client pourra lire ».
+
+  Donc : la fenêtre se montre quand il TOUCHE le champ (proposé d'office ; à
+  l'envoi reste à comparer), 8 secondes, et elle porte l'image de la page du
+  client, la note entourée d'or à sa place. Cette image est celle de la
+  planche « La note du devis, chez le client » (devis-note-client.html) : la
+  note n'est pas encore sur la vraie page, c'est la plus vraie qui existe.
+
+  Le fond du téléphone est le VRAI écran du devis, et la vraie feuille
+  d'envoi, photographiés sur des données de démonstration.
+*/
+body .pl-barre .pl-charte-bouton, body .pl-barre .pl-chartes { display: none; }
+
+.fond { position: absolute; inset: 0; }
+.fond img { width: 100%; height: auto; display: block; }
+[data-fond][hidden] { display: none; }
+
+/* Le champ touché : le cadre que prend un champ quand on écrit dedans. */
+.champ-touche { position: absolute; left: 28px; top: 412px; width: 334px; height: 88px; z-index: 4; border-radius: 8px;
+                box-shadow: inset 0 0 0 2px var(--atlas-rust); opacity: 0; transition: opacity 200ms var(--courbe); }
+.champ-touche.visible { opacity: 1; }
+.zone-champ { position: absolute; left: 28px; top: 404px; width: 334px; height: 100px; z-index: 5; border-radius: 8px; }
+
+/* LA FENÊTRE : sur l'encre, comme le tiroir de l'appli ; une phrase, puis
+   l'image de la page du client, la note entourée d'or ; un trait d'or qui se
+   vide en huit secondes, pour qu'on sache qu'elle partira. */
+.rappel { position: absolute; left: 10px; right: 10px; top: 12px; z-index: 30; display: block; padding: 12px 12px 16px;
+          border-radius: 18px; background: var(--atlas-ink); color: var(--atlas-cream); text-align: left;
+          box-shadow: 0 12px 30px -10px rgba(13,14,12,0.6);
+          opacity: 0; transform: translateY(-18px); pointer-events: none;
+          transition: opacity 260ms var(--courbe), transform 380ms cubic-bezier(0.16, 1, 0.3, 1); overflow: hidden; }
+.rappel.visible { opacity: 1; transform: none; pointer-events: auto; }
+.rappel-texte { margin: 0 4px 10px; font-size: 15.5px; line-height: 1.38; }
+.rappel-texte b { font-weight: 700; color: var(--atlas-orSurEncre); }
+.rappel-photo { display: block; width: 100%; height: auto; border-radius: 10px; }
+.rappel-temps { position: absolute; left: 16px; right: 16px; bottom: 7px; height: 3px; border-radius: 2px;
+                background: color-mix(in srgb, var(--atlas-cream) 16%, transparent); overflow: hidden; }
+.rappel-temps span { display: block; height: 100%; background: var(--atlas-orSurEncre); transform-origin: left; }
+.rappel.visible .rappel-temps span { animation: vider var(--duree, 8s) linear forwards; }
+@keyframes vider { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+/* Deux rangées de choix au-dessus du téléphone : le moment, puis la place. */
+.choix-planche { display: grid; gap: 6px; justify-content: center; margin: 0 0 10px; }
+.choix-planche .pl-etats { margin: 0; }
+.choix-planche p { margin: 0; text-align: center; font-size: 13px; font-weight: 600; color: #4a4a44; }
+.rejouer { display: flex; justify-content: center; margin: 2px 0 6px; }
+.rejouer button { min-height: 40px; padding: 0 16px; border-radius: 20px; font-size: 14px; font-weight: 600; color: #2f3b2f;
+                  background: rgba(28,28,26,0.06); }
+
+@media (prefers-reduced-motion: reduce) {
+  .rappel { transition: opacity 1ms; transform: none; }
+}
+</style>
+</head>
+<body class="pl pl-pilules">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="devis-note-client.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>La note chez le client</a>
+  <h1 class="pl-titre">La note, montrée au patron</h1>
+  <p class="pl-verdict">Tu touches « Notes / conditions », et <b>pendant 8 secondes</b> une fenêtre te montre la page de ton client, ta note entourée d'or, là où il la lira.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <!-- ═══ PROPOSÉ ═══ -->
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="choix-planche">
+        <p>Quand</p>
+        <div class="pl-etats" id="choix-moment">
+          <button type="button" data-moment="champ" aria-pressed="true">Quand il touche le champ</button>
+          <button type="button" data-moment="envoi" aria-pressed="false">À l'envoi</button>
+        </div>
+        <p>Où le client la lit</p>
+        <div class="pl-etats" id="choix-place">
+          <button type="button" data-place="a" aria-pressed="true">A, avant l'accord</button>
+          <button type="button" data-place="b" aria-pressed="false">B, sous le total</button>
+        </div>
+      </div>
+      <div class="cadre">
+        <div class="ecran" data-sans-charte id="ecran-propose">
+          <div class="fond" data-fond="champ"><img src="aujourdhui/devis-champ-notes.jpg" alt="L'écran du devis, le champ Notes / conditions en bas"></div>
+          <div class="fond" data-fond="envoi" hidden><img src="aujourdhui/devis-feuille-envoi.jpg" alt="La feuille d'envoi du devis"></div>
+
+          <span class="champ-touche" id="champ-touche" aria-hidden="true"></span>
+          <button type="button" class="zone-champ" id="zone-champ" aria-label="Toucher Notes / conditions"></button>
+
+          <button type="button" class="rappel" id="rappel" aria-live="polite" aria-label="Fermer">
+            <p class="rappel-texte" id="rappel-texte"></p>
+            <img class="rappel-photo" id="rappel-photo" src="devis-note-photo-a.jpg" alt="La page du devis chez le client, la note entourée d'or">
+            <span class="rappel-temps" aria-hidden="true"><span></span></span>
+          </button>
+        </div>
+      </div>
+      <div class="rejouer"><button type="button" id="rejouer">Revoir la fenêtre</button></div>
+    </div>
+
+    <!-- ═══ AUJOURD'HUI ═══ -->
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre">
+        <div class="cadre-capture"><img src="aujourdhui/devis-champ-notes.jpg" alt="L'écran du devis aujourd'hui : rien ne dit où le client lira la note"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>Tu touches « Notes / conditions » : une fenêtre descend en haut de l'écran, au-dessus du clavier qui s'ouvre.</li>
+      <li>Elle montre la page que ton client ouvre depuis le SMS, ta note entourée d'or à sa place, avec la phrase : il la lira ici, sur son téléphone.</li>
+      <li>Elle reste 8 secondes ; le trait d'or dessous se vide pour le montrer. Un appui la ferme avant.</li>
+      <li>Touchez le champ dans le téléphone, ou « Revoir la fenêtre ».</li>
+    </ul>
+    <h2>Pourquoi au toucher du champ</h2>
+    <ul class="garde">
+      <li>Tu l'apprends au moment où tu écris : tu sais pour qui tu écris, et tu peux tourner ta phrase pour lui.</li>
+      <li>À l'envoi, la fenêtre arrive quand la note est déjà écrite. Elle ne peut pas venir sur « Envoyer le devis » lui-même : ce bouton ouvre aussitôt ta messagerie, et elle passerait derrière. Touchez « À l'envoi » pour comparer.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>Au toucher du champ, ou à l'envoi ?</li>
+      <li>À chaque fois, ou seulement les premières fois que tu touches le champ ? Huit secondes à chaque devis finiraient par gêner.</li>
+      <li>A ou B : la place de la note sur la page du client, choisie sur la planche « La note du devis, chez le client ».</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="devis-note-client.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>La note chez le client</a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var rappel = document.getElementById("rappel");
+  var texte = document.getElementById("rappel-texte");
+  var photo = document.getElementById("rappel-photo");
+  var touche = document.getElementById("champ-touche");
+  var zone = document.getElementById("zone-champ");
+  var DUREE = 8000;
+  var minuteur = null;
+  var moment = "champ";
+  var place = "a";
+
+  function choisir(groupe, attribut, valeur) {
+    document.querySelectorAll("#" + groupe + " button").forEach(function (b) {
+      b.setAttribute("aria-pressed", b.getAttribute(attribut) === valeur ? "true" : "false");
+    });
+  }
+
+  function poser() {
+    document.querySelectorAll("[data-fond]").forEach(function (f) { f.hidden = f.getAttribute("data-fond") !== moment; });
+    zone.hidden = moment !== "champ";
+    photo.src = "devis-note-photo-" + place + ".jpg";
+    texte.innerHTML = place === "b"
+      ? "<b>Ta note :</b> ton client la lira ici, juste sous le total."
+      : "<b>Ta note :</b> ton client la lira ici, juste avant « J'accepte ce devis ».";
+  }
+
+  function fermer() {
+    clearTimeout(minuteur);
+    rappel.classList.remove("visible");
+    touche.classList.remove("visible");
+  }
+
+  function montrer() {
+    fermer();
+    poser();
+    if (moment === "champ") touche.classList.add("visible");
+    rappel.style.setProperty("--duree", DUREE + "ms");
+    /* Deux images de retard : sans elles, le trait d'or ne repart pas. */
+    requestAnimationFrame(function () { requestAnimationFrame(function () { rappel.classList.add("visible"); }); });
+    minuteur = setTimeout(fermer, DUREE);
+  }
+
+  document.addEventListener("click", function (e) {
+    if (e.target.closest("#rappel")) { fermer(); return; }
+    if (e.target.closest("#rejouer") || e.target.closest("#zone-champ")) { montrer(); return; }
+    var m = e.target.closest("#choix-moment button");
+    if (m) { moment = m.getAttribute("data-moment"); choisir("choix-moment", "data-moment", moment); montrer(); return; }
+    var p = e.target.closest("#choix-place button");
+    if (p) { place = p.getAttribute("data-place"); choisir("choix-place", "data-place", place); montrer(); }
+  });
+  poser();
+  setTimeout(montrer, 700);
+});
+</script>
+</body>
+</html>
