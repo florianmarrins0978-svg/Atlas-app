@@ -1,12 +1,28 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-10-29, `main` (`bdea976e`, batterie verte hors deux suites de fin de mois rouges sur `main` aussi),
-dernière migration `drizzle/0158_cles_composites_effacent_comme_leur_lien.sql` (réunie le 3 novembre pour la batterie commune, avec `0157_banque_lecture_refusee.sql` et `0156_pieces_importees_adresse_lue.sql`) ; `0155_part_de_main_doeuvre_sur_la_ligne.sql` (le devis) sur `main` depuis le 3 novembre
+**Dernière mise à jour :** 2026-11-04, `main` (`0de64c8c`, batterie entière jouée : 552 suites base sur 554 et 209 navigateur sur 209, les deux rouges `test-maquettes-hors-production` et `test-stockage-banc` le sont aussi sur `main`),
+dernière migration `drizzle/0158_cles_composites_effacent_comme_leur_lien.sql` (réunie le 3 novembre pour la batterie commune, avec `0157_banque_lecture_refusee.sql` et `0156_pieces_importees_adresse_lue.sql`) ; `0155_part_de_main_doeuvre_sur_la_ligne.sql` (le devis) sur `main` depuis le 3 novembre ; `0159_rappels_vehicules_vus.sql` (le « J'ai vu » des contrôles des véhicules) et `0160_envoi_facture_destinataire_tape.sql` (la facture d'un client supprimé) sur `main` le 4 novembre
+
+---
+## LA FACTURE ET TERMINÉS DE LA PLANCHE, SUR `main` (4 novembre 2026)
+
+Ses « oui » du 4 novembre, un seul lot avec ceux du 3 : sur la facture sans devis et « Travaux en plus », les pastilles TVA, Main d'œuvre et Remise ouvrent les feuilles du devis (`ARCHITECTURE.md` §549 ; Remise sur la seule facture sans devis, sa A du 7 octobre) ; « Règlement reçu » en pastille ; la facture d'un client supprimé part vers l'e-mail ou le numéro tapé, pour cet envoi seulement, rien n'est réécrit sur la fiche (§548, migration 0160). Terminés : le Filtre posé et le tri choisi en vert pâle, « Trier par » en pastilles, le sens sur le ruban du paiement (`RubanGlissant`, §547). Ce qui reste est dans `TODO.md`.
+
+---
+## « J'AI VU » SUR LES CARTES DES CONTRÔLES DES VÉHICULES (3 novembre 2026), SUR `main` LE 4 NOVEMBRE
+
+Sa demande : *« il faut qu'il y ait une petite case J'ai vu »*, et son choix : la carte part tout de suite, et revient en rouge si le contrôle n'est pas fait à l'échéance. Le « vu » retient la date limite vue (migration 0159, trois colonnes vides sur `vehicules`)  ; le jour même de l'échéance, la carte revient en ambre (« Dernier jour aujourd'hui »), sans « J'ai vu », et passe au rouge le lendemain. La liste et la fiche des véhicules n'en tiennent pas compte. Règle `rappelsDeLAccueil`, `vuPossible`, `refusDuVu` (`src/lib/vehicules.ts`) ; `ARCHITECTURE.md` §546. Vues rouges puis vertes : `test-vehicules`, `test-vehicules-rls`, `test-rappel-vehicule-vu-e2e`. Sur `main` le 4 novembre, par la batterie commune.
+## L'IMPORT : « ANNULER » SIX SECONDES, CE QUI RESTE SE REPREND (3 novembre 2026)
+
+Sa capture : « 48 documents rangés, Annuler » ne partait jamais. Le bandeau part désormais après six secondes comptées au serveur (`ANNULER_PENDANT_MS`, `src/lib/delai-annuler.ts`, la durée de `useRetraits`) ; ce qui n'a pas pu se ranger reprend sa place dans la bande et l'import le reprend (`envoiAReprendre`). Un envoi ne connaît qu'un rangement (`emporterLesRestes`) : « Annuler » ne défait que le dernier, et le serveur le refuse hors de sa fenêtre. Sans migration. `ARCHITECTURE.md` §544. Suites ciblées vertes (`test-pieces-importees-db`, `test-import-tableau-db`, `test-delai-annuler`, `test-importer-pieces-e2e`) ; sur `main` le 4 novembre, par la batterie commune.
+## LE NOM DU CLIENT SUR SES ANCIENS DEVIS (3 novembre 2026), SUR `main` LE 4 NOVEMBRE
+
+Sa demande : *« il faut juste reconnaître le nom à chaque fois »*. L'import lit le nom sous toutes les écritures des civilités (MM et Mm pour Madame, sa règle), les couples, les particules, les entreprises et les collectivités, en haut de la pièce seulement, jamais l'artisan (`clientDuTexte`, `src/lib/import-pieces.ts` ; `civilite.ts` ; `ARCHITECTURE.md` §545). Suites pures vertes, vues rouges d'abord ; sur `main` le 4 novembre, par la batterie commune. Le cas Sanchez n'est pas reproduit (`TODO.md`).
 
 ---
 ## LE DÉTAIL SOUS LA LIGNE DU DEVIS, CODÉ (4 novembre 2026), PAS ENCORE SUR `main`
 
-Sa planche `appli/soignee/devis-detail-ligne.html`. Branche `lot/objet-et-detail` (avec le titre des PDF importés) : la dictée garde la façon de faire en une phrase (`prestations.detail`, migration 0160), la ligne du devis la reçoit sous son nom, effacer devant le détail le remonte avec un espace. Suites du domaine vertes, PDF regardé. **Reste : la batterie (niveau 3), puis `main`.** `ARCHITECTURE.md` §544.
+Sa planche `appli/soignee/devis-detail-ligne.html`. Branche `lot/objet-et-detail` (avec le titre des PDF importés) : la dictée garde la façon de faire en une phrase (`prestations.detail`, migration 0162), la ligne du devis la reçoit sous son nom, effacer devant le détail le remonte avec un espace. Suites du domaine vertes, PDF regardé. **Reste : la batterie (niveau 3), puis `main`.** `ARCHITECTURE.md` §550.
 
 ## SUPPRIMER UN CLIENT REMARCHE SUR SA BASE (1er novembre 2026)
 
@@ -38,7 +54,7 @@ Le devis, la facture, le contrat, les dates du mois et le compte rendu que reço
 ---
 ## LES PDF RANGÉS PAR CLIENT, COMME UN TABLEAU, SUR `main` (3 novembre 2026, par la batterie commune des cinq lots)
 
-Sa demande du 31 octobre : CSV, Excel ou PDF, la même chose. Branche `lot/pdf-par-client` (poussée sur `claude/quatre-planches-atlas-6hi21h`). Les PDF lus passent par l'écran « Par client » et la règle des tableaux ; la lecture garde l'adresse, le téléphone et le lieu des travaux (migration 0156, expand). Suites du domaine vertes, écran regardé. **Sur `main` depuis le 3 novembre, fusionné par la batterie commune d'une autre session (« Cinq lots, une seule batterie »).** Le titre des PDF (la ligne « Objet ») est venu après : lot `lot/objet-et-detail`, migration 0159. `ARCHITECTURE.md` §538, `docs/pdf-par-client.md`.
+Sa demande du 31 octobre : CSV, Excel ou PDF, la même chose. Branche `lot/pdf-par-client` (poussée sur `claude/quatre-planches-atlas-6hi21h`). Les PDF lus passent par l'écran « Par client » et la règle des tableaux ; la lecture garde l'adresse, le téléphone et le lieu des travaux (migration 0156, expand). Suites du domaine vertes, écran regardé. **Sur `main` depuis le 3 novembre, fusionné par la batterie commune d'une autre session (« Cinq lots, une seule batterie »).** Le titre des PDF (la ligne « Objet ») est venu après : lot `lot/objet-et-detail`, migration 0161. `ARCHITECTURE.md` §538, `docs/pdf-par-client.md`.
 
 ## LE RELEVÉ DU 29 OCTOBRE, SUR `main` (31 octobre 2026)
 
@@ -79,7 +95,7 @@ Planche B retenue. Tous ses documents, à toucher sous la réponse : devis (et l
 
 ## LA BARRE DE LA MAIN D'ŒUVRE, SUR `main` (28 octobre 2026)
 
-Branche `lot/main-oeuvre-curseur`, d'après sa planche `appli/soignee/main-oeuvre-curseur.html` (palette Jardin, montant écrit à l'euro près). Écran : `src/app/chantiers/[id]/RepartirLaMainOeuvre.tsx`. Règles : `src/lib/main-oeuvre-dictee.ts` (`repartirMainOeuvre` garde les montants qu'il a réglés, `glisserLeJoint`, `ecrireUnMontant`). Jetons : `pastelsMainOeuvre`. Suites : `test-repartir-main-oeuvre.ts`, `test-main-oeuvre-dictee-db.ts`, `test-main-oeuvre-barre-e2e.ts`. **Sur `main` le 28 octobre**, batterie commune verte. `ARCHITECTURE.md` §526, `docs/main-oeuvre-curseur.md`.
+Branche `lot/main-oeuvre-curseur`, d'après sa planche `appli/soignee/main-oeuvre-curseur.html` (palette Jardin, montant écrit à l'euro près). Écran : `src/components/atlas/RepartirLaMainOeuvre.tsx` (sorti de `src/app/chantiers/[id]/` le 4 novembre 2026, avec la feuille qui le monte). Règles : `src/lib/main-oeuvre-dictee.ts` (`repartirMainOeuvre` garde les montants qu'il a réglés, `glisserLeJoint`, `ecrireUnMontant`). Jetons : `pastelsMainOeuvre`. Suites : `test-repartir-main-oeuvre.ts`, `test-main-oeuvre-dictee-db.ts`, `test-main-oeuvre-barre-e2e.ts`. **Sur `main` le 28 octobre**, batterie commune verte. `ARCHITECTURE.md` §526, `docs/main-oeuvre-curseur.md`.
 
 ---
 ## SALARIÉ ABSENT, LA C, SUR `main` (27 octobre 2026, livrée le 29)

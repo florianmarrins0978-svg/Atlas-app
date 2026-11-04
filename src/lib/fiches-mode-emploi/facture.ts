@@ -96,9 +96,15 @@ export const FICHES_FACTURE: FicheModeEmploi[] = [
     intitule: "Mettre un autre taux de TVA sur des lignes de la facture",
     motsCles: ["tva", "taux", "10", "20", "5", "categorie", "plusieurs", "changer"],
     geste:
-      "Appuyez sur « + Ajouter une TVA » : une ligne s'ouvre sous un nouveau taux. Touchez le chiffre à côté de « TVA » pour le changer.",
+      "Appuyez sur « Ajouter une TVA », tapez le taux ou touchez 10, 5,5 ou 0 %, puis « Ajouter la TVA » : une ligne s'ouvre sous ce taux. " +
+      "Touchez le chiffre à côté de « TVA » pour le changer ensuite.",
+    reserve: "Un taux déjà sur la facture ne s'ajoute pas une seconde fois.",
     source: S,
-    preuves: ["+ Ajouter une TVA", "aria-label={`Taux de TVA à"],
+    preuves: ['libelle="Ajouter une TVA"', 'piece="cette facture"', "aria-label={`Taux de TVA à"],
+    ailleurs: [
+      { source: "src/components/atlas/FeuilleDeLaTva.tsx", preuves: ["Ajouter la TVA à", '"10", "5.5", "0"'] },
+      { source: "src/lib/feuilles-du-taux.ts", preuves: ["est déjà sur ${piece}"] },
+    ],
   },
   {
     id: "facture-supplement-retirer",
@@ -115,13 +121,20 @@ export const FICHES_FACTURE: FicheModeEmploi[] = [
     id: "facture-main-doeuvre",
     ecran: "Travaux en plus",
     ou: OU_REMPLIR,
-    intitule: "Indiquer la main d'œuvre sur la facture",
-    motsCles: ["main", "oeuvre", "mo", "heures", "dont", "facture", "indiquer"],
+    intitule: "Ajouter de la main d'œuvre sur la facture",
+    motsCles: ["main", "oeuvre", "doeuvre", "mo", "heures", "dont", "facture", "indiquer", "partenaire", "equipe"],
     geste:
-      "Appuyez sur « + Main d’œuvre » et tapez le montant HT : il s'écrit « dont main d’œuvre HT » sous le Total HT. Le « − » rond la retire.",
+      "Appuyez sur « Main d’œuvre », à côté de « Ajouter une ligne » dans la TVA voulue : le calcul se montre, avec les hommes, la durée et votre prix du jour par homme. " +
+      "« Mes partenaires », à droite du titre, prend le prix d’un partenaire avec votre marge. « Ajouter la main d’œuvre » pose la ligne, et « dont main d’œuvre HT » la compte sous le Total HT. " +
+      "Touchez ce montant pour le corriger ; le « − » rond le retire.",
+    reserve: "Sans prix du jour par homme ni marge, la ligne arrive sans prix, et « dont main d’œuvre HT » ne la compte pas.",
     source: S,
-    preuves: ['data-atlas="poser-main-doeuvre"', "+ Main d"],
-    ailleurs: [{ source: "src/app/chantiers/[id]/devis-complet/LigneMainDoeuvre.tsx", preuves: ['data-atlas="retirer-main-doeuvre"'] }],
+    preuves: ['repere="poser-main-doeuvre"', 'setFeuille("mo")', "<FeuilleMainDoeuvre"],
+    ailleurs: [
+      { source: "src/components/atlas/FeuilleMainDoeuvre.tsx", preuves: ["Mes partenaires", "Ajouter la main d’œuvre", "Le jour par homme"] },
+      { source: "src/lib/main-doeuvre-devis.ts", preuves: ["export function mainDoeuvreApresUnAjout"] },
+      { source: "src/app/chantiers/[id]/devis-complet/LigneMainDoeuvre.tsx", preuves: ['data-atlas="retirer-main-doeuvre"'] },
+    ],
   },
   {
     id: "facture-remise",
@@ -130,13 +143,15 @@ export const FICHES_FACTURE: FicheModeEmploi[] = [
     intitule: "Faire une remise sur la facture",
     motsCles: ["remise", "reduction", "rabais", "ristourne", "geste", "commercial", "pourcentage", "facture"],
     geste:
-      "Sous le Total TTC, appuyez sur « + Remise » : 5 % s'inscrit, touchez le chiffre pour le changer. La croix la retire.",
+      "Sous le Total TTC, appuyez sur « Remise », tapez le pourcentage ou touchez 5, 10 ou 15 % : ce qu'elle retire se montre avant. " +
+      "« Appliquer la remise », puis touchez le chiffre pour le changer. La croix la retire.",
+    reserve: "Seulement sur une facture faite sans devis : la remise d'un devis se change sur le devis.",
     source: S,
-    preuves: ["<BoutonRemise", "REMISE_PAR_DEFAUT"],
+    preuves: ['libelle="Remise"', 'repere="poser-prix-accorde"', "<FeuilleDeLaRemise"],
     ailleurs: [
       {
         source: "src/components/atlas/Remise.tsx",
-        preuves: ['data-atlas="poser-prix-accorde"', 'REMISE_PAR_DEFAUT = "5"', 'aria-label="Remise, en pourcentage"'],
+        preuves: ['REMISE_PAR_DEFAUT = "5"', '[REMISE_PAR_DEFAUT, "10", "15"]', "Appliquer la remise", 'aria-label="Remise, en pourcentage"'],
       },
       { source: "src/lib/reduction-devis.ts", preuves: ['LIBELLE_REDUCTION = "Remise"'] },
     ],
@@ -148,11 +163,11 @@ export const FICHES_FACTURE: FicheModeEmploi[] = [
     intitule: "Noter sur la facture un acompte ou un règlement déjà reçu",
     motsCles: ["acompte", "acomptes", "reglement", "recu", "arrhes", "avance", "deduire", "verse", "paye"],
     geste:
-      "Sous le Total TTC, appuyez sur « + Règlement reçu » : une ligne se pose avec le montant proposé. " +
+      "Sous le Total TTC, appuyez sur la pastille « Règlement reçu » : une ligne se pose avec le montant proposé. " +
       "Touchez la date ou le montant pour les corriger. Le net à payer se recalcule.",
     reserve: "Grisé quand le net à payer est à zéro. Sur l'écran de la facture, les règlements se lisent seulement.",
     source: R,
-    preuves: ["+ Règlement reçu", 'aria-label="Date du règlement"', 'aria-label="Montant reçu"', "Net à payer"],
+    preuves: ['libelle="Règlement reçu"', 'aria-label="Date du règlement"', 'aria-label="Montant reçu"', "Net à payer"],
     ailleurs: [{ source: S, preuves: ["<ReglementsRecus", "fige={false}"] }],
   },
   {
@@ -228,9 +243,18 @@ export const FICHES_FACTURE: FicheModeEmploi[] = [
     geste:
       "À côté de « Envoi », touchez SMS ou E-mail, puis « Envoyer la facture » : votre messagerie s'ouvre avec le message et le lien tout prêts.",
     reserve:
-      "Grisé si le client n'a pas de coordonnée pour ce canal, ou si la facture est vide. En l'envoyant, vous l'arrêtez : une correction passerait par un avoir.",
+      "Grisé si le client n'a pas de coordonnée pour ce canal, ou si la facture est vide. Client supprimé : tapez son e-mail ou son numéro dans la case, il sert à cet envoi seulement. " +
+      "En l'envoyant, vous l'arrêtez : une correction passerait par un avoir.",
     source: F,
-    preuves: ["Envoyer la facture", 'libelle="E-mail"', 'libelle="SMS"', "Aucune coordonnée pour ce canal.", "Une correction passerait par un avoir."],
+    preuves: [
+      "Envoyer la facture",
+      'libelle="E-mail"',
+      'libelle="SMS"',
+      "Aucune coordonnée pour ce canal.",
+      "Son e-mail",
+      "Son numéro",
+      "Une correction passerait par un avoir.",
+    ],
   },
   {
     // Ses choix du 22 octobre 2026 (`appli/facture-mairie-chorus.html`).

@@ -44,7 +44,10 @@ export default function ChoixCanal({
 }: {
   libelle: string;
   actif: boolean;
-  /** La coordonnée existe-t-elle ? Sinon la capsule reste inerte. */
+  /**
+   * La coordonnée existe-t-elle, ou peut-elle se taper à côté (la facture d'un
+   * client supprimé, 3 novembre 2026) ? Sinon la capsule reste inerte.
+   */
   disponible: boolean;
   onClick: () => void;
   /**

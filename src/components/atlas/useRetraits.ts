@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ANNULER_PENDANT_MS } from "@/lib/delai-annuler";
 
 /**
  * Le retrait réversible — la mécanique commune aux huit endroits qui suppriment.
@@ -72,7 +73,7 @@ export type CompteARebours = { depuis: number; dureeMs: number };
 
 export function useRetraits({
   valider,
-  delaiMs = 6000,
+  delaiMs = ANNULER_PENDANT_MS,
 }: {
   /**
    * L'écriture destructrice, appelée une fois par élément à la fermeture du

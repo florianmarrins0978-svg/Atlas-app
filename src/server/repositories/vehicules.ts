@@ -2,7 +2,13 @@ import { and, asc, eq, isNull } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { vehicules } from "../db/schema";
 import type { Ctx } from "./context";
-import type { NatureDocumentVehicule } from "@/lib/vehicules";
+import {
+  CHAMP_DU_CONTROLE,
+  CHAMP_VU_DU_CONTROLE,
+  estControleVehicule,
+  refusDuVu,
+  type NatureDocumentVehicule,
+} from "@/lib/vehicules";
 
 /**
  * Les véhicules de l'entreprise (migration 0131). Les règles — seuils des
@@ -80,5 +86,39 @@ export async function retirerVehicule(ctx: Ctx, id: string): Promise<boolean> {
       .where(and(eq(vehicules.id, id), isNull(vehicules.deletedAt)))
       .returning({ id: vehicules.id });
     return retires.length === 1;
+  });
+}
+
+/**
+ * « J'ai vu » sur le rappel d'un contrôle — sa demande du 3 novembre 2026
+ * (migration 0159). Retient la date limite vue, pour cette échéance seule.
+ *
+ * **La règle est rejouée ici, sur la ligne verrouillée** (`refusDuVu`) : l'écran
+ * a pu être ouvert la veille de l'échéance, ou la date changée par un
+ * procès-verbal entre l'affichage et le geste. `jour` est celui de l'atelier
+ * (`jourIso`), comme pour l'accueil qui a montré la carte.
+ */
+export async function marquerRappelVehiculeVu(
+  ctx: Ctx,
+  vehiculeId: string,
+  controle: string,
+  avant: string,
+  jour: string
+): Promise<{ ok: true } | { ok: false; raison: string }> {
+  if (!estControleVehicule(controle)) return { ok: false, raison: "Ce rappel ne se range pas. Rechargez l’écran." };
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [v] = await tx
+      .select()
+      .from(vehicules)
+      .where(and(eq(vehicules.id, vehiculeId), isNull(vehicules.deletedAt)))
+      .for("update");
+    if (!v) return { ok: false as const, raison: "Ce véhicule n’existe plus. Rechargez l’écran." };
+    const refus = refusDuVu(v[CHAMP_DU_CONTROLE[controle]], avant, controle, jour);
+    if (refus) return { ok: false as const, raison: refus };
+    await tx
+      .update(vehicules)
+      .set({ [CHAMP_VU_DU_CONTROLE[controle]]: avant })
+      .where(eq(vehicules.id, vehiculeId));
+    return { ok: true as const };
   });
 }

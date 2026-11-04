@@ -15,18 +15,24 @@ import {
   piecesLuesDeLEnvoi,
   prendrePiecesALire,
   rangerEnvoiSelonLePlan,
+  rangerTableau,
 } from "../src/server/repositories/pieces-importees";
 import { clientsQuOnPeutReconnaitre } from "../src/server/repositories/clients";
-import { lignesDesPdf } from "../src/lib/import-pieces";
+import { envoiAReprendre, lignesDesPdf } from "../src/lib/import-pieces";
+import { ANNULER_PENDANT_MS, MARGE_RESEAU_ANNULER_MS } from "../src/lib/delai-annuler";
+import { CIVILITES } from "../src/lib/civilite";
+
+/** La fiche que le rangement crée pour lui : le nom lu s'écrit à la façon de l'appli (migration 0037). */
+const MARTINS_RANGE = `${CIVILITES.mr} Martins`;
 import { grouperParClient, planDeRangement, type ChoixAdresse } from "../src/lib/import-tableau";
 import { chercherLesObjets, traiterPiecesEnAttente } from "../src/server/import/traiter-pieces";
 import { enregistrerObjet } from "../src/server/storage";
 import { _reinitialiserFabriqueLLM } from "../src/server/ai/providers/llm/fabrique";
 import type { FournisseurLLM } from "../src/server/ai/providers/llm/interface";
 import { withEntreprise } from "../src/server/db/with-entreprise";
-import { clients, fichiersAPurger, piecesImportees } from "../src/server/db/schema";
+import { clients, envoisPieces, fichiersAPurger, piecesImportees } from "../src/server/db/schema";
 import { apercuSuppressionClient, effacerClient } from "../src/server/repositories/donnees-client";
-import { eq, inArray } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 
 // IMPORTER DEVIS ET FACTURES, en base et sous `atlas_app` — 22 octobre 2026.
 //
@@ -113,6 +119,48 @@ async function ranger(
 
 const tousLesClients = (ctx: Ctx) => withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => tx.select().from(clients));
 
+/**
+ * Le temps passé depuis le rangement, sans l'attendre : le rangement recule
+ * dans le temps. C'est l'heure du SERVEUR qui décide, comme pour lui.
+ */
+async function vieillir(ctx: Ctx, envoiId: string, ms: number) {
+  await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+    tx
+      .update(envoisPieces)
+      .set({ rangeLe: sql`${envoisPieces.rangeLe} - (${ms}::int * interval '1 millisecond')` })
+      .where(eq(envoisPieces.id, envoiId))
+  );
+}
+
+/**
+ * Son import du 3 novembre 2026, en petit : deux pièces nommées se rangent,
+ * la troisième n'a pas de nom lisible et reste (ses 48 sur 51, les trois
+ * devis de Mme Sanchez).
+ */
+async function rangementPartiel(nom: string) {
+  await nettoyerBase();
+  _reinitialiserFabriqueLLM(iaDeSuite("Je ne sais pas."));
+  const ctx = await monter(nom);
+  const envoi = await creerEnvoi(ctx, "lot.zip", 3);
+  await deposer(ctx, envoi.id, await pdfAvecTexte(FACTURE_MARTINS));
+  await deposer(ctx, envoi.id, await pdfAvecTexte(DEVIS_LENOIR));
+  const { piece: tilleuls } = await deposer(ctx, envoi.id, await pdfAvecTexte(SANS_NOM));
+  await traiterPiecesEnAttente(ctx);
+  const r = await ranger(ctx, envoi.id);
+  assert.equal(r.rangees, 2, "le rangement partiel n'a pas rangé les deux pièces nommées");
+  return { ctx, envoi, tilleuls: tilleuls! };
+}
+
+/** Le nombre de pièces que chaque fiche montre. */
+async function piecesParFiche(ctx: Ctx): Promise<Record<string, number>> {
+  const parFiche: Record<string, number> = {};
+  for (const c of await tousLesClients(ctx)) {
+    const fiche = await chargerFicheClient(ctx, c.id);
+    parFiche[c.nom] = (fiche?.pieces.devis.length ?? 0) + (fiche?.pieces.factures.length ?? 0);
+  }
+  return parFiche;
+}
+
 async function main() {
   console.log("=== Importer devis et factures, en base ===\n");
 
@@ -128,7 +176,8 @@ async function main() {
     assert.equal(lues, 2, "les deux pièces n'ont pas été lues");
     assert.equal(appelsIA, 0, `${appelsIA} appel(s) à l'IA pour des pièces que le texte suffisait à lire`);
     const pieces = await piecesLuesDeLEnvoi(ctx, envoi.id);
-    const martins = pieces.find((p) => p.nomLu === "M. Martins");
+    // Le nom rangé prend l'écriture de l'appli (« Mr. », migration 0037).
+    const martins = pieces.find((p) => p.nomLu === `${CIVILITES.mr} Martins`);
     assert.equal(martins?.adresseLue, "8 rue du Port, 44120 Vertou", "l'adresse du client n'est pas gardée");
     assert.equal(martins?.telephoneLu, "07 11 22 33 44", "le téléphone du client n'est pas gardé");
   });
@@ -143,7 +192,7 @@ async function main() {
     await traiterPiecesEnAttente(ctx);
     assert.equal(appelsIA, 1, "l'IA n'a pas été appelée alors que l'adresse manquait");
     const [p] = await piecesLuesDeLEnvoi(ctx, envoi.id);
-    assert.equal(p.nomLu, "M. Guérin", "le nom lu dans le texte a été perdu");
+    assert.equal(p.nomLu, `${CIVILITES.mr} Guérin`, "le nom lu dans le texte a été perdu");
     assert.equal(p.adresseLue, "5 impasse des Roses, 44300 Nantes");
   });
 
@@ -164,6 +213,24 @@ async function main() {
     assert.equal(p.montantTtc, "310.00");
     const { plan } = await ranger(ctx, envoi.id);
     assert.ok(plan.ok && plan.sansNom === 1 && plan.clients.length === 0, "une pièce sans nom a été rangée");
+  });
+
+  await essai("le nom de son entreprise, lu en base, écarte son en-tête imprimé après le client", async () => {
+    // Sa demande du 3 novembre 2026 : les entreprises se lisent aussi, et le
+    // piège est la sienne. Ici son en-tête vient APRÈS le cadre du client :
+    // seul son nom, que `traiterPiecesEnAttente` lit dans Atlas, l'écarte.
+    await nettoyerBase();
+    _reinitialiserFabriqueLLM(iaDeSuite("Je ne sais pas."));
+    const ctx = await monter("Jardins du Moulin");
+    const envoi = await creerEnvoi(ctx, "lot.zip", 1);
+    await deposer(
+      ctx,
+      envoi.id,
+      await pdfAvecTexte(["DEVIS n° D2025-0300", "03/04/2025", "Pour Mme Lenoir", "14 rue Paul Bert 44100 Nantes", "EURL Jardins du Moulin", "3 rue du Moulin 44100 Nantes", "Total TTC 1 250,00"])
+    );
+    await traiterPiecesEnAttente(ctx);
+    const [p] = await piecesLuesDeLEnvoi(ctx, envoi.id);
+    assert.equal(p.nomLu, `${CIVILITES.mme} Lenoir`, "son propre en-tête a fait douter du client, ou a été pris pour lui");
   });
 
   await essai("le même fichier deux fois ne fait qu'une pièce", async () => {
@@ -272,7 +339,7 @@ async function main() {
     await deposer(ctx, envoi.id, await pdfAvecTexte(DEVIS_LENOIR));
     await traiterPiecesEnAttente(ctx);
     await ranger(ctx, envoi.id);
-    assert.ok(await annulerRangement(ctx, envoi.id));
+    assert.deepEqual(await annulerRangement(ctx, envoi.id), { ok: true });
     const tous = await tousLesClients(ctx);
     assert.deepEqual(tous.map((c) => c.nom).sort(), ["M. Martins"], "l'annulation a laissé une fiche créée, ou retiré une fiche connue");
     assert.equal(tous[0].adresse, null, "la case complétée par le rangement ne s'est pas vidée");
@@ -325,6 +392,166 @@ async function main() {
     const r = await ranger(b, envoi.id);
     assert.equal(r.rangees, 0);
     assert.equal((await piecesLuesDeLEnvoi(a, envoi.id)).length, 1, "le rangement de B a touché les pièces de A");
+    assert.deepEqual(await annulerRangement(b, envoi.id), { ok: false, pourquoi: "introuvable" }, "B annule un envoi de A");
+  });
+
+  // ── « Annuler » six secondes, puis ce qui reste : sa capture du 3 novembre 2026 ──
+  //
+  // Son import avait rangé 48 pièces sur 51 : trois devis sans nom lisible.
+  // Le bandeau « 48 documents rangés, Annuler » ne partait jamais (le serveur
+  // ne lâchait l'envoi qu'une fois TOUT rangé), et les trois devis n'avaient
+  // plus d'autre porte que lui : l'import ne reprenait qu'un envoi jamais rangé.
+
+  await essai("rangé : « Annuler » six secondes durant, le temps compté par le serveur", async () => {
+    const { ctx } = await rangementPartiel("Essai fenêtre");
+    const etat = await envoiEnCours(ctx);
+    assert.equal(etat?.rangees, 2);
+    assert.ok(
+      typeof etat.annulableMs === "number" && etat.annulableMs > 0 && etat.annulableMs <= ANNULER_PENDANT_MS,
+      `le temps qui reste à « Annuler » : ${etat.annulableMs}`
+    );
+    assert.equal(envoiAReprendre(etat), null, "l'import reprend l'envoi pendant que « Annuler » est encore proposé");
+  });
+
+  await essai("tout rangé, les six secondes passées : plus de bande", async () => {
+    await nettoyerBase();
+    _reinitialiserFabriqueLLM(iaDeSuite("{}"));
+    const ctx = await monter("Essai tout rangé");
+    const envoi = await creerEnvoi(ctx, "lot.zip", 1);
+    await deposer(ctx, envoi.id, await pdfAvecTexte(FACTURE_MARTINS));
+    await traiterPiecesEnAttente(ctx);
+    await ranger(ctx, envoi.id);
+    await vieillir(ctx, envoi.id, ANNULER_PENDANT_MS + 1000);
+    assert.equal(await envoiEnCours(ctx), null, "la bande « documents rangés » reste après ses six secondes");
+  });
+
+  await essai("un rangement partiel, ses six secondes passées : l'état dit ce qui RESTE, et l'import le reprend", async () => {
+    const { ctx, envoi, tilleuls } = await rangementPartiel("Essai restes");
+    await vieillir(ctx, envoi.id, ANNULER_PENDANT_MS + 1000);
+    const etat = await envoiEnCours(ctx);
+    assert.ok(etat, "l'envoi a disparu : la pièce sans nom n'a plus de porte");
+    assert.equal(etat.annulableMs, null, "« Annuler » est encore proposé après six secondes");
+    assert.deepEqual(
+      { attendues: etat.attendues, recues: etat.recues, lues: etat.lues, aVerifier: etat.aVerifier, pretes: etat.pretes },
+      { attendues: 1, recues: 1, lues: 1, aVerifier: 1, pretes: 0 },
+      "les comptes de la bande ne disent pas ce qui reste"
+    );
+    assert.equal(envoiAReprendre(etat), etat.id, "l'écran d'import ne reprend pas ce qui reste");
+    assert.deepEqual((await piecesLuesDeLEnvoi(ctx, etat.id)).map((p) => p.id), [tilleuls.id]);
+  });
+
+  await essai("un second rangement, puis « Annuler » : seul le second est défait", async () => {
+    const { ctx, envoi, tilleuls } = await rangementPartiel("Essai second rangement");
+    await vieillir(ctx, envoi.id, ANNULER_PENDANT_MS + 1000);
+    const reste = await envoiEnCours(ctx);
+    const r = await ranger(ctx, reste!.id, { tapes: { [tilleuls.id]: "SARL Les Tilleuls" } });
+    assert.equal(r.rangees, 1, "la pièce restée ne se range pas une fois son nom tapé");
+
+    const etat = await envoiEnCours(ctx);
+    assert.equal(etat?.rangees, 1, "« N documents rangés » compte aussi le premier rangement");
+    assert.ok(etat.annulableMs !== null, "le second rangement ne propose pas « Annuler »");
+    assert.deepEqual(await piecesParFiche(ctx), { [MARTINS_RANGE]: 1, "Mme Lenoir": 1, "SARL Les Tilleuls": 1 });
+
+    assert.deepEqual(await annulerRangement(ctx, etat.id), { ok: true });
+    assert.deepEqual(
+      await piecesParFiche(ctx),
+      { [MARTINS_RANGE]: 1, "Mme Lenoir": 1 },
+      "« Annuler » a défait le premier rangement avec le second, ou gardé la fiche du second"
+    );
+    const apres = await envoiEnCours(ctx);
+    assert.equal(apres?.annulableMs, null);
+    assert.equal(apres.recues, 1, "la bande ne dit pas la pièce revenue à ranger");
+    assert.deepEqual((await piecesLuesDeLEnvoi(ctx, apres.id)).map((p) => p.id), [tilleuls.id], "la pièce du second rangement n'est pas revenue à ranger");
+  });
+
+  await essai("« Annuler » se refuse passé sa fenêtre, et le dit ; la marge du réseau prend l'appui parti à temps", async () => {
+    const aTemps = await rangementPartiel("Essai marge");
+    await vieillir(aTemps.ctx, aTemps.envoi.id, ANNULER_PENDANT_MS + MARGE_RESEAU_ANNULER_MS / 2);
+    assert.deepEqual(await annulerRangement(aTemps.ctx, aTemps.envoi.id), { ok: true }, "l'appui parti dans les six secondes est refusé");
+
+    const tard = await rangementPartiel("Essai trop tard");
+    await vieillir(tard.ctx, tard.envoi.id, ANNULER_PENDANT_MS + MARGE_RESEAU_ANNULER_MS + 1000);
+    assert.deepEqual(await annulerRangement(tard.ctx, tard.envoi.id), { ok: false, pourquoi: "plus-annulable" });
+    assert.deepEqual(await piecesParFiche(tard.ctx), { [MARTINS_RANGE]: 1, "Mme Lenoir": 1 }, "un « Annuler » refusé a quand même défait le rangement");
+  });
+
+  await essai("un envoi neuf emporte ce qui reste du précédent, et « Annuler » derrière lui se refuse", async () => {
+    // Dans les six secondes, un second onglet ouvre un autre envoi : reprendre
+    // l'envoi rangé lui ferait porter deux rangements, et le laisser derrière
+    // rendrait sa pièce restée introuvable.
+    const { ctx, envoi, tilleuls } = await rangementPartiel("Essai envoi suivant");
+    const neuf = await creerEnvoi(ctx, "autre.zip", 4);
+    assert.notEqual(neuf.id, envoi.id, "un envoi déjà rangé a été repris");
+    assert.deepEqual((await piecesLuesDeLEnvoi(ctx, neuf.id)).map((p) => p.id), [tilleuls.id], "ce qui restait n'a pas suivi l'envoi neuf");
+    const etat = await envoiEnCours(ctx);
+    assert.equal(etat?.id, neuf.id);
+    assert.equal(etat.attendues, 5, "l'envoi neuf n'attend pas ce qui restait plus ce qu'il annonce");
+    assert.deepEqual(
+      await annulerRangement(ctx, envoi.id),
+      { ok: false, pourquoi: "plus-annulable" },
+      "« Annuler » derrière un envoi plus récent rendrait des pièces sans écran"
+    );
+    assert.deepEqual(await piecesParFiche(ctx), { [MARTINS_RANGE]: 1, "Mme Lenoir": 1 });
+  });
+
+  await essai("un client du rangement supprimé : ce qui reste ne passe pas pour un envoi coupé", async () => {
+    // Trouvé par la suite navigateur : la fiche supprimée emporte ses pièces
+    // rangées, et « 3 attendues, 1 reçue » se lisait « Envoi interrompu ».
+    const { ctx, envoi, tilleuls } = await rangementPartiel("Essai client supprimé");
+    await vieillir(ctx, envoi.id, ANNULER_PENDANT_MS + 1000);
+    for (const c of await tousLesClients(ctx)) await effacerClient(ctx, c.id);
+    const etat = await envoiEnCours(ctx);
+    assert.deepEqual({ attendues: etat?.attendues, recues: etat?.recues }, { attendues: 1, recues: 1 }, "ce qui reste passe pour un envoi coupé");
+    assert.equal(envoiAReprendre(etat), etat!.id, "l'import ne reprend plus ce qui reste");
+    assert.deepEqual((await piecesLuesDeLEnvoi(ctx, etat!.id)).map((p) => p.id), [tilleuls.id]);
+  });
+
+  await essai("un tableau qui a emporté ce qui reste s'annule, et ce qui reste se reprend", async () => {
+    const { ctx, envoi, tilleuls } = await rangementPartiel("Essai tableau annulé");
+    await vieillir(ctx, envoi.id, ANNULER_PENDANT_MS + 1000);
+    const bilan = await rangerTableau(ctx, "t.csv", [
+      {
+        existant: null,
+        nom: "M. Tableau",
+        adresse: null,
+        telephone: null,
+        // Deux lignes pour un seul reste : l'attente du tableau ne doit pas lui être prêtée.
+        pieces: [
+          { rang: 0, genre: "facture", numero: "T-0002", objet: null, jour: "2025-01-10", montant: "90.00", nom: "M. Tableau", chantier: null, cle: "t-0002" },
+          { rang: 1, genre: "devis", numero: "T-0003", objet: null, jour: "2025-01-11", montant: "120.00", nom: "M. Tableau", chantier: null, cle: "t-0003" },
+        ],
+      },
+    ]);
+    assert.deepEqual(await annulerRangement(ctx, bilan.envoiId!), { ok: true });
+    const etat = await envoiEnCours(ctx);
+    assert.deepEqual(
+      { id: etat?.id, attendues: etat?.attendues, recues: etat?.recues },
+      { id: bilan.envoiId, attendues: 1, recues: 1 },
+      "ce qui restait passe pour un envoi coupé une fois le tableau annulé"
+    );
+    assert.equal(envoiAReprendre(etat), bilan.envoiId);
+    assert.deepEqual((await piecesLuesDeLEnvoi(ctx, bilan.envoiId!)).map((p) => p.id), [tilleuls.id]);
+    assert.deepEqual(await piecesParFiche(ctx), { [MARTINS_RANGE]: 1, "Mme Lenoir": 1 }, "le tableau annulé a laissé sa fiche, ou défait le rangement des PDF");
+  });
+
+  await essai("un tableau rangé emporte lui aussi ce qui reste", async () => {
+    const { ctx, envoi, tilleuls } = await rangementPartiel("Essai tableau après");
+    await vieillir(ctx, envoi.id, ANNULER_PENDANT_MS + 1000);
+    const bilan = await rangerTableau(ctx, "t.csv", [
+      {
+        existant: null,
+        nom: "M. Tableau",
+        adresse: null,
+        telephone: null,
+        pieces: [{ rang: 0, genre: "facture", numero: "T-0001", objet: null, jour: "2025-01-10", montant: "90.00", nom: "M. Tableau", chantier: null, cle: "t-0001" }],
+      },
+    ]);
+    assert.ok(bilan.envoiId);
+    await vieillir(ctx, bilan.envoiId, ANNULER_PENDANT_MS + 1000);
+    const etat = await envoiEnCours(ctx);
+    assert.equal(etat?.id, bilan.envoiId);
+    assert.equal(envoiAReprendre(etat), bilan.envoiId, "la pièce restée n'a plus de porte une fois le tableau rangé");
+    assert.deepEqual((await piecesLuesDeLEnvoi(ctx, bilan.envoiId)).map((p) => p.id), [tilleuls.id]);
   });
 
   _reinitialiserFabriqueLLM(null);

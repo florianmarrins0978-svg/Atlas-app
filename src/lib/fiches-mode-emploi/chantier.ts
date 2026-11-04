@@ -162,11 +162,14 @@ export const FICHES_CHANTIER: FicheModeEmploi[] = [
     ecran: "Chantiers",
     ou: "« Chantiers », les cartes en haut de la liste",
     intitule: "Faire disparaître une carte de réponse ou de rappel",
-    motsCles: ["carte", "notification", "masquer", "cacher", "disparaitre", "vu", "enlever", "bandeau"],
+    motsCles: ["carte", "notification", "masquer", "cacher", "disparaitre", "vu", "enlever", "bandeau", "controle", "vehicule", "camion"],
     geste: "Touchez « J'ai vu » sous la carte.",
-    reserve: "Un rappel revient après son délai si rien n'a bougé.",
+    reserve:
+      "Un rappel revient après son délai si rien n'a bougé. " +
+      "Un contrôle de véhicule revient le lendemain de sa date limite s'il n'est pas passé, en rouge et sans « J'ai vu ».",
     source: NOTIFS,
     preuves: ["J&apos;ai vu", 'data-atlas="j-ai-vu"'],
+    ailleurs: [{ source: "src/app/RappelsVehicules.tsx", preuves: ["J’ai vu", 'data-atlas="j-ai-vu-vehicule"', "r.vuPossible &&"] }],
   },
   {
     id: "chantiers-cartes-toutes",
@@ -625,7 +628,9 @@ export const FICHES_CHANTIER: FicheModeEmploi[] = [
     geste: "Appuyez sur « Annuler » dans le bandeau du bas. Il reste six secondes.",
     reserve: "Passé ce délai, la suppression est écrite et ne se défait plus.",
     source: "src/components/atlas/useRetraits.ts",
-    preuves: ["delaiMs = 6000", "annuler"],
+    preuves: ["delaiMs = ANNULER_PENDANT_MS", "annuler"],
+    // Les six secondes, une seule fois pour toute l'appli (3 novembre 2026).
+    ailleurs: [{ source: "src/lib/delai-annuler.ts", preuves: ["ANNULER_PENDANT_MS = 6000"] }],
   },
   {
     id: "chantiers-ouvrir",

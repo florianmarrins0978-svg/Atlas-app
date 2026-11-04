@@ -39,7 +39,6 @@ type Etat = {
   aVerifier: number;
   pretes: number;
   rangees: number;
-  rangeLe: string | null;
 };
 
 type Phase =

@@ -179,7 +179,10 @@ export default function ImporterTableau({
         {lot.quoi === "pdf" ? lot.nom : lot.fichier.name}
       </p>
       <p className="mt-[6px] text-[26px] leading-[1.15]" style={{ fontFamily: font.display }}>
-        {lot.quoi === "pdf" ? `${nombre(lot.pieces.length)} documents lus` : `${nombre(grille.length - 1)} lignes lues`}
+        {/* Ce qu'un rangement a laissé revient ici : parfois un seul document. */}
+        {lot.quoi === "pdf"
+          ? `${nombre(lot.pieces.length)} document${lot.pieces.length > 1 ? "s" : ""} lu${lot.pieces.length > 1 ? "s" : ""}`
+          : `${nombre(grille.length - 1)} lignes lues`}
       </p>
 
       {!lecture && (

@@ -41,6 +41,9 @@ const TRACES = {
   // La carte du ruban « Comment », et « Une ligne » de l'avoir (planche de la facture).
   carte: <><rect x="3" y="6" width="18" height="12" rx="2" /><path d="M3 10h18M7 14.5h3" /></>,
   liste: <path d="M8.5 6.5H20M8.5 12H20M8.5 17.5H20M4 6.5h.6M4 12h.6M4 17.5h.6" />,
+  // Les pastilles « Trier par » de Terminés (sa planche du 3 novembre 2026, B).
+  calendrier: <><rect x="3.5" y="5" width="17" height="15.5" rx="2" /><path d="M3.5 10h17M8 3v4M16 3v4" /></>,
+  personne: <><circle cx="12" cy="8" r="3.5" /><path d="M5 20a7 7 0 0 1 14 0" /></>,
 } as const;
 
 export type NomIcone = keyof typeof TRACES;

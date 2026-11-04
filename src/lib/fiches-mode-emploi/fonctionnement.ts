@@ -226,7 +226,8 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
       "Dans « Vos clients », touchez « Importer devis / facture » et choisissez vos PDF, un dossier .zip, ou le " +
       "tableau CSV ou Excel (.xlsx) exporté de votre ancien logiciel. Atlas lit chaque pièce, crée les fiches avec " +
       "leur adresse et range chaque pièce sur la sienne, par date ; quand un nom, une colonne ou une adresse le fait " +
-      "hésiter, il vous demande avant de ranger. « Annuler » défait tout, juste après.",
+      "hésiter, il vous demande avant de ranger. « Annuler » défait ce rangement, six secondes durant. Ce qui " +
+      "n'a pas pu se ranger, un nom illisible par exemple, reste dans la bande sous la recherche : touchez-la pour le ranger.",
     // Ses demandes du 28 octobre 2026 (le tableau) et du 31 (les PDF au même
     // écran) ; le .xls attend sa bibliothèque (`TODO.md`).
     reserve:
@@ -234,7 +235,11 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
       "Le vieux format .xls ne se lit pas encore : enregistrez-le en .xlsx ou en CSV depuis Excel.",
     source: "src/app/clients/importer/ImporterTableau.tsx",
     preuves: ['data-atlas="import-tableau"', "Choisir un autre fichier"],
-    ailleurs: [{ source: "src/app/clients/importer/ImporterPieces.tsx", preuves: ["tableau CSV ou Excel"] }],
+    ailleurs: [
+      { source: "src/app/clients/importer/ImporterPieces.tsx", preuves: ["tableau CSV ou Excel"] },
+      { source: "src/app/clients/BandeImport.tsx", preuves: ["annulableMs", 'href="/clients/importer"', "à vérifier"] },
+      { source: "src/lib/delai-annuler.ts", preuves: ["ANNULER_PENDANT_MS = 6000"] },
+    ],
   },
   {
     id: "ia-se-trompe",

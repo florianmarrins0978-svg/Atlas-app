@@ -24,6 +24,7 @@ export default function PastilleAjout({
   or = false,
   onClick,
   repere,
+  eteinte = false,
 }: {
   libelle: string;
   icone?: NomIcone;
@@ -31,17 +32,20 @@ export default function PastilleAjout({
   or?: boolean;
   onClick: () => void;
   repere?: string;
+  /** « Règlement reçu » quand plus rien ne reste à payer, ou pendant l'écriture. */
+  eteinte?: boolean;
 }) {
   return (
     <button
       type="button"
       data-atlas={repere}
       onClick={onClick}
+      disabled={eteinte}
       // **Le bord gauche est plus court quand un signe ouvre la pastille** : le
       // signe porte son propre air. Un mot seul (« Réessayer », 3 novembre
       // 2026) reprend les deux bords égaux du bouton de sa planche
       // (`.bouton-petit`), sans quoi il paraîtrait poussé à droite.
-      className={`inline-flex min-h-[44px] items-center gap-1.5 rounded-full ${icone || plus ? "pl-3 pr-4" : "px-4"} text-[14.5px] font-semibold active:scale-[0.98]`}
+      className={`inline-flex min-h-[44px] items-center gap-1.5 rounded-full ${icone || plus ? "pl-3 pr-4" : "px-4"} text-[14.5px] font-semibold active:scale-[0.98] disabled:opacity-45 disabled:active:scale-100`}
       style={{ color: or ? colors.or : colors.ink, boxShadow: `inset 0 0 0 1.5px ${or ? voile(colors.or, 0.6) : colors.line}` }}
     >
       {icone && <IconeTrait nom={icone} taille={17} />}

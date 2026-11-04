@@ -228,10 +228,19 @@ cas("« Monsieur Ludovic » rend « Ludovic » et la pastille Mr — SON cas", (
 });
 
 cas("les graphies qu'une transcription écrit vraiment désignent la même pastille", () => {
-  for (const dit of ["Monsieur Ludovic", "monsieur ludovic", "M. Ludovic", "Mr Ludovic", "MM. Ludovic"]) {
+  for (const dit of ["Monsieur Ludovic", "monsieur ludovic", "M. Ludovic", "Mr Ludovic", "Messieurs Ludovic"]) {
     assert.equal(detacherCivilite(dit).civilite, "mr", `« ${dit} » ne désigne pas « Mr »`);
   }
-  for (const dit of ["Madame Roux", "Mme Roux", "MADAME ROUX", "Mademoiselle Roux", "Mlle Roux", "Melle Roux"]) {
+  for (const dit of ["Madame Roux", "Mme Roux", "MADAME ROUX", "Mademoiselle Roux", "Mlle Roux", "Melle Roux", "Mesdames Roux"]) {
+    assert.equal(detacherCivilite(dit).civilite, "mme", `« ${dit} » ne désigne pas « Mme »`);
+  }
+});
+
+cas("« MM » et « Mm » sont SA Madame, pas les Messieurs de l'usage (3 novembre 2026)", () => {
+  // Ses mots : *« MM pour madame ou Mm ou M ou M. »*. L'usage officiel écrit
+  // « MM. » pour Messieurs ; sur ses devis, c'est Madame, et c'est sa règle qui
+  // lit ses pièces. Avant, « MM. Roux » allumait « Mr ».
+  for (const dit of ["MM Roux", "MM. Roux", "Mm Roux", "MM ROUX"]) {
     assert.equal(detacherCivilite(dit).civilite, "mme", `« ${dit} » ne désigne pas « Mme »`);
   }
 });

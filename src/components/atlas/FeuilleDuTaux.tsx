@@ -1,11 +1,12 @@
 "use client";
 
 import { useRef, useState } from "react";
-import BottomSheet from "@/components/atlas/BottomSheet";
-import PrimaryButton from "@/components/atlas/PrimaryButton";
+import BottomSheet from "./BottomSheet";
+import PrimaryButton from "./PrimaryButton";
 import { colors, font, voile } from "@/lib/design-tokens";
 // « 5.50 » se lit « 5,5 » : la case et les raccourcis parlent comme lui.
 import { tauxLisible as tauxEnMots } from "@/lib/reduction-devis";
+import type { ApercuDuTaux, LectureDuTaux } from "@/lib/feuilles-du-taux";
 
 /**
  * ─── UNE TVA, UN ACOMPTE, UNE REMISE : LE CHIFFRE QU'IL TAPE ─────────────────
@@ -15,20 +16,18 @@ import { tauxLisible as tauxEnMots } from "@/lib/reduction-devis";
  * une grande case au pavé de chiffres ; les valeurs courantes ne sont que des
  * raccourcis dessous. Planche : `appli/soignee/chantier.html?ecran=devis`.
  *
- * **La feuille ne décide de rien.** Ce qu'un chiffre vaut, c'est l'écran du
- * devis qui le dit (`lire`), avec les fonctions pures que le serveur oppose à
- * son tour (`tauxTvaValide`, `pourcentValide`, `tauxCumuleValide`) : une seule
- * règle pour construire l'écran et revalider ce qu'il renvoie (`CLAUDE.md` §3).
- * Ce que l'ajout produira se montre AVANT d'ajouter (`apercu`), avec les
- * totaux de l'écran, jamais avec un calcul à elle.
+ * **La feuille ne décide de rien.** Ce qu'un chiffre vaut, c'est l'écran qui
+ * la monte qui le dit (`lire`), avec les fonctions pures que le serveur oppose
+ * à son tour (`tauxTvaValide`, `pourcentValide`, `tauxCumuleValide`) : une
+ * seule règle pour construire l'écran et revalider ce qu'il renvoie
+ * (`CLAUDE.md` §3). Ce que l'ajout produira se montre AVANT d'ajouter
+ * (`apercu`), avec les totaux de l'écran, jamais avec un calcul à elle.
+ *
+ * **Le devis et la facture la montent** depuis le 4 novembre 2026 (planche
+ * `appli/soignee/facture.html`, page « ts ») : elle a quitté `devis-complet/`
+ * pour les pièces communes. La TVA et la remise y ont chacune leur montage,
+ * une seule fois pour les deux pièces (`FeuilleDeLaTva`, `FeuilleDeLaRemise`).
  */
-export type LectureDuTaux = { taux: string } | { refus: string };
-
-export type ApercuDuTaux = {
-  calcul: string;
-  montant: string;
-  dessous?: string;
-};
 
 type Props = {
   ouverte: boolean;

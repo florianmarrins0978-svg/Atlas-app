@@ -62,7 +62,7 @@ const SURVEILLES = [
   "src/app/planning/DatesDuMois.tsx",
   // La barre de la main d'œuvre (27 octobre 2026) : ses cinq pastels sont des
   // jetons fixes (`pastelsMainOeuvre`), ses ombres des voiles d'encre.
-  "src/app/chantiers/[id]/RepartirLaMainOeuvre.tsx",
+  "src/components/atlas/RepartirLaMainOeuvre.tsx",
 ];
 
 /**

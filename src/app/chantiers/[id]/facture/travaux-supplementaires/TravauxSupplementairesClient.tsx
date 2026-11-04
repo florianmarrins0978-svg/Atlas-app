@@ -19,7 +19,6 @@ import {
   lignesParCategorie,
   tauxDeLaLigne,
   tauxLisible,
-  tauxTvaPropose,
   tauxTvaValide,
   totauxAvecReduction,
 } from "@/lib/reduction-devis";
@@ -37,11 +36,10 @@ import {
   majReductionFactureAction,
   retirerLignesDeFactureAction,
 } from "../actions";
-import {
-  BoutonRemise,
-  LigneRemise,
-  REMISE_PAR_DEFAUT,
-} from "@/components/atlas/Remise";
+import { FeuilleDeLaRemise, LigneRemise } from "@/components/atlas/Remise";
+import FeuilleDeLaTva from "@/components/atlas/FeuilleDeLaTva";
+import FeuilleMainDoeuvre from "@/components/atlas/FeuilleMainDoeuvre";
+import type { ChoixDeMainOeuvre, DonneesMainOeuvre } from "@/lib/feuille-main-oeuvre";
 import { useEcrituresALaSuite } from "@/components/atlas/useEcrituresALaSuite";
 import { montantDeLaLigne } from "@/lib/montant-de-ligne";
 import { detailDeLaLigne } from "@/lib/detail-de-ligne";
@@ -51,7 +49,7 @@ import { enEuros } from "@/lib/euros";
 import { ligneSeCorrige } from "@/lib/lignes-corrigeables";
 import LigneMainDoeuvre from "../../devis-complet/LigneMainDoeuvre";
 import ReglementsRecus from "../ReglementsRecus";
-import { majMainDoeuvreFactureAction } from "../actions";
+import { ajouterMainDoeuvreDeFactureAction, majMainDoeuvreFactureAction } from "../actions";
 import type { PromesseDuDevis } from "@/lib/acomptes-facture";
 import type { ReglementEnregistre } from "@/server/repositories/paiements-facture";
 
@@ -122,6 +120,7 @@ export default function TravauxSupplementairesClient({
   tauxTvaFacture,
   reductionPourcent,
   mainDoeuvreHt,
+  mainOeuvre,
   promesseDuDevis,
   reglements,
   lignes: lignesInitiales,
@@ -157,6 +156,8 @@ export default function TravauxSupplementairesClient({
    * le devis porte sa main d'œuvre et ses acomptes.
    */
   mainDoeuvreHt: string | null;
+  /** La feuille « Main d'œuvre » du devis : sa dictée, son prix du jour par homme, ses partenaires. */
+  mainOeuvre: DonneesMainOeuvre;
   promesseDuDevis: PromesseDuDevis;
   reglements: ReglementEnregistre[];
   lignes: LigneEcran[];
@@ -333,13 +334,20 @@ export default function TravauxSupplementairesClient({
    * ajustement.
    */
   /**
-   * ─── « + MAIN D'ŒUVRE », À LA PLACE QU'IL A SUR LE DEVIS ────────────────
+   * ─── « MAIN D'ŒUVRE » OUVRE LA FEUILLE DU DEVIS — 4 novembre 2026 ─────────
    *
-   * Le geste et la ligne sont ceux du devis, montés depuis la même pièce
-   * (`LigneMainDoeuvre`) : « dont main d'œuvre HT » sous le Total HT, rien ne
-   * bouge aux totaux. Le champ s'ouvre VIDE — un montant de main d'œuvre n'a
-   * pas de valeur plausible, et un chiffre d'office s'imprimerait chez sa
-   * cliente (`docs/AGENT.md` §3).
+   * Sa remarque : *« le bouton ma TVA, main d'œuvre, est le même qu'à
+   * l'ancienne »*. Le lien doré ouvrait un champ vide où taper « dont main
+   * d'œuvre HT » ; la pastille ouvre la feuille du devis (`FeuilleMainDoeuvre`) :
+   * le calcul montré avant d'ajouter, puis la ligne, chiffrée, dans la TVA où
+   * il a appuyé (sa planche `appli/soignee/facture.html`, page « ts »).
+   *
+   * **« dont main d'œuvre HT » reste la ligne d'avant** (`LigneMainDoeuvre`),
+   * sous le Total HT, rien ne bouge aux totaux : le serveur y ajoute ce que la
+   * feuille pose (`mainDoeuvreApresUnAjout`), et l'écran montre ce que la BASE
+   * a retenu. Il se retouche et se retire comme avant. Il ne s'ouvre plus
+   * vide : plus aucun geste ne nomme une main d'œuvre sans la poser, le devis
+   * non plus depuis sa A du 13 octobre 2026.
    */
   const [mainDoeuvre, setMainDoeuvre] = useState(sansZerosInutiles(mainDoeuvreHt ?? ""));
   const [mainDoeuvreOuverte, setMainDoeuvreOuverte] = useState(mainDoeuvreHt !== null);
@@ -363,6 +371,14 @@ export default function TravauxSupplementairesClient({
     });
   }
 
+  /**
+   * Quelle feuille est ouverte : la main d'œuvre, la TVA, la remise. Une seule
+   * à la fois, comme sur le devis, dont elles sont les pièces mêmes.
+   */
+  const [feuille, setFeuille] = useState<null | "mo" | "tva" | "remise">(null);
+  /** La TVA où il a touché « Main d'œuvre » : la ligne y naît, comme sur le devis. */
+  const [tauxDeLaMainOeuvre, setTauxDeLaMainOeuvre] = useState<string | null>(null);
+
   const [reduction, setReduction] = useState(reductionPourcent ?? "");
   const [remiseOuverte, setRemiseOuverte] = useState(reductionPourcent !== null);
   /** Les écritures de la remise se suivent : voir `enregistrerLaRemise`. */
@@ -379,22 +395,29 @@ export default function TravauxSupplementairesClient({
     return r.succes;
   }
 
+  /**
+   * **LA LIGNE OUVERTE PREND SA PLACE AVANT LA NOUVELLE.** Son rang en base se
+   * décide à l'écriture : écrite après, elle passerait sous une ligne qui
+   * s'affiche au-dessous d'elle, et les deux se croiseraient au rechargement.
+   * Sur une facture, l'ordre est celui que le client lira. Vaut pour tout ce
+   * qui ajoute une ligne : un travail, une TVA, une main d'œuvre.
+   */
+  async function laLigneOuverteDAbord(): Promise<boolean> {
+    const ouverte = lignes.find((l) => estLigneOuverte(l.id));
+    if (!ouverte) return true;
+    try {
+      await idEnBase(ouverte);
+      return true;
+    } catch {
+      porter({ succes: false, erreur: "La première ligne n'a pas pu être enregistrée. Réessayez." });
+      return false;
+    }
+  }
+
   /** Une ligne de plus, dans la catégorie où le doigt a appuyé. */
   function ajouterUneLigne(taux: string | null) {
     enTransition(async () => {
-      // **LA LIGNE OUVERTE PREND SA PLACE AVANT LA NOUVELLE.** Son rang en base
-      // se décide à l'écriture : écrite après, elle passerait sous une ligne
-      // qui s'affiche au-dessous d'elle, et les deux se croiseraient au
-      // rechargement — sur une facture, l'ordre est celui que le client lira.
-      const ouverte = lignes.find((l) => estLigneOuverte(l.id));
-      if (ouverte) {
-        try {
-          await idEnBase(ouverte);
-        } catch {
-          porter({ succes: false, erreur: "La première ligne n'a pas pu être enregistrée. Réessayez." });
-          return;
-        }
-      }
+      if (!(await laLigneOuverteDAbord())) return;
       const r = await ajouterLigneDeFactureAction(factureId, taux);
       if (!porter(r) || !r.succes) return;
       setLignes((l) => [
@@ -457,11 +480,38 @@ export default function TravauxSupplementairesClient({
   }
 
   /**
-   * Une CATÉGORIE de plus — une ligne vierge sous un taux qui n'est pas encore
-   * ouvert. Les lignes déjà écrites ne bougent pas : leur taux est le sien.
+   * La main d'œuvre de sa feuille : une ligne de plus, recalculée au serveur
+   * sur ses prix (`ligneDuChoix`), et « dont » tel que la base l'a retenu.
+   * L'écran recopie ce que le serveur a POSÉ, jamais ce que la feuille
+   * annonçait : c'est ce chiffre-là que le client lira.
    */
-  function ajouterUneTva() {
-    ajouterUneLigne(tauxTvaPropose(categories.map((c) => c.taux)));
+  function ajouterMainDoeuvre(choix: ChoixDeMainOeuvre) {
+    setFeuille(null);
+    enTransition(async () => {
+      if (!(await laLigneOuverteDAbord())) return;
+      const r = await ajouterMainDoeuvreDeFactureAction(factureId, tauxDeLaMainOeuvre, choix);
+      if (!porter(r) || !r.succes) return;
+      const posee = r.ligne;
+      setLignes((liste) => [
+        ...liste,
+        {
+          id: posee.id,
+          libelle: posee.libelle,
+          // Les cases de la ligne, comme au chargement : pas de zéro dans le
+          // prix d'une main d'œuvre arrivée à chiffrer.
+          quantite: sansZerosInutiles(posee.quantite),
+          unite: posee.unite,
+          prixUnitaire: prixAEcrire(sansZerosInutiles(posee.prixUnitaire)),
+          montant: posee.montant,
+          tauxTva: posee.tauxTva,
+          supplement: posee.supplement,
+        },
+      ]);
+      if (r.mainDoeuvreHt !== null) {
+        setMainDoeuvre(sansZerosInutiles(r.mainDoeuvreHt));
+        setMainDoeuvreOuverte(true);
+      }
+    });
   }
 
   /**
@@ -747,16 +797,27 @@ export default function TravauxSupplementairesClient({
                 </div>
               ))}
 
-              {/* **Le geste dit CE QU'IL AJOUTE, pas « une ligne »** — sa
+              {/* **Le geste dit CE QU'IL AJOUTE, pas « une ligne »** (sa
                   correction du 9 septembre 2026, puis sa planche du 2 novembre :
-                  « Ajouter un travail » en pastille dorée, comme sur le devis.
+                  « Ajouter un travail » en pastille dorée, comme sur le devis).
                   Sans devis, c'est bien une ligne qu'on ajoute, et le mot le dit.
 
                   **Il vit DANS sa catégorie** depuis le 11 septembre : avec
                   deux taux à l'écran, un bouton posé en dessous ne dirait pas
-                  auquel des deux il ajoute — et poser la ligne au mauvais taux
-                  ne se verrait qu'au total. */}
-              <div className="mt-4">
+                  auquel des deux il ajoute, et poser la ligne au mauvais taux
+                  ne se verrait qu'au total.
+
+                  **Les ajouts du devis, à côté — sa planche du 4 novembre 2026**
+                  (`appli/soignee/facture.html`, page « ts », ses deux états) :
+                  « Main d'œuvre » et « Ajouter une TVA » étaient des liens dorés
+                  de 14 points, sous les lignes ; ce sont les pastilles du devis,
+                  sur la même rangée, qui ouvrent ses feuilles. La main d'œuvre
+                  naît dans la TVA où il a appuyé, comme sur le devis. « Ajouter
+                  une TVA » ne se montre qu'une fois, sous la dernière
+                  catégorie : à un seul taux, c'est la rangée de sa planche ; à
+                  deux, il reste sous tout, là où il était (et il ne disparaît
+                  plus, sa capture du 11 septembre 2026). */}
+              <div className="mt-4 flex flex-wrap gap-2">
                 <PastilleAjout
                   libelle={sansDevis ? "Ajouter une ligne" : "Ajouter un travail"}
                   icone="plus"
@@ -764,37 +825,29 @@ export default function TravauxSupplementairesClient({
                   onClick={() => ajouterUneLigne(explicite ? categorie.taux : null)}
                   repere="ajouter-ligne-supplement"
                 />
+                <PastilleAjout
+                  libelle="Main d’œuvre"
+                  icone="equipe"
+                  or
+                  onClick={() => {
+                    setTauxDeLaMainOeuvre(explicite ? categorie.taux : null);
+                    setFeuille("mo");
+                  }}
+                  repere="poser-main-doeuvre"
+                />
+                {rang === categories.length - 1 && (
+                  <PastilleAjout
+                    libelle="Ajouter une TVA"
+                    icone="plus"
+                    or
+                    onClick={() => setFeuille("tva")}
+                    repere="ajouter-tva-supplement"
+                  />
+                )}
               </div>
             </div>
           );
         })}
-
-        {/* **« + Ajouter une TVA » ne disparaît plus.** Il se cachait dès qu'un
-            taux était posé : le second était alors hors d'atteinte, et c'est ce
-            qu'il a signalé le 11 septembre 2026. */}
-        <button
-          type="button"
-          data-atlas="ajouter-tva-supplement"
-          onClick={ajouterUneTva}
-          className="mt-5 block text-[14px] font-medium"
-          style={{ color: colors.or }}
-        >
-          + Ajouter une TVA
-        </button>
-
-        {/* **Sous « + Ajouter une TVA », exactement comme sur le devis.** Il
-            ouvre la ligne, vide : le chiffre est à lui, pas à nous. */}
-        {!mainDoeuvreOuverte && (
-          <button
-            type="button"
-            data-atlas="poser-main-doeuvre"
-            onClick={() => setMainDoeuvreOuverte(true)}
-            className="mt-2.5 block text-[14px] font-medium"
-            style={{ color: colors.or }}
-          >
-            + Main d’œuvre
-          </button>
-        )}
 
         {erreur && (
           <p className="mt-4 text-[13px]" style={{ color: colors.alert }}>
@@ -866,14 +919,22 @@ export default function TravauxSupplementairesClient({
           </p>
         </div>
 
+        {/* **« Remise » en pastille, qui ouvre la feuille du devis** (sa
+            planche du 4 novembre 2026) : le pourcentage tapé, ce qu'il retire
+            montré avant de l'appliquer. Le lien « + Remise » posait 5 %
+            d'office. Seule une facture sans devis en pose une : celle d'un
+            devis se change sur le devis (sa « A » du 7 octobre 2026, que le
+            serveur tient aussi). */}
         {!remiseOuverte && sansDevis && (
-          <BoutonRemise
-            onPoser={() => {
-              setRemiseOuverte(true);
-              setReduction(REMISE_PAR_DEFAUT);
-              enregistrerLaRemise(REMISE_PAR_DEFAUT);
-            }}
-          />
+          <div className="mt-4">
+            <PastilleAjout
+              libelle="Remise"
+              icone="etiquette"
+              or
+              onClick={() => setFeuille("remise")}
+              repere="poser-prix-accorde"
+            />
+          </div>
         )}
 
         {/* ─── LES RÈGLEMENTS REÇUS, SOUS LE TOTAL TTC ───────────────────────
@@ -915,6 +976,43 @@ export default function TravauxSupplementairesClient({
           </p>
         )}
       </div>
+
+      {/* ─── LES FEUILLES DU DEVIS, MONTÉES TELLES QUELLES ─────────────────
+          Les mêmes pièces que le devis (`src/components/atlas/`) : la case,
+          les raccourcis, le refus et l'aperçu ne peuvent plus diverger. Le
+          serveur relit ce qu'elles renvoient avec les mêmes fonctions. */}
+      <FeuilleMainDoeuvre
+        ouverte={feuille === "mo"}
+        donnees={mainOeuvre}
+        onValider={ajouterMainDoeuvre}
+        onFermer={() => setFeuille(null)}
+      />
+      <FeuilleDeLaTva
+        ouverte={feuille === "tva"}
+        dejaOuverts={categories.map((c) => c.taux)}
+        piece="cette facture"
+        onAjouter={(taux) => {
+          setFeuille(null);
+          ajouterUneLigne(taux);
+        }}
+        onFermer={() => setFeuille(null)}
+      />
+      {sansDevis && (
+        <FeuilleDeLaRemise
+          ouverte={feuille === "remise"}
+          lignes={lignes}
+          tauxDuDocument={tauxTvaFacture}
+          onAppliquer={(taux) => {
+            setFeuille(null);
+            setRemiseOuverte(true);
+            setReduction(tauxLisible(taux));
+            // Le même écrivain que la case et que la croix : une remise n'a
+            // qu'une façon d'arriver en base.
+            enregistrerLaRemise(taux);
+          }}
+          onFermer={() => setFeuille(null)}
+        />
+      )}
     </main>
   );
 }

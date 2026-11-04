@@ -1073,7 +1073,7 @@ export const prestations = pgTable(
      */
     prixDicte: numeric("prix_dicte", { precision: 12, scale: 2 }),
     /**
-     * La façon de faire qu'il a dictée, en une phrase (migration 0160, sa
+     * La façon de faire qu'il a dictée, en une phrase (migration 0162, sa
      * planche du 4 novembre 2026) : elle s'écrit sous le nom de la ligne du
      * devis qui vend ce travail. NULL : rien de dicté, ou une dictée d'avant.
      */
@@ -2746,6 +2746,13 @@ export const envoisFactures = pgTable(
     expireAt: timestamp("expire_at", { withTimezone: true }).notNull(),
     canal: text("canal", { enum: ["sms", "email"] }).notNull(),
     envoyeAt: timestamp("envoye_at", { withTimezone: true }).notNull().defaultNow(),
+    /**
+     * **L'e-mail ou le numéro tapé pour CET envoi** (migration 0160), quand le
+     * client était supprimé : sa fiche n'en a plus, et ce qu'il tape ne s'y
+     * écrit pas (son choix du 3 novembre 2026, « pour cet envoi seulement »).
+     * Nul : Atlas ne l'a pas noté. Un canal corrigé le remet à nul.
+     */
+    destinataire: text("destinataire"),
 
     /**
      * **Quand le client a ouvert son lien** (migration 0081), et Atlas la note
@@ -4011,6 +4018,10 @@ export const vehicules = pgTable("vehicules", {
   controleTechniqueAvant: date("controle_technique_avant"),
   pollutionAvant: date("pollution_avant"),
   contreVisiteAvant: date("contre_visite_avant"),
+  /** Migration 0159 : la date limite sur laquelle il a touché « J'ai vu » (`rappelsDesVehicules`). */
+  controleTechniqueVuPour: date("controle_technique_vu_pour"),
+  pollutionVuPour: date("pollution_vu_pour"),
+  contreVisiteVuPour: date("contre_visite_vu_pour"),
   sources: jsonb("sources").$type<SourcesVehicule>().notNull().default({}),
   carteGriseCle: text("carte_grise_cle"),
   carteGriseLe: timestamp("carte_grise_le", { withTimezone: true }),
@@ -4165,7 +4176,7 @@ export const piecesImportees = pgTable("pieces_importees", {
   telephoneLu: text("telephone_lu"),
   chantierLu: text("chantier_lu"),
   /**
-   * Quand l'objet d'un PDF a été cherché (migration 0159) : un PDF importé
+   * Quand l'objet d'un PDF a été cherché (migration 0161) : un PDF importé
    * avant la lecture de l'objet se relit UNE fois, à l'ouverture de sa fiche.
    */
   objetChercheLe: timestamp("objet_cherche_le", { withTimezone: true }),

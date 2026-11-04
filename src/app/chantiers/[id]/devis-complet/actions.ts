@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { exigerGestionDevis } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
-import type { Ctx } from "@/server/repositories/context";
 import { retenirLecon } from "@/server/repositories/lecons-prix";
 import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
 import { PreuveRecenteExigeeError } from "@/server/preuve-recente";
@@ -32,16 +31,9 @@ import {
   majAutoliquidationDevis,
 } from "@/server/repositories/devis";
 import { logger } from "@/server/logger";
-import {
-  ligneDeSonEquipe,
-  ligneDeSonPartenaire,
-  montantDeLaMainOeuvre,
-  prixDesPartenaires,
-  type LigneDeMainOeuvre,
-  type TravailRepris,
-} from "@/lib/feuille-main-oeuvre";
+import { montantDeLaMainOeuvre, type ChoixDeMainOeuvre, type TravailRepris } from "@/lib/feuille-main-oeuvre";
 import { repartirMainOeuvre } from "@/lib/main-oeuvre-dictee";
-import { lireMarges, prixAchatCandidats } from "@/server/repositories/fournisseurs-partenaires";
+import { ligneDuChoix } from "@/server/chiffrage/main-oeuvre-choisie";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { preparerAudioEntrant } from "@/server/audio-entrant";
 import { lireRetouchesDictees } from "@/server/ai/services/retouches-devis-service";
@@ -187,39 +179,12 @@ export async function ajouterLigneAction(chantierId: string, tauxTva?: string | 
  * soir même. Son équipe (hommes × durée × prix du jour par homme), ou le prix
  * d'un de ses partenaires multiplié par sa marge.
  *
- * **Le prix se recalcule ICI, jamais sur la parole de l'écran** : les mêmes
- * fonctions qui ont construit la feuille (`ligneDeSonEquipe`,
- * `ligneDeSonPartenaire`) revalident ce qu'elle renvoie, à partir de ses
- * prix de ses partenaires lus en base (`CLAUDE.md` §3). Le tarif de son
- * équipe vaut comme un prix tapé sur une ligne : c'est le sien.
+ * **Le prix se recalcule au serveur, jamais sur la parole de l'écran**
+ * (`ligneDuChoix`, partagée avec la facture depuis le 4 novembre 2026).
  *
  * **Un refus se rend en valeur de retour** : le message d'une exception
  * levée ici n'arriverait jamais jusqu'à lui (`AGENTS.md`).
  */
-export type ChoixDeMainOeuvre =
-  | { qui: "equipe"; hommes: number; jours: number; tarif: string | null }
-  | { qui: "partenaire"; prixId: string; quantite: number };
-
-/** La ligne qu'un choix produit, recalculée sur ses prix ; un refus en mots sinon. */
-async function ligneDuChoix(ctx: Ctx, choix: ChoixDeMainOeuvre): Promise<LigneDeMainOeuvre | { raison: string }> {
-  if (choix.qui === "equipe") {
-    const hommes = Number(choix.hommes);
-    const jours = Number(choix.jours);
-    if (!(hommes > 0 && hommes <= 99 && jours > 0 && jours <= 365)) {
-      return { raison: "Le nombre d'hommes ou la durée ne se lit pas. Rechargez l'écran." };
-    }
-    // Le tarif est celui que la feuille portait au moment de l'appui : le sien
-    // repris, corrigé, ou effacé exprès (la ligne arrive alors à chiffrer).
-    // Le reprendre ici d'office contredirait ce qu'elle lui a montré.
-    return ligneDeSonEquipe(hommes, jours, choix.tarif);
-  }
-  const quantite = Number(choix.quantite);
-  if (!(quantite > 0 && quantite <= 99999)) return { raison: "Écrivez une quantité au-dessus de zéro." };
-  const [candidats, marges] = await Promise.all([prixAchatCandidats(ctx), lireMarges(ctx)]);
-  const prix = prixDesPartenaires(candidats, marges).find((p) => p.id === choix.prixId);
-  if (!prix) return { raison: "Ce prix de partenaire n'existe plus. Rechargez l'écran." };
-  return ligneDeSonPartenaire(prix, quantite);
-}
 
 export async function ajouterMainDoeuvreChoisieAction(
   chantierId: string,

@@ -3,6 +3,7 @@ import { colors, font } from "@/lib/design-tokens";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { patronQuiImporte } from "@/server/import/garde";
 import { envoiEnCours } from "@/server/repositories/pieces-importees";
+import { envoiAReprendre } from "@/lib/import-pieces";
 import ImporterPieces from "./ImporterPieces";
 import { garderLaPage } from "@/server/garde-page";
 
@@ -19,10 +20,10 @@ export default async function ImporterPage() {
   await garderLaPage();
   const ctx = await patronQuiImporte();
   if (!ctx) notFound();
-  // Un envoi déjà arrivé et pas rangé : l'écran reprend à la lecture, puis à
-  // la relecture. C'est par ici qu'il revient après avoir fermé l'appli.
-  const enCours = await envoiEnCours(ctx);
-  const reprise = enCours && !enCours.rangeLe && enCours.recues > 0 && enCours.recues >= enCours.attendues ? enCours.id : null;
+  // Un envoi déjà arrivé et pas rangé, ou ce qu'un rangement a laissé une
+  // fois ses six secondes passées : l'écran reprend à la lecture, puis à la
+  // relecture. C'est par ici qu'il revient après avoir fermé l'appli.
+  const reprise = envoiAReprendre(await envoiEnCours(ctx));
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>

@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import IconeTrait, { type NomIcone } from "@/components/atlas/IconeTrait";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
-import { colors, font, voile } from "@/lib/design-tokens";
+import RubanGlissant, { CASE_DU_RUBAN } from "@/components/atlas/RubanGlissant";
+import { colors, font } from "@/lib/design-tokens";
 import { enEuros, enMontant } from "@/lib/euros";
 import { LIBELLES_MOYEN, type MoyenDePaiement } from "@/lib/acomptes-facture";
 import { recuLePaiementAction } from "../actions";
@@ -96,25 +97,7 @@ export default function PaiementClient({
       <p id="paiement-comment" className={rubrique} style={styleRubrique}>
         Comment
       </p>
-      <div
-        role="group"
-        aria-labelledby="paiement-comment"
-        className="relative grid grid-cols-4 rounded-[18px] p-1"
-        style={{ backgroundColor: voile(colors.ink, 0.06) }}
-        data-atlas="paiement-moyen"
-      >
-        {/* Le fond qui glisse sous la case prise : la case se soulève, elle ne
-            s'encadre pas. Sans animation pour qui l'a demandé à son téléphone. */}
-        <span
-          aria-hidden="true"
-          className="absolute bottom-1 left-1 top-1 rounded-[14px] transition-transform duration-[240ms] ease-[cubic-bezier(0.22,0.61,0.36,1)] motion-reduce:transition-none"
-          style={{
-            width: "calc((100% - 8px) / 4)",
-            transform: `translateX(${rang * 100}%)`,
-            backgroundColor: colors.card,
-            boxShadow: `0 1px 2px ${voile(colors.ink, 0.08)}, 0 4px 12px ${voile(colors.ink, 0.08)}`,
-          }}
-        />
+      <RubanGlissant nombre={RUBAN.length} rang={rang} aria-labelledby="paiement-comment" repere="paiement-moyen">
         {RUBAN.map(({ moyen: m, icone }) => {
           const pris = m === moyen;
           return (
@@ -123,7 +106,7 @@ export default function PaiementClient({
               type="button"
               aria-pressed={pris}
               onClick={() => setMoyen(m)}
-              className="relative z-[1] flex min-h-[74px] flex-col items-center justify-center gap-[5px] text-[13.5px] font-semibold transition-colors duration-200 motion-reduce:transition-none"
+              className={`${CASE_DU_RUBAN} flex min-h-[74px] flex-col items-center justify-center gap-[5px] text-[13.5px] font-semibold transition-colors duration-200 motion-reduce:transition-none`}
               style={{ color: pris ? colors.ink : colors.inkSoft }}
               data-atlas={`paiement-moyen-${m}`}
             >
@@ -134,7 +117,7 @@ export default function PaiementClient({
             </button>
           );
         })}
-      </div>
+      </RubanGlissant>
 
       {moyen === "cheque" && (
         <div className="mt-4">

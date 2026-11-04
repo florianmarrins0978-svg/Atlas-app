@@ -49,6 +49,7 @@ export const QUESTIONS_PAR_ZONE: Record<string, [string, string][]> = {
     ["facture impayée, j'ai reçu le paiement", "chantiers-carte-impayee"],
     ["j'ai un rappel à facturer, comment je fais", "chantiers-carte-rappels"],
     ["comment faire disparaître une carte notification", "chantiers-carte-j-ai-vu"],
+    ["enlever le rappel du contrôle technique du camion", "chantiers-carte-j-ai-vu"],
     ["voir les autres cartes de notifications", "chantiers-cartes-toutes"],
     ["comment remplir le client d'un nouveau chantier", "nouveau-chantier-saisie"],
     ["je veux écrire mon devis à la main sans dicter", "chantier-rediger-main"],
