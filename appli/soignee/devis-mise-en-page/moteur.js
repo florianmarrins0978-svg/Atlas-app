@@ -10,8 +10,10 @@
    devis (vérifié hors du dépôt ; le résultat est dans TODO.md).
 
    `espaces` (facultatif) : la question « un espace sans changer de page ».
-   Un espace laisse la hauteur d'une ligne d'un seul libellé (11 + 19 points)
-   devant l'élément ; en haut d'une page il ne laisse rien, comme un saut. */
+   Chaque espace laisse la hauteur d'une ligne d'un seul libellé (11 + 19
+   points) devant l'élément, et il peut en mettre plusieurs d'affilée (sa
+   question du 4 novembre) : `espaces[cle]` en porte le nombre. En haut d'une
+   page ils ne laissent rien, comme un saut. */
 var MISE_EN_PAGE = (function () {
   "use strict";
   var H = 841.89, M = 31.2;
@@ -45,10 +47,11 @@ var MISE_EN_PAGE = (function () {
     function enHaut() {
       return pages.length > 1 && page.el.every(function (e) { return e.cle === "entete"; });
     }
-    function espaceDevant(cle) { return !sauts[cle] && espaces[cle] && !enHaut() ? ESPACE : 0; }
-    function poserEspace(cle) {
-      page.el.push({ cle: "espace", de: cle, h: ESPACE, dest: y + 11 });
-      y -= ESPACE;
+    function combien(cle) { return sauts[cle] ? 0 : (espaces[cle] || 0); }
+    function espaceDevant(cle) { return enHaut() ? 0 : combien(cle) * ESPACE; }
+    function poserEspace(cle, h) {
+      page.el.push({ cle: "espace", de: cle, n: combien(cle), h: h, dest: y + 11 });
+      y -= h;
     }
     page = { el: [], saut: null };
     pages.push(page);
@@ -61,7 +64,7 @@ var MISE_EN_PAGE = (function () {
       var h = 11 * r[2] + 19, cle = "ligne-" + i;
       var espace = espaceDevant(cle);
       if (sauts[cle] || y - espace - h < plancherLignes) { nouvelle(cle); poserTete(); }
-      else if (espace) poserEspace(cle);
+      else if (espace) poserEspace(cle, espace);
       page.el.push({ cle: cle, page: r[0], haut: r[1] + 11, h: h, dest: y + 11 });
       y -= h;
     });
@@ -69,14 +72,15 @@ var MISE_EN_PAGE = (function () {
     var fin = ["totaux", "notes", "modalites"];
     function poser(cle) {
       var b = BLOCS[cle];
-      if (espaceDevant(cle)) poserEspace(cle);
+      var espace = espaceDevant(cle);
+      if (espace) poserEspace(cle, espace);
       page.el.push({ cle: cle, page: src[cle][0], haut: src[cle][1] + 11, h: b.hauteur, dest: y + 11 });
       y -= b.prend;
     }
     function tient(de, a, plancher) {
       var yy = y;
       for (var i = de; i <= a; i++) {
-        if (!sauts[fin[i]] && espaces[fin[i]] && !(i === de && enHaut())) yy -= ESPACE;
+        if (!(i === de && enHaut())) yy -= combien(fin[i]) * ESPACE;
         if (yy - BLOCS[fin[i]].verifie < plancher) return false;
         yy -= BLOCS[fin[i]].prend;
       }

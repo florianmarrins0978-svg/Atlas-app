@@ -204,7 +204,7 @@
     <h2>1. Un espace</h2>
     <ul>
       <li><b>A.</b> Couper, c'est passer à la page suivante. C'est ce qui est codé.</li>
-      <li><b>B.</b> « Un espace ici » laisse la hauteur d'une ligne vide, sur la même page. Sur le PDF du client, c'est du blanc ; la puce dorée ne se voit que dans l'aperçu.</li>
+      <li><b>B.</b> « Un espace ici » laisse la hauteur d'une ligne vide, sur la même page. « Encore un espace » en ajoute une de plus, autant que la page en tient. La puce dit combien, sa croix les retire. Sur le PDF du client, c'est du blanc ; la puce dorée ne se voit que dans l'aperçu.</li>
     </ul>
     <ul class="conseil">
       <li>Mon conseil : <b>A</b>. Un blanc au milieu des prix se lit comme une ligne oubliée chez le client, et les pages se remplissent déjà sans trou.</li>
@@ -255,7 +255,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var top = (H - e.dest) / H * 100, hauteur = e.h / H * 100;
     if (e.cle === "espace") {
       return '<div class="espace-pose" style="top:' + top.toFixed(3) + '%;height:' + hauteur.toFixed(3) + '%">' +
-        '<span class="puce">Espace<button type="button" data-retirer-espace="' + e.de + '" aria-label="Retirer l\'espace">' +
+        '<span class="puce">' + (e.n > 1 ? e.n + " espaces" : "Espace") + '<button type="button" data-retirer-espace="' + e.de + '" aria-label="Retirer">' +
         '<svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></button></span></div>';
     }
     var decalage = (H - e.haut) / e.h * 100;
@@ -280,7 +280,7 @@ document.addEventListener("DOMContentLoaded", function () {
     defile.scrollTop = garde;
     if (!q1.querySelector(".barre")) q1.insertAdjacentHTML("beforeend", barre());
     document.querySelector("[data-mesure]").textContent = variante() === "b"
-      ? "Touche une ligne, puis « Un espace ici »."
+      ? "Touche une ligne, puis « Un espace ici », autant de fois que tu veux."
       : "Touche une ligne : seulement « Nouvelle page ici ».";
     peindreAction(pages);
   }
@@ -298,15 +298,31 @@ document.addEventListener("DOMContentLoaded", function () {
       return premier && premier.cle === choisi;
     });
     var b = variante() === "b";
+    deja.textContent = "Déjà en haut d'une page.";
     if (sauts[choisi]) {
       couper.hidden = false; couper.textContent = "Retirer le saut"; espacer.hidden = true; deja.hidden = true;
     } else if (enHaut) {
       couper.hidden = true; espacer.hidden = true; deja.hidden = false;
     } else {
-      couper.hidden = false; couper.textContent = b ? "Nouvelle page" : "Nouvelle page ici"; deja.hidden = true;
-      espacer.hidden = !b;
-      espacer.textContent = espaces[choisi] ? "Retirer l'espace" : "Un espace ici";
+      couper.hidden = false; couper.textContent = b ? "Nouvelle page" : "Nouvelle page ici";
+      /* Un espace de plus qui ne tiendrait pas enverrait la ligne en haut de
+         la page suivante, où il ne laisse rien : la page est pleine, c'est
+         « Nouvelle page » qu'il lui faut. */
+      var tient = b && tientEncoreUnEspace(choisi);
+      espacer.hidden = !tient;
+      espacer.textContent = espaces[choisi] ? "Encore un espace" : "Un espace ici";
+      deja.hidden = !(b && !tient);
+      if (b && !tient) deja.textContent = "Plus de place sur cette page.";
     }
+  }
+
+  function tientEncoreUnEspace(cle) {
+    var essai = {};
+    Object.keys(espaces).forEach(function (k) { essai[k] = espaces[k]; });
+    essai[cle] = (essai[cle] || 0) + 1;
+    return MISE_EN_PAGE.mettreEnPage(SRC, "propose", sauts, essai).some(function (p) {
+      return p.el.some(function (e) { return e.cle === "espace" && e.de === cle && e.n === essai[cle]; });
+    });
   }
 
   /* ─── Question 2 ─────────────────────────────────────────────────────── */
@@ -369,9 +385,10 @@ document.addEventListener("DOMContentLoaded", function () {
         if (sauts[choisi]) delete sauts[choisi]; else { sauts[choisi] = true; delete espaces[choisi]; }
         choisi = null; peindre(); return;
       }
+      /* La ligne reste choisie : chaque appui ajoute un espace de plus. */
       if (e.target.closest("[data-espacer]")) {
-        if (espaces[choisi]) delete espaces[choisi]; else espaces[choisi] = true;
-        choisi = null; peindre(); return;
+        espaces[choisi] = (espaces[choisi] || 0) + 1;
+        peindre(); return;
       }
       var m = e.target.closest("[data-touchable] .morceau[data-cle]");
       if (m) {
