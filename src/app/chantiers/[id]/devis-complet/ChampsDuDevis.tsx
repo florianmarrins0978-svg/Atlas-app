@@ -90,6 +90,7 @@ export function ZoneQuiGrandit({
   valeur,
   onChange,
   onFini,
+  onTouche,
   placeholder,
   aria,
   fige,
@@ -101,6 +102,8 @@ export function ZoneQuiGrandit({
   onChange: (v: string) => void;
   /** Reçoit ce que le CHAMP porte — voir `persisterLigne`, jamais un rendu. */
   onFini: (valeurDuChamp: string) => void;
+  /** Le champ prend la main : la note du devis y montre où le client la lira (0163). */
+  onTouche?: () => void;
   placeholder: string;
   aria: string;
   fige: boolean;
@@ -148,6 +151,7 @@ export function ZoneQuiGrandit({
         onChange(remonte ? remonte.valeur : e.target.value);
       }}
       onBlur={(e) => onFini(e.currentTarget.value)}
+      onFocus={onTouche}
       className={className}
       style={style}
     />

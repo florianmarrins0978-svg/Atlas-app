@@ -10,6 +10,11 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## LA NOTE DU DEVIS (4 novembre 2026), sur `lot/note-du-devis`
+
+**Les pièges :** la note se lit dans `devis.conditions_paiement`, celui que le PDF imprimait déjà ; elle n'est pas un champ neuf. Sur la page du client, ne jamais faire basculer `NoteDuDevis` d'un `div` à un `button` : le texte mesuré serait remplacé et la note longue ne s'ouvrirait plus ; et un texte coupé par `line-clamp` se mesure la coupe levée. Côté patron, `users` n'accorde ses colonnes qu'une à une à `atlas_app` : toute colonne neuve de `users` demande son `GRANT` dans sa migration (0163 en est l'exemple). `ARCHITECTURE.md` §552.
+
+---
 ## « MES PARTENAIRES » SUR LA MAIN D'ŒUVRE DICTÉE (4 novembre 2026)
 
 **Les pièges :** le prix d'un partenaire se relit TOUJOURS au serveur (`partenaireDuChoix`, `src/server/chiffrage/proposition-prix.ts`) ; la réponse ne porte qu'un identifiant et une quantité, et la quantité d'un prix à la journée est remplacée par les jours dictés (`quantiteDuPartenaire`). La carte (`MainOeuvreDeLaDictee.tsx`) lit son total sur la réponse enregistrée, pas sur la case : c'est ce qui garde « ce qu'il voit est ce qui part ». La liste des partenaires est une pièce commune (`PartenairesDeLaMainOeuvre.tsx`) : la feuille du devis et la carte la montent, une retouche se fait là. `ARCHITECTURE.md` §551.

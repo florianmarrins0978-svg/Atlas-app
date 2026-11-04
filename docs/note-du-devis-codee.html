@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — La note du devis, codée (4 novembre 2026)</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="la-note-du-devis-codée-4-novembre-2026">La note du devis, codée (4 novembre 2026)</h1>
+<p>Ta demande : <em>« tu peux coder ça, mais ne lance pas de batterie »</em>, après tes choix du jour sur les deux planches de la note (<code>appli/soignee/devis-note-client.html</code>, <code>appli/soignee/devis-note-avant-envoi.html</code>).</p>
+<p><strong>Où c'est :</strong> sur la branche <code>lot/note-du-devis</code>. <strong>Pas sur <code>main</code></strong> : le lot ajoute une case en base et touche la page devis de ton client, donc il lui faut la batterie complète avant d'arriver dans ton application. Elle n'a pas été jouée, à ta demande.</p>
+<h2 id="ce-qui-est-codé-point-par-point">Ce qui est codé, point par point</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Ton choix</th>
+<th>Verdict</th>
+<th>Fichier</th>
+</tr></thead><tbody>
+<tr>
+<td>La note sur la page du client, juste avant « J'accepte ce devis » (A)</td>
+<td>codé</td>
+<td><code>src/app/devis/[jeton]/NoteDuDevis.tsx</code>, <code>formulaire.tsx</code></td>
+</tr>
+<tr>
+<td>« À savoir : » sur une plage dorée, deux lignes au plus</td>
+<td>codé</td>
+<td><code>NoteDuDevis.tsx</code></td>
+</tr>
+<tr>
+<td>Plus longue, elle s'ouvre en entier d'un appui</td>
+<td>codé</td>
+<td><code>NoteDuDevis.tsx</code></td>
+</tr>
+<tr>
+<td>Au toucher de « Notes / conditions », une fenêtre de 8 secondes</td>
+<td>codé</td>
+<td><code>src/app/chantiers/[id]/devis-complet/OuLeClientLiraLaNote.tsx</code></td>
+</tr>
+<tr>
+<td>La vraie image de la page du client, la note entourée d'or</td>
+<td>codé</td>
+<td><code>public/images/devis-note-chez-le-client.jpg</code></td>
+</tr>
+<tr>
+<td>Une seule fois par compte, plus jamais ensuite</td>
+<td>codé, retenu en base</td>
+<td><code>drizzle/0163_aide_note_devis_vue.sql</code>, <code>src/server/repositories/aide-note-devis.ts</code></td>
+</tr>
+</tbody></table></div>
+<p>Rien de neuf à remplir pour toi : c'est le même champ « Notes / conditions », celui que le PDF imprimait déjà.</p>
+<h2 id="ce-qui-a-été-fait-autrement-et-pourquoi">Ce qui a été fait autrement, et pourquoi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li><strong>« Une seule fois » se retient dans la base, par compte</strong>, et pas dans le téléphone : sinon la fenêtre reviendrait sur ton PC, ou après un nettoyage du navigateur. Chaque compte de ton entreprise (un commercial, la facturation) la voit lui aussi une fois, puisqu'il écrit des devis.</li>
+<li><strong>L'image de la page du client est la même pour tous</strong> : c'est celle de la planche, ta note d'exemple entourée d'or. Une image vivante de CE devis n'est pas possible avant que le devis parte.</li>
+</ul>
+<h2 id="ce-que-jai-trouvé-en-le-codant-et-corrigé-avant-toi">Ce que j'ai trouvé en le codant, et corrigé avant toi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ol>
+<li><strong>La note longue restait coupée sans s'ouvrir.</strong> Le navigateur ne signale pas qu'un texte coupé de cette façon déborde, et en plus la note, une fois reconnue coupée, se remplaçait elle-même, ce qui annulait la reconnaissance. Corrigé, et vérifié à l'écran.</li>
+<li><strong>La fenêtre restait noire ses premières secondes</strong> : l'image arrivait après elle. Elle est maintenant chargée dès l'ouverture du devis.</li>
+<li><strong>L'application n'avait pas le droit de lire la nouvelle case</strong>, sur la table des comptes, protégée colonne par colonne. Le contrôle en base l'a vu rouge avant la correction.</li>
+</ol>
+<h2 id="ce-qui-a-été-éprouvé">Ce qui a été éprouvé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Contrôle</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td>Types, style</td>
+<td>verts</td>
+</tr>
+<tr>
+<td>La case « déjà vue » en base (<code>test-aide-note-devis-db</code>)</td>
+<td>4 sur 4, vue rouge avant le droit ajouté</td>
+</tr>
+<tr>
+<td>La note dans ce que la page du client reçoit (<code>test-envois-devis</code>)</td>
+<td>39 sur 39</td>
+</tr>
+<tr>
+<td>Le parcours dans un vrai navigateur (<code>test-note-du-devis-e2e</code>)</td>
+<td>5 sur 5 : la note courte, la longue et sa feuille, sans note, la fenêtre au premier toucher, puis plus jamais</td>
+</tr>
+<tr>
+<td>La page client existante (<code>test-devis-client-e2e</code>)</td>
+<td>verte</td>
+</tr>
+<tr>
+<td>Migrations, couches, code mort, tirets, flèches, chartes</td>
+<td>verts</td>
+</tr>
+<tr>
+<td>Écrans regardés ici, données de démonstration</td>
+<td>note courte, note longue et sa feuille, page à 360 et 390 px, fenêtre du patron</td>
+</tr>
+<tr>
+<td><strong>Batterie entière</strong></td>
+<td><strong>pas jouée</strong>, à ta demande</td>
+</tr>
+</tbody></table></div>
+<h2 id="ce-qui-reste-ouvert">Ce qui reste ouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li><strong>La batterie, puis <code>main</code></strong> : à lancer avec ton accord.</li>
+<li><strong>La place de la note sur le PDF</strong> (sous les totaux aujourd'hui) : la planche de mise en page du devis d'une autre session la touche.</li>
+</ul>
+</main>
+</body>
+</html>

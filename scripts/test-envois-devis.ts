@@ -211,6 +211,30 @@ async function main() {
     assert.ok(!/confidentiel/i.test(serialise), "un nom de chantier a fuité vers la page publique");
   });
 
+  // La note du devis, sa planche du 3 novembre 2026 : ce qu'il écrit dans
+  // « Notes / conditions » ne partait que sur le PDF, et le client acceptait
+  // depuis sa page sans l'avoir lu. Sous `atlas_app`, par le jeton, comme en
+  // production (une suite navigateur traverserait la RLS).
+  await test("la page du client reçoit la note du devis, et rien quand il n'en a pas écrit", async () => {
+    const avec = await contexteAvecDevis(`note-${Date.now()}@t.test`);
+    await devisRepo.mettreAJourEnTeteDevis(avec.ctx, avec.devisId, { conditionsPaiement: "  Libérez la place de parking sous le prunier.  " });
+    const envoiAvec = await creerEnvoi(
+      avec.ctx,
+      { chantierId: avec.chantierId, devisId: avec.devisId, canal: "sms", datesProposees: [dans(10)], contenuDevis: "devis" },
+      MAINTENANT
+    );
+    assert.strictEqual((await lireParJeton(envoiAvec.jeton, MAINTENANT))?.devis.note, "Libérez la place de parking sous le prunier.");
+
+    const sans = await contexteAvecDevis(`sans-note-${Date.now()}@t.test`);
+    await devisRepo.mettreAJourEnTeteDevis(sans.ctx, sans.devisId, { conditionsPaiement: "   " });
+    const envoiSans = await creerEnvoi(
+      sans.ctx,
+      { chantierId: sans.chantierId, devisId: sans.devisId, canal: "sms", datesProposees: [dans(10)], contenuDevis: "devis" },
+      MAINTENANT
+    );
+    assert.strictEqual((await lireParJeton(envoiSans.jeton, MAINTENANT))?.devis.note, null);
+  });
+
   await test("un lien expiré est signalé comme tel", async () => {
     const { ctx, chantierId, devisId } = await contexteAvecDevis(`exp-${Date.now()}@t.test`);
     const envoi = await creerEnvoi(

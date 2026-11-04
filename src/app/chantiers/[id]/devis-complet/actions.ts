@@ -31,6 +31,7 @@ import {
   majAutoliquidationDevis,
 } from "@/server/repositories/devis";
 import { logger } from "@/server/logger";
+import { marquerAideNoteDevisVue } from "@/server/repositories/aide-note-devis";
 import { montantDeLaMainOeuvre, type ChoixDeMainOeuvre, type TravailRepris } from "@/lib/feuille-main-oeuvre";
 import { repartirMainOeuvre } from "@/lib/main-oeuvre-dictee";
 import { ligneDuChoix } from "@/server/chiffrage/main-oeuvre-choisie";
@@ -469,6 +470,16 @@ export async function retirerAcompteAction(devisId: string, rang: number) {
   const ctx = await getCurrentCtx();
   await exigerGestionDevis(ctx, "retirer un acompte du devis");
   return retirerAcompte(ctx, devisId, rang);
+}
+
+/**
+ * La fenêtre « Ta note : ton client la lira ici » vient d'être montrée : elle
+ * ne reviendra plus pour ce compte (sa décision du 4 novembre 2026, 0163).
+ * La personne vient de la session, jamais de l'écran.
+ */
+export async function aideNoteDevisVueAction(): Promise<void> {
+  const ctx = await getCurrentCtx();
+  await marquerAideNoteDevisVue(ctx.utilisateurId);
 }
 
 export async function majEnTeteDevisAction(

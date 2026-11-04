@@ -44,6 +44,9 @@ const TRACES = {
   // Les pastilles « Trier par » de Terminés (sa planche du 3 novembre 2026, B).
   calendrier: <><rect x="3.5" y="5" width="17" height="15.5" rx="2" /><path d="M3.5 10h17M8 3v4M16 3v4" /></>,
   personne: <><circle cx="12" cy="8" r="3.5" /><path d="M5 20a7 7 0 0 1 14 0" /></>,
+  // La note du devis, « À savoir » (planche du 3 novembre 2026) : trois lignes
+  // d'écriture, la dernière plus courte, comme `note` dans le kit des planches.
+  note: <path d="M5 5.5h14M5 10h14M5 14.5h9" />,
 } as const;
 
 export type NomIcone = keyof typeof TRACES;

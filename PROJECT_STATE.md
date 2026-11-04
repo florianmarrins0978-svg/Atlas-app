@@ -3,6 +3,11 @@
 **Dernière mise à jour :** 2026-11-04, `main` (`0de64c8c`, batterie entière jouée : 552 suites base sur 554 et 209 navigateur sur 209, les deux rouges `test-maquettes-hors-production` et `test-stockage-banc` le sont aussi sur `main`),
 dernière migration `drizzle/0158_cles_composites_effacent_comme_leur_lien.sql` (réunie le 3 novembre pour la batterie commune, avec `0157_banque_lecture_refusee.sql` et `0156_pieces_importees_adresse_lue.sql`) ; `0155_part_de_main_doeuvre_sur_la_ligne.sql` (le devis) sur `main` depuis le 3 novembre ; `0159_rappels_vehicules_vus.sql` (le « J'ai vu » des contrôles des véhicules) et `0160_envoi_facture_destinataire_tape.sql` (la facture d'un client supprimé) sur `main` le 4 novembre
 
+
+---
+## LA NOTE DU DEVIS, CODÉE (4 novembre 2026), PAS SUR `main`
+
+Branche `lot/note-du-devis`, d'après `appli/soignee/devis-note-client.html` et `devis-note-avant-envoi.html` (*« tu peux coder ça, mais ne lance pas de batterie »*). La note de « Notes / conditions » paraît sur la page du client, juste avant « J'accepte ce devis » (`NoteDuDevis.tsx`) ; au premier toucher du champ, une fenêtre de 8 s montre au patron où son client la lira, une seule fois par compte (`OuLeClientLiraLaNote.tsx`, migration `0163`). `ARCHITECTURE.md` §552. Suites du domaine et suite navigateur `test-note-du-devis-e2e` jouées ; **niveau 3 (migration, devis public), batterie non jouée à sa demande : pas sur `main`**. Retour : `docs/note-du-devis-codee.md`.
 ---
 ## « MES PARTENAIRES » SUR LA MAIN D'ŒUVRE DICTÉE, CODÉ (4 novembre 2026)
 
