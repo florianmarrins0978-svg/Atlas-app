@@ -36,6 +36,9 @@
       la signature (114 points aujourd'hui, sur CHAQUE page) ne se garde que
       sur la dernière, et seulement ce qu'elle prend (38 points de moins) ;
     les notes ne laissent jamais les modalités seules avec la signature ;
+    le pied (mention et signature) SUIT les modalités au lieu d'être ancré au
+      bas de la page : sa demande du 4 novembre, « presque collé » ;
+    une phrase, à l'ouverture de l'aperçu, dit qu'on peut couper ;
     et lui coupe où il veut : une ligne, les totaux, les notes, les
       modalités. Le saut se pose DEVANT un élément, pas à une hauteur : s'il
       ajoute des lignes au-dessus, son saut reste devant la même ligne.
@@ -46,6 +49,16 @@
 
 .surtitre { margin: -12px 0 14px; font-size: 13px; font-weight: 600; letter-spacing: 0.24em;
             text-transform: uppercase; color: var(--atlas-or); }
+
+/* La phrase qui dit qu'on peut couper : sa demande du 4 novembre 2026,
+   « sinon il ne va jamais le faire ». Elle part au premier saut ou sur
+   « Compris », et ne revient plus. */
+.astuce { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; padding: 10px 8px 10px 14px;
+          border-radius: var(--r-plage, 14px); background: color-mix(in srgb, var(--atlas-or) 13%, transparent); }
+.astuce > .ico { width: 20px; height: 20px; flex: none; color: var(--atlas-orTexte); }
+.astuce p { flex: 1; margin: 0; font-size: 14.5px; line-height: 1.38; color: var(--atlas-ink); }
+.astuce button { min-height: 40px; padding: 0 12px; border-radius: 20px; font-size: 14.5px; font-weight: 600;
+                 color: var(--atlas-orTexte); }
 
 /* Les pages, recomposées à partir des vraies photos du PDF. */
 .pages { display: grid; gap: 14px; }
@@ -138,10 +151,12 @@
     <ul>
       <li>Les pages du milieu se remplissent jusqu'au numéro de page. La place de la signature ne se garde qu'en dernière page, et seulement celle qu'elle prend.</li>
       <li>Tes notes ne laissent jamais les modalités seules avec la signature.</li>
+      <li>La signature suit tes modalités, juste dessous, à 4 lignes comme à 30 : plus de trou sous l'IBAN.</li>
       <li>Ton devis de 4 lignes tient sur une page. À 30 lignes, les totaux restent avec le tableau.</li>
     </ul>
     <h2>Quand tu veux couper</h2>
     <ul>
+      <li>À l'ouverture de l'aperçu, une phrase le dit. Elle part au premier saut ou sur « Compris », et ne revient plus.</li>
       <li>Touche une ligne, les totaux, les notes ou les modalités, puis « Nouvelle page ici ».</li>
       <li>Le saut se retire d'un appui sur sa croix. « Tout remettre » les retire tous.</li>
       <li>Le saut reste devant la ligne choisie : si tu ajoutes des lignes au-dessus, il la suit.</li>
@@ -167,7 +182,13 @@ var MISE_EN_PAGE = (function () {
   var HAUT_SUITE = H - M - 20;            /* pageSuivante() */
   var PLANCHER_AUJOURDHUI = M + 114;      /* PLANCHER, sur chaque page */
   var PLANCHER_MILIEU = M + 14;           /* au-dessus du numéro de page */
-  var PLANCHER_DERNIERE = M + 54 + 22;    /* le pied mesuré, posé au-dessus du numéro */
+  /* Le pied SUIT les modalités, à l'écart qu'il a sur le devis de 4 lignes :
+     sa demande du 4 novembre 2026, « que ce soit presque collé ». Ancré au bas
+     de la page, il laissait un trou sous l'IBAN dès 20 lignes. Il doit encore
+     tenir au-dessus du numéro de page : 72 points, plus cet écart. */
+  var ECART_PIED = 3.6;
+  var BAS_PIED = M + 10.8;
+  var PLANCHER_DERNIERE = BAS_PIED + 72 + ECART_PIED;
   var BLOCS = {
     totaux: { verifie: 128, prend: 138, hauteur: 138 },
     notes: { verifie: 86, prend: 98, hauteur: 98 },
@@ -242,7 +263,7 @@ var MISE_EN_PAGE = (function () {
       }
     }
 
-    var piedHaut = regle === "aujourdhui" ? 152 : 114;
+    var piedHaut = regle === "aujourdhui" ? 152 : y - ECART_PIED;
     page.el.push({ cle: "pied", page: src.pied, haut: 152, h: 72, dest: piedHaut });
     return pages;
   }
@@ -259,6 +280,7 @@ document.addEventListener("DOMContentLoaded", function () {
   var etat = "4";
   var sauts = {};
   var choisi = null;
+  var astuceVue = false;
 
   function tete() {
     return '<div class="tete-ronds">' +
@@ -304,6 +326,11 @@ document.addEventListener("DOMContentLoaded", function () {
       var total = pages.length + (src.pages - src.pagesDevis);
       var html = tete();
       if (regle === "propose") {
+        if (!astuceVue) {
+          html += '<div class="astuce"><svg class="ico" aria-hidden="true"><use href="#i-info"/></svg>' +
+            '<p>Touchez une ligne pour commencer une nouvelle page à cet endroit.</p>' +
+            '<button type="button" data-compris>Compris</button></div>';
+        }
         html += '<button type="button" class="tout-remettre" data-tout-remettre' + (Object.keys(sauts).length ? "" : " hidden") + '>Tout remettre</button>';
       }
       html += '<div class="pages">' + pages.map(function (p, i) {
@@ -348,7 +375,8 @@ document.addEventListener("DOMContentLoaded", function () {
     var etatChoisi = e.target.closest(".pl-etats button[data-etat]");
     if (etatChoisi) {
       etat = etatChoisi.getAttribute("data-etat");
-      sauts = {}; choisi = null;
+      /* Sur la planche, chaque devis rouvre l'aperçu : la phrase revient. */
+      sauts = {}; choisi = null; astuceVue = false;
       document.querySelectorAll(".defile").forEach(function (d) { d.scrollTop = 0; });
       peindre();
       return;
@@ -357,8 +385,9 @@ document.addEventListener("DOMContentLoaded", function () {
     if (retirer) { delete sauts[retirer.getAttribute("data-retirer")]; choisi = null; peindre(); return; }
     if (e.target.closest("[data-tout-remettre]")) { sauts = {}; choisi = null; peindre(); return; }
     if (e.target.closest("[data-fermer]")) { choisi = null; peindre(); return; }
+    if (e.target.closest("[data-compris]")) { astuceVue = true; peindre(); return; }
     if (e.target.closest("[data-couper]")) {
-      if (sauts[choisi]) delete sauts[choisi]; else sauts[choisi] = true;
+      if (sauts[choisi]) delete sauts[choisi]; else { sauts[choisi] = true; astuceVue = true; }
       choisi = null;
       peindre();
       return;
