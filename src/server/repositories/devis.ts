@@ -22,7 +22,9 @@ import {
 } from "@/lib/acomptes-devis";
 import { AUCUNE_PROMESSE, type PromesseDuDevis } from "@/lib/acomptes-facture";
 import type { Ctx } from "./context";
-import { genererPdfDevis, type DevisPdfData } from "../pdf/devis-pdf";
+import { composerDevisPdf, genererPdfDevis, type DevisPdfData } from "../pdf/devis-pdf";
+import { basculerSaut, cleDeSaut } from "@/lib/sauts-de-page";
+import { PIED_DOCUMENT } from "../pdf/document-commun";
 import { enregistrerObjet } from "../storage";
 import { ecrireNumero, repartChaqueAnnee } from "@/lib/numero-documents";
 import { lignesDuDocument, lignesEnAttenteDePrix } from "@/lib/preparation-devis";
@@ -390,6 +392,7 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
             tauxTva: l.tauxTva,
             mainDoeuvre: l.mainDoeuvre,
             partMainDoeuvre: l.partMainDoeuvre,
+            lignePrixId: l.id,
             ordre: i,
           }))
         );
@@ -419,6 +422,9 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
         ...totaux,
         titre: dernier?.titre ?? null,
         conditionsPaiement: dernier?.conditionsPaiement ?? null,
+        // Ses sauts de page passent à la correction, comme son titre et ses
+        // notes : ils désignent des lignes de prix, qui sont les mêmes.
+        sautsDePage: dernier?.sautsDePage ?? [],
         // Ses lignes de main d'œuvre sont celles du chantier : elles passent
         // d'une version à l'autre avec les lignes, et « dont » les suit.
         mainDoeuvreHt: mainDoeuvreDesLignes(lignesPrixActuelles),
@@ -440,6 +446,9 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
           tauxTva: l.tauxTva,
           mainDoeuvre: l.mainDoeuvre,
           partMainDoeuvre: l.partMainDoeuvre,
+          // La ligne de prix d'où elle vient : c'est elle qu'un saut de page
+          // désigne, puisque cette ligne-ci sera réécrite (migration 0159).
+          lignePrixId: l.id,
           ordre: i,
         }))
       );
@@ -712,7 +721,11 @@ function donneesPdfDuDevis(
     totalTtc: d.totalTtc,
     reductionPourcent: d.reductionPourcent,
     reductionMontant: d.reductionMontant,
+    // Ses sauts de page, et ce qu'ils désignent : une ligne se reconnaît par sa
+    // ligne de prix, à défaut (devis d'avant la migration 0159) par elle-même.
+    sautsDePage: d.sautsDePage,
     lignes: lignes.map((l) => ({
+      id: l.lignePrixId ?? l.id,
       libelle: l.libelle,
       quantite: l.quantite,
       prixUnitaire: l.prixUnitaire,
@@ -797,12 +810,17 @@ async function habillageDuDevis(
 // clé de stockage pour un brouillon (seul le PDF du devis réellement envoyé est
 // conservé comme référence officielle — voir envoyerDevis).
 export async function genererPdfPourApercu(ctx: Ctx, devisId: string): Promise<Uint8Array> {
+  return (await composerLApercu(ctx, devisId)).pdf;
+}
+
+/** L'aperçu composé, et sa trace : où chaque ligne et chaque bloc est tombé. */
+async function composerLApercu(ctx: Ctx, devisId: string) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [d] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
     if (!d) throw new Error("Devis introuvable");
     const lignes = await lignesDuDevis(tx, devisId);
     const habillage = await habillageDuDevis(tx, ctx.entrepriseId, d);
-    return genererPdfDevis(
+    const compose = await composerDevisPdf(
       donneesPdfDuDevis(
         d,
         lignes,
@@ -812,6 +830,62 @@ export async function genererPdfPourApercu(ctx: Ctx, devisId: string): Promise<U
       ),
       habillage
     );
+    return { ...compose, devis: d };
+  });
+}
+
+/**
+ * Où chaque élément du devis est tombé, pour l'aperçu qu'il touche : sa planche
+ * du 3 novembre 2026, « Touchez une ligne pour commencer une nouvelle page à
+ * cet endroit ». **La mise en page se lit dans la trace du VRAI PDF**, celui
+ * que l'aperçu peint : l'écran ne la recalcule pas, il ne pourrait que se
+ * tromper d'une ligne.
+ *
+ * Un devis envoyé ne se met plus en page : il est parti tel quel, avec ses
+ * sauts (`modifiable` faux, aucun élément).
+ */
+export async function miseEnPageDuDevis(ctx: Ctx, devisId: string) {
+  const { trace, devis: d } = await composerLApercu(ctx, devisId);
+  const modifiable = d.statut === "brouillon";
+  return {
+    modifiable,
+    sauts: d.sautsDePage,
+    hauteurPage: PIED_DOCUMENT.hauteurPage,
+    elements: modifiable ? trace.elements.filter((e) => cleDeSaut(e.cle) !== null) : [],
+  };
+}
+
+/**
+ * Pose ou retire un saut de page devant un élément — « Nouvelle page ici » et
+ * sa croix. **Un devis envoyé refuse**, en valeur de retour : il est parti
+ * tel quel, et le déclencheur d'immuabilité le refuserait de toute façon.
+ */
+export async function basculerSautDePage(
+  ctx: Ctx,
+  devisId: string,
+  cle: string
+): Promise<{ ok: true; sauts: string[] } | { ok: false; raison: string }> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [d] = await tx.select({ statut: devis.statut, sauts: devis.sautsDePage }).from(devis).where(eq(devis.id, devisId)).limit(1);
+    if (!d) return { ok: false as const, raison: "Ce devis n'existe plus." };
+    if (d.statut !== "brouillon") return { ok: false as const, raison: "Ce devis est envoyé : sa mise en page ne change plus." };
+    const sauts = basculerSaut(d.sauts, cle);
+    await tx.update(devis).set({ sautsDePage: sauts }).where(eq(devis.id, devisId));
+    return { ok: true as const, sauts };
+  });
+}
+
+/** « Tout remettre » : la mise en page d'Atlas, sans aucun de ses sauts. */
+export async function retirerLesSautsDePage(
+  ctx: Ctx,
+  devisId: string
+): Promise<{ ok: true } | { ok: false; raison: string }> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [d] = await tx.select({ statut: devis.statut }).from(devis).where(eq(devis.id, devisId)).limit(1);
+    if (!d) return { ok: false as const, raison: "Ce devis n'existe plus." };
+    if (d.statut !== "brouillon") return { ok: false as const, raison: "Ce devis est envoyé : sa mise en page ne change plus." };
+    await tx.update(devis).set({ sautsDePage: [] }).where(eq(devis.id, devisId));
+    return { ok: true as const };
   });
 }
 
