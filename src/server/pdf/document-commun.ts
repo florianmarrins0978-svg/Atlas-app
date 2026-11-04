@@ -169,11 +169,28 @@ const MARGE = 31.2; // 1,1 cm
 const DROITE = LARGEUR - MARGE;
 
 /**
- * Hauteur réservée en bas de chaque page : mention légale, cadre de signature
- * et le trait qui les sépare du contenu. Rien ne descend en dessous.
+ * Le bas du contenu sur une page : juste au-dessus du numéro de page.
+ *
+ * **Plus de réserve pour le pied sur chaque page — sa planche du 3 novembre
+ * 2026, codée le 4** (`appli/soignee/devis-mise-en-page.html`). L'ancien
+ * plancher gardait vides les 114 points du bas de CHAQUE page pour la mention
+ * et le cadre de signature, qui ne se dessinent que sur la dernière : son devis
+ * de 4 lignes laissait ses modalités seules en page 2, sous un grand vide, pour
+ * 15,5 points. Le pied prend désormais sa place là où il se pose, et nulle part
+ * ailleurs (`poserLePied`).
  */
-const HAUTEUR_PIED = 114;
-const PLANCHER = MARGE + HAUTEUR_PIED;
+const PLANCHER = MARGE + 14;
+
+/**
+ * Le pied se pose SOUS la dernière ligne écrite, à cette distance de son trait :
+ * sa demande du 4 novembre 2026, *« que ce soit presque collé »*. Ancré au bas
+ * de la page, il laissait un trou sous l'IBAN dès 20 lignes. 22,4 points, c'est
+ * l'écart qu'il avait sur son devis de 4 lignes, celui qu'il a montré en modèle.
+ */
+const ECART_SOUS_LE_CONTENU = 22.4;
+
+/** Le pied ne descend pas plus bas : le numéro de page vit dessous. */
+const BAS_DU_PIED = MARGE + 9;
 
 /** Le modèle écrit ses montants avec `toLocaleString('fr-FR', …)` : « 1 400,00 € ». */
 const SYMBOLES: Record<string, string> = { EUR: "€" };
@@ -261,6 +278,7 @@ export type TexteTrace = {
   gras: boolean;
 };
 export type TraitTrace = { y: number; de: number; a: number; epaisseur: number; page: number };
+export type ElementTrace = { cle: string; page: number; haut: number; bas: number };
 export type CadreTrace = { x: number; y: number; largeur: number; hauteur: number; page: number };
 export type TraceDocument = {
   pages: number;
@@ -277,6 +295,15 @@ export type TraceDocument = {
    * sur les coordonnées, passerait toutes les suites au vert.
    */
   logos: { x: number; y: number; largeur: number; hauteur: number }[];
+  /**
+   * Où chaque élément du corps est tombé : chaque ligne (`ligne:<id>`, ou
+   * `ligne-<rang>` sans identifiant), les totaux, les notes, les modalités.
+   * C'est ce que l'aperçu du devis lit pour savoir quelle ligne il a touchée :
+   * la règle de mise en page reste ICI, l'écran ne la refait pas.
+   */
+  elements: ElementTrace[];
+  /** Le pied posé : sa page, son haut (cadre de signature compris), son bas. */
+  pied: { page: number; haut: number; bas: number } | null;
 };
 
 type Contexte = {
@@ -429,6 +456,12 @@ function pageSuivante(ctx: Contexte): number {
 // ─── Ce que toute pièce porte, et ce qui la distingue ───────────────────────
 
 export type LigneDocument = {
+  /**
+   * L'identifiant de la ligne, quand elle en a un : c'est lui qu'un saut de
+   * page désigne (`ligne:<id>`), pour qu'il suive sa ligne quand d'autres
+   * s'ajoutent au-dessus.
+   */
+  id?: string | null;
   libelle: string;
   quantite: string;
   prixUnitaire: string;
@@ -732,6 +765,14 @@ export type OptionsDocument = {
   blocsTexte?: [string, string][];
   /** Mention légale du pied. Elle diffère du tout au tout entre les deux pièces. */
   mentionLegale: (data: DonneesDocument) => string;
+  /**
+   * Les sauts de page qu'il a posés, devant ce qu'ils désignent : `ligne:<id>`
+   * pour une ligne, `totaux`, `notes`, `modalites` (sa planche du 3 novembre
+   * 2026, « Nouvelle page ici »). Un saut se pose DEVANT un élément, jamais à
+   * une hauteur : des lignes ajoutées au-dessus ne le déplacent pas. Une clé
+   * qui ne désigne plus rien ne fait rien. Absents : la mise en page seule.
+   */
+  sauts?: readonly string[];
   /** Le devis se signe, la facture se règle. */
   cadreSignature: boolean;
   /**
@@ -823,10 +864,63 @@ export type OptionsDocument = {
 };
 
 
+/**
+ * Compose le document, et le recompose UNE fois si la fin tombe mal.
+ *
+ * **Deux défauts que la première composition ne peut pas voir d'avance** (sa
+ * planche du 3 novembre 2026) : le pied qui ne tient plus sous les modalités,
+ * et les modalités parties seules en haut d'une page, leurs notes restées sur
+ * la page d'avant. Dans les deux cas, les notes passent avec les modalités :
+ * un saut de plus, posé par la même porte que les siens (`sauts`), et la
+ * composition recommence. Mesurer la fin avant de l'écrire aurait demandé de
+ * recopier la hauteur de chaque bloc à côté de son dessin : deux règles pour
+ * une seule mise en page (`CLAUDE.md` §3).
+ */
 export async function composerDocument(
   donnees: DonneesDocument,
   options: OptionsDocument
 ): Promise<{ pdf: Uint8Array; trace: TraceDocument }> {
+  const siens = options.sauts ?? [];
+  const premiere = await composerUneFois(donnees, options, new Set(siens));
+  const saut = sautQuiManque(premiere.trace, premiere.piedDeborde, new Set(siens));
+  if (!saut) return { pdf: premiere.pdf, trace: premiere.trace };
+  const seconde = await composerUneFois(donnees, options, new Set([...siens, saut]));
+  return { pdf: seconde.pdf, trace: seconde.trace };
+}
+
+/**
+ * Le saut à ajouter pour que la fin tombe bien, ou `null`.
+ *
+ * Les notes accompagnent les modalités : jamais l'IBAN seul au-dessus de la
+ * signature. Si les notes n'existent pas, ou qu'il a lui-même coupé avant les
+ * modalités, c'est le dernier bloc qui passe, seul.
+ */
+export function sautQuiManque(trace: TraceDocument, piedDeborde: boolean, siens: ReadonlySet<string>): string | null {
+  const ou = (cle: string) => trace.elements.find((e) => e.cle === cle);
+  const notes = ou("notes");
+  const modalites = ou("modalites");
+  const pageDuPied = trace.pied?.page ?? null;
+  // Les modalités en haut de la page du pied, leurs notes restées avant.
+  const seules =
+    !!notes &&
+    !!modalites &&
+    !siens.has("modalites") &&
+    modalites.page === pageDuPied &&
+    notes.page < modalites.page &&
+    trace.elements.filter((e) => e.page === modalites.page)[0]?.cle === "modalites";
+  if (seules && !siens.has("notes")) return "notes";
+  if (!piedDeborde) return null;
+  if (notes && modalites && notes.page === modalites.page && !siens.has("modalites") && !siens.has("notes")) return "notes";
+  const dernier = trace.elements.at(-1);
+  if (!dernier || siens.has(dernier.cle)) return null;
+  return dernier.cle;
+}
+
+async function composerUneFois(
+  donnees: DonneesDocument,
+  options: OptionsDocument,
+  sauts: ReadonlySet<string>
+): Promise<{ pdf: Uint8Array; trace: TraceDocument; piedDeborde: boolean }> {
   // **L'en-tête se compose UNE fois, ici, par la fonction que l'écran lit
   // aussi** (`enTeteDuDocument`, 26 octobre 2026) : « Sur vos papiers », dans
   // Mon entreprise, dessine ces mêmes lignes dans le même ordre.
@@ -861,7 +955,7 @@ export async function composerDocument(
     numeroPage: 1,
     ...polices,
     teintes: teintesDe(options.allure),
-    trace: { pages: 1, textes: [], traits: [], cadres: [], fonds: [], logos: [] },
+    trace: { pages: 1, textes: [], traits: [], cadres: [], fonds: [], logos: [], elements: [], pied: null },
   };
   poserPapier(ctx);
 
@@ -869,9 +963,32 @@ export async function composerDocument(
   const yEnTete = HAUTEUR - MARGE - 22;
   let y = yEnTete;
 
-  /** Descend de `hauteur`, en changeant de page si le pied est atteint. */
+  /**
+   * Vrai tant que rien n'est écrit sous l'en-tête d'une page neuve : un saut
+   * posé là ne ferait qu'ouvrir une page blanche.
+   */
+  let enHautDePage = false;
+
+  /** Descend de `hauteur`, en changeant de page si le bas est atteint. */
   const place = (hauteur: number): void => {
-    if (y - hauteur < PLANCHER) y = pageSuivante(ctx);
+    if (y - hauteur < PLANCHER) {
+      y = pageSuivante(ctx);
+      enHautDePage = true;
+    }
+  };
+
+  /** Le saut qu'il a posé devant `cle` : une page neuve, sauf en haut d'une page. */
+  const sauterSiDemande = (cle: string): boolean => {
+    if (!sauts.has(cle) || enHautDePage) return false;
+    y = pageSuivante(ctx);
+    enHautDePage = true;
+    return true;
+  };
+
+  /** Ce que l'aperçu lira : la place d'un élément, à 11 points au-dessus de sa ligne de base. */
+  const consigner = (cle: string, yDebut: number) => {
+    ctx.trace.elements.push({ cle, page: ctx.numeroPage, haut: yDebut + 11, bas: y + 11 });
+    enHautDePage = false;
   };
 
   // ─── Le logo, au-dessus du nom ──────────────────────────────────────────
@@ -1071,6 +1188,7 @@ export async function composerDocument(
     { supplement: true, lignes: papier.lignes.filter((p) => Boolean(p.ligne.supplement)) },
   ].filter((b) => b.lignes.length > 0);
   const montrerBlocs = blocs.length > 1 && !options.sansChiffrage;
+  let rangDeLaLigne = 0;
 
   for (const bloc of blocs) {
     // Le titre du bloc des suppléments se REDESSINE à chaque nouvelle page :
@@ -1087,6 +1205,7 @@ export async function composerDocument(
     if (montrerBlocs && bloc.supplement) {
       if (y - 34 < PLANCHER) {
         y = pageSuivante(ctx);
+        enHautDePage = true;
         enTeteTableau();
       }
       titreBloc(false);
@@ -1094,6 +1213,8 @@ export async function composerDocument(
 
     for (const p of bloc.lignes) {
       const ligne = p.ligne;
+      const cle = ligne.id ? `ligne:${ligne.id}` : `ligne-${rangDeLaLigne}`;
+      rangDeLaLigne += 1;
       // Sans colonnes de prix, le libellé dispose de toute la feuille.
       const largeurLibelle = options.sansChiffrage ? DROITE - MARGE : largeurLibelleChiffree;
       const lignesLibelle = enLignes(ligne.libelle, ctx.sans, 9, largeurLibelle);
@@ -1101,11 +1222,16 @@ export async function composerDocument(
       // Une ligne ne se coupe jamais en deux : elle passe entière à la page
       // suivante, en-tête de colonnes redessiné pour qu'on sache encore ce
       // qu'on lit.
-      if (y - hauteurLigne < PLANCHER) {
+      if (sauterSiDemande(cle)) {
+        enTeteTableau();
+        titreBloc(true);
+      } else if (y - hauteurLigne < PLANCHER) {
         y = pageSuivante(ctx);
+        enHautDePage = true;
         enTeteTableau();
         titreBloc(true);
       }
+      const yDebutLigne = y;
       lignesLibelle.forEach((l, i) => ecrire(ctx, l, MARGE, y - i * 11, { taille: 9 }));
       if (!options.sansChiffrage) {
         // « 3 », jamais « 3.00 » ; l'unité dans SA colonne, centrée — et « u »
@@ -1130,6 +1256,7 @@ export async function composerDocument(
       y -= Math.max(lignesLibelle.length, 1) * 11 + 7;
       trait(ctx, y, 0.7, ctx.teintes.traitClair);
       y -= 12;
+      consigner(cle, yDebutLigne);
     }
   }
 
@@ -1159,7 +1286,9 @@ export async function composerDocument(
     sousLeTotalHt.length * 16 +
     apresTotal.reduce((acc, l) => acc + (l.style === "grand" ? 22 : 16), 0) +
     (options.tampon ? 26 : 0);
+  sauterSiDemande("totaux");
   place(hauteurBloc);
+  const yDebutTotaux = y;
   y -= 6;
   const gaucheTotaux = DROITE - 220;
   const yHautTotaux = y;
@@ -1278,6 +1407,7 @@ export async function composerDocument(
     }
   }
   y = yBasTotaux;
+  consigner("totaux", yDebutTotaux);
   }
 
   // ─── Conditions et modalités de paiement ────────────────────────────────
@@ -1285,9 +1415,10 @@ export async function composerDocument(
 
   // Les blocs supplémentaires — matériel, photos — passent avant les notes :
   // ils décrivent le chantier, là où les notes commentent.
-  for (const [intertitre, contenu] of options.blocsTexte ?? []) {
+  for (const [rangDuBloc, [intertitre, contenu]] of (options.blocsTexte ?? []).entries()) {
     const lignesBloc = enLignes(contenu, ctx.sans, 9, DROITE - MARGE);
     place(14 + lignesBloc.length * 12);
+    const yDebutBloc = y;
     ecrireEspace(ctx, intertitre, MARGE, y, APPROCHE_ETIQUETTE, etiquetteBloc);
     y -= 14;
     for (const l of lignesBloc) {
@@ -1295,6 +1426,7 @@ export async function composerDocument(
       y -= 12;
     }
     y -= 12;
+    consigner(`bloc-${rangDuBloc}`, yDebutBloc);
   }
 
   // Ses notes en maigre, puis les conditions réglées en gras (13 septembre
@@ -1304,7 +1436,9 @@ export async function composerDocument(
   if (data.conditionsPaiement || notesEnGras.length) {
     const lignesNotes = data.conditionsPaiement ? enLignes(data.conditionsPaiement, ctx.sans, 9, DROITE - MARGE) : [];
     const lignesGras = notesEnGras.flatMap((phrase) => enLignes(phrase, ctx.sansGras, 9, DROITE - MARGE));
+    sauterSiDemande("notes");
     place(14 + (lignesNotes.length + lignesGras.length) * 12);
+    const yDebutNotes = y;
     ecrireEspace(ctx, options.titreNotes, MARGE, y, APPROCHE_ETIQUETTE, etiquetteBloc);
     y -= 14;
     for (const l of lignesNotes) {
@@ -1316,19 +1450,22 @@ export async function composerDocument(
       y -= 12;
     }
     y -= 12;
+    consigner("notes", yDebutNotes);
   }
 
   // Les informations — « Pour information, montant de la main d'œuvre TTC :
   // 513,00 € » — en petit, sous les notes : elles renseignent, elles
   // n'engagent pas.
-  for (const info of options.informations ?? []) {
+  for (const [rangInfo, info] of (options.informations ?? []).entries()) {
     const lignesInfo = enLignes(info, ctx.sans, 8, DROITE - MARGE);
     place(lignesInfo.length * 11 + 4);
+    const yDebutInfo = y;
     for (const l of lignesInfo) {
       ecrire(ctx, l, MARGE, y, { taille: 8, couleur: ctx.teintes.coordonnees });
       y -= 11;
     }
     y -= 4;
+    consigner(`information-${rangInfo}`, yDebutInfo);
   }
 
   // Les modalités de paiement suivent le chiffrage : sur une fiche de chantier,
@@ -1346,16 +1483,18 @@ export async function composerDocument(
     const lignesConsigne = data.consignePaiement
       ? enLignes(data.consignePaiement, ctx.sans, 9, DROITE - MARGE)
       : [];
-    // **38 EXACTEMENT quand il n'y a que l'IBAN**, et pas une hauteur calculée
-    // qui vaudrait 50 : c'est le cas du devis, et `place()` décide d'un saut de
-    // page. Une valeur différente ferait basculer certains devis sur une page de
-    // plus — un document que le client a déjà reçu, changé par un lot qui ne le
-    // vise pas. La règle du dépôt est que le défaut ne bouge pas d'un octet.
+    // **38 quand il n'y a que l'IBAN : ce que le bloc prend vraiment**
+    // (l'intertitre, puis deux lignes). La formule d'à côté le surestime de
+    // 12 points, et `place()` décide d'un saut de page sur ce chiffre : c'est
+    // exactement ces points-là qui envoyaient ses modalités seules en page 2
+    // (sa capture du 3 novembre 2026).
     const hauteurBloc =
       data.consignePaiement || data.ordreDuCheque
         ? 26 + (data.entrepriseIban ? 24 : 0) + lignesConsigne.length * 12 + (data.ordreDuCheque ? 12 : 0)
         : 38;
+    sauterSiDemande("modalites");
     place(hauteurBloc);
+    const yDebutModalites = y;
     ecrireEspace(ctx, "MODALITÉS DE PAIEMENT", MARGE, y, APPROCHE_ETIQUETTE, etiquetteBloc);
     y -= 14;
     if (data.entrepriseIban) {
@@ -1370,15 +1509,12 @@ export async function composerDocument(
     }
     if (data.ordreDuCheque) {
       ecrire(ctx, phraseDuCheque(data.ordreDuCheque), MARGE, y, { taille: 9 });
+      y -= 12;
     }
+    consigner("modalites", yDebutModalites);
   }
 
   // ─── Pied : mention légale à gauche, cadre de signature à droite ────────
-  // Ancré en bas de la dernière page plutôt qu'à la suite du contenu : le cadre
-  // de signature d'un devis se cherche toujours au même endroit.
-  const yPied = MARGE + 92;
-  trait(ctx, yPied + 22, 0.7, ctx.teintes.traitClair);
-
   // Mot pour mot la mention du modèle du patron : c'est celle qu'il a déjà
   // envoyée à ses clients, et Atlas ne doit pas en dire autre chose.
   // **La décennale et le médiateur s'ajoutent ICI, et nulle part ailleurs**
@@ -1397,9 +1533,26 @@ export async function composerDocument(
       mediateurCoordonnees: data.entrepriseMediateurCoordonnees,
     }),
   ];
-  paragraphes
-    .flatMap((p) => enLignes(p, ctx.sans, 7.8, 290))
-    .forEach((l, i) => ecrire(ctx, l, MARGE, yPied - i * 10, { taille: 7.8, couleur: ctx.teintes.legal }));
+  const lignesDuPied = paragraphes.flatMap((p) => enLignes(p, ctx.sans, 7.8, 290));
+
+  // **Le pied SUIT la dernière ligne écrite**, à `ECART_SOUS_LE_CONTENU` de
+  // son trait : sa demande du 4 novembre 2026, *« que ce soit presque
+  // collé »*. Il était ancré au bas de la dernière page, pour que le cadre de
+  // signature se cherche toujours au même endroit ; à 20 lignes, cela laissait
+  // un trou sous l'IBAN, et c'est ce trou qu'il a vu. S'il ne tient plus
+  // au-dessus du numéro de page, `composerDocument` recommence avec un saut
+  // (`sautQuiManque`) : rien ne se dessine jamais par-dessus le numéro.
+  const ecritSurLaPage = ctx.trace.textes.filter((t) => t.page === ctx.numeroPage).map((t) => t.y);
+  const derniereLigne = ecritSurLaPage.length ? Math.min(...ecritSurLaPage) : y;
+  const yPied = derniereLigne - ECART_SOUS_LE_CONTENU - 22;
+  const basDuPied =
+    Math.min(yPied - (lignesDuPied.length - 1) * 10, options.cadreSignature ? yPied - 38 : Number.POSITIVE_INFINITY) - 3;
+  const piedDeborde = basDuPied < BAS_DU_PIED;
+  ctx.trace.pied = { page: ctx.numeroPage, haut: yPied + (options.cadreSignature ? 26 : 22), bas: basDuPied };
+  trait(ctx, yPied + 22, 0.7, ctx.teintes.traitClair);
+  lignesDuPied.forEach((l, i) =>
+    ecrire(ctx, l, MARGE, yPied - i * 10, { taille: 7.8, couleur: ctx.teintes.legal })
+  );
 
   // Le cadre de signature n'appartient qu'au devis : une facture ne se signe
   // pas, elle se règle. En mettre un inviterait le client à un geste qui n'a
@@ -1531,7 +1684,7 @@ export async function composerDocument(
   // facture, la feuille de chantier : un seul endroit, parce qu'un document
   // oublié ne se verrait pas — c'est chez le client qu'on l'apprendrait, comme
   // le 31 août 2026 (`src/server/pdf/proteger-pdf.ts`).
-  return { pdf: await protegerContreModification(await pdfDoc.save()), trace: ctx.trace };
+  return { pdf: await protegerContreModification(await pdfDoc.save()), trace: ctx.trace, piedDeborde };
 }
 
 /**
@@ -1560,7 +1713,11 @@ async function joindreLAttestation(pdfDoc: PDFDocument, attestation: Attestation
   page.drawImage(image, { x: (LARGEUR - largeur) / 2, y: (HAUTEUR - hauteur) / 2, width: largeur, height: hauteur });
 }
 
-/** Le bas réservé au pied de page, pour que les contrôles parlent des mêmes chiffres. */
+/**
+ * Le bas du contenu (au-dessus du numéro de page), la marge et la page, pour que
+ * les contrôles parlent des mêmes chiffres. Le pied, lui, se lit dans la trace
+ * (`trace.pied`) : il suit le contenu et n'a plus de place fixe.
+ */
 export const PIED_DOCUMENT = { plancher: PLANCHER, marge: MARGE, hauteurPage: HAUTEUR };
 
 /** La palette des pièces, exposée pour qu'un contrôle la constate. */

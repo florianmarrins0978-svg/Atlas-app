@@ -99,12 +99,23 @@ async function main() {
     assert.ok(texte.includes("Médiateur de la consommation"), "le médiateur n'est pas sur la facture");
   });
 
-  await cas("elles sont ÉCRITES EN BAS, pas au milieu du devis", async () => {
+  await cas("elles sont ÉCRITES DANS LE PIED, sous le devis, pas au milieu", async () => {
+    // **Le pied suit le contenu depuis le 4 novembre 2026** (sa planche de la
+    // mise en page, « presque collé ») : il n'est plus au bas de la page, donc
+    // une hauteur fixe ne dit plus rien. Ce qui compte n'a pas changé : la
+    // mention vit dans le pied, sous la dernière ligne du devis, jamais parmi
+    // ses notes.
     const { trace } = await composerDevisPdf({ ...DEVIS, ...FIGE });
     const assurance = trace.textes.find((t) => t.contenu.includes("Assurance décennale"));
     assert.ok(assurance, "la mention n'a pas été tracée");
-    // Le pied commence à MARGE + 92 ; rien de ce bloc ne monte au-dessus.
-    assert.ok(assurance.y < 160, `la mention est écrite trop haut (y = ${assurance.y})`);
+    assert.ok(trace.pied, "aucun pied posé");
+    assert.equal(assurance.page, trace.pied.page, "la mention n'est pas sur la page du pied");
+    assert.ok(
+      assurance.y <= trace.pied.haut && assurance.y >= trace.pied.bas,
+      `la mention est hors du pied (y = ${assurance.y}, pied de ${trace.pied.bas} à ${trace.pied.haut})`
+    );
+    const corps = trace.textes.filter((t) => t.page === trace.pied!.page && t.y > trace.pied!.haut);
+    assert.ok(corps.length > 0 && corps.every((t) => t.y > assurance.y), "une ligne du devis passe sous la mention");
   });
 
   console.log("\n=== Les articles 9 et 11 se remplissent dans l'annexe ===");

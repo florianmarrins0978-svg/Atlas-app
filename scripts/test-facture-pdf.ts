@@ -206,7 +206,7 @@ async function main() {
       if (estDuPied) continue;
       assert.ok(
         t.y >= PIED_DOCUMENT.plancher,
-        `« ${t.contenu} » (page ${t.page}) descend sous le plancher réservé au pied.`
+        `« ${t.contenu} » (page ${t.page}) descend sous le plancher, sur le numéro de page.`
       );
     }
   });

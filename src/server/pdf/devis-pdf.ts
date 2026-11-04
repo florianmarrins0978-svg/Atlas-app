@@ -49,6 +49,12 @@ import {
 export type LigneDevisPdf = LigneDocument;
 
 export type DevisPdfData = DonneesDocument & {
+  /**
+   * Les sauts de page qu'il a posés dans l'aperçu (`devis.sauts_de_page`) :
+   * `ligne:<id>`, `totaux`, `notes`, `modalites`. Ils partent avec le devis
+   * envoyé, comme ses lignes.
+   */
+  sautsDePage?: readonly string[] | null;
   numeroCommercial: string;
   numeroVersion: number;
   statut: "brouillon" | "envoye";
@@ -288,6 +294,9 @@ export async function composerDevisPdf(
   const sansPrix = Boolean(options.sansChiffrage);
   const notes = blocNotes(data, sansPrix);
   return composerDocument({ ...data, conditionsPaiement: notes.sien }, {
+    // La feuille de chantier ne reprend pas ses sauts : ils mettent en page le
+    // devis qu'il envoie, pas la feuille de travail qu'on en tire.
+    sauts: sansPrix ? [] : (data.sautsDePage ?? []),
     sansChiffrage: options.sansChiffrage,
     // Les conditions réglées, en gras, sous ses notes.
     notesEnGras: notes.reglees,
