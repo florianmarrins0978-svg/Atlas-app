@@ -10,7 +10,12 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
-## « J'AI VU » SUR LES CONTRÔLES DES VÉHICULES (3 novembre 2026), pas sur `main`
+## LA FACTURE ET TERMINÉS DE LA PLANCHE (4 novembre 2026), sur `main`
+
+**Les pièges :** les feuilles TVA, Main d'œuvre et Remise vivent dans `src/components/atlas/` et servent le devis ET la facture ; une retouche se fait là, jamais dans une copie (`ARCHITECTURE.md` §549). Sur la facture, `poserUneLigne` revalide le taux par `tauxTvaValide` et `ajouterMainDoeuvreDeFacture` refuse une facture arrêtée (`factureEncoreEnBrouillon`). « dont main d'œuvre HT » y reste un montant, il ne suit pas un prix changé ensuite (`TODO.md`). Le client supprimé : `coordonneeDeCetEnvoi` (`src/lib/coordonnee-de-cet-envoi.ts`) décide, l'adresse tapée n'est écrite que dans `envois_factures.destinataire` (0160), jamais sur la fiche (§548). Le ruban glissant d'un choix à deux ou trois cases est `RubanGlissant` (§547) : le paiement et le sens du tri le prennent, ne pas en redessiner un.
+
+---
+## « J'AI VU » SUR LES CONTRÔLES DES VÉHICULES (3 novembre 2026), sur `main` le 4 novembre
 
 Le « vu » retient la DATE LIMITE vue (`controle_technique_vu_pour` et ses deux voisines, migration 0159), jamais l'instant du geste : la comparer à la date du contrôle suffit, et une nouvelle date le remet à neuf sans rien effacer (`ARCHITECTURE.md` §546). **Les pièges :** la liste et la fiche des véhicules lisent `rappelsDesVehicules`, sans filtre ; seul l'accueil passe par `rappelsDeLAccueil`. Mettre le filtre dans la première cacherait l'état du camion sur sa fiche. À l'écran, la clé d'une carte porte sa date (`cleDuRappel`) : revenue rouge, ou posée sur une nouvelle date, ce n'est plus la carte qu'il a fait partir. Le jour se prend au serveur (`jourIso` dans `marquerRappelVehiculeVuAction`), et `refusDuVu` rejoue la règle sur la ligne verrouillée. Suites : `test-vehicules` (la règle), `test-vehicules-rls` (sous `atlas_app`), `test-rappel-vehicule-vu-e2e` (son geste ; la date dépassée s'écrit en base, elle ne s'attend pas).
 
@@ -20,7 +25,7 @@ Le « vu » retient la DATE LIMITE vue (`controle_technique_vu_pour` et ses deux
 « Annuler » dure six secondes et ce qui reste se reprend (`ARCHITECTURE.md` §544). **Les pièges :** un envoi ne connaît qu'un rangement, ne jamais en ranger un second en place (`emporterLesRestes` : le second rangement, `creerEnvoi` et `rangerTableau` emportent ce qui reste dans l'envoi neuf) ; les comptes d'`envoiEnCours` disent ce qui RESTE, une pièce rangée n'y entre plus, et un envoi rangé n'attend que ce qu'il porte ; `annulerRangement` rend `{ ok }` ou `{ ok: false, pourquoi }`, et un `assert.ok` dessus passe toujours. Au navigateur, « Annuler » s'appuie dans ses six secondes : la fiche se regarde APRÈS. Pour voir une suite navigateur rouge avant de coder, une suite base aux types encore faux casse la construction (`next build` vérifie aussi `scripts/`) : la mettre de côté le temps de bâtir.
 
 ---
-## LE NOM DU CLIENT SUR SES ANCIENS DEVIS (3 novembre 2026), pas sur `main`
+## LE NOM DU CLIENT SUR SES ANCIENS DEVIS (3 novembre 2026), sur `main` le 4 novembre
 
 Le cœur est `clientDuTexte` (`src/lib/import-pieces.ts`) : le haut de la pièce (avant le titre du tableau), les civilités par `pastilleDuMot` et les catégories par `categorieDuClient` (`src/lib/civilite.ts`, une seule règle), le nom de son entreprise passé par `traiterPiecesEnAttente`. Le piège à connaître : **« M », « MR » et « MM » sans point sont aussi des unités**, et ne comptent que suivis d'une adresse ; **et l'en-tête de l'artisan porte sa propre forme juridique**, tenu par trois conditions (une adresse avant, une adresse après, pas de SIRET derrière). Chaque garde est tenue par un cas de `test-import-pieces.ts` qui rougit sans elle (vérifié en retirant chacune). Ce qui reste : `TODO.md`, première entrée. §545.
 
