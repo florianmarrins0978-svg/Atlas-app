@@ -3,6 +3,11 @@
 **Dernière mise à jour :** 2026-10-29, `main` (`bdea976e`, batterie verte hors deux suites de fin de mois rouges sur `main` aussi),
 dernière migration `drizzle/0158_cles_composites_effacent_comme_leur_lien.sql` (réunie le 3 novembre pour la batterie commune, avec `0157_banque_lecture_refusee.sql` et `0156_pieces_importees_adresse_lue.sql`) ; `0155_part_de_main_doeuvre_sur_la_ligne.sql` (le devis) sur `main` depuis le 3 novembre
 
+
+---
+## LA NOTE DU DEVIS, CODÉE (4 novembre 2026), PAS SUR `main`
+
+Branche `lot/note-du-devis`, d'après `appli/soignee/devis-note-client.html` et `devis-note-avant-envoi.html` (*« tu peux coder ça, mais ne lance pas de batterie »*). La note de « Notes / conditions » paraît sur la page du client, juste avant « J'accepte ce devis » (`NoteDuDevis.tsx`) ; au premier toucher du champ, une fenêtre de 8 s montre au patron où son client la lira, une seule fois par compte (`OuLeClientLiraLaNote.tsx`, migration `0159`). `ARCHITECTURE.md` §544. Suites du domaine et suite navigateur `test-note-du-devis-e2e` jouées ; **niveau 3 (migration, devis public), batterie non jouée à sa demande : pas sur `main`**. Retour : `docs/note-du-devis-codee.md`.
 ---
 ## SUPPRIMER UN CLIENT REMARCHE SUR SA BASE (1er novembre 2026)
 

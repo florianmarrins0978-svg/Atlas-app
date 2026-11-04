@@ -479,6 +479,12 @@ export type EnvoiPourClient = {
     clientCivilite: CiviliteClient | null;
     adresseChantier: string | null;
     lignes: { libelle: string; quantite: string; prixUnitaire: string; montant: string }[];
+    /**
+     * Ce que le patron a écrit dans « Notes / conditions », figé avec le devis
+     * envoyé ; `null` s'il n'a rien écrit. Le PDF l'imprimait seul : le client
+     * acceptait depuis sa page sans l'avoir lu (sa planche du 3 novembre 2026).
+     */
+    note: string | null;
   };
 };
 
@@ -686,6 +692,7 @@ export async function lireParJeton(
           prixUnitaire,
           montant,
         })),
+        note: d.conditionsPaiement?.trim() || null,
       },
     };
   });

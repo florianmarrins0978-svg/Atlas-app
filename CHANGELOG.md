@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-11-04
+
+- **La note du devis, chez le client et montrée au patron** (ses planches du 3 novembre, tranchées le 4 ; sur `lot/note-du-devis`, pas sur `main`). Ce qu'il écrit dans « Notes / conditions » paraît sur la page que son client ouvre depuis le SMS, juste avant « J'accepte ce devis », en deux lignes qui s'ouvrent en entier d'un appui ; au premier toucher du champ, une fenêtre de 8 secondes lui montre la page du client, la note entourée d'or, puis plus jamais pour ce compte (migration 0159). Évite : un client qui accepte sans avoir lu la consigne de son artisan, et un patron qui ne sait pas où elle sera lue. Corrigés en chemin, avant lui : la note longue coupée qui ne s'ouvrait pas, l'image de la fenêtre arrivée après elle, et le droit de l'application sur la colonne neuve de `users`. `ARCHITECTURE.md` §544.
+
 ## 2026-11-03
 
 - **Planche « Terminés » : le Filtre posé en trois teintes, et « Trier par » en deux façons plus jolies (la liste à coches, les pastilles), ce qu'on choisit en vert**, et le nom du client sur chaque ligne, en titre ou sous la désignation (sa demande du 3 novembre : *« visible mais pas noir »*, *« vert quand on les sélectionne »*). Rien dans `src/`.

@@ -75,6 +75,12 @@ export const users = pgTable("users", {
   // vit dans l'ensemble « Moi » du sommaire. `null` = origine, celle du départ —
   // ce qui distingue « jamais choisi » de « a choisi origine ».
   charte: text("charte"),
+  /**
+   * Quand la fenêtre « Ta note : ton client la lira ici » lui a été montrée
+   * (migration 0159) ; NULL : jamais. Une seule fois par compte, sa décision du
+   * 4 novembre 2026 : « ensuite la fenêtre ne revient plus jamais ».
+   */
+  aideNoteDevisVueLe: timestamp("aide_note_devis_vue_le", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

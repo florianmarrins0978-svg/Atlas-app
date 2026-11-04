@@ -9,7 +9,7 @@ import {
   ligneOuverteAEcrire,
   ligneOuverteAPoser,
 } from "@/lib/ligne-ouverte-devis";
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { colors, font, voile } from "@/lib/design-tokens";
 import {
@@ -89,6 +89,7 @@ import {
   type ChoixDeMainOeuvre,
   retirerLigneAction,
   majEnTeteDevisAction,
+  aideNoteDevisVueAction,
   ajouterCategorieTvaAction,
   changerTauxCategorieAction,
   retirerCategorieTvaAction,
@@ -97,6 +98,8 @@ import {
   changerTauxAcompteAction,
   retirerAcompteAction,
 } from "./actions";
+import OuLeClientLiraLaNote, { IMAGE_NOTE_CHEZ_LE_CLIENT } from "./OuLeClientLiraLaNote";
+import { preload } from "react-dom";
 
 // **Le devis, seul sur sa page — et à l'image du papier.**
 //
@@ -192,6 +195,12 @@ type Props = {
    * échouerait en silence.
    */
   emetteurModifiable: boolean;
+  /**
+   * La fenêtre « Ta note : ton client la lira ici » n'a jamais été montrée à
+   * ce compte (migration 0159) : elle se montre au premier toucher de « Notes /
+   * conditions », puis plus jamais, sa décision du 4 novembre 2026.
+   */
+  aideNoteAMontrer: boolean;
   clientId: string | null;
   /**
    * Où mène la flèche, et ce qu'elle annonce — décidé par la page
@@ -433,6 +442,23 @@ export default function DevisCompletClient(props: Props) {
     }
   }
   const [conditions, setConditions] = useState(props.conditionsPaiement);
+  // Une fois montrée, elle ne revient pas sur cette page non plus : le serveur
+  // ne la rendra plus, mais la page déjà chargée, elle, ne le sait pas.
+  const aideNoteEncoreDue = useRef(props.aideNoteAMontrer);
+  // Chargée dès l'écran, et seulement s'il doit la voir : au toucher du
+  // champ, la fenêtre a huit secondes, pas de quoi attendre une image.
+  if (props.aideNoteAMontrer) preload(IMAGE_NOTE_CHEZ_LE_CLIENT, { as: "image" });
+  const [aideNoteOuverte, setAideNoteOuverte] = useState(false);
+  const fermerAideNote = useCallback(() => setAideNoteOuverte(false), []);
+  const montrerOuLeClientLiraLaNote = () => {
+    if (!aideNoteEncoreDue.current) return;
+    aideNoteEncoreDue.current = false;
+    setAideNoteOuverte(true);
+    // Marquée au moment où elle se montre : il peut quitter l'écran pendant
+    // les huit secondes. Un échec ici ne retient rien, elle reviendrait au
+    // prochain devis, ce qui ne coûte qu'une fenêtre.
+    void aideNoteDevisVueAction().catch((e) => console.error("La fenêtre de la note n'a pas été notée vue", e));
+  };
 
   // Son titre — « Aménagement du jardin ». Jamais d'office ; vide, rien ne
   // s'imprime (sa demande du 14 septembre 2026).
@@ -2008,6 +2034,8 @@ export default function DevisCompletClient(props: Props) {
         onFermer={() => setFeuille(null)}
       />
 
+      <OuLeClientLiraLaNote ouverte={aideNoteOuverte} onFermer={fermerAideNote} />
+
       {/* --- Notes, modalités --------------------------------------------- */}
       <section className="mt-9">
         <Intertitre>Notes / conditions</Intertitre>
@@ -2020,6 +2048,7 @@ export default function DevisCompletClient(props: Props) {
           // fait apparaître deux fois sur le devis du client.
           placeholder="Accès par le portail de gauche, cour à dégager la veille. Devis gratuit et sans engagement."
           onChange={setConditions}
+          onTouche={fige ? undefined : montrerOuLeClientLiraLaNote}
           onFini={(duChamp) => majEnTeteDevisAction(props.devisId, { conditionsPaiement: duChamp })}
           className="block w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none focus:bg-[var(--voile-champ)]"
           style={{ color: colors.ink, fontSize: "16px", lineHeight: 1.5 }}

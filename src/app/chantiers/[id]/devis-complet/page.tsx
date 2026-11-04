@@ -17,6 +17,7 @@ import { unLienExistePourLeDevis } from "@/server/repositories/envois-devis";
 import { leconsComparables } from "@/server/repositories/lecons-prix";
 import { rappelDePrix } from "@/lib/lecons-prix";
 import DevisCompletClient from "./DevisCompletClient";
+import { aideNoteDevisAMontrer } from "@/server/repositories/aide-note-devis";
 import { PARAM_PROVENANCE, PARAM_RELANCE, jourDeRelecture, lienRetourDeRelecture } from "@/lib/retour-au-planning";
 import { retourDuDevis } from "@/lib/retour-du-devis";
 import { estUneEntreprise } from "@/lib/civilite";
@@ -156,6 +157,8 @@ export default async function DevisCompletPage({
         key={`${devisRow.id}-${chantier.autoliquidation ? "sans-tva" : "tva"}`}
         chantierId={id}
         emetteurModifiable={await estProprietaire(ctx)}
+        // Une seule fois par compte, sa décision du 4 novembre 2026 (0159).
+        aideNoteAMontrer={await aideNoteDevisAMontrer(ctx.utilisateurId)}
         sousTraitance={chantier.autoliquidation}
         // Pour un client Entreprise, hors franchise : son choix B, décoché
         // d'office. La règle de « Entreprise » est celle de `civilite.ts`.

@@ -17,6 +17,7 @@ import Calendrier from "@/components/atlas/Calendrier";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import { colors, font, surPlein, voile } from "@/lib/design-tokens";
 import { CocheFaite } from "@/components/atlas/LettreDuClient";
+import NoteDuDevis from "./NoteDuDevis";
 
 export default function FormulaireReponse({
   envoi,
@@ -489,6 +490,10 @@ export default function FormulaireReponse({
           **Le délai se compte sur le PREMIER jour** : c'est celui où les
           travaux commencent, et le seul qui puisse tomber avant la fin des
           quatorze jours. */}
+      {/* **La note de l'artisan, juste avant l'accord** — son choix A du
+          4 novembre 2026 : lue au moment où l'on s'engage, comme sous le
+          « Bon pour accord » du devis d'un confrère qu'il avait montré. */}
+      {envoi.devis.note && <NoteDuDevis note={envoi.devis.note} />}
       {!montrerRetractation && !envoi.devis.autoliquidation && (
         <p className="mx-0.5 mt-1.5 text-[13px] leading-[1.36]" style={{ color: colors.inkSoft }}>
           {DROIT_DE_RETRACTATION}

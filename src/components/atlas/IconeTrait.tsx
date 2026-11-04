@@ -41,6 +41,9 @@ const TRACES = {
   // La carte du ruban « Comment », et « Une ligne » de l'avoir (planche de la facture).
   carte: <><rect x="3" y="6" width="18" height="12" rx="2" /><path d="M3 10h18M7 14.5h3" /></>,
   liste: <path d="M8.5 6.5H20M8.5 12H20M8.5 17.5H20M4 6.5h.6M4 12h.6M4 17.5h.6" />,
+  // La note du devis, « À savoir » (planche du 3 novembre 2026) : trois lignes
+  // d'écriture, la dernière plus courte, comme `note` dans le kit des planches.
+  note: <path d="M5 5.5h14M5 10h14M5 14.5h9" />,
 } as const;
 
 export type NomIcone = keyof typeof TRACES;

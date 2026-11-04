@@ -10,6 +10,11 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## LA NOTE DU DEVIS (4 novembre 2026), sur `lot/note-du-devis`
+
+**Les pièges :** la note se lit dans `devis.conditions_paiement`, celui que le PDF imprimait déjà ; elle n'est pas un champ neuf. Sur la page du client, ne jamais faire basculer `NoteDuDevis` d'un `div` à un `button` : le texte mesuré serait remplacé et la note longue ne s'ouvrirait plus ; et un texte coupé par `line-clamp` se mesure la coupe levée. Côté patron, `users` n'accorde ses colonnes qu'une à une à `atlas_app` : toute colonne neuve de `users` demande son `GRANT` dans sa migration (0159 en est l'exemple). `ARCHITECTURE.md` §544.
+
+---
 ## LE DEVIS ET LA FACTURE DE LA PLANCHE, SUR `main` (3 novembre 2026)
 
 Un seul lot, à sa demande : les feuilles du devis (TVA, acompte, remise, main d'œuvre, partenaires, répartition), la croix, l'éclairage de ce qui arrive, l'ordre des lignes, et les huit écrans de la facture (`ARCHITECTURE.md` §536 et §537). Migration 0155 (`part_main_doeuvre`, nullable). Une seule pastille pour les deux (`src/components/atlas/PastilleAjout.tsx`). **Ce qui attend :** rien de lui sur la note vocale. Son « Réessayer » est codé sur la fiche client et l'ancien écran `/note-vocale` est retiré (son adresse renvoie à la fiche client, `ARCHITECTURE.md` §543) ; reste la batterie entière du lot réuni, puis `main`. **Les pièges :** une transcription qui échoue rend `echec` (« La transcription n'a pas abouti. … »), jamais `transcription_absente`, sinon « Réessayer » ne paraît pas ; une phrase d'échec de `DevisDepuisDictee` dit ce qui s'est passé, jamais « Réessayez », le geste est dessous. Pour poster un son dans une suite, la route `/api/notes-vocales/[chantierId]` (l'import de fichier est parti). Plus aucun écran ne fait réécouter une note : la question est ouverte dans `TODO.md` (« écouter sa note depuis la fiche client ? »).
