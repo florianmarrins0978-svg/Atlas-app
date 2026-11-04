@@ -36842,3 +36842,24 @@ Contrôles : `test-coordonnee-de-cet-envoi` (la règle, sans base), `test-coordo
 **Un défaut trouvé en écrivant le contrôle.** `ajouterLigneDeFacture` écrivait le taux reçu tel quel : un « 8,5 » tapé dans la feuille faisait lever PostgreSQL (la virgule), une exception que l'écran n'aurait jamais pu dire. Le taux se relit maintenant au serveur par `tauxTvaValide`, la fonction de la feuille, et un taux illisible se refuse avec ses mots (`poserUneLigne`, qui sert la ligne vide comme la main d'œuvre).
 
 Contrôles : `test-feuilles-du-taux` (pur : le refus d'un taux déjà ouvert nomme la pièce, l'aperçu de la remise), `test-feuille-main-oeuvre` (pur : l'addition à « dont », sa borne, l'à chiffrer), `test-ajouts-de-la-facture-db` (sous `atlas_app` : la ligne de son équipe, ordinaire sans devis et en plus sur une facture née d'un devis, « dont » qui s'ajoute, le taux relu, la facture partie qui refuse), `test-ajouts-de-la-facture-e2e` (le geste, de Terminés à la feuille, et le Total TTC qui suit), `test-facture-sans-devis-e2e` adapté (la TVA et la remise passent par leur feuille).
+
+## §550 : « Mes partenaires » sur la main d'œuvre dictée : un prix touché devient la main d'œuvre, relu en base
+
+**Sa demande du 4 novembre 2026** : *« quand je dicte deux jours deux hommes, et que l'application me demande ligne main d'œuvre ou répartir, ça serait bien que j'aie l'encadré Mes partenaires qui s'affiche également »*. La planche `appli/soignee/main-oeuvre-dictee-partenaires.html` proposait A (voir leurs prix) et B (prendre un prix) ; sa réponse : « B ».
+
+| | |
+|---|---|
+| **la réponse porte le partenaire** | `ChoixMainOeuvre.partenaire` (`{ prixId, quantite }`), dans la même valeur JSON de `precisions_chantier` : aucune migration. Absent, c'est son équipe. `lireChoix` écarte un partenaire abîmé sans perdre le reste du choix |
+| **la question porte de quoi le montrer** | `QuestionMainOeuvre.jours` et `.partenaires` (les prix de `prixDesPartenaires`, lus comme la feuille du devis les lit). Sa phrase vient de `questionDeLaMainOeuvre`, la même au serveur et à l'écran |
+| **une seule règle pour trois lecteurs** | `mainOeuvreDUnPartenaire` (la ligne, son montant, le calcul en clair) et `quantiteDuPartenaire` (à la journée, les jours du chantier ; sinon ce qu'il tape) dans `src/lib/feuille-main-oeuvre.ts`. La feuille du devis, la carte « Avant de chiffrer » et le serveur (`partenaireDuChoix`) les lisent |
+| **le serveur ne croit pas l'écran** | `propositionAvecMainOeuvre` relit le prix sous son entreprise et rejoue la quantité : une quantité à la journée envoyée par l'écran est remplacée par les jours dictés, un prix d'une autre entreprise ou retiré rend la main d'œuvre « à chiffrer », et la phrase le dit. Le conducteur d'un engin ne se retire pas d'un partenaire : il ne concerne que son équipe |
+| **la ligne dit son nom** | « Main d’œuvre : Élagage Durand », dans l'unité du partenaire, comme la feuille du devis la pose ; réparti, son prix se partage comme celui de l'équipe (`repartirMainOeuvre`) et « dont main d'œuvre HT » le compte |
+| **la liste ne se recopie pas** | `PastilleMesPartenaires`, `ListeDesPartenaires`, `PartenairePris` quittent `FeuilleMainDoeuvre` pour `src/components/atlas/PartenairesDeLaMainOeuvre.tsx` ; `prixEnMots` et `enUnite` pour la règle pure. Les repères (`mo-partenaires`, `mo-prix-<id>`, `mo-revenir`) restent ceux de la feuille |
+
+**Ce que l'écran montre est ce qui part.** La carte (`MainOeuvreDeLaDictee`) lit son total sur la réponse enregistrée, jamais sur le texte tapé : une quantité qui ne se lit pas ne s'enregistre pas, et le total reste celui de la dernière qui se lisait. La barre de répartition reçoit le total du partenaire ; ses parts d'avant ne font plus le compte, elle les remet à l'échelle à la dizaine (`repartirMainOeuvre`), comme le serveur.
+
+**Un total nul ne s'affiche plus « 0 € »** sous la barre : il se lit « À chiffrer » (un partenaire sans marge, ou une équipe dont tous les hommes conduisent un engin). Un zéro se lirait gratuit.
+
+**Ce qui ne change pas.** Après trois fois le même choix de ligne ou de répartition, la question ne se pose plus (`modeRetenu`) : la pastille n'est alors plus là, et la feuille « Main d'œuvre » du devis prend un partenaire juste après. Le partenaire n'est jamais retenu d'un chantier à l'autre.
+
+Contrôles : `test-feuille-main-oeuvre` (pur : la quantité à la journée, l'heure tapée, 2 jours × 450 € × 1,35, sans marge, le choix relu), `test-main-oeuvre-dictee-db` (sous `atlas_app` : la question porte ses partenaires et ses jours, la ligne au nom du partenaire quoi que l'écran envoie, le partage d'un prix à l'heure, le prix d'une autre entreprise refusé), `test-mo-dictee-partenaire-e2e` (son geste : la pastille, un prix à la journée, la croix, une heure tapée, et le devis au centime).

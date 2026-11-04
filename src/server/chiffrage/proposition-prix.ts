@@ -20,9 +20,11 @@ import {
   lireChoix,
   modeRetenu,
   partsDeDepart,
+  questionDeLaMainOeuvre,
   repartirMainOeuvre,
   tarifAvecSonHomme,
 } from "../../lib/main-oeuvre-dictee";
+import { mainOeuvreDUnPartenaire, prixDesPartenaires, quantiteDuPartenaire } from "../../lib/feuille-main-oeuvre";
 import {
   lignesVendables,
   membresDuLibelle,
@@ -662,6 +664,9 @@ export async function questionMainOeuvre(
   );
   // Retenu de ses trois derniers devis : la question ne se pose plus.
   if (modeRetenu(derniers.map((v) => lireChoix(v)?.mode ?? null))) return { dictee: true, question: null };
+  // « Mes partenaires » sur la question (son « B » du 4 novembre 2026) : les
+  // prix que la feuille du devis montre, lus de la même façon.
+  const [candidats, marges] = await Promise.all([prixAchatCandidats(ctx), lireMarges(ctx)]);
 
   // Le total que la carte annonce est celui du devis : le conducteur de chaque
   // engin, déjà payé avec lui, n'y figure pas.
@@ -676,7 +681,7 @@ export async function questionMainOeuvre(
     question: {
       id: SUJET_MAIN_OEUVRE,
       libellePrestation: "Main d'œuvre",
-      question: `Où mettre les ${new Decimal(total).toNumber().toLocaleString("fr-FR")} € de main d'œuvre ?`,
+      question: questionDeLaMainOeuvre(total),
       options: null,
       unite: null,
       mainOeuvre: {
@@ -694,9 +699,33 @@ export async function questionMainOeuvre(
         })),
         engins: engins.map((e) => e.libelle),
         hommes: mo.hommes,
+        jours: mo.jours,
+        partenaires: prixDesPartenaires(candidats, marges),
       },
     },
   };
+}
+
+/**
+ * Le partenaire de sa réponse, relu en base sous son entreprise : son prix,
+ * la quantité que la règle accepte (les jours dictés à la journée), la ligne
+ * et son calcul. `introuvable` quand le prix n'est pas (ou plus) le sien, ou
+ * qu'aucune quantité ne se lit.
+ */
+async function partenaireDuChoix(
+  ctx: Ctx,
+  choisi: { prixId: string; quantite: number },
+  jours: number,
+): Promise<
+  | ({ prix: ReturnType<typeof prixDesPartenaires>[number] } & ReturnType<typeof mainOeuvreDUnPartenaire>)
+  | { introuvable: true }
+> {
+  const [candidats, marges] = await Promise.all([prixAchatCandidats(ctx), lireMarges(ctx)]);
+  const prix = prixDesPartenaires(candidats, marges).find((p) => p.id === choisi.prixId);
+  if (!prix) return { introuvable: true };
+  const quantite = quantiteDuPartenaire(prix, jours, choisi.quantite);
+  if (quantite === null) return { introuvable: true };
+  return { prix, ...mainOeuvreDUnPartenaire(prix, quantite) };
 }
 
 /**
@@ -757,15 +786,36 @@ async function propositionAvecMainOeuvre(
   const journeesDeConducteur = t.engins.length * mo.jours;
   const journees = journeesFacturees(mo.jours, mo.hommes, journeesDeConducteur);
   const totalMO = new Decimal(mo.tarif.prix).times(journees);
-  calcul.push({
-    libelle: "Main d'œuvre",
-    detail:
-      `${mo.jours} jour(s) × ${mo.hommes} homme(s)` +
-      (journeesDeConducteur > 0
-        ? `, moins ${journeesDeConducteur} journée(s) de conducteur déjà payée(s) avec l'engin,`
-        : "") +
-      ` × ${mo.tarif.prix} € = ${totalMO.toFixed(2)} € (votre tarif « ${mo.tarif.intitule} »).`,
-  });
+
+  // **Un partenaire pris sur la question** (son « B » du 4 novembre 2026,
+  // `appli/soignee/main-oeuvre-dictee-partenaires.html`) : son prix, marge
+  // comprise, prend la place de son équipe. Il se relit ICI, sous son
+  // entreprise, avec la règle de la feuille du devis : ni le prix ni une
+  // quantité à la journée ne se croient sur la parole de l'écran. Un prix
+  // introuvable (retiré, ou d'une autre entreprise) ne se remplace par rien de
+  // plausible : la main d'œuvre arrive à chiffrer, et la phrase le dit.
+  const partenaire = choix.partenaire ? await partenaireDuChoix(ctx, choix.partenaire, mo.jours) : null;
+  if (partenaire === null) {
+    calcul.push({
+      libelle: "Main d'œuvre",
+      detail:
+        `${mo.jours} jour(s) × ${mo.hommes} homme(s)` +
+        (journeesDeConducteur > 0
+          ? `, moins ${journeesDeConducteur} journée(s) de conducteur déjà payée(s) avec l'engin,`
+          : "") +
+        ` × ${mo.tarif.prix} € = ${totalMO.toFixed(2)} € (votre tarif « ${mo.tarif.intitule} »).`,
+    });
+  } else if ("introuvable" in partenaire) {
+    donneesManquantes.push("Le prix de partenaire choisi n'existe plus : la main d'œuvre est à chiffrer.");
+  } else {
+    calcul.push({
+      libelle: "Main d'œuvre",
+      detail:
+        `${partenaire.prix.societeNom}, ${partenaire.prix.nom} : ${partenaire.calcul}` +
+        (partenaire.montant === null ? "." : ` = ${partenaire.montant} € (votre partenaire, avec votre marge).`),
+    });
+    if (partenaire.montant === null) donneesManquantes.push(partenaire.calcul);
+  }
 
   const ids = (l: LigneVendable) => l.prestations.map((p) => p.id).filter((id): id is string => !!id);
   // **La quantité physique survit même sans prix** : la mesure que sa grille a
@@ -835,31 +885,36 @@ async function propositionAvecMainOeuvre(
   }
 
   // Sans journée à facturer (tout est conducteur), rien à répartir : jamais un
-  // zéro, qui se lirait « gratuit ».
-  const montantMO = journees > 0 ? totalMO.toFixed(2) : null;
+  // zéro, qui se lirait « gratuit ». Un partenaire sans marge non plus.
+  const montantMO =
+    partenaire === null ? (journees > 0 ? totalMO.toFixed(2) : null) : "introuvable" in partenaire ? null : partenaire.montant;
   if (choix.mode === "ligne" || dedans.length === 0) {
+    const travaux = libelleMainOeuvre(dedans.map((x) => membresDuLibelle(x.vendable.libelle)[0] ?? x.vendable.libelle));
+    // La ligne d'un partenaire dit son nom, comme celle de la feuille du devis.
+    const sienne = partenaire !== null && !("introuvable" in partenaire) ? partenaire.ligne : null;
     placees.push({
       rang: dedans[0]?.rang ?? Number.MAX_SAFE_INTEGER,
       ligne: {
-        libelle: libelleMainOeuvre(dedans.map((x) => membresDuLibelle(x.vendable.libelle)[0] ?? x.vendable.libelle)),
+        libelle: sienne?.libelle ?? travaux,
         montant: montantMO,
-        quantite: String(journees),
-        unite: "jour/homme",
-        prixUnitaire: new Decimal(mo.tarif.prix).toFixed(2),
+        quantite: sienne?.quantite ?? String(journees),
+        unite: sienne?.unite ?? "jour/homme",
+        prixUnitaire: sienne ? (sienne.prixUnitaire ?? "0") : partenaire === null ? new Decimal(mo.tarif.prix).toFixed(2) : "0",
         prestationIds: dedans.flatMap((x) => ids(x.vendable)),
         mainDoeuvre: true,
       },
     });
   } else {
+    const aPartager = montantMO ?? "0";
     const cles = dedans.map((x) => x.vendable.libelle);
     const parts =
       Object.keys(choix.parts).length > 0
         ? choix.parts
         : partsDeDepart(
-            totalMO.toFixed(2),
+            aPartager,
             dedans.map((x) => ({ cle: x.vendable.libelle, grille: x.grille.prix, principal: x.vendable.principal }))
           );
-    const montants = repartirMainOeuvre(totalMO.toFixed(2), cles, parts);
+    const montants = repartirMainOeuvre(aPartager, cles, parts);
     for (const x of dedans) {
       // **Une part à zéro n'est pas un prix** : c'est un travail que ni sa
       // grille ni ses curseurs n'ont chiffré. Il sort « à chiffrer », et sa
@@ -894,10 +949,15 @@ async function propositionAvecMainOeuvre(
     prixPropose: chiffrees.length > 0 ? chiffrees.reduce((s, l) => s.plus(l.montant!), new Decimal(0)).toFixed() : null,
     libelle: lignes.map((l) => l.libelle).join("\n"),
     lignes,
-    tarifId: mo.tarif.id,
+    tarifId: partenaire === null ? mo.tarif.id : null,
     tarifsCandidats: [],
     explication: {
-      origine: "La main d'œuvre vient de VOTRE tarif, appliqué aux jours et aux hommes que vous avez dictés.",
+      origine:
+        partenaire === null
+          ? "La main d'œuvre vient de VOTRE tarif, appliqué aux jours et aux hommes que vous avez dictés."
+          : "introuvable" in partenaire
+            ? "La main d'œuvre est à chiffrer : le prix de partenaire choisi n'existe plus."
+            : "La main d'œuvre vient du prix de votre partenaire, avec votre marge.",
       elementsPrisEnCompte: d.explication.elementsPrisEnCompte,
       calcul,
       donneesManquantes: [...donneesManquantes, MATERIEL_NON_CHIFFRE],

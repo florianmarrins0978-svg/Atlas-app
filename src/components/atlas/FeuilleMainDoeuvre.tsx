@@ -5,14 +5,17 @@ import BottomSheet from "./BottomSheet";
 import IconeTrait from "./IconeTrait";
 import PrimaryButton from "./PrimaryButton";
 import RepartirLaMainOeuvre from "./RepartirLaMainOeuvre";
-import { colors, font, surPlein, voile } from "@/lib/design-tokens";
+import { ListeDesPartenaires, PartenairePris, PastilleMesPartenaires } from "./PartenairesDeLaMainOeuvre";
+import { colors, font, voile } from "@/lib/design-tokens";
 import { enEuros } from "@/lib/euros";
 import {
   DUREES_MAIN_OEUVRE,
+  aLaJournee,
   ligneDeSonEquipe,
-  ligneDeSonPartenaire,
+  mainOeuvreDUnPartenaire,
   montantDeLaMainOeuvre,
   quantiteTapee,
+  quantiteDuPartenaire,
   rangDeLaDuree,
   type ChoixDeMainOeuvre,
   type DonneesMainOeuvre,
@@ -65,47 +68,6 @@ export default function FeuilleMainDoeuvre(props: Props) {
 }
 
 const virgule = (n: number | string) => String(n).replace(".", ",");
-const sansCentimes = (prix: string) => enEuros(prix).replace(/,00(?=\s*€)/, "");
-
-/** « 3 jours », « 6,5 heures », « 40 ml » : l'unité du partenaire, dite comme il la dit. */
-function enUnite(unite: string, n: number): string {
-  const pluriel = n > 1;
-  const mot: Record<string, [string, string]> = {
-    journée: ["jour", "jours"],
-    jour: ["jour", "jours"],
-    heure: ["heure", "heures"],
-    h: ["heure", "heures"],
-    forfait: ["forfait", "forfaits"],
-  };
-  const m = mot[unite];
-  return `${virgule(n)} ${m ? m[pluriel ? 1 : 0] : unite}`;
-}
-
-/** « 380 € la journée », « 32 € le m² » : le prix tel qu'il le lit sur sa fiche. */
-function prixEnMots(p: PrixDePartenaire): string {
-  const article: Record<string, string> = { journée: "la journée", heure: "l’heure", forfait: "le forfait" };
-  return `${sansCentimes(p.prixHt)} ${article[p.unite] ?? `le ${p.unite}`}`;
-}
-
-function initiales(nom: string): string {
-  return nom
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((m) => m.charAt(0).toUpperCase())
-    .join("");
-}
-
-function Initiales({ nom }: { nom: string }) {
-  return (
-    <span
-      className="grid h-9 w-9 flex-none place-items-center rounded-full text-[14px]"
-      style={{ fontFamily: font.display, color: colors.or, boxShadow: `inset 0 0 0 1.5px ${voile(colors.or, 0.6)}` }}
-      aria-hidden="true"
-    >
-      {initiales(nom)}
-    </span>
-  );
-}
 
 function Compteur({
   valeur,
@@ -182,16 +144,13 @@ function Contenu({ donnees, repartition, onValider, onFermer }: Props) {
   // comme la planche : répartir est un choix, pas l'habitude.
   const [ou, setOu] = useState(ecrireChoix({ mode: "ligne", parts: {}, retires: [] }));
 
-  const alaJournee = qui !== null && (qui.unite === "journée" || qui.unite === "jour");
+  const alaJournee = qui !== null && aLaJournee(qui.unite);
   const tarifLu = quantiteTapee(tarif);
-  const quantitePartenaire = qui === null ? null : alaJournee ? DUREES_MAIN_OEUVRE[rang].jours : quantiteTapee(quantite);
-  const ligne =
-    qui === null
-      ? ligneDeSonEquipe(hommes, DUREES_MAIN_OEUVRE[rang].jours, tarifLu === null ? null : String(tarifLu))
-      : quantitePartenaire === null
-        ? null
-        : ligneDeSonPartenaire(qui, quantitePartenaire);
-  const montant = ligne ? montantDeLaMainOeuvre(ligne) : null;
+  const quantitePartenaire = qui === null ? null : quantiteDuPartenaire(qui, DUREES_MAIN_OEUVRE[rang].jours, quantiteTapee(quantite));
+  const duPartenaire = qui !== null && quantitePartenaire !== null ? mainOeuvreDUnPartenaire(qui, quantitePartenaire) : null;
+  const sonEquipe = ligneDeSonEquipe(hommes, DUREES_MAIN_OEUVRE[rang].jours, tarifLu === null ? null : String(tarifLu));
+  const ligne = qui === null ? sonEquipe : (duPartenaire?.ligne ?? null);
+  const montant = qui === null ? montantDeLaMainOeuvre(sonEquipe) : (duPartenaire?.montant ?? null);
   const choixDeLaFeuille: ChoixDeMainOeuvre | null =
     ligne === null
       ? null
@@ -210,6 +169,9 @@ function Contenu({ donnees, repartition, onValider, onFermer }: Props) {
     travaux: travaux.map((t) => ({ cle: t.id, libelle: t.libelle, part: 0, grille: null })),
     engins: [],
     hommes,
+    jours: DUREES_MAIN_OEUVRE[rang].jours,
+    // Ses partenaires sont déjà dans la feuille, au-dessus : la barre n'en montre pas.
+    partenaires: [],
   };
 
   const calcul =
@@ -219,9 +181,9 @@ function Contenu({ donnees, repartition, onValider, onFermer }: Props) {
         : `${hommes} ${hommes > 1 ? "hommes" : "homme"} × ${DUREES_MAIN_OEUVRE[rang].libelle} × ${virgule(tarifLu)} €`
       : qui.marge === null
         ? "Sans marge sur la main d’œuvre, la ligne arrivera à chiffrer."
-        : quantitePartenaire === null
+        : duPartenaire === null
           ? "Écrivez une quantité au-dessus de zéro."
-          : `${enUnite(qui.unite, quantitePartenaire)} × ${sansCentimes(qui.prixHt)} × ${virgule(Number(qui.marge).toFixed(2))}`;
+          : duPartenaire.calcul;
 
   function choisir(p: PrixDePartenaire) {
     setQui(p);
@@ -233,103 +195,22 @@ function Contenu({ donnees, repartition, onValider, onFermer }: Props) {
     setVue("calcul");
   }
 
-  // Les prix rangés sous leur partenaire, dans l'ordre où ils arrivent.
-  const parSociete = donnees.partenaires.reduce<Map<string, PrixDePartenaire[]>>((m, p) => {
-    m.set(p.societeNom, [...(m.get(p.societeNom) ?? []), p]);
-    return m;
-  }, new Map());
-
   return (
     <div data-atlas="feuille-mo">
       <div className="mb-3 flex items-center justify-between gap-3">
         <p className="text-[26px] leading-tight" style={{ fontFamily: font.display, color: colors.ink }}>
           Main d’œuvre
         </p>
-        <button
-          type="button"
-          aria-pressed={qui !== null}
-          onClick={() => setVue(vue === "liste" ? "calcul" : "liste")}
-          data-atlas="mo-partenaires"
-          className="inline-flex min-h-[40px] items-center gap-1.5 whitespace-nowrap rounded-full pl-2.5 pr-3.5 text-[14.5px] font-semibold"
-          style={
-            qui !== null
-              ? { color: surPlein, backgroundColor: colors.or }
-              : { color: colors.or, boxShadow: `inset 0 0 0 1.5px ${voile(colors.or, 0.6)}` }
-          }
-        >
-          <IconeTrait nom="equipe" taille={18} />
-          Mes partenaires
-        </button>
+        <PastilleMesPartenaires pris={qui !== null} onClick={() => setVue(vue === "liste" ? "calcul" : "liste")} />
       </div>
 
       {vue === "liste" ? (
-        <div data-atlas="mo-liste">
-          {parSociete.size === 0 ? (
-            <p className="py-3 text-[15px]" style={{ color: colors.inkSoft }}>
-              Aucun prix de partenaire. Ils se notent dans Réglages, Fournisseurs et partenaires.
-            </p>
-          ) : (
-            <ul>
-              {[...parSociete.entries()].map(([societe, prix], i) => (
-                <li key={societe} style={i > 0 ? { boxShadow: `inset 0 1px 0 ${colors.line}` } : undefined}>
-                  <div className="flex items-center gap-2.5 pb-0.5 pt-3">
-                    <Initiales nom={societe} />
-                    <p className="flex-1 text-[18px]" style={{ fontFamily: font.display, color: colors.ink }}>
-                      {societe}
-                    </p>
-                    <span className="text-[14px] tabular-nums" style={{ color: colors.inkSoft }}>
-                      {prix[0].marge === null ? "sans marge" : `× ${virgule(Number(prix[0].marge).toFixed(2))}`}
-                    </span>
-                  </div>
-                  {prix.map((p) => (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => choisir(p)}
-                      data-atlas={`mo-prix-${p.id}`}
-                      className="flex min-h-[52px] w-full items-center justify-between gap-2.5 py-1.5 pl-[46px] pr-1 text-left text-[15.5px]"
-                      style={{ color: colors.ink }}
-                    >
-                      <span>{p.nom}</span>
-                      <b className="whitespace-nowrap font-semibold tabular-nums">{prixEnMots(p)}</b>
-                    </button>
-                  ))}
-                </li>
-              ))}
-            </ul>
-          )}
-          <button
-            type="button"
-            onClick={revenirASonEquipe}
-            className="mt-4 min-h-[52px] w-full rounded-full text-[16px] font-semibold"
-            style={{ color: colors.ink, boxShadow: `inset 0 0 0 1.5px ${colors.line}` }}
-          >
-            Mon équipe
-          </button>
-        </div>
+        <ListeDesPartenaires partenaires={donnees.partenaires} onChoisir={choisir} onMonEquipe={revenirASonEquipe} />
       ) : (
         <div>
           {qui !== null && (
-            <div className="mb-1 flex items-center gap-2.5 rounded-[12px] py-2.5 pl-3 pr-2" style={{ backgroundColor: voile(colors.or, 0.13) }}>
-              <Initiales nom={qui.societeNom} />
-              <div className="min-w-0 flex-1">
-                <p className="text-[17px]" style={{ fontFamily: font.display, color: colors.ink }}>
-                  {qui.societeNom}
-                </p>
-                <p className="text-[13.5px]" style={{ color: colors.inkSoft }}>
-                  {qui.nom}, {prixEnMots(qui)}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={revenirASonEquipe}
-                aria-label="Revenir à mon équipe"
-                data-atlas="mo-revenir"
-                className="grid h-11 w-11 flex-none place-items-center rounded-full"
-                style={{ color: colors.inkSoft }}
-              >
-                <IconeTrait nom="croix" taille={20} />
-              </button>
+            <div className="mb-1">
+              <PartenairePris prix={qui} onRevenir={revenirASonEquipe} />
             </div>
           )}
 

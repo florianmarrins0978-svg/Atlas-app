@@ -2,6 +2,7 @@ import Decimal from "decimal.js";
 import { LIBELLE_LIGNE_MAIN_DOEUVRE } from "@/lib/main-doeuvre-devis";
 import { margeQuiVaut, prixDepuisAchat, type PrixAchatCandidat } from "@/lib/prix-achat";
 import { montantDeLaLigne } from "@/lib/montant-de-ligne";
+import { enEuros } from "@/lib/euros";
 
 /**
  * ─── LA FEUILLE « MAIN D'ŒUVRE » DU DEVIS — sa planche du 1er novembre 2026 ───
@@ -134,6 +135,66 @@ export function ligneDeSonPartenaire(p: PrixDePartenaire, quantite: number): Lig
     quantite: new Decimal(Math.max(0, quantite)).toDecimalPlaces(2).toString(),
     unite: p.unite,
     prixUnitaire: prixPositif(p.venteHt),
+  };
+}
+
+/** À la journée : le partenaire travaille les jours de son chantier, il ne se tape pas. */
+export function aLaJournee(unite: string): boolean {
+  return unite === "journée" || unite === "jour";
+}
+
+/**
+ * La quantité d'un partenaire : les jours du chantier quand il se paie à la
+ * journée, sinon ce qu'il tape, au-dessus de zéro. `null` quand rien ne se lit.
+ *
+ * **Le serveur la rejoue sur les jours dictés** : une quantité à la journée
+ * envoyée par l'écran n'est jamais crue, elle se relit sur le chantier.
+ */
+export function quantiteDuPartenaire(p: PrixDePartenaire, jours: number, tapee: number | null): number | null {
+  if (aLaJournee(p.unite)) return Number.isFinite(jours) && jours > 0 ? jours : null;
+  if (tapee === null || !Number.isFinite(tapee) || tapee <= 0 || tapee > 99999) return null;
+  return Math.round(tapee * 100) / 100;
+}
+
+const virgule = (n: number | string) => String(n).replace(".", ",");
+const sansCentimes = (prix: string) => enEuros(prix).replace(/,00(?=\s*€)/, "");
+
+/** « 3 jours », « 6,5 heures », « 40 ml » : l'unité du partenaire, dite comme il la dit. */
+export function enUnite(unite: string, n: number): string {
+  const mot: Record<string, [string, string]> = {
+    journée: ["jour", "jours"],
+    jour: ["jour", "jours"],
+    heure: ["heure", "heures"],
+    h: ["heure", "heures"],
+    forfait: ["forfait", "forfaits"],
+  };
+  const m = mot[unite];
+  return `${virgule(n)} ${m ? m[n > 1 ? 1 : 0] : unite}`;
+}
+
+/** « 380 € la journée », « 32 € le m² » : le prix tel qu'il le lit sur sa fiche. */
+export function prixEnMots(p: PrixDePartenaire): string {
+  const article: Record<string, string> = { journée: "la journée", heure: "l’heure", forfait: "le forfait" };
+  return `${sansCentimes(p.prixHt)} ${article[p.unite] ?? `le ${p.unite}`}`;
+}
+
+/**
+ * Un partenaire pour une quantité : la ligne, son montant, et le calcul en
+ * clair. La feuille du devis, la question de la dictée et le serveur lisent
+ * cette fonction-ci, et aucune autre (`CLAUDE.md` §3).
+ */
+export function mainOeuvreDUnPartenaire(
+  p: PrixDePartenaire,
+  quantite: number
+): { ligne: LigneDeMainOeuvre; montant: string | null; calcul: string } {
+  const ligne = ligneDeSonPartenaire(p, quantite);
+  return {
+    ligne,
+    montant: montantDeLaMainOeuvre(ligne),
+    calcul:
+      p.marge === null
+        ? "Sans marge sur la main d’œuvre, la ligne arrivera à chiffrer."
+        : `${enUnite(p.unite, quantite)} × ${sansCentimes(p.prixHt)} × ${virgule(Number(p.marge).toFixed(2))}`,
   };
 }
 

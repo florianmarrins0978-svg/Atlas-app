@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent, type ReactNode } from "react";
 import { colors, font, pastelsMainOeuvre, voile } from "@/lib/design-tokens";
 import {
   ecrireChoix,
@@ -54,10 +54,13 @@ export default function RepartirLaMainOeuvre({
   question,
   valeur,
   onChange,
+  sousLeDetail,
 }: {
   question: QuestionMainOeuvre;
   valeur: string;
   onChange: (valeur: string) => void;
+  /** Ce qui se lit sous le détail, avant le choix : le partenaire pris, sur la question de la dictée. */
+  sousLeDetail?: ReactNode;
 }) {
   const choix = lireChoix(valeur) ?? lireChoix(choixDeDepart(question))!;
   const dedans = question.travaux.filter((t) => !choix.retires.includes(t.cle));
@@ -193,9 +196,10 @@ export default function RepartirLaMainOeuvre({
 
   return (
     <div data-atlas="question-main-oeuvre">
-      <p className="text-[12px]" style={{ color: colors.muted }}>
+      <p className="text-[12px]" style={{ color: colors.muted }} data-atlas="mo-detail">
         {question.detail}
       </p>
+      {sousLeDetail}
       <div className="mt-2 flex flex-col gap-2">
         {(
           [
@@ -486,7 +490,8 @@ export default function RepartirLaMainOeuvre({
             Total main d&apos;œuvre
           </span>
           <span className="text-[22px] leading-none tabular-nums" style={{ color: colors.ink, fontFamily: font.display }}>
-            {euros(question.total)}
+            {/* Rien à partager n'est pas « 0 € » : un zéro se lirait gratuit. */}
+            {total > 0 ? euros(question.total) : "À chiffrer"}
           </span>
         </div>
       </div>
