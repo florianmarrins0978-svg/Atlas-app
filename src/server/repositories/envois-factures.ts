@@ -1,14 +1,15 @@
 import { nomAvecForme } from "@/lib/formes-juridiques";
 import { randomBytes } from "node:crypto";
-import { and, desc, eq, gt, inArray, isNotNull, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, isNotNull, isNull, ne, sql } from "drizzle-orm";
 import { db, type DbOrTx } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
-import { avoirs, envoisFactures, factures, chantiers } from "../db/schema";
+import { avoirs, envoisFactures, factures, chantiers, clients } from "../db/schema";
 import { enregistrerObjet, lireObjet } from "../storage";
 import { empreinteDesReglements, tamponAcquittee } from "@/lib/acomptes-facture";
 import { pdfExemplaireAcquitte } from "./factures";
 import { lireReglements } from "./paiements-facture";
 import { modalitesDeLaFacture, type ModalitesPaiement } from "@/lib/modalites-paiement";
+import { coordonneeDeCetEnvoi, type SituationDeLEnvoi } from "@/lib/coordonnee-de-cet-envoi";
 import type { Ctx } from "./context";
 
 // **Transmettre la facture, puisque personne ne le fait à la place du patron.**
@@ -39,9 +40,48 @@ export type EnvoiFacture = {
   id: string;
   jeton: string;
   canal: "sms" | "email";
+  /** La coordonnée tapée pour cet envoi (client supprimé), sinon nul (migration 0160). */
+  destinataire: string | null;
   expireAt: Date;
   envoyeAt: Date;
 };
+
+/**
+ * Ce que la règle d'une coordonnée tapée lit de la facture (`coordonneeDeCetEnvoi`).
+ *
+ * **Par le chantier, jusqu'à la fiche** : la facture ne porte pas son client,
+ * seulement son nom figé. Une fiche supprimée reste derrière sa facture
+ * (`effacerClient`, §542), `deleted_at` posé ; un chantier sans fiche n'est pas
+ * un client supprimé, et ne prend pas de coordonnée tapée.
+ *
+ * **« Partie » veut dire un lien préparé**, celui de la facture d'origine :
+ * l'arrêt seul n'envoie rien, Atlas prépare et le patron expédie. Un lien
+ * d'exemplaire acquitté (`pdf_storage_key`) suit un premier départ, il ne le
+ * fait pas.
+ *
+ * `null` : la facture n'est pas de cette entreprise, ou n'existe pas.
+ */
+async function lireLaSituation(tx: DbOrTx, entrepriseId: string, factureId: string): Promise<SituationDeLEnvoi | null> {
+  const [f] = await tx
+    .select({ supprimeLe: clients.deletedAt })
+    .from(factures)
+    .innerJoin(chantiers, and(eq(chantiers.id, factures.chantierId), eq(chantiers.entrepriseId, factures.entrepriseId)))
+    .leftJoin(clients, and(eq(clients.id, chantiers.clientId), eq(clients.entrepriseId, chantiers.entrepriseId)))
+    .where(and(eq(factures.id, factureId), eq(factures.entrepriseId, entrepriseId)))
+    .limit(1);
+  if (!f) return null;
+  const [envoi] = await tx
+    .select({ id: envoisFactures.id })
+    .from(envoisFactures)
+    .where(and(eq(envoisFactures.factureId, factureId), isNull(envoisFactures.pdfStorageKey)))
+    .limit(1);
+  return { clientSupprime: f.supprimeLe !== null, partie: envoi !== undefined };
+}
+
+/** La même lecture, pour l'écran de la facture et pour le refus d'avant l'arrêt. */
+export async function situationDeLEnvoi(ctx: Ctx, factureId: string): Promise<SituationDeLEnvoi | null> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) => lireLaSituation(tx, ctx.entrepriseId, factureId));
+}
 
 /**
  * Prépare le lien que le patron transmettra lui-même.
@@ -55,7 +95,12 @@ export async function creerEnvoiFacture(
   ctx: Ctx,
   factureId: string,
   canal: "sms" | "email",
-  maintenant: Date = new Date()
+  maintenant: Date = new Date(),
+  /**
+   * **Ce qu'il a tapé pour cet envoi**, quand son client est supprimé (sa
+   * demande du 3 novembre 2026). Nul : le chemin habituel, rien de noté.
+   */
+  coordonneeTapee: string | null = null
 ): Promise<EnvoiFacture> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [f] = await tx.select().from(factures).where(eq(factures.id, factureId)).limit(1);
@@ -67,6 +112,19 @@ export async function creerEnvoiFacture(
       throw new Error("Cette facture n'a pas de PDF archivé : le lien mènerait dans le vide.");
     }
 
+    // **La règle de l'écran, rejouée dans la transaction qui écrit** : un
+    // client vivant, une facture déjà partie ou une forme fausse ne laissent
+    // aucune ligne d'envoi. Rien n'est écrit dans `clients` : la coordonnée ne
+    // vit que sur cette ligne-ci.
+    let destinataire: string | null = null;
+    if (coordonneeTapee !== null) {
+      const situation = await lireLaSituation(tx, ctx.entrepriseId, factureId);
+      if (!situation) throw new Error("Facture introuvable");
+      const lue = coordonneeDeCetEnvoi(situation, canal, coordonneeTapee);
+      if (!lue.ok) throw new Error(lue.raison);
+      destinataire = lue.destinataire;
+    }
+
     const [envoi] = await tx
       .insert(envoisFactures)
       .values({
@@ -74,6 +132,7 @@ export async function creerEnvoiFacture(
         factureId,
         jeton: nouveauJeton(),
         canal,
+        destinataire,
         expireAt: new Date(maintenant.getTime() + VALIDITE_LIEN_JOURS * 86400_000),
       })
       .returning();
@@ -89,6 +148,7 @@ export async function creerEnvoiFacture(
       id: envoi.id,
       jeton: envoi.jeton,
       canal: envoi.canal as "sms" | "email",
+      destinataire: envoi.destinataire,
       expireAt: envoi.expireAt,
       envoyeAt: envoi.envoyeAt,
     };
@@ -113,7 +173,13 @@ export async function corrigerCanalEnvoiFacture(
   canal: "sms" | "email"
 ): Promise<void> {
   await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    await tx.update(envoisFactures).set({ canal }).where(eq(envoisFactures.id, envoiId));
+    // **La coordonnée tapée était celle de l'autre canal** (migration 0160) :
+    // la garder ferait dire au registre « SMS » avec une adresse e-mail. Le
+    // nouveau canal part vers une coordonnée qu'Atlas ne connaît pas.
+    await tx
+      .update(envoisFactures)
+      .set({ canal, destinataire: null })
+      .where(and(eq(envoisFactures.id, envoiId), ne(envoisFactures.canal, canal)));
   });
 }
 
@@ -137,6 +203,7 @@ export async function dernierEnvoiFacture(ctx: Ctx, factureId: string): Promise<
       id: dernier.id,
       jeton: dernier.jeton,
       canal: dernier.canal as "sms" | "email",
+      destinataire: dernier.destinataire,
       expireAt: dernier.expireAt,
       envoyeAt: dernier.envoyeAt,
     };

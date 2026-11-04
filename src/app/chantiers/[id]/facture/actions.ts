@@ -42,7 +42,9 @@ import {
   dernierEnvoiFacture,
   corrigerCanalEnvoiFacture,
   preparerEnvoiAcquitte,
+  situationDeLEnvoi,
 } from "@/server/repositories/envois-factures";
+import { coordonneeDeCetEnvoi } from "@/lib/coordonnee-de-cet-envoi";
 
 // Arrêt 3 du parcours (docs/AGENT.md §2.3) : le patron confirme le départ de
 // la facture. Décidé, pas optionnel — un chantier finit rarement exactement
@@ -84,9 +86,25 @@ export type ResultatEmission =
  * (voir `releveTvaCollectee`). Émettre, c'est donc l'y inscrire — sans qu'une
  * seconde écriture puisse un jour diverger de la première.
  */
-export async function emettreFactureAction(factureId: string): Promise<ResultatEmission> {
+export async function emettreFactureAction(
+  factureId: string,
+  /**
+   * Ce qu'il a tapé pour l'envoi qui suit, quand son client est supprimé (sa
+   * demande du 3 novembre 2026). Nul : le chemin habituel.
+   */
+  coordonneeTapee: { canal: "sms" | "email"; saisie: string } | null = null
+): Promise<ResultatEmission> {
   const ctx = await getCurrentCtx();
   await exigerFacturation(ctx, "émettre la facture");
+  // **La coordonnée tapée se juge AVANT l'arrêt**, par la règle de l'écran :
+  // l'arrêt est sans retour, et une adresse refusée ensuite par le lien
+  // laisserait une facture arrêtée qui n'est partie nulle part.
+  if (coordonneeTapee) {
+    const situation = await situationDeLEnvoi(ctx, factureId);
+    if (!situation) return { succes: false, erreur: "Cette facture est introuvable." };
+    const lue = coordonneeDeCetEnvoi(situation, coordonneeTapee.canal, coordonneeTapee.saisie);
+    if (!lue.ok) return { succes: false, erreur: lue.raison };
+  }
   // **Une mention obligatoire absente arrête la pièce** (son choix 1A) : une
   // facture émise ne se corrige plus que par un avoir.
   const manques = await manquesDeLaFactureAEmettre(ctx, factureId);
@@ -173,12 +191,22 @@ export type ResultatLienFacture = { succes: true; jeton: string } | { succes: fa
 
 export async function preparerLienFactureAction(
   factureId: string,
-  canal: "sms" | "email"
+  canal: "sms" | "email",
+  /**
+   * Ce qu'il a tapé pour cet envoi, quand son client est supprimé. Le dépôt
+   * rejoue la règle de l'écran dans la transaction qui écrit le lien, et la
+   * trace de l'envoi porte ce qui a servi (migration 0160).
+   */
+  coordonneeTapee: string | null = null
 ): Promise<ResultatLienFacture> {
   const ctx = await getCurrentCtx();
   await exigerFacturation(ctx, "préparer le lien de la facture");
   try {
-    const existant = await dernierEnvoiFacture(ctx, factureId);
+    // **Une coordonnée tapée ne reprend jamais un lien existant** : un lien
+    // préparé veut dire une facture partie, et la règle la refuse alors
+    // (`coordonneeDeCetEnvoi`). La reprendre en silence ferait partir le
+    // message vers une adresse que la trace ne porte pas.
+    const existant = coordonneeTapee === null ? await dernierEnvoiFacture(ctx, factureId) : null;
     // Un second appui ne fabrique pas un second lien : le client aurait alors
     // deux adresses pour la même facture, et l'artisan ne saurait plus laquelle
     // il a envoyée.
@@ -189,7 +217,7 @@ export async function preparerLienFactureAction(
       if (existant.canal !== canal) await corrigerCanalEnvoiFacture(ctx, existant.id, canal);
       return { succes: true, jeton: existant.jeton };
     }
-    const envoi = await creerEnvoiFacture(ctx, factureId, canal);
+    const envoi = await creerEnvoiFacture(ctx, factureId, canal, new Date(), coordonneeTapee);
     return { succes: true, jeton: envoi.jeton };
   } catch (e) {
     return { succes: false, erreur: e instanceof Error ? e.message : "Le lien n'a pas pu être préparé." };

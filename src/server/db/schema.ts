@@ -2740,6 +2740,13 @@ export const envoisFactures = pgTable(
     expireAt: timestamp("expire_at", { withTimezone: true }).notNull(),
     canal: text("canal", { enum: ["sms", "email"] }).notNull(),
     envoyeAt: timestamp("envoye_at", { withTimezone: true }).notNull().defaultNow(),
+    /**
+     * **L'e-mail ou le numéro tapé pour CET envoi** (migration 0160), quand le
+     * client était supprimé : sa fiche n'en a plus, et ce qu'il tape ne s'y
+     * écrit pas (son choix du 3 novembre 2026, « pour cet envoi seulement »).
+     * Nul : Atlas ne l'a pas noté. Un canal corrigé le remet à nul.
+     */
+    destinataire: text("destinataire"),
 
     /**
      * **Quand le client a ouvert son lien** (migration 0081), et Atlas la note

@@ -1,5 +1,14 @@
 # Prochaines tâches
 
+## LA FACTURE D'UN CLIENT SUPPRIMÉ : CE QUI RESTE (4 novembre 2026)
+
+Codé le 4 novembre sur son « oui » à la planche (`appli/soignee/facture.html`, état « Client supprimé », son choix « Pour cet envoi seulement »), `ARCHITECTURE.md` §548, migration `0160_envoi_facture_destinataire_tape.sql`. **Pas sur `main`** : niveau 3 (plancher `drizzle/`, gravité facturation), la batterie entière reste à jouer.
+
+- **0160 doit être passée avant que ce code soit servi** : sans elle, l'écran Facture tombe (la lecture des envois nomme la colonne `destinataire`). `demarrer.sh` l'applique à l'allumage.
+- **Pas vérifiable ICI** : l'écran (aucun serveur lancé dans ce lot). La suite navigateur `test-facture-client-supprime-e2e.ts` est écrite, pas jouée ; à regarder aussi par `npm run voir`.
+- **Le renvoi d'une facture partie, pour un client supprimé** (`TransmettreLaFacture`), n'est pas touché : il redemande la coordonnée (celle tapée au premier envoi n'est pas reprise), son bouton dit « Enregistrer et ouvrir le message » alors que rien ne s'enregistre (`mettreAJourClient` écarte une fiche supprimée), et la trace ne note pas ce qu'il y tape. À reprendre sur planche si le cas revient. Qui : nous, puis lui.
+- **À lui de dire : la facture garde le téléphone et l'e-mail copiés à sa création** (`factures.client_telephone`, `client_email`), et le papier les imprime ; la suppression du client vide la fiche, pas ces copies. Pour une facture en brouillon, faut-il les vider aussi ? Une facture arrêtée, elle, ne se réécrit jamais. Qui : lui.
+
 ## « J'AI VU » SUR LES CONTRÔLES DES VÉHICULES : CE QUI RESTE (3 novembre 2026)
 
 Codé le 3 novembre (`ARCHITECTURE.md` §546), migration `0159_rappels_vehicules_vus.sql`. **Pas sur `main`** : niveau 3 (plancher `drizzle/`), la batterie entière reste à jouer avec les autres lots.

@@ -228,9 +228,18 @@ export const FICHES_FACTURE: FicheModeEmploi[] = [
     geste:
       "À côté de « Envoi », touchez SMS ou E-mail, puis « Envoyer la facture » : votre messagerie s'ouvre avec le message et le lien tout prêts.",
     reserve:
-      "Grisé si le client n'a pas de coordonnée pour ce canal, ou si la facture est vide. En l'envoyant, vous l'arrêtez : une correction passerait par un avoir.",
+      "Grisé si le client n'a pas de coordonnée pour ce canal, ou si la facture est vide. Client supprimé : tapez son e-mail ou son numéro dans la case, il sert à cet envoi seulement. " +
+      "En l'envoyant, vous l'arrêtez : une correction passerait par un avoir.",
     source: F,
-    preuves: ["Envoyer la facture", 'libelle="E-mail"', 'libelle="SMS"', "Aucune coordonnée pour ce canal.", "Une correction passerait par un avoir."],
+    preuves: [
+      "Envoyer la facture",
+      'libelle="E-mail"',
+      'libelle="SMS"',
+      "Aucune coordonnée pour ce canal.",
+      "Son e-mail",
+      "Son numéro",
+      "Une correction passerait par un avoir.",
+    ],
   },
   {
     // Ses choix du 22 octobre 2026 (`appli/facture-mairie-chorus.html`).
