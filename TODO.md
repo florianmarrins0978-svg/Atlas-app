@@ -1,5 +1,9 @@
 # Prochaines tâches
 
+## ⏳ À CHOISIR PAR LUI (4 novembre 2026) : « Mes partenaires » sur la question de la main d'œuvre dictée
+
+Sa demande : *« quand je dicte deux jours deux hommes, et que l'application me demande ligne main d'œuvre ou répartir, ça serait bien que j'aie l'encadré Mes partenaires ; si j'ai besoin d'aller checker leur prix, je l'ai tout de suite »*. Planche `appli/soignee/main-oeuvre-dictee-partenaires.html` : la pastille de `FeuilleMainDoeuvre` à droite de « Main d'œuvre », sur la carte « Avant de chiffrer » (`DevisDepuisDictee.tsx`, `RepartirLaMainOeuvre.tsx`), qui ouvre la même liste dans une feuille. **A** : pour voir, rien ne change. **B** : un prix touché devient la main d'œuvre (2 jours × prix × marge à la journée, une quantité sinon), comme la feuille du devis ; B demande que la question et l'enregistrement de la réponse portent le partenaire (`questionMainOeuvre`, `SUJET_MAIN_OEUVRE`). Conseillé : A. Rien dans `src/`. | lui
+
 ## LA FACTURE D'UN CLIENT SUPPRIMÉ : CE QUI RESTE (4 novembre 2026)
 
 Codé le 4 novembre sur son « oui » à la planche (`appli/soignee/facture.html`, état « Client supprimé », son choix « Pour cet envoi seulement »), `ARCHITECTURE.md` §548, migration `0160_envoi_facture_destinataire_tape.sql`. **Sur `main` le 4 novembre** (`0de64c8c`), batterie entière jouée : 552 suites base sur 554, les deux rouges déjà rouges sur `main` (`test-maquettes-hors-production`, `test-stockage-banc`), 209 suites navigateur sur 209.

@@ -304,7 +304,7 @@
     "reglages-fournisseurs", "reglages-ia", "reglages-agenda", "reglages-abonnement", "reglages-donnees", "reglages-compte",
     "reglages-notifications", "reglages-connexion", "reglages-connexion-double-verification", "reglages-apparence", "reglages-banque", "devis-note-client", "devis-note-avant-envoi",
     "arrosage", "abonnement-credits-ia", "creer-un-compte", "clients-importer", "client-recoit",
-    "client-coordonnees", "client-contrat", "termines-non-payees", "termines-retours", "chantier", "facture"];
+    "client-coordonnees", "client-contrat", "termines-non-payees", "termines-retours", "chantier", "facture", "main-oeuvre-dictee-partenaires"];
 
   function planchePrete(href) {
     if (!href || /^(https?:|#|mailto:|tel:|\.\.\/)/.test(href)) return true;

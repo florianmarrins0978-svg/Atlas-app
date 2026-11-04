@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mes partenaires, après la dictée</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  MES PARTENAIRES SUR LA QUESTION DE LA MAIN D'ŒUVRE, APRÈS LA DICTÉE
+  (src/app/chantiers/[id]/DevisDepuisDictee.tsx, la carte « Avant de chiffrer » ;
+  src/components/atlas/RepartirLaMainOeuvre.tsx ; la liste vient de
+  src/components/atlas/FeuilleMainDoeuvre.tsx).
+
+  Sa demande du 4 novembre 2026 : « quand je dicte deux jours deux hommes, et
+  que l'application me demande est-ce que tu veux mettre une ligne main
+  d'œuvre ou répartir, ça serait bien que j'aie l'encadré Mes partenaires qui
+  s'affiche également ; si j'ai besoin d'aller checker leur prix, je l'ai tout
+  de suite ».
+
+  CE QUE MONTRE L'ÉCRAN D'AUJOURD'HUI (ouvert le 4 novembre, build de main,
+  aujourdhui/mo-dictee.jpg) : la question, le détail repris de la dictée, les
+  deux choix. Aucun partenaire. La pastille n'existe que dans la feuille Main
+  d'œuvre du devis (data-atlas="mo-partenaires").
+
+  CE QUI EST PROPOSÉ : la même pastille, à droite de « Main d'œuvre », qui ouvre
+  la même liste que la feuille du devis (leurs prix, leur marge), dans une
+  feuille qui monte : la question ne bouge pas de place.
+    A : pour voir. Rien ne change dans le calcul.
+    B : pour prendre, comme dans la feuille du devis. Un prix touché devient la
+        main d'œuvre (2 jours × prix × marge à la journée, une quantité à
+        écrire sinon), la croix revient à son équipe.
+
+  Les partenaires de la planche sont des exemples : chez lui, ce sont ceux de
+  Réglages, Fournisseurs et partenaires (societes_achat, prix_achat,
+  marges_achat). La barre de répartition est dessinée sans ses poignées : elle
+  ne change pas, elle sert de repère.
+*/
+.carte-chiffrer { border-radius: 4px; padding: 16px; background: var(--atlas-rustTint); }
+.carte-chiffrer .titre { margin: 0; font-size: 13px; font-weight: 500; color: var(--atlas-rust); }
+.q-quoi { margin: 0; font-size: 12px; color: var(--atlas-muted); }
+.q-question { margin: 2px 0 0; font-size: 15px; font-weight: 500; color: var(--atlas-ink); }
+.q-detail { margin: 6px 0 0; font-size: 12px; color: var(--atlas-muted); font-variant-numeric: tabular-nums; }
+.q-case { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.q-case span:first-child { width: 112px; height: 42px; border-radius: 4px; background: var(--atlas-card); }
+.q-case span:last-child { font-size: 14px; color: var(--atlas-muted); }
+.bloc-avant { margin-top: 16px; }
+.bloc-mo { margin-top: 20px; }
+
+/* La pastille : celle de la feuille du devis, à droite de « Main d'œuvre ». */
+.q-tete { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 2px; }
+.puce-partenaires { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 13px 0 10px; border-radius: 20px;
+                    font-size: 14.5px; font-weight: 600; color: var(--atlas-or); white-space: nowrap;
+                    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 60%, transparent); }
+.puce-partenaires .ico { width: 18px; height: 18px; }
+.puce-partenaires[aria-pressed="true"] { color: var(--sur-plein); background: var(--atlas-or); box-shadow: none; }
+
+.modes { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.modes button { border-radius: 999px; padding: 10px 16px; text-align: left; font-size: 14px; font-weight: 500;
+                background: var(--atlas-card); color: var(--atlas-ink); }
+.modes button[aria-pressed="true"] { background: var(--atlas-plein); color: var(--sur-plein); }
+
+.plage-mo { margin-top: 16px; padding: 18px 16px 6px; border-radius: 16px; background: var(--atlas-card);
+            box-shadow: 0 1px 2px color-mix(in srgb, var(--atlas-ink) 8%, transparent); }
+.barre-repere { display: flex; height: 64px; gap: 2px; border-radius: 16px; overflow: hidden; margin-bottom: 14px; }
+.barre-repere span { display: grid; place-items: center; font-size: 15px; font-weight: 650; color: #1c1c1a;
+                     font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; transition: flex-grow 300ms cubic-bezier(.2,.8,.2,1); }
+.travail { display: flex; align-items: center; gap: 12px; min-height: 52px; }
+.travail + .travail { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.travail i { width: 12px; height: 12px; flex: none; border-radius: 50%; }
+.travail b { flex: 1; font: 400 17px/1.25 var(--serif); }
+.travail em { font-style: normal; font-size: 17px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.total-mo { display: flex; align-items: baseline; justify-content: space-between; padding: 12px 0 10px; box-shadow: inset 0 1px 0 var(--atlas-line); }
+.total-mo span:first-child { font-size: 14px; color: var(--atlas-muted); }
+.total-mo span:last-child { font: 400 22px/1 var(--serif); font-variant-numeric: tabular-nums; }
+.continuer { margin-top: 18px; }
+
+/* B : le partenaire pris, dit à la place du détail de la dictée. */
+.qui-travaille { display: flex; align-items: center; gap: 10px; padding: 10px 8px 10px 12px; margin-top: 8px; border-radius: 12px;
+                 background: color-mix(in srgb, var(--atlas-or) 13%, transparent); }
+.initiales-or { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border-radius: 50%;
+                font: 400 14px/1 var(--serif); color: var(--atlas-or); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 60%, transparent); }
+.qui-mots { flex: 1; min-width: 0; }
+.qui-mots b { display: block; font: 400 17px/1.2 var(--serif); }
+.qui-mots small { display: block; font-size: 13.5px; color: var(--atlas-inkSoft); }
+.qui-retirer { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-inkSoft); }
+.qui-retirer .ico { width: 20px; height: 20px; }
+.qui-quantite { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 8px; }
+.qui-quantite span { font-size: 14px; color: var(--atlas-inkSoft); }
+.case-quantite { width: 104px; height: 44px; padding: 0 12px; border: 0; border-radius: 10px; outline: none; text-align: right;
+                 background: var(--atlas-card); color: var(--atlas-ink); font: 400 19px/1 var(--serif); font-variant-numeric: tabular-nums;
+                 box-shadow: inset 0 0 0 1.5px var(--atlas-lineSoft); }
+.case-quantite:focus { box-shadow: inset 0 0 0 2px var(--atlas-rust); }
+
+/* La liste : celle de la feuille du devis, mot pour mot. */
+.liste-partenaires { margin: 0; padding: 0; list-style: none; }
+.liste-partenaires > li + li { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.partenaire-nom { display: flex; align-items: center; gap: 10px; padding: 12px 0 2px; }
+.partenaire-nom b { flex: 1; font: 400 18px/1.2 var(--serif); }
+.marge-du-partenaire { font-size: 14px; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
+.prix-partenaire { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 52px; padding: 6px 4px 6px 46px;
+                   text-align: left; font-size: 15.5px; border-radius: 10px; color: var(--atlas-ink); }
+.prix-partenaire b { font-weight: 650; font-variant-numeric: tabular-nums; white-space: nowrap; }
+button.prix-partenaire:active { background: color-mix(in srgb, var(--atlas-ink) 5%, transparent); }
+.aucun-partenaire { margin: 0; padding: 12px 0; font-size: 15px; color: var(--atlas-inkSoft); }
+.feuille .bouton { margin-top: 16px; }
+
+@media (prefers-reduced-motion: reduce) { .barre-repere span { transition: none; } }
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">Mes partenaires, après la dictée</h1>
+  <p class="pl-verdict">Votre idée du 4 novembre. <b>Touchez « Mes partenaires »</b> à côté de la main d’œuvre.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <div data-vue-panneau="A">
+      <p class="pl-legende">A, pour voir leurs prix</p>
+      <div class="pl-etats" data-ecran=".ecran[data-mo='voir']">
+        <button type="button" data-etat="avec" aria-pressed="true">Avec des partenaires</button>
+        <button type="button" data-etat="sans">Sans partenaire</button>
+      </div>
+      <div class="cadre"><div class="ecran" data-mo="voir"></div></div>
+    </div>
+
+    <div data-vue-panneau="B">
+      <p class="pl-legende">B, pour prendre un prix</p>
+      <div class="pl-etats" data-ecran=".ecran[data-mo='prendre']">
+        <button type="button" data-etat="avec" aria-pressed="true">Avec des partenaires</button>
+        <button type="button" data-etat="sans">Sans partenaire</button>
+      </div>
+      <div class="cadre"><div class="ecran" data-mo="prendre"></div></div>
+    </div>
+
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre">
+        <div class="cadre-capture"><img src="aujourdhui/mo-dictee.jpg" alt="La question de la main d'œuvre après la dictée, aujourd'hui : la question, le détail de la dictée, Sur une ligne Main d'œuvre et Répartis sur les travaux, sans partenaire"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>La pastille <b>« Mes partenaires »</b> à droite de « Main d’œuvre », la même que dans la fenêtre Main d’œuvre du devis.</li>
+      <li>Elle ouvre leurs prix et leur marge, dans une feuille qui monte. La question ne bouge pas.</li>
+    </ul>
+    <h2>À choisir</h2>
+    <ul class="a-trancher">
+      <li><b>A, pour voir</b> : on regarde leurs prix, rien ne change dans le calcul.</li>
+      <li><b>B, pour prendre</b> : on touche un prix et il devient la main d’œuvre, comme dans la fenêtre du devis. La croix revient à votre équipe.</li>
+      <li>Je conseille <b>A</b> : c’est ce que vous avez demandé, et la fenêtre Main d’œuvre du devis prend déjà un partenaire, juste après.</li>
+    </ul>
+    <h2>Ce qui reste comme dans l’appli</h2>
+    <ul class="garde">
+      <li>La question, le détail de votre dictée, Sur une ligne Main d’œuvre ou Répartis sur les travaux, la barre.</li>
+    </ul>
+  </section>
+</main>
+
+<script src="kit.js"></script>
+<script>
+(function () {
+  "use strict";
+  // Des exemples : chez lui, ses partenaires de Réglages, Fournisseurs et partenaires.
+  var PARTENAIRES = [
+    { societe: "Élagage Durand", marge: 1.35, prix: [
+      { id: "d1", nom: "Démontage sur corde", unite: "journée", ht: 450 },
+      { id: "d2", nom: "Élagage", unite: "heure", ht: 60 }
+    ] },
+    { societe: "Terrassement Morel", marge: 1.2, prix: [
+      { id: "m1", nom: "Mini-pelle avec chauffeur", unite: "journée", ht: 520 },
+      { id: "m2", nom: "Évacuation en benne", unite: "forfait", ht: 180 }
+    ] }
+  ];
+  var EQUIPE = { hommes: 2, jours: 2, tarif: 280 };
+  var TRAVAUX = [
+    { nom: "Abattage du chêne", poids: 0.625, teinte: "#9fc48a" },
+    { nom: "Fente du bois", poids: 0.25, teinte: "#e3c88f" },
+    { nom: "Évacuation des déchets verts", poids: 0.125, teinte: "#93bde0" }
+  ];
+
+  function euros(n) { return Math.round(n).toLocaleString("fr-FR") + " €"; }
+  function virgule(n) { return String(n).replace(".", ","); }
+  function marge(n) { return "× " + n.toFixed(2).replace(".", ","); }
+  function article(u) { return { "journée": "la journée", heure: "l’heure", forfait: "le forfait" }[u] || "le " + u; }
+  function prixEnMots(p) { return p.ht + " € " + article(p.unite); }
+  function initiales(nom) { return nom.split(/\s+/).slice(0, 2).map(function (m) { return m.charAt(0).toUpperCase(); }).join(""); }
+  function unite(u, n) {
+    var mots = { "journée": ["jour", "jours"], heure: ["heure", "heures"], forfait: ["forfait", "forfaits"] };
+    var m = mots[u];
+    return virgule(n) + " " + (m ? m[n > 1 ? 1 : 0] : u);
+  }
+
+  function monter(ecran) {
+    var prendre = ecran.getAttribute("data-mo") === "prendre";
+    var id = "f-partenaires-" + (prendre ? "b" : "a");
+    ecran.innerHTML =
+      '<div class="defile">' +
+        '<div class="tete"><h2 class="tete-titre moyen">Transcription</h2></div>' +
+        '<section class="carte-chiffrer">' +
+          '<p class="titre">Avant de chiffrer</p>' +
+          '<div class="bloc-avant"><p class="q-quoi">Démontage du chêne</p><p class="q-question">Quelle hauteur de fût ?</p>' +
+            '<div class="q-case"><span></span><span>m</span></div></div>' +
+          '<div class="bloc-mo">' +
+            '<div class="q-tete"><p class="q-quoi">Main d’œuvre</p>' +
+              '<button class="puce-partenaires" type="button" data-ouvre="' + id + '" aria-pressed="false" aria-haspopup="dialog">' +
+              '<svg class="ico" aria-hidden="true"><use href="#i-equipe"/></svg>Mes partenaires</button></div>' +
+            '<p class="q-question">Où mettre les <span data-total-mots></span> de main d’œuvre ?</p>' +
+            '<p class="q-detail" data-detail></p>' +
+            '<div class="qui-travaille" data-qui hidden>' +
+              '<span class="initiales-or" data-qui-initiales></span>' +
+              '<div class="qui-mots"><b data-qui-nom></b><small data-qui-prix></small></div>' +
+              '<button class="qui-retirer" type="button" data-revenir aria-label="Revenir à mon équipe"><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></button>' +
+            '</div>' +
+            '<label class="qui-quantite" data-qui-quantite hidden><span data-qui-unite>Heures</span>' +
+              '<input class="case-quantite" inputmode="decimal" value="1" aria-label="Quantité"></label>' +
+            '<div class="modes"><button type="button" aria-pressed="false" data-mode>Sur une ligne Main d’œuvre</button>' +
+              '<button type="button" aria-pressed="true" data-mode>Répartis sur les travaux</button></div>' +
+            '<div class="plage-mo"><div class="barre-repere" data-barre></div><div data-travaux></div>' +
+              '<div class="total-mo"><span>Total main d’œuvre</span><span data-total></span></div></div>' +
+          '</div>' +
+          '<button class="bouton bouton-plein continuer" type="button">Continuer sans répondre à tout</button>' +
+        '</section>' +
+      '</div>' +
+      '<div class="feuille" id="' + id + '" aria-hidden="true" role="dialog" aria-label="Mes partenaires">' +
+        '<div class="feuille-poignee"></div>' +
+        '<div class="feuille-dedans">' +
+          '<p class="feuille-titre">Mes partenaires</p>' +
+          '<div data-si-etat="avec"><ul class="liste-partenaires" data-liste></ul></div>' +
+          '<p class="aucun-partenaire" data-si-etat="sans" hidden>Aucun prix de partenaire. Ils se notent dans Réglages, Fournisseurs et partenaires.</p>' +
+          '<button class="bouton bouton-creux" type="button" data-ferme>' + (prendre ? "Mon équipe" : "Fermer") + '</button>' +
+        '</div>' +
+      '</div>';
+
+    var etat = { qui: null, quantite: 1 };
+    var $ = function (sel) { return ecran.querySelector(sel); };
+
+    var liste = $("[data-liste]");
+    PARTENAIRES.forEach(function (s) {
+      var li = document.createElement("li");
+      li.innerHTML = '<div class="partenaire-nom"><span class="initiales-or" aria-hidden="true">' + initiales(s.societe) + '</span><b>' + s.societe +
+        '</b><span class="marge-du-partenaire">' + marge(s.marge) + '</span></div>';
+      s.prix.forEach(function (p) {
+        var ligne = document.createElement(prendre ? "button" : "div");
+        if (prendre) ligne.type = "button";
+        ligne.className = "prix-partenaire";
+        ligne.innerHTML = "<span>" + p.nom + "</span><b>" + prixEnMots(p) + "</b>";
+        if (prendre) ligne.addEventListener("click", function () { choisir(s, p); });
+        li.appendChild(ligne);
+      });
+      liste.appendChild(li);
+    });
+
+    function choisir(s, p) {
+      $("[data-ferme]").click();
+      etat.qui = { societe: s, prix: p };
+      etat.quantite = p.unite === "journée" ? EQUIPE.jours : 1;
+      peindre();
+    }
+    $("[data-revenir]").addEventListener("click", function () { etat.qui = null; peindre(); });
+    // B : « Mon équipe » au bas de la liste revient à son équipe, comme dans la feuille du devis.
+    if (prendre) $("[data-ferme]").addEventListener("click", function () { etat.qui = null; peindre(); });
+    $(".case-quantite").addEventListener("input", function (e) {
+      var n = parseFloat(String(e.target.value).replace(",", "."));
+      etat.quantite = n > 0 ? n : 0;
+      peindre(true);
+    });
+    ecran.querySelectorAll("[data-mode]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        ecran.querySelectorAll("[data-mode]").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+      });
+    });
+
+    function peindre(saisie) {
+      var q = etat.qui;
+      var total, detail;
+      if (!q) {
+        total = EQUIPE.hommes * EQUIPE.jours * EQUIPE.tarif;
+        detail = EQUIPE.hommes + " hommes pendant " + EQUIPE.jours + " jours, " + EQUIPE.tarif + " € le jour par homme";
+      } else {
+        total = etat.quantite * q.prix.ht * q.societe.marge;
+        detail = etat.quantite > 0
+          ? unite(q.prix.unite, etat.quantite) + " × " + q.prix.ht + " € × " + virgule(q.societe.marge.toFixed(2))
+          : "Écrivez une quantité au-dessus de zéro.";
+      }
+      $("[data-total-mots]").textContent = euros(total);
+      $("[data-detail]").textContent = detail;
+      $("[data-qui]").hidden = !q;
+      $(".puce-partenaires").setAttribute("aria-pressed", q ? "true" : "false");
+      var aQuantite = q && q.prix.unite !== "journée";
+      $("[data-qui-quantite]").hidden = !aQuantite;
+      if (q) {
+        $("[data-qui-initiales]").textContent = initiales(q.societe.societe);
+        $("[data-qui-nom]").textContent = q.societe.societe;
+        $("[data-qui-prix]").textContent = q.prix.nom + ", " + prixEnMots(q.prix);
+        $("[data-qui-unite]").textContent = q.prix.unite === "heure" ? "Heures" : "Quantité";
+        if (!saisie) $(".case-quantite").value = virgule(etat.quantite);
+      }
+      var barre = $("[data-barre]"), travaux = $("[data-travaux]");
+      barre.innerHTML = ""; travaux.innerHTML = "";
+      var reste = Math.round(total), parts = [];
+      TRAVAUX.forEach(function (t, i) {
+        var m = i === TRAVAUX.length - 1 ? reste : Math.round(total * t.poids / 10) * 10;
+        reste -= m; parts.push(m);
+      });
+      TRAVAUX.forEach(function (t, i) {
+        var morceau = document.createElement("span");
+        morceau.style.background = t.teinte;
+        morceau.style.flex = String(Math.max(parts[i], 1));
+        morceau.textContent = parts[i] >= total * 0.2 ? euros(parts[i]) : "";
+        barre.appendChild(morceau);
+        var r = document.createElement("div");
+        r.className = "travail";
+        r.innerHTML = '<i style="background:' + t.teinte + '"></i><b>' + t.nom + "</b><em>" + euros(parts[i]) + "</em>";
+        travaux.appendChild(r);
+      });
+      $("[data-total]").textContent = euros(total);
+    }
+    peindre();
+    // Sans partenaire, aucun prix ne peut rester pris : B revient à son équipe.
+    var etats = document.querySelector(".pl-etats[data-ecran=\".ecran[data-mo='" + ecran.getAttribute("data-mo") + "']\"]");
+    if (etats) etats.querySelector("[data-etat='sans']").addEventListener("click", function () { etat.qui = null; peindre(); });
+  }
+
+  document.querySelectorAll(".ecran[data-mo]").forEach(monter);
+})();
+</script>
+</body>
+</html>
