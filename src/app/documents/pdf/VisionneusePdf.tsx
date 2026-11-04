@@ -431,7 +431,7 @@ export default function VisionneusePdf({
         <div className="atlas-colonne-fixe z-[19] px-4" style={{ bottom: "calc(var(--atlas-barre) + 12px)" }}>
           <div
             data-atlas="action-saut-de-page"
-            className="flex items-center gap-2 rounded-full p-2"
+            className="flex items-center gap-1.5 rounded-full p-2"
             style={{ background: colors.card, boxShadow: `0 6px 24px ${voile(colors.ink, 0.22)}, 0 0 0 1px ${colors.line}` }}
           >
             {choisiEnHaut && !choisiSaute ? (
@@ -456,7 +456,7 @@ export default function VisionneusePdf({
                   data-atlas="nouvelle-page-ici"
                   onClick={() => void basculer(choisi)}
                   disabled={enCours}
-                  className="atlas-plein min-h-12 min-w-0 flex-1 whitespace-nowrap rounded-full px-3 text-[15.5px] font-semibold disabled:opacity-60"
+                  className="atlas-plein min-h-12 min-w-0 flex-1 rounded-full px-2 text-[15px] font-semibold leading-tight disabled:opacity-60"
                   style={{ backgroundColor: colors.plein, color: surPlein }}
                 >
                   Nouvelle page
@@ -471,7 +471,10 @@ export default function VisionneusePdf({
                     data-atlas="un-espace-ici"
                     onClick={() => void espacer(choisi)}
                     disabled={enCours}
-                    className="min-h-12 min-w-0 flex-1 whitespace-nowrap rounded-full px-3 text-[15.5px] font-semibold disabled:opacity-60"
+                    // Un peu plus large que son voisin : « Encore un espace »
+                    // est le plus long des deux, et tient ainsi sur une ligne
+                    // dès 375 points de large.
+                    className="min-h-12 min-w-0 flex-[1.2] rounded-full px-2 text-[15px] font-semibold leading-tight disabled:opacity-60"
                     style={{ color: colors.ink, boxShadow: `inset 0 0 0 1.5px ${colors.line}` }}
                   >
                     {choisiEspace ? "Encore un espace" : "Un espace ici"}
