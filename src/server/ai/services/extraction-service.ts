@@ -26,7 +26,7 @@ export const SYSTEME = `${METIER_ATLAS}
 Tu extrais des informations de chantier depuis un texte qu'il a dicté.
 Réponds UNIQUEMENT avec un objet JSON valide, sans aucun texte avant ou après, au format exact suivant :
 {
-  "prestations": { "libelle": string, "description": string | null, "quantite": string | null, "unite": string | null, "nature": string | null, "espece": string | null, "prix": string | null, "aConfirmer": boolean }[],
+  "prestations": { "libelle": string, "description": string | null, "quantite": string | null, "unite": string | null, "nature": string | null, "espece": string | null, "prix": string | null, "detail": string | null, "aConfirmer": boolean }[],
   "materiel": { "libelle": string, "description": string | null, "quantite": string | null, "unite": string | null, "aConfirmer": boolean }[],
   "dureePrevue": string | null,
   "tailleEquipe": string | null,
@@ -85,6 +85,19 @@ Règles absolues :
       -> "libelle": "Dessouchage", "description": "souches de 60", "quantite": "2", "unite": "souche"
   Recopie le nombre même si l'artisan n'a pas prononcé l'unité : « souches de 60 » se recopie tel quel,
   jamais complété ni converti.
+
+- **"detail" dit COMMENT il fera ce travail, tel qu'il l'a dicté**, pour qu'il s'écrive sous la ligne du
+  devis que lira le client : la technique, ce qu'on enlève, ce qu'on garde, ce qu'on protège
+  (« rétention », « suppression du bois mort », « allègement », « les grosses charpentières qui partent
+  vers le voisin »). Une seule phrase, propre et lisible : retire les « euh », les « mais », les mots qui
+  ne servent à rien et les répétitions, remets la phrase d'aplomb. **N'ajoute rien qu'il n'a pas dit** :
+  pas de mot technique de plus, pas de précision devinée. Les mesures restent dans "description", le
+  nombre dans "quantite", le prix dans "prix" : pas de chiffre dans "detail". S'il n'a rien dit de la
+  façon de faire, "detail" vaut null.
+    « élagage du frêne, euh, on fait de la rétention, mais on enlève le bois mort, on allège, et les
+      grosses charpentières qui partent vers le voisin on les retient »
+      -> "libelle": "Élagage d'un frêne",
+         "detail": "Suppression du bois mort, allègement, rétention des grosses charpentières qui partent vers le voisin."
 
 Règle de complétude, aussi importante que celle de non-invention :
 - **Chaque action de travail décrite dans le texte donne UNE prestation.** Ne

@@ -1073,6 +1073,12 @@ export const prestations = pgTable(
      */
     prixDicte: numeric("prix_dicte", { precision: 12, scale: 2 }),
     /**
+     * La façon de faire qu'il a dictée, en une phrase (migration 0157, sa
+     * planche du 4 novembre 2026) : elle s'écrit sous le nom de la ligne du
+     * devis qui vend ce travail. NULL : rien de dicté, ou une dictée d'avant.
+     */
+    detail: text("detail"),
+    /**
      * L'artisan a posé lui-même ces valeurs (migration 0070).
      *
      * **Le dépôt n'avait aucune provenance**, et il en fallait une : sans elle,

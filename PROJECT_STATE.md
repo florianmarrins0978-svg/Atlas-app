@@ -4,6 +4,10 @@
 dernière migration `drizzle/0158_cles_composites_effacent_comme_leur_lien.sql` (réunie le 3 novembre pour la batterie commune, avec `0157_banque_lecture_refusee.sql` et `0156_pieces_importees_adresse_lue.sql`) ; `0155_part_de_main_doeuvre_sur_la_ligne.sql` (le devis) sur `main` depuis le 3 novembre
 
 ---
+## LE DÉTAIL SOUS LA LIGNE DU DEVIS, CODÉ (4 novembre 2026), PAS ENCORE SUR `main`
+
+Sa planche `appli/soignee/devis-detail-ligne.html`. Branche `lot/detail-sous-la-ligne` : la dictée garde la façon de faire en une phrase (`prestations.detail`, migration 0157), la ligne du devis la reçoit sous son nom, effacer devant le détail le remonte avec un espace. Suites du domaine vertes, PDF regardé. **Reste : la batterie (niveau 3), puis `main`.** `ARCHITECTURE.md` §544.
+
 ## SUPPRIMER UN CLIENT REMARCHE SUR SA BASE (1er novembre 2026)
 
 La suppression d'un client tombait sur une clé composite de 0149 posée sans règle d'effacement (`ARCHITECTURE.md` §540). Migration `0158` : les vingt-six clés composites effacent comme le lien qu'elles doublent. Aucune donnée lue ni écrite. Niveau 3 (une migration).

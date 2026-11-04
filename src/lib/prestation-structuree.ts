@@ -19,6 +19,12 @@ import { nature } from "./natures-prestation";
 import { montantDicte } from "./retouches-devis";
 
 export type PrestationStructuree = {
+  /**
+   * La façon de faire qu'il a dictée, en une phrase (sa planche du 4 novembre
+   * 2026) : elle s'écrit sous le nom de la ligne du devis. `null` s'il n'a
+   * rien dit.
+   */
+  detail: string | null;
   /** En chiffres, prête pour une colonne numérique. `null` s'il n'a rien dit. */
   quantite: string | null;
   /** Son mot à lui, à la lettre. `null` s'il n'a rien dit. */
@@ -129,7 +135,22 @@ export function structureDeLaPrestation(ligne: LigneExtraite): PrestationStructu
     caracteristiques: mesuresDeLaDictee(ligne),
     aConfirmer: ligne.aConfirmer,
     prixDicte: prixLu(ligne.prix),
+    detail: detailLu(ligne.detail),
   };
+}
+
+/**
+ * Trois cents caractères au plus : au-delà, ce n'est plus le détail d'une
+ * ligne, c'est la dictée recopiée, et elle partirait chez le client.
+ */
+const DETAIL_MAX = 300;
+
+function detailLu(brut: string | null | undefined): string | null {
+  const texte = (brut ?? "").replace(/\s+/g, " ").trim();
+  if (!texte) return null;
+  if (texte.length <= DETAIL_MAX) return texte;
+  // Coupé au dernier mot entier, jamais au milieu d'un mot.
+  return texte.slice(0, texte.lastIndexOf(" ", DETAIL_MAX)).trim();
 }
 
 /**

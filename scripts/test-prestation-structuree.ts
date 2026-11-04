@@ -50,6 +50,26 @@ cas("zéro et négatif ne sont pas des quantités", () => {
   assert.equal(quantiteLue("-5"), null);
 });
 
+console.log("\n=== Le détail dicté se garde, pour la ligne du devis (4 novembre 2026) ===\n");
+
+cas("la phrase du modèle se garde, ses espaces en trop partent", () => {
+  const s = structureDeLaPrestation({
+    ...ligne({ libelle: "Élagage d'un frêne" }),
+    detail: "  Suppression du bois mort,   allègement,\n rétention des grosses charpentières qui partent vers le voisin. ",
+  });
+  assert.equal(s.detail, "Suppression du bois mort, allègement, rétention des grosses charpentières qui partent vers le voisin.");
+});
+
+cas("sans détail dicté, rien ne s'invente", () => {
+  assert.equal(structureDeLaPrestation(ligne({})).detail, null);
+  assert.equal(structureDeLaPrestation({ ...ligne({}), detail: "   " }).detail, null);
+});
+
+cas("un détail démesuré est borné : ce n'est plus un détail, c'est la dictée", () => {
+  const s = structureDeLaPrestation({ ...ligne({}), detail: "mot ".repeat(200) });
+  assert.ok(s.detail && s.detail.length <= 300, `détail de ${s.detail?.length} caractères`);
+});
+
 console.log("\n=== La quantité et l'unité entrent ENSEMBLE ou pas du tout ===\n");
 
 cas("les deux présentes : les deux passent", () => {
