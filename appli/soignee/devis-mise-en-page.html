@@ -87,7 +87,7 @@
 
 /* L'action, en bas de l'écran, une fois une ligne choisie. */
 .action-coupe { position: absolute; left: 12px; right: 12px; bottom: 86px; z-index: 7; display: flex; gap: 8px;
-                align-items: center; padding: 8px; border-radius: 18px; background: var(--atlas-card);
+                align-items: center; padding: 8px; border-radius: 999px; background: var(--atlas-card);
                 box-shadow: 0 6px 24px rgba(28,28,26,0.22), 0 0 0 1px var(--atlas-line); }
 .action-coupe[hidden] { display: none; }
 .action-coupe .bouton-plein { flex: 1; min-height: 48px; font-size: 16px; }
@@ -125,7 +125,7 @@
         <div class="ecran apercu avec-barre" data-apercu="propose" data-touchable>
           <div class="defile"></div>
           <div class="action-coupe" hidden>
-            <button type="button" class="bouton-plein" data-couper>Nouvelle page ici</button>
+            <button type="button" class="bouton bouton-plein" data-couper>Nouvelle page ici</button>
             <p class="deja" hidden>Déjà en haut d'une page.</p>
             <button type="button" class="fermer" data-fermer aria-label="Fermer"><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></button>
           </div>
