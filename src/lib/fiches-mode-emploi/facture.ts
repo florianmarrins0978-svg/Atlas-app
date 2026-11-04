@@ -163,11 +163,11 @@ export const FICHES_FACTURE: FicheModeEmploi[] = [
     intitule: "Noter sur la facture un acompte ou un règlement déjà reçu",
     motsCles: ["acompte", "acomptes", "reglement", "recu", "arrhes", "avance", "deduire", "verse", "paye"],
     geste:
-      "Sous le Total TTC, appuyez sur « + Règlement reçu » : une ligne se pose avec le montant proposé. " +
+      "Sous le Total TTC, appuyez sur la pastille « Règlement reçu » : une ligne se pose avec le montant proposé. " +
       "Touchez la date ou le montant pour les corriger. Le net à payer se recalcule.",
     reserve: "Grisé quand le net à payer est à zéro. Sur l'écran de la facture, les règlements se lisent seulement.",
     source: R,
-    preuves: ["+ Règlement reçu", 'aria-label="Date du règlement"', 'aria-label="Montant reçu"', "Net à payer"],
+    preuves: ['libelle="Règlement reçu"', 'aria-label="Date du règlement"', 'aria-label="Montant reçu"', "Net à payer"],
     ailleurs: [{ source: S, preuves: ["<ReglementsRecus", "fige={false}"] }],
   },
   {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import PastilleAjout from "@/components/atlas/PastilleAjout";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import { enEuros } from "@/lib/euros";
 import { ttcApresAvoirs } from "@/lib/avoir";
@@ -330,17 +331,22 @@ export default function ReglementsRecus({
         </a>
       ))}
 
+      {/* **En pastille depuis le 4 novembre 2026**, son « oui » devant la
+          facture sans devis : le petit lien doré était le seul geste de
+          l'écran à ne pas avoir pris la forme des autres ajouts (« Main
+          d'œuvre », « Ajouter une TVA », « Remise »). Le geste n'a pas
+          changé ; l'euro est celui de « Ajouter un acompte » du devis. */}
       {!fige && (
-        <button
-          type="button"
-          data-atlas="poser-reglement"
-          disabled={enCours || Number(net) <= 0}
-          onClick={ajouter}
-          className="mt-3 block text-[14px] font-medium"
-          style={{ color: colors.or }}
-        >
-          + Règlement reçu
-        </button>
+        <div className="mt-3">
+          <PastilleAjout
+            or
+            icone="euro"
+            libelle="Règlement reçu"
+            repere="poser-reglement"
+            eteinte={enCours || Number(net) <= 0}
+            onClick={ajouter}
+          />
+        </div>
       )}
 
       {erreur && (
