@@ -10,17 +10,17 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
-## LA MISE EN PAGE DU DEVIS (4 novembre 2026), sur `lot/mise-en-page-devis`
+## LA MISE EN PAGE DU DEVIS (4 novembre 2026), sur `main` le 4 novembre
 
-**Les pièges :** un saut se pose DEVANT un élément (`ligne:<id de la ligne de prix>`, `totaux`, `notes`, `modalites`), jamais à une hauteur ; et l'identifiant est celui de la LIGNE DE PRIX (`lignes_devis.ligne_prix_id`), parce que les lignes d'un brouillon sont effacées et recopiées à chaque synchronisation. Le PDF nomme ses lignes par elle (`l.lignePrixId ?? l.id`) : y remettre `l.id` détache tous les sauts sans un message. La route `mise-en-page` doit composer EXACTEMENT comme la route du PDF (brouillon resynchronisé d'abord), sinon il coupe la ligne voisine. `composerDocument` compose deux fois au plus (`sautQuiManque`), jamais en boucle. `atlas-plein` ne donne pas de fond : un bouton plein prend aussi `colors.plein` et `surPlein`. **Les espaces** : la page n'en prend que ce qu'elle tient, et c'est le générateur qui le dit (`ajouterUnEspaceDevant` compose AVANT d'écrire) ; ne jamais refaire ce calcul dans l'écran. Un saut posé devant un élément retire ses espaces. **0164 a reçu `espaces_de_page` en place** : une base d'essai qui avait déjà joué 0164 ne la rejoue pas (le lanceur reconnaît le nom), il faut y ajouter la colonne à la main ou la recréer. Batterie non jouée, à sa demande ; le lot attend sa décision pour `main` (`ARCHITECTURE.md` §553).
-
----
-## LA NOTE DU DEVIS (4 novembre 2026), sur `lot/note-du-devis`
-
-**Les pièges :** la note se lit dans `devis.conditions_paiement`, celui que le PDF imprimait déjà ; elle n'est pas un champ neuf. Sur la page du client, ne jamais faire basculer `NoteDuDevis` d'un `div` à un `button` : le texte mesuré serait remplacé et la note longue ne s'ouvrirait plus ; et un texte coupé par `line-clamp` se mesure la coupe levée. Côté patron, `users` n'accorde ses colonnes qu'une à une à `atlas_app` : toute colonne neuve de `users` demande son `GRANT` dans sa migration (0163 en est l'exemple). `ARCHITECTURE.md` §552.
+**Les pièges :** un saut se pose DEVANT un élément (`ligne:<id de la ligne de prix>`, `totaux`, `notes`, `modalites`), jamais à une hauteur ; et l'identifiant est celui de la LIGNE DE PRIX (`lignes_devis.ligne_prix_id`), parce que les lignes d'un brouillon sont effacées et recopiées à chaque synchronisation. Le PDF nomme ses lignes par elle (`l.lignePrixId ?? l.id`) : y remettre `l.id` détache tous les sauts sans un message. La route `mise-en-page` doit composer EXACTEMENT comme la route du PDF (brouillon resynchronisé d'abord), sinon il coupe la ligne voisine. `composerDocument` compose deux fois au plus (`sautQuiManque`), jamais en boucle. `atlas-plein` ne donne pas de fond : un bouton plein prend aussi `colors.plein` et `surPlein`. **Les espaces** : la page n'en prend que ce qu'elle tient, et c'est le générateur qui le dit (`ajouterUnEspaceDevant` compose AVANT d'écrire) ; ne jamais refaire ce calcul dans l'écran. Un saut posé devant un élément retire ses espaces. **0164 a reçu `espaces_de_page` en place** : une base d'essai qui avait déjà joué 0164 ne la rejoue pas (le lanceur reconnaît le nom), il faut y ajouter la colonne à la main ou la recréer. Sur `main` le 4 novembre, par la batterie commune des quatre lots (`docs/batterie-commune-4-novembre.md`, `ARCHITECTURE.md` §553).
 
 ---
-## « MES PARTENAIRES » SUR LA MAIN D'ŒUVRE DICTÉE (4 novembre 2026)
+## LA NOTE DU DEVIS (4 novembre 2026), sur `main` le 4 novembre
+
+**Les pièges :** la note se lit dans `devis.conditions_paiement`, celui que le PDF imprimait déjà ; elle n'est pas un champ neuf. Sur la page du client, ne jamais faire basculer `NoteDuDevis` d'un `div` à un `button` : le texte mesuré serait remplacé et la note longue ne s'ouvrirait plus ; et un texte coupé par `line-clamp` se mesure la coupe levée. Côté patron, `users` n'accorde ses colonnes qu'une à une à `atlas_app` : toute colonne neuve de `users` demande son `GRANT` dans sa migration (0163 en est l'exemple). Et une action serveur sans garde de rôle se déclare avec sa raison dans `EXEMPTIONS` de `scripts/test-actions-gardees-db.ts` : `aideNoteDevisVueAction` ne l'était pas, et c'est le seul rouge que la batterie commune a trouvé dans les lots. `ARCHITECTURE.md` §552.
+
+---
+## « MES PARTENAIRES » SUR LA MAIN D'ŒUVRE DICTÉE (4 novembre 2026), sur `main` le 4 novembre
 
 **Les pièges :** le prix d'un partenaire se relit TOUJOURS au serveur (`partenaireDuChoix`, `src/server/chiffrage/proposition-prix.ts`) ; la réponse ne porte qu'un identifiant et une quantité, et la quantité d'un prix à la journée est remplacée par les jours dictés (`quantiteDuPartenaire`). La carte (`MainOeuvreDeLaDictee.tsx`) lit son total sur la réponse enregistrée, pas sur la case : c'est ce qui garde « ce qu'il voit est ce qui part ». La liste des partenaires est une pièce commune (`PartenairesDeLaMainOeuvre.tsx`) : la feuille du devis et la carte la montent, une retouche se fait là. `ARCHITECTURE.md` §551.
 

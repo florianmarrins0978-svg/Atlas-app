@@ -4,10 +4,9 @@ Ta demande : *« Dans ce cas, c'est très bien, tu peux coder ça, mais ne
 lance pas de batterie. »*, devant la planche
 `appli/soignee/devis-mise-en-page.html`.
 
-**Où c'est :** sur la branche `lot/mise-en-page-devis`. **Pas sur `main`** :
-le lot touche le PDF du devis et de la facture et ajoute deux colonnes en
-base, donc il lui faut la batterie entière avant de partir chez toi. Elle
-n'a pas été jouée, à ta demande.
+**Où c'est :** sur `main` le 4 novembre, par la batterie commune des quatre lots (`docs/batterie-commune-4-novembre.md`). Le lot
+touche le PDF du devis et de la facture et ajoute deux colonnes en base : il
+lui fallait la batterie entière, jouée pour les quatre lots ensemble.
 
 ## Ce qui est codé, point par point
 
@@ -79,10 +78,10 @@ capture du vrai écran, corrigé.
 | Les espaces, dans le PDF | 7 cas verts de plus, rouges avant le code |
 | Les espaces, en base | 5 cas verts de plus ; le refus « Plus de place » rougit si on le retire |
 | Ton geste, dans un navigateur, en suite qui reste | 9 gestes verts, chaque écriture vérifiée en base ; rouge si la puce manque à l'écran du devis |
-| **La batterie entière** | **non jouée, à ta demande** |
+| **La batterie entière** | jouée le 4 novembre avec les trois autres lots, rien de rouge venu de ce lot |
 
 ## Ce qui reste ouvert
 
 | | Qui |
 |---|---|
-| La batterie entière, puis `main` | toi, quand tu le dis |
+| ~~La batterie entière, puis `main`~~ | faite le 4 novembre |

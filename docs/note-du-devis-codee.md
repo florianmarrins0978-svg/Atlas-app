@@ -4,10 +4,9 @@ Ta demande : *« tu peux coder ça, mais ne lance pas de batterie »*, après te
 choix du jour sur les deux planches de la note (`appli/soignee/devis-note-client.html`,
 `appli/soignee/devis-note-avant-envoi.html`).
 
-**Où c'est :** sur la branche `lot/note-du-devis`. **Pas sur `main`** : le lot
-ajoute une case en base et touche la page devis de ton client, donc il lui
-faut la batterie complète avant d'arriver dans ton application. Elle n'a pas
-été jouée, à ta demande.
+**Où c'est :** sur `main` le 4 novembre, par la batterie commune des quatre lots (`docs/batterie-commune-4-novembre.md`). Le lot
+ajoute une case en base et touche la page devis de ton client : il lui
+fallait la batterie complète, jouée pour les quatre lots ensemble.
 
 ## Ce qui est codé, point par point
 
@@ -56,10 +55,10 @@ celui que le PDF imprimait déjà.
 | La page client existante (`test-devis-client-e2e`) | verte |
 | Migrations, couches, code mort, tirets, flèches, chartes | verts |
 | Écrans regardés ici, données de démonstration | note courte, note longue et sa feuille, page à 360 et 390 px, fenêtre du patron |
-| **Batterie entière** | **pas jouée**, à ta demande |
+| **Batterie entière** | jouée le 4 novembre avec les trois autres lots ; un rouge venu de ce lot, corrigé (l'action qui note la fenêtre vue n'avait pas sa raison écrite) |
 
 ## Ce qui reste ouvert
 
-- **La batterie, puis `main`** : à lancer avec ton accord.
+- ~~**La batterie, puis `main`**~~ : faite le 4 novembre.
 - **La place de la note sur le PDF** (sous les totaux aujourd'hui) : la
   planche de mise en page du devis d'une autre session la touche.

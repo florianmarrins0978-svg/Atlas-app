@@ -293,6 +293,11 @@ const EXEMPTIONS: Record<string, string> = {
     "Retire SA propre photo et son fichier. Le refuser à un rôle lui interdirait d'effacer sa propre tête.",
   "src/app/reglages/apparence/actions.ts#choisirCharteAction":
     "La charte de couleurs de la personne connectée. Aucune donnée d'entreprise, aucun autre compte touché.",
+  "src/app/chantiers/[id]/devis-complet/actions.ts#aideNoteDevisVueAction":
+    "Note que la fenêtre de la note du devis a été montrée à la personne connectée (migration 0163), " +
+    "sur SA ligne de `users` comme la charte : aucun argument, l'identifiant vient de la session, et la " +
+    "première date reste (IS NULL). Une garde de rôle n'y fermerait rien, et un rôle qui lit le devis " +
+    "sans le gérer reverrait la fenêtre à chaque ouverture.",
   "src/app/reglages/connexion/double-verification-actions.ts#commencerActivationAction":
     "Activer la double vérification n'écrit que sur la personne connectée, quel que soit son rôle ; c'est l'écran où le patron est envoyé tant qu'elle n'est pas activée.",
   "src/app/reglages/connexion/double-verification-actions.ts#confirmerActivationAction":

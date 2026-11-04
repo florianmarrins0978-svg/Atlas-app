@@ -34,12 +34,12 @@ La ligne du devis prend le nom de ton tarif. Ce que tu disais de la façon de fa
 | Navigateur, ton geste sur le vrai devis (`test-detail-sous-la-ligne-e2e.ts`) | 3 / 3 |
 | Suites voisines (dictée, prix dicté, main d'œuvre, doublons, PDF du devis) | vertes |
 | PDF regardé | le nom, puis le détail dessous, en noir |
-| **Batterie entière** | **pas jouée** |
+| **Batterie entière** | jouée le 4 novembre avec les trois autres lots, rien de rouge venu de ce lot |
 
 ## Ce qui reste
 
 | | Qui |
 |---|---|
-| La batterie, puis `main` (le devis touche l'argent : niveau 3) | toi, quand tu le dis |
+| ~~La batterie, puis `main`~~ | faite le 4 novembre, par la batterie commune des quatre lots (`docs/batterie-commune-4-novembre.md`) |
 | Tes chantiers déjà dictés n'ont pas de détail : il ne s'est jamais gardé. Il s'écrit à la main dans la ligne, ou en redictant | rien à faire |
 | La phrase rédigée par le modèle ne s'éprouve pas ici (pas de clé) : à regarder sur ton espace, à ta prochaine dictée | toi |
