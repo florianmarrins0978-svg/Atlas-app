@@ -2093,7 +2093,12 @@ export default function DevisCompletClient(props: Props) {
           ni en-tête ni flèche (`src/lib/visionneuse-pdf.ts`). */}
       <div className="mt-10 flex flex-col items-center" style={{ borderTop: `1px solid ${colors.lineSoft}` }}>
         <Link
-          href={adresseDeLaVisionneuse(`/api/devis/${props.devisId}/pdf`, { surtitre: "Devis", titre: props.numeroCommercial })}
+          href={adresseDeLaVisionneuse(
+            `/api/devis/${props.devisId}/pdf`,
+            { surtitre: "Devis", titre: props.numeroCommercial },
+            // Un brouillon se met en page dans son aperçu ; un devis parti, non.
+            { couper: !fige }
+          )}
           data-atlas="apercu-pdf"
           className="pt-6 text-[14px] font-medium"
           style={{ color: colors.rust }}

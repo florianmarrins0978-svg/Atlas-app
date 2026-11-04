@@ -4,6 +4,7 @@ import path from "node:path";
 import {
   CHEMIN_VISIONNEUSE,
   adresseDeLaVisionneuse,
+  devisAMettreEnPage,
   fichierAccepteParLaVisionneuse,
   fichierDemandeALaVisionneuse,
 } from "../src/lib/visionneuse-pdf";
@@ -75,6 +76,31 @@ cas("rien, ou vide, ne se peint", () => {
 cas("une adresse qui n'est pas celle de la visionneuse ne se relit pas", () => {
   assert.equal(fichierDemandeALaVisionneuse(FACTURE), null);
   assert.equal(fichierDemandeALaVisionneuse(`${CHEMIN_VISIONNEUSE}?titre=x`), null);
+});
+
+// ─── « TOUCHEZ UNE LIGNE » : SEULEMENT L'APERÇU D'UN DEVIS ──────────────────
+//
+// Sa planche du 3 novembre 2026. Le paramètre arrive de l'adresse : il ne doit
+// ouvrir la mise en page que sur l'aperçu d'un devis, jamais sur une facture
+// (déjà émise, intouchable) ni sur une adresse fabriquée.
+
+const DEVIS = "/api/devis/5b1e0c2a-9d7f-4c1e-8a3b-2f6d4e8a1c90/pdf";
+
+cas("l'écran du devis ouvre la mise en page, et l'adresse se relit", () => {
+  const adresse = adresseDeLaVisionneuse(DEVIS, { surtitre: "Devis", titre: "2026-000002" }, { couper: true });
+  const params = new URLSearchParams(adresse.split("?")[1]);
+  assert.equal(devisAMettreEnPage(params.get("fichier") ?? "", params.get("couper")), "5b1e0c2a-9d7f-4c1e-8a3b-2f6d4e8a1c90");
+  const sans = new URLSearchParams(adresseDeLaVisionneuse(DEVIS, { surtitre: "Devis", titre: "x" }).split("?")[1]);
+  assert.equal(sans.get("couper"), null, "un aperçu ordinaire demande la mise en page");
+});
+
+cas("une facture, un téléchargement ou une adresse fabriquée ne se mettent pas en page", () => {
+  assert.equal(devisAMettreEnPage(DEVIS, null), null, "sans « couper », la mise en page s'ouvre");
+  assert.equal(devisAMettreEnPage(FACTURE, "1"), null, "une facture se met en page");
+  assert.equal(devisAMettreEnPage(`${DEVIS}?telecharger=1`, "1"), null);
+  assert.equal(devisAMettreEnPage("/api/devis/../factures/x/pdf", "1"), null);
+  assert.equal(devisAMettreEnPage(`https://ailleurs.example${DEVIS}`, "1"), null);
+  assert.equal(devisAMettreEnPage(DEVIS, ["1"]), null, "un paramètre répété passe pour « 1 »");
 });
 
 // ─── CE QUE pdf.js EXIGE DU NAVIGATEUR DU CLIENT ───────────────────────────

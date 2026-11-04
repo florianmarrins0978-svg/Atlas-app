@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font } from "@/lib/design-tokens";
-import { fichierAccepteParLaVisionneuse } from "@/lib/visionneuse-pdf";
+import { adresseDeLaMiseEnPage, devisAMettreEnPage, fichierAccepteParLaVisionneuse } from "@/lib/visionneuse-pdf";
 import VisionneusePdf from "./VisionneusePdf";
 import { garderLaPage } from "@/server/garde-page";
 
@@ -30,6 +30,10 @@ export default async function VisionneusePdfPage({
   if (!fichier) notFound();
   const titre = typeof params.titre === "string" && params.titre.trim() ? params.titre.trim() : "Document";
   const surtitre = typeof params.de === "string" && params.de.trim() ? params.de.trim() : undefined;
+  // L'aperçu d'un devis brouillon se met en page d'un doigt (sa planche du
+  // 3 novembre 2026). L'écran n'en sait toujours pas plus : la route de mise
+  // en page dit si ce devis et ce rôle le permettent.
+  const devisId = devisAMettreEnPage(fichier, params.couper);
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -41,7 +45,10 @@ export default async function VisionneusePdfPage({
           // signet, il n'y a rien à quoi revenir sinon l'accueil.
           retour={{ href: "/", libelle: "Retour à l'accueil" }}
         />
-        <VisionneusePdf fichier={fichier} />
+        <VisionneusePdf
+          fichier={fichier}
+          miseEnPage={devisId ? { devisId, adresse: adresseDeLaMiseEnPage(devisId) } : null}
+        />
       </div>
     </div>
   );
