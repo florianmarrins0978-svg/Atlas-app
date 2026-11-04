@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import BottomSheet from "@/components/atlas/BottomSheet";
-import IconeTrait from "@/components/atlas/IconeTrait";
-import PrimaryButton from "@/components/atlas/PrimaryButton";
+import BottomSheet from "./BottomSheet";
+import IconeTrait from "./IconeTrait";
+import PrimaryButton from "./PrimaryButton";
+import RepartirLaMainOeuvre from "./RepartirLaMainOeuvre";
 import { colors, font, surPlein, voile } from "@/lib/design-tokens";
 import { enEuros } from "@/lib/euros";
 import {
@@ -13,11 +14,11 @@ import {
   montantDeLaMainOeuvre,
   quantiteTapee,
   rangDeLaDuree,
+  type ChoixDeMainOeuvre,
+  type DonneesMainOeuvre,
   type PrixDePartenaire,
 } from "@/lib/feuille-main-oeuvre";
 import { ecrireChoix, lireChoix, repartirMainOeuvre, type QuestionMainOeuvre } from "@/lib/main-oeuvre-dictee";
-import type { ChoixDeMainOeuvre } from "./actions";
-import RepartirLaMainOeuvre from "../RepartirLaMainOeuvre";
 
 /**
  * ─── LA FEUILLE « MAIN D'ŒUVRE » — sa planche du 1er novembre 2026 ───────────
@@ -27,22 +28,29 @@ import RepartirLaMainOeuvre from "../RepartirLaMainOeuvre";
  * repris de sa dictée et son prix du jour par homme ; ou, par la pastille
  * « Mes partenaires » à droite du titre (son idée du même soir), le prix d'un
  * de ses partenaires, multiplié par sa marge. Les règles sont dans
- * `src/lib/feuille-main-oeuvre.ts`, et l'action les rejoue côté serveur.
+ * `src/lib/feuille-main-oeuvre.ts`, et l'action les rejoue côté serveur
+ * (`ligneDuChoix`).
+ *
+ * **Le devis et la facture la montent** depuis le 4 novembre 2026 (planche
+ * `appli/soignee/facture.html`, page « ts ») : *« le bouton ma TVA, main
+ * d'œuvre, est le même qu'à l'ancienne »*. La facture ne la monte que pour
+ * poser une ligne : ses lignes ne gardent pas de part de main d'œuvre
+ * (`lignes_facture` n'a ni le drapeau ni la part, §459), il n'y a donc rien
+ * à répartir, et « Où la mettre » ne s'y montre pas.
  */
-export type DonneesMainOeuvre = {
-  hommes: number | null;
-  jours: number | null;
-  tarifJour: string | null;
-  partenaires: PrixDePartenaire[];
-};
-
 type Props = {
   ouverte: boolean;
   donnees: DonneesMainOeuvre;
-  /** Les travaux de la TVA où il a appuyé qui ont leur prix : ceux qui peuvent recevoir une part. */
-  travaux: readonly { id: string; libelle: string }[];
+  /**
+   * La répartition, quand la pièce sait la garder (le devis) : les travaux de
+   * la TVA où il a appuyé qui ont leur prix, et ce qui pose les parts.
+   * Absente, la feuille ne propose que la ligne.
+   */
+  repartition?: {
+    travaux: readonly { id: string; libelle: string }[];
+    onRepartir: (choix: ChoixDeMainOeuvre, parts: Record<string, number>) => void;
+  };
   onValider: (choix: ChoixDeMainOeuvre) => void;
-  onRepartir: (choix: ChoixDeMainOeuvre, parts: Record<string, number>) => void;
   onFermer: () => void;
 };
 
@@ -161,7 +169,8 @@ function Rang({ titre, sous, children }: { titre: string; sous: string; children
   );
 }
 
-function Contenu({ donnees, travaux, onValider, onRepartir, onFermer }: Props) {
+function Contenu({ donnees, repartition, onValider, onFermer }: Props) {
+  const travaux = repartition?.travaux ?? [];
   const [vue, setVue] = useState<"calcul" | "liste">("calcul");
   const [qui, setQui] = useState<PrixDePartenaire | null>(null);
   const [hommes, setHommes] = useState(Math.min(20, Math.max(1, donnees.hommes ?? 1)));
@@ -190,7 +199,7 @@ function Contenu({ donnees, travaux, onValider, onRepartir, onFermer }: Props) {
         ? { qui: "equipe", hommes, jours: DUREES_MAIN_OEUVRE[rang].jours, tarif: tarifLu === null ? null : String(tarifLu) }
         : { qui: "partenaire", prixId: qui.id, quantite: quantitePartenaire ?? 0 };
   // Répartir demande un montant : une main d'œuvre « à chiffrer » n'a rien à partager.
-  const peutRepartir = travaux.length > 0 && montant !== null && Number(montant) > 0;
+  const peutRepartir = repartition !== undefined && travaux.length > 0 && montant !== null && Number(montant) > 0;
   const lu = lireChoix(ou);
   const dedans = travaux.filter((t) => !(lu?.retires ?? []).includes(t.id));
   const reparti = peutRepartir && lu?.mode === "reparti" && dedans.length > 0;
@@ -414,7 +423,7 @@ function Contenu({ donnees, travaux, onValider, onRepartir, onFermer }: Props) {
               pleineLargeur
               onClick={() => {
                 if (choixDeLaFeuille === null) return;
-                if (reparti && montant !== null) {
+                if (reparti && montant !== null && repartition) {
                   // Les parts telles que la barre les montre : la même règle,
                   // que le serveur rejoue avant d'écrire.
                   const parts = repartirMainOeuvre(
@@ -422,7 +431,10 @@ function Contenu({ donnees, travaux, onValider, onRepartir, onFermer }: Props) {
                     dedans.map((t) => t.id),
                     lu?.parts ?? {}
                   );
-                  onRepartir(choixDeLaFeuille, Object.fromEntries(Object.entries(parts).map(([k, v]) => [k, Number(v)])));
+                  repartition.onRepartir(
+                    choixDeLaFeuille,
+                    Object.fromEntries(Object.entries(parts).map(([k, v]) => [k, Number(v)]))
+                  );
                 } else {
                   onValider(choixDeLaFeuille);
                 }

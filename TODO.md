@@ -9,6 +9,16 @@ Codé le 4 novembre sur son « oui » à la planche (`appli/soignee/facture.html
 - **Le renvoi d'une facture partie, pour un client supprimé** (`TransmettreLaFacture`), n'est pas touché : il redemande la coordonnée (celle tapée au premier envoi n'est pas reprise), son bouton dit « Enregistrer et ouvrir le message » alors que rien ne s'enregistre (`mettreAJourClient` écarte une fiche supprimée), et la trace ne note pas ce qu'il y tape. À reprendre sur planche si le cas revient. Qui : nous, puis lui.
 - **À lui de dire : la facture garde le téléphone et l'e-mail copiés à sa création** (`factures.client_telephone`, `client_email`), et le papier les imprime ; la suppression du client vide la fiche, pas ces copies. Pour une facture en brouillon, faut-il les vider aussi ? Une facture arrêtée, elle, ne se réécrit jamais. Qui : lui.
 
+## LES AJOUTS DU DEVIS SUR LA FACTURE : CE QUI RESTE (4 novembre 2026)
+
+Codé le 4 novembre sur son « oui » à la planche `appli/soignee/facture.html` (page « ts », ses deux états) : « Main d'œuvre », « Ajouter une TVA » et « Remise » en pastilles qui ouvrent les feuilles du devis, sur « Travaux en plus » et la facture sans devis (`ARCHITECTURE.md` §549). **Pas sur `main`** : niveau 3 (l'argent, `src/server/repositories/factures.ts`), la batterie entière reste à jouer, avec `test-ajouts-de-la-facture-e2e` (écrite, pas encore jouée : ce lot n'avait pas le droit d'ouvrir un serveur).
+
+- **À la fusion** : l'entrée « ⏳ À choisir par lui (3 novembre) : deux états sur `appli/soignee/facture.html` », venue de `main` avec la planche, est tranchée pour les ajouts du devis ; « Règlement reçu » en pastille reste à sa décision (le lien « + Règlement reçu » n'a pas bougé).
+- **À lui de dire, s'il en a besoin** : nommer une main d'œuvre déjà comprise dans d'autres lignes, sans en poser une. Le lien « + Main d'œuvre » ouvrait « dont main d'œuvre HT » vide pour cela ; la planche ne le porte pas, et sa A du 13 octobre l'a retirée du devis. Un « dont » qui existe se retouche et se retire comme avant.
+- **À lui de dire** : la planche dessine « Remise » aussi sur « Travaux en plus » (facture née d'un devis). Elle reste réservée à la facture sans devis : sa « A » du 7 octobre (la remise d'un devis se change sur le devis), que le serveur refuse aussi.
+- **Par nous, lot à part (migration, niveau 3)** : sur la facture, « dont main d'œuvre HT » est un montant que la feuille augmente au moment où elle pose ; il ne suit pas un prix de main d'œuvre changé ensuite, ni une ligne arrivée à chiffrer puis chiffrée. Le faire suivre comme sur le devis demande le drapeau `main_doeuvre` (et la part) sur `lignes_facture`, et une règle pour les factures dont « dont » a été tapé à la main (expand/contract).
+- **Pas vérifiable ICI** : l'écran lui-même (serveur interdit à ce lot) ; la ligne de main d'œuvre sur le PDF de la facture (« 2 jour/homme à 280,00 € »).
+
 ## « J'AI VU » SUR LES CONTRÔLES DES VÉHICULES : CE QUI RESTE (3 novembre 2026)
 
 Codé le 3 novembre (`ARCHITECTURE.md` §546), migration `0159_rappels_vehicules_vus.sql`. **Pas sur `main`** : niveau 3 (plancher `drizzle/`), la batterie entière reste à jouer avec les autres lots.

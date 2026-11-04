@@ -14,6 +14,7 @@ import {
   majTitreDeFacture,
   majReferencesChorusFacture,
   majMainDoeuvreDeFacture,
+  ajouterMainDoeuvreDeFacture,
   majDateTravauxFacture,
   majAutoliquidationFacture,
   majTvaClientFacture,
@@ -34,6 +35,8 @@ import {
 import { faireUnAvoir } from "@/server/repositories/avoirs";
 import { declarerNonPayee } from "@/server/repositories/factures-non-payees";
 import type { MoyenDePaiement } from "@/lib/acomptes-facture";
+import type { ChoixDeMainOeuvre } from "@/lib/feuille-main-oeuvre";
+import { ligneDuChoix } from "@/server/chiffrage/main-oeuvre-choisie";
 import { jourIso } from "@/lib/jour";
 import { logger } from "@/server/logger";
 import { phraseDesManques, type Manque } from "@/lib/mentions-manquantes";
@@ -415,6 +418,56 @@ export async function majMainDoeuvreFactureAction(
   } catch (err) {
     logger.error("Main d'œuvre de la facture non enregistrée", { erreur: err instanceof Error ? err.message : String(err) });
     return { succes: false, erreur: "La main d'œuvre n'a pas pu être enregistrée. Réessayez." };
+  }
+}
+
+/**
+ * La main d'œuvre de sa feuille, posée sur la facture — la feuille du devis,
+ * montée sur « Remplir la facture » et « Travaux en plus » le 4 novembre 2026.
+ *
+ * **Elle reçoit un CHOIX, jamais un prix** : `ligneDuChoix` le recalcule sur
+ * ses prix et ses marges lus en base, la fonction même du devis. Ce que
+ * l'écran reçoit, c'est la ligne posée et « dont » tel que la base l'a
+ * retenu : il ne déduit rien de son côté.
+ */
+export type ResultatMainDoeuvreAjoutee =
+  | {
+      succes: true;
+      ligne: {
+        id: string;
+        libelle: string;
+        quantite: string;
+        unite: string | null;
+        prixUnitaire: string;
+        montant: string;
+        tauxTva: string | null;
+        supplement: boolean;
+      };
+      mainDoeuvreHt: string | null;
+    }
+  | { succes: false; erreur: string };
+
+export async function ajouterMainDoeuvreDeFactureAction(
+  factureId: string,
+  taux: string | null,
+  choix: ChoixDeMainOeuvre
+): Promise<ResultatMainDoeuvreAjoutee> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "ajouter une main d'œuvre à la facture");
+  try {
+    const ligne = await ligneDuChoix(ctx, choix);
+    if ("raison" in ligne) return { succes: false, erreur: ligne.raison };
+    const r = await ajouterMainDoeuvreDeFacture(ctx, factureId, taux, ligne);
+    if (!r.ok) return { succes: false, erreur: r.raison };
+    const { id, libelle, quantite, unite, prixUnitaire, montant, tauxTva, supplement } = r.ligne;
+    return {
+      succes: true,
+      ligne: { id, libelle, quantite, unite, prixUnitaire, montant, tauxTva, supplement },
+      mainDoeuvreHt: r.mainDoeuvreHt,
+    };
+  } catch (err) {
+    logger.error("Main d'œuvre de la facture non ajoutée", { erreur: err instanceof Error ? err.message : String(err) });
+    return { succes: false, erreur: "La main d'œuvre n'a pas pu être ajoutée. Réessayez." };
   }
 }
 

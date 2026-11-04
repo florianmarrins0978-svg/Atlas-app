@@ -36814,3 +36814,31 @@ Contrôle : `test-onglets-termines-e2e`, cas « le tri se choisit en pastille »
 Contrôles : `test-coordonnee-de-cet-envoi` (la règle, sans base), `test-coordonnee-de-cet-envoi-db` (sous `atlas_app` : l'envoi vers l'e-mail et le numéro tapés, la trace, la fiche intacte et hors de la liste, les refus d'un client vivant, d'une forme fausse, d'une facture partie, d'une autre entreprise, le canal corrigé ; vu rouge avant le code, et rouge encore quand l'envoi écrit sur la fiche), `test-facture-client-supprime-e2e` (son geste, par la vraie suppression de sa fiche ; écrite, pas jouée dans ce lot).
 
 **Ce qui n'est pas tenu** (`TODO.md`) : servi sur une base sans 0160, ce code fait tomber l'écran Facture (la lecture des envois nomme la colonne). Le renvoi d'une facture partie (`TransmettreLaFacture`) n'est pas touché : pour un client supprimé, il redemande la coordonnée, dit « Enregistrer » sans rien enregistrer, et ne la note pas. La facture garde le téléphone et l'e-mail copiés à sa création (`client_telephone`, `client_email`), que la suppression ne vide pas.
+
+## §549 : La facture monte les feuilles du devis ; « dont » y reste un montant, augmenté de ce qu'elles posent
+
+**Sa remarque du 3 novembre 2026** : *« Pourquoi la facture, c'est quand on crée une facture, elle n'a pas été modifiée comme la facture suivie d'un devis. Le bouton ma TVA, main d'œuvre, est le même qu'à l'ancienne. »* Sa planche (`appli/soignee/facture.html`, page « ts », états « Travaux en plus » et « Facture sans devis »), puis son « oui ». L'écran est `TravauxSupplementairesClient`, qui sert « Travaux en plus » et la facture sans devis.
+
+| | |
+|---|---|
+| **les pastilles** | `PastilleAjout`, comme le devis : « Ajouter un travail » (« Ajouter une ligne » sans devis), « Main d'œuvre » et « Ajouter une TVA » sur une rangée, « Remise » sous les totaux. Les liens dorés de 14 points sont partis, les repères restent (`ajouter-tva-supplement`, `poser-main-doeuvre`, `poser-prix-accorde`) |
+| **les places** | « Main d'œuvre » dans chaque catégorie, à côté de « Ajouter un travail » (la ligne naît dans la TVA où il a appuyé, comme sur le devis). « Ajouter une TVA » une seule fois, dans la rangée de la DERNIÈRE catégorie : à un taux, c'est la rangée de la planche ; à deux, il reste sous tout. La remise, là où était « + Remise » |
+| **les feuilles déménagent** | `FeuilleDuTaux`, `FeuilleMainDoeuvre` et la barre qu'elle monte (`RepartirLaMainOeuvre`) quittent `src/app/chantiers/[id]/` pour `src/components/atlas/` : deux écrans les montent, et une pièce partagée qui importerait un écran remonterait une flèche (`CLAUDE.md` §4 sexies) |
+| **une seule feuille de TVA, une seule de remise** | `FeuilleDeLaTva` et `FeuilleDeLaRemise` (dans `Remise.tsx`, à la place de `BoutonRemise`, devenu mort) portent le titre, les raccourcis, le bouton ; leur jugement et leur aperçu sont purs (`src/lib/feuilles-du-taux.ts` : `lireUneTva`, `lireUneRemise`, `apercuDeLaRemise`). Le devis les monte aussi : ses deux montages recopiés en ligne sont partis |
+| **le serveur de la feuille de main d'œuvre** | `ligneDuChoix` (le choix relu sur ses prix et ses marges) et `donneesDeLaMainOeuvre` (ce que la feuille montre en s'ouvrant) quittent les actions et la page du devis pour `src/server/chiffrage/main-oeuvre-choisie.ts`. Les types `ChoixDeMainOeuvre` et `DonneesMainOeuvre` vont dans `src/lib/feuille-main-oeuvre.ts` |
+
+**« dont main d'œuvre HT » sur la facture : une addition, pas une somme.** Le devis le calcule sur ses lignes de main d'œuvre (§459) ; `lignes_facture` n'a ni le drapeau ni la part, et l'ajouter demandait une migration et une nouvelle définition de « dont » pour les factures déjà écrites, hors de ce lot. La facture garde donc son montant (lecture B, repris du devis, retouchable), et la feuille y AJOUTE ce qu'elle pose, dans la transaction qui pose la ligne (`ajouterMainDoeuvreDeFacture`, `mainDoeuvreApresUnAjout`, bornée au total HT comme une saisie). L'écran montre ce que la base a retenu.
+
+**Ce que ça coûte, et c'est écrit dans `TODO.md` :**
+
+| | |
+|---|---|
+| un prix changé après coup | une ligne de main d'œuvre dont il change le prix ensuite ne fait pas bouger « dont » : il le corrige dans sa case, comme avant |
+| à chiffrer | sans prix du jour ni marge, la ligne arrive sans prix, et « dont » ne la compte pas, puisqu'il n'y a rien à compter |
+| **nommer une main d'œuvre sans la poser** | le lien ouvrait « dont » vide, pour nommer la main d'œuvre déjà comprise dans d'autres lignes. Cette porte est partie avec lui : la planche ne la porte pas, et sa A du 13 octobre l'a retirée du devis. Un « dont » qui existe (repris du devis, ou posé par la feuille) se retouche et se retire comme avant |
+| la répartition | la feuille ne propose pas « Répartis sur les travaux » sur la facture (`repartition` absente) : la part d'un travail ne s'y garde nulle part |
+| la remise d'un devis | la planche dessine « Remise » sur « Travaux en plus » aussi ; elle reste réservée à la facture sans devis, sa « A » du 7 octobre que `majReductionDeFacture` tient au serveur |
+
+**Un défaut trouvé en écrivant le contrôle.** `ajouterLigneDeFacture` écrivait le taux reçu tel quel : un « 8,5 » tapé dans la feuille faisait lever PostgreSQL (la virgule), une exception que l'écran n'aurait jamais pu dire. Le taux se relit maintenant au serveur par `tauxTvaValide`, la fonction de la feuille, et un taux illisible se refuse avec ses mots (`poserUneLigne`, qui sert la ligne vide comme la main d'œuvre).
+
+Contrôles : `test-feuilles-du-taux` (pur : le refus d'un taux déjà ouvert nomme la pièce, l'aperçu de la remise), `test-feuille-main-oeuvre` (pur : l'addition à « dont », sa borne, l'à chiffrer), `test-ajouts-de-la-facture-db` (sous `atlas_app` : la ligne de son équipe, ordinaire sans devis et en plus sur une facture née d'un devis, « dont » qui s'ajoute, le taux relu, la facture partie qui refuse), `test-ajouts-de-la-facture-e2e` (le geste, de Terminés à la feuille, et le Total TTC qui suit), `test-facture-sans-devis-e2e` adapté (la TVA et la remise passent par leur feuille).

@@ -8,7 +8,7 @@ import { precisionLisible, type QuestionChiffrage } from "@/lib/questions-chiffr
 import { attendreLeDevis } from "@/lib/attente-devis";
 import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
 import PastilleAjout from "@/components/atlas/PastilleAjout";
-import RepartirLaMainOeuvre, { choixDeDepart } from "./RepartirLaMainOeuvre";
+import RepartirLaMainOeuvre, { choixDeDepart } from "@/components/atlas/RepartirLaMainOeuvre";
 
 // Le geste unique : de la dictée au devis.
 //

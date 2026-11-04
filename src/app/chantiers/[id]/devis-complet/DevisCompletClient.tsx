@@ -44,9 +44,11 @@ import {
   tauxTvaValide,
   totauxAvecReduction,
 } from "@/lib/reduction-devis";
-import { LigneRemise, REMISE_PAR_DEFAUT } from "@/components/atlas/Remise";
-import FeuilleDuTaux from "./FeuilleDuTaux";
-import FeuilleMainDoeuvre, { type DonneesMainOeuvre } from "./FeuilleMainDoeuvre";
+import { FeuilleDeLaRemise, LigneRemise } from "@/components/atlas/Remise";
+import FeuilleDuTaux from "@/components/atlas/FeuilleDuTaux";
+import FeuilleDeLaTva from "@/components/atlas/FeuilleDeLaTva";
+import FeuilleMainDoeuvre from "@/components/atlas/FeuilleMainDoeuvre";
+import type { ChoixDeMainOeuvre, DonneesMainOeuvre } from "@/lib/feuille-main-oeuvre";
 import PastilleAjout from "@/components/atlas/PastilleAjout";
 import { useEcrituresALaSuite } from "@/components/atlas/useEcrituresALaSuite";
 import DicterDansLeDevis from "./DicterDansLeDevis";
@@ -86,7 +88,6 @@ import {
   ajouterLigneAction,
   ajouterMainDoeuvreChoisieAction,
   repartirMainDoeuvreAction,
-  type ChoixDeMainOeuvre,
   retirerLigneAction,
   majEnTeteDevisAction,
   ajouterCategorieTvaAction,
@@ -1881,38 +1882,28 @@ export default function DevisCompletClient(props: Props) {
       <FeuilleMainDoeuvre
         ouverte={feuille === "mo"}
         donnees={props.mainOeuvre}
-        // Les travaux de la TVA où il a appuyé, qui ont leur prix : la main
-        // d'œuvre répartie prend le taux de chaque travail, donc celui-là.
-        travaux={lignesVisibles
-          .filter(
-            (l) =>
-              !l.mainDoeuvre &&
-              !estLigneOuverte(l.id) &&
-              montantDeLaLigne(l) > 0 &&
-              (tauxDeLaMainOeuvre === null || tauxDeLaLigne({ tauxTva: l.tauxTva }, tauxDuDevis) === tauxDeLaMainOeuvre)
-          )
-          .map((l) => ({ id: l.id, libelle: l.libelle.trim() || "Sans description" }))}
+        repartition={{
+          // Les travaux de la TVA où il a appuyé, qui ont leur prix : la main
+          // d'œuvre répartie prend le taux de chaque travail, donc celui-là.
+          travaux: lignesVisibles
+            .filter(
+              (l) =>
+                !l.mainDoeuvre &&
+                !estLigneOuverte(l.id) &&
+                montantDeLaLigne(l) > 0 &&
+                (tauxDeLaMainOeuvre === null || tauxDeLaLigne({ tauxTva: l.tauxTva }, tauxDuDevis) === tauxDeLaMainOeuvre)
+            )
+            .map((l) => ({ id: l.id, libelle: l.libelle.trim() || "Sans description" })),
+          onRepartir: (choix, parts) => void repartirMainDoeuvre(choix, parts),
+        }}
         onValider={(choix) => void ajouterMainDoeuvre(choix)}
-        onRepartir={(choix, parts) => void repartirMainDoeuvre(choix, parts)}
         onFermer={() => setFeuille(null)}
       />
-      <FeuilleDuTaux
+      <FeuilleDeLaTva
         ouverte={feuille === "tva"}
-        titre="Une TVA"
-        nomDeLaCase="Taux de la TVA à ajouter, en pourcentage"
-        valeurInitiale={tauxNeuf}
-        raccourcis={["10", "5.5", "0"]}
-        lire={(saisie) => {
-          const taux = tauxTvaValide(saisie);
-          if (taux === null) return { refus: "Écrivez un taux, par exemple 10." };
-          if (categories.some((c) => c.taux === taux)) {
-            return { refus: `Une TVA à ${tauxLisible(taux)} % est déjà sur ce devis.` };
-          }
-          return { taux };
-        }}
-        bouton={(taux) => `Ajouter la TVA à ${tauxLisible(taux)} %`}
-        repere="feuille-tva"
-        onValider={(taux) => {
+        dejaOuverts={categories.map((c) => c.taux)}
+        piece="ce devis"
+        onAjouter={(taux) => {
           setFeuille(null);
           void ajouterUneTva(taux);
         }}
@@ -1969,34 +1960,13 @@ export default function DevisCompletClient(props: Props) {
           onFermer={() => setFeuille(null)}
         />
       )}
-      <FeuilleDuTaux
+      <FeuilleDeLaRemise
         ouverte={feuille === "remise"}
-        titre="Remise"
-        nomDeLaCase="Remise à poser, en pourcentage du total HT"
-        valeurInitiale={REMISE_PAR_DEFAUT}
-        raccourcis={[REMISE_PAR_DEFAUT, "10", "15"]}
-        lire={(saisie) => {
-          const taux = pourcentValide(saisie);
-          return taux === null ? { refus: "Écrivez un pourcentage au-dessus de zéro, par exemple 5." } : { taux };
-        }}
-        apercu={(taux) => {
-          // Les totaux de l'écran, la remise en plus : la même règle que le
-          // devis posé (`totauxAvecReduction`), donc le même chiffre ensuite.
-          const avec = totauxAvecReduction(
-            lignesVisibles.map((l) => ({ montant: montantDeLaLigne(l).toFixed(2), tauxTva: l.tauxTva })),
-            String(nombre(tauxTva)),
-            taux
-          );
-          const retire = Number(avec.brutHt) - Number(avec.totalHt);
-          return {
-            calcul: `${tauxLisible(taux)} % de ${enEuros(avec.brutHt)} HT`,
-            montant: `− ${enEuros(retire)}`,
-            dessous: `Total HT après remise : ${enEuros(avec.totalHt)}`,
-          };
-        }}
-        bouton={() => "Appliquer la remise"}
-        repere="feuille-remise"
-        onValider={(taux) => {
+        // Les totaux de l'écran, la remise en plus : la même règle que le
+        // devis posé (`totauxAvecReduction`), donc le même chiffre ensuite.
+        lignes={lignesVisibles.map((l) => ({ montant: montantDeLaLigne(l).toFixed(2), tauxTva: l.tauxTva }))}
+        tauxDuDocument={String(nombre(tauxTva))}
+        onAppliquer={(taux) => {
           setFeuille(null);
           setRemiseOuverte(true);
           setReduction(tauxLisible(taux));

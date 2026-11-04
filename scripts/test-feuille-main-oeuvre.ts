@@ -19,7 +19,7 @@ import {
 } from "../src/lib/feuille-main-oeuvre";
 import type { PrixAchatCandidat } from "../src/lib/prix-achat";
 import { uniteAdmise } from "../src/lib/unite-de-ligne";
-import { mainDoeuvreDesLignes } from "../src/lib/main-doeuvre-devis";
+import { mainDoeuvreApresUnAjout, mainDoeuvreDesLignes } from "../src/lib/main-doeuvre-devis";
 
 let echecs = 0;
 function cas(nom: string, fn: () => void) {
@@ -164,6 +164,24 @@ cas("« dont main d'œuvre HT » compte les parts réparties, comme les lignes d
 cas("une part ne compte jamais plus que la ligne, si le prix a baissé depuis", () => {
   assert.equal(mainDoeuvreDesLignes([{ mainDoeuvre: false, montant: "80", partMainDoeuvre: "150" }]), "80.00");
   assert.equal(mainDoeuvreDesLignes([{ mainDoeuvre: false, montant: "80", partMainDoeuvre: "-5" }]), null);
+});
+
+// ── SUR LA FACTURE — la même feuille, le 4 novembre 2026 ──────────────────
+// « dont main d'œuvre HT » y reste un montant gardé (lecture B, §459) : la
+// feuille qui ajoute une main d'œuvre l'y AJOUTE, bornée comme une saisie.
+
+cas("sur la facture, la main d'œuvre ajoutée s'ajoute à « dont »", () => {
+  assert.equal(mainDoeuvreApresUnAjout(null, "1120.00", "1520.00"), "1120.00");
+  assert.equal(mainDoeuvreApresUnAjout("380.00", "560.00", "2500.00"), "940.00");
+});
+
+cas("« dont » ne dépasse jamais le total HT, même après un ajout", () => {
+  assert.equal(mainDoeuvreApresUnAjout("900.00", "560.00", "1200.00"), "1200.00");
+});
+
+cas("une main d'œuvre à chiffrer ne change pas « dont » : rien ne s'invente", () => {
+  assert.equal(mainDoeuvreApresUnAjout(null, null, "800.00"), null);
+  assert.equal(mainDoeuvreApresUnAjout("380.00", null, "800.00"), "380.00");
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} La feuille de la main d'œuvre — ${echecs} échec(s).`);

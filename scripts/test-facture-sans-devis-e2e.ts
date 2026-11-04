@@ -402,7 +402,13 @@ async function main() {
     await page.waitForURL(/travaux-supplementaires/, { timeout: 15000 });
     await page.waitForLoadState("networkidle");
 
+    // **La pastille ouvre la feuille du devis** (sa planche du 4 novembre
+    // 2026) : la case s'ouvre sur le taux que l'ancien geste posait d'office,
+    // et c'est son « Ajouter la TVA » qui ouvre la catégorie.
     await page.click('[data-atlas="ajouter-tva-supplement"]');
+    await page.locator('[data-atlas="feuille-tva"]').waitFor();
+    assert.strictEqual(await page.locator('[data-atlas="feuille-tva-case"]').inputValue(), "10");
+    await page.click('[data-atlas="feuille-tva-valider"]');
     await page.waitForTimeout(900);
     // **Le défaut exact qu'il a signalé** : le bouton se cachait dès le premier
     // taux posé, et le second devenait inatteignable.
@@ -427,6 +433,10 @@ async function main() {
     await page.waitForTimeout(900);
 
     await page.click('[data-atlas="ajouter-tva-supplement"]');
+    await page.locator('[data-atlas="feuille-tva"]').waitFor();
+    // 10 % est pris : la case propose le suivant, comme le geste d'avant.
+    assert.strictEqual(await page.locator('[data-atlas="feuille-tva-case"]').inputValue(), "5,5");
+    await page.click('[data-atlas="feuille-tva-valider"]');
     await page.waitForTimeout(900);
     const derniere = page.locator('[data-atlas="ligne-supplement"]').last();
     await derniere.locator("textarea").fill("Terreau");
@@ -491,11 +501,18 @@ async function main() {
     }
     assert.strictEqual(avant, 255, `les trois lignes ne sont pas toutes en base : ${avant} €`);
 
+    // **La pastille ouvre la feuille de la remise** (sa planche du 4 novembre
+    // 2026) : rien ne se pose avant « Appliquer la remise », et ce qu'elle
+    // retire se lit avant.
     await page.click('[data-atlas="poser-prix-accorde"]');
+    await page.locator('[data-atlas="feuille-remise"]').waitFor();
+    const avantLaFeuille = await pool.query(`SELECT reduction_pourcent FROM factures WHERE chantier_id = $1`, [chantierId]);
+    assert.strictEqual(avantLaFeuille.rows[0].reduction_pourcent, null, "la remise est en base avant l'appui sur le bouton");
+    await page.click('[data-atlas="feuille-remise-valider"]');
     await page.waitForTimeout(1200);
 
-    // **Cinq pour cent d'emblée** — le chiffre que le bouton pose, écrit une
-    // seule fois (`REMISE_PAR_DEFAUT`), pour le devis comme pour la facture.
+    // **Cinq pour cent d'emblée** — le chiffre que la feuille propose, écrit
+    // une seule fois (`REMISE_PAR_DEFAUT`), pour le devis comme pour la facture.
     assert.strictEqual(
       await page.locator('[data-atlas="taux-prix-accorde"]').inputValue(),
       "5",

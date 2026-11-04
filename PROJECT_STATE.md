@@ -86,7 +86,7 @@ Planche B retenue. Tous ses documents, à toucher sous la réponse : devis (et l
 
 ## LA BARRE DE LA MAIN D'ŒUVRE, SUR `main` (28 octobre 2026)
 
-Branche `lot/main-oeuvre-curseur`, d'après sa planche `appli/soignee/main-oeuvre-curseur.html` (palette Jardin, montant écrit à l'euro près). Écran : `src/app/chantiers/[id]/RepartirLaMainOeuvre.tsx`. Règles : `src/lib/main-oeuvre-dictee.ts` (`repartirMainOeuvre` garde les montants qu'il a réglés, `glisserLeJoint`, `ecrireUnMontant`). Jetons : `pastelsMainOeuvre`. Suites : `test-repartir-main-oeuvre.ts`, `test-main-oeuvre-dictee-db.ts`, `test-main-oeuvre-barre-e2e.ts`. **Sur `main` le 28 octobre**, batterie commune verte. `ARCHITECTURE.md` §526, `docs/main-oeuvre-curseur.md`.
+Branche `lot/main-oeuvre-curseur`, d'après sa planche `appli/soignee/main-oeuvre-curseur.html` (palette Jardin, montant écrit à l'euro près). Écran : `src/components/atlas/RepartirLaMainOeuvre.tsx` (sorti de `src/app/chantiers/[id]/` le 4 novembre 2026, avec la feuille qui le monte). Règles : `src/lib/main-oeuvre-dictee.ts` (`repartirMainOeuvre` garde les montants qu'il a réglés, `glisserLeJoint`, `ecrireUnMontant`). Jetons : `pastelsMainOeuvre`. Suites : `test-repartir-main-oeuvre.ts`, `test-main-oeuvre-dictee-db.ts`, `test-main-oeuvre-barre-e2e.ts`. **Sur `main` le 28 octobre**, batterie commune verte. `ARCHITECTURE.md` §526, `docs/main-oeuvre-curseur.md`.
 
 ---
 ## SALARIÉ ABSENT, LA C, SUR `main` (27 octobre 2026, livrée le 29)
