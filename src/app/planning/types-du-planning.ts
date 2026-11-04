@@ -106,14 +106,11 @@ export type OuvertDansLaCarte =
   //
   // `jourSource` est porté par l'état, pas relu de la carte : pendant le geste
   // il change de mois, et la carte du jour de départ n'est plus à l'écran.
+  //
+  // **« deplacer-quand » a disparu le 1er novembre 2026** : le second temps qui
+  // demandait « Quel moment ? » après le jour touché. Le moment se déduit de ce
+  // qui part (`momentQuiPart`), et le jour touché déplace aussitôt.
   | { quoi: "deplacer"; cle: string; chantierId: string; jourSource: JourIso }
-  | {
-      quoi: "deplacer-quand";
-      cle: string;
-      chantierId: string;
-      jourSource: JourIso;
-      vers: JourIso;
-    }
   // **« ajout-quand » a disparu le 9 septembre 2026** : un second temps qui
   // demandait « Matin, Après-midi ou Journée » après avoir touché le nom du
   // chantier. La durée étant déjà en base, la question n'ajoutait rien et

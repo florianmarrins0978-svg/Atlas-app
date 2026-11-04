@@ -22,7 +22,7 @@ export async function apercuSuppressionClientsAction(
 ): Promise<
   | {
       ok: true;
-      clients: { id: string; nom: string; documents: number; conserve: { numero: string; pourquoi: string }[] }[];
+      clients: { id: string; nom: string; documents: number; conserve: { designation: string; pourquoi: string }[] }[];
     }
   | { ok: false; message: string }
 > {
@@ -40,7 +40,7 @@ export async function apercuSuppressionClientsAction(
         id,
         nom: apercu.nom,
         documents: apercu.documents,
-        conserve: apercu.pieces.map((p) => ({ numero: p.numero, pourquoi: p.pourquoi })),
+        conserve: apercu.pieces.map((p) => ({ designation: p.designation, pourquoi: p.pourquoi })),
       });
     }
   } catch (err) {

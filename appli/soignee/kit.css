@@ -320,6 +320,11 @@ body.pl ::selection { background: rgba(185,139,71,0.28); }
 .carte-ton-pied { display: flex; gap: 10px; margin-top: 14px; }
 
 /* ─── Les boutons : un plein par écran, des creux, des mots ──────────────── */
+/* **Toujours « bouton bouton-plein », jamais « bouton-plein » seul.** La forme
+   (bouts ronds sous pl-pilules, hauteur, taille du mot) vit sur .bouton ; le
+   plein ou le creux n'en donne que la couleur. Seul, il fait un bouton carré
+   que l'appli n'a nulle part : sa remarque du 4 novembre 2026, « je sais pas
+   pourquoi tu t'obstines à me faire des boutons carrés ». */
 .bouton { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;
           min-height: 56px; padding: 0 22px; border-radius: var(--r-bouton); text-decoration: none;
           font-size: 17px; font-weight: 600; letter-spacing: 0.005em; text-align: center;

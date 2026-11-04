@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La note du devis, chez le client</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  LA NOTE DU DEVIS, SUR LA PAGE DU CLIENT (src/app/devis/[jeton]/page.tsx,
+  formulaire.tsx ; la note : devis.conditions_paiement, écrite dans « Notes /
+  conditions » du devis, src/app/chantiers/[id]/devis-complet/).
+
+  Sa demande du 3 novembre 2026, devant le devis d'un confrère : sous « Bon
+  pour accord », une phrase pour le client (« le jour de l'intervention,
+  prévenir l'immeuble voisin… »). « Est-ce qu'on peut faire la même chose ? »
+
+  Ce qui a été REGARDÉ, pas supposé, sur des données de démonstration :
+    le champ existe sur le devis du patron, « Notes / conditions », et le PDF
+    l'imprime sous les totaux (aujourdhui/devis-pdf-la-note.jpg) ;
+    la page que le client ouvre depuis le SMS ne la montre PAS
+    (aujourdhui/devis-sans-la-note.jpg) : il accepte sans l'avoir lue, sauf à
+    télécharger le PDF.
+
+  La page du client tient dans 390 × 664 (sa règle de la planche du
+  31 octobre) : elle occupe 568 px aujourd'hui. La planche mesure sa hauteur
+  sous le téléphone. Aucune donnée réelle : noms et montants de démonstration.
+*/
+
+/* Ces pages partent chez le client : la charte essayée ne s'y applique pas. */
+body .pl-barre .pl-charte-bouton, body .pl-barre .pl-chartes { display: none; }
+.mesure { margin: 0 auto 4px; max-width: 390px; text-align: center; font-size: 14px; font-weight: 600; color: #4a4a44; }
+.mesure[data-tient="non"] { color: #9C3B2E; }
+.mesure[data-tient="oui"] { color: #506f44; }
+
+/* La page du devis, recopiée de la vraie (aujourdhui/devis-sans-la-note.jpg). */
+.ecran .defile { padding: 10px 18px 8px; }
+.tete-doc { display: flex; align-items: flex-start; gap: 12px; }
+.titre-doc { flex: 1; min-width: 0; margin: 0; font: 400 24px/1.25 var(--serif); letter-spacing: -0.012em; }
+.monogramme { width: 30px; height: 30px; flex: none; display: grid; place-items: center; border-radius: 50%;
+              font: 400 12.5px/1 var(--serif); letter-spacing: 0.04em; color: var(--atlas-or);
+              box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 65%, transparent); }
+.qui { margin: 2px 0 0; font-size: 14px; line-height: 1.34; color: var(--atlas-inkSoft); }
+.qui b { font-weight: 600; color: var(--atlas-ink); }
+.qui + .qui { margin-top: 1px; }
+.devis .plage { padding: 9px 12px; margin-top: 8px; }
+.devis .plage + .plage { margin-top: 6px; }
+.total { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.total-mot { font: 400 17px/1.2 var(--serif); }
+.total-chiffre { font: 400 27px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
+.total-detail { margin: 3px 0 0; font-size: 13.5px; line-height: 1.35; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
+.bouton-telecharger { min-height: 44px; margin-top: 8px; font-size: 16px; }
+.question { margin: 0; font: 400 18px/1.2 var(--serif); }
+.dates { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.date { display: flex; align-items: center; gap: 8px; min-height: 50px; padding: 6px 9px; border-radius: 10px;
+        background: color-mix(in srgb, var(--atlas-ink) 4%, transparent); box-shadow: inset 0 0 0 1px var(--atlas-line); text-align: left; }
+.date-jour { display: block; font-size: 13px; font-weight: 600; line-height: 1.2; color: var(--atlas-inkSoft); }
+.date-quand { display: block; font: 400 17px/1.18 var(--serif); }
+.autre { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 40px; margin-top: 4px; font-size: 14.5px; text-align: left; }
+.erreur-ligne { display: block; width: 100%; min-height: 40px; margin-top: 2px; padding-top: 4px; text-align: left;
+                font-size: 14.5px; font-weight: 600; color: var(--atlas-rust); box-shadow: inset 0 1px 0 var(--atlas-line); }
+.retractation-phrase { margin: 6px 2px 0; font-size: 13px; line-height: 1.36; color: var(--atlas-inkSoft); }
+.issues { display: grid; gap: 6px; margin-top: 8px; }
+.issues .bouton-plein { min-height: 48px; font: 400 19px/1 var(--serif); }
+.issues-bas { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.issues-bas .bouton-creux { min-height: 50px; padding: 4px 12px; font-size: 14.5px; line-height: 1.2; text-wrap: balance; }
+.bouton-creux.doux { color: var(--atlas-inkSoft); font-weight: 500; }
+.horodatage { margin: 4px 0 0; text-align: center; font-size: 13px; line-height: 1.3; color: var(--atlas-inkSoft); }
+
+/* LA NOTE DE L'ARTISAN : ses mots, sur une plage dorée, son dessin devant.
+   « À savoir : » ouvre la phrase, pour qu'on la lise comme une consigne et non
+   comme une clause. Deux lignes au plus (trois mettaient la page à 663 px sur 664, et ne suffisaient pas à deux phrases) : avec elle, la page doit encore tenir
+   dans 664 px. Ce qui ne tient pas s'ouvre d'un appui dans une feuille, au lieu
+   d'allonger la page : une note coupée sans moyen de la lire en entier
+   cacherait sa fin au client (vu sur le premier rendu, sa deuxième phrase
+   disparaissait). Le chevron le dit ; dans l'appli, il ne paraîtra que si la
+   note est réellement coupée. */
+.note { display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 6px; padding: 8px 12px;
+        border-radius: var(--r-plage); text-align: left; color: var(--atlas-ink);
+        background: color-mix(in srgb, var(--atlas-or) 13%, transparent); }
+.note > .ico { width: 20px; height: 20px; color: var(--atlas-orTexte); }
+.note-texte { flex: 1; min-width: 0; margin: 0; font-size: 14px; line-height: 1.36;
+              display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.note-texte b { font-weight: 700; color: var(--atlas-orTexte); }
+.note .fin { width: 18px; height: 18px; color: var(--atlas-orTexte); stroke-width: 2; }
+.feuille-note p { margin: 0; font-size: 16px; line-height: 1.5; }
+
+.pl-notes figure { margin: 12px 0 0; }
+.pl-notes figure img { width: 100%; border-radius: 8px; box-shadow: 0 0 0 1px rgba(28,28,26,0.12); }
+.pl-notes figcaption { margin-top: 6px; font-size: 14px; color: #4a4a44; }
+</style>
+</head>
+<body class="pl pl-pilules">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">La note du devis, chez le client</h1>
+  <p class="pl-verdict">Ta note existe déjà : « Notes / conditions », sur ton devis, et le PDF l'imprime. <b>La page que ton client ouvre depuis le SMS, elle, ne la montre pas.</b> La voici dessus, à deux places.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <!-- ═══ PROPOSÉ ═══ -->
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats">
+        <button type="button" data-etat="a" aria-pressed="true">A, avant l'accord</button>
+        <button type="button" data-etat="b">B, sous le total</button>
+        <button type="button" data-etat="longue">Une note longue</button>
+        <button type="button" data-etat="sans">Sans note</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran devis" data-sans-charte data-etat="a" id="ecran-propose">
+          <div class="defile" id="defile">
+            <div class="tete-doc">
+              <h2 class="titre-doc">Devis n° 2026&#8209;000003</h2>
+              <span class="monogramme" aria-hidden="true">AD</span>
+            </div>
+            <p class="qui"><b>Atelier Démo EI</b>, pour Mme Groupiron</p>
+            <p class="qui">12 rue des Tilleuls, 49000 Angers</p>
+
+            <section class="plage">
+              <div class="total">
+                <span class="total-mot">Total TTC</span>
+                <span class="total-chiffre">360,00 €</span>
+              </div>
+              <p class="total-detail">300,00 € HT et 60,00 € de TVA à 20 %</p>
+              <a class="bouton bouton-plein bouton-telecharger" href="#" data-note="Sur la planche, rien ne se télécharge."><svg class="ico ico-p" aria-hidden="true"><use href="#i-telecharger"/></svg>Télécharger mon devis</a>
+            </section>
+
+            <!-- B : la note sous le total, lue en premier. -->
+            <button type="button" class="note touche" data-si-etat="b" data-ouvre="feuille-note-courte" aria-label="Lire toute la note de votre artisan">
+              <svg class="ico" aria-hidden="true"><use href="#i-note"/></svg>
+              <p class="note-texte"><b>À savoir :</b> Le jour de l'intervention, merci de libérer la place de parking sous le prunier. L'évacuation des tailles est comprise dans le prix.</p>
+              <svg class="ico fin" aria-hidden="true"><use href="#i-suivant"/></svg>
+            </button>
+
+            <section class="plage">
+              <p class="question">Quelle date vous arrange ?</p>
+              <div class="dates">
+                <button type="button" class="date"><span class="coche-ronde" aria-hidden="true"></span><span><span class="date-jour">Dimanche</span><span class="date-quand">8 novembre</span></span></button>
+                <button type="button" class="date"><span class="coche-ronde" aria-hidden="true"></span><span><span class="date-jour">Mardi</span><span class="date-quand">10 novembre</span></span></button>
+              </div>
+              <button type="button" class="autre"><span class="coche-ronde" aria-hidden="true"></span>Cette date ne me convient pas ? Je propose</button>
+              <button type="button" class="erreur-ligne">Une erreur ? Écrivez-la, votre artisan la lira.</button>
+            </section>
+
+            <!-- A : la note juste avant l'accord, comme sous le « Bon pour
+                 accord » de son exemple : lue au moment où l'on s'engage. -->
+            <button type="button" class="note touche" data-si-etat="a" data-ouvre="feuille-note-courte" aria-label="Lire toute la note de votre artisan">
+              <svg class="ico" aria-hidden="true"><use href="#i-note"/></svg>
+              <p class="note-texte"><b>À savoir :</b> Le jour de l'intervention, merci de libérer la place de parking sous le prunier. L'évacuation des tailles est comprise dans le prix.</p>
+              <svg class="ico fin" aria-hidden="true"><use href="#i-suivant"/></svg>
+            </button>
+            <button type="button" class="note touche" data-si-etat="longue" data-ouvre="feuille-note" aria-label="Lire toute la note de votre artisan">
+              <svg class="ico" aria-hidden="true"><use href="#i-note"/></svg>
+              <p class="note-texte"><b>À savoir :</b> Le jour de l'intervention, merci de libérer la place de parking sous le prunier et de laisser le portail ouvert dès 8 h. Prévoyez que l'eau du jardin soit coupée une heure en fin de matinée. L'évacuation des tailles est comprise dans le prix ; le bois de plus de 10 cm peut rester sur place si vous le souhaitez, dites-le simplement le jour même.</p>
+              <svg class="ico fin" aria-hidden="true"><use href="#i-suivant"/></svg>
+            </button>
+
+            <p class="retractation-phrase">Vous pouvez vous rétracter pendant 14 jours après votre accord. Le formulaire est à la fin de votre devis.</p>
+            <div class="issues">
+              <button type="button" class="bouton bouton-plein" data-note="Sur la planche, rien n'est accepté.">J'accepte ce devis</button>
+              <div class="issues-bas">
+                <button type="button" class="bouton bouton-creux">Une correction avant d'accepter</button>
+                <button type="button" class="bouton bouton-creux doux">Je ne donne pas suite</button>
+              </div>
+            </div>
+            <p class="horodatage">Votre accord est horodaté et conservé avec le devis.</p>
+          </div>
+
+          <div class="feuille" id="feuille-note-courte" aria-hidden="true" role="dialog" aria-label="La note de votre artisan">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans feuille-note">
+              <h3 class="feuille-titre">À savoir</h3>
+              <p>Le jour de l'intervention, merci de libérer la place de parking sous le prunier. L'évacuation des tailles est comprise dans le prix.</p>
+              <button type="button" class="bouton bouton-creux mt-24" data-ferme>Revenir au devis</button>
+            </div>
+          </div>
+          <div class="feuille" id="feuille-note" aria-hidden="true" role="dialog" aria-label="La note de votre artisan">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans feuille-note">
+              <h3 class="feuille-titre">À savoir</h3>
+              <p>Le jour de l'intervention, merci de libérer la place de parking sous le prunier et de laisser le portail ouvert dès 8 h. Prévoyez que l'eau du jardin soit coupée une heure en fin de matinée. L'évacuation des tailles est comprise dans le prix ; le bois de plus de 10 cm peut rester sur place si vous le souhaitez, dites-le simplement le jour même.</p>
+              <button type="button" class="bouton bouton-creux mt-24" data-ferme>Revenir au devis</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="mesure" id="mesure" aria-live="polite"></p>
+    </div>
+
+    <!-- ═══ AUJOURD'HUI ═══ -->
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre">
+        <div class="cadre-capture"><img src="aujourdhui/devis-sans-la-note.jpg" alt="La page du devis que le client ouvre aujourd'hui : la note n'y est pas"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui existe déjà</h2>
+    <ul class="garde">
+      <li>Sur ton devis, le champ « Notes / conditions », sous les totaux. Ce que tu y écris est pour ce devis seulement.</li>
+      <li>Le PDF l'imprime, sous les totaux, avant le paiement.</li>
+    </ul>
+    <figure>
+      <img src="aujourdhui/devis-pdf-la-note.jpg" alt="Le PDF du devis aujourd'hui : la note sous les totaux">
+      <figcaption>Le PDF d'aujourd'hui, avec une note écrite dans « Notes / conditions ».</figcaption>
+    </figure>
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>La note apparaît aussi sur la page que ton client ouvre depuis le SMS, après « À savoir : ». Aujourd'hui il accepte sans l'avoir lue, sauf s'il télécharge le PDF.</li>
+      <li>Elle tient en deux lignes sur la page. Plus longue, elle s'ouvre en entier d'un appui, dans une feuille : la page tient toujours dans l'écran. Touchez la note.</li>
+      <li>Sans note, la page ne change pas d'un mot. Touchez « Sans note ».</li>
+      <li>Rien de neuf à remplir pour toi : c'est le même champ.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>A, juste avant « J'accepte ce devis », comme sous le « Bon pour accord » de ton exemple : lue au moment où il s'engage. Ou B, sous le total : lue en premier.</li>
+      <li>Sur le PDF, la note reste sous les totaux. La descendre sous le cadre de signature, comme sur ton exemple ?</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="client-recoit.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Ce que reçoit le client</a>
+  <a href="devis-note-avant-envoi.html">La note, montrée au patron<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var defile = document.getElementById("defile");
+  var mesure = document.getElementById("mesure");
+  /* La page doit tenir dans 664 px : la planche le mesure, état par état. */
+  function mesurer() {
+    requestAnimationFrame(function () {
+      /* Le bas du dernier élément, et non la hauteur du cadre : sur un
+         téléphone le cadre prend tout l'écran, et la mesure se comparait à
+         lui au lieu des 664 px de SON écran. */
+      var dernier = defile.lastElementChild;
+      var h = Math.ceil(dernier.getBoundingClientRect().bottom - defile.getBoundingClientRect().top + defile.scrollTop + 12);
+      var tient = h <= 664;
+      mesure.dataset.tient = tient ? "oui" : "non";
+      mesure.textContent = tient ? "Tient dans l'écran : " + h + " px sur 664." : "Dépasse l'écran de " + (h - 664) + " px.";
+    });
+  }
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-note]");
+    if (b) { e.preventDefault(); Kit.note(b, b.getAttribute("data-note")); return; }
+    if (e.target.closest(".pl-etats button[data-etat]")) setTimeout(mesurer, 30);
+  });
+  mesurer();
+});
+</script>
+</body>
+</html>

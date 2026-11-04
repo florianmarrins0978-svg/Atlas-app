@@ -1,5 +1,6 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Page, Locator } from "playwright";
@@ -54,17 +55,23 @@ async function main() {
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
   const chantierUrl = `${BASE}/chantiers/${idChantier}`;
 
-  // --- Enregistrement réel puis transcription réelle (fournisseur dev) ---
-  await page.goto(`${chantierUrl}/note-vocale`, { waitUntil: "networkidle" });
-  await page.click('button:has-text("Enregistrer une note vocale")');
-  await page.waitForSelector("text=Enregistrement en cours");
-  await page.waitForTimeout(1200);
-  await page.click("button:has-text(\"Arrêter l'enregistrement\")");
-  await page.waitForSelector("text=Enregistrée à l'instant");
+  // --- Un enregistrement réel, puis sa transcription (fournisseur d'essai) ---
+  //
+  // **Le son passe par la route de l'anneau** depuis le 3 novembre 2026 :
+  // l'écran Note vocale, où cette suite enregistrait, est retiré, et la fiche
+  // client lance la chaîne entière dès l'envoi. Ce que cette suite éprouve
+  // commence APRÈS : une note là, pas encore transcrite, et la Transcription
+  // qui la transcrit sur place.
+  const envoi = await page.request.post(`${BASE}/api/notes-vocales/${idChantier}`, {
+    multipart: {
+      fichier: { name: "note.wav", mimeType: "audio/wav", buffer: readFileSync(FAKE_MIC) },
+      dureeSecondes: "2",
+    },
+  });
+  assert.equal(envoi.status(), 200, `la note n'a pas été rangée : ${await envoi.text()}`);
 
-  assert.ok(await page.locator("text=Lancer la transcription").isVisible());
-  await page.click("text=Lancer la transcription");
-  await page.waitForSelector("text=Transcription disponible", { timeout: 10000 });
+  await page.goto(`${chantierUrl}/transcription`, { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "Lancer la transcription" }).click();
 
   // --- SES MOTS SONT LÀ, ET L'ÉCRAN LES MONTRE ---
   //
@@ -87,11 +94,13 @@ async function main() {
   // Ce que cette suite éprouve désormais est ce qu'elle seule peut éprouver :
   // la CHAÎNE ENTIÈRE, du micro aux prestations en base.
   // ═══════════════════════════════════════════════════════════════════════
-  await page.goto(`${chantierUrl}/transcription`, { waitUntil: "networkidle" });
-  assert.ok(
-    await page.locator(`text=${TEXTE_DE_LESSAI.slice(0, 40)}`).first().isVisible(),
-    "L'écran de transcription ne montre pas les mots rendus par le fournisseur"
-  );
+  await page
+    .locator(`text=${TEXTE_DE_LESSAI.slice(0, 40)}`)
+    .first()
+    .waitFor({ state: "visible", timeout: 30_000 })
+    .catch(() => {
+      throw new Error("L'écran de transcription ne montre pas les mots rendus par le fournisseur");
+    });
 
   // --- Le patron corrige ce qu'il a dit : tout le reste s'enchaîne ---
   //

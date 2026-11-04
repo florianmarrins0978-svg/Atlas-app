@@ -1419,6 +1419,7 @@ export default function DevisCompletClient(props: Props) {
                 fige={fige}
                 aria={`Description ${i + 1}`}
                 placeholder="Ex : Élagage d'un tilleul, taille architecturée"
+                retourEnEspace
                 onChange={(v) => majLigneLocale(l.id, "libelle", v)}
                 onFini={(fraiche) => {
                   void persisterLigne(l, { libelle: fraiche });

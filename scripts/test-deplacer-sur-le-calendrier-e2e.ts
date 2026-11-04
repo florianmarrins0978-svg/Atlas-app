@@ -429,29 +429,10 @@ async function main() {
     // désormais ce que celui-ci protégeait vraiment.
   });
 
-  await cas("le jour se touche DANS LE CALENDRIER, et les moments s'offrent", async () => {
-    // **Le calendrier ne fait plus ce qu'il fait d'habitude** : toucher un jour
-    // ouvrait sa fiche, ce qui aurait emporté le geste au premier appui.
-    await page.click(`[data-atlas="grille-mois"] [data-jour="${jourB}"]`);
-    await page.waitForTimeout(400);
-    const bandeau = page.locator('[data-atlas="deplacement-en-cours"]');
-    if ((await bandeau.getAttribute("data-vers")) !== jourB) {
-      throw new Error(
-        `le bandeau vise « ${await bandeau.getAttribute("data-vers")} » au lieu du ${jourB} : ` +
-          "le jour touché n'est pas devenu la destination"
-      );
-    }
-    // **LES TROIS MOTS, sur une journée entière — sa correction du 17 septembre
-    // 2026 :** *« un chantier d'une journée, si je veux je dois pouvoir déplacer
-    // soit le matin, soit l'aprem quand même ! »*. Le mot désigne la moitié qui
-    // part ; l'autre reste sur place.
-    const mots = await page.locator('[data-atlas^="vers-"]').allInnerTexts();
-    if (mots.join("|") !== "Matin|Après-midi|Journée") {
-      throw new Error(
-        `les mots offerts sont « ${mots.join(", ")} » : il ne peut plus déplacer une seule moitié`
-      );
-    }
-  });
+  // **LE CAS « les moments s'offrent » EST PARTI LE 1er NOVEMBRE 2026.** Il
+  // exigeait « Matin, Après-midi, Journée » après le jour touché ; le patron a
+  // fait retirer la question (*« que ça le déplace en un clic »*). Le cas
+  // « DEUX APPUIS » plus bas défend ce qui la remplace (`CLAUDE.md` §5 bis).
 
   await cas("« Annuler » referme le geste sans rien écrire", async () => {
     // Sa règle du 16 septembre 2026 : un geste ouvert a toujours une sortie qui
@@ -471,11 +452,14 @@ async function main() {
     }
   });
 
-  await cas("TROIS APPUIS déplacent la journée, et le serveur l'écrit", async () => {
+  await cas("DEUX APPUIS déplacent la journée, et le serveur l'écrit", async () => {
     /*
      * **Le compte est le sujet du lot :** *« c'est trop de clics à faire »*. Le
      * geste d'avant en demandait sept — Déplacer, la moitié à rendre, ouvrir le
      * tiroir, toucher le morceau, refermer, ouvrir le jour d'accueil, Poser ici.
+     * Le 17 septembre 2026 il en restait trois (le moment en dernier) ; depuis
+     * le 1er novembre, deux : *« que ça le déplace en un clic »*. Une journée
+     * arrive en journée, sans question.
      */
     const carte = await allerAuJour(jourA);
     let appuis = 0;
@@ -486,11 +470,12 @@ async function main() {
     await page.waitForTimeout(300);
     await page.click(`[data-atlas="grille-mois"] [data-jour="${jourB}"]`);
     appuis++;
-    await page.waitForTimeout(300);
-    await page.locator('[data-atlas="vers-journee"]').click();
-    appuis++;
     await page.waitForTimeout(2000);
-    if (appuis !== 3) throw new Error(`${appuis} appuis au lieu de trois`);
+    if (appuis !== 2) throw new Error(`${appuis} appuis au lieu de deux`);
+    // **Aucune question ne reste ouverte** : le geste s'est refermé de lui-même.
+    if ((await page.locator('[data-atlas="deplacement-en-cours"]').count()) !== 0) {
+      throw new Error("le jour touché n'a pas déplacé : le geste attend encore une réponse");
+    }
 
     const poses = await creneauxEnBase(chantierId);
     if (poses.join(" | ") !== attendus([`${jourB} matin`, `${jourB} apres_midi`])) {

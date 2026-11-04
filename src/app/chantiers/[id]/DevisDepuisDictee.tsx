@@ -7,6 +7,7 @@ import { preparerDevisDepuisDicteeAction, repondreQuestionsChiffrageAction } fro
 import { precisionLisible, type QuestionChiffrage } from "@/lib/questions-chiffrage";
 import { attendreLeDevis } from "@/lib/attente-devis";
 import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
+import PastilleAjout from "@/components/atlas/PastilleAjout";
 import RepartirLaMainOeuvre, { choixDeDepart } from "./RepartirLaMainOeuvre";
 
 // Le geste unique : de la dictée au devis.
@@ -78,6 +79,13 @@ type Props = {
    * (sa planche du 21 octobre 2026, réponse C).
    */
   onTravail?: (enCours: boolean) => void;
+  /**
+   * La préparation a échoué et peut se reprendre : la dictée, elle, est finie.
+   * La fiche client rend alors « Je rédige à la main », que la planche montre
+   * sous « Réessayer » (3 novembre 2026). Sans ce signal, la fiche ne savait
+   * que « dictée en cours », et le bouton restait caché devant un échec.
+   */
+  onEchec?: () => void;
 };
 
 type Etat =
@@ -96,7 +104,20 @@ type Etat =
   // L'arrêt d'avant-chiffrage : ce qui manque et qui fait le prix.
   | { type: "questions"; questions: QuestionChiffrage[] }
   | { type: "sansPrix"; raison: string }
-  | { type: "message"; texte: string };
+  /**
+   * Ce qui a arrêté la chaîne, en une phrase.
+   *
+   * **`reprise` dit si la MÊME dictée peut repartir telle quelle** — 3 novembre
+   * 2026, sa planche « Échec, Réessayer ». Vrai après une panne (fournisseur,
+   * transcription, réponse perdue) ; faux quand il n'y a rien à reprendre
+   * (aucune dictée, ou un texte de remplacement que la chaîne refuse de lire).
+   *
+   * **La phrase dit ce qui s'est passé, jamais quoi faire.** Ce qui la suit est
+   * un geste : « Réessayer » sur la fiche client, le bouton du devis resté
+   * visible au-dessus sur la Transcription et les Informations. Un « Réessayez »
+   * écrit dans la phrase doublait le bouton posé dessous.
+   */
+  | { type: "message"; texte: string; reprise: boolean };
 
 /**
  * Ce que le bouton dit pendant qu'il travaille, ou `null` s'il est au repos.
@@ -123,6 +144,7 @@ export default function DevisDepuisDictee({
   auto = false,
   surLeDevis = auto,
   onTravail,
+  onEchec,
 }: Props) {
   const router = useRouter();
   const [etat, setEtat] = useState<Etat>({ type: "repos" });
@@ -130,6 +152,10 @@ export default function DevisDepuisDictee({
   useEffect(() => {
     onTravail?.(travaille);
   }, [travaille, onTravail]);
+  const echecRepris = etat.type === "message" && etat.reprise;
+  useEffect(() => {
+    if (echecRepris) onEchec?.();
+  }, [echecRepris, onEchec]);
 
   async function lancer(remplacer = false) {
     setEtat({ type: "encours" });
@@ -169,7 +195,11 @@ export default function DevisDepuisDictee({
       }
       if (r.statut === "conflit") return setEtat({ type: "conflit" });
       if (r.statut === "transcription_absente") {
-        return setEtat({ type: "message", texte: "Aucune dictée transcrite sur ce chantier : il n'y a rien à reprendre." });
+        return setEtat({
+          type: "message",
+          texte: "Aucune dictée transcrite sur ce chantier : il n'y a rien à reprendre.",
+          reprise: false,
+        });
       }
       if (r.statut === "transcription_simulee") {
         return setEtat({
@@ -177,10 +207,11 @@ export default function DevisDepuisDictee({
           texte:
             "Votre dictée n'a pas été transcrite : aucun prestataire de transcription n'est encore raccordé. " +
             "Écrivez ce que vous avez dit sur l'écran Transcription, et le devis se fera à partir de là.",
+          reprise: false,
         });
       }
       if (r.statut === "questions") return setEtat({ type: "questions", questions: r.questions });
-      setEtat({ type: "message", texte: r.erreur });
+      setEtat({ type: "message", texte: r.erreur, reprise: true });
     } catch {
       // **La réponse s'est perdue — le travail, lui, a peut-être abouti.**
       //
@@ -213,11 +244,15 @@ export default function DevisDepuisDictee({
       if (issue.type === "questions") {
         return setEtat({ type: "questions", questions: issue.questions });
       }
+      // **La phrase ne renvoie plus à « Mon devis »** (3 novembre 2026) : ce
+      // bouton n'est monté nulle part depuis que l'avion envoie la note, et
+      // « Rechargez la page » ne montre aucun devis sur la fiche client. Cinq
+      // minutes d'attente sans devis : la chaîne peut repartir, et c'est le
+      // geste sous la phrase qui le dit.
       setEtat({
         type: "message",
-        texte:
-          "La préparation n'a pas abouti, et le devis n'est pas arrivé. Rechargez la page : " +
-          "s'il est là, tout est bon ; sinon, reprenez « Mon devis ».",
+        texte: "La préparation n'a pas abouti, et le devis n'est pas arrivé.",
+        reprise: true,
       });
     }
   }
@@ -320,9 +355,34 @@ export default function DevisDepuisDictee({
       )}
 
       {etat.type === "message" && (
-        <p role="alert" className="text-[13px]" style={{ color: colors.alert }}>
+        <p
+          role="alert"
+          data-atlas="echec-de-la-dictee"
+          // Sur la fiche client, la phrase et « Réessayer » se lisent ensemble,
+          // au centre, comme la planche (`.dictee-echec`, 14,5 points).
+          className={auto && !surLeDevis ? "text-center text-[14.5px] leading-snug" : "text-[13px]"}
+          style={{ color: colors.alert }}
+        >
           {etat.texte}
         </p>
+      )}
+
+      {/* ─── « RÉESSAYER », SOUS LA PHRASE ROUGE — sa planche du 3 novembre ──
+          *« Oui, réessayer comme ça me va, tu peux coder »* (état « Échec,
+          Réessayer » de `appli/soignee/chantier.html?ecran=note`). Il relance
+          la chaîne sur la MÊME dictée : elle retranscrit d'elle-même ce qui
+          manque (`devis-depuis-dictee.ts`), puis va jusqu'au devis. Rien n'est
+          redicté.
+
+          **Sur la fiche client seulement**, là où la planche le pose. C'est le
+          seul écran où l'échec ne laissait aucune sortie : sur la Transcription
+          et les Informations, le bouton du devis reste au-dessus de la phrase ;
+          sur le devis, la feuille est là, et relancer la chaîne par-dessus des
+          lignes qu'il a commencé à écrire n'a pas été dessiné. */}
+      {etat.type === "message" && etat.reprise && auto && !surLeDevis && (
+        <div className="flex justify-center">
+          <PastilleAjout or libelle="Réessayer" repere="reessayer-la-dictee" onClick={() => lancer()} />
+        </div>
       )}
 
       {etat.type === "sansPrix" && (
@@ -356,7 +416,7 @@ export default function DevisDepuisDictee({
           chantierId={chantierId}
           questions={etat.questions}
           onAbandon={() => setEtat({ type: "repos" })}
-          onEchec={(texte) => setEtat({ type: "message", texte })}
+          onEchec={(texte) => setEtat({ type: "message", texte, reprise: true })}
           /* **Le même partage que `lancer` — et pour le même piège.** Sur la
              page du devis, `push` vers l'adresse courante ne rejoue pas le
              rendu serveur : le patron répondait à ses questions et restait
@@ -459,7 +519,7 @@ function QuestionsChiffrage({
       // EST sa décision. Ce qu'il a laissé de côté ressort signalé sur le
       // devis, jamais oublié en silence.
       if (r.statut === "prepare") return onPrepare();
-      onEchec("statut" in r && r.statut === "echec" ? r.erreur : "La préparation n'a pas abouti. Réessayez.");
+      onEchec("statut" in r && r.statut === "echec" ? r.erreur : "La préparation n'a pas abouti.");
     } catch (panne) {
       // **LE REFUS SE JOURNALISE AVANT DE SE DIRE — 13 septembre 2026.** Ce
       // `catch` avalait la panne : l'écran disait « Réessayez » et personne,
@@ -468,7 +528,7 @@ function QuestionsChiffrage({
       // soit — et un message d'action serveur n'arrive pas jusqu'à lui, il
       // faut donc l'écrire ici.
       console.error("[chiffrage] les réponses n'ont pas pu être enregistrées", panne);
-      onEchec("Vos réponses n'ont pas pu être enregistrées. Réessayez.");
+      onEchec("Vos réponses n'ont pas pu être enregistrées.");
     } finally {
       // **ET LE BOUTON SE REND — c'est sa panne du 13 septembre 2026 :**
       // *« ça n'a pas fonctionné et impossible de recommencer »*. Le drapeau

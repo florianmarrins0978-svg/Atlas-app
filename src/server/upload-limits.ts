@@ -16,27 +16,6 @@ export function verifierTailleFichier(fichier: File): { ok: true } | { ok: false
   return { ok: true };
 }
 
-// Types audio acceptés — liste blanche : tout ce qui n'y figure pas est refusé.
-// Couvre ce que produisent les navigateurs (webm/ogg/mp4 selon la plateforme)
-// et les formats qu'un artisan peut importer depuis son téléphone.
-export const TYPES_AUDIO_AUTORISES = [
-  "audio/webm",
-  "audio/ogg",
-  "audio/mp4",
-  "audio/m4a",
-  "audio/x-m4a",
-  "audio/mpeg",
-  "audio/mp3",
-  "audio/wav",
-  "audio/x-wav",
-  "audio/aac",
-  "audio/flac",
-];
-
-// Attribut `accept` de l'input fichier — dérivé de la même liste, pour ne
-// jamais proposer côté navigateur un format que le serveur refusera.
-export const ACCEPT_AUDIO = TYPES_AUDIO_AUTORISES.join(",");
-
 // **`verifierTypeAudio` et `MESSAGE_TYPE_AUDIO_INVALIDE` ont été RETIRÉS le
 // 26 août 2026, avec le lot Audio.** Ils décidaient sur la chaîne que le
 // navigateur envoie — laquelle ne prouve rien, et commandait indirectement
@@ -46,7 +25,8 @@ export const ACCEPT_AUDIO = TYPES_AUDIO_AUTORISES.join(",");
 // lit dans les octets, et le serveur en déduit le type et l'extension. La porte
 // unique est `src/server/audio-entrant.ts`.
 //
-// **La liste ci-dessus reste**, mais pour ce qu'elle est vraiment : l'attribut
-// `accept` de l'écran, un confort d'interface qui ne protège rien — et le
-// garde-fou qui vérifie que tout format reconnu a bien un type qu'Atlas sait
-// traiter (`scripts/test-signature-audio.ts`).
+// **`TYPES_AUDIO_AUTORISES` et `ACCEPT_AUDIO` sont partis le 3 novembre 2026**
+// avec l'écran Note vocale : ils ne servaient plus qu'à l'attribut `accept` de
+// son « Ajouter un fichier audio », un confort d'interface qui ne protégeait
+// rien. Aucun écran ne choisit plus un fichier audio ; le micro envoie ce que
+// le navigateur enregistre, et la porte commune le reconnaît.

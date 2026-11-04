@@ -3,7 +3,14 @@ import { dossierEnCours } from "../repositories/dossiers-comptables";
 import { appliquerCheckUp } from "../repositories/pour-mon-comptable";
 import { logger } from "../logger";
 import type { Ctx } from "../repositories/context";
-import { ajouterMouvements, ajouterVirements, liaisonDeLEntreprise, marquerBanqueLue, noterProfondeurLue } from "../repositories/banque";
+import {
+  ajouterMouvements,
+  ajouterVirements,
+  liaisonDeLEntreprise,
+  marquerBanqueLue,
+  noterLectureRefusee,
+  noterProfondeurLue,
+} from "../repositories/banque";
 import { mouvementsBancaires, type Refus } from "./enable-banking";
 
 /**
@@ -32,7 +39,9 @@ export type ResultatLecture = { ok: true; nouveaux: number; lue: boolean } | Ref
  *
  * **La lecture est marquée faite même quand la banque refuse** : sans quoi
  * chaque relecture de l'accueil retenterait, et l'on brûlerait les lectures
- * permises sur une panne. Le refus part au journal, et Ma banque le dit.
+ * permises sur une panne. Le refus part au journal, et il est GARDÉ sur la
+ * liaison (`noterLectureRefusee`) : Ma banque le dit même rouverte plus tard,
+ * jusqu'à la prochaine lecture réussie qui l'efface.
  *
  * **La profondeur atteinte est gardée en base** (`noterProfondeurLue`) : Ma
  * banque explique pourquoi on voit moins, même quand la lecture suivante est
@@ -59,6 +68,9 @@ export async function lireLaBanque(
   const r = await mouvementsBancaires(liaison, maintenant);
   if (!r.ok) {
     logger.warn("La banque n'a pas pu être lue", { raison: r.raison });
+    // Gardé : rouverte dans la demi-heure, Ma banque ne relit pas, et doit
+    // pourtant dire « Pas lue » (migration 0157).
+    await noterLectureRefusee(ctx, r.raison);
     return r;
   }
   await noterProfondeurLue(ctx, r.joursLus, r.refusDesPlusProfonds);

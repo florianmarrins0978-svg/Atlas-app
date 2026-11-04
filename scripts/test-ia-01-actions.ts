@@ -6,8 +6,12 @@ import * as notesRepo from "../src/server/repositories/notes-vocales";
 import * as prestationsRepo from "../src/server/repositories/prestations";
 import * as materielRepo from "../src/server/repositories/materiel";
 import { enregistrerObjet } from "../src/server/storage/local-storage";
-import { lancerTranscriptionAction } from "../src/app/chantiers/[id]/note-vocale/actions";
-import { extraireInformationsAction, appliquerExtractionAction } from "../src/app/chantiers/[id]/informations/actions";
+import { lancerTranscriptionAction } from "../src/app/chantiers/[id]/transcription/actions";
+import {
+  extraireInformationsAction,
+  appliquerExtractionAction,
+  preparerDevisDepuisDicteeAction,
+} from "../src/app/chantiers/[id]/informations/actions";
 import { fermerLimiteur } from "../src/server/rate-limit";
 import { nettoyerBase } from "./_test-db";
 
@@ -66,6 +70,34 @@ async function main() {
     assert.equal(resultat.transcriptionStatut, "echouee");
     assert.equal(resultat.transcriptionErreur, "Fichier audio introuvable.");
     assert.equal(resultat.transcription, null);
+  });
+
+  // **La chaîne de la fiche client dit l'échec, elle ne nie plus la dictée** —
+  // 3 novembre 2026. Une transcription qui échouait retombait dans
+  // « transcription_absente », et l'écran disait « il n'y a rien à reprendre »
+  // à celui qui venait de dicter : « Réessayer » n'aurait jamais paru.
+  await test("preparerDevisDepuisDicteeAction : une transcription qui échoue rend un échec qui le dit, la dictée reste", async () => {
+    const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Chantier dictée égarée" });
+    await notesRepo.enregistrerNoteVocale(ctx, chantier.id, {
+      storageKey: "chantiers/inexistant/notes/egare.webm",
+      mimeType: "audio/webm",
+      tailleOctets: 10,
+      checksum: "abc",
+    });
+    const resultat = await preparerDevisDepuisDicteeAction(chantier.id);
+    assert.equal(resultat.statut, "echec", `statut « ${resultat.statut} » : l'échec de transcription est maquillé`);
+    if (resultat.statut === "echec") {
+      assert.equal(resultat.erreur, "La transcription n'a pas abouti. Fichier audio introuvable.");
+    }
+    const note = await notesRepo.getNoteVocale(ctx, chantier.id);
+    assert.ok(note?.storageKey, "la note a perdu son son : rien ne pourrait plus la reprendre");
+    assert.equal(note?.transcriptionStatut, "echouee");
+  });
+
+  await test("preparerDevisDepuisDicteeAction : sans note, il n'y a vraiment rien à reprendre", async () => {
+    const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Chantier sans dictée" });
+    const resultat = await preparerDevisDepuisDicteeAction(chantier.id);
+    assert.equal(resultat.statut, "transcription_absente");
   });
 
   await test("extraireInformationsAction : texte libre sans note vocale associée, aucune mutation", async () => {

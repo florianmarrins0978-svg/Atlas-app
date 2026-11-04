@@ -498,7 +498,7 @@ export async function annulerRangement(ctx: Ctx, envoiId: string): Promise<boole
 
 // ─── Sur la fiche du client ───────────────────────────────────────────────
 
-/** Les PDF d'un client dont l'objet n'a jamais été cherché (importés avant la migration 0156). */
+/** Les PDF d'un client dont l'objet n'a jamais été cherché (importés avant la migration 0159). */
 export async function pdfSansObjetCherche(ctx: Ctx, clientId: string, combien: number): Promise<{ id: string; fichierCle: string }[]> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const lignes = await tx

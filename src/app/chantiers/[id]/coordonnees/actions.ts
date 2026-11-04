@@ -4,6 +4,7 @@ import { exigerEcran } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantier, reprendreChantier } from "@/server/repositories/chantiers";
 import { trouverOuCreerClient, mettreAJourClient, type CanalClient } from "@/server/repositories/clients";
+import { supprimerNoteVocale } from "@/server/repositories/notes-vocales";
 import { nomDuChantier } from "@/lib/nom-chantier";
 import type { CiviliteClient } from "@/lib/civilite";
 import { jourIso } from "@/lib/jour";
@@ -156,4 +157,19 @@ export async function reprendreChantierAction(
     console.error("[coordonnées] chantier non repris", erreur);
     return { ok: false, raison: "Impossible d'enregistrer pour l'instant. Réessayez." };
   }
+}
+
+/**
+ * Jeter la dictée du chantier, depuis la fiche client.
+ *
+ * **Elle vit ici depuis le 3 novembre 2026**, avec l'écran qui l'appelle : la
+ * fiche client porte le glissement « Votre dictée » depuis le 13 septembre, et
+ * l'écran Note vocale, où l'action était née, est retiré. La fermeture du
+ * tiroir la déclenche (`useRetraits`) ; l'enregistrement part en file de purge
+ * dans la même transaction (`supprimerNoteVocale`).
+ */
+export async function supprimerNoteVocaleAction(chantierId: string) {
+  const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "supprimer une note vocale");
+  await supprimerNoteVocale(ctx, chantierId);
 }

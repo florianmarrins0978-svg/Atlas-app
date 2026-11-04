@@ -16,9 +16,10 @@ const ANNEAU = "src/app/chantiers/[id]/AnneauNoteVocale.tsx";
 const PELLICULE = "src/app/chantiers/[id]/Pellicule.tsx";
 const VISIONNEUSE = "src/components/atlas/VisionneusePhoto.tsx";
 const DEVIS_DICTEE = "src/app/chantiers/[id]/DevisDepuisDictee.tsx";
-const NOTE = "src/app/chantiers/[id]/note-vocale/NoteVocaleClient.tsx";
 const TRANSCRIPTION = "src/app/chantiers/[id]/transcription/page.tsx";
 const TEXTE_DICTE = "src/app/chantiers/[id]/transcription/TexteDicte.tsx";
+const RELANCER = "src/app/chantiers/[id]/transcription/RelancerLaTranscription.tsx";
+const DICTER_DEVIS = "src/app/chantiers/[id]/devis-complet/DicterDansLeDevis.tsx";
 const INFOS_PAGE = "src/app/chantiers/[id]/informations/page.tsx";
 const INFOS = "src/app/chantiers/[id]/informations/InformationsClient.tsx";
 const BROUILLON = "src/app/chantiers/[id]/informations/BrouillonSection.tsx";
@@ -199,9 +200,9 @@ export const FICHES_CHANTIER: FicheModeEmploi[] = [
     intitule: "Écrire son devis soi-même, sans dicter",
     motsCles: ["rediger", "ecrire", "main", "taper", "manuel", "manuellement", "sans dicter", "devis"],
     geste: "Touchez « Je rédige à la main », en bas de la fiche client : le devis s'ouvre, vide.",
-    reserve: "Le bouton disparaît pendant qu'on dicte.",
+    reserve: "Le bouton disparaît pendant qu'on dicte et pendant qu'Atlas prépare le devis. Il revient sous « Réessayer » si la préparation échoue.",
     source: FICHE,
-    preuves: ["Je rédige à la main", "dicteeEnCours ? \"invisible\""],
+    preuves: ["Je rédige à la main", "cacherLaMain ? \"invisible\"", "onEchec={() => setDicteeEnCours(false)}"],
   },
   {
     id: "chantier-civilite",
@@ -269,7 +270,7 @@ export const FICHES_CHANTIER: FicheModeEmploi[] = [
     id: "fiche-note-vocale",
     ecran: "Fiche client",
     ou: OU_FICHE_CLIENT,
-    intitule: "Dicter le chantier pour qu'Atlas écrive le devis",
+    intitule: "Dicter le chantier en note vocale pour qu'Atlas écrive le devis",
     motsCles: ["dicter", "dictee", "dictant", "vocal", "vocale", "note", "micro", "parler", "enregistrer", "voix", "transforme", "ecrit"],
     geste:
       "Touchez le micro au centre, décrivez le chantier, puis touchez l'avion qui a pris sa place : " +
@@ -292,8 +293,8 @@ export const FICHES_CHANTIER: FicheModeEmploi[] = [
     id: "chantier-dictee-retirer",
     ecran: "Fiche client",
     ou: OU_FICHE_CLIENT,
-    intitule: "Retirer une dictée déjà envoyée",
-    motsCles: ["retirer", "supprimer", "effacer", "enlever", "dictee", "note", "vocale", "redicter"],
+    intitule: "Retirer ou remplacer une note vocale déjà envoyée",
+    motsCles: ["retirer", "supprimer", "effacer", "enlever", "dictee", "note", "vocale", "redicter", "remplacer", "refaire"],
     geste: "Glissez la ligne « Votre dictée » de droite à gauche, puis « Retirer ». Vous pouvez redicter.",
     reserve: "« Annuler » reste quelques secondes pour revenir en arrière.",
     source: FICHE,
@@ -369,75 +370,65 @@ export const FICHES_CHANTIER: FicheModeEmploi[] = [
     source: DEVIS_DICTEE,
     preuves: ["Conserver mes corrections", "Repartir de la dictée"],
   },
-  // --- Écran Note vocale ----------------------------------------------------
+  {
+    id: "chantier-dictee-reessayer",
+    ecran: "Fiche client",
+    ou: "après la dictée, quand la phrase rouge dit qu'elle n'a pas abouti",
+    intitule: "Reprendre une dictée qui n'a pas abouti",
+    motsCles: ["reessayer", "relancer", "recommencer", "echec", "echoue", "abouti", "rate", "dictee", "transcription", "rouge"],
+    geste: "Sous la phrase rouge, touchez « Réessayer » : Atlas reprend la même dictée, sans la redicter.",
+    reserve: "« Réessayer » n'apparaît pas quand il n'y a rien à reprendre, sans dictée enregistrée.",
+    source: DEVIS_DICTEE,
+    preuves: ['libelle="Réessayer"', 'repere="reessayer-la-dictee"'],
+    ailleurs: [
+      { source: FICHE, preuves: ["<DevisDepuisDictee", "surLeDevis={false}"] },
+      { source: "src/server/services/devis-depuis-dictee.ts", preuves: ["La transcription n'a pas abouti."] },
+    ],
+  },
+  // --- La note vocale, depuis que son écran est retiré (3 novembre 2026) -----
+  //
+  // L'écran Note vocale portait l'enregistrement, la lecture, le retrait, la
+  // transcription et le passage au devis. Dicter et retirer vivent sur la fiche
+  // client (plus haut), transcrire sur l'écran Transcription (plus bas). Ce
+  // qui ne s'est pas recasé se DIT : la réécoute et l'envoi d'un fichier.
   {
     id: "note-vocale-ou",
-    ecran: "Note vocale",
-    ou: "« Chantiers » dans la barre du bas, puis le chantier : écran Transcription ou Informations",
-    intitule: "Ouvrir l'écran de la note vocale d'un chantier",
-    motsCles: ["note", "vocale", "ecran", "ouvrir", "trouver", "sont", "enregistrement"],
-    geste: "Sur l'écran Transcription ou Informations du chantier, touchez « Aller à la note vocale ».",
-    reserve: "Ce lien n'apparaît que tant que la dictée n'est pas transcrite.",
-    source: TRANSCRIPTION,
-    preuves: ["Aller à la note vocale", "/note-vocale`"],
-    ailleurs: [{ source: BROUILLON, preuves: ["Aller à la note vocale"] }],
+    ecran: "Fiche client",
+    ou: OU_FICHE_CLIENT,
+    intitule: "Trouver la note vocale d'un chantier",
+    motsCles: ["note", "vocale", "ecran", "ouvrir", "trouver", "sont", "dictee"],
+    geste: "La dictée vit sur la fiche client, sous « Devis à la voix ».",
+    reserve: "Sur un devis déjà écrit, le micro en haut à droite du devis ajoute à la voix.",
+    source: FICHE,
+    preuves: ["Devis à la voix", "<AnneauNoteVocale"],
+    ailleurs: [
+      { source: ACCUEIL, preuves: ["Créer un devis"] },
+      { source: DICTER_DEVIS, preuves: ["Dicter dans le devis"] },
+    ],
     lieu: true,
   },
   {
-    id: "note-vocale-enregistrer",
-    ecran: "Note vocale",
-    ou: "l'écran Note vocale d'un chantier",
-    intitule: "Enregistrer une note vocale sur l'écran Note vocale",
-    motsCles: ["enregistrer", "enregistrement", "arreter", "stop", "note", "vocale"],
-    geste: "Touchez « Enregistrer une note vocale », parlez, puis « Arrêter l'enregistrement ».",
-    source: NOTE,
-    preuves: ["Enregistrer une note vocale", "Arrêter l&apos;enregistrement"],
-  },
-  {
     id: "note-vocale-ecouter",
-    ecran: "Note vocale",
-    ou: "l'écran Note vocale d'un chantier",
+    ecran: "Transcription",
+    ou: "l'écran Transcription d'un chantier",
     intitule: "Réécouter sa note vocale",
     motsCles: ["ecouter", "reecouter", "lire", "entendre", "note", "vocale", "audio", "play"],
-    geste: "Touchez le rond de lecture à gauche de la note. Touchez-le à nouveau pour la pause.",
-    reserve: "Une fois transcrit, l'audio est effacé : l'écran dit « Enregistrement effacé » et le texte reste.",
-    source: NOTE,
-    preuves: ['"Écouter la note"', '"Mettre en pause"', "Enregistrement effacé"],
-  },
-  {
-    id: "note-vocale-retirer",
-    ecran: "Note vocale",
-    ou: "l'écran Note vocale d'un chantier",
-    intitule: "Supprimer la note vocale",
-    motsCles: ["supprimer", "retirer", "effacer", "enlever", "note", "vocale", "virer"],
-    geste: "Glissez la note de droite à gauche, puis « Retirer ».",
-    reserve: "« Annuler » reste quelques secondes en bas de l'écran.",
-    source: NOTE,
-    preuves: ["LigneRetirable", 'libelle="cette note vocale"', "TiroirDesRetires"],
+    geste: "Une dictée ne se réécoute pas dans Atlas : il en garde le texte. Relisez-le sur l'écran Transcription.",
+    source: TRANSCRIPTION,
+    preuves: ['titre="Transcription"'],
+    ailleurs: [{ source: INFOS_PAGE, preuves: ["Voir la transcription"] }],
   },
   {
     id: "note-vocale-transcrire",
-    ecran: "Note vocale",
-    ou: "l'écran Note vocale d'un chantier",
+    ecran: "Transcription",
+    ou: "l'écran Transcription d'un chantier",
     intitule: "Lancer ou relancer la transcription d'une note",
     motsCles: ["transcription", "transcrire", "lancer", "relancer", "reessayer", "note"],
-    geste: "Touchez « Lancer la transcription ». Si elle échoue, touchez « Réessayer ».",
-    source: NOTE,
-    preuves: ["Lancer la transcription", "Réessayer"],
-  },
-  {
-    id: "note-vocale-suite",
-    ecran: "Note vocale",
-    ou: "l'écran Note vocale d'un chantier",
-    intitule: "Passer de la note vocale au devis",
-    motsCles: ["devis", "creer", "dictee", "suite", "continuer", "main", "texte"],
-    geste:
-      "Touchez « Créer le devis à partir de ma dictée ». « voir le texte » ouvre la transcription, " +
-      "« Ou rédiger le devis à la main » ouvre le devis vide.",
-    reserve: "Le bouton du devis n'apparaît qu'une fois la transcription faite.",
-    source: NOTE,
-    preuves: ["voir le texte", "Ou rédiger le devis à la main", "<DevisDepuisDictee"],
-    ailleurs: [{ source: DEVIS_DICTEE, preuves: ["Créer le devis à partir de ma dictée"] }],
+    geste: "Touchez « Lancer la transcription », ou « Relancer la transcription » si elle a échoué. Ses mots s'affichent sur place.",
+    reserve: "Le bouton n'apparaît pas quand l'enregistrement a été effacé après une transcription réussie.",
+    source: TRANSCRIPTION,
+    preuves: ['libelle="Lancer la transcription"', 'libelle="Relancer la transcription"', "note?.storageKey &&"],
+    ailleurs: [{ source: RELANCER, preuves: ["lancerTranscriptionAction(chantierId)", "router.refresh()"] }],
   },
   // --- Écran Transcription --------------------------------------------------
   {
@@ -472,11 +463,11 @@ export const FICHES_CHANTIER: FicheModeEmploi[] = [
     intitule: "La dictée n'a pas été transcrite",
     motsCles: ["echec", "echoue", "transcription", "transcrite", "rate", "marche", "ecrire", "dictee"],
     geste:
-      "Touchez « Relancer depuis la note vocale », ou « Écrire ce que j'ai dit » et tapez-le, " +
+      "Touchez « Relancer la transcription », ou « Écrire ce que j'ai dit » et tapez-le, " +
       "puis « Enregistrer le texte ».",
     reserve: "L'enregistrement reste intact.",
     source: TRANSCRIPTION,
-    preuves: ["Relancer depuis la note vocale", 'libelleFerme="Écrire ce que j\'ai dit"'],
+    preuves: ['libelle="Relancer la transcription"', 'libelleFerme="Écrire ce que j\'ai dit"'],
     ailleurs: [{ source: TEXTE_DICTE, preuves: ["Enregistrer le texte", "Continuer vers les informations"] }],
   },
   // --- Écran Informations ---------------------------------------------------
@@ -648,33 +639,28 @@ export const FICHES_CHANTIER: FicheModeEmploi[] = [
   },
   {
     id: "note-vocale-completer",
-    ecran: "Note vocale",
-    ou: "l'écran de la note vocale",
-    intitule: "Ajouter quelque chose à une note déjà enregistrée",
+    ecran: "Devis",
+    ou: "un chantier, écran Devis, le micro en haut à droite",
+    intitule: "Ajouter quelque chose à une dictée déjà faite",
     motsCles: ["completer", "ajouter", "oublie", "reprendre", "note", "vocale", "suite"],
-    geste: "Appuyez sur « Reprendre, j'avais oublié quelque chose », puis parlez.",
-    source: "src/app/chantiers/[id]/note-vocale/NoteVocaleClient.tsx",
-    preuves: ["Reprendre, j'avais oublié quelque chose"],
-  },
-  {
-    id: "note-vocale-remplacer",
-    ecran: "Note vocale",
-    ou: "l'écran de la note vocale",
-    intitule: "Refaire une note vocale depuis le début",
-    motsCles: ["remplacer", "refaire", "recommencer", "note", "vocale", "effacer", "supprimer"],
-    geste: "Appuyez sur « Remplacer la note », confirmez, puis réenregistrez.",
-    source: "src/app/chantiers/[id]/note-vocale/NoteVocaleClient.tsx",
-    preuves: ["Remplacer la note", "Remplacer cette note vocale ?"],
+    geste:
+      "Sur le devis, touchez le micro en haut à droite et dites ce qui manque. " +
+      "Décochez ce qui ne va pas, puis « Appliquer ce changement ».",
+    source: DICTER_DEVIS,
+    preuves: ["Dicter dans le devis", "Appliquer ce changement"],
   },
   {
     id: "note-vocale-fichier",
-    ecran: "Note vocale",
-    ou: "l'écran de la note vocale",
+    ecran: "Fiche client",
+    ou: OU_FICHE_CLIENT,
     intitule: "Envoyer un fichier audio déjà enregistré",
     motsCles: ["fichier", "audio", "importer", "televerser", "memo", "dictaphone", "ajouter"],
-    geste: "Appuyez sur « Ajouter un fichier audio » et choisissez l'enregistrement.",
-    source: "src/app/chantiers/[id]/note-vocale/NoteVocaleClient.tsx",
-    preuves: ["Ajouter un fichier audio"],
+    geste: "Atlas ne prend pas de fichier audio : dictez sur la fiche client, au micro de « Devis à la voix ».",
+    source: FICHE,
+    preuves: ["Devis à la voix"],
+    ailleurs: [{ source: ANNEAU, preuves: ['aria-label="Dicter une note vocale"'] }],
+    // L'import de fichier est parti avec l'écran Note vocale le 3 novembre 2026.
+    absences: ["Ajouter un fichier audio"],
   },
   {
     id: "transcription-corriger",

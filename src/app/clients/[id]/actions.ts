@@ -33,7 +33,7 @@ import { jourIso } from "@/lib/jour";
 export async function supprimerClientAction(
   clientId: string
 ): Promise<
-  | { ok: true; disparu: boolean; conserve: { numero: string; pourquoi: string }[] }
+  | { ok: true; disparu: boolean; conserve: { designation: string; pourquoi: string }[] }
   | { ok: false; message: string }
 > {
   const ctx = await getCurrentCtx();
@@ -63,7 +63,7 @@ export async function supprimerClientAction(
   return {
     ok: true,
     disparu: rapport.disparu,
-    conserve: rapport.pieces.map((p) => ({ numero: p.numero, pourquoi: p.pourquoi })),
+    conserve: rapport.pieces.map((p) => ({ designation: p.designation, pourquoi: p.pourquoi })),
   };
 }
 

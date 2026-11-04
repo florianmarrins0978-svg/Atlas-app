@@ -138,6 +138,16 @@ export const CONSERVATION_LEGALE = {
    * cinq années où on peut encore le mettre en cause.
    */
   devisAccepteAns: 10,
+  /**
+   * Contrat d'entretien accepté : **sa décision du 2 novembre 2026**, il se
+   * garde comme une facture.
+   *
+   * Dix ans, Code de la consommation L213-1 et D213-2 : un contrat conclu par
+   * voie électronique pour 120 euros ou plus se conserve dix ans à compter de
+   * la fin de son exécution. Le client l'accepte par un lien, et un entretien
+   * à l'année dépasse ce seuil.
+   */
+  contratAccepteAns: 10,
 } as const;
 
 export function echeanceConservation(

@@ -62,7 +62,7 @@ export async function traiterPiecesEnAttente(ctx: Ctx): Promise<number> {
 const OBJETS_PAR_OUVERTURE = 30;
 
 /**
- * Les PDF importés AVANT que l'objet se lise (migration 0156) n'ont que leur
+ * Les PDF importés AVANT que l'objet se lise (migration 0159) n'ont que leur
  * numéro sur la fiche. Sa remarque du 3 novembre 2026, sur son devis Beseme :
  * *« objet et titre, c'est la même chose »*. Chacun se relit UNE fois, au
  * texte seul : jamais l'IA, qu'il paierait pour un titre.

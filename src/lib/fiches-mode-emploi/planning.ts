@@ -27,16 +27,15 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
     id: "planning-deplacer",
     ecran: "Planning",
     ou: "« Planning » dans la barre du bas, puis le jour du chantier dans le calendrier",
-    intitule: "Déplacer un chantier à un autre jour, ou seulement sa matinée ou son après-midi",
+    intitule: "Déplacer un chantier à un autre jour",
     motsCles: ["deplacer", "bouger", "changer", "reporter", "decaler", "jour", "date", "matin", "apres", "journee", "chantier", "planning"],
     geste:
-      "Ouvrez le jour, appuyez sur « Déplacer » sous le chantier, touchez le nouveau jour dans le calendrier, " +
-      "puis choisissez « Matin », « Après-midi » ou « Journée ».",
+      "Ouvrez le jour, appuyez sur « Déplacer » sous le chantier, puis touchez le nouveau jour dans le calendrier : il y part aussitôt.",
     reserve:
-      "Seul ce que le chantier occupe ce jour-là part. « Journée » n'est proposé que s'il y occupe le matin et l'après-midi. " +
+      "Seul ce que le chantier occupe ce jour-là part, et il garde son moment : une journée arrive en journée, un matin arrive le matin. " +
       "Un jour passé ne se déplace plus. « Annuler » arrête le geste.",
     source: CARTE,
-    preuves: ['data-atlas="deplacer"', "Déplacer", "Touchez le jour au-dessus", "Quel moment ?", 'journee: "Journée"', "Annuler"],
+    preuves: ['data-atlas="deplacer"', "Déplacer", "Touchez le jour au-dessus", "Annuler"],
     ailleurs: [{ source: "src/lib/creneaux-chantier.ts", preuves: ["Ce chantier occupe déjà ce moment-là."] }],
   },
   {

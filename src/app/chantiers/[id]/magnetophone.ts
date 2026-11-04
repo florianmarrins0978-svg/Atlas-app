@@ -229,16 +229,14 @@ export function useMagnetophone() {
  * `mp4`, Firefox de l'`ogg`, Chrome du `webm` : un nom figé ferait refuser le
  * fichier par le contrôle de format, sur un son parfaitement valable.
  *
- * **`dureeSecondes` vaut `null` pour un complément**, et c'est voulu : celui-ci
- * s'ajoute à la TRANSCRIPTION, jamais au fichier audio
- * (`complement-note-service.ts`). La note garde donc l'enregistrement — et la
- * durée — de sa première dictée. Envoyer une durée ici laisserait croire que le
- * champ compte, alors que rien ne le lit.
+ * **Une seule forme depuis le 3 novembre 2026** : le complément de l'écran
+ * Note vocale, qui partait sans durée et sous un autre nom, est retiré avec
+ * lui. Ne reste que la dictée de l'anneau, toujours entière.
  */
-export function formulaireDeNote(blob: Blob, dureeSecondes: number | null, nom = "note"): FormData {
+export function formulaireDeNote(blob: Blob, dureeSecondes: number): FormData {
   const extension = blob.type.includes("ogg") ? "ogg" : blob.type.includes("mp4") ? "m4a" : "webm";
   const fd = new FormData();
-  fd.set("fichier", blob, `${nom}.${extension}`);
-  if (dureeSecondes !== null) fd.set("dureeSecondes", String(dureeSecondes));
+  fd.set("fichier", blob, `note.${extension}`);
+  fd.set("dureeSecondes", String(dureeSecondes));
   return fd;
 }

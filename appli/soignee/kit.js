@@ -302,7 +302,7 @@
   var PRETES = ["index", "fondations", "reglages", "termines", "termines-tva", "tva-bouton-paiement", "termines-comptable", "comptable-dossier", "comptable-verification", "clients", "client", "planning", "salarie-absent", "main-oeuvre-curseur", "creer-un-devis", "accueil",
     "reglages-identite", "reglages-equipe", "reglages-vehicules", "reglages-organigramme", "reglages-tarifs", "reglages-documents",
     "reglages-fournisseurs", "reglages-ia", "reglages-agenda", "reglages-abonnement", "reglages-donnees", "reglages-compte",
-    "reglages-notifications", "reglages-connexion", "reglages-connexion-double-verification", "reglages-apparence", "reglages-banque",
+    "reglages-notifications", "reglages-connexion", "reglages-connexion-double-verification", "reglages-apparence", "reglages-banque", "devis-note-client", "devis-note-avant-envoi",
     "arrosage", "abonnement-credits-ia", "creer-un-compte", "clients-importer", "client-recoit",
     "client-coordonnees", "client-contrat", "termines-non-payees", "termines-retours", "chantier", "facture"];
 

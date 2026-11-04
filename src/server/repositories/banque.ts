@@ -25,6 +25,8 @@ export type LiaisonEnregistree = {
   luLe: Date | null;
   historiqueJours: number | null;
   historiqueRefus: string | null;
+  /** Le refus de la dernière tentative, NULL quand elle a réussi (0157). */
+  lectureRefusee: string | null;
 };
 
 export async function liaisonDeLEntreprise(ctx: Ctx): Promise<LiaisonEnregistree | null> {
@@ -39,6 +41,7 @@ export async function liaisonDeLEntreprise(ctx: Ctx): Promise<LiaisonEnregistree
       luLe: l.luLe,
       historiqueJours: l.historiqueJours,
       historiqueRefus: l.historiqueRefus,
+      lectureRefusee: l.lectureRefusee,
     };
   });
 }
@@ -81,10 +84,24 @@ export async function marquerBanqueLue(ctx: Ctx, quand: Date): Promise<void> {
   });
 }
 
-/** La profondeur qu'une lecture réussie a atteinte, et le refus qui l'a limitée s'il y en a eu un. */
+/**
+ * Une lecture réussie : la profondeur atteinte, le refus qui l'a limitée s'il y
+ * en a eu un, et **le refus de la tentative d'avant, effacé** dans la même
+ * écriture. Sans cela, Ma banque dirait « Pas lue » après une lecture réussie.
+ */
 export async function noterProfondeurLue(ctx: Ctx, jours: number, refus: string | null): Promise<void> {
   await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    await tx.update(liaisonsBancaires).set({ historiqueJours: jours, historiqueRefus: refus });
+    await tx.update(liaisonsBancaires).set({ historiqueJours: jours, historiqueRefus: refus, lectureRefusee: null });
+  });
+}
+
+/**
+ * Une lecture refusée : sa phrase, gardée jusqu'à la prochaine réussite.
+ * `luLe` ne suffit pas à le dire, il est posé avant l'appel (migration 0157).
+ */
+export async function noterLectureRefusee(ctx: Ctx, raison: string): Promise<void> {
+  await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    await tx.update(liaisonsBancaires).set({ lectureRefusee: raison });
   });
 }
 

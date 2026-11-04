@@ -8,6 +8,8 @@ import {
 import { getTarif } from "../repositories/tarifs";
 import { preparerPropositionPrix } from "./proposition-prix";
 import { ligneDejaAuDetail } from "../../lib/proposition-au-detail";
+import { libelleAvecDetail } from "../../lib/detail-de-la-ligne";
+import { listerPrestations } from "../repositories/prestations";
 
 export type LigneEcrite = { id: string; libelle: string; montant: string };
 
@@ -69,6 +71,12 @@ export async function appliquerPropositionPrix(
       : null;
   }
 
+  // **Ce qu'il a dicté de la façon de faire s'écrit sous le nom** (sa planche
+  // du 4 novembre 2026, `src/lib/detail-de-la-ligne.ts`) : la ligne porte le
+  // nom du tarif, et le détail des travaux qu'elle vend descend dessous. Le
+  // doublon se cherche sur ce libellé-là : rejouer la dictée rebâtit le même.
+  const detailDe = new Map((await listerPrestations(ctx, chantierId)).map((p) => [p.id, p.detail]));
+
   // Cas ambigu : le patron a tranché en désignant un tarif. On relit le prix
   // ACTUEL de ce tarif en base, et on vérifie qu'il faisait bien partie des
   // candidats — un id transmis au hasard ne doit rien pouvoir appliquer.
@@ -84,9 +92,11 @@ export async function appliquerPropositionPrix(
     if (!tarifActuel) {
       return { succes: false, erreur: "Ce tarif n'existe plus." };
     }
-    const doublon = refuserSiDoublon(tarifActuel.intitule);
+    // Une seule ligne pour le chantier : elle vend tous ses travaux.
+    const libelle = libelleAvecDetail(tarifActuel.intitule, [...detailDe.values()]);
+    const doublon = refuserSiDoublon(libelle);
     if (doublon) return doublon;
-    const ligne = await ajouterLignePrix(ctx, chantierId, tarifActuel.intitule, tarifActuel.prix);
+    const ligne = await ajouterLignePrix(ctx, chantierId, libelle, tarifActuel.prix);
     const ecrite = { id: ligne.id, libelle: ligne.libelle, montant: ligne.montant };
     return { succes: true, ligne: ecrite, lignes: [ecrite] };
   }
@@ -106,7 +116,11 @@ export async function appliquerPropositionPrix(
   const ecrites: LigneEcrite[] = [];
   const refusees: string[] = [];
   for (const proposee of proposition.lignes) {
-    const doublon = refuserSiDoublon(proposee.libelle);
+    const libelle = libelleAvecDetail(
+      proposee.libelle,
+      proposee.prestationIds.map((id) => detailDe.get(id))
+    );
+    const doublon = refuserSiDoublon(libelle);
     if (doublon) {
       refusees.push(doublon.erreur);
       continue;
@@ -114,7 +128,7 @@ export async function appliquerPropositionPrix(
     // **« À chiffrer » n'est pas « 0 € ».** Le montant reste à zéro en base —
     // la facturation n'accepte pas de NULL —, mais le drapeau dit que ce zéro
     // n'est pas un prix, et le devis ne partira pas tant qu'il est levé.
-    const ligne = await ajouterLignePrix(ctx, chantierId, proposee.libelle, proposee.montant ?? "0", {
+    const ligne = await ajouterLignePrix(ctx, chantierId, libelle, proposee.montant ?? "0", {
       quantite: proposee.quantite,
       unite: proposee.unite,
       prixUnitaire: proposee.prixUnitaire,

@@ -2,7 +2,7 @@ import assert from "node:assert";
 import { eq } from "drizzle-orm";
 import { pool } from "../src/server/db/client";
 import { withEntreprise } from "../src/server/db/with-entreprise";
-import { audiosAPurger, clients as clientsTable } from "../src/server/db/schema";
+import { audiosAPurger, clients as clientsTable, contratsEntretien } from "../src/server/db/schema";
 import * as entreprisesRepo from "../src/server/repositories/entreprises";
 import * as chantiersRepo from "../src/server/repositories/chantiers";
 import * as clientsRepo from "../src/server/repositories/clients";
@@ -22,6 +22,8 @@ import { creerEnvoi, enregistrerReponse } from "../src/server/repositories/envoi
 import { audioAPurger, RETENTION, motifConservation, echeanceConservation } from "../src/server/retention";
 import { versJourIso, ajouterJours } from "../src/lib/disponibilites";
 import { nettoyerBase } from "./_test-db";
+import { listerFichesClients } from "../src/server/repositories/fiche-client";
+import { factures as facturesTable } from "../src/server/db/schema";
 
 let passed = 0;
 let failed = 0;
@@ -61,6 +63,42 @@ async function rendreEchue(ctx: { utilisateurId: string; entrepriseId: string },
       .set({ purgerLe: ilYA(1) })
       .where(eq(audiosAPurger.noteId, noteId));
   });
+}
+
+/**
+ * Un contrat d'entretien posé tel que la base le garde, sans passer par
+ * l'envoi : ce qu'on éprouve ici, c'est la suppression du client qui le porte.
+ */
+async function poserUnContrat(
+  ctx: { utilisateurId: string; entrepriseId: string },
+  clientId: string,
+  statut: "brouillon" | "envoye" | "accepte" | "refuse"
+) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const parti = statut !== "brouillon";
+    const [c] = await tx
+      .insert(contratsEntretien)
+      .values({
+        entrepriseId: ctx.entrepriseId,
+        clientId,
+        statut,
+        debut: "2026-03-01",
+        dureeMois: 12,
+        tauxTva: "20.00",
+        jeton: parti ? `jeton-${statut}-${clientId}` : null,
+        empreinte: parti ? "0".repeat(64) : null,
+        envoyeLe: parti ? ilYA(40) : null,
+        reponduLe: statut === "accepte" || statut === "refuse" ? ilYA(30) : null,
+      })
+      .returning({ id: contratsEntretien.id });
+    return c.id;
+  });
+}
+
+async function contratsRestants(ctx: { utilisateurId: string; entrepriseId: string }, clientId: string) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) =>
+    tx.select({ statut: contratsEntretien.statut }).from(contratsEntretien).where(eq(contratsEntretien.clientId, clientId))
+  );
 }
 
 async function contexte(suffixe: string) {
@@ -263,7 +301,7 @@ async function main() {
     assert.strictEqual(rapport.pieces[0].quoi, "devis-accepte");
     // **La pièce porte son NUMÉRO**, sans quoi l'écran dirait « un devis est
     // conservé » — une phrase qu'on ne peut pas retrouver dans un classeur.
-    assert.ok(rapport.pieces[0].numero && rapport.pieces[0].numero !== "?", "la pièce conservée n'est pas nommée");
+    assert.ok(rapport.pieces[0].designation && !rapport.pieces[0].designation.includes("?"), "la pièce conservée n'est pas nommée");
     assert.ok(rapport.pieces[0].jusquAu, "l'échéance doit être annoncée");
     // **Dix ans, sa décision du 22 octobre 2026** : la garantie décennale court
     // dix ans, et le devis signé est ce qui prouve ce qui était commandé.
@@ -394,7 +432,7 @@ async function main() {
     assert.ok(avant, "l'aperçu ne rend rien");
     assert.strictEqual(avant.pieces.length, 1, "la facture émise n'est pas annoncée");
     assert.strictEqual(avant.pieces[0].quoi, "facture");
-    assert.match(avant.pieces[0].numero, /^F/, `numéro inattendu : « ${avant.pieces[0].numero} »`);
+    assert.match(avant.pieces[0].designation, /^n° F/, `désignation inattendue : « ${avant.pieces[0].designation} »`);
     assert.match(avant.pieces[0].pourquoi, /dix ans/);
 
     // **Et l'aperçu ne touche à RIEN** : le client est encore là après.
@@ -410,6 +448,107 @@ async function main() {
     assert.ok(apres, "le client a disparu malgré sa facture : la pièce ne vaut plus rien sans son nom");
     assert.strictEqual(apres.nom, "M. Vasseur", "le nom doit survivre avec la facture");
     assert.strictEqual(apres.telephone, null, "les moyens de recontacter doivent partir");
+  });
+
+  await test("un contrat d'entretien accepté retient le client, et se DIT", async () => {
+    // **Sa décision du 2 novembre 2026** : un contrat accepté se garde comme
+    // une facture, le client reste nommé dessus, tout le reste part. Avant,
+    // la base refusait la suppression et l'écran ne disait que « n'a pas abouti ».
+    const ctx = await contexte("contrat-accepte");
+    const client = await clientsRepo.creerClient(ctx, { nom: "Mme Roux", telephone: "0622000033" });
+    await poserUnContrat(ctx, client.id, "accepte");
+
+    const avant = await apercuSuppressionClient(ctx, client.id, MAINTENANT);
+    assert.ok(avant, "l'aperçu ne rend rien");
+    assert.deepStrictEqual(
+      avant.pieces.map((p) => [p.quoi, p.designation]),
+      [["contrat-accepte", "Contrat d'entretien de mars 2026"]],
+      "le contrat accepté n'est pas annoncé sous « Conservé par la loi »"
+    );
+    assert.match(avant.pieces[0].pourquoi, /10 ans/);
+
+    const rapport = await effacerClient(ctx, client.id, MAINTENANT);
+    assert.ok(rapport);
+    assert.strictEqual(rapport.disparu, false, "un contrat accepté ne peut pas laisser disparaître le client");
+    assert.deepStrictEqual(await contratsRestants(ctx, client.id), [{ statut: "accepte" }]);
+    const apres = await relireClient(ctx, client.id);
+    assert.strictEqual(apres?.nom, "Mme Roux", "le nom doit survivre avec le contrat");
+    assert.strictEqual(apres?.telephone, null, "les moyens de recontacter doivent partir");
+  });
+
+  await test("un contrat d'entretien jamais accepté part avec le client", async () => {
+    const ctx = await contexte("contrat-non-accepte");
+    const client = await clientsRepo.creerClient(ctx, { nom: "M. Brun" });
+    await poserUnContrat(ctx, client.id, "brouillon");
+    await poserUnContrat(ctx, client.id, "envoye");
+    await poserUnContrat(ctx, client.id, "refuse");
+
+    // Il a reçu deux de ces contrats : la question de la sauvegarde se pose.
+    const avant = await apercuSuppressionClient(ctx, client.id, MAINTENANT);
+    assert.strictEqual(avant?.pieces.length, 0, "un contrat jamais accepté n'est pas conservé par la loi");
+    assert.ok((avant?.documents ?? 0) >= 2, "les contrats partis chez le client ne comptent pas comme des documents");
+
+    const rapport = await effacerClient(ctx, client.id, MAINTENANT);
+    assert.strictEqual(rapport?.disparu, true, "rien ne retient ce client");
+    assert.deepStrictEqual(await contratsRestants(ctx, client.id), [], "un contrat a survécu à son client");
+    assert.strictEqual(await relireClient(ctx, client.id), null);
+  });
+
+  await test("une facture en brouillon ne bloque plus la suppression, et se garde avec son numéro", async () => {
+    // **Sa règle du 2 novembre 2026** : *« si je le coche, il faut que je
+    // puisse le supprimer »*. Un chantier terminé et pas encore facturé porte
+    // une facture en brouillon, et la base refusait d'effacer son chantier.
+    // Elle a déjà PRIS son numéro (`attribuerNumeroFacture`, à la création) :
+    // l'effacer trouerait la suite des factures. Elle reste donc, comme une
+    // émise, et le dit.
+    const ctx = await contexte("facture-brouillon");
+    const client = await clientsRepo.creerClient(ctx, { nom: "M. Petit", telephone: "0622000044" });
+    const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Haie", clientId: client.id });
+    await lignesPrixRepo.ajouterLignePrix(ctx, chantier.id, "Taille", "300.00");
+    const d = await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+    await devisRepo.envoyerDevis(ctx, d.id);
+    await facturesRepo.terminerChantier(ctx, chantier.id, MAINTENANT);
+    const f = await facturesRepo.getFacturePourChantier(ctx, chantier.id);
+    assert.ok(f && f.facture.statut === "brouillon", "le montage n'a pas produit de facture en brouillon : rien à mesurer");
+
+    const avant = await apercuSuppressionClient(ctx, client.id, MAINTENANT);
+    assert.deepStrictEqual(
+      avant?.pieces.map((p) => [p.quoi, p.designation]),
+      [["facture", `n° ${f.facture.numeroCommercial}`]],
+      "la facture en brouillon n'est pas annoncée sous « Conservé par la loi »"
+    );
+    assert.match(avant.pieces[0].pourquoi, /numéro/);
+
+    const rapport = await effacerClient(ctx, client.id, MAINTENANT);
+    assert.strictEqual(rapport?.disparu, false, "la facture numérotée doit retenir le nom du client");
+    const reste = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+      tx.select({ statut: facturesTable.statut }).from(facturesTable).where(eq(facturesTable.id, f.facture.id))
+    );
+    assert.deepStrictEqual(reste, [{ statut: "brouillon" }], "la facture numérotée a disparu : la suite des numéros est trouée");
+
+    // **Et il ne le voit plus dans « Vos clients »** : sa fiche reste derrière
+    // la facture, mais une liste qui le montrerait encore lui ferait croire
+    // que la suppression a échoué.
+    const liste = await listerFichesClients(ctx);
+    assert.ok(!liste.some((c) => c.id === client.id), "le client supprimé est encore dans « Vos clients »");
+  });
+
+  await test("les acomptes d'un devis envoyé partent avec lui", async () => {
+    // Vert dès son écriture : la cascade efface le devis AVANT que le
+    // déclencheur des acomptes ne lise son statut. Il garde ce chemin : effacer
+    // les acomptes à la main, devis encore là, ferait refuser la suppression
+    // (`refuser_acompte_sur_devis_envoye` ne connaît pas l'effacement).
+    const ctx = await contexte("acomptes");
+    const client = await clientsRepo.creerClient(ctx, { nom: "Mme Lenoir" });
+    const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Allée", clientId: client.id });
+    await lignesPrixRepo.ajouterLignePrix(ctx, chantier.id, "Gravier", "800.00");
+    const d = await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+    await devisRepo.poserAcompteSuivant(ctx, d.id);
+    assert.strictEqual((await devisRepo.getAcomptesDevis(ctx, d.id)).length, 1, "le montage n'a pas posé d'acompte");
+    await devisRepo.envoyerDevis(ctx, d.id);
+
+    const rapport = await effacerClient(ctx, client.id, MAINTENANT);
+    assert.strictEqual(rapport?.disparu, true, "un devis parti sans réponse, avec son acompte, ne retient rien");
   });
 
   await test("effacer le client d'une autre entreprise est impossible", async () => {

@@ -641,7 +641,12 @@ export async function listerFichesClients(ctx: Ctx): Promise<ClientEnListe[]> {
       tx
         .select({ id: clients.id, nom: clients.nom, adresse: clients.adresse, civilite: clients.civilite })
         .from(clients)
-        .where(eq(clients.entrepriseId, ctx.entrepriseId)),
+        // **Un client supprimé quitte la liste, même retenu par une pièce** :
+        // sa règle du 2 novembre 2026, *« si je le coche, il faut que je
+        // puisse le supprimer »*. Son nom reste sur la facture, et la fiche
+        // derrière elle ; le montrer encore ici lui faisait croire à un échec.
+        // `listerClients` le filtrait déjà, cette liste l'avait oublié.
+        .where(and(eq(clients.entrepriseId, ctx.entrepriseId), isNull(clients.deletedAt))),
       tx
         .select({
           id: chantiers.id,

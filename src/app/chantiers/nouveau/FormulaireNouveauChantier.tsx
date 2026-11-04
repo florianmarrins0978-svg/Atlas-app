@@ -10,7 +10,6 @@ import ChampAdresse from "@/components/atlas/ChampAdresse";
 import LigneRetirable from "@/components/atlas/LigneRetirable";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
-import { supprimerNoteVocaleAction } from "../[id]/note-vocale/actions";
 import DicterCoordonnees from "./DicterCoordonnees";
 import { champsARemplir, type CoordonneesDictees } from "@/lib/coordonnees-dictees";
 import {
@@ -21,7 +20,7 @@ import {
   reconnaitreLeClientAction,
 } from "./actions";
 import type { ClientReconnu } from "@/server/repositories/clients";
-import { reprendreChantierAction } from "../[id]/coordonnees/actions";
+import { reprendreChantierAction, supprimerNoteVocaleAction } from "../[id]/coordonnees/actions";
 import { terminerChantierAction } from "../[id]/facture/actions";
 import { oublierCetEcran } from "@/components/atlas/journal-navigateur";
 import {
@@ -119,14 +118,12 @@ export type ChantierRepris = {
    *
    * **La fiche client ne porte donc plus qu'un objet, celui de la DICTÉE** —
    * c'est ce qu'elle sert à faire, et c'est l'objet qu'il a laissé deux
-   * minutes plus tôt en envoyant sa note. Écouter et retirer vivent sur
-   * l'écran **Note vocale** (`/chantiers/[id]/note-vocale`), qu'ouvrent la
-   * Transcription et le brouillon des Informations.
+   * minutes plus tôt en envoyant sa note.
    *
-   * **Ce point a été revérifié le 5 septembre au soir**, la fiche du CHANTIER
-   * ayant été retirée la veille (§254) : le second rendu d'`AnneauNoteVocale`
-   * n'a plus d'écran, et ce sont `NoteVocaleClient` et lui seul qui portent
-   * désormais la lecture et le retrait.
+   * **Le retrait est revenu ICI le 13 septembre 2026** (la ligne « Votre
+   * dictée », plus bas). **La lecture n'existe plus nulle part depuis le
+   * 3 novembre 2026** : l'écran Note vocale, qui la portait seul, est retiré
+   * (son accord du même jour), et son adresse renvoie sur cette fiche.
    *
    * Ce booléen ne sert plus qu'à taire l'invite : voir `preparationEnCours`.
    */
@@ -544,6 +541,8 @@ export default function FormulaireNouveauChantier({
    * tromper ; il n'en reste qu'une pendant qu'on parle.
    */
   const [dicteeEnCours, setDicteeEnCours] = useState(false);
+  /** La dictée court, ou Atlas prépare le devis qu'elle a donné : la main attend. */
+  const cacherLaMain = dicteeEnCours || atlasTravaille;
   /**
    * LE chantier de cet écran — la promesse de sa création, gardée jusqu'au bout.
    *
@@ -1650,6 +1649,10 @@ export default function FormulaireNouveauChantier({
                 auto
                 surLeDevis={false}
                 onTravail={setAtlasTravaille}
+                // L'échec clôt la dictée : « Je rédige à la main » revient
+                // sous « Réessayer », et se recache pendant que la
+                // préparation relancée travaille (`atlasTravaille`).
+                onEchec={() => setDicteeEnCours(false)}
               />
             </div>
           )}
@@ -1699,9 +1702,9 @@ export default function FormulaireNouveauChantier({
 
                  **66 % de large** — sa proposition 4, choisie sur planche parmi
                  quatre (`appli/note-vocale-choix.html`). */
-              <div className={dicteeEnCours ? "invisible" : undefined} aria-hidden={dicteeEnCours || undefined} inert={dicteeEnCours || undefined}>
+              <div className={cacherLaMain ? "invisible" : undefined} aria-hidden={cacherLaMain || undefined} inert={cacherLaMain || undefined}>
                 <PrimaryButton
-                  disabled={!peutCreer || dicteeEnCours}
+                  disabled={!peutCreer || cacherLaMain}
                   onClick={() => creerPuisAller("devis")}
                   repere="action-ecrire"
                   pleineLargeur

@@ -81,6 +81,11 @@
 .filtre { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 18px; border-radius: 24px; font-size: 15px;
           background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
 .filtre .ico { width: 20px; height: 20px; }
+/* Le Filtre une fois un tri posé (sa demande du 3 novembre 2026 : « visible
+   mais pas noir ») : trois teintes de l'appli à comparer. Aujourd'hui, l'encre
+   pleine, noire. */
+.filtre.pose[data-teinte="a"] { background: var(--atlas-carteVertFond); color: var(--atlas-carteVertTexte); box-shadow: none; }
+.pl-filtre { margin-top: 6px; }
 
 [data-liste="attente"] { display: none; }
 .ecran.attente [data-liste="attente"] { display: block; }
@@ -119,10 +124,23 @@
 .volet-choix + .volet-choix { margin-top: 10px; }
 .volet-choix[aria-pressed="true"] { background: var(--atlas-plein); color: var(--sur-plein); box-shadow: none; }
 .volet-sous { margin: -10px 0 16px; font-size: 15px; color: var(--atlas-inkSoft); }
-.tri-sens { display: flex; gap: 10px; margin-top: 14px; }
-.tri-sens button { flex: 1; min-height: 48px; border-radius: 12px; font-size: 15px; font-weight: 600; color: var(--atlas-inkSoft);
-                   box-shadow: inset 0 0 0 1px var(--atlas-line); }
-.tri-sens button[aria-pressed="true"] { color: var(--atlas-or); box-shadow: inset 0 0 0 1.5px var(--atlas-or); }
+/* Trier par, en plus joli (sa demande du 3 novembre 2026 : « j'ai l'impression
+   que c'est moche »). A, la liste ; B, les pastilles ; le sens dans la barre qui
+   glisse du moyen de paiement. Ce qu'on choisit se dit en vert. */
+.tri-pastilles { display: flex; flex-wrap: wrap; gap: 8px; }
+.tri-pastille { display: inline-flex; align-items: center; gap: 7px; min-height: 46px; padding: 0 16px 0 12px; border-radius: 23px; white-space: nowrap;
+                font-size: 15px; font-weight: 600; color: var(--atlas-ink); background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.tri-pastille .ico { width: 18px; height: 18px; color: var(--atlas-or); }
+.tri-pastille[aria-pressed="true"] { background: var(--atlas-carteVertFond); color: var(--atlas-carteVertTexte); box-shadow: none; }
+.tri-pastille[aria-pressed="true"] .ico { color: var(--atlas-carteVertTexte); }
+.tri-ruban { position: relative; display: grid; grid-template-columns: 1fr 1fr; margin-top: 16px; padding: 4px; border-radius: 16px;
+             background: color-mix(in srgb, var(--atlas-ink) 6%, transparent); }
+.tri-ruban .glisse { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc((100% - 8px) / 2); border-radius: 12px;
+                     background: var(--atlas-card); box-shadow: 0 1px 2px rgba(28,28,26,0.08), 0 4px 12px rgba(28,28,26,0.08);
+                     transform: translateX(calc(var(--rang, 1) * 100%)); transition: transform 240ms var(--courbe); }
+.tri-ruban button { position: relative; z-index: 1; min-height: 48px; font-size: 15px; font-weight: 600; color: var(--atlas-inkSoft); background: none; border: 0; }
+.tri-ruban button[aria-pressed="true"] { color: var(--atlas-carteVertTexte); }
+@media (prefers-reduced-motion: reduce) { .tri-ruban .glisse { transition: none; } }
 </style>
 </head>
 <body class="pl">
@@ -142,6 +160,10 @@
         <button type="button" data-etat="rempli" aria-pressed="true">Octobre</button>
         <button type="button" data-etat="nonpayee">Une facture non payée</button>
         <button type="button" data-etat="vide">Au début</button>
+      </div>
+      <div class="pl-etats pl-filtre" id="teintes-filtre" aria-label="Le Filtre, un tri posé">
+        <button type="button" data-teinte="a" aria-pressed="true">Un tri posé</button>
+        <button type="button" data-teinte="" aria-pressed="false">Sans tri</button>
       </div>
       <div class="cadre">
         <div class="ecran avec-barre" data-etat="rempli">
@@ -194,68 +216,68 @@
                 <span>8 facturés</span>
               </div>
               <div class="filtre-rang">
-                <button class="filtre touche" type="button" data-ouvre="feuille-tri"><svg class="ico" aria-hidden="true"><use href="#i-filtre"/></svg>Filtre</button>
+                <button class="filtre touche pose" data-teinte="a" type="button" data-ouvre="feuille-tri"><svg class="ico" aria-hidden="true"><use href="#i-filtre"/></svg>Filtre</button>
               </div>
 
               <div data-liste="mois">
                 <div data-si-etat="rempli nonpayee">
-                <button class="ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Taille des haies de thuyas" data-detail="Facture n° 14, 864,00 €">
+                <button class="ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Mme Vasseur" data-detail="Facture n° 14, 864,00 €">
                   <span class="jour-bloc"><b>21</b><span>oct.</span></span>
-                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom">Taille des haies de thuyas</span><span class="ligne-montant">864,00 €</span></span><span class="ligne-etat"><b>Facturé</b> le 22 octobre, Facture n° 14</span></span>
+                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom">Mme Vasseur</span><span class="ligne-montant">864,00 €</span></span><span class="ligne-etat"><b>Facturé</b> le 22 octobre, Facture n° 14</span></span>
                 </button>
                 <a class="ligne ligne-attend touche" href="chantier-facture.html">
                   <span class="jour-bloc"><b>20</b><span>oct.</span></span>
-                  <span class="ligne-corps"><span class="ligne-nom">Élagage du tilleul</span><span class="ligne-etat">1 764,00 € prévus</span></span>
+                  <span class="ligne-corps"><span class="ligne-nom">Mr. Bernard</span><span class="ligne-etat">1 764,00 € prévus</span></span>
                   <span class="capsule-facturer">À facturer</span>
                 </a>
-                <button class="ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Tonte et ramassage des feuilles" data-detail="Facture n° 13, 312,00 €">
+                <button class="ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Mme Costa" data-detail="Facture n° 13, 312,00 €">
                   <span class="jour-bloc"><b>16</b><span>oct.</span></span>
-                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom">Tonte et ramassage des feuilles</span><span class="ligne-montant">312,00 €</span></span><span class="ligne-etat"><b>Facturé</b> le 17 octobre, Facture n° 13</span></span>
+                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom">Mme Costa</span><span class="ligne-montant">312,00 €</span></span><span class="ligne-etat"><b>Facturé</b> le 17 octobre, Facture n° 13</span></span>
                 </button>
-                <button class="ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Création d'un massif de vivaces et de graminées le long de la terrasse" data-detail="Facture n° 12, 1 776,00 €">
+                <button class="ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Mr. Faucher" data-detail="Facture n° 12, 1 776,00 €">
                   <span class="jour-bloc"><b>13</b><span>oct.</span></span>
-                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom">Création d'un massif de vivaces et de graminées le long de la terrasse</span><span class="ligne-montant">1 776,00 €</span></span><span class="ligne-etat"><b>Facturé</b> le 14 octobre, Facture n° 12</span></span>
+                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom">Mr. Faucher</span><span class="ligne-montant">1 776,00 €</span></span><span class="ligne-etat"><b>Facturé</b> le 14 octobre, Facture n° 12</span></span>
                 </button>
-                <button class="ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Pose de gazon en rouleau" data-detail="Facture n° 11, 2 940,00 €" data-payee>
+                <button class="ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Mme Aubry" data-detail="Facture n° 11, 2 940,00 €" data-payee>
                   <span class="jour-bloc"><b>9</b><span>oct.</span></span>
-                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom">Pose de gazon en rouleau</span><span class="ligne-montant">2 940,00 €</span></span><span class="ligne-etat"><b>Facturé</b> le 10 octobre, Facture n° 11</span></span>
+                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom">Mme Aubry</span><span class="ligne-montant">2 940,00 €</span></span><span class="ligne-etat"><b>Facturé</b> le 10 octobre, Facture n° 11</span></span>
                 </button>
-                <button class="ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Entretien d'automne" data-detail="Facture n° 10, 420,00 €" data-payee>
+                <button class="ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Mr. Martin" data-detail="Facture n° 10, 420,00 €" data-payee>
                   <span class="jour-bloc"><b>6</b><span>oct.</span></span>
-                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom">Entretien d'automne</span><span class="ligne-montant">420,00 €</span></span><span class="ligne-etat"><b>Facturé</b> le 7 octobre, Facture n° 10</span></span>
+                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom">Mr. Martin</span><span class="ligne-montant">420,00 €</span></span><span class="ligne-etat"><b>Facturé</b> le 7 octobre, Facture n° 10</span></span>
                 </button>
                 </div>
                 <div data-si-etat="septembre">
                 <a class="ligne ligne-attend touche" href="chantier-facture.html">
                   <span class="jour-bloc"><b>26</b><span>sept.</span></span>
-                  <span class="ligne-corps"><span class="ligne-nom">Débroussaillage du talus</span></span>
+                  <span class="ligne-corps"><span class="ligne-nom">Mme Lenoir</span></span>
                   <span class="capsule-facturer">À facturer</span>
                 </a>
-                <button class="ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Plantation d'une haie champêtre" data-detail="Facture n° 9, 3 828,00 €" data-payee>
+                <button class="ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Mr. Guérin" data-detail="Facture n° 9, 3 828,00 €" data-payee>
                   <span class="jour-bloc"><b>18</b><span>sept.</span></span>
-                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom">Plantation d'une haie champêtre</span><span class="ligne-montant">3 828,00 €</span></span><span class="ligne-etat"><b>Facturé</b> le 19 septembre, Facture n° 9</span></span>
+                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom">Mr. Guérin</span><span class="ligne-montant">3 828,00 €</span></span><span class="ligne-etat"><b>Facturé</b> le 19 septembre, Facture n° 9</span></span>
                 </button>
-                <button class="ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Arrosage automatique du jardin de devant" data-detail="Facture n° 8, 2 412,00 €" data-payee>
+                <button class="ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Mme Roux" data-detail="Facture n° 8, 2 412,00 €" data-payee>
                   <span class="jour-bloc"><b>10</b><span>sept.</span></span>
-                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom">Arrosage automatique du jardin de devant</span><span class="ligne-montant">2 412,00 €</span></span><span class="ligne-etat"><b>Facturé</b> le 11 septembre, Facture n° 8</span></span>
+                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom">Mme Roux</span><span class="ligne-montant">2 412,00 €</span></span><span class="ligne-etat"><b>Facturé</b> le 11 septembre, Facture n° 8</span></span>
                 </button>
                 </div>
                 <div data-si-etat="aout">
-                <button class="ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Taille de la glycine" data-detail="Facture n° 7, 540,00 €">
+                <button class="ligne touche" type="button" data-ouvre="volet-facture" data-chantier="Mr. Dupuis" data-detail="Facture n° 7, 540,00 €">
                   <span class="jour-bloc"><b>27</b><span>août</span></span>
-                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom">Taille de la glycine</span><span class="ligne-montant">540,00 €</span></span><span class="ligne-etat"><b>Facturé</b> le 28 août, Facture n° 7</span></span>
+                  <span class="ligne-corps"><span class="ligne-haut"><span class="ligne-nom">Mr. Dupuis</span><span class="ligne-montant">540,00 €</span></span><span class="ligne-etat"><b>Facturé</b> le 28 août, Facture n° 7</span></span>
                 </button>
                 </div>
               </div>
               <div data-liste="attente">
                 <a class="ligne ligne-attend touche" href="chantier-facture.html">
                   <span class="jour-bloc"><b>20</b><span>oct.</span></span>
-                  <span class="ligne-corps"><span class="ligne-nom">Élagage du tilleul</span><span class="ligne-etat">1 764,00 € prévus</span></span>
+                  <span class="ligne-corps"><span class="ligne-nom">Mme Leclerc</span><span class="ligne-etat">1 764,00 € prévus</span></span>
                   <span class="capsule-facturer">À facturer</span>
                 </a>
                 <a class="ligne ligne-attend touche" href="chantier-facture.html">
                   <span class="jour-bloc"><b>26</b><span>sept.</span></span>
-                  <span class="ligne-corps"><span class="ligne-nom">Débroussaillage du talus</span></span>
+                  <span class="ligne-corps"><span class="ligne-nom">Mr. Morel</span></span>
                   <span class="capsule-facturer">À facturer</span>
                 </a>
               </div>
@@ -276,7 +298,7 @@
           <section class="feuille" id="volet-facture" aria-hidden="true" aria-label="La facture du chantier">
             <div class="feuille-poignee"></div>
             <div class="feuille-dedans">
-              <h2 class="feuille-titre" id="volet-titre">Taille des haies de thuyas</h2>
+              <h2 class="feuille-titre" id="volet-titre">Mme Vasseur</h2>
               <p class="volet-sous" id="volet-sous">Facture n° 14, 864,00 €</p>
               <a class="volet-choix touche" href="chantier-facture.html"><svg class="ico" aria-hidden="true"><use href="#i-facture"/></svg>La facture</a>
               <a class="volet-choix touche" href="chantier-facture-avoir.html"><svg class="ico" aria-hidden="true"><use href="#i-annuler"/></svg>Je fais un avoir</a>
@@ -289,16 +311,21 @@
             <div class="feuille-poignee"></div>
             <div class="feuille-dedans">
               <h2 class="feuille-titre">Trier par</h2>
-              <div class="tri-cles">
-                <button class="volet-choix" type="button" aria-pressed="true" data-sens="Du plus ancien|Du plus récent">Date du chantier</button>
-                <button class="volet-choix" type="button" aria-pressed="false" data-sens="Du plus ancien|Du plus récent">Date du devis</button>
-                <button class="volet-choix" type="button" aria-pressed="false" data-sens="Du plus ancien|Du plus récent">Date de facturation</button>
-                <button class="volet-choix" type="button" aria-pressed="false" data-sens="Du plus petit|Du plus grand">Montant</button>
-                <button class="volet-choix" type="button" aria-pressed="false" data-sens="De A à Z|De Z à A">Nom du client</button>
+              <!-- Les pastilles (son choix B du 4 novembre 2026), celle choisie en vert pâle. -->
+              <div class="tri-variante" data-variante="b">
+                <div class="tri-pastilles">
+                  <button class="tri-pastille" type="button" aria-pressed="true" data-sens="Du plus ancien|Du plus récent"><svg class="ico" aria-hidden="true"><use href="#i-calendrier"/></svg>Date du chantier</button>
+                  <button class="tri-pastille" type="button" aria-pressed="false" data-sens="Du plus ancien|Du plus récent"><svg class="ico" aria-hidden="true"><use href="#i-document"/></svg>Date du devis</button>
+                  <button class="tri-pastille" type="button" aria-pressed="false" data-sens="Du plus ancien|Du plus récent"><svg class="ico" aria-hidden="true"><use href="#i-facture"/></svg>Date de facturation</button>
+                  <button class="tri-pastille" type="button" aria-pressed="false" data-sens="Du plus petit|Du plus grand"><svg class="ico" aria-hidden="true"><use href="#i-euro"/></svg>Montant</button>
+                  <button class="tri-pastille" type="button" aria-pressed="false" data-sens="De A à Z|De Z à A"><svg class="ico" aria-hidden="true"><use href="#i-personne"/></svg>Nom du client</button>
+                </div>
               </div>
-              <div class="tri-sens">
-                <button type="button" aria-pressed="false">Du plus ancien</button>
-                <button type="button" aria-pressed="true">Du plus récent</button>
+              <!-- Le sens, dans la barre qui glisse du moyen de paiement (sa « A » du 2 novembre). -->
+              <div class="tri-ruban" role="group" aria-label="Dans quel sens" style="--rang:1">
+                <span class="glisse" aria-hidden="true"></span>
+                <button type="button" aria-pressed="false" data-rang="0">Du plus ancien</button>
+                <button type="button" aria-pressed="true" data-rang="1">Du plus récent</button>
               </div>
               <button class="bouton bouton-texte mt-8" type="button" data-ferme style="width:100%;justify-content:center;color:var(--atlas-inkSoft)">Fermer</button>
             </div>
@@ -322,7 +349,10 @@
       <li>Ma TVA sur une plage dorée, Pour mon comptable sur une plage verte, côte à côte.</li>
       <li>Chaque chantier porte son jour en grand à gauche, dans un carré doré quand la facture est partie, vert plein quand elle attend.</li>
       <li>Non payées, quand elle existe, s'écrit en rouge sous les deux boutons.</li>
-    </ul>
+      <li>Le Filtre, une fois un tri posé, passe au vert pâle de « Pour mon comptable » (votre choix A, codé). Aujourd’hui il passe en noir.</li>
+        <li>« Trier par » en pastilles côte à côte, celle choisie en vert pâle (votre choix B, avec le vert du Filtre). Le sens se choisit sur la barre qui glisse, celle du moyen de paiement. Aujourd’hui, cinq grands boutons empilés, celui choisi en noir.</li>
+        <li>Le nom du client en titre, comme dans l’appli : un chantier porte le nom de son client. Cette planche montrait par erreur une désignation à sa place, et l’appli n’en a pas.</li>
+      </ul>
     <h2>Ce qui revient comme dans l'appli</h2>
     <ul class="garde">
       <li>Les couleurs : l'or de l'appli pour tout ce qui est doré, titres en or espacé, montants en or, pastille or, À facturer en vert plein, Créer une facture au contour or.</li>
@@ -339,6 +369,19 @@
 </footer>
 
 <script src="kit.js"></script>
+<script>
+/* Les trois teintes du Filtre posé, à comparer. */
+document.querySelectorAll("#teintes-filtre button").forEach(function (b) {
+  b.addEventListener("click", function () {
+    document.querySelectorAll("#teintes-filtre button").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+    var t = b.getAttribute("data-teinte");
+    document.querySelectorAll(".filtre").forEach(function (f) {
+      f.classList.toggle("pose", !!t);
+      if (t) f.setAttribute("data-teinte", t); else f.removeAttribute("data-teinte");
+    });
+  });
+});
+</script>
 <script>
   /* Le volet prend le nom et la facture du chantier touché ; « Il ne me paiera
      pas » part quand la facture est réglée (sa règle du 25 septembre). */
@@ -359,17 +402,23 @@
     oeil.setAttribute("aria-pressed", ouvert ? "true" : "false");
     oeil.setAttribute("aria-label", ouvert ? "Tout montrer" : "Ne montrer que ce qui attend");
   });
-  /* Trier par : la clé choisie, et les deux sens dans ses propres mots. */
-  var sens = document.querySelectorAll(".tri-sens button");
-  document.querySelectorAll(".tri-cles .volet-choix").forEach(function (b) {
+  /* Trier par : la clé choisie (liste ou pastilles), et le sens dans ses propres mots. */
+  var ruban = document.querySelector(".tri-ruban");
+  var sens = ruban.querySelectorAll("button");
+  var cles = document.querySelectorAll(".tri-pastille");
+  cles.forEach(function (b) {
     b.addEventListener("click", function () {
-      document.querySelectorAll(".tri-cles .volet-choix").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+      var mot = b.textContent.trim();
+      cles.forEach(function (x) { x.setAttribute("aria-pressed", x.textContent.trim() === mot ? "true" : "false"); });
       var mots = b.getAttribute("data-sens").split("|");
       sens[0].textContent = mots[0]; sens[1].textContent = mots[1];
     });
   });
   sens.forEach(function (b) {
-    b.addEventListener("click", function () { sens.forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); }); });
+    b.addEventListener("click", function () {
+      sens.forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+      ruban.style.setProperty("--rang", b.getAttribute("data-rang"));
+    });
   });
 </script>
 </body>
