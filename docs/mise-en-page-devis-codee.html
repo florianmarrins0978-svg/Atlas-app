@@ -128,6 +128,37 @@
 <td><code>src/lib/sauts-de-page.ts</code></td>
 </tr>
 </tbody></table></div>
+<h2 id="tes-deux-réponses-du-4-novembre-codées-le-même-jour">Tes deux réponses du 4 novembre, codées le même jour</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Sur <code>appli/soignee/devis-mise-en-page-questions.html</code> : <em>« dans la 1 oui la B »</em>, <em>« d'affilée »</em>, puis <em>« B »</em>.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Ton choix</th>
+<th>Ce qui est codé</th>
+<th>Fichier</th>
+</tr></thead><tbody>
+<tr>
+<td>1B : un espace sans changer de page</td>
+<td>une ligne touchée offre « Nouvelle page » et « Un espace ici »</td>
+<td><code>VisionneusePdf.tsx</code>, <code>document-commun.ts</code></td>
+</tr>
+<tr>
+<td>plusieurs d'affilée</td>
+<td>« Encore un espace » en ajoute un, la ligne reste choisie ; la puce dorée dit « 2 espaces », sa croix les retire</td>
+<td>idem, <code>src/lib/sauts-de-page.ts</code></td>
+</tr>
+<tr>
+<td>quand la page est pleine</td>
+<td>« Plus de place sur cette page. » à la place du bouton ; il reste « Nouvelle page »</td>
+<td><code>devis.ts</code>, <code>ajouterUnEspaceDevant</code></td>
+</tr>
+<tr>
+<td>2B : le saut se voit dans l'écran du devis</td>
+<td>la puce verte « Saut de page » entre les lignes, avec sa croix ; il se pose toujours dans l'aperçu</td>
+<td><code>SautDuDevis.tsx</code>, <code>DevisCompletClient.tsx</code></td>
+</tr>
+</tbody></table></div>
+<p><strong>Un détail que tu n'as pas vu sur la planche, et qui compte.</strong> Sur ton devis de 4 lignes, un espace devant les notes ne laisse plus la place de la signature : la fin du devis passerait alors en page 2, et l'espace s'y perdrait. Atlas le voit avant d'écrire, et te dit « Plus de place sur cette page. ».</p>
+<p><strong>Sur un téléphone étroit</strong> (moins de 375 points de large), les deux boutons passent sur deux lignes plutôt que de déborder.</p>
 <h2 id="ce-qui-a-été-fait-autrement-et-pourquoi">Ce qui a été fait autrement, et pourquoi</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <ul>
@@ -166,6 +197,18 @@
 <td>couper la 6e ligne, elle passe en page 2, « Tout remettre » la ramène</td>
 </tr>
 <tr>
+<td>Les espaces, dans le PDF</td>
+<td>7 cas verts de plus, rouges avant le code</td>
+</tr>
+<tr>
+<td>Les espaces, en base</td>
+<td>5 cas verts de plus ; le refus « Plus de place » rougit si on le retire</td>
+</tr>
+<tr>
+<td>Ton geste, dans un navigateur, en suite qui reste</td>
+<td>9 gestes verts, chaque écriture vérifiée en base ; rouge si la puce manque à l'écran du devis</td>
+</tr>
+<tr>
 <td><strong>La batterie entière</strong></td>
 <td><strong>non jouée, à ta demande</strong></td>
 </tr>
@@ -179,14 +222,6 @@
 <tr>
 <td>La batterie entière, puis <code>main</code></td>
 <td>toi, quand tu le dis</td>
-</tr>
-<tr>
-<td>Le saut aussi comme une ligne de l'écran du devis, comme ProGBat ou VosFactures</td>
-<td>toi</td>
-</tr>
-<tr>
-<td>Une ligne vide pour aérer</td>
-<td>toi</td>
 </tr>
 </tbody></table></div>
 </main>
