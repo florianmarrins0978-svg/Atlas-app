@@ -1,7 +1,12 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-10-29, `main` (`bdea976e`, batterie verte hors deux suites de fin de mois rouges sur `main` aussi),
-dernière migration `drizzle/0158_cles_composites_effacent_comme_leur_lien.sql` (réunie le 3 novembre pour la batterie commune, avec `0157_banque_lecture_refusee.sql` et `0156_pieces_importees_adresse_lue.sql`) ; `0155_part_de_main_doeuvre_sur_la_ligne.sql` (le devis) sur `main` depuis le 3 novembre
+dernière migration `drizzle/0158_cles_composites_effacent_comme_leur_lien.sql` (réunie le 3 novembre pour la batterie commune, avec `0157_banque_lecture_refusee.sql` et `0156_pieces_importees_adresse_lue.sql`) ; `0155_part_de_main_doeuvre_sur_la_ligne.sql` (le devis) sur `main` depuis le 3 novembre ; `0159_sauts_de_page_du_devis.sql` sur la branche `lot/mise-en-page-devis` seulement (4 novembre, pas sur `main`)
+
+---
+## LA MISE EN PAGE DU DEVIS, CODÉE (4 novembre 2026), PAS SUR `main`
+
+Branche `lot/mise-en-page-devis`, d'après `appli/soignee/devis-mise-en-page.html` (*« tu peux coder ça, mais ne lance pas de batterie »*). Les pages se remplissent jusqu'au numéro de page, le pied suit la dernière ligne (22,4 points), les notes accompagnent les modalités ; dans l'aperçu d'un devis brouillon, toucher une ligne ou un bloc puis « Nouvelle page ici », « Tout remettre », la phrase jusqu'au premier saut (`ARCHITECTURE.md` §544). Générateur `src/server/pdf/document-commun.ts`, règles des clés `src/lib/sauts-de-page.ts`, dépôt `src/server/repositories/devis.ts`, route `/api/devis/[id]/mise-en-page`, écran `src/app/documents/pdf/VisionneusePdf.tsx`, migration `0159`. Suites `test-mise-en-page-devis`, `test-sauts-de-page-db`, `test-visionneuse-pdf`, types, lint et contrôles du dépôt verts ; geste joué au navigateur sur le poste. **Niveau 3 (migration, argent), batterie non jouée à sa demande : pas sur `main`.** Reste à trancher par lui : le saut comme ligne de l'écran du devis, la ligne vide pour aérer.
 
 ---
 ## SUPPRIMER UN CLIENT REMARCHE SUR SA BASE (1er novembre 2026)

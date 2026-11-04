@@ -10,6 +10,11 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## LA MISE EN PAGE DU DEVIS (4 novembre 2026), sur `lot/mise-en-page-devis`
+
+**Les pièges :** un saut se pose DEVANT un élément (`ligne:<id de la ligne de prix>`, `totaux`, `notes`, `modalites`), jamais à une hauteur ; et l'identifiant est celui de la LIGNE DE PRIX (`lignes_devis.ligne_prix_id`), parce que les lignes d'un brouillon sont effacées et recopiées à chaque synchronisation. Le PDF nomme ses lignes par elle (`l.lignePrixId ?? l.id`) : y remettre `l.id` détache tous les sauts sans un message. La route `mise-en-page` doit composer EXACTEMENT comme la route du PDF (brouillon resynchronisé d'abord), sinon il coupe la ligne voisine. `composerDocument` compose deux fois au plus (`sautQuiManque`), jamais en boucle. `atlas-plein` ne donne pas de fond : un bouton plein prend aussi `colors.plein` et `surPlein`. Batterie non jouée, à sa demande ; le lot attend sa décision pour `main` (`ARCHITECTURE.md` §544).
+
+---
 ## LE DEVIS ET LA FACTURE DE LA PLANCHE, SUR `main` (3 novembre 2026)
 
 Un seul lot, à sa demande : les feuilles du devis (TVA, acompte, remise, main d'œuvre, partenaires, répartition), la croix, l'éclairage de ce qui arrive, l'ordre des lignes, et les huit écrans de la facture (`ARCHITECTURE.md` §536 et §537). Migration 0155 (`part_main_doeuvre`, nullable). Une seule pastille pour les deux (`src/components/atlas/PastilleAjout.tsx`). **Ce qui attend :** rien de lui sur la note vocale. Son « Réessayer » est codé sur la fiche client et l'ancien écran `/note-vocale` est retiré (son adresse renvoie à la fiche client, `ARCHITECTURE.md` §543) ; reste la batterie entière du lot réuni, puis `main`. **Les pièges :** une transcription qui échoue rend `echec` (« La transcription n'a pas abouti. … »), jamais `transcription_absente`, sinon « Réessayer » ne paraît pas ; une phrase d'échec de `DevisDepuisDictee` dit ce qui s'est passé, jamais « Réessayez », le geste est dessous. Pour poster un son dans une suite, la route `/api/notes-vocales/[chantierId]` (l'import de fichier est parti). Plus aucun écran ne fait réécouter une note : la question est ouverte dans `TODO.md` (« écouter sa note depuis la fiche client ? »).
