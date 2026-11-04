@@ -1540,6 +1540,8 @@ export const devis = pgTable(
      * partent avec le devis envoyé et passent à la version suivante.
      */
     sautsDePage: jsonb("sauts_de_page").$type<string[]>().notNull().default([]),
+    // Combien d'espaces devant chaque élément (sa réponse du 4 novembre 2026).
+    espacesDePage: jsonb("espaces_de_page").$type<Record<string, number>>().notNull().default({}),
 
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     createdBy: uuid("created_by").references(() => users.id),

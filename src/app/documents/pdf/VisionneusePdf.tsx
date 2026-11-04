@@ -5,7 +5,12 @@ import { createPortal } from "react-dom";
 import { colors, spacing, surPlein, voile } from "@/lib/design-tokens";
 import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
 import IconeTrait from "@/components/atlas/IconeTrait";
-import { basculerSautDePageAction, retirerLesSautsDePageAction } from "./actions";
+import {
+  ajouterUnEspaceAction,
+  basculerSautDePageAction,
+  retirerLesEspacesAction,
+  retirerLesSautsDePageAction,
+} from "./actions";
 
 /**
  * Peint un PDF page par page, dans l'application.
@@ -49,10 +54,24 @@ import { basculerSautDePageAction, retirerLesSautsDePageAction } from "./actions
  * ici : une règle de mise en page tenue à deux endroits ferait couper la ligne
  * d'à côté. Les zones à toucher se posent PAR-DESSUS la toile, à la hauteur
  * que le PDF donne, en pourcentage de sa page.
+ *
+ * **Et des espaces, plusieurs d'affilée** (sa réponse du 4 novembre 2026 sur
+ * `appli/soignee/devis-mise-en-page-questions.html`, « dans la 1 oui la B ») :
+ * « Un espace ici », puis « Encore un espace », la ligne restant choisie. La
+ * page dit elle-même quand elle n'en tient plus : l'action compose le devis
+ * avant d'écrire, et son refus se lit à la place du bouton.
  */
 
 type ElementMisEnPage = { cle: string; page: number; haut: number; bas: number };
-type MiseEnPageLue = { modifiable: boolean; sauts: string[]; hauteurPage: number; elements: ElementMisEnPage[] };
+type EspaceMisEnPage = ElementMisEnPage & { n: number };
+type MiseEnPageLue = {
+  modifiable: boolean;
+  sauts: string[];
+  espacesDemandes: Record<string, number>;
+  hauteurPage: number;
+  elements: ElementMisEnPage[];
+  espaces: EspaceMisEnPage[];
+};
 type Feuille = { avant: HTMLDivElement; feuille: HTMLDivElement };
 
 /**
@@ -96,6 +115,8 @@ export default function VisionneusePdf({
   const [mise, setMise] = useState<MiseEnPageLue | null>(null);
   const [choisi, setChoisi] = useState<string | null>(null);
   const [refusSaut, setRefusSaut] = useState<string | null>(null);
+  // « Plus de place sur cette page. », dit pour CETTE ligne, à la place du bouton.
+  const [refusEspace, setRefusEspace] = useState<{ cle: string; raison: string } | null>(null);
   const [enCours, setEnCours] = useState(false);
   // Lue une fois, à la naissance de l'écran : la phrase ne se montre qu'une
   // fois la mise en page lue, donc jamais au premier rendu du serveur.
@@ -182,9 +203,43 @@ export default function VisionneusePdf({
     retenirAstuce();
   };
 
-  const repeindre = () => {
-    setChoisi(null);
+  // Après un espace, la ligne reste choisie : chaque appui en ajoute un.
+  const repeindre = ({ garderLeChoix = false } = {}) => {
+    if (!garderLeChoix) setChoisi(null);
     setPeinture((n) => n + 1);
+  };
+
+  const choisir = (cle: string) => {
+    setRefusEspace(null);
+    setChoisi((c) => (c === cle ? null : cle));
+  };
+
+  const espacer = async (cle: string) => {
+    if (!miseEnPage) return;
+    setEnCours(true);
+    setRefusSaut(null);
+    const issue = await ajouterUnEspaceAction(miseEnPage.devisId, cle);
+    setEnCours(false);
+    if (!issue.ok) {
+      setRefusEspace({ cle, raison: issue.raison });
+      return;
+    }
+    comprendre();
+    repeindre({ garderLeChoix: true });
+  };
+
+  const retirerLesEspaces = async (cle: string) => {
+    if (!miseEnPage) return;
+    setEnCours(true);
+    setRefusSaut(null);
+    const issue = await retirerLesEspacesAction(miseEnPage.devisId, cle);
+    setEnCours(false);
+    if (!issue.ok) {
+      setRefusSaut(issue.raison);
+      return;
+    }
+    setRefusEspace(null);
+    repeindre();
   };
 
   const basculer = async (cle: string) => {
@@ -222,6 +277,9 @@ export default function VisionneusePdf({
   const choisiEnHaut =
     !!choisi && !!mise && mise.elements.some((e) => e.cle === choisi && e.page > 1 && premierDeLaPage(e.page)?.cle === choisi);
   const choisiSaute = !!choisi && !!mise?.sauts.includes(choisi);
+  const choisiEspace = !!choisi && !!mise?.espaces.some((e) => e.cle === choisi);
+  const refusDuChoisi = refusEspace && refusEspace.cle === choisi ? refusEspace.raison : null;
+  const aRemettre = !!mise && (mise.sauts.length > 0 || Object.keys(mise.espacesDemandes).length > 0);
   const pourcent = (points: number) => `${((points / (mise?.hauteurPage ?? 841.89)) * 100).toFixed(3)}%`;
 
   return (
@@ -248,7 +306,7 @@ export default function VisionneusePdf({
           </button>
         </div>
       )}
-      {modifiable && mise.sauts.length > 0 && (
+      {modifiable && aRemettre && (
         <div className="mb-2 flex justify-center">
           <button
             type="button"
@@ -311,26 +369,58 @@ export default function VisionneusePdf({
                   f.avant
                 )}
               {createPortal(
-                mise.elements
-                  .filter((e) => e.page === numero)
-                  .map((e) => (
-                    <button
-                      key={e.cle}
-                      type="button"
-                      data-atlas="ligne-a-couper"
-                      data-cle={e.cle}
-                      aria-pressed={choisi === e.cle}
-                      aria-label="Choisir cet endroit"
-                      onClick={() => setChoisi((c) => (c === e.cle ? null : e.cle))}
-                      className="absolute inset-x-0 block"
-                      style={{
-                        top: pourcent(mise.hauteurPage - e.haut),
-                        height: pourcent(e.haut - e.bas),
-                        background: choisi === e.cle ? voile(colors.or, 0.22) : "transparent",
-                        boxShadow: choisi === e.cle ? `inset 0 0 0 2px ${colors.or}` : "none",
-                      }}
-                    />
-                  )),
+                <>
+                  {mise.espaces
+                    .filter((e) => e.page === numero)
+                    .map((e) => (
+                      // L'espace est blanc sur le PDF du client ; sa puce ne vit
+                      // que dans l'aperçu. Sur la feuille, qui ne suit aucune
+                      // charte, elle porte son propre fond : lisible partout.
+                      <div
+                        key={`espace-${e.cle}`}
+                        className="absolute inset-x-0 z-[1] grid place-items-center"
+                        style={{ top: pourcent(mise.hauteurPage - e.haut), height: pourcent(e.haut - e.bas) }}
+                      >
+                        <span
+                          data-atlas="espace-pose"
+                          data-cle={e.cle}
+                          className="inline-flex min-h-7 items-center gap-0.5 rounded-full py-0.5 pl-2.5 pr-0.5 text-[12.5px] font-semibold"
+                          style={{ background: colors.card, color: colors.ink, boxShadow: `inset 0 0 0 1.5px ${colors.or}` }}
+                        >
+                          {e.n > 1 ? `${e.n} espaces` : "Espace"}
+                          <button
+                            type="button"
+                            aria-label="Retirer"
+                            onClick={() => void retirerLesEspaces(e.cle)}
+                            disabled={enCours}
+                            className="grid h-7 w-7 place-items-center rounded-full"
+                          >
+                            <IconeTrait nom="croix" taille={14} />
+                          </button>
+                        </span>
+                      </div>
+                    ))}
+                  {mise.elements
+                    .filter((e) => e.page === numero)
+                    .map((e) => (
+                      <button
+                        key={e.cle}
+                        type="button"
+                        data-atlas="ligne-a-couper"
+                        data-cle={e.cle}
+                        aria-pressed={choisi === e.cle}
+                        aria-label="Choisir cet endroit"
+                        onClick={() => choisir(e.cle)}
+                        className="absolute inset-x-0 block"
+                        style={{
+                          top: pourcent(mise.hauteurPage - e.haut),
+                          height: pourcent(e.haut - e.bas),
+                          background: choisi === e.cle ? voile(colors.or, 0.22) : "transparent",
+                          boxShadow: choisi === e.cle ? `inset 0 0 0 2px ${colors.or}` : "none",
+                        }}
+                      />
+                    ))}
+                </>,
                 f.feuille
               )}
             </Fragment>
@@ -348,7 +438,7 @@ export default function VisionneusePdf({
               <p className="flex-1 px-3 text-[14.5px]" style={{ color: colors.inkSoft }}>
                 Déjà en haut d&apos;une page.
               </p>
-            ) : (
+            ) : choisiSaute ? (
               <button
                 type="button"
                 data-atlas="nouvelle-page-ici"
@@ -357,8 +447,37 @@ export default function VisionneusePdf({
                 className="atlas-plein min-h-12 flex-1 rounded-full text-[17px] font-semibold disabled:opacity-60"
                 style={{ backgroundColor: colors.plein, color: surPlein }}
               >
-                {choisiSaute ? "Retirer le saut de page" : "Nouvelle page ici"}
+                Retirer le saut de page
               </button>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  data-atlas="nouvelle-page-ici"
+                  onClick={() => void basculer(choisi)}
+                  disabled={enCours}
+                  className="atlas-plein min-h-12 min-w-0 flex-1 whitespace-nowrap rounded-full px-3 text-[15.5px] font-semibold disabled:opacity-60"
+                  style={{ backgroundColor: colors.plein, color: surPlein }}
+                >
+                  Nouvelle page
+                </button>
+                {refusDuChoisi ? (
+                  <p data-atlas="plus-de-place" className="min-w-0 flex-1 px-2 text-[14.5px] leading-snug" style={{ color: colors.inkSoft }}>
+                    {refusDuChoisi}
+                  </p>
+                ) : (
+                  <button
+                    type="button"
+                    data-atlas="un-espace-ici"
+                    onClick={() => void espacer(choisi)}
+                    disabled={enCours}
+                    className="min-h-12 min-w-0 flex-1 whitespace-nowrap rounded-full px-3 text-[15.5px] font-semibold disabled:opacity-60"
+                    style={{ color: colors.ink, boxShadow: `inset 0 0 0 1.5px ${colors.line}` }}
+                  >
+                    {choisiEspace ? "Encore un espace" : "Un espace ici"}
+                  </button>
+                )}
+              </>
             )}
             <button
               type="button"

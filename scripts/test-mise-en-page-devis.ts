@@ -37,7 +37,7 @@ function lignes(n: number) {
 }
 
 /** Son devis du 3 novembre, identité de démonstration (le dépôt est public). */
-function devis(n: number, sauts?: string[]): Parameters<typeof composerDevisPdf> {
+function devis(n: number, sauts?: string[], espaces?: Record<string, number>): Parameters<typeof composerDevisPdf> {
   const ls = lignes(n);
   const ht = ls.reduce((t, l) => t + Number(l.montant), 0);
   const data: DevisPdfData = {
@@ -54,6 +54,7 @@ function devis(n: number, sauts?: string[]): Parameters<typeof composerDevisPdf>
     totalHt: ht.toFixed(2), totalTva: (ht * 0.2).toFixed(2), totalTtc: (ht * 1.2).toFixed(2), acomptes: [{ rang: 1, tauxCumule: "30" }],
     lignes: ls,
     sautsDePage: sauts,
+    espacesDePage: espaces,
   };
   return [data];
 }
@@ -187,6 +188,81 @@ async function main() {
     const sans = (await composerDevisPdf(...devis(4))).trace;
     const avec = (await composerDevisPdf(...devis(4, ["ligne:supprimee"]))).trace;
     assert.deepEqual(avec.elements, sans.elements);
+  });
+
+  // ─── LES ESPACES : sa réponse du 4 novembre, « dans la 1 oui la B », et
+  // « d'affilée » (`appli/soignee/devis-mise-en-page-questions.html`).
+
+  await cas("un espace devant une ligne la descend d'une ligne vide, sur la même page", async () => {
+    const sans = (await composerDevisPdf(...devis(20))).trace;
+    const avec = (await composerDevisPdf(...devis(20, [], { "ligne:l5": 1 }))).trace;
+    const avant = element(sans, "ligne:l5");
+    const apres = element(avec, "ligne:l5");
+    assert.ok(avant && apres, "la ligne 6 manque à la trace");
+    assert.equal(apres.page, avant.page, "un espace a fait changer la ligne de page");
+    assert.equal(Math.round(avant.haut - apres.haut), 30, "la ligne n'est pas descendue d'une ligne vide");
+    assert.deepEqual(avec.espaces.map((e) => [e.cle, e.n]), [["ligne:l5", 1]], "l'aperçu ne saura pas où est l'espace");
+    assert.equal(element(avec, "ligne:l4")?.haut, element(sans, "ligne:l4")?.haut, "la ligne d'avant a bougé");
+    assert.equal(fauteDeMiseEnPage(avec), null);
+  });
+
+  await cas("plusieurs espaces d'affilée : trois espaces, trois lignes vides", async () => {
+    const sans = element((await composerDevisPdf(...devis(20))).trace, "ligne:l5");
+    const avec = (await composerDevisPdf(...devis(20, [], { "ligne:l5": 3 }))).trace;
+    assert.ok(sans);
+    assert.equal(Math.round(sans.haut - (element(avec, "ligne:l5")?.haut ?? 0)), 90);
+    assert.equal(avec.espaces[0]?.n, 3);
+    assert.equal(fauteDeMiseEnPage(avec), null);
+  });
+
+  await cas("la page n'en tient que ce qu'elle peut : un espace ne fait jamais changer la ligne de page", async () => {
+    const avec = (await composerDevisPdf(...devis(20, [], { "ligne:l5": 40 }))).trace;
+    const l5 = element(avec, "ligne:l5");
+    assert.equal(l5?.page, 1, "trop d'espaces ont envoyé la ligne à la page suivante");
+    const poses = avec.espaces[0]?.n ?? 0;
+    assert.ok(poses > 0 && poses < 40, `la page a pris ${poses} espaces sur 40`);
+    assert.ok(l5.bas - 30 < PIED_DOCUMENT.plancher + 30, "il restait la place d'un espace de plus");
+    assert.equal(fauteDeMiseEnPage(avec), null);
+  });
+
+  await cas("un espace en haut d'une page ne laisse rien", async () => {
+    const sans = (await composerDevisPdf(...devis(30))).trace;
+    const premiere = sans.elements.find((e) => e.page === 2 && e.cle.startsWith("ligne:"));
+    assert.ok(premiere, "aucune ligne en page 2 : le décor ne prouve rien");
+    const avec = (await composerDevisPdf(...devis(30, [], { [premiere.cle]: 2 }))).trace;
+    assert.deepEqual(avec.espaces, []);
+    assert.equal(element(avec, premiere.cle)?.haut, premiere.haut);
+  });
+
+  await cas("un espace devant les totaux, les notes ou les modalités les descend sur leur page", async () => {
+    for (const cle of ["totaux", "notes", "modalites"]) {
+      // Un devis d'une ligne : la page 1 a la place d'un espace sous chacun des
+      // trois, pied compris. Celui de 4 lignes est trop juste (cas suivant).
+      const avant = element((await composerDevisPdf(...devis(1))).trace, cle);
+      const trace = (await composerDevisPdf(...devis(1, [], { [cle]: 1 }))).trace;
+      const apres = element(trace, cle);
+      assert.ok(avant && apres && apres.page === avant.page, `un espace devant « ${cle} » l'a fait changer de page`);
+      assert.equal(Math.round(avant.haut - apres.haut), 30, `« ${cle} » n'est pas descendu d'une ligne vide`);
+      assert.equal(fauteDeMiseEnPage(trace), null, `espace devant « ${cle} »`);
+    }
+  });
+
+  await cas("un espace qui pousserait la signature hors de la page fait passer la fin à la suivante, sans espace", async () => {
+    // Son devis de 4 lignes tient sur une page à quelques points près : un
+    // espace devant les notes ne laisse plus la place du pied. La règle du pied
+    // envoie alors notes, modalités et signature ensemble en page 2, et
+    // l'espace, en haut de page, ne laisse rien : c'est ce que l'action voit
+    // pour lui dire « Plus de place sur cette page. ».
+    const trace = (await composerDevisPdf(...devis(4, [], { notes: 1 }))).trace;
+    assert.equal(element(trace, "notes")?.page, 2);
+    assert.deepEqual(trace.espaces, []);
+    assert.equal(fauteDeMiseEnPage(trace), null);
+  });
+
+  await cas("un saut posé devant un élément l'emporte sur ses espaces", async () => {
+    const trace = (await composerDevisPdf(...devis(20, ["ligne:l5"], { "ligne:l5": 2 }))).trace;
+    assert.deepEqual(trace.espaces, []);
+    assert.equal(element(trace, "ligne:l5")?.page, 2);
   });
 
   await cas("chaque ligne se retrouve dans la trace par son identifiant", async () => {

@@ -14,8 +14,17 @@
 -- Sans clé étrangère, et c'est voulu : un devis envoyé garde ses lignes même
 -- quand la ligne de prix du chantier disparaît ensuite.
 --
--- **EXPAND SEUL** (`.claude/rules/deployment-safety.md`) : deux colonnes, l'une
--- à défaut constant (`[]`), l'autre nullable. Aucune ligne existante n'est
+-- **Les espaces, sa réponse du 4 novembre 2026** (« dans la 1 oui la B »,
+-- « d'affilée ») : devant un élément, combien de lignes blanches, sur la même
+-- page. Un objet `{ clé: nombre }`, la clé étant celle d'un saut. Ajouté dans
+-- CE fichier, et c'est permis : 0159 n'est passée sur aucune base qui compte
+-- (`.claude/rules/migrations.md`, « se corrige EN PLACE quand il n'est jamais
+-- passé »). Le lanceur reconnaît une migration à son NOM : une base d'essai
+-- qui l'avait déjà reçue ne la rejoue pas, et se recrée ou reçoit ces deux
+-- ordres à la main.
+--
+-- **EXPAND SEUL** (`.claude/rules/deployment-safety.md`) : trois colonnes, deux
+-- à défaut constant (`[]`, `{}`), la dernière nullable. Aucune ligne existante n'est
 -- relue ni écrite : rien à éprouver sur une base habitée, rien à voir sous
 -- FORCE RLS. Un code d'avant servi sur ce schéma les ignore. Un devis déjà
 -- envoyé n'a aucun saut, et son PDF enregistré ne change pas.
@@ -29,3 +38,11 @@ DO $$ BEGIN
 END $$;
 
 ALTER TABLE "lignes_devis" ADD COLUMN IF NOT EXISTS "ligne_prix_id" uuid;
+
+ALTER TABLE "devis" ADD COLUMN IF NOT EXISTS "espaces_de_page" jsonb NOT NULL DEFAULT '{}'::jsonb;
+
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'devis_espaces_de_page_objet') THEN
+    ALTER TABLE "devis" ADD CONSTRAINT "devis_espaces_de_page_objet" CHECK (jsonb_typeof("espaces_de_page") = 'object');
+  END IF;
+END $$;

@@ -43,7 +43,7 @@ export async function GET(_requete: Request, { params }: { params: Promise<{ id:
   const role = await getRole(ctx);
   const modifiable = mise.modifiable && !!role && peutGererDevis(role);
   return NextResponse.json(
-    { ...mise, modifiable, elements: modifiable ? mise.elements : [] },
+    { ...mise, modifiable, elements: modifiable ? mise.elements : [], espaces: modifiable ? mise.espaces : [] },
     { headers: { "Cache-Control": "no-store" } }
   );
 }

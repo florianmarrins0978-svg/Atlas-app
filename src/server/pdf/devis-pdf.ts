@@ -55,6 +55,8 @@ export type DevisPdfData = DonneesDocument & {
    * envoyé, comme ses lignes.
    */
   sautsDePage?: readonly string[] | null;
+  /** Les espaces qu'il a posés dans l'aperçu (`devis.espaces_de_page`), combien devant chaque élément. */
+  espacesDePage?: Readonly<Record<string, number>> | null;
   numeroCommercial: string;
   numeroVersion: number;
   statut: "brouillon" | "envoye";
@@ -297,6 +299,7 @@ export async function composerDevisPdf(
     // La feuille de chantier ne reprend pas ses sauts : ils mettent en page le
     // devis qu'il envoie, pas la feuille de travail qu'on en tire.
     sauts: sansPrix ? [] : (data.sautsDePage ?? []),
+    espaces: sansPrix ? {} : (data.espacesDePage ?? {}),
     sansChiffrage: options.sansChiffrage,
     // Les conditions réglées, en gras, sous ses notes.
     notesEnGras: notes.reglees,

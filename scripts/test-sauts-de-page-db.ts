@@ -140,6 +140,79 @@ async function main() {
     assert.deepEqual((await devisRepo.miseEnPageDuDevis(a, devisId)).sauts, [], "le devis de A a reçu un saut posé par B");
   });
 
+  // ─── LES ESPACES : « dans la 1 oui la B », et « d'affilée » ─────────────
+
+  await cas("un espace de plus à chaque appui, gardé avec le devis, et sa croix les retire", async () => {
+    const ctx = await contexte("espaces");
+    const { devisId, prix } = await unDevis(ctx);
+    const cle = `ligne:${prix[4]}`;
+    const avant = ou(await devisRepo.miseEnPageDuDevis(ctx, devisId), cle);
+    for (let n = 1; n <= 3; n++) {
+      const r = await devisRepo.ajouterUnEspaceDevant(ctx, devisId, cle);
+      assert.deepEqual(r, { ok: true }, `l'espace ${n} a été refusé`);
+    }
+    const mise = await devisRepo.miseEnPageDuDevis(ctx, devisId);
+    assert.deepEqual(mise.espaces.map((e) => [e.cle, e.n]), [[cle, 3]], "l'aperçu ne voit pas ses trois espaces");
+    assert.equal(Math.round((avant?.haut ?? 0) - (ou(mise, cle)?.haut ?? 0)), 90, "la ligne n'est pas descendue de trois lignes vides");
+    assert.deepEqual(await devisRepo.retirerLesEspacesDevant(ctx, devisId, cle), { ok: true });
+    assert.deepEqual((await devisRepo.miseEnPageDuDevis(ctx, devisId)).espaces, [], "la croix n'a pas retiré les espaces");
+  });
+
+  await cas("quand la page n'en tient plus, l'espace est refusé et rien ne s'écrit", async () => {
+    const ctx = await contexte("plein");
+    const { devisId, prix } = await unDevis(ctx);
+    const cle = `ligne:${prix[4]}`;
+    let refus: { ok: boolean; raison?: string } = { ok: true };
+    let poses = 0;
+    while (refus.ok && poses < 40) {
+      refus = await devisRepo.ajouterUnEspaceDevant(ctx, devisId, cle);
+      if (refus.ok) poses++;
+    }
+    assert.equal(refus.ok, false, "la page a pris 40 espaces");
+    assert.equal(refus.raison, "Plus de place sur cette page.");
+    const mise = await devisRepo.miseEnPageDuDevis(ctx, devisId);
+    assert.equal(mise.espaces[0]?.n, poses, "l'espace refusé a été écrit quand même");
+    assert.equal(ou(mise, cle)?.page, 1, "les espaces ont envoyé la ligne à la page suivante");
+  });
+
+  await cas("un saut posé devant la ligne retire ses espaces, et tout remettre retire tout", async () => {
+    const ctx = await contexte("saut-espace");
+    const { devisId, prix } = await unDevis(ctx);
+    const cle = `ligne:${prix[4]}`;
+    await devisRepo.ajouterUnEspaceDevant(ctx, devisId, cle);
+    await devisRepo.basculerSautDePage(ctx, devisId, cle);
+    const apres = await devisRepo.miseEnPageDuDevis(ctx, devisId);
+    assert.deepEqual(apres.espacesDemandes, {}, "le saut a laissé dormir les espaces de sa ligne");
+    await devisRepo.basculerSautDePage(ctx, devisId, cle);
+    await devisRepo.ajouterUnEspaceDevant(ctx, devisId, `ligne:${prix[2]}`);
+    await devisRepo.basculerSautDePage(ctx, devisId, "totaux");
+    await devisRepo.retirerLesSautsDePage(ctx, devisId);
+    const remis = await devisRepo.miseEnPageDuDevis(ctx, devisId);
+    assert.deepEqual([remis.sauts, remis.espacesDemandes], [[], {}], "« Tout remettre » a laissé des espaces");
+  });
+
+  await cas("un devis envoyé garde ses espaces, refuse d'en changer, et la correction les reprend", async () => {
+    const ctx = await contexte("espaces-envoye");
+    const { chantierId, devisId, prix } = await unDevis(ctx);
+    const cle = `ligne:${prix[6]}`;
+    await devisRepo.ajouterUnEspaceDevant(ctx, devisId, cle);
+    await devisRepo.envoyerDevis(ctx, devisId);
+    assert.equal((await devisRepo.ajouterUnEspaceDevant(ctx, devisId, cle)).ok, false, "un devis envoyé a pris un espace");
+    assert.equal((await devisRepo.retirerLesEspacesDevant(ctx, devisId, cle)).ok, false);
+    assert.deepEqual((await devisRepo.miseEnPageDuDevis(ctx, devisId)).espacesDemandes, { [cle]: 1 });
+    const v2 = await devisRepo.getOuCreerDevisBrouillon(ctx, chantierId);
+    assert.notEqual(v2.id, devisId, "aucune nouvelle version : le décor ne prouve rien");
+    assert.deepEqual((await devisRepo.miseEnPageDuDevis(ctx, v2.id)).espacesDemandes, { [cle]: 1 }, "la correction a perdu ses espaces");
+  });
+
+  await cas("une autre entreprise ne pose pas d'espace dans son devis", async () => {
+    const a = await contexte("esp-iso-a");
+    const b = await contexte("esp-iso-b");
+    const { devisId } = await unDevis(a);
+    assert.equal((await devisRepo.ajouterUnEspaceDevant(b, devisId, "totaux")).ok, false);
+    assert.deepEqual((await devisRepo.miseEnPageDuDevis(a, devisId)).espacesDemandes, {});
+  });
+
   console.log(`\nLes sauts de page en base : ${echecs} échec(s).`);
   await pool.end();
   process.exit(echecs > 0 ? 1 : 0);

@@ -189,6 +189,9 @@ const PLANCHER = MARGE + 14;
  */
 const ECART_SOUS_LE_CONTENU = 22.4;
 
+/** Un espace : la hauteur d'une ligne d'un seul libellé (11 + 19 points), blanche. */
+const ESPACE_D_UNE_LIGNE = 30;
+
 /** Le pied ne descend pas plus bas : le numéro de page vit dessous. */
 const BAS_DU_PIED = MARGE + 9;
 
@@ -279,6 +282,8 @@ export type TexteTrace = {
 };
 export type TraitTrace = { y: number; de: number; a: number; epaisseur: number; page: number };
 export type ElementTrace = { cle: string; page: number; haut: number; bas: number };
+/** Les espaces posés devant un élément : combien, et la place blanche qu'ils prennent. */
+export type EspaceTrace = { cle: string; n: number; page: number; haut: number; bas: number };
 export type CadreTrace = { x: number; y: number; largeur: number; hauteur: number; page: number };
 export type TraceDocument = {
   pages: number;
@@ -302,6 +307,8 @@ export type TraceDocument = {
    * la règle de mise en page reste ICI, l'écran ne la refait pas.
    */
   elements: ElementTrace[];
+  /** Les espaces vraiment posés : l'aperçu y pose leur puce, pour les retirer. */
+  espaces: EspaceTrace[];
   /** Le pied posé : sa page, son haut (cadre de signature compris), son bas. */
   pied: { page: number; haut: number; bas: number } | null;
 };
@@ -773,6 +780,15 @@ export type OptionsDocument = {
    * qui ne désigne plus rien ne fait rien. Absents : la mise en page seule.
    */
   sauts?: readonly string[];
+  /**
+   * Les espaces qu'il a posés devant un élément, et combien d'affilée : sa
+   * réponse du 4 novembre 2026 (« dans la 1 oui la B », « d'affilée »). Chaque
+   * espace est la hauteur d'une ligne d'un seul libellé, blanche. La page n'en
+   * prend que ce qu'elle tient : un espace ne fait jamais changer l'élément de
+   * page (ce serait un saut qu'il n'a pas posé), et en haut d'une page il ne
+   * laisse rien. Un saut posé devant le même élément l'emporte.
+   */
+  espaces?: Readonly<Record<string, number>>;
   /** Le devis se signe, la facture se règle. */
   cadreSignature: boolean;
   /**
@@ -955,7 +971,7 @@ async function composerUneFois(
     numeroPage: 1,
     ...polices,
     teintes: teintesDe(options.allure),
-    trace: { pages: 1, textes: [], traits: [], cadres: [], fonds: [], logos: [], elements: [], pied: null },
+    trace: { pages: 1, textes: [], traits: [], cadres: [], fonds: [], logos: [], elements: [], espaces: [], pied: null },
   };
   poserPapier(ctx);
 
@@ -983,6 +999,22 @@ async function composerUneFois(
     y = pageSuivante(ctx);
     enHautDePage = true;
     return true;
+  };
+
+  /**
+   * Les espaces qu'il a posés devant `cle`, autant que la page en tient avant
+   * que l'élément (`hauteur`, celle que sa règle de page vérifie) ne doive
+   * passer à la suivante.
+   */
+  const espaces = options.espaces ?? {};
+  const espacerSiDemande = (cle: string, hauteur: number): void => {
+    const demandes = Math.floor(espaces[cle] ?? 0);
+    if (demandes < 1 || enHautDePage || sauts.has(cle)) return;
+    const tiennent = Math.floor((y - hauteur - PLANCHER) / ESPACE_D_UNE_LIGNE);
+    const n = Math.min(demandes, Math.max(0, tiennent));
+    if (n < 1) return;
+    ctx.trace.espaces.push({ cle, n, page: ctx.numeroPage, haut: y + 11, bas: y - n * ESPACE_D_UNE_LIGNE + 11 });
+    y -= n * ESPACE_D_UNE_LIGNE;
   };
 
   /** Ce que l'aperçu lira : la place d'un élément, à 11 points au-dessus de sa ligne de base. */
@@ -1225,11 +1257,14 @@ async function composerUneFois(
       if (sauterSiDemande(cle)) {
         enTeteTableau();
         titreBloc(true);
-      } else if (y - hauteurLigne < PLANCHER) {
-        y = pageSuivante(ctx);
-        enHautDePage = true;
-        enTeteTableau();
-        titreBloc(true);
+      } else {
+        espacerSiDemande(cle, hauteurLigne);
+        if (y - hauteurLigne < PLANCHER) {
+          y = pageSuivante(ctx);
+          enHautDePage = true;
+          enTeteTableau();
+          titreBloc(true);
+        }
       }
       const yDebutLigne = y;
       lignesLibelle.forEach((l, i) => ecrire(ctx, l, MARGE, y - i * 11, { taille: 9 }));
@@ -1287,6 +1322,7 @@ async function composerUneFois(
     apresTotal.reduce((acc, l) => acc + (l.style === "grand" ? 22 : 16), 0) +
     (options.tampon ? 26 : 0);
   sauterSiDemande("totaux");
+  espacerSiDemande("totaux", hauteurBloc);
   place(hauteurBloc);
   const yDebutTotaux = y;
   y -= 6;
@@ -1436,8 +1472,10 @@ async function composerUneFois(
   if (data.conditionsPaiement || notesEnGras.length) {
     const lignesNotes = data.conditionsPaiement ? enLignes(data.conditionsPaiement, ctx.sans, 9, DROITE - MARGE) : [];
     const lignesGras = notesEnGras.flatMap((phrase) => enLignes(phrase, ctx.sansGras, 9, DROITE - MARGE));
+    const hauteurNotes = 14 + (lignesNotes.length + lignesGras.length) * 12;
     sauterSiDemande("notes");
-    place(14 + (lignesNotes.length + lignesGras.length) * 12);
+    espacerSiDemande("notes", hauteurNotes);
+    place(hauteurNotes);
     const yDebutNotes = y;
     ecrireEspace(ctx, options.titreNotes, MARGE, y, APPROCHE_ETIQUETTE, etiquetteBloc);
     y -= 14;
@@ -1493,6 +1531,7 @@ async function composerUneFois(
         ? 26 + (data.entrepriseIban ? 24 : 0) + lignesConsigne.length * 12 + (data.ordreDuCheque ? 12 : 0)
         : 38;
     sauterSiDemande("modalites");
+    espacerSiDemande("modalites", hauteurBloc);
     place(hauteurBloc);
     const yDebutModalites = y;
     ecrireEspace(ctx, "MODALITÉS DE PAIEMENT", MARGE, y, APPROCHE_ETIQUETTE, etiquetteBloc);
