@@ -2,7 +2,7 @@
 
 ## ~~⏳ À CHOISIR PAR LUI (4 novembre 2026) : « Mes partenaires » sur la question de la main d'œuvre dictée~~ TRANCHÉ ET CODÉ LE 4 NOVEMBRE : B
 
-Son « B ». Codé (`ARCHITECTURE.md` §550), niveau 3 (le devis, l'argent). **Pas sur `main`** : sa demande du même soir, *« ne lance pas de batterie »* ; la batterie se joue quand il le dira, puis `main`. Commit `Prendre le prix d'un partenaire sur la main d'œuvre dictée, relu en base`. **Pas vérifiable ICI** : le geste sur son iPhone (joué dans Chromium à la taille d'un iPhone 13). Ce qui était proposé :
+Son « B ». Codé (`ARCHITECTURE.md` §550), niveau 3 (le devis, l'argent). **Pas sur `main`** : sa demande du même soir, *« ne lance pas de batterie »* ; la batterie se joue quand il le dira, puis `main`. Branche `lot/mo-dictee-partenaires` (poussée sur son accord du 4 novembre). **Pas vérifiable ICI** : le geste sur son iPhone (joué dans Chromium à la taille d'un iPhone 13). Ce qui était proposé :
 
 
 Sa demande : *« quand je dicte deux jours deux hommes, et que l'application me demande ligne main d'œuvre ou répartir, ça serait bien que j'aie l'encadré Mes partenaires ; si j'ai besoin d'aller checker leur prix, je l'ai tout de suite »*. Planche `appli/soignee/main-oeuvre-dictee-partenaires.html` : la pastille de `FeuilleMainDoeuvre` à droite de « Main d'œuvre », sur la carte « Avant de chiffrer » (`DevisDepuisDictee.tsx`, `RepartirLaMainOeuvre.tsx`), qui ouvre la même liste dans une feuille. **A** : pour voir, rien ne change. **B** : un prix touché devient la main d'œuvre (2 jours × prix × marge à la journée, une quantité sinon), comme la feuille du devis ; B demande que la question et l'enregistrement de la réponse portent le partenaire (`questionMainOeuvre`, `SUJET_MAIN_OEUVRE`). Conseillé : A. | lui
