@@ -52,7 +52,7 @@ celui que le PDF imprimait déjà.
 | Types, style | verts |
 | La case « déjà vue » en base (`test-aide-note-devis-db`) | 4 sur 4, vue rouge avant le droit ajouté |
 | La note dans ce que la page du client reçoit (`test-envois-devis`) | 39 sur 39 |
-| Le parcours dans un vrai navigateur (`test-note-du-devis-e2e`) | voir ci-dessous |
+| Le parcours dans un vrai navigateur (`test-note-du-devis-e2e`) | 5 sur 5 : la note courte, la longue et sa feuille, sans note, la fenêtre au premier toucher, puis plus jamais |
 | La page client existante (`test-devis-client-e2e`) | verte |
 | Migrations, couches, code mort, tirets, flèches, chartes | verts |
 | Écrans regardés ici, données de démonstration | note courte, note longue et sa feuille, page à 360 et 390 px, fenêtre du patron |
