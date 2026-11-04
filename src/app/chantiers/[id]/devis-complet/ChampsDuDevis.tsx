@@ -3,6 +3,7 @@
 import { useLayoutEffect, useRef } from "react";
 import { colors, font } from "@/lib/design-tokens";
 import { nombreSaisi } from "@/lib/chiffre-saisi";
+import { apresEffacement } from "@/lib/detail-de-la-ligne";
 
 // **Les pièces de la feuille, sorties de l'écran qui les assemble.**
 //
@@ -94,6 +95,7 @@ export function ZoneQuiGrandit({
   fige,
   className,
   style,
+  retourEnEspace = false,
 }: {
   valeur: string;
   onChange: (v: string) => void;
@@ -104,8 +106,17 @@ export function ZoneQuiGrandit({
   fige: boolean;
   className: string;
   style: React.CSSProperties;
+  /**
+   * Effacer un retour à la ligne laisse un espace entre les deux mots qui se
+   * rejoignent : le nom et le détail d'une ligne du devis (sa planche du
+   * 4 novembre 2026, `apresEffacement`).
+   */
+  retourEnEspace?: boolean;
 }) {
   const zone = useRef<HTMLTextAreaElement>(null);
+  // Le curseur à reposer après qu'un espace a remplacé le retour effacé : React
+  // remet la valeur, et le navigateur enverrait sinon le curseur au bout.
+  const curseur = useRef<number | null>(null);
 
   // À chaque frappe ET au premier rendu : le contenu vient du serveur, il est
   // déjà long avant qu'on ait touché quoi que ce soit.
@@ -117,6 +128,10 @@ export function ZoneQuiGrandit({
     if (!el) return;
     el.style.height = "auto";
     el.style.height = `${el.scrollHeight}px`;
+    if (curseur.current !== null) {
+      el.setSelectionRange(curseur.current, curseur.current);
+      curseur.current = null;
+    }
   }, [valeur]);
 
   return (
@@ -127,7 +142,11 @@ export function ZoneQuiGrandit({
       placeholder={placeholder}
       aria-label={aria}
       rows={1}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={(e) => {
+        const remonte = retourEnEspace ? apresEffacement(valeur, e.target.value) : null;
+        if (remonte) curseur.current = remonte.curseur;
+        onChange(remonte ? remonte.valeur : e.target.value);
+      }}
       onBlur={(e) => onFini(e.currentTarget.value)}
       className={className}
       style={style}

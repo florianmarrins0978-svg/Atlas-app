@@ -51,6 +51,8 @@ export type PrestationExistante = {
   aConfirmer?: boolean | null;
   /** Le prix qu'il a dicté (migration 0135). */
   prixDicte?: string | null;
+  /** La façon de faire dictée (migration 0162). */
+  detail?: string | null;
   /** L'artisan a posé ces valeurs lui-même (migration 0070). */
   corrigeParHumain?: boolean | null;
 };
@@ -93,6 +95,7 @@ export type Enrichissement = {
     caracteristiques?: Record<string, number>;
     aConfirmer?: boolean;
     prixDicte?: string;
+    detail?: string;
   };
   /** Ce que la nouvelle lecture dit et qui contredit ce qui est déjà là. */
   contradictions: string[];
@@ -124,6 +127,7 @@ export function enrichissementPossible(
     caracteristiques?: Record<string, number> | null;
     aConfirmer: boolean;
     prixDicte?: string | null;
+    detail?: string | null;
   }
 ): Enrichissement {
   const aPoser: Enrichissement["aPoser"] = {};
@@ -218,6 +222,10 @@ export function enrichissementPossible(
       );
     }
   }
+
+  // La façon de faire dictée (4 novembre 2026) : posée quand il n'y en a pas,
+  // jamais remplacée par une relecture, qui la formulerait autrement.
+  if (nouvelle.detail && (existante.detail === null || existante.detail === undefined)) aPoser.detail = nouvelle.detail;
 
   return { aPoser, contradictions };
 }

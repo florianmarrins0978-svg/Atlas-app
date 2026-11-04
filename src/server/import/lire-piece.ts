@@ -29,12 +29,13 @@ import {
 
 const SYSTEME = `Tu lis un devis ou une facture qu'un artisan a envoyé à son client.
 Tu réponds UNIQUEMENT par un objet JSON, sans phrase avant ni après, sans balises de code :
-{"genre": "devis"|"facture"|null, "numero": string|null, "date": "AAAA-MM-JJ"|null, "montant_ttc": string|null, "client": string|null, "adresse": string|null, "telephone": string|null, "chantier": string|null}
+{"genre": "devis"|"facture"|null, "numero": string|null, "date": "AAAA-MM-JJ"|null, "montant_ttc": string|null, "client": string|null, "adresse": string|null, "telephone": string|null, "chantier": string|null, "objet": string|null}
 Règles :
 - client : le nom du client destinataire tel qu'il est écrit (« Mme Aubry », « SARL Les Jardins »), jamais celui de l'artisan qui émet le document.
 - adresse : l'adresse du client destinataire, rue, code postal et ville (« 8 rue du Port, 44120 Vertou »), jamais celle de l'artisan, ni le lieu des travaux quand il est écrit à part.
 - telephone : le téléphone du client, jamais celui de l'artisan.
 - chantier : le lieu des travaux (ou d'intervention) quand il est écrit à part et diffère de l'adresse du client, sinon null.
+- objet : le titre du document, ce qui suit « Objet : » (« Elagage », « Taille de haie »), en quelques mots, jamais la liste des lignes.
 - montant_ttc : le total TTC à payer, avec la virgule ou le point tel quel.
 - date : la date du document, pas l'échéance.
 - Tu ne DEVINES jamais : une valeur illisible ou absente vaut null.`;

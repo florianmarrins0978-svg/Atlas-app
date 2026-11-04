@@ -157,8 +157,12 @@ function pieceImportee(p: {
 }): PieceDuClient {
   return {
     // Une ligne de tableau n'a pas de PDF (migration 0154) : la fiche l'ouvre
-    // sur ses chiffres, avec son titre et son chantier.
-    ...(p.fichierCle ? {} : { format: "tableau" as const, objet: p.objet, chantier: p.adresseChantier }),
+    // sur ses chiffres. Son titre et son chantier se montrent aussi pour un
+    // PDF (sa remarque du 3 novembre 2026 : « objet et titre, c'est la même
+    // chose », et la ligne ne portait que le numéro).
+    ...(p.fichierCle ? {} : { format: "tableau" as const }),
+    objet: p.objet,
+    chantier: p.adresseChantier,
     id: p.id,
     // Un numéro qu'on n'a pas lu ne s'invente pas : la pièce porte alors son jour.
     titre: p.numero ? `n° ${p.numero}` : p.jour ? jourCourt(p.jour) : "Sans numéro",

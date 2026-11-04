@@ -1073,6 +1073,12 @@ export const prestations = pgTable(
      */
     prixDicte: numeric("prix_dicte", { precision: 12, scale: 2 }),
     /**
+     * La façon de faire qu'il a dictée, en une phrase (migration 0162, sa
+     * planche du 4 novembre 2026) : elle s'écrit sous le nom de la ligne du
+     * devis qui vend ce travail. NULL : rien de dicté, ou une dictée d'avant.
+     */
+    detail: text("detail"),
+    /**
      * L'artisan a posé lui-même ces valeurs (migration 0070).
      *
      * **Le dépôt n'avait aucune provenance**, et il en fallait une : sans elle,
@@ -4169,6 +4175,11 @@ export const piecesImportees = pgTable("pieces_importees", {
   adresseLue: text("adresse_lue"),
   telephoneLu: text("telephone_lu"),
   chantierLu: text("chantier_lu"),
+  /**
+   * Quand l'objet d'un PDF a été cherché (migration 0161) : un PDF importé
+   * avant la lecture de l'objet se relit UNE fois, à l'ouverture de sa fiche.
+   */
+  objetChercheLe: timestamp("objet_cherche_le", { withTimezone: true }),
   clientId: uuid("client_id"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

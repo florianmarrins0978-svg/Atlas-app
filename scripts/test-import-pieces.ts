@@ -118,6 +118,7 @@ async function main() {
       adresseLue: null,
       telephoneLu: "06 22 00 00 22",
       chantierLu: null,
+      objetLu: null,
     });
   });
 
@@ -364,6 +365,7 @@ async function main() {
       adresseLue: null,
       telephoneLu: null,
       chantierLu: null,
+      objetLu: null,
     });
   });
 
@@ -434,6 +436,28 @@ async function main() {
   });
 
 
+
+  console.log("\nLe titre du devis : la ligne « Objet » (sa remarque du 3 novembre 2026)");
+
+  await cas("« Objet : Elagage » donne le titre, et s'arrête au tableau qui suit", () => {
+    // Le texte de son devis Beseme, tel qu'un autre logiciel l'imprime.
+    const t = "EURL L'R DE L'ARBRE 2 B GRANDE RUE 78770 Auteuil Devis n° D-201803001 Date : 08-03-2018 BESEME Mr Mme Beseme 11 rue Baudelaire 78640 Saint Germain de la Grange France N/C Objet : Elagage Désignation Qté PU HT TVA Total HT Cèdre Bleu";
+    assert.equal(lireChampsDuTexte(t).objetLu, "Elagage");
+  });
+
+  await cas("un objet de plusieurs mots se garde entier, les titres espacés l'arrêtent", () => {
+    assert.equal(lireChampsDuTexte("Devis n° 3 M. Bernard Objet : Taille de haie et évacuation D É S I G N A T I O N Q T É").objetLu, "Taille de haie et évacuation");
+    assert.equal(lireChampsDuTexte("Facture n° 4 OBJET: Création de massifs Quantité Prix").objetLu, "Création de massifs");
+  });
+
+  await cas("sans ligne « Objet », rien n'est inventé", () => {
+    assert.equal(lireChampsDuTexte("Facture n° 9 M. Bernard Total TTC 195,00").objetLu, null);
+  });
+
+  await cas("l'IA rend l'objet, relu", () => {
+    assert.equal(relireReponseIA('{"genre":"devis","numero":"D1","date":null,"montant_ttc":null,"client":null,"objet":"Elagage"}')?.objetLu, "Elagage");
+  });
+
   console.log("\nLes PDF lus passent par la règle des tableaux (31 octobre 2026)");
 
   const pdfLu = (id: string, champs: Partial<PieceLueDuPdf>): PieceLueDuPdf => ({
@@ -446,6 +470,7 @@ async function main() {
     adresseLue: null,
     telephoneLu: null,
     chantierLu: null,
+    objetLu: null,
     ...champs,
   });
 
@@ -475,6 +500,11 @@ async function main() {
       {}
     );
     assert.deepEqual(planDeRangement(lignes, [], {}, {}), { ok: false, adresses: 1 });
+  });
+
+  await cas("l'objet lu sur le PDF devient le titre de sa ligne, comme la colonne Objet d'un tableau", () => {
+    const { lignes } = lignesDesPdf([pdfLu("a", { numero: "D-201803001", nomLu: "Mme Beseme", objetLu: "Elagage" })], {});
+    assert.equal(lignes[0].objet, "Elagage");
   });
 
   await cas("le lieu des travaux lu sur le PDF va sur la pièce, sans question", () => {

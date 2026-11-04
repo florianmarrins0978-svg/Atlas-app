@@ -36665,6 +36665,8 @@ rougir sur une carte élargie.
 
 **Trois colonnes de lecture (migration 0156, expand seul) :** `adresse_lue`, `telephone_lu`, `chantier_lu`. `adresse_chantier` garde ce que le rangement a DÉCIDÉ ; y écrire la lecture l'aurait polluée au premier « Annuler ».
 
+**Le titre d'un PDF, sa ligne « Objet » (3 novembre 2026).** Sa remarque, capture de son devis Beseme à l'appui : *« objet et titre, c'est la même chose »*, et la fiche n'en montrait que le numéro. L'objet se lit au texte (`objetDuTexte` : la ligne « Objet : », arrêtée à l'en-tête du tableau qui suit ou à un titre espacé, huit mots au plus) et par l'IA quand elle est appelée ; il va dans la colonne `objet` qu'un tableau remplit déjà, et la fiche le montre pour un PDF comme pour une ligne de tableau (`pieceImportee`). **Les PDF importés avant** se relisent UNE fois, au texte seul, à l'ouverture de leur fiche (`chercherLesObjets`, trente au plus par ouverture) ; `objet_cherche_le` (migration 0161) dit qu'ils l'ont été, qu'un objet ait été trouvé ou non. Jamais l'IA pour ce rattrapage : il la paierait pour un titre.
+
 **Ce qui n'est pas tenu.** Un PDF déjà lu avant la migration n'a pas d'adresse : il se range sans, comme avant. Le même numéro dans deux PDF différents se range deux fois (deux fichiers, deux pièces), à l'inverse d'une ligne de tableau en double.
 
 ## §539 : Ma banque soignée, chaque pastille avec son heure, et le refus de lecture gardé
@@ -36842,3 +36844,18 @@ Contrôles : `test-coordonnee-de-cet-envoi` (la règle, sans base), `test-coordo
 **Un défaut trouvé en écrivant le contrôle.** `ajouterLigneDeFacture` écrivait le taux reçu tel quel : un « 8,5 » tapé dans la feuille faisait lever PostgreSQL (la virgule), une exception que l'écran n'aurait jamais pu dire. Le taux se relit maintenant au serveur par `tauxTvaValide`, la fonction de la feuille, et un taux illisible se refuse avec ses mots (`poserUneLigne`, qui sert la ligne vide comme la main d'œuvre).
 
 Contrôles : `test-feuilles-du-taux` (pur : le refus d'un taux déjà ouvert nomme la pièce, l'aperçu de la remise), `test-feuille-main-oeuvre` (pur : l'addition à « dont », sa borne, l'à chiffrer), `test-ajouts-de-la-facture-db` (sous `atlas_app` : la ligne de son équipe, ordinaire sans devis et en plus sur une facture née d'un devis, « dont » qui s'ajoute, le taux relu, la facture partie qui refuse), `test-ajouts-de-la-facture-e2e` (le geste, de Terminés à la feuille, et le Total TTC qui suit), `test-facture-sans-devis-e2e` adapté (la TVA et la remise passent par leur feuille).
+
+## §550 : Le détail dicté s'écrit sous le nom de la ligne, dans le libellé lui-même
+
+*4 novembre 2026, planche `appli/soignee/devis-detail-ligne.html`, tous ses choix du jour.* Sa question, devant son devis du frêne : *« j'ai parlé de rétention, de suppression de bois mort, d'allègement, de rétention de grosses charpentières allant vers le voisin. Pourquoi tout ça n'a pas été écrit dans la ligne élagage d'un frêne ? »*
+
+**La cause.** La ligne porte l'intitulé du tarif. Ce qu'il dit de la façon de faire, le modèle le rangeait au mieux dans `description`, qui mourait à l'insertion (`prestation-structuree.ts` le disait déjà) ; la ligne n'en recevait jamais rien.
+
+**La règle.** La lecture de la dictée rend un champ `detail` : la façon de faire, en une phrase propre, ses mots légèrement embellis (les « euh », les « mais » et les mots inutiles partent), sans rien ajouter qu'il n'a pas dit, sans chiffre. Il se garde sur la prestation (`prestations.detail`, migration 0162, trois cents caractères au plus) et la ligne du devis le reçoit sous son nom : `libelleAvecDetail` (`src/lib/detail-de-la-ligne.ts`), appelé par `appliquerPropositionPrix` sur les prestations que la ligne vend. Le doublon se cherche sur ce libellé-là, et rejouer la dictée rebâtit le même.
+
+**Un seul texte, et non une seconde colonne**, son choix : il voulait effacer devant le détail pour le remonter sur la ligne du nom, et Entrée pour le renvoyer dessous. Le libellé d'une ligne savait déjà tenir plusieurs lignes, et le PDF les imprimer (`enLignes`) ; une colonne à part aurait demandé deux champs. Les lecteurs qui coupent un libellé aux retours à la ligne (`membresDuLibelle`) en prennent la première ligne pour nommer le travail, ou refusent d'apprendre un prix devant un texte qu'ils ne reconnaissent pas (`prixAttribuable`) : un détail sous le nom ne fausse aucun prix.
+
+**L'espace en effaçant se lit sur le RÉSULTAT** (`apresEffacement`) : sur Android, la touche effacer d'un clavier tactile arrive souvent sans nom, et ne se reconnaît pas avant d'agir. Si seul un retour à la ligne est parti entre deux mots qui se touchent, l'espace s'y remet et le curseur reste où il était. Le champ ne le fait que pour la description d'une ligne (`retourEnEspace`).
+
+**Ce qui n'est pas tenu.** Les chantiers dictés avant n'ont pas de détail : il ne s'est jamais gardé, et il ne se devine pas. La reformulation est faite par le modèle et ne s'éprouve pas ici (pas de clé) : la consigne est dans `extraction-service.ts`, sa relecture dans `test-detail-de-la-ligne-db.ts`.
+

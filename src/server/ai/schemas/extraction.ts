@@ -43,6 +43,15 @@ export const LigneExtraiteSchema = z.object({
    * `.optional()` pour les brouillons enregistrés avant cette date.
    */
   prix: z.string().nullable().optional(),
+  /**
+   * Ce qu'il dit de la FAÇON de faire ce travail, en une phrase propre :
+   * « Suppression du bois mort, allègement, rétention des grosses charpentières
+   * qui partent vers le voisin. » Elle s'écrit sous le nom de la ligne du devis
+   * (sa planche du 4 novembre 2026, `src/lib/detail-de-la-ligne.ts`).
+   *
+   * `.optional()` pour les brouillons enregistrés avant cette date.
+   */
+  detail: z.string().nullable().optional(),
   aConfirmer: z.boolean().default(false),
 });
 

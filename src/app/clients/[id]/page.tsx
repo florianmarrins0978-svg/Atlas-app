@@ -15,6 +15,7 @@ import RepartirDeCeClient from "./RepartirDeCeClient";
 import SupprimerCeClient from "./SupprimerCeClient";
 import { apercuSuppressionClient } from "@/server/repositories/donnees-client";
 import { garderLaPage } from "@/server/garde-page";
+import { chercherLesObjets } from "@/server/import/traiter-pieces";
 
 // **La fiche d'un client : son nom, ce qu'on lui a fait la dernière fois, et
 // ses papiers.**
@@ -103,6 +104,9 @@ export default async function FicheClientPage({
   const { de, registre } = await searchParams;
   const retour = retourFicheClient(Array.isArray(de) ? de[0] : de);
   const ctx = await getCurrentCtx();
+  // Le titre des PDF importés avant qu'il se lise : cherché une fois, AVANT de
+  // charger la fiche, pour qu'il se voie dès cette ouverture.
+  await chercherLesObjets(ctx, id);
   const fiche = await chargerFicheClient(ctx, id);
   if (!fiche) notFound();
 
