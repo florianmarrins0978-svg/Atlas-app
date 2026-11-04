@@ -51,7 +51,7 @@ export type PrestationExistante = {
   aConfirmer?: boolean | null;
   /** Le prix qu'il a dicté (migration 0135). */
   prixDicte?: string | null;
-  /** La façon de faire dictée (migration 0157). */
+  /** La façon de faire dictée (migration 0160). */
   detail?: string | null;
   /** L'artisan a posé ces valeurs lui-même (migration 0070). */
   corrigeParHumain?: boolean | null;

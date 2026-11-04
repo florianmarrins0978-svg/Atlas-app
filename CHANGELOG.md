@@ -8,7 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-04
 
-- **Ce qu'il dicte de la façon de faire s'écrit sous la ligne du devis** (sa planche `appli/soignee/devis-detail-ligne.html` et ses choix du jour). La dictée rend la façon de faire en une phrase propre (« Suppression du bois mort, allègement, rétention des grosses charpentières qui partent vers le voisin. »), gardée sur la prestation (migration `0157`) ; la ligne porte le nom du tarif, puis ce détail dessous, et le PDF les imprime tels quels. Effacer devant le détail le remonte sur la ligne du nom avec un espace ; Entrée le renvoie dessous. `ARCHITECTURE.md` §544.
+- **Ce qu'il dicte de la façon de faire s'écrit sous la ligne du devis** (sa planche `appli/soignee/devis-detail-ligne.html` et ses choix du jour). La dictée rend la façon de faire en une phrase propre (« Suppression du bois mort, allègement, rétention des grosses charpentières qui partent vers le voisin. »), gardée sur la prestation (migration `0160`) ; la ligne porte le nom du tarif, puis ce détail dessous, et le PDF les imprime tels quels. Effacer devant le détail le remonte sur la ligne du nom avec un espace ; Entrée le renvoie dessous. `ARCHITECTURE.md` §544.
 
 ## 2026-11-03
 

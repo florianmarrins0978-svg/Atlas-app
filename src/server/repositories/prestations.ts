@@ -28,7 +28,7 @@ export type StructurePrestation = {
   aConfirmer?: boolean | null;
   /** Le prix HT qu'il a dicté pour ce travail (migration 0135). */
   prixDicte?: string | null;
-  /** La façon de faire dictée, écrite sous la ligne du devis (migration 0157). */
+  /** La façon de faire dictée, écrite sous la ligne du devis (migration 0160). */
   detail?: string | null;
 };
 

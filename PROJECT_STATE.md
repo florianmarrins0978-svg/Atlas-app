@@ -6,7 +6,7 @@ dernière migration `drizzle/0158_cles_composites_effacent_comme_leur_lien.sql` 
 ---
 ## LE DÉTAIL SOUS LA LIGNE DU DEVIS, CODÉ (4 novembre 2026), PAS ENCORE SUR `main`
 
-Sa planche `appli/soignee/devis-detail-ligne.html`. Branche `lot/detail-sous-la-ligne` : la dictée garde la façon de faire en une phrase (`prestations.detail`, migration 0157), la ligne du devis la reçoit sous son nom, effacer devant le détail le remonte avec un espace. Suites du domaine vertes, PDF regardé. **Reste : la batterie (niveau 3), puis `main`.** `ARCHITECTURE.md` §544.
+Sa planche `appli/soignee/devis-detail-ligne.html`. Branche `lot/objet-et-detail` (avec le titre des PDF importés) : la dictée garde la façon de faire en une phrase (`prestations.detail`, migration 0160), la ligne du devis la reçoit sous son nom, effacer devant le détail le remonte avec un espace. Suites du domaine vertes, PDF regardé. **Reste : la batterie (niveau 3), puis `main`.** `ARCHITECTURE.md` §544.
 
 ## SUPPRIMER UN CLIENT REMARCHE SUR SA BASE (1er novembre 2026)
 
@@ -36,9 +36,9 @@ Branche `lot/ma-banque-soignee`, d'après `appli/soignee/reglages-banque.html` (
 Le devis, la facture, le contrat, les dates du mois et le compte rendu que reçoit le client ; Non payées, les retours d'intervention, le contrat d'entretien et Ses coordonnées chez l'artisan. Chaque écran suit la vue Proposé de sa planche (`appli/soignee/client-recoit.html`, `client-contrat.html`, `client-coordonnees.html`, `termines-non-payees.html`, `termines-retours.html`). Niveau 3 (devis, facture, une lecture en base). Retour : `docs/planches-du-31-octobre-codees.md`.
 
 ---
-## LES PDF RANGÉS PAR CLIENT, COMME UN TABLEAU, SUR `main` SANS BATTERIE (sa demande du 3 novembre 2026)
+## LES PDF RANGÉS PAR CLIENT, COMME UN TABLEAU, SUR `main` (3 novembre 2026, par la batterie commune des cinq lots)
 
-Sa demande du 31 octobre : CSV, Excel ou PDF, la même chose. Branche `lot/pdf-par-client` (poussée sur `claude/quatre-planches-atlas-6hi21h`). Les PDF lus passent par l'écran « Par client » et la règle des tableaux ; la lecture garde l'adresse, le téléphone et le lieu des travaux (migration 0156, expand). Suites du domaine vertes, écran regardé. **Poussé sur `main` le 3 novembre sans batterie, sur sa demande (« pousse ta branche sans batterie ») : la batterie entière reste due.** `ARCHITECTURE.md` §538, `docs/pdf-par-client.md`.
+Sa demande du 31 octobre : CSV, Excel ou PDF, la même chose. Branche `lot/pdf-par-client` (poussée sur `claude/quatre-planches-atlas-6hi21h`). Les PDF lus passent par l'écran « Par client » et la règle des tableaux ; la lecture garde l'adresse, le téléphone et le lieu des travaux (migration 0156, expand). Suites du domaine vertes, écran regardé. **Sur `main` depuis le 3 novembre, fusionné par la batterie commune d'une autre session (« Cinq lots, une seule batterie »).** Le titre des PDF (la ligne « Objet ») est venu après : lot `lot/objet-et-detail`, migration 0159. `ARCHITECTURE.md` §538, `docs/pdf-par-client.md`.
 
 ## LE RELEVÉ DU 29 OCTOBRE, SUR `main` (31 octobre 2026)
 
