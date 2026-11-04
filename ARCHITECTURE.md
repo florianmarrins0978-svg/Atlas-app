@@ -36786,3 +36786,15 @@ rougir sur une carte élargie.
 Contrôles : `test-vehicules` (la règle : vu en ambre, la veille, le jour, le lendemain de l'échéance, une nouvelle date, la fiche qui ne bouge pas), `test-vehicules-rls` (sous `atlas_app` : le « vu » par entreprise, refusé depuis une autre, le retour le dernier jour, le retour dépassé, l'écran resté sur l'ancienne date), `test-rappel-vehicule-vu-e2e` (son geste : la carte part avant la réponse, revient le dernier jour sans « J'ai vu », puis rouge, repart à neuf, un refus s'affiche).
 
 **Ce qui n'est pas tenu** : servi sur une base sans 0159, ce code fait tomber l'accueil du patron et l'écran Véhicules (la lecture nomme les trois colonnes). `demarrer.sh` applique les migrations à l'allumage ; rien n'empêche encore de servir après une migration en échec (`.claude/rules/deployment-safety.md`).
+
+## §547 : « Trier par » en pastilles vert pâle, et le ruban du paiement devient une pièce commune
+
+**Sa remarque du 3 novembre 2026**, devant les cinq grands boutons empilés du volet de Terminés, le choisi en noir : *« Trier par, tu peux pas me faire quelque chose de plus joli ? J'ai l'impression que c'est moche »*. Sur la planche (`appli/soignee/termines.html`), il a pris B, les tris côte à côte, avec sa retouche : *« pastille vert pâle »*. Le vert plein dessiné cède au vert du Filtre posé (`carteVertFond`, `carteVertTexte`), le même que « Pour mon comptable » : un tri choisi et le Filtre qui le signale parlent la même couleur.
+
+**Chaque pastille porte le dessin de son tri** (`ICONE_DU_TRI`) : le calendrier, le document, la facture, l'euro, la personne, tracés pris au kit des planches et ajoutés à `IconeTrait`. Les repères `tri-<clé>`, `tri-croissant` et `tri-decroissant` restent ceux d'avant.
+
+**Le sens se choisit sur le ruban du paiement**, comme la planche le montrait. Ce ruban vivait dans `PaiementClient` ; il en sort dans `RubanGlissant` (le fond et la case qui glisse), et chaque écran dessine ses cases avec `CASE_DU_RUBAN`. Deux copies du même geste auraient fini par ne plus glisser pareil (§3).
+
+**Vos clients garde son volet** : il ouvre un calendrier pour les dates, sa demande du 22 octobre, et rien n'y a été demandé.
+
+Contrôle : `test-onglets-termines-e2e`, cas « le tri se choisit en pastille » (la pastille touchée se dit choisie et passe au vert pâle, le sens se prend sur le ruban, le Filtre posé passe au vert pâle et se distingue du repos, le tri d'origine se rend). Le ruban du paiement reste éprouvé par `test-avoir-et-non-payee-e2e`.

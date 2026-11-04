@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-11-04
+
+- **Terminés : « Trier par » en pastilles côte à côte, celle choisie en vert pâle** (sa remarque : *« c'est moche »*, puis son choix sur la planche : *« B pastille vert pâle »*). Chaque pastille porte le dessin de son tri ; le sens se prend sur le ruban qui glisse du paiement, devenu une pièce commune (`RubanGlissant`). Évite cinq grands boutons empilés et un choix en noir, la couleur qu'il avait déjà refusée sur le Filtre. `ARCHITECTURE.md` §547.
+
 ## 2026-11-03
 
 - **Terminés : le Filtre posé passe au vert pâle, plus au noir** (sa demande : *« un ton un peu plus clair ou plus foncé, pour que ça soit visible mais pas noir »*, puis son choix A sur la planche). Le fond et le texte de « Pour mon comptable », juste au-dessus (`BoutonFiltre`). Vos clients ne pose jamais le Filtre et n'en change pas. **Le nom du client, lui, était déjà en titre de chaque ligne** : sa remarque visait la planche, qui titrait d'une désignation inventée ; elle est corrigée et le dit. Le tri attend son choix entre la liste et les pastilles.
