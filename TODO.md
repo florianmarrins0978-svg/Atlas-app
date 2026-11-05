@@ -28,7 +28,32 @@ planning et au choix des dates du client (`EnvoiAuClient.tsx`, lu dans le
 code). Le calcul des disponibilités n'y touche pas : sa règle est « on peut
 quand même les proposer ».
 
-## ⏳ À CHOISIR PAR LUI (5 novembre 2026) : les jours travaillés de chaque salarié
+## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : les jours travaillés de chaque salarié~~ TRANCHÉ LE 5 NOVEMBRE : A, PAS CODÉ
+
+**Sa réponse, le 5 novembre au soir** : *« faut la A »*. Le chiffre se
+corrige, et dès qu'il bouge un appui dit pourquoi (Congé, Maladie, Sans
+solde, Autre ; Samedi travaillé, Férié travaillé quand il monte). Il n'a pas
+dit de coder : **rien dans `src/`**, et le lot (migration, niveau 3) attend
+son « code-le ». Restent ouverts, ci-dessous : où le ranger, et le motif
+demandé quand on note l'absence.
+
+**Sa question du même soir, les ZONES** : *« des conventions travaillent avec
+les zones, 1, 2, 3, 4 ; est-ce toutes les mêmes ? »*. Non. Bâtiment et travaux
+publics : cinq zones de 10 km à vol d'oiseau depuis le siège, l'agence ou le
+dépôt, montants par accord régional. Paysage (IDCC 7018) : barème MSA, des
+tranches en km jusqu'à 50 (70 en zone peu dense), montants en multiples du
+minimum garanti, revus quand il change (1er janvier et 1er juin 2026) ;
+au-delà, le barème national de l'Urssaf. Lu dans les résultats de recherche,
+pas dans les textes (le réseau de ce poste refuse msa.fr) : **à confirmer sur
+le PDF MSA avant de coder**. Faisable dans Atlas : le chantier porte déjà ses
+coordonnées (`chantiers.latitude`, `longitude`), et qui y était chaque
+demi-journée (`equipes_du_chantier`) ; il manque le point de départ (siège ou
+dépôt, situé) et la table des tranches (un réglage par convention). Atlas
+COMPTE les jours par zone, il ne calcule pas les montants (ils changent deux
+fois par an et selon la région, `docs/AGENT.md` §3) ; un chantier sans
+coordonnées se dit « zone inconnue » et se corrige comme le reste. Proposé en
+planche s'il le veut.
+
 
 **Sa demande du 5 novembre** : *« pour le bilan comptable, même pour faire les
 payes, ils sont obligés de donner à chaque fois le nombre de jours travaillés
