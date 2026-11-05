@@ -8,7 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-05
 
-- **Les suites navigateur trouvent Chromium toutes seules, quelle que soit sa version** (sa demande : *« corrige maintenant »*). Un chemin écrit en dur (`chromium-1194`) faisait tomber toutes les suites navigateur sur les postes du nuage depuis le changement de version ; il fallait passer deux variables à la main. Une seule fonction, `scripts/_navigateur.mjs`, remplace quatre-vingt-douze copies. Rien ne change pour l'appli. `ARCHITECTURE.md` §554.
+- **Les suites navigateur trouvent Chromium toutes seules, quelle que soit sa version** (sa demande : *« corrige maintenant »*). Un chemin écrit en dur (`chromium-1194`) faisait tomber toutes les suites navigateur sur les postes du nuage depuis le changement de version ; il fallait passer deux variables à la main. Une seule fonction, `scripts/_navigateur.mjs`, remplace quatre-vingt-six copies ; six scripts de capture suivront. Rien ne change pour l'appli. `ARCHITECTURE.md` §554.
 
 ## 2026-11-04
 

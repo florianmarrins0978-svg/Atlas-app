@@ -23,7 +23,6 @@ import path from "node:path";
 import { chromium } from "playwright";
 import { composerDevisPdf, type DevisPdfData } from "../src/server/pdf/devis-pdf";
 import { totauxAvecReduction } from "../src/lib/reduction-devis";
-import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const SORTIE = process.argv[2] ?? "/tmp/captures";
 mkdirSync(SORTIE, { recursive: true });
@@ -86,7 +85,7 @@ const CAS: [string, DevisPdfData][] = [
   ["trois-remise", devisAvec(BEAUCOUP, "10")],
 ];
 
-const nav = await chromium.launch({ executablePath: cheminDuNavigateur() });
+const nav = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium-1194/chrome-linux/chrome" });
 const page = await nav.newPage({ viewport: { width: 900, height: 1180 } });
 
 for (const [nom, donnees] of CAS) {

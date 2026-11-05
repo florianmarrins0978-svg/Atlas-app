@@ -13,7 +13,6 @@ import path from "node:path";
 import { chromium } from "playwright";
 import { composerDevisPdf, type DevisPdfData } from "../src/server/pdf/devis-pdf";
 import { TYPOGRAPHIES, ALLURE_PAR_DEFAUT } from "../src/lib/allure-documents";
-import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const SORTIE = process.argv[2] ?? "/tmp/captures";
 mkdirSync(SORTIE, { recursive: true });
@@ -66,7 +65,7 @@ const DEVIS: DevisPdfData = {
 };
 
 const nav = await chromium.launch({
-  executablePath: cheminDuNavigateur(),
+  executablePath: "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
 });
 const page = await nav.newPage({ viewport: { width: 900, height: 1180 } });
 

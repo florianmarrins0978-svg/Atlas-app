@@ -2,14 +2,13 @@ import { chromium, devices } from "playwright";
 import { mkdirSync, writeFileSync } from "fs";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { fichierDemandeALaVisionneuse } from "../src/lib/visionneuse-pdf";
-import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const OUT = "artifacts/screenshots/step-24-devis-reel";
 mkdirSync(OUT, { recursive: true });
 
 async function main() {
   const browser = await chromium.launch({
-    executablePath: cheminDuNavigateur(),
+    executablePath: "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
   });
   const context = await browser.newContext({ ...devices["iPhone 13"], });
   const page = await context.newPage();
