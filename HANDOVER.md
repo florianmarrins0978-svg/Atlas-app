@@ -10,6 +10,11 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## LA FACTUR-X (5 novembre 2026), branche `lot/facture-x`
+
+**Les pièges :** une Factur-X est un PDF/A-3, donc **jamais chiffrée** : l'option `archivable` de `composerDocument` saute `protegerContreModification`, embarque toutes les polices (jamais `StandardFonts`) et ne recopie pas l'attestation en pages (elle part en fichier joint). Ajouter à `composerDocument` un dessin qui emploie une police du format ou une transparence sans y penser fait échouer veraPDF, pas l'écran. Le XML et le PDF calculent leurs totaux par la même fonction ; si un jour ils divergent, `xmlFactureX` refuse et la facture part en PDF ordinaire, avec un `logger.warn`. Les contrôleurs (Saxon, veraPDF, règles EN 16931) se récupèrent dans `~/.cache/atlas-facture-x` au premier passage de `test-facture-x.ts` : il faut Java, Maven et git. `ARCHITECTURE.md` §555.
+
+---
 ## LA MISE EN PAGE DU DEVIS (4 novembre 2026), sur `main` le 4 novembre
 
 **Les pièges :** un saut se pose DEVANT un élément (`ligne:<id de la ligne de prix>`, `totaux`, `notes`, `modalites`), jamais à une hauteur ; et l'identifiant est celui de la LIGNE DE PRIX (`lignes_devis.ligne_prix_id`), parce que les lignes d'un brouillon sont effacées et recopiées à chaque synchronisation. Le PDF nomme ses lignes par elle (`l.lignePrixId ?? l.id`) : y remettre `l.id` détache tous les sauts sans un message. La route `mise-en-page` doit composer EXACTEMENT comme la route du PDF (brouillon resynchronisé d'abord), sinon il coupe la ligne voisine. `composerDocument` compose deux fois au plus (`sautQuiManque`), jamais en boucle. `atlas-plein` ne donne pas de fond : un bouton plein prend aussi `colors.plein` et `surPlein`. **Les espaces** : la page n'en prend que ce qu'elle tient, et c'est le générateur qui le dit (`ajouterUnEspaceDevant` compose AVANT d'écrire) ; ne jamais refaire ce calcul dans l'écran. Un saut posé devant un élément retire ses espaces. **0164 a reçu `espaces_de_page` en place** : une base d'essai qui avait déjà joué 0164 ne la rejoue pas (le lanceur reconnaît le nom), il faut y ajouter la colonne à la main ou la recréer. Sur `main` le 4 novembre, par la batterie commune des quatre lots (`docs/batterie-commune-4-novembre.md`, `ARCHITECTURE.md` §553).

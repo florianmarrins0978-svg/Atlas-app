@@ -36,6 +36,8 @@ redistribution avec le logiciel. Elle est reproduite dans `OFL.txt`.
 | Merriweather | `merriweather-400.ttf`, `merriweather-700.ttf` |
 | Playfair Display | `playfair-400.ttf`, `playfair-700.ttf` |
 
+**Et cinq jumelles pour la Factur-X** (5 novembre 2026) : `atlas-archive-sans-*` et `atlas-archive-serif-*`, réduites de Liberation Sans et Serif 2.1 avec la commande ci-dessous, puis **renommées** (la licence réserve le nom « Liberation »). Elles ne s'emploient que pour une facture d'entreprise en typographie d'origine (`POLICES_ARCHIVABLES`), parce qu'une Factur-X doit embarquer toutes ses polices.
+
 **La dixième n'est pas ici**, et c'est voulu : « celle d'aujourd'hui » reste
 Times et Helvetica, servies par le format lui-même. C'est son réglage par
 défaut — *« les réglages actuels doivent être par défaut »*.

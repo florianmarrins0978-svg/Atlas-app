@@ -8,10 +8,14 @@ non ? »*), 3 B. `ARCHITECTURE.md` §555 porte la décision, et celle prise
 sur le verrou : Factur-X pour un client entreprise seulement, PDF verrouillé
 pour un particulier et une mairie. **Rien n'est codé.** Reste, dans l'ordre :
 
-1. **le lot Factur-X**, sans compte : XML CII au profil EN 16931 depuis la
-   facture (règle pure dans `src/lib/`), PDF/A-3 avec ce XML dedans, contrôle
-   par les règles officielles. Niveau 3 ;
-2. **le branchement**, avec sa clé sur un compte d'essai. Niveau 3.
+1. ~~**le lot Factur-X**~~ **CODÉ LE 5 NOVEMBRE** (branche `lot/facture-x`,
+   `ARCHITECTURE.md` §555) : une entreprise reçoit une Factur-X, jugée par les
+   règles EN 16931 officielles et veraPDF. Reste dans ce lot : les règles
+   françaises de XP Z12-012, non vérifiables ici ; et le rappel au patron que
+   **son adresse dans Mon entreprise doit porter le code postal**, sinon la
+   facture repart en PDF ordinaire (journalisé, pas affiché) ;
+2. **le branchement**, avec sa clé sur un compte d'essai. Niveau 3. Il fera
+   d'un refus de `xmlFactureX` un blocage affiché (choix 3 B).
 
 **À vérifier avant de coder, pas à lui demander :** le numéro d'une facture
 refusée par la plateforme (refaite sous le même numéro ou sous un neuf : la
