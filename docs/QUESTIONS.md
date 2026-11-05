@@ -2207,6 +2207,10 @@ Les devis **jamais acceptés** n'ont aucune raison légale d'être gardés 10 an
 (ils portent le nom et l'adresse de quelqu'un qui n'est pas devenu client).
 **Sa réponse, le 5 novembre : les effacer à la fermeture.**
 
+**Et fermer avant la fin du mois payé** (sa réponse sur la planche
+`fermer-mon-compte.html`, le même jour, « A ») : le compte reste ouvert
+jusqu'à la fin de ce qui est payé, puis se ferme.
+
 Écartées le même jour : le choix à la fermeture, et « télécharger, puis tout
 effacer ».
 

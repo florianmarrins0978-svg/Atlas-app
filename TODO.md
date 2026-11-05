@@ -72,9 +72,10 @@ pas dans le PDF : faut-il demander Congé ou Maladie quand on note l'absence ?
 
 ## FERMER UN COMPTE, ET LES FACTURES D'ABONNEMENT D'ATLAS (5 novembre 2026)
 
-**⏳ UNE PLANCHE À REGARDER (5 novembre 2026)** : `appli/soignee/fermer-mon-compte.html`,
-un choix : fermer avant la fin du mois payé, A (ouvert jusqu'à l'échéance,
-recommandé) ou B (fermé tout de suite).
+**~~⏳ UNE PLANCHE À REGARDER~~ CHOISIE LE 5 NOVEMBRE : A** :
+`appli/soignee/fermer-mon-compte.html`. Fermer avant la fin du mois payé : le
+compte reste ouvert jusqu'à l'échéance, puis se ferme, comme une résiliation.
+Pas codé.
 
 **Fermer un compte : tranché, pas codé** (`docs/QUESTIONS.md`, question 33,
 sa troisième version du 5 novembre, la seule qui vaut). Dans tous les cas, les
