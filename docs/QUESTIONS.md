@@ -2197,17 +2197,15 @@ plus simple »*.
 | au bout des 10 ans | l'archive s'efface à son tour |
 | à la fermeture | « Télécharger mes données » est proposé, pas obligatoire, et l'écran dit ce qui reste et jusqu'à quand |
 
-**Et deux gestes, pas un** (sa réponse du même soir) :
-
-| | Ce qui se passe |
-|---|---|
-| **Mettre en pause** | il ne paie plus, **tout est gardé**. Atlas lui écrit chaque année pour demander s'il garde son compte ; sans réponse, le compte se ferme comme ci-dessous. Revenir cinq ans après, c'est retrouver tout |
-| **Fermer** | factures, avoirs, devis acceptés, contrats acceptés et PDF gardés 10 ans, avec les clients et chantiers qui les portent et ses réglages. Revenir, c'est retrouver cela et rouvrir dessus |
+**Un seul geste : fermer** (sa réponse du même soir, « la A »). Pas de
+pause. Revenir cinq ans après, c'est retrouver ses factures, avoirs, devis
+acceptés, contrats acceptés et leurs PDF, les clients et chantiers qui les
+portent, et ses réglages, puis rouvrir dessus.
 
 **Ouvert** : il a écrit « on garde les devis et les factures 10 ans ».
 Les devis **jamais acceptés** n'ont aucune raison légale d'être gardés 10 ans
 (ils portent le nom et l'adresse de quelqu'un qui n'est pas devenu client).
-Recommandé : les effacer à la fermeture, les garder pendant une pause.
+Recommandé : les effacer à la fermeture. Sa réponse est attendue.
 
 Écartées le même jour : le choix à la fermeture, et « télécharger, puis tout
 effacer ».
