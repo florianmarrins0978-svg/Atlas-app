@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-05
 
+- **Zones : un interrupteur sur Jours travaillés** (sa demande), éteint au départ ; l'allumer ouvre Paysage, Bâtiment ou Pas de zones. Le même écran reste ouvrable depuis Équipe. Pas codé.
 - **Zones : plus de « Zone inconnue »** (sa correction). Un chantier sans adresse située ne compte dans aucune zone ; le total du salarié passe en rouge, et sa feuille dit combien de jours manquent, lesquels et où, pour qu'il touche plus sur la bonne zone. Pas codé.
 - **Le motif d'une absence : validé** (*« très bien »*), tel que sur la planche. Pas codé.
 - **Planches : les zones de déplacement, et le motif d'une absence** (ses réponses : jours travaillés dans Pour mon comptable, avec motif ; zones MSA ou bâtiment, au choix, ou aucune, et modifiables). Atlas compterait les jours de chaque salarié par zone avec le planning, sans calculer de montant. Trouvé en chemin : une absence « déplacement » est un jour travaillé, que le compte aurait retiré de la paie ; Déplacement et Formation comptent donc travaillés. Rien n'est codé. `TODO.md`, entrée du 5 novembre.
