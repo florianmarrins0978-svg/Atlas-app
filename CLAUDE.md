@@ -1032,7 +1032,7 @@ de trente minutes, ni la mémoire, ni le disque.
 | | |
 |---|---|
 | **le lancement** | une tâche d'arrière-plan de l'outil (`run_in_background`, `timeout` de 7 200 000 ms), sortie vers un fichier ; jamais `nohup … &`, jamais au premier plan (coupé à deux minutes) |
-| **Chromium** | `PLAYWRIGHT_EXECUTABLE_PATH=/opt/pw-browsers/chromium CHROMIUM_PATH=/opt/pw-browsers/chromium` : le chemin écrit dans le dépôt (`chromium-1194`) n'existe plus sur ces postes, et sans eux **toutes** les suites navigateur tombent sans défaut du produit (`TODO.md`) |
+| **Chromium** | rien à passer depuis le 5 novembre 2026 : `scripts/_navigateur.mjs` trouve le navigateur du poste, quelle que soit sa version (le lien stable `/opt/pw-browsers/chromium`, sinon le `chromium-NNNN` le plus récent). Le 28 octobre, un chemin écrit en dur (`chromium-1194`) faisait tomber **toutes** les suites navigateur sans défaut du produit. Un script qui lance Chromium appelle `cheminDuNavigateur()`, jamais un chemin à lui (`ARCHITECTURE.md` §554) |
 | **les rouges rejoués sur `main`** | `verifier-rouge-prealable.ts` hérite de l'environnement : lui donner celui de la batterie (`REDIS_URL`, `DATABASE_URL` du rôle `postgres`, `AUTH_SECRET`, `CRON_SECRET`, `LLM_PROVIDER=dev`), sans quoi il rend « illisible » des deux côtés |
 
 **Ne jamais la faire passer par `tail`.** Elle écrit son verdict à la fin, mais

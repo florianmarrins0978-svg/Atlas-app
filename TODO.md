@@ -72,7 +72,7 @@ Sa question, devant son devis du frêne : la rétention, le bois mort, l'allège
 
 - **Validé, et pas entièrement codé : le relevé du 29 octobre** (trois relectures du code, planche par planche, depuis le vendredi 23 au soir). ~~*Abonnement* et *Crédits IA* : « Attention au mot » garde son encadré bleu. *Crédits IA* : la barre sans sa plage ni sa pastille. *Mon compte* : la feuille de la photo sans « Annuler ».~~ **Codés le 29 octobre** sur ses réponses du jour (« oui », « en rouge », « oui »), **sur `main` le 31 octobre (`ec0a53bc`, batterie verte sauf `test-poser-une-date-e2e`, rouge aussi sur `main`)**, avec *Voir le dossier, A*. *Fondations* : ses réponses du 28 octobre (libellés en or à 13 px, `texteSituation` à 14,5 px) ne sont pas codées. ~~*Voir le dossier, A* : « 60 lignes » ne s'affiche pas.~~ Codé le 29 octobre, même branche. ~~*Attestation* : le PDF joint au courriel et la copie au comptable attendent sa décision.~~ Sa réponse « oui et oui » du 29 octobre : codés, sur `main` le 31 octobre. ~~*Vos clients soignée* (les cartes « Vos partenaires ») : sa condition était le CSV, livré le 29.~~ Codée le 29 octobre sur son « oui ».
 - **~~Payé par (bouts ronds)~~ : non repris le 29 octobre** : sa remarque visait le bouton, déjà en bouts ronds ; le champ suit sa planche (case à filet), `ARCHITECTURE.md` §531. **Le rond « Tout » au-dessus du A de Vos clients : sur `main` le 29 octobre (`bdea976e`).** Il portait : Ils vivent sur deux branches LOCALES de la session « Dernière correction » : `claude/paye-par-bouts-ronds` (2ceda082) et `claude/tout-cocher-au-dessus-de-a` (9ebeb010). Elle refuse de les pousser sans son accord : il doit lui écrire « oui, pousse les deux branches ». Ensuite, leur lot depuis `main` et sa batterie (Payé par touche l'argent : niveau 3).
-- **Le chemin de Chromium est écrit en dur, et il est faux sur les postes du nuage.** `scripts/e2e-browser.ts` vise `/opt/pw-browsers/chromium-1194`, recopié dans trois scripts de capture ; `verifier-connexion.mjs` cherche un `chromium-NNNN/chrome-linux`. Le poste porte `chromium-1243/chrome-linux64` et un lien stable `/opt/pw-browsers/chromium`. Sans les deux variables de `CLAUDE.md` §5, toutes les suites navigateur tombent (88 rouges la nuit du 28). Lot d'outillage, niveau 2 : une seule recherche du navigateur, le lien stable d'abord.
+- ~~**Le chemin de Chromium est écrit en dur, et il est faux sur les postes du nuage.**~~ **Corrigé le 5 novembre 2026** : une seule fonction, `scripts/_navigateur.mjs`, remplace les quatre-vingt-douze copies ; plus de variable à passer (`ARCHITECTURE.md` §554, `test-navigateur.ts`).
 - **Deux suites navigateur rouges sur `main` aussi, en fin de mois.** `test-poser-une-date-e2e` cherche un jour d'accueil après un chantier de quatre demi-journées dans la grille du mois en cours : posé le jeudi 29, il occupe le vendredi 30, et le samedi 31 n'est pas ouvrable. `test-le-client-s-est-trompe-e2e` ne trouve aucun jour proposé sur la page du client, rouge à l'identique sur `main` le 29 à 2 h 30, alors qu'elle était verte à la batterie de minuit, sur le même code. Décor à corriger (avancer d'un mois comme `test-pas-la-ce-jour-e2e`), lot à part ; la seconde reste à diagnostiquer.
 
 ## L'ATTESTATION DU COMPTABLE : SUR `main` LE 28 OCTOBRE, CE QUI RESTE À TRANCHER
@@ -16360,8 +16360,8 @@ partagées — `EnTeteEcran`, `PrimaryButton`, `src/lib/design-tokens.ts`.
 6. **Une feuille en `absolute` passe SOUS le bandeau et la bulle**, tous deux
    fixés. Une feuille modale se pose en `fixed`, au-dessus de `z-40`.
 7. **Le navigateur d'essai** : `chromium.launch({ executablePath:
-   "/opt/pw-browsers/chromium" })`, sinon Playwright réclame une installation
-   qui est pourtant là (voir §0).
+   cheminDuNavigateur() })` (`scripts/_navigateur.mjs`), sinon Playwright
+   réclame une installation qui est pourtant là (voir §0).
 
 #### Les deux réserves — ce qui ne doit PAS suivre
 

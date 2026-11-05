@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-11-05
+
+- **Les suites navigateur trouvent Chromium toutes seules, quelle que soit sa version** (sa demande : *« corrige maintenant »*). Un chemin écrit en dur (`chromium-1194`) faisait tomber toutes les suites navigateur sur les postes du nuage depuis le changement de version ; il fallait passer deux variables à la main. Une seule fonction, `scripts/_navigateur.mjs`, remplace quatre-vingt-douze copies. Rien ne change pour l'appli. `ARCHITECTURE.md` §554.
+
 ## 2026-11-04
 
 - **Quatre lots, une seule batterie** (sa demande : *« il y a 4 sessions en attente de jouer une batterie. Fusionne-les toutes et joue une seule batterie pour vous toutes »*). La mise en page du devis, la note du devis, « Mes partenaires » sur la main d'œuvre dictée, et le titre des PDF importés avec le détail sous la ligne, réunis sur `main` à jour. Les migrations se suivent : 0161 et 0162 (titre et détail), 0163 (la note, qui était 0159), 0164 (la mise en page, qui était 0159 elle aussi) ; jamais passées sur sa base sous leur ancien nom. `ARCHITECTURE.md` : la note §552 et la mise en page §553 (toutes deux §544 au départ), les partenaires §551 (§550 au départ), chaque renvoi relu un par un. Batterie entière : 556 suites base sur 559, 213 navigateur sur 213, connexion derrière un proxy verte. Un rouge venait des lots : la fenêtre de la note se marquait vue par une action serveur sans garde ni raison écrite (`test-actions-gardees-db.ts`) ; elle n'écrit que sur la ligne de la personne connectée, comme la charte, et sa raison est maintenant écrite. Les deux autres rouges (`test-maquettes-hors-production`, `test-stockage-banc`) le sont de la même façon sur `main` seul. Retour : `docs/batterie-commune-4-novembre.md`.

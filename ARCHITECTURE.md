@@ -36915,3 +36915,12 @@ Contrôles : `test-feuille-main-oeuvre` (pur : la quantité à la journée, l'he
 **Le saut dans l'écran du devis** (`SautDuDevis.tsx`) : la même puce verte, entre les lignes, devant les totaux, les notes ou les modalités, avec sa croix ; sans croix sur un devis envoyé. **Il s'y voit, il ne s'y pose pas** : l'écran du devis ne montre pas où tombent les pages. Les lignes de cet écran sont des lignes de prix : `ligne:${l.id}` y désigne directement la clé du saut.
 
 **La suite qui joue son geste** : `test-mise-en-page-apercu-e2e.ts`, chaque écriture vérifiée en base, vue rouge en retirant la puce de l'écran du devis.
+
+## §554 : Le navigateur des suites se trouve à un seul endroit
+
+*5 novembre 2026, sur sa demande (« corrige maintenant »).* Le 28 octobre, les 88 suites navigateur d'une batterie sont tombées sur un poste du nuage sans défaut du produit : `e2e-browser.ts` et une cinquantaine de scripts visaient `/opt/pw-browsers/chromium-1194/chrome-linux/chrome`, et le poste portait `chromium-1243/chrome-linux64`. Le navigateur que Playwright attend par défaut (`chromium-1234`) n'y est pas non plus. Quarante autres scripts devinaient le chemin de quatre façons différentes, chacune avec son oubli (`chrome-linux` sans `64`, la seule variable `CHROMIUM_PATH`, le seul lien stable).
+
+**La règle.** `cheminDuNavigateur()` (`scripts/_navigateur.mjs`) : ce qu'on demande (`PLAYWRIGHT_EXECUTABLE_PATH`, `CHROMIUM_PATH`, `CHROME_ATLAS`, les trois noms que le dépôt employait), puis le lien stable `<dossier>/chromium`, puis le `chromium-NNNN` le plus récent sous `chrome-linux64` ou `chrome-linux`, sinon rien : Playwright prend le sien, et c'est le cas d'un runner de CI. Le dossier est `PLAYWRIGHT_BROWSERS_PATH`, sinon `/opt/pw-browsers`. Un `.mjs`, comme `_tirets.mjs`, pour que les scripts en `.mjs` lancés par `node` et ceux en TypeScript le partagent.
+
+**Ce qui part.** Les quatre-vingt-douze copies (constantes, chemins en ligne, fonctions `navigateurPreInstalle`), et les deux variables que `CLAUDE.md` §5 faisait passer à la main pour jouer une batterie ici. Éprouvé sans elles : `test-navigateur.ts` (quatre postes, dont celui d'aujourd'hui), deux suites qui montent un composant dans Chromium, une suite navigateur de l'appli et la connexion derrière un proxy.
+
