@@ -1,0 +1,687 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Une idée pour l'appli</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  UNE IDÉE POUR L'APPLI. Rien n'est codé.
+
+  Sa demande du 5 novembre 2026 : « un petit espace, pas vraiment contact,
+  pour que l'utilisateur puisse à chaque fois me dire ce qu'il aimerait avoir
+  en plus dans l'application ».
+
+  Ce qui a décidé du dessin, et qui ne se discute pas avec lui :
+    ceux qui s'en servent ne sont pas à l'aise avec un téléphone (PRODUCT.md) :
+      la voix d'abord, avec la dictée qu'ils connaissent déjà (la B du
+      chantier, codée le 1er novembre), et un seul geste pour envoyer ;
+    rien qui surgit (« rien qui presse ») : une porte, jamais une fenêtre ;
+    la réversibilité après plutôt que la confirmation avant : « Envoyée,
+      Annuler », comme Retirer ;
+    rien ne part sans un geste : l'assistant PROPOSE, on touche Envoyer.
+
+  Trois choix, posés sur le même téléphone :
+    1, le nom : A « Une idée pour l'appli », B « Il vous manque quelque chose ? » ;
+    2, après l'envoi : A merci et un courriel chez lui ; B l'artisan suit ses
+       idées, et lui les range dans « Les idées reçues » ;
+    3, l'assistant : A rien ; B il propose d'envoyer l'idée quand il ne sait
+       pas faire.
+
+  Les idées d'exemple ne sont que des exemples : ni le terreau scanné, ni la
+  météo, ni le devis en anglais n'existent dans l'appli. La dictée de la fiche
+  client, elle, y est (1er novembre), d'où « Dans l'appli ».
+*/
+
+/* Un seul téléphone : sur ordinateur, la colonne voisine reste vide sans ça. */
+@media (min-width: 900px) { .pl-ecrans { grid-template-columns: 390px; } }
+
+.pl-questions { display: flex; flex-wrap: wrap; gap: 8px 18px; justify-content: center; margin: 0 0 14px; }
+.pl-question { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: #4a4a44; }
+.pl-question button { min-width: 44px; min-height: 40px; padding: 0 12px; border: 0; border-radius: 20px;
+                      background: #e3dfd6; color: #1c1c1a; font: inherit; cursor: pointer; }
+.pl-question button[aria-pressed="true"] { background: #2f3b2f; color: #faf9f5; }
+.pl-question button:focus-visible { outline: 2px solid #8b6835; outline-offset: 2px; }
+@media (max-width: 480px) { .pl-questions { padding: 0 var(--gouttiere); } }
+
+/* Les trois choix, lus sur l'écran lui-même : ce qui ne vaut pas se tait. */
+.ecran[data-nom="a"] .si-nom-b, .ecran[data-nom="b"] .si-nom-a,
+.ecran[data-suite="a"] .si-suite-b, .ecran[data-suite="b"] .si-suite-a,
+.ecran[data-assistant="a"] .si-assist-b, .ecran[data-assistant="b"] .si-assist-a { display: none !important; }
+
+/* ─── Les Réglages, et la porte ─────────────────────────────────────────── */
+.identite { display: flex; align-items: center; gap: 14px; text-decoration: none; color: inherit; }
+.identite-sceau { width: 52px; height: 52px; flex: none; display: grid; place-items: center; border-radius: 50%;
+                  box-shadow: inset 0 0 0 1.5px var(--atlas-or); font: 400 22px/1 var(--serif); color: var(--atlas-or); }
+.identite .ligne-nom { font-size: 21px; }
+.ecran .rubrique { color: var(--atlas-or); }
+.paquet { padding: 0 18px; }
+.paquet .ligne { min-height: 60px; }
+.paquet .ligne .ico.rubrique-ico, .paquet .ligne-fin .ico, .identite .ligne-fin .ico, .porte .ligne-fin .ico { color: var(--atlas-or); }
+
+/* Sa propre plage, hors des paquets : elle ne règle rien, elle s'adresse à
+   Atlas. Même famille que Se déconnecter, juste au-dessus. */
+.porte { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 72px; margin-top: 28px;
+         padding: 14px 18px; text-align: left; background: var(--atlas-card); border-radius: var(--r-plage); }
+.porte .ligne-nom { font-size: 19px; }
+.porte .ligne-situation { margin-top: 6px; }
+.deconnexion { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 60px; margin-top: 12px;
+               padding: 0 18px; border-radius: var(--r-plage); background: var(--atlas-card); text-decoration: none;
+               font-size: 17px; font-weight: 600; color: var(--atlas-alerte); }
+.version { margin: 22px 0 0; text-align: center; }
+
+/* ─── La dictée : celle du chantier, au trait près (chantier.html, la B) ─── */
+/* Une hauteur fixe : passer du micro à l'écoute ne fait rien sauter, et les
+   cercles d'or ont la place de s'ouvrir sous le titre. */
+.dictee-zone { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+               min-height: 176px; margin-top: 18px; }
+.fc-micro { width: 84px; height: 84px; display: grid; place-items: center; border-radius: 50%; background: var(--atlas-plein); color: var(--sur-plein);
+            box-shadow: inset 0 0 0 2px var(--atlas-orClair); transition: transform 160ms var(--courbe); }
+.fc-micro:active { transform: scale(0.97); }
+.fc-micro .ico { width: 32px; height: 32px; stroke-width: 1.7; }
+.fc-invite { margin: 12px 0 0; font-size: 15.5px; color: var(--atlas-inkSoft); text-align: center; }
+.dictee-b { display: grid; grid-template-columns: 1fr auto 1fr; align-items: start; width: 100%; margin-top: 8px; }
+.geste-dictee { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: none; font-size: 13px; font-weight: 600;
+                color: var(--atlas-inkSoft); justify-self: center; margin-top: 13px; }
+.geste-dictee .rond-creux { width: 52px; height: 52px; margin: 3px 0; color: var(--atlas-inkSoft); }
+.geste-dictee .rond-creux .ico { width: 22px; height: 22px; }
+.anneau-ecoute { position: relative; display: flex; flex-direction: column; align-items: center; gap: 26px; font-size: 13px; font-weight: 600; color: var(--atlas-ink); }
+.anneau-ecoute .ondes { position: absolute; left: 50%; top: 42px; width: 168px; height: 168px; transform: translate(-50%, -50%); pointer-events: none; overflow: visible; }
+.anneau-ecoute .ondes circle { fill: none; stroke: var(--atlas-or); stroke-width: 1.6; transition: r 120ms linear, opacity 120ms linear; }
+.anneau-ecoute .disque { position: relative; width: 84px; height: 84px; display: grid; place-items: center; border-radius: 50%; background: var(--atlas-plein);
+                         color: var(--sur-plein); box-shadow: inset 0 0 0 2px var(--atlas-orClair); transition: transform 160ms var(--courbe); }
+.anneau-ecoute:active .disque { transform: scale(0.97); }
+.anneau-ecoute .disque .ico { width: 30px; height: 30px; }
+.temps-b { justify-self: center; padding-top: 28px; }
+.dictee-temps { display: inline-flex; align-items: center; gap: 7px; font: 400 26px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; color: var(--atlas-ink); }
+.dictee-temps::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--atlas-alerte); animation: battre 1.3s ease-in-out infinite; }
+@keyframes battre { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
+.dictee-suite { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0; font-size: 16px; color: var(--atlas-ink); }
+.points { display: inline-flex; gap: 6px; }
+.points span { width: 8px; height: 8px; border-radius: 50%; background: var(--atlas-or); animation: souffle 1.2s var(--courbe) infinite; }
+.points span:nth-child(2) { animation-delay: .18s; } .points span:nth-child(3) { animation-delay: .36s; }
+@keyframes souffle { 0%, 100% { opacity: .25; transform: scale(.8); } 45% { opacity: 1; transform: scale(1); } }
+
+.j-ecris { width: auto; min-width: 220px; margin: 6px auto 0; }
+.part-avec { margin: 14px 0 0; text-align: center; }
+.merci { margin: 0 0 8px; font-size: 16px; }
+.merci b { color: inherit; }
+#texte-idee { min-height: 168px; font-size: 17px; line-height: 1.45; }
+
+/* ─── Ses idées, et leur suite ──────────────────────────────────────────── */
+.idees { padding: 0 18px; }
+.idees { overflow: hidden; }
+.idee { position: relative; padding: 15px 0 14px; }
+/* Le filet au-dessus de chaque idée, et la plage rogne celui de la première :
+   l'idée neuve, cachée tant qu'on n'a rien dit, ne laisse pas de trait seul. */
+.idee::before { content: ""; position: absolute; left: 0; right: 0; top: -1px; height: 1px; background: var(--atlas-line); }
+.vos-idees { margin-top: 30px; }
+.idee-texte { margin: 0; font: 400 18px/1.32 var(--serif); color: var(--atlas-ink); overflow-wrap: anywhere; }
+.idee-pied { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin: 9px 0 0; }
+.idee-reponse { margin: 9px 0 0; font-size: 14.5px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.idee-reponse b { font-weight: 700; color: var(--atlas-ink); }
+/* Le seul moment écrit de la planche : l'idée qu'on vient de dire se pose en
+   tête de la liste. */
+.idee.arrive { animation: se-pose 520ms var(--courbe) both; }
+@keyframes se-pose { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+
+/* ─── L'assistant : le panneau de l'appli (AssistantSidebar.tsx) ─────────── */
+.assistant { position: absolute; inset: 0; z-index: 7; display: flex; flex-direction: column; background: var(--atlas-card); }
+.as-tete { display: flex; align-items: center; gap: 12px; padding: 14px 16px 14px 20px; box-shadow: inset 0 -1px 0 var(--atlas-line); }
+.as-titre { flex: 1; margin: 0; font: 700 22px/1 var(--serif); }
+.as-oublier { font-size: 15px; color: var(--atlas-inkSoft); }
+.as-tete .rond-creux { width: 44px; height: 44px; background: var(--atlas-cream); box-shadow: none; }
+.as-fil { flex: 1; overflow-y: auto; padding: 18px 16px; display: flex; flex-direction: column; gap: 12px; scrollbar-width: none; }
+.as-moi { align-self: flex-end; max-width: 85%; padding: 12px 14px; border-radius: 6px; background: var(--atlas-rustTint); font-size: 16px; line-height: 1.45; }
+.as-lui { align-self: flex-start; max-width: 94%; padding: 12px 14px; border-radius: 6px; background: var(--atlas-cream); font-size: 16px; line-height: 1.45; }
+.as-lui > p { margin: 0; }
+.carte-idee { margin-top: 12px; padding: 14px 14px 14px; border-radius: 10px; background: var(--atlas-card);
+              box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--atlas-or) 55%, transparent); }
+.carte-idee-titre { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 14.5px; font-weight: 700; color: var(--atlas-orTexte); }
+.carte-idee-titre .ico { width: 20px; height: 20px; color: var(--atlas-or); }
+.carte-idee-texte { margin: 8px 0 12px; font: 400 18px/1.3 var(--serif); color: var(--atlas-ink); }
+.carte-idee .rang-boutons .bouton { min-height: 48px; }
+.carte-idee-faite { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 15px; font-weight: 600; color: var(--atlas-carteVertTexte); }
+.carte-idee-faite .ico { width: 20px; height: 20px; stroke-width: 2.2; }
+.as-pied { display: flex; align-items: center; gap: 10px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); box-shadow: inset 0 1px 0 var(--atlas-line); }
+.as-champ { flex: 1; min-width: 0; display: flex; align-items: center; min-height: 50px; padding: 0 18px; border-radius: 25px;
+            background: var(--atlas-cream); color: var(--atlas-inkSoft); font-size: 16px; }
+
+/* ─── Chez lui : les idées reçues ─────────────────────────────────────────── */
+.compte { margin-left: 6px; font-variant-numeric: tabular-nums lining-nums; color: var(--atlas-inkSoft); font-weight: 600; }
+.recues { margin-top: 16px; }
+.recue { padding: 16px 18px; }
+.recue-texte { margin: 0; font: 400 19px/1.32 var(--serif); color: var(--atlas-ink); overflow-wrap: anywhere; }
+.recue-qui { margin: 9px 0 0; font-size: 14.5px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.recue-qui b { font-weight: 600; color: var(--atlas-ink); }
+.recue-rang { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; margin-top: 8px; }
+.recue-rang .bouton-texte { min-height: 44px; padding: 0; }
+/* L'or des titres est celui de sa charte ; en petit texte il se lit mal
+   (2,8 pour 1), donc ce qui est neuf ici prend l'or foncé de l'appli. */
+.recue-rang .bouton-texte.or, .ecran .etat[data-ton="or"] { color: var(--atlas-orTexte); }
+.recue-rang .bouton-texte.or .ico { color: var(--atlas-or); }
+.recue-rang .bouton-texte .ico { width: 20px; height: 20px; }
+.recue-gestes { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+.recue-gestes .bouton-petit { padding: 0 14px; }
+.recue-gestes .bouton-texte { margin-left: auto; min-height: 44px; }
+.recue.part { transition: opacity 220ms var(--courbe), transform 260ms var(--courbe); opacity: 0; transform: translateX(24px); }
+
+/* A : un courriel, dans sa boîte. */
+.mail { padding: 4px 18px 18px; }
+.mail-entete { display: grid; grid-template-columns: auto 1fr; gap: 0 12px; padding: 12px 0; box-shadow: inset 0 -1px 0 var(--atlas-line); font-size: 15px; }
+.mail-entete dt { font-weight: 600; color: var(--atlas-inkSoft); }
+.mail-entete dd { margin: 0; color: var(--atlas-ink); }
+.mail .recue-texte { margin-top: 16px; }
+</style>
+</head>
+<body class="pl pl-pilules">
+
+<svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
+  <symbol id="i-ampoule" viewBox="0 0 24 24"><path d="M12 3.5a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.1v.6h5v-.6c0-.8.4-1.5 1.1-2.1A6 6 0 0 0 12 3.5z"/><path d="M9.8 20.5h4.4"/></symbol>
+  <symbol id="i-corbeille" viewBox="0 0 24 24"><path d="M4 7h16M10 4h4a1 1 0 0 1 1 1v2H9V5a1 1 0 0 1 1-1zM6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/></symbol>
+</svg>
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="reglages.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Réglages</a>
+  <h1 class="pl-titre">Une idée pour l'appli</h1>
+  <p class="pl-verdict">Votre demande du 5 novembre&nbsp;: chacun <b>dit ce qui lui manque</b>, à la voix ou par écrit, et vous le lisez. Trois choix. <b>Rien n'est codé.</b></p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats">
+        <button type="button" data-etat="porte" aria-pressed="true">Dans les Réglages</button>
+        <button type="button" data-etat="dire">Son idée</button>
+        <button type="button" data-etat="envoyee">Envoyée</button>
+        <button type="button" data-etat="assistant">Dans l'assistant</button>
+        <button type="button" data-etat="editeur">Chez vous</button>
+      </div>
+      <div class="pl-questions" aria-label="Les trois choix">
+        <span class="pl-question" data-question="nom" data-montre-etat="dire">1 Le nom
+          <button type="button" data-q="a" aria-pressed="true">A</button><button type="button" data-q="b" aria-pressed="false">B</button></span>
+        <span class="pl-question" data-question="suite" data-montre-etat="envoyee">2 Après l'envoi
+          <button type="button" data-q="a" aria-pressed="false">A</button><button type="button" data-q="b" aria-pressed="true">B</button></span>
+        <span class="pl-question" data-question="assistant" data-montre-etat="assistant">3 L'assistant
+          <button type="button" data-q="a" aria-pressed="false">A</button><button type="button" data-q="b" aria-pressed="true">B</button></span>
+      </div>
+
+      <div class="cadre">
+        <div class="ecran avec-barre avec-action" id="ecran" data-etat="porte" data-nom="a" data-suite="b" data-assistant="b">
+          <div class="defile">
+
+            <!-- ═══ RÉGLAGES : la porte, en bas, pour tout le monde ═══ -->
+            <div data-si-etat="porte">
+              <header class="tete">
+                <h1 class="tete-titre">Réglages</h1>
+                <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-va-etat="assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              </header>
+
+              <a class="plage identite touche" href="reglages-identite.html">
+                <span class="identite-sceau" aria-hidden="true">J</span>
+                <span class="ligne-corps"><span class="ligne-nom">Jardins Démo</span><span class="ligne-situation">Mon entreprise</span></span>
+                <span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>
+              </a>
+
+              <p class="rubrique">L'entreprise</p>
+              <div class="plage paquet"><ul class="liste">
+                <li><a class="ligne touche" href="reglages-equipe.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-equipe"/></svg><span class="ligne-corps"><span class="ligne-nom">Équipe</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                <li><a class="ligne touche" href="reglages-vehicules.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-vehicule"/></svg><span class="ligne-corps"><span class="ligne-nom">Véhicules</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                <li><a class="ligne touche" href="reglages-organigramme.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-organigramme"/></svg><span class="ligne-corps"><span class="ligne-nom">Organigramme</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+              </ul></div>
+
+              <p class="rubrique">Pour les devis</p>
+              <div class="plage paquet"><ul class="liste">
+                <li><a class="ligne touche" href="reglages-tarifs.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-etiquette"/></svg><span class="ligne-corps"><span class="ligne-nom">Tarifs &amp; catalogue</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                <li><a class="ligne touche" href="reglages-documents.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-document"/></svg><span class="ligne-corps"><span class="ligne-nom">Devis &amp; factures</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                <li><a class="ligne touche" href="reglages-fournisseurs.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-carton"/></svg><span class="ligne-corps"><span class="ligne-nom">Fournisseurs et partenaires</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+              </ul></div>
+
+              <p class="rubrique">L'application</p>
+              <div class="plage paquet"><ul class="liste">
+                <li><a class="ligne touche" href="reglages-ia.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-etincelle"/></svg><span class="ligne-corps"><span class="ligne-nom">Atlas IA</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                <li><a class="ligne touche" href="reglages-agenda.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-calendrier"/></svg><span class="ligne-corps"><span class="ligne-nom">Mon agenda</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                <li><a class="ligne touche" href="reglages-abonnement.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-couronne"/></svg><span class="ligne-corps"><span class="ligne-nom">Abonnement</span><span class="ligne-situation">Essai gratuit, 12 jours restants</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                <li><a class="ligne touche" href="reglages-donnees.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-bouclier-coche"/></svg><span class="ligne-corps"><span class="ligne-nom">Mes données</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+              </ul></div>
+
+              <p class="rubrique">Moi</p>
+              <div class="plage paquet"><ul class="liste">
+                <li><a class="ligne touche" href="reglages-compte.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-personne"/></svg><span class="ligne-corps"><span class="ligne-nom">Mon compte</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                <li><a class="ligne touche" href="reglages-notifications.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-cloche"/></svg><span class="ligne-corps"><span class="ligne-nom">Notifications</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                <li><a class="ligne touche" href="reglages-connexion.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-cadenas"/></svg><span class="ligne-corps"><span class="ligne-nom">Mot de passe</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                <li><a class="ligne touche" href="reglages-connexion-double-verification.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-cle"/></svg><span class="ligne-corps"><span class="ligne-nom">Double vérification</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                <li><a class="ligne touche" href="reglages-apparence.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-apparence"/></svg><span class="ligne-corps"><span class="ligne-nom">Couleurs</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+              </ul></div>
+
+              <button class="porte touche" type="button" id="porte" data-va-etat="dire">
+                <span class="pastille-ico" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-ampoule"/></svg></span>
+                <span class="ligne-corps">
+                  <span class="ligne-nom"><span class="si-nom-a">Une idée pour l'appli</span><span class="si-nom-b">Il vous manque quelque chose&nbsp;?</span></span>
+                  <span class="ligne-situation si-suite-b"><span class="etat" data-ton="vert">Votre idée est dans l'appli</span></span>
+                </span>
+                <span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>
+              </button>
+
+              <a class="deconnexion touche" href="#" data-note="Sur la planche, on reste connecté.">
+                <svg class="ico" aria-hidden="true"><use href="#i-deconnexion"/></svg>Se déconnecter
+              </a>
+              <p class="version discret">Version du 5 novembre 2026</p>
+            </div>
+
+            <!-- ═══ SON IDÉE : la voix d'abord, ou l'écrit ═══ -->
+            <div data-si-etat="dire ecoute envoi ecrire envoyee">
+              <div class="tete-ronds">
+                <button class="rond-creux" type="button" aria-label="Retour aux réglages" data-va-etat="porte"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+                <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-va-etat="assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              </div>
+              <header class="tete" style="margin-top:0"><h1 class="tete-titre"><span class="si-nom-a">Une idée pour l'appli</span><span class="si-nom-b">Il vous manque quelque chose&nbsp;?</span></h1></header>
+
+              <p class="plage-ton merci si-suite-a" data-ton="vert" data-si-etat="envoyee" role="status"><b>Merci, votre idée est partie.</b></p>
+
+              <div class="dictee-zone" data-si-etat="dire ecoute envoi envoyee">
+                <div data-si-etat="dire envoyee" style="display:flex;flex-direction:column;align-items:center">
+                  <button class="fc-micro" type="button" aria-label="Dire votre idée" data-va-etat="ecoute"><svg class="ico" aria-hidden="true"><use href="#i-micro"/></svg></button>
+                  <p class="fc-invite">Appuyez et dites ce qui vous manque</p>
+                </div>
+
+                <div class="dictee-b" data-si-etat="ecoute">
+                  <button class="geste-dictee" type="button" aria-label="Jeter ce que vous avez dit" data-va-etat="dire">
+                    <span class="rond-creux"><svg class="ico" aria-hidden="true"><use href="#i-corbeille"/></svg></span>Jeter
+                  </button>
+                  <button class="anneau-ecoute" type="button" aria-label="Envoyer votre idée" data-va-etat="envoi">
+                    <svg class="ondes" viewBox="0 0 168 168" aria-hidden="true"><circle id="onde-1" cx="84" cy="84" r="49"/><circle id="onde-2" cx="84" cy="84" r="53"/><circle id="onde-3" cx="84" cy="84" r="57"/></svg>
+                    <span class="disque"><svg class="ico" aria-hidden="true"><use href="#i-envoyer"/></svg></span>Envoyer
+                  </button>
+                  <span class="temps-b"><span class="dictee-temps" id="chrono">0:00</span></span>
+                </div>
+
+                <p class="dictee-suite" data-si-etat="envoi">Envoi<span class="points" aria-hidden="true"><span></span><span></span><span></span></span></p>
+              </div>
+
+              <button class="bouton bouton-creux j-ecris" type="button" data-va-etat="ecrire" data-si-etat="dire envoyee">
+                <svg class="ico" aria-hidden="true"><use href="#i-crayon"/></svg>J'écris mon idée
+              </button>
+
+              <label class="champ" data-si-etat="ecrire">
+                <span class="champ-libelle">Votre idée</span>
+                <textarea class="champ-saisie" id="texte-idee" rows="6" placeholder="Ce qui vous manque, ce qui vous ferait gagner du temps"></textarea>
+              </label>
+
+              <p class="discret part-avec" data-si-etat="dire ecrire">Elle arrive chez Atlas, avec votre nom.</p>
+
+              <div class="si-suite-b vos-idees" data-si-etat="dire envoyee ecoute envoi">
+                <p class="rubrique">Vos idées</p>
+                <ul class="liste plage idees" id="idees">
+                  <li class="idee" id="idee-neuve" hidden>
+                    <p class="idee-texte" id="idee-neuve-texte"></p>
+                    <p class="idee-pied"><span class="etat">Envoyée</span><span class="discret">À l'instant</span></p>
+                  </li>
+                  <li class="idee">
+                    <p class="idee-texte">Scanner le code-barres d'un sac de terreau au magasin, pour l'ajouter au chantier.</p>
+                    <p class="idee-pied"><span class="etat" data-ton="bleu">Prévue</span><span class="discret">Le 22 octobre</span></p>
+                    <p class="idee-reponse"><b>Atlas&nbsp;:</b> bonne idée, on s'y met.</p>
+                  </li>
+                  <li class="idee">
+                    <p class="idee-texte">Dicter la fiche d'un nouveau client, au lieu de tout taper.</p>
+                    <p class="idee-pied"><span class="etat" data-ton="vert">Dans l'appli</span><span class="discret">Depuis le 1er novembre</span></p>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- ═══ CHEZ VOUS, B : les idées reçues, dans vos Réglages seulement ═══ -->
+            <div data-si-etat="editeur" class="si-suite-b">
+              <div class="tete-ronds">
+                <button class="rond-creux" type="button" aria-label="Retour aux réglages" data-va-etat="porte"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+                <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-va-etat="assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              </div>
+              <header class="tete" style="margin-top:0"><h1 class="tete-titre">Les idées reçues</h1></header>
+
+              <div class="choix" role="group" aria-label="Quelles idées">
+                <button type="button" aria-pressed="true" data-montre="liste-nouvelles">Nouvelles<span class="compte" id="compte-nouvelles">2</span></button>
+                <button type="button" aria-pressed="false" data-montre="liste-prevues">Prévues<span class="compte" id="compte-prevues">1</span></button>
+                <button type="button" aria-pressed="false" data-montre="liste-traitees">Traitées<span class="compte" id="compte-traitees">4</span></button>
+              </div>
+
+              <div class="recues" id="liste-nouvelles">
+                <article class="plage recue" data-recue="meteo">
+                  <p class="recue-texte">J'aimerais voir la météo de la semaine sur le planning, pour savoir quels jours je peux tondre.</p>
+                  <p class="recue-qui"><b>Marc, patron chez Jardins Démo.</b> Aujourd'hui à 14&nbsp;h&nbsp;32, à la voix, depuis le planning.</p>
+                  <div class="recue-rang">
+                    <button class="bouton-texte or" type="button" data-note="Sur la planche, la note vocale ne se joue pas."><svg class="ico" aria-hidden="true"><use href="#i-lecture"/></svg>Écouter, 0:12</button>
+                    <span class="etat" data-ton="or">Demandée 3 fois</span>
+                  </div>
+                  <div class="recue-gestes">
+                    <button class="bouton bouton-creux bouton-petit" type="button" data-ranger="prevues" data-etat-pose="prevue" data-dit="Marquée prévue.">Prévue</button>
+                    <button class="bouton bouton-creux bouton-petit" type="button" data-ranger="traitees" data-etat-pose="pas-prevue" data-dit="Marquée pas prévue.">Pas prévue</button>
+                    <button class="bouton-texte" type="button" data-ouvre="feuille-reponse">Répondre</button>
+                  </div>
+                </article>
+                <article class="plage recue" data-recue="anglais">
+                  <p class="recue-texte">Faire le devis en anglais pour mes clients anglais.</p>
+                  <p class="recue-qui"><b>Paul, patron chez Élagage Durand.</b> Hier à 18&nbsp;h&nbsp;05, écrite, depuis un devis.</p>
+                  <div class="recue-gestes">
+                    <button class="bouton bouton-creux bouton-petit" type="button" data-ranger="prevues" data-etat-pose="prevue" data-dit="Marquée prévue.">Prévue</button>
+                    <button class="bouton bouton-creux bouton-petit" type="button" data-ranger="traitees" data-etat-pose="pas-prevue" data-dit="Marquée pas prévue.">Pas prévue</button>
+                    <button class="bouton-texte" type="button" data-ouvre="feuille-reponse">Répondre</button>
+                  </div>
+                </article>
+              </div>
+
+              <div class="recues" id="liste-prevues" hidden>
+                <article class="plage recue">
+                  <p class="recue-texte">Scanner le code-barres d'un sac de terreau au magasin, pour l'ajouter au chantier.</p>
+                  <p class="recue-qui"><b>Lucas, salarié chez Jardins Démo.</b> Le 22 octobre, à la voix, depuis un achat.</p>
+                  <div class="recue-rang"><span class="etat" data-ton="bleu">Prévue</span><span class="etat" data-ton="or">Demandée 2 fois</span></div>
+                  <div class="recue-gestes">
+                    <button class="bouton bouton-creux bouton-petit" type="button" data-ranger="traitees" data-etat-pose="faite" data-dit="Marquée faite. Lucas le verra.">Faite</button>
+                    <button class="bouton-texte" type="button" data-ouvre="feuille-reponse">Répondre</button>
+                  </div>
+                </article>
+              </div>
+
+              <div class="recues" id="liste-traitees" hidden>
+                <article class="plage recue">
+                  <p class="recue-texte">Dicter la fiche d'un nouveau client, au lieu de tout taper.</p>
+                  <p class="recue-qui"><b>Marc, patron chez Jardins Démo.</b> Le 28 octobre. Dans l'appli depuis le 1er novembre.</p>
+                  <div class="recue-rang"><span class="etat" data-ton="vert">Dans l'appli</span></div>
+                </article>
+                <article class="plage recue">
+                  <p class="recue-texte">Envoyer les factures par la poste.</p>
+                  <p class="recue-qui"><b>Paul, patron chez Élagage Durand.</b> Le 19 octobre, écrite.</p>
+                  <div class="recue-rang"><span class="etat">Pas prévue</span></div>
+                </article>
+              </div>
+            </div>
+
+            <!-- ═══ CHEZ VOUS, A : un courriel, et rien dans l'appli ═══ -->
+            <div data-si-etat="editeur" class="si-suite-a">
+              <header class="tete"><h1 class="tete-titre moyen">Votre boîte mail</h1></header>
+              <article class="plage mail">
+                <dl class="mail-entete">
+                  <dt>De</dt><dd>Atlas</dd>
+                  <dt>Objet</dt><dd>Une idée de Jardins Démo</dd>
+                </dl>
+                <p class="recue-texte">J'aimerais voir la météo de la semaine sur le planning, pour savoir quels jours je peux tondre.</p>
+                <p class="recue-qui"><b>Marc, patron chez Jardins Démo.</b> Aujourd'hui à 14&nbsp;h&nbsp;32, à la voix, depuis le planning.</p>
+                <div class="recue-rang">
+                  <button class="bouton-texte or" type="button" data-note="Sur la planche, la note vocale ne se joue pas."><svg class="ico" aria-hidden="true"><use href="#i-lecture"/></svg>Écouter la note, 0:12</button>
+                </div>
+              </article>
+            </div>
+
+          </div>
+
+          <!-- Écrire : le bouton du bas, à sa place de toujours. -->
+          <div class="action-bas" data-si-etat="ecrire">
+            <button class="bouton bouton-plein" type="button" id="envoyer-ecrite"><svg class="ico" aria-hidden="true"><use href="#i-envoyer"/></svg>Envoyer mon idée</button>
+          </div>
+
+          <!-- ═══ L'ASSISTANT : au moment où ça manque ═══ -->
+          <section class="assistant" data-si-etat="assistant" aria-label="L'assistant">
+            <div class="as-tete">
+              <h2 class="as-titre">Assistant</h2>
+              <span class="as-oublier">Oublier</span>
+              <button class="rond-creux" type="button" aria-label="Fermer l'assistant" data-va-etat="porte"><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></button>
+            </div>
+            <div class="as-fil">
+              <div class="as-moi">Est-ce que je peux voir la météo sur le planning&nbsp;?</div>
+              <div class="as-lui">
+                <p>Non, Atlas ne montre pas la météo.</p>
+                <div class="carte-idee si-assist-b" id="carte-idee">
+                  <div id="carte-question">
+                    <p class="carte-idee-titre"><svg class="ico" aria-hidden="true"><use href="#i-ampoule"/></svg><span class="si-nom-a">Une idée pour l'appli</span><span class="si-nom-b">Il vous manque quelque chose&nbsp;?</span></p>
+                    <p class="carte-idee-texte">Voir la météo sur le planning.</p>
+                    <div class="rang-boutons">
+                      <button class="bouton bouton-plein bouton-petit" type="button" id="envoyer-assistant">Envoyer</button>
+                      <button class="bouton bouton-creux bouton-petit" type="button" id="non-merci">Non merci</button>
+                    </div>
+                  </div>
+                  <p class="carte-idee-faite" id="carte-faite" hidden><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg>Envoyée. Merci.</p>
+                </div>
+              </div>
+            </div>
+            <div class="as-pied">
+              <span class="as-champ">Votre question…</span>
+              <button class="rond" type="button" aria-label="Dicter votre question" data-note="Sur la planche, l'assistant n'écoute pas."><svg class="ico" aria-hidden="true"><use href="#i-micro"/></svg></button>
+            </div>
+          </section>
+
+          <!-- Répondre à une idée : une phrase, et l'artisan la lit sous son idée. -->
+          <div class="feuille" id="feuille-reponse" aria-hidden="true" role="dialog" aria-label="Répondre">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <p class="feuille-titre">Votre réponse</p>
+              <textarea class="champ-saisie" rows="4" aria-label="Votre réponse">Bonne idée, on s'y met.</textarea>
+              <div class="rang-boutons mt-16">
+                <button class="bouton bouton-creux" type="button" data-ferme>Annuler</button>
+                <button class="bouton bouton-plein" type="button" id="envoyer-reponse">Envoyer</button>
+              </div>
+            </div>
+          </div>
+
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html">Terminés</a>
+              <a class="barre-onglet" href="arrosage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html" aria-current="page">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>Une ligne en bas des Réglages, sous Moi. Tout le monde la voit, le salarié compris, qui est sur le chantier.</li>
+      <li>On appuie, on parle, on appuie sur Envoyer. Ou on l'écrit. «&nbsp;Annuler&nbsp;» reste quelques secondes, comme pour Retirer, et rien ne part avant.</li>
+      <li>Avec l'idée partent le nom, l'entreprise, le rôle, le jour et l'écran d'où elle vient. Rien d'autre&nbsp;: ni client, ni montant.</li>
+      <li>B&nbsp;: chacun retrouve ses idées sous le micro, avec leur suite&nbsp;: Envoyée, Prévue, Dans l'appli, Pas prévue. Une idée faite se dit aussi sur la ligne des Réglages.</li>
+      <li>B&nbsp;: chez vous, «&nbsp;Les idées reçues&nbsp;», dans vos Réglages et chez personne d'autre. La note s'écoute, l'idée se range d'un appui, une réponse s'écrit. Les idées pareilles se comptent&nbsp;: «&nbsp;Demandée 3 fois&nbsp;».</li>
+    </ul>
+    <h2>Écarté</h2>
+    <ul class="garde">
+      <li>Une fenêtre qui demande son avis&nbsp;: elle surgit. Une carte sur l'accueil reste possible si les idées n'arrivent pas.</li>
+      <li>Des cases à choisir (problème, idée, question)&nbsp;: un geste de plus pour l'artisan. Le tri se fait chez vous.</li>
+      <li>La photo jointe&nbsp;: peu savent faire une capture d'écran. Elle s'ajoute si vous la voulez.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li><b>1, le nom.</b> A «&nbsp;Une idée pour l'appli&nbsp;», B «&nbsp;Il vous manque quelque chose&nbsp;?&nbsp;». <b>Je recommande A</b>&nbsp;: dans une liste, une question se lit comme une alerte, et «&nbsp;l'appli&nbsp;» tient si le nom Atlas change.</li>
+      <li><b>2, après l'envoi.</b> A&nbsp;: un merci, et l'idée arrive dans votre boîte mail. B&nbsp;: l'artisan suit ses idées, vous les rangez dans l'appli. <b>Je recommande B</b>&nbsp;: des courriels ne se comptent pas, et un artisan qui voit son idée arriver en redonne. B coûte plus&nbsp;: une table, votre écran, et un accès à vous seul aux idées de toutes les entreprises, sans rien d'autre de chez elles.</li>
+      <li><b>3, l'assistant.</b> A&nbsp;: rien ne change, l'assistant dit seulement que l'appli ne sait pas. B&nbsp;: il propose d'envoyer l'idée, et il faut toucher Envoyer. <b>Je recommande B</b>&nbsp;: c'est quand ça manque qu'on y pense.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="reglages.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Réglages</a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+/*
+  Les gestes propres à cette planche. Branché après le kit : quand un clic
+  arrive ici, le kit a déjà changé l'état de l'écran.
+*/
+document.addEventListener("DOMContentLoaded", function () {
+  var ecran = document.getElementById("ecran");
+  var defile = ecran.querySelector(".defile");
+  var VOIX = "J'aimerais voir la météo de la semaine sur le planning, pour savoir quels jours je peux tondre.";
+  var suite = null;
+
+  function aller(etat) {
+    Kit.appliquerEtat(ecran, etat);
+    document.querySelectorAll(".pl-etats button[data-etat]").forEach(function (b) {
+      b.setAttribute("aria-pressed", b.getAttribute("data-etat") === etat ? "true" : "false");
+    });
+  }
+
+  /* L'idée dite se pose en tête de « Vos idées ». */
+  function poserIdee(texte) {
+    var li = document.getElementById("idee-neuve");
+    document.getElementById("idee-neuve-texte").textContent = texte;
+    li.hidden = false;
+    li.classList.remove("arrive");
+    void li.offsetWidth;
+    li.classList.add("arrive");
+  }
+  function retirerIdee() { document.getElementById("idee-neuve").hidden = true; }
+
+  function envoyee(texte) {
+    poserIdee(texte);
+    aller("envoyee");
+    Kit.tiroir(ecran, "Envoyée.", function () { retirerIdee(); aller("dire"); });
+  }
+
+  /* Ce que chaque état demande en arrivant : la porte se montre, la voix
+     s'écoute, l'envoi se termine. */
+  var chrono = { secondes: 0 }, battement = null, t = 0;
+  function entrer(etat) {
+    clearTimeout(suite);
+    clearInterval(battement);
+    /* Le tiroir d'un geste ne survit pas à un autre écran : partir, c'est garder. */
+    if (etat !== "envoyee") ecran.querySelectorAll(".tiroir-flottant").forEach(function (t) { t.remove(); });
+    if (etat === "porte") {
+      var porte = document.getElementById("porte");
+      requestAnimationFrame(function () {
+        var haut = porte.getBoundingClientRect().top - defile.getBoundingClientRect().top + defile.scrollTop;
+        defile.scrollTop = Math.max(0, haut - 260);
+      });
+      return;
+    }
+    if (etat !== "envoyee") defile.scrollTop = 0;
+    if (etat === "ecoute") {
+      chrono.secondes = 0; t = 0;
+      document.getElementById("chrono").textContent = "0:00";
+      battement = setInterval(function () {
+        t += 1;
+        var parle = Math.sin(t / 5) > -0.35;
+        var v = parle ? 0.25 + Math.abs(Math.sin(t * 1.7) * Math.cos(t * 0.6)) * 0.75 : 0.02;
+        [1, 2, 3].forEach(function (n) {
+          var c = document.getElementById("onde-" + n);
+          c.setAttribute("r", (45 + n * 4 + v * n * 9).toFixed(1));
+          c.setAttribute("opacity", Math.max(0, 0.9 - n * 0.22 + v * 0.2).toFixed(2));
+        });
+        if (t % 8 === 0) {
+          chrono.secondes += 1;
+          document.getElementById("chrono").textContent = Math.floor(chrono.secondes / 60) + ":" + String(chrono.secondes % 60).padStart(2, "0");
+        }
+      }, 125);
+    }
+    if (etat === "envoi") {
+      suite = setTimeout(function () { if (ecran.getAttribute("data-etat") === "envoi") envoyee(VOIX); }, 1400);
+    }
+    if (etat === "envoyee" && document.getElementById("idee-neuve").hidden) poserIdee(VOIX);
+    if (etat === "ecrire") setTimeout(function () { document.getElementById("texte-idee").focus({ preventScroll: true }); }, 60);
+    if (etat === "assistant") {
+      document.getElementById("carte-idee").hidden = false;
+      document.getElementById("carte-question").hidden = false;
+      document.getElementById("carte-faite").hidden = true;
+    }
+  }
+  new MutationObserver(function () { entrer(ecran.getAttribute("data-etat")); })
+    .observe(ecran, { attributes: true, attributeFilter: ["data-etat"] });
+  entrer(ecran.getAttribute("data-etat"));
+
+  /* Les trois choix : chacun mène à l'endroit où il se voit. */
+  document.querySelectorAll(".pl-question").forEach(function (q) {
+    var nom = q.getAttribute("data-question");
+    q.querySelectorAll("button[data-q]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        q.querySelectorAll("button[data-q]").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+        ecran.setAttribute("data-" + nom, b.getAttribute("data-q"));
+        var etat = q.getAttribute("data-montre-etat");
+        if (nom === "suite" && ["dire", "envoyee", "editeur", "porte"].indexOf(ecran.getAttribute("data-etat")) >= 0) return;
+        if (nom === "nom" && ["dire", "porte", "assistant"].indexOf(ecran.getAttribute("data-etat")) >= 0) return;
+        aller(etat);
+      });
+    });
+  });
+
+  document.getElementById("envoyer-ecrite").addEventListener("click", function () {
+    var champ = document.getElementById("texte-idee");
+    var texte = champ.value.trim();
+    if (!texte) { Kit.note(ecran, "Écrivez d'abord votre idée."); champ.focus(); return; }
+    champ.value = "";
+    envoyee(texte);
+  });
+
+  document.getElementById("envoyer-assistant").addEventListener("click", function () {
+    document.getElementById("carte-question").hidden = true;
+    document.getElementById("carte-faite").hidden = false;
+    Kit.tiroir(ecran, "Envoyée.", function () {
+      document.getElementById("carte-question").hidden = false;
+      document.getElementById("carte-faite").hidden = true;
+    });
+  });
+  document.getElementById("non-merci").addEventListener("click", function () {
+    document.getElementById("carte-idee").hidden = true;
+  });
+
+  /* Chez vous : ranger une idée la fait passer dans sa liste, avec son état,
+     et le tiroir la remet où elle était. */
+  var COMPTES = { nouvelles: "compte-nouvelles", prevues: "compte-prevues", traitees: "compte-traitees" };
+  var POSES = {
+    prevue: { etat: '<span class="etat" data-ton="bleu">Prévue</span>',
+              gestes: '<button class="bouton bouton-creux bouton-petit" type="button" data-ranger="traitees" data-etat-pose="faite" data-dit="Marquée faite. L\'artisan le verra.">Faite</button>' +
+                      '<button class="bouton-texte" type="button" data-ouvre="feuille-reponse">Répondre</button>' },
+    faite: { etat: '<span class="etat" data-ton="vert">Dans l\'appli</span>', gestes: "" },
+    "pas-prevue": { etat: '<span class="etat">Pas prévue</span>', gestes: "" }
+  };
+  function ajouter(cle, n) {
+    var el = document.getElementById(COMPTES[cle]);
+    if (el) el.textContent = String(Number(el.textContent) + n);
+  }
+  function listeDe(carte) { return carte.parentNode.id.replace("liste-", ""); }
+  function ranger(bouton) {
+    var carte = bouton.closest(".recue");
+    var parent = carte.parentNode, suivante = carte.nextElementSibling, avant = carte.innerHTML;
+    var depuis = listeDe(carte), vers = bouton.getAttribute("data-ranger");
+    var pose = POSES[bouton.getAttribute("data-etat-pose")];
+    carte.classList.add("part");
+    var deplace = setTimeout(function () {
+      var rang = carte.querySelector(".recue-rang");
+      if (!rang) { rang = document.createElement("div"); rang.className = "recue-rang"; carte.querySelector(".recue-qui").after(rang); }
+      rang.querySelectorAll('.etat:not([data-ton="or"])').forEach(function (x) { x.remove(); });
+      rang.insertAdjacentHTML("afterbegin", pose.etat);
+      var gestes = carte.querySelector(".recue-gestes");
+      if (gestes) { if (pose.gestes) gestes.innerHTML = pose.gestes; else gestes.remove(); }
+      var cible = document.getElementById("liste-" + vers);
+      cible.insertBefore(carte, cible.firstElementChild);
+      carte.classList.remove("part");
+    }, 260);
+    ajouter(depuis, -1); ajouter(vers, 1);
+    Kit.tiroir(ecran, bouton.getAttribute("data-dit"), function () {
+      clearTimeout(deplace);
+      carte.innerHTML = avant;
+      if (suivante && suivante.parentNode === parent) parent.insertBefore(carte, suivante); else parent.appendChild(carte);
+      carte.classList.remove("part");
+      ajouter(depuis, 1); ajouter(vers, -1);
+    });
+  }
+  document.addEventListener("click", function (e) {
+    var bouton = e.target.closest("[data-ranger]");
+    if (bouton) { ranger(bouton); return; }
+    if (e.target.closest("#envoyer-reponse")) {
+      Kit.fermerFeuilles(ecran);
+      Kit.note(ecran, "Réponse envoyée. L'artisan la lira sous son idée.");
+      return;
+    }
+    var note = e.target.closest("[data-note]");
+    if (note) { e.preventDefault(); Kit.note(note, note.getAttribute("data-note")); }
+  });
+});
+</script>
+</body>
+</html>

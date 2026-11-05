@@ -1,6 +1,38 @@
 # Prochaines tâches
 
 
+## ⏳ À CHOISIR PAR LUI (5 novembre 2026) : une idée pour l'appli
+
+**Sa demande du 5 novembre** : *« un petit espace, pas vraiment contact, pour
+que l'utilisateur puisse à chaque fois me dire ce qu'il aimerait avoir en plus
+dans l'application »*. Planche : `appli/soignee/une-idee-pour-l-appli.html`.
+**Rien dans `src/`.**
+
+Ce que la planche pose : une ligne à part en bas des Réglages, sous Moi, pour
+tous les rôles (le salarié compris) ; la dictée B du chantier, un geste pour
+envoyer, ou « J'écris mon idée » ; « Envoyée, Annuler » comme Retirer ; avec
+l'idée partent le nom, l'entreprise, le rôle, le jour et l'écran d'origine,
+rien d'autre. Écartés : une fenêtre qui demande l'avis, des catégories à
+choisir, la photo jointe.
+
+**À trancher par lui** (mes recommandations entre parenthèses) :
+1. le nom, « Une idée pour l'appli » ou « Il vous manque quelque chose ? » (A) ;
+2. après l'envoi, A un courriel à `CONTACT_ATLAS`, B l'artisan suit ses idées
+   (Envoyée, Prévue, Dans l'appli, Pas prévue) et lui les range dans « Les
+   idées reçues », écran réservé à l'éditeur (`estEditeur`) (B) ;
+3. l'assistant, A rien, B il propose d'envoyer l'idée quand il ne sait pas
+   faire, et l'artisan touche Envoyer (B). Aujourd'hui sa consigne donne
+   l'adresse `CONTACT_ATLAS` (`assistant-service.ts`).
+
+**Ce que B coûte, à savoir avant de le coder** : une table d'idées par
+entreprise sous RLS, et un lecteur de plus, l'éditeur, qui lit les idées de
+toutes les entreprises et rien d'autre d'elles. C'est un point de sécurité
+(niveau 3) à concevoir avec lui, jamais en levant la RLS (`CLAUDE.md` §4).
+« Demandée 3 fois » suppose de rapprocher les idées pareilles : à faire à la
+main ou par Atlas IA, non tranché. **À vérifier aussi** : la page
+Confidentialité devra dire que l'idée et la note vocale partent chez
+l'éditeur (documents versionnés, `src/server/documents-legaux/versions.ts`).
+
 ## ⏳ À REGARDER PAR LUI (5 novembre 2026) : les zones de déplacement, et le motif d'une absence
 
 **Ses réponses du 5 novembre au soir** : jours travaillés dans **Pour mon
