@@ -19,9 +19,9 @@ se corrige zone par zone ; le PDF en colonnes. **Un chantier non situé ne
 compte dans AUCUNE zone** (sa correction du 5 novembre : *« il faut un message
 avec le nombre de jours travaillés calculés, qui s'affiche en rouge parce qu'il
 manque une zone à ajouter, et l'utilisateur met le +1 sur la bonne zone »*) :
-le total du salarié passe en rouge, « 1 jour à placer dans une zone » sous son
-nom, et dans sa feuille, en tête, « Il manque 1 jour dans les zones » avec le
-jour et le lieu (« Mardi 10 novembre, Les Landes, adresse non située »). Le
+le total du salarié passe en rouge, la même phrase sous son
+nom, et dans sa feuille, en tête, « Il manque une zone, ajoutez-la » (ses mots
+du même soir) avec le jour et le lieu (« Mardi 10 novembre, Les Landes, adresse non située »). Le
 plus de la bonne zone l'efface ; un jour de trop se dit pareil. **Les deux modèles sont à vérifier sur les textes** (MSA
 et accord régional) avant de coder : ce poste ne joint pas msa.fr. **À
 trancher par lui** : un jour sur deux chantiers, la zone la plus loin ou celle
