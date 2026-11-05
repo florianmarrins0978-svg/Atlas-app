@@ -306,7 +306,7 @@
     "arrosage", "abonnement-credits-ia", "creer-un-compte", "clients-importer", "client-recoit",
     "client-coordonnees", "client-contrat", "termines-non-payees", "termines-retours", "chantier", "facture", "main-oeuvre-dictee-partenaires",
     "comptable-attestation", "comptable-retour", "devis-detail-ligne", "devis-mise-en-page", "devis-mise-en-page-questions",
-    "reglages-facture-electronique", "jours-travailles"];
+    "reglages-facture-electronique", "jours-travailles", "jours-feries"];
 
   function planchePrete(href) {
     if (!href || /^(https?:|#|mailto:|tel:|\.\.\/)/.test(href)) return true;

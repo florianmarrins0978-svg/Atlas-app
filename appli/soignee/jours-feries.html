@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jours fériés sur le planning</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  LES JOURS FÉRIÉS SUR LE PLANNING (src/components/atlas/MoisCharge.tsx, le
+  mois ; src/app/planning/PlanningClient.tsx, la semaine et la fiche du jour).
+
+  Sa réponse du 5 novembre 2026, devant la planche des jours travaillés qui
+  disait que l'appli n'en connaît aucun : « oui le calendrier doit connaître
+  les jours fériés, on doit quand même pouvoir les proposer, mais il faut
+  mettre une couleur particulière pour les jours fériés, qu'on les voie d'un
+  coup d'œil ».
+
+  CE QUI EST VRAI AUJOURD'HUI : aucune règle de jour férié dans src/lib/ ;
+  le 11 novembre est un mercredi comme un autre, au planning comme dans les
+  dates proposées au client.
+
+  CE QUI CHANGE : le férié est calculé (huit dates fixes ; Lundi de Pâques,
+  Ascension, Lundi de Pentecôte depuis Pâques ; deux de plus en
+  Alsace-Moselle). Sa case prend la couleur, même un dimanche ; son nom
+  s'écrit à côté de la date. Rien n'est bloqué : les barres, Ajouter et les
+  propositions au client restent.
+
+  LA COULEUR, À CHOISIR : bleu (proposé), rouge, violet. Le bleu n'est pris
+  par rien sur le planning : ni les quatre états, ni l'or d'aujourd'hui, ni
+  l'ambre d'une absence. Le rouge est celui du calendrier de La Poste, mais
+  l'appli l'emploie pour une panne.
+
+  Les chantiers de la planche sont ceux du planning soigné, déplacés en
+  novembre ; aujourd'hui est le lundi 9. RIEN N'EST CODÉ DANS src/.
+*/
+
+.ecran { --etat-libre: var(--atlas-card); --etat-dispo: var(--atlas-vertPale);
+         --etat-plein: var(--atlas-rust); --etat-dela: var(--atlas-bordeaux); }
+.ecran[data-ferie="bleu"] { --ferie-fond: var(--atlas-carteBleuFond); --ferie-texte: var(--atlas-carteBleuTexte); }
+.ecran[data-ferie="rouge"] { --ferie-fond: var(--atlas-carteRougeFond); --ferie-texte: var(--atlas-carteRougeTexte); }
+.ecran[data-ferie="violet"] { --ferie-fond: color-mix(in srgb, var(--atlas-catHotel) 20%, var(--atlas-cream));
+                              --ferie-texte: var(--atlas-catHotel); }
+
+/* ─── Le mois, celui du planning soigné ───────────────────────────────── */
+.mois-tete { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.mois-nom { flex: 1; margin: 0; text-align: center; font: 400 27px/1.1 var(--serif); letter-spacing: -0.01em; }
+.mois-fleche { width: 48px; height: 48px; flex: none; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-or); }
+.mois-fleche .ico { width: 22px; height: 22px; stroke-width: 2; }
+.noms-jours { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; margin: 8px 0 6px; }
+.noms-jours span { text-align: center; font-size: 12.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+                   color: var(--atlas-inkSoft); }
+.noms-jours span.we { color: var(--atlas-muted); }
+.semaine-rang { border-radius: 12px; }
+.semaine-rang + .semaine-rang { margin-top: 4px; }
+.semaine-rang.lue { background: color-mix(in srgb, var(--atlas-rustTint) 72%, transparent); }
+.cases { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.case { position: relative; height: 52px; display: flex; flex-direction: column; align-items: center; padding-top: 8px;
+        border-radius: 10px; font: 400 19px/1 var(--serif); font-variant-numeric: lining-nums tabular-nums;
+        color: var(--atlas-ink); -webkit-tap-highlight-color: transparent;
+        transition: box-shadow 200ms var(--courbe), background-color 200ms var(--courbe), color 200ms var(--courbe); }
+.case.vide { pointer-events: none; }
+.case.we { background: var(--atlas-rustTint); color: var(--atlas-inkSoft); }
+.case.passe { color: var(--atlas-muted); }
+.case.passe .demis { opacity: 0.5; }
+/* Le férié passe AVANT le week-end et le passé : c'est lui qu'on doit voir. */
+.case.ferie { background: var(--ferie-fond); color: var(--ferie-texte); font-weight: 600; }
+.case.auj { box-shadow: inset 0 0 0 1.5px var(--atlas-or); color: var(--atlas-or); font-weight: 600; }
+.case.ouverte { background: var(--atlas-card); box-shadow: inset 0 0 0 1.5px var(--atlas-ink); }
+.case.ferie.ouverte { background: var(--ferie-fond); }
+.case:active { transform: scale(0.97); }
+.demis { display: grid; gap: 3px; width: 26px; margin-top: auto; margin-bottom: 9px; }
+.demi { display: block; height: 5px; border-radius: 3px; overflow: hidden; background: var(--etat-libre);
+        box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.demi i { display: block; height: 100%; border-radius: 3px; }
+
+.legende { margin: 14px 2px 0; }
+.legende-etats { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 14px; font-size: 13px; color: var(--atlas-inkSoft); }
+.legende-etat { display: inline-flex; align-items: center; gap: 6px; }
+.legende-etat i { width: 12px; height: 12px; border-radius: 3px; box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.legende-pied { display: flex; align-items: center; justify-content: center; gap: 20px; margin-top: 2px; }
+.legende-demis { display: inline-flex; align-items: center; gap: 8px; }
+.legende-demis .demis { margin: 0; width: 22px; }
+.legende-mots { display: grid; font-size: 12.5px; line-height: 1.15; font-weight: 600; color: var(--atlas-inkSoft); }
+.legende-ferie { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; color: var(--atlas-inkSoft); }
+.legende-ferie b { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 7px;
+                   font: 600 14px/1 var(--serif); font-variant-numeric: lining-nums;
+                   background: var(--ferie-fond); color: var(--ferie-texte); }
+.legende .bouton-texte { min-height: 44px; font-size: 15px; }
+
+/* Le nom du férié, à côté de la date : dans la semaine et dans la fiche du jour. */
+.pastille-ferie { display: inline-flex; align-items: center; min-height: 28px; padding: 0 11px; border-radius: 14px;
+                  font: 600 13.5px/1 var(--sans); white-space: nowrap;
+                  background: var(--ferie-fond); color: var(--ferie-texte); }
+
+/* ─── La fiche du jour, sous la semaine de sa case ─────────────────────── */
+.volet { position: relative; margin: 12px 0 10px; padding: 16px 16px 6px; border-radius: 8px; background: var(--atlas-card);
+         animation: volet-ouvre 300ms var(--courbe) both; }
+.volet::before { content: ""; position: absolute; top: -6px; left: calc(var(--pointe) - 7px); width: 14px; height: 14px;
+                 border-radius: 2px; background: var(--atlas-card); transform: rotate(45deg); }
+@keyframes volet-ouvre { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.volet .jour-titre { margin: 0 0 6px; }
+.volet-rien { margin: 6px 0 4px; font-size: var(--t-second); color: var(--atlas-inkSoft); }
+.volet .chantier + .chantier, .jour-plage .chantier + .chantier { box-shadow: inset 0 1px 0 var(--atlas-line); }
+
+.jour-titre { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin: 30px 2px 10px; font-weight: 400; }
+.jour-titre b { font: 400 21px/1.2 var(--serif); letter-spacing: -0.005em; }
+.jour-titre > span:not(.pastille-ferie) { font-size: 15px; color: var(--atlas-inkSoft); }
+.jour-titre.auj b { font-size: 24px; color: var(--atlas-or); }
+.jour-titre.passe b { color: var(--atlas-muted); }
+
+.chantier-corps { display: block; width: 100%; min-height: 76px; padding: 14px 0; text-align: left; }
+.chantier-haut { display: flex; align-items: baseline; gap: 12px; }
+.chantier-nom { flex: 1; min-width: 0; display: block; font: 400 19px/1.25 var(--serif); letter-spacing: -0.005em; overflow-wrap: anywhere; }
+.chantier-qui { flex: none; max-width: 48%; text-align: right; font-size: 15.5px; font-weight: 600; color: var(--atlas-ink); }
+.chantier-situation { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 14px; margin-top: 4px; font-size: var(--t-second);
+                      line-height: 1.35; color: var(--atlas-inkSoft); }
+.duree { font-weight: 600; color: var(--atlas-or); }
+.lieu { display: inline-flex; align-items: center; gap: 4px; }
+.lieu .ico { width: 16px; height: 16px; color: var(--atlas-inkSoft); }
+.passe .chantier-nom, .passe .duree { color: var(--atlas-muted); }
+
+.ajouter { display: inline-flex; align-items: center; gap: 8px; min-height: 52px; padding: 0 2px; font-size: 16px; font-weight: 600; color: var(--atlas-or); }
+.ajouter .ico { stroke-width: 2.2; }
+
+/* ─── Les sept jours ──────────────────────────────────────────────────── */
+.sept-jours { margin-top: 26px; }
+.liste-tete { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.liste-titre { flex: 1; margin: 0; text-align: center; font-size: 16.5px; font-weight: 700; }
+.sept-jours .jour-titre:first-of-type { margin-top: 14px; }
+.jour-plage { border-radius: var(--r-plage); background: var(--atlas-card); padding: 0 16px; }
+.jour-plage .ajouter { margin-top: -4px; }
+.jour-plage .volet-rien { margin: 0; padding: 16px 0 4px; }
+
+@media (prefers-reduced-motion: reduce) { .volet { animation: none; } }
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">Jours fériés sur le planning</h1>
+  <p class="pl-verdict">Le 1<sup>er</sup> et le 11 novembre se voient d’un coup d’œil, et le 11 garde son chantier. Touchez <b>Bleu</b>, <b>Rouge</b> ou <b>Violet</b> pour comparer, et un jour du mois pour ouvrir sa fiche.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats" id="couleurs-ferie">
+        <button type="button" data-couleur="bleu" aria-pressed="true">Bleu</button>
+        <button type="button" data-couleur="rouge" aria-pressed="false">Rouge</button>
+        <button type="button" data-couleur="violet" aria-pressed="false">Violet</button>
+      </div>
+      <div class="pl-etats" id="region">
+        <button type="button" data-region="france" aria-pressed="true">Partout en France</button>
+        <button type="button" data-region="alsace" aria-pressed="false">Alsace et Moselle</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre" id="planning" data-ferie="bleu">
+          <div class="defile">
+            <header class="tete">
+              <h1 class="tete-titre">Planning</h1>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </header>
+            <section id="mois" aria-label="Le mois"></section>
+            <section id="liste" class="sept-jours" aria-label="Les sept jours"></section>
+          </div>
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html">Chantiers</a>
+              <a class="barre-onglet" href="planning.html" aria-current="page">Planning</a>
+              <a class="barre-onglet" href="termines.html">Terminés</a>
+              <a class="barre-onglet" href="paysage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce que je propose : le bleu</h2>
+    <ul>
+      <li>Le férié se voit d’un coup d’œil : sa case prend la couleur, son chiffre aussi, même un dimanche (le 1<sup>er</sup> novembre).</li>
+      <li>Il reste un jour comme un autre : on y pose un chantier, et Atlas continue de le proposer à un client.</li>
+      <li>Son nom s’écrit à côté de la date, dans la semaine et dans la fiche du jour : Férié, Armistice 1918. Un férié sans chantier paraît quand même dans la semaine.</li>
+      <li>Le bleu n’est pris par rien sur le planning : ni vos quatre états, ni l’or d’aujourd’hui, ni l’ambre d’une absence. Le rouge rappelle le calendrier de La Poste, mais l’appli s’en sert pour une panne.</li>
+      <li>Le même dessin du mois sert quand vous choisissez les dates à proposer au client (lu dans le code) : le férié y prendra la même couleur.</li>
+      <li>Les jours travaillés de vos salariés les retirent tout seuls.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>La couleur : bleu, rouge ou violet. Et faut-il l’ajouter à Couleurs, pour la changer vous-même comme vos quatre états ?</li>
+      <li>Alsace et Moselle ont deux fériés de plus (Vendredi saint, 26 décembre). Je propose de les ajouter d’office quand l’adresse de l’entreprise est en Moselle, Bas-Rhin ou Haut-Rhin.</li>
+      <li>Le lundi de Pentecôte est souvent la journée de solidarité, donc travaillé. Il s’affiche férié ; dans les jours travaillés, il compte travaillé ou non ?</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Le reste du planning : les deux barres, vos couleurs, aujourd’hui cerné d’or, les carrés du week-end, la fiche qui s’ouvre sous sa semaine.</li>
+    </ul>
+  </section>
+</main>
+
+<script src="kit.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  "use strict";
+  var ecran = document.getElementById("planning");
+  var AUJ = "2026-11-09";
+  var EQUIPES = { 1: "Julien", 2: "Kévin" };
+  var NB_EQUIPES = 2;
+  var JOURS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
+  var MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+  var MOT = { libre: "rien", dispo: "incomplet", plein: "complet", dela: "au-delà" };
+
+  function jd(m, a) { return { matin: m || null, apres_midi: a || null }; }
+  var chantiers = [
+    { id: "henry", nom: "M. Henry", lieu: "Nantes", duree: "Une journée", jours: { "2026-11-02": jd([1, 2], [1, 2]) } },
+    { id: "blanc", nom: "Mme Blanc", lieu: "Rezé", duree: "Une demi-journée", jours: { "2026-11-03": jd([2]) } },
+    { id: "perrin", nom: "M. Perrin", lieu: "Vertou", duree: "Une journée", jours: { "2026-11-04": jd([1], [1]) } },
+    { id: "aubert", nom: "Mme Aubert", lieu: "Saint-Herblain", duree: "Une journée", jours: { "2026-11-06": jd([1, 2], [1]) } },
+    { id: "morel", nom: "M. Morel", lieu: "Basse-Goulaine", duree: "Une journée", jours: { "2026-11-09": jd([1, 2], [1, 2]) } },
+    { id: "roy", nom: "Mme Roy", lieu: "Nantes", duree: "Une demi-journée", jours: { "2026-11-10": jd([1]) } },
+    { id: "garnier", nom: "M. Garnier", lieu: "Saint-Sébastien", duree: "Une demi-journée", jours: { "2026-11-11": jd([2]) } },
+    { id: "fontaine", nom: "Mme Fontaine", lieu: "Nantes", duree: "2 jours", jours: { "2026-11-12": jd([1], [1]), "2026-11-13": jd([1], [1]) } },
+    { id: "caron", nom: "Mme Caron", lieu: "Vertou", duree: "Une journée", jours: { "2026-11-17": jd([1, 2], [1, 2]) } },
+    { id: "petit", nom: "M. Petit", lieu: "Nantes", duree: "Une journée", jours: { "2026-11-19": jd([1], [1]) } },
+    { id: "lefevre", nom: "M. Lefèvre", lieu: "Rezé", duree: "Une journée", jours: { "2026-11-24": jd([2], [2]) } },
+    { id: "vertou", nom: "Mairie de Vertou", lieu: "Vertou", duree: "Une journée", jours: { "2026-12-01": jd([2], [2]) } },
+    { id: "berthier", nom: "Mme Berthier", lieu: "Rezé", duree: "Une demi-journée", jours: { "2026-12-24": jd([1]) } }
+  ];
+
+  var etat = { a: 2026, m: 10, touche: null, debut: "2026-11-09", region: "france" };
+
+  /* ─── Les dates ─────────────────────────────────────────────────────── */
+  function enDate(j) { return new Date(j + "T12:00:00Z"); }
+  function enIso(x) { return x.toISOString().slice(0, 10); }
+  function iso(a, m, j) { return enIso(new Date(Date.UTC(a, m - 1, j, 12))); }
+  function plus(j, n) { var x = enDate(j); x.setUTCDate(x.getUTCDate() + n); return enIso(x); }
+  function rang(j) { return (enDate(j).getUTCDay() + 6) % 7; }
+  function lundiDe(j) { return plus(j, -rang(j)); }
+  function quantieme(j) { var n = enDate(j).getUTCDate(); return n === 1 ? "1er" : String(n); }
+  function moisDe(j) { return MOIS[enDate(j).getUTCMonth()]; }
+  function dateLongue(j) { return JOURS[rang(j)] + " " + quantieme(j) + " " + moisDe(j); }
+  function capitale(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+  /* ─── Les fériés : huit dates fixes, trois qui suivent Pâques ──────────
+     Pâques par l'algorithme de Meeus (calendrier grégorien). L'Alsace et la
+     Moselle en ont deux de plus (code du travail, L. 3134-13). */
+  function paques(a) {
+    var A = a % 19, B = Math.floor(a / 100), C = a % 100, D = Math.floor(B / 4), E = B % 4,
+        F = Math.floor((B + 8) / 25), G = Math.floor((B - F + 1) / 3), H = (19 * A + B - D - G + 15) % 30,
+        I = Math.floor(C / 4), K = C % 4, L = (32 + 2 * E + 2 * I - H - K) % 7, M = Math.floor((A + 11 * H + 22 * L) / 451),
+        n = H + L - 7 * M + 114;
+    return iso(a, Math.floor(n / 31), (n % 31) + 1);
+  }
+  var cache = {};
+  function feries(a) {
+    var cle = a + ":" + etat.region;
+    if (cache[cle]) return cache[cle];
+    var p = paques(a), f = {};
+    f[iso(a, 1, 1)] = "Jour de l’an";
+    f[plus(p, 1)] = "Lundi de Pâques";
+    f[iso(a, 5, 1)] = "Fête du Travail";
+    f[iso(a, 5, 8)] = "Victoire 1945";
+    f[plus(p, 39)] = "Ascension";
+    f[plus(p, 50)] = "Lundi de Pentecôte";
+    f[iso(a, 7, 14)] = "Fête nationale";
+    f[iso(a, 8, 15)] = "Assomption";
+    f[iso(a, 11, 1)] = "Toussaint";
+    f[iso(a, 11, 11)] = "Armistice 1918";
+    f[iso(a, 12, 25)] = "Noël";
+    if (etat.region === "alsace") { f[plus(p, -2)] = "Vendredi saint"; f[iso(a, 12, 26)] = "Saint-Étienne"; }
+    return (cache[cle] = f);
+  }
+  function ferie(j) { return feries(Number(j.slice(0, 4)))[j] || null; }
+
+  function ico(nom, cls) { return '<svg class="ico' + (cls ? " " + cls : "") + '" aria-hidden="true"><use href="#i-' + nom + '"/></svg>'; }
+  function qui(rangs) {
+    var noms = (rangs || []).map(function (r) { return EQUIPES[r]; });
+    if (!noms.length) return "Personne";
+    return noms.length === 1 ? noms[0] : noms.slice(0, -1).join(", ") + " et " + noms[noms.length - 1];
+  }
+
+  /* ─── La charge, comme occupationDemi ───────────────────────────────── */
+  function surLeJour(j) { return chantiers.filter(function (c) { return c.jours[j]; }); }
+  function charge(j, demi) {
+    var total = 0;
+    surLeJour(j).forEach(function (c) { var p = c.jours[j][demi]; if (p) total += p.length; });
+    return total / NB_EQUIPES;
+  }
+  function etatDe(ch) { return ch === 0 ? "libre" : ch < 1 ? "dispo" : ch === 1 ? "plein" : "dela"; }
+  function equipesDuJour(c, j) {
+    var p = c.jours[j], vu = {};
+    (p.matin || []).concat(p.apres_midi || []).forEach(function (r) { vu[r] = true; });
+    return Object.keys(vu).map(Number).sort();
+  }
+
+  /* ─── Le mois ───────────────────────────────────────────────────────── */
+  function rendreCase(j, col) {
+    if (!j) return '<span class="case vide" aria-hidden="true"></span>';
+    var we = col > 4, passe = j < AUJ, auj = j === AUJ, ouverte = j === etat.touche, f = ferie(j);
+    var m = charge(j, "matin"), a = charge(j, "apres_midi");
+    var cls = "case" + (we ? " we" : "") + (passe ? " passe" : "") + (f ? " ferie" : "") + (auj ? " auj" : "") + (ouverte ? " ouverte" : "");
+    var barres = we && m === 0 && a === 0 ? "" :
+      '<span class="demis" aria-hidden="true">' + [m, a].map(function (ch) {
+        return '<span class="demi"><i style="width:' + Math.round(Math.min(ch, 1) * 100) + '%;background:var(--etat-' + etatDe(ch) + ')"></i></span>';
+      }).join("") + "</span>";
+    var dit = capitale(dateLongue(j)) + (f ? ", férié, " + f : "") + (barres ? ", matin " + MOT[etatDe(m)] + ", après-midi " + MOT[etatDe(a)] : "");
+    return '<button type="button" class="' + cls + '" data-action="jour" data-jour="' + j + '" aria-pressed="' + ouverte +
+      '" aria-label="' + dit + '"><span>' + enDate(j).getUTCDate() + "</span>" + barres + "</button>";
+  }
+
+  function rendreMois() {
+    var premier = iso(etat.a, etat.m + 1, 1);
+    var nb = new Date(Date.UTC(etat.a, etat.m + 1, 0, 12)).getUTCDate();
+    var cases = [];
+    for (var i = 0; i < rang(premier); i++) cases.push(null);
+    for (var k = 1; k <= nb; k++) cases.push(iso(etat.a, etat.m + 1, k));
+    while (cases.length % 7) cases.push(null);
+    var lundiLu = etat.touche === null ? etat.debut : null;
+    var h = '<div class="mois-tete">' +
+      '<button type="button" class="mois-fleche" data-action="mois" data-pas="-1" aria-label="Mois précédent">' + ico("retour") + "</button>" +
+      '<h2 class="mois-nom">' + capitale(MOIS[etat.m]) + " " + etat.a + "</h2>" +
+      '<button type="button" class="mois-fleche" data-action="mois" data-pas="1" aria-label="Mois suivant">' + ico("suivant") + "</button></div>" +
+      '<div class="noms-jours" aria-hidden="true">' + ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map(function (n, i) {
+        return "<span" + (i > 4 ? ' class="we"' : "") + ">" + n + "</span>";
+      }).join("") + "</div>";
+    for (var s = 0; s < cases.length; s += 7) {
+      var semaine = cases.slice(s, s + 7);
+      var lue = lundiLu !== null && semaine.indexOf(lundiLu) >= 0;
+      h += '<div class="semaine-rang' + (lue ? " lue" : "") + '"><div class="cases">' + semaine.map(rendreCase).join("") + "</div></div>";
+      var col = etat.touche ? semaine.indexOf(etat.touche) : -1;
+      if (col >= 0) h += rendreVolet(etat.touche, col);
+    }
+    h += '<div class="legende"><div class="legende-etats">' + ["libre", "dispo", "plein", "dela"].map(function (e) {
+      return '<span class="legende-etat"><i style="background:var(--etat-' + e + ')"></i>' + MOT[e] + "</span>";
+    }).join("") + '</div><div class="legende-pied"><span class="legende-demis"><span class="demis"><span class="demi"></span><span class="demi"></span></span>' +
+      '<span class="legende-mots"><span>matin</span><span>après-midi</span></span></span>' +
+      '<span class="legende-ferie"><b>11</b>férié</span>' +
+      '<button type="button" class="bouton-texte or" data-action="note" data-texte="Le férié y aurait sa ligne, à côté des quatre états.">Couleurs</button></div></div>';
+    document.getElementById("mois").innerHTML = h;
+  }
+
+  /* ─── Le titre d'un jour, et son férié à côté ───────────────────────── */
+  function titreDuJour(j) {
+    var f = ferie(j), pastille = f ? '<span class="pastille-ferie">Férié, ' + f + "</span>" : "";
+    if (j === AUJ) return '<h3 class="jour-titre auj"><b>Aujourd’hui</b><span>' + dateLongue(j) + "</span>" + pastille + "</h3>";
+    return '<h3 class="jour-titre' + (j < AUJ ? " passe" : "") + '"><b>' + capitale(dateLongue(j)) + "</b>" + pastille + "</h3>";
+  }
+  function situation(c) {
+    return '<span class="chantier-situation"><span class="duree">' + c.duree + '</span><span class="lieu">' + ico("lieu") + c.lieu + "</span></span>";
+  }
+  function rendreChantier(c, j) {
+    return '<div class="chantier"><button type="button" class="chantier-corps touche" data-action="note" data-texte="La fiche s’ouvre comme un autre jour.">' +
+      '<span class="chantier-haut"><span class="chantier-nom">' + c.nom + '</span><span class="chantier-qui">' + qui(equipesDuJour(c, j)) + "</span></span>" +
+      situation(c) + "</button></div>";
+  }
+  function ajouter(j) {
+    return j >= AUJ ? '<button type="button" class="ajouter" data-action="note" data-texte="On y pose un chantier comme un autre jour.">' + ico("plus", "ico-p") + "Ajouter</button>" : "";
+  }
+
+  function rendreVolet(j, col) {
+    var liste = surLeJour(j);
+    var h = '<div class="volet' + (j < AUJ ? " passe" : "") + '" style="--pointe:' + ((col + 0.5) / 7 * 100).toFixed(2) + '%">' + titreDuJour(j);
+    if (!liste.length) h += '<p class="volet-rien">Rien de posé ce jour-là.</p>';
+    liste.forEach(function (c) { h += rendreChantier(c, j); });
+    return h + ajouter(j) + "</div>";
+  }
+
+  /* ─── Les sept jours : un férié y paraît même sans chantier ─────────── */
+  function rendreListe() {
+    var zone = document.getElementById("liste");
+    zone.hidden = etat.touche !== null;
+    if (zone.hidden) { zone.innerHTML = ""; return; }
+    var h = '<div class="liste-tete"><button type="button" class="mois-fleche" data-action="semaine" data-pas="-7" aria-label="Sept jours avant">' + ico("retour") + "</button>" +
+      '<h2 class="liste-titre">Semaine du ' + quantieme(etat.debut) + " " + moisDe(etat.debut) + "</h2>" +
+      '<button type="button" class="mois-fleche" data-action="semaine" data-pas="7" aria-label="Sept jours après">' + ico("suivant") + "</button></div>";
+    for (var i = 0; i < 7; i++) {
+      var j = plus(etat.debut, i), liste = surLeJour(j);
+      if (!liste.length && !ferie(j)) continue;
+      h += titreDuJour(j) + '<div class="jour-plage' + (j < AUJ ? " passe" : "") + '">';
+      if (!liste.length) h += '<p class="volet-rien">Rien de posé ce jour-là.</p>';
+      liste.forEach(function (c) { h += rendreChantier(c, j); });
+      h += ajouter(j) + "</div>";
+    }
+    zone.innerHTML = h;
+  }
+
+  function rendre() { rendreMois(); rendreListe(); }
+
+  ecran.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-action]");
+    if (!b) return;
+    var action = b.getAttribute("data-action");
+    if (action === "jour") {
+      var j = b.getAttribute("data-jour");
+      etat.touche = etat.touche === j ? null : j;
+      if (etat.touche === null) etat.debut = lundiDe(j);
+      rendre();
+      return;
+    }
+    if (action === "mois") {
+      etat.m += Number(b.getAttribute("data-pas"));
+      if (etat.m < 0) { etat.m = 11; etat.a--; } else if (etat.m > 11) { etat.m = 0; etat.a++; }
+      etat.touche = null;
+      etat.debut = lundiDe(iso(etat.a, etat.m + 1, 1));
+      rendre();
+      return;
+    }
+    if (action === "semaine") { etat.debut = plus(etat.debut, Number(b.getAttribute("data-pas"))); rendre(); return; }
+    if (action === "note") Kit.note(ecran, b.getAttribute("data-texte") || "Comme aujourd’hui dans l’appli.");
+  });
+
+  function choix(groupe, attr, quoi) {
+    document.querySelectorAll("#" + groupe + " button").forEach(function (b) {
+      b.addEventListener("click", function () {
+        document.querySelectorAll("#" + groupe + " button").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+        quoi(b.getAttribute(attr));
+      });
+    });
+  }
+  choix("couleurs-ferie", "data-couleur", function (c) { ecran.setAttribute("data-ferie", c); });
+  choix("region", "data-region", function (r) {
+    etat.region = r;
+    // Le 26 décembre ne vaut qu'en Alsace et Moselle : on montre décembre.
+    if (r === "alsace" && etat.m === 10) { etat.m = 11; etat.touche = null; etat.debut = "2026-12-21"; }
+    rendre();
+  });
+
+  rendre();
+});
+</script>
+</body>
+</html>

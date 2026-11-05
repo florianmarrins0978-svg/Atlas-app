@@ -1,12 +1,44 @@
 # Prochaines tâches
 
 
+## ⏳ À CHOISIR PAR LUI (5 novembre 2026) : la couleur des jours fériés sur le planning
+
+**Sa réponse du 5 novembre**, devant la planche des jours travaillés : *« oui
+le calendrier doit connaître les jours fériés, on doit quand même pouvoir les
+proposer, mais il faut mettre une couleur particulière pour les jours fériés,
+qu'on les voie d'un coup d'œil »*. **Tranché par lui** : l'appli connaît les
+fériés ; ils restent proposables (rien de bloqué, ni au planning ni dans les
+dates proposées au client) ; une couleur les montre.
+
+**Planche** : `appli/soignee/jours-feries.html`. La case du férié prend la
+couleur, même un dimanche ; « Férié, Armistice 1918 » à côté de la date, dans
+la semaine et dans la fiche du jour ; un férié sans chantier paraît quand même
+dans la semaine ; « 11 férié » dans la légende. **À trancher par lui** : bleu
+(proposé), rouge ou violet ; la couleur dans Couleurs ou non ; les deux fériés
+d'Alsace et Moselle d'office selon l'adresse de l'entreprise ; le lundi de
+Pentecôte, souvent travaillé (journée de solidarité), compte-t-il dans les
+jours travaillés ? **Rien dans `src/`.** Avant de lui redemander : chercher
+`ferie` dans `src/lib/` et `src/components/atlas/MoisCharge.tsx`.
+
+**Le code, le jour venu** : une règle pure dans `src/lib/` (huit dates fixes,
+Pâques par Meeus, plus un, trente-neuf et cinquante jours ; Vendredi saint et
+26 décembre pour les départements 57, 67, 68), éprouvée sans base sur
+plusieurs années ; `MoisCharge.tsx` la lit, et c'est le même mois qui sert au
+planning et au choix des dates du client (`EnvoiAuClient.tsx`, lu dans le
+code). Le calcul des disponibilités n'y touche pas : sa règle est « on peut
+quand même les proposer ».
+
 ## ⏳ À CHOISIR PAR LUI (5 novembre 2026) : les jours travaillés de chaque salarié
 
 **Sa demande du 5 novembre** : *« pour le bilan comptable, même pour faire les
 payes, ils sont obligés de donner à chaque fois le nombre de jours travaillés
 par salarié »*, compté sur les absences notées, et *« le compteur ne doit pas
 être bloqué »* : 18 calculés, 15 vrais, il le change.
+
+**Sa remarque du 5 novembre** : *« le PDF A ou B ne change rien »*. Il lisait
+les écrans, pareils tant qu'on n'avait rien corrigé : il montre désormais
+Antoine corrigé à 15 dans les deux. **Les fériés : tranchés le même soir**
+(entrée au-dessus).
 
 **Planche** : `appli/soignee/jours-travailles.html`. Une ligne « Jours
 travaillés » sous une rubrique « Mes salariés », en bas de Pour mon comptable ;

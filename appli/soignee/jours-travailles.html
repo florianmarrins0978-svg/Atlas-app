@@ -134,7 +134,7 @@
 <header class="pl-tete">
   <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
   <h1 class="pl-titre">Jours travaillés</h1>
-  <p class="pl-verdict">Touchez <b>Jours travaillés</b>, puis <b>Antoine</b> : 18 jours calculés. Touchez moins trois fois pour 15. <b>A</b> demande pourquoi, <b>B</b> garde le chiffre seul. <b>Le PDF</b> montre ce que reçoit le comptable.</p>
+  <p class="pl-verdict">Touchez <b>Jours travaillés</b>, puis <b>Antoine</b> : 18 jours calculés. Touchez moins trois fois pour 15. <b>A</b> demande pourquoi, <b>B</b> garde le chiffre seul. <b>Le PDF</b> montre ce que reçoit le comptable, Antoine corrigé à 15.</p>
 </header>
 
 <main class="pl-scene">
@@ -151,7 +151,7 @@
     </div>
 
     <div data-vue-panneau="Le PDF">
-      <p class="pl-legende">Ce que reçoit le comptable</p>
+      <p class="pl-legende">Ce que reçoit le comptable, Antoine corrigé à 15</p>
       <div class="pl-etats" id="pdf-version">
         <button type="button" data-pdf="A" aria-pressed="true">Avec A</button>
         <button type="button" data-pdf="B" aria-pressed="false">Avec B</button>
@@ -318,7 +318,7 @@
         '<button class="bouton bouton-plein envoyer" type="button" data-geste="envoyer">' + ico("partager") + 'Envoyer à mon comptable</button>';
     }
 
-    function rendre() { if (e.vue === "comptable") rendreComptable(); else rendreJours(); rendrePdf(); }
+    function rendre() { if (e.vue === "comptable") rendreComptable(); else rendreJours(); }
 
     /* ─── La feuille d'un salarié ──────────────────────────────────────── */
     function peindreFeuille() {
@@ -357,7 +357,6 @@
         '</div>';
       dedans.querySelector(".feuille-bas").innerHTML = h;
       rendreJours();
-      rendrePdf();
     }
 
     function poser(v) {
@@ -420,12 +419,17 @@
     rendre();
   });
 
-  /* ─── Le PDF, lu sur l'écran A ou B tel qu'il est ─────────────────────── */
+  /* ─── Le PDF : toujours le cas de sa demande, Antoine à 15 au lieu de 18 ─
+     Sa remarque du 5 novembre : « le PDF A ou B ne change rien ». Il lisait
+     les écrans tels qu'ils étaient, donc pareils tant qu'on n'avait rien
+     corrigé des deux côtés. Il montre désormais la même correction dans les
+     deux, et seule la façon de la dire change. */
   function rendrePdf() {
     var papier = document.getElementById("papier");
-    var e = etats[pdfVersion];
-    if (!papier || !e) return;
-    var m = e.d.mois["2026-11"];
+    if (!papier) return;
+    var m = donnees().mois["2026-11"];
+    m.salaries[1].saisi = 15;
+    m.salaries[1].motif = pdfVersion === "A" ? "maladie" : null;
     var lignes = m.salaries.map(function (s) {
       var ec = ecart(m, s), abs = s.absences.map(function (a) { return "<span>Absent " + a.dit.charAt(0).toLowerCase() + a.dit.slice(1) + "</span>"; });
       if (ec !== 0) {
