@@ -104,6 +104,7 @@
 <li><a href="#30-combien-de-temps-dois-je-garder-mes-factures-et-atlas-les-garde-t-il-">Combien de temps dois-je garder mes factures, et Atlas les garde-t-il ?</a></li>
 <li><a href="#31-si-je-facture-une-entreprise-ou-une-mairie-la-tva-disparaît-elle-de-la-facture-">Si je facture une entreprise ou une mairie, la TVA disparaît-elle de la facture ?</a></li>
 <li><a href="#32-si-je-supprime-un-client-où-reste-sa-facture-">Si je supprime un client, où reste sa facture ?</a></li>
+<li><a href="#33-si-un-artisan-supprime-son-compte-atlas-peut-il-garder-ses-factures-">Si un artisan supprime son compte, Atlas peut-il garder ses factures ?</a></li>
 </ol>
 <hr>
 <h2 id="1-le-compte-développeur-apple--qui-paie-et-combien-de-temps-">1. Le compte développeur Apple : qui paie, et combien de temps ?</h2>
@@ -1687,6 +1688,51 @@
 <p>Un chantier terminé mais pas encore facturé porte une facture en brouillon. Dans Atlas, elle reçoit son numéro dès sa création. L'effacer laisserait un trou dans la suite de vos numéros de facture, et c'est ce qu'un contrôle fiscal regarde. Elle reste donc, comme une facture émise, et la feuille de suppression le dit sous « Conservé par la loi ».</p>
 <h3 id="ce-qui-nest-pas-encore-vérifié">Ce qui n'est pas encore vérifié</h3>
 <p>Ce qui précède a été lu dans le code, pas regardé à l'écran. Et ces corrections ne sont pas encore chez vous : elles attendent la batterie avant d'aller sur <code>main</code>. Une fois livrées, le geste qui le prouve : supprimer un client qui a une facture, vérifier qu'il quitte « Vos clients », puis ouvrir sa facture depuis Terminés.</p>
+<hr>
+<h2 id="33-si-un-artisan-supprime-son-compte-atlas-peut-il-garder-ses-factures-">33. Si un artisan supprime son compte, Atlas peut-il garder ses factures ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>Votre question du 5 novembre 2026, en préparant l'hébergement.</em></p>
+<h3 id="la-réponse-courte">La réponse courte</h3>
+<p>Oui, mais <strong>pas en passant outre sa demande</strong>. L'obligation de garder les factures dix ans pèse sur <strong>l'artisan</strong>, pas sur Atlas. Atlas ne peut donc pas invoquer cette loi pour garder ses factures contre sa volonté. Ce qui rend la conservation légale, c'est que <strong>l'artisan la choisit</strong>, au moment où il ferme son compte.</p>
+<h3 id="pourquoi">Pourquoi</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Qui est responsable</th>
+<th>Ce que dit le texte</th>
+</tr></thead><tbody>
+<tr>
+<td>Les factures et les clients de l'artisan</td>
+<td>l'artisan. Atlas ne fait que les garder pour lui (« sous-traitant »)</td>
+<td>En fin de contrat, Atlas efface ou rend les données, <strong>au choix de l'artisan</strong>, sauf si une loi impose de les garder (RGPD, article 28.3.g)</td>
+</tr>
+<tr>
+<td>L'obligation de garder ses factures 10 ans</td>
+<td>l'artisan</td>
+<td>Code de commerce, L123-22</td>
+</tr>
+<tr>
+<td>Les factures d'abonnement qu'Atlas adresse à l'artisan</td>
+<td>Atlas</td>
+<td>Atlas doit les garder 10 ans lui-même : là, la loi le permet même contre sa demande (RGPD, article 17.3.b)</td>
+</tr>
+</tbody></table></div>
+<p>Garder ses factures sans son accord ferait d'Atlas le responsable d'un fichier qu'il n'a aucune raison légale de tenir. C'est le point qui serait attaquable.</p>
+<h3 id="ce-que-vous-avez-tranché-le-5-novembre-2026">Ce que vous avez tranché le 5 novembre 2026</h3>
+<ul>
+<li>les pièces gardées : il conserve une <strong>connexion en lecture seule</strong> pendant 10 ans. Il voit et télécharge ses factures, ses avoirs, ses devis acceptés et ses contrats acceptés. Il ne crée plus rien ;</li>
+<li>tout le reste s'efface après les 30 jours déjà décidés : les clients sans facture, les <strong>devis jamais acceptés</strong>, les photos, les notes, les dictées ;</li>
+<li>au bout des 10 ans, l'archive s'efface à son tour.</li>
+</ul>
+<h3 id="ce-qui-est-proposé-et-pas-encore-tranché">Ce qui est proposé, et pas encore tranché</h3>
+<p>À la fermeture, l'artisan <strong>choisit</strong> : garder ses pièces 10 ans chez Atlas (proposé par défaut), ou tout effacer tout de suite, après avoir téléchargé ses données. C'est ce choix qui rend la conservation légale.</p>
+<h3 id="la-place-que-cela-prend">La place que cela prend</h3>
+<p>Environ 300 Mo par artisan sur 10 ans, PDF compris. Pour 1 000 artisans, environ 300 Go, soit quelques euros par mois. Estimation, pas une mesure.</p>
+<h3 id="ce-qui-reste-à-faire">Ce qui reste à faire</h3>
+<ul>
+<li><strong>les conditions générales</strong> : l'article 13 dit aujourd'hui que les pièces comptables sont gardées dix ans, sans parler du choix. Il faut l'écrire, ce qui demande une nouvelle version et une nouvelle acceptation de chacun. C'est votre décision ;</li>
+<li><strong>le code</strong> : la fermeture du compte n'existe pas encore (vérifié le 5 novembre 2026). Une suppression brutale de l'entreprise échouerait de toute façon : la base refuse d'effacer une facture émise ou un devis envoyé ;</li>
+<li><strong>un avis d'avocat</strong> avant l'ouverture au public : ce qui précède est une lecture des textes, pas une consultation.</li>
+</ul>
 </main>
 </body>
 </html>
