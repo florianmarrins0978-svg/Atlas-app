@@ -18,8 +18,9 @@
  *
  *   npx tsx scripts/capture-retrait.mts <dossier> <nom> <url> [selecteurLigne]
  */
-import { existsSync, mkdirSync, readdirSync } from "node:fs";
+import { mkdirSync } from "node:fs";
 import { chromium, type Page, devices } from "playwright";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const dossier = process.argv[2];
 const nom = process.argv[3];
@@ -46,17 +47,6 @@ if (!dossier || !nom || !chemin) {
 }
 mkdirSync(dossier, { recursive: true });
 
-function navigateurPreInstalle(): string | undefined {
-  if (process.env.CHROMIUM_PATH) return process.env.CHROMIUM_PATH;
-  const racine = process.env.PLAYWRIGHT_BROWSERS_PATH;
-  if (!racine || !existsSync(racine)) return undefined;
-  if (existsSync(`${racine}/chromium`)) return `${racine}/chromium`;
-  const sous = readdirSync(racine).find((d) => /^chromium-\d+$/.test(d));
-  return sous && existsSync(`${racine}/${sous}/chrome-linux/chrome`)
-    ? `${racine}/${sous}/chrome-linux/chrome`
-    : undefined;
-}
-
 /** Le geste : pousser la colonne du texte jusqu'au bout de sa course. */
 async function glisser(page: Page, index: number) {
   await page.locator(`${selecteurLigne} .atlas-glisse`).nth(index).evaluate((el) => {
@@ -65,7 +55,7 @@ async function glisser(page: Page, index: number) {
   await page.waitForTimeout(450);
 }
 
-const navigateur = await chromium.launch({ executablePath: navigateurPreInstalle() });
+const navigateur = await chromium.launch({ executablePath: cheminDuNavigateur() });
 const contexte = await navigateur.newContext({
   ...devices["iPhone 13"], isMobile: true,
   hasTouch: true,

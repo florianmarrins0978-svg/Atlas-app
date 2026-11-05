@@ -11,8 +11,9 @@
 // rentrer.
 //
 // Usage : BASE_URL=… npx tsx scripts/capture-fiche-qui-facture.mts <dossier>
-import { mkdirSync, existsSync } from "node:fs";
+import { mkdirSync } from "node:fs";
 import { chromium, devices } from "playwright";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const dossier = process.argv[2];
 if (!dossier) {
@@ -22,11 +23,11 @@ if (!dossier) {
 mkdirSync(dossier, { recursive: true });
 
 const BASE = process.env.BASE_URL ?? "http://localhost:3000";
-const CHROME = process.env.CHROME_ATLAS ?? "/opt/pw-browsers/chromium";
+const CHROME = cheminDuNavigateur();
 
 const navigateur = await chromium.launch({
   headless: true,
-  ...(existsSync(CHROME) ? { executablePath: CHROME } : {}),
+  ...({ executablePath: cheminDuNavigateur() }),
   args: ["--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream"],
 });
 const contexte = await navigateur.newContext({

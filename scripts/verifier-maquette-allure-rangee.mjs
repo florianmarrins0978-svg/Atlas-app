@@ -32,10 +32,10 @@
   Usage : node scripts/verifier-maquette-allure-rangee.mjs
 */
 import path from "node:path";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { chromium } from "playwright";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
-const CHEMIN_SANDBOX = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
 const PAGE = "file://" + path.resolve("appli/allure-mieux-rangee.html");
 const soucis = [];
 const dire = (ok, quoi) => { if (!ok) soucis.push(quoi); };
@@ -46,7 +46,7 @@ const source = readFileSync("src/lib/allure-documents.ts", "utf8");
 const nomsDuCode = [...source.matchAll(/nom:\s*"([^"]+)"/g)].map((m) => m[1]);
 
 const navigateur = await chromium.launch(
-  existsSync(CHEMIN_SANDBOX) ? { executablePath: CHEMIN_SANDBOX } : {}
+  { executablePath: cheminDuNavigateur() }
 );
 // Les polices viennent de Google Fonts : hors ligne, elles ne répondent pas, et
 // c'est sans importance pour ce qui est mesuré ici (des places, pas des dessins

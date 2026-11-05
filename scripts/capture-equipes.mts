@@ -6,23 +6,15 @@
 // `localhost` et jamais `127.0.0.1` : Next refuse de servir ses ressources de
 // développement à une origine qu'il juge étrangère, et la page arrive alors
 // rendue par le serveur, JAMAIS hydratée — les boutons existent sans écouteur.
-import { existsSync, mkdirSync, readdirSync } from "node:fs";
+import { mkdirSync } from "node:fs";
 import { chromium, devices } from "playwright";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const dossier = process.argv[2];
 if (!dossier) { console.error("usage: capture-equipes.mts <dossier>"); process.exit(1); }
 mkdirSync(dossier, { recursive: true });
 
-function navigateurPreInstalle(): string | undefined {
-  const racine = process.env.PLAYWRIGHT_BROWSERS_PATH;
-  if (!racine || !existsSync(racine)) return undefined;
-  if (existsSync(`${racine}/chromium`)) return `${racine}/chromium`;
-  const sous = readdirSync(racine).find((d) => /^chromium-\d+$/.test(d));
-  return sous && existsSync(`${racine}/${sous}/chrome-linux/chrome`)
-    ? `${racine}/${sous}/chrome-linux/chrome` : undefined;
-}
-
-const navigateur = await chromium.launch({ executablePath: navigateurPreInstalle() });
+const navigateur = await chromium.launch({ executablePath: cheminDuNavigateur() });
 const contexte = await navigateur.newContext({
   ...devices["iPhone 13"], isMobile: true, hasTouch: true,
 });

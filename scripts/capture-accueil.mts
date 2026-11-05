@@ -13,25 +13,14 @@
  *
  *   npx tsx scripts/capture-accueil.mts <fichier.png> [port]
  */
-import { existsSync, readdirSync } from "node:fs";
 import { chromium, devices } from "playwright";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const fichier = process.argv[2] ?? "accueil.png";
 const port = process.argv[3] ?? "3000";
 const base = `http://127.0.0.1:${port}`;
 
-/** Playwright ne trouve pas seul un navigateur installé hors de son cache. */
-function navigateurPreInstalle(): string | undefined {
-  if (process.env.CHROMIUM_PATH) return process.env.CHROMIUM_PATH;
-  const racine = process.env.PLAYWRIGHT_BROWSERS_PATH;
-  if (!racine || !existsSync(racine)) return undefined;
-  const dossier = readdirSync(racine).find((d) => /^chromium-\d+$/.test(d));
-  if (!dossier) return undefined;
-  const chemin = `${racine}/${dossier}/chrome-linux/chrome`;
-  return existsSync(chemin) ? chemin : undefined;
-}
-
-const navigateur = await chromium.launch({ executablePath: navigateurPreInstalle() });
+const navigateur = await chromium.launch({ executablePath: cheminDuNavigateur() });
 // **L'écran du patron, barre du navigateur déduite.** Ces scripts posaient
 // 393 × 852 — la dalle d'un iPhone 14, pas la place qui reste à la page une
 // fois la barre d'adresse installée : 390 × 664. Sur le cadre trop haut, une

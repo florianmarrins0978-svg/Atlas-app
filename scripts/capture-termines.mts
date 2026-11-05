@@ -12,22 +12,15 @@
 //
 // `localhost`, jamais `127.0.0.1` : Next refuse ses ressources de développement
 // à une origine étrangère, et la page arrive alors JAMAIS hydratée.
-import { existsSync, mkdirSync, readdirSync } from "node:fs";
+import { mkdirSync } from "node:fs";
 import { chromium, devices } from "playwright";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const dossier = process.argv[2];
 if (!dossier) { console.error("usage: capture-termines.mts <dossier>"); process.exit(1); }
 mkdirSync(dossier, { recursive: true });
 
-function pre(): string | undefined {
-  const r = process.env.PLAYWRIGHT_BROWSERS_PATH;
-  if (!r || !existsSync(r)) return undefined;
-  if (existsSync(`${r}/chromium`)) return `${r}/chromium`;
-  const s = readdirSync(r).find((d) => /^chromium-\d+$/.test(d));
-  return s && existsSync(`${r}/${s}/chrome-linux/chrome`) ? `${r}/${s}/chrome-linux/chrome` : undefined;
-}
-
-const navigateur = await chromium.launch({ executablePath: pre() });
+const navigateur = await chromium.launch({ executablePath: cheminDuNavigateur() });
 const contexte = await navigateur.newContext({
   ...devices["iPhone 13"], isMobile: true, hasTouch: true,
 });

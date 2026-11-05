@@ -82,6 +82,7 @@ import { chromium } from "playwright";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { existsSync } from "node:fs";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PAGE = join(RACINE, "appli", "le-bouton-qui-repond.html");
@@ -96,8 +97,8 @@ const dire = (ok, quoi) => {
   if (!ok) plaintes.push(quoi);
 };
 
-const CHROME = process.env.CHROME_ATLAS ?? "/opt/pw-browsers/chromium";
-const navigateur = await chromium.launch(existsSync(CHROME) ? { executablePath: CHROME } : {});
+const CHROME = cheminDuNavigateur();
+const navigateur = await chromium.launch({ executablePath: cheminDuNavigateur() });
 
 const HAUTEUR = 900;
 /** La barre du bas est collante : elle recouvre les 80 derniers pixels, et une

@@ -11,11 +11,11 @@
 // le texte l'aurait déclarée bonne. Elle a été trouvée en REGARDANT la page.
 //
 //     node scripts/verifier-maquette-parle-le-premier.mjs
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { chromium } from "playwright";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const CHEMIN = "appli/quand-il-parle-le-premier.html";
-const SANDBOX = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
 const page = readFileSync(CHEMIN, "utf8");
 const echecs = [];
 const dire = (bon, quoi) => {
@@ -39,7 +39,7 @@ dire(/Ce que ça risque/.test(page), "chaque place dit aussi ce qu'elle coûte")
 dire(/accueil pose <b>déjà<\/b>/.test(page), "la planche dit ce que l'accueil pose déjà");
 
 const navigateur = await chromium.launch(
-  existsSync(SANDBOX) ? { executablePath: SANDBOX } : {}
+  { executablePath: cheminDuNavigateur() }
 );
 const onglet = await navigateur.newPage({ viewport: { width: 420, height: 900 } });
 await onglet.goto(`file://${process.cwd()}/${CHEMIN}`, { waitUntil: "networkidle" });

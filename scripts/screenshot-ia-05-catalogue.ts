@@ -1,12 +1,13 @@
 import { chromium, devices } from "playwright";
 import { mkdirSync } from "fs";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const OUT = "artifacts/screenshots/step-31-ia-05-catalogue";
 mkdirSync(OUT, { recursive: true });
 
 async function main() {
   const browser = await chromium.launch({
-    executablePath: "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+    executablePath: cheminDuNavigateur(),
   });
   const context = await browser.newContext({ ...devices["iPhone 13"], });
   const page = await context.newPage();

@@ -32,10 +32,9 @@
   Usage : node scripts/verifier-maquette-jour-propose.mjs
 */
 import path from "node:path";
-import { existsSync } from "node:fs";
 import { chromium } from "playwright";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
-const CHEMIN_SANDBOX = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
 
 /* global PREMIER, occupationDe */
 //
@@ -52,7 +51,7 @@ const soucis = [];
 const dire = (ok, quoi) => { if (!ok) soucis.push(quoi); };
 
 const navigateur = await chromium.launch(
-  existsSync(CHEMIN_SANDBOX) ? { executablePath: CHEMIN_SANDBOX } : {}
+  { executablePath: cheminDuNavigateur() }
 );
 const contexte = await navigateur.newContext({ viewport: { width: 390, height: 844 } });
 const page = await contexte.newPage();

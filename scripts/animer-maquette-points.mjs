@@ -28,7 +28,8 @@ import { chromium } from "playwright";
 import sharp from "sharp";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { existsSync, mkdirSync } from "node:fs";
+import { mkdirSync } from "node:fs";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const CIBLE = join(RACINE, "docs", "maquettes", "42-les-trois-points-qui-attendent.html");
@@ -40,8 +41,8 @@ const CYCLE_MS = 1500;
 const IMAGES = 30;
 const PAS_MS = CYCLE_MS / IMAGES;
 
-const CHROME = process.env.CHROME_ATLAS ?? "/opt/pw-browsers/chromium";
-const navigateur = await chromium.launch(existsSync(CHROME) ? { executablePath: CHROME } : {});
+const CHROME = cheminDuNavigateur();
+const navigateur = await chromium.launch({ executablePath: cheminDuNavigateur() });
 const contexte = await navigateur.newContext({
   viewport: { width: 1400, height: 1200 },
   javaScriptEnabled: false,

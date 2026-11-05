@@ -17,13 +17,12 @@
 */
 
 import { chromium } from "playwright";
-import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const FICHIER = join(RACINE, "appli", "planning-simple.html");
-const CHEMIN_SANDBOX = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
 
 const problemes = [];
 function verifier(quoi, condition) {
@@ -35,7 +34,7 @@ function verifier(quoi, condition) {
 }
 
 const navigateur = await chromium.launch(
-  existsSync(CHEMIN_SANDBOX) ? { executablePath: CHEMIN_SANDBOX } : {},
+  { executablePath: cheminDuNavigateur() },
 );
 // **La permission du presse-papier se donne AVANT d'ouvrir la page.** Accordée
 // après coup, elle ne s'applique pas à l'origine déjà chargée : le contrôle du

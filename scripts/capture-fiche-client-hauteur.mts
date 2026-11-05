@@ -16,6 +16,7 @@
 import { mkdirSync } from "node:fs";
 import path from "node:path";
 import { chromium, devices } from "playwright";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const SORTIE = process.argv[2] ?? "/tmp/captures";
 mkdirSync(SORTIE, { recursive: true });
@@ -29,7 +30,7 @@ const ECRANS = [
 ];
 
 const nav = await chromium.launch({
-  executablePath: "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+  executablePath: cheminDuNavigateur(),
   args: [
     "--use-fake-device-for-media-stream",
     "--use-fake-ui-for-media-stream",

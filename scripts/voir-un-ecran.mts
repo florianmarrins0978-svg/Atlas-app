@@ -30,9 +30,10 @@
 // largeur, un débordement, un ordre) et restent dans la batterie. Celle-ci sert
 // à VOIR avant d'affirmer — c'est un autre métier.
 // ═══════════════════════════════════════════════════════════════════════════
-import { existsSync, mkdirSync, readdirSync } from "node:fs";
+import { mkdirSync } from "node:fs";
 import path from "node:path";
 import { chromium, devices } from "playwright";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const args = process.argv.slice(2);
 const chemin = args.find((a) => a.startsWith("/"));
@@ -64,17 +65,7 @@ const dossier = rangDossier >= 0 && args[rangDossier + 1] ? args[rangDossier + 1
 const BASE = process.env.ATLAS_ADRESSE ?? "http://localhost:3000";
 mkdirSync(dossier, { recursive: true });
 
-function navigateurPreInstalle(): string | undefined {
-  const racine = process.env.PLAYWRIGHT_BROWSERS_PATH;
-  if (!racine || !existsSync(racine)) return undefined;
-  if (existsSync(`${racine}/chromium`)) return `${racine}/chromium`;
-  const sous = readdirSync(racine).find((d) => /^chromium-\d+$/.test(d));
-  return sous && existsSync(`${racine}/${sous}/chrome-linux/chrome`)
-    ? `${racine}/${sous}/chrome-linux/chrome`
-    : undefined;
-}
-
-const navigateur = await chromium.launch({ executablePath: navigateurPreInstalle() });
+const navigateur = await chromium.launch({ executablePath: cheminDuNavigateur() });
 const contexte = await navigateur.newContext({ ...devices["iPhone 13"], isMobile: true, hasTouch: true });
 const page = await contexte.newPage();
 

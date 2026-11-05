@@ -25,6 +25,7 @@ import { chromium } from "playwright";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { existsSync } from "node:fs";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 // `file://` exige un chemin absolu : un argument relatif donnait un
@@ -36,8 +37,8 @@ const PAGES = process.argv.length > 2
       join(RACINE, "docs", "maquettes", "toutes-les-maquettes.html"),
     ];
 
-const CHROME = process.env.CHROME_ATLAS ?? "/opt/pw-browsers/chromium";
-const navigateur = await chromium.launch(existsSync(CHROME) ? { executablePath: CHROME } : {});
+const CHROME = cheminDuNavigateur();
+const navigateur = await chromium.launch({ executablePath: cheminDuNavigateur() });
 
 const plaintes = [];
 let eprouves = 0;

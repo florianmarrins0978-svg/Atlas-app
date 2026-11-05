@@ -54,6 +54,7 @@ import { chromium } from "playwright";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { existsSync, readFileSync } from "node:fs";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const DOSSIER = resolve(process.argv[2] ?? join(RACINE, "docs", "maquettes"));
@@ -103,8 +104,8 @@ const MONTANTS = [
   { radio: "m-t", ttc: FACTURE_TTC },
 ];
 
-const CHROME = process.env.CHROME_ATLAS ?? "/opt/pw-browsers/chromium";
-const navigateur = await chromium.launch(existsSync(CHROME) ? { executablePath: CHROME } : {});
+const CHROME = cheminDuNavigateur();
+const navigateur = await chromium.launch({ executablePath: cheminDuNavigateur() });
 const contexte = await navigateur.newContext({
   viewport: { width: 430, height: 1200 },
   javaScriptEnabled: false, // son lecteur n'en exécute pas — les planches non plus

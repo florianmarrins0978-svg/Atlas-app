@@ -1,14 +1,10 @@
 import { chromium, devices, type Browser, type LaunchOptions } from "playwright";
-import { existsSync } from "node:fs";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
-// Chemin spécifique à cet environnement de développement — utilisé
-// uniquement s'il existe réellement. Sur un runner CI standard (après
-// `npx playwright install chromium`), ce chemin n'existe pas : Playwright
-// utilise alors son propre navigateur installé, sans configuration
-// supplémentaire. PLAYWRIGHT_EXECUTABLE_PATH permet de surcharger
-// explicitement si besoin (un autre environnement de développement, par
-// exemple).
-const CHEMIN_SANDBOX = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
+// Le navigateur se trouve à UN endroit, `_navigateur.mjs` : un chemin écrit en
+// dur ici a fait tomber 88 suites le 28 octobre 2026, sur un poste dont la
+// version de Chromium avait changé. Sur un runner de CI, il ne trouve rien, et
+// Playwright prend le sien.
 
 /**
  * Le délai par défaut de toute attente, dans toutes les suites.
@@ -105,7 +101,7 @@ const RETENIR_LE_SAUT_VERS_LA_MESSAGERIE = `
  * téléphone », et non plus « une fenêtre d'ordinateur de 800 × 600 ».
  */
 export async function lancerNavigateur(optionsSupplementaires: Omit<LaunchOptions, "executablePath"> = {}): Promise<Browser> {
-  const executablePath = process.env.PLAYWRIGHT_EXECUTABLE_PATH ?? (existsSync(CHEMIN_SANDBOX) ? CHEMIN_SANDBOX : undefined);
+  const executablePath = cheminDuNavigateur();
   // **Un nom de fichier accentué se garde, comme sur son téléphone** (27 octobre
   // 2026). Sans paramètres régionaux UTF-8, Chromium jette « Dossier justifié,
   // Octobre 2026.pdf » et range le fichier sous « download » : la suite des

@@ -22,6 +22,7 @@
 import { mkdirSync } from "node:fs";
 import { chromium, devices } from "playwright";
 import { existsSync } from "node:fs";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const dossier = process.argv[2];
 if (!dossier) {
@@ -36,14 +37,14 @@ const BASE = process.env.BASE_URL ?? "http://localhost:3000";
 // (`AGENTS.md`) — `HAUTEUR=560` rend un écran trop court, et la feuille doit
 // alors annoncer ce qui passe sous le pli.
 const HAUTEUR = Number(process.env.HAUTEUR ?? 664);
-const CHROME = process.env.CHROME_ATLAS ?? "/opt/pw-browsers/chromium";
+const CHROME = cheminDuNavigateur();
 
 const navigateur = await chromium.launch({
   // **`headless` explicite.** Sans lui, le navigateur s'ouvrait dans une vraie
   // fenêtre de 717 × 421 et le viewport demandé n'était jamais appliqué : on
   // mesurait un écran que personne ne possède.
   headless: true,
-  ...(existsSync(CHROME) ? { executablePath: CHROME } : {}),
+  ...({ executablePath: cheminDuNavigateur() }),
   args: ["--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream"],
 });
 // **Le viewport se pose APRÈS le descripteur, et pas seulement par lui.**

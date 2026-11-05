@@ -23,13 +23,13 @@
 */
 
 import { chromium } from "playwright";
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const MAQUETTE = join(RACINE, "docs", "maquettes", "26-la-bascule-affinee.html");
-const CHEMIN_SANDBOX = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
 
 const dossier = resolve(process.argv[2] ?? join(RACINE, "captures-bascule"));
 mkdirSync(dossier, { recursive: true });
@@ -44,7 +44,7 @@ const NOMS = [
 ];
 
 const executable =
-  process.env.PLAYWRIGHT_EXECUTABLE_PATH ?? (existsSync(CHEMIN_SANDBOX) ? CHEMIN_SANDBOX : undefined);
+  cheminDuNavigateur();
 const navigateur = await chromium.launch(executable ? { executablePath: executable } : {});
 const contexte = await navigateur.newContext({
   javaScriptEnabled: false,

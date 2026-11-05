@@ -28,16 +28,15 @@
 */
 
 import { chromium } from "playwright";
-import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const FICHIER = join(RACINE, "appli", "deux-boutons-devis.html");
 
 // Chemin propre à cet environnement, utilisé seulement s’il existe : ailleurs,
 // Playwright trouve son propre navigateur.
-const CHEMIN_SANDBOX = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
 
 const problemes = [];
 function verifier(quoi, condition) {
@@ -49,7 +48,7 @@ function verifier(quoi, condition) {
 }
 
 const navigateur = await chromium.launch(
-  existsSync(CHEMIN_SANDBOX) ? { executablePath: CHEMIN_SANDBOX } : {},
+  { executablePath: cheminDuNavigateur() },
 );
 const page = await navigateur.newPage({ viewport: { width: 1280, height: 1400 } });
 // `networkidle`, jamais `domcontentloaded` : mesurer avant la mise en page,

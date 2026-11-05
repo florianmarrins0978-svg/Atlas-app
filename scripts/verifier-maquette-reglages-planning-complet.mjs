@@ -34,10 +34,10 @@
   Usage : node scripts/verifier-maquette-reglages-planning-complet.mjs
 */
 import path from "node:path";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { chromium } from "playwright";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
-const CHEMIN_SANDBOX = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
 const PAGE = "file://" + path.resolve("appli/reglages-planning-complet.html");
 const PROPOSITIONS = ["phrase", "echelle", "jour"];
 
@@ -61,7 +61,7 @@ const enRvb = (hex) =>
   `rgb(${parseInt(hex.slice(1, 3), 16)}, ${parseInt(hex.slice(3, 5), 16)}, ${parseInt(hex.slice(5, 7), 16)})`;
 
 const navigateur = await chromium.launch(
-  existsSync(CHEMIN_SANDBOX) ? { executablePath: CHEMIN_SANDBOX } : {}
+  { executablePath: cheminDuNavigateur() }
 );
 const contexte = await navigateur.newContext({ viewport: { width: 390, height: 844 } });
 const page = await contexte.newPage();

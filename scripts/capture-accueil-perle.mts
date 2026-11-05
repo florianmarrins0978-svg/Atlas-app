@@ -26,8 +26,8 @@
  *
  *   npx tsx scripts/capture-accueil-perle.mts [dossier] [port]
  */
-import { existsSync, readdirSync } from "node:fs";
 import { chromium } from "playwright";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const dossier = process.argv[2] ?? "/tmp";
 const port = process.argv[3] ?? "3000";
@@ -37,16 +37,6 @@ const base = `http://localhost:${port}`;
 const LIGNE_ATTENDUE = 122;
 /** Ce qu'on tolère entre le point et le milieu du cadre. */
 const ECART_TOLERE = 3;
-
-function navigateurPreInstalle(): string | undefined {
-  if (process.env.CHROMIUM_PATH) return process.env.CHROMIUM_PATH;
-  const racine = process.env.PLAYWRIGHT_BROWSERS_PATH;
-  if (!racine || !existsSync(racine)) return undefined;
-  const nom = readdirSync(racine).find((d) => /^chromium-\d+$/.test(d));
-  if (!nom) return undefined;
-  const chemin = `${racine}/${nom}/chrome-linux/chrome`;
-  return existsSync(chemin) ? chemin : undefined;
-}
 
 /**
  * **Deux hauteurs d'écran, et la seconde n'est pas un luxe.**
@@ -68,7 +58,7 @@ const ECRANS = [
   { hauteur: 1100, quoi: "écran haut : la liste ne défile presque plus" },
 ];
 
-const navigateur = await chromium.launch({ executablePath: navigateurPreInstalle() });
+const navigateur = await chromium.launch({ executablePath: cheminDuNavigateur() });
 const griefs: string[] = [];
 let page!: import("playwright").Page;
 let ecranCourant = 0;

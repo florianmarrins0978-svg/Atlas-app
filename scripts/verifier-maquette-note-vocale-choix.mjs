@@ -57,6 +57,7 @@ import { chromium } from "playwright";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { existsSync } from "node:fs";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const CIBLE = resolve(process.argv[2] ?? join(RACINE, "appli", "note-vocale-choix.html"));
@@ -69,8 +70,8 @@ if (!existsSync(CIBLE)) {
 /** Ce que le navigateur entend par un centimètre : 96 points par pouce. */
 const PX_PAR_CM = 96 / 2.54;
 
-const CHROME = process.env.CHROME_ATLAS ?? "/opt/pw-browsers/chromium";
-const navigateur = await chromium.launch(existsSync(CHROME) ? { executablePath: CHROME } : {});
+const CHROME = cheminDuNavigateur();
+const navigateur = await chromium.launch({ executablePath: cheminDuNavigateur() });
 
 const plaintes = [];
 const dire = (bon, quoi) => {

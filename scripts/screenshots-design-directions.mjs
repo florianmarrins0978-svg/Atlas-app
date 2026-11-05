@@ -1,5 +1,6 @@
 import { chromium } from "playwright";
 import { mkdirSync } from "fs";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const OUT = "artifacts/screenshots/step-02-design-directions";
 mkdirSync(OUT, { recursive: true });
@@ -13,7 +14,7 @@ const pages = [
 ];
 
 const browser = await chromium.launch({
-  executablePath: "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+  executablePath: cheminDuNavigateur(),
 });
 const context = await browser.newContext({
   viewport: { width: 393, height: 852 },

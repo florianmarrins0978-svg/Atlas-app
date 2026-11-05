@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import React from "react";
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { chromium } from "playwright";
 import { compile } from "@tailwindcss/node";
 import { calculerPlan } from "../src/lib/arrosage/calcul.js";
@@ -8,6 +8,7 @@ import { dessinerPlan, type ZoneDessinee } from "../src/lib/arrosage/plan-dessin
 import PlanDessine from "../src/app/paysage/arrosage/PlanDessine";
 import LePlanDuJardin from "../src/app/paysage/arrosage/LePlanDuJardin";
 import type { ParametresPlan } from "../src/lib/arrosage/consignes";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 /**
  * REGARDER LE PLAN — sans serveur, sans base, sans clé d'IA.
@@ -44,16 +45,6 @@ if (!dossier) {
   process.exit(1);
 }
 mkdirSync(dossier, { recursive: true });
-
-function navigateurPreInstalle(): string | undefined {
-  const racine = process.env.PLAYWRIGHT_BROWSERS_PATH;
-  if (!racine || !existsSync(racine)) return undefined;
-  if (existsSync(`${racine}/chromium`)) return `${racine}/chromium`;
-  const sous = readdirSync(racine).find((d) => /^chromium-\d+$/.test(d));
-  return sous && existsSync(`${racine}/${sous}/chrome-linux/chrome`)
-    ? `${racine}/${sous}/chrome-linux/chrome`
-    : undefined;
-}
 
 type Zone = { id: number; type: string; nom: string; x: number; y: number; L: number; l: number };
 
@@ -220,7 +211,7 @@ ${html.replaceAll('"/arrosage-photos/', `"${racine}arrosage-photos/`).replaceAll
 }
 
 async function capturer() {
-  const navigateur = await chromium.launch({ executablePath: navigateurPreInstalle(), args: ["--allow-file-access-from-files"] });
+  const navigateur = await chromium.launch({ executablePath: cheminDuNavigateur(), args: ["--allow-file-access-from-files"] });
   const contexte = await navigateur.newContext({ viewport: { width: 390, height: 900 }, deviceScaleFactor: 2 });
   const onglet = await contexte.newPage();
 

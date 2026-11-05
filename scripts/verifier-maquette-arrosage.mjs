@@ -39,10 +39,11 @@
   planche dégradée qu'il prétend détecter.
 */
 
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const MAQUETTES = join(RACINE, "docs", "maquettes");
@@ -50,7 +51,6 @@ const ENTREE = join(MAQUETTES, "69-le-plan-darrosage.html");
 const SECTEURS = join(MAQUETTES, "70-le-debit-ne-se-partage-pas.html");
 const SORTIES = join(MAQUETTES, "71-ce-qui-sort-du-plan.html");
 
-const CHEMIN_SANDBOX = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
 
 let echecs = 0;
 async function cas(nom, verifier) {
@@ -109,7 +109,7 @@ await cas("la planche 69 s'ouvre sur B — celle que je recommande", () => {
 });
 
 const navigateur = await chromium.launch(
-  existsSync(CHEMIN_SANDBOX) ? { executablePath: CHEMIN_SANDBOX } : {}
+  { executablePath: cheminDuNavigateur() }
 );
 // **Sans JavaScript, comme chez lui.** C'est la seule façon de voir ce qu'il
 // verra : une planche bâtie en JS s'affiche parfaitement ici, et vide chez lui.

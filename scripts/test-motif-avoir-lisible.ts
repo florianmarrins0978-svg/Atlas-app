@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { build } from "esbuild";
 import { compile } from "@tailwindcss/node";
 import { chromium, type Page } from "playwright";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 /**
  * **LE MOTIF D'UN AVOIR SE RELIT EN ENTIER** — les notes de sa planche de la
@@ -26,14 +27,6 @@ import { chromium, type Page } from "playwright";
  */
 
 const RACINE = path.join(__dirname, "..");
-
-function navigateurPreInstalle(): string | undefined {
-  const racine = process.env.PLAYWRIGHT_BROWSERS_PATH;
-  if (!racine || !existsSync(racine)) return undefined;
-  if (existsSync(`${racine}/chromium`)) return `${racine}/chromium`;
-  const sous = readdirSync(racine).find((d) => /^chromium-\d+$/.test(d));
-  return sous && existsSync(`${racine}/${sous}/chrome-linux/chrome`) ? `${racine}/${sous}/chrome-linux/chrome` : undefined;
-}
 
 // Le motif de sa planche, rallongé comme il l'écrirait sur un chantier.
 const MOTIF_LONG =
@@ -89,7 +82,7 @@ async function eprouver() {
     logLevel: "silent",
   });
 
-  const navigateur = await chromium.launch({ executablePath: navigateurPreInstalle() });
+  const navigateur = await chromium.launch({ executablePath: cheminDuNavigateur() });
   try {
     const page = await navigateur.newPage({ viewport: { width: 390, height: 664 } });
     const erreurs: string[] = [];

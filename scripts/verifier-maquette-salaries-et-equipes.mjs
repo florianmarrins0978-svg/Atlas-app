@@ -22,13 +22,13 @@
 // savoir échouer ») : planche amputée de son alerte de doublon, planche dont le
 // curseur des équipes ne pilote plus le planning, planche dont la C garde le
 // curseur des salariés — chaque fois rouge, sur la bonne ligne.
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { chromium } from "playwright";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const CHEMIN = process.argv[2] ?? "appli/salaries-et-equipes.html";
 const PLANCHE = resolve(CHEMIN);
-const CHEMIN_SANDBOX = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
 
 const echecs = [];
 const dire = (bon, quoi) => {
@@ -45,7 +45,7 @@ const source = readFileSync(PLANCHE, "utf8");
 dire(!/<img\b/i.test(source), "aucune image : tout se touche");
 
 const navigateur = await chromium.launch(
-  existsSync(CHEMIN_SANDBOX) ? { executablePath: CHEMIN_SANDBOX } : {}
+  { executablePath: cheminDuNavigateur() }
 );
 const page = await navigateur.newPage({ viewport: { width: 1000, height: 1400 } });
 const plaintes = [];

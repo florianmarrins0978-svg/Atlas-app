@@ -60,7 +60,8 @@ import assert from "node:assert/strict";
 import { chromium } from "playwright";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { existsSync, mkdirSync, readFileSync } from "node:fs";
+import { mkdirSync, readFileSync } from "node:fs";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const FICHIER = join(RACINE, "appli", "dictee-embellie.html");
@@ -80,8 +81,8 @@ const source = readFileSync(FICHIER, "utf8");
 const FLECHES = /[→←↑↓⇒⇐➔⟶▸▶◂◀]/u;
 assert.ok(!FLECHES.test(source), "Une flèche décorative s'est glissée dans la planche.");
 
-const CHROME = process.env.CHROME_ATLAS ?? "/opt/pw-browsers/chromium";
-const navigateur = await chromium.launch(existsSync(CHROME) ? { executablePath: CHROME } : {});
+const CHROME = cheminDuNavigateur();
+const navigateur = await chromium.launch({ executablePath: cheminDuNavigateur() });
 const page = await navigateur.newPage({ viewport: { width: 390, height: 860 }, deviceScaleFactor: 2 });
 page.on("pageerror", (e) => {
   console.error("La planche a levé une erreur :", e.message);

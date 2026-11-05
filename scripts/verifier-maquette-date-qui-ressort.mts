@@ -1,17 +1,11 @@
 // Parcourir la planche comme lui : toucher chaque lettre, en clair et en nuit.
 import { chromium } from "playwright";
-import { existsSync, readdirSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { resolve } from "node:path";
-function nav(): string | undefined {
-  const r = process.env.PLAYWRIGHT_BROWSERS_PATH;
-  if (!r || !existsSync(r)) return undefined;
-  if (existsSync(`${r}/chromium`)) return `${r}/chromium`;
-  const s = readdirSync(r).find((d) => /^chromium-\d+$/.test(d));
-  return s && existsSync(`${r}/${s}/chrome-linux/chrome`) ? `${r}/${s}/chrome-linux/chrome` : undefined;
-}
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 const echecs: string[] = [];
 let temoinNomGauche = 0;
-const b = await chromium.launch({ executablePath: nav() });
+const b = await chromium.launch({ executablePath: cheminDuNavigateur() });
 const p = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
 // **Le chemin est résolu ici, pas supposé absolu.** Branché sur
 // `npm run verifier:maquette`, il arrive relatif au dépôt ; lancé à la main, il

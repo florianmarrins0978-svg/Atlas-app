@@ -21,13 +21,12 @@
 */
 
 import { chromium } from "playwright";
-import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const FICHIER = join(RACINE, "appli", "planning-memoire.html");
-const CHEMIN_SANDBOX = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
 
 const problemes = [];
 function verifier(quoi, condition) {
@@ -39,7 +38,7 @@ function verifier(quoi, condition) {
 }
 
 const navigateur = await chromium.launch(
-  existsSync(CHEMIN_SANDBOX) ? { executablePath: CHEMIN_SANDBOX } : {},
+  { executablePath: cheminDuNavigateur() },
 );
 const contexte = await navigateur.newContext({ viewport: { width: 430, height: 1200 } });
 const page = await contexte.newPage();

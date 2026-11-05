@@ -23,6 +23,7 @@ import { chromium } from "playwright";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { existsSync, readFileSync } from "node:fs";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const CHEMIN = resolve(process.argv[2] ?? join(RACINE, "appli/arrosage-discuter.html"));
@@ -42,8 +43,7 @@ const cas = (nom, fn) => {
   }
 };
 
-const SANDBOX = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
-const nav = await chromium.launch(existsSync(SANDBOX) ? { executablePath: SANDBOX } : {});
+const nav = await chromium.launch({ executablePath: cheminDuNavigateur() });
 const page = await (await nav.newContext({ viewport: { width: 390, height: 900 } })).newPage();
 await page.goto(`file://${CHEMIN}`, { waitUntil: "load" });
 

@@ -1,9 +1,10 @@
 import { spawn, spawnSync } from "node:child_process";
 import { NPM, OPTIONS_SERVEUR, arreterArbre } from "./_processus";
 import { setTimeout as attendre } from "node:timers/promises";
-import { existsSync, readdirSync, openSync, readFileSync } from "node:fs";
+import { openSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 // Monte un serveur, se connecte réellement derrière une origine étrangère, puis
 // éteint tout. Enveloppe `verifier-connexion.mjs`, qui suppose un serveur déjà
@@ -29,17 +30,6 @@ const PORT = process.env.ATLAS_ADRESSE
   ? new URL(process.env.ATLAS_ADRESSE).port || "3000"
   : "3000";
 const SANTE = `http://127.0.0.1:${PORT}/api/health/live`;
-
-/** Playwright ne trouve pas seul un navigateur installé hors de son cache. */
-function navigateurPreInstalle(): string | undefined {
-  if (process.env.CHROMIUM_PATH) return process.env.CHROMIUM_PATH;
-  const racine = process.env.PLAYWRIGHT_BROWSERS_PATH;
-  if (!racine || !existsSync(racine)) return undefined;
-  const dossier = readdirSync(racine).find((d) => /^chromium-\d+$/.test(d));
-  if (!dossier) return undefined;
-  const chemin = `${racine}/${dossier}/chrome-linux/chrome`;
-  return existsSync(chemin) ? chemin : undefined;
-}
 
 async function repond(): Promise<boolean> {
   try {
@@ -192,7 +182,7 @@ if (!pret) {
   process.exit(1);
 }
 
-const navigateur = navigateurPreInstalle();
+const navigateur = cheminDuNavigateur();
 const r = spawnSync("node", ["scripts/verifier-connexion.mjs"], {
   stdio: "inherit",
   env: {

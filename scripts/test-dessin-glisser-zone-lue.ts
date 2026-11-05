@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
-import { existsSync, readdirSync } from "node:fs";
 import { build } from "esbuild";
 import { chromium } from "playwright";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 /**
  * **UNE ZONE LUE SUR LA PHOTO SE GLISSE AU DOIGT** — sa capture du 23 octobre
@@ -22,14 +22,6 @@ import { chromium } from "playwright";
  *
  *   npx tsx scripts/test-dessin-glisser-zone-lue.ts
  */
-
-function navigateurPreInstalle(): string | undefined {
-  const racine = process.env.PLAYWRIGHT_BROWSERS_PATH;
-  if (!racine || !existsSync(racine)) return undefined;
-  if (existsSync(`${racine}/chromium`)) return `${racine}/chromium`;
-  const sous = readdirSync(racine).find((d) => /^chromium-\d+$/.test(d));
-  return sous && existsSync(`${racine}/${sous}/chrome-linux/chrome`) ? `${racine}/${sous}/chrome-linux/chrome` : undefined;
-}
 
 // Le plan de sa capture : un terrain de 17,5 × 12,5, des tamariniers cotés,
 // et un goutte-à-goutte dont la photo ne donne aucune cote.
@@ -65,7 +57,7 @@ async function eprouver() {
     logLevel: "silent",
   });
 
-  const navigateur = await chromium.launch({ executablePath: navigateurPreInstalle() });
+  const navigateur = await chromium.launch({ executablePath: cheminDuNavigateur() });
   try {
     const page = await navigateur.newPage({ viewport: { width: 430, height: 900 } });
     const erreurs: string[] = [];

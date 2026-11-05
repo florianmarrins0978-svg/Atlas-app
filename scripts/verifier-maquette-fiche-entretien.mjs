@@ -29,6 +29,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
 import { existsSync } from "node:fs";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const MAQUETTES = join(RACINE, "docs", "maquettes");
@@ -36,7 +37,6 @@ const FICHE = join(MAQUETTES, "62-la-fiche-dentretien.html");
 const RAPPORT = join(MAQUETTES, "63-le-rapport-au-client.html");
 const MODELE = join(RACINE, "appli", "composer-sa-fiche.html");
 
-const CHEMIN_SANDBOX = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
 
 let echecs = 0;
 async function cas(nom, verifier) {
@@ -80,7 +80,7 @@ await cas("« Vrai » et « Faux » ne sortent pas vers le client", async () => 
 });
 
 const navigateur = await chromium.launch(
-  existsSync(CHEMIN_SANDBOX) ? { executablePath: CHEMIN_SANDBOX } : {}
+  { executablePath: cheminDuNavigateur() }
 );
 // **Sans JavaScript, comme chez lui.** C'est la seule façon de voir ce qu'il
 // verra : une planche bâtie en JS s'affiche parfaitement ici, et vide chez lui.

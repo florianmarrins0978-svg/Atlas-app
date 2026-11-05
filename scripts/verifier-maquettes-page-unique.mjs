@@ -16,6 +16,7 @@ import { chromium } from "playwright";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { existsSync, mkdirSync } from "node:fs";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const CIBLE = process.argv[2] ?? join(RACINE, "docs", "maquettes", "toutes-les-maquettes.html");
@@ -30,8 +31,8 @@ if (CAPTURES) mkdirSync(CAPTURES, { recursive: true });
 // Playwright ne trouve pas toujours son navigateur ici ; le conteneur en
 // fournit un, et le désigner évite un « Executable doesn't exist » qui
 // enverrait chercher du côté de l'installation plutôt que de la page.
-const CHROME = process.env.CHROME_ATLAS ?? "/opt/pw-browsers/chromium";
-const navigateur = await chromium.launch(existsSync(CHROME) ? { executablePath: CHROME } : {});
+const CHROME = cheminDuNavigateur();
+const navigateur = await chromium.launch({ executablePath: cheminDuNavigateur() });
 // Le défilement doux rendait la mesure intermittente : on la prend donc sous
 // « mouvement réduit », où la page saute directement à l'ancre. C'est aussi le
 // réglage de ceux qui désactivent les animations — donc un cas réel, pas une

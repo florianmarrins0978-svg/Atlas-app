@@ -21,14 +21,14 @@
   ─────────────────────────────────────────────────────────────────────────────
 */
 
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PLANCHE = join(RACINE, "appli", "choisir-l-heure.html");
-const CHEMIN_SANDBOX = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
 
 let echecs = 0;
 async function cas(nom, verifier) {
@@ -62,7 +62,7 @@ await cas("le pas est de cinq minutes, et rien d'autre", () => {
 });
 
 const navigateur = await chromium.launch(
-  existsSync(CHEMIN_SANDBOX) ? { executablePath: CHEMIN_SANDBOX } : {}
+  { executablePath: cheminDuNavigateur() }
 );
 // Sans JavaScript, comme chez lui.
 const contexte = await navigateur.newContext({ javaScriptEnabled: false });

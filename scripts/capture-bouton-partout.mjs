@@ -24,18 +24,18 @@
 */
 
 import { chromium } from "playwright";
-import { existsSync, mkdirSync } from "node:fs";
+import { mkdirSync } from "node:fs";
 import { resolve } from "node:path";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const BASE = process.env.ATLAS_BASE ?? "http://localhost:3000";
-const CHEMIN_SANDBOX = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
 const PIN = "rgb(47, 59, 47)"; // colors.rust — l'action principale, et rien d'autre
 
 const dossier = resolve(process.argv[2] ?? "captures-bouton");
 mkdirSync(dossier, { recursive: true });
 
 const executable =
-  process.env.PLAYWRIGHT_EXECUTABLE_PATH ?? (existsSync(CHEMIN_SANDBOX) ? CHEMIN_SANDBOX : undefined);
+  cheminDuNavigateur();
 const navigateur = await chromium.launch(executable ? { executablePath: executable } : {});
 // L'écran du patron : 390 × 664, la place réelle d'une page sur son téléphone.
 const contexte = await navigateur.newContext({

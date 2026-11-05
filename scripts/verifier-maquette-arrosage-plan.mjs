@@ -41,6 +41,7 @@ import { existsSync } from "node:fs";
 // propres références finit par défendre celles d'avant-hier — c'est exactement
 // ce qui est arrivé à la légende de cette planche (voir plus bas).
 import { CATALOGUE } from "../src/lib/arrosage/catalogue.js";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const CHEMIN = resolve(process.argv[2] ?? join(RACINE, "appli/arrosage-plan.html"));
@@ -63,9 +64,8 @@ const cas = (nom, fn) => {
   }
 };
 
-const CHEMIN_SANDBOX = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
 const navigateur = await chromium.launch(
-  existsSync(CHEMIN_SANDBOX) ? { executablePath: CHEMIN_SANDBOX } : {}
+  { executablePath: cheminDuNavigateur() }
 );
 const page = await (await navigateur.newContext({ viewport: { width: 390, height: 900 } })).newPage();
 await page.goto(`file://${CHEMIN}`, { waitUntil: "load" });

@@ -13,9 +13,10 @@
 //
 // Les quatre moments, dans son ordre : la porte, la fiche, la facture vide qui
 // REFUSE de partir, et la facture remplie.
-import { existsSync, mkdirSync, readdirSync } from "node:fs";
+import { mkdirSync } from "node:fs";
 import { chromium, devices } from "playwright";
 import path from "node:path";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const dossier = process.argv[2];
 if (!dossier) {
@@ -27,15 +28,7 @@ const BASE = (process.argv[3] ?? process.env.ATLAS_ADRESSE ?? "http://localhost:
 
 // `localhost`, jamais `127.0.0.1` : Next refuse ses ressources de développement
 // à une origine étrangère, et la page arrive alors JAMAIS hydratée.
-function pre(): string | undefined {
-  const r = process.env.PLAYWRIGHT_BROWSERS_PATH;
-  if (!r || !existsSync(r)) return undefined;
-  if (existsSync(`${r}/chromium`)) return `${r}/chromium`;
-  const s = readdirSync(r).find((d) => /^chromium-\d+$/.test(d));
-  return s && existsSync(`${r}/${s}/chrome-linux/chrome`) ? `${r}/${s}/chrome-linux/chrome` : undefined;
-}
-
-const navigateur = await chromium.launch({ executablePath: pre() });
+const navigateur = await chromium.launch({ executablePath: cheminDuNavigateur() });
 const contexte = await navigateur.newContext({
   ...devices["iPhone 13"],
   isMobile: true,

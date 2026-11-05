@@ -30,19 +30,18 @@
   Usage : node scripts/verifier-maquette-temps-sur-la-fiche.mjs
 */
 import path from "node:path";
-import { existsSync } from "node:fs";
 import { chromium } from "playwright";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 // Le navigateur du bac à sable, quand il est là — le même chemin que les
 // contrôles voisins. Ailleurs (la CI), Playwright trouve le sien.
-const CHEMIN_SANDBOX = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
 
 const PAGE = "file://" + path.resolve("appli/temps-sur-la-fiche.html");
 const soucis = [];
 const dire = (ok, quoi) => { if (!ok) soucis.push(quoi); };
 
 const navigateur = await chromium.launch(
-  existsSync(CHEMIN_SANDBOX) ? { executablePath: CHEMIN_SANDBOX } : {}
+  { executablePath: cheminDuNavigateur() }
 );
 const contexte = await navigateur.newContext({ viewport: { width: 390, height: 844 } });
 const page = await contexte.newPage();

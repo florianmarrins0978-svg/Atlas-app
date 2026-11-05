@@ -36,10 +36,10 @@
   Usage : node scripts/verifier-maquette-message-et-allure.mjs
 */
 import path from "node:path";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { chromium } from "playwright";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
-const CHEMIN_SANDBOX = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
 const MESSAGE = "file://" + path.resolve("appli/mon-message-au-client.html");
 const ALLURE = "file://" + path.resolve("appli/allure-de-mes-devis.html");
 
@@ -47,7 +47,7 @@ const soucis = [];
 const dire = (ok, quoi) => { if (!ok) soucis.push(quoi); };
 
 const navigateur = await chromium.launch(
-  existsSync(CHEMIN_SANDBOX) ? { executablePath: CHEMIN_SANDBOX } : {}
+  { executablePath: cheminDuNavigateur() }
 );
 const contexte = await navigateur.newContext({ viewport: { width: 390, height: 844 } });
 const page = await contexte.newPage();

@@ -20,8 +20,9 @@
  * Exemple :
  *   npx tsx scripts/capture-etape.mts /tmp/vues <uuid> informations prix
  */
-import { existsSync, mkdirSync, readdirSync } from "node:fs";
+import { mkdirSync } from "node:fs";
 import { chromium, devices } from "playwright";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const dossier = process.argv[2];
 const chantierId = process.argv[3];
@@ -38,20 +39,7 @@ if (!dossier || !chantierId || etapes.length === 0) {
 }
 mkdirSync(dossier, { recursive: true });
 
-/** Playwright ne trouve pas seul un navigateur installé hors de son cache. */
-function navigateurPreInstalle(): string | undefined {
-  if (process.env.CHROMIUM_PATH) return process.env.CHROMIUM_PATH;
-  const racine = process.env.PLAYWRIGHT_BROWSERS_PATH;
-  if (!racine || !existsSync(racine)) return undefined;
-  const chemin = `${racine}/chromium`;
-  if (existsSync(chemin)) return chemin;
-  const sousDossier = readdirSync(racine).find((d) => /^chromium-\d+$/.test(d));
-  if (!sousDossier) return undefined;
-  const complet = `${racine}/${sousDossier}/chrome-linux/chrome`;
-  return existsSync(complet) ? complet : undefined;
-}
-
-const navigateur = await chromium.launch({ executablePath: navigateurPreInstalle() });
+const navigateur = await chromium.launch({ executablePath: cheminDuNavigateur() });
 // **L'écran du patron, barre du navigateur déduite.** Ces scripts posaient
 // 393 × 852 — la dalle d'un iPhone 14, pas la place qui reste à la page une
 // fois la barre d'adresse installée : 390 × 664. Sur le cadre trop haut, une

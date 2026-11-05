@@ -1,7 +1,8 @@
 import { spawn } from "node:child_process";
 import { setTimeout as attendre } from "node:timers/promises";
-import { rmSync, existsSync, readdirSync } from "node:fs";
+import { rmSync } from "node:fs";
 import { chromium } from "playwright";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 /**
  * **Sa page de connexion a-t-elle survécu à son serveur ?**
@@ -44,16 +45,6 @@ const DIST = ".next-batie";
 const ORIGINE_NAVIGATEUR = "http://localhost:3000";
 const HOTE_PUBLIC = "banc-essai-fictif-3000.app.github.dev";
 const IDENTIFIANTS = { email: "demo@atlas.local", motDePasse: "demo1234" };
-
-function cheminNavigateur(): string | undefined {
-  if (process.env.CHROMIUM_PATH) return process.env.CHROMIUM_PATH;
-  const racine = process.env.PLAYWRIGHT_BROWSERS_PATH;
-  if (!racine || !existsSync(racine)) return undefined;
-  const dossier = readdirSync(racine).find((d) => /^chromium-\d+$/.test(d));
-  if (!dossier) return undefined;
-  const chemin = `${racine}/${dossier}/chrome-linux/chrome`;
-  return existsSync(chemin) ? chemin : undefined;
-}
 
 async function repond(): Promise<boolean> {
   try {
@@ -110,7 +101,7 @@ if (await repond()) {
 
 await monter("Première construction");
 
-const nav = await chromium.launch({ executablePath: cheminNavigateur() });
+const nav = await chromium.launch({ executablePath: cheminDuNavigateur() });
 const page = await nav.newPage({ viewport: { width: 390, height: 844 } });
 await page.setExtraHTTPHeaders({ Origin: ORIGINE_NAVIGATEUR, "x-forwarded-host": HOTE_PUBLIC });
 

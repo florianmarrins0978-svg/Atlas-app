@@ -18,8 +18,9 @@
  *
  *   npx tsx scripts/capture-retrait-photo.mts <dossier> <chantierId>
  */
-import { existsSync, mkdirSync, readdirSync } from "node:fs";
+import { mkdirSync } from "node:fs";
 import { chromium, devices } from "playwright";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const dossier = process.argv[2];
 const chantierId = process.argv[3];
@@ -31,18 +32,7 @@ if (!dossier || !chantierId) {
 }
 mkdirSync(dossier, { recursive: true });
 
-function navigateurPreInstalle(): string | undefined {
-  if (process.env.CHROMIUM_PATH) return process.env.CHROMIUM_PATH;
-  const racine = process.env.PLAYWRIGHT_BROWSERS_PATH;
-  if (!racine || !existsSync(racine)) return undefined;
-  if (existsSync(`${racine}/chromium`)) return `${racine}/chromium`;
-  const sous = readdirSync(racine).find((d) => /^chromium-\d+$/.test(d));
-  return sous && existsSync(`${racine}/${sous}/chrome-linux/chrome`)
-    ? `${racine}/${sous}/chrome-linux/chrome`
-    : undefined;
-}
-
-const navigateur = await chromium.launch({ executablePath: navigateurPreInstalle() });
+const navigateur = await chromium.launch({ executablePath: cheminDuNavigateur() });
 const contexte = await navigateur.newContext({
   ...devices["iPhone 13"], isMobile: true,
   hasTouch: true,

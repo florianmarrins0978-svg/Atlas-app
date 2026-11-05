@@ -32,6 +32,7 @@ import { chromium } from "playwright";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const MAQUETTES = join(RACINE, "docs", "maquettes");
@@ -47,7 +48,6 @@ const ATTENDU = [
 
 // Chemin propre à cet environnement, utilisé seulement s'il existe : ailleurs,
 // Playwright trouve son propre navigateur.
-const CHEMIN_SANDBOX = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
 
 const problemes = [];
 function verifier(quoi, condition) {
@@ -160,7 +160,7 @@ for (const { fichier } of ATTENDU) {
 }
 
 const executable =
-  process.env.PLAYWRIGHT_EXECUTABLE_PATH ?? (existsSync(CHEMIN_SANDBOX) ? CHEMIN_SANDBOX : undefined);
+  cheminDuNavigateur();
 const navigateur = await chromium.launch(executable ? { executablePath: executable } : {});
 
 // **JavaScript coupé, pour de bon.** Un contrôle joué avec les scripts actifs

@@ -3,6 +3,7 @@ import { mkdirSync } from "fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURE = path.join(__dirname, "fixtures", "test-photo.jpg");
@@ -11,7 +12,7 @@ mkdirSync(OUT, { recursive: true });
 
 async function main() {
   const browser = await chromium.launch({
-    executablePath: "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+    executablePath: cheminDuNavigateur(),
   });
   const context = await browser.newContext({ ...devices["iPhone 13"], });
   const page = await context.newPage();
