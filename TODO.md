@@ -10,7 +10,9 @@ de switch entre les deux, ou de pas la mettre si l'utilisateur ne travaille
 pas par zone. Et modifiable. »* Il n'a pas dit de coder : **rien dans `src/`**.
 
 **Planche des zones** : `appli/soignee/zones-deplacement.html`. Un réglage
-dans Réglages, Équipe : Pas de zones, Paysage (MSA, 0 à 5, 5 à 20, 20 à 30,
+dans Réglages, Équipe, ouvert par une ligne « Zones de déplacement » sous les
+absences, qui dit ce qui est choisi (« Paysage, 4 zones » ; sa demande du
+5 novembre, « ajoute sur la planche la ligne équipe ») : Pas de zones, Paysage (MSA, 0 à 5, 5 à 20, 20 à 30,
 30 à 50 km), Bâtiment (1A 0 à 5, 1B 5 à 10, puis 2 à 5 par 10 km jusqu'à 50) ;
 chaque borne se change, une zone s'ajoute ou se retire, Remettre le barème.
 Départ : le siège, à vol d'oiseau. Les jours de chaque salarié comptés par
