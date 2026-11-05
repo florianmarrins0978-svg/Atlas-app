@@ -4433,3 +4433,32 @@ export const consommationIa = pgTable(
   (t) => [primaryKey({ columns: [t.entrepriseId, t.mois] })]
 );
 
+
+/**
+ * Une idée pour l'appli (migration 0167, sa planche du 5 novembre 2026) :
+ * l'artisan la dit, l'éditeur la range. **Deux lecteurs** : l'entreprise, sous
+ * l'isolation ordinaire, et l'éditeur, par `withEditeur`. Le nom de l'auteur et
+ * celui de son entreprise sont figés ici, pour que l'éditeur n'ait jamais à
+ * lire `users` ni `entreprises`.
+ */
+export const idees = pgTable("idees", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  entrepriseId: uuid("entreprise_id")
+    .notNull()
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  auteurId: uuid("auteur_id").references(() => users.id, { onDelete: "set null" }),
+  auteurNom: text("auteur_nom").notNull(),
+  auteurRole: text("auteur_role", { enum: ["proprietaire", "facturation", "commercial", "salarie"] }).notNull(),
+  entrepriseNom: text("entreprise_nom").notNull(),
+  texte: text("texte").notNull(),
+  etat: text("etat", { enum: ["envoyee", "prevue", "pas_prevue", "faite"] }).notNull().default("envoyee"),
+  reponse: text("reponse"),
+  envoyeeLe: timestamp("envoyee_le", { withTimezone: true }).notNull().defaultNow(),
+  traiteeLe: timestamp("traitee_le", { withTimezone: true }),
+});
+
+/** Les jours où l'éditeur a été prévenu d'une idée : une date, rien d'autre (0167). */
+export const ideesAlertes = pgTable("idees_alertes", {
+  jour: date("jour").primaryKey(),
+  envoyeeLe: timestamp("envoyee_le", { withTimezone: true }).notNull().defaultNow(),
+});

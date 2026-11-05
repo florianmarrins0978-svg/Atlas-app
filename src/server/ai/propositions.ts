@@ -64,6 +64,11 @@ export const TYPES_ACTION_PROPOSEE = [
   "regler_documents",
   "ajouter_prestation_entretien",
   "retirer_prestation_entretien",
+  // --- Sa planche du 5 novembre 2026, choix 3 B : quand il ne sait pas faire,
+  // l'assistant PROPOSE d'envoyer l'idée à Atlas. Elle ne part que s'il coche,
+  // comme tout le reste ; et c'est le seul geste qui ne touche à rien de chez
+  // lui (`src/server/repositories/idees.ts`).
+  "envoyer_idee",
 ] as const;
 
 export type TypeActionProposee = (typeof TYPES_ACTION_PROPOSEE)[number];

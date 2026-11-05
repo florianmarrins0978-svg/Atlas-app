@@ -965,4 +965,17 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     source: "src/server/ai/tools/rechercher-lignes-devis.ts",
     preuves: ["RechercherLignesDevis"],
   },
+  {
+    // Sa planche du 5 novembre 2026, choix 1 A : la porte s'appelle « Une
+    // idée pour l'appli », et elle est pour tout le monde.
+    id: "reglages-une-idee",
+    ecran: "Réglages",
+    ou: `${R}, tout en bas`,
+    intitule: "Dire à Atlas ce qui vous manque, proposer une idée",
+    motsCles: ["idee", "manque", "proposer", "suggestion", "ameliorer", "amelioration", "demander", "fonction", "ajouter", "avis"],
+    geste: "Touchez « Une idée pour l'appli », puis le micro, et dites ce qui vous manque. Ou « J'écris mon idée ».",
+    reserve: "Vos idées restent dessous, avec leur suite : Envoyée, Prévue, Dans l'appli ou Pas prévue.",
+    source: "src/app/reglages/idee/UneIdee.tsx",
+    preuves: ["Appuyez et dites ce qui vous manque", "J&apos;écris mon idée", "Vos idées"],
+  },
 ];

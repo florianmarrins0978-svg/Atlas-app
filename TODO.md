@@ -1,7 +1,11 @@
 # Prochaines tâches
 
 
-## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : une idée pour l'appli~~ TRANCHÉ LE 5 NOVEMBRE : 1 A, 2 B, 3 B, PAS CODÉ
+## ⏳ UNE IDÉE POUR L'APPLI, CODÉE LE 5 NOVEMBRE, BATTERIE À JOUER AVEC SON ACCORD (branche `lot/idees-pour-l-appli`)
+
+**Codé** (`ARCHITECTURE.md` §556, `PROJECT_STATE.md`). **Reste avant `main`** : la batterie (niveau 3 : migration 0167, isolation), dont `test-idees-db` et `test-idees-e2e` jamais joués ; regarder les trois écrans (`npm run voir -- /reglages`, `/reglages/idee`). **Écarts à la planche, dits** : pas de bouton « Écouter » (la voix n'est pas gardée), pas de « Demandée 3 fois », la carte de l'assistant est une proposition comme les autres. **Ouvert, à décider avec lui** : laisser partir une idée en lecture seule (essai fini, abonnement arrêté) ; la ligne de la page Confidentialité ; une idée dans l'export « Mes données ».
+
+### L'historique de la planche
 
 **Sa demande du 5 novembre** : *« un petit espace, pas vraiment contact, pour
 que l'utilisateur puisse à chaque fois me dire ce qu'il aimerait avoir en plus

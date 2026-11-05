@@ -1,5 +1,5 @@
-import { eq } from "drizzle-orm";
-import { db } from "./db/client";
+import { eq, sql } from "drizzle-orm";
+import { db, type DbOrTx } from "./db/client";
 import { users } from "./db/schema";
 import type { Ctx } from "./repositories/context";
 
@@ -53,4 +53,27 @@ export async function exigerEditeur(ctx: Ctx, action: string): Promise<void> {
   if (!(await estEditeur(ctx))) {
     throw new AccesEditeurRefuseError(action);
   }
+}
+
+/**
+ * **LA SEULE TRANSACTION OÙ UN COMPTE LIT AU-DELÀ DE SON ENTREPRISE** — les
+ * idées pour l'appli, et elles seules (migration 0167, 5 novembre 2026).
+ *
+ * L'éditeur lit les idées de toutes les entreprises. La table `idees` porte
+ * pour cela une politique de plus, qui ne s'ouvre que si
+ * `app.lecteur_des_idees` vaut « editeur » ; ce réglage n'est posé QU'ICI, et
+ * seulement après avoir relu le compte en base (`estEditeur`). Il ne vit que
+ * le temps de la transaction (`set_config(…, true)`), comme
+ * `app.entreprise_id` dans `withEntreprise`.
+ *
+ * **Ce qu'elle n'ouvre pas** : `app.entreprise_id` n'est pas posé, donc aucune
+ * autre table ne rend une ligne ici. Une requête sur les chantiers ou les
+ * clients écrite par erreur dans cette transaction rendrait zéro ligne.
+ */
+export async function withEditeur<T>(ctx: Ctx, action: string, fn: (tx: DbOrTx) => Promise<T>): Promise<T> {
+  await exigerEditeur(ctx, action);
+  return db.transaction(async (tx) => {
+    await tx.execute(sql`SELECT set_config('app.lecteur_des_idees', 'editeur', true)`);
+    return fn(tx);
+  });
 }

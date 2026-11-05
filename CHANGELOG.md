@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-05
 
+- **Une idée pour l'appli, codée** (ses choix 1 A, 2 B, 3 B, puis *« code ça »*). En bas des Réglages, pour tous les rôles : on dit ce qui manque au micro (la dictée du chantier) ou par écrit, « Envoyée, Annuler », et l'idée reste dessous avec sa suite (Envoyée, Prévue, Dans l'appli, Pas prévue) et la réponse d'Atlas. Chez l'éditeur seul, « Les idées reçues » : Nouvelles, Prévues, Traitées, ranger d'un appui, répondre ; un courriel par jour à `CONTACT_ATLAS`, sans le texte. L'assistant propose d'envoyer l'idée quand il ne trouve pas le geste. Ce que ça évite : une deuxième application, une table ouverte à tous, des idées perdues dans une boîte mail. Écart à la planche : la voix n'est pas gardée (pas de bouton « Écouter »). Migration 0167, `ARCHITECTURE.md` §556. Pas sur `main` : la batterie attend son accord.
 - **Zones : plus de case « Sans chantier »** (sa règle) : un jour au dépôt compte en zone 1. Pas codé.
 - **Les PDF des planches, alignés** (sa remarque : « Hors zone » et « Sans chantier » n'étaient pas alignés). Toutes les colonnes de zones ont la même largeur, chaque en-tête tient sur deux lignes collées en bas, et le nom comme le chiffre sont posés sur la même ligne d'écriture, dans les deux PDF.
 - **Zones : un nom qui se change, et une couleur par zone** (ses deux demandes). Une teinte du clair au foncé selon la distance, une barre de répartition sous chaque salarié ; éprouvée au validateur des couleurs dans les huit chartes. Pas codé.
