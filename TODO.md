@@ -14,9 +14,15 @@ dans Réglages, Équipe : Pas de zones, Paysage (MSA, 0 à 5, 5 à 20, 20 à 30,
 30 à 50 km), Bâtiment (1A 0 à 5, 1B 5 à 10, puis 2 à 5 par 10 km jusqu'à 50) ;
 chaque borne se change, une zone s'ajoute ou se retire, Remettre le barème.
 Départ : le siège, à vol d'oiseau. Les jours de chaque salarié comptés par
-zone (le chantier le plus loin de la journée), Zone inconnue en ambre pour un
-chantier non situé, Sans chantier, Hors zone ; tout se corrige zone par zone ;
-le PDF en colonnes. **Les deux modèles sont à vérifier sur les textes** (MSA
+zone (le chantier le plus loin de la journée), Sans chantier, Hors zone ; tout
+se corrige zone par zone ; le PDF en colonnes. **Un chantier non situé ne
+compte dans AUCUNE zone** (sa correction du 5 novembre : *« il faut un message
+avec le nombre de jours travaillés calculés, qui s'affiche en rouge parce qu'il
+manque une zone à ajouter, et l'utilisateur met le +1 sur la bonne zone »*) :
+le total du salarié passe en rouge, « 1 jour à placer dans une zone » sous son
+nom, et dans sa feuille, en tête, « Il manque 1 jour dans les zones » avec le
+jour et le lieu (« Mardi 10 novembre, Les Landes, adresse non située »). Le
+plus de la bonne zone l'efface ; un jour de trop se dit pareil. **Les deux modèles sont à vérifier sur les textes** (MSA
 et accord régional) avant de coder : ce poste ne joint pas msa.fr. **À
 trancher par lui** : un jour sur deux chantiers, la zone la plus loin ou celle
 du matin.

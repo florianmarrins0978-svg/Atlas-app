@@ -32,8 +32,12 @@
   ATLAS COMPTE, IL NE PAIE PAS : les montants changent deux fois par an et
   selon la région (docs/AGENT.md §3, rien ne s'invente). Un jour compte dans
   la zone du chantier le plus loin de la journée, même pour une demi-journée.
-  Un chantier sans adresse située se dit « Zone inconnue » ; un jour sans
-  chantier, « Sans chantier ». Tout se corrige à la main.
+  Un chantier sans adresse située ne compte dans AUCUNE zone : sa réponse du
+  5 novembre, « il faut un message avec le nombre de jours travaillés
+  calculés, qui s'affiche en rouge parce qu'il manque une zone à ajouter, et
+  l'utilisateur met le +1 sur la bonne zone ». Le message nomme le jour et le
+  lieu, pour qu'il sache laquelle. Un jour sans chantier se dit « Sans
+  chantier ». Tout se corrige à la main.
 
   RIEN N'EST CODÉ DANS src/. Distances inventées pour la planche, depuis le
   siège de l'Atelier Démo à Nantes.
@@ -78,7 +82,9 @@
 .gars-nom { display: block; font: 400 19px/1.25 var(--serif); color: var(--atlas-ink); }
 .gars-zones { display: block; margin-top: 4px; font-size: 14.5px; line-height: 1.45; color: var(--atlas-inkSoft); }
 .gars-zones b { font-weight: 600; color: var(--atlas-ink); }
-.gars-zones .inconnue { font-weight: 600; color: var(--atlas-carteAmbreTexte); }
+/* Son total passe au rouge tant qu'un jour n'est dans aucune zone. */
+.gars-compte.manque b, .gars-compte.manque small { color: var(--atlas-carteRougeTexte); }
+.gars-manque { display: block; margin-top: 6px; font-size: 14.5px; font-weight: 700; color: var(--atlas-carteRougeTexte); }
 .gars-compte { flex: none; min-width: 56px; padding-top: 2px; text-align: right; }
 .gars-compte b { display: block; font: 400 30px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; color: var(--atlas-ink); }
 .gars-compte small { display: block; margin-top: 4px; font-size: 13px; color: var(--atlas-inkSoft); }
@@ -92,14 +98,15 @@
 .pz-corps { flex: 1; min-width: 0; }
 .pz-nom { display: block; font: 400 18px/1.2 var(--serif); color: var(--atlas-ink); }
 .pz-sous { display: block; margin-top: 2px; font-size: 13.5px; color: var(--atlas-inkSoft); }
-.pz.inconnue .pz-nom, .pz.inconnue .pz-sous { color: var(--atlas-carteAmbreTexte); }
 .pas { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-ink);
        box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
 .pas[disabled] { color: var(--atlas-chevron); cursor: default; }
 .pas .ico { width: 20px; height: 20px; stroke-width: 2; }
 .pz-n { width: 34px; flex: none; text-align: center; font: 400 24px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; color: var(--atlas-ink); }
 .pz-n.corrige { color: var(--atlas-orTexte); }
-.compte-zones { margin-top: 14px; }
+.manque-zones { margin: 0 0 14px; }
+.manque-zones b { color: var(--atlas-carteRougeTexte); }
+.manque-zones span { display: block; margin-top: 6px; font-weight: 600; }
 .remettre { width: 100%; justify-content: center; margin-top: 4px; color: var(--atlas-orTexte); font-weight: 700; }
 .fermer { width: 100%; justify-content: center; margin-top: 4px; color: var(--atlas-inkSoft); }
 
@@ -121,7 +128,7 @@
 .pdf-table td { padding: 8px 2px; text-align: center; border-bottom: 1px solid #ebe8e1; }
 .pdf-table td.jours { font: 400 14px/1.1 Georgia, serif; }
 .pdf-table td.vide { color: #c9c4b8; }
-.pdf-table td.manque { color: #9c3b2e; font-weight: 700; }
+.pdf-manque { margin: 10px 0 0; color: #9c3b2e; font-weight: 700; }
 .pdf-boite { margin-top: auto; padding: 11px 13px; background: #f3f1ec; border: 1px solid #e3dfd6; }
 .pdf-boite span { display: block; margin-top: 4px; color: #8a8578; font-size: 9.5px; }
 .pdf-pied { display: flex; justify-content: space-between; margin-top: 14px; font-size: 8px; color: #8a8578; }
@@ -184,7 +191,8 @@
       <li>Un réglage, dans Réglages, Équipe : Pas de zones, Paysage (barème MSA) ou Bâtiment. Sans zones, rien ne se compte et rien ne s’affiche.</li>
       <li>Chaque borne se change, une zone s’ajoute ou se retire, et Remettre le barème rend le modèle. Les zones partent du siège ou du dépôt, à vol d’oiseau.</li>
       <li>Atlas compte les jours de chaque salarié par zone, avec le planning : qui était sur quel chantier, et où il est. Il ne calcule aucun montant : ils changent selon la région et deux fois par an, votre comptable les connaît.</li>
-      <li>Un jour sur deux chantiers compte la zone la plus loin, même pour une demi-journée. Un chantier sans adresse précise se dit Zone inconnue, en ambre, à corriger d’un appui.</li>
+      <li>Un jour sur deux chantiers compte la zone la plus loin, même pour une demi-journée.</li>
+      <li>Un chantier sans adresse précise ne compte dans aucune zone. Un message rouge dit combien de jours manquent, et lesquels : vous touchez plus sur la bonne zone, et il disparaît.</li>
       <li>Tout se corrige à la main, zone par zone, comme les jours travaillés. Le chiffre changé passe en or, et Remettre le calcul le rend.</li>
     </ul>
     <h2>À vérifier avant de coder</h2>
@@ -221,7 +229,7 @@ document.addEventListener("DOMContentLoaded", function () {
   /* Un caractère par jour travaillé de novembre (le 11 est férié). */
   var GENS = [
     { nom: "Julien", jours: 20, suite: "NRVDSBNNCCVVSANRRDNN" },
-    { nom: "Antoine", jours: 18, suite: "NRVDSBNNCCVVSZRDNP" },
+    { nom: "Antoine", jours: 18, suite: "NRVDSBNNCCVVSZRDNP", sauf: [23, 24] },
     { nom: "Paul", jours: 19.5, suite: "RRNVDBXNNVCCSSNRDNAR" }
   ];
 
@@ -240,19 +248,18 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     var fin = etat.zones.length ? etat.zones[etat.zones.length - 1][1] : 0;
     c.push({ cle: "hors", nom: "Hors zone", sous: "plus de " + nb(fin) + " km" });
-    c.push({ cle: "inconnue", nom: "Zone inconnue", sous: "l’adresse n’a pas pu être située", inconnue: true });
     c.push({ cle: "sans", nom: "Sans chantier", sous: "au dépôt ce jour-là" });
     return c;
   }
   function zoneDe(lieu) {
     if (lieu.depot) return "sans";
-    if (lieu.km === null) return "inconnue";
+    if (lieu.km === null) return null;
     for (var i = 0; i < etat.zones.length; i++) if (lieu.km <= etat.zones[i][1]) return etat.zones[i][0];
     return "hors";
   }
   function calcul(g) {
     var n = {};
-    g.suite.split("").forEach(function (l) { var z = zoneDe(LIEUX[l]); n[z] = (n[z] || 0) + 1; });
+    g.suite.split("").forEach(function (l) { var z = zoneDe(LIEUX[l]); if (z) n[z] = (n[z] || 0) + 1; });
     return n;
   }
   function compte(g, cle) {
@@ -260,6 +267,28 @@ document.addEventListener("DOMContentLoaded", function () {
     return k in etat.corrections ? etat.corrections[k] : (calcul(g)[cle] || 0);
   }
   function corrige(g, cle) { return (g.nom + ":" + cle) in etat.corrections; }
+  function capitale(t) { return t.charAt(0).toUpperCase() + t.slice(1); }
+
+  /* Ce que les zones ne couvrent pas : les jours travaillés, moins tout ce
+     qui est placé (zones, hors zone, sans chantier). Négatif : trop placé. */
+  function manque(g) {
+    var place = cases().reduce(function (t, c) { return t + compte(g, c.cle); }, 0);
+    return Math.ceil(g.jours) - place;
+  }
+  /* Les jours ouvrés de novembre 2026, le 11 férié retiré. */
+  var OUVRES = [2, 3, 4, 5, 6, 9, 10, 12, 13, 16, 17, 18, 19, 20, 23, 24, 25, 26, 27, 30];
+  var NOMS = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
+  /* Le jour et le lieu de chaque chantier qu'aucune zone ne prend : c'est ce
+     qui lui dit LAQUELLE toucher. */
+  function sansZone(g) {
+    var dates = OUVRES.filter(function (j) { return (g.sauf || []).indexOf(j) < 0; });
+    return g.suite.split("").map(function (l, i) {
+      var lieu = LIEUX[l];
+      if (lieu.depot || lieu.km !== null) return null;
+      var d = new Date(Date.UTC(2026, 10, dates[i], 12));
+      return capitale(NOMS[d.getUTCDay()]) + " " + dates[i] + " novembre, " + lieu.nom + ", adresse non située";
+    }).filter(Boolean);
+  }
 
   /* ─── Le réglage ──────────────────────────────────────────────────── */
   var reglage = document.getElementById("reglage");
@@ -341,8 +370,8 @@ document.addEventListener("DOMContentLoaded", function () {
       var n = compte(g, c.cle);
       if (!n) return null;
       // Espaces insécables : « zone 1B » ne se coupe pas en fin de ligne.
-      var mot = c.cle === "sans" ? "sans\u00a0chantier" : c.cle === "hors" ? "hors\u00a0zone" : c.cle === "inconnue" ? "en\u00a0zone\u00a0inconnue" : "en\u00a0" + c.nom.replace("Zone ", "zone\u00a0");
-      return c.inconnue ? '<span class="inconnue">' + n + "\u00a0" + mot + "</span>" : "<b>" + n + "</b>\u00a0" + mot;
+      var mot = c.cle === "sans" ? "sans\u00a0chantier" : c.cle === "hors" ? "hors\u00a0zone" : "en\u00a0" + c.nom.replace("Zone ", "zone\u00a0");
+      return "<b>" + n + "</b>\u00a0" + mot;
     }).filter(Boolean).join(", ");
   }
 
@@ -353,11 +382,14 @@ document.addEventListener("DOMContentLoaded", function () {
       '<span class="mois-nom">Novembre 2026</span><button class="mois-fleche" type="button" disabled aria-label="Le mois d’après">' + ico("suivant") + '</button></div>' +
       '<p class="mois-resume">Mois en cours, 20 jours ouvrés, le 11 est férié.</p>' +
       '<div class="plage gens">' + GENS.map(function (g, k) {
-        var corps = etat.choix === "aucune" ? "" : '<span class="gars-zones">' + phrase(g) + "</span>";
+        var m = manque(g);
+        var corps = etat.choix === "aucune" ? "" : '<span class="gars-zones">' + phrase(g) + "</span>" +
+          (m > 0 ? '<span class="gars-manque">' + jours(m) + " à placer dans une zone</span>" :
+           m < 0 ? '<span class="gars-manque">' + jours(-m) + " de trop dans les zones</span>" : "");
         return '<button class="gars touche" type="button" data-geste="salarie" data-k="' + k + '"' + (etat.choix === "aucune" ? " disabled" : "") + '>' +
           '<span class="initiales" aria-hidden="true">' + g.nom.charAt(0) + '</span>' +
           '<span class="gars-corps"><span class="gars-nom">' + g.nom + "</span>" + corps + "</span>" +
-          '<span class="gars-compte"><b>' + nb(g.jours) + "</b><small>" + (g.jours < 2 ? "jour" : "jours") + "</small></span></button>";
+          '<span class="gars-compte' + (etat.choix !== "aucune" && m !== 0 ? " manque" : "") + '"><b>' + nb(g.jours) + "</b><small>" + (g.jours < 2 ? "jour" : "jours") + "</small></span></button>";
       }).join("") + "</div>" +
       (etat.choix === "aucune" ? '<p class="sans-zones">Pas de zones : rien ne se compte.</p>' : "");
     joursZone.innerHTML = h;
@@ -366,23 +398,28 @@ document.addEventListener("DOMContentLoaded", function () {
   function peindreFeuille() {
     var g = GENS[etat.ouvert], somme = 0;
     var lignes = cases().filter(function (c) {
-      // Une case vide de « hors zone » ou « inconnue » ne se montre pas : elle ne
-      // dit rien ; les vraies zones restent toutes, pour pouvoir y ajouter un jour.
-      return !(c.cle === "hors" || c.cle === "inconnue") || compte(g, c.cle) > 0 || corrige(g, c.cle);
+      // « Hors zone » vide ne se montre pas : elle ne dit rien ; les vraies
+      // zones restent toutes, pour pouvoir y ajouter un jour.
+      return c.cle !== "hors" || compte(g, c.cle) > 0 || corrige(g, c.cle);
     }).map(function (c) {
       var n = compte(g, c.cle); somme += n;
-      return '<div class="pz' + (c.inconnue ? " inconnue" : "") + '"><span class="pz-corps"><span class="pz-nom">' + c.nom + '</span><span class="pz-sous">' + c.sous + "</span></span>" +
+      return '<div class="pz"><span class="pz-corps"><span class="pz-nom">' + c.nom + '</span><span class="pz-sous">' + c.sous + "</span></span>" +
         '<button type="button" class="pas" data-geste="pas" data-cle="' + c.cle + '" data-delta="-1" aria-label="Un jour de moins en ' + c.nom + '"' + (n === 0 ? " disabled" : "") + ">" + ico("moins") + "</button>" +
         '<span class="pz-n' + (corrige(g, c.cle) ? " corrige" : "") + '">' + n + "</span>" +
         '<button type="button" class="pas" data-geste="pas" data-cle="' + c.cle + '" data-delta="1" aria-label="Un jour de plus en ' + c.nom + '">' + ico("plus") + "</button></div>";
     }).join("");
-    var entier = Math.ceil(g.jours);
-    var ecart = somme === entier ? "" :
-      '<p class="plage-ton compte-zones" data-ton="ambre">Les zones comptent ' + jours(somme) + ", " + g.nom + " en a travaillé " + jours(g.jours) + ".</p>";
+    /* Le rouge EN TÊTE, au-dessus des zones : c'est lui qu'il vient lire, et le
+       plus de la bonne zone est juste dessous. */
+    var m = manque(g), ecart = "";
+    if (m > 0) ecart = '<p class="plage-ton manque-zones" data-ton="rouge">' + g.nom + " a travaillé " + jours(g.jours) +
+      ". <b>Il manque " + jours(m) + "</b> dans les zones : touchez plus sur la bonne." +
+      sansZone(g).slice(0, m).map(function (d) { return "<span>" + d + "</span>"; }).join("") + "</p>";
+    if (m < 0) ecart = '<p class="plage-ton manque-zones" data-ton="rouge">' + g.nom + " a travaillé " + jours(g.jours) +
+      ". <b>" + capitale(jours(-m)) + " de trop</b> dans les zones : touchez moins sur une zone.</p>";
     var corr = Object.keys(etat.corrections).some(function (k) { return k.indexOf(g.nom + ":") === 0; });
     dedans.innerHTML = '<h2 class="feuille-titre">' + g.nom + " en novembre</h2>" +
       '<p class="feuille-sous">' + jours(g.jours) + " travaillés, par zone</p>" +
-      '<div class="plage parzone">' + lignes + "</div>" + ecart +
+      ecart + '<div class="plage parzone">' + lignes + "</div>" +
       (corr ? '<button type="button" class="bouton bouton-texte remettre" data-geste="remettre-calcul">Remettre le calcul</button>' : "") +
       '<button type="button" class="bouton bouton-texte fermer" data-ferme>Fermer</button>';
   }
@@ -408,21 +445,25 @@ document.addEventListener("DOMContentLoaded", function () {
     var papier = document.getElementById("papier");
     var avec = etat.choix !== "aucune";
     var cols = avec ? cases().filter(function (c) {
-      return !(c.cle === "hors" || c.cle === "inconnue") || GENS.some(function (g) { return compte(g, c.cle) > 0; });
+      return c.cle !== "hors" || GENS.some(function (g) { return compte(g, c.cle) > 0; });
     }) : [];
     var tete = "<th>Salarié</th><th>Jours</th>" + cols.map(function (c) {
-      return "<th>" + (c.cle === "sans" ? "Sans chantier" : c.cle === "hors" ? "Hors zone" : c.cle === "inconnue" ? "Inconnue" : c.nom.replace("Zone ", "Zone<br>")) + "</th>";
+      return "<th>" + (c.cle === "sans" ? "Sans chantier" : c.cle === "hors" ? "Hors zone" : c.nom.replace("Zone ", "Zone<br>")) + "</th>";
     }).join("");
     var corps = GENS.map(function (g) {
       return "<tr><td>" + g.nom + '</td><td class="jours">' + nb(g.jours) + "</td>" + cols.map(function (c) {
         var n = compte(g, c.cle);
-        return '<td class="' + (n === 0 ? "vide" : c.inconnue ? "manque" : "") + '">' + n + "</td>";
+        return '<td class="' + (n === 0 ? "vide" : "") + '">' + n + "</td>";
       }).join("") + "</tr>";
     }).join("");
     papier.innerHTML = '<h3 class="pdf-titre">Jours travaillés</h3><p class="pdf-sous">Novembre 2026</p><hr class="pdf-filet">' +
       '<div class="pdf-deux"><div><span class="pdf-lib">Entreprise</span><p>Atelier Démo<br>10 rue des Artisans, Nantes<br>SIRET 123 456 789 00012</p></div>' +
       '<div><span class="pdf-lib">Zones</span><p>' + (avec ? MODELES[etat.choix].nom + ", depuis le siège<br>à vol d’oiseau" : "Pas de zones") + "</p></div></div>" +
       '<table class="pdf-table"><thead><tr>' + tete + "</tr></thead><tbody>" + corps + "</tbody></table>" +
+      (avec ? GENS.filter(function (g) { return manque(g) !== 0; }).map(function (g) {
+        var m = manque(g);
+        return '<p class="pdf-manque">' + g.nom + " : " + (m > 0 ? jours(m) + " sans zone" : jours(-m) + " de trop dans les zones") + ".</p>";
+      }).join("") : "") +
       '<div class="pdf-boite">' + (avec ? "Un jour compte dans la zone du chantier le plus loin de la journée." : "Une demi-journée d’absence compte pour une demie.") +
       "<span>Atlas compte les jours ; les montants restent ceux de votre barème.</span></div>" +
       '<div class="pdf-pied"><span>Jours travaillés, Atelier Démo</span><span>Page 1 sur 1</span></div>';
