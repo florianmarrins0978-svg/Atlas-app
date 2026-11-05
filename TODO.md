@@ -3,11 +3,13 @@
 
 ## FERMER UN COMPTE, ET LES FACTURES D'ABONNEMENT D'ATLAS (5 novembre 2026)
 
-**Fermer un compte : tranché, pas codé** (`docs/QUESTIONS.md`, question 33).
-Téléchargement d'abord, sinon une case « Je ne garde pas de copie » ; 30 jours ;
-puis tout s'efface. La base refuse aujourd'hui d'effacer une facture émise ou un
-devis envoyé (`drizzle/0018`, `0068`) : le chemin de fermeture devra lever ce
-verrou pour ce seul cas, prouvé par un test sur une base habitée. Maquette
+**Fermer un compte : tranché, pas codé** (`docs/QUESTIONS.md`, question 33,
+sa troisième version du 5 novembre, la seule qui vaut). Dans tous les cas, les
+factures, avoirs, devis et contrats acceptés et leurs PDF restent 10 ans,
+lisibles en lecture seule ; le reste s'efface après 30 jours ; l'archive
+s'efface au bout des 10 ans. La base refuse aujourd'hui d'effacer une facture émise ou un
+devis envoyé (`drizzle/0018`, `0068`) : l'effacement au bout des 10 ans devra lever
+ce verrou pour ce seul cas, prouvé par un test sur une base habitée. Maquette
 d'abord. Remplace `RETENTION.compteFermeJours` « mécanisme inexistant ».
 Article 13 des CGU à réécrire : sa décision (nouvelle version à accepter).
 

@@ -2160,11 +2160,16 @@ sa facture depuis Terminés.
 
 ### La réponse courte
 
-Oui, mais **pas en passant outre sa demande**. L'obligation de garder les
-factures dix ans pèse sur **l'artisan**, pas sur Atlas. Atlas ne peut donc
-pas invoquer cette loi pour garder ses factures contre sa volonté. Ce qui
-rend la conservation légale, c'est que **l'artisan la choisit**, au moment où
-il ferme son compte.
+Oui, **si les conditions générales le disent et qu'il les a acceptées.**
+L'obligation de garder les factures dix ans pèse sur l'artisan, pas sur
+Atlas : Atlas ne peut donc pas s'appuyer sur la loi seule. Ce qui rend la
+conservation légale, c'est **son instruction**, donnée en acceptant le
+contrat (article 13), et le fait qu'il garde l'accès à ses pièces.
+
+**Corrigé le jour même.** J'avais d'abord écrit que les garder « contre sa
+demande » n'était pas légal, et qu'il fallait lui faire choisir au moment de
+fermer. C'était trop fort : le choix peut se faire à l'inscription, par le
+contrat, et c'est ce que l'article 13 fait déjà.
 
 ### Pourquoi
 
@@ -2180,32 +2185,27 @@ attaquable.
 
 ### Ce que vous avez tranché le 5 novembre 2026
 
-D'abord une archive en lecture seule pendant 10 ans, puis, le même jour,
-**une version plus simple qui la remplace** :
+Trois versions dans la même journée ; **c'est la dernière qui vaut** :
+*« dans tous les cas, garder les documents dix ans dans l'application, c'est
+plus simple »*.
 
-1. la fermeture commence par **« Télécharger mes données »**, factures,
-   avoirs, devis et PDF compris ;
-2. s'il ne veut pas télécharger, il coche **« Je ne garde pas de copie. Mes
-   factures seront effacées. »** (le même geste que pour effacer un client,
-   question 32). Pas de blocage strict : un téléchargement raté sur un
-   chantier l'enfermerait dans Atlas ;
-3. **30 jours** pendant lesquels il peut revenir et retélécharger ;
-4. puis **tout s'efface**, factures comprises, et ses devis jamais acceptés
-   avec. Atlas lui a rendu ses données : c'est ce que demande le RGPD.
+| | |
+|---|---|
+| ce qui reste 10 ans, dans tous les cas | factures, avoirs, devis acceptés, contrats d'entretien acceptés, et leurs PDF |
+| comment il y accède | une connexion en **lecture seule** : il voit et télécharge, il ne crée plus rien |
+| ce qui s'efface après 30 jours | tout le reste : clients sans facture, **devis jamais acceptés**, photos, notes, dictées |
+| au bout des 10 ans | l'archive s'efface à son tour |
+| à la fermeture | « Télécharger mes données » est proposé, pas obligatoire, et l'écran dit ce qui reste et jusqu'à quand |
 
-Seules restent les **factures d'abonnement qu'Atlas lui a adressées** : leur
-conservation est l'obligation d'Atlas.
-
-À vérifier avant de coder : que l'export s'ouvre sur un téléphone et que ses
-PDF se lisent sans Atlas.
+Écartées le même jour : le choix à la fermeture, et « télécharger, puis tout
+effacer ».
 
 ### Ce qui reste à faire
 
-- **les conditions générales** : l'article 13 dit aujourd'hui que les pièces
-  comptables sont gardées dix ans. Avec ce choix, elles lui sont rendues puis
-  effacées. Il faut l'écrire, ce
-  qui demande une nouvelle version et une nouvelle acceptation de chacun.
-  C'est votre décision ;
+- **les conditions générales** : l'article 13 dit déjà que les pièces
+  comptables sont gardées dix ans. Il manque qu'il y garde l'accès en lecture
+  seule. L'ajouter demande une nouvelle version et une nouvelle acceptation
+  de chacun : c'est votre décision ;
 - **le code** : la fermeture du compte n'existe pas encore (vérifié le
   5 novembre 2026). Une suppression brutale de l'entreprise échouerait de
   toute façon : la base refuse d'effacer une facture émise ou un devis
