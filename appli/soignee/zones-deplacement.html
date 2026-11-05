@@ -88,17 +88,32 @@
              font: 400 18px/1 var(--serif); background: var(--atlas-rustTint); color: var(--atlas-rust); }
 .gars-corps { flex: 1; min-width: 0; }
 .gars-nom { display: block; font: 400 19px/1.25 var(--serif); color: var(--atlas-ink); }
-.gars-zones { display: block; margin-top: 4px; font-size: 14.5px; line-height: 1.45; color: var(--atlas-inkSoft); }
-.gars-zones b { font-weight: 600; color: var(--atlas-ink); }
 /* Son total passe au rouge tant qu'un jour n'est dans aucune zone. */
 .gars-compte.manque b, .gars-compte.manque small { color: var(--atlas-carteRougeTexte); }
 .gars-manque { display: block; margin-top: 6px; font-size: 14.5px; font-weight: 700; color: var(--atlas-carteRougeTexte); }
 .gars-compte { flex: none; min-width: 56px; padding-top: 2px; text-align: right; }
 .gars-compte b { display: block; font: 400 30px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; color: var(--atlas-ink); }
 .gars-compte small { display: block; margin-top: 4px; font-size: 13px; color: var(--atlas-inkSoft); }
-.interrupteur { margin-top: 18px; padding: 0 18px; }
-.interrupteur .ligne-corps { text-align: left; }
-.interrupteur .ligne-corps[disabled] { cursor: default; }
+/* Le total et, dessous, une pastille par zone : le même ordre pour tous. */
+.gars { flex-direction: column; align-items: stretch; gap: 10px; }
+.gars-haut { display: flex; align-items: center; gap: 14px; }
+.gars-haut .gars-nom { flex: 1; min-width: 0; }
+/* Une grille, pas un flot : la zone 2 de Julien tombe sous la zone 2 d'Antoine.
+   Six cases tiennent sur une ligne ; au-delà (le bâtiment), deux lignes égales. */
+.pastilles { display: grid; grid-template-columns: repeat(var(--n, 6), minmax(0, 1fr)); gap: 6px; }
+.pastille-zone { min-width: 0; padding: 5px 2px 6px; border-radius: 10px; text-align: center; background: var(--atlas-rustTint); }
+.pastille-zone small { display: block; font-size: 11.5px; font-weight: 600; line-height: 1.2; color: var(--atlas-inkSoft); white-space: nowrap; }
+.pastille-zone b { display: block; margin-top: 2px; font: 400 19px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; color: var(--atlas-ink); }
+.pastille-zone.zero b { color: var(--atlas-muted); }
+.pastille-zone.corrige b { color: var(--atlas-orTexte); }
+.gars .gars-manque { margin-top: -2px; }
+.zones-tete { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 16px 2px -8px; font-size: 15px; font-weight: 600; color: var(--atlas-inkSoft); }
+.zones-tete .bouton-texte { min-height: 44px; font-size: 15px; font-weight: 700; }
+.invitation { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 60px; margin-top: 14px; padding: 0 16px; text-align: left;
+              border-radius: var(--r-plage); background: var(--atlas-card); font-size: 15.5px; color: var(--atlas-ink); }
+.invitation .ico { color: var(--atlas-or); }
+.invitation span { flex: 1; min-width: 0; }
+.invitation b { flex: none; font-weight: 700; color: var(--atlas-orTexte); }
 
 /* ─── La feuille : un compteur par zone ──────────────────────────────── */
 .feuille-sous { margin: -10px 0 18px; font-size: 15px; color: var(--atlas-inkSoft); }
@@ -149,7 +164,7 @@
 <header class="pl-tete">
   <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
   <h1 class="pl-titre">Zones de déplacement</h1>
-  <p class="pl-verdict"><b>Les jours</b> : l’interrupteur Zones de déplacement est éteint ; allumez-le, et choisissez Paysage, Bâtiment ou Pas de zones. Touchez ensuite un salarié pour corriger une zone. <b>Le réglage</b> s’ouvre aussi depuis Équipe. <b>Le PDF</b> est ce que reçoit le comptable.</p>
+  <p class="pl-verdict"><b>Les jours</b> : réglé sur Paysage dans Équipe, chaque salarié montre ses zones d’office, à côté de son total. Touchez un salarié pour corriger une zone. <b>Jamais réglé</b> : une ligne propose de le faire, une fois. <b>Le réglage</b> vit dans Équipe. <b>Le PDF</b> est ce que reçoit le comptable.</p>
 </header>
 
 <main class="pl-scene">
@@ -157,6 +172,10 @@
 
     <div data-vue-panneau="Les jours">
       <p class="pl-legende">Pour mon comptable, Jours travaillés</p>
+      <div class="pl-etats" id="scenario">
+        <button type="button" data-scenario="regle" aria-pressed="true">Réglé sur Paysage</button>
+        <button type="button" data-scenario="jamais" aria-pressed="false">Jamais réglé</button>
+      </div>
       <div class="cadre"><div class="ecran avec-barre" id="ecran-jours">
         <div class="defile" id="jours"></div>
         <nav class="barre" aria-label="Navigation principale"><div class="barre-onglets">
@@ -198,8 +217,10 @@
   <section class="pl-notes">
     <h2>Ce que je propose</h2>
     <ul>
-      <li>Sur Jours travaillés, un interrupteur Zones de déplacement, éteint au départ. L’allumer ouvre le choix : Paysage (barème MSA), Bâtiment ou Pas de zones. Allumé, sa ligne dit ce qui est choisi et le rouvre ; éteint, rien ne se compte et rien ne s’affiche.</li>
-      <li>Le même réglage s’ouvre depuis Réglages, Équipe, sur une ligne sous les absences : c’est le même écran, deux portes.</li>
+      <li>Le réglage vit dans Réglages, Équipe : Paysage (barème MSA), Bâtiment ou Pas de zones. Choisi une fois, il vaut partout.</li>
+      <li>Dès qu’une convention est choisie, Jours travaillés montre d’office, sous chaque salarié, une pastille par zone avec son nombre de jours, dans le même ordre pour tous. Le PDF du comptable aussi. Rien à allumer.</li>
+      <li>Tant que personne n’a répondu, une seule ligne demande « Vos salariés ont des zones de déplacement ? ». Elle disparaît dès la réponse, même Pas de zones, et ne revient pas chaque mois.</li>
+      <li>Modifier, au-dessus des salariés, rouvre le même écran que celui d’Équipe.</li>
       <li>Chaque borne se change, une zone s’ajoute ou se retire, et Remettre le barème rend le modèle. Les zones partent du siège ou du dépôt, à vol d’oiseau.</li>
       <li>Atlas compte les jours de chaque salarié par zone, avec le planning : qui était sur quel chantier, et où il est. Il ne calcule aucun montant : ils changent selon la région et deux fois par an, votre comptable les connaît.</li>
       <li>Un jour sur deux chantiers compte la zone la plus loin, même pour une demi-journée.</li>
@@ -244,9 +265,10 @@ document.addEventListener("DOMContentLoaded", function () {
     { nom: "Paul", jours: 19.5, suite: "RRNVDBXNNVCCSSNRDNAR" }
   ];
 
-  /* Éteint au départ : sa demande du 5 novembre, « un petit bouton on-off,
-     en off, avec les zones de déplacement ». */
-  var etat = { choix: "aucune", zones: copie(MODELES.paysage.zones), corrections: {}, ouvert: null, vue: "equipe", vueJours: "jours" };
+  /* Réglé d'office dans Équipe sur le paysage : c'est le cas qu'il a décrit,
+     les zones doivent alors se voir sans rien allumer. « jamais » : personne
+     n'a encore répondu à la question des zones. */
+  var etat = { choix: "paysage", jamais: false, zones: copie(MODELES.paysage.zones), corrections: {}, ouvert: null, vue: "equipe", vueJours: "jours" };
 
   function copie(z) { return z.map(function (x) { return [x[0], x[1]]; }); }
   function ico(nom) { return '<svg class="ico ico-p" aria-hidden="true"><use href="#i-' + nom + '"/></svg>'; }
@@ -332,8 +354,8 @@ document.addEventListener("DOMContentLoaded", function () {
         '<span class="ligne-situation">' + resumeZones() + '</span></span><span class="ligne-fin">' + ico("suivant") + "</span></button></div>";
   }
 
-  /* Le MÊME écran des zones, ouvert depuis Équipe ou depuis l'interrupteur
-     de Jours travaillés : seul son retour change. Deux dessins finiraient
+  /* Le MÊME écran des zones, ouvert depuis Équipe ou depuis Jours
+     travaillés (Modifier, ou l'invitation) : seul son retour change. Deux dessins finiraient
      par ne plus dire la même chose. */
   function htmlZones(retour) {
     var h = '<div class="tete-ronds"><button class="rond-creux" type="button" data-geste="' + retour + '" aria-label="' +
@@ -377,8 +399,9 @@ document.addEventListener("DOMContentLoaded", function () {
   function gesteDesZones(geste, g) {
     if (geste === "choix") {
       etat.choix = g.getAttribute("data-choix");
+      etat.jamais = false;
       if (etat.choix !== "aucune") etat.zones = copie(MODELES[etat.choix].zones);
-      // « Pas de zones » depuis l'interrupteur : rien à régler, on revient.
+      // « Pas de zones » depuis Jours travaillés : rien à régler, on revient.
       else etat.vueJours = "jours";
       etat.corrections = {};
     } else if (geste === "remettre-bareme") { etat.zones = copie(MODELES[etat.choix].zones); etat.corrections = {}; }
@@ -432,41 +455,50 @@ document.addEventListener("DOMContentLoaded", function () {
   var joursZone = document.getElementById("jours");
   var dedans = document.querySelector("#feuille-zones .feuille-dedans");
 
-  function phrase(g) {
-    return cases().map(function (c) {
-      var n = compte(g, c.cle);
-      if (!n) return null;
-      // Espaces insécables : « zone 1B » ne se coupe pas en fin de ligne.
-      var mot = c.cle === "sans" ? "sans\u00a0chantier" : c.cle === "hors" ? "hors\u00a0zone" : "en\u00a0" + c.nom.replace("Zone ", "zone\u00a0");
-      return "<b>" + n + "</b>\u00a0" + mot;
-    }).filter(Boolean).join(", ");
+  /* Les cases qu'on montre à TOUS les salariés, dans le même ordre, pour que
+     les chiffres se lisent en colonne d'une ligne à l'autre. « Hors zone » ne
+     paraît que si quelqu'un en a. */
+  function colonnes() {
+    return cases().filter(function (c) {
+      return c.cle !== "hors" || GENS.some(function (g) { return compte(g, "hors") > 0; });
+    });
   }
+  function court(c) {
+    if (c.cle === "sans") return "Dépôt";
+    if (c.cle === "hors") return "+" + nb(etat.zones.length ? etat.zones[etat.zones.length - 1][1] : 0) + "\u00a0km";
+    return c.nom;
+  }
+  function parLigne() { var n = colonnes().length; return n <= 6 ? n : Math.ceil(n / 2); }
 
   function rendreJours() {
     if (etat.vueJours === "zones") { joursZone.innerHTML = htmlZones("vers-jours"); return; }
-    var allume = etat.choix !== "aucune";
+    var avec = etat.choix !== "aucune";
     var h = '<header class="tete"><button class="tete-retour" type="button" data-geste="note" aria-label="Pour mon comptable">' +
       '<svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button><h1 class="tete-titre moyen">Jours travaillés</h1></header>' +
       '<div class="mois-choix"><button class="mois-fleche" type="button" data-geste="note" aria-label="Le mois d’avant">' + ico("retour") + '</button>' +
       '<span class="mois-nom">Novembre 2026</span><button class="mois-fleche" type="button" disabled aria-label="Le mois d’après">' + ico("suivant") + '</button></div>' +
       '<p class="mois-resume">Mois en cours, 20 jours ouvrés, le 11 est férié.</p>' +
-      /* L'interrupteur des zones, là où il prépare la paie : allumé, la ligne
-         dit ce qui est choisi et l'ouvre ; éteint, l'allumer ouvre le choix. */
-      '<div class="plage interrupteur"><div class="ligne-bascule">' +
-        '<button type="button" class="ligne-corps" data-geste="vers-zones-jours"' + (allume ? "" : " disabled") + '>' +
-          '<b>Zones de déplacement</b><small>' + resumeZones() + "</small></button>" +
-        '<button type="button" class="bascule" role="switch" aria-checked="' + allume + '" aria-label="Zones de déplacement" data-geste="bascule-zones"></button>' +
-      "</div></div>" +
+      /* Sa correction du 5 novembre : le réglage d'Équipe suffit, les zones
+         paraissent d'office à côté du total, sans interrupteur à allumer. */
+      (avec ? '<div class="zones-tete"><span>' + resumeZones() + '</span><button type="button" class="bouton-texte or" data-geste="vers-zones-jours">Modifier</button></div>' : "") +
       '<div class="plage gens">' + GENS.map(function (g, k) {
-        var m = manque(g);
-        var corps = etat.choix === "aucune" ? "" : '<span class="gars-zones">' + phrase(g) + "</span>" +
-          (m > 0 ? '<span class="gars-manque">' + ilManque(m) + "</span>" :
-           m < 0 ? '<span class="gars-manque">' + deTrop(-m) + "</span>" : "");
-        return '<button class="gars touche" type="button" data-geste="salarie" data-k="' + k + '"' + (etat.choix === "aucune" ? " disabled" : "") + '>' +
-          '<span class="initiales" aria-hidden="true">' + g.nom.charAt(0) + '</span>' +
-          '<span class="gars-corps"><span class="gars-nom">' + g.nom + "</span>" + corps + "</span>" +
-          '<span class="gars-compte' + (etat.choix !== "aucune" && m !== 0 ? " manque" : "") + '"><b>' + nb(g.jours) + "</b><small>" + (g.jours < 2 ? "jour" : "jours") + "</small></span></button>";
-      }).join("") + "</div>";
+        var m = avec ? manque(g) : 0;
+        var pastilles = avec ? '<span class="pastilles" style="--n:' + parLigne() + '">' + colonnes().map(function (c) {
+          var n = compte(g, c.cle);
+          return '<span class="pastille-zone' + (n === 0 ? " zero" : "") + (corrige(g, c.cle) ? " corrige" : "") + '"><small>' + court(c) + "</small><b>" + n + "</b></span>";
+        }).join("") + "</span>" +
+          (m > 0 ? '<span class="gars-manque">' + ilManque(m) + "</span>" : m < 0 ? '<span class="gars-manque">' + deTrop(-m) + "</span>" : "") : "";
+        return '<button class="gars touche" type="button" data-geste="salarie" data-k="' + k + '"' + (avec ? "" : " disabled") + '>' +
+          '<span class="gars-haut"><span class="initiales" aria-hidden="true">' + g.nom.charAt(0) + '</span>' +
+          '<span class="gars-nom">' + g.nom + "</span>" +
+          '<span class="gars-compte' + (m !== 0 ? " manque" : "") + '"><b>' + nb(g.jours) + "</b><small>" + (g.jours < 2 ? "jour" : "jours") + "</small></span></span>" +
+          pastilles + "</button>";
+      }).join("") + "</div>" +
+      /* Jamais réglé : une seule ligne l'invite, et elle part dès qu'il a
+         répondu, même « Pas de zones ». Elle ne revient pas lui poser la
+         question chaque mois. */
+      (!avec && etat.jamais ? '<button type="button" class="invitation touche" data-geste="vers-zones-jours">' + ico("lieu") +
+        '<span>Vos salariés ont des zones de déplacement ?</span><b>Régler</b></button>' : "");
     joursZone.innerHTML = h;
   }
 
@@ -504,13 +536,6 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!b) return;
     var geste = b.getAttribute("data-geste");
     if (geste === "note") { Kit.note(ecranJours, "Comme sur la planche des jours travaillés."); return; }
-    if (geste === "bascule-zones") {
-      // L'écran répond avant le kit, qui rebasculerait un bouton repeint.
-      e.stopPropagation();
-      if (etat.choix !== "aucune") { etat.choix = "aucune"; etat.corrections = {}; tout(); }
-      else { etat.vueJours = "zones"; rendreJours(); joursZone.scrollTop = 0; }
-      return;
-    }
     if (geste === "vers-zones-jours" || geste === "vers-jours") {
       etat.vueJours = geste === "vers-zones-jours" ? "zones" : "jours";
       rendreJours(); joursZone.scrollTop = 0;
@@ -557,6 +582,17 @@ document.addEventListener("DOMContentLoaded", function () {
       '<div class="pdf-pied"><span>Jours travaillés, Atelier Démo</span><span>Page 1 sur 1</span></div>';
   }
 
+  document.querySelectorAll("#scenario button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      document.querySelectorAll("#scenario button").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+      var jamais = b.getAttribute("data-scenario") === "jamais";
+      etat.choix = jamais ? "aucune" : "paysage";
+      etat.jamais = jamais;
+      etat.zones = copie(MODELES.paysage.zones);
+      etat.corrections = {}; etat.vueJours = "jours"; etat.vue = "equipe";
+      tout();
+    });
+  });
   joursZone.addEventListener("input", function (e) { saisieDesZones(e, joursZone); });
   joursZone.addEventListener("focusout", finDeSaisie);
 

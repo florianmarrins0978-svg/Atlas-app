@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-05
 
+- **Zones : l'interrupteur retiré, à sa demande.** Réglées une fois dans Équipe, les zones paraissent d'office sur Jours travaillés, une pastille par zone sous chaque salarié, et dans le PDF ; une ligne invite à les régler tant que personne n'a répondu. Pas codé.
 - **Zones : un interrupteur sur Jours travaillés** (sa demande), éteint au départ ; l'allumer ouvre Paysage, Bâtiment ou Pas de zones. Le même écran reste ouvrable depuis Équipe. Pas codé.
 - **Zones : plus de « Zone inconnue »** (sa correction). Un chantier sans adresse située ne compte dans aucune zone ; le total du salarié passe en rouge, et sa feuille dit combien de jours manquent, lesquels et où, pour qu'il touche plus sur la bonne zone. Pas codé.
 - **Le motif d'une absence : validé** (*« très bien »*), tel que sur la planche. Pas codé.

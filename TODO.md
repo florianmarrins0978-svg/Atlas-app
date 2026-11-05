@@ -41,13 +41,17 @@ zones, *« oui, avec celle pour la MSA et pour le bâtiment, avec possibilité
 de switch entre les deux, ou de pas la mettre si l'utilisateur ne travaille
 pas par zone. Et modifiable. »* Il n'a pas dit de coder : **rien dans `src/`**.
 
-**Planche des zones** : `appli/soignee/zones-deplacement.html`. **L'entrée
-principale est un interrupteur sur Jours travaillés** (sa demande du même
-soir : *« un petit bouton on-off, en off, avec les zones de déplacement ; on
-clique et ça ouvre la catégorie ; on démarre avec paysage, bâtiment ou pas de
-zone »*) : éteint d'office ; l'allumer ouvre le choix ; « Pas de zones » y
-ramène éteint ; allumé, sa ligne dit le choix (« Paysage, 4 zones ») et le
-rouvre. Le MÊME écran s'ouvre aussi dans Réglages, Équipe, par une ligne « Zones de déplacement » sous les
+**Planche des zones** : `appli/soignee/zones-deplacement.html`. **Pas
+d'interrupteur** : il l'avait proposé, puis s'est repris le même soir (*« si
+l'utilisateur dit dans Équipe qu'il travaille par zone avec la MSA, il faut
+que d'office, dans le document comptable, ça soit visible : Antoine a
+travaillé 19 jours, et à côté le nombre de zones »*). Le choix se fait UNE
+fois, dans Équipe, et vaut partout : Jours travaillés montre d'office, sous
+chaque salarié, une pastille par zone (même ordre pour tous, sur une grille,
+« +50 km » et « Dépôt » au bout), et le PDF aussi. « Modifier » au-dessus
+rouvre le même écran. Jamais réglé : une seule ligne « Vos salariés ont des
+zones de déplacement ? Régler », qui part dès la réponse, même Pas de zones.
+Le réglage vit dans Réglages, Équipe, ouvert par une ligne « Zones de déplacement » sous les
 absences, qui dit ce qui est choisi (« Paysage, 4 zones » ; sa demande du
 5 novembre, « ajoute sur la planche la ligne équipe ») : Pas de zones, Paysage (MSA, 0 à 5, 5 à 20, 20 à 30,
 30 à 50 km), Bâtiment (1A 0 à 5, 1B 5 à 10, puis 2 à 5 par 10 km jusqu'à 50) ;
