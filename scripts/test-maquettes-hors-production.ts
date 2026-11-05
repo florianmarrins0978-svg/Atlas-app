@@ -51,7 +51,7 @@ const DOSSIER_DESIGN = join(__dirname, "..", "src", "app", "design");
  * aucun cache à déjouer, et il lit `NODE_ENV` au démarrage, comme le serveur :
  * une règle hissée hors de la fonction y serait jugée comme en production.
  */
-function refuse(nodeEnv: string): boolean {
+function refuse(nodeEnv: "production" | "development"): boolean {
   const r = spawnSync(process.execPath, [...process.execArgv, __filename, SONDE], {
     env: { ...process.env, NODE_ENV: nodeEnv },
     encoding: "utf8",
