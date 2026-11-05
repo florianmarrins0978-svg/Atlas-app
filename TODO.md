@@ -11,8 +11,7 @@ dans l'application »*. Planche : `appli/soignee/une-idee-pour-l-appli.html`.
 Ce que la planche pose : une ligne à part en bas des Réglages, sous Moi, pour
 tous les rôles (le salarié compris) ; la dictée B du chantier, un geste pour
 envoyer, ou « J'écris mon idée » ; « Envoyée, Annuler » comme Retirer ; avec
-l'idée partent le nom, l'entreprise, le rôle, le jour et l'écran d'origine,
-rien d'autre. Écartés : une fenêtre qui demande l'avis, des catégories à
+l'idée partent le nom, l'entreprise, le rôle et le jour, rien d'autre. Écartés : une fenêtre qui demande l'avis, des catégories à
 choisir, la photo jointe.
 
 **Tranché par lui le 5 novembre : 1 A, 2 B, 3 B** (mes trois recommandations).
@@ -26,9 +25,10 @@ Il n'a pas dit de coder.
    l'adresse `CONTACT_ATLAS` (`assistant-service.ts`).
 
 **Dans Les idées reçues, ni « à la voix » ni « écrite », ni l'heure : la
-date seule** (sa règle du même soir : *« à la voix ou écrit, on s'en fout de
-marquer ça ; l'heure, ça sert à rien, juste la date »*). L'écran d'origine
-reste, il ne l'a pas visé.
+date seule, et plus l'écran d'origine** (sa règle du même soir : *« à la
+voix ou écrit, on s'en fout de marquer ça ; l'heure, ça sert à rien, juste
+la date »*, puis *« retire aussi depuis le planning »*). Une idée dit qui et
+quel jour. L'écran d'origine n'est donc plus à envoyer.
 
 **Où ça arrive chez lui** (sa question du même soir : *« ça va arriver où
 chez moi ? Faudrait-il une petite application connectée ? »*) : dans Atlas,
