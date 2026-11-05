@@ -1,6 +1,53 @@
 # Prochaines tâches
 
 
+## ⏳ À CHOISIR PAR LUI (5 novembre 2026) : relier sa plateforme de facture électronique
+
+Sa demande : *« permettre à l'utilisateur de pouvoir connecter un compte agréé
+par l'État pour la facturation électronique »*. Planche
+`appli/soignee/reglages-facture-electronique.html`, trois choix en A ou B, le
+proposé en premier. **Rien n'est codé** (`CLAUDE.md` §3 bis).
+
+| choix | A (proposé) | B |
+|---|---|---|
+| 1. qui fait la facture | Atlas (son numéro, son PDF), la plateforme la contrôle et la transmet | Atlas envoie les lignes, Pennylane refait la facture sous son numéro |
+| 2. comment se relier | la clé du compte, collée | un bouton qui ouvre la plateforme (accès partenaire chez chacune) |
+| 3. plateforme coupée | la facture part chez le client, attend en ambre, repart seule | rien ne part tant que la plateforme ne l'a pas prise |
+
+Ce sont les trois questions du 26 septembre (entrée « BRANCHER PENNYLANE »
+plus bas), posées au moment de coder comme prévu.
+
+**Ce qui a été appris le 5 novembre, par recherche web, sources tierces
+concordantes, rien lu sur impots.gouv.fr :**
+
+- la **réception** par une plateforme agréée est obligatoire pour toute
+  entreprise **depuis le 1er septembre 2026** ; l'**émission** des TPE au
+  1er septembre 2027. Eden Nature est donc déjà concernée pour ses factures
+  de fournisseurs (`docs/A-FAIRE.md` point 6 disait « aucun logiciel » au
+  8 août) ;
+- la norme **AFNOR XP Z12-013** décrit une API commune entre un logiciel
+  (« solution compatible ») et une plateforme agréée : flux de factures,
+  statuts, e-reporting, annuaire, OAuth2. D'application volontaire ; 84 % des
+  plateformes répondantes l'implémenteraient (sondage DGFiP cité par un blog,
+  non vérifié). C'est ce qui rend possible le choix 1 A : un branchement pour
+  toutes, au lieu d'un par outil (§424 le prévoyait par outil) ;
+- **Pennylane** : immatriculée (définitivement le 11 décembre 2025 selon des
+  tiers) ; API v2 `customer_invoices` ; la transmission à la plateforme par
+  l'API n'est pas documentée publiquement (question sans réponse sur leur
+  forum) ; un jeton d'entreprise existerait (Paramètres, Connectivité,
+  Développeurs : source non officielle, à vérifier sur un vrai compte).
+
+**Le choix 1 A revient en partie sur `AGENT.md` §6** (« Atlas prépare, il
+n'émet pas ») : Atlas fabriquerait la facture électronique (Factur-X ou CII,
+profil EN 16931 et mentions françaises), et la plateforme la contrôle avant
+de la transmettre. Ne s'écrit dans `AGENT.md` et `ARCHITECTURE.md` que s'il
+choisit A.
+
+**Une fois choisi :** niveau 3 (argent et secret), une migration (la liaison
+par entreprise, la clé chiffrée par `src/lib/chiffre-au-repos.ts`, l'état de
+chaque facture transmise). Rien ne s'éprouve sans un vrai compte : il faudra
+sa clé, sur un compte d'essai.
+
 ## DEUX QUESTIONS POSÉES LE 31 OCTOBRE, SANS RÉPONSE
 
 - **L'assistant peut-il CRÉER un devis ?** Aujourd'hui il retrouve un devis existant et joint son PDF (`ARCHITECTURE.md` §525), mais aucun de ses gestes n'en fabrique un : un nouveau devis passe par la dictée. Question posée : *« Tu veux que l'assistant sache aussi créer un devis quand tu le lui demandes ? »* Pas de réponse. À lui.
@@ -1796,6 +1843,9 @@ communiquent entre elles lors de l'envoi de la facture. »* `ARCHITECTURE.md`
 §424, `docs/A-FAIRE.md` point 6.
 
 **Bloqué par lui** : l'accès développeur Pennylane (sans lui, rien ne s'éprouve).
+**Le 5 novembre** : planche et trois choix posés, voir l'entrée du 5 novembre
+en tête de ce fichier. Avec une clé collée (choix 2 A), l'accès développeur
+n'est plus un préalable.
 **Trois questions à lui poser au moment de coder**, pas avant : quel numéro fait
 foi (celui d'Atlas ou celui de l'outil), quel PDF part chez le client, que fait
 l'envoi quand la connexion est coupée ou révoquée.

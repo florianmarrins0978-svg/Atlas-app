@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-05
 
+- **Planche : relier sa plateforme de facture électronique** (sa demande : *« connecter un compte agréé par l'État »*). Une rubrique neuve des Réglages, dessinée sur Ma banque : la plateforme reliée une fois, chaque facture envoyée avec son état, un refus avec sa raison. Trois choix à faire en A ou B : qui fait la facture, comment se relier, ce que fait l'envoi quand la plateforme est coupée. Rien n'est codé. Appris en chemin : la réception par une plateforme agréée est obligatoire depuis le 1er septembre 2026, et une API commune aux plateformes existe (AFNOR XP Z12-013). `TODO.md`, entrée du 5 novembre.
 - **Les suites navigateur trouvent Chromium toutes seules, quelle que soit sa version** (sa demande : *« corrige maintenant »*). Un chemin écrit en dur (`chromium-1194`) faisait tomber toutes les suites navigateur sur les postes du nuage depuis le changement de version ; il fallait passer deux variables à la main. Une seule fonction, `scripts/_navigateur.mjs`, remplace 79 copies ; 13 scripts au nom d'argent suivront dans un lot à batterie. Rien ne change pour l'appli. `ARCHITECTURE.md` §554.
 
 ## 2026-11-04

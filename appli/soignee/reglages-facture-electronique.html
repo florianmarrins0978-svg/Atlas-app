@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Facture électronique, soignée</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  FACTURE ÉLECTRONIQUE, une rubrique neuve des Réglages. Rien n'est codé.
+
+  Sa demande du 5 novembre 2026 : « permettre à l'utilisateur de pouvoir
+  connecter un compte agréé par l'État pour la facturation électronique ».
+  Sa décision du 26 septembre (ARCHITECTURE.md §424) tient : chaque artisan
+  relie SON compte, une fois, et la transmission part à l'envoi de la facture.
+
+  Ce que la planche fait trancher, et qui ne se codait pas sans lui :
+  1. qui fait la facture : Atlas (son numéro, son PDF, la plateforme
+     transmet), ou la plateforme (Atlas envoie les lignes, elle refait la
+     facture). C'est aussi « quel numéro fait foi » et « quel PDF part »,
+     deux des trois questions notées dans TODO.md le 26 septembre ;
+  2. comment se relier : la clé du compte collée, ou un bouton qui ouvre la
+     plateforme (il faut alors un accès partenaire chez chacune) ;
+  3. ce que fait l'envoi quand la plateforme est coupée, la troisième.
+
+  Le dessin reprend Ma banque (reglages-banque.html) : un compte relié, sa
+  pastille et son heure, une liste en dessous, ce qu'Atlas fait sur ce compte,
+  délier tout en bas. Deux comptes extérieurs de l'entreprise se lisent de
+  la même façon.
+
+  Les noms de plateforme : Pennylane seule, nommée par lui le 26 septembre.
+  Aucune autre n'est citée, faute d'avoir vérifié laquelle parle l'API commune.
+*/
+
+/* Le compte : le nom en serif, son état en pastille, son heure à côté. */
+.compte { padding: 0 18px; overflow: hidden; }
+.compte-tete { display: flex; align-items: center; gap: 14px; padding: 18px 0 16px; }
+.compte-tete .ligne-nom { font-size: 21px; }
+.compte-etat { display: flex; align-items: center; flex-wrap: wrap; column-gap: 10px; margin-top: 6px; }
+.compte-quand { font-size: 15px; font-weight: 600; white-space: nowrap; }
+.compte-etat[data-ton="vert"] .compte-quand { color: var(--atlas-carteVertTexte); }
+.compte-etat[data-ton="rouge"] .compte-quand, .compte-suite[data-ton="rouge"] { color: var(--atlas-carteRougeTexte); }
+.compte-suite { margin: 6px 0 0; font-size: 14px; line-height: 1.4; }
+
+/* Les factures parties : le jour en grand, le client, le montant, son état. */
+.factures-tete { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 28px 0 10px; }
+.factures-tete .rubrique, .factures-tete .discret { margin: 0; }
+.factures { padding: 0 18px; }
+.partie { align-items: flex-start; padding: 16px 0; }
+.partie .jour { margin-top: 2px; }
+.partie-nom { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.partie-nom .ligne-nom { font-size: 17.5px; }
+.partie-montant { flex: none; font: 400 18px/1.3 var(--serif); font-variant-numeric: tabular-nums lining-nums; }
+.partie-numero { display: block; margin-top: 4px; font-size: 14px; line-height: 1.4; color: var(--atlas-inkSoft);
+                 font-variant-numeric: tabular-nums lining-nums; }
+.partie .etat { margin-top: 10px; }
+
+/* Le refus d'une facture : la carte rouge, la raison de la plateforme dedans. */
+.refus { margin-top: 4px; }
+.refus .carte-ton-texte b { font-weight: 400; }
+.refus-raison { margin: 8px 0 0; font-size: 15px; line-height: 1.45; color: var(--atlas-carteRougeTexte); }
+/* L'un sous l'autre : côte à côte, « Compléter sa fiche » se coupait en deux lignes. */
+.refus .carte-ton-pied { flex-direction: column; }
+.refus .carte-ton-pied .bouton { min-height: 52px; }
+
+/* Relier : la plateforme, puis la clé ou le bouton. */
+.relier { padding: 4px 18px 18px; }
+.relier .champ { margin-top: 14px; }
+.relier select.champ-saisie { appearance: none; -webkit-appearance: none; font: 400 18px/1.3 var(--serif); }
+.relier input.champ-saisie { font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+.cle-aide { margin-top: 6px; font-size: 14.5px; color: var(--atlas-inkSoft); }
+.cle-aide summary { min-height: 48px; display: flex; align-items: center; cursor: pointer;
+                    text-decoration: underline; text-underline-offset: 3px; list-style: none; }
+.cle-aide summary::-webkit-details-marker { display: none; }
+.cle-aide p { margin: 0 0 8px; line-height: 1.5; color: var(--atlas-ink); }
+
+/* Ce qu'Atlas fait sur ce compte : trois lignes et leur dessin. */
+.confiance { padding: 0 18px; }
+.confiance .ligne { min-height: 58px; padding: 10px 0; }
+.confiance .ligne-nom { font: 400 15.5px/1.4 var(--sans); }
+.confiance .ico { color: var(--atlas-or); }
+
+[data-ecran-panneau="facture-electronique"] [data-si-etat] > .rubrique:first-child { margin-top: 28px; }
+.delier { display: flex; justify-content: center; margin-top: 20px; }
+.reserve { padding-top: 56px; }
+
+/* Les trois questions : leurs réponses changent l'écran, sans toucher aux puces d'état. */
+.pl-questions { display: flex; flex-wrap: wrap; gap: 8px 18px; justify-content: center; margin: 0 0 14px; }
+.pl-question { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: #4a4a44; }
+.pl-question button { min-width: 44px; min-height: 40px; padding: 0 12px; border: 0; border-radius: 20px;
+                      background: #e3dfd6; color: #1c1c1a; font: inherit; cursor: pointer; }
+.pl-question button[aria-pressed="true"] { background: #2f3b2f; color: #faf9f5; }
+.pl-question button:focus-visible { outline: 2px solid #8b6835; outline-offset: 2px; }
+.ecran[data-q1="a"] .si-q1-b, .ecran[data-q1="b"] .si-q1-a,
+.ecran[data-q2="a"] .si-q2-b, .ecran[data-q2="b"] .si-q2-a,
+.ecran[data-q3="a"] .si-q3-b, .ecran[data-q3="b"] .si-q3-a { display: none; }
+
+/* Le sommaire des Réglages, recopié de reglages-banque.html, la rubrique neuve à sa place. */
+.identite { display: flex; align-items: center; gap: 14px; }
+.identite-sceau { width: 52px; height: 52px; flex: none; display: grid; place-items: center; border-radius: 50%;
+                  box-shadow: inset 0 0 0 1.5px var(--atlas-or); font: 400 22px/1 var(--serif); color: var(--atlas-or); }
+.identite .ligne-nom { font-size: 21px; }
+.paquet { padding: 0 18px; }
+.paquet .ligne { min-height: 60px; }
+.paquet .ligne .ico.rubrique-ico { color: var(--atlas-or); }
+.paquet .ligne-fin .ico, .identite .ligne-fin .ico { color: var(--atlas-or); }
+.paquet .neuve { background: color-mix(in srgb, var(--atlas-or) 10%, transparent); margin: 0 -18px; padding-left: 18px; padding-right: 18px; }
+.pl-notes .a-trancher b { font-weight: 600; }
+</style>
+</head>
+<body class="pl pl-pilules">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="reglages.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Réglages</a>
+  <h1 class="pl-titre">Facture électronique</h1>
+  <p class="pl-verdict">Le compte de la plateforme agréée se relie une fois. Ensuite, chaque facture envoyée part aussi chez elle, et sa ligne dit où elle en est. <b>Trois choix à faire, rien n'est codé.</b></p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <!-- ═══ PROPOSÉ ═══ -->
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats">
+        <button type="button" data-etat="pas-relie" aria-pressed="true">Pas encore reliée</button>
+        <button type="button" data-etat="relie">Reliée</button>
+        <button type="button" data-etat="refus">Une facture refusée</button>
+        <button type="button" data-etat="coupee">Plateforme coupée</button>
+        <button type="button" data-etat="salarie">Un salarié</button>
+      </div>
+      <div class="pl-questions" aria-label="Les trois choix">
+        <span class="pl-question" data-question="q1" data-montre-etat="relie">Choix 1
+          <button type="button" data-reponse="a" aria-pressed="true">A</button><button type="button" data-reponse="b" aria-pressed="false">B</button></span>
+        <span class="pl-question" data-question="q2" data-montre-etat="pas-relie">Choix 2
+          <button type="button" data-reponse="a" aria-pressed="true">A</button><button type="button" data-reponse="b" aria-pressed="false">B</button></span>
+        <span class="pl-question" data-question="q3" data-montre-etat="coupee">Choix 3
+          <button type="button" data-reponse="a" aria-pressed="true">A</button><button type="button" data-reponse="b" aria-pressed="false">B</button></span>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre" data-etat="pas-relie" data-q1="a" data-q2="a" data-q3="a" id="ecran-propose">
+          <div class="defile">
+
+            <div data-ecran-panneau="facture-electronique">
+              <div class="tete-ronds">
+                <button class="rond-creux" type="button" data-vers="reglages" aria-label="Retour aux réglages"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+                <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              </div>
+              <header class="tete" style="margin-top:0"><h1 class="tete-titre">Facture électronique</h1></header>
+
+              <!-- ─── Aucune plateforme reliée ─── -->
+              <div data-si-etat="pas-relie">
+                <div class="plage relier">
+                  <label class="champ">
+                    <span class="champ-libelle">Votre plateforme agréée</span>
+                    <select class="champ-saisie">
+                      <option>Pennylane</option>
+                    </select>
+                  </label>
+
+                  <!-- Choix 2, A : la clé du compte, collée une fois. -->
+                  <div class="si-q2-a">
+                    <label class="champ">
+                      <span class="champ-libelle">La clé de votre compte</span>
+                      <input class="champ-saisie" type="password" autocomplete="off" spellcheck="false" placeholder="Collez la clé ici">
+                    </label>
+                    <details class="cle-aide">
+                      <summary>Où trouver la clé ?</summary>
+                      <p>Sur Pennylane : Paramètres, puis Connectivité, puis Développeurs. Touchez « Générer un jeton » et copiez ce qu'il affiche.</p>
+                    </details>
+                    <button class="bouton bouton-plein mt-16" type="button" data-va-etat="relie">Relier mon compte</button>
+                  </div>
+
+                  <!-- Choix 2, B : la plateforme s'ouvre, il accepte, il revient. -->
+                  <div class="si-q2-b">
+                    <button class="bouton bouton-plein mt-16" type="button" data-va-etat="relie">Se connecter chez Pennylane</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ─── Le compte relié ─── -->
+              <div data-si-etat="relie refus coupee">
+                <div class="plage compte">
+                  <div class="compte-tete">
+                    <span class="pastille-ico" data-ton="vert" data-si-etat="relie refus"><svg class="ico" aria-hidden="true"><use href="#i-facture"/></svg></span>
+                    <span class="pastille-ico" data-ton="rouge" data-si-etat="coupee"><svg class="ico" aria-hidden="true"><use href="#i-facture"/></svg></span>
+                    <span class="ligne-corps">
+                      <span class="ligne-nom">Pennylane</span>
+                      <span class="compte-etat" data-ton="vert" data-si-etat="relie refus"><span class="etat" data-ton="vert">Reliée</span><span class="compte-quand">depuis le 5 novembre</span></span>
+                      <span class="compte-etat" data-ton="rouge" data-si-etat="coupee"><span class="etat" data-ton="rouge">Coupée</span><span class="compte-quand">depuis hier à 18 h 02</span></span>
+                      <span class="compte-suite si-q3-a" data-ton="rouge" data-si-etat="coupee">La clé ne marche plus. Vos factures partent chez vos clients et attendent ici.</span>
+                      <span class="compte-suite si-q3-b" data-ton="rouge" data-si-etat="coupee">La clé ne marche plus. Vos factures ne partent plus tant qu'elle ne répond pas.</span>
+                    </span>
+                  </div>
+                </div>
+                <button class="bouton bouton-plein mt-16 si-q2-a" type="button" data-si-etat="coupee" data-va-etat="pas-relie">Remplacer la clé</button>
+                <button class="bouton bouton-plein mt-16 si-q2-b" type="button" data-si-etat="coupee" data-va-etat="pas-relie">Se reconnecter chez Pennylane</button>
+              </div>
+
+              <!-- ─── La plateforme refuse une facture : la raison, et quoi faire ─── -->
+              <div data-si-etat="refus" class="refus">
+                <p class="rubrique rubrique-or">À reprendre</p>
+                <div class="carte-ton" data-ton="rouge">
+                  <p class="carte-ton-titre">Refusée par Pennylane</p>
+                  <p class="carte-ton-texte">Syndic Les Tilleuls, <b>2 880,00 €</b></p>
+                  <p class="refus-raison">Il manque le SIREN de son entreprise.</p>
+                  <div class="carte-ton-pied rang-boutons">
+                    <button class="bouton bouton-plein" type="button" data-note="Ouvre la fiche du client, la case du SIREN prête à remplir.">Compléter sa fiche</button>
+                    <button class="bouton bouton-creux" type="button" data-va-etat="relie">Renvoyer</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ─── Les factures parties chez elle ─── -->
+              <div data-si-etat="relie refus coupee">
+                <div class="factures-tete">
+                  <p class="rubrique rubrique-or">Factures envoyées</p>
+                  <p class="discret">30 derniers jours</p>
+                </div>
+                <div class="plage factures">
+                  <ul class="liste">
+                    <li><div class="ligne partie">
+                      <span class="jour"><b>4</b><span>nov.</span></span>
+                      <span class="ligne-corps">
+                        <span class="partie-nom"><span class="ligne-nom">Syndic Les Tilleuls</span><span class="partie-montant">2 880,00 €</span></span>
+                        <span class="partie-numero si-q1-a">F2026-000032</span>
+                        <span class="partie-numero si-q1-b">F2026-000032 ici, un autre numéro chez Pennylane</span>
+                        <span class="etat" data-ton="vert" data-si-etat="relie">Reçue par son client</span>
+                        <span class="etat" data-ton="rouge" data-si-etat="refus">Refusée</span>
+                        <span class="etat si-q3-a" data-ton="ambre" data-si-etat="coupee">En attente de Pennylane</span>
+                        <span class="etat si-q3-b" data-ton="rouge" data-si-etat="coupee">Pas envoyée</span>
+                      </span>
+                    </div></li>
+                    <li><div class="ligne partie">
+                      <span class="jour"><b>30</b><span>oct.</span></span>
+                      <span class="ligne-corps">
+                        <span class="partie-nom"><span class="ligne-nom">M. et Mme Roux</span><span class="partie-montant">1 240,00 €</span></span>
+                        <span class="partie-numero si-q1-a">F2026-000031</span>
+                        <span class="partie-numero si-q1-b">F2026-000031 ici, un autre numéro chez Pennylane</span>
+                        <span class="etat" data-ton="vert">Transmise</span>
+                      </span>
+                    </div></li>
+                    <li><div class="ligne partie">
+                      <span class="jour"><b>22</b><span>oct.</span></span>
+                      <span class="ligne-corps">
+                        <span class="partie-nom"><span class="ligne-nom">Mme Dupont</span><span class="partie-montant">360,00 €</span></span>
+                        <span class="partie-numero si-q1-a">F2026-000030</span>
+                        <span class="partie-numero si-q1-b">F2026-000030 ici, un autre numéro chez Pennylane</span>
+                        <span class="etat" data-ton="vert">Transmise</span>
+                      </span>
+                    </div></li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- ─── Ce qu'Atlas fait sur ce compte ─── -->
+              <div data-si-etat="pas-relie relie refus coupee">
+                <p class="rubrique rubrique-or">Sur ce compte</p>
+                <div class="plage confiance">
+                  <ul class="liste">
+                    <li><div class="ligne"><svg class="ico" aria-hidden="true"><use href="#i-envoyer"/></svg><span class="ligne-corps"><span class="ligne-nom">Chaque facture que vous envoyez part aussi chez elle.</span></span></div></li>
+                    <li><div class="ligne"><svg class="ico" aria-hidden="true"><use href="#i-document"/></svg><span class="ligne-corps"><span class="ligne-nom">Vos factures de fournisseurs arrivent chez elle, pas dans Atlas.</span></span></div></li>
+                    <li><div class="ligne"><svg class="ico" aria-hidden="true"><use href="#i-cadenas"/></svg><span class="ligne-corps"><span class="ligne-nom">Atlas n'y fait rien d'autre.</span></span></div></li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="delier" data-si-etat="relie refus coupee">
+                <button class="bouton-texte alerte" type="button" data-note="Sur la planche, le compte reste relié.">Délier mon compte</button>
+              </div>
+
+              <div class="vide reserve" data-si-etat="salarie">
+                <svg class="ico" aria-hidden="true"><use href="#i-cadenas"/></svg>
+                <p class="vide-titre">Ces réglages appartiennent au patron de l'entreprise.</p>
+                <p class="vide-texte">Le compte relié appartient au patron.</p>
+              </div>
+            </div>
+
+            <!-- ─── Le sommaire des Réglages, la rubrique neuve à sa place ─── -->
+            <div data-ecran-panneau="reglages" hidden>
+              <header class="tete">
+                <h1 class="tete-titre">Réglages</h1>
+                <button class="rond" type="button" aria-label="L'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              </header>
+
+              <a class="plage identite touche" href="reglages-identite.html" style="text-decoration:none;color:inherit">
+                <span class="identite-sceau" aria-hidden="true">J</span>
+                <span class="ligne-corps">
+                  <span class="ligne-nom">Jardins Démo</span>
+                  <span class="ligne-situation">Mon entreprise</span>
+                </span>
+                <span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>
+              </a>
+
+              <p class="rubrique rubrique-or">L'entreprise</p>
+              <div class="plage paquet">
+                <ul class="liste">
+                  <li><a class="ligne touche" href="reglages-banque.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-banque"/></svg><span class="ligne-corps"><span class="ligne-nom">Ma banque</span><span class="ligne-situation">Crédit Mutuel, lue aujourd'hui</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                  <li class="neuve"><button class="ligne touche" type="button" data-vers="facture-electronique"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-facture"/></svg><span class="ligne-corps"><span class="ligne-nom">Facture électronique</span><span class="ligne-situation" data-si-etat="relie refus">Pennylane, reliée</span><span class="ligne-situation" data-si-etat="coupee">Pennylane, coupée</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></button></li>
+                  <li><a class="ligne touche" href="reglages-equipe.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-equipe"/></svg><span class="ligne-corps"><span class="ligne-nom">Équipe</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                  <li><a class="ligne touche" href="reglages-vehicules.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-vehicule"/></svg><span class="ligne-corps"><span class="ligne-nom">Véhicules</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                  <li><a class="ligne touche" href="reglages-organigramme.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-organigramme"/></svg><span class="ligne-corps"><span class="ligne-nom">Organigramme</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                </ul>
+              </div>
+              <p class="rubrique rubrique-or">Pour les devis</p>
+              <div class="plage paquet">
+                <ul class="liste">
+                  <li><a class="ligne touche" href="reglages-tarifs.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-etiquette"/></svg><span class="ligne-corps"><span class="ligne-nom">Tarifs &amp; catalogue</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                  <li><a class="ligne touche" href="reglages-documents.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-document"/></svg><span class="ligne-corps"><span class="ligne-nom">Devis &amp; factures</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                  <li><a class="ligne touche" href="reglages-fournisseurs.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-carton"/></svg><span class="ligne-corps"><span class="ligne-nom">Fournisseurs et partenaires</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                </ul>
+              </div>
+            </div>
+
+          </div>
+
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html">Terminés</a>
+              <a class="barre-onglet" href="paysage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html" aria-current="page">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce que ça fait</h2>
+    <ul>
+      <li>Le compte se relie une fois, ici. Ensuite rien ne change à votre geste : « Envoyer la facture » la fait partir chez votre client <b>et</b> chez votre plateforme.</li>
+      <li>Chaque facture dit où elle en est : transmise, reçue par son client, refusée, en attente. Touchez les puces du haut.</li>
+      <li>Un refus donne la raison de la plateforme et quoi faire. Touchez « Une facture refusée ».</li>
+      <li>La ligne se range dans L'entreprise, sous Ma banque : deux comptes de l'entreprise, lus de la même façon. Touchez le retour en haut à gauche.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Votre client particulier reçoit sa facture par SMS ou par e-mail, comme aujourd'hui. Pour lui, la plateforme ne transmet que les chiffres à l'État.</li>
+      <li>Une mairie : « Télécharger pour Chorus Pro », comme aujourd'hui.</li>
+      <li>Réservé au patron. Touchez « Un salarié ».</li>
+      <li>Le chemin de la clé chez Pennylane vient d'une notice, pas d'un vrai compte. Il se vérifie sur le vôtre avant d'être codé.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li><b>Choix 1, qui fait la facture.</b> A : Atlas la fait, avec son numéro et son PDF, et la plateforme la transmet. Une seule facture, et toute plateforme qui parle la langue commune des plateformes peut se relier. B : Atlas envoie les lignes et Pennylane refait la facture avec son propre numéro. Deux numéros pour une vente, et un branchement à écrire pour chaque plateforme. Touchez A et B, puis « Reliée ». <b>Proposé : A.</b></li>
+      <li><b>Choix 2, comment se relier.</b> A : coller la clé de votre compte. Ça marche dès que c'est codé. B : un bouton qui ouvre Pennylane. Plus simple, mais il faut d'abord votre accès partenaire chez chaque plateforme. <b>Proposé : A, puis B quand l'accès partenaire arrive.</b></li>
+      <li><b>Choix 3, plateforme coupée.</b> A : la facture part chez votre client comme aujourd'hui, et attend ici en ambre jusqu'à ce que la plateforme réponde. B : rien ne part tant que la plateforme ne l'a pas prise. Touchez A et B, puis « Plateforme coupée ». <b>Proposé : A.</b></li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="reglages-banque.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Ma banque</a>
+  <a href="reglages-agenda.html">Mon agenda<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var ecran = document.getElementById("ecran-propose");
+
+  /* Une réponse change l'écran ET montre l'état où elle se voit : sans cela,
+     toucher « Choix 3 » sur l'écran vide ne changerait rien de visible. */
+  document.querySelectorAll(".pl-question").forEach(function (q) {
+    q.addEventListener("click", function (e) {
+      var b = e.target.closest("button[data-reponse]");
+      if (!b) return;
+      var question = q.getAttribute("data-question");
+      ecran.setAttribute("data-" + question, b.getAttribute("data-reponse"));
+      q.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+      var etat = q.getAttribute("data-montre-etat");
+      var puce = document.querySelector('.pl-etats button[data-etat="' + etat + '"]');
+      if (puce) puce.click();
+    });
+  });
+
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-note]");
+    if (b) { Kit.note(b, b.getAttribute("data-note")); return; }
+
+    /* Une puce du haut ramène toujours sur la rubrique. */
+    if (e.target.closest(".pl-etats button[data-etat]")) {
+      ecran.querySelectorAll("[data-ecran-panneau]").forEach(function (p) { p.hidden = p.getAttribute("data-ecran-panneau") !== "facture-electronique"; });
+    }
+  });
+});
+</script>
+</body>
+</html>
