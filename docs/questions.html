@@ -104,6 +104,7 @@
 <li><a href="#30-combien-de-temps-dois-je-garder-mes-factures-et-atlas-les-garde-t-il-">Combien de temps dois-je garder mes factures, et Atlas les garde-t-il ?</a></li>
 <li><a href="#31-si-je-facture-une-entreprise-ou-une-mairie-la-tva-disparaît-elle-de-la-facture-">Si je facture une entreprise ou une mairie, la TVA disparaît-elle de la facture ?</a></li>
 <li><a href="#32-si-je-supprime-un-client-où-reste-sa-facture-">Si je supprime un client, où reste sa facture ?</a></li>
+<li><a href="#33-si-un-artisan-supprime-son-compte-atlas-peut-il-garder-ses-factures-">Si un artisan supprime son compte, Atlas peut-il garder ses factures ?</a></li>
 </ol>
 <hr>
 <h2 id="1-le-compte-développeur-apple--qui-paie-et-combien-de-temps-">1. Le compte développeur Apple : qui paie, et combien de temps ?</h2>
@@ -1687,6 +1688,72 @@
 <p>Un chantier terminé mais pas encore facturé porte une facture en brouillon. Dans Atlas, elle reçoit son numéro dès sa création. L'effacer laisserait un trou dans la suite de vos numéros de facture, et c'est ce qu'un contrôle fiscal regarde. Elle reste donc, comme une facture émise, et la feuille de suppression le dit sous « Conservé par la loi ».</p>
 <h3 id="ce-qui-nest-pas-encore-vérifié">Ce qui n'est pas encore vérifié</h3>
 <p>Ce qui précède a été lu dans le code, pas regardé à l'écran. Et ces corrections ne sont pas encore chez vous : elles attendent la batterie avant d'aller sur <code>main</code>. Une fois livrées, le geste qui le prouve : supprimer un client qui a une facture, vérifier qu'il quitte « Vos clients », puis ouvrir sa facture depuis Terminés.</p>
+<hr>
+<h2 id="33-si-un-artisan-supprime-son-compte-atlas-peut-il-garder-ses-factures-">33. Si un artisan supprime son compte, Atlas peut-il garder ses factures ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>Votre question du 5 novembre 2026, en préparant l'hébergement.</em></p>
+<h3 id="la-réponse-courte">La réponse courte</h3>
+<p>Oui, <strong>si les conditions générales le disent et qu'il les a acceptées.</strong> L'obligation de garder les factures dix ans pèse sur l'artisan, pas sur Atlas : Atlas ne peut donc pas s'appuyer sur la loi seule. Ce qui rend la conservation légale, c'est <strong>son instruction</strong>, donnée en acceptant le contrat (article 13), et le fait qu'il garde l'accès à ses pièces.</p>
+<p><strong>Corrigé le jour même.</strong> J'avais d'abord écrit que les garder « contre sa demande » n'était pas légal, et qu'il fallait lui faire choisir au moment de fermer. C'était trop fort : le choix peut se faire à l'inscription, par le contrat, et c'est ce que l'article 13 fait déjà.</p>
+<h3 id="pourquoi">Pourquoi</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Qui est responsable</th>
+<th>Ce que dit le texte</th>
+</tr></thead><tbody>
+<tr>
+<td>Les factures et les clients de l'artisan</td>
+<td>l'artisan. Atlas ne fait que les garder pour lui (« sous-traitant »)</td>
+<td>En fin de contrat, Atlas efface ou rend les données, <strong>au choix de l'artisan</strong>, sauf si une loi impose de les garder (RGPD, article 28.3.g)</td>
+</tr>
+<tr>
+<td>L'obligation de garder ses factures 10 ans</td>
+<td>l'artisan</td>
+<td>Code de commerce, L123-22</td>
+</tr>
+<tr>
+<td>Les factures d'abonnement qu'Atlas adresse à l'artisan</td>
+<td>Atlas</td>
+<td>Atlas doit les garder 10 ans lui-même : là, la loi le permet même contre sa demande (RGPD, article 17.3.b)</td>
+</tr>
+</tbody></table></div>
+<p>Garder ses factures sans son accord ferait d'Atlas le responsable d'un fichier qu'il n'a aucune raison légale de tenir. C'est le point qui serait attaquable.</p>
+<h3 id="ce-que-vous-avez-tranché-le-5-novembre-2026">Ce que vous avez tranché le 5 novembre 2026</h3>
+<p>Trois versions dans la même journée ; <strong>c'est la dernière qui vaut</strong> : <em>« dans tous les cas, garder les documents dix ans dans l'application, c'est plus simple »</em>.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>ce qui reste 10 ans, dans tous les cas</td>
+<td>factures, avoirs, devis acceptés, contrats d'entretien acceptés, et leurs PDF</td>
+</tr>
+<tr>
+<td>comment il y accède</td>
+<td>une connexion en <strong>lecture seule</strong> : il voit et télécharge, il ne crée plus rien</td>
+</tr>
+<tr>
+<td>ce qui s'efface après 30 jours</td>
+<td>tout le reste : clients sans facture, <strong>devis jamais acceptés</strong>, photos, notes, dictées</td>
+</tr>
+<tr>
+<td>au bout des 10 ans</td>
+<td>l'archive s'efface à son tour</td>
+</tr>
+<tr>
+<td>à la fermeture</td>
+<td>« Télécharger mes données » est proposé, pas obligatoire, et l'écran dit ce qui reste et jusqu'à quand</td>
+</tr>
+</tbody></table></div>
+<p><strong>Un seul geste : fermer</strong> (sa réponse du même soir, « la A »). Pas de pause. Revenir cinq ans après, c'est retrouver ses factures, avoirs, devis acceptés, contrats acceptés et leurs PDF, les clients et chantiers qui les portent, et ses réglages, puis rouvrir dessus.</p>
+<p><strong>Tranché</strong> : il a écrit « on garde les devis et les factures 10 ans ». Les devis <strong>jamais acceptés</strong> n'ont aucune raison légale d'être gardés 10 ans (ils portent le nom et l'adresse de quelqu'un qui n'est pas devenu client). <strong>Sa réponse, le 5 novembre : les effacer à la fermeture.</strong></p>
+<p>Écartées le même jour : le choix à la fermeture, et « télécharger, puis tout effacer ».</p>
+<h3 id="ce-qui-reste-à-faire">Ce qui reste à faire</h3>
+<ul>
+<li><strong>les conditions générales</strong> : l'article 13 dit déjà que les pièces comptables sont gardées dix ans. Il manque qu'il y garde l'accès en lecture seule. L'ajouter demande une nouvelle version et une nouvelle acceptation de chacun : c'est votre décision ;</li>
+<li><strong>le code</strong> : la fermeture du compte n'existe pas encore (vérifié le 5 novembre 2026). Une suppression brutale de l'entreprise échouerait de toute façon : la base refuse d'effacer une facture émise ou un devis envoyé ;</li>
+<li><strong>un avis d'avocat</strong> avant l'ouverture au public : ce qui précède est une lecture des textes, pas une consultation.</li>
+</ul>
 </main>
 </body>
 </html>

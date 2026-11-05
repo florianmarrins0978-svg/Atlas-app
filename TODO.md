@@ -1,6 +1,51 @@
 # Prochaines tâches
 
 
+## FERMER UN COMPTE, ET LES FACTURES D'ABONNEMENT D'ATLAS (5 novembre 2026)
+
+**Fermer un compte : tranché, pas codé** (`docs/QUESTIONS.md`, question 33,
+sa troisième version du 5 novembre, la seule qui vaut). Dans tous les cas, les
+factures, avoirs, devis et contrats acceptés et leurs PDF restent 10 ans,
+lisibles en lecture seule ; le reste s'efface après 30 jours ; l'archive
+s'efface au bout des 10 ans. La base refuse aujourd'hui d'effacer une facture émise ou un
+devis envoyé (`drizzle/0018`, `0068`) : l'effacement au bout des 10 ans devra lever
+ce verrou pour ce seul cas, prouvé par un test sur une base habitée. Maquette
+d'abord. Remplace `RETENTION.compteFermeJours` « mécanisme inexistant ».
+Article 13 des CGU à réécrire : sa décision (nouvelle version à accepter).
+
+**Les factures qu'Atlas adresse aux artisans : Stripe les fait, mais pas
+conformes en l'état** (lu dans `src/server/paiement/stripe.ts`, 5 novembre) :
+
+- la session de paiement ne demande **ni la raison sociale, ni l'adresse, ni
+  le numéro de TVA ou le SIREN** de l'artisan (`billing_address_collection`,
+  `tax_id_collection`, `customer_update[name|address]` absents) : mentions
+  obligatoires d'une facture entre professionnels ;
+- **aucune TVA n'est ajoutée** (ni `automatic_tax` ni taux) alors que les CGU
+  annoncent des prix HT, TVA en sus ;
+- les mentions d'Atlas (SIRET, TVA, pénalités de retard, indemnité de 40 €)
+  se posent dans le tableau de bord Stripe, pas dans le code : à faire par lui ;
+- **septembre 2027** : Atlas, petite entreprise, devra émettre ses factures
+  aux artisans en facture électronique par une plateforme agréée. Stripe n'en
+  est pas une à notre connaissance : à relier à la même plateforme que celle
+  des artisans, ou à une qui lit Stripe.
+
+**Ses réponses du 5 novembre** : Atlas sera **soumis à la TVA** (20 %, prix HT
+dans les CGU), et sa facture d'abonnement doit être **en Factur-X**.
+
+**Décision prise en conséquence** (le même principe que §555 pour ses
+artisans) : **Atlas fait lui-même sa facture d'abonnement**, Stripe ne fait
+qu'encaisser. Au crochet `invoice.paid`, Atlas écrit la facture (son numéro,
+sa TVA, l'identité de l'artisan relevée au paiement), la rend en Factur-X avec
+**le même code que le lot Factur-X des artisans**, la garde 10 ans et la met
+dans Réglages, Abonnement. Côté Stripe : envoi des factures par e-mail coupé
+et historique des factures retiré du guichet, sans quoi l'artisan recevrait
+deux factures pour une vente, avec deux numéros. À vérifier dans le tableau
+de bord le jour du compte Stripe (non vérifiable ici).
+
+Ordre : 1. le lot Factur-X (§555), 2. l'identité et la TVA au paiement,
+3. la facture d'abonnement d'Atlas sur ce même code, 4. en septembre 2027,
+la transmission par la plateforme agréée d'Atlas. Pas d'application à part.
+
 ## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : relier sa plateforme de facture électronique~~ TRANCHÉ LE 5 NOVEMBRE : 1 A, 2 A, 3 B
 
 **Ses réponses, le 5 novembre** : 1 A, 2 A (*« le plus simple c'est la A
@@ -6864,6 +6909,17 @@ poussée.
 | ce qui restera | Redis et le port 3000 : ce sont des services, pas des suites |
 
 ## À FAIRE : la CI est rouge sur `main` depuis le 2 septembre — trois suites e2e
+
+**Mis à jour le 5 novembre 2026.** Depuis au moins le 27 octobre, la CI
+tombait plus tôt, sur l'étape des suites base (558/560) : les suites navigateur
+ne tournaient donc plus du tout, et l'état des trois ci-dessous n'est plus
+mesuré. Les deux rouges base (`test-maquettes-hors-production`,
+`test-stockage-banc`) venaient d'un import suffixé que tsx 4.23 rend vide ;
+corrigés, 560/560 en local. **Reste à lire** la course de `ci.yml` qui suit la
+poussée de cette correction sur `main` : si les trois suites e2e y sont encore
+rouges, c'est ce qui reste de cette entrée. Une course lancée à la main sur une
+branche ne compte pas : sans `origin/main`, `test-pas-de-pansement` et les
+suites qui lisent le diff tombent faute d'historique.
 
 **Ce n'est pas le lot des boutons verts, et c'est MESURÉ, pas supposé.** Les
 mêmes trois suites échouent sur la CI de `main` (course 33753872485, arbre sans

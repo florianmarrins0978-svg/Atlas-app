@@ -55,6 +55,7 @@ relues à chaque session) :
 30. [Combien de temps dois-je garder mes factures, et Atlas les garde-t-il ?](#30-combien-de-temps-dois-je-garder-mes-factures-et-atlas-les-garde-t-il-)
 31. [Si je facture une entreprise ou une mairie, la TVA disparaît-elle de la facture ?](#31-si-je-facture-une-entreprise-ou-une-mairie-la-tva-disparaît-elle-de-la-facture-)
 32. [Si je supprime un client, où reste sa facture ?](#32-si-je-supprime-un-client-où-reste-sa-facture-)
+33. [Si un artisan supprime son compte, Atlas peut-il garder ses factures ?](#33-si-un-artisan-supprime-son-compte-atlas-peut-il-garder-ses-factures-)
 
 ---
 
@@ -2150,4 +2151,75 @@ corrections ne sont pas encore chez vous : elles attendent la batterie avant
 d'aller sur `main`. Une fois livrées, le geste qui le prouve : supprimer un
 client qui a une facture, vérifier qu'il quitte « Vos clients », puis ouvrir
 sa facture depuis Terminés.
+
+---
+
+## 33. Si un artisan supprime son compte, Atlas peut-il garder ses factures ?
+
+*Votre question du 5 novembre 2026, en préparant l'hébergement.*
+
+### La réponse courte
+
+Oui, **si les conditions générales le disent et qu'il les a acceptées.**
+L'obligation de garder les factures dix ans pèse sur l'artisan, pas sur
+Atlas : Atlas ne peut donc pas s'appuyer sur la loi seule. Ce qui rend la
+conservation légale, c'est **son instruction**, donnée en acceptant le
+contrat (article 13), et le fait qu'il garde l'accès à ses pièces.
+
+**Corrigé le jour même.** J'avais d'abord écrit que les garder « contre sa
+demande » n'était pas légal, et qu'il fallait lui faire choisir au moment de
+fermer. C'était trop fort : le choix peut se faire à l'inscription, par le
+contrat, et c'est ce que l'article 13 fait déjà.
+
+### Pourquoi
+
+| | Qui est responsable | Ce que dit le texte |
+|---|---|---|
+| Les factures et les clients de l'artisan | l'artisan. Atlas ne fait que les garder pour lui (« sous-traitant ») | En fin de contrat, Atlas efface ou rend les données, **au choix de l'artisan**, sauf si une loi impose de les garder (RGPD, article 28.3.g) |
+| L'obligation de garder ses factures 10 ans | l'artisan | Code de commerce, L123-22 |
+| Les factures d'abonnement qu'Atlas adresse à l'artisan | Atlas | Atlas doit les garder 10 ans lui-même : là, la loi le permet même contre sa demande (RGPD, article 17.3.b) |
+
+Garder ses factures sans son accord ferait d'Atlas le responsable d'un
+fichier qu'il n'a aucune raison légale de tenir. C'est le point qui serait
+attaquable.
+
+### Ce que vous avez tranché le 5 novembre 2026
+
+Trois versions dans la même journée ; **c'est la dernière qui vaut** :
+*« dans tous les cas, garder les documents dix ans dans l'application, c'est
+plus simple »*.
+
+| | |
+|---|---|
+| ce qui reste 10 ans, dans tous les cas | factures, avoirs, devis acceptés, contrats d'entretien acceptés, et leurs PDF |
+| comment il y accède | une connexion en **lecture seule** : il voit et télécharge, il ne crée plus rien |
+| ce qui s'efface après 30 jours | tout le reste : clients sans facture, **devis jamais acceptés**, photos, notes, dictées |
+| au bout des 10 ans | l'archive s'efface à son tour |
+| à la fermeture | « Télécharger mes données » est proposé, pas obligatoire, et l'écran dit ce qui reste et jusqu'à quand |
+
+**Un seul geste : fermer** (sa réponse du même soir, « la A »). Pas de
+pause. Revenir cinq ans après, c'est retrouver ses factures, avoirs, devis
+acceptés, contrats acceptés et leurs PDF, les clients et chantiers qui les
+portent, et ses réglages, puis rouvrir dessus.
+
+**Tranché** : il a écrit « on garde les devis et les factures 10 ans ».
+Les devis **jamais acceptés** n'ont aucune raison légale d'être gardés 10 ans
+(ils portent le nom et l'adresse de quelqu'un qui n'est pas devenu client).
+**Sa réponse, le 5 novembre : les effacer à la fermeture.**
+
+Écartées le même jour : le choix à la fermeture, et « télécharger, puis tout
+effacer ».
+
+### Ce qui reste à faire
+
+- **les conditions générales** : l'article 13 dit déjà que les pièces
+  comptables sont gardées dix ans. Il manque qu'il y garde l'accès en lecture
+  seule. L'ajouter demande une nouvelle version et une nouvelle acceptation
+  de chacun : c'est votre décision ;
+- **le code** : la fermeture du compte n'existe pas encore (vérifié le
+  5 novembre 2026). Une suppression brutale de l'entreprise échouerait de
+  toute façon : la base refuse d'effacer une facture émise ou un devis
+  envoyé ;
+- **un avis d'avocat** avant l'ouverture au public : ce qui précède est une
+  lecture des textes, pas une consultation.
 
