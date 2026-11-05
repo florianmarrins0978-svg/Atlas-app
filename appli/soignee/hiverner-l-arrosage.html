@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hiverner l'arrosage, A ou B</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  HIVERNER L'ARROSAGE. Sa demande du 5 novembre 2026, mot pour mot :
+  « Tous les clients où on a facturé un arrosage automatique, il faudrait
+  mettre une petite pastille à côté du nom. Hiverner l'arrosage par exemple,
+  à partir du mois de novembre. À partir de début novembre, une petite
+  pastille se mettrait à côté du client. Et comme ça, ça nous éviterait de
+  les oublier. »
+
+  CE QUE L'APPLI SAIT AUJOURD'HUI, cherché dans src/ le 5 novembre 2026 :
+    une ligne de facture n'a qu'un libellé, une quantité, un prix, un taux et
+      une unité (lignes_facture, src/server/db/schema.ts) : aucune catégorie,
+      aucun lien vers l'outil d'arrosage ;
+    une ligne de devis renvoie à sa ligne de prix (lignePrixId), elle aussi
+      sans catégorie ;
+    le plan d'arrosage NE S'ENREGISTRE PAS (src/app/paysage/arrosage/actions.ts,
+      « Rien n'est enregistré ») : rien ne relie un plan à un client ;
+    demandes_envoyees.origine vaut « arrosage » pour une demande de prix
+      partie chez un FOURNISSEUR, sans client ;
+    les familles du contrat d'entretien sont Pelouse, Tailles, Massifs,
+      Propreté (src/lib/prestations-entretien.ts, MODELE_FOURNI) : pas
+      d'arrosage ;
+    une pièce importée n'a qu'un libellé libre.
+  L'appli ne peut donc PAS savoir de façon sûre qu'un client a un arrosage
+  automatique. Chercher le mot « arrosage » dans les libellés se tromperait
+  dans les deux sens : « arrosage de reprise » sur une plantation, et une
+  installation facturée en « 9 turbines et 2 électrovannes » sans le mot.
+  Une pastille qui se trompe de client s'apprend à être ignorée.
+
+  CE QUE LA PLANCHE PROPOSE À LA PLACE : un fait posé une fois sur le client,
+  « Arrosage automatique », par lui. Quand une facture parle d'arrosage,
+  Atlas DEMANDE sur la fiche du client, Oui ou Non, et ne pose rien seul.
+  Un client équipé par un autre se coche dans Modifier ses coordonnées.
+
+  A : dès le 1er novembre, une goutte bleue à côté du nom dans Vos clients ;
+      sur sa fiche, « Arrosage à hiverner », Le prévoir ou C'est fait ; la
+      goutte part quand c'est fait.
+  B : la même chose, et une ligne en tête de Vos clients qui les rassemble.
+
+  LA COULEUR : le bleu des cartes, que Vos clients n'emploie pas. L'or y dit
+  ce qui mène ailleurs, le rouge le dû : la goutte ne prend ni l'un ni
+  l'autre.
+
+  TODO.md (l'entretien de l'arrosage, vers la ligne 12870) prévoyait la mise
+  en route et l'hivernage dans la fiche d'entretien : pas codé non plus.
+  Aucun matériel, aucun calcul d'arrosage sur cette planche
+  (.claude/rules/arrosage.md).
+
+  RIEN N'EST CODÉ DANS src/. Les clients sont ceux des planches Vos clients
+  et La fiche d'un client.
+*/
+
+/* ─── Vos clients, recopié de clients.html ─────────────────────────────── */
+.recherche { display: flex; align-items: center; gap: 10px; }
+.recherche .champ-recherche { flex: 1; min-width: 0; }
+.filtre { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border-radius: 22px; flex: none;
+          font-size: 15px; font-weight: 600; color: var(--atlas-ink); background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.filtre .ico { width: 20px; height: 20px; }
+.portes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 4px 0 14px; }
+.porte { display: flex; align-items: center; gap: 10px; min-height: 64px; padding: 10px 12px; border-radius: 10px; text-align: left;
+         color: var(--atlas-or); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 70%, transparent); }
+.porte .ico { color: var(--atlas-or); flex: none; width: 22px; height: 22px; }
+.porte .ico-p { width: 18px; height: 18px; }
+.porte-texte { flex: 1; min-width: 0; }
+.porte-nom { display: block; font-size: 15px; font-weight: 700; line-height: 1.2; }
+.porte-compte { display: block; margin-top: 2px; font-size: 13.5px; font-weight: 500; color: var(--atlas-inkSoft); }
+.liste-une { margin-top: 18px; }
+.groupe { padding: 2px 16px; }
+.lettre { margin: 0; padding: 14px 0 2px; font: 400 17px/1 var(--serif); color: var(--atlas-inkSoft); }
+.bloc-lettre + .bloc-lettre { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.client { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 66px; padding: 8px 0 12px; text-align: left; color: inherit; }
+.groupe-plat .client + .client { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.initiales { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%;
+             font: 400 17px/1 var(--serif); background: var(--atlas-rustTint); color: var(--atlas-rust); }
+.client-corps { flex: 1; min-width: 0; }
+.client-nom { font: 400 18.5px/1.25 var(--serif); }
+.client-lieu { display: block; margin-top: 2px; font-size: 14px; color: var(--atlas-inkSoft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.client-bas { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 8px; margin-top: 4px; }
+.client-piece { font-size: 14px; color: var(--atlas-inkSoft); white-space: nowrap; }
+.du { flex: none; display: inline-flex; align-items: center; min-height: 26px; padding: 0 10px; border-radius: 13px; font-size: 14px; font-weight: 700;
+      font-variant-numeric: tabular-nums lining-nums; background: var(--atlas-carteRougeFond); color: var(--atlas-carteRougeTexte); white-space: nowrap; }
+.client > .ico { width: 20px; height: 20px; color: var(--atlas-chevron); stroke-width: 2; flex: none; }
+.importer { margin-top: 28px; color: var(--atlas-or); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 70%, transparent); }
+.importer .ico { color: var(--atlas-or); }
+
+/* ─── La goutte : petite, collée au nom, le bleu des cartes ────────────── */
+.nom-rang { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.nom-rang .client-nom { min-width: 0; overflow-wrap: anywhere; }
+.goutte { width: 22px; height: 22px; flex: none; display: inline-grid; place-items: center; border-radius: 50%;
+          background: var(--atlas-carteBleuFond); color: var(--atlas-carteBleuTexte); }
+.goutte .ico { width: 14px; height: 14px; stroke-width: 2.1; }
+
+/* B : la ligne qui les rassemble, en tête de la liste. */
+.rassemble { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 60px; margin-top: 14px; padding: 8px 14px 8px 10px;
+             border-radius: var(--r-plage); text-align: left; background: var(--atlas-carteBleuFond); color: var(--atlas-carteBleuTexte); }
+.rassemble .pastille-ico { background: var(--atlas-card); }
+.rassemble-texte { flex: 1; min-width: 0; font-size: 16px; font-weight: 700; }
+.rassemble > .ico { width: 20px; height: 20px; flex: none; stroke-width: 2; }
+.filtre-pose { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 18px 0 0; font: 400 22px/1.2 var(--serif); }
+.filtre-pose .goutte { width: 28px; height: 28px; }
+.filtre-pose .goutte .ico { width: 17px; height: 17px; }
+.filtre-pose button { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-inkSoft);
+                      box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.rien { padding: 26px 4px; text-align: center; font-size: 15.5px; color: var(--atlas-inkSoft); }
+
+/* ─── La fiche d'un client, recopiée de client.html ────────────────────── */
+.carte-visite { padding: 16px 16px 4px; }
+.client-mot { margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--atlas-or); }
+.fiche-nom { margin: 2px 0 8px; font: 400 31px/1.05 var(--serif); letter-spacing: -0.012em; }
+.coordonnee { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 40px; text-align: left; font-size: 16px; color: var(--atlas-ink); }
+.coordonnee .ico { color: var(--atlas-or); width: 22px; height: 22px; flex: none; }
+.coordonnee-tel { font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+.carte-gestes { display: grid; grid-template-columns: 1fr 1fr; margin-top: 8px; box-shadow: inset 0 1px 0 var(--atlas-line); }
+.carte-gestes > * { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 50px; padding: 6px 8px; border-radius: 0;
+                    text-align: left; line-height: 1.2; font-size: 14.5px; font-weight: 700; color: var(--atlas-or); }
+.carte-gestes > * + * { border-left: 1px solid var(--atlas-line); }
+.carte-gestes .ico { width: 20px; height: 20px; flex: none; }
+.repartir { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+.tuile-geste { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; min-height: 76px; padding: 8px 6px;
+               border-radius: 14px; text-align: center; font-size: 14.5px; font-weight: 700; line-height: 1.2; }
+.tuile-geste .ico { width: 26px; height: 26px; }
+.tuile-pleine { color: var(--atlas-plein); }
+.tuile-or { color: var(--atlas-or); }
+.prestation { margin-top: 12px; padding: 12px 16px; }
+.prestation-titre { margin: 0; font-size: 14.5px; color: var(--atlas-inkSoft); }
+.prestation-titre b { color: var(--atlas-ink); font-weight: 700; }
+.prestation ul { margin: 8px 0 0; padding: 0; list-style: none; }
+.prestation li { position: relative; padding: 3px 0 3px 18px; font: 400 17px/1.3 var(--serif); }
+.prestation li::before { content: ""; position: absolute; left: 2px; top: 11px; width: 7px; height: 7px; border-radius: 50%; background: var(--atlas-or); }
+.dossier { margin-top: 18px; }
+.onglets-dossier { display: grid; grid-template-columns: repeat(3, 1fr); box-shadow: inset 0 -1px 0 var(--atlas-line); }
+.onglets-dossier button { position: relative; min-height: 52px; font-size: 16px; font-weight: 600; color: var(--atlas-inkSoft); }
+.onglets-dossier button[aria-selected="true"] { color: var(--atlas-ink); font-weight: 700; }
+.onglets-dossier button[aria-selected="true"]::after { content: ""; position: absolute; left: 18%; right: 18%; bottom: 0; height: 2px; border-radius: 2px; background: var(--atlas-or); }
+.piece { position: relative; display: flex; align-items: center; gap: 12px; width: 100%; min-height: 68px; padding: 10px 0; text-align: left; }
+.piece + .piece::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
+.piece-corps { flex: 1; min-width: 0; }
+.piece-haut { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.piece-titre { min-width: 0; font: 400 18.5px/1.25 var(--serif); font-variant-numeric: lining-nums; }
+.piece-somme { flex: none; font-size: 15.5px; font-weight: 600; font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
+.piece-date { display: block; margin-top: 2px; font-size: 14px; color: var(--atlas-inkSoft); }
+.piece > .ico { width: 20px; height: 20px; color: var(--atlas-chevron); stroke-width: 2; flex: none; }
+
+/* ─── Ce que la planche ajoute à la fiche ──────────────────────────────── */
+.hiverner { margin-top: 12px; padding: 14px 16px 16px; }
+.hiverner-tete { display: flex; align-items: center; gap: 12px; }
+.hiverner-tete b { display: block; font: 400 20px/1.2 var(--serif); }
+.hiverner-tete small { display: block; margin-top: 3px; font-size: 14.5px; color: var(--atlas-carteBleuTexte); font-weight: 600; }
+.hiverner .rang-boutons { margin-top: 14px; }
+.hiverner .bouton-petit { width: 100%; }
+.hiverne { margin: 12px 0 0 4px; }
+.question { margin-top: 12px; padding: 14px 16px 16px; }
+.question p { margin: 0; font-size: 16px; line-height: 1.45; color: var(--atlas-ink); }
+.question p b { display: block; color: var(--atlas-carteBleuTexte); }
+.question .rang-boutons { margin-top: 14px; }
+.question .bouton-petit { width: 100%; }
+</style>
+</head>
+<body class="pl pl-pilules">
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">Hiverner l'arrosage</h1>
+  <p class="pl-verdict">Le 3 novembre, une goutte se pose à côté de <b>Mme Garnier</b> et des <b>Roux</b>. Touchez Mme Garnier, puis <b>C'est fait</b> : la goutte part. <b>Le 20 octobre</b>, rien. <b>B</b> les rassemble en tête de la liste. <b>Atlas demande</b> : il ne devine pas qui a un arrosage.</p>
+</header>
+<main class="pl-scene">
+  <div class="pl-ecrans">
+    <div data-vue-panneau="A">
+      <p class="pl-legende">A, la goutte à côté du nom</p>
+      <div class="pl-etats" data-pour="A">
+        <button type="button" data-date="oct" aria-pressed="false">Le 20 octobre</button>
+        <button type="button" data-date="nov" aria-pressed="true">Le 3 novembre</button>
+      </div>
+      <div class="cadre"><div class="ecran avec-barre" data-version="A"></div></div>
+    </div>
+    <div data-vue-panneau="B">
+      <p class="pl-legende">B, la goutte, et les rassembler</p>
+      <div class="pl-etats" data-pour="B">
+        <button type="button" data-date="oct" aria-pressed="false">Le 20 octobre</button>
+        <button type="button" data-date="nov" aria-pressed="true">Le 3 novembre</button>
+      </div>
+      <div class="cadre"><div class="ecran avec-barre" data-version="B"></div></div>
+    </div>
+    <div data-vue-panneau="Atlas demande">
+      <p class="pl-legende">Atlas demande, il ne devine pas</p>
+      <div class="cadre"><div class="ecran avec-barre" data-version="demande"></div></div>
+    </div>
+  </div>
+  <section class="pl-notes">
+    <h2>Ce que je propose : A</h2>
+    <ul>
+      <li>Dès le 1er novembre, une petite goutte bleue à côté du nom de chaque client qui a un arrosage automatique, dans Vos clients.</li>
+      <li>Sur sa fiche, juste sous ses coordonnées : Arrosage à hiverner. Le prévoir ouvre le planning sur lui ; C'est fait retire la goutte.</li>
+      <li>Atlas ne peut pas savoir seul qui a un arrosage : une ligne de facture n'est qu'un texte, et un plan d'arrosage ne s'enregistre pas. Le mot « arrosage » se tromperait dans les deux sens : un arrosage de reprise sur une plantation, une installation facturée en turbines sans le mot.</li>
+      <li>Donc il demande. Quand une facture parle d'arrosage, la fiche du client pose la question une fois : Oui ou Non. Rien ne se pose sans votre Oui.</li>
+      <li>Un client équipé par un autre, dont vous ne faites que l'hivernage : la case se coche dans Modifier ses coordonnées.</li>
+      <li>B ajoute en tête de Vos clients une ligne qui les rassemble, « 2 arrosages à hiverner ». Utile à partir d'une dizaine de clients équipés ; en dessous, la goutte suffit.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>La date : le 1er novembre partout, ou réglable dans Réglages. Le gel ne vient pas au même moment à Nice et dans le Jura.</li>
+      <li>Ce qui retire la goutte : C'est fait seulement (dessiné), ou déjà l'hivernage prévu au planning. Une intervention d'hivernage terminée au planning pourrait aussi cocher C'est fait toute seule.</li>
+      <li>Au printemps, la même goutte pour la remise en route : à partir de quelle date.</li>
+      <li>Un client sous contrat d'entretien dont un passage couvre l'hivernage : la goutte part avec ce passage. Les familles du contrat (Pelouse, Tailles, Massifs, Propreté) n'ont pas d'arrosage aujourd'hui : il faudrait l'ajouter.</li>
+      <li>Où Atlas pose sa question : sur la fiche du client (dessiné), ou au départ de la facture, qui doit rester rapide.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Vos clients et la fiche d'un client, comme sur leurs planches : la goutte s'ajoute au nom, la ligne s'ajoute sous les coordonnées.</li>
+      <li>L'or reste ce qui mène ailleurs, le rouge le dû : la goutte prend le bleu, que la liste n'emploie pas.</li>
+      <li>L'outil d'arrosage ne change pas, et rien n'est calculé ici.</li>
+    </ul>
+  </section>
+</main>
+<footer class="pl-pied">
+  <a href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+</footer>
+<script src="kit.js"></script>
+<script>
+(function () {
+  "use strict";
+  /* Les clients des planches Vos clients et La fiche d'un client. Les
+     numéros sont dans la plage que l'ARCEP réserve aux fictions (06 39 98). */
+  function donnees() {
+    return [
+      { nom: "Mme Aubry", ini: "MA" },
+      { nom: "M. Bernard", ini: "MB", piece: "Facture du 17 oct.", du: "312,00 € dus" },
+      { nom: "Mme Costa", ini: "MC", piece: "Facture du 22 oct." },
+      { nom: "M. Faucher", ini: "MF", piece: "Facture du 10 oct.", arrosage: "question", vu: "10 octobre", tel: "06 39 98 61 20",
+        derniere: { jour: "10 octobre 2026", lignes: ["Réparation de l'arrosage automatique"] },
+        factures: [{ titre: "Réparation de l'arrosage automatique", somme: "186,00 €", no: "F2026-000013", jour: "10 octobre 2026" }] },
+      { nom: "Mme Garnier", ini: "MG", lieu: "18 rue des Lilas, 49100 Angers", piece: "Facture du 14 oct.", du: "2 016,00 € dus",
+        arrosage: true, tel: "06 39 98 33 07",
+        derniere: { jour: "14 octobre 2026", lignes: ["Création d'un massif de vivaces", "Paillage"] },
+        factures: [{ titre: "Création d'un massif", somme: "2 016,00 €", no: "F2026-000012", jour: "14 octobre 2026" },
+                   { titre: "Arrosage automatique, 2 réseaux", somme: "3 480,00 €", no: "F2026-000005", jour: "12 mai 2026" }] },
+      { nom: "M. Lefèvre", ini: "ML", lieu: "7 allée du Parc, 49130 Les Ponts-de-Cé", piece: "Devis du 2 oct." },
+      { nom: "M. et Mme Roux", ini: "R", lieu: "3 impasse des Saules, 49070 Beaucouzé", piece: "Facture du 7 oct.",
+        arrosage: true, tel: "06 39 98 52 46",
+        derniere: { jour: "7 octobre 2026", lignes: ["Taille de haie de lauriers"] },
+        factures: [{ titre: "Taille de haie", somme: "540,00 €", no: "F2026-000011", jour: "7 octobre 2026" },
+                   { titre: "Arrosage automatique, 3 réseaux", somme: "4 920,00 €", no: "F2025-000018", jour: "23 avril 2025" }] }
+    ];
+  }
+  var JOUR = { oct: "20 octobre", nov: "3 novembre" };
+  function ico(nom, cls) { return '<svg class="ico' + (cls ? " " + cls : "") + '" aria-hidden="true"><use href="#i-' + nom + '"/></svg>'; }
+  function goutte() { return '<span class="goutte" role="img" aria-label="Arrosage à hiverner">' + ico("goutte") + '</span>'; }
+  var barre =
+    '<nav class="barre" aria-label="Navigation principale"><div class="barre-onglets">' +
+      '<a class="barre-onglet" href="accueil.html" aria-current="page">Chantiers</a>' +
+      '<a class="barre-onglet" href="planning.html">Planning</a>' +
+      '<a class="barre-onglet" href="termines.html">Terminés</a>' +
+      '<a class="barre-onglet" href="paysage.html">Paysage</a>' +
+      '<a class="barre-onglet" href="reglages.html">Réglages</a>' +
+      '<span class="barre-trait" aria-hidden="true"><span></span></span>' +
+    '</div></nav>';
+
+  var ecrans = {};
+  document.querySelectorAll(".ecran[data-version]").forEach(function (ecran) {
+    var version = ecran.getAttribute("data-version");
+    var e = { date: "nov", vue: "liste", k: null, filtre: false, c: donnees() };
+    if (version === "demande") { e.vue = "fiche"; e.k = 3; }
+    ecran.innerHTML = '<div class="defile"></div>' + barre;
+    var defile = ecran.querySelector(".defile");
+
+    function saison() { return e.date === "nov"; }
+    function aHiverner(c) { return saison() && c.arrosage === true && !c.hiverne; }
+    function lesAHiverner() { return e.c.filter(aHiverner); }
+
+    function ligneClient(c, k) {
+      return '<button class="client touche" type="button" data-geste="ouvrir" data-k="' + k + '">' +
+        '<span class="initiales" aria-hidden="true">' + c.ini + '</span>' +
+        '<span class="client-corps"><span class="nom-rang"><span class="client-nom">' + c.nom + '</span>' + (aHiverner(c) ? goutte() : "") + '</span>' +
+          (c.lieu ? '<span class="client-lieu">' + c.lieu + '</span>' : "") +
+          (c.piece ? '<span class="client-bas"><span class="client-piece">' + c.piece + '</span>' + (c.du ? '<span class="du">' + c.du + '</span>' : "") + '</span>' : "") +
+        '</span>' + ico("suivant") + '</button>';
+    }
+
+    /* ─── Vos clients ─────────────────────────────────────────────────── */
+    function rendreListe() {
+      var n = lesAHiverner().length;
+      var h =
+        '<div class="rang-espace" style="margin-top:4px">' +
+          '<button class="rond-creux" type="button" data-geste="inchange" aria-label="Retour à la liste des chantiers">' + ico("retour") + '</button>' +
+        '</div>' +
+        '<header class="tete" style="margin:12px 0 0"><h1 class="tete-titre">Vos clients</h1>' +
+          '<button class="rond" type="button" data-geste="inchange" aria-label="Ouvrir l’assistant">' + ico("assistant") + '</button></header>' +
+        '<p class="tete-situation" style="margin:4px 0 18px">7 clients</p>';
+      if (e.filtre && n) {
+        h += '<div class="filtre-pose">' + goutte() + 'À hiverner' +
+             '<button type="button" data-geste="defiltrer" aria-label="Revenir à tous les clients">' + ico("croix", "ico-p") + '</button></div>' +
+             '<div class="plage groupe groupe-plat liste-une">' +
+             e.c.map(function (c, k) { return aHiverner(c) ? ligneClient(c, k) : ""; }).join("") + '</div>';
+        defile.innerHTML = h;
+        return;
+      }
+      e.filtre = false;
+      h +=
+        '<div class="portes">' +
+          '<button class="porte touche" type="button" data-geste="inchange">' + ico("entreprise") + '<span class="porte-texte"><span class="porte-nom">Vos partenaires</span><span class="porte-compte">Aucun</span></span>' + ico("suivant", "ico-p") + '</button>' +
+          '<button class="porte touche" type="button" data-geste="inchange">' + ico("banque") + '<span class="porte-texte"><span class="porte-nom">Services publics</span><span class="porte-compte">1</span></span>' + ico("suivant", "ico-p") + '</button>' +
+        '</div>' +
+        '<div class="recherche">' +
+          '<div class="champ-recherche">' + ico("loupe") + '<input type="text" inputmode="search" placeholder="Chercher un client" aria-label="Chercher un client" autocomplete="off"></div>' +
+          '<button class="filtre touche" type="button" data-geste="inchange">' + ico("filtre") + 'Filtre</button>' +
+        '</div>';
+      if (version === "B" && n) {
+        h += '<button class="rassemble touche" type="button" data-geste="filtrer">' +
+             '<span class="pastille-ico" data-ton="bleu">' + ico("goutte") + '</span>' +
+             '<span class="rassemble-texte">' + n + (n > 1 ? " arrosages à hiverner" : " arrosage à hiverner") + '</span>' + ico("suivant") + '</button>';
+      }
+      var lettres = {};
+      e.c.forEach(function (c, k) {
+        var l = c.nom.replace(/^(M\. et Mme|Mme|M\.)\s+/, "").charAt(0);
+        (lettres[l] = lettres[l] || []).push(ligneClient(c, k));
+      });
+      h += '<div class="plage groupe liste-une">' + Object.keys(lettres).map(function (l) {
+        return '<div class="bloc-lettre"><p class="lettre">' + l + '</p>' + lettres[l].join("") + '</div>';
+      }).join("") + '</div>' +
+        '<button class="bouton bouton-creux importer touche" type="button" data-geste="inchange">' + ico("importer") + 'Importer devis / facture</button>';
+      defile.innerHTML = h;
+    }
+
+    /* ─── La fiche d'un client ────────────────────────────────────────── */
+    function rendreFiche() {
+      var c = e.c[e.k];
+      var h =
+        '<div class="rang-espace" style="margin:0 0 10px">' +
+          '<button class="rond-creux" type="button" data-geste="retour" aria-label="Retour à vos clients">' + ico("retour") + '</button>' +
+          '<button class="rond" type="button" data-geste="inchange" aria-label="Ouvrir l’assistant">' + ico("assistant") + '</button>' +
+        '</div>' +
+        '<div class="plage carte-visite"><p class="client-mot">Client</p><h1 class="fiche-nom">' + c.nom + '</h1>' +
+          (c.lieu ? '<button class="coordonnee touche" type="button" data-geste="inchange">' + ico("lieu") + c.lieu + '</button>' : "") +
+          '<button class="coordonnee touche" type="button" data-geste="inchange">' + ico("telephone") + '<span class="coordonnee-tel">' + c.tel + '</span></button>' +
+          '<div class="carte-gestes">' +
+            '<button class="touche" type="button" data-geste="coordonnees">' + ico("crayon") + 'Modifier ses coordonnées</button>' +
+            '<button class="touche" type="button" data-geste="inchange">' + ico("telecharger") + 'Tout télécharger</button>' +
+          '</div></div>';
+      if (c.arrosage === "question") {
+        h += '<div class="plage-ton question" data-ton="bleu"><p><b>Sa facture du ' + c.vu + ' parle d’arrosage.</b>Ce client a un arrosage automatique ?</p>' +
+             '<div class="rang-boutons">' +
+               '<button class="bouton bouton-plein bouton-petit" type="button" data-geste="oui">Oui</button>' +
+               '<button class="bouton bouton-creux bouton-petit" type="button" data-geste="non">Non</button>' +
+             '</div></div>';
+      } else if (aHiverner(c)) {
+        h += '<div class="plage hiverner"><div class="hiverner-tete"><span class="pastille-ico" data-ton="bleu">' + ico("goutte") + '</span>' +
+             '<span><b>Arrosage à hiverner</b>' + (c.prevu ? '<small>Prévu le jeudi 12 novembre</small>' : "") + '</span></div>' +
+             '<div class="rang-boutons">' +
+               (c.prevu ? "" : '<button class="bouton bouton-creux bouton-petit" type="button" data-geste="prevoir">' + ico("calendrier") + 'Le prévoir</button>') +
+               '<button class="bouton bouton-plein bouton-petit" type="button" data-geste="fait">' + ico("coche") + 'C’est fait</button>' +
+             '</div></div>';
+      } else if (saison() && c.arrosage === true && c.hiverne) {
+        h += '<p class="hiverne"><span class="etat" data-ton="vert">Hiverné le ' + c.hiverne + '</span></p>';
+      }
+      h +=
+        '<div class="repartir">' +
+          '<button class="tuile-geste tuile-pleine touche" type="button" data-geste="inchange">' + ico("annuler") + 'Dernier devis</button>' +
+          '<button class="tuile-geste tuile-or touche" type="button" data-geste="inchange">' + ico("plus") + 'Nouveau devis</button>' +
+          '<button class="tuile-geste tuile-or touche" type="button" data-geste="inchange">' + ico("calendrier") + 'Contrat d’entretien</button>' +
+        '</div>' +
+        '<div class="plage prestation"><p class="prestation-titre"><b>Dernière prestation</b>, le ' + c.derniere.jour + '</p><ul>' +
+          c.derniere.lignes.map(function (l) { return '<li>' + l + '</li>'; }).join("") + '</ul></div>' +
+        '<section class="dossier" aria-label="Son dossier"><div class="onglets-dossier" role="tablist">' +
+          '<button type="button" role="tab" aria-selected="false" data-geste="inchange">Devis</button>' +
+          '<button type="button" role="tab" aria-selected="true">Factures</button>' +
+          '<button type="button" role="tab" aria-selected="false" data-geste="inchange">Fiches</button></div>' +
+          c.factures.map(function (f) {
+            return '<button class="piece touche" type="button" data-geste="inchange"><span class="piece-corps"><span class="piece-haut">' +
+              '<span class="piece-titre">' + f.titre + '</span><span class="piece-somme">' + f.somme + '</span></span>' +
+              '<span class="piece-date">n° ' + f.no + ', ' + f.jour + '</span></span>' + ico("suivant") + '</button>';
+          }).join("") +
+        '</section>';
+      defile.innerHTML = h;
+    }
+
+    function rendre() { if (e.vue === "fiche") rendreFiche(); else rendreListe(); }
+
+    ecran.addEventListener("click", function (ev) {
+      var g = ev.target.closest("[data-geste]");
+      if (!g) return;
+      var geste = g.getAttribute("data-geste"), c = e.k === null ? null : e.c[e.k];
+      if (geste === "inchange") { Kit.note(ecran, "Inchangé : voir les planches Vos clients et La fiche d’un client."); return; }
+      if (geste === "ouvrir") {
+        var k = Number(g.getAttribute("data-k"));
+        if (!e.c[k].factures) { Kit.note(ecran, "La fiche de ce client ne change pas."); return; }
+        e.vue = "fiche"; e.k = k; rendre(); defile.scrollTop = 0; return;
+      }
+      if (geste === "retour") { e.vue = "liste"; e.k = null; rendre(); defile.scrollTop = 0; return; }
+      if (geste === "filtrer") { e.filtre = true; rendre(); defile.scrollTop = 0; return; }
+      if (geste === "defiltrer") { e.filtre = false; rendre(); return; }
+      if (geste === "coordonnees") { Kit.note(ecran, "La case Arrosage automatique y vit, avec ses coordonnées."); return; }
+      if (geste === "oui") { c.arrosage = true; rendre(); Kit.note(ecran, "Noté. La case se change dans Modifier ses coordonnées."); return; }
+      if (geste === "non") { c.arrosage = false; rendre(); Kit.note(ecran, "Atlas ne le redemandera pas pour cette facture."); return; }
+      if (geste === "prevoir") { c.prevu = true; rendre(); Kit.note(ecran, "Le planning s’ouvre sur ce client. Sur la planche, posé au jeudi 12 novembre."); return; }
+      if (geste === "fait") {
+        var cible = c;
+        cible.hiverne = JOUR[e.date];
+        rendre();
+        Kit.tiroir(ecran, "Hiverné. La goutte part.", function () { cible.hiverne = null; rendre(); });
+        return;
+      }
+    });
+
+    ecrans[version] = { poserDate: function (d) { e.date = d; rendre(); } };
+    rendre();
+  });
+
+  document.querySelectorAll(".pl-etats[data-pour]").forEach(function (groupe) {
+    var cible = ecrans[groupe.getAttribute("data-pour")];
+    groupe.querySelectorAll("button[data-date]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        groupe.querySelectorAll("button[data-date]").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+        cible.poserDate(b.getAttribute("data-date"));
+      });
+    });
+  });
+})();
+</script>
+</body>
+</html>

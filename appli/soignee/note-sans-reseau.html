@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Une note sans réseau, A ou B</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  UNE NOTE DICTÉE SANS RÉSEAU.
+
+  D'OÙ VIENT L'IDÉE : la conversation du 5 novembre 2026. Question du patron,
+  « est-ce que tu as des idées pour améliorer notre application ? » ; idée
+  n° 1 de la réponse, « une note dictée sans réseau est perdue » ; son choix,
+  « 1,3,5,6 Fais des planches ».
+
+  CE QUI EXISTE DANS src/, lu le 5 novembre 2026 :
+    src/app/chantiers/[id]/AnneauNoteVocale.tsx   l'anneau de la fiche client.
+      Le Blob de la dictée vit dans une variable locale d'envoyerLaNote : un
+      envoi raté le laisse partir, rien ne le garde.
+    src/lib/envoi-note-vocale.ts   un fetch qui échoue rend une raison, et
+      c'est tout. Aucune file, aucun rangement sur le téléphone.
+    src/lib/diagnostic-liaison.ts   la phrase du cas « hors-ligne », recopiée
+      telle quelle dans l'onglet Aujourd'hui. AnneauNoteVocale l'écrit en
+      colors.rust, 12 px, sous l'invite.
+    src/app/chantiers/nouveau/FormulaireNouveauChantier.tsx, assurerChantier :
+      sur une fiche NEUVE, le chantier se crée au moment d'envoyer la note.
+      Sans réseau, creerChantierAction rejette ; envoyerLaNote n'a qu'un
+      try/finally, sans catch : d'après le code, la note se perd alors sans
+      aucune phrase. Pas éprouvé ici (aucun serveur lancé, sa règle du
+      5 novembre). La phrase d'Aujourd'hui ne paraît donc que sur un chantier
+      déjà créé.
+    src/lib/fiches-mode-emploi/fonctionnement.ts, fiche « atlas-internet » :
+      « il n'a pas encore de mode hors ligne ». Aucun service worker.
+
+  A : la note et la fiche restent sur le téléphone ; elles partent toutes
+      seules dès que le réseau revient, puis le devis se prépare comme
+      d'habitude.
+  B : gardées aussi, mais elles ne partent que sur son appui, quand le réseau
+      est revenu : le disque redevient Envoyer.
+
+  Le dessin est celui de appli/soignee/chantier.html : la fiche client, la
+  dictée B choisie le 1er novembre, ses gestes à leur place. Seul l'état
+  « gardée » s'ajoute, au même endroit, sur le même disque.
+
+  RIEN N'EST CODÉ DANS src/.
+*/
+
+/* ─── La planche : une ligne au-dessus du téléphone, qui dit ce qui s'est passé ─── */
+.etats-planche { margin-bottom: 4px; }
+.etat-quoi { margin: 0 auto 4px; max-width: 390px; text-align: center; font-size: 14px; line-height: 1.4; color: #4a4a44; }
+@media (max-width: 480px) {
+  .etat-quoi { padding: 0 var(--gouttiere); }
+}
+
+/* ─── La fiche client, recopiée de chantier.html ──────────────────────────── */
+.fc .derriere { position: absolute; inset: 0; padding: 14px var(--gouttiere); background: var(--atlas-cream); }
+.fc .derriere h2 { margin: 0; font: 400 34px/1.05 var(--serif); letter-spacing: -0.012em; }
+/* Le voile reste sombre sur toutes les chartes, comme dans chantier.html :
+   l'encre, claire sur Nuit et Sylve, l'éclaircirait. */
+.fc .derriere-voile { position: absolute; inset: 0; background: color-mix(in srgb, #0d0e0c 30%, transparent); }
+.fc-feuille { position: absolute; left: 0; right: 0; top: 30px; bottom: 0; display: flex; flex-direction: column;
+              border-radius: var(--r-feuille) var(--r-feuille) 0 0; background: var(--atlas-cream); overflow: hidden; }
+.fc-feuille .defile { padding: 6px 12px 28px; }
+.fc-tete { display: grid; grid-template-columns: 40px 1fr 44px; align-items: center; min-height: 52px; margin-bottom: 6px; }
+.fc-tete h2 { margin: 0; text-align: center; font: 400 26px/1.1 var(--serif); }
+.fc-tete .retour-nu { width: 40px; height: 44px; display: grid; place-items: center; color: var(--atlas-ink); }
+.fc-tete .retour-nu .ico { width: 20px; height: 20px; }
+.fc-tete .rond-creux { width: 44px; height: 44px; }
+.fc-tete .rond-creux .ico { width: 20px; height: 20px; }
+.fc-pastilles { display: flex; gap: 6px; }
+.fc-pastilles span { flex: 1 1 auto; display: grid; place-items: center; height: 38px; padding: 0 10px; border-radius: 19px; font-size: 15.5px;
+                     box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.fc-lib { display: flex; justify-content: space-between; margin: 8px 0 3px; font-size: 11px; font-weight: 500; letter-spacing: .2em;
+          text-transform: uppercase; color: var(--atlas-inkSoft); }
+.fc-lib b { font-weight: 600; color: var(--atlas-ink); letter-spacing: .14em; }
+.fc-case { display: flex; align-items: center; height: 44px; padding: 0 14px; border-radius: 8px; background: var(--atlas-rustTint);
+           font-size: 16px; color: var(--atlas-muted); }
+.fc-deux { display: grid; grid-template-columns: 1.2fr 1fr; gap: 8px; }
+.fc-deux > div:last-child .fc-case { justify-content: flex-end; }
+.fc-filet { height: 1px; margin: 12px 0 6px; background: var(--atlas-line); }
+.fc-envoi { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+.fc-envoi span:last-child { display: flex; gap: 22px; font-size: 14px; color: var(--atlas-muted); letter-spacing: 0; text-transform: none; }
+.fc-photo { width: 56px; height: 56px; display: grid; place-items: center; border-radius: 6px; color: var(--atlas-or);
+            border: 1.5px dashed color-mix(in srgb, var(--atlas-or) 70%, transparent); }
+.fc-photo .ico { width: 18px; height: 18px; }
+.fc-voix-lib { margin: 14px 0 0; text-align: center; font-size: 11px; font-weight: 500; letter-spacing: .2em; text-transform: uppercase;
+               color: var(--atlas-inkSoft); }
+
+/* ─── La dictée : la même zone, à la même hauteur, quel que soit l'état ──── */
+.dictee-zone { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+               min-height: 132px; margin-top: 6px; }
+.zone-col { display: flex; flex-direction: column; align-items: center; }
+.fc-micro { width: 84px; height: 84px; display: grid; place-items: center; border-radius: 50%; background: var(--atlas-plein); color: var(--sur-plein);
+            box-shadow: inset 0 0 0 2px var(--atlas-orClair); transition: transform 160ms var(--courbe); }
+.fc-micro:active { transform: scale(0.97); }
+.fc-micro .ico { width: 32px; height: 32px; stroke-width: 1.7; }
+.fc-invite { margin: 10px 0 0; font-size: 15px; color: var(--atlas-inkSoft); }
+
+/* Jeter à gauche, le disque au milieu, le temps à droite : la ligne de la
+   dictée B, gardée telle quelle pour la note qui attend. */
+.dictee-b { display: grid; grid-template-columns: 1fr auto 1fr; align-items: start; width: 100%; }
+.geste-dictee { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: none; margin-top: 13px; justify-self: center;
+                font-size: 13px; font-weight: 600; color: var(--atlas-inkSoft); }
+.geste-dictee .rond-creux { width: 52px; height: 52px; margin: 3px 0; color: var(--atlas-inkSoft); }
+.geste-dictee .rond-creux .ico { width: 22px; height: 22px; }
+.temps-b { justify-self: center; margin-top: 13px; padding-top: 14px; }
+.duree { font: 400 26px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; color: var(--atlas-ink); }
+
+/* La note gardée : le disque reste à sa place, en creux, le sablier d'or
+   dedans. Pas un second aplat vert (sa règle du 31 août). */
+.attente { display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--atlas-ink); }
+.disque-attente { width: 84px; height: 84px; display: grid; place-items: center; border-radius: 50%; background: var(--atlas-card);
+                  color: var(--atlas-orTexte); box-shadow: inset 0 0 0 2px var(--atlas-orClair); }
+.disque-attente .ico { width: 30px; height: 30px; }
+/* Le réseau revenu, en B : le même disque redevient celui d'Envoyer. */
+.envoi-garde { display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--atlas-ink); }
+.envoi-garde .disque { width: 84px; height: 84px; display: grid; place-items: center; border-radius: 50%; background: var(--atlas-plein);
+                       color: var(--sur-plein); box-shadow: inset 0 0 0 2px var(--atlas-orClair); transition: transform 160ms var(--courbe); }
+.envoi-garde:active .disque { transform: scale(0.97); }
+.envoi-garde .disque .ico { width: 30px; height: 30px; }
+.attente-sous { margin: 10px 0 0; text-align: center; font-size: 15px; line-height: 1.4; color: var(--atlas-inkSoft); }
+
+/* Envoyée : ce qui se passe, en mots, et l'or qui souffle (chantier.html). */
+.centre-texte { text-align: center; }
+.dictee-suite { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0; font-size: 16px; color: var(--atlas-ink); }
+.points { display: inline-flex; gap: 6px; }
+.points span { width: 8px; height: 8px; border-radius: 50%; background: var(--atlas-or); animation: point 1.2s var(--courbe) infinite; }
+.points span:nth-child(2) { animation-delay: .18s; } .points span:nth-child(3) { animation-delay: .36s; }
+@keyframes point { 0%, 100% { opacity: .25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-4px); } }
+@media (prefers-reduced-motion: reduce) { .points span { animation: none; opacity: .7; } }
+
+/* Aujourd'hui : la phrase de diagnostic-liaison.ts, à la place et dans la
+   couleur où AnneauNoteVocale l'écrit (colors.rust, 12 px). */
+.erreur-auj { margin: 8px 6px 0; text-align: center; font-size: 12px; line-height: 1.45; color: var(--atlas-rust); }
+
+/* Trois téléphones : sur ordinateur, les notes passent dessous plutôt que de
+   tenir dans une colonne de deux cents pixels. */
+@media (min-width: 900px) {
+  .pl-scene { grid-template-columns: minmax(0, 1fr); }
+  .pl-notes { margin: 0 auto; }
+}
+@media (min-width: 1300px) {
+  .pl-scene { max-width: 1300px; }
+  .pl-ecrans { grid-template-columns: repeat(3, 390px); }
+}
+
+.fc-a-la-main { width: auto; min-width: 220px; margin: 8px auto 0; }
+.ecran[data-etat="envoyee"] .fc-a-la-main { visibility: hidden; }
+</style>
+</head>
+<body class="pl pl-pilules">
+<svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden"><symbol id="i-corbeille" viewBox="0 0 24 24"><path d="M4 7h16M10 4h4a1 1 0 0 1 1 1v2H9V5a1 1 0 0 1 1-1zM6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/></symbol></svg>
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">Une note sans réseau</h1>
+  <p class="pl-verdict">Touchez <b>Sans réseau</b>, puis <b>Réseau revenu</b>, puis <b>Envoyée</b>. <b>A</b> envoie la note toute seule, <b>B</b> attend votre appui sur Envoyer. <b>Aujourd'hui</b>, elle est perdue.</p>
+</header>
+<main class="pl-scene">
+  <div>
+    <div class="pl-etats etats-planche" id="etats" data-ecran=".ecran.fc" role="group" aria-label="Le réseau">
+      <button type="button" data-etat="sans" aria-pressed="true">Sans réseau</button>
+      <button type="button" data-etat="revenu" aria-pressed="false">Réseau revenu</button>
+      <button type="button" data-etat="envoyee" aria-pressed="false">Envoyée</button>
+    </div>
+    <div class="pl-ecrans">
+      <div data-vue-panneau="A">
+        <p class="pl-legende">A, elle part toute seule</p>
+        <p class="etat-quoi" data-version="A"></p>
+        <div class="cadre"><div class="ecran fc" data-version="A"></div></div>
+      </div>
+      <div data-vue-panneau="B">
+        <p class="pl-legende">B, elle part sur votre appui</p>
+        <p class="etat-quoi" data-version="B"></p>
+        <div class="cadre"><div class="ecran fc" data-version="B"></div></div>
+      </div>
+      <div data-vue-panneau="aujourdhui">
+        <p class="pl-legende">Aujourd'hui</p>
+        <p class="etat-quoi" data-version="aujourdhui"></p>
+        <div class="cadre"><div class="ecran fc" data-version="aujourdhui"></div></div>
+      </div>
+    </div>
+  </div>
+  <section class="pl-notes">
+    <h2>Ce que je propose : A</h2>
+    <ul>
+      <li>Une note dictée sans réseau reste sur le téléphone, avec la fiche du client. Fermer Atlas ne la perd pas.</li>
+      <li>Elle part toute seule dès que le réseau revient, et le devis se prépare comme d'habitude.</li>
+      <li>Tant qu'elle attend, Jeter reste à sa place.</li>
+      <li>Pourquoi A plutôt que B : sur un chantier, vous êtes déjà au suivant. Avec B, un appui oublié, et le devis attend sans que personne le sache.</li>
+    </ul>
+    <h2>Ce qu'il faut savoir</h2>
+    <ul>
+      <li>Atlas ne s'ouvre pas sans réseau : il n'a pas de mode hors ligne. La planche couvre l'appli déjà ouverte quand le réseau tombe, dans un jardin où ça capte mal.</li>
+      <li>Atlas fermé, la note part à la prochaine ouverture, avec du réseau.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>Plusieurs notes en attente, sur plusieurs chantiers : les montrer aussi sur Vos chantiers ?</li>
+      <li>Combien de temps une note attend sur le téléphone avant qu'Atlas vous le rappelle.</li>
+      <li>La note porte la voix, le nom et l'adresse du client : gardée sur le téléphone tant qu'elle n'est pas partie, effacée du téléphone dès l'envoi. À inscrire dans le document RGPD.</li>
+      <li>La fiche du mode d'emploi « Utiliser Atlas sans internet » est à réécrire le jour où c'est codé.</li>
+    </ul>
+    <h2>Trouvé dans l'appli en cherchant</h2>
+    <ul class="a-trancher">
+      <li>Sur une fiche neuve, le chantier se crée au moment d'envoyer la note. Sans réseau, d'après le code, la note se perd alors sans aucune phrase. Pas essayé : à voir sur ton espace en mode avion. La phrase d'Aujourd'hui ne paraît que sur un chantier déjà créé.</li>
+      <li>Cette phrase s'écrit dans la couleur des boutons, en petit, pas en rouge.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>La fiche client, le micro, la dictée choisie le 1er novembre, Jeter et Envoyer à leur place.</li>
+      <li>Avec du réseau, rien ne change.</li>
+    </ul>
+  </section>
+</main>
+<script src="kit.js"></script>
+<script>
+(function () {
+  "use strict";
+  function ico(nom) { return '<svg class="ico" aria-hidden="true"><use href="#i-' + nom + '"/></svg>'; }
+
+  /* Ce qui s'est passé, au-dessus du téléphone : la seule phrase de la
+     planche qui ne soit pas de l'appli. */
+  var QUOI = {
+    A: { sans: "Dictée sans réseau : la note est gardée.", revenu: "Le réseau revient : elle part toute seule.", envoyee: "Le devis se prépare, comme d'habitude." },
+    B: { sans: "Dictée sans réseau : la note est gardée.", revenu: "Le réseau revient : elle attend votre appui.", envoyee: "Le devis se prépare, comme d'habitude." },
+    aujourdhui: { sans: "Dictée sans réseau : la note est perdue.", revenu: "Le réseau revient : rien à renvoyer.", envoyee: "Refaite de mémoire, puis envoyée." }
+  };
+
+  var JETER = '<button class="geste-dictee" type="button" aria-label="Jeter la note" data-note="Sur la planche, la note reste.">' +
+    '<span class="rond-creux">' + ico("corbeille") + '</span>Jeter</button>';
+  var DUREE = '<span class="temps-b"><span class="duree">1:42</span></span>';
+  var GARDEE = '<span class="attente"><span class="disque-attente">' + ico("horloge-sable") + '</span>Gardée</span>';
+  var PREPARE = '<div class="centre-texte" data-si-etat="envoyee"><p class="dictee-suite">Atlas prépare votre devis' +
+    '<span class="points" aria-hidden="true"><span></span><span></span><span></span></span></p></div>';
+  var TRANSCRIPTION = '<div class="centre-texte" data-si-etat="revenu"><p class="dictee-suite">Transcription' +
+    '<span class="points" aria-hidden="true"><span></span><span></span><span></span></span></p></div>';
+  var MICRO = '<div class="zone-col" data-si-etat="sans revenu">' +
+    '<button class="fc-micro" type="button" aria-label="Dicter une note vocale" data-note="Sur la planche, rien ne s\'enregistre.">' + ico("micro") + '</button>' +
+    '<p class="fc-invite">Appuyez et décrivez le chantier</p></div>';
+
+  /* La zone de la dictée, et ce qui s'écrit dessous, pour chaque version. */
+  var ZONE = {
+    A: {
+      zone: '<div class="dictee-b" data-si-etat="sans">' + JETER + GARDEE + DUREE + '</div>' + TRANSCRIPTION + PREPARE,
+      dessous: '<p class="attente-sous" data-si-etat="sans">Elle part dès que le réseau revient.</p>'
+    },
+    B: {
+      zone: '<div class="dictee-b" data-si-etat="sans">' + JETER + GARDEE + DUREE + '</div>' +
+        '<div class="dictee-b" data-si-etat="revenu">' + JETER +
+          '<button class="envoi-garde" type="button" aria-label="Envoyer la note et préparer le devis" data-passe="envoyee">' +
+          '<span class="disque">' + ico("envoyer") + '</span>Envoyer</button>' + DUREE + '</div>' + PREPARE,
+      dessous: '<p class="attente-sous" data-si-etat="sans">Envoyez-la quand le réseau revient.</p>' +
+        '<p class="attente-sous" data-si-etat="revenu">Le réseau est revenu.</p>'
+    },
+    aujourdhui: {
+      zone: MICRO + PREPARE,
+      // La phrase exacte de src/lib/diagnostic-liaison.ts, cas « hors-ligne ».
+      dessous: '<p class="erreur-auj" data-si-etat="sans revenu">L\'enregistrement n\'est pas parti : le serveur est injoignable depuis ce téléphone. Vérifiez votre connexion, puis refaites la note.</p>'
+    }
+  };
+
+  document.querySelectorAll(".ecran.fc").forEach(function (ecran) {
+    var z = ZONE[ecran.getAttribute("data-version")];
+    ecran.innerHTML =
+      '<div class="derriere" aria-hidden="true"><h2>Vos chantiers</h2></div>' +
+      '<div class="derriere-voile" aria-hidden="true"></div>' +
+      '<section class="fc-feuille" aria-label="Fiche client"><div class="defile">' +
+        '<div class="fc-tete">' +
+          '<button class="retour-nu" type="button" aria-label="Fermer" data-note="Sur la planche, la fiche reste ouverte.">' + ico("retour") + '</button>' +
+          '<h2>Fiche client</h2>' +
+          '<button class="rond-creux" type="button" aria-label="Dicter les coordonnées" data-note="Sur la planche, rien ne s\'enregistre.">' + ico("micro") + '</button>' +
+        '</div>' +
+        '<div class="fc-pastilles" aria-hidden="true"><span>Mr</span><span>Mme</span><span>Entreprise</span><span>Public</span></div>' +
+        '<div class="fc-deux">' +
+          '<div><p class="fc-lib">Nom du client</p><div class="fc-case">Bernard</div></div>' +
+          '<div><p class="fc-lib" style="justify-content:flex-end">Téléphone</p><div class="fc-case">06 12 34 56 78</div></div>' +
+        '</div>' +
+        '<p class="fc-lib">E-mail</p><div class="fc-case">bernard@exemple.fr</div>' +
+        '<p class="fc-lib"><span>Adresse</span><b>+ Client</b></p><div class="fc-case">12 rue des Lilas, Nantes</div>' +
+        '<div class="fc-filet"></div>' +
+        '<p class="fc-lib fc-envoi"><span>Envoi</span><span>SMS<span>E-mail</span></span></p>' +
+        '<p class="fc-lib">Photos</p>' +
+        '<span class="fc-photo" aria-hidden="true">' + ico("plus") + '</span>' +
+        '<p class="fc-voix-lib">Devis à la voix</p>' +
+        '<div class="dictee-zone">' + z.zone + '</div>' +
+        z.dessous +
+        '<button class="bouton bouton-creux bouton-petit fc-a-la-main" type="button" data-note="Inchangé : voir la planche Le chantier.">Je rédige à la main</button>' +
+      '</div></section>';
+  });
+
+  var groupe = document.getElementById("etats");
+  function peindre(etat) {
+    document.querySelectorAll(".etat-quoi").forEach(function (p) { p.textContent = QUOI[p.getAttribute("data-version")][etat]; });
+    document.querySelectorAll(".fc .defile").forEach(function (d) { d.scrollTop = d.scrollHeight; });
+  }
+  groupe.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-etat]");
+    if (b) peindre(b.getAttribute("data-etat"));
+  });
+  document.addEventListener("click", function (e) {
+    // Envoyer, en B : la rangée du haut suit, et les trois téléphones avec.
+    var passe = e.target.closest("[data-passe]");
+    if (passe) { groupe.querySelector('[data-etat="' + passe.getAttribute("data-passe") + '"]').click(); return; }
+    var note = e.target.closest("[data-note]");
+    if (note) Kit.note(note, note.getAttribute("data-note"));
+  });
+  peindre("sans");
+})();
+</script>
+</body>
+</html>

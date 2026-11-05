@@ -1,6 +1,61 @@
 # Prochaines tâches
 
 
+## ⏳ À CHOISIR PAR LUI (5 novembre 2026) : cinq planches, A ou B
+
+**Sa question du 5 novembre** : *« est-ce que tu as des idées pour améliorer
+notre application ? Est-ce que tu penses à des choses qu'on aurait pu
+oublier ? »*. Sur six idées, il a retenu 1, 3, 5 et 6 (*« Fais des
+planches »*), puis il a demandé l'hivernage : *« tous les clients où on a
+facturé un arrosage automatique, il faudrait mettre une petite pastille à
+côté du nom […] à partir de début novembre »*. **Rien dans `src/`.**
+
+| planche (`appli/soignee/`) | A, proposé | B |
+|---|---|---|
+| `note-sans-reseau.html` | la note dictée sans réseau reste sur le téléphone et part seule quand le réseau revient | gardée, elle part sur son appui |
+| `franchise-plafond.html` | en franchise, une ligne sur Terminés à partir de 80 % du plafond | le compteur toujours dans Votre TVA |
+| `restrictions-d-eau.html` | « Restriction d'eau » sur la carte du planning, commune en Alerte ou plus, aujourd'hui et demain | seulement dans la fiche du chantier |
+| `heures-du-jour.html` | heures du retour du jour (tranché le 9 octobre) comparées au devis, en heures | aussi en euros de main d'œuvre |
+| `hiverner-l-arrosage.html` | dès le 1er novembre, une goutte à côté du nom et « Arrosage à hiverner » sur la fiche | la même chose, plus une ligne qui les rassemble en tête de Vos clients |
+
+Commun à A et B : la facture qui fait passer le plafond majoré s'arrête avant
+de partir (trois issues, dont « L'envoyer sans TVA », pour ne pas bloquer sur
+un plafond non vérifié) ; pour l'hivernage, Atlas demande Oui ou Non une fois
+sur le client, faute de savoir reconnaître un arrosage sur une facture.
+
+**Trouvé dans le code en dessinant (lu, ni éprouvé ni vu à l'écran) :**
+- fiche client NEUVE sans réseau : `assurerChantier` appelle
+  `creerChantierAction`, qui échoue, et `envoyerLaNote` n'a pas de `catch`
+  (`FormulaireNouveauChantier.tsx`) : la note se perdrait sans un mot. Sur un
+  chantier existant, la note est jetée après la phrase de liaison
+  (`src/lib/envoi-note-vocale.ts`). À reproduire, test rouge d'abord ;
+- Terminés ne lit pas le régime de TVA (aucun `regimeTva` dans
+  `src/app/termines/`) : « Ma TVA à déclarer » paraît sans doute aussi pour une
+  entreprise en franchise. À regarder à l'écran ;
+- le devis ne connaît aucune heure : la main d'œuvre de l'équipe y est en jours
+  d'homme (`src/lib/feuille-main-oeuvre.ts`), et la durée d'une journée n'est
+  réglée nulle part ;
+- rien ne dit qu'une facture porte un arrosage : lignes sans catégorie, plan
+  d'arrosage jamais enregistré (`src/app/paysage/arrosage/actions.ts`), et les
+  familles du contrat d'entretien n'ont pas d'arrosage
+  (`src/lib/prestations-entretien.ts`) ;
+- le retour d'intervention n'est pas exigé au départ (`retour_demande` éteint) :
+  sans réglage, beaucoup de jours resteraient sans heures ;
+- les factures importées vivent à part (`pieces_importees`) : le compteur de
+  franchise devra les lire.
+
+**À vérifier avant de coder, pas à lui demander :** les plafonds de la
+franchise en 2026 (37 500 € et 41 250 € valaient pour les services jusqu'en
+2025, une réforme à 25 000 € a été suspendue) et ce qui arrive à la facture qui
+les passe ; l'API publique de VigiEau, que le réseau d'ici refuse.
+
+**Écartées le même jour :** la déclaration avant de creuser (DT-DICT), non
+retenue ; les produits phyto interdits en jardin privé, retirée par moi : la
+seule fiche qui donne un traitement (`donnees/phyto/fiches/001-fomes-resineux.json`,
+le Rotstop) est un produit de biocontrôle. Il a répondu *« on n'a pas ça dans
+l'appli »* : le Diagnostic végétal est monté (Paysage), mais rien ne charge ces
+trois fiches au démarrage de son espace (`scripts/importer-fiches-phyto.ts`).
+
 ## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : une idée pour l'appli~~ TRANCHÉ LE 5 NOVEMBRE : 1 A, 2 B, 3 B, PAS CODÉ
 
 **Sa demande du 5 novembre** : *« un petit espace, pas vraiment contact, pour

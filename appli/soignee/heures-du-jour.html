@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Les heures du jour, A ou B</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  LES HEURES DU JOUR : une saisie, trois usages.
+
+  D'OÙ ÇA VIENT. La conversation du 5 novembre 2026 : parmi les idées qu'on
+  lui a proposées, il a retenu celle ci (« 1,3,5,6 Fais des planches »). La
+  même saisie des heures sert l'attestation fiscale de ses clients, le temps
+  passé sur un chantier face au devis, et la paie.
+
+  CE QUI EST DÉJÀ TRANCHÉ, ET NE SE REDEMANDE PAS (TODO.md, « LE CRÉDIT
+  D'IMPÔT DE SES CLIENTS », planche appli/credit-d-impot.html, 9 octobre
+  2026) : les heures se tapent LE JOUR DE L'INTERVENTION, au retour du jour,
+  heures et minutes en déroulants ; seules les personnes cochées sur la
+  demi-journée y figurent ; le patron seulement s'il n'a aucun salarié.
+
+  CE QUI EXISTE DANS src/ :
+    le retour du jour : src/app/planning/TravauxAFaire.tsx, règles dans
+      src/lib/retour-intervention.ts, table retours_intervention. Posé par le
+      salarié, un par jour, AUCUN montant : un salarié ne voit pas un euro.
+      Il part toujours ; ce qui manque se dit dessous (ceQuiManque), et rien
+      n'est attendu quand le patron n'a rien demandé (retour_demande, éteint
+      par défaut) ;
+    AUCUNE heure n'est enregistrée nulle part ;
+    le devis ne sait PAS les heures prévues. La main d'œuvre de son équipe
+      est une ligne en JOURS D'HOMME (src/lib/feuille-main-oeuvre.ts,
+      ligneDeSonEquipe : hommes fois jours, unité « jour/homme », au prix du
+      jour par homme). Une main d'œuvre tapée en euros, ou répartie sur les
+      lignes (partMainDoeuvre, src/lib/main-doeuvre-devis.ts), ne dit aucun
+      temps. Et l'appli ne sait pas combien d'heures fait une journée.
+
+  DONC LE PRÉVU NE SE DEVINE PAS : jours d'homme du devis fois les heures
+  d'une journée, réglées par lui une fois. Sans l'un des deux, l'écran le dit
+  et ne compare rien.
+
+  A : l'écart dit en heures, sur Terminés.
+  B : l'écart dit aussi en euros, au prix de sa journée d'homme.
+
+  RIEN N'EST CODÉ DANS src/. Les noms et les montants sont ceux de la
+  planche ; Terminés et le planning sont dessinés simplifiés.
+*/
+
+/* ─── Le planning, simplifié : la journée et sa fiche d'intervention ────── */
+.jour-titre { margin: -6px 0 14px; font: 400 21px/1.2 var(--serif); }
+.chantier { padding: 16px 16px 14px; border-radius: var(--r-plage); background: var(--atlas-card); }
+.chantier-nom { display: block; font: 400 21px/1.2 var(--serif); }
+.chantier-quoi { display: block; margin-top: 3px; font-size: 14.5px; color: var(--atlas-inkSoft); }
+.moments { margin: 12px 0 4px; }
+.moment { display: flex; align-items: center; gap: 12px; min-height: 40px; box-shadow: inset 0 -1px 0 var(--atlas-lineSoft); }
+.moment-etat { width: 9px; height: 9px; flex: none; border-radius: 50%; background: var(--atlas-plein); }
+.moment-nom { width: 92px; flex: none; font-size: 14px; font-weight: 700; letter-spacing: 0.04em; color: var(--atlas-inkSoft); }
+.moment-qui { flex: 1; min-width: 0; font-size: 16px; }
+.intervention { margin-top: 14px; padding: 16px 14px 14px; border-radius: 8px;
+                box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 80%, transparent); }
+.intervention-titre { margin: 0 2px 12px; font: 400 19px/1.2 var(--serif); }
+.teinte { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 54px; padding: 0 14px 0 16px;
+          border-radius: 12px; text-align: left; font: 400 17px/1.2 var(--serif); color: var(--atlas-ink);
+          background: var(--atlas-carteVertFond); }
+.teinte span { margin-left: auto; font: 700 14px/1 var(--sans); color: var(--atlas-carteVertTexte); }
+.teinte .ico { width: 18px; height: 18px; stroke-width: 2.2; color: var(--atlas-carteVertTexte); }
+.taches { padding: 6px 4px 0; }
+.tache { display: flex; align-items: center; gap: 12px; min-height: 42px; font-size: 16px; }
+.tache-signe { width: 24px; height: 24px; flex: none; display: grid; place-items: center; border-radius: 50%;
+               background: var(--atlas-plein); color: var(--sur-plein); }
+.tache-signe .ico { width: 15px; height: 15px; stroke-width: 2.4; }
+
+/* Combien d'heures : un nom, deux déroulants. */
+.heures .rubrique { margin: 20px 2px 4px; }
+.heure { display: flex; align-items: center; gap: 8px; min-height: 56px; padding: 0 2px; box-shadow: inset 0 -1px 0 var(--atlas-lineSoft); }
+.heure-nom { flex: 1; min-width: 0; font: 400 18px/1.25 var(--serif); }
+.heure select { min-height: 44px; padding: 0 30px 0 12px; border: 0; border-radius: 10px; appearance: none; -webkit-appearance: none;
+                font: 600 16px/1 var(--sans); font-variant-numeric: tabular-nums; color: var(--atlas-ink);
+                background: var(--atlas-cream) no-repeat right 10px center / 12px 12px;
+                box-shadow: inset 0 0 0 1px var(--atlas-line);
+                background-image: linear-gradient(45deg, transparent 50%, var(--atlas-or) 50%), linear-gradient(135deg, var(--atlas-or) 50%, transparent 50%);
+                background-size: 6px 6px, 6px 6px; background-position: right 15px center, right 10px center; }
+.heure select.vide { color: var(--atlas-muted); }
+.envoyer { margin-top: 18px; }
+.manque { margin: 10px 0 0; text-align: center; font-size: 13.5px; line-height: 1.45; color: var(--atlas-muted); }
+.parti { display: flex; align-items: center; gap: 12px; margin-top: 18px; padding: 12px 14px; border-radius: 12px;
+         background: color-mix(in srgb, var(--atlas-plein) 16%, transparent); box-shadow: inset 0 0 0 1px var(--atlas-vertPale); }
+.parti .rond-coche { width: 22px; height: 22px; flex: none; display: grid; place-items: center; border-radius: 50%;
+                     background: var(--atlas-plein); color: var(--sur-plein); }
+.parti .rond-coche .ico { width: 13px; height: 13px; stroke-width: 2.6; }
+.parti b { display: block; font: 400 16px/1.2 var(--serif); color: var(--atlas-rust); }
+.parti small { display: block; margin-top: 2px; font-size: 12.5px; color: var(--atlas-muted); }
+
+/* ─── Terminés, simplifié : le mois et ses chantiers finis ──────────────── */
+.mois { display: flex; align-items: center; justify-content: center; gap: 8px; margin: -4px 0 16px; }
+.mois button { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-or); }
+.mois button[disabled] { color: var(--atlas-chevron); }
+.mois b { min-width: 170px; text-align: center; font: 400 23px/1.2 var(--serif); font-weight: 400; }
+.fini { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 76px; padding: 12px 0; text-align: left; color: inherit; }
+.fini + .fini { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.jour-bloc { width: 48px; flex: none; align-self: flex-start; padding: 6px 0 7px; border-radius: 8px; text-align: center; line-height: 1;
+             background: var(--atlas-carteAmbreFond); }
+.jour-bloc b { display: block; font: 400 22px/1 var(--serif); font-variant-numeric: lining-nums; }
+.jour-bloc span { display: block; margin-top: 3px; font-size: 13px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: var(--atlas-or); }
+.fini-corps { flex: 1; min-width: 0; }
+.fini-haut { display: flex; align-items: baseline; gap: 10px; }
+.fini-nom { flex: 1; min-width: 0; font: 400 19px/1.25 var(--serif); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fini-montant { flex: none; font: 700 19px/1.25 var(--serif); color: var(--atlas-or); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
+.fini-etat { display: block; margin-top: 4px; font-size: 15px; line-height: 1.4; color: var(--atlas-inkSoft); }
+.fini-etat b { color: var(--atlas-or); }
+.fini-ecart { display: block; margin-top: 2px; font-size: 14.5px; font-weight: 600; color: var(--atlas-carteAmbreTexte); }
+
+.volet-sous { margin: -10px 0 16px; font-size: 15px; color: var(--atlas-inkSoft); }
+.volet-choix { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 58px; padding: 0 16px; border-radius: 12px; text-align: left;
+               font: 400 19px/1 var(--serif); color: var(--atlas-ink); background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.volet-choix .ico { color: var(--atlas-or); }
+.volet-choix small { margin-left: auto; font: 600 15px/1 var(--sans); font-variant-numeric: tabular-nums; color: var(--atlas-inkSoft); }
+.volet-choix.alerte, .volet-choix.alerte .ico { color: var(--atlas-alerte); }
+.volet-choix + .volet-choix { margin-top: 10px; }
+.volet-choix.neuf { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 70%, transparent); }
+.fermer { width: 100%; justify-content: center; margin-top: 12px; color: var(--atlas-inkSoft); }
+
+/* ─── Le temps passé ─────────────────────────────────────────────────── */
+.deux { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.chiffre-bloc { padding: 14px 16px; border-radius: 12px; background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.chiffre-bloc b { display: block; font: 400 34px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; letter-spacing: -0.01em; }
+.chiffre-bloc span { display: block; margin-top: 6px; font-size: 14px; color: var(--atlas-inkSoft); }
+.chiffre-bloc.inconnu b { color: var(--atlas-muted); }
+.ecart { margin-top: 12px; font-size: 15.5px; }
+.ecart b { color: inherit; }
+.ecart-euros { display: block; margin-top: 2px; font-weight: 700; }
+.d-ou { margin: 10px 2px 0; font-size: 14px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.journee { margin-top: 12px; }
+.journee .heure { box-shadow: none; padding: 0; }
+.journee .heure-nom { font: 600 15.5px/1.3 var(--sans); }
+.par-jour .rubrique { margin-top: 24px; }
+.jour-ligne { padding: 10px 0; box-shadow: inset 0 -1px 0 var(--atlas-line); }
+.jour-ligne-tete { display: flex; justify-content: space-between; gap: 10px; font: 400 17px/1.3 var(--serif); }
+.jour-ligne-tete span { font: 600 15px/1.3 var(--sans); font-variant-numeric: tabular-nums; }
+.qui-heures { display: flex; justify-content: space-between; gap: 10px; margin-top: 4px; font-size: 15px; color: var(--atlas-inkSoft); }
+.qui-heures span:last-child { font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body class="pl pl-pilules">
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">Les heures du jour</h1>
+  <p class="pl-verdict"><b>Le retour du jour</b> : chacun ses heures, le soir même. Puis <b>A</b> ou <b>B</b>, sur Terminés : touchez <b>Mr. Bernard</b>, puis <b>Le temps passé</b>. A dit l'écart en heures, B aussi en euros.</p>
+</header>
+<main class="pl-scene">
+  <div class="pl-ecrans">
+    <div data-vue-panneau="Le retour du jour">
+      <p class="pl-legende">Le soir, sur la fiche d'intervention</p>
+      <div class="pl-etats" id="cas-retour">
+        <button type="button" data-cas="equipe" aria-pressed="true">Avec deux salariés</button>
+        <button type="button" data-cas="seul" aria-pressed="false">Artisan seul</button>
+      </div>
+      <div class="cadre"><div class="ecran avec-barre" id="ecran-retour"></div></div>
+    </div>
+    <div data-vue-panneau="A">
+      <p class="pl-legende">A, l'écart en heures</p>
+      <div class="pl-etats" data-cas-pour="A">
+        <button type="button" data-cas="devis" aria-pressed="true">Jours d'homme au devis</button>
+        <button type="button" data-cas="journee" aria-pressed="false">Journée pas réglée</button>
+        <button type="button" data-cas="forfait" aria-pressed="false">Devis au forfait</button>
+      </div>
+      <div class="cadre"><div class="ecran avec-barre" data-version="A"></div></div>
+    </div>
+    <div data-vue-panneau="B">
+      <p class="pl-legende">B, l'écart en heures et en euros</p>
+      <div class="pl-etats" data-cas-pour="B">
+        <button type="button" data-cas="devis" aria-pressed="true">Jours d'homme au devis</button>
+        <button type="button" data-cas="journee" aria-pressed="false">Journée pas réglée</button>
+        <button type="button" data-cas="forfait" aria-pressed="false">Devis au forfait</button>
+      </div>
+      <div class="cadre"><div class="ecran avec-barre" data-version="B"></div></div>
+    </div>
+  </div>
+  <section class="pl-notes">
+    <h2>Ce que je propose : A</h2>
+    <ul>
+      <li>Une seule saisie, le soir, sur le retour du jour : les heures de chaque personne cochée sur la journée. Elles servent trois fois : l'attestation fiscale de vos clients si vous êtes déclaré, le temps passé sur le chantier face au devis, le total d'heures du mois de chacun pour la paie.</li>
+      <li>Les déroulants partent vides : un 0 h posé d'office deviendrait un chiffre faux si personne n'y touche.</li>
+      <li>Sur Terminés, un chantier qui a pris plus de temps que prévu le dit dès la liste, en ambre. Moins de temps : rien dans la liste, le détail le dit.</li>
+      <li>Le prévu se lit sur le devis : les jours d'homme de la ligne Main d'œuvre, fois les heures d'une journée chez vous. La journée se règle une fois ; tant qu'elle ne l'est pas, Atlas la demande sur place et ne compare rien.</li>
+      <li>Un devis sans jours d'homme, au forfait ou avec une main d'œuvre tapée en euros : le prévu ne se devine pas. L'écran le dit, et ne montre que le passé.</li>
+      <li>Pourquoi A plutôt que B : les euros de B sont votre prix de vente, pas ce que l'heure vous coûte. 125 € de plus se lit comme une perte, alors que l'appli ne connaît ni les salaires ni les charges.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>Demander les heures à toutes les entreprises, ou seulement à celles qui l'allument dans Réglages, Équipe, comme Demander une preuve ? Proposé : à toutes, rien n'oblige à les remplir.</li>
+      <li>Un soir sans retour du jour : le retour n'est pas exigé au départ, donc ce jour reste sans heures. Le détail le dira, et ne comparera rien. Un oubli peut-il se rattraper après coup ? Votre règle du 9 octobre dit le jour même.</li>
+      <li>Pour la paie : le total d'heures du mois de chacun, à côté de son nombre de jours dans Jours travaillés. Pas dessiné ici.</li>
+      <li>Une journée de travail : un seul chiffre pour toute l'équipe, ou un par salarié (un temps partiel) ?</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Les heures se tapent le jour même, en déroulants, pour les seules personnes cochées sur la journée ; vous seulement si vous n'avez aucun salarié (votre décision du 9 octobre).</li>
+      <li>Le retour du jour part toujours, heures tapées ou non ; ce qui manque se lit dessous, en gris.</li>
+      <li>Un salarié ne voit pas un euro : son retour ne montre que des heures, jamais l'écart.</li>
+      <li>Jours travaillés (votre A du 5 novembre) reste calculé sur les absences : les heures ne le remplacent pas.</li>
+      <li>La facture suit le devis : le temps passé ne change aucun prix.</li>
+      <li>Le planning, la fiche d'intervention et Terminés sont dessinés simplifiés ici.</li>
+    </ul>
+  </section>
+</main>
+<script src="kit.js"></script>
+<script>
+(function () {
+  "use strict";
+  var NBSP = " ";
+  function ico(nom) { return '<svg class="ico ico-p" aria-hidden="true"><use href="#i-' + nom + '"/></svg>'; }
+  /* « 7 h 30 », « 8 h », « 30 h 30 ». */
+  function enHeures(h) {
+    var tot = Math.round(Math.abs(h) * 60), hh = Math.floor(tot / 60), mm = tot % 60;
+    return hh + NBSP + "h" + (mm ? NBSP + (mm < 10 ? "0" : "") + mm : "");
+  }
+  function enEuros(n) {
+    var s = n.toFixed(2).split("."), e = s[0].replace(/\B(?=(\d{3})+(?!\d))/g, NBSP);
+    return e + "," + s[1] + NBSP + "€";
+  }
+  function de(nom) { return /^[aeiouyéèh]/i.test(nom) ? "d’" + nom : "de " + nom; }
+  function barre(rang) {
+    var noms = [["accueil", "Chantiers"], ["planning", "Planning"], ["termines", "Terminés"], ["paysage", "Paysage"], ["reglages", "Réglages"]];
+    return '<nav class="barre" aria-label="Navigation principale"><div class="barre-onglets">' +
+      noms.map(function (n, i) {
+        return '<a class="barre-onglet" href="' + n[0] + '.html"' + (i === rang ? ' aria-current="page"' : "") + ">" + n[1] + "</a>";
+      }).join("") +
+      '<span class="barre-trait" aria-hidden="true"><span></span></span></div></nav>';
+  }
+  function deroulants(cle, h, m, nom) {
+    var oh = '<option value=""' + (h === null ? " selected" : "") + ">Heures</option>";
+    for (var i = 0; i <= 12; i++) oh += '<option value="' + i + '"' + (h === i ? " selected" : "") + ">" + i + NBSP + "h</option>";
+    var om = '<option value=""' + (m === null ? " selected" : "") + ">min</option>";
+    [0, 15, 30, 45].forEach(function (x) { om += '<option value="' + x + '"' + (m === x ? " selected" : "") + ">" + (x < 10 ? "0" : "") + x + NBSP + "min</option>"; });
+    return '<select data-h="' + cle + '" aria-label="Heures ' + de(nom) + '"' + (h === null ? ' class="vide"' : "") + ">" + oh + "</select>" +
+      '<select data-m="' + cle + '" aria-label="Minutes ' + de(nom) + '"' + (m === null ? ' class="vide"' : "") + ">" + om + "</select>";
+  }
+
+  /* ═══ LE RETOUR DU JOUR ═══════════════════════════════════════════════
+     Mardi 20 octobre 2026, second jour chez Mr. Bernard. Julien et Antoine
+     sont cochés matin et après-midi ; artisan seul, il n'y a que lui. */
+  var retour = { cas: "equipe", parti: false, heures: {} };
+  var ecranRetour = document.getElementById("ecran-retour");
+  function gens() { return retour.cas === "seul" ? ["Vous"] : ["Julien", "Antoine"]; }
+  function phraseManque() {
+    var manquent = gens().filter(function (n) { var x = retour.heures[n]; return !x || x.h === null; });
+    if (!manquent.length) return "";
+    if (retour.cas === "seul") return "Il manque vos heures.";
+    return "Il manque les heures " + manquent.map(de).join(" et ") + ".";
+  }
+  function rendreRetour() {
+    var qui = retour.cas === "seul" ? "" : "Julien, Antoine";
+    var h =
+      '<div class="defile">' +
+        '<header class="tete"><h1 class="tete-titre moyen">Planning</h1></header>' +
+        '<p class="jour-titre">Mardi 20 octobre</p>' +
+        '<section class="chantier">' +
+          '<span class="chantier-nom">Mr. Bernard</span><span class="chantier-quoi">Taille et abattage, 2 jours</span>' +
+          '<div class="moments">' +
+            '<div class="moment"><i class="moment-etat" aria-hidden="true"></i><span class="moment-nom">Matin</span><span class="moment-qui">' + qui + "</span></div>" +
+            '<div class="moment"><i class="moment-etat" aria-hidden="true"></i><span class="moment-nom">Après-midi</span><span class="moment-qui">' + qui + "</span></div>" +
+          "</div>" +
+          '<div class="intervention"><h2 class="intervention-titre">Fiche d’intervention</h2>' +
+            '<button type="button" class="teinte" aria-expanded="true" data-g="note" data-texte="Les travaux se cochent comme aujourd’hui.">Travaux à faire<span>tout est fait</span>' + ico("haut") + "</button>" +
+            '<div class="taches">' +
+              ["Taille de la haie de thuyas", "Abattage du bouleau", "Évacuation des déchets verts"].map(function (t) {
+                return '<div class="tache"><span class="tache-signe" aria-hidden="true">' + ico("coche") + "</span>" + t + "</div>";
+              }).join("") +
+            "</div>" +
+            '<div class="heures"><h3 class="rubrique">Combien d’heures ?</h3>' +
+              gens().map(function (n) {
+                var x = retour.heures[n] || { h: null, m: null };
+                return '<div class="heure"><span class="heure-nom">' + n + "</span>" + deroulants(n, x.h, x.m, n) + "</div>";
+              }).join("") +
+            "</div>" +
+            (retour.parti
+              ? '<div class="parti"><span class="rond-coche" aria-hidden="true">' + ico("coche") + "</span><span><b>Retour du jour envoyé</b><small>À retrouver dans Terminés, Retour d’intervention</small></span></div>"
+              : '<button type="button" class="bouton bouton-plein envoyer" data-g="envoyer">Envoyer le retour du jour</button>' +
+                (phraseManque() ? '<p class="manque">' + phraseManque() + "</p>" : "")) +
+          "</div>" +
+        "</section>" +
+      "</div>" + barre(1);
+    ecranRetour.innerHTML = h;
+    Kit.brancher(ecranRetour);
+  }
+  ecranRetour.addEventListener("change", function (ev) {
+    var s = ev.target, n = s.getAttribute("data-h") || s.getAttribute("data-m");
+    if (!n) return;
+    var x = retour.heures[n] || (retour.heures[n] = { h: null, m: null });
+    var v = s.value === "" ? null : Number(s.value);
+    if (s.hasAttribute("data-h")) { x.h = v; if (v !== null && x.m === null) x.m = 0; }
+    else x.m = v;
+    var defile = ecranRetour.querySelector(".defile"), haut = defile.scrollTop;
+    rendreRetour();
+    ecranRetour.querySelector(".defile").scrollTop = haut;
+  });
+  ecranRetour.addEventListener("click", function (ev) {
+    var g = ev.target.closest("[data-g]");
+    if (!g) return;
+    if (g.getAttribute("data-g") === "note") { Kit.note(g, g.getAttribute("data-texte")); return; }
+    if (g.getAttribute("data-g") === "envoyer") {
+      var defile = ecranRetour.querySelector(".defile"), haut = defile.scrollTop;
+      retour.parti = true; rendreRetour();
+      ecranRetour.querySelector(".defile").scrollTop = haut;
+    }
+  });
+  document.querySelectorAll("#cas-retour [data-cas]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      document.querySelectorAll("#cas-retour [data-cas]").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+      retour = { cas: b.getAttribute("data-cas"), parti: false, heures: {} };
+      rendreRetour();
+    });
+  });
+  rendreRetour();
+
+  /* ═══ TERMINÉS, A ET B ═════════════════════════════════════════════════
+     Mr. Bernard : 2 hommes fois 2 jours, soit 4 jours d'homme au devis, à
+     350 € la journée d'homme (une ligne de 1 400 €). Passé : 30 h 30.
+     Une journée de 7 h : prévu 28 h, 2 h 30 de plus, 125 € au prix de B. */
+  var JOURS_HOMME = 4, PRIX_JOUR = 350;
+  var JOURS = [
+    { dit: "Lundi 19 octobre", gens: [["Julien", 7.5], ["Antoine", 7.5]] },
+    { dit: "Mardi 20 octobre", gens: [["Julien", 8], ["Antoine", 7.5]] }
+  ];
+  var PASSE = JOURS.reduce(function (t, j) { return t + j.gens.reduce(function (s, g) { return s + g[1]; }, 0); }, 0);
+  var CHOIX_JOURNEE = [6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10];
+
+  document.querySelectorAll(".ecran[data-version]").forEach(function (ecran) {
+    var version = ecran.getAttribute("data-version");
+    var e = { cas: "devis", journee: 7 };
+    function prevu() { return e.cas === "forfait" || e.journee === null ? null : JOURS_HOMME * e.journee; }
+    function ecart() { var p = prevu(); return p === null ? null : PASSE - p; }
+
+    function ligneEcart() {
+      var x = ecart();
+      return x !== null && x > 0 ? '<span class="fini-ecart">' + enHeures(x) + " de plus que prévu</span>" : "";
+    }
+    function rendre() {
+      ecran.innerHTML =
+        '<div class="defile">' +
+          '<header class="tete"><h1 class="tete-titre">Terminés</h1></header>' +
+          '<div class="mois"><button type="button" aria-label="Mois précédent" data-g="note" data-texte="Septembre, comme aujourd’hui.">' + ico("retour") + "</button>" +
+            "<b>Octobre 2026</b>" +
+            '<button type="button" aria-label="Mois suivant" disabled>' + ico("suivant") + "</button></div>" +
+          '<div class="plage plage-serree">' +
+            '<button type="button" class="fini touche" data-g="bernard">' +
+              '<span class="jour-bloc"><b>20</b><span>oct.</span></span>' +
+              '<span class="fini-corps"><span class="fini-haut"><span class="fini-nom">Mr. Bernard</span><span class="fini-montant">' + enEuros(1764) + '</span></span>' +
+              '<span class="fini-etat"><b>Facturé</b> le 23 octobre, Facture n°' + NBSP + "15</span>" + ligneEcart() + "</span>" +
+            "</button>" +
+            '<button type="button" class="fini touche" data-g="note" data-texte="Ouvrez Mr. Bernard.">' +
+              '<span class="jour-bloc"><b>21</b><span>oct.</span></span>' +
+              '<span class="fini-corps"><span class="fini-haut"><span class="fini-nom">Mme Vasseur</span><span class="fini-montant">864,00' + NBSP + '€</span></span>' +
+              '<span class="fini-etat"><b>Facturé</b> le 22 octobre, Facture n°' + NBSP + "14</span></span>" +
+            "</button>" +
+            '<button type="button" class="fini touche" data-g="note" data-texte="Ouvrez Mr. Bernard.">' +
+              '<span class="jour-bloc"><b>17</b><span>oct.</span></span>' +
+              '<span class="fini-corps"><span class="fini-haut"><span class="fini-nom">Mme Costa</span><span class="fini-montant">312,00' + NBSP + '€</span></span>' +
+              '<span class="fini-etat"><b>Facturé</b> le 17 octobre, Facture n°' + NBSP + "13</span></span>" +
+            "</button>" +
+          "</div>" +
+        "</div>" + barre(2) +
+        '<section class="feuille" id="volet-' + version + '" aria-hidden="true" aria-label="Le chantier de Mr. Bernard">' +
+          '<div class="feuille-poignee"></div><div class="feuille-dedans">' +
+            '<h2 class="feuille-titre">Mr. Bernard</h2>' +
+            '<p class="volet-sous">Facture n°' + NBSP + "15, " + enEuros(1764) + "</p>" +
+            '<button type="button" class="volet-choix touche" data-g="note" data-texte="La facture, comme aujourd’hui.">' + ico("facture") + "La facture</button>" +
+            '<button type="button" class="volet-choix touche neuf" data-g="temps">' + ico("horloge") + "Le temps passé<small>" + enHeures(PASSE) + "</small></button>" +
+            '<button type="button" class="volet-choix touche" data-g="note" data-texte="Comme aujourd’hui.">' + ico("annuler") + "Je fais un avoir</button>" +
+            '<button type="button" class="volet-choix alerte touche" data-g="note" data-texte="Comme aujourd’hui.">' + ico("alerte") + "Il ne me paiera pas</button>" +
+            '<button type="button" class="bouton bouton-texte fermer" data-ferme>Annuler</button>' +
+          "</div></section>" +
+        '<section class="feuille" id="temps-' + version + '" aria-hidden="true" aria-label="Le temps passé chez Mr. Bernard">' +
+          '<div class="feuille-poignee"></div><div class="feuille-dedans"></div></section>';
+      Kit.brancher(ecran);
+    }
+
+    function peindreTemps() {
+      var p = prevu(), x = ecart(), h = "";
+      h += '<h2 class="feuille-titre">Le temps passé</h2>' +
+        '<div class="deux">' +
+          '<div class="chiffre-bloc"><b>' + enHeures(PASSE) + "</b><span>passées</span></div>" +
+          '<div class="chiffre-bloc' + (p === null ? " inconnu" : "") + '"><b>' + (p === null ? "?" : enHeures(p)) + "</b><span>prévues</span></div>" +
+        "</div>";
+      if (e.cas === "forfait") {
+        h += '<p class="d-ou">Le devis ne dit pas de temps.</p>';
+      } else if (e.journee === null) {
+        h += '<div class="journee plage-ton" data-ton="or"><div class="heure"><span class="heure-nom">Une journée chez vous ?</span>' +
+          '<select data-journee aria-label="Une journée de travail, combien d’heures" class="vide"><option value="" selected>Choisir</option>' +
+          CHOIX_JOURNEE.map(function (c) { return '<option value="' + c + '">' + enHeures(c) + "</option>"; }).join("") +
+          "</select></div></div>";
+      } else {
+        var plus = x > 0, egal = x === 0;
+        var t = egal ? "Juste le temps prévu." : enHeures(x) + (plus ? " de plus" : " de moins") + " que prévu.";
+        var euros = version === "B" && !egal
+          ? '<span class="ecart-euros">' + enEuros(Math.abs(x) * PRIX_JOUR / e.journee) + (plus ? " de main d’œuvre en plus" : " de main d’œuvre en moins") + "</span>"
+          : "";
+        h += '<p class="ecart plage-ton" data-ton="' + (plus ? "ambre" : "vert") + '">' + t + euros + "</p>" +
+          '<p class="d-ou">' + JOURS_HOMME + " jours d’homme au devis, une journée de " + enHeures(e.journee) +
+          (version === "B" ? ", " + PRIX_JOUR + NBSP + "€ la journée d’homme" : "") + ".</p>";
+      }
+      h += '<div class="par-jour"><h3 class="rubrique">Jour par jour</h3>' +
+        JOURS.map(function (j) {
+          var tot = j.gens.reduce(function (s, g) { return s + g[1]; }, 0);
+          return '<div class="jour-ligne"><div class="jour-ligne-tete">' + j.dit + "<span>" + enHeures(tot) + "</span></div>" +
+            j.gens.map(function (g) { return '<div class="qui-heures"><span>' + g[0] + "</span><span>" + enHeures(g[1]) + "</span></div>"; }).join("") +
+            "</div>";
+        }).join("") + "</div>" +
+        '<button type="button" class="bouton bouton-texte fermer" data-ferme>Fermer</button>';
+      ecran.querySelector("#temps-" + version + " .feuille-dedans").innerHTML = h;
+    }
+
+    ecran.addEventListener("click", function (ev) {
+      var g = ev.target.closest("[data-g]");
+      if (!g) return;
+      var geste = g.getAttribute("data-g");
+      if (geste === "note") { Kit.note(g, g.getAttribute("data-texte")); return; }
+      if (geste === "bernard") { Kit.ouvrirFeuille("volet-" + version, g); return; }
+      if (geste === "temps") {
+        Kit.fermerFeuilles(ecran);
+        peindreTemps();
+        Kit.ouvrirFeuille("temps-" + version, ecran.querySelector('[data-g="bernard"]'));
+      }
+    });
+    ecran.addEventListener("change", function (ev) {
+      if (!ev.target.hasAttribute("data-journee") || ev.target.value === "") return;
+      e.journee = Number(ev.target.value);
+      var garde = e.journee;
+      rendre();
+      e.journee = garde;
+      peindreTemps();
+      Kit.ouvrirFeuille("temps-" + version, ecran.querySelector('[data-g="bernard"]'));
+      Kit.note(ecran.querySelector(".feuille.ouverte .chiffre-bloc"), "Gardé dans Réglages, Équipe.");
+    });
+    document.querySelectorAll('[data-cas-pour="' + version + '"] [data-cas]').forEach(function (b) {
+      b.addEventListener("click", function () {
+        b.parentNode.querySelectorAll("[data-cas]").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+        e.cas = b.getAttribute("data-cas");
+        e.journee = e.cas === "journee" ? null : 7;
+        rendre();
+      });
+    });
+    rendre();
+  });
+})();
+</script>
+</body>
+</html>

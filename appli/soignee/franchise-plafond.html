@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le plafond de la franchise, A ou B</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  LE PLAFOND DE LA FRANCHISE DE TVA. Ce qui existe dans src/ : le réglage
+  « Franchise en base » de Votre TVA (src/app/reglages/identite/IdentiteClient.tsx),
+  qui imprime la mention 293 B et retire la TVA des devis et des factures
+  (src/server/repositories/devis.ts et factures.ts lisent regimeTva). AUCUN
+  compteur nulle part : cherché le 5 novembre 2026, ni seuil, ni plafond, ni
+  37 500 dans src/lib et src/server.
+
+  D'où vient l'idée : la conversation du 5 novembre 2026 (« est-ce que tu
+  penses à des choses qu'on aurait pu oublier ? »), puis son choix
+  « 1,3,5,6 Fais des planches ». Un artisan en franchise qui passe le plafond
+  doit facturer la TVA ; Atlas a toutes ses factures, et ne compte rien.
+
+  Le compteur ne vit que pour une entreprise réglée en Franchise en base.
+  Assujettie, rien ne change.
+
+  A : rien tant qu'on est loin. Une ligne sur Terminés à partir de 80 % du
+      plafond. À l'arrêt 2, quand CETTE facture fait passer le plafond majoré,
+      elle ne part pas en silence.
+  B : le compteur toujours visible dans Réglages, Votre TVA, sous Franchise
+      en base, et le même arrêt à la facture.
+
+  LES CHIFFRES SONT DES EXEMPLES. 37 500 € et 41 250 € sont les plafonds des
+  prestations de services connus jusqu'en 2025 ; une réforme à 25 000 € a été
+  suspendue en 2025, et ce qui vaut en 2026 n'est pas vérifié ici.
+
+  Le compte de la planche : factures envoyées + factures importées (table
+  pieces_importees, migration 0136) moins les avoirs, HT.
+    printemps  12 400 = 12 400
+    octobre    31 980 + 1 520 - 300 = 33 200  (89 % de 37 500)
+    passé      37 680 + 1 520 - 300 = 38 900
+    la facture de Mr. Lambert : 1 900 + 2 700 + 3 800 = 8 400 ;
+    33 200 + 8 400 = 41 600, au-dessus de 41 250.
+
+  RIEN N'EST CODÉ DANS src/.
+*/
+
+/* ─── Terminés, le haut de l'écran (termines.html) ─────────────────────── */
+.argent { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.case { display: flex; flex-direction: column; min-height: 140px; padding: 16px 14px; border-radius: var(--r-plage);
+        text-decoration: none; color: inherit; }
+.case-titre { font-size: 13px; font-weight: 700; line-height: 1.35; letter-spacing: 0.1em; text-wrap: balance; text-transform: uppercase; color: var(--atlas-or); }
+.case-sous { margin-top: 6px; font: 400 17px/1.2 var(--serif); color: var(--atlas-ink); }
+.case-pied { margin-top: auto; padding-top: 14px; }
+.case-valeur { font: 400 26px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; letter-spacing: -0.01em; white-space: nowrap; color: var(--atlas-ink); }
+.case-bien { display: flex; align-items: center; gap: 6px; font: 400 18px/1.15 var(--serif); color: var(--atlas-ink); }
+.case-bien .ico { width: 20px; height: 20px; stroke-width: 2; }
+.case-tva { background: var(--atlas-carteAmbreFond); }
+.case-compta { background: var(--atlas-carteVertFond); }
+.case-compta .case-titre, .case-compta .case-bien .ico { color: var(--atlas-carteVertTexte); }
+.portes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+.porte { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 56px; padding: 0 14px;
+         border-radius: 28px; font-size: 15px; font-weight: 500; line-height: 1.2; text-align: center; text-decoration: none;
+         color: var(--atlas-ink); background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.porte-or { color: var(--atlas-or); background: transparent; box-shadow: inset 0 0 0 1.5px var(--atlas-or); }
+.mois-nom { margin: 34px 0 0; text-align: center; font: 400 30px/1.1 var(--serif); }
+.t-ligne { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 76px; padding: 12px 0; text-align: left; }
+.jour-bloc { width: 48px; flex: none; align-self: flex-start; padding: 6px 0 7px; border-radius: 8px; text-align: center; line-height: 1;
+             background: var(--atlas-carteAmbreFond); }
+.jour-bloc b { display: block; font: 400 22px/1 var(--serif); font-variant-numeric: lining-nums; }
+.jour-bloc span { display: block; margin-top: 3px; font-size: 13px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: var(--atlas-or); }
+.t-corps { flex: 1; min-width: 0; }
+.t-haut { display: flex; align-items: baseline; gap: 10px; }
+.t-nom { flex: 1; min-width: 0; font: 400 19px/1.25 var(--serif); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.t-montant { flex: none; font: 700 19px/1.25 var(--serif); color: var(--atlas-or); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
+.t-etat { display: block; margin-top: 4px; font-size: 15px; line-height: 1.4; color: var(--atlas-inkSoft); }
+.t-etat b { color: var(--atlas-or); }
+
+/* ─── La ligne de la franchise (A), sous les deux boutons ──────────────── */
+.franchise { display: block; width: 100%; margin-top: 10px; padding: 14px 16px 16px; border-radius: var(--r-plage); text-align: left;
+             background: var(--atlas-carteAmbreFond); color: var(--atlas-carteAmbreTexte); }
+.franchise[data-ton="rouge"] { background: var(--atlas-carteRougeFond); color: var(--atlas-carteRougeTexte); }
+.franchise-haut { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 15.5px; font-weight: 700; }
+.franchise-haut .ico { width: 20px; height: 20px; stroke-width: 2; }
+.franchise-chiffres { display: block; margin: 6px 0 10px; font: 400 19px/1.25 var(--serif); font-variant-numeric: tabular-nums lining-nums; color: var(--atlas-ink); }
+
+/* ─── La jauge : le plein suit le ton de ce qu'elle dit ─────────────────── */
+.jauge { display: block; height: 8px; border-radius: 4px; overflow: hidden; background: color-mix(in srgb, var(--atlas-ink) 10%, transparent); }
+.jauge > span { display: block; height: 100%; border-radius: 4px; background: currentColor; }
+
+/* ─── Votre TVA (B), sous Franchise en base ─────────────────────────────── */
+.compte-tva { margin-top: 10px; }
+.compte-tva-chiffres { display: block; margin: 4px 0 12px; font: 400 19px/1.25 var(--serif); font-variant-numeric: tabular-nums lining-nums; color: var(--atlas-ink); }
+.compte-tva-chiffres b { font-weight: 400; font-size: 24px; }
+.compte-tva .jauge { color: var(--atlas-or); }
+.compte-tva[data-ton="ambre"] .jauge, .compte-tva[data-ton="ambre"] .compte-tva-chiffres b { color: var(--atlas-carteAmbreTexte); }
+.compte-tva[data-ton="rouge"] .jauge, .compte-tva[data-ton="rouge"] .compte-tva-chiffres b { color: var(--atlas-carteRougeTexte); }
+.compte-tva .bouton-texte { margin-top: 6px; }
+
+/* ─── La facture (facture.html), en franchise ──────────────────────────── */
+.fa .tete-situation { text-transform: none; letter-spacing: 0; }
+.carte-doc { background: var(--atlas-card); border-radius: var(--r-plage); padding: 18px; }
+.carte-doc + .carte-doc { margin-top: 12px; }
+.doc-numero { font: 400 22px/1.2 var(--serif); color: var(--atlas-ink); }
+.doc-titre { margin-top: 2px; font: italic 400 18px/1.3 var(--serif); color: var(--atlas-inkSoft); }
+.rang-ligne { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; padding: 10px 0; }
+.rang-ligne + .rang-ligne { box-shadow: inset 0 1px 0 var(--atlas-lineSoft); }
+.rang-ligne .nom { flex: 1; min-width: 0; font-size: 16px; color: var(--atlas-ink); }
+.rang-ligne .nom small { display: block; margin-top: 2px; font-size: 14px; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
+.rang-ligne .prix { font-size: 16px; color: var(--atlas-ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.mention { margin-top: 6px; font-size: 14px; color: var(--atlas-inkSoft); }
+.ttc { margin-top: 10px; padding-top: 14px; box-shadow: inset 0 1px 0 var(--atlas-line); text-align: center; }
+.ttc p { font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--atlas-inkSoft); }
+.ttc .montant-grand { margin-top: 6px; font-size: 46px; color: var(--atlas-or); }
+
+/* ─── La feuille du compte, et l'arrêt ──────────────────────────────────── */
+.compte .rang-ligne .prix { font-size: 16.5px; }
+.compte .total { margin-top: 4px; box-shadow: inset 0 1px 0 var(--atlas-line); }
+.compte .total .nom, .compte .total .prix { font: 400 20px/1.2 var(--serif); }
+.plafonds { margin-top: 14px; }
+.plafonds .rang-ligne { padding: 6px 0; box-shadow: none; }
+.plafonds .nom, .plafonds .prix { color: var(--atlas-inkSoft); }
+.compte .plage-ton { margin-top: 14px; }
+.compte .discret { margin-top: 12px; }
+.resultat { padding: 16px; border-radius: 10px; text-align: center; background: var(--atlas-carteRougeFond); color: var(--atlas-carteRougeTexte); }
+.resultat p { font-size: 14.5px; }
+.resultat .gros { margin: 6px 0; font: 400 34px/1.1 var(--serif); color: var(--atlas-ink); font-variant-numeric: tabular-nums lining-nums; }
+.arret-phrase { margin: 16px 2px 18px; font-size: 16px; line-height: 1.45; color: var(--atlas-ink); }
+.arret .bouton + .bouton { margin-top: 10px; }
+.arret .bouton-texte, .compte .fermer { display: flex; width: 100%; justify-content: center; margin-top: 8px; color: var(--atlas-inkSoft); }
+</style>
+</head>
+<body class="pl pl-pilules">
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">Le plafond de la franchise</h1>
+  <p class="pl-verdict">Pour une entreprise en <b>Franchise en base</b>. <b>A</b> : rien loin du plafond ; tout près, une ligne sur Terminés, touchez-la pour le compte. <b>B</b> : le compte toujours dans Votre TVA. <b>La facture</b> : touchez Envoyer, elle fait passer le plafond majoré. Les montants sont des exemples.</p>
+</header>
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <!-- ═══ A : Terminés, à partir de 80 % ═════════════════════════════════ -->
+    <div data-vue-panneau="A">
+      <p class="pl-legende">A, une ligne sur Terminés à partir de 80 %</p>
+      <div class="pl-etats" data-ecran="#ecran-A">
+        <button type="button" data-etat="printemps" aria-pressed="false">Loin du plafond</button>
+        <button type="button" data-etat="octobre" aria-pressed="true">Près du plafond</button>
+        <button type="button" data-etat="passe" aria-pressed="false">Plafond passé</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre" id="ecran-A">
+          <div class="defile">
+            <header class="tete">
+              <h1 class="tete-titre">Terminés</h1>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </header>
+            <div class="argent">
+              <a class="case case-tva" href="#" data-note="Inchangé : voir la planche Terminés.">
+                <span class="case-titre">Ma TVA à déclarer</span>
+                <span class="case-sous">Octobre 2026</span>
+                <span class="case-pied"><span class="case-valeur">0,00&nbsp;€</span></span>
+              </a>
+              <a class="case case-compta" href="#" data-note="Inchangé : voir la planche Terminés.">
+                <span class="case-titre">Pour mon comptable</span>
+                <span class="case-sous">Dossier en cours</span>
+                <span class="case-pied"><span class="case-bien"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg>Tout est justifié</span></span>
+              </a>
+            </div>
+            <div class="portes">
+              <a class="porte" href="#" data-note="Inchangé : voir la planche Terminés.">Retours d'intervention</a>
+              <a class="porte porte-or" href="#" data-note="Inchangé : voir la planche Terminés.">Créer une facture</a>
+            </div>
+
+            <button class="franchise touche" type="button" data-ouvre="compte-A" data-si-etat="octobre">
+              <span class="franchise-haut">Franchise de TVA<svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>
+              <span class="franchise-chiffres">33&#8239;200&nbsp;€ sur 37&#8239;500&nbsp;€ cette année</span>
+              <span class="jauge"><span style="width:89%"></span></span>
+            </button>
+            <button class="franchise touche" type="button" data-ton="rouge" data-ouvre="compte-A" data-si-etat="passe">
+              <span class="franchise-haut">Plafond de la franchise passé<svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>
+              <span class="franchise-chiffres">38&#8239;900&nbsp;€ sur 37&#8239;500&nbsp;€ cette année</span>
+              <span class="jauge"><span style="width:100%"></span></span>
+            </button>
+
+            <p class="mois-nom">Octobre 2026</p>
+            <div class="t-ligne">
+              <span class="jour-bloc"><b>21</b><span>oct.</span></span>
+              <span class="t-corps"><span class="t-haut"><span class="t-nom">Mme Vasseur</span><span class="t-montant">864,00&nbsp;€</span></span><span class="t-etat"><b>Facturé</b> le 22 octobre, Facture n° 31</span></span>
+            </div>
+            <div class="t-ligne">
+              <span class="jour-bloc"><b>14</b><span>oct.</span></span>
+              <span class="t-corps"><span class="t-haut"><span class="t-nom">Mr. Faucher</span><span class="t-montant">1&#8239;776,00&nbsp;€</span></span><span class="t-etat"><b>Facturé</b> le 15 octobre, Facture n° 30</span></span>
+            </div>
+          </div>
+          <nav class="barre" aria-label="Navigation principale"><div class="barre-onglets">
+            <a class="barre-onglet" href="accueil.html">Chantiers</a>
+            <a class="barre-onglet" href="planning.html">Planning</a>
+            <a class="barre-onglet" href="termines.html" aria-current="page">Terminés</a>
+            <a class="barre-onglet" href="paysage.html">Paysage</a>
+            <a class="barre-onglet" href="reglages.html">Réglages</a>
+            <span class="barre-trait" aria-hidden="true"><span></span></span>
+          </div></nav>
+          <section class="feuille" id="compte-A" aria-hidden="true" aria-label="Le compte de la franchise">
+            <div class="feuille-poignee"></div><div class="feuille-dedans" data-compte></div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ B : Votre TVA, toujours ═════════════════════════════════════════ -->
+    <div data-vue-panneau="B">
+      <p class="pl-legende">B, le compte toujours dans Votre TVA</p>
+      <div class="pl-etats" data-ecran="#ecran-B">
+        <button type="button" data-etat="printemps" aria-pressed="false">Loin du plafond</button>
+        <button type="button" data-etat="octobre" aria-pressed="true">Près du plafond</button>
+        <button type="button" data-etat="passe" aria-pressed="false">Plafond passé</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre" id="ecran-B">
+          <div class="defile">
+            <div class="tete-ronds"><button class="rond-creux" type="button" data-note="Retour à Mon entreprise." aria-label="Retour à Mon entreprise"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button></div>
+            <header class="tete"><h1 class="tete-titre moyen">Votre TVA</h1></header>
+            <div class="cartes-choix" data-un-seul>
+              <button class="carte-choix" type="button" data-choix="franchise" aria-pressed="true" data-montre="b-franchise">
+                <span class="coche-ronde" aria-hidden="true"></span>
+                <b>Franchise en base</b>
+                <small>Pas de TVA. La mention 293 B s'imprime.</small>
+              </button>
+              <button class="carte-choix" type="button" data-choix="assujettie" aria-pressed="false" data-montre="b-assujettie">
+                <span class="coche-ronde" aria-hidden="true"></span>
+                <b>Assujettie</b>
+                <small>Vous facturez la TVA.</small>
+              </button>
+            </div>
+            <div id="b-franchise">
+              <p class="plage-ton mt-8" data-ton="vert">Vos factures portent « TVA non applicable, article 293 B du CGI ».</p>
+              <div class="plage compte-tva" data-si-etat="printemps">
+                <span class="reglage-libelle">Cette année</span>
+                <span class="compte-tva-chiffres"><b>12&#8239;400&nbsp;€</b> sur 37&#8239;500&nbsp;€</span>
+                <span class="jauge"><span style="width:33%"></span></span>
+                <button class="bouton-texte or" type="button" data-ouvre="compte-B">Voir le compte</button>
+              </div>
+              <div class="plage compte-tva" data-ton="ambre" data-si-etat="octobre">
+                <span class="reglage-libelle">Cette année</span>
+                <span class="compte-tva-chiffres"><b>33&#8239;200&nbsp;€</b> sur 37&#8239;500&nbsp;€</span>
+                <span class="jauge"><span style="width:89%"></span></span>
+                <button class="bouton-texte or" type="button" data-ouvre="compte-B">Voir le compte</button>
+              </div>
+              <div class="plage compte-tva" data-ton="rouge" data-si-etat="passe">
+                <span class="reglage-libelle">Cette année, plafond passé</span>
+                <span class="compte-tva-chiffres"><b>38&#8239;900&nbsp;€</b> sur 37&#8239;500&nbsp;€</span>
+                <span class="jauge"><span style="width:100%"></span></span>
+                <button class="bouton-texte or" type="button" data-ouvre="compte-B">Voir le compte</button>
+              </div>
+            </div>
+            <div id="b-assujettie" hidden>
+              <div class="plage reglages mt-8">
+                <label class="reglage">
+                  <span class="reglage-libelle">Numéro de TVA intracommunautaire</span>
+                  <input class="reglage-valeur chiffre" placeholder="FR…">
+                </label>
+              </div>
+            </div>
+          </div>
+          <nav class="barre" aria-label="Navigation principale"><div class="barre-onglets">
+            <a class="barre-onglet" href="accueil.html">Chantiers</a>
+            <a class="barre-onglet" href="planning.html">Planning</a>
+            <a class="barre-onglet" href="termines.html">Terminés</a>
+            <a class="barre-onglet" href="paysage.html">Paysage</a>
+            <a class="barre-onglet" href="reglages.html" aria-current="page">Réglages</a>
+            <span class="barre-trait" aria-hidden="true"><span></span></span>
+          </div></nav>
+          <section class="feuille" id="compte-B" aria-hidden="true" aria-label="Le compte de la franchise">
+            <div class="feuille-poignee"></div><div class="feuille-dedans" data-compte></div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ La facture : le même arrêt avec A et avec B ════════════════════ -->
+    <div data-vue-panneau="La facture">
+      <p class="pl-legende">A et B, l'arrêt de la facture qui passe le plafond majoré</p>
+      <div class="cadre">
+        <div class="ecran fa avec-barre avec-action" id="ecran-F" data-etat="octobre">
+          <div class="defile">
+            <div class="tete-ronds">
+              <button class="rond-creux" type="button" aria-label="Retour" data-note="Retour au chantier."><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </div>
+            <div class="tete"><h2 class="tete-titre">Facture</h2></div>
+            <p class="tete-situation">Mr. Lambert</p>
+            <section class="carte-doc">
+              <p class="doc-numero">F2026&#8209;000032</p>
+              <p class="doc-titre">Création du jardin</p>
+              <p class="mt-8"><span class="etat" data-ton="bleu">Brouillon</span></p>
+            </section>
+            <section class="carte-doc">
+              <div class="rang-ligne"><span class="nom">Terrassement et préparation du sol<small>1 forfait</small></span><span class="prix">1&#8239;900,00&nbsp;€</span></div>
+              <div class="rang-ligne"><span class="nom">Plantation d'une haie<small>60 ml à 45,00&nbsp;€</small></span><span class="prix">2&#8239;700,00&nbsp;€</span></div>
+              <div class="rang-ligne"><span class="nom">Engazonnement<small>380 m² à 10,00&nbsp;€</small></span><span class="prix">3&#8239;800,00&nbsp;€</span></div>
+            </section>
+            <section class="carte-doc">
+              <div class="rang-ligne" style="padding:6px 0"><span class="nom">Total HT</span><span class="prix">8&#8239;400,00&nbsp;€</span></div>
+              <p class="mention">TVA non applicable, article 293 B du CGI</p>
+              <div class="ttc">
+                <p>Total à payer</p>
+                <p class="montant-grand">8&#8239;400,00&nbsp;€</p>
+              </div>
+            </section>
+          </div>
+          <div class="action-bas">
+            <button class="bouton bouton-plein" type="button" data-ouvre="arret">Envoyer la facture</button>
+          </div>
+          <nav class="barre" aria-label="Navigation principale"><div class="barre-onglets">
+            <a class="barre-onglet" href="accueil.html" aria-current="page">Chantiers</a>
+            <a class="barre-onglet" href="planning.html">Planning</a>
+            <a class="barre-onglet" href="termines.html">Terminés</a>
+            <a class="barre-onglet" href="paysage.html">Paysage</a>
+            <a class="barre-onglet" href="reglages.html">Réglages</a>
+            <span class="barre-trait" aria-hidden="true"><span></span></span>
+          </div></nav>
+          <section class="feuille arret" id="arret" aria-hidden="true" aria-label="Cette facture passe le plafond">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre">Cette facture passe le plafond</h2>
+              <div class="resultat">
+                <p>Avec elle, cette année</p>
+                <p class="gros">41&#8239;600,00&nbsp;€</p>
+                <p>Plafond majoré 41&#8239;250&nbsp;€</p>
+              </div>
+              <p class="arret-phrase">Votre comptable vous dit si la TVA est due.</p>
+              <button class="bouton bouton-plein" type="button" data-geste="assujettie">Passer en Assujettie</button>
+              <button class="bouton bouton-creux" type="button" data-geste="voir-compte">Voir le compte</button>
+              <button class="bouton-texte" type="button" data-geste="sans-tva">L'envoyer sans TVA</button>
+            </div>
+          </section>
+          <section class="feuille" id="compte-F" aria-hidden="true" aria-label="Le compte de la franchise">
+            <div class="feuille-poignee"></div><div class="feuille-dedans" data-compte></div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce que je propose : A</h2>
+    <ul>
+      <li>Rien ne se montre tant que vous êtes loin du plafond : une ligne de plus sur Terminés toute l’année, vous ne la liriez plus.</li>
+      <li>À partir de 80 % du plafond, une ligne ambre sur Terminés, sous les deux boutons. Passé le plafond, elle devient rouge. Un appui ouvre le compte.</li>
+      <li>Le compte additionne les factures de l’année, celles qu’Atlas a envoyées et celles que vous avez importées, moins les avoirs. Tout en HT, et chaque ligne se recompte à la main.</li>
+      <li>À la facture qui fait passer le plafond majoré, l’envoi s’arrête et le dit. Vous choisissez : passer en Assujettie, voir le compte, ou l’envoyer sans TVA. Rien ne part en silence, et rien n’est bloqué : si votre comptable dit que c’est bon, elle part.</li>
+      <li>Assujettie, rien de tout cela n’existe : le compteur ne vit qu’en Franchise en base.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>Les plafonds de 2026. 37 500 € et 41 250 € sont ceux des prestations de services connus jusqu’en 2025 ; une réforme à 25 000 € a été suspendue en 2025. Ce qui vaut aujourd’hui se lit sur impots.gouv.fr ou se demande à votre comptable, avant d’écrire un seul chiffre dans l’appli.</li>
+      <li>Compter le facturé ou l’encaissé. La planche compte les factures envoyées ; votre comptable dit lequel fait foi pour la franchise.</li>
+      <li>Une activité mixte, vente de végétaux et services, a deux plafonds. L’appli ne sait pas aujourd’hui quelle ligne est une vente et quelle ligne est un service.</li>
+      <li>Ce qui arrive à la facture qui fait passer le plafond, et l’année suivante. L’arrêt ne l’affirme pas, il renvoie au comptable : la règle a changé en 2025 et je ne l’ai pas vérifiée.</li>
+      <li>Passer en Assujettie demande un numéro de TVA. Quand on vient d’en sortir, on ne l’a pas encore : la facture attend-elle, ou part-elle sans TVA ?</li>
+      <li>Les factures importées comptent : elles vivent à part dans l’appli, le compteur doit les lire aussi.</li>
+    </ul>
+    <h2>Trouvé dans l’appli en cherchant</h2>
+    <ul class="a-trancher">
+      <li>Terminés ne lit pas le régime de TVA : en franchise, la case Ma TVA à déclarer s’y montre sans doute aussi. Pas vu à l’écran.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Votre TVA garde ses deux cartes, Franchise en base et Assujettie, et la mention 293 B.</li>
+      <li>La facture garde ses lignes, son total et son bouton Envoyer la facture ; l’arrêt ne paraît qu’à celle qui passe le plafond majoré.</li>
+      <li>Le reste de Terminés : la planche n’ajoute qu’une ligne, sous les deux boutons.</li>
+    </ul>
+  </section>
+</main>
+<script src="kit.js"></script>
+<script>
+(function () {
+  "use strict";
+  var EURO = " €";
+  function m(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " ") + ",00" + EURO; }
+  function mr(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " ") + EURO; }
+  /* Le compte, par moment de l'année. Les montants sont des exemples :
+     envoyées + importées moins les avoirs, HT. */
+  var COMPTES = {
+    printemps: { envoyees: [9, 12400], importees: [0, 0], avoirs: [0, 0], total: 12400 },
+    octobre: { envoyees: [31, 31980], importees: [2, 1520], avoirs: [1, 300], total: 33200 },
+    passe: { envoyees: [35, 37680], importees: [2, 1520], avoirs: [1, 300], total: 38900 }
+  };
+  var PLAFOND = 37500, MAJORE = 41250;
+  function pluriel(n, un, plusieurs) { return n + " " + (n < 2 ? un : plusieurs); }
+  function bloc(cle) {
+    var c = COMPTES[cle];
+    var h = '<div class="compte" data-si-etat="' + cle + '">' +
+      '<h2 class="feuille-titre">Franchise de TVA en 2026</h2>' +
+      '<div class="rang-ligne"><span class="nom">' + pluriel(c.envoyees[0], "facture envoyée", "factures envoyées") + '</span><span class="prix">' + m(c.envoyees[1]) + '</span></div>';
+    if (c.importees[0]) h += '<div class="rang-ligne"><span class="nom">' + pluriel(c.importees[0], "facture importée", "factures importées") + '</span><span class="prix">' + m(c.importees[1]) + '</span></div>';
+    if (c.avoirs[0]) h += '<div class="rang-ligne"><span class="nom">' + pluriel(c.avoirs[0], "avoir", "avoirs") + '</span><span class="prix">moins ' + m(c.avoirs[1]) + '</span></div>';
+    h += '<div class="rang-ligne total"><span class="nom">Total</span><span class="prix">' + m(c.total) + '</span></div>' +
+      '<div class="plafonds">' +
+        '<div class="rang-ligne"><span class="nom">Plafond</span><span class="prix">' + mr(PLAFOND) + '</span></div>' +
+        '<div class="rang-ligne"><span class="nom">Plafond majoré</span><span class="prix">' + mr(MAJORE) + '</span></div>' +
+      '</div>';
+    if (c.total <= PLAFOND) {
+      h += '<p class="plage-ton" data-ton="' + (c.total >= PLAFOND * 0.8 ? "ambre" : "or") + '">Encore ' + mr(PLAFOND - c.total) + ' avant ' + mr(PLAFOND) + '.</p>';
+    } else {
+      h += '<p class="plage-ton" data-ton="rouge">Encore ' + mr(MAJORE - c.total) + ' avant ' + mr(MAJORE) + '. Votre comptable vous dit ce que ça change pour 2027.</p>';
+    }
+    h += '<p class="discret">En HT, sur les factures envoyées.</p>' +
+      '<button type="button" class="bouton-texte fermer" data-ferme>Fermer</button></div>';
+    return h;
+  }
+  document.querySelectorAll("[data-compte]").forEach(function (el) {
+    el.innerHTML = bloc("printemps") + bloc("octobre") + bloc("passe");
+  });
+  /* La facture se joue en octobre : son compte est celui d'octobre. */
+  var f = document.getElementById("ecran-F");
+  function noter(ecran, texte) { Kit.fermerFeuilles(ecran); setTimeout(function () { Kit.note(ecran, texte); }, 200); }
+  document.addEventListener("click", function (ev) {
+    var n = ev.target.closest("[data-note]");
+    if (n) { ev.preventDefault(); noter(n.closest(".ecran"), n.getAttribute("data-note")); return; }
+    var g = ev.target.closest("[data-geste]");
+    if (!g) return;
+    var ecran = g.closest(".ecran");
+    var geste = g.getAttribute("data-geste");
+    if (geste === "voir-compte") {
+      Kit.fermerFeuilles(ecran);
+      setTimeout(function () { Kit.ouvrirFeuille("compte-F", g); }, 260);
+      return;
+    }
+    if (geste === "assujettie") { noter(ecran, "Ouvre Votre TVA. La facture se refait avec la TVA."); return; }
+    if (geste === "sans-tva") { noter(ecran, "Elle part comme aujourd'hui, mention 293 B."); return; }
+  });
+  document.addEventListener("DOMContentLoaded", function () { Kit.appliquerEtat(f, "octobre"); });
+})();
+</script>
+</body>
+</html>

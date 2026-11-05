@@ -692,6 +692,28 @@
         ],
         "createdAt": "2026-11-05T21:53:46.234Z",
         "reason": "Faux positif vérifié à la capture : le cadre est le téléphone (l'écran le remplit) et la liste .idees porte 18 px de chaque côté, qui écrasent le padding 0 de .liste du kit"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/franchise-plafond.html",
+          "appli/soignee/heures-du-jour.html",
+          "appli/soignee/hiverner-l-arrosage.html",
+          "appli/soignee/note-sans-reseau.html",
+          "appli/soignee/restrictions-d-eau.html"
+        ],
+        "createdAt": "2026-11-05T22:47:47.032Z",
+        "reason": "Claude: fond de planche rgb(235,232,225) et charte Origine du kit soigné, recopiés de src/lib/chartes.ts (appli/soignee/kit.js), comme toutes les planches soignées"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "appli/soignee/franchise-plafond.html"
+        ],
+        "createdAt": "2026-11-05T22:47:47.050Z",
+        "reason": "Claude: le .cadre est le contour du téléphone, l'écran le remplit bord à bord comme un vrai téléphone ; la marge intérieure vit dans .defile"
       }
     ]
   }
