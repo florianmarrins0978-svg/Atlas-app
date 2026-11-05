@@ -108,7 +108,7 @@ async function main() {
   await test("des identifiants faux ne s'enregistrent pas, et la phrase dit quoi faire", async () => {
     const r = await relier("mauvais");
     assert.equal(r.ok, false);
-    assert.match((r as { raison: string }).raison, /Pennylane refuse vos identifiants/);
+    assert.equal((r as { raison: string }).raison, "Pennylane refuse ces identifiants.");
     assert.equal(await liaisonPlateforme(ctx), null);
   });
 

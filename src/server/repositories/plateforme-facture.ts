@@ -61,7 +61,9 @@ export async function relierPlateforme(
   // **On vérifie AVANT d'enregistrer** : des identifiants faux enregistrés
   // bloqueraient sa prochaine facture d'entreprise (3 B), au pire moment.
   const essai = await verifierLaLiaison(nom, adressesDe(cle)!, ids, recuperer);
-  if (!essai.ok) return { ok: false, raison: essai.raison };
+  // Sur l'écran même où il les tape, « remplacez-les dans Réglages » ne dit
+  // rien : la phrase d'ici nomme seulement ce qui ne va pas.
+  if (!essai.ok) return { ok: false, raison: essai.famille === "coupee" ? `${nom} refuse ces identifiants.` : essai.raison };
   await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const valeurs = {
       plateforme: cle,
@@ -149,6 +151,7 @@ export async function marquerLaPlateformeCoupee(ctx: Ctx, maintenant: Date = new
 
 export type TransmissionLue = {
   factureId: string;
+  chantierId: string;
   numero: string;
   client: string | null;
   totalTtc: string;
@@ -185,6 +188,7 @@ export async function transmissionsRecentes(
           raison: transmissionsFactures.raison,
           deposeeLe: transmissionsFactures.deposeeLe,
           numero: factures.numeroCommercial,
+          chantierId: factures.chantierId,
           client: factures.clientNom,
           totalTtc: factures.totalTtc,
         })
@@ -222,6 +226,7 @@ export async function transmissionsRecentes(
   }
   return lignes.map((l) => ({
     factureId: l.factureId,
+    chantierId: l.chantierId,
     numero: l.numero,
     client: l.client,
     totalTtc: l.totalTtc,

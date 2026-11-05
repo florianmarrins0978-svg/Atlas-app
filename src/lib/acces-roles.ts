@@ -107,6 +107,9 @@ const FERME_AU_COMMERCIAL = [
   // facturation qu'il ne doit pas voir. L'écran et son retour se ferment ensemble.
   "/reglages/banque",
   "/api/banque",
+  // **Le compte de la plateforme de facture électronique** (5 novembre 2026) :
+  // il porte les factures de chaque client, la facturation qu'il ne voit pas.
+  "/reglages/facture-electronique",
   // ───────────────────────────────────────────────────────────────────────
   // **LA FACTURATION, ET C'EST SA RÈGLE DU 13 AOÛT — pas une nouveauté.**
   //

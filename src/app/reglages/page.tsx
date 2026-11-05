@@ -2,7 +2,7 @@ import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font, libelleCaps } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getRole } from "@/server/autorisation";
-import { rubriquesReglages } from "@/lib/rubriques-reglages";
+import { rubriquesReglages, situationDeLaPlateforme } from "@/lib/rubriques-reglages";
 import { versionEtRetard } from "@/server/version-executee";
 import { etatDeLaBase } from "@/server/retard-de-la-base";
 import { etatVersionLente } from "@/server/etat-banc";
@@ -13,6 +13,8 @@ import Sommaire from "./Sommaire";
 import { derniereIssueMiseAJour } from "./actions";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import { liaisonDeLEntreprise } from "@/server/repositories/banque";
+import { liaisonPlateforme } from "@/server/repositories/plateforme-facture";
+import { plateformesOffertes } from "@/server/plateformes/catalogue";
 import { situationDeLaBanque } from "@/lib/ma-banque-en-mots";
 import { estBancDEssai } from "@/profil-banc";
 import { garderLaPage } from "@/server/garde-page";
@@ -49,11 +51,12 @@ export default async function ReglagesPage() {
   // n'interroge pas la base, il affiche ce qu'on lui donne (`CLAUDE.md` §4
   // sexies), et cette lecture-ci part avec les deux autres au lieu d'ajouter un
   // aller-retour.
-  const [role, etatVersion, entreprise, liaison] = await Promise.all([
+  const [role, etatVersion, entreprise, liaison, plateforme] = await Promise.all([
     getRole(ctx),
     versionEtRetard(),
     getEntreprise(ctx),
     liaisonDeLEntreprise(ctx),
+    liaisonPlateforme(ctx),
   ]);
   const version = etatVersion.ligne;
 
@@ -75,9 +78,14 @@ export default async function ReglagesPage() {
   // **Ma banque n'y entre que reliée, et chez le patron seul** : l'écran est à
   // lui (`estProprietaire` dans `reglages/banque/page.tsx`), et ce qu'un autre
   // rôle n'ouvre pas ne doit pas sortir d'ici, pas même le nom de la banque.
+  // **Facture électronique, de même, chez le patron seul** et seulement si une
+  // plateforme se relie (`ARCHITECTURE.md` §555).
   const ensembles = rubriquesReglages(
     role,
-    role === "proprietaire" && liaison ? { situation: situationDeLaBanque(liaison.banque, liaison.luLe, new Date()) } : null
+    role === "proprietaire" && liaison ? { situation: situationDeLaBanque(liaison.banque, liaison.luLe, new Date()) } : null,
+    role === "proprietaire" && plateformesOffertes().length > 0
+      ? { situation: plateforme ? situationDeLaPlateforme(plateforme.nom, plateforme.etat) : null }
+      : null
   );
 
   return (

@@ -231,6 +231,9 @@ essai("le commercial atteint l'application, sauf les adresses nommées", () => {
     // hérite de son refus — mais l'hériter en SILENCE serait le jour où l'on
     // pose une page qui, elle, ne devait pas l'hériter.
     "/reglages/equipe/nouveau",
+    // **La plateforme de facture électronique (5 novembre 2026)** : le compte
+    // qui porte les factures de chaque client, fermé comme Ma banque.
+    "/reglages/facture-electronique",
     "/reglages/identite",
     "/termines",
     // **Pour mon comptable (24 octobre 2026)**, fermé comme Terminés : le

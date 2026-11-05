@@ -328,5 +328,33 @@ essai("reliée, Ma banque ne sort pas chez le commercial", () => {
   assert.ok(!chezLui.some((r) => r.href === "/reglages/banque"));
 });
 
+// Facture électronique, sa planche du 5 novembre 2026 : dans le sommaire
+// SEULEMENT quand une plateforme se relie, sous Ma banque, avec sa situation.
+essai("Facture électronique n'entre que si une plateforme se relie, sous Ma banque", () => {
+  const sans = rubriquesReglages("proprietaire").flatMap((e) => e.rubriques);
+  assert.ok(!sans.some((r) => r.href === "/reglages/facture-electronique"), "la ligne sort sans plateforme");
+  const entreprise = rubriquesReglages("proprietaire", { situation: "Crédit Mutuel" }, { situation: "Pennylane, reliée" }).find(
+    (e) => e.titre === "L'entreprise"
+  );
+  assert.equal(entreprise?.rubriques[0].href, "/reglages/banque");
+  assert.deepEqual(entreprise?.rubriques[1], {
+    nom: "Facture électronique",
+    icone: "feuille_envoyee",
+    href: "/reglages/facture-electronique",
+    situation: "Pennylane, reliée",
+  });
+  const pasReliee = rubriquesReglages("proprietaire", null, { situation: null }).find((e) => e.titre === "L'entreprise");
+  assert.equal(pasReliee?.rubriques[0].situation, undefined);
+  const icones = rubriquesReglages("proprietaire", { situation: "x" }, { situation: "y" }).flatMap((e) => e.rubriques.map((r) => r.icone));
+  assert.equal(new Set(icones).size, icones.length, `icônes : ${icones.join(", ")}`);
+});
+
+essai("Facture électronique ne sort ni chez le commercial ni chez le salarié", () => {
+  for (const role of ["commercial", "salarie"] as const) {
+    const chezLui = rubriquesReglages(role, null, { situation: "Pennylane, reliée" }).flatMap((e) => e.rubriques);
+    assert.ok(!chezLui.some((r) => r.href === "/reglages/facture-electronique"), role);
+  }
+});
+
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Rubriques des réglages — ${echecs} échec(s).`);
 process.exit(echecs === 0 ? 0 : 1);
