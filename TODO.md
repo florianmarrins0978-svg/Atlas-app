@@ -7056,6 +7056,14 @@ Le même soir, la CI de `main` rendait encore 558/560 : deux suites base qui
 ouvrent un navigateur, alors que la CI n'installait Chromium qu'après elles.
 L'installation est passée avant les suites base (`ci.yml`).
 
+**Course suivante (5 novembre, 20 h 57 UTC) : 560/560 base, construction
+verte, 212/213 navigateur.** Les trois suites e2e du tableau ci-dessous
+passent. Reste **`test-anneau-dictee-e2e`**, un seul cas : « l'avion est à
+44.0 px du micro ». **NON REPRODUIT ici**, ni seule, ni derrière les 13 suites
+qui la précèdent en CI (14/14). La cause n'est pas trouvée, et rien ne dit
+encore si son écran a un défaut. Le rouge écrit désormais les deux boîtes et le
+texte de l'anneau : lire la prochaine course de `ci.yml` avant de corriger.
+
 **Ce n'est pas le lot des boutons verts, et c'est MESURÉ, pas supposé.** Les
 mêmes trois suites échouent sur la CI de `main` (course 33753872485, arbre sans
 une ligne de mon code) et sur celle de la branche (33762884903) — la comparaison

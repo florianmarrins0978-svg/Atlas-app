@@ -153,7 +153,17 @@ async function main() {
         avant.x + avant.width / 2 - (disque.x + disque.width / 2),
         avant.y + avant.height / 2 - (disque.y + disque.height / 2)
       );
-      assert.ok(ecart <= 2, `l'avion est à ${ecart.toFixed(1)} px du micro : le doigt ne le trouve plus où il était`);
+      // **Le rouge dit ce qu'il a vu** (5 novembre 2026) : la CI de `main` a
+      // mesuré 44 px d'écart quand ce poste mesure zéro, dans le même ordre de
+      // suites. Sans les deux boîtes ni le texte de l'anneau, rien ne dit ce
+      // qui a poussé le disque, et l'on ne peut que deviner.
+      if (ecart > 2) {
+        const texte = (await anneau.innerText()).replace(/\s+/g, " ").trim();
+        assert.fail(
+          `l'avion est à ${ecart.toFixed(1)} px du micro : le doigt ne le trouve plus où il était. ` +
+            `Micro ${JSON.stringify(avant)}, disque ${JSON.stringify(disque)}, anneau : « ${texte} »`
+        );
+      }
 
       for (const mot of ["Jeter", "Envoyer"]) {
         assert.ok(
