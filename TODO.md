@@ -6946,6 +6946,10 @@ rouges, c'est ce qui reste de cette entrée. Une course lancée à la main sur u
 branche ne compte pas : sans `origin/main`, `test-pas-de-pansement` et les
 suites qui lisent le diff tombent faute d'historique.
 
+Le même soir, la CI de `main` rendait encore 558/560 : deux suites base qui
+ouvrent un navigateur, alors que la CI n'installait Chromium qu'après elles.
+L'installation est passée avant les suites base (`ci.yml`).
+
 **Ce n'est pas le lot des boutons verts, et c'est MESURÉ, pas supposé.** Les
 mêmes trois suites échouent sur la CI de `main` (course 33753872485, arbre sans
 une ligne de mon code) et sur celle de la branche (33762884903) — la comparaison
