@@ -629,6 +629,42 @@
         ],
         "createdAt": "2026-11-05T20:45:48.825Z",
         "reason": "Claude: le .cadre est le téléphone de la planche (kit.css), son .ecran le remplit bord à bord comme sur chaque planche ; le texte garde la gouttière de l'écran"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/zones-deplacement.html"
+        ],
+        "createdAt": "2026-11-05T21:33:20.941Z",
+        "reason": "PRODUCT.md, Brand Commitments: fond crème de la charte Arborea, identité existante du kit appli/soignee"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "appli/soignee/zones-deplacement.html"
+        ],
+        "createdAt": "2026-11-05T21:33:20.962Z",
+        "reason": "Claude: le .cadre est le téléphone de la planche (kit.css), son .ecran le remplit bord à bord comme sur chaque planche ; le texte garde la gouttière de l'écran"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/motif-absence.html"
+        ],
+        "createdAt": "2026-11-05T21:33:20.983Z",
+        "reason": "PRODUCT.md, Brand Commitments: fond crème de la charte Arborea, identité existante du kit appli/soignee"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "appli/soignee/motif-absence.html"
+        ],
+        "createdAt": "2026-11-05T21:33:21.006Z",
+        "reason": "Claude: le .cadre est le téléphone de la planche (kit.css), son .ecran le remplit bord à bord comme sur chaque planche ; le texte garde la gouttière de l'écran"
       }
     ]
   }
