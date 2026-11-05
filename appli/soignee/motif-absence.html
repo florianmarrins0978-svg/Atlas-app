@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pourquoi il est absent</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  LE MOTIF D'UNE ABSENCE, demandé quand on la note (src/app/planning/
+  PasLaCeJour.tsx et PisteAbsence.tsx ; src/app/reglages/AbsencesEquipe.tsx).
+
+  Sa réponse du 5 novembre 2026, à la question « faut-il demander Congé ou
+  Maladie quand on note l'absence ? » : « avec motif ». C'est ce qui permet
+  au compte des jours travaillés (sa planche A, même soir) de dire au
+  comptable pourquoi un jour manque.
+
+  TROUVÉ EN LA DESSINANT : une « absence » d'Atlas n'est pas toujours un jour
+  non travaillé. Elle est née le 14 août pour « une équipe qui doit partir en
+  déplacement pour cinq jours » : le gars travaille, ailleurs, et n'est pas
+  libre pour un chantier. Compter toute absence comme non travaillée aurait
+  retiré ces jours-là de sa paie. D'où Déplacement et Formation, comptés
+  travaillés ; les autres comptent absents.
+
+  LA NOTE LIBRE RESTE, et reste à lui : « Le motif n'est là que pour vous »
+  (AbsencesEquipe.tsx) devient « La note n'est là que pour vous ». Le motif,
+  lui, part au comptable.
+
+  RIEN N'EST CODÉ DANS src/. Les noms sont ceux des planches salarie-absent
+  et reglages-equipe.
+*/
+
+/* ─── Les motifs : deux colonnes, gros doigts ─────────────────────────── */
+.motifs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.motif { min-height: 50px; padding: 0 10px; border-radius: 12px; background: var(--atlas-card);
+         box-shadow: inset 0 0 0 1px var(--atlas-line); font-size: 15.5px; font-weight: 600; color: var(--atlas-ink);
+         transition: box-shadow 180ms var(--courbe); }
+.motif[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--atlas-rust); }
+.compte { margin: 8px 2px 0; font-size: 14px; color: var(--atlas-inkSoft); }
+.compte:empty { display: none; }
+.pourquoi { margin: 14px 2px 8px; font-size: 15px; font-weight: 700; color: var(--atlas-carteAmbreTexte); }
+.pourquoi.dit { color: var(--atlas-inkSoft); font-weight: 600; }
+
+/* ─── Au planning : la feuille C de salarie-absent, en appuis ─────────── */
+.fiche { border-radius: var(--r-plage); background: var(--atlas-card); padding: 6px 18px 12px; margin-top: 8px; }
+.fiche-date b { display: block; font: 400 26px/1.15 var(--serif); color: var(--atlas-or); margin-top: 14px; }
+.fiche-date span { font-size: 15px; color: var(--atlas-inkSoft); }
+.pers { padding: 14px 0 16px; }
+.pers + .pers { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.pers-tete { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+.pers .initiales { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%;
+                   font: 400 18px/1 var(--serif); background: var(--atlas-rustTint); color: var(--atlas-rust); }
+.pers[data-absent="true"] .initiales { background: var(--atlas-carteAmbreFond); color: var(--atlas-carteAmbreTexte); }
+.pers-nom { font: 400 21px/1.2 var(--serif); color: var(--atlas-ink); }
+.piste { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 4px; border-radius: 14px;
+         background: var(--atlas-rustTint); }
+.curseur { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc((100% - 8px) / 4); border-radius: 10px;
+           background: var(--atlas-card); box-shadow: 0 1px 2px rgba(28,28,26,0.10), 0 2px 8px rgba(28,28,26,0.08);
+           transform: translateX(calc(var(--i, 0) * 100%)); transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1), background-color 240ms ease-out; }
+.pers[data-absent="true"] .curseur { background: var(--atlas-carteAmbreFond); }
+.piste button { position: relative; z-index: 1; min-height: 48px; padding: 0 2px; border-radius: 10px; font-size: 14.5px; font-weight: 600;
+                white-space: nowrap; color: var(--atlas-inkSoft); }
+.piste button[aria-checked="true"] { color: var(--atlas-ink); }
+.pers[data-absent="true"] .piste button[aria-checked="true"], .pers[data-absent="true"] .piste button:first-of-type { color: var(--atlas-carteAmbreTexte); }
+@media (max-width: 370px) { .piste button { font-size: 13.5px; } }
+.fermer { width: 100%; justify-content: center; margin-top: 8px; color: var(--atlas-inkSoft); }
+
+/* ─── Dans Équipe : la feuille « Qui n'est pas là ? » ─────────────────── */
+.absence { position: relative; display: flex; align-items: center; gap: 14px; min-height: 76px; padding: 12px 0; }
+.absence .ligne-nom { font-weight: 600; }
+.absence .quand { display: block; margin-top: 2px; font-size: 15px; font-weight: 600; color: var(--atlas-or); }
+.tete-ronde { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: 50%;
+              font: 600 16px/1 var(--sans); background: var(--atlas-rustTint); color: var(--atlas-or); }
+.bouton-absence { border-radius: 999px; color: var(--atlas-rust); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.choisir { appearance: none; -webkit-appearance: none; width: 100%; margin-top: 3px; padding: 0; border: 0; background: transparent;
+           font: 400 18px/1.3 var(--serif); color: var(--atlas-ink); outline: none; }
+.valeur-bas { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.valeur-bas .ico { width: 20px; height: 20px; color: var(--atlas-or); }
+.feuille .motifs { margin-top: 4px; }
+.feuille .reglage .motifs { margin: 8px 0 2px; }
+</style>
+</head>
+<body class="pl pl-pilules">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">Pourquoi il est absent</h1>
+  <p class="pl-verdict">Quand vous notez une absence, un appui dit pourquoi. <b>Au planning</b>, sous le salarié qui manque ; <b>dans Équipe</b>, dans la feuille d’une absence de plusieurs jours. Déplacement et Formation comptent travaillés.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <div data-vue-panneau="Au planning">
+      <p class="pl-legende">Planning, Salarié absent ?</p>
+      <div class="cadre"><div class="ecran avec-barre" id="ecran-planning">
+        <div class="defile">
+          <header class="tete"><h1 class="tete-titre moyen">Planning</h1></header>
+          <div class="fiche">
+            <div class="fiche-date"><b>Aujourd’hui</b><span>mardi 27 octobre</span></div>
+            <button type="button" class="bouton bouton-creux mt-16" data-ouvre="feuille-planning">Salarié absent ?</button>
+          </div>
+        </div>
+        <nav class="barre" aria-label="Navigation principale"><div class="barre-onglets">
+          <a class="barre-onglet" href="accueil.html">Chantiers</a>
+          <a class="barre-onglet" href="planning.html" aria-current="page">Planning</a>
+          <a class="barre-onglet" href="termines.html">Terminés</a>
+          <a class="barre-onglet" href="paysage.html">Paysage</a>
+          <a class="barre-onglet" href="reglages.html">Réglages</a>
+          <span class="barre-trait" aria-hidden="true"><span></span></span>
+        </div></nav>
+        <section class="feuille" id="feuille-planning" aria-hidden="true" aria-label="Salarié absent">
+          <div class="feuille-poignee"></div><div class="feuille-dedans"></div>
+        </section>
+      </div></div>
+    </div>
+
+    <div data-vue-panneau="Dans Équipe">
+      <p class="pl-legende">Réglages, Équipe, Noter une absence</p>
+      <div class="cadre"><div class="ecran avec-barre" id="ecran-equipe">
+        <div class="defile">
+          <div class="tete-ronds"><button class="rond-creux" type="button" aria-label="Réglages"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button></div>
+          <h1 class="tete-titre">Équipe</h1>
+          <p class="rubrique rubrique-or mt-24">Absences</p>
+          <div class="plage plage-serree" id="liste-absences"></div>
+          <button class="bouton bouton-creux bouton-absence mt-16" type="button" data-ouvre="feuille-equipe"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Noter une absence</button>
+        </div>
+        <nav class="barre" aria-label="Navigation principale"><div class="barre-onglets">
+          <a class="barre-onglet" href="accueil.html">Chantiers</a>
+          <a class="barre-onglet" href="planning.html">Planning</a>
+          <a class="barre-onglet" href="termines.html">Terminés</a>
+          <a class="barre-onglet" href="paysage.html">Paysage</a>
+          <a class="barre-onglet" href="reglages.html" aria-current="page">Réglages</a>
+          <span class="barre-trait" aria-hidden="true"><span></span></span>
+        </div></nav>
+        <section class="feuille" id="feuille-equipe" aria-hidden="true" aria-label="Noter une absence">
+          <div class="feuille-poignee"></div>
+          <div class="feuille-dedans">
+            <h2 class="feuille-titre">Qui n’est pas là&nbsp;?</h2>
+            <div class="plage reglages">
+              <label class="reglage"><span class="reglage-libelle">Qui</span>
+                <span class="valeur-bas"><select class="choisir" aria-label="Qui est absent"><option>Lucas</option><option selected>Thomas</option><option>Hugo</option></select><svg class="ico" aria-hidden="true"><use href="#i-bas"/></svg></span></label>
+              <div class="reglage-rang reglage" style="gap:18px">
+                <span><span class="reglage-libelle">Du</span><span class="reglage-valeur">9 novembre 2026</span></span>
+                <span><span class="reglage-libelle">Au</span><span class="reglage-valeur">13 novembre 2026</span></span>
+              </div>
+              <div class="reglage"><span class="reglage-libelle">Pourquoi</span><div class="motifs" id="motifs-equipe"></div>
+                <span class="reglage-sous" id="compte-equipe"></span></div>
+              <label class="reglage"><span class="reglage-libelle">Note</span><input class="reglage-valeur" placeholder="Chantier à Angers…"></label>
+            </div>
+            <p class="plage-ton mt-8" data-ton="or">Absence de <b>Thomas</b> du 9 au 13 novembre, week-ends compris. La note n’est là que pour vous.</p>
+            <div class="pile mt-16">
+              <button class="bouton bouton-plein" type="button" id="noter">Noter l’absence</button>
+              <button class="bouton bouton-texte" type="button" data-ferme style="width:100%;justify-content:center;color:var(--atlas-inkSoft)">Annuler</button>
+            </div>
+          </div>
+        </section>
+      </div></div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce que je propose</h2>
+    <ul>
+      <li>Six motifs, d’un appui : Congé, Maladie, Sans solde, Déplacement, Formation, Autre. Au planning, ils paraissent sous le salarié dès qu’il manque ; dans Équipe, dans la feuille.</li>
+      <li>Déplacement et Formation comptent travaillés : le salarié n’est pas libre pour un chantier, mais sa journée est payée. Les quatre autres comptent absents.</li>
+      <li>Le motif part au comptable avec les jours travaillés. La note libre reste à vous, comme aujourd’hui.</li>
+      <li>Rien n’est obligé : sans motif, l’absence se note quand même, et Jours travaillés écrit « pourquoi ? » en ambre pour vous le rappeler.</li>
+    </ul>
+    <h2>Trouvé en la dessinant</h2>
+    <ul class="a-trancher">
+      <li>Une absence d’Atlas est née pour « une équipe en déplacement cinq jours » : ces jours-là sont travaillés. Sans motif, la planche des jours travaillés les aurait retirés de la paie. Le motif règle ça.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>La piste Présent, Matin, Après-midi, Journée, et la période notée dans Équipe qui se lit sous le nom.</li>
+      <li>Une absence retire toujours le salarié des dates proposées aux clients, quel que soit son motif.</li>
+    </ul>
+  </section>
+</main>
+
+<script src="kit.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  "use strict";
+  var MOTIFS = [["conge", "Congé"], ["maladie", "Maladie"], ["sans_solde", "Sans solde"], ["deplacement", "Déplacement"], ["formation", "Formation"], ["autre", "Autre"]];
+  var TRAVAILLE = { deplacement: true, formation: true };
+  var MOMENTS = [["present", "Présent"], ["matin", "Matin"], ["apres_midi", "Après-midi"], ["journee", "Journée"]];
+
+  function motifs(choisi, groupe) {
+    return MOTIFS.map(function (m) {
+      return '<button type="button" class="motif" data-motif="' + m[0] + '" data-groupe="' + groupe + '" aria-pressed="' + (choisi === m[0]) + '">' + m[1] + "</button>";
+    }).join("");
+  }
+  function compte(m) { return !m ? "" : TRAVAILLE[m] ? "Compté travaillé." : "Compté absent."; }
+
+  /* ─── Au planning ──────────────────────────────────────────────────── */
+  var gens = { Julien: { moment: "present", motif: null }, Antoine: { moment: "journee", motif: null } };
+  var dedans = document.querySelector("#feuille-planning .feuille-dedans");
+  function rang(nom) {
+    var g = gens[nom], i = MOMENTS.map(function (x) { return x[0]; }).indexOf(g.moment), absent = i > 0;
+    return '<div class="pers" data-absent="' + absent + '"><div class="pers-tete"><span class="initiales" aria-hidden="true">' + nom.charAt(0) + "</span>" +
+      '<span class="pers-nom">' + nom + "</span></div>" +
+      '<div class="piste" role="radiogroup" aria-label="' + nom + ', le mardi 27 octobre" style="--i:' + i + '"><span class="curseur" aria-hidden="true"></span>' +
+      MOMENTS.map(function (m, k) {
+        return '<button type="button" role="radio" data-qui="' + nom + '" data-moment="' + m[0] + '" aria-checked="' + (k === i) + '">' + (k === 0 && absent ? "Absent" : m[1]) + "</button>";
+      }).join("") + "</div>" +
+      (absent ? '<p class="pourquoi' + (g.motif ? " dit" : "") + '">Pourquoi ?</p><div class="motifs">' + motifs(g.motif, nom) + '</div><p class="compte">' + compte(g.motif) + "</p>" : "") +
+      "</div>";
+  }
+  function peindrePlanning() {
+    dedans.innerHTML = '<h2 class="feuille-titre">Absent le mardi 27 octobre ?</h2>' + Object.keys(gens).map(rang).join("") +
+      '<button type="button" class="bouton bouton-texte fermer" data-ferme>Fermer</button>';
+  }
+  dedans.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-moment]");
+    if (b) {
+      var g = gens[b.getAttribute("data-qui")];
+      g.moment = b.getAttribute("data-moment");
+      if (g.moment === "present") g.motif = null;
+      peindrePlanning(); return;
+    }
+    var m = e.target.closest(".motif");
+    if (m) {
+      var p = gens[m.getAttribute("data-groupe")], cle = m.getAttribute("data-motif");
+      p.motif = p.motif === cle ? null : cle;
+      peindrePlanning();
+    }
+  });
+  peindrePlanning();
+  /* La feuille s'ouvre d'office : c'est elle qu'on vient regarder. */
+  Kit.ouvrirFeuille("feuille-planning");
+  // Le kit pose le doigt sur le premier bouton : son cadre d'or ferait croire
+  // que « Présent » est choisi autrement que par la piste.
+  setTimeout(function () { if (document.activeElement) document.activeElement.blur(); }, 450);
+
+  /* ─── Dans Équipe ──────────────────────────────────────────────────── */
+  var absences = [{ rang: 2, nom: "Thomas", quand: "du 3 au 7 novembre", motif: "deplacement" }];
+  var motifEquipe = "deplacement";
+  var LIB = {}; MOTIFS.forEach(function (m) { LIB[m[0]] = m[1]; });
+  function peindreListe() {
+    document.getElementById("liste-absences").innerHTML = absences.map(function (a) {
+      return '<div class="absence"><span class="tete-ronde" aria-hidden="true">' + a.rang + '</span><span class="ligne-corps"><span class="ligne-nom">' + a.nom + "</span>" +
+        '<span class="quand">' + a.quand + '</span><span class="ligne-situation">' + (a.motif ? LIB[a.motif] + ", " + compte(a.motif).toLowerCase().replace(".", "") : "Sans motif") + "</span></span></div>";
+    }).join("");
+  }
+  function peindreMotifs() {
+    document.getElementById("motifs-equipe").innerHTML = motifs(motifEquipe, "equipe");
+    document.getElementById("compte-equipe").textContent = compte(motifEquipe);
+  }
+  document.getElementById("motifs-equipe").addEventListener("click", function (e) {
+    var m = e.target.closest(".motif");
+    if (!m) return;
+    var cle = m.getAttribute("data-motif");
+    motifEquipe = motifEquipe === cle ? null : cle;
+    peindreMotifs();
+  });
+  document.getElementById("noter").addEventListener("click", function () {
+    absences.push({ rang: 2, nom: "Thomas", quand: "du 9 au 13 novembre", motif: motifEquipe });
+    Kit.fermerFeuilles(document.getElementById("ecran-equipe"));
+    peindreListe();
+  });
+  peindreListe(); peindreMotifs();
+});
+</script>
+</body>
+</html>

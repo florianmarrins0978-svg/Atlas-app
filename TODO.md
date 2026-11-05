@@ -1,6 +1,41 @@
 # Prochaines tâches
 
 
+## ⏳ À REGARDER PAR LUI (5 novembre 2026) : les zones de déplacement, et le motif d'une absence
+
+**Ses réponses du 5 novembre au soir** : jours travaillés dans **Pour mon
+comptable**, **avec motif** demandé quand on note l'absence ; et pour les
+zones, *« oui, avec celle pour la MSA et pour le bâtiment, avec possibilité
+de switch entre les deux, ou de pas la mettre si l'utilisateur ne travaille
+pas par zone. Et modifiable. »* Il n'a pas dit de coder : **rien dans `src/`**.
+
+**Planche des zones** : `appli/soignee/zones-deplacement.html`. Un réglage
+dans Réglages, Équipe : Pas de zones, Paysage (MSA, 0 à 5, 5 à 20, 20 à 30,
+30 à 50 km), Bâtiment (1A 0 à 5, 1B 5 à 10, puis 2 à 5 par 10 km jusqu'à 50) ;
+chaque borne se change, une zone s'ajoute ou se retire, Remettre le barème.
+Départ : le siège, à vol d'oiseau. Les jours de chaque salarié comptés par
+zone (le chantier le plus loin de la journée), Zone inconnue en ambre pour un
+chantier non situé, Sans chantier, Hors zone ; tout se corrige zone par zone ;
+le PDF en colonnes. **Les deux modèles sont à vérifier sur les textes** (MSA
+et accord régional) avant de coder : ce poste ne joint pas msa.fr. **À
+trancher par lui** : un jour sur deux chantiers, la zone la plus loin ou celle
+du matin.
+
+**Planche du motif** : `appli/soignee/motif-absence.html`. Six motifs d'un
+appui, au planning sous le salarié qui manque et dans la feuille d'Équipe :
+Congé, Maladie, Sans solde, Déplacement, Formation, Autre. **Trouvé en la
+dessinant** : une absence d'Atlas est née pour un déplacement de cinq jours
+(`absences-equipe.ts`, 14 août) : ces jours sont TRAVAILLÉS. Déplacement et
+Formation comptent donc travaillés, les autres absents. La note libre reste
+privée (« La note n'est là que pour vous ») ; le motif part au comptable.
+Sans motif, l'absence se note quand même, et Jours travaillés dit « pourquoi ? ».
+
+**Vu par le contrôle de dessin, hors de ces planches** : l'or des dates
+(#B98B47 sur crème, 2,8 pour 1) et le texte du bouton plein vert (#faf9f5 sur
+#7d9a6d, 3 pour 1) manquent de contraste pour du texte courant, dans l'appli
+aussi ; en plein soleil, c'est ce qui se lit le moins bien. Non touché : c'est
+sa charte, à lui proposer à part.
+
 ## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : la couleur des jours fériés sur le planning~~ TRANCHÉ LE 5 NOVEMBRE : LE BLEU, PAS CODÉ
 
 **Sa réponse, le 5 novembre au soir** : *« bleue pour les jours fériés »*

@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Zones de déplacement</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  LES ZONES DE DÉPLACEMENT. Rien n'existe dans src/.
+
+  Sa question du 5 novembre 2026 : « des conventions travaillent avec les
+  zones, zone 1, 2, 3, 4 ; est-ce que c'est toutes les mêmes ? », puis sa
+  réponse : « oui, avec celle pour la MSA et pour le bâtiment, avec
+  possibilité de switch entre les deux, ou de pas la mettre si l'utilisateur
+  ne travaille pas par zone. Et modifiable. »
+
+  CE QUE L'APPLI SAIT DÉJÀ : où est chaque chantier (chantiers.latitude,
+  longitude, quand l'adresse a pu être située) et qui y était chaque
+  demi-journée (equipes_du_chantier). Il manque le point de départ situé et
+  la table des zones.
+
+  LES DEUX MODÈLES, À VÉRIFIER AVANT DE CODER (le réseau du poste refuse
+  msa.fr ; lus dans des résultats de recherche, pas dans les textes) :
+    Paysage, barème MSA : 0 à 5, 5 à 20, 20 à 30, 30 à 50 km ; au-delà, le
+      barème de l'Urssaf (70 km en zone peu dense) ;
+    Bâtiment : 1A 0 à 5, 1B 5 à 10, puis 2 à 5 par 10 km jusqu'à 50, à vol
+      d'oiseau, depuis le siège, l'agence ou le dépôt. Les accords régionaux
+      varient.
+  D'où « modifiable » : chaque borne se change, une zone s'ajoute ou part.
+
+  ATLAS COMPTE, IL NE PAIE PAS : les montants changent deux fois par an et
+  selon la région (docs/AGENT.md §3, rien ne s'invente). Un jour compte dans
+  la zone du chantier le plus loin de la journée, même pour une demi-journée.
+  Un chantier sans adresse située se dit « Zone inconnue » ; un jour sans
+  chantier, « Sans chantier ». Tout se corrige à la main.
+
+  RIEN N'EST CODÉ DANS src/. Distances inventées pour la planche, depuis le
+  siège de l'Atelier Démo à Nantes.
+*/
+
+.ecran button.ligne { width: 100%; text-align: left; }
+
+/* ─── Le réglage ─────────────────────────────────────────────────────── */
+.choix-zones { padding: 0 18px; }
+.choix-zones .radio b { font-size: 18px; }
+.zones { padding: 2px 18px; }
+.zone { position: relative; display: flex; align-items: center; gap: 10px; min-height: 60px; }
+.zone + .zone::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
+.zone-nom { width: 74px; flex: none; font: 400 18px/1.2 var(--serif); color: var(--atlas-ink); }
+.zone-de { flex: 1; min-width: 0; font-size: 15px; color: var(--atlas-inkSoft); }
+.zone-km { width: 64px; flex: none; padding: 6px 0; border: 0; border-bottom: 1.5px solid var(--atlas-line); border-radius: 0;
+           background: transparent; outline: none; text-align: center; color: var(--atlas-ink);
+           font: 400 20px/1.1 var(--serif); font-variant-numeric: tabular-nums lining-nums; }
+.zone-km:focus { border-bottom-color: var(--atlas-or); }
+.zone-unite { flex: none; font-size: 15px; color: var(--atlas-inkSoft); }
+.zone-retirer { width: 44px; height: 44px; margin-right: -12px; flex: none; display: grid; place-items: center; color: var(--atlas-inkSoft); }
+/* Caché, il garde sa place : les champs des zones restent alignés. */
+.zone-retirer[hidden] { display: grid; visibility: hidden; }
+.zone.hors .zone-de { color: var(--atlas-ink); }
+.gestes-zones { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0 12px; margin-top: 6px; }
+.gestes-zones .bouton-texte { font-size: 15.5px; font-weight: 600; }
+.depart .reglage-valeur { font-size: 17px; }
+
+/* ─── Les jours, par zone ────────────────────────────────────────────── */
+.mois-choix { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px;
+              border-radius: var(--r-plage); background: var(--atlas-card); }
+.mois-fleche { width: 56px; height: 56px; flex: none; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-or); }
+.mois-fleche .ico { width: 26px; height: 26px; stroke-width: 2; }
+.mois-nom { font: 400 26px/1.1 var(--serif); text-align: center; }
+.mois-resume { margin: 12px 4px 0; text-align: center; font-size: 15px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.gens { margin-top: 18px; padding: 0 18px; }
+.gars { position: relative; display: flex; align-items: flex-start; gap: 14px; width: 100%; min-height: 80px; padding: 16px 0; text-align: left; color: inherit; }
+.gars + .gars::before { content: ""; position: absolute; left: 58px; right: 0; top: 0; height: 1px; background: var(--atlas-line); pointer-events: none; }
+.initiales { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%;
+             font: 400 18px/1 var(--serif); background: var(--atlas-rustTint); color: var(--atlas-rust); }
+.gars-corps { flex: 1; min-width: 0; }
+.gars-nom { display: block; font: 400 19px/1.25 var(--serif); color: var(--atlas-ink); }
+.gars-zones { display: block; margin-top: 4px; font-size: 14.5px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.gars-zones b { font-weight: 600; color: var(--atlas-ink); }
+.gars-zones .inconnue { font-weight: 600; color: var(--atlas-carteAmbreTexte); }
+.gars-compte { flex: none; min-width: 56px; padding-top: 2px; text-align: right; }
+.gars-compte b { display: block; font: 400 30px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; color: var(--atlas-ink); }
+.gars-compte small { display: block; margin-top: 4px; font-size: 13px; color: var(--atlas-inkSoft); }
+.sans-zones { margin: 14px 4px 0; font-size: 15px; color: var(--atlas-inkSoft); text-align: center; }
+
+/* ─── La feuille : un compteur par zone ──────────────────────────────── */
+.feuille-sous { margin: -10px 0 18px; font-size: 15px; color: var(--atlas-inkSoft); }
+.parzone { padding: 0 16px; }
+.pz { position: relative; display: flex; align-items: center; gap: 12px; min-height: 64px; }
+.pz + .pz::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
+.pz-corps { flex: 1; min-width: 0; }
+.pz-nom { display: block; font: 400 18px/1.2 var(--serif); color: var(--atlas-ink); }
+.pz-sous { display: block; margin-top: 2px; font-size: 13.5px; color: var(--atlas-inkSoft); }
+.pz.inconnue .pz-nom, .pz.inconnue .pz-sous { color: var(--atlas-carteAmbreTexte); }
+.pas { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-ink);
+       box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
+.pas[disabled] { color: var(--atlas-chevron); cursor: default; }
+.pas .ico { width: 20px; height: 20px; stroke-width: 2; }
+.pz-n { width: 34px; flex: none; text-align: center; font: 400 24px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; color: var(--atlas-ink); }
+.pz-n.corrige { color: var(--atlas-orTexte); }
+.compte-zones { margin-top: 14px; }
+.remettre { width: 100%; justify-content: center; margin-top: 4px; color: var(--atlas-orTexte); font-weight: 700; }
+.fermer { width: 100%; justify-content: center; margin-top: 4px; color: var(--atlas-inkSoft); }
+
+/* ─── Le PDF : du papier, pas une charte (PRODUCT.md) ────────────────── */
+.pdf-cadre { width: 390px; max-width: 100%; }
+.papier { aspect-ratio: 210 / 297; display: flex; flex-direction: column; padding: 34px 22px 18px;
+          background: #ffffff; color: #1c1c1a; font: 400 11px/1.45 Helvetica, Arial, sans-serif;
+          box-shadow: 0 1px 3px rgba(28,28,26,0.10), 0 10px 28px rgba(28,28,26,0.10); }
+.pdf-titre { margin: 0; font: 400 30px/1.1 Georgia, "Times New Roman", serif; }
+.pdf-sous { margin: 6px 0 0; font: 400 15px/1.3 Georgia, "Times New Roman", serif; color: #4a4a44; }
+.pdf-filet { height: 1px; margin: 16px 0 16px; border: 0; background: #B98B47; }
+.pdf-lib { display: block; margin-bottom: 4px; font-size: 7.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #8a8578; }
+.pdf-deux { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.pdf-deux p { margin: 0; }
+.pdf-table { width: 100%; margin-top: 20px; border-collapse: collapse; font-variant-numeric: tabular-nums lining-nums; }
+.pdf-table th { padding: 0 2px 6px; font-size: 7px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #8a8578;
+                border-bottom: 1px solid #d9d5cc; text-align: center; }
+.pdf-table th:first-child, .pdf-table td:first-child { text-align: left; padding-left: 0; }
+.pdf-table td { padding: 8px 2px; text-align: center; border-bottom: 1px solid #ebe8e1; }
+.pdf-table td.jours { font: 400 14px/1.1 Georgia, serif; }
+.pdf-table td.vide { color: #c9c4b8; }
+.pdf-table td.manque { color: #9c3b2e; font-weight: 700; }
+.pdf-boite { margin-top: auto; padding: 11px 13px; background: #f3f1ec; border: 1px solid #e3dfd6; }
+.pdf-boite span { display: block; margin-top: 4px; color: #8a8578; font-size: 9.5px; }
+.pdf-pied { display: flex; justify-content: space-between; margin-top: 14px; font-size: 8px; color: #8a8578; }
+</style>
+</head>
+<body class="pl pl-pilules">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">Zones de déplacement</h1>
+  <p class="pl-verdict"><b>Le réglage</b> : Pas de zones, Paysage ou Bâtiment, et chaque borne se change. <b>Les jours</b> suivent tout de suite : touchez un salarié pour corriger une zone. <b>Le PDF</b> est ce que reçoit le comptable.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <div data-vue-panneau="Le réglage">
+      <p class="pl-legende">Réglages, Équipe, Zones de déplacement</p>
+      <div class="cadre"><div class="ecran avec-barre" id="ecran-reglage">
+        <div class="defile" id="reglage"></div>
+        <nav class="barre" aria-label="Navigation principale"><div class="barre-onglets">
+          <a class="barre-onglet" href="accueil.html">Chantiers</a>
+          <a class="barre-onglet" href="planning.html">Planning</a>
+          <a class="barre-onglet" href="termines.html">Terminés</a>
+          <a class="barre-onglet" href="paysage.html">Paysage</a>
+          <a class="barre-onglet" href="reglages.html" aria-current="page">Réglages</a>
+          <span class="barre-trait" aria-hidden="true"><span></span></span>
+        </div></nav>
+      </div></div>
+    </div>
+
+    <div data-vue-panneau="Les jours">
+      <p class="pl-legende">Pour mon comptable, Jours travaillés</p>
+      <div class="cadre"><div class="ecran avec-barre" id="ecran-jours">
+        <div class="defile" id="jours"></div>
+        <nav class="barre" aria-label="Navigation principale"><div class="barre-onglets">
+          <a class="barre-onglet" href="accueil.html">Chantiers</a>
+          <a class="barre-onglet" href="planning.html">Planning</a>
+          <a class="barre-onglet" href="termines.html" aria-current="page">Terminés</a>
+          <a class="barre-onglet" href="paysage.html">Paysage</a>
+          <a class="barre-onglet" href="reglages.html">Réglages</a>
+          <span class="barre-trait" aria-hidden="true"><span></span></span>
+        </div></nav>
+        <section class="feuille" id="feuille-zones" aria-hidden="true" aria-label="Les zones d’un salarié">
+          <div class="feuille-poignee"></div><div class="feuille-dedans"></div>
+        </section>
+      </div></div>
+    </div>
+
+    <div data-vue-panneau="Le PDF">
+      <p class="pl-legende">Ce que reçoit le comptable</p>
+      <div class="pdf-cadre"><div class="papier" id="papier"></div></div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce que je propose</h2>
+    <ul>
+      <li>Un réglage, dans Réglages, Équipe : Pas de zones, Paysage (barème MSA) ou Bâtiment. Sans zones, rien ne se compte et rien ne s’affiche.</li>
+      <li>Chaque borne se change, une zone s’ajoute ou se retire, et Remettre le barème rend le modèle. Les zones partent du siège ou du dépôt, à vol d’oiseau.</li>
+      <li>Atlas compte les jours de chaque salarié par zone, avec le planning : qui était sur quel chantier, et où il est. Il ne calcule aucun montant : ils changent selon la région et deux fois par an, votre comptable les connaît.</li>
+      <li>Un jour sur deux chantiers compte la zone la plus loin, même pour une demi-journée. Un chantier sans adresse précise se dit Zone inconnue, en ambre, à corriger d’un appui.</li>
+      <li>Tout se corrige à la main, zone par zone, comme les jours travaillés. Le chiffre changé passe en or, et Remettre le calcul le rend.</li>
+    </ul>
+    <h2>À vérifier avant de coder</h2>
+    <ul class="a-trancher">
+      <li>Les deux modèles viennent de résultats de recherche : ce poste ne peut pas ouvrir le site de la MSA. Ils seront vérifiés sur les textes de l’année, et ils restent modifiables.</li>
+      <li>Au-delà de 50 km (70 km en zone peu dense pour le paysage), c’est un autre barème : la planche l’écrit Hors zone.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>Un jour sur deux chantiers : la zone la plus loin, ou celle du matin ?</li>
+    </ul>
+  </section>
+</main>
+
+<script src="kit.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  "use strict";
+
+  /* Les deux modèles : la borne HAUTE de chaque zone, en km. */
+  var MODELES = {
+    paysage: { nom: "Paysage", sous: "Barème MSA des entreprises du paysage", zones: [["Zone 1", 5], ["Zone 2", 20], ["Zone 3", 30], ["Zone 4", 50]] },
+    batiment: { nom: "Bâtiment", sous: "Zones de 10 km, accord de votre région", zones: [["Zone 1A", 5], ["Zone 1B", 10], ["Zone 2", 20], ["Zone 3", 30], ["Zone 4", 40], ["Zone 5", 50]] }
+  };
+
+  /* Les lieux de la planche, à vol d'oiseau depuis le siège de Nantes.
+     km null : l'adresse n'a pas pu être située (un lieu-dit). */
+  var LIEUX = {
+    R: { nom: "Rezé", km: 4 }, N: { nom: "Nantes", km: 3 }, V: { nom: "Vertou", km: 9 },
+    S: { nom: "Saint-Herblain", km: 7 }, B: { nom: "Basse-Goulaine", km: 8 }, C: { nom: "Clisson", km: 27 },
+    A: { nom: "Ancenis", km: 37 }, P: { nom: "Pornic", km: 46 }, Z: { nom: "Saint-Nazaire", km: 53 },
+    X: { nom: "Les Landes, lieu-dit", km: null }, D: { nom: "Au dépôt", depot: true }
+  };
+  /* Un caractère par jour travaillé de novembre (le 11 est férié). */
+  var GENS = [
+    { nom: "Julien", jours: 20, suite: "NRVDSBNNCCVVSANRRDNN" },
+    { nom: "Antoine", jours: 18, suite: "NRVDSBNNCCVVSZRDNP" },
+    { nom: "Paul", jours: 19.5, suite: "RRNVDBXNNVCCSSNRDNAR" }
+  ];
+
+  var etat = { choix: "paysage", zones: copie(MODELES.paysage.zones), corrections: {}, ouvert: null };
+
+  function copie(z) { return z.map(function (x) { return [x[0], x[1]]; }); }
+  function ico(nom) { return '<svg class="ico ico-p" aria-hidden="true"><use href="#i-' + nom + '"/></svg>'; }
+  function nb(n) { return String(n).replace(".", ","); }
+  function jours(n) { return nb(n) + (n < 2 ? " jour" : " jours"); }
+
+  /* ─── Les cases d'un mois : les zones, puis ce qui n'en a pas ─────────── */
+  function cases() {
+    var c = etat.zones.map(function (z, i) {
+      var de = i === 0 ? 0 : etat.zones[i - 1][1];
+      return { cle: z[0], nom: z[0], sous: "de " + nb(de) + " à " + nb(z[1]) + " km" };
+    });
+    var fin = etat.zones.length ? etat.zones[etat.zones.length - 1][1] : 0;
+    c.push({ cle: "hors", nom: "Hors zone", sous: "plus de " + nb(fin) + " km" });
+    c.push({ cle: "inconnue", nom: "Zone inconnue", sous: "l’adresse n’a pas pu être située", inconnue: true });
+    c.push({ cle: "sans", nom: "Sans chantier", sous: "au dépôt ce jour-là" });
+    return c;
+  }
+  function zoneDe(lieu) {
+    if (lieu.depot) return "sans";
+    if (lieu.km === null) return "inconnue";
+    for (var i = 0; i < etat.zones.length; i++) if (lieu.km <= etat.zones[i][1]) return etat.zones[i][0];
+    return "hors";
+  }
+  function calcul(g) {
+    var n = {};
+    g.suite.split("").forEach(function (l) { var z = zoneDe(LIEUX[l]); n[z] = (n[z] || 0) + 1; });
+    return n;
+  }
+  function compte(g, cle) {
+    var k = g.nom + ":" + cle;
+    return k in etat.corrections ? etat.corrections[k] : (calcul(g)[cle] || 0);
+  }
+  function corrige(g, cle) { return (g.nom + ":" + cle) in etat.corrections; }
+
+  /* ─── Le réglage ──────────────────────────────────────────────────── */
+  var reglage = document.getElementById("reglage");
+  function rendreReglage() {
+    var h = '<div class="tete-ronds"><button class="rond-creux" type="button" data-geste="note" aria-label="Retour à l’équipe">' +
+      '<svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button></div>' +
+      '<h1 class="tete-titre">Zones de déplacement</h1>' +
+      '<div class="plage choix-zones mt-16" role="radiogroup" aria-label="Vos zones">' +
+      [["aucune", "Pas de zones", "Vos salariés n’ont pas d’indemnité par zone"],
+       ["paysage", MODELES.paysage.nom, MODELES.paysage.sous],
+       ["batiment", MODELES.batiment.nom, MODELES.batiment.sous]].map(function (x) {
+        return '<button type="button" class="radio" role="radio" data-geste="choix" data-choix="' + x[0] + '" aria-checked="' + (etat.choix === x[0]) + '">' +
+          '<span class="coche-ronde"></span><span><b>' + x[1] + '</b><small>' + x[2] + '</small></span></button>';
+      }).join("") + "</div>";
+    if (etat.choix !== "aucune") {
+      h += '<h2 class="rubrique">Départ</h2>' +
+        '<div class="plage reglages depart"><button type="button" class="reglage" style="width:100%;text-align:left" data-geste="note">' +
+        '<span class="reglage-libelle">Les zones partent de</span><span class="reglage-valeur">Le siège, 10 rue des Artisans, Nantes</span>' +
+        '<span class="reglage-sous">À vol d’oiseau</span></button></div>' +
+        '<h2 class="rubrique">Les zones</h2><div class="plage zones">' +
+        etat.zones.map(function (z, i) {
+          var de = i === 0 ? 0 : etat.zones[i - 1][1];
+          return '<div class="zone"><span class="zone-nom">' + z[0] + '</span><span class="zone-de">de ' + nb(de) + ' à</span>' +
+            '<input class="zone-km" type="text" inputmode="decimal" autocomplete="off" data-i="' + i + '" value="' + nb(z[1]) + '" aria-label="' + z[0] + ', jusqu’à combien de km">' +
+            '<span class="zone-unite">km</span>' +
+            '<button type="button" class="zone-retirer" data-geste="retirer" aria-label="Retirer ' + z[0] + '"' + (i === etat.zones.length - 1 && etat.zones.length > 1 ? "" : " hidden") + '>' + ico("croix") + '</button></div>';
+        }).join("") +
+        '<div class="zone hors"><span class="zone-nom">Au-delà</span><span class="zone-de">Hors zone</span></div></div>' +
+        '<div class="gestes-zones"><button type="button" class="bouton-texte or" data-geste="ajouter">' + ico("plus") + 'Ajouter une zone</button>' +
+        '<button type="button" class="bouton-texte" data-geste="remettre-bareme">Remettre le barème</button></div>' +
+        '<p class="second mt-8">Modèle à vérifier avec votre comptable.</p>';
+    }
+    reglage.innerHTML = h;
+  }
+
+  reglage.addEventListener("click", function (e) {
+    var g = e.target.closest("[data-geste]");
+    if (!g) return;
+    var geste = g.getAttribute("data-geste");
+    if (geste === "note") { Kit.note(g, "Comme aujourd’hui dans l’appli."); return; }
+    if (geste === "choix") {
+      etat.choix = g.getAttribute("data-choix");
+      if (etat.choix !== "aucune") etat.zones = copie(MODELES[etat.choix].zones);
+      etat.corrections = {};
+    }
+    if (geste === "remettre-bareme") { etat.zones = copie(MODELES[etat.choix].zones); etat.corrections = {}; }
+    if (geste === "retirer") { etat.zones.pop(); etat.corrections = {}; }
+    if (geste === "ajouter") {
+      var der = etat.zones[etat.zones.length - 1], n = etat.zones.length + 1;
+      etat.zones.push(["Zone " + (etat.choix === "batiment" ? n - 1 : n), (der ? der[1] : 0) + 10]);
+      etat.corrections = {};
+    }
+    tout();
+  });
+  /* Une borne tapée : les jours suivent tout de suite, le champ garde son curseur. */
+  reglage.addEventListener("input", function (e) {
+    if (!e.target.matches(".zone-km")) return;
+    var i = Number(e.target.getAttribute("data-i")), v = Number(e.target.value.replace(",", "."));
+    var bas = i === 0 ? 0 : etat.zones[i - 1][1], haut = i < etat.zones.length - 1 ? etat.zones[i + 1][1] : 999;
+    if (isNaN(v) || v <= bas || v >= haut) return;
+    etat.zones[i][1] = v;
+    etat.corrections = {};
+    var suivant = reglage.querySelectorAll(".zone-de")[i + 1];
+    if (suivant) suivant.textContent = "de " + nb(v) + " à";
+    reglage.querySelector(".zone.hors .zone-de").textContent = "Hors zone";
+    rendreJours(); rendrePdf();
+  });
+  reglage.addEventListener("focusout", function (e) {
+    if (e.target.matches(".zone-km")) e.target.value = nb(etat.zones[Number(e.target.getAttribute("data-i"))][1]);
+  });
+
+  /* ─── Les jours ───────────────────────────────────────────────────── */
+  var ecranJours = document.getElementById("ecran-jours");
+  var joursZone = document.getElementById("jours");
+  var dedans = document.querySelector("#feuille-zones .feuille-dedans");
+
+  function phrase(g) {
+    return cases().map(function (c) {
+      var n = compte(g, c.cle);
+      if (!n) return null;
+      // Espaces insécables : « zone 1B » ne se coupe pas en fin de ligne.
+      var mot = c.cle === "sans" ? "sans\u00a0chantier" : c.cle === "hors" ? "hors\u00a0zone" : c.cle === "inconnue" ? "en\u00a0zone\u00a0inconnue" : "en\u00a0" + c.nom.replace("Zone ", "zone\u00a0");
+      return c.inconnue ? '<span class="inconnue">' + n + "\u00a0" + mot + "</span>" : "<b>" + n + "</b>\u00a0" + mot;
+    }).filter(Boolean).join(", ");
+  }
+
+  function rendreJours() {
+    var h = '<header class="tete"><button class="tete-retour" type="button" data-geste="note" aria-label="Pour mon comptable">' +
+      '<svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button><h1 class="tete-titre moyen">Jours travaillés</h1></header>' +
+      '<div class="mois-choix"><button class="mois-fleche" type="button" data-geste="note" aria-label="Le mois d’avant">' + ico("retour") + '</button>' +
+      '<span class="mois-nom">Novembre 2026</span><button class="mois-fleche" type="button" disabled aria-label="Le mois d’après">' + ico("suivant") + '</button></div>' +
+      '<p class="mois-resume">Mois en cours, 20 jours ouvrés, le 11 est férié.</p>' +
+      '<div class="plage gens">' + GENS.map(function (g, k) {
+        var corps = etat.choix === "aucune" ? "" : '<span class="gars-zones">' + phrase(g) + "</span>";
+        return '<button class="gars touche" type="button" data-geste="salarie" data-k="' + k + '"' + (etat.choix === "aucune" ? " disabled" : "") + '>' +
+          '<span class="initiales" aria-hidden="true">' + g.nom.charAt(0) + '</span>' +
+          '<span class="gars-corps"><span class="gars-nom">' + g.nom + "</span>" + corps + "</span>" +
+          '<span class="gars-compte"><b>' + nb(g.jours) + "</b><small>" + (g.jours < 2 ? "jour" : "jours") + "</small></span></button>";
+      }).join("") + "</div>" +
+      (etat.choix === "aucune" ? '<p class="sans-zones">Pas de zones : rien ne se compte.</p>' : "");
+    joursZone.innerHTML = h;
+  }
+
+  function peindreFeuille() {
+    var g = GENS[etat.ouvert], somme = 0;
+    var lignes = cases().filter(function (c) {
+      // Une case vide de « hors zone » ou « inconnue » ne se montre pas : elle ne
+      // dit rien ; les vraies zones restent toutes, pour pouvoir y ajouter un jour.
+      return !(c.cle === "hors" || c.cle === "inconnue") || compte(g, c.cle) > 0 || corrige(g, c.cle);
+    }).map(function (c) {
+      var n = compte(g, c.cle); somme += n;
+      return '<div class="pz' + (c.inconnue ? " inconnue" : "") + '"><span class="pz-corps"><span class="pz-nom">' + c.nom + '</span><span class="pz-sous">' + c.sous + "</span></span>" +
+        '<button type="button" class="pas" data-geste="pas" data-cle="' + c.cle + '" data-delta="-1" aria-label="Un jour de moins en ' + c.nom + '"' + (n === 0 ? " disabled" : "") + ">" + ico("moins") + "</button>" +
+        '<span class="pz-n' + (corrige(g, c.cle) ? " corrige" : "") + '">' + n + "</span>" +
+        '<button type="button" class="pas" data-geste="pas" data-cle="' + c.cle + '" data-delta="1" aria-label="Un jour de plus en ' + c.nom + '">' + ico("plus") + "</button></div>";
+    }).join("");
+    var entier = Math.ceil(g.jours);
+    var ecart = somme === entier ? "" :
+      '<p class="plage-ton compte-zones" data-ton="ambre">Les zones comptent ' + jours(somme) + ", " + g.nom + " en a travaillé " + jours(g.jours) + ".</p>";
+    var corr = Object.keys(etat.corrections).some(function (k) { return k.indexOf(g.nom + ":") === 0; });
+    dedans.innerHTML = '<h2 class="feuille-titre">' + g.nom + " en novembre</h2>" +
+      '<p class="feuille-sous">' + jours(g.jours) + " travaillés, par zone</p>" +
+      '<div class="plage parzone">' + lignes + "</div>" + ecart +
+      (corr ? '<button type="button" class="bouton bouton-texte remettre" data-geste="remettre-calcul">Remettre le calcul</button>' : "") +
+      '<button type="button" class="bouton bouton-texte fermer" data-ferme>Fermer</button>';
+  }
+
+  ecranJours.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-geste]");
+    if (!b) return;
+    var geste = b.getAttribute("data-geste");
+    if (geste === "note") { Kit.note(ecranJours, "Comme sur la planche des jours travaillés."); return; }
+    if (geste === "salarie") { etat.ouvert = Number(b.getAttribute("data-k")); peindreFeuille(); Kit.ouvrirFeuille("feuille-zones", b); return; }
+    var g = GENS[etat.ouvert];
+    if (geste === "pas") {
+      var cle = b.getAttribute("data-cle"), v = Math.max(0, compte(g, cle) + Number(b.getAttribute("data-delta")));
+      if (v === (calcul(g)[cle] || 0)) delete etat.corrections[g.nom + ":" + cle];
+      else etat.corrections[g.nom + ":" + cle] = v;
+    }
+    if (geste === "remettre-calcul") Object.keys(etat.corrections).forEach(function (k) { if (k.indexOf(g.nom + ":") === 0) delete etat.corrections[k]; });
+    peindreFeuille(); rendreJours(); rendrePdf();
+  });
+
+  /* ─── Le PDF ──────────────────────────────────────────────────────── */
+  function rendrePdf() {
+    var papier = document.getElementById("papier");
+    var avec = etat.choix !== "aucune";
+    var cols = avec ? cases().filter(function (c) {
+      return !(c.cle === "hors" || c.cle === "inconnue") || GENS.some(function (g) { return compte(g, c.cle) > 0; });
+    }) : [];
+    var tete = "<th>Salarié</th><th>Jours</th>" + cols.map(function (c) {
+      return "<th>" + (c.cle === "sans" ? "Sans chantier" : c.cle === "hors" ? "Hors zone" : c.cle === "inconnue" ? "Inconnue" : c.nom.replace("Zone ", "Zone<br>")) + "</th>";
+    }).join("");
+    var corps = GENS.map(function (g) {
+      return "<tr><td>" + g.nom + '</td><td class="jours">' + nb(g.jours) + "</td>" + cols.map(function (c) {
+        var n = compte(g, c.cle);
+        return '<td class="' + (n === 0 ? "vide" : c.inconnue ? "manque" : "") + '">' + n + "</td>";
+      }).join("") + "</tr>";
+    }).join("");
+    papier.innerHTML = '<h3 class="pdf-titre">Jours travaillés</h3><p class="pdf-sous">Novembre 2026</p><hr class="pdf-filet">' +
+      '<div class="pdf-deux"><div><span class="pdf-lib">Entreprise</span><p>Atelier Démo<br>10 rue des Artisans, Nantes<br>SIRET 123 456 789 00012</p></div>' +
+      '<div><span class="pdf-lib">Zones</span><p>' + (avec ? MODELES[etat.choix].nom + ", depuis le siège<br>à vol d’oiseau" : "Pas de zones") + "</p></div></div>" +
+      '<table class="pdf-table"><thead><tr>' + tete + "</tr></thead><tbody>" + corps + "</tbody></table>" +
+      '<div class="pdf-boite">' + (avec ? "Un jour compte dans la zone du chantier le plus loin de la journée." : "Une demi-journée d’absence compte pour une demie.") +
+      "<span>Atlas compte les jours ; les montants restent ceux de votre barème.</span></div>" +
+      '<div class="pdf-pied"><span>Jours travaillés, Atelier Démo</span><span>Page 1 sur 1</span></div>';
+  }
+
+  function tout() { rendreReglage(); rendreJours(); rendrePdf(); }
+  tout();
+});
+</script>
+</body>
+</html>
