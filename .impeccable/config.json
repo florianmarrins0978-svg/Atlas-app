@@ -593,6 +593,15 @@
         ],
         "createdAt": "2026-11-05T08:21:03.753Z",
         "reason": "Claude: the only line-height under 1.3 in this file is .identite-sceau (22px/1), a single-letter monogram centred in a 52px circle, copied from reglages-banque.html; not multi-line text"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/fermer-mon-compte.html"
+        ],
+        "createdAt": "2026-11-05T19:26:48.050Z",
+        "reason": "PRODUCT.md, Brand Commitments: fond crème de la charte Arborea, identité existante du kit appli/soignee"
       }
     ]
   }
