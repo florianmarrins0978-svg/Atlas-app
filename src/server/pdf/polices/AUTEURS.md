@@ -13,6 +13,7 @@ nommer :
 - **librebaskerville** — Copyright 2012 The Libre Baskerville Project Authors (https://github.com/impallari/Libre-Baskerville) with Reserved Font Name Libre Baskerville.
 - **merriweather** — Copyright 2020 The Merriweather Project Authors (https://github.com/EbenSorkin/Merriweather4) with Reserved Font Name "Merriweather".
 - **playfairdisplay** — Copyright 2017 The Playfair Display Project Authors (https://github.com/clauseggers/Playfair-Display), with Reserved Font Name "Playfair Display"
+- **atlas-archive-sans**, **atlas-archive-serif** (5 novembre 2026) : versions réduites de **Liberation Sans** et **Liberation Serif** 2.1. Digitized data copyright (c) 2010 Google Corporation with Reserved Font Arimo, Tinos and Cousine. Copyright (c) 2012 Red Hat, Inc. with Reserved Font Name Liberation. **Renommées** parce que la réduction au latin les modifie, et que la licence interdit de garder un nom réservé sur une version modifiée. Elles servent à une facture Factur-X dont la typographie est celle d'origine : mêmes chasses que Helvetica et Times (`polices-embarquees.ts`, `POLICES_ARCHIVABLES`).
 
 **Les noms réservés se respectent** : la licence interdit de redistribuer une
 version modifiée sous le même nom. Ces fichiers sont tels que Google Fonts les

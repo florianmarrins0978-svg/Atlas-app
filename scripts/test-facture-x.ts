@@ -35,12 +35,16 @@ import {
   type FacturePourFactureX,
 } from "../src/lib/facture-x";
 import { totauxAvecReduction } from "../src/lib/reduction-devis";
+import { inflateSync } from "node:zlib";
+import { PDFArray, PDFDict, PDFDocument, PDFName, PDFRawStream, StandardFonts } from "pdf-lib";
+import { fabriquerFactureX } from "../src/server/pdf/facture-x-pdf";
+import { genererPdfFacture, type FacturePdfData } from "../src/server/pdf/facture-pdf";
 
 exigerLesOutils("java", "mvn", "git");
 
 let reussis = 0;
-function ok(nom: string, fn: () => void) {
-  fn();
+async function ok(nom: string, fn: () => void | Promise<void>) {
+  await fn();
   reussis++;
   console.log(`  ✓ ${nom}`);
 }
@@ -121,16 +125,17 @@ const CAS: Record<string, FacturePourFactureX> = {
   }),
 };
 
+async function principal(): Promise<void> {
 console.log("Les règles pures");
 
-ok("une adresse se coupe au code postal, avec ou sans virgule", () => {
+await ok("une adresse se coupe au code postal, avec ou sans virgule", () => {
   assert.deepEqual(adresseEnParties("18 avenue de la Gare, 33000 Bordeaux"), { ligne: "18 avenue de la Gare", codePostal: "33000", ville: "Bordeaux" });
   assert.deepEqual(adresseEnParties("4 chemin des Vignes\n33500 Libourne, France"), { ligne: "4 chemin des Vignes", codePostal: "33500", ville: "Libourne" });
   assert.equal(adresseEnParties("Lieu-dit Le Bourg"), null);
   assert.equal(adresseEnParties(null), null);
 });
 
-ok("les unités d'une ligne ont toutes un code, et l'inconnue part « une unité »", () => {
+await ok("les unités d'une ligne ont toutes un code, et l'inconnue part « une unité »", () => {
   assert.equal(codeUnite("m²"), "MTK");
   assert.equal(codeUnite("ml"), "MTR");
   assert.equal(codeUnite("forfait"), "LS");
@@ -139,12 +144,12 @@ ok("les unités d'une ligne ont toutes un code, et l'inconnue part « une unité
   assert.equal(codeUnite(null), "C62");
 });
 
-ok("le SIREN est le début du SIRET", () => {
+await ok("le SIREN est le début du SIRET", () => {
   assert.equal(sirenDe("123 456 789 00021"), "123456789");
   assert.equal(sirenDe("1234"), null);
 });
 
-ok("chaque donnée qui manque donne sa phrase, et aucun XML", () => {
+await ok("chaque donnée qui manque donne sa phrase, et aucun XML", () => {
   const refus = (f: FacturePourFactureX) => {
     const r = xmlFactureX(f, MENTION);
     assert.equal(r.ok, false);
@@ -203,14 +208,118 @@ fichiers["temoin-faux.xml"] = fichiers["un-taux.xml"].replace(
 const fautes = controler(fichiers);
 
 for (const nom of Object.keys(CAS)) {
-  ok(`${nom} : conforme au schéma et aux règles EN 16931`, () => {
+  await ok(`${nom} : conforme au schéma et aux règles EN 16931`, () => {
     assert.deepEqual(fautes.get(`${nom}.xml`) ?? [], []);
   });
 }
-ok("le témoin aux totaux faussés est refusé par les règles officielles", () => {
+await ok("le témoin aux totaux faussés est refusé par les règles officielles", () => {
   const siennes = fautes.get("temoin-faux.xml") ?? [];
   assert.ok(siennes.some((f) => f.startsWith("BR-CO-15")), `attendu BR-CO-15, reçu : ${siennes.join(" | ") || "rien"}`);
 });
 
+console.log("\nLe PDF/A-3");
+
+/** Les fichiers joints d'un PDF, décompressés, par leur nom. */
+async function joints(octets: Uint8Array): Promise<Map<string, { texte: string; relation: string }>> {
+  const doc = await PDFDocument.load(octets, { updateMetadata: false });
+  assert.equal(doc.context.trailerInfo.Encrypt, undefined, "le PDF est chiffré : ce n'est plus un PDF/A");
+  const noms = doc.catalog.lookup(PDFName.of("Names"), PDFDict).lookup(PDFName.of("EmbeddedFiles"), PDFDict).lookup(PDFName.of("Names"), PDFArray);
+  const af = doc.catalog.lookup(PDFName.of("AF"), PDFArray);
+  const rendu = new Map<string, { texte: string; relation: string }>();
+  for (let i = 0; i < noms.size(); i += 2) {
+    const fiche = noms.lookup(i + 1, PDFDict);
+    const flux = fiche.lookup(PDFName.of("EF"), PDFDict).lookup(PDFName.of("F"), PDFRawStream);
+    const nom = noms.lookup(i).toString().replace(/^\(|\)$/g, "");
+    rendu.set(nom, {
+      texte: inflateSync(flux.getContents()).toString("utf8"),
+      relation: String(fiche.lookup(PDFName.of("AFRelationship"))),
+    });
+  }
+  assert.equal(af.size(), rendu.size, "chaque fichier joint doit être relié au catalogue (/AF)");
+  return rendu;
+}
+
+const MOMENT = new Date("2026-11-05T10:00:00Z");
+// Le papier veut chaque règlement entier (sa date, son moyen) ; le XML n'en lit que le montant.
+const entreprise = {
+  ...CAS["deux-taux-remise-acompte"],
+  statut: "emise",
+  clientCivilite: "entreprise",
+  reglements: [{ date: "2026-10-20", montant: "600.00", moyen: "virement", numero: null, solde: false }],
+} as unknown as FacturePdfData;
+
+// Une attestation d'assureur comme il en arrive : un PDF aux polices non
+// embarquées. Recopiée en pages, elle ferait échouer la pièce entière.
+const attestation = await (async () => {
+  const doc = await PDFDocument.create();
+  const page = doc.addPage([595, 842]);
+  page.drawText("Attestation d'assurance décennale", { x: 60, y: 760, size: 14, font: await doc.embedFont(StandardFonts.Helvetica) });
+  return { octets: await doc.save(), mime: "application/pdf" };
+})();
+
+const pieces: Record<string, Uint8Array> = {};
+const xmlJoint: Record<string, string> = {};
+for (const [nom, options] of Object.entries({
+  "typographie-d-origine": {},
+  "typographie-choisie": { allure: { typographie: "lato", fond: "#ffffff", accent: "#2f3b2f" } },
+  "avec-attestation": { attestation },
+})) {
+  const r = await fabriquerFactureX(entreprise, options, MOMENT);
+  assert.ok(r.ok, `${nom} : ${(r as { raison?: string }).raison}`);
+  pieces[`${nom}.pdf`] = (r as { pdf: Uint8Array }).pdf;
+  xmlJoint[`${nom}.pdf`] = (r as { xml: string }).xml;
+}
+pieces["temoin-ordinaire.pdf"] = await genererPdfFacture(entreprise);
+for (const [nom, octets] of Object.entries(pieces)) writeFileSync(path.join(dossier, nom), octets);
+
+const vera = spawnSync(
+  "java",
+  ["-cp", outils.classpath, "org.verapdf.apps.GreenfieldCliWrapper", "--flavour", "3b", "--format", "text", ...Object.keys(pieces).map((n) => path.join(dossier, n))],
+  { encoding: "utf8", timeout: 5 * 60 * 1000 }
+);
+const verdicts = new Map<string, string>();
+for (const ligne of vera.stdout.split("\n")) {
+  const m = ligne.match(/^(PASS|FAIL) (.+) 3b$/);
+  if (m) verdicts.set(path.basename(m[2]), m[1]);
+}
+
+for (const nom of ["typographie-d-origine", "typographie-choisie", "avec-attestation"]) {
+  await ok(`${nom} : PDF/A-3b selon veraPDF`, () => {
+    assert.equal(verdicts.get(`${nom}.pdf`), "PASS", `veraPDF : ${verdicts.get(`${nom}.pdf`) ?? "pas de verdict"}\n${vera.stderr.slice(-800)}`);
+  });
+}
+await ok("le témoin, la facture verrouillée d'aujourd'hui, est refusé par veraPDF", () => {
+  assert.equal(verdicts.get("temoin-ordinaire.pdf"), "FAIL");
+});
+
+await ok("le XML relu dans le PDF est celui que la règle a écrit, et il passe les règles officielles", async () => {
+  const lus = await joints(pieces["typographie-d-origine.pdf"]);
+  assert.deepEqual([...lus.keys()], ["factur-x.xml"]);
+  assert.equal(lus.get("factur-x.xml")!.texte, xmlJoint["typographie-d-origine.pdf"]);
+  assert.equal(lus.get("factur-x.xml")!.relation, "/Alternative");
+  const fautesDuJoint = controler({ "joint.xml": lus.get("factur-x.xml")!.texte });
+  assert.deepEqual(fautesDuJoint.get("joint.xml") ?? [], []);
+});
+
+await ok("l'attestation part en fichier joint, pas en pages", async () => {
+  const lus = await joints(pieces["avec-attestation.pdf"]);
+  assert.deepEqual([...lus.keys()].sort(), ["attestation-decennale.pdf", "factur-x.xml"]);
+  assert.equal(lus.get("attestation-decennale.pdf")!.relation, "/Supplement");
+  const avec = await PDFDocument.load(pieces["avec-attestation.pdf"]);
+  const sans = await PDFDocument.load(pieces["typographie-d-origine.pdf"]);
+  assert.equal(avec.getPageCount(), sans.getPageCount());
+});
+
+await ok("une facture que la règle refuse ne donne aucun PDF", async () => {
+  const r = await fabriquerFactureX({ ...entreprise, entrepriseNumeroTva: null }, {}, MOMENT);
+  assert.equal(r.ok, false);
+});
+
 rmSync(dossier, { recursive: true, force: true });
 console.log(`\n${reussis} test(s) réussi(s).`);
+}
+
+principal().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

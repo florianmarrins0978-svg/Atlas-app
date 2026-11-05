@@ -88,3 +88,24 @@ export function annoncerLaLongueurDesPolices(contexte: PDFContext): number {
   }
   return completes;
 }
+
+/**
+ * LES JUMELLES EMBARQUÉES DES POLICES DU FORMAT, pour une pièce archivable.
+ *
+ * Sa typographie par défaut est Times et Helvetica, servies par le lecteur
+ * sans être dans le fichier. Une Factur-X est un PDF/A, qui exige que chaque
+ * police soit embarquée (`ARCHITECTURE.md` §555). Liberation Sans et Serif ont
+ * été dessinées pour avoir les mêmes chasses qu'Helvetica et Times : la page
+ * se compose au même point, et la facture d'une entreprise garde sa mise en
+ * page. Réduites au latin comme les autres (`polices/LISEZ-MOI.md`), sous SIL
+ * Open Font License 1.1 (`polices/AUTEURS.md`). **Renommées « Atlas Archive »**
+ * : « Liberation » est un nom réservé, et la licence interdit de le garder sur
+ * une version modifiée. Une police réduite en est une.
+ */
+export const POLICES_ARCHIVABLES = {
+  sans: "atlas-archive-sans-400.ttf",
+  sansGras: "atlas-archive-sans-700.ttf",
+  serif: "atlas-archive-serif-400.ttf",
+  serifGras: "atlas-archive-serif-700.ttf",
+  serifItalique: "atlas-archive-serif-400-italique.ttf",
+} as const;
