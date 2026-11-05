@@ -3,7 +3,15 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { PDFArray, PDFDocument, PDFHexString, PDFName, PDFString, type PDFRef } from "pdf-lib";
 import { xmlFactureX } from "@/lib/facture-x";
-import { composerFacturePdf, mentionLegaleFacture, type FacturePdfData, type OptionsFacturePdf } from "./facture-pdf";
+import { estUneEntreprise } from "@/lib/civilite";
+import { logger } from "@/server/logger";
+import {
+  composerFacturePdf,
+  genererPdfFacture,
+  mentionLegaleFacture,
+  type FacturePdfData,
+  type OptionsFacturePdf,
+} from "./facture-pdf";
 import type { AttestationDocument } from "./document-commun";
 
 /**
@@ -54,6 +62,38 @@ export async function fabriquerFactureX(
     date: maintenant,
   });
   return { ok: true, pdf: octets, xml: r.xml };
+}
+
+/**
+ * LA PIÈCE QUI PART À L'ÉMISSION : une Factur-X pour une entreprise, le PDF
+ * verrouillé pour les autres.
+ *
+ * **Pour qui** (`ARCHITECTURE.md` §555) : la plateforme ne transmet comme
+ * facture que celle d'une entreprise. Un particulier n'en reçoit que les
+ * chiffres, une mairie passe par Chorus Pro : tous deux gardent le verrou du
+ * 31 août, que la Factur-X ne peut pas porter. `estUneEntreprise` laisse déjà
+ * la mairie dehors.
+ *
+ * **Quand la règle refuse** (une adresse sans code postal, un numéro de TVA
+ * absent), la pièce part en PDF ordinaire et le refus se journalise avec sa
+ * raison. C'est juste tant que rien ne la transmet à une plateforme : avant
+ * septembre 2027, ce PDF reste une facture valable pour une petite
+ * entreprise. Le jour où le branchement existe, son choix 3 B s'applique :
+ * rien ne part sans la plateforme, et le refus s'affiche (`TODO.md`).
+ */
+export async function pieceDeLaFacture(
+  data: FacturePdfData,
+  options: OptionsFacturePdf = {},
+  maintenant: Date = new Date()
+): Promise<Uint8Array> {
+  if (!estUneEntreprise(data.clientNom, data.clientCivilite)) return genererPdfFacture(data, options);
+  const r = await fabriquerFactureX(data, options, maintenant);
+  if (r.ok) return r.pdf;
+  logger.warn("Factur-X refusée, la facture part en PDF ordinaire", {
+    facture: data.numeroCommercial,
+    raison: r.raison,
+  });
+  return genererPdfFacture(data, options);
 }
 
 type Joint = { nom: string; octets: Uint8Array; mime: string; relation: "Alternative" | "Supplement"; description: string };

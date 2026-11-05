@@ -36,9 +36,16 @@ import {
 } from "../src/lib/facture-x";
 import { totauxAvecReduction } from "../src/lib/reduction-devis";
 import { inflateSync } from "node:zlib";
-import { PDFArray, PDFDict, PDFDocument, PDFName, PDFRawStream, StandardFonts } from "pdf-lib";
+import { PDFArray, PDFDict, PDFDocument, PDFName, PDFRawStream, StandardFonts, type PDFRef } from "pdf-lib";
 import { fabriquerFactureX } from "../src/server/pdf/facture-x-pdf";
 import { genererPdfFacture, type FacturePdfData } from "../src/server/pdf/facture-pdf";
+
+/** Le flux d'un fichier joint, désigné par sa référence. */
+function fluxBrut(doc: PDFDocument, ref: unknown): PDFRawStream {
+  const flux = doc.context.lookup(ref as PDFRef);
+  assert.ok(flux instanceof PDFRawStream, "le fichier joint n'est pas un flux");
+  return flux;
+}
 
 exigerLesOutils("java", "mvn", "git");
 
@@ -228,10 +235,10 @@ async function joints(octets: Uint8Array): Promise<Map<string, { texte: string; 
   const rendu = new Map<string, { texte: string; relation: string }>();
   for (let i = 0; i < noms.size(); i += 2) {
     const fiche = noms.lookup(i + 1, PDFDict);
-    const flux = fiche.lookup(PDFName.of("EF"), PDFDict).lookup(PDFName.of("F"), PDFRawStream);
-    const nom = noms.lookup(i).toString().replace(/^\(|\)$/g, "");
+    const flux = fiche.lookup(PDFName.of("EF"), PDFDict).get(PDFName.of("F"));
+    const nom = String(noms.lookup(i)).replace(/^\(|\)$/g, "");
     rendu.set(nom, {
-      texte: inflateSync(flux.getContents()).toString("utf8"),
+      texte: inflateSync(fluxBrut(doc, flux).getContents()).toString("utf8"),
       relation: String(fiche.lookup(PDFName.of("AFRelationship"))),
     });
   }

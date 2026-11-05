@@ -26,6 +26,7 @@ import type { ReglementRecu } from "../../lib/acomptes-facture";
 import type { Ctx } from "./context";
 import { lireDevisQuiFaitFoi } from "./devis";
 import { genererPdfFacture, type FacturePdfData } from "../pdf/facture-pdf";
+import { pieceDeLaFacture } from "../pdf/facture-x-pdf";
 import { enregistrerObjet } from "../storage";
 import { jourIso } from "../../lib/jour";
 import { factureDExemple } from "../../lib/facture-d-exemple";
@@ -2266,9 +2267,13 @@ export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Da
     // l'autre moitié — le PDF brouillon, qui recopiait les colonnes — a sorti
     // une facture aux totaux faux. Seul le STATUT reste forcé : la pièce
     // archivée doit dire « émise » alors que la ligne ne le sera qu'après.
-    const pdfBytes = await genererPdfFacture(
+    // **Une entreprise reçoit une Factur-X** (`ARCHITECTURE.md` §555) : le
+    // même papier, polices embarquées, sans verrou, son XML dedans. C'est
+    // cette pièce-là qui s'archive et que son lien sert.
+    const pdfBytes = await pieceDeLaFacture(
       donneesFacture({ ...avant, ...emetteur, ...adresses, ...dates, statut: "emise" }, lignes, complements),
-      habillage2
+      habillage2,
+      maintenant
     );
 
     const objet = await enregistrerObjet(
