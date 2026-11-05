@@ -137,7 +137,7 @@ export type PieceConservee = {
  */
 async function cequiDoitRester(
   tx: Parameters<Parameters<typeof withEntreprise>[2]>[0],
-  ctx: Ctx,
+  ctx: Pick<Ctx, "entrepriseId">,
   clientId: string,
   chantierIds: string[],
   maintenant: Date
@@ -386,197 +386,216 @@ export async function effacerClient(
   clientId: string,
   maintenant: Date = new Date()
 ): Promise<RapportEffacement | null> {
-  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    const [client] = await tx
-      .select()
-      .from(clients)
-      .where(and(eq(clients.id, clientId), eq(clients.entrepriseId, ctx.entrepriseId)))
-      .limit(1);
-    if (!client) return null;
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) => effacerClientDans(tx, ctx, clientId, maintenant));
+}
 
-    // **Le troisième argument est `true` : la portée est la TRANSACTION.** Posé
-    // à `false`, le réglage survivrait à la connexion rendue au pool, et la
-    // prochaine requête à passer par là pourrait détruire un devis parti sans
-    // que personne l'ait demandé.
-    await tx.execute(sql`SELECT set_config('atlas.effacement_client', 'oui', true)`);
+/**
+ * LE MÊME EFFACEMENT, DANS UNE TRANSACTION DÉJÀ OUVERTE — pour la purge des
+ * comptes fermés (`fermeture-compte.ts`, 5 novembre 2026).
+ *
+ * Trente jours après la fermeture, tout client s'efface selon CETTE règle, et
+ * pas une seconde : ses factures et ses devis acceptés restent, le reste part.
+ * La purge n'a ni session ni utilisateur, et le compte est en lecture seule :
+ * elle pose son contexte elle-même, comme les autres purges planifiées.
+ *
+ * L'appelant DOIT avoir posé `app.entreprise_id` sur cette transaction : sans
+ * lui, la RLS ne laisse rien voir, et l'effacement ne trouverait aucun client.
+ */
+export async function effacerClientDans(
+  tx: Parameters<Parameters<typeof withEntreprise>[2]>[0],
+  ctx: Pick<Ctx, "entrepriseId">,
+  clientId: string,
+  maintenant: Date
+): Promise<RapportEffacement | null> {
+  const [client] = await tx
+    .select()
+    .from(clients)
+    .where(and(eq(clients.id, clientId), eq(clients.entrepriseId, ctx.entrepriseId)))
+    .limit(1);
+  if (!client) return null;
 
-    const chantiersDuClient = await tx
-      .select({ id: chantiers.id })
-      .from(chantiers)
-      .where(and(eq(chantiers.clientId, clientId), eq(chantiers.entrepriseId, ctx.entrepriseId)));
-    const chantierIds = chantiersDuClient.map((c) => c.id);
+  // **Le troisième argument est `true` : la portée est la TRANSACTION.** Posé
+  // à `false`, le réglage survivrait à la connexion rendue au pool, et la
+  // prochaine requête à passer par là pourrait détruire un devis parti sans
+  // que personne l'ait demandé.
+  await tx.execute(sql`SELECT set_config('atlas.effacement_client', 'oui', true)`);
 
-    const detail: Record<string, number> = {};
-    const { pieces, devisAConserver, chantiersAConserver } = await cequiDoitRester(
-      tx,
-      ctx,
-      clientId,
-      chantierIds,
-      maintenant
-    );
+  const chantiersDuClient = await tx
+    .select({ id: chantiers.id })
+    .from(chantiers)
+    .where(and(eq(chantiers.clientId, clientId), eq(chantiers.entrepriseId, ctx.entrepriseId)));
+  const chantierIds = chantiersDuClient.map((c) => c.id);
 
-    // **Ses pièces importées partent avec lui** — sa décision du 22 octobre
-    // 2026, *« avec le même message »*. Ce sont les archives d'un autre
-    // logiciel : rien ne les cloue ici, et la question de la sauvegarde a été
-    // posée avant (`apercuSuppressionClient`). Laissées, elles gardaient son
-    // nom sans plus aucun lien vers lui.
-    const importees = await tx
-      .delete(piecesImportees)
-      .where(and(eq(piecesImportees.clientId, clientId), eq(piecesImportees.entrepriseId, ctx.entrepriseId)))
-      .returning({ cle: piecesImportees.fichierCle });
-    // Une ligne de tableau n'a pas de fichier à purger (migration 0154).
-    for (const { cle } of importees) {
-      if (cle) await tx.insert(fichiersAPurger).values({ storageKey: cle });
+  const detail: Record<string, number> = {};
+  const { pieces, devisAConserver, chantiersAConserver } = await cequiDoitRester(
+    tx,
+    ctx,
+    clientId,
+    chantierIds,
+    maintenant
+  );
+
+  // **Ses pièces importées partent avec lui** — sa décision du 22 octobre
+  // 2026, *« avec le même message »*. Ce sont les archives d'un autre
+  // logiciel : rien ne les cloue ici, et la question de la sauvegarde a été
+  // posée avant (`apercuSuppressionClient`). Laissées, elles gardaient son
+  // nom sans plus aucun lien vers lui.
+  const importees = await tx
+    .delete(piecesImportees)
+    .where(and(eq(piecesImportees.clientId, clientId), eq(piecesImportees.entrepriseId, ctx.entrepriseId)))
+    .returning({ cle: piecesImportees.fichierCle });
+  // Une ligne de tableau n'a pas de fichier à purger (migration 0154).
+  for (const { cle } of importees) {
+    if (cle) await tx.insert(fichiersAPurger).values({ storageKey: cle });
+  }
+  detail.piecesImportees = importees.length;
+
+  if (chantierIds.length > 0) {
+    // Fichiers : mis en file de purge plutôt que détruits sur place — une
+    // transaction annulée ne doit jamais laisser un objet effacé face à une
+    // ligne encore vivante.
+    const fichiers = [
+      ...(await tx
+        .select({ cle: photos.storageKey })
+        .from(photos)
+        .where(inArray(photos.chantierId, chantierIds))),
+      ...(await tx
+        .select({ cle: notesVocales.storageKey })
+        .from(notesVocales)
+        .where(inArray(notesVocales.chantierId, chantierIds))),
+    ]
+      .map((f) => f.cle)
+      .filter((c): c is string => c !== null);
+
+    for (const cle of fichiers) {
+      await tx.insert(fichiersAPurger).values({ storageKey: cle });
     }
-    detail.piecesImportees = importees.length;
+    detail.fichiers = fichiers.length;
 
-    if (chantierIds.length > 0) {
-      // Fichiers : mis en file de purge plutôt que détruits sur place — une
-      // transaction annulée ne doit jamais laisser un objet effacé face à une
-      // ligne encore vivante.
-      const fichiers = [
-        ...(await tx
-          .select({ cle: photos.storageKey })
-          .from(photos)
-          .where(inArray(photos.chantierId, chantierIds))),
-        ...(await tx
-          .select({ cle: notesVocales.storageKey })
-          .from(notesVocales)
-          .where(inArray(notesVocales.chantierId, chantierIds))),
-      ]
-        .map((f) => f.cle)
-        .filter((c): c is string => c !== null);
-
-      for (const cle of fichiers) {
-        await tx.insert(fichiersAPurger).values({ storageKey: cle });
-      }
-      detail.fichiers = fichiers.length;
-
-      const suppressions: [string, () => Promise<unknown>][] = [
-        ["photos", () => tx.delete(photos).where(inArray(photos.chantierId, chantierIds))],
-        ["notesVocales", () => tx.delete(notesVocales).where(inArray(notesVocales.chantierId, chantierIds))],
-        ["brouillons", () => tx.delete(brouillonsInformations).where(inArray(brouillonsInformations.chantierId, chantierIds))],
-        ["prestations", () => tx.delete(prestations).where(inArray(prestations.chantierId, chantierIds))],
-        ["materiel", () => tx.delete(materiel).where(inArray(materiel.chantierId, chantierIds))],
-        ["lignesPrix", () => tx.delete(lignesPrix).where(inArray(lignesPrix.chantierId, chantierIds))],
-        ["propositionsIa", () => tx.delete(propositionsIa).where(inArray(propositionsIa.chantierId, chantierIds))],
-        /**
-         * **Ce qu'il a demandé à l'assistant DEPUIS les chantiers de ce
-         * client** (migration 0069). Une conversation dit ce qu'on cherchait
-         * chez quelqu'un ; l'effacement ne peut pas la laisser derrière.
-         *
-         * **Ce que cette ligne n'attrape PAS, et il faut le savoir** : un
-         * message posé depuis un autre écran ne porte aucun chantier, et peut
-         * pourtant nommer ce client. Le fil est plafonné à trente messages
-         * (`fil-assistant.ts`), donc il s'efface de lui-même en une poignée
-         * d'échanges — mais ce n'est pas une garantie, et c'est écrit dans
-         * `TODO.md`.
-         */
-        [
-          "messagesAssistant",
-          () => tx.delete(messagesAssistant).where(inArray(messagesAssistant.chantierId, chantierIds)),
-        ],
-      ];
-      for (const [nom, executer] of suppressions) {
-        const r = (await executer()) as { rowCount?: number };
-        detail[nom] = r?.rowCount ?? 0;
-      }
-
-      // Les envois portent le lien public vers le devis : ils sont retirés dans
-      // tous les cas, y compris pour un devis conservé. Un lien qui survivrait
-      // à un effacement rouvrirait l'accès aux données qu'on vient de retirer.
-      const rEnvois = (await tx
-        .delete(envoisDevis)
-        .where(
-          and(inArray(envoisDevis.chantierId, chantierIds), eq(envoisDevis.entrepriseId, ctx.entrepriseId))
-        )) as { rowCount?: number };
-      detail.envois = rEnvois?.rowCount ?? 0;
-
-      // **Les devis ENVOYÉS partent aussi, sauf ceux qui sont cloués.** C'est ce
-      // que sa décision du 27 août change : avant, tout devis parti bloquait
-      // l'opération entière sur le déclencheur d'immuabilité.
-      const tousDevis = await tx
-        .select({ id: devis.id })
-        .from(devis)
-        .where(inArray(devis.chantierId, chantierIds));
-      const devisSupprimables = tousDevis.map((d) => d.id).filter((id) => !devisAConserver.has(id));
-      if (devisSupprimables.length > 0) {
-        const r = (await tx.delete(devis).where(inArray(devis.id, devisSupprimables))) as {
-          rowCount?: number;
-        };
-        detail.devis = r?.rowCount ?? 0;
-      } else {
-        detail.devis = 0;
-      }
-
-      // Un chantier ne part que s'il ne porte plus aucune pièce conservée —
-      // le supprimer emporterait sa facture en cascade, ce que la clé étrangère
-      // refuse de toute façon.
-      const chantiersSupprimables = chantierIds.filter((id) => !chantiersAConserver.has(id));
-      if (chantiersSupprimables.length > 0) {
-        const r = (await tx
-          .delete(chantiers)
-          .where(
-            and(inArray(chantiers.id, chantiersSupprimables), eq(chantiers.entrepriseId, ctx.entrepriseId))
-          )) as { rowCount?: number };
-        detail.chantiers = r?.rowCount ?? 0;
-      } else {
-        detail.chantiers = 0;
-      }
+    const suppressions: [string, () => Promise<unknown>][] = [
+      ["photos", () => tx.delete(photos).where(inArray(photos.chantierId, chantierIds))],
+      ["notesVocales", () => tx.delete(notesVocales).where(inArray(notesVocales.chantierId, chantierIds))],
+      ["brouillons", () => tx.delete(brouillonsInformations).where(inArray(brouillonsInformations.chantierId, chantierIds))],
+      ["prestations", () => tx.delete(prestations).where(inArray(prestations.chantierId, chantierIds))],
+      ["materiel", () => tx.delete(materiel).where(inArray(materiel.chantierId, chantierIds))],
+      ["lignesPrix", () => tx.delete(lignesPrix).where(inArray(lignesPrix.chantierId, chantierIds))],
+      ["propositionsIa", () => tx.delete(propositionsIa).where(inArray(propositionsIa.chantierId, chantierIds))],
+      /**
+       * **Ce qu'il a demandé à l'assistant DEPUIS les chantiers de ce
+       * client** (migration 0069). Une conversation dit ce qu'on cherchait
+       * chez quelqu'un ; l'effacement ne peut pas la laisser derrière.
+       *
+       * **Ce que cette ligne n'attrape PAS, et il faut le savoir** : un
+       * message posé depuis un autre écran ne porte aucun chantier, et peut
+       * pourtant nommer ce client. Le fil est plafonné à trente messages
+       * (`fil-assistant.ts`), donc il s'efface de lui-même en une poignée
+       * d'échanges — mais ce n'est pas une garantie, et c'est écrit dans
+       * `TODO.md`.
+       */
+      [
+        "messagesAssistant",
+        () => tx.delete(messagesAssistant).where(inArray(messagesAssistant.chantierId, chantierIds)),
+      ],
+    ];
+    for (const [nom, executer] of suppressions) {
+      const r = (await executer()) as { rowCount?: number };
+      detail[nom] = r?.rowCount ?? 0;
     }
 
-    // **Ses contrats jamais acceptés partent avec lui**, et APRÈS ses
-    // chantiers : un passage de contrat est un chantier qui vise son contrat,
-    // et la clé ne cède pas. Les dates du mois envoyées partent en cascade.
-    // L'accepté reste : il est dans `pieces`, et retient le client plus bas.
-    const rContrats = (await tx
-      .delete(contratsEntretien)
+    // Les envois portent le lien public vers le devis : ils sont retirés dans
+    // tous les cas, y compris pour un devis conservé. Un lien qui survivrait
+    // à un effacement rouvrirait l'accès aux données qu'on vient de retirer.
+    const rEnvois = (await tx
+      .delete(envoisDevis)
       .where(
-        and(
-          eq(contratsEntretien.clientId, clientId),
-          eq(contratsEntretien.entrepriseId, ctx.entrepriseId),
-          ne(contratsEntretien.statut, "accepte")
-        )
+        and(inArray(envoisDevis.chantierId, chantierIds), eq(envoisDevis.entrepriseId, ctx.entrepriseId))
       )) as { rowCount?: number };
-    detail.contrats = rContrats?.rowCount ?? 0;
+    detail.envois = rEnvois?.rowCount ?? 0;
 
-    const echeance = pieces.length > 0 ? pieces.map((p) => p.jusquAu).sort().at(-1) ?? null : null;
-    const motif = motifConservation(pieces.length, echeance ? new Date(`${echeance}T00:00:00Z`) : null);
-
-    if (pieces.length === 0) {
-      // **RIEN NE RETIENT CE CLIENT : IL DISPARAÎT POUR DE BON.** C'est sa
-      // proposition C, et c'est ce qui la distingue des deux autres — une fiche
-      // renommée « Client effacé » qui reste dans la base n'est pas une
-      // suppression, et il l'aurait retrouvée en cherchant.
-      const r = (await tx
-        .delete(clients)
-        .where(and(eq(clients.id, clientId), eq(clients.entrepriseId, ctx.entrepriseId)))) as {
+    // **Les devis ENVOYÉS partent aussi, sauf ceux qui sont cloués.** C'est ce
+    // que sa décision du 27 août change : avant, tout devis parti bloquait
+    // l'opération entière sur le déclencheur d'immuabilité.
+    const tousDevis = await tx
+      .select({ id: devis.id })
+      .from(devis)
+      .where(inArray(devis.chantierId, chantierIds));
+    const devisSupprimables = tousDevis.map((d) => d.id).filter((id) => !devisAConserver.has(id));
+    if (devisSupprimables.length > 0) {
+      const r = (await tx.delete(devis).where(inArray(devis.id, devisSupprimables))) as {
         rowCount?: number;
       };
-      detail.client = r?.rowCount ?? 0;
-      const supprimes = Object.values(detail).reduce((total, n) => total + n, 0);
-      return { supprimes, detail, pieces, disparu: true, motif: null };
+      detail.devis = r?.rowCount ?? 0;
+    } else {
+      detail.devis = 0;
     }
 
-    // Une pièce le retient : son nom reste (sans lui, la pièce ne vaut plus
-    // rien), tout ce qui sert à le recontacter part.
-    await tx
-      .update(clients)
-      .set({
-        telephone: null,
-        email: null,
-        adresse: null,
-        canalCommunication: null,
-        effaceLe: maintenant,
-        conservationMotif: motif,
-        updatedAt: maintenant,
-        deletedAt: maintenant,
-      })
-      .where(eq(clients.id, clientId));
+    // Un chantier ne part que s'il ne porte plus aucune pièce conservée —
+    // le supprimer emporterait sa facture en cascade, ce que la clé étrangère
+    // refuse de toute façon.
+    const chantiersSupprimables = chantierIds.filter((id) => !chantiersAConserver.has(id));
+    if (chantiersSupprimables.length > 0) {
+      const r = (await tx
+        .delete(chantiers)
+        .where(
+          and(inArray(chantiers.id, chantiersSupprimables), eq(chantiers.entrepriseId, ctx.entrepriseId))
+        )) as { rowCount?: number };
+      detail.chantiers = r?.rowCount ?? 0;
+    } else {
+      detail.chantiers = 0;
+    }
+  }
 
+  // **Ses contrats jamais acceptés partent avec lui**, et APRÈS ses
+  // chantiers : un passage de contrat est un chantier qui vise son contrat,
+  // et la clé ne cède pas. Les dates du mois envoyées partent en cascade.
+  // L'accepté reste : il est dans `pieces`, et retient le client plus bas.
+  const rContrats = (await tx
+    .delete(contratsEntretien)
+    .where(
+      and(
+        eq(contratsEntretien.clientId, clientId),
+        eq(contratsEntretien.entrepriseId, ctx.entrepriseId),
+        ne(contratsEntretien.statut, "accepte")
+      )
+    )) as { rowCount?: number };
+  detail.contrats = rContrats?.rowCount ?? 0;
+
+  const echeance = pieces.length > 0 ? pieces.map((p) => p.jusquAu).sort().at(-1) ?? null : null;
+  const motif = motifConservation(pieces.length, echeance ? new Date(`${echeance}T00:00:00Z`) : null);
+
+  if (pieces.length === 0) {
+    // **RIEN NE RETIENT CE CLIENT : IL DISPARAÎT POUR DE BON.** C'est sa
+    // proposition C, et c'est ce qui la distingue des deux autres — une fiche
+    // renommée « Client effacé » qui reste dans la base n'est pas une
+    // suppression, et il l'aurait retrouvée en cherchant.
+    const r = (await tx
+      .delete(clients)
+      .where(and(eq(clients.id, clientId), eq(clients.entrepriseId, ctx.entrepriseId)))) as {
+      rowCount?: number;
+    };
+    detail.client = r?.rowCount ?? 0;
     const supprimes = Object.values(detail).reduce((total, n) => total + n, 0);
-    return { supprimes, detail, pieces, disparu: false, motif };
-  });
+    return { supprimes, detail, pieces, disparu: true, motif: null };
+  }
+
+  // Une pièce le retient : son nom reste (sans lui, la pièce ne vaut plus
+  // rien), tout ce qui sert à le recontacter part.
+  await tx
+    .update(clients)
+    .set({
+      telephone: null,
+      email: null,
+      adresse: null,
+      canalCommunication: null,
+      effaceLe: maintenant,
+      conservationMotif: motif,
+      updatedAt: maintenant,
+      deletedAt: maintenant,
+    })
+    .where(eq(clients.id, clientId));
+
+  const supprimes = Object.values(detail).reduce((total, n) => total + n, 0);
+  return { supprimes, detail, pieces, disparu: false, motif };
 }
 
 /**

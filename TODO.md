@@ -77,15 +77,40 @@ pas dans le PDF : faut-il demander Congé ou Maladie quand on note l'absence ?
 compte reste ouvert jusqu'à l'échéance, puis se ferme, comme une résiliation.
 Pas codé.
 
-**Fermer un compte : tranché, pas codé** (`docs/QUESTIONS.md`, question 33,
-sa troisième version du 5 novembre, la seule qui vaut). Dans tous les cas, les
-factures, avoirs, devis et contrats acceptés et leurs PDF restent 10 ans,
-lisibles en lecture seule ; le reste s'efface après 30 jours ; l'archive
-s'efface au bout des 10 ans. La base refuse aujourd'hui d'effacer une facture émise ou un
-devis envoyé (`drizzle/0018`, `0068`) : l'effacement au bout des 10 ans devra lever
-ce verrou pour ce seul cas, prouvé par un test sur une base habitée. Maquette
-d'abord. Remplace `RETENTION.compteFermeJours` « mécanisme inexistant ».
-Article 13 des CGU à réécrire : sa décision (nouvelle version à accepter).
+**Fermer un compte : CODÉ le 5 novembre 2026 sur `lot/fermeture-compte`, PAS
+LIVRÉ** : la batterie attend son « lance » (sa règle du même jour). Les suites
+pures sont vertes ; `scripts/test-fermeture-compte-db.ts` est écrit et n'a
+**jamais tourné** (il vide la base de test : même accord requis). Ce qui est
+codé : `src/lib/fermeture-compte.ts` (les règles), migration 0166 (trois dates
+sur `entreprises`), `withEntreprise` (lecture seule et salariés refusés une fois
+fermé), `reglages/donnees/fermer` (l'écran de la planche), la purge planifiée
+(`effacerLeResteDesComptesFermes`, qui passe chaque client par
+`effacerClientDans`), et l'abonnement repris qui rouvre le compte.
+
+**Ce qui reste, et qui le sait :**
+
+- **⚠ la preuve d'acceptation d'un devis part avec le client.** Un devis
+  accepté se reconnaît à son envoi (`envois_devis.reponse = 'acceptee'`), et
+  l'effacement d'un client supprime TOUS les envois, conservés ou non
+  (`donnees-client.ts`, « les envois portent le lien public »). Le devis reste,
+  la trace de son acceptation non. Défaut d'avant ce lot, que la purge des
+  comptes fermés étend à tous les clients : garder la ligne d'envoi d'un devis
+  conservé en retirant seulement son jeton. À trancher avant la livraison ;
+- le salarié d'un compte fermé tombe sur l'écran d'erreur, faute d'un écran
+  « le compte de l'entreprise est fermé » ;
+- l'écran du compte fermé est l'appli en lecture seule (Terminés porte les
+  factures et leurs PDF), pas la liste dédiée de la planche ;
+- ce que la purge n'efface pas encore, faute de passer par un client : les
+  liaisons bancaires et leurs mouvements, les chantiers sans client, les
+  photos de diagnostic, les messages de l'assistant sans chantier ;
+- l'e-mail qui le prévient avant l'effacement (`docs/A-FAIRE.md`, « prévenu
+  par e-mail avant ») ;
+- l'effacement au bout des dix ans : la base refuse d'effacer une facture
+  émise ou un devis envoyé (`drizzle/0018`, `0068`), il faudra lever ce verrou
+  pour ce seul cas. Et `echeanceConservation` compte dix ans depuis la DATE de
+  la pièce, alors que L123-22 les compte depuis la clôture de l'exercice : une
+  facture de mars 2026 se garde jusqu'à fin 2036, pas mars 2036 ;
+- l'article 13 des CGU à réécrire : sa décision (nouvelle version à accepter).
 
 **Les factures qu'Atlas adresse aux artisans : Stripe les fait, mais pas
 conformes en l'état** (lu dans `src/server/paiement/stripe.ts`, 5 novembre) :
@@ -8004,7 +8029,7 @@ Tout est écrit pas à pas dans `docs/DEPLOIEMENT-PURGE.md`.
 
 ### 3. Deux durées qui décrivent ce qui n'existe pas
 
-- `RETENTION.compteFermeJours` — **il n'y a aucun chemin de fermeture de compte**
+- ~~`RETENTION.compteFermeJours`~~ **codé le 5 novembre 2026** (`lot/fermeture-compte`), la constante a déménagé dans `src/lib/fermeture-compte.ts`. Texte d'origine : **il n'y a aucun chemin de fermeture de compte**
   dans le produit : ni écran, ni fonction. Soit on écrit le chemin, soit on
   retire la durée. Elle est marquée comme telle dans le code en attendant ;
 - le **lien d'un compte rendu d'entretien n'expire jamais**, alors que celui d'un

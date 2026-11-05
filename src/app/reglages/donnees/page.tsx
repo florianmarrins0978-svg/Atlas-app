@@ -2,7 +2,7 @@ import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import Paquet from "@/components/atlas/reglages/Paquet";
 import PastilleIcone from "@/components/atlas/reglages/PastilleIcone";
 import PlageTon from "@/components/atlas/reglages/PlageTon";
-import { colors, font, voile } from "@/lib/design-tokens";
+import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { estProprietaire } from "@/server/autorisation";
 import { getEntreprise } from "@/server/repositories/entreprises";
@@ -10,7 +10,7 @@ import { nomFichierSauvegarde } from "@/lib/nom-sauvegarde";
 import RubriqueReservee from "../RubriqueReservee";
 import BoutonTelecharger from "./BoutonTelecharger";
 import Picto from "@/components/atlas/reglages/Picto";
-import { CONTACT_ATLAS } from "@/lib/contact-atlas";
+import Link from "next/link";
 import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
@@ -106,31 +106,23 @@ export default async function DonneesPage() {
           </div>
         </Paquet>
 
-        {/* **DIRE COMMENT, PLUTÔT QUE DIRE QUE ÇA NE SE FAIT PAS — 9 septembre 2026.**
-            La phrase d'avant annonçait deux absences : « l'effacement de votre
-            compte et le registre des traitements ne se font pas encore depuis
-            l'application ». Le « registre des traitements » est du vocabulaire de
-            juriste, et il ne concerne pas l'artisan qui lit cet écran ; quant à
-            l'effacement, lui dire qu'il est impossible le laisse sans recours
-            alors qu'il en a un — nous écrire. L'écran ne promet donc aucun
-            effacement depuis l'appli : il donne l'adresse, et rien d'autre.
-
-            L'adresse vient de `CONTACT_ATLAS` et de nulle part ailleurs : le jour
-            où il en crée une pour l'application, une seule ligne change. */}
-        <p
-          className="mx-6 mt-[30px] pt-[18px] text-[15px] leading-[1.55]"
-          style={{ color: colors.inkSoft, boxShadow: `inset 0 1px 0 ${colors.line}` }}
-        >
-          Pour effacer votre compte, écrivez à{" "}
-          <a
-            href={`mailto:${CONTACT_ATLAS}`}
-            className="font-semibold underline underline-offset-4"
-            style={{ color: colors.or, textDecorationColor: voile(colors.or, 0.45) }}
+        {/* **FERMER SON COMPTE, À LA PLACE DE L'ADRESSE — 5 novembre 2026.**
+            La ligne d'en bas disait « Pour effacer votre compte, écrivez à »,
+            parce que l'appli ne savait pas le faire. Elle le sait (planche
+            `fermer-mon-compte.html`, son choix A) : la ligne change de texte,
+            pas de place (`CLAUDE.md` §3). Un lien et non un bouton plein : le
+            seul bouton plein de l'écran reste la copie, et fermer se décide
+            sur l'écran suivant, qui dit ce qui reste et ce qui part. */}
+        <div className="mx-6 mt-[30px] flex justify-center pt-[18px]" style={{ boxShadow: `inset 0 1px 0 ${colors.line}` }}>
+          <Link
+            href="/reglages/donnees/fermer"
+            data-atlas="vers-fermer-mon-compte"
+            className="inline-flex min-h-[48px] items-center px-1 text-[16px] font-semibold no-underline"
+            style={{ color: colors.alert }}
           >
-            {CONTACT_ATLAS}
-          </a>
-          .
-        </p>
+            Fermer mon compte
+          </Link>
+        </div>
 
         {/* Le nom est redit sur le LIEN, et pas seulement dans l'en-tête du
             serveur. Un `download` vide laisse Safari se rabattre sur le nom du

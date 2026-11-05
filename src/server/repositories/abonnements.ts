@@ -15,7 +15,8 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { db } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
-import { abonnements, evenementsPaiement, membresEntreprise } from "../db/schema";
+import { abonnements, entreprises, evenementsPaiement, membresEntreprise } from "../db/schema";
+import { abonnementRouvreLeCompte } from "@/lib/fermeture-compte";
 import { roleFabrique, type FormuleCode, type Periodicite, type StatutAbonnement } from "@/lib/abonnements";
 import { ROLES } from "@/lib/acces-roles";
 import type { Ctx } from "./context";
@@ -138,6 +139,7 @@ export async function enregistrerLAbonnement(ctx: Ctx, etat: EtatVenuDuPrestatai
         .insert(abonnements)
         .values({ entrepriseId: ctx.entrepriseId, ...versLaLigne(etat) })
         .onConflictDoUpdate({ target: abonnements.entrepriseId, set: versLaLigne(etat) });
+      await rouvrirSiRepris(tx, ctx.entrepriseId, etat);
     },
     // **La seule écriture permise en lecture seule.** C'est elle qui met fin à
     // l'essai terminé : sans cette porte, il paierait sans pouvoir rentrer.
@@ -203,7 +205,26 @@ export async function appliquerDepuisLeCrochet(
       .update(abonnements)
       .set(versLaLigne(etat))
       .where(eq(abonnements.abonnementPrestataire, etat.abonnementPrestataire));
+    // Les deux chemins, et pas seulement le retour du paiement : il peut payer
+    // puis fermer l'onglet, et seul le crochet saura alors qu'il est revenu.
+    await rouvrirSiRepris(tx, ligne.entrepriseId, etat);
 
     return true;
   });
+}
+
+/**
+ * Retire la fermeture d'un compte dont l'abonnement reprend
+ * (`abonnementRouvreLeCompte`). Ce que la purge a effacé ne revient pas.
+ */
+async function rouvrirSiRepris(
+  tx: Parameters<Parameters<typeof withEntreprise>[2]>[0],
+  entrepriseId: string,
+  etat: EtatVenuDuPrestataire
+): Promise<void> {
+  if (!abonnementRouvreLeCompte(etat)) return;
+  await tx
+    .update(entreprises)
+    .set({ fermetureDemandeeLe: null, fermetureLe: null, resteEffaceLe: null })
+    .where(and(eq(entreprises.id, entrepriseId), sql`${entreprises.fermetureLe} IS NOT NULL`));
 }

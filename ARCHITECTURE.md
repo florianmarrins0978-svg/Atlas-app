@@ -36940,3 +36940,18 @@ Contrôles : `test-feuille-main-oeuvre` (pur : la quantité à la journée, l'he
 
 **L'ordre des lots.** D'abord la Factur-X, qui ne dépend d'aucun compte : une règle pure qui écrit le XML (CII, profil EN 16931) depuis la facture, le PDF rendu PDF/A-3 avec ce XML dedans, et un contrôle par les règles officielles. Ensuite le branchement (la clé chiffrée par `chiffre-au-repos.ts`, isolée par entreprise ; l'état de chaque facture transmise), qui ne s'éprouve qu'avec un vrai compte. Les deux sont de niveau 3.
 
+## §556 : Fermer son compte : trois dates sur l'entreprise, une règle, la porte de `withEntreprise`
+
+*5 novembre 2026, question 33 de `docs/QUESTIONS.md`, planche `appli/soignee/fermer-mon-compte.html` (choix A).*
+
+| Décision | Pourquoi |
+|---|---|
+| trois dates sur `entreprises` (migration 0166), aucune table neuve | `withEntreprise` lit déjà l'adhésion et l'abonnement en une requête ; la fermeture s'y joint sans aller-retour de plus |
+| la lecture seule et le refus des salariés dans `withEntreprise` | la même raison que la lecture seule de l'essai (§ du 13 septembre) : 176 gestes écrivent, en fermer un par un en oublierait un |
+| la date d'effet est la fin de ce qui est payé, lue sur l'abonnement | son choix A ; la résiliation à l'échéance part chez Stripe AVANT que la base note la fermeture, sinon il paierait pour un compte qu'il croit fermé |
+| la purge passe chaque client par `effacerClientDans` | une seule règle de ce qui se garde (sa décision du 27 août) ; une seconde aurait divergé. La transaction pose `app.entreprise_id` depuis la ligne lue, jamais depuis une saisie |
+| un abonnement repris (actif, sans résiliation demandée) retire la fermeture, sur les deux chemins (retour du paiement et crochet) | il peut payer puis fermer l'onglet ; « résiliation demandée » est l'état exact d'une fermeture en cours, et la lire comme une reprise l'effacerait à la seconde où elle s'écrit |
+| `RETENTION.compteFermeJours` supprimé, `JOURS_AVANT_EFFACEMENT` dans `src/lib/fermeture-compte.ts` | un seul chiffre, à l'endroit des règles pures ; l'ancien ne s'appliquait à rien |
+
+**Écarté** : un drapeau sur l'adhésion de chaque salarié (il aurait fallu le défaire un par un en rouvrant), et effacer le reste au jour de la fermeture (il perdrait « Rouvrir rend tout » pendant trente jours).
+

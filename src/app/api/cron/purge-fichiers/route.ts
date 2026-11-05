@@ -3,6 +3,7 @@ import { purgerFichiersEnAttente } from "@/server/repositories/fichiers";
 import { purgerPreuvesPerimees } from "@/server/preuve-recente";
 import { purgerAudiosTranscrits, purgerPhotosDiagnostic } from "@/server/repositories/retention";
 import { noterPurgeReussie } from "@/server/journal-purge";
+import { effacerLeResteDesComptesFermes } from "@/server/repositories/fermeture-compte";
 import { getEnv } from "@/server/env";
 import { logger } from "@/server/logger";
 import { idRequeteValideOuGenere, executerAvecContexte } from "@/server/request-context";
@@ -47,6 +48,11 @@ export async function POST(request: Request) {
       // diagnostic échues entrent en file AVANT qu'on la vide, sinon elles
       // attendent une exécution de plus.
       const { photosPurgees } = await purgerPhotosDiagnostic();
+      // **Les comptes fermés depuis trente jours** (question 33 de
+      // `docs/QUESTIONS.md`), toujours avant qu'on vide la file : leurs photos
+      // et leurs dictées y entrent, et partent ainsi le jour même. Un compte
+      // qui échoue est journalisé et repris demain, sans arrêter les autres.
+      const { comptesEffaces, clientsEffaces } = await effacerLeResteDesComptesFermes();
       const nombrePurges = await purgerFichiersEnAttente();
       /**
        * **Les preuves de ré-authentification périmées, ici et nulle part
@@ -83,8 +89,8 @@ export async function POST(request: Request) {
         preuvesPurgees,
       });
 
-      logger.info("Purge planifiée exécutée", { nombrePurges, audiosPurges, photosPurgees });
-      return NextResponse.json({ statut: "ok", nombrePurges, audiosPurges, photosPurgees, preuvesPurgees });
+      logger.info("Purge planifiée exécutée", { nombrePurges, audiosPurges, photosPurgees, comptesEffaces, clientsEffaces });
+      return NextResponse.json({ statut: "ok", nombrePurges, audiosPurges, photosPurgees, preuvesPurgees, comptesEffaces });
     } catch (err) {
       logger.error("Échec de la purge planifiée des fichiers", { erreur: err });
       return NextResponse.json({ erreur: "Échec de la purge." }, { status: 500 });

@@ -1,7 +1,8 @@
 import { and, eq, sql } from "drizzle-orm";
 import { db, type DbOrTx } from "./client";
-import { abonnements, membresEntreprise } from "./schema";
+import { abonnements, entreprises, membresEntreprise } from "./schema";
 import { enLectureSeule } from "@/lib/abonnements";
+import { compteFerme } from "@/lib/fermeture-compte";
 import { logger } from "../logger";
 
 // Cœur de la sécurité multi-entreprise (voir docs/ARCHITECTURE_DONNEES.md §7 et
@@ -38,6 +39,13 @@ import { logger } from "../logger";
 // **Une seule porte reste ouverte** : s'abonner (`pourSortirDeLEssai`). Sans
 // elle, l'enregistrement du paiement serait lui-même refusé, et il ne pourrait
 // jamais rouvrir ce qu'il vient de payer.
+//
+// ET LE COMPTE FERMÉ SE REFERME ICI AUSSI — 5 novembre 2026 (question 33 de
+// `docs/QUESTIONS.md`). Passé sa date d'effet, un compte fermé est en lecture
+// seule comme un essai terminé, par la même porte, et **seul le patron y
+// entre** : la planche le lui a dit, « vos salariés n'auront plus accès à
+// Atlas ». Ce refus vit ici plutôt que dans chaque écran pour la même raison
+// que la lecture seule : un écran oublié leur laisserait voir les factures.
 
 export class AccesRefuseError extends Error {
   constructor(utilisateurId: string, entrepriseId: string) {
@@ -47,8 +55,9 @@ export class AccesRefuseError extends Error {
 }
 
 /**
- * Levée quand un geste tente d'écrire en lecture seule : essai terminé, ou
- * abonnement résilié depuis le 18 octobre 2026.
+ * Levée quand un geste tente d'écrire en lecture seule : essai terminé,
+ * abonnement résilié depuis le 18 octobre 2026, compte fermé depuis le
+ * 5 novembre 2026.
  *
  * Le message ne parvient jamais à l'écran tel quel (Next.js le remplace en
  * production, `AGENTS.md` piège 0 ter) : c'est le ruban de l'accueil et la
@@ -57,7 +66,7 @@ export class AccesRefuseError extends Error {
  */
 export class LectureSeuleError extends Error {
   constructor(entrepriseId: string) {
-    super(`L'entreprise ${entrepriseId} est en lecture seule : essai terminé ou abonnement résilié.`);
+    super(`L'entreprise ${entrepriseId} est en lecture seule : essai terminé, abonnement résilié ou compte fermé.`);
     this.name = "LectureSeuleError";
   }
 }
@@ -79,6 +88,12 @@ export type OptionsEntreprise = {
    * y met fin, et il doit pouvoir s'écrire depuis elle.
    */
   pourSortirDeLEssai?: true;
+  /**
+   * Autorise l'écriture sur un compte FERMÉ, pour le seul geste qui le rouvre
+   * (`fermeture-compte.ts`). La lecture seule de l'abonnement, elle, tient
+   * toujours : rouvrir un compte n'offre pas un abonnement.
+   */
+  pourRouvrirLeCompte?: true;
 };
 
 export async function withEntreprise<T>(
@@ -96,13 +111,19 @@ export async function withEntreprise<T>(
     // ouvre chaque transaction de l'application, et un aller-retour de plus ici
     // se paie sur tous les écrans. L'abonnement est en jointure externe — la
     // plupart des entreprises n'en ont pas, et elles ne doivent rien sentir.
+    // La fermeture du compte vient dans la même requête, pour la même raison.
     const [adhesion] = await tx
       .select({
         id: membresEntreprise.id,
+        role: membresEntreprise.role,
         statut: abonnements.statut,
         periodeFin: abonnements.periodeFin,
+        fermetureDemandeeLe: entreprises.fermetureDemandeeLe,
+        fermetureLe: entreprises.fermetureLe,
+        resteEffaceLe: entreprises.resteEffaceLe,
       })
       .from(membresEntreprise)
+      .innerJoin(entreprises, eq(entreprises.id, membresEntreprise.entrepriseId))
       .leftJoin(abonnements, eq(abonnements.entrepriseId, membresEntreprise.entrepriseId))
       .where(
         and(eq(membresEntreprise.utilisateurId, utilisateurId), eq(membresEntreprise.entrepriseId, entrepriseId))
@@ -113,10 +134,21 @@ export async function withEntreprise<T>(
       throw new AccesRefuseError(utilisateurId, entrepriseId);
     }
 
-    const lectureSeule =
+    const maintenant = new Date();
+    const ferme = compteFerme(
+      { demandeeLe: adhesion.fermetureDemandeeLe, effectiveLe: adhesion.fermetureLe, resteEffaceLe: adhesion.resteEffaceLe },
+      maintenant
+    );
+    if (ferme && adhesion.role !== "proprietaire") {
+      logger.warn("Accès refusé : compte fermé, réservé au patron", { entrepriseId });
+      throw new AccesRefuseError(utilisateurId, entrepriseId);
+    }
+
+    const abonnementFerme =
       !options.pourSortirDeLEssai &&
       adhesion.statut !== null &&
-      enLectureSeule({ statut: adhesion.statut, periodeFin: adhesion.periodeFin }, new Date());
+      enLectureSeule({ statut: adhesion.statut, periodeFin: adhesion.periodeFin }, maintenant);
+    const lectureSeule = abonnementFerme || (ferme && !options.pourSortirDeLEssai && !options.pourRouvrirLeCompte);
 
     if (!lectureSeule) return fn(tx);
 
@@ -129,7 +161,7 @@ export async function withEntreprise<T>(
       if (!estUnRefusDeLectureSeule(e)) throw e;
       // Rendre le refus bavard AVANT de le lever : sans cette ligne, un « ça ne
       // marche pas » chez lui n'aurait aucune trace à lire (`AGENTS.md`).
-      logger.warn("Écriture refusée : lecture seule (essai terminé ou abonnement résilié)", { entrepriseId });
+      logger.warn("Écriture refusée : lecture seule (essai terminé, abonnement résilié ou compte fermé)", { entrepriseId, ferme });
       throw new LectureSeuleError(entrepriseId);
     }
   });

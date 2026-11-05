@@ -3,6 +3,7 @@ import { getClient } from "@/server/repositories/clients";
 import { photosDesAutresChantiers } from "@/server/repositories/photos";
 import { abonnementDeLEntreprise } from "@/server/repositories/abonnements";
 import { etatDeLAcces, phraseLectureSeule } from "@/lib/abonnements";
+import { fermetureDeLEntreprise } from "@/server/repositories/fermeture-compte";
 import EcranLectureSeule from "@/components/atlas/EcranLectureSeule";
 import FormulaireNouveauChantier, { type ClientDeDepart } from "./FormulaireNouveauChantier";
 import { garderLaPage } from "@/server/garde-page";
@@ -38,7 +39,8 @@ export default async function NouveauChantierPage({
   // formulaire qu'on remplit en entier pour un refus au bout serait une panne
   // déguisée ; on le dit ici, avant la première case.
   const ctx = await getCurrentCtx();
-  const fermee = phraseLectureSeule(etatDeLAcces(await abonnementDeLEntreprise(ctx), new Date()));
+  const [abonnement, fermeture] = await Promise.all([abonnementDeLEntreprise(ctx), fermetureDeLEntreprise(ctx)]);
+  const fermee = phraseLectureSeule(etatDeLAcces(abonnement, new Date(), fermeture));
   if (fermee) return <EcranLectureSeule titre="Nouveau chantier" phrase={fermee} />;
   const brut = parametres.client;
   const clientId = Array.isArray(brut) ? brut[0] : brut;

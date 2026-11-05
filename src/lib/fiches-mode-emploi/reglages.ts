@@ -698,12 +698,14 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     id: "reglages-effacer-compte",
     ecran: "Mes données",
     ou: `${R}, puis Mes données, en bas`,
-    intitule: "Effacer son compte Atlas",
+    intitule: "Fermer ou effacer son compte Atlas",
     motsCles: ["effacer", "supprimer", "compte", "fermer", "desinscrire", "quitter", "resilier", "definitivement"],
-    geste: "Ouvrez « Mes données » : l'adresse à qui écrire pour effacer votre compte est en bas.",
-    reserve: "L'effacement ne se fait pas encore depuis l'application.",
+    geste: "Ouvrez « Mes données », puis « Fermer mon compte » en bas.",
+    reserve:
+      "Réservé au patron. Abonné, le compte reste ouvert jusqu'à la fin de ce qui est payé. " +
+      "Les factures et les devis acceptés restent dix ans, le reste s'efface trente jours après.",
     source: "src/app/reglages/donnees/page.tsx",
-    preuves: ["Pour effacer votre compte, écrivez à", "CONTACT_ATLAS"],
+    preuves: ["Fermer mon compte", "/reglages/donnees/fermer"],
   },
   {
     id: "reglages-abonnement",

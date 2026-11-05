@@ -60,27 +60,6 @@ export const RETENTION = {
    */
   journauxJours: 180,
 
-  /**
-   * Délai après fermeture d'un compte, avant effacement complet.
-   *
-   * ═══════════════════════════════════════════════════════════════════════
-   * **⚠ CE MÉCANISME N'EXISTE PAS. Cette durée décrit une opération qui n'est
-   * pas codée** — lot de clôture, 29 août 2026.
-   *
-   * Vérifié : il n'y a dans tout le dépôt aucun chemin de fermeture de compte.
-   * Ni `fermerCompte`, ni écran « supprimer mon compte », ni suppression
-   * d'entreprise ou d'utilisateur hors des suites de test.
-   *
-   * Elle est **gardée plutôt que retirée**, et volontairement : elle porte une
-   * décision déjà prise — trente jours de grâce plutôt qu'un effacement
-   * immédiat — que le jour où le chemin s'écrira, personne n'aura à reprendre.
-   * Mais l'écrire sans cet avertissement était une **promesse fausse** : on
-   * lisait « 30 jours » et l'on croyait à un délai appliqué.
-   *
-   * Inscrit dans `TODO.md` : soit le chemin s'écrit, soit cette durée part.
-   * ═══════════════════════════════════════════════════════════════════════
-   */
-  compteFermeJours: 30,
 } as const;
 
 /**

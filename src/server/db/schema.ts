@@ -361,6 +361,15 @@ export const entreprises = pgTable("entreprises", {
   tvaExigibilite: text("tva_exigibilite", { enum: ["encaissements", "debits"] })
     .notNull()
     .default("encaissements"),
+  /**
+   * FERMER SON COMPTE (migration 0166, question 33 de `docs/QUESTIONS.md`).
+   * Demandée le jour où il appuie ; effective à la fin de ce qui est payé ;
+   * le reste effacé trente jours après, par la purge. Les règles vivent dans
+   * `src/lib/fermeture-compte.ts`.
+   */
+  fermetureDemandeeLe: timestamp("fermeture_demandee_le", { withTimezone: true }),
+  fermetureLe: timestamp("fermeture_le", { withTimezone: true }),
+  resteEffaceLe: timestamp("reste_efface_le", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),

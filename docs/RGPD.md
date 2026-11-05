@@ -244,7 +244,7 @@ sécurité la moins coûteuse et la plus efficace.
 | Historique des prix | illimitée | ❌ **rien** | Peut être **anonymisé** : l'intérêt est le prix, pas le client |
 | Photos de chantier | illimitée | ❌ **rien** | Durée de la relation |
 | Journaux techniques | 180 j *visés* | ❌ **rien dans Atlas**, et c'est normal | Les journaux partent sur la sortie standard : c'est **l'hébergeur** qui les garde et les expire. À poser chez Scaleway |
-| Compte fermé | 30 j *visés* | ❌ **le mécanisme n'existe pas** | Il n'y a **aucun chemin de fermeture de compte** dans le produit : ni écran, ni fonction. La durée décrit une opération qui n'est pas codée |
+| Compte fermé | 30 j | ⏳ **codé le 5 novembre 2026, pas encore livré** (batterie en attente de son accord) | Réglages, Mes données, « Fermer mon compte ». Lecture seule à la fin de ce qui est payé ; trente jours après, chaque client passe par l'effacement d'un client (`effacerLeResteDesComptesFermes`, purge planifiée). Factures, avoirs, devis et contrats acceptés restent. `src/lib/fermeture-compte.ts` |
 
 ### Conservation IMPOSÉE — à ne jamais purger
 
