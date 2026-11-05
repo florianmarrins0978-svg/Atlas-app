@@ -25,6 +25,11 @@ Il n'a pas dit de coder.
    faire, et l'artisan touche Envoyer (B). Aujourd'hui sa consigne donne
    l'adresse `CONTACT_ATLAS` (`assistant-service.ts`).
 
+**Dans Les idées reçues, ni « à la voix » ni « écrite », ni l'heure : la
+date seule** (sa règle du même soir : *« à la voix ou écrit, on s'en fout de
+marquer ça ; l'heure, ça sert à rien, juste la date »*). L'écran d'origine
+reste, il ne l'a pas visé.
+
 **Où ça arrive chez lui** (sa question du même soir : *« ça va arriver où
 chez moi ? Faudrait-il une petite application connectée ? »*) : dans Atlas,
 sur son compte d'éditeur (`estEditeur`, comme Mon vocabulaire), une ligne
