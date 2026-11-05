@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jours travaillés, A ou B</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  JOURS TRAVAILLÉS PAR SALARIÉ. Rien n'existe dans src/ (cherché le
+  5 novembre 2026 : ni « jours travaillés », ni compteur par salarié).
+
+  Sa demande du 5 novembre 2026 : « pour le bilan comptable, même pour faire
+  les payes, ils sont obligés de donner à chaque fois le nombre de jours
+  travaillés par salarié. […] on peut se référer à si l'utilisateur indique
+  une absence. Mais le compteur ne doit pas être bloqué : s'il n'a pas indiqué
+  son absence, qu'on a 18 jours et qu'en fait il a été présent que 15, il faut
+  qu'il puisse le modifier. »
+
+  LE CALCUL, ce que l'appli sait déjà :
+    les jours ouvrés du mois, du lundi au vendredi, comme le planning
+      (src/lib/disponibilites.ts saute les samedis et dimanches) ;
+    moins les jours fériés, que l'appli NE CONNAÎT PAS aujourd'hui : sans eux,
+      novembre compterait 21 jours au lieu de 20 (le 11 tombe un mercredi) ;
+    moins les absences notées (absences_equipe : le planning et Réglages,
+      Équipe), une demi-journée pour une demie. Une absence notée « week-ends
+      compris » ne retire que ses jours ouvrés.
+
+  LA CORRECTION : le chiffre se change, moins, plus, ou tapé. Le calcul reste
+  écrit à côté, et « Remettre » le rend. Une absence notée APRÈS la
+  correction ne la défait pas : les deux chiffres restent visibles.
+
+  A : quand le chiffre bouge, « Pourquoi ? » d'un appui. Un congé, un arrêt
+      maladie et un sans solde ne se paient pas pareil : avec le chiffre seul,
+      le comptable rappelle.
+  B : le chiffre seul, ce qu'il a demandé mot pour mot.
+
+  LE PDF : une page par mois, le motif d'une absence notée N'Y EST PAS. Sous
+  la case du motif, l'appli écrit aujourd'hui « Le motif n'est là que pour
+  vous » (src/app/reglages/AbsencesEquipe.tsx) : l'envoyer au comptable
+  trahirait cette phrase.
+
+  RIEN N'EST CODÉ DANS src/. Les noms sont ceux des planches du planning.
+*/
+
+/* ─── Pour mon comptable, la page d'aujourd'hui, simplifiée ─────────────── */
+.ecran button.ligne { width: 100%; text-align: left; }
+.ligne-fin .etat { margin-right: 2px; }
+
+/* ─── Le mois, entre ses deux flèches (celles de Mes dossiers) ──────────── */
+.mois-choix { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px;
+              border-radius: var(--r-plage); background: var(--atlas-card); }
+.mois-fleche { width: 56px; height: 56px; flex: none; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-or); }
+.mois-fleche .ico { width: 26px; height: 26px; stroke-width: 2; }
+.mois-fleche[disabled] { color: color-mix(in srgb, var(--atlas-or) 28%, transparent); cursor: default; }
+.mois-nom { font: 400 26px/1.1 var(--serif); font-variant-numeric: lining-nums; text-align: center; }
+.mois-resume { margin: 12px 4px 0; text-align: center; font-size: 15px; line-height: 1.45; color: var(--atlas-inkSoft); }
+
+/* ─── Un salarié, son compte ─────────────────────────────────────────────── */
+.gens { margin-top: 18px; padding: 0 18px; }
+.gars { position: relative; display: flex; align-items: center; gap: 14px; width: 100%; min-height: 80px;
+        padding: 14px 0; text-align: left; color: inherit; }
+.gars + .gars::before { content: ""; position: absolute; left: 58px; right: 0; top: 0; height: 1px;
+                        background: var(--atlas-line); pointer-events: none; }
+.initiales { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%;
+             font: 400 18px/1 var(--serif); background: var(--atlas-rustTint); color: var(--atlas-rust); }
+.gars-corps { flex: 1; min-width: 0; }
+.gars-nom { display: block; font: 400 19px/1.25 var(--serif); color: var(--atlas-ink); }
+.gars-situation { display: block; margin-top: 3px; font-size: 14px; line-height: 1.4; color: var(--atlas-inkSoft); }
+.gars-situation[data-ton="ambre"] { color: var(--atlas-carteAmbreTexte); font-weight: 600; }
+.gars-compte { flex: none; min-width: 56px; text-align: right; }
+.gars-compte b { display: block; font: 400 30px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums;
+                 letter-spacing: -0.01em; color: var(--atlas-ink); }
+.gars-compte small { display: block; margin-top: 4px; font-size: 13px; color: var(--atlas-inkSoft); }
+.envoyer { margin-top: 22px; }
+
+/* ─── La feuille d'un salarié ────────────────────────────────────────────── */
+.feuille-sous { margin: -10px 0 22px; font-size: 15px; color: var(--atlas-inkSoft); }
+.compteur input { width: 120px; padding: 4px 0 8px; border: 0; border-bottom: 2px solid var(--atlas-line); border-radius: 0;
+                  background: transparent; outline: none; text-align: center; color: var(--atlas-ink);
+                  font: 400 48px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums;
+                  transition: border-color 160ms var(--courbe); }
+.compteur input:focus { border-bottom-color: var(--atlas-or); }
+.compteur button .ico { width: 24px; height: 24px; stroke-width: 2; }
+.unite { margin: 8px 0 0; text-align: center; font-size: 15px; color: var(--atlas-inkSoft); }
+
+.calcul { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 22px;
+          padding: 4px 6px 4px 16px; border-radius: 12px; font-size: 15px; color: var(--atlas-ink);
+          background: color-mix(in srgb, var(--atlas-or) 13%, transparent); }
+.calcul .bouton-texte { color: var(--atlas-orTexte); font-weight: 700; }
+
+.pourquoi { margin: 24px 0 12px; font: 400 20px/1.25 var(--serif); color: var(--atlas-ink); }
+.motifs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.motif { min-height: 54px; padding: 0 12px; border-radius: 12px; background: var(--atlas-card);
+         box-shadow: inset 0 0 0 1px var(--atlas-line); font-size: 16px; font-weight: 600; color: var(--atlas-ink);
+         transition: box-shadow 180ms var(--courbe); }
+.motif[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--atlas-rust); }
+
+.notees { margin-top: 26px; }
+.notees .rubrique { margin: 0 0 4px; }
+.notee { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 50px;
+         font-size: 15.5px; color: var(--atlas-ink); box-shadow: inset 0 -1px 0 var(--atlas-line); }
+.notee span:last-child { flex: none; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
+.notee.aucune { color: var(--atlas-inkSoft); box-shadow: none; }
+.fermer { width: 100%; justify-content: center; margin-top: 14px; color: var(--atlas-inkSoft); }
+
+/* ─── Le PDF du comptable : du papier, pas une charte (PRODUCT.md) ──────── */
+.pdf-cadre { width: 390px; max-width: 100%; }
+.papier { aspect-ratio: 210 / 297; display: flex; flex-direction: column; padding: 34px 26px 18px;
+          background: #ffffff; color: #1c1c1a; font: 400 11px/1.45 Helvetica, Arial, sans-serif;
+          box-shadow: 0 1px 3px rgba(28,28,26,0.10), 0 10px 28px rgba(28,28,26,0.10); }
+.pdf-titre { margin: 0; font: 400 30px/1.1 Georgia, "Times New Roman", serif; }
+.pdf-sous { margin: 6px 0 0; font: 400 15px/1.3 Georgia, "Times New Roman", serif; color: #4a4a44; }
+.pdf-filet { height: 1px; margin: 16px 0 18px; border: 0; background: #B98B47; }
+.pdf-deux { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.pdf-lib { display: block; margin-bottom: 4px; font-size: 7.5px; font-weight: 700; letter-spacing: 0.06em;
+           text-transform: uppercase; color: #8a8578; }
+.pdf-deux p { margin: 0; }
+.pdf-table { width: 100%; margin-top: 22px; border-collapse: collapse; }
+.pdf-table th { padding: 0 6px 6px 0; text-align: left; font-size: 7.5px; font-weight: 700; letter-spacing: 0.06em;
+                text-transform: uppercase; color: #8a8578; border-bottom: 1px solid #d9d5cc; }
+.pdf-table td { padding: 8px 6px 8px 0; vertical-align: top; border-bottom: 1px solid #ebe8e1; }
+.pdf-table .nb { width: 58px; text-align: right; padding-right: 14px; font: 400 15px/1.1 Georgia, serif; font-variant-numeric: tabular-nums lining-nums; }
+.pdf-table th.nb { font: 700 7.5px/1.45 Helvetica, Arial, sans-serif; }
+.pdf-table .abs span { display: block; }
+.pdf-table .abs .manque { color: #9c3b2e; }
+.pdf-boite { margin-top: auto; padding: 11px 13px; background: #f3f1ec; border: 1px solid #e3dfd6; }
+.pdf-boite span { display: block; margin-top: 4px; color: #8a8578; font-size: 9.5px; }
+.pdf-pied { display: flex; justify-content: space-between; margin-top: 14px; font-size: 8px; color: #8a8578; }
+</style>
+</head>
+<body class="pl pl-pilules">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">Jours travaillés</h1>
+  <p class="pl-verdict">Touchez <b>Jours travaillés</b>, puis <b>Antoine</b> : 18 jours calculés. Touchez moins trois fois pour 15. <b>A</b> demande pourquoi, <b>B</b> garde le chiffre seul. <b>Le PDF</b> montre ce que reçoit le comptable.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <div data-vue-panneau="A">
+      <p class="pl-legende">A, le chiffre et pourquoi</p>
+      <div class="cadre"><div class="ecran avec-barre" data-version="A"></div></div>
+    </div>
+
+    <div data-vue-panneau="B">
+      <p class="pl-legende">B, le chiffre seul</p>
+      <div class="cadre"><div class="ecran avec-barre" data-version="B"></div></div>
+    </div>
+
+    <div data-vue-panneau="Le PDF">
+      <p class="pl-legende">Ce que reçoit le comptable</p>
+      <div class="pl-etats" id="pdf-version">
+        <button type="button" data-pdf="A" aria-pressed="true">Avec A</button>
+        <button type="button" data-pdf="B" aria-pressed="false">Avec B</button>
+      </div>
+      <div class="pdf-cadre"><div class="papier" id="papier"></div></div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce que je propose : A</h2>
+    <ul>
+      <li>Le compte se fait tout seul : les jours ouvrés du mois, moins les jours fériés, moins les absences notées au planning ou dans Réglages, Équipe. Une demi-journée compte pour une demie.</li>
+      <li>Il se corrige toujours : moins, plus, ou le chiffre tapé (19,5 marche). Le calcul reste écrit à côté, et Remettre le rend.</li>
+      <li>A demande pourquoi, d’un appui, dès que le chiffre bouge : Congé, Maladie, Sans solde, Autre ; et quand il monte, Samedi travaillé, Férié travaillé, Autre. Votre comptable en a besoin pour la fiche de paie : un congé, un arrêt maladie et un sans solde ne se paient pas pareil.</li>
+      <li>Envoyer à mon comptable : une page PDF par mois, par Mail ou Messages. Rien ne part sans votre appui.</li>
+      <li>Le mois en cours se compte jusqu’au 30 : les jours qui restent sont comptés travaillés, et le PDF le dit.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>Où le mettre : dans Pour mon comptable (dessiné ici), ou dans Réglages, Équipe.</li>
+      <li>Le motif d’une absence notée est écrit « pour vous » dans l’appli : le PDF n’en dit que les dates. Pour que le comptable lise Congé ou Maladie sur ces jours-là aussi, il faudrait le demander quand on note l’absence.</li>
+      <li>Un salarié embauché ou parti en cours de mois, ou à temps partiel : l’appli ne connaît ni ses dates ni ses jours. Le compte sera faux et se corrigera à la main, sauf si sa fiche les apprend.</li>
+    </ul>
+    <h2>Trouvé dans l’appli en cherchant</h2>
+    <ul class="a-trancher">
+      <li>L’appli ne connaît aucun jour férié : le planning peut proposer le 11 novembre à un client. À ajouter pour le compte, et utile au planning.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Les absences se notent comme aujourd’hui : Salarié absent ? sur le planning, et Réglages, Équipe.</li>
+      <li>Le reste de Pour mon comptable (dessiné simplifié ici) : la planche n’ajoute que Mes salariés, en bas.</li>
+    </ul>
+  </section>
+</main>
+
+<script src="kit.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var MOINS = [["conge", "Congé"], ["maladie", "Maladie"], ["sans_solde", "Sans solde"], ["autre", "Autre"]];
+  var PLUS = [["samedi", "Samedi travaillé"], ["ferie", "Férié travaillé"], ["autre", "Autre"]];
+
+  /* Deux mois, pour voir le mois en cours et un mois fini, déjà corrigé.
+     Novembre 2026 : 21 jours du lundi au vendredi, le 11 (un mercredi) est
+     férié, donc 20. Octobre 2026 : 22, aucun férié. */
+  function donnees() {
+    return {
+      ordre: ["2026-10", "2026-11"],
+      mois: {
+        "2026-10": { nom: "Octobre 2026", court: "octobre", ouvres: 22, ferie: null, enCours: false, salaries: [
+          { nom: "Julien", absences: [], saisi: 21, motif: "maladie" },
+          { nom: "Antoine", absences: [{ dit: "Du lundi 26 au vendredi 30", jours: 5 }], saisi: null, motif: null },
+          { nom: "Paul", absences: [], saisi: null, motif: null }
+        ] },
+        "2026-11": { nom: "Novembre 2026", court: "novembre", ouvres: 20, ferie: "le 11 est férié", enCours: true, salaries: [
+          { nom: "Julien", absences: [], saisi: null, motif: null },
+          { nom: "Antoine", absences: [{ dit: "Du lundi 23 au mardi 24", jours: 2 }], saisi: null, motif: null },
+          { nom: "Paul", absences: [{ dit: "Le jeudi 12 au matin", jours: 0.5 }], saisi: null, motif: null }
+        ] }
+      }
+    };
+  }
+
+  function ico(nom) { return '<svg class="ico ico-p" aria-hidden="true"><use href="#i-' + nom + '"/></svg>'; }
+  function nb(n) { return String(n).replace(".", ","); }
+  /* « 1,5 jour », « 2 jours » : le pluriel français commence à deux. */
+  function jours(n) { return nb(n) + (Math.abs(n) < 2 ? " jour" : " jours"); }
+  function calcul(m, s) { return m.ouvres - s.absences.reduce(function (t, a) { return t + a.jours; }, 0); }
+  function valeur(m, s) { return s.saisi === null ? calcul(m, s) : s.saisi; }
+  function ecart(m, s) { return valeur(m, s) - calcul(m, s); }
+  function motifs(m, s) { return ecart(m, s) < 0 ? MOINS : PLUS; }
+  function libelle(m, s) {
+    var t = motifs(m, s).filter(function (x) { return x[0] === s.motif; })[0];
+    return t ? t[1] : null;
+  }
+  function resume(m) {
+    return (m.enCours ? "Mois en cours, " : "") + m.ouvres + " jours ouvrés" + (m.ferie ? ", " + m.ferie : "") + ".";
+  }
+
+  /* Ce qui se lit sous le nom. */
+  function situation(version, m, s) {
+    var e = ecart(m, s);
+    if (e !== 0) {
+      if (version === "B") return { texte: "Corrigé, le calcul disait " + nb(calcul(m, s)) };
+      var l = libelle(m, s);
+      if (!l) return { texte: "Corrigé, pourquoi ?", ton: "ambre" };
+      return { texte: l + ", " + jours(Math.abs(e)) + (e > 0 ? " de plus" : "") };
+    }
+    if (s.absences.length) return { texte: "Absent " + s.absences.map(function (a) { return a.dit.charAt(0).toLowerCase() + a.dit.slice(1); }).join(", et ") };
+    return { texte: "Aucune absence notée" };
+  }
+
+  var etats = {};
+  var pdfVersion = "A";
+
+  document.querySelectorAll(".ecran[data-version]").forEach(function (ecran) {
+    var version = ecran.getAttribute("data-version");
+    var id = "feuille-" + version;
+    var e = etats[version] = { vue: "comptable", mois: "2026-11", d: donnees(), ouvert: null };
+
+    ecran.innerHTML =
+      '<div class="defile"></div>' +
+      '<nav class="barre" aria-label="Navigation principale"><div class="barre-onglets">' +
+        '<a class="barre-onglet" href="accueil.html">Chantiers</a>' +
+        '<a class="barre-onglet" href="planning.html">Planning</a>' +
+        '<a class="barre-onglet" href="termines.html" aria-current="page">Terminés</a>' +
+        '<a class="barre-onglet" href="paysage.html">Paysage</a>' +
+        '<a class="barre-onglet" href="reglages.html">Réglages</a>' +
+        '<span class="barre-trait" aria-hidden="true"><span></span></span>' +
+      '</div></nav>' +
+      '<section class="feuille" id="' + id + '" aria-hidden="true" aria-label="Jours travaillés d’un salarié">' +
+        '<div class="feuille-poignee"></div><div class="feuille-dedans"></div>' +
+      '</section>';
+
+    var defile = ecran.querySelector(".defile");
+    var dedans = ecran.querySelector("#" + id + " .feuille-dedans");
+    function mois() { return e.d.mois[e.mois]; }
+    function salarie() { return mois().salaries[e.ouvert]; }
+
+    /* ─── Pour mon comptable, le bas de la page ───────────────────────── */
+    function rendreComptable() {
+      var m = e.d.mois["2026-11"];
+      defile.innerHTML =
+        '<header class="tete"><h1 class="tete-titre">Pour mon comptable</h1></header>' +
+        '<p class="tete-situation">Dossier en cours depuis le 1ᵉʳ janvier 2026</p>' +
+        '<h2 class="rubrique">Mes relevés</h2>' +
+        '<div class="plage plage-serree"><div class="liste">' +
+          '<div class="ligne"><span class="ligne-corps"><span class="ligne-nom">Novembre 2026</span><span class="ligne-situation">En cours</span></span></div>' +
+          '<div class="ligne"><span class="ligne-corps"><span class="ligne-nom">Octobre 2026</span><span class="ligne-situation">Tout est justifié</span></span></div>' +
+        '</div></div>' +
+        '<h2 class="rubrique">Le dossier</h2>' +
+        '<div class="plage"><button class="bouton bouton-creux" type="button" data-geste="inchange">' + ico("cadenas") + 'Arrêter mon dossier ici</button></div>' +
+        '<div class="liste mt-8"><button class="ligne touche" type="button" data-geste="inchange">' +
+          '<span class="ligne-icone or">' + ico("document") + '</span><span class="ligne-corps"><span class="ligne-nom">Mes dossiers justifiés</span>' +
+          '<span class="ligne-situation">Gardés dix ans</span></span><span class="ligne-fin">' + ico("suivant") + '</span></button></div>' +
+        '<h2 class="rubrique">Mes salariés</h2>' +
+        '<div class="liste"><button class="ligne touche" type="button" data-geste="ouvrir-jours">' +
+          '<span class="ligne-icone or">' + ico("equipe") + '</span><span class="ligne-corps"><span class="ligne-nom">Jours travaillés</span>' +
+          '<span class="ligne-situation">Novembre, ' + m.salaries.length + ' salariés</span></span><span class="ligne-fin">' + ico("suivant") + '</span></button></div>';
+    }
+
+    /* ─── Jours travaillés ─────────────────────────────────────────────── */
+    function rendreJours() {
+      var m = mois(), i = e.d.ordre.indexOf(e.mois);
+      defile.innerHTML =
+        '<header class="tete"><button class="tete-retour" type="button" data-geste="retour" aria-label="Pour mon comptable">' + ico("retour") + '</button>' +
+        '<h1 class="tete-titre moyen">Jours travaillés</h1></header>' +
+        '<div class="mois-choix">' +
+          '<button class="mois-fleche" type="button" data-geste="mois" data-pas="-1" aria-label="Le mois d’avant"' + (i === 0 ? " disabled" : "") + '>' + ico("retour") + '</button>' +
+          '<span class="mois-nom">' + m.nom + '</span>' +
+          '<button class="mois-fleche" type="button" data-geste="mois" data-pas="1" aria-label="Le mois d’après"' + (i === e.d.ordre.length - 1 ? " disabled" : "") + '>' + ico("suivant") + '</button>' +
+        '</div>' +
+        '<p class="mois-resume">' + resume(m) + '</p>' +
+        '<div class="plage gens">' + m.salaries.map(function (s, k) {
+          var sit = situation(version, m, s), v = valeur(m, s);
+          return '<button class="gars touche" type="button" data-geste="salarie" data-k="' + k + '">' +
+            '<span class="initiales" aria-hidden="true">' + s.nom.charAt(0) + '</span>' +
+            '<span class="gars-corps"><span class="gars-nom">' + s.nom + '</span>' +
+            '<span class="gars-situation"' + (sit.ton ? ' data-ton="' + sit.ton + '"' : "") + '>' + sit.texte + '</span></span>' +
+            '<span class="gars-compte"><b>' + nb(v) + '</b><small>' + (Math.abs(v) < 2 ? "jour" : "jours") + '</small></span></button>';
+        }).join("") + '</div>' +
+        '<button class="bouton bouton-plein envoyer" type="button" data-geste="envoyer">' + ico("partager") + 'Envoyer à mon comptable</button>';
+    }
+
+    function rendre() { if (e.vue === "comptable") rendreComptable(); else rendreJours(); rendrePdf(); }
+
+    /* ─── La feuille d'un salarié ──────────────────────────────────────── */
+    function peindreFeuille() {
+      var m = mois(), s = salarie();
+      dedans.innerHTML =
+        '<h2 class="feuille-titre">' + s.nom + ' en ' + m.court + '</h2>' +
+        '<p class="feuille-sous">' + resume(m) + '</p>' +
+        '<div class="compteur">' +
+          '<button type="button" data-geste="pas" data-jour="-1" aria-label="Un jour de moins">' + ico("moins") + '</button>' +
+          '<input type="text" inputmode="decimal" autocomplete="off" aria-label="Jours travaillés de ' + s.nom + '" value="' + nb(valeur(m, s)) + '">' +
+          '<button type="button" data-geste="pas" data-jour="1" aria-label="Un jour de plus">' + ico("plus") + '</button>' +
+        '</div>' +
+        '<p class="unite">jours travaillés</p>' +
+        '<div class="feuille-bas"></div>' +
+        '<button type="button" class="bouton bouton-texte fermer" data-ferme>Fermer</button>';
+      peindreBas();
+    }
+
+    /* Le bas se repeint seul : le chiffre tapé garde son curseur. */
+    function peindreBas() {
+      var m = mois(), s = salarie(), ec = ecart(m, s), h = "";
+      if (ec !== 0) {
+        h += '<div class="calcul"><span>Le calcul disait ' + nb(calcul(m, s)) + '.</span>' +
+          '<button type="button" class="bouton-texte" data-geste="remettre">Remettre ' + nb(calcul(m, s)) + '</button></div>';
+        if (version === "A") {
+          h += '<h3 class="pourquoi">Pourquoi ' + jours(Math.abs(ec)) + ' de ' + (ec < 0 ? "moins" : "plus") + ' ?</h3>' +
+            '<div class="motifs" role="group" aria-label="Pourquoi">' + motifs(m, s).map(function (x) {
+              return '<button type="button" class="motif" data-geste="motif" data-motif="' + x[0] + '" aria-pressed="' + (s.motif === x[0]) + '">' + x[1] + '</button>';
+            }).join("") + '</div>';
+        }
+      }
+      h += '<div class="notees"><h3 class="rubrique">Absences notées</h3>' +
+        (s.absences.length
+          ? s.absences.map(function (a) { return '<div class="notee"><span>' + a.dit + '</span><span>' + jours(a.jours) + '</span></div>'; }).join("")
+          : '<div class="notee aucune"><span>Aucune en ' + m.court + '</span></div>') +
+        '</div>';
+      dedans.querySelector(".feuille-bas").innerHTML = h;
+      rendreJours();
+      rendrePdf();
+    }
+
+    function poser(v) {
+      var m = mois(), s = salarie(), avant = ecart(m, s);
+      v = Math.max(0, Math.min(31, Math.round(v * 2) / 2));
+      s.saisi = v === calcul(m, s) ? null : v;
+      /* Le motif ne survit pas à un changement de sens : un congé ne dit
+         rien d'un samedi travaillé. */
+      var apres = ecart(m, s);
+      if (apres === 0 || (avant < 0) !== (apres < 0)) s.motif = null;
+    }
+
+    ecran.addEventListener("click", function (ev) {
+      var g = ev.target.closest("[data-geste]");
+      if (!g) return;
+      var geste = g.getAttribute("data-geste");
+      if (geste === "ouvrir-jours") { e.vue = "jours"; rendre(); defile.scrollTop = 0; return; }
+      if (geste === "retour") { e.vue = "comptable"; rendre(); defile.scrollTop = 0; return; }
+      if (geste === "inchange") { Kit.note(ecran, "Inchangé : voir la planche Pour mon comptable."); return; }
+      if (geste === "envoyer") { Kit.note(ecran, "Le PDF du mois part par Mail ou Messages."); return; }
+      if (geste === "mois") { e.mois = e.d.ordre[e.d.ordre.indexOf(e.mois) + Number(g.getAttribute("data-pas"))]; rendre(); return; }
+      if (geste === "salarie") {
+        e.ouvert = Number(g.getAttribute("data-k"));
+        peindreFeuille();
+        Kit.ouvrirFeuille(id, g);
+        return;
+      }
+      if (geste === "pas") {
+        // « data-jour », pas « data-pas » : le kit lit tout « .compteur [data-pas] »
+        // comme son propre compteur à <output>, et celui-ci porte un champ.
+        poser(valeur(mois(), salarie()) + Number(g.getAttribute("data-jour")));
+        dedans.querySelector("input").value = nb(valeur(mois(), salarie()));
+        peindreBas();
+        return;
+      }
+      if (geste === "remettre") {
+        salarie().saisi = null; salarie().motif = null;
+        dedans.querySelector("input").value = nb(valeur(mois(), salarie()));
+        peindreBas();
+        return;
+      }
+      if (geste === "motif") {
+        var s = salarie(), cle = g.getAttribute("data-motif");
+        s.motif = s.motif === cle ? null : cle;
+        peindreBas();
+      }
+    });
+
+    dedans.addEventListener("input", function (ev) {
+      if (!ev.target.matches("input")) return;
+      var v = Number(ev.target.value.replace(",", ".").trim());
+      if (ev.target.value.trim() === "" || isNaN(v)) return;
+      poser(v);
+      peindreBas();
+    });
+    dedans.addEventListener("focusout", function (ev) {
+      if (ev.target.matches("input") && salarie()) ev.target.value = nb(valeur(mois(), salarie()));
+    });
+
+    rendre();
+  });
+
+  /* ─── Le PDF, lu sur l'écran A ou B tel qu'il est ─────────────────────── */
+  function rendrePdf() {
+    var papier = document.getElementById("papier");
+    var e = etats[pdfVersion];
+    if (!papier || !e) return;
+    var m = e.d.mois["2026-11"];
+    var lignes = m.salaries.map(function (s) {
+      var ec = ecart(m, s), abs = s.absences.map(function (a) { return "<span>Absent " + a.dit.charAt(0).toLowerCase() + a.dit.slice(1) + "</span>"; });
+      if (ec !== 0) {
+        var l = pdfVersion === "A" ? libelle(m, s) : null;
+        if (l) abs.push("<span>" + l + ", " + jours(Math.abs(ec)) + (ec > 0 ? " de plus" : "") + "</span>");
+        else abs.push('<span class="manque">' + jours(Math.abs(ec)) + " de " + (ec < 0 ? "moins" : "plus") + " que le calcul, sans motif</span>");
+      }
+      if (!abs.length) abs.push("<span>Aucune</span>");
+      return "<tr><td>" + s.nom + '</td><td class="nb">' + nb(valeur(m, s)) + '</td><td class="abs">' + abs.join("") + "</td></tr>";
+    }).join("");
+    papier.innerHTML =
+      '<h3 class="pdf-titre">Jours travaillés</h3>' +
+      '<p class="pdf-sous">Novembre 2026</p>' +
+      '<hr class="pdf-filet">' +
+      '<div class="pdf-deux">' +
+        '<div><span class="pdf-lib">Entreprise</span><p>Atelier Démo<br>10 rue des Artisans, Nantes<br>SIRET 123 456 789 00012</p></div>' +
+        '<div><span class="pdf-lib">Le mois</span><p>20 jours ouvrés<br>Le 11 novembre est férié</p></div>' +
+      '</div>' +
+      '<table class="pdf-table"><thead><tr><th>Salarié</th><th class="nb">Travaillés</th><th>Absences</th></tr></thead><tbody>' + lignes + '</tbody></table>' +
+      '<div class="pdf-boite">Une demi-journée d’absence compte pour une demie.' +
+        '<span>Préparé le 5 novembre 2026 : le mois n’est pas fini, les jours qui restent sont comptés travaillés.</span></div>' +
+      '<div class="pdf-pied"><span>Jours travaillés, Atelier Démo</span><span>Page 1 sur 1</span></div>';
+  }
+
+  document.querySelectorAll("#pdf-version button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      pdfVersion = b.getAttribute("data-pdf");
+      document.querySelectorAll("#pdf-version button").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+      rendrePdf();
+    });
+  });
+  rendrePdf();
+})();
+</script>
+</body>
+</html>

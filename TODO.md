@@ -1,6 +1,43 @@
 # Prochaines tâches
 
 
+## ⏳ À CHOISIR PAR LUI (5 novembre 2026) : les jours travaillés de chaque salarié
+
+**Sa demande du 5 novembre** : *« pour le bilan comptable, même pour faire les
+payes, ils sont obligés de donner à chaque fois le nombre de jours travaillés
+par salarié »*, compté sur les absences notées, et *« le compteur ne doit pas
+être bloqué »* : 18 calculés, 15 vrais, il le change.
+
+**Planche** : `appli/soignee/jours-travailles.html`. Une ligne « Jours
+travaillés » sous une rubrique « Mes salariés », en bas de Pour mon comptable ;
+le mois entre deux flèches ; par salarié, le calcul (jours ouvrés du lundi au
+vendredi, moins les fériés, moins `absences_equipe`, une demi-journée pour une
+demie) ; une feuille avec moins, plus, le chiffre tapé, « Le calcul disait 18 »
+et Remettre ; un PDF d'une page par mois, partagé par le téléphone.
+**A** (proposé) : « Pourquoi 3 jours de moins ? » Congé, Maladie, Sans solde,
+Autre (et Samedi travaillé, Férié travaillé quand il monte). **B** : le chiffre
+seul. **Rien dans `src/`.** Avant de lui redemander : chercher
+`Jours travaillés` dans `src/app/termines/comptable/`.
+
+**À trancher par lui** : A ou B ; Pour mon comptable ou Réglages, Équipe ; le
+motif d'une absence notée, écrit « pour vous » (`AbsencesEquipe.tsx`), ne va
+pas dans le PDF : faut-il demander Congé ou Maladie quand on note l'absence ?
+
+**Ce que le code demandera, quel que soit le choix** :
+
+1. **les jours fériés**, que l'appli ignore (aucune règle dans `src/lib/`) :
+   sans eux novembre 2026 compte 21 jours au lieu de 20. Règle pure (dates
+   fixes, Pâques, Ascension, Pentecôte ; l'Alsace-Moselle en a deux de plus,
+   un réglage). Le planning en a besoin aussi : il peut proposer le 11 novembre
+   à un client ;
+2. **une table de corrections** (salarié, mois, jours saisis, motif), sous
+   `withEntreprise` et RLS : migration, donc niveau 3. Une absence notée après
+   la correction ne l'efface pas, les deux chiffres restent à l'écran ;
+3. **le PDF du mois** (`src/server/pdf/`), sans le motif privé des absences ;
+4. **hors du compte, à dire** : un salarié embauché ou parti en cours de mois,
+   ou à temps partiel, se corrige à la main tant que sa fiche n'a ni dates ni
+   jours.
+
 ## FERMER UN COMPTE, ET LES FACTURES D'ABONNEMENT D'ATLAS (5 novembre 2026)
 
 **⏳ UNE PLANCHE À REGARDER (5 novembre 2026)** : `appli/soignee/fermer-mon-compte.html`,
