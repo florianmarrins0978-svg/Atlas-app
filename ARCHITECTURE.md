@@ -36940,3 +36940,16 @@ Contrôles : `test-feuille-main-oeuvre` (pur : la quantité à la journée, l'he
 
 **L'ordre des lots.** D'abord la Factur-X, qui ne dépend d'aucun compte : une règle pure qui écrit le XML (CII, profil EN 16931) depuis la facture, le PDF rendu PDF/A-3 avec ce XML dedans, et un contrôle par les règles officielles. Ensuite le branchement (la clé chiffrée par `chiffre-au-repos.ts`, isolée par entreprise ; l'état de chaque facture transmise), qui ne s'éprouve qu'avec un vrai compte. Les deux sont de niveau 3.
 
+## §556 : Un client supprimé : sa facture en brouillon perd son téléphone et son e-mail
+
+**Sa réponse du 5 novembre 2026** à la question laissée par le §548 (la facture garde le téléphone et l'e-mail copiés à sa création, et le papier les imprime ; faut-il les vider sur un brouillon ?) : *« oui on efface tout »*.
+
+| | |
+|---|---|
+| **ce qui part** | `factures.client_telephone` et `client_email` des factures EN BROUILLON de ses chantiers, dans la transaction de `effacerClient`, comme la fiche |
+| **ce qui reste** | le nom et l'adresse : ce sont des mentions obligatoires, sans lesquelles le brouillon ne pourrait plus être émis (et le §548 permet encore de l'envoyer, vers ce qu'il tape) ; le numéro, pour la suite des factures (§542) |
+| **ce qui ne bouge jamais** | une facture émise : `trg_facture_immuable` la protège. Le filtre sur le brouillon n'est pas une politesse : sans lui, la suppression entière tomberait sur ce déclencheur |
+
+**« Tout », lu comme ses deux coordonnées.** La question portait sur le téléphone et l'e-mail ; l'adresse est gardée pour la raison écrite ci-dessus, et c'est à lui de dire s'il la veut partie aussi (le brouillon ne pourrait alors plus s'émettre sans qu'il la retape). Un devis accepté et conservé garde ses copies : il ne lui a pas été demandé.
+
+Contrôle : `test-retention-effacement` (sous `atlas_app` : le brouillon d'un client supprimé n'a plus ni téléphone ni e-mail, son nom et son adresse restent), vu rouge avant la correction.

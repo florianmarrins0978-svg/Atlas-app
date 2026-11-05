@@ -20,6 +20,7 @@ Format : le plus récent en tête.
 
 ## 2026-11-05
 
+- **Un client supprimé : sa facture en brouillon perd son téléphone et son e-mail** (sa réponse : *« oui on efface tout »*). Le brouillon les avait recopiés à sa création et le papier les imprimait encore après la suppression. Le nom et l'adresse restent, mentions sans lesquelles il ne pourrait plus être émis ; une facture émise ne se réécrit jamais. `ARCHITECTURE.md` §556.
 - **Zones : les jours d'une zone, et sa couleur au choix** (ses demandes). Toucher Zone 3 sous Julien montre ses jours, la ville, le code postal, l'adresse et la distance ; la pastille d'une zone, dans la feuille d'un salarié, propose neuf couleurs pour tous. Pas codé.
 - **Cinq planches d'idées** (sa question : « des choses qu'on aurait pu oublier ? ») : une note dictée sans réseau gardée sur le téléphone, le plafond de la franchise de TVA, les restrictions d'eau sur le planning, les heures du jour face au devis, et l'hivernage des arrosages dès le 1er novembre. Pas codé.
 - **Zones : plus de case « Sans chantier »** (sa règle) : un jour au dépôt compte en zone 1. Pas codé.
