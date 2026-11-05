@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fermer mon compte, soigné</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  FERMER MON COMPTE. Rien n'est codé.
+
+  Ses décisions du 5 novembre 2026 (docs/QUESTIONS.md, question 33) :
+  à la fermeture, dans tous les cas, les factures, avoirs, devis acceptés,
+  contrats acceptés et leurs PDF restent dix ans, avec les clients et les
+  chantiers qui les portent et ses réglages ; il garde une connexion en
+  lecture seule ; tout le reste s'efface trente jours après, devis jamais
+  acceptés compris ; « Télécharger mes données » est proposé, pas imposé ;
+  revenir, c'est rouvrir dessus.
+
+  La place : en bas de Mes données, là où vit aujourd'hui « Pour effacer
+  votre compte, écrivez à ». La ligne change de texte, pas de place
+  (CLAUDE.md §3).
+
+  La date des dix ans : Code de commerce L123-22, dix ans après la clôture de
+  l'exercice. Une facture de 2026 se garde donc jusqu'au 31 décembre 2036 ;
+  les plus anciennes partent avant, chacune à sa date.
+
+  Le geste se confirme par le mot de passe, la même feuille que le
+  téléchargement : rien n'est perdu le jour même, et il se défait pendant
+  trente jours. Pas de case à cocher : rien de ce qui compte n'est détruit.
+*/
+.fichier { display: flex; align-items: center; gap: 14px; padding: 16px 18px; }
+.fichier .ligne-nom { font-size: 17px; line-height: 1.3; }
+.fichier .ligne-situation { margin-top: 5px; font-size: 15px; }
+.ranger { display: flex; align-items: flex-start; gap: 10px; margin-top: 12px; }
+.ranger .ico { width: 20px; height: 20px; margin-top: 1px; }
+.fermer-lien { display: flex; justify-content: center; margin: 30px 0 0; padding-top: 18px; box-shadow: inset 0 1px 0 var(--atlas-line); }
+.feuille-sous { margin: -10px 0 18px; font-size: 15px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.reserve { padding-top: 56px; }
+.reserve .vide-titre { max-width: 15em; margin: 0 auto; }
+
+/* Ce qui reste, ce qui part : deux listes, l'une sous l'autre, même dessin. */
+.sort { padding: 0 18px; }
+.sort .ligne { min-height: 54px; padding: 10px 0; }
+.sort .ligne-nom { font: 400 16px/1.4 var(--sans); }
+.sort-reste .ico { color: var(--atlas-or); }
+.sort-part .ico { color: var(--atlas-inkSoft); }
+.quand { margin: 8px 2px 0; font-size: 15px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.quand b { color: var(--atlas-ink); font-weight: 600; }
+.bouton-fermer { background: var(--atlas-alerte); color: var(--atlas-card); }
+
+/* Le compte fermé : la plage qui le dit, puis ses pièces, lisibles. */
+.ferme-tete { display: flex; align-items: flex-start; gap: 10px; }
+.ferme-tete .ico { width: 20px; height: 20px; margin-top: 1px; flex: none; }
+.ferme-tete span b { font-weight: 600; }
+.pieces { padding: 0 18px; }
+.piece { align-items: flex-start; padding: 16px 0; }
+.piece .jour { margin-top: 2px; }
+.piece-nom { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.piece-nom .ligne-nom { font-size: 17.5px; }
+.piece-montant { flex: none; font: 400 18px/1.3 var(--serif); font-variant-numeric: tabular-nums lining-nums; }
+.piece-numero { display: block; margin-top: 4px; font-size: 14px; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums lining-nums; }
+.piece-pdf { margin-top: 8px; }
+/* Fermé, l'écran n'a plus de barre : le bouton redescend tout en bas. */
+.ecran[data-etat="ferme"] .action-bas, .ecran[data-etat="ans"] .action-bas { bottom: 0; }
+.ecran[data-etat="ferme"] .defile, .ecran[data-etat="ans"] .defile { padding-bottom: 104px; }
+.piece-pdf { margin-left: -4px; }
+.lecture-seule { margin: 22px 2px 0; font-size: 15px; line-height: 1.45; color: var(--atlas-inkSoft); text-align: center; }
+[data-ecran-panneau] > .rubrique:first-of-type { margin-top: 24px; }
+</style>
+</head>
+<body class="pl pl-pilules">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="reglages-donnees.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Mes données</a>
+  <h1 class="pl-titre">Fermer mon compte</h1>
+  <p class="pl-verdict">Le compte se ferme depuis Mes données. <b>Les factures et les devis acceptés restent dix ans</b>, lisibles. Le reste s'efface trente jours après. <b>Rien n'est codé.</b></p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <!-- ═══ PROPOSÉ ═══ -->
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats">
+        <button type="button" data-etat="donnees" aria-pressed="true">Mes données</button>
+        <button type="button" data-etat="fermer">Fermer</button>
+        <button type="button" data-etat="ferme">Fermé</button>
+        <button type="button" data-etat="ans">Cinq ans après</button>
+        <button type="button" data-etat="salarie">Un salarié</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre avec-action" data-etat="donnees" id="ecran-propose">
+          <div class="defile">
+
+            <!-- ─── Mes données : la dernière ligne change de texte ─── -->
+            <div data-si-etat="donnees salarie">
+              <div class="tete-ronds">
+                <a class="rond-creux" href="reglages.html" aria-label="Retour aux réglages"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+                <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              </div>
+              <header class="tete" style="margin-top:0"><h1 class="tete-titre">Mes données</h1></header>
+            </div>
+
+            <div data-si-etat="donnees">
+              <p class="rubrique rubrique-or">En garder une copie</p>
+              <div class="plage fichier">
+                <span class="pastille-ico" data-ton="vert"><svg class="ico" aria-hidden="true"><use href="#i-carton"/></svg></span>
+                <span class="ligne-corps">
+                  <span class="ligne-nom">atlas-jardins-demo-2026-11-05.zip</span>
+                  <span class="ligne-situation">Tout ce qu'Atlas garde pour vous, dans un fichier qui s'ouvre sans lui.</span>
+                </span>
+              </div>
+              <p class="plage-ton ranger" data-ton="ambre"><svg class="ico" aria-hidden="true"><use href="#i-cadenas"/></svg><span>Il porte les coordonnées de vos clients : rangez-le comme un dossier client.</span></p>
+              <div class="fermer-lien">
+                <button class="bouton-texte alerte" type="button" data-va-etat="fermer">Fermer mon compte</button>
+              </div>
+            </div>
+
+            <!-- ─── Fermer : ce qui reste, ce qui part ─── -->
+            <div data-si-etat="fermer">
+              <div class="tete-ronds">
+                <button class="rond-creux" type="button" data-va-etat="donnees" aria-label="Retour à Mes données"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+                <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              </div>
+              <header class="tete" style="margin-top:0"><h1 class="tete-titre">Fermer mon compte</h1></header>
+
+              <p class="rubrique rubrique-or">Reste dix ans</p>
+              <div class="plage sort sort-reste">
+                <ul class="liste">
+                  <li><div class="ligne"><svg class="ico" aria-hidden="true"><use href="#i-facture"/></svg><span class="ligne-corps"><span class="ligne-nom">Vos factures et vos avoirs</span></span></div></li>
+                  <li><div class="ligne"><svg class="ico" aria-hidden="true"><use href="#i-document"/></svg><span class="ligne-corps"><span class="ligne-nom">Vos devis et contrats acceptés</span></span></div></li>
+                  <li><div class="ligne"><svg class="ico" aria-hidden="true"><use href="#i-client"/></svg><span class="ligne-corps"><span class="ligne-nom">Les clients et chantiers qui les portent</span></span></div></li>
+                  <li><div class="ligne"><svg class="ico" aria-hidden="true"><use href="#i-reglages"/></svg><span class="ligne-corps"><span class="ligne-nom">Vos réglages</span></span></div></li>
+                </ul>
+              </div>
+              <p class="quand">Vous les lisez et les téléchargez avec votre mot de passe.</p>
+
+              <p class="rubrique rubrique-or">S'efface le 5 décembre</p>
+              <div class="plage sort sort-part">
+                <ul class="liste">
+                  <li><div class="ligne"><svg class="ico" aria-hidden="true"><use href="#i-document"/></svg><span class="ligne-corps"><span class="ligne-nom">Les devis jamais acceptés</span></span></div></li>
+                  <li><div class="ligne"><svg class="ico" aria-hidden="true"><use href="#i-client"/></svg><span class="ligne-corps"><span class="ligne-nom">Les clients sans facture</span></span></div></li>
+                  <li><div class="ligne"><svg class="ico" aria-hidden="true"><use href="#i-photo"/></svg><span class="ligne-corps"><span class="ligne-nom">Les photos, les notes, les dictées</span></span></div></li>
+                </ul>
+              </div>
+              <p class="quand">D'ici là, <b>Rouvrir mon compte</b> rend tout.</p>
+
+              <button class="bouton bouton-creux mt-24" type="button" data-ouvre="feuille-preuve-copie" style="width:100%"><svg class="ico" aria-hidden="true"><use href="#i-telecharger"/></svg>Télécharger mes données</button>
+            </div>
+
+            <!-- ─── Fermé : lecture seule, ses pièces ─── -->
+            <div data-si-etat="ferme ans">
+              <header class="tete">
+                <h1 class="tete-titre">Jardins Démo</h1>
+              </header>
+              <p class="plage-ton ferme-tete" data-ton="ambre"><svg class="ico" aria-hidden="true"><use href="#i-cadenas"/></svg>
+                <span data-si-etat="ferme">Compte fermé. <b>Le reste s'efface le 5 décembre.</b></span>
+                <span data-si-etat="ans">Compte fermé. <b>Vos pièces restent jusqu'au 31 décembre 2036.</b></span>
+              </p>
+
+              <p class="rubrique rubrique-or">Factures</p>
+              <div class="plage pieces">
+                <ul class="liste">
+                  <li><div class="ligne piece">
+                    <span class="jour"><b>4</b><span>nov.</span></span>
+                    <span class="ligne-corps">
+                      <span class="piece-nom"><span class="ligne-nom">Syndic Les Tilleuls</span><span class="piece-montant">2 880,00 €</span></span>
+                      <span class="piece-numero">F2026-000032</span>
+                      <button class="bouton-texte piece-pdf" type="button" data-note="Sur la planche, le PDF ne s'ouvre pas."><svg class="ico ico-p" aria-hidden="true"><use href="#i-document"/></svg>Ouvrir le PDF</button>
+                    </span>
+                  </div></li>
+                  <li><div class="ligne piece">
+                    <span class="jour"><b>30</b><span>oct.</span></span>
+                    <span class="ligne-corps">
+                      <span class="piece-nom"><span class="ligne-nom">M. et Mme Roux</span><span class="piece-montant">1 240,00 €</span></span>
+                      <span class="piece-numero">F2026-000031</span>
+                      <button class="bouton-texte piece-pdf" type="button" data-note="Sur la planche, le PDF ne s'ouvre pas."><svg class="ico ico-p" aria-hidden="true"><use href="#i-document"/></svg>Ouvrir le PDF</button>
+                    </span>
+                  </div></li>
+                </ul>
+              </div>
+
+              <p class="rubrique rubrique-or">Devis acceptés</p>
+              <div class="plage pieces">
+                <ul class="liste">
+                  <li><div class="ligne piece">
+                    <span class="jour"><b>12</b><span>oct.</span></span>
+                    <span class="ligne-corps">
+                      <span class="piece-nom"><span class="ligne-nom">Syndic Les Tilleuls</span><span class="piece-montant">2 880,00 €</span></span>
+                      <span class="piece-numero">D2026-000041</span>
+                      <button class="bouton-texte piece-pdf" type="button" data-note="Sur la planche, le PDF ne s'ouvre pas."><svg class="ico ico-p" aria-hidden="true"><use href="#i-document"/></svg>Ouvrir le PDF</button>
+                    </span>
+                  </div></li>
+                </ul>
+              </div>
+
+              <button class="bouton bouton-creux mt-24" type="button" data-ouvre="feuille-preuve-copie" style="width:100%"><svg class="ico" aria-hidden="true"><use href="#i-telecharger"/></svg>Télécharger mes données</button>
+              <p class="lecture-seule">Rien ne se crée ni ne se modifie.</p>
+            </div>
+
+            <div class="vide reserve" data-si-etat="salarie">
+              <svg class="ico" aria-hidden="true"><use href="#i-cadenas"/></svg>
+              <p class="vide-titre">Ces réglages appartiennent au patron de l'entreprise.</p>
+              <p class="vide-texte">Seul le patron ferme le compte de l'entreprise.</p>
+            </div>
+          </div>
+
+          <div class="action-bas" data-si-etat="donnees"><button class="bouton bouton-plein" type="button" data-ouvre="feuille-preuve-copie"><svg class="ico" aria-hidden="true"><use href="#i-telecharger"/></svg>Télécharger mes données</button></div>
+          <div class="action-bas" data-si-etat="fermer"><button class="bouton bouton-fermer" type="button" data-ouvre="feuille-preuve-fermer">Fermer mon compte</button></div>
+          <div class="action-bas" data-si-etat="ferme ans"><button class="bouton bouton-plein" type="button" data-note="Rouvre l'abonnement : le compte repasse en écriture, sur ce qui est gardé.">Rouvrir mon compte</button></div>
+
+          <nav class="barre" aria-label="Navigation principale" data-si-etat="donnees fermer salarie">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html">Terminés</a>
+              <a class="barre-onglet" href="paysage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html" aria-current="page">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+
+          <!-- La vérification, pour la copie : la même qu'aujourd'hui. -->
+          <section class="feuille" id="feuille-preuve-copie" aria-hidden="true" aria-label="Vérifiez que c'est bien vous">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre">Vérifiez que c'est bien vous</h2>
+              <p class="feuille-sous">Ce fichier contient toute votre entreprise.</p>
+              <label class="champ">
+                <span class="champ-libelle">Votre mot de passe</span>
+                <input class="champ-saisie" type="password" autocomplete="off" value="motdepasse">
+              </label>
+              <div class="pile mt-24">
+                <button class="bouton bouton-plein" type="button" data-ferme data-note="Sur la planche, aucun fichier ne part.">Continuer</button>
+                <button class="bouton bouton-texte" type="button" data-ferme style="width:100%;justify-content:center;color:var(--atlas-inkSoft)">Annuler</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- La vérification, pour fermer : le même geste, son bouton à lui. -->
+          <section class="feuille" id="feuille-preuve-fermer" aria-hidden="true" aria-label="Fermer le compte">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre">Vérifiez que c'est bien vous</h2>
+              <p class="feuille-sous">Vos salariés n'auront plus accès à Atlas.</p>
+              <label class="champ">
+                <span class="champ-libelle">Votre mot de passe</span>
+                <input class="champ-saisie" type="password" autocomplete="off" value="motdepasse">
+              </label>
+              <div class="pile mt-24">
+                <button class="bouton bouton-fermer" type="button" data-ferme id="confirmer-fermeture">Fermer mon compte</button>
+                <button class="bouton bouton-texte" type="button" data-ferme style="width:100%;justify-content:center;color:var(--atlas-inkSoft)">Annuler</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce que ça fait</h2>
+    <ul>
+      <li>En bas de Mes données, « Pour effacer votre compte, écrivez à » devient <b>Fermer mon compte</b>. Même place. Touchez-le.</li>
+      <li>L'écran dit ce qui reste dix ans et ce qui s'efface, avec la date. Télécharger y est proposé, pas obligatoire.</li>
+      <li>Le mot de passe confirme. Touchez « Fermer mon compte » en bas, puis dans la feuille.</li>
+      <li>Fermé, le compte s'ouvre en lecture seule : ses factures, ses devis acceptés, leurs PDF. Touchez « Fermé ».</li>
+      <li>Pendant trente jours, Rouvrir rend tout. Après, Rouvrir repart sur ce qui est gardé. Touchez « Cinq ans après ».</li>
+      <li>Les accès des salariés se coupent à la fermeture.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>La copie, son nom de fichier et sa vérification, comme aujourd'hui.</li>
+      <li>Dix ans après la fin de l'année de chaque pièce : une facture de 2026 reste jusqu'au 31 décembre 2036. Les plus anciennes partent avant, chacune à sa date.</li>
+      <li>Réservé au patron. Touchez « Un salarié ».</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li><b>Fermer avant la fin du mois payé.</b> A : le compte reste ouvert jusqu'à la fin de ce qui est payé, puis se ferme, comme une résiliation. B : il se ferme tout de suite, et le reste du mois est perdu. <b>Je recommande A.</b></li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="reglages-donnees.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Mes données</a>
+  <a href="reglages-compte.html">Mon compte<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+/* Les petits mots de la planche : ce qui ne part pas le dit. */
+document.addEventListener("click", function (e) {
+  var b = e.target.closest("[data-note]");
+  if (b) Kit.note(b, b.getAttribute("data-note"));
+});
+/* La feuille se referme d'abord (data-ferme), puis l'écran passe à « Fermé » :
+   le kit ne fait qu'un des deux gestes par bouton. */
+document.getElementById("confirmer-fermeture").addEventListener("click", function () {
+  setTimeout(function () { document.querySelector('.pl-etats button[data-etat="ferme"]').click(); }, 250);
+});
+</script>
+</body>
+</html>

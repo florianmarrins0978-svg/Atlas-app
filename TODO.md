@@ -3,6 +3,10 @@
 
 ## FERMER UN COMPTE, ET LES FACTURES D'ABONNEMENT D'ATLAS (5 novembre 2026)
 
+**⏳ UNE PLANCHE À REGARDER (5 novembre 2026)** : `appli/soignee/fermer-mon-compte.html`,
+un choix : fermer avant la fin du mois payé, A (ouvert jusqu'à l'échéance,
+recommandé) ou B (fermé tout de suite).
+
 **Fermer un compte : tranché, pas codé** (`docs/QUESTIONS.md`, question 33,
 sa troisième version du 5 novembre, la seule qui vaut). Dans tous les cas, les
 factures, avoirs, devis et contrats acceptés et leurs PDF restent 10 ans,
