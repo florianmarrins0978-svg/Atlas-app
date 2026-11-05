@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-05
 
+- **Le motif d'une absence : validé** (*« très bien »*), tel que sur la planche. Pas codé.
 - **Planches : les zones de déplacement, et le motif d'une absence** (ses réponses : jours travaillés dans Pour mon comptable, avec motif ; zones MSA ou bâtiment, au choix, ou aucune, et modifiables). Atlas compterait les jours de chaque salarié par zone avec le planning, sans calculer de montant. Trouvé en chemin : une absence « déplacement » est un jour travaillé, que le compte aurait retiré de la paie ; Déplacement et Formation comptent donc travaillés. Rien n'est codé. `TODO.md`, entrée du 5 novembre.
 - **Jours fériés : son choix, le bleu.** La case du férié en bleu clair, son chiffre et sa pastille en bleu soutenu. Pas codé. `TODO.md`, entrée du 5 novembre.
 - **Jours travaillés : son choix, la A** (le chiffre corrigé dit pourquoi). Pas codé. Et sa question sur les zones de déplacement : elles ne sont pas les mêmes d'une convention à l'autre (bâtiment et travaux publics, cinq zones de 10 km ; paysage, le barème MSA) ; Atlas pourrait compter les jours par zone, sans calculer les montants. `TODO.md`, entrée du 5 novembre.

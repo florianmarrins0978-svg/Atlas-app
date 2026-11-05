@@ -21,7 +21,8 @@ et accord régional) avant de coder : ce poste ne joint pas msa.fr. **À
 trancher par lui** : un jour sur deux chantiers, la zone la plus loin ou celle
 du matin.
 
-**Planche du motif** : `appli/soignee/motif-absence.html`. Six motifs d'un
+**Planche du motif : VALIDÉE le 5 novembre** (*« très bien motif d'une
+absence »*), pas codée. `appli/soignee/motif-absence.html`. Six motifs d'un
 appui, au planning sous le salarié qui manque et dans la feuille d'Équipe :
 Congé, Maladie, Sans solde, Déplacement, Formation, Autre. **Trouvé en la
 dessinant** : une absence d'Atlas est née pour un déplacement de cinq jours
