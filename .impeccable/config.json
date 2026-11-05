@@ -602,6 +602,15 @@
         ],
         "createdAt": "2026-11-05T19:26:48.050Z",
         "reason": "PRODUCT.md, Brand Commitments: fond crème de la charte Arborea, identité existante du kit appli/soignee"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/jours-travailles.html"
+        ],
+        "createdAt": "2026-11-05T19:38:49.689Z",
+        "reason": "PRODUCT.md, Brand Commitments: fond crème de la charte Arborea, identité existante du kit appli/soignee"
       }
     ]
   }
