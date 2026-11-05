@@ -29,8 +29,22 @@ conformes en l'état** (lu dans `src/server/paiement/stripe.ts`, 5 novembre) :
   est pas une à notre connaissance : à relier à la même plateforme que celle
   des artisans, ou à une qui lit Stripe.
 
-Pas d'application à part : Stripe numérote, envoie, garde et montre déjà ces
-factures (guichet « Gérer mon abonnement »).
+**Ses réponses du 5 novembre** : Atlas sera **soumis à la TVA** (20 %, prix HT
+dans les CGU), et sa facture d'abonnement doit être **en Factur-X**.
+
+**Décision prise en conséquence** (le même principe que §555 pour ses
+artisans) : **Atlas fait lui-même sa facture d'abonnement**, Stripe ne fait
+qu'encaisser. Au crochet `invoice.paid`, Atlas écrit la facture (son numéro,
+sa TVA, l'identité de l'artisan relevée au paiement), la rend en Factur-X avec
+**le même code que le lot Factur-X des artisans**, la garde 10 ans et la met
+dans Réglages, Abonnement. Côté Stripe : envoi des factures par e-mail coupé
+et historique des factures retiré du guichet, sans quoi l'artisan recevrait
+deux factures pour une vente, avec deux numéros. À vérifier dans le tableau
+de bord le jour du compte Stripe (non vérifiable ici).
+
+Ordre : 1. le lot Factur-X (§555), 2. l'identité et la TVA au paiement,
+3. la facture d'abonnement d'Atlas sur ce même code, 4. en septembre 2027,
+la transmission par la plateforme agréée d'Atlas. Pas d'application à part.
 
 ## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : relier sa plateforme de facture électronique~~ TRANCHÉ LE 5 NOVEMBRE : 1 A, 2 A, 3 B
 
