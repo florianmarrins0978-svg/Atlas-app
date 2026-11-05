@@ -14,10 +14,16 @@
 // **Rien n'entre dans le dépôt** : 27 Mo de bibliothèques Java et 10 Mo de
 // règles vivent dans `~/.cache/atlas-facture-x` (ou `ATLAS_OUTILS_FACTURE_X`),
 // récupérés au premier besoin par Maven et git, puis relus tels quels.
-import { spawnSync } from "node:child_process";
+//
+// **Maven et git ne sont exigés QUE là où ils servent** : au premier besoin.
+// Un cache déjà posé se relit avec Java seul, et une machine qui n'a ni l'un ni
+// l'autre mesure quand même (`test-outil-requis.ts`, « un outil déclaré est un
+// outil appelé »).
+import { spawnSync, type SpawnSyncOptions } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync, readdirSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { exigerLesOutils } from "./_outil-requis";
 
 export const VERSIONS = {
   verapdf: "1.28.2",
@@ -28,12 +34,13 @@ export const VERSIONS = {
 
 const DEPOT_EN16931 = "https://github.com/ConnectingEurope/eInvoicing-EN16931.git";
 
-export function dossierDesOutils() {
+export function dossierDesOutils(): string {
   return process.env.ATLAS_OUTILS_FACTURE_X || path.join(os.homedir(), ".cache", "atlas-facture-x");
 }
 
-function jouer(commande, args, options = {}) {
-  const r = spawnSync(commande, args, { encoding: "utf8", timeout: 10 * 60 * 1000, ...options });
+function jouer(commande: string, args: string[], options: SpawnSyncOptions = {}): string {
+  exigerLesOutils(commande);
+  const r = spawnSync(commande, args, { timeout: 10 * 60 * 1000, ...options, encoding: "utf8" });
   if (r.status !== 0) {
     const sortie = `${r.stdout ?? ""}${r.stderr ?? ""}`.trim().split("\n").slice(-6).join("\n");
     throw new Error(`« ${commande} ${args.slice(0, 3).join(" ")} » a échoué (code ${r.status}).\n${sortie}`);
@@ -41,7 +48,7 @@ function jouer(commande, args, options = {}) {
   return r.stdout;
 }
 
-function bibliotheques(racine) {
+function bibliotheques(racine: string): string {
   const lib = path.join(racine, "lib");
   const attendus = [`Saxon-HE-${VERSIONS.saxon}.jar`, `greenfield-apps-${VERSIONS.verapdf}.jar`];
   const presents = existsSync(lib) ? readdirSync(lib) : [];
@@ -61,7 +68,7 @@ function bibliotheques(racine) {
   return lib;
 }
 
-function regles(racine) {
+function regles(racine: string): { xslt: string; xsd: string } {
   const depot = path.join(racine, `en16931-${VERSIONS.en16931.slice(0, 12)}`);
   const xslt = path.join(depot, "cii", "xslt", "EN16931-CII-validation.xslt");
   const xsd = path.join(
@@ -85,7 +92,7 @@ function regles(racine) {
 }
 
 /** Les chemins des contrôleurs, récupérés au besoin. Lève avec la commande fautive. */
-export function outilsFactureX() {
+export function outilsFactureX(): { classpath: string; xslt: string; xsd: string } {
   const racine = dossierDesOutils();
   const lib = bibliotheques(racine);
   const { xslt, xsd } = regles(racine);

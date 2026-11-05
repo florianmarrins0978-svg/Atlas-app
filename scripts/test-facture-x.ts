@@ -26,7 +26,7 @@ import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { exigerLesOutils } from "./_outil-requis";
-import { outilsFactureX } from "./_outils-facture-x.mjs";
+import { outilsFactureX } from "./_outils-facture-x";
 import {
   xmlFactureX,
   adresseEnParties,
@@ -47,7 +47,10 @@ function fluxBrut(doc: PDFDocument, ref: unknown): PDFRawStream {
   return flux;
 }
 
-exigerLesOutils("java", "mvn", "git");
+exigerLesOutils("java");
+// Avant tout essai : s'il faut les récupérer et que Maven ou git manque, la
+// suite se tait ICI, sans avoir rien mesuré à moitié.
+const outils = outilsFactureX();
 
 let reussis = 0;
 async function ok(nom: string, fn: () => void | Promise<void>) {
@@ -178,7 +181,6 @@ await ok("chaque donnée qui manque donne sa phrase, et aucun XML", () => {
 });
 
 console.log("\nLes contrôleurs officiels");
-const outils = outilsFactureX();
 const dossier = mkdtempSync(path.join(os.tmpdir(), "facture-x-"));
 
 function controler(fichiers: Record<string, string>): Map<string, string[]> {

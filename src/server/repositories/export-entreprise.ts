@@ -75,6 +75,8 @@ import {
   piecesImportees,
   liaisonsBancaires,
   virementsRecus,
+  liaisonsPlateformes,
+  transmissionsFactures,
   mouvementsBancaires,
   dossiersComptables,
   bilansComptables,
@@ -90,6 +92,8 @@ import { jourIso } from "@/lib/jour";
 
 // La banque reliée, moins ce qui en ouvre la lecture (voir la requête).
 const liaisonSansSession = Object.fromEntries(Object.entries(getTableColumns(liaisonsBancaires)).filter(([nom]) => nom !== "sessionId"));
+// Sa plateforme de facture électronique, moins son secret (voir la requête).
+const plateformeSansSecret = Object.fromEntries(Object.entries(getTableColumns(liaisonsPlateformes)).filter(([nom]) => nom !== "secretChiffre"));
 
 // Emporter ses données, sans demander la permission à personne.
 //
@@ -230,6 +234,8 @@ export async function exporterEntreprise(
       saBanqueReliee,
       sesVirementsRecus,
       sesMouvementsBancaires,
+      saPlateformeReliee,
+      sesTransmissions,
       sesDossiersComptables,
       sesBilansComptables,
       sesEnvoisAuComptable,
@@ -462,6 +468,11 @@ export async function exporterEntreprise(
       // fond du dossier du comptable, et la banque ne les rend plus après
       // quatre-vingt-dix jours.
       tx.select().from(mouvementsBancaires).where(eq(mouvementsBancaires.entrepriseId, e)),
+      // Sa plateforme de facture électronique et ce qu'elle a dit de chaque
+      // facture déposée (migration 0165). **Sans le secret** : chiffré ou
+      // non, il ouvre son compte chez la plateforme, et une archive voyage.
+      tx.select(plateformeSansSecret).from(liaisonsPlateformes).where(eq(liaisonsPlateformes.entrepriseId, e)),
+      tx.select().from(transmissionsFactures).where(eq(transmissionsFactures.entrepriseId, e)),
       // Les dossiers rangés pour le comptable et leurs bilans (migration
       // 0144) : gardés dix ans par Atlas, et c'est la sauvegarde qui permet de
       // les garder plus longtemps.
@@ -589,6 +600,8 @@ export async function exporterEntreprise(
       liaisons_bancaires: saBanqueReliee,
       virements_recus: sesVirementsRecus,
       mouvements_bancaires: sesMouvementsBancaires,
+      liaisons_plateformes: saPlateformeReliee,
+      transmissions_factures: sesTransmissions,
       dossiers_comptables: sesDossiersComptables,
       bilans_comptables: sesBilansComptables,
       envois_comptable: sesEnvoisAuComptable,

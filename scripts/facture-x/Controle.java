@@ -15,7 +15,7 @@ import net.sf.saxon.s9api.XsltTransformer;
  * D16B (la forme), puis les règles EN 16931 publiées par la Commission
  * européenne (le fond : totaux, TVA, mentions). Les deux fichiers sont ceux
  * de ConnectingEurope/eInvoicing-EN16931, à un commit fixé
- * (`scripts/_outils-facture-x.mjs`).
+ * (`scripts/_outils-facture-x.ts`).
  *
  * Une ligne par faute, « fichier<TAB>règle<TAB>texte », et rien d'autre :
  * la suite qui l'appelle (`scripts/test-facture-x.ts`) lit ces lignes.
