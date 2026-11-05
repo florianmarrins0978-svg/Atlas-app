@@ -939,7 +939,13 @@ nulle part. Une batterie jouée pendant qu'une session voisine enregistre un
 fichier rend des chiffres qui n'accusent personne et qu'il faut rejouer : dix
 minutes perdues, et l'envie d'y croire quand même.
 
-Une ligne suffit avant de la lancer, et l'on attend sa réponse. Vaut aussi pour
+Une ligne suffit avant de la lancer, et l'on attend sa réponse.
+
+**ET AUCUNE BATTERIE SANS SON « OUI » EXPLICITE — 5 novembre 2026, y compris
+dans un conteneur du nuage où personne d'autre ne mesure :** *« Ne lance
+aucune batterie !!!! Sans mon autorisation »*. Une question posée n'est pas
+une autorisation, et son silence non plus : le lot attend, commité, sur sa
+branche locale. Vaut aussi pour
 tout ce qui prend le port 3000 ou vide la base — les suites navigateur, le seed,
 un serveur de développement.
 
