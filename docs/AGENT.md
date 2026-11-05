@@ -419,6 +419,13 @@ remplacées par ce branchement.
 > périmètre ; l'extension y est désormais inscrite, et l'**émission légale**
 > reste explicitement hors périmètre — définitivement, pas « pas encore ».
 
+> **Révisé le 5 novembre 2026, par sa décision** (choix 1 A de la planche
+> `appli/soignee/reglages-facture-electronique.html`) : Atlas fabrique la
+> facture électronique (Factur-X) et la dépose sur la plateforme agréée de
+> l'artisan, qui la contrôle et la transmet. Une seule facture, un seul
+> numéro, celui d'Atlas. La plateforme agréée reste le seul canal légal :
+> Atlas n'en est pas une. Le pourquoi est dans `ARCHITECTURE.md` §555.
+
 ## 7. Où ça tourne
 
 L'application Next.js a besoin d'un serveur, d'une base PostgreSQL et de Redis.

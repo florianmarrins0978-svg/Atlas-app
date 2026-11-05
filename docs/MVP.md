@@ -50,6 +50,8 @@ Comptabilité, paiement en ligne, stocks, paie, RH, suivi GPS, WhatsApp, analyse
 
 **Émission légale des factures** : hors périmètre définitivement, quel que soit le stade. Atlas prépare les données, un outil comptable conforme émet le document. Ce n'est pas un « pas encore » : c'est un risque juridique qu'on ne prend pas.
 
+> **Révisé le 5 novembre 2026, par sa décision** : Atlas fabrique la Factur-X et la dépose sur la plateforme agréée de l'artisan, qui la contrôle et la transmet (`AGENT.md` §6, `ARCHITECTURE.md` §555).
+
 **Facturation et TVA au sens de la préparation** : ces briques sortent du hors-périmètre depuis l'extension du 2026-07-31 (voir §1). Elles restent hors du parcours socle décrit en §3, et sont cadrées dans [`AGENT.md`](AGENT.md).
 
 ## 6. Stack technique

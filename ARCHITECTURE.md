@@ -36924,3 +36924,19 @@ Contrôles : `test-feuille-main-oeuvre` (pur : la quantité à la journée, l'he
 
 **Ce qui part.** 79 des quatre-vingt-douze copies (13 scripts au nom de devis, de facture, de prix, d'avoir ou de remise attendent un lot à batterie, `TODO.md`) (constantes, chemins en ligne, fonctions `navigateurPreInstalle`), et les deux variables que `CLAUDE.md` §5 faisait passer à la main pour jouer une batterie ici. Éprouvé sans elles : `test-navigateur.ts` (quatre postes, dont celui d'aujourd'hui), deux suites qui montent un composant dans Chromium, une suite navigateur de l'appli et la connexion derrière un proxy.
 
+## §555 : La facture électronique : Atlas fabrique la Factur-X, la plateforme de l'artisan la transmet
+
+*5 novembre 2026, ses choix sur la planche `appli/soignee/reglages-facture-electronique.html`.* Rien n'est codé.
+
+| Choix | Sa réponse | Ce que ça veut dire |
+|---|---|---|
+| 1. qui fait la facture | **A** | Atlas garde son numéro et son PDF, et fabrique la Factur-X ; la plateforme agréée de l'artisan la contrôle et la transmet. Une seule facture par vente, un seul numéro |
+| 2. comment se relier | **A** | l'artisan colle la clé de son compte ; aucun accès partenaire à attendre. Le bouton viendra quand l'accès partenaire existera |
+| 3. plateforme coupée | **B** | rien ne part chez le client tant que la plateforme n'a pas pris la facture ; jamais une facture partie d'un seul côté |
+
+**Ce que le choix 1 A révise.** `AGENT.md` §6 et `MVP.md` disaient « Atlas prépare, l'outil comptable émet », définitivement. Le cadre a changé depuis : la réforme fait passer toute facture par une plateforme agréée, qui la contrôle avant de la transmettre (règles EN 16931 et françaises), et une API commune aux plateformes existe (AFNOR XP Z12-013). Le risque qui fondait la règle de juillet, une facture non conforme découverte trop tard, est arrêté à la porte de la plateforme : un refus revient avec sa raison. La responsabilité de la facture a toujours été celle de l'artisan, jamais celle de son logiciel.
+
+**Le verrou du 31 août et la Factur-X.** Le PDF d'une facture est protégé contre la modification (`proteger-pdf.ts`), c'est-à-dire chiffré avec un mot de passe propriétaire. Une Factur-X est un PDF/A-3, et la norme PDF/A interdit tout chiffrement : **une Factur-X ne peut pas être verrouillée.** Décision prise ici, et dite : la Factur-X ne sert qu'aux factures qui passent par la plateforme comme factures, celles d'un client **entreprise** ; la facture d'un **particulier** (la plateforme n'en transmet que les chiffres, e-reporting) et celle d'une **mairie** (Chorus Pro) gardent le PDF verrouillé d'aujourd'hui. Ce qui protège une Factur-X à la place : la plateforme garde ce qui est parti, et Atlas son empreinte.
+
+**L'ordre des lots.** D'abord la Factur-X, qui ne dépend d'aucun compte : une règle pure qui écrit le XML (CII, profil EN 16931) depuis la facture, le PDF rendu PDF/A-3 avec ce XML dedans, et un contrôle par les règles officielles. Ensuite le branchement (la clé chiffrée par `chiffre-au-repos.ts`, isolée par entreprise ; l'état de chaque facture transmise), qui ne s'éprouve qu'avec un vrai compte. Les deux sont de niveau 3.
+

@@ -1,7 +1,26 @@
 # Prochaines tâches
 
 
-## ⏳ À CHOISIR PAR LUI (5 novembre 2026) : relier sa plateforme de facture électronique
+## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : relier sa plateforme de facture électronique~~ TRANCHÉ LE 5 NOVEMBRE : 1 A, 2 A, 3 B
+
+**Ses réponses, le 5 novembre** : 1 A, 2 A (*« le plus simple c'est la A
+non ? »*), 3 B. `ARCHITECTURE.md` §555 porte la décision, et celle prise
+sur le verrou : Factur-X pour un client entreprise seulement, PDF verrouillé
+pour un particulier et une mairie. **Rien n'est codé.** Reste, dans l'ordre :
+
+1. **le lot Factur-X**, sans compte : XML CII au profil EN 16931 depuis la
+   facture (règle pure dans `src/lib/`), PDF/A-3 avec ce XML dedans, contrôle
+   par les règles officielles. Niveau 3 ;
+2. **le branchement**, avec sa clé sur un compte d'essai. Niveau 3.
+
+**À vérifier avant de coder, pas à lui demander :** le numéro d'une facture
+refusée par la plateforme (refaite sous le même numéro ou sous un neuf : la
+numérotation sans trou en dépend) ; les mentions françaises que le profil
+EN 16931 porte ou non (SIREN du client, catégorie de l'opération, option sur
+les débits). **À lui dire au moment de coder :** avec 3 B, une panne chez la
+plateforme bloque aussi la facture d'un particulier.
+
+*Ce qui suit est l'entrée telle qu'elle a été posée, avant ses réponses.*
 
 Sa demande : *« permettre à l'utilisateur de pouvoir connecter un compte agréé
 par l'État pour la facturation électronique »*. Planche
