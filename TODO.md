@@ -1,7 +1,13 @@
 # Prochaines tâches
 
 
-## ⏳ À CHOISIR PAR LUI (5 novembre 2026) : la couleur des jours fériés sur le planning
+## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : la couleur des jours fériés sur le planning~~ TRANCHÉ LE 5 NOVEMBRE : LE BLEU, PAS CODÉ
+
+**Sa réponse, le 5 novembre au soir** : *« bleue pour les jours fériés »*
+(`carteBleuFond` pour la case, `carteBleuTexte` pour le chiffre et la
+pastille). Il n'a pas dit de coder : **rien dans `src/`**. Restent ouverts,
+ci-dessous : la couleur dans Couleurs ou non, l'Alsace et la Moselle d'office,
+le lundi de Pentecôte dans les jours travaillés.
 
 **Sa réponse du 5 novembre**, devant la planche des jours travaillés : *« oui
 le calendrier doit connaître les jours fériés, on doit quand même pouvoir les
@@ -13,8 +19,8 @@ dates proposées au client) ; une couleur les montre.
 **Planche** : `appli/soignee/jours-feries.html`. La case du férié prend la
 couleur, même un dimanche ; « Férié, Armistice 1918 » à côté de la date, dans
 la semaine et dans la fiche du jour ; un férié sans chantier paraît quand même
-dans la semaine ; « 11 férié » dans la légende. **À trancher par lui** : bleu
-(proposé), rouge ou violet ; la couleur dans Couleurs ou non ; les deux fériés
+dans la semaine ; « 11 férié » dans la légende. **À trancher par lui** : ~~bleu,
+rouge ou violet~~ le bleu ; la couleur dans Couleurs ou non ; les deux fériés
 d'Alsace et Moselle d'office selon l'adresse de l'entreprise ; le lundi de
 Pentecôte, souvent travaillé (journée de solidarité), compte-t-il dans les
 jours travaillés ? **Rien dans `src/`.** Avant de lui redemander : chercher
