@@ -1,6 +1,35 @@
 # Prochaines tâches
 
 
+## FERMER UN COMPTE, ET LES FACTURES D'ABONNEMENT D'ATLAS (5 novembre 2026)
+
+**Fermer un compte : tranché, pas codé** (`docs/QUESTIONS.md`, question 33).
+Téléchargement d'abord, sinon une case « Je ne garde pas de copie » ; 30 jours ;
+puis tout s'efface. La base refuse aujourd'hui d'effacer une facture émise ou un
+devis envoyé (`drizzle/0018`, `0068`) : le chemin de fermeture devra lever ce
+verrou pour ce seul cas, prouvé par un test sur une base habitée. Maquette
+d'abord. Remplace `RETENTION.compteFermeJours` « mécanisme inexistant ».
+Article 13 des CGU à réécrire : sa décision (nouvelle version à accepter).
+
+**Les factures qu'Atlas adresse aux artisans : Stripe les fait, mais pas
+conformes en l'état** (lu dans `src/server/paiement/stripe.ts`, 5 novembre) :
+
+- la session de paiement ne demande **ni la raison sociale, ni l'adresse, ni
+  le numéro de TVA ou le SIREN** de l'artisan (`billing_address_collection`,
+  `tax_id_collection`, `customer_update[name|address]` absents) : mentions
+  obligatoires d'une facture entre professionnels ;
+- **aucune TVA n'est ajoutée** (ni `automatic_tax` ni taux) alors que les CGU
+  annoncent des prix HT, TVA en sus ;
+- les mentions d'Atlas (SIRET, TVA, pénalités de retard, indemnité de 40 €)
+  se posent dans le tableau de bord Stripe, pas dans le code : à faire par lui ;
+- **septembre 2027** : Atlas, petite entreprise, devra émettre ses factures
+  aux artisans en facture électronique par une plateforme agréée. Stripe n'en
+  est pas une à notre connaissance : à relier à la même plateforme que celle
+  des artisans, ou à une qui lit Stripe.
+
+Pas d'application à part : Stripe numérote, envoie, garde et montre déjà ces
+factures (guichet « Gérer mon abonnement »).
+
 ## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : relier sa plateforme de facture électronique~~ TRANCHÉ LE 5 NOVEMBRE : 1 A, 2 A, 3 B
 
 **Ses réponses, le 5 novembre** : 1 A, 2 A (*« le plus simple c'est la A

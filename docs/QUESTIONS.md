@@ -2180,28 +2180,30 @@ attaquable.
 
 ### Ce que vous avez tranché le 5 novembre 2026
 
-- les pièces gardées : il conserve une **connexion en lecture seule** pendant
-  10 ans. Il voit et télécharge ses factures, ses avoirs, ses devis acceptés
-  et ses contrats acceptés. Il ne crée plus rien ;
-- tout le reste s'efface après les 30 jours déjà décidés : les clients sans
-  facture, les **devis jamais acceptés**, les photos, les notes, les dictées ;
-- au bout des 10 ans, l'archive s'efface à son tour.
+D'abord une archive en lecture seule pendant 10 ans, puis, le même jour,
+**une version plus simple qui la remplace** :
 
-### Ce qui est proposé, et pas encore tranché
+1. la fermeture commence par **« Télécharger mes données »**, factures,
+   avoirs, devis et PDF compris ;
+2. s'il ne veut pas télécharger, il coche **« Je ne garde pas de copie. Mes
+   factures seront effacées. »** (le même geste que pour effacer un client,
+   question 32). Pas de blocage strict : un téléchargement raté sur un
+   chantier l'enfermerait dans Atlas ;
+3. **30 jours** pendant lesquels il peut revenir et retélécharger ;
+4. puis **tout s'efface**, factures comprises, et ses devis jamais acceptés
+   avec. Atlas lui a rendu ses données : c'est ce que demande le RGPD.
 
-À la fermeture, l'artisan **choisit** : garder ses pièces 10 ans chez Atlas
-(proposé par défaut), ou tout effacer tout de suite, après avoir téléchargé
-ses données. C'est ce choix qui rend la conservation légale.
+Seules restent les **factures d'abonnement qu'Atlas lui a adressées** : leur
+conservation est l'obligation d'Atlas.
 
-### La place que cela prend
-
-Environ 300 Mo par artisan sur 10 ans, PDF compris. Pour 1 000 artisans,
-environ 300 Go, soit quelques euros par mois. Estimation, pas une mesure.
+À vérifier avant de coder : que l'export s'ouvre sur un téléphone et que ses
+PDF se lisent sans Atlas.
 
 ### Ce qui reste à faire
 
 - **les conditions générales** : l'article 13 dit aujourd'hui que les pièces
-  comptables sont gardées dix ans, sans parler du choix. Il faut l'écrire, ce
+  comptables sont gardées dix ans. Avec ce choix, elles lui sont rendues puis
+  effacées. Il faut l'écrire, ce
   qui demande une nouvelle version et une nouvelle acceptation de chacun.
   C'est votre décision ;
 - **le code** : la fermeture du compte n'existe pas encore (vérifié le
