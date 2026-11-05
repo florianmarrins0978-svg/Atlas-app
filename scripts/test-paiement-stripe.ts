@@ -106,6 +106,8 @@ async function main() {
     const { serveur, recues } = fauxPrestataire((r) => {
       if (r.chemin.startsWith("/v1/prices?")) return { statut: 200, corps: { data: [] } };
       if (r.chemin === "/v1/prices") return { statut: 200, corps: { id: "price_neuf" } };
+      if (r.chemin.startsWith("/v1/tax_rates?")) return { statut: 200, corps: { data: [] } };
+      if (r.chemin === "/v1/tax_rates") return { statut: 200, corps: { id: "txr_neuf" } };
       return { statut: 200, corps: { id: "cs_1", url: "https://paiement.example/cs_1" } };
     });
     const port = await surUnPort(serveur);
@@ -158,6 +160,20 @@ async function main() {
       assert.equal(c.get("locale"), "fr");
     });
 
+    // **Sa réponse du 5 novembre 2026 : Atlas est soumis à la TVA.** Les CGU
+    // et l'écran annoncent des prix HT ; sans taux sur l'abonnement, Stripe
+    // prélevait le HT seul et la facture ne portait aucune TVA.
+    await cas("la TVA à 20 % s'ajoute au prix HT, sur l'abonnement entier", async () => {
+      const taux = recues.find((x) => x.methode === "POST" && x.chemin === "/v1/tax_rates");
+      assert.ok(taux, "aucun taux de TVA n'a été créé chez le prestataire");
+      const t = champs(taux.corps);
+      assert.equal(t.get("percentage"), "20");
+      assert.equal(t.get("inclusive"), "false", "un taux inclus ferait du prix HT un prix TTC");
+      assert.equal(t.get("country"), "FR");
+      const session = recues.find((x) => x.chemin === "/v1/checkout/sessions");
+      assert.equal(champs(session!.corps).get("subscription_data[default_tax_rates][0]"), "txr_neuf");
+    });
+
     await cas("l'adresse de retour est celle d'ATLAS_URL_PUBLIQUE, jamais celle du visiteur", async () => {
       const session = recues.find((x) => x.chemin === "/v1/checkout/sessions");
       assert.match(champs(session!.corps).get("success_url") ?? "", /^https:\/\/atlas\.example\//);
@@ -207,6 +223,19 @@ async function main() {
     const { serveur, recues } = fauxPrestataire((r) => {
       if (r.chemin.startsWith("/v1/prices?")) return { statut: 200, corps: { data: [{ id: "price_deja_la" }] } };
       if (r.chemin === "/v1/prices") return { statut: 200, corps: { id: "price_en_trop" } };
+      // Un taux d'un autre usage d'abord : seule l'étiquette d'Atlas compte.
+      if (r.chemin.startsWith("/v1/tax_rates?")) {
+        return {
+          statut: 200,
+          corps: {
+            data: [
+              { id: "txr_autre", metadata: {} },
+              { id: "txr_deja_la", metadata: { atlas_cle: "atlas_tva_fr_20" } },
+            ],
+          },
+        };
+      }
+      if (r.chemin === "/v1/tax_rates") return { statut: 200, corps: { id: "txr_en_trop" } };
       return { statut: 200, corps: { id: "cs_3", url: "https://paiement.example/cs_3" } };
     });
     const port = await surUnPort(serveur);
@@ -233,6 +262,12 @@ async function main() {
     await cas("c'est bien le prix trouvé qui part dans la session", async () => {
       const session = recues.find((x) => x.chemin === "/v1/checkout/sessions");
       assert.equal(champs(session!.corps).get("line_items[0][price]"), "price_deja_la");
+    });
+
+    await cas("le taux de TVA déjà créé par Atlas est réemployé, jamais recréé", async () => {
+      assert.equal(recues.filter((x) => x.methode === "POST" && x.chemin === "/v1/tax_rates").length, 0);
+      const session = recues.find((x) => x.chemin === "/v1/checkout/sessions");
+      assert.equal(champs(session!.corps).get("subscription_data[default_tax_rates][0]"), "txr_deja_la");
     });
 
     serveur.close();

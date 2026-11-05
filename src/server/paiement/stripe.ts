@@ -37,7 +37,14 @@
  */
 import { getEnv } from "../env";
 import { logger } from "../logger";
-import { FORMULES, formule, centimes, type FormuleCode, type Periodicite } from "@/lib/abonnements";
+import {
+  FORMULES,
+  formule,
+  centimes,
+  TVA_ABONNEMENT_POURCENT,
+  type FormuleCode,
+  type Periodicite,
+} from "@/lib/abonnements";
 import { remboursementAuProrata, type RaisonDepart } from "@/lib/resiliation";
 import type { EtatVenuDuPrestataire } from "../repositories/abonnements";
 
@@ -173,6 +180,55 @@ async function prixDeLaFormule(f: (typeof FORMULES)[number], periodicite: Period
 }
 
 /**
+ * LE TAUX DE TVA — fabriqué par Atlas chez le prestataire, comme le prix.
+ *
+ * Même raison que `prixDeLaFormule` : un taux créé à la main dans le tableau
+ * de bord serait une seconde source, et l'écran dirait HT pendant que la
+ * banque prélèverait autre chose. Un taux Stripe ne se modifie pas ; il n'a
+ * pas non plus de clé de recherche, d'où l'étiquette qui porte le taux : le
+ * jour où le taux change, un objet neuf naît et l'ancien reste aux factures
+ * déjà faites.
+ *
+ * **Non inclus** (`inclusive=false`) : le prix de `abonnements.ts` est HT, et
+ * un taux inclus en ferait silencieusement un prix TTC, soit 20 % de recette
+ * en moins sur chaque abonnement.
+ */
+async function tauxDeTva(): Promise<{ ok: true; taux: string } | Echec> {
+  const cle = `atlas_tva_fr_${TVA_ABONNEMENT_POURCENT}`;
+
+  const existants = await appeler("/v1/tax_rates?active=true&limit=100", "GET");
+  if (!existants.ok) return existants;
+  const liste = existants.donnees.data;
+  if (Array.isArray(liste)) {
+    for (const t of liste) {
+      if (estObjet(t) && typeof t.id === "string" && estObjet(t.metadata) && t.metadata.atlas_cle === cle) {
+        return { ok: true, taux: t.id };
+      }
+    }
+  }
+
+  const cree = await appeler(
+    "/v1/tax_rates",
+    "POST",
+    corpsFormulaire({
+      display_name: "TVA",
+      percentage: TVA_ABONNEMENT_POURCENT,
+      inclusive: "false",
+      country: "FR",
+      jurisdiction: "FR",
+      "metadata[atlas_cle]": cle,
+    })
+  );
+  if (!cree.ok) return cree;
+  const id = cree.donnees.id;
+  if (typeof id !== "string") {
+    logger.error("Le prestataire n'a pas rendu d'identifiant de taux de TVA", { reponse: cree.donnees });
+    return { ok: false, erreur: "prestataire_refuse" };
+  }
+  return { ok: true, taux: id };
+}
+
+/**
  * OUVRIR LE PAIEMENT — la page hébergée où il saisit sa carte.
  *
  * **`metadata` porte la formule choisie**, et c'est par là qu'on la relit au
@@ -193,6 +249,8 @@ export async function ouvrirLePaiement(params: {
 
   const prix = await prixDeLaFormule(f, params.periodicite);
   if (!prix.ok) return prix;
+  const tva = await tauxDeTva();
+  if (!tva.ok) return tva;
 
   const corps = corpsFormulaire({
     mode: "subscription",
@@ -208,6 +266,9 @@ export async function ouvrirLePaiement(params: {
     "subscription_data[metadata][entreprise_id]": params.entrepriseId,
     "subscription_data[metadata][formule]": params.formule,
     "subscription_data[metadata][periodicite]": params.periodicite,
+    // Sur l'abonnement, pas sur la ligne : un changement de formule remplace
+    // la ligne, et la TVA partirait avec elle.
+    "subscription_data[default_tax_rates][0]": tva.taux,
   });
 
   const r = await appeler("/v1/checkout/sessions", "POST", corps);

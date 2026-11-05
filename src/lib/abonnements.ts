@@ -398,6 +398,15 @@ export function formule(code: string | null | undefined): Formule | null {
   return FORMULES.find((f) => f.code === code) ?? null;
 }
 
+/**
+ * La TVA qu'Atlas ajoute à ses prix HT, en pour cent.
+ *
+ * Sa réponse du 5 novembre 2026 : Atlas est soumis à la TVA. Les CGU (article
+ * 14) et l'écran annoncent des prix HT, « la TVA française au taux en vigueur
+ * s'y ajoute » : c'est ce taux, et lui seul, qui part chez le prestataire.
+ */
+export const TVA_ABONNEMENT_POURCENT = 20;
+
 /** Ce qui sera débité, en euros HT, pour une formule et une périodicité. */
 export function montantDu(f: Formule, periodicite: Periodicite): number {
   return periodicite === "annuelle" ? f.prixAnnuel : f.prixMensuel;
