@@ -30,6 +30,7 @@ Format : le plus récent en tête.
 - **Le bilan des suites base nomme ses rouges sous le compte** (`Suites rouges : …`). La CI de `main` disait encore « 558/560 » après la correction, et le journal lisible d'ici s'arrête avant la ligne qui les nomme : les deux rouges restaient sans nom, alors que les 560 passent ici sous Node 20 comme 22.
 - **La CI installe Chromium avant les suites base.** Les deux rouges qu'elle a nommés (`test-dessin-glisser-zone-lue`, `test-motif-avoir-lisible`) ouvrent un vrai navigateur ; il ne s'installait qu'après elles. Reproduit ici en masquant le navigateur : même refus, « Executable doesn't exist ».
 - **La CI de `main` passe les suites base (560/560) et la construction, et 212 suites navigateur sur 213.** Les trois rouges e2e notés depuis le 2 septembre passent. Reste `test-anneau-dictee-e2e` (44 px entre le micro et l'avion en CI, zéro ici, non reproduit) : son rouge dit maintenant ce qu'il a mesuré.
+- **`test-anneau-dictee-e2e` mesure dans la page, plus dans la fenêtre.** Les 44 px de la CI étaient le défilement que Playwright fait en réessayant un appui (la fiche dépasse la fenêtre de 45 px) ; reproduit au chiffre près. L'écran n'avait rien. Un disque vraiment décalé la fait toujours rougir.
 
 ## 2026-11-04
 

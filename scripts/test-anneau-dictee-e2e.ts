@@ -131,7 +131,18 @@ async function main() {
   // planche ne montre : l'avion tombe EXACTEMENT sous le doigt qui vient de
   // lancer la dictée, donc un double appui enverrait une note d'une demi-seconde.
   await cas("l'avion prend la place exacte du micro, chaque geste porte son mot, et un double appui n'envoie rien", async () => {
-    const avant = await bouton.boundingBox();
+    // **Les boîtes se lisent DANS LA PAGE, pas dans la fenêtre** (5 novembre
+    // 2026). `boundingBox()` est relatif à ce qu'on voit : la fiche fait 709 px
+    // pour une fenêtre de 664, et quand Playwright réessaie un appui sur un
+    // bouton qui s'anime encore (une CI lente), il fait défiler la page pour
+    // le retrouver. La CI de `main` a ainsi lu « 44 px du micro » sur un disque
+    // resté à sa place : le doigt du patron, lui, ne fait rien défiler. On
+    // ajoute donc le défilement à chaque mesure.
+    const dansLaPage = async (boite: { x: number; y: number; width: number; height: number } | null) => {
+      const defile = await page.evaluate(() => ({ x: window.scrollX, y: window.scrollY }));
+      return boite && { ...boite, x: boite.x + defile.x, y: boite.y + defile.y };
+    };
+    const avant = await dansLaPage(await bouton.boundingBox());
     await bouton.click();
     const envoyer = page.locator('[data-atlas="dictee-envoyer"]');
     await envoyer.waitFor({ state: "visible", timeout: 10_000 });
@@ -145,7 +156,9 @@ async function main() {
         "un second appui dans la première seconde a envoyé la note : le double appui part chez Atlas"
       );
 
-      const disque = await page.locator('[data-atlas="dictee-envoyer"] .atlas-disque-envoi').boundingBox();
+      const disque = await dansLaPage(
+        await page.locator('[data-atlas="dictee-envoyer"] .atlas-disque-envoi').boundingBox()
+      );
       assert.ok(avant && disque, "le micro ou le disque d'envoi n'a pas de boîte : rien à mesurer");
       // Une boîte de zéro pixel n'est pas une mesure (`CLAUDE.md` §5).
       assert.ok(disque.width >= 76, `le disque d'envoi fait ${disque.width} px : ce n'est plus le disque du micro`);

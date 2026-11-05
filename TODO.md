@@ -7217,6 +7217,15 @@ qui la précèdent en CI (14/14). La cause n'est pas trouvée, et rien ne dit
 encore si son écran a un défaut. Le rouge écrit désormais les deux boîtes et le
 texte de l'anneau : lire la prochaine course de `ci.yml` avant de corriger.
 
+**TROUVÉ le soir même.** La course suivante a écrit les boîtes : disque à
+`y 441.84`, micro à `y 485.84`, même texte. La fiche fait 709 px pour une
+fenêtre de 664 : Playwright, en réessayant un appui sur un bouton qui s'anime
+encore, fait défiler la page de 44 px, et `boundingBox()` est relatif à la
+fenêtre. Reproduit ici au chiffre près en faisant défiler de 44 px. La suite
+mesure désormais dans la page ; elle reste rouge contre un disque vraiment
+décalé (30 px, éprouvé). L'écran du patron n'avait rien. **Reste à lire** la
+course de `ci.yml` qui suit : si elle est verte, barrer cette entrée.
+
 **Ce n'est pas le lot des boutons verts, et c'est MESURÉ, pas supposé.** Les
 mêmes trois suites échouent sur la CI de `main` (course 33753872485, arbre sans
 une ligne de mon code) et sur celle de la branche (33762884903) — la comparaison
