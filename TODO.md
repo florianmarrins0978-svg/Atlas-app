@@ -70,6 +70,15 @@ chaque salarié, une pastille par zone (même ordre pour tous, sur une grille,
 « +50 km » et « Dépôt » au bout), et le PDF aussi. « Modifier » au-dessus
 rouvre le même écran. Jamais réglé : une seule ligne « Vos salariés ont des
 zones de déplacement ? Régler », qui part dès la réponse, même Pas de zones.
+**Ses deux demandes suivantes, même soir** : *« pouvoir changer le nom des
+zones, si je veux écrire zone 3C »* : le nom se tape dans le réglage comme les
+km (la clé interne est le rang, renommer ne défait aucune correction) ; et
+*« des couleurs par zone, qu'à l'œil on voie comment ça rend »* : une seule
+teinte du clair (la plus proche) au foncé (la plus loin), « +50 km » au bout,
+« Dépôt » gris ; une barre de répartition sous chaque salarié, le chiffre de
+chaque case dans sa couleur, le nom au-dessus en encre. Rampe OKLCH teinte
+190, clair 0,71 à 0,29, sombre 0,47 à 0,88 (inversée sur fond sombre),
+éprouvée au validateur des couleurs dans les huit chartes jusqu'à sept pas.
 Le réglage vit dans Réglages, Équipe, ouvert par une ligne « Zones de déplacement » sous les
 absences, qui dit ce qui est choisi (« Paysage, 4 zones » ; sa demande du
 5 novembre, « ajoute sur la planche la ligne équipe ») : Pas de zones, Paysage (MSA, 0 à 5, 5 à 20, 20 à 30,

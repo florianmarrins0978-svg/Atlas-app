@@ -51,7 +51,11 @@
 .zones { padding: 2px 18px; }
 .zone { position: relative; display: flex; align-items: center; gap: 10px; min-height: 60px; }
 .zone + .zone::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
-.zone-nom { width: 74px; flex: none; font: 400 18px/1.2 var(--serif); color: var(--atlas-ink); }
+.zone-nom { width: 84px; flex: none; min-width: 0; padding: 6px 0; border: 0; border-bottom: 1.5px solid transparent; border-radius: 0;
+            background: transparent; outline: none; font: 400 18px/1.2 var(--serif); color: var(--atlas-ink); }
+/* Le nom se change : son trait se voit, comme celui des km. */
+input.zone-nom { border-bottom-color: var(--atlas-line); }
+input.zone-nom:focus { border-bottom-color: var(--atlas-or); }
 .zone-de { flex: 1; min-width: 0; font-size: 15px; color: var(--atlas-inkSoft); }
 .zone-km { width: 64px; flex: none; padding: 6px 0; border: 0; border-bottom: 1.5px solid var(--atlas-line); border-radius: 0;
            background: transparent; outline: none; text-align: center; color: var(--atlas-ink);
@@ -100,12 +104,34 @@
 .gars-haut .gars-nom { flex: 1; min-width: 0; }
 /* Une grille, pas un flot : la zone 2 de Julien tombe sous la zone 2 d'Antoine.
    Six cases tiennent sur une ligne ; au-delà (le bâtiment), deux lignes égales. */
-.pastilles { display: grid; grid-template-columns: repeat(var(--n, 6), minmax(0, 1fr)); gap: 6px; }
-.pastille-zone { min-width: 0; padding: 5px 2px 6px; border-radius: 10px; text-align: center; background: var(--atlas-rustTint); }
-.pastille-zone small { display: block; font-size: 11.5px; font-weight: 600; line-height: 1.2; color: var(--atlas-inkSoft); white-space: nowrap; }
-.pastille-zone b { display: block; margin-top: 2px; font: 400 19px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; color: var(--atlas-ink); }
-.pastille-zone.zero b { color: var(--atlas-muted); }
-.pastille-zone.corrige b { color: var(--atlas-orTexte); }
+.pastilles { display: grid; grid-template-columns: repeat(var(--n, 6), minmax(0, 1fr)); gap: 5px; align-items: end; }
+/* La case d'une zone : son nom au-dessus, en encre ; son chiffre dans sa
+   couleur. Aucun petit texte posé sur la couleur : il s'y lirait mal. */
+.pastille-zone { min-width: 0; text-align: center; }
+/* Un nom choisi par lui (« Zone 3C ») tient en entier : plus serré, et sur
+   deux lignes s'il le faut, jamais coupé de points de suspension. */
+.pastille-zone small { display: block; min-height: 14px; margin-bottom: 3px; font-size: 11px; font-weight: 600; line-height: 1.2;
+                       letter-spacing: -0.01em; color: var(--atlas-inkSoft); overflow-wrap: anywhere; }
+.pastille-zone b { display: block; padding: 7px 0 6px; border-radius: 9px; font: 600 19px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums;
+                   background: var(--zc); color: var(--tc); }
+.ecran[data-sombre] .pastille-zone b { background: var(--zs); color: var(--ts); }
+/* Zéro jour : la case reste, vide et cernée, pour que les colonnes tiennent. */
+.pastille-zone.zero b, .ecran[data-sombre] .pastille-zone.zero b { background: transparent; color: var(--atlas-muted); font-weight: 400;
+                                                                    box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
+.pastille-zone.depot b, .ecran[data-sombre] .pastille-zone.depot b { background: var(--atlas-rustTint); color: var(--atlas-ink); }
+.pastille-zone.depot.zero b { background: transparent; color: var(--atlas-muted); }
+/* Corrigé à la main : un trait d'or sous le chiffre, la couleur reste celle de la zone. */
+.pastille-zone.corrige b { box-shadow: inset 0 -3px 0 var(--atlas-or); }
+/* La répartition du mois d'un coup d'œil : la même couleur, à la largeur des jours. */
+.repartition { display: flex; gap: 2px; height: 8px; margin: -2px 0 2px; }
+.repartition i { display: block; min-width: 4px; border-radius: 2px; background: var(--zc); }
+.repartition i:first-child { border-radius: 4px 2px 2px 4px; }
+.repartition i:last-child { border-radius: 2px 4px 4px 2px; }
+.ecran[data-sombre] .repartition i { background: var(--zs); }
+.repartition i.depot, .ecran[data-sombre] .repartition i.depot { background: color-mix(in srgb, var(--atlas-muted) 45%, var(--atlas-card)); }
+.pz-teinte { width: 14px; height: 14px; flex: none; border-radius: 4px; background: var(--zc); }
+.ecran[data-sombre] .pz-teinte { background: var(--zs); }
+.pz-teinte.depot { background: color-mix(in srgb, var(--atlas-muted) 45%, var(--atlas-card)); }
 .gars .gars-manque { margin-top: -2px; }
 .zones-tete { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 16px 2px -8px; font-size: 15px; font-weight: 600; color: var(--atlas-inkSoft); }
 .zones-tete .bouton-texte { min-height: 44px; font-size: 15px; font-weight: 700; }
@@ -154,6 +180,9 @@
 .pdf-table td.jours { font: 400 14px/1.1 Georgia, serif; }
 .pdf-table td.vide { color: #c9c4b8; }
 .pdf-manque { margin: 10px 0 0; color: #9c3b2e; font-weight: 700; }
+/* Le papier ne suit pas la charte : la rampe claire, toujours. */
+.pdf-teinte { display: block; width: 14px; height: 5px; margin: 0 auto 4px; border-radius: 2px; background: var(--zc); }
+.pdf-teinte.depot { background: #c9c4b8; }
 .pdf-boite { margin-top: auto; padding: 11px 13px; background: #f3f1ec; border: 1px solid #e3dfd6; }
 .pdf-boite span { display: block; margin-top: 4px; color: #8a8578; font-size: 9.5px; }
 .pdf-pied { display: flex; justify-content: space-between; margin-top: 14px; font-size: 8px; color: #8a8578; }
@@ -225,7 +254,9 @@
       <li>Atlas compte les jours de chaque salarié par zone, avec le planning : qui était sur quel chantier, et où il est. Il ne calcule aucun montant : ils changent selon la région et deux fois par an, votre comptable les connaît.</li>
       <li>Un jour sur deux chantiers compte la zone la plus loin, même pour une demi-journée.</li>
       <li>Un chantier sans adresse précise ne compte dans aucune zone. Le total passe en rouge avec « Il manque une zone, ajoutez-la », le jour et le lieu dessous : vous touchez plus sur la bonne zone, et il disparaît.</li>
-      <li>Tout se corrige à la main, zone par zone, comme les jours travaillés. Le chiffre changé passe en or, et Remettre le calcul le rend.</li>
+      <li>Tout se corrige à la main, zone par zone, comme les jours travaillés. Le chiffre changé prend un trait d’or, et Remettre le calcul le rend.</li>
+      <li>Chaque zone a sa couleur, une seule teinte du clair au foncé : la plus claire est la plus proche, la plus foncée la plus loin. Sous chaque salarié, une barre montre son mois d’un coup d’œil, et chaque case garde son nom écrit au-dessus.</li>
+      <li>Le nom d’une zone se change, comme ses km : Zone 3C, Lointaine, ce que dit votre accord.</li>
     </ul>
     <h2>À vérifier avant de coder</h2>
     <ul class="a-trancher">
@@ -275,21 +306,44 @@ document.addEventListener("DOMContentLoaded", function () {
   function nb(n) { return String(n).replace(".", ","); }
   function jours(n) { return nb(n) + (n < 2 ? " jour" : " jours"); }
 
+  /* ─── La couleur d'une zone ────────────────────────────────────────────
+     Sa demande du 5 novembre : « des couleurs par zone, qu'à l'œil on voie
+     comment ça rend ». Les zones sont dans l'ORDRE de la distance : une seule
+     teinte, du clair (la plus proche) au foncé (la plus loin), plutôt que des
+     couleurs au hasard qui ne diraient pas laquelle est loin. « +50 km » est
+     le dernier pas ; « Dépôt », sans distance, reste gris.
+     Éprouvé au validateur des couleurs (rampe ordonnée, OKLCH, teinte 190) :
+     jusqu'à sept pas, chaque marche se distingue de sa voisine et la plus
+     claire se voit encore sur le fond, dans les six chartes claires et les
+     deux sombres. Sur fond sombre la rampe s'inverse : la plus loin est la
+     plus claire. Au-delà de sept pas, les marches se rapprochent : les noms
+     écrits au-dessus des cases restent la lecture sûre. */
+  var RAMPE = { clair: [0.71, 0.29], sombre: [0.47, 0.88] };
+  function teinte(k) {
+    var n = etat.zones.length + 1, t = n > 1 ? k / (n - 1) : 0;
+    var lc = RAMPE.clair[0] + (RAMPE.clair[1] - RAMPE.clair[0]) * t;
+    var ls = RAMPE.sombre[0] + (RAMPE.sombre[1] - RAMPE.sombre[0]) * t;
+    return "--zc:oklch(" + lc.toFixed(3) + " 0.1 190);--zs:oklch(" + ls.toFixed(3) + " 0.1 190);" +
+      "--tc:var(" + (lc < 0.58 ? "--atlas-card" : "--atlas-ink") + ");--ts:var(" + (ls < 0.6 ? "--atlas-ink" : "--atlas-card") + ")";
+  }
+
   /* ─── Les cases d'un mois : les zones, puis ce qui n'en a pas ─────────── */
   function cases() {
     var c = etat.zones.map(function (z, i) {
       var de = i === 0 ? 0 : etat.zones[i - 1][1];
-      return { cle: z[0], nom: z[0], sous: "de " + nb(de) + " à " + nb(z[1]) + " km" };
+      // La clé est le RANG, pas le nom : renommer « Zone 3 » en « Zone 3C »
+      // ne doit rien défaire de ce qui a été compté ou corrigé.
+      return { cle: "z" + i, nom: z[0], sous: "de " + nb(de) + " à " + nb(z[1]) + " km", teinte: teinte(i) };
     });
     var fin = etat.zones.length ? etat.zones[etat.zones.length - 1][1] : 0;
-    c.push({ cle: "hors", nom: "Hors zone", sous: "plus de " + nb(fin) + " km" });
-    c.push({ cle: "sans", nom: "Sans chantier", sous: "au dépôt ce jour-là" });
+    c.push({ cle: "hors", nom: "Hors zone", sous: "plus de " + nb(fin) + " km", teinte: teinte(etat.zones.length) });
+    c.push({ cle: "sans", nom: "Sans chantier", sous: "au dépôt ce jour-là", teinte: "" });
     return c;
   }
   function zoneDe(lieu) {
     if (lieu.depot) return "sans";
     if (lieu.km === null) return null;
-    for (var i = 0; i < etat.zones.length; i++) if (lieu.km <= etat.zones[i][1]) return etat.zones[i][0];
+    for (var i = 0; i < etat.zones.length; i++) if (lieu.km <= etat.zones[i][1]) return "z" + i;
     return "hors";
   }
   function calcul(g) {
@@ -377,12 +431,14 @@ document.addEventListener("DOMContentLoaded", function () {
         '<h2 class="rubrique">Les zones</h2><div class="plage zones">' +
         etat.zones.map(function (z, i) {
           var de = i === 0 ? 0 : etat.zones[i - 1][1];
-          return '<div class="zone"><span class="zone-nom">' + z[0] + '</span><span class="zone-de">de ' + nb(de) + ' à</span>' +
+          return '<div class="zone"><span class="pz-teinte" style="' + teinte(i) + '" aria-hidden="true"></span>' +
+            '<input class="zone-nom" type="text" autocomplete="off" maxlength="12" data-nom="' + i + '" value="' + z[0] + '" aria-label="Nom de la zone ' + (i + 1) + '">' +
+            '<span class="zone-de">de ' + nb(de) + ' à</span>' +
             '<input class="zone-km" type="text" inputmode="decimal" autocomplete="off" data-i="' + i + '" value="' + nb(z[1]) + '" aria-label="' + z[0] + ', jusqu’à combien de km">' +
             '<span class="zone-unite">km</span>' +
             '<button type="button" class="zone-retirer" data-geste="retirer" aria-label="Retirer ' + z[0] + '"' + (i === etat.zones.length - 1 && etat.zones.length > 1 ? "" : " hidden") + '>' + ico("croix") + '</button></div>';
         }).join("") +
-        '<div class="zone hors"><span class="zone-nom">Au-delà</span><span class="zone-de">Hors zone</span></div></div>' +
+        '<div class="zone hors"><span class="pz-teinte" style="' + teinte(etat.zones.length) + '" aria-hidden="true"></span><span class="zone-nom">Au-delà</span><span class="zone-de">Hors zone</span></div></div>' +
         '<div class="gestes-zones"><button type="button" class="bouton-texte or" data-geste="ajouter">' + ico("plus") + 'Ajouter une zone</button>' +
         '<button type="button" class="bouton-texte" data-geste="remettre-bareme">Remettre le barème</button></div>' +
         '<p class="second mt-8">Modèle à vérifier avec votre comptable.</p>';
@@ -432,6 +488,17 @@ document.addEventListener("DOMContentLoaded", function () {
   /* Une borne tapée : tout le reste suit tout de suite, et l'écran où l'on
      tape n'est pas repeint, pour que le champ garde son curseur. */
   function saisieDesZones(e, ici) {
+    /* Un nom tapé (« Zone 3C ») : sa demande du 5 novembre. Vide, la zone
+       garde son ancien nom plutôt que de devenir une case sans titre. */
+    if (e.target.matches(".zone-nom")) {
+      var nom = e.target.value.trim();
+      if (!nom) return;
+      etat.zones[Number(e.target.getAttribute("data-nom"))][0] = nom;
+      if (ici !== reglage) rendreReglage();
+      if (ici !== joursZone) rendreJours();
+      rendrePdf();
+      return;
+    }
     if (!e.target.matches(".zone-km")) return;
     var i = Number(e.target.getAttribute("data-i")), v = Number(e.target.value.replace(",", "."));
     var bas = i === 0 ? 0 : etat.zones[i - 1][1], haut = i < etat.zones.length - 1 ? etat.zones[i + 1][1] : 999;
@@ -445,6 +512,7 @@ document.addEventListener("DOMContentLoaded", function () {
     rendrePdf();
   }
   function finDeSaisie(e) {
+    if (e.target.matches(".zone-nom[data-nom]")) e.target.value = etat.zones[Number(e.target.getAttribute("data-nom"))][0];
     if (e.target.matches(".zone-km")) e.target.value = nb(etat.zones[Number(e.target.getAttribute("data-i"))][1]);
   }
   reglage.addEventListener("input", function (e) { saisieDesZones(e, reglage); });
@@ -483,9 +551,15 @@ document.addEventListener("DOMContentLoaded", function () {
       (avec ? '<div class="zones-tete"><span>' + resumeZones() + '</span><button type="button" class="bouton-texte or" data-geste="vers-zones-jours">Modifier</button></div>' : "") +
       '<div class="plage gens">' + GENS.map(function (g, k) {
         var m = avec ? manque(g) : 0;
-        var pastilles = avec ? '<span class="pastilles" style="--n:' + parLigne() + '">' + colonnes().map(function (c) {
+        var cols = colonnes();
+        var barre = avec ? '<span class="repartition" aria-hidden="true">' + cols.map(function (c) {
           var n = compte(g, c.cle);
-          return '<span class="pastille-zone' + (n === 0 ? " zero" : "") + (corrige(g, c.cle) ? " corrige" : "") + '"><small>' + court(c) + "</small><b>" + n + "</b></span>";
+          return n ? '<i class="' + (c.cle === "sans" ? "depot" : "") + '" style="flex:' + n + " 1 0;" + c.teinte + '"></i>' : "";
+        }).join("") + "</span>" : "";
+        var pastilles = avec ? barre + '<span class="pastilles" style="--n:' + parLigne() + '">' + cols.map(function (c) {
+          var n = compte(g, c.cle);
+          return '<span class="pastille-zone' + (n === 0 ? " zero" : "") + (c.cle === "sans" ? " depot" : "") + (corrige(g, c.cle) ? " corrige" : "") +
+            '" style="' + c.teinte + '"><small>' + court(c) + "</small><b>" + n + "</b></span>";
         }).join("") + "</span>" +
           (m > 0 ? '<span class="gars-manque">' + ilManque(m) + "</span>" : m < 0 ? '<span class="gars-manque">' + deTrop(-m) + "</span>" : "") : "";
         return '<button class="gars touche" type="button" data-geste="salarie" data-k="' + k + '"' + (avec ? "" : " disabled") + '>' +
@@ -510,7 +584,7 @@ document.addEventListener("DOMContentLoaded", function () {
       return c.cle !== "hors" || compte(g, c.cle) > 0 || corrige(g, c.cle);
     }).map(function (c) {
       var n = compte(g, c.cle); somme += n;
-      return '<div class="pz"><span class="pz-corps"><span class="pz-nom">' + c.nom + '</span><span class="pz-sous">' + c.sous + "</span></span>" +
+      return '<div class="pz"><span class="pz-teinte' + (c.cle === "sans" ? " depot" : "") + '" style="' + c.teinte + '" aria-hidden="true"></span><span class="pz-corps"><span class="pz-nom">' + c.nom + '</span><span class="pz-sous">' + c.sous + "</span></span>" +
         '<button type="button" class="pas" data-geste="pas" data-cle="' + c.cle + '" data-delta="-1" aria-label="Un jour de moins en ' + c.nom + '"' + (n === 0 ? " disabled" : "") + ">" + ico("moins") + "</button>" +
         '<span class="pz-n' + (corrige(g, c.cle) ? " corrige" : "") + '">' + n + "</span>" +
         '<button type="button" class="pas" data-geste="pas" data-cle="' + c.cle + '" data-delta="1" aria-label="Un jour de plus en ' + c.nom + '">' + ico("plus") + "</button></div>";
@@ -561,7 +635,7 @@ document.addEventListener("DOMContentLoaded", function () {
       return c.cle !== "hors" || GENS.some(function (g) { return compte(g, c.cle) > 0; });
     }) : [];
     var tete = "<th>Salarié</th><th>Jours</th>" + cols.map(function (c) {
-      return "<th>" + (c.cle === "sans" ? "Sans chantier" : c.cle === "hors" ? "Hors zone" : c.nom.replace("Zone ", "Zone<br>")) + "</th>";
+      return '<th><i class="pdf-teinte' + (c.cle === "sans" ? " depot" : "") + '" style="' + c.teinte + '"></i>' + (c.cle === "sans" ? "Sans chantier" : c.cle === "hors" ? "Hors zone" : c.nom.replace("Zone ", "Zone<br>")) + "</th>";
     }).join("");
     var corps = GENS.map(function (g) {
       return "<tr><td>" + g.nom + '</td><td class="jours">' + nb(g.jours) + "</td>" + cols.map(function (c) {
