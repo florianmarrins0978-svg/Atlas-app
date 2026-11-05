@@ -41,7 +41,6 @@ import { chromium } from "playwright";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { existsSync } from "node:fs";
-import { cheminDuNavigateur } from "./_navigateur.mjs";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 // `resolve` : un chemin relatif donné en argument produisait « file://docs/… »
@@ -56,8 +55,8 @@ if (!existsSync(CIBLE)) {
   process.exit(1);
 }
 
-const CHROME = cheminDuNavigateur();
-const navigateur = await chromium.launch({ executablePath: cheminDuNavigateur() });
+const CHROME = process.env.CHROME_ATLAS ?? "/opt/pw-browsers/chromium";
+const navigateur = await chromium.launch(existsSync(CHROME) ? { executablePath: CHROME } : {});
 
 const plaintes = [];
 const dire = (bon, quoi) => {
