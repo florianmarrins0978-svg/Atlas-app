@@ -44,6 +44,8 @@
 .pl-question button[aria-pressed="true"] { background: #2f3b2f; color: #faf9f5; }
 .pl-question button:focus-visible { outline: 2px solid #8b6835; outline-offset: 2px; }
 @media (max-width: 480px) { .pl-questions { padding: 0 var(--gouttiere); } }
+/* Le courriel se lit dans la boîte mail, pas dans Atlas : la barre de l'appli n'y est pas. */
+.ecran[data-etat="alerte"] .barre { display: none; }
 
 /* Les trois choix, lus sur l'écran lui-même : ce qui ne vaut pas se tait. */
 .ecran[data-nom="a"] .si-nom-b, .ecran[data-nom="b"] .si-nom-a,
@@ -185,7 +187,7 @@
 <header class="pl-tete">
   <a class="pl-sommaire" href="reglages.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Réglages</a>
   <h1 class="pl-titre">Une idée pour l'appli</h1>
-  <p class="pl-verdict">Votre demande du 5 novembre&nbsp;: chacun <b>dit ce qui lui manque</b>, à la voix ou par écrit, et vous le lisez. Trois choix. <b>Rien n'est codé.</b></p>
+  <p class="pl-verdict">Votre demande du 5 novembre&nbsp;: chacun <b>dit ce qui lui manque</b>, à la voix ou par écrit, et vous le lisez. <b>Vos choix&nbsp;: 1 A, 2 B, 3 B.</b> Ce qui arrive chez vous est sous «&nbsp;Chez vous&nbsp;». <b>Rien n'est codé.</b></p>
 </header>
 
 <main class="pl-scene">
@@ -198,7 +200,7 @@
         <button type="button" data-etat="dire">Son idée</button>
         <button type="button" data-etat="envoyee">Envoyée</button>
         <button type="button" data-etat="assistant">Dans l'assistant</button>
-        <button type="button" data-etat="editeur">Chez vous</button>
+        <button type="button" data-etat="alerte" data-chez-vous>Chez vous</button>
       </div>
       <div class="pl-questions" aria-label="Les trois choix">
         <span class="pl-question" data-question="nom" data-montre-etat="dire">1 Le nom
@@ -214,7 +216,7 @@
           <div class="defile">
 
             <!-- ═══ RÉGLAGES : la porte, en bas, pour tout le monde ═══ -->
-            <div data-si-etat="porte">
+            <div data-si-etat="porte editeur-porte">
               <header class="tete">
                 <h1 class="tete-titre">Réglages</h1>
                 <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-va-etat="assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
@@ -256,6 +258,16 @@
                 <li><a class="ligne touche" href="reglages-connexion-double-verification.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-cle"/></svg><span class="ligne-corps"><span class="ligne-nom">Double vérification</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
                 <li><a class="ligne touche" href="reglages-apparence.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-apparence"/></svg><span class="ligne-corps"><span class="ligne-nom">Couleurs</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
               </ul></div>
+
+              <!-- Chez vous seulement : votre compte est celui de l'éditeur (src/server/editeur.ts). -->
+              <button class="porte touche" type="button" id="porte-editeur" data-va-etat="editeur" data-si-etat="editeur-porte">
+                <span class="pastille-ico" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-email"/></svg></span>
+                <span class="ligne-corps">
+                  <span class="ligne-nom">Les idées reçues</span>
+                  <span class="ligne-situation"><span class="etat" data-ton="or">2 nouvelles</span></span>
+                </span>
+                <span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>
+              </button>
 
               <button class="porte touche" type="button" id="porte" data-va-etat="dire">
                 <span class="pastille-ico" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-ampoule"/></svg></span>
@@ -336,7 +348,7 @@
             <!-- ═══ CHEZ VOUS, B : les idées reçues, dans vos Réglages seulement ═══ -->
             <div data-si-etat="editeur" class="si-suite-b">
               <div class="tete-ronds">
-                <button class="rond-creux" type="button" aria-label="Retour aux réglages" data-va-etat="porte"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+                <button class="rond-creux" type="button" aria-label="Retour aux réglages" data-va-etat="editeur-porte"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
                 <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-va-etat="assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
               </div>
               <header class="tete" style="margin-top:0"><h1 class="tete-titre">Les idées reçues</h1></header>
@@ -398,8 +410,23 @@
               </div>
             </div>
 
+            <!-- ═══ CHEZ VOUS, B : le courriel qui prévient. Il dit qui, jamais quoi :
+                 le texte peut nommer un client, il reste dans Atlas, derrière le mot
+                 de passe. Un seul courriel pour ce qui arrive le même jour. ═══ -->
+            <div data-si-etat="alerte" class="si-suite-b">
+              <header class="tete"><h1 class="tete-titre moyen">Votre boîte mail</h1></header>
+              <article class="plage mail">
+                <dl class="mail-entete">
+                  <dt>De</dt><dd>Atlas</dd>
+                  <dt>Objet</dt><dd>2 nouvelles idées</dd>
+                </dl>
+                <p class="recue-texte">Jardins Démo et Élagage Durand vous ont envoyé une idée.</p>
+                <a class="bouton bouton-plein mt-24" href="#" data-va-etat="editeur-porte">Ouvrir Atlas</a>
+              </article>
+            </div>
+
             <!-- ═══ CHEZ VOUS, A : un courriel, et rien dans l'appli ═══ -->
-            <div data-si-etat="editeur" class="si-suite-a">
+            <div data-si-etat="alerte editeur" class="si-suite-a">
               <header class="tete"><h1 class="tete-titre moyen">Votre boîte mail</h1></header>
               <article class="plage mail">
                 <dl class="mail-entete">
@@ -487,7 +514,7 @@
       <li>On appuie, on parle, on appuie sur Envoyer. Ou on l'écrit. «&nbsp;Annuler&nbsp;» reste quelques secondes, comme pour Retirer, et rien ne part avant.</li>
       <li>Avec l'idée partent le nom, l'entreprise, le rôle, le jour et l'écran d'où elle vient. Rien d'autre&nbsp;: ni client, ni montant.</li>
       <li>B&nbsp;: chacun retrouve ses idées sous le micro, avec leur suite&nbsp;: Envoyée, Prévue, Dans l'appli, Pas prévue. Une idée faite se dit aussi sur la ligne des Réglages.</li>
-      <li>B&nbsp;: chez vous, «&nbsp;Les idées reçues&nbsp;», dans vos Réglages et chez personne d'autre. La note s'écoute, l'idée se range d'un appui, une réponse s'écrit. Les idées pareilles se comptent&nbsp;: «&nbsp;Demandée 3 fois&nbsp;».</li>
+      <li>B&nbsp;: chez vous, «&nbsp;Les idées reçues&nbsp;». La note s'écoute, l'idée se range d'un appui, une réponse s'écrit. Les idées pareilles se comptent&nbsp;: «&nbsp;Demandée 3 fois&nbsp;».</li>
     </ul>
     <h2>Écarté</h2>
     <ul class="garde">
@@ -495,11 +522,17 @@
       <li>Des cases à choisir (problème, idée, question)&nbsp;: un geste de plus pour l'artisan. Le tri se fait chez vous.</li>
       <li>La photo jointe&nbsp;: peu savent faire une capture d'écran. Elle s'ajoute si vous la voulez.</li>
     </ul>
-    <h2>À trancher</h2>
-    <ul class="a-trancher">
-      <li><b>1, le nom.</b> A «&nbsp;Une idée pour l'appli&nbsp;», B «&nbsp;Il vous manque quelque chose&nbsp;?&nbsp;». <b>Je recommande A</b>&nbsp;: dans une liste, une question se lit comme une alerte, et «&nbsp;l'appli&nbsp;» tient si le nom Atlas change.</li>
-      <li><b>2, après l'envoi.</b> A&nbsp;: un merci, et l'idée arrive dans votre boîte mail. B&nbsp;: l'artisan suit ses idées, vous les rangez dans l'appli. <b>Je recommande B</b>&nbsp;: des courriels ne se comptent pas, et un artisan qui voit son idée arriver en redonne. B coûte plus&nbsp;: une table, votre écran, et un accès à vous seul aux idées de toutes les entreprises, sans rien d'autre de chez elles.</li>
-      <li><b>3, l'assistant.</b> A&nbsp;: rien ne change, l'assistant dit seulement que l'appli ne sait pas. B&nbsp;: il propose d'envoyer l'idée, et il faut toucher Envoyer. <b>Je recommande B</b>&nbsp;: c'est quand ça manque qu'on y pense.</li>
+    <h2>Où ça arrive chez vous</h2>
+    <ul>
+      <li>Dans Atlas, sur votre compte à vous&nbsp;: «&nbsp;Les idées reçues&nbsp;» dans vos Réglages. Personne d'autre ne voit cette ligne, comme pour Mon vocabulaire.</li>
+      <li>Un courriel vous prévient, sur votre adresse. Il dit de qui vient l'idée, jamais ce qu'elle dit&nbsp;: le texte peut nommer un client, il reste dans Atlas, derrière votre mot de passe. Un seul courriel pour les idées d'une même journée.</li>
+      <li>Pas de seconde application&nbsp;: elle lirait les mêmes idées, dans la même base, et ce serait une porte de plus à protéger sur internet.</li>
+    </ul>
+    <h2>Vos choix, le 5 novembre</h2>
+    <ul class="garde">
+      <li><b>1 A</b>, «&nbsp;Une idée pour l'appli&nbsp;».</li>
+      <li><b>2 B</b>, l'artisan suit ses idées, vous les rangez dans l'appli.</li>
+      <li><b>3 B</b>, l'assistant propose d'envoyer l'idée quand il ne sait pas faire.</li>
     </ul>
   </section>
 </main>
@@ -552,8 +585,10 @@ document.addEventListener("DOMContentLoaded", function () {
     clearInterval(battement);
     /* Le tiroir d'un geste ne survit pas à un autre écran : partir, c'est garder. */
     if (etat !== "envoyee") ecran.querySelectorAll(".tiroir-flottant").forEach(function (t) { t.remove(); });
-    if (etat === "porte") {
-      var porte = document.getElementById("porte");
+    var chezVous = ["alerte", "editeur-porte", "editeur"].indexOf(etat) >= 0;
+    document.querySelector("[data-chez-vous]").setAttribute("aria-pressed", chezVous ? "true" : "false");
+    if (etat === "porte" || etat === "editeur-porte") {
+      var porte = document.getElementById(etat === "porte" ? "porte" : "porte-editeur");
       requestAnimationFrame(function () {
         var haut = porte.getBoundingClientRect().top - defile.getBoundingClientRect().top + defile.scrollTop;
         defile.scrollTop = Math.max(0, haut - 260);

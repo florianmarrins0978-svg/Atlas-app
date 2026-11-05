@@ -1,7 +1,7 @@
 # Prochaines tâches
 
 
-## ⏳ À CHOISIR PAR LUI (5 novembre 2026) : une idée pour l'appli
+## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : une idée pour l'appli~~ TRANCHÉ LE 5 NOVEMBRE : 1 A, 2 B, 3 B, PAS CODÉ
 
 **Sa demande du 5 novembre** : *« un petit espace, pas vraiment contact, pour
 que l'utilisateur puisse à chaque fois me dire ce qu'il aimerait avoir en plus
@@ -15,7 +15,8 @@ l'idée partent le nom, l'entreprise, le rôle, le jour et l'écran d'origine,
 rien d'autre. Écartés : une fenêtre qui demande l'avis, des catégories à
 choisir, la photo jointe.
 
-**À trancher par lui** (mes recommandations entre parenthèses) :
+**Tranché par lui le 5 novembre : 1 A, 2 B, 3 B** (mes trois recommandations).
+Il n'a pas dit de coder.
 1. le nom, « Une idée pour l'appli » ou « Il vous manque quelque chose ? » (A) ;
 2. après l'envoi, A un courriel à `CONTACT_ATLAS`, B l'artisan suit ses idées
    (Envoyée, Prévue, Dans l'appli, Pas prévue) et lui les range dans « Les
@@ -23,6 +24,16 @@ choisir, la photo jointe.
 3. l'assistant, A rien, B il propose d'envoyer l'idée quand il ne sait pas
    faire, et l'artisan touche Envoyer (B). Aujourd'hui sa consigne donne
    l'adresse `CONTACT_ATLAS` (`assistant-service.ts`).
+
+**Où ça arrive chez lui** (sa question du même soir : *« ça va arriver où
+chez moi ? Faudrait-il une petite application connectée ? »*) : dans Atlas,
+sur son compte d'éditeur (`estEditeur`, comme Mon vocabulaire), une ligne
+« Les idées reçues » dans ses Réglages, que personne d'autre ne voit ; et un
+courriel à `CONTACT_ATLAS` qui dit de qui vient l'idée, jamais son texte (il
+peut nommer un client), un seul pour les idées d'une même journée. **Pas de
+seconde application** : elle lirait la même base, et ce serait une porte de
+plus à protéger. Ajouté sur la planche, sous « Chez vous ». **Pas vérifiable
+ici** : que `ATLAS_EDITEUR_EMAIL` soit posée sur son espace avec son adresse.
 
 **Ce que B coûte, à savoir avant de le coder** : une table d'idées par
 entreprise sous RLS, et un lecteur de plus, l'éditeur, qui lit les idées de
