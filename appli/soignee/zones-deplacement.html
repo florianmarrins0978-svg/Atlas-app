@@ -172,12 +172,20 @@ input.zone-nom:focus { border-bottom-color: var(--atlas-or); }
 .pdf-lib { display: block; margin-bottom: 4px; font-size: 7.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #8a8578; }
 .pdf-deux { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .pdf-deux p { margin: 0; }
-.pdf-table { width: 100%; margin-top: 20px; border-collapse: collapse; font-variant-numeric: tabular-nums lining-nums; }
-.pdf-table th { padding: 0 2px 6px; font-size: 7px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #8a8578;
-                border-bottom: 1px solid #d9d5cc; text-align: center; }
+/* Sa remarque du 5 novembre : « pourquoi Hors zone et Sans chantier ne sont
+   pas alignés ? Aligne tout, fais les choses carrées. » Toutes les colonnes de
+   jours ont la MÊME largeur (table fixe), chaque en-tête tient sur deux
+   lignes, collées en bas, et sa marque de couleur à la même hauteur ; chaque
+   chiffre est centré sous la sienne. */
+.pdf-table { width: 100%; margin-top: 20px; border-collapse: collapse; table-layout: fixed; font-variant-numeric: tabular-nums lining-nums; }
+.pdf-table col.c-nom { width: 62px; }
+.pdf-table col.c-jours { width: 40px; }
+.pdf-table th { height: 34px; padding: 0 1px 6px; vertical-align: bottom; font-size: 7px; font-weight: 700; line-height: 1.25; letter-spacing: 0.03em;
+                text-transform: uppercase; color: #8a8578; border-bottom: 1px solid #d9d5cc; text-align: center; }
 .pdf-table th:first-child, .pdf-table td:first-child { text-align: left; padding-left: 0; }
-.pdf-table td { padding: 8px 2px; text-align: center; border-bottom: 1px solid #ebe8e1; }
-.pdf-table td.jours { font: 400 14px/1.1 Georgia, serif; }
+/* Le nom, en petit, et le chiffre, en grand, posés sur la MÊME ligne d'écriture. */
+.pdf-table td { padding: 9px 1px 8px; vertical-align: baseline; text-align: center; border-bottom: 1px solid #ebe8e1; }
+.pdf-table td.jours { font: 400 14px/1 Georgia, serif; }
 .pdf-table td.vide { color: #c9c4b8; }
 .pdf-manque { margin: 10px 0 0; color: #9c3b2e; font-weight: 700; }
 /* Le papier ne suit pas la charte : la rampe claire, toujours. */
@@ -634,8 +642,13 @@ document.addEventListener("DOMContentLoaded", function () {
     var cols = avec ? cases().filter(function (c) {
       return c.cle !== "hors" || GENS.some(function (g) { return compte(g, c.cle) > 0; });
     }) : [];
+    /* Deux lignes pour TOUS les en-têtes : « Zone » sur « 1A », « Hors » sur
+       « zone », « Au » sur « dépôt ». Un nom choisi par lui coupe à son
+       premier espace. */
+    function deuxLignes(t) { var i = t.indexOf(" "); return i < 0 ? "<br>" + t : t.slice(0, i) + "<br>" + t.slice(i + 1); }
     var tete = "<th>Salarié</th><th>Jours</th>" + cols.map(function (c) {
-      return '<th><i class="pdf-teinte' + (c.cle === "sans" ? " depot" : "") + '" style="' + c.teinte + '"></i>' + (c.cle === "sans" ? "Sans chantier" : c.cle === "hors" ? "Hors zone" : c.nom.replace("Zone ", "Zone<br>")) + "</th>";
+      return '<th><i class="pdf-teinte' + (c.cle === "sans" ? " depot" : "") + '" style="' + c.teinte + '"></i>' +
+        deuxLignes(c.cle === "sans" ? "Au dépôt" : c.cle === "hors" ? "Hors zone" : c.nom) + "</th>";
     }).join("");
     var corps = GENS.map(function (g) {
       return "<tr><td>" + g.nom + '</td><td class="jours">' + nb(g.jours) + "</td>" + cols.map(function (c) {
@@ -646,7 +659,8 @@ document.addEventListener("DOMContentLoaded", function () {
     papier.innerHTML = '<h3 class="pdf-titre">Jours travaillés</h3><p class="pdf-sous">Novembre 2026</p><hr class="pdf-filet">' +
       '<div class="pdf-deux"><div><span class="pdf-lib">Entreprise</span><p>Atelier Démo<br>10 rue des Artisans, Nantes<br>SIRET 123 456 789 00012</p></div>' +
       '<div><span class="pdf-lib">Zones</span><p>' + (avec ? MODELES[etat.choix].nom + ", depuis le siège<br>à vol d’oiseau" : "Pas de zones") + "</p></div></div>" +
-      '<table class="pdf-table"><thead><tr>' + tete + "</tr></thead><tbody>" + corps + "</tbody></table>" +
+      '<table class="pdf-table"><colgroup><col class="c-nom"><col class="c-jours">' + cols.map(function () { return "<col>"; }).join("") + "</colgroup>" +
+      "<thead><tr>" + tete + "</tr></thead><tbody>" + corps + "</tbody></table>" +
       (avec ? GENS.filter(function (g) { return manque(g) !== 0; }).map(function (g) {
         var m = manque(g);
         return '<p class="pdf-manque">' + g.nom + " : " + (m > 0 ? jours(m) + " sans zone" : jours(-m) + " de trop dans les zones") + ".</p>";
