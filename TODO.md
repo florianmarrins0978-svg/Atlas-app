@@ -34,6 +34,14 @@ peut nommer un client), un seul pour les idées d'une même journée. **Pas de
 seconde application** : elle lirait la même base, et ce serait une porte de
 plus à protéger. Ajouté sur la planche, sous « Chez vous ». **Pas vérifiable
 ici** : que `ATLAS_EDITEUR_EMAIL` soit posée sur son espace avec son adresse.
+**Vérifié dans le dépôt le 5 novembre : rien ne la pose** (ni `remoteEnv` de
+`devcontainer.json`, ni `docker-compose.yml`, ni `completer-env-local.sh`).
+Elle n'y est donc que s'il l'a écrite lui-même dans `.env.local`. Le signe
+à l'écran : Réglages, Atlas IA, le paquet « Ce qu'elle sait reconnaître » et
+Mon vocabulaire n'apparaissent qu'à l'éditeur. Le jour où les artisans
+auront une adresse en ligne, la même variable devra y être posée, sinon
+personne ne lira les idées. Le courriel d'alerte suppose aussi
+`BREVO_API_KEY` et `COURRIEL_EXPEDITEUR` là où tourne l'appli.
 
 **Ce que B coûte, à savoir avant de le coder** : une table d'idées par
 entreprise sous RLS, et un lecteur de plus, l'éditeur, qui lit les idées de
