@@ -26,7 +26,9 @@ import type { ReglementRecu } from "../../lib/acomptes-facture";
 import type { Ctx } from "./context";
 import { lireDevisQuiFaitFoi } from "./devis";
 import { genererPdfFacture, type FacturePdfData } from "../pdf/facture-pdf";
-import { pieceDeLaFacture } from "../pdf/facture-x-pdf";
+import { fabriquerFactureX, pieceDeLaFacture } from "../pdf/facture-x-pdf";
+import { deposerDansLaTransaction, marquerLaPlateformeCoupee, plateformePourDeposer } from "./plateforme-facture";
+import type { Refus as RefusDeLaPlateforme } from "../plateformes/api-commune";
 import { enregistrerObjet } from "../storage";
 import { jourIso } from "../../lib/jour";
 import { factureDExemple } from "../../lib/facture-d-exemple";
@@ -2201,7 +2203,34 @@ async function numeroSansLePrendre(tx: DbOrTx, entrepriseId: string, maintenant:
   return ecrireNumero(format, "facture", { annee, mois, numero });
 }
 
+/**
+ * La plateforme n'a pas pris la facture : rien n'est émis, le brouillon reste
+ * (son choix 3 B, `ARCHITECTURE.md` §555). Le message est la phrase rendue au
+ * patron ; `famille` dit quel geste elle appelle.
+ */
+export class FacturePasPriseParLaPlateformeError extends Error {
+  readonly famille: RefusDeLaPlateforme["famille"];
+  constructor(refus: RefusDeLaPlateforme) {
+    super(refus.raison);
+    this.name = "FacturePasPriseParLaPlateformeError";
+    this.famille = refus.famille;
+  }
+}
+
 export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Date = new Date()) {
+  try {
+    return await emettreDansLaBase(ctx, factureId, maintenant);
+  } catch (err) {
+    // **Après le retour en arrière**, sinon la marque partirait avec lui : la
+    // liaison dit « coupée » jusqu'à ce qu'il remplace ses identifiants.
+    if (err instanceof FacturePasPriseParLaPlateformeError && err.famille === "coupee") {
+      await marquerLaPlateformeCoupee(ctx, maintenant);
+    }
+    throw err;
+  }
+}
+
+async function emettreDansLaBase(ctx: Ctx, factureId: string, maintenant: Date) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [avant] = await tx.select().from(factures).where(eq(factures.id, factureId)).limit(1);
     if (!avant) throw new Error("Facture introuvable");
@@ -2270,11 +2299,29 @@ export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Da
     // **Une entreprise reçoit une Factur-X** (`ARCHITECTURE.md` §555) : le
     // même papier, polices embarquées, sans verrou, son XML dedans. C'est
     // cette pièce-là qui s'archive et que son lien sert.
-    const pdfBytes = await pieceDeLaFacture(
-      donneesFacture({ ...avant, ...emetteur, ...adresses, ...dates, statut: "emise" }, lignes, complements),
-      habillage2,
-      maintenant
-    );
+    const donnees = donneesFacture({ ...avant, ...emetteur, ...adresses, ...dates, statut: "emise" }, lignes, complements);
+    // **Avec une plateforme reliée, rien ne part sans elle** (son choix 3 B) :
+    // une Factur-X que la règle refuse, une liaison coupée ou une plateforme
+    // muette défont l'émission entière, numéro compris. Sans plateforme, la
+    // pièce part comme avant (`pieceDeLaFacture`).
+    const plateforme = estUneEntreprise(donnees.clientNom, donnees.clientCivilite)
+      ? await plateformePourDeposer(tx, ctx.entrepriseId)
+      : null;
+    if (plateforme && !plateforme.ok) throw new FacturePasPriseParLaPlateformeError(plateforme);
+    let pdfBytes: Uint8Array;
+    if (plateforme) {
+      const fx = await fabriquerFactureX(donnees, habillage2, maintenant);
+      if (!fx.ok) {
+        throw new FacturePasPriseParLaPlateformeError({
+          ok: false,
+          famille: "refusee",
+          raison: `La facture ne peut pas partir en facture électronique : ${fx.raison}`,
+        });
+      }
+      pdfBytes = fx.pdf;
+    } else {
+      pdfBytes = await pieceDeLaFacture(donnees, habillage2, maintenant);
+    }
 
     const objet = await enregistrerObjet(
       `chantiers/${avant.chantierId}/factures`,
@@ -2318,6 +2365,18 @@ export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Da
       .update(chantiers)
       .set({ factureEnvoyeeAt: sql`COALESCE(facture_envoyee_at, now())` })
       .where(eq(chantiers.id, facture.chantierId));
+
+    // **Le dépôt en dernier, dans la même transaction** : s'il échoue, tout ce
+    // qui précède se défait, et la plateforme n'a rien reçu. S'il réussit, la
+    // facture est chez elle ET émise ici, jamais l'un sans l'autre.
+    if (plateforme) {
+      const depot = await deposerDansLaTransaction(tx, ctx.entrepriseId, plateforme, {
+        id: facture.id,
+        numero: facture.numeroCommercial,
+        pdf: pdfBytes,
+      });
+      if (!depot.ok) throw new FacturePasPriseParLaPlateformeError(depot);
+    }
 
     return facture;
   });
