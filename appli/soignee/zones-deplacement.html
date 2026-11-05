@@ -36,8 +36,11 @@
   5 novembre, « il faut un message avec le nombre de jours travaillés
   calculés, qui s'affiche en rouge parce qu'il manque une zone à ajouter, et
   l'utilisateur met le +1 sur la bonne zone ». Le message nomme le jour et le
-  lieu, pour qu'il sache laquelle. Un jour sans chantier se dit « Sans
-  chantier ». Tout se corrige à la main.
+  lieu, pour qu'il sache laquelle. Tout se corrige à la main.
+
+  UN JOUR AU DÉPÔT COMPTE EN ZONE 1 : sa règle du même soir, « à partir du
+  moment où même s'ils sont au dépôt, ça sera la zone 1 ; sans chantier, tu
+  peux l'enlever ». La case « Sans chantier » a disparu.
 
   RIEN N'EST CODÉ DANS src/. Distances inventées pour la planche, depuis le
   siège de l'Atelier Démo à Nantes.
@@ -118,8 +121,6 @@ input.zone-nom:focus { border-bottom-color: var(--atlas-or); }
 /* Zéro jour : la case reste, vide et cernée, pour que les colonnes tiennent. */
 .pastille-zone.zero b, .ecran[data-sombre] .pastille-zone.zero b { background: transparent; color: var(--atlas-muted); font-weight: 400;
                                                                     box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
-.pastille-zone.depot b, .ecran[data-sombre] .pastille-zone.depot b { background: var(--atlas-rustTint); color: var(--atlas-ink); }
-.pastille-zone.depot.zero b { background: transparent; color: var(--atlas-muted); }
 /* Corrigé à la main : un trait d'or sous le chiffre, la couleur reste celle de la zone. */
 .pastille-zone.corrige b { box-shadow: inset 0 -3px 0 var(--atlas-or); }
 /* La répartition du mois d'un coup d'œil : la même couleur, à la largeur des jours. */
@@ -128,10 +129,9 @@ input.zone-nom:focus { border-bottom-color: var(--atlas-or); }
 .repartition i:first-child { border-radius: 4px 2px 2px 4px; }
 .repartition i:last-child { border-radius: 2px 4px 4px 2px; }
 .ecran[data-sombre] .repartition i { background: var(--zs); }
-.repartition i.depot, .ecran[data-sombre] .repartition i.depot { background: color-mix(in srgb, var(--atlas-muted) 45%, var(--atlas-card)); }
 .pz-teinte { width: 14px; height: 14px; flex: none; border-radius: 4px; background: var(--zc); }
 .ecran[data-sombre] .pz-teinte { background: var(--zs); }
-.pz-teinte.depot { background: color-mix(in srgb, var(--atlas-muted) 45%, var(--atlas-card)); }
+
 .gars .gars-manque { margin-top: -2px; }
 .zones-tete { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 16px 2px -8px; font-size: 15px; font-weight: 600; color: var(--atlas-inkSoft); }
 .zones-tete .bouton-texte { min-height: 44px; font-size: 15px; font-weight: 700; }
@@ -172,8 +172,7 @@ input.zone-nom:focus { border-bottom-color: var(--atlas-or); }
 .pdf-lib { display: block; margin-bottom: 4px; font-size: 7.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #8a8578; }
 .pdf-deux { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .pdf-deux p { margin: 0; }
-/* Sa remarque du 5 novembre : « pourquoi Hors zone et Sans chantier ne sont
-   pas alignés ? Aligne tout, fais les choses carrées. » Toutes les colonnes de
+/* Sa remarque du 5 novembre : « pourquoi Hors zone n'est pas aligné ? Aligne tout, fais les choses carrées. » Toutes les colonnes de
    jours ont la MÊME largeur (table fixe), chaque en-tête tient sur deux
    lignes, collées en bas, et sa marque de couleur à la même hauteur ; chaque
    chiffre est centré sous la sienne. */
@@ -190,7 +189,6 @@ input.zone-nom:focus { border-bottom-color: var(--atlas-or); }
 .pdf-manque { margin: 10px 0 0; color: #9c3b2e; font-weight: 700; }
 /* Le papier ne suit pas la charte : la rampe claire, toujours. */
 .pdf-teinte { display: block; width: 14px; height: 5px; margin: 0 auto 4px; border-radius: 2px; background: var(--zc); }
-.pdf-teinte.depot { background: #c9c4b8; }
 .pdf-boite { margin-top: auto; padding: 11px 13px; background: #f3f1ec; border: 1px solid #e3dfd6; }
 .pdf-boite span { display: block; margin-top: 4px; color: #8a8578; font-size: 9.5px; }
 .pdf-pied { display: flex; justify-content: space-between; margin-top: 14px; font-size: 8px; color: #8a8578; }
@@ -261,6 +259,7 @@ input.zone-nom:focus { border-bottom-color: var(--atlas-or); }
       <li>Chaque borne se change, une zone s’ajoute ou se retire, et Remettre le barème rend le modèle. Les zones partent du siège ou du dépôt, à vol d’oiseau.</li>
       <li>Atlas compte les jours de chaque salarié par zone, avec le planning : qui était sur quel chantier, et où il est. Il ne calcule aucun montant : ils changent selon la région et deux fois par an, votre comptable les connaît.</li>
       <li>Un jour sur deux chantiers compte la zone la plus loin, même pour une demi-journée.</li>
+      <li>Un jour au dépôt compte en zone 1, comme un chantier tout près.</li>
       <li>Un chantier sans adresse précise ne compte dans aucune zone. Le total passe en rouge avec « Il manque une zone, ajoutez-la », le jour et le lieu dessous : vous touchez plus sur la bonne zone, et il disparaît.</li>
       <li>Tout se corrige à la main, zone par zone, comme les jours travaillés. Le chiffre changé prend un trait d’or, et Remettre le calcul le rend.</li>
       <li>Chaque zone a sa couleur, une seule teinte du clair au foncé : la plus claire est la plus proche, la plus foncée la plus loin. Sous chaque salarié, une barre montre son mois d’un coup d’œil, et chaque case garde son nom écrit au-dessus.</li>
@@ -319,7 +318,7 @@ document.addEventListener("DOMContentLoaded", function () {
      comment ça rend ». Les zones sont dans l'ORDRE de la distance : une seule
      teinte, du clair (la plus proche) au foncé (la plus loin), plutôt que des
      couleurs au hasard qui ne diraient pas laquelle est loin. « +50 km » est
-     le dernier pas ; « Dépôt », sans distance, reste gris.
+     le dernier pas.
      Éprouvé au validateur des couleurs (rampe ordonnée, OKLCH, teinte 190) :
      jusqu'à sept pas, chaque marche se distingue de sa voisine et la plus
      claire se voit encore sur le fond, dans les six chartes claires et les
@@ -345,11 +344,11 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     var fin = etat.zones.length ? etat.zones[etat.zones.length - 1][1] : 0;
     c.push({ cle: "hors", nom: "Hors zone", sous: "plus de " + nb(fin) + " km", teinte: teinte(etat.zones.length) });
-    c.push({ cle: "sans", nom: "Sans chantier", sous: "au dépôt ce jour-là", teinte: "" });
     return c;
   }
   function zoneDe(lieu) {
-    if (lieu.depot) return "sans";
+    // Au dépôt : la première zone, sa règle du 5 novembre.
+    if (lieu.depot) return etat.zones.length ? "z0" : "hors";
     if (lieu.km === null) return null;
     for (var i = 0; i < etat.zones.length; i++) if (lieu.km <= etat.zones[i][1]) return "z" + i;
     return "hors";
@@ -370,7 +369,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function deTrop(n) { return n === 1 ? "Une zone de trop, retirez-la." : n + " zones de trop, retirez-les."; }
 
   /* Ce que les zones ne couvrent pas : les jours travaillés, moins tout ce
-     qui est placé (zones, hors zone, sans chantier). Négatif : trop placé. */
+     qui est placé (zones et hors zone). Négatif : trop placé. */
   function manque(g) {
     var place = cases().reduce(function (t, c) { return t + compte(g, c.cle); }, 0);
     return Math.ceil(g.jours) - place;
@@ -540,7 +539,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
   function court(c) {
-    if (c.cle === "sans") return "Dépôt";
     if (c.cle === "hors") return "+" + nb(etat.zones.length ? etat.zones[etat.zones.length - 1][1] : 0) + "\u00a0km";
     return c.nom;
   }
@@ -562,11 +560,11 @@ document.addEventListener("DOMContentLoaded", function () {
         var cols = colonnes();
         var barre = avec ? '<span class="repartition" aria-hidden="true">' + cols.map(function (c) {
           var n = compte(g, c.cle);
-          return n ? '<i class="' + (c.cle === "sans" ? "depot" : "") + '" style="flex:' + n + " 1 0;" + c.teinte + '"></i>' : "";
+          return n ? '<i style="flex:' + n + " 1 0;" + c.teinte + '"></i>' : "";
         }).join("") + "</span>" : "";
         var pastilles = avec ? barre + '<span class="pastilles" style="--n:' + parLigne() + '">' + cols.map(function (c) {
           var n = compte(g, c.cle);
-          return '<span class="pastille-zone' + (n === 0 ? " zero" : "") + (c.cle === "sans" ? " depot" : "") + (corrige(g, c.cle) ? " corrige" : "") +
+          return '<span class="pastille-zone' + (n === 0 ? " zero" : "") + (corrige(g, c.cle) ? " corrige" : "") +
             '" style="' + c.teinte + '"><small>' + court(c) + "</small><b>" + n + "</b></span>";
         }).join("") + "</span>" +
           (m > 0 ? '<span class="gars-manque">' + ilManque(m) + "</span>" : m < 0 ? '<span class="gars-manque">' + deTrop(-m) + "</span>" : "") : "";
@@ -592,7 +590,7 @@ document.addEventListener("DOMContentLoaded", function () {
       return c.cle !== "hors" || compte(g, c.cle) > 0 || corrige(g, c.cle);
     }).map(function (c) {
       var n = compte(g, c.cle); somme += n;
-      return '<div class="pz"><span class="pz-teinte' + (c.cle === "sans" ? " depot" : "") + '" style="' + c.teinte + '" aria-hidden="true"></span><span class="pz-corps"><span class="pz-nom">' + c.nom + '</span><span class="pz-sous">' + c.sous + "</span></span>" +
+      return '<div class="pz"><span class="pz-teinte" style="' + c.teinte + '" aria-hidden="true"></span><span class="pz-corps"><span class="pz-nom">' + c.nom + '</span><span class="pz-sous">' + c.sous + "</span></span>" +
         '<button type="button" class="pas" data-geste="pas" data-cle="' + c.cle + '" data-delta="-1" aria-label="Un jour de moins en ' + c.nom + '"' + (n === 0 ? " disabled" : "") + ">" + ico("moins") + "</button>" +
         '<span class="pz-n' + (corrige(g, c.cle) ? " corrige" : "") + '">' + n + "</span>" +
         '<button type="button" class="pas" data-geste="pas" data-cle="' + c.cle + '" data-delta="1" aria-label="Un jour de plus en ' + c.nom + '">' + ico("plus") + "</button></div>";
@@ -643,12 +641,10 @@ document.addEventListener("DOMContentLoaded", function () {
       return c.cle !== "hors" || GENS.some(function (g) { return compte(g, c.cle) > 0; });
     }) : [];
     /* Deux lignes pour TOUS les en-têtes : « Zone » sur « 1A », « Hors » sur
-       « zone », « Au » sur « dépôt ». Un nom choisi par lui coupe à son
-       premier espace. */
+       « zone ». Un nom choisi par lui coupe à son premier espace. */
     function deuxLignes(t) { var i = t.indexOf(" "); return i < 0 ? "<br>" + t : t.slice(0, i) + "<br>" + t.slice(i + 1); }
     var tete = "<th>Salarié</th><th>Jours</th>" + cols.map(function (c) {
-      return '<th><i class="pdf-teinte' + (c.cle === "sans" ? " depot" : "") + '" style="' + c.teinte + '"></i>' +
-        deuxLignes(c.cle === "sans" ? "Au dépôt" : c.cle === "hors" ? "Hors zone" : c.nom) + "</th>";
+      return '<th><i class="pdf-teinte" style="' + c.teinte + '"></i>' + deuxLignes(c.cle === "hors" ? "Hors zone" : c.nom) + "</th>";
     }).join("");
     var corps = GENS.map(function (g) {
       return "<tr><td>" + g.nom + '</td><td class="jours">' + nb(g.jours) + "</td>" + cols.map(function (c) {

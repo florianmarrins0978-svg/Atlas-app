@@ -72,15 +72,14 @@ que d'office, dans le document comptable, ça soit visible : Antoine a
 travaillé 19 jours, et à côté le nombre de zones »*). Le choix se fait UNE
 fois, dans Équipe, et vaut partout : Jours travaillés montre d'office, sous
 chaque salarié, une pastille par zone (même ordre pour tous, sur une grille,
-« +50 km » et « Dépôt » au bout), et le PDF aussi. « Modifier » au-dessus
+« +50 km » au bout), et le PDF aussi. « Modifier » au-dessus
 rouvre le même écran. Jamais réglé : une seule ligne « Vos salariés ont des
 zones de déplacement ? Régler », qui part dès la réponse, même Pas de zones.
 **Ses deux demandes suivantes, même soir** : *« pouvoir changer le nom des
 zones, si je veux écrire zone 3C »* : le nom se tape dans le réglage comme les
 km (la clé interne est le rang, renommer ne défait aucune correction) ; et
 *« des couleurs par zone, qu'à l'œil on voie comment ça rend »* : une seule
-teinte du clair (la plus proche) au foncé (la plus loin), « +50 km » au bout,
-« Dépôt » gris ; une barre de répartition sous chaque salarié, le chiffre de
+teinte du clair (la plus proche) au foncé (la plus loin), « +50 km » au bout ; une barre de répartition sous chaque salarié, le chiffre de
 chaque case dans sa couleur, le nom au-dessus en encre. Rampe OKLCH teinte
 190, clair 0,71 à 0,29, sombre 0,47 à 0,88 (inversée sur fond sombre),
 éprouvée au validateur des couleurs dans les huit chartes jusqu'à sept pas.
@@ -90,8 +89,10 @@ absences, qui dit ce qui est choisi (« Paysage, 4 zones » ; sa demande du
 30 à 50 km), Bâtiment (1A 0 à 5, 1B 5 à 10, puis 2 à 5 par 10 km jusqu'à 50) ;
 chaque borne se change, une zone s'ajoute ou se retire, Remettre le barème.
 Départ : le siège, à vol d'oiseau. Les jours de chaque salarié comptés par
-zone (le chantier le plus loin de la journée), Sans chantier, Hors zone ; tout
-se corrige zone par zone ; le PDF en colonnes. **Un chantier non situé ne
+zone (le chantier le plus loin de la journée), Hors zone ; **un jour au dépôt
+compte en zone 1** (sa règle du 5 novembre : *« même s'ils sont au dépôt, ça
+sera la zone 1 ; sans chantier, tu peux l'enlever »*) ; tout se corrige zone
+par zone ; le PDF en colonnes. **Un chantier non situé ne
 compte dans AUCUNE zone** (sa correction du 5 novembre : *« il faut un message
 avec le nombre de jours travaillés calculés, qui s'affiche en rouge parce qu'il
 manque une zone à ajouter, et l'utilisateur met le +1 sur la bonne zone »*) :
