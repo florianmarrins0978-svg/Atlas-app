@@ -186,12 +186,18 @@ Ordre : 1. le lot Factur-X (§555), 2. l'identité et la TVA au paiement,
 3. la facture d'abonnement d'Atlas sur ce même code, 4. en septembre 2027,
 la transmission par la plateforme agréée d'Atlas. Pas d'application à part.
 
-## ⏳ UNE PLANCHE À REGARDER (5 novembre 2026) : le prix TTC de l'abonnement
+## ~~⏳ UNE PLANCHE À REGARDER~~ MISE EN ATTENTE LE 5 NOVEMBRE : le prix TTC de l'abonnement
 
 `appli/soignee/abonnement-prix-ttc.html`. Atlas ajoute la TVA (lot
 `lot/tva-abonnement`, pas encore sur `main`) : l'écran Abonnement doit dire ce
 qu'il paiera. A, le TTC sous chaque prix ; B, une ligne au-dessus du bouton
 (recommandé : à l'année, A écrit 468 € TTC sous 468 € barré). Rien n'est codé.
+
+**Sa réponse, le 5 novembre** : *« les prix vont sûrement encore bouger, donc
+pour l'instant on change rien »*. Ni l'écran, ni la question HT ou TTC (39 € HT
+plus la TVA, ou 39 € TVA comprise, qui demanderait une nouvelle version des
+CGU). À reposer quand la grille sera arrêtée. Le lot `lot/tva-abonnement` suit
+les CGU d'aujourd'hui (prix HT, TVA en sus) et n'en dépend pas.
 
 ## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : relier sa plateforme de facture électronique~~ TRANCHÉ LE 5 NOVEMBRE : 1 A, 2 A, 3 B
 
