@@ -6894,6 +6894,17 @@ poussée.
 
 ## À FAIRE : la CI est rouge sur `main` depuis le 2 septembre — trois suites e2e
 
+**Mis à jour le 5 novembre 2026.** Depuis au moins le 27 octobre, la CI
+tombait plus tôt, sur l'étape des suites base (558/560) : les suites navigateur
+ne tournaient donc plus du tout, et l'état des trois ci-dessous n'est plus
+mesuré. Les deux rouges base (`test-maquettes-hors-production`,
+`test-stockage-banc`) venaient d'un import suffixé que tsx 4.23 rend vide ;
+corrigés, 560/560 en local. **Reste à lire** la course de `ci.yml` qui suit la
+poussée de cette correction sur `main` : si les trois suites e2e y sont encore
+rouges, c'est ce qui reste de cette entrée. Une course lancée à la main sur une
+branche ne compte pas : sans `origin/main`, `test-pas-de-pansement` et les
+suites qui lisent le diff tombent faute d'historique.
+
 **Ce n'est pas le lot des boutons verts, et c'est MESURÉ, pas supposé.** Les
 mêmes trois suites échouent sur la CI de `main` (course 33753872485, arbre sans
 une ligne de mon code) et sur celle de la branche (33762884903) — la comparaison
