@@ -83,6 +83,14 @@ teinte du clair (la plus proche) au foncé (la plus loin), « +50 km » au bout 
 chaque case dans sa couleur, le nom au-dessus en encre. Rampe OKLCH teinte
 190, clair 0,71 à 0,29, sombre 0,47 à 0,88 (inversée sur fond sombre),
 éprouvée au validateur des couleurs dans les huit chartes jusqu'à sept pas.
+**Ses deux demandes suivantes** : toucher une case sous un salarié (Zone 3 sous
+Julien) ouvre ses jours dans cette zone : la date, le code postal et la ville,
+l'adresse du chantier et chez qui, la distance (« Corrigé à la main » si le
+compte diffère) ; et dans la feuille d'un salarié, toucher la pastille d'une
+zone propose neuf couleurs (D'origine, puis les couleurs de catégorie que les
+huit chartes rendent déjà, et bordeaux) : la couleur vaut pour la zone, chez
+tous, et le papier garde sa valeur d'Origine. Une couleur choisie sort de la
+rampe ordonnée : c'est son choix, « D'origine » la rend.
 Le réglage vit dans Réglages, Équipe, ouvert par une ligne « Zones de déplacement » sous les
 absences, qui dit ce qui est choisi (« Paysage, 4 zones » ; sa demande du
 5 novembre, « ajoute sur la planche la ligne équipe ») : Pas de zones, Paysage (MSA, 0 à 5, 5 à 20, 20 à 30,

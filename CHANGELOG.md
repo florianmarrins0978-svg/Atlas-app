@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-05
 
+- **Zones : les jours d'une zone, et sa couleur au choix** (ses demandes). Toucher Zone 3 sous Julien montre ses jours, la ville, le code postal, l'adresse et la distance ; la pastille d'une zone, dans la feuille d'un salarié, propose neuf couleurs pour tous. Pas codé.
 - **Zones : plus de case « Sans chantier »** (sa règle) : un jour au dépôt compte en zone 1. Pas codé.
 - **Les PDF des planches, alignés** (sa remarque : « Hors zone » et « Sans chantier » n'étaient pas alignés). Toutes les colonnes de zones ont la même largeur, chaque en-tête tient sur deux lignes collées en bas, et le nom comme le chiffre sont posés sur la même ligne d'écriture, dans les deux PDF.
 - **Zones : un nom qui se change, et une couleur par zone** (ses deux demandes). Une teinte du clair au foncé selon la distance, une barre de répartition sous chaque salarié ; éprouvée au validateur des couleurs dans les huit chartes. Pas codé.
