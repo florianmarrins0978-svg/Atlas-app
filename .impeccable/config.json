@@ -665,6 +665,33 @@
         ],
         "createdAt": "2026-11-05T21:33:21.006Z",
         "reason": "Claude: le .cadre est le téléphone de la planche (kit.css), son .ecran le remplit bord à bord comme sur chaque planche ; le texte garde la gouttière de l'écran"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/une-idee-pour-l-appli.html"
+        ],
+        "createdAt": "2026-11-05T21:53:46.195Z",
+        "reason": "Charte Origine de l'appli (kit.css, src/lib/chartes.ts), reprise d'Arborea et choisie par le patron ; la planche la reproduit"
+      },
+      {
+        "rule": "pulsing-dot",
+        "value": "*",
+        "files": [
+          "appli/soignee/une-idee-pour-l-appli.html"
+        ],
+        "createdAt": "2026-11-05T21:53:46.215Z",
+        "reason": "Point rouge pendant un enregistrement réel (dictée B du chantier, codée le 1er novembre) et PointsQuiSoufflent.tsx de l'appli pendant l'envoi : deux indicateurs liés à un état vivant"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "appli/soignee/une-idee-pour-l-appli.html"
+        ],
+        "createdAt": "2026-11-05T21:53:46.234Z",
+        "reason": "Faux positif vérifié à la capture : le cadre est le téléphone (l'écran le remplit) et la liste .idees porte 18 px de chaque côté, qui écrasent le padding 0 de .liste du kit"
       }
     ]
   }
