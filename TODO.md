@@ -1,5 +1,11 @@
 # Prochaines tâches
 
+
+## DEUX QUESTIONS POSÉES LE 31 OCTOBRE, SANS RÉPONSE
+
+- **L'assistant peut-il CRÉER un devis ?** Aujourd'hui il retrouve un devis existant et joint son PDF (`ARCHITECTURE.md` §525), mais aucun de ses gestes n'en fabrique un : un nouveau devis passe par la dictée. Question posée : *« Tu veux que l'assistant sache aussi créer un devis quand tu le lui demandes ? »* Pas de réponse. À lui.
+- **L'en-tête de Vos clients** : l'assistant y est sur la ligne du retour, pas à la place de sa planche (`appli/soignee/clients.html`). Le laisser ou le déplacer ? Pas de réponse. À lui.
+
 ## ~~⏳ À CHOISIR PAR LUI (4 novembre 2026) : « Mes partenaires » sur la question de la main d'œuvre dictée~~ TRANCHÉ ET CODÉ LE 4 NOVEMBRE : B
 
 Son « B ». Codé (`ARCHITECTURE.md` §551), niveau 3 (le devis, l'argent). **Sur `main` le 4 novembre**, par la batterie commune des quatre lots (`docs/batterie-commune-4-novembre.md`). Branche `lot/mo-dictee-partenaires` (poussée sur son accord du 4 novembre). **Pas vérifiable ICI** : le geste sur son iPhone (joué dans Chromium à la taille d'un iPhone 13). Ce qui était proposé :
