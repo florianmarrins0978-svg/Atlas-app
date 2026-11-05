@@ -1,4 +1,4 @@
-import { and, eq, inArray, isNotNull, ne, sql } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, ne, not, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import {
   brouillonsInformations,
@@ -19,6 +19,7 @@ import {
   piecesImportees,
 } from "../db/schema";
 import type { Ctx } from "./context";
+import { genererJeton } from "./envois-devis";
 import { CONSERVATION_LEGALE, echeanceConservation, motifConservation } from "../retention";
 import { moisDuJour } from "@/lib/jour";
 import { deOuD } from "@/lib/contrats-entretien";
@@ -502,15 +503,45 @@ export async function effacerClientDans(
       detail[nom] = r?.rowCount ?? 0;
     }
 
-    // Les envois portent le lien public vers le devis : ils sont retirés dans
-    // tous les cas, y compris pour un devis conservé. Un lien qui survivrait
-    // à un effacement rouvrirait l'accès aux données qu'on vient de retirer.
+    // **LE LIEN PART, LE « OUI » RESTE — sa réponse du 5 novembre 2026.**
+    //
+    // Un envoi porte deux choses : le lien public vers le devis, et la
+    // réponse du client. Tout envoi partait, y compris celui d'un devis
+    // conservé : le devis restait dix ans, la preuve qu'il avait été accepté
+    // (le jour, la réponse, l'empreinte du devis lu) disparaissait. Et c'est
+    // aussi par cet envoi que `cequiDoitRester` reconnaît un devis accepté :
+    // un second effacement ne l'aurait plus vu.
+    //
+    // L'envoi qui porte l'acceptation d'un devis conservé reste donc ; son
+    // lien meurt deux fois, jeton remplacé par un jeton jamais envoyé, et
+    // échéance passée. Le mot libre du client part : il n'est pas la preuve.
+    const gardes = [...devisAConserver];
+    const preuveDAcceptation =
+      gardes.length > 0
+        ? and(inArray(envoisDevis.devisId, gardes), sql`coalesce(${envoisDevis.reponse} = 'acceptee', false)`)
+        : undefined;
     const rEnvois = (await tx
       .delete(envoisDevis)
       .where(
-        and(inArray(envoisDevis.chantierId, chantierIds), eq(envoisDevis.entrepriseId, ctx.entrepriseId))
+        and(
+          inArray(envoisDevis.chantierId, chantierIds),
+          eq(envoisDevis.entrepriseId, ctx.entrepriseId),
+          preuveDAcceptation ? not(preuveDAcceptation) : undefined
+        )
       )) as { rowCount?: number };
     detail.envois = rEnvois?.rowCount ?? 0;
+    if (preuveDAcceptation) {
+      const preuves = await tx
+        .select({ id: envoisDevis.id })
+        .from(envoisDevis)
+        .where(and(eq(envoisDevis.entrepriseId, ctx.entrepriseId), preuveDAcceptation));
+      for (const { id } of preuves) {
+        await tx
+          .update(envoisDevis)
+          .set({ jeton: genererJeton(), expireAt: maintenant, precisionClient: null })
+          .where(eq(envoisDevis.id, id));
+      }
+    }
 
     // **Les devis ENVOYÉS partent aussi, sauf ceux qui sont cloués.** C'est ce
     // que sa décision du 27 août change : avant, tout devis parti bloquait

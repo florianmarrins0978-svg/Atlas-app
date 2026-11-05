@@ -89,13 +89,12 @@ fermé), `reglages/donnees/fermer` (l'écran de la planche), la purge planifiée
 
 **Ce qui reste, et qui le sait :**
 
-- **⚠ la preuve d'acceptation d'un devis part avec le client.** Un devis
-  accepté se reconnaît à son envoi (`envois_devis.reponse = 'acceptee'`), et
-  l'effacement d'un client supprime TOUS les envois, conservés ou non
-  (`donnees-client.ts`, « les envois portent le lien public »). Le devis reste,
-  la trace de son acceptation non. Défaut d'avant ce lot, que la purge des
-  comptes fermés étend à tous les clients : garder la ligne d'envoi d'un devis
-  conservé en retirant seulement son jeton. À trancher avant la livraison ;
+- ~~la preuve d'acceptation d'un devis part avec le client~~ **corrigé le
+  5 novembre 2026, sur sa réponse « OUI ! »** (`effacerClientDans`) : l'envoi
+  qui porte l'acceptation d'un devis conservé reste, son lien meurt (jeton
+  remplacé, échéance passée). Suite `test-retention-effacement`, cas « le lien
+  public du devis est retiré », étendue ; **jamais jouée** (base de test) : à
+  voir rouge sur `main` puis vert sur la branche quand il dira « lance » ;
 - le salarié d'un compte fermé tombe sur l'écran d'erreur, faute d'un écran
   « le compte de l'entreprise est fermé » ;
 - l'écran du compte fermé est l'appli en lecture seule (Terminés porte les

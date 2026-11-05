@@ -23,7 +23,7 @@ import { audioAPurger, RETENTION, motifConservation, echeanceConservation } from
 import { versJourIso, ajouterJours } from "../src/lib/disponibilites";
 import { nettoyerBase } from "./_test-db";
 import { listerFichesClients } from "../src/server/repositories/fiche-client";
-import { factures as facturesTable } from "../src/server/db/schema";
+import { factures as facturesTable, envoisDevis as envoisDevisTable } from "../src/server/db/schema";
 
 let passed = 0;
 let failed = 0;
@@ -352,6 +352,21 @@ async function main() {
       null,
       "un lien survivant rouvrirait l'accès aux données effacées"
     );
+
+    // **Et la PREUVE de l'acceptation reste** (sa réponse « OUI ! » du
+    // 5 novembre 2026). Le devis gardé dix ans ne prouve rien sans le « oui »
+    // daté du client : c'est sur l'envoi qu'il vit, et l'effacement le
+    // supprimait avec le lien. Le lien part, la réponse reste.
+    const restants = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) =>
+      tx
+        .select({ reponse: envoisDevisTable.reponse, responduAt: envoisDevisTable.responduAt, jeton: envoisDevisTable.jeton })
+        .from(envoisDevisTable)
+        .where(eq(envoisDevisTable.devisId, d.id))
+    );
+    assert.strictEqual(restants.length, 1, "la réponse du client au devis conservé a disparu");
+    assert.strictEqual(restants[0].reponse, "acceptee");
+    assert.ok(restants[0].responduAt, "la date du « oui » a disparu");
+    assert.notStrictEqual(restants[0].jeton, envoi.jeton, "le jeton envoyé au client ouvre encore la page");
   });
 
   // ─── LE CAS QUI MANQUAIT, ET QUI FAISAIT TOMBER LA FONCTION ───────────────
