@@ -233,10 +233,13 @@ export function useMagnetophone() {
  * Note vocale, qui partait sans durée et sous un autre nom, est retiré avec
  * lui. Ne reste que la dictée de l'anneau, toujours entière.
  */
-export function formulaireDeNote(blob: Blob, dureeSecondes: number): FormData {
+export function formulaireDeNote(blob: Blob, dureeSecondes: number, envoiId: string): FormData {
   const extension = blob.type.includes("ogg") ? "ogg" : blob.type.includes("mp4") ? "m4a" : "webm";
   const fd = new FormData();
   fd.set("fichier", blob, `note.${extension}`);
   fd.set("dureeSecondes", String(dureeSecondes));
+  // Le même à chaque appui sur une note gardée : le serveur reconnaît un envoi
+  // déjà reçu au lieu de le réécrire (`note-vocale-entrante.ts`, 6 novembre 2026).
+  fd.set("envoiId", envoiId);
   return fd;
 }

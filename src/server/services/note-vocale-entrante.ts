@@ -1,5 +1,5 @@
 import { getCurrentCtx } from "@/server/session-ctx";
-import { enregistrerNoteVocale } from "@/server/repositories/notes-vocales";
+import { enregistrerNoteVocale, noteDejaRecue } from "@/server/repositories/notes-vocales";
 import { enregistrerObjet } from "@/server/storage";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { preparerAudioEntrant } from "@/server/audio-entrant";
@@ -51,7 +51,25 @@ import { messageDePanne, type EtapeNote } from "@/lib/panne-note-vocale";
  */
 export type ResultatNoteVocale =
   | { ok: true; storageKey: string | null; dureeSecondes: number | null }
-  | { ok: false; raison: string };
+  /** `nonRecevable` : ce son ne sera JAMAIS reçu (absent, illisible). Le
+   *  téléphone ne le garde pas pour le renvoyer (`src/lib/note-gardee.ts`). */
+  | { ok: false; raison: string; nonRecevable?: true };
+
+/**
+ * L'identifiant que le téléphone pose sur UN envoi (6 novembre 2026).
+ *
+ * **Pourquoi il existe** : une note gardée sans réseau repart sur son appui
+ * (sa réponse B). Une réponse perdue en chemin, puis un second appui, et le
+ * même son arrivait deux fois : la note était réécrite, sa transcription
+ * remise à zéro, et le devis se préparait une seconde fois. Reconnu, l'envoi
+ * déjà reçu rend ce qu'il avait rendu, sans rien réécrire.
+ *
+ * Un identifiant mal formé est ignoré, jamais refusé : un téléphone d'avant
+ * cette version n'en envoie aucun, et sa note doit passer comme hier.
+ */
+function lireEnvoiId(brut: FormDataEntryValue | null): string | undefined {
+  return typeof brut === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(brut) ? brut.toLowerCase() : undefined;
+}
 
 // `extensionPour(mimeType)` vivait ici. Elle est morte le 26 août 2026 avec le
 // lot Audio : elle déduisait l'extension de la chaîne envoyée par le téléphone,
@@ -69,13 +87,22 @@ export async function recevoirNoteVocale(
 ): Promise<ResultatNoteVocale> {
   const fichier = formData.get("fichier");
   if (!(fichier instanceof File)) {
-    return { ok: false, raison: "Aucun son n'est arrivé jusqu'au serveur." };
+    return { ok: false, raison: "Aucun son n'est arrivé jusqu'au serveur.", nonRecevable: true };
   }
   const dureeSecondes = Number(formData.get("dureeSecondes") ?? 0) || undefined;
+  const envoiId = lireEnvoiId(formData.get("envoiId"));
 
   let etape: EtapeNote = "session";
   try {
     const ctx = await getCurrentCtx();
+
+    // **Avant la cadence et avant le stockage** : un envoi déjà reçu ne doit ni
+    // consommer la limite, ni déposer un second fichier que rien ne lirait.
+    if (envoiId) {
+      etape = "base";
+      const deja = await noteDejaRecue(ctx, chantierId, envoiId);
+      if (deja) return { ok: true, storageKey: deja.storageKey, dureeSecondes: deja.dureeSecondes };
+    }
 
     etape = "cadence";
     const limite = await verifierLimite(`televersement:${ctx.entrepriseId}`, LIMITES.televersementFichier);
@@ -88,7 +115,7 @@ export async function recevoirNoteVocale(
     // c'est elle qui empêche de la faire travailler en rafale.
     etape = "lecture";
     const audio = await preparerAudioEntrant(fichier);
-    if (!audio.ok) return { ok: false, raison: audio.message };
+    if (!audio.ok) return { ok: false, raison: audio.message, nonRecevable: true };
 
     etape = "stockage";
     // L'extension vient du format RÉEL, jamais de ce que le téléphone annonce.
@@ -104,6 +131,7 @@ export async function recevoirNoteVocale(
       nomOriginal: fichier.name || undefined,
       checksum: objet.checksum,
       dureeSecondes,
+      envoiId,
     });
 
     return { ok: true, storageKey: note.storageKey, dureeSecondes: note.dureeSecondes };
