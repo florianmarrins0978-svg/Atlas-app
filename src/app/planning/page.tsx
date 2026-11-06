@@ -64,6 +64,7 @@ export default async function PlanningPage({
       initialChantiers={contexte.chantiers}
       nombreEquipes={contexte.nombreEquipes}
       nombreSalaries={contexte.nombreSalaries}
+      alsaceMoselle={contexte.alsaceMoselle}
       equipesNommees={contexte.equipesNommees}
       absences={contexte.absences}
       bandeauAgenda={bandeauAgendaDuPlanning([google, apple], masque)}

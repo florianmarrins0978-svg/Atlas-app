@@ -7,6 +7,7 @@ import { grilleDuMois, moisDecale, JOURS_COURTS, MOIS_LONGS, type CaseMois } fro
 import { etatDemi, MOT_ETAT, partDeLaBarre, type EtatDemi } from "@/lib/planning-jour";
 import { axeDuGeste, pasDuGlissement, type AxeDuGeste } from "@/lib/glissement";
 import type { JourIso } from "@/lib/disponibilites";
+import { nomDuFerie } from "@/lib/jours-feries";
 
 /**
  * LE MOIS AVEC SA CHARGE — le calendrier du planning, extrait pour être
@@ -67,6 +68,7 @@ export default function MoisCharge({
   voletDetache = false,
   reperePrefixe = "",
   sousLaLegende,
+  alsaceMoselle = false,
 }: {
   curseur: Curseur;
   setCurseur: (maj: (c: Curseur) => Curseur) => void;
@@ -150,6 +152,11 @@ export default function MoisCharge({
    * (sa demande du 29 septembre 2026). L'écran d'envoi n'y met rien.
    */
   sousLaLegende?: ReactNode;
+  /**
+   * L'entreprise est-elle en Alsace ou en Moselle ? Deux fériés de plus
+   * (`src/lib/jours-feries.ts`). Faux par défaut : la liste nationale.
+   */
+  alsaceMoselle?: boolean;
 }) {
   const retenus = useMemo(
     () => new Set([...(jourRetenus ?? []), ...(jourRetenusSeconde ?? []), ...(jourRetenu ? [jourRetenu] : [])]),
@@ -342,6 +349,7 @@ export default function MoisCharge({
                         aujourdHui,
                         occupationDe,
                         onToucherJour,
+                        alsaceMoselle,
                       })
                     )}
                   </div>
@@ -392,6 +400,7 @@ export default function MoisCharge({
       occupationDe,
       onToucherJour,
       reperePrefixe,
+      alsaceMoselle,
     ]
   );
 
@@ -524,9 +533,19 @@ function caseDuJour(
     aujourdHui: JourIso;
     occupationDe: (jour: JourIso, demi: "matin" | "apres_midi") => OccupationLue;
     onToucherJour: (jour: JourIso) => void;
+    alsaceMoselle: boolean;
   }
 ) {
-  const { retenus, entoures, jourTouche, aujourdHui, occupationDe, onToucherJour } = lu;
+  const { retenus, entoures, jourTouche, aujourdHui, occupationDe, onToucherJour, alsaceMoselle } = lu;
+  // ─── LE FÉRIÉ, EN BLEU — sa réponse du 5 novembre 2026 ─────────────────
+  // *« on doit quand même pouvoir les proposer, mais il faut une couleur
+  // particulière pour qu'on les voie d'un coup d'œil »*, et le bleu choisi sur
+  // sa planche (`appli/soignee/jours-feries.html`). La case reste TOUCHABLE et
+  // ses barres restent : seuls son fond et son chiffre changent. Le bleu n'est
+  // pris par rien d'autre ici, ni les quatre états, ni l'or d'aujourd'hui.
+  // Il passe AVANT le week-end : un 1er novembre qui tombe un dimanche est
+  // d'abord la Toussaint.
+  const ferie = nomDuFerie(c.jour, alsaceMoselle);
   // « La B » : la case reste papier, le chiffre est entouré. Vert pin pour la
   // première proposition ; pour la seconde, l'or DE TEXTE de la charte
   // (`orTexte`, détaché à 4,5 de la plage sur les huit chartes) — l'or nu ne
@@ -546,6 +565,9 @@ function caseDuJour(
               key={c.jour}
               type="button"
               data-jour={c.jour}
+              // Le nom du férié, à part de `data-etat` : un férié reste
+              // « regardable » ou « passé », comme n'importe quel jour.
+              data-ferie={ferie ?? undefined}
               // **Un voisin se regarde, il ne se touche pas.** Il n'est là que
               // pour se montrer pendant le geste : ni le doigt ni le clavier ne
               // doivent l'atteindre, sinon une journée s'ouvre par erreur.
@@ -574,7 +596,7 @@ function caseDuJour(
               // **L'état reste ANNONCÉ, même s'il ne s'écrit plus.** La planche
               // a retiré les mots de la case — c'est la couleur qui parle —,
               // mais une couleur ne se lit pas à voix haute.
-              aria-label={`${c.numero} ${MOIS_LONGS[mois]}, matin : ${ditLaBarre(
+              aria-label={`${c.numero} ${MOIS_LONGS[mois]}${ferie ? `, férié, ${ferie}` : ""}, matin : ${ditLaBarre(
                 occupationDe(c.jour, "matin")
               )}, après-midi : ${ditLaBarre(occupationDe(c.jour, "apres_midi"))}`}
               onClick={() => onToucherJour(c.jour)}
@@ -587,9 +609,11 @@ function caseDuJour(
                     ? colors.rustTint
                     : c.jour === jourTouche
                     ? colors.rustTint
-                    : c.weekEnd
-                      ? voile(colors.ink, 0.035)
-                      : "transparent",
+                    : ferie
+                      ? colors.carteBleuFond
+                      : c.weekEnd
+                        ? voile(colors.ink, 0.035)
+                        : "transparent",
                 boxShadow:
                   c.jour === jourTouche
                     ? `inset 0 0 0 1.5px ${colors.ink}`
@@ -627,10 +651,12 @@ function caseDuJour(
                     ? surPlein
                     : c.jour === aujourdHui
                       ? colors.or
-                      : c.weekEnd || passe
-                        ? voile(colors.ink, 0.42)
-                        : colors.ink,
-                  fontWeight: c.jour === aujourdHui ? 600 : 400,
+                      : ferie
+                        ? colors.carteBleuTexte
+                        : c.weekEnd || passe
+                          ? voile(colors.ink, 0.42)
+                          : colors.ink,
+                  fontWeight: c.jour === aujourdHui || ferie ? 600 : 400,
                 }}
               >
                 {c.numero}
@@ -811,7 +837,7 @@ export function Legende({ aCote }: { aCote?: ReactNode } = {}) {
         </span>
       ))}
     </div>
-    <div className="mt-0.5 flex min-h-[44px] items-center justify-center gap-[22px]">
+    <div className="mt-0.5 flex min-h-[44px] flex-wrap items-center justify-center gap-x-[22px] gap-y-1">
       <span
         data-atlas="legende-position"
         className="flex flex-shrink-0 items-center gap-[8px] whitespace-nowrap"
@@ -832,6 +858,24 @@ export function Legende({ aCote }: { aCote?: ReactNode } = {}) {
           <b className="text-[12.5px] font-semibold leading-[1.15]" style={{ color: colors.inkSoft }}>
             après-midi
           </b>
+        </span>
+      </span>
+      {/* « 11 férié » : la case bleue du mois, en petit, et son mot. Sans elle,
+          un bleu nouveau arriverait dans le mois sans que rien ne le nomme. */}
+      <span data-atlas="legende-ferie" className="flex flex-shrink-0 items-center gap-[7px] whitespace-nowrap">
+        <b
+          className="flex h-[26px] w-[26px] items-center justify-center rounded-[7px] text-[14px] font-semibold"
+          style={{
+            fontFamily: font.display,
+            fontVariantNumeric: "lining-nums",
+            background: colors.carteBleuFond,
+            color: colors.carteBleuTexte,
+          }}
+        >
+          11
+        </b>
+        <span className="text-[13px] font-semibold" style={{ color: colors.inkSoft }}>
+          férié
         </span>
       </span>
       {aCote}

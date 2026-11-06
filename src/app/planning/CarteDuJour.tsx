@@ -34,6 +34,8 @@ import {
 import { PasLaCeJour } from "./PasLaCeJour";
 import { AjoutAuJour } from "./AjoutAuJour";
 import { FeuilleChantier } from "./FeuilleChantier";
+import PastilleFerie from "@/components/atlas/PastilleFerie";
+import { nomDuFerie } from "@/lib/jours-feries";
 
 /**
  * UNE MOITIÉ DE JOURNÉE QUE PERSONNE N'OCCUPE.
@@ -232,6 +234,7 @@ function MotDuGeste({
  */
 export function CarteDuJour({
   cle,
+  alsaceMoselle = false,
   jour,
   seulement,
   attache,
@@ -273,6 +276,8 @@ export function CarteDuJour({
   retourAEnvoyer,
 }: {
   cle: string;
+  /** Deux fériés de plus en Alsace et en Moselle (`src/lib/jours-feries.ts`). */
+  alsaceMoselle?: boolean;
   jour: JourIso;
   /** Qui n'est pas là ce jour-là — voir §267. */
   absencesDuJour: (jour: JourIso) => AbsenceDuPlanning[];
@@ -430,6 +435,8 @@ export function CarteDuJour({
       >
         {jour === jourIso(new Date()) ? jourLisibleCourt(jour).toLocaleLowerCase("fr") : jourLisibleCourt(jour)}
       </span>
+      {/* Le férié se nomme à côté de la date, comme dans la semaine. */}
+      {nomDuFerie(jour, alsaceMoselle) && <PastilleFerie nom={nomDuFerie(jour, alsaceMoselle) as string} />}
     </h3>
   );
   return (

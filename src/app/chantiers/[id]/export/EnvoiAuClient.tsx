@@ -864,6 +864,9 @@ function Contenu({
             <div className="rounded-[10px] px-3 py-3" style={{ backgroundColor: colors.card }}>
               {curseur && (
                 <MoisCharge
+                  // Le férié en bleu ici aussi : il choisit les dates du client
+                  // sur le même mois que le planning (sa règle : proposable).
+                  alsaceMoselle={preparation?.planning.alsaceMoselle ?? false}
                   curseur={curseur}
                   setCurseur={(maj) => setCurseur((c) => (c ? maj(c) : c))}
                   aujourdHui={jourIso(new Date())}

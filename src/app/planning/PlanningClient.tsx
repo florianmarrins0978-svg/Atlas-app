@@ -70,6 +70,8 @@ import {
 import { AjoutAuJour } from "./AjoutAuJour";
 import { CarteDuJour } from "./CarteDuJour";
 import { TiroirDuBas } from "./TiroirDuBas";
+import PastilleFerie from "@/components/atlas/PastilleFerie";
+import { nomDuFerie } from "@/lib/jours-feries";
 
 /**
  * LE PLANNING — le mois, la journée qui s'ouvre dessous, la semaine en bas.
@@ -137,6 +139,7 @@ export default function PlanningClient({
   datesDuMois = null,
   couleurs = AUCUNE_COULEUR_CHOISIE,
   nomCharte = null,
+  alsaceMoselle = false,
 }: {
   initialChantiers: ChantierPlanning[];
   /** La CAPACITÉ : combien de chantiers tiennent dans une journée. */
@@ -217,6 +220,11 @@ export default function PlanningClient({
   /** Les couleurs du planning de l'entreprise (migration 0113), et l'apparence de la personne. */
   couleurs?: CouleursPlanning;
   nomCharte?: NomCharte | null;
+  /**
+   * L'entreprise est-elle en Alsace ou en Moselle ? Lu au serveur dans son
+   * adresse (`estEnAlsaceMoselle`) : deux fériés de plus.
+   */
+  alsaceMoselle?: boolean;
 }) {
   // **L'état vit ici** : le mois, la légende et la fiche du jour se repeignent
   // pendant qu'il choisit, avant même que la base ait répondu.
@@ -1394,7 +1402,12 @@ export default function PlanningClient({
       : `Du ${quantieme(debut)} ${moisDebut} au ${quantieme(fin)} ${moisFin}`;
   }, [joursDeLaSemaine]);
 
-  const joursAvecChantiers = joursDeLaSemaine.filter((j) => chantiersDuJour(j).length > 0);
+  // **Un férié paraît dans la semaine même sans chantier** — sa planche du
+  // 5 novembre 2026 : on le voit venir avant d'y poser quelqu'un. La journée
+  // reste ouverte à l'ajout, comme les autres.
+  const joursAvecChantiers = joursDeLaSemaine.filter(
+    (j) => chantiersDuJour(j).length > 0 || nomDuFerie(j, alsaceMoselle) !== null
+  );
 
   /** Ce que porte une carte de journée — les mêmes gestes aux deux endroits. */
   // La règle vit dans `retourDuJourAttendu` ; l'écran ne fait que la montrer.
@@ -1529,6 +1542,7 @@ export default function PlanningClient({
           <MoisCharge
             curseur={curseur}
             setCurseur={setCurseur}
+            alsaceMoselle={alsaceMoselle}
             aujourdHui={aujourdHui}
             jourTouche={jourTouche}
             onToucherJour={toucherLeJour}
@@ -1553,6 +1567,7 @@ export default function PlanningClient({
             volet={(jour, colonne) => (
               <CarteDuJour
                 cle="jour"
+                alsaceMoselle={alsaceMoselle}
                 jour={jour}
                 // La pointe vise le CENTRE de la case touchée : c'est le
                 // calendrier qui donne la colonne, lui seul la connaît. Il ne
@@ -1705,6 +1720,7 @@ export default function PlanningClient({
                     {jourLisibleCourt(jour).toLocaleLowerCase("fr")}
                   </span>
                 )}
+                {nomDuFerie(jour, alsaceMoselle) && <PastilleFerie nom={nomDuFerie(jour, alsaceMoselle) as string} />}
               </h3>
               <div data-atlas="plage-du-jour" className="mt-2.5 rounded-[6px] px-4" style={{ background: colors.card }}>
               {chantiersDuJour(jour).map((c, rangDansLeJour) => {
@@ -1843,6 +1859,7 @@ export default function PlanningClient({
                     {deplie && (
                       <CarteDuJour
                         cle={`liste:${c.id}`}
+                        alsaceMoselle={alsaceMoselle}
                         jour={carteListe.jour}
                         seulement={c.id}
                         // **Sous le NOM, et non au centre** — sa correction du
