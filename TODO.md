@@ -32,11 +32,23 @@ restent.
 | les suites | `test-taches-du-devis` vert ici ; `test-reprise-du-devis-db` écrite, **jamais jouée** (base : son oui) |
 | reste | son oui pour la base et la batterie (niveau 3), voir la suite base ROUGE sur l'ancien code puis verte, puis `main` |
 
-**Pas corrigé, et à lui dire :** la reprise perd aussi `partMainDoeuvre`, la
-part de main d'œuvre répartie dans le prix d'un travail. « Dont main d'œuvre
-HT » sous-compte donc un devis repris dont la main d'œuvre était répartie.
-La recopier ne suffit pas : si le tarif du jour remplace le prix, la part
-n'y est plus comprise. Une règle à décider, pas un oubli à recopier.
+**Pas corrigé, ⏳ À SA DÉCISION :** la reprise perd aussi `partMainDoeuvre`,
+la part de main d'œuvre répartie dans le prix d'un travail. Rejoué avec les
+fonctions pures (`partsAppliquees`, `reprendreLaLigne`, `prixDeLaLigneReprise`,
+`mainDoeuvreDesLignes`) le 6 novembre :
+
+| | prix de la haie (25 ml) | dont main d'œuvre HT |
+|---|---|---|
+| l'an dernier, 12 €/ml et 400 € répartis | 700 € (28 €/ml) | 400 € |
+| repris par « Dernier devis » | 700 € | **rien** |
+| puis « Mettre à jour », grille à 13 €/ml | **325 €** : les 400 € partent | rien |
+
+Le tarif du jour se compare au prix ENTIER, part comprise : la ligne est
+toujours « grille proposée », et le oui efface la main d'œuvre.
+
+**Proposé (image envoyée le 6 novembre) :** recopier la part, et que le tarif
+du jour ne remplace que le prix du travail (325 € + 400 € = 725 €, dont main
+d'œuvre 400 €). Attend son oui ; rien n'est codé.
 
 **La planche** de la fiche plus jolie : `appli/fiche-travaux-en-mieux.html`.
 Rien n'est codé de son apparence.
