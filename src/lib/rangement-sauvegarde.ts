@@ -31,7 +31,9 @@ export type OrigineFichier =
   | "dossier-comptable"
   | "bilan-comptable"
   /** L'attestation que le comptable signe (27 octobre 2026). */
-  | "attestation-comptable";
+  | "attestation-comptable"
+  /** La facture d'abonnement qu'Atlas lui a émise (6 novembre 2026). */
+  | "abonnement-atlas";
 
 export type FichierARanger = {
   storageKey: string;
@@ -60,6 +62,7 @@ const DOSSIER_PAR_ORIGINE: Record<OrigineFichier, string> = {
   "dossier-comptable": "Pour mon comptable",
   "bilan-comptable": "Pour mon comptable",
   "attestation-comptable": "Pour mon comptable",
+  "abonnement-atlas": "Abonnement Atlas",
 };
 
 const NOM_PAR_ORIGINE: Record<OrigineFichier, string> = {
@@ -76,6 +79,7 @@ const NOM_PAR_ORIGINE: Record<OrigineFichier, string> = {
   "dossier-comptable": "Dossier",
   "bilan-comptable": "Bilan",
   "attestation-comptable": "Attestation",
+  "abonnement-atlas": "Facture",
 };
 
 /**

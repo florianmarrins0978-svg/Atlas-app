@@ -208,6 +208,15 @@ export const COLONNES_OBJET: readonly ColonneObjet[] = [
     absenceNormale: true,
     raisonAbsence: "même raison que la carte grise",
   },
+  // La facture d'abonnement qu'Atlas émet à l'artisan, en Factur-X (migration
+  // 0175, 6 novembre 2026, `src/lib/facture-atlas.ts`).
+  {
+    table: "factures_atlas",
+    colonne: "pdf_storage_key",
+    quoi: "la facture d'abonnement qu'Atlas a émise à l'artisan",
+    // Elle naît avec son PDF (NOT NULL) et se garde dix ans : son absence est une perte.
+    absenceNormale: false,
+  },
   // Le fichier d'un devis reçu d'un fournisseur (migration 0132, 19 octobre 2026).
   {
     table: "devis_recus",

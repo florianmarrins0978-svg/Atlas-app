@@ -78,6 +78,7 @@ import {
   virementsRecus,
   liaisonsPlateformes,
   transmissionsFactures,
+  facturesAtlas,
   mouvementsBancaires,
   dossiersComptables,
   bilansComptables,
@@ -245,6 +246,7 @@ export async function exporterEntreprise(
       sesAttestationsDuComptable,
       sesRetoursDuComptable,
       saConsommationIA,
+      sesFacturesAtlas,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
       tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
@@ -495,6 +497,9 @@ export async function exporterEntreprise(
       tx.select().from(retoursComptable).where(eq(retoursComptable.entrepriseId, e)),
       // Ses crédits IA, mois par mois (migration 0148) : une estimation, pas une facture.
       tx.select().from(consommationIa).where(eq(consommationIa.entrepriseId, e)),
+      // Les factures d'abonnement qu'Atlas lui a émises (migration 0175) : ses
+      // factures d'achat, que son comptable lui réclamera. Leur PDF part avec.
+      tx.select().from(facturesAtlas).where(eq(facturesAtlas.entrepriseId, e)),
     ]);
 
     // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
@@ -616,6 +621,7 @@ export async function exporterEntreprise(
       attestations_comptable: sesAttestationsDuComptable,
       retours_comptable: sesRetoursDuComptable,
       consommation_ia: saConsommationIA,
+      factures_atlas: sesFacturesAtlas,
     };
 
     const compte: Record<string, number> = {};
@@ -708,6 +714,7 @@ export async function exporterEntreprise(
     const auDossier = new Map(sesDossiersComptables.map((d) => [d.id, `du ${d.du} au ${d.au}`]));
     for (const b of sesBilansComptables) ajouter(b.fichierCle, "bilan-comptable", null, auDossier.get(b.dossierId) ?? null, null);
     for (const a of sesAttestationsDuComptable) ajouter(a.fichierCle, "attestation-comptable", null, auDossier.get(a.dossierId) ?? null, jourIso(a.signeLe));
+    for (const f of sesFacturesAtlas) ajouter(f.pdfStorageKey, "abonnement-atlas", null, f.numero, f.emiseLe);
     const chantiersDeRangement = new Map(
       lesChantiers.map((c) => [c.id, { nom: c.nom, client: c.clientId ? nomDuClient.get(c.clientId) ?? null : null }])
     );
