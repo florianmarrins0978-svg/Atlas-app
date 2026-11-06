@@ -311,7 +311,7 @@
     "client-coordonnees", "client-contrat", "termines-non-payees", "termines-retours", "chantier", "facture", "main-oeuvre-dictee-partenaires",
     "comptable-attestation", "comptable-retour", "devis-detail-ligne", "devis-mise-en-page", "devis-mise-en-page-questions",
     "reglages-facture-electronique", "jours-travailles", "jours-feries", "zones-deplacement", "motif-absence",
-    "note-sans-reseau", "franchise-plafond", "restrictions-d-eau", "heures-du-jour", "hiverner-l-arrosage"];
+    "note-sans-reseau", "franchise-plafond", "restrictions-d-eau", "heures-du-jour", "hiverner-l-arrosage", "fiche-travaux"];
 
   function planchePrete(href) {
     if (!href || /^(https?:|#|mailto:|tel:|\.\.\/)/.test(href)) return true;

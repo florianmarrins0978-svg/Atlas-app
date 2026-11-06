@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La fiche travaux</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  LA FICHE TRAVAUX, SOIGNÉE : « Travaux à faire », sur la fiche d'intervention.
+
+  SA DEMANDE DU 6 NOVEMBRE 2026 : « la reprendre, l'améliorer, la rendre plus
+  jolie ; il ne faut jamais que la main-d'œuvre qu'il y a dans le devis
+  s'affiche, il faut qu'il n'y ait que les travaux ; le camion d'évacuation
+  ne doit pas non plus apparaître ». Sa réponse à la question du même jour :
+  le déplacement et la location partent aussi ; l'évacuation des déchets et
+  une fourniture seule restent.
+
+  CE QUI EST CODÉ (branche locale claude/fiche-travaux-que-les-travaux, pas
+  sur main) : la règle des lignes, seFaitSurLeChantier dans
+  src/lib/taches-du-devis.ts. Rien de l'apparence n'est codé.
+
+  CE QUI EXISTE DANS src/ : src/app/planning/TravauxAFaire.tsx, sa planche du
+  19 septembre (appli/fiche-intervention-sixieme.html). L'écran Aujourd'hui en
+  est recopié, tailles comprises.
+
+  CE QUI NE BOUGE PAS : la place du bandeau, sous la fiche de sécurité et de
+  la même forme qu'elle ; l'ordre de ce qu'il contient (les travaux, les
+  photos, le mot, le bouton, le retour envoyé) ; aucun montant ; la case
+  ronde ; le retour part toujours, ce qui manque se lit dessous.
+
+  Les noms et le devis sont ceux de la planche du devis
+  (devis-mise-en-page-questions.html) : Camion d'évacuation et Broyeur y sont
+  deux lignes à part.
+*/
+
+/* ─── La journée et sa fiche d'intervention, simplifiées ─────────────────── */
+.jour-titre { margin: -6px 0 14px; font: 400 21px/1.2 var(--serif); }
+.chantier { padding: 16px 16px 14px; border-radius: var(--r-plage); background: var(--atlas-card); }
+.chantier-nom { display: block; font: 400 21px/1.2 var(--serif); }
+.chantier-quoi { display: block; margin-top: 3px; font-size: 14.5px; color: var(--atlas-inkSoft); }
+.intervention { margin-top: 14px; padding: 16px 14px 14px; border-radius: 8px;
+                box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 80%, transparent); }
+.intervention-titre { margin: 0 2px 12px; font: 400 19px/1.2 var(--serif); }
+.ma-note { display: block; padding: 12px 14px; border-radius: 10px; font-size: 15px; line-height: 1.45;
+           background: var(--atlas-card); color: var(--atlas-ink); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.lien-devis { display: block; width: max-content; margin: 12px auto 0; padding: 8px 12px; font-size: 14px; font-weight: 700;
+              color: var(--atlas-ink); }
+
+/* La barre d'un bandeau : la même forme pour la sécurité et les travaux. */
+.bandeau { margin-top: 14px; overflow: hidden; border-radius: 12px; background: var(--atlas-card);
+           box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.bandeau-barre { position: relative; display: flex; align-items: center; gap: 10px; width: 100%; min-height: 54px;
+                 padding: 0 14px 0 16px; text-align: left; }
+.bandeau-nom { flex: 1; min-width: 0; font: 400 16px/1.2 var(--serif); }
+.bandeau-compte { flex: none; font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.bandeau-barre .ico { width: 16px; height: 16px; stroke-width: 2.1; transition: transform 300ms var(--courbe); }
+.bandeau-barre[aria-expanded="true"] .ico { transform: rotate(180deg); }
+.bandeau.securite .bandeau-barre { background: color-mix(in srgb, var(--atlas-or) 13%, var(--atlas-card)); color: var(--atlas-orTexte); }
+.bandeau.travaux .bandeau-barre { background: color-mix(in srgb, var(--atlas-plein) 16%, var(--atlas-card)); color: var(--atlas-rust); }
+.pli { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 320ms var(--courbe); }
+.pli.ouvert { grid-template-rows: 1fr; }
+.pli > div { min-height: 0; overflow: hidden; }
+
+/* ═══ PROPOSÉ ═══════════════════════════════════════════════════════════════ */
+
+/* Le compte se lit aussi d'un coup d'œil : un trait qui se remplit, en bas de
+   la barre. Il dit la même chose que « 3 sur 6 faits », pour qui ne lit pas. */
+.propose .bandeau-compte { font-size: 14px; font-weight: 700; }
+.avance { position: absolute; left: 0; right: 0; bottom: 0; height: 3px;
+          background: color-mix(in srgb, var(--atlas-plein) 22%, transparent); }
+.avance > i { display: block; height: 100%; width: 0; background: var(--atlas-plein);
+              transition: width 460ms var(--courbe); }
+
+.travaux-dedans { padding: 2px 16px 18px; }
+.tache { position: relative; display: flex; align-items: center; gap: 14px; width: 100%; min-height: 60px;
+         padding: 10px 0; text-align: left; -webkit-tap-highlight-color: transparent; }
+.tache + .tache::before { content: ""; position: absolute; left: 44px; right: 0; top: 0; height: 1px;
+                          background: var(--atlas-lineSoft); }
+.tache-rond { width: 30px; height: 30px; flex: none; display: grid; place-items: center; border-radius: 50%;
+              background: var(--atlas-card); color: var(--sur-plein);
+              box-shadow: inset 0 0 0 1.75px var(--atlas-vertPale);
+              transition: background-color 200ms var(--courbe), box-shadow 200ms var(--courbe), transform 160ms var(--courbe); }
+.tache:active .tache-rond { transform: scale(0.92); }
+.tache-rond svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.6;
+                  stroke-linecap: round; stroke-linejoin: round; }
+/* La coche se TRACE quand on coche : le seul mouvement de la fiche. */
+.tache-rond path { stroke-dasharray: 22; stroke-dashoffset: 22; transition: stroke-dashoffset 240ms var(--courbe) 60ms; }
+.tache[aria-pressed="true"] .tache-rond { background: var(--atlas-plein); box-shadow: none; }
+.tache[aria-pressed="true"] .tache-rond path { stroke-dashoffset: 0; }
+.tache-quoi { flex: 1; min-width: 0; font: 400 17px/1.3 var(--serif); color: var(--atlas-ink); overflow-wrap: anywhere;
+              transition: color 200ms var(--courbe); }
+.tache-combien { flex: none; font-size: 14.5px; font-weight: 600; font-variant-numeric: tabular-nums lining-nums;
+                 color: var(--atlas-inkSoft); white-space: nowrap; }
+.tache[aria-pressed="true"] .tache-quoi { color: var(--atlas-inkSoft); }
+
+.rubrique-photos { display: flex; align-items: baseline; gap: 8px; margin: 18px 0 10px; }
+.rubrique-photos .rubrique { margin: 0; }
+.rubrique-photos small { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--atlas-inkSoft); }
+.photos { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.photo, .photo-plus { aspect-ratio: 1; border-radius: 10px; overflow: hidden; }
+.photo { position: relative; background: var(--atlas-rustTint); }
+.photo img { width: 100%; height: 100%; object-fit: cover; }
+.photo-plus { position: relative; display: grid; place-items: center; color: var(--atlas-rust);
+              background: color-mix(in srgb, var(--atlas-plein) 14%, var(--atlas-card));
+              box-shadow: inset 0 0 0 1.5px var(--atlas-vertPale); }
+.photo-plus .ico { width: 26px; height: 26px; }
+.photo-plus input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+.a-signaler { display: block; width: 100%; min-height: 76px; margin-top: 16px; padding: 13px 14px; border: 0; border-radius: 10px;
+              resize: none; outline: none; font: 400 16px/1.45 var(--sans); color: var(--atlas-ink); caret-color: var(--atlas-or);
+              background: color-mix(in srgb, var(--atlas-or) 10%, var(--atlas-card));
+              box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--atlas-or) 30%, transparent); }
+.a-signaler::placeholder { color: var(--atlas-inkSoft); opacity: 0.85; }
+.a-signaler:focus { box-shadow: inset 0 0 0 2px var(--atlas-or); }
+.envoyer { margin-top: 16px; }
+.manque { margin: 10px 0 0; text-align: center; font-size: 14px; line-height: 1.45; color: var(--atlas-inkSoft); }
+
+.parti { display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 10px; padding: 12px 16px; border-radius: 12px;
+         text-align: left; background: color-mix(in srgb, var(--atlas-plein) 16%, var(--atlas-card));
+         box-shadow: inset 0 0 0 1px var(--atlas-vertPale); }
+.parti .rond-coche { width: 24px; height: 24px; flex: none; display: grid; place-items: center; border-radius: 50%;
+                     background: var(--atlas-plein); color: var(--sur-plein); }
+.parti .rond-coche .ico { width: 14px; height: 14px; stroke-width: 2.6; }
+.parti b { display: block; font: 400 16px/1.2 var(--serif); color: var(--atlas-rust); }
+.parti small { display: block; margin-top: 2px; font-size: 13px; color: var(--atlas-inkSoft); }
+
+/* ═══ AUJOURD'HUI : TravauxAFaire.tsx, au pixel près ══════════════════════ */
+.aujourdhui .parti { border-radius: 999px; padding: 10px 16px; }
+.aujourdhui .travaux-dedans { padding: 10px 14px 14px; }
+.aujourdhui .tache { min-height: 44px; padding: 6px 0; gap: 12px; align-items: flex-start; }
+.aujourdhui .tache + .tache::before { display: none; }
+.aujourdhui .tache-rond { width: 24px; height: 24px; box-shadow: inset 0 0 0 1.5px var(--atlas-vertPale); }
+.aujourdhui .tache-rond svg { width: 13px; height: 13px; stroke-width: 2.2; }
+.aujourdhui .tache-rond path { stroke-dasharray: none; stroke-dashoffset: 0; transition: none; }
+.aujourdhui .tache:not([aria-pressed="true"]) .tache-rond { color: transparent; }
+.aujourdhui .tache-quoi { padding-top: 2px; font: 400 14.5px/1.45 var(--sans); }
+.aujourdhui .tache[aria-pressed="true"] .tache-quoi { color: var(--atlas-muted); }
+.aujourdhui .rubrique-photos { margin: 8px 0 0; align-items: center; flex-wrap: wrap; gap: 7px; }
+.aujourdhui .rubrique-photos .rubrique { font-size: 11px; font-weight: 500; letter-spacing: 0.28em; color: var(--atlas-ink); }
+.aujourdhui .photos { display: flex; flex-wrap: wrap; gap: 7px; }
+.aujourdhui .photo, .aujourdhui .photo-plus { width: 46px; height: 46px; border-radius: 9px; }
+.aujourdhui .photo-plus .ico { width: 17px; height: 17px; }
+.aujourdhui .a-signaler { min-height: 0; margin-top: 10px; padding: 10px 12px; font-size: 16px;
+                          background: color-mix(in srgb, var(--atlas-or) 13%, var(--atlas-card));
+                          box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--atlas-or) 22%, transparent); }
+.aujourdhui .a-signaler::placeholder { color: var(--atlas-muted); opacity: 1; }
+.aujourdhui .envoyer-petit { display: block; width: max-content; margin: 14px auto 0; padding: 12px 24px; border-radius: 999px;
+                             font: 400 15px/1.2 var(--serif); background: var(--atlas-plein); color: var(--sur-plein); }
+.aujourdhui .manque { margin-top: 8px; font-size: 12.5px; color: var(--atlas-muted); }
+.aujourdhui .parti small { font-size: 11.5px; color: var(--atlas-muted); }
+.aujourdhui .parti b { font-size: 15px; }
+.aujourdhui .parti .rond-coche { width: 19px; height: 19px; }
+</style>
+</head>
+<body class="pl pl-pilules">
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">La fiche travaux</h1>
+  <p class="pl-verdict"><b>Que les travaux</b> : ni la main d’œuvre, ni le camion, ni le broyeur, ni le déplacement. Touchez <b>Travaux à faire</b>, cochez, ajoutez une photo, envoyez. <b>Aujourd’hui</b> montre la fiche actuelle.</p>
+</header>
+<main class="pl-scene">
+  <div class="pl-ecrans">
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats" id="etats-propose">
+        <button type="button" data-cas="matin" aria-pressed="false">Le matin</button>
+        <button type="button" data-cas="soir" aria-pressed="true">Le soir</button>
+        <button type="button" data-cas="envoye" aria-pressed="false">Envoyé</button>
+      </div>
+      <div class="cadre"><div class="ecran avec-barre propose" id="ecran-propose"></div></div>
+    </div>
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd’hui</p>
+      <div class="pl-etats" id="etats-aujourdhui">
+        <button type="button" data-cas="matin" aria-pressed="false">Le matin</button>
+        <button type="button" data-cas="soir" aria-pressed="true">Le soir</button>
+        <button type="button" data-cas="envoye" aria-pressed="false">Envoyé</button>
+      </div>
+      <div class="cadre"><div class="ecran avec-barre aujourdhui" id="ecran-aujourdhui"></div></div>
+    </div>
+  </div>
+  <section class="pl-notes">
+    <h2>Ce que je propose</h2>
+    <ul>
+      <li>Que les travaux : la main d’œuvre, le camion, le broyeur, les engins, le déplacement et la location ne s’affichent plus. L’évacuation des déchets et une fourniture seule restent, comme vous l’avez dit. <b>Cette règle est codée</b>, elle attend sa batterie.</li>
+      <li>Le nom du travail en plus grand, et sa quantité à droite : « 25 ml » ne se colle plus au nom.</li>
+      <li>Des cases plus grandes, et toute la ligne se touche. La coche se trace quand on coche.</li>
+      <li>Un trait sous la barre se remplit à chaque travail coché : on voit où on en est sans ouvrir.</li>
+      <li>Les photos en grand, quatre par rang. Le bouton prend toute la largeur, sous le pouce.</li>
+      <li>Un travail fait reste lisible : il passe en gris foncé, plus en gris clair.</li>
+    </ul>
+    <h2>Trouvé en chemin, et corrigé</h2>
+    <ul>
+      <li>Un devis repris par « Dernier devis » perdait le repère de sa main d’œuvre : elle s’affichait à cocher, et sortait de « dont main d’œuvre HT ». Corrigé sur la même branche.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Le bandeau reste à sa place, sous la fiche de sécurité, de la même forme qu’elle : son compte grossit avec.</li>
+      <li>Le même ordre dedans : les travaux, les photos, le mot, le bouton.</li>
+      <li>Aucun montant. Le retour part toujours, coché ou non, avec ou sans photo.</li>
+      <li>Toucher une photo l’ouvre en grand, comme aujourd’hui.</li>
+    </ul>
+  </section>
+</main>
+<script src="kit.js"></script>
+<script>
+(function () {
+  "use strict";
+  function ico(nom, cls) { return '<svg class="ico ' + (cls || "ico-p") + '" aria-hidden="true"><use href="#i-' + nom + '"/></svg>'; }
+  var COCHE = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.4 6.3 11.7 13 5"/></svg>';
+  function barre(rang) {
+    var noms = [["accueil", "Chantiers"], ["planning", "Planning"], ["termines", "Terminés"], ["paysage", "Paysage"], ["reglages", "Réglages"]];
+    return '<nav class="barre" aria-label="Navigation principale"><div class="barre-onglets">' +
+      noms.map(function (n, i) {
+        return '<a class="barre-onglet" href="' + n[0] + '.html"' + (i === rang ? ' aria-current="page"' : "") + ">" + n[1] + "</a>";
+      }).join("") +
+      '<span class="barre-trait" aria-hidden="true"><span></span></span></div></nav>';
+  }
+
+  /* Le devis de Mr. Bernard, ligne par ligne. « sePaie » : ce qui ne se
+     coche pas, et que la règle codée retire de la fiche. */
+  var DEVIS = [
+    { quoi: "Taille de haie de laurier", combien: "25 ml" },
+    { quoi: "Élagage d’un frêne", combien: "" },
+    { quoi: "Camion d’évacuation", combien: "", sePaie: true },
+    { quoi: "Broyeur", combien: "", sePaie: true },
+    { quoi: "Abattage d’un thuya dépérissant", combien: "" },
+    { quoi: "Dessouchage à la rogneuse", combien: "" },
+    { quoi: "Tonte de la pelouse arrière", combien: "" },
+    { quoi: "Scarification et regarnissage du gazon", combien: "40 m²" }
+  ];
+  var COCHEES_LE_SOIR = ["Taille de haie de laurier", "Élagage d’un frêne", "Tonte de la pelouse arrière"];
+
+  function monter(id, propose) {
+    var ecran = document.getElementById(id);
+    var lignes = DEVIS.filter(function (l) { return !propose || !l.sePaie; });
+    var e = { ouvert: true, faites: {}, photos: [], mot: "", envoyes: 0, modifier: false };
+
+    function poser(cas) {
+      e.faites = {};
+      e.photos = [];
+      e.mot = "";
+      e.modifier = false;
+      if (cas !== "matin") COCHEES_LE_SOIR.forEach(function (q) { e.faites[q] = true; });
+      e.ouvert = cas !== "envoye";
+      e.envoyes = cas === "envoye" ? 1 : 0;
+      rendre();
+    }
+
+    function compte() {
+      var n = lignes.length, f = lignes.filter(function (l) { return e.faites[l.quoi]; }).length;
+      if (n === 0) return propose ? "aucun travail" : "aucune ligne";
+      if (f === 0) return propose ? n + (n > 1 ? " travaux" : " travail") : n + " ligne" + (n > 1 ? "s" : "");
+      if (f === n) return propose ? "Tout est fait" : "tout est fait";
+      return f + " sur " + n + " fait" + (f > 1 ? "s" : "");
+    }
+    function part() {
+      return lignes.length ? (100 * lignes.filter(function (l) { return e.faites[l.quoi]; }).length / lignes.length) : 0;
+    }
+    function manque() {
+      var m = [];
+      if (!lignes.some(function (l) { return e.faites[l.quoi]; })) m.push("cochez ce que vous avez fait");
+      if (e.photos.length === 0) m.push("ajoutez une photo");
+      if (!m.length) return "";
+      var t = m.join(" et ");
+      return propose ? t.charAt(0).toUpperCase() + t.slice(1) + "." : t;
+    }
+
+    function rendreTache(l) {
+      var faite = !!e.faites[l.quoi];
+      var libelle = propose ? l.quoi : l.quoi + (l.combien ? ", " + l.combien : "");
+      return '<button type="button" class="tache" data-g="cocher" data-quoi="' + l.quoi + '" aria-pressed="' + faite + '">' +
+        '<span class="tache-rond" aria-hidden="true">' + COCHE + "</span>" +
+        '<span class="tache-quoi">' + libelle + "</span>" +
+        (propose && l.combien ? '<span class="tache-combien">' + l.combien + "</span>" : "") +
+        "</button>";
+    }
+
+    function rendrePhotos() {
+      var titre = '<span class="rubrique">Photos</span>' + (e.photos.length ? "<small>" + e.photos.length + "/10</small>" : "");
+      var tuiles = e.photos.map(function (src, i) {
+        return '<button type="button" class="photo" data-g="note" data-texte="La photo s’ouvre en grand, comme aujourd’hui." aria-label="Photo ' + (i + 1) + ' en grand"><img src="' + src + '" alt=""></button>';
+      }).join("") +
+        '<label class="photo-plus" aria-label="Ajouter une photo">' + ico("plus") +
+        '<input type="file" accept="image/*" multiple data-g="photos"></label>';
+      /* Aujourd'hui, le mot et les vignettes partagent un rang ; proposé, les
+         vignettes ont le leur, quatre par rang. */
+      if (!propose) return '<div class="rubrique-photos">' + titre + tuiles + "</div>";
+      return '<div class="rubrique-photos">' + titre + '</div><div class="photos">' + tuiles + "</div>";
+    }
+
+    function rendreTravaux() {
+      var ouvert = e.ouvert;
+      var h = '<div class="bandeau travaux">' +
+        '<button type="button" class="bandeau-barre" data-g="barre" aria-expanded="' + ouvert + '">' +
+          '<span class="bandeau-nom">Travaux à faire</span><span class="bandeau-compte">' + compte() + "</span>" + ico("bas") +
+          (propose ? '<span class="avance" aria-hidden="true"><i style="width:' + part() + '%"></i></span>' : "") +
+        "</button>" +
+        '<div class="pli' + (ouvert ? " ouvert" : "") + '"><div><div class="travaux-dedans">' +
+          lignes.map(rendreTache).join("") +
+          rendrePhotos() +
+          '<textarea class="a-signaler" rows="2" data-g="mot" placeholder="À signaler, facultatif">' + e.mot + "</textarea>" +
+          (propose
+            ? '<button type="button" class="bouton bouton-plein envoyer" data-g="envoyer">' + (e.modifier ? "Renvoyer le retour" : "Envoyer le retour du jour") + "</button>"
+            : '<button type="button" class="envoyer-petit" data-g="envoyer">' + (e.modifier ? "Renvoyer le retour" : "Envoyer le retour du jour") + "</button>") +
+          (manque() ? '<p class="manque">' + manque() + "</p>" : "") +
+        "</div></div></div></div>";
+      if (e.envoyes > 0) {
+        h += '<button type="button" class="parti" data-g="rouvrir" aria-expanded="' + (ouvert && e.modifier) + '">' +
+          '<span class="rond-coche" aria-hidden="true">' + ico("coche") + "</span><span><b>Retour du jour envoyé</b>" +
+          "<small>À retrouver dans Terminés, Retour d’intervention</small></span></button>";
+      }
+      return h;
+    }
+
+    function rendre() {
+      var defile = ecran.querySelector(".defile"), haut = defile ? defile.scrollTop : 0;
+      ecran.innerHTML =
+        '<div class="defile">' +
+          '<header class="tete"><h1 class="tete-titre moyen">Planning</h1></header>' +
+          '<p class="jour-titre">Mardi 10 novembre</p>' +
+          '<section class="chantier">' +
+            '<span class="chantier-nom">Mr. Bernard</span><span class="chantier-quoi">Julien, Antoine</span>' +
+            '<div class="intervention"><h2 class="intervention-titre">Fiche d’intervention</h2>' +
+              '<span class="ma-note">Prendre la rogneuse.</span>' +
+              '<div class="bandeau securite"><button type="button" class="bandeau-barre" data-g="note" data-texte="La fiche de sécurité, comme aujourd’hui." aria-expanded="false">' +
+                '<span class="bandeau-nom">Fiche de sécurité</span><span class="bandeau-compte">à remplir</span>' + ico("bas") + "</button></div>" +
+              rendreTravaux() +
+              '<button type="button" class="lien-devis" data-g="note" data-texte="Le devis sans les prix, comme aujourd’hui.">Ouvrir le devis sans les prix</button>' +
+            "</div>" +
+          "</section>" +
+        "</div>" + barre(1);
+      Kit.brancher(ecran);
+      ecran.querySelector(".defile").scrollTop = haut;
+    }
+
+    ecran.addEventListener("click", function (ev) {
+      var g = ev.target.closest("[data-g]");
+      if (!g) return;
+      var geste = g.getAttribute("data-g");
+      if (geste === "note") { ev.preventDefault(); Kit.note(g, g.getAttribute("data-texte")); return; }
+      if (geste === "barre") { e.ouvert = !e.ouvert; e.modifier = false; rendre(); return; }
+      if (geste === "rouvrir") { e.modifier = !(e.ouvert && e.modifier); e.ouvert = e.modifier; rendre(); return; }
+      if (geste === "cocher") {
+        var q = g.getAttribute("data-quoi");
+        e.faites[q] = !e.faites[q];
+        /* Seule la ligne touchée change : redessiner tout l'écran couperait
+           la coche qui se trace. */
+        g.setAttribute("aria-pressed", String(!!e.faites[q]));
+        ecran.querySelector(".travaux .bandeau-compte").textContent = compte();
+        var trait = ecran.querySelector(".avance > i");
+        if (trait) trait.style.width = part() + "%";
+        var p = ecran.querySelector(".travaux .manque"), t = manque();
+        if (p && !t) p.remove();
+        else if (p) p.textContent = t;
+        else if (t) ecran.querySelector('[data-g="envoyer"]').insertAdjacentHTML("afterend", '<p class="manque">' + t + "</p>");
+        return;
+      }
+      if (geste === "envoyer") {
+        if (!e.modifier) e.envoyes += 1;
+        e.modifier = false;
+        e.ouvert = false;
+        e.photos = [];
+        e.mot = "";
+        rendre();
+      }
+    });
+    ecran.addEventListener("input", function (ev) {
+      if (ev.target.getAttribute("data-g") === "mot") e.mot = ev.target.value;
+    });
+    ecran.addEventListener("change", function (ev) {
+      if (ev.target.getAttribute("data-g") !== "photos") return;
+      Array.prototype.slice.call(ev.target.files || [], 0, 10 - e.photos.length).forEach(function (f) {
+        e.photos.push(URL.createObjectURL(f));
+      });
+      rendre();
+    });
+
+    document.querySelectorAll("#etats-" + (propose ? "propose" : "aujourdhui") + " [data-cas]").forEach(function (b, _, tous) {
+      b.addEventListener("click", function () {
+        tous.forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+        poser(b.getAttribute("data-cas"));
+      });
+    });
+    poser("soir");
+  }
+
+  monter("ecran-propose", true);
+  monter("ecran-aujourdhui", false);
+})();
+</script>
+</body>
+</html>

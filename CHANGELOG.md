@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-06
 
+- **La fiche travaux, plus jolie : une planche** (`appli/soignee/fiche-travaux.html`, sa demande). Le nom du travail en grand et sa quantité à droite, des cases plus grandes dont la coche se trace, un trait sous la barre qui se remplit, les photos quatre par rang, le bouton sur toute la largeur. Proposé à côté d'Aujourd'hui. Pas codé.
 - **Le site de vente, plus joli** (`appli/vente/chapitres-6.html`, sa demande ; devant les trois jeux de couleurs, sa réponse : « tu choisis »). La A, le vert de l'appli, avec les bandes vert nuit et l'or de la C ; la B écartée (la terre cuite, qu'il a retirée de l'appli), la C écartée comme fond (une page longue en sombre se lit moins bien). Les captures posent sur un fond sauge ou sable, les mots géants restent aux quatre chapitres, le texte est visible sans script. **Défaut réel trouvé en regardant chapitres-5** : la carte Illimité y était presque invisible (son or se citait lui-même), corrigé d'une ligne. Mêmes textes, mêmes prix. Pas codé.
 - **Hiverner l'arrosage : le contrat d'entretien demande aussi** (sa demande) : un client sous contrat d'entretien reçoit la question de l'arrosage, puis « Vous faites son hivernage ? ». La goutte ne vient qu'avec les deux Oui.
 - **Hiverner l'arrosage : la goutte aussi dans le mois** (sa demande) : à côté du numéro du jour, dans le mois en haut du planning, pour voir tous les hivernages d'un coup d'œil. Pas codé.
