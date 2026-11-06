@@ -529,10 +529,29 @@ d'identité, et la facture d'Atlas (étape 3) les y lira. Les redemander au
 paiement ferait deux sources qui divergent. Reste à l'étape 3 : refuser de
 facturer sans SIRET ni adresse, plutôt que de faire une facture incomplète.
 
-Ordre (sa réponse « la A » du 5 novembre) : 1. le lot Factur-X (§555, en
-cours sur `lot/facture-x`), 2. la TVA au paiement,
+Ordre (sa réponse « la A » du 5 novembre) : 1. le lot Factur-X (§555, sur
+`main` le 6 novembre), 2. la TVA au paiement (`lot/tva-abonnement`),
 3. la facture d'abonnement d'Atlas sur ce même code, 4. en septembre 2027,
 la transmission par la plateforme agréée d'Atlas. Pas d'application à part.
+
+**Étape 3 : CODÉE le 6 novembre sur `lot/facture-atlas`** (qui porte aussi la
+TVA), **pas livrée**, batterie en attente de son « lance ». Au crochet
+`invoice.paid`, Atlas émet sa facture (`emettreLaFactureDAbonnement`) : numéro
+`AT2026-000001` d'un compteur sans trou (migration 0172), Factur-X par
+`pieceDeLaFacture` (PDF ordinaire si l'adresse de l'artisan n'a pas de code
+postal), PDF rangé, envoyé au patron par e-mail en pièce jointe.
+`scripts/test-facture-atlas.ts` vert (la pièce passe par `xmlFactureX`) ;
+**`test-factures-atlas-db.ts` écrite, jamais jouée.** Reste :
+
+- **ses cinq lignes à poser** : `ATLAS_VENDEUR_NOM`, `_ADRESSE`, `_SIRET`,
+  `_TVA`, `_EMAIL`. Sans elles, aucune facture ne part, et le journal le dit ;
+- chez Stripe : couper l'envoi de ses propres factures (sinon deux factures
+  pour un paiement) ;
+- **une facture refusée ne se refait pas toute seule** (identité incomplète,
+  montants qui ne se recoupent pas : Stripe a reçu son 200). À émettre à la
+  main depuis le journal ; un écran pour la refaire n'existe pas ;
+- l'artisan ne voit pas encore ses factures Atlas dans l'appli (Réglages,
+  Abonnement) : il les reçoit par e-mail. Un écran demande une planche.
 
 ## ~~⏳ UNE PLANCHE À REGARDER~~ MISE EN ATTENTE LE 5 NOVEMBRE : le prix TTC de l'abonnement
 

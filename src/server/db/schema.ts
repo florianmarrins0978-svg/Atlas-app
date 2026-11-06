@@ -3969,6 +3969,48 @@ export const abonnements = pgTable(
  * table, un réseau lent prolongerait trois fois la période payée d'un seul
  * prélèvement.
  */
+/**
+ * LES FACTURES D'ABONNEMENT D'ATLAS (migration 0172, `src/lib/facture-atlas.ts`).
+ * Une par paiement reçu ; ni modifiable ni effaçable (droits retirés en base),
+ * et retenue par l'entreprise en RESTRICT : ce sont les pièces d'Atlas.
+ */
+export const compteurFacturesAtlas = pgTable("compteur_factures_atlas", {
+  id: smallint("id").primaryKey(),
+  dernier: integer("dernier").notNull().default(0),
+});
+
+export const facturesAtlas = pgTable(
+  "factures_atlas",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "restrict" }),
+    rang: integer("rang").notNull(),
+    numero: text("numero").notNull(),
+    facturePrestataire: text("facture_prestataire").notNull(),
+    emiseLe: date("emise_le").notNull(),
+    periodeDebut: date("periode_debut").notNull(),
+    periodeFin: date("periode_fin").notNull(),
+    formule: text("formule").notNull(),
+    totalHt: numeric("total_ht", { precision: 10, scale: 2 }).notNull(),
+    totalTva: numeric("total_tva", { precision: 10, scale: 2 }).notNull(),
+    totalTtc: numeric("total_ttc", { precision: 10, scale: 2 }).notNull(),
+    acheteurNom: text("acheteur_nom").notNull(),
+    acheteurAdresse: text("acheteur_adresse"),
+    acheteurSiret: text("acheteur_siret"),
+    acheteurNumeroTva: text("acheteur_numero_tva"),
+    pdfStorageKey: text("pdf_storage_key").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("factures_atlas_rang_uk").on(t.rang),
+    unique("factures_atlas_numero_uk").on(t.numero),
+    unique("factures_atlas_prestataire_uk").on(t.facturePrestataire),
+    index("factures_atlas_entreprise_idx").on(t.entrepriseId, t.emiseLe),
+  ]
+);
+
 export const evenementsPaiement = pgTable(
   "evenements_paiement",
   {

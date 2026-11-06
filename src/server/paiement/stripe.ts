@@ -385,6 +385,66 @@ export function lireUnAbonnement(brut: Record<string, unknown>): EtatVenuDuPrest
   };
 }
 
+/** Ce qu'une facture PAYÉE de Stripe dit, et qu'Atlas recopie sur la sienne. */
+export type FacturePayeeLue = {
+  /** L'identifiant Stripe : il rend l'émission rejouable sans doublon. */
+  facturePrestataire: string;
+  abonnementPrestataire: string;
+  htCentimes: number;
+  tvaCentimes: number;
+  ttcCentimes: number;
+  /** `AAAA-MM-JJ` */
+  payeeLe: string;
+  periodeDebut: string;
+  periodeFin: string;
+};
+
+const jourIsoDeSecondes = (s: number) => new Date(s * 1000).toISOString().slice(0, 10);
+
+/**
+ * LIRE UNE FACTURE PAYÉE (`invoice.paid`), pour la facture d'abonnement
+ * qu'Atlas émet lui-même (5 novembre 2026, `src/lib/facture-atlas.ts`).
+ *
+ * **Deux formes de l'abonnement, toutes deux documentées** : l'ancienne
+ * (`subscription` à la racine) et celle des versions récentes de l'API
+ * (`parent.subscription_details.subscription`). Le HT est
+ * `total_excluding_tax`, la TVA ce qui sépare ce HT du total : ce sont les
+ * montants PRÉLEVÉS, prorata compris, jamais une grille recalculée ici.
+ *
+ * Une facture non payée, à zéro (un essai), ou à laquelle il manque un
+ * morceau : `null`, et rien ne s'émet. Une facture à zéro n'est pas une vente.
+ */
+export function lireUneFacturePayee(brut: Record<string, unknown>): FacturePayeeLue | null {
+  if (brut.object !== "invoice" || typeof brut.id !== "string" || brut.status !== "paid") return null;
+  const parent = estObjet(brut.parent) && estObjet(brut.parent.subscription_details) ? brut.parent.subscription_details : null;
+  const sub = brut.subscription ?? parent?.subscription;
+  const abonnement = typeof sub === "string" ? sub : estObjet(sub) && typeof sub.id === "string" ? sub.id : null;
+  const total = brut.total;
+  const ht = brut.total_excluding_tax;
+  if (!abonnement || typeof total !== "number" || typeof ht !== "number" || total <= 0) return null;
+
+  const transitions = estObjet(brut.status_transitions) ? brut.status_transitions : {};
+  const payeeA = typeof transitions.paid_at === "number" ? transitions.paid_at : typeof brut.created === "number" ? brut.created : null;
+  const lignes = estObjet(brut.lines) && Array.isArray(brut.lines.data) ? brut.lines.data : [];
+  const periode = lignes.length > 0 && estObjet(lignes[0]) && estObjet(lignes[0].period) ? lignes[0].period : null;
+  if (payeeA === null || !periode || typeof periode.start !== "number" || typeof periode.end !== "number") {
+    logger.error("Facture payée illisible : date ou période absente", { facture: brut.id });
+    return null;
+  }
+  return {
+    facturePrestataire: brut.id,
+    abonnementPrestataire: abonnement,
+    htCentimes: ht,
+    tvaCentimes: total - ht,
+    ttcCentimes: total,
+    payeeLe: jourIsoDeSecondes(payeeA),
+    periodeDebut: jourIsoDeSecondes(periode.start),
+    // La fin de période Stripe est l'instant où la suivante commence : le
+    // dernier jour payé est la veille.
+    periodeFin: jourIsoDeSecondes(periode.end - 1),
+  };
+}
+
 /**
  * **Un état inconnu vaut « impayé », jamais « actif ».** C'est le seul repli
  * qui ne donne rien gratuitement : se tromper vers l'actif offrirait

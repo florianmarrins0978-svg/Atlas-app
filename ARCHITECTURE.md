@@ -37066,3 +37066,20 @@ minuit le 31 décembre, et chaque pièce de la nuit serait partie fausse.
 | **prouvée dans les conditions de la batterie** : le jour de la démonstration rempli à la main, l'ancienne version rouge, la nouvelle verte | une suite capricieuse ne se croit pas guérie parce qu'elle passe seule (§353) |
 
 Ce n'est pas le seul cas possible : toute suite qui prend « le premier jour proposé » de la démonstration partage ce risque. Elle se donne son jour, comme celle-ci.
+
+## §561 : Atlas facture lui-même son abonnement, avec le code Factur-X des artisans
+
+*6 novembre 2026, ses réponses du 5 : TVA, et Factur-X.*
+
+| Décision | Pourquoi |
+|---|---|
+| Stripe encaisse, Atlas facture (`invoice.paid`, `emettreLaFactureDAbonnement`) | Stripe ne fabrique pas de Factur-X ; une facture faite chez lui aurait été une seconde fabrique, et un autre numéro |
+| la donnée passe par `donneesFactureAtlas`, puis `pieceDeLaFacture` du lot Factur-X | une seule façon de fabriquer une facture ; la pièce d'Atlas est éprouvée par `xmlFactureX` comme celle d'un artisan |
+| les montants sont ceux PRÉLEVÉS (prorata compris), et doivent se recouper avec le taux | une grille recalculée ici aurait dit autre chose que la banque ; un écart se refuse au lieu de se choisir |
+| un compteur unique verrouillé (`compteur_factures_atlas`), la pièce vérifiée AVANT de tirer le rang | une suite sans trou ; une SEQUENCE en aurait à chaque transaction annulée, un refus en aurait laissé un |
+| `factures_atlas` sans UPDATE ni DELETE pour `atlas_app`, `entreprise_id` en RESTRICT | ce sont les pièces d'Atlas, gardées quoi qu'il arrive au compte de l'artisan (RGPD 17.3.b) |
+| l'identité d'Atlas en configuration (`ATLAS_VENDEUR_*`), refus si incomplète | rien ne s'invente sur une pièce comptable |
+| l'e-mail au patron hors de la transaction | un service d'e-mail coupé ne défait pas une facture émise |
+
+Le dépôt lit les adresses des patrons par `adressesDesPatronsDans` (`membres-entreprise.ts`), écrite pour être la seule lecture de « qui est le patron » des envois d'Atlas ; l'e-mail d'avant l'effacement (`lot/fermeture-compte`) la reprendra à la fusion des deux lots.
+

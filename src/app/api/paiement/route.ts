@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { CorpsTropGros, texteBorne } from "@/server/corps-borne";
 import { verifierSignature } from "@/lib/signature-stripe";
-import { lireUnAbonnement } from "@/server/paiement/stripe";
+import { lireUnAbonnement, lireUneFacturePayee } from "@/server/paiement/stripe";
+import { emettreLaFactureDAbonnement } from "@/server/repositories/factures-atlas";
 import { appliquerDepuisLeCrochet } from "@/server/repositories/abonnements";
 import { getEnv } from "@/server/env";
 import { logger } from "@/server/logger";
@@ -94,6 +95,21 @@ export async function POST(request: Request) {
      * état vrai au moment où le prestataire l'a envoyé.
      */
     const objet = evenement.data && typeof evenement.data === "object" ? (evenement.data as Record<string, unknown>).object : null;
+
+    // **Un paiement reçu fait naître la facture d'Atlas** (5 novembre 2026,
+    // `src/lib/facture-atlas.ts`) : Stripe encaisse, Atlas facture. Un refus
+    // attendu (identité d'Atlas incomplète) répond 200 et se journalise :
+    // Stripe rejouerait sans fin un événement qui ne peut pas réussir. Une
+    // panne imprévue, elle, lève : le 500 fait rejouer, et le compteur, annulé
+    // avec la transaction, n'a pas de trou.
+    if (type === "invoice.paid" && objet && typeof objet === "object") {
+      const payee = lireUneFacturePayee(objet as Record<string, unknown>);
+      if (payee) {
+        const emission = await emettreLaFactureDAbonnement(payee);
+        logger.info("Facture d'abonnement", { emission, facture: payee.facturePrestataire });
+      }
+      return NextResponse.json({ recu: true });
+    }
     if (!objet || typeof objet !== "object" || (objet as Record<string, unknown>).object !== "subscription") {
       return NextResponse.json({ recu: true });
     }

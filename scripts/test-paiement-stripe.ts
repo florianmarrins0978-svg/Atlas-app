@@ -660,6 +660,50 @@ async function main() {
     if (!r.ok) assert.equal(r.erreur, "prestataire_injoignable");
   });
 
+  console.log("\n=== Lire une facture payée (la facture d'abonnement d'Atlas) ===\n");
+
+  {
+    const stripe = await moduleFrais();
+    const payee = {
+      object: "invoice",
+      id: "in_1",
+      status: "paid",
+      parent: { subscription_details: { subscription: "sub_123" } },
+      total: 4680,
+      total_excluding_tax: 3900,
+      created: 1793000000,
+      status_transitions: { paid_at: 1793000100 },
+      lines: { data: [{ period: { start: 1793000000, end: 1795592000 } }] },
+    };
+
+    await cas("le HT, la TVA et le total sont ceux PRÉLEVÉS", async () => {
+      const f = stripe.lireUneFacturePayee(payee);
+      assert.ok(f);
+      assert.equal(f.htCentimes, 3900);
+      assert.equal(f.tvaCentimes, 780);
+      assert.equal(f.ttcCentimes, 4680);
+      assert.equal(f.abonnementPrestataire, "sub_123");
+      assert.equal(f.facturePrestataire, "in_1");
+    });
+
+    await cas("l'abonnement se lit aussi dans l'ancienne forme, à la racine", async () => {
+      const { parent: _p, ...sansParent } = payee;
+      void _p;
+      assert.equal(stripe.lireUneFacturePayee({ ...sansParent, subscription: "sub_ancien" })?.abonnementPrestataire, "sub_ancien");
+    });
+
+    await cas("le dernier jour payé est la veille du début de la période suivante", async () => {
+      const f = stripe.lireUneFacturePayee(payee);
+      assert.equal(f?.periodeFin, new Date((1795592000 - 1) * 1000).toISOString().slice(0, 10));
+    });
+
+    await cas("non payée, à zéro, ou sans abonnement : rien ne s'émet", async () => {
+      assert.equal(stripe.lireUneFacturePayee({ ...payee, status: "open" }), null);
+      assert.equal(stripe.lireUneFacturePayee({ ...payee, total: 0, total_excluding_tax: 0 }), null);
+      assert.equal(stripe.lireUneFacturePayee({ ...payee, parent: null }), null);
+    });
+  }
+
   console.log(`\n${echecs === 0 ? "✅" : "❌"} ${echecs} échec(s)\n`);
   process.exit(echecs === 0 ? 0 : 1);
 }

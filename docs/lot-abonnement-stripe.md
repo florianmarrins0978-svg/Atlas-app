@@ -155,6 +155,18 @@ Le crochet à déclarer chez Stripe : **votre adresse + `/api/paiement`**, et le
 Commencez avec une clé de **test** (`sk_test_`) et la carte `4242 4242 4242
 4242` : rien n'est débité, et tout le parcours se joue en vrai.
 
+**Et l'identité d'Atlas, pour ses propres factures** (6 novembre 2026, Atlas
+facture lui-même en Factur-X) :
+
+    ATLAS_VENDEUR_NOM=…       la raison sociale de l'entreprise qui porte Atlas
+    ATLAS_VENDEUR_ADRESSE=…   avec le code postal, sinon la Factur-X se refuse
+    ATLAS_VENDEUR_SIRET=…
+    ATLAS_VENDEUR_TVA=FR…
+    ATLAS_VENDEUR_EMAIL=…
+
+Puis chez Stripe : Réglages, Facturation, couper l'envoi des factures aux
+clients. Sinon l'artisan reçoit deux factures pour un seul paiement.
+
 ### 2. Trancher le cloisonnement par formule
 
 Voir plus haut. Une phrase suffit.
