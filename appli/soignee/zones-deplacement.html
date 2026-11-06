@@ -140,11 +140,12 @@ button.pastille-zone b { transition: transform 120ms var(--courbe); }
 .touche-teinte::after { content: ""; position: absolute; inset: -11px; }
 .touche-teinte[aria-expanded="true"] { box-shadow: 0 0 0 2px var(--atlas-card), 0 0 0 4px var(--atlas-or); }
 .palette { padding: 2px 0 14px; }
-.palette-choix { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px 6px; }
+.palette-choix { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px 6px; }
 .palette-choix button { display: flex; flex-direction: column; align-items: center; gap: 5px; min-height: 60px; padding: 4px 0;
                         font-size: 12px; font-weight: 600; color: var(--atlas-inkSoft); }
-.palette-choix i { width: 32px; height: 32px; border-radius: 50%; background: var(--zc); box-shadow: inset 0 0 0 1px var(--atlas-line); }
-.ecran[data-sombre] .palette-choix i { background: var(--zs); }
+/* Chaque choix montre SON dégradé, du haut (la zone proche) vers le bas (la plus loin). */
+.palette-choix i { width: 34px; height: 46px; border-radius: 9px; background: var(--dc); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.ecran[data-sombre] .palette-choix i { background: var(--ds); }
 .palette-choix button[aria-pressed="true"] { color: var(--atlas-ink); }
 .palette-choix button[aria-pressed="true"] i { box-shadow: 0 0 0 2px var(--atlas-card), 0 0 0 4px var(--atlas-or); }
 .palette-note { margin: 8px 0 0; font-size: 13.5px; color: var(--atlas-inkSoft); }
@@ -222,7 +223,7 @@ button.pastille-zone b { transition: transform 120ms var(--courbe); }
 .pdf-table td.vide { color: #c9c4b8; }
 .pdf-manque { margin: 10px 0 0; color: #9c3b2e; font-weight: 700; }
 /* Le papier ne suit pas la charte : la rampe claire, toujours. */
-.pdf-teinte { display: block; width: 14px; height: 5px; margin: 0 auto 4px; border-radius: 2px; background: var(--zp, var(--zc)); }
+.pdf-teinte { display: block; width: 14px; height: 5px; margin: 0 auto 4px; border-radius: 2px; background: var(--zc); }
 .pdf-boite { margin-top: auto; padding: 11px 13px; background: #f3f1ec; border: 1px solid #e3dfd6; }
 .pdf-boite span { display: block; margin-top: 4px; color: #8a8578; font-size: 9.5px; }
 .pdf-pied { display: flex; justify-content: space-between; margin-top: 14px; font-size: 8px; color: #8a8578; }
@@ -302,16 +303,16 @@ button.pastille-zone b { transition: transform 120ms var(--courbe); }
       <li>Chaque zone a sa couleur, une seule teinte du clair au foncé : la plus claire est la plus proche, la plus foncée la plus loin. Sous chaque salarié, une barre montre son mois d’un coup d’œil, et chaque case garde son nom écrit au-dessus.</li>
       <li>Le nom d’une zone se change, comme ses km : Zone 3C, Lointaine, ce que dit votre accord.</li>
       <li>Toucher une case sous un salarié, Zone 3 sous Julien, ouvre ses jours dans cette zone : la date, le code postal et la ville, l’adresse du chantier, et la distance.</li>
-      <li>Dans la feuille d’un salarié, toucher la pastille d’une zone propose neuf couleurs, dont celle d’origine. La couleur vaut pour la zone, chez tous les salariés, et dans le PDF.</li>
+      <li>Dans la feuille d’un salarié, toucher la pastille d’une zone propose sept dégradés : turquoise, vert, bleu, violet, rose, orange, gris. Un appui, et toutes les zones prennent le dégradé choisi, du clair au foncé, chez tous les salariés et dans le PDF.</li>
     </ul>
     <h2>À vérifier avant de coder</h2>
     <ul class="a-trancher">
       <li>Les deux modèles viennent de résultats de recherche : ce poste ne peut pas ouvrir le site de la MSA. Ils seront vérifiés sur les textes de l’année, et ils restent modifiables.</li>
       <li>Au-delà de 50 km (70 km en zone peu dense pour le paysage), c’est un autre barème : la planche l’écrit Hors zone.</li>
     </ul>
-    <h2>À trancher</h2>
-    <ul class="a-trancher">
-      <li>Un jour sur deux chantiers : la zone la plus loin, ou celle du matin ?</li>
+    <h2>Tranché par vous</h2>
+    <ul class="garde">
+      <li>Un jour sur deux chantiers compte la zone la plus loin (votre réponse du 6 novembre).</li>
     </ul>
   </section>
 </main>
@@ -353,7 +354,7 @@ document.addEventListener("DOMContentLoaded", function () {
      les zones doivent alors se voir sans rien allumer. « jamais » : personne
      n'a encore répondu à la question des zones. */
   var etat = { choix: "paysage", jamais: false, zones: copie(MODELES.paysage.zones), corrections: {}, ouvert: null, vue: "equipe", vueJours: "jours",
-               couleurs: {}, palette: null };
+               teinte: "turquoise", palette: null };
 
   function copie(z) { return z.map(function (x) { return [x[0], x[1]]; }); }
   function ico(nom) { return '<svg class="ico ico-p" aria-hidden="true"><use href="#i-' + nom + '"/></svg>'; }
@@ -366,40 +367,51 @@ document.addEventListener("DOMContentLoaded", function () {
      teinte, du clair (la plus proche) au foncé (la plus loin), plutôt que des
      couleurs au hasard qui ne diraient pas laquelle est loin. « +50 km » est
      le dernier pas.
-     Éprouvé au validateur des couleurs (rampe ordonnée, OKLCH, teinte 190) :
-     jusqu'à sept pas, chaque marche se distingue de sa voisine et la plus
-     claire se voit encore sur le fond, dans les six chartes claires et les
-     deux sombres. Sur fond sombre la rampe s'inverse : la plus loin est la
-     plus claire. Au-delà de sept pas, les marches se rapprochent : les noms
-     écrits au-dessus des cases restent la lecture sûre. */
-  var RAMPE = { clair: [0.71, 0.29], sombre: [0.47, 0.88] };
-  /* Sa demande du 5 novembre : « cliquer sur la pastille pour modifier les
-     couleurs ». La couleur est celle de la ZONE, pour tous les salariés ; on
-     la prend parmi les couleurs que les huit chartes savent déjà rendre
-     (claires et sombres), et « D'origine » rend la rampe. Le papier, lui, ne
-     suit pas la charte : chaque couleur y garde sa valeur d'Origine. */
-  var COULEURS = [
-    { cle: null, nom: "D’origine" },
-    { cle: "catRepas", nom: "Vert", papier: "#477c36" },
-    { cle: "catTransport", nom: "Turquoise", papier: "#277a7a" },
-    { cle: "catCarburant", nom: "Bleu", papier: "#3d6e9e" },
-    { cle: "catHotel", nom: "Violet", papier: "#7a5aa6" },
-    { cle: "catVirement", nom: "Rose", papier: "#a3506b" },
-    { cle: "catMateriel", nom: "Orange", papier: "#9c6123" },
-    { cle: "bordeaux", nom: "Bordeaux", papier: "#6E2433" },
-    { cle: "catAutre", nom: "Gris", papier: "#736f64" }
+     SA DEMANDE SUIVANTE, le 6 novembre : « si je choisis la couleur violette,
+     tu me fais un dégradé pareil de violet ; on clique sur une et elles se
+     remplissent toutes automatiquement ». On ne choisit donc pas la couleur
+     d'UNE zone : on choisit la teinte du dégradé, et toutes les zones la
+     prennent, de la plus proche (claire) à la plus loin (foncée). L'ordre de
+     la distance se lit toujours, quelle que soit la teinte.
+     Éprouvé au validateur des couleurs (rampe ordonnée, OKLCH) pour les sept
+     teintes, de deux à sept pas, dans les six chartes claires et les deux
+     sombres : chaque marche se distingue de sa voisine, la plus claire se
+     voit encore sur le fond, la teinte ne glisse pas. Sur fond sombre la
+     rampe s'inverse (la plus loin est la plus claire) et sa saturation baisse
+     vers le clair, sans quoi les marches du haut se confondaient. Au-delà de
+     sept pas, les noms écrits au-dessus des cases restent la lecture sûre. */
+  var RAMPE = { clair: [0.71, 0.29], sombre: [0.50, 0.89] };
+  var TEINTES = [
+    { cle: "turquoise", nom: "Turquoise", h: 190, c: 0.09 },
+    { cle: "vert", nom: "Vert", h: 145, c: 0.09 },
+    { cle: "bleu", nom: "Bleu", h: 255, c: 0.09 },
+    { cle: "violet", nom: "Violet", h: 305, c: 0.09 },
+    { cle: "rose", nom: "Rose", h: 355, c: 0.09 },
+    { cle: "orange", nom: "Orange", h: 55, c: 0.09 },
+    { cle: "gris", nom: "Gris", h: 90, c: 0.012 }
   ];
+  function laTeinte(cle) { return TEINTES.filter(function (x) { return x.cle === cle; })[0] || TEINTES[0]; }
+  /* La couleur du pas k sur n, dans une teinte : la valeur claire et la
+     sombre, et l'encre qui se lit dessus dans chacune. */
+  function pas(k, n, t) {
+    var r = n > 1 ? k / (n - 1) : 0;
+    var lc = RAMPE.clair[0] + (RAMPE.clair[1] - RAMPE.clair[0]) * r;
+    var ls = RAMPE.sombre[0] + (RAMPE.sombre[1] - RAMPE.sombre[0]) * r;
+    var cs = t.c * Math.min(1, Math.max(0.3, (0.97 - ls) / 0.2));
+    return { clair: "oklch(" + lc.toFixed(3) + " " + t.c + " " + t.h + ")", sombre: "oklch(" + ls.toFixed(3) + " " + cs.toFixed(3) + " " + t.h + ")",
+             lc: lc, ls: ls };
+  }
   function teinte(k) {
-    var choisie = etat.couleurs[k < etat.zones.length ? "z" + k : "hors"];
-    if (choisie) {
-      var c = COULEURS.filter(function (x) { return x.cle === choisie; })[0];
-      return "--zc:var(--atlas-" + choisie + ");--zs:var(--atlas-" + choisie + ");--tc:var(--atlas-card);--ts:var(--atlas-card);--zp:" + c.papier;
-    }
-    var n = etat.zones.length + 1, t = n > 1 ? k / (n - 1) : 0;
-    var lc = RAMPE.clair[0] + (RAMPE.clair[1] - RAMPE.clair[0]) * t;
-    var ls = RAMPE.sombre[0] + (RAMPE.sombre[1] - RAMPE.sombre[0]) * t;
-    return "--zc:oklch(" + lc.toFixed(3) + " 0.1 190);--zs:oklch(" + ls.toFixed(3) + " 0.1 190);" +
-      "--tc:var(" + (lc < 0.58 ? "--atlas-card" : "--atlas-ink") + ");--ts:var(" + (ls < 0.6 ? "--atlas-ink" : "--atlas-card") + ")";
+    var p = pas(k, etat.zones.length + 1, laTeinte(etat.teinte));
+    return "--zc:" + p.clair + ";--zs:" + p.sombre + ";" +
+      "--tc:var(" + (p.lc < 0.58 ? "--atlas-card" : "--atlas-ink") + ");--ts:var(" + (p.ls < 0.6 ? "--atlas-ink" : "--atlas-card") + ")";
+  }
+  /* Le dégradé entier d'une teinte, du haut (proche) vers le bas (loin) :
+     c'est ce que montre chaque choix, pour qu'on voie ce qu'on prend. */
+  function degrade(t) {
+    var n = etat.zones.length + 1, clair = [], sombre = [];
+    for (var k = 0; k < n; k++) { var p = pas(k, n, t); clair.push(p.clair); sombre.push(p.sombre); }
+    return "--dc:linear-gradient(to bottom," + clair.join(",") + ");--ds:linear-gradient(to bottom," + sombre.join(",") + ")";
   }
 
   /* ─── Les cases d'un mois : les zones, puis ce qui n'en a pas ─────────── */
@@ -656,17 +668,10 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function palette(c) {
-    var actuelle = etat.couleurs[c.cle] || null;
-    var rang = c.cle === "hors" ? etat.zones.length : Number(c.cle.slice(1));
-    return '<div class="palette"><div class="palette-choix" role="group" aria-label="Couleur de ' + c.nom + '">' + COULEURS.map(function (x) {
-      // « D'origine » se montre dans SA teinte de rampe, pour qu'on sache ce qu'on retrouve.
-      var style = x.cle ? "--zc:var(--atlas-" + x.cle + ");--zs:var(--atlas-" + x.cle + ")" : (function () {
-        var sauve = etat.couleurs[c.cle]; delete etat.couleurs[c.cle];
-        var t = teinte(rang); if (sauve) etat.couleurs[c.cle] = sauve; return t;
-      })();
-      return '<button type="button" data-geste="choisir-couleur" data-cle="' + c.cle + '" data-couleur="' + (x.cle || "") + '" aria-pressed="' + (actuelle === x.cle) + '">' +
-        '<i style="' + style + '"></i>' + x.nom + "</button>";
-    }).join("") + '</div><p class="palette-note">Pour tous les salariés.</p></div>';
+    return '<div class="palette"><div class="palette-choix" role="group" aria-label="Couleur des zones">' + TEINTES.map(function (t) {
+      return '<button type="button" data-geste="choisir-teinte" data-teinte="' + t.cle + '" aria-pressed="' + (etat.teinte === t.cle) + '">' +
+        '<i style="' + degrade(t) + '"></i>' + t.nom + "</button>";
+    }).join("") + '</div><p class="palette-note">Toutes les zones, chez tous les salariés.</p></div>';
   }
 
   var dedansJours = document.querySelector("#feuille-jours-zone .feuille-dedans");
@@ -738,9 +743,8 @@ document.addEventListener("DOMContentLoaded", function () {
     if (geste === "salarie") { etat.ouvert = Number(b.getAttribute("data-k")); etat.palette = null; peindreFeuille(); Kit.ouvrirFeuille("feuille-zones", b); return; }
     if (geste === "jours-zone") { peindreJoursZone(Number(b.getAttribute("data-k")), b.getAttribute("data-cle")); Kit.ouvrirFeuille("feuille-jours-zone", b); return; }
     if (geste === "couleur") { var cc = b.getAttribute("data-cle"); etat.palette = etat.palette === cc ? null : cc; peindreFeuille(); return; }
-    if (geste === "choisir-couleur") {
-      var z = b.getAttribute("data-cle"), choix = b.getAttribute("data-couleur");
-      if (choix) etat.couleurs[z] = choix; else delete etat.couleurs[z];
+    if (geste === "choisir-teinte") {
+      etat.teinte = b.getAttribute("data-teinte");
       etat.palette = null;
       peindreFeuille(); rendreJours(); rendreReglage(); rendrePdf();
       return;

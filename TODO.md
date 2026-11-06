@@ -182,8 +182,15 @@ l'adresse du chantier et chez qui, la distance (« Corrigé à la main » si le
 compte diffère) ; et dans la feuille d'un salarié, toucher la pastille d'une
 zone propose neuf couleurs (D'origine, puis les couleurs de catégorie que les
 huit chartes rendent déjà, et bordeaux) : la couleur vaut pour la zone, chez
-tous, et le papier garde sa valeur d'Origine. Une couleur choisie sort de la
-rampe ordonnée : c'est son choix, « D'origine » la rend.
+tous, et le papier garde sa valeur d'Origine.
+**Revu le 6 novembre, à sa demande** (*« si je choisis la couleur violette,
+tu me fais un dégradé pareil de violet ; on clique sur une et elles se
+remplissent toutes »*) : on ne choisit plus la couleur d'UNE zone mais la
+teinte du dégradé, et toutes les zones la prennent, du clair (proche) au foncé
+(loin). Sept teintes (turquoise d'origine, vert, bleu, violet, rose, orange,
+gris), chacune éprouvée au validateur de deux à sept pas dans les huit
+chartes (clair 0,71 à 0,29, sombre 0,50 à 0,89 avec la saturation qui baisse
+vers le clair). Chaque choix montre son dégradé, du haut vers le bas.
 Le réglage vit dans Réglages, Équipe, ouvert par une ligne « Zones de déplacement » sous les
 absences, qui dit ce qui est choisi (« Paysage, 4 zones » ; sa demande du
 5 novembre, « ajoute sur la planche la ligne équipe ») : Pas de zones, Paysage (MSA, 0 à 5, 5 à 20, 20 à 30,
@@ -202,8 +209,8 @@ nom, et dans sa feuille, en tête, « Il manque une zone, ajoutez-la » (ses mot
 du même soir) avec le jour et le lieu (« Mardi 10 novembre, Les Landes, adresse non située »). Le
 plus de la bonne zone l'efface ; un jour de trop se dit pareil. **Les deux modèles sont à vérifier sur les textes** (MSA
 et accord régional) avant de coder : ce poste ne joint pas msa.fr. **À
-trancher par lui** : un jour sur deux chantiers, la zone la plus loin ou celle
-du matin.
+trancher par lui** : ~~un jour sur deux chantiers, la zone la plus loin ou
+celle du matin~~ **tranché le 6 novembre : la plus loin.**
 
 **Planche du motif : VALIDÉE le 5 novembre** (*« très bien motif d'une
 absence »*), pas codée. `appli/soignee/motif-absence.html`. Six motifs d'un
