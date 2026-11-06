@@ -55,6 +55,19 @@ export class AccesRefuseError extends Error {
 }
 
 /**
+ * Le compte de l'entreprise est fermé, et celui qui frappe n'en est pas le
+ * patron (5 novembre 2026). Un refus d'accès comme un autre pour tout ce qui
+ * l'attrape déjà ; `garderLaPage` le reconnaît pour lui montrer l'écran qui
+ * le dit (`/compte-ferme`) plutôt qu'une page d'erreur.
+ */
+export class CompteFermeError extends AccesRefuseError {
+  constructor(utilisateurId: string, entrepriseId: string) {
+    super(utilisateurId, entrepriseId);
+    this.name = "CompteFermeError";
+  }
+}
+
+/**
  * Levée quand un geste tente d'écrire en lecture seule : essai terminé,
  * abonnement résilié depuis le 18 octobre 2026, compte fermé depuis le
  * 5 novembre 2026.
@@ -141,7 +154,7 @@ export async function withEntreprise<T>(
     );
     if (ferme && adhesion.role !== "proprietaire") {
       logger.warn("Accès refusé : compte fermé, réservé au patron", { entrepriseId });
-      throw new AccesRefuseError(utilisateurId, entrepriseId);
+      throw new CompteFermeError(utilisateurId, entrepriseId);
     }
 
     const abonnementFerme =

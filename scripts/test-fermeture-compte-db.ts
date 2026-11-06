@@ -5,6 +5,7 @@ import { withEntreprise, AccesRefuseError, LectureSeuleError } from "../src/serv
 import {
   clients as clientsTable,
   devis as devisTable,
+  chantiers as chantiersTable,
   factures as facturesTable,
 } from "../src/server/db/schema";
 import * as entreprisesRepo from "../src/server/repositories/entreprises";
@@ -100,7 +101,18 @@ async function remplir(ctx: Ctx) {
   const ch4 = await chantiersRepo.creerChantier(ctx, { nom: "Gazon", clientId: brouillon.id });
   await devisRepo.getOuCreerDevisBrouillon(ctx, ch4.id);
 
-  return { factureId: f.facture.id, devisAccepteId: d2.id, devisJamaisId: d3.id, clients: { facture, accepte, jamais, brouillon } };
+  // Un chantier qu'aucun client ne porte : aucun effacement de client ne
+  // l'atteint, c'est la purge qui doit le voir (6 novembre 2026).
+  const libre = await chantiersRepo.creerChantier(ctx, { nom: "Sans client" });
+  await lignesPrixRepo.ajouterLignePrix(ctx, libre.id, "Tonte", "80.00");
+
+  return {
+    factureId: f.facture.id,
+    devisAccepteId: d2.id,
+    devisJamaisId: d3.id,
+    chantierLibreId: libre.id,
+    clients: { facture, accepte, jamais, brouillon },
+  };
 }
 
 async function compter(ctx: Ctx) {
@@ -108,6 +120,7 @@ async function compter(ctx: Ctx) {
     clients: (await tx.select({ id: clientsTable.id, nom: clientsTable.nom, telephone: clientsTable.telephone }).from(clientsTable)),
     devis: (await tx.select({ id: devisTable.id }).from(devisTable)).map((d) => d.id),
     factures: (await tx.select({ id: facturesTable.id, statut: facturesTable.statut }).from(facturesTable)),
+    chantiers: (await tx.select({ id: chantiersTable.id }).from(chantiersTable)).map((c) => c.id),
   }));
 }
 
@@ -201,6 +214,11 @@ async function main() {
     const noms = apres.clients.map((c) => c.nom).sort();
     assert.deepEqual(noms, ["M. Vasseur", "Mme Costa"], `clients restants : ${noms.join(", ")}`);
     for (const c of apres.clients) assert.equal(c.telephone, null, `${c.nom} garde de quoi être recontacté`);
+  });
+
+  await test("le chantier sans client part aussi, il n'avait rien de cloué", async () => {
+    assert.ok(avant.chantiers.includes(dansFerme.chantierLibreId), "le montage n'a pas posé le chantier sans client");
+    assert.ok(!(await compter(ferme)).chantiers.includes(dansFerme.chantierLibreId), "le chantier sans client est resté");
   });
 
   await test("archivé : la date est posée, et rien ne repasse", async () => {

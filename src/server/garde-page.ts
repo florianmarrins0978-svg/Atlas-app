@@ -5,6 +5,10 @@ import { estCheminPublic } from "@/lib/chemins-publics";
 import { accesDeLaPersonne } from "@/server/autorisation";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { garderLAdresseVerifiee, garderLesDocumentsLegaux } from "@/server/garde-etapes-du-compte";
+import { CompteFermeError } from "@/server/db/with-entreprise";
+
+/** L'écran du salarié dont l'entreprise a fermé son compte. */
+export const CHEMIN_COMPTE_FERME = "/compte-ferme";
 
 /**
  * LE REFUS DES RÔLES, POSÉ PAR CHAQUE ÉCRAN.
@@ -66,6 +70,14 @@ export async function garderLaPage(): Promise<void> {
      * la laisse donc repartir.
      */
     if (typeof (err as { digest?: unknown })?.digest === "string") throw err;
+
+    // **Le compte de l'entreprise est fermé, et ce n'est pas le patron** : il
+    // lit l'écran qui le dit, plutôt qu'une page d'erreur à chaque adresse
+    // (5 novembre 2026). Cet écran-là ne lit rien de l'entreprise.
+    if (err instanceof CompteFermeError) {
+      if (chemin !== CHEMIN_COMPTE_FERME) redirect(CHEMIN_COMPTE_FERME);
+      return;
+    }
 
     // Le reste — pas de session, pas d'adhésion — n'est pas à cette garde de
     // trancher. Le middleware renvoie déjà à la connexion, et `getCurrentCtx`

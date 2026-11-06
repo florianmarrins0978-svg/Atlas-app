@@ -1,7 +1,15 @@
 import { and, eq, isNotNull, isNull, lte, sql } from "drizzle-orm";
 import { db } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
-import { abonnements, clients, entreprises } from "../db/schema";
+import {
+  abonnements,
+  clients,
+  entreprises,
+  fichiersAPurger,
+  liaisonsBancaires,
+  messagesAssistant,
+  photosDiagnostic,
+} from "../db/schema";
 import {
   JOURS_AVANT_EFFACEMENT,
   etatDeLaFermeture,
@@ -9,7 +17,7 @@ import {
   type EtatFermeture,
   type Fermeture,
 } from "@/lib/fermeture-compte";
-import { effacerClientDans } from "./donnees-client";
+import { effacerChantiersSansClientDans, effacerClientDans } from "./donnees-client";
 import { logger } from "../logger";
 import type { Ctx } from "./context";
 
@@ -104,6 +112,43 @@ export async function retirerLaFermeture(ctx: Ctx, maintenant: Date = new Date()
   );
 }
 
+/**
+ * CE QU'AUCUN CLIENT NE PORTE, et qui part aussi (6 novembre 2026, sa
+ * demande « tu peux faire ces 5 là ») :
+ *
+ * | | |
+ * |---|---|
+ * | les chantiers sans client | par la même règle que ceux d'un client (`effacerChantiersSansClientDans`) : une facture ou un devis accepté les retient |
+ * | la liaison bancaire | l'accès à son compte en banque : plus personne ne s'en sert, et c'est un secret |
+ * | les messages de l'assistant posés hors d'un chantier | ce qu'il a demandé, et qui peut nommer quelqu'un ; ceux d'un chantier sont partis avec lui |
+ * | les photos de diagnostic | le fichier part, la fiche reste sans image, comme à la purge des quatre-vingt-dix jours (`purgerPhotosDiagnostic`) |
+ *
+ * **Ce qui reste, et c'est délibéré** : les mouvements et virements de la
+ * banque. Ils sont reliés aux pièces de son comptable (migration 0145, en
+ * cascade) et aux paiements de ses factures : les effacer emporterait des
+ * pièces comptables. Ils sont dans `TODO.md`.
+ */
+async function effacerCeQuiNAppartientAAucunClient(
+  tx: Parameters<Parameters<typeof withEntreprise>[2]>[0],
+  entrepriseId: string,
+  maintenant: Date
+): Promise<void> {
+  await effacerChantiersSansClientDans(tx, { entrepriseId }, maintenant);
+  await tx.delete(liaisonsBancaires).where(eq(liaisonsBancaires.entrepriseId, entrepriseId));
+  await tx
+    .delete(messagesAssistant)
+    .where(and(eq(messagesAssistant.entrepriseId, entrepriseId), isNull(messagesAssistant.chantierId)));
+  const images = await tx
+    .select({ id: photosDiagnostic.id, cle: photosDiagnostic.storageKey })
+    .from(photosDiagnostic)
+    .where(and(eq(photosDiagnostic.entrepriseId, entrepriseId), isNotNull(photosDiagnostic.storageKey)));
+  for (const { id, cle } of images) {
+    if (!cle) continue;
+    await tx.insert(fichiersAPurger).values({ storageKey: cle });
+    await tx.update(photosDiagnostic).set({ storageKey: null, purgeeLe: maintenant }).where(eq(photosDiagnostic.id, id));
+  }
+}
+
 export type RapportFermetures = { comptesEffaces: number; clientsEffaces: number };
 
 /**
@@ -156,6 +201,7 @@ export async function effacerLeResteDesComptesFermes(maintenant: Date = new Date
         for (const { id } of aEffacer) {
           await effacerClientDans(tx, { entrepriseId: c.id }, id, maintenant);
         }
+        await effacerCeQuiNAppartientAAucunClient(tx, c.id, maintenant);
         await tx.update(entreprises).set({ resteEffaceLe: maintenant, updatedAt: maintenant }).where(eq(entreprises.id, c.id));
         return aEffacer.length;
       });

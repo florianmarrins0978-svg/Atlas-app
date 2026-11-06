@@ -224,6 +224,9 @@ essai("le commercial atteint l'application, sauf les adresses nommées", () => {
     "/reglages/documents/message",
     "/reglages/documents/numero",
     "/reglages/donnees",
+    // Fermer le compte (5 novembre 2026) vit sous Mes données, et hérite de
+    // sa fermeture : c'est le geste du patron, et de lui seul.
+    "/reglages/donnees/fermer",
     "/reglages/equipe",
     // **Ajoutée le 26 août 2026 par ce contrôle lui-même**, et c'est ce qu'on
     // lui demande : l'écran « Nouveau compte » est né ce jour-là, et la liste
