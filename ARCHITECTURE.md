@@ -36946,7 +36946,7 @@ Contrôles : `test-feuille-main-oeuvre` (pur : la quantité à la journée, l'he
 
 | Décision | Pourquoi |
 |---|---|
-| trois dates sur `entreprises` (migration 0166), aucune table neuve | `withEntreprise` lit déjà l'adhésion et l'abonnement en une requête ; la fermeture s'y joint sans aller-retour de plus |
+| trois dates sur `entreprises` (migration 0171), aucune table neuve | `withEntreprise` lit déjà l'adhésion et l'abonnement en une requête ; la fermeture s'y joint sans aller-retour de plus |
 | la lecture seule et le refus des salariés dans `withEntreprise` | la même raison que la lecture seule de l'essai (§ du 13 septembre) : 176 gestes écrivent, en fermer un par un en oublierait un |
 | la date d'effet est la fin de ce qui est payé, lue sur l'abonnement | son choix A ; la résiliation à l'échéance part chez Stripe AVANT que la base note la fermeture, sinon il paierait pour un compte qu'il croit fermé |
 | la purge passe chaque client par `effacerClientDans` | une seule règle de ce qui se garde (sa décision du 27 août) ; une seconde aurait divergé. La transaction pose `app.entreprise_id` depuis la ligne lue, jamais depuis une saisie |

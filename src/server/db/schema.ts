@@ -362,7 +362,7 @@ export const entreprises = pgTable("entreprises", {
     .notNull()
     .default("encaissements"),
   /**
-   * FERMER SON COMPTE (migration 0166, question 33 de `docs/QUESTIONS.md`).
+   * FERMER SON COMPTE (migration 0171, question 33 de `docs/QUESTIONS.md`).
    * Demandée le jour où il appuie ; effective à la fin de ce qui est payé ;
    * le reste effacé trente jours après, par la purge. Les règles vivent dans
    * `src/lib/fermeture-compte.ts`.

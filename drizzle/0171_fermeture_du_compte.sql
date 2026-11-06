@@ -12,7 +12,7 @@
 --     c'est ce qui l'empêche de repasser.
 --   · `prevenu_le` : le jour où l'e-mail « votre compte s'efface le … » est
 --     parti, sept jours avant (ajouté le 6 novembre 2026, dans CE fichier :
---     0166 n'est passée sur aucune base qui compte). Il empêche un second
+--     0171 (née 0166, renumérotée le 6 novembre : `main` avait pris ce numéro) n'est passée sur aucune base qui compte). Il empêche un second
 --     envoi, et il ne se pose que sur un envoi réussi.
 --
 -- **Les trois vivent ensemble ou pas du tout** pour les deux premières : une

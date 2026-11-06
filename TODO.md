@@ -81,7 +81,7 @@ Pas codé.
 LIVRÉ** : la batterie attend son « lance » (sa règle du même jour). Les suites
 pures sont vertes ; `scripts/test-fermeture-compte-db.ts` est écrit et n'a
 **jamais tourné** (il vide la base de test : même accord requis). Ce qui est
-codé : `src/lib/fermeture-compte.ts` (les règles), migration 0166 (trois dates
+codé : `src/lib/fermeture-compte.ts` (les règles), migration 0171 (trois dates
 sur `entreprises`), `withEntreprise` (lecture seule et salariés refusés une fois
 fermé), `reglages/donnees/fermer` (l'écran de la planche), la purge planifiée
 (`effacerLeResteDesComptesFermes`, qui passe chaque client par
@@ -108,7 +108,7 @@ fermé), `reglages/donnees/fermer` (l'écran de la planche), la purge planifiée
   paiements des factures ;
 - ~~l'e-mail qui le prévient avant l'effacement~~ **codé le 6 novembre** :
   sept jours avant, une fois, date posée sur un envoi réussi seulement
-  (`prevenirAvantLEffacement`, colonne `prevenu_le` dans 0166) ;
+  (`prevenirAvantLEffacement`, colonne `prevenu_le` dans 0171) ;
 - ~~`echeanceConservation` compte dix ans depuis la date de la pièce~~
   **corrigé le 6 novembre** (`src/lib/conservation.ts`) : jusqu'au 31 décembre
   de l'année de la pièce plus onze, le côté sûr faute de connaître l'exercice
