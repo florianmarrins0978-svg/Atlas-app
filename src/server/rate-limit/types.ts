@@ -132,9 +132,12 @@ export const LIMITES = {
   confirmationProposition: { max: 30, fenetreMs: 60 * 1000 },
   televersementFichier: { max: 20, fenetreMs: 60 * 1000 },
   // Une idée pour l'appli (5 novembre 2026) : chacune arrive chez l'éditeur.
-  // Dix par heure et par personne laissent dire tout ce qu'on veut ; au-delà,
-  // c'est un doigt resté appuyé, ou quelqu'un qui remplit la boîte d'un autre.
-  ideeEnvoyee: { max: 10, fenetreMs: 60 * 60 * 1000 },
+  // Cinq par quart d'heure et par personne laissent dire tout ce qu'on veut ;
+  // au-delà, c'est un doigt resté appuyé, ou quelqu'un qui remplit la boîte
+  // d'un autre. **Un quart d'heure, pas une heure** : aucune fenêtre n'enferme
+  // plus longtemps (`test-connexion-limite`, qui a rougi sur la première
+  // version à la batterie commune du 6 novembre 2026).
+  ideeEnvoyee: { max: 5, fenetreMs: 15 * 60 * 1000 },
   // L'import de devis et factures (22 octobre 2026) : 2 000 pièces par envoi,
   // parties une à une. Au seuil ordinaire de vingt par minute, un envoi
   // prendrait plus d'une heure et demie l'appli ouverte. Six cents par minute

@@ -132,6 +132,10 @@ export const ECRANS_A_PRECHAUFFER = [
   "/reglages/banque",
   // Sa plateforme de facture électronique (5 novembre 2026).
   "/reglages/facture-electronique",
+  // Une idée pour l'appli, et les idées reçues de l'éditeur (5 novembre 2026),
+  // réclamées par ce contrôle à la batterie commune du 6 novembre.
+  "/reglages/idee",
+  "/reglages/idees-recues",
   // L'onglet « Paysage » et son premier outil interne (18 août 2026). La fiche
   // de chantier s'ouvre sur un chantier, souvent en 4G : c'est exactement le
   // cas où une compilation à froid ne passe pas.

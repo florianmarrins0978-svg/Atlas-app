@@ -78,8 +78,20 @@ async function main() {
     assert.equal(await liste.locator('[data-atlas="idee"]', { hasText: regret }).count(), 0);
 
     // 5. L'adresse de l'éditeur n'existe pas pour ce compte.
-    const reponse = await page.goto(`${BASE}/reglages/idees-recues`, { waitUntil: "networkidle" });
-    assert.equal(reponse?.status(), 404, "Les idées reçues s'ouvrent à un compte qui n'est pas l'éditeur");
+    //
+    // **Le code HTTP ne prouve rien ici**, la leçon de `test-vocabulaire-editeur-e2e` :
+    // les Réglages portent un `loading.tsx`, la réponse part en flux, et
+    // Next.js rend alors 200 sur un `notFound()` (« Next.js will return a 200
+    // HTTP status code for streamed responses », `not-found.md`). Ce contrôle
+    // exigeait 404 et a rougi à la batterie commune du 6 novembre 2026 sur une
+    // page qui refusait bien. Ce qui se vérifie : rien des idées n'arrive au
+    // navigateur, ni l'écran, ni l'idée qu'on vient d'envoyer.
+    await page.goto(`${BASE}/reglages/idees-recues`, { waitUntil: "networkidle" });
+    await page.waitForTimeout(600);
+    const contenu = await page.locator("body").innerText();
+    assert.doesNotMatch(contenu, /Les idées reçues/, "Les idées reçues s'ouvrent à un compte qui n'est pas l'éditeur");
+    assert.ok(!contenu.includes(garde), "une idée envoyée se lit à l'adresse de l'éditeur");
+    assert.doesNotMatch(contenu, /accès refusé|réservé à l'éditeur|non autorisé/i, "la page dit qu'elle existe et qu'elle est refusée");
 
     console.log("✅ Une idée pour l'appli : la porte, l'envoi après le tiroir, Annuler, la date seule, l'éditeur fermé");
   } finally {

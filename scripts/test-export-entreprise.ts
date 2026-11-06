@@ -124,9 +124,14 @@ async function tablesScopeesParEntreprise(): Promise<string[]> {
 // disparaît un jour de la base, la suite le dira plutôt que de laisser une
 // exception périmée couvrir une vraie omission.
 const EXCLUSIONS_MOTIVEES: Record<string, string> = {
-  // Rien : à ce jour, toute table portant entreprise_id est exportée. Ce
-  // registre existe pour que la prochaine exclusion soit écrite, pas décidée
-  // en silence dans la requête.
+  // Ce registre existe pour que chaque exclusion soit écrite, pas décidée en
+  // silence dans la requête.
+  //
+  // Les idées pour l'appli : sa décision du 6 novembre 2026, « pas d'idées
+  // dans le fichier de Mes données » (`TODO.md`, lot des idées). Ce sont des
+  // messages envoyés à l'éditeur d'Atlas, pas des données du métier : une
+  // sauvegarde de l'entreprise n'a pas à les rendre.
+  idees: "des messages adressés à l'éditeur d'Atlas, hors de Mes données par sa décision du 6 novembre 2026",
 };
 
 async function main() {
