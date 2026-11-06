@@ -53,7 +53,14 @@ async function leClientAccepte(navigateur: Browser) {
   const demande = page.getByText(/Je demande expressément/);
   if (await demande.count()) await demande.click();
   await page.getByRole("button", { name: /J'accepte ce devis/ }).click();
-  await page.locator("text=C'est noté").waitFor({ timeout: 30_000 });
+  // **Un « Timeout » ne désigne personne** : rouge deux fois à la batterie
+  // commune du 6 novembre 2026, vert seul, la suite ne disait pas ce que le
+  // client lisait. Ce qu'il voit au moment où « C'est noté » manque se dit
+  // désormais (`AGENTS.md` : rendre bavard un défaut muet avant de le corriger).
+  await page.locator("text=C'est noté").waitFor({ timeout: 30_000 }).catch(async (e) => {
+    console.log("Ce que l'écran du client montre :\n" + (await page.locator("body").innerText()).slice(0, 1500));
+    throw e;
+  });
   await contexte.close();
   const { rows } = await pool.query(
     "select e.reponse, c.date_planifiee from envois_devis e join chantiers c on c.id = e.chantier_id where e.jeton = $1",
