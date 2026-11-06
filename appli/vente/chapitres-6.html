@@ -57,12 +57,17 @@
   d'essai (atlas_scene), et rien n'est dessiné par-dessus. Un doigt en
   pastille blanche montrait d'abord où l'on appuie ; sa réponse : « enlève
   cette pastille blanche et joue simplement les cinématiques ».
-    · Dictez : la phrase s'écrit lettre à lettre, au rythme d'une voix
-      (72 ms la lettre, une respiration aux espaces et aux virgules, cinq
-      secondes en tout), puis la ligne du devis arrive ;
-    · la note vocale : le micro au repos, puis le vrai chrono, une
-      capture par seconde, de 0:00 à 0:12 (nov-dictee-*.jpg, la bande du bas
-      de l'écran, prise avec un micro simulé) ;
+    · l'ouverture : « Créer un devis », le + qui tourne et ses éclats, puis
+      la fiche client qui monte (nov-creer-un-devis.mp4, 1,2 s). C'est la
+      vraie animation de l'appli, filmée image par image avec l'horloge de
+      la page figée, pour la définition d'un iPhone ; sa demande du soir ;
+    · Dictez, remis dans l'ordre du geste à sa demande (« c'est un peu à
+      l'envers ») : d'abord la note vocale, le micro au repos puis le vrai
+      chrono, une capture par seconde, de 0:00 à 0:12 (nov-dictee-*.jpg,
+      prise avec un micro simulé) ; plus bas la phrase, qui s'écrit lettre
+      à lettre au rythme d'une voix (72 ms la lettre, une respiration aux
+      espaces et aux virgules, cinq secondes en tout) ; puis la ligne du
+      devis, qui se pose sur sa propre rangée du devis entier ;
     · Envoyez : la date se choisit, la case des 14 jours apparaît et se
       coche, le client accepte, et la page devient
       « C'est noté. Votre artisan est prévenu. » (nov-client-0 à 3) ;
@@ -294,8 +299,6 @@ section{padding:clamp(88px,12vw,150px) 0}
 .dite .l.dite-la{opacity:1}
 .dite .l.dernier::after{content:"";position:absolute;right:-4px;top:.16em;bottom:.06em;width:2px;background:var(--feuille);animation:clignote 1s steps(1) infinite}
 @keyframes clignote{50%{opacity:0}}
-html.anime .devient{opacity:0;transform:translateY(16px);transition:opacity .8s ease,transform 1s var(--sortie)}
-html.anime .devient.vu{opacity:1;transform:none}
 
 /* Ce que la phrase devient : la ligne du devis, en clair. */
 .devient{margin-top:28px;display:grid;gap:10px}
@@ -307,14 +310,27 @@ html.anime .devient.vu{opacity:1;transform:none}
 @media (min-width:520px){.ligne{grid-template-columns:1fr auto auto auto}.ligne .designation{grid-column:auto}.ligne .total{grid-column:auto;grid-row:auto}}
 
 /* Dictez : le devis sur la scène, le téléphone qui le chevauche. */
-.duo{width:100%;padding:22px 20px 28px;display:grid;justify-items:center}
-.duo .feuille{width:100%}
-.duo .appareil{width:min(64vw,270px);margin-top:-96px;position:relative;z-index:2}
-.duo-sous{width:100%;text-align:right}
+/* Dictez se lit dans l'ordre du geste : la note vocale, la phrase qui
+   s'écrit, puis la ligne qu'elle devient, posée sur le devis entier. */
+.recit{justify-items:stretch}
+.scene-micro{display:flex;justify-content:center;padding:40px 20px}
+.scene-micro .appareil{width:min(70vw,300px)}
+.recit .dite{margin-top:8px}
+.recit .devient{margin-top:8px}
+.devis-loupe{position:relative;width:min(100%,560px);margin:6px auto 0}
+.devis-loupe .feuille{width:100%}
+/* La ligne se pose sur sa propre rangée du PDF (36,2 % de la hauteur de la
+   page : 847 px sur 2339 dans nov-devis.jpg), un peu plus grande que la page. */
+.devis-loupe .ligne{position:absolute;left:-4%;right:-4%;top:36.2%;transform:translateY(-50%);z-index:2;box-shadow:0 0 0 1px rgba(var(--ombre),.1),0 26px 50px -22px rgba(var(--ombre),.55)}
+html.anime .devis-loupe .ligne{opacity:0;transform:translateY(-38%) scale(.94);transition:opacity .7s ease,transform 1.1s var(--sortie)}
+html.anime .devient.vu .devis-loupe .ligne{opacity:1;transform:translateY(-50%)}
+.recit .sous{text-align:right}
+/* Le film de l'ouverture : la vraie animation de l'appli, filmée image par
+   image. Sans script ou sans mouvement, son affiche montre l'accueil. */
+.ecran video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top}
 @media (min-width:960px){
-  .duo{display:block;height:820px;padding:0}
-  .duo .feuille{position:absolute;right:40px;top:44px;width:64%}
-  .duo .appareil{position:absolute;left:40px;bottom:40px;width:280px;margin:0}
+  .scene-micro{padding:56px 40px}
+  .scene-micro .appareil{width:320px}
 }
 
 /* Vos prix, pas les nôtres : la réponse à la première méfiance. */
@@ -537,7 +553,7 @@ html.anime .chiffre.joue span{opacity:1;transform:none;transition-delay:1.5s}
     </div>
     <div class="scene" aria-hidden="true">
       <figure class="feuille"><img src="images/nov-devis.jpg" alt="" width="1654" height="2339"></figure>
-      <div class="appareil"><img src="images/nov-accueil.jpg" alt="" width="1170" height="1992"></div>
+      <div class="appareil" id="scene-creer"><div class="ecran"><video poster="images/nov-creer-un-devis.jpg" muted playsinline preload="auto" width="780" height="1328"><source src="images/nov-creer-un-devis.mp4" type="video/mp4"><source src="images/nov-creer-un-devis.webm" type="video/webm"></video></div></div>
     </div>
   </div>
 </section>
@@ -576,18 +592,20 @@ html.anime .chiffre.joue span{opacity:1;transform:none;transition-delay:1.5s}
     <div class="chap-texte">
       <h2 class="mot">Dictez<span class="point">.</span></h2>
       <p class="chapo">Vous décrivez le chantier sur place, à voix haute. Atlas écrit le devis.</p>
+    </div>
+    <div class="chap-visuel recit">
+      <div class="scene scene-micro">
+        <div class="appareil" id="scene-micro"><div class="ecran"><img src="images/nov-fiche-client.jpg" alt="Fiche client d'Atlas, remplie pour Mr. Lemaire, avec le bouton Devis à la voix" width="1170" height="1992"><div class="bande" aria-hidden="true"></div></div></div>
+      </div>
       <p class="dite" id="dite">« On arrache l'ancienne haie de thuyas sur douze mètres. »</p>
       <div class="devient">
         <p class="sur">Sur le devis, cela devient :</p>
-        <p class="ligne"><span class="designation">Arrachage de la haie de thuyas et évacuation</span><span class="qte">12 ml</span><span class="pu">18,00 €</span><span class="total">216,00 € HT</span></p>
+        <div class="devis-loupe">
+          <figure class="feuille"><img src="images/nov-devis.jpg" alt="Le devis fini, en PDF : Création d'un massif pour Mr. Lemaire, quatre lignes, 718,50 euros HT, 862,20 euros TTC" width="1654" height="2339"></figure>
+          <p class="ligne"><span class="designation">Arrachage de la haie de thuyas et évacuation</span><span class="qte">12 ml</span><span class="pu">18,00 €</span><span class="total">216,00 € HT</span></p>
+        </div>
+        <p class="sous">Le devis, prêt à partir.</p>
       </div>
-    </div>
-    <div class="chap-visuel">
-      <div class="scene duo">
-        <figure class="feuille"><img src="images/nov-devis.jpg" alt="Le devis fini, en PDF : Création d'un massif pour Mr. Lemaire, quatre lignes, 718,50 euros HT, 862,20 euros TTC" width="1654" height="2339"></figure>
-        <div class="appareil" id="scene-micro"><div class="ecran"><img src="images/nov-fiche-client.jpg" alt="Fiche client d'Atlas, remplie pour Mr. Lemaire, avec le bouton Devis à la voix" width="1170" height="1992"><div class="bande" aria-hidden="true"></div></div></div>
-      </div>
-      <p class="sous duo-sous">Le devis, prêt à partir.</p>
     </div>
   </div>
 </section>
@@ -952,10 +970,27 @@ html.anime .chiffre.joue span{opacity:1;transform:none;transition-delay:1.5s}
       var c = lettres[i];
       await attendre(c === " " ? 120 : /[,.»]/.test(c) ? 320 : 72);
     }
-    await attendre(500); devient.classList.add("vu");
     await attendre(2400); spans[spans.length - 1].classList.remove("dernier");
   };
   new IntersectionObserver(function(e, o){ if (e[0].isIntersecting){ o.disconnect(); dicter(); } }, {threshold:0.9}).observe(dite);
+  // Puis, plus bas, la ligne se pose sur le devis entier.
+  new IntersectionObserver(function(e, o){ if (e[0].isIntersecting){ o.disconnect(); devient.classList.add("vu"); } }, {threshold:0.45}).observe(devient.querySelector(".devis-loupe"));
+
+  // 0. L'ouverture : « Créer un devis », le + qui tourne et la fiche client
+  // qui monte, le film de la vraie animation de l'appli, rejoué tant qu'on
+  // regarde. Si le téléphone refuse la lecture, l'affiche reste : l'accueil.
+  var creer = document.getElementById("scene-creer"), film = creer.querySelector("video");
+  var jusquAuBout = function(){ return new Promise(function(r){ film.addEventListener("ended", r, {once:true}); }); };
+  scene(creer, 0.4, function(){}, async function(encore){
+    while (encore()){
+      film.pause(); film.currentTime = 0;
+      await attendre(1400); if (!encore()) return;
+      var fin = jusquAuBout();
+      try { await film.play(); } catch (e) { return; }
+      await fin; if (!encore()) return;
+      await attendre(2600);
+    }
+  }, function(){ film.pause(); });
 
   // 2. La note vocale : le micro au repos, puis l'enregistrement qui démarre
   // et le vrai chrono qui défile, une capture par seconde (nov-dictee-00 à 12).
