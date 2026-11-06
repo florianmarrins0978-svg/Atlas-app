@@ -182,21 +182,20 @@ export function momentsOfferts(combienPartent: number): MomentDArrivee[] {
 }
 
 /**
- * LE MOMENT D'ARRIVÉE SE DÉDUIT DE CE QUI PART — sa demande du 1er novembre 2026.
+ * UNE JOURNÉE PART SANS QUESTION — sa demande du 1er novembre 2026.
  *
- * *« Quand je clique sur déplacer, je voudrais cliquer sur le jour et que ça le
- * déplace en un clic »*, puis : *« si c'est un chantier d'une journée, pas
- * besoin de me demander si je veux déplacer le matin ou l'aprem »*. La question
- * « Quel moment ? » du 17 septembre a donc disparu de l'écran : une journée
- * arrive en journée, une moitié garde sa moitié (`appli/deplacer-en-un-appui.html`,
- * la A). Ce qui en résulte passe encore par `deplacerCeQueLeJourPorte`, qui
- * revalide : la réponse d'ici est toujours un moment que `momentsOfferts`
- * accepte, et la suite le tient.
+ * *« Si c'est un chantier d'une journée, pas besoin de me demander si je veux
+ * déplacer le matin ou l'aprem »*, puis, le 6 novembre : *« si c'est une
+ * demi-journée, l'utilisateur doit pouvoir choisir si on le met le matin ou
+ * l'après-midi »*. Le jour touché déplace donc aussitôt ce que porte une
+ * journée entière ; une demi-journée garde sa question (`momentsOfferts(1)`).
+ *
+ * Rend le moment à écrire sans rien demander, ou `null` quand la question
+ * reste due. Le résultat passe encore par `deplacerCeQueLeJourPorte`, qui
+ * revalide.
  */
-export function momentQuiPart(partants: readonly Creneau[]): MomentDArrivee | null {
-  if (partants.length >= 2) return "journee";
-  if (partants.length === 1) return partants[0].moment;
-  return null;
+export function departSansQuestion(partants: readonly Creneau[]): MomentDArrivee | null {
+  return partants.length >= 2 ? "journee" : null;
 }
 
 /** Ce que le chantier occupe CE jour-là — ce qui partira, et rien d'autre. */
