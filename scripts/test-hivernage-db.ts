@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import { pool } from "../src/server/db/client";
+import { eq } from "drizzle-orm";
+import { withEntreprise } from "../src/server/db/with-entreprise";
+import { chantiers } from "../src/server/db/schema";
 import { creerEntreprise } from "../src/server/repositories/entreprises";
 import { creerChantier, listerChantiersPourPlanning } from "../src/server/repositories/chantiers";
 import { creerClient, getClient, mettreAJourClient } from "../src/server/repositories/clients";
@@ -152,8 +155,16 @@ async function main() {
     assert.deepEqual(etat?.poses, [{ chantierId: chantier.id, jour: "2026-11-12", moment: "matin" }]);
     const dit = ceQueLaFicheDit(etat!, "2026-11-05");
     assert.equal(dit?.genre === "a-hiverner" && dit.prevu?.chantierId, chantier.id);
-    const { rows } = await pool.query("select travaux_a_la_main from chantiers where id = $1", [chantier.id]);
-    assert.deepEqual(rows[0]?.travaux_a_la_main, [TRAVAUX_DE_L_HIVERNAGE]);
+    // **Relu sous le contexte de l'entreprise, jamais par le pool nu** : sous
+    // FORCE RLS, une requête sans contexte ne voit AUCUNE ligne, sans erreur
+    // (`.claude/rules/migrations.md`). La première version lisait ainsi et
+    // rendait `undefined` : elle accusait le produit d'un défaut qu'elle
+    // fabriquait (batterie commune du 6 novembre au soir).
+    const travaux = await withEntreprise(a.utilisateurId, a.entrepriseId, async (tx) => {
+      const [l] = await tx.select({ travaux: chantiers.travauxALaMain }).from(chantiers).where(eq(chantiers.id, chantier.id));
+      return l?.travaux;
+    });
+    assert.deepEqual(travaux, [TRAVAUX_DE_L_HIVERNAGE]);
   });
 
   await cas("une autre entreprise ne lit ni n'écrit rien de son arrosage", async () => {
