@@ -163,6 +163,29 @@ const HORS_CHARTE: Array<{
   },
   {
     /**
+     * **La ligne qui rassemble les clients à hiverner, en tête de Vos clients**
+     * : sa planche du 5 novembre 2026, la B retenue le 6
+     * (`appli/soignee/hiverner-l-arrosage.html`). Une plage bleue pleine
+     * largeur, de la nature de la ligne du plafond juste au-dessus ; bornée à
+     * son repère, tout autre bouton carré de la liste fait toujours rougir.
+     */
+    motif: /^src[/\\]app[/\\]clients[/\\]ListeClients\.tsx$/,
+    pourquoi: "plage pleine largeur qui rassemble les clients à hiverner, et non geste en capsule",
+    seulement: /data-atlas="rassembler-a-hiverner"/,
+  },
+  {
+    /**
+     * **Les cases du mois de « Le prévoir »** (la fiche d'un client, sa planche
+     * du 5 novembre 2026) : la même tuile de 44 px que la case du planning
+     * (`MoisCharge`, plus bas), ni geste ni champ. Bornée à `data-jour=` :
+     * les autres boutons de la feuille sont des capsules, et restent surveillés.
+     */
+    motif: /^src[/\\]app[/\\]clients[/\\]\[id\][/\\]ArrosageDuClient\.tsx$/,
+    pourquoi: "case du calendrier : une tuile de 44 px, ni geste ni champ",
+    seulement: /data-jour=/,
+  },
+  {
+    /**
      * **La même chose, en tête de la fiche de chantier** — « Composer ma fiche »,
      * depuis le 26 août 2026 (`ARCHITECTURE.md` §190).
      *

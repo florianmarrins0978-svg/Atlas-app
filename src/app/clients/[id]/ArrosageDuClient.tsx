@@ -141,7 +141,7 @@ export default function ArrosageDuClient({
               <Link
                 href={`/planning?chantier=${dit.prevu.chantierId}`}
                 data-atlas="voir-l-hivernage"
-                className="flex min-h-[44px] items-center justify-center gap-2 rounded-[12px] px-3 text-[15px] font-bold"
+                className="flex min-h-[44px] items-center justify-center gap-2 rounded-full px-3 text-[15px] font-bold"
                 style={{ color: colors.ink, boxShadow: `inset 0 0 0 1.5px ${colors.line}` }}
               >
                 <DessinCalendrier />
@@ -368,7 +368,7 @@ function FeuilleDuPrevoir({
                   aria-pressed={moment === m.cle}
                   data-atlas={`moment-${m.cle}`}
                   onClick={() => setMoment(m.cle)}
-                  className={`flex min-h-[56px] w-full items-center justify-between gap-3 rounded-[12px] px-4 text-left text-[16px] font-semibold ${i > 0 ? "mt-2" : ""}`}
+                  className={`flex min-h-[56px] w-full items-center justify-between gap-3 rounded-full px-5 text-left text-[16px] font-semibold ${i > 0 ? "mt-2" : ""}`}
                   style={{
                     color: colors.ink,
                     backgroundColor: colors.card,
@@ -468,7 +468,7 @@ function Bouton({
       onClick={onClick}
       disabled={disabled}
       data-atlas={repere}
-      className="flex min-h-[44px] items-center justify-center gap-2 rounded-[12px] px-3 text-[15px] font-bold"
+      className="flex min-h-[44px] items-center justify-center gap-2 rounded-full px-3 text-[15px] font-bold"
       style={
         plein
           ? { backgroundColor: colors.plein, color: surPlein }
