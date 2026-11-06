@@ -4,7 +4,8 @@
 
 **Sa réponse du 6 novembre** : *« Oui corrige le maintenant. Pas de
 batterie »*. Codé sur la branche `lot/police-inferieur-ou-egal`, poussée sur
-GitHub le même jour sur son « oui » (*« pousse-les »*) ; pas sur `main`.
+GitHub le même jour sur son « oui » (*« pousse-les »*), puis réuni dans
+`lot/fiche-securite-soignee`, celle qui se fusionne ; pas sur `main`.
 
 | | |
 |---|---|
@@ -88,10 +89,14 @@ changer ici les changerait tous ; la phrase de refus de Signer garde ses mots
 liste des numéros d'« Alerter » garde l'ordre du code, seul l'encadré
 « En cas d'accident » met les pompiers en premier.
 
-**Le « ≤ » du PDF** : corrigé à part, sur la branche locale
-`lot/police-inferieur-ou-egal` (son entrée en tête de ce fichier, une fois les
-deux lots réunis). Sur cette branche-ci, seule, il s'imprime encore en case
-vide.
+**Le « ≤ » du PDF** : corrigé à part (`lot/police-inferieur-ou-egal`, son
+entrée en tête de ce fichier), puis **réuni dans `lot/fiche-securite-soignee`
+le 6 novembre, avec `main` du jour**, sur sa demande : *« pousse sur la
+branche, je vais fusionner toutes les sessions qui n'ont pas joué de
+batterie »*. Cette branche porte donc les deux lots ; c'est elle qui se
+fusionne. Rejoué sur l'ensemble : types, `test-polices-documents.ts`,
+`test-fiche-securite.ts`, et un PDF regardé (« HTA (U ≤ 50 000 V) », en gras
+quand c'est coché).
 
 ## LES FÉRIÉS, LE MOTIF, LES JOURS TRAVAILLÉS ET LES ZONES : CODÉS LE 6 NOVEMBRE, SUR main LE 6 NOVEMBRE (batterie commune)
 
