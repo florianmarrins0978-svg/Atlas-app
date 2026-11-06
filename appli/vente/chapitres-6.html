@@ -54,20 +54,23 @@
 
   LES MISES EN SCÈNE, sa demande du 6 novembre 2026 au soir. Toutes jouent
   de VRAIES captures de l'appli, prises le même jour sur une copie de la base
-  d'essai (atlas_scene) ; seul le doigt est dessiné, et il ne montre que
-  l'endroit où l'on appuie.
+  d'essai (atlas_scene), et rien n'est dessiné par-dessus. Un doigt en
+  pastille blanche montrait d'abord où l'on appuie ; sa réponse : « enlève
+  cette pastille blanche et joue simplement les cinématiques ».
     · Dictez : la phrase s'écrit lettre à lettre, au rythme d'une voix
       (72 ms la lettre, une respiration aux espaces et aux virgules, cinq
       secondes en tout), puis la ligne du devis arrive ;
-    · la note vocale : un doigt sur le micro, puis le vrai chrono, une
+    · la note vocale : le micro au repos, puis le vrai chrono, une
       capture par seconde, de 0:00 à 0:12 (nov-dictee-*.jpg, la bande du bas
       de l'écran, prise avec un micro simulé) ;
-    · Envoyez : le doigt quitte « Télécharger mon devis » pour la date, la
-      case des 14 jours apparaît, il la coche, il accepte, et la page devient
+    · Envoyez : la date se choisit, la case des 14 jours apparaît et se
+      coche, le client accepte, et la page devient
       « C'est noté. Votre artisan est prévenu. » (nov-client-0 à 3) ;
     · Encaissez : 143,70 € monte depuis zéro, puis la phrase ;
-    · Et aussi, inversé à sa demande : les travaux d'abord, qui se cochent AU
-      DÉFILEMENT (la carte reste posée, chaque cran coche une tâche), la
+    · Et aussi, inversé à sa demande : les travaux d'abord, qui se cochent
+      TOUT SEULS à l'arrivée, une tâche par seconde environ (la première
+      version les cochait au défilement : « ça bug », la carte restait
+      posée et le geste se perdait), la
       remarque, l'appui sur « Envoyer le retour du jour » et la carte qui se
       replie (nov-travaux-0 à 6) ; puis le retour du soir que reçoit le
       patron.
@@ -203,7 +206,8 @@ section{padding:clamp(88px,12vw,150px) 0}
 .appareil{width:min(70vw,320px);padding:9px;border-radius:48px;background:linear-gradient(155deg,#26302a,#0d120f 40%);box-shadow:0 60px 90px -46px rgba(var(--ombre),.7),0 22px 34px -22px rgba(var(--ombre),.45),inset 0 0 0 1.5px #39433c,inset 0 0 0 3px #0b0f0c}
 .appareil > img{border-radius:39px;width:100%;aspect-ratio:1170/1992;object-fit:cover;object-position:top;background:var(--papier)}
 /* L'écran d'un téléphone qui joue une scène : les captures s'y empilent, une
-   seule se voit à la fois, et le doigt se pose par-dessus. */
+   seule se voit à la fois. Rien n'est dessiné par-dessus : sa demande, après
+   un premier essai avec un doigt en pastille blanche, « enlève-la ». */
 .ecran{position:relative;border-radius:39px;overflow:hidden;aspect-ratio:1170/1992;background:var(--papier)}
 .ecran img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;object-position:top}
 .ecran img.etape{opacity:0;transition:opacity .3s ease,transform .6s var(--sortie)}
@@ -218,13 +222,6 @@ section{padding:clamp(88px,12vw,150px) 0}
    le temps d'un battement, l'écran au repos dessous. */
 .ecran .bande img,.ecran .bande img.etape{opacity:0;transition:none}
 .ecran .bande img.vue{opacity:1}
-/* Le doigt : il ne dessine que l'endroit où l'on appuie, jamais un écran. */
-.doigt{position:absolute;left:50%;top:50%;z-index:3;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:rgba(18,38,27,.16);box-shadow:0 0 0 2.5px rgba(255,255,255,.95),0 8px 18px rgba(0,0,0,.28);opacity:0;transform:scale(.6);transition:left .85s var(--sortie),top .85s var(--sortie),opacity .3s ease,transform .25s ease;pointer-events:none}
-.doigt.la{opacity:1;transform:scale(1)}
-.doigt.appui{transform:scale(.8)}
-.doigt::after{content:"";position:absolute;inset:-3px;border-radius:50%;border:2.5px solid var(--or-clair);opacity:0}
-.doigt.appui::after{animation:onde .65s ease-out}
-@keyframes onde{from{opacity:.95;transform:scale(1)}to{opacity:0;transform:scale(2.2)}}
 .feuille{margin:0;border-radius:4px;overflow:hidden;background:#fbfaf6;box-shadow:0 50px 80px -44px rgba(var(--ombre),.6),0 4px 10px rgba(var(--ombre),.07),0 0 0 1px rgba(var(--ombre),.05)}
 .gros{margin:0;border-radius:22px;overflow:hidden;background:var(--papier);box-shadow:0 34px 70px -40px rgba(var(--ombre),.5),0 0 0 1px rgba(var(--ombre),.07)}
 .gros img{width:100%;transform:scale(1.035);transition:transform 1.6s var(--sortie)}
@@ -363,13 +360,8 @@ html.anime .chiffre.joue span{opacity:1;transform:none;transition-delay:1.5s}
 .case p{padding:0 28px 24px;color:var(--encre-2);font-size:16.5px}
 .case .cadre{display:grid;place-items:center;margin:0 14px 14px;padding:28px 18px;border-radius:18px;background:var(--sauge)}
 .case .cadre img{width:100%;max-width:440px;border-radius:12px;box-shadow:0 20px 40px -28px rgba(var(--ombre),.55)}
-/* Les travaux se cochent au défilement : la carte reste posée pendant que la
-   page avance, et chaque cran de défilement coche une tâche. */
-.case.joue{overflow:visible}
-.defile{position:relative}
-.course{display:none}
-html.anime .course{display:block;height:min(120vh,1040px)}
-html.anime .defile .colle{position:sticky;top:96px}
+/* Les travaux se cochent tout seuls à l'arrivée. La carte tient dans
+   l'écran, pour qu'on voie toutes les coches sans avoir à descendre. */
 .pile{position:relative;width:min(100%,calc((100svh - 200px) * 786 / 1530));aspect-ratio:786/1530;margin:0 auto;transition:height .6s var(--sortie)}
 .pile.mesuree{aspect-ratio:auto}
 .case .cadre .pile img{position:absolute;left:0;top:0;width:100%;max-width:none;height:auto}
@@ -496,7 +488,6 @@ html.anime .defile .colle{position:sticky;top:96px}
 @media (min-width:960px){.pouce{display:none}}
 
 @media (prefers-reduced-motion:reduce){
-  .doigt{display:none}
   .gros img{transform:none;transition:none}
   .dite span{transition:none}
   .dite.attend span{opacity:1}
@@ -594,7 +585,7 @@ html.anime .defile .colle{position:sticky;top:96px}
     <div class="chap-visuel">
       <div class="scene duo">
         <figure class="feuille"><img src="images/nov-devis.jpg" alt="Le devis fini, en PDF : Création d'un massif pour Mr. Lemaire, quatre lignes, 718,50 euros HT, 862,20 euros TTC" width="1654" height="2339"></figure>
-        <div class="appareil" id="scene-micro"><div class="ecran"><img src="images/nov-fiche-client.jpg" alt="Fiche client d'Atlas, remplie pour Mr. Lemaire, avec le bouton Devis à la voix" width="1170" height="1992"><div class="bande" aria-hidden="true"></div><span class="doigt" aria-hidden="true"></span></div></div>
+        <div class="appareil" id="scene-micro"><div class="ecran"><img src="images/nov-fiche-client.jpg" alt="Fiche client d'Atlas, remplie pour Mr. Lemaire, avec le bouton Devis à la voix" width="1170" height="1992"><div class="bande" aria-hidden="true"></div></div></div>
       </div>
       <p class="sous duo-sous">Le devis, prêt à partir.</p>
     </div>
@@ -621,7 +612,7 @@ html.anime .defile .colle{position:sticky;top:96px}
     </div>
     <div class="chap-visuel">
       <div class="scene sable">
-        <div class="appareil" id="scene-envoi"><div class="ecran"><img class="etape vue" src="images/nov-client-2.jpg" alt="Page que reçoit le client : le devis de Mr. Lemaire à 862,20 euros TTC, le vendredi 6 novembre choisi, la case de rétractation cochée, J'accepte ce devis, Une correction avant d'accepter et Je ne donne pas suite" width="1170" height="1992"><span class="doigt" aria-hidden="true"></span></div></div>
+        <div class="appareil" id="scene-envoi"><div class="ecran"><img class="etape vue" src="images/nov-client-2.jpg" alt="Page que reçoit le client : le devis de Mr. Lemaire à 862,20 euros TTC, le vendredi 6 novembre choisi, la case de rétractation cochée, J'accepte ce devis, Une correction avant d'accepter et Je ne donne pas suite" width="1170" height="1992"></div></div>
       </div>
     </div>
   </div>
@@ -668,12 +659,11 @@ html.anime .defile .colle{position:sticky;top:96px}
   <div class="large aussi-grille">
     <h2 class="mot">Et aussi.</h2>
     <div class="grille">
-      <article class="case joue">
+      <article class="case">
         <h3>Les travaux cochés</h3>
         <p>Sur place, tâche par tâche.</p>
         <div class="defile" id="scene-travaux">
-          <div class="cadre colle"><div class="pile"><img class="etape vue" src="images/nov-travaux-5.jpg" alt="Travaux à faire : les quatre tâches cochées, la remarque sur le portail, et Envoyer le retour du jour" width="786" height="1530"><span class="doigt" aria-hidden="true"></span></div></div>
-          <div class="course" aria-hidden="true"></div>
+          <div class="cadre"><div class="pile"><img class="etape vue" src="images/nov-travaux-5.jpg" alt="Travaux à faire : les quatre tâches cochées, la remarque sur le portail, et Envoyer le retour du jour" width="786" height="1530"></div></div>
         </div>
       </article>
       <article class="case">
@@ -929,14 +919,12 @@ html.anime .defile .colle{position:sticky;top:96px}
   document.documentElement.classList.add("anime");
   var attendre = function(ms){ return new Promise(function(r){ setTimeout(r, ms); }); };
   var montrer = function(liste, i){ liste.forEach(function(im, k){ im.classList.toggle("vue", k === i); }); };
-  var placer = function(doigt, p){ doigt.style.left = (p.x * 100) + "%"; doigt.style.top = (p.y * 100) + "%"; };
-  var appuyer = async function(doigt){ doigt.classList.add("appui"); await attendre(230); doigt.classList.remove("appui"); };
   // Les images d'une scène ne se chargent qu'à l'approche : sans cela, la page
   // ferait venir une trentaine de captures avant même qu'on la lise.
-  var empiler = function(conteneur, sources, avant){
+  var empiler = function(conteneur, sources){
     return sources.map(function(src){
       var im = new Image(); im.src = src; im.alt = ""; im.decoding = "async"; im.className = "etape";
-      conteneur.insertBefore(im, avant || null); return im;
+      conteneur.appendChild(im); return im;
     });
   };
   // Une scène se joue quand elle est assez à l'écran ; la quitter l'arrête,
@@ -969,41 +957,34 @@ html.anime .defile .colle{position:sticky;top:96px}
   };
   new IntersectionObserver(function(e, o){ if (e[0].isIntersecting){ o.disconnect(); dicter(); } }, {threshold:0.9}).observe(dite);
 
-  // 2. La note vocale : un doigt sur le micro, et le vrai chrono qui défile,
-  // une capture par seconde (images/nov-dictee-00 à 12).
-  var micro = document.getElementById("scene-micro"), bande = micro.querySelector(".bande"), doigtMicro = micro.querySelector(".doigt"), secondes = [];
+  // 2. La note vocale : le micro au repos, puis l'enregistrement qui démarre
+  // et le vrai chrono qui défile, une capture par seconde (nov-dictee-00 à 12).
+  var micro = document.getElementById("scene-micro"), bande = micro.querySelector(".bande"), secondes = [];
   scene(micro, 0.6, function(){
     for (var k = 0; k <= 12; k++) secondes.push("images/nov-dictee-" + (k < 10 ? "0" : "") + k + ".jpg");
     secondes = empiler(bande, secondes);
   }, async function(encore){
     while (encore()){
-      montrer(secondes, -1); placer(doigtMicro, {x:0.5, y:0.7919});
-      await attendre(900); if (!encore()) return;
-      doigtMicro.classList.add("la"); await attendre(700); await appuyer(doigtMicro);
-      montrer(secondes, 0); doigtMicro.classList.remove("la");
+      montrer(secondes, -1);
+      await attendre(1600); if (!encore()) return;
+      montrer(secondes, 0);
       for (var k = 1; k < secondes.length; k++){ await attendre(1000); if (!encore()) return; montrer(secondes, k); }
       await attendre(2200);
     }
-  }, function(){ montrer(secondes, -1); doigtMicro.classList.remove("la"); });
+  }, function(){ montrer(secondes, -1); });
 
-  // 3. Le client : la sélection quitte « Télécharger » pour la date, la case
-  // des 14 jours apparaît, il la coche, il accepte, et la page change.
-  var envoi = document.getElementById("scene-envoi"), ecranEnvoi = envoi.querySelector(".ecran"), doigtEnvoi = envoi.querySelector(".doigt");
+  // 3. Le client : la date se choisit, la case des 14 jours apparaît, elle se
+  // coche, il accepte, et la page change.
+  var envoi = document.getElementById("scene-envoi"), ecranEnvoi = envoi.querySelector(".ecran");
   var fixe = ecranEnvoi.querySelector("img.etape"), pages = [];
-  var POS = { telecharger:{x:0.5, y:0.2625}, date:{x:0.2804, y:0.4276}, coche:{x:0.0974, y:0.6338}, accepter:{x:0.5, y:0.7808} };
   scene(envoi, 0.55, function(){
-    pages = empiler(ecranEnvoi, ["images/nov-client-0.jpg", "images/nov-client-1.jpg", "images/nov-client-2.jpg", "images/nov-client-3.jpg"], doigtEnvoi);
+    pages = empiler(ecranEnvoi, ["images/nov-client-0.jpg", "images/nov-client-1.jpg", "images/nov-client-2.jpg", "images/nov-client-3.jpg"]);
     pages[3].classList.add("page");
   }, async function(encore){
-    fixe.classList.remove("vue"); montrer(pages, 0); doigtEnvoi.classList.remove("la"); placer(doigtEnvoi, POS.telecharger);
-    await attendre(700); if (!encore()) return;
-    doigtEnvoi.classList.add("la"); await attendre(1000); if (!encore()) return;
-    placer(doigtEnvoi, POS.date); await attendre(1150); if (!encore()) return;
-    await appuyer(doigtEnvoi); montrer(pages, 1); await attendre(1300); if (!encore()) return;
-    placer(doigtEnvoi, POS.coche); await attendre(1150); if (!encore()) return;
-    await appuyer(doigtEnvoi); montrer(pages, 2); await attendre(1300); if (!encore()) return;
-    placer(doigtEnvoi, POS.accepter); await attendre(1150); if (!encore()) return;
-    await appuyer(doigtEnvoi); await attendre(200); doigtEnvoi.classList.remove("la"); montrer(pages, 3);
+    fixe.classList.remove("vue"); montrer(pages, 0);
+    await attendre(1800); if (!encore()) return; montrer(pages, 1);
+    await attendre(1900); if (!encore()) return; montrer(pages, 2);
+    await attendre(1900); if (!encore()) return; montrer(pages, 3);
   });
 
   // 4. La TVA du mois : le chiffre monte jusqu'à sa valeur, puis la phrase.
@@ -1016,49 +997,30 @@ html.anime .defile .colle{position:sticky;top:96px}
     (function pas(t){ var x = Math.min(1, (t - debut) / duree), lisse = 1 - Math.pow(1 - x, 3); chiffre.textContent = euros(Math.round(valeur * lisse * 100) / 100); if (x < 1) requestAnimationFrame(pas); })(debut);
   }, {threshold:0.7}).observe(tva);
 
-  // 5. Les travaux : la carte reste posée, et le défilement coche les tâches
-  // une à une, écrit la remarque, puis appuie sur « Envoyer le retour du jour ».
-  var defile = document.getElementById("scene-travaux"), pile = defile.querySelector(".pile"), colle = defile.querySelector(".colle"), doigtTravaux = pile.querySelector(".doigt");
-  var fixeTravaux = pile.querySelector("img.etape"), etapes = [], courante = -1;
-  var CRANS = [0, 0.1, 0.24, 0.38, 0.52, 0.66, 0.84];
-  var DOIGTS = [null, {x:0.1145, y:0.1759}, {x:0.1145, y:0.2857}, {x:0.1145, y:0.3956}, {x:0.1145, y:0.5055}, {x:0.5, y:0.7706}, {x:0.5, y:0.9205}];
-  // La scène garde sa hauteur quand la carte se replie : sans cela, la page
-  // remonterait sous le doigt au moment même de l'envoi.
-  var hauteurPile = function(rapport){ pile.style.height = Math.round(pile.offsetWidth * rapport) + "px"; };
-  // La course se mesure une fois, carte dépliée : mesurée en direct, elle
-  // grandirait au repli, ferait reculer l'étape, qui déplierait la carte, et
-  // la scène battrait entre les deux.
-  var course = 1;
-  var figer = function(){
-    defile.style.height = ""; pile.classList.add("mesuree"); pile.style.transition = "none"; hauteurPile(1530 / 786);
-    var deplie = colle.offsetHeight, chemin = defile.querySelector(".course").offsetHeight;
-    defile.style.height = (deplie + chemin) + "px"; course = chemin;
-    if (courante === 6) hauteurPile(455 / 786);
+  // 5. Les travaux : à l'arrivée, les tâches se cochent toutes seules, une à
+  // une, la remarque s'écrit, le retour part, et la carte se replie comme dans
+  // l'appli. Sa demande : pas au défilement. Jouée jusqu'au bout, elle reste
+  // sur sa fin ; quittée avant, elle repart du début au retour.
+  var defile = document.getElementById("scene-travaux"), pile = defile.querySelector(".pile");
+  var fixeTravaux = pile.querySelector("img.etape"), etapes = [], finie = false, repliee = false;
+  var hauteurPile = function(){ pile.style.height = Math.round(pile.offsetWidth * (repliee ? 455 : 1530) / 786) + "px"; };
+  scene(defile, 0.6, function(){
+    etapes = empiler(pile, [0, 1, 2, 3, 4, 5, 6].map(function(k){ return "images/nov-travaux-" + k + ".jpg"; }));
+    etapes[5].alt = fixeTravaux.alt; fixeTravaux.remove();
+    pile.classList.add("mesuree"); pile.style.transition = "none"; hauteurPile(); montrer(etapes, 5);
     void pile.offsetHeight; pile.style.transition = "";
-  };
-  var majTravaux = function(){
-    if (!etapes.length) return;
-    var r = defile.getBoundingClientRect(), haut = parseFloat(getComputedStyle(colle).top) || 0;
-    var p = Math.max(0, Math.min(1, (haut - r.top) / course)), i = 0;
-    CRANS.forEach(function(c, k){ if (p >= c) i = k; });
-    if (i === courante) return;
-    var avance = i > courante && courante >= 0; courante = i;
-    // Envoyé, la carte de l'appli se replie : le cadre se replie avec elle.
-    hauteurPile(i === 6 ? 455 / 786 : 1530 / 786);
-    if (avance && DOIGTS[i]){
-      placer(doigtTravaux, DOIGTS[i]); doigtTravaux.classList.add("la"); appuyer(doigtTravaux);
-      setTimeout(function(){ if (courante === i) montrer(etapes, i); }, 160);
-      clearTimeout(majTravaux.t); majTravaux.t = setTimeout(function(){ doigtTravaux.classList.remove("la"); }, 650);
-    } else montrer(etapes, i);
-  };
-  new IntersectionObserver(function(e, o){
-    if (!e[0].isIntersecting) return; o.disconnect();
-    etapes = empiler(pile, [0, 1, 2, 3, 4, 5, 6].map(function(k){ return "images/nov-travaux-" + k + ".jpg"; }), doigtTravaux);
-    fixeTravaux.remove(); etapes[5].alt = fixeTravaux.alt; figer(); majTravaux();
-  }, {rootMargin:"900px 0px"}).observe(defile);
-  var demande = false;
-  addEventListener("scroll", function(){ if (demande) return; demande = true; requestAnimationFrame(function(){ demande = false; majTravaux(); }); }, {passive:true});
-  addEventListener("resize", function(){ if (etapes.length){ figer(); majTravaux(); } });
+  }, async function(encore){
+    if (finie) return;
+    repliee = false; hauteurPile(); montrer(etapes, 0);
+    var pas = [900, 900, 900, 900, 1200, 1500];
+    for (var k = 1; k <= 6; k++){
+      await attendre(pas[k - 1]); if (!encore()) return;
+      if (k === 6){ repliee = true; hauteurPile(); }
+      montrer(etapes, k);
+    }
+    finie = true;
+  });
+  addEventListener("resize", function(){ if (etapes.length) hauteurPile(); });
 })();
 </script>
 </body>
