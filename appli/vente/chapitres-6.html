@@ -1,0 +1,796 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f5f1e6">
+<title>Atlas pour les paysagistes</title>
+<meta name="description" content="Planche : le site de vente d'Atlas, repris et embelli, en vert forêt.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Hanken+Grotesk:wght@400;500;600&display=swap">
+<!--
+  PLANCHE, rien n'est codé dans l'application. Sixième version, posée à côté
+  de chapitres-5.html, qui reste telle quelle.
+
+  Sa demande du 6 novembre 2026 : « la reprendre et l'améliorer, la rendre
+  plus jolie ». Devant les trois jeux de couleurs de chapitres-5, sa réponse :
+  « tu choisis ».
+
+  LES COULEURS RETENUES : A, forêt vive, et ce que C avait de mieux.
+    · le vert reste celui de l'appli (vert pin, or, crème : la charte
+      d'Arborea). Un artisan qui essaie retrouve les couleurs du site ;
+    · B est écartée : la terre cuite est la couleur qu'il a retirée de
+      l'appli le 3 août, puis des documents ;
+    · C est écartée comme fond de page : une page longue à lire, en sombre,
+      se lit moins bien pour des yeux de soixante ans et au soleil, et les
+      captures claires de l'appli y deviennent des rectangles éblouissants.
+      Elle garde ses grandes bandes : le problème du métier, Encaissez, la
+      fin et le pied sont en vert nuit, avec l'or.
+  Le bouton d'essai a sa couleur à lui, que rien d'autre ne porte : le vert
+  feuille sur le clair (5,4 pour 1 avec le blanc), l'or sur le vert nuit
+  (8,3 pour 1). Textes : 6,5 pour 1 au moins sur le clair, 7,9 sur le sombre.
+
+  CE QUI A CHANGÉ, et rien d'autre :
+    · un DÉFAUT RÉEL de chapitres-5, trouvé en regardant la page : en
+      « Actuelles », la carte Illimité était presque invisible, son or se
+      citait lui-même (--reine-or:var(--reine-or)), donc tout son fond
+      tombait. Corrigé là-bas aussi, d'une ligne ;
+    · les mots géants restent aux quatre chapitres (Dictez, Envoyez,
+      Planifiez, Encaissez), et leur point est en or. Les autres titres
+      descendent d'une taille : dix mots géants à la suite ne faisaient plus
+      de sommet ;
+    · les captures posent sur un fond de couleur (sauge pour l'ouverture et
+      Dictez, sable pour Envoyez) au lieu du crème sur crème : c'était ce qui
+      rendait la page fade, plus que les teintes elles-mêmes ;
+    · la page du client est dans un téléphone, comme les autres écrans ;
+    · « Et aussi » : les deux cases ont la même hauteur ;
+    · « Vous gardez la main » et « Pour commencer » ne sont plus des cartes :
+      des colonnes séparées d'un filet, et les trois gestes reliés par une
+      ligne, dans leur ordre ;
+    · le mouvement : le texte est visible d'emblée (sans script, chapitres-5
+      laissait la page vide). Restent la phrase dictée qui s'écrit mot à mot,
+      et les captures qui se posent en entrant dans l'écran.
+
+  CE QUI N'A PAS BOUGÉ : tous les textes, mot pour mot, et leur ordre ; les
+  prix de src/lib/abonnements.ts (39, 59, 159 € HT, l'année à dix mois) ;
+  l'essai de quinze jours ; le contact « à compléter » ; toutes les images
+  sont les captures réelles du dossier images/, rien n'est redessiné.
+
+  L'en-tête de chapitres-3.html dit d'où vient chaque réponse aux doutes de
+  l'artisan méfiant, vérifiée dans le code : il reste vrai.
+-->
+<style>
+:root{
+  --fond:#f5f1e6;--papier:#fcfaf3;--encre:#12261b;--encre-2:#4b5a50;--trait:#e0d9c7;
+  --sauge:#e4ebda;--sauge-2:#d3dfc5;--sable:#efe6d3;--sable-2:#e5d8bd;
+  --action:#1d7a3c;--action-survol:#186a33;--action-texte:#ffffff;
+  --feuille:#237a3c;--or:#95600f;--or-clair:#f0b43c;
+  --nuit:#0e2a1b;--nuit-2:#0a2015;--sur-nuit:#f3efe3;--sur-nuit-2:#b9cbbd;--trait-nuit:rgba(243,239,227,.14);
+  --ombre:18,38,27;
+  --display:"Instrument Serif","Iowan Old Style",Georgia,serif;
+  --texte:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --large:1200px;
+  --sortie:cubic-bezier(.16,1,.3,1);
+  /* Un site de vente se lit tel qu'il a été choisi : il ne bascule pas en
+     sombre avec le téléphone, sans quoi la planche montrerait autre chose
+     que les couleurs retenues. */
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{overflow-x:clip;scroll-padding-top:76px;scrollbar-color:color-mix(in srgb,var(--encre-2) 45%,transparent) var(--fond);accent-color:var(--action)}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+body{margin:0;background:var(--fond);color:var(--encre);font:400 18px/1.55 var(--texte);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+::selection{background:color-mix(in srgb,var(--or-clair) 42%,transparent);color:inherit}
+img{display:block;max-width:100%;height:auto}
+a{color:inherit;text-underline-offset:.22em;text-decoration-thickness:1px}
+:focus-visible{outline:2px solid var(--action);outline-offset:3px;border-radius:8px}
+.nuit :focus-visible,.pied :focus-visible{outline-color:var(--or-clair)}
+h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;letter-spacing:-.015em;line-height:.95;text-wrap:balance}
+p{margin:0;text-wrap:pretty}
+
+.large{width:min(100% - 32px,var(--large));margin-inline:auto}
+section{padding:clamp(88px,12vw,150px) 0}
+
+/* ── Le vert nuit : la matière des grandes bandes ─────────────────────── */
+/* Un grain très léger et une lueur d'or venue d'en haut : sans eux, un
+   aplat sombre de cette taille se lit comme un trou dans la page. */
+.nuit,.pied{position:relative;isolation:isolate;background:radial-gradient(90% 70% at 85% -10%,rgba(240,180,60,.11),transparent 62%),var(--nuit);color:var(--sur-nuit)}
+.nuit::before,.pied::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.08;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E")}
+.nuit .chapo,.nuit .sous{color:var(--sur-nuit-2)}
+
+/* ── La barre ─────────────────────────────────────────────────────────── */
+.barre{position:fixed;inset:0 0 auto 0;z-index:20;height:64px;background:color-mix(in srgb,var(--fond) 84%,transparent);backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2);border-bottom:1px solid transparent;transition:border-color .3s}
+.barre.posee{border-bottom-color:var(--trait)}
+.barre .large{height:100%;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.marque{font:400 30px/1 var(--display);text-decoration:none;letter-spacing:-.01em}
+.liens{display:none;gap:32px;font-size:15.5px}
+.liens a{text-decoration:none;color:var(--encre-2);transition:color .2s}
+.liens a:hover{color:var(--encre)}
+.barre .droite{display:flex;align-items:center;gap:6px}
+.ouvre-menu{border:0;background:transparent;color:var(--encre);font:500 15.5px/1 var(--texte);padding:10px 12px;min-height:44px;cursor:pointer}
+.lien-demo{font:600 14.5px/1 var(--texte);text-decoration:none;padding:13px 18px;border-radius:999px;background:var(--action);color:var(--action-texte);transition:background .2s}
+.lien-demo:hover{background:var(--action-survol)}
+@media (min-width:960px){.liens{display:flex}.ouvre-menu{display:none}}
+
+.menu{position:fixed;inset:0;z-index:30;background:var(--fond);padding:92px 24px 32px;display:none;flex-direction:column}
+.menu.ouvert{display:flex}
+.menu a{font:400 clamp(40px,11vw,64px)/1.15 var(--display);text-decoration:none;padding:8px 0;border-bottom:1px solid var(--trait)}
+.menu .ferme{position:absolute;top:10px;right:max(16px,env(safe-area-inset-right));border:0;background:transparent;color:var(--encre);font:500 15.5px/1 var(--texte);padding:12px;min-height:44px;cursor:pointer}
+.menu .bouton{margin-top:32px;font:600 17px/1 var(--texte);border:0}
+
+/* ── Les boutons ──────────────────────────────────────────────────────── */
+.bouton{display:inline-flex;align-items:center;justify-content:center;min-height:58px;padding:0 30px;border-radius:999px;background:var(--action);color:var(--action-texte);font:600 17px/1 var(--texte);text-decoration:none;border:0;cursor:pointer;box-shadow:0 1px 0 rgba(255,255,255,.18) inset,0 10px 24px -14px rgba(var(--ombre),.7);transition:transform .3s var(--sortie),box-shadow .3s var(--sortie),background .2s}
+.bouton:hover{background:var(--action-survol);transform:translateY(-2px);box-shadow:0 1px 0 rgba(255,255,255,.18) inset,0 18px 32px -16px rgba(var(--ombre),.75)}
+.bouton:active{transform:translateY(0)}
+.bouton.clair{background:transparent;color:var(--encre);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--encre) 22%,transparent)}
+.bouton.clair:hover{background:color-mix(in srgb,var(--encre) 5%,transparent);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--encre) 45%,transparent)}
+.nuit .bouton,.bouton.or{background:var(--or-clair);color:var(--nuit);box-shadow:0 1px 0 rgba(255,255,255,.35) inset,0 18px 40px -18px rgba(240,180,60,.55)}
+.nuit .bouton:hover,.bouton.or:hover{background:#f5c25a}
+.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:36px}
+.rassure{margin-top:16px;font-size:15px;color:var(--encre-2)}
+
+/* ── Les supports des captures : le téléphone, la feuille, le recadrage ─ */
+.appareil{width:min(70vw,320px);padding:9px;border-radius:48px;background:linear-gradient(155deg,#26302a,#0d120f 40%);box-shadow:0 60px 90px -46px rgba(var(--ombre),.7),0 22px 34px -22px rgba(var(--ombre),.45),inset 0 0 0 1.5px #39433c,inset 0 0 0 3px #0b0f0c}
+.appareil img{border-radius:39px;width:100%;aspect-ratio:1170/1992;object-fit:cover;object-position:top;background:var(--papier)}
+.appareil.long img{aspect-ratio:1170/2235}
+.feuille{margin:0;border-radius:4px;overflow:hidden;background:#fbfaf6;box-shadow:0 50px 80px -44px rgba(var(--ombre),.6),0 4px 10px rgba(var(--ombre),.07),0 0 0 1px rgba(var(--ombre),.05)}
+.gros{margin:0;border-radius:22px;overflow:hidden;background:var(--papier);box-shadow:0 34px 70px -40px rgba(var(--ombre),.5),0 0 0 1px rgba(var(--ombre),.07)}
+.gros img{width:100%;transform:scale(1.035);transition:transform 1.6s var(--sortie)}
+.gros.vu img{transform:none}
+.sous{margin-top:14px;font-size:15.5px;color:var(--encre-2)}
+
+/* La scène : le fond de couleur où posent les captures. C'est elle qui
+   sort la page du crème sur crème. */
+.scene{position:relative;overflow:hidden;border-radius:30px;background:radial-gradient(70% 55% at 30% 20%,rgba(255,255,255,.55),transparent 70%),var(--sauge);box-shadow:inset 0 0 0 1px rgba(var(--ombre),.05)}
+.scene.sable{background:radial-gradient(70% 55% at 70% 15%,rgba(255,255,255,.5),transparent 70%),var(--sable)}
+
+/* ── L'ouverture ──────────────────────────────────────────────────────── */
+.ouverture{padding-top:clamp(112px,14vw,156px);padding-bottom:clamp(64px,8vw,112px)}
+.ouverture-grille{display:grid;gap:44px;text-align:center}
+.ouverture h1{font-size:clamp(52px,13.6vw,96px);line-height:.93}
+.ouverture h1 em{font-style:italic;color:var(--feuille)}
+.ouverture .chapo{margin:24px auto 0;font-size:clamp(19px,2vw,22px);line-height:1.45;color:var(--encre-2);max-width:30em}
+.ouverture .actions{justify-content:center}
+.ouverture .scene{height:clamp(430px,120vw,500px)}
+.ouverture .scene .feuille{position:absolute;width:62%;right:-6%;top:30px;transform:rotate(4deg)}
+.ouverture .scene .appareil{position:absolute;width:min(64vw,260px);left:9%;bottom:-86px}
+@media (min-width:960px){
+  .ouverture-grille{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);align-items:center;text-align:left;gap:56px}
+  .ouverture .chapo{margin-inline:0}
+  .ouverture .actions{justify-content:flex-start}
+  .ouverture .scene{height:640px}
+  .ouverture .scene .feuille{width:62%;right:7%;top:56px;transform:rotate(3deg)}
+  .ouverture .scene .appareil{width:300px;left:9%;bottom:-96px}
+}
+
+/* ── Le problème ──────────────────────────────────────────────────────── */
+.douleur-grille{display:grid;gap:52px}
+.douleur h2{font-size:clamp(56px,13vw,104px)}
+.douleur ul{padding:0;margin:0}
+.douleur li{list-style:none;font:400 clamp(30px,7vw,46px)/1.12 var(--display);padding:18px 0;border-bottom:1px solid var(--trait-nuit)}
+.douleur li:first-child{border-top:1px solid var(--trait-nuit)}
+.douleur .reponse{margin-top:44px;font:italic 400 clamp(32px,7.4vw,48px)/1.08 var(--display);color:var(--or-clair)}
+@media (min-width:960px){.douleur-grille{grid-template-columns:1.1fr .9fr;align-items:end;gap:88px}}
+
+/* ── Un chapitre : le mot, sa phrase, et ce qu'on voit ─────────────────── */
+.mot{font-size:clamp(56px,13vw,96px);line-height:.9}
+.chapitre .mot{font-size:clamp(88px,23vw,128px);line-height:.85}
+.mot .point{color:var(--or)}
+.nuit .mot .point{color:var(--or-clair)}
+.chapitre .chapo{margin-top:24px;font-size:clamp(20px,4.6vw,25px);line-height:1.38;color:var(--encre-2);max-width:22em}
+.nuit.chapitre .chapo{color:var(--sur-nuit-2)}
+.chap-grille{display:grid;gap:52px}
+.chap-visuel{display:grid;gap:40px;justify-items:center}
+.papier{background:var(--papier)}
+@media (min-width:960px){
+  .chap-grille{grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:76px;align-items:start}
+  .chap-texte{position:sticky;top:132px}
+  .chap-grille.inverse .chap-texte{order:2}
+}
+
+/* La phrase dictée, qui s'écrit mot à mot : le seul moment écrit de la page. */
+.dite{margin-top:44px;font:italic 400 clamp(30px,7vw,44px)/1.12 var(--display);color:var(--encre)}
+.dite span{transition:opacity .5s ease}
+.dite.attend span{opacity:.14}
+.dite.vu span{opacity:1}
+
+/* Ce que la phrase devient : la ligne du devis, en clair. */
+.devient{margin-top:28px;display:grid;gap:10px}
+.devient .sur{font-size:15px;color:var(--encre-2)}
+.ligne{display:grid;grid-template-columns:1fr auto auto;gap:6px 18px;align-items:baseline;padding:17px 20px;border-radius:16px;background:var(--papier);box-shadow:0 0 0 1px rgba(var(--ombre),.08),0 18px 34px -24px rgba(var(--ombre),.45);font-size:16px;font-variant-numeric:tabular-nums}
+.ligne .designation{grid-column:1/-1;font-weight:500}
+.ligne .qte,.ligne .pu{color:var(--encre-2)}
+.ligne .total{grid-column:3;grid-row:2;font-weight:600;color:var(--feuille)}
+@media (min-width:520px){.ligne{grid-template-columns:1fr auto auto auto}.ligne .designation{grid-column:auto}.ligne .total{grid-column:auto;grid-row:auto}}
+
+/* Dictez : le devis sur la scène, le téléphone qui le chevauche. */
+.duo{width:100%;padding:22px 20px 28px;display:grid;justify-items:center}
+.duo .feuille{width:100%}
+.duo .appareil{width:min(64vw,270px);margin-top:-96px;position:relative;z-index:2}
+.duo-sous{width:100%;text-align:right}
+@media (min-width:960px){
+  .duo{display:block;height:820px;padding:0}
+  .duo .feuille{position:absolute;right:40px;top:44px;width:64%}
+  .duo .appareil{position:absolute;left:40px;bottom:40px;width:280px;margin:0}
+}
+
+/* Vos prix, pas les nôtres : la réponse à la première méfiance. */
+.vos-prix{padding-top:0}
+.vos-prix-grille{display:grid;gap:36px;padding-top:clamp(64px,8vw,104px);border-top:1px solid var(--trait)}
+.vos-prix h2{font-size:clamp(48px,11vw,88px)}
+.faits{list-style:none;margin:0;padding:0;display:grid}
+.faits li{padding:24px 0 24px 46px;border-bottom:1px solid var(--trait);display:grid;gap:6px;position:relative}
+.faits li:first-child{border-top:1px solid var(--trait)}
+.faits li svg{position:absolute;left:0;top:27px;width:26px;height:26px;color:var(--feuille)}
+.faits b{font:400 clamp(25px,2.6vw,30px)/1.15 var(--display)}
+.faits span{color:var(--encre-2);font-size:16.5px}
+@media (min-width:960px){.vos-prix-grille{grid-template-columns:1fr 1fr;gap:88px;align-items:start}}
+
+/* Envoyez : la page du client, entière, dans son téléphone. */
+.envoi .scene{width:100%;display:flex;justify-content:center;padding:40px 20px}
+.envoi .appareil{width:min(74vw,330px)}
+@media (min-width:960px){.envoi .scene{padding:64px 40px}.envoi .appareil{width:350px}}
+
+/* Planifiez : le mois en grand, puis l'équipe et la fiche côte à côte. */
+.plans{display:grid;gap:24px;width:100%}
+.plans figure{margin:0}
+.plans .paire{display:grid;gap:24px}
+@media (min-width:760px){.plans .paire{grid-template-columns:1fr 1fr;align-items:start}}
+
+/* Encaissez : la facture, et le chiffre de la TVA. */
+.chiffre{margin-top:52px}
+.chiffre b{display:block;font:400 clamp(80px,22vw,148px)/.9 var(--display);font-variant-numeric:tabular-nums;color:var(--or-clair);letter-spacing:-.02em}
+.chiffre span{display:block;margin-top:14px;font-size:17px;color:var(--sur-nuit-2)}
+.encaisse .feuille{width:min(100%,620px);box-shadow:0 60px 100px -40px rgba(0,0,0,.85),0 0 0 1px rgba(255,255,255,.04)}
+
+/* ── Et aussi ─────────────────────────────────────────────────────────── */
+/* Les deux captures n'ont ni la même largeur ni la même hauteur : côte à
+   côte, l'une des cases restait à moitié vide. Elles se suivent donc, dans
+   la colonne des captures, le titre à gauche comme pour les chapitres. */
+.aussi-grille{display:grid;gap:44px}
+.grille{display:grid;gap:20px}
+.case{border-radius:28px;overflow:hidden;background:var(--papier);box-shadow:0 0 0 1px rgba(var(--ombre),.07),0 30px 60px -48px rgba(var(--ombre),.5);display:flex;flex-direction:column}
+.case h3{font-size:clamp(32px,3vw,38px);padding:30px 28px 8px}
+.case p{padding:0 28px 24px;color:var(--encre-2);font-size:16.5px}
+.case .cadre{display:grid;place-items:center;margin:0 14px 14px;padding:28px 18px;border-radius:18px;background:var(--sauge)}
+.case .cadre img{width:100%;max-width:440px;border-radius:12px;box-shadow:0 20px 40px -28px rgba(var(--ombre),.55)}
+@media (min-width:960px){
+  .aussi-grille{grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:76px;align-items:start}
+  .aussi-grille .mot{position:sticky;top:132px}
+  .case .cadre{padding:40px 24px}
+}
+
+/* ── Vous gardez la main ──────────────────────────────────────────────── */
+.main-grille{display:grid;gap:44px}
+.deux{display:grid}
+.deux article{padding:30px 0;border-top:1px solid var(--trait)}
+.deux article:last-child{border-bottom:1px solid var(--trait)}
+.deux h3{font-size:clamp(32px,4vw,42px);line-height:1}
+.deux p{margin-top:14px;color:var(--encre-2);max-width:34em}
+@media (min-width:960px){.main-grille{grid-template-columns:1fr 1fr;gap:88px;align-items:start}}
+
+/* Pour commencer : trois gestes, dans leur ordre, reliés d'un filet. */
+.gestes{display:grid;gap:0;margin-top:52px;counter-reset:geste;list-style:none;padding:0}
+.geste{counter-increment:geste;position:relative;padding:0 0 36px 72px;display:grid;gap:10px;align-content:start}
+.geste::before{content:counter(geste);position:absolute;left:0;top:-4px;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:var(--nuit);color:var(--or-clair);font:400 28px/1 var(--display)}
+.geste:not(:last-child)::after{content:"";position:absolute;left:23.5px;top:52px;bottom:6px;width:1px;background:var(--trait)}
+.geste h3{font-size:clamp(30px,3vw,36px);line-height:1.05}
+.geste p{color:var(--encre-2);font-size:16.5px;max-width:28em}
+@media (min-width:860px){
+  .gestes{grid-template-columns:repeat(3,1fr);gap:40px}
+  .geste{padding:72px 0 0}
+  .geste::before{top:0}
+  .geste:not(:last-child)::after{left:64px;right:-40px;top:23.5px;bottom:auto;width:auto;height:1px}
+}
+
+/* ── Les prix ─────────────────────────────────────────────────────────── */
+.prix-tete{text-align:center}
+.prix-tete .mot{font-size:clamp(64px,15vw,112px)}
+.prix-tete .chapo{margin:24px auto 0;font-size:clamp(19px,2vw,22px);color:var(--encre-2);max-width:28em}
+.qui-compte{margin:14px auto 0;max-width:34em;font-size:16.5px;color:var(--encre)}
+.bascule{display:inline-flex;margin-top:34px;padding:5px;border-radius:999px;background:var(--fond);box-shadow:inset 0 0 0 1px var(--trait)}
+.bascule button{border:0;background:transparent;color:var(--encre-2);font:500 15px/1 var(--texte);padding:12px 18px;border-radius:999px;min-height:44px;cursor:pointer;transition:background .25s,color .25s}
+.bascule button[aria-pressed="true"]{background:var(--action);color:var(--action-texte);box-shadow:0 6px 16px -10px rgba(var(--ombre),.8)}
+.formules{display:grid;gap:22px;margin-top:44px;align-items:stretch}
+@media (min-width:960px){.formules{grid-template-columns:repeat(3,1fr);gap:22px}}
+.formule{background:var(--fond);border-radius:28px;padding:36px 28px 30px;box-shadow:0 0 0 1px rgba(var(--ombre),.09);display:flex;flex-direction:column}
+.formule.mise{background:var(--papier);box-shadow:0 0 0 2px var(--action),0 34px 60px -38px rgba(var(--ombre),.55)}
+.formule h3{font-size:44px}
+.formule .accroche{margin-top:8px;color:var(--encre-2);font-size:16px;min-height:3.1em}
+.formule .prix{margin-top:18px;font:400 70px/1 var(--display);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.formule .prix small{font:400 16px/1 var(--texte);color:var(--encre-2);letter-spacing:0}
+.formule .offert{margin-top:6px;font-size:14px;color:var(--or);min-height:20px}
+.formule ul{list-style:none;padding:0;margin:22px 0 28px;flex:1}
+.formule li{padding:11px 0 11px 30px;position:relative;font-size:16px;border-top:1px solid var(--trait)}
+.formule li::before{content:"";position:absolute;left:3px;top:17px;width:12px;height:7px;border-left:2px solid var(--feuille);border-bottom:2px solid var(--feuille);transform:rotate(-45deg)}
+.formule li.manque{color:#5f6c63;text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--encre-2) 55%,transparent)}
+.formule li.manque::before{border:0;width:10px;height:2px;top:22px;background:var(--encre-2);transform:none}
+/* Illimité : la formule de l'essai, en vert nuit et en or. Son bandeau dit
+   un fait (FORMULE_DE_LESSAI), pas une popularité qu'aucun chiffre ne fonde. */
+.formule.reine{position:relative;color:var(--sur-nuit);background:radial-gradient(120% 70% at 85% 0%,rgba(240,180,60,.2),transparent 60%),var(--nuit);box-shadow:0 0 0 1.5px var(--or-clair),0 44px 80px -36px rgba(var(--ombre),.8)}
+.formule.reine h3,.formule.reine .offert{color:var(--or-clair)}
+.formule.reine .accroche,.formule.reine .prix small{color:var(--sur-nuit-2)}
+.formule.reine li{border-top-color:var(--trait-nuit)}
+.formule.reine li::before{border-color:var(--or-clair)}
+.formule.reine li.fort{font-weight:600;color:var(--or-clair)}
+.formule.reine .bandeau{position:absolute;top:-14px;left:26px;padding:8px 14px;border-radius:999px;background:var(--or-clair);color:var(--nuit);font:600 12.5px/1 var(--texte);letter-spacing:.06em;text-transform:uppercase}
+.formule .bouton{width:100%}
+.essai-note{margin-top:28px;text-align:center;color:var(--encre-2);font-size:16px}
+
+/* ── Les questions ────────────────────────────────────────────────────── */
+.questions-grille{display:grid;gap:40px}
+.questions details{border-top:1px solid var(--trait)}
+.questions details:last-child{border-bottom:1px solid var(--trait)}
+.questions summary{cursor:pointer;display:flex;justify-content:space-between;align-items:baseline;gap:20px;padding:23px 0;font:400 clamp(24px,2.4vw,28px)/1.18 var(--display);list-style:none;transition:color .2s}
+.questions summary:hover{color:var(--feuille)}
+.questions summary::-webkit-details-marker{display:none}
+.questions summary::after{content:"";flex:none;width:11px;height:11px;margin-right:4px;border-right:1.5px solid var(--or);border-bottom:1.5px solid var(--or);transform:rotate(45deg) translateY(-4px);transition:transform .35s var(--sortie)}
+.questions details[open] summary::after{transform:rotate(225deg) translateY(-4px)}
+.questions details p{padding-bottom:26px;color:var(--encre-2);max-width:38em}
+@media (min-width:960px){.questions-grille{grid-template-columns:.8fr 1.2fr;gap:88px}.questions-grille .tete-q{position:sticky;top:132px;align-self:start}}
+
+/* ── La fin ───────────────────────────────────────────────────────────── */
+.fin{text-align:center;padding:clamp(110px,15vw,180px) 0}
+.fin h2{font-size:clamp(50px,11.5vw,108px);line-height:.98;max-width:11em;margin-inline:auto}
+.fin .actions{justify-content:center;margin-top:44px}
+.fin .rassure{color:var(--sur-nuit-2)}
+
+/* ── Le contact ───────────────────────────────────────────────────────── */
+.contact-grille{display:grid;gap:44px}
+.contact .chapo{margin-top:20px;font-size:clamp(19px,2vw,22px);color:var(--encre-2)}
+.contact form{display:grid;gap:14px}
+.contact .deux-champs{display:grid;gap:14px}
+@media (min-width:640px){.contact .deux-champs{grid-template-columns:1fr 1fr}}
+.contact label{display:grid;gap:7px;font-size:14px;color:var(--encre-2)}
+.contact input,.contact select,.contact textarea{font:400 17px/1.4 var(--texte);color:var(--encre);background:var(--fond);border:1px solid var(--trait);border-radius:14px;padding:14px 16px;min-height:54px;width:100%;caret-color:var(--action);transition:border-color .2s,box-shadow .2s}
+.contact input:focus,.contact select:focus,.contact textarea:focus{outline:none;border-color:var(--action);box-shadow:0 0 0 3px color-mix(in srgb,var(--action) 18%,transparent)}
+.contact textarea{min-height:140px;resize:vertical}
+.contact .bouton{margin-top:6px}
+.contact .reponse-maquette{font-size:15px;color:var(--encre-2);min-height:22px}
+.coordonnees{margin:40px 0 0;display:grid}
+.coordonnees div{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:15px 0;border-top:1px solid var(--trait);font-size:16px}
+.coordonnees div:last-child{border-bottom:1px solid var(--trait)}
+.coordonnees dt{color:var(--encre-2)}
+.coordonnees dd{margin:0;text-align:right}
+.a-completer{display:inline-block;padding:4px 11px;border:1px dashed var(--or);border-radius:999px;color:var(--or);font-size:14px}
+@media (min-width:960px){.contact-grille{grid-template-columns:.9fr 1.1fr;gap:88px;align-items:start}}
+
+/* ── Le pied ──────────────────────────────────────────────────────────── */
+.pied{background:var(--nuit-2);padding:72px 0 calc(40px + env(safe-area-inset-bottom))}
+.pied-grille{display:grid;gap:44px}
+.pied .marque{font-size:36px;color:var(--sur-nuit)}
+.pied .devise{margin-top:10px;color:var(--sur-nuit-2);font-size:16px}
+.pied nav{display:grid;grid-template-columns:1fr 1fr;gap:32px 24px}
+.pied h3{font:600 12.5px/1 var(--texte);letter-spacing:.12em;text-transform:uppercase;color:var(--or-clair)}
+.pied ul{list-style:none;padding:0;margin:14px 0 0}
+.pied li a{display:block;padding:7px 0;color:var(--sur-nuit);text-decoration:none;font-size:16px}
+.pied li a:hover{text-decoration:underline}
+.pied .bas{margin-top:52px;padding-top:20px;border-top:1px solid var(--trait-nuit);color:var(--sur-nuit-2);font-size:14px}
+@media (min-width:900px){.pied-grille{grid-template-columns:1fr 1.6fr}.pied nav{grid-template-columns:repeat(3,1fr)}}
+
+/* Le bouton d'essai, sous le pouce, sur téléphone seulement. */
+.pouce{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:15;display:flex;justify-content:center;transform:translateY(140%);transition:transform .5s var(--sortie);pointer-events:none}
+.pouce.vu{transform:none;pointer-events:auto}
+.pouce .bouton{width:100%;max-width:420px;box-shadow:0 20px 44px -16px rgba(var(--ombre),.75)}
+@media (min-width:960px){.pouce{display:none}}
+
+@media (prefers-reduced-motion:reduce){
+  .gros img{transform:none;transition:none}
+  .dite span{transition:none}
+  .dite.attend span{opacity:1}
+  .pouce,.bouton,.bascule button{transition:none}
+}
+</style>
+</head>
+<body>
+
+<header class="barre" id="barre">
+  <div class="large">
+    <a class="marque" href="#">Atlas</a>
+    <nav class="liens" aria-label="Rubriques">
+      <a href="#fonctionnement">Comment ça marche</a>
+      <a href="#prix">Les prix</a>
+      <a href="#questions">Vos questions</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <div class="droite">
+      <button type="button" class="ouvre-menu" aria-expanded="false" aria-controls="menu">Menu</button>
+      <a class="lien-demo" href="#essayer">Essai gratuit</a>
+    </div>
+  </div>
+</header>
+
+<nav class="menu" id="menu" aria-label="Rubriques">
+  <button type="button" class="ferme">Fermer</button>
+  <a href="#fonctionnement">Comment ça marche</a>
+  <a href="#prix">Les prix</a>
+  <a href="#questions">Vos questions</a>
+  <a href="#contact">Contact</a>
+  <a class="bouton" href="#essayer">Essayer 15 jours gratuits</a>
+</nav>
+
+<main>
+
+<section class="ouverture">
+  <div class="large ouverture-grille">
+    <div>
+      <h1>Le devis part avant que vous quittiez <em>le chantier.</em></h1>
+      <p class="chapo">Vous dictez le chantier. Atlas écrit le devis. Votre client accepte sur son téléphone.</p>
+      <div class="actions">
+        <a class="bouton" href="#essayer">Essayer 15 jours gratuits</a>
+        <a class="bouton clair" href="#prix">Voir les prix</a>
+      </div>
+      <p class="rassure">Sans carte bancaire. Tout est ouvert pendant l'essai.</p>
+    </div>
+    <div class="scene" aria-hidden="true">
+      <figure class="feuille"><img src="images/devis-fini.jpg" alt="" width="1654" height="2339"></figure>
+      <div class="appareil"><img src="images/accueil.jpg" alt="" width="1170" height="1992"></div>
+    </div>
+  </div>
+</section>
+
+<section class="douleur nuit">
+  <div class="large douleur-grille">
+    <h2>Vous êtes paysagiste, élagueur, artisan. Pas secrétaire.</h2>
+    <div>
+      <ul>
+        <li>Les devis retapés le soir.</li>
+        <li>Les clients qui ne répondent pas.</li>
+        <li>La TVA calculée à la fin du mois.</li>
+      </ul>
+      <p class="reponse">Atlas s'en occupe. Vous restez sur le chantier.</p>
+    </div>
+  </div>
+</section>
+
+<section class="chapitre" id="fonctionnement">
+  <div class="large chap-grille">
+    <div class="chap-texte">
+      <h2 class="mot">Dictez<span class="point">.</span></h2>
+      <p class="chapo">Vous décrivez le chantier sur place, à voix haute. Atlas écrit le devis.</p>
+      <p class="dite" id="dite">« On arrache l'ancienne haie de thuyas sur douze mètres. »</p>
+      <div class="devient">
+        <p class="sur">Sur le devis, cela devient :</p>
+        <p class="ligne"><span class="designation">Arrachage de la haie de thuyas et évacuation</span><span class="qte">12 ml</span><span class="pu">18,00 €</span><span class="total">216,00 € HT</span></p>
+      </div>
+    </div>
+    <div class="chap-visuel">
+      <div class="scene duo">
+        <figure class="feuille"><img src="images/devis-fini.jpg" alt="Le devis fini, en PDF : Création d'un massif pour Mr. Lemaire, quatre lignes, 718,50 euros HT, 862,20 euros TTC" width="1654" height="2339"></figure>
+        <div class="appareil"><img src="images/feuille-remplie.jpg" alt="Fiche client d'Atlas, remplie, avec le bouton Devis à la voix" width="1170" height="1992"></div>
+      </div>
+      <p class="sous duo-sous">Le devis, prêt à partir.</p>
+    </div>
+  </div>
+</section>
+
+<section class="vos-prix">
+  <div class="large vos-prix-grille">
+    <h2>Vos prix, pas les nôtres.</h2>
+    <ul class="faits">
+      <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Votre liste de tarifs.</b><span>Vous l'importez une fois, depuis Excel. Atlas s'en sert pour chaque ligne.</span></li>
+      <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Un prix qu'il ne connaît pas reste vide.</b><span>Il vous le demande. Il ne l'invente jamais.</span></li>
+      <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Tout se corrige à la main.</b><span>Une ligne à changer, une ligne à ajouter : avant l'envoi, le devis est à vous.</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="chapitre papier envoi">
+  <div class="large chap-grille inverse">
+    <div class="chap-texte">
+      <h2 class="mot">Envoyez<span class="point">.</span></h2>
+      <p class="chapo">Le client choisit sa date et accepte depuis son téléphone.</p>
+      <p class="sous">Son accord est horodaté et conservé avec le devis.</p>
+    </div>
+    <div class="chap-visuel">
+      <div class="scene sable">
+        <div class="appareil long"><img src="images/accord-entier.jpg" alt="Page que reçoit le client, en entier : le devis de Mr. Lemaire à 862,20 euros TTC, le choix de la date, la case de rétractation, J'accepte ce devis, Une correction avant d'accepter et Je ne donne pas suite" width="1170" height="2235"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="chapitre">
+  <div class="large chap-grille">
+    <div class="chap-texte">
+      <h2 class="mot">Planifiez<span class="point">.</span></h2>
+      <p class="chapo">Le mois d'un coup d'œil : plein, à moitié, trop chargé.</p>
+    </div>
+    <div class="chap-visuel">
+      <div class="plans">
+        <figure class="gros"><img src="images/chap-planning.jpg" alt="Planning d'octobre : demi-journées en vert foncé, vert clair et rouge" width="1170" height="1080"></figure>
+        <div class="paire">
+          <div>
+            <figure class="gros"><img src="images/chap-equipe.jpg" alt="Le chantier Lemaire du jeudi 8 octobre, Lucas et Julien le matin" width="1170" height="560"></figure>
+            <p class="sous">L'équipe se pose à la demi-journée.</p>
+          </div>
+          <div>
+            <figure class="gros"><img src="images/chap-gestes.jpg" alt="Fiche d'intervention entière : Maps, Waze, Copier l'adresse, Appeler le client, la note, la fiche de sécurité, les travaux à faire, le devis sans les prix" width="1170" height="1600"></figure>
+            <p class="sous">Le jour J, tout tient sur la fiche.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="chapitre nuit encaisse">
+  <div class="large chap-grille inverse">
+    <div class="chap-texte">
+      <h2 class="mot">Encaissez<span class="point">.</span></h2>
+      <p class="chapo">La facture reprend le devis, ligne pour ligne.</p>
+      <div class="chiffre"><b>143,70 €</b><span>La TVA du mois, déjà calculée.</span></div>
+    </div>
+    <div class="chap-visuel">
+      <figure class="feuille"><img src="images/facture-finie.jpg" alt="La facture finie, en PDF : F2026-000001 pour Mr. Lemaire, Création d'un massif, les quatre lignes du devis, 862,20 euros net à payer" width="1654" height="2339"></figure>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="large aussi-grille">
+    <h2 class="mot">Et aussi.</h2>
+    <div class="grille">
+      <article class="case">
+        <h3>Le retour du soir</h3>
+        <p>Ce que l'équipe a fait, coché le soir même.</p>
+        <div class="cadre"><img src="images/chap-retour.jpg" alt="Retour d'intervention du chantier Lemaire, quatre tâches cochées" width="1010" height="500"></div>
+      </article>
+      <article class="case">
+        <h3>Les travaux cochés</h3>
+        <p>Sur place, tâche par tâche.</p>
+        <div class="cadre"><img src="images/chap-travaux.jpg" alt="Travaux à faire, tout est fait, et la remarque sur le portail" width="950" height="1494"></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="large main-grille">
+    <h2 class="mot">Vous gardez la main.</h2>
+    <div class="deux">
+      <article>
+        <h3>L'IA prépare. Vous décidez.</h3>
+        <p>Rien ne part chez le client sans votre accord. Chaque ligne se corrige à la main, et quand une information manque, Atlas la laisse vide et vous la demande plutôt que de l'inventer.</p>
+      </article>
+      <article>
+        <h3>Pensé pour les paysagistes et les élagueurs.</h3>
+        <p>Les mots du métier, l'équipe posée à la demi-journée, les retours d'intervention, la fiche de sécurité d'élagage, les entretiens. Pas un logiciel de devis générique.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="large">
+    <h2 class="mot">Pour commencer.</h2>
+    <ol class="gestes">
+      <li class="geste"><h3>Votre compte</h3><p>Le nom de l'entreprise, sa forme, votre régime de TVA. Une question à la fois. Votre logo s'ajoute ensuite.</p></li>
+      <li class="geste"><h3>Vos prix</h3><p>Importez votre liste depuis Excel, ou remplissez-les au fil de vos premiers devis.</p></li>
+      <li class="geste"><h3>Votre premier devis</h3><p>Ouvrez la fiche du client, appuyez sur le micro, et décrivez le chantier.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section class="papier" id="prix">
+  <div class="large">
+    <div class="prix-tete">
+      <h2 class="mot">Les prix.</h2>
+      <p class="chapo">Sans engagement. Vous arrêtez quand vous voulez, à la fin de la période en cours.</p>
+      <p class="qui-compte">Seules comptent les personnes qui font les devis et les factures. Vos salariés ne comptent jamais.</p>
+      <div class="bascule" role="group" aria-label="Paiement">
+        <button type="button" data-periode="mois" aria-pressed="true">Au mois</button>
+        <button type="button" data-periode="an" aria-pressed="false">À l'année, 2 mois offerts</button>
+      </div>
+    </div>
+    <div class="formules">
+      <article class="formule" data-mois="39" data-an="390">
+        <h3>Artisan</h3>
+        <p class="accroche">Du devis dicté à la facture, sans rien retaper.</p>
+        <p class="prix"><span class="montant">39 €</span> <small class="rythme">HT par mois</small></p>
+        <p class="offert"></p>
+        <ul>
+          <li>Devis et factures illimités</li>
+          <li>Vos dictées transcrites et chiffrées</li>
+          <li>Le planning de vos chantiers</li>
+          <li>Votre relevé de TVA, tenu tout seul</li>
+          <li>Vos salariés ont accès au planning</li>
+          <li class="manque">Les absences de vos équipes</li>
+          <li class="manque">Les retours d'intervention de vos salariés</li>
+          <li class="manque">Jusqu'à 5 personnes aux devis et aux factures</li>
+        </ul>
+        <a class="bouton clair" href="#essayer">Essayer 15 jours gratuits</a>
+      </article>
+      <article class="formule mise" data-mois="59" data-an="590">
+        <h3>Entreprise</h3>
+        <p class="accroche">Tout Atlas, jusqu'à cinq personnes qui facturent.</p>
+        <p class="prix"><span class="montant">59 €</span> <small class="rythme">HT par mois</small></p>
+        <p class="offert"></p>
+        <ul>
+          <li>Devis et factures illimités</li>
+          <li>Vos dictées transcrites et chiffrées</li>
+          <li>Le planning de vos chantiers</li>
+          <li>Votre relevé de TVA, tenu tout seul</li>
+          <li>Vos salariés ont accès au planning</li>
+          <li>Les absences de vos équipes</li>
+          <li>Les retours d'intervention de vos salariés</li>
+          <li>Jusqu'à 5 personnes aux devis et aux factures</li>
+        </ul>
+        <a class="bouton" href="#essayer">Essayer 15 jours gratuits</a>
+      </article>
+      <article class="formule reine" data-mois="159" data-an="1590">
+        <span class="bandeau">Offerte 15 jours</span>
+        <h3>Illimité</h3>
+        <p class="accroche">Toute votre équipe sur Atlas.</p>
+        <p class="prix"><span class="montant">159 €</span> <small class="rythme">HT par mois</small></p>
+        <p class="offert"></p>
+        <ul>
+          <li>Devis et factures illimités</li>
+          <li>Vos dictées transcrites et chiffrées</li>
+          <li>Le planning de vos chantiers</li>
+          <li>Votre relevé de TVA, tenu tout seul</li>
+          <li>Vos salariés ont accès au planning</li>
+          <li>Les absences de vos équipes</li>
+          <li>Les retours d'intervention de vos salariés</li>
+          <li class="fort">Autant de personnes que vous voulez aux devis et aux factures</li>
+        </ul>
+        <a class="bouton or" href="#essayer">Essayer 15 jours gratuits</a>
+      </article>
+    </div>
+    <p class="essai-note">L'essai ouvre tout, sans carte bancaire. Vous choisissez votre formule après.</p>
+  </div>
+</section>
+
+<section class="questions" id="questions">
+  <div class="large questions-grille">
+    <div class="tete-q"><h2 class="mot">Vos questions.</h2></div>
+    <div>
+      <details><summary>Faut-il être à l'aise avec un téléphone ?</summary><p>Non. Les boutons sont grands, les mots sont ceux du métier. Atlas est fait pour être utilisé debout, d'une main, en plein soleil.</p></details>
+      <details><summary>Sur quoi Atlas fonctionne-t-il ?</summary><p>Sur votre téléphone et sur votre ordinateur, dans le navigateur. Il s'ajoute à l'écran d'accueil comme une application.</p></details>
+      <details><summary>Et si l'IA se trompe ?</summary><p>Vous le voyez avant le client. Rien n'est envoyé, validé ou facturé sans votre geste, et chaque ligne se corrige à la main.</p></details>
+      <details><summary>Et sur ordinateur ?</summary><p>Ouvrez Atlas dans Chrome ou Edge et installez-le : il s'ouvre dans sa propre fenêtre, avec son icône sur le bureau, comme un logiciel. Même compte que sur le téléphone.</p></details>
+      <details><summary>Mon client n'a pas de smartphone.</summary><p>Téléchargez le devis en PDF : vous l'imprimez et vous le lui donnez, ou vous l'envoyez par e-mail.</p></details>
+      <details><summary>Mes devis sont-ils en règle ?</summary><p>Le papier porte vos numéros, la TVA et, pour un particulier, le formulaire de rétractation. S'il manque votre assurance décennale ou votre médiateur, Atlas vous le rappelle.</p></details>
+      <details><summary>Mes clients doivent-ils installer quelque chose ?</summary><p>Non. Ils reçoivent un lien par SMS ou par e-mail, choisissent leur date et acceptent depuis leur téléphone.</p></details>
+      <details><summary>Mes données sont-elles à l'abri ?</summary><p>Chaque entreprise est isolée des autres au niveau de la base de données elle-même. Vos clients, vos prix et vos chantiers ne sont visibles que par votre équipe.</p></details>
+      <details><summary>Que se passe-t-il après les 15 jours ?</summary><p>Rien n'est prélevé tout seul. Vous choisissez une formule, ou Atlas passe en lecture seule : vos devis et vos factures restent consultables.</p></details>
+      <details><summary>Et si j'arrête ?</summary><p>Vous téléchargez toutes vos données quand vous voulez, vos devis et vos factures en PDF compris.</p></details>
+      <details><summary>Et la facture électronique ?</summary><p>Elle arrive. Vous pourrez relier votre compte de facture électronique à Atlas, et vos factures partiront par lui.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="fin nuit" id="essayer">
+  <div class="large">
+    <h2>Quinze jours pour retrouver vos soirées.</h2>
+    <div class="actions"><a class="bouton" href="#essayer">Essayer 15 jours gratuits</a></div>
+    <p class="rassure">Sans carte bancaire. Sans engagement.</p>
+  </div>
+</section>
+
+<section class="contact papier" id="contact">
+  <div class="large contact-grille">
+    <div>
+      <h2 class="mot">Contact.</h2>
+      <p class="chapo">Une question avant d'essayer ? On vous répond.</p>
+      <dl class="coordonnees">
+        <div><dt>E-mail</dt><dd><span class="a-completer">à compléter</span></dd></div>
+        <div><dt>Téléphone</dt><dd><span class="a-completer">à compléter</span></dd></div>
+        <div><dt>Adresse</dt><dd><span class="a-completer">à compléter</span></dd></div>
+      </dl>
+    </div>
+    <form id="formulaire-contact">
+      <div class="deux-champs">
+        <label>Votre nom<input name="nom" autocomplete="name" required></label>
+        <label>Téléphone<input name="telephone" type="tel" autocomplete="tel"></label>
+      </div>
+      <div class="deux-champs">
+        <label>E-mail<input name="email" type="email" autocomplete="email" required></label>
+        <label>Votre métier<select name="metier"><option>Paysagiste</option><option>Élagueur</option><option>Autre artisan</option></select></label>
+      </div>
+      <label>Votre message<textarea name="message" required></textarea></label>
+      <button class="bouton" type="submit">Envoyer</button>
+      <p class="reponse-maquette" aria-live="polite"></p>
+    </form>
+  </div>
+</section>
+
+</main>
+
+<div class="pouce" id="pouce"><a class="bouton" href="#essayer">Essayer 15 jours gratuits</a></div>
+
+<footer class="pied">
+  <div class="large">
+    <div class="pied-grille">
+      <div>
+        <a class="marque" href="#">Atlas</a>
+        <p class="devise">Le logiciel des paysagistes et des élagueurs.</p>
+      </div>
+      <nav aria-label="Pied de page">
+        <div><h3>Atlas</h3><ul>
+          <li><a href="#fonctionnement">Comment ça marche</a></li>
+          <li><a href="#prix">Les prix</a></li>
+          <li><a href="#essayer">Essai gratuit</a></li>
+        </ul></div>
+        <div><h3>Aide</h3><ul>
+          <li><a href="#questions">Vos questions</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul></div>
+        <div><h3>Légal</h3><ul>
+          <li><a href="mentions-legales.html#mentions">Mentions légales</a></li>
+          <li><a href="mentions-legales.html#conditions">Conditions générales</a></li>
+          <li><a href="mentions-legales.html#donnees">Données personnelles</a></li>
+          <li><a href="mentions-legales.html#cookies">Cookies</a></li>
+        </ul></div>
+      </nav>
+    </div>
+    <p class="bas">© 2026 Atlas. Prix hors taxes.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  // La barre prend un filet dès qu'on a quitté le haut de la page.
+  var barre = document.getElementById("barre");
+  addEventListener("scroll", function(){ barre.classList.toggle("posee", scrollY > 8); }, {passive:true});
+
+  // Le menu du téléphone s'ouvre en plein écran et se referme dès qu'une rubrique est choisie.
+  var menu = document.getElementById("menu"), ouvre = document.querySelector(".ouvre-menu");
+  function basculer(ouvert){ menu.classList.toggle("ouvert", ouvert); ouvre.setAttribute("aria-expanded", String(ouvert)); document.documentElement.style.overflow = ouvert ? "hidden" : ""; }
+  ouvre.addEventListener("click", function(){ basculer(true); });
+  menu.querySelector(".ferme").addEventListener("click", function(){ basculer(false); });
+  menu.querySelectorAll("a").forEach(function(a){ a.addEventListener("click", function(){ basculer(false); }); });
+
+  // La maquette n'a pas de serveur : le formulaire le dit au lieu de faire semblant d'envoyer.
+  document.getElementById("formulaire-contact").addEventListener("submit", function(e){
+    e.preventDefault();
+    this.querySelector(".reponse-maquette").textContent = "Maquette : ce formulaire n'envoie encore rien.";
+  });
+
+  // Le mois ou l'année : le prix de chaque carte vient de ses attributs, recopiés
+  // de src/lib/abonnements.ts (l'année vaut dix mois, deux sont offerts).
+  var boutonsPeriode = document.querySelectorAll(".bascule button");
+  function periode(p){
+    boutonsPeriode.forEach(function(b){ b.setAttribute("aria-pressed", String(b.getAttribute("data-periode") === p)); });
+    document.querySelectorAll(".formule").forEach(function(f){
+      f.querySelector(".montant").textContent = Number(f.getAttribute(p === "an" ? "data-an" : "data-mois")).toLocaleString("fr-FR") + " €";
+      f.querySelector(".rythme").textContent = p === "an" ? "HT par an" : "HT par mois";
+      var auMois = Number(f.getAttribute("data-an")) / 12;
+      f.querySelector(".offert").textContent = p === "an" ? "Deux mois offerts, soit " + auMois.toLocaleString("fr-FR", {minimumFractionDigits:2, maximumFractionDigits:2}) + " € par mois" : "";
+    });
+  }
+  boutonsPeriode.forEach(function(b){ b.addEventListener("click", function(){ periode(b.getAttribute("data-periode")); }); });
+
+  // Le bouton du pouce : visible une fois l'ouverture passée, effacé dès qu'un
+  // autre bouton d'essai est à l'écran (les prix, la fin), pour ne jamais doubler.
+  var pouce = document.getElementById("pouce");
+  if ("IntersectionObserver" in window){
+    var visibles = new Set();
+    var veille = new IntersectionObserver(function(entrees){
+      entrees.forEach(function(e){ e.isIntersecting ? visibles.add(e.target) : visibles.delete(e.target); });
+      pouce.classList.toggle("vu", visibles.size === 0);
+    });
+    document.querySelectorAll(".ouverture, #prix, #essayer, #contact, .pied").forEach(function(c){ veille.observe(c); });
+  }
+
+  // La phrase dictée se découpe en mots, qui s'allument l'un après l'autre.
+  // Elle n'est pâlie qu'une fois le script là : sans lui, elle se lit entière.
+  var dite = document.getElementById("dite");
+  dite.innerHTML = dite.textContent.split(" ").map(function(m, i){
+    return '<span style="transition-delay:' + (i * 0.09).toFixed(2) + 's">' + m + '</span>';
+  }).join(" ");
+
+  // Les captures se posent en entrant dans l'écran : visibles d'emblée, elles
+  // ne font que se resserrer. Rien d'autre ne bouge.
+  var cibles = document.querySelectorAll(".gros, #dite");
+  if (!("IntersectionObserver" in window)){ cibles.forEach(function(c){ c.classList.add("vu"); }); return; }
+  dite.classList.add("attend");
+  var guetteur = new IntersectionObserver(function(entrees){
+    entrees.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add("vu"); guetteur.unobserve(e.target); } });
+  }, {rootMargin:"0px 0px -12% 0px", threshold:0.15});
+  cibles.forEach(function(c){ guetteur.observe(c); });
+})();
+</script>
+</body>
+</html>
