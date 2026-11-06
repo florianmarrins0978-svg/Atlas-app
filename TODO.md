@@ -27,8 +27,13 @@ elles racontent le chemin (`CLAUDE.md` §3 bis).
 la B »*) : la goutte, la fiche, Le prévoir qui pose au planning, et la ligne
 qui les rassemble en tête de Vos clients. Au planning, la même goutte bleue à
 côté du jour de l'hivernage, dans la semaine ET à côté du numéro du jour dans
-le mois en haut du planning (ses deux demandes du même jour). Il n'a pas dit
-de coder.
+le mois en haut du planning (ses deux demandes du même jour). **Et le contrat d'entretien** (sa demande du
+même jour : *« quand il y a un contrat d'entretien, on peut peut-être le
+demander. Atlas demande s'il y a un arrosage automatique et si on fait
+l'hivernage »*) : la question part aussi d'un contrat d'entretien, et une
+seconde suit le Oui, « Vous faites son hivernage ? » ; la goutte ne vient
+qu'avec les deux Oui. Codé dans `lot/hivernage` sur son « tu peux coder tout
+ça ».
 
 **Franchise : A ET B, sa réponse du 6 novembre** (*« j'ai l'impression qu'il
 faut la A et la B »*, et mon accord) : le compteur toujours dans Votre TVA, là

@@ -38,6 +38,12 @@
   « Arrosage automatique », par lui. Quand une facture parle d'arrosage,
   Atlas DEMANDE sur la fiche du client, Oui ou Non, et ne pose rien seul.
   Un client équipé par un autre se coche dans Modifier ses coordonnées.
+  Sa demande du 6 novembre 2026 : « pour les contrats d'entretien, souvent,
+  on fait l'hivernage. Donc quand il y a un contrat d'entretien, on peut
+  peut-être le demander. Atlas demande s'il y a un arrosage automatique et
+  si on fait l'hivernage. » La question part donc aussi d'un contrat
+  d'entretien, et une seconde suit le Oui : vous faites son hivernage ? La
+  goutte ne vient qu'avec les deux Oui.
 
   A : dès le 1er novembre, une goutte bleue à côté du nom dans Vos clients ;
       sur sa fiche, « Arrosage à hiverner », Le prévoir ou C'est fait ; la
@@ -278,6 +284,10 @@
     </div>
     <div data-vue-panneau="Atlas demande">
       <p class="pl-legende">Atlas demande, il ne devine pas</p>
+      <div class="pl-etats" data-pour="demande">
+        <button type="button" data-qui="3" aria-pressed="true">Une facture</button>
+        <button type="button" data-qui="0" aria-pressed="false">Un contrat d’entretien</button>
+      </div>
       <div class="cadre"><div class="ecran avec-barre" data-version="demande"></div></div>
     </div>
   </div>
@@ -290,8 +300,8 @@
       <li>La goutte reste tant que ce n'est pas fait : prévu n'est pas fait. La fiche dit le jour prévu, et Le voir vous mène au planning.</li>
       <li>Au planning, la même goutte bleue se pose à côté du jour de l'hivernage, dans le mois et dans la semaine : tous les hivernages du mois se voient d'un coup d'œil. Elle ne se confond pas avec le bleu d'un férié : un férié ne se choisit pas, les deux ne tombent jamais le même jour.</li>
       <li>Atlas ne peut pas savoir seul qui a un arrosage : une ligne de facture n'est qu'un texte, et un plan d'arrosage ne s'enregistre pas. Le mot « arrosage » se tromperait dans les deux sens : un arrosage de reprise sur une plantation, une installation facturée en turbines sans le mot.</li>
-      <li>Donc il demande. Quand une facture parle d'arrosage, la fiche du client pose la question une fois : Oui ou Non. Rien ne se pose sans votre Oui.</li>
-      <li>Un client équipé par un autre, dont vous ne faites que l'hivernage : la case se coche dans Modifier ses coordonnées.</li>
+      <li>Donc il demande. Quand une facture parle d'arrosage, ou quand le client a un contrat d'entretien, la fiche pose la question une fois : il y a un arrosage automatique ? Puis : vous faites son hivernage ? La goutte ne vient qu'avec deux Oui.</li>
+      <li>Non à l'une ou à l'autre : plus de question pour ce client. Les deux cases se changent dans Modifier ses coordonnées, pour un client équipé par un autre aussi.</li>
       <li>B ajoute en tête de Vos clients une ligne qui les rassemble, « 2 arrosages à hiverner ». Utile à partir d'une dizaine de clients équipés ; en dessous, la goutte suffit.</li>
     </ul>
     <h2>À trancher</h2>
@@ -322,20 +332,23 @@
      numéros sont dans la plage que l'ARCEP réserve aux fictions (06 39 98). */
   function donnees() {
     return [
-      { nom: "Mme Aubry", ini: "MA" },
+      { nom: "Mme Aubry", ini: "MA", lieu: "5 rue des Tilleuls, 49800 Trélazé", piece: "Contrat d’entretien", arrosage: "question", pourquoi: "contrat",
+        elle: "Elle", tel: "06 39 98 74 15",
+        derniere: { jour: "28 octobre 2026", lignes: ["Tonte", "Ramassage des feuilles"] },
+        factures: [{ titre: "Entretien d’octobre", somme: "180,00 €", no: "F2026-000014", jour: "31 octobre 2026" }] },
       { nom: "M. Bernard", ini: "MB", piece: "Facture du 17 oct.", du: "312,00 € dus" },
       { nom: "Mme Costa", ini: "MC", piece: "Facture du 22 oct." },
-      { nom: "M. Faucher", ini: "MF", piece: "Facture du 10 oct.", arrosage: "question", vu: "10 octobre", tel: "06 39 98 61 20",
+      { nom: "M. Faucher", ini: "MF", piece: "Facture du 10 oct.", arrosage: "question", pourquoi: "facture", vu: "10 octobre", tel: "06 39 98 61 20",
         derniere: { jour: "10 octobre 2026", lignes: ["Réparation de l'arrosage automatique"] },
         factures: [{ titre: "Réparation de l'arrosage automatique", somme: "186,00 €", no: "F2026-000013", jour: "10 octobre 2026" }] },
       { nom: "Mme Garnier", ini: "MG", lieu: "18 rue des Lilas, 49100 Angers", piece: "Facture du 14 oct.", du: "2 016,00 € dus",
-        arrosage: true, tel: "06 39 98 33 07",
+        arrosage: true, hivernage: true, tel: "06 39 98 33 07",
         derniere: { jour: "14 octobre 2026", lignes: ["Création d'un massif de vivaces", "Paillage"] },
         factures: [{ titre: "Création d'un massif", somme: "2 016,00 €", no: "F2026-000012", jour: "14 octobre 2026" },
                    { titre: "Arrosage automatique, 2 réseaux", somme: "3 480,00 €", no: "F2026-000005", jour: "12 mai 2026" }] },
       { nom: "M. Lefèvre", ini: "ML", lieu: "7 allée du Parc, 49130 Les Ponts-de-Cé", piece: "Devis du 2 oct." },
       { nom: "M. et Mme Roux", ini: "R", lieu: "3 impasse des Saules, 49070 Beaucouzé", piece: "Facture du 7 oct.",
-        arrosage: true, tel: "06 39 98 52 46",
+        arrosage: true, hivernage: true, tel: "06 39 98 52 46",
         derniere: { jour: "7 octobre 2026", lignes: ["Taille de haie de lauriers"] },
         factures: [{ titre: "Taille de haie", somme: "540,00 €", no: "F2026-000011", jour: "7 octobre 2026" },
                    { titre: "Arrosage automatique, 3 réseaux", somme: "4 920,00 €", no: "F2025-000018", jour: "23 avril 2025" }] }
@@ -389,7 +402,7 @@
     var dedans = ecran.querySelector("#" + idFeuille + " .feuille-dedans");
 
     function saison() { return e.date === "nov"; }
-    function aHiverner(c) { return saison() && c.arrosage === true && !c.hiverne; }
+    function aHiverner(c) { return saison() && c.arrosage === true && c.hivernage === true && !c.hiverne; }
     function lesAHiverner() { return e.c.filter(aHiverner); }
 
     function ligneClient(c, k) {
@@ -462,10 +475,17 @@
             '<button class="touche" type="button" data-geste="inchange">' + ico("telecharger") + 'Tout télécharger</button>' +
           '</div></div>';
       if (c.arrosage === "question") {
-        h += '<div class="plage-ton question" data-ton="bleu"><p><b>Sa facture du ' + c.vu + ' parle d’arrosage.</b>Ce client a un arrosage automatique ?</p>' +
+        var pourquoi = c.pourquoi === "contrat" ? (c.elle || "Il") + " a un contrat d’entretien." : "Sa facture du " + c.vu + " parle d’arrosage.";
+        h += '<div class="plage-ton question" data-ton="bleu"><p><b>' + pourquoi + '</b>Il y a un arrosage automatique ?</p>' +
              '<div class="rang-boutons">' +
                '<button class="bouton bouton-plein bouton-petit" type="button" data-geste="oui">Oui</button>' +
                '<button class="bouton bouton-creux bouton-petit" type="button" data-geste="non">Non</button>' +
+             '</div></div>';
+      } else if (c.arrosage === true && c.hivernage === "question") {
+        h += '<div class="plage-ton question" data-ton="bleu"><p><b>Arrosage automatique.</b>Vous faites son hivernage ?</p>' +
+             '<div class="rang-boutons">' +
+               '<button class="bouton bouton-plein bouton-petit" type="button" data-geste="hiv-oui">Oui</button>' +
+               '<button class="bouton bouton-creux bouton-petit" type="button" data-geste="hiv-non">Non</button>' +
              '</div></div>';
       } else if (aHiverner(c)) {
         h += '<div class="plage hiverner"><div class="hiverner-tete"><span class="pastille-ico" data-ton="bleu">' + ico("goutte") + '</span>' +
@@ -643,9 +663,11 @@
       if (geste === "retour") { e.vue = "liste"; e.k = null; rendre(); defile.scrollTop = 0; return; }
       if (geste === "filtrer") { e.filtre = true; rendre(); defile.scrollTop = 0; return; }
       if (geste === "defiltrer") { e.filtre = false; rendre(); return; }
-      if (geste === "coordonnees") { Kit.note(ecran, "La case Arrosage automatique y vit, avec ses coordonnées."); return; }
-      if (geste === "oui") { c.arrosage = true; rendre(); Kit.note(ecran, "Noté. La case se change dans Modifier ses coordonnées."); return; }
-      if (geste === "non") { c.arrosage = false; rendre(); Kit.note(ecran, "Atlas ne le redemandera pas pour cette facture."); return; }
+      if (geste === "coordonnees") { Kit.note(ecran, "Les cases Arrosage automatique et Vous faites son hivernage y vivent, avec ses coordonnées."); return; }
+      if (geste === "oui") { c.arrosage = true; if (c.hivernage === undefined) c.hivernage = "question"; rendre(); return; }
+      if (geste === "non") { c.arrosage = false; rendre(); Kit.note(ecran, "Atlas ne le redemandera plus pour ce client."); return; }
+      if (geste === "hiv-oui") { c.hivernage = true; rendre(); Kit.note(ecran, "Noté. Les cases se changent dans Modifier ses coordonnées."); return; }
+      if (geste === "hiv-non") { c.hivernage = false; rendre(); Kit.note(ecran, "Pas de goutte pour ce client."); return; }
       if (geste === "prevoir") { e.choix = { mois: 10, jour: null, moment: null }; peindreFeuille(); Kit.ouvrirFeuille(idFeuille, g); return; }
       if (geste === "mois") { e.choix.mois += Number(g.getAttribute("data-pas")); e.choix.jour = null; e.choix.moment = null; peindreFeuille(); return; }
       if (geste === "jour") { e.choix.jour = new Date(2026, e.choix.mois, Number(g.getAttribute("data-j"))); e.choix.moment = null; peindreFeuille(); return; }
@@ -669,12 +691,21 @@
       }
     });
 
-    ecrans[version] = { poserDate: function (d) { e.date = d; rendre(); } };
+    ecrans[version] = {
+      poserDate: function (d) { e.date = d; rendre(); },
+      ouvrir: function (k) { e.c = donnees(); e.vue = "fiche"; e.k = k; rendre(); defile.scrollTop = 0; }
+    };
     rendre();
   });
 
   document.querySelectorAll(".pl-etats[data-pour]").forEach(function (groupe) {
     var cible = ecrans[groupe.getAttribute("data-pour")];
+    groupe.querySelectorAll("button[data-qui]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        groupe.querySelectorAll("button[data-qui]").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+        cible.ouvrir(Number(b.getAttribute("data-qui")));
+      });
+    });
     groupe.querySelectorAll("button[data-date]").forEach(function (b) {
       b.addEventListener("click", function () {
         groupe.querySelectorAll("button[data-date]").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });

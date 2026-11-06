@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-06
 
+- **Hiverner l'arrosage : le contrat d'entretien demande aussi** (sa demande) : un client sous contrat d'entretien reçoit la question de l'arrosage, puis « Vous faites son hivernage ? ». La goutte ne vient qu'avec les deux Oui.
 - **Hiverner l'arrosage : la goutte aussi dans le mois** (sa demande) : à côté du numéro du jour, dans le mois en haut du planning, pour voir tous les hivernages d'un coup d'œil. Pas codé.
 - **Hiverner l'arrosage : la goutte sur le planning** (sa demande) : posé au planning, l'hivernage met la même goutte bleue à côté de son jour. Un férié ne se choisit pas, donc son bleu ne la croise jamais. Pas codé.
 - **Restrictions d'eau et heures du jour : écartées** (sa décision) : seules les trois premières planches se coderont. Les deux planches restent, marquées écartées.
