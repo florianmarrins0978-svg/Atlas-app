@@ -18,7 +18,7 @@ import { AUCUNE_COULEUR_CHOISIE, type CouleursPlanning } from "@/lib/couleurs-pl
 import type { NomCharte } from "@/lib/chartes";
 import CouleursDuPlanning from "./CouleursDuPlanning";
 import { cleCreneau, type Creneau, type JourIso } from "@/lib/disponibilites";
-import { demiJourneesAPoser, momentQuiPart } from "@/lib/creneaux-chantier";
+import { demiJourneesAPoser, departSansQuestion } from "@/lib/creneaux-chantier";
 import { autourDuJour, fusionnerAbsences, gesteDuJour, type MomentDuJour } from "@/lib/absences-equipe";
 import { cocheRefusee, joursDeLaPastille, type ChantierPourAbsence } from "@/lib/equipe-absente";
 import { absenceDuJourAction } from "@/app/reglages/actions";
@@ -928,7 +928,8 @@ export default function PlanningClient({
    * encore là après le mois tourné ? » — une question qui ne se pose plus :
    * détachée de la semaine, elle y survit.
    */
-  const enDeplacement = ouvert?.quoi === "deplacer";
+  const enDeplacement =
+    ouvert?.quoi === "deplacer" || ouvert?.quoi === "deplacer-quand";
 
   function toucherLeJour(jour: JourIso) {
     // ─── PENDANT UN DÉPLACEMENT, LE JOUR TOUCHÉ EST LA DESTINATION ─────────
@@ -942,21 +943,27 @@ export default function PlanningClient({
     // fiche du chantier qui part doit rester où elle est, sinon il regarde
     // déjà autre chose au moment de choisir le moment.
     //
-    // **ET LE JOUR TOUCHÉ SUFFIT — sa demande du 1er novembre 2026 :** *« que
-    // ça le déplace en un clic »*. Plus de « Quel moment ? » : ce que le jour
-    // de départ porte arrive tel quel (`momentQuiPart`). Toucher le jour de
-    // départ lui-même ne déplace rien, il ne fait que garder le geste ouvert.
+    // **UNE JOURNÉE PART EN UN APPUI — sa demande du 1er novembre 2026 :**
+    // *« si c'est un chantier d'une journée, pas besoin de me demander si je
+    // veux déplacer le matin ou l'aprem »*. Le jour touché la déplace aussitôt
+    // (`departSansQuestion`). Une demi-journée garde sa question, sa précision
+    // du 6 novembre : *« il faut que l'utilisateur puisse choisir si on le met
+    // le matin ou l'après-midi »*.
     if (ouvert?.quoi === "deplacer") {
-      if (jour === ouvert.jourSource) return;
       const chantier = chantiers.find((c) => c.id === ouvert.chantierId);
-      const moment = chantier
-        ? momentQuiPart(creneauxDe(chantier).filter((c) => c.jour === ouvert.jourSource))
+      const sansQuestion = chantier
+        ? departSansQuestion(creneauxDe(chantier).filter((c) => c.jour === ouvert.jourSource))
         : null;
-      if (!moment) {
-        setOuvert(null);
+      if (sansQuestion && jour !== ouvert.jourSource) {
+        deplacerLeJour(ouvert.chantierId, ouvert.jourSource, jour, sansQuestion);
         return;
       }
-      deplacerLeJour(ouvert.chantierId, ouvert.jourSource, jour, moment);
+      setOuvert({ ...ouvert, quoi: "deplacer-quand", vers: jour });
+      return;
+    }
+    if (ouvert?.quoi === "deplacer-quand") {
+      // Il se ravise sur le jour : on garde le geste, on change la cible.
+      setOuvert({ ...ouvert, vers: jour });
       return;
     }
     setOuvert(null);
@@ -1084,8 +1091,8 @@ export default function PlanningClient({
   const PAGE_VIEILLIE = "Rien n'est parti. Rechargez la page.";
 
   /**
-   * DÉPLACER CE QUE LE JOUR PORTE — deux appuis au lieu de sept (Déplacer, le
-   * jour), depuis le 1er novembre 2026.
+   * DÉPLACER CE QUE LE JOUR PORTE — trois appuis au lieu de sept, et deux pour
+   * une journée entière depuis le 1er novembre 2026.
    *
    * **Sa demande du 17 septembre 2026 :** *« trop de clics à faire »*. Le geste
    * d'avant rendait la demi-journée au tiroir du bas, d'où il fallait aller la
@@ -1571,6 +1578,13 @@ export default function PlanningClient({
                 ecriture={gestesCarte.ecriture && jour >= aujourdHui}
               />
             )}
+            // ─── LE JOUR D'ACCUEIL, PEINT PENDANT LE GESTE ────────────────
+            //
+            // **Sa demande du 17 septembre 2026 :** *« je choisis la deux, le
+            // planning au-dessus »*. Le jour touché reste marqué le temps qu'il
+            // choisisse le moment — sans quoi il ne sait plus lequel il a pris,
+            // et le calendrier ne répond pas à son doigt.
+            jourRetenu={ouvert?.quoi === "deplacer-quand" ? ouvert.vers : null}
             // ─── LE MOIS ENTIER AU-DESSUS PENDANT LE GESTE ────────────────
             //
             // **Sa demande du 17 septembre 2026**, planche 120 « la A » :
