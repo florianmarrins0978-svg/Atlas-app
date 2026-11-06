@@ -1,5 +1,40 @@
 # Prochaines tâches
 
+## ⏳ BATTERIE COMMUNE DU 6 NOVEMBRE AU SOIR : FUSIONNÉE, PAS LANCÉE (sa consigne)
+
+**Sa demande, à 18 h** : *« il y a déjà 3 sessions ou 4 sessions qui attendent
+de jouer une batterie. Fusionne-la avec la tienne. Ne la lance toujours pas.
+Il y en a une dernière qui continue de coder et dès qu'elle a fini, tu la
+prendras aussi. »* Branche `lot/batterie-commune-6-novembre-soir`, partie de
+`main` (`a5e381e5`). **Aucune batterie lancée** : elle attend son « oui ».
+
+| session | lot | migration | rencontre |
+|---|---|---|---|
+| 5 | `lot/sablier-appli` | aucune | aucune |
+| 5 | `lot/hivernage` | 0165, devenue **0171** | le calendrier prend le férié ET la goutte ; « Le prévoir » refuse le férié (`jours-feries.ts`) ; trois boutons carrés arrondis, deux plages nommées (`test-boutons-arrondis`) |
+| 5 | `lot/note-sans-reseau` | 0166, devenue **0172** | la dictée d'une idée (main) n'a pas d'identifiant d'envoi : `formulaireDeNote` et `formulaireDEnvoiDeNote` |
+| 5 | `lot/franchise-plafond` | aucune | la Factur-X (main) : l'arrêt du plafond passe avant le dépôt chez la plateforme |
+| 3 | `claude/deplacer-en-un-appui` | aucune | aucune |
+| 3 | `claude/fiche-travaux-que-les-travaux` | 0169, devenue **0173** | aucune |
+| 2 | `lot/fiche-securite-soignee` (avec le « ≤ ») | aucune | aucune |
+| 1 | `lot/fermeture-compte`, `lot/facture-atlas`, `lot/tva-abonnement` | sa 0171, à passer en **0174** | **à prendre quand elle aura fini** |
+
+Paragraphes renumérotés : l'hivernage §561, la note §562, le plafond §563, la
+fiche travaux §564 et §565. Chaque renvoi à un numéro déplacé a été relu un
+par un (`CLAUDE.md` §6, B) : 0165, 0166 et 0169 désignent aussi la nature d'une
+absence, les jours travaillés et la Factur-X, qui gardent les leurs.
+
+**Joué ici, sans serveur ni base** : `tsc` vert ; eslint sur les 86 fichiers
+touchés, 0 erreur ; vertes : test-hivernage, test-note-gardee,
+test-franchise-plafond, test-mention-franchise, test-facture-pdf, test-sablier,
+test-boutons-arrondis, test-creneaux-chantier, test-panne-note-vocale,
+test-mode-emploi, test-pas-de-pansement, test-pas-de-code-mort, test-couches,
+test-aucun-tiret, test-aucune-fleche, test-chartes-lisibles,
+test-une-seule-recherche, test-classes-atlas-uniques,
+test-actions-serveur-sans-export-de-type, test-todo-sans-titre-menteur.
+Niveau calculé : 3 (migrations, argent). **Reste** : la session 1, puis la
+batterie entière sur son « oui », puis `main`.
+
 ## LE « ≤ » DU PDF DE LA FICHE DE SÉCURITÉ : CORRIGÉ LE 6 NOVEMBRE 2026, PAS SUR main
 
 **Sa réponse du 6 novembre** : *« Oui corrige le maintenant. Pas de
