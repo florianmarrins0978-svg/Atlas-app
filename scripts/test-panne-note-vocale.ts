@@ -161,7 +161,10 @@ async function main() {
       throw new Error("Failed to fetch");
     });
     assert.equal(etat, "hors-ligne");
-    assert.ok(/connexion/i.test(phraseDeLiaison(etat)), "la phrase doit parler de la connexion");
+    // « Envoyez-la quand le réseau revient. » : sa planche du 5 novembre 2026,
+    // la B. Le mot a changé (la note est gardée, plus rien à vérifier avant de
+    // la refaire) ; la règle, elle, tient : seule cette phrase parle du réseau.
+    assert.ok(/connexion|réseau/i.test(phraseDeLiaison(etat)), "la phrase doit parler du réseau");
   });
 
   await testAsync("le diagnostic ne lève JAMAIS, il est appelé depuis un catch", async () => {
@@ -173,7 +176,9 @@ async function main() {
       async () => null as unknown as Response,
     ]) {
       const etat = await diagnostiquerLiaison(sonde as (url: string) => Promise<Response>);
-      assert.ok(phraseDeLiaison(etat).length > 40, `phrase absente pour un diagnostic en panne : ${etat}`);
+      // Une PHRASE, pas un mot : la plus courte est celle de sa planche du
+      // 5 novembre 2026, « Envoyez-la quand le réseau revient. » (35 signes).
+      assert.ok(phraseDeLiaison(etat).length > 20, `phrase absente pour un diagnostic en panne : ${etat}`);
     }
   });
 

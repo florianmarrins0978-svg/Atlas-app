@@ -102,12 +102,21 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
     ecran: "Atlas",
     ou: "partout",
     intitule: "Utiliser Atlas sans internet, hors ligne",
-    motsCles: ["internet", "hors ligne", "reseau", "connexion", "wifi", "campagne", "capte"],
+    motsCles: ["internet", "hors ligne", "reseau", "connexion", "wifi", "campagne", "capte", "note", "dictee", "gardee"],
+    // **La note dictée est gardée depuis le 6 novembre 2026** (sa planche B,
+    // `appli/soignee/note-sans-reseau.html`) : la fiche disait « attendez d'en
+    // retrouver », ce qui laissait croire qu'une note dictée sans réseau était
+    // perdue, et elle l'était. Le reste d'Atlas, lui, n'a toujours pas de mode
+    // hors ligne : il ne s'ouvre pas sans réseau.
     geste:
-      "Atlas a besoin d'internet pour s'ouvrir et pour enregistrer : il n'a pas encore de mode hors ligne. " +
-      "Sans réseau, attendez d'en retrouver avant de valider.",
+      "Atlas a besoin d'internet pour s'ouvrir et pour enregistrer : il n'a pas de mode hors ligne. " +
+      "Une note dictée sans réseau reste gardée sur le téléphone : touchez Envoyer quand le réseau revient.",
     source: "src/app/layout.tsx",
     preuves: ['manifest: "/manifest.json"'],
+    ailleurs: [
+      { source: "src/app/chantiers/[id]/AnneauNoteVocale.tsx", preuves: ["Gardée", "envoyerLaNoteGardee"] },
+      { source: "src/lib/diagnostic-liaison.ts", preuves: ["Envoyez-la quand le réseau revient."] },
+    ],
     // Un mode hors ligne passerait par un service worker.
     absences: ["serviceWorker"],
   },

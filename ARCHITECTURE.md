@@ -36940,3 +36940,16 @@ Contrôles : `test-feuille-main-oeuvre` (pur : la quantité à la journée, l'he
 
 **L'ordre des lots.** D'abord la Factur-X, qui ne dépend d'aucun compte : une règle pure qui écrit le XML (CII, profil EN 16931) depuis la facture, le PDF rendu PDF/A-3 avec ce XML dedans, et un contrôle par les règles officielles. Ensuite le branchement (la clé chiffrée par `chiffre-au-repos.ts`, isolée par entreprise ; l'état de chaque facture transmise), qui ne s'éprouve qu'avec un vrai compte. Les deux sont de niveau 3.
 
+## §557 : Une note dictée qui ne part pas est gardée sur le téléphone, et repart sur son appui
+
+**Sa planche du 5 novembre 2026, la B le 6** (`appli/soignee/note-sans-reseau.html`). Un envoi raté jetait le son : il vivait dans une variable de `envoyerLaNote`, et la phrase disait « puis refaites la note ». Sur une fiche neuve, la création du chantier levait avant l'envoi et rien ne la rattrapait : la note se perdait sans une phrase.
+
+**Ce qui décide est pur** (`src/lib/note-gardee.ts`) : `causeDeLaGarde` garde tout, sauf un son que le serveur ne recevra jamais (`nonRecevable`, posé par la route : absent, illisible, trop gros) ; `etatDuDisque` ne retient le disque sur « Gardée » que lorsque le serveur est injoignable ; `phraseDeLaNoteGardee` porte les mots de la planche et ne dit jamais de recharger quand la page est le seul endroit où vit la note. `envoyerNoteVocale` dit désormais POURQUOI il a raté (`liaison`), au lieu d'une seule raison en toutes lettres.
+
+**« Revenu » est une réponse du serveur, pas `navigator.onLine`.** Sur un wifi sans internet, le téléphone annonce « en ligne » et rien ne passe : le disque y proposerait Envoyer pour un envoi impossible. L'anneau interroge `/api/health/live` (`diagnostiquerLiaison`) tout de suite, toutes les dix secondes, et à chaque annonce `online`. C'est l'appui qui envoie, jamais la sonde : la B.
+
+**Le rangement** (`src/app/chantiers/[id]/notes-gardees.ts`) : IndexedDB, une note par chantier comme sur le serveur, le son en octets (un `Blob` rangé tel quel a longtemps été refusé par Safari). Rien n'y lève : un téléphone qui refuse de ranger le dit en valeur, et la phrase demande de rester sur la page. Une fiche neuve n'a pas de chantier : sa note ne vit que dans la page, faute de quoi la rattacher sans risquer le mauvais client.
+
+**Un envoi ne s'enregistre qu'une fois** (migration 0166, `notes_vocales.envoi_id`, expand seul). Avec la B, une réponse perdue puis un second appui faisaient arriver deux fois le même son : la note réécrite, sa transcription remise à zéro, le devis préparé deux fois. Le téléphone pose un identifiant à la note captée (`nouvelIdentifiantDEnvoi`, sans `crypto.randomUUID`, absent hors https) ; le service le reconnaît AVANT la cadence et le stockage (`noteDejaRecue`), et rend ce qu'il avait rendu. Une note remplacée sans identifiant efface l'ancien : elle ne se ferait pas passer pour lui.
+
+**Écarté :** l'envoi automatique au retour du réseau (la A, sa réponse B) ; un service worker (le mode hors ligne entier, qui ferait s'ouvrir Atlas sans réseau : un autre lot) ; garder la saisie d'une fiche neuve pour la recréer plus tard (la ligne de l'accueil d'abord, sur planche, `TODO.md`).

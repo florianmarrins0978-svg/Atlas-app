@@ -1,6 +1,54 @@
 # Prochaines tâches
 
 
+## CODÉ LE 6 NOVEMBRE, PAS SUR main : une note sans réseau (B)
+
+**Sa réponse B du 6 novembre**, puis *« tu peux coder tout ça et ne lance pas de
+batterie »*. Branche locale `lot/note-sans-reseau`, non poussée. Planche
+`appli/soignee/note-sans-reseau.html`. `ARCHITECTURE.md` §557.
+
+**Ce qui est codé :** un envoi raté garde la note (`src/lib/note-gardee.ts`,
+`causeDeLaGarde`), sauf un son que le serveur ne recevra jamais
+(`nonRecevable`, rendu et dit comme avant). Sur le téléphone, IndexedDB, une
+note par chantier (`src/app/chantiers/[id]/notes-gardees.ts`). L'anneau dit
+« Gardée » (le sablier de `IconeTrait`) tant que le serveur ne répond pas,
+« Envoyer » dès qu'il répond, et c'est son appui qui envoie
+(`AnneauNoteVocale.tsx`). La fiche neuve dont le chantier ne peut pas être
+créé garde la note dans la page, et le dit. Le serveur reconnaît un envoi déjà
+reçu (`envoi_id`, migration `0166_note_vocale_envoi.sql`, `noteDejaRecue`).
+Les phrases de liaison ne disent plus « refaites la note » ; la fiche
+« atlas-internet » dit vrai.
+
+**Joué ici, au vert :** `npx tsc --noEmit`, eslint sur les fichiers touchés,
+`test-note-gardee` (16 cas, rouge d'abord sur l'envoi et les anciennes
+phrases), `test-panne-note-vocale`, `test-mode-emploi`, `test-pas-de-pansement`,
+`test-pas-de-code-mort`, `test-couches`, `test-aucun-tiret`, `test-aucune-fleche`,
+`test-chartes-lisibles`, `test-classes-atlas-uniques`. **Niveau 3** (migration,
+`globals.css`, schéma) : `npm run verifier:avant-livraison`, sur SON accord.
+
+**Écrit, à jouer avec la batterie :** `test-note-vocale-envoi-db.ts` (l'envoi
+reconnu, l'isolation, le remplacement sans identifiant) et
+`test-note-sans-reseau-e2e.ts` (fiche neuve et chantier existant, réseau coupé
+puis rendu, page rouverte).
+
+**Pas vérifié ici, et à dire comme tel :** aucun écran ouvert (sa règle, pas de
+serveur) ; aucun téléphone réellement privé de réseau ; IndexedDB sur Safari
+d'iPhone jamais essayé ; la migration jamais appliquée à une base.
+
+**Ce qui reste, et qui n'est pas codé :**
+- **la ligne « 1 note à envoyer » sur l'accueil** (« à trancher en codant ») :
+  elle demande une planche d'abord (`CLAUDE.md` §3 bis), et elle compense le
+  risque de la B, l'oubli. Sans elle, une note gardée ne se retrouve qu'en
+  rouvrant la fiche de son chantier ;
+- **la fiche neuve fermée avant l'envoi** : sa note ne vit que dans la page
+  (le chantier n'existe pas encore, rien ne la rattacherait sans risquer le
+  mauvais client) ; la phrase le dit. La garder au-delà demande de garder aussi
+  la saisie, et la ligne de l'accueil pour la retrouver ;
+- **la page vieillie sur une fiche neuve** : la création du chantier passe par
+  une action serveur, qu'une page d'avant la mise à jour ne peut plus appeler ;
+  la note reste gardée dans la page, mais seul un rechargement répare, et il la
+  perd. Rare (après une mise à jour), dit sous le disque.
+
 ## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : cinq planches, A ou B~~ TRANCHÉ LE 6 NOVEMBRE : HIVERNAGE B, NOTE B, FRANCHISE A ET B, DEUX ÉCARTÉES, PAS CODÉ
 
 **Sa question du 5 novembre** : *« est-ce que tu as des idées pour améliorer

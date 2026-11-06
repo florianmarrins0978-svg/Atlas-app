@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { notesVocales, fichiersAPurger, audiosAPurger } from "../db/schema";
 import type { Ctx } from "./context";
@@ -11,7 +11,24 @@ type FichierAudio = {
   nomOriginal?: string;
   checksum: string;
   dureeSecondes?: number;
+  /** L'identifiant de l'envoi posé par le téléphone (`note-vocale-entrante.ts`). */
+  envoiId?: string;
 };
+
+/**
+ * Cet envoi est-il déjà arrivé ? Une note gardée sans réseau repart sur un
+ * appui : une réponse perdue puis un second appui ne doivent rien réécrire.
+ */
+export async function noteDejaRecue(ctx: Ctx, chantierId: string, envoiId: string) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [row] = await tx
+      .select({ storageKey: notesVocales.storageKey, dureeSecondes: notesVocales.dureeSecondes })
+      .from(notesVocales)
+      .where(and(eq(notesVocales.chantierId, chantierId), eq(notesVocales.envoiId, envoiId)))
+      .limit(1);
+    return row ?? null;
+  });
+}
 
 export async function getNoteVocale(ctx: Ctx, chantierId: string) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
@@ -36,6 +53,9 @@ export async function enregistrerNoteVocale(ctx: Ctx, chantierId: string, fichie
         .update(notesVocales)
         .set({
           ...fichier,
+          // Posé même absent : une note remplacée par un envoi sans identifiant
+          // ne doit pas se faire passer pour l'envoi d'avant.
+          envoiId: fichier.envoiId ?? null,
           transcription: null,
           transcriptionStatut: "non_demandee",
           transcriptionErreur: null,

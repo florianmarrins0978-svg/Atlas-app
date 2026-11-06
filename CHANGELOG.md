@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-06
 
+- **Une note dictée sans réseau est gardée, et part sur son appui** (sa planche B, « tu peux coder tout ça et ne lance pas de batterie ») : l'envoi raté ne jette plus le son. Il reste sur le téléphone, le disque dit « Gardée » avec le sablier, puis « Envoyer » dès que le serveur répond ; une page rouverte sur le chantier le retrouve. La fiche neuve qui perdait la note sans un mot quand le chantier ne pouvait pas être créé la garde dans la page. Un identifiant d'envoi (migration 0166) empêche qu'un second appui fasse deux notes et deux devis. Codé sur `lot/note-sans-reseau`, **pas sur `main`** : sa batterie attend son accord.
 - **Hiverner l'arrosage : la goutte aussi dans le mois** (sa demande) : à côté du numéro du jour, dans le mois en haut du planning, pour voir tous les hivernages d'un coup d'œil. Pas codé.
 - **Hiverner l'arrosage : la goutte sur le planning** (sa demande) : posé au planning, l'hivernage met la même goutte bleue à côté de son jour. Un férié ne se choisit pas, donc son bleu ne la croise jamais. Pas codé.
 - **Restrictions d'eau et heures du jour : écartées** (sa décision) : seules les trois premières planches se coderont. Les deux planches restent, marquées écartées.

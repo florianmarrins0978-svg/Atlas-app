@@ -1,4 +1,4 @@
-import { diagnostiquerLiaison, phraseDeLiaison } from "./diagnostic-liaison";
+import { diagnostiquerLiaison, phraseDeLiaison, type EtatLiaison } from "./diagnostic-liaison";
 
 /**
  * Envoyer un enregistrement au serveur, depuis le navigateur.
@@ -18,7 +18,22 @@ import { diagnostiquerLiaison, phraseDeLiaison } from "./diagnostic-liaison";
  */
 export type EnvoiNote =
   | { ok: true; storageKey: string | null; dureeSecondes: number | null }
-  | { ok: false; raison: string; sessionPerimee?: true };
+  | {
+      ok: false;
+      raison: string;
+      sessionPerimee?: true;
+      /**
+       * **Rien n'est arrivé au serveur**, et pourquoi (6 novembre 2026). C'est
+       * ce qui fait GARDER la note sur le téléphone (`note-gardee.ts`) : elle
+       * repartira telle quelle, sans qu'on la refasse.
+       */
+      liaison?: EtatLiaison;
+      /**
+       * **Le serveur a reçu le son et ne le recevra jamais** : illisible, trop
+       * gros. Le renvoyer rendrait le même refus ; la note ne se garde pas.
+       */
+      nonRecevable?: true;
+    };
 
 export async function envoyerNoteVocale(
   chantierId: string,
@@ -33,7 +48,8 @@ export async function envoyerNoteVocale(
     // Le serveur n'a pas été joint. **On lui demande s'il est vivant avant de
     // conclure** : accuser le réseau sans avoir demandé, c'est envoyer chercher
     // au mauvais endroit — le défaut du 12 août.
-    return { ok: false, raison: phraseDeLiaison(await diagnostiquerLiaison()) };
+    const liaison = await diagnostiquerLiaison();
+    return { ok: false, raison: phraseDeLiaison(liaison), liaison };
   }
 
   // **Une réponse qui n'est pas du JSON n'est pas une réponse de cette route.**
@@ -47,8 +63,8 @@ export async function envoyerNoteVocale(
     return {
       ok: false,
       raison:
-        "Le serveur a répondu autre chose que prévu. La page a sans doute vieilli. " +
-        "Rechargez-la, puis refaites la note.",
+        "Le serveur a répondu autre chose que prévu. La page a sans doute vieilli : " +
+        "rechargez-la, puis envoyez la note, elle est gardée.",
       ...(reponse.status === 401 || reponse.status === 403 ? { sessionPerimee: true as const } : {}),
     };
   }
@@ -61,5 +77,10 @@ export async function envoyerNoteVocale(
       ? rendu.raison
       : `Le serveur a refusé l'enregistrement (code ${reponse.status}).`;
 
-  return { ok: false, raison, ...(reponse.status === 401 ? { sessionPerimee: true as const } : {}) };
+  return {
+    ok: false,
+    raison,
+    ...(reponse.status === 401 ? { sessionPerimee: true as const } : {}),
+    ...(rendu && !rendu.ok && rendu.nonRecevable ? { nonRecevable: true as const } : {}),
+  };
 }

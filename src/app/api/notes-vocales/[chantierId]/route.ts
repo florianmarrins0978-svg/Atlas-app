@@ -74,7 +74,7 @@ export async function POST(
   } catch (erreur) {
     if (erreur instanceof CorpsTropGros) {
       return NextResponse.json(
-        { ok: false, raison: MESSAGE_FICHIER_TROP_VOLUMINEUX },
+        { ok: false, raison: MESSAGE_FICHIER_TROP_VOLUMINEUX, nonRecevable: true },
         { status: 413 }
       );
     }

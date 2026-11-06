@@ -26,16 +26,21 @@
 
 export type EtatLiaison = "page-vieillie" | "serveur-en-peine" | "hors-ligne";
 
+/**
+ * **La note est GARDÉE, et la phrase le sait** (6 novembre 2026). Ces trois
+ * phrases disaient « puis refaites la note » : un envoi raté jetait le son.
+ * Il reste désormais sur le téléphone (`note-gardee.ts`), et c'est l'appui
+ * sur Envoyer qui le renvoie, sa réponse B du 6 novembre. La phrase hors
+ * ligne est celle de sa planche, mot pour mot.
+ */
 const PHRASE: Record<EtatLiaison, string> = {
   "page-vieillie":
-    "L'enregistrement n'est pas parti : cette page a été ouverte avant la dernière mise à jour " +
-    "de l'espace de travail. Rechargez-la, puis refaites la note. Le serveur, lui, répond bien.",
+    "La note n'est pas partie : cette page date d'avant la dernière mise à jour. " +
+    "Rechargez-la, puis envoyez la note, elle est gardée. Le serveur, lui, répond bien.",
   "serveur-en-peine":
-    "L'enregistrement n'est pas parti : le serveur répond mal, il est sans doute en train de " +
-    "redémarrer. Attendez une minute, rechargez la page, puis refaites la note.",
-  "hors-ligne":
-    "L'enregistrement n'est pas parti : le serveur est injoignable depuis ce téléphone. " +
-    "Vérifiez votre connexion, puis refaites la note.",
+    "La note n'est pas partie : le serveur répond mal, il est sans doute en train de " +
+    "redémarrer. Attendez une minute, puis envoyez-la, elle est gardée.",
+  "hors-ligne": "Envoyez-la quand le réseau revient.",
 };
 
 /** La phrase à montrer, pour un état de liaison donné. */

@@ -5,7 +5,33 @@ import { useRouter } from "next/navigation";
 import { colors, font } from "@/lib/design-tokens";
 import { useMagnetophone, formulaireDeNote } from "./magnetophone";
 import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
+import IconeTrait from "@/components/atlas/IconeTrait";
 import { envoyerNoteVocale } from "@/lib/envoi-note-vocale";
+import { diagnostiquerLiaison } from "@/lib/diagnostic-liaison";
+import {
+  causeDeLaGarde,
+  etatDuDisque,
+  nouvelIdentifiantDEnvoi,
+  phraseDeLaNoteGardee,
+  type CauseGardee,
+} from "@/lib/note-gardee";
+import { garderLaNote, noteGardeeDe, oublierLaNote } from "./notes-gardees";
+
+/**
+ * Une note qui n'a pas pu partir, et qui attend son appui sur Envoyer — sa
+ * planche du 5 novembre 2026, la B le 6 (`appli/soignee/note-sans-reseau.html`).
+ * `chantierId` nul : une fiche neuve dont le chantier n'a pas pu être créé ; la
+ * note ne vit alors que dans cette page (`notes-gardees.ts`).
+ */
+type NoteEnAttente = {
+  chantierId: string | null;
+  envoiId: string;
+  blob: Blob;
+  secondes: number;
+  cause: CauseGardee;
+  raison?: string;
+  stockageRefuse: boolean;
+};
 
 /**
  * L'anneau muet — l'accès direct à la note vocale, sur la fiche du chantier.
@@ -195,6 +221,61 @@ export default function AnneauNoteVocale({
   const router = useRouter();
   const magnetophone = useMagnetophone();
   const [envoi, setEnvoi] = useState(false);
+  const [enAttente, setEnAttente] = useState<NoteEnAttente | null>(null);
+  /** Le serveur répond-il ? Une QUESTION posée au serveur, pas `navigator.onLine`. */
+  const [joignable, setJoignable] = useState<boolean | null>(null);
+
+  // ─── Une page rouverte retrouve la note gardée de ce chantier ─────────
+  useEffect(() => {
+    if (!chantierId) return;
+    let vivant = true;
+    noteGardeeDe(chantierId).then((n) => {
+      if (!vivant || !n) return;
+      setEnAttente(
+        (deja) =>
+          deja ?? {
+            chantierId: n.chantierId,
+            envoiId: n.envoiId,
+            blob: new Blob([n.octets], { type: n.type }),
+            secondes: n.secondes,
+            cause: n.cause,
+            stockageRefuse: false,
+          }
+      );
+    });
+    return () => {
+      vivant = false;
+    };
+  }, [chantierId]);
+
+  // ─── Sans réseau, on demande au serveur s'il est revenu ───────────────
+  //
+  // **Toutes les dix secondes, et dès que le téléphone annonce le réseau.**
+  // L'annonce seule ne suffit pas : sur un wifi sans internet, `online` arrive
+  // et rien ne passe. C'est la réponse du serveur qui fait passer le disque de
+  // « Gardée » à « Envoyer » ; l'envoi, lui, attend son appui (la B).
+  const causeEnAttente = enAttente?.cause ?? null;
+  useEffect(() => {
+    if (causeEnAttente !== "hors-ligne") return;
+    let vivant = true;
+    const sonder = async () => {
+      const etat = await diagnostiquerLiaison();
+      if (vivant) setJoignable(etat !== "hors-ligne");
+    };
+    const perdu = () => setJoignable(false);
+    // Une première question tout de suite : une note retrouvée à l'ouverture de
+    // la page, réseau revenu, ne doit pas attendre dix secondes son Envoyer.
+    void sonder();
+    const minuterie = setInterval(sonder, 10_000);
+    window.addEventListener("online", sonder);
+    window.addEventListener("offline", perdu);
+    return () => {
+      vivant = false;
+      clearInterval(minuterie);
+      window.removeEventListener("online", sonder);
+      window.removeEventListener("offline", perdu);
+    };
+  }, [causeEnAttente]);
 
 
   // ─── Le volume réellement enregistré ──────────────────────────────────
@@ -288,25 +369,104 @@ export default function AnneauNoteVocale({
       onDictee?.(false);
       return;
     }
+    // L'identifiant naît avec la note, et la suit à chaque appui : c'est lui
+    // qui fait reconnaître au serveur un envoi déjà reçu.
+    await envoyer(capte.blob, capte.secondes, nouvelIdentifiantDEnvoi());
+  }
+
+  /** La note gardée repart : SON appui, la B du 6 novembre 2026. */
+  async function envoyerLaNoteGardee() {
+    if (envoi || !enAttente) return;
+    await envoyer(enAttente.blob, enAttente.secondes, enAttente.envoiId);
+  }
+
+  /**
+   * Envoyer, la première fois comme les suivantes.
+   *
+   * **Ce qui ne part pas est GARDÉ**, au lieu de partir avec la variable qui
+   * portait le son : c'était le défaut du 5 novembre 2026, « puis refaites la
+   * note ». Seul un son que le serveur ne recevra jamais est rendu, en le
+   * disant (`causeDeLaGarde`).
+   *
+   * **La fiche neuve, d'abord** : son chantier se crée ici (`assurerChantier`).
+   * Sans réseau, la création levait, rien ne la rattrapait, et la note se
+   * perdait sans une phrase. Elle est désormais gardée dans la page.
+   */
+  async function envoyer(blob: Blob, secondes: number, envoiId: string) {
     setEnvoi(true);
     try {
-      const cible = chantierId ?? (await assurerChantier?.());
+      let cible = chantierId;
       if (!cible) {
-        magnetophone.setErreur("Impossible d'enregistrer ce chantier pour l'instant. Réessayez.");
-        onDictee?.(false);
+        try {
+          cible = (await assurerChantier?.()) ?? null;
+        } catch {
+          await garder({ chantierId: null, envoiId, blob, secondes, cause: await diagnostiquerLiaison() });
+          return;
+        }
+      }
+      if (!cible) {
+        await garder({
+          chantierId: null,
+          envoiId,
+          blob,
+          secondes,
+          cause: "serveur",
+          raison: "Impossible d'enregistrer ce chantier pour l'instant. Réessayez.",
+        });
         return;
       }
-      const resultat = await envoyerNoteVocale(cible, formulaireDeNote(capte.blob, capte.secondes));
+      const resultat = await envoyerNoteVocale(cible, formulaireDeNote(blob, secondes, envoiId));
       if (!resultat.ok) {
-        magnetophone.setErreur(resultat.raison);
-        onDictee?.(false);
+        const cause = causeDeLaGarde(resultat);
+        if (cause) {
+          await garder({ chantierId: cible, envoiId, blob, secondes, cause, raison: resultat.raison });
+        } else {
+          // Le serveur ne le recevra jamais : le garder ne servirait qu'à
+          // retenir la voix du client sur ce téléphone.
+          await oublierLaNote(cible);
+          setEnAttente(null);
+          magnetophone.setErreur(resultat.raison);
+          onDictee?.(false);
+        }
         return;
       }
+      // Partie : la voix du client quitte le téléphone.
+      await oublierLaNote(cible);
+      setEnAttente(null);
       if (onDicte) onDicte(cible);
       else router.refresh();
     } finally {
       setEnvoi(false);
     }
+  }
+
+  /** Range la note qui n'est pas partie, et le dit sous le disque. */
+  async function garder(note: Omit<NoteEnAttente, "stockageRefuse">) {
+    let stockageRefuse = false;
+    if (note.chantierId) {
+      const range = await garderLaNote({
+        chantierId: note.chantierId,
+        envoiId: note.envoiId,
+        octets: await note.blob.arrayBuffer(),
+        type: note.blob.type,
+        secondes: note.secondes,
+        cause: note.cause,
+        gardeeLe: new Date().toISOString(),
+      });
+      stockageRefuse = !range.ok;
+    }
+    magnetophone.setErreur(null);
+    setJoignable(note.cause === "hors-ligne" ? false : null);
+    setEnAttente({ ...note, stockageRefuse });
+    onDictee?.(false);
+  }
+
+  /** Jeter la note gardée : elle quitte le téléphone, le micro revient. */
+  async function jeterLaNoteGardee() {
+    if (envoi || !enAttente) return;
+    if (enAttente.chantierId) await oublierLaNote(enAttente.chantierId);
+    setEnAttente(null);
+    setJoignable(null);
   }
 
 
@@ -355,6 +515,71 @@ export default function AnneauNoteVocale({
           <p className="flex items-center gap-2 text-[13px]" style={{ color: colors.muted }}>
             Transcription
             <PointsQuiSoufflent />
+          </p>
+        </div>
+      );
+    }
+
+    // ─── LA NOTE GARDÉE — sa planche du 5 novembre 2026, la B le 6 ─────────
+    //
+    // La ligne de la dictée B, à sa place : Jeter, le disque, le temps. Le
+    // disque est en creux, le sablier d'or dedans, tant que le serveur ne
+    // répond pas ; il redevient celui d'Envoyer dès qu'il répond, et c'est
+    // son appui qui envoie. Jamais deux aplats verts (sa règle du 31 août).
+    if (enAttente) {
+      const disque = etatDuDisque(enAttente.cause, joignable);
+      return (
+        <div className="atlas-dictee" data-etat={disque} data-atlas="anneau-note-vocale">
+          <div className="atlas-ecoute">
+            <button
+              type="button"
+              onClick={jeterLaNoteGardee}
+              aria-label="Supprimer la note"
+              className="atlas-jeter"
+              style={{ color: colors.inkSoft }}
+              data-atlas="note-gardee-jeter"
+            >
+              <span className="atlas-jeter-rond">
+                <IconePoubelle />
+              </span>
+              Jeter
+            </button>
+
+            {disque === "gardee" ? (
+              <span className="atlas-garde" style={{ color: colors.ink }} data-atlas="note-gardee">
+                <span className="atlas-disque-garde">
+                  <IconeTrait nom="sablier" taille={36} />
+                </span>
+                Gardée
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={envoyerLaNoteGardee}
+                aria-label="Envoyer la note et préparer le devis"
+                className="atlas-envoyer"
+                style={{ color: colors.ink }}
+                data-atlas="note-gardee-envoyer"
+              >
+                <span className="atlas-disque-envoi">
+                  <IconeAvion taille={28} />
+                </span>
+                Envoyer
+              </button>
+            )}
+
+            <span className="atlas-compteur" style={{ color: colors.ink, fontFamily: font.display }}>
+              {mmss(enAttente.secondes)}
+            </span>
+          </div>
+          <p className="mt-2 text-center text-[15px]" style={{ color: colors.inkSoft }} data-atlas="note-gardee-phrase">
+            {phraseDeLaNoteGardee({
+              cause: enAttente.cause,
+              joignable,
+              ficheNeuve: enAttente.chantierId === null,
+              raison: enAttente.raison,
+              stockageRefuse: enAttente.stockageRefuse,
+            })}
           </p>
         </div>
       );

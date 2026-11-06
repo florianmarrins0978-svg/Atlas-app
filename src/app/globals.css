@@ -1319,6 +1319,31 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
 .atlas-envoyer:active .atlas-disque-envoi {
   transform: scale(0.97);
 }
+/* LA NOTE GARDÉE — sa planche du 5 novembre 2026, la B le 6
+ * (`appli/soignee/note-sans-reseau.html`). Sans réseau, le disque reste à SA
+ * place, en creux, le sablier d'or dedans, et « Gardée » dessous : pas un
+ * second aplat vert (sa règle du 31 août, « ça dénature l'appli »). Le serveur
+ * revenu, `.atlas-disque-envoi` reprend sa place et l'appui envoie. */
+.atlas-garde {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 16px;
+}
+.atlas-disque-garde {
+  width: 80px;
+  height: 80px;
+  border-radius: 99px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--atlas-orTexte, #8b6835);
+  background: var(--atlas-card, #faf9f5);
+  box-shadow: inset 0 0 0 2px var(--atlas-orClair, #C9A15E);
+}
 /* Les cercles se centrent sur le disque (40 px sous le haut du bouton), et
  * leurs rayons viennent de `cerclesDeLaVoix` : la règle vit dans une fonction
  * pure, le dessin ici. Au calme demandé par le téléphone, ils se taisent : le
