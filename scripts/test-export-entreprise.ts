@@ -127,10 +127,10 @@ const EXCLUSIONS_MOTIVEES: Record<string, string> = {
   // Ce registre existe pour que chaque exclusion soit écrite, pas décidée en
   // silence dans la requête.
   //
-  // Les idées pour l'appli : sa décision du 6 novembre 2026, « pas d'idées
-  // dans le fichier de Mes données » (`TODO.md`, lot des idées). Ce sont des
-  // messages envoyés à l'éditeur d'Atlas, pas des données du métier : une
-  // sauvegarde de l'entreprise n'a pas à les rendre.
+  // Les idées pour l'appli : sa décision du 6 novembre 2026, posée devant la
+  // question « je les mets dans le fichier de Mes données ? » : *« Non, on
+  // s'en fout. Les idées, les gens, ils s'en foutent de ça. »* Ce sont des
+  // messages envoyés à l'éditeur d'Atlas, pas des données du métier.
   idees: "des messages adressés à l'éditeur d'Atlas, hors de Mes données par sa décision du 6 novembre 2026",
 };
 
