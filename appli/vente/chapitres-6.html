@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f5f1e6">
-<title>Atlas pour les paysagistes</title>
+<title>Atlas pour les artisans</title>
 <meta name="description" content="Planche : le site de vente d'Atlas, repris et embelli, en vert forêt.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -78,6 +78,18 @@
   signaler » des travaux à faire tient deux lignes et ne grandit pas
   (TravauxAFaire.tsx, rows=2, resize-none). Une remarque de trois lignes s'y
   cache. La capture porte donc une remarque courte. Inscrit dans TODO.md.
+
+  POUR LES ARTISANS, PLUS POUR LES SEULS PAYSAGISTES ET ÉLAGUEURS. Sa
+  demande du 6 novembre 2026 : « pensé pour les artisans, pas pour les
+  paysagistes et les élagueurs ». Ont changé : le titre, « Vous êtes
+  artisan. Pas secrétaire. » (il disait « paysagiste, élagueur, artisan »),
+  « Pensé pour les artisans. », dont la phrase perd la fiche d'élagage et
+  les entretiens, propres au jardin, le pied de page, et le métier du
+  formulaire, écrit librement au lieu d'un choix entre paysagiste et
+  élagueur. Les captures restent celles d'un chantier de jardin : c'est
+  l'exemple, il dit vrai de l'appli. Ce qui reste à savoir, et que le site
+  ne doit pas cacher : le pôle Paysage, le vocabulaire et les fiches de
+  sécurité de l'appli sont ceux du jardin (PRODUCT.md).
 
   L'en-tête de chapitres-3.html dit d'où vient chaque réponse aux doutes de
   l'artisan méfiant, vérifiée dans le code : il reste vrai.
@@ -453,7 +465,7 @@ section{padding:clamp(88px,12vw,150px) 0}
 
 <section class="douleur nuit">
   <div class="large douleur-grille">
-    <h2>Vous êtes paysagiste, élagueur, artisan. Pas secrétaire.</h2>
+    <h2>Vous êtes artisan. Pas secrétaire.</h2>
     <div>
       <ul>
         <li>Les devis retapés le soir.</li>
@@ -576,8 +588,8 @@ section{padding:clamp(88px,12vw,150px) 0}
         <p>Rien ne part chez le client sans votre accord. Chaque ligne se corrige à la main, et quand une information manque, Atlas la laisse vide et vous la demande plutôt que de l'inventer.</p>
       </article>
       <article>
-        <h3>Pensé pour les paysagistes et les élagueurs.</h3>
-        <p>Les mots du métier, l'équipe posée à la demi-journée, les retours d'intervention, la fiche de sécurité d'élagage, les entretiens. Pas un logiciel de devis générique.</p>
+        <h3>Pensé pour les artisans.</h3>
+        <p>Les mots du métier, l'équipe posée à la demi-journée, les retours d'intervention. Pas un logiciel de devis générique.</p>
       </article>
     </div>
   </div>
@@ -708,7 +720,7 @@ section{padding:clamp(88px,12vw,150px) 0}
       </div>
       <div class="deux-champs">
         <label>E-mail<input name="email" type="email" autocomplete="email" required></label>
-        <label>Votre métier<select name="metier"><option>Paysagiste</option><option>Élagueur</option><option>Autre artisan</option></select></label>
+        <label>Votre métier<input name="metier" autocomplete="organization-title"></label>
       </div>
       <label>Votre message<textarea name="message" required></textarea></label>
       <button class="bouton" type="submit">Envoyer</button>
@@ -726,7 +738,7 @@ section{padding:clamp(88px,12vw,150px) 0}
     <div class="pied-grille">
       <div>
         <a class="marque" href="#">Atlas</a>
-        <p class="devise">Le logiciel des paysagistes et des élagueurs.</p>
+        <p class="devise">Le logiciel des artisans.</p>
       </div>
       <nav aria-label="Pied de page">
         <div><h3>Atlas</h3><ul>

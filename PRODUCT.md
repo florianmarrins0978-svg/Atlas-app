@@ -40,11 +40,17 @@ facture, puis la fiche d'entretien.
 **Cible commerciale, confirmée le 2 septembre 2026 : les paysagistes d'abord.**
 **Élargie le 9 octobre 2026 aux élagueurs** (sa réponse, devant le site de
 vente) : la fiche de sécurité d'élagage et le vocabulaire du jardin les
-servent déjà. « Les artisans » en général ont été écartés pour l'instant : un
-maçon ou un plombier trouverait un outil qui ne parle pas son métier.
-L'arrosage, le diagnostic végétal et les fiches d'entretien font partie du cœur,
-pas d'un module optionnel. Un élargissement à d'autres métiers reste possible
-plus tard ; il n'est pas engagé.
+servent déjà. L'arrosage, le diagnostic végétal et les fiches d'entretien font
+partie du cœur, pas d'un module optionnel.
+
+**Le site de vente s'adresse aux artisans depuis le 6 novembre 2026** (sa
+demande : *« pensé pour les artisans, pas pour les paysagistes et les
+élagueurs »*). Le 9 octobre, « les artisans » en général avaient été écartés,
+au motif qu'un maçon ou un plombier trouverait un outil qui ne parle pas son
+métier : ce motif reste vrai de l'appli, dont le pôle Paysage, le vocabulaire
+et les fiches de sécurité sont ceux du jardin. Le site ne promet donc rien de
+propre au jardin, et ses captures restent un chantier de jardin donné en
+exemple. Ce que l'appli devient pour les autres métiers n'est pas décidé.
 
 ## Product Purpose
 
