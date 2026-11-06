@@ -62,8 +62,12 @@ export type AbsenceAffichee = {
   premierJour: string;
   dernierJour: string;
   motif: string | null;
-  /** Congé, maladie… (migration 0165). Absente des lignes notées avant. */
-  nature?: NatureAbsence | null;
+  /**
+   * Congé, maladie… (migration 0165). NULL pour les lignes notées avant.
+   * **Obligatoire, et c'est le point** : facultative, l'écran Équipe l'oubliait
+   * sans un mot, et les motifs déjà notés ne s'affichaient pas.
+   */
+  nature: NatureAbsence | null;
 };
 
 export default function AbsencesEquipe({

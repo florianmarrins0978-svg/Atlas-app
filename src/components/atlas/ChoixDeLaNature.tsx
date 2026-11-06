@@ -44,7 +44,7 @@ export default function ChoixDeLaNature({
             data-nature={n}
             aria-pressed={nature === n}
             onClick={() => onChoisir(nature === n ? null : n)}
-            className="min-h-[50px] rounded-[12px] border-0 px-2.5 text-[15.5px] font-semibold"
+            className="min-h-[50px] rounded-full border-0 px-2.5 text-[15.5px] font-semibold"
             style={{
               fontFamily: font.body,
               background: colors.card,

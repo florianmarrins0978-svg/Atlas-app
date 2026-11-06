@@ -162,6 +162,7 @@ export default async function EquipePage() {
               premierJour: a.premierJour,
               dernierJour: a.dernierJour,
               motif: a.motif,
+              nature: a.nature,
             }))}
             aujourdHui={aujourdHui}
             agendaRelie={agendaRelie}
