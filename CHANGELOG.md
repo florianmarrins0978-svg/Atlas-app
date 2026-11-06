@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-06
 
+- **Hiverner l'arrosage : la B** (sa réponse) : la goutte, Le prévoir, et la ligne qui rassemble les clients à hiverner en tête de Vos clients. Pas codé.
 - **Hiverner l'arrosage : « Le prévoir » pose la date au planning** (sa demande) : le jour, puis le matin, l'après-midi ou la journée, chaque moment disant ce qui y est déjà ; l'hivernage se pose au planning, la goutte reste jusqu'à « C'est fait ». Pas codé.
 
 ## 2026-11-05

@@ -18,6 +18,10 @@ côté du nom […] à partir de début novembre »*. **Rien dans `src/`.**
 | `heures-du-jour.html` | heures du retour du jour (tranché le 9 octobre) comparées au devis, en heures | aussi en euros de main d'œuvre |
 | `hiverner-l-arrosage.html` | dès le 1er novembre, une goutte à côté du nom et « Arrosage à hiverner » sur la fiche ; « Le prévoir » fait choisir le jour et le moment, et l'hivernage se pose au planning (sa demande du 6 novembre), la goutte restant jusqu'à « C'est fait » | la même chose, plus une ligne qui les rassemble en tête de Vos clients |
 
+**Hivernage : la B, sa réponse du 6 novembre** (*« Pour l'arrosage je choisis
+la B »*) : la goutte, la fiche, Le prévoir qui pose au planning, et la ligne
+qui les rassemble en tête de Vos clients. Il n'a pas dit de coder.
+
 Commun à A et B : la facture qui fait passer le plafond majoré s'arrête avant
 de partir (trois issues, dont « L'envoyer sans TVA », pour ne pas bloquer sur
 un plafond non vérifié) ; pour l'hivernage, Atlas demande Oui ou Non une fois
