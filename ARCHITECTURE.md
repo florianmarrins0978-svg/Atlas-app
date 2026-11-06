@@ -36940,3 +36940,15 @@ Contrôles : `test-feuille-main-oeuvre` (pur : la quantité à la journée, l'he
 
 **L'ordre des lots.** D'abord la Factur-X, qui ne dépend d'aucun compte : une règle pure qui écrit le XML (CII, profil EN 16931) depuis la facture, le PDF rendu PDF/A-3 avec ce XML dedans, et un contrôle par les règles officielles. Ensuite le branchement (la clé chiffrée par `chiffre-au-repos.ts`, isolée par entreprise ; l'état de chaque facture transmise), qui ne s'éprouve qu'avec un vrai compte. Les deux sont de niveau 3.
 
+
+## §558 : Le plafond de la franchise se compte à un seul endroit, et l'arrêt vit dans l'émission
+
+**Sa planche du 5 novembre 2026, A et B le 6 novembre** (`appli/soignee/franchise-plafond.html`). Un artisan en franchise en base qui passe le plafond majoré doit facturer la TVA dès le dépassement (BOFiP BOI-TVA-DECLA-40-10-10, 1er juillet 2026). Atlas a toutes ses factures ; il ne comptait rien.
+
+**Un seul calcul** (`src/lib/franchise-plafond.ts`), en centimes entiers : la ligne de Terminés (à partir de 80 % du plafond), le compteur de Votre TVA, la feuille du compte et l'arrêt de la facture lisent la même fonction. Le dépôt (`src/server/repositories/franchise-plafond.ts`) ne rend que trois sommes de l'année civile, lue à Paris : les factures émises (HT), les pièces importées de genre facture (leur montant, sans TVA en franchise), les avoirs (HT). Par l'année de la pièce, pas de l'encaissement : le BOFiP compte les prestations réalisées de l'année.
+
+**Le plafond des services seulement.** Les ventes ont les leurs (85 000 € et 93 500 €), mais l'appli ne sait pas quelle ligne est une vente. Comparer tout le chiffre au plafond des services prévient tôt une activité mixte, jamais tard : c'est le côté sûr, et la feuille dit de quel plafond il s'agit. Un réglage « surtout des ventes » serait la suite, s'il le demande.
+
+**L'arrêt vit dans `emettreFacture`, pas dans l'écran** : c'est là que passe toute facture qui part (l'écran de la facture, Chorus Pro, la facture d'un passage d'entretien), comme le contrôle du devis à jour juste au-dessus. Le total comparé est celui-là même qui s'écrit sur la pièce, dans la même transaction. L'émission lève `FacturePasseLePlafondError`, qui porte le compte ; l'action le rend en valeur ; l'écran DEMANDE, et « L'envoyer sans TVA » rappelle la même émission avec `malgreLePlafond`. La facture d'un passage d'entretien ne part pas avec son compte rendu : elle attend son geste sur Terminés, et le journal ne l'écrit pas comme une panne.
+
+**Le plafond de base n'arrête rien** : passé lui seul, la franchise tient jusqu'au 31 décembre. Seul le majoré arrête, et chaque facture suivante s'arrête encore, en disant que le plafond est déjà passé.

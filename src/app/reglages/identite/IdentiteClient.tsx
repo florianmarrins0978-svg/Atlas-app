@@ -113,6 +113,7 @@ export default function IdentiteClient({
   initial,
   aPrevenir,
   declarations,
+  compteFranchise,
   attestationDeposee: attestationDeposeeInitiale,
   remarquesAttestation,
 }: {
@@ -135,6 +136,12 @@ export default function IdentiteClient({
    * répondent ensemble ou pas du tout.
    */
   declarations: React.ReactNode;
+  /**
+   * Le compte de l'année face au plafond de la franchise (sa planche du
+   * 5 novembre 2026, B), monté par la page comme les déclarations : il ne vit
+   * que sous Franchise en base.
+   */
+  compteFranchise: React.ReactNode;
 }) {
   const [valeurs, setValeurs] = useState<Identite>(initial);
   /**
@@ -431,6 +438,7 @@ export default function IdentiteClient({
         ) : (
           <div className="mt-2.5">
             <PlageTon ton="vert">Vos factures portent : {MENTION_FRANCHISE}</PlageTon>
+            {compteFranchise}
           </div>
         )}
       </Paquet>

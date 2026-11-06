@@ -58,6 +58,8 @@ import {
   porteUnAutreIban,
 } from "../../lib/modalites-paiement";
 import { uniteAdmise } from "../../lib/unite-de-ligne";
+import { arretDeLaFacture, compterLaFranchise, type ArretDuPlafond } from "../../lib/franchise-plafond";
+import { chiffresDeLAnnee } from "./franchise-plafond";
 import { dateDesTravauxProposee } from "../../lib/creneaux-chantier";
 import { manquesDeLaFacture, type Manque } from "../../lib/mentions-manquantes";
 import { estUneEntreprise, estUnClientPublic } from "../../lib/civilite";
@@ -1800,6 +1802,20 @@ export class FactureDejaEmiseError extends Error {
 }
 
 /**
+ * La facture ferait passer le plafond majoré de la franchise (sa planche du
+ * 5 novembre 2026, A et B). Ce n'est pas un refus : l'action le rend en
+ * valeur, l'écran DEMANDE, et « L'envoyer sans TVA » la refait partir avec
+ * `malgreLePlafond`. Le compte voyage avec l'erreur : c'est lui que l'arrêt
+ * montre, calculé dans la même transaction que l'émission.
+ */
+export class FacturePasseLePlafondError extends Error {
+  constructor(readonly arret: ArretDuPlafond) {
+    super("Cette facture passe le plafond de la franchise.");
+    this.name = "FacturePasseLePlafondError";
+  }
+}
+
+/**
  * Fige la facture sur les montants confirmés — l'arrêt 3 franchi.
  *
  * Les montants sont recalculés depuis les lignes plutôt que repris tels quels :
@@ -2200,7 +2216,13 @@ async function numeroSansLePrendre(tx: DbOrTx, entrepriseId: string, maintenant:
   return ecrireNumero(format, "facture", { annee, mois, numero });
 }
 
-export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Date = new Date()) {
+export async function emettreFacture(
+  ctx: Ctx,
+  factureId: string,
+  maintenant: Date = new Date(),
+  /** Son « L'envoyer sans TVA », après l'arrêt du plafond : rien d'autre ne le pose. */
+  { malgreLePlafond = false }: { malgreLePlafond?: boolean } = {}
+) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [avant] = await tx.select().from(factures).where(eq(factures.id, factureId)).limit(1);
     if (!avant) throw new Error("Facture introuvable");
@@ -2252,6 +2274,18 @@ export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Da
     // périmé. La pièce porte ce qui est vrai le jour où elle part ; c'est la
     // règle que la reprise du devis applique déjà au brouillon.
     const emetteur = await emetteurDuJour(tx, ctx.entrepriseId);
+    // **LE PLAFOND DE LA FRANCHISE, ICI ET NULLE PART AILLEURS — sa planche du
+    // 5 novembre 2026.** Comme le devis à jour juste au-dessus : c'est ici que
+    // passe toute facture qui part, celle de l'écran comme celle d'un passage
+    // d'entretien, et aucun chemin ne la fait passer le plafond majoré sans
+    // qu'il l'ait vu. Le total est celui-là même qui s'écrit sur la pièce, et
+    // l'année celle de sa date d'émission.
+    if (emetteur.entrepriseRegimeTva === "franchise" && !malgreLePlafond) {
+      const annee = Number(dates.dateEmission.slice(0, 4));
+      const compte = compterLaFranchise(await chiffresDeLAnnee(tx, ctx.entrepriseId, annee));
+      const arret = arretDeLaFacture(compte, totalHt.toFixed(2));
+      if (arret) throw new FacturePasseLePlafondError(arret);
+    }
     const adresses = await adressesDuJour(tx, avant);
 
     // La pièce est figée au moment de l'émission, jamais régénérée ensuite :

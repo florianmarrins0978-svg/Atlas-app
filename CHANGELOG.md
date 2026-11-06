@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-06
 
+- **Le plafond de la franchise, codé (A et B), pas sur `main`** : le compte de l'année (factures émises, plus importées, moins avoirs, HT) face aux plafonds des services de 2026, 37 500 € et 41 250 €, lus au BOFiP du 1er juillet 2026. Une ligne sur Terminés à partir de 80 %, le compteur dans Votre TVA, et l'arrêt dans `emettreFacture` de toute facture qui passerait le plafond majoré, avec « L'envoyer sans TVA ». Ce que ça évite : une facture partie sans TVA alors qu'elle était due, sans que personne l'ait vu. Lot `lot/franchise-plafond`, aucune batterie jouée.
 - **Hiverner l'arrosage : la goutte aussi dans le mois** (sa demande) : à côté du numéro du jour, dans le mois en haut du planning, pour voir tous les hivernages d'un coup d'œil. Pas codé.
 - **Hiverner l'arrosage : la goutte sur le planning** (sa demande) : posé au planning, l'hivernage met la même goutte bleue à côté de son jour. Un férié ne se choisit pas, donc son bleu ne la croise jamais. Pas codé.
 - **Restrictions d'eau et heures du jour : écartées** (sa décision) : seules les trois premières planches se coderont. Les deux planches restent, marquées écartées.

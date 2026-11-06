@@ -150,6 +150,19 @@ const HORS_CHARTE: Array<{
   },
   {
     /**
+     * **La ligne du plafond de la franchise, juste sous ces deux cartes** —
+     * sa planche du 5 novembre 2026 (`appli/soignee/franchise-plafond.html`,
+     * A, retenue le 6 novembre). Une plage teintée pleine largeur, ambre puis
+     * rouge, qui porte un titre, un montant et une jauge, et ouvre le compte :
+     * la même nature que les cartes du dessus, la même raison, et un repère
+     * borné. Tout autre bouton carré de ce fichier fait toujours rougir.
+     */
+    motif: /^src[/\\]components[/\\]atlas[/\\]FranchiseDeTva\.tsx$/,
+    pourquoi: "plage pleine largeur qu'on parcourt, sous les cartes de Terminés, à 4 px et non geste en capsule",
+    seulement: /data-atlas="ligne-franchise"/,
+  },
+  {
+    /**
      * **La même chose, en tête de la fiche de chantier** — « Composer ma fiche »,
      * depuis le 26 août 2026 (`ARCHITECTURE.md` §190).
      *

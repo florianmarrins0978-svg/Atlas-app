@@ -1,6 +1,58 @@
 # Prochaines tâches
 
 
+## CODÉ LE 6 NOVEMBRE, PAS SUR main : le plafond de la franchise (A et B)
+
+**Sa demande** : *« tu peux coder tout ça et ne lance pas de batterie »*
+(6 novembre 2026), sur la planche `appli/soignee/franchise-plafond.html`, A ET
+B. Branche locale `lot/franchise-plafond`, **non poussée**. Aucune batterie,
+aucune suite base, aucun écran ouvert : tout ce qui suit est **écrit, pas
+éprouvé**.
+
+**Les plafonds, sourcés le 6 novembre 2026** (`src/lib/franchise-plafond.ts`) :
+37 500 € et 41 250 € pour les prestations de services, BOFiP
+BOI-TVA-DECLA-40-10-10 du 1er juillet 2026 (exemple de 2026 : passé 41 250 €,
+la franchise est perdue à la date du dépassement ; entre les deux, gardée
+toute l'année et perdue au 1er janvier suivant) ; impots.gouv.fr, « Les régimes
+d'imposition à la TVA » (85 000 € et 93 500 € pour les ventes) ; loi
+n° 2025-1044 du 3 novembre 2025 (BOFiP ACTU-2025-00144), qui abandonne le seuil
+de 25 000 €. **Le compte se compare au plafond des services seulement** :
+l'appli ne sait pas quelle ligne est une vente, et le plafond le plus bas
+prévient tôt, jamais tard.
+
+**Ce qui est codé** : la règle pure `src/lib/franchise-plafond.ts` (le compte en
+centimes, ses bornes, le ton, la phrase, l'arrêt) ; le dépôt
+`src/server/repositories/franchise-plafond.ts` (factures émises de l'année,
+pièces importées de genre facture, avoirs, par l'année de la pièce) ; l'arrêt
+dans `emettreFacture` (`FacturePasseLePlafondError`, option `malgreLePlafond`),
+donc aussi pour la facture d'un passage d'entretien, qui attend alors son geste
+sur Terminés ; l'action `emettreFactureAction` qui le rend en valeur ; les
+écrans dans `src/components/atlas/FranchiseDeTva.tsx` (la ligne de Terminés, le
+compteur de Votre TVA, la feuille du compte, l'arrêt) ; `enEurosEntiers` dans
+`src/lib/euros.ts`.
+
+**Joué ici, vert** : `test-franchise-plafond` (bornes 79,99 %, 80 %, plafond
+exact, un centime de plus, au majoré aussi), types, lint, et 312 des 336 suites
+sans base du dépôt ; les 24 autres rougissent aussi sans ce lot (21 rejouées
+sur `main`, rouges de la même façon, faute de clé ou de réseau ici ; 3 demandent
+une base ou Redis). **Écrit, à jouer** : `test-franchise-plafond-db` (le compte
+d'une entreprise sans celui d'une autre, l'arrêt dans l'émission, Assujettie
+jamais arrêtée). **À écrire** : une suite navigateur de l'arrêt et de la ligne
+de Terminés. **Jamais ouvert** : aucun des trois écrans.
+
+**Ce qui reste ouvert, et qui revient à lui ou à son comptable** :
+- passer en Assujettie demande un numéro de TVA qu'on n'a pas encore au jour
+  du dépassement : « Passer en Assujettie » mène à Votre TVA, la facture attend ;
+- après ce passage, la facture en brouillon doit porter la TVA : le taux de ses
+  lignes sous franchise n'a pas été relu dans ce lot, à regarder à l'écran ;
+- une pièce importée « à vérifier » compte déjà : le côté sûr ;
+- Terminés ne lit toujours pas le régime de TVA pour « Ma TVA à déclarer »
+  (trouvé par la planche) : hors de ce lot, non corrigé ;
+- Légifrance montre l'article 293 B abrogé par une ordonnance du 17 décembre
+  2025 (une recodification du CGI ?), alors que le BOFiP du 1er juillet 2026
+  le cite encore : la mention « art. 293 B du CGI » imprimée sur les factures
+  est peut-être à renuméroter. Non vérifié, hors de ce lot.
+
 ## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : cinq planches, A ou B~~ TRANCHÉ LE 6 NOVEMBRE : HIVERNAGE B, NOTE B, FRANCHISE A ET B, DEUX ÉCARTÉES, PAS CODÉ
 
 **Sa question du 5 novembre** : *« est-ce que tu as des idées pour améliorer

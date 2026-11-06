@@ -14,6 +14,8 @@ import { enEuros } from "@/lib/euros";
 import { remarquesSurLAttestation } from "@/lib/attestation-lue";
 import { jourIso } from "@/lib/jour";
 import { garderLaPage } from "@/server/garde-page";
+import { compteDeLaFranchise } from "@/server/repositories/franchise-plafond";
+import { CompteurDeLaFranchise } from "@/components/atlas/FranchiseDeTva";
 
 export const dynamic = "force-dynamic";
 
@@ -58,6 +60,9 @@ export default async function IdentitePage() {
   const periodicite = e?.periodiciteTva ?? PERIODICITE_TVA_PAR_DEFAUT;
   const courante = periodeCourante(periodicite);
   const releves = await relevesSousLesDeuxRegimes(ctx, courante.debut, courante.fin);
+  // Le compte de l'année, sous Franchise en base (sa planche du 5 novembre
+  // 2026, B) : lu même en Assujettie, l'écran le montre dès la carte choisie.
+  const franchise = await compteDeLaFranchise(ctx);
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -95,6 +100,7 @@ export default async function IdentitePage() {
             ? remarquesSurLAttestation(e.attestationDecennaleLue, e.assureurDecennale, jourIso(new Date())).map((r) => r.libelle)
             : []
         }
+        compteFranchise={<CompteurDeLaFranchise compte={franchise.compte} />}
         declarations={
           <>
             <PeriodiciteTvaReglage initiale={periodicite} />
