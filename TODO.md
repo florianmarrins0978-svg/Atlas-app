@@ -44,12 +44,13 @@ ses lignes à leur place plus loin dans la fiche.
 | | |
 |---|---|
 | les planches | `appli/soignee/fiche-de-securite.html` et `fiche-de-securite-pdf.html` (en ligne) |
-| la branche | LOCALE, `lot/fiche-securite-soignee`, dans le conteneur de la session qui l'a écrite ; tant qu'elle n'est pas poussée, elle n'existe que là |
+| la branche | `lot/fiche-securite-soignee`, poussée sur GitHub le 6 novembre sur son « oui » (*« pousse-les »*) ; pas sur `main` |
 | la règle | `pointsDuMinimumLegal` (les huit points, faits ou non) et `etatDesParties` (« Fait », « À remplir », partie par partie) dans `src/lib/fiche-securite.ts` ; `minimumLegal` n'en est plus que le reste, il n'y a qu'une règle |
 | l'écran | `FormulaireFicheDeSecurite.tsx` : titres de partie en serif, l'état à côté, cases de 48 points cochées en vert, Suivant et Signer sur toute la largeur avec le refus juste au-dessus, croquis en trois lignes, urgences une par ligne, Signer avec les huit points, écran signé sans encadrés ; `Signature.tsx` (cadre, « Effacer ») |
 | le PDF | `src/server/pdf/fiche-securite-pdf.ts` : « En cas d'accident » en tête, titres à filet doré, cases pleines, listes en colonnes, champs en colonnes, l'équipe en tableau, la signature en cadre, « page n sur N », un titre réserve la place de ce qui le suit (le croquis ne quitte plus son titre). 6 pages au lieu de 7 sur la fiche d'essai |
 | éprouvé ici | types, lint, `test-fiche-securite.ts` (rouge puis vert sur les huit points), `test-boutons-arrondis` (vignettes passées à 64 points), `test-boutons-pleins`, `test-chartes-lisibles`, `test-mode-emploi`, tirets, flèches, pansements, code mort, couches ; un PDF d'essai regardé page par page |
-| PAS éprouvé ici | l'écran codé n'a pas été ouvert (pas de serveur sans son accord) ; ni la suite navigateur `test-fiche-securite-e2e`, ni les suites base |
+| regardé ici | sur son « oui » (*« Oui, regarde »*), l'appli lancée sur une base jetable : la loi, les six étapes et l'écran signé, et les gestes joués dans un navigateur (« Pas de risque de noyade » fait passer sa partie à « Fait », Signer refusé dit les cinq manques au-dessus du bouton, le manque « Les risques » mène à l'étape 4). Deux écarts vus et corrigés : « Coordonnées GPS » collé à l'adresse, le refus de Signer qui chevauchait la liste |
+| PAS éprouvé ici | la suite navigateur `test-fiche-securite-e2e` et les suites base (pas de batterie) ; un vrai iPhone ; la carte IGN (ce poste ne la joint pas) |
 | reste | **niveau 3** (`fiche-securite.ts` atteint 15 points d'entrée) : la batterie, sur son « oui », puis `main` |
 
 **Ce qui a été fait autrement que la planche, et pourquoi** : « Chercher une

@@ -593,7 +593,7 @@ export default function FormulaireFicheDeSecurite({
           </Bloc>
           <Bloc id="lieu" titre="Identification du chantier" explication="Où est le chantier, et quand. Relevez la position GPS sur place : elle guide les secours.">
             <Fixe nom="Lieu (adresse)" vide={!contexte.adresse}>{contexte.adresse ?? "non renseignée"}</Fixe>
-            <div className="mt-2.5">
+            <div className="mt-[22px]">
               <SousTitre>Coordonnées GPS</SousTitre>
               <button type="button" data-atlas="relever-gps" disabled={releveEnCours} onClick={() => { setReleveEnCours(true); setRefus(null); releverLaPosition((gps) => setContenu((c) => ({ ...c, gps })), (r) => { setRefus(r); setGpsAEcrire(true); }, () => setReleveEnCours(false)); }} className={`${CLASSE_BOUTON} gap-2`} style={{ ...styleCreux, color: releveEnCours ? colors.inkSoft : colors.ink }}>
                 <Cible /> {releveEnCours ? "Relevé en cours…" : "Relever ici"}
@@ -1229,7 +1229,7 @@ function Cadre({ entete, pied, children }: { entete?: React.ReactNode; pied: Rea
     <div style={{ background: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       {entete && <div className="sticky top-0 z-10" style={{ background: colors.cream }}>{entete}</div>}
       <div data-atlas="corps-de-la-fiche" className="px-4 pb-6 pt-3.5">{children}</div>
-      <div className="sticky bottom-0 z-10 px-4 pb-[calc(12px+var(--atlas-barre))] pt-2.5 [body:not(:has(.atlas-nav-basse))_&]:pb-3" style={{ background: `linear-gradient(to top, ${colors.cream} 68%, ${voile(colors.cream, 0)})` }}>{pied}</div>
+      <div className="sticky bottom-0 z-10 px-4 pb-[calc(12px+var(--atlas-barre))] pt-2.5 [body:not(:has(.atlas-nav-basse))_&]:pb-3" style={{ background: `linear-gradient(to top, ${colors.cream} calc(100% - 14px), ${voile(colors.cream, 0)})` }}>{pied}</div>
     </div>
   );
 }
