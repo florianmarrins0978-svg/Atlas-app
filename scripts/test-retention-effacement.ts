@@ -19,7 +19,8 @@ import * as facturesRepo from "../src/server/repositories/factures";
 import * as lignesPrixRepo from "../src/server/repositories/lignes-prix";
 import { devis as devisTable } from "../src/server/db/schema";
 import { creerEnvoi, enregistrerReponse } from "../src/server/repositories/envois-devis";
-import { audioAPurger, RETENTION, motifConservation, echeanceConservation } from "../src/server/retention";
+import { audioAPurger, RETENTION, motifConservation } from "../src/server/retention";
+import { echeanceConservation } from "../src/lib/conservation";
 import { versJourIso, ajouterJours } from "../src/lib/disponibilites";
 import { nettoyerBase } from "./_test-db";
 import { listerFichesClients } from "../src/server/repositories/fiche-client";
@@ -170,9 +171,12 @@ async function main() {
     assert.match(m ?? "", /L123-22/);
   });
 
-  await test("l'échéance de conservation compte en années pleines", async () => {
+  // **Corrigé le 6 novembre 2026** : dix ans depuis la clôture de l'exercice
+  // (L123-22), pas depuis la date de la pièce. « 2036-04-01 » partait avant
+  // le terme de tout exercice clos en 2026 ou plus tard.
+  await test("l'échéance de conservation court jusqu'à la fin de l'année N + dix + un", async () => {
     const e = echeanceConservation(new Date("2026-04-01T00:00:00Z"), 10);
-    assert.strictEqual(e.toISOString().slice(0, 10), "2036-04-01");
+    assert.strictEqual(e.toISOString().slice(0, 10), "2037-12-31");
   });
 
   // ---- Purge réelle
@@ -305,11 +309,10 @@ async function main() {
     assert.ok(rapport.pieces[0].jusquAu, "l'échéance doit être annoncée");
     // **Dix ans, sa décision du 22 octobre 2026** : la garantie décennale court
     // dix ans, et le devis signé est ce qui prouve ce qui était commandé.
-    const dansDixAns = new Date(MAINTENANT.getTime());
-    dansDixAns.setUTCFullYear(dansDixAns.getUTCFullYear() + 10);
+    // Fin d'exercice comprise, le côté sûr (`src/lib/conservation.ts`).
     assert.strictEqual(
       rapport.pieces[0].jusquAu,
-      dansDixAns.toISOString().slice(0, 10),
+      `${MAINTENANT.getUTCFullYear() + 11}-12-31`,
       "le devis accepté n'est pas gardé dix ans"
     );
     assert.strictEqual(rapport.disparu, false, "une pièce le retient : il ne peut pas avoir disparu");

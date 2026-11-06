@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-11-06
+
+- **Fermer son compte, la suite** (sa demande : *« tu peux faire ces 5 là »*, sur `lot/fermeture-compte`, pas livré). Le salarié d'un compte fermé lit « Le compte de l'entreprise est fermé. » au lieu d'une page d'erreur (`/compte-ferme`). La purge des trente jours atteint aussi les chantiers sans client, par la même règle que ceux d'un client (séparée, pas recopiée), la liaison bancaire, les messages de l'assistant hors chantier et les photos de diagnostic. Le patron reçoit un e-mail sept jours avant l'effacement, une seule fois. **La durée de conservation est corrigée** : dix ans depuis la clôture de l'exercice (L123-22), pas depuis la date de la pièce ; faute de connaître l'exercice, une pièce se garde jusqu'au 31 décembre de son année plus onze, le côté sûr (`src/lib/conservation.ts`). Ce qu'il évite : effacer une facture avant son terme. **Pas fait, et dit** : l'effacement de l'archive au bout des dix ans (il faut une base montée pour relever les clés qui tiennent aux factures) et la facture d'abonnement d'Atlas en Factur-X (elle attend le lot Factur-X de l'autre session).
+
 ## 2026-11-05
 
 - **Effacer un client garde la preuve que son devis a été accepté** (sa réponse « OUI ! »). L'effacement supprimait tous les envois du devis, donc le « oui » daté du client, alors que le devis accepté, lui, reste dix ans : il ne prouvait plus rien, et un second effacement ne le reconnaissait même plus comme accepté. L'envoi de l'acceptation reste désormais ; seul son lien meurt (jeton remplacé par un jeton jamais envoyé, échéance passée), avec le mot libre du client. Sur `lot/fermeture-compte`, que la purge des comptes fermés aurait étendu à tous les clients. **Pas livré**, suite écrite et pas encore jouée.

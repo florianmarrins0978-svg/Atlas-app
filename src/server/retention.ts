@@ -129,15 +129,6 @@ export const CONSERVATION_LEGALE = {
   contratAccepteAns: 10,
 } as const;
 
-export function echeanceConservation(
-  depuis: Date,
-  annees: number = CONSERVATION_LEGALE.facturesAns
-): Date {
-  const d = new Date(depuis.getTime());
-  d.setUTCFullYear(d.getUTCFullYear() + annees);
-  return d;
-}
-
 /**
  * Phrase à remettre à la personne qui demande l'effacement.
  *

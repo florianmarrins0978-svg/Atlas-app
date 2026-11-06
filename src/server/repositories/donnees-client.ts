@@ -20,7 +20,8 @@ import {
 } from "../db/schema";
 import type { Ctx } from "./context";
 import { genererJeton } from "./envois-devis";
-import { CONSERVATION_LEGALE, echeanceConservation, motifConservation } from "../retention";
+import { CONSERVATION_LEGALE, motifConservation } from "../retention";
+import { echeanceConservation } from "@/lib/conservation";
 import { moisDuJour } from "@/lib/jour";
 import { deOuD } from "@/lib/contrats-entretien";
 

@@ -95,20 +95,37 @@ fermé), `reglages/donnees/fermer` (l'écran de la planche), la purge planifiée
   remplacé, échéance passée). Suite `test-retention-effacement`, cas « le lien
   public du devis est retiré », étendue ; **jamais jouée** (base de test) : à
   voir rouge sur `main` puis vert sur la branche quand il dira « lance » ;
-- le salarié d'un compte fermé tombe sur l'écran d'erreur, faute d'un écran
-  « le compte de l'entreprise est fermé » ;
+- ~~le salarié d'un compte fermé tombe sur l'écran d'erreur~~ **codé le
+  6 novembre** : `CompteFermeError`, `garderLaPage` l'envoie sur
+  `/compte-ferme` (« Le compte de l'entreprise est fermé. », Se déconnecter) ;
 - l'écran du compte fermé est l'appli en lecture seule (Terminés porte les
   factures et leurs PDF), pas la liste dédiée de la planche ;
-- ce que la purge n'efface pas encore, faute de passer par un client : les
-  liaisons bancaires et leurs mouvements, les chantiers sans client, les
-  photos de diagnostic, les messages de l'assistant sans chantier ;
-- l'e-mail qui le prévient avant l'effacement (`docs/A-FAIRE.md`, « prévenu
-  par e-mail avant ») ;
-- l'effacement au bout des dix ans : la base refuse d'effacer une facture
-  émise ou un devis envoyé (`drizzle/0018`, `0068`), il faudra lever ce verrou
-  pour ce seul cas. Et `echeanceConservation` compte dix ans depuis la DATE de
-  la pièce, alors que L123-22 les compte depuis la clôture de l'exercice : une
-  facture de mars 2026 se garde jusqu'à fin 2036, pas mars 2036 ;
+- ~~ce que la purge n'efface pas encore~~ **codé le 6 novembre** : chantiers
+  sans client (même règle que ceux d'un client, `effacerLesChantiersDans`),
+  liaison bancaire, messages de l'assistant hors chantier, fichiers des
+  photos de diagnostic. **Restent, délibérément** : les mouvements et virements
+  de la banque, reliés aux pièces du comptable (0145, en cascade) et aux
+  paiements des factures ;
+- ~~l'e-mail qui le prévient avant l'effacement~~ **codé le 6 novembre** :
+  sept jours avant, une fois, date posée sur un envoi réussi seulement
+  (`prevenirAvantLEffacement`, colonne `prevenu_le` dans 0166) ;
+- ~~`echeanceConservation` compte dix ans depuis la date de la pièce~~
+  **corrigé le 6 novembre** (`src/lib/conservation.ts`) : jusqu'au 31 décembre
+  de l'année de la pièce plus onze, le côté sûr faute de connaître l'exercice
+  de chaque artisan (sa décision du même jour). Les dates « conservé
+  jusqu'au » de l'effacement d'un client reculent d'autant ;
+- **l'effacement de l'archive au bout des dix ans : la règle est codée
+  (`archiveEchue`), PAS l'effacement lui-même.** `atlas_app` n'a pas le droit
+  d'effacer une facture ni un avoir (0018, 0101), et c'est voulu : il faudra
+  une fonction `SECURITY DEFINER` du propriétaire, qui lève les déclencheurs
+  d'immuabilité pour ce seul cas, et efface dans l'ordre des clés (une
+  vingtaine de tables tiennent aux factures et aux chantiers, dont des clés
+  composites posées par 0149 et des RESTRICT). Écrite sans base pour relever
+  ce graphe, elle serait la seule porte vers l'effacement de factures, et
+  personne ne l'aurait jamais vue tourner. À écrire base montée ; elle ne
+  servira pas avant 2038 (première archive échue) ;
+- après elle, l'entreprise et les comptes de ses personnes restent :
+  `atlas_app` n'a pas le droit d'effacer une entreprise (0147) ;
 - l'article 13 des CGU à réécrire : sa décision (nouvelle version à accepter).
 
 **Les factures qu'Atlas adresse aux artisans : Stripe les fait, mais pas
