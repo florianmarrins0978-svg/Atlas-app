@@ -44,6 +44,7 @@ function ligne(p: Partial<LigneAReprendre> & { libelle: string }): LigneAReprend
     aChiffrer: false,
     tauxTva: null,
     ordre: 0,
+    mainDoeuvre: false,
     ...p,
   };
 }

@@ -59,6 +59,13 @@ async function main() {
   await ajouterLignePrix(A, ancien.id, "Taille de haie", "700.00", { quantite: "40", prixUnitaire: "17.50", unite: "ml" });
   await ajouterLignePrix(A, ancien.id, "Évacuation des déchets verts", "90.00");
   await ajouterLignePrix(A, ancien.id, "Traitement anti-mousse", "0.00", { aChiffrer: true });
+  // Sa main d'œuvre, renommée : seul le drapeau dit encore ce qu'elle est.
+  await ajouterLignePrix(A, ancien.id, "Équipe, deux jours", "800.00", {
+    quantite: "4",
+    prixUnitaire: "200.00",
+    unite: "jour/homme",
+    mainDoeuvre: true,
+  });
   // Aujourd'hui, sa grille dit 18,20 pour la haie, et toujours 90 pour l'évacuation.
   await creerTarif(A, { intitule: "Taille de haie", prix: "18.20", unite: "ml" });
   await creerTarif(A, { intitule: "Évacuation des déchets verts", prix: "90.00" });
@@ -77,6 +84,16 @@ async function main() {
     assert.equal(evac.prixGrille, null, "un tarif inchangé n'est pas une proposition");
     const mousse = await ligne("Traitement anti-mousse");
     assert.equal(mousse.prixAncien, null, "une ligne à chiffrer n'a pas d'ancien prix : zéro n'en est pas un");
+  });
+
+  // **Trouvé le 6 novembre 2026**, en cherchant pourquoi sa main d'œuvre
+  // s'affichait encore sur la fiche travaux : la reprise relisait la ligne
+  // sans son drapeau, et la réécrivait sans lui. Le devis repris la montrait
+  // à cocher à l'équipe, et la sortait de « dont main d'œuvre HT ».
+  await test("la reprise garde le drapeau de la main d'œuvre", async () => {
+    const equipe = await ligne("Équipe, deux jours");
+    assert.equal(equipe.mainDoeuvre, true, "une main d'œuvre reprise reste une main d'œuvre");
+    assert.equal((await ligne("Taille de haie")).mainDoeuvre, false);
   });
 
   await test("« Mettre à jour » pose le tarif du jour, et seulement là où il diffère", async () => {

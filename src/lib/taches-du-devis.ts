@@ -30,15 +30,77 @@ export function sansLigneVide<T extends { libelle: string }>(lignes: readonly T[
 }
 
 /**
- * **La main d'œuvre n'est pas un travail** — sa capture du 25 octobre 2026,
- * « Main d'œuvre » à cocher sous la haie : *« la main d'œuvre ne doit pas
- * apparaître »*. Elle se paie, elle ne se fait pas. Le drapeau de la ligne la
- * reconnaît, jamais son texte (`LIBELLE_LIGNE_MAIN_DOEUVRE`, qu'il renomme).
+ * Les premiers mots d'une ligne qui se paie et ne se fait pas, sur un libellé
+ * déjà ramené à des lettres simples (`premiersMots`).
+ *
+ * **Sa demande du 6 novembre 2026 :** *« il faut qu'il n'y ait que les
+ * travaux ; le camion d'évacuation ne doit pas non plus apparaître »*, puis sa
+ * réponse : le déplacement et la location partent aussi, l'évacuation des
+ * déchets et une fourniture seule restent.
+ *
+ * **Le PREMIER mot, jamais un mot quelque part.** « Camion d'évacuation » et
+ * « Broyeur » nomment un engin ; « Dessouchage à la rogneuse » nomme un
+ * travail qui s'en sert. Chercher le mot partout cacherait le dessouchage, et
+ * une case qui disparaît à tort est un travail que l'équipe ne fera pas : le
+ * doute laisse la case.
  */
+const SE_PAIE_SANS_SE_FAIRE = new RegExp(
+  "^(?:forfait (?:de |d )?)?(?:" +
+    [
+      "main d ?oeuvre",
+      "camion\\w*",
+      "bennes?",
+      "broyeurs?",
+      "rogneuses?",
+      "fendeuses?",
+      "nacelles?",
+      "(?:mini ?)?pelles?",
+      "pelleteuses?",
+      "tractopelles?",
+      "(?:mini ?)?chargeuses?",
+      "tracteurs?",
+      "remorques?",
+      "grues?",
+      "engins?",
+      "deplacements?",
+      "frais",
+      "locations?",
+    ].join("|") +
+    ")\\b"
+);
+
+/** Le libellé en lettres simples : sans accent, sans apostrophe, sans trait d'union. */
+function premiersMots(libelle: string): string {
+  return libelle
+    .toLowerCase()
+    .replace(/œ/g, "oe")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[’'`\-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * **Ce qui se paie ne se coche pas.** La main d'œuvre d'abord — sa capture du
+ * 25 octobre 2026, « Main d'œuvre » à cocher sous la haie : *« la main
+ * d'œuvre ne doit pas apparaître »* —, puis l'engin, le camion, le
+ * déplacement et la location (6 novembre).
+ *
+ * **Le drapeau OU le premier mot.** Le drapeau reconnaît une main d'œuvre
+ * renommée ; mais une ligne écrite avant lui (migration 0130), ou tapée sur
+ * une ligne ordinaire, ne le porte pas, et un camion n'en a aucun. Un devis
+ * déjà parti ne se réécrit pas : c'est donc à la lecture que la règle tient.
+ */
+export function seFaitSurLeChantier(ligne: { libelle: string; mainDoeuvre: boolean }): boolean {
+  return !ligne.mainDoeuvre && !SE_PAIE_SANS_SE_FAIRE.test(premiersMots(ligne.libelle));
+}
+
+/** Les travaux d'un devis, une case par ligne qui se fait, quantité comprise. */
 export function tachesDuDevis(
   lignes: readonly { libelle: string; quantite: string; unite: string | null; mainDoeuvre: boolean }[]
 ): string[] {
-  return sansLigneVide(lignes.filter((l) => !l.mainDoeuvre)).map((l) => {
+  return sansLigneVide(lignes.filter(seFaitSurLeChantier)).map((l) => {
       // **La quantité s'écrit quand elle apprend quelque chose.** « 1 » ne dit
       // rien de plus que le libellé ; « 18 ml » dit combien de mètres de haie.
       // Elle s'écrit comme sur le papier du devis, unité comprise : *« le 45

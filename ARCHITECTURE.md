@@ -36953,3 +36953,20 @@ Contrôles : `test-feuille-main-oeuvre` (pur : la quantité à la journée, l'he
 **« Tout », lu comme ses deux coordonnées.** La question portait sur le téléphone et l'e-mail ; l'adresse est gardée pour la raison écrite ci-dessus, et c'est à lui de dire s'il la veut partie aussi (le brouillon ne pourrait alors plus s'émettre sans qu'il la retape). Un devis accepté et conservé garde ses copies : il ne lui a pas été demandé.
 
 Contrôle : `test-retention-effacement` (sous `atlas_app` : le brouillon d'un client supprimé n'a plus ni téléphone ni e-mail, son nom et son adresse restent), vu rouge avant la correction.
+
+## §557 : Un travail se reconnaît à son premier mot, et le doute laisse la case
+
+**Sa demande du 6 novembre 2026 :** la fiche travaux ne montre que les travaux ; ni la main d'œuvre, ni le camion d'évacuation, ni (sa réponse) le déplacement et la location. L'évacuation des déchets et une fourniture seule restent.
+
+| | |
+|---|---|
+| **le drapeau** | reconnaît la main d'œuvre renommée (migration 0130) |
+| **le premier mot** | reconnaît ce qui n'a pas de drapeau : une main d'œuvre d'avant 0130 ou tapée à la main, un engin, un véhicule, un déplacement, des frais, une location |
+| **écarté : le mot n'importe où** | « Dessouchage à la rogneuse » perdrait sa case ; une case qui disparaît à tort est un travail que l'équipe ne fera pas |
+| **écarté : réécrire les lignes en base** | un devis parti garde ce qu'il portait ; la règle tient donc à la lecture |
+
+Les retours déjà partis gardent leurs cases telles qu'elles sont parties : une preuve datée ne se réécrit pas.
+
+**Et la reprise traverse le drapeau** (`LigneAReprendre.mainDoeuvre`, exigé) : « Dernier devis » le perdait, la main d'œuvre reprise devenait un travail à cocher et sortait de « dont main d'œuvre HT ». La part répartie (`partMainDoeuvre`) reste perdue à la reprise, et c'est une règle à décider (`TODO.md`).
+
+Contrôles : `test-taches-du-devis` (les deux sens), `test-reprise-du-devis-db`.

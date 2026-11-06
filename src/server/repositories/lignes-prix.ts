@@ -545,6 +545,7 @@ export async function reprendreLesLignesPrix(
       aChiffrer: l.aChiffrer,
       tauxTva: l.tauxTva,
       ordre: l.ordre,
+      mainDoeuvre: l.mainDoeuvre,
     })),
     grille.map((t) => ({ intitule: t.intitule, prix: t.prix, unite: t.unite }))
   );
@@ -564,6 +565,7 @@ export async function reprendreLesLignesPrix(
       // Une ligne qui attend son prix n'a pas d'ancien prix : zéro n'en est pas un.
       prixAncien: l.sort === "attend-son-prix" ? null : l.prixUnitaire,
       prixGrille: l.sort === "grille-proposee" ? l.prixGrille : null,
+      mainDoeuvre: l.mainDoeuvre,
     });
   }
 
@@ -604,6 +606,7 @@ export async function proposerLaGrilleDuJour(ctx: Ctx, chantierId: string): Prom
           aChiffrer: l.aChiffrer,
           tauxTva: l.tauxTva,
           ordre: l.ordre,
+          mainDoeuvre: l.mainDoeuvre,
         },
         tarifs
       );

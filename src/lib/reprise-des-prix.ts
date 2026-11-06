@@ -56,6 +56,13 @@ export type LigneAReprendre = {
   aChiffrer: boolean;
   tauxTva: string | null;
   ordre: number;
+  /**
+   * Une ligne de main d'œuvre (migration 0130). Rien ici ne s'en sert : elle
+   * traverse, et c'est tout son rôle. **Exigée, pas facultative** : oubliée
+   * à la lecture, la main d'œuvre reprise devenait un travail à cocher, et
+   * sortait de « dont main d'œuvre HT » (6 novembre 2026).
+   */
+  mainDoeuvre: boolean;
 };
 
 /** Un tarif de sa grille, tel qu'il est AUJOURD'HUI. */

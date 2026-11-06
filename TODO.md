@@ -17,6 +17,30 @@ et sa hauteur reprise à chaque frappe pour un Safari qui ne le connaît pas).
 Aujourd'hui y garde le défaut, pour comparer. Le code suivra son choix.
 
 
+## ⏳ LA FICHE TRAVAUX : QUE LES TRAVAUX, SUR UNE BRANCHE LOCALE (6 novembre 2026)
+
+**Sa demande :** *« il ne faut jamais que la main-d'œuvre qu'il y a dans le
+devis s'affiche ; il faut qu'il n'y ait que les travaux ; le camion
+d'évacuation ne doit pas non plus apparaître »*. Sa réponse à la question :
+déplacement et location partent ; évacuation des déchets et fourniture seule
+restent.
+
+| | |
+|---|---|
+| la règle | `seFaitSurLeChantier` (`src/lib/taches-du-devis.ts`) : le drapeau, ou le PREMIER mot du libellé |
+| la reprise | `reprendreLesLignesPrix` recopie enfin `mainDoeuvre` (`LigneAReprendre` l'exige) |
+| les suites | `test-taches-du-devis` vert ici ; `test-reprise-du-devis-db` écrite, **jamais jouée** (base : son oui) |
+| reste | son oui pour la base et la batterie (niveau 3), voir la suite base ROUGE sur l'ancien code puis verte, puis `main` |
+
+**Pas corrigé, et à lui dire :** la reprise perd aussi `partMainDoeuvre`, la
+part de main d'œuvre répartie dans le prix d'un travail. « Dont main d'œuvre
+HT » sous-compte donc un devis repris dont la main d'œuvre était répartie.
+La recopier ne suffit pas : si le tarif du jour remplace le prix, la part
+n'y est plus comprise. Une règle à décider, pas un oubli à recopier.
+
+**La planche** de la fiche plus jolie : `appli/fiche-travaux-en-mieux.html`.
+Rien n'est codé de son apparence.
+
 ## AVANT LE 31 DÉCEMBRE 2027 : la mention « TVA non applicable, art. 293 B du CGI »
 
 **Corrigé le 6 novembre 2026, sur les sites officiels** (sa demande : *« tu
