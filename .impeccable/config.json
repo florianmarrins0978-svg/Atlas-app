@@ -723,6 +723,24 @@
         ],
         "createdAt": "2026-11-06T10:24:33.621Z",
         "reason": "Le cadre du téléphone (kit des planches) et la zone de signature au doigt : surfaces bord à bord par construction"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/fiche-de-securite.html"
+        ],
+        "createdAt": "2026-11-06T10:28:45.481Z",
+        "reason": "Charte de l'appli recopiée : fond des planches (body.pl du kit) et crème d'Origine #f5f3ee de src/lib/design-tokens.ts, identité en place (PRODUCT.md)"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/fiche-de-securite-pdf.html"
+        ],
+        "createdAt": "2026-11-06T10:28:45.500Z",
+        "reason": "Charte de l'appli recopiée : fond des planches (body.pl du kit) et crème d'Origine #f5f3ee de src/lib/design-tokens.ts, identité en place (PRODUCT.md)"
       }
     ]
   }
