@@ -26,8 +26,8 @@ elles racontent le chemin (`CLAUDE.md` §3 bis).
 **Hivernage : la B, sa réponse du 6 novembre** (*« Pour l'arrosage je choisis
 la B »*) : la goutte, la fiche, Le prévoir qui pose au planning, et la ligne
 qui les rassemble en tête de Vos clients. Au planning, la même goutte bleue à
-côté du jour de l'hivernage (sa demande du même jour) ; à trancher en codant,
-la goutte aussi sur le jour, dans le mois en haut du planning. Il n'a pas dit
+côté du jour de l'hivernage, dans la semaine ET à côté du numéro du jour dans
+le mois en haut du planning (ses deux demandes du même jour). Il n'a pas dit
 de coder.
 
 **Franchise : A ET B, sa réponse du 6 novembre** (*« j'ai l'impression qu'il

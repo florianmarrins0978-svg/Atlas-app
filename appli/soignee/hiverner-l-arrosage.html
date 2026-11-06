@@ -65,7 +65,9 @@
   l'oubli qu'elle évite. Rien ne se choisit d'office : aucun jour, aucun
   moment n'est posé avant son appui. Au planning, sa demande du même jour :
   « une petite goutte à côté du jour bleu, ça peut être pas mal » ; la
-  goutte de Vos clients se pose à côté du titre du jour.
+  goutte de Vos clients se pose à côté du titre du jour ; puis « même bien
+  qu'elle soit sur le mois à côté du jour » : elle se pose aussi sur sa case,
+  dans le mois en haut du planning.
 
   RIEN N'EST CODÉ DANS src/. Les clients sont ceux des planches Vos clients
   et La fiche d'un client.
@@ -212,6 +214,31 @@
 .jour-titre span { font-size: 15px; color: var(--atlas-inkSoft); }
 .jour-titre.ferie b { color: var(--atlas-carteBleuTexte); }
 .jour-titre .goutte { align-self: center; margin-left: -2px; }
+
+/* Le mois du planning, recopié de planning.html : deux barres par jour, le
+   matin en haut ; la goutte à côté du numéro du jour de l'hivernage. */
+.ecran { --etat-libre: var(--atlas-card); --etat-dispo: var(--atlas-vertPale); --etat-plein: var(--atlas-rust); }
+.pm-nom { margin: 14px 0 0; text-align: center; font: 400 27px/1.1 var(--serif); font-weight: 400; letter-spacing: -0.01em; }
+.pm-noms { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; margin: 10px 0 6px; }
+.pm-noms span { text-align: center; font-size: 12.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--atlas-inkSoft); }
+.pm-noms span.we { color: var(--atlas-muted); }
+.pm-rang { border-radius: 12px; }
+.pm-rang + .pm-rang { margin-top: 4px; }
+.pm-rang.lue { background: color-mix(in srgb, var(--atlas-rustTint) 72%, transparent); }
+.pm-cases { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.pm-case { position: relative; height: 52px; display: flex; flex-direction: column; align-items: center; padding-top: 8px; border-radius: 10px;
+           font: 400 19px/1 var(--serif); font-variant-numeric: lining-nums tabular-nums; color: var(--atlas-ink); }
+.pm-case.we { background: var(--atlas-rustTint); color: var(--atlas-inkSoft); }
+.pm-case.passe { color: var(--atlas-muted); }
+.pm-case.passe .demis { opacity: 0.5; }
+.pm-case.auj { box-shadow: inset 0 0 0 1.5px var(--atlas-or); color: var(--atlas-or); font-weight: 600; }
+.pm-case.ferie { color: var(--atlas-carteBleuTexte); }
+.demis { display: grid; gap: 3px; width: 26px; margin-top: auto; margin-bottom: 9px; }
+.demi { display: block; height: 5px; border-radius: 3px; overflow: hidden; background: var(--etat-libre); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.demi i { display: block; height: 100%; border-radius: 3px; }
+.pm-num { display: inline-flex; align-items: center; gap: 3px; }
+.pm-case .goutte { width: 16px; height: 16px; }
+.pm-case .goutte .ico { width: 11px; height: 11px; stroke-width: 2.2; }
 .jour-plage { border-radius: var(--r-plage); background: var(--atlas-card); padding: 0 16px; overflow: hidden; }
 .jour-rien { margin: 0; padding: 16px 0; font-size: 15px; color: var(--atlas-inkSoft); }
 .chantier { min-height: 76px; padding: 14px 0; }
@@ -261,7 +288,7 @@
       <li>Sur sa fiche, juste sous ses coordonnées : Arrosage à hiverner, avec Le prévoir et C'est fait.</li>
       <li>Le prévoir : vous choisissez le jour, puis le matin, l'après-midi ou la journée. Chaque moment dit ce qui y est déjà posé. Le poser au planning, et l'hivernage y est, chez ce client, comme un client posé sans devis.</li>
       <li>La goutte reste tant que ce n'est pas fait : prévu n'est pas fait. La fiche dit le jour prévu, et Le voir vous mène au planning.</li>
-      <li>Au planning, la même goutte bleue se pose à côté du jour de l'hivernage. Elle ne se confond pas avec le bleu d'un férié : un férié ne se choisit pas, les deux ne tombent jamais le même jour.</li>
+      <li>Au planning, la même goutte bleue se pose à côté du jour de l'hivernage, dans le mois et dans la semaine : tous les hivernages du mois se voient d'un coup d'œil. Elle ne se confond pas avec le bleu d'un férié : un férié ne se choisit pas, les deux ne tombent jamais le même jour.</li>
       <li>Atlas ne peut pas savoir seul qui a un arrosage : une ligne de facture n'est qu'un texte, et un plan d'arrosage ne s'enregistre pas. Le mot « arrosage » se tromperait dans les deux sens : un arrosage de reprise sur une plantation, une installation facturée en turbines sans le mot.</li>
       <li>Donc il demande. Quand une facture parle d'arrosage, la fiche du client pose la question une fois : Oui ou Non. Rien ne se pose sans votre Oui.</li>
       <li>Un client équipé par un autre, dont vous ne faites que l'hivernage : la case se coche dans Modifier ses coordonnées.</li>
@@ -271,7 +298,6 @@
     <ul class="a-trancher">
       <li>La date : le 1er novembre partout, ou réglable dans Réglages. Le gel ne vient pas au même moment à Nice et dans le Jura.</li>
       <li>Ce qui retire la goutte : C'est fait seulement (dessiné), ou aussi la journée d'hivernage terminée au planning, toute seule.</li>
-      <li>La goutte aussi dans le mois, en haut du planning, sur le jour de l'hivernage : pour les voir tous d'un coup d'œil.</li>
       <li>L'équipe du jour se choisit au planning, comme aujourd'hui. Le prix de l'hivernage : une ligne de Mes tarifs, pour la facture.</li>
       <li>Au printemps, la même goutte pour la remise en route : à partir de quelle date.</li>
       <li>Un client sous contrat d'entretien dont un passage couvre l'hivernage : la goutte part avec ce passage. Les familles du contrat (Pelouse, Tailles, Massifs, Propreté) n'ont pas d'arrosage aujourd'hui : il faudrait l'ajouter.</li>
@@ -517,7 +543,41 @@
       dedans.innerHTML = h;
     }
 
-    /* ─── Le planning : la semaine du jour prévu ──────────────────────── */
+    /* ─── Le planning : le mois, puis la semaine du jour prévu ────────── */
+    function hivernagesDu(d) { return e.c.filter(function (x) { return x.prevu && x.prevu.jour.getTime() === d.getTime(); }); }
+    /* La charge d'une demi-journée, comme le planning la peint : un chantier
+       posé y prend la moitié de la barre (l'équipe de la planche en tient deux). */
+    function charge(d, m) {
+      var o = OCCUPE[cle(d)] || {}, n = o[m] ? 1 : 0;
+      hivernagesDu(d).forEach(function (x) { if (x.prevu.moment === m || x.prevu.moment === "journee") n++; });
+      return Math.min(n * 0.5, 1);
+    }
+    function rendreMois(p, lundi) {
+      var mois = p.getMonth(), premier = new Date(2026, mois, 1), nb = new Date(2026, mois + 1, 0).getDate();
+      var cases = [];
+      for (var v = 0; v < (premier.getDay() + 6) % 7; v++) cases.push(null);
+      for (var k = 1; k <= nb; k++) cases.push(new Date(2026, mois, k));
+      while (cases.length % 7) cases.push(null);
+      var h = '<h2 class="pm-nom">' + majuscule(MOIS[mois]) + ' 2026</h2>' +
+        '<div class="pm-noms" aria-hidden="true">' + ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map(function (n, i) {
+          return "<span" + (i > 4 ? ' class="we"' : "") + ">" + n + "</span>";
+        }).join("") + '</div>';
+      for (var s = 0; s < cases.length; s += 7) {
+        var semaine = cases.slice(s, s + 7);
+        var lue = semaine.some(function (d) { return d && d.getTime() === lundi.getTime(); });
+        h += '<div class="pm-rang' + (lue ? " lue" : "") + '"><div class="pm-cases">' + semaine.map(function (d, col) {
+          if (!d) return '<span class="pm-case" aria-hidden="true"></span>';
+          var we = col > 4, ferie = FERIES[cle(d)], a = charge(d, "matin"), b = charge(d, "apres");
+          var cls = "pm-case" + (we ? " we" : "") + (d < AUJ ? " passe" : "") + (d.getTime() === AUJ.getTime() ? " auj" : "") + (ferie ? " ferie" : "");
+          var barres = we || ferie ? "" : '<span class="demis" aria-hidden="true">' + [a, b].map(function (c) {
+            return '<span class="demi"><i style="width:' + Math.round(c * 100) + '%;background:var(--etat-' + (c >= 1 ? "plein" : "dispo") + ')"></i></span>';
+          }).join("") + '</span>';
+          var goutte = hivernagesDu(d).length ? '<span class="goutte" role="img" aria-label="Un hivernage ce jour-là">' + ico("goutte") + '</span>' : "";
+          return '<span class="' + cls + '"><span class="pm-num">' + d.getDate() + goutte + '</span>' + barres + '</span>';
+        }).join("") + '</div></div>';
+      }
+      return h;
+    }
     function rendrePlanning() {
       var c = e.c[e.k], p = c.prevu.jour;
       var lundi = new Date(p.getFullYear(), p.getMonth(), p.getDate() - ((p.getDay() + 6) % 7));
@@ -532,11 +592,12 @@
           '<button class="rond" type="button" data-geste="inchange" aria-label="Ouvrir l’assistant">' + ico("assistant") + '</button>' +
         '</div>' +
         '<header class="tete" style="margin:0"><h1 class="tete-titre">Planning</h1></header>' +
+        rendreMois(p, lundi) +
         '<p class="semaine-titre">Semaine du ' + (lundi.getDate() === 1 ? "1er" : lundi.getDate()) + ' ' + MOIS[lundi.getMonth()] + '</p>';
       for (var i = 0; i < 5; i++) {
         var d = new Date(lundi.getFullYear(), lundi.getMonth(), lundi.getDate() + i);
         var dit = jourDit(d), ferie = FERIES[cle(d)];
-        var ici = e.c.filter(function (x) { return x.prevu && x.prevu.jour.getTime() === d.getTime(); });
+        var ici = hivernagesDu(d);
         /* La goutte à côté du jour (sa demande du 6 novembre) : la même que
            dans Vos clients. Un férié ne la porte jamais, il ne se pose pas. */
         h += '<h2 class="jour-titre' + (ferie ? " ferie" : "") + '"><b>' + majuscule(dit.split(" ")[0]) + '</b><span>' + dit.split(" ").slice(1).join(" ") + (ferie ? ", férié" : "") + '</span>' +
