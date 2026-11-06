@@ -1,5 +1,6 @@
 import { chantiersDeLEquipe, listerChantiersPourPlanning } from "@/server/repositories/chantiers";
 import { getEntreprise } from "@/server/repositories/entreprises";
+import { estEnAlsaceMoselle } from "@/lib/jours-feries";
 import { listerEquipes } from "@/server/repositories/equipes";
 import { absencesSurLaFenetre } from "@/server/repositories/absences-equipe";
 import { HORIZON_OCCUPATION_PATRON_JOURS, ajouterJours, versJourIso } from "@/lib/disponibilites";
@@ -107,6 +108,10 @@ export async function contextePlanning(ctx: Ctx, maintenant: Date) {
     // doit s'éclaircir pour se voir sur fond sombre (`variablesDesEtats`).
     couleurs: couleursDepuisColonnes(entreprise),
     nomCharte,
+    // **Deux fériés de plus en Alsace et en Moselle**, lus dans l'adresse de
+    // l'entreprise : le planning et l'écran d'envoi peignent les mêmes jours
+    // en bleu, puisqu'ils lisent ce même chargement.
+    alsaceMoselle: estEnAlsaceMoselle(entreprise?.adresse),
   };
 }
 

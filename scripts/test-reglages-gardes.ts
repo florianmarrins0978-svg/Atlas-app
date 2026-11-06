@@ -58,6 +58,9 @@ const PERSONNELLES: Record<string, string> = {
   "connexion/page.tsx": "son mot de passe, ses clés d'appareil, sa déconnexion",
   "connexion/double-verification/page.tsx": "le code de SON téléphone, ses codes de secours",
   "apparence/page.tsx": "les couleurs de SON application",
+  // Ouverte à tous les rôles par sa planche du 5 novembre 2026 (`REGLAGES_A_SOI`) :
+  // chacun n'y lit et n'y envoie que SES idées, jamais celles de l'entreprise.
+  "idee/page.tsx": "les idées que CETTE personne envoie à l'éditeur, et elles seules",
 };
 
 /** La racine des réglages : elle compose la liste selon le rôle, sans rien lire. */

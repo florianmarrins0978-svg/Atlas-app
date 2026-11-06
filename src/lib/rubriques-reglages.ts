@@ -261,7 +261,15 @@ export function rubriquesReglages(
    * artisan ouvrirait une porte qui refuse. Reliée, la banque prouve que la
    * porte s'ouvre chez lui. `situation` vient de `situationDeLaBanque`.
    */
-  banqueReliee: { situation: string } | null = null
+  banqueReliee: { situation: string } | null = null,
+  /**
+   * **Facture électronique n'entre que si une plateforme se relie** — sa
+   * planche du 5 novembre 2026 (`appli/soignee/reglages-facture-electronique.html`),
+   * sous Ma banque. Tant qu'Atlas ne connaît l'adresse d'aucune plateforme
+   * (`plateformesOffertes`), la ligne ouvrirait une porte qui refuse.
+   * `situation` : `situationDeLaPlateforme`, ou rien si aucune n'est reliée.
+   */
+  factureElectronique: { situation: string | null } | null = null
 ): EnsembleRubriques[] {
   /**
    * **Un rôle illisible est traité comme un SALARIÉ**, jamais comme rien.
@@ -309,9 +317,20 @@ export function rubriquesReglages(
     {
       titre: "L'entreprise",
       cote: "entreprise" as const,
-      rubriques: garder(
-        banqueReliee ? [{ nom: "Ma banque", icone: "banque", href: "/reglages/banque", situation: banqueReliee.situation }, ...ENTREPRISE] : ENTREPRISE
-      ),
+      rubriques: garder([
+        ...(banqueReliee ? [{ nom: "Ma banque", icone: "banque" as const, href: "/reglages/banque", situation: banqueReliee.situation }] : []),
+        ...(factureElectronique
+          ? [
+              {
+                nom: "Facture électronique",
+                icone: "feuille_envoyee" as const,
+                href: "/reglages/facture-electronique",
+                ...(factureElectronique.situation ? { situation: factureElectronique.situation } : {}),
+              },
+            ]
+          : []),
+        ...ENTREPRISE,
+      ]),
     },
     { titre: "Pour les devis", cote: "entreprise" as const, rubriques: garder(POUR_LES_DEVIS) },
     { titre: "L'application", cote: "entreprise" as const, rubriques: garder(L_APPLICATION) },
@@ -418,4 +437,9 @@ export function adressesAutorisees(role: RoleReglages | null): string[] {
     .flatMap((e) => e.rubriques)
     .map((r) => r.href)
     .filter((h): h is string => h !== null);
+}
+
+/** « Pennylane, reliée » : l'état de la liaison, sous le nom de la rubrique. */
+export function situationDeLaPlateforme(nom: string, etat: "reliee" | "coupee"): string {
+  return `${nom}, ${etat === "coupee" ? "coupée" : "reliée"}`;
 }

@@ -162,17 +162,27 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
   },
   {
     id: "facture-electronique",
-    ecran: "Facture",
-    ou: "« Terminés » dans la barre du bas",
+    ecran: "Facture électronique",
+    ou: "« Réglages » dans la barre du bas, puis Facture électronique",
     intitule: "La facture électronique obligatoire, la plateforme agréée",
-    motsCles: ["electronique", "obligatoire", "plateforme", "agreee", "2026", "reforme", "chorus", "dematerialisee"],
+    motsCles: ["electronique", "obligatoire", "plateforme", "agreee", "2026", "reforme", "chorus", "dematerialisee", "pennylane", "relier"],
     geste:
-      "Atlas ne transmet pas encore vos factures à une plateforme de facturation électronique. " +
-      "Il fabrique la facture et l'envoie à votre client, par SMS ou par e-mail.",
-    source: "src/app/chantiers/[id]/facture/FactureClient.tsx",
-    preuves: ["Envoyer la facture", 'libelle="SMS"', 'libelle="E-mail"'],
-    // Le connecteur prévu (`ARCHITECTURE.md` §424) commencera par lui.
-    absences: ["Pennylane", "pennylane"],
+      "Ouvrez Réglages, puis « Facture électronique ». Choisissez votre plateforme, collez l'identifiant et le secret " +
+      "de votre compte, puis touchez « Relier mon compte ». Ensuite, chaque facture d'entreprise part en Factur-X " +
+      "sur votre plateforme, et rien ne part chez votre client tant qu'elle ne l'a pas prise.",
+    // La ligne ne paraît qu'une fois l'adresse de la plateforme connue de
+    // l'espace (`plateformesOffertes`, `ARCHITECTURE.md` §555) : sans elle,
+    // l'assistant enseignerait un geste introuvable.
+    reserve:
+      "Réservé au patron. Tant que la ligne n'est pas dans Réglages, Atlas envoie la facture à votre client " +
+      "par SMS ou par e-mail, sans plateforme.",
+    source: "src/app/reglages/facture-electronique/page.tsx",
+    preuves: ['libelle="Relier mon compte"', "Identifiant", "Secret"],
+    ailleurs: [
+      { source: "src/lib/rubriques-reglages.ts", preuves: ['nom: "Facture électronique"'] },
+      { source: "src/app/reglages/page.tsx", preuves: ["plateformesOffertes().length > 0"] },
+      { source: "src/server/repositories/factures.ts", preuves: ["deposerDansLaTransaction"] },
+    ],
   },
   {
     id: "factures-comptable",

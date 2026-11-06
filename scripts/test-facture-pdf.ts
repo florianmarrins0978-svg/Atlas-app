@@ -138,6 +138,20 @@ async function main() {
     );
   });
 
+  await cas("la phrase de la franchise suit le jour de la facture : 293 B en 2026, L. 233-3 dès 2027", async () => {
+    // L'ordonnance n° 2026-671 du 27 juillet 2026 crée l'article L. 233-3 du
+    // CIBS, en vigueur le 1er janvier 2027 : le citer plus tôt, c'est citer un
+    // article qui n'existe pas encore. Une facture rééditée garde la phrase de
+    // SON jour, pas celle du jour où on la retélécharge.
+    const enFranchise = { ...FACTURE, tauxTva: "0.00", totalTva: "0.00", totalTtc: "2450.00", regimeTva: "franchise" as const };
+    const fin2026 = contenus((await composerFacturePdf({ ...enFranchise, dateEmission: "2026-12-31" })).trace).join(" ");
+    assert.match(fin2026, /TVA non applicable, art\. 293 B du CGI/, "Le 31 décembre 2026, la facture cite encore l'article 293 B.");
+    assert.doesNotMatch(fin2026, /L\. 233-3/, "Le 31 décembre 2026, l'article L. 233-3 n'est pas encore en vigueur.");
+    const debut2027 = contenus((await composerFacturePdf({ ...enFranchise, dateEmission: "2027-01-01" })).trace).join(" ");
+    assert.match(debut2027, /TVA non applicable, article L\. 233-3 du code des impositions sur les biens et services/, "Dès le 1er janvier 2027, la facture cite l'article L. 233-3 du CIBS.");
+    assert.doesNotMatch(debut2027, /293 B/, "Dès 2027, la facture ne doit pas porter deux fondements.");
+  });
+
   await cas("elle ne porte aucun cadre de signature", async () => {
     const { trace } = await composerFacturePdf(FACTURE);
     assert.deepEqual(trace.cadres, [], "Une facture ne se signe pas, elle se règle.");

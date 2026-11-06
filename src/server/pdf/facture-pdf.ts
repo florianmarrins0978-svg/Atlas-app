@@ -1,4 +1,4 @@
-import { MENTION_FRANCHISE, sousFranchise } from "@/lib/franchise-tva";
+import { mentionFranchise, sousFranchise } from "@/lib/franchise-tva";
 import { MENTION_AUTOLIQUIDATION } from "@/lib/autoliquidation";
 import { estUneEntreprise, estUnClientPublic } from "@/lib/civilite";
 import { MENTION_RETARD_PUBLIC } from "@/lib/facture-publique";
@@ -75,7 +75,7 @@ export type FacturePdfData = DonneesDocument & {
   autoliquidation?: boolean;
 };
 
-function mentionLegaleFacture(data: FacturePdfData): string {
+export function mentionLegaleFacture(data: FacturePdfData): string {
   // **Les 40 € ne se réclament qu'à un professionnel** (C. com. L441-10,
   // D441-5) : sur la facture d'un particulier, ils lui demandaient ce qu'il ne
   // doit pas (`docs/check-up-legal-documents.md`, point 5).
@@ -94,7 +94,7 @@ function mentionLegaleFacture(data: FacturePdfData): string {
   // d'avant 0039 (régime nul), `sousFranchise` répondrait « franchise », et la
   // pièce porterait deux mentions qui se contredisent.
   if (data.autoliquidation) return `${base} ${MENTION_AUTOLIQUIDATION}`;
-  return sousFranchise(data.regimeTva, data.tauxTva) ? `${base} ${MENTION_FRANCHISE}` : base;
+  return sousFranchise(data.regimeTva, data.tauxTva) ? `${base} ${mentionFranchise(data.dateEmission)}` : base;
 }
 
 export type OptionsFacturePdf = {
@@ -104,6 +104,8 @@ export type OptionsFacturePdf = {
   attestation?: AttestationDocument | null;
   /** La facture d'exemple des Réglages : EXEMPLE en travers de la page. */
   exemple?: boolean;
+  /** Pour une Factur-X (`facture-x-pdf.ts`) : polices embarquées, sans verrou. */
+  archivable?: boolean;
 };
 
 /**
@@ -189,6 +191,7 @@ export async function composerFacturePdf(
     mentionLegale: () => mentionLegaleFacture(data),
     cadreSignature: false,
     filigrane: options.exemple ? "EXEMPLE" : null,
+    archivable: options.archivable,
   });
 }
 

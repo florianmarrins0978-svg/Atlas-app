@@ -52,7 +52,7 @@ async function main() {
   });
 
   await essai("sur une apparence claire, sa couleur sort INTACTE", () => {
-    const v = variablesDesEtats({ libre: "#ffffff", dispo: "#d0782a", plein: "#1c1c1a", dela: "#b8322a" }, charte("origine"));
+    const v = variablesDesEtats({ libre: "#ffffff", dispo: "#d0782a", plein: "#1c1c1a", dela: "#b8322a", ferie: null }, charte("origine"));
     assert.deepEqual(v, {
       "--atlas-etat-libre": "#ffffff",
       "--atlas-etat-dispo": "#d0782a",
@@ -86,9 +86,10 @@ async function main() {
   await essai("une couleur choisie se relit en base, telle quelle", async () => {
     await nettoyerBase();
     const ctx = await monter("Chez Dupont");
-    await mettreAJourEntreprise(ctx, { couleursPlanning: { plein: "#1c1c1a", dela: "#B8322A" } });
+    // Le férié aussi (migration 0168), sa réponse du 6 novembre : « réglable ».
+    await mettreAJourEntreprise(ctx, { couleursPlanning: { plein: "#1c1c1a", dela: "#B8322A", ferie: "#EDDED9" } });
     const lues = couleursDepuisColonnes(await getEntreprise(ctx));
-    assert.deepEqual(lues, { libre: null, dispo: null, plein: "#1c1c1a", dela: "#b8322a" });
+    assert.deepEqual(lues, { libre: null, dispo: null, plein: "#1c1c1a", dela: "#b8322a", ferie: "#edded9" });
   });
 
   await essai("UN ÉTAT ABSENT N'EST PAS TOUCHÉ, null le rend à l'apparence", async () => {

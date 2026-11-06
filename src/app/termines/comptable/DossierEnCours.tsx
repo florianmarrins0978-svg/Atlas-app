@@ -51,6 +51,7 @@ export default function DossierEnCours({
   periodes,
   aRegarder,
   factures,
+  joursTravailles,
 }: {
   dossier: { du: string; premier: boolean; aujourdhui: string };
   banque: { nom: string; lue: string | null } | null;
@@ -59,6 +60,8 @@ export default function DossierEnCours({
   periodes: Record<Decoupage, Periode[]>;
   aRegarder: ARegarder[];
   factures: Facture[];
+  /** « Novembre, 3 salariés » ; `null` pour un artisan seul : la ligne ne paraît pas. */
+  joursTravailles: string | null;
 }) {
   const router = useRouter();
   const [enCours, demarrer] = useTransition();
@@ -256,6 +259,30 @@ export default function DossierEnCours({
           <Icone nom="suivant" taille={20} epaisseur={2} />
         </span>
       </Link>
+
+      {joursTravailles && (
+        <>
+          <h2 className={rubrique} style={{ color: colors.inkSoft, fontFamily: font.body }}>
+            Mes salariés
+          </h2>
+          <Link href="/termines/comptable/jours-travailles" className="mx-6 mt-2.5 flex min-h-[64px] items-center gap-3.5 py-2" data-atlas="jours-travailles">
+            <span className="inline-flex h-11 w-11 flex-none items-center justify-center rounded-full" style={{ boxShadow: `inset 0 0 0 1px ${colors.line}`, color: colors.or }}>
+              <Icone nom="equipe" taille={21} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[18px] leading-[1.25]" style={{ fontFamily: font.display }}>
+                Jours travaillés
+              </span>
+              <span className="mt-0.5 block text-[14px]" style={{ color: colors.inkSoft }}>
+                {joursTravailles}
+              </span>
+            </span>
+            <span style={{ color: colors.chevron }}>
+              <Icone nom="suivant" taille={20} epaisseur={2} />
+            </span>
+          </Link>
+        </>
+      )}
 
       {passe && (
         <p role="status" className="atlas-colonne-fixe z-30 mx-6 rounded-[14px] px-4 py-3 text-center text-[15px]" style={{ bottom: `calc(var(--atlas-barre) + ${avecCheckUp ? 88 : 16}px)`, backgroundColor: colors.ink, color: colors.cream }} data-atlas="passe">

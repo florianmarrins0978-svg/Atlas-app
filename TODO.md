@@ -11,12 +11,13 @@ lignes, et la troisième se cache dans la case (mesuré : 66 px visibles pour
 90 px de texte). Un salarié qui relit ce qu'il envoie ne voit donc pas tout.
 C'est une apparence : **la maquette d'abord** (`CLAUDE.md` §3 bis), puis son
 choix. Rien n'est perdu à l'envoi, le retour reçu dans Terminés montre tout.
-La planche voisine du même jour, `appli/soignee/fiche-travaux.html`, ne le
-règle pas (la case y passe à 76 px de haut, sans grandir) : à y ajouter avant
-de la coder.
+**Réglé sur la planche le 6 novembre** (`appli/soignee/fiche-travaux.html`) :
+dans A comme dans B, la case grandit avec le texte (`field-sizing: content`,
+et sa hauteur reprise à chaque frappe pour un Safari qui ne le connaît pas).
+Aujourd'hui y garde le défaut, pour comparer. Le code suivra son choix.
 
 
-## AVANT LE 31 DÉCEMBRE 2027 : la mention « TVA non applicable, art. 293 B du CGI »
+## CODÉ LE 6 NOVEMBRE, SUR main LE 6 NOVEMBRE (batterie commune) : la mention de la franchise bascule seule au 1er janvier 2027
 
 **Corrigé le 6 novembre 2026, sur les sites officiels** (sa demande : *« tu
 peux aussi aller vérifier par toi-même »*). La date du 1er janvier 2027 écrite
@@ -29,7 +30,20 @@ L. 223-3 du Code des impositions sur les biens et services (CIBS) » (une de ses
 pages écrit L. 233-3, sans doute une coquille : à faire trancher). Le détail,
 pour lui : `docs/A-FAIRE.md` point 18.
 
-**Le jour où la phrase change dans Atlas, elle vit en DEUX copies** :
+**Codé le 6 novembre 2026 sur sa consigne** (*« si t'as vérifié, change la phrase
+tout de suite »*), lot `lot/mention-franchise`, PAS SUR `main` : niveau 3, il
+attend sa batterie. La vérification a montré que L. 223-3 ET L. 233-3 existent :
+le premier vient de l'ordonnance de décembre 2025, le second de celle du
+27 juillet 2026, **en vigueur le 1er janvier 2027** (Légifrance,
+LEGIARTI000054524584). Écrire L. 233-3 dès novembre 2026, c'était citer un
+article pas encore en vigueur : `mentionFranchise(jour)` rend donc 293 B avant
+le 1er janvier 2027 et L. 233-3 ensuite, au jour de la pièce (facture, devis,
+avoir, et la phrase de Votre TVA). `scripts/test-mention-franchise.ts` et un
+cas de `test-facture-pdf.ts`, rouges d'abord. Reste : la confirmation de son
+comptable, et le texte des conditions (`ConditionsClient.tsx`, « la franchise
+de l'article 293 B ») qui décrit les CGU, laissé tel quel.
+
+**Ce qui était noté avant d'être codé** : la phrase vivait en DEUX copies :
 `MENTION_FRANCHISE` (`src/lib/franchise-tva.ts`) et la chaîne écrite en dur
 dans `src/server/pdf/avoir-pdf.ts`. La seconde doit d'abord prendre la
 première (`CLAUDE.md` §3), sinon l'avoir gardera l'ancienne phrase.
@@ -64,6 +78,47 @@ liste des numéros d'« Alerter » garde l'ordre du code, seul l'encadré
 `lot/police-inferieur-ou-egal` (son entrée en tête de ce fichier, une fois les
 deux lots réunis). Sur cette branche-ci, seule, il s'imprime encore en case
 vide.
+
+## LES FÉRIÉS, LE MOTIF, LES JOURS TRAVAILLÉS ET LES ZONES : CODÉS LE 6 NOVEMBRE, SUR main LE 6 NOVEMBRE (batterie commune)
+
+**Sa consigne du 6 novembre** : *« oui, code tout ça, tu peux pousser mais ne
+lance pas de batterie »*. Quatre gestes codés, sur la branche
+`lot/paie-zones-feries`, poussée ; **rien n'est sur `main`** : le lot est de
+niveau 3 (quatre migrations, `drizzle/0165` à `0168`), et `garde-fusion-main`
+refuse sans la batterie. Le document de retour : `docs/lot-paie-zones-feries.md`.
+
+| | où le voir dans `src/` |
+|---|---|
+| les fériés en bleu | `src/lib/jours-feries.ts`, `MoisCharge.tsx`, `PastilleFerie.tsx` |
+| le motif d'une absence | `src/lib/nature-absence.ts`, `ChoixDeLaNature.tsx`, migration 0165 |
+| les jours travaillés | `src/app/termines/comptable/jours-travailles/`, migration 0166 |
+| les zones | `src/app/reglages/equipe/zones/`, `src/lib/zones-deplacement.ts`, migration 0167 |
+
+**Ce qui reste, et qui peut le faire :**
+
+1. ~~la batterie, puis `main`~~ **faites le 6 novembre**, une seule batterie
+   pour quatre lots à sa demande (`docs/batterie-commune-6-novembre.md`) ;
+2. ~~deux suites en base jamais jouées~~ **jouées vertes par la batterie
+   commune** : `test-nature-absence-repo` (5 sur 5), `test-jours-travailles-repo`
+   (9 sur 9) ;
+3. **aucune suite navigateur n'ouvre encore Jours travaillés ni les zones**, ni
+   l'avertissement du férié au planning et à l'envoi (pas rendu ici : ces deux
+   écrans demandent un serveur) :
+   les écrans ont été rendus ici sans serveur (le vrai composant, gestes
+   simulés, à 360 et 390 px, en Origine et en Nuit), jamais derrière une
+   connexion. À écrire avant ou avec la batterie ;
+4. **les deux barèmes** (MSA du paysage, accord régional du bâtiment) restent
+   à vérifier sur les textes de l'année : ce poste ne joint pas msa.fr. Ils se
+   modifient à l'écran ;
+5. ~~le lundi de Pentecôte ; le bleu dans Couleurs~~ **tranchés le 6 novembre,
+   et codés** : *« tous les jours fériés, on doit quand même pouvoir mettre
+   des chantiers dessus si on veut travailler ce jour-là »* (un férié où le
+   planning met le salarié sur un chantier compte travaillé, Pentecôte
+   comprise) ; et *« réglable »* (une ligne Férié dans Couleurs, migration
+   `0168`) ; puis *« ça doit nous prévenir mais jamais nous bloquer »* (un
+   avertissement après le geste, au planning et dans l'écran d'envoi) ;
+6. **hors du compte, à dire** : un salarié embauché ou parti en cours de mois,
+   ou à temps partiel, se corrige à la main ; sa fiche n'a ni dates ni jours.
 
 ## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : cinq planches, A ou B~~ TRANCHÉ LE 6 NOVEMBRE : HIVERNAGE B, NOTE B, FRANCHISE A ET B, DEUX ÉCARTÉES ; TROIS LOTS CODÉS, PAS SUR main
 
@@ -173,7 +228,11 @@ le Rotstop) est un produit de biocontrôle. Il a répondu *« on n'a pas ça dan
 l'appli »* : le Diagnostic végétal est monté (Paysage), mais rien ne charge ces
 trois fiches au démarrage de son espace (`scripts/importer-fiches-phyto.ts`).
 
-## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : une idée pour l'appli~~ TRANCHÉ LE 5 NOVEMBRE : 1 A, 2 B, 3 B, PAS CODÉ
+## UNE IDÉE POUR L'APPLI, CODÉE LE 5 NOVEMBRE : SUR main LE 6 NOVEMBRE (batterie commune)
+
+**Codé** (`ARCHITECTURE.md` §558, `PROJECT_STATE.md`). **Sur `main` le 6 novembre**, par la batterie commune (`docs/batterie-commune-6-novembre.md`) : sa migration y devient 0170 et son paragraphe §558 ; la batterie a trouvé cinq défauts, corrigés (le limiteur d'une heure ramené au quart d'heure, la table hors de la sauvegarde déclarée, deux écrans au préchauffage, l'écran d'une idée déclaré à soi, le contrôle de l'éditeur qui exigeait un 404). Reste : regarder les trois écrans (`npm run voir -- /reglages`, `/reglages/idee`). **Écarts à la planche, dits** : pas de bouton « Écouter » (la voix n'est pas gardée), pas de « Demandée 3 fois » (écartée par lui le 6 novembre), la carte de l'assistant est une proposition comme les autres. **Tranché par lui le 6 novembre** : pas d'idée après la fin de l'essai ni sous un abonnement arrêté (*« on va pas laisser envoyer une idée à la fin de l'essai gratuit »*), c'est ce que fait déjà le code ; la ligne de confidentialité *« si c'est obligatoire, on le fait »* : elle l'est (article 13 du RGPD), faite en `canevas-2` (`versions.ts`, `docs/RGPD.md` §2.6), qui reste un canevas à faire rédiger avant de vrais clients. Pas de pastille « Demandée 3 fois » (*« j'en ai pas besoin en vrai, on laisse comme ça, pas de pastille »*). Et **pas d'idées dans le fichier de « Mes données »** : sa réponse du 6 novembre, à la question posée en propre (la session des idées l'avait écrit sans elle) : *« Non, on s'en fout. Les idées, les gens, ils s'en foutent de ça. »* Plus rien à trancher.
+
+### L'historique de la planche
 
 **Sa demande du 5 novembre** : *« un petit espace, pas vraiment contact, pour
 que l'utilisateur puisse à chaque fois me dire ce qu'il aimerait avoir en plus
@@ -229,13 +288,14 @@ main ou par Atlas IA, non tranché. **À vérifier aussi** : la page
 Confidentialité devra dire que l'idée et la note vocale partent chez
 l'éditeur (documents versionnés, `src/server/documents-legaux/versions.ts`).
 
-## ⏳ À REGARDER PAR LUI (5 novembre 2026) : les zones de déplacement, et le motif d'une absence
+## ~~⏳ À REGARDER PAR LUI (5 novembre 2026) : les zones de déplacement, et le motif d'une absence~~ CODÉS LE 6 NOVEMBRE, SUR main LE 6
 
 **Ses réponses du 5 novembre au soir** : jours travaillés dans **Pour mon
 comptable**, **avec motif** demandé quand on note l'absence ; et pour les
 zones, *« oui, avec celle pour la MSA et pour le bâtiment, avec possibilité
 de switch entre les deux, ou de pas la mettre si l'utilisateur ne travaille
-pas par zone. Et modifiable. »* Il n'a pas dit de coder : **rien dans `src/`**.
+pas par zone. Et modifiable. »* **Codé le 6 novembre** (entrée du lot, en
+tête de ce fichier).
 
 **Planche des zones** : `appli/soignee/zones-deplacement.html`. **Pas
 d'interrupteur** : il l'avait proposé, puis s'est repris le même soir (*« si
@@ -292,7 +352,7 @@ trancher par lui** : ~~un jour sur deux chantiers, la zone la plus loin ou
 celle du matin~~ **tranché le 6 novembre : la plus loin.**
 
 **Planche du motif : VALIDÉE le 5 novembre** (*« très bien motif d'une
-absence »*), pas codée. `appli/soignee/motif-absence.html`. Six motifs d'un
+absence »*), codée le 6 novembre. `appli/soignee/motif-absence.html`. Six motifs d'un
 appui, au planning sous le salarié qui manque et dans la feuille d'Équipe :
 Congé, Maladie, Sans solde, Déplacement, Formation, Autre. **Trouvé en la
 dessinant** : une absence d'Atlas est née pour un déplacement de cinq jours
@@ -307,13 +367,13 @@ Sans motif, l'absence se note quand même, et Jours travaillés dit « pourquoi 
 aussi ; en plein soleil, c'est ce qui se lit le moins bien. Non touché : c'est
 sa charte, à lui proposer à part.
 
-## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : la couleur des jours fériés sur le planning~~ TRANCHÉ LE 5 NOVEMBRE : LE BLEU, PAS CODÉ
+## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : la couleur des jours fériés sur le planning~~ TRANCHÉ LE 5 NOVEMBRE : LE BLEU, CODÉ ET SUR main LE 6
 
 **Sa réponse, le 5 novembre au soir** : *« bleue pour les jours fériés »*
 (`carteBleuFond` pour la case, `carteBleuTexte` pour le chiffre et la
-pastille). Il n'a pas dit de coder : **rien dans `src/`**. Restent ouverts,
-ci-dessous : la couleur dans Couleurs ou non, l'Alsace et la Moselle d'office,
-le lundi de Pentecôte dans les jours travaillés.
+pastille). **Codé le 6 novembre** (entrée du lot, en tête de ce fichier),
+l'Alsace et la Moselle d'office par le code postal de l'entreprise. Restent
+ouverts : la couleur dans Couleurs ou non, le lundi de Pentecôte.
 
 **Sa réponse du 5 novembre**, devant la planche des jours travaillés : *« oui
 le calendrier doit connaître les jours fériés, on doit quand même pouvoir les
@@ -329,8 +389,7 @@ dans la semaine ; « 11 férié » dans la légende. **À trancher par lui** : ~
 rouge ou violet~~ le bleu ; la couleur dans Couleurs ou non ; les deux fériés
 d'Alsace et Moselle d'office selon l'adresse de l'entreprise ; le lundi de
 Pentecôte, souvent travaillé (journée de solidarité), compte-t-il dans les
-jours travaillés ? **Rien dans `src/`.** Avant de lui redemander : chercher
-`ferie` dans `src/lib/` et `src/components/atlas/MoisCharge.tsx`.
+jours travaillés ? Codé : `src/lib/jours-feries.ts`, lu par `MoisCharge.tsx`.
 
 **Le code, le jour venu** : une règle pure dans `src/lib/` (huit dates fixes,
 Pâques par Meeus, plus un, trente-neuf et cinquante jours ; Vendredi saint et
@@ -340,14 +399,13 @@ planning et au choix des dates du client (`EnvoiAuClient.tsx`, lu dans le
 code). Le calcul des disponibilités n'y touche pas : sa règle est « on peut
 quand même les proposer ».
 
-## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : les jours travaillés de chaque salarié~~ TRANCHÉ LE 5 NOVEMBRE : A, PAS CODÉ
+## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : les jours travaillés de chaque salarié~~ TRANCHÉ LE 5 NOVEMBRE : A, CODÉ ET SUR main LE 6
 
 **Sa réponse, le 5 novembre au soir** : *« faut la A »*. Le chiffre se
 corrige, et dès qu'il bouge un appui dit pourquoi (Congé, Maladie, Sans
-solde, Autre ; Samedi travaillé, Férié travaillé quand il monte). Il n'a pas
-dit de coder : **rien dans `src/`**, et le lot (migration, niveau 3) attend
-son « code-le ». Restent ouverts, ci-dessous : où le ranger, et le motif
-demandé quand on note l'absence.
+solde, Autre ; Samedi travaillé, Férié travaillé quand il monte). **Codé le
+6 novembre**, dans Pour mon comptable, avec le motif demandé quand on note
+l'absence (entrée du lot, en tête de ce fichier).
 
 **Sa question du même soir, les ZONES** : *« des conventions travaillent avec
 les zones, 1, 2, 3, 4 ; est-ce toutes les mêmes ? »*. Non. Bâtiment et travaux
@@ -385,8 +443,7 @@ demie) ; une feuille avec moins, plus, le chiffre tapé, « Le calcul disait 18 
 et Remettre ; un PDF d'une page par mois, partagé par le téléphone.
 **A** (proposé) : « Pourquoi 3 jours de moins ? » Congé, Maladie, Sans solde,
 Autre (et Samedi travaillé, Férié travaillé quand il monte). **B** : le chiffre
-seul. **Rien dans `src/`.** Avant de lui redemander : chercher
-`Jours travaillés` dans `src/app/termines/comptable/`.
+seul. Codé : `src/app/termines/comptable/jours-travailles/`.
 
 **À trancher par lui** : A ou B ; Pour mon comptable ou Réglages, Équipe ; le
 motif d'une absence notée, écrit « pour vous » (`AbsencesEquipe.tsx`), ne va
@@ -477,10 +534,26 @@ non ? »*), 3 B. `ARCHITECTURE.md` §555 porte la décision, et celle prise
 sur le verrou : Factur-X pour un client entreprise seulement, PDF verrouillé
 pour un particulier et une mairie. **Rien n'est codé.** Reste, dans l'ordre :
 
-1. **le lot Factur-X**, sans compte : XML CII au profil EN 16931 depuis la
-   facture (règle pure dans `src/lib/`), PDF/A-3 avec ce XML dedans, contrôle
-   par les règles officielles. Niveau 3 ;
-2. **le branchement**, avec sa clé sur un compte d'essai. Niveau 3.
+1. ~~**le lot Factur-X**~~ **CODÉ LE 5 NOVEMBRE** (branche `lot/facture-x`,
+   `ARCHITECTURE.md` §555) : une entreprise reçoit une Factur-X, jugée par les
+   règles EN 16931 officielles et veraPDF. Reste dans ce lot : les règles
+   françaises de XP Z12-012, non vérifiables ici ; et le rappel au patron que
+   **son adresse dans Mon entreprise doit porter le code postal**, sinon la
+   facture repart en PDF ordinaire (journalisé, pas affiché) ;
+2. ~~**le branchement**~~ **CODÉ LE 5 NOVEMBRE** (`ARCHITECTURE.md` §555,
+   « Le branchement ») contre une fausse plateforme : écran, liaison chiffrée,
+   dépôt, choix 3 B. **Reste, et c'est à lui puis à nous :**
+   - **lui** : un compte d'essai (sandbox) Pennylane, et la réponse de
+     Pennylane à la question : par quelle API un logiciel tiers dépose une
+     Factur-X (le message est dans la conversation du 5 novembre, à recopier
+     dans `docs/A-FAIRE.md` s'il le veut) ;
+   - **nous** : poser `ATLAS_PENNYLANE_FLUX_URL` et `ATLAS_PENNYLANE_JETON_URL`
+     sur son espace une fois l'adresse connue, puis un premier dépôt réel sur
+     le compte d'essai, jamais sur son vrai compte (une facture transmise ne
+     s'efface pas) ;
+   - plus tard : le cycle de vie (« reçue par son client »), l'e-reporting des
+     particuliers, l'annuaire ; une suite navigateur de l'écran (le geste a été
+     joué à la main le 5 novembre).
 
 **À vérifier avant de coder, pas à lui demander :** le numéro d'une facture
 refusée par la plateforme (refaite sous le même numéro ou sous un neuf : la

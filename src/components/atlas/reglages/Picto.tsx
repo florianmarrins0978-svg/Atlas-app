@@ -49,7 +49,10 @@ export type NomPicto =
   | "note"
   | "oeil"
   | "carton"
-  | "scanner";
+  | "scanner"
+  | "ampoule"
+  | "email"
+  | "corbeille";
 
 const TRACES: Record<NomPicto, React.ReactNode> = {
   suivant: <path d="M9 5l7 7-7 7" />,
@@ -175,6 +178,30 @@ const TRACES: Record<NomPicto, React.ReactNode> = {
   ),
   scanner: (
     <path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16M7 12h10" />
+  ),
+  // Les deux pictogrammes d'« Une idée pour l'appli » (sa planche du
+  // 5 novembre 2026) : l'ampoule de la porte, l'enveloppe des idées reçues.
+  // L'enveloppe est celle du kit ; l'ampoule est dessinée sur la planche,
+  // au même trait.
+  ampoule: (
+    <>
+      <path d="M12 3.5a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.1v.6h5v-.6c0-.8.4-1.5 1.1-2.1A6 6 0 0 0 12 3.5z" />
+      <path d="M9.8 20.5h4.4" />
+    </>
+  ),
+  email: (
+    <>
+      <rect x="3.5" y="5.5" width="17" height="13" rx="2" />
+      <path d="M4 7l8 6 8-6" />
+    </>
+  ),
+  // « Jeter » sous la dictée, le tracé de `AnneauNoteVocale`.
+  corbeille: (
+    <>
+      <path d="M4 7h16" />
+      <path d="M10 4h4a1 1 0 0 1 1 1v2H9V5a1 1 0 0 1 1-1z" />
+      <path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12" />
+    </>
   ),
 };
 

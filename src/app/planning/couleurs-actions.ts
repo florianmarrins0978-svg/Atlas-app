@@ -5,12 +5,12 @@ import { exigerProprietaire } from "@/server/autorisation";
 import { getEntreprise, mettreAJourEntreprise } from "@/server/repositories/entreprises";
 import { lireCharte } from "@/server/repositories/charte-personne";
 import { charte } from "@/lib/chartes";
-import { choixAEcrire, couleursDepuisColonnes, ETATS_DU_PLANNING, type CouleursPlanning } from "@/lib/couleurs-planning";
-import type { EtatDemi } from "@/lib/planning-jour";
+import { choixAEcrire, couleursDepuisColonnes, COULEURS_DU_PLANNING, type CleCouleur, type CouleursPlanning } from "@/lib/couleurs-planning";
 import { logger } from "@/server/logger";
 
 /**
- * Pose la couleur d'un état du planning, pour toute l'entreprise.
+ * Pose la couleur d'un état du planning, ou celle des fériés, pour toute
+ * l'entreprise.
  *
  * **Le propriétaire seul**, comme l'allure des documents : sa réponse du
  * 29 septembre 2026, « tout l'entreprise », en fait un réglage commun, que ses
@@ -22,12 +22,12 @@ import { logger } from "@/server/logger";
  * message d'une exception n'arriverait jamais jusqu'à lui (`AGENTS.md`).
  */
 export async function majCouleurPlanningAction(
-  etat: EtatDemi,
+  etat: CleCouleur,
   couleur: string | null
 ): Promise<{ ok: true; couleurs: CouleursPlanning } | { ok: false; raison: string }> {
   const ctx = await getCurrentCtx();
   try {
-    if (!ETATS_DU_PLANNING.includes(etat)) throw new Error(`État inconnu : ${String(etat)}`);
+    if (!COULEURS_DU_PLANNING.includes(etat)) throw new Error(`État inconnu : ${String(etat)}`);
     await exigerProprietaire(ctx, "modifier les couleurs du planning");
     // La couleur de l'apparence s'écrit vide : elle suivra l'apparence.
     const aEcrire = choixAEcrire(etat, couleur, charte(await lireCharte()));

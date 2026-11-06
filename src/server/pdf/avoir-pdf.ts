@@ -1,6 +1,7 @@
 import Decimal from "decimal.js";
 import { composerDocument, type DonneesDocument, type LogoDocument } from "./document-commun";
 import { jourNumerique } from "../../lib/jour";
+import { mentionFranchise, sousFranchise } from "@/lib/franchise-tva";
 import type { Allure } from "@/lib/allure-documents";
 import { enEuros } from "@/lib/euros";
 import type { LigneAvoirStockee } from "@/lib/avoir";
@@ -51,7 +52,10 @@ export async function genererPdfAvoir(
   options: { allure?: Allure | null; logo?: LogoDocument | null } = {}
 ): Promise<Uint8Array> {
   const f = data.facture;
-  const enFranchise = f.regimeTva != null ? f.regimeTva === "franchise" : Number(f.tauxTva) === 0;
+  // La lecture de la franchise et sa phrase sont celles de la facture et du
+  // devis : l'avoir les recopiait, et aurait gardé l'ancienne phrase le
+  // 1er janvier 2027 (`scripts/test-mention-franchise.ts`).
+  const enFranchise = sousFranchise(f.regimeTva, f.tauxTva);
 
   const document: DonneesDocument = {
     ...f,
@@ -103,7 +107,7 @@ export async function genererPdfAvoir(
     ],
     tampon: null,
     informations: [],
-    mentionLegale: () => (enFranchise ? "TVA non applicable, art. 293 B du CGI." : ""),
+    mentionLegale: () => (enFranchise ? mentionFranchise(data.dateEmission) : ""),
     cadreSignature: false,
   });
   return pdf;

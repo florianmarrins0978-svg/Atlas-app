@@ -13,6 +13,7 @@ import type { AttestationLue } from "../../lib/attestation-lue";
 import type { PrestationContrat } from "../../lib/contrats-entretien";
 import type { SourcesVehicule } from "../../lib/vehicules";
 import type { LigneImprimee } from "../../lib/ticket-imprime";
+import { NATURES_ABSENCE } from "../../lib/nature-absence";
 
 import {
   pgTable,
@@ -272,6 +273,8 @@ export const entreprises = pgTable("entreprises", {
   planningIncomplet: text("planning_incomplet"),
   planningComplet: text("planning_complet"),
   planningAuDela: text("planning_au_dela"),
+  /** Le fond des jours fériés (migration 0168) ; NULL : le bleu de l'apparence. */
+  planningFerie: text("planning_ferie"),
   /** Le logo vit dans le stockage, comme une photo — la base garde sa clef. */
   logoStorageKey: text("logo_storage_key"),
   logoMime: text("logo_mime"),
@@ -313,6 +316,12 @@ export const entreprises = pgTable("entreprises", {
   // saisie : il n'a personne à affilier, et lui proposer une case à cocher lui
   // inventerait une organisation qu'il n'a pas.
   nombreSalaries: integer("nombre_salaries").notNull().default(0),
+  /**
+   * Les zones de déplacement (migration 0167), lues par `reglageLu`
+   * (`src/lib/zones-deplacement.ts`). NULL : jamais réglé, et Jours travaillés
+   * l'invite alors à le faire, une fois.
+   */
+  zonesDeplacement: jsonb("zones_deplacement"),
   /**
    * Le patron exige-t-il un retour d'intervention en fin de chantier ?
    *
@@ -677,11 +686,48 @@ export const absencesEquipe = pgTable("absences_equipe", {
    */
   premierDemi: text("premier_demi").notNull().default("matin"),
   dernierDemi: text("dernier_demi").notNull().default("apres_midi"),
+  /** La note libre du patron, « pour vous » : elle ne part nulle part. */
   motif: text("motif"),
+  /**
+   * La NATURE, faite pour partir chez le comptable (migration 0165) : congé,
+   * maladie, sans solde, déplacement, formation, autre. NULL : personne ne
+   * l'a dite. Ce qui compte travaillé se décide dans `src/lib/nature-absence.ts`.
+   */
+  nature: text("nature", { enum: NATURES_ABSENCE }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
 });
+
+/**
+ * Les jours travaillés corrigés à la main, un salarié et un mois par ligne
+ * (migration 0166). Le CALCUL ne s'écrit pas : il se refait à chaque ouverture
+ * (`src/lib/jours-travailles.ts`). Seul ce que le patron a changé est ici.
+ *
+ * **Le salarié se désigne par son rang**, comme ses absences et son nom : la
+ * ligne d'équipe n'existe pas toujours en base.
+ */
+export const joursTravaillesCorriges = pgTable(
+  "jours_travailles_corriges",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    rang: integer("rang").notNull(),
+    /** « 2026-11 ». */
+    mois: text("mois").notNull(),
+    /** Le chiffre saisi, par demi-journée. NULL : le calcul fait foi. */
+    jours: numeric("jours", { precision: 4, scale: 1 }),
+    /** Pourquoi il a changé (`MOTIFS_EN_MOINS`, `MOTIFS_EN_PLUS`). */
+    motif: text("motif"),
+    /** Les cases de zone corrigées : `{ "z0": 3, "hors": 1 }`. */
+    zones: jsonb("zones").$type<Record<string, number>>(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [unique("jours_travailles_corriges_uk").on(t.entrepriseId, t.rang, t.mois)]
+);
 
 // Correction v2.1 §3 : "prochain_numero_devis" représente le PROCHAIN numéro
 // disponible (pas le dernier attribué). Initialisé à 1 à la création de
@@ -4260,6 +4306,42 @@ export const virementsRecus = pgTable("virements_recus", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+/**
+ * La plateforme agréée de l'entreprise (migration 0169, `ARCHITECTURE.md` §555).
+ *
+ * **Le secret ne se lit qu'en clair dans le serveur, au moment de déposer**
+ * (`src/server/repositories/plateforme-facture.ts`) : il ouvre le compte de
+ * facturation de l'artisan. `identifiant` vide : le secret est un jeton d'accès.
+ */
+export const liaisonsPlateformes = pgTable("liaisons_plateformes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  entrepriseId: uuid("entreprise_id")
+    .notNull()
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  plateforme: text("plateforme", { enum: ["pennylane"] }).notNull(),
+  identifiant: text("identifiant"),
+  secretChiffre: text("secret_chiffre").notNull(),
+  etat: text("etat", { enum: ["reliee", "coupee"] }).notNull().default("reliee"),
+  coupeeLe: timestamp("coupee_le", { withTimezone: true }),
+  createdBy: uuid("created_by").references(() => users.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** Une facture déposée sur la plateforme, et ce que la plateforme en a dit (0169). */
+export const transmissionsFactures = pgTable("transmissions_factures", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  entrepriseId: uuid("entreprise_id")
+    .notNull()
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  factureId: uuid("facture_id").notNull(),
+  plateforme: text("plateforme", { enum: ["pennylane"] }).notNull(),
+  fluxId: text("flux_id").notNull(),
+  etat: text("etat", { enum: ["en_cours", "transmise", "refusee"] }).notNull().default("en_cours"),
+  raison: text("raison"),
+  deposeeLe: timestamp("deposee_le", { withTimezone: true }).notNull().defaultNow(),
+  lueLe: timestamp("lue_le", { withTimezone: true }),
+});
+
 // ─── Pour mon comptable — migration 0142, sa remarque du 24 octobre 2026 ─────
 
 /**
@@ -4433,3 +4515,32 @@ export const consommationIa = pgTable(
   (t) => [primaryKey({ columns: [t.entrepriseId, t.mois] })]
 );
 
+
+/**
+ * Une idée pour l'appli (migration 0170, sa planche du 5 novembre 2026) :
+ * l'artisan la dit, l'éditeur la range. **Deux lecteurs** : l'entreprise, sous
+ * l'isolation ordinaire, et l'éditeur, par `withEditeur`. Le nom de l'auteur et
+ * celui de son entreprise sont figés ici, pour que l'éditeur n'ait jamais à
+ * lire `users` ni `entreprises`.
+ */
+export const idees = pgTable("idees", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  entrepriseId: uuid("entreprise_id")
+    .notNull()
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  auteurId: uuid("auteur_id").references(() => users.id, { onDelete: "set null" }),
+  auteurNom: text("auteur_nom").notNull(),
+  auteurRole: text("auteur_role", { enum: ["proprietaire", "facturation", "commercial", "salarie"] }).notNull(),
+  entrepriseNom: text("entreprise_nom").notNull(),
+  texte: text("texte").notNull(),
+  etat: text("etat", { enum: ["envoyee", "prevue", "pas_prevue", "faite"] }).notNull().default("envoyee"),
+  reponse: text("reponse"),
+  envoyeeLe: timestamp("envoyee_le", { withTimezone: true }).notNull().defaultNow(),
+  traiteeLe: timestamp("traitee_le", { withTimezone: true }),
+});
+
+/** Les jours où l'éditeur a été prévenu d'une idée : une date, rien d'autre (0170). */
+export const ideesAlertes = pgTable("idees_alertes", {
+  jour: date("jour").primaryKey(),
+  envoyeeLe: timestamp("envoyee_le", { withTimezone: true }).notNull().defaultNow(),
+});

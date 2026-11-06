@@ -36926,7 +36926,7 @@ Contrôles : `test-feuille-main-oeuvre` (pur : la quantité à la journée, l'he
 
 ## §555 : La facture électronique : Atlas fabrique la Factur-X, la plateforme de l'artisan la transmet
 
-*5 novembre 2026, ses choix sur la planche `appli/soignee/reglages-facture-electronique.html`.* Rien n'est codé.
+*5 novembre 2026, ses choix sur la planche `appli/soignee/reglages-facture-electronique.html`.* **La Factur-X et le branchement sont codés** (lot `lot/facture-x`, voir « Ce qui est codé » et « Le branchement » plus bas) ; il manque l'adresse de Pennylane et un premier dépôt réel.
 
 | Choix | Sa réponse | Ce que ça veut dire |
 |---|---|---|
@@ -36939,6 +36939,33 @@ Contrôles : `test-feuille-main-oeuvre` (pur : la quantité à la journée, l'he
 **Le verrou du 31 août et la Factur-X.** Le PDF d'une facture est protégé contre la modification (`proteger-pdf.ts`), c'est-à-dire chiffré avec un mot de passe propriétaire. Une Factur-X est un PDF/A-3, et la norme PDF/A interdit tout chiffrement : **une Factur-X ne peut pas être verrouillée.** Décision prise ici, et dite : la Factur-X ne sert qu'aux factures qui passent par la plateforme comme factures, celles d'un client **entreprise** ; la facture d'un **particulier** (la plateforme n'en transmet que les chiffres, e-reporting) et celle d'une **mairie** (Chorus Pro) gardent le PDF verrouillé d'aujourd'hui. Ce qui protège une Factur-X à la place : la plateforme garde ce qui est parti, et Atlas son empreinte.
 
 **L'ordre des lots.** D'abord la Factur-X, qui ne dépend d'aucun compte : une règle pure qui écrit le XML (CII, profil EN 16931) depuis la facture, le PDF rendu PDF/A-3 avec ce XML dedans, et un contrôle par les règles officielles. Ensuite le branchement (la clé chiffrée par `chiffre-au-repos.ts`, isolée par entreprise ; l'état de chaque facture transmise), qui ne s'éprouve qu'avec un vrai compte. Les deux sont de niveau 3.
+
+**Ce qui est codé, le 5 novembre (lot `lot/facture-x`).**
+
+| Pièce | Où | Pourquoi ainsi |
+|---|---|---|
+| le XML CII, profil EN 16931 | `src/lib/facture-x.ts`, `xmlFactureX` | règle pure ; ses totaux sortent de `totauxAvecReduction`, la fonction du papier, et elle refuse si les totaux imprimés n'y retombent pas. La remise part en remise de document par taux, les acomptes reçus en montant déjà payé, la sous-traitance en catégorie AE, la franchise en E |
+| ses refus | la même | une phrase par donnée qui manque (numéro de TVA, code postal, échéance, TVA à 0 % sans motif) ; rien ne s'invente, pas même le pays d'une adresse sans code postal |
+| le PDF/A-3 | `src/server/pdf/facture-x-pdf.ts`, `fabriquerFactureX`, `enPdfA3` | XMP Factur-X, profil sRGB (`srgb.icc`, écrit par LittleCMS), identifiant de fichier, le XML joint en `Alternative`, l'attestation décennale jointe en `Supplement` au lieu de pages recopiées |
+| les polices | `composerDocument`, option `archivable` ; `POLICES_ARCHIVABLES` | Times et Helvetica ne sont pas embarquées et PDF/A l'exige : leurs jumelles Liberation (mêmes chasses, la page se compose au point près), réduites au latin et **renommées « Atlas Archive »**, parce que « Liberation » est un nom réservé de la licence OFL |
+| l'émission | `emettreFacture`, `pieceDeLaFacture` | une entreprise (`estUneEntreprise`, qui laisse la mairie dehors) reçoit la Factur-X archivée ; un particulier et une mairie, le PDF verrouillé. **Un refus de la règle garde le PDF ordinaire** et se journalise : tant que rien ne transmet à une plateforme, ce PDF reste une facture valable. Le branchement fera de ce refus un blocage, son choix 3 B |
+
+**Qui juge.** `scripts/test-facture-x.ts` : le schéma CII D16B et les règles EN 16931 de la Commission européenne (ConnectingEurope/eInvoicing-EN16931, commit fixé, Saxon HE), puis veraPDF 3b ; un XML aux totaux faussés doit rendre BR-CO-15, la facture verrouillée d'aujourd'hui doit échouer à veraPDF. Les outils vivent hors du dépôt, dans `~/.cache/atlas-facture-x` (`scripts/_outils-facture-x.ts`) ; sans Java, la suite ne mesure rien et le dit, et Maven et git ne sont exigés qu'au premier remplissage du cache. La sauvegarde téléchargeable emporte la liaison et les transmissions, jamais le secret (`test-export-entreprise.ts`). `scripts/test-facture-x-emission-db.ts` joue l'émission en base, sous `atlas_app`.
+
+**Ce qui n'est pas vérifié** : les règles françaises que XP Z12-012 ajoute à l'EN 16931 (adresse électronique, catégorie de l'opération, SIREN du client exigé). Elles ne sont pas publiques ici ; la plateforme les contrôlera.
+
+**Le branchement, codé le 5 novembre (« code tout »).**
+
+| Pièce | Où | Pourquoi ainsi |
+|---|---|---|
+| la liaison et les transmissions | migration 0169 (0165 sur sa branche) : `liaisons_plateformes` (une par entreprise, secret chiffré, domaine `plateforme-facture`), `transmissions_factures` (une par facture, clé double vers la facture), FORCE RLS | le secret ouvre le compte de facturation de l'artisan : jamais en clair, et `scripts/secret-de-l-espace.ts` le relit au changement de clé |
+| le connecteur | `src/server/plateformes/api-commune.ts` | écrit d'après les contrats OpenAPI 1.3.0 de XP Z12-013 (annexe A) : jeton OAuth2 « client credentials », ou le secret présenté tel quel quand l'identifiant est vide ; `POST /v1/flows` en multipart (`flowInfo` JSON, `file` PDF, `processingRule` B2B, `sha256`) ; `GET /v1/flows/{id}` pour l'état. **`flowProfile` n'est pas envoyé** : son énumération (Basic, CIUS, Extended-CTC-FR) ne dit pas lequel nomme l'EN 16931, et il est facultatif |
+| trois familles de refus | la même | `coupee` (401, 403 : remplacer les identifiants), `injoignable` (réseau, 429, 5xx : réessayer), `refusee` (400, 422 : corriger la facture). Une phrase par famille, et la raison de la plateforme quand elle en donne une |
+| le catalogue | `src/server/plateformes/catalogue.ts` | une plateforme n'est offerte que si son adresse est connue (`ATLAS_PENNYLANE_FLUX_URL`, `ATLAS_PENNYLANE_JETON_URL`) ; sans elle, ni rubrique ni porte |
+| son choix 3 B | `emettreFacture` | pour une entreprise, avec une plateforme reliée : Factur-X obligatoire (un refus de la règle bloque), dépôt EN DERNIER dans la transaction d'émission. Un échec défait tout, numéro compris ; une liaison révoquée est marquée coupée APRÈS le retour en arrière, et le reste jusqu'au remplacement. Un particulier ne passe pas par la plateforme |
+| l'écran | `/reglages/facture-electronique`, ligne du sommaire sous Ma banque | patron seul, fermé au commercial ; vérifie les identifiants AVANT de les garder ; relit au plus dix états en cours par ouverture, hors transaction |
+
+**Ce qui n'est pas codé, et qui viendra** : le cycle de vie (« reçue par son client », statuts CDAR), l'e-reporting des ventes aux particuliers, l'annuaire. **Ce qui n'est pas éprouvé** : une vraie plateforme. Éprouvé contre `scripts/_fausse-plateforme.ts`, qui suit les contrats et sait accepter, refuser, rejeter, se taire et révoquer (`test-plateforme-facture-db.ts`, douze cas, trois rougissent sans le refus).
 
 ## §556 : Un client supprimé : sa facture en brouillon perd son téléphone et son e-mail
 
@@ -36953,3 +36980,89 @@ Contrôles : `test-feuille-main-oeuvre` (pur : la quantité à la journée, l'he
 **« Tout », lu comme ses deux coordonnées.** La question portait sur le téléphone et l'e-mail ; l'adresse est gardée pour la raison écrite ci-dessus, et c'est à lui de dire s'il la veut partie aussi (le brouillon ne pourrait alors plus s'émettre sans qu'il la retape). Un devis accepté et conservé garde ses copies : il ne lui a pas été demandé.
 
 Contrôle : `test-retention-effacement` (sous `atlas_app` : le brouillon d'un client supprimé n'a plus ni téléphone ni e-mail, son nom et son adresse restent), vu rouge avant la correction.
+
+## §557 : Les jours travaillés et les zones : le calcul se refait, seule la correction s'écrit
+
+*6 novembre 2026, sa consigne « code tout ça ». Planches `appli/soignee/jours-feries.html`, `motif-absence.html`, `jours-travailles.html` (la A), `zones-deplacement.html`.* Sur `lot/paie-zones-feries`, pas sur `main`.
+
+| Décision | Pourquoi |
+|---|---|
+| **les fériés se calculent** (`src/lib/jours-feries.ts`) : huit dates fixes, Pâques par Meeus, plus 1, 39 et 50 jours ; Vendredi saint et 26 décembre quand le code postal de l'entreprise est en 57, 67 ou 68 | aucune liste à tenir chaque année ; sans code postal, la liste nationale (le côté sûr : deux jours bleus de moins, jamais deux jours travaillés marqués fériés) |
+| **un férié se NOMME, il ne se ferme pas** | sa règle : on peut toujours le proposer. Le planning le peint, le compte le retire des jours ouvrés ; une seule liste pour les deux |
+| **la nature d'une absence est une colonne à part** (`absences_equipe.nature`, 0165), la note libre reste « pour vous » | la note ne part nulle part, la nature part au comptable. Déplacement et Formation comptent travaillés (`compteTravaille`) : une absence d'Atlas est née pour un déplacement de cinq jours |
+| **le calcul ne s'écrit pas** ; `jours_travailles_corriges` (0166) ne porte que ce que le patron a changé, par rang et par mois | une absence notée après coup change le calcul, jamais le chiffre saisi : les deux restent à l'écran et il décide. Un chiffre égal au calcul efface la ligne, sans quoi il redeviendrait figé |
+| **le salarié se désigne par son rang**, comme ses absences | la ligne d'équipe n'existe pas toujours en base |
+| **le motif doit aller dans le sens de l'écart** (`motifCorrectionLu`) | un congé ne dit rien d'un samedi travaillé ; un motif qui ne colle plus tombe |
+| **le réglage des zones est un `jsonb` sur l'entreprise** (0167), NULL veut dire jamais réglé | l'invitation ne parle qu'à celui qui n'a jamais répondu ; « Pas de zones » s'écrit et la fait taire |
+| **un jour se place au chantier le plus LOIN** ; au dépôt, en zone 1 ; un déplacement noté, hors zone ; une formation de la journée, sans zone | ses réponses des 5 et 6 novembre. **Un seul chantier non situé ce jour-là, et le jour n'a pas de zone** : le plus loin pourrait être lui, une zone devinée serait pire qu'un rouge |
+| **les coordonnées ne valent que pour l'adresse qui les a produites** (`positionSiSituee`) | la règle des fiches de sécurité ; et l'écran situe d'abord quelques chantiers (`situerQuelquesChantiers`), que seul l'appariement situait |
+| **le siège se situe une fois, quand le réglage s'écrit** (`src/server/zones-deplacement.ts`) | pas un appel à la Base Adresse Nationale à chaque ouverture ; une adresse changée se resitue au réglage suivant. Une panne du service n'empêche pas d'écrire les zones, l'écran dit « pas pu être située » |
+| **les cases corrigées ne s'effacent pas quand une borne bouge** | un mois passé a pu partir chez le comptable avec elles. La planche les remettait à zéro ; une case fausse se voit (trait d'or, total rouge) et se remet d'un appui |
+| **ce qu'il manque se compare au nombre de jours arrondi au-dessus** (`manqueAuxZones`) | une demi-journée de chantier occupe un jour dans sa zone |
+| **une seule feuille par salarié porte le chiffre ET les zones** | les deux planches en dessinaient chacune une ; réunies, il n'y a qu'un endroit où corriger un salarié |
+| **la teinte se choisit pour TOUTES les zones**, une rampe OKLCH du clair (proche) au foncé (loin), inversée sur les chartes sombres ; le PDF prend la rampe claire convertie en sRGB | sa demande du 6 novembre ; éprouvée au validateur des couleurs, sept teintes, deux à sept pas, huit chartes |
+| **corriger est au patron et à la facturation, régler les zones au patron seul** | le premier est Pour mon comptable (`exigerFacturation`), le second vit dans Équipe (`exigerProprietaire`) |
+| **Atlas compte les jours, jamais les montants** | ils changent selon la région et deux fois par an (`docs/AGENT.md` §3). Les deux barèmes sont des modèles à vérifier, chaque nom et chaque borne se changent |
+
+**Un férié se travaille** (sa règle du 6 novembre : *« on doit quand même pouvoir mettre des chantiers dessus si on veut travailler ce jour-là »*). Rien ne le ferme au planning, et `test-jours-feries` le tient (`jourRetenable`, `creneauxDuChantier`). Un férié où le planning met le salarié sur un chantier compte travaillé, une demie par demi-journée (`partsAuPlanning`, la même lecture du planning que les zones, `lecteurDuPlanning`) : pas de règle à part pour le lundi de Pentecôte, il compte s'il est travaillé.
+
+**Un férié prévient, il ne bloque jamais** (sa règle du même soir). L'avertissement se rédige dans `src/lib/jours-feries.ts` (`feriesNouveaux`, `phraseDesFeries`) et ne dit que ce que le geste vient de toucher : un férié déjà couvert avant ne se redit pas à chaque retouche. Au planning, il paraît APRÈS le geste réussi, six secondes, au-dessus du tiroir (`avisFerie`) : jamais une question avant, qui serait déjà une porte. Dans l'écran d'envoi, sous le mois, tant qu'un férié est proposé.
+
+**La couleur du férié se règle avec les quatre autres** (sa réponse : « réglable »), mais ce n'est pas un état : une demi-journée fériée reste rien, incomplète ou complète. `CleCouleur` ajoute `ferie` aux quatre `EtatDemi`, sa colonne est `planning_ferie` (0168, NULL : le bleu de l'apparence). Le chiffre posé dessus se calcule (`texteSurLeFond`) : l'encre ou la plage de la charte si l'une tient 4,5, sinon le noir ou le blanc, cas trouvé par le contrôle sur Sylve.
+
+**Le texte se rédige une fois** : `phraseDeLAbsence`, `phraseDeLaCorrection`, `phraseDuFerieTravaille` et `resumeDuMois` servent l'écran et le PDF, qui lisent le même chargement (`moisDesSalaries`).
+
+**Les boutons du motif sont des capsules**, contre le dessin des planches (des rectangles arrondis) : `test-boutons-arrondis` tient la forme unique de tous les boutons du produit depuis le 12 août.
+
+**Ce qui n'est pas éprouvé ici** : les deux suites en base (`test-nature-absence-repo`, `test-jours-travailles-repo`) vident la base et attendent la batterie ; aucune suite navigateur n'ouvre encore les deux écrans neufs. Les écrans ont été rendus sans serveur, le vrai composant et des gestes simulés, à 360 et 390 px, en Origine et en Nuit ; les migrations ont été appliquées sur une base vide, et `test-toute-table-est-cloisonnee` y est vert.
+
+## §558 : Une idée pour l'appli : deux lecteurs sur une seule table
+
+*5 novembre 2026, sa planche `appli/soignee/une-idee-pour-l-appli.html`, ses choix 1 A, 2 B, 3 B, puis « code ça ».* Chaque utilisateur, salarié compris, dit à Atlas ce qui lui manque ; l'éditeur le lit et le range.
+
+**La seule table où un compte lit au-delà de son entreprise.** `idees` (migration 0170) porte deux lecteurs : l'entreprise, sous l'isolation ordinaire (`app.entreprise_id`), et l'éditeur, par une politique qui ne s'ouvre que si `app.lecteur_des_idees` vaut « editeur ». Ce réglage n'est posé que par `withEditeur` (`src/server/editeur.ts`), après `estEditeur`, qui relit l'adresse du compte en base et la compare à `ATLAS_EDITEUR_EMAIL`. Même confiance que `app.abonnement_prestataire` (0084). `app.entreprise_id` n'y est pas posé : une requête sur les clients ou les chantiers écrite par erreur dans `withEditeur` rend zéro ligne (`test-idees-db.ts` le mesure, une ligne de client à l'appui).
+
+**Écarté, et pourquoi.** Lever la RLS pour l'éditeur (interdit, `CLAUDE.md` §4) ; une copie dans une table sans isolation (le texte peut nommer un client, et la moindre requête mal écrite la lirait) ; une seconde application (sa question : « faudrait-il une petite application connectée ? ») : la même base, et une porte de plus sur internet.
+
+**Figé sur la ligne.** Le prénom de l'auteur, son rôle et le nom de son entreprise sont écrits au moment de l'envoi : l'éditeur ne lit jamais `users` ni `entreprises`. Une idée dit qui et quel jour, rien d'autre : ni l'heure, ni « à la voix », ni l'écran d'origine (ses deux règles du même soir).
+
+**L'artisan écrit une fois.** INSERT seul, à l'état « envoyée », sans réponse ni date de tri (vérifié par `WITH CHECK`) ; ni UPDATE ni DELETE ne lui sont ouverts. « Envoyée, Annuler » se joue AVANT l'envoi, par `useRetraits` : l'idée se pose à l'écran, et ne part qu'à la fermeture du tiroir (le minuteur, `pagehide` ou le démontage). Le tri de l'éditeur passe par le même crochet : « Marquée prévue, Annuler ».
+
+**La voix n'est pas gardée.** La planche montrait « Écouter » chez l'éditeur ; le code transcrit et oublie, comme la question dictée à l'assistant. Garder la voix de chaque utilisateur sur un serveur ne valait pas le confort d'écouter. Un écart à la planche, dit ici et à lui.
+
+**Un courriel par jour, sans le texte.** La première idée du jour écrit à `CONTACT_ATLAS` (« Une idée vous attend dans Atlas »), les suivantes se taisent. `idees_alertes` ne porte qu'une date, sans isolation, comme `termes_metier` : rien à isoler. Le jour ne se marque qu'après un envoi réussi.
+
+**L'assistant propose, il n'envoie pas.** Le geste `envoyer_idee` est une proposition comme les autres : il coche, puis confirme. La consigne lui fait d'abord chercher la fiche (`RechercherModeEmploi`) et lui interdit d'affirmer qu'une fonction n'existe pas : il dit qu'il ne trouve pas le geste. Une fiche `reglages-une-idee` lui apprend où est la porte.
+
+**Ses décisions du 6 novembre, à ne pas rouvrir.** En lecture seule (essai fini, abonnement arrêté), l'idée ne part pas : *« on va pas laisser envoyer une idée à la fin de l'essai gratuit »* ; l'écran le dit et donne l'adresse. **Pas de « Demandée 3 fois »** : la planche la montrait, il l'a écartée (*« pas de pastille »*) ; ne pas la coder d'après la planche. **Pas d'idées dans le fichier de « Mes données »** (*« j'en ai pas besoin »*) : le droit d'accès se rend sur demande. La confidentialité le dit, version `canevas-2` (article 13 du RGPD), et `docs/RGPD.md` §2.6.
+
+## §559 : Une phrase de loi a une date, et la pièce garde celle de son jour
+
+La mention de la franchise cite un article de loi, et l'article change de
+numéro quand la TVA passe du CGI au CIBS : L. 233-3, en vigueur le 1er janvier
+2027 (ordonnance n° 2026-671 du 27 juillet 2026). Une constante ne peut pas
+dire vrai des deux côtés de cette date : elle aurait cité trop tôt un article
+pas encore en vigueur, ou trop tard un article abrogé.
+
+`mentionFranchise(jour)` (`src/lib/franchise-tva.ts`) lit le jour de la PIÈCE,
+jamais celui de l'affichage : une facture de 2026 retéléchargée en 2027 garde
+sa phrase, ce que le BOFiP permet jusqu'au 31 décembre 2027. Facture, devis et
+avoir la prennent au même endroit ; l'avoir, qui recopiait la phrase et la
+lecture de la franchise, passe par `sousFranchise` et `mentionFranchise`.
+`scripts/test-mention-franchise.ts` refuse la phrase écrite ailleurs.
+
+Écarté : changer la constante le jour J à la main. Personne ne l'aurait fait à
+minuit le 31 décembre, et chaque pièce de la nuit serait partie fausse.
+
+
+## §560 : Une suite navigateur ne dépend pas de ce que les autres laissent
+
+*6 novembre 2026, la batterie commune de quatre lots.* `test-le-client-s-est-trompe-e2e` tombait trois fois à la batterie et passait seule. Son écran, une fois qu'on l'a fait parler, disait « Cette date vient d'être retenue par ailleurs » : la démonstration ne propose qu'un jour, trois jours après l'amorçage, et les suites jouées avant elle posaient assez de chantiers ce jour-là pour le remplir. Le produit répondait juste.
+
+| Décision | Pourquoi |
+|---|---|
+| **la suite se donne son propre jour** (un jour de semaine dans quarante-cinq jours, dans la fenêtre de 90 jours que le serveur revérifie) et le rend à la fin | elle mesure l'erreur du client, pas l'occupation du planning. Un cas qui dépend du jour du mois et de l'ordre des suites ne dit rien de ce qu'il prétend |
+| **une attente qui échoue écrit ce que l'écran montre** | un « Timeout » ne désigne personne ; la phrase de l'écran a donné la cause en un tour, après trois batteries muettes |
+| **prouvée dans les conditions de la batterie** : le jour de la démonstration rempli à la main, l'ancienne version rouge, la nouvelle verte | une suite capricieuse ne se croit pas guérie parce qu'elle passe seule (§353) |
+
+Ce n'est pas le seul cas possible : toute suite qui prend « le premier jour proposé » de la démonstration partage ce risque. Elle se donne son jour, comme celle-ci.

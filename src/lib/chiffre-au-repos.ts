@@ -55,7 +55,7 @@ const PREFIXE = "v1";
  * `agenda` reste le défaut et garde sa dérivation à l'octet près : les jetons
  * déjà en base se relisent tels quels.
  */
-export type DomaineSecret = "agenda" | "double-verification";
+export type DomaineSecret = "agenda" | "double-verification" | "plateforme-facture";
 
 function cle(domaine: DomaineSecret, secret: string): Buffer {
   return createHash("sha256").update(`atlas:${domaine}:${secret}`).digest();

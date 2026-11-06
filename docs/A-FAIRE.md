@@ -1300,11 +1300,16 @@ tolérance de l'ancienne phrase au 30 juin 2028. Le BOFiP que j'ai lu dit encore
 
 | | Qui | Quand |
 |---|---|---|
-| confirmer la nouvelle phrase, et son numéro (L. 223-3) | votre comptable | avant fin 2027, sans urgence |
-| changer la phrase dans Atlas (factures, devis, avoirs) | moi | une fois confirmée |
+| confirmer la nouvelle phrase | votre comptable | sans urgence |
+| changer la phrase dans Atlas (factures, devis, avoirs) | moi | **codé le 6 novembre 2026, en attente de la batterie** |
 
-**Rien ne presse :** jusqu'au 31 décembre 2027 au moins, la phrase d'aujourd'hui
-est permise.
+**Le doute sur le numéro est levé, le même jour.** Les deux articles existent :
+L. 223-3 vient de l'ordonnance de décembre 2025 ; L. 233-3 le remplace, créé par
+l'ordonnance du 27 juillet 2026, **en vigueur le 1er janvier 2027** (Légifrance).
+Atlas écrit donc « art. 293 B du CGI » sur les pièces datées jusqu'au
+31 décembre 2026, puis « article L. 233-3 du code des impositions sur les biens
+et services (CIBS) » à partir du 1er janvier 2027, tout seul. Une facture de 2026
+retéléchargée plus tard garde sa phrase, ce qui est permis jusqu'à fin 2027.
 
 Sources :
 
