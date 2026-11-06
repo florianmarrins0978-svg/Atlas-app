@@ -18,9 +18,10 @@ prendras aussi. »* Branche `lot/batterie-commune-6-novembre-soir`, partie de
 | 3 | `claude/fiche-travaux-que-les-travaux` | 0169, devenue **0173** | aucune |
 | 2 | `lot/fiche-securite-soignee` (avec le « ≤ ») | aucune | aucune |
 | 1 | `lot/fermeture-compte` (`a3be638e`) | 0166, puis 0171, devenue **0174** | l'effacement d'un client, découpé pour servir au compte fermé, reprend la règle du brouillon de facture venue de main |
+| 1 | `lot/facture-atlas` (`187db259`, avec la TVA de l'abonnement ; `lot/tva-abonnement` est dedans, non pris à part) | 0172, devenue **0175** | « qui est le patron » se lisait deux fois : l'e-mail d'avant l'effacement prend `adressesDesPatronsDans` |
 
 Paragraphes renumérotés : l'hivernage §561, la note §562, le plafond §563, la
-fiche travaux §564 et §565. Chaque renvoi à un numéro déplacé a été relu un
+fiche travaux §564 et §565, la fermeture du compte §566, la facture d'Atlas §567. Chaque renvoi à un numéro déplacé a été relu un
 par un (`CLAUDE.md` §6, B) : 0165, 0166 et 0169 désignent aussi la nature d'une
 absence, les jours travaillés et la Factur-X, qui gardent les leurs.
 
@@ -32,7 +33,10 @@ test-mode-emploi, test-pas-de-pansement, test-pas-de-code-mort, test-couches,
 test-aucun-tiret, test-aucune-fleche, test-chartes-lisibles,
 test-une-seule-recherche, test-classes-atlas-uniques,
 test-actions-serveur-sans-export-de-type, test-todo-sans-titre-menteur.
-Niveau calculé : 3 (migrations, argent). **Reste** : la session 1, puis la
+La session 1 est prise (fermeture du compte et facture d'Atlas) : **toutes les
+sessions en attente sont dans la branche.** `test-paiement-stripe` demande
+`DATABASE_URL` et `AUTH_SECRET` posés (il ne s'y connecte pas) : vert avec
+ceux de la CI. Niveau calculé : 3 (migrations, argent). **Reste** : la
 batterie entière sur son « oui », puis `main`.
 
 ## LE « ≤ » DU PDF DE LA FICHE DE SÉCURITÉ : CORRIGÉ LE 6 NOVEMBRE 2026, PAS SUR main
@@ -807,7 +811,7 @@ la transmission par la plateforme agréée d'Atlas. Pas d'application à part.
 **Étape 3 : CODÉE le 6 novembre sur `lot/facture-atlas`** (qui porte aussi la
 TVA), **pas livrée**, batterie en attente de son « lance ». Au crochet
 `invoice.paid`, Atlas émet sa facture (`emettreLaFactureDAbonnement`) : numéro
-`AT2026-000001` d'un compteur sans trou (migration 0172), Factur-X par
+`AT2026-000001` d'un compteur sans trou (migration 0175), Factur-X par
 `pieceDeLaFacture` (PDF ordinaire si l'adresse de l'artisan n'a pas de code
 postal), PDF rangé, envoyé au patron par e-mail en pièce jointe.
 `scripts/test-facture-atlas.ts` vert (la pièce passe par `xmlFactureX`) ;

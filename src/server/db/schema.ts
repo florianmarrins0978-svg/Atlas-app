@@ -4014,7 +4014,7 @@ export const abonnements = pgTable(
  * prélèvement.
  */
 /**
- * LES FACTURES D'ABONNEMENT D'ATLAS (migration 0172, `src/lib/facture-atlas.ts`).
+ * LES FACTURES D'ABONNEMENT D'ATLAS (migration 0175, `src/lib/facture-atlas.ts`).
  * Une par paiement reçu ; ni modifiable ni effaçable (droits retirés en base),
  * et retenue par l'entreprise en RESTRICT : ce sont les pièces d'Atlas.
  */

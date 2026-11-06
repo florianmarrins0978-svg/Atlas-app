@@ -37159,7 +37159,7 @@ Contrôles : `test-reprise-des-prix`, `test-hausse-du-devis` (purs, verts), `tes
 
 **Ajouté le 6 novembre 2026.** Le salarié d'un compte fermé reçoit `CompteFermeError` (une sorte d'`AccesRefuseError`), que `garderLaPage` envoie sur `/compte-ferme` ; cet écran ne lit rien de l'entreprise. La moitié « chantiers » de l'effacement d'un client est devenue `effacerLesChantiersDans`, pour servir aussi aux chantiers sans client : une règle, deux appelants. La conservation se compte jusqu'au 31 décembre de l'année de la pièce plus dix plus un (`src/lib/conservation.ts`, déménagée de `server/retention.ts` parce qu'elle est pure) : L123-22 part de la clôture de l'exercice, qu'Atlas ne connaît pas. **L'effacement de l'archive échue n'est pas codé** : il demande une fonction du propriétaire qui lève l'immuabilité des factures, et elle s'écrira base montée (`TODO.md`).
 
-## §561 : Atlas facture lui-même son abonnement, avec le code Factur-X des artisans
+## §567 : Atlas facture lui-même son abonnement, avec le code Factur-X des artisans
 
 *6 novembre 2026, ses réponses du 5 : TVA, et Factur-X.*
 

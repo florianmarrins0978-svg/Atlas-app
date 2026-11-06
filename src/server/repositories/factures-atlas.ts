@@ -90,7 +90,7 @@ export async function emettreLaFactureDAbonnement(
       .set({ dernier: sql`${compteurFacturesAtlas.dernier} + 1` })
       .where(eq(compteurFacturesAtlas.id, 1))
       .returning({ rang: compteurFacturesAtlas.dernier });
-    if (!compteur) throw new Error("Le compteur des factures d'Atlas est absent (migration 0172).");
+    if (!compteur) throw new Error("Le compteur des factures d'Atlas est absent (migration 0175).");
 
     const numero = numeroFactureAtlas(compteur.rang, Number(lue.payeeLe.slice(0, 4)));
     const piece = donneesFactureAtlas({ vendeur, acheteur, numero, dateEmission: lue.payeeLe, encaissement });

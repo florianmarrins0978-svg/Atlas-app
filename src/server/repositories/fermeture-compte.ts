@@ -5,8 +5,6 @@ import {
   abonnements,
   clients,
   entreprises,
-  membresEntreprise,
-  users,
   fichiersAPurger,
   liaisonsBancaires,
   messagesAssistant,
@@ -26,6 +24,7 @@ import {
 import { effacerChantiersSansClientDans, effacerClientDans } from "./donnees-client";
 import { logger } from "../logger";
 import { envoyerCourriel } from "../courriel";
+import { adressesDesPatronsDans } from "./membres-entreprise";
 import type { Ctx } from "./context";
 
 /**
@@ -258,18 +257,16 @@ export async function prevenirAvantLEffacement(maintenant: Date = new Date()): P
   for (const c of candidats) {
     if (!aPrevenir(c, c.prevenuLe, maintenant) || !c.effectiveLe) continue;
     // `membres_entreprise` est sous RLS : le contexte se pose depuis la ligne
-    // lue, comme pour l'effacement.
+    // lue, comme pour l'effacement. « Qui est le patron » ne se lit qu'à un
+    // endroit, celui de la facture d'abonnement d'Atlas (`adressesDesPatronsDans`,
+    // réuni à la batterie commune du 6 novembre au soir).
     const patrons = await db.transaction(async (tx) => {
       await tx.execute(sql`SELECT set_config('app.entreprise_id', ${c.id}, true)`);
-      return tx
-        .select({ email: users.email })
-        .from(membresEntreprise)
-        .innerJoin(users, eq(users.id, membresEntreprise.utilisateurId))
-        .where(and(eq(membresEntreprise.entrepriseId, c.id), eq(membresEntreprise.role, "proprietaire")));
+      return adressesDesPatronsDans(tx, c.id);
     });
     const courriel = courrielAvantEffacement(dateDEffacement(c.effectiveLe));
     let parti = false;
-    for (const { email } of patrons) {
+    for (const email of patrons) {
       const r = await envoyerCourriel({ a: email, ...courriel });
       if (r.ok) parti = true;
       else logger.warn("E-mail d'avant l'effacement non parti", { entrepriseId: c.id, raison: r.raison });
