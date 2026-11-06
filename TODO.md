@@ -1,7 +1,7 @@
 # Prochaines tâches
 
 
-## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : cinq planches, A ou B~~ TRANCHÉ LE 6 NOVEMBRE : HIVERNAGE B, NOTE B, FRANCHISE A ET B, DEUX ÉCARTÉES, PAS CODÉ
+## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : cinq planches, A ou B~~ TRANCHÉ LE 6 NOVEMBRE : HIVERNAGE B, NOTE B, FRANCHISE A ET B, DEUX ÉCARTÉES ; TROIS LOTS CODÉS, PAS SUR main
 
 **Sa question du 5 novembre** : *« est-ce que tu as des idées pour améliorer
 notre application ? Est-ce que tu penses à des choses qu'on aurait pu
@@ -17,6 +17,13 @@ côté du nom […] à partir de début novembre »*. **Rien dans `src/`.**
 | `restrictions-d-eau.html` | « Restriction d'eau » sur la carte du planning, commune en Alerte ou plus, aujourd'hui et demain | seulement dans la fiche du chantier |
 | `heures-du-jour.html` | heures du retour du jour (tranché le 9 octobre) comparées au devis, en heures | aussi en euros de main d'œuvre |
 | `hiverner-l-arrosage.html` | dès le 1er novembre, une goutte à côté du nom et « Arrosage à hiverner » sur la fiche ; « Le prévoir » fait choisir le jour et le moment, et l'hivernage se pose au planning (sa demande du 6 novembre), la goutte restant jusqu'à « C'est fait » | la même chose, plus une ligne qui les rassemble en tête de Vos clients |
+
+**Codés le 6 novembre sur son « tu peux coder tout ça et ne lance pas de
+batterie »**, chacun sur sa branche LOCALE, dans le conteneur de la session
+qui les a écrits : `lot/hivernage` (migration 0165), `lot/note-sans-reseau`
+(migration 0166), `lot/franchise-plafond`, et `lot/sablier-appli`. Niveau 3
+tous les quatre : chacun attend SA batterie, sur son « oui ». Tant qu'une
+branche n'est pas poussée, elle n'existe que dans ce conteneur.
 
 **Restrictions d'eau et heures du jour : ÉCARTÉES le 6 novembre** (*« on va
 garder que les 3 premières planches. Les 2 dernières, on va pas les
