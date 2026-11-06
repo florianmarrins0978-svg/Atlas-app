@@ -134,6 +134,11 @@ const EXCLUSIONS_MOTIVEES: Record<string, string> = {
   idees: "des messages adressés à l'éditeur d'Atlas, hors de Mes données par sa décision du 6 novembre 2026",
 };
 
+/** Les tables qui portent une entreprise, absentes de l'export, et que rien n'excuse. */
+function tablesOubliees(enBase: readonly string[], exportees: ReadonlySet<string>): string[] {
+  return enBase.filter((t) => !exportees.has(t) && !(t in EXCLUSIONS_MOTIVEES));
+}
+
 async function main() {
   await nettoyerBase();
 
@@ -225,7 +230,7 @@ async function main() {
     const enBase = await tablesScopeesParEntreprise();
     const e = await exporterEntreprise(A);
     const exportees = new Set(Object.keys(e.tables));
-    const oubliees = enBase.filter((t) => !exportees.has(t) && !(t in EXCLUSIONS_MOTIVEES));
+    const oubliees = tablesOubliees(enBase, exportees);
     assert.deepEqual(
       oubliees,
       [],
@@ -247,8 +252,10 @@ async function main() {
     const enBase = await tablesScopeesParEntreprise();
     const exportees = new Set(Object.keys((await exporterEntreprise(A)).tables));
     exportees.delete("clients");
-    const oubliees = enBase.filter((t) => !exportees.has(t));
-    assert.deepEqual(oubliees, ["clients"], "le contrôle n'a pas vu la table retirée");
+    // La MÊME règle que le contrôle qu'il éprouve : recopiée sans les
+    // exclusions, elle a rougi le jour où la première s'est écrite (les idées,
+    // 6 novembre 2026), sur un contrôle qui marchait.
+    assert.deepEqual(tablesOubliees(enBase, exportees), ["clients"], "le contrôle n'a pas vu la table retirée");
   });
 
   await test("sa banque reliée part dans la sauvegarde, jamais la session qui la relit", async () => {
