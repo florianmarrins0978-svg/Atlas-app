@@ -91,6 +91,19 @@
   ne doit pas cacher : le pôle Paysage, le vocabulaire et les fiches de
   sécurité de l'appli sont ceux du jardin (PRODUCT.md).
 
+  ET L'ACCENT EST MIS DESSUS, sa demande qui a suivi : « mettre l'accent
+  sur que c'est une application pour tous les artisans ». Une section « Pour
+  tous les artisans. », juste après le problème du métier : les métiers en
+  grand, puis quatre faits vérifiés dans le code. La fiche client distingue
+  particulier, entreprise et service public (ses quatre boutons, vus à
+  l'écran) ; plusieurs taux sur un devis (DevisCompletClient.tsx, une ligne
+  par taux) ; l'autoliquidation pour un client entreprise hors franchise
+  (devis-complet/page.tsx, sousTraitancePossible) ; le pôle Paysage, en plus.
+  ÉCARTÉ : « vous lui apprenez les mots de votre métier ». Mon vocabulaire
+  existe, mais l'écran, ouvert, répond 404 à l'artisan : il est réservé à
+  l'éditeur (reglages/vocabulaire/page.tsx, estEditeur). Et une question
+  de plus, franche : « Mon métier n'est pas le jardin. »
+
   L'en-tête de chapitres-3.html dit d'où vient chaque réponse aux doutes de
   l'artisan méfiant, vérifiée dans le code : il reste vrai.
 -->
@@ -205,6 +218,15 @@ section{padding:clamp(88px,12vw,150px) 0}
 .douleur li:first-child{border-top:1px solid var(--trait-nuit)}
 .douleur .reponse{margin-top:44px;font:italic 400 clamp(32px,7.4vw,48px)/1.08 var(--display);color:var(--or-clair)}
 @media (min-width:960px){.douleur-grille{grid-template-columns:1.1fr .9fr;align-items:end;gap:88px}}
+
+/* ── Pour tous les artisans : les métiers en grand, puis ce qui les sert ── */
+/* Les métiers se lisent comme un mur de mots, sans séparateur : un point ou
+   un tiret entre eux est refusé ici (CLAUDE.md §3), et l'espace suffit. */
+.liste-metiers{list-style:none;margin:40px 0 0;padding:28px 0 0;border-top:1px solid var(--trait);display:flex;flex-wrap:wrap;gap:2px clamp(18px,2.6vw,34px);font:400 clamp(34px,7.6vw,68px)/1.06 var(--display);letter-spacing:-.015em}
+.liste-metiers li:nth-child(even){color:var(--encre-2)}
+.liste-metiers .le-votre{font-style:italic;color:var(--feuille)}
+.faits.atouts{margin-top:clamp(48px,6vw,72px)}
+@media (min-width:860px){.atouts{grid-template-columns:1fr 1fr;column-gap:64px}.atouts li:nth-child(2){border-top:1px solid var(--trait)}}
 
 /* ── Un chapitre : le mot, sa phrase, et ce qu'on voit ─────────────────── */
 .mot{font-size:clamp(56px,13vw,96px);line-height:.9}
@@ -477,6 +499,21 @@ section{padding:clamp(88px,12vw,150px) 0}
   </div>
 </section>
 
+<section class="metiers papier" id="metiers">
+  <div class="large">
+    <h2 class="mot">Pour tous les artisans.</h2>
+    <ul class="liste-metiers">
+      <li>Maçon</li><li>Plombier</li><li>Électricien</li><li>Menuisier</li><li>Peintre</li><li>Couvreur</li><li>Carreleur</li><li>Chauffagiste</li><li>Plaquiste</li><li>Paysagiste</li><li>Élagueur</li><li class="le-votre">et le vôtre.</li>
+    </ul>
+    <ul class="faits atouts">
+      <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Particulier, entreprise ou mairie.</b><span>La fiche client les distingue. Le particulier reçoit son formulaire de rétractation.</span></li>
+      <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Plusieurs taux de TVA.</b><span>Sur un même devis, une ligne par taux.</span></li>
+      <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>La sous-traitance.</b><span>L'autoliquidation, quand votre client est une entreprise.</span></li>
+      <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Le jardin, en plus.</b><span>Pour les paysagistes et les élagueurs : le plan d'arrosage, le diagnostic végétal, les fiches de sécurité d'élagage.</span></li>
+    </ul>
+  </div>
+</section>
+
 <section class="chapitre" id="fonctionnement">
   <div class="large chap-grille">
     <div class="chap-texte">
@@ -680,6 +717,7 @@ section{padding:clamp(88px,12vw,150px) 0}
     <div class="tete-q"><h2 class="mot">Vos questions.</h2></div>
     <div>
       <details><summary>Faut-il être à l'aise avec un téléphone ?</summary><p>Non. Les boutons sont grands, les mots sont ceux du métier. Atlas est fait pour être utilisé debout, d'une main, en plein soleil.</p></details>
+      <details><summary>Mon métier n'est pas le jardin.</summary><p>Atlas vous sert quand même : le devis, la date, le planning, la facture et la TVA valent pour tous les métiers, avec vos prix. Seul l'onglet Paysage est propre au jardin.</p></details>
       <details><summary>Sur quoi Atlas fonctionne-t-il ?</summary><p>Sur votre téléphone et sur votre ordinateur, dans le navigateur. Il s'ajoute à l'écran d'accueil comme une application.</p></details>
       <details><summary>Et si l'IA se trompe ?</summary><p>Vous le voyez avant le client. Rien n'est envoyé, validé ou facturé sans votre geste, et chaque ligne se corrige à la main.</p></details>
       <details><summary>Et sur ordinateur ?</summary><p>Ouvrez Atlas dans Chrome ou Edge et installez-le : il s'ouvre dans sa propre fenêtre, avec son icône sur le bureau, comme un logiciel. Même compte que sur le téléphone.</p></details>
