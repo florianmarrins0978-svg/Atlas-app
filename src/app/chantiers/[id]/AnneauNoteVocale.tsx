@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { colors, font } from "@/lib/design-tokens";
-import { useMagnetophone, formulaireDeNote } from "./magnetophone";
+import { useMagnetophone, formulaireDEnvoiDeNote } from "./magnetophone";
 import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
 import IconeTrait from "@/components/atlas/IconeTrait";
 import { envoyerNoteVocale } from "@/lib/envoi-note-vocale";
@@ -415,7 +415,7 @@ export default function AnneauNoteVocale({
         });
         return;
       }
-      const resultat = await envoyerNoteVocale(cible, formulaireDeNote(blob, secondes, envoiId));
+      const resultat = await envoyerNoteVocale(cible, formulaireDEnvoiDeNote(blob, secondes, envoiId));
       if (!resultat.ok) {
         const cause = causeDeLaGarde(resultat);
         if (cause) {

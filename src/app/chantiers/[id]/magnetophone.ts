@@ -233,13 +233,27 @@ export function useMagnetophone() {
  * Note vocale, qui partait sans durée et sous un autre nom, est retiré avec
  * lui. Ne reste que la dictée de l'anneau, toujours entière.
  */
-export function formulaireDeNote(blob: Blob, dureeSecondes: number, envoiId: string): FormData {
+export function formulaireDeNote(blob: Blob, dureeSecondes: number): FormData {
   const extension = blob.type.includes("ogg") ? "ogg" : blob.type.includes("mp4") ? "m4a" : "webm";
   const fd = new FormData();
   fd.set("fichier", blob, `note.${extension}`);
   fd.set("dureeSecondes", String(dureeSecondes));
-  // Le même à chaque appui sur une note gardée : le serveur reconnaît un envoi
-  // déjà reçu au lieu de le réécrire (`note-vocale-entrante.ts`, 6 novembre 2026).
+  return fd;
+}
+
+/**
+ * LA NOTE D'UN CHANTIER : le même son, et l'identifiant de son envoi.
+ *
+ * Le même à chaque appui sur une note gardée : le serveur reconnaît un envoi
+ * déjà reçu au lieu de le réécrire (`note-vocale-entrante.ts`, 6 novembre
+ * 2026). **À part de `formulaireDeNote`**, que la dictée d'une idée emploie
+ * aussi (`UneIdee.tsx`, arrivée sur `main` le même jour) : sa transcription
+ * revient en texte à relire, elle ne s'enregistre pas, et n'a donc pas de
+ * doublon à craindre. Exiger l'identifiant partout l'aurait réclamé à qui
+ * n'en a pas l'usage.
+ */
+export function formulaireDEnvoiDeNote(blob: Blob, dureeSecondes: number, envoiId: string): FormData {
+  const fd = formulaireDeNote(blob, dureeSecondes);
   fd.set("envoiId", envoiId);
   return fd;
 }
