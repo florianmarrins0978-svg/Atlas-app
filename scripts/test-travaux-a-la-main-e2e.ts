@@ -90,9 +90,10 @@ async function main() {
   await ouvrirLesTravaux();
 
   await cas("SANS DEVIS, le bandeau s'ouvre sur « Ajouter un travail »", async () => {
-    assert.equal((await page.locator(COMPTE).innerText()).trim(), "aucune ligne");
+    // « travail », plus « ligne » : sa planche A du 6 novembre 2026.
+    assert.equal((await page.locator(COMPTE).innerText()).trim(), "aucun travail");
     assert.equal(await page.locator(TACHE).count(), 0);
-    assert.doesNotMatch(await page.locator(FEUILLE).innerText(), /Aucune ligne sur le devis/);
+    assert.doesNotMatch(await page.locator(FEUILLE).innerText(), /Aucun travail sur le devis/);
   });
 
   await cas("écrire, Ajouter, puis Entrée : deux lignes à cocher, en base", async () => {
@@ -106,7 +107,7 @@ async function main() {
       timeout: 10_000,
     });
     assert.equal(await champ.inputValue(), "", "le champ ne se vide pas après l'ajout");
-    assert.equal((await page.locator(COMPTE).innerText()).trim(), "2 lignes");
+    assert.equal((await page.locator(COMPTE).innerText()).trim(), "2 travaux");
     assert.deepEqual(await travauxEnBase(chantierId), ["Taille de haie de thuya", "Ramassage des feuilles"]);
   });
 

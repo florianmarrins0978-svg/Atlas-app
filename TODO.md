@@ -50,8 +50,11 @@ toujours « grille proposée », et le oui efface la main d'œuvre.
 du jour ne remplace que le prix du travail (325 € + 400 € = 725 €, dont main
 d'œuvre 400 €). Attend son oui ; rien n'est codé.
 
-**La planche** de la fiche plus jolie : `appli/fiche-travaux-en-mieux.html`.
-Rien n'est codé de son apparence.
+**La planche** : `appli/soignee/fiche-travaux.html`. **Sa réponse : la A**,
+codée sur la même branche (`TravauxAFaire.tsx`, `FicheDeSecurite.tsx` pour le
+compte). La B reste sur la planche, écartée. **Pas regardée dans l'appli
+ici** : le serveur attend son oui, comme la batterie. `npm run voir --
+/planning` dès qu'il le donne, fiche ouverte sur un chantier à devis.
 
 ## AVANT LE 31 DÉCEMBRE 2027 : la mention « TVA non applicable, art. 293 B du CGI »
 

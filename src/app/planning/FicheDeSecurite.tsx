@@ -90,7 +90,9 @@ export default function FicheDeSecurite({ chantierId }: { chantierId: string }) 
           <span className="min-w-0 flex-1 text-[16px] leading-[1.2]" style={{ fontFamily: font.display, color: colors.orTexte }}>
             Fiche de sécurité
           </span>
-          <span data-atlas="compte-de-la-fiche" className="flex-none text-[12.5px] font-semibold" style={{ color: colors.orTexte }}>
+          {/* Le même compte que « Travaux à faire » (sa planche A du
+              6 novembre 2026) : les deux barres restent sœurs. */}
+          <span data-atlas="compte-de-la-fiche" className="flex-none text-[14px] font-bold" style={{ color: colors.orTexte }}>
             {compte}
           </span>
           <svg

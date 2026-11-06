@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { tachesDuDevis } from "../src/lib/taches-du-devis";
+import { enDeuxParts, tachesDuDevis } from "../src/lib/taches-du-devis";
 
 // « Travaux à faire », sur la fiche d'intervention : une case ronde par ligne
 // du devis. **Sa capture du 29 septembre 2026** montrait une case sans rien à
@@ -142,6 +142,33 @@ cas("un travail qui nomme un engin ou la main d'œuvre reste un travail", () => 
       "Pelouse à créer",
     ]
   );
+});
+
+// **Sa planche A du 6 novembre 2026** (`appli/soignee/fiche-travaux.html`) :
+// le nom du travail en grand, sa quantité à droite. La case garde le texte
+// entier, celui que le retour enregistre et que Terminés relit ; l'écran le
+// coupe en deux avec l'inverse exact de ce qui l'a écrit. Le cas qui compte :
+// rien ne se perd, et rien ne se coupe là où le devis n'a pas mis de quantité.
+cas("une case se coupe en nom et quantité, sans rien perdre", () => {
+  const lignes = [
+    { libelle: "Taille de haie de laurier", quantite: "25.00", unite: "ml", mainDoeuvre: false },
+    { libelle: "Engazonnement", quantite: "12.50", unite: "m²", mainDoeuvre: false },
+    { libelle: "Abattage, broyage et évacuation", quantite: "1.00", unite: null, mainDoeuvre: false },
+    { libelle: "Plantation, 3 variétés", quantite: "6.00", unite: null, mainDoeuvre: false },
+    { libelle: "Tonte", quantite: "1.00", unite: "forfait", mainDoeuvre: false },
+  ];
+  const cases = tachesDuDevis(lignes);
+  assert.deepEqual(cases.map(enDeuxParts), [
+    { quoi: "Taille de haie de laurier", combien: "25 ml" },
+    { quoi: "Engazonnement", combien: "12,5 m²" },
+    { quoi: "Abattage, broyage et évacuation", combien: null },
+    { quoi: "Plantation, 3 variétés", combien: "6 u" },
+    { quoi: "Tonte", combien: null },
+  ]);
+  for (const c of cases) {
+    const { quoi, combien } = enDeuxParts(c);
+    assert.equal(combien === null ? quoi : `${quoi}, ${combien}`, c, "la case a perdu du texte");
+  }
 });
 
 if (echecs > 0) {

@@ -113,6 +113,27 @@ export function tachesDuDevis(
     });
 }
 
+/** Une case de la fiche, coupée pour l'écran : ce qu'on fait, et combien. */
+export type DeuxParts = { quoi: string; combien: string | null };
+
+/** « , 25 ml » en fin de case : exactement ce que `tachesDuDevis` y écrit. */
+const QUANTITE_EN_FIN = /^(.+), (\d+(?:,\d+)?) ([^,]+)$/;
+
+/**
+ * **Le nom en grand, la quantité à droite** — sa planche A du 6 novembre
+ * 2026 (`appli/soignee/fiche-travaux.html`).
+ *
+ * **La case reste UN texte**, et c'est délibéré : c'est lui que le retour du
+ * jour enregistre, que Terminés relit et que `casesDuJour` retrouve le
+ * lendemain. Lui donner une autre forme ferait perdre leurs coches aux
+ * retours déjà partis. L'écran le coupe donc ici, à côté de ce qui l'écrit,
+ * et la coupe ne perd rien : réunis, les deux morceaux redonnent la case.
+ */
+export function enDeuxParts(tache: string): DeuxParts {
+  const m = QUANTITE_EN_FIN.exec(tache);
+  return m ? { quoi: m[1], combien: `${m[2]} ${m[3]}` } : { quoi: tache, combien: null };
+}
+
 // ─── Les travaux écrits à la main ─────────────────────────────────────────
 
 /**
