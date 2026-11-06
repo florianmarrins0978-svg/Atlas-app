@@ -224,6 +224,9 @@ const REGLAGES_A_SOI = [
   "/reglages/notifications",
   "/reglages/connexion",
   "/reglages/apparence",
+  // **Une idée pour l'appli, 5 novembre 2026** : chacun dit à Atlas ce qui lui
+  // manque, et suit ses idées à lui. Rien de l'entreprise n'y est lu.
+  "/reglages/idee",
 ] as const;
 
 /**

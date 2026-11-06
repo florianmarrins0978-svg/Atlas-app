@@ -43,6 +43,7 @@ import {
   retirerPrestation as retirerPrestationEntretien,
 } from "@/server/repositories/prestations-entretien";
 import { terminerChantier } from "@/server/repositories/factures";
+import { envoyerIdee } from "@/server/repositories/idees";
 import { estUnJourValide, estUnDemiValide } from "@/lib/planning-jour";
 import type { Moment } from "@/lib/disponibilites";
 import { ajouterLignePrixDirectAction } from "@/app/chantiers/[id]/prix/actions";
@@ -927,6 +928,19 @@ export async function appliquerPropositionsAction(
               // vide » ne se réparent pas de la même façon.
               message: ajout.refus === "doublon" ? "Cette ligne existe déjà dans la fiche." : "Cette ligne n'a pas pu être ajoutée.",
             });
+            break;
+          }
+          resultats.push({ ...base, statut: "appliquee" });
+          break;
+        }
+        case "envoyer_idee": {
+          // **Une idée pour l'appli, choix 3 B** : la seule proposition qui
+          // n'écrit rien chez lui. Elle passe par le même dépôt que l'écran
+          // « Une idée pour l'appli », donc la même revalidation du texte et le
+          // même courriel à l'éditeur.
+          const envoi = await envoyerIdee(ctx, donnees.texte);
+          if (!envoi.ok) {
+            resultats.push({ ...base, statut: "conflit", categorie: "donnee_invalide", message: envoi.message });
             break;
           }
           resultats.push({ ...base, statut: "appliquee" });

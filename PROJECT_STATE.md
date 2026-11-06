@@ -13,6 +13,12 @@ Ses choix du 5 novembre sur `appli/soignee/reglages-facture-electronique.html` :
 
 Branche `lot/paie-zones-feries` (*« code tout ça, tu peux pousser mais ne lance pas de batterie »*). Les fériés en bleu au planning, calculés pour toute année (`src/lib/jours-feries.ts`) ; le motif d'une absence, au planning et dans Équipe (migration `0165`) ; Pour mon comptable, Mes salariés, Jours travaillés, le compte du mois corrigeable et son PDF (`src/app/termines/comptable/jours-travailles/`, migration `0166`) ; Réglages, Équipe, Zones de déplacement, et les jours de chaque salarié par zone (`src/app/reglages/equipe/zones/`, migration `0167`). Puis ses deux réponses du même jour : un férié au planning compte travaillé, et sa couleur se règle dans Couleurs (migration `0168`). Types, lint et contrôles purs verts ; migrations appliquées sur une base vide, `test-toute-table-est-cloisonnee` vert ; écrans rendus sans serveur à 360 et 390 px. **Niveau 3 : la batterie, avec son accord, avant `main`.** Les suites en base `test-nature-absence-repo` et `test-jours-travailles-repo` sont écrites et pas jouées. `ARCHITECTURE.md` §557, `docs/lot-paie-zones-feries.md`.
 
+
+---
+## UNE IDÉE POUR L'APPLI, CODÉE (5 novembre 2026), PAS SUR `main`
+
+Branche `lot/idees-pour-l-appli`, d'après `appli/soignee/une-idee-pour-l-appli.html` (ses choix 1 A, 2 B, 3 B, puis *« code ça »*). En bas des Réglages, pour tous : « Une idée pour l'appli » (`src/app/reglages/idee/`), la dictée du chantier ou l'écrit, « Envoyée, Annuler », et Vos idées avec leur suite. Chez l'éditeur seul : la ligne « Les idées reçues » (`src/app/reglages/idees-recues/`), trois onglets, ranger avec Annuler, répondre ; un courriel par jour à `CONTACT_ATLAS`, sans le texte. L'assistant propose `envoyer_idee`. Migration `0170` (deux lecteurs, `withEditeur`), dépôt `src/server/repositories/idees.ts`, règles `src/lib/idees.ts`, `ARCHITECTURE.md` §558. Joués verts ici : types, lint, `test-idees`, `test-mode-emploi`, `test-acces-roles`, `test-couches`, `test-pas-de-code-mort`, `test-aucun-tiret`, `test-aucune-fleche`, `test-pas-de-pansement`. **Écrits, pas encore joués (ils vident la base) : `test-idees-db`, `test-idees-e2e`.** **Niveau 3 (migration, isolation) : la batterie attend son accord.**
+
 ---
 ## LA MISE EN PAGE DU DEVIS, CODÉE (4 novembre 2026), SUR `main` LE 4 NOVEMBRE
 

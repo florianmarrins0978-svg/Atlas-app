@@ -101,6 +101,9 @@ const OUVERT_AU_SALARIE = [
   "/reglages/connexion",
   "/reglages/connexion/double-verification",
   "/reglages/apparence",
+  // **Une idée pour l'appli (5 novembre 2026)** : le salarié aussi dit ce qui
+  // lui manque, c'est lui qui est sur le chantier. Il ne lit que SES idées.
+  "/reglages/idee",
   // L'organigramme, visible par tous depuis le 27 septembre 2026 (sa règle).
   "/reglages/organigramme",
   // Les véhicules, lus par tous depuis le 14 octobre 2026 (§461) : la liste, la fiche, le papier.

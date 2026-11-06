@@ -339,6 +339,8 @@ export const QUESTIONS_PAR_ZONE: Record<string, [string, string][]> = {
     ["télécharger mes données", "reglages-donnees"],
     ["supprimer mon compte atlas", "reglages-effacer-compte"],
     ["résilier mon abonnement", "reglages-abonnement"],
+    ["proposer une idée pour améliorer l'appli", "reglages-une-idee"],
+    ["dire à atlas ce qui me manque", "reglages-une-idee"],
     ["changer de formule d'abonnement", "reglages-formule"],
     ["changer mon prénom", "reglages-compte"],
     ["changer mon mot de passe", "reglages-mot-de-passe"],

@@ -37015,3 +37015,23 @@ Contrôle : `test-retention-effacement` (sous `atlas_app` : le brouillon d'un cl
 **Les boutons du motif sont des capsules**, contre le dessin des planches (des rectangles arrondis) : `test-boutons-arrondis` tient la forme unique de tous les boutons du produit depuis le 12 août.
 
 **Ce qui n'est pas éprouvé ici** : les deux suites en base (`test-nature-absence-repo`, `test-jours-travailles-repo`) vident la base et attendent la batterie ; aucune suite navigateur n'ouvre encore les deux écrans neufs. Les écrans ont été rendus sans serveur, le vrai composant et des gestes simulés, à 360 et 390 px, en Origine et en Nuit ; les migrations ont été appliquées sur une base vide, et `test-toute-table-est-cloisonnee` y est vert.
+
+## §558 : Une idée pour l'appli : deux lecteurs sur une seule table
+
+*5 novembre 2026, sa planche `appli/soignee/une-idee-pour-l-appli.html`, ses choix 1 A, 2 B, 3 B, puis « code ça ».* Chaque utilisateur, salarié compris, dit à Atlas ce qui lui manque ; l'éditeur le lit et le range.
+
+**La seule table où un compte lit au-delà de son entreprise.** `idees` (migration 0170) porte deux lecteurs : l'entreprise, sous l'isolation ordinaire (`app.entreprise_id`), et l'éditeur, par une politique qui ne s'ouvre que si `app.lecteur_des_idees` vaut « editeur ». Ce réglage n'est posé que par `withEditeur` (`src/server/editeur.ts`), après `estEditeur`, qui relit l'adresse du compte en base et la compare à `ATLAS_EDITEUR_EMAIL`. Même confiance que `app.abonnement_prestataire` (0084). `app.entreprise_id` n'y est pas posé : une requête sur les clients ou les chantiers écrite par erreur dans `withEditeur` rend zéro ligne (`test-idees-db.ts` le mesure, une ligne de client à l'appui).
+
+**Écarté, et pourquoi.** Lever la RLS pour l'éditeur (interdit, `CLAUDE.md` §4) ; une copie dans une table sans isolation (le texte peut nommer un client, et la moindre requête mal écrite la lirait) ; une seconde application (sa question : « faudrait-il une petite application connectée ? ») : la même base, et une porte de plus sur internet.
+
+**Figé sur la ligne.** Le prénom de l'auteur, son rôle et le nom de son entreprise sont écrits au moment de l'envoi : l'éditeur ne lit jamais `users` ni `entreprises`. Une idée dit qui et quel jour, rien d'autre : ni l'heure, ni « à la voix », ni l'écran d'origine (ses deux règles du même soir).
+
+**L'artisan écrit une fois.** INSERT seul, à l'état « envoyée », sans réponse ni date de tri (vérifié par `WITH CHECK`) ; ni UPDATE ni DELETE ne lui sont ouverts. « Envoyée, Annuler » se joue AVANT l'envoi, par `useRetraits` : l'idée se pose à l'écran, et ne part qu'à la fermeture du tiroir (le minuteur, `pagehide` ou le démontage). Le tri de l'éditeur passe par le même crochet : « Marquée prévue, Annuler ».
+
+**La voix n'est pas gardée.** La planche montrait « Écouter » chez l'éditeur ; le code transcrit et oublie, comme la question dictée à l'assistant. Garder la voix de chaque utilisateur sur un serveur ne valait pas le confort d'écouter. Un écart à la planche, dit ici et à lui.
+
+**Un courriel par jour, sans le texte.** La première idée du jour écrit à `CONTACT_ATLAS` (« Une idée vous attend dans Atlas »), les suivantes se taisent. `idees_alertes` ne porte qu'une date, sans isolation, comme `termes_metier` : rien à isoler. Le jour ne se marque qu'après un envoi réussi.
+
+**L'assistant propose, il n'envoie pas.** Le geste `envoyer_idee` est une proposition comme les autres : il coche, puis confirme. La consigne lui fait d'abord chercher la fiche (`RechercherModeEmploi`) et lui interdit d'affirmer qu'une fonction n'existe pas : il dit qu'il ne trouve pas le geste. Une fiche `reglages-une-idee` lui apprend où est la porte.
+
+**Ses décisions du 6 novembre, à ne pas rouvrir.** En lecture seule (essai fini, abonnement arrêté), l'idée ne part pas : *« on va pas laisser envoyer une idée à la fin de l'essai gratuit »* ; l'écran le dit et donne l'adresse. **Pas de « Demandée 3 fois »** : la planche la montrait, il l'a écartée (*« pas de pastille »*) ; ne pas la coder d'après la planche. **Pas d'idées dans le fichier de « Mes données »** (*« j'en ai pas besoin »*) : le droit d'accès se rend sur demande. La confidentialité le dit, version `canevas-2` (article 13 du RGPD), et `docs/RGPD.md` §2.6.

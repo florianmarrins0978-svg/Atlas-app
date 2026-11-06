@@ -10,6 +10,10 @@ import { panneauVersionLente } from "@/lib/version-lente";
 import BoutonMiseAJour from "./BoutonMiseAJour";
 import SeDeconnecter from "./SeDeconnecter";
 import Sommaire from "./Sommaire";
+import PorteDesIdees from "./PorteDesIdees";
+import { estEditeur } from "@/server/editeur";
+import { nombreDIdeesNouvelles, uneIdeeVientDEtreFaite } from "@/server/repositories/idees";
+import { nouvellesEnMots } from "@/lib/idees";
 import { derniereIssueMiseAJour } from "./actions";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import { liaisonDeLEntreprise } from "@/server/repositories/banque";
@@ -51,13 +55,19 @@ export default async function ReglagesPage() {
   // n'interroge pas la base, il affiche ce qu'on lui donne (`CLAUDE.md` §4
   // sexies), et cette lecture-ci part avec les deux autres au lieu d'ajouter un
   // aller-retour.
-  const [role, etatVersion, entreprise, liaison, plateforme] = await Promise.all([
+  const [role, etatVersion, entreprise, liaison, plateforme, editeur, ideeFaite] = await Promise.all([
     getRole(ctx),
     versionEtRetard(),
     getEntreprise(ctx),
     liaisonDeLEntreprise(ctx),
     liaisonPlateforme(ctx),
+    estEditeur(ctx),
+    uneIdeeVientDEtreFaite(ctx),
   ]);
+  // Le compte n'est lu qu'une fois sûr que c'est l'éditeur : `withEditeur`
+  // refuserait tout autre compte, et une ligne qui n'est pas la sienne ne se
+  // calcule pas.
+  const nouvelles = editeur ? nouvellesEnMots(await nombreDIdeesNouvelles(ctx)) : null;
   const version = etatVersion.ligne;
 
   // **LA BASE PORTE-T-ELLE LE SCHÉMA QUE CE CODE ATTEND ? — sa panne du
@@ -96,6 +106,10 @@ export default async function ReglagesPage() {
         <EnTeteEcran titre="Réglages" />
 
         <Sommaire ensembles={ensembles} paquets nomEntreprise={entreprise?.nom ?? null} />
+
+        {/* **Sous Moi, au-dessus de Se déconnecter** : sa planche du
+            5 novembre 2026, « Une idée pour l'appli ». Pour tous les rôles. */}
+        <PorteDesIdees editeur={editeur ? { nouvelles } : null} ideeFaite={ideeFaite} />
 
         {/* **Un écran court dit pourquoi il est court.** Sans cette phrase, le
             salarié lit une application amputée et va demander au patron de
