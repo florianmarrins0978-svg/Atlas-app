@@ -37054,3 +37054,15 @@ lecture de la franchise, passe par `sousFranchise` et `mentionFranchise`.
 Écarté : changer la constante le jour J à la main. Personne ne l'aurait fait à
 minuit le 31 décembre, et chaque pièce de la nuit serait partie fausse.
 
+
+## §560 : Une suite navigateur ne dépend pas de ce que les autres laissent
+
+*6 novembre 2026, la batterie commune de quatre lots.* `test-le-client-s-est-trompe-e2e` tombait trois fois à la batterie et passait seule. Son écran, une fois qu'on l'a fait parler, disait « Cette date vient d'être retenue par ailleurs » : la démonstration ne propose qu'un jour, trois jours après l'amorçage, et les suites jouées avant elle posaient assez de chantiers ce jour-là pour le remplir. Le produit répondait juste.
+
+| Décision | Pourquoi |
+|---|---|
+| **la suite se donne son propre jour** (un jour de semaine dans quarante-cinq jours, dans la fenêtre de 90 jours que le serveur revérifie) et le rend à la fin | elle mesure l'erreur du client, pas l'occupation du planning. Un cas qui dépend du jour du mois et de l'ordre des suites ne dit rien de ce qu'il prétend |
+| **une attente qui échoue écrit ce que l'écran montre** | un « Timeout » ne désigne personne ; la phrase de l'écran a donné la cause en un tour, après trois batteries muettes |
+| **prouvée dans les conditions de la batterie** : le jour de la démonstration rempli à la main, l'ancienne version rouge, la nouvelle verte | une suite capricieuse ne se croit pas guérie parce qu'elle passe seule (§353) |
+
+Ce n'est pas le seul cas possible : toute suite qui prend « le premier jour proposé » de la démonstration partage ce risque. Elle se donne son jour, comme celle-ci.

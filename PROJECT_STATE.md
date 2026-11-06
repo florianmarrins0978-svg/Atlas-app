@@ -1,26 +1,26 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-11-04, `main`, quatre lots réunis en une seule batterie (`docs/batterie-commune-4-novembre.md`) : la mise en page du devis, la note du devis, « Mes partenaires » sur la main d'œuvre dictée, le titre des PDF importés et le détail sous la ligne. Batterie entière jouée : 556 suites base sur 559 et 213 navigateur sur 213, connexion derrière un proxy verte ; un rouge venu des lots corrigé et rejoué vert, les deux autres (`test-maquettes-hors-production`, `test-stockage-banc`) le sont aussi sur `main`.
-dernière migration `drizzle/0169_plateforme_facture_electronique.sql` (la plateforme de facture électronique, branche `lot/facture-x`), avant elle `drizzle/0164_sauts_de_page_du_devis.sql` (la mise en page du devis), avec `0163_aide_note_devis_vue.sql` (la note du devis), `0162_prestations_detail.sql` et `0161_pieces_importees_objet_cherche.sql` (le détail et le titre), sur `main` le 4 novembre ; avant elles, `0159_rappels_vehicules_vus.sql` et `0160_envoi_facture_destinataire_tape.sql` sur `main` le 4 novembre, `0158_cles_composites_effacent_comme_leur_lien.sql` le 3
+**Dernière mise à jour :** 2026-11-06, `main`, quatre lots de quatre sessions réunis en une seule batterie à sa demande (`docs/batterie-commune-6-novembre.md`) : les fériés, le motif d'une absence, les jours travaillés et les zones ; la Factur-X ; une idée pour l'appli ; la mention de la franchise datée. Trois batteries entières : la dernière, 571 suites base sur 571 et 213 navigateur sur 214, connexion derrière un proxy verte ; le seul rouge (`test-le-client-s-est-trompe-e2e`, une suite qui dépendait de l'ordre) corrigé, prouvé rouge puis vert, et rejoué par `verifier-ce-qui-a-bouge`.
+dernière migration `drizzle/0170_idees_pour_l_appli.sql` (une idée pour l'appli, 0167 sur sa branche), avec `0169_plateforme_facture_electronique.sql` (la Factur-X, 0165 sur sa branche) et `0165` à `0168` (nature d'une absence, jours travaillés corrigés, zones de déplacement, couleur du férié), sur `main` le 6 novembre ; avant elles `0164_sauts_de_page_du_devis.sql`, sur `main` le 4 novembre
 
 ---
-## LA FACTUR-X, CODÉE (5 novembre 2026), branche `lot/facture-x`
+## LA FACTUR-X, CODÉE (5 novembre 2026), SUR `main` LE 6 NOVEMBRE
 
 Ses choix du 5 novembre sur `appli/soignee/reglages-facture-electronique.html` : 1 A, 2 A, 3 B (`ARCHITECTURE.md` §555). Codé : le XML CII EN 16931 (`src/lib/facture-x.ts`), le PDF/A-3 (`src/server/pdf/facture-x-pdf.ts`), les polices « Atlas Archive », et l'émission des factures entreprise en Factur-X. Suites `test-facture-x` (règles officielles et veraPDF, 17 vertes) et `test-facture-x-emission-db` (3 vertes, rouge sans le branchement). **Et le branchement**, le même jour : migration 0165, écran `/reglages/facture-electronique`, connecteur de l'API commune XP Z12-013, choix 3 B dans `emettreFacture` ; suite `test-plateforme-facture-db` (12 vertes contre une fausse plateforme). **Reste** : l'adresse de Pennylane et un premier dépôt réel sur son compte d'essai (`TODO.md`).
 
 ---
-## LES FÉRIÉS, LE MOTIF, LES JOURS TRAVAILLÉS ET LES ZONES, CODÉS (6 novembre 2026), PAS SUR `main`
+## LES FÉRIÉS, LE MOTIF, LES JOURS TRAVAILLÉS ET LES ZONES, CODÉS (6 novembre 2026), SUR `main` LE 6 NOVEMBRE
 
 Branche `lot/paie-zones-feries` (*« code tout ça, tu peux pousser mais ne lance pas de batterie »*). Les fériés en bleu au planning, calculés pour toute année (`src/lib/jours-feries.ts`) ; le motif d'une absence, au planning et dans Équipe (migration `0165`) ; Pour mon comptable, Mes salariés, Jours travaillés, le compte du mois corrigeable et son PDF (`src/app/termines/comptable/jours-travailles/`, migration `0166`) ; Réglages, Équipe, Zones de déplacement, et les jours de chaque salarié par zone (`src/app/reglages/equipe/zones/`, migration `0167`). Puis ses deux réponses du même jour : un férié au planning compte travaillé, et sa couleur se règle dans Couleurs (migration `0168`). Types, lint et contrôles purs verts ; migrations appliquées sur une base vide, `test-toute-table-est-cloisonnee` vert ; écrans rendus sans serveur à 360 et 390 px. **Niveau 3 : la batterie, avec son accord, avant `main`.** Les suites en base `test-nature-absence-repo` et `test-jours-travailles-repo` sont écrites et pas jouées. `ARCHITECTURE.md` §557, `docs/lot-paie-zones-feries.md`.
 
 
 ---
-## UNE IDÉE POUR L'APPLI, CODÉE (5 novembre 2026), PAS SUR `main`
+## UNE IDÉE POUR L'APPLI, CODÉE (5 novembre 2026), SUR `main` LE 6 NOVEMBRE
 
 Branche `lot/idees-pour-l-appli`, d'après `appli/soignee/une-idee-pour-l-appli.html` (ses choix 1 A, 2 B, 3 B, puis *« code ça »*). En bas des Réglages, pour tous : « Une idée pour l'appli » (`src/app/reglages/idee/`), la dictée du chantier ou l'écrit, « Envoyée, Annuler », et Vos idées avec leur suite. Chez l'éditeur seul : la ligne « Les idées reçues » (`src/app/reglages/idees-recues/`), trois onglets, ranger avec Annuler, répondre ; un courriel par jour à `CONTACT_ATLAS`, sans le texte. L'assistant propose `envoyer_idee`. Migration `0170` (deux lecteurs, `withEditeur`), dépôt `src/server/repositories/idees.ts`, règles `src/lib/idees.ts`, `ARCHITECTURE.md` §558. Joués verts ici : types, lint, `test-idees`, `test-mode-emploi`, `test-acces-roles`, `test-couches`, `test-pas-de-code-mort`, `test-aucun-tiret`, `test-aucune-fleche`, `test-pas-de-pansement`. **Écrits, pas encore joués (ils vident la base) : `test-idees-db`, `test-idees-e2e`.** **Niveau 3 (migration, isolation) : la batterie attend son accord.**
 
 ---
-## LA MENTION DE LA FRANCHISE, DATÉE (6 novembre 2026), PAS SUR `main`
+## LA MENTION DE LA FRANCHISE, DATÉE (6 novembre 2026), SUR `main` LE 6 NOVEMBRE
 
 « art. 293 B du CGI » jusqu'au 31 décembre 2026, « article L. 233-3 du code
 des impositions sur les biens et services (CIBS) » à partir du 1er janvier

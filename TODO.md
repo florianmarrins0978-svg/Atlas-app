@@ -17,7 +17,7 @@ et sa hauteur reprise à chaque frappe pour un Safari qui ne le connaît pas).
 Aujourd'hui y garde le défaut, pour comparer. Le code suivra son choix.
 
 
-## CODÉ LE 6 NOVEMBRE, PAS SUR main : la mention de la franchise bascule seule au 1er janvier 2027
+## CODÉ LE 6 NOVEMBRE, SUR main LE 6 NOVEMBRE (batterie commune) : la mention de la franchise bascule seule au 1er janvier 2027
 
 **Corrigé le 6 novembre 2026, sur les sites officiels** (sa demande : *« tu
 peux aussi aller vérifier par toi-même »*). La date du 1er janvier 2027 écrite
@@ -92,7 +92,7 @@ n'est pas lu par le graphe : niveau 3, batterie, donc son « oui ».
 Suivant refuse avec une phrase rouge écrite tout en haut, loin du doigt. La
 planche la pose juste au-dessus de Suivant.
 
-## LES FÉRIÉS, LE MOTIF, LES JOURS TRAVAILLÉS ET LES ZONES : CODÉS LE 6 NOVEMBRE SUR `lot/paie-zones-feries`, PAS SUR main
+## LES FÉRIÉS, LE MOTIF, LES JOURS TRAVAILLÉS ET LES ZONES : CODÉS LE 6 NOVEMBRE, SUR main LE 6 NOVEMBRE (batterie commune)
 
 **Sa consigne du 6 novembre** : *« oui, code tout ça, tu peux pousser mais ne
 lance pas de batterie »*. Quatre gestes codés, sur la branche
@@ -109,11 +109,11 @@ refuse sans la batterie. Le document de retour : `docs/lot-paie-zones-feries.md`
 
 **Ce qui reste, et qui peut le faire :**
 
-1. **la batterie** (`npm run verifier:avant-livraison`), avec son « oui »,
-   puis la poussée sur `main` ;
-2. **deux suites en base écrites, jamais jouées** (elles vident la base) :
-   `test-nature-absence-repo.ts`, `test-jours-travailles-repo.ts`. La
-   batterie les jouera ;
+1. ~~la batterie, puis `main`~~ **faites le 6 novembre**, une seule batterie
+   pour quatre lots à sa demande (`docs/batterie-commune-6-novembre.md`) ;
+2. ~~deux suites en base jamais jouées~~ **jouées vertes par la batterie
+   commune** : `test-nature-absence-repo` (5 sur 5), `test-jours-travailles-repo`
+   (9 sur 9) ;
 3. **aucune suite navigateur n'ouvre encore Jours travaillés ni les zones**, ni
    l'avertissement du férié au planning et à l'envoi (pas rendu ici : ces deux
    écrans demandent un serveur) :
@@ -241,9 +241,9 @@ le Rotstop) est un produit de biocontrôle. Il a répondu *« on n'a pas ça dan
 l'appli »* : le Diagnostic végétal est monté (Paysage), mais rien ne charge ces
 trois fiches au démarrage de son espace (`scripts/importer-fiches-phyto.ts`).
 
-## ⏳ UNE IDÉE POUR L'APPLI, CODÉE LE 5 NOVEMBRE, BATTERIE À JOUER AVEC SON ACCORD (branche `lot/idees-pour-l-appli`)
+## UNE IDÉE POUR L'APPLI, CODÉE LE 5 NOVEMBRE : SUR main LE 6 NOVEMBRE (batterie commune)
 
-**Codé** (`ARCHITECTURE.md` §558, `PROJECT_STATE.md`). **Reste avant `main`** : la batterie (niveau 3 : migration 0170, isolation), dont `test-idees-db` et `test-idees-e2e` jamais joués ; regarder les trois écrans (`npm run voir -- /reglages`, `/reglages/idee`). **Écarts à la planche, dits** : pas de bouton « Écouter » (la voix n'est pas gardée), pas de « Demandée 3 fois » (écartée par lui le 6 novembre), la carte de l'assistant est une proposition comme les autres. **Tranché par lui le 6 novembre** : pas d'idée après la fin de l'essai ni sous un abonnement arrêté (*« on va pas laisser envoyer une idée à la fin de l'essai gratuit »*), c'est ce que fait déjà le code ; la ligne de confidentialité *« si c'est obligatoire, on le fait »* : elle l'est (article 13 du RGPD), faite en `canevas-2` (`versions.ts`, `docs/RGPD.md` §2.6), qui reste un canevas à faire rédiger avant de vrais clients. Pas de pastille « Demandée 3 fois » (*« j'en ai pas besoin en vrai, on laisse comme ça, pas de pastille »*). Et **pas d'idées dans le fichier de « Mes données »** : sa réponse du 6 novembre, à la question posée en propre (la session des idées l'avait écrit sans elle) : *« Non, on s'en fout. Les idées, les gens, ils s'en foutent de ça. »* Plus rien à trancher.
+**Codé** (`ARCHITECTURE.md` §558, `PROJECT_STATE.md`). **Sur `main` le 6 novembre**, par la batterie commune (`docs/batterie-commune-6-novembre.md`) : sa migration y devient 0170 et son paragraphe §558 ; la batterie a trouvé cinq défauts, corrigés (le limiteur d'une heure ramené au quart d'heure, la table hors de la sauvegarde déclarée, deux écrans au préchauffage, l'écran d'une idée déclaré à soi, le contrôle de l'éditeur qui exigeait un 404). Reste : regarder les trois écrans (`npm run voir -- /reglages`, `/reglages/idee`). **Écarts à la planche, dits** : pas de bouton « Écouter » (la voix n'est pas gardée), pas de « Demandée 3 fois » (écartée par lui le 6 novembre), la carte de l'assistant est une proposition comme les autres. **Tranché par lui le 6 novembre** : pas d'idée après la fin de l'essai ni sous un abonnement arrêté (*« on va pas laisser envoyer une idée à la fin de l'essai gratuit »*), c'est ce que fait déjà le code ; la ligne de confidentialité *« si c'est obligatoire, on le fait »* : elle l'est (article 13 du RGPD), faite en `canevas-2` (`versions.ts`, `docs/RGPD.md` §2.6), qui reste un canevas à faire rédiger avant de vrais clients. Pas de pastille « Demandée 3 fois » (*« j'en ai pas besoin en vrai, on laisse comme ça, pas de pastille »*). Et **pas d'idées dans le fichier de « Mes données »** : sa réponse du 6 novembre, à la question posée en propre (la session des idées l'avait écrit sans elle) : *« Non, on s'en fout. Les idées, les gens, ils s'en foutent de ça. »* Plus rien à trancher.
 
 ### L'historique de la planche
 
@@ -301,7 +301,7 @@ main ou par Atlas IA, non tranché. **À vérifier aussi** : la page
 Confidentialité devra dire que l'idée et la note vocale partent chez
 l'éditeur (documents versionnés, `src/server/documents-legaux/versions.ts`).
 
-## ~~⏳ À REGARDER PAR LUI (5 novembre 2026) : les zones de déplacement, et le motif d'une absence~~ CODÉS LE 6 NOVEMBRE, PAS SUR main
+## ~~⏳ À REGARDER PAR LUI (5 novembre 2026) : les zones de déplacement, et le motif d'une absence~~ CODÉS LE 6 NOVEMBRE, SUR main LE 6
 
 **Ses réponses du 5 novembre au soir** : jours travaillés dans **Pour mon
 comptable**, **avec motif** demandé quand on note l'absence ; et pour les
@@ -380,7 +380,7 @@ Sans motif, l'absence se note quand même, et Jours travaillés dit « pourquoi 
 aussi ; en plein soleil, c'est ce qui se lit le moins bien. Non touché : c'est
 sa charte, à lui proposer à part.
 
-## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : la couleur des jours fériés sur le planning~~ TRANCHÉ LE 5 NOVEMBRE : LE BLEU, CODÉ LE 6, PAS SUR main
+## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : la couleur des jours fériés sur le planning~~ TRANCHÉ LE 5 NOVEMBRE : LE BLEU, CODÉ ET SUR main LE 6
 
 **Sa réponse, le 5 novembre au soir** : *« bleue pour les jours fériés »*
 (`carteBleuFond` pour la case, `carteBleuTexte` pour le chiffre et la
@@ -412,7 +412,7 @@ planning et au choix des dates du client (`EnvoiAuClient.tsx`, lu dans le
 code). Le calcul des disponibilités n'y touche pas : sa règle est « on peut
 quand même les proposer ».
 
-## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : les jours travaillés de chaque salarié~~ TRANCHÉ LE 5 NOVEMBRE : A, CODÉ LE 6, PAS SUR main
+## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : les jours travaillés de chaque salarié~~ TRANCHÉ LE 5 NOVEMBRE : A, CODÉ ET SUR main LE 6
 
 **Sa réponse, le 5 novembre au soir** : *« faut la A »*. Le chiffre se
 corrige, et dès qu'il bouge un appui dit pourquoi (Congé, Maladie, Sans
