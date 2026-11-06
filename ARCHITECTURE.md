@@ -36953,3 +36953,32 @@ Contrôles : `test-feuille-main-oeuvre` (pur : la quantité à la journée, l'he
 **« Tout », lu comme ses deux coordonnées.** La question portait sur le téléphone et l'e-mail ; l'adresse est gardée pour la raison écrite ci-dessus, et c'est à lui de dire s'il la veut partie aussi (le brouillon ne pourrait alors plus s'émettre sans qu'il la retape). Un devis accepté et conservé garde ses copies : il ne lui a pas été demandé.
 
 Contrôle : `test-retention-effacement` (sous `atlas_app` : le brouillon d'un client supprimé n'a plus ni téléphone ni e-mail, son nom et son adresse restent), vu rouge avant la correction.
+
+## §557 : Les jours travaillés et les zones : le calcul se refait, seule la correction s'écrit
+
+*6 novembre 2026, sa consigne « code tout ça ». Planches `appli/soignee/jours-feries.html`, `motif-absence.html`, `jours-travailles.html` (la A), `zones-deplacement.html`.* Sur `lot/paie-zones-feries`, pas sur `main`.
+
+| Décision | Pourquoi |
+|---|---|
+| **les fériés se calculent** (`src/lib/jours-feries.ts`) : huit dates fixes, Pâques par Meeus, plus 1, 39 et 50 jours ; Vendredi saint et 26 décembre quand le code postal de l'entreprise est en 57, 67 ou 68 | aucune liste à tenir chaque année ; sans code postal, la liste nationale (le côté sûr : deux jours bleus de moins, jamais deux jours travaillés marqués fériés) |
+| **un férié se NOMME, il ne se ferme pas** | sa règle : on peut toujours le proposer. Le planning le peint, le compte le retire des jours ouvrés ; une seule liste pour les deux |
+| **la nature d'une absence est une colonne à part** (`absences_equipe.nature`, 0165), la note libre reste « pour vous » | la note ne part nulle part, la nature part au comptable. Déplacement et Formation comptent travaillés (`compteTravaille`) : une absence d'Atlas est née pour un déplacement de cinq jours |
+| **le calcul ne s'écrit pas** ; `jours_travailles_corriges` (0166) ne porte que ce que le patron a changé, par rang et par mois | une absence notée après coup change le calcul, jamais le chiffre saisi : les deux restent à l'écran et il décide. Un chiffre égal au calcul efface la ligne, sans quoi il redeviendrait figé |
+| **le salarié se désigne par son rang**, comme ses absences | la ligne d'équipe n'existe pas toujours en base |
+| **le motif doit aller dans le sens de l'écart** (`motifCorrectionLu`) | un congé ne dit rien d'un samedi travaillé ; un motif qui ne colle plus tombe |
+| **le réglage des zones est un `jsonb` sur l'entreprise** (0167), NULL veut dire jamais réglé | l'invitation ne parle qu'à celui qui n'a jamais répondu ; « Pas de zones » s'écrit et la fait taire |
+| **un jour se place au chantier le plus LOIN** ; au dépôt, en zone 1 ; un déplacement noté, hors zone ; une formation de la journée, sans zone | ses réponses des 5 et 6 novembre. **Un seul chantier non situé ce jour-là, et le jour n'a pas de zone** : le plus loin pourrait être lui, une zone devinée serait pire qu'un rouge |
+| **les coordonnées ne valent que pour l'adresse qui les a produites** (`positionSiSituee`) | la règle des fiches de sécurité ; et l'écran situe d'abord quelques chantiers (`situerQuelquesChantiers`), que seul l'appariement situait |
+| **le siège se situe une fois, quand le réglage s'écrit** (`src/server/zones-deplacement.ts`) | pas un appel à la Base Adresse Nationale à chaque ouverture ; une adresse changée se resitue au réglage suivant. Une panne du service n'empêche pas d'écrire les zones, l'écran dit « pas pu être située » |
+| **les cases corrigées ne s'effacent pas quand une borne bouge** | un mois passé a pu partir chez le comptable avec elles. La planche les remettait à zéro ; une case fausse se voit (trait d'or, total rouge) et se remet d'un appui |
+| **ce qu'il manque se compare au nombre de jours arrondi au-dessus** (`manqueAuxZones`) | une demi-journée de chantier occupe un jour dans sa zone |
+| **une seule feuille par salarié porte le chiffre ET les zones** | les deux planches en dessinaient chacune une ; réunies, il n'y a qu'un endroit où corriger un salarié |
+| **la teinte se choisit pour TOUTES les zones**, une rampe OKLCH du clair (proche) au foncé (loin), inversée sur les chartes sombres ; le PDF prend la rampe claire convertie en sRGB | sa demande du 6 novembre ; éprouvée au validateur des couleurs, sept teintes, deux à sept pas, huit chartes |
+| **corriger est au patron et à la facturation, régler les zones au patron seul** | le premier est Pour mon comptable (`exigerFacturation`), le second vit dans Équipe (`exigerProprietaire`) |
+| **Atlas compte les jours, jamais les montants** | ils changent selon la région et deux fois par an (`docs/AGENT.md` §3). Les deux barèmes sont des modèles à vérifier, chaque nom et chaque borne se changent |
+
+**Le texte se rédige une fois** : `phraseDeLAbsence`, `phraseDeLaCorrection` et `resumeDuMois` servent l'écran et le PDF, qui lisent le même chargement (`moisDesSalaries`).
+
+**Les boutons du motif sont des capsules**, contre le dessin des planches (des rectangles arrondis) : `test-boutons-arrondis` tient la forme unique de tous les boutons du produit depuis le 12 août.
+
+**Ce qui n'est pas éprouvé ici** : les deux suites en base (`test-nature-absence-repo`, `test-jours-travailles-repo`) vident la base et attendent la batterie ; aucune suite navigateur n'ouvre encore les deux écrans neufs. Les écrans ont été rendus sans serveur, le vrai composant et des gestes simulés, à 360 et 390 px, en Origine et en Nuit ; les migrations ont été appliquées sur une base vide, et `test-toute-table-est-cloisonnee` y est vert.

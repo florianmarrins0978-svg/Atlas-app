@@ -78,6 +78,41 @@ n'est pas lu par le graphe : niveau 3, batterie, donc son « oui ».
 Suivant refuse avec une phrase rouge écrite tout en haut, loin du doigt. La
 planche la pose juste au-dessus de Suivant.
 
+## LES FÉRIÉS, LE MOTIF, LES JOURS TRAVAILLÉS ET LES ZONES : CODÉS LE 6 NOVEMBRE SUR `lot/paie-zones-feries`, PAS SUR main
+
+**Sa consigne du 6 novembre** : *« oui, code tout ça, tu peux pousser mais ne
+lance pas de batterie »*. Quatre gestes codés, sur la branche
+`lot/paie-zones-feries`, poussée ; **rien n'est sur `main`** : le lot est de
+niveau 3 (deux migrations, `drizzle/0165` à `0167`), et `garde-fusion-main`
+refuse sans la batterie. Le document de retour : `docs/lot-paie-zones-feries.md`.
+
+| | où le voir dans `src/` |
+|---|---|
+| les fériés en bleu | `src/lib/jours-feries.ts`, `MoisCharge.tsx`, `PastilleFerie.tsx` |
+| le motif d'une absence | `src/lib/nature-absence.ts`, `ChoixDeLaNature.tsx`, migration 0165 |
+| les jours travaillés | `src/app/termines/comptable/jours-travailles/`, migration 0166 |
+| les zones | `src/app/reglages/equipe/zones/`, `src/lib/zones-deplacement.ts`, migration 0167 |
+
+**Ce qui reste, et qui peut le faire :**
+
+1. **la batterie** (`npm run verifier:avant-livraison`), avec son « oui »,
+   puis la poussée sur `main` ;
+2. **deux suites en base écrites, jamais jouées** (elles vident la base) :
+   `test-nature-absence-repo.ts`, `test-jours-travailles-repo.ts`. La
+   batterie les jouera ;
+3. **aucune suite navigateur n'ouvre encore Jours travaillés ni les zones** :
+   les écrans ont été rendus ici sans serveur (le vrai composant, gestes
+   simulés, à 360 et 390 px, en Origine et en Nuit), jamais derrière une
+   connexion. À écrire avant ou avec la batterie ;
+4. **les deux barèmes** (MSA du paysage, accord régional du bâtiment) restent
+   à vérifier sur les textes de l'année : ce poste ne joint pas msa.fr. Ils se
+   modifient à l'écran ;
+5. **à trancher par lui** : le lundi de Pentecôte (journée de solidarité)
+   compte-t-il travaillé ? Aujourd'hui il est férié, donc retiré, et se
+   corrige à la main. Le bleu des fériés dans Couleurs, ou fixe ?
+6. **hors du compte, à dire** : un salarié embauché ou parti en cours de mois,
+   ou à temps partiel, se corrige à la main ; sa fiche n'a ni dates ni jours.
+
 ## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : cinq planches, A ou B~~ TRANCHÉ LE 6 NOVEMBRE : HIVERNAGE B, NOTE B, FRANCHISE A ET B, DEUX ÉCARTÉES ; TROIS LOTS CODÉS, PAS SUR main
 
 **Sa question du 5 novembre** : *« est-ce que tu as des idées pour améliorer
@@ -242,13 +277,14 @@ main ou par Atlas IA, non tranché. **À vérifier aussi** : la page
 Confidentialité devra dire que l'idée et la note vocale partent chez
 l'éditeur (documents versionnés, `src/server/documents-legaux/versions.ts`).
 
-## ⏳ À REGARDER PAR LUI (5 novembre 2026) : les zones de déplacement, et le motif d'une absence
+## ~~⏳ À REGARDER PAR LUI (5 novembre 2026) : les zones de déplacement, et le motif d'une absence~~ CODÉS LE 6 NOVEMBRE, PAS SUR main
 
 **Ses réponses du 5 novembre au soir** : jours travaillés dans **Pour mon
 comptable**, **avec motif** demandé quand on note l'absence ; et pour les
 zones, *« oui, avec celle pour la MSA et pour le bâtiment, avec possibilité
 de switch entre les deux, ou de pas la mettre si l'utilisateur ne travaille
-pas par zone. Et modifiable. »* Il n'a pas dit de coder : **rien dans `src/`**.
+pas par zone. Et modifiable. »* **Codé le 6 novembre** (entrée du lot, en
+tête de ce fichier).
 
 **Planche des zones** : `appli/soignee/zones-deplacement.html`. **Pas
 d'interrupteur** : il l'avait proposé, puis s'est repris le même soir (*« si
@@ -305,7 +341,7 @@ trancher par lui** : ~~un jour sur deux chantiers, la zone la plus loin ou
 celle du matin~~ **tranché le 6 novembre : la plus loin.**
 
 **Planche du motif : VALIDÉE le 5 novembre** (*« très bien motif d'une
-absence »*), pas codée. `appli/soignee/motif-absence.html`. Six motifs d'un
+absence »*), codée le 6 novembre. `appli/soignee/motif-absence.html`. Six motifs d'un
 appui, au planning sous le salarié qui manque et dans la feuille d'Équipe :
 Congé, Maladie, Sans solde, Déplacement, Formation, Autre. **Trouvé en la
 dessinant** : une absence d'Atlas est née pour un déplacement de cinq jours
@@ -320,13 +356,13 @@ Sans motif, l'absence se note quand même, et Jours travaillés dit « pourquoi 
 aussi ; en plein soleil, c'est ce qui se lit le moins bien. Non touché : c'est
 sa charte, à lui proposer à part.
 
-## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : la couleur des jours fériés sur le planning~~ TRANCHÉ LE 5 NOVEMBRE : LE BLEU, PAS CODÉ
+## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : la couleur des jours fériés sur le planning~~ TRANCHÉ LE 5 NOVEMBRE : LE BLEU, CODÉ LE 6, PAS SUR main
 
 **Sa réponse, le 5 novembre au soir** : *« bleue pour les jours fériés »*
 (`carteBleuFond` pour la case, `carteBleuTexte` pour le chiffre et la
-pastille). Il n'a pas dit de coder : **rien dans `src/`**. Restent ouverts,
-ci-dessous : la couleur dans Couleurs ou non, l'Alsace et la Moselle d'office,
-le lundi de Pentecôte dans les jours travaillés.
+pastille). **Codé le 6 novembre** (entrée du lot, en tête de ce fichier),
+l'Alsace et la Moselle d'office par le code postal de l'entreprise. Restent
+ouverts : la couleur dans Couleurs ou non, le lundi de Pentecôte.
 
 **Sa réponse du 5 novembre**, devant la planche des jours travaillés : *« oui
 le calendrier doit connaître les jours fériés, on doit quand même pouvoir les
@@ -342,8 +378,7 @@ dans la semaine ; « 11 férié » dans la légende. **À trancher par lui** : ~
 rouge ou violet~~ le bleu ; la couleur dans Couleurs ou non ; les deux fériés
 d'Alsace et Moselle d'office selon l'adresse de l'entreprise ; le lundi de
 Pentecôte, souvent travaillé (journée de solidarité), compte-t-il dans les
-jours travaillés ? **Rien dans `src/`.** Avant de lui redemander : chercher
-`ferie` dans `src/lib/` et `src/components/atlas/MoisCharge.tsx`.
+jours travaillés ? Codé : `src/lib/jours-feries.ts`, lu par `MoisCharge.tsx`.
 
 **Le code, le jour venu** : une règle pure dans `src/lib/` (huit dates fixes,
 Pâques par Meeus, plus un, trente-neuf et cinquante jours ; Vendredi saint et
@@ -353,14 +388,13 @@ planning et au choix des dates du client (`EnvoiAuClient.tsx`, lu dans le
 code). Le calcul des disponibilités n'y touche pas : sa règle est « on peut
 quand même les proposer ».
 
-## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : les jours travaillés de chaque salarié~~ TRANCHÉ LE 5 NOVEMBRE : A, PAS CODÉ
+## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : les jours travaillés de chaque salarié~~ TRANCHÉ LE 5 NOVEMBRE : A, CODÉ LE 6, PAS SUR main
 
 **Sa réponse, le 5 novembre au soir** : *« faut la A »*. Le chiffre se
 corrige, et dès qu'il bouge un appui dit pourquoi (Congé, Maladie, Sans
-solde, Autre ; Samedi travaillé, Férié travaillé quand il monte). Il n'a pas
-dit de coder : **rien dans `src/`**, et le lot (migration, niveau 3) attend
-son « code-le ». Restent ouverts, ci-dessous : où le ranger, et le motif
-demandé quand on note l'absence.
+solde, Autre ; Samedi travaillé, Férié travaillé quand il monte). **Codé le
+6 novembre**, dans Pour mon comptable, avec le motif demandé quand on note
+l'absence (entrée du lot, en tête de ce fichier).
 
 **Sa question du même soir, les ZONES** : *« des conventions travaillent avec
 les zones, 1, 2, 3, 4 ; est-ce toutes les mêmes ? »*. Non. Bâtiment et travaux
@@ -398,8 +432,7 @@ demie) ; une feuille avec moins, plus, le chiffre tapé, « Le calcul disait 18 
 et Remettre ; un PDF d'une page par mois, partagé par le téléphone.
 **A** (proposé) : « Pourquoi 3 jours de moins ? » Congé, Maladie, Sans solde,
 Autre (et Samedi travaillé, Férié travaillé quand il monte). **B** : le chiffre
-seul. **Rien dans `src/`.** Avant de lui redemander : chercher
-`Jours travaillés` dans `src/app/termines/comptable/`.
+seul. Codé : `src/app/termines/comptable/jours-travailles/`.
 
 **À trancher par lui** : A ou B ; Pour mon comptable ou Réglages, Équipe ; le
 motif d'une absence notée, écrit « pour vous » (`AbsencesEquipe.tsx`), ne va

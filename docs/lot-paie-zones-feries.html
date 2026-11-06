@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Les fériés, le motif, les jours travaillés et les zones : codés</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="les-fériés-le-motif-les-jours-travaillés-et-les-zones--codés">Les fériés, le motif, les jours travaillés et les zones : codés</h1>
+<p><em>6 novembre 2026. Ta consigne : « oui, code tout ça, tu peux pousser mais ne lance pas de batterie ».</em></p>
+<p><strong>Où c'est :</strong> sur la branche <code>lot/paie-zones-feries</code>, poussée. <strong>Pas sur <code>main</code></strong> : le lot porte trois migrations, donc il demande la batterie, et le garde-fou de <code>main</code> refuse sans elle. Rien ne change sur ton espace tant que ce n'est pas fusionné.</p>
+<h2 id="ce-qui-est-codé-point-par-point">Ce qui est codé, point par point</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Verdict</th>
+<th>Où</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>1. Les jours fériés en bleu</strong></td>
+<td>codé, comme la planche : la case bleue, le nom à côté de la date, « 11 férié » dans la légende ; un férié sans chantier paraît dans la semaine. Toujours proposable</td>
+<td><code>src/lib/jours-feries.ts</code>, <code>MoisCharge.tsx</code>, <code>PastilleFerie.tsx</code></td>
+</tr>
+<tr>
+<td><strong>Chaque année, tout seul</strong></td>
+<td>oui : les dates se calculent (Pâques, Ascension, Pentecôte en découlent). Aucune liste à mettre à jour</td>
+<td><code>src/lib/jours-feries.ts</code></td>
+</tr>
+<tr>
+<td><strong>L'Alsace et la Moselle</strong></td>
+<td>deux fériés de plus (Vendredi saint, 26 décembre), lus dans le code postal de l'entreprise (57, 67, 68)</td>
+<td>idem</td>
+</tr>
+<tr>
+<td><strong>2. Le motif d'une absence</strong></td>
+<td>codé : Congé, Maladie, Sans solde, Déplacement, Formation, Autre, au planning et dans Réglages, Équipe. Déplacement et Formation comptent travaillés. La note reste « pour vous »</td>
+<td><code>ChoixDeLaNature.tsx</code>, migration <code>0165</code></td>
+</tr>
+<tr>
+<td><strong>3. Jours travaillés, la A</strong></td>
+<td>codé dans Pour mon comptable, rubrique Mes salariés : le mois entre deux flèches, le compte de chaque salarié, la feuille avec moins, plus, le chiffre tapé (19,5 marche), « Le calcul disait 18 », Remettre, et « Pourquoi 3 jours de moins ? »</td>
+<td><code>src/app/termines/comptable/jours-travailles/</code>, migration <code>0166</code></td>
+</tr>
+<tr>
+<td><strong>Le PDF du comptable</strong></td>
+<td>codé : une page par mois, aligné comme sur la planche, partagé par le téléphone. Rien ne part sans ton appui</td>
+<td><code>src/server/pdf/jours-travailles-pdf.ts</code></td>
+</tr>
+<tr>
+<td><strong>4. Les zones de déplacement</strong></td>
+<td>codé dans Réglages, Équipe, ligne Zones de déplacement sous les absences : Pas de zones, Paysage, Bâtiment ; chaque nom (« Zone 3C ») et chaque borne se changent, une zone s'ajoute ou part, Remettre le barème</td>
+<td><code>src/app/reglages/equipe/zones/</code>, migration <code>0167</code></td>
+</tr>
+<tr>
+<td><strong>Les zones d'office</strong></td>
+<td>oui : réglées une fois, elles paraissent sous chaque salarié (une pastille par zone, la barre de répartition) et dans le PDF. Jamais réglé : une ligne « Vos salariés ont des zones de déplacement ? Régler »</td>
+<td><code>JoursTravailles.tsx</code></td>
+</tr>
+<tr>
+<td><strong>Le chantier le plus loin, le dépôt en zone 1</strong></td>
+<td>oui, tes deux règles</td>
+<td><code>src/lib/zones-deplacement.ts</code></td>
+</tr>
+<tr>
+<td><strong>« Il manque une zone, ajoutez-la. »</strong></td>
+<td>oui : le total en rouge, et dans la feuille le jour et le lieu (« Vendredi 6 novembre, Les Landes, adresse non située ») ; le plus sur la bonne zone l'efface. « Une zone de trop, retirez-la. » dans l'autre sens</td>
+<td>idem</td>
+</tr>
+<tr>
+<td><strong>Toucher une zone sous un salarié</strong></td>
+<td>ouvre ses jours dans cette zone : la date, le code postal et la ville, la rue, chez qui, la distance</td>
+<td>idem</td>
+</tr>
+<tr>
+<td><strong>La pastille de couleur</strong></td>
+<td>ouvre les sept dégradés ; un appui, et toutes les zones changent, chez tous les salariés et dans le PDF</td>
+<td>idem</td>
+</tr>
+</tbody></table></div>
+<h2 id="ce-qui-a-été-fait-autrement-et-pourquoi">Ce qui a été fait autrement, et pourquoi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Une seule feuille par salarié</strong></td>
+<td>les deux planches en dessinaient chacune une (le chiffre, puis les zones). Réunies : le chiffre en haut, les zones dessous. Un seul endroit pour corriger quelqu'un</td>
+</tr>
+<tr>
+<td><strong>Les boutons du motif en capsule</strong></td>
+<td>la planche les dessinait en rectangles arrondis ; ta règle du 12 août veut la même forme pour tous les boutons, et le contrôle l'a refusé</td>
+</tr>
+<tr>
+<td><strong>L'icône des zones : une épingle</strong></td>
+<td>celle qui existait (« carte ») est une carte bancaire, vu sur la capture</td>
+</tr>
+<tr>
+<td><strong>Changer une borne n'efface pas les zones corrigées</strong></td>
+<td>la planche les remettait à zéro. Un mois déjà envoyé au comptable les garde ; une case corrigée garde son trait d'or et se remet d'un appui</td>
+</tr>
+<tr>
+<td><strong>Les chantiers pas encore situés le sont à l'ouverture</strong></td>
+<td>sinon presque tous les jours seraient en rouge : jusqu'ici, seul l'appariement du planning situait les adresses. Huit au plus à chaque ouverture</td>
+</tr>
+<tr>
+<td><strong>Corriger les jours : toi et la facturation ; régler les zones : toi seul</strong></td>
+<td>le premier vit dans Pour mon comptable, le second dans Équipe</td>
+</tr>
+</tbody></table></div>
+<h2 id="trouvé-en-chemin-et-corrigé">Trouvé en chemin, et corrigé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li><strong>L'écran Équipe perdait le motif des absences déjà notées</strong> (mon lot d'avant) : il se voyait au moment de noter, plus après. Corrigé à la racine : le compilateur refuse désormais l'oubli.</li>
+<li><strong>Deux défauts vus sur les captures</strong> : les intertitres de la feuille sortaient dans la police des titres ; « de 20 à » se coupait sur deux lignes dans le réglage des zones. Les deux corrigés, recapturés à 360 px.</li>
+</ul>
+<h2 id="ce-qui-a-été-éprouvé-ici">Ce qui a été éprouvé ici</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>types, style</td>
+<td>verts</td>
+</tr>
+<tr>
+<td>contrôles purs du dépôt (tirets, flèches, couches, code mort, pansements, boutons, accès, pages gardées, couleurs, PDF, numéros de migration, TODO, mémoire)</td>
+<td><strong>22 sur 22 verts</strong></td>
+</tr>
+<tr>
+<td>les règles des jours et des zones (<code>test-jours-travailles</code>)</td>
+<td><strong>24 essais verts</strong>, deux vus rouges en cassant exprès</td>
+</tr>
+<tr>
+<td>les trois migrations</td>
+<td>appliquées sur une base vide montée ici ; la nouvelle table est sous RLS forcée, <code>test-toute-table-est-cloisonnee</code> vert</td>
+</tr>
+<tr>
+<td>le PDF</td>
+<td>rendu et regardé, avec et sans zones</td>
+</tr>
+<tr>
+<td>les deux écrans</td>
+<td>rendus dans un navigateur, le vrai composant, à 360 et 390 px, en Origine et en Nuit, gestes joués (corriger, motif, zone, couleur, jours d'une zone)</td>
+</tr>
+</tbody></table></div>
+<h2 id="ce-qui-na-pas-été-éprouvé">Ce qui n'a PAS été éprouvé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li><strong>La batterie</strong>, à ta demande.</li>
+<li><strong>Deux suites en base</strong>, écrites et jamais jouées : elles vident la base, donc elles attendent ta batterie (<code>test-nature-absence-repo</code>, <code>test-jours-travailles-repo</code>).</li>
+<li><strong>Les écrans derrière une vraie connexion</strong> : pas vérifiable ici sans serveur. Aucune suite navigateur ne les ouvre encore.</li>
+</ul>
+<h2 id="ce-qui-reste-et-qui-le-tranche">Ce qui reste, et qui le tranche</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>qui</th>
+</tr></thead><tbody>
+<tr>
+<td>la batterie, puis <code>main</code></td>
+<td><strong>toi</strong>, ton « oui »</td>
+</tr>
+<tr>
+<td>le lundi de Pentecôte (journée de solidarité) : compté travaillé ? Aujourd'hui férié, donc retiré, et corrigeable à la main</td>
+<td><strong>toi</strong></td>
+</tr>
+<tr>
+<td>le bleu des fériés dans Couleurs, ou fixe</td>
+<td><strong>toi</strong></td>
+</tr>
+<tr>
+<td>les deux barèmes (MSA, bâtiment) à vérifier sur les textes de l'année : ce poste ne joint pas le site de la MSA</td>
+<td><strong>toi ou ton comptable</strong> ; ils se changent à l'écran</td>
+</tr>
+<tr>
+<td>un salarié embauché ou parti en cours de mois, ou à temps partiel</td>
+<td>se corrige à la main ; sa fiche n'a ni dates ni jours</td>
+</tr>
+<tr>
+<td>une suite navigateur pour Jours travaillés et les zones</td>
+<td><strong>moi</strong>, avec la batterie</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>
