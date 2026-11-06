@@ -37035,3 +37035,22 @@ Contrôle : `test-retention-effacement` (sous `atlas_app` : le brouillon d'un cl
 **L'assistant propose, il n'envoie pas.** Le geste `envoyer_idee` est une proposition comme les autres : il coche, puis confirme. La consigne lui fait d'abord chercher la fiche (`RechercherModeEmploi`) et lui interdit d'affirmer qu'une fonction n'existe pas : il dit qu'il ne trouve pas le geste. Une fiche `reglages-une-idee` lui apprend où est la porte.
 
 **Ses décisions du 6 novembre, à ne pas rouvrir.** En lecture seule (essai fini, abonnement arrêté), l'idée ne part pas : *« on va pas laisser envoyer une idée à la fin de l'essai gratuit »* ; l'écran le dit et donne l'adresse. **Pas de « Demandée 3 fois »** : la planche la montrait, il l'a écartée (*« pas de pastille »*) ; ne pas la coder d'après la planche. **Pas d'idées dans le fichier de « Mes données »** (*« j'en ai pas besoin »*) : le droit d'accès se rend sur demande. La confidentialité le dit, version `canevas-2` (article 13 du RGPD), et `docs/RGPD.md` §2.6.
+
+## §559 : Une phrase de loi a une date, et la pièce garde celle de son jour
+
+La mention de la franchise cite un article de loi, et l'article change de
+numéro quand la TVA passe du CGI au CIBS : L. 233-3, en vigueur le 1er janvier
+2027 (ordonnance n° 2026-671 du 27 juillet 2026). Une constante ne peut pas
+dire vrai des deux côtés de cette date : elle aurait cité trop tôt un article
+pas encore en vigueur, ou trop tard un article abrogé.
+
+`mentionFranchise(jour)` (`src/lib/franchise-tva.ts`) lit le jour de la PIÈCE,
+jamais celui de l'affichage : une facture de 2026 retéléchargée en 2027 garde
+sa phrase, ce que le BOFiP permet jusqu'au 31 décembre 2027. Facture, devis et
+avoir la prennent au même endroit ; l'avoir, qui recopiait la phrase et la
+lecture de la franchise, passe par `sousFranchise` et `mentionFranchise`.
+`scripts/test-mention-franchise.ts` refuse la phrase écrite ailleurs.
+
+Écarté : changer la constante le jour J à la main. Personne ne l'aurait fait à
+minuit le 31 décembre, et chaque pièce de la nuit serait partie fausse.
+

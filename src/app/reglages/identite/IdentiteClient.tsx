@@ -16,7 +16,8 @@ import { formeADuCapital, formeConnue } from "@/lib/formes-juridiques";
 import { capitalEnBase } from "@/lib/mentions-legales";
 import { enTeteDuDocument, type EnTeteDocument } from "@/lib/en-tete-document";
 import { ibanEnGroupes } from "@/lib/modalites-paiement";
-import { MENTION_FRANCHISE } from "@/lib/franchise-tva";
+import { mentionFranchise } from "@/lib/franchise-tva";
+import { jourIso } from "@/lib/jour";
 import AlerteAncienIban from "@/components/atlas/AlerteAncienIban";
 import { listerAPrevenirAction, prevenirAction } from "@/app/prevenir-du-nouvel-iban";
 import type { FactureAPrevenir } from "@/server/repositories/factures";
@@ -385,7 +386,7 @@ export default function IdentiteClient({
               enregistrer({ regimeTva: "franchise" });
             }}
             titre="Franchise en base"
-            detail="Pas de TVA. La mention 293 B s'imprime."
+            detail="Pas de TVA. La mention s'imprime."
           />
           <CarteChoix
             pris={valeurs.regimeTva === "assujettie"}
@@ -430,7 +431,7 @@ export default function IdentiteClient({
           </>
         ) : (
           <div className="mt-2.5">
-            <PlageTon ton="vert">Vos factures portent : {MENTION_FRANCHISE}</PlageTon>
+            <PlageTon ton="vert">Vos factures portent : {mentionFranchise(jourIso(new Date()))}</PlageTon>
           </div>
         )}
       </Paquet>

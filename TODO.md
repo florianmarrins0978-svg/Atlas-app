@@ -16,7 +16,7 @@ règle pas (la case y passe à 76 px de haut, sans grandir) : à y ajouter avant
 de la coder.
 
 
-## AVANT LE 31 DÉCEMBRE 2027 : la mention « TVA non applicable, art. 293 B du CGI »
+## CODÉ LE 6 NOVEMBRE, PAS SUR main : la mention de la franchise bascule seule au 1er janvier 2027
 
 **Corrigé le 6 novembre 2026, sur les sites officiels** (sa demande : *« tu
 peux aussi aller vérifier par toi-même »*). La date du 1er janvier 2027 écrite
@@ -29,7 +29,20 @@ L. 223-3 du Code des impositions sur les biens et services (CIBS) » (une de ses
 pages écrit L. 233-3, sans doute une coquille : à faire trancher). Le détail,
 pour lui : `docs/A-FAIRE.md` point 18.
 
-**Le jour où la phrase change dans Atlas, elle vit en DEUX copies** :
+**Codé le 6 novembre 2026 sur sa consigne** (*« si t'as vérifié, change la phrase
+tout de suite »*), lot `lot/mention-franchise`, PAS SUR `main` : niveau 3, il
+attend sa batterie. La vérification a montré que L. 223-3 ET L. 233-3 existent :
+le premier vient de l'ordonnance de décembre 2025, le second de celle du
+27 juillet 2026, **en vigueur le 1er janvier 2027** (Légifrance,
+LEGIARTI000054524584). Écrire L. 233-3 dès novembre 2026, c'était citer un
+article pas encore en vigueur : `mentionFranchise(jour)` rend donc 293 B avant
+le 1er janvier 2027 et L. 233-3 ensuite, au jour de la pièce (facture, devis,
+avoir, et la phrase de Votre TVA). `scripts/test-mention-franchise.ts` et un
+cas de `test-facture-pdf.ts`, rouges d'abord. Reste : la confirmation de son
+comptable, et le texte des conditions (`ConditionsClient.tsx`, « la franchise
+de l'article 293 B ») qui décrit les CGU, laissé tel quel.
+
+**Ce qui était noté avant d'être codé** : la phrase vivait en DEUX copies :
 `MENTION_FRANCHISE` (`src/lib/franchise-tva.ts`) et la chaîne écrite en dur
 dans `src/server/pdf/avoir-pdf.ts`. La seconde doit d'abord prendre la
 première (`CLAUDE.md` §3), sinon l'avoir gardera l'ancienne phrase.
