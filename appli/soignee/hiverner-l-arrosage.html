@@ -53,6 +53,18 @@
   Aucun matériel, aucun calcul d'arrosage sur cette planche
   (.claude/rules/arrosage.md).
 
+  LE PRÉVOIR, sa demande du 6 novembre 2026 : « Pour l'arrosage quand on
+  clique sur le prévoir ça serais bien de choisir une date et qu'elle ce pose
+  sur le planning ». Une feuille : le mois, le jour (les jours passés, les
+  week-ends et le férié ne se touchent pas, un point d'or sous un jour déjà
+  chargé), puis le matin, l'après-midi ou la journée, comme l'ajout au
+  planning (src/app/planning/AjoutDunClient.tsx, BasculeDuMoment.tsx), chaque
+  moment disant ce qui y est déjà posé. Le poser au planning pose le client
+  avec « Hivernage de l'arrosage » pour travaux, comme un client posé sans
+  devis. La goutte RESTE jusqu'à C'est fait : prévu n'est pas fait, et c'est
+  l'oubli qu'elle évite. Rien ne se choisit d'office : aucun jour, aucun
+  moment n'est posé avant son appui.
+
   RIEN N'EST CODÉ DANS src/. Les clients sont ceux des planches Vos clients
   et La fiche d'un client.
 */
@@ -161,13 +173,60 @@
 .question p b { display: block; color: var(--atlas-carteBleuTexte); }
 .question .rang-boutons { margin-top: 14px; }
 .question .bouton-petit { width: 100%; }
+
+/* ─── Le prévoir : le jour, le moment, puis le planning ────────────────── */
+.feuille-sous { margin: -10px 0 18px; font-size: 15px; color: var(--atlas-inkSoft); }
+.mois-tete { display: flex; align-items: center; justify-content: space-between; margin: 0 0 6px; }
+.mois-tete b { font: 400 21px/1.2 var(--serif); font-weight: 400; }
+.mois-tete button { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-or); }
+.mois-tete button[disabled] { color: color-mix(in srgb, var(--atlas-or) 28%, transparent); cursor: default; }
+.mois-tete .ico { width: 22px; height: 22px; stroke-width: 2; }
+.jours-noms, .grille { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.jours-noms span { padding-bottom: 4px; text-align: center; font-size: 12.5px; font-weight: 700; color: var(--atlas-muted); }
+.case-jour { position: relative; height: 44px; border-radius: 10px; font-size: 16px; font-variant-numeric: tabular-nums lining-nums;
+             color: var(--atlas-ink); transition: background-color 160ms var(--courbe); }
+.case-jour[disabled] { color: var(--atlas-muted); opacity: 0.5; cursor: default; }
+/* Le férié prend le bleu du planning (sa réponse du 5 novembre, jours-feries.html). */
+.case-jour.ferie { color: var(--atlas-carteBleuTexte); opacity: 0.8; }
+.case-jour.charge::after { content: ""; position: absolute; left: 50%; bottom: 5px; width: 5px; height: 5px; margin-left: -2.5px;
+                           border-radius: 50%; background: var(--atlas-or); }
+.case-jour[aria-pressed="true"] { background: var(--atlas-plein); color: var(--sur-plein); }
+.case-jour[aria-pressed="true"]::after { background: var(--sur-plein); }
+.moments-choix { margin-top: 22px; }
+.moment-choix { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 56px; padding: 0 16px;
+                border-radius: 12px; text-align: left; font-size: 16px; font-weight: 600; color: var(--atlas-ink);
+                background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); transition: box-shadow 160ms var(--courbe); }
+.moment-choix + .moment-choix { margin-top: 8px; }
+.moment-choix span { min-width: 0; text-align: right; font-size: 15px; font-weight: 500; color: var(--atlas-inkSoft); }
+.moment-choix span.libre { font-weight: 600; color: var(--atlas-carteVertTexte); }
+.moment-choix[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--atlas-rust); }
+.poser { margin-top: 22px; }
+.fermer { width: 100%; justify-content: center; margin-top: 8px; color: var(--atlas-inkSoft); }
+
+/* Le planning, recopié de planning.html : le jour, puis ses chantiers. */
+.semaine-titre { margin: 18px 0 0; text-align: center; font-size: 16.5px; font-weight: 700; }
+.jour-titre { display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 10px; margin: 26px 2px 10px; font-weight: 400; }
+.jour-titre b { font: 400 21px/1.2 var(--serif); font-weight: 400; letter-spacing: -0.005em; }
+.jour-titre span { font-size: 15px; color: var(--atlas-inkSoft); }
+.jour-titre.ferie b { color: var(--atlas-carteBleuTexte); }
+.jour-plage { border-radius: var(--r-plage); background: var(--atlas-card); padding: 0 16px; overflow: hidden; }
+.jour-rien { margin: 0; padding: 16px 0; font-size: 15px; color: var(--atlas-inkSoft); }
+.chantier { min-height: 76px; padding: 14px 0; }
+.chantier + .chantier { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.chantier.neuf { margin: 0 -16px; padding: 14px 16px; background: color-mix(in srgb, var(--atlas-or) 13%, transparent); }
+.chantier-nom { display: block; font: 400 19px/1.25 var(--serif); letter-spacing: -0.005em; overflow-wrap: anywhere; }
+.chantier-situation { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 14px; margin-top: 4px; font-size: 15px; line-height: 1.35;
+                      color: var(--atlas-inkSoft); }
+.duree { font-weight: 600; color: var(--atlas-or); }
+.lieu { display: inline-flex; align-items: center; gap: 4px; }
+.lieu .ico { width: 16px; height: 16px; color: var(--atlas-inkSoft); }
 </style>
 </head>
 <body class="pl pl-pilules">
 <header class="pl-tete">
   <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
   <h1 class="pl-titre">Hiverner l'arrosage</h1>
-  <p class="pl-verdict">Le 3 novembre, une goutte se pose à côté de <b>Mme Garnier</b> et des <b>Roux</b>. Touchez Mme Garnier, puis <b>C'est fait</b> : la goutte part. <b>Le 20 octobre</b>, rien. <b>B</b> les rassemble en tête de la liste. <b>Atlas demande</b> : il ne devine pas qui a un arrosage.</p>
+  <p class="pl-verdict">Le 3 novembre, une goutte se pose à côté de <b>Mme Garnier</b> et des <b>Roux</b>. Touchez Mme Garnier, puis <b>Le prévoir</b> : un jour, un moment, et l'hivernage se pose au planning. <b>C'est fait</b> retire la goutte. <b>Le 20 octobre</b>, rien. <b>B</b> les rassemble en tête de la liste. <b>Atlas demande</b> : il ne devine pas qui a un arrosage.</p>
 </header>
 <main class="pl-scene">
   <div class="pl-ecrans">
@@ -196,7 +255,9 @@
     <h2>Ce que je propose : A</h2>
     <ul>
       <li>Dès le 1er novembre, une petite goutte bleue à côté du nom de chaque client qui a un arrosage automatique, dans Vos clients.</li>
-      <li>Sur sa fiche, juste sous ses coordonnées : Arrosage à hiverner. Le prévoir ouvre le planning sur lui ; C'est fait retire la goutte.</li>
+      <li>Sur sa fiche, juste sous ses coordonnées : Arrosage à hiverner, avec Le prévoir et C'est fait.</li>
+      <li>Le prévoir : vous choisissez le jour, puis le matin, l'après-midi ou la journée. Chaque moment dit ce qui y est déjà posé. Le poser au planning, et l'hivernage y est, chez ce client, comme un client posé sans devis.</li>
+      <li>La goutte reste tant que ce n'est pas fait : prévu n'est pas fait. La fiche dit le jour prévu, et Le voir vous mène au planning.</li>
       <li>Atlas ne peut pas savoir seul qui a un arrosage : une ligne de facture n'est qu'un texte, et un plan d'arrosage ne s'enregistre pas. Le mot « arrosage » se tromperait dans les deux sens : un arrosage de reprise sur une plantation, une installation facturée en turbines sans le mot.</li>
       <li>Donc il demande. Quand une facture parle d'arrosage, la fiche du client pose la question une fois : Oui ou Non. Rien ne se pose sans votre Oui.</li>
       <li>Un client équipé par un autre, dont vous ne faites que l'hivernage : la case se coche dans Modifier ses coordonnées.</li>
@@ -205,7 +266,8 @@
     <h2>À trancher</h2>
     <ul class="a-trancher">
       <li>La date : le 1er novembre partout, ou réglable dans Réglages. Le gel ne vient pas au même moment à Nice et dans le Jura.</li>
-      <li>Ce qui retire la goutte : C'est fait seulement (dessiné), ou déjà l'hivernage prévu au planning. Une intervention d'hivernage terminée au planning pourrait aussi cocher C'est fait toute seule.</li>
+      <li>Ce qui retire la goutte : C'est fait seulement (dessiné), ou aussi la journée d'hivernage terminée au planning, toute seule.</li>
+      <li>L'équipe du jour se choisit au planning, comme aujourd'hui. Le prix de l'hivernage : une ligne de Mes tarifs, pour la facture.</li>
       <li>Au printemps, la même goutte pour la remise en route : à partir de quelle date.</li>
       <li>Un client sous contrat d'entretien dont un passage couvre l'hivernage : la goutte part avec ce passage. Les familles du contrat (Pelouse, Tailles, Massifs, Propreté) n'ont pas d'arrosage aujourd'hui : il faudrait l'ajouter.</li>
       <li>Où Atlas pose sa question : sur la fiche du client (dessiné), ou au départ de la facture, qui doit rester rapide.</li>
@@ -249,6 +311,28 @@
     ];
   }
   var JOUR = { oct: "20 octobre", nov: "3 novembre" };
+  /* Le planning de la planche, novembre 2026 : ce qui est déjà posé, par
+     demi-journée. Le 11 est férié, le 1er est un dimanche. */
+  var AUJ = new Date(2026, 10, 3);
+  var MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+  var NOMS_JOURS = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
+  var FERIES = { "10-11": true, "11-25": true };
+  var BERNARD = ["M. Bernard", "Élagage", "Angers"], COSTA = ["Mme Costa", "Entretien du jardin", "Avrillé"],
+      LEFEVRE = ["M. Lefèvre", "Création d’une allée", "Les Ponts-de-Cé"], AUBRY = ["Mme Aubry", "Taille de haie", "Trélazé"],
+      FAUCHER = ["M. Faucher", "Tonte", "Saint-Barthélemy-d’Anjou"];
+  var OCCUPE = {
+    "10-3": { matin: BERNARD, apres: BERNARD }, "10-4": { matin: COSTA }, "10-5": { matin: LEFEVRE, apres: LEFEVRE },
+    "10-6": { apres: AUBRY }, "10-9": { matin: FAUCHER }, "10-10": { matin: COSTA, apres: COSTA },
+    "10-12": { apres: LEFEVRE }, "10-13": { matin: BERNARD }, "10-17": { matin: AUBRY },
+    "10-19": { matin: FAUCHER, apres: FAUCHER }, "10-24": { apres: COSTA }
+  };
+  var MOMENTS = [["matin", "Le matin"], ["apres", "L’après-midi"], ["journee", "La journée"]];
+  function cle(d) { return d.getMonth() + "-" + d.getDate(); }
+  function jourDit(d) { return NOMS_JOURS[d.getDay()] + " " + (d.getDate() === 1 ? "1er" : d.getDate()) + " " + MOIS[d.getMonth()]; }
+  function majuscule(t) { return t.charAt(0).toUpperCase() + t.slice(1); }
+  function posable(d) { var j = d.getDay(); return d >= AUJ && j !== 0 && j !== 6 && !FERIES[cle(d)]; }
+  function momentDit(m) { return m === "matin" ? "le matin" : m === "apres" ? "l’après-midi" : "toute la journée"; }
+  function ville(c) { return c.lieu ? c.lieu.replace(/^.*\d{5}\s+/, "") : null; }
   function ico(nom, cls) { return '<svg class="ico' + (cls ? " " + cls : "") + '" aria-hidden="true"><use href="#i-' + nom + '"/></svg>'; }
   function goutte() { return '<span class="goutte" role="img" aria-label="Arrosage à hiverner">' + ico("goutte") + '</span>'; }
   var barre =
@@ -264,10 +348,14 @@
   var ecrans = {};
   document.querySelectorAll(".ecran[data-version]").forEach(function (ecran) {
     var version = ecran.getAttribute("data-version");
-    var e = { date: "nov", vue: "liste", k: null, filtre: false, c: donnees() };
+    var e = { date: "nov", vue: "liste", k: null, filtre: false, c: donnees(), choix: null };
     if (version === "demande") { e.vue = "fiche"; e.k = 3; }
-    ecran.innerHTML = '<div class="defile"></div>' + barre;
+    var idFeuille = "prevoir-" + version;
+    ecran.innerHTML = '<div class="defile"></div>' + barre +
+      '<section class="feuille" id="' + idFeuille + '" aria-hidden="true" aria-label="Prévoir l’hivernage">' +
+        '<div class="feuille-poignee"></div><div class="feuille-dedans"></div></section>';
     var defile = ecran.querySelector(".defile");
+    var dedans = ecran.querySelector("#" + idFeuille + " .feuille-dedans");
 
     function saison() { return e.date === "nov"; }
     function aHiverner(c) { return saison() && c.arrosage === true && !c.hiverne; }
@@ -350,9 +438,11 @@
              '</div></div>';
       } else if (aHiverner(c)) {
         h += '<div class="plage hiverner"><div class="hiverner-tete"><span class="pastille-ico" data-ton="bleu">' + ico("goutte") + '</span>' +
-             '<span><b>Arrosage à hiverner</b>' + (c.prevu ? '<small>Prévu le jeudi 12 novembre</small>' : "") + '</span></div>' +
+             '<span><b>Arrosage à hiverner</b>' + (c.prevu ? '<small>Prévu le ' + jourDit(c.prevu.jour) + ', ' + momentDit(c.prevu.moment) + '</small>' : "") + '</span></div>' +
              '<div class="rang-boutons">' +
-               (c.prevu ? "" : '<button class="bouton bouton-creux bouton-petit" type="button" data-geste="prevoir">' + ico("calendrier") + 'Le prévoir</button>') +
+               (c.prevu
+                 ? '<button class="bouton bouton-creux bouton-petit" type="button" data-geste="voir">' + ico("calendrier") + 'Le voir</button>'
+                 : '<button class="bouton bouton-creux bouton-petit" type="button" data-geste="prevoir">' + ico("calendrier") + 'Le prévoir</button>') +
                '<button class="bouton bouton-plein bouton-petit" type="button" data-geste="fait">' + ico("coche") + 'C’est fait</button>' +
              '</div></div>';
       } else if (saison() && c.arrosage === true && c.hiverne) {
@@ -379,7 +469,97 @@
       defile.innerHTML = h;
     }
 
-    function rendre() { if (e.vue === "fiche") rendreFiche(); else rendreListe(); }
+    /* ─── La feuille du prévoir : le mois, le jour, le moment ─────────── */
+    function occupant(d, m) {
+      var o = OCCUPE[cle(d)] || {};
+      if (m !== "journee") return o[m] ? o[m][0] : null;
+      if (!o.matin && !o.apres) return null;
+      if (o.matin && o.apres && o.matin === o.apres) return o.matin[0] + " toute la journée";
+      return [o.matin ? o.matin[0] + " le matin" : null, o.apres ? o.apres[0] + " l’après-midi" : null].filter(Boolean).join(", ");
+    }
+    function peindreFeuille() {
+      var c = e.c[e.k], ch = e.choix;
+      var premier = new Date(2026, ch.mois, 1), nb = new Date(2026, ch.mois + 1, 0).getDate();
+      var decale = (premier.getDay() + 6) % 7, cases = "";
+      for (var v = 0; v < decale; v++) cases += "<span></span>";
+      for (var d = 1; d <= nb; d++) {
+        var jour = new Date(2026, ch.mois, d), choisi = ch.jour && ch.jour.getTime() === jour.getTime();
+        cases += '<button type="button" class="case-jour' + (FERIES[cle(jour)] ? " ferie" : "") + (OCCUPE[cle(jour)] ? " charge" : "") + '"' +
+          (posable(jour) ? ' data-geste="jour" data-j="' + d + '"' : " disabled") +
+          ' aria-pressed="' + (choisi ? "true" : "false") + '" aria-label="' + majuscule(jourDit(jour)) + '">' + d + '</button>';
+      }
+      var h =
+        '<h2 class="feuille-titre">Prévoir l’hivernage</h2>' +
+        '<p class="feuille-sous">' + c.nom + (ville(c) ? ", " + ville(c) : "") + '</p>' +
+        '<div class="mois-tete">' +
+          '<button type="button" data-geste="mois" data-pas="-1" aria-label="Le mois d’avant"' + (ch.mois <= 10 ? " disabled" : "") + '>' + ico("retour") + '</button>' +
+          '<b>' + majuscule(MOIS[ch.mois]) + ' 2026</b>' +
+          '<button type="button" data-geste="mois" data-pas="1" aria-label="Le mois d’après"' + (ch.mois >= 11 ? " disabled" : "") + '>' + ico("suivant") + '</button>' +
+        '</div>' +
+        '<div class="jours-noms" aria-hidden="true"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>' +
+        '<div class="grille">' + cases + '</div>';
+      if (ch.jour) {
+        h += '<div class="moments-choix" role="group" aria-label="Quel moment"><p class="rubrique">' + majuscule(jourDit(ch.jour)) + '</p>' +
+          MOMENTS.map(function (m) {
+            var qui = occupant(ch.jour, m[0]);
+            return '<button type="button" class="moment-choix" data-geste="moment" data-m="' + m[0] + '" aria-pressed="' + (ch.moment === m[0]) + '">' +
+              m[1] + '<span' + (qui ? "" : ' class="libre"') + '>' + (qui || "Libre") + '</span></button>';
+          }).join("") + '</div>';
+      }
+      h += '<button type="button" class="bouton bouton-plein poser" data-geste="poser"' + (ch.jour && ch.moment ? "" : " disabled") + '>' +
+             ico("calendrier") + 'Le poser au planning</button>' +
+           '<button type="button" class="bouton bouton-texte fermer" data-ferme>Annuler</button>';
+      dedans.innerHTML = h;
+    }
+
+    /* ─── Le planning : la semaine du jour prévu ──────────────────────── */
+    function rendrePlanning() {
+      var c = e.c[e.k], p = c.prevu.jour;
+      var lundi = new Date(p.getFullYear(), p.getMonth(), p.getDate() - ((p.getDay() + 6) % 7));
+      function ligne(o, moment, neuf) {
+        return '<div class="chantier' + (neuf ? " neuf" : "") + '"><span class="chantier-nom">' + o[0] + '</span>' +
+          '<span class="chantier-situation"><span class="duree">' + moment + '</span><span>' + o[1] + '</span>' +
+          (o[2] ? '<span class="lieu">' + ico("lieu") + o[2] + '</span>' : "") + '</span></div>';
+      }
+      var h =
+        '<div class="rang-espace" style="margin:0 0 10px">' +
+          '<button class="rond-creux" type="button" data-geste="retour-fiche" aria-label="Retour à la fiche de ' + c.nom + '">' + ico("retour") + '</button>' +
+          '<button class="rond" type="button" data-geste="inchange" aria-label="Ouvrir l’assistant">' + ico("assistant") + '</button>' +
+        '</div>' +
+        '<header class="tete" style="margin:0"><h1 class="tete-titre">Planning</h1></header>' +
+        '<p class="semaine-titre">Semaine du ' + (lundi.getDate() === 1 ? "1er" : lundi.getDate()) + ' ' + MOIS[lundi.getMonth()] + '</p>';
+      for (var i = 0; i < 5; i++) {
+        var d = new Date(lundi.getFullYear(), lundi.getMonth(), lundi.getDate() + i);
+        var dit = jourDit(d), ferie = FERIES[cle(d)];
+        h += '<h2 class="jour-titre' + (ferie ? " ferie" : "") + '"><b>' + majuscule(dit.split(" ")[0]) + '</b><span>' + dit.split(" ").slice(1).join(" ") + (ferie ? ", férié" : "") + '</span></h2>';
+        if (ferie) continue;
+        var o = OCCUPE[cle(d)] || {}, lignes = [];
+        var ici = e.c.filter(function (x) { return x.prevu && x.prevu.jour.getTime() === d.getTime(); });
+        function poseIci(m) {
+          ici.forEach(function (x) {
+            if (x.prevu.moment === m) lignes.push(ligne([x.nom, "Hivernage de l’arrosage", ville(x)], m === "matin" ? "Le matin" : m === "apres" ? "L’après-midi" : "La journée", x === c));
+          });
+        }
+        poseIci("journee");
+        if (o.matin && o.apres && o.matin === o.apres) lignes.push(ligne(o.matin, "La journée"));
+        else { if (o.matin) lignes.push(ligne(o.matin, "Le matin")); }
+        poseIci("matin");
+        if (o.apres && o.apres !== o.matin) lignes.push(ligne(o.apres, "L’après-midi"));
+        poseIci("apres");
+        h += '<div class="jour-plage">' + (lignes.length ? lignes.join("") : '<p class="jour-rien">Rien de posé</p>') + '</div>';
+      }
+      defile.innerHTML = h;
+    }
+
+    function rendre() {
+      if (e.vue === "fiche") rendreFiche(); else if (e.vue === "planning") rendrePlanning(); else rendreListe();
+      ecran.querySelectorAll(".barre-onglet").forEach(function (a) {
+        var vise = e.vue === "planning" ? "planning.html" : "accueil.html";
+        if (a.getAttribute("href") === vise) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+      });
+      // Le trait d'or suit l'onglet du planning : le kit ne le place qu'au chargement.
+      ecran.querySelector(".barre-trait").style.setProperty("--rang", e.vue === "planning" ? 1 : 0);
+    }
 
     ecran.addEventListener("click", function (ev) {
       var g = ev.target.closest("[data-geste]");
@@ -397,7 +577,20 @@
       if (geste === "coordonnees") { Kit.note(ecran, "La case Arrosage automatique y vit, avec ses coordonnées."); return; }
       if (geste === "oui") { c.arrosage = true; rendre(); Kit.note(ecran, "Noté. La case se change dans Modifier ses coordonnées."); return; }
       if (geste === "non") { c.arrosage = false; rendre(); Kit.note(ecran, "Atlas ne le redemandera pas pour cette facture."); return; }
-      if (geste === "prevoir") { c.prevu = true; rendre(); Kit.note(ecran, "Le planning s’ouvre sur ce client. Sur la planche, posé au jeudi 12 novembre."); return; }
+      if (geste === "prevoir") { e.choix = { mois: 10, jour: null, moment: null }; peindreFeuille(); Kit.ouvrirFeuille(idFeuille, g); return; }
+      if (geste === "mois") { e.choix.mois += Number(g.getAttribute("data-pas")); e.choix.jour = null; e.choix.moment = null; peindreFeuille(); return; }
+      if (geste === "jour") { e.choix.jour = new Date(2026, e.choix.mois, Number(g.getAttribute("data-j"))); e.choix.moment = null; peindreFeuille(); return; }
+      if (geste === "moment") { e.choix.moment = g.getAttribute("data-m"); peindreFeuille(); return; }
+      if (geste === "poser") {
+        var pose = c;
+        pose.prevu = { jour: e.choix.jour, moment: e.choix.moment };
+        Kit.fermerFeuilles(ecran);
+        rendre();
+        Kit.tiroir(ecran, "Posé au planning.", function () { pose.prevu = null; rendre(); });
+        return;
+      }
+      if (geste === "voir") { e.vue = "planning"; rendre(); defile.scrollTop = 0; return; }
+      if (geste === "retour-fiche") { e.vue = "fiche"; rendre(); defile.scrollTop = 0; return; }
       if (geste === "fait") {
         var cible = c;
         cible.hiverne = JOUR[e.date];

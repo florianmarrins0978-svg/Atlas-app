@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-11-06
+
+- **Hiverner l'arrosage : « Le prévoir » pose la date au planning** (sa demande) : le jour, puis le matin, l'après-midi ou la journée, chaque moment disant ce qui y est déjà ; l'hivernage se pose au planning, la goutte reste jusqu'à « C'est fait ». Pas codé.
+
 ## 2026-11-05
 
 - **Zones : les jours d'une zone, et sa couleur au choix** (ses demandes). Toucher Zone 3 sous Julien montre ses jours, la ville, le code postal, l'adresse et la distance ; la pastille d'une zone, dans la feuille d'un salarié, propose neuf couleurs pour tous. Pas codé.

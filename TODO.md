@@ -16,7 +16,7 @@ côté du nom […] à partir de début novembre »*. **Rien dans `src/`.**
 | `franchise-plafond.html` | en franchise, une ligne sur Terminés à partir de 80 % du plafond | le compteur toujours dans Votre TVA |
 | `restrictions-d-eau.html` | « Restriction d'eau » sur la carte du planning, commune en Alerte ou plus, aujourd'hui et demain | seulement dans la fiche du chantier |
 | `heures-du-jour.html` | heures du retour du jour (tranché le 9 octobre) comparées au devis, en heures | aussi en euros de main d'œuvre |
-| `hiverner-l-arrosage.html` | dès le 1er novembre, une goutte à côté du nom et « Arrosage à hiverner » sur la fiche | la même chose, plus une ligne qui les rassemble en tête de Vos clients |
+| `hiverner-l-arrosage.html` | dès le 1er novembre, une goutte à côté du nom et « Arrosage à hiverner » sur la fiche ; « Le prévoir » fait choisir le jour et le moment, et l'hivernage se pose au planning (sa demande du 6 novembre), la goutte restant jusqu'à « C'est fait » | la même chose, plus une ligne qui les rassemble en tête de Vos clients |
 
 Commun à A et B : la facture qui fait passer le plafond majoré s'arrête avant
 de partir (trois issues, dont « L'envoyer sans TVA », pour ne pas bloquer sur
