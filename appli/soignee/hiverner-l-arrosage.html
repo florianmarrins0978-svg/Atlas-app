@@ -63,7 +63,9 @@
   avec « Hivernage de l'arrosage » pour travaux, comme un client posé sans
   devis. La goutte RESTE jusqu'à C'est fait : prévu n'est pas fait, et c'est
   l'oubli qu'elle évite. Rien ne se choisit d'office : aucun jour, aucun
-  moment n'est posé avant son appui.
+  moment n'est posé avant son appui. Au planning, sa demande du même jour :
+  « une petite goutte à côté du jour bleu, ça peut être pas mal » ; la
+  goutte de Vos clients se pose à côté du titre du jour.
 
   RIEN N'EST CODÉ DANS src/. Les clients sont ceux des planches Vos clients
   et La fiche d'un client.
@@ -209,6 +211,7 @@
 .jour-titre b { font: 400 21px/1.2 var(--serif); font-weight: 400; letter-spacing: -0.005em; }
 .jour-titre span { font-size: 15px; color: var(--atlas-inkSoft); }
 .jour-titre.ferie b { color: var(--atlas-carteBleuTexte); }
+.jour-titre .goutte { align-self: center; margin-left: -2px; }
 .jour-plage { border-radius: var(--r-plage); background: var(--atlas-card); padding: 0 16px; overflow: hidden; }
 .jour-rien { margin: 0; padding: 16px 0; font-size: 15px; color: var(--atlas-inkSoft); }
 .chantier { min-height: 76px; padding: 14px 0; }
@@ -258,6 +261,7 @@
       <li>Sur sa fiche, juste sous ses coordonnées : Arrosage à hiverner, avec Le prévoir et C'est fait.</li>
       <li>Le prévoir : vous choisissez le jour, puis le matin, l'après-midi ou la journée. Chaque moment dit ce qui y est déjà posé. Le poser au planning, et l'hivernage y est, chez ce client, comme un client posé sans devis.</li>
       <li>La goutte reste tant que ce n'est pas fait : prévu n'est pas fait. La fiche dit le jour prévu, et Le voir vous mène au planning.</li>
+      <li>Au planning, la même goutte bleue se pose à côté du jour de l'hivernage. Elle ne se confond pas avec le bleu d'un férié : un férié ne se choisit pas, les deux ne tombent jamais le même jour.</li>
       <li>Atlas ne peut pas savoir seul qui a un arrosage : une ligne de facture n'est qu'un texte, et un plan d'arrosage ne s'enregistre pas. Le mot « arrosage » se tromperait dans les deux sens : un arrosage de reprise sur une plantation, une installation facturée en turbines sans le mot.</li>
       <li>Donc il demande. Quand une facture parle d'arrosage, la fiche du client pose la question une fois : Oui ou Non. Rien ne se pose sans votre Oui.</li>
       <li>Un client équipé par un autre, dont vous ne faites que l'hivernage : la case se coche dans Modifier ses coordonnées.</li>
@@ -267,6 +271,7 @@
     <ul class="a-trancher">
       <li>La date : le 1er novembre partout, ou réglable dans Réglages. Le gel ne vient pas au même moment à Nice et dans le Jura.</li>
       <li>Ce qui retire la goutte : C'est fait seulement (dessiné), ou aussi la journée d'hivernage terminée au planning, toute seule.</li>
+      <li>La goutte aussi dans le mois, en haut du planning, sur le jour de l'hivernage : pour les voir tous d'un coup d'œil.</li>
       <li>L'équipe du jour se choisit au planning, comme aujourd'hui. Le prix de l'hivernage : une ligne de Mes tarifs, pour la facture.</li>
       <li>Au printemps, la même goutte pour la remise en route : à partir de quelle date.</li>
       <li>Un client sous contrat d'entretien dont un passage couvre l'hivernage : la goutte part avec ce passage. Les familles du contrat (Pelouse, Tailles, Massifs, Propreté) n'ont pas d'arrosage aujourd'hui : il faudrait l'ajouter.</li>
@@ -531,10 +536,13 @@
       for (var i = 0; i < 5; i++) {
         var d = new Date(lundi.getFullYear(), lundi.getMonth(), lundi.getDate() + i);
         var dit = jourDit(d), ferie = FERIES[cle(d)];
-        h += '<h2 class="jour-titre' + (ferie ? " ferie" : "") + '"><b>' + majuscule(dit.split(" ")[0]) + '</b><span>' + dit.split(" ").slice(1).join(" ") + (ferie ? ", férié" : "") + '</span></h2>';
+        var ici = e.c.filter(function (x) { return x.prevu && x.prevu.jour.getTime() === d.getTime(); });
+        /* La goutte à côté du jour (sa demande du 6 novembre) : la même que
+           dans Vos clients. Un férié ne la porte jamais, il ne se pose pas. */
+        h += '<h2 class="jour-titre' + (ferie ? " ferie" : "") + '"><b>' + majuscule(dit.split(" ")[0]) + '</b><span>' + dit.split(" ").slice(1).join(" ") + (ferie ? ", férié" : "") + '</span>' +
+          (ici.length ? '<span class="goutte" role="img" aria-label="Un hivernage ce jour-là">' + ico("goutte") + '</span>' : "") + '</h2>';
         if (ferie) continue;
         var o = OCCUPE[cle(d)] || {}, lignes = [];
-        var ici = e.c.filter(function (x) { return x.prevu && x.prevu.jour.getTime() === d.getTime(); });
         function poseIci(m) {
           ici.forEach(function (x) {
             if (x.prevu.moment === m) lignes.push(ligne([x.nom, "Hivernage de l’arrosage", ville(x)], m === "matin" ? "Le matin" : m === "apres" ? "L’après-midi" : "La journée", x === c));
