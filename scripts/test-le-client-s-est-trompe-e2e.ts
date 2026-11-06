@@ -35,11 +35,29 @@ async function cas(nom: string, fn: () => Promise<void>) {
   }
 }
 
+/** Un jour de semaine dans quarante-cinq jours : loin de ce que posent les autres suites. */
+function jourAPart(): string {
+  const d = new Date(Date.now() + 45 * 86400_000);
+  while (d.getUTCDay() === 0 || d.getUTCDay() === 6) d.setUTCDate(d.getUTCDate() + 1);
+  return d.toISOString().slice(0, 10);
+}
+
 /** Le client accepte sur sa page, au premier jour qu'elle lui propose. */
 async function leClientAccepte(navigateur: Browser) {
+  // **SON PROPRE JOUR, que nulle autre suite ne prend** — 6 novembre 2026.
+  // La démonstration propose un seul jour, trois jours après l'amorçage : à la
+  // batterie, les suites jouées avant celle-ci posaient assez de chantiers ce
+  // jour-là pour le remplir, et la page répondait, à juste titre, « Cette date
+  // vient d'être retenue par ailleurs ». Seule, la suite passait ; dans la
+  // batterie, elle tombait selon le jour du mois. Le cas mesure l'erreur du
+  // client, pas l'occupation du planning : il prend un jour de semaine dans
+  // quarante-cinq jours, dans la fenêtre que le serveur revérifie (90 jours).
   await pool.query(
-    "update envois_devis set reponse = null, repondu_at = null, precision_client = null, jours_souhaites = null, expire_at = now() + interval '14 days' where jeton = $1",
-    [JETON]
+    `update envois_devis set reponse = null, repondu_at = null, precision_client = null, jours_souhaites = null,
+            expire_at = now() + interval '14 days', dates_proposees = ARRAY[$2::date], jours_proposes = null,
+            dates_forcees = '{}'
+      where jeton = $1`,
+    [JETON, jourAPart()]
   );
   const contexte = await navigateur.newContext({ ...ECRAN_DU_PATRON });
   const page = await contexte.newPage();
@@ -183,12 +201,14 @@ async function main() {
     await pool.query(
       `update envois_devis set reponse = $2, repondu_at = $3, date_retenue = $4, jours_retenus = $5,
               precision_client = $6, jours_souhaites = $7, expire_at = $8, vu_par_patron_at = $9,
-              adresse_ip = $10, agent_utilisateur = $11, demarrage_anticipe = $12
+              adresse_ip = $10, agent_utilisateur = $11, demarrage_anticipe = $12,
+              dates_proposees = $13, jours_proposes = $14, dates_forcees = $15
         where id = $1`,
       [
         e.id, e.reponse, e.repondu_at, e.date_retenue, e.jours_retenus ? JSON.stringify(e.jours_retenus) : null,
         e.precision_client, e.jours_souhaites ? JSON.stringify(e.jours_souhaites) : null, e.expire_at,
         e.vu_par_patron_at, e.adresse_ip, e.agent_utilisateur, e.demarrage_anticipe,
+        e.dates_proposees, e.jours_proposes ? JSON.stringify(e.jours_proposes) : null, e.dates_forcees,
       ]
     );
     await pool.query("delete from creneaux_chantier where chantier_id = $1", [chantierId]);
