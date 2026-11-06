@@ -30,6 +30,22 @@ chiffres (`CLAUDE.md` §3), et la ligne de Terminés reste muette sous 80 % :
 l'écran de l'argent ne porte pas un compteur de plus toute l'année. Il n'a
 pas dit de coder.
 
+**Note sans réseau : la B, sa réponse du 6 novembre** (*« je pense qu'il faut
+appuyer pour que la note parte »*), contre ma recommandation A : la note reste
+sur le téléphone, et c'est son appui qui l'envoie une fois le réseau revenu. Le
+risque de la B est l'oubli (une note qui dort, un devis jamais préparé) : à
+trancher en codant, une ligne « 1 note à envoyer » sur l'accueil. Il n'a pas
+dit de coder.
+
+**Le sablier, redessiné le même jour** (*« mets un vrai sablier, là on dirait
+pas du tout un sablier »*) : l'ancien n'avait que la moitié haute de son côté
+droit et se lisait comme un Z. Refait dans `appli/soignee/kit.js`, donc sur
+toutes les planches qui le portent. **Le même dessin cassé est dans
+l'appli** (`src/components/atlas/IconeTrait.tsx`, `sablier`), montré à SES
+CLIENTS sur les pages du devis, de la facture, du contrat et de l'entretien
+(`LettreDuClient`), et dans Pour mon comptable (`CarteARegarder.tsx`). À
+porter dans `src/` sur son accord : c'est un écran que ses clients voient.
+
 Commun à A et B : la facture qui fait passer le plafond majoré s'arrête avant
 de partir (trois issues, dont « L'envoyer sans TVA », pour ne pas bloquer sur
 un plafond non vérifié) ; pour l'hivernage, Atlas demande Oui ou Non une fois

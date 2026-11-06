@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-06
 
+- **Une note sans réseau : la B** (sa réponse) : la note reste sur le téléphone et part sur son appui. **Le sablier des planches redessiné** (« on dirait pas du tout un sablier ») : l'ancien, qui n'avait que la moitié de son côté droit, est aussi celui de l'appli, sur les pages que ses clients ouvrent. Pas codé.
 - **Le plafond de la franchise : A et B** (sa réponse) : le compteur toujours dans Votre TVA, et la ligne sur Terminés à partir de 80 % du plafond, sur un seul calcul. Pas codé.
 - **Hiverner l'arrosage : la B** (sa réponse) : la goutte, Le prévoir, et la ligne qui rassemble les clients à hiverner en tête de Vos clients. Pas codé.
 - **Hiverner l'arrosage : « Le prévoir » pose la date au planning** (sa demande) : le jour, puis le matin, l'après-midi ou la journée, chaque moment disant ce qui y est déjà ; l'hivernage se pose au planning, la goutte reste jusqu'à « C'est fait ». Pas codé.
