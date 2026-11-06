@@ -68,8 +68,9 @@
       à lettre au rythme d'une voix (72 ms la lettre, une respiration aux
       espaces et aux virgules, cinq secondes en tout) ; puis la ligne du
       devis, qui se pose sur sa propre rangée du devis entier ;
-    · Envoyez : la date se choisit, la case des 14 jours apparaît et se
-      coche, le client accepte, et la page devient
+    · Envoyez : dès que le téléphone entre à l'écran, la date se choisit,
+      la case des 14 jours apparaît et se coche, le client accepte, et la
+      page devient
       « C'est noté. Votre artisan est prévenu. » (nov-client-0 à 3) ;
     · Encaissez : 143,70 € monte depuis zéro, puis la phrase ;
     · Et aussi, inversé à sa demande : les travaux d'abord, qui se cochent
@@ -949,9 +950,13 @@ html.anime .chiffre.joue span{opacity:1;transform:none;transition-delay:1.5s}
   // y revenir la rejoue depuis le début.
   var scene = function(el, seuil, prete, jouer, arreter){
     var tour = 0, chargee = false;
-    new IntersectionObserver(function(e){ if (e[0].isIntersecting && !chargee){ chargee = true; prete(); } }, {rootMargin:"900px 0px"}).observe(el);
+    // Arrivé d'un coup (un lien, un défilement rapide), la scène peut se jouer
+    // avant d'avoir préparé ses images : elle les prépare alors elle-même,
+    // sans quoi l'écran du téléphone restait vide un instant.
+    var charger = function(){ if (!chargee){ chargee = true; prete(); } };
+    new IntersectionObserver(function(e){ if (e[0].isIntersecting) charger(); }, {rootMargin:"900px 0px"}).observe(el);
     new IntersectionObserver(function(e){
-      if (e[0].isIntersecting){ tour++; var mien = tour; jouer(function(){ return mien === tour; }); }
+      if (e[0].isIntersecting){ charger(); tour++; var mien = tour; jouer(function(){ return mien === tour; }); }
       else { tour++; if (arreter) arreter(); }
     }, {threshold:seuil}).observe(el);
   };
@@ -995,31 +1000,33 @@ html.anime .chiffre.joue span{opacity:1;transform:none;transition-delay:1.5s}
   // 2. La note vocale : le micro au repos, puis l'enregistrement qui démarre
   // et le vrai chrono qui défile, une capture par seconde (nov-dictee-00 à 12).
   var micro = document.getElementById("scene-micro"), bande = micro.querySelector(".bande"), secondes = [];
-  scene(micro, 0.6, function(){
+  scene(micro, 0.4, function(){
     for (var k = 0; k <= 12; k++) secondes.push("images/nov-dictee-" + (k < 10 ? "0" : "") + k + ".jpg");
     secondes = empiler(bande, secondes);
   }, async function(encore){
     while (encore()){
       montrer(secondes, -1);
-      await attendre(1600); if (!encore()) return;
+      await attendre(700); if (!encore()) return;
       montrer(secondes, 0);
       for (var k = 1; k < secondes.length; k++){ await attendre(1000); if (!encore()) return; montrer(secondes, k); }
       await attendre(2200);
     }
   }, function(){ montrer(secondes, -1); });
 
-  // 3. Le client : la date se choisit, la case des 14 jours apparaît, elle se
-  // coche, il accepte, et la page change.
+  // 3. Le client : la date se choisit tout de suite, la case des 14 jours
+  // apparaît, elle se coche, il accepte, et la page change.
   var envoi = document.getElementById("scene-envoi"), ecranEnvoi = envoi.querySelector(".ecran");
   var fixe = ecranEnvoi.querySelector("img.etape"), pages = [];
-  scene(envoi, 0.55, function(){
+  // Elle part dès que le téléphone entre à l'écran : à 55 %, il fallait
+  // presque l'avoir traversé (sa remarque du 6 novembre).
+  scene(envoi, 0.3, function(){
     pages = empiler(ecranEnvoi, ["images/nov-client-0.jpg", "images/nov-client-1.jpg", "images/nov-client-2.jpg", "images/nov-client-3.jpg"]);
     pages[3].classList.add("page");
   }, async function(encore){
     fixe.classList.remove("vue"); montrer(pages, 0);
-    await attendre(1800); if (!encore()) return; montrer(pages, 1);
-    await attendre(1900); if (!encore()) return; montrer(pages, 2);
-    await attendre(1900); if (!encore()) return; montrer(pages, 3);
+    await attendre(500); if (!encore()) return; montrer(pages, 1);
+    await attendre(1400); if (!encore()) return; montrer(pages, 2);
+    await attendre(1400); if (!encore()) return; montrer(pages, 3);
   });
 
   // 4. La TVA du mois : le chiffre monte jusqu'à sa valeur, puis la phrase.
@@ -1039,7 +1046,7 @@ html.anime .chiffre.joue span{opacity:1;transform:none;transition-delay:1.5s}
   var defile = document.getElementById("scene-travaux"), pile = defile.querySelector(".pile");
   var fixeTravaux = pile.querySelector("img.etape"), etapes = [], finie = false, repliee = false;
   var hauteurPile = function(){ pile.style.height = Math.round(pile.offsetWidth * (repliee ? 455 : 1530) / 786) + "px"; };
-  scene(defile, 0.6, function(){
+  scene(defile, 0.4, function(){
     etapes = empiler(pile, [0, 1, 2, 3, 4, 5, 6].map(function(k){ return "images/nov-travaux-" + k + ".jpg"; }));
     etapes[5].alt = fixeTravaux.alt; fixeTravaux.remove();
     pile.classList.add("mesuree"); pile.style.transition = "none"; hauteurPile(); montrer(etapes, 5);
@@ -1047,7 +1054,7 @@ html.anime .chiffre.joue span{opacity:1;transform:none;transition-delay:1.5s}
   }, async function(encore){
     if (finie) return;
     repliee = false; hauteurPile(); montrer(etapes, 0);
-    var pas = [900, 900, 900, 900, 1200, 1500];
+    var pas = [500, 900, 900, 900, 1200, 1500];
     for (var k = 1; k <= 6; k++){
       await attendre(pas[k - 1]); if (!encore()) return;
       if (k === 6){ repliee = true; hauteurPile(); }
