@@ -379,3 +379,23 @@ export async function equipesPourRattachement(ctx: Ctx): Promise<{ id: string; r
       .orderBy(equipes.rang)
   );
 }
+
+/**
+ * LES ADRESSES DES PATRONS d'une entreprise, dans une transaction SANS session
+ * qui a déjà posé `app.entreprise_id` (`membres_entreprise` est sous RLS).
+ *
+ * Pour ce qu'Atlas envoie de lui-même au patron : sa facture d'abonnement,
+ * l'e-mail d'avant l'effacement d'un compte fermé. Une seule lecture de « qui
+ * est le patron », pour tous ces envois.
+ */
+export async function adressesDesPatronsDans(
+  tx: Parameters<Parameters<typeof withEntreprise>[2]>[0],
+  entrepriseId: string
+): Promise<string[]> {
+  const lignes = await tx
+    .select({ email: users.email })
+    .from(membresEntreprise)
+    .innerJoin(users, eq(users.id, membresEntreprise.utilisateurId))
+    .where(and(eq(membresEntreprise.entrepriseId, entrepriseId), eq(membresEntreprise.role, "proprietaire")));
+  return lignes.map((l) => l.email);
+}

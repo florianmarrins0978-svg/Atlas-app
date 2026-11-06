@@ -106,6 +106,8 @@ async function main() {
     const { serveur, recues } = fauxPrestataire((r) => {
       if (r.chemin.startsWith("/v1/prices?")) return { statut: 200, corps: { data: [] } };
       if (r.chemin === "/v1/prices") return { statut: 200, corps: { id: "price_neuf" } };
+      if (r.chemin.startsWith("/v1/tax_rates?")) return { statut: 200, corps: { data: [] } };
+      if (r.chemin === "/v1/tax_rates") return { statut: 200, corps: { id: "txr_neuf" } };
       return { statut: 200, corps: { id: "cs_1", url: "https://paiement.example/cs_1" } };
     });
     const port = await surUnPort(serveur);
@@ -158,6 +160,20 @@ async function main() {
       assert.equal(c.get("locale"), "fr");
     });
 
+    // **Sa réponse du 5 novembre 2026 : Atlas est soumis à la TVA.** Les CGU
+    // et l'écran annoncent des prix HT ; sans taux sur l'abonnement, Stripe
+    // prélevait le HT seul et la facture ne portait aucune TVA.
+    await cas("la TVA à 20 % s'ajoute au prix HT, sur l'abonnement entier", async () => {
+      const taux = recues.find((x) => x.methode === "POST" && x.chemin === "/v1/tax_rates");
+      assert.ok(taux, "aucun taux de TVA n'a été créé chez le prestataire");
+      const t = champs(taux.corps);
+      assert.equal(t.get("percentage"), "20");
+      assert.equal(t.get("inclusive"), "false", "un taux inclus ferait du prix HT un prix TTC");
+      assert.equal(t.get("country"), "FR");
+      const session = recues.find((x) => x.chemin === "/v1/checkout/sessions");
+      assert.equal(champs(session!.corps).get("subscription_data[default_tax_rates][0]"), "txr_neuf");
+    });
+
     await cas("l'adresse de retour est celle d'ATLAS_URL_PUBLIQUE, jamais celle du visiteur", async () => {
       const session = recues.find((x) => x.chemin === "/v1/checkout/sessions");
       assert.match(champs(session!.corps).get("success_url") ?? "", /^https:\/\/atlas\.example\//);
@@ -207,6 +223,19 @@ async function main() {
     const { serveur, recues } = fauxPrestataire((r) => {
       if (r.chemin.startsWith("/v1/prices?")) return { statut: 200, corps: { data: [{ id: "price_deja_la" }] } };
       if (r.chemin === "/v1/prices") return { statut: 200, corps: { id: "price_en_trop" } };
+      // Un taux d'un autre usage d'abord : seule l'étiquette d'Atlas compte.
+      if (r.chemin.startsWith("/v1/tax_rates?")) {
+        return {
+          statut: 200,
+          corps: {
+            data: [
+              { id: "txr_autre", metadata: {} },
+              { id: "txr_deja_la", metadata: { atlas_cle: "atlas_tva_fr_20" } },
+            ],
+          },
+        };
+      }
+      if (r.chemin === "/v1/tax_rates") return { statut: 200, corps: { id: "txr_en_trop" } };
       return { statut: 200, corps: { id: "cs_3", url: "https://paiement.example/cs_3" } };
     });
     const port = await surUnPort(serveur);
@@ -233,6 +262,12 @@ async function main() {
     await cas("c'est bien le prix trouvé qui part dans la session", async () => {
       const session = recues.find((x) => x.chemin === "/v1/checkout/sessions");
       assert.equal(champs(session!.corps).get("line_items[0][price]"), "price_deja_la");
+    });
+
+    await cas("le taux de TVA déjà créé par Atlas est réemployé, jamais recréé", async () => {
+      assert.equal(recues.filter((x) => x.methode === "POST" && x.chemin === "/v1/tax_rates").length, 0);
+      const session = recues.find((x) => x.chemin === "/v1/checkout/sessions");
+      assert.equal(champs(session!.corps).get("subscription_data[default_tax_rates][0]"), "txr_deja_la");
     });
 
     serveur.close();
@@ -624,6 +659,50 @@ async function main() {
     assert.equal(r.ok, false);
     if (!r.ok) assert.equal(r.erreur, "prestataire_injoignable");
   });
+
+  console.log("\n=== Lire une facture payée (la facture d'abonnement d'Atlas) ===\n");
+
+  {
+    const stripe = await moduleFrais();
+    const payee = {
+      object: "invoice",
+      id: "in_1",
+      status: "paid",
+      parent: { subscription_details: { subscription: "sub_123" } },
+      total: 4680,
+      total_excluding_tax: 3900,
+      created: 1793000000,
+      status_transitions: { paid_at: 1793000100 },
+      lines: { data: [{ period: { start: 1793000000, end: 1795592000 } }] },
+    };
+
+    await cas("le HT, la TVA et le total sont ceux PRÉLEVÉS", async () => {
+      const f = stripe.lireUneFacturePayee(payee);
+      assert.ok(f);
+      assert.equal(f.htCentimes, 3900);
+      assert.equal(f.tvaCentimes, 780);
+      assert.equal(f.ttcCentimes, 4680);
+      assert.equal(f.abonnementPrestataire, "sub_123");
+      assert.equal(f.facturePrestataire, "in_1");
+    });
+
+    await cas("l'abonnement se lit aussi dans l'ancienne forme, à la racine", async () => {
+      const { parent: _p, ...sansParent } = payee;
+      void _p;
+      assert.equal(stripe.lireUneFacturePayee({ ...sansParent, subscription: "sub_ancien" })?.abonnementPrestataire, "sub_ancien");
+    });
+
+    await cas("le dernier jour payé est la veille du début de la période suivante", async () => {
+      const f = stripe.lireUneFacturePayee(payee);
+      assert.equal(f?.periodeFin, new Date((1795592000 - 1) * 1000).toISOString().slice(0, 10));
+    });
+
+    await cas("non payée, à zéro, ou sans abonnement : rien ne s'émet", async () => {
+      assert.equal(stripe.lireUneFacturePayee({ ...payee, status: "open" }), null);
+      assert.equal(stripe.lireUneFacturePayee({ ...payee, total: 0, total_excluding_tax: 0 }), null);
+      assert.equal(stripe.lireUneFacturePayee({ ...payee, parent: null }), null);
+    });
+  }
 
   console.log(`\n${echecs === 0 ? "✅" : "❌"} ${echecs} échec(s)\n`);
   process.exit(echecs === 0 ? 0 : 1);

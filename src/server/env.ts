@@ -115,6 +115,18 @@ export type Env = {
   /** `ATLAS_PAIEMENT_CLE` — la clé secrète (`sk_…`). Ne sort JAMAIS du serveur. */
   paiementCleSecrete?: string;
   /**
+   * L'identité d'ATLAS sur ses propres factures d'abonnement (5 novembre
+   * 2026, `src/lib/facture-atlas.ts`). Absentes, aucune facture ne part, et
+   * le refus se journalise : rien ne s'invente sur une pièce comptable.
+   */
+  vendeurAtlas: {
+    nom: string | null;
+    adresse: string | null;
+    siret: string | null;
+    numeroTva: string | null;
+    email: string | null;
+  };
+  /**
    * `ATLAS_PAIEMENT_SECRET_CROCHET` — le secret du crochet (`whsec_…`).
    *
    * **Ce n'est pas la même chose que la clé**, et les confondre ouvrirait
@@ -692,6 +704,13 @@ function construireEnv(): Env {
     brevoApiKey,
     courrielExpediteur,
     paiementCleSecrete: optionnel("ATLAS_PAIEMENT_CLE"),
+    vendeurAtlas: {
+      nom: optionnel("ATLAS_VENDEUR_NOM") ?? null,
+      adresse: optionnel("ATLAS_VENDEUR_ADRESSE") ?? null,
+      siret: optionnel("ATLAS_VENDEUR_SIRET") ?? null,
+      numeroTva: optionnel("ATLAS_VENDEUR_TVA") ?? null,
+      email: optionnel("ATLAS_VENDEUR_EMAIL") ?? null,
+    },
     paiementSecretCrochet: optionnel("ATLAS_PAIEMENT_SECRET_CROCHET"),
     // La barre oblique finale se retire ici, une fois : ailleurs, chaque
     // appelant devrait s'en souvenir, et le premier oubli fabrique un

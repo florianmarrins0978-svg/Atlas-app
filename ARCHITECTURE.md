@@ -37159,3 +37159,19 @@ Contrôles : `test-reprise-des-prix`, `test-hausse-du-devis` (purs, verts), `tes
 
 **Ajouté le 6 novembre 2026.** Le salarié d'un compte fermé reçoit `CompteFermeError` (une sorte d'`AccesRefuseError`), que `garderLaPage` envoie sur `/compte-ferme` ; cet écran ne lit rien de l'entreprise. La moitié « chantiers » de l'effacement d'un client est devenue `effacerLesChantiersDans`, pour servir aussi aux chantiers sans client : une règle, deux appelants. La conservation se compte jusqu'au 31 décembre de l'année de la pièce plus dix plus un (`src/lib/conservation.ts`, déménagée de `server/retention.ts` parce qu'elle est pure) : L123-22 part de la clôture de l'exercice, qu'Atlas ne connaît pas. **L'effacement de l'archive échue n'est pas codé** : il demande une fonction du propriétaire qui lève l'immuabilité des factures, et elle s'écrira base montée (`TODO.md`).
 
+## §561 : Atlas facture lui-même son abonnement, avec le code Factur-X des artisans
+
+*6 novembre 2026, ses réponses du 5 : TVA, et Factur-X.*
+
+| Décision | Pourquoi |
+|---|---|
+| Stripe encaisse, Atlas facture (`invoice.paid`, `emettreLaFactureDAbonnement`) | Stripe ne fabrique pas de Factur-X ; une facture faite chez lui aurait été une seconde fabrique, et un autre numéro |
+| la donnée passe par `donneesFactureAtlas`, puis `pieceDeLaFacture` du lot Factur-X | une seule façon de fabriquer une facture ; la pièce d'Atlas est éprouvée par `xmlFactureX` comme celle d'un artisan |
+| les montants sont ceux PRÉLEVÉS (prorata compris), et doivent se recouper avec le taux | une grille recalculée ici aurait dit autre chose que la banque ; un écart se refuse au lieu de se choisir |
+| un compteur unique verrouillé (`compteur_factures_atlas`), la pièce vérifiée AVANT de tirer le rang | une suite sans trou ; une SEQUENCE en aurait à chaque transaction annulée, un refus en aurait laissé un |
+| `factures_atlas` sans UPDATE ni DELETE pour `atlas_app`, `entreprise_id` en RESTRICT | ce sont les pièces d'Atlas, gardées quoi qu'il arrive au compte de l'artisan (RGPD 17.3.b) |
+| l'identité d'Atlas en configuration (`ATLAS_VENDEUR_*`), refus si incomplète | rien ne s'invente sur une pièce comptable |
+| l'e-mail au patron hors de la transaction | un service d'e-mail coupé ne défait pas une facture émise |
+
+Le dépôt lit les adresses des patrons par `adressesDesPatronsDans` (`membres-entreprise.ts`), écrite pour être la seule lecture de « qui est le patron » des envois d'Atlas ; l'e-mail d'avant l'effacement (`lot/fermeture-compte`) la reprendra à la fusion des deux lots.
+

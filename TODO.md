@@ -767,12 +767,10 @@ fermé), `reglages/donnees/fermer` (l'écran de la planche), la purge planifiée
 **Les factures qu'Atlas adresse aux artisans : Stripe les fait, mais pas
 conformes en l'état** (lu dans `src/server/paiement/stripe.ts`, 5 novembre) :
 
-- la session de paiement ne demande **ni la raison sociale, ni l'adresse, ni
-  le numéro de TVA ou le SIREN** de l'artisan (`billing_address_collection`,
-  `tax_id_collection`, `customer_update[name|address]` absents) : mentions
-  obligatoires d'une facture entre professionnels ;
-- **aucune TVA n'est ajoutée** (ni `automatic_tax` ni taux) alors que les CGU
-  annoncent des prix HT, TVA en sus ;
+- ~~la session de paiement ne demande ni la raison sociale, ni l'adresse, ni
+  le SIREN de l'artisan~~ : **ne se corrige pas chez Stripe**, la facture
+  d'Atlas les lira dans ses réglages (voir plus bas) ;
+- ~~aucune TVA n'est ajoutée~~ **codé le 5 novembre**, voir plus bas ;
 - les mentions d'Atlas (SIRET, TVA, pénalités de retard, indemnité de 40 €)
   se posent dans le tableau de bord Stripe, pas dans le code : à faire par lui ;
 - **septembre 2027** : Atlas, petite entreprise, devra émettre ses factures
@@ -793,9 +791,37 @@ et historique des factures retiré du guichet, sans quoi l'artisan recevrait
 deux factures pour une vente, avec deux numéros. À vérifier dans le tableau
 de bord le jour du compte Stripe (non vérifiable ici).
 
-Ordre : 1. le lot Factur-X (§555), 2. l'identité et la TVA au paiement,
+**Étape 2, la TVA au paiement : codée le 5 novembre** (`tauxDeTva`,
+`stripe.ts`), à voir sur une vraie page de paiement avec une clé d'essai.
+**L'identité de l'artisan n'est PAS demandée à Stripe, et c'est délibéré** :
+sa raison sociale, son adresse et son SIRET sont déjà dans ses réglages
+d'identité, et la facture d'Atlas (étape 3) les y lira. Les redemander au
+paiement ferait deux sources qui divergent. Reste à l'étape 3 : refuser de
+facturer sans SIRET ni adresse, plutôt que de faire une facture incomplète.
+
+Ordre (sa réponse « la A » du 5 novembre) : 1. le lot Factur-X (§555, sur
+`main` le 6 novembre), 2. la TVA au paiement (`lot/tva-abonnement`),
 3. la facture d'abonnement d'Atlas sur ce même code, 4. en septembre 2027,
 la transmission par la plateforme agréée d'Atlas. Pas d'application à part.
+
+**Étape 3 : CODÉE le 6 novembre sur `lot/facture-atlas`** (qui porte aussi la
+TVA), **pas livrée**, batterie en attente de son « lance ». Au crochet
+`invoice.paid`, Atlas émet sa facture (`emettreLaFactureDAbonnement`) : numéro
+`AT2026-000001` d'un compteur sans trou (migration 0172), Factur-X par
+`pieceDeLaFacture` (PDF ordinaire si l'adresse de l'artisan n'a pas de code
+postal), PDF rangé, envoyé au patron par e-mail en pièce jointe.
+`scripts/test-facture-atlas.ts` vert (la pièce passe par `xmlFactureX`) ;
+**`test-factures-atlas-db.ts` écrite, jamais jouée.** Reste :
+
+- **ses cinq lignes à poser** : `ATLAS_VENDEUR_NOM`, `_ADRESSE`, `_SIRET`,
+  `_TVA`, `_EMAIL`. Sans elles, aucune facture ne part, et le journal le dit ;
+- chez Stripe : couper l'envoi de ses propres factures (sinon deux factures
+  pour un paiement) ;
+- **une facture refusée ne se refait pas toute seule** (identité incomplète,
+  montants qui ne se recoupent pas : Stripe a reçu son 200). À émettre à la
+  main depuis le journal ; un écran pour la refaire n'existe pas ;
+- l'artisan ne voit pas encore ses factures Atlas dans l'appli (Réglages,
+  Abonnement) : il les reçoit par e-mail. Un écran demande une planche.
 
 ## ~~⏳ UNE PLANCHE À REGARDER~~ MISE EN ATTENTE LE 5 NOVEMBRE : le prix TTC de l'abonnement
 
