@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-07
 
+- **« Créer un devis » attend une demi-seconde** (sa demande : *« elle s'enclenche trop rapidement »*). Et sur téléphone, le geste attend que le téléphone de l'ouverture soit à moitié à l'écran : au premier mouvement du doigt, on ne le voyait pas encore. Pas codé.
 - **Site de vente : le bandeau vert au bas de la page, retiré** (sa capture sur iPhone). C'était le bouton « Essayer 15 jours gratuits », caché en le descendant de 140 % de sa hauteur, alors qu'il est posé à 12 px du bas plus la marge de la barre d'accueil de l'iPhone (34 px) : il dépassait de 23 px. Il descend désormais de toute sa hauteur plus cet écart, puis devient invisible. Test rouge puis vert dans `appli/tests/e2e.js`, qui sert la page avec la marge d'un iPhone (Chromium la vaut 0). Pas codé.
 
 ## 2026-11-06

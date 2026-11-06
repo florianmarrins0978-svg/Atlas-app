@@ -1108,6 +1108,8 @@ html.anime .pile{overflow:hidden;border-radius:16px}
   film.addEventListener("ended", function(){ finFilm.classList.add("vue"); film.classList.remove("joue"); });
   var lancer = async function(){
     arme = false; var mien = ++tourCreer;
+    // Une demi-seconde pour voir l'accueil avant l'appui (sa demande).
+    await attendre(500); if (mien !== tourCreer) return;
     await camCreer.aller(PLUS, 520); if (mien !== tourCreer) return;
     try { film.currentTime = 0; } catch (e) {}
     var promesse = film.play();
@@ -1118,10 +1120,15 @@ html.anime .pile{overflow:hidden;border-radius:16px}
     camCreer.aller(PLAN, 820);
   };
   var remettre = function(){ arme = true; tourCreer++; film.pause(); film.classList.remove("joue"); finFilm.classList.remove("vue"); camCreer.poser(PLAN); };
-  addEventListener("scroll", function(){
-    if (arme && scrollY > 24) lancer();
+  // Sur un téléphone, le premier mouvement du doigt ne montre pas encore le
+  // téléphone de l'ouverture : le geste attend qu'il soit à moitié à l'écran.
+  var partVue = 0;
+  var essayer = function(){
+    if (arme && scrollY > 24 && partVue >= 0.5) lancer();
     else if (!arme && scrollY < 2) remettre();
-  }, {passive:true});
+  };
+  new IntersectionObserver(function(e){ partVue = e[0].intersectionRatio; essayer(); }, {threshold:[0, 0.25, 0.5, 0.75, 1]}).observe(creer);
+  addEventListener("scroll", essayer, {passive:true});
 
   // 2. La note vocale : le micro au repos, puis l'enregistrement qui démarre
   // et le vrai chrono qui défile, une capture par seconde (nov-dictee-00 à 12).
