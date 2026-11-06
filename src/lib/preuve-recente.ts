@@ -75,6 +75,11 @@ export const GESTES_SENSIBLES = {
    * d'appareil ; nommer un second patron, ou retirer le vrai, est pire encore.
    */
   accesALEntreprise: "acces-a-l-entreprise",
+  /**
+   * Fermer le compte (5 novembre 2026) : une session volée qui le fermerait
+   * couperait l'accès de toute l'équipe et lancerait l'effacement du reste.
+   */
+  fermerLeCompte: "fermer-le-compte",
 } as const;
 
 export type GesteSensible = (typeof GESTES_SENSIBLES)[keyof typeof GESTES_SENSIBLES];
@@ -97,5 +102,7 @@ export function messagePreuveExigee(geste: GesteSensible): string {
       return "Ce fichier contient toute votre entreprise : vérifiez que c'est bien vous.";
     case GESTES_SENSIBLES.accesALEntreprise:
       return "Les accès ouvrent votre entreprise : vérifiez que c'est bien vous.";
+    case GESTES_SENSIBLES.fermerLeCompte:
+      return "Vos salariés n'auront plus accès à Atlas : vérifiez que c'est bien vous.";
   }
 }

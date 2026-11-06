@@ -19,11 +19,12 @@ import * as facturesRepo from "../src/server/repositories/factures";
 import * as lignesPrixRepo from "../src/server/repositories/lignes-prix";
 import { devis as devisTable } from "../src/server/db/schema";
 import { creerEnvoi, enregistrerReponse } from "../src/server/repositories/envois-devis";
-import { audioAPurger, RETENTION, motifConservation, echeanceConservation } from "../src/server/retention";
+import { audioAPurger, RETENTION, motifConservation } from "../src/server/retention";
+import { echeanceConservation } from "../src/lib/conservation";
 import { versJourIso, ajouterJours } from "../src/lib/disponibilites";
 import { nettoyerBase } from "./_test-db";
 import { listerFichesClients } from "../src/server/repositories/fiche-client";
-import { factures as facturesTable } from "../src/server/db/schema";
+import { factures as facturesTable, envoisDevis as envoisDevisTable } from "../src/server/db/schema";
 
 let passed = 0;
 let failed = 0;
@@ -170,9 +171,12 @@ async function main() {
     assert.match(m ?? "", /L123-22/);
   });
 
-  await test("l'échéance de conservation compte en années pleines", async () => {
+  // **Corrigé le 6 novembre 2026** : dix ans depuis la clôture de l'exercice
+  // (L123-22), pas depuis la date de la pièce. « 2036-04-01 » partait avant
+  // le terme de tout exercice clos en 2026 ou plus tard.
+  await test("l'échéance de conservation court jusqu'à la fin de l'année N + dix + un", async () => {
     const e = echeanceConservation(new Date("2026-04-01T00:00:00Z"), 10);
-    assert.strictEqual(e.toISOString().slice(0, 10), "2036-04-01");
+    assert.strictEqual(e.toISOString().slice(0, 10), "2037-12-31");
   });
 
   // ---- Purge réelle
@@ -305,11 +309,10 @@ async function main() {
     assert.ok(rapport.pieces[0].jusquAu, "l'échéance doit être annoncée");
     // **Dix ans, sa décision du 22 octobre 2026** : la garantie décennale court
     // dix ans, et le devis signé est ce qui prouve ce qui était commandé.
-    const dansDixAns = new Date(MAINTENANT.getTime());
-    dansDixAns.setUTCFullYear(dansDixAns.getUTCFullYear() + 10);
+    // Fin d'exercice comprise, le côté sûr (`src/lib/conservation.ts`).
     assert.strictEqual(
       rapport.pieces[0].jusquAu,
-      dansDixAns.toISOString().slice(0, 10),
+      `${MAINTENANT.getUTCFullYear() + 11}-12-31`,
       "le devis accepté n'est pas gardé dix ans"
     );
     assert.strictEqual(rapport.disparu, false, "une pièce le retient : il ne peut pas avoir disparu");
@@ -352,6 +355,21 @@ async function main() {
       null,
       "un lien survivant rouvrirait l'accès aux données effacées"
     );
+
+    // **Et la PREUVE de l'acceptation reste** (sa réponse « OUI ! » du
+    // 5 novembre 2026). Le devis gardé dix ans ne prouve rien sans le « oui »
+    // daté du client : c'est sur l'envoi qu'il vit, et l'effacement le
+    // supprimait avec le lien. Le lien part, la réponse reste.
+    const restants = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) =>
+      tx
+        .select({ reponse: envoisDevisTable.reponse, responduAt: envoisDevisTable.responduAt, jeton: envoisDevisTable.jeton })
+        .from(envoisDevisTable)
+        .where(eq(envoisDevisTable.devisId, d.id))
+    );
+    assert.strictEqual(restants.length, 1, "la réponse du client au devis conservé a disparu");
+    assert.strictEqual(restants[0].reponse, "acceptee");
+    assert.ok(restants[0].responduAt, "la date du « oui » a disparu");
+    assert.notStrictEqual(restants[0].jeton, envoi.jeton, "le jeton envoyé au client ouvre encore la page");
   });
 
   // ─── LE CAS QUI MANQUAIT, ET QUI FAISAIT TOMBER LA FONCTION ───────────────

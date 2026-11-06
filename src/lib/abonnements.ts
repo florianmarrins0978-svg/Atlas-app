@@ -40,6 +40,8 @@
  * trois** : c'est son Atlas à lui, et celui de ceux qui s'en servaient avant
  * l'offre. Une fermeture est la conséquence d'une formule choisie.
  */
+
+import { compteFerme, type Fermeture } from "./fermeture-compte";
 import type { Role } from "./acces-roles";
 
 export type FormuleCode = "artisan" | "entreprise" | "illimite";
@@ -132,9 +134,20 @@ export function etatDeLEssai(abonnement: AbonnementLu, maintenant: Date): EtatEs
  * pas : Stripe garde l'abonnement « actif » jusqu'à la date payée, et il garde
  * tout jusque-là.
  */
-export type EtatAcces = EtatEssai | { statut: "resilie" };
+export type EtatAcces = EtatEssai | { statut: "resilie" } | { statut: "ferme" };
 
-export function etatDeLAcces(abonnement: AbonnementLu, maintenant: Date): EtatAcces | null {
+/**
+ * **Le compte fermé passe avant tout le reste** (5 novembre 2026, question 33
+ * de `docs/QUESTIONS.md`) : fermé, il l'est quel que soit son abonnement, et
+ * c'est ce que le ruban et le bouton éteint doivent dire. La lecture seule
+ * elle-même est posée par `withEntreprise`, depuis la même règle.
+ */
+export function etatDeLAcces(
+  abonnement: AbonnementLu,
+  maintenant: Date,
+  fermeture: Fermeture | null = null
+): EtatAcces | null {
+  if (compteFerme(fermeture, maintenant)) return { statut: "ferme" };
   if (abonnement?.statut === "resilie") return { statut: "resilie" };
   return etatDeLEssai(abonnement, maintenant);
 }
@@ -156,11 +169,13 @@ export function enLectureSeule(abonnement: AbonnementLu, maintenant: Date): bool
 export function phraseLectureSeule(acces: EtatAcces | null): string | null {
   if (acces?.statut === "termine") return "Votre essai est terminé. Choisissez une formule pour créer de nouveau.";
   if (acces?.statut === "resilie") return "Votre abonnement est terminé. Choisissez une formule pour créer de nouveau.";
+  if (acces?.statut === "ferme") return "Votre compte est fermé. Rouvrez-le dans Mes données pour créer de nouveau.";
   return null;
 }
 
 /** Le ruban en tête de l'accueil — le seul écran qu'il ouvre tous les matins. */
 export function texteDuRuban(etat: EtatAcces): string {
+  if (etat.statut === "ferme") return "Compte fermé, lecture seule";
   if (etat.statut === "resilie") return "Abonnement terminé, lecture seule";
   if (etat.statut === "termine") return "Essai terminé, lecture seule";
   return etat.joursRestants > 1

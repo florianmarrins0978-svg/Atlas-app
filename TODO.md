@@ -17,7 +17,7 @@ prendras aussi. »* Branche `lot/batterie-commune-6-novembre-soir`, partie de
 | 3 | `claude/deplacer-en-un-appui` | aucune | aucune |
 | 3 | `claude/fiche-travaux-que-les-travaux` | 0169, devenue **0173** | aucune |
 | 2 | `lot/fiche-securite-soignee` (avec le « ≤ ») | aucune | aucune |
-| 1 | `lot/fermeture-compte`, `lot/facture-atlas`, `lot/tva-abonnement` | sa 0171, à passer en **0174** | **à prendre quand elle aura fini** |
+| 1 | `lot/fermeture-compte` (`a3be638e`) | 0166, puis 0171, devenue **0174** | l'effacement d'un client, découpé pour servir au compte fermé, reprend la règle du brouillon de facture venue de main |
 
 Paragraphes renumérotés : l'hivernage §561, la note §562, le plafond §563, la
 fiche travaux §564 et §565. Chaque renvoi à un numéro déplacé a été relu un
@@ -713,15 +713,56 @@ pas dans le PDF : faut-il demander Congé ou Maladie quand on note l'absence ?
 compte reste ouvert jusqu'à l'échéance, puis se ferme, comme une résiliation.
 Pas codé.
 
-**Fermer un compte : tranché, pas codé** (`docs/QUESTIONS.md`, question 33,
-sa troisième version du 5 novembre, la seule qui vaut). Dans tous les cas, les
-factures, avoirs, devis et contrats acceptés et leurs PDF restent 10 ans,
-lisibles en lecture seule ; le reste s'efface après 30 jours ; l'archive
-s'efface au bout des 10 ans. La base refuse aujourd'hui d'effacer une facture émise ou un
-devis envoyé (`drizzle/0018`, `0068`) : l'effacement au bout des 10 ans devra lever
-ce verrou pour ce seul cas, prouvé par un test sur une base habitée. Maquette
-d'abord. Remplace `RETENTION.compteFermeJours` « mécanisme inexistant ».
-Article 13 des CGU à réécrire : sa décision (nouvelle version à accepter).
+**Fermer un compte : CODÉ le 5 novembre 2026 sur `lot/fermeture-compte`, PAS
+LIVRÉ** : la batterie attend son « lance » (sa règle du même jour). Les suites
+pures sont vertes ; `scripts/test-fermeture-compte-db.ts` est écrit et n'a
+**jamais tourné** (il vide la base de test : même accord requis). Ce qui est
+codé : `src/lib/fermeture-compte.ts` (les règles), migration 0174 (trois dates
+sur `entreprises`), `withEntreprise` (lecture seule et salariés refusés une fois
+fermé), `reglages/donnees/fermer` (l'écran de la planche), la purge planifiée
+(`effacerLeResteDesComptesFermes`, qui passe chaque client par
+`effacerClientDans`), et l'abonnement repris qui rouvre le compte.
+
+**Ce qui reste, et qui le sait :**
+
+- ~~la preuve d'acceptation d'un devis part avec le client~~ **corrigé le
+  5 novembre 2026, sur sa réponse « OUI ! »** (`effacerClientDans`) : l'envoi
+  qui porte l'acceptation d'un devis conservé reste, son lien meurt (jeton
+  remplacé, échéance passée). Suite `test-retention-effacement`, cas « le lien
+  public du devis est retiré », étendue ; **jamais jouée** (base de test) : à
+  voir rouge sur `main` puis vert sur la branche quand il dira « lance » ;
+- ~~le salarié d'un compte fermé tombe sur l'écran d'erreur~~ **codé le
+  6 novembre** : `CompteFermeError`, `garderLaPage` l'envoie sur
+  `/compte-ferme` (« Le compte de l'entreprise est fermé. », Se déconnecter) ;
+- l'écran du compte fermé est l'appli en lecture seule (Terminés porte les
+  factures et leurs PDF), pas la liste dédiée de la planche ;
+- ~~ce que la purge n'efface pas encore~~ **codé le 6 novembre** : chantiers
+  sans client (même règle que ceux d'un client, `effacerLesChantiersDans`),
+  liaison bancaire, messages de l'assistant hors chantier, fichiers des
+  photos de diagnostic. **Restent, délibérément** : les mouvements et virements
+  de la banque, reliés aux pièces du comptable (0145, en cascade) et aux
+  paiements des factures ;
+- ~~l'e-mail qui le prévient avant l'effacement~~ **codé le 6 novembre** :
+  sept jours avant, une fois, date posée sur un envoi réussi seulement
+  (`prevenirAvantLEffacement`, colonne `prevenu_le` dans 0174) ;
+- ~~`echeanceConservation` compte dix ans depuis la date de la pièce~~
+  **corrigé le 6 novembre** (`src/lib/conservation.ts`) : jusqu'au 31 décembre
+  de l'année de la pièce plus onze, le côté sûr faute de connaître l'exercice
+  de chaque artisan (sa décision du même jour). Les dates « conservé
+  jusqu'au » de l'effacement d'un client reculent d'autant ;
+- **l'effacement de l'archive au bout des dix ans : la règle est codée
+  (`archiveEchue`), PAS l'effacement lui-même.** `atlas_app` n'a pas le droit
+  d'effacer une facture ni un avoir (0018, 0101), et c'est voulu : il faudra
+  une fonction `SECURITY DEFINER` du propriétaire, qui lève les déclencheurs
+  d'immuabilité pour ce seul cas, et efface dans l'ordre des clés (une
+  vingtaine de tables tiennent aux factures et aux chantiers, dont des clés
+  composites posées par 0149 et des RESTRICT). Écrite sans base pour relever
+  ce graphe, elle serait la seule porte vers l'effacement de factures, et
+  personne ne l'aurait jamais vue tourner. À écrire base montée ; elle ne
+  servira pas avant 2038 (première archive échue) ;
+- après elle, l'entreprise et les comptes de ses personnes restent :
+  `atlas_app` n'a pas le droit d'effacer une entreprise (0147) ;
+- l'article 13 des CGU à réécrire : sa décision (nouvelle version à accepter).
 
 **Les factures qu'Atlas adresse aux artisans : Stripe les fait, mais pas
 conformes en l'état** (lu dans `src/server/paiement/stripe.ts`, 5 novembre) :
@@ -8694,7 +8735,7 @@ Tout est écrit pas à pas dans `docs/DEPLOIEMENT-PURGE.md`.
 
 ### 3. Deux durées qui décrivent ce qui n'existe pas
 
-- `RETENTION.compteFermeJours` — **il n'y a aucun chemin de fermeture de compte**
+- ~~`RETENTION.compteFermeJours`~~ **codé le 5 novembre 2026** (`lot/fermeture-compte`), la constante a déménagé dans `src/lib/fermeture-compte.ts`. Texte d'origine : **il n'y a aucun chemin de fermeture de compte**
   dans le produit : ni écran, ni fonction. Soit on écrit le chemin, soit on
   retire la durée. Elle est marquée comme telle dans le code en attendant ;
 - le **lien d'un compte rendu d'entretien n'expire jamais**, alors que celui d'un

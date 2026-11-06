@@ -36,6 +36,7 @@ import { rappelsDeLAccueil } from "@/lib/vehicules";
 import { receptionsASignaler } from "@/server/repositories/envois-factures";
 import { abonnementDeLEntreprise } from "@/server/repositories/abonnements";
 import { etatDeLAcces, phraseLectureSeule } from "@/lib/abonnements";
+import { fermetureDeLEntreprise } from "@/server/repositories/fermeture-compte";
 import RubanEssai from "@/components/atlas/RubanEssai";
 import AnnonceTransmission from "@/components/atlas/AnnonceTransmission";
 import EcranChantiers from "./EcranChantiers";
@@ -84,7 +85,7 @@ export default async function ChantiersPage() {
   // siens lui-même ; ces trois-là se lisent ici, sur la même règle.
   const role = await getRole(ctx);
   const recoit = (domaine: DomaineDesRappels) => role !== null && recoitLesRappels(role, domaine);
-  const [chantiers, contrats, notifications, caducs, rappels, receptions, abonnement, retoursManques, vehicules, virements, liaison, attestations, retours] = await Promise.all([
+  const [chantiers, contrats, notifications, caducs, rappels, receptions, abonnement, fermeture, retoursManques, vehicules, virements, liaison, attestations, retours] = await Promise.all([
     listerChantiersPourAffichage(ctx),
     // Qui ne rédige pas de contrat n'en voit pas : il ne pourrait ni les
     // reprendre, ni les retirer.
@@ -98,6 +99,7 @@ export default async function ChantiersPage() {
     recoit("facture") ? receptionsASignaler(ctx) : [],
     // L'essai de quinze jours, s'il y en a un : `null` pour son Atlas à lui.
     abonnementDeLEntreprise(ctx),
+    fermetureDeLEntreprise(ctx),
     // « Retour pas reçu » : sa planche du 26 septembre 2026, seulement quand
     // il a allumé « Demander une preuve ».
     reglesDuRetour(ctx).then((r) => retoursPasRecusEnCours(ctx, r.demande, maintenant)),
@@ -126,7 +128,7 @@ export default async function ChantiersPage() {
 
   // Le ruban et le bouton éteint se décident ICI, sur le même instant que les
   // rappels — la règle vit dans `abonnements.ts`, l'écran n'en recalcule rien.
-  const acces = etatDeLAcces(abonnement, maintenant);
+  const acces = etatDeLAcces(abonnement, maintenant, fermeture);
 
   // **Cette liste ne montre que ce qui reste à préparer.** Un chantier passé au
   // planning vit au planning ; facturé, terminé, ou dont la date est dépassée,

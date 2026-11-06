@@ -37142,3 +37142,20 @@ Contrôles : `test-taches-du-devis` (les deux sens), `test-reprise-du-devis-db`.
 **Le piège évité** : comparer le tarif du jour au prix entier (28 € part comprise contre 12 €) faisait toujours « changer » la haie, et le oui effaçait les 400 €. Et une main d'œuvre posée APRÈS la reprise sort la ligne de la reprise, comme un prix tapé, sans quoi le oui suivant la retirait.
 
 Contrôles : `test-reprise-des-prix`, `test-hausse-du-devis` (purs, verts), `test-reprise-du-devis-db` (le parcours entier, sous `atlas_app`).
+## §566 : Fermer son compte : trois dates sur l'entreprise, une règle, la porte de `withEntreprise`
+
+*5 novembre 2026, question 33 de `docs/QUESTIONS.md`, planche `appli/soignee/fermer-mon-compte.html` (choix A).*
+
+| Décision | Pourquoi |
+|---|---|
+| trois dates sur `entreprises` (migration 0174), aucune table neuve | `withEntreprise` lit déjà l'adhésion et l'abonnement en une requête ; la fermeture s'y joint sans aller-retour de plus |
+| la lecture seule et le refus des salariés dans `withEntreprise` | la même raison que la lecture seule de l'essai (§ du 13 septembre) : 176 gestes écrivent, en fermer un par un en oublierait un |
+| la date d'effet est la fin de ce qui est payé, lue sur l'abonnement | son choix A ; la résiliation à l'échéance part chez Stripe AVANT que la base note la fermeture, sinon il paierait pour un compte qu'il croit fermé |
+| la purge passe chaque client par `effacerClientDans` | une seule règle de ce qui se garde (sa décision du 27 août) ; une seconde aurait divergé. La transaction pose `app.entreprise_id` depuis la ligne lue, jamais depuis une saisie |
+| un abonnement repris (actif, sans résiliation demandée) retire la fermeture, sur les deux chemins (retour du paiement et crochet) | il peut payer puis fermer l'onglet ; « résiliation demandée » est l'état exact d'une fermeture en cours, et la lire comme une reprise l'effacerait à la seconde où elle s'écrit |
+| `RETENTION.compteFermeJours` supprimé, `JOURS_AVANT_EFFACEMENT` dans `src/lib/fermeture-compte.ts` | un seul chiffre, à l'endroit des règles pures ; l'ancien ne s'appliquait à rien |
+
+**Écarté** : un drapeau sur l'adhésion de chaque salarié (il aurait fallu le défaire un par un en rouvrant), et effacer le reste au jour de la fermeture (il perdrait « Rouvrir rend tout » pendant trente jours).
+
+**Ajouté le 6 novembre 2026.** Le salarié d'un compte fermé reçoit `CompteFermeError` (une sorte d'`AccesRefuseError`), que `garderLaPage` envoie sur `/compte-ferme` ; cet écran ne lit rien de l'entreprise. La moitié « chantiers » de l'effacement d'un client est devenue `effacerLesChantiersDans`, pour servir aussi aux chantiers sans client : une règle, deux appelants. La conservation se compte jusqu'au 31 décembre de l'année de la pièce plus dix plus un (`src/lib/conservation.ts`, déménagée de `server/retention.ts` parce qu'elle est pure) : L123-22 part de la clôture de l'exercice, qu'Atlas ne connaît pas. **L'effacement de l'archive échue n'est pas codé** : il demande une fonction du propriétaire qui lève l'immuabilité des factures, et elle s'écrira base montée (`TODO.md`).
+

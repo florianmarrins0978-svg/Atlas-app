@@ -26,7 +26,18 @@ import Picto from "@/components/atlas/reglages/Picto";
  * refuse même si l'on ouvre l'adresse à la main. Ce composant évite seulement un
  * refus muet.
  */
-export default function BoutonTelecharger({ nomFichier }: { nomFichier: string }) {
+export default function BoutonTelecharger({
+  nomFichier,
+  allure = "plein",
+}: {
+  nomFichier: string;
+  /**
+   * « creux » sur l'écran Fermer mon compte : là, le bouton plein du bas est
+   * la fermeture, et la copie se propose au-dessus, sans l'imposer (sa
+   * décision du 5 novembre 2026). Le même lien, la même preuve.
+   */
+  allure?: "plein" | "creux";
+}) {
   const lien = useRef<HTMLAnchorElement | null>(null);
   const [demande, setDemande] = useState(false);
   const [enCours, setEnCours] = useState(false);
@@ -74,24 +85,39 @@ export default function BoutonTelecharger({ nomFichier }: { nomFichier: string }
           feuille hériterait du plan de la colonne fixe (z-10) et passerait
           SOUS la barre du bas (z-20) : le bouton « Continuer » serait couvert,
           et le fichier ne partirait jamais. */}
-      <ActionBas>
+      {allure === "plein" ? (
+        <ActionBas>
+          <a
+            ref={lien}
+            href="/api/mes-donnees"
+            download={nomFichier}
+            onClick={auClic}
+            data-atlas="telecharger-mes-donnees"
+            className="atlas-plein flex min-h-[56px] w-full items-center justify-center gap-2.5 rounded-full px-[22px] text-[17px] font-semibold no-underline"
+            // **`surPlein`, et non `colors.cream`** : sur Nuit et Sylve le vert
+            // `plein` devient clair et la crème devient sombre, le mot se
+            // perdait dans son bouton (`CLAUDE.md` §3, sept chartes dont deux
+            // sombres). `surPlein` est ce qui se pose SUR un aplat, partout.
+            style={{ backgroundColor: colors.plein, color: surPlein }}
+          >
+            <Picto nom="telecharger" />
+            {enCours ? "Un instant…" : "Télécharger mes données"}
+          </a>
+        </ActionBas>
+      ) : (
         <a
           ref={lien}
           href="/api/mes-donnees"
           download={nomFichier}
           onClick={auClic}
           data-atlas="telecharger-mes-donnees"
-          className="atlas-plein flex min-h-[56px] w-full items-center justify-center gap-2.5 rounded-full px-[22px] text-[17px] font-semibold no-underline"
-          // **`surPlein`, et non `colors.cream`** : sur Nuit et Sylve le vert
-          // `plein` devient clair et la crème devient sombre, le mot se
-          // perdait dans son bouton (`CLAUDE.md` §3, sept chartes dont deux
-          // sombres). `surPlein` est ce qui se pose SUR un aplat, partout.
-          style={{ backgroundColor: colors.plein, color: surPlein }}
+          className="flex min-h-[56px] w-full items-center justify-center gap-2.5 rounded-full px-[22px] text-[17px] font-semibold no-underline"
+          style={{ color: colors.ink, boxShadow: `inset 0 0 0 1.5px ${colors.line}` }}
         >
           <Picto nom="telecharger" />
           {enCours ? "Un instant…" : "Télécharger mes données"}
         </a>
-      </ActionBas>
+      )}
 
       <DemanderPreuve
         ouvert={demande}

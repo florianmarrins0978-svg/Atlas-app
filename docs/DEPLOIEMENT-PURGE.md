@@ -129,10 +129,10 @@ deux premiers échouent bruyamment, celui-là non.
   garde et les expire. **Aucun code d'Atlas ne l'applique, et c'est normal** —
   chercher à purger ce qu'on ne détient pas n'aurait aucun sens. La durée est à
   poser dans la configuration de journalisation de Scaleway.
-- **La fermeture d'un compte** (`RETENTION.compteFermeJours`, 30 jours). Ce
-  chemin **n'existe pas** dans le produit : ni écran, ni fonction. La durée
-  décrit une opération qui n'est pas codée, et elle est marquée comme telle dans
-  `src/server/retention.ts`. À écrire ou à retirer — c'est dans `TODO.md`.
+- **La fermeture d'un compte** (`JOURS_AVANT_EFFACEMENT`, 30 jours,
+  `src/lib/fermeture-compte.ts`). Codée le 5 novembre 2026 : elle passe par
+  **cette même purge planifiée**, rien à configurer de plus chez l'hébergeur.
+  Le rapport de la purge porte `comptesEffaces`.
 - **Les sauvegardes.** Elles ont leur propre document
   (`docs/lot-sauvegarde-cloture.md`) et leur propre liste `SCW-01` à `SCW-23`.
   Une purge n'est pas une sauvegarde : l'une efface ce qui a expiré, l'autre
