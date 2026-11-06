@@ -392,6 +392,8 @@ export async function noterAbsenceAction(formData: FormData): Promise<ResultatAb
   const premierJour = String(formData.get("premierJour") ?? "").trim();
   const dernierJour = String(formData.get("dernierJour") ?? "").trim();
   const motif = String(formData.get("motif") ?? "").trim() || null;
+  // La nature (congé, maladie…) : relue par le dépôt, une valeur inconnue n'en est pas une.
+  const nature = String(formData.get("nature") ?? "").trim() || null;
 
   // **Rejouée au serveur, même si l'écran l'a déjà vue.** Un écran n'est pas
   // une garde : il suffit d'une requête écrite à la main pour poser une absence
@@ -418,6 +420,7 @@ export async function noterAbsenceAction(formData: FormData): Promise<ResultatAb
     premierDemi,
     dernierDemi,
     motif,
+    nature,
   });
   if (!ligne) return { ok: false, raison: "Cette équipe n\u2019existe pas." };
   // **Ce que le congé a défait remonte jusqu'à l'écran** — sa consigne du
@@ -460,7 +463,9 @@ const MOMENTS_DU_JOUR = ["matin", "apres_midi", "journee"] as const;
 export async function absenceDuJourAction(
   rang: number,
   jour: string,
-  moment: MomentDuJour | null
+  moment: MomentDuJour | null,
+  /** La nature de ce jour : sans elle, le jour n'en a pas (le dépôt la relit). */
+  nature: string | null = null
 ): Promise<ResultatAbsenceDuJour> {
   const refus = refusDeLAbsence(jour, jour);
   if (refus) return { ok: false, raison: phraseDuRefus(refus) };
@@ -471,7 +476,7 @@ export async function absenceDuJourAction(
   await exigerProprietaire(ctx, "noter l'absence d'une équipe");
   await exigerFonction(ctx, "absences", "noter l'absence d'une équipe");
 
-  const r = await absenceDuJour(ctx, { rang, jour, moment });
+  const r = await absenceDuJour(ctx, { rang, jour, moment, nature });
   if (!r) return { ok: false, raison: "Cette équipe n\u2019existe pas." };
   return { ok: true, ...r };
 }

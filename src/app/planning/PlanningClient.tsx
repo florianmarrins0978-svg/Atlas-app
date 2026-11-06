@@ -72,6 +72,7 @@ import { CarteDuJour } from "./CarteDuJour";
 import { TiroirDuBas } from "./TiroirDuBas";
 import PastilleFerie from "@/components/atlas/PastilleFerie";
 import { nomDuFerie } from "@/lib/jours-feries";
+import type { NatureAbsence } from "@/lib/nature-absence";
 
 /**
  * LE PLANNING — le mois, la journée qui s'ouvre dessous, la semaine en bas.
@@ -574,7 +575,7 @@ export default function PlanningClient({
    * part chez un client est exactement ce qu'on cherche à éviter.
    */
   const poserLeJour = useCallback(
-    async (jour: JourIso, rang: number, moment: MomentDuJour | null) => {
+    async (jour: JourIso, rang: number, moment: MomentDuJour | null, nature: NatureAbsence | null = null) => {
       const siennes = absencesVues.filter((a) => a.rang === rang);
       const { aRetirer, aPoser } = gesteDuJour(siennes, jour, moment);
       const retirees = new Set(aRetirer);
@@ -587,11 +588,13 @@ export default function PlanningClient({
         dernierJour: p.dernierJour,
         premierDemi: p.premierDemi,
         dernierDemi: p.dernierDemi,
+        // Le morceau d'une période garde sa nature ; le jour prend celle qu'il dit.
+        nature: p.depuis ? (p.depuis.nature ?? null) : nature,
       }));
       const idsProvisoires = new Set(provisoires.map((a) => a.id));
       setAbsencesVues((v) => [...v.filter((a) => !retirees.has(a.id)), ...provisoires]);
 
-      const r = await absenceDuJourAction(rang, jour, moment);
+      const r = await absenceDuJourAction(rang, jour, moment, nature);
 
       if (!r.ok) {
         setAbsencesVues((v) => [
@@ -613,6 +616,7 @@ export default function PlanningClient({
           dernierJour: a.dernierJour,
           premierDemi: a.premierDemi,
           dernierDemi: a.dernierDemi,
+          nature: a.nature,
         })),
       ]);
 

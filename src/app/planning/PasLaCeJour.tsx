@@ -10,6 +10,8 @@ import { jourLisible } from "@/lib/jour";
 import type { AbsenceDuPlanning } from "./types-du-planning";
 import { BasculeDuMoment, LES_TROIS_MOMENTS } from "./BasculeDuMoment";
 import { PisteAbsence } from "./PisteAbsence";
+import ChoixDeLaNature from "@/components/atlas/ChoixDeLaNature";
+import type { NatureAbsence } from "@/lib/nature-absence";
 
 /**
  * Ce que l'absence d'une personne prend de CE jour.
@@ -44,6 +46,16 @@ function momentCeJour(absences: readonly AbsenceDuPlanning[], rang: number, jour
  * **L'ENCRE RÉTRÉCIT, LA CIBLE NON** : 44 px de haut, pleine largeur. Un geste
  * qu'on rate avec des gants ne vaut pas mieux qu'un geste qu'on ne voit pas.
  */
+/**
+ * La nature de l'absence de CE jour, pour un salarié : celle de la ligne qui
+ * le couvre. Deux lignes le même jour (un matin, un après-midi) se lisent dans
+ * l'ordre : la première qui dit sa nature.
+ */
+function natureCeJour(absences: readonly AbsenceDuPlanning[], rang: number, jour: JourIso): NatureAbsence | null {
+  const couvrent = absences.filter((a) => a.rang === rang && momentDuJour(a, jour) !== null);
+  return couvrent.find((a) => a.nature)?.nature ?? null;
+}
+
 function GesteAbsence({
   children,
   onClick,
@@ -109,7 +121,7 @@ export function PasLaCeJour({
   nombreSalaries: number;
   nomEquipe: (rang: number) => string;
   /** L'état d'une personne pour CE jour seulement : `null` la rend présente. */
-  poser: (jour: JourIso, rang: number, moment: MomentDuJour | null) => void;
+  poser: (jour: JourIso, rang: number, moment: MomentDuJour | null, nature?: NatureAbsence | null) => void;
 }) {
   /**
    * LA FEUILLE EST-ELLE OUVERTE ?
@@ -260,7 +272,22 @@ export function PasLaCeJour({
                       )}
                     </span>
                   </div>
-                  <PisteAbsence nom={`${nom}, le ${jourLisible(jour)}`} retenu={moment} onChoisir={(m) => poser(jour, r, m)} />
+                  {/* Changer le moment garde le motif déjà dit : seul le jour bouge. */}
+                  <PisteAbsence
+                    nom={`${nom}, le ${jourLisible(jour)}`}
+                    retenu={moment}
+                    onChoisir={(m) => poser(jour, r, m, natureCeJour(absences, r, jour))}
+                  />
+                  {/* ─── POURQUOI IL EST ABSENT — sa planche du 5 novembre ───
+                      Dès qu'il manque, les six motifs paraissent sous sa piste.
+                      Un salarié seulement : l'artisan seul n'a pas de paie à
+                      préparer, et lui demander un motif n'aurait pas de sens. */}
+                  {moment && !seul && (
+                    <ChoixDeLaNature
+                      nature={natureCeJour(absences, r, jour)}
+                      onChoisir={(n) => poser(jour, r, moment, n)}
+                    />
+                  )}
                 </div>
               );
             })}

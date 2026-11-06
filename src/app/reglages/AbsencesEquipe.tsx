@@ -15,6 +15,8 @@ import PlageTon from "@/components/atlas/reglages/PlageTon";
 import PastilleIcone from "@/components/atlas/reglages/PastilleIcone";
 import LigneReglage, { styleValeurReglage } from "@/components/atlas/reglages/LigneReglage";
 import Picto from "@/components/atlas/reglages/Picto";
+import ChoixDeLaNature from "@/components/atlas/ChoixDeLaNature";
+import { LIBELLE_NATURE, phraseDuCompte, type NatureAbsence } from "@/lib/nature-absence";
 
 /**
  * « Absences » — les jours où quelqu'un n'est pas là.
@@ -60,6 +62,8 @@ export type AbsenceAffichee = {
   premierJour: string;
   dernierJour: string;
   motif: string | null;
+  /** Congé, maladie… (migration 0165). Absente des lignes notées avant. */
+  nature?: NatureAbsence | null;
 };
 
 export default function AbsencesEquipe({
@@ -105,6 +109,9 @@ export default function AbsencesEquipe({
   const [premierJour, setPremierJour] = useState(aujourdHui);
   const [dernierJour, setDernierJour] = useState(aujourdHui);
   const [motif, setMotif] = useState("");
+  // Le motif fait pour partir chez le comptable (sa planche du 5 novembre
+  // 2026) ; la note d'à côté reste à lui.
+  const [nature, setNature] = useState<NatureAbsence | null>(null);
 
   // **Les lignes retirées disparaissent tout de suite, et reviennent si le
   // serveur n'a pas suivi.** Attendre le serveur pour effacer donne un écran
@@ -196,6 +203,7 @@ export default function AbsencesEquipe({
     setPremierJour(aujourdHui);
     setDernierJour(aujourdHui);
     setMotif("");
+    setNature(null);
     setRefus(null);
     setOuverte(true);
   }
@@ -221,6 +229,7 @@ export default function AbsencesEquipe({
     fd.set("premierJour", premierJour);
     fd.set("dernierJour", dernierJour);
     fd.set("motif", motif);
+    fd.set("nature", nature ?? "");
     const r = await noterAbsenceAction(fd);
     setEnCours(false);
     if (!r.ok) {
@@ -313,6 +322,13 @@ export default function AbsencesEquipe({
                 <span className="mt-0.5 block text-[15px] font-semibold" style={{ color: colors.or }}>
                   {libelleAbsence(a.premierJour, a.dernierJour)}
                 </span>
+                {/* « Déplacement, compté travaillé » : ce que le comptable lira,
+                    et ce que le compte des jours en fait. */}
+                {a.nature && (
+                  <span data-atlas="nature-absence" className="mt-[3px] block truncate text-[14.5px] leading-[1.4]" style={{ color: colors.inkSoft }}>
+                    {LIBELLE_NATURE[a.nature]}, {(phraseDuCompte(a.nature) ?? "").replace(/\.$/, "").toLocaleLowerCase("fr")}
+                  </span>
+                )}
                 {a.motif && (
                   <span className="mt-[3px] block truncate text-[14.5px] leading-[1.4]" style={{ color: colors.inkSoft }}>
                     {a.motif}
@@ -411,13 +427,20 @@ export default function AbsencesEquipe({
               />
             </label>
           </div>
-          <LigneReglage libelle="Motif" htmlFor="absence-motif">
+          <LigneReglage libelle="Pourquoi">
+            <div className="mt-2">
+              <ChoixDeLaNature nature={nature} onChoisir={setNature} etiquette={null} />
+            </div>
+          </LigneReglage>
+          {/* **« Note », et plus « Motif »** : le motif est désormais au-dessus,
+              fait pour partir chez le comptable ; ce champ-ci reste à lui. */}
+          <LigneReglage libelle="Note" htmlFor="absence-motif">
             <input
               id="absence-motif"
               value={motif}
               onChange={(e) => setMotif(e.target.value)}
-              placeholder="Déplacement…"
-              aria-label="Motif de l'absence"
+              placeholder="Chantier à Angers…"
+              aria-label="Note pour vous"
               style={styleValeurReglage}
             />
           </LigneReglage>
@@ -431,7 +454,7 @@ export default function AbsencesEquipe({
               <>
                 Absence {deNom.slice(0, deNom.length - nomSaisi.length)}
                 <span className="font-bold" style={{ color: colors.ink }}>{nomSaisi}</span>{" "}
-                {libelleAbsence(premierJour, dernierJour)}, week-ends compris. Le motif n’est là que pour vous.
+                {libelleAbsence(premierJour, dernierJour)}, week-ends compris. La note n’est là que pour vous.
               </>
             )}
           </PlageTon>

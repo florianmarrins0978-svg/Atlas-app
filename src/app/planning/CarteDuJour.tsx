@@ -36,6 +36,7 @@ import { AjoutAuJour } from "./AjoutAuJour";
 import { FeuilleChantier } from "./FeuilleChantier";
 import PastilleFerie from "@/components/atlas/PastilleFerie";
 import { nomDuFerie } from "@/lib/jours-feries";
+import type { NatureAbsence } from "@/lib/nature-absence";
 
 /**
  * UNE MOITIÉ DE JOURNÉE QUE PERSONNE N'OCCUPE.
@@ -290,7 +291,7 @@ export function CarteDuJour({
     demi?: "matin" | "apres_midi"
   ) => string;
   absencesAutourDuJour: (jour: JourIso) => AbsenceDuPlanning[];
-  poserLeJour: (jour: JourIso, rang: number, moment: MomentDuJour | null) => void;
+  poserLeJour: (jour: JourIso, rang: number, moment: MomentDuJour | null, nature?: NatureAbsence | null) => void;
   /**
    * Le chantier SEUL qu'on déplie, quand la carte sort d'une ligne des
    * planifiés.

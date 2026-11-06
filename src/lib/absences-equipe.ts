@@ -1,3 +1,4 @@
+import type { NatureAbsence } from "./nature-absence";
 import { cleCreneau, MOMENTS, type Creneau, type JourIso, type Moment } from "@/lib/disponibilites";
 
 /**
@@ -61,6 +62,12 @@ export type AbsenceEquipe = {
    */
   premierDemi?: Moment | string | null;
   dernierDemi?: Moment | string | null;
+  /**
+   * Congé, maladie, déplacement… (migration 0165, `src/lib/nature-absence.ts`).
+   * Facultative pour la même raison que les bornes : le calcul de la capacité
+   * ne la lit jamais, une absence retire le salarié quelle que soit sa nature.
+   */
+  nature?: NatureAbsence | null;
 };
 
 /** Ce que vaut une borne non renseignée : la journée entière. */

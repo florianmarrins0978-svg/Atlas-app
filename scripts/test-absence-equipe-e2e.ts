@@ -145,7 +145,10 @@ async function main() {
     await page.waitForSelector("text=Qui n’est pas là ?", { timeout: 10_000 });
     await page.getByLabel("Premier jour d'absence").fill(premier);
     await page.getByLabel("Dernier jour d'absence").fill(dernier);
-    await page.getByLabel("Motif de l'absence").fill(MOTIF);
+    // **« Note », et plus « Motif »** (sa planche du motif, validée le
+    // 5 novembre 2026) : la note libre reste à lui, le motif fait pour partir
+    // chez le comptable se choisit au-dessus, d'un appui.
+    await page.getByLabel("Note pour vous").fill(MOTIF);
 
     // **Dit AVANT l'appui.** Le patron doit savoir ce qu'il bloque, et que les
     // week-ends comptent — sans quoi il découvrirait le samedi manquant plus

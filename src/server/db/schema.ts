@@ -13,6 +13,7 @@ import type { AttestationLue } from "../../lib/attestation-lue";
 import type { PrestationContrat } from "../../lib/contrats-entretien";
 import type { SourcesVehicule } from "../../lib/vehicules";
 import type { LigneImprimee } from "../../lib/ticket-imprime";
+import { NATURES_ABSENCE } from "../../lib/nature-absence";
 
 import {
   pgTable,
@@ -677,7 +678,14 @@ export const absencesEquipe = pgTable("absences_equipe", {
    */
   premierDemi: text("premier_demi").notNull().default("matin"),
   dernierDemi: text("dernier_demi").notNull().default("apres_midi"),
+  /** La note libre du patron, « pour vous » : elle ne part nulle part. */
   motif: text("motif"),
+  /**
+   * La NATURE, faite pour partir chez le comptable (migration 0165) : congé,
+   * maladie, sans solde, déplacement, formation, autre. NULL : personne ne
+   * l'a dite. Ce qui compte travaillé se décide dans `src/lib/nature-absence.ts`.
+   */
+  nature: text("nature", { enum: NATURES_ABSENCE }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
