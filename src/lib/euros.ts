@@ -43,6 +43,17 @@ export function enMontant(montant: string | number): string {
   return sansEspaceFine(FORMAT_MONTANT.format(Number.isFinite(valeur) ? valeur : 0));
 }
 
+const FORMAT_EUROS_ENTIERS = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
+
+/**
+ * Un nombre d'euros ENTIER : « 37 500 € ». Pour un plafond ou un compte qui se
+ * lit d'un coup d'œil (sa planche du plafond de la franchise) ; l'arrondi est
+ * à l'appelant, qui sait de quel côté il ne doit pas mentir.
+ */
+export function enEurosEntiers(euros: number): string {
+  return sansEspaceFine(FORMAT_EUROS_ENTIERS.format(Number.isFinite(euros) ? euros : 0));
+}
+
 /** L'espace fine insécable d'`Intl`, remplacée par celle que WinAnsi connaît. */
 function sansEspaceFine(texte: string): string {
   return texte.replace(/\u202f/g, "\u00a0");

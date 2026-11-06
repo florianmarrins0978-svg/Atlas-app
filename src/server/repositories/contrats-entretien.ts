@@ -6,7 +6,7 @@ import { db } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
 import { chantiers, clients, contratsEntretien, entreprises, factures, parametresChiffrage } from "../db/schema";
 import type { Ctx } from "./context";
-import { COLONNES_EMETTEUR, emettreFacture, identiteDeLEmetteur, terminerChantier } from "./factures";
+import { COLONNES_EMETTEUR, emettreFacture, FacturePasseLePlafondError, identiteDeLEmetteur, terminerChantier } from "./factures";
 import { creerEnvoiFacture, dernierEnvoiFacture } from "./envois-factures";
 import { lirePassage } from "./passages-entretien";
 import { allureDesDocuments } from "./entreprises";
@@ -541,6 +541,13 @@ export async function factureDuPassageAvecSonCompteRendu(
     const envoi = await creerEnvoiFacture(ctx, facture.id, canal, maintenant);
     return { ok: true, jeton: envoi.jeton };
   } catch (err) {
+    // **Le plafond de la franchise n'est pas une panne** (sa planche du
+    // 5 novembre 2026) : la facture attend son geste, sur l'écran de la facture
+    // où l'arrêt lui demande. Elle ne part pas avec le compte rendu sans qu'il
+    // l'ait vu, et le journal ne l'écrit pas comme un échec.
+    if (err instanceof FacturePasseLePlafondError) {
+      return { ok: false, phrase: "Le compte rendu part. Sa facture passe le plafond de la franchise : envoyez-la depuis Terminés." };
+    }
     // Rendre la panne bavarde AVANT de rendre sa phrase (`AGENTS.md`).
     console.error("[factureDuPassageAvecSonCompteRendu] échec", { passageEntretienId, chantierId: cible.id, err });
     return refus;

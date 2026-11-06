@@ -39,6 +39,8 @@ import {
   majReferencesChorusFactureAction,
 } from "./actions";
 import ListeDesManques from "@/components/atlas/ListeDesManques";
+import { ArretDuPlafond } from "@/components/atlas/FranchiseDeTva";
+import type { ArretDuPlafond as Arret } from "@/lib/franchise-plafond";
 import type { Manque } from "@/lib/mentions-manquantes";
 import { estUneEntreprise, estUnClientPublic, type CiviliteClient } from "@/lib/civilite";
 import { peutPreparerLaPiece } from "@/lib/preparation-devis";
@@ -282,6 +284,10 @@ export default function FactureClient({
   const [refusSousTraitance, setRefusSousTraitance] = useState<string | null>(null);
   const [sousTraitanceEnCours, setSousTraitanceEnCours] = useState(false);
   const [manques, setManques] = useState<Manque[]>([]);
+  // L'arrêt du plafond de la franchise (sa planche du 5 novembre 2026) : le
+  // compte de l'année avec cette facture, et le geste à reprendre s'il
+  // l'envoie sans TVA, l'envoi ou le dépôt sur Chorus Pro.
+  const [arretPlafond, setArretPlafond] = useState<{ arret: Arret; reprendre: "envoi" | "chorus" } | null>(null);
 
   async function basculerSousTraitance() {
     if (!initialFacture) return;
@@ -453,7 +459,7 @@ export default function FactureClient({
    * dépose sur Chorus Pro doit porter son numéro définitif, jamais
    * « brouillon ». Les refus sont ceux de l'envoi, dits aux mêmes endroits.
    */
-  async function arreterPourChorus(): Promise<boolean> {
+  async function arreterPourChorus(malgreLePlafond = false): Promise<boolean> {
     if (!initialFacture) return false;
     setEnCours(true);
     setErreur(null);
@@ -461,9 +467,11 @@ export default function FactureClient({
     try {
       // Ce qu'il vient de taper part avec elle, même s'il n'a pas quitté la case.
       await enregistrerChorus();
-      const emission = await emettreFactureAction(initialFacture.id);
+      const emission = await emettreFactureAction(initialFacture.id, null, malgreLePlafond);
       if (!emission.succes) {
-        if (emission.manques?.length) {
+        if (emission.plafond) {
+          setArretPlafond({ arret: emission.plafond, reprendre: "chorus" });
+        } else if (emission.manques?.length) {
           setManques(emission.manques);
           setErreur("Il manque une mention obligatoire.");
         } else {
@@ -481,7 +489,7 @@ export default function FactureClient({
     }
   }
 
-  async function envoyerLaFacture() {
+  async function envoyerLaFacture(malgreLePlafond = false) {
     if (!initialFacture) return;
     setEnCours(true);
     setErreur(null);
@@ -489,12 +497,19 @@ export default function FactureClient({
       setManques([]);
       const emission = await emettreFactureAction(
         initialFacture.id,
-        saisissable ? { canal: canalEnvoi, saisie } : null
+        saisissable ? { canal: canalEnvoi, saisie } : null,
+        malgreLePlafond
       );
       if (!emission.succes) {
-        // Ce qui manque se LISTE, chaque ligne avec sa porte (son choix 1A) ;
-        // la phrase seule l'enverrait chercher Réglages sans lien.
-        if (emission.manques?.length) {
+        // **Le plafond de la franchise DEMANDE, il ne refuse pas** : la feuille
+        // s'ouvre, et « L'envoyer sans TVA » rappelle ce même envoi. La
+        // messagerie s'ouvrira dans la foulée de cet appui-là, assez près du
+        // doigt pour qu'iOS la laisse passer.
+        if (emission.plafond) {
+          setArretPlafond({ arret: emission.plafond, reprendre: "envoi" });
+        } else if (emission.manques?.length) {
+          // Ce qui manque se LISTE, chaque ligne avec sa porte (son choix 1A) ;
+          // la phrase seule l'enverrait chercher Réglages sans lien.
           setManques(emission.manques);
           setErreur("Il manque une mention obligatoire.");
         } else {
@@ -1405,7 +1420,7 @@ export default function FactureClient({
           ) : (
           <PrimaryButton pleineLargeur
             disabled={enCours || !destinataire || !verdictEnvoi.possible}
-            onClick={envoyerLaFacture}
+            onClick={() => envoyerLaFacture()}
             // **Un repère stable, pour que le contrôle accuse le bon coupable.**
             // Attendu par son LIBELLÉ, il mourait sur un délai dépassé dès que le
             // mot changeait — un rouge qui n'apprend rien. Repéré ainsi, la suite
@@ -1414,6 +1429,24 @@ export default function FactureClient({
           >
             {enCours ? "Envoi…" : "Envoyer la facture"}
           </PrimaryButton>
+          )}
+
+          {/* **L'ARRÊT DU PLAFOND DE LA FRANCHISE — sa planche du 5 novembre
+              2026.** Il ne paraît qu'à la facture qui fait passer le plafond
+              majoré, et il demande : passer en Assujettie, voir le compte, ou
+              l'envoyer sans TVA, ce dernier geste reprenant celui qu'il venait
+              de faire. */}
+          {arretPlafond && (
+            <ArretDuPlafond
+              arret={arretPlafond.arret}
+              onFermer={() => setArretPlafond(null)}
+              onSansTva={async () => {
+                const reprendre = arretPlafond.reprendre;
+                setArretPlafond(null);
+                if (reprendre === "envoi") await envoyerLaFacture(true);
+                else if (await arreterPourChorus(true)) router.refresh();
+              }}
+            />
           )}
 
           {/* **CE QUE LE BOUTON ENGAGE, dit sous lui — proposition B.**

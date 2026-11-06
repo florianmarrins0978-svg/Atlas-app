@@ -22,8 +22,10 @@ import {
   FactureDejaEmiseError,
   FactureEnRetardSurLeDevisError,
   FacturePasPriseParLaPlateformeError,
+  FacturePasseLePlafondError,
   FinChantierImpossibleError,
 } from "@/server/repositories/factures";
+import type { ArretDuPlafond } from "@/lib/franchise-plafond";
 import {
   poserReglementRecu,
   majReglementRecu,
@@ -81,7 +83,13 @@ export async function terminerChantierAction(chantierId: string): Promise<Result
 
 export type ResultatEmission =
   | { succes: true; numero: string }
-  | { succes: false; erreur: string; manques?: Manque[] };
+  | {
+      succes: false;
+      erreur: string;
+      manques?: Manque[];
+      /** La facture passerait le plafond majoré de la franchise : l'écran demande, il ne refuse pas. */
+      plafond?: ArretDuPlafond;
+    };
 
 /**
  * Fige la facture et la porte au relevé de TVA.
@@ -96,7 +104,9 @@ export async function emettreFactureAction(
    * Ce qu'il a tapé pour l'envoi qui suit, quand son client est supprimé (sa
    * demande du 3 novembre 2026). Nul : le chemin habituel.
    */
-  coordonneeTapee: { canal: "sms" | "email"; saisie: string } | null = null
+  coordonneeTapee: { canal: "sms" | "email"; saisie: string } | null = null,
+  /** Son « L'envoyer sans TVA » sur l'arrêt du plafond (sa planche du 5 novembre 2026). */
+  malgreLePlafond = false
 ): Promise<ResultatEmission> {
   const ctx = await getCurrentCtx();
   await exigerFacturation(ctx, "émettre la facture");
@@ -114,7 +124,7 @@ export async function emettreFactureAction(
   const manques = await manquesDeLaFactureAEmettre(ctx, factureId);
   if (manques.length > 0) return { succes: false, erreur: phraseDesManques(manques), manques };
   try {
-    const facture = await emettreFacture(ctx, factureId);
+    const facture = await emettreFacture(ctx, factureId, new Date(), { malgreLePlafond });
     return { succes: true, numero: facture.numeroCommercial };
   } catch (err) {
     if (
@@ -123,6 +133,9 @@ export async function emettreFactureAction(
       err instanceof FacturePasPriseParLaPlateformeError
     ) {
       return { succes: false, erreur: err.message };
+    }
+    if (err instanceof FacturePasseLePlafondError) {
+      return { succes: false, erreur: err.message, plafond: err.arret };
     }
     throw err;
   }
