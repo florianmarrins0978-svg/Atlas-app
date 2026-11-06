@@ -4,6 +4,20 @@ import path from "node:path";
 import { PDFDocument, rgb } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 import { TYPOGRAPHIES } from "../src/lib/allure-documents";
+import {
+  CONSIGNES_DE_SECOURS,
+  CONSIGNES_D_UN_ARBRE,
+  DANGERS_D_UN_ARBRE,
+  DECOUVERTE_FORTUITE,
+  FORMATIONS,
+  LIBELLES,
+  NOTE_DE_LA_FEUILLE,
+  PERIMETRE_DU_DECRET,
+  POINTS_DE_VIGILANCE,
+  contenuVide,
+} from "../src/lib/fiche-securite";
+import { OUTILS_DU_CROQUIS } from "../src/lib/croquis-securite";
+import { sansCommentaires } from "./_sans-commentaires";
 
 /**
  * LES POLICES DE SES DOCUMENTS S'IMPRIMENT-ELLES VRAIMENT ?
@@ -107,6 +121,35 @@ for (const fichier of fichiers) {
     assert.ok(pdf.length < 120_000, `${fichier} : ${Math.round(pdf.length / 1024)} ko — police non réduite ?`);
   });
   }
+
+  /*
+   * LA FICHE DE SÉCURITÉ IMPRIME AUTRE CHOSE QU'UN DEVIS. **Trouvé le
+   * 6 novembre 2026, en regardant le PDF** : « HTA (U ▯ 50 000 V) ». Les mots
+   * de la MSA portent un « ≤ » que la réduction du 24 août n'avait pas gardé,
+   * et la liste ci-dessus, faite pour le devis, ne pouvait pas le voir. Ici,
+   * la liste n'est pas écrite à la main : elle est lue dans ce que la fiche
+   * imprime vraiment, les mots de `fiche-securite.ts`, ceux du croquis, et les
+   * chaînes du moteur du PDF lui-même.
+   */
+  await verifier("la fiche de sécurité : chaque caractère qu'elle imprime a un dessin dans Inter", () => {
+    const textes: string[] = [];
+    const ramasser = (v: unknown): void => {
+      if (typeof v === "string") textes.push(v);
+      else if (Array.isArray(v)) v.forEach(ramasser);
+      else if (v && typeof v === "object") Object.values(v).forEach(ramasser);
+    };
+    ramasser([LIBELLES, POINTS_DE_VIGILANCE, CONSIGNES_DE_SECOURS, PERIMETRE_DU_DECRET, NOTE_DE_LA_FEUILLE, DANGERS_D_UN_ARBRE,
+      CONSIGNES_D_UN_ARBRE, FORMATIONS, DECOUVERTE_FORTUITE.mot, contenuVide().protocole, OUTILS_DU_CROQUIS.map((o) => o.libelle)]);
+    const moteur = path.join(__dirname, "..", "src", "server", "pdf", "fiche-securite-pdf.ts");
+    textes.push(sansCommentaires(readFileSync(moteur, "utf8")).join("\n"));
+    const caracteres = [...new Set(textes.join("").replace(/\s/g, ""))];
+    assert.ok(caracteres.length > 60, `${caracteres.length} caractères seulement : la fiche n'a pas été lue`);
+    for (const fichier of ["inter-400.ttf", "inter-700.ttf"]) {
+      const police = fontkit.create(readFileSync(path.join(DOSSIER, fichier)));
+      const absents = caracteres.filter((c) => !police.hasGlyphForCodePoint(c.codePointAt(0)!));
+      assert.deepEqual(absents, [], `${fichier} ne sait pas dessiner : ${absents.map((c) => `« ${c} » U+${c.codePointAt(0)!.toString(16).toUpperCase()}`).join(", ")}`);
+    }
+  });
 }
 
 void jouer().then(() => {

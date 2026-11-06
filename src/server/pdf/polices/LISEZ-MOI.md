@@ -79,7 +79,18 @@ U+2044,U+2122,U+2202,U+2212,U+202F,U+20AC,U+FB01,U+FB02" \
 Les tables de composition (`GSUB`, `GPOS`) partent : `pdf-lib` ne les lit pas,
 et elles pèsent la moitié du fichier.
 
+**Inter garde deux signes de plus : `U+2264,U+2265` (« ≤ » et « ≥ »)**, à
+ajouter au bout de la liste ci-dessus pour ses deux fichiers. C'est la police
+de la fiche de sécurité, et les mots de la MSA en portent : « HTA (U ≤ 50 000
+V) ». Réduite le 24 août sans eux, elle imprimait « HTA (U ▯ 50 000 V) »
+depuis le 22 septembre, sans une erreur ; trouvé le 6 novembre 2026 en
+regardant le PDF. Refaite ce jour-là depuis `fonts.gstatic.com` (Inter v20) :
+la commande sans les deux signes redonnait les fichiers d'avant à l'octet
+près, la seule différence est donc leur ajout.
+
 **`scripts/test-polices-documents.ts` monte la garde** — il vérifie que chaque
-caractère qu'un devis sait écrire a bien un dessin, que la police s'embarque
+caractère qu'un devis sait écrire a bien un dessin, que chaque caractère que la
+fiche de sécurité imprime en a un dans Inter (lus dans ses mots et dans son
+moteur, pas recopiés), que la police s'embarque
 entière sans tomber, et qu'aucun fichier non réduit n'a été reposé ici. Il sait
 échouer : confronté aux fichiers d'origine, il les refuse.

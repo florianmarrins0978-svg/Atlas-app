@@ -1,5 +1,20 @@
 # Prochaines tâches
 
+## LE « ≤ » DU PDF DE LA FICHE DE SÉCURITÉ : CORRIGÉ LE 6 NOVEMBRE 2026, PAS SUR main
+
+**Sa réponse du 6 novembre** : *« Oui corrige le maintenant. Pas de
+batterie »*. Codé sur la branche LOCALE `lot/police-inferieur-ou-egal`, dans
+le conteneur de la session qui l'a écrit ; tant qu'elle n'est pas poussée,
+elle n'existe que là.
+
+| | |
+|---|---|
+| la cause | `inter-400.ttf` et `inter-700.ttf` réduits le 24 août sans U+2264 ni U+2265 ; la fiche les imprime depuis le 22 septembre (« HTA (U ▯ 50 000 V) ») |
+| le rouge | `scripts/test-polices-documents.ts` : chaque caractère que la fiche imprime (ses mots, ceux du croquis, les chaînes du moteur du PDF) doit avoir un dessin dans Inter. Rouge sur « ≤ » U+2264, et sur lui seul |
+| la correction | Inter v20 repris de `fonts.gstatic.com`, réduit par la commande de `src/server/pdf/polices/LISEZ-MOI.md` plus `U+2264,U+2265`. Sans ces deux signes, la commande redonne les fichiers d'avant à l'octet près |
+| éprouvé ici | le contrôle vert, les types, `test-fiche-securite.ts`, un PDF de fiche regardé : « HTA (U ≤ 50 000 V) » |
+| reste | **niveau 3** (un `.ttf` n'est pas lu par le graphe) : la batterie, sur son « oui », puis `main` |
+
 ## La case « À signaler » des travaux à faire ne grandit pas (6 novembre 2026)
 
 Vu en refaisant les captures du site de vente, pas encore signalé par lui ni

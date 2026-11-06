@@ -316,7 +316,10 @@ async function dessinerLaCarte(doc: PDFDocument, plume: Plume, carte: CarteImpri
 
 async function polices(doc: PDFDocument): Promise<{ normale: PDFFont; grasse: PDFFont }> {
   // Inter, embarquée : les polices standard d'un PDF (WinAnsi) n'ont ni « ≤ »
-  // ni « … », et la feuille en est pleine (HTA (U ≤ 50 000 V)).
+  // ni « … », et la feuille en est pleine (HTA (U ≤ 50 000 V)). Encore faut-il
+  // que le fichier les porte : réduit sans le « ≤ », il l'a imprimé en case
+  // vide du 22 septembre au 6 novembre 2026 (`polices/LISEZ-MOI.md`) ;
+  // `test-polices-documents.ts` lit désormais chaque caractère de la fiche.
   doc.registerFontkit(fontkit);
   const dossier = path.join(process.cwd(), "src/server/pdf/polices");
   const [normale, grasse] = await Promise.all([readFile(path.join(dossier, "inter-400.ttf")), readFile(path.join(dossier, "inter-700.ttf"))]);
