@@ -81,7 +81,9 @@ essai("la photo n'est rappelée que si le patron l'a allumée", () => {
 
 essai("les deux manques se disent ensemble, pas l'un après l'autre", () => {
   const phrase = phraseDeCeQuiManque({ taches: [{ libelle: "T", faite: false }], photos: 0 }, PREUVE_ET_PHOTO);
-  assert.equal(phrase, "cochez ce que vous avez fait et ajoutez une photo");
+  // Une phrase, majuscule et point : sa planche A du 6 novembre 2026, et
+  // l'écran la lit désormais ici au lieu de recoller les morceaux lui-même.
+  assert.equal(phrase, "Cochez ce que vous avez fait et ajoutez une photo.");
 });
 
 // **Le piège du zèle.** Exiger une photo alors que le patron n'a même pas

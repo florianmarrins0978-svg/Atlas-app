@@ -46,6 +46,9 @@ n'a pas touché la case. **Et la goutte se lit à la MARQUE du chantier**
 ## LE PLAFOND DE LA FRANCHISE (6 novembre 2026), pas sur `main`
 
 **Les pièges :** l'arrêt du plafond vit dans `emettreFacture` (`FacturePasseLePlafondError`) ; tout nouvel appelant direct doit l'attraper et le rendre en valeur, faute de quoi une entreprise en franchise près du plafond voit une panne là où l'appli lui pose une question. « L'envoyer sans TVA » n'est que `malgreLePlafond: true`, rien d'autre ne le pose. Et les plafonds de `src/lib/franchise-plafond.ts` se relisent à chaque loi de finances : ils portent leur source et leur date.
+## LA FICHE TRAVAUX : QUE LES TRAVAUX (6 novembre 2026), sur `claude/fiche-travaux-que-les-travaux`, LOCALE
+
+**Les pièges :** la règle lit le PREMIER mot du libellé (`seFaitSurLeChantier`, `src/lib/taches-du-devis.ts`), jamais un mot quelque part : « Dessouchage à la rogneuse » doit garder sa case. Ajouter un engin à la liste se fait là, avec un cas qui le garde et un cas qui le cache dans `test-taches-du-devis`. La reprise « Dernier devis » exige `mainDoeuvre` dans `LigneAReprendre` : le retirer refait perdre le drapeau sans un mot. **L'écran (sa planche A)** coupe chaque case en nom et quantité par `enDeuxParts`, l'inverse exact de `tachesDuDevis` : changer l'écriture de la quantité sans lui recolle « 25 ml » au nom. La case, elle, reste un texte entier, celui que les retours enregistrent. **La reprise de la main d'œuvre répartie** (§558) : `prix_ancien` d'une ligne reprise est le prix du TRAVAIL seul ; la part a ses bases (`part_ancienne`, `part_grille`). Écrire un `prixAncien` part comprise refait effacer la main d'œuvre au premier « Mettre à jour ». **Reste** : son oui pour la base, voir `test-reprise-du-devis-db` rouge sur l'ancien code puis vert, la batterie (niveau 3), puis `main` (`ARCHITECTURE.md` §557, `TODO.md`).
 
 ---
 ## LA MISE EN PAGE DU DEVIS (4 novembre 2026), sur `main` le 4 novembre

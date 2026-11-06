@@ -2,8 +2,7 @@ import { and, asc, eq, isNotNull } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { chantiers, lignesPrix } from "../db/schema";
 import type { Ctx } from "./context";
-import { prixDeLaLigneReprise, type ReponseGrille } from "../../lib/hausse-du-devis";
-import { montantDeLaLigne } from "../../lib/montant-de-ligne";
+import { ligneApresSaReponse, type ReponseGrille } from "../../lib/hausse-du-devis";
 
 /**
  * Le devis repris par « Dernier devis » : sa réponse au tarif du jour, et la
@@ -15,6 +14,10 @@ import { montantDeLaLigne } from "../../lib/montant-de-ligne";
  * rien ne s'empile, et un prix affiché est toujours celui que la règle donne.
  * Une ligne retouchée à la main n'a plus de `prixAncien` : elle n'est pas lue.
  *
+ * **La main d'œuvre répartie suit, depuis ses propres bases** (sa décision du
+ * 6 novembre 2026) : « Mettre à jour » ne vise que le travail, sauf quand son
+ * prix du jour par homme a bougé (`ligneApresSaReponse`).
+ *
  * Rend les lignes réécrites, pour que l'écran les pose sans se recharger.
  */
 export async function appliquerLaReprise(
@@ -24,7 +27,7 @@ export async function appliquerLaReprise(
 ): Promise<{
   reponse: ReponseGrille;
   hausse: number;
-  lignes: { id: string; prixUnitaire: string; montant: string }[];
+  lignes: { id: string; prixUnitaire: string; montant: string; partMainDoeuvre: string | null }[];
 }> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const patch: { repriseGrille?: "oui" | "non" | null; hausseReprise?: string | null } = {};
@@ -49,20 +52,26 @@ export async function appliquerLaReprise(
       .where(and(eq(lignesPrix.chantierId, chantierId), isNotNull(lignesPrix.prixAncien)))
       .orderBy(asc(lignesPrix.ordre));
 
-    const ecrites: { id: string; prixUnitaire: string; montant: string }[] = [];
+    const ecrites: { id: string; prixUnitaire: string; montant: string; partMainDoeuvre: string | null }[] = [];
     for (const l of reprises) {
       if (l.prixAncien === null) continue;
-      const prixUnitaire = prixDeLaLigneReprise(
-        { prixAncien: l.prixAncien, prixGrille: l.prixGrille },
+      const apres = ligneApresSaReponse(
+        {
+          quantite: l.quantite,
+          prixAncien: l.prixAncien,
+          prixGrille: l.prixGrille,
+          partAncienne: l.partAncienne,
+          partGrille: l.partGrille,
+        },
         reponse,
         hausse
       );
-      const montant = montantDeLaLigne(l.quantite, prixUnitaire);
+      const partMainDoeuvre = apres.partMainDoeuvre;
       await tx
         .update(lignesPrix)
-        .set({ prixUnitaire, montant, updatedAt: new Date() })
+        .set({ prixUnitaire: apres.prixUnitaire, montant: apres.montant, partMainDoeuvre, updatedAt: new Date() })
         .where(eq(lignesPrix.id, l.id));
-      ecrites.push({ id: l.id, prixUnitaire, montant });
+      ecrites.push({ id: l.id, prixUnitaire: apres.prixUnitaire, montant: apres.montant, partMainDoeuvre });
     }
     return { reponse, hausse, lignes: ecrites };
   });

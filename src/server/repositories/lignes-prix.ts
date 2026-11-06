@@ -94,10 +94,23 @@ export async function ajouterLignePrix(
     /** Une ligne de main d'œuvre (migration 0130) : « + Main d'œuvre » dans sa catégorie. */
     mainDoeuvre?: boolean;
     /** La part de main d'œuvre comprise dans ce travail (migration 0155) : la répartition de la préparation du devis. */
-    partMainDoeuvre?: string;
+    partMainDoeuvre?: string | null;
+    /** Les jours d'homme de cette part (migration 0169), quand ils sont connus. */
+    joursMainDoeuvre?: string | null;
+    /** Les deux bases de la main d'œuvre d'une ligne reprise (migration 0169). */
+    partAncienne?: string | null;
+    partGrille?: string | null;
   }
 ) {
-  exigerNombresDeLigne(montant, options?.quantite, options?.prixUnitaire, options?.partMainDoeuvre);
+  exigerNombresDeLigne(
+    montant,
+    options?.quantite,
+    options?.prixUnitaire,
+    options?.partMainDoeuvre ?? undefined,
+    options?.joursMainDoeuvre ?? undefined,
+    options?.partAncienne ?? undefined,
+    options?.partGrille ?? undefined
+  );
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const existantes = await tx.select().from(lignesPrix).where(eq(lignesPrix.chantierId, chantierId));
     const sansTva = await sansTvaSurLeChantier(tx, chantierId);
@@ -117,6 +130,9 @@ export async function ajouterLignePrix(
         prixGrille: options?.prixGrille ?? null,
         mainDoeuvre: options?.mainDoeuvre ?? false,
         partMainDoeuvre: options?.partMainDoeuvre ?? null,
+        joursMainDoeuvre: options?.joursMainDoeuvre ?? null,
+        partAncienne: options?.partAncienne ?? null,
+        partGrille: options?.partGrille ?? null,
         ordre: existantes.length,
       })
       .returning();
@@ -158,7 +174,12 @@ export async function modifierLignePrix(
     // correspond pas à son détail ne se rattrape que par un avoir.
     // Les champs déclarés et eux seuls : `{ ...data }` laissait déplacer une
     // ligne vers un autre chantier, ou réécrire son prix de grille (audit E7).
-    const patch: Partial<typeof data> & { prixAncien?: null; prixGrille?: null } = seulement(data, [
+    const patch: Partial<typeof data> & {
+      prixAncien?: null;
+      prixGrille?: null;
+      partAncienne?: null;
+      partGrille?: null;
+    } = seulement(data, [
       "libelle", "montant", "quantite", "prixUnitaire", "unite", "aChiffrer", "tauxTva",
     ]);
     if (data.unite !== undefined) patch.unite = uniteAdmise(data.unite);
@@ -230,6 +251,10 @@ export async function modifierLignePrix(
     ) {
       patch.prixAncien = null;
       patch.prixGrille = null;
+      // Sa main d'œuvre sort de la reprise avec lui : un « Mettre à jour »
+      // suivant ne doit pas réécrire le prix qu'il vient de taper.
+      patch.partAncienne = null;
+      patch.partGrille = null;
     }
     const [row] = await tx
       .update(lignesPrix)
@@ -545,6 +570,9 @@ export async function reprendreLesLignesPrix(
       aChiffrer: l.aChiffrer,
       tauxTva: l.tauxTva,
       ordre: l.ordre,
+      mainDoeuvre: l.mainDoeuvre,
+      partMainDoeuvre: l.partMainDoeuvre,
+      joursMainDoeuvre: l.joursMainDoeuvre,
     })),
     grille.map((t) => ({ intitule: t.intitule, prix: t.prix, unite: t.unite }))
   );
@@ -562,8 +590,16 @@ export async function reprendreLesLignesPrix(
       aChiffrer: l.sort === "attend-son-prix",
       tauxTva: l.tauxTva,
       // Une ligne qui attend son prix n'a pas d'ancien prix : zéro n'en est pas un.
-      prixAncien: l.sort === "attend-son-prix" ? null : l.prixUnitaire,
+      // **L'ancien prix est celui du TRAVAIL** : la main d'œuvre répartie a
+      // ses propres bases, pour que « Mettre à jour » ne vise que la taille
+      // (sa décision du 6 novembre 2026).
+      prixAncien: l.sort === "attend-son-prix" ? null : l.prixTravail,
       prixGrille: l.sort === "grille-proposee" ? l.prixGrille : null,
+      mainDoeuvre: l.mainDoeuvre,
+      partMainDoeuvre: l.partMainDoeuvre,
+      joursMainDoeuvre: l.joursMainDoeuvre,
+      partAncienne: l.sort === "attend-son-prix" ? null : l.partMainDoeuvre,
+      partGrille: l.sort === "attend-son-prix" ? null : l.partGrille,
     });
   }
 
@@ -604,6 +640,9 @@ export async function proposerLaGrilleDuJour(ctx: Ctx, chantierId: string): Prom
           aChiffrer: l.aChiffrer,
           tauxTva: l.tauxTva,
           ordre: l.ordre,
+          mainDoeuvre: l.mainDoeuvre,
+          partMainDoeuvre: l.partMainDoeuvre,
+          joursMainDoeuvre: l.joursMainDoeuvre,
         },
         tarifs
       );
@@ -611,8 +650,10 @@ export async function proposerLaGrilleDuJour(ctx: Ctx, chantierId: string): Prom
         .update(lignesPrix)
         .set({
           // Une ligne qui attend son prix n'a pas d'ancien prix : zéro n'en est pas un.
-          prixAncien: r.sort === "attend-son-prix" ? null : l.prixUnitaire,
+          prixAncien: r.sort === "attend-son-prix" ? null : r.prixTravail,
           prixGrille: r.sort === "grille-proposee" ? r.prixGrille : null,
+          partAncienne: r.sort === "attend-son-prix" ? null : r.partMainDoeuvre,
+          partGrille: r.sort === "attend-son-prix" ? null : r.partGrille,
           updatedAt: new Date(),
         })
         .where(eq(lignesPrix.id, l.id));
@@ -636,7 +677,14 @@ export async function proposerLaGrilleDuJour(ctx: Ctx, chantierId: string): Prom
 export async function poserLesPartsDeMainDoeuvre(
   ctx: Ctx,
   chantierId: string,
-  parts: Readonly<Record<string, string>>
+  parts: Readonly<Record<string, string>>,
+  /**
+   * Le prix du jour par homme de SON équipe, quand c'est elle qui fait cette
+   * main d'œuvre : chaque part en retient ses jours d'homme (migration 0169),
+   * pour qu'un devis repris la reporte au prix du jour d'alors. `null` pour un
+   * partenaire : ses jours ne se mesurent pas au prix du patron.
+   */
+  prixJourHomme: string | null
 ): Promise<{ ok: true; lignes: TravailRepris[] } | { ok: false; raison: string }> {
   const ids = Object.keys(parts);
   if (ids.length === 0) return { ok: false, raison: "Aucun travail ne reçoit de main d'œuvre." };
@@ -659,11 +707,47 @@ export async function poserLesPartsDeMainDoeuvre(
       return { ok: false, raison: "Cette main d'œuvre ferait un prix démesuré. Vérifiez le calcul." };
     }
     for (const r of repris) {
+      const avant = lues.find((l) => l.id === r.id);
       await tx
         .update(lignesPrix)
-        .set({ prixUnitaire: r.prixUnitaire, montant: r.montant, partMainDoeuvre: r.partMainDoeuvre, updatedAt: new Date() })
+        .set({
+          prixUnitaire: r.prixUnitaire,
+          montant: r.montant,
+          partMainDoeuvre: r.partMainDoeuvre,
+          joursMainDoeuvre: joursDeLaPart(avant?.partMainDoeuvre ?? null, avant?.joursMainDoeuvre ?? null, r.partPosee, prixJourHomme),
+          // **Une main d'œuvre posée aujourd'hui sort la ligne de la reprise**,
+          // comme un prix tapé : un « Mettre à jour » suivant repartirait de
+          // l'ancien prix et lui retirerait ce qu'il vient d'ajouter.
+          prixAncien: null,
+          prixGrille: null,
+          partAncienne: null,
+          partGrille: null,
+          updatedAt: new Date(),
+        })
         .where(eq(lignesPrix.id, r.id));
     }
     return { ok: true, lignes: repris };
   });
+}
+
+/**
+ * Les jours d'homme d'une part, après qu'une main d'œuvre s'y ajoute : ceux
+ * d'avant plus ceux de ce qui vient d'être posé, au prix du jour par homme.
+ *
+ * **Inconnus dès qu'une partie l'est** : une part d'avant sans jours, ou une
+ * main d'œuvre de partenaire, et le total ne se reporte plus au nouveau prix
+ * du jour. Garder ses euros vaut mieux qu'une moitié de calcul qui en invente.
+ */
+function joursDeLaPart(
+  partAvant: string | null,
+  joursAvant: string | null,
+  posee: string,
+  prixJourHomme: string | null
+): string | null {
+  if (prixJourHomme === null) return null;
+  const prix = new Decimal(prixJourHomme);
+  if (!prix.greaterThan(0)) return null;
+  const dejaLa = new Decimal(partAvant ?? "0").greaterThan(0);
+  if (dejaLa && joursAvant === null) return null;
+  return new Decimal(joursAvant ?? "0").plus(new Decimal(posee).div(prix)).toDecimalPlaces(6).toFixed(6);
 }

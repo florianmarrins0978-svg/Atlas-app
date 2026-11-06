@@ -267,9 +267,14 @@ const HORS_CHARTE: Array<{
     //
     // Le motif vise la LIGNE — la vignette —, pas le fichier : un vrai bouton
     // rectangulaire écrit demain dans cet écran serait toujours dénoncé.
+    //
+    // **Depuis sa planche A du 6 novembre 2026**, les vignettes sont carrées,
+    // quatre par rang, et le « + » est la case vide de la même grille : rond,
+    // il ferait un trou dans le rang. Elles se nomment par leur repère, la
+    // taille n'étant plus écrite.
     motif: /^src[/\\]app[/\\]planning[/\\]TravauxAFaire\.tsx$/,
-    seulement: /h-\[46px\] w-\[46px\]/,
-    pourquoi: "vignette d'une photo du retour : un cercle rognerait l'image",
+    seulement: /data-atlas="(?:photo-du-retour|ajouter-photo-retour)"/,
+    pourquoi: "vignette d'une photo du retour, et la case vide qui en ajoute une : un cercle rognerait l'image",
   },
   {
     // **LA MÊME VIGNETTE, SUR LA FICHE DE SÉCURITÉ** — arrivée le 22 septembre

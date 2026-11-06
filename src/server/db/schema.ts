@@ -1345,6 +1345,19 @@ export const lignesPrix = pgTable(
      * d'œuvre HT » la compte. Nulle : aucune part.
      */
     partMainDoeuvre: numeric("part_main_doeuvre", { precision: 12, scale: 2 }),
+    /**
+     * Les jours d'homme que représente cette part (migration 0169) : sans eux,
+     * le nouveau prix du jour par homme ne se reporte pas sur un devis repris.
+     * Nuls quand ils ne sont pas connus (une part d'avant, un partenaire).
+     */
+    joursMainDoeuvre: numeric("jours_main_doeuvre", { precision: 12, scale: 6 }),
+    /**
+     * Les deux bases de la main d'œuvre d'une ligne reprise (migration 0169),
+     * comme `prixAncien` et `prixGrille` pour son travail : l'ancienne part,
+     * et la même au prix du jour d'aujourd'hui quand il a bougé.
+     */
+    partAncienne: numeric("part_ancienne", { precision: 12, scale: 2 }),
+    partGrille: numeric("part_grille", { precision: 12, scale: 2 }),
     ordre: integer("ordre").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

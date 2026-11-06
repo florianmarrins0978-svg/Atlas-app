@@ -44,6 +44,9 @@ function ligne(p: Partial<LigneAReprendre> & { libelle: string }): LigneAReprend
     aChiffrer: false,
     tauxTva: null,
     ordre: 0,
+    mainDoeuvre: false,
+    partMainDoeuvre: null,
+    joursMainDoeuvre: null,
     ...p,
   };
 }
@@ -201,6 +204,97 @@ essai("une grille vide ne casse rien : tous les prix sont gardés", () => {
   );
   assert.equal(r[0].sort, "prix-garde");
   assert.equal(r[0].prixUnitaire, "17.50");
+});
+
+// ─── SA DÉCISION DU 6 NOVEMBRE 2026 : la main d'œuvre suit le devis repris ───
+//
+// *« Il faut garder les 400 € de main d'œuvre. Et quand on fait mettre à
+// jour les prix, ça doit juste se mettre à jour par rapport à la taille de la
+// haie. À part si les prix de la main d'œuvre ont augmenté : si on est passé
+// de 400 à 420, ça se réfère au nouveau prix de la main d'œuvre. Mais dans
+// tous les cas, il faut que la ligne main d'œuvre soit présente. »*
+//
+// Sa haie de l'an dernier : 25 ml à 12 €, plus 400 € de main d'œuvre répartis
+// dessus (2 jours d'homme à 200 €), soit 25 ml à 28 €. Cette année, sa grille
+// dit 13 € la haie.
+const GRILLE_DU_JOUR = (jourHomme: string): TarifDuJour[] => [
+  { intitule: "Taille de haie de laurier", prix: "13.00", unite: "ml" },
+  { intitule: "Main d'œuvre", prix: jourHomme, unite: "jour/homme" },
+];
+const HAIE = {
+  libelle: "Taille de haie de laurier",
+  quantite: "25",
+  prixUnitaire: "28.00",
+  unite: "ml",
+  partMainDoeuvre: "400.00",
+  joursMainDoeuvre: "2",
+};
+
+essai("la main d'œuvre répartie reste, et le tarif du jour ne vise que la taille", () => {
+  const r = reprendreLaLigne(ligne(HAIE), GRILLE_DU_JOUR("200.00"));
+  assert.equal(r.prixUnitaire, "28.00", "le devis repris change avant sa réponse");
+  assert.equal(r.partMainDoeuvre, "400.00", "les 400 € de main d'œuvre sont perdus");
+  assert.equal(r.prixTravail, "12.00", "la taille seule vaut 12 €, main d'œuvre retirée");
+  assert.equal(r.sort, "grille-proposee");
+  assert.equal(r.sort === "grille-proposee" ? r.prixGrille : null, "13.00", "le tarif du jour se compare à 28 €, part comprise");
+  assert.equal(r.partGrille, null, "son prix du jour n'a pas bougé : rien à proposer pour la main d'œuvre");
+});
+
+essai("son prix du jour par homme a bougé : la main d'œuvre passe de 400 à 420", () => {
+  const r = reprendreLaLigne(ligne(HAIE), GRILLE_DU_JOUR("210.00"));
+  assert.equal(r.partGrille, "420.00");
+  assert.equal(resumeDeLaReprise([r]).aQuelqueChoseADire, true);
+});
+
+essai("la taille au même prix, seule la main d'œuvre a bougé : la question se pose", () => {
+  const r = reprendreLaLigne(ligne({ ...HAIE }), [
+    { intitule: "Taille de haie de laurier", prix: "12.00", unite: "ml" },
+    { intitule: "Main d'œuvre", prix: "210.00", unite: "jour/homme" },
+  ]);
+  assert.equal(r.sort, "inchange");
+  assert.equal(r.partGrille, "420.00");
+  assert.equal(resumeDeLaReprise([r]).aQuelqueChoseADire, true);
+});
+
+// Les jours ne se devinent pas : une part posée avant qu'Atlas les retienne,
+// ou celle d'un partenaire, garde son montant. Jamais un prix reconstitué.
+essai("sans les jours d'homme, la main d'œuvre garde ses 400 €", () => {
+  const r = reprendreLaLigne(ligne({ ...HAIE, joursMainDoeuvre: null }), GRILLE_DU_JOUR("210.00"));
+  assert.equal(r.partMainDoeuvre, "400.00");
+  assert.equal(r.partGrille, null);
+});
+
+// Une dictée « répartie » met TOUT le prix du travail en main d'œuvre : il n'y
+// a pas de prix de taille à mettre à jour, et en proposer un ajouterait 325 €
+// qu'aucun devis n'a portés.
+essai("un travail payé tout entier en main d'œuvre ne reçoit pas le tarif de la taille", () => {
+  const r = reprendreLaLigne(
+    ligne({ ...HAIE, prixUnitaire: "16.00", partMainDoeuvre: "400.00" }),
+    GRILLE_DU_JOUR("210.00")
+  );
+  assert.equal(r.prixTravail, "0.00");
+  assert.notEqual(r.sort, "grille-proposee", "un prix de taille apparaît là où il n'y en avait pas");
+  assert.equal(r.partGrille, "420.00");
+});
+
+// La ligne « Main d'œuvre » elle-même : ses jours d'homme sont sa quantité, son
+// prix est le prix du jour par homme. Elle se reconnaît à son unité, comme la
+// dictée la chiffre (`tarif-main-oeuvre.ts`), jamais à son libellé.
+essai("la ligne de main d'œuvre au jour par homme reçoit le prix du jour", () => {
+  const r = reprendreLaLigne(
+    ligne({ libelle: "Main d’œuvre", quantite: "4", prixUnitaire: "200.00", unite: "jour/homme", mainDoeuvre: true }),
+    GRILLE_DU_JOUR("210.00")
+  );
+  assert.equal(r.mainDoeuvre, true);
+  assert.equal(r.sort === "grille-proposee" ? r.prixGrille : null, "210.00");
+});
+
+essai("une main d'œuvre au forfait garde son prix", () => {
+  const r = reprendreLaLigne(
+    ligne({ libelle: "Main d’œuvre", quantite: "1", prixUnitaire: "500.00", unite: "forfait", mainDoeuvre: true }),
+    GRILLE_DU_JOUR("210.00")
+  );
+  assert.equal(r.sort, "prix-garde");
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Reprendre à ses prix, tarif du jour proposé : ${echecs} échec(s).`);

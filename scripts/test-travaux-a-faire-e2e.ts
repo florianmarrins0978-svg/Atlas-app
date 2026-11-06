@@ -31,6 +31,7 @@ import { Pool } from "pg";
 import { lancerNavigateur } from "./e2e-browser";
 import { ADRESSE } from "./_adresse";
 import { jpegDeTaille } from "./_images-temoins";
+import { tachesDuDevis } from "../src/lib/taches-du-devis";
 
 const BASE = ADRESSE;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -87,14 +88,24 @@ async function main() {
   );
   // Le devis envoyé le plus récent — celui que la feuille imprime
   // (`devisÀImprimer`, `repositories/devis.ts`).
-  const { rows: lignesDuDevis } = await pool.query<{ n: number }>(
-    `SELECT count(*)::int AS n FROM lignes_devis l
+  // **Les cases attendues se comptent par LA règle de l'écran**, jamais par
+  // un compte de lignes : la main d'œuvre, le camion ou le déplacement du
+  // devis ne donnent pas de case (sa demande du 6 novembre 2026), et le jeu
+  // de démonstration en porte (« Forfait déplacement »).
+  const { rows: lignesDuDevis } = await pool.query<{
+    libelle: string;
+    quantite: string;
+    unite: string | null;
+    mainDoeuvre: boolean;
+  }>(
+    `SELECT l.libelle, l.quantite::text AS quantite, l.unite, l.main_doeuvre AS "mainDoeuvre" FROM lignes_devis l
       WHERE l.devis_id = (SELECT id FROM devis WHERE chantier_id = $1 AND statut = 'envoye'
-                          ORDER BY numero_version DESC LIMIT 1)`,
+                          ORDER BY numero_version DESC LIMIT 1)
+      ORDER BY l.ordre`,
     [chantierId]
   );
-  const nombreDeLignes = Number(lignesDuDevis[0]?.n ?? 0);
-  assert.ok(nombreDeLignes > 0, "le devis du chantier n'a aucune ligne : rien à mesurer");
+  const nombreDeLignes = tachesDuDevis(lignesDuDevis).length;
+  assert.ok(nombreDeLignes > 0, "le devis du chantier n'a aucun travail : rien à mesurer");
 
   const navigateur = await lancerNavigateur();
   const contexte = await navigateur.newContext({ viewport: { width: 390, height: 844 } });
@@ -127,7 +138,7 @@ async function main() {
 
   await cas("FERMÉ, le bandeau dit COMBIEN et ne montre pas les lignes du devis", async () => {
     const compte = (await page.locator(COMPTE).innerText()).trim();
-    assert.match(compte, new RegExp(`^${nombreDeLignes} ligne`), `le compte dit « ${compte} »`);
+    assert.match(compte, new RegExp(`^${nombreDeLignes} travai`), `le compte dit « ${compte} »`);
     assert.equal(await page.locator(TACHE).count(), 0, "les lignes du devis s'étalent sur le planning");
     const texte = await page.locator(FEUILLE).innerText();
     assert.match(texte, /Travaux à faire/);
@@ -212,7 +223,7 @@ async function main() {
     const compte = (await page.locator(COMPTE).innerText()).trim();
     // Un devis d'une seule ligne cochée, c'est « tout est fait » — le jeu de
     // démonstration en porte selon les suites jouées avant celle-ci.
-    const attendu = nombreDeLignes === 1 ? /^tout est fait$/ : /^1 sur \d+ fait$/;
+    const attendu = nombreDeLignes === 1 ? /^Tout est fait$/ : /^1 sur \d+ fait$/;
     assert.match(compte, attendu, `le compte dit « ${compte} » et non ${attendu}`);
     await page.locator(ENVOYER).click();
     await page.waitForFunction(

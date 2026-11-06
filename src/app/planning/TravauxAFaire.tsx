@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import VisionneusePhoto from "@/components/atlas/VisionneusePhoto";
-import { colors, font, libelleCaps, surPlein, voile } from "@/lib/design-tokens";
+import { colors, font, surPlein, voile } from "@/lib/design-tokens";
 import { ACCEPT_PHOTOS } from "@/lib/exif";
-import { TRAVAIL_MAX } from "@/lib/taches-du-devis";
+import { TRAVAIL_MAX, enDeuxParts } from "@/lib/taches-du-devis";
 import {
   PHOTOS_MAX_PAR_CHANTIER,
   PHOTOS_MAX_PAR_RETOUR,
@@ -15,7 +15,7 @@ import {
 } from "@/lib/photos-plafonds";
 import {
   casesDuJour,
-  ceQuiManque,
+  phraseDeCeQuiManque,
   retourModifiable,
   type ReglesDuRetour,
   type TacheDuRetour,
@@ -89,6 +89,17 @@ import { ajouterTravailAction, enleverTravailAction } from "./actions";
  * n'est plus un bouton : il dit ce qui est parti, et le retour du jour part
  * de la barre (`retourModifiable`). La journée où la fiche est ouverte ne
  * compte pas : le 26, depuis la fiche du 28, le retour du 26 se rouvre.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **SA PLANCHE A DU 6 NOVEMBRE 2026** (`appli/soignee/fiche-travaux.html`),
+ * choisie devant une B plus poussée : *« on garde la A »*. Même place, même
+ * ordre, même barre que la fiche de sécurité ; ce qui change se lit mieux :
+ * le nom du travail en grand et sa quantité à droite (`enDeuxParts`), des
+ * cases de trente points, un trait sous la barre qui se remplit, les photos
+ * quatre par rang, la case « À signaler » qui grandit avec le texte (la
+ * troisième ligne se cachait), le bouton sur toute la largeur. Un travail
+ * fait passe en encre douce : le gris clair d'avant ne se lisait pas au
+ * soleil.
  */
 
 /** Le dernier retour parti, tel que la fiche le rouvre pour le modifier. */
@@ -149,6 +160,17 @@ export default function TravauxAFaire({
   const [refus, setRefus] = useState<string | null>(null);
   const [rangOuvert, setRangOuvert] = useState<number | null>(null);
   const champ = useRef<HTMLInputElement>(null);
+  const mot = useRef<HTMLTextAreaElement>(null);
+
+  // **La case « À signaler » grandit avec ce qu'on écrit** : à deux lignes, la
+  // troisième se cachait, et un salarié qui relit ce qu'il envoie ne voyait
+  // pas tout. La hauteur suit le texte, y compris celui d'un retour rouvert.
+  useEffect(() => {
+    const t = mot.current;
+    if (!t) return;
+    t.style.height = "auto";
+    t.style.height = `${t.scrollHeight + 2}px`;
+  }, [aSignaler, ouvert, charge]);
 
   // **Chargé à l'OUVERTURE, pas au montage.** La fiche d'un chantier se déplie
   // souvent sans qu'on aille jusqu'aux travaux : charger d'office ferait une
@@ -266,7 +288,7 @@ export default function TravauxAFaire({
   // d'hier ne réécrit pas la liste du chantier.
   const ecrireIci = aLaMain && !enModification;
   const faites = taches.filter((t) => t.faite).length;
-  const manques = ceQuiManque({ taches, photos: reprises.size }, regles);
+  const manque = phraseDeCeQuiManque({ taches, photos: reprises.size }, regles);
 
   async function envoyer() {
     setEnvoi(true);
@@ -363,14 +385,17 @@ export default function TravauxAFaire({
     setReprises(apres);
   }
 
+  // « 6 travaux », plus « 6 lignes » : la fiche ne montre plus que les travaux
+  // (`seFaitSurLeChantier`), et c'est son mot à lui.
   const compte =
     taches.length === 0
-      ? "aucune ligne"
+      ? "aucun travail"
       : faites === 0
-        ? `${taches.length} ligne${taches.length > 1 ? "s" : ""}`
+        ? `${taches.length} ${taches.length > 1 ? "travaux" : "travail"}`
         : faites === taches.length
-          ? "tout est fait"
+          ? "Tout est fait"
           : `${faites} sur ${taches.length} fait${faites > 1 ? "s" : ""}`;
+  const avance = taches.length === 0 ? 0 : (100 * faites) / taches.length;
 
   return (
     <div data-atlas="travaux-a-faire" className="mt-3.5">
@@ -386,7 +411,7 @@ export default function TravauxAFaire({
           data-atlas="ouvrir-travaux"
           aria-expanded={ouvert && !enModification}
           onClick={basculerLaBarre}
-          className="flex min-h-[54px] w-full items-center gap-2.5 pl-4 pr-3.5 text-left"
+          className="relative flex min-h-[54px] w-full items-center gap-2.5 pl-4 pr-3.5 text-left"
           style={{ background: voile(colors.plein, 0.16) }}
         >
           <span
@@ -397,7 +422,7 @@ export default function TravauxAFaire({
           </span>
           <span
             data-atlas="compte-des-travaux"
-            className="flex-none text-[12.5px] font-semibold"
+            className="flex-none text-[14px] font-bold tabular-nums"
             style={{ color: colors.rust }}
           >
             {compte}
@@ -419,6 +444,21 @@ export default function TravauxAFaire({
               strokeLinejoin="round"
             />
           </svg>
+          {/* Le compte, d'un coup d'œil : un trait qui se remplit à chaque
+              travail coché. Il dit la même chose que « 3 sur 6 faits ». */}
+          {taches.length > 0 && (
+            <span
+              aria-hidden="true"
+              data-atlas="avance-des-travaux"
+              className="absolute inset-x-0 bottom-0 h-[3px]"
+              style={{ background: voile(colors.plein, 0.22) }}
+            >
+              <span
+                className="block h-full transition-[width] duration-500 ease-out"
+                style={{ width: `${avance}%`, background: colors.plein }}
+              />
+            </span>
+          )}
         </button>
 
         {/* Le pli : une grille 0fr → 1fr, rien à mesurer, et le contenu
@@ -435,12 +475,23 @@ export default function TravauxAFaire({
             ) : charge ? (
               <div className="pb-3.5 pt-2.5">
                 {taches.length === 0 && !ecrireIci ? (
-                  <p className="m-0 text-[13.5px] leading-[1.5]" style={{ color: colors.muted }}>
-                    Aucune ligne sur le devis. Vous pouvez quand même poser une photo et un mot.
+                  <p className="m-0 text-[14px] leading-[1.5]" style={{ color: colors.inkSoft }}>
+                    Aucun travail sur le devis. Vous pouvez quand même poser une photo et un mot.
                   </p>
                 ) : (
-                  taches.map((t, rang) => (
-                    <div key={`${t.libelle}-${rang}`} className="flex items-start">
+                  taches.map((t, rang) => {
+                    const { quoi, combien } = enDeuxParts(t.libelle);
+                    return (
+                    <div key={`${t.libelle}-${rang}`} className="relative flex items-center">
+                    {/* Le filet commence après la case : il sépare les noms,
+                        pas les ronds. */}
+                    {rang > 0 && (
+                      <span
+                        aria-hidden="true"
+                        className="pointer-events-none absolute left-[44px] right-0 top-0 h-px"
+                        style={{ background: colors.lineSoft }}
+                      />
+                    )}
                     <button
                       type="button"
                       aria-pressed={t.faite}
@@ -450,37 +501,49 @@ export default function TravauxAFaire({
                           avant.map((x, i) => (i === rang ? { ...x, faite: !x.faite } : x))
                         )
                       }
-                      className="flex min-h-[44px] w-full items-start gap-3 py-1.5 text-left"
+                      className="flex min-h-[60px] w-full items-center gap-3.5 py-2.5 text-left"
                     >
-                      {/* Vingt-quatre pixels, et la LIGNE ENTIÈRE est la cible :
+                      {/* Trente pixels, et la LIGNE ENTIÈRE est la cible :
                           on vise mal avec des gants, sur un écran sale.
                           RONDE — sa règle du 12 août 2026, la même forme
-                          partout (`test-boutons-arrondis.ts`). */}
+                          partout (`test-boutons-arrondis.ts`). La coche se
+                          TRACE en cochant : le seul mouvement de la fiche. */}
                       <span
                         aria-hidden="true"
-                        className="grid h-6 w-6 flex-none place-items-center rounded-full"
+                        className="grid h-[30px] w-[30px] flex-none place-items-center rounded-full transition-[background-color,box-shadow] duration-200"
                         style={{
                           backgroundColor: t.faite ? colors.plein : colors.card,
-                          color: t.faite ? surPlein : "transparent",
-                          boxShadow: t.faite ? "none" : `inset 0 0 0 1.5px ${colors.vertPale}`,
+                          color: surPlein,
+                          boxShadow: t.faite ? "none" : `inset 0 0 0 1.75px ${colors.vertPale}`,
                         }}
                       >
-                        <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                           <path
                             d="M3 8.4 6.3 11.7 13 5"
                             stroke="currentColor"
-                            strokeWidth="2.2"
+                            strokeWidth="2.6"
                             strokeLinecap="round"
                             strokeLinejoin="round"
+                            strokeDasharray={22}
+                            strokeDashoffset={t.faite ? 0 : 22}
+                            className="transition-[stroke-dashoffset] delay-75 duration-300 motion-reduce:transition-none"
                           />
                         </svg>
                       </span>
                       <span
-                        className="min-w-0 flex-1 pt-0.5 text-[14.5px] leading-[1.45]"
-                        style={{ color: t.faite ? colors.muted : colors.ink }}
+                        className="min-w-0 flex-1 text-[17px] leading-[1.3] [overflow-wrap:anywhere]"
+                        style={{ fontFamily: font.display, color: t.faite ? colors.inkSoft : colors.ink }}
                       >
-                        {t.libelle}
+                        {quoi}
                       </span>
+                      {combien !== null && (
+                        <span
+                          className="flex-none whitespace-nowrap text-[14.5px] font-semibold tabular-nums"
+                          style={{ color: colors.inkSoft }}
+                        >
+                          {combien}
+                        </span>
+                      )}
                     </button>
                     {ecrireIci && (
                       <button
@@ -498,7 +561,8 @@ export default function TravauxAFaire({
                       </button>
                     )}
                     </div>
-                  ))
+                    );
+                  })
                 )}
 
                 {/* **Le champ vit sous les lignes qu'il a déjà posées** — sa
@@ -536,17 +600,28 @@ export default function TravauxAFaire({
                   </form>
                 )}
 
-                <div className="mt-2 flex flex-wrap items-center gap-[7px]">
-                  <span className={libelleCaps} style={{ color: colors.ink }}>
+                <div className="mb-2.5 mt-4 flex items-baseline gap-2">
+                  <span
+                    className="text-[13px] font-semibold uppercase tracking-[0.12em]"
+                    style={{ color: colors.inkSoft }}
+                  >
                     Photos
                   </span>
                   {/* Le compte n'apparaît qu'avec une photo cochée : sans
                       rien, « 0/10 » annoncerait une règle avant le geste. */}
                   {reprises.size > 0 && (
-                    <span className="text-[12px]" style={{ color: colors.muted }} data-atlas="compte-photos-retour">
+                    <span
+                      className="text-[13px] font-semibold tabular-nums"
+                      style={{ color: colors.inkSoft }}
+                      data-atlas="compte-photos-retour"
+                    >
                       {reprises.size}/{PHOTOS_MAX_PAR_RETOUR}
                     </span>
                   )}
+                </div>
+                {/* Quatre par rang, carrées : une photo de chantier se
+                    reconnaît en grand, pas en timbre-poste. */}
+                <div className="grid grid-cols-4 gap-2">
                   {/* **Toucher une vignette l'OUVRE, il ne la décoche plus** —
                       sa capture du 28 septembre 2026 : *« impossible de
                       cliquer pour voir les photos et pouvoir les faire
@@ -564,7 +639,7 @@ export default function TravauxAFaire({
                         aria-label={`Photo ${i + 1} en grand`}
                         data-atlas="photo-du-retour"
                         onClick={() => setRangOuvert(i)}
-                        className="h-[46px] w-[46px] overflow-hidden rounded-[9px]"
+                        className="aspect-square overflow-hidden rounded-[10px]"
                         style={{
                           opacity: prise ? 1 : 0.45,
                           backgroundColor: colors.rustTint,
@@ -586,15 +661,15 @@ export default function TravauxAFaire({
                     onClick={() => champ.current?.click()}
                     aria-label="Ajouter une photo"
                     data-atlas="ajouter-photo-retour"
-                    className="grid h-[46px] w-[46px] place-items-center rounded-[9px]"
+                    className="grid aspect-square place-items-center rounded-[10px]"
                     style={{
-                      backgroundColor: voile(colors.plein, 0.16),
+                      backgroundColor: voile(colors.plein, 0.14),
                       color: colors.rust,
-                      boxShadow: `inset 0 0 0 1px ${colors.vertPale}`,
+                      boxShadow: `inset 0 0 0 1.5px ${colors.vertPale}`,
                     }}
                   >
-                    <svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                      <path d="M10 4v12M4 10h12" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+                    <svg width="26" height="26" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                      <path d="M10 4v12M4 10h12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
                     </svg>
                   </button>
                   {/* **Sans `capture`** : sur un iPhone il IMPOSE l'appareil photo
@@ -634,6 +709,7 @@ export default function TravauxAFaire({
                 )}
 
                 <textarea
+                  ref={mot}
                   value={aSignaler}
                   onChange={(e) => setASignaler(e.target.value)}
                   placeholder="À signaler, facultatif"
@@ -641,11 +717,11 @@ export default function TravauxAFaire({
                   rows={2}
                   // **16 px au moins.** En dessous, iOS grossit la page à la mise
                   // au point et l'écran saute sous le doigt.
-                  className="mt-2.5 w-full resize-none rounded-[10px] px-3 py-2.5 text-[16px] leading-[1.45] outline-none"
+                  className="mt-4 block min-h-[76px] w-full resize-none overflow-hidden rounded-[10px] px-3.5 py-3 text-[16px] leading-[1.45] outline-none"
                   style={{
-                    backgroundColor: voile(colors.or, 0.13),
+                    backgroundColor: voile(colors.or, 0.1),
                     color: colors.ink,
-                    boxShadow: `inset 0 0 0 1px ${voile(colors.or, 0.22)}`,
+                    boxShadow: `inset 0 0 0 1px ${voile(colors.or, 0.3)}`,
                     caretColor: colors.or,
                   }}
                 />
@@ -653,27 +729,27 @@ export default function TravauxAFaire({
                 {/* Toujours actif : il part avec ce qu'il a. Il ne se ferme
                     que le temps de l'envoi — c'est ce qui tient le double appui
                     d'un réseau lent, depuis que l'index unique ne le tient plus
-                    (migration 0096). */}
+                    (migration 0096). Toute la largeur : sous le pouce. */}
                 <button
                   type="button"
                   onClick={() => void envoyer()}
                   disabled={envoi}
                   data-atlas="envoyer-le-retour"
-                  className="mx-auto mt-3.5 block w-max rounded-full px-6 py-3 text-[15px] disabled:opacity-45"
-                  style={{ backgroundColor: colors.plein, color: surPlein, fontFamily: font.display }}
+                  className="mt-4 flex min-h-[56px] w-full items-center justify-center rounded-full px-5 text-[17px] font-semibold disabled:opacity-45"
+                  style={{ backgroundColor: colors.plein, color: surPlein }}
                 >
                   {envoi ? "Un instant…" : enModification ? "Renvoyer le retour" : "Envoyer le retour du jour"}
                 </button>
 
                 {/* Ce que le patron attend encore, AVANT l'appui — un rappel,
                     plus un verrou. Et le refus du serveur au même endroit. */}
-                {(manques.length > 0 || refus) && (
+                {(manque !== "" || refus) && (
                   <p
-                    className="mb-0 mt-2 text-center text-[12.5px] leading-[1.45]"
-                    style={{ color: refus ? colors.alert : colors.muted }}
+                    className="mb-0 mt-2.5 text-center text-[14px] leading-[1.45]"
+                    style={{ color: refus ? colors.alert : colors.inkSoft }}
                     data-atlas="ce-qui-manque"
                   >
-                    {refus ?? manques.join(" et ")}
+                    {refus ?? manque}
                   </p>
                 )}
               </div>
@@ -695,7 +771,10 @@ export default function TravauxAFaire({
           aria-expanded={modifiable ? ouvert && enModification : undefined}
           disabled={!modifiable}
           onClick={rouvrirLeRetour}
-          className="mt-2.5 flex w-full items-center gap-3 rounded-full px-4 py-2.5 text-left"
+          // La capsule, comme tout ce qu'on appuie (sa règle du 12 août
+          // 2026, `test-boutons-arrondis.ts`) : la planche A lui donnait un
+          // coin de 12 px, la règle passe avant.
+          className="mt-2.5 flex w-full items-center gap-3 rounded-full px-4 py-3 text-left"
           style={{
             backgroundColor: voile(colors.plein, 0.16),
             boxShadow: `inset 0 0 0 1px ${colors.vertPale}`,
@@ -703,10 +782,10 @@ export default function TravauxAFaire({
         >
           <span
             aria-hidden="true"
-            className="grid h-[19px] w-[19px] flex-none place-items-center rounded-full"
+            className="grid h-6 w-6 flex-none place-items-center rounded-full"
             style={{ backgroundColor: colors.plein, color: surPlein }}
           >
-            <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+            <svg width="14" height="14" viewBox="0 0 12 12" fill="none">
               <path
                 d="M2 6.3 4.7 9 10 3"
                 stroke="currentColor"
@@ -718,14 +797,14 @@ export default function TravauxAFaire({
           </span>
           <span className="min-w-0">
             <span
-              className="block text-[15px] leading-[1.15]"
+              className="block text-[16px] leading-[1.2]"
               style={{ color: colors.rust, fontFamily: font.display }}
             >
               {vientDePartir && envoyes === 1
                 ? "Retour du jour envoyé"
                 : `${envoyes} retour${envoyes > 1 ? "s" : ""} envoyé${envoyes > 1 ? "s" : ""}`}
             </span>
-            <span className="mt-[1px] block text-[11.5px] leading-[1.3]" style={{ color: colors.muted }}>
+            <span className="mt-0.5 block text-[13px] leading-[1.35]" style={{ color: colors.inkSoft }}>
               À retrouver dans Terminés, Retour d&apos;intervention
             </span>
           </span>

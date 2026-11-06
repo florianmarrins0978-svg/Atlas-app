@@ -258,13 +258,18 @@ export function ceQuiManque(
  *
  * **Une seule fonction l'écrit**, pour l'écran comme pour le refus du serveur :
  * deux formulations du même refus finissent par se contredire, et c'est celle
- * qu'il lit sur son téléphone qui paraîtra fausse.
+ * qu'il lit sur son téléphone qui paraîtra fausse. L'écran l'oubliait et
+ * recollait les morceaux lui-même : il la lit ici depuis le 6 novembre 2026.
+ *
+ * **Une phrase, majuscule et point** (sa planche A du 6 novembre) : elle se
+ * lit sous le bouton, seule sur sa ligne.
  */
 export function phraseDeCeQuiManque(
   pose: CeQuIlAPose,
   regles: ReglesDuRetour
 ): string {
-  return ceQuiManque(pose, regles).join(" et ");
+  const morceaux = ceQuiManque(pose, regles).join(" et ");
+  return morceaux === "" ? "" : `${morceaux.charAt(0).toUpperCase()}${morceaux.slice(1)}.`;
 }
 
 /**

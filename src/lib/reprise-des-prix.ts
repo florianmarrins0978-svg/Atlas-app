@@ -44,7 +44,9 @@
 // (« Taille de haie » et « taille de haie » sont le même tarif). Deux rédactions
 // de la même règle finissent toujours par diverger (`CLAUDE.md` §3), et la
 // divergence porterait ici un nom : un devis repris au mauvais prix.
+import Decimal from "decimal.js";
 import { memeMot } from "./mots-catalogue";
+import { auJourParHomme, tarifJourHomme } from "./tarif-main-oeuvre";
 
 /** Une ligne du chantier qu'on reprend, telle qu'elle est en base. */
 export type LigneAReprendre = {
@@ -56,6 +58,22 @@ export type LigneAReprendre = {
   aChiffrer: boolean;
   tauxTva: string | null;
   ordre: number;
+  /**
+   * Une ligne de main d'œuvre (migration 0130). Rien ici ne s'en sert : elle
+   * traverse, et c'est tout son rôle. **Exigée, pas facultative** : oubliée
+   * à la lecture, la main d'œuvre reprise devenait un travail à cocher, et
+   * sortait de « dont main d'œuvre HT » (6 novembre 2026).
+   */
+  mainDoeuvre: boolean;
+  /**
+   * La main d'œuvre RÉPARTIE dans le prix de ce travail (migration 0155), en
+   * euros, et les jours d'homme qu'elle représente (migration 0169). Les jours
+   * sont nuls quand ils ne sont pas connus : une part posée avant 0169, ou
+   * celle d'un partenaire. Exigés eux aussi : c'est en les oubliant ici que
+   * « dont main d'œuvre HT » se perdait.
+   */
+  partMainDoeuvre: string | null;
+  joursMainDoeuvre: string | null;
 };
 
 /** Un tarif de sa grille, tel qu'il est AUJOURD'HUI. */
@@ -85,6 +103,20 @@ export type LigneReprise = LigneAReprendre & {
   /** Le prix de la dernière fois, toujours. */
   prixUnitaire: string;
   montant: string;
+  /**
+   * Le prix du TRAVAIL seul, main d'œuvre répartie retirée : c'est lui que le
+   * tarif du jour remplace (sa décision du 6 novembre 2026, *« ça doit juste
+   * se mettre à jour par rapport à la taille de la haie »*). Le prix unitaire
+   * de la ligne quand rien n'y est réparti.
+   */
+  prixTravail: string;
+  /**
+   * La main d'œuvre au prix du jour par homme d'AUJOURD'HUI, quand il a bougé
+   * (*« si on est passé de 400 à 420, ça se réfère au nouveau prix »*). Nulle
+   * quand rien n'a bougé, ou quand les jours ne sont pas connus : elle ne se
+   * devine pas.
+   */
+  partGrille: string | null;
 } & SortReprise;
 
 /**
@@ -127,13 +159,36 @@ export function reprendreLaLigne(
   ligne: LigneAReprendre,
   tarifs: readonly TarifDuJour[]
 ): LigneReprise {
+  const montant = montantDeLaLigne(ligne.quantite, ligne.prixUnitaire);
+  const part = partRepartie(ligne);
+  const prixTravail = part === null ? ligne.prixUnitaire : prixSansLaPart(ligne.quantite, montant, part);
+  const jourHomme = tarifJourHomme(tarifs);
   const garde = (sort: SortReprise): LigneReprise => ({
     ...ligne,
-    montant: montantDeLaLigne(ligne.quantite, ligne.prixUnitaire),
+    partMainDoeuvre: part,
+    montant,
+    prixTravail,
+    partGrille: part === null ? null : partAuPrixDuJour(part, ligne.joursMainDoeuvre, jourHomme?.prix ?? null),
     ...sort,
   });
 
   if (ligne.aChiffrer) return garde({ sort: "attend-son-prix" });
+
+  // **La ligne « Main d'œuvre » de son équipe** : sa quantité est en jours
+  // d'homme, son prix est le prix du jour par homme. Elle se reconnaît à son
+  // unité (`auJourParHomme`), comme la dictée la chiffre ; son libellé, il le
+  // change au doigt.
+  if (ligne.mainDoeuvre && auJourParHomme(ligne.unite)) {
+    if (!jourHomme) return garde({ sort: "prix-garde" });
+    return memeMontant(jourHomme.prix, ligne.prixUnitaire)
+      ? garde({ sort: "inchange" })
+      : garde({ sort: "grille-proposee", prixGrille: jourHomme.prix });
+  }
+
+  // **Un travail payé tout entier en main d'œuvre** (une dictée « répartie »)
+  // n'a pas de prix de taille à mettre à jour : en proposer un ajouterait au
+  // devis un montant qu'aucun devis n'a porté.
+  if (part !== null && !new Decimal(prixTravail).greaterThan(0)) return garde({ sort: "prix-garde" });
 
   // Un libellé vide ne correspond à rien — et `memeMot` rendrait vrai contre un
   // tarif dont l'intitulé serait vide lui aussi.
@@ -143,9 +198,50 @@ export function reprendreLaLigne(
     : undefined;
   if (!tarif) return garde({ sort: "prix-garde" });
 
-  if (memeMontant(tarif.prix, ligne.prixUnitaire)) return garde({ sort: "inchange" });
+  // Comparé au TRAVAIL seul : à 28 € part comprise, la haie aurait toujours
+  // paru « changée » face à 12 €, et un oui aurait effacé la main d'œuvre.
+  if (memeMontant(tarif.prix, prixTravail)) return garde({ sort: "inchange" });
 
   return garde({ sort: "grille-proposee", prixGrille: tarif.prix });
+}
+
+/** La part répartie sur ce travail, ou `null` : une ligne de main d'œuvre n'en porte pas, elle EST la main d'œuvre. */
+function partRepartie(ligne: LigneAReprendre): string | null {
+  if (ligne.mainDoeuvre || ligne.partMainDoeuvre === null) return null;
+  try {
+    const p = new Decimal(ligne.partMainDoeuvre);
+    return p.greaterThan(0) ? p.toFixed(2) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Le prix unitaire du travail une fois la part retirée, au centime, jamais sous zéro. */
+function prixSansLaPart(quantite: string, montant: string, part: string): string {
+  try {
+    const q = new Decimal(quantite);
+    if (!q.greaterThan(0)) return "0.00";
+    return Decimal.max(0, new Decimal(montant).minus(part)).div(q).toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toFixed(2);
+  } catch {
+    return "0.00";
+  }
+}
+
+/**
+ * Les mêmes jours d'homme au prix du jour d'aujourd'hui, quand il diffère de
+ * ce que la part valait. `null` sans jours connus ou sans prix du jour : la
+ * part garde alors son montant.
+ */
+function partAuPrixDuJour(part: string, jours: string | null, prixDuJour: string | null): string | null {
+  if (jours === null || prixDuJour === null) return null;
+  try {
+    const j = new Decimal(jours);
+    if (!j.greaterThan(0)) return null;
+    const neuve = j.times(prixDuJour).toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toFixed(2);
+    return memeMontant(neuve, part) ? null : neuve;
+  } catch {
+    return null;
+  }
 }
 
 /** Le devis entier, repris ligne à ligne, dans son ordre d'origine. */
@@ -171,7 +267,10 @@ export function resumeDeLaReprise(lignes: readonly LigneReprise[]): {
   attendentLeurPrix: number;
   aQuelqueChoseADire: boolean;
 } {
-  const grillesProposees = lignes.filter((l) => l.sort === "grille-proposee").length;
+  // Une main d'œuvre au nouveau prix du jour est une proposition comme une
+  // autre : sans elle, la question ne se posait pas quand seul son jour par
+  // homme avait bougé.
+  const grillesProposees = lignes.filter((l) => l.sort === "grille-proposee" || l.partGrille !== null).length;
   const prixGardes = lignes.filter((l) => l.sort === "prix-garde").length;
   const attendentLeurPrix = lignes.filter((l) => l.sort === "attend-son-prix").length;
   return {

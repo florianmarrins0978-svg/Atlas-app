@@ -21,6 +21,8 @@
  * Fonctions pures : ni base, ni réseau.
  */
 import Decimal from "decimal.js";
+import { partsAppliquees } from "./feuille-main-oeuvre";
+import { montantDeLaLigne } from "./montant-de-ligne";
 
 /** Sa réponse à « Votre grille a changé ». `null` : pas encore répondu. */
 export type ReponseGrille = "oui" | "non" | null;
@@ -62,11 +64,67 @@ export function prixAugmente(prix: string, taux: number): string {
 
 /** Ce qu'une ligne reprise porte pour le calcul. */
 export type PrixDeReprise = {
-  /** Son prix sur l'ancien devis. */
+  /** Son prix sur l'ancien devis : celui du TRAVAIL, main d'œuvre répartie retirée. */
   prixAncien: string;
   /** Le tarif du jour, quand sa grille le porte à un autre prix. */
   prixGrille: string | null;
 };
+
+/**
+ * Une ligne reprise, main d'œuvre comprise : sa décision du 6 novembre 2026.
+ *
+ * *« Il faut garder les 400 € de main d'œuvre. Et quand on fait mettre à jour
+ * les prix, ça doit juste se mettre à jour par rapport à la taille de la haie.
+ * À part si les prix de la main d'œuvre ont augmenté. »*
+ */
+export type LigneRepriseAvecSaPart = PrixDeReprise & {
+  quantite: string;
+  /** La main d'œuvre répartie sur l'ancien devis, en euros ; `null` sans part. */
+  partAncienne: string | null;
+  /** La même au prix du jour par homme d'aujourd'hui, quand il a bougé. */
+  partGrille: string | null;
+};
+
+/**
+ * Ce que la ligne devient après sa réponse et la hausse, **toujours depuis
+ * ses bases** : le travail (ancien ou tarif du jour), la main d'œuvre
+ * (ancienne ou au prix du jour), chacun monté du même taux.
+ *
+ * La part se pose comme la feuille « Main d'œuvre » la pose (`partsAppliquees`) :
+ * la part gardée est ce que le prix a VRAIMENT reçu au centime, pour que
+ * « dont main d'œuvre HT » ne dise jamais un euro de plus que la ligne.
+ */
+export function ligneApresSaReponse(
+  ligne: LigneRepriseAvecSaPart,
+  reponse: ReponseGrille,
+  hausse: number
+): { prixUnitaire: string; montant: string; partMainDoeuvre: string | null } {
+  const prixTravail = prixDeLaLigneReprise(ligne, reponse, hausse);
+  if (ligne.partAncienne === null) {
+    return { prixUnitaire: prixTravail, montant: montantDeLaLigne(ligne.quantite, prixTravail), partMainDoeuvre: null };
+  }
+  const base = reponse === "oui" && ligne.partGrille !== null ? ligne.partGrille : ligne.partAncienne;
+  const [posee] = partsAppliquees(
+    [{ id: "ligne", quantite: ligne.quantite, prixUnitaire: prixTravail, partMainDoeuvre: null }],
+    { ligne: prixAugmente(base, hausse) }
+  );
+  // Une quantité nulle ne reçoit rien (`partsAppliquees`) : la ligne garde
+  // alors son travail seul, et la part n'annonce rien qu'elle ne porte pas.
+  if (!posee) {
+    return { prixUnitaire: prixTravail, montant: montantDeLaLigne(ligne.quantite, prixTravail), partMainDoeuvre: null };
+  }
+  return { prixUnitaire: posee.prixUnitaire, montant: posee.montant, partMainDoeuvre: posee.partMainDoeuvre };
+}
+
+/** Les mains d'œuvre à nommer sous « Votre grille a changé » : celles dont le prix du jour par homme a bougé. */
+export function partsAMettreAJour<L extends { partAncienne: string | null; partGrille: string | null }>(
+  lignes: readonly L[]
+): (L & { partAncienne: string; partGrille: string })[] {
+  return lignes.filter(
+    (l): l is L & { partAncienne: string; partGrille: string } =>
+      l.partAncienne !== null && l.partGrille !== null && !new Decimal(l.partAncienne).equals(l.partGrille)
+  );
+}
 
 /**
  * Le prix affiché d'une ligne reprise : l'ancien prix, ou le tarif du jour

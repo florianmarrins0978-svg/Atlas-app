@@ -37109,3 +37109,36 @@ Sa planche du 5 novembre 2026 (`appli/soignee/hiverner-l-arrosage.html`), sa ré
 **L'arrêt vit dans `emettreFacture`, pas dans l'écran** : c'est là que passe toute facture qui part (l'écran de la facture, Chorus Pro, la facture d'un passage d'entretien), comme le contrôle du devis à jour juste au-dessus. Le total comparé est celui-là même qui s'écrit sur la pièce, dans la même transaction. L'émission lève `FacturePasseLePlafondError`, qui porte le compte ; l'action le rend en valeur ; l'écran DEMANDE, et « L'envoyer sans TVA » rappelle la même émission avec `malgreLePlafond`. La facture d'un passage d'entretien ne part pas avec son compte rendu : elle attend son geste sur Terminés, et le journal ne l'écrit pas comme une panne.
 
 **Le plafond de base n'arrête rien** : passé lui seul, la franchise tient jusqu'au 31 décembre. Seul le majoré arrête, et chaque facture suivante s'arrête encore, en disant que le plafond est déjà passé.
+## §557 : Un travail se reconnaît à son premier mot, et le doute laisse la case
+
+**Sa demande du 6 novembre 2026 :** la fiche travaux ne montre que les travaux ; ni la main d'œuvre, ni le camion d'évacuation, ni (sa réponse) le déplacement et la location. L'évacuation des déchets et une fourniture seule restent.
+
+| | |
+|---|---|
+| **le drapeau** | reconnaît la main d'œuvre renommée (migration 0130) |
+| **le premier mot** | reconnaît ce qui n'a pas de drapeau : une main d'œuvre d'avant 0130 ou tapée à la main, un engin, un véhicule, un déplacement, des frais, une location |
+| **écarté : le mot n'importe où** | « Dessouchage à la rogneuse » perdrait sa case ; une case qui disparaît à tort est un travail que l'équipe ne fera pas |
+| **écarté : réécrire les lignes en base** | un devis parti garde ce qu'il portait ; la règle tient donc à la lecture |
+
+Les retours déjà partis gardent leurs cases telles qu'elles sont parties : une preuve datée ne se réécrit pas.
+
+**Et la reprise traverse le drapeau** (`LigneAReprendre.mainDoeuvre`, exigé) : « Dernier devis » le perdait, la main d'œuvre reprise devenait un travail à cocher et sortait de « dont main d'œuvre HT ». La part répartie (`partMainDoeuvre`) reste perdue à la reprise, et c'est une règle à décider (`TODO.md`).
+
+Contrôles : `test-taches-du-devis` (les deux sens), `test-reprise-du-devis-db`.
+
+## §558 : La main d'œuvre répartie se retient en jours d'homme, et un devis repris la reporte au prix du jour
+
+**Sa décision du 6 novembre 2026**, devant l'image d'une haie reprise par « Dernier devis » : *« il faut garder les 400 € de main d'œuvre ; quand on fait mettre à jour les prix, ça doit juste se mettre à jour par rapport à la taille de la haie ; à part si les prix de la main d'œuvre ont augmenté, de 400 à 420 ; dans tous les cas, la ligne main d'œuvre présente »*.
+
+| | |
+|---|---|
+| **ce qui se retient** | `lignes_prix.jours_main_doeuvre` : les jours d'homme d'une part répartie, posés par la feuille (équipe) et par la dictée (`journees`) |
+| **écarté : retenir le prix du jour** | il change à chaque réponse ; les jours sont un fait du chantier, ils ne changent jamais |
+| **écarté : déduire les jours** | de la durée dictée ou du total : la feuille laisse changer l'équipe avant d'ajouter, et ce serait une main d'œuvre inventée |
+| **inconnus** | une part d'avant 0169, ou de partenaire : elle garde ses euros, sans montée |
+| **les bases d'une ligne reprise** | `prix_ancien` = le TRAVAIL seul, part retirée ; `part_ancienne`, `part_grille` pour la main d'œuvre. La réponse et la hausse repartent toujours d'elles (`ligneApresSaReponse`) |
+| **la ligne « Main d'œuvre »** | se reconnaît à son unité au jour par homme (`auJourParHomme`), et reçoit le prix du jour par homme de la grille |
+
+**Le piège évité** : comparer le tarif du jour au prix entier (28 € part comprise contre 12 €) faisait toujours « changer » la haie, et le oui effaçait les 400 €. Et une main d'œuvre posée APRÈS la reprise sort la ligne de la reprise, comme un prix tapé, sans quoi le oui suivant la retirait.
+
+Contrôles : `test-reprise-des-prix`, `test-hausse-du-devis` (purs, verts), `test-reprise-du-devis-db` (le parcours entier, sous `atlas_app`).

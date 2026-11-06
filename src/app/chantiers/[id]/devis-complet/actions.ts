@@ -230,7 +230,10 @@ export async function repartirMainDoeuvreAction(
   if (total === null) return { ok: false, raison: "Sans prix, il n'y a rien à répartir : donnez le prix du jour, ou la marge." };
   const ids = Object.keys(parts);
   if (ids.length === 0) return { ok: false, raison: "Aucun travail ne reçoit de main d'œuvre." };
-  return poserLesPartsDeMainDoeuvre(ctx, chantierId, repartirMainOeuvre(total, ids, parts));
+  // Son équipe : le prix du jour par homme de la feuille, celui qui a fait ce
+  // total ; un partenaire n'en a pas (`poserLesPartsDeMainDoeuvre`).
+  const prixJourHomme = choix.qui === "equipe" ? ligne.prixUnitaire : null;
+  return poserLesPartsDeMainDoeuvre(ctx, chantierId, repartirMainOeuvre(total, ids, parts), prixJourHomme);
 }
 
 /**
@@ -504,7 +507,12 @@ export async function repriseDuDevisAction(
   chantierId: string,
   choix: { reponse?: ReponseGrille; hausse?: string }
 ): Promise<
-  | { ok: true; reponse: ReponseGrille; hausse: number; lignes: { id: string; prixUnitaire: string; montant: string }[] }
+  | {
+      ok: true;
+      reponse: ReponseGrille;
+      hausse: number;
+      lignes: { id: string; prixUnitaire: string; montant: string; partMainDoeuvre: string | null }[];
+    }
   | { ok: false; raison: string }
 > {
   const ctx = await getCurrentCtx();

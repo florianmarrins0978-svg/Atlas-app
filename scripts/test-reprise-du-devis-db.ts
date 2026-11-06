@@ -8,6 +8,7 @@ import {
   ajouterLignePrix,
   listerLignesPrix,
   modifierLignePrix,
+  poserLesPartsDeMainDoeuvre,
   proposerLaGrilleDuJour,
   reprendreLesLignesPrix,
 } from "../src/server/repositories/lignes-prix";
@@ -59,6 +60,13 @@ async function main() {
   await ajouterLignePrix(A, ancien.id, "Taille de haie", "700.00", { quantite: "40", prixUnitaire: "17.50", unite: "ml" });
   await ajouterLignePrix(A, ancien.id, "Évacuation des déchets verts", "90.00");
   await ajouterLignePrix(A, ancien.id, "Traitement anti-mousse", "0.00", { aChiffrer: true });
+  // Sa main d'œuvre, renommée : seul le drapeau dit encore ce qu'elle est.
+  await ajouterLignePrix(A, ancien.id, "Équipe, deux jours", "800.00", {
+    quantite: "4",
+    prixUnitaire: "200.00",
+    unite: "jour/homme",
+    mainDoeuvre: true,
+  });
   // Aujourd'hui, sa grille dit 18,20 pour la haie, et toujours 90 pour l'évacuation.
   await creerTarif(A, { intitule: "Taille de haie", prix: "18.20", unite: "ml" });
   await creerTarif(A, { intitule: "Évacuation des déchets verts", prix: "90.00" });
@@ -77,6 +85,16 @@ async function main() {
     assert.equal(evac.prixGrille, null, "un tarif inchangé n'est pas une proposition");
     const mousse = await ligne("Traitement anti-mousse");
     assert.equal(mousse.prixAncien, null, "une ligne à chiffrer n'a pas d'ancien prix : zéro n'en est pas un");
+  });
+
+  // **Trouvé le 6 novembre 2026**, en cherchant pourquoi sa main d'œuvre
+  // s'affichait encore sur la fiche travaux : la reprise relisait la ligne
+  // sans son drapeau, et la réécrivait sans lui. Le devis repris la montrait
+  // à cocher à l'équipe, et la sortait de « dont main d'œuvre HT ».
+  await test("la reprise garde le drapeau de la main d'œuvre", async () => {
+    const equipe = await ligne("Équipe, deux jours");
+    assert.equal(equipe.mainDoeuvre, true, "une main d'œuvre reprise reste une main d'œuvre");
+    assert.equal((await ligne("Taille de haie")).mainDoeuvre, false);
   });
 
   await test("« Mettre à jour » pose le tarif du jour, et seulement là où il diffère", async () => {
@@ -151,6 +169,46 @@ async function main() {
     await proposerLaGrilleDuJour(B, ancien.id);
     const haie = (await listerLignesPrix(A, ancien.id)).find((l) => l.libelle === "Taille de haie")!;
     assert.equal(Number(haie.prixAncien), 17.5, "rien n'a été réécrit depuis l'autre entreprise");
+  });
+
+  // ─── SA DÉCISION DU 6 NOVEMBRE 2026 : la main d'œuvre répartie suit ───
+  // (« Taille de haie », plus haut, rapprocherait son propre tarif : un autre
+  // travail garde la mesure lisible.) L'an dernier : 25 ml de photinias à 12 €, plus 400 € de main
+  // d'œuvre de son équipe répartis dessus (2 jours d'homme à 200 €). Cette
+  // année : les photinias à 13 €, le jour par homme à 210 €.
+  await test("la main d'œuvre répartie : gardée, puis au tarif du jour sur son oui", async () => {
+    const avant = await chantiersRepo.creerChantier(A, { nom: "Haie Julien 2025", clientId: julien.id });
+    const haie = await ajouterLignePrix(A, avant.id, "Taille de photinias", "300.00", {
+      quantite: "25",
+      prixUnitaire: "12.00",
+      unite: "ml",
+    });
+    const pose = await poserLesPartsDeMainDoeuvre(A, avant.id, { [haie.id]: "400.00" }, "200.00");
+    assert.ok(pose.ok, "la main d'œuvre ne se pose pas");
+    const posee = (await listerLignesPrix(A, avant.id))[0];
+    assert.equal(Number(posee.montant), 700);
+    assert.equal(Number(posee.joursMainDoeuvre), 2, "les jours d'homme de la part ne sont pas retenus");
+
+    await creerTarif(A, { intitule: "Taille de photinias", prix: "13.00", unite: "ml" });
+    await creerTarif(A, { intitule: "Main d'œuvre", prix: "210.00", unite: "jour/homme" });
+    const apres = await chantiersRepo.creerChantier(A, { nom: "Haie Julien 2026", clientId: julien.id });
+    await reprendreLesLignesPrix(A, avant.id, apres.id);
+    const reprise = (await listerLignesPrix(A, apres.id)).find((l) => l.libelle === "Taille de photinias")!;
+    assert.equal(Number(reprise.montant), 700, "le devis repris change avant sa réponse");
+    assert.equal(Number(reprise.partMainDoeuvre), 400, "« dont main d'œuvre HT » se perd à la reprise");
+    assert.equal(Number(reprise.prixAncien), 12, "l'ancien prix doit être celui de la taille seule");
+    assert.equal(Number(reprise.prixGrille), 13);
+    assert.equal(Number(reprise.partGrille), 420);
+
+    await appliquerLaReprise(A, apres.id, { reponse: "oui" });
+    const oui = (await listerLignesPrix(A, apres.id)).find((l) => l.id === reprise.id)!;
+    assert.equal(Number(oui.montant), 745);
+    assert.equal(Number(oui.partMainDoeuvre), 420);
+
+    await appliquerLaReprise(A, apres.id, { reponse: "non" });
+    const non = (await listerLignesPrix(A, apres.id)).find((l) => l.id === reprise.id)!;
+    assert.equal(Number(non.montant), 700);
+    assert.equal(Number(non.partMainDoeuvre), 400);
   });
 
   await test("la base refuse une hausse hors borne", async () => {

@@ -18,6 +18,55 @@ Aujourd'hui y garde le défaut, pour comparer. Le code suivra son choix.
 
 
 ## CODÉ LE 6 NOVEMBRE, SUR main LE 6 NOVEMBRE (batterie commune) : la mention de la franchise bascule seule au 1er janvier 2027
+## ⏳ LA FICHE TRAVAUX : QUE LES TRAVAUX, SUR UNE BRANCHE LOCALE (6 novembre 2026)
+
+**Sa demande :** *« il ne faut jamais que la main-d'œuvre qu'il y a dans le
+devis s'affiche ; il faut qu'il n'y ait que les travaux ; le camion
+d'évacuation ne doit pas non plus apparaître »*. Sa réponse à la question :
+déplacement et location partent ; évacuation des déchets et fourniture seule
+restent.
+
+| | |
+|---|---|
+| la règle | `seFaitSurLeChantier` (`src/lib/taches-du-devis.ts`) : le drapeau, ou le PREMIER mot du libellé |
+| la reprise | `reprendreLesLignesPrix` recopie enfin `mainDoeuvre` (`LigneAReprendre` l'exige) |
+| les suites | `test-taches-du-devis` vert ici ; `test-reprise-du-devis-db` écrite, **jamais jouée** (base : son oui) |
+| reste | son oui pour la base et la batterie (niveau 3), voir la suite base ROUGE sur l'ancien code puis verte, puis `main` |
+
+**~~À SA DÉCISION~~ TRANCHÉ LE 6 NOVEMBRE, CODÉ SUR LA MÊME BRANCHE** (sa
+réponse : *« il faut garder les 400 € ; mettre à jour, juste la taille de la
+haie ; à part si les prix de la main d'œuvre ont augmenté, 400 à 420 ; dans
+tous les cas la ligne main d'œuvre présente »*). Migration 0169 (les jours
+d'homme de la part, ses deux bases), `ligneApresSaReponse`, la question qui
+nomme la main d'œuvre. Une part posée AVANT 0169, ou celle d'un partenaire,
+n'a pas ses jours : elle garde ses 400 €, sans montée au nouveau prix.
+`test-reprise-du-devis-db` porte son cas entier, **jamais jouée** (son oui).
+
+Ce qui était écrit avant sa réponse : la reprise perd aussi `partMainDoeuvre`,
+la part de main d'œuvre répartie dans le prix d'un travail. Rejoué avec les
+fonctions pures (`partsAppliquees`, `reprendreLaLigne`, `prixDeLaLigneReprise`,
+`mainDoeuvreDesLignes`) le 6 novembre :
+
+| | prix de la haie (25 ml) | dont main d'œuvre HT |
+|---|---|---|
+| l'an dernier, 12 €/ml et 400 € répartis | 700 € (28 €/ml) | 400 € |
+| repris par « Dernier devis » | 700 € | **rien** |
+| puis « Mettre à jour », grille à 13 €/ml | **325 €** : les 400 € partent | rien |
+
+Le tarif du jour se compare au prix ENTIER, part comprise : la ligne est
+toujours « grille proposée », et le oui efface la main d'œuvre.
+
+**Proposé (image envoyée le 6 novembre) :** recopier la part, et que le tarif
+du jour ne remplace que le prix du travail (325 € + 400 € = 725 €, dont main
+d'œuvre 400 €). Attend son oui ; rien n'est codé.
+
+**La planche** : `appli/soignee/fiche-travaux.html`. **Sa réponse : la A**,
+codée sur la même branche (`TravauxAFaire.tsx`, `FicheDeSecurite.tsx` pour le
+compte). La B reste sur la planche, écartée. **Pas regardée dans l'appli
+ici** : le serveur attend son oui, comme la batterie. `npm run voir --
+/planning` dès qu'il le donne, fiche ouverte sur un chantier à devis.
+
+## AVANT LE 31 DÉCEMBRE 2027 : la mention « TVA non applicable, art. 293 B du CGI »
 
 **Corrigé le 6 novembre 2026, sur les sites officiels** (sa demande : *« tu
 peux aussi aller vérifier par toi-même »*). La date du 1er janvier 2027 écrite

@@ -15,6 +15,8 @@ import {
   prixDeLaLigneReprise,
   lignesAMettreAJour,
   memeValeur,
+  ligneApresSaReponse,
+  partsAMettreAJour,
 } from "../src/lib/hausse-du-devis";
 
 let echecs = 0;
@@ -128,6 +130,52 @@ essai("« 17,5 » et « 17.50 » sont le même prix ; « 17,6 » ne l'est pas", 
   assert.equal(memeValeur("17,6", "17.50"), false);
   assert.equal(memeValeur("", "17.50"), false);
   assert.equal(memeValeur("abc", "abc"), false);
+});
+
+// ─── SA DÉCISION DU 6 NOVEMBRE 2026 : la main d'œuvre répartie suit ───
+// Sa haie : 25 ml, la taille à 12 € (13 € au tarif du jour), 400 € de main
+// d'œuvre (420 € au prix du jour par homme d'aujourd'hui).
+const HAIE = { quantite: "25", prixAncien: "12.00", prixGrille: "13.00", partAncienne: "400.00", partGrille: "420.00" };
+
+essai("« Garder les anciens » : le devis de l'an dernier, main d'œuvre comprise", () => {
+  assert.deepEqual(ligneApresSaReponse(HAIE, "non", 0), { prixUnitaire: "28.00", montant: "700.00", partMainDoeuvre: "400.00" });
+});
+
+essai("« Mettre à jour » : la taille au tarif du jour, la main d'œuvre au prix du jour", () => {
+  assert.deepEqual(ligneApresSaReponse(HAIE, "oui", 0), { prixUnitaire: "29.80", montant: "745.00", partMainDoeuvre: "420.00" });
+});
+
+essai("« Mettre à jour » sans hausse du jour par homme : 325 € plus les 400 € (son image)", () => {
+  assert.deepEqual(ligneApresSaReponse({ ...HAIE, partGrille: null }, "oui", 0), {
+    prixUnitaire: "29.00",
+    montant: "725.00",
+    partMainDoeuvre: "400.00",
+  });
+});
+
+// La hausse monte ses prix, main d'œuvre comprise, comme elle montait la ligne
+// entière avant que la part se lise à part ; et la part reste ce que le prix
+// a vraiment reçu, au centime, pour que « dont main d'œuvre HT » ne mente pas.
+essai("une hausse de 10 % monte la taille et la main d'œuvre, sans s'empiler", () => {
+  const r = ligneApresSaReponse(HAIE, "oui", 10);
+  assert.deepEqual(r, { prixUnitaire: "32.78", montant: "819.50", partMainDoeuvre: "462.00" });
+  assert.equal(Number(r.montant) - 25 * 14.3, Number(r.partMainDoeuvre), "la part ne dit pas ce que le prix a reçu");
+});
+
+essai("une ligne sans main d'œuvre ne change pas de calcul", () => {
+  assert.deepEqual(
+    ligneApresSaReponse({ quantite: "40", prixAncien: "17.50", prixGrille: "18.20", partAncienne: null, partGrille: null }, "oui", 0),
+    { prixUnitaire: "18.20", montant: "728.00", partMainDoeuvre: null }
+  );
+});
+
+essai("la question nomme la main d'œuvre qui a bougé, et elle seule", () => {
+  const lignes = [
+    { id: "a", ...HAIE },
+    { id: "b", ...HAIE, partGrille: null },
+    { id: "c", ...HAIE, partGrille: "400.00" },
+  ];
+  assert.deepEqual(partsAMettreAJour(lignes).map((l) => l.id), ["a"]);
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Hausse d'un devis repris : ${echecs} échec(s).`);
