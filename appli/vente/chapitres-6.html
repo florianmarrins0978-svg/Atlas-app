@@ -57,10 +57,12 @@
   d'essai (atlas_scene), et rien n'est dessiné par-dessus. Un doigt en
   pastille blanche montrait d'abord où l'on appuie ; sa réponse : « enlève
   cette pastille blanche et joue simplement les cinématiques ».
-    · l'ouverture : « Créer un devis », le + qui tourne et ses éclats, puis
-      la fiche client qui monte (nov-creer-un-devis.mp4, 1,2 s). C'est la
-      vraie animation de l'appli, filmée image par image avec l'horloge de
-      la page figée, pour la définition d'un iPhone ; sa demande du soir ;
+    · l'ouverture : l'accueil, tel quel ; au premier défilement, « Créer un
+      devis », le + qui tourne et ses éclats, puis la fiche client qui monte
+      (nov-creer-un-devis.mp4, 1,2 s), qui reste. C'est la vraie animation
+      de l'appli, filmée image par image avec l'horloge de la page figée,
+      pour la définition d'un iPhone. Entre deux images fixes : seule, la
+      vidéo laissait l'écran blanc une ou deux secondes sur son téléphone ;
     · Dictez, remis dans l'ordre du geste à sa demande (« c'est un peu à
       l'envers ») : d'abord la note vocale, le micro au repos puis le vrai
       chrono, une capture par seconde, de 0:00 à 0:12 (nov-dictee-*.jpg,
@@ -327,8 +329,16 @@ html.anime .devis-loupe .ligne{opacity:0;transform:translateY(-38%) scale(.94);t
 html.anime .devient.vu .devis-loupe .ligne{opacity:1;transform:translateY(-50%)}
 .recit .sous{text-align:right}
 /* Le film de l'ouverture : la vraie animation de l'appli, filmée image par
-   image. Sans script ou sans mouvement, son affiche montre l'accueil. */
-.ecran video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top}
+   image, entre deux images fixes. Un téléphone efface l'affiche d'une vidéo
+   avant d'en avoir les images, et l'écran restait blanc une ou deux
+   secondes (sa remarque du 6 novembre) : l'accueil reste donc posé
+   dessous, le film ne se montre qu'une fois lancé, et la fiche client
+   prend sa place à la fin. Aucun fondu : un fondu laisserait voir l'entre
+   deux. */
+.ecran video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;z-index:2;opacity:0}
+.ecran video.joue{opacity:1}
+.ecran img.film-fin{z-index:3;opacity:0}
+.ecran img.film-fin.vue{opacity:1}
 @media (min-width:960px){
   .scene-micro{padding:56px 40px}
   .scene-micro .appareil{width:320px}
@@ -554,7 +564,7 @@ html.anime .chiffre.joue span{opacity:1;transform:none;transition-delay:1.5s}
     </div>
     <div class="scene" aria-hidden="true">
       <figure class="feuille"><img src="images/nov-devis.jpg" alt="" width="1654" height="2339"></figure>
-      <div class="appareil" id="scene-creer"><div class="ecran"><video poster="images/nov-creer-un-devis.jpg" muted playsinline preload="auto" width="780" height="1328"><source src="images/nov-creer-un-devis.mp4" type="video/mp4"><source src="images/nov-creer-un-devis.webm" type="video/webm"></video></div></div>
+      <div class="appareil" id="scene-creer"><div class="ecran"><img src="images/nov-creer-un-devis.jpg" alt="" width="1170" height="1992"><video muted playsinline preload="auto" width="780" height="1328"><source src="images/nov-creer-un-devis.mp4" type="video/mp4"><source src="images/nov-creer-un-devis.webm" type="video/webm"></video><img class="film-fin" src="images/nov-creer-un-devis-fin.jpg" alt="" width="1170" height="1992"></div></div>
     </div>
   </div>
 </section>
@@ -981,21 +991,27 @@ html.anime .chiffre.joue span{opacity:1;transform:none;transition-delay:1.5s}
   // Puis, plus bas, la ligne se pose sur le devis entier.
   new IntersectionObserver(function(e, o){ if (e[0].isIntersecting){ o.disconnect(); devient.classList.add("vu"); } }, {threshold:0.45}).observe(devient.querySelector(".devis-loupe"));
 
-  // 0. L'ouverture : « Créer un devis », le + qui tourne et la fiche client
-  // qui monte, le film de la vraie animation de l'appli, rejoué tant qu'on
-  // regarde. Si le téléphone refuse la lecture, l'affiche reste : l'accueil.
-  var creer = document.getElementById("scene-creer"), film = creer.querySelector("video");
-  var jusquAuBout = function(){ return new Promise(function(r){ film.addEventListener("ended", r, {once:true}); }); };
-  scene(creer, 0.4, function(){}, async function(encore){
-    while (encore()){
-      film.pause(); film.currentTime = 0;
-      await attendre(1400); if (!encore()) return;
-      var fin = jusquAuBout();
-      try { await film.play(); } catch (e) { return; }
-      await fin; if (!encore()) return;
-      await attendre(2600);
-    }
-  }, function(){ film.pause(); });
+  // 0. L'ouverture : l'accueil, tel quel. Au premier défilement, « Créer un
+  // devis » : le + tourne et la fiche client monte, le film de la vraie
+  // animation de l'appli. Sa demande : pas en boucle, pas d'emblée ; revenu
+  // tout en haut, la page redevient l'accueil et le geste se rejouera.
+  var creer = document.getElementById("scene-creer"), film = creer.querySelector("video"), finFilm = creer.querySelector(".film-fin");
+  var arme = true;
+  film.addEventListener("playing", function(){ film.classList.add("joue"); });
+  film.addEventListener("ended", function(){ finFilm.classList.add("vue"); film.classList.remove("joue"); });
+  var lancer = function(){
+    arme = false;
+    try { film.currentTime = 0; } catch (e) {}
+    var promesse = film.play();
+    // Lecture refusée (économie d'énergie, par exemple) : la fiche client
+    // s'affiche d'un coup, sans écran vide entre les deux.
+    if (promesse && promesse.catch) promesse.catch(function(){ finFilm.classList.add("vue"); });
+  };
+  var remettre = function(){ arme = true; film.pause(); film.classList.remove("joue"); finFilm.classList.remove("vue"); };
+  addEventListener("scroll", function(){
+    if (arme && scrollY > 24) lancer();
+    else if (!arme && scrollY < 2) remettre();
+  }, {passive:true});
 
   // 2. La note vocale : le micro au repos, puis l'enregistrement qui démarre
   // et le vrai chrono qui défile, une capture par seconde (nov-dictee-00 à 12).
