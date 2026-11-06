@@ -229,10 +229,22 @@ async function main() {
     // **`any` et non `race` :** l'une des deux attentes n'aboutira JAMAIS —
     // selon que la chaîne s'annonce ou qu'elle a déjà emmené. `race` échoue
     // sur la première qui expire, `any` réussit sur la première qui aboutit.
+    //
+    // **Et quand aucune n'aboutit, on dit où l'écran en était** (6 novembre
+    // 2026). La CI de `main` a rendu « All promises were rejected » une fois
+    // sur quatre, et rien d'autre : ni l'adresse, ni ce que montrait l'anneau,
+    // ni le refus éventuel. Sans cela, on ne pourrait que deviner pourquoi la
+    // chaîne n'est pas partie.
     await Promise.any([
       page.locator('[data-atlas="preparation-automatique"]').waitFor({ timeout: 60_000 }),
       page.waitForURL(/\/devis-complet$/, { timeout: 60_000 }),
-    ]);
+    ]).catch(async () => {
+      const anneauVu = (await anneau.count()) > 0 ? (await anneau.innerText()).replace(/\s+/g, " ").trim() : "absent";
+      throw new Error(
+        `60 s après l'avion, ni la préparation ne s'annonce ni le devis ne s'ouvre. ` +
+          `Adresse : ${page.url()}, anneau : « ${anneauVu} »`
+      );
+    });
   });
 
   await cas("la note dictée se voit, et elle se JETTE depuis cet écran", async () => {

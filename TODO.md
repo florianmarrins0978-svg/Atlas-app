@@ -7304,6 +7304,14 @@ mesure désormais dans la page ; elle reste rouge contre un disque vraiment
 décalé (30 px, éprouvé). L'écran du patron n'avait rien. **Reste à lire** la
 course de `ci.yml` qui suit : si elle est verte, barrer cette entrée.
 
+**Course suivante (6 novembre, 0 h 16 UTC) : le cas des 44 px passe.** Un
+autre cas de la même suite tombe : « un appui dicte, l'avion envoie »,
+`All promises were rejected` (ni la préparation ne s'annonce, ni le devis ne
+s'ouvre en 60 s). Il passait aux trois autres courses lues (1732, 1739, 1757) :
+une sur quatre. **NON REPRODUIT ici, cause inconnue** ; ne pas le classer
+capricieux sans l'avoir compris (`ARCHITECTURE.md` §353). Son rouge dit
+désormais l'adresse et ce que montre l'anneau : lire la course suivante.
+
 **Ce n'est pas le lot des boutons verts, et c'est MESURÉ, pas supposé.** Les
 mêmes trois suites échouent sur la CI de `main` (course 33753872485, arbre sans
 une ligne de mon code) et sur celle de la branche (33762884903) — la comparaison
