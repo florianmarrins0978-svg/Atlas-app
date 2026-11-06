@@ -37109,7 +37109,7 @@ Sa planche du 5 novembre 2026 (`appli/soignee/hiverner-l-arrosage.html`), sa ré
 **L'arrêt vit dans `emettreFacture`, pas dans l'écran** : c'est là que passe toute facture qui part (l'écran de la facture, Chorus Pro, la facture d'un passage d'entretien), comme le contrôle du devis à jour juste au-dessus. Le total comparé est celui-là même qui s'écrit sur la pièce, dans la même transaction. L'émission lève `FacturePasseLePlafondError`, qui porte le compte ; l'action le rend en valeur ; l'écran DEMANDE, et « L'envoyer sans TVA » rappelle la même émission avec `malgreLePlafond`. La facture d'un passage d'entretien ne part pas avec son compte rendu : elle attend son geste sur Terminés, et le journal ne l'écrit pas comme une panne.
 
 **Le plafond de base n'arrête rien** : passé lui seul, la franchise tient jusqu'au 31 décembre. Seul le majoré arrête, et chaque facture suivante s'arrête encore, en disant que le plafond est déjà passé.
-## §557 : Un travail se reconnaît à son premier mot, et le doute laisse la case
+## §564 : Un travail se reconnaît à son premier mot, et le doute laisse la case
 
 **Sa demande du 6 novembre 2026 :** la fiche travaux ne montre que les travaux ; ni la main d'œuvre, ni le camion d'évacuation, ni (sa réponse) le déplacement et la location. L'évacuation des déchets et une fourniture seule restent.
 
@@ -37126,7 +37126,7 @@ Les retours déjà partis gardent leurs cases telles qu'elles sont parties : une
 
 Contrôles : `test-taches-du-devis` (les deux sens), `test-reprise-du-devis-db`.
 
-## §558 : La main d'œuvre répartie se retient en jours d'homme, et un devis repris la reporte au prix du jour
+## §565 : La main d'œuvre répartie se retient en jours d'homme, et un devis repris la reporte au prix du jour
 
 **Sa décision du 6 novembre 2026**, devant l'image d'une haie reprise par « Dernier devis » : *« il faut garder les 400 € de main d'œuvre ; quand on fait mettre à jour les prix, ça doit juste se mettre à jour par rapport à la taille de la haie ; à part si les prix de la main d'œuvre ont augmenté, de 400 à 420 ; dans tous les cas, la ligne main d'œuvre présente »*.
 
@@ -37135,7 +37135,7 @@ Contrôles : `test-taches-du-devis` (les deux sens), `test-reprise-du-devis-db`.
 | **ce qui se retient** | `lignes_prix.jours_main_doeuvre` : les jours d'homme d'une part répartie, posés par la feuille (équipe) et par la dictée (`journees`) |
 | **écarté : retenir le prix du jour** | il change à chaque réponse ; les jours sont un fait du chantier, ils ne changent jamais |
 | **écarté : déduire les jours** | de la durée dictée ou du total : la feuille laisse changer l'équipe avant d'ajouter, et ce serait une main d'œuvre inventée |
-| **inconnus** | une part d'avant 0169, ou de partenaire : elle garde ses euros, sans montée |
+| **inconnus** | une part d'avant 0173, ou de partenaire : elle garde ses euros, sans montée |
 | **les bases d'une ligne reprise** | `prix_ancien` = le TRAVAIL seul, part retirée ; `part_ancienne`, `part_grille` pour la main d'œuvre. La réponse et la hausse repartent toujours d'elles (`ligneApresSaReponse`) |
 | **la ligne « Main d'œuvre »** | se reconnaît à son unité au jour par homme (`auJourParHomme`), et reçoit le prix du jour par homme de la grille |
 

@@ -30,7 +30,7 @@ export type LigneDeReprise = {
   libelle: string;
   prixAncien: string | null;
   prixGrille: string | null;
-  /** Sa main d'œuvre répartie sur l'ancien devis, et la même au prix du jour (migration 0169). */
+  /** Sa main d'œuvre répartie sur l'ancien devis, et la même au prix du jour (migration 0173). */
   partAncienne: string | null;
   partGrille: string | null;
 };

@@ -95,9 +95,9 @@ export async function ajouterLignePrix(
     mainDoeuvre?: boolean;
     /** La part de main d'œuvre comprise dans ce travail (migration 0155) : la répartition de la préparation du devis. */
     partMainDoeuvre?: string | null;
-    /** Les jours d'homme de cette part (migration 0169), quand ils sont connus. */
+    /** Les jours d'homme de cette part (migration 0173), quand ils sont connus. */
     joursMainDoeuvre?: string | null;
-    /** Les deux bases de la main d'œuvre d'une ligne reprise (migration 0169). */
+    /** Les deux bases de la main d'œuvre d'une ligne reprise (migration 0173). */
     partAncienne?: string | null;
     partGrille?: string | null;
   }
@@ -680,7 +680,7 @@ export async function poserLesPartsDeMainDoeuvre(
   parts: Readonly<Record<string, string>>,
   /**
    * Le prix du jour par homme de SON équipe, quand c'est elle qui fait cette
-   * main d'œuvre : chaque part en retient ses jours d'homme (migration 0169),
+   * main d'œuvre : chaque part en retient ses jours d'homme (migration 0173),
    * pour qu'un devis repris la reporte au prix du jour d'alors. `null` pour un
    * partenaire : ses jours ne se mesurent pas au prix du patron.
    */

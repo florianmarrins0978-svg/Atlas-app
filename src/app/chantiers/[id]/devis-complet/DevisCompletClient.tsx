@@ -145,7 +145,7 @@ type Ligne = {
   mainDoeuvre?: boolean | null;
   /** La main d'œuvre répartie sur ce travail (migration 0155), comprise dans son prix. */
   partMainDoeuvre?: string | null;
-  /** Reprise : sa main d'œuvre sur l'ancien devis, et la même au prix du jour quand il a bougé (migration 0169). */
+  /** Reprise : sa main d'œuvre sur l'ancien devis, et la même au prix du jour quand il a bougé (migration 0173). */
   partAncienne?: string | null;
   partGrille?: string | null;
 };

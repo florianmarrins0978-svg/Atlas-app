@@ -103,7 +103,7 @@ export type LigneProposee = {
    */
   partMainDoeuvre?: string;
   /**
-   * Les jours d'homme de cette part (migration 0169), quand son équipe la fait
+   * Les jours d'homme de cette part (migration 0173), quand son équipe la fait
    * à son prix du jour : un devis repris la reportera au prix du jour d'alors.
    * Absents pour un partenaire.
    */

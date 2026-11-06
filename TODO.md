@@ -36,9 +36,9 @@ restent.
 **~~À SA DÉCISION~~ TRANCHÉ LE 6 NOVEMBRE, CODÉ SUR LA MÊME BRANCHE** (sa
 réponse : *« il faut garder les 400 € ; mettre à jour, juste la taille de la
 haie ; à part si les prix de la main d'œuvre ont augmenté, 400 à 420 ; dans
-tous les cas la ligne main d'œuvre présente »*). Migration 0169 (les jours
+tous les cas la ligne main d'œuvre présente »*). Migration 0173 (les jours
 d'homme de la part, ses deux bases), `ligneApresSaReponse`, la question qui
-nomme la main d'œuvre. Une part posée AVANT 0169, ou celle d'un partenaire,
+nomme la main d'œuvre. Une part posée AVANT 0173, ou celle d'un partenaire,
 n'a pas ses jours : elle garde ses 400 €, sans montée au nouveau prix.
 `test-reprise-du-devis-db` porte son cas entier, **jamais jouée** (son oui).
 

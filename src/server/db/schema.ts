@@ -1346,13 +1346,13 @@ export const lignesPrix = pgTable(
      */
     partMainDoeuvre: numeric("part_main_doeuvre", { precision: 12, scale: 2 }),
     /**
-     * Les jours d'homme que représente cette part (migration 0169) : sans eux,
+     * Les jours d'homme que représente cette part (migration 0173) : sans eux,
      * le nouveau prix du jour par homme ne se reporte pas sur un devis repris.
      * Nuls quand ils ne sont pas connus (une part d'avant, un partenaire).
      */
     joursMainDoeuvre: numeric("jours_main_doeuvre", { precision: 12, scale: 6 }),
     /**
-     * Les deux bases de la main d'œuvre d'une ligne reprise (migration 0169),
+     * Les deux bases de la main d'œuvre d'une ligne reprise (migration 0173),
      * comme `prixAncien` et `prixGrille` pour son travail : l'ancienne part,
      * et la même au prix du jour d'aujourd'hui quand il a bougé.
      */

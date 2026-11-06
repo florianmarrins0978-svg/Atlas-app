@@ -67,8 +67,8 @@ export type LigneAReprendre = {
   mainDoeuvre: boolean;
   /**
    * La main d'œuvre RÉPARTIE dans le prix de ce travail (migration 0155), en
-   * euros, et les jours d'homme qu'elle représente (migration 0169). Les jours
-   * sont nuls quand ils ne sont pas connus : une part posée avant 0169, ou
+   * euros, et les jours d'homme qu'elle représente (migration 0173). Les jours
+   * sont nuls quand ils ne sont pas connus : une part posée avant 0173, ou
    * celle d'un partenaire. Exigés eux aussi : c'est en les oubliant ici que
    * « dont main d'œuvre HT » se perdait.
    */
