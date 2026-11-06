@@ -887,6 +887,56 @@ d'exercice et adresse de contact.
 sécurité appliquées.
 `,
   },
+  {
+    // **Une idée pour l'appli (5 novembre 2026)** : une donnée neuve part chez
+    // l'éditeur, et l'article 13 du RGPD veut qu'on le dise au moment où on la
+    // recueille. Sa réponse du 6 novembre : « si c'est obligatoire, on le
+    // fait ». Une version de plus, jamais une réécriture de canevas-1. Elle ne
+    // demande aucune acceptation : c'est une information, pas un contrat.
+    type: "confidentialite",
+    version: "canevas-2",
+    titre: "Politique de confidentialité",
+    resume: "Ce que nous faisons de vos données à vous, en tant qu'abonné.",
+    acceptationRequise: false,
+    enVigueurLe: "2026-12-07",
+    contenu: `# Politique de confidentialité
+
+> **Canevas non juridique.** À remplacer avant toute mise en service réelle.
+
+Ce document concerne **vos** données d'abonné, pas celles de vos clients, qui
+relèvent du contrat de sous-traitance.
+
+## Ce que nous conservons
+
+Votre adresse e-mail, le nom de votre entreprise, et les éléments nécessaires à
+la gestion de votre abonnement.
+
+## Vos idées pour l'appli
+
+Ce que vous envoyez depuis « Une idée pour l'appli », ou depuis l'assistant,
+arrive chez l'éditeur d'Atlas : votre idée, votre prénom, votre rôle, le nom de
+votre entreprise et le jour de l'envoi. Il s'en sert pour améliorer Atlas, et
+pour vous répondre sous votre idée ; c'est notre intérêt légitime à faire un
+meilleur service.
+
+Une idée dictée est transcrite par notre fournisseur de transcription, puis
+l'enregistrement est oublié : seul le texte est gardé. Vos idées sont
+conservées tant que votre entreprise a un compte.
+
+N'y écrivez ni le nom ni l'adresse d'un client : ce n'est pas utile pour dire
+ce qui vous manque.
+
+## Vos droits
+
+Accès, rectification, effacement, portabilité, opposition. À rédiger : modalités
+d'exercice et adresse de contact.
+
+## Où vivent les données
+
+À compléter une fois l'hébergement choisi : hébergeur, pays, et mesures de
+sécurité appliquées.
+`,
+  },
 ];
 
 /**

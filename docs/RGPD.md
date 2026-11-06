@@ -111,6 +111,21 @@ Voir §8 pour les conditions à respecter pour qu'il fasse foi.
   contextes d'erreur.
 - **Base légale** : intérêt légitime (sécurité du service).
 
+### 2.6 Une idée pour l'appli (5 novembre 2026)
+
+- **Finalité** : recevoir ce qui manque aux utilisateurs, pour améliorer Atlas, et leur répondre.
+- **Base légale** : intérêt légitime (améliorer le service).
+- **Données** : le texte de l'idée, le prénom de l'auteur, son rôle, le nom de son entreprise, le jour
+  de l'envoi (`idees`, migration 0167). Une idée dictée est transcrite par le fournisseur de
+  transcription, puis l'enregistrement est oublié : rien de la voix n'est gardé.
+- **Personnes concernées** : les artisans abonnés et leurs salariés.
+- **Destinataire** : l'éditeur seul (`withEditeur`, `ARCHITECTURE.md` §556). Le courriel qui le
+  prévient ne porte que le nom de l'entreprise, jamais le texte.
+- **Durée** : tant que l'entreprise a un compte (effacée avec elle, `ON DELETE CASCADE`).
+- **Information** : la phrase « Elle arrive chez Atlas, avec votre nom. » sous le micro, et la
+  politique de confidentialité `canevas-2`.
+- **Notre rôle** : responsable de traitement.
+
 ## 3. Sous-traitants ultérieurs
 
 L'article 28.2 impose que ces destinataires soient **autorisés par le
