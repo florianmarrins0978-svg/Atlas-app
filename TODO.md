@@ -11,6 +11,9 @@ lignes, et la troisième se cache dans la case (mesuré : 66 px visibles pour
 90 px de texte). Un salarié qui relit ce qu'il envoie ne voit donc pas tout.
 C'est une apparence : **la maquette d'abord** (`CLAUDE.md` §3 bis), puis son
 choix. Rien n'est perdu à l'envoi, le retour reçu dans Terminés montre tout.
+La planche voisine du même jour, `appli/soignee/fiche-travaux.html`, ne le
+règle pas (la case y passe à 76 px de haut, sans grandir) : à y ajouter avant
+de la coder.
 
 
 ## AVANT LE 31 DÉCEMBRE 2027 : la mention « TVA non applicable, art. 293 B du CGI »
