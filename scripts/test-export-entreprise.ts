@@ -80,6 +80,11 @@ async function garnir(entrepriseId: string, marqueur: string) {
       [entrepriseId, `session-secrete-${marqueur}`, marqueur]
     );
     await client.query(
+      `INSERT INTO liaisons_plateformes (entreprise_id, plateforme, identifiant, secret_chiffre)
+       VALUES ($1,'pennylane',$2,$3)`,
+      [entrepriseId, `identifiant-${marqueur}`, `secret-chiffre-${marqueur}`]
+    );
+    await client.query(
       `INSERT INTO photos (entreprise_id, chantier_id, storage_key, mime_type, taille_octets, checksum)
        VALUES ($1,$2,$3,'image/jpeg',1024,'abc')`,
       [entrepriseId, chantierId, `photos/${marqueur}-1.jpg`]
@@ -119,10 +124,20 @@ async function tablesScopeesParEntreprise(): Promise<string[]> {
 // disparaît un jour de la base, la suite le dira plutôt que de laisser une
 // exception périmée couvrir une vraie omission.
 const EXCLUSIONS_MOTIVEES: Record<string, string> = {
-  // Rien : à ce jour, toute table portant entreprise_id est exportée. Ce
-  // registre existe pour que la prochaine exclusion soit écrite, pas décidée
-  // en silence dans la requête.
+  // Ce registre existe pour que chaque exclusion soit écrite, pas décidée en
+  // silence dans la requête.
+  //
+  // Les idées pour l'appli : sa décision du 6 novembre 2026, posée devant la
+  // question « je les mets dans le fichier de Mes données ? » : *« Non, on
+  // s'en fout. Les idées, les gens, ils s'en foutent de ça. »* Ce sont des
+  // messages envoyés à l'éditeur d'Atlas, pas des données du métier.
+  idees: "des messages adressés à l'éditeur d'Atlas, hors de Mes données par sa décision du 6 novembre 2026",
 };
+
+/** Les tables qui portent une entreprise, absentes de l'export, et que rien n'excuse. */
+function tablesOubliees(enBase: readonly string[], exportees: ReadonlySet<string>): string[] {
+  return enBase.filter((t) => !exportees.has(t) && !(t in EXCLUSIONS_MOTIVEES));
+}
 
 async function main() {
   await nettoyerBase();
@@ -215,7 +230,7 @@ async function main() {
     const enBase = await tablesScopeesParEntreprise();
     const e = await exporterEntreprise(A);
     const exportees = new Set(Object.keys(e.tables));
-    const oubliees = enBase.filter((t) => !exportees.has(t) && !(t in EXCLUSIONS_MOTIVEES));
+    const oubliees = tablesOubliees(enBase, exportees);
     assert.deepEqual(
       oubliees,
       [],
@@ -237,8 +252,10 @@ async function main() {
     const enBase = await tablesScopeesParEntreprise();
     const exportees = new Set(Object.keys((await exporterEntreprise(A)).tables));
     exportees.delete("clients");
-    const oubliees = enBase.filter((t) => !exportees.has(t));
-    assert.deepEqual(oubliees, ["clients"], "le contrôle n'a pas vu la table retirée");
+    // La MÊME règle que le contrôle qu'il éprouve : recopiée sans les
+    // exclusions, elle a rougi le jour où la première s'est écrite (les idées,
+    // 6 novembre 2026), sur un contrôle qui marchait.
+    assert.deepEqual(tablesOubliees(enBase, exportees), ["clients"], "le contrôle n'a pas vu la table retirée");
   });
 
   await test("sa banque reliée part dans la sauvegarde, jamais la session qui la relit", async () => {
@@ -246,6 +263,15 @@ async function main() {
     const [liaison] = (e.tables.liaisons_bancaires ?? []) as Record<string, unknown>[];
     assert.equal(liaison?.banque, "Banque A");
     assert.ok(!("sessionId" in liaison) && !JSON.stringify(e).includes("session-secrete"), "la session du prestataire voyage dans l'archive");
+  });
+
+  await test("sa plateforme de facture électronique part dans la sauvegarde, jamais son secret", async () => {
+    const e = await exporterEntreprise(A);
+    const [liaison] = (e.tables.liaisons_plateformes ?? []) as Record<string, unknown>[];
+    assert.equal(liaison?.plateforme, "pennylane");
+    // Chiffré ou non, le secret ouvre son compte chez la plateforme : une
+    // archive téléchargée voyage, et la clé de l'espace peut voyager avec.
+    assert.ok(!("secretChiffre" in liaison) && !JSON.stringify(e).includes("secret-chiffre"), "le secret de la plateforme voyage dans l'archive");
   });
 
   await test("les tables partagées restent hors de l'export", async () => {

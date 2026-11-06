@@ -533,6 +533,50 @@ async function main() {
     assert.ok(!liste.some((c) => c.id === client.id), "le client supprimé est encore dans « Vos clients »");
   });
 
+  await test("une facture en brouillon garde son numéro et le nom, pas de quoi joindre le client", async () => {
+    // **Sa réponse du 5 novembre 2026** : *« oui on efface tout »*. La facture
+    // recopie le téléphone et l'e-mail du client à sa création, et le papier
+    // les imprime : la fiche vidée, le brouillon les gardait. Le nom et
+    // l'adresse restent : sans eux, la facture ne pourrait plus être émise
+    // (mentions obligatoires). Une facture émise, elle, ne se réécrit jamais.
+    const ctx = await contexte("brouillon-coordonnees");
+    const client = await clientsRepo.creerClient(ctx, {
+      nom: "M. Lenoir",
+      telephone: "0622000055",
+      email: "lenoir@exemple.test",
+      adresse: "3 rue des Lilas, 37000 Tours",
+    });
+    const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Haie", clientId: client.id });
+    await lignesPrixRepo.ajouterLignePrix(ctx, chantier.id, "Taille", "300.00");
+    const d = await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+    await devisRepo.envoyerDevis(ctx, d.id);
+    await facturesRepo.terminerChantier(ctx, chantier.id, MAINTENANT);
+    const f = await facturesRepo.getFacturePourChantier(ctx, chantier.id);
+    assert.ok(f && f.facture.statut === "brouillon", "le montage n'a pas produit de facture en brouillon : rien à mesurer");
+    const lire = () =>
+      withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+        tx
+          .select({
+            nom: facturesTable.clientNom,
+            adresse: facturesTable.clientAdresse,
+            telephone: facturesTable.clientTelephone,
+            email: facturesTable.clientEmail,
+          })
+          .from(facturesTable)
+          .where(eq(facturesTable.id, f.facture.id))
+      );
+    const [avant] = await lire();
+    assert.ok(avant.telephone && avant.email, `le brouillon n'a pas recopié de quoi joindre le client : rien à mesurer (${JSON.stringify(avant)})`);
+
+    await effacerClient(ctx, client.id, MAINTENANT);
+    const [apres] = await lire();
+    assert.deepStrictEqual(
+      apres,
+      { nom: avant.nom, adresse: avant.adresse, telephone: null, email: null },
+      "le brouillon garde de quoi joindre un client supprimé"
+    );
+  });
+
   await test("les acomptes d'un devis envoyé partent avec lui", async () => {
     // Vert dès son écriture : la cascade efface le devis AVANT que le
     // déclencheur des acomptes ne lise son statut. Il garde ce chemin : effacer

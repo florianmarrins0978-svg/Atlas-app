@@ -131,7 +131,18 @@ async function main() {
   // planche ne montre : l'avion tombe EXACTEMENT sous le doigt qui vient de
   // lancer la dictée, donc un double appui enverrait une note d'une demi-seconde.
   await cas("l'avion prend la place exacte du micro, chaque geste porte son mot, et un double appui n'envoie rien", async () => {
-    const avant = await bouton.boundingBox();
+    // **Les boîtes se lisent DANS LA PAGE, pas dans la fenêtre** (5 novembre
+    // 2026). `boundingBox()` est relatif à ce qu'on voit : la fiche fait 709 px
+    // pour une fenêtre de 664, et quand Playwright réessaie un appui sur un
+    // bouton qui s'anime encore (une CI lente), il fait défiler la page pour
+    // le retrouver. La CI de `main` a ainsi lu « 44 px du micro » sur un disque
+    // resté à sa place : le doigt du patron, lui, ne fait rien défiler. On
+    // ajoute donc le défilement à chaque mesure.
+    const dansLaPage = async (boite: { x: number; y: number; width: number; height: number } | null) => {
+      const defile = await page.evaluate(() => ({ x: window.scrollX, y: window.scrollY }));
+      return boite && { ...boite, x: boite.x + defile.x, y: boite.y + defile.y };
+    };
+    const avant = await dansLaPage(await bouton.boundingBox());
     await bouton.click();
     const envoyer = page.locator('[data-atlas="dictee-envoyer"]');
     await envoyer.waitFor({ state: "visible", timeout: 10_000 });
@@ -145,7 +156,9 @@ async function main() {
         "un second appui dans la première seconde a envoyé la note : le double appui part chez Atlas"
       );
 
-      const disque = await page.locator('[data-atlas="dictee-envoyer"] .atlas-disque-envoi').boundingBox();
+      const disque = await dansLaPage(
+        await page.locator('[data-atlas="dictee-envoyer"] .atlas-disque-envoi').boundingBox()
+      );
       assert.ok(avant && disque, "le micro ou le disque d'envoi n'a pas de boîte : rien à mesurer");
       // Une boîte de zéro pixel n'est pas une mesure (`CLAUDE.md` §5).
       assert.ok(disque.width >= 76, `le disque d'envoi fait ${disque.width} px : ce n'est plus le disque du micro`);
@@ -153,7 +166,17 @@ async function main() {
         avant.x + avant.width / 2 - (disque.x + disque.width / 2),
         avant.y + avant.height / 2 - (disque.y + disque.height / 2)
       );
-      assert.ok(ecart <= 2, `l'avion est à ${ecart.toFixed(1)} px du micro : le doigt ne le trouve plus où il était`);
+      // **Le rouge dit ce qu'il a vu** (5 novembre 2026) : la CI de `main` a
+      // mesuré 44 px d'écart quand ce poste mesure zéro, dans le même ordre de
+      // suites. Sans les deux boîtes ni le texte de l'anneau, rien ne dit ce
+      // qui a poussé le disque, et l'on ne peut que deviner.
+      if (ecart > 2) {
+        const texte = (await anneau.innerText()).replace(/\s+/g, " ").trim();
+        assert.fail(
+          `l'avion est à ${ecart.toFixed(1)} px du micro : le doigt ne le trouve plus où il était. ` +
+            `Micro ${JSON.stringify(avant)}, disque ${JSON.stringify(disque)}, anneau : « ${texte} »`
+        );
+      }
 
       for (const mot of ["Jeter", "Envoyer"]) {
         assert.ok(
@@ -206,10 +229,22 @@ async function main() {
     // **`any` et non `race` :** l'une des deux attentes n'aboutira JAMAIS —
     // selon que la chaîne s'annonce ou qu'elle a déjà emmené. `race` échoue
     // sur la première qui expire, `any` réussit sur la première qui aboutit.
+    //
+    // **Et quand aucune n'aboutit, on dit où l'écran en était** (6 novembre
+    // 2026). La CI de `main` a rendu « All promises were rejected » une fois
+    // sur quatre, et rien d'autre : ni l'adresse, ni ce que montrait l'anneau,
+    // ni le refus éventuel. Sans cela, on ne pourrait que deviner pourquoi la
+    // chaîne n'est pas partie.
     await Promise.any([
       page.locator('[data-atlas="preparation-automatique"]').waitFor({ timeout: 60_000 }),
       page.waitForURL(/\/devis-complet$/, { timeout: 60_000 }),
-    ]);
+    ]).catch(async () => {
+      const anneauVu = (await anneau.count()) > 0 ? (await anneau.innerText()).replace(/\s+/g, " ").trim() : "absent";
+      throw new Error(
+        `60 s après l'avion, ni la préparation ne s'annonce ni le devis ne s'ouvre. ` +
+          `Adresse : ${page.url()}, anneau : « ${anneauVu} »`
+      );
+    });
   });
 
   await cas("la note dictée se voit, et elle se JETTE depuis cet écran", async () => {

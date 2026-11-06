@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Restrictions d'eau, A ou B</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  LES RESTRICTIONS D'EAU SUR LE PLANNING. Rien n'existe dans src/ (cherché le
+  5 novembre 2026 : ni « sécheresse », ni « VigiEau », ni « restriction d'eau »).
+
+  D'où vient l'idée : la conversation du 5 novembre 2026, où une liste de ce
+  qui manquait lui a été proposée ; son choix, « 1,3,5,6 Fais des planches ».
+  C'est la 5 : quand une commune est sous arrêté sécheresse, arroser une
+  pelouse, remplir une piscine ou laver une terrasse peut être interdit à
+  certaines heures. Le client est verbalisé, l'artisan aussi, et personne ne
+  le prévient.
+
+  LA SOURCE : VigiEau (vigieau.gouv.fr) dit les restrictions par commune, en
+  quatre niveaux, Vigilance (aucune restriction), Alerte, Alerte renforcée,
+  Crise, et selon le profil : particulier, entreprise, collectivité. Un client
+  mairie est une collectivité (l'appli sait facturer une mairie).
+
+  CE QUE L'APPLI SAIT DÉJÀ : un chantier dont l'adresse est reconnue porte sa
+  latitude et sa longitude (chantiers.latitude, chantiers.longitude dans
+  src/server/db/schema.ts). Une adresse libre, un lieu-dit, les laisse vides,
+  et c'est un état normal.
+
+  A : sur le planning, la carte d'un chantier porte une ligne ambre
+      « Restriction d'eau » quand sa commune est en Alerte ou plus ce jour-là.
+      Vigilance ne dit rien. Un appui ouvre la feuille.
+  B : rien sur la carte ; la même ligne, seulement dans la fiche
+      d'intervention du chantier, qu'il faut ouvrir.
+  Les deux : aujourd'hui et demain seulement, puisque VigiEau dit ce qui est
+  en vigueur, pas ce qui le sera.
+
+  L'EXEMPLE : le jeudi 16 juillet 2026, autour de Nantes (les clients de la
+  planche du planning). Les usages et leurs heures sont des EXEMPLES tirés
+  d'arrêtés courants : chaque arrêté a les siens.
+
+  L'adresse des logiciels de VigiEau (api.vigieau.gouv.fr) n'a pas pu être
+  jointe d'ici le 5 novembre 2026 : le mandataire réseau refuse. Pas
+  vérifiable ICI.
+
+  RIEN N'EST CODÉ DANS src/. Le planning est dessiné simplifié : le mois, puis
+  la semaine, comme planning.html.
+*/
+
+/* Les couleurs des quatre états du planning, celles de la charte. */
+.ecran { --etat-libre: var(--atlas-card); --etat-dispo: var(--atlas-vertPale);
+         --etat-plein: var(--atlas-rust); --etat-dela: var(--atlas-bordeaux); }
+
+/* ─── Le mois, comme planning.html ───────────────────────────────────── */
+.mois-tete { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.mois-nom { flex: 1; margin: 0; text-align: center; font: 400 27px/1.1 var(--serif); letter-spacing: -0.01em; }
+.mois-fleche { width: 48px; height: 48px; flex: none; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-or); }
+.mois-fleche .ico { width: 22px; height: 22px; stroke-width: 2; }
+.noms-jours { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; margin: 8px 0 6px; }
+.noms-jours span { text-align: center; font-size: 12.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+                   color: var(--atlas-inkSoft); }
+.noms-jours span.we { color: var(--atlas-muted); }
+.semaine-rang { border-radius: 12px; }
+.semaine-rang + .semaine-rang { margin-top: 4px; }
+.semaine-rang.lue { background: color-mix(in srgb, var(--atlas-rustTint) 72%, transparent); }
+.cases { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.case { position: relative; height: 52px; display: flex; flex-direction: column; align-items: center; padding-top: 8px;
+        border-radius: 10px; font: 400 19px/1 var(--serif); font-variant-numeric: lining-nums tabular-nums; color: var(--atlas-ink); }
+.case.vide { pointer-events: none; }
+.case.we { background: var(--atlas-rustTint); color: var(--atlas-inkSoft); }
+.case.passe { color: var(--atlas-muted); }
+.case.passe .demis { opacity: 0.5; }
+.case.auj { box-shadow: inset 0 0 0 1.5px var(--atlas-or); color: var(--atlas-or); font-weight: 600; }
+.demis { display: grid; gap: 3px; width: 26px; margin-top: auto; margin-bottom: 9px; }
+.demi { display: block; height: 5px; border-radius: 3px; overflow: hidden; background: var(--etat-libre);
+        box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.demi i { display: block; height: 100%; border-radius: 3px; }
+
+/* ─── La semaine, comme planning.html ────────────────────────────────── */
+.sept-jours { margin-top: 26px; }
+.liste-tete { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.liste-titre { flex: 1; margin: 0; text-align: center; font-size: 16.5px; font-weight: 700; }
+.jour-titre { display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 10px; margin: 30px 2px 10px; font-weight: 400; }
+.sept-jours .jour-titre:first-of-type { margin-top: 14px; }
+.jour-titre b { font: 400 21px/1.2 var(--serif); letter-spacing: -0.005em; }
+.jour-titre span { font-size: 15px; color: var(--atlas-inkSoft); }
+.jour-titre.auj b { font-size: 24px; color: var(--atlas-or); }
+.jour-plage { border-radius: var(--r-plage); background: var(--atlas-card); padding: 0 16px; }
+.chantier { position: relative; }
+.chantier + .chantier::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
+.chantier-rang { display: flex; align-items: center; gap: 4px; margin-right: -12px; }
+.chantier-corps { flex: 1; min-width: 0; min-height: 76px; padding: 14px 0; text-align: left; border-radius: 0; }
+.chantier-haut { display: flex; align-items: baseline; gap: 12px; }
+.chantier-nom { flex: 1; min-width: 0; display: block; font: 400 19px/1.25 var(--serif); letter-spacing: -0.005em; overflow-wrap: anywhere; }
+.chantier.ouvert .chantier-nom { color: var(--atlas-or); }
+.chantier-qui { flex: none; max-width: 48%; text-align: right; font-size: 15.5px; font-weight: 600; color: var(--atlas-ink); }
+.chantier-situation { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 14px; margin-top: 4px;
+                      font-size: var(--t-second); line-height: 1.35; color: var(--atlas-inkSoft); }
+.duree { font-weight: 600; color: var(--atlas-or); }
+.lieu { display: inline-flex; align-items: center; gap: 4px; }
+.lieu .ico { width: 16px; height: 16px; color: var(--atlas-inkSoft); }
+.chantier-portes { width: 44px; height: 56px; flex: none; display: grid; place-items: center; color: var(--atlas-chevron); }
+.chantier-portes .ico { width: 20px; height: 20px; stroke-width: 2.2; }
+.chantier-dedans { padding-bottom: 4px; }
+
+/* ─── A : la ligne ambre, sur la carte ───────────────────────────────── */
+.eau { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; margin: -8px 0 14px; padding: 0 14px 0 11px;
+       border-radius: 20px; font-size: 14.5px; font-weight: 700;
+       background: var(--atlas-carteAmbreFond); color: var(--atlas-carteAmbreTexte); }
+.eau .ico { width: 18px; height: 18px; stroke-width: 2; }
+.eau[data-niveau="crise"] { background: var(--atlas-carteRougeFond); color: var(--atlas-carteRougeTexte); }
+
+/* ─── La fiche d'intervention, comme planning.html ───────────────────── */
+.moment { display: flex; align-items: center; gap: 12px; min-height: 48px; }
+.moment-etat { width: 12px; height: 12px; flex: none; border-radius: 3px; box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.moment-nom { width: 88px; flex: none; font-size: 14px; font-weight: 700; letter-spacing: 0.04em; color: var(--atlas-inkSoft); }
+.moment-qui { flex: 1; min-width: 0; font-size: 16px; color: var(--atlas-ink); }
+.intervention { margin: 8px 0 12px; padding: 16px 14px 14px; border-radius: 8px;
+                box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 80%, transparent); }
+.intervention-titre { margin: 0 2px 12px; font: 400 19px/1.2 var(--serif); }
+.sur-place { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.sur-place button { display: flex; align-items: center; gap: 10px; min-height: 54px; padding: 0 12px; border-radius: 12px;
+                    text-align: left; font-size: 15px; font-weight: 600; line-height: 1.2; background: var(--atlas-rustTint); color: var(--atlas-ink); }
+.sur-place .ico { color: var(--atlas-or); }
+.teinte { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 54px; margin-top: 10px; padding: 0 14px 0 16px;
+          border-radius: 12px; text-align: left; font: 400 17px/1.2 var(--serif); color: var(--atlas-ink); }
+.teinte span { margin-left: auto; font: 700 14px/1 var(--sans); text-align: right; }
+.teinte .ico { stroke-width: 2.2; }
+.teinte.ambre { background: var(--atlas-carteAmbreFond); }
+.teinte.ambre span, .teinte.ambre .ico { color: var(--atlas-carteAmbreTexte); }
+.teinte.vert { background: var(--atlas-carteVertFond); }
+.teinte.vert span, .teinte.vert .ico { color: var(--atlas-carteVertTexte); }
+.teinte.rouge { background: var(--atlas-carteRougeFond); }
+.teinte.rouge span, .teinte.rouge .ico { color: var(--atlas-carteRougeTexte); }
+/* B : la ligne vit en tête de la fiche, avant Maps. */
+.intervention .teinte.eau-fiche { margin: 0 0 10px; }
+
+/* ─── La feuille de la restriction ───────────────────────────────────── */
+.feuille .feuille-titre { margin-bottom: 4px; }
+.eau-ou { margin: 0 0 20px; font-size: 15.5px; color: var(--atlas-inkSoft); }
+.niveau { padding: 16px 16px 14px; border-radius: 12px; background: var(--atlas-carteAmbreFond); color: var(--atlas-carteAmbreTexte); }
+.niveau[data-niveau="crise"] { background: var(--atlas-carteRougeFond); color: var(--atlas-carteRougeTexte); }
+.niveau-nom { display: block; font: 400 25px/1.1 var(--serif); }
+.niveau-pas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 14px; }
+.niveau-pas i { height: 6px; border-radius: 3px; background: color-mix(in srgb, currentColor 18%, transparent); }
+.niveau-pas i.plein { background: currentColor; }
+.niveau-mots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 6px; font-size: 12px; line-height: 1.2; }
+.niveau-mots span { opacity: 0.75; }
+.niveau-mots span.ici { opacity: 1; font-weight: 700; }
+.usages { margin: 0; padding: 0; list-style: none; }
+.usage { position: relative; display: flex; flex-direction: column; gap: 2px; padding: 12px 0; }
+.usage + .usage::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
+.usage-quoi { font: 400 17.5px/1.25 var(--serif); color: var(--atlas-ink); }
+.usage-regle { font-size: 15px; font-weight: 600; color: var(--atlas-carteAmbreTexte); }
+.usage-regle.libre { color: var(--atlas-inkSoft); font-weight: 400; }
+.eau-source { margin: 16px 0 18px; font-size: 14px; line-height: 1.5; color: var(--atlas-inkSoft); }
+.fermer { width: 100%; justify-content: center; margin-top: 6px; color: var(--atlas-inkSoft); }
+</style>
+</head>
+<body class="pl pl-pilules">
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">Restrictions d'eau</h1>
+  <p class="pl-verdict">Jeudi 16 juillet. Faites défiler jusqu'à la semaine. <b>A</b> : la carte de Mme Linotte porte Restriction d'eau, touchez la ligne. <b>B</b> : touchez Mme Linotte, elle est dans la fiche d'intervention. <b>Aucun arrêté</b> montre la même semaine sans restriction.</p>
+</header>
+<main class="pl-scene">
+  <div class="pl-etats" id="choix-arrete">
+    <button type="button" data-arrete="oui" aria-pressed="true">Un arrêté</button>
+    <button type="button" data-arrete="non" aria-pressed="false">Aucun arrêté</button>
+  </div>
+  <div class="pl-ecrans">
+    <div data-vue-panneau="A">
+      <p class="pl-legende">A, sur la carte du chantier</p>
+      <div class="cadre"><div class="ecran avec-barre" data-version="A"></div></div>
+    </div>
+    <div data-vue-panneau="B">
+      <p class="pl-legende">B, dans la fiche d'intervention</p>
+      <div class="cadre"><div class="ecran avec-barre" data-version="B"></div></div>
+    </div>
+  </div>
+  <section class="pl-notes">
+    <h2>Ce que je propose : A</h2>
+    <ul>
+      <li>Chaque matin à 7 h, l'appli lit VigiEau pour la commune de chaque chantier d'aujourd'hui et de demain.</li>
+      <li>Alerte, Alerte renforcée ou Crise : une ligne sur la carte du chantier, Restriction d'eau. Vigilance ne dit rien, et l'hiver non plus.</li>
+      <li>Un appui ouvre le niveau, la commune, ce qui touche un jardin avec ses heures, la date de l'arrêté et l'heure de la lecture. Le texte vient de VigiEau, recopié.</li>
+      <li>Un client mairie se lit comme une collectivité : touchez la Mairie de Vertou, vendredi. Ses règles ne sont pas celles d'un particulier.</li>
+      <li>Aujourd'hui et demain seulement : VigiEau dit ce qui est en vigueur, pas ce qui le sera. Mme Fontaine, à Rezé le mercredi 22, n'a donc encore rien.</li>
+      <li>Pourquoi A : le matin, on lit la semaine sans rien ouvrir. Avec B, il faut ouvrir chaque chantier pour savoir. Un salarié la voit aussi, et c'est lui qui est sur place.</li>
+      <li>Les usages et leurs heures montrés ici sont des exemples d'arrêtés courants. Chaque arrêté a les siens.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>Quels chantiers la portent. Dessiné ici : tous ceux de la commune. L'appli ne sait pas lesquels utilisent de l'eau ; en juillet, l'ambre peut être partout, et un signal qui sonne partout ne se lit plus. L'autre voie : seulement les chantiers dont le devis porte arrosage, plantation, engazonnement ou nettoyage, ce qui demande de marquer ces prestations dans Mes tarifs.</li>
+      <li>Un chantier dont l'adresse n'est pas reconnue (un lieu-dit) : sa commune ne se lit pas. Le dire en gris sur la carte, ou se taire.</li>
+      <li>L'adresse de VigiEau pour les logiciels n'a pas pu être jointe d'ici : le réseau de cet environnement la refuse. Ce qu'elle rend et ses conditions d'usage se vérifient avant de coder.</li>
+    </ul>
+    <h2>Trouvé dans l'appli en cherchant</h2>
+    <ul class="a-trancher">
+      <li>L'appli situe déjà chaque chantier dont l'adresse est reconnue (sa latitude et sa longitude). Sa commune se lit donc sans rien vous demander de plus.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Rien ne se bloque, rien ne part chez le client : la ligne prévient, vous décidez.</li>
+      <li>Le reste du planning, dessiné simplifié ici : le mois, la semaine, la fiche d'intervention.</li>
+    </ul>
+  </section>
+</main>
+<script src="kit.js"></script>
+<script>
+(function () {
+  "use strict";
+  var AUJ = "2026-07-16", DEMAIN = "2026-07-17";
+  var EQUIPES = { 1: "Julien", 2: "Kévin" };
+  var NB_EQUIPES = 2;
+  var JOURS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
+  var MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+  function jd(m, a) { return { matin: m || null, apres_midi: a || null }; }
+  /* Les clients de la planche du planning, posés en juillet. Le 14 est férié :
+     rien n'y est posé. */
+  var CHANTIERS = [
+    { id: "henry", nom: "M. Henry", lieu: "Nantes", duree: "Une journée", jours: { "2026-07-06": jd([1, 2], [1, 2]) } },
+    { id: "blanc", nom: "Mme Blanc", lieu: "Rezé", duree: "Une demi-journée", jours: { "2026-07-08": jd([2]) } },
+    { id: "perrin", nom: "M. Perrin", lieu: "Vertou", duree: "Une journée", jours: { "2026-07-09": jd([1], [1]) } },
+    { id: "dumas", nom: "Mme Dumas", lieu: "Bouguenais", duree: "Une journée", jours: { "2026-07-13": jd([1, 2], [1, 2]) } },
+    { id: "leroy", nom: "M. Leroy", lieu: "Nantes", duree: "Une journée", jours: { "2026-07-15": jd([2], [2]) } },
+    { id: "linotte", nom: "Mme Linotte", lieu: "Rezé", duree: "Une journée", profil: "particulier", jours: { "2026-07-16": jd([1], [1]) } },
+    { id: "martins", nom: "M. Martins", lieu: "Vertou", duree: "Une demi-journée", profil: "particulier", jours: { "2026-07-16": jd(null, [2]) } },
+    { id: "vertou", nom: "Mairie de Vertou", lieu: "Vertou", duree: "Une journée", profil: "collectivite", jours: { "2026-07-17": jd([2], [2]) } },
+    { id: "garnier", nom: "M. Garnier", lieu: "Nantes", duree: "Une demi-journée", profil: "particulier", jours: { "2026-07-17": jd([1]) } },
+    { id: "roux", nom: "M. et Mme Roux", lieu: "Bouguenais", duree: "2 jours", profil: "particulier", jours: { "2026-07-20": jd([1, 2], [1, 2]), "2026-07-21": jd([1, 2], [1, 2]) } },
+    { id: "fontaine", nom: "Mme Fontaine", lieu: "Rezé", duree: "Une journée", profil: "particulier", jours: { "2026-07-22": jd([1], [1]) } }
+  ];
+
+  /* ─── Ce que VigiEau dirait le 16 juillet à 7 h (EXEMPLES) ───────────── */
+  var NIVEAUX = ["vigilance", "alerte", "renforcee", "crise"];
+  var NOM_NIVEAU = { vigilance: "Vigilance", alerte: "Alerte", renforcee: "Alerte renforcée", crise: "Crise" };
+  var MOT_NIVEAU = { vigilance: "Vigilance", alerte: "Alerte", renforcee: "Renforcée", crise: "Crise" };
+  var COMMUNES = { "Rezé": "renforcee", "Vertou": "alerte", "Bouguenais": "alerte", "Nantes": "vigilance" };
+  var USAGES = {
+    particulier: {
+      alerte: [["Arroser une pelouse, un massif", "Interdit de 10 h à 18 h"], ["Arroser un potager", "Interdit de 10 h à 18 h"],
+               ["Remplir une piscine", "Interdit, la remise à niveau reste permise"], ["Laver une terrasse, une façade", "Interdit, sauf au nettoyeur haute pression"]],
+      renforcee: [["Arroser une pelouse, un massif", "Interdit"], ["Arroser un potager", "Interdit de 8 h à 20 h"],
+                  ["Remplir une piscine", "Interdit"], ["Laver une terrasse, une façade", "Interdit"]]
+    },
+    collectivite: {
+      alerte: [["Arroser les espaces verts", "Interdit de 10 h à 18 h"], ["Arroser un terrain de sport", "Interdit de 10 h à 18 h"],
+               ["Laver la voirie", "Interdit, sauf pour l’hygiène"], ["Une fontaine en circuit ouvert", "Arrêtée"]]
+    }
+  };
+  var PROFIL = { particulier: "pour un particulier", collectivite: "pour une collectivité" };
+  var RUBRIQUE = { particulier: "Au jardin", collectivite: "Espaces verts" };
+  var arrete = true;
+
+  function niveauDe(c, j) {
+    if (!arrete) return "vigilance";
+    /* Aujourd'hui et demain seulement : VigiEau ne dit pas l'avenir. */
+    if (j !== AUJ && j !== DEMAIN) return null;
+    return COMMUNES[c.lieu] || "vigilance";
+  }
+  function restreint(c, j) { var n = niveauDe(c, j); return n && n !== "vigilance" ? n : null; }
+
+  /* ─── Les dates ───────────────────────────────────────────────────── */
+  function enDate(j) { return new Date(j + "T12:00:00Z"); }
+  function enIso(x) { return x.toISOString().slice(0, 10); }
+  function plus(j, n) { var x = enDate(j); x.setUTCDate(x.getUTCDate() + n); return enIso(x); }
+  function rang(j) { return (enDate(j).getUTCDay() + 6) % 7; }
+  function quantieme(j) { var n = enDate(j).getUTCDate(); return n === 1 ? "1er" : String(n); }
+  function dateLongue(j) { return JOURS[rang(j)] + " " + quantieme(j) + " " + MOIS[enDate(j).getUTCMonth()]; }
+  function capitale(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+  function ico(nom, cls) { return '<svg class="ico' + (cls ? " " + cls : "") + '" aria-hidden="true"><use href="#i-' + nom + '"/></svg>'; }
+  function qui(rangs) {
+    var noms = (rangs || []).map(function (r) { return EQUIPES[r]; });
+    if (!noms.length) return "Personne";
+    return noms.length === 1 ? noms[0] : noms.slice(0, -1).join(", ") + " et " + noms[noms.length - 1];
+  }
+  function surLeJour(j) { return CHANTIERS.filter(function (c) { return c.jours[j]; }); }
+  function charge(j, demi) {
+    var total = 0;
+    surLeJour(j).forEach(function (c) { var p = c.jours[j][demi]; if (p) total += p.length; });
+    return total / NB_EQUIPES;
+  }
+  function etatDe(ch) { return ch === 0 ? "libre" : ch < 1 ? "dispo" : ch === 1 ? "plein" : "dela"; }
+  function equipesDuJour(c, j) {
+    var p = c.jours[j], vu = {};
+    (p.matin || []).concat(p.apres_midi || []).forEach(function (r) { vu[r] = true; });
+    return Object.keys(vu).map(Number).sort();
+  }
+
+  document.querySelectorAll(".ecran[data-version]").forEach(function (ecran) {
+    var version = ecran.getAttribute("data-version");
+    var id = "feuille-eau-" + version;
+    var deplies = {};
+    ecran.innerHTML =
+      '<div class="defile"></div>' +
+      '<nav class="barre" aria-label="Navigation principale"><div class="barre-onglets">' +
+        '<a class="barre-onglet" href="accueil.html">Chantiers</a>' +
+        '<a class="barre-onglet" href="planning.html" aria-current="page">Planning</a>' +
+        '<a class="barre-onglet" href="termines.html">Terminés</a>' +
+        '<a class="barre-onglet" href="paysage.html">Paysage</a>' +
+        '<a class="barre-onglet" href="reglages.html">Réglages</a>' +
+        '<span class="barre-trait" aria-hidden="true"><span></span></span>' +
+      '</div></nav>' +
+      '<section class="feuille" id="' + id + '" aria-hidden="true" aria-label="Restriction d’eau">' +
+        '<div class="feuille-poignee"></div><div class="feuille-dedans"></div>' +
+      '</section>';
+    var defile = ecran.querySelector(".defile");
+    var dedans = ecran.querySelector("#" + id + " .feuille-dedans");
+
+    function rendreMois() {
+      var premier = "2026-07-01", cases = [];
+      for (var i = 0; i < rang(premier); i++) cases.push(null);
+      for (var k = 1; k <= 31; k++) cases.push(plus(premier, k - 1));
+      while (cases.length % 7) cases.push(null);
+      var h = '<div class="mois-tete">' +
+        '<button type="button" class="mois-fleche" data-geste="inchange" aria-label="Mois précédent">' + ico("retour") + '</button>' +
+        '<h2 class="mois-nom">Juillet 2026</h2>' +
+        '<button type="button" class="mois-fleche" data-geste="inchange" aria-label="Mois suivant">' + ico("suivant") + '</button></div>' +
+        '<div class="noms-jours" aria-hidden="true">' + ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map(function (n, i) {
+          return "<span" + (i > 4 ? ' class="we"' : "") + ">" + n + "</span>";
+        }).join("") + "</div>";
+      for (var s = 0; s < cases.length; s += 7) {
+        var semaine = cases.slice(s, s + 7);
+        h += '<div class="semaine-rang' + (semaine.indexOf(AUJ) >= 0 ? " lue" : "") + '"><div class="cases">' + semaine.map(function (j, col) {
+          if (!j) return '<span class="case vide" aria-hidden="true"></span>';
+          var we = col > 4, m = charge(j, "matin"), a = charge(j, "apres_midi");
+          var cls = "case" + (we ? " we" : "") + (j < AUJ ? " passe" : "") + (j === AUJ ? " auj" : "");
+          var barres = we ? "" : '<span class="demis" aria-hidden="true">' + [m, a].map(function (ch) {
+            return '<span class="demi"><i style="width:' + Math.round(Math.min(ch, 1) * 100) + '%;background:var(--etat-' + etatDe(ch) + ')"></i></span>';
+          }).join("") + "</span>";
+          return '<button type="button" class="' + cls + '" data-geste="inchange" aria-label="' + capitale(dateLongue(j)) + '"><span>' +
+            enDate(j).getUTCDate() + "</span>" + barres + "</button>";
+        }).join("") + "</div></div>";
+      }
+      return h;
+    }
+
+    function titreDuJour(j) {
+      if (j === AUJ) return '<h3 class="jour-titre auj"><b>Aujourd’hui</b><span>' + dateLongue(j) + "</span></h3>";
+      return '<h3 class="jour-titre"><b>' + capitale(dateLongue(j)) + "</b></h3>";
+    }
+
+    function ligneEau(c, j) {
+      var n = restreint(c, j);
+      if (!n) return "";
+      return '<button type="button" class="eau" data-geste="eau" data-id="' + c.id + '" data-jour="' + j + '" data-niveau="' + n + '">' +
+        ico("goutte") + "Restriction d’eau</button>";
+    }
+
+    function rendreDedans(c, j) {
+      var p = c.jours[j], h = '<div class="moments">';
+      [["matin", "Matin"], ["apres_midi", "Après-midi"]].forEach(function (dm) {
+        if (!p[dm[0]]) return;
+        h += '<div class="moment"><i class="moment-etat" style="background:var(--etat-' + etatDe(charge(j, dm[0])) + ')" aria-hidden="true"></i>' +
+          '<span class="moment-nom">' + dm[1] + '</span><span class="moment-qui">' + qui(p[dm[0]]) + "</span></div>";
+      });
+      h += '</div><div class="intervention"><h4 class="intervention-titre">Fiche d’intervention</h4>';
+      var n = version === "B" ? restreint(c, j) : null;
+      if (n) h += '<button type="button" class="teinte eau-fiche ' + (n === "crise" ? "rouge" : "ambre") + '" data-geste="eau" data-id="' + c.id + '" data-jour="' + j + '">' +
+        "Restriction d’eau<span>" + NOM_NIVEAU[n] + "</span></button>";
+      h += '<div class="sur-place">' +
+        '<button type="button" data-geste="inchange">' + ico("lieu") + "Maps</button>" +
+        '<button type="button" data-geste="inchange">' + ico("envoyer") + "Waze</button>" +
+        '<button type="button" data-geste="inchange">' + ico("copier") + "Copier l’adresse</button>" +
+        '<button type="button" data-geste="inchange">' + ico("telephone") + "Appeler le client</button></div>" +
+        '<button type="button" class="teinte ambre" data-geste="inchange">Fiche de sécurité<span>à remplir</span>' + ico("bas", "ico-p") + "</button>" +
+        '<button type="button" class="teinte vert" data-geste="inchange">Travaux à faire<span>aucune ligne</span>' + ico("bas", "ico-p") + "</button></div>";
+      return h;
+    }
+
+    function rendreListe() {
+      var h = '<section class="sept-jours" aria-label="Les sept jours"><div class="liste-tete">' +
+        '<button type="button" class="mois-fleche" data-geste="inchange" aria-label="Sept jours avant">' + ico("retour") + "</button>" +
+        '<h2 class="liste-titre">Semaine du 16 juillet</h2>' +
+        '<button type="button" class="mois-fleche" data-geste="inchange" aria-label="Sept jours après">' + ico("suivant") + "</button></div>";
+      for (var i = 0; i < 7; i++) {
+        var j = plus(AUJ, i), liste = surLeJour(j);
+        if (!liste.length) continue;
+        h += titreDuJour(j) + '<div class="jour-plage">';
+        liste.forEach(function (c) {
+          var cle = j + ":" + c.id, ouvert = !!deplies[cle];
+          h += '<div class="chantier' + (ouvert ? " ouvert" : "") + '"><div class="chantier-rang">' +
+            '<button type="button" class="chantier-corps touche" data-geste="deplier" data-cle="' + cle + '" aria-expanded="' + ouvert + '">' +
+            '<span class="chantier-haut"><span class="chantier-nom">' + c.nom + '</span><span class="chantier-qui">' + qui(equipesDuJour(c, j)) + "</span></span>" +
+            '<span class="chantier-situation"><span class="duree">' + c.duree + '</span><span class="lieu">' + ico("lieu") + c.lieu + "</span></span></button>" +
+            '<button type="button" class="chantier-portes" data-geste="inchange" aria-label="Le devis et la fiche de ' + c.nom + '">' + ico("suivant") + "</button></div>" +
+            (version === "A" ? ligneEau(c, j) : "") +
+            (ouvert ? '<div class="chantier-dedans">' + rendreDedans(c, j) + "</div>" : "") + "</div>";
+        });
+        h += "</div>";
+      }
+      return h + "</section>";
+    }
+
+    function rendre() {
+      var haut = defile.scrollTop;
+      defile.innerHTML =
+        '<header class="tete"><h1 class="tete-titre">Planning</h1>' +
+        '<button class="rond" type="button" data-geste="inchange" aria-label="Ouvrir l’assistant">' + ico("assistant") + "</button></header>" +
+        rendreMois() + rendreListe();
+      defile.scrollTop = haut;
+    }
+    ecran._rendre = function () { deplies = {}; Kit.fermerFeuilles(ecran); rendre(); };
+
+    function feuilleEau(c, j, depuis) {
+      var n = restreint(c, j), profil = c.profil || "particulier";
+      var usages = (USAGES[profil] && USAGES[profil][n]) || USAGES.particulier[n];
+      var k = NIVEAUX.indexOf(n);
+      dedans.innerHTML =
+        '<h2 class="feuille-titre">Restriction d’eau</h2>' +
+        '<p class="eau-ou">' + c.lieu + ", " + PROFIL[profil] + ", " + (j === AUJ ? "aujourd’hui" : "demain") + "</p>" +
+        '<div class="niveau" data-niveau="' + n + '"><b class="niveau-nom">' + NOM_NIVEAU[n] + "</b>" +
+          '<div class="niveau-pas" aria-hidden="true">' + NIVEAUX.map(function (x, i) { return '<i class="' + (i <= k ? "plein" : "") + '"></i>'; }).join("") + "</div>" +
+          '<div class="niveau-mots" aria-hidden="true">' + NIVEAUX.map(function (x, i) { return '<span class="' + (i === k ? "ici" : "") + '">' + MOT_NIVEAU[x] + "</span>"; }).join("") + "</div>" +
+        "</div>" +
+        '<p class="rubrique">' + RUBRIQUE[profil] + "</p>" +
+        '<ul class="usages">' + usages.map(function (u) {
+          return '<li class="usage"><span class="usage-quoi">' + u[0] + '</span><span class="usage-regle">' + u[1] + "</span></li>";
+        }).join("") + "</ul>" +
+        '<p class="eau-source">Arrêté du 9 juillet 2026, jusqu’au 31 juillet.<br>VigiEau, lu à 7 h.</p>' +
+        '<button type="button" class="bouton bouton-creux" data-geste="arrete">' + ico("document") + "Lire l’arrêté</button>" +
+        '<button type="button" class="bouton bouton-texte fermer" data-ferme>Fermer</button>';
+      Kit.ouvrirFeuille(id, depuis);
+    }
+
+    ecran.addEventListener("click", function (ev) {
+      var g = ev.target.closest("[data-geste]");
+      if (!g || !ecran.contains(g)) return;
+      var geste = g.getAttribute("data-geste");
+      if (geste === "deplier") { var cle = g.getAttribute("data-cle"); deplies[cle] = !deplies[cle]; rendre(); return; }
+      if (geste === "eau") {
+        var c = CHANTIERS.filter(function (x) { return x.id === g.getAttribute("data-id"); })[0];
+        feuilleEau(c, g.getAttribute("data-jour"), g);
+        return;
+      }
+      if (geste === "arrete") { Kit.note(ecran, "Ouvre l’arrêté sur VigiEau."); return; }
+      if (geste === "inchange") { Kit.note(ecran, "Inchangé : voir la planche Planning."); return; }
+    });
+    rendre();
+  });
+
+  document.querySelectorAll("#choix-arrete button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      arrete = b.getAttribute("data-arrete") === "oui";
+      document.querySelectorAll("#choix-arrete button").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+      document.querySelectorAll(".ecran[data-version]").forEach(function (e) { e._rendre(); });
+    });
+  });
+})();
+</script>
+</body>
+</html>

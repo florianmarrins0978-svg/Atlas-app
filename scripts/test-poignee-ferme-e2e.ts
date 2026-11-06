@@ -112,7 +112,7 @@ async function main() {
     // pire que la poignée muette : le patron perdrait la feuille en visant
     // « Waze ». C'est ce que `stopPropagation` protège, et il doit survivre.
     await ouvrirLaFeuille();
-    await page.getByLabel("Motif de l'absence").click();
+    await page.getByLabel("Note pour vous").click();
     await page.waitForTimeout(400);
     assert.ok(
       await page.getByLabel("Refermer").isVisible(),

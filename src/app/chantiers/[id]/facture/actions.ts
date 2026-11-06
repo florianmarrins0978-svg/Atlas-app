@@ -21,6 +21,7 @@ import {
   manquesDeLaFactureAEmettre,
   FactureDejaEmiseError,
   FactureEnRetardSurLeDevisError,
+  FacturePasPriseParLaPlateformeError,
   FinChantierImpossibleError,
 } from "@/server/repositories/factures";
 import {
@@ -116,7 +117,11 @@ export async function emettreFactureAction(
     const facture = await emettreFacture(ctx, factureId);
     return { succes: true, numero: facture.numeroCommercial };
   } catch (err) {
-    if (err instanceof FactureDejaEmiseError || err instanceof FactureEnRetardSurLeDevisError) {
+    if (
+      err instanceof FactureDejaEmiseError ||
+      err instanceof FactureEnRetardSurLeDevisError ||
+      err instanceof FacturePasPriseParLaPlateformeError
+    ) {
       return { succes: false, erreur: err.message };
     }
     throw err;

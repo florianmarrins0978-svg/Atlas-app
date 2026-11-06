@@ -150,6 +150,14 @@ jobs:
       - name: Contrôler les fixtures d'essai du diagnostic
         run: npx tsx scripts/importer-fiches-phyto.ts donnees/phyto/fixtures --fixtures --verifier
 
+      # **Avant les suites base, et plus seulement avant les suites navigateur**
+      # (5 novembre 2026). Deux suites base ouvrent un vrai navigateur sur un
+      # seul composant (`test-dessin-glisser-zone-lue`, `test-motif-avoir-lisible`) ;
+      # installé après elles, Chromium manquait, et la CI de `main` rougissait
+      # sur deux suites justes, que le poste de l'agent passait.
+      - name: Installer le navigateur Playwright
+        run: npx playwright install --with-deps chromium
+
       - name: Suite de tests (base de données)
         env:
           DATABASE_URL: postgresql://atlas_app:atlas_app_ci_pw@localhost:5432/atlas_test
@@ -187,9 +195,6 @@ jobs:
           OPENAI_API_KEY: ci-placeholder-openai-key
           NODE_ENV: production
         run: npm run build
-
-      - name: Installer le navigateur Playwright
-        run: npx playwright install --with-deps chromium
 
       # **LA MACHINE DIT CE QU'ELLE A, DANS LE JOURNAL, PENDANT QU'ELLE TOURNE.**
       #

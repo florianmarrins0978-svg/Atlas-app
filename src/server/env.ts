@@ -132,6 +132,18 @@ export type Env = {
    * `ATLAS_RP_ID` juste au-dessus.
    */
   urlPublique?: string;
+
+  // ── La plateforme de facture électronique (5 novembre 2026) ─────────────
+  //
+  // **Optionnelles, et c'est ce qui cache la rubrique.** L'API commune des
+  // plateformes (AFNOR XP Z12-013) a une adresse PAR plateforme ; tant qu'Atlas
+  // ne connaît pas celle de Pennylane, « Facture électronique » ne s'offre pas :
+  // une porte qui refuse se lit comme une panne (`ARCHITECTURE.md` §555).
+
+  /** `ATLAS_PENNYLANE_FLUX_URL` : le service des flux de l'API commune chez Pennylane. */
+  pennylaneFluxUrl?: string;
+  /** `ATLAS_PENNYLANE_JETON_URL` : où un identifiant et son secret s'échangent contre un jeton. */
+  pennylaneJetonUrl?: string;
   sentryDsn?: string;
   sentryEnvironment: string;
   releaseVersion?: string;
@@ -685,6 +697,8 @@ function construireEnv(): Env {
     // appelant devrait s'en souvenir, et le premier oubli fabrique un
     // « https://…//reglages » que certains hébergeurs refusent.
     urlPublique: optionnel("ATLAS_URL_PUBLIQUE")?.replace(/\/+$/, ""),
+    pennylaneFluxUrl: optionnel("ATLAS_PENNYLANE_FLUX_URL")?.replace(/\/+$/, ""),
+    pennylaneJetonUrl: optionnel("ATLAS_PENNYLANE_JETON_URL"),
     sentryDsn: process.env.SENTRY_DSN,
     sentryEnvironment: process.env.SENTRY_ENVIRONMENT ?? nodeEnv,
     releaseVersion: process.env.RELEASE_VERSION,

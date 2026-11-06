@@ -4,6 +4,7 @@ import path from "node:path";
 import { PDFDocument, rgb } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 import { TYPOGRAPHIES } from "../src/lib/allure-documents";
+import { POLICES_ARCHIVABLES } from "../src/server/pdf/polices-embarquees";
 
 /**
  * LES POLICES DE SES DOCUMENTS S'IMPRIMENT-ELLES VRAIMENT ?
@@ -67,6 +68,11 @@ const fichiers = TYPOGRAPHIES.flatMap((t) =>
 // normal et le gras. Quatre ont été retirées à sa demande ; leurs fichiers
 // restent sur le disque, mais plus personne ne les sert.
 assert.equal(fichiers.length, 10, `${fichiers.length} fichiers : les cinq familles en portent deux chacune`);
+
+// **Et les cinq jumelles d'une Factur-X** (5 novembre 2026,
+// `polices-embarquees.ts`) : la typographie d'origine, embarquée. Elles
+// partent chez les entreprises clientes, elles ont donc les mêmes gardes.
+fichiers.push(...Object.values(POLICES_ARCHIVABLES));
 
 async function jouer(): Promise<void> {
 for (const fichier of fichiers) {

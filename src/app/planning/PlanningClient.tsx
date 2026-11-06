@@ -70,6 +70,9 @@ import {
 import { AjoutAuJour } from "./AjoutAuJour";
 import { CarteDuJour } from "./CarteDuJour";
 import { TiroirDuBas } from "./TiroirDuBas";
+import PastilleFerie, { COULEURS_DU_FERIE } from "@/components/atlas/PastilleFerie";
+import { feriesNouveaux, nomDuFerie, phraseDesFeries } from "@/lib/jours-feries";
+import type { NatureAbsence } from "@/lib/nature-absence";
 
 /**
  * LE PLANNING — le mois, la journée qui s'ouvre dessous, la semaine en bas.
@@ -137,6 +140,7 @@ export default function PlanningClient({
   datesDuMois = null,
   couleurs = AUCUNE_COULEUR_CHOISIE,
   nomCharte = null,
+  alsaceMoselle = false,
 }: {
   initialChantiers: ChantierPlanning[];
   /** La CAPACITÉ : combien de chantiers tiennent dans une journée. */
@@ -217,6 +221,11 @@ export default function PlanningClient({
   /** Les couleurs du planning de l'entreprise (migration 0113), et l'apparence de la personne. */
   couleurs?: CouleursPlanning;
   nomCharte?: NomCharte | null;
+  /**
+   * L'entreprise est-elle en Alsace ou en Moselle ? Lu au serveur dans son
+   * adresse (`estEnAlsaceMoselle`) : deux fériés de plus.
+   */
+  alsaceMoselle?: boolean;
 }) {
   // **L'état vit ici** : le mois, la légende et la fiche du jour se repeignent
   // pendant qu'il choisit, avant même que la base ait répondu.
@@ -566,7 +575,7 @@ export default function PlanningClient({
    * part chez un client est exactement ce qu'on cherche à éviter.
    */
   const poserLeJour = useCallback(
-    async (jour: JourIso, rang: number, moment: MomentDuJour | null) => {
+    async (jour: JourIso, rang: number, moment: MomentDuJour | null, nature: NatureAbsence | null = null) => {
       const siennes = absencesVues.filter((a) => a.rang === rang);
       const { aRetirer, aPoser } = gesteDuJour(siennes, jour, moment);
       const retirees = new Set(aRetirer);
@@ -579,11 +588,13 @@ export default function PlanningClient({
         dernierJour: p.dernierJour,
         premierDemi: p.premierDemi,
         dernierDemi: p.dernierDemi,
+        // Le morceau d'une période garde sa nature ; le jour prend celle qu'il dit.
+        nature: p.depuis ? (p.depuis.nature ?? null) : nature,
       }));
       const idsProvisoires = new Set(provisoires.map((a) => a.id));
       setAbsencesVues((v) => [...v.filter((a) => !retirees.has(a.id)), ...provisoires]);
 
-      const r = await absenceDuJourAction(rang, jour, moment);
+      const r = await absenceDuJourAction(rang, jour, moment, nature);
 
       if (!r.ok) {
         setAbsencesVues((v) => [
@@ -605,6 +616,7 @@ export default function PlanningClient({
           dernierJour: a.dernierJour,
           premierDemi: a.premierDemi,
           dernierDemi: a.dernierDemi,
+          nature: a.nature,
         })),
       ]);
 
@@ -1079,6 +1091,30 @@ export default function PlanningClient({
    * de la liste au lieu d'être un second état à tenir à jour.
    */
   const [dernierPose, setDernierPose] = useState<{ id: string; jour: JourIso } | null>(null);
+
+  // ─── UN FÉRIÉ SE PRÉVIENT, IL NE SE REFUSE JAMAIS — 6 novembre 2026 ─────
+  // Sa règle : *« ça doit nous prévenir mais jamais nous bloquer »*. Le geste
+  // est déjà fait quand la phrase paraît : elle dit le férié qu'il vient de
+  // toucher, puis s'en va. Un férié déjà couvert avant le geste ne se redit
+  // pas (`feriesNouveaux`).
+  const [avisFerie, setAvisFerie] = useState<string | null>(null);
+  useEffect(() => {
+    if (!avisFerie) return;
+    const t = setTimeout(() => setAvisFerie(null), 6000);
+    return () => clearTimeout(t);
+  }, [avisFerie]);
+  function prevenirDuFerie(chantierId: string, etat: Partial<ChantierPlanning>) {
+    const avant = chantiers.find((c) => c.id === chantierId);
+    if (!avant) return;
+    const phrase = phraseDesFeries(
+      feriesNouveaux(
+        creneauxDe(avant).map((c) => c.jour),
+        creneauxDe({ ...avant, ...etat }).map((c) => c.jour),
+        alsaceMoselle
+      )
+    );
+    if (phrase) setAvisFerie(`${phrase} Le chantier y est bien posé.`);
+  }
   /** Le chantier dont on demande s'il faut le supprimer, le temps de la question. */
   const [aSupprimer, setASupprimer] = useState<ChantierPlanning | null>(null);
   const PAGE_VIEILLIE = "Rien n'est parti. Rechargez la page.";
@@ -1119,6 +1155,7 @@ export default function PlanningClient({
         console.error("Déplacement refusé", { chantierId, jourSource, vers, moment, erreur: r.erreur });
         return;
       }
+      prevenirDuFerie(chantierId, etatDesCreneaux(r.creneaux));
       setChantiers((liste) =>
         liste.map((c) => (c.id === chantierId ? { ...c, ...etatDesCreneaux(r.creneaux) } : c))
       );
@@ -1147,6 +1184,7 @@ export default function PlanningClient({
         console.error("Repose refusée", { chantierId, jour, demi, erreur: r.erreur });
         return;
       }
+      prevenirDuFerie(chantierId, etatDesCreneaux(r.creneaux));
       setChantiers((liste) => liste.map((c) => (c.id === chantierId ? { ...c, ...etatDesCreneaux(r.creneaux) } : c)));
     });
   }
@@ -1220,6 +1258,8 @@ export default function PlanningClient({
    * l'on cale la fenêtre sur son jour pour qu'il le voie sans le chercher.
    */
   function poserUnClient(chantier: ChantierPlanning) {
+    const phrase = phraseDesFeries(feriesNouveaux([], creneauxDe(chantier).map((c) => c.jour), alsaceMoselle));
+    if (phrase) setAvisFerie(`${phrase} Le chantier y est bien posé.`);
     setChantiers((liste) => [...liste, chantier]);
     if (chantier.datePlanifiee) setDebutFenetre(chantier.datePlanifiee as JourIso);
   }
@@ -1229,6 +1269,7 @@ export default function PlanningClient({
     enTransition(async () => {
       const r = await planifierChantierAction(chantierId, jour);
       if (!r.succes) return;
+      prevenirDuFerie(chantierId, r.etat);
       setChantiers((liste) =>
         liste.map((c) => (c.id === chantierId ? { ...c, ...r.etat } : c))
       );
@@ -1255,6 +1296,7 @@ export default function PlanningClient({
         console.error("Pose à sa place refusée", { chantierId, jour, erreur: r.erreur });
         return r.erreur;
       }
+      prevenirDuFerie(chantierId, r.etat);
       setChantiers((liste) =>
         liste.map((c) =>
           c.id === chantierId
@@ -1294,6 +1336,7 @@ export default function PlanningClient({
         router.push(`/chantiers/${chantierId}/export`);
         return null;
       }
+      prevenirDuFerie(chantierId, r.etat);
       setChantiers((liste) =>
         liste.map((c) =>
           c.id === chantierId
@@ -1394,7 +1437,12 @@ export default function PlanningClient({
       : `Du ${quantieme(debut)} ${moisDebut} au ${quantieme(fin)} ${moisFin}`;
   }, [joursDeLaSemaine]);
 
-  const joursAvecChantiers = joursDeLaSemaine.filter((j) => chantiersDuJour(j).length > 0);
+  // **Un férié paraît dans la semaine même sans chantier** — sa planche du
+  // 5 novembre 2026 : on le voit venir avant d'y poser quelqu'un. La journée
+  // reste ouverte à l'ajout, comme les autres.
+  const joursAvecChantiers = joursDeLaSemaine.filter(
+    (j) => chantiersDuJour(j).length > 0 || nomDuFerie(j, alsaceMoselle) !== null
+  );
 
   /** Ce que porte une carte de journée — les mêmes gestes aux deux endroits. */
   // La règle vit dans `retourDuJourAttendu` ; l'écran ne fait que la montrer.
@@ -1529,6 +1577,7 @@ export default function PlanningClient({
           <MoisCharge
             curseur={curseur}
             setCurseur={setCurseur}
+            alsaceMoselle={alsaceMoselle}
             aujourdHui={aujourdHui}
             jourTouche={jourTouche}
             onToucherJour={toucherLeJour}
@@ -1553,6 +1602,7 @@ export default function PlanningClient({
             volet={(jour, colonne) => (
               <CarteDuJour
                 cle="jour"
+                alsaceMoselle={alsaceMoselle}
                 jour={jour}
                 // La pointe vise le CENTRE de la case touchée : c'est le
                 // calendrier qui donne la colonne, lui seul la connaît. Il ne
@@ -1705,6 +1755,7 @@ export default function PlanningClient({
                     {jourLisibleCourt(jour).toLocaleLowerCase("fr")}
                   </span>
                 )}
+                {nomDuFerie(jour, alsaceMoselle) && <PastilleFerie nom={nomDuFerie(jour, alsaceMoselle) as string} />}
               </h3>
               <div data-atlas="plage-du-jour" className="mt-2.5 rounded-[6px] px-4" style={{ background: colors.card }}>
               {chantiersDuJour(jour).map((c, rangDansLeJour) => {
@@ -1843,6 +1894,7 @@ export default function PlanningClient({
                     {deplie && (
                       <CarteDuJour
                         cle={`liste:${c.id}`}
+                        alsaceMoselle={alsaceMoselle}
                         jour={carteListe.jour}
                         seulement={c.id}
                         // **Sous le NOM, et non au centre** — sa correction du
@@ -1985,6 +2037,22 @@ export default function PlanningClient({
         onFermer={() => montrerLesPortes(null)}
       />
     </div>
+      {/* L'avertissement du férié, au-dessus du tiroir, le temps de le lire :
+          le chantier est déjà posé, rien n'attend sa réponse. */}
+      {avisFerie && (
+        <p
+          role="status"
+          data-atlas="avis-ferie"
+          className="atlas-colonne-fixe z-[25] mx-6 rounded-[14px] px-4 py-3 text-center text-[15px] font-semibold"
+          style={{
+            bottom: "calc(var(--atlas-barre) + var(--atlas-tiroir, 0px) + 12px)",
+            backgroundColor: COULEURS_DU_FERIE.fond,
+            color: COULEURS_DU_FERIE.texte,
+          }}
+        >
+          {avisFerie}
+        </p>
+      )}
     </CouleursDesEtats>
   );
 }

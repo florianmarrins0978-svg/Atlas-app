@@ -593,6 +593,154 @@
         ],
         "createdAt": "2026-11-05T08:21:03.753Z",
         "reason": "Claude: the only line-height under 1.3 in this file is .identite-sceau (22px/1), a single-letter monogram centred in a 52px circle, copied from reglages-banque.html; not multi-line text"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/fermer-mon-compte.html"
+        ],
+        "createdAt": "2026-11-05T19:26:48.050Z",
+        "reason": "PRODUCT.md, Brand Commitments: fond crème de la charte Arborea, identité existante du kit appli/soignee"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/jours-travailles.html"
+        ],
+        "createdAt": "2026-11-05T19:38:49.689Z",
+        "reason": "PRODUCT.md, Brand Commitments: fond crème de la charte Arborea, identité existante du kit appli/soignee"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/jours-feries.html"
+        ],
+        "createdAt": "2026-11-05T20:45:48.807Z",
+        "reason": "PRODUCT.md, Brand Commitments: fond crème de la charte Arborea, identité existante du kit appli/soignee"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "appli/soignee/jours-feries.html"
+        ],
+        "createdAt": "2026-11-05T20:45:48.825Z",
+        "reason": "Claude: le .cadre est le téléphone de la planche (kit.css), son .ecran le remplit bord à bord comme sur chaque planche ; le texte garde la gouttière de l'écran"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/zones-deplacement.html"
+        ],
+        "createdAt": "2026-11-05T21:33:20.941Z",
+        "reason": "PRODUCT.md, Brand Commitments: fond crème de la charte Arborea, identité existante du kit appli/soignee"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "appli/soignee/zones-deplacement.html"
+        ],
+        "createdAt": "2026-11-05T21:33:20.962Z",
+        "reason": "Claude: le .cadre est le téléphone de la planche (kit.css), son .ecran le remplit bord à bord comme sur chaque planche ; le texte garde la gouttière de l'écran"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/motif-absence.html"
+        ],
+        "createdAt": "2026-11-05T21:33:20.983Z",
+        "reason": "PRODUCT.md, Brand Commitments: fond crème de la charte Arborea, identité existante du kit appli/soignee"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "appli/soignee/motif-absence.html"
+        ],
+        "createdAt": "2026-11-05T21:33:21.006Z",
+        "reason": "Claude: le .cadre est le téléphone de la planche (kit.css), son .ecran le remplit bord à bord comme sur chaque planche ; le texte garde la gouttière de l'écran"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/une-idee-pour-l-appli.html"
+        ],
+        "createdAt": "2026-11-05T21:53:46.195Z",
+        "reason": "Charte Origine de l'appli (kit.css, src/lib/chartes.ts), reprise d'Arborea et choisie par le patron ; la planche la reproduit"
+      },
+      {
+        "rule": "pulsing-dot",
+        "value": "*",
+        "files": [
+          "appli/soignee/une-idee-pour-l-appli.html"
+        ],
+        "createdAt": "2026-11-05T21:53:46.215Z",
+        "reason": "Point rouge pendant un enregistrement réel (dictée B du chantier, codée le 1er novembre) et PointsQuiSoufflent.tsx de l'appli pendant l'envoi : deux indicateurs liés à un état vivant"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "appli/soignee/une-idee-pour-l-appli.html"
+        ],
+        "createdAt": "2026-11-05T21:53:46.234Z",
+        "reason": "Faux positif vérifié à la capture : le cadre est le téléphone (l'écran le remplit) et la liste .idees porte 18 px de chaque côté, qui écrasent le padding 0 de .liste du kit"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/franchise-plafond.html",
+          "appli/soignee/heures-du-jour.html",
+          "appli/soignee/hiverner-l-arrosage.html",
+          "appli/soignee/note-sans-reseau.html",
+          "appli/soignee/restrictions-d-eau.html"
+        ],
+        "createdAt": "2026-11-05T22:47:47.032Z",
+        "reason": "Claude: fond de planche rgb(235,232,225) et charte Origine du kit soigné, recopiés de src/lib/chartes.ts (appli/soignee/kit.js), comme toutes les planches soignées"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "appli/soignee/franchise-plafond.html"
+        ],
+        "createdAt": "2026-11-05T22:47:47.050Z",
+        "reason": "Claude: le .cadre est le contour du téléphone, l'écran le remplit bord à bord comme un vrai téléphone ; la marge intérieure vit dans .defile"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "appli/soignee/fiche-de-securite.html"
+        ],
+        "createdAt": "2026-11-06T10:24:33.621Z",
+        "reason": "Le cadre du téléphone (kit des planches) et la zone de signature au doigt : surfaces bord à bord par construction"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/fiche-de-securite.html"
+        ],
+        "createdAt": "2026-11-06T10:28:45.481Z",
+        "reason": "Charte de l'appli recopiée : fond des planches (body.pl du kit) et crème d'Origine #f5f3ee de src/lib/design-tokens.ts, identité en place (PRODUCT.md)"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/fiche-de-securite-pdf.html"
+        ],
+        "createdAt": "2026-11-06T10:28:45.500Z",
+        "reason": "Charte de l'appli recopiée : fond des planches (body.pl du kit) et crème d'Origine #f5f3ee de src/lib/design-tokens.ts, identité en place (PRODUCT.md)"
       }
     ]
   }

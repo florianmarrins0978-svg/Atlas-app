@@ -2202,10 +2202,14 @@ pause. Revenir cinq ans après, c'est retrouver ses factures, avoirs, devis
 acceptés, contrats acceptés et leurs PDF, les clients et chantiers qui les
 portent, et ses réglages, puis rouvrir dessus.
 
-**Ouvert** : il a écrit « on garde les devis et les factures 10 ans ».
+**Tranché** : il a écrit « on garde les devis et les factures 10 ans ».
 Les devis **jamais acceptés** n'ont aucune raison légale d'être gardés 10 ans
 (ils portent le nom et l'adresse de quelqu'un qui n'est pas devenu client).
-Recommandé : les effacer à la fermeture. Sa réponse est attendue.
+**Sa réponse, le 5 novembre : les effacer à la fermeture.**
+
+**Et fermer avant la fin du mois payé** (sa réponse sur la planche
+`fermer-mon-compte.html`, le même jour, « A ») : le compte reste ouvert
+jusqu'à la fin de ce qui est payé, puis se ferme.
 
 Écartées le même jour : le choix à la fermeture, et « télécharger, puis tout
 effacer ».

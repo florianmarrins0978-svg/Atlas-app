@@ -492,6 +492,25 @@ export async function effacerClient(
         )) as { rowCount?: number };
       detail.envois = rEnvois?.rowCount ?? 0;
 
+      // **Une facture en brouillon garde son numéro et le nom, pas de quoi le
+      // joindre** — sa réponse du 5 novembre 2026, *« oui on efface tout »*.
+      // Elle recopie le téléphone et l'e-mail à sa création, et le papier les
+      // imprime : la fiche vidée plus bas, le brouillon les gardait. Le nom et
+      // l'adresse restent, mentions sans lesquelles elle ne pourrait plus être
+      // émise. Une facture émise ne se réécrit jamais (`trg_facture_immuable`) :
+      // le filtre sur le brouillon n'est pas une politesse, sans lui la
+      // suppression entière tomberait sur ce déclencheur.
+      await tx
+        .update(factures)
+        .set({ clientTelephone: null, clientEmail: null })
+        .where(
+          and(
+            inArray(factures.chantierId, chantierIds),
+            eq(factures.entrepriseId, ctx.entrepriseId),
+            eq(factures.statut, "brouillon")
+          )
+        );
+
       // **Les devis ENVOYÉS partent aussi, sauf ceux qui sont cloués.** C'est ce
       // que sa décision du 27 août change : avant, tout devis parti bloquait
       // l'opération entière sur le déclencheur d'immuabilité.

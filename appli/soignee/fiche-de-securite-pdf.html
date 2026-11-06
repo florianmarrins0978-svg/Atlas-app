@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le PDF de la fiche de sécurité</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  LE PDF DE LA FICHE DE SÉCURITÉ (src/server/pdf/fiche-securite-pdf.ts).
+
+  SA DEMANDE du 6 novembre 2026 : « la fiche de sécurité, il faudrait aller la
+  chercher, l'améliorer, la rendre plus jolie », et sa réponse « les deux » :
+  l'écran (fiche-de-securite.html) et ce PDF.
+
+  À DROITE, LE VRAI PDF : servi le 6 novembre 2026 par l'appli lancée sur une
+  base jetable, pour une fiche signée du jeu de démonstration (« Reprise de
+  toiture »), sept pages (aujourdhui/fiche-securite-pdf-<page>.jpg). La carte
+  IGN n'y est pas : ce poste ne joint pas l'IGN, chez lui elle s'imprime.
+
+  À GAUCHE, LA MÊME FICHE, PROPOSÉE : les mêmes rubriques, dans le même ordre,
+  avec les mêmes mots (src/lib/fiche-securite.ts). Rien n'est retiré.
+
+  CE QUI CHANGE, et pourquoi :
+    « En cas d'accident » en haut de la première page : le lieu, le point GPS,
+      le point de rencontre, la trousse, les secouristes et les numéros. Ce
+      que cherchent les secours ou un inspecteur était à la page 6 ;
+    une case cochée se voit : pleine et noire, le mot en gras ; une case vide
+      reste imprimée, en gris. Un inspecteur voit ce qui a été regardé ;
+    les listes courtes sur deux ou trois colonnes : 6 pages au lieu de 7 ;
+    un titre ne reste jamais seul en bas d'une page (le croquis, page 3) ;
+    l'équipe en tableau : compétences, SST, GSA, lecture signée ;
+    la signature dans un cadre, avec son nom, sa date, sa garde ;
+    chaque page dit le chantier, et « page 2 sur 6 ».
+
+  CE QUI SE CORRIGE, et ce n'est pas du goût : le « ≤ » des tensions sort en
+  case vide (« HTA (U ▯ 50 000 V) »). La police Inter du dépôt a été réduite
+  le 24 août 2026 sans lui (src/server/pdf/polices/LISEZ-MOI.md, la liste des
+  caractères gardés), et la fiche l'emploie depuis le 22 septembre.
+
+  Un document part en papier : il garde les couleurs d'Origine quelle que soit
+  la charte essayée (PRODUCT.md), comme le vrai PDF.
+
+  RIEN N'EST CODÉ DANS src/.
+*/
+
+.pl-charte-bouton, .pl-chartes { display: none !important; }
+.pl-scene { grid-template-columns: minmax(0, 1fr) !important; }
+.pl-notes { margin: 8px auto 0 !important; }
+.feuilles { display: grid; gap: 22px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) {
+  .feuilles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .feuilles [data-vue-panneau] { display: block !important; }
+}
+.feuilles .pl-etats, .grand-rang { grid-column: 1 / -1; }
+.capture-quoi { margin: 0 0 10px; text-align: center; font-size: 14px; color: #4a4a44; }
+.capture-quoi b { color: #1c1c1a; }
+.bureau { height: min(80vh, 1000px); overflow-y: auto; overscroll-behavior: contain; padding: 14px; border-radius: 14px; background: #d9d5cc; }
+.bureau img { display: block; width: 100%; height: auto; box-shadow: 0 6px 18px -6px rgba(28,28,26,0.4); }
+.bureau img + img, .bureau .a4 + .a4 { margin-top: 14px; }
+.bureau.grand { overflow-x: auto; }
+.bureau.grand img { width: 595px; max-width: none; }
+.grand-rang { display: flex; justify-content: center; margin-top: -8px; }
+.grand-bouton { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 22px; font-size: 15px;
+                font-weight: 600; color: #2f3b2f; background: #faf9f5; box-shadow: inset 0 0 0 1px rgba(28,28,26,0.12); }
+.grand-bouton[aria-pressed="true"] { background: #2f3b2f; color: #faf9f5; }
+@media (max-width: 480px) {
+  .pl-scene { padding: 0 var(--gouttiere) !important; }
+  .bureau { height: 74svh; padding: 10px; }
+}
+
+/* ─── La page A4 proposée : 595 × 842 points, mise à l'échelle de la colonne ── */
+.a4 { position: relative; width: 595px; height: 842px; overflow: hidden; background: #faf9f5; color: #1c1c1a;
+      font: 400 9px/1.38 "Inter", ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
+      box-shadow: 0 6px 18px -6px rgba(28,28,26,0.4); zoom: var(--echelle, 1); font-variant-numeric: lining-nums; }
+.a4-tete { position: absolute; left: 40px; right: 40px; top: 22px; display: flex; justify-content: space-between; gap: 12px;
+           font-size: 7.5px; color: #5f5b52; }
+.a4-tete b { color: #1c1c1a; font-weight: 600; }
+.a4-dedans { position: absolute; left: 40px; right: 40px; top: 42px; bottom: 44px; }
+.a4-pied { position: absolute; left: 40px; right: 40px; bottom: 22px; display: flex; justify-content: space-between;
+           font-size: 7.5px; color: #5f5b52; padding-top: 6px; box-shadow: inset 0 1px 0 #e2ded3; }
+
+.doc-titre { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.doc-titre h2 { margin: 0; font-size: 22px; line-height: 1.1; font-weight: 700; letter-spacing: -0.01em; }
+.doc-titre p { margin: 4px 0 0; max-width: 330px; font-size: 7.5px; line-height: 1.4; color: #5f5b52; }
+.doc-signee { flex: none; text-align: right; font-size: 8px; line-height: 1.45; color: #5f5b52; }
+.doc-signee b { display: block; font-size: 9.5px; color: #1f6b3a; font-weight: 700; }
+
+/* En cas d'accident : ce que cherchent les secours, au premier coup d'œil. */
+.accident { margin-top: 14px; padding: 11px 12px 12px; border-radius: 4px; background: #f3e6e2; box-shadow: inset 0 0 0 1px #e3c9c1; }
+.accident h3 { margin: 0 0 8px; font-size: 12px; font-weight: 700; color: #9c3b2e; }
+.accident-grille { display: grid; grid-template-columns: 116px 1fr 1fr; gap: 14px; }
+.accident .num { display: flex; align-items: baseline; gap: 6px; padding: 1.5px 0; }
+.accident .num b { width: 26px; font-size: 13px; font-weight: 700; }
+.accident .num span { font-size: 8px; }
+.accident dl { margin: 0; }
+.accident dt { font-size: 7.5px; color: #7a4a40; font-weight: 600; }
+.accident dd { margin: 0 0 5px; font-size: 9px; font-weight: 600; }
+
+/* Les rubriques : un titre et un filet, sans bande de couleur. */
+.rub { margin-top: 13px; }
+.rub > h3 { margin: 0 0 6px; padding-bottom: 3px; font-size: 10.5px; font-weight: 700; box-shadow: inset 0 -0.75px 0 #b98b47; }
+.rub h4 { margin: 7px 0 3px; font-size: 9px; font-weight: 700; }
+.champs { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 18px; }
+.champ-doc { padding: 1.5px 0; }
+.champ-doc span { display: block; font-size: 7.5px; color: #5f5b52; }
+.champ-doc b { display: block; font-weight: 600; }
+.plein { grid-column: 1 / -1; }
+.vig { margin: 3px 0; font-size: 7.5px; color: #5f5b52; }
+.vig b { font-weight: 600; color: #7b5c2e; }
+.note-doc { margin: 3px 0; font-size: 7.5px; color: #5f5b52; }
+
+/* Les cases : pleine et noire quand elle est cochée, grise sinon. */
+.cases-doc { display: grid; grid-template-columns: 1fr; gap: 1px 14px; margin: 2px 0; }
+.cases-doc.c2 { grid-template-columns: 1fr 1fr; }
+.cases-doc.c3 { grid-template-columns: 1fr 1fr 1fr; }
+.cd { display: flex; align-items: flex-start; gap: 5px; padding: 1px 0; color: #8a8578; }
+.cd i { width: 8px; height: 8px; flex: none; margin-top: 2px; box-shadow: inset 0 0 0 0.75px #b3ad9f; display: grid; place-items: center; }
+.cd.oui { color: #1c1c1a; font-weight: 600; }
+.cd.oui i { background: #1c1c1a; box-shadow: none; }
+.cd.oui i::after { content: ""; width: 4px; height: 2.2px; margin-top: -1px; border-left: 1.2px solid #faf9f5; border-bottom: 1.2px solid #faf9f5; transform: rotate(-45deg); }
+.cases-doc .retrait { padding-left: 13px; }
+
+/* L'équipe : un tableau, qui a lu quoi et quand. */
+table.equipe { width: 100%; border-collapse: collapse; margin-top: 4px; }
+.equipe th { text-align: left; font-size: 7.5px; font-weight: 600; color: #5f5b52; padding: 3px 6px 3px 0; box-shadow: inset 0 -0.75px 0 #e2ded3; }
+.equipe td { padding: 4px 6px 4px 0; vertical-align: top; box-shadow: inset 0 -0.75px 0 #eeebe4; }
+.equipe td b { font-weight: 600; }
+.manque { color: #9c3b2e; font-weight: 600; }
+
+/* Le croquis et sa légende, côte à côte. */
+.croquis-doc { display: grid; grid-template-columns: 264px 1fr; gap: 14px; align-items: start; }
+.croquis-doc svg { display: block; width: 264px; height: 198px; background: #fff; box-shadow: inset 0 0 0 0.75px #b3ad9f; }
+.legende-doc { margin: 0; padding: 0; list-style: none; }
+.legende-doc li { display: flex; align-items: center; gap: 6px; padding: 2px 0; }
+.legende-doc svg { width: 18px; height: 12px; flex: none; background: none; box-shadow: none; }
+
+.consignes-doc { margin: 2px 0 0; padding: 0 0 0 14px; }
+.consignes-doc li { padding: 0.5px 0; }
+.urgences-doc { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 4px 0 6px; }
+.urgences-doc div { padding: 4px 6px; border-radius: 3px; box-shadow: inset 0 0 0 0.75px #b3ad9f; }
+.urgences-doc b { display: block; font-size: 12px; font-weight: 700; }
+.urgences-doc span { font-size: 7px; color: #5f5b52; }
+
+/* La signature : un cadre, le nom, la date, la garde. */
+.signature-doc { display: grid; grid-template-columns: 1fr 230px; gap: 14px; margin-top: 4px; }
+.cadre-signature { height: 86px; border-radius: 3px; box-shadow: inset 0 0 0 0.75px #b3ad9f; position: relative; background: #fff; }
+.cadre-signature span { position: absolute; left: 8px; bottom: 5px; font-size: 7px; color: #8a8578; }
+.cadre-signature svg { position: absolute; left: 30px; top: 12px; width: 150px; height: 56px; }
+.trait-lecture { width: 64px; height: 22px; display: block; }
+.note-feuille { margin-top: 16px; padding-top: 8px; box-shadow: inset 0 0.75px 0 #e2ded3; font-size: 7.5px; color: #3d3a34; }
+.note-feuille b { display: block; margin-bottom: 3px; font-size: 8px; }
+.note-feuille ul { margin: 0; padding-left: 12px; }
+
+.debordement { outline: 3px solid #d00 !important; }
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="fiche-de-securite.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>La fiche de sécurité</a>
+  <h1 class="pl-titre">Le PDF de la fiche</h1>
+  <p class="pl-verdict">Ce que l'équipe, le client ou un inspecteur lit. <b>« En cas d'accident » en haut de la première page</b>, les cases cochées qui se voient, <b>6 pages au lieu de 7</b>. À droite, le vrai PDF servi par l'appli.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="feuilles">
+    <div class="pl-etats" id="pages">
+      <button type="button" data-p="1" aria-pressed="true">La première page</button>
+      <button type="button" data-p="tout" aria-pressed="false">Toute la fiche</button>
+      <button type="button" data-p="reseaux" aria-pressed="false">Les réseaux, le « ≤ »</button>
+      <button type="button" data-p="fin" aria-pressed="false">La signature</button>
+    </div>
+    <div class="grand-rang"><button type="button" class="grand-bouton" id="lire-en-grand" aria-pressed="false"><svg class="ico ico-p" aria-hidden="true"><use href="#i-recherche"/></svg>Lire en grand</button></div>
+
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <p class="capture-quoi" id="quoi-propose"></p>
+      <div class="bureau" id="bureau-propose"></div>
+    </div>
+
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <p class="capture-quoi" id="quoi-vrai"></p>
+      <div class="bureau" id="bureau-vrai"></div>
+    </div>
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>« En cas d'accident » en haut de la première page : l'adresse, le point GPS, le point de rencontre des secours, la trousse, qui est secouriste, et les numéros. Aujourd'hui c'est à la page 6.</li>
+      <li>Une case cochée se voit : pleine et noire, le mot en gras. Une case vide reste imprimée, en gris : l'inspecteur voit ce que vous avez regardé.</li>
+      <li>Les listes courtes passent sur deux ou trois colonnes : 6 pages au lieu de 7.</li>
+      <li>Un titre ne reste plus seul en bas d'une page. Aujourd'hui celui du croquis est en bas de la page 3, le dessin à la page 4.</li>
+      <li>L'équipe en tableau : compétences, SST, GSA, et qui a signé l'avoir lue.</li>
+      <li>La signature dans un cadre, avec le nom, la date et jusqu'à quand la fiche est gardée.</li>
+      <li>Chaque page dit le chantier et « page 2 sur 6 ». Les titres s'écrivent en minuscules, avec un filet doré.</li>
+      <li>Un champ vide dit « non renseigné » au lieu d'un tiret.</li>
+    </ul>
+    <h2>Ce qui se corrige</h2>
+    <ul class="a-trancher">
+      <li>Le signe « inférieur ou égal » des tensions ne s'imprime pas : « HTA (U ▯ 50 000 V) ». La police du PDF a été réduite le 24 août sans ce signe, et la fiche l'emploie depuis le 22 septembre. C'est un défaut : il se corrige quoi que vous choisissiez ici.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Toutes les rubriques de la MSA, dans leur ordre, avec leurs mots, cochées ou non.</li>
+      <li>Le croquis dessiné, la carte IGN du point, les photos du balisage.</li>
+      <li>Les couleurs du papier, celles de vos documents.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>« En cas d'accident » reprend des lignes écrites plus loin dans la fiche : elles restent aussi à leur place. Garder les deux ?</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="fiche-de-securite.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>L'écran de la fiche</a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+(function () {
+  "use strict";
+  /* Les mots de src/lib/fiche-securite.ts, recopiés le 6 novembre 2026. */
+  var D = {"LIBELLES":{"travaux":["Éhoupage","Élagage de formation","Élagage d’entretien","Haubanage","Démontage avec rétention","Démontage sans rétention","Abattage directionnel","Abattage non directionnel","Ébranchage","Billonnage","Broyage","Évacuation des rémanents","Rognage / essouchage","Débitage d’arbre au sol","Débroussaillage","Démontage d’arbres tombés sur un obstacle","Conduite d’engins","Entretien d’espace vert","Création d’espace vert"],"epi":["Contrôle visuel des EPI fait","Chaussures de sécurité anti-coupure","Pantalon anti-coupure","Manchettes anti-coupure","Visière et lunettes","Gants","Casque de protection","Casque de communication","Protection auditive","Talkie-walkie","Harnais ou baudrier d’élagage","Corde de travail (rappel)","Corde d’accès (secours)","Longe de maintien","Mousqueton à triple verrouillage","Descendeur mécanique","Descendeur textile","Sifflet"],"elevation":["Pas besoin pour ce chantier","Nacelle (PEMP)","PIRL","EPI de grimper","Échelle","Échafaudage","La nacelle ne peut pas être utilisée ici"],"coupe":["Tronçonneuse élagueuse","Tronçonneuse abatteuse","Lamier d’élagage","Scie sur perche","Sécateur"],"autresMateriels":["Broyeur","Essoucheuse / Rogneuse","Treuil / Câble","Mini chargeur","Souffleur","Scie à main","Matériel de rétention et de freinage","Grue","Engin de coupe mécanisé"],"situation":["Jardin privé","Voie publique en ville","Voie ferrée","Ligne électrique de transport","Forêt ouverte au public","Site industriel classé Seveso","Arrêté municipal ou document particulier"],"risquesArbres":["Rien à signaler","Chute de branches ou de charges pendant les travaux","Chute de bois avec la grue","Fissures, champignons ou cavités visibles du sol","Charpentière cassée récemment"],"matieres":["Repérer la présence de bois morts ou dépérissants sur les sujets à traiter (ou à proximité)","Identifier les affections dangereuses pour la santé et la sécurité des travailleurs (suie, chancre, capricorne, champignon lignivore…)","Évaluer l’état d’ancrage des arbres (enracinement)"],"balisage":["Balisage externe du chantier vis-à-vis des personnes extérieures avec panneaux d’interdiction d’accès et de signalisation du danger","Balisage interne au chantier pour limiter les risques de chute d’objet/branche sur l’homme de pied (délimitation organisationnelle)","Mode / moyen de communication entre travailleurs, à préciser (ex : casques communicants) :","Surveillance de l’accès au chantier (intrusion du public)"],"biologique":["Rien à signaler","Chenilles processionnaires","Frelons sp et autres hyménoptères","Berce du Caucase, Ambroisie sp…","Tiques sp","Suie de l’Érable","Chancre du Platane"],"biologiqueMesures":["EPI appropriés (masque, combinaison, gants…)","Appel à un spécialiste pour circonscrire le danger","Certi biocide (si utilisation de produits biocides)"],"reseaux":["Rien à signaler","Électrique","Eau, Vapeur","Gaz","Télécom","Fibre"],"tensions":["HTB (U > 50 000 V)","HTA (U ≤ 50 000 V)","BT (U ≤ 1 000 V)"],"reseauxMesures":["DT DICT declaration-travaux-proximite-reseaux (chantier distant < 50 m conducteurs électriques nus ou lors d’arrachage d’arbre, de creusement de tranchées…)","AIPR (Formulaire)","Distance de sécurité à respecter vis-à-vis des conducteurs électriques nus :"],"distances":["HTB (U > 50 000 V) : 5 m","HTA (U ≤ 50 000 V) : 3 m","BT (U ≤ 1 000 V) : 3 m"],"noyade":["Pas de risque de noyade","Piscine","Rivière","Lac","Fleuve","Étang ou bassin"],"environnement":["Rien à signaler","Routier","Facteurs météo ambiants","Bruit","État des sols","Conditions de vie sur le chantier","Éclairage","Vapeurs","Poussières","Noyade","Passants non autorisés","Corde happée par un outil en marche","Pollution accidentelle"],"environnementMesures":["Balisage du chantier sur voie publique (https://www.jebalise.fr/)","Adaptation des heures de travail","Mise à disposition d’eau en quantité suffisante","Mise à disposition de cabinet d’aisance","Mise à disposition d’équipements ou de vêtements de travail spécifiques, préciser :","Signal d’alarme (sifflet)","Équipement individuel de flottaison / barque / bouée de sauvetage","Plan de prévention (entreprise utilisatrice)"],"coactivite":["Rien à signaler","Entraînement par les éléments mobiles des équipements de travail (rogneuse, broyeur…)","Projection (avec broyeur, rogneuse…)"],"organisation":["Répartition des tâches dans le temps et l’espace (travailleur/matériel)","Respect des consignes de sécurité des machines","Mode de communication entre travailleurs :"],"meteo":["Sécuriser les travaux en cours puis arrêter les travaux","Protéger les zones dangereuses ou potentiellement dangereuses (matérialisation, interdiction d’accès…)","Prévenir le responsable du chantier ou le chef d’entreprise"],"secours":["Trousse de secours (contenu approprié à l’activité)","Kit d’urgence portatif (élagueur)","Tous les travailleurs sur le chantier sont Sauveteurs Secouristes du Travail (SST)","Travailleurs, disposant des compétences (type Grimpeur Sauveteur dans l’Arbre) et des moyens pour porter secours à victime dans l’arbre, en nombre suffisant sur le chantier","Moyen de communication fonctionnel","Protocole de secours propre au site, lu"]},"VIG":{"horaires":"Horaires, délais de réalisation…","mainDOeuvre":"Niveau de formation, ancienneté, habilitation, autorisation de conduite…","activites":"Moyens de prévention mis en œuvre, EPI appropriés à l’activité et aux travailleurs…","materiels":"Approprié à l’activité, conforme, vérifié (VGP), état (maintenance…)","elevation":"Privilégier les équipements de protection collective","echelle":"Échelle = moyen d’accès","distanceMateriels":"Distance de sécurité à respecter vis-à-vis des matériels","matieres":"Fragilisation des points d’ancrage, de la structure des arbres (branches, tronc…)","manuel":"Manuel d’utilisation du matériel","bulletins":"Bulletins d’alerte météorologiques"},"SECOURS":{"proteger":["Sécuriser les travaux en cours puis arrêter les travaux","Protéger les zones dangereuses ou potentiellement dangereuses (matérialisation, interdiction d’accès…)","Prévenir le responsable du chantier ou le chef d’entreprise"],"alerter":["S’identifier (nom, prénom, entreprise)","Donner sa localisation et préciser les moyens d’accès","Décrire la nature de l’accident","Préciser le nombre et l’état du (des) blessé(s)","Décrire les gestes de premiers secours en cours (le cas échéant)","Fixer un rendez-vous au point de rencontre des secours (PRS)","Ne jamais raccrocher le premier : attendre les instructions des services de secours"],"secourir":["Intervenir sans s’exposer (suivant référentiel SST et / ou GSA)","Préparer l’arrivée et l’accès des secours (dégagement des rémanents et du matériel)","Prévenir le siège des entreprises (du donneur d’ordre et de celle réalisant le chantier)"],"permanentes":["Dès le début du chantier, stationner les véhicules dans le sens du départ et laisser la voie d’accès libre.","Obtenir l’accord des services d’urgence avant de déplacer / véhiculer une victime vers un centre de secours."],"urgences":[["17","Police"],["18","Pompiers"],["15","SAMU"],["112","Partout en Europe"],["114","Sourd, malentendant"]]},"PERIMETRE":[["Abattage à la main","2 fois la hauteur de l’arbre"],["Élagage, éhoupage","personne sous l’arbre"],["Machines","la distance marquée dessus"]],"DANGERS":["Arbre mort","Bois mort","Défaut de structure","Fissure","Cavité","Champignons","Chancre","Suie","Frelons","Charpentière cassée récemment"],"CONSIGNES_ARBRE":["Utiliser une nacelle","Utiliser un engin de coupe mécanisé","Rubalise autour du tronc","Prévenir toute l’équipe"],"AJOUTS":["travaux","epi","situation","risquesArbres","noyade","elevation","coupe","autresMateriels","matieres","balisage","biologique","biologiqueMesures","reseaux","reseauxMesures","environnement","environnementMesures","coactivite","organisation","meteo","secours"],"PROTOCOLE":"1. Se faire voir ou entendre de celui qui travaille dans la zone.\n2. Attendre qu’il arrête sa machine ou sa coupe.\n3. Entrer seulement quand il fait signe, avec ses EPI.\n4. Lui dire où l’on se trouve tant qu’on est dans la zone.\n5. Le prévenir en sortant, avant qu’il reprenne.","FORTUITE":"formulaire de découverte fortuite de réseau"};
+  var L = D.LIBELLES;
+  function esc(t) { return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/ ([?!;»])/g, " $1").replace(/ :/g, " :").replace(/« /g, "« "); }
+
+  /* La fiche signée « Reprise de toiture », celle du vrai PDF à droite. */
+  var C = {
+    travaux: ["Démontage avec rétention", "Abattage directionnel", "Évacuation des rémanents"],
+    epi: ["Pantalon anti-coupure", "Visière et lunettes", "Gants", "Casque de protection"],
+    elevation: ["EPI de grimper"], coupe: ["Tronçonneuse élagueuse", "Tronçonneuse abatteuse"], autresMateriels: ["Broyeur"],
+    situation: ["Jardin privé"], risquesArbres: ["Chute de branches ou de charges pendant les travaux"],
+    balisage: [L.balisage[0]], biologique: ["Rien à signaler"], reseaux: ["Rien à signaler"], noyade: ["Pas de risque de noyade"],
+    environnement: ["Rien à signaler"], coactivite: ["Rien à signaler"], meteo: [L.meteo[0]], secours: [L.secours[0], L.secours[4]]
+  };
+  function cases(f, colonnes, sous) {
+    return '<div class="cases-doc' + (colonnes ? " c" + colonnes : "") + '">' + L[f].map(function (mot) {
+      var oui = (C[f] || []).indexOf(mot) >= 0;
+      return '<div class="cd' + (oui ? " oui" : "") + '"><i></i><span>' + esc(mot) + '</span></div>' + (sous && sous[mot] ? sous[mot] : "");
+    }).join("") + '</div>';
+  }
+  function champ(nom, val, plein) {
+    var vide = !val;
+    return '<div class="champ-doc' + (plein ? " plein" : "") + '"><span>' + esc(nom) + '</span><b' + (vide ? ' style="font-weight:400;color:#8a8578"' : '') + '>' + esc(vide ? "non renseigné" : val) + '</b></div>';
+  }
+  function vig(t) { return '<p class="vig"><b>Point de vigilance</b> ' + esc(t) + '</p>'; }
+  function rub(titre, corps) { return '<section class="rub"><h3>' + esc(titre) + '</h3>' + corps + '</section>'; }
+  var TOTAL = 6;
+  function page(n, corps) {
+    return '<div class="a4" data-page="' + n + '"><div class="a4-tete"><span><b>Fiche de sécurité</b>, Reprise de toiture, 12 novembre 2026</span><span>Atelier Démo</span></div>' +
+      '<div class="a4-dedans">' + corps + '</div>' +
+      '<div class="a4-pied"><span>Signée le 12 novembre 2026, gardée jusqu’au 12 novembre 2028</span><span>Page ' + n + ' sur ' + TOTAL + '</span></div></div>';
+  }
+  function trait(w, h) {
+    return '<svg viewBox="0 0 150 56" style="width:' + w + 'px;height:' + h + 'px" aria-hidden="true"><path d="M6 40c10-22 20-32 26-26s-8 30 2 28 14-30 24-28-3 24 7 24 12-18 22-18 9 14 30 4 14-10 27-16" fill="none" stroke="#1c1c1a" stroke-width="2" stroke-linecap="round"/></svg>';
+  }
+  var S = D.SECOURS;
+
+  var p1 = '<div class="doc-titre"><div><h2>Fiche de sécurité</h2><p>Fiche d’intervention en lien avec le décret 2021-1833 du 24 décembre 2021 relatif aux règles de sécurité applicables aux travaux agricoles dans les parcs et jardins et autres travaux d’entretien de la végétation.</p></div>' +
+      '<div class="doc-signee"><b>Signée</b>le 12 novembre 2026 à 7 h 55<br>par Compte de démonstration</div></div>' +
+    '<section class="accident"><h3>En cas d’accident</h3><div class="accident-grille">' +
+      '<div>' + [S.urgences[1], S.urgences[2], S.urgences[3], S.urgences[0], S.urgences[4]].map(function (u) { return '<div class="num"><b>' + u[0] + '</b><span>' + esc(u[1]) + '</span></div>'; }).join("") + '</div>' +
+      '<dl><dt>Adresse</dt><dd>8 impasse du Moulin, Rezé</dd><dt>Point GPS</dt><dd>47.21810, -1.55360</dd><dt>Point de rencontre des secours</dt><dd>devant le portail du client</dd></dl>' +
+      '<dl><dt>Trousse de secours</dt><dd>dans la cabine du camion</dd><dt>Sauveteurs secouristes (SST)</dt><dd>Kevin Morel, Lucas Petit</dd><dt>Grimpeur sauveteur (GSA)</dt><dd>Kevin Morel</dd><dt>Responsable sur place</dt><dd>Kevin Morel, 06 98 76 54 32</dd></dl>' +
+    '</div></section>' +
+    rub("Identification", '<div class="champs">' + champ("Nom du chantier", "Reprise de toiture") + champ("N° de devis et/ou de commande afférent", "2026-000001") +
+      '<h4 class="plein">Entreprise réalisant le chantier</h4>' + champ("Raison sociale", "Atelier Démo") + champ("Téléphone (en cas d’incident ou d’accident)", "06 12 34 56 78") +
+      '<h4 class="plein">Donneur d’ordre</h4>' + champ("Raison sociale", "M. Faucher") + champ("Ce qu’il est pour le chantier", "") + '</div>') +
+    rub("Identification du chantier", '<div class="champs">' + champ("Lieu (adresse, coordonnées GPS)", "8 impasse du Moulin, Rezé, 47.21810, -1.55360", true) +
+      champ("Adresse au point GPS", "5 Allée des Tilleuls 44000 Nantes") + champ("Adresse d’accès des secours", "") +
+      champ("Dates d’exécution, début", "12 novembre 2026, 08:00") + champ("Dates d’exécution, fin", "12 novembre 2026, 17:00") + '</div>' +
+      '<p class="note-doc">La carte IGN du point s’imprime ici, comme aujourd’hui.</p>' + vig(D.VIG.horaires)) +
+    rub("Main d’œuvre", '<div class="champs">' + champ("Responsable de l’entreprise sur le chantier", "Kevin Morel, 06 98 76 54 32") + champ("Nombre de travailleurs de l’entreprise", "2") + '</div>' +
+      vig(D.VIG.mainDOeuvre) +
+      '<table class="equipe"><thead><tr><th>Nom</th><th>Formations</th><th>SST</th><th>GSA</th><th>A lu la fiche</th></tr></thead><tbody>' +
+      '<tr><td><b>Kevin Morel</b></td><td>CACES nacelle</td><td>jusqu’au 18 novembre 2027</td><td>jusqu’au 2 juin 2027</td><td>le 12 novembre 2026 à 8 h 10</td></tr>' +
+      '<tr><td><b>Lucas Petit</b></td><td>aucune</td><td>jusqu’au 10 mars 2028</td><td class="manque">non</td><td class="manque">pas encore signé</td></tr></tbody></table>' +
+      '<h4>Sous-traitants et autres entreprises sur le chantier</h4><p style="margin:0">Aucune.</p>');
+
+  var p2 = rub("Travaux à réaliser", cases("travaux", 2) + vig(D.VIG.activites)) +
+    rub("Les EPI", cases("epi", 3)) +
+    rub("Matériels", vig(D.VIG.materiels) +
+      '<h4>Moyens d’élévation</h4>' + vig(D.VIG.elevation) + cases("elevation", 3) + vig(D.VIG.echelle) +
+      '<h4>Matériels de coupe</h4>' + vig(D.VIG.distanceMateriels) + cases("coupe", 3) +
+      '<h4>Matériels autres</h4>' + vig(D.VIG.distanceMateriels) + cases("autresMateriels", 3));
+
+  var croquis = '<svg viewBox="0 0 400 300" aria-label="Le croquis">' +
+      '<rect x="20" y="20" width="360" height="252" fill="none" stroke="#1c1c1a" stroke-width="2" stroke-dasharray="7 6"/>' +
+      '<rect x="56" y="44" width="92" height="70" fill="#e3d6bd" stroke="#1c1c1a" stroke-width="2.5"/>' +
+      '<path d="M0 286 H400" stroke="#b98b47" stroke-width="9" stroke-linecap="round"/>' +
+      '<path d="M44 262 L 96 210" stroke="#1c1c1a" stroke-width="5" stroke-dasharray="12 7" stroke-linecap="round"/>' +
+      '<circle cx="262" cy="118" r="46" fill="rgba(156,59,46,0.12)" stroke="#9c3b2e" stroke-width="3" stroke-dasharray="9 6"/>' +
+      '<circle cx="222" cy="86" r="15" fill="#9c3b2e"/><text x="222" y="92" text-anchor="middle" font-size="17" font-weight="700" fill="#fff" font-family="system-ui, sans-serif">1</text>' +
+      '<rect x="318" y="212" width="38" height="38" fill="#7d9a6d"/><path d="M337 220v22M326 231h22" stroke="#fff" stroke-width="4"/></svg>';
+  var legende = [
+    ['<path d="M2 10 L16 2" stroke="#1c1c1a" stroke-width="2.4" stroke-dasharray="4 3"/>', "Accès au chantier"],
+    ['<path d="M1 6 H17" stroke="#b98b47" stroke-width="4"/>', "Voie de circulation"],
+    ['<circle cx="9" cy="6" r="5" fill="#9c3b2e"/>', "Arbre à abattre, numéro 1"],
+    ['<rect x="3" y="1" width="12" height="10" fill="#e3d6bd" stroke="#1c1c1a" stroke-width="1.2"/>', "Maison"],
+    ['<rect x="4" y="1" width="10" height="10" fill="#7d9a6d"/>', "Rendez-vous des secours"],
+    ['<rect x="1.5" y="1.5" width="15" height="9" fill="none" stroke="#1c1c1a" stroke-width="1.2" stroke-dasharray="2 2"/>', "Limite de parcelle"]
+  ].map(function (l) { return '<li><svg viewBox="0 0 18 12">' + l[0] + '</svg>' + esc(l[1]) + '</li>'; }).join("");
+
+  var p3 = rub("La situation des travaux", cases("situation", 3)) +
+    rub("Les arbres dangereux", '<div class="champs"><h4 class="plein">Arbre 1, numéro 1 sur le croquis</h4>' + champ("Intervention", "Abattage") + champ("Dangers vus", "Arbre mort") + champ("Consignes", "", true) + '</div>') +
+    rub("Les arbres pendant l’intervention", cases("risquesArbres", 2) + '<h4>Matières. État sanitaire et physiologique des arbres</h4>' + cases("matieres") + vig(D.VIG.matieres)) +
+    rub("Carte / croquis / photo du chantier indiquant les accès, voies de circulation et les végétaux à traiter",
+      '<div class="croquis-doc">' + croquis + '<div><ul class="legende-doc">' + legende + '</ul><p class="note-doc">Les numéros des arbres sont ceux des arbres dangereux.</p>' +
+        '<h4>Périmètre de sécurité, d’après le décret</h4>' + D.PERIMETRE.map(function (l) { return '<p style="margin:1px 0">' + esc(l[0]) + ' : ' + esc(l[1]) + '.</p>'; }).join("") + '</div></div>' +
+      '<p class="note-doc">Délimitation matérielle du chantier obligatoire</p>' +
+      '<h4>Zones du chantier</h4>' + cases("balisage"));
+
+  var tensions = '<div class="cases-doc c3 retrait">' + L.tensions.map(function (t) { return '<div class="cd"><i></i><span>' + esc(t) + '</span></div>'; }).join("") + '</div>';
+  var distances = '<div class="cases-doc c3 retrait">' + L.distances.map(function (t) { return '<div class="cd"><i></i><span>' + esc(t) + '</span></div>'; }).join("") + '</div>';
+  var sousR = {}; sousR[L.reseauxMesures[2]] = distances;
+  var p4 = rub("Risques spécifiques au chantier. Risque biologique", cases("biologique", 3) + '<h4>Mesures de prévention spécifiques au chantier</h4>' + cases("biologiqueMesures", 2)) +
+    rub("Risques liés aux réseaux, aériens et souterrains", cases("reseaux", 3) + '<div class="note-doc" style="margin:0 0 1px">Électrique</div>' + tensions +
+      '<h4>Mesures</h4>' + cases("reseauxMesures", 0, sousR) + '<p class="note-doc">Au cas où : ' + esc(D.FORTUITE) + '</p>') +
+    rub("La noyade", cases("noyade", 3)) +
+    rub("Risques liés à l’environnement du chantier", cases("environnement", 3) + '<h4>Mesures</h4>' + cases("environnementMesures", 2)) ;
+
+  var p5 = rub("Co-activité dans la zone de sécurité du chantier", cases("coactivite") + '<div class="champs">' + champ("Risques autres identifiés", "") + champ("Mesures de prévention autres", "") + '</div>') +
+    rub("Règles organisationnelles à mettre en place", cases("organisation") + vig(D.VIG.manuel)) +
+    rub("Entrer dans une zone de danger", '<ol class="consignes-doc">' + D.PROTOCOLE.split("\n").map(function (l) { return '<li>' + esc(l.replace(/^\d+\.\s*/, "")) + '</li>'; }).join("") + '</ol>') +
+    rub("Consignes sur la conduite à tenir en cas de phénomènes météorologiques imprévus", vig(D.VIG.bulletins) + cases("meteo")) +
+    rub("Organisation des secours. Ressources humaines et matérielles", cases("secours") + '<div class="champs">' + champ("Préciser le lieu où se trouve la trousse de secours", "dans la cabine du camion") + champ("Préciser le Point de Rencontre des Secours", "devant le portail du client") + '</div>') ;
+
+  var p6 = rub("Organisation des secours. Consignes et procédures",
+      '<h4>1. Protéger</h4><ol class="consignes-doc">' + S.proteger.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join("") + '</ol>' +
+      '<h4>2. Alerter</h4><div class="urgences-doc">' + S.urgences.map(function (u) { return '<div><b>' + u[0] + '</b><span>' + esc(u[1]) + '</span></div>'; }).join("") + '</div>' +
+      '<ol class="consignes-doc">' + S.alerter.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join("") + '</ol>' +
+      '<h4>3. Secourir</h4><ol class="consignes-doc">' + S.secourir.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join("") + '</ol>' +
+      '<p class="note-doc">' + esc(S.permanentes[0]) + '</p><p class="note-doc" style="color:#1c1c1a;font-weight:700">' + esc(S.permanentes[1]) + '</p>') +
+    rub("Observations / Consignes particulières", '<p style="margin:0;color:#8a8578">Aucune observation.</p>') +
+    rub("Enregistrement", '<div class="signature-doc"><div class="champs" style="grid-template-columns:1fr">' +
+        champ("Nom et prénom du chef d’entreprise (ou de son représentant)", "Compte de démonstration") + champ("Date", "12 novembre 2026, à 7 h 55") + champ("Gardée jusqu’au", "12 novembre 2028") + '</div>' +
+        '<div class="cadre-signature">' + trait(150, 56) + '<span>Signature</span></div></div>') +
+    rub("Présentée aux travailleurs", '<table class="equipe"><thead><tr><th>Nom</th><th>A lu la fiche</th><th>Signature</th></tr></thead><tbody>' +
+        '<tr><td><b>Kevin Morel</b></td><td>le 12 novembre 2026 à 8 h 10</td><td>' + trait(64, 22) + '</td></tr>' +
+        '<tr><td><b>Lucas Petit</b></td><td class="manque">pas encore signé</td><td></td></tr></tbody></table>') +
+    '<div class="note-feuille"><b>La fiche d’intervention est :</b><ul>' +
+      ["communiquée et présentée aux travailleurs avant le début des travaux.", "disponible en permanence sur le chantier (possiblement dématérialisée).",
+       "communiquée au chef de l’entreprise utilisatrice lorsque le chantier est réalisé dans le cadre des dispositions prises en application de l’article L. 4511-1 du code du travail (plan de prévention).",
+       "conservée pendant deux ans à compter de sa date de signature."].map(function (x) { return '<li>' + esc(x) + '</li>'; }).join("") + '</ul></div>';
+
+  var PAGES = [p1, p2, p3, p4, p5, p6].map(function (c, i) { return page(i + 1, c); });
+  var VUES = {
+    "1": { propose: [0], quoi: "La première page", vrai: [1], quoiVrai: "La page 1" },
+    tout: { propose: [0, 1, 2, 3, 4, 5], quoi: "Les 6 pages", vrai: [1, 2, 3, 4, 5, 6, 7], quoiVrai: "Les 7 pages" },
+    reseaux: { propose: [3], quoi: "La page 4 : « HTA (U ≤ 50 000 V) »", vrai: [5], quoiVrai: "La page 5 : « HTA (U ▯ 50 000 V) »" },
+    fin: { propose: [5], quoi: "La dernière page", vrai: [7], quoiVrai: "La page 7" }
+  };
+
+  var proposeEl = document.getElementById("bureau-propose");
+  var vraiEl = document.getElementById("bureau-vrai");
+  function echelle() {
+    var l = proposeEl.clientWidth - 28;
+    if (window.matchMedia("(max-width: 480px)").matches) l = proposeEl.clientWidth - 20;
+    proposeEl.style.setProperty("--echelle", proposeEl.classList.contains("grand") ? "1" : Math.max(0.3, Math.min(1.4, l / 595)).toFixed(4));
+  }
+  /* Une page qui déborde se voit sur la planche : elle ne doit jamais partir ainsi. */
+  function verifier() {
+    proposeEl.querySelectorAll(".a4-dedans").forEach(function (d) {
+      var trop = d.scrollHeight > d.clientHeight + 1;
+      d.closest(".a4").classList.toggle("debordement", trop);
+      if (trop) console.error("page " + d.closest(".a4").getAttribute("data-page") + " déborde de " + (d.scrollHeight - d.clientHeight) + " points");
+    });
+  }
+  function montrer(cle) {
+    var v = VUES[cle];
+    proposeEl.innerHTML = v.propose.map(function (i) { return PAGES[i]; }).join("");
+    vraiEl.innerHTML = v.vrai.map(function (n) { return '<img src="aujourdhui/fiche-securite-pdf-' + n + '.jpg" alt="La page ' + n + ' du vrai PDF">'; }).join("");
+    document.getElementById("quoi-propose").innerHTML = "<b>" + v.quoi + "</b>";
+    document.getElementById("quoi-vrai").innerHTML = "Le vrai PDF : <b>" + v.quoiVrai + "</b>";
+    proposeEl.scrollTop = 0; vraiEl.scrollTop = 0;
+    document.querySelectorAll("#pages button").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-p") === cle ? "true" : "false"); });
+    echelle();
+    verifier();
+  }
+  document.querySelectorAll("#pages button").forEach(function (b) { b.addEventListener("click", function () { montrer(b.getAttribute("data-p")); }); });
+  window.addEventListener("resize", echelle);
+  document.addEventListener("click", function (e) { if (e.target.closest(".pl-onglets")) setTimeout(echelle, 30); });
+  var grand = false;
+  var boutonGrand = document.getElementById("lire-en-grand");
+  boutonGrand.addEventListener("click", function () {
+    grand = !grand;
+    document.querySelectorAll(".bureau").forEach(function (b) { b.classList.toggle("grand", grand); });
+    boutonGrand.setAttribute("aria-pressed", grand ? "true" : "false");
+    boutonGrand.lastChild.textContent = grand ? "Voir la page entière" : "Lire en grand";
+    echelle();
+  });
+  montrer("1");
+})();
+</script>
+</body>
+</html>

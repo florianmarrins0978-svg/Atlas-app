@@ -1,0 +1,1293 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f5f1e6">
+<title>Atlas pour les artisans</title>
+<meta name="description" content="Planche : le site de vente d'Atlas, repris et embelli, en vert forêt.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Hanken+Grotesk:wght@400;500;600&display=swap">
+<!--
+  PLANCHE, rien n'est codé dans l'application. Sixième version, posée à côté
+  de chapitres-5.html, qui reste telle quelle.
+
+  Sa demande du 6 novembre 2026 : « la reprendre et l'améliorer, la rendre
+  plus jolie ». Devant les trois jeux de couleurs de chapitres-5, sa réponse :
+  « tu choisis ».
+
+  LES COULEURS RETENUES : A, forêt vive, et ce que C avait de mieux.
+    · le vert reste celui de l'appli (vert pin, or, crème : la charte
+      d'Arborea). Un artisan qui essaie retrouve les couleurs du site ;
+    · B est écartée : la terre cuite est la couleur qu'il a retirée de
+      l'appli le 3 août, puis des documents ;
+    · C est écartée comme fond de page : une page longue à lire, en sombre,
+      se lit moins bien pour des yeux de soixante ans et au soleil, et les
+      captures claires de l'appli y deviennent des rectangles éblouissants.
+      Elle garde ses grandes bandes : le problème du métier, Encaissez, la
+      fin et le pied sont en vert nuit, avec l'or.
+  Le bouton d'essai a sa couleur à lui, que rien d'autre ne porte : le vert
+  feuille sur le clair (5,4 pour 1 avec le blanc), l'or sur le vert nuit
+  (8,3 pour 1). Textes : 6,5 pour 1 au moins sur le clair, 7,9 sur le sombre.
+
+  CE QUI A CHANGÉ, et rien d'autre :
+    · un DÉFAUT RÉEL de chapitres-5, trouvé en regardant la page : en
+      « Actuelles », la carte Illimité était presque invisible, son or se
+      citait lui-même (--reine-or:var(--reine-or)), donc tout son fond
+      tombait. Corrigé là-bas aussi, d'une ligne ;
+    · les mots géants restent aux quatre chapitres (Dictez, Envoyez,
+      Planifiez, Encaissez), et leur point est en or. Les autres titres
+      descendent d'une taille : dix mots géants à la suite ne faisaient plus
+      de sommet ;
+    · les captures posent sur un fond de couleur (sauge pour l'ouverture et
+      Dictez, sable pour Envoyez) au lieu du crème sur crème : c'était ce qui
+      rendait la page fade, plus que les teintes elles-mêmes ;
+    · la page du client est dans un téléphone, comme les autres écrans ;
+    · « Et aussi » : les deux cases ont la même hauteur ;
+    · « Vous gardez la main » et « Pour commencer » ne sont plus des cartes :
+      des colonnes séparées d'un filet, et les trois gestes reliés par une
+      ligne, dans leur ordre ;
+    · le mouvement : le texte est visible d'emblée (sans script, chapitres-5
+      laissait la page vide), et les captures se posent en entrant dans
+      l'écran.
+
+  LES MISES EN SCÈNE, sa demande du 6 novembre 2026 au soir. Toutes jouent
+  de VRAIES captures de l'appli, prises le même jour sur une copie de la base
+  d'essai (atlas_scene), et rien n'est dessiné par-dessus. Un doigt en
+  pastille blanche montrait d'abord où l'on appuie ; sa réponse : « enlève
+  cette pastille blanche et joue simplement les cinématiques ».
+    · l'ouverture : l'accueil, tel quel ; au premier défilement, « Créer un
+      devis », le + qui tourne et ses éclats, puis la fiche client qui monte
+      (nov-creer-un-devis.mp4, 1,2 s), qui reste. C'est la vraie animation
+      de l'appli, filmée image par image avec l'horloge de la page figée,
+      pour la définition d'un iPhone. Entre deux images fixes : seule, la
+      vidéo laissait l'écran blanc une ou deux secondes sur son téléphone ;
+    · Dictez, remis dans l'ordre du geste à sa demande (« c'est un peu à
+      l'envers ») : d'abord la note vocale, le micro au repos puis le vrai
+      chrono, une capture par seconde, de 0:00 à 0:12 (nov-dictee-*.jpg,
+      prise avec un micro simulé) ; plus bas la phrase, mot à mot au rythme
+      d'une voix ; puis la ligne du devis, qui sort de sa propre rangée du
+      devis entier ;
+    · Envoyez : dès que le téléphone entre à l'écran, la date se choisit,
+      la case des 14 jours apparaît et se coche, le client accepte, et la
+      page devient
+      « C'est noté. Votre artisan est prévenu. » (nov-client-0 à 3) ;
+    · Planifiez, sa demande du soir (« on n'a pas fait de mise en scène,
+      tu peux proposer ») : le mois se remplit chantier après chantier, le
+      10 passe au rouge quand il devient trop chargé, le 6 se remplit en
+      dernier (nov-mois-0 à 5, une capture par chantier posé), puis
+      l'équipe se pose sur la journée : « + Salarié », Lucas, Lucas et
+      Julien (nov-equipe-0 à 2) ;
+    · Encaissez : 143,70 € monte depuis zéro, puis la phrase ; et, sa
+      demande du soir, le montant de la TVA sort de la facture, grossit,
+      Ma TVA apparaît à 0,00 € et il y rentre : 143,70 € (nov-tva-avant et
+      apres, captures de /termines/tva). Inspiré du skill HyperFrames,
+      « carry across » : l'objet rétrécit en volant et se pose dans l'écran
+      suivant ; mais joué dans la page, pas rendu en vidéo, pour suivre le
+      défilement et rester net ;
+    · Et aussi, inversé à sa demande : les travaux d'abord, qui se cochent
+      TOUT SEULS à l'arrivée, une tâche par seconde environ (la première
+      version les cochait au défilement : « ça bug », la carte restait
+      posée et le geste se perdait), la
+      remarque, l'appui sur « Envoyer le retour du jour » et la carte qui se
+      replie (nov-travaux-0 à 6) ; puis le retour du soir que reçoit le
+      patron.
+  LA CAMÉRA, sa demande qui a suivi : « améliore toutes les animations avec
+  le skill HyperFrames, repense-les si tu veux ». HyperFrames fabrique des
+  vidéos ; les scènes, elles, suivent le défilement et doivent rester nettes.
+  Elles restent donc dans la page, et en prennent les règles de mouvement
+  (references/motion.md du skill) :
+    · une caméra dans chaque écran avance vers ce qu'on touche, puis recule
+      (power2.inOut) : le + de Créer un devis, le micro, la date, la case et
+      le bouton du client, le 10 trop chargé puis le 6, la remarque et
+      l'envoi du retour. Les coches et l'équipe restent plan large : plus
+      près, la caméra coupait les ronds qu'on coche et « Matin » ;
+    · un écran neuf arrive un peu grand et se pose (expo.out), « C'est
+      noté » et Ma TVA ;
+    · un léger flou au plus vite d'un déplacement, sur le montant qui vole ;
+    · la phrase dictée arrive mot à mot, chaque mot sortant d'un flou ;
+    · la ligne du devis sort de sa rangée, qui s'éclaire d'abord, comme la
+      TVA de la facture ;
+    · aucun anneau de clic, aucune pulsation : le geste se lit à ce qui
+      change sur l'écran.
+  Pour qui demande moins de mouvement, et sans script, chaque scène montre son
+  état le plus parlant, et rien ne bouge.
+
+  CE QUI N'A PAS BOUGÉ : tous les textes, mot pour mot, et leur ordre ; les
+  prix de src/lib/abonnements.ts (39, 59, 159 € HT, l'année à dix mois) ;
+  l'essai de quinze jours ; le contact « à compléter ».
+
+  LES CAPTURES SONT CELLES DE L'APPLI DU 6 NOVEMBRE 2026 (images/nov-*.jpg).
+  Sa remarque du jour : « certaines pages de l'application ont changé, va
+  regarder dans l'application avant de mettre des pages qui n'existent
+  plus ». Celles du 8 octobre étaient périmées : la page que reçoit le
+  client a été refaite (elle tient sur un écran), le planning montre la
+  semaine sous le mois, la fiche client a pris « Public » et « Je rédige à
+  la main », l'accueil colore ses cartes. Les anciennes restent dans
+  images/ pour les planches d'avant.
+  Comment elles ont été faites, pour qui les refera : l'appli lancée dans un
+  conteneur du nuage, sur une base d'essai amorcée (son accord du jour), au
+  nom des Jardins de Valmorin (numéros impossibles à attribuer, Valmorin est
+  une commune inventée). L'identité, les quatre tarifs, les deux salariés
+  et les chantiers qui colorent le mois sont posés en base ; le chantier
+  Lemaire, lui, passe par les boutons : fiche client, devis écrit à la main
+  (sans clé d'IA ici, la dictée ne rend qu'un texte simulé), date du
+  vendredi 6 proposée, accord du client sur sa page, travaux cochés, retour
+  envoyé, facture créée, envoyée et payée. La TVA de novembre affichée par
+  Terminés vaut bien 143,70 €.
+  UN DÉFAUT DE L'APPLI vu en les faisant, et non corrigé ici : la case « À
+  signaler » des travaux à faire tient deux lignes et ne grandit pas
+  (TravauxAFaire.tsx, rows=2, resize-none). Une remarque de trois lignes s'y
+  cache. La capture porte donc une remarque courte. Inscrit dans TODO.md.
+
+  POUR LES ARTISANS, PLUS POUR LES SEULS PAYSAGISTES ET ÉLAGUEURS. Sa
+  demande du 6 novembre 2026 : « pensé pour les artisans, pas pour les
+  paysagistes et les élagueurs ». Ont changé : le titre, « Vous êtes
+  artisan. Pas secrétaire. » (il disait « paysagiste, élagueur, artisan »),
+  « Pensé pour les artisans. », dont la phrase perd la fiche d'élagage et
+  les entretiens, propres au jardin, le pied de page, et le métier du
+  formulaire, écrit librement au lieu d'un choix entre paysagiste et
+  élagueur. Les captures restent celles d'un chantier de jardin : c'est
+  l'exemple, il dit vrai de l'appli. Ce qui reste à savoir, et que le site
+  ne doit pas cacher : le pôle Paysage, le vocabulaire et les fiches de
+  sécurité de l'appli sont ceux du jardin (PRODUCT.md).
+
+  ET L'ACCENT EST MIS DESSUS, sa demande qui a suivi : « mettre l'accent
+  sur que c'est une application pour tous les artisans ». Une section « Pour
+  tous les artisans. », juste après le problème du métier : les métiers en
+  grand, puis quatre faits vérifiés dans le code. La fiche client distingue
+  particulier, entreprise et service public (ses quatre boutons, vus à
+  l'écran) ; plusieurs taux sur un devis (DevisCompletClient.tsx, une ligne
+  par taux) ; l'autoliquidation pour un client entreprise hors franchise
+  (devis-complet/page.tsx, sousTraitancePossible) ; le pôle Paysage, en plus.
+  ÉCARTÉ : « vous lui apprenez les mots de votre métier ». Mon vocabulaire
+  existe, mais l'écran, ouvert, répond 404 à l'artisan : il est réservé à
+  l'éditeur (reglages/vocabulaire/page.tsx, estEditeur). Et une question
+  de plus, franche : « Mon métier n'est pas le jardin. »
+
+  L'en-tête de chapitres-3.html dit d'où vient chaque réponse aux doutes de
+  l'artisan méfiant, vérifiée dans le code : il reste vrai.
+-->
+<style>
+:root{
+  --fond:#f5f1e6;--papier:#fcfaf3;--encre:#12261b;--encre-2:#4b5a50;--trait:#e0d9c7;
+  --sauge:#e4ebda;--sauge-2:#d3dfc5;--sable:#efe6d3;--sable-2:#e5d8bd;
+  --action:#1d7a3c;--action-survol:#186a33;--action-texte:#ffffff;
+  --feuille:#237a3c;--or:#95600f;--or-clair:#f0b43c;
+  --nuit:#0e2a1b;--nuit-2:#0a2015;--sur-nuit:#f3efe3;--sur-nuit-2:#b9cbbd;--trait-nuit:rgba(243,239,227,.14);
+  --ombre:18,38,27;
+  --display:"Instrument Serif","Iowan Old Style",Georgia,serif;
+  --texte:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --large:1200px;
+  --sortie:cubic-bezier(.16,1,.3,1);
+  /* Un site de vente se lit tel qu'il a été choisi : il ne bascule pas en
+     sombre avec le téléphone, sans quoi la planche montrerait autre chose
+     que les couleurs retenues. */
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{overflow-x:clip;scroll-padding-top:76px;scrollbar-color:color-mix(in srgb,var(--encre-2) 45%,transparent) var(--fond);accent-color:var(--action)}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+body{margin:0;background:var(--fond);color:var(--encre);font:400 18px/1.55 var(--texte);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+::selection{background:color-mix(in srgb,var(--or-clair) 42%,transparent);color:inherit}
+img{display:block;max-width:100%;height:auto}
+a{color:inherit;text-underline-offset:.22em;text-decoration-thickness:1px}
+:focus-visible{outline:2px solid var(--action);outline-offset:3px;border-radius:8px}
+.nuit :focus-visible,.pied :focus-visible{outline-color:var(--or-clair)}
+h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;letter-spacing:-.015em;line-height:.95;text-wrap:balance}
+p{margin:0;text-wrap:pretty}
+
+.large{width:min(100% - 32px,var(--large));margin-inline:auto}
+section{padding:clamp(88px,12vw,150px) 0}
+
+/* ── Le vert nuit : la matière des grandes bandes ─────────────────────── */
+/* Un grain très léger et une lueur d'or venue d'en haut : sans eux, un
+   aplat sombre de cette taille se lit comme un trou dans la page. */
+.nuit,.pied{position:relative;isolation:isolate;background:radial-gradient(90% 70% at 85% -10%,rgba(240,180,60,.11),transparent 62%),var(--nuit);color:var(--sur-nuit)}
+.nuit::before,.pied::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.08;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E")}
+.nuit .chapo,.nuit .sous{color:var(--sur-nuit-2)}
+
+/* ── La barre ─────────────────────────────────────────────────────────── */
+.barre{position:fixed;inset:0 0 auto 0;z-index:20;height:64px;background:color-mix(in srgb,var(--fond) 84%,transparent);backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2);border-bottom:1px solid transparent;transition:border-color .3s}
+.barre.posee{border-bottom-color:var(--trait)}
+.barre .large{height:100%;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.marque{font:400 30px/1 var(--display);text-decoration:none;letter-spacing:-.01em}
+.liens{display:none;gap:32px;font-size:15.5px}
+.liens a{text-decoration:none;color:var(--encre-2);transition:color .2s}
+.liens a:hover{color:var(--encre)}
+.barre .droite{display:flex;align-items:center;gap:6px}
+.ouvre-menu{border:0;background:transparent;color:var(--encre);font:500 15.5px/1 var(--texte);padding:10px 12px;min-height:44px;cursor:pointer}
+.lien-demo{font:600 14.5px/1 var(--texte);text-decoration:none;padding:13px 18px;border-radius:999px;background:var(--action);color:var(--action-texte);transition:background .2s}
+.lien-demo:hover{background:var(--action-survol)}
+@media (min-width:960px){.liens{display:flex}.ouvre-menu{display:none}}
+
+.menu{position:fixed;inset:0;z-index:30;background:var(--fond);padding:92px 24px 32px;display:none;flex-direction:column}
+.menu.ouvert{display:flex}
+.menu a{font:400 clamp(40px,11vw,64px)/1.15 var(--display);text-decoration:none;padding:8px 0;border-bottom:1px solid var(--trait)}
+.menu .ferme{position:absolute;top:10px;right:max(16px,env(safe-area-inset-right));border:0;background:transparent;color:var(--encre);font:500 15.5px/1 var(--texte);padding:12px;min-height:44px;cursor:pointer}
+.menu .bouton{margin-top:32px;font:600 17px/1 var(--texte);border:0}
+
+/* ── Les boutons ──────────────────────────────────────────────────────── */
+.bouton{display:inline-flex;align-items:center;justify-content:center;min-height:58px;padding:0 30px;border-radius:999px;background:var(--action);color:var(--action-texte);font:600 17px/1 var(--texte);text-decoration:none;border:0;cursor:pointer;box-shadow:0 1px 0 rgba(255,255,255,.18) inset,0 10px 24px -14px rgba(var(--ombre),.7);transition:transform .3s var(--sortie),box-shadow .3s var(--sortie),background .2s}
+.bouton:hover{background:var(--action-survol);transform:translateY(-2px);box-shadow:0 1px 0 rgba(255,255,255,.18) inset,0 18px 32px -16px rgba(var(--ombre),.75)}
+.bouton:active{transform:translateY(0)}
+.bouton.clair{background:transparent;color:var(--encre);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--encre) 22%,transparent)}
+.bouton.clair:hover{background:color-mix(in srgb,var(--encre) 5%,transparent);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--encre) 45%,transparent)}
+.nuit .bouton,.bouton.or{background:var(--or-clair);color:var(--nuit);box-shadow:0 1px 0 rgba(255,255,255,.35) inset,0 18px 40px -18px rgba(240,180,60,.55)}
+.nuit .bouton:hover,.bouton.or:hover{background:#f5c25a}
+.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:36px}
+.rassure{margin-top:16px;font-size:15px;color:var(--encre-2)}
+
+/* ── Les supports des captures : le téléphone, la feuille, le recadrage ─ */
+.appareil{width:min(70vw,320px);padding:9px;border-radius:48px;background:linear-gradient(155deg,#26302a,#0d120f 40%);box-shadow:0 60px 90px -46px rgba(var(--ombre),.7),0 22px 34px -22px rgba(var(--ombre),.45),inset 0 0 0 1.5px #39433c,inset 0 0 0 3px #0b0f0c}
+.appareil > img{border-radius:39px;width:100%;aspect-ratio:1170/1992;object-fit:cover;object-position:top;background:var(--papier)}
+/* L'écran d'un téléphone qui joue une scène : les captures s'y empilent, une
+   seule se voit à la fois. Rien n'est dessiné par-dessus : sa demande, après
+   un premier essai avec un doigt en pastille blanche, « enlève-la ». */
+.ecran{position:relative;border-radius:39px;overflow:hidden;aspect-ratio:1170/1992;background:var(--papier)}
+.ecran img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;object-position:top}
+.ecran img.etape{opacity:0;transition:opacity .3s ease,transform .6s var(--sortie)}
+.ecran img.etape.vue{opacity:1}
+/* La bande du micro : le bas de l'écran, une capture par seconde du vrai
+   chrono. Elle commence à 67,27 % de la hauteur, là où « Devis à la voix »
+   s'écrit dans l'appli. */
+.ecran .bande{position:absolute;left:0;right:0;bottom:0;height:32.731%}
+/* Le chrono change d'un coup, comme dans l'appli : un fondu laisserait voir,
+   le temps d'un battement, l'écran au repos dessous. */
+.ecran .bande img,.ecran .bande img.etape{opacity:0;transition:none}
+.ecran .bande img.vue{opacity:1}
+.feuille{margin:0;border-radius:4px;overflow:hidden;background:#fbfaf6;box-shadow:0 50px 80px -44px rgba(var(--ombre),.6),0 4px 10px rgba(var(--ombre),.07),0 0 0 1px rgba(var(--ombre),.05)}
+.gros{margin:0;border-radius:22px;overflow:hidden;background:var(--papier);box-shadow:0 34px 70px -40px rgba(var(--ombre),.5),0 0 0 1px rgba(var(--ombre),.07)}
+.gros img{width:100%;transform:scale(1.035);transition:transform 1.6s var(--sortie)}
+.gros.vu img{transform:none}
+.sous{margin-top:14px;font-size:15.5px;color:var(--encre-2)}
+
+/* La scène : le fond de couleur où posent les captures. C'est elle qui
+   sort la page du crème sur crème. */
+.scene{position:relative;overflow:hidden;border-radius:30px;background:radial-gradient(70% 55% at 30% 20%,rgba(255,255,255,.55),transparent 70%),var(--sauge);box-shadow:inset 0 0 0 1px rgba(var(--ombre),.05)}
+.scene.sable{background:radial-gradient(70% 55% at 70% 15%,rgba(255,255,255,.5),transparent 70%),var(--sable)}
+
+/* ── L'ouverture ──────────────────────────────────────────────────────── */
+.ouverture{padding-top:clamp(112px,14vw,156px);padding-bottom:clamp(64px,8vw,112px)}
+.ouverture-grille{display:grid;gap:44px;text-align:center}
+.ouverture h1{font-size:clamp(52px,13.6vw,96px);line-height:.93}
+.ouverture h1 em{font-style:italic;color:var(--feuille)}
+.ouverture .chapo{margin:24px auto 0;font-size:clamp(19px,2vw,22px);line-height:1.45;color:var(--encre-2);max-width:30em}
+.ouverture .actions{justify-content:center}
+.ouverture .scene{height:clamp(430px,120vw,500px)}
+.ouverture .scene .feuille{position:absolute;width:62%;right:-6%;top:30px;transform:rotate(4deg)}
+.ouverture .scene .appareil{position:absolute;width:min(64vw,260px);left:9%;bottom:-86px}
+@media (min-width:960px){
+  .ouverture-grille{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);align-items:center;text-align:left;gap:56px}
+  .ouverture .chapo{margin-inline:0}
+  .ouverture .actions{justify-content:flex-start}
+  .ouverture .scene{height:640px}
+  .ouverture .scene .feuille{width:62%;right:7%;top:56px;transform:rotate(3deg)}
+  .ouverture .scene .appareil{width:300px;left:9%;bottom:-96px}
+}
+
+/* ── Le problème ──────────────────────────────────────────────────────── */
+.douleur-grille{display:grid;gap:52px}
+.douleur h2{font-size:clamp(56px,13vw,104px)}
+.douleur ul{padding:0;margin:0}
+.douleur li{list-style:none;font:400 clamp(30px,7vw,46px)/1.12 var(--display);padding:18px 0;border-bottom:1px solid var(--trait-nuit)}
+.douleur li:first-child{border-top:1px solid var(--trait-nuit)}
+.douleur .reponse{margin-top:44px;font:italic 400 clamp(32px,7.4vw,48px)/1.08 var(--display);color:var(--or-clair)}
+@media (min-width:960px){.douleur-grille{grid-template-columns:1.1fr .9fr;align-items:end;gap:88px}}
+
+/* ── Pour tous les artisans : les métiers en grand, puis ce qui les sert ── */
+/* Les métiers se lisent comme un mur de mots, sans séparateur : un point ou
+   un tiret entre eux est refusé ici (CLAUDE.md §3), et l'espace suffit. */
+.liste-metiers{list-style:none;margin:40px 0 0;padding:28px 0 0;border-top:1px solid var(--trait);display:flex;flex-wrap:wrap;gap:2px clamp(18px,2.6vw,34px);font:400 clamp(34px,7.6vw,68px)/1.06 var(--display);letter-spacing:-.015em}
+.liste-metiers li:nth-child(even){color:var(--encre-2)}
+.liste-metiers .le-votre{font-style:italic;color:var(--feuille)}
+.faits.atouts{margin-top:clamp(48px,6vw,72px)}
+@media (min-width:860px){.atouts{grid-template-columns:1fr 1fr;column-gap:64px}.atouts li:nth-child(2){border-top:1px solid var(--trait)}}
+
+/* ── Un chapitre : le mot, sa phrase, et ce qu'on voit ─────────────────── */
+.mot{font-size:clamp(56px,13vw,96px);line-height:.9}
+.chapitre .mot{font-size:clamp(88px,23vw,128px);line-height:.85}
+.mot .point{color:var(--or)}
+.nuit .mot .point{color:var(--or-clair)}
+.chapitre .chapo{margin-top:24px;font-size:clamp(20px,4.6vw,25px);line-height:1.38;color:var(--encre-2);max-width:22em}
+.nuit.chapitre .chapo{color:var(--sur-nuit-2)}
+.chap-grille{display:grid;gap:52px}
+.chap-visuel{display:grid;gap:40px;justify-items:center}
+.papier{background:var(--papier)}
+@media (min-width:960px){
+  .chap-grille{grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:76px;align-items:start}
+  .chap-texte{position:sticky;top:132px}
+  .chap-grille.inverse .chap-texte{order:2}
+}
+
+/* La phrase dictée, qui s'écrit mot à mot : le seul moment écrit de la page. */
+.dite{margin-top:44px;font:italic 400 clamp(30px,7vw,44px)/1.12 var(--display);color:var(--encre)}
+/* La caméra des téléphones : elle avance vers ce qu'on touche, puis recule.
+   Créée par le script, elle n'existe pas sans lui ni sans mouvement. */
+.camera{position:absolute;inset:0;transform-origin:0 0;will-change:transform}
+.empile > .camera{position:relative;inset:auto}
+/* La phrase arrive mot à mot, comme une dictée qui se transcrit : chaque mot
+   sort d'un léger flou. Les mots tiennent déjà leur place, la ligne ne saute
+   jamais. Le curseur suit le dernier. */
+.dite .m{display:inline-block;position:relative;opacity:0;filter:blur(8px);transform:translateY(.06em);transition:opacity .22s ease,filter .3s ease,transform .45s var(--sortie)}
+.dite .m.dite-la{opacity:1;filter:none;transform:none}
+.dite .m.dernier::after{content:"";position:absolute;right:-7px;top:.16em;bottom:.06em;width:2px;background:var(--feuille);animation:clignote 1s steps(1) infinite}
+@keyframes clignote{50%{opacity:0}}
+
+/* Ce que la phrase devient : la ligne du devis, en clair. */
+.devient{margin-top:28px;display:grid;gap:10px}
+.devient .sur{font-size:15px;color:var(--encre-2)}
+.ligne{display:grid;grid-template-columns:1fr auto auto;gap:6px 18px;align-items:baseline;padding:17px 20px;border-radius:16px;background:var(--papier);box-shadow:0 0 0 1px rgba(var(--ombre),.08),0 18px 34px -24px rgba(var(--ombre),.45);font-size:16px;font-variant-numeric:tabular-nums}
+.ligne .designation{grid-column:1/-1;font-weight:500}
+.ligne .qte,.ligne .pu{color:var(--encre-2)}
+.ligne .total{grid-column:3;grid-row:2;font-weight:600;color:var(--feuille)}
+@media (min-width:520px){.ligne{grid-template-columns:1fr auto auto auto}.ligne .designation{grid-column:auto}.ligne .total{grid-column:auto;grid-row:auto}}
+
+/* Dictez : le devis sur la scène, le téléphone qui le chevauche. */
+/* Dictez se lit dans l'ordre du geste : la note vocale, la phrase qui
+   s'écrit, puis la ligne qu'elle devient, posée sur le devis entier. */
+.recit{justify-items:stretch}
+.scene-micro{display:flex;justify-content:center;padding:40px 20px}
+.scene-micro .appareil{width:min(70vw,300px)}
+.recit .dite{margin-top:8px}
+.recit .devient{margin-top:8px}
+.devis-loupe{position:relative;width:min(100%,560px);margin:6px auto 0}
+.devis-loupe .feuille{width:100%}
+/* La ligne se pose sur sa propre rangée du PDF (36,2 % de la hauteur de la
+   page : 847 px sur 2339 dans nov-devis.jpg), un peu plus grande que la page. */
+.devis-loupe .ligne{position:absolute;left:-4%;right:-4%;top:36.2%;transform:translateY(-50%);z-index:2;box-shadow:0 0 0 1px rgba(var(--ombre),.1),0 26px 50px -22px rgba(var(--ombre),.55)}
+/* Elle sort du devis : sa rangée s'éclaire d'abord, puis la ligne s'en
+   détache, grandit et se pose au-dessus de la page. */
+.devis-loupe::after{content:"";position:absolute;left:4.5%;right:4.5%;top:35%;height:2.6%;border-radius:4px;background:color-mix(in srgb,var(--or-clair) 38%,transparent);clip-path:inset(0 100% 0 0);opacity:0;pointer-events:none}
+html.anime .devient.vu .devis-loupe::after{opacity:1;clip-path:inset(0 0 0 0);transition:clip-path .5s cubic-bezier(.65,0,.35,1)}
+html.anime .devis-loupe .ligne{opacity:0;filter:blur(4px);transform:translateY(-50%) scale(.82);transition:opacity .45s ease .4s,filter .5s ease .4s,transform 1.1s var(--sortie) .4s,box-shadow 1.1s ease .4s}
+html.anime .devient.vu .devis-loupe .ligne{opacity:1;filter:none;transform:translateY(-50%)}
+.recit .sous{text-align:right}
+/* Le film de l'ouverture : la vraie animation de l'appli, filmée image par
+   image, entre deux images fixes. Un téléphone efface l'affiche d'une vidéo
+   avant d'en avoir les images, et l'écran restait blanc une ou deux
+   secondes (sa remarque du 6 novembre) : l'accueil reste donc posé
+   dessous, le film ne se montre qu'une fois lancé, et la fiche client
+   prend sa place à la fin. Aucun fondu : un fondu laisserait voir l'entre
+   deux. */
+.ecran video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;z-index:2;opacity:0}
+.ecran video.joue{opacity:1}
+.ecran img.film-fin{z-index:3;opacity:0}
+.ecran img.film-fin.vue{opacity:1}
+@media (min-width:960px){
+  .scene-micro{padding:56px 40px}
+  .scene-micro .appareil{width:320px}
+}
+
+/* Vos prix, pas les nôtres : la réponse à la première méfiance. */
+.vos-prix{padding-top:0}
+.vos-prix-grille{display:grid;gap:36px;padding-top:clamp(64px,8vw,104px);border-top:1px solid var(--trait)}
+.vos-prix h2{font-size:clamp(48px,11vw,88px)}
+.faits{list-style:none;margin:0;padding:0;display:grid}
+.faits li{padding:24px 0 24px 46px;border-bottom:1px solid var(--trait);display:grid;gap:6px;position:relative}
+.faits li:first-child{border-top:1px solid var(--trait)}
+.faits li svg{position:absolute;left:0;top:27px;width:26px;height:26px;color:var(--feuille)}
+.faits b{font:400 clamp(25px,2.6vw,30px)/1.15 var(--display)}
+.faits span{color:var(--encre-2);font-size:16.5px}
+@media (min-width:960px){.vos-prix-grille{grid-template-columns:1fr 1fr;gap:88px;align-items:start}}
+
+/* Envoyez : la page du client, entière, dans son téléphone. */
+.envoi .scene{width:100%;display:flex;justify-content:center;padding:40px 20px}
+.envoi .appareil{width:min(74vw,330px)}
+@media (min-width:960px){.envoi .scene{padding:64px 40px}.envoi .appareil{width:350px}}
+
+/* Planifiez : le mois en grand, puis l'équipe et la fiche côte à côte. */
+.plans{display:grid;gap:24px;width:100%}
+.plans figure{margin:0}
+.plans .paire{display:grid;gap:24px}
+@media (min-width:760px){.plans .paire{grid-template-columns:1fr 1fr;align-items:start}}
+/* Planifiez : les captures du mois, puis de la carte du jour, s'empilent.
+   Chaque nouvelle passe au-dessus de la précédente et ne fait que s'allumer :
+   un fondu croisé laisserait voir, à mi-chemin, l'image finale dessous. */
+.empile{position:relative}
+.empile img.etape{position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;transition:opacity .35s ease}
+.empile img.etape.vue{opacity:1}
+
+/* Encaissez : la facture, et le chiffre de la TVA. */
+.chiffre{margin-top:52px}
+.chiffre b{display:block;font:400 clamp(80px,22vw,148px)/.9 var(--display);font-variant-numeric:tabular-nums;color:var(--or-clair);letter-spacing:-.02em}
+.chiffre span{display:block;margin-top:14px;font-size:17px;color:var(--sur-nuit-2)}
+html.anime .chiffre b,html.anime .chiffre span{opacity:0;transform:translateY(20px);transition:opacity .7s ease,transform 1s var(--sortie)}
+html.anime .chiffre.joue b{opacity:1;transform:none}
+html.anime .chiffre.joue span{opacity:1;transform:none;transition-delay:1.5s}
+.encaisse .feuille{width:min(100%,620px);box-shadow:0 60px 100px -40px rgba(0,0,0,.85),0 0 0 1px rgba(255,255,255,.04)}
+/* Encaissez : le montant de la TVA sort de la facture, grossit, et rentre
+   dans Ma TVA, qui passe de 0,00 € à 143,70 €. L'objet porté d'un écran à
+   l'autre (« carry across ») : il rétrécit en volant et se pose dans le
+   chiffre de l'appli, au pixel près. Sans mouvement, les deux sont posés. */
+.scene-tva{position:relative;width:min(100%,640px);aspect-ratio:1/1.16;margin:0 auto}
+.scene-tva .feuille{position:absolute;left:0;top:0;width:76%;transition:opacity .8s ease}
+.scene-tva .appareil{position:absolute;right:0;top:21%;width:52%;z-index:2}
+.scene-tva .ecran img.etape{opacity:0}
+.scene-tva .ecran img.etape.vue{opacity:1}
+/* Ma TVA arrive un peu grande et se pose, comme un écran qui s'ouvre. */
+html.anime .scene-tva .appareil{opacity:0;transform:scale(1.07);transition:opacity .45s ease,transform 1s var(--sortie)}
+.scene-tva .feuille::after{content:"";position:absolute;left:55.5%;right:3.5%;top:51.8%;height:2.6%;border-radius:3px;background:rgba(240,180,60,.34);clip-path:inset(0 100% 0 0);opacity:0;pointer-events:none}
+.scene-tva.surligne .feuille::after{opacity:1;clip-path:inset(0 0 0 0);transition:clip-path .45s cubic-bezier(.65,0,.35,1)}
+html.anime .scene-tva.telephone .appareil{opacity:1;transform:none}
+html.anime .scene-tva.telephone .feuille{opacity:.55}
+.jeton{position:absolute;left:0;top:0;z-index:5;font:400 clamp(46px,12vw,68px)/1 var(--display);color:var(--or-clair);white-space:nowrap;transform-origin:0 0;opacity:0;pointer-events:none;text-shadow:0 14px 34px rgba(0,0,0,.5);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+
+/* ── Et aussi ─────────────────────────────────────────────────────────── */
+/* Les deux captures n'ont ni la même largeur ni la même hauteur : côte à
+   côte, l'une des cases restait à moitié vide. Elles se suivent donc, dans
+   la colonne des captures, le titre à gauche comme pour les chapitres. */
+.aussi-grille{display:grid;gap:44px}
+.grille{display:grid;gap:20px}
+.case{border-radius:28px;overflow:hidden;background:var(--papier);box-shadow:0 0 0 1px rgba(var(--ombre),.07),0 30px 60px -48px rgba(var(--ombre),.5);display:flex;flex-direction:column}
+.case h3{font-size:clamp(32px,3vw,38px);padding:30px 28px 8px}
+.case p{padding:0 28px 24px;color:var(--encre-2);font-size:16.5px}
+.case .cadre{display:grid;place-items:center;margin:0 14px 14px;padding:28px 18px;border-radius:18px;background:var(--sauge)}
+.case .cadre img{width:100%;max-width:440px;border-radius:12px;box-shadow:0 20px 40px -28px rgba(var(--ombre),.55)}
+/* Les travaux se cochent tout seuls à l'arrivée. La carte tient dans
+   l'écran, pour qu'on voie toutes les coches sans avoir à descendre. */
+.pile{position:relative;width:min(100%,calc((100svh - 200px) * 786 / 1530));aspect-ratio:786/1530;margin:0 auto;transition:height .6s var(--sortie)}
+.pile.mesuree{aspect-ratio:auto}
+html.anime .pile{overflow:hidden;border-radius:16px}
+.case .cadre .pile img{position:absolute;left:0;top:0;width:100%;max-width:none;height:auto}
+.pile img.etape{opacity:0}
+.pile img.etape.vue{opacity:1}
+@media (min-width:960px){
+  .aussi-grille{grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:76px;align-items:start}
+  .aussi-grille .mot{position:sticky;top:132px}
+  .case .cadre{padding:40px 24px}
+}
+
+/* ── Vous gardez la main ──────────────────────────────────────────────── */
+.main-grille{display:grid;gap:44px}
+.deux{display:grid}
+.deux article{padding:30px 0;border-top:1px solid var(--trait)}
+.deux article:last-child{border-bottom:1px solid var(--trait)}
+.deux h3{font-size:clamp(32px,4vw,42px);line-height:1}
+.deux p{margin-top:14px;color:var(--encre-2);max-width:34em}
+@media (min-width:960px){.main-grille{grid-template-columns:1fr 1fr;gap:88px;align-items:start}}
+
+/* Pour commencer : trois gestes, dans leur ordre, reliés d'un filet. */
+.gestes{display:grid;gap:0;margin-top:52px;counter-reset:geste;list-style:none;padding:0}
+.geste{counter-increment:geste;position:relative;padding:0 0 36px 72px;display:grid;gap:10px;align-content:start}
+.geste::before{content:counter(geste);position:absolute;left:0;top:-4px;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:var(--nuit);color:var(--or-clair);font:400 28px/1 var(--display)}
+.geste:not(:last-child)::after{content:"";position:absolute;left:23.5px;top:52px;bottom:6px;width:1px;background:var(--trait)}
+.geste h3{font-size:clamp(30px,3vw,36px);line-height:1.05}
+.geste p{color:var(--encre-2);font-size:16.5px;max-width:28em}
+@media (min-width:860px){
+  .gestes{grid-template-columns:repeat(3,1fr);gap:40px}
+  .geste{padding:72px 0 0}
+  .geste::before{top:0}
+  .geste:not(:last-child)::after{left:64px;right:-40px;top:23.5px;bottom:auto;width:auto;height:1px}
+}
+
+/* ── Les prix ─────────────────────────────────────────────────────────── */
+.prix-tete{text-align:center}
+.prix-tete .mot{font-size:clamp(64px,15vw,112px)}
+.prix-tete .chapo{margin:24px auto 0;font-size:clamp(19px,2vw,22px);color:var(--encre-2);max-width:28em}
+.qui-compte{margin:14px auto 0;max-width:34em;font-size:16.5px;color:var(--encre)}
+.bascule{display:inline-flex;margin-top:34px;padding:5px;border-radius:999px;background:var(--fond);box-shadow:inset 0 0 0 1px var(--trait)}
+.bascule button{border:0;background:transparent;color:var(--encre-2);font:500 15px/1 var(--texte);padding:12px 18px;border-radius:999px;min-height:44px;cursor:pointer;transition:background .25s,color .25s}
+.bascule button[aria-pressed="true"]{background:var(--action);color:var(--action-texte);box-shadow:0 6px 16px -10px rgba(var(--ombre),.8)}
+.formules{display:grid;gap:22px;margin-top:44px;align-items:stretch}
+@media (min-width:960px){.formules{grid-template-columns:repeat(3,1fr);gap:22px}}
+.formule{background:var(--fond);border-radius:28px;padding:36px 28px 30px;box-shadow:0 0 0 1px rgba(var(--ombre),.09);display:flex;flex-direction:column}
+.formule.mise{background:var(--papier);box-shadow:0 0 0 2px var(--action),0 34px 60px -38px rgba(var(--ombre),.55)}
+.formule h3{font-size:44px}
+.formule .accroche{margin-top:8px;color:var(--encre-2);font-size:16px;min-height:3.1em}
+.formule .prix{margin-top:18px;font:400 70px/1 var(--display);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.formule .prix small{font:400 16px/1 var(--texte);color:var(--encre-2);letter-spacing:0}
+.formule .offert{margin-top:6px;font-size:14px;color:var(--or);min-height:20px}
+.formule ul{list-style:none;padding:0;margin:22px 0 28px;flex:1}
+.formule li{padding:11px 0 11px 30px;position:relative;font-size:16px;border-top:1px solid var(--trait)}
+.formule li::before{content:"";position:absolute;left:3px;top:17px;width:12px;height:7px;border-left:2px solid var(--feuille);border-bottom:2px solid var(--feuille);transform:rotate(-45deg)}
+.formule li.manque{color:#5f6c63;text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--encre-2) 55%,transparent)}
+.formule li.manque::before{border:0;width:10px;height:2px;top:22px;background:var(--encre-2);transform:none}
+/* Illimité : la formule de l'essai, en vert nuit et en or. Son bandeau dit
+   un fait (FORMULE_DE_LESSAI), pas une popularité qu'aucun chiffre ne fonde. */
+.formule.reine{position:relative;color:var(--sur-nuit);background:radial-gradient(120% 70% at 85% 0%,rgba(240,180,60,.2),transparent 60%),var(--nuit);box-shadow:0 0 0 1.5px var(--or-clair),0 44px 80px -36px rgba(var(--ombre),.8)}
+.formule.reine h3,.formule.reine .offert{color:var(--or-clair)}
+.formule.reine .accroche,.formule.reine .prix small{color:var(--sur-nuit-2)}
+.formule.reine li{border-top-color:var(--trait-nuit)}
+.formule.reine li::before{border-color:var(--or-clair)}
+.formule.reine li.fort{font-weight:600;color:var(--or-clair)}
+.formule.reine .bandeau{position:absolute;top:-14px;left:26px;padding:8px 14px;border-radius:999px;background:var(--or-clair);color:var(--nuit);font:600 12.5px/1 var(--texte);letter-spacing:.06em;text-transform:uppercase}
+.formule .bouton{width:100%}
+.essai-note{margin-top:28px;text-align:center;color:var(--encre-2);font-size:16px}
+
+/* ── Les questions ────────────────────────────────────────────────────── */
+.questions-grille{display:grid;gap:40px}
+.questions details{border-top:1px solid var(--trait)}
+.questions details:last-child{border-bottom:1px solid var(--trait)}
+.questions summary{cursor:pointer;display:flex;justify-content:space-between;align-items:baseline;gap:20px;padding:23px 0;font:400 clamp(24px,2.4vw,28px)/1.18 var(--display);list-style:none;transition:color .2s}
+.questions summary:hover{color:var(--feuille)}
+.questions summary::-webkit-details-marker{display:none}
+.questions summary::after{content:"";flex:none;width:11px;height:11px;margin-right:4px;border-right:1.5px solid var(--or);border-bottom:1.5px solid var(--or);transform:rotate(45deg) translateY(-4px);transition:transform .35s var(--sortie)}
+.questions details[open] summary::after{transform:rotate(225deg) translateY(-4px)}
+.questions details p{padding-bottom:26px;color:var(--encre-2);max-width:38em}
+@media (min-width:960px){.questions-grille{grid-template-columns:.8fr 1.2fr;gap:88px}.questions-grille .tete-q{position:sticky;top:132px;align-self:start}}
+
+/* ── La fin ───────────────────────────────────────────────────────────── */
+.fin{text-align:center;padding:clamp(110px,15vw,180px) 0}
+.fin h2{font-size:clamp(50px,11.5vw,108px);line-height:.98;max-width:11em;margin-inline:auto}
+.fin .actions{justify-content:center;margin-top:44px}
+.fin .rassure{color:var(--sur-nuit-2)}
+
+/* ── Le contact ───────────────────────────────────────────────────────── */
+.contact-grille{display:grid;gap:44px}
+.contact .chapo{margin-top:20px;font-size:clamp(19px,2vw,22px);color:var(--encre-2)}
+.contact form{display:grid;gap:14px}
+.contact .deux-champs{display:grid;gap:14px}
+@media (min-width:640px){.contact .deux-champs{grid-template-columns:1fr 1fr}}
+.contact label{display:grid;gap:7px;font-size:14px;color:var(--encre-2)}
+.contact input,.contact select,.contact textarea{font:400 17px/1.4 var(--texte);color:var(--encre);background:var(--fond);border:1px solid var(--trait);border-radius:14px;padding:14px 16px;min-height:54px;width:100%;caret-color:var(--action);transition:border-color .2s,box-shadow .2s}
+.contact input:focus,.contact select:focus,.contact textarea:focus{outline:none;border-color:var(--action);box-shadow:0 0 0 3px color-mix(in srgb,var(--action) 18%,transparent)}
+.contact textarea{min-height:140px;resize:vertical}
+.contact .bouton{margin-top:6px}
+.contact .reponse-maquette{font-size:15px;color:var(--encre-2);min-height:22px}
+.coordonnees{margin:40px 0 0;display:grid}
+.coordonnees div{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:15px 0;border-top:1px solid var(--trait);font-size:16px}
+.coordonnees div:last-child{border-bottom:1px solid var(--trait)}
+.coordonnees dt{color:var(--encre-2)}
+.coordonnees dd{margin:0;text-align:right}
+.a-completer{display:inline-block;padding:4px 11px;border:1px dashed var(--or);border-radius:999px;color:var(--or);font-size:14px}
+@media (min-width:960px){.contact-grille{grid-template-columns:.9fr 1.1fr;gap:88px;align-items:start}}
+
+/* ── Le pied ──────────────────────────────────────────────────────────── */
+.pied{background:var(--nuit-2);padding:72px 0 calc(40px + env(safe-area-inset-bottom))}
+.pied-grille{display:grid;gap:44px}
+.pied .marque{font-size:36px;color:var(--sur-nuit)}
+.pied .devise{margin-top:10px;color:var(--sur-nuit-2);font-size:16px}
+.pied nav{display:grid;grid-template-columns:1fr 1fr;gap:32px 24px}
+.pied h3{font:600 12.5px/1 var(--texte);letter-spacing:.12em;text-transform:uppercase;color:var(--or-clair)}
+.pied ul{list-style:none;padding:0;margin:14px 0 0}
+.pied li a{display:block;padding:7px 0;color:var(--sur-nuit);text-decoration:none;font-size:16px}
+.pied li a:hover{text-decoration:underline}
+.pied .bas{margin-top:52px;padding-top:20px;border-top:1px solid var(--trait-nuit);color:var(--sur-nuit-2);font-size:14px}
+@media (min-width:900px){.pied-grille{grid-template-columns:1fr 1.6fr}.pied nav{grid-template-columns:repeat(3,1fr)}}
+
+/* Le bouton d'essai, sous le pouce, sur téléphone seulement. */
+.pouce{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:15;display:flex;justify-content:center;transform:translateY(140%);transition:transform .5s var(--sortie);pointer-events:none}
+.pouce.vu{transform:none;pointer-events:auto}
+.pouce .bouton{width:100%;max-width:420px;box-shadow:0 20px 44px -16px rgba(var(--ombre),.75)}
+@media (min-width:960px){.pouce{display:none}}
+
+@media (prefers-reduced-motion:reduce){
+  .gros img{transform:none;transition:none}
+  .dite span{transition:none}
+  .dite.attend span{opacity:1}
+  .pouce,.bouton,.bascule button{transition:none}
+}
+</style>
+</head>
+<body>
+
+<header class="barre" id="barre">
+  <div class="large">
+    <a class="marque" href="#">Atlas</a>
+    <nav class="liens" aria-label="Rubriques">
+      <a href="#fonctionnement">Comment ça marche</a>
+      <a href="#prix">Les prix</a>
+      <a href="#questions">Vos questions</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <div class="droite">
+      <button type="button" class="ouvre-menu" aria-expanded="false" aria-controls="menu">Menu</button>
+      <a class="lien-demo" href="#essayer">Essai gratuit</a>
+    </div>
+  </div>
+</header>
+
+<nav class="menu" id="menu" aria-label="Rubriques">
+  <button type="button" class="ferme">Fermer</button>
+  <a href="#fonctionnement">Comment ça marche</a>
+  <a href="#prix">Les prix</a>
+  <a href="#questions">Vos questions</a>
+  <a href="#contact">Contact</a>
+  <a class="bouton" href="#essayer">Essayer 15 jours gratuits</a>
+</nav>
+
+<main>
+
+<section class="ouverture">
+  <div class="large ouverture-grille">
+    <div>
+      <h1>Le devis part avant que vous quittiez <em>le chantier.</em></h1>
+      <p class="chapo">Vous dictez le chantier. Atlas écrit le devis. Votre client accepte sur son téléphone.</p>
+      <div class="actions">
+        <a class="bouton" href="#essayer">Essayer 15 jours gratuits</a>
+        <a class="bouton clair" href="#prix">Voir les prix</a>
+      </div>
+      <p class="rassure">Sans carte bancaire. Tout est ouvert pendant l'essai.</p>
+    </div>
+    <div class="scene" aria-hidden="true">
+      <figure class="feuille"><img src="images/nov-devis.jpg" alt="" width="1654" height="2339"></figure>
+      <div class="appareil" id="scene-creer"><div class="ecran"><img src="images/nov-creer-un-devis.jpg" alt="" width="1170" height="1992"><video muted playsinline preload="auto" width="780" height="1328"><source src="images/nov-creer-un-devis.mp4" type="video/mp4"><source src="images/nov-creer-un-devis.webm" type="video/webm"></video><img class="film-fin" src="images/nov-creer-un-devis-fin.jpg" alt="" width="1170" height="1992"></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="douleur nuit">
+  <div class="large douleur-grille">
+    <h2>Vous êtes artisan. Pas secrétaire.</h2>
+    <div>
+      <ul>
+        <li>Les devis retapés le soir.</li>
+        <li>Les clients qui ne répondent pas.</li>
+        <li>La TVA calculée à la fin du mois.</li>
+      </ul>
+      <p class="reponse">Atlas s'en occupe. Vous restez sur le chantier.</p>
+    </div>
+  </div>
+</section>
+
+<section class="metiers papier" id="metiers">
+  <div class="large">
+    <h2 class="mot">Pour tous les artisans.</h2>
+    <ul class="liste-metiers">
+      <li>Maçon</li><li>Plombier</li><li>Électricien</li><li>Menuisier</li><li>Peintre</li><li>Couvreur</li><li>Carreleur</li><li>Chauffagiste</li><li>Plaquiste</li><li>Paysagiste</li><li>Élagueur</li><li class="le-votre">et le vôtre.</li>
+    </ul>
+    <ul class="faits atouts">
+      <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Particulier, entreprise ou mairie.</b><span>La fiche client les distingue. Le particulier reçoit son formulaire de rétractation.</span></li>
+      <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Plusieurs taux de TVA.</b><span>Sur un même devis, une ligne par taux.</span></li>
+      <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>La sous-traitance.</b><span>L'autoliquidation, quand votre client est une entreprise.</span></li>
+      <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Le jardin, en plus.</b><span>Pour les paysagistes et les élagueurs : le plan d'arrosage, le diagnostic végétal, les fiches de sécurité d'élagage.</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="chapitre" id="fonctionnement">
+  <div class="large chap-grille">
+    <div class="chap-texte">
+      <h2 class="mot">Dictez<span class="point">.</span></h2>
+      <p class="chapo">Vous décrivez le chantier sur place, à voix haute. Atlas écrit le devis.</p>
+    </div>
+    <div class="chap-visuel recit">
+      <div class="scene scene-micro">
+        <div class="appareil" id="scene-micro"><div class="ecran"><img src="images/nov-fiche-client.jpg" alt="Fiche client d'Atlas, remplie pour Mr. Lemaire, avec le bouton Devis à la voix" width="1170" height="1992"><div class="bande" aria-hidden="true"></div></div></div>
+      </div>
+      <p class="dite" id="dite">« On arrache l'ancienne haie de thuyas sur douze mètres. »</p>
+      <div class="devient">
+        <p class="sur">Sur le devis, cela devient :</p>
+        <div class="devis-loupe">
+          <figure class="feuille"><img src="images/nov-devis.jpg" alt="Le devis fini, en PDF : Création d'un massif pour Mr. Lemaire, quatre lignes, 718,50 euros HT, 862,20 euros TTC" width="1654" height="2339"></figure>
+          <p class="ligne"><span class="designation">Arrachage de la haie de thuyas et évacuation</span><span class="qte">12 ml</span><span class="pu">18,00 €</span><span class="total">216,00 € HT</span></p>
+        </div>
+        <p class="sous">Le devis, prêt à partir.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="vos-prix">
+  <div class="large vos-prix-grille">
+    <h2>Vos prix, pas les nôtres.</h2>
+    <ul class="faits">
+      <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Votre liste de tarifs.</b><span>Vous l'importez une fois, depuis Excel. Atlas s'en sert pour chaque ligne.</span></li>
+      <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Un prix qu'il ne connaît pas reste vide.</b><span>Il vous le demande. Il ne l'invente jamais.</span></li>
+      <li><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="12"/><path d="M8 13.4l3.4 3.3L18.2 9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Tout se corrige à la main.</b><span>Une ligne à changer, une ligne à ajouter : avant l'envoi, le devis est à vous.</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="chapitre papier envoi">
+  <div class="large chap-grille inverse">
+    <div class="chap-texte">
+      <h2 class="mot">Envoyez<span class="point">.</span></h2>
+      <p class="chapo">Le client choisit sa date et accepte depuis son téléphone.</p>
+      <p class="sous">Son accord est horodaté et conservé avec le devis.</p>
+    </div>
+    <div class="chap-visuel">
+      <div class="scene sable">
+        <div class="appareil" id="scene-envoi"><div class="ecran"><img class="etape vue" src="images/nov-client-2.jpg" alt="Page que reçoit le client : le devis de Mr. Lemaire à 862,20 euros TTC, le vendredi 6 novembre choisi, la case de rétractation cochée, J'accepte ce devis, Une correction avant d'accepter et Je ne donne pas suite" width="1170" height="1992"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="chapitre">
+  <div class="large chap-grille">
+    <div class="chap-texte">
+      <h2 class="mot">Planifiez<span class="point">.</span></h2>
+      <p class="chapo">Le mois d'un coup d'œil : plein, à moitié, trop chargé.</p>
+    </div>
+    <div class="chap-visuel">
+      <div class="plans">
+        <figure class="gros empile" id="scene-mois"><img src="images/nov-mois-5.jpg" alt="Planning de novembre : demi-journées en vert clair, vert foncé et rouge, le vendredi 6 entouré d'or" width="1170" height="1563"></figure>
+        <div class="paire">
+          <div>
+            <figure class="gros empile" id="scene-equipe"><img src="images/nov-equipe-2.jpg" alt="Le chantier de Mr. Lemaire, le vendredi 6 novembre : Lucas et Julien le matin et l'après-midi" width="1038" height="834"></figure>
+            <p class="sous">L'équipe se pose à la demi-journée.</p>
+          </div>
+          <div>
+            <figure class="gros"><img src="images/nov-fiche-intervention.jpg" alt="Fiche d'intervention entière : Maps, Waze, Copier l'adresse, Appeler le client, la note, la fiche de sécurité, les travaux à faire, le devis sans les prix" width="882" height="1596"></figure>
+            <p class="sous">Le jour J, tout tient sur la fiche.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="chapitre nuit encaisse">
+  <div class="large chap-grille inverse">
+    <div class="chap-texte">
+      <h2 class="mot">Encaissez<span class="point">.</span></h2>
+      <p class="chapo">La facture reprend le devis, ligne pour ligne.</p>
+      <div class="chiffre" id="tva-du-mois" data-valeur="143.70"><b>143,70 €</b><span>La TVA du mois, déjà calculée.</span></div>
+    </div>
+    <div class="chap-visuel">
+      <div class="scene-tva" id="scene-tva">
+        <figure class="feuille"><img src="images/nov-facture.jpg" alt="La facture finie, en PDF : F2026-000001 pour Mr. Lemaire, Création d'un massif, les quatre lignes du devis, 862,20 euros net à payer" width="1654" height="2339"></figure>
+        <div class="appareil"><div class="ecran"><img src="images/nov-tva-apres.jpg" alt="Ma TVA de novembre dans Atlas : TVA collectée 143,70 euros, TVA à payer 143,70 euros" width="1170" height="1992"></div></div>
+        <span class="jeton" aria-hidden="true">143,70 €</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="large aussi-grille">
+    <h2 class="mot">Et aussi.</h2>
+    <div class="grille">
+      <article class="case">
+        <h3>Les travaux cochés</h3>
+        <p>Sur place, tâche par tâche.</p>
+        <div class="defile" id="scene-travaux">
+          <div class="cadre"><div class="pile"><img class="etape vue" src="images/nov-travaux-5.jpg" alt="Travaux à faire : les quatre tâches cochées, la remarque sur le portail, et Envoyer le retour du jour" width="786" height="1530"></div></div>
+        </div>
+      </article>
+      <article class="case">
+        <h3>Le retour du soir</h3>
+        <p>Ce que l'équipe a fait, coché le soir même.</p>
+        <div class="cadre"><img src="images/nov-retour.jpg" alt="Retour d'intervention du chantier Lemaire : quatre tâches faites, et le portail à revoir" width="1038" height="971"></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="large main-grille">
+    <h2 class="mot">Vous gardez la main.</h2>
+    <div class="deux">
+      <article>
+        <h3>L'IA prépare. Vous décidez.</h3>
+        <p>Rien ne part chez le client sans votre accord. Chaque ligne se corrige à la main, et quand une information manque, Atlas la laisse vide et vous la demande plutôt que de l'inventer.</p>
+      </article>
+      <article>
+        <h3>Pensé pour les artisans.</h3>
+        <p>Les mots du métier, l'équipe posée à la demi-journée, les retours d'intervention. Pas un logiciel de devis générique.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="large">
+    <h2 class="mot">Pour commencer.</h2>
+    <ol class="gestes">
+      <li class="geste"><h3>Votre compte</h3><p>Le nom de l'entreprise, sa forme, votre régime de TVA. Une question à la fois. Votre logo s'ajoute ensuite.</p></li>
+      <li class="geste"><h3>Vos prix</h3><p>Importez votre liste depuis Excel, ou remplissez-les au fil de vos premiers devis.</p></li>
+      <li class="geste"><h3>Votre premier devis</h3><p>Ouvrez la fiche du client, appuyez sur le micro, et décrivez le chantier.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section class="papier" id="prix">
+  <div class="large">
+    <div class="prix-tete">
+      <h2 class="mot">Les prix.</h2>
+      <p class="chapo">Sans engagement. Vous arrêtez quand vous voulez, à la fin de la période en cours.</p>
+      <p class="qui-compte">Seules comptent les personnes qui font les devis et les factures. Vos salariés ne comptent jamais.</p>
+      <div class="bascule" role="group" aria-label="Paiement">
+        <button type="button" data-periode="mois" aria-pressed="true">Au mois</button>
+        <button type="button" data-periode="an" aria-pressed="false">À l'année, 2 mois offerts</button>
+      </div>
+    </div>
+    <div class="formules">
+      <article class="formule" data-mois="39" data-an="390">
+        <h3>Artisan</h3>
+        <p class="accroche">Du devis dicté à la facture, sans rien retaper.</p>
+        <p class="prix"><span class="montant">39 €</span> <small class="rythme">HT par mois</small></p>
+        <p class="offert"></p>
+        <ul>
+          <li>Devis et factures illimités</li>
+          <li>Vos dictées transcrites et chiffrées</li>
+          <li>Le planning de vos chantiers</li>
+          <li>Votre relevé de TVA, tenu tout seul</li>
+          <li>Vos salariés ont accès au planning</li>
+          <li class="manque">Les absences de vos équipes</li>
+          <li class="manque">Les retours d'intervention de vos salariés</li>
+          <li class="manque">Jusqu'à 5 personnes aux devis et aux factures</li>
+        </ul>
+        <a class="bouton clair" href="#essayer">Essayer 15 jours gratuits</a>
+      </article>
+      <article class="formule mise" data-mois="59" data-an="590">
+        <h3>Entreprise</h3>
+        <p class="accroche">Tout Atlas, jusqu'à cinq personnes qui facturent.</p>
+        <p class="prix"><span class="montant">59 €</span> <small class="rythme">HT par mois</small></p>
+        <p class="offert"></p>
+        <ul>
+          <li>Devis et factures illimités</li>
+          <li>Vos dictées transcrites et chiffrées</li>
+          <li>Le planning de vos chantiers</li>
+          <li>Votre relevé de TVA, tenu tout seul</li>
+          <li>Vos salariés ont accès au planning</li>
+          <li>Les absences de vos équipes</li>
+          <li>Les retours d'intervention de vos salariés</li>
+          <li>Jusqu'à 5 personnes aux devis et aux factures</li>
+        </ul>
+        <a class="bouton" href="#essayer">Essayer 15 jours gratuits</a>
+      </article>
+      <article class="formule reine" data-mois="159" data-an="1590">
+        <span class="bandeau">Offerte 15 jours</span>
+        <h3>Illimité</h3>
+        <p class="accroche">Toute votre équipe sur Atlas.</p>
+        <p class="prix"><span class="montant">159 €</span> <small class="rythme">HT par mois</small></p>
+        <p class="offert"></p>
+        <ul>
+          <li>Devis et factures illimités</li>
+          <li>Vos dictées transcrites et chiffrées</li>
+          <li>Le planning de vos chantiers</li>
+          <li>Votre relevé de TVA, tenu tout seul</li>
+          <li>Vos salariés ont accès au planning</li>
+          <li>Les absences de vos équipes</li>
+          <li>Les retours d'intervention de vos salariés</li>
+          <li class="fort">Autant de personnes que vous voulez aux devis et aux factures</li>
+        </ul>
+        <a class="bouton or" href="#essayer">Essayer 15 jours gratuits</a>
+      </article>
+    </div>
+    <p class="essai-note">L'essai ouvre tout, sans carte bancaire. Vous choisissez votre formule après.</p>
+  </div>
+</section>
+
+<section class="questions" id="questions">
+  <div class="large questions-grille">
+    <div class="tete-q"><h2 class="mot">Vos questions.</h2></div>
+    <div>
+      <details><summary>Faut-il être à l'aise avec un téléphone ?</summary><p>Non. Les boutons sont grands, les mots sont ceux du métier. Atlas est fait pour être utilisé debout, d'une main, en plein soleil.</p></details>
+      <details><summary>Mon métier n'est pas le jardin.</summary><p>Atlas vous sert quand même : le devis, la date, le planning, la facture et la TVA valent pour tous les métiers, avec vos prix. Seul l'onglet Paysage est propre au jardin.</p></details>
+      <details><summary>Sur quoi Atlas fonctionne-t-il ?</summary><p>Sur votre téléphone et sur votre ordinateur, dans le navigateur. Il s'ajoute à l'écran d'accueil comme une application.</p></details>
+      <details><summary>Et si l'IA se trompe ?</summary><p>Vous le voyez avant le client. Rien n'est envoyé, validé ou facturé sans votre geste, et chaque ligne se corrige à la main.</p></details>
+      <details><summary>Et sur ordinateur ?</summary><p>Ouvrez Atlas dans Chrome ou Edge et installez-le : il s'ouvre dans sa propre fenêtre, avec son icône sur le bureau, comme un logiciel. Même compte que sur le téléphone.</p></details>
+      <details><summary>Mon client n'a pas de smartphone.</summary><p>Téléchargez le devis en PDF : vous l'imprimez et vous le lui donnez, ou vous l'envoyez par e-mail.</p></details>
+      <details><summary>Mes devis sont-ils en règle ?</summary><p>Le papier porte vos numéros, la TVA et, pour un particulier, le formulaire de rétractation. S'il manque votre assurance décennale ou votre médiateur, Atlas vous le rappelle.</p></details>
+      <details><summary>Mes clients doivent-ils installer quelque chose ?</summary><p>Non. Ils reçoivent un lien par SMS ou par e-mail, choisissent leur date et acceptent depuis leur téléphone.</p></details>
+      <details><summary>Mes données sont-elles à l'abri ?</summary><p>Chaque entreprise est isolée des autres au niveau de la base de données elle-même. Vos clients, vos prix et vos chantiers ne sont visibles que par votre équipe.</p></details>
+      <details><summary>Que se passe-t-il après les 15 jours ?</summary><p>Rien n'est prélevé tout seul. Vous choisissez une formule, ou Atlas passe en lecture seule : vos devis et vos factures restent consultables.</p></details>
+      <details><summary>Et si j'arrête ?</summary><p>Vous téléchargez toutes vos données quand vous voulez, vos devis et vos factures en PDF compris.</p></details>
+      <details><summary>Et la facture électronique ?</summary><p>Elle arrive. Vous pourrez relier votre compte de facture électronique à Atlas, et vos factures partiront par lui.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="fin nuit" id="essayer">
+  <div class="large">
+    <h2>Quinze jours pour retrouver vos soirées.</h2>
+    <div class="actions"><a class="bouton" href="#essayer">Essayer 15 jours gratuits</a></div>
+    <p class="rassure">Sans carte bancaire. Sans engagement.</p>
+  </div>
+</section>
+
+<section class="contact papier" id="contact">
+  <div class="large contact-grille">
+    <div>
+      <h2 class="mot">Contact.</h2>
+      <p class="chapo">Une question avant d'essayer ? On vous répond.</p>
+      <dl class="coordonnees">
+        <div><dt>E-mail</dt><dd><span class="a-completer">à compléter</span></dd></div>
+        <div><dt>Téléphone</dt><dd><span class="a-completer">à compléter</span></dd></div>
+        <div><dt>Adresse</dt><dd><span class="a-completer">à compléter</span></dd></div>
+      </dl>
+    </div>
+    <form id="formulaire-contact">
+      <div class="deux-champs">
+        <label>Votre nom<input name="nom" autocomplete="name" required></label>
+        <label>Téléphone<input name="telephone" type="tel" autocomplete="tel"></label>
+      </div>
+      <div class="deux-champs">
+        <label>E-mail<input name="email" type="email" autocomplete="email" required></label>
+        <label>Votre métier<input name="metier" autocomplete="organization-title"></label>
+      </div>
+      <label>Votre message<textarea name="message" required></textarea></label>
+      <button class="bouton" type="submit">Envoyer</button>
+      <p class="reponse-maquette" aria-live="polite"></p>
+    </form>
+  </div>
+</section>
+
+</main>
+
+<div class="pouce" id="pouce"><a class="bouton" href="#essayer">Essayer 15 jours gratuits</a></div>
+
+<footer class="pied">
+  <div class="large">
+    <div class="pied-grille">
+      <div>
+        <a class="marque" href="#">Atlas</a>
+        <p class="devise">Le logiciel des artisans.</p>
+      </div>
+      <nav aria-label="Pied de page">
+        <div><h3>Atlas</h3><ul>
+          <li><a href="#fonctionnement">Comment ça marche</a></li>
+          <li><a href="#prix">Les prix</a></li>
+          <li><a href="#essayer">Essai gratuit</a></li>
+        </ul></div>
+        <div><h3>Aide</h3><ul>
+          <li><a href="#questions">Vos questions</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul></div>
+        <div><h3>Légal</h3><ul>
+          <li><a href="mentions-legales.html#mentions">Mentions légales</a></li>
+          <li><a href="mentions-legales.html#conditions">Conditions générales</a></li>
+          <li><a href="mentions-legales.html#donnees">Données personnelles</a></li>
+          <li><a href="mentions-legales.html#cookies">Cookies</a></li>
+        </ul></div>
+      </nav>
+    </div>
+    <p class="bas">© 2026 Atlas. Prix hors taxes.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  // La barre prend un filet dès qu'on a quitté le haut de la page.
+  var barre = document.getElementById("barre");
+  addEventListener("scroll", function(){ barre.classList.toggle("posee", scrollY > 8); }, {passive:true});
+
+  // Le menu du téléphone s'ouvre en plein écran et se referme dès qu'une rubrique est choisie.
+  var menu = document.getElementById("menu"), ouvre = document.querySelector(".ouvre-menu");
+  function basculer(ouvert){ menu.classList.toggle("ouvert", ouvert); ouvre.setAttribute("aria-expanded", String(ouvert)); document.documentElement.style.overflow = ouvert ? "hidden" : ""; }
+  ouvre.addEventListener("click", function(){ basculer(true); });
+  menu.querySelector(".ferme").addEventListener("click", function(){ basculer(false); });
+  menu.querySelectorAll("a").forEach(function(a){ a.addEventListener("click", function(){ basculer(false); }); });
+
+  // La maquette n'a pas de serveur : le formulaire le dit au lieu de faire semblant d'envoyer.
+  document.getElementById("formulaire-contact").addEventListener("submit", function(e){
+    e.preventDefault();
+    this.querySelector(".reponse-maquette").textContent = "Maquette : ce formulaire n'envoie encore rien.";
+  });
+
+  // Le mois ou l'année : le prix de chaque carte vient de ses attributs, recopiés
+  // de src/lib/abonnements.ts (l'année vaut dix mois, deux sont offerts).
+  var boutonsPeriode = document.querySelectorAll(".bascule button");
+  function periode(p){
+    boutonsPeriode.forEach(function(b){ b.setAttribute("aria-pressed", String(b.getAttribute("data-periode") === p)); });
+    document.querySelectorAll(".formule").forEach(function(f){
+      f.querySelector(".montant").textContent = Number(f.getAttribute(p === "an" ? "data-an" : "data-mois")).toLocaleString("fr-FR") + " €";
+      f.querySelector(".rythme").textContent = p === "an" ? "HT par an" : "HT par mois";
+      var auMois = Number(f.getAttribute("data-an")) / 12;
+      f.querySelector(".offert").textContent = p === "an" ? "Deux mois offerts, soit " + auMois.toLocaleString("fr-FR", {minimumFractionDigits:2, maximumFractionDigits:2}) + " € par mois" : "";
+    });
+  }
+  boutonsPeriode.forEach(function(b){ b.addEventListener("click", function(){ periode(b.getAttribute("data-periode")); }); });
+
+  // Le bouton du pouce : visible une fois l'ouverture passée, effacé dès qu'un
+  // autre bouton d'essai est à l'écran (les prix, la fin), pour ne jamais doubler.
+  var pouce = document.getElementById("pouce");
+  if ("IntersectionObserver" in window){
+    var visibles = new Set();
+    var veille = new IntersectionObserver(function(entrees){
+      entrees.forEach(function(e){ e.isIntersecting ? visibles.add(e.target) : visibles.delete(e.target); });
+      pouce.classList.toggle("vu", visibles.size === 0);
+    });
+    document.querySelectorAll(".ouverture, #prix, #essayer, #contact, .pied").forEach(function(c){ veille.observe(c); });
+  }
+
+  // Les captures se posent en entrant dans l'écran : visibles d'emblée, elles
+  // ne font que se resserrer.
+  if (!("IntersectionObserver" in window)) return;
+  var guetteur = new IntersectionObserver(function(entrees){
+    entrees.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add("vu"); guetteur.unobserve(e.target); } });
+  }, {rootMargin:"0px 0px -12% 0px", threshold:0.15});
+  document.querySelectorAll(".gros").forEach(function(c){ guetteur.observe(c); });
+
+  // ── LES MISES EN SCÈNE ────────────────────────────────────────────────
+  // Sans script, ou pour qui a demandé moins de mouvement, chaque scène montre
+  // son état le plus parlant, posé dans le balisage, et rien ne bouge.
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  document.documentElement.classList.add("anime");
+  var attendre = function(ms){ return new Promise(function(r){ setTimeout(r, ms); }); };
+  var montrer = function(liste, i){ liste.forEach(function(im, k){ im.classList.toggle("vue", k === i); }); };
+  // Les images d'une scène ne se chargent qu'à l'approche : sans cela, la page
+  // ferait venir une trentaine de captures avant même qu'on la lise.
+  var empiler = function(conteneur, sources){
+    return sources.map(function(src){
+      var im = new Image(); im.src = src; im.alt = ""; im.decoding = "async"; im.className = "etape";
+      conteneur.appendChild(im); return im;
+    });
+  };
+  // La caméra, d'après les règles de mouvement du skill HyperFrames : elle va
+  // et vient en accélérant puis en ralentissant (power2.inOut), un écran neuf
+  // arrive un peu grand et se pose sur une longue traîne (expo.out). Elle ne
+  // sort jamais de l'écran : son cadrage est borné aux bords de l'image.
+  var CAMERA = "cubic-bezier(.65,0,.35,1)", ARRIVEE = "cubic-bezier(.16,1,.3,1)", PLAN = { x:.5, y:.5, z:1 };
+  var camera = function(cadre){
+    var el = document.createElement("div"); el.className = "camera";
+    while (cadre.firstChild) el.appendChild(cadre.firstChild);
+    cadre.appendChild(el);
+    var anim = null;
+    var cadrage = function(p){
+      var W = cadre.clientWidth, H = cadre.clientHeight;
+      var tx = Math.min(0, Math.max(W - W * p.z, W / 2 - p.x * W * p.z)), ty = Math.min(0, Math.max(H - H * p.z, H / 2 - p.y * H * p.z));
+      return "translate(" + tx.toFixed(1) + "px," + ty.toFixed(1) + "px) scale(" + p.z + ")";
+    };
+    return {
+      el: el,
+      aller: function(p, duree, courbe){
+        var de = getComputedStyle(el).transform; if (!de || de === "none") de = "translate(0px,0px) scale(1)";
+        if (anim) anim.cancel();
+        var vers = cadrage(p); el.style.transform = vers;
+        anim = el.animate([{ transform: de }, { transform: vers }], { duration: duree || 700, easing: courbe || CAMERA });
+        return anim.finished.catch(function(){});
+      },
+      poser: function(p){ if (anim) anim.cancel(); el.style.transform = cadrage(p); },
+      // Un écran neuf : un peu grand, puis il se pose.
+      arriver: function(){ this.poser({ x:.5, y:.4, z:1.06 }); return this.aller(PLAN, 650, ARRIVEE); }
+    };
+  };
+
+  // Une scène se joue quand elle est assez à l'écran ; la quitter l'arrête,
+  // y revenir la rejoue depuis le début.
+  var scene = function(el, seuil, prete, jouer, arreter){
+    var tour = 0, chargee = false;
+    // Arrivé d'un coup (un lien, un défilement rapide), la scène peut se jouer
+    // avant d'avoir préparé ses images : elle les prépare alors elle-même,
+    // sans quoi l'écran du téléphone restait vide un instant.
+    var charger = function(){ if (!chargee){ chargee = true; prete(); } };
+    new IntersectionObserver(function(e){ if (e[0].isIntersecting) charger(); }, {rootMargin:"900px 0px"}).observe(el);
+    new IntersectionObserver(function(e){
+      if (e[0].isIntersecting){ charger(); tour++; var mien = tour; jouer(function(){ return mien === tour; }); }
+      else { tour++; if (arreter) arreter(); }
+    }, {threshold:seuil}).observe(el);
+  };
+
+  // 1. La phrase dictée : mot à mot, comme une dictée qui se transcrit, au
+  // rythme d'une voix (un mot long prend plus de temps qu'un court, la fin de
+  // phrase respire). Les guillemets suivent leur mot. Puis la ligne du devis.
+  var dite = document.getElementById("dite"), devient = document.querySelector(".devient");
+  var mots = [];
+  dite.textContent.trim().split(/\s+/).forEach(function(m){
+    if (m === "«" || (mots.length && mots[mots.length - 1] === "«")) { if (mots.length && mots[mots.length - 1] === "«") mots[mots.length - 1] += "\u00a0" + m; else mots.push(m); }
+    else if (m === "»" && mots.length) mots[mots.length - 1] += "\u00a0" + m;
+    else mots.push(m);
+  });
+  dite.innerHTML = mots.map(function(m){ return '<span class="m">' + m + '</span>'; }).join(" ");
+  var spans = Array.from(dite.querySelectorAll(".m"));
+  var dicter = async function(){
+    await attendre(450);
+    for (var i = 0; i < spans.length; i++){
+      if (i > 0) spans[i - 1].classList.remove("dernier");
+      spans[i].classList.add("dite-la", "dernier");
+      await attendre(170 + 42 * mots[i].replace(/[«»\u00a0]/g, "").length + (/[,.]/.test(mots[i]) ? 260 : 0));
+    }
+    await attendre(2400); spans[spans.length - 1].classList.remove("dernier");
+  };
+  new IntersectionObserver(function(e, o){ if (e[0].isIntersecting){ o.disconnect(); dicter(); } }, {threshold:0.9}).observe(dite);
+  // Puis, plus bas, la ligne se pose sur le devis entier.
+  new IntersectionObserver(function(e, o){ if (e[0].isIntersecting){ o.disconnect(); devient.classList.add("vu"); } }, {threshold:0.45}).observe(devient.querySelector(".devis-loupe"));
+
+  // 0. L'ouverture : l'accueil, tel quel. Au premier défilement, « Créer un
+  // devis » : le + tourne et la fiche client monte, le film de la vraie
+  // animation de l'appli. Sa demande : pas en boucle, pas d'emblée ; revenu
+  // tout en haut, la page redevient l'accueil et le geste se rejouera.
+  // La caméra s'approche de « Créer un devis + » avant l'appui, puis recule
+  // pendant que la fiche monte, pour qu'on la voie entière.
+  var creer = document.getElementById("scene-creer"), film = creer.querySelector("video"), finFilm = creer.querySelector(".film-fin");
+  var camCreer = camera(creer.querySelector(".ecran")), PLUS = { x:.47, y:.27, z:1.35 };
+  var arme = true, tourCreer = 0;
+  film.addEventListener("playing", function(){ film.classList.add("joue"); });
+  film.addEventListener("ended", function(){ finFilm.classList.add("vue"); film.classList.remove("joue"); });
+  var lancer = async function(){
+    arme = false; var mien = ++tourCreer;
+    await camCreer.aller(PLUS, 520); if (mien !== tourCreer) return;
+    try { film.currentTime = 0; } catch (e) {}
+    var promesse = film.play();
+    // Lecture refusée (économie d'énergie, par exemple) : la fiche client
+    // s'affiche d'un coup, sans écran vide entre les deux.
+    if (promesse && promesse.catch) promesse.catch(function(){ finFilm.classList.add("vue"); });
+    await attendre(420); if (mien !== tourCreer) return;
+    camCreer.aller(PLAN, 820);
+  };
+  var remettre = function(){ arme = true; tourCreer++; film.pause(); film.classList.remove("joue"); finFilm.classList.remove("vue"); camCreer.poser(PLAN); };
+  addEventListener("scroll", function(){
+    if (arme && scrollY > 24) lancer();
+    else if (!arme && scrollY < 2) remettre();
+  }, {passive:true});
+
+  // 2. La note vocale : le micro au repos, puis l'enregistrement qui démarre
+  // et le vrai chrono qui défile, une capture par seconde (nov-dictee-00 à 12).
+  // La caméra s'approche du micro, l'enregistrement démarre sous nos yeux,
+  // puis elle recule pendant que les secondes continuent.
+  var micro = document.getElementById("scene-micro"), bande = micro.querySelector(".bande"), secondes = [];
+  var camMicro = camera(micro.querySelector(".ecran")), MICRO = { x:.5, y:.79, z:1.35 };
+  scene(micro, 0.4, function(){
+    for (var k = 0; k <= 12; k++) secondes.push("images/nov-dictee-" + (k < 10 ? "0" : "") + k + ".jpg");
+    secondes = empiler(bande, secondes);
+  }, async function(encore){
+    while (encore()){
+      montrer(secondes, -1); camMicro.poser(PLAN);
+      await attendre(600); if (!encore()) return;
+      await camMicro.aller(MICRO, 650); if (!encore()) return;
+      await attendre(150); if (!encore()) return;
+      montrer(secondes, 0);
+      for (var k = 1; k < secondes.length; k++){
+        await attendre(1000); if (!encore()) return; montrer(secondes, k);
+        if (k === 3) camMicro.aller(PLAN, 850);
+      }
+      await attendre(2200);
+    }
+  }, function(){ montrer(secondes, -1); camMicro.poser(PLAN); });
+
+  // 3. Le client : la date se choisit tout de suite, la case des 14 jours
+  // apparaît, elle se coche, il accepte, et la page change.
+  // La caméra suit le geste du client : la date, la case, le bouton. La page
+  // qui dit « C'est noté » arrive un peu grande et se pose.
+  var envoi = document.getElementById("scene-envoi"), ecranEnvoi = envoi.querySelector(".ecran");
+  var fixe = ecranEnvoi.querySelector("img.etape"), pages = [];
+  var camEnvoi = camera(ecranEnvoi);
+  var DATE = { x:.5, y:.43, z:1.18 }, COCHE = { x:.45, y:.63, z:1.18 }, ACCEPTER = { x:.5, y:.79, z:1.18 };
+  // Elle part dès que le téléphone entre à l'écran : à 55 %, il fallait
+  // presque l'avoir traversé (sa remarque du 6 novembre).
+  scene(envoi, 0.3, function(){
+    pages = empiler(camEnvoi.el, ["images/nov-client-0.jpg", "images/nov-client-1.jpg", "images/nov-client-2.jpg", "images/nov-client-3.jpg"]);
+  }, async function(encore){
+    fixe.classList.remove("vue"); montrer(pages, 0); camEnvoi.poser(PLAN);
+    await attendre(250); if (!encore()) return;
+    await camEnvoi.aller(DATE, 550); if (!encore()) return; montrer(pages, 1);
+    await attendre(600); if (!encore()) return;
+    await camEnvoi.aller(COCHE, 600); if (!encore()) return; montrer(pages, 2);
+    await attendre(550); if (!encore()) return;
+    await camEnvoi.aller(ACCEPTER, 500); if (!encore()) return;
+    await attendre(350); if (!encore()) return;
+    montrer(pages, 3); camEnvoi.arriver();
+  }, function(){ camEnvoi.poser(PLAN); });
+
+  // 3 bis. Planifiez : le mois se remplit chantier après chantier (le 10 passe
+  // au rouge quand il devient trop chargé, le 6 se remplit en dernier), puis
+  // l'équipe se pose sur la journée de Mr. Lemaire. Captures de l'appli,
+  // une par chantier posé (nov-mois-0 à 5, nov-equipe-0 à 2).
+  var jusqua = function(liste, i){ liste.forEach(function(im, k){ im.classList.toggle("vue", k <= i); }); };
+  var empilerSur = function(figure, sources){
+    return sources.map(function(src){ var im = new Image(); im.src = src; im.alt = ""; im.decoding = "async"; im.className = "etape"; figure.appendChild(im); return im; });
+  };
+  // Sur un téléphone, le mois et la carte du jour sont à l'écran ensemble :
+  // la carte attend que le mois soit rempli, sans quoi les deux jouaient en
+  // même temps et l'équipe se posait sans qu'on la regarde.
+  // Les trois premiers chantiers se posent plan large ; puis la caméra va sur
+  // le 10 et le 12 au moment où le 10 devient trop chargé, passe sur le 6 qui
+  // se remplit, et recule. Les cadrages sont mesurés sur les captures.
+  var moisEnCours = false;
+  var figMois = document.getElementById("scene-mois"), camMois = camera(figMois), imgMois = [];
+  var DIX = { x:.35, y:.44, z:1.6 }, SIX = { x:.635, y:.34, z:1.7 };
+  scene(figMois, 0.4, function(){ imgMois = empilerSur(camMois.el, [0, 1, 2, 3, 4, 5].map(function(k){ return "images/nov-mois-" + k + ".jpg"; })); }, async function(encore){
+    moisEnCours = true; jusqua(imgMois, 0); camMois.poser(PLAN);
+    await attendre(600); if (!encore()) return;
+    for (var k = 1; k <= 3; k++){ if (k > 1) { await attendre(720); if (!encore()) return; } jusqua(imgMois, k); }
+    await attendre(500); if (!encore()) return;
+    await camMois.aller(DIX, 700); if (!encore()) return;
+    await attendre(150); if (!encore()) return; jusqua(imgMois, 4);
+    await attendre(1000); if (!encore()) return;
+    await camMois.aller(SIX, 700); if (!encore()) return;
+    await attendre(150); if (!encore()) return; jusqua(imgMois, 5);
+    await attendre(900); if (!encore()) return;
+    await camMois.aller(PLAN, 800);
+    moisEnCours = false;
+  }, function(){ moisEnCours = false; camMois.poser(PLAN); });
+
+  // L'équipe se pose plan large : la carte est étroite, et rapprochée, la
+  // caméra coupait « Matin » et « Après-midi ».
+  var figEquipe = document.getElementById("scene-equipe"), imgEquipe = [];
+  scene(figEquipe, 0.4, function(){ imgEquipe = empilerSur(figEquipe, [0, 1, 2].map(function(k){ return "images/nov-equipe-" + k + ".jpg"; })); }, async function(encore){
+    jusqua(imgEquipe, 0);
+    while (moisEnCours){ await attendre(150); if (!encore()) return; }
+    await attendre(700); if (!encore()) return;
+    jusqua(imgEquipe, 1); await attendre(1000); if (!encore()) return;
+    jusqua(imgEquipe, 2);
+  });
+
+  // 3 ter. Encaissez : le montant de la TVA sort de la facture, grossit, Ma
+  // TVA apparaît à 0,00 €, et le montant y rentre : 143,70 €. Les positions
+  // sont mesurées sur les captures (nov-facture : la rangée « TVA 20 % » ;
+  // nov-tva-avant : la ligne « TVA collectée »).
+  var tvaScene = document.getElementById("scene-tva"), jeton = tvaScene.querySelector(".jeton"), feuilleTva = tvaScene.querySelector(".feuille"), ecranTva = tvaScene.querySelector(".ecran"), avantTva = null;
+  var SOURCE = { x:0.9166, y:0.5306, l:0.0617 }, CIBLE = { x:0.7103, y:0.4895, l:0.1795 };
+  var ou = function(el, point){
+    var s = tvaScene.getBoundingClientRect(), r = el.getBoundingClientRect(), l = jeton.offsetWidth, h = jeton.offsetHeight, e = (point.l * r.width) / l;
+    return { x: r.left - s.left + point.x * r.width - l * e / 2, y: r.top - s.top + point.y * r.height - h * e / 2, e: e };
+  };
+  var placerJeton = function(p){ return "translate(" + p.x.toFixed(1) + "px," + p.y.toFixed(1) + "px) scale(" + p.e.toFixed(4) + ")"; };
+  var vols = [];
+  var voler = function(cles, options){ var a = jeton.animate(cles, Object.assign({ fill: "forwards" }, options)); vols.push(a); return a.finished.catch(function(){}); };
+  scene(tvaScene, 0.45, function(){
+    avantTva = new Image(); avantTva.src = "images/nov-tva-avant.jpg"; avantTva.alt = ""; avantTva.className = "etape vue"; ecranTva.appendChild(avantTva);
+  }, async function(encore){
+    vols.forEach(function(a){ a.cancel(); }); vols = [];
+    tvaScene.classList.remove("telephone", "surligne"); avantTva.style.transition = "none"; avantTva.classList.add("vue");
+    await attendre(400); if (!encore()) return;
+    // La rangée de la TVA s'éclaire sur la facture.
+    tvaScene.classList.add("surligne");
+    await attendre(520); if (!encore()) return;
+    var depart = ou(feuilleTva, SOURCE), s = tvaScene.getBoundingClientRect();
+    var milieu = { x: s.width * 0.47 - jeton.offsetWidth / 2, y: s.height * 0.32 - jeton.offsetHeight / 2, e: 1 };
+    // Il sort de la facture : il apparaît sur son chiffre, puis grossit, un
+    // léger flou au plus vite de son envol.
+    await voler([{ transform: placerJeton(depart), opacity: 0 }, { transform: placerJeton(depart), opacity: 1 }], { duration: 200 }); if (!encore()) return;
+    await voler([{ transform: placerJeton(depart), opacity: 1, filter: "blur(0px)" }, { transform: placerJeton({ x: depart.x + (milieu.x - depart.x) * .55, y: depart.y + (milieu.y - depart.y) * .55, e: depart.e + (1 - depart.e) * .7 }), filter: "blur(3px)", offset: .3 }, { transform: placerJeton(milieu), opacity: 1, filter: "blur(0px)" }], { duration: 1000, easing: ARRIVEE }); if (!encore()) return;
+    // Ma TVA apparaît, encore à zéro.
+    tvaScene.classList.add("telephone");
+    await attendre(1100); if (!encore()) return;
+    // Il y rentre : il rétrécit en volant, un léger flou au plus vite.
+    var arrivee = ou(ecranTva, CIBLE);
+    await voler([{ transform: placerJeton(milieu), filter: "blur(0px)", opacity: 1 }, { transform: placerJeton({ x: (milieu.x + arrivee.x) / 2, y: (milieu.y + arrivee.y) / 2 - 12, e: (1 + arrivee.e) / 2 }), filter: "blur(3px)", opacity: 1, offset: 0.5 }, { transform: placerJeton(arrivee), filter: "blur(0px)", opacity: 1 }], { duration: 850, easing: "cubic-bezier(.65,0,.35,1)" }); if (!encore()) return;
+    avantTva.classList.remove("vue"); tvaScene.classList.remove("surligne");
+    await voler([{ opacity: 1, transform: placerJeton(arrivee) }, { opacity: 0, transform: placerJeton(arrivee) }], { duration: 160 });
+  }, function(){ vols.forEach(function(a){ a.cancel(); }); vols = []; });
+
+  // 4. La TVA du mois : le chiffre monte jusqu'à sa valeur, puis la phrase.
+  var tva = document.getElementById("tva-du-mois"), chiffre = tva.querySelector("b"), valeur = Number(tva.dataset.valeur);
+  var euros = function(v){ return v.toLocaleString("fr-FR", {minimumFractionDigits:2, maximumFractionDigits:2}) + " €"; };
+  chiffre.textContent = euros(0);
+  new IntersectionObserver(function(e, o){
+    if (!e[0].isIntersecting) return; o.disconnect(); tva.classList.add("joue");
+    var debut = performance.now(), duree = 1500;
+    (function pas(t){ var x = Math.min(1, (t - debut) / duree), lisse = 1 - Math.pow(1 - x, 3); chiffre.textContent = euros(Math.round(valeur * lisse * 100) / 100); if (x < 1) requestAnimationFrame(pas); })(debut);
+  }, {threshold:0.7}).observe(tva);
+
+  // 5. Les travaux : à l'arrivée, les tâches se cochent toutes seules, une à
+  // une, la remarque s'écrit, le retour part, et la carte se replie comme dans
+  // l'appli. Sa demande : pas au défilement. Jouée jusqu'au bout, elle reste
+  // sur sa fin ; quittée avant, elle repart du début au retour.
+  // Les coches se lisent plan large : rapprochée, la caméra coupait les ronds
+  // qu'on coche. Elle ne s'avance que sur la remarque et sur le bouton, puis
+  // recule quand la carte se replie.
+  var defile = document.getElementById("scene-travaux"), pile = defile.querySelector(".pile");
+  var fixeTravaux = pile.querySelector("img.etape"), etapes = [], finie = false, repliee = false, camTravaux = null;
+  var BAS = { x:.5, y:.84, z:1.18 };
+  var hauteurPile = function(){ pile.style.height = Math.round(pile.offsetWidth * (repliee ? 455 : 1530) / 786) + "px"; };
+  scene(defile, 0.4, function(){
+    fixeTravaux.remove(); camTravaux = camera(pile);
+    etapes = empiler(camTravaux.el, [0, 1, 2, 3, 4, 5, 6].map(function(k){ return "images/nov-travaux-" + k + ".jpg"; }));
+    etapes[5].alt = fixeTravaux.alt;
+    pile.classList.add("mesuree"); pile.style.transition = "none"; hauteurPile(); montrer(etapes, 5);
+    void pile.offsetHeight; pile.style.transition = "";
+  }, async function(encore){
+    if (finie) return;
+    repliee = false; hauteurPile(); montrer(etapes, 0); camTravaux.poser(PLAN);
+    await attendre(350); if (!encore()) return;
+    for (var k = 1; k <= 4; k++){ await attendre(k === 1 ? 300 : 780); if (!encore()) return; montrer(etapes, k); }
+    await attendre(500); if (!encore()) return;
+    await camTravaux.aller(BAS, 650); if (!encore()) return;
+    montrer(etapes, 5);
+    await attendre(1100); if (!encore()) return;
+    camTravaux.aller(PLAN, 600);
+    repliee = true; hauteurPile(); montrer(etapes, 6);
+    finie = true;
+  });
+  addEventListener("resize", function(){ if (etapes.length) hauteurPile(); });
+})();
+</script>
+</body>
+</html>

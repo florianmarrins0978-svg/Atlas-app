@@ -5,11 +5,12 @@ import { colors, texteSituation } from "@/lib/design-tokens";
 import { charte, type NomCharte } from "@/lib/chartes";
 import {
   couleurDApparence,
-  ETATS_DU_PLANNING,
+  COULEURS_DU_PLANNING,
   RACCOURCIS_DU_PLANNING,
+  type CleCouleur,
   type CouleursPlanning,
 } from "@/lib/couleurs-planning";
-import { MOT_ETAT, type EtatDemi } from "@/lib/planning-jour";
+import { MOT_ETAT } from "@/lib/planning-jour";
 import { Couleur } from "@/components/atlas/Couleur";
 import { majCouleurPlanningAction } from "./couleurs-actions";
 
@@ -36,7 +37,7 @@ export default function CouleursDuPlanning({
   const [, demarrer] = useTransition();
   const apparence = charte(nomCharte);
 
-  function poser(etat: EtatDemi, v: string) {
+  function poser(etat: CleCouleur, v: string) {
     onChanger({ ...couleurs, [etat]: v });
     demarrer(async () => {
       const r = await majCouleurPlanningAction(etat, v);
@@ -84,12 +85,14 @@ export default function CouleursDuPlanning({
             >
               <span className="mx-auto block h-1 w-10 rounded-full" style={{ background: colors.line }} />
             </button>
-            {ETATS_DU_PLANNING.map((etat) => {
+            {/* Le férié en dernier, sous les quatre états : il peint la case du
+                jour, pas sa barre (sa réponse du 6 novembre 2026, « réglable »). */}
+            {COULEURS_DU_PLANNING.map((etat) => {
               const dApparence = couleurDApparence(etat, apparence);
               return (
                 <Couleur
                   key={etat}
-                  titre={MOT_ETAT[etat]}
+                  titre={etat === "ferie" ? "férié" : MOT_ETAT[etat]}
                   valeur={couleurs[etat] ?? dApparence}
                   clef={`planning-${etat}`}
                   rapides={[[dApparence, "Celle d'aujourd'hui"], ...RACCOURCIS_DU_PLANNING[etat]]}

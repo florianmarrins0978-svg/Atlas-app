@@ -101,6 +101,9 @@ const OUVERT_AU_SALARIE = [
   "/reglages/connexion",
   "/reglages/connexion/double-verification",
   "/reglages/apparence",
+  // **Une idée pour l'appli (5 novembre 2026)** : le salarié aussi dit ce qui
+  // lui manque, c'est lui qui est sur le chantier. Il ne lit que SES idées.
+  "/reglages/idee",
   // L'organigramme, visible par tous depuis le 27 septembre 2026 (sa règle).
   "/reglages/organigramme",
   // Les véhicules, lus par tous depuis le 14 octobre 2026 (§461) : la liste, la fiche, le papier.
@@ -231,6 +234,10 @@ essai("le commercial atteint l'application, sauf les adresses nommées", () => {
     // hérite de son refus — mais l'hériter en SILENCE serait le jour où l'on
     // pose une page qui, elle, ne devait pas l'hériter.
     "/reglages/equipe/nouveau",
+    "/reglages/equipe/zones",
+    // **La plateforme de facture électronique (5 novembre 2026)** : le compte
+    // qui porte les factures de chaque client, fermé comme Ma banque.
+    "/reglages/facture-electronique",
     "/reglages/identite",
     "/termines",
     // **Pour mon comptable (24 octobre 2026)**, fermé comme Terminés : le
@@ -242,6 +249,8 @@ essai("le commercial atteint l'application, sauf les adresses nommées", () => {
     "/termines/comptable/bilans/xxxx/xxxx",
     "/termines/comptable/dossiers",
     "/termines/comptable/dossiers/xxxx/pdf",
+    "/termines/comptable/jours-travailles",
+    "/termines/comptable/jours-travailles/pdf",
     "/termines/comptable/piece/xxxx",
     "/termines/comptable/xxxx",
     // La catégorie « Non payées » (24 septembre 2026), fermée comme Terminés.

@@ -19,6 +19,7 @@ import { joursPresentsSurLeChantier } from "../../lib/equipe-absente";
 import { gesteDuJour, type MomentDuJour } from "../../lib/absences-equipe";
 import type { Ctx } from "./context";
 import type { JourIso } from "@/lib/disponibilites";
+import { natureLue, type NatureAbsence } from "@/lib/nature-absence";
 
 export type AbsenceEnregistree = {
   id: string;
@@ -32,6 +33,8 @@ export type AbsenceEnregistree = {
   premierDemi: string;
   dernierDemi: string;
   motif: string | null;
+  /** Congé, maladie… pour le comptable (migration 0165). NULL : non dite. */
+  nature: NatureAbsence | null;
 };
 
 /**
@@ -91,6 +94,7 @@ export async function listerAbsencesEquipe(
         premierDemi: absencesEquipe.premierDemi,
         dernierDemi: absencesEquipe.dernierDemi,
         motif: absencesEquipe.motif,
+        nature: absencesEquipe.nature,
       })
       .from(absencesEquipe)
       .innerJoin(equipes, eq(absencesEquipe.equipeId, equipes.id))
@@ -132,6 +136,8 @@ export async function absencesSurLaFenetre(
      */
     premierDemi: string;
     dernierDemi: string;
+    /** Sa nature, pour que la feuille du planning montre le motif choisi. */
+    nature: NatureAbsence | null;
   }[]
 > {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
@@ -152,6 +158,7 @@ export async function absencesSurLaFenetre(
         dernierJour: absencesEquipe.dernierJour,
         premierDemi: absencesEquipe.premierDemi,
         dernierDemi: absencesEquipe.dernierDemi,
+        nature: absencesEquipe.nature,
       })
       .from(absencesEquipe)
       .innerJoin(equipes, eq(equipes.id, absencesEquipe.equipeId))
@@ -220,6 +227,8 @@ export async function noterAbsenceEquipe(
      */
     premierDemi?: string | null;
     dernierDemi?: string | null;
+    /** Congé, maladie… (migration 0165). Facultative : absente, elle n'est pas dite. */
+    nature?: string | null;
   }
 ): Promise<AbsencePosee | null> {
   const rang = Math.trunc(entree.rang);
@@ -243,6 +252,9 @@ export async function noterAbsenceEquipe(
         premierDemi: entree.premierDemi === "apres_midi" ? "apres_midi" : "matin",
         dernierDemi: entree.dernierDemi === "matin" ? "matin" : "apres_midi",
         motif: entree.motif?.trim() ? entree.motif.trim() : null,
+        // Relue ici aussi : une valeur inconnue ne devient pas une nature, et
+        // la contrainte 0165 ne la rattraperait que par une erreur muette.
+        nature: natureLue(entree.nature),
       })
       .returning({
         id: absencesEquipe.id,
@@ -252,6 +264,7 @@ export async function noterAbsenceEquipe(
         premierDemi: absencesEquipe.premierDemi,
         dernierDemi: absencesEquipe.dernierDemi,
         motif: absencesEquipe.motif,
+        nature: absencesEquipe.nature,
       });
     if (!creee) return null;
 
@@ -314,7 +327,16 @@ export type GesteDuJourEcrit = {
  */
 export async function absenceDuJour(
   ctx: Ctx,
-  entree: { rang: number; jour: JourIso; moment: MomentDuJour | null }
+  entree: {
+    rang: number;
+    jour: JourIso;
+    moment: MomentDuJour | null;
+    /**
+     * La nature de CE jour (sa planche du motif, validée le 5 novembre 2026).
+     * Les morceaux d'une période qui l'entourent gardent la leur.
+     */
+    nature?: string | null;
+  }
 ): Promise<GesteDuJourEcrit | null> {
   const rang = Math.trunc(entree.rang);
   if (!Number.isInteger(rang) || rang < 1) return null;
@@ -332,6 +354,7 @@ export async function absenceDuJour(
         premierDemi: absencesEquipe.premierDemi,
         dernierDemi: absencesEquipe.dernierDemi,
         motif: absencesEquipe.motif,
+        nature: absencesEquipe.nature,
       })
       .from(absencesEquipe)
       .where(
@@ -364,8 +387,10 @@ export async function absenceDuJour(
           dernierJour: p.dernierJour,
           premierDemi: p.premierDemi,
           dernierDemi: p.dernierDemi,
-          // Les morceaux d'une période gardent son motif ; le jour posé ici n'en a pas.
+          // Les morceaux d'une période gardent son motif et sa nature ; le jour
+          // posé ici n'a pas de note, et prend la nature qu'il vient de dire.
           motif: p.depuis?.motif ?? null,
+          nature: p.depuis ? p.depuis.nature : natureLue(entree.nature),
         })
         .returning({
           id: absencesEquipe.id,
@@ -375,6 +400,7 @@ export async function absenceDuJour(
           premierDemi: absencesEquipe.premierDemi,
           dernierDemi: absencesEquipe.dernierDemi,
           motif: absencesEquipe.motif,
+        nature: absencesEquipe.nature,
         });
       if (ligne) posees.push({ ...ligne, rang: cible.rang, nom: cible.nom });
     }

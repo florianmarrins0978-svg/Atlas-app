@@ -22,6 +22,9 @@
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import { spawnSync } from "node:child_process";
+
+const SONDE = "--sonde";
 
 let echecs = 0;
 function essai(nom: string, fn: () => void) {
@@ -37,40 +40,57 @@ function essai(nom: string, fn: () => void) {
 
 const DOSSIER_DESIGN = join(__dirname, "..", "src", "app", "design");
 
-/** Joue la mise en page sous un `NODE_ENV` donné, et dit si elle a refusé. */
-async function refuse(nodeEnv: string): Promise<boolean> {
-  const avant = process.env.NODE_ENV;
-  // `NODE_ENV` est en lecture seule dans les types de Node : on passe par
-  // l'objet, comme le font déjà les suites qui manipulent `AUTH_TEST_*`.
-  (process.env as Record<string, string>).NODE_ENV = nodeEnv;
+/**
+ * Joue la mise en page sous un `NODE_ENV` donné, et dit si elle a refusé.
+ *
+ * **Chaque verdict se rend dans SON processus.** La première version importait
+ * le module avec un suffixe (`layout?production`) pour déjouer le cache : sous
+ * tsx 4.23, un import suffixé ne transforme plus le `.tsx` et rend un module
+ * vide, si bien que `mod.default` n'était plus une fonction et la suite rougit
+ * sur une mise en page juste, depuis la CI de `main`. Un processus neuf n'a
+ * aucun cache à déjouer, et il lit `NODE_ENV` au démarrage, comme le serveur :
+ * une règle hissée hors de la fonction y serait jugée comme en production.
+ */
+function refuse(nodeEnv: "production" | "development"): boolean {
+  const r = spawnSync(process.execPath, [...process.execArgv, __filename, SONDE], {
+    env: { ...process.env, NODE_ENV: nodeEnv },
+    encoding: "utf8",
+  });
+  const verdict = (r.stdout ?? "").trim().split("\n").pop() ?? "";
+  if (verdict === "REFUSEE") return true;
+  if (verdict === "SERVIE") return false;
+  // Ni l'un ni l'autre : un import cassé, une erreur quelconque. Elle ne doit
+  // pas passer pour un refus, sans quoi la suite serait verte sur un fichier
+  // en ruine.
+  throw new Error(
+    `la mise en page n'a rendu aucun verdict sous NODE_ENV=${nodeEnv} : ${verdict || r.stderr || "rien"}`
+  );
+}
+
+/** Le côté sonde : appelle la mise en page une fois, et dit ce qu'elle a fait. */
+async function sonder() {
   try {
-    // Import à chaud à chaque appel : le module lit `NODE_ENV` à l'exécution,
-    // mais un cache de module figerait tout de même le premier verdict si la
-    // règle venait à être hissée hors de la fonction.
-    const chemin = `../src/app/design/layout?${nodeEnv}`;
-    const mod = (await import(chemin)) as { default: (p: { children: unknown }) => unknown };
+    const mod = (await import("../src/app/design/layout")) as {
+      default: (p: { children: unknown }) => unknown;
+    };
     mod.default({ children: null });
-    return false;
+    console.log("SERVIE");
   } catch (e) {
     // `notFound()` lève une erreur repérée par son `digest` — c'est ainsi que
-    // Next.js la distingue d'une vraie panne. On exige CE motif : une erreur
-    // quelconque (un import cassé, par exemple) ne doit pas passer pour un
-    // refus, sans quoi la suite serait verte sur un fichier en ruine.
-    const digest = (e as { digest?: string }).digest ?? "";
-    assert.ok(
-      String(digest).startsWith("NEXT_HTTP_ERROR_FALLBACK") || String(digest).startsWith("NEXT_NOT_FOUND"),
-      `la mise en page a levé autre chose qu'un « page introuvable » : ${(e as Error).message}`
+    // Next.js la distingue d'une vraie panne. On exige CE motif.
+    const digest = String((e as { digest?: string }).digest ?? "");
+    console.log(
+      digest.startsWith("NEXT_HTTP_ERROR_FALLBACK") || digest.startsWith("NEXT_NOT_FOUND")
+        ? "REFUSEE"
+        : `AUTRE ${(e as Error).message}`
     );
-    return true;
-  } finally {
-    (process.env as Record<string, string>).NODE_ENV = avant ?? "test";
   }
 }
 
 async function main() {
   console.log("Maquettes /design : servies en développement, absentes en production");
 
-  const enProduction = await refuse("production");
+  const enProduction = refuse("production");
   essai("EN PRODUCTION : la page n'existe pas", () => {
     assert.ok(
       enProduction,
@@ -78,7 +98,7 @@ async function main() {
     );
   });
 
-  const enDeveloppement = await refuse("development");
+  const enDeveloppement = refuse("development");
   essai("EN DÉVELOPPEMENT : elle est servie — les captures d'écran vivent", () => {
     assert.equal(
       enDeveloppement,
@@ -137,7 +157,7 @@ async function main() {
   process.exit(echecs === 0 ? 0 : 1);
 }
 
-main().catch((e) => {
+(process.argv.includes(SONDE) ? sonder() : main()).catch((e) => {
   console.error(e);
   process.exit(1);
 });

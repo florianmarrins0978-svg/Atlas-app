@@ -44,6 +44,8 @@ console.log(`Exécution de ${fichiers.length} suites de tests...\n`);
 const DELAI_PAR_SUITE_MS = 8 * 60 * 1000;
 
 let echecs = 0;
+// Leurs noms, redits sous le compte : voir la fin du fichier.
+const rouges: string[] = [];
 // Les suites qui ont refusé de conclure : ni vertes, ni rouges (`_outil-requis.ts`).
 let muettes = 0;
 for (const fichier of fichiers) {
@@ -62,6 +64,7 @@ for (const fichier of fichiers) {
     (resultat.signal === "SIGTERM" && resultat.status === null);
   if (bloquee) {
     echecs++;
+    rouges.push(fichier);
     console.error(
       `${phraseDeBlocage(fichier, DELAI_PAR_SUITE_MS / 60000)}\n` +
         "   Ses tests ont peut-être tous réussi : le processus, lui, ne s'arrête pas.\n" +
@@ -74,11 +77,13 @@ for (const fichier of fichiers) {
 
   if (resultat.error) {
     echecs++;
+    rouges.push(fichier);
     console.error(phraseDEchec(fichier, `spawn error: ${resultat.error.message}`));
     continue;
   }
   if (resultat.signal) {
     echecs++;
+    rouges.push(fichier);
     console.error(phraseDEchec(fichier, `signal: ${resultat.signal}`));
     continue;
   }
@@ -90,9 +95,17 @@ for (const fichier of fichiers) {
   }
   if (resultat.status !== 0) {
     echecs++;
+    rouges.push(fichier);
     console.error(phraseDEchec(fichier, `code: ${resultat.status}`));
   }
 }
 
 console.log(`\n${phraseDeCompte(fichiers.length - echecs - muettes, fichiers.length, muettes)}`);
+// **Les noms se redisent sous le compte, et c'est ce qui permet de les lire.**
+// La ligne « ❌ … a échoué » est écrite au milieu des 560 suites ; or le journal
+// d'une course de CI ne se lit d'ici que par sa fin (5 000 lignes, les journaux
+// de PostgreSQL compris), et le 5 novembre 2026 « 558/560 » était la seule
+// trace lisible : deux rouges sans nom. Le préfixe n'est pas « ❌ » : les
+// lecteurs de bilan (`_bilan-suites.mjs`) les compteraient deux fois.
+if (rouges.length > 0) console.log(`Suites rouges : ${rouges.join(", ")}`);
 if (echecs > 0) process.exit(1);

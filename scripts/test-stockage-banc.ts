@@ -39,10 +39,16 @@ function test(nom: string, fn: () => void) {
 /**
  * Joue un environnement donné, puis remet exactement celui d'avant.
  *
- * Les modules sont réimportés à chaque fois : `getEnv()` mémoïse, et
- * `choisi()` lit la configuration au premier usage. Sans cette remise à zéro,
- * le second cas relirait la décision du premier — et deux contrôles verts ne
- * prouveraient qu'une chose.
+ * `getEnv()` mémoïse : sans `_reinitialiserEnvPourTests()`, le second cas
+ * relirait la décision du premier, et deux contrôles verts ne prouveraient
+ * qu'une chose. `choisi()`, lui, relit `getEnv()` à chaque appel : le module
+ * n'a donc pas à être réimporté.
+ *
+ * **Il l'était, avec un suffixe (`index?<date>`), et c'est ce qui a mis la CI
+ * de `main` au rouge.** Sous tsx 4.23, un import suffixé rend un module vide :
+ * `lireObjet` n'était plus une fonction, le déploiement réel rougissait, et le
+ * cas du banc passait au VERT sans rien éprouver, puisque « is not a
+ * function » n'est pas un refus de configuration.
  */
 async function avec(variables: Record<string, string | undefined>, fn: (m: typeof import("../src/server/storage")) => Promise<void> | void) {
   const avant: Record<string, string | undefined> = {};
@@ -53,8 +59,11 @@ async function avec(variables: Record<string, string | undefined>, fn: (m: typeo
   }
   _reinitialiserEnvPourTests();
   try {
-    const m = await import(`../src/server/storage/index?${Date.now()}${Math.round(performance.now())}`);
-    await fn(m as typeof import("../src/server/storage"));
+    const m = await import("../src/server/storage");
+    // Un module vide rendrait chaque cas « sans refus de configuration » :
+    // vert pour le banc, sans avoir rien demandé au stockage.
+    assert.equal(typeof m.lireObjet, "function", "le module de stockage ne s'est pas chargé");
+    await fn(m);
   } finally {
     for (const [nom, valeur] of Object.entries(avant)) {
       if (valeur === undefined) delete process.env[nom];
