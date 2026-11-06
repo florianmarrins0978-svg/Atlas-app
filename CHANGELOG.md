@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-11-07
+
+- **Site de vente : le bandeau vert au bas de la page, retiré** (sa capture sur iPhone). C'était le bouton « Essayer 15 jours gratuits », caché en le descendant de 140 % de sa hauteur, alors qu'il est posé à 12 px du bas plus la marge de la barre d'accueil de l'iPhone (34 px) : il dépassait de 23 px. Il descend désormais de toute sa hauteur plus cet écart, puis devient invisible. Test rouge puis vert dans `appli/tests/e2e.js`, qui sert la page avec la marge d'un iPhone (Chromium la vaut 0). Pas codé.
+
 ## 2026-11-06
 
 - **Quatre lots de quatre sessions sur `main`, par une seule batterie** (sa demande : *« fusionne-les, joue qu'une seule batterie pour vous toutes et pousse une fois vert »*) : les fériés, le motif d'une absence, les jours travaillés et les zones ; la Factur-X ; une idée pour l'appli ; la mention de la franchise datée. La rencontre a demandé de renuméroter deux migrations (0165 de la Factur-X devient 0169, 0167 des idées devient 0170) et un paragraphe (§556 des idées devient §558). Elle a trouvé un vrai défaut : la Factur-X lisait l'ancienne phrase de la franchise, qu'un autre lot avait datée (une facture de 2027 aurait cité le CGI pendant que son papier citait le CIBS). La batterie a trouvé cinq défauts du lot des idées, dont la sienne n'avait jamais tourné, et une suite qui dépendait de l'ordre (`test-le-client-s-est-trompe-e2e` : le seul jour proposé par la démonstration se remplissait). Tout corrigé, chaque correction vue rouge puis verte. Sa réponse sur les idées : pas dans « Mes données ». `docs/batterie-commune-6-novembre.md`.

@@ -568,8 +568,14 @@ html.anime .pile{overflow:hidden;border-radius:16px}
 @media (min-width:900px){.pied-grille{grid-template-columns:1fr 1.6fr}.pied nav{grid-template-columns:repeat(3,1fr)}}
 
 /* Le bouton d'essai, sous le pouce, sur téléphone seulement. */
-.pouce{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:15;display:flex;justify-content:center;transform:translateY(140%);transition:transform .5s var(--sortie);pointer-events:none}
-.pouce.vu{transform:none;pointer-events:auto}
+/* Caché, il descend de toute sa hauteur PLUS l'écart qui le sépare du bas :
+   140 % de sa hauteur suffisaient sur ordinateur, pas sur un iPhone, qui
+   réserve 34 px à sa barre d'accueil. Le bouton dépassait alors de 23 px,
+   un bandeau vert au bas du site (sa capture du 7 novembre). Une fois
+   descendu, il est aussi rendu invisible : rien ne peut plus en dépasser,
+   même quand la barre du navigateur change la hauteur de l'écran. */
+.pouce{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:15;display:flex;justify-content:center;transform:translateY(calc(100% + 24px + env(safe-area-inset-bottom)));visibility:hidden;transition:transform .5s var(--sortie),visibility 0s linear .5s;pointer-events:none}
+.pouce.vu{transform:none;visibility:visible;transition:transform .5s var(--sortie),visibility 0s;pointer-events:auto}
 .pouce .bouton{width:100%;max-width:420px;box-shadow:0 20px 44px -16px rgba(var(--ombre),.75)}
 @media (min-width:960px){.pouce{display:none}}
 

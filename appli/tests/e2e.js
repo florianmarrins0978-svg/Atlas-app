@@ -663,6 +663,35 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     await cCl.close();
   }
 
+  // ── Le site de vente : le bouton d'essai caché ne dépasse pas ────────────
+  //
+  // Sa capture du 7 novembre 2026, sur iPhone : un petit bandeau vert au bas
+  // du site. C'était le bouton « Essayer 15 jours gratuits », caché en le
+  // descendant de 140 % de sa hauteur, alors qu'il est posé à 12 px du bas
+  // PLUS la marge que l'iPhone réserve à sa barre d'accueil. Chromium vaut 0
+  // pour cette marge : la page est servie ici avec 34 px, la valeur d'un
+  // iPhone, sans quoi le contrôle ne verrait jamais le défaut.
+  {
+    const cVe = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    await cVe.route(/\/vente\/chapitres-6\.html$/, async (route) => {
+      const r = await route.fetch();
+      route.fulfill({ response: r, body: (await r.text()).replace(/env\(safe-area-inset-bottom\)/g, '34px') });
+    });
+    const page = await cVe.newPage();
+    await page.goto(`${B}/vente/chapitres-6.html`, { waitUntil: 'domcontentloaded' });
+    await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+    await page.waitForTimeout(1200);
+    const pouce = await page.evaluate(() => {
+      const el = document.getElementById('pouce'), r = el.getBoundingClientRect();
+      return { cache: !el.classList.contains('vu'), haut: r.top, ecran: innerHeight, visible: getComputedStyle(el).visibility };
+    });
+    ok('vente : au bas du site, le bouton d\'essai est caché', pouce.cache);
+    ok('vente : caché, il ne dépasse pas du bas de l\'écran',
+       pouce.visible === 'hidden' || pouce.haut >= pouce.ecran,
+       'il dépasse de ' + Math.round(pouce.ecran - pouce.haut) + ' px');
+    await cVe.close();
+  }
+
   await browser.close();
   console.log(`\n✅ PASS: ${pass}   ❌ FAIL: ${fail}`);
   if (fails.length){ console.log('\nÉchecs :'); fails.forEach(f => console.log('  - ' + f)); }
