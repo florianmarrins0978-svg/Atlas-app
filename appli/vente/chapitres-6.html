@@ -49,8 +49,30 @@
       des colonnes séparées d'un filet, et les trois gestes reliés par une
       ligne, dans leur ordre ;
     · le mouvement : le texte est visible d'emblée (sans script, chapitres-5
-      laissait la page vide). Restent la phrase dictée qui s'écrit mot à mot,
-      et les captures qui se posent en entrant dans l'écran.
+      laissait la page vide), et les captures se posent en entrant dans
+      l'écran.
+
+  LES MISES EN SCÈNE, sa demande du 6 novembre 2026 au soir. Toutes jouent
+  de VRAIES captures de l'appli, prises le même jour sur une copie de la base
+  d'essai (atlas_scene) ; seul le doigt est dessiné, et il ne montre que
+  l'endroit où l'on appuie.
+    · Dictez : la phrase s'écrit lettre à lettre, au rythme d'une voix
+      (72 ms la lettre, une respiration aux espaces et aux virgules, cinq
+      secondes en tout), puis la ligne du devis arrive ;
+    · la note vocale : un doigt sur le micro, puis le vrai chrono, une
+      capture par seconde, de 0:00 à 0:12 (nov-dictee-*.jpg, la bande du bas
+      de l'écran, prise avec un micro simulé) ;
+    · Envoyez : le doigt quitte « Télécharger mon devis » pour la date, la
+      case des 14 jours apparaît, il la coche, il accepte, et la page devient
+      « C'est noté. Votre artisan est prévenu. » (nov-client-0 à 3) ;
+    · Encaissez : 143,70 € monte depuis zéro, puis la phrase ;
+    · Et aussi, inversé à sa demande : les travaux d'abord, qui se cochent AU
+      DÉFILEMENT (la carte reste posée, chaque cran coche une tâche), la
+      remarque, l'appui sur « Envoyer le retour du jour » et la carte qui se
+      replie (nov-travaux-0 à 6) ; puis le retour du soir que reçoit le
+      patron.
+  Pour qui demande moins de mouvement, et sans script, chaque scène montre son
+  état le plus parlant, et rien ne bouge.
 
   CE QUI N'A PAS BOUGÉ : tous les textes, mot pour mot, et leur ordre ; les
   prix de src/lib/abonnements.ts (39, 59, 159 € HT, l'année à dix mois) ;
@@ -179,7 +201,30 @@ section{padding:clamp(88px,12vw,150px) 0}
 
 /* ── Les supports des captures : le téléphone, la feuille, le recadrage ─ */
 .appareil{width:min(70vw,320px);padding:9px;border-radius:48px;background:linear-gradient(155deg,#26302a,#0d120f 40%);box-shadow:0 60px 90px -46px rgba(var(--ombre),.7),0 22px 34px -22px rgba(var(--ombre),.45),inset 0 0 0 1.5px #39433c,inset 0 0 0 3px #0b0f0c}
-.appareil img{border-radius:39px;width:100%;aspect-ratio:1170/1992;object-fit:cover;object-position:top;background:var(--papier)}
+.appareil > img{border-radius:39px;width:100%;aspect-ratio:1170/1992;object-fit:cover;object-position:top;background:var(--papier)}
+/* L'écran d'un téléphone qui joue une scène : les captures s'y empilent, une
+   seule se voit à la fois, et le doigt se pose par-dessus. */
+.ecran{position:relative;border-radius:39px;overflow:hidden;aspect-ratio:1170/1992;background:var(--papier)}
+.ecran img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;object-position:top}
+.ecran img.etape{opacity:0;transition:opacity .3s ease,transform .6s var(--sortie)}
+.ecran img.etape.vue{opacity:1}
+.ecran img.etape.page{transform:translateX(8%)}
+.ecran img.etape.page.vue{transform:none}
+/* La bande du micro : le bas de l'écran, une capture par seconde du vrai
+   chrono. Elle commence à 67,27 % de la hauteur, là où « Devis à la voix »
+   s'écrit dans l'appli. */
+.ecran .bande{position:absolute;left:0;right:0;bottom:0;height:32.731%}
+/* Le chrono change d'un coup, comme dans l'appli : un fondu laisserait voir,
+   le temps d'un battement, l'écran au repos dessous. */
+.ecran .bande img,.ecran .bande img.etape{opacity:0;transition:none}
+.ecran .bande img.vue{opacity:1}
+/* Le doigt : il ne dessine que l'endroit où l'on appuie, jamais un écran. */
+.doigt{position:absolute;left:50%;top:50%;z-index:3;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:rgba(18,38,27,.16);box-shadow:0 0 0 2.5px rgba(255,255,255,.95),0 8px 18px rgba(0,0,0,.28);opacity:0;transform:scale(.6);transition:left .85s var(--sortie),top .85s var(--sortie),opacity .3s ease,transform .25s ease;pointer-events:none}
+.doigt.la{opacity:1;transform:scale(1)}
+.doigt.appui{transform:scale(.8)}
+.doigt::after{content:"";position:absolute;inset:-3px;border-radius:50%;border:2.5px solid var(--or-clair);opacity:0}
+.doigt.appui::after{animation:onde .65s ease-out}
+@keyframes onde{from{opacity:.95;transform:scale(1)}to{opacity:0;transform:scale(2.2)}}
 .feuille{margin:0;border-radius:4px;overflow:hidden;background:#fbfaf6;box-shadow:0 50px 80px -44px rgba(var(--ombre),.6),0 4px 10px rgba(var(--ombre),.07),0 0 0 1px rgba(var(--ombre),.05)}
 .gros{margin:0;border-radius:22px;overflow:hidden;background:var(--papier);box-shadow:0 34px 70px -40px rgba(var(--ombre),.5),0 0 0 1px rgba(var(--ombre),.07)}
 .gros img{width:100%;transform:scale(1.035);transition:transform 1.6s var(--sortie)}
@@ -246,9 +291,14 @@ section{padding:clamp(88px,12vw,150px) 0}
 
 /* La phrase dictée, qui s'écrit mot à mot : le seul moment écrit de la page. */
 .dite{margin-top:44px;font:italic 400 clamp(30px,7vw,44px)/1.12 var(--display);color:var(--encre)}
-.dite span{transition:opacity .5s ease}
-.dite.attend span{opacity:.14}
-.dite.vu span{opacity:1}
+/* La phrase s'écrit lettre à lettre, comme dictée : chaque lettre tient déjà
+   sa place, la ligne ne saute donc jamais. Le curseur suit la dernière. */
+.dite .l{opacity:0;position:relative}
+.dite .l.dite-la{opacity:1}
+.dite .l.dernier::after{content:"";position:absolute;right:-4px;top:.16em;bottom:.06em;width:2px;background:var(--feuille);animation:clignote 1s steps(1) infinite}
+@keyframes clignote{50%{opacity:0}}
+html.anime .devient{opacity:0;transform:translateY(16px);transition:opacity .8s ease,transform 1s var(--sortie)}
+html.anime .devient.vu{opacity:1;transform:none}
 
 /* Ce que la phrase devient : la ligne du devis, en clair. */
 .devient{margin-top:28px;display:grid;gap:10px}
@@ -297,6 +347,9 @@ section{padding:clamp(88px,12vw,150px) 0}
 .chiffre{margin-top:52px}
 .chiffre b{display:block;font:400 clamp(80px,22vw,148px)/.9 var(--display);font-variant-numeric:tabular-nums;color:var(--or-clair);letter-spacing:-.02em}
 .chiffre span{display:block;margin-top:14px;font-size:17px;color:var(--sur-nuit-2)}
+html.anime .chiffre b,html.anime .chiffre span{opacity:0;transform:translateY(20px);transition:opacity .7s ease,transform 1s var(--sortie)}
+html.anime .chiffre.joue b{opacity:1;transform:none}
+html.anime .chiffre.joue span{opacity:1;transform:none;transition-delay:1.5s}
 .encaisse .feuille{width:min(100%,620px);box-shadow:0 60px 100px -40px rgba(0,0,0,.85),0 0 0 1px rgba(255,255,255,.04)}
 
 /* ── Et aussi ─────────────────────────────────────────────────────────── */
@@ -310,6 +363,18 @@ section{padding:clamp(88px,12vw,150px) 0}
 .case p{padding:0 28px 24px;color:var(--encre-2);font-size:16.5px}
 .case .cadre{display:grid;place-items:center;margin:0 14px 14px;padding:28px 18px;border-radius:18px;background:var(--sauge)}
 .case .cadre img{width:100%;max-width:440px;border-radius:12px;box-shadow:0 20px 40px -28px rgba(var(--ombre),.55)}
+/* Les travaux se cochent au défilement : la carte reste posée pendant que la
+   page avance, et chaque cran de défilement coche une tâche. */
+.case.joue{overflow:visible}
+.defile{position:relative}
+.course{display:none}
+html.anime .course{display:block;height:min(120vh,1040px)}
+html.anime .defile .colle{position:sticky;top:96px}
+.pile{position:relative;width:min(100%,calc((100svh - 200px) * 786 / 1530));aspect-ratio:786/1530;margin:0 auto;transition:height .6s var(--sortie)}
+.pile.mesuree{aspect-ratio:auto}
+.case .cadre .pile img{position:absolute;left:0;top:0;width:100%;max-width:none;height:auto}
+.pile img.etape{opacity:0}
+.pile img.etape.vue{opacity:1}
 @media (min-width:960px){
   .aussi-grille{grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:76px;align-items:start}
   .aussi-grille .mot{position:sticky;top:132px}
@@ -431,6 +496,7 @@ section{padding:clamp(88px,12vw,150px) 0}
 @media (min-width:960px){.pouce{display:none}}
 
 @media (prefers-reduced-motion:reduce){
+  .doigt{display:none}
   .gros img{transform:none;transition:none}
   .dite span{transition:none}
   .dite.attend span{opacity:1}
@@ -528,7 +594,7 @@ section{padding:clamp(88px,12vw,150px) 0}
     <div class="chap-visuel">
       <div class="scene duo">
         <figure class="feuille"><img src="images/nov-devis.jpg" alt="Le devis fini, en PDF : Création d'un massif pour Mr. Lemaire, quatre lignes, 718,50 euros HT, 862,20 euros TTC" width="1654" height="2339"></figure>
-        <div class="appareil"><img src="images/nov-fiche-client.jpg" alt="Fiche client d'Atlas, remplie pour Mr. Lemaire, avec le bouton Devis à la voix" width="1170" height="1992"></div>
+        <div class="appareil" id="scene-micro"><div class="ecran"><img src="images/nov-fiche-client.jpg" alt="Fiche client d'Atlas, remplie pour Mr. Lemaire, avec le bouton Devis à la voix" width="1170" height="1992"><div class="bande" aria-hidden="true"></div><span class="doigt" aria-hidden="true"></span></div></div>
       </div>
       <p class="sous duo-sous">Le devis, prêt à partir.</p>
     </div>
@@ -555,7 +621,7 @@ section{padding:clamp(88px,12vw,150px) 0}
     </div>
     <div class="chap-visuel">
       <div class="scene sable">
-        <div class="appareil"><img src="images/nov-accord.jpg" alt="Page que reçoit le client : le devis de Mr. Lemaire à 862,20 euros TTC, le vendredi 6 novembre choisi, la case de rétractation cochée, J'accepte ce devis, Une correction avant d'accepter et Je ne donne pas suite" width="1170" height="1992"></div>
+        <div class="appareil" id="scene-envoi"><div class="ecran"><img class="etape vue" src="images/nov-client-2.jpg" alt="Page que reçoit le client : le devis de Mr. Lemaire à 862,20 euros TTC, le vendredi 6 novembre choisi, la case de rétractation cochée, J'accepte ce devis, Une correction avant d'accepter et Je ne donne pas suite" width="1170" height="1992"><span class="doigt" aria-hidden="true"></span></div></div>
       </div>
     </div>
   </div>
@@ -590,7 +656,7 @@ section{padding:clamp(88px,12vw,150px) 0}
     <div class="chap-texte">
       <h2 class="mot">Encaissez<span class="point">.</span></h2>
       <p class="chapo">La facture reprend le devis, ligne pour ligne.</p>
-      <div class="chiffre"><b>143,70 €</b><span>La TVA du mois, déjà calculée.</span></div>
+      <div class="chiffre" id="tva-du-mois" data-valeur="143.70"><b>143,70 €</b><span>La TVA du mois, déjà calculée.</span></div>
     </div>
     <div class="chap-visuel">
       <figure class="feuille"><img src="images/nov-facture.jpg" alt="La facture finie, en PDF : F2026-000001 pour Mr. Lemaire, Création d'un massif, les quatre lignes du devis, 862,20 euros net à payer" width="1654" height="2339"></figure>
@@ -602,15 +668,18 @@ section{padding:clamp(88px,12vw,150px) 0}
   <div class="large aussi-grille">
     <h2 class="mot">Et aussi.</h2>
     <div class="grille">
+      <article class="case joue">
+        <h3>Les travaux cochés</h3>
+        <p>Sur place, tâche par tâche.</p>
+        <div class="defile" id="scene-travaux">
+          <div class="cadre colle"><div class="pile"><img class="etape vue" src="images/nov-travaux-5.jpg" alt="Travaux à faire : les quatre tâches cochées, la remarque sur le portail, et Envoyer le retour du jour" width="786" height="1530"><span class="doigt" aria-hidden="true"></span></div></div>
+          <div class="course" aria-hidden="true"></div>
+        </div>
+      </article>
       <article class="case">
         <h3>Le retour du soir</h3>
         <p>Ce que l'équipe a fait, coché le soir même.</p>
-        <div class="cadre"><img src="images/nov-retour.jpg" alt="Retour d'intervention du chantier Lemaire : quatre tâches faites, et le portail à revoir" width="1038" height="1011"></div>
-      </article>
-      <article class="case">
-        <h3>Les travaux cochés</h3>
-        <p>Sur place, tâche par tâche.</p>
-        <div class="cadre"><img src="images/nov-travaux.jpg" alt="Travaux à faire, tout est fait, et la remarque sur le portail" width="810" height="1545"></div>
+        <div class="cadre"><img src="images/nov-retour.jpg" alt="Retour d'intervention du chantier Lemaire : quatre tâches faites, et le portail à revoir" width="1038" height="971"></div>
       </article>
     </div>
   </div>
@@ -845,22 +914,151 @@ section{padding:clamp(88px,12vw,150px) 0}
     document.querySelectorAll(".ouverture, #prix, #essayer, #contact, .pied").forEach(function(c){ veille.observe(c); });
   }
 
-  // La phrase dictée se découpe en mots, qui s'allument l'un après l'autre.
-  // Elle n'est pâlie qu'une fois le script là : sans lui, elle se lit entière.
-  var dite = document.getElementById("dite");
-  dite.innerHTML = dite.textContent.split(" ").map(function(m, i){
-    return '<span style="transition-delay:' + (i * 0.09).toFixed(2) + 's">' + m + '</span>';
-  }).join(" ");
-
   // Les captures se posent en entrant dans l'écran : visibles d'emblée, elles
-  // ne font que se resserrer. Rien d'autre ne bouge.
-  var cibles = document.querySelectorAll(".gros, #dite");
-  if (!("IntersectionObserver" in window)){ cibles.forEach(function(c){ c.classList.add("vu"); }); return; }
-  dite.classList.add("attend");
+  // ne font que se resserrer.
+  if (!("IntersectionObserver" in window)) return;
   var guetteur = new IntersectionObserver(function(entrees){
     entrees.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add("vu"); guetteur.unobserve(e.target); } });
   }, {rootMargin:"0px 0px -12% 0px", threshold:0.15});
-  cibles.forEach(function(c){ guetteur.observe(c); });
+  document.querySelectorAll(".gros").forEach(function(c){ guetteur.observe(c); });
+
+  // ── LES MISES EN SCÈNE ────────────────────────────────────────────────
+  // Sans script, ou pour qui a demandé moins de mouvement, chaque scène montre
+  // son état le plus parlant, posé dans le balisage, et rien ne bouge.
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  document.documentElement.classList.add("anime");
+  var attendre = function(ms){ return new Promise(function(r){ setTimeout(r, ms); }); };
+  var montrer = function(liste, i){ liste.forEach(function(im, k){ im.classList.toggle("vue", k === i); }); };
+  var placer = function(doigt, p){ doigt.style.left = (p.x * 100) + "%"; doigt.style.top = (p.y * 100) + "%"; };
+  var appuyer = async function(doigt){ doigt.classList.add("appui"); await attendre(230); doigt.classList.remove("appui"); };
+  // Les images d'une scène ne se chargent qu'à l'approche : sans cela, la page
+  // ferait venir une trentaine de captures avant même qu'on la lise.
+  var empiler = function(conteneur, sources, avant){
+    return sources.map(function(src){
+      var im = new Image(); im.src = src; im.alt = ""; im.decoding = "async"; im.className = "etape";
+      conteneur.insertBefore(im, avant || null); return im;
+    });
+  };
+  // Une scène se joue quand elle est assez à l'écran ; la quitter l'arrête,
+  // y revenir la rejoue depuis le début.
+  var scene = function(el, seuil, prete, jouer, arreter){
+    var tour = 0, chargee = false;
+    new IntersectionObserver(function(e){ if (e[0].isIntersecting && !chargee){ chargee = true; prete(); } }, {rootMargin:"900px 0px"}).observe(el);
+    new IntersectionObserver(function(e){
+      if (e[0].isIntersecting){ tour++; var mien = tour; jouer(function(){ return mien === tour; }); }
+      else { tour++; if (arreter) arreter(); }
+    }, {threshold:seuil}).observe(el);
+  };
+
+  // 1. La phrase dictée : lettre à lettre, au rythme d'une voix, avec une
+  // respiration aux espaces et aux virgules. Puis la ligne du devis arrive.
+  var dite = document.getElementById("dite"), devient = document.querySelector(".devient");
+  var lettres = Array.from(dite.textContent);
+  dite.innerHTML = lettres.map(function(c){ return '<span class="l">' + c + '</span>'; }).join("");
+  var spans = Array.from(dite.querySelectorAll(".l"));
+  var dicter = async function(){
+    await attendre(500);
+    for (var i = 0; i < spans.length; i++){
+      if (i > 0) spans[i - 1].classList.remove("dernier");
+      spans[i].classList.add("dite-la", "dernier");
+      var c = lettres[i];
+      await attendre(c === " " ? 120 : /[,.»]/.test(c) ? 320 : 72);
+    }
+    await attendre(500); devient.classList.add("vu");
+    await attendre(2400); spans[spans.length - 1].classList.remove("dernier");
+  };
+  new IntersectionObserver(function(e, o){ if (e[0].isIntersecting){ o.disconnect(); dicter(); } }, {threshold:0.9}).observe(dite);
+
+  // 2. La note vocale : un doigt sur le micro, et le vrai chrono qui défile,
+  // une capture par seconde (images/nov-dictee-00 à 12).
+  var micro = document.getElementById("scene-micro"), bande = micro.querySelector(".bande"), doigtMicro = micro.querySelector(".doigt"), secondes = [];
+  scene(micro, 0.6, function(){
+    for (var k = 0; k <= 12; k++) secondes.push("images/nov-dictee-" + (k < 10 ? "0" : "") + k + ".jpg");
+    secondes = empiler(bande, secondes);
+  }, async function(encore){
+    while (encore()){
+      montrer(secondes, -1); placer(doigtMicro, {x:0.5, y:0.7919});
+      await attendre(900); if (!encore()) return;
+      doigtMicro.classList.add("la"); await attendre(700); await appuyer(doigtMicro);
+      montrer(secondes, 0); doigtMicro.classList.remove("la");
+      for (var k = 1; k < secondes.length; k++){ await attendre(1000); if (!encore()) return; montrer(secondes, k); }
+      await attendre(2200);
+    }
+  }, function(){ montrer(secondes, -1); doigtMicro.classList.remove("la"); });
+
+  // 3. Le client : la sélection quitte « Télécharger » pour la date, la case
+  // des 14 jours apparaît, il la coche, il accepte, et la page change.
+  var envoi = document.getElementById("scene-envoi"), ecranEnvoi = envoi.querySelector(".ecran"), doigtEnvoi = envoi.querySelector(".doigt");
+  var fixe = ecranEnvoi.querySelector("img.etape"), pages = [];
+  var POS = { telecharger:{x:0.5, y:0.2625}, date:{x:0.2804, y:0.4276}, coche:{x:0.0974, y:0.6338}, accepter:{x:0.5, y:0.7808} };
+  scene(envoi, 0.55, function(){
+    pages = empiler(ecranEnvoi, ["images/nov-client-0.jpg", "images/nov-client-1.jpg", "images/nov-client-2.jpg", "images/nov-client-3.jpg"], doigtEnvoi);
+    pages[3].classList.add("page");
+  }, async function(encore){
+    fixe.classList.remove("vue"); montrer(pages, 0); doigtEnvoi.classList.remove("la"); placer(doigtEnvoi, POS.telecharger);
+    await attendre(700); if (!encore()) return;
+    doigtEnvoi.classList.add("la"); await attendre(1000); if (!encore()) return;
+    placer(doigtEnvoi, POS.date); await attendre(1150); if (!encore()) return;
+    await appuyer(doigtEnvoi); montrer(pages, 1); await attendre(1300); if (!encore()) return;
+    placer(doigtEnvoi, POS.coche); await attendre(1150); if (!encore()) return;
+    await appuyer(doigtEnvoi); montrer(pages, 2); await attendre(1300); if (!encore()) return;
+    placer(doigtEnvoi, POS.accepter); await attendre(1150); if (!encore()) return;
+    await appuyer(doigtEnvoi); await attendre(200); doigtEnvoi.classList.remove("la"); montrer(pages, 3);
+  });
+
+  // 4. La TVA du mois : le chiffre monte jusqu'à sa valeur, puis la phrase.
+  var tva = document.getElementById("tva-du-mois"), chiffre = tva.querySelector("b"), valeur = Number(tva.dataset.valeur);
+  var euros = function(v){ return v.toLocaleString("fr-FR", {minimumFractionDigits:2, maximumFractionDigits:2}) + " €"; };
+  chiffre.textContent = euros(0);
+  new IntersectionObserver(function(e, o){
+    if (!e[0].isIntersecting) return; o.disconnect(); tva.classList.add("joue");
+    var debut = performance.now(), duree = 1500;
+    (function pas(t){ var x = Math.min(1, (t - debut) / duree), lisse = 1 - Math.pow(1 - x, 3); chiffre.textContent = euros(Math.round(valeur * lisse * 100) / 100); if (x < 1) requestAnimationFrame(pas); })(debut);
+  }, {threshold:0.7}).observe(tva);
+
+  // 5. Les travaux : la carte reste posée, et le défilement coche les tâches
+  // une à une, écrit la remarque, puis appuie sur « Envoyer le retour du jour ».
+  var defile = document.getElementById("scene-travaux"), pile = defile.querySelector(".pile"), colle = defile.querySelector(".colle"), doigtTravaux = pile.querySelector(".doigt");
+  var fixeTravaux = pile.querySelector("img.etape"), etapes = [], courante = -1;
+  var CRANS = [0, 0.1, 0.24, 0.38, 0.52, 0.66, 0.84];
+  var DOIGTS = [null, {x:0.1145, y:0.1759}, {x:0.1145, y:0.2857}, {x:0.1145, y:0.3956}, {x:0.1145, y:0.5055}, {x:0.5, y:0.7706}, {x:0.5, y:0.9205}];
+  // La scène garde sa hauteur quand la carte se replie : sans cela, la page
+  // remonterait sous le doigt au moment même de l'envoi.
+  var hauteurPile = function(rapport){ pile.style.height = Math.round(pile.offsetWidth * rapport) + "px"; };
+  // La course se mesure une fois, carte dépliée : mesurée en direct, elle
+  // grandirait au repli, ferait reculer l'étape, qui déplierait la carte, et
+  // la scène battrait entre les deux.
+  var course = 1;
+  var figer = function(){
+    defile.style.height = ""; pile.classList.add("mesuree"); pile.style.transition = "none"; hauteurPile(1530 / 786);
+    var deplie = colle.offsetHeight, chemin = defile.querySelector(".course").offsetHeight;
+    defile.style.height = (deplie + chemin) + "px"; course = chemin;
+    if (courante === 6) hauteurPile(455 / 786);
+    void pile.offsetHeight; pile.style.transition = "";
+  };
+  var majTravaux = function(){
+    if (!etapes.length) return;
+    var r = defile.getBoundingClientRect(), haut = parseFloat(getComputedStyle(colle).top) || 0;
+    var p = Math.max(0, Math.min(1, (haut - r.top) / course)), i = 0;
+    CRANS.forEach(function(c, k){ if (p >= c) i = k; });
+    if (i === courante) return;
+    var avance = i > courante && courante >= 0; courante = i;
+    // Envoyé, la carte de l'appli se replie : le cadre se replie avec elle.
+    hauteurPile(i === 6 ? 455 / 786 : 1530 / 786);
+    if (avance && DOIGTS[i]){
+      placer(doigtTravaux, DOIGTS[i]); doigtTravaux.classList.add("la"); appuyer(doigtTravaux);
+      setTimeout(function(){ if (courante === i) montrer(etapes, i); }, 160);
+      clearTimeout(majTravaux.t); majTravaux.t = setTimeout(function(){ doigtTravaux.classList.remove("la"); }, 650);
+    } else montrer(etapes, i);
+  };
+  new IntersectionObserver(function(e, o){
+    if (!e[0].isIntersecting) return; o.disconnect();
+    etapes = empiler(pile, [0, 1, 2, 3, 4, 5, 6].map(function(k){ return "images/nov-travaux-" + k + ".jpg"; }), doigtTravaux);
+    fixeTravaux.remove(); etapes[5].alt = fixeTravaux.alt; figer(); majTravaux();
+  }, {rootMargin:"900px 0px"}).observe(defile);
+  var demande = false;
+  addEventListener("scroll", function(){ if (demande) return; demande = true; requestAnimationFrame(function(){ demande = false; majTravaux(); }); }, {passive:true});
+  addEventListener("resize", function(){ if (etapes.length){ figer(); majTravaux(); } });
 })();
 </script>
 </body>
