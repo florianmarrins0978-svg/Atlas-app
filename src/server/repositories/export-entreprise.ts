@@ -2,6 +2,7 @@ import { eq, getTableColumns } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import {
   absencesEquipe,
+  joursTravaillesCorriges,
   acomptesDevis,
   audiosAPurger,
   brouillonsInformations,
@@ -191,6 +192,7 @@ export async function exporterEntreprise(
       lesEquipes,
       sesEquipesDeChantier,
       sesAbsences,
+      sesJoursCorriges,
       sesTranches,
       sesNatures,
       lesReglements,
@@ -323,6 +325,10 @@ export async function exporterEntreprise(
       // ses clients : une sauvegarde qui l'oublierait rendrait un planning qui
       // ne se comporte plus comme le sien.
       tx.select().from(absencesEquipe).where(eq(absencesEquipe.entrepriseId, e)),
+      // Les jours travaillés qu'il a corrigés à la main (migration 0166) : une
+      // sauvegarde qui les perdrait rendrait des mois que le comptable a reçus
+      // autrement.
+      tx.select().from(joursTravaillesCorriges).where(eq(joursTravaillesCorriges.entrepriseId, e)),
       // Les tranches et les travaux qu'il a réglés lui-même (14 août 2026,
       // `ARCHITECTURE.md` §102). Sans eux, une sauvegarde rendrait ses prix
       // sans rendre les cases qui leur donnent un sens : « 1 400 € » pour
@@ -544,6 +550,7 @@ export async function exporterEntreprise(
       equipes: lesEquipes,
       equipes_du_chantier: sesEquipesDeChantier,
       absences_equipe: sesAbsences,
+      jours_travailles_corriges: sesJoursCorriges,
       // Le modèle de fiche d'entretien : ses prestations, ses familles, son ordre.
       prestations_entretien: sonModeleEntretien,
       passages_entretien: sesPassages,

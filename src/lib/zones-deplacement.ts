@@ -18,8 +18,10 @@
 // relevés dans des résultats de recherche, ce poste ne joint pas msa.fr. C'est
 // pour cela que chaque borne et chaque nom se changent.
 
-import type { JourIso } from "@/lib/disponibilites";
+import type { JourIso, Moment } from "@/lib/disponibilites";
 import { distanceOiseauKm } from "@/lib/appariement-demi-journees";
+import { momentDuJour, type AbsenceEquipe } from "@/lib/absences-equipe";
+import { compteTravaille } from "@/lib/nature-absence";
 
 export const CONVENTIONS = ["aucune", "paysage", "batiment"] as const;
 export type Convention = (typeof CONVENTIONS)[number];
@@ -89,6 +91,14 @@ export function reglageLu(valeur: unknown): ReglageZones | null {
   return { convention, zones: convention === "aucune" ? [] : zones, teinte, depart };
 }
 
+/** « Paysage, 4 zones », « Pas de zones », « À régler » : la ligne d'Équipe. */
+export function resumeDesZones(r: ReglageZones | null): string {
+  if (!r) return "À régler";
+  if (r.convention === "aucune") return "Pas de zones";
+  const n = r.zones.length;
+  return `${MODELES[r.convention].nom}, ${n} ${n > 1 ? "zones" : "zone"}`;
+}
+
 /**
  * Des zones venues de l'écran, relues : un nom non vide de douze signes au
  * plus, des bornes qui MONTENT strictement, entre 0 et 500 km, six au plus.
@@ -118,6 +128,24 @@ export function zonesLues(valeur: unknown): Zone[] | null {
 export function caseDeLaDistance(km: number, zones: readonly Zone[]): number | "hors" {
   const i = zones.findIndex((z) => km <= z.km);
   return i < 0 ? "hors" : i;
+}
+
+/**
+ * La position d'un chantier, si elle vaut encore : les coordonnées ne disent
+ * vrai que pour l'adresse qui les a produites (`adresseSituee`). Une adresse
+ * corrigée depuis les rend fausses, et une zone devinée sur elles serait pire
+ * que pas de zone.
+ */
+export function positionSiSituee(c: {
+  latitude: string | number | null;
+  longitude: string | number | null;
+  adresse: string | null;
+  adresseSituee: string | null;
+}): Position | null {
+  if (c.latitude === null || c.longitude === null || !c.adresse || c.adresseSituee !== c.adresse) return null;
+  const latitude = Number(c.latitude);
+  const longitude = Number(c.longitude);
+  return Number.isFinite(latitude) && Number.isFinite(longitude) ? { latitude, longitude } : null;
 }
 
 /** Un chantier tel que le compte le lit : où il est, s'il est situé. */
@@ -171,6 +199,54 @@ export function placerLeJour(j: JourDuSalarie, depart: Position | null, zones: r
   }
   const l = loin as { c: ChantierDuJour; km: number };
   return { jour: j.jour, case: caseDeLaDistance(l.km, zones), chantier: l.c, km: Math.round(l.km), depot: false, raison: null };
+}
+
+// ─── CE QUE LE PLANNING DIT DE CHAQUE JOUR ─────────────────────────────────
+
+/** Une coche de `equipes_du_chantier`, le salarié désigné par son rang. */
+export type Coche = { chantierId: string; jour: JourIso | null; demi: string; rang: number };
+
+/** Un chantier posé : où il est, et les demi-journées qu'il occupe. */
+export type ChantierPose = ChantierDuJour & { id: string; creneaux: readonly { jour: JourIso; moment: Moment }[] };
+
+/**
+ * Les jours d'un salarié, du point de vue des zones, à partir du planning.
+ *
+ * **Il est sur un chantier une demi-journée** quand le chantier occupe cette
+ * demi-journée ET qu'il y est coché : sans jour, la coche vaut chaque jour du
+ * chantier ; datée, ce jour seulement (migration 0093). Une demi-journée où il
+ * est absent ne le met sur aucun chantier.
+ *
+ * **Seuls les jours où il a travaillé** (`joursDeTravail`, rendus par
+ * `compteDuMois`) se placent : un jour de congé n'a pas de zone. Un
+ * déplacement noté le met hors zone, une formation de la journée sans zone.
+ */
+export function joursDuSalarie(
+  rang: number,
+  joursDeTravail: readonly JourIso[],
+  chantiers: readonly ChantierPose[],
+  coches: readonly Coche[],
+  absences: readonly AbsenceEquipe[]
+): JourDuSalarie[] {
+  const siennes = coches.filter((c) => c.rang === rang);
+  const parId = new Map(chantiers.map((c) => [c.id, c]));
+  return joursDeTravail.map((jour) => {
+    const moments = absences.map((a) => ({ a, m: momentDuJour(a, jour) })).filter((x) => x.m !== null);
+    const enDeplacement = moments.some((x) => x.a.nature === "deplacement");
+    const enFormation = moments.some((x) => x.a.nature === "formation" && x.m === "journee");
+    const absentLe = (demi: Moment) =>
+      moments.some((x) => !compteTravaille(x.a.nature ?? null) && (x.m === "journee" || x.m === demi));
+    const vus = new Map<string, ChantierDuJour>();
+    for (const c of siennes) {
+      if (c.demi !== "matin" && c.demi !== "apres_midi") continue;
+      if (c.jour !== null && c.jour !== jour) continue;
+      if (absentLe(c.demi)) continue;
+      const chantier = parId.get(c.chantierId);
+      if (!chantier || !chantier.creneaux.some((x) => x.jour === jour && x.moment === c.demi)) continue;
+      vus.set(chantier.id, { nom: chantier.nom, adresse: chantier.adresse, position: chantier.position });
+    }
+    return { jour, chantiers: [...vus.values()], enDeplacement, enFormation: enFormation && vus.size === 0 };
+  });
 }
 
 /** Le compte d'un salarié par zone : un nombre par zone, puis hors zone. */
@@ -285,4 +361,33 @@ export function oklchEnRgb(L: number, C: number, h: number): string {
     return v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055;
   };
   return `#${lin.map((x) => Math.round(gamma(x) * 255).toString(16).padStart(2, "0")).join("")}`;
+}
+
+// ─── CE QUI SE LIT D'UN JOUR ────────────────────────────────────────────────
+
+/**
+ * Le code postal et la ville d'une adresse, puis le reste : « 44000 Nantes »
+ * et « 14 rue Crébillon ». Sans code postal, l'adresse entière, en ville.
+ */
+export function villeDeLAdresse(adresse: string | null): { ville: string; rue: string | null } {
+  if (!adresse) return { ville: "Adresse non écrite", rue: null };
+  const m = adresse.match(/^(.*?)[,\s]*\b(\d{5})\s+([^,]+?)\s*(?:,\s*France)?\s*$/i);
+  if (!m) return { ville: adresse.trim(), rue: null };
+  const rue = m[1].replace(/[,\s]+$/, "").trim();
+  return { ville: `${m[2]} ${m[3]}`, rue: rue || null };
+}
+
+/** « Mercredi 4 novembre » : la date telle qu'il la cherche dans sa tête. */
+export function jourEnClair(jour: JourIso): string {
+  const t = new Date(`${jour}T12:00:00Z`).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
+
+/**
+ * « Mercredi 4 novembre, Les Landes, adresse non située » : ce qui lui dit
+ * quelle zone toucher, sous « Il manque une zone, ajoutez-la. ».
+ */
+export function phraseDuJourSansZone(p: JourPlace): string {
+  const lieu = p.chantier ? (p.chantier.adresse ?? p.chantier.nom) : null;
+  return [jourEnClair(p.jour), lieu, p.raison].filter(Boolean).join(", ");
 }

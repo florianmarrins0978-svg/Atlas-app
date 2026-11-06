@@ -40,6 +40,8 @@ const TRACES = {
   etiquette: <><path d="M3.5 12.5V4.5h8l9 9-8 8z" /><circle cx="8" cy="8.5" r="1.5" /></>,
   // La carte du ruban « Comment », et « Une ligne » de l'avoir (planche de la facture).
   carte: <><rect x="3" y="6" width="18" height="12" rx="2" /><path d="M3 10h18M7 14.5h3" /></>,
+  // Les zones de déplacement (planche du 5 novembre 2026), le tracé de `kit.js`.
+  lieu: <><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z" /><circle cx="12" cy="10" r="2.3" /></>,
   liste: <path d="M8.5 6.5H20M8.5 12H20M8.5 17.5H20M4 6.5h.6M4 12h.6M4 17.5h.6" />,
   // Les pastilles « Trier par » de Terminés (sa planche du 3 novembre 2026, B).
   calendrier: <><rect x="3.5" y="5" width="17" height="15.5" rx="2" /><path d="M3.5 10h17M8 3v4M16 3v4" /></>,

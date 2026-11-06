@@ -27,6 +27,9 @@ import {
 import DossierEnCours, { type Periode } from "./DossierEnCours";
 import { carteDeLaLigne, facturesAffichees, type ARegarder } from "./a-regarder";
 import { garderLaPage } from "@/server/garde-page";
+import { getEntreprise } from "@/server/repositories/entreprises";
+import { MAX_SALARIES } from "@/lib/equipes";
+import { moisDuJour, nomDuMois } from "@/lib/jours-travailles";
 
 export const dynamic = "force-dynamic";
 
@@ -54,12 +57,17 @@ export default async function PageDossierEnCours() {
 
   const debutTickets = new Date(`${du}T12:00:00Z`);
   debutTickets.setUTCDate(debutTickets.getUTCDate() - 5);
-  const [lignes, tickets, factures, enAttente] = await Promise.all([
+  const [lignes, tickets, factures, enAttente, entreprise] = await Promise.all([
     lignesDuReleve(ctx, du, au),
     ticketsLibres(ctx, debutTickets.toISOString().slice(0, 10), au),
     facturesRecuesLibres(ctx),
     facturesARapprocher(ctx),
+    getEntreprise(ctx),
   ]);
+  // La ligne des jours travaillés : un artisan seul n'a personne à compter.
+  const salaries = Math.min(MAX_SALARIES, entreprise?.nombreSalaries ?? 0);
+  const mois = nomDuMois(moisDuJour(jourIso(maintenant))).split(" ")[0];
+  const joursTravailles = salaries > 0 ? `${mois.charAt(0).toUpperCase() + mois.slice(1)}, ${salaries} ${salaries > 1 ? "salariés" : "salarié"}` : null;
 
   const dossier = lignes.map((l) => ({
     jour: l.jour,
@@ -126,6 +134,7 @@ export default async function PageDossierEnCours() {
           periodes={periodes}
           aRegarder={aRegarder}
           factures={facturesAffichees(factures)}
+          joursTravailles={joursTravailles}
         />
       </div>
     </div>

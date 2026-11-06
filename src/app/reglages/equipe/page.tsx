@@ -22,6 +22,11 @@ import FonctionReservee from "@/components/atlas/FonctionReservee";
 import { abonnementDeLEntreprise } from "@/server/repositories/abonnements";
 import { fonctionOuverte } from "@/lib/abonnements";
 import { garderLaPage } from "@/server/garde-page";
+import Link from "next/link";
+import Paquet from "@/components/atlas/reglages/Paquet";
+import PastilleIcone from "@/components/atlas/reglages/PastilleIcone";
+import Icone from "@/components/atlas/IconeTrait";
+import { reglageLu, resumeDesZones } from "@/lib/zones-deplacement";
 
 export const dynamic = "force-dynamic";
 
@@ -170,6 +175,29 @@ export default async function EquipePage() {
         ) : (
           <FonctionReservee fonction="absences" />
         )}
+
+        {/* **Les zones de déplacement, sous les absences** — sa demande du
+            5 novembre 2026, « ajoute sur la planche la ligne équipe ». Réglées
+            ici une fois, elles paraissent d'office dans Jours travaillés et dans
+            le PDF du comptable. */}
+        <Paquet titre="Déplacements">
+          <Link href="/reglages/equipe/zones" className="flex min-h-[64px] items-center gap-3.5 py-2" data-atlas="ligne-zones">
+            <PastilleIcone>
+              <Icone nom="lieu" taille={20} />
+            </PastilleIcone>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[17.5px] leading-[1.25]" style={{ fontFamily: font.display }}>
+                Zones de déplacement
+              </span>
+              <span className="mt-0.5 block text-[14px]" style={{ color: colors.inkSoft }}>
+                {resumeDesZones(reglageLu(entreprise?.zonesDeplacement))}
+              </span>
+            </span>
+            <span style={{ color: colors.chevron }}>
+              <Icone nom="suivant" taille={20} epaisseur={2} />
+            </span>
+          </Link>
+        </Paquet>
 
         {/* **RETIRÉ le 26 août 2026 : la phrase qui expliquait pourquoi le
             planning n'écrivait rien à une seule équipe.** Elle disait vrai tant

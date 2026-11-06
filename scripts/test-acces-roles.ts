@@ -231,6 +231,7 @@ essai("le commercial atteint l'application, sauf les adresses nommées", () => {
     // hérite de son refus — mais l'hériter en SILENCE serait le jour où l'on
     // pose une page qui, elle, ne devait pas l'hériter.
     "/reglages/equipe/nouveau",
+    "/reglages/equipe/zones",
     "/reglages/identite",
     "/termines",
     // **Pour mon comptable (24 octobre 2026)**, fermé comme Terminés : le
@@ -242,6 +243,8 @@ essai("le commercial atteint l'application, sauf les adresses nommées", () => {
     "/termines/comptable/bilans/xxxx/xxxx",
     "/termines/comptable/dossiers",
     "/termines/comptable/dossiers/xxxx/pdf",
+    "/termines/comptable/jours-travailles",
+    "/termines/comptable/jours-travailles/pdf",
     "/termines/comptable/piece/xxxx",
     "/termines/comptable/xxxx",
     // La catégorie « Non payées » (24 septembre 2026), fermée comme Terminés.

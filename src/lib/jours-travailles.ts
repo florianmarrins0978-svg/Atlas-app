@@ -218,3 +218,56 @@ export function nombreDeJours(n: number): string {
 export function enJours(n: number): string {
   return `${nombreDeJours(n)} ${Math.abs(n) < 2 ? "jour" : "jours"}`;
 }
+
+// ─── CE QUI SE LIT, À L'ÉCRAN ET SUR LE PDF ─────────────────────────────────
+//
+// Une seule rédaction pour les deux : le comptable doit lire ce que le patron a
+// vu sous le nom de son salarié.
+
+const LIBELLE_NATURE_EN_TETE: Record<NatureAbsence, string> = {
+  conge: "Congé",
+  maladie: "Maladie",
+  sans_solde: "Sans solde",
+  deplacement: "Déplacement",
+  formation: "Formation",
+  autre: "Absent",
+};
+
+/** « Congé du 23 au 24 novembre », « Absent le 12 novembre au matin ». */
+export function phraseDeLAbsence(a: AbsenceDuMois): string {
+  const tete = a.nature ? LIBELLE_NATURE_EN_TETE[a.nature] : "Absent";
+  return `${tete} ${a.dit}${a.travaillee ? ", compté travaillé" : ""}`;
+}
+
+/** Le chiffre du mois : celui saisi, sinon le calcul. */
+export function valeurDuMois(compte: CompteDuMois, saisi: number | null): number {
+  return saisi ?? compte.calcul;
+}
+
+/**
+ * La correction, dite : « Maladie, 3 jours », « Samedi travaillé, 1 jour de
+ * plus » ; `null` sans écart. Sans motif, `sansMotif` le dit, et l'écran
+ * comme le PDF le montrent en couleur.
+ */
+export function phraseDeLaCorrection(
+  compte: CompteDuMois,
+  saisi: number | null,
+  motif: MotifCorrection | null
+): { texte: string; sansMotif: boolean } | null {
+  const ecart = valeurDuMois(compte, saisi) - compte.calcul;
+  if (ecart === 0) return null;
+  if (motif) return { texte: `${LIBELLE_MOTIF_CORRECTION[motif]}, ${enJours(Math.abs(ecart))}${ecart > 0 ? " de plus" : ""}`, sansMotif: false };
+  return { texte: `${enJours(Math.abs(ecart))} de ${ecart < 0 ? "moins" : "plus"} que le calcul, sans motif`, sansMotif: true };
+}
+
+/** « Mois en cours, 20 jours ouvrés, le 11 est férié. » */
+export function resumeDuMois(mois: MoisIso, ouvres: number, feries: readonly { jour: JourIso }[], enCours: boolean): string {
+  const jours = feries.map((f) => Number(f.jour.slice(8, 10)));
+  const ferie =
+    jours.length === 0
+      ? ""
+      : jours.length === 1
+        ? `, le ${jours[0] === 1 ? "1ᵉʳ" : jours[0]} est férié`
+        : `, ${jours.slice(0, -1).map((j) => (j === 1 ? "1ᵉʳ" : j)).join(", ")} et ${jours[jours.length - 1]} fériés`;
+  return `${enCours ? "Mois en cours, " : ""}${ouvres} jours ouvrés${ferie}.`;
+}

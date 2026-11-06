@@ -15,16 +15,22 @@ import {
   moisValide,
   moisVoisin,
   motifCorrectionLu,
+  phraseDeLAbsence,
+  phraseDeLaCorrection,
+  resumeDuMois,
 } from "../src/lib/jours-travailles";
 import {
   caseDeLaDistance,
   compteParZone,
   correctionsDeZonesLues,
+  joursDuSalarie,
   couleurDeLaCase,
   MODELES,
   manqueAuxZones,
+  phraseDuJourSansZone,
   phraseDuManque,
   placerLeJour,
+  villeDeLAdresse,
   reglageLu,
   zonesLues,
 } from "../src/lib/zones-deplacement";
@@ -134,6 +140,17 @@ essai("les mois se suivent, et se valident", () => {
   assert.equal(enJours(2), "2 jours");
 });
 
+essai("ce qui se lit : l'absence avec sa nature, la correction avec son motif, ou sans", () => {
+  const c = compteDuMois("2026-11", [absence("2026-11-23", "2026-11-24", { nature: "conge" }), absence("2026-11-02", "2026-11-02", { nature: "deplacement" })]);
+  assert.deepEqual(c.absences.map(phraseDeLAbsence), ["Déplacement le 2 novembre, compté travaillé", "Congé du 23 au 24 novembre"]);
+  assert.equal(phraseDeLaCorrection(c, 15, "maladie")?.texte, "Maladie, 3 jours");
+  assert.equal(phraseDeLaCorrection(c, 19, "samedi")?.texte, "Samedi travaillé, 1 jour de plus");
+  assert.deepEqual(phraseDeLaCorrection(c, 15, null), { texte: "3 jours de moins que le calcul, sans motif", sansMotif: true });
+  assert.equal(phraseDeLaCorrection(c, null, null), null);
+  assert.equal(resumeDuMois("2026-11", 20, [{ jour: "2026-11-11" }], true), "Mois en cours, 20 jours ouvrés, le 11 est férié.");
+  assert.equal(resumeDuMois("2026-10", 22, [], false), "22 jours ouvrés.");
+});
+
 console.log("=== Les zones de déplacement ===");
 
 const NANTES = { latitude: 47.2184, longitude: -1.5536 };
@@ -219,6 +236,40 @@ essai("le dégradé va du clair au foncé, et sa couleur papier est un vrai hex"
   assert.equal(proche.encreClaire, false);
   assert.equal(loin.encreClaire, true);
   assert.match(loin.papier, /^#[0-9a-f]{6}$/);
+});
+
+essai("le planning place un salarié là où il est coché, et nulle part pendant son absence", () => {
+  const chantiers = [
+    { id: "c1", nom: "Clisson", adresse: "Clisson", position: CLISSON, creneaux: [{ jour: "2026-11-02", moment: "matin" as const }, { jour: "2026-11-02", moment: "apres_midi" as const }, { jour: "2026-11-03", moment: "matin" as const }] },
+    { id: "c2", nom: "Nantes", adresse: "Nantes", position: NANTES, creneaux: [{ jour: "2026-11-03", moment: "apres_midi" as const }] },
+  ];
+  const coches = [
+    { chantierId: "c1", jour: null, demi: "matin", rang: 1 },
+    { chantierId: "c1", jour: null, demi: "apres_midi", rang: 1 },
+    { chantierId: "c2", jour: "2026-11-03", demi: "apres_midi", rang: 1 },
+    // Un autre salarié, coché sur le même chantier : il ne compte pas pour le 1.
+    { chantierId: "c2", jour: null, demi: "apres_midi", rang: 2 },
+  ];
+  const absences = [
+    // Absent le matin du 3 : Clisson ce matin-là ne compte pas.
+    { equipeId: "x", rang: 1, premierJour: "2026-11-03", dernierJour: "2026-11-03", dernierDemi: "matin", nature: "maladie" as const },
+    { equipeId: "x", rang: 1, premierJour: "2026-11-04", dernierJour: "2026-11-04", nature: "deplacement" as const },
+    { equipeId: "x", rang: 1, premierJour: "2026-11-05", dernierJour: "2026-11-05", nature: "formation" as const },
+  ];
+  const j = joursDuSalarie(1, ["2026-11-02", "2026-11-03", "2026-11-04", "2026-11-05", "2026-11-06"], chantiers, coches, absences);
+  assert.deepEqual(j[0].chantiers.map((c) => c.nom), ["Clisson"]);
+  assert.deepEqual(j[1].chantiers.map((c) => c.nom), ["Nantes"]);
+  assert.equal(j[2].enDeplacement, true);
+  assert.equal(j[3].enFormation, true);
+  assert.deepEqual(j[4].chantiers, []);
+});
+
+essai("la ville d'une adresse, et la phrase d'un jour sans zone", () => {
+  assert.deepEqual(villeDeLAdresse("14 rue Crébillon, 44000 Nantes"), { ville: "44000 Nantes", rue: "14 rue Crébillon" });
+  assert.deepEqual(villeDeLAdresse("14 rue Crébillon 44000 Nantes, France"), { ville: "44000 Nantes", rue: "14 rue Crébillon" });
+  assert.deepEqual(villeDeLAdresse("Les Landes"), { ville: "Les Landes", rue: null });
+  const p = placerLeJour({ jour: "2026-11-04", chantiers: [{ nom: "Mme Roux", adresse: "Les Landes", position: null }] }, NANTES, zones);
+  assert.equal(phraseDuJourSansZone(p), "Mercredi 4 novembre, Les Landes, adresse non située");
 });
 
 if (echecs) {

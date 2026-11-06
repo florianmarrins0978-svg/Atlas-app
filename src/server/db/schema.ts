@@ -315,6 +315,12 @@ export const entreprises = pgTable("entreprises", {
   // inventerait une organisation qu'il n'a pas.
   nombreSalaries: integer("nombre_salaries").notNull().default(0),
   /**
+   * Les zones de déplacement (migration 0167), lues par `reglageLu`
+   * (`src/lib/zones-deplacement.ts`). NULL : jamais réglé, et Jours travaillés
+   * l'invite alors à le faire, une fois.
+   */
+  zonesDeplacement: jsonb("zones_deplacement"),
+  /**
    * Le patron exige-t-il un retour d'intervention en fin de chantier ?
    *
    * *« Ça sera au patron de décider »*, 8 septembre 2026. **Éteint par défaut**,
@@ -690,6 +696,36 @@ export const absencesEquipe = pgTable("absences_equipe", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
 });
+
+/**
+ * Les jours travaillés corrigés à la main, un salarié et un mois par ligne
+ * (migration 0166). Le CALCUL ne s'écrit pas : il se refait à chaque ouverture
+ * (`src/lib/jours-travailles.ts`). Seul ce que le patron a changé est ici.
+ *
+ * **Le salarié se désigne par son rang**, comme ses absences et son nom : la
+ * ligne d'équipe n'existe pas toujours en base.
+ */
+export const joursTravaillesCorriges = pgTable(
+  "jours_travailles_corriges",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    rang: integer("rang").notNull(),
+    /** « 2026-11 ». */
+    mois: text("mois").notNull(),
+    /** Le chiffre saisi, par demi-journée. NULL : le calcul fait foi. */
+    jours: numeric("jours", { precision: 4, scale: 1 }),
+    /** Pourquoi il a changé (`MOTIFS_EN_MOINS`, `MOTIFS_EN_PLUS`). */
+    motif: text("motif"),
+    /** Les cases de zone corrigées : `{ "z0": 3, "hors": 1 }`. */
+    zones: jsonb("zones").$type<Record<string, number>>(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [unique("jours_travailles_corriges_uk").on(t.entrepriseId, t.rang, t.mois)]
+);
 
 // Correction v2.1 §3 : "prochain_numero_devis" représente le PROCHAIN numéro
 // disponible (pas le dernier attribué). Initialisé à 1 à la création de
