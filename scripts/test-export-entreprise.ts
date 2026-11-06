@@ -80,6 +80,11 @@ async function garnir(entrepriseId: string, marqueur: string) {
       [entrepriseId, `session-secrete-${marqueur}`, marqueur]
     );
     await client.query(
+      `INSERT INTO liaisons_plateformes (entreprise_id, plateforme, identifiant, secret_chiffre)
+       VALUES ($1,'pennylane',$2,$3)`,
+      [entrepriseId, `identifiant-${marqueur}`, `secret-chiffre-${marqueur}`]
+    );
+    await client.query(
       `INSERT INTO photos (entreprise_id, chantier_id, storage_key, mime_type, taille_octets, checksum)
        VALUES ($1,$2,$3,'image/jpeg',1024,'abc')`,
       [entrepriseId, chantierId, `photos/${marqueur}-1.jpg`]
@@ -246,6 +251,15 @@ async function main() {
     const [liaison] = (e.tables.liaisons_bancaires ?? []) as Record<string, unknown>[];
     assert.equal(liaison?.banque, "Banque A");
     assert.ok(!("sessionId" in liaison) && !JSON.stringify(e).includes("session-secrete"), "la session du prestataire voyage dans l'archive");
+  });
+
+  await test("sa plateforme de facture électronique part dans la sauvegarde, jamais son secret", async () => {
+    const e = await exporterEntreprise(A);
+    const [liaison] = (e.tables.liaisons_plateformes ?? []) as Record<string, unknown>[];
+    assert.equal(liaison?.plateforme, "pennylane");
+    // Chiffré ou non, le secret ouvre son compte chez la plateforme : une
+    // archive téléchargée voyage, et la clé de l'espace peut voyager avec.
+    assert.ok(!("secretChiffre" in liaison) && !JSON.stringify(e).includes("secret-chiffre"), "le secret de la plateforme voyage dans l'archive");
   });
 
   await test("les tables partagées restent hors de l'export", async () => {

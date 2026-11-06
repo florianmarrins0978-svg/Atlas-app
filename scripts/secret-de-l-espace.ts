@@ -52,6 +52,9 @@ export function dossierDesSecrets(): string {
 const COLONNES: Array<{ table: string; cle: string; colonnes: string[]; domaine: DomaineSecret }> = [
   { table: "agendas_externes", cle: "id", colonnes: ["client_secret", "jeton_acces", "jeton_rafraichissement", "mot_de_passe"], domaine: "agenda" },
   { table: "double_verification", cle: "utilisateur_id", colonnes: ["secret_chiffre"], domaine: "double-verification" },
+  // Le secret de la plateforme de facture électronique (0169) : il ouvre le
+  // compte de facturation de l'artisan, et doit survivre au changement de clé.
+  { table: "liaisons_plateformes", cle: "id", colonnes: ["secret_chiffre"], domaine: "plateforme-facture" },
 ];
 
 type Bilan = { rechiffres: number; illisibles: number };

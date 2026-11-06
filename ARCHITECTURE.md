@@ -36926,7 +36926,7 @@ Contrôles : `test-feuille-main-oeuvre` (pur : la quantité à la journée, l'he
 
 ## §555 : La facture électronique : Atlas fabrique la Factur-X, la plateforme de l'artisan la transmet
 
-*5 novembre 2026, ses choix sur la planche `appli/soignee/reglages-facture-electronique.html`.* Rien n'est codé.
+*5 novembre 2026, ses choix sur la planche `appli/soignee/reglages-facture-electronique.html`.* **La Factur-X et le branchement sont codés** (lot `lot/facture-x`, voir « Ce qui est codé » et « Le branchement » plus bas) ; il manque l'adresse de Pennylane et un premier dépôt réel.
 
 | Choix | Sa réponse | Ce que ça veut dire |
 |---|---|---|
@@ -36939,6 +36939,33 @@ Contrôles : `test-feuille-main-oeuvre` (pur : la quantité à la journée, l'he
 **Le verrou du 31 août et la Factur-X.** Le PDF d'une facture est protégé contre la modification (`proteger-pdf.ts`), c'est-à-dire chiffré avec un mot de passe propriétaire. Une Factur-X est un PDF/A-3, et la norme PDF/A interdit tout chiffrement : **une Factur-X ne peut pas être verrouillée.** Décision prise ici, et dite : la Factur-X ne sert qu'aux factures qui passent par la plateforme comme factures, celles d'un client **entreprise** ; la facture d'un **particulier** (la plateforme n'en transmet que les chiffres, e-reporting) et celle d'une **mairie** (Chorus Pro) gardent le PDF verrouillé d'aujourd'hui. Ce qui protège une Factur-X à la place : la plateforme garde ce qui est parti, et Atlas son empreinte.
 
 **L'ordre des lots.** D'abord la Factur-X, qui ne dépend d'aucun compte : une règle pure qui écrit le XML (CII, profil EN 16931) depuis la facture, le PDF rendu PDF/A-3 avec ce XML dedans, et un contrôle par les règles officielles. Ensuite le branchement (la clé chiffrée par `chiffre-au-repos.ts`, isolée par entreprise ; l'état de chaque facture transmise), qui ne s'éprouve qu'avec un vrai compte. Les deux sont de niveau 3.
+
+**Ce qui est codé, le 5 novembre (lot `lot/facture-x`).**
+
+| Pièce | Où | Pourquoi ainsi |
+|---|---|---|
+| le XML CII, profil EN 16931 | `src/lib/facture-x.ts`, `xmlFactureX` | règle pure ; ses totaux sortent de `totauxAvecReduction`, la fonction du papier, et elle refuse si les totaux imprimés n'y retombent pas. La remise part en remise de document par taux, les acomptes reçus en montant déjà payé, la sous-traitance en catégorie AE, la franchise en E |
+| ses refus | la même | une phrase par donnée qui manque (numéro de TVA, code postal, échéance, TVA à 0 % sans motif) ; rien ne s'invente, pas même le pays d'une adresse sans code postal |
+| le PDF/A-3 | `src/server/pdf/facture-x-pdf.ts`, `fabriquerFactureX`, `enPdfA3` | XMP Factur-X, profil sRGB (`srgb.icc`, écrit par LittleCMS), identifiant de fichier, le XML joint en `Alternative`, l'attestation décennale jointe en `Supplement` au lieu de pages recopiées |
+| les polices | `composerDocument`, option `archivable` ; `POLICES_ARCHIVABLES` | Times et Helvetica ne sont pas embarquées et PDF/A l'exige : leurs jumelles Liberation (mêmes chasses, la page se compose au point près), réduites au latin et **renommées « Atlas Archive »**, parce que « Liberation » est un nom réservé de la licence OFL |
+| l'émission | `emettreFacture`, `pieceDeLaFacture` | une entreprise (`estUneEntreprise`, qui laisse la mairie dehors) reçoit la Factur-X archivée ; un particulier et une mairie, le PDF verrouillé. **Un refus de la règle garde le PDF ordinaire** et se journalise : tant que rien ne transmet à une plateforme, ce PDF reste une facture valable. Le branchement fera de ce refus un blocage, son choix 3 B |
+
+**Qui juge.** `scripts/test-facture-x.ts` : le schéma CII D16B et les règles EN 16931 de la Commission européenne (ConnectingEurope/eInvoicing-EN16931, commit fixé, Saxon HE), puis veraPDF 3b ; un XML aux totaux faussés doit rendre BR-CO-15, la facture verrouillée d'aujourd'hui doit échouer à veraPDF. Les outils vivent hors du dépôt, dans `~/.cache/atlas-facture-x` (`scripts/_outils-facture-x.ts`) ; sans Java, la suite ne mesure rien et le dit, et Maven et git ne sont exigés qu'au premier remplissage du cache. La sauvegarde téléchargeable emporte la liaison et les transmissions, jamais le secret (`test-export-entreprise.ts`). `scripts/test-facture-x-emission-db.ts` joue l'émission en base, sous `atlas_app`.
+
+**Ce qui n'est pas vérifié** : les règles françaises que XP Z12-012 ajoute à l'EN 16931 (adresse électronique, catégorie de l'opération, SIREN du client exigé). Elles ne sont pas publiques ici ; la plateforme les contrôlera.
+
+**Le branchement, codé le 5 novembre (« code tout »).**
+
+| Pièce | Où | Pourquoi ainsi |
+|---|---|---|
+| la liaison et les transmissions | migration 0169 (0165 sur sa branche) : `liaisons_plateformes` (une par entreprise, secret chiffré, domaine `plateforme-facture`), `transmissions_factures` (une par facture, clé double vers la facture), FORCE RLS | le secret ouvre le compte de facturation de l'artisan : jamais en clair, et `scripts/secret-de-l-espace.ts` le relit au changement de clé |
+| le connecteur | `src/server/plateformes/api-commune.ts` | écrit d'après les contrats OpenAPI 1.3.0 de XP Z12-013 (annexe A) : jeton OAuth2 « client credentials », ou le secret présenté tel quel quand l'identifiant est vide ; `POST /v1/flows` en multipart (`flowInfo` JSON, `file` PDF, `processingRule` B2B, `sha256`) ; `GET /v1/flows/{id}` pour l'état. **`flowProfile` n'est pas envoyé** : son énumération (Basic, CIUS, Extended-CTC-FR) ne dit pas lequel nomme l'EN 16931, et il est facultatif |
+| trois familles de refus | la même | `coupee` (401, 403 : remplacer les identifiants), `injoignable` (réseau, 429, 5xx : réessayer), `refusee` (400, 422 : corriger la facture). Une phrase par famille, et la raison de la plateforme quand elle en donne une |
+| le catalogue | `src/server/plateformes/catalogue.ts` | une plateforme n'est offerte que si son adresse est connue (`ATLAS_PENNYLANE_FLUX_URL`, `ATLAS_PENNYLANE_JETON_URL`) ; sans elle, ni rubrique ni porte |
+| son choix 3 B | `emettreFacture` | pour une entreprise, avec une plateforme reliée : Factur-X obligatoire (un refus de la règle bloque), dépôt EN DERNIER dans la transaction d'émission. Un échec défait tout, numéro compris ; une liaison révoquée est marquée coupée APRÈS le retour en arrière, et le reste jusqu'au remplacement. Un particulier ne passe pas par la plateforme |
+| l'écran | `/reglages/facture-electronique`, ligne du sommaire sous Ma banque | patron seul, fermé au commercial ; vérifie les identifiants AVANT de les garder ; relit au plus dix états en cours par ouverture, hors transaction |
+
+**Ce qui n'est pas codé, et qui viendra** : le cycle de vie (« reçue par son client », statuts CDAR), l'e-reporting des ventes aux particuliers, l'annuaire. **Ce qui n'est pas éprouvé** : une vraie plateforme. Éprouvé contre `scripts/_fausse-plateforme.ts`, qui suit les contrats et sait accepter, refuser, rejeter, se taire et révoquer (`test-plateforme-facture-db.ts`, douze cas, trois rougissent sans le refus).
 
 ## §556 : Un client supprimé : sa facture en brouillon perd son téléphone et son e-mail
 

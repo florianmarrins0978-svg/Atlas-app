@@ -232,6 +232,9 @@ essai("le commercial atteint l'application, sauf les adresses nommées", () => {
     // pose une page qui, elle, ne devait pas l'hériter.
     "/reglages/equipe/nouveau",
     "/reglages/equipe/zones",
+    // **La plateforme de facture électronique (5 novembre 2026)** : le compte
+    // qui porte les factures de chaque client, fermé comme Ma banque.
+    "/reglages/facture-electronique",
     "/reglages/identite",
     "/termines",
     // **Pour mon comptable (24 octobre 2026)**, fermé comme Terminés : le

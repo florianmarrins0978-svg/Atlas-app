@@ -158,15 +158,21 @@
                     </select>
                   </label>
 
-                  <!-- Choix 2, A : la clé du compte, collée une fois. -->
+                  <!-- Choix 2, A : les identifiants du compte, collés une fois.
+                       Deux cases et non une clé (corrigé le 5 novembre) : l'API
+                       commune des plateformes demande un identifiant et un secret. -->
                   <div class="si-q2-a">
                     <label class="champ">
-                      <span class="champ-libelle">La clé de votre compte</span>
-                      <input class="champ-saisie" type="password" autocomplete="off" spellcheck="false" placeholder="Collez la clé ici">
+                      <span class="champ-libelle">Identifiant</span>
+                      <input class="champ-saisie" autocomplete="off" spellcheck="false">
+                    </label>
+                    <label class="champ">
+                      <span class="champ-libelle">Secret</span>
+                      <input class="champ-saisie" type="password" autocomplete="off" spellcheck="false" placeholder="Collez le secret ici">
                     </label>
                     <details class="cle-aide">
-                      <summary>Où trouver la clé ?</summary>
-                      <p>Sur Pennylane : Paramètres, puis Connectivité, puis Développeurs. Touchez « Générer un jeton » et copiez ce qu'il affiche.</p>
+                      <summary>Où les trouver ?</summary>
+                      <p>Dans Pennylane : Paramètres de l'entreprise, puis Connectivité, puis Développeurs. Un jeton seul se colle dans Secret.</p>
                     </details>
                     <button class="bouton bouton-plein mt-16" type="button" data-va-etat="relie">Relier mon compte</button>
                   </div>
@@ -188,12 +194,12 @@
                       <span class="ligne-nom">Pennylane</span>
                       <span class="compte-etat" data-ton="vert" data-si-etat="relie refus"><span class="etat" data-ton="vert">Reliée</span><span class="compte-quand">depuis le 5 novembre</span></span>
                       <span class="compte-etat" data-ton="rouge" data-si-etat="coupee"><span class="etat" data-ton="rouge">Coupée</span><span class="compte-quand">depuis hier à 18 h 02</span></span>
-                      <span class="compte-suite si-q3-a" data-ton="rouge" data-si-etat="coupee">La clé ne marche plus. Vos factures partent chez vos clients et attendent ici.</span>
-                      <span class="compte-suite si-q3-b" data-ton="rouge" data-si-etat="coupee">La clé ne marche plus. Vos factures ne partent plus tant qu'elle ne répond pas.</span>
+                      <span class="compte-suite si-q3-a" data-ton="rouge" data-si-etat="coupee">Vos identifiants ne marchent plus. Vos factures partent chez vos clients et attendent ici.</span>
+                      <span class="compte-suite si-q3-b" data-ton="rouge" data-si-etat="coupee">Vos identifiants ne marchent plus. Vos factures d'entreprise ne partent plus tant qu'ils ne sont pas remplacés.</span>
                     </span>
                   </div>
                 </div>
-                <button class="bouton bouton-plein mt-16 si-q2-a" type="button" data-si-etat="coupee" data-va-etat="pas-relie">Remplacer la clé</button>
+                <button class="bouton bouton-plein mt-16 si-q2-a" type="button" data-si-etat="coupee" data-va-etat="pas-relie">Remplacer mes identifiants</button>
                 <button class="bouton bouton-plein mt-16 si-q2-b" type="button" data-si-etat="coupee" data-va-etat="pas-relie">Se reconnecter chez Pennylane</button>
               </div>
 
@@ -205,8 +211,7 @@
                   <p class="carte-ton-texte">Syndic Les Tilleuls, <b>2 880,00 €</b></p>
                   <p class="refus-raison">Il manque le SIREN de son entreprise.</p>
                   <div class="carte-ton-pied rang-boutons">
-                    <button class="bouton bouton-plein" type="button" data-note="Ouvre la fiche du client, la case du SIREN prête à remplir.">Compléter sa fiche</button>
-                    <button class="bouton bouton-creux" type="button" data-va-etat="relie">Renvoyer</button>
+                    <button class="bouton bouton-creux" type="button" data-note="Ouvre la facture : elle se corrige par un avoir, puis une nouvelle facture.">Ouvrir la facture</button>
                   </div>
                 </div>
               </div>
@@ -225,7 +230,7 @@
                         <span class="partie-nom"><span class="ligne-nom">Syndic Les Tilleuls</span><span class="partie-montant">2 880,00 €</span></span>
                         <span class="partie-numero si-q1-a">F2026-000032</span>
                         <span class="partie-numero si-q1-b">F2026-000032 ici, un autre numéro chez Pennylane</span>
-                        <span class="etat" data-ton="vert" data-si-etat="relie">Reçue par son client</span>
+                        <span class="etat" data-ton="vert" data-si-etat="relie">Transmise</span>
                         <span class="etat" data-ton="rouge" data-si-etat="refus">Refusée</span>
                         <span class="etat si-q3-a" data-ton="ambre" data-si-etat="coupee">En attente de Pennylane</span>
                         <span class="etat si-q3-b" data-ton="rouge" data-si-etat="coupee">Pas envoyée</span>
@@ -334,7 +339,7 @@
     <h2>Ce que ça fait</h2>
     <ul>
       <li>Le compte se relie une fois, ici. Ensuite rien ne change à votre geste : « Envoyer la facture » la fait partir chez votre client <b>et</b> chez votre plateforme.</li>
-      <li>Chaque facture dit où elle en est : transmise, reçue par son client, refusée, en attente. Touchez les puces du haut.</li>
+      <li>Chaque facture dit où elle en est : en cours, transmise, refusée. Touchez les puces du haut.</li>
       <li>Un refus donne la raison de la plateforme et quoi faire. Touchez « Une facture refusée ».</li>
       <li>La ligne se range dans L'entreprise, sous Ma banque : deux comptes de l'entreprise, lus de la même façon. Touchez le retour en haut à gauche.</li>
     </ul>
@@ -344,6 +349,12 @@
       <li>Une mairie : « Télécharger pour Chorus Pro », comme aujourd'hui.</li>
       <li>Réservé au patron. Touchez « Un salarié ».</li>
       <li>Le chemin de la clé chez Pennylane vient d'une notice, pas d'un vrai compte. Il se vérifie sur le vôtre avant d'être codé.</li>
+    </ul>
+    <h2>Corrigé le 5 novembre, en codant</h2>
+    <ul>
+      <li>Deux cases au lieu d'une clé : l'API commune des plateformes demande un identifiant et un secret.</li>
+      <li>« Reçue par son client » attendra : ce retour vient d'un second échange avec la plateforme, pas encore codé.</li>
+      <li>Une facture refusée après son départ se corrige par un avoir, puis une nouvelle facture : « Ouvrir la facture » y mène.</li>
     </ul>
     <h2>Tranché le 5 novembre</h2>
     <ul class="a-trancher">

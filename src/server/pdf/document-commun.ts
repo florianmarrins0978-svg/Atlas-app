@@ -33,7 +33,7 @@ import { lignesDuPapier, quantiteLisible, tauxCourt } from "@/lib/lignes-du-papi
 import { uniteDeLaLigne } from "@/lib/unite-de-ligne";
 import { protegerContreModification } from "./proteger-pdf";
 import { sansAnnotations } from "./attestation-deposee";
-import { annoncerLaLongueurDesPolices } from "./polices-embarquees";
+import { annoncerLaLongueurDesPolices, POLICES_ARCHIVABLES } from "./polices-embarquees";
 import { pourLePapier } from "@/lib/texte-pdf";
 
 // Le moteur commun des pièces que le client reçoit : devis et facture.
@@ -658,11 +658,17 @@ async function imageDuLogo(
  */
 async function policesDu(
   pdfDoc: PDFDocument,
-  allure: Allure | null | undefined
+  allure: Allure | null | undefined,
+  archivable = false
 ): Promise<{ sans: PDFFont; sansGras: PDFFont; serif: PDFFont; serifGras: PDFFont; serifItalique: PDFFont }> {
   // Même prudence que pour les teintes : une clef écrite par une version d'avant
   // ne doit pas empêcher le document de sortir.
   const choisie = allure ? typographieDe(normaliserAllure(allure).typographie) : null;
+  // **Une pièce archivable n'a pas le droit aux polices du format** : Times et
+  // Helvetica ne sont pas embarquées, et la norme PDF/A exige que tout ce qui
+  // s'écrit le soit (`ARCHITECTURE.md` §555). Leurs jumelles Liberation ont les
+  // mêmes chasses, lettre pour lettre : la page se compose au point près.
+  if (!choisie?.fichiers && archivable) return policesArchivables(pdfDoc);
   if (!choisie?.fichiers) {
     return {
       sans: await pdfDoc.embedFont(StandardFonts.Helvetica),
@@ -696,6 +702,7 @@ async function policesDu(
       typographie: choisie.clef,
       erreur: err instanceof Error ? err.message : String(err),
     });
+    if (archivable) return policesArchivables(pdfDoc);
     return {
       sans: await pdfDoc.embedFont(StandardFonts.Helvetica),
       sansGras: await pdfDoc.embedFont(StandardFonts.HelveticaBold),
@@ -704,6 +711,29 @@ async function policesDu(
       serifItalique: await pdfDoc.embedFont(StandardFonts.TimesRomanItalic),
     };
   }
+}
+
+/**
+ * Les jumelles embarquées de Times et Helvetica, pour une pièce archivable.
+ *
+ * **Pas de repli ici** : sans elles, la pièce ne serait pas une Factur-X, et
+ * l'appelant le sait (`fabriquerFactureX` garde alors le PDF ordinaire).
+ */
+async function policesArchivables(
+  pdfDoc: PDFDocument
+): Promise<{ sans: PDFFont; sansGras: PDFFont; serif: PDFFont; serifGras: PDFFont; serifItalique: PDFFont }> {
+  const dossier = path.join(process.cwd(), "src/server/pdf/polices");
+  const lire = (fichier: string) => readFile(path.join(dossier, fichier));
+  const [sans, sansGras, serif, serifGras, serifItalique] = await Promise.all(
+    [
+      POLICES_ARCHIVABLES.sans,
+      POLICES_ARCHIVABLES.sansGras,
+      POLICES_ARCHIVABLES.serif,
+      POLICES_ARCHIVABLES.serifGras,
+      POLICES_ARCHIVABLES.serifItalique,
+    ].map(async (f) => pdfDoc.embedFont(await lire(f), { subset: false }))
+  );
+  return { sans, sansGras, serif, serifGras, serifItalique };
 }
 
 /**
@@ -877,6 +907,14 @@ export type OptionsDocument = {
    * pouvoir passer pour une vraie facture. Absent : rien ne change.
    */
   filigrane?: string | null;
+  /**
+   * La pièce sera une Factur-X (`facture-x-pdf.ts`, `ARCHITECTURE.md` §555) :
+   * toutes ses polices embarquées, **aucun verrou** (la norme PDF/A interdit
+   * le chiffrement), et l'attestation décennale gardée à part, pour être
+   * jointe comme fichier plutôt que recopiée en pages qu'Atlas n'a pas
+   * écrites. Absente : rien ne change.
+   */
+  archivable?: boolean;
 };
 
 
@@ -964,7 +1002,7 @@ async function composerUneFois(
   // l'oublier ne se verrait qu'au premier document d'un patron qui en a réglé
   // une, c'est-à-dire chez lui et pas ici.
   pdfDoc.registerFontkit(fontkit);
-  const polices = await policesDu(pdfDoc, options.allure);
+  const polices = await policesDu(pdfDoc, options.allure, options.archivable);
   const ctx: Contexte = {
     pdfDoc,
     page: pdfDoc.addPage([LARGEUR, HAUTEUR]),
@@ -1714,7 +1752,7 @@ async function composerUneFois(
   // **Après la numérotation** : « Page 2 / 2 » compte le devis, et
   // l'attestation le suit comme l'annexe qu'elle est, telle que l'assureur l'a
   // émise. **Avant le scellé** : elle part protégée avec le reste.
-  if (options.attestation) await joindreLAttestation(pdfDoc, options.attestation);
+  if (options.attestation && !options.archivable) await joindreLAttestation(pdfDoc, options.attestation);
 
   await pdfDoc.flush();
   annoncerLaLongueurDesPolices(pdfDoc.context);
@@ -1723,7 +1761,8 @@ async function composerUneFois(
   // facture, la feuille de chantier : un seul endroit, parce qu'un document
   // oublié ne se verrait pas — c'est chez le client qu'on l'apprendrait, comme
   // le 31 août 2026 (`src/server/pdf/proteger-pdf.ts`).
-  return { pdf: await protegerContreModification(await pdfDoc.save()), trace: ctx.trace, piedDeborde };
+  const octets = await pdfDoc.save();
+  return { pdf: options.archivable ? octets : await protegerContreModification(octets), trace: ctx.trace, piedDeborde };
 }
 
 /**

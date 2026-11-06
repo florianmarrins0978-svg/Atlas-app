@@ -529,10 +529,26 @@ non ? »*), 3 B. `ARCHITECTURE.md` §555 porte la décision, et celle prise
 sur le verrou : Factur-X pour un client entreprise seulement, PDF verrouillé
 pour un particulier et une mairie. **Rien n'est codé.** Reste, dans l'ordre :
 
-1. **le lot Factur-X**, sans compte : XML CII au profil EN 16931 depuis la
-   facture (règle pure dans `src/lib/`), PDF/A-3 avec ce XML dedans, contrôle
-   par les règles officielles. Niveau 3 ;
-2. **le branchement**, avec sa clé sur un compte d'essai. Niveau 3.
+1. ~~**le lot Factur-X**~~ **CODÉ LE 5 NOVEMBRE** (branche `lot/facture-x`,
+   `ARCHITECTURE.md` §555) : une entreprise reçoit une Factur-X, jugée par les
+   règles EN 16931 officielles et veraPDF. Reste dans ce lot : les règles
+   françaises de XP Z12-012, non vérifiables ici ; et le rappel au patron que
+   **son adresse dans Mon entreprise doit porter le code postal**, sinon la
+   facture repart en PDF ordinaire (journalisé, pas affiché) ;
+2. ~~**le branchement**~~ **CODÉ LE 5 NOVEMBRE** (`ARCHITECTURE.md` §555,
+   « Le branchement ») contre une fausse plateforme : écran, liaison chiffrée,
+   dépôt, choix 3 B. **Reste, et c'est à lui puis à nous :**
+   - **lui** : un compte d'essai (sandbox) Pennylane, et la réponse de
+     Pennylane à la question : par quelle API un logiciel tiers dépose une
+     Factur-X (le message est dans la conversation du 5 novembre, à recopier
+     dans `docs/A-FAIRE.md` s'il le veut) ;
+   - **nous** : poser `ATLAS_PENNYLANE_FLUX_URL` et `ATLAS_PENNYLANE_JETON_URL`
+     sur son espace une fois l'adresse connue, puis un premier dépôt réel sur
+     le compte d'essai, jamais sur son vrai compte (une facture transmise ne
+     s'efface pas) ;
+   - plus tard : le cycle de vie (« reçue par son client »), l'e-reporting des
+     particuliers, l'annuaire ; une suite navigateur de l'écran (le geste a été
+     joué à la main le 5 novembre).
 
 **À vérifier avant de coder, pas à lui demander :** le numéro d'une facture
 refusée par la plateforme (refaite sous le même numéro ou sous un neuf : la

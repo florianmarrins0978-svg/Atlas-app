@@ -4306,6 +4306,42 @@ export const virementsRecus = pgTable("virements_recus", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+/**
+ * La plateforme agréée de l'entreprise (migration 0169, `ARCHITECTURE.md` §555).
+ *
+ * **Le secret ne se lit qu'en clair dans le serveur, au moment de déposer**
+ * (`src/server/repositories/plateforme-facture.ts`) : il ouvre le compte de
+ * facturation de l'artisan. `identifiant` vide : le secret est un jeton d'accès.
+ */
+export const liaisonsPlateformes = pgTable("liaisons_plateformes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  entrepriseId: uuid("entreprise_id")
+    .notNull()
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  plateforme: text("plateforme", { enum: ["pennylane"] }).notNull(),
+  identifiant: text("identifiant"),
+  secretChiffre: text("secret_chiffre").notNull(),
+  etat: text("etat", { enum: ["reliee", "coupee"] }).notNull().default("reliee"),
+  coupeeLe: timestamp("coupee_le", { withTimezone: true }),
+  createdBy: uuid("created_by").references(() => users.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** Une facture déposée sur la plateforme, et ce que la plateforme en a dit (0169). */
+export const transmissionsFactures = pgTable("transmissions_factures", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  entrepriseId: uuid("entreprise_id")
+    .notNull()
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  factureId: uuid("facture_id").notNull(),
+  plateforme: text("plateforme", { enum: ["pennylane"] }).notNull(),
+  fluxId: text("flux_id").notNull(),
+  etat: text("etat", { enum: ["en_cours", "transmise", "refusee"] }).notNull().default("en_cours"),
+  raison: text("raison"),
+  deposeeLe: timestamp("deposee_le", { withTimezone: true }).notNull().defaultNow(),
+  lueLe: timestamp("lue_le", { withTimezone: true }),
+});
+
 // ─── Pour mon comptable — migration 0142, sa remarque du 24 octobre 2026 ─────
 
 /**

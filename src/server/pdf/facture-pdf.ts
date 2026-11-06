@@ -75,7 +75,7 @@ export type FacturePdfData = DonneesDocument & {
   autoliquidation?: boolean;
 };
 
-function mentionLegaleFacture(data: FacturePdfData): string {
+export function mentionLegaleFacture(data: FacturePdfData): string {
   // **Les 40 € ne se réclament qu'à un professionnel** (C. com. L441-10,
   // D441-5) : sur la facture d'un particulier, ils lui demandaient ce qu'il ne
   // doit pas (`docs/check-up-legal-documents.md`, point 5).
@@ -104,6 +104,8 @@ export type OptionsFacturePdf = {
   attestation?: AttestationDocument | null;
   /** La facture d'exemple des Réglages : EXEMPLE en travers de la page. */
   exemple?: boolean;
+  /** Pour une Factur-X (`facture-x-pdf.ts`) : polices embarquées, sans verrou. */
+  archivable?: boolean;
 };
 
 /**
@@ -189,6 +191,7 @@ export async function composerFacturePdf(
     mentionLegale: () => mentionLegaleFacture(data),
     cadreSignature: false,
     filigrane: options.exemple ? "EXEMPLE" : null,
+    archivable: options.archivable,
   });
 }
 
