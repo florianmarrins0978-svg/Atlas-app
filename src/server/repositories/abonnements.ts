@@ -225,6 +225,6 @@ async function rouvrirSiRepris(
   if (!abonnementRouvreLeCompte(etat)) return;
   await tx
     .update(entreprises)
-    .set({ fermetureDemandeeLe: null, fermetureLe: null, resteEffaceLe: null })
+    .set({ fermetureDemandeeLe: null, fermetureLe: null, resteEffaceLe: null, prevenuLe: null })
     .where(and(eq(entreprises.id, entrepriseId), sql`${entreprises.fermetureLe} IS NOT NULL`));
 }

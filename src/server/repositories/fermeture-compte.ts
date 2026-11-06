@@ -5,6 +5,8 @@ import {
   abonnements,
   clients,
   entreprises,
+  membresEntreprise,
+  users,
   fichiersAPurger,
   liaisonsBancaires,
   messagesAssistant,
@@ -12,6 +14,10 @@ import {
 } from "../db/schema";
 import {
   JOURS_AVANT_EFFACEMENT,
+  JOURS_AVANT_PREVENIR,
+  aPrevenir,
+  courrielAvantEffacement,
+  dateDEffacement,
   etatDeLaFermeture,
   resteAEffacer,
   type EtatFermeture,
@@ -19,6 +25,7 @@ import {
 } from "@/lib/fermeture-compte";
 import { effacerChantiersSansClientDans, effacerClientDans } from "./donnees-client";
 import { logger } from "../logger";
+import { envoyerCourriel } from "../courriel";
 import type { Ctx } from "./context";
 
 /**
@@ -88,7 +95,7 @@ export async function programmerLaFermeture(ctx: Ctx, effectiveLe: Date, mainten
   await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     await tx
       .update(entreprises)
-      .set({ fermetureDemandeeLe: maintenant, fermetureLe: effectiveLe, resteEffaceLe: null, updatedAt: maintenant })
+      .set({ fermetureDemandeeLe: maintenant, fermetureLe: effectiveLe, resteEffaceLe: null, prevenuLe: null, updatedAt: maintenant })
       .where(eq(entreprises.id, ctx.entrepriseId));
   });
 }
@@ -105,7 +112,7 @@ export async function retirerLaFermeture(ctx: Ctx, maintenant: Date = new Date()
     async (tx) => {
       await tx
         .update(entreprises)
-        .set({ fermetureDemandeeLe: null, fermetureLe: null, resteEffaceLe: null, updatedAt: maintenant })
+        .set({ fermetureDemandeeLe: null, fermetureLe: null, resteEffaceLe: null, prevenuLe: null, updatedAt: maintenant })
         .where(eq(entreprises.id, ctx.entrepriseId));
     },
     { pourRouvrirLeCompte: true }
@@ -214,4 +221,62 @@ export async function effacerLeResteDesComptesFermes(maintenant: Date = new Date
     }
   }
   return { comptesEffaces, clientsEffaces };
+}
+
+/**
+ * SEPT JOURS AVANT L'EFFACEMENT, LE PATRON EST PRÉVENU PAR E-MAIL.
+ *
+ * Opération planifiée, comme l'effacement, et dans le même passage (avant
+ * lui : le jour où les deux tombent ensemble, l'e-mail part d'abord).
+ *
+ * **La date ne se pose que sur un envoi réussi** : un service d'e-mail coupé
+ * ne doit pas faire croire qu'il a été prévenu, et l'envoi repart demain.
+ * Le texte vient de `courrielAvantEffacement`, la date de la même règle que
+ * l'effacement.
+ */
+export async function prevenirAvantLEffacement(maintenant: Date = new Date()): Promise<number> {
+  const seuil = new Date(maintenant.getTime() - (JOURS_AVANT_EFFACEMENT - JOURS_AVANT_PREVENIR) * 24 * 60 * 60 * 1000);
+  const candidats = await db
+    .select({
+      id: entreprises.id,
+      demandeeLe: entreprises.fermetureDemandeeLe,
+      effectiveLe: entreprises.fermetureLe,
+      resteEffaceLe: entreprises.resteEffaceLe,
+      prevenuLe: entreprises.prevenuLe,
+    })
+    .from(entreprises)
+    .where(
+      and(
+        isNotNull(entreprises.fermetureLe),
+        isNull(entreprises.resteEffaceLe),
+        isNull(entreprises.prevenuLe),
+        lte(entreprises.fermetureLe, seuil)
+      )
+    );
+
+  let prevenus = 0;
+  for (const c of candidats) {
+    if (!aPrevenir(c, c.prevenuLe, maintenant) || !c.effectiveLe) continue;
+    // `membres_entreprise` est sous RLS : le contexte se pose depuis la ligne
+    // lue, comme pour l'effacement.
+    const patrons = await db.transaction(async (tx) => {
+      await tx.execute(sql`SELECT set_config('app.entreprise_id', ${c.id}, true)`);
+      return tx
+        .select({ email: users.email })
+        .from(membresEntreprise)
+        .innerJoin(users, eq(users.id, membresEntreprise.utilisateurId))
+        .where(and(eq(membresEntreprise.entrepriseId, c.id), eq(membresEntreprise.role, "proprietaire")));
+    });
+    const courriel = courrielAvantEffacement(dateDEffacement(c.effectiveLe));
+    let parti = false;
+    for (const { email } of patrons) {
+      const r = await envoyerCourriel({ a: email, ...courriel });
+      if (r.ok) parti = true;
+      else logger.warn("E-mail d'avant l'effacement non parti", { entrepriseId: c.id, raison: r.raison });
+    }
+    if (!parti) continue;
+    await db.update(entreprises).set({ prevenuLe: maintenant }).where(eq(entreprises.id, c.id));
+    prevenus++;
+  }
+  return prevenus;
 }

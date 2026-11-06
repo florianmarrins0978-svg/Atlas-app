@@ -3,7 +3,7 @@ import { purgerFichiersEnAttente } from "@/server/repositories/fichiers";
 import { purgerPreuvesPerimees } from "@/server/preuve-recente";
 import { purgerAudiosTranscrits, purgerPhotosDiagnostic } from "@/server/repositories/retention";
 import { noterPurgeReussie } from "@/server/journal-purge";
-import { effacerLeResteDesComptesFermes } from "@/server/repositories/fermeture-compte";
+import { effacerLeResteDesComptesFermes, prevenirAvantLEffacement } from "@/server/repositories/fermeture-compte";
 import { getEnv } from "@/server/env";
 import { logger } from "@/server/logger";
 import { idRequeteValideOuGenere, executerAvecContexte } from "@/server/request-context";
@@ -52,6 +52,9 @@ export async function POST(request: Request) {
       // `docs/QUESTIONS.md`), toujours avant qu'on vide la file : leurs photos
       // et leurs dictées y entrent, et partent ainsi le jour même. Un compte
       // qui échoue est journalisé et repris demain, sans arrêter les autres.
+      // L'e-mail d'avant l'effacement d'abord : le jour où les deux tombent
+      // ensemble, il part avant que rien ne s'efface.
+      const comptesPrevenus = await prevenirAvantLEffacement();
       const { comptesEffaces, clientsEffaces } = await effacerLeResteDesComptesFermes();
       const nombrePurges = await purgerFichiersEnAttente();
       /**
@@ -89,8 +92,8 @@ export async function POST(request: Request) {
         preuvesPurgees,
       });
 
-      logger.info("Purge planifiée exécutée", { nombrePurges, audiosPurges, photosPurgees, comptesEffaces, clientsEffaces });
-      return NextResponse.json({ statut: "ok", nombrePurges, audiosPurges, photosPurgees, preuvesPurgees, comptesEffaces });
+      logger.info("Purge planifiée exécutée", { nombrePurges, audiosPurges, photosPurgees, comptesEffaces, clientsEffaces, comptesPrevenus });
+      return NextResponse.json({ statut: "ok", nombrePurges, audiosPurges, photosPurgees, preuvesPurgees, comptesEffaces, comptesPrevenus });
     } catch (err) {
       logger.error("Échec de la purge planifiée des fichiers", { erreur: err });
       return NextResponse.json({ erreur: "Échec de la purge." }, { status: 500 });

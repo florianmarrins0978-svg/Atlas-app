@@ -8,6 +8,9 @@ import {
   etatDeLaFermeture,
   jourEnMots,
   abonnementRouvreLeCompte,
+  aPrevenir,
+  courrielAvantEffacement,
+  JOURS_AVANT_PREVENIR,
   resteAEffacer,
 } from "../src/lib/fermeture-compte";
 
@@ -142,6 +145,32 @@ cas("essai, impayé, résilié : rien ne rouvre", () => {
   for (const statut of ["essai", "impaye", "resilie"] as const) {
     assert.equal(abonnementRouvreLeCompte({ statut, annulationDemandee: false }), false);
   }
+});
+
+console.log("\n=== L'e-mail d'avant l'effacement ===\n");
+
+// Fermé le 1er décembre, effacé le 31 : l'e-mail part à partir du 24.
+cas(`${JOURS_AVANT_PREVENIR} jours avant l'effacement, pas avant`, () => {
+  assert.equal(JOURS_AVANT_PREVENIR, 7);
+  assert.equal(aPrevenir(demandee, null, jour("2026-12-23")), false);
+  assert.equal(aPrevenir(demandee, null, jour("2026-12-24")), true);
+});
+
+cas("une seule fois : déjà prévenu, rien ne repart", () => {
+  assert.equal(aPrevenir(demandee, jour("2026-12-24"), jour("2026-12-26")), false);
+});
+
+cas("fermeture seulement programmée, ou reste déjà effacé : aucun e-mail", () => {
+  assert.equal(aPrevenir(demandee, null, MAINTENANT), false);
+  assert.equal(aPrevenir({ ...demandee, resteEffaceLe: jour("2026-12-31") }, null, jour("2027-01-02")), false);
+});
+
+cas("l'e-mail dit la date, ce qui part, ce qui reste, et où rouvrir", () => {
+  const c = courrielAvantEffacement(jour("2026-12-31"));
+  assert.match(c.objet, /31 décembre 2026/);
+  assert.match(c.texte, /devis jamais acceptés/);
+  assert.match(c.texte, /restent dix ans/);
+  assert.match(c.texte, /Mes données/);
 });
 
 console.log("\n=== Le jour dit à l'écran ===\n");

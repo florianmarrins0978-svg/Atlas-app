@@ -135,3 +135,32 @@ export function abonnementRouvreLeCompte(etat: { statut: StatutAbonnement; annul
 export function jourEnMots(d: Date): string {
   return d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Paris" });
 }
+
+/**
+ * L'E-MAIL D'AVANT L'EFFACEMENT — sept jours avant (6 novembre 2026, et
+ * `docs/A-FAIRE.md` le disait le 18 octobre : « prévenu par e-mail avant »).
+ *
+ * Sept jours, pas trente : fermé, il le sait déjà ; ce que l'e-mail apporte,
+ * c'est la date, au moment où il peut encore télécharger ou rouvrir. Un seul
+ * envoi : `prevenuLe` posé, plus rien ne part.
+ */
+export const JOURS_AVANT_PREVENIR = 7;
+
+export function aPrevenir(f: Fermeture | null | undefined, prevenuLe: Date | null, maintenant: Date): boolean {
+  if (prevenuLe) return false;
+  const e = etatDeLaFermeture(f, maintenant);
+  if (e.statut !== "fermee") return false;
+  return maintenant.getTime() >= e.effacementLe.getTime() - JOURS_AVANT_PREVENIR * UN_JOUR_MS;
+}
+
+export function courrielAvantEffacement(effacementLe: Date): { objet: string; texte: string } {
+  const jour = jourEnMots(effacementLe);
+  return {
+    objet: `Votre compte Atlas s'efface le ${jour}`,
+    texte:
+      `Votre compte Atlas est fermé. Le ${jour}, ce qui ne se garde pas s'efface : ` +
+      "les devis jamais acceptés, les clients sans facture, les photos, les notes et les dictées.\n\n" +
+      "Vos factures, vos avoirs, vos devis et contrats acceptés restent dix ans, lisibles avec votre mot de passe.\n\n" +
+      "Pour garder une copie de tout, ou pour rouvrir votre compte : Réglages, puis Mes données.",
+  };
+}

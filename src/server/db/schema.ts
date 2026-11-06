@@ -370,6 +370,8 @@ export const entreprises = pgTable("entreprises", {
   fermetureDemandeeLe: timestamp("fermeture_demandee_le", { withTimezone: true }),
   fermetureLe: timestamp("fermeture_le", { withTimezone: true }),
   resteEffaceLe: timestamp("reste_efface_le", { withTimezone: true }),
+  /** L'e-mail parti sept jours avant l'effacement (`aPrevenir`), une seule fois. */
+  prevenuLe: timestamp("prevenu_le", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
