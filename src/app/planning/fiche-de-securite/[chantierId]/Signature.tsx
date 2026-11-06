@@ -61,7 +61,7 @@ export default function Signature({
       <div
         ref={cadre}
         data-atlas="signature"
-        className="relative h-[170px] overflow-hidden rounded-[12px]"
+        className="relative h-[170px] overflow-hidden rounded-[6px]"
         style={{ background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
       >
         <canvas
@@ -88,12 +88,12 @@ export default function Signature({
         />
         <span aria-hidden="true" className="pointer-events-none absolute bottom-[34px] left-[18px] right-[18px] border-t border-dashed" style={{ borderColor: colors.line }} />
         {points === 0 && (
-          <span className="pointer-events-none absolute bottom-[10px] left-0 right-0 text-center text-[12px]" style={{ color: colors.muted }}>
+          <span className="pointer-events-none absolute bottom-[10px] left-0 right-0 text-center text-[14px]" style={{ color: colors.inkSoft }}>
             Signez ici, au doigt
           </span>
         )}
       </div>
-      <button type="button" onClick={() => onTrace([])} className="ml-auto mt-2 block min-h-[40px] px-1 text-[13.5px] font-semibold" style={{ color: colors.ink }}>
+      <button type="button" onClick={() => onTrace([])} className="ml-auto mt-1.5 block min-h-[44px] px-1 text-[15px] font-semibold" style={{ color: colors.ink }}>
         Effacer
       </button>
     </div>
