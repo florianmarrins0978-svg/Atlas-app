@@ -22,6 +22,14 @@ côté du nom […] à partir de début novembre »*. **Rien dans `src/`.**
 la B »*) : la goutte, la fiche, Le prévoir qui pose au planning, et la ligne
 qui les rassemble en tête de Vos clients. Il n'a pas dit de coder.
 
+**Franchise : A ET B, sa réponse du 6 novembre** (*« j'ai l'impression qu'il
+faut la A et la B »*, et mon accord) : le compteur toujours dans Votre TVA, là
+où l'on vient le chercher, ET la ligne sur Terminés à partir de 80 % du
+plafond, qui vient à lui quand ça compte. Une seule fonction pour les deux
+chiffres (`CLAUDE.md` §3), et la ligne de Terminés reste muette sous 80 % :
+l'écran de l'argent ne porte pas un compteur de plus toute l'année. Il n'a
+pas dit de coder.
+
 Commun à A et B : la facture qui fait passer le plafond majoré s'arrête avant
 de partir (trois issues, dont « L'envoyer sans TVA », pour ne pas bloquer sur
 un plafond non vérifié) ; pour l'hivernage, Atlas demande Oui ou Non une fois
