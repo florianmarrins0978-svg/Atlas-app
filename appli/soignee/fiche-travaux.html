@@ -115,6 +115,10 @@
               resize: none; outline: none; font: 400 16px/1.45 var(--sans); color: var(--atlas-ink); caret-color: var(--atlas-or);
               background: color-mix(in srgb, var(--atlas-or) 10%, var(--atlas-card));
               box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--atlas-or) 30%, transparent); }
+/* Elle grandit avec ce qu'on écrit : la troisième ligne ne se cache plus
+   (TODO.md, « La case À signaler ne grandit pas »). */
+.a-signaler { overflow: hidden; field-sizing: content; }
+.aujourdhui .a-signaler { overflow: auto; field-sizing: fixed; }
 .a-signaler::placeholder { color: var(--atlas-inkSoft); opacity: 0.85; }
 .a-signaler:focus { box-shadow: inset 0 0 0 2px var(--atlas-or); }
 .envoyer { margin-top: 16px; }
@@ -289,6 +293,7 @@
       <li>Le nom du travail en plus grand, et sa quantité à droite : « 25 ml » ne se colle plus au nom.</li>
       <li>Des cases plus grandes, et toute la ligne se touche. La coche se trace quand on coche.</li>
       <li>Le bouton prend toute la largeur, sous le pouce. Un travail fait reste lisible.</li>
+      <li>La case « À signaler » grandit avec ce qu’on écrit : aujourd’hui, la troisième ligne se cache.</li>
     </ul>
     <h2>A, la barre de toujours</h2>
     <ul>
@@ -345,6 +350,12 @@
     { quoi: "Scarification et regarnissage du gazon", combien: "40 m²" }
   ];
   var COCHEES_LE_SOIR = ["Taille de haie de laurier", "Élagage d’un frêne", "Tonte de la pelouse arrière"];
+  /* Pour un navigateur qui ne connaît pas encore field-sizing. */
+  function grandir(t) {
+    if (!t || t.closest(".aujourdhui")) return;
+    t.style.height = "auto";
+    t.style.height = t.scrollHeight + 2 + "px";
+  }
 
   function monter(id, propose) {
     var ecran = document.getElementById(id);
@@ -446,6 +457,7 @@
           "</section>" +
         "</div>" + barre(1);
       Kit.brancher(ecran);
+      grandir(ecran.querySelector(".a-signaler"));
       ecran.querySelector(".defile").scrollTop = haut;
     }
 
@@ -481,7 +493,7 @@
       }
     });
     ecran.addEventListener("input", function (ev) {
-      if (ev.target.getAttribute("data-g") === "mot") e.mot = ev.target.value;
+      if (ev.target.getAttribute("data-g") === "mot") { e.mot = ev.target.value; grandir(ev.target); }
     });
     ecran.addEventListener("change", function (ev) {
       if (ev.target.getAttribute("data-g") !== "photos") return;
@@ -598,6 +610,7 @@
           "</section>" +
         "</div>" + barre(1);
       Kit.brancher(ecran);
+      grandir(ecran.querySelector(".a-signaler"));
       ecran.querySelector(".defile").scrollTop = haut;
       e.frais = false;
     }
@@ -645,7 +658,7 @@
       }
     });
     ecran.addEventListener("input", function (ev) {
-      if (ev.target.getAttribute("data-g") === "mot") e.mot = ev.target.value;
+      if (ev.target.getAttribute("data-g") === "mot") { e.mot = ev.target.value; grandir(ev.target); }
     });
     ecran.addEventListener("change", function (ev) {
       if (ev.target.getAttribute("data-g") !== "photos") return;
