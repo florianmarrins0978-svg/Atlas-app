@@ -54,8 +54,30 @@
 
   CE QUI N'A PAS BOUGÉ : tous les textes, mot pour mot, et leur ordre ; les
   prix de src/lib/abonnements.ts (39, 59, 159 € HT, l'année à dix mois) ;
-  l'essai de quinze jours ; le contact « à compléter » ; toutes les images
-  sont les captures réelles du dossier images/, rien n'est redessiné.
+  l'essai de quinze jours ; le contact « à compléter ».
+
+  LES CAPTURES SONT CELLES DE L'APPLI DU 6 NOVEMBRE 2026 (images/nov-*.jpg).
+  Sa remarque du jour : « certaines pages de l'application ont changé, va
+  regarder dans l'application avant de mettre des pages qui n'existent
+  plus ». Celles du 8 octobre étaient périmées : la page que reçoit le
+  client a été refaite (elle tient sur un écran), le planning montre la
+  semaine sous le mois, la fiche client a pris « Public » et « Je rédige à
+  la main », l'accueil colore ses cartes. Les anciennes restent dans
+  images/ pour les planches d'avant.
+  Comment elles ont été faites, pour qui les refera : l'appli lancée dans un
+  conteneur du nuage, sur une base d'essai amorcée (son accord du jour), au
+  nom des Jardins de Valmorin (numéros impossibles à attribuer, Valmorin est
+  une commune inventée). L'identité, les quatre tarifs, les deux salariés
+  et les chantiers qui colorent le mois sont posés en base ; le chantier
+  Lemaire, lui, passe par les boutons : fiche client, devis écrit à la main
+  (sans clé d'IA ici, la dictée ne rend qu'un texte simulé), date du
+  vendredi 6 proposée, accord du client sur sa page, travaux cochés, retour
+  envoyé, facture créée, envoyée et payée. La TVA de novembre affichée par
+  Terminés vaut bien 143,70 €.
+  UN DÉFAUT DE L'APPLI vu en les faisant, et non corrigé ici : la case « À
+  signaler » des travaux à faire tient deux lignes et ne grandit pas
+  (TravauxAFaire.tsx, rows=2, resize-none). Une remarque de trois lignes s'y
+  cache. La capture porte donc une remarque courte. Inscrit dans TODO.md.
 
   L'en-tête de chapitres-3.html dit d'où vient chaque réponse aux doutes de
   l'artisan méfiant, vérifiée dans le code : il reste vrai.
@@ -133,7 +155,6 @@ section{padding:clamp(88px,12vw,150px) 0}
 /* ── Les supports des captures : le téléphone, la feuille, le recadrage ─ */
 .appareil{width:min(70vw,320px);padding:9px;border-radius:48px;background:linear-gradient(155deg,#26302a,#0d120f 40%);box-shadow:0 60px 90px -46px rgba(var(--ombre),.7),0 22px 34px -22px rgba(var(--ombre),.45),inset 0 0 0 1.5px #39433c,inset 0 0 0 3px #0b0f0c}
 .appareil img{border-radius:39px;width:100%;aspect-ratio:1170/1992;object-fit:cover;object-position:top;background:var(--papier)}
-.appareil.long img{aspect-ratio:1170/2235}
 .feuille{margin:0;border-radius:4px;overflow:hidden;background:#fbfaf6;box-shadow:0 50px 80px -44px rgba(var(--ombre),.6),0 4px 10px rgba(var(--ombre),.07),0 0 0 1px rgba(var(--ombre),.05)}
 .gros{margin:0;border-radius:22px;overflow:hidden;background:var(--papier);box-shadow:0 34px 70px -40px rgba(var(--ombre),.5),0 0 0 1px rgba(var(--ombre),.07)}
 .gros img{width:100%;transform:scale(1.035);transition:transform 1.6s var(--sortie)}
@@ -424,8 +445,8 @@ section{padding:clamp(88px,12vw,150px) 0}
       <p class="rassure">Sans carte bancaire. Tout est ouvert pendant l'essai.</p>
     </div>
     <div class="scene" aria-hidden="true">
-      <figure class="feuille"><img src="images/devis-fini.jpg" alt="" width="1654" height="2339"></figure>
-      <div class="appareil"><img src="images/accueil.jpg" alt="" width="1170" height="1992"></div>
+      <figure class="feuille"><img src="images/nov-devis.jpg" alt="" width="1654" height="2339"></figure>
+      <div class="appareil"><img src="images/nov-accueil.jpg" alt="" width="1170" height="1992"></div>
     </div>
   </div>
 </section>
@@ -457,8 +478,8 @@ section{padding:clamp(88px,12vw,150px) 0}
     </div>
     <div class="chap-visuel">
       <div class="scene duo">
-        <figure class="feuille"><img src="images/devis-fini.jpg" alt="Le devis fini, en PDF : Création d'un massif pour Mr. Lemaire, quatre lignes, 718,50 euros HT, 862,20 euros TTC" width="1654" height="2339"></figure>
-        <div class="appareil"><img src="images/feuille-remplie.jpg" alt="Fiche client d'Atlas, remplie, avec le bouton Devis à la voix" width="1170" height="1992"></div>
+        <figure class="feuille"><img src="images/nov-devis.jpg" alt="Le devis fini, en PDF : Création d'un massif pour Mr. Lemaire, quatre lignes, 718,50 euros HT, 862,20 euros TTC" width="1654" height="2339"></figure>
+        <div class="appareil"><img src="images/nov-fiche-client.jpg" alt="Fiche client d'Atlas, remplie pour Mr. Lemaire, avec le bouton Devis à la voix" width="1170" height="1992"></div>
       </div>
       <p class="sous duo-sous">Le devis, prêt à partir.</p>
     </div>
@@ -485,7 +506,7 @@ section{padding:clamp(88px,12vw,150px) 0}
     </div>
     <div class="chap-visuel">
       <div class="scene sable">
-        <div class="appareil long"><img src="images/accord-entier.jpg" alt="Page que reçoit le client, en entier : le devis de Mr. Lemaire à 862,20 euros TTC, le choix de la date, la case de rétractation, J'accepte ce devis, Une correction avant d'accepter et Je ne donne pas suite" width="1170" height="2235"></div>
+        <div class="appareil"><img src="images/nov-accord.jpg" alt="Page que reçoit le client : le devis de Mr. Lemaire à 862,20 euros TTC, le vendredi 6 novembre choisi, la case de rétractation cochée, J'accepte ce devis, Une correction avant d'accepter et Je ne donne pas suite" width="1170" height="1992"></div>
       </div>
     </div>
   </div>
@@ -499,14 +520,14 @@ section{padding:clamp(88px,12vw,150px) 0}
     </div>
     <div class="chap-visuel">
       <div class="plans">
-        <figure class="gros"><img src="images/chap-planning.jpg" alt="Planning d'octobre : demi-journées en vert foncé, vert clair et rouge" width="1170" height="1080"></figure>
+        <figure class="gros"><img src="images/nov-planning.jpg" alt="Planning de novembre : demi-journées en vert clair, vert foncé et rouge, le vendredi 6 entouré d'or" width="1170" height="1560"></figure>
         <div class="paire">
           <div>
-            <figure class="gros"><img src="images/chap-equipe.jpg" alt="Le chantier Lemaire du jeudi 8 octobre, Lucas et Julien le matin" width="1170" height="560"></figure>
+            <figure class="gros"><img src="images/nov-equipe.jpg" alt="Le chantier de Mr. Lemaire, le vendredi 6 novembre : Lucas et Julien le matin et l'après-midi" width="1038" height="834"></figure>
             <p class="sous">L'équipe se pose à la demi-journée.</p>
           </div>
           <div>
-            <figure class="gros"><img src="images/chap-gestes.jpg" alt="Fiche d'intervention entière : Maps, Waze, Copier l'adresse, Appeler le client, la note, la fiche de sécurité, les travaux à faire, le devis sans les prix" width="1170" height="1600"></figure>
+            <figure class="gros"><img src="images/nov-fiche-intervention.jpg" alt="Fiche d'intervention entière : Maps, Waze, Copier l'adresse, Appeler le client, la note, la fiche de sécurité, les travaux à faire, le devis sans les prix" width="882" height="1596"></figure>
             <p class="sous">Le jour J, tout tient sur la fiche.</p>
           </div>
         </div>
@@ -523,7 +544,7 @@ section{padding:clamp(88px,12vw,150px) 0}
       <div class="chiffre"><b>143,70 €</b><span>La TVA du mois, déjà calculée.</span></div>
     </div>
     <div class="chap-visuel">
-      <figure class="feuille"><img src="images/facture-finie.jpg" alt="La facture finie, en PDF : F2026-000001 pour Mr. Lemaire, Création d'un massif, les quatre lignes du devis, 862,20 euros net à payer" width="1654" height="2339"></figure>
+      <figure class="feuille"><img src="images/nov-facture.jpg" alt="La facture finie, en PDF : F2026-000001 pour Mr. Lemaire, Création d'un massif, les quatre lignes du devis, 862,20 euros net à payer" width="1654" height="2339"></figure>
     </div>
   </div>
 </section>
@@ -535,12 +556,12 @@ section{padding:clamp(88px,12vw,150px) 0}
       <article class="case">
         <h3>Le retour du soir</h3>
         <p>Ce que l'équipe a fait, coché le soir même.</p>
-        <div class="cadre"><img src="images/chap-retour.jpg" alt="Retour d'intervention du chantier Lemaire, quatre tâches cochées" width="1010" height="500"></div>
+        <div class="cadre"><img src="images/nov-retour.jpg" alt="Retour d'intervention du chantier Lemaire : quatre tâches faites, et le portail à revoir" width="1038" height="1011"></div>
       </article>
       <article class="case">
         <h3>Les travaux cochés</h3>
         <p>Sur place, tâche par tâche.</p>
-        <div class="cadre"><img src="images/chap-travaux.jpg" alt="Travaux à faire, tout est fait, et la remarque sur le portail" width="950" height="1494"></div>
+        <div class="cadre"><img src="images/nov-travaux.jpg" alt="Travaux à faire, tout est fait, et la remarque sur le portail" width="810" height="1545"></div>
       </article>
     </div>
   </div>

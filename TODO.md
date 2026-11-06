@@ -1,5 +1,17 @@
 # Prochaines tâches
 
+## La case « À signaler » des travaux à faire ne grandit pas (6 novembre 2026)
+
+Vu en refaisant les captures du site de vente, pas encore signalé par lui ni
+corrigé. Sur la fiche d'intervention du planning, la case tient deux lignes
+(`src/app/planning/TravauxAFaire.tsx`, `rows={2}` et `resize-none`), et rien ne
+l'agrandit quand on écrit. La fiche est étroite depuis qu'elle vit dans la carte
+du jour : « Le portail ferme mal, à revoir au prochain passage. » y prend trois
+lignes, et la troisième se cache dans la case (mesuré : 66 px visibles pour
+90 px de texte). Un salarié qui relit ce qu'il envoie ne voit donc pas tout.
+C'est une apparence : **la maquette d'abord** (`CLAUDE.md` §3 bis), puis son
+choix. Rien n'est perdu à l'envoi, le retour reçu dans Terminés montre tout.
+
 
 ## AVANT LE 31 DÉCEMBRE 2027 : la mention « TVA non applicable, art. 293 B du CGI »
 
