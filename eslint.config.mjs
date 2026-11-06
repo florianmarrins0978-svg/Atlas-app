@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
@@ -21,6 +22,10 @@ const GLOBALES_NODE = Object.fromEntries(
     "__filename",
   ].map((nom) => [nom, "readonly"])
 );
+
+const SKILLS_DE_TIERS = Object.keys(
+  JSON.parse(readFileSync(new URL("./skills-lock.json", import.meta.url), "utf8")).skills
+).map((nom) => `.claude/skills/${nom}/**`);
 
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -89,6 +94,14 @@ const eslintConfig = defineConfig([
     // et rejetteraient par exemple le `require()` de sa batterie de tests.
     // Il a son propre outillage, décrit dans appli/README.md.
     "appli/**",
+    // Les skills installés par `npx skills add` sont le code d'un tiers, copié
+    // tel quel : le corriger ici, ce serait diverger de sa source à la mise à
+    // jour suivante. La liste se lit dans `skills-lock.json`, que l'outil tient
+    // lui-même : un skill ajouté demain s'y écarte sans qu'on y pense, et les
+    // skills écrits pour ce dépôt (absents du verrou) restent contrôlés.
+    // Constaté le 6 novembre 2026 : `media-use/scripts/recipe.mjs` faisait
+    // rougir le lint sur une règle React qui ne le concerne pas.
+    ...SKILLS_DE_TIERS,
   ]),
 ]);
 
