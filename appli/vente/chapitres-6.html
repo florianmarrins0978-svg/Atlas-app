@@ -66,10 +66,9 @@
     · Dictez, remis dans l'ordre du geste à sa demande (« c'est un peu à
       l'envers ») : d'abord la note vocale, le micro au repos puis le vrai
       chrono, une capture par seconde, de 0:00 à 0:12 (nov-dictee-*.jpg,
-      prise avec un micro simulé) ; plus bas la phrase, qui s'écrit lettre
-      à lettre au rythme d'une voix (72 ms la lettre, une respiration aux
-      espaces et aux virgules, cinq secondes en tout) ; puis la ligne du
-      devis, qui se pose sur sa propre rangée du devis entier ;
+      prise avec un micro simulé) ; plus bas la phrase, mot à mot au rythme
+      d'une voix ; puis la ligne du devis, qui sort de sa propre rangée du
+      devis entier ;
     · Envoyez : dès que le téléphone entre à l'écran, la date se choisit,
       la case des 14 jours apparaît et se coche, le client accepte, et la
       page devient
@@ -94,6 +93,24 @@
       remarque, l'appui sur « Envoyer le retour du jour » et la carte qui se
       replie (nov-travaux-0 à 6) ; puis le retour du soir que reçoit le
       patron.
+  LA CAMÉRA, sa demande qui a suivi : « améliore toutes les animations avec
+  le skill HyperFrames, repense-les si tu veux ». HyperFrames fabrique des
+  vidéos ; les scènes, elles, suivent le défilement et doivent rester nettes.
+  Elles restent donc dans la page, et en prennent les règles de mouvement
+  (references/motion.md du skill) :
+    · une caméra dans chaque écran avance vers ce qu'on touche, puis recule
+      (power2.inOut) : le + de Créer un devis, le micro, la date, la case et
+      le bouton du client, le 10 trop chargé puis le 6, la remarque et
+      l'envoi du retour. Les coches et l'équipe restent plan large : plus
+      près, la caméra coupait les ronds qu'on coche et « Matin » ;
+    · un écran neuf arrive un peu grand et se pose (expo.out), « C'est
+      noté » et Ma TVA ;
+    · un léger flou au plus vite d'un déplacement, sur le montant qui vole ;
+    · la phrase dictée arrive mot à mot, chaque mot sortant d'un flou ;
+    · la ligne du devis sort de sa rangée, qui s'éclaire d'abord, comme la
+      TVA de la facture ;
+    · aucun anneau de clic, aucune pulsation : le geste se lit à ce qui
+      change sur l'écran.
   Pour qui demande moins de mouvement, et sans script, chaque scène montre son
   état le plus parlant, et rien ne bouge.
 
@@ -232,8 +249,6 @@ section{padding:clamp(88px,12vw,150px) 0}
 .ecran img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;object-position:top}
 .ecran img.etape{opacity:0;transition:opacity .3s ease,transform .6s var(--sortie)}
 .ecran img.etape.vue{opacity:1}
-.ecran img.etape.page{transform:translateX(8%)}
-.ecran img.etape.page.vue{transform:none}
 /* La bande du micro : le bas de l'écran, une capture par seconde du vrai
    chrono. Elle commence à 67,27 % de la hauteur, là où « Devis à la voix »
    s'écrit dans l'appli. */
@@ -308,11 +323,16 @@ section{padding:clamp(88px,12vw,150px) 0}
 
 /* La phrase dictée, qui s'écrit mot à mot : le seul moment écrit de la page. */
 .dite{margin-top:44px;font:italic 400 clamp(30px,7vw,44px)/1.12 var(--display);color:var(--encre)}
-/* La phrase s'écrit lettre à lettre, comme dictée : chaque lettre tient déjà
-   sa place, la ligne ne saute donc jamais. Le curseur suit la dernière. */
-.dite .l{opacity:0;position:relative}
-.dite .l.dite-la{opacity:1}
-.dite .l.dernier::after{content:"";position:absolute;right:-4px;top:.16em;bottom:.06em;width:2px;background:var(--feuille);animation:clignote 1s steps(1) infinite}
+/* La caméra des téléphones : elle avance vers ce qu'on touche, puis recule.
+   Créée par le script, elle n'existe pas sans lui ni sans mouvement. */
+.camera{position:absolute;inset:0;transform-origin:0 0;will-change:transform}
+.empile > .camera{position:relative;inset:auto}
+/* La phrase arrive mot à mot, comme une dictée qui se transcrit : chaque mot
+   sort d'un léger flou. Les mots tiennent déjà leur place, la ligne ne saute
+   jamais. Le curseur suit le dernier. */
+.dite .m{display:inline-block;position:relative;opacity:0;filter:blur(8px);transform:translateY(.06em);transition:opacity .22s ease,filter .3s ease,transform .45s var(--sortie)}
+.dite .m.dite-la{opacity:1;filter:none;transform:none}
+.dite .m.dernier::after{content:"";position:absolute;right:-7px;top:.16em;bottom:.06em;width:2px;background:var(--feuille);animation:clignote 1s steps(1) infinite}
 @keyframes clignote{50%{opacity:0}}
 
 /* Ce que la phrase devient : la ligne du devis, en clair. */
@@ -337,8 +357,12 @@ section{padding:clamp(88px,12vw,150px) 0}
 /* La ligne se pose sur sa propre rangée du PDF (36,2 % de la hauteur de la
    page : 847 px sur 2339 dans nov-devis.jpg), un peu plus grande que la page. */
 .devis-loupe .ligne{position:absolute;left:-4%;right:-4%;top:36.2%;transform:translateY(-50%);z-index:2;box-shadow:0 0 0 1px rgba(var(--ombre),.1),0 26px 50px -22px rgba(var(--ombre),.55)}
-html.anime .devis-loupe .ligne{opacity:0;transform:translateY(-38%) scale(.94);transition:opacity .7s ease,transform 1.1s var(--sortie)}
-html.anime .devient.vu .devis-loupe .ligne{opacity:1;transform:translateY(-50%)}
+/* Elle sort du devis : sa rangée s'éclaire d'abord, puis la ligne s'en
+   détache, grandit et se pose au-dessus de la page. */
+.devis-loupe::after{content:"";position:absolute;left:4.5%;right:4.5%;top:35%;height:2.6%;border-radius:4px;background:color-mix(in srgb,var(--or-clair) 38%,transparent);clip-path:inset(0 100% 0 0);opacity:0;pointer-events:none}
+html.anime .devient.vu .devis-loupe::after{opacity:1;clip-path:inset(0 0 0 0);transition:clip-path .5s cubic-bezier(.65,0,.35,1)}
+html.anime .devis-loupe .ligne{opacity:0;filter:blur(4px);transform:translateY(-50%) scale(.82);transition:opacity .45s ease .4s,filter .5s ease .4s,transform 1.1s var(--sortie) .4s,box-shadow 1.1s ease .4s}
+html.anime .devient.vu .devis-loupe .ligne{opacity:1;filter:none;transform:translateY(-50%)}
 .recit .sous{text-align:right}
 /* Le film de l'ouverture : la vraie animation de l'appli, filmée image par
    image, entre deux images fixes. Un téléphone efface l'affiche d'une vidéo
@@ -402,7 +426,10 @@ html.anime .chiffre.joue span{opacity:1;transform:none;transition-delay:1.5s}
 .scene-tva .appareil{position:absolute;right:0;top:21%;width:52%;z-index:2}
 .scene-tva .ecran img.etape{opacity:0}
 .scene-tva .ecran img.etape.vue{opacity:1}
-html.anime .scene-tva .appareil{opacity:0;transform:translateY(30px) scale(.97);transition:opacity .6s ease,transform 1s var(--sortie)}
+/* Ma TVA arrive un peu grande et se pose, comme un écran qui s'ouvre. */
+html.anime .scene-tva .appareil{opacity:0;transform:scale(1.07);transition:opacity .45s ease,transform 1s var(--sortie)}
+.scene-tva .feuille::after{content:"";position:absolute;left:55.5%;right:3.5%;top:51.8%;height:2.6%;border-radius:3px;background:rgba(240,180,60,.34);clip-path:inset(0 100% 0 0);opacity:0;pointer-events:none}
+.scene-tva.surligne .feuille::after{opacity:1;clip-path:inset(0 0 0 0);transition:clip-path .45s cubic-bezier(.65,0,.35,1)}
 html.anime .scene-tva.telephone .appareil{opacity:1;transform:none}
 html.anime .scene-tva.telephone .feuille{opacity:.55}
 .jeton{position:absolute;left:0;top:0;z-index:5;font:400 clamp(46px,12vw,68px)/1 var(--display);color:var(--or-clair);white-space:nowrap;transform-origin:0 0;opacity:0;pointer-events:none;text-shadow:0 14px 34px rgba(0,0,0,.5);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
@@ -422,6 +449,7 @@ html.anime .scene-tva.telephone .feuille{opacity:.55}
    l'écran, pour qu'on voie toutes les coches sans avoir à descendre. */
 .pile{position:relative;width:min(100%,calc((100svh - 200px) * 786 / 1530));aspect-ratio:786/1530;margin:0 auto;transition:height .6s var(--sortie)}
 .pile.mesuree{aspect-ratio:auto}
+html.anime .pile{overflow:hidden;border-radius:16px}
 .case .cadre .pile img{position:absolute;left:0;top:0;width:100%;max-width:none;height:auto}
 .pile img.etape{opacity:0}
 .pile img.etape.vue{opacity:1}
@@ -991,6 +1019,36 @@ html.anime .scene-tva.telephone .feuille{opacity:.55}
       conteneur.appendChild(im); return im;
     });
   };
+  // La caméra, d'après les règles de mouvement du skill HyperFrames : elle va
+  // et vient en accélérant puis en ralentissant (power2.inOut), un écran neuf
+  // arrive un peu grand et se pose sur une longue traîne (expo.out). Elle ne
+  // sort jamais de l'écran : son cadrage est borné aux bords de l'image.
+  var CAMERA = "cubic-bezier(.65,0,.35,1)", ARRIVEE = "cubic-bezier(.16,1,.3,1)", PLAN = { x:.5, y:.5, z:1 };
+  var camera = function(cadre){
+    var el = document.createElement("div"); el.className = "camera";
+    while (cadre.firstChild) el.appendChild(cadre.firstChild);
+    cadre.appendChild(el);
+    var anim = null;
+    var cadrage = function(p){
+      var W = cadre.clientWidth, H = cadre.clientHeight;
+      var tx = Math.min(0, Math.max(W - W * p.z, W / 2 - p.x * W * p.z)), ty = Math.min(0, Math.max(H - H * p.z, H / 2 - p.y * H * p.z));
+      return "translate(" + tx.toFixed(1) + "px," + ty.toFixed(1) + "px) scale(" + p.z + ")";
+    };
+    return {
+      el: el,
+      aller: function(p, duree, courbe){
+        var de = getComputedStyle(el).transform; if (!de || de === "none") de = "translate(0px,0px) scale(1)";
+        if (anim) anim.cancel();
+        var vers = cadrage(p); el.style.transform = vers;
+        anim = el.animate([{ transform: de }, { transform: vers }], { duration: duree || 700, easing: courbe || CAMERA });
+        return anim.finished.catch(function(){});
+      },
+      poser: function(p){ if (anim) anim.cancel(); el.style.transform = cadrage(p); },
+      // Un écran neuf : un peu grand, puis il se pose.
+      arriver: function(){ this.poser({ x:.5, y:.4, z:1.06 }); return this.aller(PLAN, 650, ARRIVEE); }
+    };
+  };
+
   // Une scène se joue quand elle est assez à l'écran ; la quitter l'arrête,
   // y revenir la rejoue depuis le début.
   var scene = function(el, seuil, prete, jouer, arreter){
@@ -1006,19 +1064,24 @@ html.anime .scene-tva.telephone .feuille{opacity:.55}
     }, {threshold:seuil}).observe(el);
   };
 
-  // 1. La phrase dictée : lettre à lettre, au rythme d'une voix, avec une
-  // respiration aux espaces et aux virgules. Puis la ligne du devis arrive.
+  // 1. La phrase dictée : mot à mot, comme une dictée qui se transcrit, au
+  // rythme d'une voix (un mot long prend plus de temps qu'un court, la fin de
+  // phrase respire). Les guillemets suivent leur mot. Puis la ligne du devis.
   var dite = document.getElementById("dite"), devient = document.querySelector(".devient");
-  var lettres = Array.from(dite.textContent);
-  dite.innerHTML = lettres.map(function(c){ return '<span class="l">' + c + '</span>'; }).join("");
-  var spans = Array.from(dite.querySelectorAll(".l"));
+  var mots = [];
+  dite.textContent.trim().split(/\s+/).forEach(function(m){
+    if (m === "«" || (mots.length && mots[mots.length - 1] === "«")) { if (mots.length && mots[mots.length - 1] === "«") mots[mots.length - 1] += "\u00a0" + m; else mots.push(m); }
+    else if (m === "»" && mots.length) mots[mots.length - 1] += "\u00a0" + m;
+    else mots.push(m);
+  });
+  dite.innerHTML = mots.map(function(m){ return '<span class="m">' + m + '</span>'; }).join(" ");
+  var spans = Array.from(dite.querySelectorAll(".m"));
   var dicter = async function(){
-    await attendre(500);
+    await attendre(450);
     for (var i = 0; i < spans.length; i++){
       if (i > 0) spans[i - 1].classList.remove("dernier");
       spans[i].classList.add("dite-la", "dernier");
-      var c = lettres[i];
-      await attendre(c === " " ? 120 : /[,.»]/.test(c) ? 320 : 72);
+      await attendre(170 + 42 * mots[i].replace(/[«»\u00a0]/g, "").length + (/[,.]/.test(mots[i]) ? 260 : 0));
     }
     await attendre(2400); spans[spans.length - 1].classList.remove("dernier");
   };
@@ -1030,19 +1093,25 @@ html.anime .scene-tva.telephone .feuille{opacity:.55}
   // devis » : le + tourne et la fiche client monte, le film de la vraie
   // animation de l'appli. Sa demande : pas en boucle, pas d'emblée ; revenu
   // tout en haut, la page redevient l'accueil et le geste se rejouera.
+  // La caméra s'approche de « Créer un devis + » avant l'appui, puis recule
+  // pendant que la fiche monte, pour qu'on la voie entière.
   var creer = document.getElementById("scene-creer"), film = creer.querySelector("video"), finFilm = creer.querySelector(".film-fin");
-  var arme = true;
+  var camCreer = camera(creer.querySelector(".ecran")), PLUS = { x:.47, y:.27, z:1.35 };
+  var arme = true, tourCreer = 0;
   film.addEventListener("playing", function(){ film.classList.add("joue"); });
   film.addEventListener("ended", function(){ finFilm.classList.add("vue"); film.classList.remove("joue"); });
-  var lancer = function(){
-    arme = false;
+  var lancer = async function(){
+    arme = false; var mien = ++tourCreer;
+    await camCreer.aller(PLUS, 520); if (mien !== tourCreer) return;
     try { film.currentTime = 0; } catch (e) {}
     var promesse = film.play();
     // Lecture refusée (économie d'énergie, par exemple) : la fiche client
     // s'affiche d'un coup, sans écran vide entre les deux.
     if (promesse && promesse.catch) promesse.catch(function(){ finFilm.classList.add("vue"); });
+    await attendre(420); if (mien !== tourCreer) return;
+    camCreer.aller(PLAN, 820);
   };
-  var remettre = function(){ arme = true; film.pause(); film.classList.remove("joue"); finFilm.classList.remove("vue"); };
+  var remettre = function(){ arme = true; tourCreer++; film.pause(); film.classList.remove("joue"); finFilm.classList.remove("vue"); camCreer.poser(PLAN); };
   addEventListener("scroll", function(){
     if (arme && scrollY > 24) lancer();
     else if (!arme && scrollY < 2) remettre();
@@ -1050,35 +1119,51 @@ html.anime .scene-tva.telephone .feuille{opacity:.55}
 
   // 2. La note vocale : le micro au repos, puis l'enregistrement qui démarre
   // et le vrai chrono qui défile, une capture par seconde (nov-dictee-00 à 12).
+  // La caméra s'approche du micro, l'enregistrement démarre sous nos yeux,
+  // puis elle recule pendant que les secondes continuent.
   var micro = document.getElementById("scene-micro"), bande = micro.querySelector(".bande"), secondes = [];
+  var camMicro = camera(micro.querySelector(".ecran")), MICRO = { x:.5, y:.79, z:1.35 };
   scene(micro, 0.4, function(){
     for (var k = 0; k <= 12; k++) secondes.push("images/nov-dictee-" + (k < 10 ? "0" : "") + k + ".jpg");
     secondes = empiler(bande, secondes);
   }, async function(encore){
     while (encore()){
-      montrer(secondes, -1);
-      await attendre(700); if (!encore()) return;
+      montrer(secondes, -1); camMicro.poser(PLAN);
+      await attendre(600); if (!encore()) return;
+      await camMicro.aller(MICRO, 650); if (!encore()) return;
+      await attendre(150); if (!encore()) return;
       montrer(secondes, 0);
-      for (var k = 1; k < secondes.length; k++){ await attendre(1000); if (!encore()) return; montrer(secondes, k); }
+      for (var k = 1; k < secondes.length; k++){
+        await attendre(1000); if (!encore()) return; montrer(secondes, k);
+        if (k === 3) camMicro.aller(PLAN, 850);
+      }
       await attendre(2200);
     }
-  }, function(){ montrer(secondes, -1); });
+  }, function(){ montrer(secondes, -1); camMicro.poser(PLAN); });
 
   // 3. Le client : la date se choisit tout de suite, la case des 14 jours
   // apparaît, elle se coche, il accepte, et la page change.
+  // La caméra suit le geste du client : la date, la case, le bouton. La page
+  // qui dit « C'est noté » arrive un peu grande et se pose.
   var envoi = document.getElementById("scene-envoi"), ecranEnvoi = envoi.querySelector(".ecran");
   var fixe = ecranEnvoi.querySelector("img.etape"), pages = [];
+  var camEnvoi = camera(ecranEnvoi);
+  var DATE = { x:.5, y:.43, z:1.18 }, COCHE = { x:.45, y:.63, z:1.18 }, ACCEPTER = { x:.5, y:.79, z:1.18 };
   // Elle part dès que le téléphone entre à l'écran : à 55 %, il fallait
   // presque l'avoir traversé (sa remarque du 6 novembre).
   scene(envoi, 0.3, function(){
-    pages = empiler(ecranEnvoi, ["images/nov-client-0.jpg", "images/nov-client-1.jpg", "images/nov-client-2.jpg", "images/nov-client-3.jpg"]);
-    pages[3].classList.add("page");
+    pages = empiler(camEnvoi.el, ["images/nov-client-0.jpg", "images/nov-client-1.jpg", "images/nov-client-2.jpg", "images/nov-client-3.jpg"]);
   }, async function(encore){
-    fixe.classList.remove("vue"); montrer(pages, 0);
-    await attendre(500); if (!encore()) return; montrer(pages, 1);
-    await attendre(1400); if (!encore()) return; montrer(pages, 2);
-    await attendre(1400); if (!encore()) return; montrer(pages, 3);
-  });
+    fixe.classList.remove("vue"); montrer(pages, 0); camEnvoi.poser(PLAN);
+    await attendre(250); if (!encore()) return;
+    await camEnvoi.aller(DATE, 550); if (!encore()) return; montrer(pages, 1);
+    await attendre(600); if (!encore()) return;
+    await camEnvoi.aller(COCHE, 600); if (!encore()) return; montrer(pages, 2);
+    await attendre(550); if (!encore()) return;
+    await camEnvoi.aller(ACCEPTER, 500); if (!encore()) return;
+    await attendre(350); if (!encore()) return;
+    montrer(pages, 3); camEnvoi.arriver();
+  }, function(){ camEnvoi.poser(PLAN); });
 
   // 3 bis. Planifiez : le mois se remplit chantier après chantier (le 10 passe
   // au rouge quand il devient trop chargé, le 6 se remplit en dernier), puis
@@ -1091,18 +1176,36 @@ html.anime .scene-tva.telephone .feuille{opacity:.55}
   // Sur un téléphone, le mois et la carte du jour sont à l'écran ensemble :
   // la carte attend que le mois soit rempli, sans quoi les deux jouaient en
   // même temps et l'équipe se posait sans qu'on la regarde.
+  // Les trois premiers chantiers se posent plan large ; puis la caméra va sur
+  // le 10 et le 12 au moment où le 10 devient trop chargé, passe sur le 6 qui
+  // se remplit, et recule. Les cadrages sont mesurés sur les captures.
   var moisEnCours = false;
-  [["scene-mois", [0, 1, 2, 3, 4, 5].map(function(k){ return "images/nov-mois-" + k + ".jpg"; }), [700, 750, 750, 750, 900], true],
-   ["scene-equipe", [0, 1, 2].map(function(k){ return "images/nov-equipe-" + k + ".jpg"; }), [1000, 1000], false]].forEach(function(d){
-    var figure = document.getElementById(d[0]), images = [], estLeMois = d[3];
-    scene(figure, 0.4, function(){ images = empilerSur(figure, d[1]); }, async function(encore){
-      jusqua(images, 0);
-      if (estLeMois) moisEnCours = true;
-      else { while (moisEnCours){ await attendre(150); if (!encore()) return; } }
-      await attendre(estLeMois ? 600 : 700); if (!encore()) return;
-      for (var k = 1; k < images.length; k++){ if (k > 1) { await attendre(d[2][k - 2]); if (!encore()) return; } jusqua(images, k); }
-      if (estLeMois) moisEnCours = false;
-    }, function(){ if (estLeMois) moisEnCours = false; });
+  var figMois = document.getElementById("scene-mois"), camMois = camera(figMois), imgMois = [];
+  var DIX = { x:.35, y:.44, z:1.6 }, SIX = { x:.635, y:.34, z:1.7 };
+  scene(figMois, 0.4, function(){ imgMois = empilerSur(camMois.el, [0, 1, 2, 3, 4, 5].map(function(k){ return "images/nov-mois-" + k + ".jpg"; })); }, async function(encore){
+    moisEnCours = true; jusqua(imgMois, 0); camMois.poser(PLAN);
+    await attendre(600); if (!encore()) return;
+    for (var k = 1; k <= 3; k++){ if (k > 1) { await attendre(720); if (!encore()) return; } jusqua(imgMois, k); }
+    await attendre(500); if (!encore()) return;
+    await camMois.aller(DIX, 700); if (!encore()) return;
+    await attendre(150); if (!encore()) return; jusqua(imgMois, 4);
+    await attendre(1000); if (!encore()) return;
+    await camMois.aller(SIX, 700); if (!encore()) return;
+    await attendre(150); if (!encore()) return; jusqua(imgMois, 5);
+    await attendre(900); if (!encore()) return;
+    await camMois.aller(PLAN, 800);
+    moisEnCours = false;
+  }, function(){ moisEnCours = false; camMois.poser(PLAN); });
+
+  // L'équipe se pose plan large : la carte est étroite, et rapprochée, la
+  // caméra coupait « Matin » et « Après-midi ».
+  var figEquipe = document.getElementById("scene-equipe"), imgEquipe = [];
+  scene(figEquipe, 0.4, function(){ imgEquipe = empilerSur(figEquipe, [0, 1, 2].map(function(k){ return "images/nov-equipe-" + k + ".jpg"; })); }, async function(encore){
+    jusqua(imgEquipe, 0);
+    while (moisEnCours){ await attendre(150); if (!encore()) return; }
+    await attendre(700); if (!encore()) return;
+    jusqua(imgEquipe, 1); await attendre(1000); if (!encore()) return;
+    jusqua(imgEquipe, 2);
   });
 
   // 3 ter. Encaissez : le montant de la TVA sort de la facture, grossit, Ma
@@ -1122,20 +1225,24 @@ html.anime .scene-tva.telephone .feuille{opacity:.55}
     avantTva = new Image(); avantTva.src = "images/nov-tva-avant.jpg"; avantTva.alt = ""; avantTva.className = "etape vue"; ecranTva.appendChild(avantTva);
   }, async function(encore){
     vols.forEach(function(a){ a.cancel(); }); vols = [];
-    tvaScene.classList.remove("telephone"); avantTva.style.transition = "none"; avantTva.classList.add("vue");
-    await attendre(500); if (!encore()) return;
+    tvaScene.classList.remove("telephone", "surligne"); avantTva.style.transition = "none"; avantTva.classList.add("vue");
+    await attendre(400); if (!encore()) return;
+    // La rangée de la TVA s'éclaire sur la facture.
+    tvaScene.classList.add("surligne");
+    await attendre(520); if (!encore()) return;
     var depart = ou(feuilleTva, SOURCE), s = tvaScene.getBoundingClientRect();
     var milieu = { x: s.width * 0.47 - jeton.offsetWidth / 2, y: s.height * 0.32 - jeton.offsetHeight / 2, e: 1 };
-    // Il sort de la facture : il apparaît sur son chiffre, puis grossit.
-    await voler([{ transform: placerJeton(depart), opacity: 0 }, { transform: placerJeton(depart), opacity: 1 }], { duration: 220 }); if (!encore()) return;
-    await voler([{ transform: placerJeton(depart), opacity: 1 }, { transform: placerJeton(milieu), opacity: 1 }], { duration: 950, easing: "cubic-bezier(.16,1,.3,1)" }); if (!encore()) return;
+    // Il sort de la facture : il apparaît sur son chiffre, puis grossit, un
+    // léger flou au plus vite de son envol.
+    await voler([{ transform: placerJeton(depart), opacity: 0 }, { transform: placerJeton(depart), opacity: 1 }], { duration: 200 }); if (!encore()) return;
+    await voler([{ transform: placerJeton(depart), opacity: 1, filter: "blur(0px)" }, { transform: placerJeton({ x: depart.x + (milieu.x - depart.x) * .55, y: depart.y + (milieu.y - depart.y) * .55, e: depart.e + (1 - depart.e) * .7 }), filter: "blur(3px)", offset: .3 }, { transform: placerJeton(milieu), opacity: 1, filter: "blur(0px)" }], { duration: 1000, easing: ARRIVEE }); if (!encore()) return;
     // Ma TVA apparaît, encore à zéro.
     tvaScene.classList.add("telephone");
     await attendre(1100); if (!encore()) return;
     // Il y rentre : il rétrécit en volant, un léger flou au plus vite.
     var arrivee = ou(ecranTva, CIBLE);
     await voler([{ transform: placerJeton(milieu), filter: "blur(0px)", opacity: 1 }, { transform: placerJeton({ x: (milieu.x + arrivee.x) / 2, y: (milieu.y + arrivee.y) / 2 - 12, e: (1 + arrivee.e) / 2 }), filter: "blur(3px)", opacity: 1, offset: 0.5 }, { transform: placerJeton(arrivee), filter: "blur(0px)", opacity: 1 }], { duration: 850, easing: "cubic-bezier(.65,0,.35,1)" }); if (!encore()) return;
-    avantTva.classList.remove("vue");
+    avantTva.classList.remove("vue"); tvaScene.classList.remove("surligne");
     await voler([{ opacity: 1, transform: placerJeton(arrivee) }, { opacity: 0, transform: placerJeton(arrivee) }], { duration: 160 });
   }, function(){ vols.forEach(function(a){ a.cancel(); }); vols = []; });
 
@@ -1153,23 +1260,30 @@ html.anime .scene-tva.telephone .feuille{opacity:.55}
   // une, la remarque s'écrit, le retour part, et la carte se replie comme dans
   // l'appli. Sa demande : pas au défilement. Jouée jusqu'au bout, elle reste
   // sur sa fin ; quittée avant, elle repart du début au retour.
+  // Les coches se lisent plan large : rapprochée, la caméra coupait les ronds
+  // qu'on coche. Elle ne s'avance que sur la remarque et sur le bouton, puis
+  // recule quand la carte se replie.
   var defile = document.getElementById("scene-travaux"), pile = defile.querySelector(".pile");
-  var fixeTravaux = pile.querySelector("img.etape"), etapes = [], finie = false, repliee = false;
+  var fixeTravaux = pile.querySelector("img.etape"), etapes = [], finie = false, repliee = false, camTravaux = null;
+  var BAS = { x:.5, y:.84, z:1.18 };
   var hauteurPile = function(){ pile.style.height = Math.round(pile.offsetWidth * (repliee ? 455 : 1530) / 786) + "px"; };
   scene(defile, 0.4, function(){
-    etapes = empiler(pile, [0, 1, 2, 3, 4, 5, 6].map(function(k){ return "images/nov-travaux-" + k + ".jpg"; }));
-    etapes[5].alt = fixeTravaux.alt; fixeTravaux.remove();
+    fixeTravaux.remove(); camTravaux = camera(pile);
+    etapes = empiler(camTravaux.el, [0, 1, 2, 3, 4, 5, 6].map(function(k){ return "images/nov-travaux-" + k + ".jpg"; }));
+    etapes[5].alt = fixeTravaux.alt;
     pile.classList.add("mesuree"); pile.style.transition = "none"; hauteurPile(); montrer(etapes, 5);
     void pile.offsetHeight; pile.style.transition = "";
   }, async function(encore){
     if (finie) return;
-    repliee = false; hauteurPile(); montrer(etapes, 0);
-    var pas = [500, 900, 900, 900, 1200, 1500];
-    for (var k = 1; k <= 6; k++){
-      await attendre(pas[k - 1]); if (!encore()) return;
-      if (k === 6){ repliee = true; hauteurPile(); }
-      montrer(etapes, k);
-    }
+    repliee = false; hauteurPile(); montrer(etapes, 0); camTravaux.poser(PLAN);
+    await attendre(350); if (!encore()) return;
+    for (var k = 1; k <= 4; k++){ await attendre(k === 1 ? 300 : 780); if (!encore()) return; montrer(etapes, k); }
+    await attendre(500); if (!encore()) return;
+    await camTravaux.aller(BAS, 650); if (!encore()) return;
+    montrer(etapes, 5);
+    await attendre(1100); if (!encore()) return;
+    camTravaux.aller(PLAN, 600);
+    repliee = true; hauteurPile(); montrer(etapes, 6);
     finie = true;
   });
   addEventListener("resize", function(){ if (etapes.length) hauteurPile(); });
