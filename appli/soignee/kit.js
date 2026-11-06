@@ -94,9 +94,11 @@
     "lune": '<path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10z"/>',
     /* Le sablier, redessiné le 6 novembre 2026 : « on dirait pas du tout un
        sablier ». L'ancien n'avait que la moitié haute de son côté droit, et se
-       lisait comme un Z. Ses deux plateaux, ses deux bulbes, le sable en haut,
-       le filet, le tas en bas. */
-    "horloge-sable": '<path d="M6 3.5h12M6 20.5h12"/><path d="M7.5 3.5v2c0 2.8 3.6 4.3 3.6 6.5s-3.6 3.7-3.6 6.5v2M16.5 3.5v2c0 2.8-3.6 4.3-3.6 6.5s3.6 3.7 3.6 6.5v2"/><path d="M9.6 7.8h4.8c-.7 1-1.6 1.7-2.4 2.1-.8-.4-1.7-1.1-2.4-2.1z" fill="currentColor" stroke-width="1"/><path d="M12 12.8v2.8" stroke-width="1.2"/><path d="M8.9 18.7c.7-1.5 1.9-2.4 3.1-2.4s2.4.9 3.1 2.4z" fill="currentColor" stroke-width="1"/>',
+       lisait comme un Z. Ses deux plateaux, ses deux bulbes, le niveau du
+       sable, le filet, le tas en bas : au trait, sans remplissage, comme
+       toutes les autres. Le MÊME tracé que `sablier` dans
+       src/components/atlas/IconeTrait.tsx (scripts/test-sablier.ts). */
+    "horloge-sable": '<path d="M5.5 3.5h13M5.5 20.5h13"/><path d="M7 3.5v1.8c0 3 4.2 4.4 4.2 6.7s-4.2 3.7-4.2 6.7v1.8M17 3.5v1.8c0 3-4.2 4.4-4.2 6.7s4.2 3.7 4.2 6.7v1.8"/><path d="M9.3 7.3h5.4M12 13.3v2M8.7 18.9c.9-1.6 2-2.4 3.3-2.4s2.4.8 3.3 2.4"/>',
     "carton": '<path d="M12 3.5l8 4.2v8.6l-8 4.2-8-4.2V7.7z"/><path d="M4 7.7l8 4.3 8-4.3M12 12v8.5"/>',
     "oeil-barre": '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/><path d="M4.5 19.5l15-15"/>',
     "scanner": '<path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16M7 12h10"/>',
