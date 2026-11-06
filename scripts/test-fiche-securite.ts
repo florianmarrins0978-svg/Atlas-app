@@ -16,6 +16,8 @@ import {
   libellesAvecLesSiens,
   lecturesManquantes,
   minimumLegal,
+  pointsDuMinimumLegal,
+  etatDesParties,
   memoireDepuis,
   refusDeFinaliser,
   validite,
@@ -133,6 +135,43 @@ async function main() {
     assert.deepEqual(minimumLegal(ficheComplete(), chantier), [], minimumLegal(ficheComplete(), chantier).map((m) => m.quoi).join(", "));
     // Sans EPI, sans sous-traitants, sans arbres dangereux, sans co-activité : conseillé, pas exigé.
     assert.equal(ficheComplete().coches.epi, undefined);
+  });
+
+  // ─── LES HUIT POINTS, FAITS OU NON — la planche du 6 novembre 2026, son « oui pour tout » ───
+  // Signer montre tout ce que la loi exige, pas seulement ce qui manque ; et chaque partie le dit
+  // à côté de son titre (« À remplir », « Fait »). Les deux sortent de la règle qui refuse la
+  // signature : une seconde liste finirait par dire « Fait » sur une fiche qui ne se signe pas.
+  await cas("les points du minimum légal : tous, avec leur état, et les manques en sont exactement le reste", () => {
+    const points = pointsDuMinimumLegal(contenuVide(), chantier);
+    assert.deepEqual(points.map((p) => p.quoi), ["Les dates", "Les travaux", "Le matériel", "Le croquis", "La délimitation du chantier", "Les risques", "La météo", "Les secours"]);
+    assert.deepEqual(points.filter((p) => p.fait).map((p) => p.quoi), ["Les dates"], "un chantier au planning porte déjà ses dates");
+    for (const fiche of [contenuVide(), ficheComplete(), cocher(contenuVide(), "travaux", "Haubanage")]) {
+      assert.deepEqual(
+        pointsDuMinimumLegal(fiche, chantier).filter((p) => !p.fait).map(({ fait: _fait, ...m }) => m),
+        minimumLegal(fiche, chantier),
+        "les manques ne sont plus le reste des points : deux règles pour une question",
+      );
+    }
+    assert.ok(pointsDuMinimumLegal(ficheComplete(), chantier).every((p) => p.fait));
+    // Le lieu n'est une exigence à remplir que sur un chantier sans adresse.
+    assert.ok(!points.some((p) => p.quoi === "Le lieu"));
+    const sansAdresse = pointsDuMinimumLegal({ ...contenuVide(), gps: "48.1, 1.7" }, { adresse: null, datePlanifiee: null });
+    assert.deepEqual(sansAdresse.find((p) => p.quoi === "Le lieu")?.fait, true, "le GPS relevé fait le lieu");
+  });
+
+  await cas("l'état de chaque partie : « Fait » ou « À remplir », par la même règle, et rien sur ce qui n'est qu'un conseil", () => {
+    const vide = etatDesParties(contenuVide(), chantier);
+    assert.deepEqual(Object.keys(vide).sort(), ["balisage", "croquis", "lieu", "materiel", "meteo", "risques-arbres", "risques-biologiques", "risques-environnement", "risques-noyade", "risques-reseaux", "secours", "travaux"].sort());
+    assert.equal(vide.lieu, true);
+    assert.equal(vide.travaux, false);
+    assert.equal(vide.epi, undefined, "les EPI se conseillent, ils ne s'exigent pas");
+    const noyade = etatDesParties(cocher(contenuVide(), "noyade", "Pas de risque de noyade"), chantier);
+    assert.equal(noyade["risques-noyade"], true, "« Pas de risque de noyade » est une réponse");
+    assert.equal(noyade["risques-reseaux"], false, "une famille répondue ne répond pas pour les autres");
+    assert.ok(Object.values(etatDesParties(ficheComplete(), chantier)).every(Boolean));
+    const secoursSansTrousse = etatDesParties({ ...ficheComplete(), lieuTrousse: "" }, chantier);
+    assert.equal(secoursSansTrousse.secours, false, "sans le lieu de la trousse, les secours ne sont pas faits");
+    assert.equal(etatDesParties(contenuVide(), { adresse: "x", datePlanifiee: null }).lieu, false, "sans dates, la partie du lieu reste à remplir");
   });
 
   await cas("« Rien à signaler » est une réponse ; un risque oublié n'en est pas une", () => {

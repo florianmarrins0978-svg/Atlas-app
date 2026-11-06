@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { colors, font, surPlein, voile } from "@/lib/design-tokens";
@@ -27,7 +27,9 @@ import {
   gardeeJusquAu,
   lecturesManquantes,
   libellesAvecLesSiens,
+  etatDesParties,
   minimumLegal,
+  pointsDuMinimumLegal,
   refusDeFinaliser,
   refusDuReleveGps,
   validite,
@@ -209,6 +211,7 @@ export default function FormulaireFicheDeSecurite({
   }
 
   const legal = minimumLegal(contenu, contexte);
+  const points = pointsDuMinimumLegal(contenu, contexte);
 
   async function signer() {
     setRefus(null);
@@ -388,7 +391,7 @@ export default function FormulaireFicheDeSecurite({
   if (ecran === "loi") {
     return (
       <Cadre pied={<Vert onClick={() => { if (!signeeLe) void enregistrer(etapeVue); setEcran(signeeLe ? "signee" : "fiche"); }}>Compris, je remplis</Vert>}>
-        <h2 className="m-0 mb-3.5 text-[24px] leading-[1.15]" style={{ fontFamily: font.display }}>Décret 2021-1833, en vigueur depuis le 1er mars 2022</h2>
+        <h2 className="m-0 mb-3.5 text-[28px] font-normal leading-[1.12]" style={{ fontFamily: font.display, letterSpacing: "-0.01em" }}>Décret 2021-1833, en vigueur depuis le 1er mars 2022</h2>
         <Loi>Avant un chantier d’élagage ou d’abattage, le chef d’entreprise remplit une fiche d’intervention, la signe, la montre à son équipe, la garde sur le chantier, la transmet à l’entreprise qui l’a fait venir quand il y a un plan de prévention, et la conserve deux ans. Elle doit dire :</Loi>
         <ol className="m-0 mt-2.5 list-none p-0">
           {[
@@ -405,8 +408,10 @@ export default function FormulaireFicheDeSecurite({
         </ol>
         <Loi>La fiche peut être sur le téléphone. Sans ces éléments, elle ne se signe pas : l’écran dit ce qui manque, et où le remplir.</Loi>
         <Loi>Elle ne vaut que pour l’élagage et l’abattage, dans les parcs, jardins et arbres d’alignement. Pas pour une tonte, une haie, une création.</Loi>
-        <Loi><b style={{ fontWeight: 600 }}>Ce que vous cochez et écrivez est repris sur votre prochaine fiche</b>, votre équipe et ses compétences aussi. Vérifiez chaque case à chaque chantier : c’est votre signature.</Loi>
-        <div className="mt-[18px] flex flex-col gap-2">
+        <p className="m-0 mt-4 rounded-[6px] px-4 py-3 text-[15.5px] leading-[1.5]" style={{ background: voile(colors.or, 0.13) }}>
+          <b style={{ fontWeight: 700 }}>Ce que vous cochez et écrivez est repris sur votre prochaine fiche</b>, votre équipe et ses compétences aussi. Vérifiez chaque case à chaque chantier : c’est votre signature.
+        </p>
+        <div className="mt-5 flex flex-col gap-2.5">
           <LienDeLaLoi href={LIENS_DE_LA_LOI.decret}>Lire le décret sur Légifrance</LienDeLaLoi>
           <LienDeLaLoi href={LIENS_DE_LA_LOI.formulaire}>Voir le formulaire de la MSA</LienDeLaLoi>
         </div>
@@ -432,68 +437,66 @@ export default function FormulaireFicheDeSecurite({
       <Cadre
         pied={
           <div className="flex flex-col gap-2">
-            {refus && <p className="m-0 text-center text-[13px] font-semibold" style={{ color: colors.alert }}>{refus}</p>}
-            <div className="grid grid-cols-2 gap-2">
-              <Link href={adresseDeLaVisionneuse(adresseDuPdf, { surtitre: "Fiche de sécurité", titre: contexte.chantierNom })} data-atlas="ouvrir-le-pdf-de-la-fiche" className="flex min-h-[46px] items-center justify-center rounded-full px-2.5 text-[15px] no-underline" style={{ fontFamily: font.display, color: colors.rust, boxShadow: `inset 0 0 0 1.5px ${colors.vertPale}` }}>
+            <Refus>{refus}</Refus>
+            <div className="grid grid-cols-2 gap-2.5">
+              <Link href={adresseDeLaVisionneuse(adresseDuPdf, { surtitre: "Fiche de sécurité", titre: contexte.chantierNom })} data-atlas="ouvrir-le-pdf-de-la-fiche" className={CLASSE_BOUTON} style={styleCreux}>
                 Ouvrir le PDF
               </Link>
               {finalisee ? (
-                <span data-atlas="fiche-enregistree" className="flex min-h-[46px] items-center justify-center gap-2 rounded-full text-[15px]" style={{ fontFamily: font.display, color: colors.rust, boxShadow: `inset 0 0 0 1.5px ${colors.vertPale}` }}>
-                  <span aria-hidden="true" className="grid h-5 w-5 place-items-center rounded-full" style={{ background: colors.plein, color: surPlein }}><Coche /></span>
+                <span data-atlas="fiche-enregistree" className={`${CLASSE_BOUTON} gap-2`} style={styleCreux}>
+                  <RondCoche cochee />
                   Enregistrée
                 </span>
               ) : (
-                <button type="button" data-atlas="enregistrer-la-fiche" aria-disabled={manquent.length > 0} disabled={occupe} onClick={finaliser} className="flex min-h-[46px] items-center justify-center rounded-full text-[15px]" style={{ fontFamily: font.display, background: manquent.length ? "transparent" : colors.plein, color: manquent.length ? colors.rust : surPlein, boxShadow: manquent.length ? `inset 0 0 0 1.5px ${colors.vertPale}` : "none", opacity: manquent.length ? 0.45 : 1 }}>
-                  Enregistrer
-                </button>
+                <Vert data-atlas="enregistrer-la-fiche" grise={manquent.length > 0} disabled={occupe} onClick={finaliser}>Enregistrer</Vert>
               )}
             </div>
-            <Link href="/planning" data-atlas="retour-au-planning" className="mx-auto block w-max px-3 py-1.5 text-[14px] font-bold no-underline" style={{ color: colors.ink }}>
+            <Link href="/planning" data-atlas="retour-au-planning" className="mx-auto flex min-h-[44px] w-max items-center px-3 text-[16px] font-semibold no-underline" style={{ color: colors.ink }}>
               {finalisee ? "Retour au planning" : "Plus tard"}
             </Link>
           </div>
         }
       >
-        <h2 data-atlas="fiche-signee" className="m-0 text-[26px] leading-[1.15]" style={{ fontFamily: font.display }}>{manquent.length ? "Signatures en attente" : "Fiche signée"}</h2>
-        <p className="m-0 mt-1.5 text-[14px]" style={{ color: colors.muted }}>
+        <h2 data-atlas="fiche-signee" className="m-0 text-[30px] font-normal leading-[1.1]" style={{ fontFamily: font.display, letterSpacing: "-0.01em" }}>{manquent.length ? "Signatures en attente" : "Fiche signée"}</h2>
+        <p className="m-0 mt-1.5 text-[15px] leading-[1.45]" style={{ color: colors.inkSoft }}>
           {manquent.length ? "Elle s’enregistre quand tout le monde a signé." : finalisee ? `Enregistrée. Gardée jusqu’au ${dateLongue(gardeeJusquAu(signeeLe))}.` : "Tout le monde a signé : enregistrez-la."}
         </p>
-        <Bloc id="signatures" titre="Les signatures">
+        <Bloc id="signatures" titre="Les signatures" etiquette={<Etiquette ton={manquent.length ? "ambre" : "vert"}>{contenu.lectures.length + 1} sur {contenu.lectures.length + 1 + manquent.length}</Etiquette>}>
           <Personnage nom={contenu.signataire} detail={`Chef d’entreprise. A signé la fiche le ${dateLongue(signeeLe)} à ${heure(signeeLe)}.`} signe />
           {(presents.length > 0 || contenu.lectures.length > 0) && <Aide haut>Chacun signe qu’il a lu la fiche, avant de commencer.</Aide>}
           {contenu.lectures.map((l) => (
             <Personnage key={l.nom} nom={l.nom} detail={`A lu la fiche à ${heure(new Date(l.le))}.`} signe image={l.png} />
           ))}
           {manquent.map((nom) => (
-            <div key={nom} className="flex min-h-[52px] items-center gap-3 border-t" style={{ borderColor: colors.lineSoft }}>
-              <span aria-hidden="true" className="h-6 w-6 flex-none rounded-full" style={{ boxShadow: `inset 0 0 0 1.5px ${colors.vertPale}` }} />
-              <span className="min-w-0 flex-1 text-[15px]">{nom}</span>
-              <button type="button" data-atlas="absent" onClick={() => void marquerAbsent(nom)} className="min-h-[40px] px-1 text-[13px] font-bold" style={{ color: colors.muted }}>Absent</button>
-              <button type="button" data-atlas="faire-signer" onClick={() => { setRefus(null); setTraceDuLecteur([]); setLecteur(nom); }} className="min-h-[40px] flex-none rounded-full px-4 text-[14px]" style={{ background: colors.plein, color: surPlein }}>Signer</button>
+            <div key={nom} className="flex min-h-[64px] items-center gap-[13px] border-t py-2" style={{ borderColor: colors.lineSoft }}>
+              <RondCoche cochee={false} />
+              <span className="min-w-0 flex-1 text-[18px] leading-[1.25]" style={{ fontFamily: font.display }}>{nom}</span>
+              <button type="button" data-atlas="absent" onClick={() => void marquerAbsent(nom)} className="min-h-[44px] px-1.5 text-[15px] font-semibold" style={{ color: colors.inkSoft }}>Absent</button>
+              <button type="button" data-atlas="faire-signer" onClick={() => { setRefus(null); setTraceDuLecteur([]); setLecteur(nom); }} className="min-h-[44px] flex-none rounded-full px-[18px] text-[15px] font-semibold" style={{ background: colors.plein, color: surPlein }}>Signer</button>
             </div>
           ))}
-          {manquent.length > 0 && <p className="m-0 mt-2.5 text-[13px] font-semibold" style={{ color: colors.alert }}>{manquent.join(" et ")} {manquent.length > 1 ? "doivent" : "doit"} signer avant d’enregistrer la fiche. Quelqu’un n’est pas venu ? Touchez « Absent ».</p>}
+          {manquent.length > 0 && <p className="m-0 mt-2.5 text-[14px] font-semibold leading-[1.45]" style={{ color: colors.carteAmbreTexte }}>{manquent.join(" et ")} {manquent.length > 1 ? "doivent" : "doit"} signer avant d’enregistrer la fiche. Quelqu’un n’est pas venu ? Touchez « Absent ».</p>}
         </Bloc>
         <Bloc id="envoi" titre="À qui l’envoyer" explication="Ce que la loi demande, destinataire par destinataire.">
-          <Destinataire titre="Votre équipe" obligation="Obligatoire, avant de commencer">
+          <Destinataire titre="Votre équipe" obligation="Obligatoire, avant de commencer" ton="ambre">
             Chacun doit l’avoir lue avant le premier coup de tronçonneuse. {manquent.length ? "Faites signer chacun ci-dessus." : "C’est fait : tout le monde a signé."}
             {envoyerA("equipe", "Envoyer à l’équipe")}
           </Destinataire>
-          <Destinataire titre="Les entreprises sur place" obligation={autresEntreprises.length ? "Obligatoire, avant de commencer" : "Rien à faire"} libre={autresEntreprises.length === 0}>
+          <Destinataire titre="Les entreprises sur place" obligation={autresEntreprises.length ? "Obligatoire, avant de commencer" : "Rien à faire"} ton={autresEntreprises.length ? "ambre" : "neutre"}>
             {autresEntreprises.length ? "Montrez-leur la fiche : les secours s’organisent ensemble. Chacune fait aussi la sienne." : "Aucune autre entreprise sur ce chantier."}
             {autresEntreprises.map((x) => <span key={x.nom} className="block">{envoyerA(`entreprise:${x.nom}`, `Envoyer à ${x.nom}`)}</span>)}
           </Destinataire>
           <Destinataire titre="Votre client">
             Ce client (une entreprise, une mairie, un syndic) vous a-t-il fait remplir un plan de prévention ?
-            <span className="mt-1 block text-[13px]" style={{ color: colors.muted }}>C’est le document qu’un client professionnel vous fait signer avant de travailler sur son site.</span>
-            <span className="mt-2.5 grid grid-cols-2 gap-1.5">
+            <span className="mt-1 block text-[14px]" style={{ color: colors.inkSoft }}>C’est le document qu’un client professionnel vous fait signer avant de travailler sur son site.</span>
+            <Paire className="mt-3">
               <Choix actif={contenu.prevention === "non"} onClick={() => void repondreALaPrevention("non")}>Non</Choix>
               <Choix actif={contenu.prevention === "oui"} onClick={() => void repondreALaPrevention("oui")}>Oui</Choix>
-            </span>
+            </Paire>
             {contenu.prevention === "oui" && <span className="mt-2.5 block"><b className="font-semibold" style={{ color: colors.ink }}>Obligatoire</b> : envoyez-lui la fiche.{envoyerA("client", "Envoyer au client")}</span>}
             {contenu.prevention === "non" && <span className="mt-2.5 block">Rien à envoyer. Un particulier n’a pas à la recevoir.</span>}
           </Destinataire>
-          <Destinataire titre="La garder" obligation={finalisee ? "Fait par Atlas" : "Après toutes les signatures"} libre={finalisee}>
+          <Destinataire titre="La garder" obligation={finalisee ? "Fait par Atlas" : "Après toutes les signatures"} ton={finalisee ? "vert" : "neutre"}>
             Elle doit rester sur le chantier pendant les travaux : votre téléphone suffit. {finalisee ? `Atlas la garde deux ans, jusqu’au ${dateLongue(gardeeJusquAu(signeeLe))}, rangée dans Paysage.` : "Atlas la garde deux ans, dès qu’elle est enregistrée."}
             {finalisee && paysageOuvert && <> <Link href="/paysage/fiches-securite" className="font-bold no-underline" style={{ color: colors.ink }}>Voir où</Link></>}
           </Destinataire>
@@ -501,13 +504,13 @@ export default function FormulaireFicheDeSecurite({
         {lecteur && (
           <div className="fixed inset-0 z-[60] flex items-end" style={{ background: voile(colors.ink, 0.35) }}>
             <div data-atlas="feuillet-de-lecture" className="w-full rounded-t-[20px] px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-[18px]" style={{ background: colors.cream }}>
-              <p className="m-0 text-[20px] leading-[1.2]" style={{ fontFamily: font.display }}>{lecteur}</p>
-              <p className="m-0 mt-1 text-[13.5px]" style={{ color: colors.muted }}>J’ai pris connaissance de la fiche.</p>
+              <p className="m-0 text-[26px] leading-[1.15]" style={{ fontFamily: font.display }}>{lecteur}</p>
+              <p className="m-0 mt-1 text-[15px]" style={{ color: colors.inkSoft }}>J’ai pris connaissance de la fiche.</p>
               <div className="mt-3"><Signature trace={traceDuLecteur} onTrace={setTraceDuLecteur} /></div>
-              {refus && <p className="m-0 mt-2 text-[13px] font-semibold" style={{ color: colors.alert }}>{refus}</p>}
-              <div className="mt-3 grid grid-cols-2 gap-2">
+              <Refus>{refus}</Refus>
+              <div className="mt-3 grid grid-cols-2 gap-2.5 [&>*]:mt-0">
                 <Creux onClick={() => { setLecteur(null); setRefus(null); }}>Annuler</Creux>
-                <Vert pleine data-atlas="valider-la-lecture" disabled={occupe} onClick={signerLaLecture}>Valider</Vert>
+                <Vert data-atlas="valider-la-lecture" disabled={occupe} onClick={signerLaLecture}>Valider</Vert>
               </div>
             </div>
           </div>
@@ -518,42 +521,43 @@ export default function FormulaireFicheDeSecurite({
 
   // ══════════════════ LES SIX ÉCRANS ══════════════════
   const entete = (
-    <div className="flex items-center gap-1.5 px-2.5 pt-2" style={{ minHeight: 58 }}>
-      <button type="button" aria-label="Retour" data-atlas="retour-de-la-fiche" data-geste-retour="" onClick={retour} className="grid h-11 w-11 flex-none place-items-center" style={{ color: colors.rust }}>
-        <svg width="22" height="22" viewBox="0 0 20 20" fill="none"><path d="M12.5 4 6.5 10l6 6" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" /></svg>
+    <div className="flex items-center gap-2 px-2 pt-2" style={{ minHeight: 60 }}>
+      <button type="button" aria-label="Retour" data-atlas="retour-de-la-fiche" data-geste-retour="" onClick={retour} className="grid h-12 w-12 flex-none place-items-center" style={{ color: colors.ink }}>
+        <svg width="24" height="24" viewBox="0 0 20 20" fill="none"><path d="M12.5 4 6.5 10l6 6" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </button>
-      <span className="min-w-0 flex-1 leading-[1.15]">
-        <span className="block text-[17px]" style={{ fontFamily: font.display }}>Fiche de sécurité</span>
-        <span className="mt-[1px] block text-[12px]" style={{ color: colors.muted }}>{contexte.chantierNom}</span>
+      <span className="min-w-0 flex-1 leading-[1.2]">
+        <span className="block text-[20px]" style={{ fontFamily: font.display }}>Fiche de sécurité</span>
+        <span className="mt-[2px] block truncate text-[14px]" style={{ color: colors.inkSoft }}>{contexte.chantierNom}</span>
       </span>
-      <span data-atlas="etape-de-la-fiche" className="flex-none text-[12.5px] font-semibold" style={{ color: colors.orTexte }}>{etape} sur {NOMBRE_D_ETAPES}</span>
+      <span data-atlas="etape-de-la-fiche" className="flex-none pr-2 text-[14.5px] font-semibold tabular-nums" style={{ color: colors.orTexte }}>{etape} sur {NOMBRE_D_ETAPES}</span>
     </div>
   );
   const avancee = (
-    <div aria-hidden="true" className="grid gap-1 px-4 pt-2" style={{ gridTemplateColumns: `repeat(${NOMBRE_D_ETAPES}, 1fr)` }}>
+    <div aria-hidden="true" className="grid gap-[5px] px-4 pb-2.5 pt-1.5" style={{ gridTemplateColumns: `repeat(${NOMBRE_D_ETAPES}, 1fr)`, boxShadow: `inset 0 -1px 0 ${colors.lineSoft}` }}>
       {ETAPES.map((_, i) => (
-        <i key={i} className="block h-[3px] rounded-[2px]" style={{ background: i + 1 < etape ? colors.or : i + 1 === etape ? colors.rust : colors.line }} />
+        <i key={i} className="block h-1 rounded-[2px]" style={{ background: i + 1 < etape ? colors.or : i + 1 === etape ? colors.rust : colors.line }} />
       ))}
     </div>
   );
   const manquesCroquis = manquesDuCroquis(contenu.croquis);
 
   return (
+    <EtatDesParties.Provider value={etatDesParties(contenu, contexte)}>
     <Cadre
       entete={<>{entete}{avancee}</>}
       pied={
-        etape < NOMBRE_D_ETAPES ? (
-          <Vert data-atlas="suivant" disabled={occupe} onClick={suivant}>Suivant</Vert>
-        ) : (
-          <button type="button" data-atlas="signer-la-fiche" aria-disabled={legal.length > 0} disabled={occupe} onClick={signer} className="mx-auto flex min-h-[46px] w-max max-w-full items-center justify-center rounded-full px-[26px] text-[15.5px]" style={{ fontFamily: font.display, background: legal.length ? "transparent" : colors.plein, color: legal.length ? colors.rust : surPlein, boxShadow: legal.length ? `inset 0 0 0 1.5px ${colors.vertPale}` : "none", opacity: legal.length ? 0.45 : 1 }}>
-            Signer la fiche
-          </button>
-        )
+        <>
+          <Refus>{refus}</Refus>
+          {etape < NOMBRE_D_ETAPES ? (
+            <Vert data-atlas="suivant" disabled={occupe} onClick={suivant}>Suivant</Vert>
+          ) : (
+            <Vert data-atlas="signer-la-fiche" grise={legal.length > 0} disabled={occupe} onClick={signer}>Signer la fiche</Vert>
+          )}
+        </>
       }
     >
       {champInvisibleDuFond}
-      <h2 className="m-0 mb-1 text-[24px] leading-[1.15]" style={{ fontFamily: font.display }}>{ETAPES[etape - 1]}</h2>
-      {refus && etape < NOMBRE_D_ETAPES && <p className="m-0 mb-2 text-[13px]" style={{ color: colors.alert }}>{refus}</p>}
+      <h2 className="m-0 mb-1 text-[30px] font-normal leading-[1.1]" style={{ fontFamily: font.display, letterSpacing: "-0.01em" }}>{ETAPES[etape - 1]}</h2>
 
       {etape === 1 && (
         <>
@@ -566,10 +570,10 @@ export default function FormulaireFicheDeSecurite({
             <Champ nom="Téléphone (en cas d’incident ou d’accident)" {...champ("telephoneIncident")} type="tel" />
           </Bloc>
           <Bloc id="donneur" titre="Donneur d’ordre" explication="Qui vous a commandé les travaux ? Le client du devis, ou quelqu’un d’autre : une entreprise qui vous sous-traite, un syndic, une mairie.">
-            <div className="mt-1 grid grid-cols-2 gap-1.5">
+            <Paire>
               <Choix actif={contenu.donneur === "client"} onClick={() => setContenu((c) => ({ ...c, donneur: "client" }))}>Le client du devis</Choix>
               <Choix actif={contenu.donneur === "autre"} onClick={() => setContenu((c) => ({ ...c, donneur: "autre" }))}>Quelqu’un d’autre</Choix>
-            </div>
+            </Paire>
             {contenu.donneur === "client" && (
               <>
                 <Fixe nom="Raison sociale" vide={!contexte.client}>{contexte.client?.nom ?? "aucun client sur ce chantier"}</Fixe>
@@ -590,8 +594,8 @@ export default function FormulaireFicheDeSecurite({
           <Bloc id="lieu" titre="Identification du chantier" explication="Où est le chantier, et quand. Relevez la position GPS sur place : elle guide les secours.">
             <Fixe nom="Lieu (adresse)" vide={!contexte.adresse}>{contexte.adresse ?? "non renseignée"}</Fixe>
             <div className="mt-2.5">
-              <span className="mb-[3px] block text-[12.5px]" style={{ color: colors.muted }}>Coordonnées GPS</span>
-              <button type="button" data-atlas="relever-gps" disabled={releveEnCours} onClick={() => { setReleveEnCours(true); setRefus(null); releverLaPosition((gps) => setContenu((c) => ({ ...c, gps })), (r) => { setRefus(r); setGpsAEcrire(true); }, () => setReleveEnCours(false)); }} className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-full text-[15px]" style={{ background: colors.card, color: releveEnCours ? colors.muted : colors.rust, boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
+              <SousTitre>Coordonnées GPS</SousTitre>
+              <button type="button" data-atlas="relever-gps" disabled={releveEnCours} onClick={() => { setReleveEnCours(true); setRefus(null); releverLaPosition((gps) => setContenu((c) => ({ ...c, gps })), (r) => { setRefus(r); setGpsAEcrire(true); }, () => setReleveEnCours(false)); }} className={`${CLASSE_BOUTON} gap-2`} style={{ ...styleCreux, color: releveEnCours ? colors.inkSoft : colors.ink }}>
                 <Cible /> {releveEnCours ? "Relevé en cours…" : "Relever ici"}
               </button>
               <CarteDuPoint gps={contenu.gps} repli={contexte.position} onPoint={(gps) => setContenu((c) => ({ ...c, gps }))} />
@@ -601,7 +605,7 @@ export default function FormulaireFicheDeSecurite({
               <Fixe nom="Adresse au point GPS" vide={!contenu.adresseDuPoint}>{contenu.adresseDuPoint || "aucune adresse connue à cet endroit"}</Fixe>
             )}
             <Champ nom="Adresse d’accès des secours, si elle est différente" {...champ("adresseSecours")} placeholder="Exemple : portail arrière, chemin des Saules" />
-            <Aide haut>Dates d’exécution, d’après le planning</Aide>
+            <SousTitre>Dates d’exécution, d’après le planning</SousTitre>
             <div className="mt-2.5 grid grid-cols-2 gap-2 [&>*]:mt-0 [&>*]:min-w-0">
               <Fixe nom="Début, jour" vide={!contexte.datePlanifiee}>{jourDepuisIso(contexte.datePlanifiee) || "pas encore planifié"}</Fixe>
               <Fixe nom="Fin, jour" vide={!contexte.datePlanifiee}>{jourDepuisIso(contexte.datePlanifiee) || "pas encore planifié"}</Fixe>
@@ -630,10 +634,10 @@ export default function FormulaireFicheDeSecurite({
             <Aide haut>Gardés pour vos prochaines fiches.</Aide>
           </Bloc>
           <Bloc id="entreprises" titre="Sous-traitants et autres entreprises" explication="Toute entreprise qui travaille avec vous sur le chantier. Les secours s’organisent ensemble, et elle doit voir cette fiche.">
-            <div className="grid grid-cols-2 gap-1.5">
+            <Paire>
               <Choix actif={contenu.entreprisesSurPlace === "aucune"} onClick={() => setContenu((c) => ({ ...c, entreprisesSurPlace: "aucune" }))}>Aucune</Choix>
               <Choix actif={contenu.entreprisesSurPlace === "oui"} onClick={() => setContenu((c) => ({ ...c, entreprisesSurPlace: "oui" }))}>Oui</Choix>
-            </div>
+            </Paire>
             {contenu.entreprisesSurPlace === "oui" && (
               <>
                 {contenu.entreprises.some((x) => x.nom.trim()) && (
@@ -667,21 +671,21 @@ export default function FormulaireFicheDeSecurite({
               const bien = [...p.formations, sst.ok && sst.fin && `SST jusqu’au ${dateLongue(sst.fin)}`, gsa.ok && gsa.fin && `GSA jusqu’au ${dateLongue(gsa.fin)}`].filter(Boolean).join(", ");
               const mal = [!sst.ok && (sst.fin ? `SST dépassé depuis le ${dateLongue(sst.fin)}.` : "Pas de SST."), !gsa.ok && (gsa.fin ? `GSA dépassé depuis le ${dateLongue(gsa.fin)}.` : "Pas de GSA.")].filter(Boolean).join(" ");
               return (
-                <div key={i} data-atlas="personne-de-l-equipe" className="flex items-start gap-3 border-t py-2.5 first:border-t-0" style={{ borderColor: colors.lineSoft }}>
-                  <button type="button" aria-pressed={p.present} aria-label={`${p.nom || "Cette personne"} vient`} onClick={() => changerLEquipe(contenu.equipe.map((x, k) => (k === i ? { ...x, present: !x.present } : x)))} className="mt-[1px] grid h-6 w-6 flex-none place-items-center rounded-full" style={{ background: p.present ? colors.plein : colors.card, boxShadow: p.present ? "none" : `inset 0 0 0 1.5px ${colors.vertPale}`, color: p.present ? surPlein : "transparent" }}><Coche /></button>
+                <div key={i} data-atlas="personne-de-l-equipe" className="flex items-start gap-[13px] border-t py-3 first:border-t-0" style={{ borderColor: colors.lineSoft }}>
+                  <button type="button" aria-pressed={p.present} aria-label={`${p.nom || "Cette personne"} vient`} onClick={() => changerLEquipe(contenu.equipe.map((x, k) => (k === i ? { ...x, present: !x.present } : x)))} className="-m-[11px] grid h-11 w-11 flex-none place-items-center"><RondCoche cochee={p.present} /></button>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[15px]">{p.nom || "Sans nom"}</span>
-                    {bien && <span className="mt-0.5 block text-[12.5px] leading-[1.4]" style={{ color: colors.inkSoft }}>{bien}</span>}
-                    {mal && <span className="mt-0.5 block text-[12.5px] font-semibold leading-[1.4]" style={{ color: colors.alert }}>{mal}</span>}
+                    <span className="block text-[18px] leading-[1.25]" style={{ fontFamily: font.display }}>{p.nom || "Sans nom"}</span>
+                    {bien && <span className="mt-[3px] block text-[14px] leading-[1.4]" style={{ color: colors.inkSoft }}>{bien}</span>}
+                    {mal && <span className="mt-[3px] block text-[14px] font-semibold leading-[1.4]" style={{ color: colors.alert }}>{mal}</span>}
                   </span>
-                  <button type="button" data-atlas="competences" onClick={() => setPersonneOuverte(i)} className="min-h-[44px] flex-none px-0.5 text-[13.5px] font-bold" style={{ color: colors.ink }}>Compétences</button>
+                  <button type="button" data-atlas="competences" onClick={() => setPersonneOuverte(i)} className="-mt-2.5 min-h-[44px] flex-none px-1 text-[15px] font-semibold" style={{ color: colors.rust }}>Compétences</button>
                 </div>
               );
             })}
             <Ajout data-atlas="ajouter-une-personne" onClick={() => { changerLEquipe([...contenu.equipe, { nom: "", present: true, formations: [], sst: "", gsa: "" }]); setPersonneOuverte(contenu.equipe.length); }}>Ajouter une personne</Ajout>
             {contenu.equipe.length === 0 && (
               <div className="mt-2.5">
-                <span className="mb-[3px] block text-[12.5px]" style={{ color: colors.muted }}>Nombre de travailleurs de l’entreprise</span>
+                <span className="mb-[7px] block text-[14.5px] font-semibold" style={{ color: colors.inkSoft }}>Nombre de travailleurs de l’entreprise</span>
                 <div className="flex items-center gap-2.5">
                   <Compteur signe="moins" onClick={() => setContenu((c) => ({ ...c, nombreDeTravailleurs: Math.max(1, c.nombreDeTravailleurs - 1) }))} />
                   <span data-atlas="nombre-de-travailleurs" className="min-w-[34px] text-center text-[24px] leading-none" style={{ fontFamily: font.display }}>{contenu.nombreDeTravailleurs}</span>
@@ -710,14 +714,14 @@ export default function FormulaireFicheDeSecurite({
           </Bloc>
           <Bloc id="materiel" titre="Matériels" explication="Cochez le matériel que vous allez utiliser sur ce chantier.">
             <Vigilance>{POINTS_DE_VIGILANCE.materiels}</Vigilance>
-            <Aide haut>Moyens d’élévation</Aide>
+            <SousTitre>Moyens d’élévation</SousTitre>
             <Vigilance>{POINTS_DE_VIGILANCE.elevation}</Vigilance>
             <Groupe {...g} famille="elevation" genre="pastilles" />
             <Vigilance>{POINTS_DE_VIGILANCE.echelle}</Vigilance>
-            <Aide haut>Matériels de coupe</Aide>
+            <SousTitre>Matériels de coupe</SousTitre>
             <Vigilance>{POINTS_DE_VIGILANCE.distanceMateriels}</Vigilance>
             <Groupe {...g} famille="coupe" genre="pastilles" />
-            <Aide haut>Matériels autres</Aide>
+            <SousTitre>Matériels autres</SousTitre>
             <Vigilance>{POINTS_DE_VIGILANCE.distanceMateriels}</Vigilance>
             <Groupe {...g} famille="autresMateriels" genre="pastilles" />
             <Aide haut>Ce que vous ajoutez reste pour vos prochaines fiches.</Aide>
@@ -726,24 +730,24 @@ export default function FormulaireFicheDeSecurite({
             <Groupe {...g} famille="situation" genre="pastilles" />
           </Bloc>
           <Bloc id="arbres-dangereux" titre="Les arbres dangereux" explication="Un arbre mort, creux, fissuré, qui peut casser pendant le travail. Chacun prend son numéro sur le croquis.">
-            <div className="grid grid-cols-2 gap-1.5">
+            <Paire>
               <Choix actif={contenu.arbresDangereux === "non"} onClick={() => setContenu((c) => ({ ...c, arbresDangereux: "non" }))}>Non</Choix>
               <Choix actif={contenu.arbresDangereux === "oui"} onClick={() => setContenu((c) => ({ ...c, arbresDangereux: "oui", arbres: c.arbres.length ? c.arbres : [arbreVide(false)] }))}>Oui</Choix>
-            </div>
+            </Paire>
             {contenu.arbresDangereux === "oui" && (
               <>
                 {contenu.arbres.map((a, i) => (
                   <Carte key={i} titre={`${a.groupe ? "Groupe d’arbres" : "Arbre"} ${i + 1}`} precision={`numéro ${i + 1} sur le croquis`} onRetirer={() => setContenu((c) => ({ ...c, arbres: c.arbres.filter((_, k) => k !== i) }))}>
-                    <Aide haut>Intervention</Aide>
-                    <div className="grid grid-cols-2 gap-1.5">
+                    <SousTitre>Intervention</SousTitre>
+                    <Paire>
                       <Choix actif={a.intervention === "Abattage"} onClick={() => changerUnArbre(i, { intervention: "Abattage" })}>Abattage</Choix>
                       <Choix actif={a.intervention === "Élagage"} onClick={() => changerUnArbre(i, { intervention: "Élagage" })}>Élagage</Choix>
-                    </div>
-                    <Aide haut>Dangers vus</Aide>
+                    </Paire>
+                    <SousTitre>Dangers vus</SousTitre>
                     <div className="flex flex-wrap gap-1.5">
                       {DANGERS_D_UN_ARBRE.map((d) => <Pastille key={d} active={a.dangers.includes(d)} onClick={() => changerUnArbre(i, { dangers: basculer(a.dangers, d) })}>{d}</Pastille>)}
                     </div>
-                    <Aide haut>Consignes</Aide>
+                    <SousTitre>Consignes</SousTitre>
                     <div className="flex flex-wrap gap-1.5">
                       {CONSIGNES_D_UN_ARBRE.map((d) => <Pastille key={d} active={a.consignes.includes(d)} onClick={() => changerUnArbre(i, { consignes: basculer(a.consignes, d) })}>{d}</Pastille>)}
                     </div>
@@ -766,10 +770,10 @@ export default function FormulaireFicheDeSecurite({
             {!contenu.croquis.fond ? (
               <>
                 <Aide>Obligatoire sur le croquis : les accès, les voies de circulation, les arbres à traiter.</Aide>
-                <div className="flex flex-col gap-2">
-                  <Vert pleine data-atlas="croquis-sur-photo" onClick={() => choisirLeFond("photo")}>Dessiner sur une photo du chantier</Vert>
-                  <Creux data-atlas="croquis-page-blanche" onClick={() => choisirLeFond("blanc")}>Dessiner sur une page blanche</Creux>
-                  <Creux data-atlas="croquis-importe" onClick={() => choisirLeFond("import")}>Importer un croquis déjà fait</Creux>
+                <div>
+                  <Facon icone={<Appareil />} data-atlas="croquis-sur-photo" onClick={() => choisirLeFond("photo")}>Dessiner sur une photo du chantier</Facon>
+                  <Facon icone={<Crayon />} data-atlas="croquis-page-blanche" onClick={() => choisirLeFond("blanc")}>Dessiner sur une page blanche</Facon>
+                  <Facon icone={<Importer />} data-atlas="croquis-importe" onClick={() => choisirLeFond("import")}>Importer un croquis déjà fait</Facon>
                 </div>
               </>
             ) : (
@@ -778,7 +782,7 @@ export default function FormulaireFicheDeSecurite({
                 <button type="button" data-atlas="apercu-du-croquis" onClick={() => setEditionDuCroquis(true)} aria-label="Ouvrir le croquis" className="mt-2.5 block w-full overflow-hidden rounded-[12px] p-0" style={{ aspectRatio: "4 / 3", boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
                   <DessinDuCroquis croquis={contenu.croquis} fondUrl={fondUrl} />
                 </button>
-                {manquesCroquis.length > 0 && <p className="m-0 mt-2 text-[13px] font-semibold" style={{ color: colors.alert }}>Croquis à finir. Il manque : {manquesCroquis.join(", ")}.</p>}
+                {manquesCroquis.length > 0 && <p className="m-0 mt-2.5 text-[14px] font-semibold leading-[1.45]" style={{ color: colors.carteAmbreTexte }}>Croquis à finir. Il manque : {manquesCroquis.join(", ")}.</p>}
                 <Creux data-atlas="modifier-le-croquis" onClick={() => setEditionDuCroquis(true)}>{manquesCroquis.length ? "Finir le croquis" : "Modifier le croquis"}</Creux>
                 {contenu.croquis.marques.map((m, i) => m.t === "danger" && (
                   <Champ key={i} nom={`Zone de danger ${contenu.croquis.marques.slice(0, i + 1).filter((x) => x.t === "danger").length}, ce que c’est`} value={m.mot} placeholder="Exemple : chute de branches" onChange={(e) => { const mot = e.target.value.slice(0, 80); setContenu((c) => ({ ...c, croquis: { ...c.croquis, marques: c.croquis.marques.map((x, k) => (k === i && x.t === "danger" ? { ...x, mot } : x)) } })); }} />
@@ -789,13 +793,13 @@ export default function FormulaireFicheDeSecurite({
             )}
           </Bloc>
           <Bloc id="photos" titre="Photos du balisage" explication="Le balisage, les zones sensibles, un document. Prenez la photo, ou choisissez-la dans la photothèque.">
-            <div className="mt-2 flex flex-wrap items-center gap-[7px]">
+            <div className="flex flex-wrap items-center gap-2">
               {sesPhotos.map((p, i) => (
-                <button key={p.id} type="button" onClick={() => setRangOuvert(i)} aria-label={`Photo ${i + 1} en grand`} data-atlas="photo-de-la-fiche" className="h-[46px] w-[46px] flex-none overflow-hidden rounded-[9px] p-0" style={{ boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
+                <button key={p.id} type="button" onClick={() => setRangOuvert(i)} aria-label={`Photo ${i + 1} en grand`} data-atlas="photo-de-la-fiche" className="h-16 w-16 flex-none overflow-hidden rounded-[6px] p-0" style={{ boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
                   <img src={`/api/fichiers/${p.storageKey}`} alt="" className="h-full w-full object-cover" />
                 </button>
               ))}
-              <label data-atlas="prendre-une-photo" className="grid h-[46px] w-[72px] flex-none cursor-pointer place-items-center rounded-[9px]" style={{ background: voile(colors.plein, 0.16), color: colors.rust, boxShadow: `inset 0 0 0 1px ${colors.vertPale}` }}>
+              <label data-atlas="prendre-une-photo" aria-label="Prendre une photo" className="grid h-16 w-16 flex-none cursor-pointer place-items-center rounded-[6px]" style={{ color: colors.or, boxShadow: `inset 0 0 0 1.5px ${voile(colors.or, 0.65)}` }}>
                 <Appareil />
                 <input type="file" accept={ACCEPT_PHOTOS} multiple hidden onChange={(e) => { const f = Array.from(e.target.files ?? []); e.target.value = ""; void televerser(f); }} />
               </label>
@@ -819,10 +823,10 @@ export default function FormulaireFicheDeSecurite({
 
       {etape === 4 && (
         <>
-          <Aide>Répondez pour chaque risque. « Rien à signaler » est une réponse : il dit que vous avez regardé.</Aide>
+          <p className="m-0 mt-1.5 text-[15px] leading-[1.45]" style={{ color: colors.inkSoft }}>Répondez pour chaque risque. « Rien à signaler » est une réponse : il dit que vous avez regardé.</p>
           <Bloc id="risques-arbres" titre="Les arbres pendant l’intervention" explication="Ce qui peut tomber, casser ou céder pendant le travail.">
             <Groupe {...g} famille="risquesArbres" genre="pastilles" />
-            <Aide haut>État sanitaire et physiologique des arbres</Aide>
+            <SousTitre>État sanitaire et physiologique des arbres</SousTitre>
             <Groupe {...g} famille="matieres" genre="cases" />
             <Vigilance>{POINTS_DE_VIGILANCE.matieres}</Vigilance>
             <Champ nom="Autres (à préciser)" {...champ("matieresAutres")} lignes={2} placeholder="Exemple : rien vu sur les chênes, à confirmer sur place" />
@@ -831,7 +835,7 @@ export default function FormulaireFicheDeSecurite({
             <Groupe {...g} famille="biologique" genre="pastilles" />
             {aDesRisques(contenu, "biologique") && (
               <>
-                <Aide haut>Mesures de prévention spécifiques au chantier</Aide>
+                <SousTitre>Mesures de prévention spécifiques au chantier</SousTitre>
                 <Groupe {...g} famille="biologiqueMesures" genre="pastilles" />
               </>
             )}
@@ -840,7 +844,7 @@ export default function FormulaireFicheDeSecurite({
             <Groupe {...g} famille="reseaux" genre="pastilles" sous={{ Électrique: <Groupe {...g} famille="tensions" genre="pastilles" /> }} />
             {aDesRisques(contenu, "reseaux") && (
               <>
-                <Aide haut>Mesures</Aide>
+                <SousTitre>Mesures</SousTitre>
                 <Groupe {...g} famille="reseauxMesures" genre="cases" sous={{ [LIBELLES.reseauxMesures[2]]: <Groupe {...g} famille="distances" genre="cases" /> }} />
                 <Aide haut>Au cas où : <a href={DECOUVERTE_FORTUITE.url} target="_blank" rel="noopener" className="font-semibold" style={{ color: colors.rust, textDecoration: "underline", textDecorationColor: colors.or, textUnderlineOffset: 3 }}>{DECOUVERTE_FORTUITE.mot}</a></Aide>
               </>
@@ -853,14 +857,14 @@ export default function FormulaireFicheDeSecurite({
             <Groupe {...g} famille="environnement" genre="pastilles" />
             {(aDesRisques(contenu, "environnement") || aDesRisques(contenu, "noyade")) && (
               <>
-                <Aide haut>Mesures</Aide>
+                <SousTitre>Mesures</SousTitre>
                 <Groupe {...g} famille="environnementMesures" genre="pastilles" sous={{ [LIBELLES.environnementMesures[4]]: <Champ nom="" {...champ("environnementPreciser")} placeholder="Exemple : gilets haute visibilité" /> }} />
               </>
             )}
           </Bloc>
           <Bloc id="coactivite" titre="Co-activité dans la zone de sécurité du chantier" explication="D’autres personnes travaillent en même temps dans la zone ? Une machine peut happer ou projeter ?">
             <Groupe {...g} famille="coactivite" genre="cases" />
-            <Aide haut>Règles organisationnelles à mettre en place</Aide>
+            <SousTitre>Règles organisationnelles à mettre en place</SousTitre>
             <Groupe {...g} famille="organisation" genre="cases" sous={{ [LIBELLES.organisation[2]]: <Champ nom="" {...champ("organisationCommunication")} placeholder="Exemple : casques communicants" /> }} />
             <Vigilance>{POINTS_DE_VIGILANCE.manuel}</Vigilance>
           </Bloc>
@@ -895,23 +899,25 @@ export default function FormulaireFicheDeSecurite({
             <Champ nom="Préciser le Point de Rencontre des Secours :" {...champ("pointDeRencontre")} placeholder="Exemple : devant le portail du client" />
           </Bloc>
           <Bloc id="consignes" titre="Organisation des secours. Consignes et procédures" explication="La marche à suivre, dans l’ordre. Elle est imprimée sur la fiche : à lire avant de commencer.">
-            <div className="overflow-hidden rounded-[12px]" style={{ background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
-              <button type="button" aria-expanded={consignesOuvertes} onClick={() => setConsignesOuvertes((o) => !o)} className="flex min-h-[54px] w-full items-center gap-2.5 pl-4 pr-3.5 text-left" style={{ background: voile(colors.plein, 0.16) }}>
-                <span className="min-w-0 flex-1 text-[16px] leading-[1.2]" style={{ fontFamily: font.display, color: colors.rust }}>Protéger, alerter, secourir</span>
-                <span className="flex-none text-[12.5px] font-semibold" style={{ color: colors.rust }}>15, 18, 112</span>
-                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true" className="flex-none transition-transform duration-300" style={{ color: colors.rust, transform: consignesOuvertes ? "rotate(180deg)" : "none" }}><path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            <div className="overflow-hidden rounded-[6px]" style={{ background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
+              <button type="button" aria-expanded={consignesOuvertes} onClick={() => setConsignesOuvertes((o) => !o)} className="flex min-h-[64px] w-full items-center gap-3 px-3.5 py-2.5 text-left">
+                <span aria-hidden="true" className="grid h-10 w-10 flex-none place-items-center rounded-[12px]" style={{ background: colors.carteRougeFond, color: colors.carteRougeTexte }}><Telephone /></span>
+                <span className="min-w-0 flex-1 text-[18px] leading-[1.2]" style={{ fontFamily: font.display }}>Protéger, alerter, secourir</span>
+                <span className="flex-none text-[14px] font-semibold tabular-nums" style={{ color: colors.inkSoft }}>15, 18, 112</span>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true" className="flex-none transition-transform duration-300" style={{ color: colors.inkSoft, transform: consignesOuvertes ? "rotate(180deg)" : "none" }}><path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </button>
               <div className="grid transition-[grid-template-rows] duration-300" style={{ gridTemplateRows: consignesOuvertes ? "1fr" : "0fr" }}>
-                <div className="min-h-0 overflow-hidden px-3.5">
-                  <div className="pb-3.5 pt-3">
+                <div className="min-h-0 overflow-hidden px-4">
+                  <div className="pb-[18px] pt-1" style={{ boxShadow: `inset 0 1px 0 ${colors.line}` }}>
                     <TitreDeConsigne>1. Protéger</TitreDeConsigne>
                     <ol className="m-0 list-none p-0">{CONSIGNES_DE_SECOURS.proteger.map((x, i) => <Consigne key={x} numero={i + 1}>{x}</Consigne>)}</ol>
                     <TitreDeConsigne>2. Alerter</TitreDeConsigne>
-                    <div className="mb-3 mt-2 grid grid-cols-5 gap-1.5">
+                    <div className="mb-2 mt-1.5">
                       {CONSIGNES_DE_SECOURS.urgences.map(([n, q]) => (
-                        <a key={n} href={`tel:${n}`} className="flex min-h-[56px] flex-col items-center justify-center rounded-full no-underline" style={{ background: colors.card, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
-                          <b className="text-[20px] font-normal leading-none" style={{ fontFamily: font.display }}>{n}</b>
-                          <span className="mt-[3px] px-[2px] text-center text-[9.5px] leading-[1.1]" style={{ color: colors.muted }}>{q}</span>
+                        <a key={n} href={`tel:${n}`} className="flex min-h-[56px] items-center gap-3.5 border-t no-underline first:border-t-0" style={{ color: colors.ink, borderColor: colors.lineSoft }}>
+                          <b className="w-[52px] text-[26px] font-normal leading-none tabular-nums" style={{ fontFamily: font.display }}>{n}</b>
+                          <span className="min-w-0 flex-1 text-[16px]">{q}</span>
+                          <span aria-hidden="true" style={{ color: colors.rust }}><Telephone /></span>
                         </a>
                       ))}
                     </div>
@@ -934,38 +940,38 @@ export default function FormulaireFicheDeSecurite({
 
       {etape === 6 && (
         <>
-          {legal.length > 0 ? (
-            <Bloc id="minimum-legal" titre="Pour pouvoir signer">
-              <p className="m-0 mb-2 text-[13.5px] font-semibold leading-[1.45]" style={{ color: colors.alert }}>La loi exige ces éléments. Sans eux, la fiche ne peut être ni signée ni enregistrée.</p>
-              <ul className="m-0 list-none p-0">
-                {legal.map((x) => (
-                  <li key={x.quoi} className="m-0">
-                    <button type="button" data-atlas="manque-de-la-fiche" onClick={() => aller(x.etape, x.bloc)} className="flex min-h-[52px] w-full items-center gap-2.5 border-t py-2 text-left first:border-t-0" style={{ borderColor: colors.lineSoft }}>
+          <Bloc id="minimum-legal" titre="Pour pouvoir signer" etiquette={<Etiquette ton={legal.length ? "ambre" : "vert"}>{points.length - legal.length} sur {points.length}</Etiquette>}>
+            <p className="m-0 rounded-[6px] px-4 py-3 text-[14.5px] font-semibold leading-[1.45]" style={{ background: legal.length ? colors.carteAmbreFond : colors.carteVertFond, color: legal.length ? colors.carteAmbreTexte : colors.carteVertTexte }}>
+              {legal.length ? "La loi exige ces éléments. Sans eux, la fiche ne peut être ni signée ni enregistrée." : "Tout ce que la loi exige est rempli"}
+            </p>
+            <ul className="m-0 mt-1 list-none p-0">
+              {points.map((x) => (
+                <li key={x.quoi} className="m-0 border-t first:border-t-0" style={{ borderColor: colors.lineSoft }}>
+                  {x.fait ? (
+                    <span className="flex min-h-[56px] items-center gap-[13px] py-3 text-[16px]" style={{ color: colors.inkSoft }}>
+                      <RondCoche cochee />
+                      {x.quoi}
+                    </span>
+                  ) : (
+                    <button type="button" data-atlas="manque-de-la-fiche" onClick={() => aller(x.etape, x.bloc)} className="flex min-h-[56px] w-full items-start gap-[13px] py-3 text-left">
+                      <span aria-hidden="true" className="mt-[1px] h-[22px] w-[22px] flex-none rounded-full" style={{ boxShadow: `inset 0 0 0 2px ${colors.carteAmbreTexte}` }} />
                       <span className="min-w-0 flex-1">
-                        <span className="block text-[14.5px]" style={{ color: colors.ink }}>{x.quoi}</span>
-                        <span className="mt-0.5 block text-[12.5px] leading-[1.4]" style={{ color: colors.orTexte }}>{x.faire}</span>
+                        <span className="block text-[16px] font-semibold" style={{ color: colors.ink }}>{x.quoi}</span>
+                        <span className="mt-[3px] block text-[14px] leading-[1.4]" style={{ color: colors.carteAmbreTexte }}>{x.faire}</span>
                       </span>
-                      <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true" className="flex-none" style={{ color: colors.muted }}><path d="M7.5 4l6 6-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                      <Chevron />
                     </button>
-                  </li>
-                ))}
-              </ul>
-            </Bloc>
-          ) : (
-            <Bloc id="minimum-legal" titre="Le minimum légal">
-              <div className="flex min-h-[44px] items-center gap-2.5 text-[14.5px]" style={{ color: colors.rust }}>
-                <span aria-hidden="true" className="grid h-[22px] w-[22px] flex-none place-items-center rounded-full" style={{ background: colors.plein, color: surPlein }}><Coche /></span>
-                Tout ce que la loi exige est rempli
-              </div>
-            </Bloc>
-          )}
+                  )}
+                </li>
+              ))}
+            </ul>
+          </Bloc>
           <Bloc id="enregistrement" titre="Signature du chef d’entreprise" explication="Le chef d’entreprise signe. Sa signature engage sa responsabilité. Ensuite, chaque personne de l’équipe signera l’avoir lue, sur ce téléphone.">
             <Champ nom="Nom et prénom du chef d’entreprise (ou de son représentant)" {...champ("signataire")} />
             <Fixe nom="Date">{dateLongue(new Date())}</Fixe>
-            <div className="mt-2.5">
+            <div className="mt-3.5">
               <Signature trace={trace} onTrace={setTrace} />
             </div>
-            {refus && <p className="m-0 mt-2 text-[13px] font-semibold" style={{ color: colors.alert }}>{refus}</p>}
           </Bloc>
         </>
       )}
@@ -988,6 +994,7 @@ export default function FormulaireFicheDeSecurite({
         />
       )}
     </Cadre>
+    </EtatDesParties.Provider>
   );
 }
 
@@ -1001,7 +1008,7 @@ function FeuilletDesCompetences({ personne, onChange, onRetirer, onFermer }: { p
     <div className="fixed inset-0 z-[60] flex items-end" style={{ background: voile(colors.ink, 0.35) }}>
       <div data-atlas="feuillet-des-competences" className="max-h-[88%] w-full overflow-y-auto rounded-t-[20px] px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-[18px]" style={{ background: colors.cream }}>
         <Champ nom="Nom et prénom" value={personne.nom} placeholder="Exemple : Kevin Morel" onChange={(e) => onChange({ ...personne, nom: e.target.value })} />
-        <Aide haut>Formations et diplômes</Aide>
+        <SousTitre>Formations et diplômes</SousTitre>
         <div className="flex flex-wrap gap-1.5">
           {[...FORMATIONS, ...personne.formations.filter((f) => !(FORMATIONS as readonly string[]).includes(f))].map((f) => (
             <Pastille key={f} active={personne.formations.includes(f)} onClick={() => onChange({ ...personne, formations: basculer(personne.formations, f) })}>{f}</Pastille>
@@ -1013,9 +1020,9 @@ function FeuilletDesCompetences({ personne, onChange, onRetirer, onFermer }: { p
           <Champ nom="GSA obtenu le" type="date" value={personne.gsa} onChange={(e) => onChange({ ...personne, gsa: e.target.value })} />
         </div>
         <Aide haut>Les 24 mois se comptent tout seuls. Gardé pour vos prochaines fiches.</Aide>
-        <div className="mt-2 grid grid-cols-2 gap-2">
+        <div className="mt-3 grid grid-cols-2 gap-2.5 [&>*]:mt-0">
           <Creux onClick={onRetirer}>Retirer de l’équipe</Creux>
-          <Vert pleine data-atlas="valider-les-competences" onClick={onFermer}>Valider</Vert>
+          <Vert data-atlas="valider-les-competences" onClick={onFermer}>Valider</Vert>
         </div>
       </div>
     </div>
@@ -1026,33 +1033,33 @@ function AjoutDeFormation({ onValider }: { onValider: (mot: string) => void }) {
   const [mot, setMot] = useState("");
   return (
     <div className="mt-2 flex gap-2">
-      <input type="text" autoComplete="off" value={mot} placeholder="Exemple : CACES grue" onChange={(e) => setMot(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); onValider(mot); setMot(""); } }} className="min-h-[46px] min-w-0 flex-1 rounded-[10px] border-0 px-3 py-2.5 text-[16px] outline-none" style={{ background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}`, color: colors.ink, caretColor: colors.or }} />
-      <button type="button" onClick={() => { onValider(mot); setMot(""); }} className="flex min-h-[46px] items-center justify-center rounded-full px-[18px] text-[15px]" style={{ fontFamily: font.display, background: colors.plein, color: surPlein }}>Ajouter</button>
+      <input type="text" autoComplete="off" value={mot} placeholder="Exemple : CACES grue" onChange={(e) => setMot(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); onValider(mot); setMot(""); } }} className="min-h-[52px] min-w-0 flex-1 rounded-[6px] border-0 px-[15px] py-3 text-[16px] outline-none" style={{ background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}`, color: colors.ink, caretColor: colors.or }} />
+      <button type="button" onClick={() => { onValider(mot); setMot(""); }} className="flex min-h-[52px] items-center justify-center rounded-full px-5 text-[16px] font-semibold" style={{ background: colors.plein, color: surPlein }}>Ajouter</button>
     </div>
   );
 }
 
 function Personnage({ nom, detail, signe, image }: { nom: string; detail: string; signe?: boolean; image?: string }) {
   return (
-    <div className="flex min-h-[52px] items-center gap-3 border-t py-1.5 first:border-t-0" style={{ borderColor: colors.lineSoft }}>
-      <span aria-hidden="true" className="grid h-6 w-6 flex-none place-items-center rounded-full" style={{ background: signe ? colors.plein : "transparent", color: surPlein, boxShadow: signe ? "none" : `inset 0 0 0 1.5px ${colors.vertPale}` }}><Coche /></span>
+    <div className="flex min-h-[64px] items-center gap-[13px] border-t py-2.5 first:border-t-0" style={{ borderColor: colors.lineSoft }}>
+      <RondCoche cochee={Boolean(signe)} />
       <span className="min-w-0 flex-1">
-        <span className="block text-[15px]">{nom}</span>
-        <span className="block text-[12px]" style={{ color: colors.muted }}>{detail}</span>
+        <span className="block text-[18px] leading-[1.25]" style={{ fontFamily: font.display }}>{nom}</span>
+        <span className="mt-0.5 block text-[14px] leading-[1.4]" style={{ color: colors.inkSoft }}>{detail}</span>
       </span>
       {image && <img src={image} alt={`Signature de ${nom}`} className="h-10 w-[84px] flex-none rounded-[6px] object-contain" style={{ background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.lineSoft}` }} />}
     </div>
   );
 }
-
-function Destinataire({ titre, obligation, libre, children }: { titre: string; obligation?: string; libre?: boolean; children: React.ReactNode }) {
+/** Un destinataire de la fiche : son nom, ce que la loi en dit, sans encadré autour (la planche du 6 novembre). */
+function Destinataire({ titre, obligation, ton, children }: { titre: string; obligation?: string; ton?: "ambre" | "vert" | "neutre"; children: React.ReactNode }) {
   return (
-    <div className="mt-2.5 rounded-[14px] px-3.5 py-3 first:mt-0" style={{ background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
-      <p className="m-0 flex flex-wrap items-center gap-2">
-        <span className="text-[17px] leading-[1.2]" style={{ fontFamily: font.display }}>{titre}</span>
-        {obligation && <span className="rounded-full px-2 py-0.5 text-[11.5px] font-semibold" style={{ background: libre ? voile(colors.plein, 0.16) : voile(colors.or, 0.13), color: libre ? colors.rust : colors.orTexte }}>{obligation}</span>}
+    <div className="border-t py-4 first:border-t-0 first:pt-0" style={{ borderColor: colors.line }}>
+      <p className="m-0 flex flex-wrap items-start justify-between gap-x-2.5 gap-y-1.5">
+        <span className="text-[18px] leading-[1.25]" style={{ fontFamily: font.display }}>{titre}</span>
+        {obligation && <Etiquette ton={ton ?? "neutre"}>{obligation}</Etiquette>}
       </p>
-      <div className="mt-1.5 text-[14px] leading-[1.45]" style={{ color: colors.inkSoft }}>{children}</div>
+      <div className="mt-1.5 text-[15px] leading-[1.45]" style={{ color: colors.ink }}>{children}</div>
     </div>
   );
 }
@@ -1067,35 +1074,22 @@ function Groupe({ contenu, setContenu, enCours, setEnCours, famille, genre, sous
   const liste = libellesAvecLesSiens(contenu, famille);
   const enPastilles = genre === "pastilles";
   return (
-    <div data-atlas={`groupe-${famille}`} className={enPastilles ? "flex flex-wrap gap-1.5" : ""}>
+    <div data-atlas={`groupe-${famille}`} className={enPastilles ? "flex flex-wrap gap-2" : ""}>
       {liste.map((libelle) => {
         const cochee = estCoche(contenu, famille, libelle);
         const liens = SOULIGNES[libelle];
         const texte = liens ? avecLiens(libelle, liens) : libelle;
         const basculer = () => setContenu((c) => cocher(c, famille, libelle));
-        const contenuDeLaCase = enPastilles ? (
+        const contenuDeLaCase = (
           <>
-            <span aria-hidden="true" className="grid h-[18px] w-[18px] flex-none place-items-center rounded-full" style={{ background: cochee ? colors.plein : "transparent", boxShadow: cochee ? "none" : `inset 0 0 0 1.5px ${colors.vertPale}`, color: cochee ? surPlein : "transparent" }}>
-              <Coche />
-            </span>
-            <span>{texte}</span>
-          </>
-        ) : (
-          <>
-            <span aria-hidden="true" className="mt-[-1px] grid h-6 w-6 flex-none place-items-center rounded-full" style={{ background: cochee ? colors.plein : colors.card, boxShadow: cochee ? "none" : `inset 0 0 0 1.5px ${colors.vertPale}`, color: cochee ? surPlein : "transparent" }}>
-              <Coche />
-            </span>
-            <span className="min-w-0 flex-1">{texte}</span>
+            <RondCoche cochee={cochee} />
+            <span className={enPastilles ? "" : "min-w-0 flex-1"}>{texte}</span>
           </>
         );
-        const classe = enPastilles
-          ? "inline-flex min-h-[44px] items-center gap-[7px] rounded-full py-2 pl-3 pr-3.5 text-left text-[14px] leading-[1.2]"
-          : "flex min-h-[44px] w-full items-start gap-3 py-[6px] text-left text-[14.5px] leading-[1.45]";
-        const style = enPastilles
-          ? { background: cochee ? voile(colors.plein, 0.16) : colors.card, boxShadow: `inset 0 0 0 ${cochee ? "1.5px" : "1px"} ${cochee ? colors.plein : colors.line}`, color: colors.ink }
-          : { color: colors.ink };
+        const classe = enPastilles ? CLASSE_PASTILLE : CLASSE_CASE;
+        const style = enPastilles ? stylePastille(cochee) : styleCase(cochee);
         return (
-          <span key={libelle} className={enPastilles ? "contents" : "block"}>
+          <span key={libelle} className={enPastilles ? "contents" : "block border-t first:border-t-0"} style={enPastilles ? undefined : { borderColor: colors.lineSoft }}>
             {liens ? (
               // Un lien dans un bouton n'est pas permis : la ligne est une boîte,
               // le mot souligné ouvre le site, tout le reste coche.
@@ -1124,7 +1118,7 @@ function Groupe({ contenu, setContenu, enCours, setEnCours, famille, genre, sous
                 {contenuDeLaCase}
               </button>
             )}
-            {sous?.[libelle] && cochee && <div className={enPastilles ? "basis-full pl-[18px]" : "pl-9"}>{sous[libelle]}</div>}
+            {sous?.[libelle] && cochee && <div className={enPastilles ? "basis-full pl-[22px]" : "pb-2 pl-[35px]"}>{sous[libelle]}</div>}
           </span>
         );
       })}
@@ -1135,8 +1129,8 @@ function Groupe({ contenu, setContenu, enCours, setEnCours, famille, genre, sous
           type="button"
           data-atlas={`ajouter-${famille}`}
           onClick={() => setEnCours(famille)}
-          className={`${enPastilles ? "inline-flex" : "mt-1 inline-flex"} min-h-[44px] items-center gap-1.5 rounded-full py-2 pl-2.5 pr-3.5 text-[14px]`}
-          style={{ background: voile(colors.plein, 0.16), color: colors.rust, boxShadow: `inset 0 0 0 1px ${colors.vertPale}` }}
+          className={`${enPastilles ? "inline-flex" : "mt-2 inline-flex"} min-h-[48px] items-center gap-2 rounded-full py-2.5 pl-3 pr-4 text-[15.5px] font-semibold`}
+          style={{ color: colors.rust, boxShadow: `inset 0 0 0 1.5px ${colors.vertPale}` }}
         >
           <Plus /> Ajouter
         </button>
@@ -1239,62 +1233,104 @@ function Cadre({ entete, pied, children }: { entete?: React.ReactNode; pied: Rea
     </div>
   );
 }
-function Vert({ children, onClick, disabled, pleine, ...reste }: { children: React.ReactNode; onClick: () => void; disabled?: boolean; pleine?: boolean; "data-atlas"?: string }) {
+/**
+ * LES BOUTONS DE LA FICHE, D'APRÈS SA PLANCHE DU 6 NOVEMBRE 2026 : une seule
+ * écriture pour tous (Suivant et Signer étaient en serif, Ajouter non), 56 points
+ * de haut, sur toute la largeur. Le plein dit l'action de l'écran ; grisé, il
+ * reste touchable pour DIRE ce qui manque (`signer`, `finaliser`).
+ */
+const CLASSE_BOUTON = "flex min-h-[56px] w-full items-center justify-center rounded-full px-5 text-center text-[17px] font-semibold leading-[1.2] no-underline transition-opacity";
+const styleCreux: React.CSSProperties = { color: colors.ink, boxShadow: `inset 0 0 0 1.5px ${colors.line}` };
+function Vert({ children, onClick, disabled, grise, ...reste }: { children: React.ReactNode; onClick: () => void; disabled?: boolean; grise?: boolean; "data-atlas"?: string }) {
   return (
-    <button type="button" {...reste} disabled={disabled} onClick={onClick} className={`${pleine ? "w-full" : "mx-auto w-max max-w-full px-[26px]"} flex min-h-[46px] items-center justify-center gap-2 rounded-full text-[15.5px] transition-opacity`} style={{ fontFamily: font.display, background: colors.plein, color: surPlein, opacity: disabled ? 0.45 : 1 }}>
+    <button type="button" {...reste} aria-disabled={grise || undefined} disabled={disabled} onClick={onClick} className={CLASSE_BOUTON} style={{ background: grise ? colors.line : colors.plein, color: grise ? colors.inkSoft : surPlein, opacity: disabled ? 0.45 : 1 }}>
       {children}
     </button>
   );
 }
-function Bloc({ id, titre, precision, explication, children }: { id: string; titre: string; precision?: string; explication?: string; children: React.ReactNode }) {
+/** La phrase d'un refus, juste au-dessus du bouton qui l'a provoqué : là où le doigt vient de toucher. */
+function Refus({ children }: { children: string | null }) {
+  if (!children) return null;
+  return <p role="status" className="m-0 mb-2.5 text-center text-[14px] font-semibold leading-[1.4]" style={{ color: colors.alert }}>{children}</p>;
+}
+
+/**
+ * CE QUE LA LOI EXIGE, PARTIE PAR PARTIE — « À remplir » ou « Fait » à côté du
+ * titre, dès l'ouverture (sa réponse du 6 novembre 2026). L'écran ne décide de
+ * rien : la valeur vient de `etatDesParties`, la règle même qui refuse la
+ * signature. Une partie absente n'est qu'un conseil et ne porte rien.
+ */
+const EtatDesParties = createContext<Partial<Record<string, boolean>>>({});
+function Etiquette({ ton, children }: { ton: "ambre" | "vert" | "neutre"; children: React.ReactNode }) {
+  const fond = ton === "ambre" ? colors.carteAmbreFond : ton === "vert" ? colors.carteVertFond : voile(colors.ink, 0.06);
+  const encre = ton === "ambre" ? colors.carteAmbreTexte : ton === "vert" ? colors.carteVertTexte : colors.inkSoft;
   return (
-    <div id={`bloc-${id}`} className="mt-4 scroll-mt-[96px] border-t pt-3.5 first-of-type:mt-2 first-of-type:border-t-0 first-of-type:pt-0" style={{ borderColor: colors.lineSoft }}>
-      <p className="m-0 mb-2 text-[10px] font-semibold uppercase leading-none tracking-[0.16em]" style={{ color: colors.ink }}>
-        {titre}
-        {precision && <span className="ml-1.5 text-[11.5px] font-medium normal-case tracking-[0.02em]" style={{ color: colors.muted }}>{precision}</span>}
-      </p>
-      {explication && <p className="m-0 mb-3 mt-[-2px] text-[14px] leading-[1.45]" style={{ color: colors.inkSoft }}>{explication}</p>}
+    <span data-atlas="etat-de-la-partie" className="inline-flex min-h-[28px] flex-none items-center gap-[7px] whitespace-nowrap rounded-full px-[11px] text-[13.5px] font-semibold leading-none tabular-nums" style={{ background: fond, color: encre }}>
+      <span aria-hidden="true" className="h-[7px] w-[7px] flex-none rounded-full" style={{ background: "currentColor" }} />
       {children}
-    </div>
+    </span>
+  );
+}
+function Bloc({ id, titre, precision, explication, etiquette, children }: { id: string; titre: string; precision?: string; explication?: string; etiquette?: React.ReactNode; children: React.ReactNode }) {
+  const fait = useContext(EtatDesParties)[id];
+  const etat = etiquette ?? (fait === undefined ? null : <Etiquette ton={fait ? "vert" : "ambre"}>{fait ? "Fait" : "À remplir"}</Etiquette>);
+  return (
+    <section id={`bloc-${id}`} className="mt-[26px] scroll-mt-[120px] border-t pt-[26px] first-of-type:mt-3.5 first-of-type:border-t-0 first-of-type:pt-0" style={{ borderColor: colors.line }}>
+      <div className="flex items-start gap-2.5">
+        <h3 className="m-0 min-w-0 flex-1 text-[21px] font-normal leading-[1.22]" style={{ fontFamily: font.display }}>
+          {titre}
+          {precision && <span className="text-[15px]" style={{ fontFamily: font.body, color: colors.inkSoft }}> {precision}</span>}
+        </h3>
+        {etat && <span className="mt-[1px] flex-none">{etat}</span>}
+      </div>
+      {explication && <p className="m-0 mt-1.5 text-[15px] leading-[1.45]" style={{ color: colors.inkSoft }}>{explication}</p>}
+      <div className="mt-3.5">{children}</div>
+    </section>
   );
 }
 function Aide({ children, haut }: { children: React.ReactNode; haut?: boolean }) {
-  return <p className={`m-0 mb-2.5 text-[12.5px] leading-[1.45] ${haut ? "mt-3" : ""}`} style={{ color: colors.muted }}>{children}</p>;
+  return <p className={`m-0 mb-2.5 text-[14px] leading-[1.45] ${haut ? "mt-3" : ""}`} style={{ color: colors.inkSoft }}>{children}</p>;
+}
+/** Un titre à l'intérieur d'une partie (« Moyens d'élévation ») : il se lit comme un titre, pas comme une note. */
+function SousTitre({ children }: { children: React.ReactNode }) {
+  return <p className="m-0 mb-2.5 mt-[22px] text-[15.5px] font-semibold leading-[1.3] first:mt-0" style={{ color: colors.ink }}>{children}</p>;
 }
 function Vigilance({ children }: { children: React.ReactNode }) {
   return (
-    <p className="m-0 my-2 pl-3 text-[13.5px] leading-[1.45]" style={{ color: colors.inkSoft, borderLeft: `2px solid ${colors.or}` }}>
-      <b className="mr-1 font-semibold" style={{ color: colors.orTexte }}>Point de vigilance</b>
-      {children}
+    <p className="m-0 my-3 flex gap-2.5 text-[14.5px] leading-[1.45]" style={{ color: colors.inkSoft }}>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" aria-hidden="true" className="mt-[1px] flex-none" style={{ color: colors.or }}><circle cx="12" cy="12" r="8.5" /><path d="M12 11v5M12 8h.01" /></svg>
+      <span><b className="mr-1 font-semibold" style={{ color: colors.orTexte }}>Point de vigilance</b>{children}</span>
     </p>
   );
 }
 function Loi({ children }: { children: React.ReactNode }) {
-  return <p className="m-0 mt-3 text-[15px] leading-[1.5]">{children}</p>;
+  return <p className="m-0 mt-3.5 text-[16px] leading-[1.5]">{children}</p>;
 }
 function LienDeLaLoi({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <a href={href} target="_blank" rel="noopener" className="flex min-h-[48px] items-center rounded-full px-5 text-[15px] font-semibold no-underline" style={{ background: colors.card, color: colors.rust, boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
+    <a href={href} target="_blank" rel="noopener" className={`${CLASSE_BOUTON} gap-2.5`} style={styleCreux}>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ color: colors.or }}><path d="M6.5 3.5H14l4 4v13H6.5z" /><path d="M14 3.5v4h4M9.5 12.5h5M9.5 16h5" /></svg>
       {children}
     </a>
   );
 }
 function Consigne({ numero, children }: { numero: number; children: React.ReactNode }) {
   return (
-    <li className="relative py-1 pl-[26px] text-[14px] leading-[1.45]">
-      <span aria-hidden="true" className="absolute left-0 top-[5px] grid h-[18px] w-[18px] place-items-center rounded-full text-[11px] font-bold" style={{ background: voile(colors.or, 0.13), color: colors.orTexte }}>{numero}</span>
+    <li className="relative py-[5px] pl-8 text-[15.5px] leading-[1.45]">
+      <span aria-hidden="true" className="absolute left-0 top-[6px] grid h-[22px] w-[22px] place-items-center rounded-full text-[12.5px] font-bold" style={{ background: voile(colors.or, 0.15), color: colors.orTexte }}>{numero}</span>
       {children}
     </li>
   );
 }
 function TitreDeConsigne({ children }: { children: React.ReactNode }) {
-  return <p className="m-0 mb-1 mt-3.5 text-[16px] font-semibold leading-[1.2] first:mt-0" style={{ fontFamily: font.display }}>{children}</p>;
+  return <p className="m-0 mb-1.5 mt-4 text-[18px] leading-[1.2] first:mt-0" style={{ fontFamily: font.display }}>{children}</p>;
 }
+/** Ce qu'Atlas a déjà, d'après le chantier : un texte, pas une case, pour qu'on ne croie pas pouvoir le changer. */
 function Fixe({ nom, children, vide }: { nom: string; children: React.ReactNode; vide?: boolean }) {
   return (
-    <div className="mt-2.5 first:mt-0">
-      {nom && <span className="mb-[3px] block text-[12.5px]" style={{ color: colors.muted }}>{nom}</span>}
-      <span className="flex min-h-[46px] items-center rounded-[10px] px-3 py-2.5 text-[16px] leading-[1.4]" style={{ background: colors.rustTint, boxShadow: `inset 0 0 0 1px ${colors.lineSoft}`, color: vide ? colors.muted : colors.ink, fontStyle: vide ? "italic" : "normal" }}>{children}</span>
+    <div className="mt-3.5 first:mt-0">
+      {nom && <span className="block text-[14px] font-semibold" style={{ color: colors.inkSoft }}>{nom}</span>}
+      <span className="mt-0.5 block leading-[1.3]" style={vide ? { fontSize: 16, fontStyle: "italic", color: colors.inkSoft } : { fontSize: 18, fontFamily: font.display, color: colors.ink }}>{children}</span>
     </div>
   );
 }
@@ -1314,19 +1350,23 @@ function Champ({ nom, lignes, type, ...reste }: { nom: string; lignes?: number; 
   // prochain `type` que le téléphone décidera d’habiller. `appearance: none`
   // reste pour que le CHAMP, lui, garde nos mesures.
   const dedans = { color: colors.ink, caretColor: colors.or, WebkitAppearance: "none", appearance: "none", background: "transparent" } as const;
-  const classe = "block w-full min-h-[46px] rounded-[10px] border-0 px-3 py-2.5 text-[16px] leading-[1.4] outline-none";
+  const classe = "block w-full min-h-[52px] rounded-[6px] border-0 px-[15px] py-3.5 text-[16px] leading-[1.4] outline-none";
   return (
-    <label className="mt-2.5 block first:mt-0">
-      {nom && <span className="mb-[3px] block text-[12.5px]" style={{ color: colors.muted }}>{nom}</span>}
-      <span className="block rounded-[10px]" style={{ background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
+    <label className="mt-4 block first:mt-0">
+      {nom && <span className="mb-[7px] block text-[14.5px] font-semibold leading-[1.35]" style={{ color: colors.inkSoft }}>{nom}</span>}
+      <span className="block rounded-[6px]" style={{ background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
         {lignes ? <textarea rows={lignes} className={`${classe} resize-none`} style={dedans} {...reste} /> : <input type={type ?? "text"} autoComplete="off" className={classe} style={dedans} {...reste} />}
       </span>
     </label>
   );
 }
+/** Deux réponses côte à côte : la plage glisse sous celle qui est prise. */
+function Paire({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <div className={`grid grid-cols-2 gap-1 rounded-full p-1 ${className ?? ""}`} style={{ background: voile(colors.ink, 0.06) }}>{children}</div>;
+}
 function Choix({ actif, onClick, children }: { actif: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button type="button" aria-pressed={actif} onClick={onClick} className="flex min-h-[46px] items-center justify-center rounded-full px-2.5 py-1.5 text-center text-[14.5px] leading-[1.2]" style={{ background: actif ? voile(colors.plein, 0.16) : colors.card, boxShadow: `inset 0 0 0 ${actif ? "1.5px" : "1px"} ${actif ? colors.rust : colors.line}`, color: actif ? colors.rust : colors.ink, fontWeight: actif ? 600 : 400 }}>
+    <button type="button" aria-pressed={actif} onClick={onClick} className="flex min-h-[46px] items-center justify-center rounded-full px-2.5 py-1.5 text-center text-[15px] font-semibold leading-[1.2]" style={{ background: actif ? colors.card : "transparent", boxShadow: actif ? `inset 0 0 0 1.5px ${colors.rust}` : "none", color: actif ? colors.ink : colors.inkSoft }}>
       {children}
     </button>
   );
@@ -1340,9 +1380,11 @@ function Compteur({ signe, onClick }: { signe: "plus" | "moins"; onClick: () => 
 }
 function Rappel({ titre, lignes }: { titre: string; lignes: readonly (readonly [string, string])[] }) {
   return (
-    <div className="mb-3 rounded-[10px] px-3 py-2.5 text-[13.5px] leading-[1.5]" style={{ background: voile(colors.or, 0.13), color: colors.inkSoft }}>
-      <b className="font-semibold" style={{ color: colors.ink }}>{titre}</b>
-      <table className="w-full border-collapse"><tbody>{lignes.map(([a, b]) => <tr key={a}><td className="py-[2px] align-top">{a}</td><td className="py-[2px] text-right align-top font-semibold" style={{ color: colors.ink }}>{b}</td></tr>)}</tbody></table>
+    <div className="mb-3 rounded-[6px] px-4 py-3.5" style={{ background: colors.carteAmbreFond }}>
+      <b className="mb-2 block text-[14.5px] font-bold" style={{ color: colors.ink }}>{titre}</b>
+      {lignes.map(([a, b]) => (
+        <p key={a} className="m-0 py-1 text-[15px] leading-[1.4]" style={{ color: colors.ink }}><span className="font-semibold">{a}</span> : {b}.</p>
+      ))}
     </div>
   );
 }
@@ -1353,8 +1395,8 @@ function AjoutEnCours({ famille, onValider }: { famille: Famille; onValider: (mo
   const exemples: Partial<Record<Famille, string>> = { matieres: "Exemple : nid de frelons", travaux: "Exemple : taille de réduction", biologique: "Exemple : rats", balisage: "Exemple : sortie du garage bloquée", environnement: "Exemple : pente forte", coactivite: "Exemple : livraison prévue à 10 h", secours: "Exemple : couverture de survie", meteo: "Exemple : on arrête dès 40 km/h de vent" };
   return (
     <div className="mt-2 flex w-full basis-full gap-2">
-      <input ref={champ} type="text" autoComplete="off" data-atlas={`mot-ajoute-${famille}`} value={mot} placeholder={exemples[famille] ?? "Exemple : camion-grue"} onChange={(e) => setMot(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); onValider(mot); } }} className="min-h-[46px] min-w-0 flex-1 rounded-[10px] border-0 px-3 py-2.5 text-[16px] outline-none" style={{ background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.or}`, color: colors.ink, caretColor: colors.or }} />
-      <button type="button" data-atlas={`valider-ajout-${famille}`} onClick={() => onValider(mot)} className="flex min-h-[46px] items-center justify-center rounded-full px-[18px] text-[15px]" style={{ fontFamily: font.display, background: colors.plein, color: surPlein }}>Ajouter</button>
+      <input ref={champ} type="text" autoComplete="off" data-atlas={`mot-ajoute-${famille}`} value={mot} placeholder={exemples[famille] ?? "Exemple : camion-grue"} onChange={(e) => setMot(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); onValider(mot); } }} className="min-h-[52px] min-w-0 flex-1 rounded-[6px] border-0 px-[15px] py-3 text-[16px] outline-none" style={{ background: colors.card, boxShadow: `inset 0 0 0 1.5px ${colors.or}`, color: colors.ink, caretColor: colors.or }} />
+      <button type="button" data-atlas={`valider-ajout-${famille}`} onClick={() => onValider(mot)} className="flex min-h-[52px] items-center justify-center rounded-full px-5 text-[16px] font-semibold" style={{ background: colors.plein, color: surPlein }}>Ajouter</button>
     </div>
   );
 }
@@ -1363,6 +1405,18 @@ function Coche() {
 }
 function Plus() {
   return <svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 4v12M4 10h12" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" /></svg>;
+}
+function Chevron() {
+  return <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true" className="flex-none" style={{ color: colors.chevron }}><path d="M7.5 4l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+}
+function Crayon() {
+  return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4.5 19.5l1-4.3L15.6 5.1a2.1 2.1 0 0 1 3 3L8.5 18.5z" /><path d="M13.5 7.2l3 3" /></svg>;
+}
+function Importer() {
+  return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M5 15v4.5h14V15" /></svg>;
+}
+function Telephone() {
+  return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6.6 3.5h2.9l1.5 4.4-2 1.3a11 11 0 0 0 5.8 5.8l1.3-2 4.4 1.5v2.9a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.6 5.7a2 2 0 0 1 2-2.2z" /></svg>;
 }
 function Cible() {
   return <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true"><circle cx="10" cy="10" r="5.5" /><circle cx="10" cy="10" r="1.6" /><path d="M10 1.5v3M10 15.5v3M1.5 10h3M15.5 10h3" /></svg>;
@@ -1373,41 +1427,74 @@ function Appareil() {
 
 function Creux({ children, onClick, disabled, ...reste }: { children: React.ReactNode; onClick: () => void; disabled?: boolean; "data-atlas"?: string }) {
   return (
-    <button type="button" {...reste} disabled={disabled} onClick={onClick} className="mt-2.5 flex min-h-[46px] w-full items-center justify-center rounded-full px-2.5 text-[15px]" style={{ fontFamily: font.display, color: colors.rust, boxShadow: `inset 0 0 0 1.5px ${colors.vertPale}`, opacity: disabled ? 0.45 : 1 }}>
+    <button type="button" {...reste} disabled={disabled} onClick={onClick} className={`mt-3 ${CLASSE_BOUTON}`} style={{ ...styleCreux, opacity: disabled ? 0.45 : 1 }}>
       {children}
     </button>
   );
 }
+/** « Ajouter un responsable », « Une personne » : un mot qu'on touche, pas un second bouton plein. */
 function Ajout({ children, onClick, ...reste }: { children: React.ReactNode; onClick: () => void; "data-atlas"?: string }) {
   return (
-    <button type="button" {...reste} onClick={onClick} className="mt-2.5 inline-flex min-h-[44px] items-center gap-1.5 rounded-full py-2 pl-2.5 pr-3.5 text-[14px]" style={{ background: voile(colors.plein, 0.16), color: colors.rust, boxShadow: `inset 0 0 0 1px ${colors.vertPale}` }}>
+    <button type="button" {...reste} onClick={onClick} className="mt-2 inline-flex min-h-[48px] items-center gap-2 px-0.5 text-[16px] font-semibold" style={{ color: colors.rust }}>
       <Plus /> {children}
     </button>
   );
 }
+
+/*
+ * LES CASES DE LA FICHE, D'UNE SEULE FAÇON. La pastille (un mot court) et la
+ * ligne (une phrase de la MSA) partagent leur rond et leur état coché, que
+ * `Groupe` emploie aussi : trois dessins écrits à la main avaient fini par ne
+ * plus se ressembler. Cochée, la case se voit au soleil : fond vert, mot gras.
+ */
+const CLASSE_PASTILLE = "inline-flex min-h-[48px] max-w-full items-center gap-[9px] rounded-full py-2.5 pl-3 pr-4 text-left text-[15.5px] leading-[1.25]";
+const CLASSE_CASE = "flex min-h-[52px] w-full items-start gap-[13px] py-[13px] text-left text-[16px] leading-[1.4]";
+function stylePastille(cochee: boolean): React.CSSProperties {
+  return { background: cochee ? colors.carteVertFond : colors.card, boxShadow: `inset 0 0 0 ${cochee ? "1.5px" : "1px"} ${cochee ? colors.plein : colors.line}`, color: colors.ink, fontWeight: cochee ? 600 : 400 };
+}
+function styleCase(cochee: boolean): React.CSSProperties {
+  return { color: colors.ink, fontWeight: cochee ? 600 : 400 };
+}
+function RondCoche({ cochee }: { cochee: boolean }) {
+  return (
+    <span aria-hidden="true" className="grid h-[22px] w-[22px] flex-none place-items-center rounded-full" style={{ background: cochee ? colors.plein : "transparent", boxShadow: cochee ? "none" : `inset 0 0 0 1.5px ${colors.chevron}`, color: cochee ? surPlein : "transparent" }}>
+      <Coche />
+    </span>
+  );
+}
 function Pastille({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button type="button" aria-pressed={active} onClick={onClick} className="inline-flex min-h-[44px] items-center gap-[7px] rounded-full py-2 pl-3 pr-3.5 text-left text-[14px] leading-[1.2]" style={{ background: active ? voile(colors.plein, 0.16) : colors.card, boxShadow: `inset 0 0 0 ${active ? "1.5px" : "1px"} ${active ? colors.plein : colors.line}`, color: colors.ink }}>
-      <span aria-hidden="true" className="grid h-[18px] w-[18px] flex-none place-items-center rounded-full" style={{ background: active ? colors.plein : "transparent", boxShadow: active ? "none" : `inset 0 0 0 1.5px ${colors.vertPale}`, color: active ? surPlein : "transparent" }}><Coche /></span>
+    <button type="button" aria-pressed={active} onClick={onClick} className={CLASSE_PASTILLE} style={stylePastille(active)}>
+      <RondCoche cochee={active} />
       {children}
     </button>
   );
 }
 function Case({ cochee, onClick, children }: { cochee: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button type="button" aria-pressed={cochee} onClick={onClick} className="mt-1.5 flex min-h-[44px] w-full items-start gap-3 py-[6px] text-left text-[14.5px] leading-[1.45]" style={{ color: colors.ink }}>
-      <span aria-hidden="true" className="mt-[-1px] grid h-6 w-6 flex-none place-items-center rounded-full" style={{ background: cochee ? colors.plein : colors.card, boxShadow: cochee ? "none" : `inset 0 0 0 1.5px ${colors.vertPale}`, color: cochee ? surPlein : "transparent" }}><Coche /></span>
+    <button type="button" aria-pressed={cochee} onClick={onClick} className={CLASSE_CASE} style={styleCase(cochee)}>
+      <RondCoche cochee={cochee} />
       <span className="min-w-0 flex-1">{children}</span>
+    </button>
+  );
+}
+/** Une façon de faire le croquis : une ligne qu'on touche. Le seul bouton plein de l'écran reste Suivant. */
+function Facon({ icone, children, ...reste }: { icone: React.ReactNode; children: React.ReactNode; onClick: () => void; "data-atlas"?: string }) {
+  return (
+    <button type="button" {...reste} className="flex min-h-[64px] w-full items-center gap-3.5 border-t py-2.5 text-left first:border-t-0" style={{ borderColor: colors.line }}>
+      <span aria-hidden="true" className="grid h-10 w-10 flex-none place-items-center rounded-[12px]" style={{ background: voile(colors.or, 0.12), color: colors.or }}>{icone}</span>
+      <span className="min-w-0 flex-1 text-[18px] leading-[1.25]" style={{ fontFamily: font.display }}>{children}</span>
+      <Chevron />
     </button>
   );
 }
 function Carte({ titre, precision, onRetirer, children }: { titre: string; precision?: string; onRetirer: () => void; children: React.ReactNode }) {
   return (
-    <div className="mt-2.5 rounded-[14px] px-3.5 py-3" style={{ background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
+    <div className="mt-3 rounded-[6px] px-4 py-3.5" style={{ background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
       <div className="flex items-baseline gap-2">
-        <span className="min-w-0 flex-1 text-[17px] leading-[1.2]" style={{ fontFamily: font.display }}>{titre}</span>
-        {precision && <span className="flex-none text-[12px]" style={{ color: colors.muted }}>{precision}</span>}
-        <button type="button" onClick={onRetirer} className="min-h-[40px] flex-none px-1 text-[13px] font-bold" style={{ color: colors.alert }}>Retirer</button>
+        <span className="min-w-0 flex-1 text-[18px] leading-[1.25]" style={{ fontFamily: font.display }}>{titre}</span>
+        {precision && <span className="flex-none text-[14px]" style={{ color: colors.inkSoft }}>{precision}</span>}
+        <button type="button" onClick={onRetirer} className="min-h-[44px] flex-none px-1 text-[15px] font-semibold" style={{ color: colors.alert }}>Retirer</button>
       </div>
       {children}
     </div>

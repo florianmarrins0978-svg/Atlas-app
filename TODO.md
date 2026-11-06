@@ -34,49 +34,35 @@ pour lui : `docs/A-FAIRE.md` point 18.
 dans `src/server/pdf/avoir-pdf.ts`. La seconde doit d'abord prendre la
 première (`CLAUDE.md` §3), sinon l'avoir gardera l'ancienne phrase.
 
-## ⏳ À CHOISIR PAR LUI (6 novembre 2026) : la fiche de sécurité soignée, l'écran et le PDF
+## ~~⏳ À CHOISIR PAR LUI (6 novembre 2026) : la fiche de sécurité soignée, l'écran et le PDF~~ TRANCHÉ LE 6 NOVEMBRE : OUI POUR TOUT ; CODÉ, PAS SUR main
 
-**Sa demande du 6 novembre** : *« la fiche de sécurité, il faudrait aller la
-chercher, l'améliorer, la rendre plus jolie »* ; ses réponses : l'écran ET le
-PDF, et oui pour lancer l'appli dans le nuage afin de la regarder d'abord.
+**Ses réponses du 6 novembre** : *« Oui pour tout tu peux coder ne lance pas
+de batterie. Dès l'ouverture. »* Donc l'écran ET le PDF des planches,
+« À remplir » dès la première ouverture, et « En cas d'accident » garde aussi
+ses lignes à leur place plus loin dans la fiche.
 
 | | |
 |---|---|
-| l'écran | `appli/soignee/fiche-de-securite.html`, https://florianmarrins0978-svg.github.io/Atlas-app/soignee/fiche-de-securite.html |
-| le PDF | `appli/soignee/fiche-de-securite-pdf.html`, https://florianmarrins0978-svg.github.io/Atlas-app/soignee/fiche-de-securite-pdf.html |
-| Aujourd'hui | captures de l'écran servi le 6 novembre (base jetable, fiche « Pose de clôture » à moitié remplie) et le vrai PDF d'une fiche signée, dans `appli/soignee/aujourdhui/fiche-securite-*.jpg` |
+| les planches | `appli/soignee/fiche-de-securite.html` et `fiche-de-securite-pdf.html` (en ligne) |
+| la branche | LOCALE, `lot/fiche-securite-soignee`, dans le conteneur de la session qui l'a écrite ; tant qu'elle n'est pas poussée, elle n'existe que là |
+| la règle | `pointsDuMinimumLegal` (les huit points, faits ou non) et `etatDesParties` (« Fait », « À remplir », partie par partie) dans `src/lib/fiche-securite.ts` ; `minimumLegal` n'en est plus que le reste, il n'y a qu'une règle |
+| l'écran | `FormulaireFicheDeSecurite.tsx` : titres de partie en serif, l'état à côté, cases de 48 points cochées en vert, Suivant et Signer sur toute la largeur avec le refus juste au-dessus, croquis en trois lignes, urgences une par ligne, Signer avec les huit points, écran signé sans encadrés ; `Signature.tsx` (cadre, « Effacer ») |
+| le PDF | `src/server/pdf/fiche-securite-pdf.ts` : « En cas d'accident » en tête, titres à filet doré, cases pleines, listes en colonnes, champs en colonnes, l'équipe en tableau, la signature en cadre, « page n sur N », un titre réserve la place de ce qui le suit (le croquis ne quitte plus son titre). 6 pages au lieu de 7 sur la fiche d'essai |
+| éprouvé ici | types, lint, `test-fiche-securite.ts` (rouge puis vert sur les huit points), `test-boutons-arrondis` (vignettes passées à 64 points), `test-boutons-pleins`, `test-chartes-lisibles`, `test-mode-emploi`, tirets, flèches, pansements, code mort, couches ; un PDF d'essai regardé page par page |
+| PAS éprouvé ici | l'écran codé n'a pas été ouvert (pas de serveur sans son accord) ; ni la suite navigateur `test-fiche-securite-e2e`, ni les suites base |
+| reste | **niveau 3** (`fiche-securite.ts` atteint 15 points d'entrée) : la batterie, sur son « oui », puis `main` |
 
-**Deux questions posées sur les planches** : « À remplir » dès la première
-ouverture, ou seulement une fois l'étape passée ? Et « En cas d'accident »
-reprend des lignes écrites plus loin : les garder aux deux endroits ?
+**Ce qui a été fait autrement que la planche, et pourquoi** : « Chercher une
+adresse » garde son dessin, parce que `ChampAdresse` sert cinq écrans et que le
+changer ici les changerait tous ; la phrase de refus de Signer garde ses mots
+(« Touchez-les ci-dessus pour les remplir »), que la suite navigateur lit ; la
+liste des numéros d'« Alerter » garde l'ordre du code, seul l'encadré
+« En cas d'accident » met les pompiers en premier.
 
-**Ce que touchera le lot, une fois choisi** (rien n'est codé) :
-`FormulaireFicheDeSecurite.tsx` (`Bloc`, `Pastille`, `Case`, `Fixe`,
-`Vigilance`, `Vert`, `Creux`, le pied) ; `minimumLegal` doit rendre les huit
-points AVEC leur état, pas seulement les manques, et l'état d'une partie
-(« À remplir », « Fait ») doit sortir de la même règle, jamais d'une copie
-(`CLAUDE.md` §3) ; la page de l'étape 2 s'allonge d'un quart (cases de 48
-points). Le PDF : `src/server/pdf/fiche-securite-pdf.ts` (colonnes, cases
-pleines, aucun titre seul en bas de page, « page n sur N », la signature dans
-un cadre). Un titre en bas de page se garde avec sa suite par `place()`.
-
-**Trouvé en regardant, un défaut et non un goût : le « ≤ » ne s'imprime pas.**
-Le PDF écrit « HTA (U ▯ 50 000 V) » et « BT (U ▯ 1 000 V) », deux fois
-(tensions, distances). La cause, mesurée le 6 novembre : `inter-400.ttf` et
-`inter-700.ttf` (`src/server/pdf/polices/`) n'ont que 377 dessins, sans U+2264
-ni U+2265 ; la réduction du 24 août (`LISEZ-MOI.md`, la liste `--unicodes`) ne
-les a pas gardés, et la fiche les emploie depuis le 22 septembre. Le
-commentaire de `polices()` dans `fiche-securite-pdf.ts` affirme le contraire.
-À faire dans cet ordre : un contrôle ROUGE qui vérifie que chaque caractère de
-`LIBELLES` et des textes du PDF a un dessin dans la police embarquée
-(`scripts/test-polices-documents.ts` ne regarde que le devis) ; refaire la
-réduction d'Inter avec U+2264 et U+2265 depuis le fichier d'origine
-(`fonts.gstatic.com`, à vérifier joignable) ; le contrôle vert. Un `.ttf`
-n'est pas lu par le graphe : niveau 3, batterie, donc son « oui ».
-
-**Vu en jouant l'écran** : à l'étape 2, sans réponse sur les arbres dangereux,
-Suivant refuse avec une phrase rouge écrite tout en haut, loin du doigt. La
-planche la pose juste au-dessus de Suivant.
+**Le « ≤ » du PDF** : corrigé à part, sur la branche locale
+`lot/police-inferieur-ou-egal` (son entrée en tête de ce fichier, une fois les
+deux lots réunis). Sur cette branche-ci, seule, il s'imprime encore en case
+vide.
 
 ## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : cinq planches, A ou B~~ TRANCHÉ LE 6 NOVEMBRE : HIVERNAGE B, NOTE B, FRANCHISE A ET B, DEUX ÉCARTÉES ; TROIS LOTS CODÉS, PAS SUR main
 

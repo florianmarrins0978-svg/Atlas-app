@@ -813,26 +813,74 @@ export const RISQUES_A_REGARDER: readonly (readonly [Famille, string, string])[]
  * signe pas (sa règle du 14 octobre 2026). Le lieu et les dates viennent du
  * chantier : ils ne manquent que si le chantier ne les porte pas.
  */
-export function minimumLegal(contenu: ContenuFiche, chantier: { adresse: string | null; datePlanifiee: string | null }): Manque[] {
+export function minimumLegal(contenu: ContenuFiche, chantier: ChantierDeLaFiche): Manque[] {
+  return pointsDuMinimumLegal(contenu, chantier)
+    .filter((p) => !p.fait)
+    .map(({ quoi, faire, etape, bloc }) => ({ quoi, faire, etape, bloc }));
+}
+
+/** Ce que la fiche lit du chantier : il peut porter le lieu et les dates à sa place. */
+export type ChantierDeLaFiche = { adresse: string | null; datePlanifiee: string | null };
+
+/** Un point du minimum légal, rempli ou non. `faire` ne sert qu'à celui qui manque. */
+export type PointDuMinimum = Manque & { fait: boolean };
+
+/** Une famille de risques a sa réponse dès qu'une case est cochée, « Rien à signaler » compris. */
+const repondu = (c: ContenuFiche, famille: Famille) => coches(c, famille).length > 0;
+
+/**
+ * TOUS LES POINTS DU MINIMUM LÉGAL, FAITS OU NON — sa planche du 6 novembre
+ * 2026 : Signer les montre tous, et leur compte (« 3 sur 8 »). C'est la seule
+ * source : `minimumLegal` en est le reste, `etatDesParties` les range par
+ * partie de l'écran. Le lieu n'est un point que sur un chantier sans adresse :
+ * avec elle, le chantier le porte et il n'y a rien à remplir.
+ */
+export function pointsDuMinimumLegal(contenu: ContenuFiche, chantier: ChantierDeLaFiche): PointDuMinimum[] {
   const c = contenu;
   const n = (famille: Famille) => coches(c, famille).filter((x) => !REPONSES_VIDES.includes(x)).length;
-  const m: Manque[] = [];
-  if (!chantier.adresse && !c.gps.trim()) m.push({ quoi: "Le lieu", faire: "Relevez la position GPS : le chantier n’a pas d’adresse.", etape: 1, bloc: "lieu" });
-  if (!chantier.datePlanifiee) m.push({ quoi: "Les dates", faire: "Posez le chantier au planning : la fiche reprend ses jours.", etape: 1, bloc: "lieu" });
-  if (n("travaux") === 0) m.push({ quoi: "Les travaux", faire: "Cochez au moins un type de travaux.", etape: 2, bloc: "travaux" });
-  if (n("elevation") + n("coupe") + n("autresMateriels") === 0) m.push({ quoi: "Le matériel", faire: "Cochez le matériel ou les moyens d’élévation utilisés.", etape: 2, bloc: "materiel" });
   const croquis = manquesDuCroquis(c.croquis);
-  if (croquis.length > 0) m.push({ quoi: "Le croquis", faire: `Posez sur le croquis : ${croquis.join(", ")}.`, etape: 3, bloc: "croquis" });
-  if (coches(c, "balisage").length === 0) m.push({ quoi: "La délimitation du chantier", faire: "Cochez comment le chantier est balisé.", etape: 3, bloc: "balisage" });
-  const sansReponse = RISQUES_A_REGARDER.filter(([f]) => coches(c, f).length === 0);
-  if (sansReponse.length > 0) {
-    m.push({ quoi: "Les risques", faire: `Répondez pour ${sansReponse.map(([, mot]) => mot).join(", ")}. « Rien à signaler » compte comme une réponse.`, etape: 4, bloc: sansReponse[0][2] });
+  const sansReponse = RISQUES_A_REGARDER.filter(([f]) => !repondu(c, f));
+  const points: PointDuMinimum[] = [];
+  if (!chantier.adresse) points.push({ quoi: "Le lieu", faire: "Relevez la position GPS : le chantier n’a pas d’adresse.", etape: 1, bloc: "lieu", fait: c.gps.trim() !== "" });
+  points.push(
+    { quoi: "Les dates", faire: "Posez le chantier au planning : la fiche reprend ses jours.", etape: 1, bloc: "lieu", fait: Boolean(chantier.datePlanifiee) },
+    { quoi: "Les travaux", faire: "Cochez au moins un type de travaux.", etape: 2, bloc: "travaux", fait: n("travaux") > 0 },
+    { quoi: "Le matériel", faire: "Cochez le matériel ou les moyens d’élévation utilisés.", etape: 2, bloc: "materiel", fait: n("elevation") + n("coupe") + n("autresMateriels") > 0 },
+    { quoi: "Le croquis", faire: `Posez sur le croquis : ${croquis.join(", ")}.`, etape: 3, bloc: "croquis", fait: croquis.length === 0 },
+    { quoi: "La délimitation du chantier", faire: "Cochez comment le chantier est balisé.", etape: 3, bloc: "balisage", fait: repondu(c, "balisage") },
+    {
+      quoi: "Les risques",
+      faire: `Répondez pour ${sansReponse.map(([, mot]) => mot).join(", ")}. « Rien à signaler » compte comme une réponse.`,
+      etape: 4,
+      bloc: (sansReponse[0] ?? RISQUES_A_REGARDER[0])[2],
+      fait: sansReponse.length === 0,
+    },
+    { quoi: "La météo", faire: "Cochez la conduite à tenir si le temps tourne.", etape: 5, bloc: "meteo", fait: repondu(c, "meteo") },
+    {
+      quoi: "Les secours",
+      faire: "Cochez les secours prévus, et écrivez le point de rencontre et le lieu de la trousse.",
+      etape: 5,
+      bloc: "secours",
+      fait: repondu(c, "secours") && c.pointDeRencontre.trim() !== "" && c.lieuTrousse.trim() !== "",
+    },
+  );
+  return points;
+}
+
+/**
+ * L'ÉTAT DE CHAQUE PARTIE QUE LA LOI EXIGE, à côté de son titre : `true` dit
+ * « Fait », `false` « À remplir ». Une partie absente ne s'exige pas (les EPI,
+ * les sous-traitants) et ne porte rien. Les risques, un seul point, se
+ * répartissent sur leurs cinq parties, chacune répondue ou non.
+ */
+export function etatDesParties(contenu: ContenuFiche, chantier: ChantierDeLaFiche): Partial<Record<string, boolean>> {
+  const etat: Partial<Record<string, boolean>> = {};
+  for (const p of pointsDuMinimumLegal(contenu, chantier)) {
+    if (p.quoi === "Les risques") continue;
+    etat[p.bloc] = (etat[p.bloc] ?? true) && p.fait;
   }
-  if (coches(c, "meteo").length === 0) m.push({ quoi: "La météo", faire: "Cochez la conduite à tenir si le temps tourne.", etape: 5, bloc: "meteo" });
-  if (coches(c, "secours").length === 0 || !c.pointDeRencontre.trim() || !c.lieuTrousse.trim()) {
-    m.push({ quoi: "Les secours", faire: "Cochez les secours prévus, et écrivez le point de rencontre et le lieu de la trousse.", etape: 5, bloc: "secours" });
-  }
-  return m;
+  for (const [famille, , bloc] of RISQUES_A_REGARDER) etat[bloc] = repondu(contenu, famille);
+  return etat;
 }
 
 /** La même phrase partout où la signature est refusée faute du minimum légal. */

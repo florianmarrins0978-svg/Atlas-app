@@ -249,7 +249,8 @@ const HORS_CHARTE: Array<{
     // **Ce qu'elle ne couvre PAS** : le « Retirer » de la visionneuse, dans le
     // même fichier — celui-là est un geste, et il porte la capsule.
     motif: /^src[/\\]app[/\\]planning[/\\]fiche-de-securite[/\\]\[chantierId\][/\\]FormulaireFicheDeSecurite\.tsx$/,
-    seulement: /h-\[46px\] w-\[46px\]/,
+    // Passées de 46 à 64 points le 6 novembre 2026, sa planche de la fiche soignée : la règle reste la même.
+    seulement: /h-16 w-16/,
     pourquoi: "vignette d'une photo du terrain : un cercle rognerait l'image",
   },
   {

@@ -356,7 +356,7 @@ fichier sur un vrai iPhone : à essayer sur son espace. Batterie jouée (commune
 
 | | |
 |---|---|
-| la règle | `minimumLegal`, `refusDeFinaliser`, `lecturesManquantes`, `validite` dans `src/lib/fiche-securite.ts` ; le croquis dans `src/lib/croquis-securite.ts` |
+| la règle | `pointsDuMinimumLegal` (les huit points, faits ou non : Signer les montre tous), `minimumLegal` (leur reste, ce qui bloque), `etatDesParties` (« Fait » ou « À remplir » à côté de chaque partie, même source), `refusDeFinaliser`, `lecturesManquantes`, `validite` dans `src/lib/fiche-securite.ts` ; le croquis dans `src/lib/croquis-securite.ts` |
 | l'écran | `FormulaireFicheDeSecurite.tsx` (six étapes, puis signatures et envoi), `Croquis.tsx` (éditeur plein écran) |
 | la base | `completerLaFicheSignee` ajoute une lecture ou l'enregistrement à une fiche signée **sans la rouvrir** ; Paysage ne liste une fiche à équipe qu'enregistrée |
 | la carte | `src/lib/carte-du-point.ts` (tuiles, une fois pour l'écran et le PDF), `CarteDuPoint.tsx`, `/api/carte/tuile` et `/api/carte/adresse` (gardées, comptées, ouvertes au salarié) |
