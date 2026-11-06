@@ -36979,6 +36979,8 @@ Contrôle : `test-retention-effacement` (sous `atlas_app` : le brouillon d'un cl
 
 **Un férié se travaille** (sa règle du 6 novembre : *« on doit quand même pouvoir mettre des chantiers dessus si on veut travailler ce jour-là »*). Rien ne le ferme au planning, et `test-jours-feries` le tient (`jourRetenable`, `creneauxDuChantier`). Un férié où le planning met le salarié sur un chantier compte travaillé, une demie par demi-journée (`partsAuPlanning`, la même lecture du planning que les zones, `lecteurDuPlanning`) : pas de règle à part pour le lundi de Pentecôte, il compte s'il est travaillé.
 
+**Un férié prévient, il ne bloque jamais** (sa règle du même soir). L'avertissement se rédige dans `src/lib/jours-feries.ts` (`feriesNouveaux`, `phraseDesFeries`) et ne dit que ce que le geste vient de toucher : un férié déjà couvert avant ne se redit pas à chaque retouche. Au planning, il paraît APRÈS le geste réussi, six secondes, au-dessus du tiroir (`avisFerie`) : jamais une question avant, qui serait déjà une porte. Dans l'écran d'envoi, sous le mois, tant qu'un férié est proposé.
+
 **La couleur du férié se règle avec les quatre autres** (sa réponse : « réglable »), mais ce n'est pas un état : une demi-journée fériée reste rien, incomplète ou complète. `CleCouleur` ajoute `ferie` aux quatre `EtatDemi`, sa colonne est `planning_ferie` (0168, NULL : le bleu de l'apparence). Le chiffre posé dessus se calcule (`texteSurLeFond`) : l'encre ou la plage de la charte si l'une tient 4,5, sinon le noir ou le blanc, cas trouvé par le contrôle sur Sylve.
 
 **Le texte se rédige une fois** : `phraseDeLAbsence`, `phraseDeLaCorrection`, `phraseDuFerieTravaille` et `resumeDuMois` servent l'écran et le PDF, qui lisent le même chargement (`moisDesSalaries`).

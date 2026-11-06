@@ -99,3 +99,40 @@ export function estEnAlsaceMoselle(adresse: string | null | undefined): boolean 
   const departement = codes[codes.length - 1].slice(0, 2);
   return departement === "57" || departement === "67" || departement === "68";
 }
+
+// ─── PRÉVENIR, JAMAIS BLOQUER — sa règle du 6 novembre 2026 ─────────────────
+//
+// *« Ça doit nous prévenir mais jamais nous bloquer »* : un chantier se pose
+// sur un férié (on peut vouloir y travailler), et l'écran le dit. Ces deux
+// fonctions rédigent l'avertissement ; aucune ne refuse quoi que ce soit.
+
+/** Les fériés d'une liste de jours, dans l'ordre, chacun une fois. */
+export function feriesParmi(jours: readonly JourIso[], alsaceMoselle = false): { jour: JourIso; nom: string }[] {
+  return [...new Set(jours)]
+    .sort()
+    .map((jour) => ({ jour, nom: nomDuFerie(jour, alsaceMoselle) }))
+    .filter((f): f is { jour: JourIso; nom: string } => f.nom !== null);
+}
+
+/** Les fériés qu'un geste vient de toucher : ceux d'après qui n'y étaient pas avant. */
+export function feriesNouveaux(avant: readonly JourIso[], apres: readonly JourIso[], alsaceMoselle = false) {
+  const deja = new Set(avant);
+  return feriesParmi(apres.filter((j) => !deja.has(j)), alsaceMoselle);
+}
+
+function dateEnClair(jour: JourIso): string {
+  const t = new Date(`${jour}T12:00:00Z`).toLocaleDateString("fr-FR", { day: "numeric", month: "long", timeZone: "UTC" });
+  return t.startsWith("1 ") ? `1ᵉʳ${t.slice(1)}` : t;
+}
+
+/**
+ * « Le 11 novembre est férié (Armistice 1918). », « Le 11 novembre et le
+ * 25 décembre sont fériés. » ; `null` sans férié.
+ */
+export function phraseDesFeries(feries: readonly { jour: JourIso; nom: string }[]): string | null {
+  if (feries.length === 0) return null;
+  if (feries.length === 1) return `Le ${dateEnClair(feries[0].jour)} est férié (${feries[0].nom}).`;
+  const dates = feries.map((f) => `le ${dateEnClair(f.jour)}`);
+  const liste = `${dates.slice(0, -1).join(", ")} et ${dates[dates.length - 1]}`;
+  return `${liste.charAt(0).toUpperCase()}${liste.slice(1)} sont fériés.`;
+}

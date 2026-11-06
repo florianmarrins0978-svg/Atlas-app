@@ -16,6 +16,7 @@ import { ditCeQuiResteCeJour, equipesLibresCeJour } from "@/lib/planning-jour";
 import JourneeRegardee from "./JourneeRegardee";
 import CouleursDesEtats from "@/components/atlas/CouleursDesEtats";
 import { AUCUNE_COULEUR_CHOISIE } from "@/lib/couleurs-planning";
+import { feriesParmi, phraseDesFeries } from "@/lib/jours-feries";
 import {
   basculerLaSeconde,
   gesteSurUnJour,
@@ -190,6 +191,10 @@ function Contenu({
    */
   const [etat, setEtat] = useState<EtatDesPropositions>(AUCUNE_PROPOSITION);
   const selection = etat.propositions.flat();
+  // **Un férié proposé se dit, il ne se refuse pas** (sa règle du 6 novembre
+  // 2026 : « ça doit nous prévenir mais jamais nous bloquer »).
+  const feriesProposes = feriesParmi(selection, preparation?.planning.alsaceMoselle ?? false);
+  const avisFeries = phraseDesFeries(feriesProposes);
   const dureeEnCours = preparation?.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES;
   const joursParProposition = joursDuChantier(dureeEnCours);
   const attendLaSeconde = etat.secondeVoulue && etat.propositions.length < 2;
@@ -912,6 +917,11 @@ function Contenu({
                       que le geste en deux temps prétendait éviter. */}
                   Proposer le {jourLisible(verdict.alternative)}
                 </button>
+              </p>
+            )}
+            {avisFeries && (
+              <p data-atlas="avis-ferie" className="mt-2 text-center text-[14px] font-semibold" style={{ color: colors.carteBleuTexte }}>
+                {avisFeries} Votre client pourra {feriesProposes.length > 1 ? "les" : "le"} choisir.
               </p>
             )}
           </div>

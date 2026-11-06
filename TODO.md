@@ -100,7 +100,9 @@ refuse sans la batterie. Le document de retour : `docs/lot-paie-zones-feries.md`
 2. **deux suites en base écrites, jamais jouées** (elles vident la base) :
    `test-nature-absence-repo.ts`, `test-jours-travailles-repo.ts`. La
    batterie les jouera ;
-3. **aucune suite navigateur n'ouvre encore Jours travaillés ni les zones** :
+3. **aucune suite navigateur n'ouvre encore Jours travaillés ni les zones**, ni
+   l'avertissement du férié au planning et à l'envoi (pas rendu ici : ces deux
+   écrans demandent un serveur) :
    les écrans ont été rendus ici sans serveur (le vrai composant, gestes
    simulés, à 360 et 390 px, en Origine et en Nuit), jamais derrière une
    connexion. À écrire avant ou avec la batterie ;
@@ -112,7 +114,8 @@ refuse sans la batterie. Le document de retour : `docs/lot-paie-zones-feries.md`
    des chantiers dessus si on veut travailler ce jour-là »* (un férié où le
    planning met le salarié sur un chantier compte travaillé, Pentecôte
    comprise) ; et *« réglable »* (une ligne Férié dans Couleurs, migration
-   `0168`) ;
+   `0168`) ; puis *« ça doit nous prévenir mais jamais nous bloquer »* (un
+   avertissement après le geste, au planning et dans l'écran d'envoi) ;
 6. **hors du compte, à dire** : un salarié embauché ou parti en cours de mois,
    ou à temps partiel, se corrige à la main ; sa fiche n'a ni dates ni jours.
 

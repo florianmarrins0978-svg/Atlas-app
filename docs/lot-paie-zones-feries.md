@@ -26,6 +26,7 @@
 | | |
 |---|---|
 | **« On doit quand même pouvoir mettre des chantiers dessus »** | rien ne fermait un férié au planning, et un contrôle le tient désormais. Et un férié où le planning met un salarié sur un chantier **compte travaillé** dans Jours travaillés, lundi de Pentecôte compris : « Férié travaillé le 11 novembre », à l'écran et sur le PDF. Une demi-journée de chantier compte une demie |
+| **« Ça doit nous prévenir mais jamais nous bloquer »** | au planning, après chaque geste qui pose un chantier sur un férié : « Le 11 novembre est férié (Armistice 1918). Le chantier y est bien posé. », quelques secondes, puis la phrase s'en va. Un férié déjà couvert ne se redit pas. Et dans l'écran d'envoi, sous le mois, quand une date proposée au client est fériée. Rien n'est jamais refusé |
 | **« Réglable »** | une ligne **Férié** dans Couleurs, sous rien, incomplet, complet, au-delà : le bleu d'aujourd'hui, rouge pâle, violet pâle (les teintes de ta planche), ou le nuancier. La case, la légende et la pastille suivent. Le chiffre reste lisible sur les huit chartes : le contrôle a trouvé un cas sur Sylve où il ne l'était pas, corrigé |
 
 ## Ce qui a été fait autrement, et pourquoi
@@ -61,6 +62,7 @@
 - **La batterie**, à ta demande.
 - **Deux suites en base**, écrites et jamais jouées : elles vident la base, donc elles attendent ta batterie (`test-nature-absence-repo`, `test-jours-travailles-repo`).
 - **Les écrans derrière une vraie connexion** : pas vérifiable ici sans serveur. Aucune suite navigateur ne les ouvre encore.
+- **L'avertissement du férié** au planning et dans l'écran d'envoi : écrit et contrôlé par sa règle, mais pas regardé à l'écran ici (ces deux écrans demandent un serveur).
 
 ## Ce qui reste, et qui le tranche
 

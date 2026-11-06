@@ -6,7 +6,7 @@
 // et personne ne le verrait avant.
 
 import assert from "node:assert/strict";
-import { dimancheDePaques, estEnAlsaceMoselle, feriesDeLAnnee, nomDuFerie } from "../src/lib/jours-feries";
+import { dimancheDePaques, estEnAlsaceMoselle, feriesDeLAnnee, feriesNouveaux, nomDuFerie, phraseDesFeries } from "../src/lib/jours-feries";
 import { creneauxDuChantier, jourRetenable } from "../src/lib/disponibilites";
 import { CHARTES, contraste } from "../src/lib/chartes";
 import {
@@ -104,6 +104,18 @@ essai("LA COULEUR DU FÉRIÉ SE RÈGLE, et son chiffre reste lisible sur les hui
       assert.ok(contraste(fond, texte) >= 4.5, `${c.nom}, ${t} : le chiffre ne se lit pas (${contraste(fond, texte).toFixed(2)})`);
     }
   }
+});
+
+essai("PRÉVENIR SANS BLOQUER : ce qu'un geste vient de poser sur un férié se dit", () => {
+  // Sa règle du 6 novembre 2026 : « ça doit nous prévenir mais jamais nous bloquer ».
+  const poseLe10 = ["2026-11-10", "2026-11-10"];
+  const pose10et11 = ["2026-11-10", "2026-11-10", "2026-11-11", "2026-11-11"];
+  assert.equal(phraseDesFeries(feriesNouveaux([], pose10et11)), "Le 11 novembre est férié (Armistice 1918).");
+  // Un férié déjà couvert avant le geste ne se redit pas à chaque retouche.
+  assert.equal(phraseDesFeries(feriesNouveaux(pose10et11, [...pose10et11, "2026-11-12"])), null);
+  assert.equal(phraseDesFeries(feriesNouveaux([], poseLe10)), null);
+  assert.equal(phraseDesFeries(feriesNouveaux([], ["2026-05-01"])), "Le 1ᵉʳ mai est férié (Fête du Travail).");
+  assert.equal(phraseDesFeries(feriesNouveaux([], ["2026-12-25", "2026-12-28", "2027-01-01"])), "Le 25 décembre et le 1ᵉʳ janvier sont fériés.");
 });
 
 if (echecs) {
