@@ -1,7 +1,7 @@
 # Prochaines tâches
 
 
-## ⏳ À CHOISIR PAR LUI (5 novembre 2026) : cinq planches, A ou B
+## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : cinq planches, A ou B~~ TRANCHÉ LE 6 NOVEMBRE : HIVERNAGE B, NOTE B, FRANCHISE A ET B, DEUX ÉCARTÉES, PAS CODÉ
 
 **Sa question du 5 novembre** : *« est-ce que tu as des idées pour améliorer
 notre application ? Est-ce que tu penses à des choses qu'on aurait pu
@@ -17,6 +17,11 @@ côté du nom […] à partir de début novembre »*. **Rien dans `src/`.**
 | `restrictions-d-eau.html` | « Restriction d'eau » sur la carte du planning, commune en Alerte ou plus, aujourd'hui et demain | seulement dans la fiche du chantier |
 | `heures-du-jour.html` | heures du retour du jour (tranché le 9 octobre) comparées au devis, en heures | aussi en euros de main d'œuvre |
 | `hiverner-l-arrosage.html` | dès le 1er novembre, une goutte à côté du nom et « Arrosage à hiverner » sur la fiche ; « Le prévoir » fait choisir le jour et le moment, et l'hivernage se pose au planning (sa demande du 6 novembre), la goutte restant jusqu'à « C'est fait » | la même chose, plus une ligne qui les rassemble en tête de Vos clients |
+
+**Restrictions d'eau et heures du jour : ÉCARTÉES le 6 novembre** (*« on va
+garder que les 3 premières planches. Les 2 dernières, on va pas les
+coder »*). Ne pas les coder, ne pas les lui reproposer. Les planches restent :
+elles racontent le chemin (`CLAUDE.md` §3 bis).
 
 **Hivernage : la B, sa réponse du 6 novembre** (*« Pour l'arrosage je choisis
 la B »*) : la goutte, la fiche, Le prévoir qui pose au planning, et la ligne
@@ -43,8 +48,13 @@ droit et se lisait comme un Z. Refait dans `appli/soignee/kit.js`, donc sur
 toutes les planches qui le portent. **Le même dessin cassé est dans
 l'appli** (`src/components/atlas/IconeTrait.tsx`, `sablier`), montré à SES
 CLIENTS sur les pages du devis, de la facture, du contrat et de l'entretien
-(`LettreDuClient`), et dans Pour mon comptable (`CarteARegarder.tsx`). À
-porter dans `src/` sur son accord : c'est un écran que ses clients voient.
+(`LettreDuClient`), et dans Pour mon comptable (`CarteARegarder.tsx`).
+**Précision du même jour** : sur les pages du client, il ne paraît que sur
+« Ce lien n'est plus valable » ; dans Pour mon comptable, pendant « Lecture de
+la facture… ». **Son accord, le 6 novembre** (*« corrige dans l'appli et sur
+la planche aussi »*) : lot local `lot/sablier-appli`, un seul tracé au trait
+pour l'appli et le kit, tenu par `scripts/test-sablier.ts`. Pas poussé : ses
+contrôles attendent son « oui » (`CLAUDE.md` §5).
 
 Commun à A et B : la facture qui fait passer le plafond majoré s'arrête avant
 de partir (trois issues, dont « L'envoyer sans TVA », pour ne pas bloquer sur
