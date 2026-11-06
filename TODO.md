@@ -86,7 +86,7 @@ CLIENTS sur les pages du devis, de la facture, du contrat et de l'entretien
 « Ce lien n'est plus valable » ; dans Pour mon comptable, pendant « Lecture de
 la facture… ». **Son accord, le 6 novembre** (*« corrige dans l'appli et sur
 la planche aussi »*) : lot local `lot/sablier-appli`, un seul tracé au trait
-pour l'appli et le kit, tenu par `scripts/test-sablier.ts`. Pas poussé : ses
+pour l'appli et le kit, tenu par `test-sablier.ts`, qui n'existe que sur ce lot. Pas poussé : ses
 contrôles attendent son « oui » (`CLAUDE.md` §5).
 
 Commun à A et B : la facture qui fait passer le plafond majoré s'arrête avant
