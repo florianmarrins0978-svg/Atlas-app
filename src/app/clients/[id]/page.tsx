@@ -16,6 +16,11 @@ import SupprimerCeClient from "./SupprimerCeClient";
 import { apercuSuppressionClient } from "@/server/repositories/donnees-client";
 import { garderLaPage } from "@/server/garde-page";
 import { chercherLesObjets } from "@/server/import/traiter-pieces";
+import { etatHivernageDuClient } from "@/server/repositories/hivernage";
+import { getRole } from "@/server/autorisation";
+import { ceQueLaFicheDit } from "@/lib/hivernage";
+import { peutModifierLePlanning } from "@/lib/acces-roles";
+import ArrosageDuClient from "./ArrosageDuClient";
 
 // **La fiche d'un client : son nom, ce qu'on lui a fait la dernière fois, et
 // ses papiers.**
@@ -115,6 +120,13 @@ export default async function FicheClientPage({
   // « ce qui reste » finiraient par diverger, et c'est l'écran qui mentirait —
   // on lui promettrait que tout part, et la facture resterait (`CLAUDE.md` §3).
   const apercu = await apercuSuppressionClient(ctx, id);
+
+  // **Son arrosage et son hivernage** (sa planche du 5 novembre 2026, « la B ») :
+  // ce que la fiche en dit se décide dans `src/lib/hivernage.ts`, au jour que
+  // le serveur compte, à l'heure de son atelier.
+  const aujourdHui = jourIso(new Date());
+  const [etatArrosage, role] = await Promise.all([etatHivernageDuClient(ctx, id), getRole(ctx)]);
+  const arrosage = etatArrosage ? ceQueLaFicheDit(etatArrosage, aujourdHui) : null;
 
   // **L'ADRESSE, PUIS LE TÉLÉPHONE À LA LIGNE — sa demande du 26 août 2026 :**
   // *« supprime le point entre l'adresse et le numéro de tel ; le tel doit être
@@ -227,6 +239,19 @@ export default async function FicheClientPage({
           )}
         </div>
       </div>
+
+      {/* ─── SON ARROSAGE, JUSTE SOUS SES COORDONNÉES ───────────────────────
+          La place de la planche : au-dessus des trois gestes, parce que c'est
+          un rappel sur LUI, pas un geste vers un document. */}
+      {arrosage && (
+        <ArrosageDuClient
+          clientId={fiche.client.id}
+          nomClient={fiche.client.nom}
+          dit={arrosage}
+          aujourdHui={aujourdHui}
+          peutPoser={role !== null && peutModifierLePlanning(role)}
+        />
+      )}
 
       <RepartirDeCeClient clientId={fiche.client.id} dernierChantierId={fiche.chantierDuDernierDevis} />
 

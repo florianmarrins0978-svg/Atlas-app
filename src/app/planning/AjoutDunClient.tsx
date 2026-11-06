@@ -8,7 +8,8 @@ import { ChampRecherche } from "@/components/atlas/ChampRecherche";
 // Un fichier « use server » réexporté par Next ne laisse survivre que des
 // valeurs ; un nom de type y meurt à l'évaluation et emporte TOUTES les actions
 // de l'écran (`scripts/test-actions-serveur-sans-export-de-type.ts`).
-import type { ClientProposé, QuandPoser } from "./actions";
+import type { ClientProposé } from "./actions";
+import type { QuandPoser } from "@/lib/planning-jour";
 import { chercherDesClientsAction, poserUnClientAction, poserDuTempsAction } from "./actions";
 import type { ChantierPlanning } from "./types-du-planning";
 import { Choisir, Petit } from "./ElementsDuPlanning";

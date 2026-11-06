@@ -19,6 +19,7 @@ import { composerFicheClient, type FicheClient } from "@/lib/fiche-client";
 import { resteDu } from "@/lib/exigibilite-tva";
 import { jourDeRangement, rangerParNom } from "@/lib/bandes-clients";
 import { jourIso } from "@/lib/jour";
+import { aHiverner } from "@/lib/hivernage";
 import { avoirsDesFactures } from "./avoirs";
 import { receptionEnMots, type ReceptionLisible } from "@/lib/reception-facture";
 import { categorieDuClient, type CategorieClient } from "../../lib/civilite";
@@ -615,6 +616,11 @@ export type ClientEnListe = {
    * trouve la pièce, et mène à sa fiche.
    */
   pieces: PieceDuClient[];
+  /**
+   * La goutte à côté de son nom (sa planche du 5 novembre 2026, « la B ») :
+   * un arrosage, l'hivernage par nous, en saison, et pas encore fait.
+   */
+  aHiverner: boolean;
 };
 
 /**
@@ -639,7 +645,15 @@ export async function listerFichesClients(ctx: Ctx): Promise<ClientEnListe[]> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [sesClients, sesChantiers] = await Promise.all([
       tx
-        .select({ id: clients.id, nom: clients.nom, adresse: clients.adresse, civilite: clients.civilite })
+        .select({
+          id: clients.id,
+          nom: clients.nom,
+          adresse: clients.adresse,
+          civilite: clients.civilite,
+          arrosageAutomatique: clients.arrosageAutomatique,
+          hivernageParNous: clients.hivernageParNous,
+          hiverneLe: clients.hiverneLe,
+        })
         .from(clients)
         // **Un client supprimé quitte la liste, même retenu par une pièce** :
         // sa règle du 2 novembre 2026, *« si je le coche, il faut que je
@@ -863,6 +877,9 @@ export async function listerFichesClients(ctx: Ctx): Promise<ClientEnListe[]> {
           aujourdHui
         ),
         pieces: rangerDuPlusRecent(piecesParClient.get(client.id) ?? []),
+        // La goutte de sa planche du 5 novembre 2026 : la règle vit dans
+        // `src/lib/hivernage.ts`, la liste ne fait que la porter.
+        aHiverner: aHiverner(client, aujourdHui),
       };
     });
 

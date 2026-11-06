@@ -26,6 +26,14 @@ Branche `lot/idees-pour-l-appli`, d'après `appli/soignee/une-idee-pour-l-appli.
 des impositions sur les biens et services (CIBS) » à partir du 1er janvier
 2027, au jour de chaque pièce (`mentionFranchise`, `ARCHITECTURE.md` §559).
 Lot `lot/mention-franchise`, niveau 3, en attente de sa batterie.
+## HIVERNER L'ARROSAGE (B), CODÉ (6 novembre 2026), PAS SUR `main`
+
+Lot `lot/hivernage`, en attente de sa batterie. La goutte des clients à
+hiverner (Vos clients, la fiche, la semaine et le mois du planning), les deux
+questions de la fiche et leurs cases dans ses coordonnées, « Le prévoir » qui
+pose au planning, « C'est fait » et « Annuler ». Migration `0171_hivernage.sql`.
+Règles : `src/lib/hivernage.ts`, `scripts/test-hivernage.ts` (vert) ; en base :
+`scripts/test-hivernage-db.ts` (écrite, pas jouée). Aucun écran ouvert.
 
 ## LA MISE EN PAGE DU DEVIS, CODÉE (4 novembre 2026), SUR `main` LE 4 NOVEMBRE
 

@@ -38,6 +38,8 @@ import {
   type TriClients,
 } from "@/lib/tri-clients";
 import { filtrerClientsParNom, morceauxSurlignes } from "@/lib/recherche-client";
+import { compteDesArrosages } from "@/lib/hivernage";
+import Goutte from "@/components/atlas/Goutte";
 
 /**
  * La liste des clients, et le champ qui les retrouve.
@@ -100,6 +102,8 @@ export type FicheClientListee = {
   du: string | number | null;
   /** Ses devis et ses factures, ceux de sa fiche : la loupe y cherche un titre ou un montant. */
   pieces: PieceDuClient[];
+  /** La goutte à côté de son nom : un arrosage à hiverner (`src/lib/hivernage.ts`). */
+  aHiverner: boolean;
 };
 
 /** Une pièce que la loupe a trouvée, et le client chez qui elle mène. */
@@ -139,6 +143,13 @@ type EtatRecherche = {
    */
   choix: Set<string> | null;
   choisir: (choix: Set<string> | null) => void;
+  /**
+   * « N arrosages à hiverner » (sa réponse « la B » du 6 novembre 2026) : la
+   * ligne en tête de la liste rassemble ces clients, et la croix les rend tous.
+   */
+  hiverner: boolean;
+  rassembler: (oui: boolean) => void;
+  nombreAHiverner: number;
 };
 
 const Contexte = createContext<EtatRecherche | null>(null);
@@ -172,15 +183,21 @@ export function FournisseurClients({
   const [saisie, poser] = useState("");
   const [tri, trier] = useState<TriClients>({ cle: "nom" });
   const [choix, choisir] = useState<Set<string> | null>(null);
+  const [rassembles, rassembler] = useState(false);
+  const nombreAHiverner = useMemo(() => clients.filter((c) => c.aHiverner).length, [clients]);
+  // Le dernier hivernage noté ailleurs vide le rassemblement : il se défait de
+  // lui-même plutôt que de montrer une liste vide sous une croix.
+  const hiverner = rassembles && nombreAHiverner > 0;
+  const deDepart = useMemo(() => (hiverner ? clients.filter((c) => c.aHiverner) : clients), [clients, hiverner]);
   // **Trié par date, la ligne montre la pièce DU MOIS** (`clientsDuMois`),
   // pas sa plus récente : un titre qui dit juin 2017 au-dessus d'une ligne qui
   // dit 2024 se lirait comme une erreur.
   const dansLeTri = useMemo(
     () =>
       tri.cle === "nom"
-        ? clients
-        : clientsDuMois(clients, tri.cle, tri.mois).map((c) => ({ ...c, derniere: c.piece })),
-    [clients, tri]
+        ? deDepart
+        : clientsDuMois(deDepart, tri.cle, tri.mois).map((c) => ({ ...c, derniere: c.piece })),
+    [deDepart, tri]
   );
   const visibles = useMemo(() => filtrerClientsParNom(dansLeTri, saisie), [dansLeTri, saisie]);
   // **Le nom ne fait pas sortir de pièce ici** (`""` pour le nom) : le client
@@ -198,8 +215,22 @@ export function FournisseurClients({
     [dansLeTri, saisie]
   );
   const valeur = useMemo(
-    () => ({ saisie, poser, total: dansLeTri.length, visibles, piecesTrouvees, aujourdHui, tri, trier, choix, choisir }),
-    [saisie, dansLeTri.length, visibles, piecesTrouvees, aujourdHui, tri, choix]
+    () => ({
+      saisie,
+      poser,
+      total: dansLeTri.length,
+      visibles,
+      piecesTrouvees,
+      aujourdHui,
+      tri,
+      trier,
+      choix,
+      choisir,
+      hiverner,
+      rassembler,
+      nombreAHiverner,
+    }),
+    [saisie, dansLeTri.length, visibles, piecesTrouvees, aujourdHui, tri, choix, hiverner, nombreAHiverner]
   );
   return <Contexte.Provider value={valeur}>{children}</Contexte.Provider>;
 }
@@ -257,7 +288,8 @@ export default function ListeClients({
   /** Ce qui se pose au bout de la liste : la porte de l'import, geste rare. */
   auBout?: React.ReactNode;
 }) {
-  const { saisie, poser, visibles, piecesTrouvees, aujourdHui, tri, trier, choix, choisir, total } = useRecherche();
+  const { saisie, poser, visibles, piecesTrouvees, aujourdHui, tri, trier, choix, choisir, total, hiverner, rassembler, nombreAHiverner } =
+    useRecherche();
   const cherche = saisie.trim().length > 0;
   const [volet, setVolet] = useState(false);
   // « Tout » ne coche que ce qui est À L'ÉCRAN : une recherche ou un
@@ -351,6 +383,48 @@ export default function ListeClients({
         )}
       </div>
       {sousLaRecherche}
+
+      {/* **« N arrosages à hiverner », sous la recherche — « la B », sa
+          réponse du 6 novembre 2026.** Hors du choix et d'un mois filtré : on
+          y fait autre chose que rassembler. Rassemblés, la ligne cède sa place
+          au titre « À hiverner » et à sa croix, qui rend tous les clients. */}
+      {!choix && tri.cle === "nom" && hiverner && (
+        <div className="mx-[22px] mb-[4px] mt-[4px] flex items-center justify-center gap-[10px]" data-atlas="a-hiverner-rassembles">
+          <Goutte taille={28} />
+          <span className="text-[22px] leading-[1.2]" style={{ fontFamily: font.display, color: colors.ink }}>
+            À hiverner
+          </span>
+          <button
+            type="button"
+            onClick={() => rassembler(false)}
+            aria-label="Revenir à tous les clients"
+            data-atlas="defaire-a-hiverner"
+            className="grid h-10 w-10 place-items-center rounded-full"
+            style={{ color: colors.inkSoft, boxShadow: `inset 0 0 0 1px ${colors.line}`, WebkitTapHighlightColor: "transparent" }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              <path d="M6.5 6.5l11 11M17.5 6.5l-11 11" />
+            </svg>
+          </button>
+        </div>
+      )}
+      {!choix && tri.cle === "nom" && !hiverner && nombreAHiverner > 0 && !cherche && (
+        <button
+          type="button"
+          onClick={() => rassembler(true)}
+          data-atlas="rassembler-a-hiverner"
+          className="mx-[22px] mb-[14px] flex min-h-[60px] w-[calc(100%-44px)] items-center gap-3 rounded-[6px] py-2 pl-[10px] pr-[14px] text-left"
+          style={{ backgroundColor: colors.carteBleuFond, color: colors.carteBleuTexte, WebkitTapHighlightColor: "transparent" }}
+        >
+          <span className="grid h-9 w-9 flex-none place-items-center rounded-full" style={{ backgroundColor: colors.card }}>
+            <Goutte taille={28} />
+          </span>
+          <span className="min-w-0 flex-1 text-[16px] font-bold">{compteDesArrosages(nombreAHiverner)}</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" className="flex-none">
+            <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      )}
 
       <VoletTriClients
         ouvert={volet}
@@ -737,6 +811,13 @@ function LigneClient({
               s'appellent Martins, une recherche sans marque ressemble à une
               recherche qui n'a pas filtré. */}
           <Surligne texte={client.nom} saisie={saisie} />
+          {/* La goutte, collée au nom : un arrosage à hiverner (sa planche
+              du 5 novembre 2026). Le nom reste ce qui se lit d'abord. */}
+          {client.aHiverner && (
+            <span className="ml-2 inline-block align-[-3px]">
+              <Goutte libelle="Arrosage à hiverner" />
+            </span>
+          )}
         </span>
         {/* `inkSoft`, et non le gris des méta : `muted` tient 3,32 de
             contraste sur le fond crème, et c'est cette ligne-ci qui répond à
