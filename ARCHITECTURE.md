@@ -37084,7 +37084,7 @@ Sa planche du 5 novembre 2026 (`appli/soignee/hiverner-l-arrosage.html`), sa ré
 
 **Les coordonnées gardent trois états.** Une case ne dit que oui ou non : sans le troisième, corriger un téléphone aurait répondu « non » à la question de l'arrosage, et elle ne serait jamais revenue.
 
-## §557 : Une note dictée qui ne part pas est gardée sur le téléphone, et repart sur son appui
+## §562 : Une note dictée qui ne part pas est gardée sur le téléphone, et repart sur son appui
 
 **Sa planche du 5 novembre 2026, la B le 6** (`appli/soignee/note-sans-reseau.html`). Un envoi raté jetait le son : il vivait dans une variable de `envoyerLaNote`, et la phrase disait « puis refaites la note ». Sur une fiche neuve, la création du chantier levait avant l'envoi et rien ne la rattrapait : la note se perdait sans une phrase.
 
@@ -37094,6 +37094,6 @@ Sa planche du 5 novembre 2026 (`appli/soignee/hiverner-l-arrosage.html`), sa ré
 
 **Le rangement** (`src/app/chantiers/[id]/notes-gardees.ts`) : IndexedDB, une note par chantier comme sur le serveur, le son en octets (un `Blob` rangé tel quel a longtemps été refusé par Safari). Rien n'y lève : un téléphone qui refuse de ranger le dit en valeur, et la phrase demande de rester sur la page. Une fiche neuve n'a pas de chantier : sa note ne vit que dans la page, faute de quoi la rattacher sans risquer le mauvais client.
 
-**Un envoi ne s'enregistre qu'une fois** (migration 0166, `notes_vocales.envoi_id`, expand seul). Avec la B, une réponse perdue puis un second appui faisaient arriver deux fois le même son : la note réécrite, sa transcription remise à zéro, le devis préparé deux fois. Le téléphone pose un identifiant à la note captée (`nouvelIdentifiantDEnvoi`, sans `crypto.randomUUID`, absent hors https) ; le service le reconnaît AVANT la cadence et le stockage (`noteDejaRecue`), et rend ce qu'il avait rendu. Une note remplacée sans identifiant efface l'ancien : elle ne se ferait pas passer pour lui.
+**Un envoi ne s'enregistre qu'une fois** (migration 0172, `notes_vocales.envoi_id`, expand seul). Avec la B, une réponse perdue puis un second appui faisaient arriver deux fois le même son : la note réécrite, sa transcription remise à zéro, le devis préparé deux fois. Le téléphone pose un identifiant à la note captée (`nouvelIdentifiantDEnvoi`, sans `crypto.randomUUID`, absent hors https) ; le service le reconnaît AVANT la cadence et le stockage (`noteDejaRecue`), et rend ce qu'il avait rendu. Une note remplacée sans identifiant efface l'ancien : elle ne se ferait pas passer pour lui.
 
 **Écarté :** l'envoi automatique au retour du réseau (la A, sa réponse B) ; un service worker (le mode hors ligne entier, qui ferait s'ouvrir Atlas sans réseau : un autre lot) ; garder la saisie d'une fiche neuve pour la recréer plus tard (la ligne de l'accueil d'abord, sur planche, `TODO.md`).

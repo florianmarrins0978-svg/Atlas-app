@@ -176,7 +176,7 @@ connaîtra (`jourChoisissable`, un seul endroit).
 
 **Sa réponse B du 6 novembre**, puis *« tu peux coder tout ça et ne lance pas de
 batterie »*. Branche locale `lot/note-sans-reseau`, non poussée. Planche
-`appli/soignee/note-sans-reseau.html`. `ARCHITECTURE.md` §557.
+`appli/soignee/note-sans-reseau.html`. `ARCHITECTURE.md` §562.
 
 **Ce qui est codé :** un envoi raté garde la note (`src/lib/note-gardee.ts`,
 `causeDeLaGarde`), sauf un son que le serveur ne recevra jamais
@@ -186,7 +186,7 @@ note par chantier (`src/app/chantiers/[id]/notes-gardees.ts`). L'anneau dit
 « Envoyer » dès qu'il répond, et c'est son appui qui envoie
 (`AnneauNoteVocale.tsx`). La fiche neuve dont le chantier ne peut pas être
 créé garde la note dans la page, et le dit. Le serveur reconnaît un envoi déjà
-reçu (`envoi_id`, migration `0166_note_vocale_envoi.sql`, `noteDejaRecue`).
+reçu (`envoi_id`, migration `0172_note_vocale_envoi.sql`, `noteDejaRecue`).
 Les phrases de liaison ne disent plus « refaites la note » ; la fiche
 « atlas-internet » dit vrai.
 

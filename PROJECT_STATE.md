@@ -37,7 +37,7 @@ Règles : `src/lib/hivernage.ts`, `scripts/test-hivernage.ts` (vert) ; en base :
 
 ## UNE NOTE SANS RÉSEAU (B), CODÉE (6 novembre 2026), PAS SUR `main`
 
-Branche locale `lot/note-sans-reseau`, d'après `appli/soignee/note-sans-reseau.html` (*« tu peux coder tout ça et ne lance pas de batterie »*). Un envoi raté garde la note sur le téléphone (IndexedDB) ; le disque dit « Gardée », puis « Envoyer » quand le serveur répond, et son appui l'envoie ; la fiche neuve garde la note dans la page ; un identifiant d'envoi évite les doublons (migration `0166_note_vocale_envoi.sql`). `ARCHITECTURE.md` §557. Suites pures vertes ; `test-note-vocale-envoi-db` et `test-note-sans-reseau-e2e` écrits, à jouer. **Niveau 3 : batterie en attente de son accord.** Reste : la ligne « 1 note à envoyer » de l'accueil, planche d'abord (`TODO.md`).
+Branche locale `lot/note-sans-reseau`, d'après `appli/soignee/note-sans-reseau.html` (*« tu peux coder tout ça et ne lance pas de batterie »*). Un envoi raté garde la note sur le téléphone (IndexedDB) ; le disque dit « Gardée », puis « Envoyer » quand le serveur répond, et son appui l'envoie ; la fiche neuve garde la note dans la page ; un identifiant d'envoi évite les doublons (migration `0172_note_vocale_envoi.sql`). `ARCHITECTURE.md` §562. Suites pures vertes ; `test-note-vocale-envoi-db` et `test-note-sans-reseau-e2e` écrits, à jouer. **Niveau 3 : batterie en attente de son accord.** Reste : la ligne « 1 note à envoyer » de l'accueil, planche d'abord (`TODO.md`).
 
 ---
 ## LA MISE EN PAGE DU DEVIS, CODÉE (4 novembre 2026), SUR `main` LE 4 NOVEMBRE

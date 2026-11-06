@@ -1,5 +1,5 @@
 /* =======================================================================
-   Un même envoi de note ne s'enregistre qu'une fois (migration 0166).
+   Un même envoi de note ne s'enregistre qu'une fois (migration 0172).
 
    **Pourquoi** : sa planche du 5 novembre 2026, la B le 6. Une note dictée
    sans réseau est gardée sur le téléphone et repart sur son appui. Une

@@ -1220,7 +1220,7 @@ export const notesVocales = pgTable(
       .notNull()
       .default("non_demandee"),
     transcriptionErreur: text("transcription_erreur"),
-    /** L'envoi qui l'a posée, identifié par le téléphone (migration 0166) :
+    /** L'envoi qui l'a posée, identifié par le téléphone (migration 0172) :
      *  un second envoi du même son ne réécrit rien. NULL avant cette version. */
     envoiId: uuid("envoi_id"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

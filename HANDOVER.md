@@ -42,7 +42,7 @@ n'a pas touché la case. **Et la goutte se lit à la MARQUE du chantier**
 
 ## UNE NOTE SANS RÉSEAU (6 novembre 2026), sur `lot/note-sans-reseau`, pas sur `main`
 
-**Les pièges :** « le réseau est revenu » se demande au SERVEUR (`diagnostiquerLiaison`), jamais à `navigator.onLine`, qui dit « en ligne » sur un wifi sans internet. Le son se range en octets dans IndexedDB, pas en `Blob`. Un envoi porte son identifiant (`envoi_id`, 0166) : sans lui, un second appui après une réponse perdue réécrivait la note et relançait le devis. Une phrase qui dit « refaites la note » est fausse depuis ce lot : la note est gardée. `ARCHITECTURE.md` §557.
+**Les pièges :** « le réseau est revenu » se demande au SERVEUR (`diagnostiquerLiaison`), jamais à `navigator.onLine`, qui dit « en ligne » sur un wifi sans internet. Le son se range en octets dans IndexedDB, pas en `Blob`. Un envoi porte son identifiant (`envoi_id`, 0172) : sans lui, un second appui après une réponse perdue réécrivait la note et relançait le devis. Une phrase qui dit « refaites la note » est fausse depuis ce lot : la note est gardée. `ARCHITECTURE.md` §562.
 
 ---
 ## LA MISE EN PAGE DU DEVIS (4 novembre 2026), sur `main` le 4 novembre
