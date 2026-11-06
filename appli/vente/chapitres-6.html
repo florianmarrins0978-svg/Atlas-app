@@ -74,7 +74,19 @@
       la case des 14 jours apparaît et se coche, le client accepte, et la
       page devient
       « C'est noté. Votre artisan est prévenu. » (nov-client-0 à 3) ;
-    · Encaissez : 143,70 € monte depuis zéro, puis la phrase ;
+    · Planifiez, sa demande du soir (« on n'a pas fait de mise en scène,
+      tu peux proposer ») : le mois se remplit chantier après chantier, le
+      10 passe au rouge quand il devient trop chargé, le 6 se remplit en
+      dernier (nov-mois-0 à 5, une capture par chantier posé), puis
+      l'équipe se pose sur la journée : « + Salarié », Lucas, Lucas et
+      Julien (nov-equipe-0 à 2) ;
+    · Encaissez : 143,70 € monte depuis zéro, puis la phrase ; et, sa
+      demande du soir, le montant de la TVA sort de la facture, grossit,
+      Ma TVA apparaît à 0,00 € et il y rentre : 143,70 € (nov-tva-avant et
+      apres, captures de /termines/tva). Inspiré du skill HyperFrames,
+      « carry across » : l'objet rétrécit en volant et se pose dans l'écran
+      suivant ; mais joué dans la page, pas rendu en vidéo, pour suivre le
+      défilement et rester net ;
     · Et aussi, inversé à sa demande : les travaux d'abord, qui se cochent
       TOUT SEULS à l'arrivée, une tâche par seconde environ (la première
       version les cochait au défilement : « ça bug », la carte restait
@@ -366,6 +378,12 @@ html.anime .devient.vu .devis-loupe .ligne{opacity:1;transform:translateY(-50%)}
 .plans figure{margin:0}
 .plans .paire{display:grid;gap:24px}
 @media (min-width:760px){.plans .paire{grid-template-columns:1fr 1fr;align-items:start}}
+/* Planifiez : les captures du mois, puis de la carte du jour, s'empilent.
+   Chaque nouvelle passe au-dessus de la précédente et ne fait que s'allumer :
+   un fondu croisé laisserait voir, à mi-chemin, l'image finale dessous. */
+.empile{position:relative}
+.empile img.etape{position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;transition:opacity .35s ease}
+.empile img.etape.vue{opacity:1}
 
 /* Encaissez : la facture, et le chiffre de la TVA. */
 .chiffre{margin-top:52px}
@@ -375,6 +393,19 @@ html.anime .chiffre b,html.anime .chiffre span{opacity:0;transform:translateY(20
 html.anime .chiffre.joue b{opacity:1;transform:none}
 html.anime .chiffre.joue span{opacity:1;transform:none;transition-delay:1.5s}
 .encaisse .feuille{width:min(100%,620px);box-shadow:0 60px 100px -40px rgba(0,0,0,.85),0 0 0 1px rgba(255,255,255,.04)}
+/* Encaissez : le montant de la TVA sort de la facture, grossit, et rentre
+   dans Ma TVA, qui passe de 0,00 € à 143,70 €. L'objet porté d'un écran à
+   l'autre (« carry across ») : il rétrécit en volant et se pose dans le
+   chiffre de l'appli, au pixel près. Sans mouvement, les deux sont posés. */
+.scene-tva{position:relative;width:min(100%,640px);aspect-ratio:1/1.16;margin:0 auto}
+.scene-tva .feuille{position:absolute;left:0;top:0;width:76%;transition:opacity .8s ease}
+.scene-tva .appareil{position:absolute;right:0;top:21%;width:52%;z-index:2}
+.scene-tva .ecran img.etape{opacity:0}
+.scene-tva .ecran img.etape.vue{opacity:1}
+html.anime .scene-tva .appareil{opacity:0;transform:translateY(30px) scale(.97);transition:opacity .6s ease,transform 1s var(--sortie)}
+html.anime .scene-tva.telephone .appareil{opacity:1;transform:none}
+html.anime .scene-tva.telephone .feuille{opacity:.55}
+.jeton{position:absolute;left:0;top:0;z-index:5;font:400 clamp(46px,12vw,68px)/1 var(--display);color:var(--or-clair);white-space:nowrap;transform-origin:0 0;opacity:0;pointer-events:none;text-shadow:0 14px 34px rgba(0,0,0,.5);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
 
 /* ── Et aussi ─────────────────────────────────────────────────────────── */
 /* Les deux captures n'ont ni la même largeur ni la même hauteur : côte à
@@ -655,10 +686,10 @@ html.anime .chiffre.joue span{opacity:1;transform:none;transition-delay:1.5s}
     </div>
     <div class="chap-visuel">
       <div class="plans">
-        <figure class="gros"><img src="images/nov-planning.jpg" alt="Planning de novembre : demi-journées en vert clair, vert foncé et rouge, le vendredi 6 entouré d'or" width="1170" height="1560"></figure>
+        <figure class="gros empile" id="scene-mois"><img src="images/nov-mois-5.jpg" alt="Planning de novembre : demi-journées en vert clair, vert foncé et rouge, le vendredi 6 entouré d'or" width="1170" height="1563"></figure>
         <div class="paire">
           <div>
-            <figure class="gros"><img src="images/nov-equipe.jpg" alt="Le chantier de Mr. Lemaire, le vendredi 6 novembre : Lucas et Julien le matin et l'après-midi" width="1038" height="834"></figure>
+            <figure class="gros empile" id="scene-equipe"><img src="images/nov-equipe-2.jpg" alt="Le chantier de Mr. Lemaire, le vendredi 6 novembre : Lucas et Julien le matin et l'après-midi" width="1038" height="834"></figure>
             <p class="sous">L'équipe se pose à la demi-journée.</p>
           </div>
           <div>
@@ -679,7 +710,11 @@ html.anime .chiffre.joue span{opacity:1;transform:none;transition-delay:1.5s}
       <div class="chiffre" id="tva-du-mois" data-valeur="143.70"><b>143,70 €</b><span>La TVA du mois, déjà calculée.</span></div>
     </div>
     <div class="chap-visuel">
-      <figure class="feuille"><img src="images/nov-facture.jpg" alt="La facture finie, en PDF : F2026-000001 pour Mr. Lemaire, Création d'un massif, les quatre lignes du devis, 862,20 euros net à payer" width="1654" height="2339"></figure>
+      <div class="scene-tva" id="scene-tva">
+        <figure class="feuille"><img src="images/nov-facture.jpg" alt="La facture finie, en PDF : F2026-000001 pour Mr. Lemaire, Création d'un massif, les quatre lignes du devis, 862,20 euros net à payer" width="1654" height="2339"></figure>
+        <div class="appareil"><div class="ecran"><img src="images/nov-tva-apres.jpg" alt="Ma TVA de novembre dans Atlas : TVA collectée 143,70 euros, TVA à payer 143,70 euros" width="1170" height="1992"></div></div>
+        <span class="jeton" aria-hidden="true">143,70 €</span>
+      </div>
     </div>
   </div>
 </section>
@@ -1044,6 +1079,65 @@ html.anime .chiffre.joue span{opacity:1;transform:none;transition-delay:1.5s}
     await attendre(1400); if (!encore()) return; montrer(pages, 2);
     await attendre(1400); if (!encore()) return; montrer(pages, 3);
   });
+
+  // 3 bis. Planifiez : le mois se remplit chantier après chantier (le 10 passe
+  // au rouge quand il devient trop chargé, le 6 se remplit en dernier), puis
+  // l'équipe se pose sur la journée de Mr. Lemaire. Captures de l'appli,
+  // une par chantier posé (nov-mois-0 à 5, nov-equipe-0 à 2).
+  var jusqua = function(liste, i){ liste.forEach(function(im, k){ im.classList.toggle("vue", k <= i); }); };
+  var empilerSur = function(figure, sources){
+    return sources.map(function(src){ var im = new Image(); im.src = src; im.alt = ""; im.decoding = "async"; im.className = "etape"; figure.appendChild(im); return im; });
+  };
+  // Sur un téléphone, le mois et la carte du jour sont à l'écran ensemble :
+  // la carte attend que le mois soit rempli, sans quoi les deux jouaient en
+  // même temps et l'équipe se posait sans qu'on la regarde.
+  var moisEnCours = false;
+  [["scene-mois", [0, 1, 2, 3, 4, 5].map(function(k){ return "images/nov-mois-" + k + ".jpg"; }), [700, 750, 750, 750, 900], true],
+   ["scene-equipe", [0, 1, 2].map(function(k){ return "images/nov-equipe-" + k + ".jpg"; }), [1000, 1000], false]].forEach(function(d){
+    var figure = document.getElementById(d[0]), images = [], estLeMois = d[3];
+    scene(figure, 0.4, function(){ images = empilerSur(figure, d[1]); }, async function(encore){
+      jusqua(images, 0);
+      if (estLeMois) moisEnCours = true;
+      else { while (moisEnCours){ await attendre(150); if (!encore()) return; } }
+      await attendre(estLeMois ? 600 : 700); if (!encore()) return;
+      for (var k = 1; k < images.length; k++){ if (k > 1) { await attendre(d[2][k - 2]); if (!encore()) return; } jusqua(images, k); }
+      if (estLeMois) moisEnCours = false;
+    }, function(){ if (estLeMois) moisEnCours = false; });
+  });
+
+  // 3 ter. Encaissez : le montant de la TVA sort de la facture, grossit, Ma
+  // TVA apparaît à 0,00 €, et le montant y rentre : 143,70 €. Les positions
+  // sont mesurées sur les captures (nov-facture : la rangée « TVA 20 % » ;
+  // nov-tva-avant : la ligne « TVA collectée »).
+  var tvaScene = document.getElementById("scene-tva"), jeton = tvaScene.querySelector(".jeton"), feuilleTva = tvaScene.querySelector(".feuille"), ecranTva = tvaScene.querySelector(".ecran"), avantTva = null;
+  var SOURCE = { x:0.9166, y:0.5306, l:0.0617 }, CIBLE = { x:0.7103, y:0.4895, l:0.1795 };
+  var ou = function(el, point){
+    var s = tvaScene.getBoundingClientRect(), r = el.getBoundingClientRect(), l = jeton.offsetWidth, h = jeton.offsetHeight, e = (point.l * r.width) / l;
+    return { x: r.left - s.left + point.x * r.width - l * e / 2, y: r.top - s.top + point.y * r.height - h * e / 2, e: e };
+  };
+  var placerJeton = function(p){ return "translate(" + p.x.toFixed(1) + "px," + p.y.toFixed(1) + "px) scale(" + p.e.toFixed(4) + ")"; };
+  var vols = [];
+  var voler = function(cles, options){ var a = jeton.animate(cles, Object.assign({ fill: "forwards" }, options)); vols.push(a); return a.finished.catch(function(){}); };
+  scene(tvaScene, 0.45, function(){
+    avantTva = new Image(); avantTva.src = "images/nov-tva-avant.jpg"; avantTva.alt = ""; avantTva.className = "etape vue"; ecranTva.appendChild(avantTva);
+  }, async function(encore){
+    vols.forEach(function(a){ a.cancel(); }); vols = [];
+    tvaScene.classList.remove("telephone"); avantTva.style.transition = "none"; avantTva.classList.add("vue");
+    await attendre(500); if (!encore()) return;
+    var depart = ou(feuilleTva, SOURCE), s = tvaScene.getBoundingClientRect();
+    var milieu = { x: s.width * 0.47 - jeton.offsetWidth / 2, y: s.height * 0.32 - jeton.offsetHeight / 2, e: 1 };
+    // Il sort de la facture : il apparaît sur son chiffre, puis grossit.
+    await voler([{ transform: placerJeton(depart), opacity: 0 }, { transform: placerJeton(depart), opacity: 1 }], { duration: 220 }); if (!encore()) return;
+    await voler([{ transform: placerJeton(depart), opacity: 1 }, { transform: placerJeton(milieu), opacity: 1 }], { duration: 950, easing: "cubic-bezier(.16,1,.3,1)" }); if (!encore()) return;
+    // Ma TVA apparaît, encore à zéro.
+    tvaScene.classList.add("telephone");
+    await attendre(1100); if (!encore()) return;
+    // Il y rentre : il rétrécit en volant, un léger flou au plus vite.
+    var arrivee = ou(ecranTva, CIBLE);
+    await voler([{ transform: placerJeton(milieu), filter: "blur(0px)", opacity: 1 }, { transform: placerJeton({ x: (milieu.x + arrivee.x) / 2, y: (milieu.y + arrivee.y) / 2 - 12, e: (1 + arrivee.e) / 2 }), filter: "blur(3px)", opacity: 1, offset: 0.5 }, { transform: placerJeton(arrivee), filter: "blur(0px)", opacity: 1 }], { duration: 850, easing: "cubic-bezier(.65,0,.35,1)" }); if (!encore()) return;
+    avantTva.classList.remove("vue");
+    await voler([{ opacity: 1, transform: placerJeton(arrivee) }, { opacity: 0, transform: placerJeton(arrivee) }], { duration: 160 });
+  }, function(){ vols.forEach(function(a){ a.cancel(); }); vols = []; });
 
   // 4. La TVA du mois : le chiffre monte jusqu'à sa valeur, puis la phrase.
   var tva = document.getElementById("tva-du-mois"), chiffre = tva.querySelector("b"), valeur = Number(tva.dataset.valeur);
