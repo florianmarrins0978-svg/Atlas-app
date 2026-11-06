@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>La fiche travaux</title>
+<title>La fiche travaux, A ou B</title>
 <link rel="stylesheet" href="kit.css">
 <style>
 /*
@@ -15,6 +15,10 @@
   ne doit pas non plus apparaître ». Sa réponse à la question du même jour :
   le déplacement et la location partent aussi ; l'évacuation des déchets et
   une fourniture seule restent.
+
+  A ET B : A est la première proposition, gardée telle quelle pour comparer ;
+  B est sa demande du même jour, « beaucoup plus jolie, beaucoup plus
+  stylée ». Ses styles vivent sous .b, ils ne touchent ni A ni Aujourd'hui.
 
   CE QUI EST CODÉ (branche locale claude/fiche-travaux-que-les-travaux, pas
   sur main) : la règle des lignes, seFaitSurLeChantier dans
@@ -151,24 +155,122 @@
 .aujourdhui .parti small { font-size: 11.5px; color: var(--atlas-muted); }
 .aujourdhui .parti b { font-size: 15px; }
 .aujourdhui .parti .rond-coche { width: 19px; height: 19px; }
+/* ═══ B, PLUS LOIN : le carnet ═════════════════════════════════════════════
+   Sa demande du 6 novembre, devant A : « une autre apparence, beaucoup plus
+   jolie, beaucoup plus stylée », A gardée pour comparer. Toujours ses
+   couleurs et ses huit chartes ; ce qui change, c'est la tenue. */
+.b .bandeau { border-radius: 14px; }
+.b .carnet-tete { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px 12px;
+                  width: 100%; padding: 14px 14px 14px 16px; text-align: left; color: var(--atlas-ink);
+                  background: var(--atlas-carteVertFond); transition: background-color 360ms var(--courbe), color 360ms var(--courbe); }
+.b .securite .carnet-tete { background: var(--atlas-carteAmbreFond); }
+.b .carnet-titre { font: 400 20px/1.15 var(--serif); letter-spacing: -0.005em; }
+.b .carnet-compte { display: flex; align-items: center; gap: 10px; }
+.b .carnet-compte b { font: 400 30px/1 var(--serif); font-variant-numeric: lining-nums tabular-nums; letter-spacing: -0.01em; }
+.b .carnet-compte small { font-size: 14px; font-weight: 700; line-height: 1.15; color: var(--atlas-carteVertTexte); }
+.b .securite .carnet-compte small { color: var(--atlas-carteAmbreTexte); }
+.b .carnet-rond { width: 34px; height: 34px; flex: none; display: grid; place-items: center; border-radius: 50%;
+                  color: var(--atlas-carteVertTexte); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-carteVertTexte) 45%, transparent);
+                  transition: transform 320ms var(--courbe); }
+.b .securite .carnet-rond { color: var(--atlas-carteAmbreTexte); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-carteAmbreTexte) 45%, transparent); }
+.b .carnet-rond .ico { width: 18px; height: 18px; stroke-width: 2.2; }
+.b .carnet-tete[aria-expanded="true"] .carnet-rond { transform: rotate(180deg); }
+/* Un trait par travail : on compte ce qui reste sans lire un chiffre. */
+.b .pointage { grid-column: 1 / -1; display: flex; gap: 4px; }
+.b .pointage i { flex: 1; height: 6px; border-radius: 3px; transition: background-color 320ms var(--courbe);
+                 background: color-mix(in srgb, var(--atlas-carteVertTexte) 22%, transparent); }
+.b .pointage i.fait { background: var(--atlas-plein); }
+/* Tout est fait : la barre passe au vert plein, le seul aplat du bandeau. */
+.b .tout .carnet-tete { background: var(--atlas-plein); color: var(--sur-plein); }
+.b .tout .carnet-compte small, .b .tout .carnet-rond { color: var(--sur-plein); }
+.b .tout .carnet-rond { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--sur-plein) 55%, transparent); }
+.b .carnet-titre { white-space: nowrap; }
+.b .pointage-fait { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; min-height: 6px;
+                    font-size: 15px; font-weight: 700; color: var(--sur-plein); }
+.b .pointage-fait .ico { width: 18px; height: 18px; stroke-width: 2.6; }
+
+.b .travaux-dedans { padding: 8px 6px 16px; }
+.b .tache { min-height: 62px; padding: 10px 10px; gap: 14px; border-radius: 10px; transition: background-color 260ms var(--courbe); }
+.b .tache + .tache { margin-top: 2px; }
+.b .tache + .tache::before { display: none; }
+.b .tache[aria-pressed="true"] { background: color-mix(in srgb, var(--atlas-carteVertFond) 72%, var(--atlas-card)); }
+.b .tache-rond { width: 32px; height: 32px; box-shadow: inset 0 0 0 2px var(--atlas-vertPale); }
+.b .tache-rond svg { width: 17px; height: 17px; }
+.b .tache.vive .tache-rond { animation: pression 420ms var(--courbe-g); }
+@keyframes pression { 0% { transform: scale(0.82); } 60% { transform: scale(1.08); } 100% { transform: scale(1); } }
+.b .tache-quoi { font-size: 17.5px; }
+.b .tache[aria-pressed="true"] .tache-quoi { color: var(--atlas-ink); }
+.b .tache-combien { padding: 5px 10px; border-radius: 999px; font-size: 14px; font-weight: 700; color: var(--atlas-orTexte);
+                    background: color-mix(in srgb, var(--atlas-or) 13%, transparent); }
+
+.b .bloc-titre { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 20px 10px 10px; }
+.b .bloc-titre span { font: 400 18px/1.2 var(--serif); }
+.b .bloc-titre small { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--atlas-inkSoft); }
+.b .bande { display: flex; gap: 10px; margin: 0 -6px; padding: 0 16px 2px; overflow-x: auto; scroll-snap-type: x mandatory;
+            scrollbar-width: none; overscroll-behavior-x: contain; }
+.b .bande::-webkit-scrollbar { display: none; }
+.b .bande .photo, .b .bande .photo-plus { flex: none; width: 92px; height: 92px; border-radius: 12px; scroll-snap-align: start; }
+.b .bande .photo-plus { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+                        font-size: 14px; font-weight: 600; }
+.b .bande .photo-plus .ico { width: 28px; height: 28px; }
+
+/* Le mot : une page de carnet, lignée d'or, les lignes suivent le texte. */
+.b .a-signaler { min-height: 114px; margin: 16px 0 0; padding: 10px 14px 6px; border-radius: 12px; line-height: 28px;
+                 background-color: color-mix(in srgb, var(--atlas-or) 7%, var(--atlas-card));
+                 background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 27px,
+                   color-mix(in srgb, var(--atlas-or) 32%, transparent) 27px, color-mix(in srgb, var(--atlas-or) 32%, transparent) 28px);
+                 background-position: 0 10px; background-attachment: local;
+                 box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--atlas-or) 26%, transparent); }
+.b .mot { padding: 0 10px; }
+.b .envoyer { margin: 18px 0 0; padding: 0 16px; white-space: nowrap; }
+
+/* Le retour parti : un tampon, l'heure, et Modifier qui se voit. */
+.b .tampon { display: flex; align-items: flex-start; gap: 14px; margin-top: 12px; padding: 14px 14px 6px; border-radius: 14px;
+             background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.b .tampon.frais .tampon-rond { animation: tampon 460ms var(--courbe); }
+@keyframes tampon { 0% { transform: scale(1.35); opacity: 0; } 70% { transform: scale(0.96); opacity: 1; } 100% { transform: scale(1); } }
+.b .tampon-rond { width: 48px; height: 48px; flex: none; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-plein);
+                  box-shadow: inset 0 0 0 2px var(--atlas-plein), inset 0 0 0 5px var(--atlas-card), inset 0 0 0 6.5px var(--atlas-plein); }
+.b .tampon-rond .ico { width: 24px; height: 24px; stroke-width: 2.4; }
+.b .tampon-corps { flex: 1; min-width: 0; }
+.b .tampon-corps b { display: block; font: 400 18px/1.2 var(--serif); font-variant-numeric: lining-nums; }
+.b .tampon-corps small { display: block; margin-top: 3px; font-size: 13.5px; line-height: 1.35; color: var(--atlas-inkSoft); }
+.b .tampon .bouton-texte { min-height: 44px; margin-left: -4px; padding: 0 4px; font-size: 15.5px; }
+
+/* Trois écrans côte à côte quand la place le permet. */
+@media (min-width: 1300px) {
+  .pl-scene { grid-template-columns: minmax(0, 1fr); }
+  .pl-ecrans { grid-template-columns: repeat(3, 390px); }
+  .pl-notes { margin: 0 auto; }
+}
 </style>
 </head>
 <body class="pl pl-pilules">
 <header class="pl-tete">
   <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
-  <h1 class="pl-titre">La fiche travaux</h1>
-  <p class="pl-verdict"><b>Que les travaux</b> : ni la main d’œuvre, ni le camion, ni le broyeur, ni le déplacement. Touchez <b>Travaux à faire</b>, cochez, ajoutez une photo, envoyez. <b>Aujourd’hui</b> montre la fiche actuelle.</p>
+  <h1 class="pl-titre">La fiche travaux, A ou B</h1>
+  <p class="pl-verdict"><b>A ou B</b>, que les travaux dans les deux : ni la main d’œuvre, ni le camion, ni le broyeur, ni le déplacement. Touchez <b>Travaux à faire</b>, cochez, ajoutez une photo, envoyez. <b>Aujourd’hui</b> montre la fiche actuelle.</p>
 </header>
 <main class="pl-scene">
   <div class="pl-ecrans">
-    <div data-vue-panneau="propose">
-      <p class="pl-legende">Proposé</p>
+    <div data-vue-panneau="A">
+      <p class="pl-legende">A</p>
       <div class="pl-etats" id="etats-propose">
         <button type="button" data-cas="matin" aria-pressed="false">Le matin</button>
         <button type="button" data-cas="soir" aria-pressed="true">Le soir</button>
         <button type="button" data-cas="envoye" aria-pressed="false">Envoyé</button>
       </div>
       <div class="cadre"><div class="ecran avec-barre propose" id="ecran-propose"></div></div>
+    </div>
+    <div data-vue-panneau="B">
+      <p class="pl-legende">B, plus loin</p>
+      <div class="pl-etats" id="etats-b">
+        <button type="button" data-cas="matin" aria-pressed="false">Le matin</button>
+        <button type="button" data-cas="soir" aria-pressed="true">Le soir</button>
+        <button type="button" data-cas="tout" aria-pressed="false">Tout fait</button>
+        <button type="button" data-cas="envoye" aria-pressed="false">Envoyé</button>
+      </div>
+      <div class="cadre"><div class="ecran avec-barre b" id="ecran-b"></div></div>
     </div>
     <div data-vue-panneau="aujourdhui">
       <p class="pl-legende">Aujourd’hui</p>
@@ -181,14 +283,26 @@
     </div>
   </div>
   <section class="pl-notes">
-    <h2>Ce que je propose</h2>
+    <h2>Dans A et dans B</h2>
     <ul>
       <li>Que les travaux : la main d’œuvre, le camion, le broyeur, les engins, le déplacement et la location ne s’affichent plus. L’évacuation des déchets et une fourniture seule restent, comme vous l’avez dit. <b>Cette règle est codée</b>, elle attend sa batterie.</li>
       <li>Le nom du travail en plus grand, et sa quantité à droite : « 25 ml » ne se colle plus au nom.</li>
       <li>Des cases plus grandes, et toute la ligne se touche. La coche se trace quand on coche.</li>
-      <li>Un trait sous la barre se remplit à chaque travail coché : on voit où on en est sans ouvrir.</li>
-      <li>Les photos en grand, quatre par rang. Le bouton prend toute la largeur, sous le pouce.</li>
-      <li>Un travail fait reste lisible : il passe en gris foncé, plus en gris clair.</li>
+      <li>Le bouton prend toute la largeur, sous le pouce. Un travail fait reste lisible.</li>
+    </ul>
+    <h2>A, la barre de toujours</h2>
+    <ul>
+      <li>Un trait sous la barre se remplit à chaque travail coché. Les photos quatre par rang. Le fait passe en gris foncé.</li>
+    </ul>
+    <h2>B, plus loin</h2>
+    <ul>
+      <li>Un petit trait par travail, et le compte en grand : on voit ce qui reste sans lire.</li>
+      <li>Un travail fait se teinte de vert, et sa case se remplit d’un coup.</li>
+      <li>Tout est fait : la barre passe au vert plein.</li>
+      <li>Les photos en grand, en bande qu’on fait glisser du doigt.</li>
+      <li>Le mot s’écrit sur une page de carnet, lignée d’or.</li>
+      <li>Une fois parti, le retour dit son heure, et « Modifier » se voit : plus besoin de deviner qu’on peut toucher le retour envoyé.</li>
+      <li>La fiche de sécurité prendrait la même allure, pour que les deux restent sœurs.</li>
     </ul>
     <h2>Trouvé en chemin, et corrigé</h2>
     <ul>
@@ -386,7 +500,171 @@
     poser("soir");
   }
 
+  /* ═══ B, PLUS LOIN ═══════════════════════════════════════════════════════ */
+  function monterB(id) {
+    var ecran = document.getElementById(id);
+    var lignes = DEVIS.filter(function (l) { return !l.sePaie; });
+    var e = { ouvert: true, faites: {}, photos: [], mot: "", parti: null, modifier: false, frais: false };
+    var NBSP = " ";
+    function heure(d) { return d.getHours() + NBSP + "h" + NBSP + (d.getMinutes() < 10 ? "0" : "") + d.getMinutes(); }
+
+    function poser(cas) {
+      e.faites = {};
+      e.photos = [];
+      e.mot = "";
+      e.modifier = false;
+      e.frais = false;
+      if (cas === "soir" || cas === "envoye") COCHEES_LE_SOIR.forEach(function (q) { e.faites[q] = true; });
+      if (cas === "tout") lignes.forEach(function (l) { e.faites[l.quoi] = true; });
+      e.ouvert = cas !== "envoye";
+      e.parti = cas === "envoye" ? "17" + NBSP + "h" + NBSP + "42" : null;
+      rendre();
+    }
+    function faites() { return lignes.filter(function (l) { return e.faites[l.quoi]; }).length; }
+    function compte() {
+      var n = lignes.length, f = faites();
+      if (f === n && n > 0) return "";
+      if (f === 0) return "<b>" + n + "</b><small>travaux</small>";
+      return "<b>" + f + "</b><small>sur " + n + "</small>";
+    }
+    function manque() {
+      var m = [];
+      if (faites() === 0) m.push("cochez ce que vous avez fait");
+      if (e.photos.length === 0) m.push("ajoutez une photo");
+      if (!m.length) return "";
+      var t = m.join(" et ");
+      return t.charAt(0).toUpperCase() + t.slice(1) + ".";
+    }
+    function pointage() {
+      if (faites() === lignes.length && lignes.length > 0) return '<span class="pointage-fait">' + ico("coche") + "Tout est fait</span>";
+      return '<span class="pointage" aria-hidden="true">' + lignes.map(function (l) {
+        return "<i" + (e.faites[l.quoi] ? ' class="fait"' : "") + "></i>";
+      }).join("") + "</span>";
+    }
+    function rendreTache(l) {
+      return '<button type="button" class="tache" data-g="cocher" data-quoi="' + l.quoi + '" aria-pressed="' + !!e.faites[l.quoi] + '">' +
+        '<span class="tache-rond" aria-hidden="true">' + COCHE + "</span>" +
+        '<span class="tache-quoi">' + l.quoi + "</span>" +
+        (l.combien ? '<span class="tache-combien">' + l.combien + "</span>" : "") + "</button>";
+    }
+    function rendreTravaux() {
+      var tout = faites() === lignes.length && lignes.length > 0;
+      var h = '<div class="bandeau travaux' + (tout ? " tout" : "") + '">' +
+        '<button type="button" class="carnet-tete" data-g="barre" aria-expanded="' + e.ouvert + '">' +
+          '<span class="carnet-titre">Travaux à faire</span>' +
+          '<span class="carnet-compte">' + compte() + '<span class="carnet-rond">' + ico("bas") + "</span></span>" +
+          pointage() +
+        "</button>" +
+        '<div class="pli' + (e.ouvert ? " ouvert" : "") + '"><div><div class="travaux-dedans">' +
+          lignes.map(rendreTache).join("") +
+          '<div class="bloc-titre"><span>Photos</span>' + (e.photos.length ? "<small>" + e.photos.length + " sur 10</small>" : "") + "</div>" +
+          '<div class="bande">' +
+            e.photos.map(function (src, i) {
+              return '<button type="button" class="photo" data-g="note" data-texte="La photo s’ouvre en grand, comme aujourd’hui." aria-label="Photo ' + (i + 1) + ' en grand"><img src="' + src + '" alt=""></button>';
+            }).join("") +
+            '<label class="photo-plus">' + ico("photo") + "Ajouter" +
+              '<input type="file" accept="image/*" multiple data-g="photos" aria-label="Ajouter une photo"></label>' +
+          "</div>" +
+          '<div class="mot"><textarea class="a-signaler" rows="3" data-g="mot" placeholder="À signaler, facultatif">' + e.mot + "</textarea></div>" +
+          '<button type="button" class="bouton bouton-plein envoyer" data-g="envoyer">' +
+            (e.modifier ? "Renvoyer le retour" : "Envoyer le retour du jour") + "</button>" +
+          (manque() ? '<p class="manque">' + manque() + "</p>" : "") +
+        "</div></div></div></div>";
+      if (e.parti) {
+        h += '<div class="tampon' + (e.frais ? " frais" : "") + '">' +
+          '<span class="tampon-rond" aria-hidden="true">' + ico("coche") + "</span>" +
+          '<span class="tampon-corps"><b>Envoyé à ' + e.parti + "</b><small>À retrouver dans Terminés, Retour d’intervention</small>" +
+          '<button type="button" class="bouton-texte" data-g="rouvrir" aria-expanded="' + (e.ouvert && e.modifier) + '">' +
+            (e.ouvert && e.modifier ? "Fermer" : "Modifier") + "</button></span></div>";
+      }
+      return h;
+    }
+    function rendre() {
+      var defile = ecran.querySelector(".defile"), haut = defile ? defile.scrollTop : 0;
+      ecran.innerHTML =
+        '<div class="defile">' +
+          '<header class="tete"><h1 class="tete-titre moyen">Planning</h1></header>' +
+          '<p class="jour-titre">Mardi 10 novembre</p>' +
+          '<section class="chantier">' +
+            '<span class="chantier-nom">Mr. Bernard</span><span class="chantier-quoi">Julien, Antoine</span>' +
+            '<div class="intervention"><h2 class="intervention-titre">Fiche d’intervention</h2>' +
+              '<span class="ma-note">Prendre la rogneuse.</span>' +
+              '<div class="bandeau securite"><button type="button" class="carnet-tete" data-g="note" data-texte="La fiche de sécurité, comme aujourd’hui." aria-expanded="false">' +
+                '<span class="carnet-titre">Fiche de sécurité</span>' +
+                '<span class="carnet-compte"><small>à remplir</small><span class="carnet-rond">' + ico("bas") + "</span></span></button></div>" +
+              rendreTravaux() +
+              '<button type="button" class="lien-devis" data-g="note" data-texte="Le devis sans les prix, comme aujourd’hui.">Ouvrir le devis sans les prix</button>' +
+            "</div>" +
+          "</section>" +
+        "</div>" + barre(1);
+      Kit.brancher(ecran);
+      ecran.querySelector(".defile").scrollTop = haut;
+      e.frais = false;
+    }
+    /* Cocher ne redessine que ce qui change : redessiner tout couperait
+       l'élan de la case. */
+    function peindreLeCompte() {
+      var tout = faites() === lignes.length && lignes.length > 0;
+      ecran.querySelector(".travaux").classList.toggle("tout", tout);
+      ecran.querySelector(".travaux .carnet-compte").innerHTML = compte() + '<span class="carnet-rond">' + ico("bas") + "</span>";
+      var ancien = ecran.querySelector(".travaux .pointage, .travaux .pointage-fait");
+      if (tout || ancien.classList.contains("pointage-fait")) ancien.outerHTML = pointage();
+      else ecran.querySelectorAll(".travaux .pointage i").forEach(function (i, rang) {
+        i.classList.toggle("fait", !!e.faites[lignes[rang].quoi]);
+      });
+      var p = ecran.querySelector(".travaux .manque"), t = manque();
+      if (p && !t) p.remove();
+      else if (p) p.textContent = t;
+      else if (t) ecran.querySelector('[data-g="envoyer"]').insertAdjacentHTML("afterend", '<p class="manque">' + t + "</p>");
+    }
+
+    ecran.addEventListener("click", function (ev) {
+      var g = ev.target.closest("[data-g]");
+      if (!g) return;
+      var geste = g.getAttribute("data-g");
+      if (geste === "note") { ev.preventDefault(); Kit.note(g, g.getAttribute("data-texte")); return; }
+      if (geste === "barre") { e.ouvert = !e.ouvert; e.modifier = false; rendre(); return; }
+      if (geste === "rouvrir") { e.modifier = !(e.ouvert && e.modifier); e.ouvert = e.modifier; rendre(); return; }
+      if (geste === "cocher") {
+        var q = g.getAttribute("data-quoi");
+        e.faites[q] = !e.faites[q];
+        g.setAttribute("aria-pressed", String(!!e.faites[q]));
+        g.classList.remove("vive");
+        if (e.faites[q]) { void g.offsetWidth; g.classList.add("vive"); }
+        peindreLeCompte();
+        return;
+      }
+      if (geste === "envoyer") {
+        if (!e.modifier) e.parti = heure(new Date());
+        e.modifier = false;
+        e.ouvert = false;
+        e.photos = [];
+        e.mot = "";
+        e.frais = true;
+        rendre();
+      }
+    });
+    ecran.addEventListener("input", function (ev) {
+      if (ev.target.getAttribute("data-g") === "mot") e.mot = ev.target.value;
+    });
+    ecran.addEventListener("change", function (ev) {
+      if (ev.target.getAttribute("data-g") !== "photos") return;
+      Array.prototype.slice.call(ev.target.files || [], 0, 10 - e.photos.length).forEach(function (f) {
+        e.photos.push(URL.createObjectURL(f));
+      });
+      rendre();
+    });
+    document.querySelectorAll("#etats-b [data-cas]").forEach(function (b, _, tous) {
+      b.addEventListener("click", function () {
+        tous.forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+        poser(b.getAttribute("data-cas"));
+      });
+    });
+    poser("soir");
+  }
+
   monter("ecran-propose", true);
+  monterB("ecran-b");
   monter("ecran-aujourdhui", false);
 })();
 </script>
