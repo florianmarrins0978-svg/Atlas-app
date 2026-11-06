@@ -45,6 +45,7 @@ qui ne se résoudra pas en codant.
 15. [Créer le compte Brevo, pour que le code de vérification parte](#15-créer-le-compte-brevo-pour-que-le-code-de-vérification-parte)
 16. [Prendre un nom de domaine, pour que le devis parte d’Atlas avec un lien cliquable](#16-prendre-un-nom-de-domaine-pour-que-le-devis-parte-datlas-avec-un-lien-cliquable)
 17. [Laisser un client refuser les nouvelles conditions sans perdre ses données](#17-laisser-un-client-refuser-les-nouvelles-conditions-sans-perdre-ses-données)
+18. [Changer la mention de TVA des factures en franchise avant fin 2027](#18-changer-la-mention-de-tva-des-factures-en-franchise-avant-fin-2027)
 
 ---
 
@@ -1255,3 +1256,59 @@ Codé le 18 octobre 2026, **sur `main` le 21 octobre 2026** après une batterie 
 | dire si Atlas doit garder les factures dix ans (article 13) ou seulement les rendre à l'artisan : l'obligation comptable pèse sur lui, et un sous-traitant doit en principe rendre puis effacer (RGPD, article 28.3.g) | le juriste |
 
 Planche : `appli/documents-legaux-un-geste.html`.
+
+---
+
+## 18. Changer la mention de TVA des factures en franchise avant fin 2027
+
+**Qui : votre comptable**, pour confirmer la nouvelle phrase. **Moi**, pour la
+changer dans Atlas une fois confirmée.
+
+*Ajouté le 6 novembre 2026, avec votre accord, après votre question « c'est
+quoi l'article 293 B ? ».*
+
+### De quoi il s'agit
+
+Une entreprise en franchise de TVA ne facture pas de TVA, et chaque facture
+doit le dire. Atlas imprime aujourd'hui : « TVA non applicable, art. 293 B du
+CGI. » Cet article 293 B est celui de la loi fiscale qui crée la franchise.
+
+La TVA change de code : elle quitte le code général des impôts (CGI) pour le
+code des impositions sur les biens et services (CIBS). Les règles ne changent
+pas, seuls les numéros des articles changent.
+
+### Ce qui est vérifié, sur les sites officiels
+
+| | Ce que dit la source |
+|---|---|
+| **la phrase d'aujourd'hui reste permise** | les renvois au CGI dans les mentions des factures « seront possibles jusqu'au 31 décembre 2027 » (BOFiP, dispositions transitoires, version du 7 octobre 2026) |
+| **la nouvelle phrase est déjà admise** | impots.gouv.fr donne les deux au choix : l'ancienne, ou « TVA non applicable, article L. 223-3 du Code des impositions sur les biens et services (CIBS) » |
+| **le plafond et le fonctionnement** | inchangés (BOFiP, conséquences de la franchise, version du 1er juillet 2026) |
+
+**Un doute qui reste :** deux pages d'impots.gouv.fr ne donnent pas le même
+numéro, L. 223-3 sur l'une, L. 233-3 sur l'autre. Les autres articles de la
+franchise y sont des L. 223 (par exemple L. 223-13), donc L. 233-3 est
+probablement une coquille. Légifrance, qui trancherait, refuse d'être lu
+depuis mon poste.
+
+**Une date à confirmer :** des cabinets d'avocats écrivent qu'une ordonnance du
+27 juillet 2026 a repoussé le changement de code au 1er janvier 2027, et la
+tolérance de l'ancienne phrase au 30 juin 2028. Le BOFiP que j'ai lu dit encore
+31 décembre 2027 : c'est la date sûre.
+
+### Ce qu'il faut faire
+
+| | Qui | Quand |
+|---|---|---|
+| confirmer la nouvelle phrase, et son numéro (L. 223-3) | votre comptable | avant fin 2027, sans urgence |
+| changer la phrase dans Atlas (factures, devis, avoirs) | moi | une fois confirmée |
+
+**Rien ne presse :** jusqu'au 31 décembre 2027 au moins, la phrase d'aujourd'hui
+est permise.
+
+Sources :
+
+- [BOFiP, dispositions transitoires](https://bofip.impots.gouv.fr/bofip/14901-PGP.html/identifiant=BOI-RES-TVA-000253-20260218)
+- [BOFiP, conséquences de la franchise](https://bofip.impots.gouv.fr/bofip/1079-PGP.html/identifiant=BOI-TVA-DECLA-40-10-20-20260701)
+- [impots.gouv.fr, micro-entrepreneur et TVA](https://www.impots.gouv.fr/professionnel/questions/en-tant-que-micro-entrepreneur-puis-je-etre-redevable-de-la-tva)
+- [impots.gouv.fr, obligations déclaratives](https://www.impots.gouv.fr/professionnel/questions/je-suis-micro-entrepreneur-ou-la-tete-dune-micro-entreprise-ai-je-des)

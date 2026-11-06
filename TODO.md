@@ -1,16 +1,23 @@
 # Prochaines tâches
 
 
-## AVANT LE 1er JANVIER 2027 : la mention « TVA non applicable, art. 293 B du CGI »
+## AVANT LE 31 DÉCEMBRE 2027 : la mention « TVA non applicable, art. 293 B du CGI »
 
-Atlas l'imprime sur les factures d'une entreprise en franchise. Trouvé le
-6 novembre 2026 en codant `lot/franchise-plafond` : l'ordonnance n° 2025-1247
-du 17 décembre 2025 déplace la TVA du CGI vers le CIBS, et Légifrance affiche
-l'article 293 B en vigueur jusqu'au 1er janvier 2027. Des sources de seconde
-main (pas le texte de l'ordonnance) disent que la mention reste valable en
-2026, l'obligation tenant à l'article 293 E II, maintenu. **À vérifier sur le
-texte de l'ordonnance et sa table de correspondance avant fin 2026**, puis
-avec son comptable ; rien à changer avant. Lui dit le 6 novembre.
+**Corrigé le 6 novembre 2026, sur les sites officiels** (sa demande : *« tu
+peux aussi aller vérifier par toi-même »*). La date du 1er janvier 2027 écrite
+ici une heure plus tôt venait de sources de seconde main ; elle était fausse
+pour les factures. Le BOFiP (dispositions transitoires, version du 7 octobre
+2026) : les renvois au CGI dans les mentions des factures restent possibles
+**jusqu'au 31 décembre 2027** (article 46 II de l'ordonnance n° 2025-1247).
+impots.gouv.fr admet déjà la nouvelle phrase, « TVA non applicable, article
+L. 223-3 du Code des impositions sur les biens et services (CIBS) » (une de ses
+pages écrit L. 233-3, sans doute une coquille : à faire trancher). Le détail,
+pour lui : `docs/A-FAIRE.md` point 18.
+
+**Le jour où la phrase change dans Atlas, elle vit en DEUX copies** :
+`MENTION_FRANCHISE` (`src/lib/franchise-tva.ts`) et la chaîne écrite en dur
+dans `src/server/pdf/avoir-pdf.ts`. La seconde doit d'abord prendre la
+première (`CLAUDE.md` §3), sinon l'avoir gardera l'ancienne phrase.
 
 ## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : cinq planches, A ou B~~ TRANCHÉ LE 6 NOVEMBRE : HIVERNAGE B, NOTE B, FRANCHISE A ET B, DEUX ÉCARTÉES ; TROIS LOTS CODÉS, PAS SUR main
 
