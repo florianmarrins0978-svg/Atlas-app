@@ -76,6 +76,8 @@ export type ChantierPlanning = {
   /** Un passage de contrat d'entretien, et sa clé, qui dit son mois (0107). */
   contratEntretienId?: string | null;
   contratPassage?: string | null;
+  /** « hivernage » : posé depuis la fiche d'un client (migration 0165). La goutte à côté de son jour. */
+  nature?: "hivernage" | null;
 };
 
 /**

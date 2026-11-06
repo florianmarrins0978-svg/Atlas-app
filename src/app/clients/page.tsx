@@ -147,6 +147,7 @@ export default async function ClientsPage({
               facture: c.facture ?? null,
               du: c.du ?? null,
               pieces: c.pieces,
+              aHiverner: c.aHiverner,
             }))}
           >
             <EnTeteEcran

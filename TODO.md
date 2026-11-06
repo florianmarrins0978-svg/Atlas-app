@@ -1,6 +1,44 @@
 # Prochaines tâches
 
 
+## CODÉ LE 6 NOVEMBRE, PAS SUR main : hiverner l'arrosage (B)
+
+Lot `lot/hivernage`, commité, **pas poussé** (sa règle : aucune batterie sans
+son « oui », et `main` ne s'atteint qu'après elle). Planche
+`appli/soignee/hiverner-l-arrosage.html`, sa réponse « la B », son ajout du
+6 novembre sur les contrats d'entretien.
+
+**Décisions prises pour coder, à lui dire** (`ARCHITECTURE.md` §556) :
+- trois faits sur le client, nullables : `arrosage_automatique`,
+  `hivernage_par_nous`, `hiverne_le` ; NULL veut dire « jamais demandé » ;
+- la question paraît quand une facture ÉMISE (ou une facture importée rangée)
+  a une ligne qui parle d'arrosage, ou quand il a un contrat d'entretien
+  ACCEPTÉ ; la facture passe d'abord dans la phrase. Puis la seconde question,
+  « Vous faites son hivernage ? ». « Non » ne se redemande plus (la planche
+  disait « pour cette facture ») ;
+- la saison : du 1er novembre à la fin février, à l'heure de Paris ;
+- « Le prévoir » pose par `poserLeClientSurLeJour`, le geste de « Un client »
+  du planning, sorti de `poserUnClientAction` pour servir aux deux ; le
+  chantier porte `nature = 'hivernage'` et le travail « Hivernage de
+  l'arrosage ». « Le voir » ouvre `/planning?chantier=…` ; « Annuler » après la
+  pose supprime le chantier posé ;
+- l'application ne connaît aucun férié : la feuille retire les jours passés,
+  les week-ends et ce qui sort de la saison, pas le 11 novembre.
+
+**Reste à jouer, sur son « oui »** : le niveau est 3 (`drizzle/`,
+`src/server/db/`). `scripts/test-hivernage-db.ts` (écrite, jamais jouée),
+`npm run db:migrate` de `0165` sur une base, les suites navigateur de
+`/clients`, `/clients/[id]`, `/clients/[id]/coordonnees` et `/planning`, puis la
+batterie entière. **Aucun écran n'a été ouvert** : la fiche, la feuille de
+« Le prévoir », la liste et le planning sont à regarder avant de dire qu'ils
+tiennent (`.claude/rules/regarder-l-ecran.md`).
+
+**Ouvert, pas tranché** : la date de départ réglable (Nice et le Jura) ; la
+remise en route au printemps en miroir ; l'arrosage dans les familles du
+contrat d'entretien ; la goutte qui partirait seule quand la journée
+d'hivernage est terminée au planning ; les fériés, le jour où l'appli les
+connaîtra (`jourChoisissable`, un seul endroit).
+
 ## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : cinq planches, A ou B~~ TRANCHÉ LE 6 NOVEMBRE : HIVERNAGE B, NOTE B, FRANCHISE A ET B, DEUX ÉCARTÉES, PAS CODÉ
 
 **Sa question du 5 novembre** : *« est-ce que tu as des idées pour améliorer

@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-06
 
+- **Hiverner l'arrosage, codé (la B), pas sur `main`** (son « tu peux coder tout ça », le 6 novembre). Sur la fiche d'un client, Atlas demande s'il a un arrosage automatique, puis si l'hivernage est fait par nous, quand une facture émise parle d'arrosage ou qu'il a un contrat d'entretien accepté ; la case est aussi dans ses coordonnées. Du 1er novembre à la fin février, les deux « oui » posent une goutte à côté de son nom dans Vos clients, une ligne « N arrosages à hiverner » les rassemble, et sa fiche dit « Arrosage à hiverner » avec « Le prévoir » (le jour, le matin, l'après-midi ou la journée, posé au planning par le même geste que « Un client ») et « C'est fait ». Au planning, la goutte à côté du jour, dans la semaine et dans le mois. Ce que ça évite : un hivernage oublié, et un réseau qui gèle. Migration `0165_hivernage.sql`, expand seul. Rien n'a été joué en base ni ouvert à l'écran : sa règle, aucune batterie sans son « oui ».
 - **Hiverner l'arrosage : la goutte aussi dans le mois** (sa demande) : à côté du numéro du jour, dans le mois en haut du planning, pour voir tous les hivernages d'un coup d'œil. Pas codé.
 - **Hiverner l'arrosage : la goutte sur le planning** (sa demande) : posé au planning, l'hivernage met la même goutte bleue à côté de son jour. Un férié ne se choisit pas, donc son bleu ne la croise jamais. Pas codé.
 - **Restrictions d'eau et heures du jour : écartées** (sa décision) : seules les trois premières planches se coderont. Les deux planches restent, marquées écartées.

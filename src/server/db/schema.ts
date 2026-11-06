@@ -801,6 +801,16 @@ export const clients = pgTable(
     // Canal convenu avec le client pour l'envoi du devis (docs/AGENT.md §2.1).
     // Sans lui, l'envoi est impossible : mieux vaut bloquer qu'envoyer dans le vide.
     canalCommunication: text("canal_communication", { enum: ["sms", "email"] }),
+    /**
+     * L'hivernage de son arrosage (migration 0165, sa planche du 5 novembre
+     * 2026). Trois faits posés par LUI, sur la fiche du client ou dans ses
+     * coordonnées, jamais devinés d'une ligne de facture. NULL : jamais
+     * demandé, et c'est ce qui fait paraître la question (`src/lib/hivernage.ts`).
+     */
+    arrosageAutomatique: boolean("arrosage_automatique"),
+    hivernageParNous: boolean("hivernage_par_nous"),
+    /** Le jour où l'hivernage a été fait. Il vaut pour la saison qui le contient. */
+    hiverneLe: date("hiverne_le"),
     // Effacement à la demande (docs/RGPD.md §5). Un client effacé n'est pas une
     // ligne supprimée : ce que la loi impose de conserver subsiste, et le motif
     // dit quoi et pourquoi.
@@ -999,6 +1009,13 @@ export const chantiers = pgTable(
      * devis prennent leur place (`travauxAffiches`). Migration 0126.
      */
     travauxALaMain: text("travaux_a_la_main").array().notNull().default(sql`'{}'::text[]`),
+    /**
+     * CE QU'EST CE CHANTIER, quand ce n'est pas un chantier ordinaire
+     * (migration 0165). « hivernage » : posé depuis la fiche d'un client par
+     * « Le prévoir ». C'est cette marque, jamais le libellé, qui fait porter
+     * la goutte au planning et dire « Prévu le… » à la fiche.
+     */
+    nature: text("nature", { enum: ["hivernage"] }),
     // **Qui tient ce chantier vit dans `equipesDuChantier`, plus ici.** La
     // colonne `equipe_id` portait UNE équipe, pour le chantier entier ; il en
     // veut plusieurs, et différentes le matin et l'après-midi (migration 0058).

@@ -257,6 +257,13 @@ export async function creerChantier(
      * devis, et l'écrire à la création la figerait avant qu'on la connaisse.
      */
     dureeDemiJournees?: number;
+    /**
+     * CE QU'EST CE CHANTIER, et ses travaux, quand il naît d'un geste qui le
+     * sait : « Le prévoir » de la fiche d'un client pose un hivernage
+     * (migration 0165). Ailleurs, absents : un chantier ordinaire.
+     */
+    nature?: "hivernage";
+    travauxALaMain?: string[];
   }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
@@ -268,6 +275,8 @@ export async function creerChantier(
         adresseChantier: data.adresseChantier,
         clientId: data.clientId ?? null,
         dureeDemiJournees: data.dureeDemiJournees,
+        nature: data.nature ?? null,
+        ...(data.travauxALaMain ? { travauxALaMain: data.travauxALaMain } : null),
         createdBy: ctx.utilisateurId,
         updatedBy: ctx.utilisateurId,
       })
@@ -1076,6 +1085,9 @@ export async function listerChantiersPourPlanning(ctx: Ctx) {
         // liste plutôt qu'au moment du geste : le patron ouvre sa feuille en
         // voiture, souvent sans réseau — la même raison que l'adresse.
         note: chantiers.note,
+        // Un hivernage posé depuis la fiche d'un client : la goutte à côté de
+        // son jour, dans la semaine et dans le mois (migration 0165).
+        nature: chantiers.nature,
         ...DERNIER_ENVOI,
       })
       .from(chantiers)

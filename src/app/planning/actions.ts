@@ -33,8 +33,9 @@ import {
 import { dernierEnvoiDuChantier, nombreDeRetoursDuChantier } from "@/server/repositories/retours-intervention";
 import { getClient, listerClients, mettreAJourClient, trouverOuCreerClient } from "@/server/repositories/clients";
 import { filtrerClientsParNom } from "@/lib/recherche-client";
-import { nomDuChantier } from "@/lib/nom-chantier";
 import { poserALaPlaceDuClient } from "@/server/repositories/pose-a-sa-place";
+import { poserLeClientSurLeJour } from "@/server/repositories/pose-d-un-client";
+import type { QuandPoser } from "@/lib/planning-jour";
 import { dernierEnvoi } from "@/server/repositories/envois-devis";
 import { etatEnvoi } from "@/lib/etat-envoi";
 import { getOuCreerDevisBrouillon } from "@/server/repositories/devis";
@@ -588,9 +589,6 @@ export async function chercherDesClientsAction(saisie: string): Promise<ClientPr
     .map((c) => ({ id: c.id, nom: c.nom, telephone: c.telephone, adresse: c.adresse }));
 }
 
-/** Ce que le jour reçoit : une moitié, ou la journée entière. */
-export type QuandPoser = "matin" | "apres_midi" | "journee";
-
 export type ResultatPoseClient =
   | { succes: true; chantier: ChantierDuPlanning; ficheCreee: boolean }
   | { succes: false; erreur: string };
@@ -633,23 +631,9 @@ export async function poserUnClientAction(
     adresse: saisie.adresse?.trim() || undefined,
   });
 
-  // **Le nom du chantier ne s'invente pas ici** : `nomDuChantier` le fabrique
-  // pour toute l'application, et le recopier à la main donnerait un jour deux
-  // façons de nommer la même chose (`CLAUDE.md` §3).
-  // **La durée naît AVEC le chantier** : `planifierChantier` la lit pour savoir
-  // combien de demi-journées poser, et un chantier sans durée vaudrait la
-  // journée entière — donc « Matin » prendrait aussi l'après-midi.
-  const chantier = await creerChantier(ctx, {
-    nom: nomDuChantier({ nomClient: client.nom, adresseChantier: client.adresse, jour }),
-    adresseChantier: client.adresse ?? undefined,
-    clientId: client.id,
-    dureeDemiJournees: quand === "journee" ? 2 : 1,
-  });
-
-  await planifierChantier(ctx, chantier.id, jour, {
-    demi: quand === "apres_midi" ? "apres_midi" : "matin",
-  });
-  await porterChantierDansAgenda(ctx, chantier.id);
+  // **Le geste de poser vit une seule fois** (`poserLeClientSurLeJour`) : la
+  // fiche d'un client le reprend pour l'hivernage (« Le prévoir »).
+  const chantier = await poserLeClientSurLeJour(ctx, client, jour, quand);
 
   // **On relit par la requête du planning**, plutôt que de fabriquer la ligne :
   // elle porte une quinzaine de champs — l'adresse, le dernier envoi, les

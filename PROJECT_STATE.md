@@ -4,6 +4,15 @@
 dernière migration `drizzle/0164_sauts_de_page_du_devis.sql` (la mise en page du devis), avec `0163_aide_note_devis_vue.sql` (la note du devis), `0162_prestations_detail.sql` et `0161_pieces_importees_objet_cherche.sql` (le détail et le titre), sur `main` le 4 novembre ; avant elles, `0159_rappels_vehicules_vus.sql` et `0160_envoi_facture_destinataire_tape.sql` sur `main` le 4 novembre, `0158_cles_composites_effacent_comme_leur_lien.sql` le 3
 
 ---
+## HIVERNER L'ARROSAGE (B), CODÉ (6 novembre 2026), PAS SUR `main`
+
+Lot `lot/hivernage`, en attente de sa batterie. La goutte des clients à
+hiverner (Vos clients, la fiche, la semaine et le mois du planning), les deux
+questions de la fiche et leurs cases dans ses coordonnées, « Le prévoir » qui
+pose au planning, « C'est fait » et « Annuler ». Migration `0165_hivernage.sql`.
+Règles : `src/lib/hivernage.ts`, `scripts/test-hivernage.ts` (vert) ; en base :
+`scripts/test-hivernage-db.ts` (écrite, pas jouée). Aucun écran ouvert.
+
 ## LA MISE EN PAGE DU DEVIS, CODÉE (4 novembre 2026), SUR `main` LE 4 NOVEMBRE
 
 Branche `lot/mise-en-page-devis`, d'après `appli/soignee/devis-mise-en-page.html` (*« tu peux coder ça, mais ne lance pas de batterie »*). Les pages se remplissent jusqu'au numéro de page, le pied suit la dernière ligne (22,4 points), les notes accompagnent les modalités ; dans l'aperçu d'un devis brouillon, toucher une ligne ou un bloc puis « Nouvelle page ici », « Tout remettre », la phrase jusqu'au premier saut (`ARCHITECTURE.md` §553). Générateur `src/server/pdf/document-commun.ts`, règles des clés `src/lib/sauts-de-page.ts`, dépôt `src/server/repositories/devis.ts`, route `/api/devis/[id]/mise-en-page`, écran `src/app/documents/pdf/VisionneusePdf.tsx`, migration `0164`. Suites `test-mise-en-page-devis`, `test-sauts-de-page-db`, `test-visionneuse-pdf`, types, lint et contrôles du dépôt verts ; geste joué au navigateur sur le poste. Puis ses deux réponses du même jour (`appli/soignee/devis-mise-en-page-questions.html`) : des espaces dans l'aperçu, plusieurs d'affilée (« Un espace ici », « Encore un espace », « Plus de place sur cette page. »), et le saut vu dans l'écran du devis (`SautDuDevis.tsx`) ; colonne `espaces_de_page` dans 0164 ; suite navigateur `test-mise-en-page-apercu-e2e.ts`. **Niveau 3 (migration, argent) : sur `main` le 4 novembre, par la batterie commune des quatre lots** (`docs/batterie-commune-4-novembre.md`). Plus rien à trancher.

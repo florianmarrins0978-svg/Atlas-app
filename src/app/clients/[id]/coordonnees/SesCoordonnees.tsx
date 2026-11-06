@@ -7,6 +7,7 @@ import ChoixCivilite from "@/components/atlas/ChoixCivilite";
 import ChampAdresse from "@/components/atlas/ChampAdresse";
 import AvisNumeroTva from "@/components/atlas/AvisNumeroTva";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
+import CocheRonde from "@/components/atlas/reglages/CocheRonde";
 import type React from "react";
 import { colors, libelleCaps } from "@/lib/design-tokens";
 import { casesDuClient, type CiviliteClient } from "@/lib/civilite";
@@ -49,6 +50,8 @@ export default function SesCoordonnees({
     siret: string;
     numeroTva: string;
     codeService: string;
+    arrosageAutomatique: boolean | null;
+    hivernageParNous: boolean | null;
   };
   retour: { href: string; libelle: string };
 }) {
@@ -61,6 +64,11 @@ export default function SesCoordonnees({
   const [siret, setSiret] = useState(depart.siret);
   const [numeroTva, setNumeroTva] = useState(depart.numeroTva || DEBUT_NUMERO_TVA);
   const [codeService, setCodeService] = useState(depart.codeService);
+  // **Trois états, pas deux** : `null` (jamais demandé) reste `null` tant
+  // qu'on n'y touche pas. Une case cochée ou non écrirait sinon « non » à
+  // chaque correction d'un téléphone, et la question de sa fiche disparaîtrait.
+  const [arrosage, setArrosage] = useState<boolean | null>(depart.arrosageAutomatique);
+  const [hivernage, setHivernage] = useState<boolean | null>(depart.hivernageParNous);
   const cases = casesDuClient(civilite);
   const [refus, setRefus] = useState<string | null>(null);
   const [enCours, demarrer] = useTransition();
@@ -77,6 +85,8 @@ export default function SesCoordonnees({
         siret,
         numeroTva,
         codeService,
+        arrosageAutomatique: arrosage,
+        hivernageParNous: hivernage,
       });
       if (!r.ok) {
         setRefus(r.raison);
@@ -175,6 +185,22 @@ export default function SesCoordonnees({
           <ChampAdresse label="Son adresse" placeholder="12 rue des Lilas, Nantes" value={adresse} onChange={setAdresse} sansLibelle />
         </div>
 
+        {/* **Son arrosage, puis son hivernage** (sa planche du 5 novembre
+            2026) : la même chose que les deux questions de sa fiche, pour un
+            client équipé par un autre, ou une réponse à corriger. La seconde
+            case n'existe que sous la première cochée. */}
+        <div className="mt-1 flex flex-col">
+          <Coche libelle="Arrosage automatique" pris={arrosage === true} onClick={() => setArrosage(arrosage !== true)} repere="case-arrosage" />
+          {arrosage === true && (
+            <Coche
+              libelle="Vous faites son hivernage"
+              pris={hivernage === true}
+              onClick={() => setHivernage(hivernage !== true)}
+              repere="case-hivernage"
+            />
+          )}
+        </div>
+
         {/* Un refus se lit là où le geste se fait, et il porte sa raison. */}
         {refus && (
           <p role="alert" className="text-[14px] font-semibold" style={{ color: colors.alert }}>
@@ -190,6 +216,24 @@ export default function SesCoordonnees({
       </form>
 
     </div>
+  );
+}
+
+/** Une case à cocher, la pastille des choix de l'appli (`CocheRonde`). */
+function Coche({ libelle, pris, onClick, repere }: { libelle: string; pris: boolean; onClick: () => void; repere: string }) {
+  return (
+    <button
+      type="button"
+      role="checkbox"
+      aria-checked={pris}
+      onClick={onClick}
+      data-atlas={repere}
+      className="flex min-h-[48px] items-center gap-3 text-left text-[16px]"
+      style={{ color: colors.ink, WebkitTapHighlightColor: "transparent" }}
+    >
+      <CocheRonde pris={pris} />
+      {libelle}
+    </button>
   );
 }
 

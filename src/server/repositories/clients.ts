@@ -334,6 +334,9 @@ export async function mettreAJourClient(
     numeroTva?: string | null;
     /** Un client public (migration 0137) ; déjà lu par `referenceChorusLue`. */
     codeService?: string | null;
+    /** Son arrosage et son hivernage (migration 0165) : `null` remet « jamais demandé ». */
+    arrosageAutomatique?: boolean | null;
+    hivernageParNous?: boolean | null;
   }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
@@ -344,6 +347,7 @@ export async function mettreAJourClient(
       .set({
         ...seulement(data, [
           "nom", "civilite", "telephone", "adresse", "email", "canalCommunication", "siret", "numeroTva", "codeService",
+          "arrosageAutomatique", "hivernageParNous",
         ]),
         updatedAt: new Date(),
       })

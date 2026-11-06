@@ -36940,3 +36940,21 @@ Contrôles : `test-feuille-main-oeuvre` (pur : la quantité à la journée, l'he
 
 **L'ordre des lots.** D'abord la Factur-X, qui ne dépend d'aucun compte : une règle pure qui écrit le XML (CII, profil EN 16931) depuis la facture, le PDF rendu PDF/A-3 avec ce XML dedans, et un contrôle par les règles officielles. Ensuite le branchement (la clé chiffrée par `chiffre-au-repos.ts`, isolée par entreprise ; l'état de chaque facture transmise), qui ne s'éprouve qu'avec un vrai compte. Les deux sont de niveau 3.
 
+## §556 : Hiverner l'arrosage : trois faits sur le client, une marque sur le chantier, un seul geste pour poser
+
+Sa planche du 5 novembre 2026 (`appli/soignee/hiverner-l-arrosage.html`), sa réponse « la B » et son ajout du 6 : *« pour les contrats d'entretien, souvent, on fait l'hivernage. Atlas demande s'il y a un arrosage automatique et si on fait l'hivernage. »* Codé le 6 novembre, lot `lot/hivernage`, migration `0165`.
+
+**Atlas ne devine pas qui a un arrosage.** Une ligne de facture n'est qu'un texte : « arrosage de reprise » sur une plantation n'est pas un réseau, « 9 turbines » en est un sans le mot. Le mot ne fait donc que poser la question (`parleDArrosage`) ; la réponse est un fait posé par lui sur le client : `arrosage_automatique`, puis `hivernage_par_nous`, nullables, NULL voulant dire « jamais demandé ». La goutte ne vaut que pour les deux « oui » : un hivernage fait par un autre n'a rien à oublier chez nous. **Le contrat compte quand il est accepté** : c'est la seule source qui dise qu'un jardin est entretenu chez lui ; un brouillon ou un envoi sans réponse, non.
+
+**La saison vit dans une règle pure** (`debutDeLaSaison`, `aHiverner`) : du 1er novembre à la fin février, `hiverne_le` comptant pour la saison qui le contient. La liste (`listerFichesClients`) et la fiche (`ceQueLaFicheDit`) lisent la même : deux calculs de « à hiverner » auraient montré la goutte dans la liste et pas sur la fiche.
+
+**Une marque, pas un libellé.** `chantiers.nature = 'hivernage'` dit au planning et à la fiche qu'un chantier posé est un hivernage. Le travail « Hivernage de l'arrosage » est un texte qu'il peut réécrire ; la marque ne se tape pas, et la goutte du planning ne disparaît pas avec une correction de libellé.
+
+**Un seul geste pour poser.** « Un client » du planning (parti du jour) et « Le prévoir » de la fiche (parti du client) posent par `poserLeClientSurLeJour` (`src/server/repositories/pose-d-un-client.ts`), sorti de `poserUnClientAction` : le nom du chantier, sa durée, sa place, l'agenda. Les gardes restent aux portes, chacune dans son action. `QuandPoser` descend dans `src/lib/planning-jour.ts`, sous les deux.
+
+**Ce que la feuille montre de ce qui est posé** se lit au moment où elle s'ouvre (`cePlanningPorteAction`), sur le planning tel que la personne le VOIT (`contextePlanning`, son tamis compris), avec la règle des places du planning (`creneauxPoses`, dans `cePlanningPorte`). Une lecture qui échoue le dit : la feuille ne promet jamais « Libre » sur un matin qu'elle n'a pas regardé.
+
+**Le mois partagé ne connaît pas l'hivernage.** `MoisCharge` reçoit un `signeDuJour` que l'écran lui donne, jour par jour ; sans lui, la case reste celle d'avant, au pixel (`display: contents`). Le calendrier de l'écran d'envoi n'en sait rien.
+
+**Les coordonnées gardent trois états.** Une case ne dit que oui ou non : sans le troisième, corriger un téléphone aurait répondu « non » à la question de l'arrosage, et elle ne serait jamais revenue.
+

@@ -67,6 +67,7 @@ export default function MoisCharge({
   voletDetache = false,
   reperePrefixe = "",
   sousLaLegende,
+  signeDuJour,
 }: {
   curseur: Curseur;
   setCurseur: (maj: (c: Curseur) => Curseur) => void;
@@ -150,6 +151,13 @@ export default function MoisCharge({
    * (sa demande du 29 septembre 2026). L'écran d'envoi n'y met rien.
    */
   sousLaLegende?: ReactNode;
+  /**
+   * UN SIGNE À CÔTÉ DU NUMÉRO DU JOUR — sur le planning, la goutte d'un
+   * hivernage posé (sa demande du 6 novembre 2026 : *« même bien qu'elle soit
+   * sur le mois à côté du jour »*). Le calendrier ne sait pas ce qu'il montre :
+   * l'écran le lui donne, jour par jour. Sans lui, la case est celle d'avant.
+   */
+  signeDuJour?: (jour: JourIso) => ReactNode;
 }) {
   const retenus = useMemo(
     () => new Set([...(jourRetenus ?? []), ...(jourRetenusSeconde ?? []), ...(jourRetenu ? [jourRetenu] : [])]),
@@ -342,6 +350,7 @@ export default function MoisCharge({
                         aujourdHui,
                         occupationDe,
                         onToucherJour,
+                        signeDuJour,
                       })
                     )}
                   </div>
@@ -392,6 +401,7 @@ export default function MoisCharge({
       occupationDe,
       onToucherJour,
       reperePrefixe,
+      signeDuJour,
     ]
   );
 
@@ -524,9 +534,11 @@ function caseDuJour(
     aujourdHui: JourIso;
     occupationDe: (jour: JourIso, demi: "matin" | "apres_midi") => OccupationLue;
     onToucherJour: (jour: JourIso) => void;
+    signeDuJour?: (jour: JourIso) => ReactNode;
   }
 ) {
-  const { retenus, entoures, jourTouche, aujourdHui, occupationDe, onToucherJour } = lu;
+  const { retenus, entoures, jourTouche, aujourdHui, occupationDe, onToucherJour, signeDuJour } = lu;
+  const signe = c.horsMois ? null : (signeDuJour?.(c.jour) ?? null);
   // « La B » : la case reste papier, le chiffre est entouré. Vert pin pour la
   // première proposition ; pour la seconde, l'or DE TEXTE de la charte
   // (`orTexte`, détaché à 4,5 de la plage sur les huit chartes) — l'or nu ne
@@ -599,6 +611,9 @@ function caseDuJour(
                 WebkitTapHighlightColor: "transparent",
               }}
             >
+              {/* Le signe du jour se pose À CÔTÉ du numéro. Sans signe, le
+                  numéro reste seul dans la case (`contents`), au pixel près. */}
+              <span className={signe ? "flex items-center gap-[3px]" : "contents"}>
               <span
                 className="text-[17px] leading-none"
                 data-entoure={entoure ?? undefined}
@@ -634,6 +649,8 @@ function caseDuJour(
                 }}
               >
                 {c.numero}
+              </span>
+              {signe}
               </span>
               <MarqueDuJour
                 matin={occupationDe(c.jour, "matin")}

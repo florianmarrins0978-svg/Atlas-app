@@ -45,6 +45,13 @@ export type SesCoordonnees = {
   numeroTva: string;
   /** Pour un client public, ce que Chorus Pro vérifie (22 octobre 2026). */
   codeService: string;
+  /**
+   * Son arrosage et son hivernage (sa planche du 5 novembre 2026). `null` :
+   * jamais demandé, et l'écran le rend tel quel tant qu'on n'y touche pas,
+   * sans quoi corriger un téléphone répondrait « non » à sa place.
+   */
+  arrosageAutomatique: boolean | null;
+  hivernageParNous: boolean | null;
 };
 
 export type ResultatCoordonnees = { ok: true } | { ok: false; raison: string };
@@ -78,6 +85,13 @@ export async function enregistrerSesCoordonneesAction(
     return { ok: false, raison: "Ce numéro de TVA n'a pas la bonne forme : FR suivi de 11 chiffres en France." };
   }
 
+  // Le type n'existe pas à l'exécution : ce qui n'est ni oui, ni non, ni
+  // « jamais demandé » ne s'écrit pas.
+  const triEtat = (v: unknown) => v === true || v === false || v === null;
+  if (!triEtat(data.arrosageAutomatique) || !triEtat(data.hivernageParNous)) {
+    return { ok: false, raison: "La case de l'arrosage ne se lit pas." };
+  }
+
   const existant = await getClient(ctx, clientId);
   if (!existant) {
     return { ok: false, raison: "Ce client n'existe plus." };
@@ -92,6 +106,8 @@ export async function enregistrerSesCoordonneesAction(
     siret: siret || null,
     numeroTva: numeroTva || null,
     codeService: referenceChorusLue(data.codeService) || null,
+    arrosageAutomatique: data.arrosageAutomatique,
+    hivernageParNous: data.hivernageParNous,
   });
 
   // **`mettreAJourClient` rend `null` quand rien n'a été touché**, et ce n'est

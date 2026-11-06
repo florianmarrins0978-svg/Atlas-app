@@ -13,6 +13,7 @@ import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { cheminAutorise, peutModifierLePlanning, type Role } from "@/lib/acces-roles";
 import { colors, font } from "@/lib/design-tokens";
 import MoisCharge, { Fleche } from "@/components/atlas/MoisCharge";
+import Goutte from "@/components/atlas/Goutte";
 import CouleursDesEtats from "@/components/atlas/CouleursDesEtats";
 import { AUCUNE_COULEUR_CHOISIE, type CouleursPlanning } from "@/lib/couleurs-planning";
 import type { NomCharte } from "@/lib/chartes";
@@ -1377,6 +1378,13 @@ export default function PlanningClient({
     [parCreneau]
   );
 
+  // **La marque du chantier, jamais son libellé** (migration 0165) : un
+  // « Hivernage de l'arrosage » réécrit à la main ne perd pas sa goutte.
+  const porteUnHivernage = useCallback(
+    (jour: JourIso) => chantiersDuJour(jour).some((c) => c.nature === "hivernage"),
+    [chantiersDuJour]
+  );
+
   const titreSemaine = useMemo(() => {
     const debut = enDate(debutFenetre);
     // **La fin se calcule, elle ne se lit pas au rang 6** : sur la vue journée
@@ -1538,6 +1546,12 @@ export default function PlanningClient({
             // disait rien au mois, et rien ne montrait d'où venait la liste.
             // Sans liste à l'écran (un jour est ouvert), aucune semaine n'est lue.
             semaineLue={jourTouche === null ? lundiDe(debutFenetre) : null}
+            // **La goutte à côté du numéro d'un jour d'hivernage** — sa
+            // demande du 6 novembre 2026 : tous les hivernages du mois d'un
+            // coup d'œil. La même goutte que Vos clients et la semaine.
+            signeDuJour={(jour) =>
+              porteUnHivernage(jour) ? <Goutte taille={16} libelle="Un hivernage ce jour-là" /> : null
+            }
             // **Le patron seul** : c'est un réglage de l'entreprise, sa réponse
             // du 29 septembre 2026. Ses salariés voient ses couleurs.
             sousLaLegende={
@@ -1703,6 +1717,13 @@ export default function PlanningClient({
                 {jour === aujourdHui && (
                   <span className="text-[15px]" style={{ fontFamily: font.body, color: colors.inkSoft }}>
                     {jourLisibleCourt(jour).toLocaleLowerCase("fr")}
+                  </span>
+                )}
+                {/* La goutte d'un hivernage posé ce jour-là (sa demande du
+                    6 novembre 2026), à côté du titre du jour. */}
+                {porteUnHivernage(jour) && (
+                  <span className="self-center">
+                    <Goutte libelle="Un hivernage ce jour-là" />
                   </span>
                 )}
               </h3>

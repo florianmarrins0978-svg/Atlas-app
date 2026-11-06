@@ -23,6 +23,14 @@ import { type Moment } from "@/lib/disponibilites";
 export type Demi = Moment;
 export const DEMIS: readonly Demi[] = ["matin", "apres_midi"];
 
+/**
+ * Ce que le jour reçoit quand on y POSE un client sans devis : une moitié, ou
+ * la journée entière. Le planning (« Un client ») et la fiche d'un client
+ * (« Le prévoir » de l'hivernage) posent par le même geste, donc par le même
+ * mot : il vit ici, sous les deux.
+ */
+export type QuandPoser = Demi | "journee";
+
 /** Ce qui s'écrit dans la colonne de gauche d'une ligne de la fiche du jour. */
 export const MOT_DEMI: Record<Demi, string> = {
   matin: "Matin",
