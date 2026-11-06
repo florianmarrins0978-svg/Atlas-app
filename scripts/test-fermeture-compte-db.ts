@@ -125,8 +125,23 @@ async function compter(ctx: Ctx) {
 }
 
 /** La fermeture posée dans le passé, comme si les jours avaient passé. */
+/**
+ * « Le compte a été fermé il y a N jours » : un RÉGLAGE D'HORLOGE, qu'aucun
+ * geste du patron ne produit. La fermeture se programme sur un compte ouvert
+ * (`programmerLaFermeture`) ; un compte déjà fermé est en lecture seule, et
+ * c'est voulu. La première version passait par ce geste : au second appel, sur
+ * le compte que l'appel d'avant avait fermé, l'écriture était refusée, la
+ * purge ne tournait jamais, et trois cas tombaient derrière elle (trouvé à la
+ * batterie commune du 6 novembre au soir). Les dates s'écrivent donc ici, sur
+ * `entreprises`, qui n'est pas sous RLS.
+ */
 async function fermerIlYA(ctx: Ctx, jours: number) {
-  await programmerLaFermeture(ctx, ilYA(jours), ilYA(jours + 1));
+  await pool.query(
+    `UPDATE entreprises
+        SET fermeture_demandee_le = $2, fermeture_le = $3, reste_efface_le = NULL, prevenu_le = NULL
+      WHERE id = $1`,
+    [ctx.entrepriseId, ilYA(jours + 1), ilYA(jours)]
+  );
 }
 
 async function idDe(email: string): Promise<string> {
@@ -224,8 +239,16 @@ async function main() {
   await test("archivé : la date est posée, et rien ne repasse", async () => {
     const { etat } = await lireLaFermeture(ferme);
     assert.equal(etat.statut, "archivee");
-    const r = await effacerLeResteDesComptesFermes(new Date(MAINTENANT.getTime() + 400 * JOUR));
-    assert.equal(r.comptesEffaces, 0);
+    // **Ce compte-là, pas tous** : à quatre cents jours, les AUTRES comptes
+    // fermés de cette suite sont échus à leur tour, et la purge les traite à
+    // bon droit. La première version comptait tous les comptes (« 3 == 0 ») :
+    // elle accusait la purge de repasser sur un compte qu'elle ne touchait pas.
+    const dateDuCompte = async () =>
+      (await pool.query<{ reste: Date | null }>("SELECT reste_efface_le AS reste FROM entreprises WHERE id = $1", [ferme.entrepriseId])).rows[0]?.reste?.getTime();
+    const avantRepasse = await dateDuCompte();
+    assert.ok(avantRepasse, "le compte archivé n'a pas de date d'effacement");
+    await effacerLeResteDesComptesFermes(new Date(MAINTENANT.getTime() + 400 * JOUR));
+    assert.equal(await dateDuCompte(), avantRepasse, "la purge est repassée sur le compte archivé");
   });
 
   await test("le patron lit toujours ses pièces gardées", async () => {
