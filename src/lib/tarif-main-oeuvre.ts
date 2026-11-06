@@ -70,15 +70,26 @@ function reconnaitre(unite: string | null): { parHomme: boolean; parJour: boolea
 }
 
 /**
+ * Une unité de prix au jour ET par homme (« jour/homme », « j/h »…) : celle
+ * d'une ligne de main d'œuvre de son équipe, dont la quantité est le nombre
+ * de jours d'homme. La reprise d'un devis la reconnaît ainsi (6 novembre
+ * 2026), comme la dictée la chiffre : par l'unité, jamais par le libellé.
+ */
+export function auJourParHomme(unite: string | null): boolean {
+  const r = reconnaitre(unite);
+  return r !== null && r.parHomme && r.parJour;
+}
+
+/**
  * Son tarif au jour et par homme, s'il en a un : c'est lui qui chiffre la main
  * d'œuvre qu'il dicte (« 2 hommes, 2 jours »), conducteurs d'engin retirés
- * (`main-oeuvre-dictee.ts`).
+ * (`main-oeuvre-dictee.ts`). Il ne lit que l'unité et le prix : la reprise
+ * d'un devis le cherche aussi dans une grille sans identifiants.
  */
-export function tarifJourHomme(tarifs: readonly TarifSimple[]): TarifSimple | null {
+export function tarifJourHomme<T extends { prix: string; unite: string | null }>(tarifs: readonly T[]): T | null {
   return (
     tarifs.find((t) => {
-      const r = reconnaitre(t.unite);
-      if (!r?.parHomme || !r.parJour) return false;
+      if (!auJourParHomme(t.unite)) return false;
       try {
         return new Decimal(t.prix).greaterThan(0);
       } catch {

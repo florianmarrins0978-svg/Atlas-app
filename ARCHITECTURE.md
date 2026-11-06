@@ -36970,3 +36970,20 @@ Les retours déjà partis gardent leurs cases telles qu'elles sont parties : une
 **Et la reprise traverse le drapeau** (`LigneAReprendre.mainDoeuvre`, exigé) : « Dernier devis » le perdait, la main d'œuvre reprise devenait un travail à cocher et sortait de « dont main d'œuvre HT ». La part répartie (`partMainDoeuvre`) reste perdue à la reprise, et c'est une règle à décider (`TODO.md`).
 
 Contrôles : `test-taches-du-devis` (les deux sens), `test-reprise-du-devis-db`.
+
+## §558 : La main d'œuvre répartie se retient en jours d'homme, et un devis repris la reporte au prix du jour
+
+**Sa décision du 6 novembre 2026**, devant l'image d'une haie reprise par « Dernier devis » : *« il faut garder les 400 € de main d'œuvre ; quand on fait mettre à jour les prix, ça doit juste se mettre à jour par rapport à la taille de la haie ; à part si les prix de la main d'œuvre ont augmenté, de 400 à 420 ; dans tous les cas, la ligne main d'œuvre présente »*.
+
+| | |
+|---|---|
+| **ce qui se retient** | `lignes_prix.jours_main_doeuvre` : les jours d'homme d'une part répartie, posés par la feuille (équipe) et par la dictée (`journees`) |
+| **écarté : retenir le prix du jour** | il change à chaque réponse ; les jours sont un fait du chantier, ils ne changent jamais |
+| **écarté : déduire les jours** | de la durée dictée ou du total : la feuille laisse changer l'équipe avant d'ajouter, et ce serait une main d'œuvre inventée |
+| **inconnus** | une part d'avant 0169, ou de partenaire : elle garde ses euros, sans montée |
+| **les bases d'une ligne reprise** | `prix_ancien` = le TRAVAIL seul, part retirée ; `part_ancienne`, `part_grille` pour la main d'œuvre. La réponse et la hausse repartent toujours d'elles (`ligneApresSaReponse`) |
+| **la ligne « Main d'œuvre »** | se reconnaît à son unité au jour par homme (`auJourParHomme`), et reçoit le prix du jour par homme de la grille |
+
+**Le piège évité** : comparer le tarif du jour au prix entier (28 € part comprise contre 12 €) faisait toujours « changer » la haie, et le oui effaçait les 400 €. Et une main d'œuvre posée APRÈS la reprise sort la ligne de la reprise, comme un prix tapé, sans quoi le oui suivant la retirait.
+
+Contrôles : `test-reprise-des-prix`, `test-hausse-du-devis` (purs, verts), `test-reprise-du-devis-db` (le parcours entier, sous `atlas_app`).

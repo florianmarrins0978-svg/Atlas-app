@@ -145,6 +145,9 @@ type Ligne = {
   mainDoeuvre?: boolean | null;
   /** La main d'œuvre répartie sur ce travail (migration 0155), comprise dans son prix. */
   partMainDoeuvre?: string | null;
+  /** Reprise : sa main d'œuvre sur l'ancien devis, et la même au prix du jour quand il a bougé (migration 0169). */
+  partAncienne?: string | null;
+  partGrille?: string | null;
 };
 
 /**
@@ -1156,7 +1159,14 @@ export default function DevisCompletClient(props: Props) {
           chantierId={props.chantierId}
           lignes={lignes
             .filter((l) => !estLigneOuverte(l.id))
-            .map((l) => ({ id: l.id, libelle: l.libelle, prixAncien: l.prixAncien ?? null, prixGrille: l.prixGrille ?? null }))}
+            .map((l) => ({
+              id: l.id,
+              libelle: l.libelle,
+              prixAncien: l.prixAncien ?? null,
+              prixGrille: l.prixGrille ?? null,
+              partAncienne: l.partAncienne ?? null,
+              partGrille: l.partGrille ?? null,
+            }))}
           reponseInitiale={props.repriseGrille}
           hausseInitiale={props.hausseReprise}
           ecrire={aLaSuite}
@@ -1164,7 +1174,11 @@ export default function DevisCompletClient(props: Props) {
             setLignes((cur) =>
               cur.map((l) => {
                 const m = maj.find((x) => x.id === l.id);
-                return m ? { ...l, prixUnitaire: prixAEcrire(sansZerosInutiles(m.prixUnitaire)), montant: m.montant } : l;
+                // La part suit le prix : sans elle, « dont main d'œuvre HT »
+                // garderait l'ancienne main d'œuvre jusqu'au rechargement.
+                return m
+                  ? { ...l, prixUnitaire: prixAEcrire(sansZerosInutiles(m.prixUnitaire)), montant: m.montant, partMainDoeuvre: m.partMainDoeuvre }
+                  : l;
               })
             )
           }

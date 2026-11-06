@@ -138,6 +138,7 @@ export async function appliquerPropositionPrix(
       // (2 novembre 2026, `test-main-oeuvre-dictee-db.ts`).
       mainDoeuvre: proposee.mainDoeuvre,
       partMainDoeuvre: proposee.partMainDoeuvre,
+      joursMainDoeuvre: proposee.joursMainDoeuvre,
     });
 
     // **On note quelles prestations cette ligne vend.** Sans ce lien, une ligne

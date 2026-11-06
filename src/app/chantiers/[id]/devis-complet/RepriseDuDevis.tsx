@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { colors, surPlein } from "@/lib/design-tokens";
 import { enEuros } from "@/lib/euros";
-import { lignesAMettreAJour, lireTauxDeHausse, type ReponseGrille } from "@/lib/hausse-du-devis";
+import { lignesAMettreAJour, lireTauxDeHausse, partsAMettreAJour, type ReponseGrille } from "@/lib/hausse-du-devis";
 import { repriseDuDevisAction } from "./actions";
 
 /**
@@ -30,6 +30,9 @@ export type LigneDeReprise = {
   libelle: string;
   prixAncien: string | null;
   prixGrille: string | null;
+  /** Sa main d'œuvre répartie sur l'ancien devis, et la même au prix du jour (migration 0169). */
+  partAncienne: string | null;
+  partGrille: string | null;
 };
 
 export default function RepriseDuDevis({
@@ -47,7 +50,7 @@ export default function RepriseDuDevis({
   /** La file d'écriture de la feuille : une hausse ne double jamais un prix tapé en cours d'envoi. */
   ecrire: <T>(ecriture: () => Promise<T>) => Promise<T>;
   /** Les prix réécrits, à poser dans la feuille sans la recharger. */
-  onPrix: (maj: { id: string; prixUnitaire: string; montant: string }[]) => void;
+  onPrix: (maj: { id: string; prixUnitaire: string; montant: string; partMainDoeuvre: string | null }[]) => void;
 }) {
   const [reponse, setReponse] = useState<ReponseGrille>(reponseInitiale);
   const [hausse, setHausse] = useState(hausseInitiale);
@@ -61,6 +64,10 @@ export default function RepriseDuDevis({
 
   const reprises = lignes.filter((l) => l.prixAncien !== null);
   const aMettreAJour = lignesAMettreAJour(reprises);
+  // Sa main d'œuvre au nouveau prix du jour par homme : une question comme une
+  // autre (sa décision du 6 novembre 2026), même quand la taille n'a pas bougé.
+  const mainsDoeuvre = partsAMettreAJour(reprises);
+  const aDemander = aMettreAJour.length + mainsDoeuvre.length > 0;
   if (reprises.length === 0 && hausse === 0) return null;
 
   async function envoyer(choix: { reponse?: ReponseGrille; hausse?: string }) {
@@ -105,7 +112,7 @@ export default function RepriseDuDevis({
 
   return (
     <div className="mb-6 flex flex-col gap-3">
-      {aMettreAJour.length > 0 && reponse === null && (
+      {aDemander && reponse === null && (
         <div
           className="rounded-lg p-3"
           style={{ boxShadow: `inset 0 0 0 1.5px ${colors.or}` }}
@@ -118,6 +125,12 @@ export default function RepriseDuDevis({
             <p key={l.id} className="text-[14.5px] leading-normal tabular-nums">
               {l.libelle} : <s style={{ color: colors.muted }}>{enEuros(Number(l.prixAncien))}</s> devient{" "}
               {enEuros(Number(l.prixGrille))}
+            </p>
+          ))}
+          {mainsDoeuvre.map((l) => (
+            <p key={`mo-${l.id}`} className="text-[14.5px] leading-normal tabular-nums" data-atlas="main-oeuvre-a-mettre-a-jour">
+              Main d’œuvre de {l.libelle} : <s style={{ color: colors.muted }}>{enEuros(Number(l.partAncienne))}</s> devient{" "}
+              {enEuros(Number(l.partGrille))}
             </p>
           ))}
           <div className="mt-3 flex gap-2">
@@ -141,7 +154,7 @@ export default function RepriseDuDevis({
         </div>
       )}
 
-      {aMettreAJour.length > 0 && reponse !== null && (
+      {aDemander && reponse !== null && (
         <p className="flex items-center justify-between gap-3 text-[14px]" style={{ color: colors.inkSoft }}>
           <span>{reponse === "oui" ? "Prix mis à jour." : "Anciens prix gardés."}</span>
           <button

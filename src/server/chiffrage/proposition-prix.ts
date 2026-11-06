@@ -102,6 +102,12 @@ export type LigneProposee = {
    * (prix dicté, tarif nommé, sa grille quand il l'a sorti par la croix).
    */
   partMainDoeuvre?: string;
+  /**
+   * Les jours d'homme de cette part (migration 0169), quand son équipe la fait
+   * à son prix du jour : un devis repris la reportera au prix du jour d'alors.
+   * Absents pour un partenaire.
+   */
+  joursMainDoeuvre?: string;
 };
 
 export type PropositionPrix = {
@@ -934,7 +940,13 @@ async function propositionAvecMainOeuvre(
         rang: x.rang,
         ligne: aChiffrer
           ? auForfait(x.vendable, null, x.grille)
-          : { ...auForfait(x.vendable, part, x.grille), partMainDoeuvre: part },
+          : {
+              ...auForfait(x.vendable, part, x.grille),
+              partMainDoeuvre: part,
+              ...(partenaire === null && part !== null
+                ? { joursMainDoeuvre: new Decimal(part).div(mo.tarif.prix).toDecimalPlaces(6).toFixed(6) }
+                : {}),
+            },
       });
     }
     calcul.push({ libelle: "Répartition", detail: "La main d'œuvre est répartie sur les travaux, selon vos curseurs." });

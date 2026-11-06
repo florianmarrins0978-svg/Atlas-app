@@ -32,7 +32,16 @@ restent.
 | les suites | `test-taches-du-devis` vert ici ; `test-reprise-du-devis-db` écrite, **jamais jouée** (base : son oui) |
 | reste | son oui pour la base et la batterie (niveau 3), voir la suite base ROUGE sur l'ancien code puis verte, puis `main` |
 
-**Pas corrigé, ⏳ À SA DÉCISION :** la reprise perd aussi `partMainDoeuvre`,
+**~~À SA DÉCISION~~ TRANCHÉ LE 6 NOVEMBRE, CODÉ SUR LA MÊME BRANCHE** (sa
+réponse : *« il faut garder les 400 € ; mettre à jour, juste la taille de la
+haie ; à part si les prix de la main d'œuvre ont augmenté, 400 à 420 ; dans
+tous les cas la ligne main d'œuvre présente »*). Migration 0169 (les jours
+d'homme de la part, ses deux bases), `ligneApresSaReponse`, la question qui
+nomme la main d'œuvre. Une part posée AVANT 0169, ou celle d'un partenaire,
+n'a pas ses jours : elle garde ses 400 €, sans montée au nouveau prix.
+`test-reprise-du-devis-db` porte son cas entier, **jamais jouée** (son oui).
+
+Ce qui était écrit avant sa réponse : la reprise perd aussi `partMainDoeuvre`,
 la part de main d'œuvre répartie dans le prix d'un travail. Rejoué avec les
 fonctions pures (`partsAppliquees`, `reprendreLaLigne`, `prixDeLaLigneReprise`,
 `mainDoeuvreDesLignes`) le 6 novembre :
