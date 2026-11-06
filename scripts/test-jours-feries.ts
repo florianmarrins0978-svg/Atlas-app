@@ -7,6 +7,16 @@
 
 import assert from "node:assert/strict";
 import { dimancheDePaques, estEnAlsaceMoselle, feriesDeLAnnee, nomDuFerie } from "../src/lib/jours-feries";
+import { creneauxDuChantier, jourRetenable } from "../src/lib/disponibilites";
+import { CHARTES, contraste } from "../src/lib/chartes";
+import {
+  AUCUNE_COULEUR_CHOISIE,
+  RACCOURCIS_DU_PLANNING,
+  VARIABLE_TEXTE_DU_FERIE,
+  couleurDApparence,
+  variableDeLEtat,
+  variablesDesEtats,
+} from "../src/lib/couleurs-planning";
 
 let echecs = 0;
 function essai(nom: string, fn: () => void) {
@@ -64,6 +74,36 @@ essai("l'Alsace et la Moselle se lisent au code postal, et seulement là", () =>
   // Sans code postal, la liste nationale : le côté sûr.
   assert.equal(estEnAlsaceMoselle("Derrière l'église"), false);
   assert.equal(estEnAlsaceMoselle(null), false);
+});
+
+essai("UN FÉRIÉ RESTE PROPOSABLE ET POSABLE : sa règle du 6 novembre 2026", () => {
+  // *« Dans tous les cas, tous les jours fériés, on doit quand même pouvoir
+  // mettre des chantiers dessus si jamais on veut travailler ce jour-là. »*
+  // Le jour ne se refuse pas, et un chantier ne le saute pas.
+  const novembre = { debut: "2026-11-01", fin: "2026-11-30" };
+  assert.equal(jourRetenable("2026-11-11", 2, new Map(), 1, novembre), true, "l'Armistice est refusé");
+  assert.equal(jourRetenable("2027-05-17", 2, new Map(), 1, { debut: "2027-05-01", fin: "2027-05-31" }), true, "le lundi de Pentecôte est refusé");
+  assert.deepEqual(
+    creneauxDuChantier({ jour: "2026-11-10", moment: "matin" }, 4).map((c) => c.jour),
+    ["2026-11-10", "2026-11-10", "2026-11-11", "2026-11-11"],
+    "un chantier de deux jours parti la veille saute le férié"
+  );
+});
+
+essai("LA COULEUR DU FÉRIÉ SE RÈGLE, et son chiffre reste lisible sur les huit chartes", () => {
+  // Rien de choisi : aucune variable, la case garde le bleu de l'apparence.
+  for (const c of CHARTES) assert.equal(variablesDesEtats(AUCUNE_COULEUR_CHOISIE, c)[variableDeLEtat("ferie")], undefined, c.nom);
+  // Chaque choix proposé, et un fond foncé : le chiffre tient 4,5 sur son fond.
+  const choix = [...RACCOURCIS_DU_PLANNING.ferie.map(([t]) => t), "#22456d", "#1c1c1a"];
+  for (const c of CHARTES) {
+    for (const t of [couleurDApparence("ferie", c), ...choix]) {
+      const v = variablesDesEtats({ ...AUCUNE_COULEUR_CHOISIE, ferie: t }, c);
+      const fond = v[variableDeLEtat("ferie")];
+      const texte = v[VARIABLE_TEXTE_DU_FERIE];
+      assert.ok(fond && texte, `${c.nom}, ${t} : une variable manque`);
+      assert.ok(contraste(fond, texte) >= 4.5, `${c.nom}, ${t} : le chiffre ne se lit pas (${contraste(fond, texte).toFixed(2)})`);
+    }
+  }
 });
 
 if (echecs) {

@@ -94,7 +94,8 @@ function situation(s: SalarieVu): { texte: string; ambre?: boolean } {
     if (!s.motif) return { texte: "Corrigé, pourquoi ?", ambre: true };
     return { texte: `${LIBELLE_MOTIF_CORRECTION[s.motif]}, ${enJours(Math.abs(e))}${e > 0 ? " de plus" : ""}` };
   }
-  if (s.absences.length) return { texte: s.absences.map((a) => a.texte).join(", et ") };
+  const dits = [...s.absences.map((a) => a.texte), ...s.feries];
+  if (dits.length) return { texte: dits.join(", et ") };
   return { texte: "Aucune absence notée" };
 }
 
@@ -682,6 +683,18 @@ function FeuilleDuSalarie(f: {
         <p className="flex min-h-[50px] items-center text-[15.5px]" style={{ color: colors.inkSoft }}>
           Aucune en {f.court}
         </p>
+      )}
+
+      {/* Ce que le planning lui a fait travailler un férié : déjà compté, il
+          se lit ici pour qu'on sache d'où vient le jour de plus. */}
+      {s.feries.length > 0 && (
+        <div className="mt-2" data-atlas="feries-travailles">
+          {s.feries.map((t) => (
+            <p key={t} className="flex min-h-[50px] items-center text-[15.5px]" style={{ boxShadow: `inset 0 -1px 0 ${colors.line}` }}>
+              {t}
+            </p>
+          ))}
+        </div>
       )}
 
       <button type="button" onClick={f.onFermer} className="mt-3.5 flex min-h-[48px] w-full items-center justify-center" style={{ color: colors.inkSoft }}>

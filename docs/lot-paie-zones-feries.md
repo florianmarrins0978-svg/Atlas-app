@@ -2,7 +2,7 @@
 
 *6 novembre 2026. Ta consigne : « oui, code tout ça, tu peux pousser mais ne lance pas de batterie ».*
 
-**Où c'est :** sur la branche `lot/paie-zones-feries`, poussée. **Pas sur `main`** : le lot porte trois migrations, donc il demande la batterie, et le garde-fou de `main` refuse sans elle. Rien ne change sur ton espace tant que ce n'est pas fusionné.
+**Où c'est :** sur la branche `lot/paie-zones-feries`, poussée. **Pas sur `main`** : le lot porte quatre migrations, donc il demande la batterie, et le garde-fou de `main` refuse sans elle. Rien ne change sur ton espace tant que ce n'est pas fusionné.
 
 ## Ce qui est codé, point par point
 
@@ -20,6 +20,13 @@
 | **« Il manque une zone, ajoutez-la. »** | oui : le total en rouge, et dans la feuille le jour et le lieu (« Vendredi 6 novembre, Les Landes, adresse non située ») ; le plus sur la bonne zone l'efface. « Une zone de trop, retirez-la. » dans l'autre sens | idem |
 | **Toucher une zone sous un salarié** | ouvre ses jours dans cette zone : la date, le code postal et la ville, la rue, chez qui, la distance | idem |
 | **La pastille de couleur** | ouvre les sept dégradés ; un appui, et toutes les zones changent, chez tous les salariés et dans le PDF | idem |
+
+## Tes deux réponses du même soir, codées
+
+| | |
+|---|---|
+| **« On doit quand même pouvoir mettre des chantiers dessus »** | rien ne fermait un férié au planning, et un contrôle le tient désormais. Et un férié où le planning met un salarié sur un chantier **compte travaillé** dans Jours travaillés, lundi de Pentecôte compris : « Férié travaillé le 11 novembre », à l'écran et sur le PDF. Une demi-journée de chantier compte une demie |
+| **« Réglable »** | une ligne **Férié** dans Couleurs, sous rien, incomplet, complet, au-delà : le bleu d'aujourd'hui, rouge pâle, violet pâle (les teintes de ta planche), ou le nuancier. La case, la légende et la pastille suivent. Le chiffre reste lisible sur les huit chartes : le contrôle a trouvé un cas sur Sylve où il ne l'était pas, corrigé |
 
 ## Ce qui a été fait autrement, et pourquoi
 
@@ -43,8 +50,9 @@
 |---|---|
 | types, style | verts |
 | contrôles purs du dépôt (tirets, flèches, couches, code mort, pansements, boutons, accès, pages gardées, couleurs, PDF, numéros de migration, TODO, mémoire) | **22 sur 22 verts** |
-| les règles des jours et des zones (`test-jours-travailles`) | **24 essais verts**, deux vus rouges en cassant exprès |
-| les trois migrations | appliquées sur une base vide montée ici ; la nouvelle table est sous RLS forcée, `test-toute-table-est-cloisonnee` vert |
+| les règles des jours et des zones (`test-jours-travailles`) | **26 essais verts**, quatre vus rouges en cassant exprès |
+| les fériés (`test-jours-feries`) : posables, et leur couleur lisible | verts, les deux vus rouges en cassant exprès |
+| les quatre migrations | appliquées sur une base vide montée ici ; la nouvelle table est sous RLS forcée, `test-toute-table-est-cloisonnee` vert |
 | le PDF | rendu et regardé, avec et sans zones |
 | les deux écrans | rendus dans un navigateur, le vrai composant, à 360 et 390 px, en Origine et en Nuit, gestes joués (corriger, motif, zone, couleur, jours d'une zone) |
 
@@ -59,8 +67,6 @@
 | | qui |
 |---|---|
 | la batterie, puis `main` | **toi**, ton « oui » |
-| le lundi de Pentecôte (journée de solidarité) : compté travaillé ? Aujourd'hui férié, donc retiré, et corrigeable à la main | **toi** |
-| le bleu des fériés dans Couleurs, ou fixe | **toi** |
 | les deux barèmes (MSA, bâtiment) à vérifier sur les textes de l'année : ce poste ne joint pas le site de la MSA | **toi ou ton comptable** ; ils se changent à l'écran |
 | un salarié embauché ou parti en cours de mois, ou à temps partiel | se corrige à la main ; sa fiche n'a ni dates ni jours |
 | une suite navigateur pour Jours travaillés et les zones | **moi**, avec la batterie |

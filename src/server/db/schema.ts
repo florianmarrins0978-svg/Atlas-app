@@ -273,6 +273,8 @@ export const entreprises = pgTable("entreprises", {
   planningIncomplet: text("planning_incomplet"),
   planningComplet: text("planning_complet"),
   planningAuDela: text("planning_au_dela"),
+  /** Le fond des jours fériés (migration 0168) ; NULL : le bleu de l'apparence. */
+  planningFerie: text("planning_ferie"),
   /** Le logo vit dans le stockage, comme une photo — la base garde sa clef. */
   logoStorageKey: text("logo_storage_key"),
   logoMime: text("logo_mime"),

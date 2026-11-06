@@ -36977,7 +36977,11 @@ Contrôle : `test-retention-effacement` (sous `atlas_app` : le brouillon d'un cl
 | **corriger est au patron et à la facturation, régler les zones au patron seul** | le premier est Pour mon comptable (`exigerFacturation`), le second vit dans Équipe (`exigerProprietaire`) |
 | **Atlas compte les jours, jamais les montants** | ils changent selon la région et deux fois par an (`docs/AGENT.md` §3). Les deux barèmes sont des modèles à vérifier, chaque nom et chaque borne se changent |
 
-**Le texte se rédige une fois** : `phraseDeLAbsence`, `phraseDeLaCorrection` et `resumeDuMois` servent l'écran et le PDF, qui lisent le même chargement (`moisDesSalaries`).
+**Un férié se travaille** (sa règle du 6 novembre : *« on doit quand même pouvoir mettre des chantiers dessus si on veut travailler ce jour-là »*). Rien ne le ferme au planning, et `test-jours-feries` le tient (`jourRetenable`, `creneauxDuChantier`). Un férié où le planning met le salarié sur un chantier compte travaillé, une demie par demi-journée (`partsAuPlanning`, la même lecture du planning que les zones, `lecteurDuPlanning`) : pas de règle à part pour le lundi de Pentecôte, il compte s'il est travaillé.
+
+**La couleur du férié se règle avec les quatre autres** (sa réponse : « réglable »), mais ce n'est pas un état : une demi-journée fériée reste rien, incomplète ou complète. `CleCouleur` ajoute `ferie` aux quatre `EtatDemi`, sa colonne est `planning_ferie` (0168, NULL : le bleu de l'apparence). Le chiffre posé dessus se calcule (`texteSurLeFond`) : l'encre ou la plage de la charte si l'une tient 4,5, sinon le noir ou le blanc, cas trouvé par le contrôle sur Sylve.
+
+**Le texte se rédige une fois** : `phraseDeLAbsence`, `phraseDeLaCorrection`, `phraseDuFerieTravaille` et `resumeDuMois` servent l'écran et le PDF, qui lisent le même chargement (`moisDesSalaries`).
 
 **Les boutons du motif sont des capsules**, contre le dessin des planches (des rectangles arrondis) : `test-boutons-arrondis` tient la forme unique de tous les boutons du produit depuis le 12 août.
 

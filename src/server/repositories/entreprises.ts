@@ -21,7 +21,7 @@ import {
   type Allure,
 } from "@/lib/allure-documents";
 import { FORMATS_NUMERO } from "@/lib/numero-documents";
-import type { EtatDemi } from "@/lib/planning-jour";
+import type { CleCouleur } from "@/lib/couleurs-planning";
 import { MAX_EQUIPES, MAX_SALARIES } from "@/lib/equipes";
 import { capitalEnBase } from "@/lib/mentions-legales";
 import { lireObjet } from "../storage";
@@ -221,7 +221,7 @@ export async function mettreAJourEntreprise(
      * touché** ; `null` le rend à la couleur de l'apparence. Une valeur qui
      * n'est pas une couleur ne rentre pas (`couleurNettoyee`).
      */
-    couleursPlanning?: Partial<Record<EtatDemi, string | null>>;
+    couleursPlanning?: Partial<Record<CleCouleur, string | null>>;
   }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
@@ -336,13 +336,14 @@ export async function mettreAJourEntreprise(
     }
 
     if (data.couleursPlanning !== undefined) {
-      const colonnes: Record<EtatDemi, string> = {
+      const colonnes: Record<CleCouleur, string> = {
         libre: "planningRien",
         dispo: "planningIncomplet",
         plein: "planningComplet",
         dela: "planningAuDela",
+        ferie: "planningFerie",
       };
-      for (const [etat, couleur] of Object.entries(data.couleursPlanning) as [EtatDemi, string | null][]) {
+      for (const [etat, couleur] of Object.entries(data.couleursPlanning) as [CleCouleur, string | null][]) {
         if (couleur === null) valeurs[colonnes[etat]] = null;
         else {
           const propre = couleurNettoyee(couleur);

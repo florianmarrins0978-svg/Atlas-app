@@ -12,7 +12,9 @@
 //   moins les fériés (`src/lib/jours-feries.ts`) ;
 //   moins les absences notées, une demi-journée pour une demie, SAUF celles
 //     qui comptent travaillées (déplacement, formation :
-//     `src/lib/nature-absence.ts`).
+//     `src/lib/nature-absence.ts`) ;
+//   plus les fériés où le planning le met sur un chantier (sa règle du
+//     6 novembre 2026 : un férié peut se travailler, et il se compte alors).
 // Une absence notée « week-ends compris » ne retire que ses jours ouvrés.
 //
 // **La correction ne défait pas le calcul** : les deux restent, et l'écran les
@@ -115,6 +117,8 @@ export type CompteDuMois = {
   absences: AbsenceDuMois[];
   /** Les jours d'absence dont personne n'a dit pourquoi. */
   sansNature: number;
+  /** Les fériés où le planning le met sur un chantier, comptés travaillés. */
+  feriesTravailles: { jour: JourIso; nom: string; part: number }[];
   /**
    * Les jours ouvrés où il a travaillé au moins une demi-journée : ce que
    * comptent les zones de déplacement (une demi-journée de chantier vaut un
@@ -129,8 +133,14 @@ export type CompteDuMois = {
  * **Deux absences qui se chevauchent ne retirent pas deux fois le même jour** :
  * un jour ne peut pas être retiré de plus d'une journée.
  */
-export function compteDuMois(mois: MoisIso, absences: readonly AbsenceEquipe[], alsaceMoselle = false): CompteDuMois {
-  const { ouvres } = joursOuvresDuMois(mois, alsaceMoselle);
+export function compteDuMois(
+  mois: MoisIso,
+  absences: readonly AbsenceEquipe[],
+  alsaceMoselle = false,
+  /** Ce que le planning lui donne à faire, par jour (`partsAuPlanning`) : seuls les fériés sont lus. */
+  auPlanning: ReadonlyMap<JourIso, number> = new Map()
+): CompteDuMois {
+  const { ouvres, feries } = joursOuvresDuMois(mois, alsaceMoselle);
   const { debut, fin } = bornesDuMois(mois);
   let retire = 0;
   let sansNature = 0;
@@ -168,7 +178,22 @@ export function compteDuMois(mois: MoisIso, absences: readonly AbsenceEquipe[], 
     .sort((x, y) => x.de.localeCompare(y.de))
     .map((x) => ({ dit: x.dit, jours: x.jours, nature: x.nature, travaillee: x.travaillee }));
 
-  return { ouvres: ouvres.length, calcul: ouvres.length - retire, absences: lues, sansNature, joursDeTravail };
+  // Un férié au planning : une demie par demi-journée de chantier, la journée
+  // au plus. Il entre aussi dans les jours de travail, pour sa zone.
+  const feriesTravailles = feries
+    .map((f) => ({ ...f, part: Math.min(1, auPlanning.get(f.jour) ?? 0) }))
+    .filter((f) => f.part > 0);
+  const enPlus = feriesTravailles.reduce((t, f) => t + f.part, 0);
+  const tousLesJours = [...joursDeTravail, ...feriesTravailles.map((f) => f.jour)].sort();
+
+  return {
+    ouvres: ouvres.length,
+    calcul: ouvres.length - retire + enPlus,
+    absences: lues,
+    sansNature,
+    feriesTravailles,
+    joursDeTravail: tousLesJours,
+  };
 }
 
 // ─── LA CORRECTION À LA MAIN ────────────────────────────────────────────────
@@ -237,6 +262,11 @@ const LIBELLE_NATURE_EN_TETE: Record<NatureAbsence, string> = {
 export function phraseDeLAbsence(a: AbsenceDuMois): string {
   const tete = a.nature ? LIBELLE_NATURE_EN_TETE[a.nature] : "Absent";
   return `${tete} ${a.dit}${a.travaillee ? ", compté travaillé" : ""}`;
+}
+
+/** « Férié travaillé le 11 novembre », « …, une demi-journée ». */
+export function phraseDuFerieTravaille(f: { jour: JourIso; part: number }): string {
+  return `Férié travaillé ${libelleAbsence(f.jour, f.jour)}${f.part < 1 ? ", une demi-journée" : ""}`;
 }
 
 /** Le chiffre du mois : celui saisi, sinon le calcul. */

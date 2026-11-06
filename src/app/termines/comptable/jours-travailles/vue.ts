@@ -1,5 +1,5 @@
 import type { SalarieDuMois } from "@/server/repositories/jours-travailles";
-import { phraseDeLAbsence } from "@/lib/jours-travailles";
+import { phraseDeLAbsence, phraseDuFerieTravaille } from "@/lib/jours-travailles";
 import { cleDeCase, phraseDuJourSansZone, villeDeLAdresse } from "@/lib/zones-deplacement";
 
 /** Un jour dans une zone, prêt à lire : la date, la ville, la rue, la distance. */
@@ -13,6 +13,8 @@ export type SalarieVu = {
   saisi: number | null;
   motif: SalarieDuMois["motif"];
   absences: { texte: string; jours: number }[];
+  /** « Férié travaillé le 11 novembre » : le planning l'y a mis. */
+  feries: string[];
   zones: null | {
     /** Ce que le planning compte, case par case (« z0 »… « hors »). */
     calcul: Record<string, number>;
@@ -43,6 +45,7 @@ export function vueDuMois(s: SalarieDuMois): SalarieVu {
     saisi: s.saisi,
     motif: s.motif,
     absences: s.compte.absences.map((a) => ({ texte: phraseDeLAbsence(a), jours: a.jours })),
+    feries: s.compte.feriesTravailles.map(phraseDuFerieTravaille),
     zones,
   };
 }

@@ -1,4 +1,15 @@
 import { colors, font } from "@/lib/design-tokens";
+import { VARIABLE_TEXTE_DU_FERIE, variableDeLEtat } from "@/lib/couleurs-planning";
+
+/**
+ * Le fond et le chiffre d'un férié : la couleur réglée dans « Couleurs » (sa
+ * réponse du 6 novembre 2026, « réglable »), sinon le bleu de l'apparence.
+ * Écrit une fois : la case du mois, sa légende et cette pastille le lisent.
+ */
+export const COULEURS_DU_FERIE = {
+  fond: `var(${variableDeLEtat("ferie")}, ${colors.carteBleuFond})`,
+  texte: `var(${VARIABLE_TEXTE_DU_FERIE}, ${colors.carteBleuTexte})`,
+} as const;
 
 /**
  * « Férié, Armistice 1918 », à côté de la date d'un jour.
@@ -13,7 +24,7 @@ export default function PastilleFerie({ nom }: { nom: string }) {
     <span
       data-atlas="pastille-ferie"
       className="inline-flex min-h-[28px] items-center whitespace-nowrap rounded-full px-[11px] text-[13.5px] font-semibold leading-none"
-      style={{ background: colors.carteBleuFond, color: colors.carteBleuTexte, fontFamily: font.body }}
+      style={{ background: COULEURS_DU_FERIE.fond, color: COULEURS_DU_FERIE.texte, fontFamily: font.body }}
     >
       Férié, {nom}
     </span>

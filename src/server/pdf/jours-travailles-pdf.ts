@@ -3,7 +3,7 @@ import fontkit from "@pdf-lib/fontkit";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { charte } from "@/lib/chartes";
-import { enJours, nombreDeJours, nomDuMois, phraseDeLAbsence, phraseDeLaCorrection, resumeDuMois, valeurDuMois } from "@/lib/jours-travailles";
+import { enJours, nombreDeJours, nomDuMois, phraseDeLAbsence, phraseDeLaCorrection, phraseDuFerieTravaille, resumeDuMois, valeurDuMois } from "@/lib/jours-travailles";
 import { MODELES, couleurDeLaCase, manqueAuxZones } from "@/lib/zones-deplacement";
 import type { MoisDesSalaries } from "@/server/repositories/jours-travailles";
 import { protegerContreModification } from "./proteger-pdf";
@@ -196,6 +196,7 @@ export async function pdfDesJoursTravailles(lu: MoisDesSalaries, enCours: boolea
       ? []
       : [
           ...s.compte.absences.map((a) => ({ t: capitale(phraseDeLAbsence(a)), rouge: false })),
+          ...s.compte.feriesTravailles.map((f) => ({ t: phraseDuFerieTravaille(f), rouge: false })),
           ...[phraseDeLaCorrection(s.compte, s.saisi, s.motif)].filter((x) => x !== null).map((c) => ({ t: c.texte, rouge: c.sansMotif })),
         ];
     if (!avecZones && lignes.length === 0) lignes.push({ t: "Aucune", rouge: false });
@@ -240,6 +241,7 @@ export async function pdfDesJoursTravailles(lu: MoisDesSalaries, enCours: boolea
     const dits = lu.salaries.flatMap((s) => {
       const t = [
         ...s.compte.absences.map((a) => ({ t: `${s.nom} : ${phraseDeLAbsence(a)}`, rouge: false })),
+        ...s.compte.feriesTravailles.map((f) => ({ t: `${s.nom} : ${phraseDuFerieTravaille(f)}`, rouge: false })),
         ...[phraseDeLaCorrection(s.compte, s.saisi, s.motif)].filter((x) => x !== null).map((c) => ({ t: `${s.nom} : ${c.texte}`, rouge: c.sansMotif })),
       ];
       const m = manqueAuxZones(valeurDuMois(s.compte, s.saisi), cases.map((c) => compte(s, c.cle)));

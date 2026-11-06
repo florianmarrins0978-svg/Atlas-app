@@ -228,15 +228,50 @@ export function joursDuSalarie(
   coches: readonly Coche[],
   absences: readonly AbsenceEquipe[]
 ): JourDuSalarie[] {
+  const lire = lecteurDuPlanning(rang, chantiers, coches, absences);
+  return joursDeTravail.map((jour) => {
+    const l = lire(jour);
+    return { jour, chantiers: l.chantiers, enDeplacement: l.enDeplacement, enFormation: l.enFormation && l.chantiers.length === 0 };
+  });
+}
+
+/**
+ * Ce que le planning met un salarié à faire, ces jours-là : une demie par
+ * demi-journée où il est sur un chantier, la journée au plus.
+ *
+ * **Sert aux FÉRIÉS** — sa règle du 6 novembre 2026 : *« on doit quand même
+ * pouvoir mettre des chantiers dessus si jamais on veut travailler ce
+ * jour-là »*. Un férié où il est coché sur un chantier est donc un férié
+ * travaillé, et le compte le reprend sans qu'on le corrige à la main. La même
+ * lecture que les zones : une coche, un chantier qui occupe la demi-journée,
+ * et pas d'absence ce moment-là.
+ */
+export function partsAuPlanning(
+  rang: number,
+  jours: readonly JourIso[],
+  chantiers: readonly ChantierPose[],
+  coches: readonly Coche[],
+  absences: readonly AbsenceEquipe[]
+): Map<JourIso, number> {
+  const lire = lecteurDuPlanning(rang, chantiers, coches, absences);
+  const parts = new Map<JourIso, number>();
+  for (const jour of jours) {
+    const n = lire(jour).demis.size * 0.5;
+    if (n > 0) parts.set(jour, n);
+  }
+  return parts;
+}
+
+/** La lecture d'un jour du planning pour un salarié, écrite une fois pour les deux usages. */
+function lecteurDuPlanning(rang: number, chantiers: readonly ChantierPose[], coches: readonly Coche[], absences: readonly AbsenceEquipe[]) {
   const siennes = coches.filter((c) => c.rang === rang);
   const parId = new Map(chantiers.map((c) => [c.id, c]));
-  return joursDeTravail.map((jour) => {
+  return (jour: JourIso) => {
     const moments = absences.map((a) => ({ a, m: momentDuJour(a, jour) })).filter((x) => x.m !== null);
-    const enDeplacement = moments.some((x) => x.a.nature === "deplacement");
-    const enFormation = moments.some((x) => x.a.nature === "formation" && x.m === "journee");
     const absentLe = (demi: Moment) =>
       moments.some((x) => !compteTravaille(x.a.nature ?? null) && (x.m === "journee" || x.m === demi));
     const vus = new Map<string, ChantierDuJour>();
+    const demis = new Set<Moment>();
     for (const c of siennes) {
       if (c.demi !== "matin" && c.demi !== "apres_midi") continue;
       if (c.jour !== null && c.jour !== jour) continue;
@@ -244,9 +279,15 @@ export function joursDuSalarie(
       const chantier = parId.get(c.chantierId);
       if (!chantier || !chantier.creneaux.some((x) => x.jour === jour && x.moment === c.demi)) continue;
       vus.set(chantier.id, { nom: chantier.nom, adresse: chantier.adresse, position: chantier.position });
+      demis.add(c.demi);
     }
-    return { jour, chantiers: [...vus.values()], enDeplacement, enFormation: enFormation && vus.size === 0 };
-  });
+    return {
+      chantiers: [...vus.values()],
+      demis,
+      enDeplacement: moments.some((x) => x.a.nature === "deplacement"),
+      enFormation: moments.some((x) => x.a.nature === "formation" && x.m === "journee"),
+    };
+  };
 }
 
 /** Le compte d'un salarié par zone : un nombre par zone, puis hors zone. */

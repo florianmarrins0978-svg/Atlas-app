@@ -83,7 +83,7 @@ planche la pose juste au-dessus de Suivant.
 **Sa consigne du 6 novembre** : *« oui, code tout ça, tu peux pousser mais ne
 lance pas de batterie »*. Quatre gestes codés, sur la branche
 `lot/paie-zones-feries`, poussée ; **rien n'est sur `main`** : le lot est de
-niveau 3 (deux migrations, `drizzle/0165` à `0167`), et `garde-fusion-main`
+niveau 3 (quatre migrations, `drizzle/0165` à `0168`), et `garde-fusion-main`
 refuse sans la batterie. Le document de retour : `docs/lot-paie-zones-feries.md`.
 
 | | où le voir dans `src/` |
@@ -107,9 +107,12 @@ refuse sans la batterie. Le document de retour : `docs/lot-paie-zones-feries.md`
 4. **les deux barèmes** (MSA du paysage, accord régional du bâtiment) restent
    à vérifier sur les textes de l'année : ce poste ne joint pas msa.fr. Ils se
    modifient à l'écran ;
-5. **à trancher par lui** : le lundi de Pentecôte (journée de solidarité)
-   compte-t-il travaillé ? Aujourd'hui il est férié, donc retiré, et se
-   corrige à la main. Le bleu des fériés dans Couleurs, ou fixe ?
+5. ~~le lundi de Pentecôte ; le bleu dans Couleurs~~ **tranchés le 6 novembre,
+   et codés** : *« tous les jours fériés, on doit quand même pouvoir mettre
+   des chantiers dessus si on veut travailler ce jour-là »* (un férié où le
+   planning met le salarié sur un chantier compte travaillé, Pentecôte
+   comprise) ; et *« réglable »* (une ligne Férié dans Couleurs, migration
+   `0168`) ;
 6. **hors du compte, à dire** : un salarié embauché ou parti en cours de mois,
    ou à temps partiel, se corrige à la main ; sa fiche n'a ni dates ni jours.
 

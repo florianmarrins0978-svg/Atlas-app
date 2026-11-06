@@ -8,6 +8,7 @@ import { etatDemi, MOT_ETAT, partDeLaBarre, type EtatDemi } from "@/lib/planning
 import { axeDuGeste, pasDuGlissement, type AxeDuGeste } from "@/lib/glissement";
 import type { JourIso } from "@/lib/disponibilites";
 import { nomDuFerie } from "@/lib/jours-feries";
+import { COULEURS_DU_FERIE } from "@/components/atlas/PastilleFerie";
 
 /**
  * LE MOIS AVEC SA CHARGE — le calendrier du planning, extrait pour être
@@ -610,7 +611,7 @@ function caseDuJour(
                     : c.jour === jourTouche
                     ? colors.rustTint
                     : ferie
-                      ? colors.carteBleuFond
+                      ? COULEURS_DU_FERIE.fond
                       : c.weekEnd
                         ? voile(colors.ink, 0.035)
                         : "transparent",
@@ -652,7 +653,7 @@ function caseDuJour(
                     : c.jour === aujourdHui
                       ? colors.or
                       : ferie
-                        ? colors.carteBleuTexte
+                        ? COULEURS_DU_FERIE.texte
                         : c.weekEnd || passe
                           ? voile(colors.ink, 0.42)
                           : colors.ink,
@@ -868,8 +869,8 @@ export function Legende({ aCote }: { aCote?: ReactNode } = {}) {
           style={{
             fontFamily: font.display,
             fontVariantNumeric: "lining-nums",
-            background: colors.carteBleuFond,
-            color: colors.carteBleuTexte,
+            background: COULEURS_DU_FERIE.fond,
+            color: COULEURS_DU_FERIE.texte,
           }}
         >
           11

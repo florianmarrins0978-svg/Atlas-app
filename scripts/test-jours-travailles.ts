@@ -17,6 +17,7 @@ import {
   motifCorrectionLu,
   phraseDeLAbsence,
   phraseDeLaCorrection,
+  phraseDuFerieTravaille,
   resumeDuMois,
 } from "../src/lib/jours-travailles";
 import {
@@ -24,6 +25,7 @@ import {
   compteParZone,
   correctionsDeZonesLues,
   joursDuSalarie,
+  partsAuPlanning,
   couleurDeLaCase,
   MODELES,
   manqueAuxZones,
@@ -270,6 +272,27 @@ essai("la ville d'une adresse, et la phrase d'un jour sans zone", () => {
   assert.deepEqual(villeDeLAdresse("Les Landes"), { ville: "Les Landes", rue: null });
   const p = placerLeJour({ jour: "2026-11-04", chantiers: [{ nom: "Mme Roux", adresse: "Les Landes", position: null }] }, NANTES, zones);
   assert.equal(phraseDuJourSansZone(p), "Mercredi 4 novembre, Les Landes, adresse non située");
+});
+
+essai("UN FÉRIÉ AU PLANNING SE COMPTE TRAVAILLÉ : sa règle du 6 novembre 2026", () => {
+  // Le 11 novembre sur un chantier : vingt et un jours, et le comptable le lit.
+  const c = compteDuMois("2026-11", [], false, new Map([["2026-11-11", 1], ["2026-11-12", 1]]));
+  assert.equal(c.calcul, 21, "seul le férié s'ajoute : un jour ouvré au planning compte déjà");
+  assert.deepEqual(c.feriesTravailles.map((f) => f.jour), ["2026-11-11"]);
+  assert.ok(c.joursDeTravail.includes("2026-11-11"), "le férié travaillé doit avoir sa zone");
+  assert.equal(phraseDuFerieTravaille(c.feriesTravailles[0]), "Férié travaillé le 11 novembre");
+  // Une demi-journée de chantier le jour férié : une demie.
+  assert.equal(compteDuMois("2026-11", [], false, new Map([["2026-11-11", 0.5]])).calcul, 20.5);
+  assert.equal(phraseDuFerieTravaille({ jour: "2026-11-11", part: 0.5 }), "Férié travaillé le 11 novembre, une demi-journée");
+});
+
+essai("le planning donne la part d'un jour : une demie par demi-journée de chantier, rien pendant une absence", () => {
+  const chantiers = [{ id: "c", nom: "X", adresse: "Nantes", position: NANTES, creneaux: [{ jour: "2026-11-11", moment: "matin" as const }, { jour: "2026-11-11", moment: "apres_midi" as const }] }];
+  const coches = [{ chantierId: "c", jour: null, demi: "matin", rang: 1 }, { chantierId: "c", jour: null, demi: "apres_midi", rang: 1 }];
+  assert.equal(partsAuPlanning(1, ["2026-11-11"], chantiers, coches, []).get("2026-11-11"), 1);
+  assert.equal(partsAuPlanning(2, ["2026-11-11"], chantiers, coches, []).size, 0, "un salarié non coché travaille");
+  const absent = [{ equipeId: "x", premierJour: "2026-11-11", dernierJour: "2026-11-11", premierDemi: "apres_midi", nature: "conge" as const }];
+  assert.equal(partsAuPlanning(1, ["2026-11-11"], chantiers, coches, absent).get("2026-11-11"), 0.5);
 });
 
 if (echecs) {

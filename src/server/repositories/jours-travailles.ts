@@ -35,6 +35,7 @@ import {
   compteParZone,
   correctionsDeZonesLues,
   joursDuSalarie,
+  partsAuPlanning,
   positionSiSituee,
   reglageLu,
   type ChantierPose,
@@ -170,7 +171,9 @@ export async function moisDesSalaries(ctx: Ctx, mois: MoisIso): Promise<MoisDesS
   const nombreSalaries = Math.min(MAX_SALARIES, entreprise?.nombreSalaries ?? 0);
   const salaries = salariesAffiches(equipesNommees, nombreSalaries).map((s) => {
     const siennes = absences.filter((a) => a.rang === s.rang);
-    const compte = compteDuMois(mois, siennes, alsaceMoselle);
+    // Un férié où le planning le met sur un chantier compte travaillé.
+    const auPlanning = partsAuPlanning(s.rang, feries.map((f) => f.jour), chantiersPoses, lu.coches, siennes);
+    const compte = compteDuMois(mois, siennes, alsaceMoselle, auPlanning);
     const c = lu.corrections.find((x) => x.rang === s.rang);
     const saisi = c?.jours != null ? joursSaisisLus(Number(c.jours)) : null;
     const valeur = saisi ?? compte.calcul;
