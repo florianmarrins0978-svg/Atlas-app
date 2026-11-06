@@ -3,9 +3,8 @@
 ## LE « ≤ » DU PDF DE LA FICHE DE SÉCURITÉ : CORRIGÉ LE 6 NOVEMBRE 2026, PAS SUR main
 
 **Sa réponse du 6 novembre** : *« Oui corrige le maintenant. Pas de
-batterie »*. Codé sur la branche LOCALE `lot/police-inferieur-ou-egal`, dans
-le conteneur de la session qui l'a écrit ; tant qu'elle n'est pas poussée,
-elle n'existe que là.
+batterie »*. Codé sur la branche `lot/police-inferieur-ou-egal`, poussée sur
+GitHub le même jour sur son « oui » (*« pousse-les »*) ; pas sur `main`.
 
 | | |
 |---|---|
