@@ -1,0 +1,858 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La fiche de sécurité, soignée</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  LA FICHE DE SÉCURITÉ, L'ÉCRAN À REMPLIR.
+
+  SA DEMANDE du 6 novembre 2026 : « la fiche de sécurité, il faudrait aller la
+  chercher, l'améliorer, la rendre plus jolie ». Ses deux réponses du même
+  jour : l'écran ET le PDF (le PDF a sa planche, fiche-de-securite-pdf.html) ;
+  oui pour lancer l'appli dans le nuage et regarder la fiche telle qu'elle est.
+
+  CE QUI A ÉTÉ REGARDÉ, le 6 novembre 2026, sur une base jetable amorcée :
+    src/app/planning/fiche-de-securite/[chantierId]/FormulaireFicheDeSecurite.tsx
+      les six étapes, l'écran de la loi, l'écran « signée » ;
+    les captures d'Aujourd'hui (aujourdhui/fiche-securite-*.jpg) viennent de
+      cet écran, ouvert dans un navigateur à 390 points, fiche à moitié
+      remplie (chantier « Pose de clôture » du jeu de démonstration). La
+      carte IGN y est vide : ce poste ne joint pas l'IGN, chez lui elle
+      s'affiche.
+
+  LES MOTS sont ceux de src/lib/fiche-securite.ts (LIBELLES,
+  POINTS_DE_VIGILANCE, CONSIGNES_DE_SECOURS, PERIMETRE_DU_DECRET…), recopiés
+  tels quels dans DONNEES plus bas ; les phrases d'explication sont celles du
+  formulaire. Rien n'est retiré, rien n'est inventé.
+
+  CE QUI CHANGE, et rien d'autre (le détail est dans les notes de la page) :
+    les titres des parties en serif, à la place des capitales de 10 points ;
+    « À remplir » ou « Fait » à côté de chaque partie que la loi exige, lu
+      dans la même règle que « Pour pouvoir signer » (minimumLegal) ;
+    Signer montre les huit points, faits ou non ;
+    une case cochée qui se voit au soleil, des cases plus grandes ;
+    Suivant sur toute la largeur, en bas, toujours au même endroit ;
+    ce qui est rempli d'après le chantier écrit comme un texte, sans case ;
+    le texte gris clair passé en encre douce ;
+    le point de vigilance sans sa barre dorée ;
+    les numéros d'urgence en liste, un par ligne ;
+    « Chercher une adresse » dans la barre de recherche de l'appli.
+
+  RIEN N'EST CODÉ DANS src/.
+*/
+
+/* La planche : deux téléphones côte à côte, Proposé et Aujourd'hui. */
+.pl-etats { max-width: 820px; margin-left: auto; margin-right: auto; }
+
+/* ─── En haut de l'écran : le retour, le nom, l'étape, l'avancée ─────────── */
+.fs-tete { flex: none; padding: 8px var(--gouttiere) 10px; background: var(--atlas-cream);
+           box-shadow: inset 0 -1px 0 var(--atlas-lineSoft); }
+.fs-tete-rang { display: flex; align-items: center; gap: 8px; min-height: 52px; }
+.fs-tete .tete-retour { margin-left: -14px; }
+.fs-tete-noms { flex: 1; min-width: 0; line-height: 1.2; }
+.fs-tete-noms b { display: block; font: 400 20px/1.15 var(--serif); }
+.fs-tete-noms span { display: block; margin-top: 2px; font-size: 14px; color: var(--atlas-inkSoft); }
+.fs-compte { flex: none; font-size: 14.5px; font-weight: 600; color: var(--atlas-orTexte); font-variant-numeric: tabular-nums; }
+.fs-avancee { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; margin-top: 6px; }
+.fs-avancee i { display: block; height: 4px; border-radius: 2px; background: var(--atlas-line); transition: background-color 300ms var(--courbe); }
+.fs-avancee i.vu { background: var(--atlas-or); }
+.fs-avancee i.ici { background: var(--atlas-rust); }
+
+/* ─── Le titre de l'étape, puis les parties ──────────────────────────────── */
+.fs-etape { margin: 6px 0 4px; font: 400 30px/1.1 var(--serif); letter-spacing: -0.01em; text-wrap: balance; }
+.fs-intro { margin: 6px 0 0; font-size: 15px; line-height: 1.45; color: var(--atlas-inkSoft); }
+
+.bloc { padding-top: 26px; margin-top: 26px; box-shadow: inset 0 1px 0 var(--atlas-line); scroll-margin-top: 8px; }
+.bloc:first-of-type { margin-top: 14px; padding-top: 0; box-shadow: none; }
+.bloc-tete { display: flex; align-items: flex-start; gap: 10px; }
+.bloc-titre { flex: 1; min-width: 0; margin: 0; font: 400 21px/1.22 var(--serif); letter-spacing: -0.005em; text-wrap: balance; }
+.bloc-titre small { font: 400 15px/1.3 var(--sans); color: var(--atlas-inkSoft); }
+.bloc-tete .etat { margin-top: 1px; flex: none; }
+.bloc-expl { margin: 6px 0 0; font-size: 15px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.bloc-corps { margin-top: 14px; }
+.sous-titre { margin: 22px 0 10px; font-size: 15.5px; font-weight: 600; color: var(--atlas-ink); }
+.sous-titre:first-child { margin-top: 0; }
+.garde-note { margin: 12px 0 0; font-size: 14px; line-height: 1.4; color: var(--atlas-inkSoft); }
+
+/* Le point de vigilance : ses mots, sans barre de couleur. */
+.vigilance { display: flex; gap: 10px; margin: 12px 0; font-size: 14.5px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.vigilance .ico { width: 20px; height: 20px; margin-top: 1px; color: var(--atlas-or); stroke-width: 1.9; }
+.vigilance b { font-weight: 600; color: var(--atlas-orTexte); }
+
+/* ─── Les pastilles : un mot, une case ronde, cochée en plein ───────────── */
+.pastilles { display: flex; flex-wrap: wrap; gap: 8px; }
+.pastille { display: inline-flex; align-items: center; gap: 9px; min-height: 48px; max-width: 100%; padding: 10px 16px 10px 12px;
+            border-radius: 999px; text-align: left; font-size: 15.5px; line-height: 1.25; color: var(--atlas-ink);
+            background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line);
+            -webkit-tap-highlight-color: transparent;
+            transition: background-color 200ms var(--courbe), box-shadow 200ms var(--courbe); }
+.pastille:active { transform: scale(0.985); }
+.rond-coche { width: 22px; height: 22px; flex: none; display: grid; place-items: center; border-radius: 50%;
+              box-shadow: inset 0 0 0 1.5px var(--atlas-chevron); color: transparent;
+              transition: background-color 200ms var(--courbe), box-shadow 200ms var(--courbe); }
+.rond-coche .ico { width: 14px; height: 14px; stroke-width: 2.8; }
+[aria-pressed="true"] > .rond-coche { background: var(--atlas-plein); box-shadow: none; color: var(--sur-plein); }
+.pastille[aria-pressed="true"] { background: var(--atlas-carteVertFond); box-shadow: inset 0 0 0 1.5px var(--atlas-plein); font-weight: 600; }
+.pastille-ajout { color: var(--atlas-rust); font-weight: 600; background: transparent;
+                  box-shadow: inset 0 0 0 1.5px var(--atlas-vertPale); }
+.pastille-ajout .ico { width: 18px; height: 18px; stroke-width: 2.2; }
+
+/* Les longues phrases de la MSA : une ligne chacune, la case à gauche. */
+.cases { margin: 0; }
+.case { position: relative; display: flex; align-items: flex-start; gap: 13px; width: 100%; min-height: 52px; padding: 13px 0;
+        text-align: left; font-size: 16px; line-height: 1.4; color: var(--atlas-ink); -webkit-tap-highlight-color: transparent; }
+.case + .case::before { content: ""; position: absolute; left: 35px; right: 0; top: 0; height: 1px; background: var(--atlas-lineSoft); }
+.case .rond-coche { margin-top: 0; }
+.case[aria-pressed="true"] { font-weight: 600; }
+.sous-groupe { margin: 4px 0 8px 35px; }
+
+/* Ce qui est déjà rempli d'après le chantier : un texte, pas une case. */
+.fixe { position: relative; padding: 11px 0; }
+.fixe + .fixe::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-lineSoft); }
+.fixe-nom { display: block; font-size: 14px; font-weight: 600; color: var(--atlas-inkSoft); }
+.fixe-valeur { display: block; margin-top: 2px; font: 400 18px/1.3 var(--serif); font-variant-numeric: lining-nums; }
+.fixe-valeur.absente { font: 400 16px/1.3 var(--sans); font-style: italic; color: var(--atlas-inkSoft); }
+.deux { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.deux > * { min-width: 0; }
+.deux .champ { margin-top: 0; }
+.bloc-corps .champ + .deux, .bloc-corps .deux + .champ, .bloc-corps .deux + .deux { margin-top: 16px; }
+.choix { margin: 2px 0 0; }
+.choix + .fixe, .choix + .champ, .choix + .deux { margin-top: 14px; }
+
+/* Le relevé GPS et sa carte : la carte est celle de l'IGN, inchangée. */
+.bouton-gps { margin-top: 2px; }
+.bouton-gps .ico { width: 20px; height: 20px; }
+.carte-ign { position: relative; height: 176px; margin-top: 12px; border-radius: var(--r-plage); overflow: hidden;
+             background: var(--atlas-rustTint); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.carte-ign svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.carte-ign .ign { position: absolute; right: 8px; bottom: 6px; font-size: 11px; font-weight: 600; color: var(--atlas-inkSoft); }
+.carte-ign .mode { position: absolute; left: 8px; top: 8px; display: flex; gap: 4px; padding: 3px; border-radius: 10px; background: var(--atlas-card); }
+.carte-ign .mode span { padding: 6px 10px; border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--atlas-inkSoft); }
+.carte-ign .mode span:first-child { background: var(--atlas-plein); color: var(--sur-plein); }
+.champ-recherche { margin-top: 12px; }
+
+/* L'équipe : une personne par ligne, ses compétences dessous. */
+.personne { position: relative; display: flex; align-items: flex-start; gap: 13px; padding: 13px 0; }
+.personne + .personne::before { content: ""; position: absolute; left: 35px; right: 0; top: 0; height: 1px; background: var(--atlas-lineSoft); }
+.personne > button.rond-tap { margin-top: 1px; }
+.rond-tap { display: grid; place-items: center; width: 22px; height: 22px; flex: none; }
+.personne-corps { flex: 1; min-width: 0; }
+.personne-corps b { display: block; font: 400 18px/1.25 var(--serif); }
+.personne-corps span { display: block; margin-top: 3px; font-size: 14px; line-height: 1.4; color: var(--atlas-inkSoft); }
+.personne-corps em { display: block; margin-top: 3px; font-style: normal; font-size: 14px; font-weight: 600; color: var(--atlas-alerte); }
+.personne .bouton-texte { min-height: 44px; margin-top: -10px; font-size: 15px; }
+
+/* Les trois façons de faire le croquis : trois lignes, aucune en plein. */
+.facons { margin-top: 2px; }
+.facon { position: relative; display: flex; align-items: center; gap: 14px; width: 100%; min-height: 64px; padding: 10px 0; text-align: left; }
+.facon + .facon::before { content: ""; position: absolute; left: 54px; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
+.facon b { flex: 1; font: 400 18px/1.25 var(--serif); }
+.facon > .ico { width: 20px; height: 20px; color: var(--atlas-chevron); stroke-width: 2; }
+.croquis-vu { margin-top: 4px; border-radius: var(--r-plage); overflow: hidden; background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.croquis-vu svg { display: block; width: 100%; height: auto; }
+.obligatoires { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 0; }
+.photo-ajout { width: 64px; height: 64px; display: grid; place-items: center; border-radius: var(--r-plage); color: var(--atlas-or);
+               box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 65%, transparent); }
+.photo-ajout .ico { width: 24px; height: 24px; }
+
+/* Le rappel du décret : trois distances, posées comme un tableau. */
+.rappel { margin: 2px 0 6px; padding: 14px 16px; border-radius: var(--r-plage); background: var(--atlas-carteAmbreFond); }
+.rappel b { display: block; margin-bottom: 8px; font-size: 14.5px; font-weight: 700; color: var(--atlas-ink); }
+.rappel p { margin: 0; padding: 4px 0; font-size: 15px; line-height: 1.4; color: var(--atlas-ink); }
+.rappel p span { font-weight: 600; }
+
+/* Protéger, alerter, secourir : un pli, et des numéros qu'on touche. */
+.pli { border-radius: var(--r-plage); overflow: hidden; background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.pli-tete { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; padding: 10px 14px; text-align: left; }
+.pli-tete .pastille-ico { width: 40px; height: 40px; }
+.pli-tete b { flex: 1; min-width: 0; font: 400 18px/1.2 var(--serif); }
+.pli-tete small { font-size: 14px; font-weight: 600; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
+.pli-tete > .ico { width: 20px; height: 20px; color: var(--atlas-inkSoft); transition: transform 300ms var(--courbe); }
+.pli[data-ouvert] .pli-tete > .ico { transform: rotate(180deg); }
+.pli-corps { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 320ms var(--courbe); }
+.pli[data-ouvert] .pli-corps { grid-template-rows: 1fr; }
+.pli-corps > div { min-height: 0; overflow: hidden; }
+.pli-dedans { padding: 4px 16px 18px; box-shadow: inset 0 1px 0 var(--atlas-line); }
+.pli-dedans h4 { margin: 16px 0 6px; font: 400 18px/1.2 var(--serif); }
+.consignes { margin: 0; padding: 0; list-style: none; counter-reset: c; }
+.consignes li { position: relative; padding: 5px 0 5px 32px; font-size: 15px; line-height: 1.45; counter-increment: c; }
+.consignes li::before { content: counter(c); position: absolute; left: 0; top: 6px; width: 22px; height: 22px; display: grid; place-items: center;
+                        border-radius: 50%; font-size: 12.5px; font-weight: 700; color: var(--atlas-orTexte);
+                        background: color-mix(in srgb, var(--atlas-or) 15%, transparent); }
+.urgences { margin: 6px 0 8px; }
+.urgence { position: relative; display: flex; align-items: center; gap: 14px; min-height: 56px; text-decoration: none; color: var(--atlas-ink); }
+.urgence + .urgence::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-lineSoft); }
+.urgence b { width: 52px; font: 400 26px/1 var(--serif); font-variant-numeric: lining-nums; }
+.urgence span { flex: 1; font-size: 16px; }
+.urgence .ico { width: 20px; height: 20px; color: var(--atlas-rust); }
+.pli-dedans .garde-note b { font-weight: 600; color: var(--atlas-ink); }
+
+/* ─── Signer : les huit points, faits ou non ─────────────────────────────── */
+.points { margin: 4px 0 0; }
+.point { position: relative; display: flex; align-items: flex-start; gap: 13px; width: 100%; min-height: 56px; padding: 12px 0; text-align: left; }
+.point + .point::before { content: ""; position: absolute; left: 35px; right: 0; top: 0; height: 1px; background: var(--atlas-lineSoft); }
+.point-corps { flex: 1; min-width: 0; }
+.point-corps b { display: block; font-size: 16px; font-weight: 600; }
+.point-corps span { display: block; margin-top: 3px; font-size: 14px; line-height: 1.4; color: var(--atlas-carteAmbreTexte); }
+.point.fait .point-corps b { font-weight: 400; color: var(--atlas-inkSoft); }
+.point > .ico { width: 20px; height: 20px; margin-top: 1px; color: var(--atlas-chevron); stroke-width: 2; }
+.rond-manque { width: 22px; height: 22px; flex: none; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--atlas-carteAmbreTexte); }
+.rond-fait { width: 22px; height: 22px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--atlas-plein); color: var(--sur-plein); }
+.rond-fait .ico { width: 14px; height: 14px; stroke-width: 2.8; }
+
+/* La signature au doigt : une plage, un trait de base, et c'est tout. */
+.signature { position: relative; height: 150px; margin-top: 14px; border-radius: var(--r-plage); background: var(--atlas-card);
+             box-shadow: inset 0 0 0 1px var(--atlas-line); touch-action: none; }
+.signature canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.signature .base { position: absolute; left: 18px; right: 18px; bottom: 34px; height: 0; border-top: 1.5px dashed var(--atlas-chevron); pointer-events: none; }
+.signature .invite { position: absolute; left: 0; right: 0; bottom: 10px; text-align: center; font-size: 14px; color: var(--atlas-inkSoft); pointer-events: none; }
+.effacer { display: flex; justify-content: flex-end; }
+.refus { margin: 0 0 10px; text-align: center; font-size: 14px; font-weight: 600; line-height: 1.4; color: var(--atlas-alerte); }
+
+/* La fiche signée : qui a signé, qui doit encore, à qui l'envoyer. */
+.qui { position: relative; display: flex; align-items: center; gap: 13px; min-height: 64px; padding: 10px 0; }
+.qui + .qui::before { content: ""; position: absolute; left: 35px; right: 0; top: 0; height: 1px; background: var(--atlas-lineSoft); }
+.qui-corps { flex: 1; min-width: 0; }
+.qui-corps b { display: block; font: 400 18px/1.25 var(--serif); }
+.qui-corps span { display: block; margin-top: 2px; font-size: 14px; line-height: 1.4; color: var(--atlas-inkSoft); }
+.qui .trait-signe { width: 54px; height: 28px; flex: none; color: var(--atlas-ink); }
+.qui .bouton-texte { font-size: 15px; color: var(--atlas-inkSoft); }
+.qui .bouton-petit { flex: none; }
+.dest { position: relative; padding: 16px 0; }
+.dest + .dest::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
+.dest-tete { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 6px 10px; }
+.dest-tete b { font: 400 18px/1.25 var(--serif); }
+.dest p { margin: 6px 0 0; font-size: 15px; line-height: 1.45; color: var(--atlas-ink); }
+.dest p.second { color: var(--atlas-inkSoft); font-size: 14px; }
+.dest .bouton, .dest .choix { margin-top: 12px; }
+.envoyee { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 15px; font-weight: 600; color: var(--atlas-rust); }
+.action-bas .rang-boutons { margin-bottom: 2px; }
+.action-bas .bouton-texte { width: 100%; justify-content: center; min-height: 40px; color: var(--atlas-ink); }
+.ecran[data-pied="double"] .defile { padding-bottom: 230px; }
+
+/* La loi : le décret en clair, sept points, deux liens. */
+.loi p { margin: 14px 0 0; font-size: 16px; line-height: 1.5; }
+.loi .consignes { margin-top: 10px; }
+.loi .consignes li { font-size: 16px; }
+.loi .plage-ton { margin-top: 16px; font-size: 15.5px; }
+.loi .pile { margin-top: 20px; }
+.loi .bouton .ico { width: 20px; height: 20px; color: var(--atlas-or); }
+
+/* La feuille de lecture : la personne signe qu'elle a lu. */
+.feuille .signature { margin-top: 12px; }
+.feuille .rang-boutons { margin-top: 14px; }
+
+@media (min-width: 900px) {
+  .pl-scene { grid-template-columns: minmax(0, 1fr); }
+  .pl-notes { margin: 0 auto; }
+}
+</style>
+</head>
+<body class="pl pl-pilules">
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">La fiche de sécurité</h1>
+  <p class="pl-verdict">Touchez une étape, ou <b>Suivant</b> dans le téléphone. Cochez une case : à côté du titre, <b>À remplir</b> devient <b>Fait</b>. À droite, l'écran d'aujourd'hui. Le PDF a sa planche, en bas de la page.</p>
+</header>
+
+<main class="pl-scene">
+  <div>
+    <div class="pl-etats" id="etapes" data-ecran="#ecran-propose, #capture-fiche" role="group" aria-label="L'étape de la fiche">
+      <button type="button" data-etat="loi" aria-pressed="true">La loi</button>
+      <button type="button" data-etat="e1" aria-pressed="false">1 Chantier</button>
+      <button type="button" data-etat="e2" aria-pressed="false">2 Travaux</button>
+      <button type="button" data-etat="e3" aria-pressed="false">3 Croquis</button>
+      <button type="button" data-etat="e4" aria-pressed="false">4 Risques</button>
+      <button type="button" data-etat="e5" aria-pressed="false">5 Secours</button>
+      <button type="button" data-etat="e6" aria-pressed="false">6 Signer</button>
+      <button type="button" data-etat="signee" aria-pressed="false">Signée</button>
+    </div>
+    <div class="pl-ecrans">
+      <div data-vue-panneau="propose">
+        <p class="pl-legende">Proposé</p>
+        <div class="cadre">
+          <div class="ecran avec-barre avec-action" id="ecran-propose">
+            <div class="fs-tete" id="tete"></div>
+            <div class="defile" id="defile"></div>
+            <div class="action-bas" id="pied"></div>
+            <nav class="barre" aria-label="Navigation principale">
+              <div class="barre-onglets">
+                <a class="barre-onglet" href="accueil.html">Chantiers</a>
+                <a class="barre-onglet" href="planning.html" aria-current="page">Planning</a>
+                <a class="barre-onglet" href="termines.html">Terminés</a>
+                <a class="barre-onglet" href="paysage.html">Paysage</a>
+                <a class="barre-onglet" href="reglages.html">Réglages</a>
+                <span class="barre-trait" aria-hidden="true"><span></span></span>
+              </div>
+            </nav>
+            <section class="feuille" id="feuille-lecture" aria-hidden="true" aria-label="Signer la lecture">
+              <div class="feuille-poignee"></div>
+              <div class="feuille-dedans">
+                <p class="feuille-titre" id="lecteur-nom">Lucas Petit</p>
+                <p class="second" style="margin:-10px 0 0">J’ai pris connaissance de la fiche.</p>
+                <div class="signature" id="signature-lecteur"><div class="base"></div><span class="invite">Signez ici, au doigt</span><canvas></canvas></div>
+                <div class="rang-boutons">
+                  <button class="bouton bouton-creux" type="button" data-ferme>Annuler</button>
+                  <button class="bouton bouton-plein" type="button" data-action="valider-lecture">Valider</button>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+      <div data-vue-panneau="aujourdhui">
+        <p class="pl-legende">Aujourd'hui</p>
+        <div class="cadre">
+          <div class="cadre-capture" id="capture-fiche">
+            <img src="aujourdhui/fiche-securite-loi.jpg" alt="L'écran de la loi aujourd'hui" data-si-etat="loi">
+            <img src="aujourdhui/fiche-securite-1.jpg" alt="L'étape 1, le chantier, aujourd'hui" data-si-etat="e1" loading="lazy">
+            <img src="aujourdhui/fiche-securite-2.jpg" alt="L'étape 2, les travaux, aujourd'hui" data-si-etat="e2" loading="lazy">
+            <img src="aujourdhui/fiche-securite-3.jpg" alt="L'étape 3, croquis et balisage, aujourd'hui" data-si-etat="e3" loading="lazy">
+            <img src="aujourdhui/fiche-securite-4.jpg" alt="L'étape 4, les risques, aujourd'hui" data-si-etat="e4" loading="lazy">
+            <img src="aujourdhui/fiche-securite-5.jpg" alt="L'étape 5, mesures et secours, aujourd'hui" data-si-etat="e5" loading="lazy">
+            <img src="aujourdhui/fiche-securite-6.jpg" alt="L'étape 6, signer, aujourd'hui" data-si-etat="e6" loading="lazy">
+            <img src="aujourdhui/fiche-securite-signee.jpg" alt="La fiche signée, une lecture en attente, aujourd'hui" data-si-etat="signee" loading="lazy">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>Chaque partie porte un vrai titre, en grand. Aujourd'hui ce sont de petites capitales de 10 points : en faisant défiler, on ne voit pas où une partie commence.</li>
+      <li>À côté de chaque partie que la loi exige : <b>À remplir</b> en ambre, puis <b>Fait</b> en vert dès que c'est rempli. Ce sont les huit points de « Pour pouvoir signer », lus par la même règle.</li>
+      <li>Signer montre les huit points, faits ou non, et leur compte : « 3 sur 8 ». Aujourd'hui seuls les manques s'affichent. Un point à remplir emmène toujours à sa partie.</li>
+      <li>Une case cochée se voit en plein soleil : fond vert, mot en gras. Les cases passent de 44 à 48 points, les mots de 14 à 15,5.</li>
+      <li>Suivant prend toute la largeur, en bas, à la même place sur les six étapes. Aujourd'hui c'est une petite pilule au milieu, posée sur le texte.</li>
+      <li>Ce qui vient du chantier (le nom, le client, l'adresse, les jours) s'écrit comme un texte, sans case grise : on ne croit plus pouvoir le changer.</li>
+      <li>Le gris clair des explications passe en encre douce : lisible au soleil.</li>
+      <li>Le point de vigilance garde ses mots, sans la barre dorée à gauche.</li>
+      <li>Les trois façons de faire le croquis deviennent trois lignes : le seul bouton plein de l'écran reste Suivant.</li>
+      <li>Les numéros d'urgence s'affichent un par ligne, en gros : on les touche pour appeler.</li>
+      <li>« Chercher une adresse » prend la barre de recherche de l'appli, votre règle du 1er novembre.</li>
+      <li>Tous les boutons s'écrivent de la même écriture. Aujourd'hui Suivant et Signer sont en serif, Ajouter non.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Les six étapes, dans le même ordre, tout à la suite : votre choix du 13 octobre.</li>
+      <li>Chaque mot, chaque case, chaque phrase qui explique la loi : rien n'est retiré.</li>
+      <li>La signature refusée tant que le minimum légal manque, l'enregistrement refusé tant qu'un présent n'a pas signé.</li>
+      <li>Le croquis en plein écran, la carte IGN, la signature au doigt, Absent.</li>
+      <li>Votre charte : essayez les huit avec le bouton en haut.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>« À remplir » s'affiche dès la première ouverture de la fiche. Ou seulement une fois l'étape passée, pour ne pas voir de l'ambre partout au début ?</li>
+    </ul>
+    <h2>Trouvé en regardant</h2>
+    <ul class="a-trancher">
+      <li>Dans le PDF, le signe « inférieur ou égal » des tensions électriques ne s'imprime pas : on lit « HTA (U ▯ 50 000 V) ». C'est un défaut, pas une question de goût : il se corrige avec le PDF.</li>
+      <li>Sur l'étape 2, sans réponse à « Les arbres dangereux », Suivant refuse avec une phrase en rouge tout en haut, loin du doigt. Proposé : la phrase s'écrit juste au-dessus de Suivant.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <a href="fiche-de-securite-pdf.html">Le PDF de la fiche</a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* Les mots de src/lib/fiche-securite.ts, recopiés le 6 novembre 2026. */
+  var D = {"LIBELLES":{"travaux":["Éhoupage","Élagage de formation","Élagage d’entretien","Haubanage","Démontage avec rétention","Démontage sans rétention","Abattage directionnel","Abattage non directionnel","Ébranchage","Billonnage","Broyage","Évacuation des rémanents","Rognage / essouchage","Débitage d’arbre au sol","Débroussaillage","Démontage d’arbres tombés sur un obstacle","Conduite d’engins","Entretien d’espace vert","Création d’espace vert"],"epi":["Contrôle visuel des EPI fait","Chaussures de sécurité anti-coupure","Pantalon anti-coupure","Manchettes anti-coupure","Visière et lunettes","Gants","Casque de protection","Casque de communication","Protection auditive","Talkie-walkie","Harnais ou baudrier d’élagage","Corde de travail (rappel)","Corde d’accès (secours)","Longe de maintien","Mousqueton à triple verrouillage","Descendeur mécanique","Descendeur textile","Sifflet"],"elevation":["Pas besoin pour ce chantier","Nacelle (PEMP)","PIRL","EPI de grimper","Échelle","Échafaudage","La nacelle ne peut pas être utilisée ici"],"coupe":["Tronçonneuse élagueuse","Tronçonneuse abatteuse","Lamier d’élagage","Scie sur perche","Sécateur"],"autresMateriels":["Broyeur","Essoucheuse / Rogneuse","Treuil / Câble","Mini chargeur","Souffleur","Scie à main","Matériel de rétention et de freinage","Grue","Engin de coupe mécanisé"],"situation":["Jardin privé","Voie publique en ville","Voie ferrée","Ligne électrique de transport","Forêt ouverte au public","Site industriel classé Seveso","Arrêté municipal ou document particulier"],"risquesArbres":["Rien à signaler","Chute de branches ou de charges pendant les travaux","Chute de bois avec la grue","Fissures, champignons ou cavités visibles du sol","Charpentière cassée récemment"],"matieres":["Repérer la présence de bois morts ou dépérissants sur les sujets à traiter (ou à proximité)","Identifier les affections dangereuses pour la santé et la sécurité des travailleurs (suie, chancre, capricorne, champignon lignivore…)","Évaluer l’état d’ancrage des arbres (enracinement)"],"balisage":["Balisage externe du chantier vis-à-vis des personnes extérieures avec panneaux d’interdiction d’accès et de signalisation du danger","Balisage interne au chantier pour limiter les risques de chute d’objet/branche sur l’homme de pied (délimitation organisationnelle)","Mode / moyen de communication entre travailleurs, à préciser (ex : casques communicants) :","Surveillance de l’accès au chantier (intrusion du public)"],"biologique":["Rien à signaler","Chenilles processionnaires","Frelons sp et autres hyménoptères","Berce du Caucase, Ambroisie sp…","Tiques sp","Suie de l’Érable","Chancre du Platane"],"biologiqueMesures":["EPI appropriés (masque, combinaison, gants…)","Appel à un spécialiste pour circonscrire le danger","Certi biocide (si utilisation de produits biocides)"],"reseaux":["Rien à signaler","Électrique","Eau, Vapeur","Gaz","Télécom","Fibre"],"tensions":["HTB (U > 50 000 V)","HTA (U ≤ 50 000 V)","BT (U ≤ 1 000 V)"],"reseauxMesures":["DT DICT declaration-travaux-proximite-reseaux (chantier distant < 50 m conducteurs électriques nus ou lors d’arrachage d’arbre, de creusement de tranchées…)","AIPR (Formulaire)","Distance de sécurité à respecter vis-à-vis des conducteurs électriques nus :"],"distances":["HTB (U > 50 000 V) : 5 m","HTA (U ≤ 50 000 V) : 3 m","BT (U ≤ 1 000 V) : 3 m"],"noyade":["Pas de risque de noyade","Piscine","Rivière","Lac","Fleuve","Étang ou bassin"],"environnement":["Rien à signaler","Routier","Facteurs météo ambiants","Bruit","État des sols","Conditions de vie sur le chantier","Éclairage","Vapeurs","Poussières","Noyade","Passants non autorisés","Corde happée par un outil en marche","Pollution accidentelle"],"environnementMesures":["Balisage du chantier sur voie publique (https://www.jebalise.fr/)","Adaptation des heures de travail","Mise à disposition d’eau en quantité suffisante","Mise à disposition de cabinet d’aisance","Mise à disposition d’équipements ou de vêtements de travail spécifiques, préciser :","Signal d’alarme (sifflet)","Équipement individuel de flottaison / barque / bouée de sauvetage","Plan de prévention (entreprise utilisatrice)"],"coactivite":["Rien à signaler","Entraînement par les éléments mobiles des équipements de travail (rogneuse, broyeur…)","Projection (avec broyeur, rogneuse…)"],"organisation":["Répartition des tâches dans le temps et l’espace (travailleur/matériel)","Respect des consignes de sécurité des machines","Mode de communication entre travailleurs :"],"meteo":["Sécuriser les travaux en cours puis arrêter les travaux","Protéger les zones dangereuses ou potentiellement dangereuses (matérialisation, interdiction d’accès…)","Prévenir le responsable du chantier ou le chef d’entreprise"],"secours":["Trousse de secours (contenu approprié à l’activité)","Kit d’urgence portatif (élagueur)","Tous les travailleurs sur le chantier sont Sauveteurs Secouristes du Travail (SST)","Travailleurs, disposant des compétences (type Grimpeur Sauveteur dans l’Arbre) et des moyens pour porter secours à victime dans l’arbre, en nombre suffisant sur le chantier","Moyen de communication fonctionnel","Protocole de secours propre au site, lu"]},"VIG":{"horaires":"Horaires, délais de réalisation…","mainDOeuvre":"Niveau de formation, ancienneté, habilitation, autorisation de conduite…","activites":"Moyens de prévention mis en œuvre, EPI appropriés à l’activité et aux travailleurs…","materiels":"Approprié à l’activité, conforme, vérifié (VGP), état (maintenance…)","elevation":"Privilégier les équipements de protection collective","echelle":"Échelle = moyen d’accès","distanceMateriels":"Distance de sécurité à respecter vis-à-vis des matériels","matieres":"Fragilisation des points d’ancrage, de la structure des arbres (branches, tronc…)","manuel":"Manuel d’utilisation du matériel","bulletins":"Bulletins d’alerte météorologiques"},"SECOURS":{"proteger":["Sécuriser les travaux en cours puis arrêter les travaux","Protéger les zones dangereuses ou potentiellement dangereuses (matérialisation, interdiction d’accès…)","Prévenir le responsable du chantier ou le chef d’entreprise"],"alerter":["S’identifier (nom, prénom, entreprise)","Donner sa localisation et préciser les moyens d’accès","Décrire la nature de l’accident","Préciser le nombre et l’état du (des) blessé(s)","Décrire les gestes de premiers secours en cours (le cas échéant)","Fixer un rendez-vous au point de rencontre des secours (PRS)","Ne jamais raccrocher le premier : attendre les instructions des services de secours"],"secourir":["Intervenir sans s’exposer (suivant référentiel SST et / ou GSA)","Préparer l’arrivée et l’accès des secours (dégagement des rémanents et du matériel)","Prévenir le siège des entreprises (du donneur d’ordre et de celle réalisant le chantier)"],"permanentes":["Dès le début du chantier, stationner les véhicules dans le sens du départ et laisser la voie d’accès libre.","Obtenir l’accord des services d’urgence avant de déplacer / véhiculer une victime vers un centre de secours."],"urgences":[["17","Police"],["18","Pompiers"],["15","SAMU"],["112","Partout en Europe"],["114","Sourd, malentendant"]]},"PERIMETRE":[["Abattage à la main","2 fois la hauteur de l’arbre"],["Élagage, éhoupage","personne sous l’arbre"],["Machines","la distance marquée dessus"]],"DANGERS":["Arbre mort","Bois mort","Défaut de structure","Fissure","Cavité","Champignons","Chancre","Suie","Frelons","Charpentière cassée récemment"],"CONSIGNES_ARBRE":["Utiliser une nacelle","Utiliser un engin de coupe mécanisé","Rubalise autour du tronc","Prévenir toute l’équipe"],"AJOUTS":["travaux","epi","situation","risquesArbres","noyade","elevation","coupe","autresMateriels","matieres","balisage","biologique","biologiqueMesures","reseaux","reseauxMesures","environnement","environnementMesures","coactivite","organisation","meteo","secours"],"PROTOCOLE":"1. Se faire voir ou entendre de celui qui travaille dans la zone.\n2. Attendre qu’il arrête sa machine ou sa coupe.\n3. Entrer seulement quand il fait signe, avec ses EPI.\n4. Lui dire où l’on se trouve tant qu’on est dans la zone.\n5. Le prévenir en sortant, avant qu’il reprenne.","FORTUITE":"formulaire de découverte fortuite de réseau"};
+  var L = D.LIBELLES;
+  var VIDES = ["Rien à signaler", "Pas de risque de noyade", "Pas besoin pour ce chantier"];
+  var ETAPES = ["Le chantier", "Les travaux", "Croquis et balisage", "Les risques", "Mesures et secours", "Signer"];
+
+  function ico(nom) { return '<svg class="ico" aria-hidden="true"><use href="#i-' + nom + '"/></svg>'; }
+  /* Une valeur d'attribut garde le mot exact : c'est lui que la case retrouve dans LIBELLES. */
+  function attr(t) { return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;"); }
+  function esc(t) {
+    return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;")
+      // Le « ? » ou le « » » ne commence jamais une ligne : une espace fine insécable les tient au mot.
+      .replace(/ ([?!;»])/g, "\u202F$1").replace(/ :/g, "\u00A0:").replace(/« /g, "«\u202F");
+  }
+
+  /* ─── La fiche « Pose de clôture », telle que la montrent les captures ─── */
+  var M = {
+    coches: {
+      travaux: ["Démontage avec rétention", "Abattage directionnel", "Évacuation des rémanents"],
+      epi: ["Pantalon anti-coupure", "Visière et lunettes", "Gants", "Casque de protection"],
+      elevation: ["EPI de grimper"], coupe: ["Tronçonneuse élagueuse", "Tronçonneuse abatteuse"], autresMateriels: ["Broyeur"],
+      situation: ["Jardin privé"], risquesArbres: ["Chute de branches ou de charges pendant les travaux"]
+    },
+    donneur: "client", entreprises: "aucune", arbres: "non", croquis: false,
+    trousse: "", rencontre: "", consignes: false,
+    equipe: [{ nom: "Kevin Morel", present: true, bien: "CACES nacelle, SST jusqu’au 18 novembre 2027, GSA jusqu’au 2 juin 2027", mal: "" },
+             { nom: "Lucas Petit", present: true, bien: "SST jusqu’au 10 mars 2028", mal: "Pas de GSA." }],
+    trace: false, refus: "", lu: false, enregistree: false
+  };
+  var etape = "loi";
+  function coches(f) { return M.coches[f] || []; }
+  function n(f) { return coches(f).filter(function (x) { return VIDES.indexOf(x) < 0; }).length; }
+  function aDesRisques(f) { return n(f) > 0; }
+  function cocher(f, mot) {
+    var avant = coches(f);
+    var vide = VIDES.indexOf(mot) >= 0;
+    M.coches[f] = avant.indexOf(mot) >= 0 ? avant.filter(function (x) { return x !== mot; })
+      : vide ? [mot] : avant.filter(function (x) { return VIDES.indexOf(x) < 0; }).concat([mot]);
+  }
+
+  /* Le minimum légal, dans l'ordre de minimumLegal (src/lib/fiche-securite.ts).
+     Dans l'appli, ces huit points sortiront de la même règle : rien n'est recopié. */
+  var RISQUES = [["risquesArbres", "les arbres", "risques-arbres"], ["biologique", "le biologique", "risques-biologiques"],
+                 ["reseaux", "les réseaux", "risques-reseaux"], ["noyade", "la noyade", "risques-noyade"],
+                 ["environnement", "l’environnement", "risques-environnement"]];
+  function points() {
+    var sansReponse = RISQUES.filter(function (r) { return coches(r[0]).length === 0; });
+    return [
+      { quoi: "Les dates", e: 1, bloc: "lieu", fait: true, faire: "" },
+      { quoi: "Les travaux", e: 2, bloc: "travaux", fait: n("travaux") > 0, faire: "Cochez au moins un type de travaux." },
+      { quoi: "Le matériel", e: 2, bloc: "materiel", fait: n("elevation") + n("coupe") + n("autresMateriels") > 0, faire: "Cochez le matériel ou les moyens d’élévation utilisés." },
+      { quoi: "Le croquis", e: 3, bloc: "croquis", fait: M.croquis, faire: "Posez sur le croquis : accès, voie de circulation, arbres à traiter." },
+      { quoi: "La délimitation du chantier", e: 3, bloc: "balisage", fait: coches("balisage").length > 0, faire: "Cochez comment le chantier est balisé." },
+      { quoi: "Les risques", e: 4, bloc: sansReponse.length ? sansReponse[0][2] : "risques-arbres", fait: sansReponse.length === 0,
+        faire: "Répondez pour " + sansReponse.map(function (r) { return r[1]; }).join(", ") + ". « Rien à signaler » compte comme une réponse." },
+      { quoi: "La météo", e: 5, bloc: "meteo", fait: coches("meteo").length > 0, faire: "Cochez la conduite à tenir si le temps tourne." },
+      { quoi: "Les secours", e: 5, bloc: "secours", fait: coches("secours").length > 0 && M.rencontre.trim() !== "" && M.trousse.trim() !== "",
+        faire: "Cochez les secours prévus, et écrivez le point de rencontre et le lieu de la trousse." }
+    ];
+  }
+  /* L'état d'une partie que la loi exige, à côté de son titre. */
+  var LEGAL = {
+    lieu: function () { return true; },
+    travaux: function () { return n("travaux") > 0; },
+    materiel: function () { return n("elevation") + n("coupe") + n("autresMateriels") > 0; },
+    croquis: function () { return M.croquis; },
+    balisage: function () { return coches("balisage").length > 0; },
+    "risques-arbres": function () { return coches("risquesArbres").length > 0; },
+    "risques-biologiques": function () { return coches("biologique").length > 0; },
+    "risques-reseaux": function () { return coches("reseaux").length > 0; },
+    "risques-noyade": function () { return coches("noyade").length > 0; },
+    "risques-environnement": function () { return coches("environnement").length > 0; },
+    meteo: function () { return coches("meteo").length > 0; },
+    secours: function () { return points()[7].fait; }
+  };
+  function etatDuBloc(id) {
+    if (!LEGAL[id]) return "";
+    return LEGAL[id]() ? '<span class="etat" data-ton="vert" data-etat-bloc="' + id + '">Fait</span>'
+                       : '<span class="etat" data-ton="ambre" data-etat-bloc="' + id + '">À remplir</span>';
+  }
+
+  /* ─── Les pièces de l'écran ─────────────────────────────────────────────── */
+  function bloc(id, titre, expl, corps, precision) {
+    return '<section class="bloc" id="bloc-' + id + '"><div class="bloc-tete"><h3 class="bloc-titre">' + esc(titre) +
+      (precision ? ' <small>' + esc(precision) + '</small>' : '') + '</h3>' + etatDuBloc(id) + '</div>' +
+      (expl ? '<p class="bloc-expl">' + esc(expl) + '</p>' : '') + '<div class="bloc-corps">' + corps + '</div></section>';
+  }
+  function vig(t) { return '<p class="vigilance">' + ico("info") + '<span><b>Point de vigilance</b> ' + esc(t) + '</span></p>'; }
+  function sous(t) { return '<p class="sous-titre">' + esc(t) + '</p>'; }
+  function note(t) { return '<p class="garde-note">' + esc(t) + '</p>'; }
+  function coche() { return '<span class="rond-coche" aria-hidden="true">' + ico("coche") + '</span>'; }
+  function ajout(f) {
+    return D.AJOUTS.indexOf(f) >= 0 ? '<button class="pastille pastille-ajout" type="button" data-note="Sur la planche, rien ne s\'ajoute.">' + ico("plus") + 'Ajouter</button>' : "";
+  }
+  function pastilles(f, apres) {
+    return '<div class="pastilles">' + L[f].map(function (mot) {
+      var oui = coches(f).indexOf(mot) >= 0;
+      return '<button class="pastille" type="button" aria-pressed="' + oui + '" data-f="' + f + '" data-mot="' + attr(mot) + '">' + coche() + esc(mot) + '</button>';
+    }).join("") + ajout(f) + '</div>' + (apres || "");
+  }
+  function cases(f, sousDe) {
+    return '<div class="cases">' + L[f].map(function (mot) {
+      var oui = coches(f).indexOf(mot) >= 0;
+      var s = sousDe && sousDe[mot] && oui ? '<div class="sous-groupe">' + sousDe[mot] + '</div>' : "";
+      return '<button class="case" type="button" aria-pressed="' + oui + '" data-f="' + f + '" data-mot="' + attr(mot) + '">' + coche() + '<span>' + esc(mot) + '</span></button>' + s;
+    }).join("") + '</div>' + (D.AJOUTS.indexOf(f) >= 0 ? '<div class="pastilles" style="margin-top:6px">' + ajout(f) + '</div>' : "");
+  }
+  function fixe(nom, val, vide) {
+    return '<div class="fixe"><span class="fixe-nom">' + esc(nom) + '</span><span class="fixe-valeur' + (vide ? ' absente' : '') + '">' + esc(val) + '</span></div>';
+  }
+  function champ(nom, val, ph, opts) {
+    opts = opts || {};
+    var attrs = (opts.cle ? ' data-cle="' + opts.cle + '"' : '') + (opts.type ? ' type="' + opts.type + '"' : '') + (opts.mode ? ' inputmode="' + opts.mode + '"' : '');
+    var saisie = opts.lignes
+      ? '<textarea class="champ-saisie" rows="' + opts.lignes + '"' + attrs + (ph ? ' placeholder="' + esc(ph) + '"' : '') + '>' + esc(val || "") + '</textarea>'
+      : '<input class="champ-saisie"' + attrs + ' value="' + attr(val || "") + '"' + (ph ? ' placeholder="' + esc(ph) + '"' : '') + '>';
+    return '<label class="champ">' + (nom ? '<span class="champ-libelle">' + esc(nom) + '</span>' : '') + saisie + '</label>';
+  }
+  function choix(cle, options) {
+    return '<div class="choix" role="group">' + options.map(function (o) {
+      return '<button type="button" data-choix-de="' + cle + '" data-valeur="' + o[0] + '" aria-pressed="' + (M[cle] === o[0]) + '">' + esc(o[1]) + '</button>';
+    }).join("") + '</div>';
+  }
+
+  /* ─── Les écrans ─────────────────────────────────────────────────────────── */
+  var CORPS = {
+    loi: function () {
+      var sept = ["où est le chantier, quels travaux, avec quel matériel, quels jours", "une carte, un croquis ou une photo : les accès, les passages, les arbres à traiter",
+        "les risques propres à ce chantier et à ce qui l’entoure", "les mesures de sécurité prises", "la marche à suivre en cas d’accident",
+        "comment les secours s’organisent", "la marche à suivre si le temps tourne"];
+      return '<div class="loi"><h2 class="fs-etape" style="font-size:28px">Décret 2021-1833, en vigueur depuis le 1er mars 2022</h2>' +
+        '<p>Avant un chantier d’élagage ou d’abattage, le chef d’entreprise remplit une fiche d’intervention, la signe, la montre à son équipe, la garde sur le chantier, la transmet à l’entreprise qui l’a fait venir quand il y a un plan de prévention, et la conserve deux ans. Elle doit dire :</p>' +
+        '<ol class="consignes">' + sept.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join("") + '</ol>' +
+        '<p>La fiche peut être sur le téléphone. Sans ces éléments, elle ne se signe pas : l’écran dit ce qui manque, et où le remplir.</p>' +
+        '<p>Elle ne vaut que pour l’élagage et l’abattage, dans les parcs, jardins et arbres d’alignement. Pas pour une tonte, une haie, une création.</p>' +
+        '<p class="plage-ton" data-ton="or"><b>Ce que vous cochez et écrivez est repris sur votre prochaine fiche</b>, votre équipe et ses compétences aussi. Vérifiez chaque case à chaque chantier : c’est votre signature.</p>' +
+        '<div class="pile"><a class="bouton bouton-creux" href="#" data-note="Sur la planche, Légifrance ne s\'ouvre pas.">' + ico("document") + 'Lire le décret sur Légifrance</a>' +
+        '<a class="bouton bouton-creux" href="#" data-note="Sur la planche, le formulaire ne s\'ouvre pas.">' + ico("document") + 'Voir le formulaire de la MSA</a></div></div>';
+    },
+    e1: function () {
+      var donneur = M.donneur === "client"
+        ? fixe("Raison sociale", "Mme Aubry") + fixe("Téléphone (en cas d’incident ou d’accident)", "06 55 44 33 22")
+        : '<div class="deux">' + champ("Nom", "", "Exemple : Dubeaujardin") + champ("Prénom", "", "Exemple : Marc") + '</div>' + champ("Téléphone (en cas d’incident ou d’accident)", "", "Exemple : 06 00 00 00 00", { type: "tel" });
+      var equipe = M.equipe.map(function (p, i) {
+        return '<div class="personne"><button class="rond-tap" type="button" aria-pressed="' + p.present + '" aria-label="' + esc(p.nom) + ' vient" data-present="' + i + '">' + coche() + '</button>' +
+          '<span class="personne-corps"><b>' + esc(p.nom) + '</b>' + (p.bien ? '<span>' + esc(p.bien) + '</span>' : '') + (p.mal ? '<em>' + esc(p.mal) + '</em>' : '') + '</span>' +
+          '<button class="bouton-texte" type="button" data-note="Inchangé : la feuille des compétences.">Compétences</button></div>';
+      }).join("");
+      return bloc("identification", "Identification", "Déjà rempli d’après le chantier. Rien à écrire.",
+          fixe("Nom du chantier", "Pose de clôture") + fixe("N° de devis et/ou de commande afférent", "aucun devis", true)) +
+        bloc("entreprise", "Entreprise réalisant le chantier", "Vous. Le numéro est celui qu’on appelle s’il arrive quelque chose.",
+          fixe("Raison sociale", "Atelier Démo") + champ("Téléphone (en cas d’incident ou d’accident)", "06 12 34 56 78", "", { type: "tel" })) +
+        bloc("donneur", "Donneur d’ordre", "Qui vous a commandé les travaux ? Le client du devis, ou quelqu’un d’autre : une entreprise qui vous sous-traite, un syndic, une mairie.",
+          choix("donneur", [["client", "Le client du devis"], ["autre", "Quelqu’un d’autre"]]) + donneur + champ("Ce qu’il est pour le chantier", "", "Exemple : propriétaire, syndic, mairie")) +
+        bloc("lieu", "Identification du chantier", "Où est le chantier, et quand. Relevez la position GPS sur place : elle guide les secours.",
+          fixe("Lieu (adresse)", "2 route de Vertou, Vertou") +
+          sous("Coordonnées GPS") +
+          '<button class="bouton bouton-creux bouton-gps" type="button" data-note="Sur la planche, la position ne se relève pas.">' + ico("lieu") + 'Relever ici</button>' +
+          '<div class="champ-recherche"><svg class="ico" aria-hidden="true"><use href="#i-loupe"/></svg><input type="text" inputmode="search" placeholder="Chercher une adresse" aria-label="Chercher une adresse"></div>' +
+          '<div class="carte-ign" aria-label="La carte IGN, inchangée">' +
+            '<svg viewBox="0 0 346 176" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
+              '<path d="M-10 120 C 80 100, 160 140, 360 96" fill="none" stroke="var(--atlas-card)" stroke-width="14"/>' +
+              '<path d="M120 -10 C 130 60, 150 120, 140 190" fill="none" stroke="var(--atlas-card)" stroke-width="9"/>' +
+              '<path d="M250 -10 L 230 190" fill="none" stroke="var(--atlas-card)" stroke-width="6"/>' +
+              '<circle cx="186" cy="92" r="22" fill="color-mix(in srgb, var(--atlas-alerte) 18%, transparent)"/>' +
+              '<path d="M186 96s-10-9.5-10-17a10 10 0 0 1 20 0c0 7.5-10 17-10 17z" fill="var(--atlas-alerte)"/><circle cx="186" cy="79" r="3.4" fill="var(--atlas-card)"/>' +
+            '</svg><div class="mode"><span>Plan</span><span>Photo aérienne</span></div><span class="ign">IGN</span></div>' +
+          '<p class="garde-note">Sous les arbres, le GPS peut se tromper de quelques mètres. Touchez la carte à l’endroit exact du chantier.</p>' +
+          champ("", "47.21810, -1.55360", "Exemple : 48.94123, 1.72004", { mode: "decimal" }) +
+          fixe("Adresse au point GPS", "5 Allée des Tilleuls 44000 Nantes") +
+          champ("Adresse d’accès des secours, si elle est différente", "", "Exemple : portail arrière, chemin des Saules") +
+          sous("Dates d’exécution, d’après le planning") +
+          '<div class="deux">' + fixe("Début, jour", "12 novembre") + fixe("Fin, jour", "12 novembre") + '</div>' +
+          '<div class="deux">' + champ("Début, heures", "08:00", "", { type: "time" }) + champ("Fin, heures", "17:00", "", { type: "time" }) + '</div>' +
+          vig(D.VIG.horaires)) +
+        bloc("responsables", "Responsables de l’entreprise sur le chantier", "Qui commande sur place. Il peut y en avoir plusieurs.",
+          '<div class="deux">' + champ("Nom", "Morel") + champ("Prénom", "Kevin") + '</div>' + champ("Téléphone", "06 98 76 54 32", "", { type: "tel" }) +
+          '<button class="bouton-texte" type="button" data-note="Sur la planche, rien ne s\'ajoute.">' + ico("plus") + 'Ajouter un responsable</button>' + note("Gardés pour vos prochaines fiches.")) +
+        bloc("entreprises", "Sous-traitants et autres entreprises", "Toute entreprise qui travaille avec vous sur le chantier. Les secours s’organisent ensemble, et elle doit voir cette fiche.",
+          choix("entreprises", [["aucune", "Aucune"], ["oui", "Oui"]]) +
+          (M.entreprises === "oui" ? '<button class="bouton-texte" type="button" data-note="Inchangé : la carte de l\'entreprise.">' + ico("plus") + 'Nouvelle entreprise</button>' + note("Chaque entreprise est gardée pour vos prochaines fiches. Elle fait aussi sa propre fiche.") : "")) +
+        bloc("equipe", "L’équipe et ses compétences", "Cochez qui vient sur ce chantier. Les compétences s’écrivent une fois, et reviennent sur chaque fiche.",
+          equipe + '<button class="bouton-texte" type="button" data-note="Inchangé : la feuille des compétences.">' + ico("plus") + 'Ajouter une personne</button>' +
+          vig(D.VIG.mainDOeuvre) + champ("Autres précisions sur l’équipe", "", "Exemple : 3 personnes en CDI, un intérimaire", { lignes: 2 }) +
+          note("L’équipe, ses compétences et ce texte sont gardés pour vos prochaines fiches."));
+    },
+    e2: function () {
+      var arbre = M.arbres === "oui"
+        ? '<p class="sous-titre">Arbre 1 <span class="discret" style="font-weight:400">numéro 1 sur le croquis</span></p>' +
+          sous("Intervention") + '<div class="choix" role="group"><button type="button" aria-pressed="true">Abattage</button><button type="button" aria-pressed="false">Élagage</button></div>' +
+          sous("Dangers vus") + '<div class="pastilles">' + D.DANGERS.map(function (d, i) { return '<button class="pastille" type="button" aria-pressed="' + (i === 0) + '" data-bascule>' + coche() + esc(d) + '</button>'; }).join("") + '</div>' +
+          sous("Consignes") + '<div class="pastilles">' + D.CONSIGNES_ARBRE.map(function (d) { return '<button class="pastille" type="button" aria-pressed="false" data-bascule>' + coche() + esc(d) + '</button>'; }).join("") + '</div>' +
+          champ("Autres consignes pour cet arbre", "", "Exemple : démonter par le haut, côté maison") +
+          '<div class="rang" style="margin-top:8px"><button class="bouton-texte" type="button" data-note="Sur la planche, rien ne s\'ajoute.">' + ico("plus") + 'Un arbre</button><button class="bouton-texte" type="button" data-note="Sur la planche, rien ne s\'ajoute.">' + ico("plus") + 'Un groupe d’arbres</button></div>'
+        : "";
+      return bloc("travaux", "Travaux à réaliser", "Cochez ce que vous allez faire sur ce chantier.", pastilles("travaux") + vig(D.VIG.activites)) +
+        bloc("epi", "Les EPI", "Les équipements de protection que l’équipe porte sur ce chantier. Pour les vêtements anti-coupure, précisez la classe 1, 2 ou 3 avec « Ajouter ».", pastilles("epi")) +
+        bloc("materiel", "Matériels", "Cochez le matériel que vous allez utiliser sur ce chantier.",
+          vig(D.VIG.materiels) + sous("Moyens d’élévation") + vig(D.VIG.elevation) + pastilles("elevation") + vig(D.VIG.echelle) +
+          sous("Matériels de coupe") + vig(D.VIG.distanceMateriels) + pastilles("coupe") +
+          sous("Matériels autres") + vig(D.VIG.distanceMateriels) + pastilles("autresMateriels") + note("Ce que vous ajoutez reste pour vos prochaines fiches.")) +
+        bloc("situation", "La situation des travaux", "Où se passe le chantier. Une voie ferrée, une ligne électrique ou un site classé demandent des autorisations à part.", pastilles("situation")) +
+        bloc("arbres-dangereux", "Les arbres dangereux", "Un arbre mort, creux, fissuré, qui peut casser pendant le travail. Chacun prend son numéro sur le croquis.",
+          choix("arbres", [["non", "Non"], ["oui", "Oui"]]) + arbre);
+    },
+    e3: function () {
+      var croquis = M.croquis
+        ? '<div class="croquis-vu"><svg viewBox="0 0 400 300" aria-label="Le croquis du chantier">' +
+            '<rect x="0" y="0" width="400" height="300" fill="var(--atlas-card)"/>' +
+            '<rect x="20" y="20" width="360" height="252" fill="none" stroke="var(--atlas-ink)" stroke-width="2" stroke-dasharray="7 6"/>' +
+            '<rect x="56" y="44" width="92" height="70" fill="var(--atlas-carteAmbreFond)" stroke="var(--atlas-ink)" stroke-width="2.5"/>' +
+            '<path d="M0 286 H400" stroke="var(--atlas-or)" stroke-width="9" stroke-linecap="round"/>' +
+            '<path d="M44 262 L 96 210" stroke="var(--atlas-ink)" stroke-width="5" stroke-dasharray="12 7" stroke-linecap="round"/>' +
+            '<circle cx="262" cy="118" r="46" fill="color-mix(in srgb, var(--atlas-alerte) 12%, transparent)" stroke="var(--atlas-alerte)" stroke-width="3" stroke-dasharray="9 6"/>' +
+            '<circle cx="222" cy="86" r="15" fill="var(--atlas-alerte)"/><text x="222" y="92" text-anchor="middle" font-size="17" font-weight="700" fill="var(--atlas-card)" font-family="system-ui, sans-serif">1</text>' +
+            '<rect x="318" y="212" width="38" height="38" fill="var(--atlas-plein)"/><path d="M337 220v22M326 231h22" stroke="var(--sur-plein)" stroke-width="4"/>' +
+          '</svg></div>' +
+          '<div class="obligatoires"><span class="etat" data-ton="vert">Accès</span><span class="etat" data-ton="vert">Voie de circulation</span><span class="etat" data-ton="vert">Arbre à traiter</span></div>' +
+          '<button class="bouton bouton-creux" type="button" style="margin-top:14px" data-note="Inchangé : le croquis s\'ouvre en plein écran.">Modifier le croquis</button>' +
+          note("Légende : Accès au chantier, Voie de circulation, Arbre à abattre, Maison, Rendez-vous des secours, Limite de parcelle.")
+        : '<p class="garde-note" style="margin-top:0">Obligatoire sur le croquis : les accès, les voies de circulation, les arbres à traiter.</p>' +
+          '<div class="facons">' +
+            '<button class="facon" type="button" data-croquis><span class="pastille-ico">' + ico("photo") + '</span><b>Dessiner sur une photo du chantier</b>' + ico("suivant") + '</button>' +
+            '<button class="facon" type="button" data-croquis><span class="pastille-ico">' + ico("crayon") + '</span><b>Dessiner sur une page blanche</b>' + ico("suivant") + '</button>' +
+            '<button class="facon" type="button" data-croquis><span class="pastille-ico">' + ico("importer") + '</span><b>Importer un croquis déjà fait</b>' + ico("suivant") + '</button>' +
+          '</div>';
+      var rappel = '<div class="rappel"><b>Périmètre de sécurité, d’après le décret</b>' + D.PERIMETRE.map(function (l) { return '<p><span>' + esc(l[0]) + '</span> : ' + esc(l[1]) + '.</p>'; }).join("") + '</div>';
+      var sousBalisage = {}; sousBalisage[L.balisage[2]] = champ("", "", "Exemple : casques communicants à 3");
+      return bloc("croquis", "Le croquis", "Une carte, un croquis ou une photo du chantier : par où on entre, par où on passe, les arbres à traiter.", croquis) +
+        bloc("photos", "Photos du balisage", "Le balisage, les zones sensibles, un document. Prenez la photo, ou choisissez-la dans la photothèque.",
+          '<button class="photo-ajout" type="button" aria-label="Prendre une photo" data-note="Sur la planche, rien ne se photographie.">' + ico("photo") + '</button>') +
+        bloc("balisage", "La délimitation du chantier", "Obligatoire : ce que vous mettez en place pour que personne n’entre dans la zone de danger.", rappel + cases("balisage", sousBalisage));
+    },
+    e4: function () {
+      var reseaux = pastilles("reseaux", coches("reseaux").indexOf("Électrique") >= 0 ? sous("Électrique") + pastilles("tensions") : "");
+      var sousMesures = {}; sousMesures[L.reseauxMesures[2]] = cases("distances");
+      var sousEnv = {}; sousEnv[L.environnementMesures[4]] = champ("", "", "Exemple : gilets haute visibilité");
+      var sousOrga = {}; sousOrga[L.organisation[2]] = champ("", "", "Exemple : casques communicants");
+      return '<p class="fs-intro">Répondez pour chaque risque. « Rien à signaler » est une réponse : il dit que vous avez regardé.</p>' +
+        bloc("risques-arbres", "Les arbres pendant l’intervention", "Ce qui peut tomber, casser ou céder pendant le travail.",
+          pastilles("risquesArbres") + sous("État sanitaire et physiologique des arbres") + cases("matieres") + vig(D.VIG.matieres) +
+          champ("Autres (à préciser)", "", "Exemple : rien vu sur les chênes, à confirmer sur place", { lignes: 2 })) +
+        bloc("risques-biologiques", "Les risques biologiques", "Des bêtes ou des plantes dangereuses sur place ? Cochez-les, puis ce que vous faites contre.",
+          pastilles("biologique") + (aDesRisques("biologique") ? sous("Mesures de prévention spécifiques au chantier") + pastilles("biologiqueMesures") : "")) +
+        bloc("risques-reseaux", "Les réseaux", "Des lignes électriques, des câbles ou des canalisations près des arbres, en l’air ou sous terre ?",
+          reseaux + (aDesRisques("reseaux") ? sous("Mesures") + cases("reseauxMesures", sousMesures) + note("Au cas où : " + D.FORTUITE) : ""), "aériens et souterrains") +
+        bloc("risques-noyade", "La noyade", "Une piscine, une rivière, un bassin près des arbres ?", pastilles("noyade")) +
+        bloc("risques-environnement", "L’environnement du chantier", "Ce qui, autour du chantier, peut gêner ou blesser : la route, les passants, le bruit, un sol glissant.",
+          pastilles("environnement") + (aDesRisques("environnement") || aDesRisques("noyade") ? sous("Mesures") + pastilles("environnementMesures") + (coches("environnementMesures").indexOf(L.environnementMesures[4]) >= 0 ? sousEnv[L.environnementMesures[4]] : "") : "")) +
+        bloc("coactivite", "Co-activité dans la zone de sécurité du chantier", "D’autres personnes travaillent en même temps dans la zone ? Une machine peut happer ou projeter ?",
+          cases("coactivite") + sous("Règles organisationnelles à mettre en place") + cases("organisation", sousOrga) + vig(D.VIG.manuel)) +
+        bloc("autres-risques", "Risques autres identifiés, mesures de prévention autres", "Ce qui n’est dans aucune liste, et ce que vous faites contre.",
+          champ("Risques autres identifiés", "", "Exemple : coups de vent possibles", { lignes: 2 }) + champ("Mesures de prévention autres", "", "Exemple : rubalise autour de la propriété", { lignes: 2 }) +
+          note("Ces deux textes sont gardés pour vos prochaines fiches."));
+    },
+    e5: function () {
+      var S = D.SECOURS;
+      var liste = function (l) { return '<ol class="consignes">' + l.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join("") + '</ol>'; };
+      return bloc("protocole", "Entrer dans une zone de danger", "Zone de chute, zone de broyage, zone avec engin : comment on y entre sans se faire blesser. Un texte modèle, à adapter au chantier.",
+          champ("Protocole d’entrée en zone de danger", D.PROTOCOLE, "", { lignes: 6 }) + note("Votre version est gardée pour vos prochaines fiches.")) +
+        bloc("meteo", "Consignes sur la conduite à tenir en cas de phénomènes météorologiques imprévus", "La marche à suivre si le vent, l’orage ou une pluie forte arrive pendant le chantier.",
+          vig(D.VIG.bulletins) + cases("meteo")) +
+        bloc("secours", "Organisation des secours. Ressources humaines et matérielles", "Ce qu’il y a sur place pour porter secours, et où. Le Point de Rencontre des Secours, c’est l’endroit précis où les pompiers vous retrouvent.",
+          cases("secours") +
+          champ("Préciser le lieu où se trouve la trousse de secours :", M.trousse, "Exemple : dans la cabine du camion", { cle: "trousse" }) + note("Gardé pour vos prochaines fiches.") +
+          champ("Préciser le Point de Rencontre des Secours :", M.rencontre, "Exemple : devant le portail du client", { cle: "rencontre" })) +
+        bloc("consignes", "Organisation des secours. Consignes et procédures", "La marche à suivre, dans l’ordre. Elle est imprimée sur la fiche : à lire avant de commencer.",
+          '<div class="pli"' + (M.consignes ? ' data-ouvert' : '') + '><button class="pli-tete" type="button" data-pli aria-expanded="' + M.consignes + '"><span class="pastille-ico" data-ton="rouge">' + ico("telephone") + '</span><b>Protéger, alerter, secourir</b><small>15, 18, 112</small>' + ico("bas") + '</button>' +
+          '<div class="pli-corps"><div><div class="pli-dedans">' +
+            '<h4>1. Protéger</h4>' + liste(S.proteger) +
+            '<h4>2. Alerter</h4><div class="urgences">' + S.urgences.map(function (u) { return '<a class="urgence" href="#" data-note="Sur la planche, rien n\'appelle."><b>' + u[0] + '</b><span>' + esc(u[1]) + '</span>' + ico("telephone") + '</a>'; }).join("") + '</div>' + liste(S.alerter) +
+            '<h4>3. Secourir</h4>' + liste(S.secourir) +
+            '<p class="garde-note">' + esc(S.permanentes[0]) + '</p><p class="garde-note"><b>' + esc(S.permanentes[1]) + '</b></p>' +
+          '</div></div></div></div>') +
+        bloc("observations", "Observations / Consignes particulières", "Ce que l’équipe doit savoir en plus, pour ce chantier-là.",
+          champ("", "", "Exemple : prévenir le chef si quelque chose change", { lignes: 3 }) + note("Ce texte est gardé pour vos prochaines fiches."));
+    },
+    e6: function () {
+      var p = points();
+      var faits = p.filter(function (x) { return x.fait; }).length;
+      var liste = p.map(function (x) {
+        return x.fait
+          ? '<div class="point fait"><span class="rond-fait" aria-hidden="true">' + ico("coche") + '</span><span class="point-corps"><b>' + esc(x.quoi) + '</b></span></div>'
+          : '<button class="point" type="button" data-aller="e' + x.e + '" data-bloc="' + x.bloc + '"><span class="rond-manque" aria-hidden="true"></span><span class="point-corps"><b>' + esc(x.quoi) + '</b><span>' + esc(x.faire) + '</span></span>' + ico("suivant") + '</button>';
+      }).join("");
+      var tete = faits === p.length
+        ? '<p class="plage-ton" data-ton="vert">Tout ce que la loi exige est rempli.</p>'
+        : '<p class="plage-ton" data-ton="ambre">La loi exige ces éléments. Sans eux, la fiche ne peut être ni signée ni enregistrée.</p>';
+      return '<section class="bloc" id="bloc-minimum-legal"><div class="bloc-tete"><h3 class="bloc-titre">Pour pouvoir signer</h3><span class="etat" data-ton="' + (faits === p.length ? "vert" : "ambre") + '">' + faits + ' sur ' + p.length + '</span></div>' +
+          '<div class="bloc-corps">' + tete + '<div class="points">' + liste + '</div></div></section>' +
+        bloc("enregistrement", "Signature du chef d’entreprise", "Le chef d’entreprise signe. Sa signature engage sa responsabilité. Ensuite, chaque personne de l’équipe signera l’avoir lue, sur ce téléphone.",
+          champ("Nom et prénom du chef d’entreprise (ou de son représentant)", "Compte de démonstration") + fixe("Date", "6 novembre 2026") +
+          '<div class="signature" id="signature-chef"><div class="base"></div><span class="invite">Signez ici, au doigt</span><canvas></canvas></div>' +
+          '<div class="effacer"><button class="bouton-texte" type="button" data-effacer="signature-chef">Effacer</button></div>');
+    },
+    signee: function () {
+      var tous = M.lu;
+      var enr = M.enregistree;
+      var lucas = M.lu
+        ? '<div class="qui"><span class="rond-fait" aria-hidden="true">' + ico("coche") + '</span><span class="qui-corps"><b>Lucas Petit</b><span>A lu la fiche à 8 h 14.</span></span>' + trait() + '</div>'
+        : '<div class="qui"><span class="rond-manque" aria-hidden="true" style="box-shadow: inset 0 0 0 1.5px var(--atlas-chevron)"></span><span class="qui-corps"><b>Lucas Petit</b></span>' +
+          '<button class="bouton-texte" type="button" data-note="Sur la planche, Lucas reste présent.">Absent</button>' +
+          '<button class="bouton bouton-plein bouton-petit" type="button" data-ouvre="feuille-lecture">Signer</button></div>';
+      return '<h2 class="fs-etape">' + (tous ? "Fiche signée" : "Signatures en attente") + '</h2>' +
+        '<p class="fs-intro">' + (!tous ? "Elle s’enregistre quand tout le monde a signé." : enr ? "Enregistrée. Gardée jusqu’au 6 novembre 2028." : "Tout le monde a signé : enregistrez-la.") + '</p>' +
+        '<section class="bloc"><div class="bloc-tete"><h3 class="bloc-titre">Les signatures</h3><span class="etat" data-ton="' + (tous ? "vert" : "ambre") + '">' + (tous ? "3 sur 3" : "2 sur 3") + '</span></div><div class="bloc-corps">' +
+          '<div class="qui"><span class="rond-fait" aria-hidden="true">' + ico("coche") + '</span><span class="qui-corps"><b>Compte de démonstration</b><span>Chef d’entreprise. A signé la fiche le 6 novembre 2026 à 7 h 55.</span></span>' + trait() + '</div>' +
+          '<div class="qui"><span class="rond-fait" aria-hidden="true">' + ico("coche") + '</span><span class="qui-corps"><b>Kevin Morel</b><span>A lu la fiche à 8 h 10.</span></span>' + trait() + '</div>' +
+          lucas +
+          (tous ? "" : '<p class="garde-note" style="color:var(--atlas-carteAmbreTexte);font-weight:600">Lucas Petit doit signer avant d’enregistrer la fiche. Quelqu’un n’est pas venu ? Touchez « Absent ».</p>') +
+        '</div></section>' +
+        '<section class="bloc"><div class="bloc-tete"><h3 class="bloc-titre">À qui l’envoyer</h3></div><p class="bloc-expl">Ce que la loi demande, destinataire par destinataire.</p><div class="bloc-corps">' +
+          '<div class="dest"><div class="dest-tete"><b>Votre équipe</b><span class="etat" data-ton="ambre">Obligatoire, avant de commencer</span></div><p>Chacun doit l’avoir lue avant le premier coup de tronçonneuse. ' + (tous ? "C’est fait : tout le monde a signé." : "Faites signer chacun ci-dessus.") + '</p>' +
+            '<button class="bouton bouton-creux" type="button" data-note="Sur la planche, rien ne part.">Envoyer à l’équipe</button></div>' +
+          '<div class="dest"><div class="dest-tete"><b>Les entreprises sur place</b><span class="etat">Rien à faire</span></div><p>Aucune autre entreprise sur ce chantier.</p></div>' +
+          '<div class="dest"><div class="dest-tete"><b>Votre client</b></div><p>Ce client (une entreprise, une mairie, un syndic) vous a-t-il fait remplir un plan de prévention ?</p>' +
+            '<p class="second">C’est le document qu’un client professionnel vous fait signer avant de travailler sur son site.</p>' +
+            '<div class="choix" role="group"><button type="button" aria-pressed="true">Non</button><button type="button" aria-pressed="false">Oui</button></div>' +
+            '<p>Rien à envoyer. Un particulier n’a pas à la recevoir.</p></div>' +
+          '<div class="dest"><div class="dest-tete"><b>La garder</b><span class="etat" data-ton="' + (enr ? "vert" : "") + '">' + (enr ? "Fait par Atlas" : "Après toutes les signatures") + '</span></div>' +
+            '<p>Elle doit rester sur le chantier pendant les travaux : votre téléphone suffit. ' + (enr ? "Atlas la garde deux ans, jusqu’au 6 novembre 2028, rangée dans Paysage." : "Atlas la garde deux ans, dès qu’elle est enregistrée.") + '</p></div>' +
+        '</div></section>';
+    }
+  };
+  function trait() {
+    return '<svg class="trait-signe" viewBox="0 0 54 28" aria-hidden="true"><path d="M3 20c5-10 9-14 11-10s-3 12 1 11 6-13 10-12-1 10 3 10 5-8 9-8 4 6 13 2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+  }
+
+  /* ─── L'en-tête et le pied, selon l'étape ───────────────────────────────── */
+  function peindreTete() {
+    var tete = document.getElementById("tete");
+    var num = /^e(\d)$/.exec(etape);
+    if (!num) { tete.hidden = true; return; }
+    tete.hidden = false;
+    var i = Number(num[1]);
+    var barres = "";
+    for (var k = 1; k <= 6; k++) barres += '<i class="' + (k < i ? "vu" : k === i ? "ici" : "") + '"></i>';
+    tete.innerHTML = '<div class="fs-tete-rang"><button class="tete-retour" type="button" aria-label="Retour" data-retour>' + ico("retour") + '</button>' +
+      '<span class="fs-tete-noms"><b>Fiche de sécurité</b><span>Pose de clôture</span></span><span class="fs-compte">' + i + ' sur 6</span></div>' +
+      '<div class="fs-avancee" aria-hidden="true">' + barres + '</div>';
+  }
+  function peindrePied() {
+    var pied = document.getElementById("pied");
+    var ecran = document.getElementById("ecran-propose");
+    ecran.removeAttribute("data-pied");
+    var refus = M.refus ? '<p class="refus" role="status">' + esc(M.refus) + '</p>' : "";
+    if (etape === "loi") pied.innerHTML = '<button class="bouton bouton-plein" type="button" data-aller="e1">Compris, je remplis</button>';
+    else if (etape === "e6") {
+      var pret = points().every(function (x) { return x.fait; }) && M.trace;
+      pied.innerHTML = refus + '<button class="bouton bouton-plein" type="button" data-signer' + (pret ? "" : ' aria-disabled="true"') + '>Signer la fiche</button>';
+    } else if (etape === "signee") {
+      ecran.setAttribute("data-pied", "double");
+      pied.innerHTML = refus + '<div class="rang-boutons"><a class="bouton bouton-creux" href="fiche-de-securite-pdf.html">Ouvrir le PDF</a>' +
+        (M.enregistree ? '<span class="bouton bouton-creux" style="gap:8px"><span class="rond-fait" aria-hidden="true">' + ico("coche") + '</span>Enregistrée</span>'
+          : '<button class="bouton bouton-plein" type="button" data-enregistrer' + (M.lu ? "" : ' aria-disabled="true"') + '>Enregistrer</button>') + '</div>' +
+        '<button class="bouton-texte" type="button" data-note="Sur la planche, on reste sur la fiche.">' + (M.enregistree ? "Retour au planning" : "Plus tard") + '</button>';
+    } else pied.innerHTML = refus + '<button class="bouton bouton-plein" type="button" data-suivant>Suivant</button>';
+  }
+
+  var defile = document.getElementById("defile");
+  function peindre(garderLaPlace) {
+    var haut = defile.scrollTop;
+    var numero = /^e(\d)$/.exec(etape);
+    defile.innerHTML = (numero ? '<h2 class="fs-etape">' + ETAPES[Number(numero[1]) - 1] + '</h2>' : "") + CORPS[etape]();
+    peindreTete();
+    peindrePied();
+    brancherSignatures();
+    defile.scrollTop = garderLaPlace ? haut : 0;
+  }
+
+  /* Une saisie ne repeint pas l'écran (le doigt perdrait sa case) : seul l'état
+     de la partie, à côté de son titre, se remet à jour. */
+  function majEtats() {
+    defile.querySelectorAll("[data-etat-bloc]").forEach(function (s) {
+      var ok = LEGAL[s.getAttribute("data-etat-bloc")]();
+      s.setAttribute("data-ton", ok ? "vert" : "ambre");
+      s.textContent = ok ? "Fait" : "À remplir";
+    });
+  }
+
+  /* ─── La signature au doigt, pour de vrai ──────────────────────────────── */
+  function brancherSignatures() {
+    document.querySelectorAll(".signature").forEach(function (zone) {
+      if (zone._branchee) return;
+      zone._branchee = true;
+      var toile = zone.querySelector("canvas");
+      var c2 = toile.getContext("2d");
+      var trace = false, dernier = null;
+      function taille() {
+        var r = zone.getBoundingClientRect(), d = window.devicePixelRatio || 1;
+        toile.width = Math.max(1, r.width * d); toile.height = Math.max(1, r.height * d);
+        c2.setTransform(d, 0, 0, d, 0, 0);
+        c2.lineWidth = 2.4; c2.lineCap = "round"; c2.lineJoin = "round";
+        c2.strokeStyle = getComputedStyle(zone).color;
+      }
+      zone.style.color = "var(--atlas-ink)";
+      taille();
+      function point(e) { var r = toile.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
+      toile.addEventListener("pointerdown", function (e) { toile.setPointerCapture(e.pointerId); taille.apply(null); dernier = point(e); trace = true; });
+      toile.addEventListener("pointermove", function (e) {
+        if (!trace) return;
+        var p = point(e);
+        c2.beginPath(); c2.moveTo(dernier[0], dernier[1]); c2.lineTo(p[0], p[1]); c2.stroke();
+        dernier = p;
+        zone.querySelector(".invite").hidden = true;
+        if (zone.id === "signature-chef" && !M.trace) { M.trace = true; M.refus = ""; peindrePied(); }
+        if (zone.id === "signature-lecteur") zone._signee = true;
+      });
+      function fin() { trace = false; }
+      toile.addEventListener("pointerup", fin); toile.addEventListener("pointercancel", fin);
+      zone._effacer = function () { c2.clearRect(0, 0, toile.width, toile.height); zone.querySelector(".invite").hidden = false; zone._signee = false; };
+    });
+  }
+
+  /* ─── Les gestes ────────────────────────────────────────────────────────── */
+  var groupe = document.getElementById("etapes");
+  function aller(vers, blocVise) {
+    M.refus = "";
+    groupe.querySelector('[data-etat="' + vers + '"]').click();
+    if (blocVise) {
+      var el = document.getElementById("bloc-" + blocVise);
+      if (el) defile.scrollTop = el.offsetTop - 8;
+    }
+  }
+  groupe.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-etat]");
+    if (!b) return;
+    etape = b.getAttribute("data-etat");
+    M.refus = "";
+    peindre(false);
+    document.getElementById("capture-fiche").scrollTop = 0;
+  });
+
+  document.getElementById("ecran-propose").addEventListener("click", function (e) {
+    var t = e.target;
+    var cible;
+    if ((cible = t.closest("[data-f]"))) {
+      cocher(cible.getAttribute("data-f"), cible.getAttribute("data-mot"));
+      peindre(true);
+      return;
+    }
+    if ((cible = t.closest("[data-bascule]"))) { cible.setAttribute("aria-pressed", cible.getAttribute("aria-pressed") === "true" ? "false" : "true"); return; }
+    if ((cible = t.closest("[data-choix-de]"))) { M[cible.getAttribute("data-choix-de")] = cible.getAttribute("data-valeur"); M.refus = ""; peindre(true); return; }
+    if ((cible = t.closest("[data-present]"))) { var p = M.equipe[Number(cible.getAttribute("data-present"))]; p.present = !p.present; peindre(true); return; }
+    if (t.closest("[data-croquis]")) { M.croquis = true; peindre(true); return; }
+    if ((cible = t.closest("[data-pli]"))) { M.consignes = !M.consignes; var pli = cible.closest(".pli"); pli.toggleAttribute("data-ouvert", M.consignes); cible.setAttribute("aria-expanded", String(M.consignes)); return; }
+    if ((cible = t.closest("[data-aller]"))) { e.preventDefault(); aller(cible.getAttribute("data-aller"), cible.getAttribute("data-bloc")); return; }
+    if (t.closest("[data-retour]")) {
+      var i = Number(etape.slice(1));
+      aller(i > 1 ? "e" + (i - 1) : "loi");
+      return;
+    }
+    if (t.closest("[data-suivant]")) {
+      // La règle du formulaire : sans réponse sur les arbres dangereux, l'étape 2 ne se quitte pas.
+      if (etape === "e2" && !M.arbres) { M.refus = "Les arbres dangereux sont à préciser."; peindrePied(); return; }
+      aller("e" + (Number(etape.slice(1)) + 1));
+      return;
+    }
+    if (t.closest("[data-signer]")) {
+      var manque = points().filter(function (x) { return !x.fait; });
+      if (manque.length) {
+        M.refus = "Il manque " + manque.length + " élément" + (manque.length > 1 ? "s" : "") + " que la loi exige : " + manque.map(function (x) { return x.quoi.toLowerCase(); }).join(", ") + ".";
+      } else if (!M.trace) M.refus = "Signez au doigt dans le cadre.";
+      else { M.lu = false; M.enregistree = false; aller("signee"); return; }
+      peindrePied();
+      return;
+    }
+    if (t.closest("[data-enregistrer]")) {
+      if (!M.lu) { M.refus = "Lucas Petit doit signer avant d’enregistrer la fiche."; peindrePied(); return; }
+      M.enregistree = true; M.refus = ""; peindre(true); return;
+    }
+    if ((cible = t.closest("[data-action='valider-lecture']"))) {
+      var zone = document.getElementById("signature-lecteur");
+      if (!zone._signee) { Kit.note(cible, "Signez au doigt dans le cadre."); return; }
+      M.lu = true; M.refus = ""; Kit.fermerFeuilles(document.getElementById("ecran-propose")); zone._effacer(); peindre(true); return;
+    }
+    if ((cible = t.closest("[data-effacer]"))) { var z = document.getElementById(cible.getAttribute("data-effacer")); if (z && z._effacer) z._effacer(); M.trace = false; peindrePied(); return; }
+    if ((cible = t.closest("[data-note]"))) { e.preventDefault(); Kit.note(cible, cible.getAttribute("data-note")); }
+  });
+  defile.addEventListener("input", function (e) {
+    var cle = e.target.getAttribute && e.target.getAttribute("data-cle");
+    if (cle) { M[cle] = e.target.value; majEtats(); }
+  });
+
+  peindre(false);
+})();
+</script>
+</body>
+</html>

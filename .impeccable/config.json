@@ -714,6 +714,15 @@
         ],
         "createdAt": "2026-11-05T22:47:47.050Z",
         "reason": "Claude: le .cadre est le contour du téléphone, l'écran le remplit bord à bord comme un vrai téléphone ; la marge intérieure vit dans .defile"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "appli/soignee/fiche-de-securite.html"
+        ],
+        "createdAt": "2026-11-06T10:24:33.621Z",
+        "reason": "Le cadre du téléphone (kit des planches) et la zone de signature au doigt : surfaces bord à bord par construction"
       }
     ]
   }

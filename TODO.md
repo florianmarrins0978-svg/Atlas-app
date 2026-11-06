@@ -19,6 +19,50 @@ pour lui : `docs/A-FAIRE.md` point 18.
 dans `src/server/pdf/avoir-pdf.ts`. La seconde doit d'abord prendre la
 première (`CLAUDE.md` §3), sinon l'avoir gardera l'ancienne phrase.
 
+## ⏳ À CHOISIR PAR LUI (6 novembre 2026) : la fiche de sécurité soignée, l'écran et le PDF
+
+**Sa demande du 6 novembre** : *« la fiche de sécurité, il faudrait aller la
+chercher, l'améliorer, la rendre plus jolie »* ; ses réponses : l'écran ET le
+PDF, et oui pour lancer l'appli dans le nuage afin de la regarder d'abord.
+
+| | |
+|---|---|
+| l'écran | `appli/soignee/fiche-de-securite.html`, https://florianmarrins0978-svg.github.io/Atlas-app/soignee/fiche-de-securite.html |
+| le PDF | `appli/soignee/fiche-de-securite-pdf.html`, https://florianmarrins0978-svg.github.io/Atlas-app/soignee/fiche-de-securite-pdf.html |
+| Aujourd'hui | captures de l'écran servi le 6 novembre (base jetable, fiche « Pose de clôture » à moitié remplie) et le vrai PDF d'une fiche signée, dans `appli/soignee/aujourdhui/fiche-securite-*.jpg` |
+
+**Deux questions posées sur les planches** : « À remplir » dès la première
+ouverture, ou seulement une fois l'étape passée ? Et « En cas d'accident »
+reprend des lignes écrites plus loin : les garder aux deux endroits ?
+
+**Ce que touchera le lot, une fois choisi** (rien n'est codé) :
+`FormulaireFicheDeSecurite.tsx` (`Bloc`, `Pastille`, `Case`, `Fixe`,
+`Vigilance`, `Vert`, `Creux`, le pied) ; `minimumLegal` doit rendre les huit
+points AVEC leur état, pas seulement les manques, et l'état d'une partie
+(« À remplir », « Fait ») doit sortir de la même règle, jamais d'une copie
+(`CLAUDE.md` §3) ; la page de l'étape 2 s'allonge d'un quart (cases de 48
+points). Le PDF : `src/server/pdf/fiche-securite-pdf.ts` (colonnes, cases
+pleines, aucun titre seul en bas de page, « page n sur N », la signature dans
+un cadre). Un titre en bas de page se garde avec sa suite par `place()`.
+
+**Trouvé en regardant, un défaut et non un goût : le « ≤ » ne s'imprime pas.**
+Le PDF écrit « HTA (U ▯ 50 000 V) » et « BT (U ▯ 1 000 V) », deux fois
+(tensions, distances). La cause, mesurée le 6 novembre : `inter-400.ttf` et
+`inter-700.ttf` (`src/server/pdf/polices/`) n'ont que 377 dessins, sans U+2264
+ni U+2265 ; la réduction du 24 août (`LISEZ-MOI.md`, la liste `--unicodes`) ne
+les a pas gardés, et la fiche les emploie depuis le 22 septembre. Le
+commentaire de `polices()` dans `fiche-securite-pdf.ts` affirme le contraire.
+À faire dans cet ordre : un contrôle ROUGE qui vérifie que chaque caractère de
+`LIBELLES` et des textes du PDF a un dessin dans la police embarquée
+(`scripts/test-polices-documents.ts` ne regarde que le devis) ; refaire la
+réduction d'Inter avec U+2264 et U+2265 depuis le fichier d'origine
+(`fonts.gstatic.com`, à vérifier joignable) ; le contrôle vert. Un `.ttf`
+n'est pas lu par le graphe : niveau 3, batterie, donc son « oui ».
+
+**Vu en jouant l'écran** : à l'étape 2, sans réponse sur les arbres dangereux,
+Suivant refuse avec une phrase rouge écrite tout en haut, loin du doigt. La
+planche la pose juste au-dessus de Suivant.
+
 ## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : cinq planches, A ou B~~ TRANCHÉ LE 6 NOVEMBRE : HIVERNAGE B, NOTE B, FRANCHISE A ET B, DEUX ÉCARTÉES ; TROIS LOTS CODÉS, PAS SUR main
 
 **Sa question du 5 novembre** : *« est-ce que tu as des idées pour améliorer
