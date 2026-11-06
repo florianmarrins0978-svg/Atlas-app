@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-06
 
+- **Le sablier de l'appli redessiné** (son accord : « corrige dans l'appli et sur la planche aussi ») : celui de `IconeTrait`, montré à ses clients sur « Ce lien n'est plus valable » et dans Pour mon comptable pendant la lecture d'une facture, n'avait que la moitié haute de son côté droit. Un seul tracé au trait pour l'appli et les planches, tenu par `scripts/test-sablier.ts` (rouge sur l'ancien tracé, vert sur le nouveau).
 - **Hiverner l'arrosage : la goutte aussi dans le mois** (sa demande) : à côté du numéro du jour, dans le mois en haut du planning, pour voir tous les hivernages d'un coup d'œil. Pas codé.
 - **Hiverner l'arrosage : la goutte sur le planning** (sa demande) : posé au planning, l'hivernage met la même goutte bleue à côté de son jour. Un férié ne se choisit pas, donc son bleu ne la croise jamais. Pas codé.
 - **Restrictions d'eau et heures du jour : écartées** (sa décision) : seules les trois premières planches se coderont. Les deux planches restent, marquées écartées.

@@ -15,7 +15,11 @@ const TRACES = {
   banque: <path d="M3.5 9.5L12 4.5l8.5 5M5.5 9.5v8M9.8 9.5v8M14.2 9.5v8M18.5 9.5v8M3.5 19.5h17" />,
   document: <><path d="M6.5 3.5H14l4 4v13H6.5z" /><path d="M14 3.5v4h4M9.5 12.5h5M9.5 16h5" /></>,
   suivant: <path d="M9 5l7 7-7 7" />,
-  sablier: <path d="M7 3.5h10M7 20.5h10M8 3.5c0 5 8 5 8 8.5s-8 3.5-8 8.5M16 3.5c0 5-8 5-8 8.5" />,
+  // Redessiné le 6 novembre 2026 (« on dirait pas du tout un sablier ») : le
+  // tracé d'avant n'avait que la moitié haute de son côté droit et se lisait
+  // comme un Z, jusque sur « Ce lien n'est plus valable » chez ses clients. Le
+  // même que `horloge-sable` du kit des planches (`scripts/test-sablier.ts`).
+  sablier: <><path d="M5.5 3.5h13M5.5 20.5h13" /><path d="M7 3.5v1.8c0 3 4.2 4.4 4.2 6.7s-4.2 3.7-4.2 6.7v1.8M17 3.5v1.8c0 3-4.2 4.4-4.2 6.7s4.2 3.7 4.2 6.7v1.8" /><path d="M9.3 7.3h5.4M12 13.3v2M8.7 18.9c.9-1.6 2-2.4 3.3-2.4s2.4.8 3.3 2.4" /></>,
   scanner: <path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16M7 12h10" />,
   retour: <path d="M15 5l-7 7 7 7" />,
   plus: <path d="M12 5v14M5 12h14" />,
