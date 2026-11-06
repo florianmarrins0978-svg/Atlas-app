@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-06
 
+- **La mention de la franchise bascule seule au 1er janvier 2027** (sa consigne : « si t'as vérifié, change la phrase tout de suite ») : « art. 293 B du CGI » jusqu'au 31 décembre 2026, « article L. 233-3 du code des impositions sur les biens et services (CIBS) » ensuite, au jour de chaque pièce. L'article L. 233-3 n'entre en vigueur que le 1er janvier 2027 : le citer plus tôt aurait été faux. L'avoir, qui recopiait la phrase et la lecture de la franchise, prend désormais celles de la facture. Sur `lot/mention-franchise`, pas sur `main`.
 - **Hiverner l'arrosage : le contrat d'entretien demande aussi** (sa demande) : un client sous contrat d'entretien reçoit la question de l'arrosage, puis « Vous faites son hivernage ? ». La goutte ne vient qu'avec les deux Oui.
 - **Hiverner l'arrosage : la goutte aussi dans le mois** (sa demande) : à côté du numéro du jour, dans le mois en haut du planning, pour voir tous les hivernages d'un coup d'œil. Pas codé.
 - **Hiverner l'arrosage : la goutte sur le planning** (sa demande) : posé au planning, l'hivernage met la même goutte bleue à côté de son jour. Un férié ne se choisit pas, donc son bleu ne la croise jamais. Pas codé.

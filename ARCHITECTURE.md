@@ -36953,3 +36953,22 @@ Contrôles : `test-feuille-main-oeuvre` (pur : la quantité à la journée, l'he
 **« Tout », lu comme ses deux coordonnées.** La question portait sur le téléphone et l'e-mail ; l'adresse est gardée pour la raison écrite ci-dessus, et c'est à lui de dire s'il la veut partie aussi (le brouillon ne pourrait alors plus s'émettre sans qu'il la retape). Un devis accepté et conservé garde ses copies : il ne lui a pas été demandé.
 
 Contrôle : `test-retention-effacement` (sous `atlas_app` : le brouillon d'un client supprimé n'a plus ni téléphone ni e-mail, son nom et son adresse restent), vu rouge avant la correction.
+
+## §559 : Une phrase de loi a une date, et la pièce garde celle de son jour
+
+La mention de la franchise cite un article de loi, et l'article change de
+numéro quand la TVA passe du CGI au CIBS : L. 233-3, en vigueur le 1er janvier
+2027 (ordonnance n° 2026-671 du 27 juillet 2026). Une constante ne peut pas
+dire vrai des deux côtés de cette date : elle aurait cité trop tôt un article
+pas encore en vigueur, ou trop tard un article abrogé.
+
+`mentionFranchise(jour)` (`src/lib/franchise-tva.ts`) lit le jour de la PIÈCE,
+jamais celui de l'affichage : une facture de 2026 retéléchargée en 2027 garde
+sa phrase, ce que le BOFiP permet jusqu'au 31 décembre 2027. Facture, devis et
+avoir la prennent au même endroit ; l'avoir, qui recopiait la phrase et la
+lecture de la franchise, passe par `sousFranchise` et `mentionFranchise`.
+`scripts/test-mention-franchise.ts` refuse la phrase écrite ailleurs.
+
+Écarté : changer la constante le jour J à la main. Personne ne l'aurait fait à
+minuit le 31 décembre, et chaque pièce de la nuit serait partie fausse.
+

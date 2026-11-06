@@ -1,5 +1,5 @@
 import { numeroDuDevisSurLePapier } from "@/lib/numero-documents";
-import { MENTION_FRANCHISE, sousFranchise } from "@/lib/franchise-tva";
+import { mentionFranchise, sousFranchise } from "@/lib/franchise-tva";
 import { MENTION_AUTOLIQUIDATION } from "@/lib/autoliquidation";
 import { estUnClientProfessionnel } from "@/lib/civilite";
 import { DEBUT_DES_TRAVAUX, TITRE_FORMULAIRE, paragraphesFormulaire } from "@/lib/retractation";
@@ -268,7 +268,7 @@ function mentionDuDevis(d: DevisPdfData): string {
   // L'autoliquidation passe avant le taux : à 0 % sur un devis d'avant 0118,
   // `sousFranchise` répondrait « franchise » (la même garde que la facture).
   if (d.autoliquidation) return `${base} ${MENTION_AUTOLIQUIDATION}`;
-  return sousFranchise(d.regimeTva, d.tauxTva) ? `${base} ${MENTION_FRANCHISE}` : base;
+  return sousFranchise(d.regimeTva, d.tauxTva) ? `${base} ${mentionFranchise(d.dateEmission)}` : base;
 }
 
 /**

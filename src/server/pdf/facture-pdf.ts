@@ -1,4 +1,4 @@
-import { MENTION_FRANCHISE, sousFranchise } from "@/lib/franchise-tva";
+import { mentionFranchise, sousFranchise } from "@/lib/franchise-tva";
 import { MENTION_AUTOLIQUIDATION } from "@/lib/autoliquidation";
 import { estUneEntreprise, estUnClientPublic } from "@/lib/civilite";
 import { MENTION_RETARD_PUBLIC } from "@/lib/facture-publique";
@@ -94,7 +94,7 @@ function mentionLegaleFacture(data: FacturePdfData): string {
   // d'avant 0039 (régime nul), `sousFranchise` répondrait « franchise », et la
   // pièce porterait deux mentions qui se contredisent.
   if (data.autoliquidation) return `${base} ${MENTION_AUTOLIQUIDATION}`;
-  return sousFranchise(data.regimeTva, data.tauxTva) ? `${base} ${MENTION_FRANCHISE}` : base;
+  return sousFranchise(data.regimeTva, data.tauxTva) ? `${base} ${mentionFranchise(data.dateEmission)}` : base;
 }
 
 export type OptionsFacturePdf = {
