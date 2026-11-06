@@ -1,7 +1,7 @@
 import Decimal from "decimal.js";
 import { echapperXml } from "./caldav";
 import { totauxAvecReduction, tauxDeLaLigne } from "./reduction-devis";
-import { sousFranchise, MENTION_FRANCHISE } from "./franchise-tva";
+import { mentionFranchise, sousFranchise } from "./franchise-tva";
 import { MENTION_AUTOLIQUIDATION } from "./autoliquidation";
 import { uniteAdmise } from "./unite-de-ligne";
 
@@ -144,7 +144,10 @@ type Categorie = { code: "S" | "AE" | "E"; motif: string | null };
 
 function categorieDe(f: FacturePourFactureX, taux: string): Categorie | null {
   if (f.autoliquidation) return { code: "AE", motif: MENTION_AUTOLIQUIDATION };
-  if (sousFranchise(f.regimeTva ?? null, taux)) return { code: "E", motif: MENTION_FRANCHISE };
+  // La phrase du jour de la facture, la même que son PDF (`mentionFranchise`) :
+  // une Factur-X de 2027 qui citerait encore le CGI dirait autre chose que son
+  // propre papier.
+  if (sousFranchise(f.regimeTva ?? null, taux)) return { code: "E", motif: mentionFranchise(f.dateEmission.slice(0, 10)) };
   if (new Decimal(taux).greaterThan(0)) return { code: "S", motif: null };
   return null;
 }

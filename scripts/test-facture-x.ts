@@ -180,6 +180,21 @@ await ok("chaque donnée qui manque donne sa phrase, et aucun XML", () => {
   );
 });
 
+await ok("la franchise porte la phrase du JOUR de la facture, la même que son papier", () => {
+  // Trouvé en réunissant ce lot à celui de la mention datée (6 novembre 2026) :
+  // une Factur-X de 2027 qui citerait encore le CGI dirait autre chose que son
+  // propre PDF (`mentionFranchise`).
+  const xml = (dateEmission: string) => {
+    const r = xmlFactureX({ ...CAS.franchise, dateEmission }, MENTION);
+    assert.ok(r.ok, (r as { raison?: string }).raison);
+    return (r as { xml: string }).xml;
+  };
+  assert.match(xml("2026-11-04"), /art\. 293 B du CGI/);
+  const de2027 = xml("2027-01-04");
+  assert.match(de2027, /L\. 233-3 du code des impositions sur les biens et services/);
+  assert.doesNotMatch(de2027, /293 B/);
+});
+
 console.log("\nLes contrôleurs officiels");
 const dossier = mkdtempSync(path.join(os.tmpdir(), "facture-x-"));
 
