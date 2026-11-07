@@ -98,7 +98,7 @@ tous les cas la ligne main d'œuvre présente »*). Migration 0173 (les jours
 d'homme de la part, ses deux bases), `ligneApresSaReponse`, la question qui
 nomme la main d'œuvre. Une part posée AVANT 0173, ou celle d'un partenaire,
 n'a pas ses jours : elle garde ses 400 €, sans montée au nouveau prix.
-`test-reprise-du-devis-db` porte son cas entier, **jamais jouée** (son oui).
+`test-reprise-du-devis-db` porte son cas entier, **verte dans la batterie commune du 6 au soir**.
 
 Ce qui était écrit avant sa réponse : la reprise perd aussi `partMainDoeuvre`,
 la part de main d'œuvre répartie dans le prix d'un travail. Rejoué avec les
@@ -116,7 +116,7 @@ toujours « grille proposée », et le oui efface la main d'œuvre.
 
 **Proposé (image envoyée le 6 novembre) :** recopier la part, et que le tarif
 du jour ne remplace que le prix du travail (325 € + 400 € = 725 €, dont main
-d'œuvre 400 €). Attend son oui ; rien n'est codé.
+d'œuvre 400 €). ~~Attend son oui~~ : son oui le 6 novembre, codé ci-dessus.
 
 **La planche** : `appli/soignee/fiche-travaux.html`. **Sa réponse : la A**,
 codée sur la même branche (`TravauxAFaire.tsx`, `FicheDeSecurite.tsx` pour le
