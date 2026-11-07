@@ -692,6 +692,34 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     await cVe.close();
   }
 
+  // ── Le site de vente : chaque film se joue jusqu'à sa dernière image ─────
+  //
+  // Les scènes du 7 novembre 2026 sont des films de la vraie appli, montés
+  // avec HyperFrames. Leurs noms se composent dans le script
+  // (« nov-film- » + data-film) : aucun grep ne dit qu'un fichier manque, et
+  // un film absent laisserait un téléphone figé sur sa première image. On
+  // les regarde donc jouer, un par un, comme lui en descendant.
+  {
+    const cFi = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const page = await cFi.newPage();
+    await page.goto(`${B}/vente/chapitres-6.html`, { waitUntil: 'domcontentloaded' });
+    for (const nom of ['micro', 'envoi', 'mois', 'equipe', 'travaux']) {
+      await page.evaluate((n) => { const el = document.querySelector('[data-film="' + n + '"]'); scrollTo(0, scrollY + el.getBoundingClientRect().top - 90); }, nom);
+      const fin = await page.waitForFunction((n) => {
+        const f = document.querySelector('[data-film="' + n + '"] .film-fin');
+        return f && f.classList.contains('vue');
+      }, nom, { timeout: 15000 }).then(() => true, () => false);
+      const etat = await page.evaluate((n) => {
+        const c = document.querySelector('[data-film="' + n + '"]'), v = c.querySelector('video');
+        const vu = (s) => { const i = c.querySelector(s); return !!(i && i.complete && i.naturalWidth); };
+        return { erreur: v && v.error && v.error.code, joue: v && v.played.length ? v.played.end(v.played.length - 1) / v.duration : 0, debut: vu('.film-debut'), fin: vu('.film-fin') };
+      }, nom);
+      ok('vente : le film ' + nom + ' se joue jusqu\'au bout', fin && !etat.erreur && etat.joue > 0.95, JSON.stringify(etat));
+      ok('vente : le film ' + nom + ' a sa première et sa dernière image', etat.debut && etat.fin, JSON.stringify(etat));
+    }
+    await cFi.close();
+  }
+
   await browser.close();
   console.log(`\n✅ PASS: ${pass}   ❌ FAIL: ${fail}`);
   if (fails.length){ console.log('\nÉchecs :'); fails.forEach(f => console.log('  - ' + f)); }
