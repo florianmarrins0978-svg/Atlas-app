@@ -65,20 +65,19 @@
       vidéo laissait l'écran blanc une ou deux secondes sur son téléphone ;
     · Dictez, remis dans l'ordre du geste à sa demande (« c'est un peu à
       l'envers ») : d'abord la note vocale, le micro au repos puis le vrai
-      chrono, une capture par seconde, de 0:00 à 0:12 (nov-dictee-*.jpg,
-      prise avec un micro simulé) ; plus bas la phrase, mot à mot au rythme
-      d'une voix ; puis la ligne du devis, qui sort de sa propre rangée du
-      devis entier ;
+      chrono qui défile (nov-film-micro, enregistré avec un micro simulé) ;
+      plus bas la phrase, mot à mot au rythme d'une voix ; puis la ligne du
+      devis, qui sort de sa propre rangée du devis entier ;
     · Envoyez : dès que le téléphone entre à l'écran, la date se choisit,
       la case des 14 jours apparaît et se coche, le client accepte, et la
-      page devient
-      « C'est noté. Votre artisan est prévenu. » (nov-client-0 à 3) ;
+      page devient « C'est noté. Votre artisan est prévenu. »
+      (nov-film-envoi) ;
     · Planifiez, sa demande du soir (« on n'a pas fait de mise en scène,
       tu peux proposer ») : le mois se remplit chantier après chantier, le
       10 passe au rouge quand il devient trop chargé, le 6 se remplit en
-      dernier (nov-mois-0 à 5, une capture par chantier posé), puis
+      dernier (nov-film-mois, une capture par chantier posé), puis
       l'équipe se pose sur la journée : « + Salarié », Lucas, Lucas et
-      Julien (nov-equipe-0 à 2) ;
+      Julien (nov-film-equipe, la vraie appli) ;
     · Encaissez : 143,70 € monte depuis zéro, puis la phrase ; et, sa
       demande du soir, le montant de la TVA sort de la facture, grossit,
       Ma TVA apparaît à 0,00 € et il y rentre : 143,70 € (nov-tva-avant et
@@ -91,13 +90,29 @@
       version les cochait au défilement : « ça bug », la carte restait
       posée et le geste se perdait), la
       remarque, l'appui sur « Envoyer le retour du jour » et la carte qui se
-      replie (nov-travaux-0 à 6) ; puis le retour du soir que reçoit le
+      replie (nov-film-travaux) ; puis le retour du soir que reçoit le
       patron.
+  LES FILMS, sa demande du 7 novembre 2026 : « mets-toi dans la peau d'un
+  motion designer, des animations d'une meilleure qualité, l'idée c'est de
+  vendre l'application ». Les scènes du téléphone étaient des captures
+  fixes qui se succédaient : un geste se lisait en sauts. Elles sont
+  désormais FILMÉES dans la vraie appli, à trente images par seconde, avec
+  l'horloge de la page figée et avancée d'une image à chaque prise (la coche
+  qui se pose, la case qui s'ouvre, la carte qui se replie, le chrono :
+  tout est le vrai mouvement de l'appli), puis montées avec HyperFrames, qui
+  cuit la caméra et le flou de mouvement dans l'image. Le mois seul est
+  monté de ses captures, une par chantier posé. Chaque film joue entre sa
+  première et sa dernière image (nov-film-*-debut.jpg, -fin.jpg), comme
+  l'ouverture : rien de blanc avant, rien qui saute après. Les noms se
+  composent dans le script (« nov-film- » + data-film) : appli/tests/e2e.js
+  regarde chaque film jouer jusqu'au bout. Un film introuvable ou refusé
+  montre sa dernière image.
   LA CAMÉRA, sa demande qui a suivi : « améliore toutes les animations avec
-  le skill HyperFrames, repense-les si tu veux ». HyperFrames fabrique des
-  vidéos ; les scènes, elles, suivent le défilement et doivent rester nettes.
-  Elles restent donc dans la page, et en prennent les règles de mouvement
-  (references/motion.md du skill) :
+  le skill HyperFrames, repense-les si tu veux ». Elle suit les règles de
+  mouvement du skill (references/motion.md) ; dans les films, elle est cuite
+  dans l'image. Se jouent encore dans la page : l'ouverture, dont la caméra
+  s'approche avant l'appui, pendant qu'on regarde l'accueil ; la phrase et
+  la ligne du devis ; la TVA, qui vole d'un élément de la page à l'autre :
     · une caméra dans chaque écran avance vers ce qu'on touche, puis recule
       (power2.inOut) : le + de Créer un devis, le micro, la date, la case et
       le bouton du client, le 10 trop chargé puis le 6, la remarque et
@@ -136,6 +151,20 @@
   vendredi 6 proposée, accord du client sur sa page, travaux cochés, retour
   envoyé, facture créée, envoyée et payée. La TVA de novembre affichée par
   Terminés vaut bien 143,70 €.
+  Les films, pour qui les refera : la même appli, filmée par Playwright à
+  la définition d'un iPhone (390 px, trois pixels par point). L'horloge de
+  la page est figée (page.clock), chaque animation de l'appli est mise en
+  pause et avancée d'une image à la fois (document.getAnimations()), puis
+  photographiée : trente images par seconde, sans une saccade, quelle que
+  soit la vitesse de la machine. Le geste est fait par les vrais boutons.
+  Les images deviennent une composition HyperFrames : un seul plan vidéo
+  dans un cadre que GSAP déplace (la caméra), le flou de mouvement allumé,
+  GSAP posé à côté de la composition parce que le réseau du conteneur
+  refuse son CDN. Rendu par npx hyperframes render, puis réencodé pour le
+  site en H.264 et en VP9, la première et la dernière image tirées du film
+  lui même. Le jour de la prise, la date de Paris était passée au samedi :
+  l'horloge du serveur et celle de la page ont été reculées de quatorze
+  heures, pour que le vendredi 6 reste « aujourd'hui ».
   UN DÉFAUT DE L'APPLI vu en les faisant, et non corrigé ici : la case « À
   signaler » des travaux à faire tient deux lignes et ne grandit pas
   (TravauxAFaire.tsx, rows=2, resize-none). Une remarque de trois lignes s'y
@@ -242,25 +271,15 @@ section{padding:clamp(88px,12vw,150px) 0}
 /* ── Les supports des captures : le téléphone, la feuille, le recadrage ─ */
 .appareil{width:min(70vw,320px);padding:9px;border-radius:48px;background:linear-gradient(155deg,#26302a,#0d120f 40%);box-shadow:0 60px 90px -46px rgba(var(--ombre),.7),0 22px 34px -22px rgba(var(--ombre),.45),inset 0 0 0 1.5px #39433c,inset 0 0 0 3px #0b0f0c}
 .appareil > img{border-radius:39px;width:100%;aspect-ratio:1170/1992;object-fit:cover;object-position:top;background:var(--papier)}
-/* L'écran d'un téléphone qui joue une scène : les captures s'y empilent, une
-   seule se voit à la fois. Rien n'est dessiné par-dessus : sa demande, après
-   un premier essai avec un doigt en pastille blanche, « enlève-la ». */
+/* L'écran d'un téléphone qui joue une scène. Rien n'est dessiné par-dessus :
+   sa demande, après un premier essai avec un doigt en pastille blanche,
+   « enlève-la ». */
 .ecran{position:relative;border-radius:39px;overflow:hidden;aspect-ratio:1170/1992;background:var(--papier)}
 .ecran img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;object-position:top}
-.ecran img.etape{opacity:0;transition:opacity .3s ease,transform .6s var(--sortie)}
-.ecran img.etape.vue{opacity:1}
-/* La bande du micro : le bas de l'écran, une capture par seconde du vrai
-   chrono. Elle commence à 67,27 % de la hauteur, là où « Devis à la voix »
-   s'écrit dans l'appli. */
-.ecran .bande{position:absolute;left:0;right:0;bottom:0;height:32.731%}
-/* Le chrono change d'un coup, comme dans l'appli : un fondu laisserait voir,
-   le temps d'un battement, l'écran au repos dessous. */
-.ecran .bande img,.ecran .bande img.etape{opacity:0;transition:none}
-.ecran .bande img.vue{opacity:1}
 .feuille{margin:0;border-radius:4px;overflow:hidden;background:#fbfaf6;box-shadow:0 50px 80px -44px rgba(var(--ombre),.6),0 4px 10px rgba(var(--ombre),.07),0 0 0 1px rgba(var(--ombre),.05)}
 .gros{margin:0;border-radius:22px;overflow:hidden;background:var(--papier);box-shadow:0 34px 70px -40px rgba(var(--ombre),.5),0 0 0 1px rgba(var(--ombre),.07)}
-.gros img{width:100%;transform:scale(1.035);transition:transform 1.6s var(--sortie)}
-.gros.vu img{transform:none}
+.gros img,.gros video{width:100%;transform:scale(1.035);transition:transform 1.6s var(--sortie)}
+.gros.vu img,.gros.vu video{transform:none}
 .sous{margin-top:14px;font-size:15.5px;color:var(--encre-2)}
 
 /* La scène : le fond de couleur où posent les captures. C'est elle qui
@@ -326,7 +345,6 @@ section{padding:clamp(88px,12vw,150px) 0}
 /* La caméra des téléphones : elle avance vers ce qu'on touche, puis recule.
    Créée par le script, elle n'existe pas sans lui ni sans mouvement. */
 .camera{position:absolute;inset:0;transform-origin:0 0;will-change:transform}
-.empile > .camera{position:relative;inset:auto}
 /* La phrase arrive mot à mot, comme une dictée qui se transcrit : chaque mot
    sort d'un léger flou. Les mots tiennent déjà leur place, la ligne ne saute
    jamais. Le curseur suit le dernier. */
@@ -364,17 +382,25 @@ html.anime .devient.vu .devis-loupe::after{opacity:1;clip-path:inset(0 0 0 0);tr
 html.anime .devis-loupe .ligne{opacity:0;filter:blur(4px);transform:translateY(-50%) scale(.82);transition:opacity .45s ease .4s,filter .5s ease .4s,transform 1.1s var(--sortie) .4s,box-shadow 1.1s ease .4s}
 html.anime .devient.vu .devis-loupe .ligne{opacity:1;filter:none;transform:translateY(-50%)}
 .recit .sous{text-align:right}
-/* Le film de l'ouverture : la vraie animation de l'appli, filmée image par
-   image, entre deux images fixes. Un téléphone efface l'affiche d'une vidéo
-   avant d'en avoir les images, et l'écran restait blanc une ou deux
-   secondes (sa remarque du 6 novembre) : l'accueil reste donc posé
-   dessous, le film ne se montre qu'une fois lancé, et la fiche client
-   prend sa place à la fin. Aucun fondu : un fondu laisserait voir l'entre
-   deux. */
-.ecran video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;z-index:2;opacity:0}
-.ecran video.joue{opacity:1}
-.ecran img.film-fin{z-index:3;opacity:0}
-.ecran img.film-fin.vue{opacity:1}
+/* Les films : la vraie appli, filmée image par image, entre deux images
+   fixes. Un téléphone efface l'affiche d'une vidéo avant d'en avoir les
+   images, et l'écran restait blanc une ou deux secondes (sa remarque du
+   6 novembre) : la première image reste donc posée dessous, le film ne se
+   montre qu'une fois lancé, et la dernière image prend sa place à la fin.
+   Aucun fondu : un fondu laisserait voir l'entre deux. Sans mouvement, ni
+   film ni images : la capture posée dans le balisage, l'état le plus
+   parlant. */
+.film{position:relative}
+.film video,.film img.film-debut,.film img.film-fin{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;object-position:top}
+.film img.film-debut{z-index:1}
+.film video{z-index:2;opacity:0}
+.film video.joue{opacity:1}
+.film img.film-fin{z-index:3;opacity:0}
+.film img.film-fin.vue{opacity:1}
+/* Hors d'un téléphone, le cadre prend la forme du film ; sans mouvement, celle
+   de sa capture. */
+html.anime .gros.film,html.anime .pile.film{aspect-ratio:var(--film)}
+html.anime .gros.film img.film-pose,html.anime .pile.film img.film-pose{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;object-position:top}
 @media (min-width:960px){
   .scene-micro{padding:56px 40px}
   .scene-micro .appareil{width:320px}
@@ -402,12 +428,6 @@ html.anime .devient.vu .devis-loupe .ligne{opacity:1;filter:none;transform:trans
 .plans figure{margin:0}
 .plans .paire{display:grid;gap:24px}
 @media (min-width:760px){.plans .paire{grid-template-columns:1fr 1fr;align-items:start}}
-/* Planifiez : les captures du mois, puis de la carte du jour, s'empilent.
-   Chaque nouvelle passe au-dessus de la précédente et ne fait que s'allumer :
-   un fondu croisé laisserait voir, à mi-chemin, l'image finale dessous. */
-.empile{position:relative}
-.empile img.etape{position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;transition:opacity .35s ease}
-.empile img.etape.vue{opacity:1}
 
 /* Encaissez : la facture, et le chiffre de la TVA. */
 .chiffre{margin-top:52px}
@@ -446,13 +466,13 @@ html.anime .scene-tva.telephone .feuille{opacity:.55}
 .case .cadre{display:grid;place-items:center;margin:0 14px 14px;padding:28px 18px;border-radius:18px;background:var(--sauge)}
 .case .cadre img{width:100%;max-width:440px;border-radius:12px;box-shadow:0 20px 40px -28px rgba(var(--ombre),.55)}
 /* Les travaux se cochent tout seuls à l'arrivée. La carte tient dans
-   l'écran, pour qu'on voie toutes les coches sans avoir à descendre. */
-.pile{position:relative;width:min(100%,calc((100svh - 200px) * 786 / 1530));aspect-ratio:786/1530;margin:0 auto;transition:height .6s var(--sortie)}
-.pile.mesuree{aspect-ratio:auto}
-html.anime .pile{overflow:hidden;border-radius:16px}
-.case .cadre .pile img{position:absolute;left:0;top:0;width:100%;max-width:none;height:auto}
-.pile img.etape{opacity:0}
-.pile img.etape.vue{opacity:1}
+   l'écran, pour qu'on voie toutes les coches sans avoir à descendre. Le film
+   peint en sauge, sous la carte repliée, ce qu'elle libère : la case garde
+   sa hauteur, et rien ne saute plus bas. */
+.pile{width:min(100%,calc((100svh - 200px) * 540 / 1030));margin:0 auto}
+.case .cadre .pile img{max-width:none}
+html.anime .pile{overflow:hidden;border-radius:12px}
+html.anime .case .cadre .pile img{border-radius:0;box-shadow:none}
 @media (min-width:960px){
   .aussi-grille{grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:76px;align-items:start}
   .aussi-grille .mot{position:sticky;top:132px}
@@ -568,8 +588,14 @@ html.anime .pile{overflow:hidden;border-radius:16px}
 @media (min-width:900px){.pied-grille{grid-template-columns:1fr 1.6fr}.pied nav{grid-template-columns:repeat(3,1fr)}}
 
 /* Le bouton d'essai, sous le pouce, sur téléphone seulement. */
-.pouce{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:15;display:flex;justify-content:center;transform:translateY(140%);transition:transform .5s var(--sortie);pointer-events:none}
-.pouce.vu{transform:none;pointer-events:auto}
+/* Caché, il descend de toute sa hauteur PLUS l'écart qui le sépare du bas :
+   140 % de sa hauteur suffisaient sur ordinateur, pas sur un iPhone, qui
+   réserve 34 px à sa barre d'accueil. Le bouton dépassait alors de 23 px,
+   un bandeau vert au bas du site (sa capture du 7 novembre). Une fois
+   descendu, il est aussi rendu invisible : rien ne peut plus en dépasser,
+   même quand la barre du navigateur change la hauteur de l'écran. */
+.pouce{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:15;display:flex;justify-content:center;transform:translateY(calc(100% + 24px + env(safe-area-inset-bottom)));visibility:hidden;transition:transform .5s var(--sortie),visibility 0s linear .5s;pointer-events:none}
+.pouce.vu{transform:none;visibility:visible;transition:transform .5s var(--sortie),visibility 0s;pointer-events:auto}
 .pouce .bouton{width:100%;max-width:420px;box-shadow:0 20px 44px -16px rgba(var(--ombre),.75)}
 @media (min-width:960px){.pouce{display:none}}
 
@@ -623,7 +649,7 @@ html.anime .pile{overflow:hidden;border-radius:16px}
     </div>
     <div class="scene" aria-hidden="true">
       <figure class="feuille"><img src="images/nov-devis.jpg" alt="" width="1654" height="2339"></figure>
-      <div class="appareil" id="scene-creer"><div class="ecran"><img src="images/nov-creer-un-devis.jpg" alt="" width="1170" height="1992"><video muted playsinline preload="auto" width="780" height="1328"><source src="images/nov-creer-un-devis.mp4" type="video/mp4"><source src="images/nov-creer-un-devis.webm" type="video/webm"></video><img class="film-fin" src="images/nov-creer-un-devis-fin.jpg" alt="" width="1170" height="1992"></div></div>
+      <div class="appareil" id="scene-creer"><div class="ecran film"><img src="images/nov-creer-un-devis.jpg" alt="" width="1170" height="1992"><video muted playsinline preload="auto" width="780" height="1328"><source src="images/nov-creer-un-devis.mp4" type="video/mp4"><source src="images/nov-creer-un-devis.webm" type="video/webm"></video><img class="film-fin" src="images/nov-creer-un-devis-fin.jpg" alt="" width="1170" height="1992"></div></div>
     </div>
   </div>
 </section>
@@ -665,7 +691,7 @@ html.anime .pile{overflow:hidden;border-radius:16px}
     </div>
     <div class="chap-visuel recit">
       <div class="scene scene-micro">
-        <div class="appareil" id="scene-micro"><div class="ecran"><img src="images/nov-fiche-client.jpg" alt="Fiche client d'Atlas, remplie pour Mr. Lemaire, avec le bouton Devis à la voix" width="1170" height="1992"><div class="bande" aria-hidden="true"></div></div></div>
+        <div class="appareil" id="scene-micro"><div class="ecran film" data-film="micro"><img class="film-pose" src="images/nov-film-micro-fin.jpg" alt="Fiche client d'Atlas, remplie pour Mr. Lemaire, la note vocale en cours : 0:06" width="780" height="1328"></div></div>
       </div>
       <p class="dite" id="dite">« On arrache l'ancienne haie de thuyas sur douze mètres. »</p>
       <div class="devient">
@@ -700,7 +726,7 @@ html.anime .pile{overflow:hidden;border-radius:16px}
     </div>
     <div class="chap-visuel">
       <div class="scene sable">
-        <div class="appareil" id="scene-envoi"><div class="ecran"><img class="etape vue" src="images/nov-client-2.jpg" alt="Page que reçoit le client : le devis de Mr. Lemaire à 862,20 euros TTC, le vendredi 6 novembre choisi, la case de rétractation cochée, J'accepte ce devis, Une correction avant d'accepter et Je ne donne pas suite" width="1170" height="1992"></div></div>
+        <div class="appareil" id="scene-envoi"><div class="ecran film" data-film="envoi"><img class="film-pose" src="images/nov-client-2.jpg" alt="Page que reçoit le client : le devis de Mr. Lemaire à 862,20 euros TTC, le vendredi 6 novembre choisi, la case de rétractation cochée, J'accepte ce devis, Une correction avant d'accepter et Je ne donne pas suite" width="1170" height="1992"></div></div>
       </div>
     </div>
   </div>
@@ -714,10 +740,10 @@ html.anime .pile{overflow:hidden;border-radius:16px}
     </div>
     <div class="chap-visuel">
       <div class="plans">
-        <figure class="gros empile" id="scene-mois"><img src="images/nov-mois-5.jpg" alt="Planning de novembre : demi-journées en vert clair, vert foncé et rouge, le vendredi 6 entouré d'or" width="1170" height="1563"></figure>
+        <figure class="gros film" id="scene-mois" data-film="mois" style="--film:780/1042"><img class="film-pose" src="images/nov-mois-5.jpg" alt="Planning de novembre : demi-journées en vert clair, vert foncé et rouge, le vendredi 6 entouré d'or" width="1170" height="1563"></figure>
         <div class="paire">
           <div>
-            <figure class="gros empile" id="scene-equipe"><img src="images/nov-equipe-2.jpg" alt="Le chantier de Mr. Lemaire, le vendredi 6 novembre : Lucas et Julien le matin et l'après-midi" width="1038" height="834"></figure>
+            <figure class="gros film" id="scene-equipe" data-film="equipe" style="--film:692/600"><img class="film-pose" src="images/nov-film-equipe-fin.jpg" alt="Le chantier de Mr. Lemaire, le vendredi 6 novembre : Lucas et Julien le matin et l'après-midi" width="692" height="600"></figure>
             <p class="sous">L'équipe se pose à la demi-journée.</p>
           </div>
           <div>
@@ -755,7 +781,7 @@ html.anime .pile{overflow:hidden;border-radius:16px}
         <h3>Les travaux cochés</h3>
         <p>Sur place, tâche par tâche.</p>
         <div class="defile" id="scene-travaux">
-          <div class="cadre"><div class="pile"><img class="etape vue" src="images/nov-travaux-5.jpg" alt="Travaux à faire : les quatre tâches cochées, la remarque sur le portail, et Envoyer le retour du jour" width="786" height="1530"></div></div>
+          <div class="cadre"><div class="pile film" data-film="travaux" style="--film:540/1030"><img class="film-pose" src="images/nov-travaux-5.jpg" alt="Travaux à faire : les quatre tâches cochées, la remarque sur le portail, et Envoyer le retour du jour" width="786" height="1530"></div></div>
         </div>
       </article>
       <article class="case">
@@ -1010,19 +1036,46 @@ html.anime .pile{overflow:hidden;border-radius:16px}
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   document.documentElement.classList.add("anime");
   var attendre = function(ms){ return new Promise(function(r){ setTimeout(r, ms); }); };
-  var montrer = function(liste, i){ liste.forEach(function(im, k){ im.classList.toggle("vue", k === i); }); };
-  // Les images d'une scène ne se chargent qu'à l'approche : sans cela, la page
-  // ferait venir une trentaine de captures avant même qu'on la lise.
-  var empiler = function(conteneur, sources){
-    return sources.map(function(src){
-      var im = new Image(); im.src = src; im.alt = ""; im.decoding = "async"; im.className = "etape";
-      conteneur.appendChild(im); return im;
-    });
+  // Les films des scènes : la vraie appli filmée image par image, puis montée
+  // avec HyperFrames, la caméra et le flou de mouvement cuits dans l'image
+  // (power2.inOut pour aller et venir, expo.out pour un écran qui se pose).
+  // Rien ne se charge avant l'approche : une scène prépare sa bobine à
+  // 900 px de l'écran. Jouer rend la main à la fin du film ; un film refusé
+  // (économie d'énergie, par exemple) ou introuvable montre aussitôt sa
+  // dernière image : sans cela, le téléphone restait figé sur la première.
+  var bobine = function(cadre){
+    var nom = "images/nov-film-" + cadre.dataset.film, video = null, fin = null, quand = null, casse = false;
+    var rendre = function(){ if (quand){ var q = quand; quand = null; q(); } };
+    var finir = function(){ fin.classList.add("vue"); video.classList.remove("joue"); rendre(); };
+    return {
+      preparer: function(){
+        var debut = new Image(); debut.src = nom + "-debut.jpg"; debut.alt = ""; debut.decoding = "async"; debut.className = "film-debut";
+        video = document.createElement("video"); video.muted = true; video.playsInline = true; video.setAttribute("muted", ""); video.setAttribute("playsinline", ""); video.preload = "auto";
+        // La dernière source en échec, aucune ne se lira : la vidéo, elle, ne
+        // le signale pas.
+        ["mp4", "webm"].forEach(function(t){ var so = document.createElement("source"); so.src = nom + "." + t; so.type = "video/" + t; video.appendChild(so); });
+        video.lastChild.addEventListener("error", function(){ casse = true; finir(); });
+        fin = new Image(); fin.src = nom + "-fin.jpg"; fin.alt = ""; fin.decoding = "async"; fin.className = "film-fin";
+        video.addEventListener("playing", function(){ video.classList.add("joue"); });
+        video.addEventListener("ended", finir);
+        cadre.append(debut, video, fin);
+      },
+      remettre: function(){ rendre(); video.pause(); video.classList.remove("joue"); if (!casse) fin.classList.remove("vue"); try { video.currentTime = 0; } catch (e) {} },
+      jouer: function(){
+        this.remettre();
+        if (casse) return Promise.resolve();
+        // Une lecture coupée par la sortie de l'écran n'est pas un refus : la
+        // dernière image n'a pas à remplacer le film qu'on quitte.
+        return new Promise(function(r){ quand = r; var p = video.play(); if (p && p.catch) p.catch(function(e){ if (!e || e.name !== "AbortError") finir(); }); });
+      },
+      arreter: function(){ rendre(); if (video) video.pause(); }
+    };
   };
-  // La caméra, d'après les règles de mouvement du skill HyperFrames : elle va
-  // et vient en accélérant puis en ralentissant (power2.inOut), un écran neuf
-  // arrive un peu grand et se pose sur une longue traîne (expo.out). Elle ne
-  // sort jamais de l'écran : son cadrage est borné aux bords de l'image.
+  // La caméra de l'ouverture, d'après les règles de mouvement du skill
+  // HyperFrames : elle va et vient en accélérant puis en ralentissant
+  // (power2.inOut). Elle reste dans la page, pas dans le film, parce qu'elle
+  // s'approche AVANT l'appui, pendant qu'on regarde l'accueil. Elle ne sort
+  // jamais de l'écran : son cadrage est borné aux bords de l'image.
   var CAMERA = "cubic-bezier(.65,0,.35,1)", ARRIVEE = "cubic-bezier(.16,1,.3,1)", PLAN = { x:.5, y:.5, z:1 };
   var camera = function(cadre){
     var el = document.createElement("div"); el.className = "camera";
@@ -1043,9 +1096,7 @@ html.anime .pile{overflow:hidden;border-radius:16px}
         anim = el.animate([{ transform: de }, { transform: vers }], { duration: duree || 700, easing: courbe || CAMERA });
         return anim.finished.catch(function(){});
       },
-      poser: function(p){ if (anim) anim.cancel(); el.style.transform = cadrage(p); },
-      // Un écran neuf : un peu grand, puis il se pose.
-      arriver: function(){ this.poser({ x:.5, y:.4, z:1.06 }); return this.aller(PLAN, 650, ARRIVEE); }
+      poser: function(p){ if (anim) anim.cancel(); el.style.transform = cadrage(p); }
     };
   };
 
@@ -1102,6 +1153,8 @@ html.anime .pile{overflow:hidden;border-radius:16px}
   film.addEventListener("ended", function(){ finFilm.classList.add("vue"); film.classList.remove("joue"); });
   var lancer = async function(){
     arme = false; var mien = ++tourCreer;
+    // Une demi-seconde pour voir l'accueil avant l'appui (sa demande).
+    await attendre(500); if (mien !== tourCreer) return;
     await camCreer.aller(PLUS, 520); if (mien !== tourCreer) return;
     try { film.currentTime = 0; } catch (e) {}
     var promesse = film.play();
@@ -1112,101 +1165,67 @@ html.anime .pile{overflow:hidden;border-radius:16px}
     camCreer.aller(PLAN, 820);
   };
   var remettre = function(){ arme = true; tourCreer++; film.pause(); film.classList.remove("joue"); finFilm.classList.remove("vue"); camCreer.poser(PLAN); };
-  addEventListener("scroll", function(){
-    if (arme && scrollY > 24) lancer();
+  // Sur un téléphone, le premier mouvement du doigt ne montre pas encore le
+  // téléphone de l'ouverture : le geste attend qu'il soit à moitié à l'écran.
+  var partVue = 0;
+  var essayer = function(){
+    if (arme && scrollY > 24 && partVue >= 0.5) lancer();
     else if (!arme && scrollY < 2) remettre();
-  }, {passive:true});
+  };
+  new IntersectionObserver(function(e){ partVue = e[0].intersectionRatio; essayer(); }, {threshold:[0, 0.25, 0.5, 0.75, 1]}).observe(creer);
+  addEventListener("scroll", essayer, {passive:true});
 
-  // 2. La note vocale : le micro au repos, puis l'enregistrement qui démarre
-  // et le vrai chrono qui défile, une capture par seconde (nov-dictee-00 à 12).
-  // La caméra s'approche du micro, l'enregistrement démarre sous nos yeux,
-  // puis elle recule pendant que les secondes continuent.
-  var micro = document.getElementById("scene-micro"), bande = micro.querySelector(".bande"), secondes = [];
-  var camMicro = camera(micro.querySelector(".ecran")), MICRO = { x:.5, y:.79, z:1.35 };
-  scene(micro, 0.4, function(){
-    for (var k = 0; k <= 12; k++) secondes.push("images/nov-dictee-" + (k < 10 ? "0" : "") + k + ".jpg");
-    secondes = empiler(bande, secondes);
-  }, async function(encore){
+  // 2. La note vocale : le micro au repos, la caméra qui s'approche, le
+  // vrai chrono qui défile, puis elle recule pendant que les secondes
+  // continuent. Rejouée tant qu'on la regarde.
+  var micro = bobine(document.querySelector("#scene-micro .film"));
+  scene(document.getElementById("scene-micro"), 0.4, micro.preparer, async function(encore){
     while (encore()){
-      montrer(secondes, -1); camMicro.poser(PLAN);
-      await attendre(600); if (!encore()) return;
-      await camMicro.aller(MICRO, 650); if (!encore()) return;
-      await attendre(150); if (!encore()) return;
-      montrer(secondes, 0);
-      for (var k = 1; k < secondes.length; k++){
-        await attendre(1000); if (!encore()) return; montrer(secondes, k);
-        if (k === 3) camMicro.aller(PLAN, 850);
-      }
+      micro.remettre();
+      await attendre(450); if (!encore()) return;
+      await micro.jouer(); if (!encore()) return;
       await attendre(2200);
     }
-  }, function(){ montrer(secondes, -1); camMicro.poser(PLAN); });
+  }, micro.arreter);
 
-  // 3. Le client : la date se choisit tout de suite, la case des 14 jours
-  // apparaît, elle se coche, il accepte, et la page change.
-  // La caméra suit le geste du client : la date, la case, le bouton. La page
-  // qui dit « C'est noté » arrive un peu grande et se pose.
-  var envoi = document.getElementById("scene-envoi"), ecranEnvoi = envoi.querySelector(".ecran");
-  var fixe = ecranEnvoi.querySelector("img.etape"), pages = [];
-  var camEnvoi = camera(ecranEnvoi);
-  var DATE = { x:.5, y:.43, z:1.18 }, COCHE = { x:.45, y:.63, z:1.18 }, ACCEPTER = { x:.5, y:.79, z:1.18 };
-  // Elle part dès que le téléphone entre à l'écran : à 55 %, il fallait
-  // presque l'avoir traversé (sa remarque du 6 novembre).
-  scene(envoi, 0.3, function(){
-    pages = empiler(camEnvoi.el, ["images/nov-client-0.jpg", "images/nov-client-1.jpg", "images/nov-client-2.jpg", "images/nov-client-3.jpg"]);
-  }, async function(encore){
-    fixe.classList.remove("vue"); montrer(pages, 0); camEnvoi.poser(PLAN);
+  // 3. Le client : dès que le téléphone entre à l'écran, la date se choisit,
+  // la case des 14 jours apparaît et se coche, il accepte, et la page « C'est
+  // noté » arrive un peu grande et se pose. La caméra suit son geste. Elle
+  // part à 30 % : à 55 %, il fallait presque l'avoir traversé (sa remarque du
+  // 6 novembre).
+  var envoi = bobine(document.querySelector("#scene-envoi .film"));
+  scene(document.getElementById("scene-envoi"), 0.3, envoi.preparer, async function(encore){
+    envoi.remettre();
     await attendre(250); if (!encore()) return;
-    await camEnvoi.aller(DATE, 550); if (!encore()) return; montrer(pages, 1);
-    await attendre(600); if (!encore()) return;
-    await camEnvoi.aller(COCHE, 600); if (!encore()) return; montrer(pages, 2);
-    await attendre(550); if (!encore()) return;
-    await camEnvoi.aller(ACCEPTER, 500); if (!encore()) return;
-    await attendre(350); if (!encore()) return;
-    montrer(pages, 3); camEnvoi.arriver();
-  }, function(){ camEnvoi.poser(PLAN); });
+    envoi.jouer();
+  }, envoi.arreter);
 
-  // 3 bis. Planifiez : le mois se remplit chantier après chantier (le 10 passe
-  // au rouge quand il devient trop chargé, le 6 se remplit en dernier), puis
-  // l'équipe se pose sur la journée de Mr. Lemaire. Captures de l'appli,
-  // une par chantier posé (nov-mois-0 à 5, nov-equipe-0 à 2).
-  var jusqua = function(liste, i){ liste.forEach(function(im, k){ im.classList.toggle("vue", k <= i); }); };
-  var empilerSur = function(figure, sources){
-    return sources.map(function(src){ var im = new Image(); im.src = src; im.alt = ""; im.decoding = "async"; im.className = "etape"; figure.appendChild(im); return im; });
-  };
+  // 3 bis. Planifiez : le mois se remplit chantier après chantier, la caméra
+  // va sur le 10 au moment où il passe au rouge, puis sur le 6 qui se remplit
+  // en dernier, et recule. Puis l'équipe se pose sur la journée de
+  // Mr. Lemaire : « + Salarié », Lucas, Lucas et Julien, plan large (plus
+  // près, la caméra coupait « Matin » et « Après-midi »).
   // Sur un téléphone, le mois et la carte du jour sont à l'écran ensemble :
   // la carte attend que le mois soit rempli, sans quoi les deux jouaient en
   // même temps et l'équipe se posait sans qu'on la regarde.
-  // Les trois premiers chantiers se posent plan large ; puis la caméra va sur
-  // le 10 et le 12 au moment où le 10 devient trop chargé, passe sur le 6 qui
-  // se remplit, et recule. Les cadrages sont mesurés sur les captures.
   var moisEnCours = false;
-  var figMois = document.getElementById("scene-mois"), camMois = camera(figMois), imgMois = [];
-  var DIX = { x:.35, y:.44, z:1.6 }, SIX = { x:.635, y:.34, z:1.7 };
-  scene(figMois, 0.4, function(){ imgMois = empilerSur(camMois.el, [0, 1, 2, 3, 4, 5].map(function(k){ return "images/nov-mois-" + k + ".jpg"; })); }, async function(encore){
-    moisEnCours = true; jusqua(imgMois, 0); camMois.poser(PLAN);
-    await attendre(600); if (!encore()) return;
-    for (var k = 1; k <= 3; k++){ if (k > 1) { await attendre(720); if (!encore()) return; } jusqua(imgMois, k); }
-    await attendre(500); if (!encore()) return;
-    await camMois.aller(DIX, 700); if (!encore()) return;
-    await attendre(150); if (!encore()) return; jusqua(imgMois, 4);
-    await attendre(1000); if (!encore()) return;
-    await camMois.aller(SIX, 700); if (!encore()) return;
-    await attendre(150); if (!encore()) return; jusqua(imgMois, 5);
-    await attendre(900); if (!encore()) return;
-    await camMois.aller(PLAN, 800);
-    moisEnCours = false;
-  }, function(){ moisEnCours = false; camMois.poser(PLAN); });
+  var mois = bobine(document.getElementById("scene-mois"));
+  scene(document.getElementById("scene-mois"), 0.4, mois.preparer, async function(encore){
+    moisEnCours = true; mois.remettre();
+    await attendre(450);
+    if (encore()) await mois.jouer();
+    // Quittée puis reprise, l'ancienne lecture rend la main pendant que la
+    // nouvelle commence : elle ne doit pas libérer l'équipe à sa place.
+    if (encore()) moisEnCours = false;
+  }, function(){ moisEnCours = false; mois.arreter(); });
 
-  // L'équipe se pose plan large : la carte est étroite, et rapprochée, la
-  // caméra coupait « Matin » et « Après-midi ».
-  var figEquipe = document.getElementById("scene-equipe"), imgEquipe = [];
-  scene(figEquipe, 0.4, function(){ imgEquipe = empilerSur(figEquipe, [0, 1, 2].map(function(k){ return "images/nov-equipe-" + k + ".jpg"; })); }, async function(encore){
-    jusqua(imgEquipe, 0);
+  var equipe = bobine(document.getElementById("scene-equipe"));
+  scene(document.getElementById("scene-equipe"), 0.4, equipe.preparer, async function(encore){
+    equipe.remettre();
     while (moisEnCours){ await attendre(150); if (!encore()) return; }
-    await attendre(700); if (!encore()) return;
-    jusqua(imgEquipe, 1); await attendre(1000); if (!encore()) return;
-    jusqua(imgEquipe, 2);
-  });
+    await attendre(500); if (!encore()) return;
+    equipe.jouer();
+  }, equipe.arreter);
 
   // 3 ter. Encaissez : le montant de la TVA sort de la facture, grossit, Ma
   // TVA apparaît à 0,00 €, et le montant y rentre : 143,70 €. Les positions
@@ -1263,30 +1282,14 @@ html.anime .pile{overflow:hidden;border-radius:16px}
   // Les coches se lisent plan large : rapprochée, la caméra coupait les ronds
   // qu'on coche. Elle ne s'avance que sur la remarque et sur le bouton, puis
   // recule quand la carte se replie.
-  var defile = document.getElementById("scene-travaux"), pile = defile.querySelector(".pile");
-  var fixeTravaux = pile.querySelector("img.etape"), etapes = [], finie = false, repliee = false, camTravaux = null;
-  var BAS = { x:.5, y:.84, z:1.18 };
-  var hauteurPile = function(){ pile.style.height = Math.round(pile.offsetWidth * (repliee ? 455 : 1530) / 786) + "px"; };
-  scene(defile, 0.4, function(){
-    fixeTravaux.remove(); camTravaux = camera(pile);
-    etapes = empiler(camTravaux.el, [0, 1, 2, 3, 4, 5, 6].map(function(k){ return "images/nov-travaux-" + k + ".jpg"; }));
-    etapes[5].alt = fixeTravaux.alt;
-    pile.classList.add("mesuree"); pile.style.transition = "none"; hauteurPile(); montrer(etapes, 5);
-    void pile.offsetHeight; pile.style.transition = "";
-  }, async function(encore){
+  var travaux = bobine(document.querySelector("#scene-travaux .film")), finie = false;
+  scene(document.getElementById("scene-travaux"), 0.4, travaux.preparer, async function(encore){
     if (finie) return;
-    repliee = false; hauteurPile(); montrer(etapes, 0); camTravaux.poser(PLAN);
-    await attendre(350); if (!encore()) return;
-    for (var k = 1; k <= 4; k++){ await attendre(k === 1 ? 300 : 780); if (!encore()) return; montrer(etapes, k); }
-    await attendre(500); if (!encore()) return;
-    await camTravaux.aller(BAS, 650); if (!encore()) return;
-    montrer(etapes, 5);
-    await attendre(1100); if (!encore()) return;
-    camTravaux.aller(PLAN, 600);
-    repliee = true; hauteurPile(); montrer(etapes, 6);
-    finie = true;
-  });
-  addEventListener("resize", function(){ if (etapes.length) hauteurPile(); });
+    travaux.remettre();
+    await attendre(400); if (!encore()) return;
+    await travaux.jouer();
+    if (encore()) finie = true;
+  }, function(){ if (!finie) travaux.arreter(); });
 })();
 </script>
 </body>
