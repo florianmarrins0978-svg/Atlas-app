@@ -107,10 +107,22 @@ async function main() {
     await page.locator('[data-atlas="note-gardee-envoyer"]').waitFor({ timeout: 20_000 });
     await page.locator('[data-atlas="note-gardee-envoyer"]').click();
     await page.locator('[data-atlas="note-gardee"], [data-atlas="note-gardee-envoyer"]').first().waitFor({ state: "detached", timeout: 20_000 });
-    const { rows } = await pool.query(
-      `SELECT n.envoi_id FROM notes_vocales n JOIN chantiers c ON c.id = n.chantier_id JOIN clients cl ON cl.id = c.client_id WHERE cl.nom = $1`,
-      [nom]
-    );
+    // **La page quitte « Gardée » quand l'envoi COMMENCE, pas quand il finit** :
+    // le chantier se crée, puis la note s'écrit, quelques dixièmes plus tard.
+    // La première version lisait la base à cet instant et trouvait zéro note,
+    // alors que la note était en base 71 ms après le client (batterie commune
+    // du 6 novembre au soir). On attend donc qu'elle y soit, vingt secondes au
+    // plus : une note qui n'arrive jamais fait toujours rougir.
+    const lire = () =>
+      pool.query(
+        `SELECT n.envoi_id FROM notes_vocales n JOIN chantiers c ON c.id = n.chantier_id JOIN clients cl ON cl.id = c.client_id WHERE cl.nom = $1`,
+        [nom]
+      );
+    let { rows } = await lire();
+    for (const limite = Date.now() + 20_000; rows.length === 0 && Date.now() < limite; ) {
+      await page.waitForTimeout(250);
+      ({ rows } = await lire());
+    }
     if (rows.length !== 1) throw new Error(`${rows.length} note(s) en base pour la fiche neuve, au lieu d'une`);
     if (!rows[0].envoi_id) throw new Error("la note est partie sans son identifiant d'envoi");
   });
