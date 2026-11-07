@@ -1,12 +1,14 @@
 # Prochaines tâches
 
-## ⏳ BATTERIE COMMUNE DU 6 NOVEMBRE AU SOIR : FUSIONNÉE, PAS LANCÉE (sa consigne)
+## BATTERIE COMMUNE DU 6 NOVEMBRE AU SOIR : VERTE, SUR main LE 7 NOVEMBRE
 
 **Sa demande, à 18 h** : *« il y a déjà 3 sessions ou 4 sessions qui attendent
 de jouer une batterie. Fusionne-la avec la tienne. Ne la lance toujours pas.
 Il y en a une dernière qui continue de coder et dès qu'elle a fini, tu la
 prendras aussi. »* Branche `lot/batterie-commune-6-novembre-soir`, partie de
-`main` (`a5e381e5`). **Aucune batterie lancée** : elle attend son « oui ».
+`main` (`a5e381e5`). **Batterie lancée sur son « oui », verte** : le détail,
+lots, mesures, rouges et ce qui reste, est dans
+`docs/batterie-commune-6-novembre-soir.md`.
 
 | session | lot | migration | rencontre |
 |---|---|---|---|
@@ -36,15 +38,18 @@ test-actions-serveur-sans-export-de-type, test-todo-sans-titre-menteur.
 La session 1 est prise (fermeture du compte et facture d'Atlas) : **toutes les
 sessions en attente sont dans la branche.** `test-paiement-stripe` demande
 `DATABASE_URL` et `AUTH_SECRET` posés (il ne s'y connecte pas) : vert avec
-ceux de la CI. Niveau calculé : 3 (migrations, argent). **Reste** : la
-batterie entière sur son « oui », puis `main`.
+ceux de la CI. Niveau calculé : 3 (migrations, argent). **Batterie** : 583 suites base sur
+583, 215 navigateur sur 215 après rattrapage (la suite rouge rejouée deux
+fois, verte), construction et connexion vertes ; sur `main` le 7 novembre.
+**Reste** : regarder les écrans sur son espace.
 
-## LE « ≤ » DU PDF DE LA FICHE DE SÉCURITÉ : CORRIGÉ LE 6 NOVEMBRE 2026, PAS SUR main
+## LE « ≤ » DU PDF DE LA FICHE DE SÉCURITÉ : CORRIGÉ LE 6 NOVEMBRE 2026, SUR main LE 7 NOVEMBRE
 
 **Sa réponse du 6 novembre** : *« Oui corrige le maintenant. Pas de
 batterie »*. Codé sur la branche `lot/police-inferieur-ou-egal`, poussée sur
 GitHub le même jour sur son « oui » (*« pousse-les »*), puis réuni dans
-`lot/fiche-securite-soignee`, celle qui se fusionne ; pas sur `main`.
+`lot/fiche-securite-soignee`, celle qui se fusionne ; sur `main` le
+7 novembre avec la batterie commune.
 
 | | |
 |---|---|
@@ -52,7 +57,7 @@ GitHub le même jour sur son « oui » (*« pousse-les »*), puis réuni dans
 | le rouge | `scripts/test-polices-documents.ts` : chaque caractère que la fiche imprime (ses mots, ceux du croquis, les chaînes du moteur du PDF) doit avoir un dessin dans Inter. Rouge sur « ≤ » U+2264, et sur lui seul |
 | la correction | Inter v20 repris de `fonts.gstatic.com`, réduit par la commande de `src/server/pdf/polices/LISEZ-MOI.md` plus `U+2264,U+2265`. Sans ces deux signes, la commande redonne les fichiers d'avant à l'octet près |
 | éprouvé ici | le contrôle vert, les types, `test-fiche-securite.ts`, un PDF de fiche regardé : « HTA (U ≤ 50 000 V) » |
-| reste | **niveau 3** (un `.ttf` n'est pas lu par le graphe) : la batterie, sur son « oui », puis `main` |
+| reste | rien : batterie commune verte, sur `main` le 7 novembre |
 
 ## La case « À signaler » des travaux à faire ne grandit pas (6 novembre 2026)
 
@@ -71,8 +76,7 @@ et sa hauteur reprise à chaque frappe pour un Safari qui ne le connaît pas).
 Aujourd'hui y garde le défaut, pour comparer. Le code suivra son choix.
 
 
-## CODÉ LE 6 NOVEMBRE, SUR main LE 6 NOVEMBRE (batterie commune) : la mention de la franchise bascule seule au 1er janvier 2027
-## ⏳ LA FICHE TRAVAUX : QUE LES TRAVAUX, SUR UNE BRANCHE LOCALE (6 novembre 2026)
+## LA FICHE TRAVAUX : QUE LES TRAVAUX, SUR main LE 7 NOVEMBRE (batterie commune)
 
 **Sa demande :** *« il ne faut jamais que la main-d'œuvre qu'il y a dans le
 devis s'affiche ; il faut qu'il n'y ait que les travaux ; le camion
@@ -84,8 +88,8 @@ restent.
 |---|---|
 | la règle | `seFaitSurLeChantier` (`src/lib/taches-du-devis.ts`) : le drapeau, ou le PREMIER mot du libellé |
 | la reprise | `reprendreLesLignesPrix` recopie enfin `mainDoeuvre` (`LigneAReprendre` l'exige) |
-| les suites | `test-taches-du-devis` vert ici ; `test-reprise-du-devis-db` écrite, **jamais jouée** (base : son oui) |
-| reste | son oui pour la base et la batterie (niveau 3), voir la suite base ROUGE sur l'ancien code puis verte, puis `main` |
+| les suites | `test-taches-du-devis` et `test-reprise-du-devis-db` vertes dans la batterie commune |
+| reste | sur `main` le 7 novembre ; la suite base n'a pas été vue ROUGE sur l'ancien code dans cette batterie |
 
 **~~À SA DÉCISION~~ TRANCHÉ LE 6 NOVEMBRE, CODÉ SUR LA MÊME BRANCHE** (sa
 réponse : *« il faut garder les 400 € ; mettre à jour, juste la taille de la
@@ -116,11 +120,10 @@ d'œuvre 400 €). Attend son oui ; rien n'est codé.
 
 **La planche** : `appli/soignee/fiche-travaux.html`. **Sa réponse : la A**,
 codée sur la même branche (`TravauxAFaire.tsx`, `FicheDeSecurite.tsx` pour le
-compte). La B reste sur la planche, écartée. **Pas regardée dans l'appli
-ici** : le serveur attend son oui, comme la batterie. `npm run voir --
-/planning` dès qu'il le donne, fiche ouverte sur un chantier à devis.
+compte). La B reste sur la planche, écartée. **Pas regardée dans l'appli** :
+à regarder sur son espace, fiche ouverte sur un chantier à devis.
 
-## AVANT LE 31 DÉCEMBRE 2027 : la mention « TVA non applicable, art. 293 B du CGI »
+## CODÉ LE 6 NOVEMBRE, SUR main LE 6 NOVEMBRE (batterie commune) : la mention de la franchise bascule seule au 1er janvier 2027
 
 **Corrigé le 6 novembre 2026, sur les sites officiels** (sa demande : *« tu
 peux aussi aller vérifier par toi-même »*). La date du 1er janvier 2027 écrite
@@ -151,7 +154,7 @@ de l'article 293 B ») qui décrit les CGU, laissé tel quel.
 dans `src/server/pdf/avoir-pdf.ts`. La seconde doit d'abord prendre la
 première (`CLAUDE.md` §3), sinon l'avoir gardera l'ancienne phrase.
 
-## ~~⏳ À CHOISIR PAR LUI (6 novembre 2026) : la fiche de sécurité soignée, l'écran et le PDF~~ TRANCHÉ LE 6 NOVEMBRE : OUI POUR TOUT ; CODÉ, PAS SUR main
+## ~~⏳ À CHOISIR PAR LUI (6 novembre 2026) : la fiche de sécurité soignée, l'écran et le PDF~~ TRANCHÉ LE 6 NOVEMBRE : OUI POUR TOUT ; CODÉ, SUR main LE 7 NOVEMBRE
 
 **Ses réponses du 6 novembre** : *« Oui pour tout tu peux coder ne lance pas
 de batterie. Dès l'ouverture. »* Donc l'écran ET le PDF des planches,
@@ -161,14 +164,15 @@ ses lignes à leur place plus loin dans la fiche.
 | | |
 |---|---|
 | les planches | `appli/soignee/fiche-de-securite.html` et `fiche-de-securite-pdf.html` (en ligne) |
-| la branche | `lot/fiche-securite-soignee`, poussée sur GitHub le 6 novembre sur son « oui » (*« pousse-les »*) ; pas sur `main` |
+| la branche | `lot/fiche-securite-soignee`, poussée sur GitHub le 6 novembre sur son « oui » (*« pousse-les »*) ; sur `main` le 7 novembre (batterie commune) |
 | la règle | `pointsDuMinimumLegal` (les huit points, faits ou non) et `etatDesParties` (« Fait », « À remplir », partie par partie) dans `src/lib/fiche-securite.ts` ; `minimumLegal` n'en est plus que le reste, il n'y a qu'une règle |
 | l'écran | `FormulaireFicheDeSecurite.tsx` : titres de partie en serif, l'état à côté, cases de 48 points cochées en vert, Suivant et Signer sur toute la largeur avec le refus juste au-dessus, croquis en trois lignes, urgences une par ligne, Signer avec les huit points, écran signé sans encadrés ; `Signature.tsx` (cadre, « Effacer ») |
 | le PDF | `src/server/pdf/fiche-securite-pdf.ts` : « En cas d'accident » en tête, titres à filet doré, cases pleines, listes en colonnes, champs en colonnes, l'équipe en tableau, la signature en cadre, « page n sur N », un titre réserve la place de ce qui le suit (le croquis ne quitte plus son titre). 6 pages au lieu de 7 sur la fiche d'essai |
 | éprouvé ici | types, lint, `test-fiche-securite.ts` (rouge puis vert sur les huit points), `test-boutons-arrondis` (vignettes passées à 64 points), `test-boutons-pleins`, `test-chartes-lisibles`, `test-mode-emploi`, tirets, flèches, pansements, code mort, couches ; un PDF d'essai regardé page par page |
 | regardé ici | sur son « oui » (*« Oui, regarde »*), l'appli lancée sur une base jetable : la loi, les six étapes et l'écran signé, et les gestes joués dans un navigateur (« Pas de risque de noyade » fait passer sa partie à « Fait », Signer refusé dit les cinq manques au-dessus du bouton, le manque « Les risques » mène à l'étape 4). Deux écarts vus et corrigés : « Coordonnées GPS » collé à l'adresse, le refus de Signer qui chevauchait la liste |
-| PAS éprouvé ici | la suite navigateur `test-fiche-securite-e2e` et les suites base (pas de batterie) ; un vrai iPhone ; la carte IGN (ce poste ne la joint pas) |
-| reste | **niveau 3** (`fiche-securite.ts` atteint 15 points d'entrée) : la batterie, sur son « oui », puis `main` |
+| éprouvé par la batterie commune | `test-fiche-securite-e2e` et les suites base, vertes |
+| PAS éprouvé | un vrai iPhone ; la carte IGN (ce poste ne la joint pas) |
+| reste | regarder sur son espace |
 
 **Ce qui a été fait autrement que la planche, et pourquoi** : « Chercher une
 adresse » garde son dessin, parce que `ChampAdresse` sert cinq écrans et que le
@@ -227,146 +231,7 @@ refuse sans la batterie. Le document de retour : `docs/lot-paie-zones-feries.md`
 6. **hors du compte, à dire** : un salarié embauché ou parti en cours de mois,
    ou à temps partiel, se corrige à la main ; sa fiche n'a ni dates ni jours.
 
-## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : cinq planches, A ou B~~ TRANCHÉ LE 6 NOVEMBRE : HIVERNAGE B, NOTE B, FRANCHISE A ET B, DEUX ÉCARTÉES ; TROIS LOTS CODÉS, PAS SUR main
-## CODÉ LE 6 NOVEMBRE, PAS SUR main : hiverner l'arrosage (B)
-
-Lot `lot/hivernage`, commité, **pas poussé** (sa règle : aucune batterie sans
-son « oui », et `main` ne s'atteint qu'après elle). Planche
-`appli/soignee/hiverner-l-arrosage.html`, sa réponse « la B », son ajout du
-6 novembre sur les contrats d'entretien.
-
-**Décisions prises pour coder, à lui dire** (`ARCHITECTURE.md` §561) :
-- trois faits sur le client, nullables : `arrosage_automatique`,
-  `hivernage_par_nous`, `hiverne_le` ; NULL veut dire « jamais demandé » ;
-- la question paraît quand une facture ÉMISE (ou une facture importée rangée)
-  a une ligne qui parle d'arrosage, ou quand il a un contrat d'entretien
-  ACCEPTÉ ; la facture passe d'abord dans la phrase. Puis la seconde question,
-  « Vous faites son hivernage ? ». « Non » ne se redemande plus (la planche
-  disait « pour cette facture ») ;
-- la saison : du 1er novembre à la fin février, à l'heure de Paris ;
-- « Le prévoir » pose par `poserLeClientSurLeJour`, le geste de « Un client »
-  du planning, sorti de `poserUnClientAction` pour servir aux deux ; le
-  chantier porte `nature = 'hivernage'` et le travail « Hivernage de
-  l'arrosage ». « Le voir » ouvre `/planning?chantier=…` ; « Annuler » après la
-  pose supprime le chantier posé ;
-- l'application ne connaît aucun férié : la feuille retire les jours passés,
-  les week-ends et ce qui sort de la saison, pas le 11 novembre.
-
-**Reste à jouer, sur son « oui »** : le niveau est 3 (`drizzle/`,
-`src/server/db/`). `scripts/test-hivernage-db.ts` (écrite, jamais jouée),
-`npm run db:migrate` de `0165` sur une base, les suites navigateur de
-`/clients`, `/clients/[id]`, `/clients/[id]/coordonnees` et `/planning`, puis la
-batterie entière. **Aucun écran n'a été ouvert** : la fiche, la feuille de
-« Le prévoir », la liste et le planning sont à regarder avant de dire qu'ils
-tiennent (`.claude/rules/regarder-l-ecran.md`).
-
-**Ouvert, pas tranché** : la date de départ réglable (Nice et le Jura) ; la
-remise en route au printemps en miroir ; l'arrosage dans les familles du
-contrat d'entretien ; la goutte qui partirait seule quand la journée
-d'hivernage est terminée au planning ; les fériés, le jour où l'appli les
-connaîtra (`jourChoisissable`, un seul endroit).
-
-## CODÉ LE 6 NOVEMBRE, PAS SUR main : une note sans réseau (B)
-
-**Sa réponse B du 6 novembre**, puis *« tu peux coder tout ça et ne lance pas de
-batterie »*. Branche locale `lot/note-sans-reseau`, non poussée. Planche
-`appli/soignee/note-sans-reseau.html`. `ARCHITECTURE.md` §562.
-
-**Ce qui est codé :** un envoi raté garde la note (`src/lib/note-gardee.ts`,
-`causeDeLaGarde`), sauf un son que le serveur ne recevra jamais
-(`nonRecevable`, rendu et dit comme avant). Sur le téléphone, IndexedDB, une
-note par chantier (`src/app/chantiers/[id]/notes-gardees.ts`). L'anneau dit
-« Gardée » (le sablier de `IconeTrait`) tant que le serveur ne répond pas,
-« Envoyer » dès qu'il répond, et c'est son appui qui envoie
-(`AnneauNoteVocale.tsx`). La fiche neuve dont le chantier ne peut pas être
-créé garde la note dans la page, et le dit. Le serveur reconnaît un envoi déjà
-reçu (`envoi_id`, migration `0172_note_vocale_envoi.sql`, `noteDejaRecue`).
-Les phrases de liaison ne disent plus « refaites la note » ; la fiche
-« atlas-internet » dit vrai.
-
-**Joué ici, au vert :** `npx tsc --noEmit`, eslint sur les fichiers touchés,
-`test-note-gardee` (16 cas, rouge d'abord sur l'envoi et les anciennes
-phrases), `test-panne-note-vocale`, `test-mode-emploi`, `test-pas-de-pansement`,
-`test-pas-de-code-mort`, `test-couches`, `test-aucun-tiret`, `test-aucune-fleche`,
-`test-chartes-lisibles`, `test-classes-atlas-uniques`. **Niveau 3** (migration,
-`globals.css`, schéma) : `npm run verifier:avant-livraison`, sur SON accord.
-
-**Écrit, à jouer avec la batterie :** `test-note-vocale-envoi-db.ts` (l'envoi
-reconnu, l'isolation, le remplacement sans identifiant) et
-`test-note-sans-reseau-e2e.ts` (fiche neuve et chantier existant, réseau coupé
-puis rendu, page rouverte).
-
-**Pas vérifié ici, et à dire comme tel :** aucun écran ouvert (sa règle, pas de
-serveur) ; aucun téléphone réellement privé de réseau ; IndexedDB sur Safari
-d'iPhone jamais essayé ; la migration jamais appliquée à une base.
-
-**Ce qui reste, et qui n'est pas codé :**
-- **la ligne « 1 note à envoyer » sur l'accueil** (« à trancher en codant ») :
-  elle demande une planche d'abord (`CLAUDE.md` §3 bis), et elle compense le
-  risque de la B, l'oubli. Sans elle, une note gardée ne se retrouve qu'en
-  rouvrant la fiche de son chantier ;
-- **la fiche neuve fermée avant l'envoi** : sa note ne vit que dans la page
-  (le chantier n'existe pas encore, rien ne la rattacherait sans risquer le
-  mauvais client) ; la phrase le dit. La garder au-delà demande de garder aussi
-  la saisie, et la ligne de l'accueil pour la retrouver ;
-- **la page vieillie sur une fiche neuve** : la création du chantier passe par
-  une action serveur, qu'une page d'avant la mise à jour ne peut plus appeler ;
-  la note reste gardée dans la page, mais seul un rechargement répare, et il la
-  perd. Rare (après une mise à jour), dit sous le disque.
-
-## CODÉ LE 6 NOVEMBRE, PAS SUR main : le plafond de la franchise (A et B)
-
-**Sa demande** : *« tu peux coder tout ça et ne lance pas de batterie »*
-(6 novembre 2026), sur la planche `appli/soignee/franchise-plafond.html`, A ET
-B. Branche locale `lot/franchise-plafond`, **non poussée**. Aucune batterie,
-aucune suite base, aucun écran ouvert : tout ce qui suit est **écrit, pas
-éprouvé**.
-
-**Les plafonds, sourcés le 6 novembre 2026** (`src/lib/franchise-plafond.ts`) :
-37 500 € et 41 250 € pour les prestations de services, BOFiP
-BOI-TVA-DECLA-40-10-10 du 1er juillet 2026 (exemple de 2026 : passé 41 250 €,
-la franchise est perdue à la date du dépassement ; entre les deux, gardée
-toute l'année et perdue au 1er janvier suivant) ; impots.gouv.fr, « Les régimes
-d'imposition à la TVA » (85 000 € et 93 500 € pour les ventes) ; loi
-n° 2025-1044 du 3 novembre 2025 (BOFiP ACTU-2025-00144), qui abandonne le seuil
-de 25 000 €. **Le compte se compare au plafond des services seulement** :
-l'appli ne sait pas quelle ligne est une vente, et le plafond le plus bas
-prévient tôt, jamais tard.
-
-**Ce qui est codé** : la règle pure `src/lib/franchise-plafond.ts` (le compte en
-centimes, ses bornes, le ton, la phrase, l'arrêt) ; le dépôt
-`src/server/repositories/franchise-plafond.ts` (factures émises de l'année,
-pièces importées de genre facture, avoirs, par l'année de la pièce) ; l'arrêt
-dans `emettreFacture` (`FacturePasseLePlafondError`, option `malgreLePlafond`),
-donc aussi pour la facture d'un passage d'entretien, qui attend alors son geste
-sur Terminés ; l'action `emettreFactureAction` qui le rend en valeur ; les
-écrans dans `src/components/atlas/FranchiseDeTva.tsx` (la ligne de Terminés, le
-compteur de Votre TVA, la feuille du compte, l'arrêt) ; `enEurosEntiers` dans
-`src/lib/euros.ts`.
-
-**Joué ici, vert** : `test-franchise-plafond` (bornes 79,99 %, 80 %, plafond
-exact, un centime de plus, au majoré aussi), types, lint, et 312 des 336 suites
-sans base du dépôt ; les 24 autres rougissent aussi sans ce lot (21 rejouées
-sur `main`, rouges de la même façon, faute de clé ou de réseau ici ; 3 demandent
-une base ou Redis). **Écrit, à jouer** : `test-franchise-plafond-db` (le compte
-d'une entreprise sans celui d'une autre, l'arrêt dans l'émission, Assujettie
-jamais arrêtée). **À écrire** : une suite navigateur de l'arrêt et de la ligne
-de Terminés. **Jamais ouvert** : aucun des trois écrans.
-
-**Ce qui reste ouvert, et qui revient à lui ou à son comptable** :
-- passer en Assujettie demande un numéro de TVA qu'on n'a pas encore au jour
-  du dépassement : « Passer en Assujettie » mène à Votre TVA, la facture attend ;
-- après ce passage, la facture en brouillon doit porter la TVA : le taux de ses
-  lignes sous franchise n'a pas été relu dans ce lot, à regarder à l'écran ;
-- une pièce importée « à vérifier » compte déjà : le côté sûr ;
-- Terminés ne lit toujours pas le régime de TVA pour « Ma TVA à déclarer »
-  (trouvé par la planche) : hors de ce lot, non corrigé ;
-- Légifrance montre l'article 293 B abrogé par une ordonnance du 17 décembre
-  2025 (une recodification du CGI ?), alors que le BOFiP du 1er juillet 2026
-  le cite encore : la mention « art. 293 B du CGI » imprimée sur les factures
-  est peut-être à renuméroter. Non vérifié, hors de ce lot.
-
-## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : cinq planches, A ou B~~ TRANCHÉ LE 6 NOVEMBRE : HIVERNAGE B, NOTE B, FRANCHISE A ET B, DEUX ÉCARTÉES, PAS CODÉ
+## ~~⏳ À CHOISIR PAR LUI (5 novembre 2026) : cinq planches, A ou B~~ TRANCHÉ LE 6 NOVEMBRE : HIVERNAGE B, NOTE B, FRANCHISE A ET B, DEUX ÉCARTÉES ; TROIS LOTS CODÉS, SUR main LE 7 NOVEMBRE
 
 **Sa question du 5 novembre** : *« est-ce que tu as des idées pour améliorer
 notre application ? Est-ce que tu penses à des choses qu'on aurait pu
@@ -473,6 +338,145 @@ seule fiche qui donne un traitement (`donnees/phyto/fiches/001-fomes-resineux.js
 le Rotstop) est un produit de biocontrôle. Il a répondu *« on n'a pas ça dans
 l'appli »* : le Diagnostic végétal est monté (Paysage), mais rien ne charge ces
 trois fiches au démarrage de son espace (`scripts/importer-fiches-phyto.ts`).
+
+## CODÉ LE 6 NOVEMBRE, SUR main LE 7 NOVEMBRE (batterie commune) : hiverner l'arrosage (B)
+
+Lot `lot/hivernage`, réuni dans la batterie commune du 6 novembre au soir,
+verte, et sur `main` le 7 novembre (migration 0171). Planche
+`appli/soignee/hiverner-l-arrosage.html`, sa réponse « la B », son ajout du
+6 novembre sur les contrats d'entretien.
+
+**Décisions prises pour coder, à lui dire** (`ARCHITECTURE.md` §561) :
+- trois faits sur le client, nullables : `arrosage_automatique`,
+  `hivernage_par_nous`, `hiverne_le` ; NULL veut dire « jamais demandé » ;
+- la question paraît quand une facture ÉMISE (ou une facture importée rangée)
+  a une ligne qui parle d'arrosage, ou quand il a un contrat d'entretien
+  ACCEPTÉ ; la facture passe d'abord dans la phrase. Puis la seconde question,
+  « Vous faites son hivernage ? ». « Non » ne se redemande plus (la planche
+  disait « pour cette facture ») ;
+- la saison : du 1er novembre à la fin février, à l'heure de Paris ;
+- « Le prévoir » pose par `poserLeClientSurLeJour`, le geste de « Un client »
+  du planning, sorti de `poserUnClientAction` pour servir aux deux ; le
+  chantier porte `nature = 'hivernage'` et le travail « Hivernage de
+  l'arrosage ». « Le voir » ouvre `/planning?chantier=…` ; « Annuler » après la
+  pose supprime le chantier posé ;
+- l'application ne connaît aucun férié : la feuille retire les jours passés,
+  les week-ends et ce qui sort de la saison, pas le 11 novembre.
+
+**Joué par la batterie commune** : `scripts/test-hivernage-db.ts` (il lisait
+la base sans contexte d'entreprise, corrigé), la migration 0171, les suites
+navigateur, la batterie entière, verte. **Aucun écran n'a été ouvert** : la fiche, la feuille de
+« Le prévoir », la liste et le planning sont à regarder avant de dire qu'ils
+tiennent (`.claude/rules/regarder-l-ecran.md`).
+
+**Ouvert, pas tranché** : la date de départ réglable (Nice et le Jura) ; la
+remise en route au printemps en miroir ; l'arrosage dans les familles du
+contrat d'entretien ; la goutte qui partirait seule quand la journée
+d'hivernage est terminée au planning ; les fériés, le jour où l'appli les
+connaîtra (`jourChoisissable`, un seul endroit) : FAIT à la fusion, « Le
+prévoir » refuse le férié.
+
+## CODÉ LE 6 NOVEMBRE, SUR main LE 7 NOVEMBRE (batterie commune) : une note sans réseau (B)
+
+**Sa réponse B du 6 novembre**, puis *« tu peux coder tout ça et ne lance pas de
+batterie »*. `lot/note-sans-reseau`, réuni dans la batterie commune, verte,
+sur `main` le 7 novembre (migration 0172). Planche
+`appli/soignee/note-sans-reseau.html`. `ARCHITECTURE.md` §562.
+
+**Ce qui est codé :** un envoi raté garde la note (`src/lib/note-gardee.ts`,
+`causeDeLaGarde`), sauf un son que le serveur ne recevra jamais
+(`nonRecevable`, rendu et dit comme avant). Sur le téléphone, IndexedDB, une
+note par chantier (`src/app/chantiers/[id]/notes-gardees.ts`). L'anneau dit
+« Gardée » (le sablier de `IconeTrait`) tant que le serveur ne répond pas,
+« Envoyer » dès qu'il répond, et c'est son appui qui envoie
+(`AnneauNoteVocale.tsx`). La fiche neuve dont le chantier ne peut pas être
+créé garde la note dans la page, et le dit. Le serveur reconnaît un envoi déjà
+reçu (`envoi_id`, migration `0172_note_vocale_envoi.sql`, `noteDejaRecue`).
+Les phrases de liaison ne disent plus « refaites la note » ; la fiche
+« atlas-internet » dit vrai.
+
+**Joué ici, au vert :** `npx tsc --noEmit`, eslint sur les fichiers touchés,
+`test-note-gardee` (16 cas, rouge d'abord sur l'envoi et les anciennes
+phrases), `test-panne-note-vocale`, `test-mode-emploi`, `test-pas-de-pansement`,
+`test-pas-de-code-mort`, `test-couches`, `test-aucun-tiret`, `test-aucune-fleche`,
+`test-chartes-lisibles`, `test-classes-atlas-uniques`. **Niveau 3** (migration,
+`globals.css`, schéma) : `npm run verifier:avant-livraison`, sur SON accord.
+
+**Joués par la batterie commune, verts :** `test-note-vocale-envoi-db.ts` (l'envoi
+reconnu, l'isolation, le remplacement sans identifiant) et
+`test-note-sans-reseau-e2e.ts` (fiche neuve et chantier existant, réseau coupé
+puis rendu, page rouverte ; elle lisait trop tôt, elle attend désormais la
+note, vingt secondes au plus).
+
+**Pas vérifié ici, et à dire comme tel :** aucun écran ouvert (sa règle, pas de
+serveur) ; aucun téléphone réellement privé de réseau ; IndexedDB sur Safari
+d'iPhone jamais essayé ; la migration jamais appliquée à une base.
+
+**Ce qui reste, et qui n'est pas codé :**
+- **la ligne « 1 note à envoyer » sur l'accueil** (« à trancher en codant ») :
+  elle demande une planche d'abord (`CLAUDE.md` §3 bis), et elle compense le
+  risque de la B, l'oubli. Sans elle, une note gardée ne se retrouve qu'en
+  rouvrant la fiche de son chantier ;
+- **la fiche neuve fermée avant l'envoi** : sa note ne vit que dans la page
+  (le chantier n'existe pas encore, rien ne la rattacherait sans risquer le
+  mauvais client) ; la phrase le dit. La garder au-delà demande de garder aussi
+  la saisie, et la ligne de l'accueil pour la retrouver ;
+- **la page vieillie sur une fiche neuve** : la création du chantier passe par
+  une action serveur, qu'une page d'avant la mise à jour ne peut plus appeler ;
+  la note reste gardée dans la page, mais seul un rechargement répare, et il la
+  perd. Rare (après une mise à jour), dit sous le disque.
+
+## CODÉ LE 6 NOVEMBRE, SUR main LE 7 NOVEMBRE (batterie commune) : le plafond de la franchise (A et B)
+
+**Sa demande** : *« tu peux coder tout ça et ne lance pas de batterie »*
+(6 novembre 2026), sur la planche `appli/soignee/franchise-plafond.html`, A ET
+B. `lot/franchise-plafond`, réuni dans la batterie commune, verte, sur
+`main` le 7 novembre. **Aucun écran ouvert** : à regarder sur son espace.
+
+**Les plafonds, sourcés le 6 novembre 2026** (`src/lib/franchise-plafond.ts`) :
+37 500 € et 41 250 € pour les prestations de services, BOFiP
+BOI-TVA-DECLA-40-10-10 du 1er juillet 2026 (exemple de 2026 : passé 41 250 €,
+la franchise est perdue à la date du dépassement ; entre les deux, gardée
+toute l'année et perdue au 1er janvier suivant) ; impots.gouv.fr, « Les régimes
+d'imposition à la TVA » (85 000 € et 93 500 € pour les ventes) ; loi
+n° 2025-1044 du 3 novembre 2025 (BOFiP ACTU-2025-00144), qui abandonne le seuil
+de 25 000 €. **Le compte se compare au plafond des services seulement** :
+l'appli ne sait pas quelle ligne est une vente, et le plafond le plus bas
+prévient tôt, jamais tard.
+
+**Ce qui est codé** : la règle pure `src/lib/franchise-plafond.ts` (le compte en
+centimes, ses bornes, le ton, la phrase, l'arrêt) ; le dépôt
+`src/server/repositories/franchise-plafond.ts` (factures émises de l'année,
+pièces importées de genre facture, avoirs, par l'année de la pièce) ; l'arrêt
+dans `emettreFacture` (`FacturePasseLePlafondError`, option `malgreLePlafond`),
+donc aussi pour la facture d'un passage d'entretien, qui attend alors son geste
+sur Terminés ; l'action `emettreFactureAction` qui le rend en valeur ; les
+écrans dans `src/components/atlas/FranchiseDeTva.tsx` (la ligne de Terminés, le
+compteur de Votre TVA, la feuille du compte, l'arrêt) ; `enEurosEntiers` dans
+`src/lib/euros.ts`.
+
+**Joué ici, vert** : `test-franchise-plafond` (bornes 79,99 %, 80 %, plafond
+exact, un centime de plus, au majoré aussi), types, lint, et 312 des 336 suites
+sans base du dépôt ; les 24 autres rougissent aussi sans ce lot (21 rejouées
+sur `main`, rouges de la même façon, faute de clé ou de réseau ici ; 3 demandent
+une base ou Redis). **Écrit, à jouer** : `test-franchise-plafond-db` (le compte
+d'une entreprise sans celui d'une autre, l'arrêt dans l'émission, Assujettie
+jamais arrêtée). **À écrire** : une suite navigateur de l'arrêt et de la ligne
+de Terminés. **Jamais ouvert** : aucun des trois écrans.
+
+**Ce qui reste ouvert, et qui revient à lui ou à son comptable** :
+- passer en Assujettie demande un numéro de TVA qu'on n'a pas encore au jour
+  du dépassement : « Passer en Assujettie » mène à Votre TVA, la facture attend ;
+- après ce passage, la facture en brouillon doit porter la TVA : le taux de ses
+  lignes sous franchise n'a pas été relu dans ce lot, à regarder à l'écran ;
+- une pièce importée « à vérifier » compte déjà : le côté sûr ;
+- Terminés ne lit toujours pas le régime de TVA pour « Ma TVA à déclarer »
+  (trouvé par la planche) : hors de ce lot, non corrigé ;
+- Légifrance montre l'article 293 B abrogé par une ordonnance du 17 décembre
+  2025 (une recodification du CGI ?), alors que le BOFiP du 1er juillet 2026
+  le cite encore : la mention « art. 293 B du CGI » imprimée sur les factures
+  est peut-être à renuméroter. **Vérifié depuis** : l'entrée de la mention de
+la franchise, plus haut.
 
 ## UNE IDÉE POUR L'APPLI, CODÉE LE 5 NOVEMBRE : SUR main LE 6 NOVEMBRE (batterie commune)
 
@@ -717,10 +721,10 @@ pas dans le PDF : faut-il demander Congé ou Maladie quand on note l'absence ?
 compte reste ouvert jusqu'à l'échéance, puis se ferme, comme une résiliation.
 Pas codé.
 
-**Fermer un compte : CODÉ le 5 novembre 2026 sur `lot/fermeture-compte`, PAS
-LIVRÉ** : la batterie attend son « lance » (sa règle du même jour). Les suites
-pures sont vertes ; `scripts/test-fermeture-compte-db.ts` est écrit et n'a
-**jamais tourné** (il vide la base de test : même accord requis). Ce qui est
+**Fermer un compte : CODÉ le 5 novembre 2026 sur `lot/fermeture-compte`, SUR
+main LE 7 NOVEMBRE** (batterie commune du 6 au soir, verte).
+`scripts/test-fermeture-compte-db.ts` y a tourné : il se trompait deux fois
+(un compte fermé reprogrammé, tous les comptes comptés), corrigé, 13 sur 13. Ce qui est
 codé : `src/lib/fermeture-compte.ts` (les règles), migration 0174 (trois dates
 sur `entreprises`), `withEntreprise` (lecture seule et salariés refusés une fois
 fermé), `reglages/donnees/fermer` (l'écran de la planche), la purge planifiée
@@ -809,7 +813,8 @@ Ordre (sa réponse « la A » du 5 novembre) : 1. le lot Factur-X (§555, sur
 la transmission par la plateforme agréée d'Atlas. Pas d'application à part.
 
 **Étape 3 : CODÉE le 6 novembre sur `lot/facture-atlas`** (qui porte aussi la
-TVA), **pas livrée**, batterie en attente de son « lance ». Au crochet
+TVA), **sur `main` le 7 novembre** (batterie commune, verte ; elle y a trouvé
+que ces factures manquaient à « Mes données », corrigé). Au crochet
 `invoice.paid`, Atlas émet sa facture (`emettreLaFactureDAbonnement`) : numéro
 `AT2026-000001` d'un compteur sans trou (migration 0175), Factur-X par
 `pieceDeLaFacture` (PDF ordinaire si l'adresse de l'artisan n'a pas de code

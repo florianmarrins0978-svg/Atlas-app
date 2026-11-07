@@ -1,9 +1,20 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-11-06, `main`, quatre lots de quatre sessions réunis en une seule batterie à sa demande (`docs/batterie-commune-6-novembre.md`) : les fériés, le motif d'une absence, les jours travaillés et les zones ; la Factur-X ; une idée pour l'appli ; la mention de la franchise datée. Trois batteries entières : la dernière, 571 suites base sur 571 et 213 navigateur sur 214, connexion derrière un proxy verte ; le seul rouge (`test-le-client-s-est-trompe-e2e`, une suite qui dépendait de l'ordre) corrigé, prouvé rouge puis vert, et rejoué par `verifier-ce-qui-a-bouge`.
+**Dernière mise à jour :** 2026-11-07, `main`, neuf lots de quatre sessions réunis en une seule batterie à sa demande (`docs/batterie-commune-6-novembre-soir.md`) : le vrai sablier, hiverner l'arrosage, la note sans réseau, le plafond de la franchise, déplacer un chantier en un appui, la fiche travaux, la fiche de sécurité soignée, fermer son compte, la facture d'abonnement d'Atlas. Deux batteries entières : la dernière, 583 suites base sur 583, 214 navigateur sur 215, construction et connexion vertes ; le rouge (`test-note-sans-reseau-e2e`, qui lisait la base trop tôt) corrigé, rejoué par `verifier-ce-qui-a-bouge` puis une seconde fois, vert.
 dernière migration `drizzle/0170_idees_pour_l_appli.sql` (une idée pour l'appli, 0167 sur sa branche), avec `0169_plateforme_facture_electronique.sql` (la Factur-X, 0165 sur sa branche) et `0165` à `0168` (nature d'une absence, jours travaillés corrigés, zones de déplacement, couleur du férié), sur `main` le 6 novembre ; avant elles `0164_sauts_de_page_du_devis.sql`, sur `main` le 4 novembre
 
 ---
+## LA BATTERIE COMMUNE DU 6 NOVEMBRE AU SOIR, SUR `main` LE 7 NOVEMBRE
+
+Neuf lots, une batterie (`docs/batterie-commune-6-novembre-soir.md`). Ceux
+qui n'ont pas leur section plus bas : le sablier au trait (`IconeTrait`,
+`scripts/test-sablier.ts`) ; déplacer un chantier en un appui ; la fiche
+travaux, que les travaux (`seFaitSurLeChantier`, migration `0173`,
+§564 et §565) ; la fiche de sécurité soignée, écran et PDF, avec le « ≤ »
+dans Inter ; la facture d'abonnement d'Atlas, avec sa TVA (migration `0175`,
+§567), rangée sous « Abonnement Atlas » dans Mes données. Aucun écran de ces
+lots n'a été ouvert : à regarder sur son espace.
+
 ## LA FACTUR-X, CODÉE (5 novembre 2026), SUR `main` LE 6 NOVEMBRE
 
 Ses choix du 5 novembre sur `appli/soignee/reglages-facture-electronique.html` : 1 A, 2 A, 3 B (`ARCHITECTURE.md` §555). Codé : le XML CII EN 16931 (`src/lib/facture-x.ts`), le PDF/A-3 (`src/server/pdf/facture-x-pdf.ts`), les polices « Atlas Archive », et l'émission des factures entreprise en Factur-X. Suites `test-facture-x` (règles officielles et veraPDF, 17 vertes) et `test-facture-x-emission-db` (3 vertes, rouge sans le branchement). **Et le branchement**, le même jour : migration 0165, écran `/reglages/facture-electronique`, connecteur de l'API commune XP Z12-013, choix 3 B dans `emettreFacture` ; suite `test-plateforme-facture-db` (12 vertes contre une fausse plateforme). **Reste** : l'adresse de Pennylane et un premier dépôt réel sur son compte d'essai (`TODO.md`).
@@ -25,29 +36,31 @@ Branche `lot/idees-pour-l-appli`, d'après `appli/soignee/une-idee-pour-l-appli.
 « art. 293 B du CGI » jusqu'au 31 décembre 2026, « article L. 233-3 du code
 des impositions sur les biens et services (CIBS) » à partir du 1er janvier
 2027, au jour de chaque pièce (`mentionFranchise`, `ARCHITECTURE.md` §559).
-Lot `lot/mention-franchise`, niveau 3, en attente de sa batterie.
-## HIVERNER L'ARROSAGE (B), CODÉ (6 novembre 2026), PAS SUR `main`
+Lot `lot/mention-franchise`, sur `main` le 6 novembre (batterie commune).
 
-Lot `lot/hivernage`, en attente de sa batterie. La goutte des clients à
+## HIVERNER L'ARROSAGE (B), CODÉ (6 novembre 2026), SUR `main` LE 7 NOVEMBRE
+
+Lot `lot/hivernage`, sur `main` par la batterie commune du 6 au soir. La goutte des clients à
 hiverner (Vos clients, la fiche, la semaine et le mois du planning), les deux
 questions de la fiche et leurs cases dans ses coordonnées, « Le prévoir » qui
 pose au planning, « C'est fait » et « Annuler ». Migration `0171_hivernage.sql`.
 Règles : `src/lib/hivernage.ts`, `scripts/test-hivernage.ts` (vert) ; en base :
-`scripts/test-hivernage-db.ts` (écrite, pas jouée). Aucun écran ouvert.
+`scripts/test-hivernage-db.ts` (verte dans la batterie). « Le prévoir » refuse un
+férié. Aucun écran ouvert.
 
-## UNE NOTE SANS RÉSEAU (B), CODÉE (6 novembre 2026), PAS SUR `main`
+## UNE NOTE SANS RÉSEAU (B), CODÉE (6 novembre 2026), SUR `main` LE 7 NOVEMBRE
 
-Branche locale `lot/note-sans-reseau`, d'après `appli/soignee/note-sans-reseau.html` (*« tu peux coder tout ça et ne lance pas de batterie »*). Un envoi raté garde la note sur le téléphone (IndexedDB) ; le disque dit « Gardée », puis « Envoyer » quand le serveur répond, et son appui l'envoie ; la fiche neuve garde la note dans la page ; un identifiant d'envoi évite les doublons (migration `0172_note_vocale_envoi.sql`). `ARCHITECTURE.md` §562. Suites pures vertes ; `test-note-vocale-envoi-db` et `test-note-sans-reseau-e2e` écrits, à jouer. **Niveau 3 : batterie en attente de son accord.** Reste : la ligne « 1 note à envoyer » de l'accueil, planche d'abord (`TODO.md`).
-
----
-## LE PLAFOND DE LA FRANCHISE, CODÉ (6 novembre 2026), PAS SUR `main`
-
-Branche locale `lot/franchise-plafond`, d'après `appli/soignee/franchise-plafond.html`, A et B (*« tu peux coder tout ça et ne lance pas de batterie »*). Le compte de l'année face aux plafonds des services de 2026 (37 500 € et 41 250 €, sourcés au BOFiP du 1er juillet 2026), la ligne de Terminés à partir de 80 %, le compteur de Votre TVA, la feuille du compte, et l'arrêt de la facture qui passe le plafond majoré, dans `emettreFacture` (`ARCHITECTURE.md` §563). `test-franchise-plafond`, types, lint et 312 des 336 suites sans base verts (les 24 autres le sont aussi sur `main`, ou demandent une base) ; `test-franchise-plafond-db` écrite, pas jouée ; aucun écran ouvert. **Niveau 3 (argent) : attend son « oui » pour la batterie.**
+Lot `lot/note-sans-reseau`, sur `main` par la batterie commune, d'après `appli/soignee/note-sans-reseau.html` (*« tu peux coder tout ça et ne lance pas de batterie »*). Un envoi raté garde la note sur le téléphone (IndexedDB) ; le disque dit « Gardée », puis « Envoyer » quand le serveur répond, et son appui l'envoie ; la fiche neuve garde la note dans la page ; un identifiant d'envoi évite les doublons (migration `0172_note_vocale_envoi.sql`). `ARCHITECTURE.md` §562. Suites pures, `test-note-vocale-envoi-db` et `test-note-sans-reseau-e2e` vertes dans la batterie. Reste : la ligne « 1 note à envoyer » de l'accueil, planche d'abord (`TODO.md`).
 
 ---
-## FERMER SON COMPTE, CODÉ (5 novembre 2026), PAS ENCORE SUR `main`
+## LE PLAFOND DE LA FRANCHISE, CODÉ (6 novembre 2026), SUR `main` LE 7 NOVEMBRE
 
-Branche `lot/fermeture-compte`, d'après `appli/soignee/fermer-mon-compte.html` (choix A) et la question 33 de `docs/QUESTIONS.md` (*« très bien code ça »*, et aucune batterie sans son accord). « Fermer mon compte » en bas de Mes données ; lecture seule et salariés refusés une fois fermé (`withEntreprise`) ; trente jours après, la purge planifiée efface le reste client par client ; se réabonner rouvre. Règles `src/lib/fermeture-compte.ts`, dépôt `src/server/repositories/fermeture-compte.ts`, écran `src/app/reglages/donnees/fermer/`, migration `0174`. `ARCHITECTURE.md` §566. Suites pures vertes (`test-fermeture-compte`, vue rouge contre une règle cassée) ; **`test-fermeture-compte-db` écrite, jamais jouée** ; types et style verts. **Niveau 3 (migration, sécurité) : la batterie attend son « lance ».** Ce qui reste, dont la preuve d'acceptation d'un devis qui part avec le client, est dans `TODO.md`.
+Lot `lot/franchise-plafond`, sur `main` par la batterie commune, d'après `appli/soignee/franchise-plafond.html`, A et B (*« tu peux coder tout ça et ne lance pas de batterie »*). Le compte de l'année face aux plafonds des services de 2026 (37 500 € et 41 250 €, sourcés au BOFiP du 1er juillet 2026), la ligne de Terminés à partir de 80 %, le compteur de Votre TVA, la feuille du compte, et l'arrêt de la facture qui passe le plafond majoré, dans `emettreFacture` (`ARCHITECTURE.md` §563). `test-franchise-plafond`, types, lint et 312 des 336 suites sans base verts (les 24 autres le sont aussi sur `main`, ou demandent une base) ; `test-franchise-plafond-db` verte dans la batterie ; aucun écran ouvert.
+
+---
+## FERMER SON COMPTE, CODÉ (5 novembre 2026), SUR `main` LE 7 NOVEMBRE
+
+Branche `lot/fermeture-compte`, d'après `appli/soignee/fermer-mon-compte.html` (choix A) et la question 33 de `docs/QUESTIONS.md` (*« très bien code ça »*, et aucune batterie sans son accord). « Fermer mon compte » en bas de Mes données ; lecture seule et salariés refusés une fois fermé (`withEntreprise`) ; trente jours après, la purge planifiée efface le reste client par client ; se réabonner rouvre. Règles `src/lib/fermeture-compte.ts`, dépôt `src/server/repositories/fermeture-compte.ts`, écran `src/app/reglages/donnees/fermer/`, migration `0174`. `ARCHITECTURE.md` §566. Suites pures vertes (`test-fermeture-compte`, vue rouge contre une règle cassée) ; `test-fermeture-compte-db` verte dans la batterie commune, 13 sur 13 (elle se trompait deux fois, corrigée) ; types et style verts. Ce qui reste, dont la preuve d'acceptation d'un devis qui part avec le client, est dans `TODO.md`.
 
 ---
 ## LA MISE EN PAGE DU DEVIS, CODÉE (4 novembre 2026), SUR `main` LE 4 NOVEMBRE
