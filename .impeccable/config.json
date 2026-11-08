@@ -786,6 +786,24 @@
         ],
         "createdAt": "2026-11-08T11:25:24.370Z",
         "reason": "charte existante d'Atlas : fond crème du kit des planches (appli/soignee/kit.css), repris d'Arborea (PRODUCT.md)"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/banque-entrees-sorties.html"
+        ],
+        "createdAt": "2026-11-08T11:32:29.061Z",
+        "reason": "charte existante d'Atlas : fond crème du kit des planches, repris d'Arborea (PRODUCT.md)"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "appli/soignee/banque-entrees-sorties.html"
+        ],
+        "createdAt": "2026-11-08T11:32:29.081Z",
+        "reason": "faux positifs : .cadre est le téléphone du kit, son écran y est bord à bord par construction ; l'en-tête de l'assistant centre un bouton de 44 px dans 64 px, comme AssistantSidebar.tsx"
       }
     ]
   }
