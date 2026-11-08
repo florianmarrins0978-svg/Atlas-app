@@ -22,6 +22,7 @@ import { PARAM_PROVENANCE, PARAM_RELANCE, jourDeRelecture, lienRetourDeRelecture
 import { retourDuDevis } from "@/lib/retour-du-devis";
 import { estUneEntreprise } from "@/lib/civilite";
 import { laCaseExiste } from "@/lib/services-a-la-personne";
+import { urssafDuDevis } from "@/server/repositories/avance-immediate";
 import PreparationDictee from "./PreparationDictee";
 import { garderLaPage } from "@/server/garde-page";
 import { donneesDeLaMainOeuvre } from "@/server/chiffrage/main-oeuvre-choisie";
@@ -168,6 +169,9 @@ export default async function DevisCompletPage({
           clientNom: client?.nom,
           clientCivilite: client?.civilite ?? null,
         })}
+        // L'avance immédiate (lot 3) : un client inscrit n'a pas d'acompte. La
+        // liaison et l'inscription viennent d'ici ; la case, de l'écran.
+        avanceImmediate={(await urssafDuDevis(ctx, devisRow.id)) ?? null}
         devisId={devisRow.id}
         numeroCommercial={devisRow.numeroCommercial}
         dateEmission={devisRow.dateEmission}

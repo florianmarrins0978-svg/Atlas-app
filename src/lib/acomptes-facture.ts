@@ -19,7 +19,13 @@ import { echeancierDevis, type AcompteDevis } from "./acomptes-devis";
  * aucun des deux ne les recopie (`CLAUDE.md` §3).
  */
 
-export type MoyenDePaiement = "virement" | "cheque" | "especes" | "carte" | "autre";
+/**
+ * **« Avance immédiate »** (migration 0180) : le versement de l'Urssaf, noté
+ * par la relève de la demande de paiement (`releverLesDemandes`), jamais
+ * proposé au doigt. L'Urssaf verse toute la facture ; l'attestation fiscale ne
+ * le compte pas comme payé par le client (`acquitteDansLAnnee`).
+ */
+export type MoyenDePaiement = "virement" | "cheque" | "especes" | "carte" | "avance_immediate" | "autre";
 
 /** Les moyens qu'il choisit d'un doigt, dans l'ordre de la planche. */
 export const MOYENS_PROPOSES: readonly MoyenDePaiement[] = ["cheque", "virement", "especes", "carte"];
@@ -29,6 +35,7 @@ export const LIBELLES_MOYEN: Record<MoyenDePaiement, string> = {
   virement: "virement",
   especes: "espèces",
   carte: "carte",
+  avance_immediate: "avance immédiate",
   autre: "règlement",
 };
 

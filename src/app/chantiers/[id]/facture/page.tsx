@@ -23,6 +23,8 @@ import { avecCivilite } from "@/lib/civilite";
 import { laCaseExiste } from "@/lib/services-a-la-personne";
 import { jourIso } from "@/lib/jour";
 import { garderLaPage } from "@/server/garde-page";
+import { releverLesDemandes, situationUrssafDeLaFacture } from "@/server/repositories/avance-immediate";
+import { ETAPES_FINALES } from "@/lib/urssaf/branchement";
 
 export const dynamic = "force-dynamic";
 
@@ -53,6 +55,16 @@ export default async function FacturePage({
   // La facture n'est PAS bâtie à l'ouverture de l'écran : consulter n'est pas
   // clôturer. Elle naît de l'appui sur « Créer la facture », jamais d'un regard.
   const existante = await getFacturePourChantier(ctx, id);
+
+  // **L'avance immédiate** (lot 3) : `null` pour une entreprise non déclarée,
+  // dont les tables du lot 3 ne se lisent pas. Une demande encore en cours se
+  // relit chez l'Urssaf AVANT les règlements : versée, elle vient d'en noter un,
+  // et l'écran doit le montrer.
+  let avanceImmediate = existante ? await situationUrssafDeLaFacture(ctx, existante.facture.id) : null;
+  if (existante && avanceImmediate?.demande && !(ETAPES_FINALES as readonly string[]).includes(avanceImmediate.demande.etape)) {
+    await releverLesDemandes(ctx, new Date(), { factureId: existante.facture.id });
+    avanceImmediate = await situationUrssafDeLaFacture(ctx, existante.facture.id);
+  }
 
   const [entreprise, client] = await Promise.all([
     getEntreprise(ctx),
@@ -160,6 +172,7 @@ export default async function FacturePage({
           clientEmail={client?.email ?? null}
           canalClient={(client?.canalCommunication as "sms" | "email" | null) ?? null}
           situationEnvoi={situationEnvoi}
+          avanceImmediate={avanceImmediate}
           jetonDejaPrepare={envoiDejaFait?.jeton ?? null}
           jetonAcquittePrepare={jetonAcquitte}
           avoirs={avoirs}

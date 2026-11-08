@@ -23,7 +23,10 @@ export default function CaseServicesALaPersonne({
   enCours = false,
   refus,
   onBasculer,
+  children,
 }: {
+  /** Ce qui suit la case sur la facture d'un client inscrit : l'addition de l'avance immédiate (lot 3). */
+  children?: React.ReactNode;
   coche: boolean;
   /** « Mr. Lambert récupère 252,00 € sur ses impôts », ou « Devis normal ». */
   sous: string;
@@ -67,6 +70,7 @@ export default function CaseServicesALaPersonne({
           {refus}
         </p>
       )}
+      {children}
     </section>
   );
 }

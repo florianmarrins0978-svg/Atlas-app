@@ -89,6 +89,13 @@ function d(x: string): Decimal {
  * saisi deux fois, ne doit pas faire attester plus que ce que le client doit.
  * Atlas ne note pas les remboursements ; le plafond tient leur place, au plus
  * juste de ce qu'il sait.
+ *
+ * **Un versement de l'avance immédiate ne compte pas** (lot 3, migration
+ * 0180). L'Urssaf y a versé toute la facture : elle a déjà avancé la moitié au
+ * client, et transmet elle-même ses paiements aux impôts. L'attester ici
+ * ferait compter ce crédit une seconde fois sur sa déclaration ; c'est le
+ * sens qui ne coûte rien à personne, et sa planche le laisse « À trancher »
+ * (`TODO.md`).
  */
 export function acquitteDansLAnnee(f: FactureAttestable, annee: number): string {
   const du = `${annee}-01-01`;
@@ -98,7 +105,7 @@ export function acquitteDansLAnnee(f: FactureAttestable, annee: number): string 
   let pendant = new Decimal(0);
   for (const r of f.reglements) {
     const m = d(r.montant);
-    if (!m.isPositive()) continue;
+    if (!m.isPositive() || r.moyen === "avance_immediate") continue;
     if (r.date < du) avant = avant.plus(m);
     else if (r.date < au) pendant = pendant.plus(m);
   }
@@ -114,8 +121,11 @@ export type HeureEnregistree = { chantierId: string; jour: string; minutes: numb
 /** Une ligne du tableau : le nom est résolu, ou `null` s'il manque encore. */
 export type InterventionAttestee = { jour: string; minutes: number; numero: number; nom: string | null };
 
-/** Un moyen que la phrase sait écrire ; « autre » ne dit rien de ce qu'il était. */
-export type MoyenConnu = Exclude<MoyenDePaiement, "autre">;
+/**
+ * Un moyen que la phrase sait écrire ; « autre » ne dit rien de ce qu'il était,
+ * et l'avance immédiate n'est jamais attestée (`acquitteDansLAnnee`).
+ */
+export type MoyenConnu = Exclude<MoyenDePaiement, "autre" | "avance_immediate">;
 
 export type AttestationCalculee = {
   annee: number;
@@ -163,7 +173,7 @@ export function calculerLAttestation(p: {
     comptees.push(f);
     montant = montant.plus(part);
     for (const r of f.reglements) {
-      if (r.date < du || r.date >= au || !d(r.montant).isPositive()) continue;
+      if (r.date < du || r.date >= au || !d(r.montant).isPositive() || r.moyen === "avance_immediate") continue;
       if (r.moyen && r.moyen !== "autre") moyens.add(r.moyen);
       else inconnu = true;
     }

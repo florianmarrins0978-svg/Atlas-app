@@ -17,6 +17,7 @@ import { garderLaPage } from "@/server/garde-page";
 import { compteDeLaFranchise } from "@/server/repositories/franchise-plafond";
 import { CompteurDeLaFranchise } from "@/components/atlas/FranchiseDeTva";
 import { compteDeLActiviteACote } from "@/server/repositories/services-a-la-personne";
+import { liaisonUrssaf } from "@/server/repositories/avance-immediate";
 
 export const dynamic = "force-dynamic";
 
@@ -67,6 +68,10 @@ export default async function IdentitePage() {
   // Le compte de l'activité à côté (migration 0178) : lu même éteint, comme la
   // franchise, pour paraître dès qu'il allume l'interrupteur.
   const activiteACote = await compteDeLActiviteACote(ctx);
+  // La liaison avec l'Urssaf (migration 0180), lue seulement pour une
+  // entreprise déclarée : une base où 0180 manquerait encore ne fait pas
+  // tomber Mon entreprise. Lue sans ses codes, qui ne quittent pas le serveur.
+  const liaison = e?.sapDeclaree ? await liaisonUrssaf(ctx) : null;
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -113,6 +118,7 @@ export default async function IdentitePage() {
           logoDepose: !!e?.sapLogoCle,
         }}
         compteActiviteACote={activiteACote}
+        liaisonUrssaf={liaison ? { relieeLe: jourIso(liaison.relieeLe), aRefaire: liaison.aRefaire } : null}
         declarations={
           <>
             <PeriodiciteTvaReglage initiale={periodicite} />

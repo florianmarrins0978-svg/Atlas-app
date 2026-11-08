@@ -5,6 +5,7 @@ import {
   chantiers,
   clients,
   contratsEntretien,
+  inscriptionsUrssaf,
   devis,
   envoisDevis,
   factures,
@@ -656,6 +657,17 @@ export async function effacerClientDans(
       )
     )) as { rowCount?: number };
   detail.contrats = rContrats?.rowCount ?? 0;
+
+  // **Son inscription à l'Urssaf part avec lui**, même quand une pièce le
+  // retient (migration 0180) : sa date de naissance et son identifiant chez
+  // l'Urssaf ne servent qu'à envoyer de nouvelles factures, et il n'y en aura
+  // plus. Les demandes déjà parties restent sur leurs factures.
+  const rInscription = (await tx
+    .delete(inscriptionsUrssaf)
+    .where(and(eq(inscriptionsUrssaf.clientId, clientId), eq(inscriptionsUrssaf.entrepriseId, ctx.entrepriseId)))) as {
+    rowCount?: number;
+  };
+  detail.inscriptionUrssaf = rInscription?.rowCount ?? 0;
 
   const echeance = pieces.length > 0 ? pieces.map((p) => p.jusquAu).sort().at(-1) ?? null : null;
   const motif = motifConservation(pieces.length, echeance ? new Date(`${echeance}T00:00:00Z`) : null);

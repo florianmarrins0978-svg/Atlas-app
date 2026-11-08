@@ -28,6 +28,7 @@ import { lireDevisQuiFaitFoi } from "./devis";
 import { genererPdfFacture, type FacturePdfData } from "../pdf/facture-pdf";
 import { fabriquerFactureX, pieceDeLaFacture } from "../pdf/facture-x-pdf";
 import { deposerDansLaTransaction, marquerLaPlateformeCoupee, plateformePourDeposer } from "./plateforme-facture";
+import { transmettreALUrssafDansLaTransaction } from "./avance-immediate";
 import type { Refus as RefusDeLaPlateforme } from "../plateformes/api-commune";
 import { enregistrerObjet } from "../storage";
 import { jourIso } from "../../lib/jour";
@@ -2302,15 +2303,35 @@ export class FacturePasPriseParLaPlateformeError extends Error {
   }
 }
 
+/**
+ * L'Urssaf n'a pas pris la demande de paiement : rien n'est émis, le
+ * brouillon reste, comme pour la plateforme (lot 3, `ARCHITECTURE.md` §572).
+ * Le message est la phrase rendue au patron : un refus de la règle (« Une
+ * facture par mois du calendrier ») ou celui de l'Urssaf.
+ */
+export class FacturePasPriseParLUrssafError extends Error {
+  constructor(raison: string) {
+    super(raison);
+    this.name = "FacturePasPriseParLUrssafError";
+  }
+}
+
 export async function emettreFacture(
   ctx: Ctx,
   factureId: string,
   maintenant: Date = new Date(),
-  /** Son « L'envoyer sans TVA », après l'arrêt du plafond : rien d'autre ne le pose. */
-  { malgreLePlafond = false }: { malgreLePlafond?: boolean } = {}
+  {
+    malgreLePlafond = false,
+    versLUrssaf = false,
+  }: {
+    /** Son « L'envoyer sans TVA », après l'arrêt du plafond : rien d'autre ne le pose. */
+    malgreLePlafond?: boolean;
+    /** « Envoyer à l'Urssaf » : la demande de paiement part dans la même transaction (lot 3). */
+    versLUrssaf?: boolean;
+  } = {}
 ) {
   try {
-    return await emettreDansLaBase(ctx, factureId, maintenant, malgreLePlafond);
+    return await emettreDansLaBase(ctx, factureId, maintenant, malgreLePlafond, versLUrssaf);
   } catch (err) {
     // **Après le retour en arrière**, sinon la marque partirait avec lui : la
     // liaison dit « coupée » jusqu'à ce qu'il remplace ses identifiants.
@@ -2321,7 +2342,7 @@ export async function emettreFacture(
   }
 }
 
-async function emettreDansLaBase(ctx: Ctx, factureId: string, maintenant: Date, malgreLePlafond: boolean) {
+async function emettreDansLaBase(ctx: Ctx, factureId: string, maintenant: Date, malgreLePlafond: boolean, versLUrssaf: boolean) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [avant] = await tx.select().from(factures).where(eq(factures.id, factureId)).limit(1);
     if (!avant) throw new Error("Facture introuvable");
@@ -2480,6 +2501,16 @@ async function emettreDansLaBase(ctx: Ctx, factureId: string, maintenant: Date, 
         pdf: pdfBytes,
       });
       if (!depot.ok) throw new FacturePasPriseParLaPlateformeError(depot);
+    }
+
+    // **L'avance immédiate, en dernier aussi, et pour la même raison** (lot 3) :
+    // la facture est écrite émise, son numéro et sa date sont ceux qui partent ;
+    // un refus de l'Urssaf défait tout, et la facture reste un brouillon. Une
+    // facture acceptée est chez l'Urssaf ET arrêtée ici. La plateforme ne sert
+    // qu'une entreprise cliente, l'Urssaf qu'un particulier : jamais les deux.
+    if (versLUrssaf) {
+      const envoi = await transmettreALUrssafDansLaTransaction(tx, ctx, facture.id, maintenant);
+      if (!envoi.ok) throw new FacturePasPriseParLUrssafError(envoi.raison);
     }
 
     return facture;

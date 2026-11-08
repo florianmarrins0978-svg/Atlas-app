@@ -174,6 +174,16 @@ export const LIMITES = {
    */
   ouvrirLePaiement: { max: 6, fenetreMs: 60 * 1000 },
   /**
+   * Relier l'Urssaf, y inscrire un client, lui envoyer une facture (lot 3 de
+   * l'avance immédiate), compté PAR ENTREPRISE. Chacun de ces appuis part
+   * chez l'Urssaf avec les codes de l'artisan : un doigt resté appuyé ne doit
+   * pas faire couper sa liaison par l'Urssaf. Dix par minute couvrent une
+   * faute de frappe corrigée, une inscription refaite, plusieurs factures de
+   * suite. Les relectures à l'ouverture des écrans n'y passent pas : elles
+   * sont déjà espacées de cinq minutes (`aRelire`).
+   */
+  urssaf: { max: 10, fenetreMs: 60 * 1000 },
+  /**
    * « Recevoir un code » du mot de passe oublié, compté par SOURCE.
    *
    * Chaque adresse est déjà bornée à trois codes par quart d'heure, en base

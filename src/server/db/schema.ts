@@ -2773,7 +2773,7 @@ export const paiementsFacture = pgTable(
     /** Date civile : c'est elle qui décide du mois ou du trimestre déclaré. */
     datePaiement: date("date_paiement").notNull(),
     montant: numeric("montant", { precision: 12, scale: 2 }).notNull(),
-    moyen: text("moyen", { enum: ["virement", "cheque", "especes", "carte", "autre"] }),
+    moyen: text("moyen", { enum: ["virement", "cheque", "especes", "carte", "avance_immediate", "autre"] }),
     note: text("note"),
     /** Le numéro du chèque (migration 0092) — « chèque n° 1806028 » sur la facture. */
     numero: text("numero"),
@@ -2817,7 +2817,7 @@ export const reglementsRetires = pgTable(
     factureId: uuid("facture_id").notNull(),
     datePaiement: date("date_paiement").notNull(),
     montant: numeric("montant", { precision: 12, scale: 2 }).notNull(),
-    moyen: text("moyen", { enum: ["virement", "cheque", "especes", "carte", "autre"] }),
+    moyen: text("moyen", { enum: ["virement", "cheque", "especes", "carte", "avance_immediate", "autre"] }),
     note: text("note"),
     numero: text("numero"),
     libelle: text("libelle"),
@@ -4520,6 +4520,98 @@ export const liaisonsPlateformes = pgTable("liaisons_plateformes", {
   createdBy: uuid("created_by").references(() => users.id),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/**
+ * LA LIAISON AVEC L'URSSAF pour l'avance immédiate (migration 0180,
+ * `ARCHITECTURE.md` §572). Une par entreprise. **Les deux codes sont chiffrés
+ * au repos** (domaine « urssaf ») et ne se lisent en clair que dans le serveur,
+ * au moment d'appeler l'Urssaf (`src/server/repositories/avance-immediate.ts`).
+ */
+export const liaisonsUrssaf = pgTable("liaisons_urssaf", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  entrepriseId: uuid("entreprise_id")
+    .notNull()
+    .unique("liaisons_urssaf_une_par_entreprise")
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  clientIdChiffre: text("client_id_chiffre").notNull(),
+  clientSecretChiffre: text("client_secret_chiffre").notNull(),
+  idTiersFacturation: text("id_tiers_facturation").notNull(),
+  codeNature: text("code_nature").notNull(),
+  relieeLe: timestamp("reliee_le", { withTimezone: true }).notNull().defaultNow(),
+  relieePar: uuid("reliee_par").references(() => users.id, { onDelete: "set null" }),
+});
+
+/**
+ * L'INSCRIPTION D'UN CLIENT À L'URSSAF (migration 0180). **Ni IBAN ni BIC** :
+ * ils partent à l'Urssaf et ne se gardent pas. La date de naissance, si :
+ * chaque demande de paiement la porte.
+ */
+export const inscriptionsUrssaf = pgTable(
+  "inscriptions_urssaf",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    clientId: uuid("client_id").notNull(),
+    idClientUrssaf: text("id_client_urssaf").notNull(),
+    dateNaissance: date("date_naissance").notNull(),
+    etat: text("etat", { enum: ["en_attente", "inscrit"] }).notNull().default("en_attente"),
+    etatLe: timestamp("etat_le", { withTimezone: true }).notNull().defaultNow(),
+    demandeeLe: timestamp("demandee_le", { withTimezone: true }).notNull().defaultNow(),
+    lueLe: timestamp("lue_le", { withTimezone: true }),
+    inscritePar: uuid("inscrite_par").references(() => users.id, { onDelete: "set null" }),
+  },
+  (t) => [
+    unique("inscriptions_urssaf_un_par_client").on(t.entrepriseId, t.clientId),
+    foreignKey({
+      columns: [t.clientId, t.entrepriseId],
+      foreignColumns: [clients.id, clients.entrepriseId],
+      name: "inscriptions_urssaf_client_fk",
+    }).onDelete("cascade"),
+  ]
+);
+
+/**
+ * LA DEMANDE DE PAIEMENT D'UNE FACTURE À L'URSSAF (migration 0180). Une par
+ * facture, écrite dans la transaction qui l'arrête ; l'étape est relue chez
+ * l'Urssaf à l'ouverture de la facture et de Terminés.
+ */
+export const demandesUrssaf = pgTable(
+  "demandes_urssaf",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    factureId: uuid("facture_id").notNull(),
+    idDemandePaiement: text("id_demande_paiement").notNull(),
+    etape: text("etape", {
+      enum: ["integree", "en-attente-du-client", "validee", "refusee", "prelevee", "impayee", "versee", "annulee", "recouvree", "inconnue"],
+    })
+      .notNull()
+      .default("integree"),
+    libelleUrssaf: text("libelle_urssaf"),
+    envoyeeLe: timestamp("envoyee_le", { withTimezone: true }).notNull().defaultNow(),
+    etapeLe: timestamp("etape_le", { withTimezone: true }).notNull().defaultNow(),
+    valideeLe: date("validee_le"),
+    lueLe: timestamp("lue_le", { withTimezone: true }),
+    montantVerse: numeric("montant_verse", { precision: 12, scale: 2 }),
+    verseeLe: date("versee_le"),
+    paiementId: uuid("paiement_id"),
+    envoyeePar: uuid("envoyee_par").references(() => users.id, { onDelete: "set null" }),
+  },
+  (t) => [
+    unique("demandes_urssaf_une_par_facture").on(t.entrepriseId, t.factureId),
+    unique("demandes_urssaf_id_uk").on(t.entrepriseId, t.idDemandePaiement),
+    index("demandes_urssaf_a_relire_idx").on(t.entrepriseId, t.etape),
+    foreignKey({
+      columns: [t.factureId, t.entrepriseId],
+      foreignColumns: [factures.id, factures.entrepriseId],
+      name: "demandes_urssaf_facture_fk",
+    }).onDelete("cascade"),
+  ]
+);
 
 /** Une facture déposée sur la plateforme, et ce que la plateforme en a dit (0169). */
 export const transmissionsFactures = pgTable("transmissions_factures", {

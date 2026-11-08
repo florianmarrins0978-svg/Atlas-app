@@ -31,6 +31,7 @@ import ChoixEnMots from "@/components/atlas/reglages/ChoixEnMots";
 import VoirUnExemple, { ADRESSE_DE_L_EXEMPLE } from "../VoirUnExemple";
 import Picto from "@/components/atlas/reglages/Picto";
 import ServicesALaPersonne, { type EtatServicesALaPersonne } from "./ServicesALaPersonne";
+import AvanceImmediate, { type EtatLiaisonUrssaf } from "./AvanceImmediate";
 import { ceQuiManqueALaDeclaration, type CompteDeLActiviteACote } from "@/lib/services-a-la-personne";
 
 /**
@@ -140,7 +141,10 @@ export default function IdentiteClient({
   remarquesAttestation,
   servicesALaPersonne: servicesALaPersonneInitiaux,
   compteActiviteACote,
+  liaisonUrssaf,
 }: {
+  /** La liaison avec l'Urssaf (migration 0180), sans ses codes ; `null` : pas reliée, ou pas lue. */
+  liaisonUrssaf: EtatLiaisonUrssaf;
   initial: Identite;
   /** Les services à la personne tels que la base les porte (migration 0178). */
   servicesALaPersonne: EtatServicesALaPersonne;
@@ -589,6 +593,12 @@ export default function IdentiteClient({
         onEtat={(partiel) => setSap((avant) => ({ ...avant, ...partiel }))}
         compte={compteActiviteACote}
       />
+
+      {/* **L'avance immédiate, juste dessous** (lot 3) : elle n'a de sens que
+          pour une entreprise déclarée, et suit donc l'interrupteur du dessus.
+          Une liaison non lue (l'entreprise n'était pas déclarée à l'ouverture)
+          se montre « pas reliée » : relier à nouveau ne fait que remplacer. */}
+      {sap.declaree && <AvanceImmediate initiale={liaisonUrssaf} />}
 
       {/* **Voir un exemple, sous le pouce** (planche soignée du 26 octobre
           2026) : il attendait au bout de cinq écrans de défilement. Posé AVANT

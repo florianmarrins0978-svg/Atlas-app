@@ -34,7 +34,7 @@ import { avoirsDesFactures } from "./avoirs";
 
 export type PaiementEnregistre = Paiement & {
   id: string;
-  moyen: "virement" | "cheque" | "especes" | "carte" | "autre" | null;
+  moyen: MoyenDePaiement | null;
   note: string | null;
   /** `reprise` : supposé par la migration 0045, et l'écran doit le dire. */
   origine: "saisi" | "reprise" | "banque";

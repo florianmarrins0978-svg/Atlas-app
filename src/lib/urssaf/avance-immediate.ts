@@ -358,6 +358,9 @@ export function demandePaiementPourUrssaf(f: FactureAtlas): Verdict<DemandePaiem
     const qui = `Ligne ${i + 1}`;
     if (vide(l.codeNature)) manques.push({ champ: `lignes.${i}.codeNature`, libelle: `${qui} : nature de la prestation`, raison: "absent" });
     if (!(l.quantite > 0)) manques.push({ champ: `lignes.${i}.quantite`, libelle: `${qui} : quantité`, raison: "format" });
+    // Une prestation à zéro ou en négatif (une remise posée comme une ligne)
+    // ne se paie pas : l'Urssaf n'avance rien sur un montant qui n'est pas dû.
+    if (l.ttcCentimes <= 0) manques.push({ champ: `lignes.${i}.ttc`, libelle: `${qui} : un montant nul ou négatif`, raison: "format" });
     if (l.htCentimes + l.tvaCentimes !== l.ttcCentimes) manques.push({ champ: `lignes.${i}.montants`, libelle: `${qui} : HT plus TVA ne fait pas le TTC`, raison: "format" });
     if (Math.round(l.quantite * l.unitaireTTCCentimes) !== l.ttcCentimes) manques.push({ champ: `lignes.${i}.unitaire`, libelle: `${qui} : quantité fois prix ne fait pas le TTC`, raison: "format" });
   });

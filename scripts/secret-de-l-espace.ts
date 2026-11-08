@@ -55,6 +55,9 @@ const COLONNES: Array<{ table: string; cle: string; colonnes: string[]; domaine:
   // Le secret de la plateforme de facture électronique (0169) : il ouvre le
   // compte de facturation de l'artisan, et doit survivre au changement de clé.
   { table: "liaisons_plateformes", cle: "id", colonnes: ["secret_chiffre"], domaine: "plateforme-facture" },
+  // Les deux codes de l'Urssaf (0180) : ils font verser l'avance immédiate sur
+  // son compte, et un changement de clé ne doit pas couper sa liaison.
+  { table: "liaisons_urssaf", cle: "id", colonnes: ["client_id_chiffre", "client_secret_chiffre"], domaine: "urssaf" },
 ];
 
 type Bilan = { rechiffres: number; illisibles: number };

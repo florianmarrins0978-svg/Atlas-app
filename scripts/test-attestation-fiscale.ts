@@ -139,6 +139,16 @@ cas("un moyen « autre » ne se devine pas : la phrase n'en dit aucun", () => {
   assert.equal(nbsp(contenuDeLAttestationFiscale(ORGANISME, VASSEUR, c, "2027-01-12").total.libelle), "Payé en 2026");
 });
 
+cas("L'AVANCE IMMÉDIATE NE S'ATTESTE PAS : l'Urssaf a déjà avancé la moitié (lot 3)", () => {
+  // Versée par l'Urssaf, la facture est réglée en entier ; la compter ici
+  // ferait déclarer au client un crédit qu'il a déjà touché.
+  const parLUrssaf = facture({ id: "ai", reglements: [{ date: "2026-04-14", montant: "504.00", moyen: "avance_immediate" }] });
+  assert.equal(acquitteDansLAnnee(parLUrssaf, 2026), "0.00");
+  const c = calculerLAttestation({ annee: 2026, factures: [F1, parLUrssaf], heures: HEURES, nomsActuels: NOMS });
+  assert.equal(c.montant, "504.00", "seule la facture payée par virement compte");
+  assert.deepEqual(c.moyens, ["virement"], "la phrase ne dit pas l'avance immédiate");
+});
+
 cas("UNE FACTURE SANS HEURES N'INVENTE PAS DE DURÉE : elle est nommée, l'attestation reste à compléter", () => {
   const c = calculerLAttestation({ annee: 2026, factures: [F1, F2], heures: HEURES.filter((h) => h.chantierId !== "ch-2"), nomsActuels: NOMS });
   assert.deepEqual(c.facturesSansHeures, ["F2026-2"]);

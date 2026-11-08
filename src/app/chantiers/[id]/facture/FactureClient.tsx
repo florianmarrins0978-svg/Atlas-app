@@ -41,6 +41,9 @@ import {
 } from "./actions";
 import ListeDesManques from "@/components/atlas/ListeDesManques";
 import CaseServicesALaPersonne from "@/components/atlas/CaseServicesALaPersonne";
+import { AdditionDeLAvanceImmediate, EnvoyerALUrssaf, SuiviDeLUrssaf, quiPaie } from "./AvanceImmediateDeLaFacture";
+import type { SituationUrssafDeLaFacture } from "@/server/repositories/avance-immediate";
+import { envoiOrdinaireApres, pastilleDeLaDemande } from "@/lib/urssaf/branchement";
 import { phraseSousLaCase } from "@/lib/services-a-la-personne";
 import { ArretDuPlafond } from "@/components/atlas/FranchiseDeTva";
 import type { ArretDuPlafond as Arret } from "@/lib/franchise-plafond";
@@ -174,7 +177,14 @@ export default function FactureClient({
   avoirs,
   envoyeeLe,
   suite,
+  avanceImmediate = null,
 }: {
+  /**
+   * L'avance immédiate (lot 3), lue au serveur (`situationUrssafDeLaFacture`) :
+   * la facture part-elle à l'Urssaf, ce que la règle refuse, et la demande
+   * partie. `null` : entreprise non déclarée, rien à montrer.
+   */
+  avanceImmediate?: SituationUrssafDeLaFacture | null;
   /**
    * Le jour où le lien du client a été préparé, donc où la messagerie s'est
    * ouverte avec lui (`dernierEnvoiFacture`) : la pastille « Envoyée le » de
@@ -316,6 +326,9 @@ export default function FactureClient({
   }
   const [sapEnCours, setSapEnCours] = useState(false);
   const [refusSap, setRefusSap] = useState<string | null>(null);
+  // « Il paie autrement cette fois » (sa planche, lot 3) : l'envoi ordinaire
+  // revient, la case reste cochée et l'attestation de janvier la comptera.
+  const [paieAutrement, setPaieAutrement] = useState(false);
   async function basculerSap(coche: boolean) {
     if (!initialFacture) return;
     const avant = sap;
@@ -690,12 +703,27 @@ export default function FactureClient({
   /** Tout est réglé : c'est l'exemplaire acquitté qui part (23 octobre 2026). */
   const acquittee = estAcquittee(totaux.totalTtc, reglements);
   /**
+   * **L'avance immédiate** (lot 3) : une demande partie, la facture est chez
+   * l'Urssaf. Tant qu'elle y est, ni « Il m'a payé » ni le renvoi : le suivi dit
+   * la suite, et c'est l'Urssaf qui paie. Refusée par le client ou annulée,
+   * l'envoi ordinaire revient, sous « L'envoyer par SMS » (sa planche).
+   */
+  const demandeUrssaf = avanceImmediate?.demande ?? null;
+  const apresUnRefus = demandeUrssaf !== null && envoiOrdinaireApres(demandeUrssaf.etape);
+  const chezLUrssaf = demandeUrssaf !== null && demandeUrssaf.etape !== "versee" && !apresUnRefus;
+  /** Avant l'envoi : client inscrit, case cochée, et il n'a pas dit « il paie autrement ». */
+  const voieUrssaf = !emise && !!avanceImmediate?.versLUrssaf && sap && !paieAutrement;
+  /**
    * Le renvoi se déplie d'office quand c'est LUI qui reste à faire : la facture
    * arrêtée n'est jamais partie (le lien n'a pas pu se préparer, et c'est ce
    * bloc qui le rattrape), ou elle est soldée et l'exemplaire acquitté attend.
    * Le reste du temps, « Il m'a payé » est le geste, et le renvoi passe dessous.
+   * Refusée à l'Urssaf, elle attend son « L'envoyer par SMS » : jamais partie
+   * chez lui, elle ne se déplie pas d'office.
    */
-  const renvoiVisible = renvoiOuvert || !jetonDejaPrepare || acquittee;
+  const premierEnvoiApresRefus = apresUnRefus && !jetonDejaPrepare;
+  const renvoiVisible = premierEnvoiApresRefus ? renvoiOuvert : renvoiOuvert || !jetonDejaPrepare || acquittee;
+  const pastilleUrssaf = demandeUrssaf ? pastilleDeLaDemande(demandeUrssaf, initialFacture.clientNom, initialFacture.clientCivilite) : null;
 
   return (
     <div className="mt-5 flex flex-col gap-3 px-[22px]">
@@ -764,7 +792,12 @@ export default function FactureClient({
               n'a pas pu se préparer), elle le dit, en gris : c'est le bloc du
               renvoi, plus bas, qui le rattrape. */}
           {emise ? (
-            envoyeeLe ? (
+            // Partie par l'Urssaf (lot 3) : son état à elle, comme la planche.
+            pastilleUrssaf && !(apresUnRefus && envoyeeLe) ? (
+              <EtatEcrit ton={pastilleUrssaf.ton} dataAtlas="etat-facture">
+                {pastilleUrssaf.texte}
+              </EtatEcrit>
+            ) : envoyeeLe ? (
               <EtatEcrit ton="vert" dataAtlas="etat-facture">
                 Envoyée le {jourEtMois(envoyeeLe)}
               </EtatEcrit>
@@ -1190,7 +1223,17 @@ export default function FactureClient({
             clientCivilite: initialFacture.clientCivilite,
             totalTtc: totaux.totalTtc,
           })}
-        />
+        >
+          {/* L'addition de l'avance immédiate (lot 3) : un client inscrit, la
+              case cochée. Partie à l'Urssaf, elle reste : c'est ce qui a été
+              demandé. Refusée, elle part : il paie tout, comme aujourd'hui. */}
+          {sap && (voieUrssaf || (demandeUrssaf !== null && !apresUnRefus)) && (
+            <AdditionDeLAvanceImmediate
+              totalTtc={totaux.totalTtc}
+              qui={quiPaie(initialFacture.clientNom, initialFacture.clientCivilite)}
+            />
+          )}
+        </CaseServicesALaPersonne>
       )}
 
       {/* Les règlements reçus et le net à payer — **en lecture**. Sa correction
@@ -1252,9 +1295,23 @@ export default function FactureClient({
               **Ne pas le remettre au prochain doute** : une suite qui le
               réclamerait serait à corriger, pas l'écran (`CLAUDE.md` §5 bis). */}
 
+          {/* Le suivi de l'Urssaf (lot 3), sous « arrêtée » : envoyée,
+              validée, versée, ou refusée. */}
+          {demandeUrssaf && (
+            <div className="mt-3 w-full">
+              <SuiviDeLUrssaf
+                demande={demandeUrssaf}
+                totalTtc={totaux.totalTtc}
+                clientNom={initialFacture.clientNom}
+                clientCivilite={initialFacture.clientCivilite}
+              />
+            </div>
+          )}
+
           {/* « Mon client ne me paie pas », puis « Il m'a payé » : rendus au
-              serveur, qui sait si elle est encore due (`SuiteDeLaFacture`). */}
-          {suite}
+              serveur, qui sait si elle est encore due (`SuiteDeLaFacture`).
+              Chez l'Urssaf, c'est elle qui paie : ils attendent sa réponse. */}
+          {!chezLUrssaf && suite}
 
           {/* ─── LE RENVOI, SOUS LE GESTE QUI RESTE — sa planche du 2 novembre
               2026 : *« Envoyée, le bouton plein devient « Il m'a payé » : c'est
@@ -1270,7 +1327,7 @@ export default function FactureClient({
               message et le patron l'expédie depuis sa messagerie
               (`docs/A-FAIRE.md` §5). Soldée, il se déplie aussi : l'exemplaire
               acquitté est alors ce qui reste à envoyer. */}
-          {clientPublic ? (
+          {chezLUrssaf ? null : clientPublic ? (
             // **Une mairie : le PDF à déposer, pas un message** (22 octobre
             // 2026). C'est ce qui reste quand la feuille de partage n'a pas
             // suivi l'appui qui l'a arrêtée.
@@ -1322,10 +1379,23 @@ export default function FactureClient({
               className="mt-2 inline-flex min-h-[48px] items-center px-1 text-[16px] font-semibold"
               style={{ color: colors.rust }}
             >
-              Renvoyer par SMS ou e-mail
+              {/* Refusée à l'Urssaf, elle n'est jamais partie chez lui : c'est
+                  un premier envoi, par son canal (sa planche, lot 3). */}
+              {premierEnvoiApresRefus ? (canalEnvoi === "sms" ? "L'envoyer par SMS" : "L'envoyer par e-mail") : "Renvoyer par SMS ou e-mail"}
             </button>
           )}
         </section>
+      ) : voieUrssaf ? (
+        // **Un client inscrit, la case cochée : la facture part à l'Urssaf**
+        // (lot 3). « Il paie autrement cette fois » rend l'envoi ordinaire.
+        <EnvoyerALUrssaf
+          factureId={initialFacture.id}
+          totalTtc={totaux.totalTtc}
+          qui={quiPaie(initialFacture.clientNom, initialFacture.clientCivilite)}
+          manques={avanceImmediate?.manques ?? []}
+          verdictPossible={verdictEnvoi.possible}
+          onAutrement={() => setPaieAutrement(true)}
+        />
       ) : (
         <>
           {/* **L'encart du canal, à la forme de la fiche client — sa demande du

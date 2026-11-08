@@ -19,6 +19,7 @@ import { compteDeLaFranchise } from "@/server/repositories/franchise-plafond";
 import { LigneDeLaFranchise } from "@/components/atlas/FranchiseDeTva";
 import { ligneDesAttestations } from "@/server/repositories/attestations-fiscales";
 import LigneDesAttestations from "./LigneDesAttestations";
+import { releverLesDemandes } from "@/server/repositories/avance-immediate";
 
 export const dynamic = "force-dynamic";
 
@@ -62,6 +63,11 @@ export default async function TerminesPage({ searchParams }: { searchParams: Pro
   // paiement noté, sa demande du 25 septembre 2026).
   const { chantier: chantierDemande } = await searchParams;
   const ctx = await getCurrentCtx();
+  // **Les factures parties à l'Urssaf, relues d'abord** (lot 3) : une facture
+  // versée s'acquitte, et elle doit sortir de l'attente de paiement AVANT que
+  // l'écran ne la compte. Au plus une fois par quelques minutes, et rien pour
+  // une entreprise non déclarée ; une Urssaf muette laisse tout tel quel.
+  await releverLesDemandes(ctx);
   const chantiers = await listerChantiersTermines(ctx);
   const lignes = preparer(chantiers);
   // **Le mois du jour se décide ICI, sur le serveur.** Calculé dans le

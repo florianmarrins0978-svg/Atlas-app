@@ -126,6 +126,29 @@ Voir §8 pour les conditions à respecter pour qu'il fasse foi.
   politique de confidentialité `canevas-2`.
 - **Notre rôle** : responsable de traitement.
 
+### 2.7 L'avance immédiate du crédit d'impôt (8 novembre 2026, lot 3)
+
+- **Finalité** : inscrire un client particulier à l'Urssaf et lui faire payer la moitié de ses
+  factures de services à la personne, l'Urssaf versant la facture entière à l'artisan
+  (`ARCHITECTURE.md` §572).
+- **Base légale** : exécution du contrat entre l'artisan et son client, qui accepte lui-même son
+  inscription chez l'Urssaf (le dispositif est facultatif).
+- **Données transmises à l'Urssaf** : civilité, nom de naissance, prénoms, date et lieu de
+  naissance, portable, e-mail, adresse postale, **IBAN, BIC et titulaire du compte** ; puis, pour
+  chaque facture, ses montants, ses dates et la date de naissance du client.
+- **Données gardées par Atlas** (`inscriptions_urssaf`, `demandes_urssaf`) : l'identifiant que
+  l'Urssaf rend, la **date de naissance** (chaque demande de paiement l'exige), l'état de
+  l'inscription et celui de chaque demande. **L'IBAN et le BIC ne sont jamais gardés** : la table
+  n'a pas de colonne pour eux. Ni les prénoms, ni le lieu de naissance.
+- **Les codes de l'artisan** (`liaisons_urssaf`) : chiffrés au repos, jamais rendus à un écran ni
+  mis dans la sauvegarde.
+- **Durée** : tant que le client a une fiche ; son effacement emporte l'inscription, même quand
+  une facture retient la fiche.
+- **Destinataire** : l'Urssaf, organisme public, au titre du dispositif de l'État (ce n'est pas un
+  sous-traitant d'Atlas). Le lieu de naissance se cherche par son nom et son département au
+  découpage administratif de l'État, l'adresse de la fiche à la Base Adresse Nationale (§3).
+- **Notre rôle** : sous-traitant.
+
 ## 3. Sous-traitants ultérieurs
 
 L'article 28.2 impose que ces destinataires soient **autorisés par le
@@ -149,7 +172,8 @@ contrat doit refléter ce choix.
 | Supervision des erreurs | Sentry (optionnel) | Contextes d'erreur — **peuvent contenir des données personnelles** | Filtrer les contextes, ou renoncer à Sentry |
 | Envoi de SMS | à choisir | Numéro de téléphone du client, lien vers son devis | Région UE, durée de rétention des messages chez le fournisseur |
 | Envoi d'e-mails | à choisir | Adresse du client, devis et facture en pièce jointe | Idem |
-| Aide à la saisie d'adresse | Base Adresse Nationale (État français) | **Uniquement la rue en cours de frappe** — jamais le nom du client, jamais le chantier | Service public français, hébergé en France, sans compte ni clé. Éprouvé : `scripts/test-recherche-adresse.ts` vérifie que rien d'autre ne part |
+| Aide à la saisie d'adresse | Base Adresse Nationale (État français) | **Uniquement la rue en cours de frappe** — jamais le nom du client, jamais le chantier. **Et, à l'inscription d'un client à l'avance immédiate (§2.7), son adresse entière, sans son nom**, pour en tirer le code de sa commune | Service public français, hébergé en France, sans compte ni clé. Éprouvé : `scripts/test-recherche-adresse.ts` vérifie que rien d'autre ne part ; `scripts/test-avance-immediate-faux-serveur.ts` pour l'inscription |
+| Commune de naissance (avance immédiate) | Découpage administratif de l'État (geo.api.gouv.fr) | **Un nom de commune et un numéro de département**, jamais le nom du client | Service public français, sans compte ni clé (`src/server/adresses/communes.ts`) |
 
 **L'aide à la saisie d'adresse mérite une note à part**, parce qu'elle a été
 choisie *contre* la solution évidente. Le patron voulait la commodité qu'il

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { exigerGestionDevis } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
+import { devisSansAcompte } from "@/server/repositories/avance-immediate";
 import { retenirLecon } from "@/server/repositories/lecons-prix";
 import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
 import { PreuveRecenteExigeeError } from "@/server/preuve-recente";
@@ -461,6 +462,12 @@ function montantDeLaLigne(quantite: string, prixUnitaire: string): string {
 export async function ajouterAcompteAction(devisId: string, taux?: string) {
   const ctx = await getCurrentCtx();
   await exigerGestionDevis(ctx, "ajouter un acompte au devis");
+  // **Un client inscrit à l'avance immédiate n'a pas d'acompte** (lot 3), par
+  // la règle que l'écran suit pour cacher le geste (`sansAcompteAuDevis`) : un
+  // acompte encaissé puis déclaré à l'Urssaf oblige à une garantie financière.
+  if (await devisSansAcompte(ctx, devisId)) {
+    return { ok: false as const, raison: "Pas d'acompte : il est inscrit à l'avance immédiate." };
+  }
   return poserAcompteSuivant(ctx, devisId, taux);
 }
 
