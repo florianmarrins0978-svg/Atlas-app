@@ -1,5 +1,25 @@
 # Prochaines tâches
 
+## ⏳ À CHOISIR PAR LUI (8 novembre 2026) : vos entrées et sorties, l'écran A ou B, et l'assistant
+
+Sa question, sur « Pour mon comptable » : *« c'est normal que quand je lui
+demande mes entrées et mes sorties de l'année, il me les trouve pas »*. Puis :
+*« fais une maquette d'abord »*.
+
+**Lu dans le code** : l'écran ne lit que le dossier en cours
+(`lignesDuReleve(ctx, du, au)`, chez lui depuis le 28 octobre) et intitule
+« 2026 » ce qui n'en est qu'une dizaine de jours ; la banque est pourtant lue
+plus loin (`NIVEAUX_D_HISTORIQUE_JOURS`) et gardée (`ajouterMouvements`) ; aucun
+outil de l'assistant (`src/server/ai/tools/`) ne lit le relevé.
+
+**La planche** : `appli/soignee/banque-entrees-sorties.html`. Écran A : « 2026 »
+devient « Depuis le 28 octobre ». Écran B : « Année » compte tout 2026, le
+dossier reste dit à part. L'assistant : entrées, sorties, reste, sur une
+période ; si la banque n'a donné qu'une partie, il le dit avec la date.
+
+**Aussi à trancher** : l'assistant donne-t-il le détail mois par mois quand on
+demande l'année ? Niveau 3 au codage (argent).
+
 ## ⏳ À CHOISIR PAR LUI (8 novembre 2026) : au planning, un client sans fiche, A ou B
 
 Sa demande, photo du planning à l'appui : *« soit rechercher un client, soit
