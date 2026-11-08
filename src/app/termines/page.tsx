@@ -17,6 +17,8 @@ import { ligneAJustifier, lignesDuReleve } from "@/server/repositories/pour-mon-
 import { garderLaPage } from "@/server/garde-page";
 import { compteDeLaFranchise } from "@/server/repositories/franchise-plafond";
 import { LigneDeLaFranchise } from "@/components/atlas/FranchiseDeTva";
+import { ligneDesAttestations } from "@/server/repositories/attestations-fiscales";
+import LigneDesAttestations from "./LigneDesAttestations";
 
 export const dynamic = "force-dynamic";
 
@@ -97,6 +99,10 @@ export default async function TerminesPage({ searchParams }: { searchParams: Pro
   // Le même « soldée » que l'écran « Il ne vous paiera pas » lit pour refuser :
   // une seule règle décide si la porte existe et si elle s'ouvre.
   const chantiersSoldes = (await facturesAvecPaiements(ctx)).filter((f) => f.etat === "soldee").map((f) => f.chantierId);
+  // Les attestations fiscales de ses clients (sa planche du 8 novembre 2026) :
+  // du 1er janvier au 31 mars, pour une entreprise déclarée, et rien sinon.
+  // Hors de cette saison, aucune requête ne part (`ligneDesAttestations`).
+  const attestations = await ligneDesAttestations(ctx);
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -232,6 +238,7 @@ export default async function TerminesPage({ searchParams }: { searchParams: Pro
             nonPayees={nonPayees.length}
             chantierDemande={chantierDemande ?? null}
             chantiersSoldes={chantiersSoldes}
+            attestations={attestations ? <LigneDesAttestations {...attestations} /> : null}
           />
         </div>
 

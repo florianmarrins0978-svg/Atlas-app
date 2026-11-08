@@ -2273,7 +2273,50 @@ proxy. Les deux rouges (`test-connexion-service-en-panne-e2e`,
 (`verifier-rouge-prealable`), et repassent verts dans le complément d'après
 fusion (`verifier-ce-qui-a-bouge`).
 
-## ⏳ LE CRÉDIT D'IMPÔT DE SES CLIENTS : LOT 1 CODÉ LE 8 NOVEMBRE 2026, BATTERIE ET LOTS SUIVANTS À FAIRE (8 octobre 2026)
+## ⏳ LE CRÉDIT D'IMPÔT DE SES CLIENTS : LOTS 1 ET 2 CODÉS LE 8 NOVEMBRE 2026, BATTERIE ET LOTS SUIVANTS À FAIRE (8 octobre 2026)
+
+**LOT 2, CODÉ LE 8 NOVEMBRE 2026 SUR LA MÊME CONSIGNE**, migration 0179,
+`ARCHITECTURE.md` §571 : les heures du retour du jour, et l'attestation de
+janvier.
+
+| | |
+|---|---|
+| **codé** | sur la fiche d'intervention, « Combien d'heures ? » (entreprise déclarée, case du chantier retenue) : une ligne par salarié coché ce jour-là, le patron seul sans salarié, deux listes 0 à 24 h et 00 à 59, « Pour l'attestation de Mr. X. » ; les heures partent avec le retour, dans sa transaction. En janvier, jusqu'au 31 mars : la ligne « Attestations fiscales 2026 » de Terminés, la liste des clients (interventions, montant, état), l'attestation de chacun relue à l'écran et en PDF, envoyée seule par la feuille de partage, la trace de chaque envoi, « À renvoyer » si elle a changé depuis |
+| **pas codé** | la signature dessinée ; Cesu, APA, PCH et avance immédiate déduits du montant (aucun moyen de règlement ne les dit) ; le numéro du compte débité ; une nature autre que « petits travaux de jardinage » ; l'archivage du PDF envoyé |
+| **pas éprouvé** | la migration 0179 n'a jamais été appliquée ; `scripts/test-attestations-fiscales-db.ts` est écrite, pas jouée ; aucun écran regardé (la ligne de Terminés ne paraît qu'en janvier : pour la voir avant, une date posée à la main en essai). **La batterie (niveau 3 : argent et `drizzle/`) se joue avec son accord**, puis la fiche d'intervention d'un chantier coché et les trois écrans des attestations se regardent |
+
+**Tranché seul au lot 2, à lui dire :**
+
+- **le montant est ce qui a été PAYÉ dans l'année** (les règlements datés de
+  l'année, plafonnés à la facture après avoirs), pas « les factures de l'année
+  réglées » : une facture payée moitié en décembre, moitié en janvier aurait
+  perdu sa première moitié. Les interventions sont celles des chantiers payés
+  dans l'année, à leurs dates ;
+- **les heures se tapent aussi sur un chantier sans devis** quand sa facture
+  prendra la case (un passage d'entretien n'a jamais de devis) : la case lue
+  est celle de la facture, sinon du devis, sinon la règle d'une pièce neuve ;
+- **une facture payée sans aucune heure enregistrée rend l'attestation « À
+  compléter »**, et elle ne part pas : aucune durée n'est devinée. Conséquence
+  à trancher par lui : **toutes les interventions d'avant ce lot n'ont pas
+  d'heures**, donc les attestations de 2026 de ses clients seront à compléter
+  en janvier. Deux voies : une saisie de rattrapage sur l'attestation (contre
+  sa règle du 9 octobre, « le jour même »), ou les faire à la main cette
+  année ;
+- **pas de « gérant » ni de « président » deviné** : la phrase dit « Je
+  soussigné Thomas Leroy, pour Jardins Démo » (soussignée pour Mme), le nom du
+  premier compte propriétaire ; sans nom, l'entreprise certifie seule. Un
+  réglage « qualité du signataire » est à décider s'il la veut ;
+- **le nom de chaque intervenant est gardé le jour de l'intervention** ; un
+  salarié sans nom écrit (« Salarié 3 » à l'écran) rend l'attestation à
+  compléter, jusqu'à ce qu'il le nomme dans Équipe ;
+- **l'attestation part par la feuille de partage du téléphone**, comme la
+  fiche de sécurité : elle vit derrière la connexion, et un lien public aurait
+  demandé une porte de plus ; « Par e-mail, comme ses factures » dit le canal
+  de sa dernière facture partie ;
+- **une attestation partie redevient « À renvoyer »** dès que ce qu'Atlas
+  compose ne lui ressemble plus (un règlement, une adresse corrigée) ;
+- **la nature est « petits travaux de jardinage »** pour toutes les
+  entreprises ; une autre activité déclarée demandera un réglage.
 
 **LOT 1, CODÉ LE 8 NOVEMBRE 2026 SUR SA CONSIGNE** (*« Code tout ce que tu peux
 coder et ne lance pas de batterie »*), migration 0178, `ARCHITECTURE.md` §570.
@@ -2281,7 +2324,7 @@ coder et ne lance pas de batterie »*), migration 0178, `ARCHITECTURE.md` §570.
 | | |
 |---|---|
 | **codé** | Mon entreprise : « Services à la personne » après le médiateur (déclarée sur NOVA, n° de déclaration, déclarée le, logo à déposer, activité à côté et son compte contre 30 %) ; la case du devis et sa phrase ; la facture qui la reprend et se décoche avant l'envoi ; le logo et la mention sur les deux PDF ; le n° d'intervenant dans Équipe, le patron n° 0 |
-| **pas codé** | la signature ; le retour du jour (les heures) ; l'attestation de janvier ; Cesu et avance immédiate au règlement ; pas d'acompte pour un client inscrit ; l'avance immédiate entière (codes, inscription, envoi, suivi) |
+| **pas codé** | la signature ; ~~le retour du jour (les heures) ; l'attestation de janvier~~ (lot 2, ci-dessus) ; Cesu et avance immédiate au règlement ; pas d'acompte pour un client inscrit ; l'avance immédiate entière (codes, inscription, envoi, suivi) |
 | **pas éprouvé** | la migration n'a jamais été appliquée ; `scripts/test-services-a-la-personne-db.ts` est écrite, pas jouée ; aucun écran regardé. **La batterie (niveau 3 : argent et `drizzle/`) se joue avec son accord**, puis les trois écrans se regardent (`npm run voir -- /reglages/identite`, un devis, une facture, Équipe) |
 
 **Tranché seul en codant, à lui dire :**
@@ -2314,8 +2357,8 @@ d'impôts ». C'est le crédit d'impôt de 50 % des services à la personne
 (article 199 sexdecies du CGI), qui dépend d'abord de la déclaration de son
 entreprise (NOVA, numéro SAP). Planche `appli/credit-d-impot.html` : le numéro
 dans Mon entreprise, la case sur la facture, l'attestation fiscale annuelle
-dans Terminés. Le lot 1 est codé depuis le 8 novembre 2026 (ci-dessus) ; le
-reste ne l'est pas.
+dans Terminés. Les lots 1 et 2 sont codés depuis le 8 novembre 2026 (ci-dessus) ;
+le reste ne l'est pas.
 
 **Tranché le 9 octobre 2026 : les heures se tapent LE JOUR DE
 L'INTERVENTION**, au retour d'intervention, et l'attestation les additionne

@@ -59,7 +59,14 @@ export default function ListeTermines({
   nonPayees,
   chantierDemande,
   chantiersSoldes,
+  attestations,
 }: {
+  /**
+   * La ligne « Attestations fiscales 2026 », rendue par le serveur, ou `null`
+   * hors de sa saison (`LigneDesAttestations`). Sous les deux portes, à la
+   * place que lui donne sa planche du 8 novembre 2026.
+   */
+  attestations: React.ReactNode;
   /**
    * Les chantiers dont la facture est entièrement réglée. Leur volet ne propose
    * plus « Il ne me paiera pas » — sa décision du 25 septembre 2026 : le bouton
@@ -270,6 +277,8 @@ export default function ListeTermines({
           Créer une facture
         </Link>
       </div>
+
+      {attestations}
 
       {/* ─── LES FACTURES NON PAYÉES — sa demande du 24 septembre 2026 ──────
           *« Dans Terminés, si je dis que mon client ne me paiera pas, il faut

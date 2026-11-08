@@ -220,8 +220,17 @@ export const MENTION_CREDIT_D_IMPOT =
  * ne s'invente pas.
  */
 export function mentionServicesALaPersonne(numero: string, declareeLe: string | null): string {
+  return `${MENTION_CREDIT_D_IMPOT} ${referenceDeLaDeclaration(numero, declareeLe)}.`;
+}
+
+/**
+ * « Déclaration SAP123456789 du 12 mars 2024 », sans point : la référence que
+ * la mention des pièces ET l'en-tête de l'attestation fiscale portent (lot 2).
+ * Écrite une fois, pour qu'elles ne disent jamais deux dates différentes.
+ */
+export function referenceDeLaDeclaration(numero: string, declareeLe: string | null): string {
   const date = declareeLe ? ` du ${jourDeLettre(declareeLe)}` : "";
-  return `${MENTION_CREDIT_D_IMPOT} Déclaration ${numero}${date}.`;
+  return `Déclaration ${numero}${date}`;
 }
 
 /**

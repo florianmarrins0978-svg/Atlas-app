@@ -14,8 +14,10 @@ import {
   poserLeRetour,
 } from "@/server/repositories/retours-intervention";
 import { tachesDuChantier } from "@/server/repositories/devis";
+import { heuresDuRetour, intervenantsPermis, type HeuresDuJour } from "@/server/repositories/heures-d-intervention";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { retourRecu, type TacheDuRetour } from "@/lib/retour-intervention";
+import { heuresRecues, type HeuresSaisies } from "@/lib/heures-d-intervention";
 
 /**
  * LE RETOUR D'INTERVENTION — les gestes du salarié, depuis le planning.
@@ -44,6 +46,31 @@ import { retourRecu, type TacheDuRetour } from "@/lib/retour-intervention";
 /** Ce qu'un refus rend — jamais une exception : son message n'arriverait pas. */
 type Refus = { ok: false; raison: string };
 
+/** Ce que la fiche envoie : le retour, et les heures du jour quand la section existe. */
+type RetourEnvoye = { taches: TacheDuRetour[]; photoIds: string[]; aSignaler: string | null; heures?: HeuresSaisies | null };
+
+/**
+ * Les heures reçues, relues contre la liste du jour (migration 0179).
+ *
+ * **Absentes, elles ne touchent à rien** : un chantier hors services à la
+ * personne, ou une page ouverte avant cette version, envoie le retour comme
+ * avant. **Sans objet** (la case décochée entre l'ouverture et l'envoi), elles
+ * sont laissées : le retour part, sans elles. **Fausses**, elles refusent : un
+ * numéro qui n'est pas sur le chantier ce jour-là ne s'écrit pas.
+ */
+async function heuresAEcrire(
+  ctx: Awaited<ReturnType<typeof getCurrentCtx>>,
+  chantierId: string,
+  saisie: unknown
+): Promise<{ ok: true; heures: HeuresDuJour | null } | Refus> {
+  if (saisie === undefined || saisie === null) return { ok: true, heures: null };
+  const permis = await intervenantsPermis(ctx, chantierId);
+  if (!permis) return { ok: true, heures: null };
+  const lues = heuresRecues(saisie, permis.intervenants);
+  if (!lues.ok) return lues;
+  return { ok: true, heures: { jour: permis.jour, lignes: lues.lignes } };
+}
+
 async function garder(chantierId: string, action: string) {
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/planning", action);
@@ -70,12 +97,13 @@ async function garder(chantierId: string, action: string) {
 export async function etatDuRetourAction(chantierId: string) {
   const ctx = await garder(chantierId, "lire le retour d'intervention");
 
-  const [regles, feuille, retour, envoyes, sesPhotos] = await Promise.all([
+  const [regles, feuille, retour, envoyes, sesPhotos, heures] = await Promise.all([
     reglesDuRetour(ctx),
     tachesDuChantier(ctx, chantierId),
     dernierRetourDuChantier(ctx, chantierId),
     nombreDeRetoursDuChantier(ctx, chantierId),
     listerPhotosHorsFicheDeSecurite(ctx, chantierId),
+    heuresDuRetour(ctx, chantierId),
   ]);
 
   return {
@@ -87,6 +115,9 @@ export async function etatDuRetourAction(chantierId: string) {
     retour,
     envoyes,
     photos: sesPhotos.map((p) => ({ id: p.id, storageKey: p.storageKey })),
+    // « Combien d'heures ? » : seulement pour une entreprise déclarée et un
+    // chantier dont la case est retenue, aujourd'hui (`heuresDuRetour`).
+    heures,
   };
 }
 
@@ -99,7 +130,7 @@ export async function etatDuRetourAction(chantierId: string) {
  */
 export async function poserLeRetourAction(
   chantierId: string,
-  quoi: { taches: TacheDuRetour[]; photoIds: string[]; aSignaler: string | null }
+  quoi: RetourEnvoye
 ): Promise<{ ok: true; id: string } | Refus> {
   const ctx = await garder(chantierId, "poser un retour d'intervention");
 
@@ -109,13 +140,15 @@ export async function poserLeRetourAction(
   // parce que l'écran n'est pas la seule porte.
   const recu = retourRecu(quoi);
   if (!recu.ok) return recu;
+  const heures = await heuresAEcrire(ctx, chantierId, quoi.heures);
+  if (!heures.ok) return heures;
 
   // **Aucun refus sur ce qui manque — sa règle du 19 septembre 2026.** Le
   // retour du jour part avec ce qu'il a : sans photo, sans tout cocher. Ce que
   // le patron attend encore se lit sur la fiche (`ceQuiManque`), il ne ferme
   // plus la porte. Les gardes qui restent sont celles qui comptent : le rôle,
   // la portée du chantier, l'entreprise.
-  const retour = await poserLeRetour(ctx, chantierId, recu.retour);
+  const retour = await poserLeRetour(ctx, chantierId, { ...recu.retour, heures: heures.heures });
 
   revalidatePath("/planning");
   // Le patron le lit dans Terminés : sans cela il verrait la liste d'hier.
@@ -137,14 +170,17 @@ export async function poserLeRetourAction(
 export async function modifierLeRetourAction(
   chantierId: string,
   retourId: string,
-  quoi: { taches: TacheDuRetour[]; photoIds: string[]; aSignaler: string | null }
+  quoi: RetourEnvoye
 ): Promise<{ ok: true } | Refus> {
   const ctx = await garder(chantierId, "modifier un retour d'intervention");
 
   const recu = retourRecu(quoi);
   if (!recu.ok) return recu;
+  // Le retour ne se modifie que le jour même : ses heures sont celles du jour.
+  const heures = await heuresAEcrire(ctx, chantierId, quoi.heures);
+  if (!heures.ok) return heures;
 
-  const fait = await modifierLeDernierRetour(ctx, chantierId, retourId, recu.retour);
+  const fait = await modifierLeDernierRetour(ctx, chantierId, retourId, { ...recu.retour, heures: heures.heures });
   // Un autre retour est parti entre-temps, ou le jour est passé (la page était
   // restée ouverte après minuit) : celui-ci est la preuve d'un jour fini.
   if (!fait) return { ok: false, raison: "Ce retour ne se modifie plus. Envoyez le retour du jour." };

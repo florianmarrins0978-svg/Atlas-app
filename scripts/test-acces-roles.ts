@@ -243,6 +243,11 @@ essai("le commercial atteint l'application, sauf les adresses nommées", () => {
     "/reglages/facture-electronique",
     "/reglages/identite",
     "/termines",
+    // **Les attestations fiscales de ses clients (8 novembre 2026)**, fermées
+    // comme Terminés : elles portent ce que chaque client a payé dans l'année.
+    "/termines/attestations-fiscales",
+    "/termines/attestations-fiscales/xxxx",
+    "/termines/attestations-fiscales/xxxx/pdf",
     // **Pour mon comptable (24 octobre 2026)**, fermé comme Terminés : le
     // dossier montre chaque ligne de banque et ses montants. La pièce d'une
     // ligne (ticket, facture) se sert par sa propre route, fermée de même.

@@ -4009,6 +4009,73 @@ export const retoursInterventionVus = pgTable(
 );
 
 /**
+ * LES HEURES DU RETOUR DU JOUR (migration 0179), pour l'attestation fiscale de
+ * ses clients : une ligne par chantier, par jour et par intervenant.
+ *
+ * **L'intervenant se désigne par son numéro** (lot 1, `numero_intervenant`) :
+ * il ne se redonne jamais, et le patron, sans ligne d'équipe, porte le 0. Le
+ * nom est celui écrit CE jour-là, ou NULL. Les règles vivent dans
+ * `src/lib/heures-d-intervention.ts`.
+ */
+export const heuresDIntervention = pgTable(
+  "heures_d_intervention",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    chantierId: uuid("chantier_id").notNull(),
+    jour: date("jour").notNull(),
+    intervenantNumero: integer("intervenant_numero").notNull(),
+    intervenantNom: text("intervenant_nom"),
+    /** 1 à 1 499 : zéro ne s'écrit pas, il efface la ligne. */
+    minutes: integer("minutes").notNull(),
+    posePar: uuid("pose_par").references(() => users.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("heures_d_intervention_uk").on(t.entrepriseId, t.chantierId, t.jour, t.intervenantNumero),
+    index("heures_d_intervention_chantier_idx").on(t.entrepriseId, t.chantierId),
+    foreignKey({
+      columns: [t.chantierId, t.entrepriseId],
+      foreignColumns: [chantiers.id, chantiers.entrepriseId],
+      name: "heures_d_intervention_chantier_fk",
+    }).onDelete("cascade"),
+  ]
+);
+
+/**
+ * LES ATTESTATIONS FISCALES ENVOYÉES (migration 0179) : une ligne par envoi,
+ * jamais réécrite. L'empreinte dit ce que le papier affirmait
+ * (`empreinteDeLAttestation`) : quand ce qu'Atlas compose aujourd'hui ne lui
+ * ressemble plus, l'attestation est « À renvoyer ».
+ */
+export const attestationsFiscalesEnvoyees = pgTable(
+  "attestations_fiscales_envoyees",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    clientId: uuid("client_id").notNull(),
+    annee: integer("annee").notNull(),
+    montant: numeric("montant", { precision: 12, scale: 2 }).notNull(),
+    empreinte: text("empreinte").notNull(),
+    envoyeeLe: timestamp("envoyee_le", { withTimezone: true }).notNull().defaultNow(),
+    envoyeePar: uuid("envoyee_par").references(() => users.id, { onDelete: "set null" }),
+  },
+  (t) => [
+    index("attestations_fiscales_envoyees_annee_idx").on(t.entrepriseId, t.annee, t.clientId),
+    foreignKey({
+      columns: [t.clientId, t.entrepriseId],
+      foreignColumns: [clients.id, clients.entrepriseId],
+      name: "attestations_fiscales_envoyees_client_fk",
+    }).onDelete("cascade"),
+  ]
+);
+
+/**
  * L'ABONNEMENT DE L'ENTREPRISE — migration 0084.
  *
  * **Les prix ne sont PAS ici.** Ils vivent dans `src/lib/abonnements.ts`, avec
