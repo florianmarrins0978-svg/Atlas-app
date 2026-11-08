@@ -41,10 +41,11 @@ fi
 ajouter() {
   nom="$1"
   phrase="$2"
+  valeur="${3:-}"
   # Le nom, et lui seul : `AUTH_GOOGLE_ID` ne doit pas se reconnaître dans
   # `AUTH_GOOGLE_ID_ANCIEN`, ni dans une phrase de commentaire qui le cite.
   if ! grep -qE "^[[:space:]]*${nom}[[:space:]]*=" "$FICHIER"; then
-    printf '\n# %s\n%s=\n' "$phrase" "$nom" >> "$FICHIER"
+    printf '\n# %s\n%s=%s\n' "$phrase" "$nom" "$valeur" >> "$FICHIER"
   fi
 }
 
@@ -60,3 +61,8 @@ ajouter AUTH_GOOGLE_ID      "Pour entrer avec Google (voir docs/entrer-avec-goog
 ajouter AUTH_GOOGLE_SECRET  "Le secret du même identifiant Google :"
 ajouter AUTH_APPLE_ID       "Pour entrer avec Apple (Service ID, compte développeur payant) :"
 ajouter AUTH_APPLE_SECRET   "Le secret du même Service ID Apple :"
+# Le seul nom écrit REMPLI : ce n'est pas une clé, c'est le compte du banc.
+# Sans lui, personne n'est éditeur (`src/server/editeur.ts`) et les idées
+# envoyées depuis l'appli ne se lisent nulle part. Payé le 8 novembre 2026.
+# Une adresse déjà posée ne se touche pas, comme une clé collée.
+ajouter ATLAS_EDITEUR_EMAIL "Le compte qui lit Les idées reçues et Mon vocabulaire :" "demo@atlas.local"

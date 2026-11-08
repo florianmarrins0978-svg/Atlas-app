@@ -774,9 +774,12 @@ peut nommer un client), un seul pour les idées d'une même journée. **Pas de
 seconde application** : elle lirait la même base, et ce serait une porte de
 plus à protéger. Ajouté sur la planche, sous « Chez vous ». **Pas vérifiable
 ici** : que `ATLAS_EDITEUR_EMAIL` soit posée sur son espace avec son adresse.
-**Vérifié dans le dépôt le 5 novembre : rien ne la pose** (ni `remoteEnv` de
-`devcontainer.json`, ni `docker-compose.yml`, ni `completer-env-local.sh`).
-Elle n'y est donc que s'il l'a écrite lui-même dans `.env.local`. Le signe
+~~**Vérifié dans le dépôt le 5 novembre : rien ne la pose.**~~ **Réglé le
+8 novembre 2026** : il a écrit une idée et ne l'a jamais reçue. Son compte est
+`demo@atlas.local` (sa réponse) ; `completer-env-local.sh` l'écrit remplie
+dans `.env.local` à l'allumage. **Pas vérifié ICI** : qu'une variable vide
+posée par `run-e2e-tests.ts` l'emporte sur `.env.local` pour `next start`
+(si non, `test-idees-e2e` rougit sur son espace, et le dira). Le signe
 à l'écran : Réglages, Atlas IA, le paquet « Ce qu'elle sait reconnaître » et
 Mon vocabulaire n'apparaissent qu'à l'éditeur. Le jour où les artisans
 auront une adresse en ligne, la même variable devra y être posée, sinon

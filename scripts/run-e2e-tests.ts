@@ -515,6 +515,15 @@ async function main() {
        */
       ATLAS_PROFIL: "banc",
       /**
+       * **Le compte de démonstration n'est pas l'éditeur, ici.** Sur son
+       * espace, `.env.local` le nomme éditeur (`completer-env-local.sh`,
+       * 8 novembre 2026), et `next start` lit ce fichier. Les suites, elles,
+       * éprouvent un compte ordinaire : la porte des idées reçues doit lui
+       * rester fermée (`test-idees-e2e`). Une variable posée, même vide,
+       * l'emporte sur `.env.local`.
+       */
+      ATLAS_EDITEUR_EMAIL: "",
+      /**
        * **« UntrustedHost », vu au premier essai du 8 septembre.** Auth.js
        * refuse de servir une session en production si l'hôte n'est pas déclaré
        * de confiance : chaque suite restait plantée devant un formulaire de

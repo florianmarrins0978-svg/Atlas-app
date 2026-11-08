@@ -96,6 +96,26 @@ cas("un nom qui n'est cité qu'en commentaire ne compte pas pour posé", () => {
   assert.match(apres, /^AUTH_GOOGLE_ID=$/m, "Le commentaire a été pris pour une ligne posée.");
 });
 
+console.log("=== Le compte du banc lit Les idées reçues ===");
+
+// **Son idée du 8 novembre 2026, partie et lue par personne.** La ligne « Les
+// idées reçues » ne s'ouvre qu'au compte que nomme `ATLAS_EDITEUR_EMAIL`, et
+// rien ne la posait sur son espace : il écrivait des idées que personne ne
+// pouvait lire. Sur un banc, le compte du patron est celui du jeu de
+// démonstration (sa réponse : « C'est demo@atlas.local »).
+
+cas("un espace reçoit l'adresse de l'éditeur, déjà remplie", () => {
+  const apres = completer("OPENAI_API_KEY=\n");
+  assert.match(apres, /^ATLAS_EDITEUR_EMAIL=demo@atlas\.local$/m, "Personne n'est éditeur sur son espace.");
+});
+
+cas("une adresse d'éditeur déjà posée n'est pas remplacée", () => {
+  const apres = completer("ATLAS_EDITEUR_EMAIL=autre@exemple.fr\n");
+  assert.match(apres, /^ATLAS_EDITEUR_EMAIL=autre@exemple\.fr$/m, "Son choix a été écrasé.");
+  const combien = apres.split("\n").filter((l) => l.startsWith("ATLAS_EDITEUR_EMAIL=")).length;
+  assert.equal(combien, 1, "Deux lignes d'éditeur : la seconde contredit la première.");
+});
+
 console.log("=== Et ce qu'il écrit n'efface rien au chargement ===");
 
 cas("les emplacements vides qu'il ajoute ne ressortent pas de `charger-cles.sh`", () => {
@@ -108,7 +128,8 @@ cas("les emplacements vides qu'il ajoute ne ressortent pas de `charger-cles.sh`"
     encoding: "utf8",
     env: { NODE_ENV: "test", PATH: process.env.PATH ?? "/usr/bin:/bin", AUTH_GOOGLE_ID: "venu-des-secrets" },
   });
-  assert.equal(sortie.trim(), "", "Une ligne vide du modèle a été ressortie, donc exportée.");
+  // Seule l'adresse de l'éditeur, écrite remplie exprès, doit en sortir.
+  assert.equal(sortie.trim(), "ATLAS_EDITEUR_EMAIL=demo@atlas.local", "Une ligne vide du modèle a été ressortie, donc exportée.");
 });
 
 console.log(echecs === 0 ? "\n✅ Le fichier de clés suit Atlas." : `\n❌ ${echecs} échec(s).`);
