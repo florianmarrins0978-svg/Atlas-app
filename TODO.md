@@ -147,6 +147,11 @@ facturé du jour se lit sur la date d'émission des factures, comme le reste
 8 novembre : *« ça veut rien dire, la ligne à ce rythme tu l'enlèves »*). Il
 reste « 52 400 € de retard sur votre saison. » Ne pas la remettre.
 
+**Le tableau « Tous les mois »** (sa demande du 8 novembre) : 2026 d'abord,
+2025 à droite, l'écart sous 2025 ; chaque mois sur une bande vert pâle quand
+il a fait plus, bordeaux pâle quand il a fait moins (les jetons
+`carteVertFond` et `carteRougeFond`, qui suivent les chartes sombres).
+
 **La phrase du bénéfice, réécrite le 8 novembre** : *« c'est-à-dire quoi, sur
 100 euros encaissés il vous reste 14,51 ? »*. Elle dit désormais « Sur 1 000 €
 encaissés, il vous reste 145 € une fois tout payé. Pour votre objectif, il en

@@ -129,9 +129,19 @@
 .travaux td:first-child { font: 400 17px/1.25 var(--serif); }
 .travaux td small { display: block; margin-top: 2px; font: 400 13.5px/1.3 var(--sans); color: var(--atlas-inkSoft); }
 .travaux .bas { color: var(--atlas-carteAmbreTexte); font-weight: 700; }
-.travaux td small.plus, .travaux td small.moins { font-weight: 700; }
-.travaux td small.plus { color: var(--atlas-carteVertTexte); }
-.travaux td small.moins { color: var(--atlas-carteAmbreTexte); }
+/* Tous les mois face à 2025 : une bande par mois, teintée selon l'écart. */
+.mois-face { width: 100%; margin-top: 6px; border-collapse: separate; border-spacing: 0 6px; font-variant-numeric: tabular-nums lining-nums; }
+.mois-face th { padding: 0 12px 2px; font-size: 13px; font-weight: 600; text-align: right; color: var(--atlas-inkSoft); }
+.mois-face th:first-child, .mois-face td:first-child { text-align: left; }
+.mois-face td { padding: 12px; font-size: 16px; line-height: 1.3; text-align: right; vertical-align: top; color: var(--atlas-ink); }
+.mois-face td:first-child { font: 400 17px/1.3 var(--serif); border-radius: var(--r-plage) 0 0 var(--r-plage); }
+.mois-face td:last-child { border-radius: 0 var(--r-plage) var(--r-plage) 0; }
+.mois-face td small { display: block; margin-top: 3px; font: 700 13.5px/1.3 var(--sans); white-space: nowrap; color: var(--atlas-inkSoft); }
+.mois-face td + td { white-space: nowrap; }
+.mois-face tr.plus td { background: var(--atlas-carteVertFond); }
+.mois-face tr.plus td small { color: var(--atlas-carteVertTexte); }
+.mois-face tr.moins td { background: var(--atlas-carteRougeFond); }
+.mois-face tr.moins td small { color: var(--atlas-carteRougeTexte); }
 
 .feuille .rang-ligne.total { margin-top: 4px; box-shadow: inset 0 1px 0 var(--atlas-line); }
 .feuille .rang-ligne.total .nom, .feuille .rang-ligne.total .prix { font: 400 20px/1.2 var(--serif); }
@@ -458,18 +468,22 @@
      se compare au même jour, comme le bloc. */
   function rendreTousLesMois(cle) {
     var s = ETATS[cle], d = new Date(s.jour), m = d.getUTCMonth(), jour = d.getUTCDate(), entier = s.jour === finDuMois(m);
+    /* Sa demande du 8 novembre : 2026 d'abord, 2025 à droite, l'écart sous
+       2025 ; et la ligne en vert pâle quand il a fait plus, en bordeaux pâle
+       quand il a fait moins. Les teintes sont celles des cartes de l'appli :
+       elles suivent les chartes sombres. */
     var h = '<h2 class="feuille-titre">Face à 2025</h2>' +
-      '<table class="travaux"><thead><tr><th scope="col">Mois</th><th scope="col">2025</th><th scope="col">2026</th></tr></thead><tbody>';
+      '<table class="mois-face"><thead><tr><th scope="col">Mois</th><th scope="col">2026</th><th scope="col">2025</th></tr></thead><tbody>';
     for (var i = m; i >= 0; i--) {
       var partiel = i === m && !entier;
       var fait = s.mois[i], avant = partiel ? an2025Jusquau(i, jour) : MOIS_2025[i], n = fait - avant;
-      var ecart = Math.abs(n) < 100 ? "<small>Pareil</small>"
-        : '<small class="' + (n > 0 ? "plus" : "moins") + '">' + e(Math.abs(n)) + (n > 0 ? " de plus" : " de moins") + "</small>";
+      var sens = Math.abs(n) < 100 ? "" : n > 0 ? "plus" : "moins";
+      var ecart = "<small>" + (sens ? e(Math.abs(n)) + (n > 0 ? " de plus" : " de moins") : "Pareil") + "</small>";
       /* Le jour avant le mois, toujours : « du 1er au 8 novembre », jamais
          « novembre, au 8 » (sa remarque du 8 novembre : « la date est à
          l'envers »). */
-      h += "<tr><td>" + (partiel ? "Du 1er au " + jour + " " + MOIS[i] : Maj(MOIS[i])) + "</td>" +
-        "<td>" + e(avant) + "</td><td>" + e(fait) + ecart + "</td></tr>";
+      h += '<tr class="' + sens + '"><td>' + (partiel ? "Du 1er au " + jour + " " + MOIS[i] : Maj(MOIS[i])) + "</td>" +
+        "<td>" + e(fait) + "</td><td>" + e(avant) + ecart + "</td></tr>";
     }
     return h + '</tbody></table><button class="bouton-texte fermer" type="button" data-ferme>Fermer</button>';
   }
