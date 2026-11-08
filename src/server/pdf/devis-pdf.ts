@@ -13,6 +13,7 @@ import {
   type TraceDocument,
   type AttestationDocument,
   type LogoDocument,
+  type ServicesALaPersonneDocument,
 } from "./document-commun";
 import { jourNumerique } from "../../lib/jour";
 import {
@@ -164,6 +165,8 @@ export type OptionsDevisPdf = {
   logo?: LogoDocument | null;
   /** L'attestation décennale figée sur ce devis, lue par le dépôt. */
   attestation?: AttestationDocument | null;
+  /** Le logo et la mention des services à la personne, quand la case est retenue (migration 0178). */
+  servicesALaPersonne?: ServicesALaPersonneDocument | null;
 };
 
 /**
@@ -327,6 +330,8 @@ export async function composerDevisPdf(
     logo: sansPrix ? null : options.logo,
     // La feuille de chantier ne s'envoie pas au client : rien à y prouver.
     attestation: sansPrix ? null : options.attestation,
+    // Ni crédit d'impôt : elle n'est ni un devis ni une facture.
+    servicesALaPersonne: sansPrix ? null : options.servicesALaPersonne,
     // **Sans les prix, ce n'est plus un devis : c'est la feuille de travail.**
     // Garder le titre « DEVIS » sur un document qu'un salarié emporte ferait
     // croire à un devis amputé — et le client à qui on le montrerait par erreur

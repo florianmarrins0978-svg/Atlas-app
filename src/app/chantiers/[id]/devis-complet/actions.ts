@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { exigerGestionDevis } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
+import { devisSansAcompte } from "@/server/repositories/avance-immediate";
 import { retenirLecon } from "@/server/repositories/lecons-prix";
 import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
 import { PreuveRecenteExigeeError } from "@/server/preuve-recente";
@@ -29,6 +30,7 @@ import {
   changerTauxAcompte,
   retirerAcompte,
   majAutoliquidationDevis,
+  majServicesALaPersonneDevis,
 } from "@/server/repositories/devis";
 import { logger } from "@/server/logger";
 import { marquerAideNoteDevisVue } from "@/server/repositories/aide-note-devis";
@@ -460,6 +462,12 @@ function montantDeLaLigne(quantite: string, prixUnitaire: string): string {
 export async function ajouterAcompteAction(devisId: string, taux?: string) {
   const ctx = await getCurrentCtx();
   await exigerGestionDevis(ctx, "ajouter un acompte au devis");
+  // **Un client inscrit à l'avance immédiate n'a pas d'acompte** (lot 3), par
+  // la règle que l'écran suit pour cacher le geste (`sansAcompteAuDevis`) : un
+  // acompte encaissé puis déclaré à l'Urssaf oblige à une garantie financière.
+  if (await devisSansAcompte(ctx, devisId)) {
+    return { ok: false as const, raison: "Pas d'acompte : il est inscrit à l'avance immédiate." };
+  }
   return poserAcompteSuivant(ctx, devisId, taux);
 }
 
@@ -555,6 +563,28 @@ export async function majAutoliquidationDevisAction(
     return r;
   } catch (err) {
     logger.error("Sous-traitance du devis non enregistrée", { erreur: err instanceof Error ? err.message : String(err) });
+    return { ok: false, raison: "Le changement n'a pas pu être enregistré. Réessayez." };
+  }
+}
+
+/**
+ * La case « Services à la personne » du devis (migration 0178). Le refus
+ * revient en valeur : l'écran remet la case où elle était et dit pourquoi.
+ */
+export async function majServicesALaPersonneDevisAction(
+  chantierId: string,
+  coche: boolean
+): Promise<{ ok: true; servicesALaPersonne: boolean } | { ok: false; raison: string }> {
+  const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "cocher les services à la personne");
+  try {
+    const r = await majServicesALaPersonneDevis(ctx, chantierId, coche === true);
+    if (r.ok) revalidatePath(`/chantiers/${chantierId}/devis-complet`);
+    return r;
+  } catch (err) {
+    logger.error("Case services à la personne du devis non enregistrée", {
+      erreur: err instanceof Error ? err.message : String(err),
+    });
     return { ok: false, raison: "Le changement n'a pas pu être enregistré. Réessayez." };
   }
 }

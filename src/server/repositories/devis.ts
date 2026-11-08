@@ -1,6 +1,7 @@
 import { manquesDuDevis, type Manque } from "@/lib/mentions-manquantes";
 import { TAUX_SANS_TVA, tauxRendus, tauxSousAutoliquidation } from "@/lib/autoliquidation";
 import { estUneEntreprise } from "@/lib/civilite";
+import { caseParDefaut, laCaseExiste } from "@/lib/services-a-la-personne";
 import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
 import { jourIso } from "@/lib/jour";
 import { withEntreprise } from "../db/with-entreprise";
@@ -29,6 +30,7 @@ import { enregistrerObjet } from "../storage";
 import { ecrireNumero, repartChaqueAnnee } from "@/lib/numero-documents";
 import { lignesDuDocument, lignesEnAttenteDePrix } from "@/lib/preparation-devis";
 import { ORDRE_DES_LIGNES_PRIX } from "./lignes-prix";
+import { papierServicesALaPersonne, type CaseDuDocument } from "./services-a-la-personne";
 import { refusDuTravail, tachesDuDevis, travauxAffiches } from "@/lib/taches-du-devis";
 
 const TAUX_TVA_DEFAUT = "20.00";
@@ -429,6 +431,18 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
         // Ses lignes de main d'œuvre sont celles du chantier : elles passent
         // d'une version à l'autre avec les lignes, et « dont » les suit.
         mainDoeuvreHt: mainDoeuvreDesLignes(lignesPrixActuelles),
+        // **La case « Services à la personne » (migration 0178)** : une
+        // version corrigée garde le choix de la précédente, comme son titre ;
+        // un devis neuf prend la règle (`caseParDefaut`), cochée seulement
+        // sans activité à côté.
+        servicesALaPersonne: dernier
+          ? dernier.servicesALaPersonne
+          : caseParDefaut({
+              declaree: entreprise.sapDeclaree,
+              activiteACote: entreprise.sapActiviteACote,
+              clientNom: client?.nom,
+              clientCivilite: client?.civilite ?? null,
+            }),
         createdBy: ctx.utilisateurId,
       })
       .returning();
@@ -796,15 +810,19 @@ export async function manquesDuDevisAEnvoyer(ctx: Ctx, devisId: string): Promise
  * L'allure, le logo, et l'attestation FIGÉE sur ce devis (son choix A du
  * 5 octobre 2026). La feuille de chantier n'en a pas besoin : elle garde
  * `allureDesDocuments` seul.
+ *
+ * Et les services à la personne quand sa case est retenue (migration 0178) :
+ * le logo en tête, la mention au pied.
  */
 async function habillageDuDevis(
-  tx: Parameters<typeof allureDesDocuments>[0],
+  tx: DbOrTx,
   entrepriseId: string,
-  d: { entrepriseAttestationDecennaleCle: string | null; entrepriseAttestationDecennaleMime: string | null }
+  d: CaseDuDocument & { entrepriseAttestationDecennaleCle: string | null; entrepriseAttestationDecennaleMime: string | null }
 ) {
   return {
     ...(await allureDesDocuments(tx, entrepriseId)),
     attestation: await attestationLue(d.entrepriseAttestationDecennaleCle, d.entrepriseAttestationDecennaleMime),
+    servicesALaPersonne: await papierServicesALaPersonne(tx, entrepriseId, d),
   };
 }
 
@@ -1512,5 +1530,58 @@ export async function majAutoliquidationDevis(
       await tx.update(devis).set({ tauxTva: rendus.tauxTva }).where(eq(devis.id, brouillon.id));
     }
     return { ok: true, autoliquidation: active };
+  });
+}
+
+/**
+ * LA CASE « SERVICES À LA PERSONNE » DU DEVIS (migration 0178), une pour tout
+ * le devis.
+ *
+ * **Cochée seulement si elle existe** : une entreprise déclarée et un client
+ * particulier, par la règle de l'écran (`laCaseExiste`). Le client se lit sur
+ * sa fiche, comme pour la sous-traitance : c'est lui que l'écran montre, et le
+ * brouillon le recopie à chaque rendu. Décocher reste toujours permis.
+ *
+ * Sur la DERNIÈRE version, et seulement en brouillon : un devis parti ne
+ * change plus (trigger PostgreSQL), le corriger ouvre une version qui garde
+ * ce choix.
+ */
+export async function majServicesALaPersonneDevis(
+  ctx: Ctx,
+  chantierId: string,
+  coche: boolean
+): Promise<{ ok: true; servicesALaPersonne: boolean } | { ok: false; raison: string }> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    // Le verrou du rendu du brouillon, comme la sous-traitance.
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${chantierId}))`);
+    const [c] = await tx.select().from(chantiers).where(eq(chantiers.id, chantierId)).limit(1);
+    if (!c) return { ok: false, raison: "Ce chantier est introuvable." };
+    const [brouillon] = await tx
+      .select({ id: devis.id, statut: devis.statut })
+      .from(devis)
+      .where(eq(devis.chantierId, chantierId))
+      .orderBy(desc(devis.numeroVersion))
+      .limit(1);
+    if (!brouillon || brouillon.statut !== "brouillon") {
+      return { ok: false, raison: "Le devis est parti : il ne change plus." };
+    }
+    if (coche) {
+      const [e] = await tx
+        .select({ declaree: entreprises.sapDeclaree })
+        .from(entreprises)
+        .where(eq(entreprises.id, ctx.entrepriseId))
+        .limit(1);
+      const [client] = c.clientId
+        ? await tx.select().from(clients).where(eq(clients.id, c.clientId)).limit(1)
+        : [];
+      if (!e?.declaree) {
+        return { ok: false, raison: "Votre entreprise n'est pas déclarée : voyez Mon entreprise." };
+      }
+      if (!laCaseExiste({ declaree: e.declaree, clientNom: client?.nom, clientCivilite: client?.civilite ?? null })) {
+        return { ok: false, raison: "Le crédit d'impôt est celui d'un particulier : ce client n'en est pas un." };
+      }
+    }
+    await tx.update(devis).set({ servicesALaPersonne: coche }).where(eq(devis.id, brouillon.id));
+    return { ok: true, servicesALaPersonne: coche };
   });
 }

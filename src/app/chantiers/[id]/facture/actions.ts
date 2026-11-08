@@ -17,14 +17,17 @@ import {
   ajouterMainDoeuvreDeFacture,
   majDateTravauxFacture,
   majAutoliquidationFacture,
+  majServicesALaPersonneFacture,
   majTvaClientFacture,
   manquesDeLaFactureAEmettre,
   FactureDejaEmiseError,
   FactureEnRetardSurLeDevisError,
   FacturePasPriseParLaPlateformeError,
+  FacturePasPriseParLUrssafError,
   FacturePasseLePlafondError,
   FinChantierImpossibleError,
 } from "@/server/repositories/factures";
+import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import type { ArretDuPlafond } from "@/lib/franchise-plafond";
 import {
   poserReglementRecu,
@@ -138,6 +141,40 @@ export async function emettreFactureAction(
       return { succes: false, erreur: err.message, plafond: err.arret };
     }
     throw err;
+  }
+}
+
+/**
+ * « Envoyer à l'Urssaf » (lot 3, sa planche du 8 novembre 2026) : la facture
+ * s'arrête par la MÊME porte que l'envoi ordinaire (`emettreFacture`), et la
+ * demande de paiement part dans sa transaction. Les droits sont ceux de
+ * l'envoi d'une facture ; l'appel à l'Urssaf compte dans sa limite.
+ *
+ * **Un refus revient en valeur, avec sa phrase** : celui de la règle (« Une
+ * facture par mois du calendrier »), celui de l'Urssaf, ou une mention
+ * obligatoire qui manque. La facture reste alors un brouillon.
+ */
+export async function envoyerALUrssafAction(factureId: string): Promise<ResultatEmission> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "envoyer la facture à l'Urssaf");
+  const limite = await verifierLimite(`urssaf:${ctx.entrepriseId}`, LIMITES.urssaf);
+  if (!limite.autorise) return { succes: false, erreur: limite.message };
+  const manques = await manquesDeLaFactureAEmettre(ctx, factureId);
+  if (manques.length > 0) return { succes: false, erreur: phraseDesManques(manques), manques };
+  try {
+    const facture = await emettreFacture(ctx, factureId, new Date(), { versLUrssaf: true });
+    return { succes: true, numero: facture.numeroCommercial };
+  } catch (err) {
+    if (
+      err instanceof FactureDejaEmiseError ||
+      err instanceof FactureEnRetardSurLeDevisError ||
+      err instanceof FacturePasPriseParLUrssafError ||
+      err instanceof FacturePasseLePlafondError
+    ) {
+      return { succes: false, erreur: err.message };
+    }
+    logger.error("Facture non partie à l'Urssaf", { erreur: err instanceof Error ? err.message : String(err) });
+    return { succes: false, erreur: "La facture n'a pas pu partir à l'Urssaf. Réessayez." };
   }
 }
 
@@ -607,6 +644,27 @@ export async function majAutoliquidationFactureAction(
       : { succes: false, erreur: r.raison };
   } catch (err) {
     logger.error("Sous-traitance non enregistrée", { erreur: err instanceof Error ? err.message : String(err) });
+    return { succes: false, erreur: "Le changement n'a pas pu être enregistré. Réessayez." };
+  }
+}
+
+/**
+ * La case « Services à la personne » de la facture (migration 0178), tant
+ * qu'elle est un brouillon. Le refus revient en valeur, jamais en exception.
+ */
+export async function majServicesALaPersonneFactureAction(
+  factureId: string,
+  coche: boolean
+): Promise<{ succes: true; servicesALaPersonne: boolean } | { succes: false; erreur: string }> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "cocher les services à la personne");
+  try {
+    const r = await majServicesALaPersonneFacture(ctx, factureId, coche === true);
+    return r.ok ? { succes: true, servicesALaPersonne: r.servicesALaPersonne } : { succes: false, erreur: r.raison };
+  } catch (err) {
+    logger.error("Case services à la personne de la facture non enregistrée", {
+      erreur: err instanceof Error ? err.message : String(err),
+    });
     return { succes: false, erreur: "Le changement n'a pas pu être enregistré. Réessayez." };
   }
 }

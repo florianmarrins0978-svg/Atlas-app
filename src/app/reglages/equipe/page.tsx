@@ -27,6 +27,7 @@ import Paquet from "@/components/atlas/reglages/Paquet";
 import PastilleIcone from "@/components/atlas/reglages/PastilleIcone";
 import Icone from "@/components/atlas/IconeTrait";
 import { reglageLu, resumeDesZones } from "@/lib/zones-deplacement";
+import { numerosDesIntervenants } from "@/server/repositories/services-a-la-personne";
 
 export const dynamic = "force-dynamic";
 
@@ -91,6 +92,11 @@ export default async function EquipePage() {
   // 2026). La règle est dans `fonctionOuverte` ; sans abonnement, tout est ouvert.
   const absencesOuvertes = fonctionOuverte(abonnement?.formule, "absences");
   const retoursOuverts = fonctionOuverte(abonnement?.formule, "retours");
+  // Le numéro d'intervenant de chacun (migration 0178), pour l'attestation
+  // fiscale : seulement une entreprise déclarée, et c'est cette lecture qui
+  // numérote ceux qui n'en ont pas encore. APRÈS `listerEquipes`, jamais en
+  // même temps : elle peut créer les lignes que le compteur annonce.
+  const numeros = await numerosDesIntervenants(ctx);
 
   const agendaRelie = (google.relie && google.actif) || (apple.relie && apple.actif);
 
@@ -148,6 +154,7 @@ export default async function EquipePage() {
         <VosSalaries
           initialNombreSalaries={entreprise?.nombreSalaries ?? 0}
           initialNoms={equipes.map((e) => ({ rang: e.rang, nom: e.nom, photo: e.photo }))}
+          numeros={numeros}
         />
 
         {/* **Sous les noms, comme il l'a retenu** (`docs/maquettes/55`,

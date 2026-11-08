@@ -2314,14 +2314,144 @@ proxy. Les deux rouges (`test-connexion-service-en-panne-e2e`,
 (`verifier-rouge-prealable`), et repassent verts dans le complément d'après
 fusion (`verifier-ce-qui-a-bouge`).
 
-## ⏳ LE CRÉDIT D'IMPÔT DE SES CLIENTS : PLANCHE POSÉE, UNE QUESTION OUVERTE (8 octobre 2026)
+## ⏳ LE CRÉDIT D'IMPÔT DE SES CLIENTS : LOTS 1, 2 ET 3 CODÉS LE 8 NOVEMBRE 2026, BATTERIE ET CODES DE L'URSSAF À ATTENDRE (8 octobre 2026)
+
+**LOT 3, CODÉ LE 8 NOVEMBRE 2026 SUR LA MÊME CONSIGNE** : l'avance immédiate
+branchée, migration 0180, `ARCHITECTURE.md` §577.
+
+| | |
+|---|---|
+| **codé** | Mon entreprise, entreprise déclarée : « Avance immédiate », « Relier l'Urssaf » (identifiant, clé secrète, identifiant Urssaf de l'entreprise, code de la nature), vérifiés chez l'Urssaf AVANT d'être gardés, les deux codes chiffrés ; « Délier ». La fiche d'un client particulier, entreprise reliée : pas inscrit, en attente (relu chez l'Urssaf à l'ouverture), inscrit ; « L'inscrire à l'Urssaf » ne demande que ce qu'Atlas n'a pas, la commune de naissance cherchée chez l'État, l'adresse de la fiche découpée par la Base Adresse Nationale ; l'IBAN et le BIC partent à l'Urssaf et ne se gardent pas. Le devis d'un client inscrit : pas d'acompte, l'écran et l'action par la même règle. Sa facture : l'addition de la planche, « Envoyer à l'Urssaf » et sa feuille, qui l'arrête par la même porte que l'envoi ordinaire avec la demande dans la transaction (refusée, elle reste un brouillon), les refus de la règle dits avant le bouton, « Il paie autrement cette fois » ; le suivi (envoyée, validée, versée, refusée) relu à l'ouverture de la facture et de Terminés ; versée, un règlement « avance immédiate » du montant de la facture l'acquitte ; refusée, « L'envoyer par SMS ». Le moyen « avance immédiate » en base ; l'attestation fiscale ne le compte pas |
+| **pas codé** | « Lui renvoyer le lien » (aucune route dans la description 1.29.1 : le délai passé, « L'inscrire à nouveau ») ; « Je n'ai pas encore ces codes » de la planche (l'adresse de la demande sur api.gouv.fr n'a pas été lue) ; une tâche planifiée qui relève les demandes (la seule du dépôt est la purge, sans contexte d'entreprise) ; l'inscription dans l'export RGPD d'un client (`exporterClient`) ; Cesu, APA et PCH au règlement |
+| **pas éprouvé** | **RIEN ne peut s'essayer pour de vrai avant les codes de l'Urssaf et son bac à sable** : les adresses se surchargent par `URSSAF_ATP_BASE` et `URSSAF_JETON_URL`, jamais devinées. La migration 0180 n'a jamais été appliquée ; `scripts/test-avance-immediate-db.ts` est écrite, pas jouée ; aucun écran regardé. **La batterie (niveau 3 : argent et `drizzle/`) se joue avec son accord**, puis Mon entreprise, la fiche d'un client particulier, un devis et une facture se regardent |
+
+**Tranché seul au lot 3, à lui dire :**
+
+- **la demande part DANS la transaction qui arrête la facture**, comme le dépôt
+  sur la plateforme de facture électronique : refusée par l'Urssaf, la facture
+  reste un brouillon, numéro compris. Le cas qui reste ouvert : une Urssaf qui
+  accepte, puis une transaction qui échoue après, laisse une demande chez elle
+  sans trace dans Atlas (rare, assumé comme pour la plateforme) ;
+- **seul un client INSCRIT voit sa facture partir à l'Urssaf** ; un client en
+  attente n'a pas encore accepté, l'Urssaf refuserait. Son devis, lui, perd
+  déjà l'acompte ;
+- **les lignes de la demande** : une par ligne de la facture ; une ligne
+  d'heures garde sa quantité et l'unité HEURE quand le compte tombe juste au
+  centime, toute autre part en forfait de quantité 1 ; avec une remise sur la
+  facture, un forfait par taux de TVA ; la date et la durée du retour du jour
+  sur la première ;
+- **l'attestation fiscale ne compte pas un règlement « avance immédiate »** :
+  l'Urssaf a déjà avancé la moitié au client et transmet ses paiements aux
+  impôts. C'est le côté sans risque d'un point que sa planche laisse « À
+  trancher » ; à confirmer à l'Urssaf ou à la DGFiP ;
+- **l'état du client relu chez l'Urssaf ne conclut que sur des mots sans
+  ambiguïté** (« actif », « attente ») : la forme de cette réponse n'est pas
+  dans la description, un état illisible laisse la fiche telle quelle ;
+- **la feuille demande aussi les prénoms et le nom de naissance** (repris de la
+  fiche, à corriger) : l'Urssaf les exige, et Atlas n'a qu'un nom ;
+- **né hors de France, le code du pays se tape en cinq chiffres** (« 99134 »),
+  la nomenclature de l'Insee : une liste des pays serait un lot à elle seule ;
+- **les droits** : relier et délier, le patron seul ; inscrire un client et
+  envoyer à l'Urssaf, ceux de la facturation ; tous limités à dix appels par
+  minute et par entreprise.
+
+**Les inconnues à lever sur la documentation remise à l'habilitation et sur le
+bac à sable** (six, dont les quatre de la liaison) : le code nature du
+jardinage, les codes des statuts, la forme de l'état d'un client
+(`GET /particulier`), l'adresse du bac à sable ; le découpage du lieu de
+naissance outre-mer (« 97105 » donne « 971 » et « 105 ») ; le délai d'acceptation
+du client (sept jours, d'après l'aide d'Evoliz).
+
+**LOT 2, CODÉ LE 8 NOVEMBRE 2026 SUR LA MÊME CONSIGNE**, migration 0179,
+`ARCHITECTURE.md` §576 : les heures du retour du jour, et l'attestation de
+janvier.
+
+| | |
+|---|---|
+| **codé** | sur la fiche d'intervention, « Combien d'heures ? » (entreprise déclarée, case du chantier retenue) : une ligne par salarié coché ce jour-là, le patron seul sans salarié, deux listes 0 à 24 h et 00 à 59, « Pour l'attestation de Mr. X. » ; les heures partent avec le retour, dans sa transaction. En janvier, jusqu'au 31 mars : la ligne « Attestations fiscales 2026 » de Terminés, la liste des clients (interventions, montant, état), l'attestation de chacun relue à l'écran et en PDF, envoyée seule par la feuille de partage, la trace de chaque envoi, « À renvoyer » si elle a changé depuis |
+| **pas codé** | la signature dessinée ; Cesu, APA et PCH déduits du montant (aucun moyen de règlement ne les dit ; ~~l'avance immédiate~~ : ne s'atteste pas depuis le lot 3) ; le numéro du compte débité ; une nature autre que « petits travaux de jardinage » ; l'archivage du PDF envoyé |
+| **pas éprouvé** | la migration 0179 n'a jamais été appliquée ; `scripts/test-attestations-fiscales-db.ts` est écrite, pas jouée ; aucun écran regardé (la ligne de Terminés ne paraît qu'en janvier : pour la voir avant, une date posée à la main en essai). **La batterie (niveau 3 : argent et `drizzle/`) se joue avec son accord**, puis la fiche d'intervention d'un chantier coché et les trois écrans des attestations se regardent |
+
+**Tranché seul au lot 2, à lui dire :**
+
+- **le montant est ce qui a été PAYÉ dans l'année** (les règlements datés de
+  l'année, plafonnés à la facture après avoirs), pas « les factures de l'année
+  réglées » : une facture payée moitié en décembre, moitié en janvier aurait
+  perdu sa première moitié. Les interventions sont celles des chantiers payés
+  dans l'année, à leurs dates ;
+- **les heures se tapent aussi sur un chantier sans devis** quand sa facture
+  prendra la case (un passage d'entretien n'a jamais de devis) : la case lue
+  est celle de la facture, sinon du devis, sinon la règle d'une pièce neuve ;
+- **une facture payée sans aucune heure enregistrée rend l'attestation « À
+  compléter »**, et elle ne part pas : aucune durée n'est devinée.
+  **Tranché le 8 novembre 2026 : à la main, rien à coder.** Sa réponse :
+  *« il n'y aura pas d'attestation avant 2026 »*, puis *« elles peuvent se
+  faire à la main, ou un écran pour saisir les heures après coup, les deux me
+  vont »*. Le cas est rare : une facture déjà envoyée n'a pas la case et
+  n'entre dans aucune attestation ; seul un chantier fait AVANT la mise en
+  service et facturé APRÈS, case cochée, reste « À compléter », et l'artisan
+  fait cette attestation à la main. Si le cas devient fréquent : une planche
+  d'abord, pour compléter seulement les dates qui manquent, depuis
+  l'attestation ;
+- **pas de « gérant » ni de « président » deviné** : la phrase dit « Je
+  soussigné Thomas Leroy, pour Jardins Démo » (soussignée pour Mme), le nom du
+  premier compte propriétaire ; sans nom, l'entreprise certifie seule. Un
+  réglage « qualité du signataire » est à décider s'il la veut ;
+- **le nom de chaque intervenant est gardé le jour de l'intervention** ; un
+  salarié sans nom écrit (« Salarié 3 » à l'écran) rend l'attestation à
+  compléter, jusqu'à ce qu'il le nomme dans Équipe ;
+- **l'attestation part par la feuille de partage du téléphone**, comme la
+  fiche de sécurité : elle vit derrière la connexion, et un lien public aurait
+  demandé une porte de plus ; « Par e-mail, comme ses factures » dit le canal
+  de sa dernière facture partie ;
+- **une attestation partie redevient « À renvoyer »** dès que ce qu'Atlas
+  compose ne lui ressemble plus (un règlement, une adresse corrigée) ;
+- **la nature est « petits travaux de jardinage »** pour toutes les
+  entreprises ; une autre activité déclarée demandera un réglage.
+
+**LOT 1, CODÉ LE 8 NOVEMBRE 2026 SUR SA CONSIGNE** (*« Code tout ce que tu peux
+coder et ne lance pas de batterie »*), migration 0178, `ARCHITECTURE.md` §575.
+
+| | |
+|---|---|
+| **codé** | Mon entreprise : « Services à la personne » après le médiateur (déclarée sur NOVA, n° de déclaration, déclarée le, logo à déposer, activité à côté et son compte contre 30 %) ; la case du devis et sa phrase ; la facture qui la reprend et se décoche avant l'envoi ; le logo et la mention sur les deux PDF ; le n° d'intervenant dans Équipe, le patron n° 0 |
+| **pas codé** | la signature ; ~~le retour du jour (les heures) ; l'attestation de janvier~~ (lot 2, ci-dessus) ; Cesu au règlement ; ~~pas d'acompte pour un client inscrit ; l'avance immédiate entière (codes, inscription, envoi, suivi)~~ (lot 3, ci-dessus) |
+| **pas éprouvé** | la migration n'a jamais été appliquée ; `scripts/test-services-a-la-personne-db.ts` est écrite, pas jouée ; aucun écran regardé. **La batterie (niveau 3 : argent et `drizzle/`) se joue avec son accord**, puis les trois écrans se regardent (`npm run voir -- /reglages/identite`, un devis, une facture, Équipe) |
+
+**Tranché seul en codant, à lui dire :**
+
+- la mention se lit sur l'entreprise au moment d'imprimer, elle n'est pas figée
+  sur la pièce comme la décennale : une pièce partie garde son PDF archivé,
+  mais l'exemplaire acquitté, recomposé après coup, relit la déclaration du
+  jour (comme il relit déjà le logo) ;
+- une facture née sans devis, ou d'un passage d'entretien, prend la règle d'un
+  devis neuf (cochée sans activité à côté) ;
+- sur la facture, la ligne sous la case est celle du devis (« Mr. X récupère
+  N € sur ses impôts ») et non « Comme le devis » de la planche, qui allait
+  avec l'addition de l'avance immédiate (codée au lot 3, sous la case, pour un
+  client inscrit) ;
+- le compte de l'activité à côté compte le FACTURÉ (factures arrêtées de
+  l'année, avoirs déduits de leur côté), sans les pièces importées ; « facturé
+  ou encaissé » reste à trancher par lui ou son comptable ;
+- un salarié annoncé au compteur sans ligne en base en reçoit une, sans nom,
+  avec son numéro, à la lecture d'Équipe d'une entreprise déclarée ; un nom
+  réécrit sur une ligne garde son numéro (Atlas ne sait pas si c'est une
+  correction ou une autre personne) ;
+- `sap_logo_mime` s'ajoute à `sap_logo_cle`, comme pour son logo ;
+- le logo des services à la personne n'est pas montré sur l'écran du devis
+  (seulement sur le PDF) : le montrer demandait d'ouvrir sa clé à la route des
+  fichiers, une porte de sécurité, hors de ce lot ;
+- ~~le commentaire de la planche dit encore « RIEN N'EST CODÉ DANS src/ » : à
+  reprendre à sa prochaine publication~~ : repris au lot 3, avec la ligne
+  d'`appli/essais.html`.
 
 Sa question : « faire une facture à une cliente pour qu'elle soit exonérée
 d'impôts ». C'est le crédit d'impôt de 50 % des services à la personne
 (article 199 sexdecies du CGI), qui dépend d'abord de la déclaration de son
 entreprise (NOVA, numéro SAP). Planche `appli/credit-d-impot.html` : le numéro
 dans Mon entreprise, la case sur la facture, l'attestation fiscale annuelle
-dans Terminés. **Rien n'est codé.**
+dans Terminés. Les lots 1 et 2 sont codés depuis le 8 novembre 2026 (ci-dessus) ;
+le reste ne l'est pas.
 
 **Tranché le 9 octobre 2026 : les heures se tapent LE JOUR DE
 L'INTERVENTION**, au retour d'intervention, et l'attestation les additionne
@@ -2512,8 +2642,9 @@ inscrire un client depuis sa fiche avec les seules cases qui manquent,
 « Envoyer à l'Urssaf », le suivi envoyée, validée, versée ou refusée), pas
 d'acompte pour un client inscrit (garantie financière), le logo sur les
 papiers, l'attestation de janvier sur papier. L'ancienne planche reste, son
-lien d'`essais.html` renvoie à la nouvelle. **Rien n'est codé ; elle attend
-son choix.** Ce qu'elle laisse à trancher est écrit sous ses écrans.
+lien d'`essais.html` renvoie à la nouvelle. Son lot 1 (Mon entreprise, le
+devis, la facture, Équipe) est codé le 8 novembre 2026 sur sa consigne ; le
+reste attend. Ce qu'elle laisse à trancher est écrit sous ses écrans.
 
 **Sa règle du 8 novembre 2026 pour les heures du retour du jour** : *« il
 faut pouvoir mettre n'importe quel nombre d'heures »*. La roulette des heures
@@ -2566,8 +2697,9 @@ l'envoi, et la facture redevient normale (*« quand je décoche, il n'y a rien
 qui se passe »* : corrigé dans la planche) ; partie à l'Urssaf, elle ne bouge
 plus. Écran « Le devis » ajouté à `appli/soignee/credit-d-impot.html`.
 
-**Relier l'Urssaf : rien n'est codé, et voici ce que ça demande (lu le
-8 novembre 2026 sur les pages officielles).** Sa question : *« est-ce que ça
+**Relier l'Urssaf : ce que ça demande (lu le 8 novembre 2026 sur les pages
+officielles).** *Rien n'était codé ce jour-là ; tout l'est depuis, lots 3 et
+la liaison ci-dessous.* Sa question : *« est-ce que ça
 marche ou c'est mis comme ça dans la planche ? il faut que ça fonctionne »*.
 Ce n'est que dessiné. Sources : la fiche de l'API sur data.gouv.fr
 (`api-tiers-de-prestation`) et le formulaire vierge de la démarche
@@ -2586,6 +2718,23 @@ portail technique (portailapi.urssaf.fr) ne répond pas depuis la session.
 Rien ne peut s'éprouver avant que l'Urssaf donne ses codes : le code
 s'écrirait à l'aveugle. Ordre proposé : son dossier d'éditeur d'abord, le
 code pendant l'instruction, l'essai sur les codes reçus.
+
+**La liaison est CODÉE le 8 novembre 2026 (sa demande : *« faut surtout que
+tu codes déjà la liaison »*), et BRANCHÉE le même jour au lot 3 (ci-dessus).** `src/lib/urssaf/` et
+`src/server/urssaf/`, `ARCHITECTURE.md` §574, suites `test-urssaf-*`. Sa
+question *« seulement 2 codes ? »* : oui pour se connecter (`client_id`,
+`client_secret`), d'après la description officielle de l'API ; chaque
+facture porte en plus l'identifiant Urssaf de l'artisan
+(`idTiersFacturation`) et son numéro SAP. Sa préférence : **pour commencer,
+chaque artisan fait lui-même sa demande à l'Urssaf** et colle ses codes dans
+Atlas. À vérifier auprès de l'Urssaf (habilitation-api@urssaf.fr) : un
+artisan peut-il nommer Atlas comme logiciel avant qu'Atlas ait son propre
+dossier d'éditeur ? ~~Restent, dans l'ordre : la place des codes en base
+(migration, secret chiffré), le geste « Relier l'Urssaf » qui appelle
+`verifierCodes`, l'inscription depuis la fiche, l'envoi depuis la facture,
+le suivi~~ : codés au lot 3 (ci-dessus). Restent les inconnues à lever sur la
+documentation remise à l'habilitation (code nature du jardinage, codes des
+statuts, activation du client, adresse du bac à sable), listées au lot 3.
 
 **Le nom ET le numéro de chaque intervenant sur l'attestation (sa question
 du 8 novembre 2026, « des numéros, ou les noms ? »).** La page officielle
@@ -2644,7 +2793,8 @@ chaque salarié le sien dans l'ordre d'arrivée, affiché seulement quand
 l'entreprise est déclarée. **Un numéro ne se redonne jamais** : sinon deux
 personnes le partagent sur deux années d'attestations. Il ne peut donc pas
 être le rang de la ligne (`VosSalaries`, qui se renumérote quand on retire un
-salarié) : il faudra une colonne à lui. Jamais le numéro de sécurité sociale. Mention exacte de la
+salarié) : il a sa colonne depuis le 8 novembre 2026 (`equipes.numero_intervenant`,
+migration 0178). Jamais le numéro de sécurité sociale. Mention exacte de la
 facture et condition d'activité exclusive : à confirmer (page officielle
 servicesalapersonne.gouv.fr ou DDETS, bloquées d'ici).
 

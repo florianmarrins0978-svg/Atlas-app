@@ -59,6 +59,11 @@ import {
   messagesAssistant,
   rappelsVus,
   retoursIntervention,
+  heuresDIntervention,
+  attestationsFiscalesEnvoyees,
+  liaisonsUrssaf,
+  inscriptionsUrssaf,
+  demandesUrssaf,
   retoursInterventionTaches,
   retoursInterventionPhotos,
   retoursInterventionVus,
@@ -97,6 +102,10 @@ import { jourIso } from "@/lib/jour";
 const liaisonSansSession = Object.fromEntries(Object.entries(getTableColumns(liaisonsBancaires)).filter(([nom]) => nom !== "sessionId"));
 // Sa plateforme de facture électronique, moins son secret (voir la requête).
 const plateformeSansSecret = Object.fromEntries(Object.entries(getTableColumns(liaisonsPlateformes)).filter(([nom]) => nom !== "secretChiffre"));
+// Sa liaison avec l'Urssaf, moins ses deux codes (voir la requête).
+const urssafSansCodes = Object.fromEntries(
+  Object.entries(getTableColumns(liaisonsUrssaf)).filter(([nom]) => nom !== "clientIdChiffre" && nom !== "clientSecretChiffre")
+);
 
 // Emporter ses données, sans demander la permission à personne.
 //
@@ -249,6 +258,11 @@ export async function exporterEntreprise(
       saConsommationIA,
       sesFacturesAtlas,
       sesObjectifs,
+      sesHeures,
+      sesAttestationsFiscales,
+      saLiaisonUrssaf,
+      sesInscriptionsUrssaf,
+      sesDemandesUrssaf,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
       tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
@@ -505,6 +519,18 @@ export async function exporterEntreprise(
       // Ses objectifs de l'année (migration 0181) : SA saisie, que rien ne
       // reconstitue.
       tx.select().from(objectifsAnnee).where(eq(objectifsAnnee.entrepriseId, e)),
+      // Les heures du retour du jour (migration 0179) : la seule trace des
+      // durées que l'attestation fiscale de ses clients exige. Une reprise qui
+      // les perdrait ne saurait plus en faire aucune.
+      tx.select().from(heuresDIntervention).where(eq(heuresDIntervention.entrepriseId, e)),
+      // Les attestations parties, une ligne par envoi, avec leur empreinte.
+      tx.select().from(attestationsFiscalesEnvoyees).where(eq(attestationsFiscalesEnvoyees.entrepriseId, e)),
+      // L'avance immédiate (migration 0180) : sa liaison **sans les deux codes**
+      // (chiffrés ou non, ils font verser l'Urssaf sur son compte, et une
+      // archive voyage), ses clients inscrits et ses demandes de paiement.
+      tx.select(urssafSansCodes).from(liaisonsUrssaf).where(eq(liaisonsUrssaf.entrepriseId, e)),
+      tx.select().from(inscriptionsUrssaf).where(eq(inscriptionsUrssaf.entrepriseId, e)),
+      tx.select().from(demandesUrssaf).where(eq(demandesUrssaf.entrepriseId, e)),
     ]);
 
     // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
@@ -628,6 +654,13 @@ export async function exporterEntreprise(
       consommation_ia: saConsommationIA,
       factures_atlas: sesFacturesAtlas,
       objectifs_annee: sesObjectifs,
+      // Après les chantiers et les clients, qu'elles désignent.
+      heures_d_intervention: sesHeures,
+      attestations_fiscales_envoyees: sesAttestationsFiscales,
+      // Après les clients et les factures, qu'elles désignent.
+      liaisons_urssaf: saLiaisonUrssaf,
+      inscriptions_urssaf: sesInscriptionsUrssaf,
+      demandes_urssaf: sesDemandesUrssaf,
     };
 
     const compte: Record<string, number> = {};

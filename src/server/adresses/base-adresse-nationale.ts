@@ -1,4 +1,5 @@
 import { lireSuggestions, meriteUneRecherche, MAX_SUGGESTIONS, type SuggestionAdresse } from "@/lib/suggestions-adresse";
+import { adressePostaleDeLaBan } from "@/lib/urssaf/branchement";
 
 /**
  * L'annuaire des adresses françaises, interrogé par Atlas — jamais par le
@@ -91,6 +92,34 @@ export async function adresseAuPoint(
     return lireSuggestions(await reponse.json())[0]?.libelle ?? null;
   } catch (erreur) {
     console.error("[adresses] adresse au point injoignable", { erreur: String(erreur) });
+    return null;
+  }
+}
+
+/**
+ * L'adresse d'un client, découpée comme l'Urssaf l'attend (code INSEE de la
+ * commune, code postal, voie), pour l'inscrire à l'avance immédiate (lot 3).
+ * Seule l'adresse part, jamais son nom. `null` quand la base ne la reconnaît
+ * pas ou ne répond pas : l'inscription s'arrête, et l'écran envoie corriger
+ * l'adresse de la fiche (`adressePostaleDeLaBan` ne devine rien).
+ */
+export async function adresseDecoupee(
+  saisie: string,
+  base: string = process.env.ADRESSE_BASE_URL || BASE_PAR_DEFAUT
+): Promise<ReturnType<typeof adressePostaleDeLaBan>> {
+  if (!meriteUneRecherche(saisie)) return null;
+  const url = new URL("/search/", base);
+  url.searchParams.set("q", saisie.trim());
+  url.searchParams.set("limit", "1");
+  try {
+    const reponse = await fetch(url, { signal: AbortSignal.timeout(DELAI_MS), headers: { Accept: "application/json" } });
+    if (!reponse.ok) {
+      console.error("[adresses] adresse découpée refusée", { statut: reponse.status });
+      return null;
+    }
+    return adressePostaleDeLaBan(await reponse.json());
+  } catch (erreur) {
+    console.error("[adresses] adresse découpée injoignable", { erreur: String(erreur) });
     return null;
   }
 }

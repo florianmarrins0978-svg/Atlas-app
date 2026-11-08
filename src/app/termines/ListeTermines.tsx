@@ -59,8 +59,15 @@ export default function ListeTermines({
   nonPayees,
   chantierDemande,
   chantiersSoldes,
+  attestations,
   monAnnee = null,
 }: {
+  /**
+   * La ligne « Attestations fiscales 2026 », rendue par le serveur, ou `null`
+   * hors de sa saison (`LigneDesAttestations`). Sous les deux portes, à la
+   * place que lui donne sa planche du 8 novembre 2026.
+   */
+  attestations: React.ReactNode;
   /**
    * La ligne de Mon année, sous les deux boutons (sa planche du 8 novembre
    * 2026). `null` tant qu'il ne l'a pas allumée dans Réglages : la page
@@ -278,6 +285,7 @@ export default function ListeTermines({
         </Link>
       </div>
 
+      {attestations}
       {monAnnee}
 
       {/* ─── LES FACTURES NON PAYÉES — sa demande du 24 septembre 2026 ──────

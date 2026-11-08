@@ -28,6 +28,7 @@ import { lireDevisQuiFaitFoi } from "./devis";
 import { genererPdfFacture, type FacturePdfData } from "../pdf/facture-pdf";
 import { fabriquerFactureX, pieceDeLaFacture } from "../pdf/facture-x-pdf";
 import { deposerDansLaTransaction, marquerLaPlateformeCoupee, plateformePourDeposer } from "./plateforme-facture";
+import { transmettreALUrssafDansLaTransaction } from "./avance-immediate";
 import type { Refus as RefusDeLaPlateforme } from "../plateformes/api-commune";
 import { enregistrerObjet } from "../storage";
 import { jourIso } from "../../lib/jour";
@@ -66,6 +67,8 @@ import { chiffresDeLAnnee } from "./franchise-plafond";
 import { dateDesTravauxProposee } from "../../lib/creneaux-chantier";
 import { manquesDeLaFacture, type Manque } from "../../lib/mentions-manquantes";
 import { estUneEntreprise, estUnClientPublic } from "../../lib/civilite";
+import { caseParDefaut, laCaseExiste } from "../../lib/services-a-la-personne";
+import { papierServicesALaPersonne, type CaseDuDocument } from "./services-a-la-personne";
 import { delaiDePaiement, echeanceMaxJours, referenceChorusLue } from "../../lib/facture-publique";
 import type { Creneau } from "../../lib/disponibilites";
 import {
@@ -237,6 +240,7 @@ type OrigineDeLaFacture = Pick<
   | "reductionMontant"
   | "mainDoeuvreHt"
   | "titre"
+  | "servicesALaPersonne"
 >;
 
 function instantaneDuDevis(d: typeof devis.$inferSelect): OrigineDeLaFacture {
@@ -270,6 +274,9 @@ function instantaneDuDevis(d: typeof devis.$inferSelect): OrigineDeLaFacture {
     // suivent le devis sur la facture.
     mainDoeuvreHt: d.mainDoeuvreHt,
     titre: d.titre,
+    // La case « Services à la personne » suit le devis accepté (migration
+    // 0178) : le client a lu la mention du crédit d'impôt sur son devis.
+    servicesALaPersonne: d.servicesALaPersonne,
   };
 }
 
@@ -651,10 +658,27 @@ async function poserLaFactureBrouillon(
   // 7 octobre 2026), sans quoi un devis accepté « comptant » donnait une
   // facture à 30 jours parce que les Réglages avaient changé entre-temps.
   const [entrepriseCourante] = await tx
-    .select({ ...COLONNES_EMETTEUR, delaiPaiementJours: entreprises.delaiPaiementJours })
+    .select({
+      ...COLONNES_EMETTEUR,
+      delaiPaiementJours: entreprises.delaiPaiementJours,
+      sapDeclaree: entreprises.sapDeclaree,
+      sapActiviteACote: entreprises.sapActiviteACote,
+    })
     .from(entreprises)
     .where(eq(entreprises.id, ctx.entrepriseId))
     .limit(1);
+
+  // **La case d'une facture née SANS devis suit la règle d'un devis neuf**
+  // (migration 0178) : une seule règle pour un document neuf, `caseParDefaut`.
+  // Celle d'une facture née d'un devis vient du devis (`instantaneDuDevis`).
+  const servicesALaPersonne =
+    instantane.servicesALaPersonne ??
+    caseParDefaut({
+      declaree: entrepriseCourante?.sapDeclaree ?? false,
+      activiteACote: entrepriseCourante?.sapActiviteACote ?? false,
+      clientNom: instantane.clientNom,
+      clientCivilite: instantane.clientCivilite,
+    });
 
   const numeroCommercial = await attribuerNumeroFacture(tx, ctx.entrepriseId);
 
@@ -716,6 +740,7 @@ async function poserLaFactureBrouillon(
       dateEcheance: jourIso(echeance),
       dateTravaux,
       clientCodeService: fiche?.codeService ?? null,
+      servicesALaPersonne,
       createdBy: ctx.utilisateurId,
     })
     .returning();
@@ -1717,6 +1742,48 @@ export async function majAutoliquidationFacture(
 }
 
 /**
+ * LA CASE « SERVICES À LA PERSONNE » DE LA FACTURE (migration 0178).
+ *
+ * Reprise du devis, elle **se change encore tant que la facture est un
+ * brouillon**, comme le reste de la facture (sa planche du 8 novembre 2026 :
+ * décochée, la facture redevient normale) ; arrêtée, elle ne bouge plus
+ * (`factureEncoreEnBrouillon`, et `trg_facture_immuable` derrière lui).
+ *
+ * Cochée seulement si elle existe : une entreprise déclarée et le client
+ * PORTÉ par la facture, particulier (`laCaseExiste`, la règle de l'écran).
+ */
+export async function majServicesALaPersonneFacture(
+  ctx: Ctx,
+  factureId: string,
+  coche: boolean
+): Promise<{ ok: true; servicesALaPersonne: boolean } | Refus> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const garde = await factureEncoreEnBrouillon(tx, factureId);
+    if (!garde.ok) return garde;
+    if (coche) {
+      const [f] = await tx
+        .select({ clientNom: factures.clientNom, clientCivilite: factures.clientCivilite })
+        .from(factures)
+        .where(eq(factures.id, factureId))
+        .limit(1);
+      const [e] = await tx
+        .select({ declaree: entreprises.sapDeclaree })
+        .from(entreprises)
+        .where(eq(entreprises.id, ctx.entrepriseId))
+        .limit(1);
+      if (!e?.declaree) {
+        return { ok: false, raison: "Votre entreprise n'est pas déclarée : voyez Mon entreprise." };
+      }
+      if (!laCaseExiste({ declaree: e.declaree, clientNom: f?.clientNom, clientCivilite: f?.clientCivilite ?? null })) {
+        return { ok: false, raison: "Le crédit d'impôt est celui d'un particulier : ce client n'en est pas un." };
+      }
+    }
+    await tx.update(factures).set({ servicesALaPersonne: coche }).where(eq(factures.id, factureId));
+    return { ok: true, servicesALaPersonne: coche };
+  });
+}
+
+/**
  * Le numéro de TVA du donneur d'ordre — retenu sur la facture ET sur sa fiche
  * (son choix 5B : *« mais avec la possibilité de modifier »*). La facture
  * suivante de ce client le reprendra ; il le corrige ici quand il change.
@@ -2076,13 +2143,16 @@ export function donneesFacture(
  * 5 octobre 2026) : celle du jour où elle part, jamais celle d'aujourd'hui.
  */
 async function habillageDeLaFacture(
-  tx: Parameters<typeof allureDesDocuments>[0],
+  tx: DbOrTx,
   entrepriseId: string,
-  f: { entrepriseAttestationDecennaleCle: string | null; entrepriseAttestationDecennaleMime: string | null }
+  f: CaseDuDocument & { entrepriseAttestationDecennaleCle: string | null; entrepriseAttestationDecennaleMime: string | null }
 ) {
   return {
     ...(await allureDesDocuments(tx, entrepriseId)),
     attestation: await attestationLue(f.entrepriseAttestationDecennaleCle, f.entrepriseAttestationDecennaleMime),
+    // Le logo et la mention des services à la personne, quand la case est
+    // retenue (migration 0178). La facture d'exemple ne porte pas la case.
+    servicesALaPersonne: await papierServicesALaPersonne(tx, entrepriseId, f),
   };
 }
 
@@ -2233,15 +2303,35 @@ export class FacturePasPriseParLaPlateformeError extends Error {
   }
 }
 
+/**
+ * L'Urssaf n'a pas pris la demande de paiement : rien n'est émis, le
+ * brouillon reste, comme pour la plateforme (lot 3, `ARCHITECTURE.md` §577).
+ * Le message est la phrase rendue au patron : un refus de la règle (« Une
+ * facture par mois du calendrier ») ou celui de l'Urssaf.
+ */
+export class FacturePasPriseParLUrssafError extends Error {
+  constructor(raison: string) {
+    super(raison);
+    this.name = "FacturePasPriseParLUrssafError";
+  }
+}
+
 export async function emettreFacture(
   ctx: Ctx,
   factureId: string,
   maintenant: Date = new Date(),
-  /** Son « L'envoyer sans TVA », après l'arrêt du plafond : rien d'autre ne le pose. */
-  { malgreLePlafond = false }: { malgreLePlafond?: boolean } = {}
+  {
+    malgreLePlafond = false,
+    versLUrssaf = false,
+  }: {
+    /** Son « L'envoyer sans TVA », après l'arrêt du plafond : rien d'autre ne le pose. */
+    malgreLePlafond?: boolean;
+    /** « Envoyer à l'Urssaf » : la demande de paiement part dans la même transaction (lot 3). */
+    versLUrssaf?: boolean;
+  } = {}
 ) {
   try {
-    return await emettreDansLaBase(ctx, factureId, maintenant, malgreLePlafond);
+    return await emettreDansLaBase(ctx, factureId, maintenant, malgreLePlafond, versLUrssaf);
   } catch (err) {
     // **Après le retour en arrière**, sinon la marque partirait avec lui : la
     // liaison dit « coupée » jusqu'à ce qu'il remplace ses identifiants.
@@ -2252,7 +2342,7 @@ export async function emettreFacture(
   }
 }
 
-async function emettreDansLaBase(ctx: Ctx, factureId: string, maintenant: Date, malgreLePlafond: boolean) {
+async function emettreDansLaBase(ctx: Ctx, factureId: string, maintenant: Date, malgreLePlafond: boolean, versLUrssaf: boolean) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [avant] = await tx.select().from(factures).where(eq(factures.id, factureId)).limit(1);
     if (!avant) throw new Error("Facture introuvable");
@@ -2323,7 +2413,8 @@ async function emettreDansLaBase(ctx: Ctx, factureId: string, maintenant: Date, 
     // depuis les données du jour ne serait plus celui que le client a reçu.
     const complements = await complementsDeLaFacture(tx, ctx.entrepriseId, avant);
 
-    const habillage2 = await habillageDeLaFacture(tx, ctx.entrepriseId, emetteur);
+    // La case et le client viennent de la facture, l'attestation de l'émetteur du jour.
+    const habillage2 = await habillageDeLaFacture(tx, ctx.entrepriseId, { ...avant, ...emetteur });
     // **Les quatre totaux ne se repassent plus ici — 10 septembre 2026.**
     // `donneesFacture` les calcule elle-même depuis ces mêmes lignes, avec cette
     // même fonction. Les lui imposer était la moitié d'une duplication dont
@@ -2410,6 +2501,16 @@ async function emettreDansLaBase(ctx: Ctx, factureId: string, maintenant: Date, 
         pdf: pdfBytes,
       });
       if (!depot.ok) throw new FacturePasPriseParLaPlateformeError(depot);
+    }
+
+    // **L'avance immédiate, en dernier aussi, et pour la même raison** (lot 3) :
+    // la facture est écrite émise, son numéro et sa date sont ceux qui partent ;
+    // un refus de l'Urssaf défait tout, et la facture reste un brouillon. Une
+    // facture acceptée est chez l'Urssaf ET arrêtée ici. La plateforme ne sert
+    // qu'une entreprise cliente, l'Urssaf qu'un particulier : jamais les deux.
+    if (versLUrssaf) {
+      const envoi = await transmettreALUrssafDansLaTransaction(tx, ctx, facture.id, maintenant);
+      if (!envoi.ok) throw new FacturePasPriseParLUrssafError(envoi.raison);
     }
 
     return facture;

@@ -17,6 +17,9 @@ import { ligneAJustifier, lignesDuReleve } from "@/server/repositories/pour-mon-
 import { garderLaPage } from "@/server/garde-page";
 import { compteDeLaFranchise } from "@/server/repositories/franchise-plafond";
 import { LigneDeLaFranchise } from "@/components/atlas/FranchiseDeTva";
+import { ligneDesAttestations } from "@/server/repositories/attestations-fiscales";
+import LigneDesAttestations from "./LigneDesAttestations";
+import { releverLesDemandes } from "@/server/repositories/avance-immediate";
 import LigneMonAnnee from "@/components/atlas/LigneMonAnnee";
 import { cheminAutorise } from "@/lib/acces-roles";
 import { etatDeLAnnee } from "@/lib/mon-annee";
@@ -65,6 +68,11 @@ export default async function TerminesPage({ searchParams }: { searchParams: Pro
   // paiement noté, sa demande du 25 septembre 2026).
   const { chantier: chantierDemande } = await searchParams;
   const ctx = await getCurrentCtx();
+  // **Les factures parties à l'Urssaf, relues d'abord** (lot 3) : une facture
+  // versée s'acquitte, et elle doit sortir de l'attente de paiement AVANT que
+  // l'écran ne la compte. Au plus une fois par quelques minutes, et rien pour
+  // une entreprise non déclarée ; une Urssaf muette laisse tout tel quel.
+  await releverLesDemandes(ctx);
   const chantiers = await listerChantiersTermines(ctx);
   const lignes = preparer(chantiers);
   // **Le mois du jour se décide ICI, sur le serveur.** Calculé dans le
@@ -102,6 +110,10 @@ export default async function TerminesPage({ searchParams }: { searchParams: Pro
   // Le même « soldée » que l'écran « Il ne vous paiera pas » lit pour refuser :
   // une seule règle décide si la porte existe et si elle s'ouvre.
   const chantiersSoldes = (await facturesAvecPaiements(ctx)).filter((f) => f.etat === "soldee").map((f) => f.chantierId);
+  // Les attestations fiscales de ses clients (sa planche du 8 novembre 2026) :
+  // du 1er janvier au 31 mars, pour une entreprise déclarée, et rien sinon.
+  // Hors de cette saison, aucune requête ne part (`ligneDesAttestations`).
+  const attestations = await ligneDesAttestations(ctx);
   // **Mon année, sous les deux boutons — seulement s'il l'a allumée** (sa règle
   // du 8 novembre 2026 : « il ne faut pas que ça s'affiche de base »), et à qui
   // ouvre l'écran : la facturation lit Terminés, pas le chiffre de l'année.
@@ -243,6 +255,7 @@ export default async function TerminesPage({ searchParams }: { searchParams: Pro
             nonPayees={nonPayees.length}
             chantierDemande={chantierDemande ?? null}
             chantiersSoldes={chantiersSoldes}
+            attestations={attestations ? <LigneDesAttestations {...attestations} /> : null}
             monAnnee={
               porte ? (
                 <LigneMonAnnee

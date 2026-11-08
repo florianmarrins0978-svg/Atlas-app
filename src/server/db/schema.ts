@@ -387,6 +387,26 @@ export const entreprises = pgTable("entreprises", {
    * tant qu'il ne l'a pas allumé, dans Réglages, Mon année.
    */
   monAnneeSurTermines: boolean("mon_annee_sur_termines").notNull().default(false),
+  /**
+   * LES SERVICES À LA PERSONNE (migration 0178), le crédit d'impôt de ses
+   * clients. **Déclarée, jamais déduite**, comme le régime de TVA : éteinte,
+   * le reste est gardé et rien ne s'imprime. Les règles vivent dans
+   * `src/lib/services-a-la-personne.ts`.
+   */
+  sapDeclaree: boolean("sap_declaree").notNull().default(false),
+  /** « SAP » et neuf chiffres, ou « SIR » et le SIRET pour une coopérative. */
+  sapNumero: text("sap_numero"),
+  sapDeclareeLe: date("sap_declaree_le"),
+  /** Le logo des services à la personne (R7232-19), dans le stockage, comme le logo. */
+  sapLogoCle: text("sap_logo_cle"),
+  sapLogoMime: text("sap_logo_mime"),
+  /** Une activité hors services à la personne : 30 % au plus du HT de l'année. */
+  sapActiviteACote: boolean("sap_activite_a_cote").notNull().default(false),
+  /**
+   * Le dernier numéro d'intervenant DONNÉ. Il ne redescend jamais : un
+   * numéro ne se redonne pas. Seul `tirer_numero_intervenant` l'écrit.
+   */
+  dernierNumeroIntervenant: integer("dernier_numero_intervenant").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
@@ -548,11 +568,20 @@ export const equipes = pgTable(
      * la base.
      */
     chefId: uuid("chef_id"),
+    /**
+     * Le numéro d'intervenant (migration 0178), pour l'attestation fiscale.
+     * Ni le rang (il se renumérote), ni le numéro de sécurité sociale. Tiré
+     * par le déclencheur à la création de la ligne ; NULL pour une ligne
+     * d'avant, jusqu'à la première lecture de l'équipe d'une entreprise
+     * déclarée (`numerosDesIntervenants`).
+     */
+    numeroIntervenant: integer("numero_intervenant"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
     unique("equipes_entreprise_rang_uk").on(t.entrepriseId, t.rang),
+    unique("equipes_numero_intervenant_uk").on(t.entrepriseId, t.numeroIntervenant),
     unique("equipes_id_entreprise_uk").on(t.id, t.entrepriseId),
     foreignKey({
       columns: [t.chefId, t.entrepriseId],
@@ -1572,6 +1601,12 @@ export const devis = pgTable(
      * déjà à zéro : l'état vit sur le chantier (`chantiers.autoliquidation`).
      */
     autoliquidation: boolean("autoliquidation").notNull().default(false),
+    /**
+     * La case « Services à la personne » (migration 0178), une pour tout le
+     * devis. Cochée, le logo et la mention s'impriment, si l'entreprise est
+     * déclarée et le client particulier (`caseRetenue`). La facture la reprend.
+     */
+    servicesALaPersonne: boolean("services_a_la_personne").notNull().default(false),
     clientNumeroTva: text("client_numero_tva"),
     clientAdresse: text("client_adresse"),
     clientTelephone: text("client_telephone"),
@@ -2571,6 +2606,12 @@ export const factures = pgTable(
      * avoirs, relevé) la lit donc sans TVA sans avoir à connaître ce drapeau.
      */
     autoliquidation: boolean("autoliquidation").notNull().default(false),
+    /**
+     * La case « Services à la personne » (migration 0178), reprise du devis.
+     * Elle se change encore tant que la facture est un brouillon ; arrêtée,
+     * `trg_facture_immuable` la fige avec le reste.
+     */
+    servicesALaPersonne: boolean("services_a_la_personne").notNull().default(false),
     /** Le numéro de TVA du donneur d'ordre, imprimé sous son nom (242 nonies A, I-4°). */
     clientNumeroTva: text("client_numero_tva"),
     tauxAvantAutoliquidation: jsonb("taux_avant_autoliquidation").$type<{
@@ -2745,7 +2786,7 @@ export const paiementsFacture = pgTable(
     /** Date civile : c'est elle qui décide du mois ou du trimestre déclaré. */
     datePaiement: date("date_paiement").notNull(),
     montant: numeric("montant", { precision: 12, scale: 2 }).notNull(),
-    moyen: text("moyen", { enum: ["virement", "cheque", "especes", "carte", "autre"] }),
+    moyen: text("moyen", { enum: ["virement", "cheque", "especes", "carte", "avance_immediate", "autre"] }),
     note: text("note"),
     /** Le numéro du chèque (migration 0092) — « chèque n° 1806028 » sur la facture. */
     numero: text("numero"),
@@ -2789,7 +2830,7 @@ export const reglementsRetires = pgTable(
     factureId: uuid("facture_id").notNull(),
     datePaiement: date("date_paiement").notNull(),
     montant: numeric("montant", { precision: 12, scale: 2 }).notNull(),
-    moyen: text("moyen", { enum: ["virement", "cheque", "especes", "carte", "autre"] }),
+    moyen: text("moyen", { enum: ["virement", "cheque", "especes", "carte", "avance_immediate", "autre"] }),
     note: text("note"),
     numero: text("numero"),
     libelle: text("libelle"),
@@ -3981,6 +4022,73 @@ export const retoursInterventionVus = pgTable(
 );
 
 /**
+ * LES HEURES DU RETOUR DU JOUR (migration 0179), pour l'attestation fiscale de
+ * ses clients : une ligne par chantier, par jour et par intervenant.
+ *
+ * **L'intervenant se désigne par son numéro** (lot 1, `numero_intervenant`) :
+ * il ne se redonne jamais, et le patron, sans ligne d'équipe, porte le 0. Le
+ * nom est celui écrit CE jour-là, ou NULL. Les règles vivent dans
+ * `src/lib/heures-d-intervention.ts`.
+ */
+export const heuresDIntervention = pgTable(
+  "heures_d_intervention",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    chantierId: uuid("chantier_id").notNull(),
+    jour: date("jour").notNull(),
+    intervenantNumero: integer("intervenant_numero").notNull(),
+    intervenantNom: text("intervenant_nom"),
+    /** 1 à 1 499 : zéro ne s'écrit pas, il efface la ligne. */
+    minutes: integer("minutes").notNull(),
+    posePar: uuid("pose_par").references(() => users.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("heures_d_intervention_uk").on(t.entrepriseId, t.chantierId, t.jour, t.intervenantNumero),
+    index("heures_d_intervention_chantier_idx").on(t.entrepriseId, t.chantierId),
+    foreignKey({
+      columns: [t.chantierId, t.entrepriseId],
+      foreignColumns: [chantiers.id, chantiers.entrepriseId],
+      name: "heures_d_intervention_chantier_fk",
+    }).onDelete("cascade"),
+  ]
+);
+
+/**
+ * LES ATTESTATIONS FISCALES ENVOYÉES (migration 0179) : une ligne par envoi,
+ * jamais réécrite. L'empreinte dit ce que le papier affirmait
+ * (`empreinteDeLAttestation`) : quand ce qu'Atlas compose aujourd'hui ne lui
+ * ressemble plus, l'attestation est « À renvoyer ».
+ */
+export const attestationsFiscalesEnvoyees = pgTable(
+  "attestations_fiscales_envoyees",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    clientId: uuid("client_id").notNull(),
+    annee: integer("annee").notNull(),
+    montant: numeric("montant", { precision: 12, scale: 2 }).notNull(),
+    empreinte: text("empreinte").notNull(),
+    envoyeeLe: timestamp("envoyee_le", { withTimezone: true }).notNull().defaultNow(),
+    envoyeePar: uuid("envoyee_par").references(() => users.id, { onDelete: "set null" }),
+  },
+  (t) => [
+    index("attestations_fiscales_envoyees_annee_idx").on(t.entrepriseId, t.annee, t.clientId),
+    foreignKey({
+      columns: [t.clientId, t.entrepriseId],
+      foreignColumns: [clients.id, clients.entrepriseId],
+      name: "attestations_fiscales_envoyees_client_fk",
+    }).onDelete("cascade"),
+  ]
+);
+
+/**
  * L'ABONNEMENT DE L'ENTREPRISE — migration 0084.
  *
  * **Les prix ne sont PAS ici.** Ils vivent dans `src/lib/abonnements.ts`, avec
@@ -4460,6 +4568,98 @@ export const liaisonsPlateformes = pgTable("liaisons_plateformes", {
   createdBy: uuid("created_by").references(() => users.id),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/**
+ * LA LIAISON AVEC L'URSSAF pour l'avance immédiate (migration 0180,
+ * `ARCHITECTURE.md` §577). Une par entreprise. **Les deux codes sont chiffrés
+ * au repos** (domaine « urssaf ») et ne se lisent en clair que dans le serveur,
+ * au moment d'appeler l'Urssaf (`src/server/repositories/avance-immediate.ts`).
+ */
+export const liaisonsUrssaf = pgTable("liaisons_urssaf", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  entrepriseId: uuid("entreprise_id")
+    .notNull()
+    .unique("liaisons_urssaf_une_par_entreprise")
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  clientIdChiffre: text("client_id_chiffre").notNull(),
+  clientSecretChiffre: text("client_secret_chiffre").notNull(),
+  idTiersFacturation: text("id_tiers_facturation").notNull(),
+  codeNature: text("code_nature").notNull(),
+  relieeLe: timestamp("reliee_le", { withTimezone: true }).notNull().defaultNow(),
+  relieePar: uuid("reliee_par").references(() => users.id, { onDelete: "set null" }),
+});
+
+/**
+ * L'INSCRIPTION D'UN CLIENT À L'URSSAF (migration 0180). **Ni IBAN ni BIC** :
+ * ils partent à l'Urssaf et ne se gardent pas. La date de naissance, si :
+ * chaque demande de paiement la porte.
+ */
+export const inscriptionsUrssaf = pgTable(
+  "inscriptions_urssaf",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    clientId: uuid("client_id").notNull(),
+    idClientUrssaf: text("id_client_urssaf").notNull(),
+    dateNaissance: date("date_naissance").notNull(),
+    etat: text("etat", { enum: ["en_attente", "inscrit"] }).notNull().default("en_attente"),
+    etatLe: timestamp("etat_le", { withTimezone: true }).notNull().defaultNow(),
+    demandeeLe: timestamp("demandee_le", { withTimezone: true }).notNull().defaultNow(),
+    lueLe: timestamp("lue_le", { withTimezone: true }),
+    inscritePar: uuid("inscrite_par").references(() => users.id, { onDelete: "set null" }),
+  },
+  (t) => [
+    unique("inscriptions_urssaf_un_par_client").on(t.entrepriseId, t.clientId),
+    foreignKey({
+      columns: [t.clientId, t.entrepriseId],
+      foreignColumns: [clients.id, clients.entrepriseId],
+      name: "inscriptions_urssaf_client_fk",
+    }).onDelete("cascade"),
+  ]
+);
+
+/**
+ * LA DEMANDE DE PAIEMENT D'UNE FACTURE À L'URSSAF (migration 0180). Une par
+ * facture, écrite dans la transaction qui l'arrête ; l'étape est relue chez
+ * l'Urssaf à l'ouverture de la facture et de Terminés.
+ */
+export const demandesUrssaf = pgTable(
+  "demandes_urssaf",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    factureId: uuid("facture_id").notNull(),
+    idDemandePaiement: text("id_demande_paiement").notNull(),
+    etape: text("etape", {
+      enum: ["integree", "en-attente-du-client", "validee", "refusee", "prelevee", "impayee", "versee", "annulee", "recouvree", "inconnue"],
+    })
+      .notNull()
+      .default("integree"),
+    libelleUrssaf: text("libelle_urssaf"),
+    envoyeeLe: timestamp("envoyee_le", { withTimezone: true }).notNull().defaultNow(),
+    etapeLe: timestamp("etape_le", { withTimezone: true }).notNull().defaultNow(),
+    valideeLe: date("validee_le"),
+    lueLe: timestamp("lue_le", { withTimezone: true }),
+    montantVerse: numeric("montant_verse", { precision: 12, scale: 2 }),
+    verseeLe: date("versee_le"),
+    paiementId: uuid("paiement_id"),
+    envoyeePar: uuid("envoyee_par").references(() => users.id, { onDelete: "set null" }),
+  },
+  (t) => [
+    unique("demandes_urssaf_une_par_facture").on(t.entrepriseId, t.factureId),
+    unique("demandes_urssaf_id_uk").on(t.entrepriseId, t.idDemandePaiement),
+    index("demandes_urssaf_a_relire_idx").on(t.entrepriseId, t.etape),
+    foreignKey({
+      columns: [t.factureId, t.entrepriseId],
+      foreignColumns: [factures.id, factures.entrepriseId],
+      name: "demandes_urssaf_facture_fk",
+    }).onDelete("cascade"),
+  ]
+);
 
 /** Une facture déposée sur la plateforme, et ce que la plateforme en a dit (0169). */
 export const transmissionsFactures = pgTable("transmissions_factures", {

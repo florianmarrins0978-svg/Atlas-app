@@ -14,6 +14,7 @@ import {
   users,
 } from "../db/schema";
 import type { Ctx } from "./context";
+import { ecrireLesHeuresDans, type HeuresDuJour } from "./heures-d-intervention";
 import { retourModifiable, type RetourEnListe, type TacheDuRetour } from "../../lib/retour-intervention";
 import { jourIso } from "../../lib/jour";
 import { sansLigneVide } from "../../lib/taches-du-devis";
@@ -35,6 +36,12 @@ export type RetourAPoser = {
   /** Les photos du chantier qu'il montre. Relues ici, jamais crues sur parole. */
   photoIds: readonly string[];
   aSignaler: string | null;
+  /**
+   * Les heures du jour, pour l'attestation fiscale (migration 0179), déjà
+   * relues contre la liste du jour (`heuresRecues`). Absentes : le retour ne
+   * les touche pas, c'est le cas de tout chantier hors services à la personne.
+   */
+  heures?: HeuresDuJour | null;
 };
 
 /**
@@ -81,7 +88,9 @@ export async function poserLeRetour(
 /**
  * Les tâches et les photos d'un retour — une seule écriture pour l'envoi et
  * pour la modification : deux façons de poser le même contenu finiraient par
- * ne plus poser le même (`CLAUDE.md` §3).
+ * ne plus poser le même (`CLAUDE.md` §3). Les heures du jour aussi, dans la
+ * même transaction : un retour parti sans ses heures se renverrait, et en
+ * ferait deux.
  */
 async function poserLeContenu(
   tx: DbOrTx,
@@ -90,6 +99,8 @@ async function poserLeContenu(
   chantierId: string,
   quoi: RetourAPoser
 ) {
+  if (quoi.heures) await ecrireLesHeuresDans(tx, ctx, chantierId, quoi.heures);
+
   // Les tâches viennent de l'écran : une case sans texte ne s'écrit pas, quoi
   // qu'il envoie (`sansLigneVide`).
   const taches = sansLigneVide(quoi.taches);

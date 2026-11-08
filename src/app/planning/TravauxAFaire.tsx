@@ -21,6 +21,15 @@ import {
   type TacheDuRetour,
 } from "@/lib/retour-intervention";
 import {
+  HEURES_PROPOSEES,
+  MINUTES_PROPOSEES,
+  enHeuresEtMinutes,
+  libelleHeures,
+  libelleMinutes,
+  minutesDe,
+} from "@/lib/heures-d-intervention";
+import { libelleNumeroIntervenant } from "@/lib/services-a-la-personne";
+import {
   ajouterPhotoDuRetourAction,
   etatDuRetourAction,
   modifierLeRetourAction,
@@ -102,6 +111,18 @@ import { ajouterTravailAction, enleverTravailAction } from "./actions";
  * soleil.
  */
 
+/**
+ * « COMBIEN D'HEURES ? » — le crédit d'impôt de ses clients, lot 2 (sa planche
+ * du 8 novembre 2026, `appli/soignee/credit-d-impot.html`, « Retour du jour »).
+ * Une ligne par intervenant que le serveur a retenu pour aujourd'hui
+ * (`heuresDuRetour`), deux roulettes natives, et les heures partent avec le
+ * retour. `null` : la section n'existe pas, et le retour part comme avant.
+ */
+type HeuresDuJour = {
+  pour: string;
+  intervenants: { numero: number; libelle: string; minutes: number }[];
+};
+
 /** Le dernier retour parti, tel que la fiche le rouvre pour le modifier. */
 type RetourParti = {
   id: string;
@@ -159,6 +180,7 @@ export default function TravauxAFaire({
   const modifiable = dernierLe !== null && retourModifiable(dernierLe, new Date());
   const [refus, setRefus] = useState<string | null>(null);
   const [rangOuvert, setRangOuvert] = useState<number | null>(null);
+  const [heures, setHeures] = useState<HeuresDuJour | null>(null);
   const champ = useRef<HTMLInputElement>(null);
   const mot = useRef<HTMLTextAreaElement>(null);
 
@@ -217,6 +239,7 @@ export default function TravauxAFaire({
             }
           : null;
         setRegles(etat.regles);
+        setHeures(etat.heures);
         setPhotos(etat.photos);
         setEnvoyes(etat.envoyes);
         setAFaire(etat.aFaire);
@@ -297,6 +320,7 @@ export default function TravauxAFaire({
       taches,
       photoIds: [...reprises],
       aSignaler: aSignaler.trim() || null,
+      heures: heures ? heures.intervenants.map((i) => ({ numero: i.numero, minutes: i.minutes })) : null,
     };
     const aModifier = enModification && modifiable ? dernier : null;
     const r = aModifier
@@ -598,6 +622,99 @@ export default function TravauxAFaire({
                       Ajouter
                     </button>
                   </form>
+                )}
+
+                {/* **« Combien d'heures ? », sous les travaux faits** — l'ordre
+                    de sa planche. Les roulettes vont de 0 à 24 h, puis de 00 à
+                    59 minute par minute (sa règle du 8 novembre 2026, *« il faut
+                    pouvoir mettre n'importe quel nombre d'heures »*). */}
+                {heures && (
+                  <div data-atlas="combien-d-heures" className="mt-4">
+                    <span
+                      className="text-[13px] font-semibold uppercase tracking-[0.12em]"
+                      style={{ color: colors.inkSoft }}
+                    >
+                      Combien d&apos;heures ?
+                    </span>
+                    <div className="mt-1">
+                      {heures.intervenants.map((i, rang) => {
+                        const duree = enHeuresEtMinutes(i.minutes);
+                        const poser = (h: number, m: number) => {
+                          const total = minutesDe(h, m);
+                          if (total === null) return;
+                          setHeures((avant) =>
+                            avant && {
+                              ...avant,
+                              intervenants: avant.intervenants.map((x) => (x.numero === i.numero ? { ...x, minutes: total } : x)),
+                            }
+                          );
+                        };
+                        // 16 px au moins : en dessous, iOS grossit la page à
+                        // l'ouverture de la roulette.
+                        const roulette = {
+                          backgroundColor: colors.cream,
+                          color: colors.ink,
+                          boxShadow: `inset 0 0 0 1.5px ${colors.line}`,
+                          fontSize: 16,
+                        } as const;
+                        return (
+                          <div
+                            key={i.numero}
+                            data-atlas="heures-d-un-intervenant"
+                            className="relative flex min-h-[64px] items-center gap-2.5 py-2.5"
+                          >
+                            {rang > 0 && (
+                              <span
+                                aria-hidden="true"
+                                className="pointer-events-none absolute inset-x-0 top-0 h-px"
+                                style={{ background: colors.lineSoft }}
+                              />
+                            )}
+                            <span className="min-w-0 flex-1">
+                              <span
+                                className="block text-[17px] leading-[1.25] [overflow-wrap:anywhere]"
+                                style={{ fontFamily: font.display, color: colors.ink }}
+                              >
+                                {i.libelle}
+                              </span>
+                              <span className="mt-0.5 block text-[13.5px]" style={{ color: colors.inkSoft }}>
+                                {libelleNumeroIntervenant(i.numero)}
+                              </span>
+                            </span>
+                            <select
+                              aria-label={`Heures de ${i.libelle}`}
+                              value={duree.heures}
+                              onChange={(e) => poser(Number(e.target.value), duree.minutes)}
+                              className="min-h-12 flex-none rounded-[10px] px-3 tabular-nums"
+                              style={roulette}
+                            >
+                              {HEURES_PROPOSEES.map((v) => (
+                                <option key={v} value={v}>
+                                  {libelleHeures(v)}
+                                </option>
+                              ))}
+                            </select>
+                            <select
+                              aria-label={`Minutes de ${i.libelle}`}
+                              value={duree.minutes}
+                              onChange={(e) => poser(duree.heures, Number(e.target.value))}
+                              className="min-h-12 flex-none rounded-[10px] px-3 tabular-nums"
+                              style={roulette}
+                            >
+                              {MINUTES_PROPOSEES.map((v) => (
+                                <option key={v} value={v}>
+                                  {libelleMinutes(v)}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <p className="m-0 mt-1 text-[13.5px] leading-[1.4]" style={{ color: colors.inkSoft }}>
+                      {heures.pour}
+                    </p>
+                  </div>
                 )}
 
                 <div className="mb-2.5 mt-4 flex items-baseline gap-2">

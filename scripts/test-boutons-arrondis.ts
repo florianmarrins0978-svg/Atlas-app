@@ -163,6 +163,19 @@ const HORS_CHARTE: Array<{
   },
   {
     /**
+     * **La ligne des attestations fiscales, sous les deux portes de Terminés**
+     * : sa planche du 8 novembre 2026 (`appli/soignee/credit-d-impot.html`,
+     * « L'attestation », sa plage `.attestations` au rayon des plages). Une
+     * plage teintée pleine largeur, ambre puis verte, qui porte un titre et une
+     * phrase et ouvre la liste : la nature de la ligne de la franchise, et un
+     * repère borné. Tout autre bouton carré de ce fichier fait toujours rougir.
+     */
+    motif: /^src[/\\]app[/\\]termines[/\\]LigneDesAttestations\.tsx$/,
+    pourquoi: "plage pleine largeur qu'on parcourt, sous les portes de Terminés, à 4 px et non geste en capsule",
+    seulement: /data-atlas="ligne-des-attestations"/,
+  },
+  {
+    /**
      * **La ligne qui rassemble les clients à hiverner, en tête de Vos clients**
      * : sa planche du 5 novembre 2026, la B retenue le 6
      * (`appli/soignee/hiverner-l-arrosage.html`). Une plage bleue pleine

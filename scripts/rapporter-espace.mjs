@@ -163,7 +163,16 @@ export function ecrivainsRecents(corpsPrecedent, actuel) {
 /** « 14:00 UTC » : l'heure de chaque espace, sans la date, qui est celle d'au-dessus. */
 const heure = (iso) => `${String(iso).slice(11, 16)} UTC`;
 
-/** Le corps de la fiche. Rendu séparément pour être éprouvable sans réseau. */
+/**
+ * Le corps de la fiche. Rendu séparément pour être éprouvable sans réseau.
+ *
+ * Les types sont écrits : sans eux, TypeScript lit `espace = null` et
+ * `ecrivains = []` comme « toujours null » et « toujours vide », et refuse
+ * l'empreinte et la liste que l'appelant lui donne.
+ *
+ * @param {{ diagnostic: string, quand: string, moment?: string,
+ *   espace?: string | null, ecrivains?: Array<{ espace: string, quand: string }> }} fiche
+ */
 export function corpsDuRapport({ diagnostic, quand, moment = "main", espace = null, ecrivains = [] }) {
   const plusieurs = ecrivains.length > 1;
   return [

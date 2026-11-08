@@ -19,11 +19,17 @@ import { chercherLesObjets } from "@/server/import/traiter-pieces";
 import { etatHivernageDuClient } from "@/server/repositories/hivernage";
 import { getRole } from "@/server/autorisation";
 import { ceQueLaFicheDit } from "@/lib/hivernage";
-import { peutModifierLePlanning } from "@/lib/acces-roles";
+import { peutFacturer, peutModifierLePlanning } from "@/lib/acces-roles";
 import { estProprietaire } from "@/server/autorisation";
 import PorteImport from "../PorteImport";
 import BandeImport from "../BandeImport";
 import ArrosageDuClient from "./ArrosageDuClient";
+import AvanceImmediateDuClient from "./AvanceImmediateDuClient";
+import { getEntreprise } from "@/server/repositories/entreprises";
+import { getClient } from "@/server/repositories/clients";
+import { inscriptionDuClient, liaisonUrssaf, relireLInscription } from "@/server/repositories/avance-immediate";
+import { ceQueLaFicheDit as ceQueLaFicheDitDeLUrssaf, feuillePreremplie, rubriqueDuClient } from "@/lib/urssaf/branchement";
+import { avecCivilite } from "@/lib/civilite";
 
 // **La fiche d'un client : son nom, ce qu'on lui a fait la dernière fois, et
 // ses papiers.**
@@ -130,6 +136,32 @@ export default async function FicheClientPage({
   const aujourdHui = jourIso(new Date());
   const [etatArrosage, role, importe] = await Promise.all([etatHivernageDuClient(ctx, id), getRole(ctx), estProprietaire(ctx)]);
   const arrosage = etatArrosage ? ceQueLaFicheDit(etatArrosage, aujourdHui) : null;
+
+  // **L'avance immédiate** (lot 3, sa planche du 8 novembre 2026) : une
+  // entreprise déclarée, reliée à l'Urssaf, un client particulier. Les tables
+  // du lot 3 ne se lisent que pour une entreprise déclarée. L'état d'un client
+  // en attente se relit chez l'Urssaf à l'ouverture, au plus une fois par
+  // quelques minutes, et une Urssaf muette laisse la fiche telle quelle.
+  const avanceImmediate = await (async () => {
+    const entreprise = await getEntreprise(ctx);
+    if (!entreprise?.sapDeclaree) return null;
+    const [liaison, leClient] = await Promise.all([liaisonUrssaf(ctx), getClient(ctx, id)]);
+    if (!leClient) return null;
+    const reliee = liaison !== null && !liaison.aRefaire;
+    if (!rubriqueDuClient({ declaree: true, reliee, clientNom: leClient.nom, clientCivilite: leClient.civilite })) return null;
+    await relireLInscription(ctx, id);
+    const inscription = await inscriptionDuClient(ctx, id);
+    return {
+      qui: avecCivilite(leClient.nom, leClient.civilite) || leClient.nom,
+      dit: ceQueLaFicheDitDeLUrssaf(inscription, aujourdHui),
+      preremplie: feuillePreremplie({
+        nom: leClient.nom,
+        civilite: leClient.civilite,
+        telephone: leClient.telephone,
+        email: leClient.email,
+      }),
+    };
+  })();
 
   // **L'ADRESSE, PUIS LE TÉLÉPHONE À LA LIGNE — sa demande du 26 août 2026 :**
   // *« supprime le point entre l'adresse et le numéro de tel ; le tel doit être
@@ -253,6 +285,16 @@ export default async function FicheClientPage({
           dit={arrosage}
           aujourdHui={aujourdHui}
           peutPoser={role !== null && peutModifierLePlanning(role)}
+        />
+      )}
+
+      {avanceImmediate && (
+        <AvanceImmediateDuClient
+          clientId={fiche.client.id}
+          qui={avanceImmediate.qui}
+          dit={avanceImmediate.dit}
+          preremplie={avanceImmediate.preremplie}
+          peutInscrire={role !== null && peutFacturer(role)}
         />
       )}
 

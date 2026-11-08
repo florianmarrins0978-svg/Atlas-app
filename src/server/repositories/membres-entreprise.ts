@@ -1,4 +1,4 @@
-import { and, eq, ne } from "drizzle-orm";
+import { and, asc, eq, ne } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { hash } from "bcryptjs";
 import { db } from "../db/client";
@@ -398,4 +398,28 @@ export async function adressesDesPatronsDans(
     .innerJoin(users, eq(users.id, membresEntreprise.utilisateurId))
     .where(and(eq(membresEntreprise.entrepriseId, entrepriseId), eq(membresEntreprise.role, "proprietaire")));
   return lignes.map((l) => l.email);
+}
+
+/**
+ * LE PATRON d'une entreprise, tel qu'il signe : son nom écrit et sa civilité,
+ * ou `null` quand son compte n'en porte pas. Le premier compte propriétaire,
+ * s'il y en a plusieurs : c'est celui qui a ouvert l'entreprise.
+ *
+ * Pour les heures du retour du jour (le patron seul, n° 0) et l'attestation
+ * fiscale (« Je soussigné… »). Dans la transaction de l'appelant, qui a posé
+ * `app.entreprise_id` (`membres_entreprise` est sous RLS).
+ */
+export async function patronDans(
+  tx: Parameters<Parameters<typeof withEntreprise>[2]>[0],
+  entrepriseId: string
+): Promise<{ nom: string; civilite: "mr" | "mme" | null } | null> {
+  const [l] = await tx
+    .select({ prenom: users.prenom, nom: users.nom, civilite: users.civilite })
+    .from(membresEntreprise)
+    .innerJoin(users, eq(users.id, membresEntreprise.utilisateurId))
+    .where(and(eq(membresEntreprise.entrepriseId, entrepriseId), eq(membresEntreprise.role, "proprietaire")))
+    .orderBy(asc(membresEntreprise.createdAt))
+    .limit(1);
+  const nom = l ? nomAffiche(l) : "";
+  return l && nom ? { nom, civilite: l.civilite } : null;
 }

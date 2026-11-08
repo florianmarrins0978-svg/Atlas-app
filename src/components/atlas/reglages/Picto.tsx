@@ -52,7 +52,9 @@ export type NomPicto =
   | "scanner"
   | "ampoule"
   | "email"
-  | "corbeille";
+  | "corbeille"
+  | "euro"
+  | "horloge-sable";
 
 const TRACES: Record<NomPicto, React.ReactNode> = {
   suivant: <path d="M9 5l7 7-7 7" />,
@@ -201,6 +203,16 @@ const TRACES: Record<NomPicto, React.ReactNode> = {
       <path d="M4 7h16" />
       <path d="M10 4h4a1 1 0 0 1 1 1v2H9V5a1 1 0 0 1 1-1z" />
       <path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12" />
+    </>
+  ),
+  // L'avance immédiate (lot 3), recopiés du kit : « Il paie la moitié », puis
+  // « En attente de Mr. Lambert ».
+  euro: <path d="M16.5 7.2A6 6 0 1 0 16.5 16.8M5.5 10.5h8M5.5 13.5h8" />,
+  "horloge-sable": (
+    <>
+      <path d="M5.5 3.5h13M5.5 20.5h13" />
+      <path d="M7 3.5v1.8c0 3 4.2 4.4 4.2 6.7s-4.2 3.7-4.2 6.7v1.8M17 3.5v1.8c0 3-4.2 4.4-4.2 6.7s4.2 3.7 4.2 6.7v1.8" />
+      <path d="M9.3 7.3h5.4M12 13.3v2M8.7 18.9c.9-1.6 2-2.4 3.3-2.4s2.4.8 3.3 2.4" />
     </>
   ),
 };
