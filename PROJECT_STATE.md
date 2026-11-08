@@ -1,5 +1,10 @@
 # État du projet
 
+## JOURS TRAVAILLÉS DANS ÉQUIPE, CODÉ (8 novembre 2026), PAS ENCORE SUR `main`
+
+Sous « Combien de salariés ? », le même écran que Pour mon comptable, qui garde sa porte (`chargerJoursTravailles`, prop `ou` de `JoursTravailles`). Types, lint, écran regardé, gestes joués à la main (nombre de salariés, mois d'avant, Modifier). Contrôle de son niveau pas encore joué : il attend son oui.
+
+---
 ## MON ANNÉE, CODÉE (8 novembre 2026), SUR `main` LE 8 NOVEMBRE
 
 Par la batterie commune des trois lots (`docs/batterie-commune-8-novembre.md`),

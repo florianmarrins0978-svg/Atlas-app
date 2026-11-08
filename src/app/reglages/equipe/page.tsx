@@ -28,6 +28,8 @@ import PastilleIcone from "@/components/atlas/reglages/PastilleIcone";
 import Icone from "@/components/atlas/IconeTrait";
 import { reglageLu, resumeDesZones } from "@/lib/zones-deplacement";
 import { numerosDesIntervenants } from "@/server/repositories/services-a-la-personne";
+import JoursTravailles from "@/app/termines/comptable/jours-travailles/JoursTravailles";
+import { chargerJoursTravailles } from "@/app/termines/comptable/jours-travailles/charger";
 
 export const dynamic = "force-dynamic";
 
@@ -56,7 +58,11 @@ export const dynamic = "force-dynamic";
  * accès » porte des COMPTES, « Vos équipes » porte des FILES DU PLANNING
  * (`docs/QUESTIONS.md` §10).
  */
-export default async function EquipePage() {
+export default async function EquipePage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   await garderLaPage();
   const ctx = await getCurrentCtx();
   if (!(await estProprietaire(ctx))) {
@@ -97,6 +103,10 @@ export default async function EquipePage() {
   // numérote ceux qui n'en ont pas encore. APRÈS `listerEquipes`, jamais en
   // même temps : elle peut créer les lignes que le compteur annonce.
   const numeros = await numerosDesIntervenants(ctx);
+  // **Les jours travaillés, aussi ici** (sa demande du 8 novembre 2026,
+  // capture de l'écran à l'appui) : le même écran que dans Pour mon comptable,
+  // qui garde sa porte. Un artisan seul n'a personne à compter.
+  const jours = (entreprise?.nombreSalaries ?? 0) > 0 ? await chargerJoursTravailles(ctx, (await searchParams).mois) : null;
 
   const agendaRelie = (google.relie && google.actif) || (apple.relie && apple.actif);
 
@@ -156,6 +166,14 @@ export default async function EquipePage() {
           initialNoms={equipes.map((e) => ({ rang: e.rang, nom: e.nom, photo: e.photo }))}
           numeros={numeros}
         />
+
+        {/* Sous « Combien de salariés ? », avant Absences : là où il l'a
+            demandé. Le mois changé ici reste ici (`?mois=`). */}
+        {jours && (
+          <Paquet titre="Jours travaillés" sansPlage dataAtlas="jours-dans-equipe">
+            <JoursTravailles {...jours} ou="equipe" />
+          </Paquet>
+        )}
 
         {/* **Sous les noms, comme il l'a retenu** (`docs/maquettes/55`,
             proposition A) : c'est là que vivent les équipes, et c'est là qu'on

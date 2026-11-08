@@ -54,6 +54,15 @@ type Props = {
   jamaisRegle: boolean;
   zones: null | { resume: string; zones: Zone[]; teinte: TeinteZones; departSitue: boolean };
   salaries: SalarieVu[];
+  /**
+   * Où l'écran est monté. Sa demande du 8 novembre 2026 : *« tu me fais juste
+   * une copie, comme ça j'ai à la fois la porte dans mon comptable et dans mon
+   * équipe »*. C'est le MÊME composant aux deux endroits, jamais une copie
+   * (`CLAUDE.md` §3). Dans Équipe, il vit dans un paquet qui pose déjà la
+   * marge, l'envoi au comptable reste à l'écran du comptable, et le réglage
+   * des zones ramène dans Équipe.
+   */
+  ou: "comptable" | "equipe";
 };
 
 const rubrique = "text-[13px] font-semibold uppercase tracking-[0.14em]";
@@ -220,8 +229,10 @@ export default function JoursTravailles(p: Props) {
   const s = salaries.find((x) => x.rang === ouvert) ?? null;
   const jz = zoneOuverte ? salaries.find((x) => x.rang === zoneOuverte.rang) ?? null : null;
 
+  const zonesHref = p.ou === "equipe" ? "/reglages/equipe/zones" : "/reglages/equipe/zones?depuis=jours";
+
   return (
-    <div className="px-6">
+    <div className={p.ou === "equipe" ? undefined : "px-6"}>
       <div className="mt-2 flex items-center justify-between gap-2 rounded-[22px] p-1.5" style={{ backgroundColor: colors.card }}>
         <Link
           href={`?mois=${p.precedent}`}
@@ -259,7 +270,7 @@ export default function JoursTravailles(p: Props) {
         <div className="mx-0.5 mt-4 flex items-center justify-between gap-3 text-[15px] font-semibold" style={{ color: colors.inkSoft }}>
           <span>{p.zones.resume}</span>
           {p.peutRegler && (
-            <Link href="/reglages/equipe/zones?depuis=jours" className="flex min-h-[44px] items-center text-[15px] font-bold" style={{ color: colors.orTexte }}>
+            <Link href={zonesHref} className="flex min-h-[44px] items-center text-[15px] font-bold" style={{ color: colors.orTexte }}>
               Modifier
             </Link>
           )}
@@ -373,7 +384,7 @@ export default function JoursTravailles(p: Props) {
             <Icone nom="lieu" taille={20} />
           </span>
           <span className="min-w-0 flex-1">Vos salariés ont des zones de déplacement ?</span>
-          <Link href="/reglages/equipe/zones?depuis=jours" className="flex min-h-[48px] flex-none items-center rounded-full px-3 font-bold" style={{ color: colors.orTexte }}>
+          <Link href={zonesHref} className="flex min-h-[48px] flex-none items-center rounded-full px-3 font-bold" style={{ color: colors.orTexte }}>
             Régler
           </Link>
         </div>
@@ -391,7 +402,7 @@ export default function JoursTravailles(p: Props) {
         </p>
       )}
 
-      {salaries.length > 0 && (
+      {p.ou === "comptable" && salaries.length > 0 && (
         <button
           type="button"
           onClick={envoyer}
