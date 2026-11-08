@@ -1,6 +1,6 @@
 # Prochaines tâches
 
-## ⏳ À CHOISIR PAR LUI (8 novembre 2026) : vos entrées et sorties, l'écran A ou B, et l'assistant
+## ⏳ À REGARDER PAR LUI (8 novembre 2026) : vos entrées et sorties, deux cases, et l'assistant
 
 Sa question, sur « Pour mon comptable » : *« c'est normal que quand je lui
 demande mes entrées et mes sorties de l'année, il me les trouve pas »*. Puis :
@@ -17,8 +17,16 @@ devient « Depuis le 28 octobre ». Écran B : « Année » compte tout 2026, le
 dossier reste dit à part. L'assistant : entrées, sorties, reste, sur une
 période ; si la banque n'a donné qu'une partie, il le dit avec la date.
 
-**Aussi à trancher** : l'assistant donne-t-il le détail mois par mois quand on
-demande l'année ? Niveau 3 au codage (argent).
+**Sa réponse, le même jour** : *« la B. Par contre, si c'est dossier en cours
+depuis le 28 octobre, il ne faut pas que ça nous induise en erreur : le mois,
+les trimestres et l'année seulement sur le dossier en cours, et à côté, une
+autre case pour voir toutes les dépenses depuis le 1er janvier »*. Planche
+revue : deux cases côte à côte avec leurs totaux ; le dossier garde Mois,
+Trimestre, Année, chaque période disant où elle commence (« 2026, depuis le
+28 octobre ») ; l'année depuis le 1er janvier, mois par mois.
+
+**Reste à trancher** : l'assistant donne-t-il le détail mois par mois quand
+on demande l'année ? Niveau 3 au codage (argent).
 
 ## ⏳ À REGARDER PAR LUI (8 novembre 2026) : « Autre chose », en entier
 
@@ -2466,6 +2474,27 @@ Unipros »* (page « services à la personne », étape 01), puis la facture par
 accepte un devis fait ailleurs, à son en-tête, ou un import. Un chantier qui
 mêle élagage et taille donne deux devis et deux émetteurs : l'élagage chez
 l'artisan, la taille chez la coopérative.
+
+**Relier l'Urssaf : rien n'est codé, et voici ce que ça demande (lu le
+8 novembre 2026 sur les pages officielles).** Sa question : *« est-ce que ça
+marche ou c'est mis comme ça dans la planche ? il faut que ça fonctionne »*.
+Ce n'est que dessiné. Sources : la fiche de l'API sur data.gouv.fr
+(`api-tiers-de-prestation`) et le formulaire vierge de la démarche
+(demarche.numerique.gouv.fr, `api-tiers-de-prestations/dossier_vide`). Le
+portail technique (portailapi.urssaf.fr) ne répond pas depuis la session.
+
+| | |
+|---|---|
+| **ce que c'est** | une API, pas le site : `https://api.urssaf.fr/atp/v1/tiersPrestations`, accès restreint. Trois gestes : inscrire un particulier, transmettre une demande de paiement, lire son statut. Atlas ÉCRIT (inscription, facture) et LIT (statut, virement, rejet) : pas de lecture seule |
+| **le dossier d'Atlas** | une fois, par sa société, case « Je suis éditeur de logiciel » (numéro SAP facultatif pour un éditeur) |
+| **le dossier de chaque artisan** | case « J'ai recours à un éditeur de logiciel », en nommant Atlas ; son contact technique reçoit les codes d'accès, qu'il colle dans Atlas |
+| **les pièces** | justificatif de promotion du dispositif (mentions imposées : service mis en place par l'Urssaf et la DGFiP, non obligatoire, activation du compte, 48 h pour valider ou contester, l'organisme reste l'interlocuteur, lien vers les plafonds sur impots.gouv.fr ; un kit Urssaf existe), attestation de régularité fiscale de moins d'un mois, RIB de virement, pièce d'identité du dirigeant, contacts (dirigeant, gestion, comptabilité, technique), CGU acceptées |
+| **les délais** | 19 jours au mieux, environ 2 mois avec échanges, 3 mois si le dossier est incomplet |
+| **les règles qui touchent le produit** | le client doit avoir déjà fait une déclaration de revenus ; une demande de paiement ne couvre pas plus d'un mois calendaire ; un RIB de prélèvement sur lequel **l'Urssaf prélève l'artisan si le client ne paie pas sa part** |
+
+Rien ne peut s'éprouver avant que l'Urssaf donne ses codes : le code
+s'écrirait à l'aveugle. Ordre proposé : son dossier d'éditeur d'abord, le
+code pendant l'instruction, l'essai sur les codes reçus.
 
 **Le nom ET le numéro de chaque intervenant sur l'attestation (sa question
 du 8 novembre 2026, « des numéros, ou les noms ? »).** La page officielle
