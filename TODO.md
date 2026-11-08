@@ -1,5 +1,21 @@
 # Prochaines tâches
 
+## ⏳ À REGARDER PAR LUI (8 novembre 2026) : une facture depuis la fiche d'un client
+
+Sa question : *« si je vais dans Mes clients, que je clique sur Bernard, est-ce
+que je peux ajouter un devis, une facture, juste pour ce client-là ? »*, puis
+*« montre-moi la maquette finie que tu veux coder avant de coder quoi que ce
+soit »*.
+
+**Lu dans le code** : la fiche (`RepartirDeCeClient.tsx`) porte « Dernier
+devis », « Nouveau devis » (`/chantiers/nouveau?client=`) et « Contrat
+d'entretien » ; une facture sans devis ne part que de Terminés
+(`/chantiers/nouveau?facture=1`). La page lit déjà les deux réglages ensemble.
+
+**La planche** : `appli/soignee/client-nouvelle-facture.html`. Un geste
+« Nouvelle facture » (`?client=<id>&facture=1`) ; quatre gestes deux par deux,
+trois sur une ligne. Niveau 3 au codage (argent).
+
 ## ⏳ À REGARDER PAR LUI (8 novembre 2026) : vos entrées et sorties, deux cases, et l'assistant
 
 Sa question, sur « Pour mon comptable » : *« c'est normal que quand je lui
@@ -28,7 +44,7 @@ Trimestre, Année, chaque période disant où elle commence (« 2026, depuis le
 **Reste à trancher** : l'assistant donne-t-il le détail mois par mois quand
 on demande l'année ? Niveau 3 au codage (argent).
 
-## ⏳ À REGARDER PAR LUI (8 novembre 2026) : « Autre chose », en entier
+## ⏳ À REGARDER PAR LUI (8 novembre 2026) : « Autre chose », en entier (maquette finie : sans fiche client, ligne de facture gardée)
 
 Sa demande, en quatre temps le même jour (le chemin est dans l'en-tête de la
 planche) ; sa décision, photo de la fiche d'intervention à l'appui : *« quand

@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Une facture depuis sa fiche</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  UNE FACTURE DEPUIS LA FICHE D'UN CLIENT
+  (src/app/clients/[id]/RepartirDeCeClient.tsx).
+
+  Sa question du 8 novembre 2026 : « si je vais dans Mes clients, que je
+  clique sur Bernard, est-ce que je peux ajouter un devis, une facture, juste
+  pour ce client-là ? », puis « montre-moi la maquette finie que tu veux
+  coder avant de coder quoi que ce soit ».
+
+  CE QUI EST VRAI AUJOURD'HUI, LU DANS LE CODE : sa fiche porte « Dernier
+  devis » (s'il a déjà un chantier), « Nouveau devis »
+  (/chantiers/nouveau?client=<id>) et « Contrat d'entretien ». Une facture
+  sans devis ne part que de Terminés, « Créer une facture »
+  (/chantiers/nouveau?facture=1), où l'on choisit le client. La même page
+  lit les deux réglages à la fois (chantiers/nouveau/page.tsx) : le client
+  rempli ET la facture au lieu du devis.
+
+  CE QUI CHANGE : un geste « Nouvelle facture », qui ouvre ce même écran,
+  le client déjà rempli. Quatre gestes se rangent deux par deux, chacun
+  garde ses 76 px de haut pour le pouce ; trois restent sur une ligne.
+*/
+.ecran { background: var(--atlas-cream); }
+.haut-fiche { display: flex; justify-content: space-between; align-items: center; margin: 4px 0 12px; }
+.rond-creux { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; box-shadow: inset 0 0 0 1px var(--atlas-line); color: var(--atlas-ink); }
+.carte-client { background: var(--atlas-card); border-radius: 14px; padding: 16px; }
+.carte-client .etiquette { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--atlas-orTexte); }
+.carte-client h1 { margin: 4px 0 10px; font: 400 28px/1.1 var(--serif); color: var(--atlas-ink); }
+.carte-client .tel { display: flex; align-items: center; gap: 10px; font-size: 15.5px; color: var(--atlas-ink); }
+.carte-client .tel .ico { color: var(--atlas-or); width: 18px; height: 18px; }
+.carte-client .modifier { display: flex; justify-content: center; align-items: center; gap: 8px; min-height: 44px; margin-top: 12px;
+                          border-top: 1px solid var(--atlas-line); font-size: 14.5px; font-weight: 600; color: var(--atlas-orTexte); }
+.gestes { display: grid; gap: 10px; margin-top: 12px; }
+.gestes.trois { grid-template-columns: repeat(3, 1fr); }
+.gestes.quatre { grid-template-columns: repeat(2, 1fr); }
+.geste { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; min-height: 76px; padding: 8px 6px;
+         border-radius: 14px; font-size: 14.5px; font-weight: 700; line-height: 1.2; text-align: center; color: var(--atlas-orTexte); }
+.geste .ico { width: 26px; height: 26px; }
+.geste.plein { color: var(--atlas-rust); }
+.onglets { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 14px; border-bottom: 1px solid var(--atlas-line); }
+.onglets span { display: grid; place-items: center; min-height: 44px; font-size: 15px; font-weight: 600; color: var(--atlas-inkSoft); }
+.onglets .choisi { color: var(--atlas-ink); box-shadow: inset 0 -2px 0 var(--atlas-or); }
+.vide-liste { margin: 16px 0 0; text-align: center; font-size: 14.5px; color: var(--atlas-inkSoft); }
+.supprimer { display: flex; justify-content: center; margin-top: 28px; font-size: 14.5px; font-weight: 600; color: var(--atlas-alerte); }
+
+/* L'écran suivant : celui de « Créer une facture », le client déjà rempli. */
+.suite[hidden] { display: none; }
+.suite h1 { margin: 6px 0 14px; font: 400 28px/1.1 var(--serif); color: var(--atlas-ink); }
+.suite .rempli { padding: 14px; border-radius: 12px; background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.suite .rempli small { display: block; font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--atlas-inkSoft); }
+.suite .rempli b { display: block; margin-top: 4px; font: 400 20px/1.2 var(--serif); color: var(--atlas-ink); }
+.suite .rempli span { display: block; margin-top: 2px; font-size: 14.5px; color: var(--atlas-inkSoft); }
+.suite .reste { margin: 14px 0 0; font-size: 14px; line-height: 1.45; color: var(--atlas-inkSoft); }
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">Une facture depuis sa fiche</h1>
+  <p class="pl-verdict">Sur la fiche de M. Bernard, un geste de plus : <b>Nouvelle facture</b>, son nom déjà rempli. Touchez-le.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+    <div>
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats" id="choix">
+        <button type="button" data-cas="deja" aria-pressed="true">Il a déjà un chantier</button>
+        <button type="button" data-cas="premier" aria-pressed="false">Pas encore</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran">
+          <div class="defile" id="fiche">
+            <div class="haut-fiche">
+              <span class="rond-creux" aria-hidden="true"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg></span>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </div>
+            <section class="carte-client">
+              <p class="etiquette">Client</p>
+              <h1>M. Bernard</h1>
+              <p class="tel"><svg class="ico" aria-hidden="true"><use href="#i-telephone"/></svg>06 12 34 56 78</p>
+              <p class="modifier"><svg class="ico ico-p" aria-hidden="true"><use href="#i-crayon"/></svg>Modifier ses coordonnées</p>
+            </section>
+            <div class="gestes quatre" id="gestes"></div>
+            <div class="onglets" aria-hidden="true"><span class="choisi">Devis</span><span>Factures</span><span>Fiches</span></div>
+            <p class="vide-liste" id="vide">Aucun devis parti</p>
+            <p class="supprimer"><svg class="ico ico-p" aria-hidden="true"><use href="#i-croix"/></svg>&nbsp;Supprimer ce client</p>
+          </div>
+
+          <div class="defile suite" id="suite" hidden>
+            <div class="haut-fiche">
+              <button class="rond-creux" type="button" id="retour" aria-label="Revenir à la fiche"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg></button>
+              <span></span>
+            </div>
+            <h1>Nouvelle facture</h1>
+            <div class="rempli">
+              <small>Client</small>
+              <b>M. Bernard</b>
+              <span>06 12 34 56 78</span>
+            </div>
+            <p class="reste">La suite est l’écran que vous connaissez déjà, celui de Terminés, « Créer une facture » : les travaux, puis la facture.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>Sur la fiche d’un client, un geste de plus : <b>Nouvelle facture</b>. Il ouvre l’écran de « Créer une facture », <b>le client déjà rempli</b>.</li>
+      <li>Quatre gestes se rangent deux par deux, chacun garde sa hauteur pour le pouce. Trois restent sur une ligne.</li>
+      <li>Rien de neuf derrière : l’écran de facture sait déjà prendre un client (lu dans le code). C’est un bouton.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>« Dernier devis », « Nouveau devis », « Contrat d’entretien », les onglets Devis, Factures, Fiches.</li>
+      <li>« Créer une facture » dans Terminés, pour un client qu’on choisit sur place.</li>
+    </ul>
+  </section>
+</main>
+
+<script src="kit.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  "use strict";
+  // Les dessins de la fiche, repris tels quels de RepartirDeCeClient.tsx.
+  var TOURNE = '<svg class="ico" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M15.2 9a6.2 6.2 0 1 1-1.9-4.5M15.2 2.4V6h-3.6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var PLUS = '<svg class="ico" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M9 3.4v11.2M3.4 9h11.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>';
+  var FACTURE = '<svg class="ico" aria-hidden="true"><use href="#i-facture"/></svg>';
+  var CALENDRIER = '<svg class="ico" aria-hidden="true"><use href="#i-calendrier"/></svg>';
+  var cas = "deja";
+  function rendre() {
+    var g = [];
+    if (cas === "deja") g.push('<button type="button" class="geste plein">' + TOURNE + "Dernier devis</button>");
+    g.push('<button type="button" class="geste">' + PLUS + "Nouveau devis</button>");
+    g.push('<button type="button" class="geste" id="nouvelle-facture">' + FACTURE + "Nouvelle facture</button>");
+    g.push('<button type="button" class="geste">' + CALENDRIER + "Contrat d’entretien</button>");
+    var el = document.getElementById("gestes");
+    el.className = "gestes " + (g.length === 4 ? "quatre" : "trois");
+    el.innerHTML = g.join("");
+  }
+  document.getElementById("gestes").addEventListener("click", function (e) {
+    if (!e.target.closest("#nouvelle-facture")) return;
+    document.getElementById("fiche").hidden = true;
+    document.getElementById("suite").hidden = false;
+  });
+  document.getElementById("retour").addEventListener("click", function () {
+    document.getElementById("fiche").hidden = false;
+    document.getElementById("suite").hidden = true;
+  });
+  document.getElementById("choix").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    cas = b.dataset.cas;
+    this.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+    document.getElementById("fiche").hidden = false;
+    document.getElementById("suite").hidden = true;
+    rendre();
+  });
+  rendre();
+});
+</script>
+</body>
+</html>
