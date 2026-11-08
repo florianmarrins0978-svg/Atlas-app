@@ -1,21 +1,21 @@
 # État du projet
 
-## MON ANNÉE, CODÉE (8 novembre 2026), PAS SUR `main`
+## MON ANNÉE, CODÉE (8 novembre 2026), SUR `main` LE 8 NOVEMBRE
 
-Sur `claude/eager-cori-g7qv8y`. Niveau 3 (migration 0181, argent) : elle
-attend sa batterie, qu'il n'a pas autorisée. Codé : Réglages, Mon année, son
+Par la batterie commune des trois lots (`docs/batterie-commune-8-novembre.md`),
+avec sa suite navigateur, `test-mon-annee-e2e.ts`. Codé : Réglages, Mon année, son
 interrupteur de Terminés, l'objectif, la saison, l'an dernier au même jour,
 le reste mois par mois, ce qui peut encore rentrer, le bénéfice sur la banque,
 et « Vos prix », rangés par ses tarifs lus sur le libellé des lignes.
 `docs/mon-annee.md`.
 
-**Dernière mise à jour :** 2026-11-07, `main`, neuf lots de quatre sessions réunis en une seule batterie à sa demande (`docs/batterie-commune-6-novembre-soir.md`) : le vrai sablier, hiverner l'arrosage, la note sans réseau, le plafond de la franchise, déplacer un chantier en un appui, la fiche travaux, la fiche de sécurité soignée, fermer son compte, la facture d'abonnement d'Atlas. Deux batteries entières : la dernière, 583 suites base sur 583, 214 navigateur sur 215, construction et connexion vertes ; le rouge (`test-note-sans-reseau-e2e`, qui lisait la base trop tôt) corrigé, rejoué par `verifier-ce-qui-a-bouge` puis une seconde fois, vert.
-dernière migration `drizzle/0170_idees_pour_l_appli.sql` (une idée pour l'appli, 0167 sur sa branche), avec `0169_plateforme_facture_electronique.sql` (la Factur-X, 0165 sur sa branche) et `0165` à `0168` (nature d'une absence, jours travaillés corrigés, zones de déplacement, couleur du férié), sur `main` le 6 novembre ; avant elles `0164_sauts_de_page_du_devis.sql`, sur `main` le 4 novembre
+**Dernière mise à jour :** 2026-11-08, `main`, trois lots réunis en une seule batterie à sa demande (`docs/batterie-commune-8-novembre.md`) : Mon année ; le téléphone du chantier, l'import depuis la fiche, les entrées et sorties, la colonne à 672 px, la fiche de l'espace ; le crédit d'impôt et l'avance immédiate. 215 suites navigateur sur 215, connexion verte ; sept suites base rouges corrigées, puis rejouées par `verifier-ce-qui-a-bouge` : 599 sur 599, navigateur 14 sur 14.
+dernière migration `drizzle/0181_mon_annee.sql`, avec `0176` à `0180` (téléphone du chantier, import depuis la fiche, services à la personne, heures et attestations fiscales, avance immédiate), sur `main` le 8 novembre
 
 ---
-## IMPORTER DEPUIS LA FICHE D'UN CLIENT, CODÉ (8 novembre 2026), PAS ENCORE SUR `main`
+## IMPORTER DEPUIS LA FICHE D'UN CLIENT, CODÉ (8 novembre 2026), SUR `main` LE 8 NOVEMBRE
 
-Sa planche `appli/client-importer-depuis-sa-fiche.html` (*« code la 2, pas de batterie »*). Le bouton « Importer devis / facture » au bout de la fiche (`src/app/clients/PorteImport.tsx`, partagé avec Vos clients) ; l'envoi retient le client (migration `0177`) ; ses pièces se rangent chez lui (`lignesPourLeClient`, `src/lib/import-tableau.ts`) ; retour sur sa fiche avec `BandeImport`. Verts ici : règle, base (23), navigateur (13). **Niveau 3 : la batterie, avec son accord, avant `main`.** `ARCHITECTURE.md` §572.
+Sa planche `appli/client-importer-depuis-sa-fiche.html` (*« code la 2, pas de batterie »*). Le bouton « Importer devis / facture » au bout de la fiche (`src/app/clients/PorteImport.tsx`, partagé avec Vos clients) ; l'envoi retient le client (migration `0177`) ; ses pièces se rangent chez lui (`lignesPourLeClient`, `src/lib/import-tableau.ts`) ; retour sur sa fiche avec `BandeImport`. Verts ici : règle, base (23), navigateur (13), puis la batterie commune du 8 novembre. `ARCHITECTURE.md` §572.
 ---
 ## LA VITESSE DE LA VERSION RAPIDE, MESURÉE LE 8 NOVEMBRE 2026
 
@@ -41,9 +41,9 @@ base (ici, tout est sur la même machine), et une entreprise qui a des centaines
 de chantiers (ici, la démonstration en a quelques-uns).
 
 ---
-## VOS ENTRÉES ET SORTIES, CODÉES (8 novembre 2026), PAS ENCORE SUR `main`
+## VOS ENTRÉES ET SORTIES, CODÉES (8 novembre 2026), SUR `main` LE 8 NOVEMBRE
 
-Sa planche `appli/soignee/banque-entrees-sorties.html` (*« 1 tu peux coder »*). « Pour mon comptable » porte deux cases : le dossier en cours (Mois, Trimestre, Année ; une période qu'il entame dit où elle commence) et l'année, mois par mois, depuis le 1ᵉʳ janvier ou le premier jour donné par la banque. L'assistant lit le relevé (`src/server/ai/tools/lire-releve.ts`). Règles : `libelleDansLeDossier`, `debutCouvert`, `totauxDuReleve` (`src/lib/pour-mon-comptable.ts`) ; dépôt : `premierJourDuReleve`. Écran : `src/app/termines/comptable/page.tsx`, `DossierEnCours.tsx`. Aucune migration. Verts ici : règles (48), outil sous `atlas_app` (6), navigateur (14, rouge sur l'ancien écran), garde-fous. **Niveau 3 : la batterie, avec son accord, avant `main`.** `ARCHITECTURE.md` §571.
+Sa planche `appli/soignee/banque-entrees-sorties.html` (*« 1 tu peux coder »*). « Pour mon comptable » porte deux cases : le dossier en cours (Mois, Trimestre, Année ; une période qu'il entame dit où elle commence) et l'année, mois par mois, depuis le 1ᵉʳ janvier ou le premier jour donné par la banque. L'assistant lit le relevé (`src/server/ai/tools/lire-releve.ts`). Règles : `libelleDansLeDossier`, `debutCouvert`, `totauxDuReleve` (`src/lib/pour-mon-comptable.ts`) ; dépôt : `premierJourDuReleve`. Écran : `src/app/termines/comptable/page.tsx`, `DossierEnCours.tsx`. Aucune migration. Verts ici : règles (48), outil sous `atlas_app` (6), navigateur (14, rouge sur l'ancien écran), garde-fous, puis la batterie commune du 8 novembre. `ARCHITECTURE.md` §571.
 
 ---
 ## LA BATTERIE COMMUNE DU 6 NOVEMBRE AU SOIR, SUR `main` LE 7 NOVEMBRE

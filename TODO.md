@@ -1,6 +1,18 @@
 # Prochaines tâches
 
-## ~~⏳ À REGARDER PAR LUI (8 novembre 2026) : importer un devis depuis la fiche d'un client~~ TRANCHÉ LE 8 NOVEMBRE : « CODE LA 2, PAS DE BATTERIE » ; CODÉ LE 8 NOVEMBRE (§572), batterie entière à jouer avec son accord (migration 0177, route d'API)
+## BATTERIE COMMUNE DU 8 NOVEMBRE : VERTE, SUR main LE 8 NOVEMBRE
+
+Trois lots, une batterie (sa demande : *« fusionne les 3 et joue qu'une seule
+batterie pour les 3 »*) : Mon année ; le téléphone du chantier, l'import
+depuis la fiche, les entrées et sorties, la colonne à 672 px ; le crédit
+d'impôt et l'avance immédiate. Le détail : `docs/batterie-commune-8-novembre.md`.
+
+| | |
+|---|---|
+| reste | qu'il regarde les écrans de ces lots sur son espace |
+| reste, à moi | la lecture sans IA d'une facture importée ne reconnaît que « 293 B » : une facture de 2027 (« L. 233-3 du CIBS ») garde un HT vide, jamais faux (`lireChampsDuTexte`, `src/lib/import-pieces.ts`) |
+
+## ~~⏳ À REGARDER PAR LUI (8 novembre 2026) : importer un devis depuis la fiche d'un client~~ TRANCHÉ LE 8 NOVEMBRE : « CODE LA 2, PAS DE BATTERIE » ; CODÉ LE 8 NOVEMBRE (§572), SUR main LE 8 NOVEMBRE (batterie commune)
 
 Sa correction de la planche « Nouvelle facture » : *« c'est pas ce que je
 voulais ; j'étais avant sur une autre application et j'avais juste un devis à
@@ -27,7 +39,7 @@ depuis Vos clients. Règle, base (23) et navigateur (13, rouge sur l'appli sans
 le geste) verts ici ; **reste la batterie entière**, avec son accord, puis
 `main`.
 
-## ~~⏳ À REGARDER PAR LUI (8 novembre 2026) : vos entrées et sorties, deux cases, et l'assistant~~ TRANCHÉ LE 8 NOVEMBRE : « 1 TU PEUX CODER » ; CODÉ LE 8 NOVEMBRE (§571), batterie entière à jouer (argent, rayon de 17 points d'entrée)
+## ~~⏳ À REGARDER PAR LUI (8 novembre 2026) : vos entrées et sorties, deux cases, et l'assistant~~ TRANCHÉ LE 8 NOVEMBRE : « 1 TU PEUX CODER » ; CODÉ LE 8 NOVEMBRE (§571), SUR main LE 8 NOVEMBRE (batterie commune)
 
 Sa question, sur « Pour mon comptable » : *« c'est normal que quand je lui
 demande mes entrées et mes sorties de l'année, il me les trouve pas »*. Puis :
@@ -58,7 +70,7 @@ la banque a donné ; l'outil `LireReleve` rend les totaux puis le détail mois p
 mois, comme sa planche. Règles, outil et écran éprouvés rouge puis vert ici ;
 **reste la batterie entière** (niveau 3), avec son accord, puis `main`.
 
-## ~~⏳ À REGARDER PAR LUI (8 novembre 2026) : « Autre chose », en entier~~ TRANCHÉ LE 8 NOVEMBRE : « 1, C'EST OK » ; CODÉ LE 8 NOVEMBRE (§569), batterie entière à jouer (migration 0176)
+## ~~⏳ À REGARDER PAR LUI (8 novembre 2026) : « Autre chose », en entier~~ TRANCHÉ LE 8 NOVEMBRE : « 1, C'EST OK » ; CODÉ LE 8 NOVEMBRE (§569), SUR main LE 8 NOVEMBRE (batterie commune)
 
 Sa demande, en quatre temps le même jour (le chemin est dans l'en-tête de la
 planche) ; sa décision, photo de la fiche d'intervention à l'appui : *« quand
@@ -83,7 +95,7 @@ téléphone du chantier quand il n'y a pas de fiche ; les travaux remplissent
 la liste de `TravauxAFaire`. À trancher : la ligne de la facture, même pour la
 banque ou une livraison ?
 
-## ~~⏳ À CHOISIR PAR LUI (8 novembre 2026) : sur ordinateur, la largeur de la colonne~~ TRANCHÉ LE 8 NOVEMBRE : 672 PX ; CODÉ LE 8 NOVEMBRE, batterie entière à jouer (plancher : `globals.css`)
+## ~~⏳ À CHOISIR PAR LUI (8 novembre 2026) : sur ordinateur, la largeur de la colonne~~ TRANCHÉ LE 8 NOVEMBRE : 672 PX ; CODÉ LE 8 NOVEMBRE, SUR main LE 8 NOVEMBRE (batterie commune)
 
 Sa demande, photo de son portable à l'appui : *« les bandes s'étirent jusqu'au
 milieu de l'écran alors que le texte s'arrête à un quart ; pareil pour les
@@ -119,7 +131,7 @@ quand deux espaces l'ont écrite dans la dernière heure. **Corrigé noir sur
 blanc** : « publier `CODESPACE_NAME` », écrit ici le matin, aurait publié
 l'adresse de son appli, port 3000 public, sur un dépôt public.
 
-## Mon année : CHOISIE ET CODÉE LE 8 NOVEMBRE 2026, PAS SUR main (elle attend sa batterie, qu'il n'a pas autorisée)
+## Mon année : CHOISIE ET CODÉE LE 8 NOVEMBRE 2026, SUR main LE 8 NOVEMBRE (batterie commune)
 
 **Sa demande du 8 novembre** : *« pouvoir se mettre des objectifs : cette
 année, 300 000 euros de chiffre d'affaires, dont 50 000 de bénéfice ; si tu es
@@ -214,16 +226,17 @@ un booléen par entreprise, faux par défaut (expand, colonne nullable ou
 `default false`).
 
 **CODÉ LE 8 NOVEMBRE** (son « tu peux coder ça. Ne lance pas de batterie »),
-sur `claude/eager-cori-g7qv8y`, **pas sur `main`** : niveau 3 (migration 0181,
-argent), et aucune batterie n'a été autorisée. Le détail et ce qui reste :
+sur `claude/eager-cori-g7qv8y`, puis **sur `main` le 8 novembre** par la
+batterie commune des trois lots (`docs/batterie-commune-8-novembre.md`). Le
+détail et ce qui reste :
 `docs/mon-annee.md`, `ARCHITECTURE.md` §578.
 
 | | |
 |---|---|
 | codé | l'objectif (migration 0181), Réglages, Mon année (rubrique en tête de L'entreprise), l'interrupteur « Afficher sur Terminés » éteint de base, la ligne sur Terminés, le chiffre et sa saison, Face à l'an dernier (le jour, du 1er au jour, tous les mois), le reste mois par mois, ce qui peut encore rentrer, le bénéfice sur la banque, **Vos prix** rangés par ses tarifs (`src/lib/vos-prix.ts`), le plafond de la franchise dans la feuille de l'objectif |
 | éprouvé ici | types, style, `test-mon-annee.ts` et `test-vos-prix.ts` (chacune vue rouge en cassant une règle), accès, rubriques, couches, code mort, pansements, tirets, flèches, chartes |
-| PAS éprouvé ici | `test-mon-annee-db.ts` (écrite, elle vide la base) ; l'écran lui-même (il faut le serveur, sur le port 3000) |
-| **reste à faire** | son « oui » pour la batterie, puis `main` |
+| éprouvé par la batterie commune | `test-mon-annee-db.ts`, et `test-mon-annee-e2e.ts`, écrite à la batterie : l'objectif, l'interrupteur, la ligne de Terminés, l'avertissement de la franchise |
+| **reste à faire** | qu'il regarde l'écran sur son espace |
 
 **Les factures importées comptent par leur HT, codé le 8 novembre** (sa question
 *« la limite, comment on peut corriger ce problème ? »*, puis *« tu peux les lire
@@ -2314,7 +2327,7 @@ proxy. Les deux rouges (`test-connexion-service-en-panne-e2e`,
 (`verifier-rouge-prealable`), et repassent verts dans le complément d'après
 fusion (`verifier-ce-qui-a-bouge`).
 
-## ⏳ LE CRÉDIT D'IMPÔT DE SES CLIENTS : LOTS 1, 2 ET 3 CODÉS LE 8 NOVEMBRE 2026, BATTERIE ET CODES DE L'URSSAF À ATTENDRE (8 octobre 2026)
+## ⏳ LE CRÉDIT D'IMPÔT DE SES CLIENTS : LOTS 1, 2 ET 3 CODÉS LE 8 NOVEMBRE 2026, SUR main LE 8 NOVEMBRE (batterie commune), CODES DE L'URSSAF À ATTENDRE (8 octobre 2026)
 
 **LOT 3, CODÉ LE 8 NOVEMBRE 2026 SUR LA MÊME CONSIGNE** : l'avance immédiate
 branchée, migration 0180, `ARCHITECTURE.md` §577.
@@ -2323,7 +2336,7 @@ branchée, migration 0180, `ARCHITECTURE.md` §577.
 |---|---|
 | **codé** | Mon entreprise, entreprise déclarée : « Avance immédiate », « Relier l'Urssaf » (identifiant, clé secrète, identifiant Urssaf de l'entreprise, code de la nature), vérifiés chez l'Urssaf AVANT d'être gardés, les deux codes chiffrés ; « Délier ». La fiche d'un client particulier, entreprise reliée : pas inscrit, en attente (relu chez l'Urssaf à l'ouverture), inscrit ; « L'inscrire à l'Urssaf » ne demande que ce qu'Atlas n'a pas, la commune de naissance cherchée chez l'État, l'adresse de la fiche découpée par la Base Adresse Nationale ; l'IBAN et le BIC partent à l'Urssaf et ne se gardent pas. Le devis d'un client inscrit : pas d'acompte, l'écran et l'action par la même règle. Sa facture : l'addition de la planche, « Envoyer à l'Urssaf » et sa feuille, qui l'arrête par la même porte que l'envoi ordinaire avec la demande dans la transaction (refusée, elle reste un brouillon), les refus de la règle dits avant le bouton, « Il paie autrement cette fois » ; le suivi (envoyée, validée, versée, refusée) relu à l'ouverture de la facture et de Terminés ; versée, un règlement « avance immédiate » du montant de la facture l'acquitte ; refusée, « L'envoyer par SMS ». Le moyen « avance immédiate » en base ; l'attestation fiscale ne le compte pas |
 | **pas codé** | « Lui renvoyer le lien » (aucune route dans la description 1.29.1 : le délai passé, « L'inscrire à nouveau ») ; « Je n'ai pas encore ces codes » de la planche (l'adresse de la demande sur api.gouv.fr n'a pas été lue) ; une tâche planifiée qui relève les demandes (la seule du dépôt est la purge, sans contexte d'entreprise) ; l'inscription dans l'export RGPD d'un client (`exporterClient`) ; Cesu, APA et PCH au règlement |
-| **pas éprouvé** | **RIEN ne peut s'essayer pour de vrai avant les codes de l'Urssaf et son bac à sable** : les adresses se surchargent par `URSSAF_ATP_BASE` et `URSSAF_JETON_URL`, jamais devinées. La migration 0180 n'a jamais été appliquée ; `scripts/test-avance-immediate-db.ts` est écrite, pas jouée ; aucun écran regardé. **La batterie (niveau 3 : argent et `drizzle/`) se joue avec son accord**, puis Mon entreprise, la fiche d'un client particulier, un devis et une facture se regardent |
+| **pas éprouvé** | **RIEN ne peut s'essayer pour de vrai avant les codes de l'Urssaf et son bac à sable** : les adresses se surchargent par `URSSAF_ATP_BASE` et `URSSAF_JETON_URL`, jamais devinées. La migration 0180 et `scripts/test-avance-immediate-db.ts` sont passées par la batterie commune du 8 novembre (le test lisait la garde au mauvais endroit, corrigé) ; aucun écran regardé : Mon entreprise, la fiche d'un client particulier, un devis et une facture se regardent sur son espace |
 
 **Tranché seul au lot 3, à lui dire :**
 

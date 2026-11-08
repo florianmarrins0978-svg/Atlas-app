@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Batterie commune du 8 novembre : trois lots, une seule batterie</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="batterie-commune-du-8-novembre--trois-lots-une-seule-batterie">Batterie commune du 8 novembre : trois lots, une seule batterie</h1>
+<p>Ta demande : <em>« Il y a 3 sessions qui attendent de jouer une batterie. Fusionne les 3 et joue qu'une seule batterie pour les 3. »</em></p>
+<p>Branche : <code>claude/eager-cori-g7qv8y</code>, partie de <code>main</code> (<code>eb952c24</code>), où les deux autres lots ont été fusionnés.</p>
+<h2 id="les-lots">Les lots</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Session</th>
+<th>Lot</th>
+<th>Migrations</th>
+<th>Ce que la fusion a demandé</th>
+</tr></thead><tbody>
+<tr>
+<td>jolly</td>
+<td>Le téléphone du chantier, l'import depuis la fiche d'un client, les entrées et sorties de la banque, « Autre chose » pour un client facturé ailleurs, la fiche de l'espace</td>
+<td>0176, 0177</td>
+<td>rien</td>
+</tr>
+<tr>
+<td>epic</td>
+<td>Le crédit d'impôt de tes clients (lots 1 et 2 : les heures du jour, l'attestation de janvier), l'avance immédiate de l'Urssaf</td>
+<td>0178, 0179, 0180</td>
+<td>rien</td>
+</tr>
+<tr>
+<td>la mienne</td>
+<td>Mon année, Vos prix, le plafond de la franchise dans la feuille de l'objectif, le HT des factures importées</td>
+<td>0176, devenue <strong>0181</strong></td>
+<td>sur Terminés, la ligne des attestations passe avant celle de Mon année (une action datée avant un tableau de bord) ; les types de la fiche de l'espace écrits, sans quoi la vérification des types refusait la suite de jolly</td>
+</tr>
+</tbody></table></div>
+<p>Paragraphes d'<code>ARCHITECTURE.md</code> : les trois lots avaient pris le §569. Jolly garde §569 à §573, epic passe à <strong>§574 à §577</strong>, le mien à <strong>§578</strong>. Chaque renvoi déplacé a été relu sur les lignes de son lot seulement, jamais remplacé à l'aveugle.</p>
+<h2 id="les-mesures">Les mesures</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Base</th>
+<th>Navigateur</th>
+<th>Connexion derrière un proxy</th>
+</tr></thead><tbody>
+<tr>
+<td>batterie</td>
+<td>592 sur 599</td>
+<td><strong>215 sur 215</strong></td>
+<td>verte</td>
+</tr>
+<tr>
+<td>rattrapage</td>
+<td><strong>599 sur 599</strong></td>
+<td><strong>14 sur 14</strong>, dont Mon année</td>
+<td></td>
+</tr>
+<tr>
+<td>seconde fois</td>
+<td>les sept rouges, verts</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table></div>
+<p>Types, style, construction, mémoire du dépôt, fournisseurs d'IA et données de démonstration verts à la batterie ; types, style et données de démonstration verts au rattrapage.</p>
+<p>La suite navigateur de Mon année est neuve, et je ne l'ai pas encore vue rougir sur un écran cassé. Ses cas « la ligne est absente » ne mesurent pas un vide : sur le même écran, le cas « allumée » trouve la ligne.</p>
+<h2 id="ce-que-la-batterie-a-trouvé-et-ce-qui-a-été-fait">Ce que la batterie a trouvé, et ce qui a été fait</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Rouge</th>
+<th>D'où</th>
+<th>Ce qui a été fait</th>
+</tr></thead><tbody>
+<tr>
+<td>L'écran Mon année lisait la base avant de savoir qui le regarde</td>
+<td>Mon année</td>
+<td>la question « est-ce le patron ? » passe avant la lecture, comme dans toute rubrique de l'entreprise</td>
+</tr>
+<tr>
+<td>Mon année n'était pas préparé d'avance</td>
+<td>Mon année</td>
+<td>ajouté aux écrans compilés au démarrage de ton espace : sans cela, la première ouverture attend</td>
+</tr>
+<tr>
+<td>La consigne de lecture des pièces importées recopiait la phrase de la franchise</td>
+<td>Mon année</td>
+<td>elle cite les deux articles (CGI et CIBS) sans recopier la phrase : celle de tes factures ne s'écrit qu'à un endroit</td>
+</tr>
+<tr>
+<td>Deux boutons à coins carrés : la ligne de Mon année sur Terminés, les deux cases du relevé</td>
+<td>Mon année, et la banque (jolly)</td>
+<td><strong>ce sont des cartes de tes planches</strong>, à leur rayon de planche : déclarées comme telles, bornées à leur repère. Tout autre bouton carré fait toujours rougir</td>
+</tr>
+<tr>
+<td>Le mode d'emploi citait un ancien texte d'« Autre chose » et l'ancien lien de l'import</td>
+<td>jolly</td>
+<td>les deux fiches suivent le code d'aujourd'hui</td>
+</tr>
+<tr>
+<td>Le logo des services à la personne manquait à la liste des fichiers stockés</td>
+<td>epic</td>
+<td><strong>un vrai oubli</strong> : la vérification de la sauvegarde ne le regardait pas. Ajouté</td>
+</tr>
+<tr>
+<td>La base devait refuser un code Urssaf écrit en clair</td>
+<td>le test d'epic</td>
+<td><strong>le test se trompait</strong> : la base refuse bien (vérifié à la main), mais le test cherchait le nom de la garde dans un message qui ne le porte plus. Il le lit là où il est</td>
+</tr>
+<tr>
+<td>Aucune suite navigateur n'ouvrait Mon année</td>
+<td>Mon année</td>
+<td><strong>une suite écrite</strong> : fixer l'objectif, allumer et éteindre la ligne de Terminés (éteinte par défaut, ta règle), l'avertissement de la franchise. Sans elle, le rattrapage exigeait une seconde batterie entière</td>
+</tr>
+</tbody></table></div>
+<h2 id="ce-qui-a-été-dit-et-se-révèle-faux">Ce qui a été dit et se révèle faux</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li>Avant la batterie, je n'avais joué que les suites de Mon année, et je t'avais dit le lot prêt. Quatre contrôles qui surveillent tous les écrans le refusaient (les gardes de Réglages, le préchauffage, la phrase de la franchise, les boutons) : c'est la batterie qui les a trouvés, pas moi.</li>
+</ul>
+<h2 id="ce-qui-reste-et-qui-le-tranche">Ce qui reste, et qui le tranche</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Qui</th>
+</tr></thead><tbody>
+<tr>
+<td>Regarder sur ton espace : Mon année (l'objectif, l'interrupteur, Vos prix), la ligne sur Terminés, l'import depuis la fiche d'un client, les entrées et sorties de la banque, le crédit d'impôt et l'avance immédiate</td>
+<td><strong>toi</strong>, une fois ton espace à jour</td>
+</tr>
+<tr>
+<td>Une facture importée de 2027 portera l'article L. 233-3 au lieu du 293 B : la lecture sans IA ne le reconnaît pas encore, et laisse alors le HT vide (jamais faux)</td>
+<td><strong>moi</strong>, au prochain lot de l'import</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>
