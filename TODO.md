@@ -2353,6 +2353,21 @@ numéro » de la planche ne le sert pas. Pour lui, les voies sont une structure
 (c'est exactement ce qu'elle vend). La frontière entre « taille des arbres »
 (dedans) et « élagage » (dehors) est à faire préciser par la DDETS.
 
+**« Le devis sur Atlas, la facture par une coopérative » : pas tel quel
+(8 novembre 2026).** Sa proposition pour l'élagueur à 81 % : faire le devis
+dans Atlas, l'envoyer à une coopérative existante qui fait la facture. Deux
+obstacles, lus le même jour : (1) la règle officielle (servicesalapersonne.gouv.fr,
+« comment demander une déclaration ») veut que les DEVIS et les factures
+portent la mention de la déclaration ; l'organisme déclaré étant la
+coopérative, le devis doit porter SON numéro, son logo et ses CGV (celles
+d'Unipros se signent avec le devis) ; un devis d'Atlas au nom de l'artisan
+ne le fait pas ; (2) chez Unipros, *« vous créez le devis depuis votre espace
+Unipros »* (page « services à la personne », étape 01), puis la facture part
+*« à l'entête de la coopérative »*. Seule la coopérative peut dire si elle
+accepte un devis fait ailleurs, à son en-tête, ou un import. Un chantier qui
+mêle élagage et taille donne deux devis et deux émetteurs : l'élagage chez
+l'artisan, la taille chez la coopérative.
+
 **Ses deux remarques suivantes, le même jour :**
 
 - *« le client paie 252 et l'Urssaf te verse 504, alors que la facture vaut
