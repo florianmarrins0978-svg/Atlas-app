@@ -92,6 +92,7 @@ const TitreFeuille = ({ children }: { children: React.ReactNode }) => (
 );
 
 export default function MonAnnee({
+  modifiable,
   annee,
   aujourdHui,
   objectif,
@@ -105,6 +106,8 @@ export default function MonAnnee({
   banqueReliee,
   benefice,
 }: {
+  /** Le patron seul pose l'objectif et l'interrupteur ; la facturation lit. */
+  modifiable: boolean;
   annee: number;
   aujourdHui: string;
   objectif: { chiffreAffaires: number; benefice: number | null } | null;
@@ -177,9 +180,11 @@ export default function MonAnnee({
               <span className="text-[14px] font-semibold" style={{ color: colors.inkSoft }}>
                 Chiffre d&apos;affaires
               </span>
-              <button type="button" onClick={ouvrirObjectif} className="-my-2.5 min-h-10 text-[15px] font-semibold" style={{ color: colors.or }} data-atlas="modifier-objectif">
-                Modifier
-              </button>
+              {modifiable && (
+                <button type="button" onClick={ouvrirObjectif} className="-my-2.5 min-h-10 text-[15px] font-semibold" style={{ color: colors.or }} data-atlas="modifier-objectif">
+                  Modifier
+                </button>
+              )}
             </div>
             <span className="mb-3.5 mt-1.5 block text-[19px] leading-[1.25]" style={{ fontFamily: font.display, color: colors.inkSoft, ...CHIFFRES }}>
               <b className="text-[30px] font-normal" style={{ color: colors.ink }}>{eur(etat.fait)}</b> sur {eur(etat.objectif)}
@@ -216,14 +221,17 @@ export default function MonAnnee({
             <p className="mb-5 mt-2 text-[15px]" style={{ color: colors.inkSoft, ...CHIFFRES }}>
               Facturé cette année, {eur(facture)}.{totalAnDernier !== null && ` L'an dernier, ${eur(totalAnDernier)}.`}
             </p>
-            <PrimaryButton pleineLargeur onClick={ouvrirObjectif} repere="fixer-objectif">
-              Fixer mon objectif
-            </PrimaryButton>
+            {modifiable && (
+              <PrimaryButton pleineLargeur onClick={ouvrirObjectif} repere="fixer-objectif">
+                Fixer mon objectif
+              </PrimaryButton>
+            )}
           </div>
         </Paquet>
       )}
 
-      {/* ─── L'interrupteur, au-dessus de Face à l'an dernier ──────────── */}
+      {/* ─── L'interrupteur, au-dessus de Face à l'an dernier : le patron seul ─ */}
+      {modifiable && (
       <Paquet>
         <div className="flex min-h-16 items-center gap-3.5 py-3">
           <span className="flex-1 text-[18px] leading-[1.25]" style={{ fontFamily: font.display, color: colors.ink }}>
@@ -243,6 +251,7 @@ export default function MonAnnee({
           </button>
         </div>
       </Paquet>
+      )}
 
       {/* ─── Face à l'an dernier : le jour même, puis du 1er à aujourd'hui ─ */}
       {face && (

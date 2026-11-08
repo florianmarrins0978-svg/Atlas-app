@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getCurrentCtx } from "@/server/session-ctx";
-import { exigerEcran } from "@/server/garde-action";
+import { exigerProprietaire } from "@/server/autorisation";
 import { ecrireObjectif, ecrireSurTermines } from "@/server/repositories/mon-annee";
 import { objectifValide } from "@/lib/mon-annee";
 import { jourIso } from "@/lib/jour";
@@ -11,8 +11,9 @@ import { jourIso } from "@/lib/jour";
  * Les deux gestes de Mon année : poser l'objectif de l'année, et allumer la
  * ligne sur Terminés.
  *
- * **La garde est celle de l'écran** (`exigerEcran`) : une seule règle,
- * `cheminAutorise`, ouvre la page ET ses actions. Le patron seul aujourd'hui.
+ * **Le patron seul ÉCRIT.** La facturation lit l'écran (sa réponse du
+ * 8 novembre 2026, « ils peuvent le voir », `cheminAutorise`) ; poser
+ * l'objectif de l'entreprise et choisir ce que montre Terminés lui restent.
  *
  * **Le retour est une valeur, jamais une exception** : le message d'une erreur
  * levée par une action serveur n'arrive jamais jusqu'au patron
@@ -25,7 +26,7 @@ const ECRAN = "/reglages/mon-annee";
 export async function ecrireObjectifAction(chiffreAffaires: string, benefice: string): Promise<Resultat> {
   const ctx = await getCurrentCtx();
   try {
-    await exigerEcran(ctx, ECRAN, "poser l'objectif de l'année");
+    await exigerProprietaire(ctx, "poser l'objectif de l'année");
   } catch {
     return { ok: false, raison: "Seul le patron pose l'objectif." };
   }
@@ -47,7 +48,7 @@ export async function ecrireObjectifAction(chiffreAffaires: string, benefice: st
 export async function ecrireSurTerminesAction(oui: boolean): Promise<Resultat> {
   const ctx = await getCurrentCtx();
   try {
-    await exigerEcran(ctx, ECRAN, "montrer Mon année sur Terminés");
+    await exigerProprietaire(ctx, "montrer Mon année sur Terminés");
   } catch {
     return { ok: false, raison: "Seul le patron règle Mon année." };
   }

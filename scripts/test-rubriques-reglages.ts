@@ -250,6 +250,16 @@ essai("l'entreprise ne s'annonce pas à qui elle n'appartient pas", () => {
   }
 });
 
+// Sa réponse du 8 novembre 2026 : « ils peuvent le voir ». La facturation lit
+// Mon année ; le commercial et le salarié ne la reçoivent pas dans le sommaire.
+essai("Mon année sort chez le patron et la facturation, jamais chez le commercial ni le salarié", () => {
+  assert.ok(toutes("proprietaire").some((r) => r.href === "/reglages/mon-annee"));
+  assert.ok(toutes("facturation").some((r) => r.href === "/reglages/mon-annee"), "la facturation ne reçoit pas Mon année");
+  for (const role of ["commercial", "salarie"] as const) {
+    assert.ok(!toutes(role).some((r) => r.href === "/reglages/mon-annee"), `Mon année sort chez ${role}`);
+  }
+});
+
 essai("aucun paquet vide ne sort", () => {
   for (const role of ["proprietaire", "salarie", "commercial", "facturation", null] as const) {
     for (const e of rubriquesReglages(role)) {

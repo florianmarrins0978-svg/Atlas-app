@@ -208,10 +208,11 @@ argent), et aucune batterie n'a été autorisée. Le détail et ce qui reste :
 | PAS éprouvé ici | `test-mon-annee-db.ts` (écrite, elle vide la base) ; l'écran lui-même (il faut le serveur, sur le port 3000) |
 | **reste à faire, lot 2** | « Vos prix », rangés par SES tarifs : faire garder à chaque ligne de devis le tarif d'où elle vient (`proposition-prix.ts` connaît `tarifId`, `lignes_prix` n'a pas de colonne), colonne nullable (expand) ; seuls les devis faits ensuite seront rangés |
 
-**Tranché par défaut, à lui confirmer** : impôts et cotisations comptent comme
-dépense ; le rôle Facturation NE voit PAS Mon année (ni l'écran, ni la ligne de
-Terminés) ; sans an dernier dans l'appli, ni trait, ni retard, ni Face à l'an
-dernier.
+**Tranché par lui le 8 novembre** : le rôle Facturation VOIT Mon année
+(*« ils peuvent le voir »*), l'écran et la ligne de Terminés ; il ne pose ni
+l'objectif ni l'interrupteur (`exigerProprietaire`). **Par défaut, à lui
+confirmer** : impôts et cotisations comptent comme dépense ; sans an dernier
+dans l'appli, ni trait, ni retard, ni Face à l'an dernier.
 
 ## BATTERIE COMMUNE DU 6 NOVEMBRE AU SOIR : VERTE, SUR main LE 7 NOVEMBRE
 

@@ -300,9 +300,13 @@ essai("la facturation tient son cycle, et rien de plus", () => {
   // `/documents/pdf` : la visionneuse où s'ouvre la facture qu'elle émet, et
   // depuis le 24 septembre 2026 celle d'une ligne de Ma TVA. Fermée, elle
   // tombait sur un refus en appuyant sur « Voir la facture en PDF ».
-  for (const a of ["/", "/chantiers/xxxx", "/chantiers/xxxx/facture", "/clients", "/termines/tva", "/planning", "/api/factures/xxxx/pdf", "/documents/entretien/xxxx", "/documents/pdf"]) {
+  // `/reglages/mon-annee` : sa réponse du 8 novembre 2026, « ils peuvent le voir ».
+  for (const a of ["/", "/chantiers/xxxx", "/chantiers/xxxx/facture", "/clients", "/termines/tva", "/planning", "/api/factures/xxxx/pdf", "/documents/entretien/xxxx", "/documents/pdf", "/reglages/mon-annee"]) {
     assert.ok(cheminAutorise("facturation", a), `la facturation est refusée sur ${a}`);
   }
+  // Mon année n'est ouverte qu'à elle : le salarié et le commercial ne la lisent pas.
+  assert.ok(!cheminAutorise("salarie", "/reglages/mon-annee"), "le salarié lit Mon année");
+  assert.ok(!cheminAutorise("commercial", "/reglages/mon-annee"), "le commercial lit Mon année");
   for (const a of ["/paysage", "/catalogue", "/reglages/identite", "/reglages/tarifs", "/reglages/equipe"]) {
     assert.ok(!cheminAutorise("facturation", a), `la facturation atteint ${a}`);
   }

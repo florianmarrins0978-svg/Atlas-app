@@ -111,8 +111,8 @@ const FERME_AU_COMMERCIAL = [
   // il porte les factures de chaque client, la facturation qu'il ne voit pas.
   "/reglages/facture-electronique",
   // **Mon année** (8 novembre 2026) : le chiffre d'affaires, le bénéfice, ce
-  // qui reste à facturer. Le patron seul ; la facturation et le salarié ne
-  // l'ont pas non plus, faute d'y figurer dans leurs réglages ouverts.
+  // qui reste à facturer. Le commercial ne voit pas les factures ; la
+  // facturation, elle, la lit (`REGLAGES_DE_LA_FACTURATION`).
   "/reglages/mon-annee",
   // ───────────────────────────────────────────────────────────────────────
   // **LA FACTURATION, ET C'EST SA RÈGLE DU 13 AOÛT — pas une nouveauté.**
@@ -249,6 +249,15 @@ const REGLAGES_A_TOUS = [
 ] as const;
 
 /**
+ * **Les réglages d'entreprise que la FACTURATION lit, et le salarié non.**
+ * Mon année, sa réponse du 8 novembre 2026 à « le rôle Facturation le voit-il ? » :
+ * *« ils peuvent le voir »*. Le chiffre de l'année est son métier. Elle LIT :
+ * poser l'objectif et allumer la ligne de Terminés restent au patron
+ * (`exigerProprietaire` dans `reglages/mon-annee/actions.ts`).
+ */
+const REGLAGES_DE_LA_FACTURATION = ["/reglages/mon-annee"] as const;
+
+/**
  * CE QUE LA FACTURATION ATTEINT, ET RIEN D'AUTRE.
  *
  * **Une liste blanche, comme le salarié, et pas une liste noire comme le
@@ -346,7 +355,7 @@ export function cheminAutorise(role: Role, chemin: string): boolean {
 
   if (role === "facturation") {
     if (!OUVERT_A_LA_FACTURATION.some((p) => sousChemin(chemin, p))) return false;
-    return reglagesASoi(chemin);
+    return reglagesASoi(chemin) || REGLAGES_DE_LA_FACTURATION.some((h) => sousChemin(chemin, h));
   }
 
   if (FEUILLE_SANS_MONTANTS.test(chemin)) return true;

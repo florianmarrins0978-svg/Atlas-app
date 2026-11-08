@@ -12,6 +12,7 @@ import {
 } from "@/lib/mon-annee";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { garderLaPage } from "@/server/garde-page";
+import { estProprietaire } from "@/server/autorisation";
 import { donneesMonAnnee } from "@/server/repositories/mon-annee";
 import MonAnnee from "./MonAnnee";
 
@@ -35,6 +36,8 @@ export default async function MonAnneePage() {
   await garderLaPage();
   const ctx = await getCurrentCtx();
   const d = await donneesMonAnnee(ctx);
+  // La facturation lit ; le patron seul pose l'objectif et l'interrupteur.
+  const modifiable = await estProprietaire(ctx);
 
   const anDernier = aUnAnDernier(d.pieces, d.annee);
   const etat = d.objectif ? etatDeLAnnee(d.objectif.chiffreAffaires, d.pieces, d.aujourdHui, d.alsaceMoselle) : null;
@@ -46,6 +49,7 @@ export default async function MonAnneePage() {
       <div className="pb-24" data-atlas="ecran-mon-annee">
         <EnTeteEcran allure="soignee" titre="Mon année" retour={{ href: "/reglages", libelle: "Retour aux réglages" }} />
         <MonAnnee
+          modifiable={modifiable}
           annee={d.annee}
           aujourdHui={d.aujourdHui}
           objectif={d.objectif}

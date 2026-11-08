@@ -16,7 +16,7 @@
 | Point de la planche | Verdict | Où |
 |---|---|---|
 | Mon année dans Réglages, en tête de L'entreprise | codé | `src/lib/rubriques-reglages.ts` |
-| Le patron seul y entre (ni commercial, ni facturation, ni salarié) | codé | `src/lib/acces-roles.ts`, `exigerEcran` dans les actions |
+| Le patron y entre et écrit ; la facturation lit (sa réponse : « ils peuvent le voir ») ; ni commercial ni salarié | codé | `src/lib/acces-roles.ts` (`REGLAGES_DE_LA_FACTURATION`), `exigerProprietaire` dans les actions |
 | L'objectif de l'année : chiffre d'affaires HT, bénéfice facultatif | codé | migration `drizzle/0176_mon_annee.sql`, `src/app/reglages/mon-annee/actions.ts` |
 | « Afficher sur Terminés », au-dessus de Face à 2025, **éteint de base** | codé | colonne `entreprises.mon_annee_sur_termines`, faux par défaut |
 | La ligne sous les deux boutons de Terminés, seulement allumée | codé | `src/components/atlas/LigneMonAnnee.tsx`, `src/app/termines/page.tsx` |
@@ -41,7 +41,7 @@
 | Point | Proposé par défaut | Qui tranche |
 |---|---|---|
 | Impôts et cotisations, comptés comme dépense dans le bénéfice | oui | lui |
-| Le rôle Facturation voit-il Mon année ? | non, ni l'écran ni la ligne | lui |
+| Le rôle Facturation voit-il Mon année ? | **tranché : oui**, en lecture ; l'objectif et l'interrupteur restent au patron | lui, le 8 novembre |
 | **Vos prix (lot 2)** | chaque ligne de devis garde le tarif d'où elle vient (une colonne neuve, sans rien toucher aux anciennes lignes) ; seuls les devis faits ensuite seront rangés | à coder, après la livraison de ce lot |
 
 ## Les contrôles
