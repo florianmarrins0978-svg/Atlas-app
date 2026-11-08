@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-08
 
+- **Un espace ouvert sur une branche de session ne reste plus figé dessus** (sa plainte : *« il lui manque énormément de versions »*). Son espace PC suivait `claude/app-sur-ordinateur` depuis le 3 octobre et servait ce code-là, 1 486 commits derrière `main`, en se disant « à jour ». La mise à jour du démarrage ramène désormais l'espace sur `main` dès que tout ce que porte sa branche y est (ou que la branche a été effacée) ; un lot pas encore fusionné reste suivi. Ce que ça évite : un mois d'essais sur une version morte, sans un mot pour le dire. §568.
 - **Mon année, l'objectif : une planche** (`appli/soignee/mon-annee.html`, sa demande). Un chiffre d'affaires et un bénéfice pour l'année ; ce qu'il reste à facturer mois par mois et par jour travaillé, réparti comme sa saison de l'an dernier ; ce qui est déjà en main (à facturer, signé, en attente) ; le bénéfice, seulement avec la banque reliée ; ce que rapporte une journée d'équipe par travail, face à ce qu'il en faut ; et, sa demande du même jour, chaque mois face au même mois de 2025, le mois en cours comparé au même jour. Ce que ça évite : un rythme à parts égales qui le dirait en retard tout l'hiver, un bénéfice faux faute des salaires et du loyer, un prix proposé sans source. Pas codé.
 
 ## 2026-11-07
