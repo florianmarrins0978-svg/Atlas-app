@@ -1,22 +1,23 @@
 # Prochaines tâches
 
-## ⏳ À REGARDER PAR LUI (8 novembre 2026) : une facture depuis la fiche d'un client
+## ⏳ À REGARDER PAR LUI (8 novembre 2026) : importer un devis depuis la fiche d'un client
 
-Sa question : *« si je vais dans Mes clients, que je clique sur Bernard, est-ce
-que je peux ajouter un devis, une facture, juste pour ce client-là ? »*, puis
-*« montre-moi la maquette finie que tu veux coder avant de coder quoi que ce
-soit »*.
+Sa correction de la planche « Nouvelle facture » : *« c'est pas ce que je
+voulais ; j'étais avant sur une autre application et j'avais juste un devis à
+importer pour Bernard : est-ce que je peux, à partir de Bernard, cliquer sur
+importer un devis ? »*
 
-**Lu dans le code** : la fiche (`RepartirDeCeClient.tsx`) porte « Dernier
-devis », « Nouveau devis » (`/chantiers/nouveau?client=`) et « Contrat
-d'entretien » ; une facture sans devis ne part que de Terminés
-(`/chantiers/nouveau?facture=1`). La page lit déjà les deux réglages ensemble.
+**Lu dans le code** : l'import ne part que de « Vos clients »
+(`/clients/importer`, `ImporterPieces.tsx`) et range chaque pièce par le nom
+qu'il y lit ; sa page ne prend aucun client en paramètre.
 
-**La planche** : `appli/soignee/client-nouvelle-facture.html`. Un geste
-« Nouvelle facture » (`?client=<id>&facture=1`) ; quatre gestes deux par deux,
-trois sur une ligne. Niveau 3 au codage (argent).
+**La planche** : `appli/soignee/client-nouvelle-facture.html` (même adresse).
+Un geste « Importer devis / facture » sur la fiche ; l'import s'ouvre
+attaché à ce client, et ce qu'il lit se range chez lui sans chercher son nom.
+Au codage : l'import doit porter le client choisi jusqu'au rangement (niveau
+3, argent : des pièces comptables).
 
-## ⏳ À REGARDER PAR LUI (8 novembre 2026) : vos entrées et sorties, deux cases, et l'assistant
+## ⏳ À REGARDER PAR LUI (8 novembre 2026) : vos entrées et sorties, deux cases, et l'assistant (couleurs de l'écran reprises à l'identique le 8 novembre)
 
 Sa question, sur « Pour mon comptable » : *« c'est normal que quand je lui
 demande mes entrées et mes sorties de l'année, il me les trouve pas »*. Puis :
@@ -133,11 +134,24 @@ rentrer »** : il ne comprenait pas le titre. **Le jour avant le mois, partout**
 
 **Face à 2025, sa forme arrêtée le 8 novembre** : *« la date d'aujourd'hui par
 rapport à l'année dernière, à la même date. Et à la limite le mois en cours, du
-1er au 8. Et le jour, c'est tout. »* Deux comparaisons : « Du 1er janvier au
-8 novembre » (2026, 2025, l'écart), puis « Du 1er au 8 novembre » (2026, 2025,
-l'écart), et « Tous les mois ». La période s'écrit une fois au-dessus. **Lu
-comme le cumul depuis janvier**, pas comme le facturé du seul jour : à
-confirmer s'il voulait le jour seul (le 8 novembre 2025 était un samedi).
+1er au 8. Et le jour, c'est tout. »* **Lu d'abord comme le cumul
+depuis janvier : c'était FAUX**, et il l'a dit sèchement : *« pourquoi tu m'as
+mis deux fois du 1er janvier au 8 novembre ? Si on est le 8 novembre, je veux
+savoir ce que j'ai fait le 8 novembre de l'année dernière. Et ensuite le mois
+en cours : si on est le 25, du 1er au 25, plus le 25 de l'année dernière. »*
+**Forme arrêtée** : « Le 8 novembre » (2026, 2025, l'écart), puis « Du 1er au
+8 novembre » (2026, 2025, l'écart), et « Tous les mois ». Au codage : le
+facturé du jour se lit sur la date d'émission des factures, comme le reste
+(`bilan-periode.ts` avec du = au).
+
+**« À ce rythme, 241 000 € au 31 décembre » est retiré** (sa demande du
+8 novembre : *« ça veut rien dire, la ligne à ce rythme tu l'enlèves »*). Il
+reste « 52 400 € de retard sur votre saison. » Ne pas la remettre.
+
+**Le tableau « Tous les mois »** (sa demande du 8 novembre) : 2026 d'abord,
+2025 à droite, l'écart sous 2025 ; chaque mois sur une bande vert pâle quand
+il a fait plus, bordeaux pâle quand il a fait moins (les jetons
+`carteVertFond` et `carteRougeFond`, qui suivent les chartes sombres).
 
 **La phrase du bénéfice, réécrite le 8 novembre** : *« c'est-à-dire quoi, sur
 100 euros encaissés il vous reste 14,51 ? »*. Elle dit désormais « Sur 1 000 €
@@ -173,7 +187,16 @@ déjà : `bilan-periode.ts` (facturé, encaissé), `aFacturerPartout`
 | le bénéfice | un objectif comme le chiffre | encaissé moins les sorties pro de la banque reliée. **Sans banque, il ne s'affiche pas** : les tickets seuls oublient salaires, loyer, cotisations, et le chiffre serait faux |
 | les conseils | « augmente les prix sur ça » | un compte, jamais un prix proposé (`docs/AGENT.md` §3) : ce que rapporte une journée d'équipe par travail face à ce qu'il en faut, et la part des devis signés |
 
-**À trancher par lui** : la porte (Terminés ou Chantiers) ; impôts et
+**La porte, tranchée par lui le 8 novembre** : *« une catégorie Mon année dans
+les réglages, avec un bouton on/off si l'utilisateur veut que ça s'affiche aussi
+sur Terminés ; il ne faut pas que ça s'affiche de base »*. Mon année est une
+rubrique de Réglages, sous L'entreprise ; en bas de l'écran, « Afficher sur
+Terminés », **éteint de base**. Allumé, la ligne de Mon année se pose sur
+Terminés sous les deux boutons, à côté de celle de la franchise. Au codage :
+un booléen par entreprise, faux par défaut (expand, colonne nullable ou
+`default false`).
+
+**À trancher par lui** : impôts et
 cotisations comptés comme dépense ; le rôle Facturation le voit-il ; ce qui se
 dit sans an dernier. Le compte « par journée » ne prend que les chantiers d'un
 seul travail (`prix-attribuable.ts` : un montant partagé n'appartient à aucun).
@@ -2490,6 +2513,18 @@ Unipros »* (page « services à la personne », étape 01), puis la facture par
 accepte un devis fait ailleurs, à son en-tête, ou un import. Un chantier qui
 mêle élagage et taille donne deux devis et deux émetteurs : l'élagage chez
 l'artisan, la taille chez la coopérative.
+
+**Le choix se fait AU DEVIS (sa remarque du 8 novembre 2026, *« à partir de
+quel moment ? C'est le moment où je rédige le devis »*).** Il a raison, et la
+règle le confirme : la mention de la déclaration est due sur le devis comme sur
+la facture, et une activité à côté se facture à part. Donc une case « Services
+à la personne » par devis (jamais ligne par ligne), visible seulement pour une
+entreprise déclarée et un client particulier ; cochée, le logo et la mention
+s'impriment, l'acompte disparaît pour un client inscrit à l'avance immédiate ;
+la facture reprend la case. Sur la facture, elle se décoche encore avant
+l'envoi, et la facture redevient normale (*« quand je décoche, il n'y a rien
+qui se passe »* : corrigé dans la planche) ; partie à l'Urssaf, elle ne bouge
+plus. Écran « Le devis » ajouté à `appli/soignee/credit-d-impot.html`.
 
 **Relier l'Urssaf : rien n'est codé, et voici ce que ça demande (lu le
 8 novembre 2026 sur les pages officielles).** Sa question : *« est-ce que ça
