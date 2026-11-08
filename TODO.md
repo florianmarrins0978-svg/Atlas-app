@@ -14,8 +14,12 @@ porte sur Terminés). **Ajout du même jour, sa demande** : *« un retour sur la
 mensualité de l'année dernière : en novembre 2025 il a fait tant, et comparé à
 cette année il manque tant ou il a fait plus »*. Le bloc « Face à 2025 » : le
 mois en cours contre le même mois de 2025 **au même jour** (huit jours contre
-huit jours, sans quoi chaque début de mois paraîtrait en retard), depuis
-janvier, et tous les mois dans une feuille. Il se montre aussi sans objectif.
+huit jours, sans quoi chaque début de mois paraîtrait en retard). Il se montre
+aussi sans objectif. **Allégé sur sa demande du même jour** : *« on voit la
+date d'aujourd'hui par rapport à la date de l'année dernière, ce qu'on a fait
+en plus ou en moins, c'est tout »*. Deux lignes, « Du 1er au 8 novembre 2026 »
+et « … 2025 », la date écrite en entier, puis l'écart. « Depuis janvier », la
+ligne « novembre 2025 entier » et la feuille de tous les mois sont retirés.
 **Tranché par lui le 8 novembre** : *« il faut comparer le jour, le 8 avec le
 8 de l'année dernière »*. La comparaison au même jour du calendrier est donc
 retenue ; elle ne se redemande pas.

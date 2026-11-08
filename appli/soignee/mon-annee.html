@@ -103,19 +103,6 @@
 .rang-ligne.fort .prix { color: var(--atlas-or); }
 .plage > .bouton-texte { margin-top: 4px; }
 
-/* Face à l'an dernier : le mois, 2025 dessous ; le montant, l'écart dessous. */
-.compare { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 11px 0; }
-.compare + .compare { box-shadow: inset 0 1px 0 var(--atlas-lineSoft); }
-.compare .nom { flex: 1; min-width: 0; font: 400 18px/1.25 var(--serif); color: var(--atlas-ink); }
-.compare .nom small { display: block; margin-top: 3px; font: 400 14px/1.35 var(--sans); color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
-.compare .prix { display: flex; flex-direction: column; align-items: flex-end; font-size: 17px; line-height: 1.25; color: var(--atlas-ink);
-                 font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
-.ecart { margin-top: 3px; font-size: 14px; font-weight: 700; color: var(--atlas-inkSoft); }
-.ecart[data-ton="vert"] { color: var(--atlas-carteVertTexte); }
-.ecart[data-ton="ambre"] { color: var(--atlas-carteAmbreTexte); }
-.feuille .total { margin-top: 4px; box-shadow: inset 0 1px 0 var(--atlas-line); }
-.feuille .total .compare .nom { font-size: 20px; }
-
 /* Ce qui est en main : des lignes à toucher, qui mènent là où ça se fait. */
 .main-ligne { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 60px; padding: 8px 0; text-align: left; }
 .main-ligne + .main-ligne { box-shadow: inset 0 1px 0 var(--atlas-lineSoft); }
@@ -157,7 +144,7 @@
 <header class="pl-tete">
   <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
   <h1 class="pl-titre">Mon année</h1>
-  <p class="pl-verdict">L'objectif de l'année, <b>chaque mois face au même mois de 2025</b>, ce qu'il reste à facturer <b>mois par mois</b>, ce qui est déjà en main, le bénéfice, et <b>vos prix</b> face à l'objectif. Touchez <b>Modifier</b> et changez l'objectif : tout se recalcule. Les montants sont des exemples.</p>
+  <p class="pl-verdict">L'objectif de l'année, <b>le mois face au même jour de 2025</b>, ce qu'il reste à facturer <b>mois par mois</b>, ce qui est déjà en main, le bénéfice, et <b>vos prix</b> face à l'objectif. Touchez <b>Modifier</b> et changez l'objectif : tout se recalcule. Les montants sont des exemples.</p>
 </header>
 <main class="pl-scene">
   <div class="pl-ecrans">
@@ -208,9 +195,6 @@
               <button class="bouton bouton-plein" type="button" data-geste="garder">Garder</button>
               <button class="bouton-texte fermer" type="button" data-ferme>Fermer</button>
             </div>
-          </section>
-          <section class="feuille" id="f-an-dernier" aria-hidden="true" aria-label="2026 face à 2025">
-            <div class="feuille-poignee"></div><div class="feuille-dedans" data-an-dernier></div>
           </section>
           <section class="feuille" id="f-mois" aria-hidden="true" aria-label="Mois par mois">
             <div class="feuille-poignee"></div><div class="feuille-dedans" data-mois></div>
@@ -277,7 +261,7 @@
     <ul>
       <li>Un objectif par an, en HT : le chiffre d'affaires, et le bénéfice si vous voulez le suivre. Rien n'est rempli d'avance ; l'an dernier est écrit dessous pour repère.</li>
       <li>La jauge dit où vous en êtes. Le trait dit où vous devriez être aujourd'hui, d'après votre saison de l'an dernier : un paysagiste ne facture pas en janvier ce qu'il facture en mai. Couper l'objectif en douze parts égales vous dirait « en retard » tout l'hiver et « en avance » tout le printemps.</li>
-      <li>Face à 2025 : le mois en cours contre le même mois de l'an dernier, et depuis janvier, avec l'écart en plus ou en moins. Le mois en cours se compare au même jour : le 8 novembre, huit jours de novembre 2026 contre huit jours de novembre 2025, sans quoi chaque début de mois paraîtrait en retard. Tous les mois dans une feuille. Elle se montre aussi sans objectif.</li>
+      <li>Face à 2025 : du 1er à aujourd'hui, cette année et l'an dernier au même jour, et ce que vous avez fait en plus ou en moins. Rien d'autre. Il se montre aussi sans objectif.</li>
       <li>Ce qu'il reste à facturer, mois par mois et par jour travaillé, suit la même saison. Les jours travaillés sont les jours ouvrés, fériés retirés.</li>
       <li>Ce qui est déjà en main : les chantiers finis pas encore facturés, les devis signés pas encore faits, les devis sans réponse. Avec les deux premiers, il reste ce qu'il faut encore faire signer.</li>
       <li>Le bénéfice : ce qui est encaissé, moins les sorties pro de votre banque. Il ne s'affiche qu'avec la banque reliée : avec les tickets seuls, il manquerait les salaires, le loyer, les cotisations, et le chiffre serait faux.</li>
@@ -431,45 +415,23 @@
     };
   }
 
-  /* Face à l'an dernier : chaque mois de 2026 contre le même mois de 2025,
-     et le mois en cours contre 2025 AU MÊME JOUR. Comparer huit jours de
-     novembre à tout novembre 2025 dirait « en retard » chaque début de mois. */
-  function comparer(s) {
-    var d = new Date(s.jour), m = d.getUTCMonth(), jour = d.getUTCDate();
-    var entier = s.jour === finDuMois(m);
-    var liste = s.mois.map(function (fait, i) {
-      return { m: i, fait: fait, avant: i < m || entier ? MOIS_2025[i] : an2025Jusquau(i, jour), partiel: i === m && !entier };
-    });
-    var depuis = liste.reduce(function (a, x) { return a + x.fait; }, 0);
-    var depuisAvant = liste.reduce(function (a, x) { return a + x.avant; }, 0);
-    return { jour: jour, liste: liste, courant: liste[m], depuis: depuis, depuisAvant: depuisAvant, moisEntier2025: MOIS_2025[m] };
+  /* Face à 2025 : le mois en cours contre 2025 AU MÊME JOUR, et rien
+     d'autre (sa règle du 8 novembre : « la date d'aujourd'hui par rapport à
+     la date de l'année dernière, ce qu'on a fait en plus ou en moins, c'est
+     tout »). Comparer huit jours de novembre à tout novembre 2025 dirait
+     « en retard » chaque début de mois. */
+  function periode(jour, m, entier, annee) {
+    if (entier) return Maj(MOIS[m]) + " " + annee;
+    return (jour === 1 ? "Le 1er " : "Du 1er au " + jour + " ") + MOIS[m] + " " + annee;
   }
-  function ecart(fait, avant) {
-    var n = fait - avant;
-    if (Math.abs(n) < 100) return '<span class="ecart">Pareil</span>';
-    return '<span class="ecart" data-ton="' + (n > 0 ? "vert" : "ambre") + '">' + e(Math.abs(n)) + (n > 0 ? " de plus" : " de moins") + "</span>";
-  }
-  function ligneCompare(nom, fait, avant) {
-    return '<div class="compare"><span class="nom">' + nom + "<small>2025, " + e(avant) + "</small></span>" +
-      '<span class="prix">' + e(fait) + ecart(fait, avant) + "</span></div>";
-  }
-  function nomDuMois(x, jour) { return Maj(MOIS[x.m]) + (x.partiel ? ", au " + jour : ""); }
   function rendreFace(s) {
-    var c = comparer(s);
+    var d = new Date(s.jour), m = d.getUTCMonth(), jour = d.getUTCDate(), entier = s.jour === finDuMois(m);
+    var fait = s.mois[m], avant = entier ? MOIS_2025[m] : an2025Jusquau(m, jour), n = fait - avant;
+    var dit = Math.abs(n) < 100
+      ? '<p class="plage-ton" data-ton="or">Pareil.</p>'
+      : '<p class="plage-ton" data-ton="' + (n > 0 ? "vert" : "ambre") + '"><b>' + e(Math.abs(n)) + "</b>" + (n > 0 ? " de plus." : " de moins.") + "</p>";
     return '<h2 class="rubrique">Face à 2025</h2><section class="plage">' +
-      ligneCompare(nomDuMois(c.courant, c.jour), c.courant.fait, c.courant.avant) +
-      ligneCompare("Depuis janvier", c.depuis, c.depuisAvant) +
-      (c.courant.partiel ? '<p class="discret">' + Maj(MOIS[c.courant.m]) + " 2025 entier, " + e(c.moisEntier2025) + ".</p>" : "") +
-      '<button class="bouton-texte or" type="button" data-ouvre="f-an-dernier">Tous les mois</button></section>';
-  }
-  function rendreAnDernier(cle) {
-    var s = ETATS[cle], c = comparer(s);
-    var h = '<h2 class="feuille-titre">2026 face à 2025</h2>';
-    c.liste.slice().reverse().forEach(function (x) { h += ligneCompare(nomDuMois(x, c.jour), x.fait, x.avant); });
-    h += '<div class="total">' + ligneCompare("Depuis janvier", c.depuis, c.depuisAvant) + "</div>" +
-      '<p class="discret">En HT, les avoirs retirés. Le mois en cours se compare au même jour de 2025.</p>' +
-      '<button class="bouton-texte fermer" type="button" data-ferme>Fermer</button>';
-    return h;
+      ligne(periode(jour, m, entier, 2026), e(fait)) + ligne(periode(jour, m, entier, 2025), e(avant)) + dit + "</section>";
   }
 
   function pct(n) { return Math.max(0, Math.min(100, n * 100)).toFixed(1) + "%"; }
@@ -649,7 +611,6 @@
     ecranA.querySelector("[data-mois]").innerHTML = rendreMois(cle);
     ecranA.querySelector("[data-benefice]").innerHTML = rendreBenefice(cle);
     ecranA.querySelector("[data-travaux]").innerHTML = rendreTravaux(cle);
-    ecranA.querySelector("[data-an-dernier]").innerHTML = rendreAnDernier(cle);
     ecranT.querySelector("[data-porte]").innerHTML = rendrePorte(etatDe(ecranT, "retard"));
   }
   new MutationObserver(tout).observe(ecranA, { attributes: true, attributeFilter: ["data-etat"] });
