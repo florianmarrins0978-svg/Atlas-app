@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-08
 
+- **Mon année, codée : pas encore sur `main`** (sa demande : *« tu peux coder ça. Ne lance pas de batterie »*). Une rubrique de Réglages, en tête de L'entreprise : l'objectif de l'année (migration 0176), le chiffre et le trait de sa saison, l'an dernier au même jour, ce qui reste à facturer mois par mois, ce qui peut encore rentrer, le bénéfice sur la banque reliée ; un interrupteur « Afficher sur Terminés », éteint de base, pose la ligne sous les deux boutons de Terminés. Ce que ça évite : un chiffre de l'année calculé autrement que celui de la franchise, un « à facturer » qui ne dirait pas le même nombre que Terminés, un bénéfice sans salaires ni loyer. « Vos prix » attend le lot 2 (`ARCHITECTURE.md` §569).
 - **Deux planches corrigées sur ses remarques.** Entrées et sorties : les couleurs inventées sont remplacées par celles de l'écran (`src/lib/chartes.ts`, Origine ; le dessin de `DossierEnCours.tsx`). La fiche client : « Nouvelle facture » n'était pas sa demande ; c'est « Importer devis / facture », attaché au client. Pas codé.
 - **Une facture depuis la fiche d'un client : une planche** (`appli/soignee/client-nouvelle-facture.html`, sa question). Sa fiche propose un devis mais pas de facture : un geste « Nouvelle facture » ouvrirait l'écran de Terminés, le client déjà rempli. Pas codé.
 - **« Autre chose », en entier : la maquette finie** (`appli/soignee/planning-sans-fiche.html`). Le nom, l'adresse, le téléphone et les travaux à faire, sans fiche client. Pas codé.

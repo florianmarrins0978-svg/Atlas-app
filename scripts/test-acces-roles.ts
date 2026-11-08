@@ -242,6 +242,8 @@ essai("le commercial atteint l'application, sauf les adresses nommées", () => {
     // qui porte les factures de chaque client, fermé comme Ma banque.
     "/reglages/facture-electronique",
     "/reglages/identite",
+    // Mon année (8 novembre 2026) : le chiffre d'affaires et le bénéfice, au patron seul.
+    "/reglages/mon-annee",
     "/termines",
     // **Pour mon comptable (24 octobre 2026)**, fermé comme Terminés : le
     // dossier montre chaque ligne de banque et ses montants. La pièce d'une

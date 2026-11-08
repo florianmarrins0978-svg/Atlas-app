@@ -37191,3 +37191,24 @@ Son espace PC avait été ouvert le 3 octobre sur `claude/app-sur-ordinateur`. L
 | le distant qui ne répond pas ne fait rien conclure | ne pas savoir n'est pas « finie » |
 
 **Ce que la correction ne rattrape pas seule** : un espace déjà figé exécute l'ANCIEN script, celui de sa branche. Il faut que le nouveau y arrive une fois, soit par sa branche avancée jusqu'à `main` (sans perte : elle n'a rien que `main` n'ait), soit par un passage sur `main` fait à la main. Éprouvé par `scripts/test-mise-a-jour-espace.ts` (cinq cas, rouges avant la correction) et sur une copie du vrai dépôt à l'état de son espace : « à jour » avec l'ancien script, « faite » et `main` du jour avec le nouveau.
+
+
+## §569 : Mon année : la saison de l'an dernier, l'an dernier au même jour, et un bénéfice qui ne se compte qu'avec la banque
+
+*8 novembre 2026, sa planche « Mon année » (`appli/soignee/mon-annee.html`) et son « tu peux coder ça ». Pas sur `main` : il attend sa batterie.*
+
+| Décision | Pourquoi |
+|---|---|
+| un objectif par année civile (`objectifs_annee`), le bénéfice facultatif, rien de recopié d'une année sur l'autre | rien ne s'invente ; garder les années passées permettra de dire « tenu ou non » sans le lui redemander |
+| `entreprises.mon_annee_sur_termines`, faux par défaut | sa règle : « il ne faut pas que ça s'affiche de base » ; aucune entreprise existante ne voit apparaître une ligne qu'elle n'a pas demandée |
+| le chiffre d'affaires est celui du plafond de la franchise : factures ÉMISES en HT à leur date, moins les avoirs | une seule définition du chiffre de l'année dans l'appli |
+| les factures importées ne comptent qu'en franchise | l'import ne lit que le TTC ; mêlé à du HT, l'an dernier paraîtrait plus haut qu'il n'était |
+| le trait et le reste mois par mois suivent la part de chaque mois dans l'an dernier ; sans an dernier, ni trait ni retard | à parts égales, un paysagiste serait « en retard » tout l'hiver |
+| Face à l'an dernier : le jour même, puis du 1er à aujourd'hui, face aux mêmes jours de l'an dernier ; le 29 février tombe le 28 | sa correction : « si on est le 8 novembre, je veux savoir ce que j'ai fait le 8 novembre de l'année dernière » ; un mois entier face à huit jours paraîtrait toujours en retard |
+| « À facturer » se lit par `aFacturerPartout`, la règle de Terminés, puis le HT de la facture préparée ou du dernier devis envoyé | deux définitions auraient donné deux comptes à deux écrans d'intervalle |
+| « signés » et « sans réponse » : le DERNIER envoi de chaque chantier, un chantier déjà à facturer n'y entre pas | un chantier compte une fois |
+| le bénéfice : entrées sans motif, moins les sorties sauf `perso` et `pret` ; une sortie sans pièce compte | sans la banque, l'appli ne voit ni salaires ni loyer, et le chiffre serait faux ; les prêts mêlent capital et intérêts |
+| l'écran et ses actions sont gardés par `cheminAutorise("/reglages/mon-annee")`, fermé au commercial, absent des réglages de la facturation et du salarié ; la ligne de Terminés obéit à la même règle | une seule règle ouvre l'écran, ses actions et la ligne |
+| « Vos prix » n'est pas dans ce lot | une ligne de devis oublie le tarif d'où elle vient (`proposition-prix.ts` connaît `tarifId`, `lignes_prix` ne le garde pas) ; il faut d'abord le lui faire garder |
+
+Règles pures dans `src/lib/mon-annee.ts` (`scripts/test-mon-annee.ts`, vue rouge en cassant la règle du même jour), lecture dans `src/server/repositories/mon-annee.ts` (`scripts/test-mon-annee-db.ts`, écrite, pas jouée : elle vide la base, et aucune batterie n'était autorisée).

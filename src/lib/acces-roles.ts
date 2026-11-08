@@ -110,6 +110,10 @@ const FERME_AU_COMMERCIAL = [
   // **Le compte de la plateforme de facture électronique** (5 novembre 2026) :
   // il porte les factures de chaque client, la facturation qu'il ne voit pas.
   "/reglages/facture-electronique",
+  // **Mon année** (8 novembre 2026) : le chiffre d'affaires, le bénéfice, ce
+  // qui reste à facturer. Le patron seul ; la facturation et le salarié ne
+  // l'ont pas non plus, faute d'y figurer dans leurs réglages ouverts.
+  "/reglages/mon-annee",
   // ───────────────────────────────────────────────────────────────────────
   // **LA FACTURATION, ET C'EST SA RÈGLE DU 13 AOÛT — pas une nouveauté.**
   //

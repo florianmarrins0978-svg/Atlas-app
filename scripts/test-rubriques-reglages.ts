@@ -90,8 +90,13 @@ essai("ses priorités ouvrent l'entreprise, dans l'ordre de sa planche du 25 oct
   // et l'équipe restent en tête ; les véhicules et l'organigramme rejoignent
   // l'équipe, les fournisseurs rejoignent les tarifs. C'est cet ordre-là, le
   // sien, que le contrôle défend désormais, en entier.
+  //
+  // **Mon année s'y glisse le 8 novembre 2026, au-dessus de l'équipe** : sa
+  // planche de ce jour-là la montre en tête de L'entreprise, et il l'a choisie
+  // (« tu peux coder ça »).
   assert.deepEqual(entreprise, [
     "/reglages/identite",
+    "/reglages/mon-annee",
     "/reglages/equipe",
     "/reglages/vehicules",
     "/reglages/organigramme",
@@ -135,6 +140,7 @@ essai("« Fiche d'entretien » a quitté les Réglages, et n'y revient pas", () 
 essai("un membre ne reçoit AUCUNE rubrique de l'entreprise", () => {
   const adresses = toutes("salarie").map((r) => r.href);
   for (const interdite of [
+    "/reglages/mon-annee",
     "/reglages/identite",
     "/reglages/equipe",
     "/reglages/tarifs",

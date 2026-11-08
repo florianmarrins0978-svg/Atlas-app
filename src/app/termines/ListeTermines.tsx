@@ -59,7 +59,14 @@ export default function ListeTermines({
   nonPayees,
   chantierDemande,
   chantiersSoldes,
+  monAnnee = null,
 }: {
+  /**
+   * La ligne de Mon année, sous les deux boutons (sa planche du 8 novembre
+   * 2026). `null` tant qu'il ne l'a pas allumée dans Réglages : la page
+   * décide, la liste ne fait que la poser à sa place.
+   */
+  monAnnee?: React.ReactNode;
   /**
    * Les chantiers dont la facture est entièrement réglée. Leur volet ne propose
    * plus « Il ne me paiera pas » — sa décision du 25 septembre 2026 : le bouton
@@ -270,6 +277,8 @@ export default function ListeTermines({
           Créer une facture
         </Link>
       </div>
+
+      {monAnnee}
 
       {/* ─── LES FACTURES NON PAYÉES — sa demande du 24 septembre 2026 ──────
           *« Dans Terminés, si je dis que mon client ne me paiera pas, il faut

@@ -1,5 +1,14 @@
 # État du projet
 
+## MON ANNÉE, CODÉE (8 novembre 2026), PAS SUR `main`
+
+Sur `claude/eager-cori-g7qv8y`. Niveau 3 (migration 0176, argent) : elle
+attend sa batterie, qu'il n'a pas autorisée. Codé : Réglages, Mon année, son
+interrupteur de Terminés, l'objectif, la saison, l'an dernier au même jour,
+le reste mois par mois, ce qui peut encore rentrer, le bénéfice sur la banque.
+Pas codé : « Vos prix » (lot 2, il faut d'abord que chaque ligne de devis garde
+son tarif). `docs/mon-annee.md`.
+
 **Dernière mise à jour :** 2026-11-07, `main`, neuf lots de quatre sessions réunis en une seule batterie à sa demande (`docs/batterie-commune-6-novembre-soir.md`) : le vrai sablier, hiverner l'arrosage, la note sans réseau, le plafond de la franchise, déplacer un chantier en un appui, la fiche travaux, la fiche de sécurité soignée, fermer son compte, la facture d'abonnement d'Atlas. Deux batteries entières : la dernière, 583 suites base sur 583, 214 navigateur sur 215, construction et connexion vertes ; le rouge (`test-note-sans-reseau-e2e`, qui lisait la base trop tôt) corrigé, rejoué par `verifier-ce-qui-a-bouge` puis une seconde fois, vert.
 dernière migration `drizzle/0170_idees_pour_l_appli.sql` (une idée pour l'appli, 0167 sur sa branche), avec `0169_plateforme_facture_electronique.sql` (la Factur-X, 0165 sur sa branche) et `0165` à `0168` (nature d'une absence, jours travaillés corrigés, zones de déplacement, couleur du férié), sur `main` le 6 novembre ; avant elles `0164_sauts_de_page_du_devis.sql`, sur `main` le 4 novembre
 

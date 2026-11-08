@@ -17,6 +17,11 @@ import { ligneAJustifier, lignesDuReleve } from "@/server/repositories/pour-mon-
 import { garderLaPage } from "@/server/garde-page";
 import { compteDeLaFranchise } from "@/server/repositories/franchise-plafond";
 import { LigneDeLaFranchise } from "@/components/atlas/FranchiseDeTva";
+import LigneMonAnnee from "@/components/atlas/LigneMonAnnee";
+import { cheminAutorise } from "@/lib/acces-roles";
+import { etatDeLAnnee } from "@/lib/mon-annee";
+import { getRole } from "@/server/autorisation";
+import { porteMonAnnee } from "@/server/repositories/mon-annee";
 
 export const dynamic = "force-dynamic";
 
@@ -97,6 +102,12 @@ export default async function TerminesPage({ searchParams }: { searchParams: Pro
   // Le même « soldée » que l'écran « Il ne vous paiera pas » lit pour refuser :
   // une seule règle décide si la porte existe et si elle s'ouvre.
   const chantiersSoldes = (await facturesAvecPaiements(ctx)).filter((f) => f.etat === "soldee").map((f) => f.chantierId);
+  // **Mon année, sous les deux boutons — seulement s'il l'a allumée** (sa règle
+  // du 8 novembre 2026 : « il ne faut pas que ça s'affiche de base »), et à qui
+  // ouvre l'écran : la facturation lit Terminés, pas le chiffre de l'année.
+  // La même règle que la garde de la page (`cheminAutorise`), jamais une autre.
+  const role = await getRole(ctx);
+  const porte = role && cheminAutorise(role, "/reglages/mon-annee") ? await porteMonAnnee(ctx) : null;
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -232,6 +243,13 @@ export default async function TerminesPage({ searchParams }: { searchParams: Pro
             nonPayees={nonPayees.length}
             chantierDemande={chantierDemande ?? null}
             chantiersSoldes={chantiersSoldes}
+            monAnnee={
+              porte ? (
+                <LigneMonAnnee
+                  etat={porte.objectif ? etatDeLAnnee(porte.objectif.chiffreAffaires, porte.pieces, porte.aujourdHui, porte.alsaceMoselle) : null}
+                />
+              ) : null
+            }
           />
         </div>
 

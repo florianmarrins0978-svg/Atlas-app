@@ -57,7 +57,9 @@ export type NomIcone =
    * Facture électronique, 5 novembre 2026 : la feuille qui part. Pas celle de
    * « Devis & factures » : deux rubriques ne partagent jamais une icône.
    */
-  | "feuille_envoyee";
+  | "feuille_envoyee"
+  /** Mon année, 8 novembre 2026 : l'euro, celui de `IconeTrait`. */
+  | "euro";
 
 const TRACES: Record<NomIcone, React.ReactNode> = {
   carton: (
@@ -167,6 +169,8 @@ const TRACES: Record<NomIcone, React.ReactNode> = {
     <path d="M9.2 3.6a2.1 2.1 0 0 1 4.2 0c0 .8-.5 1.2-.5 1.7 0 .5.4.8.9.8h2.6a1 1 0 0 1 1 1v2.7c0 .5.3.9.8.9.5 0 .9-.5 1.7-.5a2.1 2.1 0 0 1 0 4.2c-.8 0-1.2-.5-1.7-.5-.5 0-.8.4-.8.9V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7.1a1 1 0 0 1 1-1h2.8c.5 0 .9-.3.9-.8 0-.5-.5-.9-.5-1.7Z" />
   ),
   banque: <path d="M3.5 9.5L12 4.5l8.5 5M5.5 9.5v8M9.8 9.5v8M14.2 9.5v8M18.5 9.5v8M3.5 19.5h17" />,
+  // Mon année : l'euro de `IconeTrait`, au trait de cette famille.
+  euro: <path d="M16.5 7.2A6 6 0 1 0 16.5 16.8M5 10.5h8M5 13.5h8" />,
   feuille_envoyee: (
     <>
       <path d="M13.2 3H6.4A1.4 1.4 0 0 0 5 4.4v15.2A1.4 1.4 0 0 0 6.4 21h5.4" />

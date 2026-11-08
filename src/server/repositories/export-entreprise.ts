@@ -79,6 +79,7 @@ import {
   liaisonsPlateformes,
   transmissionsFactures,
   facturesAtlas,
+  objectifsAnnee,
   mouvementsBancaires,
   dossiersComptables,
   bilansComptables,
@@ -247,6 +248,7 @@ export async function exporterEntreprise(
       sesRetoursDuComptable,
       saConsommationIA,
       sesFacturesAtlas,
+      sesObjectifs,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
       tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
@@ -500,6 +502,9 @@ export async function exporterEntreprise(
       // Les factures d'abonnement qu'Atlas lui a émises (migration 0175) : ses
       // factures d'achat, que son comptable lui réclamera. Leur PDF part avec.
       tx.select().from(facturesAtlas).where(eq(facturesAtlas.entrepriseId, e)),
+      // Ses objectifs de l'année (migration 0176) : SA saisie, que rien ne
+      // reconstitue.
+      tx.select().from(objectifsAnnee).where(eq(objectifsAnnee.entrepriseId, e)),
     ]);
 
     // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
@@ -622,6 +627,7 @@ export async function exporterEntreprise(
       retours_comptable: sesRetoursDuComptable,
       consommation_ia: saConsommationIA,
       factures_atlas: sesFacturesAtlas,
+      objectifs_annee: sesObjectifs,
     };
 
     const compte: Record<string, number> = {};

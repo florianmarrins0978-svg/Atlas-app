@@ -329,6 +329,10 @@ export function rubriquesReglages(
               },
             ]
           : []),
+        // **Mon année, au-dessus de l'équipe** : sa planche du 8 novembre 2026,
+        // choisie le jour même (« tu peux coder ça »). Ma banque reste en tête
+        // quand elle est reliée, sa place du 1er novembre.
+        { nom: "Mon année", icone: "euro" as const, href: "/reglages/mon-annee" },
         ...ENTREPRISE,
       ]),
     },

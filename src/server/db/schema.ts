@@ -381,6 +381,12 @@ export const entreprises = pgTable("entreprises", {
   resteEffaceLe: timestamp("reste_efface_le", { withTimezone: true }),
   /** L'e-mail parti sept jours avant l'effacement (`aPrevenir`), une seule fois. */
   prevenuLe: timestamp("prevenu_le", { withTimezone: true }),
+  /**
+   * Mon année se montre-t-elle aussi sur Terminés (migration 0176) ? Sa règle
+   * du 8 novembre 2026 : *« il ne faut pas que ça s'affiche de base »*. Faux
+   * tant qu'il ne l'a pas allumé, dans Réglages, Mon année.
+   */
+  monAnneeSurTermines: boolean("mon_annee_sur_termines").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
@@ -4263,6 +4269,27 @@ export const demandesEnvoyees = pgTable("demandes_envoyees", {
   createdBy: uuid("created_by").references(() => users.id),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/**
+ * L'objectif d'une année civile (migration 0176, sa planche « Mon année » du
+ * 8 novembre 2026). Le chiffre d'affaires HT est obligatoire, le bénéfice
+ * facultatif. Une année neuve part SANS objectif : rien n'est recopié de l'an
+ * dernier. Les bornes sont celles de `objectifValide` (`src/lib/mon-annee.ts`),
+ * redites en CHECK par la migration.
+ */
+export const objectifsAnnee = pgTable(
+  "objectifs_annee",
+  {
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    annee: smallint("annee").notNull(),
+    chiffreAffairesHt: numeric("chiffre_affaires_ht", { precision: 12, scale: 2 }).notNull(),
+    benefice: numeric("benefice", { precision: 12, scale: 2 }),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ name: "objectifs_annee_pk", columns: [t.entrepriseId, t.annee] })]
+);
 
 export const margesAchat = pgTable("marges_achat", {
   entrepriseId: uuid("entreprise_id")

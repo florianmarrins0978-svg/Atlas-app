@@ -105,7 +105,7 @@ base. **À faire** : publier `CODESPACE_NAME` dans la fiche
 différents l'ont écrite dans la dernière heure. Pas codé : pas demandé ce
 jour-là.
 
-## ⏳ À CHOISIR PAR LUI (8 novembre 2026) : Mon année, l'objectif de chiffre d'affaires et de bénéfice
+## Mon année : CHOISIE ET CODÉE LE 8 NOVEMBRE 2026, PAS SUR main (elle attend sa batterie, qu'il n'a pas autorisée)
 
 **Sa demande du 8 novembre** : *« pouvoir se mettre des objectifs : cette
 année, 300 000 euros de chiffre d'affaires, dont 50 000 de bénéfice ; si tu es
@@ -196,10 +196,22 @@ Terminés sous les deux boutons, à côté de celle de la franchise. Au codage :
 un booléen par entreprise, faux par défaut (expand, colonne nullable ou
 `default false`).
 
-**À trancher par lui** : impôts et
-cotisations comptés comme dépense ; le rôle Facturation le voit-il ; ce qui se
-dit sans an dernier. Le compte « par journée » ne prend que les chantiers d'un
-seul travail (`prix-attribuable.ts` : un montant partagé n'appartient à aucun).
+**CODÉ LE 8 NOVEMBRE** (son « tu peux coder ça. Ne lance pas de batterie »),
+sur `claude/eager-cori-g7qv8y`, **pas sur `main`** : niveau 3 (migration 0176,
+argent), et aucune batterie n'a été autorisée. Le détail et ce qui reste :
+`docs/mon-annee.md`, `ARCHITECTURE.md` §569.
+
+| | |
+|---|---|
+| codé | l'objectif (migration 0176), Réglages, Mon année (rubrique en tête de L'entreprise), l'interrupteur « Afficher sur Terminés » éteint de base, la ligne sur Terminés, le chiffre et sa saison, Face à l'an dernier (le jour, du 1er au jour, tous les mois), le reste mois par mois, ce qui peut encore rentrer, le bénéfice sur la banque |
+| éprouvé ici | types, style, `test-mon-annee.ts` (vu rouge en cassant une règle), accès, rubriques, couches, code mort, pansements, tirets, flèches, chartes |
+| PAS éprouvé ici | `test-mon-annee-db.ts` (écrite, elle vide la base) ; l'écran lui-même (il faut le serveur, sur le port 3000) |
+| **reste à faire, lot 2** | « Vos prix », rangés par SES tarifs : faire garder à chaque ligne de devis le tarif d'où elle vient (`proposition-prix.ts` connaît `tarifId`, `lignes_prix` n'a pas de colonne), colonne nullable (expand) ; seuls les devis faits ensuite seront rangés |
+
+**Tranché par défaut, à lui confirmer** : impôts et cotisations comptent comme
+dépense ; le rôle Facturation NE voit PAS Mon année (ni l'écran, ni la ligne de
+Terminés) ; sans an dernier dans l'appli, ni trait, ni retard, ni Face à l'an
+dernier.
 
 ## BATTERIE COMMUNE DU 6 NOVEMBRE AU SOIR : VERTE, SUR main LE 7 NOVEMBRE
 
