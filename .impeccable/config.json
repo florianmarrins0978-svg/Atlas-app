@@ -768,6 +768,15 @@
         ],
         "createdAt": "2026-11-08T09:52:11.417Z",
         "reason": "agent: fond crème #f5f3ee de la charte Origine de l'application (src/lib/design-tokens.ts), recopié par kit.css"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/sur-ordinateur-largeur.html"
+        ],
+        "createdAt": "2026-11-08T10:27:34.003Z",
+        "reason": "charte existante d'Atlas : fond crème repris d'Arborea (PRODUCT.md, Brand Commitments) ; la planche montre ses vrais écrans dans leur monde"
       }
     ]
   }
