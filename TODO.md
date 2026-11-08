@@ -50,6 +50,14 @@ rentrer »** : il ne comprenait pas le titre. **Le jour avant le mois, partout**
 (*« la date est toujours à l'envers »*) : « Au 8 novembre 2026 », « D'ici le
 30 novembre », « Du 1er au 8 novembre », jamais « 2026, au 8 novembre » ni
 « Novembre, d'ici le 30 ».
+
+**Face à 2025, sa forme arrêtée le 8 novembre** : *« la date d'aujourd'hui par
+rapport à l'année dernière, à la même date. Et à la limite le mois en cours, du
+1er au 8. Et le jour, c'est tout. »* Deux comparaisons : « Du 1er janvier au
+8 novembre » (2026, 2025, l'écart), puis « Du 1er au 8 novembre » (2026, 2025,
+l'écart), et « Tous les mois ». La période s'écrit une fois au-dessus. **Lu
+comme le cumul depuis janvier**, pas comme le facturé du seul jour : à
+confirmer s'il voulait le jour seul (le 8 novembre 2025 était un samedi).
 **Tranché par lui le 8 novembre** : *« il faut comparer le jour, le 8 avec le
 8 de l'année dernière »*. La comparaison au même jour du calendrier est donc
 retenue ; elle ne se redemande pas.
