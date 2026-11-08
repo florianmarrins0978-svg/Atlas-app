@@ -777,9 +777,9 @@ ici** : que `ATLAS_EDITEUR_EMAIL` soit posée sur son espace avec son adresse.
 ~~**Vérifié dans le dépôt le 5 novembre : rien ne la pose.**~~ **Réglé le
 8 novembre 2026** : il a écrit une idée et ne l'a jamais reçue. Son compte est
 `demo@atlas.local` (sa réponse) ; `completer-env-local.sh` l'écrit remplie
-dans `.env.local` à l'allumage. **Pas vérifié ICI** : qu'une variable vide
-posée par `run-e2e-tests.ts` l'emporte sur `.env.local` pour `next start`
-(si non, `test-idees-e2e` rougit sur son espace, et le dira).
+dans `.env.local` à l'allumage. `run-e2e-tests.ts` la pose vide pour les
+suites, et cela tient : `@next/env` ne prend une valeur de `.env.local` que si
+la variable est `undefined` (lu dans `node_modules/@next/env`, le 8 novembre).
 **Provisoire, et il l'a dit** (8 novembre 2026) : *« un jour cette appli sera
 chez un hébergeur et je vais sûrement changer de compte éditeur ; là, c'est
 juste pour faire des tests »*. `demo@atlas.local` ne vaut que pour son banc
