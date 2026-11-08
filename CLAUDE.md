@@ -724,7 +724,7 @@ Concrètement, pour toute planche dont on attend un choix :
    sur des données de démonstration, sans un script), le geste se joue pour
    de vrai pour figer chaque étape, et **seul le changement proposé s'y
    ajoute**. Modèles : `appli/soignee/planning-sans-fiche.html` et
-   `client-nouvelle-facture.html` ; l'outil : `scripts/planche-figee/`
+   `appli/client-importer-depuis-sa-fiche.html` ; l'outil : `scripts/planche-figee/`
    (`figer.mjs` fige, `composer.mjs` assemble, `parcourir.mjs` touche chaque
    geste). Seul un écran qui n'existe pas encore se dessine avec le kit ;
 3. rien d'autre à faire pour qu'elle soit vérifiée en ligne : depuis le

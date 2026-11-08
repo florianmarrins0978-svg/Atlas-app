@@ -11,13 +11,15 @@ importer un devis ? »*
 (`/clients/importer`, `ImporterPieces.tsx`) et range chaque pièce par le nom
 qu'il y lit ; sa page ne prend aucun client en paramètre.
 
-**La planche** : `appli/soignee/client-nouvelle-facture.html` (même adresse),
-**refaite le même soir sur les vrais écrans figés** (*« c'est pas la vraie page
-du client, donc c'est de la merde »*). Le bouton « Importer devis / facture »
-de Vos clients, tel quel, au bout de sa fiche ; l'import s'ouvre attaché à ce
-client (« M. Bernard » à la place de « Vos clients »), et ce qu'il lit se range
-chez lui sans chercher son nom ; on revient sur sa fiche avec le bandeau
-« 2 documents rangés ».
+**La planche** : `appli/client-importer-depuis-sa-fiche.html`, **refaite le
+même soir sur les vrais écrans figés** (*« c'est pas la vraie page du client,
+donc c'est de la merde »*). Le bouton « Importer devis / facture » de Vos
+clients, tel quel, au bout de sa fiche ; l'import s'ouvre attaché à ce client
+(« M. Bernard » à la place de « Vos clients »), et ce qu'il lit se range chez
+lui sans chercher son nom ; on revient sur sa fiche avec le bandeau
+« 2 documents rangés ». Elle vit à la racine d'`appli/`, comme les autres
+écrans figés (`appli/moyen-de-reglement-termines.html`) : `soignee/` garde les
+planches dessinées au kit.
 Au codage : l'import doit porter le client choisi jusqu'au rangement (niveau
 3, argent : des pièces comptables).
 
