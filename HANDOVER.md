@@ -15,8 +15,9 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 **Sa plainte :** sur son PC, Atlas est vide (aucun client, aucune facture, TVA à
 zéro), alors que tout est sur son téléphone. **Ce n'est pas un défaut du code** :
 le PC ouvre l'espace `super-duper-umbrella-vpg6477549gjcxxjx` (ouvert le
-3 octobre pour `claude/app-sur-ordinateur`, §568), le téléphone en ouvre un
-autre. Chaque espace porte son propre PostgreSQL (`atlas-pgdata`,
+3 octobre pour `claude/app-sur-ordinateur`, §568), le téléphone ouvre
+`reimagined-space-yodel`, sur `main` (sa capture de github.com, le
+8 novembre). C'est celui-là qui porte ses données. Chaque espace porte son propre PostgreSQL (`atlas-pgdata`,
 `.devcontainer/docker-compose.yml`) : deux espaces, deux bases, rien entre les
 deux. Un espace n'expose que du HTTP, donc deux espaces ne peuvent pas partager
 une base : la seule base commune viendra avec l'hébergement (Scaleway, décidé).
