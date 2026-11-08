@@ -19,6 +19,19 @@ janvier, et tous les mois dans une feuille. Il se montre aussi sans objectif.
 **Tranché par lui le 8 novembre** : *« il faut comparer le jour, le 8 avec le
 8 de l'année dernière »*. La comparaison au même jour du calendrier est donc
 retenue ; elle ne se redemande pas.
+
+**« Vos prix » se range par SES TARIFS, pas par la nature du travail** — sa
+question du 8 novembre : *« si c'est un électricien et qu'il a marqué tableau
+électrique, la nomenclature va changer ? »*. Il avait raison : la première
+planche rangeait par `prestations.nature`, dont la liste
+(`natures-prestation.ts`) est celle de l'espace vert ; chez un électricien,
+tout y vaut `null` et la section serait vide. Ses tarifs (`tarifs`, Réglages,
+Tarifs & catalogue) sont dans ses mots, quel que soit le métier. **Ce qui
+manque pour le coder** : `proposition-prix.ts` connaît le `tarifId` d'une
+ligne et ne le stocke pas ; `lignes_prix` n'a pas de colonne pour lui. Une
+colonne nullable (expand), écrite à la naissance de la ligne ; les lignes
+d'avant restent sans tarif, rien ne se devine. Un chantier compte pour le
+tarif qui fait plus de la moitié de son montant HT.
 La saison du rythme et cette comparaison lisent le même relevé de 2025. Tout ce qu'elle montre sort de données que l'appli tient
 déjà : `bilan-periode.ts` (facturé, encaissé), `aFacturerPartout`
 (`termines-par-mois.ts`), `devis.statut`, `prestations.nature`,
