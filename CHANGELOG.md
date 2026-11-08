@@ -8,7 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-08
 
-- **Mon année, l'objectif : une planche** (`appli/soignee/mon-annee.html`, sa demande). Un chiffre d'affaires et un bénéfice pour l'année ; ce qu'il reste à facturer mois par mois et par jour travaillé, réparti comme sa saison de l'an dernier ; ce qui est déjà en main (à facturer, signé, en attente) ; le bénéfice, seulement avec la banque reliée ; ce que rapporte une journée d'équipe par travail, face à ce qu'il en faut. Ce que ça évite : un rythme à parts égales qui le dirait en retard tout l'hiver, un bénéfice faux faute des salaires et du loyer, un prix proposé sans source. Pas codé.
+- **Mon année, l'objectif : une planche** (`appli/soignee/mon-annee.html`, sa demande). Un chiffre d'affaires et un bénéfice pour l'année ; ce qu'il reste à facturer mois par mois et par jour travaillé, réparti comme sa saison de l'an dernier ; ce qui est déjà en main (à facturer, signé, en attente) ; le bénéfice, seulement avec la banque reliée ; ce que rapporte une journée d'équipe par travail, face à ce qu'il en faut ; et, sa demande du même jour, chaque mois face au même mois de 2025, le mois en cours comparé au même jour. Ce que ça évite : un rythme à parts égales qui le dirait en retard tout l'hiver, un bénéfice faux faute des salaires et du loyer, un prix proposé sans source. Pas codé.
 
 ## 2026-11-07
 
