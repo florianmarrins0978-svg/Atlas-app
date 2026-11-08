@@ -46,6 +46,15 @@ Les cases restent ouvertes, avec un prénom en plus (aujourd'hui le nom et le
 prénom s'écrivent ensemble dans `clients.nom` : une colonne neuve, donc une
 migration en deux temps, si elle est gardée).
 
+**Revu une seconde fois, sa précision** : *« ça sera un client que je ne
+facturerai pas ; il passera par une autre plateforme pour être facturé,
+comme Unipros ; il faut préciser qu'il ne pourra pas facturer ce client »*.
+Retour à « Créer sa fiche » ou « Sans fiche ». Sans fiche : « Il ne pourra
+pas être facturé dans Atlas. », plus de prénom, téléphone ni e-mail (aucune
+place sans fiche), l'adresse reste sur le chantier (`adresse_chantier`). C'est
+« Autre chose » plus une adresse : aucune migration. Reste à trancher : A ou
+B, et un téléphone sur le chantier pour l'appeler la veille.
+
 ## ⏳ À CHOISIR PAR LUI (8 novembre 2026) : sur ordinateur, la largeur de la colonne
 
 Sa demande, photo de son portable à l'appui : *« les bandes s'étirent jusqu'au
