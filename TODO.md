@@ -1,5 +1,29 @@
 # Prochaines tâches
 
+## ⏳ À CHOISIR PAR LUI (8 novembre 2026) : sur ordinateur, la largeur de la colonne
+
+Sa demande, photo de son portable à l'appui : *« les bandes s'étirent jusqu'au
+milieu de l'écran alors que le texte s'arrête à un quart ; pareil pour les
+notifications. Est-ce qu'on peut trouver un juste milieu ? »*
+
+**La racine** : sur ordinateur, `--atlas-largeur` vaut 64rem (1024 px,
+`globals.css`, « L'ORDINATEUR », §447), plus du double de la colonne pour
+laquelle les écrans sont dessinés. Tout ce qui prend la largeur s'étire, et le
+mois du planning ne tient plus à l'écran.
+
+**La planche** : `appli/sur-ordinateur-largeur.html`, ses vrais écrans rendus à
+1536 x 730 px avec seule cette variable changée (1024, 768, 672, 576 px).
+Conseillée : **672 px (42rem)**, la largeur de la feuille du devis.
+
+**Ce que la correction touchera, une fois choisie** : la seule valeur de
+`--atlas-largeur` au-delà de 1024 px d'écran, et §447. Aucun écran ; le
+téléphone ne bouge pas. Relire `scripts/test-sur-ordinateur-e2e.ts`, qui peut
+mesurer la colonne.
+
+**Vu en passant, hors de sa demande** : sur Paysage, la liste dépasse le titre
+de 10 px de chaque côté (`mx-4` contre `mx-[26px]`, `src/app/paysage/page.tsx`),
+téléphone compris. Proposé à part sur la planche.
+
 ## ⏳ À CHOISIR PAR LUI (8 novembre 2026) : Mon année, l'objectif de chiffre d'affaires et de bénéfice
 
 **Sa demande du 8 novembre** : *« pouvoir se mettre des objectifs : cette
@@ -2358,6 +2382,21 @@ numéro » de la planche ne le sert pas. Pour lui, les voies sont une structure
 à part dédiée aux services à la personne, ou une coopérative comme Unipros
 (c'est exactement ce qu'elle vend). La frontière entre « taille des arbres »
 (dedans) et « élagage » (dehors) est à faire préciser par la DDETS.
+
+**« Le devis sur Atlas, la facture par une coopérative » : pas tel quel
+(8 novembre 2026).** Sa proposition pour l'élagueur à 81 % : faire le devis
+dans Atlas, l'envoyer à une coopérative existante qui fait la facture. Deux
+obstacles, lus le même jour : (1) la règle officielle (servicesalapersonne.gouv.fr,
+« comment demander une déclaration ») veut que les DEVIS et les factures
+portent la mention de la déclaration ; l'organisme déclaré étant la
+coopérative, le devis doit porter SON numéro, son logo et ses CGV (celles
+d'Unipros se signent avec le devis) ; un devis d'Atlas au nom de l'artisan
+ne le fait pas ; (2) chez Unipros, *« vous créez le devis depuis votre espace
+Unipros »* (page « services à la personne », étape 01), puis la facture part
+*« à l'entête de la coopérative »*. Seule la coopérative peut dire si elle
+accepte un devis fait ailleurs, à son en-tête, ou un import. Un chantier qui
+mêle élagage et taille donne deux devis et deux émetteurs : l'élagage chez
+l'artisan, la taille chez la coopérative.
 
 **Ses deux remarques suivantes, le même jour :**
 
