@@ -22,6 +22,15 @@
   Après-midi, Journée. « Créer sa fiche » reste choisi d'office ; « Sans
   fiche » referme les trois cases, et le nom va seul au planning, comme
   « Autre chose ». Rien n'est codé.
+
+  REVU LE MÊME JOUR, SA CORRECTION : « même si on ne crée pas sa fiche
+  client, il faut quand même pouvoir mettre le nom, le prénom, l'adresse, le
+  numéro de téléphone, parce que c'est un client qu'on va ajouter au planning
+  et qu'on va peut-être facturer ». Une facture porte le nom et l'adresse du
+  client : ce qu'il décrit EST une fiche. Le choix ne porte donc plus sur la
+  fiche mais sur sa place : « Dans Vos clients » d'office, ou « Pas encore »,
+  et la fiche y entre seule à son premier devis ou sa première facture. Les
+  cases restent ouvertes dans les deux cas, avec le prénom en plus.
 */
 .ecran { background: var(--atlas-cream); }
 .semaine { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin: 0 0 14px; }
@@ -61,7 +70,7 @@
 <header class="pl-tete">
   <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
   <h1 class="pl-titre">Un client sans fiche</h1>
-  <p class="pl-verdict">Tapez un nom. Connu, il se propose. Inconnu, vous choisissez : <b>Créer sa fiche</b> ou <b>Sans fiche</b>. Essayez « Bernard », puis « Luloui ».</p>
+  <p class="pl-verdict">Tapez un nom. Connu, il se propose. Inconnu, vous remplissez ce que vous savez, et vous choisissez : <b>Dans Vos clients</b> ou <b>Pas encore</b>. Essayez « Bernard », puis « Luloui ».</p>
 </header>
 
 <main class="pl-scene">
@@ -101,16 +110,17 @@
                   <div id="choix-a">
                     <p class="verdict">Inconnu.</p>
                     <div class="mots" role="group" aria-label="Sa fiche">
-                      <button type="button" data-fiche="oui" aria-pressed="true">Créer sa fiche</button>
-                      <button type="button" data-fiche="non" aria-pressed="false">Sans fiche</button>
+                      <button type="button" data-fiche="oui" aria-pressed="true">Dans Vos clients</button>
+                      <button type="button" data-fiche="non" aria-pressed="false">Pas encore</button>
                     </div>
                   </div>
                   <!-- B : la phrase d'aujourd'hui, et une case. -->
                   <div id="choix-b" hidden>
                     <p class="verdict" id="phrase-b">Inconnu, sa fiche sera créée</p>
-                    <label class="case"><input type="checkbox" id="case-sans">Sans fiche</label>
+                    <label class="case"><input type="checkbox" id="case-sans">Pas encore dans Vos clients</label>
                   </div>
                   <div class="cases" id="cases">
+                    <input class="champ-saisie" placeholder="Prénom" aria-label="Prénom">
                     <input class="champ-saisie" placeholder="Téléphone" aria-label="Téléphone">
                     <input class="champ-saisie" placeholder="E-mail" aria-label="E-mail">
                     <input class="champ-saisie" placeholder="Adresse du chantier" aria-label="Adresse du chantier">
@@ -138,19 +148,19 @@
   <section class="pl-notes">
     <h2>Ce qui change</h2>
     <ul>
-      <li>Sous un nom inconnu, deux mots au même dessin que Matin, Après-midi, Journée : <b>Créer sa fiche</b>, choisi d’office comme aujourd’hui, ou <b>Sans fiche</b>.</li>
-      <li>Sans fiche, les trois cases se referment et seul le nom va au planning. Aucun contact n’est créé.</li>
-      <li>C’est ce que fait déjà « Autre chose » (lu dans le code) : le planning sait poser un nom sans client. Ici, on y arrive depuis « Un client ».</li>
+      <li>Sous un nom inconnu, le prénom, le téléphone, l’e-mail et l’adresse se remplissent toujours : c’est un client que vous facturerez peut-être.</li>
+      <li>Puis deux mots : <b>Dans Vos clients</b>, choisi d’office comme aujourd’hui, ou <b>Pas encore</b>.</li>
+      <li>Pas encore : tout est gardé, mais il n’encombre pas « Vos clients ». Il y entre tout seul à son premier devis ou sa première facture.</li>
     </ul>
     <h2>A ou B</h2>
     <ul>
-      <li><b>A</b> montre le choix avant les cases : on voit tout de suite qu’on peut s’en passer.</li>
-      <li><b>B</b> garde la phrase d’aujourd’hui et ajoute une case, plus discrète, mais les trois cases s’ouvrent d’abord.</li>
+      <li><b>A</b> montre le choix sous le nom, en deux mots.</li>
+      <li><b>B</b> garde la phrase d’aujourd’hui et ajoute une case, plus discrète.</li>
     </ul>
     <h2>À trancher</h2>
     <ul class="a-trancher">
       <li>A ou B ?</li>
-      <li>Si vous faites plus tard un devis à ce nom, je propose qu’Atlas vous demande de créer sa fiche à ce moment-là. D’accord ?</li>
+      <li>Le prénom est une case nouvelle : aujourd’hui, le nom et le prénom s’écrivent ensemble. On la garde ?</li>
     </ul>
     <h2>Ce qui ne bouge pas</h2>
     <ul class="garde">
@@ -189,8 +199,7 @@ document.addEventListener("DOMContentLoaded", function () {
     zoneInconnu.hidden = !inconnu;
     choixA.hidden = variante !== "a";
     choixB.hidden = variante !== "b";
-    cases.hidden = sansFiche;
-    phraseB.textContent = sansFiche ? "Inconnu" : "Inconnu, sa fiche sera créée";
+    phraseB.textContent = sansFiche ? "Inconnu, gardé hors de Vos clients" : "Inconnu, sa fiche sera créée";
     document.querySelectorAll("[data-fiche]").forEach(function (b) {
       b.setAttribute("aria-pressed", String((b.dataset.fiche === "non") === sansFiche));
     });
