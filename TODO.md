@@ -2217,6 +2217,45 @@ l'Urssaf depuis l'écran d'Evoliz (essai gratuit de 15 jours pour le savoir).
 du code (d'où sortent ses factures aux particuliers, Evoliz ou Uniconnect, à
 quoi sert l'autre, quelle activité et quel rythme de facturation).
 
+**Sa vraie demande, le même soir :** *« Je veux pas brancher quelque chose,
+j'aimerais pouvoir faire la même chose. Qu'il puisse faire ce qu'il faisait
+chez Unipro, mais chez moi. »* Le collègue ne peut pas facturer en son nom.
+
+**Ce qu'est Unipros, d'après ses CGV et son règlement intérieur** (lus le
+8 novembre 2026) : une SCIC SA dont l'objet est l'exercice **exclusif**
+d'activités de services à la personne, « dont l'exécution est confiée à ses
+sociétaires ». Elle est l'organisme déclaré, émet la facture, encaisse
+(l'avance immédiate comprise), reverse 100 % en 24 à 48 h, génère les
+attestations fiscales et les déclarations SAP. Elle exige de chaque
+sociétaire une assurance de responsabilité civile professionnelle, vérifie
+son identité, et réclame tous les six mois les documents de vigilance contre
+le travail dissimulé (articles L. 8221-1 et D. 8254-2 du code du travail).
+Son règlement se réclame des « coopératives d'artisans de services à la
+personne » : **le droit de confier l'exécution à des sociétaires non déclarés
+tient à cette forme coopérative**, et rien ne dit qu'une société ordinaire
+puisse en faire autant. À faire trancher par un avocat avant toute ligne de
+code sur cette voie.
+
+**Ce qui se copie dans Atlas, et ce qui ne s'y copie pas :**
+
+| | |
+|---|---|
+| le logiciel (numéro, mentions, attestations, heures, Cesu, avance immédiate) | **se code** : c'est la planche `appli/credit-d-impot.html`, plus la liaison Urssaf ; sert tout artisan qui a SON numéro |
+| être l'organisme déclaré à la place de l'artisan | **ne se code pas** : il faut une structure à lui, déclarée, à activité exclusive (donc pas Eden Nature), probablement une coopérative ; c'est une entreprise à créer, avec ses obligations |
+| facturer et encaisser pour un autre artisan, reverser, autofacturer | se code, mais **traverse l'isolation entre entreprises** (l'organisme émet pour le travail d'un autre compte) et **revient sur la décision du 31 juillet 2026** : Atlas prépare, il n'émet pas (`docs/AGENT.md` §6, `MVP.md`) |
+
+**Et une prémisse à vérifier avec lui :** depuis le 1er janvier 2025, un
+micro-entrepreneur ou une entreprise de moins de 11 salariés dont les services
+à la personne sont l'activité principale peut avoir SON numéro tout en gardant
+jusqu'à 30 % d'activité hors services à la personne (décret n° 2024-851,
+FAQ de servicesalapersonne.gouv.fr lue le 8 novembre 2026). Si c'est
+l'activité exclusive qui empêchait le collègue d'avoir son numéro, ce n'est
+peut-être plus vrai.
+
+**Proposé, pas décidé :** coder d'abord le module crédit d'impôt pour les
+artisans qui ont leur numéro (il servira aussi à la voie coopérative, s'il la
+choisit), et ne rien coder de la voie coopérative avant l'avis d'un avocat.
+
 **Tranché le 9 octobre 2026 : les acomptes gardent leur taux CUMULÉ.** C'est
 sa propre façon de compter : *« 1er acompte 30 %, 2e 50 %, 3e 75 % »*, soit
 ce que le client a payé en tout à chaque étape. L'appli fait déjà ainsi
