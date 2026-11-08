@@ -17,7 +17,14 @@
     le facturé et l'encaissé d'une période : src/lib/bilan-periode.ts ;
     ce qui attend sa facture : src/lib/termines-par-mois.ts (aFacturerPartout) ;
     les devis envoyés, signés, refusés : devis.statut ;
-    la nature de chaque travail : prestations.nature, src/lib/natures-prestation.ts ;
+    ses tarifs, à lui, dans ses mots : la table tarifs (Réglages, Tarifs &
+      catalogue). Le chiffrage sait de quel tarif vient une ligne
+      (src/server/chiffrage/proposition-prix.ts, tarifId) mais NE LE GARDE
+      PAS : lignes_prix n'a aucune colonne pour lui. C'est à ajouter ;
+    PAS la nature du travail (src/lib/natures-prestation.ts) : sa liste est
+      celle de l'espace vert (abattage, haie, tonte…), et chez un électricien
+      chaque ligne y vaudrait null. Sa question du 8 novembre : « si c'est un
+      électricien, tableau électrique, la nomenclature va changer ? » ;
     le temps réservé au planning : chantiers.duree_demi_journees ;
     les jours ouvrés et les fériés : src/lib/jours-feries.ts ;
     toutes les sorties de la banque reliée, avec leur motif (fournisseur,
@@ -274,7 +281,7 @@
       <li>Ce qu'il reste à facturer, mois par mois et par jour travaillé, suit la même saison. Les jours travaillés sont les jours ouvrés, fériés retirés.</li>
       <li>Ce qui est déjà en main : les chantiers finis pas encore facturés, les devis signés pas encore faits, les devis sans réponse. Avec les deux premiers, il reste ce qu'il faut encore faire signer.</li>
       <li>Le bénéfice : ce qui est encaissé, moins les sorties pro de votre banque. Il ne s'affiche qu'avec la banque reliée : avec les tickets seuls, il manquerait les salaires, le loyer, les cotisations, et le chiffre serait faux.</li>
-      <li>Vos prix : ce que rapporte une journée d'équipe, travail par travail, face à ce qu'il en faut pour l'objectif ; et la part des devis signés. Presque tous signés, c'est souvent un prix trop bas. L'appli ne propose jamais un prix : elle montre le compte, vous décidez.</li>
+      <li>Vos prix : rangés par <b>vos tarifs</b>, ceux de Réglages, Tarifs &amp; catalogue, avec vos mots. Un électricien lirait « Tableau électrique », pas « Tonte ». Pour chacun, ce que rapporte une journée d'équipe face à ce qu'il en faut pour l'objectif, et la part des devis signés. Un chantier compte pour le tarif qui fait plus de la moitié de son montant. Presque tous signés, c'est souvent un prix trop bas. L'appli ne propose jamais un prix : elle montre le compte, vous décidez.</li>
       <li>Vous seul le voyez. Un salarié ne voit jamais un euro, ici non plus.</li>
     </ul>
     <h2>À trancher</h2>
@@ -289,9 +296,10 @@
     <ul class="garde">
       <li>Le facturé et l'encaissé de n'importe quelle période, les avoirs retirés.</li>
       <li>Les chantiers finis qui attendent leur facture, et les devis envoyés, signés ou refusés.</li>
-      <li>La nature de chaque travail du devis (abattage, élagage, haie, tonte…), et le temps réservé au planning.</li>
+      <li>Vos tarifs, et le temps réservé au planning. Mais une ligne de devis oublie de quel tarif elle vient : il faut le lui faire garder, et seuls les devis faits ensuite seront rangés.</li>
       <li>Les sorties de la banque reliée, avec leur motif : fournisseur, salaire, loyer, impôts, prêt, perso.</li>
       <li>Rien de l'objectif lui-même : ni réglage, ni écran. C'est ce qui reste à faire.</li>
+      <li>La liste des travaux que l'appli reconnaît (abattage, haie, tonte…) est celle de l'espace vert : elle ne sert pas ici, sinon un électricien n'aurait rien.</li>
     </ul>
   </section>
 </main>
@@ -372,8 +380,10 @@
   ETATS.vide = ETATS.retard;
   ETATS.sansbanque = ETATS.retard;
 
-  /* Ce que rapporte une journée d'équipe, sur les chantiers d'un seul
-     travail : le facturé HT divisé par le temps réservé au planning. */
+  /* Ce que rapporte une journée d'équipe, rangé par SES tarifs : un chantier
+     compte pour le tarif qui fait plus de la moitié de son montant HT, et le
+     facturé HT se divise par le temps réservé au planning. Les noms sont ceux
+     qu'il a écrits ; un électricien lirait « Tableau électrique ». */
   var TRAVAUX = [
     { nom: "Abattage", jour: 980, chantiers: 14, signes: 13, envoyes: 14, annee: 41200 },
     { nom: "Élagage", jour: 760, chantiers: 22, signes: 18, envoyes: 24, annee: 50200 },
@@ -610,7 +620,7 @@
         "<td>" + x.signes + " sur " + x.envoyes + "</td></tr>";
     });
     h += "</tbody></table>" +
-      '<p class="discret">Sur les chantiers d\'un seul travail, facturé HT divisé par le temps réservé au planning.</p>' +
+      '<p class="discret">Rangé par vos tarifs. Un chantier compte pour le tarif qui fait plus de la moitié de son montant.</p>' +
       '<button class="bouton-texte fermer" type="button" data-ferme>Fermer</button>';
     return h;
   }
