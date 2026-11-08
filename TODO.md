@@ -119,11 +119,15 @@ rentrer »** : il ne comprenait pas le titre. **Le jour avant le mois, partout**
 
 **Face à 2025, sa forme arrêtée le 8 novembre** : *« la date d'aujourd'hui par
 rapport à l'année dernière, à la même date. Et à la limite le mois en cours, du
-1er au 8. Et le jour, c'est tout. »* Deux comparaisons : « Du 1er janvier au
-8 novembre » (2026, 2025, l'écart), puis « Du 1er au 8 novembre » (2026, 2025,
-l'écart), et « Tous les mois ». La période s'écrit une fois au-dessus. **Lu
-comme le cumul depuis janvier**, pas comme le facturé du seul jour : à
-confirmer s'il voulait le jour seul (le 8 novembre 2025 était un samedi).
+1er au 8. Et le jour, c'est tout. »* **Lu d'abord comme le cumul
+depuis janvier : c'était FAUX**, et il l'a dit sèchement : *« pourquoi tu m'as
+mis deux fois du 1er janvier au 8 novembre ? Si on est le 8 novembre, je veux
+savoir ce que j'ai fait le 8 novembre de l'année dernière. Et ensuite le mois
+en cours : si on est le 25, du 1er au 25, plus le 25 de l'année dernière. »*
+**Forme arrêtée** : « Le 8 novembre » (2026, 2025, l'écart), puis « Du 1er au
+8 novembre » (2026, 2025, l'écart), et « Tous les mois ». Au codage : le
+facturé du jour se lit sur la date d'émission des factures, comme le reste
+(`bilan-periode.ts` avec du = au).
 
 **La phrase du bénéfice, réécrite le 8 novembre** : *« c'est-à-dire quoi, sur
 100 euros encaissés il vous reste 14,51 ? »*. Elle dit désormais « Sur 1 000 €
