@@ -95,13 +95,16 @@
 .mention-papier { margin-top: 14px; padding-top: 12px; box-shadow: inset 0 1px 0 var(--atlas-lineSoft); font-size: 13.5px; line-height: 1.5; color: var(--atlas-inkSoft); }
 .mention-papier b { display: block; margin-bottom: 4px; font-size: 12.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
 
-/* Le partage de l'avance immédiate : ce que paie le client, ce que verse l'Urssaf. */
-.partage { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.partage > div { display: flex; flex-direction: column; padding: 14px; border-radius: 12px; background: color-mix(in srgb, var(--atlas-or) 11%, transparent); }
-.partage > div:last-child { background: var(--atlas-carteVertFond); }
-.partage p { font-size: 14px; line-height: 1.35; color: var(--atlas-inkSoft); }
-/* Les deux montants sur la même ligne, même quand un libellé passe à deux. */
-.partage .montant { display: block; margin-top: auto; padding-top: 8px; font-size: 26px; color: var(--atlas-ink); }
+/* L'avance immédiate en ADDITION, sa remarque du 8 novembre : deux cartes
+   côte à côte (« il paie 252 », « l'Urssaf verse 504 ») se lisaient comme
+   deux paiements, 756 € pour une facture de 504. Ce qu'il reçoit est le
+   total ; les deux moitiés qui le forment sont au-dessus du trait. */
+.somme { margin-top: 14px; padding: 4px 16px 6px; border-radius: 12px; background: var(--atlas-carteVertFond); }
+.somme .rang-ligne .nom, .somme .rang-ligne .prix { font-size: 15.5px; color: var(--atlas-ink); }
+.somme .rang-ligne + .rang-ligne { box-shadow: inset 0 1px 0 color-mix(in srgb, var(--atlas-carteVertTexte) 18%, transparent); }
+.somme .rang-ligne.total { box-shadow: inset 0 1.5px 0 var(--atlas-carteVertTexte); }
+.somme .total .nom { font-weight: 700; color: var(--atlas-carteVertTexte); }
+.somme .total .prix { font: 400 24px/1 var(--serif); color: var(--atlas-ink); }
 
 /* Le suivi de l'Urssaf : trois pas, chacun avec son état. */
 .suivi { margin: 0; padding: 0; list-style: none; }
@@ -119,9 +122,10 @@
 .suivi small { display: block; margin-top: 2px; font-size: 14px; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
 .suivi [data-ton="gris"] b { color: var(--atlas-inkSoft); font-weight: 500; }
 
-.recap { margin: 4px 0 18px; }
-.recap .rang-ligne .nom, .recap .rang-ligne .prix { font-size: 16.5px; }
-.recap .rang-ligne .prix { font: 400 22px/1 var(--serif); }
+.client-ligne .etat { flex: none; }
+.papier-pied { margin-top: 16px; text-align: center; }
+.papier-pied .discret { margin-top: 8px; }
+.papier-pied .etat { margin-bottom: 12px; }
 .action-bas .bouton-texte { display: block; width: 100%; text-align: center; }
 
 /* ─── Terminés (termines.html), le haut ──────────────────────────────────── */
@@ -250,7 +254,7 @@
             <div class="plage" data-si-etat="non">
               <div class="urssaf">
                 <span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-banque"/></svg></span>
-                <span class="ligne-corps"><b>L'Urssaf n'est pas reliée</b><small>Vos clients paient la moitié, l'Urssaf vous verse le reste.</small></span>
+                <span class="ligne-corps"><b>L'Urssaf n'est pas reliée</b><small>Vos clients ne paient que la moitié, l'Urssaf vous verse toute la facture.</small></span>
               </div>
               <button class="bouton bouton-plein" type="button" data-ouvre="relier">Relier l'Urssaf</button>
             </div>
@@ -489,9 +493,10 @@
                 <span class="ligne-corps"><b>Crédit d'impôt</b><small>Services à la personne</small></span>
                 <button class="bascule" type="button" role="switch" aria-checked="true" aria-label="Crédit d'impôt"></button>
               </div>
-              <div class="partage mt-16">
-                <div><p>Mr. Lambert paie</p><span class="montant">252,00&nbsp;€</span></div>
-                <div><p>L'Urssaf vous verse</p><span class="montant">504,00&nbsp;€</span></div>
+              <div class="somme">
+                <div class="rang-ligne"><span class="nom">Payé par Mr. Lambert</span><span class="prix">252,00&nbsp;€</span></div>
+                <div class="rang-ligne"><span class="nom">Son crédit d'impôt</span><span class="prix">252,00&nbsp;€</span></div>
+                <div class="rang-ligne total"><span class="nom">L'Urssaf vous verse</span><span class="prix">504,00&nbsp;€</span></div>
               </div>
               <p class="mention-papier"><b>Sur la facture</b>Le logo, puis <i>« Prestation de services à la personne ouvrant droit au crédit d'impôt de l'article 199 sexdecies du code général des impôts. Déclaration SAP123456789 du 12 mars 2024. »</i></p>
             </section>
@@ -538,9 +543,10 @@
             <div class="feuille-poignee"></div>
             <div class="feuille-dedans">
               <h2 class="feuille-titre">Envoyer à l'Urssaf</h2>
-              <div class="recap">
-                <div class="rang-ligne"><span class="nom">Mr. Lambert valide, puis paie</span><span class="prix">252,00&nbsp;€</span></div>
-                <div class="rang-ligne"><span class="nom">L'Urssaf vous verse</span><span class="prix">504,00&nbsp;€</span></div>
+              <div class="somme" style="margin:0 0 18px">
+                <div class="rang-ligne"><span class="nom">Payé par Mr. Lambert</span><span class="prix">252,00&nbsp;€</span></div>
+                <div class="rang-ligne"><span class="nom">Son crédit d'impôt</span><span class="prix">252,00&nbsp;€</span></div>
+                <div class="rang-ligne total"><span class="nom">L'Urssaf vous verse</span><span class="prix">504,00&nbsp;€</span></div>
               </div>
               <p class="plage-ton" data-ton="or">Envoyée, elle ne se modifie plus. Une correction passerait par un avoir.</p>
               <button class="bouton bouton-plein mt-16" type="button" data-passe="urssaf">Envoyer</button>
@@ -552,12 +558,11 @@
     </div>
 
     <!-- ═══ 5. L'ATTESTATION ═════════════════════════════════════════════ -->
+    <!-- Sa demande du 8 novembre : « on va pas toutes les envoyer d'un coup ;
+         le mieux, c'est une par une ». Chaque attestation s'ouvre, se relit et
+         part seule ; la liste et la ligne de Terminés comptent ce qui reste. -->
     <div data-vue-panneau="L'attestation" hidden>
-      <p class="pl-legende">En janvier, sur Terminés</p>
-      <div class="pl-etats" data-ecran="#ecran-att">
-        <button type="button" data-etat="janvier" aria-pressed="true">À envoyer</button>
-        <button type="button" data-etat="envoyees" aria-pressed="false">Envoyées</button>
-      </div>
+      <p class="pl-legende">En janvier, sur Terminés, une par une</p>
       <div class="cadre">
         <div class="ecran avec-barre" id="ecran-att">
           <div class="defile">
@@ -582,12 +587,8 @@
               <a class="porte porte-or" href="#" data-note="Inchangé : voir la planche Terminés.">Créer une facture</a>
             </div>
 
-            <button class="attestations touche" type="button" data-ton="ambre" data-ouvre="liste" data-si-etat="janvier">
-              <span class="ligne-corps"><b>Attestations fiscales 2026</b><span>3 clients, avant le 31 mars</span></span>
-              <svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg>
-            </button>
-            <button class="attestations touche" type="button" data-ton="vert" data-ouvre="liste" data-si-etat="envoyees">
-              <span class="ligne-corps"><b>Attestations fiscales 2026</b><span>Envoyées le 12 janvier</span></span>
+            <button class="attestations touche" type="button" data-ton="ambre" data-ouvre="liste" id="carte-att">
+              <span class="ligne-corps"><b>Attestations fiscales 2026</b><span id="carte-att-texte">3 à envoyer, avant le 31 mars</span></span>
               <svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg>
             </button>
 
@@ -606,59 +607,13 @@
             <div class="feuille-poignee"></div>
             <div class="feuille-dedans">
               <h2 class="feuille-titre">Attestations 2026</h2>
-              <button class="client-ligne" type="button" data-papier>
-                <span class="ligne-corps"><b>Mme Vasseur</b><small>4 interventions</small></span>
-                <span class="prix">1&#8239;008,00&nbsp;€</span>
-                <svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg>
-              </button>
-              <button class="client-ligne" type="button" data-papier>
-                <span class="ligne-corps"><b>Mr. Faucher</b><small>2 interventions</small></span>
-                <span class="prix">640,00&nbsp;€</span>
-                <svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg>
-              </button>
-              <button class="client-ligne" type="button" data-papier>
-                <span class="ligne-corps"><b>Mme Costa</b><small>9 interventions</small></span>
-                <span class="prix">2&#8239;160,00&nbsp;€</span>
-                <svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg>
-              </button>
-              <button class="bouton bouton-plein mt-24" type="button" data-passe="envoyees" data-si-etat="janvier">Les envoyer</button>
-              <p class="discret centre mt-8" data-si-etat="janvier">Chacune part par SMS ou e-mail, comme une facture.</p>
-              <p class="discret centre mt-8" data-si-etat="envoyees">Envoyées le 12 janvier.</p>
-              <button class="bouton-texte" type="button" data-ferme style="display:flex;width:100%;justify-content:center;margin-top:8px;color:var(--atlas-inkSoft)">Fermer</button>
+              <div id="liste-att"></div>
+              <button class="bouton-texte" type="button" data-ferme style="display:flex;width:100%;justify-content:center;margin-top:12px;color:var(--atlas-inkSoft)">Fermer</button>
             </div>
           </section>
-          <section class="feuille" id="papier" aria-hidden="true" aria-label="L'attestation de Mme Vasseur">
+          <section class="feuille" id="papier" aria-hidden="true" aria-label="Une attestation">
             <div class="feuille-poignee"></div>
-            <div class="feuille-dedans">
-              <h2 class="feuille-titre">Mme Vasseur</h2>
-              <div class="lettre">
-                <div class="entete">
-                  <div>
-                    <b>Jardins Démo</b>
-                    <span>4 rue des Tilleuls, 49000 Angers</span>
-                    <span>Déclaration SAP123456789 du 12 mars 2024</span>
-                  </div>
-                  <span class="logo">Logo des services à la personne</span>
-                </div>
-                <h3>Attestation fiscale 2026</h3>
-                <p>Je soussigné Julien Martin, gérant de Jardins Démo, certifie que Mme Vasseur, 8 allée des Chênes, 49100 Angers, a bénéficié à son domicile de petits travaux de jardinage.</p>
-                <table>
-                  <thead><tr><th>Date</th><th>Durée</th><th>Intervenant</th></tr></thead>
-                  <tbody>
-                    <tr><td>12 mars</td><td>2 h 30</td><td>n° 1</td></tr>
-                    <tr><td>14 mai</td><td>3 h</td><td>n° 1</td></tr>
-                    <tr><td>14 mai</td><td>3 h</td><td>n° 2</td></tr>
-                    <tr><td>21 octobre</td><td>4 h</td><td>n° 1</td></tr>
-                  </tbody>
-                </table>
-                <div class="total"><span>Payé en 2026, par virement</span><b>1&#8239;008,00&nbsp;€</b></div>
-                <div class="signe">
-                  <span>Angers, le 12 janvier 2027</span>
-                  <svg viewBox="0 0 170 60" aria-hidden="true"><path d="M8 40c10-22 18-30 22-24 4 7-10 30-4 30 7 0 14-26 22-24 6 2-2 20 4 20 8 0 10-14 18-14 7 0 3 12 10 12 9 0 14-18 24-18 7 0 4 10 12 10 10 0 22-12 34-16"/><path d="M40 52c30-4 70-6 110-4"/></svg>
-                </div>
-              </div>
-              <button class="bouton bouton-creux mt-16" type="button" data-ferme>Fermer</button>
-            </div>
+            <div class="feuille-dedans" id="papier-att"></div>
           </section>
         </div>
       </div>
@@ -670,11 +625,11 @@
     <ul>
       <li><b>Relier l'Urssaf une fois</b>, dans Mon entreprise, avec les deux codes qu'elle vous envoie après votre demande. Chaque artisan fait la sienne en nommant Atlas, comme chez Evoliz.</li>
       <li><b>Inscrire un client une fois</b>, depuis sa fiche. Atlas a déjà son nom, son adresse, son portable et son e-mail ; il ne demande que ce qui manque (naissance, IBAN). Le code de sa commune se tire de son adresse. Le client accepte chez l'Urssaf sous 7 jours.</li>
-      <li><b>Ensuite, sa facture part à l'Urssaf d'un appui.</b> Il ne paie que sa moitié, l'Urssaf vous verse tout. L'envoi reste l'arrêt d'aujourd'hui : rien ne part sans vous.</li>
+      <li><b>Ensuite, sa facture part à l'Urssaf d'un appui.</b> L'Urssaf vous verse toute la facture, 504 € : elle prélève 252 € chez le client et avance les 252 € de son crédit d'impôt. Vous ne recevez rien du client lui-même. L'envoi reste l'arrêt d'aujourd'hui : rien ne part sans vous.</li>
       <li><b>La facture suit l'Urssaf toute seule</b> : envoyée, validée, versée. Versée, elle s'acquitte seule. Refusée, elle part par SMS comme aujourd'hui.</li>
       <li><b>Pas d'acompte pour un client inscrit.</b> Un acompte encaissé puis déclaré à l'Urssaf oblige à une garantie bancaire dès le premier euro, et l'Urssaf refuse une facture déjà en partie payée.</li>
       <li><b>Le logo et le numéro</b> s'impriment sur chaque devis et chaque facture.</li>
-      <li><b>En janvier</b>, Terminés prépare les attestations de l'année, avec la date et la durée de chaque intervention ; un appui les envoie. Le reste de l'année, la ligne n'existe pas.</li>
+      <li><b>En janvier</b>, Terminés prépare les attestations de l'année, avec la date et la durée de chaque intervention. <b>Une par une</b> : chacune s'ouvre, se relit et part seule, par le canal de ses factures ; la ligne de Terminés compte ce qui reste. Le reste de l'année, la ligne n'existe pas.</li>
     </ul>
     <h2>À trancher</h2>
     <ul class="a-trancher">
@@ -731,16 +686,84 @@
   document.querySelectorAll("select[data-minutes]").forEach(function (s) {
     remplir(s, 59, function (i) { return (i < 10 ? "0" : "") + i; }, Number(s.getAttribute("data-minutes")));
   });
+  /* ─── Les attestations, une par une (sa demande du 8 novembre) ──────────
+     Les montants et les dates sont des exemples. */
+  var ATT = [
+    { nom: "Mme Vasseur", adresse: "8 allée des Chênes, 49100 Angers", total: "1 008,00 €", moyen: "par virement", canal: "e-mail",
+      lignes: [["12 mars", "2 h 30", "n° 1"], ["14 mai", "3 h", "n° 1"], ["14 mai", "3 h", "n° 2"], ["21 octobre", "4 h", "n° 1"]] },
+    { nom: "Mr. Faucher", adresse: "3 rue du Moulin, 49130 Les Ponts-de-Cé", total: "640,00 €", moyen: "par chèque", canal: "SMS",
+      lignes: [["2 avril", "3 h", "n° 1"], ["18 septembre", "2 h 15", "n° 2"]] },
+    { nom: "Mme Costa", adresse: "21 avenue Jean Joxé, 49100 Angers", total: "2 160,00 €", moyen: "par virement", canal: "e-mail",
+      lignes: [["15 janvier", "2 h", "n° 1"], ["12 février", "2 h", "n° 1"], ["19 mars", "2 h 30", "n° 1"], ["16 avril", "3 h", "n° 2"], ["21 mai", "3 h", "n° 1"],
+               ["18 juin", "3 h", "n° 1"], ["23 juillet", "2 h 30", "n° 2"], ["17 septembre", "3 h", "n° 1"], ["22 octobre", "3 h", "n° 1"]] }
+  ];
+  var envoyee = ATT.map(function () { return false; });
+  var SIGNATURE = '<svg viewBox="0 0 170 60" aria-hidden="true"><path d="M8 40c10-22 18-30 22-24 4 7-10 30-4 30 7 0 14-26 22-24 6 2-2 20 4 20 8 0 10-14 18-14 7 0 3 12 10 12 9 0 14-18 24-18 7 0 4 10 12 10 10 0 22-12 34-16"/><path d="M40 52c30-4 70-6 110-4"/></svg>';
+  var CHEVRON = '<svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg>';
+  function etat(i) {
+    return envoyee[i] ? '<span class="etat" data-ton="vert">Envoyée</span>' : '<span class="etat" data-ton="ambre">À envoyer</span>';
+  }
+  function interventions(a) { return a.lignes.length + (a.lignes.length > 1 ? " interventions" : " intervention"); }
+  function dessinerListe() {
+    document.getElementById("liste-att").innerHTML = ATT.map(function (a, i) {
+      return '<button class="client-ligne" type="button" data-attestation="' + i + '">' +
+        '<span class="ligne-corps"><b>' + a.nom + '</b><small>' + interventions(a) + ', ' + a.total + '</small></span>' +
+        etat(i) + CHEVRON + '</button>';
+    }).join("");
+    var reste = envoyee.filter(function (e) { return !e; }).length;
+    var carte = document.getElementById("carte-att");
+    carte.setAttribute("data-ton", reste ? "ambre" : "vert");
+    document.getElementById("carte-att-texte").textContent = reste
+      ? reste + " à envoyer, avant le 31 mars"
+      : "Toutes envoyées";
+  }
+  function dessinerPapier(i) {
+    var a = ATT[i];
+    var pied = envoyee[i]
+      ? '<div class="papier-pied"><span class="etat" data-ton="vert">Envoyée le 12 janvier</span>' +
+        '<button class="bouton bouton-creux" type="button" data-retour-liste>Revenir à la liste</button></div>'
+      : '<div class="papier-pied"><button class="bouton bouton-plein" type="button" data-envoyer="' + i + '">Envoyer à ' + a.nom + '</button>' +
+        '<p class="discret">Par ' + a.canal + ', comme ses factures.</p>' +
+        '<button class="bouton-texte" type="button" data-retour-liste style="display:flex;width:100%;justify-content:center;color:var(--atlas-inkSoft)">Pas encore</button></div>';
+    document.getElementById("papier-att").innerHTML =
+      '<h2 class="feuille-titre">' + a.nom + '</h2>' +
+      '<div class="lettre"><div class="entete"><div><b>Jardins Démo</b><span>4 rue des Tilleuls, 49000 Angers</span>' +
+      '<span>Déclaration SAP123456789 du 12 mars 2024</span></div><span class="logo">Logo des services à la personne</span></div>' +
+      '<h3>Attestation fiscale 2026</h3>' +
+      '<p>Je soussigné Julien Martin, gérant de Jardins Démo, certifie que ' + a.nom + ', ' + a.adresse +
+      ', a bénéficié à son domicile de petits travaux de jardinage.</p>' +
+      '<table><thead><tr><th>Date</th><th>Durée</th><th>Intervenant</th></tr></thead><tbody>' +
+      a.lignes.map(function (l) { return '<tr><td>' + l[0] + '</td><td>' + l[1] + '</td><td>' + l[2] + '</td></tr>'; }).join("") +
+      '</tbody></table>' +
+      '<div class="total"><span>Payé en 2026, ' + a.moyen + '</span><b>' + a.total + '</b></div>' +
+      '<div class="signe"><span>Angers, le 12 janvier 2027</span>' + SIGNATURE + '</div></div>' + pied;
+  }
+  function changerDeFeuille(ecran, id, depuis) {
+    Kit.fermerFeuilles(ecran);
+    setTimeout(function () { Kit.ouvrirFeuille(id, depuis); }, 260);
+  }
+  dessinerListe();
+  document.addEventListener("click", function (ev) {
+    var ouvre = ev.target.closest("[data-attestation]");
+    if (ouvre) {
+      dessinerPapier(Number(ouvre.getAttribute("data-attestation")));
+      changerDeFeuille(ouvre.closest(".ecran"), "papier", ouvre);
+      return;
+    }
+    var envoi = ev.target.closest("[data-envoyer]");
+    if (envoi) {
+      envoyee[Number(envoi.getAttribute("data-envoyer"))] = true;
+      dessinerListe();
+      changerDeFeuille(envoi.closest(".ecran"), "liste", null);
+      return;
+    }
+    var retour = ev.target.closest("[data-retour-liste]");
+    if (retour) { changerDeFeuille(retour.closest(".ecran"), "liste", null); return; }
+  });
+
   document.addEventListener("click", function (ev) {
     var p = ev.target.closest("[data-passe]");
     if (p) { ev.preventDefault(); passer(p.closest(".ecran"), p.getAttribute("data-passe")); return; }
-    var papier = ev.target.closest("[data-papier]");
-    if (papier) {
-      var e = papier.closest(".ecran");
-      Kit.fermerFeuilles(e);
-      setTimeout(function () { Kit.ouvrirFeuille("papier", papier); }, 260);
-      return;
-    }
     var n = ev.target.closest("[data-note]");
     if (n) { ev.preventDefault(); noter(n.closest(".ecran"), n.getAttribute("data-note")); }
   });

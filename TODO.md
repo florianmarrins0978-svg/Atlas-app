@@ -2331,6 +2331,22 @@ va de 0 à 24 h, celle des minutes de 00 à 59, une par une (la planche
 d'octobre s'arrêtait à 12 h, par quarts d'heure). Posé dans la planche, à
 garder tel quel au codage.
 
+**Ses deux remarques suivantes, le même jour :**
+
+- *« le client paie 252 et l'Urssaf te verse 504, alors que la facture vaut
+  504 : il n'y a pas un problème dans le calcul ? »* Le calcul était juste,
+  l'écran trompait : deux cartes côte à côte se lisaient comme deux paiements.
+  L'Urssaf verse TOUTE la facture ; elle prélève la moitié chez le client et
+  avance l'autre, son crédit d'impôt ; l'artisan ne reçoit rien du client
+  lui-même. La planche l'écrit désormais en addition (payé par le client,
+  son crédit d'impôt, puis « L'Urssaf vous verse » sous le trait). Et une
+  phrase de Mon entreprise était fausse (« l'Urssaf vous verse le reste ») :
+  corrigée en « toute la facture » ;
+- *« on va pas toutes les envoyer d'un coup ; le mieux, c'est une par une »* :
+  plus de bouton « Les envoyer ». Chaque attestation s'ouvre, se relit et part
+  seule, par le canal des factures du client ; la liste montre « À envoyer » ou
+  « Envoyée » par client, et la ligne de Terminés compte ce qui reste.
+
 **Tranché le 9 octobre 2026 : les acomptes gardent leur taux CUMULÉ.** C'est
 sa propre façon de compter : *« 1er acompte 30 %, 2e 50 %, 3e 75 % »*, soit
 ce que le client a payé en tout à chaque étape. L'appli fait déjà ainsi
