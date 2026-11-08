@@ -2546,6 +2546,23 @@ Rien ne peut s'éprouver avant que l'Urssaf donne ses codes : le code
 s'écrirait à l'aveugle. Ordre proposé : son dossier d'éditeur d'abord, le
 code pendant l'instruction, l'essai sur les codes reçus.
 
+**La liaison est CODÉE le 8 novembre 2026 (sa demande : *« faut surtout que
+tu codes déjà la liaison »*), pas encore branchée.** `src/lib/urssaf/` et
+`src/server/urssaf/`, `ARCHITECTURE.md` §569, suites `test-urssaf-*`. Sa
+question *« seulement 2 codes ? »* : oui pour se connecter (`client_id`,
+`client_secret`), d'après la description officielle de l'API ; chaque
+facture porte en plus l'identifiant Urssaf de l'artisan
+(`idTiersFacturation`) et son numéro SAP. Sa préférence : **pour commencer,
+chaque artisan fait lui-même sa demande à l'Urssaf** et colle ses codes dans
+Atlas. À vérifier auprès de l'Urssaf (habilitation-api@urssaf.fr) : un
+artisan peut-il nommer Atlas comme logiciel avant qu'Atlas ait son propre
+dossier d'éditeur ? Restent, dans l'ordre : la place des codes en base
+(migration, secret chiffré), le geste « Relier l'Urssaf » qui appelle
+`verifierCodes`, l'inscription depuis la fiche, l'envoi depuis la facture,
+le suivi ; et quatre inconnues à lever sur la documentation remise à
+l'habilitation (code nature du jardinage, codes des statuts, activation du
+client, adresse du bac à sable).
+
 **Le nom ET le numéro de chaque intervenant sur l'attestation (sa question
 du 8 novembre 2026, « des numéros, ou les noms ? »).** La page officielle
 (« Les obligations réglementaires ») exige *« nom et numéro d'identification

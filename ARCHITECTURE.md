@@ -37191,3 +37191,18 @@ Son espace PC avait été ouvert le 3 octobre sur `claude/app-sur-ordinateur`. L
 | le distant qui ne répond pas ne fait rien conclure | ne pas savoir n'est pas « finie » |
 
 **Ce que la correction ne rattrape pas seule** : un espace déjà figé exécute l'ANCIEN script, celui de sa branche. Il faut que le nouveau y arrive une fois, soit par sa branche avancée jusqu'à `main` (sans perte : elle n'a rien que `main` n'ait), soit par un passage sur `main` fait à la main. Éprouvé par `scripts/test-mise-a-jour-espace.ts` (cinq cas, rouges avant la correction) et sur une copie du vrai dépôt à l'état de son espace : « à jour » avec l'ancien script, « faite » et `main` du jour avec le nouveau.
+
+## §569 : La liaison avec l'Urssaf (avance immédiate) : deux pièces, une seule source
+
+*8 novembre 2026, sa demande : « faut surtout que tu codes déjà la liaison ; il faut être sûr que ça soit ça que l'URSSAF demande, seulement 2 codes ».*
+
+**La source.** La description officielle de l'API « Tiers de prestation » (Swagger 2.0, version 1.29.1), publiée par l'État dans le dépôt `betagouv/api_gouv_swaggers` (`swaggers/api-tiers-de-prestation.json`). Le portail technique de l'Urssaf refuse les clients sans navigateur depuis la session de développement : on ne le force pas. Ce qui n'est pas dans cette description est écrit comme tel dans le code, jamais deviné.
+
+**Ce qu'elle dit, et qui répond à sa question.** Pour SE CONNECTER, deux codes : `client_id` et `client_secret`, en OAuth2 « client credentials », authentification Basic, portée `homeplus.tiersprestations`, jeton sur `https://api.urssaf.fr/api/oauth/v1/token`. Pour ENVOYER une facture, deux renseignements de plus : `idTiersFacturation` (« identifiant du tiers de prestation qui recevra le paiement, identifiant SI Home+ », donné par l'Urssaf) et le numéro de l'organisme sur chaque prestation (`SAP` et neuf chiffres, ou `SIR` et le SIRET pour une coopérative), exigé depuis septembre 2023 selon l'aide d'Evoliz et porté par `complement2` dans une intégration publique.
+
+**Deux pièces, dans les deux étages habituels.** `src/lib/urssaf/avance-immediate.ts` : les règles, sans réseau (motifs et longueurs recopiés de la description, clé de l'IBAN, une période d'un seul mois du calendrier, aucune facture déjà en partie réglée, des totaux qui se recomposent au centime, l'étape d'une demande lue sur son libellé). `src/server/urssaf/tiers-de-prestation.ts` : l'échange (un jeton par entreprise, gardé jusqu'à une minute de sa fin ; un 401 se rejoue UNE fois avec un jeton neuf ; un refus revient en valeur, jamais en exception ; les deux codes ne s'écrivent jamais au journal).
+
+**Ce qui reste ouvert, et ne se devine pas.** (1) Le code « nature » du petit jardinage : la description donne la forme (`codeNature`, exemple « ENF ») mais pas la nomenclature ; aucun défaut n'est posé, une ligne sans nature ne part pas. (2) Les codes des statuts : seule leur forme est décrite ; l'étape se lit sur le libellé (les neuf de l'aide d'Evoliz), et une étape inconnue reste « inconnue ». (3) `GET /particulier?idClient=` (l'activation du compte du client) n'est pas dans la 1.29.1 mais sert dans deux intégrations publiques. (4) L'adresse du bac à sable : surchargeable (`URSSAF_ATP_BASE`, `URSSAF_JETON_URL`), jamais devinée. Tout se tranche avec la documentation que l'Urssaf remet à l'habilitation, et sur son bac à sable.
+
+**Ce qui n'est pas fait.** Ni écran, ni place en base pour les codes (une migration, chiffrée, au lot suivant), ni branchement à la facture. La planche `appli/soignee/credit-d-impot.html` attend son choix (§3 bis).
+
