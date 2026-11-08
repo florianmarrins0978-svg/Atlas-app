@@ -1,5 +1,25 @@
 # Prochaines tâches
 
+## ⏳ À REGARDER PAR LUI (8 novembre 2026) : le compteur de jours dans Équipe
+
+Sa demande : *« ça serait bien d'avoir dans mes équipes le compteur de jours
+qu'on peut retrouver dans le dossier pour mon comptable »*. Son choix, posé
+le même jour entre trois formes : **le chiffre sous chaque nom** (pas une ligne
+de plus, ni les deux).
+
+**La planche** : `appli/soignee/equipe-jours-travailles.html`, sur les vrais
+écrans figés (Équipe et Jours travaillés, base de démonstration : Antoine,
+Julien en congé du 19 au 20, Marc). Sous chaque nom de « Combien de
+salariés ? », « 18 jours en novembre », dans l'or des liens (`orTexte`) ;
+le toucher ouvre Jours travaillés. **Le retour de cet écran ramène déjà à
+Équipe** (`data-geste-retour`, l'historique) : rien à changer là.
+
+**À coder après son oui** : le chiffre se lit dans `moisDesSalaries`
+(`src/server/repositories/jours-travailles.ts`), le même chargement que
+l'écran et le PDF du comptable, jamais un second calcul (`CLAUDE.md` §3) ;
+`VosSalaries` le reçoit par rang. À trancher en codant : un nom effacé ou
+un salarié ajouté sans recharger (le chiffre suit le rang, pas le nom).
+
 ## BATTERIE COMMUNE DU 8 NOVEMBRE : VERTE, SUR main LE 8 NOVEMBRE
 
 Trois lots, une batterie (sa demande : *« fusionne les 3 et joue qu'une seule
