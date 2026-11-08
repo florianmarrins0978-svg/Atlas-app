@@ -166,14 +166,14 @@
 .lettre .entete b { display: block; font-family: var(--serif); font-size: 16px; font-weight: 400; }
 .lettre .entete span { display: block; color: #4a4a44; }
 .lettre .logo { display: grid; place-items: center; width: 64px; height: 64px; flex: none; border-radius: 6px; padding: 6px; text-align: center;
-                font-size: 9.5px; line-height: 1.2; color: #4a4a44; box-shadow: inset 0 0 0 1px rgba(28,28,26,0.25); }
+                font-size: 12px; line-height: 1.2; color: #4a4a44; box-shadow: inset 0 0 0 1px rgba(28,28,26,0.25); }
 .lettre h3 { margin: 18px 0 10px; font: 400 19px/1.2 var(--serif); }
 .lettre p + p { margin-top: 8px; }
 .lettre table { width: 100%; margin: 12px 0; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 .lettre th { padding: 6px 4px; text-align: left; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #8b6835;
              border-bottom: 1px solid rgba(28,28,26,0.2); }
 .lettre td { padding: 6px 4px; border-bottom: 1px solid rgba(28,28,26,0.08); vertical-align: top; }
-.lettre td small { display: block; font-size: 11.5px; color: #4a4a44; }
+.lettre td small { display: block; font-size: 12px; color: #4a4a44; }
 .lettre .total { display: flex; justify-content: space-between; margin-top: 6px; font-size: 14px; }
 .lettre .total b { font-family: var(--serif); font-size: 17px; font-weight: 400; }
 .lettre .signe { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; margin-top: 16px; }
@@ -193,7 +193,7 @@
 .dc-emetteur { margin: 0; font: 400 20px/1.25 var(--serif); }
 .dc-coord { margin: 6px 0 0; font-size: 15px; line-height: 1.6; }
 .dc-logo { display: grid; place-items: center; width: 58px; height: 58px; flex: none; border-radius: 6px; padding: 5px; text-align: center;
-           font-size: 9px; line-height: 1.2; color: var(--atlas-inkSoft); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+           font-size: 12px; line-height: 1.2; color: var(--atlas-inkSoft); box-shadow: inset 0 0 0 1px var(--atlas-line); }
 .dc-cap { font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--atlas-inkSoft); }
 .dc-regle { height: 2px; margin: 20px 0 0; background: var(--atlas-ink); }
 .dc-mot { margin: 22px 0 0; text-align: center; font: 400 26px/1.1 var(--serif); }
@@ -462,7 +462,7 @@
                   <p class="dc-emetteur">Jardins Démo</p>
                   <p class="dc-coord">4 rue des Tilleuls, Angers<br>123 456 789 00012</p>
                 </div>
-                <span class="dc-logo" data-si-sap>Logo des services à la personne</span>
+                <span class="dc-logo" data-si-sap>Logo</span>
               </div>
               <div class="dc-regle"></div>
               <p class="dc-mot">DEVIS</p>
@@ -861,7 +861,7 @@
     document.getElementById("papier-att").innerHTML =
       '<h2 class="feuille-titre">' + a.nom + '</h2>' +
       '<div class="lettre"><div class="entete"><div><b>Jardins Démo</b><span>4 rue des Tilleuls, 49000 Angers</span>' +
-      '<span>Déclaration SAP123456789 du 12 mars 2024</span></div><span class="logo">Logo des services à la personne</span></div>' +
+      '<span>Déclaration SAP123456789 du 12 mars 2024</span></div><span class="logo">Logo</span></div>' +
       '<h3>Attestation fiscale 2026</h3>' +
       '<p>Je soussigné Thomas Leroy, gérant de Jardins Démo, certifie que ' + a.nom + ', ' + a.adresse +
       ', a bénéficié à son domicile de petits travaux de jardinage.</p>' +
