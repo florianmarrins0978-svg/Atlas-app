@@ -8,6 +8,8 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-08
 
+- **Une facture depuis la fiche d'un client : une planche** (`appli/soignee/client-nouvelle-facture.html`, sa question). Sa fiche propose un devis mais pas de facture : un geste « Nouvelle facture » ouvrirait l'écran de Terminés, le client déjà rempli. Pas codé.
+- **« Autre chose », en entier : la maquette finie** (`appli/soignee/planning-sans-fiche.html`). Le nom, l'adresse, le téléphone et les travaux à faire, sans fiche client. Pas codé.
 - **Vos entrées et sorties : une planche** (`appli/soignee/banque-entrees-sorties.html`, sa question). « Année » sur « Pour mon comptable » ne comptait que le dossier en cours (depuis le 28 octobre chez lui) en s'intitulant « 2026 », et l'assistant ne sait pas lire la banque. A : le dire ; B : compter toute l'année. Et l'assistant qui lit le relevé. Ce que ça évite : un total de l'année faux de dix mois, présenté comme juste. Pas codé.
 - **Au planning, un client sans fiche : une planche** (`appli/soignee/planning-sans-fiche.html`, sa demande). Sous un nom inconnu, choisir « Créer sa fiche » (d'office, comme aujourd'hui) ou « Sans fiche », en A (deux mots) ou B (une case). Ce que ça évite : créer un contact pour un nom posé en passant. Pas codé.
 - **Sur ordinateur, la largeur : une planche** (`appli/sur-ordinateur-largeur.html`, sa demande : les bandes et les notifications s'étirent trop sur son portable). Ses vrais écrans rendus à la taille de son portable, avec seule la largeur de la colonne changée : 1024 px aujourd'hui, 768, 672 (conseillée, celle du devis) et 576. Ce que ça évite : corriger écran par écran ce qui vient d'une seule valeur du cadre. Pas codé.

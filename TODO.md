@@ -1,6 +1,22 @@
 # Prochaines tâches
 
-## ⏳ À CHOISIR PAR LUI (8 novembre 2026) : vos entrées et sorties, l'écran A ou B, et l'assistant
+## ⏳ À REGARDER PAR LUI (8 novembre 2026) : une facture depuis la fiche d'un client
+
+Sa question : *« si je vais dans Mes clients, que je clique sur Bernard, est-ce
+que je peux ajouter un devis, une facture, juste pour ce client-là ? »*, puis
+*« montre-moi la maquette finie que tu veux coder avant de coder quoi que ce
+soit »*.
+
+**Lu dans le code** : la fiche (`RepartirDeCeClient.tsx`) porte « Dernier
+devis », « Nouveau devis » (`/chantiers/nouveau?client=`) et « Contrat
+d'entretien » ; une facture sans devis ne part que de Terminés
+(`/chantiers/nouveau?facture=1`). La page lit déjà les deux réglages ensemble.
+
+**La planche** : `appli/soignee/client-nouvelle-facture.html`. Un geste
+« Nouvelle facture » (`?client=<id>&facture=1`) ; quatre gestes deux par deux,
+trois sur une ligne. Niveau 3 au codage (argent).
+
+## ⏳ À REGARDER PAR LUI (8 novembre 2026) : vos entrées et sorties, deux cases, et l'assistant
 
 Sa question, sur « Pour mon comptable » : *« c'est normal que quand je lui
 demande mes entrées et mes sorties de l'année, il me les trouve pas »*. Puis :
@@ -17,10 +33,18 @@ devient « Depuis le 28 octobre ». Écran B : « Année » compte tout 2026, le
 dossier reste dit à part. L'assistant : entrées, sorties, reste, sur une
 période ; si la banque n'a donné qu'une partie, il le dit avec la date.
 
-**Aussi à trancher** : l'assistant donne-t-il le détail mois par mois quand on
-demande l'année ? Niveau 3 au codage (argent).
+**Sa réponse, le même jour** : *« la B. Par contre, si c'est dossier en cours
+depuis le 28 octobre, il ne faut pas que ça nous induise en erreur : le mois,
+les trimestres et l'année seulement sur le dossier en cours, et à côté, une
+autre case pour voir toutes les dépenses depuis le 1er janvier »*. Planche
+revue : deux cases côte à côte avec leurs totaux ; le dossier garde Mois,
+Trimestre, Année, chaque période disant où elle commence (« 2026, depuis le
+28 octobre ») ; l'année depuis le 1er janvier, mois par mois.
 
-## ⏳ À REGARDER PAR LUI (8 novembre 2026) : « Autre chose », en entier
+**Reste à trancher** : l'assistant donne-t-il le détail mois par mois quand
+on demande l'année ? Niveau 3 au codage (argent).
+
+## ⏳ À REGARDER PAR LUI (8 novembre 2026) : « Autre chose », en entier (maquette finie : sans fiche client, ligne de facture gardée)
 
 Sa demande, en quatre temps le même jour (le chemin est dans l'en-tête de la
 planche) ; sa décision, photo de la fiche d'intervention à l'appui : *« quand
@@ -109,11 +133,15 @@ rentrer »** : il ne comprenait pas le titre. **Le jour avant le mois, partout**
 
 **Face à 2025, sa forme arrêtée le 8 novembre** : *« la date d'aujourd'hui par
 rapport à l'année dernière, à la même date. Et à la limite le mois en cours, du
-1er au 8. Et le jour, c'est tout. »* Deux comparaisons : « Du 1er janvier au
-8 novembre » (2026, 2025, l'écart), puis « Du 1er au 8 novembre » (2026, 2025,
-l'écart), et « Tous les mois ». La période s'écrit une fois au-dessus. **Lu
-comme le cumul depuis janvier**, pas comme le facturé du seul jour : à
-confirmer s'il voulait le jour seul (le 8 novembre 2025 était un samedi).
+1er au 8. Et le jour, c'est tout. »* **Lu d'abord comme le cumul
+depuis janvier : c'était FAUX**, et il l'a dit sèchement : *« pourquoi tu m'as
+mis deux fois du 1er janvier au 8 novembre ? Si on est le 8 novembre, je veux
+savoir ce que j'ai fait le 8 novembre de l'année dernière. Et ensuite le mois
+en cours : si on est le 25, du 1er au 25, plus le 25 de l'année dernière. »*
+**Forme arrêtée** : « Le 8 novembre » (2026, 2025, l'écart), puis « Du 1er au
+8 novembre » (2026, 2025, l'écart), et « Tous les mois ». Au codage : le
+facturé du jour se lit sur la date d'émission des factures, comme le reste
+(`bilan-periode.ts` avec du = au).
 
 **La phrase du bénéfice, réécrite le 8 novembre** : *« c'est-à-dire quoi, sur
 100 euros encaissés il vous reste 14,51 ? »*. Elle dit désormais « Sur 1 000 €
