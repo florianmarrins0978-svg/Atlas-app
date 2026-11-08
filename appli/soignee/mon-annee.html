@@ -393,7 +393,6 @@
   function e(n) { return FR.format(n) + " €"; }
   function cent(n) { return Math.round(n / 100) * 100; }
   function dix(n) { return Math.round(n / 10) * 10; }
-  function mille(n) { return Math.round(n / 1000) * 1000; }
 
   function calculer(cle) {
     var s = ETATS[cle], o = objectifs[cle];
@@ -415,7 +414,7 @@
     var benefice = s.encaisse - depenses;
     return {
       s: s, O: O, B: B, part: part, attendu: attendu, ecart: s.facture - attendu, reste: reste,
-      mois: mois, projection: mille(s.facture / part),
+      mois: mois,
       enMain: s.aFacturer[1] + s.signes[1], aTrouver: reste - s.aFacturer[1] - s.signes[1],
       depenses: depenses, benefice: benefice,
       sur100: benefice / s.encaisse * 100, faut100: B ? B / O * 100 : null,
@@ -510,7 +509,7 @@
     if (passe) {
       h += '<p class="plage-ton" data-ton="vert">Objectif passé de <b>' + e(-c.reste) + "</b>.</p>";
     } else if (c.ecart < 0) {
-      h += '<p class="plage-ton" data-ton="ambre"><b>' + e(-c.ecart) + "</b> de retard sur votre saison. À ce rythme, " + e(c.projection) + " au 31 décembre.</p>";
+      h += '<p class="plage-ton" data-ton="ambre"><b>' + e(-c.ecart) + "</b> de retard sur votre saison.</p>";
     } else {
       h += '<p class="plage-ton" data-ton="vert"><b>' + e(c.ecart) + "</b> d'avance sur votre saison.</p>";
     }

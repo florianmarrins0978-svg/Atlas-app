@@ -143,6 +143,10 @@ en cours : si on est le 25, du 1er au 25, plus le 25 de l'année dernière. »*
 facturé du jour se lit sur la date d'émission des factures, comme le reste
 (`bilan-periode.ts` avec du = au).
 
+**« À ce rythme, 241 000 € au 31 décembre » est retiré** (sa demande du
+8 novembre : *« ça veut rien dire, la ligne à ce rythme tu l'enlèves »*). Il
+reste « 52 400 € de retard sur votre saison. » Ne pas la remettre.
+
 **La phrase du bénéfice, réécrite le 8 novembre** : *« c'est-à-dire quoi, sur
 100 euros encaissés il vous reste 14,51 ? »*. Elle dit désormais « Sur 1 000 €
 encaissés, il vous reste 145 € une fois tout payé. Pour votre objectif, il en
