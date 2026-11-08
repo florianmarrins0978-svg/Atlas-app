@@ -1,27 +1,24 @@
 # Prochaines tâches
 
-## ⏳ À REGARDER PAR LUI (8 novembre 2026) : le compteur de jours dans Équipe
+## ~~⏳ À REGARDER PAR LUI (8 novembre 2026) : le compteur de jours dans Équipe~~ TRANCHÉ LE 8 NOVEMBRE (« FAIS-MOI UNE COPIE »), CODÉ LE 8 NOVEMBRE, PAS ENCORE SUR main
 
-Sa demande : *« ça serait bien d'avoir dans mes équipes le compteur de jours
-qu'on peut retrouver dans le dossier pour mon comptable »*. Une première
-planche (le chiffre seul sous chaque nom) a été **remplacée le soir même** par
-sa capture de Jours travaillés : *« dans Équipe, sous combien de salariés,
-j'aimerais avoir ça »*.
+Sa demande, puis sa capture de Jours travaillés : *« dans Équipe, sous
+combien de salariés, j'aimerais avoir ça »*, et *« tu me fais juste une
+copie, comme ça j'ai la porte dans mon comptable et dans mon équipe »*.
+Planche : `appli/soignee/equipe-jours-travailles.html`.
 
-**La planche** : `appli/soignee/equipe-jours-travailles.html`, sur les vrais
-écrans figés (base de démonstration : Antoine, Julien en congé du 19 au 20,
-Marc ; Paysage, 4 zones). Sous « Combien de salariés ? » et avant Absences,
-une rubrique « Jours travaillés » : le mois, la ligne des ouvrés, « Paysage,
-4 zones, Modifier », la carte des salariés avec leurs zones. Un nom ou une
-case ouvre sa feuille par-dessus Équipe. **Laissés à l'écran du comptable** :
-le titre de l'écran et « Envoyer à mon comptable » (mon choix, à lui dire).
+**Codé** : `JoursTravailles` monté dans Équipe (`ou="equipe"` : sans marge
+propre, sans « Envoyer à mon comptable », « Modifier » vers les zones sans
+`?depuis=jours`), préparé par `chargerJoursTravailles`
+(`src/app/termines/comptable/jours-travailles/charger.ts`) pour les deux
+pages ; seulement si Équipe compte au moins un salarié. Nom, nombre de
+salariés et absence relisent `/reglages/equipe` (`revaliderLesJoursDEquipe`).
 
-**À coder après son oui** : un seul composant pour les deux écrans, jamais
-une copie (`CLAUDE.md` §3) : `JoursTravailles` reçoit de quoi taire son envoi,
-et la page Équipe lit `moisDesSalaries` comme l'écran du comptable. Le mois
-changé dans Équipe reste dans Équipe (`?mois=` sur `/reglages/equipe`).
-À vérifier en codant : `situerQuelquesChantiers` coûte à chaque ouverture
-d'Équipe ; un salarié ajouté au compteur sans recharger.
+| reste | qui |
+|---|---|
+| le contrôle de son niveau, avec son oui | lui, puis moi |
+| aucune suite navigateur n'ouvre encore Jours travaillés, ni dans Équipe | moi, avec le lot |
+| `situerQuelquesChantiers` tourne désormais à chaque ouverture d'Équipe : à mesurer sur sa base | moi |
 
 ## BATTERIE COMMUNE DU 8 NOVEMBRE : VERTE, SUR main LE 8 NOVEMBRE
 

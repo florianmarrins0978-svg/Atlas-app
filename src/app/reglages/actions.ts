@@ -36,10 +36,21 @@ import { revalidatePath } from "next/cache";
  * devrait connaître les deux. Effacer un nom, c'est revenir au repli
  * « Équipe B » — un état normal (`ARCHITECTURE.md` §51).
  */
+/**
+ * Équipe montre les jours travaillés sous « Combien de salariés ? » (sa
+ * demande du 8 novembre 2026). Un nom, un salarié de plus, une absence notée
+ * sur ce même écran changent ces jours : sans cette relecture, le bloc
+ * garderait le compte d'avant jusqu'au rechargement, sous ses yeux.
+ */
+function revaliderLesJoursDEquipe() {
+  revalidatePath("/reglages/equipe");
+}
+
 export async function nommerEquipeAction(rang: number, nom: string) {
   const ctx = await getCurrentCtx();
   await exigerProprietaire(ctx, "nommer une équipe");
   const enregistree = await nommerEquipe(ctx, rang, nom);
+  revaliderLesJoursDEquipe();
   return { rang: enregistree.rang, nom: enregistree.nom };
 }
 
@@ -356,6 +367,7 @@ export async function mettreAJourNombreSalariesAction(nombreSalaries: number) {
   const ctx = await getCurrentCtx();
   await exigerProprietaire(ctx, "modifier le nombre de salariés");
   const e = await mettreAJourEntreprise(ctx, { nombreSalaries });
+  revaliderLesJoursDEquipe();
   return { nombreSalaries: e?.nombreSalaries ?? 0 };
 }
 
@@ -423,6 +435,7 @@ export async function noterAbsenceAction(formData: FormData): Promise<ResultatAb
     nature,
   });
   if (!ligne) return { ok: false, raison: "Cette équipe n\u2019existe pas." };
+  revaliderLesJoursDEquipe();
   // **Ce que le congé a défait remonte jusqu'à l'écran** — sa consigne du
   // 8 septembre 2026, « pas de pansement, corrige à la racine ». Retirer une
   // affectation devenue fausse est la bonne réponse ; la retirer EN SILENCE
@@ -444,6 +457,7 @@ export async function retirerAbsenceAction(id: string): Promise<{ ok: boolean }>
   await exigerProprietaire(ctx, "retirer l'absence d'une équipe");
   await exigerFonction(ctx, "absences", "retirer l'absence d'une équipe");
   const ligne = await retirerAbsenceEquipe(ctx, id);
+  if (ligne) revaliderLesJoursDEquipe();
   return { ok: Boolean(ligne) };
 }
 
