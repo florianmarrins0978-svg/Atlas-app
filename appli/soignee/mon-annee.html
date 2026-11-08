@@ -73,6 +73,17 @@
 .porte-or { color: var(--atlas-or); background: transparent; box-shadow: inset 0 0 0 1.5px var(--atlas-or); }
 .mois-nom { margin: 34px 0 0; text-align: center; font: 400 30px/1.1 var(--serif); }
 
+/* Réglages, le sommaire (recopié de reglages.html). */
+.identite { display: flex; align-items: center; gap: 14px; }
+.identite-sceau { width: 52px; height: 52px; flex: none; display: grid; place-items: center; border-radius: 50%;
+                  box-shadow: inset 0 0 0 1.5px var(--atlas-or); font: 400 22px/1 var(--serif); color: var(--atlas-or); }
+#ecran-reglages .rubrique { color: var(--atlas-or); }
+.identite .ligne-nom { font-size: 21px; }
+.paquet { padding: 0 18px; }
+.paquet .ligne { min-height: 60px; }
+.paquet .ligne .ico.rubrique-ico { color: var(--atlas-or); }
+.paquet .ligne-fin .ico, .identite .ligne-fin .ico { color: var(--atlas-or); }
+
 /* La ligne de Mon année sur Terminés : la sœur de celle de la franchise. */
 .entree-annee { display: block; width: 100%; margin-top: 10px; padding: 14px 16px 16px; border-radius: var(--r-plage); text-align: left;
                 background: var(--atlas-card); color: var(--atlas-ink); }
@@ -160,14 +171,14 @@
 <header class="pl-tete">
   <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
   <h1 class="pl-titre">Mon année</h1>
-  <p class="pl-verdict">L'objectif de l'année, <b>le mois face au même jour de 2025</b>, ce qu'il reste à facturer <b>mois par mois</b>, ce qui peut encore rentrer, le bénéfice, et <b>vos prix</b> face à l'objectif. Touchez <b>Modifier</b> et changez l'objectif : tout se recalcule. Les montants sont des exemples.</p>
+  <p class="pl-verdict">Dans <b>Réglages</b>, sous L'entreprise ; sur Terminés <b>seulement si vous l'allumez</b>, en bas de l'écran. L'objectif de l'année, <b>le mois face au même jour de 2025</b>, ce qu'il reste à facturer <b>mois par mois</b>, ce qui peut encore rentrer, le bénéfice, et <b>vos prix</b> face à l'objectif. Touchez <b>Modifier</b> et changez l'objectif : tout se recalcule. Les montants sont des exemples.</p>
 </header>
 <main class="pl-scene">
   <div class="pl-ecrans">
 
     <!-- ═══ Mon année ════════════════════════════════════════════════════════ -->
     <div data-vue-panneau="Mon année">
-      <p class="pl-legende">L'écran, ouvert depuis Terminés</p>
+      <p class="pl-legende">L'écran, ouvert depuis Réglages</p>
       <div class="pl-etats" data-ecran="#ecran-annee">
         <button type="button" data-etat="vide" aria-pressed="false">Pas d'objectif</button>
         <button type="button" data-etat="moitie" aria-pressed="false">À la moitié, 30 juin</button>
@@ -179,19 +190,27 @@
         <div class="ecran avec-barre" id="ecran-annee">
           <div class="defile">
             <div class="tete-ronds">
-              <button class="rond-creux" type="button" data-note="Retour à Terminés." aria-label="Retour à Terminés"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+              <button class="rond-creux" type="button" data-note="Retour à Réglages." aria-label="Retour à Réglages"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
               <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-note="L'assistant lit les mêmes chiffres : « combien il me reste pour mon objectif ? »"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
             </div>
             <header class="tete"><h1 class="tete-titre">Mon année</h1></header>
             <p class="tete-situation" data-annee-situation>2026</p>
             <div data-annee></div>
+            <!-- Sa demande du 8 novembre : Mon année vit dans Réglages, et ne se
+                 montre sur Terminés que s'il l'allume. Éteint de base. -->
+            <div class="plage plage-serree mt-24">
+              <div class="ligne-bascule">
+                <span class="ligne-corps"><b>Afficher sur Terminés</b></span>
+                <button class="bascule" type="button" role="switch" aria-checked="false" aria-label="Afficher sur Terminés" id="bascule-termines"></button>
+              </div>
+            </div>
           </div>
           <nav class="barre" aria-label="Navigation principale"><div class="barre-onglets">
             <a class="barre-onglet" href="accueil.html">Chantiers</a>
             <a class="barre-onglet" href="planning.html">Planning</a>
-            <a class="barre-onglet" href="termines.html" aria-current="page">Terminés</a>
+            <a class="barre-onglet" href="termines.html">Terminés</a>
             <a class="barre-onglet" href="paysage.html">Paysage</a>
-            <a class="barre-onglet" href="reglages.html">Réglages</a>
+            <a class="barre-onglet" href="reglages.html" aria-current="page">Réglages</a>
             <span class="barre-trait" aria-hidden="true"><span></span></span>
           </div></nav>
 
@@ -228,13 +247,58 @@
       </div>
     </div>
 
+    <!-- ═══ Dans Réglages : la rubrique ════════════════════════════════════ -->
+    <div data-vue-panneau="Réglages">
+      <p class="pl-legende">Réglages, Mon année sous L'entreprise</p>
+      <div class="cadre">
+        <div class="ecran avec-barre" id="ecran-reglages">
+          <div class="defile">
+            <header class="tete">
+              <h1 class="tete-titre">Réglages</h1>
+              <button class="rond" type="button" aria-label="L'assistant" data-note="Inchangé."><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </header>
+            <a class="plage identite touche" href="#" data-note="Inchangé : voir la planche Réglages." style="text-decoration:none;color:inherit">
+              <span class="identite-sceau" aria-hidden="true">J</span>
+              <span class="ligne-corps"><span class="ligne-nom">Jardins Démo</span><span class="ligne-situation">Mon entreprise</span></span>
+              <span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>
+            </a>
+            <p class="rubrique">L'entreprise</p>
+            <div class="plage paquet">
+              <ul class="liste">
+                <li><a class="ligne touche" href="#" data-note="Ouvre Mon année : l'écran de la planche."><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-euro"/></svg><span class="ligne-corps"><span class="ligne-nom">Mon année</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                <li><a class="ligne touche" href="#" data-note="Inchangé."><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-equipe"/></svg><span class="ligne-corps"><span class="ligne-nom">Équipe</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                <li><a class="ligne touche" href="#" data-note="Inchangé."><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-vehicule"/></svg><span class="ligne-corps"><span class="ligne-nom">Véhicules</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                <li><a class="ligne touche" href="#" data-note="Inchangé."><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-organigramme"/></svg><span class="ligne-corps"><span class="ligne-nom">Organigramme</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+              </ul>
+            </div>
+            <p class="rubrique">Pour les devis</p>
+            <div class="plage paquet">
+              <ul class="liste">
+                <li><a class="ligne touche" href="#" data-note="Inchangé."><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-etiquette"/></svg><span class="ligne-corps"><span class="ligne-nom">Tarifs &amp; catalogue</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                <li><a class="ligne touche" href="#" data-note="Inchangé."><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-document"/></svg><span class="ligne-corps"><span class="ligne-nom">Devis &amp; factures</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+              </ul>
+            </div>
+          </div>
+          <nav class="barre" aria-label="Navigation principale"><div class="barre-onglets">
+            <a class="barre-onglet" href="accueil.html">Chantiers</a>
+            <a class="barre-onglet" href="planning.html">Planning</a>
+            <a class="barre-onglet" href="termines.html">Terminés</a>
+            <a class="barre-onglet" href="paysage.html">Paysage</a>
+            <a class="barre-onglet" href="reglages.html" aria-current="page">Réglages</a>
+            <span class="barre-trait" aria-hidden="true"><span></span></span>
+          </div></nav>
+        </div>
+      </div>
+    </div>
+
     <!-- ═══ Sur Terminés : la porte ═════════════════════════════════════════ -->
-    <div data-vue-panneau="Sur Terminés">
-      <p class="pl-legende">La porte, sur Terminés, sous les deux boutons</p>
+    <div data-vue-panneau="Terminés">
+      <p class="pl-legende">Terminés : rien de base ; allumé dans Mon année, une ligne sous les deux boutons</p>
       <div class="pl-etats" data-ecran="#ecran-termines">
-        <button type="button" data-etat="moitie" aria-pressed="false">À la moitié, 30 juin</button>
-        <button type="button" data-etat="retard" aria-pressed="true">En retard, 8 novembre</button>
-        <button type="button" data-etat="vide" aria-pressed="false">Pas d'objectif</button>
+        <button type="button" data-etat="eteint" aria-pressed="true">Éteint, de base</button>
+        <button type="button" data-etat="retard" aria-pressed="false">Allumé, 8 novembre</button>
+        <button type="button" data-etat="moitie" aria-pressed="false">Allumé, 30 juin</button>
+        <button type="button" data-etat="vide" aria-pressed="false">Allumé, pas d'objectif</button>
       </div>
       <div class="cadre">
         <div class="ecran avec-barre" id="ecran-termines">
@@ -278,6 +342,7 @@
   <section class="pl-notes">
     <h2>Ce que je propose</h2>
     <ul>
+      <li>Mon année vit dans Réglages, sous L'entreprise. En bas de l'écran, un interrupteur « Afficher sur Terminés », éteint de base : allumé, une ligne de Mon année se pose sur Terminés, sous les deux boutons.</li>
       <li>Un objectif par an, en HT : le chiffre d'affaires, et le bénéfice si vous voulez le suivre. Rien n'est rempli d'avance ; l'an dernier est écrit dessous pour repère.</li>
       <li>La jauge dit où vous en êtes. Le trait dit où vous devriez être aujourd'hui, d'après votre saison de l'an dernier : un paysagiste ne facture pas en janvier ce qu'il facture en mai. Couper l'objectif en douze parts égales vous dirait « en retard » tout l'hiver et « en avance » tout le printemps.</li>
       <li>Face à 2025 : le jour même, cette année et le même jour de l'an dernier ; puis le mois en cours, du 1er à aujourd'hui, face aux mêmes jours de l'an dernier. Chaque fois, ce que vous avez fait en plus ou en moins. Tous les mois dans un tableau, d'un appui. Il se montre aussi sans objectif.</li>
@@ -289,7 +354,6 @@
     </ul>
     <h2>À trancher</h2>
     <ul class="a-trancher">
-      <li>La porte : sur Terminés, sous les deux boutons (la planche), ou en haut de Chantiers, que vous ouvrez tous les jours.</li>
       <li>Le bénéfice : encaissé moins les sorties pro de la banque, impôts et cotisations comptés comme une dépense. Les prêts n'y sont pas : la banque ne sépare pas le capital des intérêts. Le vrai chiffre reste celui de votre comptable.</li>
       <li>Le rôle Facturation : le voit-il aussi, ou vous seul ?</li>
       <li>Sans l'an dernier dans l'appli (une première année, ou des factures jamais importées), ni trait ni retard : le reste se répartit sur les jours ouvrés. Importer ses anciennes factures donne la saison.</li>
@@ -647,6 +711,7 @@
 
   /* ─── La porte, sur Terminés ──────────────────────────────────────────── */
   function rendrePorte(cle) {
+    if (cle === "eteint") return "";
     var c = calculer(cle);
     if (c.vide) {
       return '<button class="entree-annee touche" type="button" data-note="Ouvre Mon année, et sa feuille Mon objectif.">' +
@@ -670,7 +735,9 @@
     ecranA.querySelector("[data-benefice]").innerHTML = rendreBenefice(cle);
     ecranA.querySelector("[data-travaux]").innerHTML = rendreTravaux(cle);
     ecranA.querySelector("[data-tous-les-mois]").innerHTML = rendreTousLesMois(cle);
-    ecranT.querySelector("[data-porte]").innerHTML = rendrePorte(etatDe(ecranT, "retard"));
+    var cleT = etatDe(ecranT, "eteint");
+    ecranT.querySelector("[data-porte]").innerHTML = rendrePorte(cleT);
+    document.getElementById("bascule-termines").setAttribute("aria-checked", cleT === "eteint" ? "false" : "true");
   }
   new MutationObserver(tout).observe(ecranA, { attributes: true, attributeFilter: ["data-etat"] });
   new MutationObserver(tout).observe(ecranT, { attributes: true, attributeFilter: ["data-etat"] });
@@ -680,6 +747,17 @@
   var saisieB = document.getElementById("saisie-benefice");
   function lireEuros(champ) { var n = parseInt(String(champ.value).replace(/[^\d]/g, ""), 10); return isFinite(n) && n > 0 ? n : null; }
   function poserEuros(champ, n) { champ.value = n ? FR.format(n) : ""; }
+
+  /* L'interrupteur de Mon année allume la ligne de Terminés, dans l'autre
+     panneau : on le voit en changeant d'onglet. Une seule source dit s'il est
+     allumé, l'état de Terminés ; le kit, qui retourne seul toute bascule, ne
+     la touche donc pas (sinon il la retournait une seconde fois). */
+  document.getElementById("bascule-termines").addEventListener("click", function (ev) {
+    ev.stopPropagation();
+    var allume = ev.currentTarget.getAttribute("aria-checked") !== "true";
+    var b = document.querySelector('.pl-etats[data-ecran="#ecran-termines"] button[data-etat="' + (allume ? "retard" : "eteint") + '"]');
+    if (b) b.click();
+  });
 
   document.addEventListener("click", function (ev) {
     var n = ev.target.closest("[data-note]");
