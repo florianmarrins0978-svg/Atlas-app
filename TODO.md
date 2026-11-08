@@ -1,6 +1,6 @@
 # Prochaines tâches
 
-## ⏳ À CHOISIR PAR LUI (8 novembre 2026) : vos entrées et sorties, l'écran A ou B, et l'assistant
+## ⏳ À REGARDER PAR LUI (8 novembre 2026) : vos entrées et sorties, deux cases, et l'assistant
 
 Sa question, sur « Pour mon comptable » : *« c'est normal que quand je lui
 demande mes entrées et mes sorties de l'année, il me les trouve pas »*. Puis :
@@ -17,8 +17,16 @@ devient « Depuis le 28 octobre ». Écran B : « Année » compte tout 2026, le
 dossier reste dit à part. L'assistant : entrées, sorties, reste, sur une
 période ; si la banque n'a donné qu'une partie, il le dit avec la date.
 
-**Aussi à trancher** : l'assistant donne-t-il le détail mois par mois quand on
-demande l'année ? Niveau 3 au codage (argent).
+**Sa réponse, le même jour** : *« la B. Par contre, si c'est dossier en cours
+depuis le 28 octobre, il ne faut pas que ça nous induise en erreur : le mois,
+les trimestres et l'année seulement sur le dossier en cours, et à côté, une
+autre case pour voir toutes les dépenses depuis le 1er janvier »*. Planche
+revue : deux cases côte à côte avec leurs totaux ; le dossier garde Mois,
+Trimestre, Année, chaque période disant où elle commence (« 2026, depuis le
+28 octobre ») ; l'année depuis le 1er janvier, mois par mois.
+
+**Reste à trancher** : l'assistant donne-t-il le détail mois par mois quand
+on demande l'année ? Niveau 3 au codage (argent).
 
 ## ⏳ À REGARDER PAR LUI (8 novembre 2026) : « Autre chose », en entier
 

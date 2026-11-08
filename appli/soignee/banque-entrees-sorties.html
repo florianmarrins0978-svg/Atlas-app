@@ -23,6 +23,14 @@
     ligne est gardée (ajouterMouvements) ;
   - l'assistant n'a aucun outil qui lise le relevé.
 
+  SA RÉPONSE, LE MÊME JOUR : « la B. Par contre, si c'est dossier en cours
+  depuis le 28 octobre, il ne faut pas que ça nous induise en erreur : le
+  mois, les trimestres et l'année seulement sur le dossier en cours, et à
+  côté, une autre case pour voir toutes les dépenses depuis le 1er janvier ».
+  D'où deux cases côte à côte, chacune avec ses totaux : le dossier (Mois,
+  Trimestre, Année comme avant, chaque période disant où elle commence) et
+  l'année depuis le 1er janvier, mois par mois.
+
   LES CHIFFRES DE CETTE PLANCHE SONT DES EXEMPLES, sauf ceux du dossier en
   cours (−285,41 €, +500,00 €, 6 sans ticket), recopiés de sa photo.
 */
@@ -43,6 +51,19 @@
 .barre-couleurs span { display: block; height: 100%; }
 .totaux { display: flex; gap: 14px; font-size: 14px; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
 .precision { margin: 8px 0 0; font-size: 13px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.deux-cases { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.case-releve { display: block; text-align: left; padding: 12px; border-radius: 12px; background: var(--atlas-card);
+               box-shadow: inset 0 0 0 1px var(--atlas-line); color: var(--atlas-ink); }
+.case-releve[aria-pressed="true"] { box-shadow: inset 0 0 0 1.5px var(--atlas-ink); }
+.case-releve b { display: block; font-size: 14px; font-weight: 600; }
+.case-releve small { display: block; margin-top: 2px; font-size: 12.5px; color: var(--atlas-inkSoft); }
+.case-releve .totaux { margin-top: 8px; font-size: 13px; gap: 8px; flex-wrap: wrap; }
+.segments button { display: grid; place-items: center; min-height: 38px; border-radius: 19px; font-size: 14px; color: var(--atlas-inkSoft); }
+.segments button[aria-pressed="true"] { background: var(--atlas-card); color: var(--atlas-ink); font-weight: 600; box-shadow: 0 1px 2px rgba(28,28,26,.08); }
+.mois { list-style: none; margin: 10px 0 0; padding: 0; }
+.mois li { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-top: 1px solid var(--atlas-lineSoft);
+           font-size: 14px; color: var(--atlas-ink); font-variant-numeric: tabular-nums; }
+.mois li span:last-child { color: var(--atlas-inkSoft); }
 .dossier-seul { margin: 14px 0 0; padding: 12px 14px; border-radius: 12px; background: var(--atlas-card); font-size: 13.5px; color: var(--atlas-inkSoft); }
 .dossier-seul b { color: var(--atlas-ink); font-weight: 600; }
 
@@ -81,8 +102,7 @@
       <p class="pl-legende">Pour mon comptable</p>
       <div class="pl-etats" id="choix-ecran">
         <button type="button" data-ecran="auj" aria-pressed="false">Aujourd’hui</button>
-        <button type="button" data-ecran="a" aria-pressed="true">A, le dossier</button>
-        <button type="button" data-ecran="b" aria-pressed="false">B, l’année entière</button>
+        <button type="button" data-ecran="propose" aria-pressed="true">Proposé, votre B</button>
       </div>
       <div class="cadre">
         <div class="ecran">
@@ -90,14 +110,14 @@
             <h1 class="titre-page">Pour mon comptable</h1>
             <p class="sous-titre">Dossier en cours depuis le 28 octobre 2026</p>
             <p class="rubrique-petite">Mes relevés</p>
-            <div class="segments" aria-hidden="true"><span>Mois</span><span>Trimestre</span><span class="choisi">Année</span></div>
-            <div class="legende" aria-hidden="true">
+            <div id="releves"></div>
+            <div hidden id="legende-modele"><div class="legende" aria-hidden="true">
               <span><i style="background:#3f4f7a"></i>Carburant</span><span><i style="background:#b0673f"></i>Repas</span>
               <span><i style="background:#8a6a3b"></i>Matériel</span><span><i style="background:#7a63c7"></i>Hôtel</span>
               <span><i style="background:#3f6f82"></i>Train, taxi</span><span><i style="background:#c0505b"></i>Virement</span>
               <span><i style="background:#6b6b66"></i>Autre</span>
-            </div>
-            <div class="periode" id="periode"></div>
+            </div></div>
+
           </div>
         </div>
       </div>
@@ -126,14 +146,14 @@
   <section class="pl-notes">
     <h2>Ce qui change</h2>
     <ul>
-      <li><b>A, le dossier</b> : l’écran garde le dossier en cours, mais le dit. « 2026 » devient « Depuis le 28 octobre ».</li>
-      <li><b>B, l’année entière</b> : « Année » compte tout 2026, depuis le 1<sup>er</sup> janvier. Ce qui reste à justifier, lui, reste celui du dossier.</li>
+      <li><b>Deux cases côte à côte</b>, chacune avec ses totaux : <b>le dossier en cours</b>, depuis le 28 octobre, et <b>depuis le 1<sup>er</sup> janvier</b>.</li>
+      <li>Le dossier garde Mois, Trimestre et Année comme avant ; chaque période dit où elle commence : « 2026, depuis le 28 octobre », plus jamais « 2026 » seul.</li>
+      <li>Depuis le 1<sup>er</sup> janvier : toute l’année, mois par mois, entrées et sorties.</li>
       <li><b>L’assistant</b> lit votre relevé : entrées, sorties et ce qui reste, sur l’année, un mois, ou depuis une date. Il ne change rien, il lit.</li>
-      <li>Si la banque n’a donné qu’une partie de l’année, l’écran et l’assistant le disent, avec la date. Rien n’est deviné avant.</li>
+      <li>Si la banque n’a donné qu’une partie de l’année, la case et l’assistant le disent, avec la date. Rien n’est deviné avant.</li>
     </ul>
     <h2>À trancher</h2>
     <ul class="a-trancher">
-      <li>L’écran : A ou B ?</li>
       <li>L’assistant : les totaux seuls, ou aussi mois par mois quand vous demandez l’année ?</li>
     </ul>
     <h2>Ce qui ne bouge pas</h2>
@@ -152,15 +172,56 @@ document.addEventListener("DOMContentLoaded", function () {
   var e = " €";
   var BARRE_DOSSIER = [["#c0505b", 86], ["#6b6b66", 14]];
   var BARRE_ANNEE = [["#3f4f7a", 18], ["#b0673f", 9], ["#8a6a3b", 31], ["#7a63c7", 3], ["#3f6f82", 2], ["#c0505b", 27], ["#6b6b66", 10]];
-  var ECRANS = {
-    auj: { nom: "2026", barre: BARRE_DOSSIER, sorties: "−285,41" + e, entrees: "+500,00" + e, ticket: "6 sans ticket",
-           precision: "" },
-    a:   { nom: "Depuis le 28 octobre", barre: BARRE_DOSSIER, sorties: "−285,41" + e, entrees: "+500,00" + e, ticket: "6 sans ticket",
-           precision: "" },
-    b:   { nom: "2026", barre: BARRE_ANNEE, sorties: "−31 875,42" + e, entrees: "+52 340,00" + e, ticket: "",
-           precision: "Du 1<sup>er</sup> janvier à aujourd’hui.",
-           dossier: "<b>Dossier en cours</b>, depuis le 28 octobre : −285,41" + e + ", +500,00" + e + ", 6 sans ticket." }
+  // Le dossier en cours, tel que sa photo le montre : 285,41 € sortis, 500 € entrés, depuis le 28 octobre.
+  var DOSSIER = {
+    mois: [["Novembre", "−120,10", "+500,00", "4 sans ticket"], ["Octobre, depuis le 28", "−165,31", "+0,00", "2 sans ticket"]],
+    trimestre: [["4<sup>e</sup> trimestre, depuis le 28 octobre", "−285,41", "+500,00", "6 sans ticket"]],
+    annee: [["2026, depuis le 28 octobre", "−285,41", "+500,00", "6 sans ticket"]]
   };
+  // L'année d'exemple, mois par mois : leur somme fait les totaux de la case.
+  var ANNEE = [["Janvier", "2 100,00", "1 820,40"], ["Février", "2 850,00", "1 655,10"], ["Mars", "3 900,00", "2 410,75"],
+    ["Avril", "5 200,00", "3 120,30"], ["Mai", "6 400,00", "3 880,95"], ["Juin", "6 800,00", "4 012,60"],
+    ["Juillet", "5 900,00", "3 655,25"], ["Août", "4 100,00", "2 290,80"], ["Septembre", "5 450,00", "3 540,35"],
+    ["Octobre", "6 120,00", "3 402,17"], ["Novembre, au 8", "3 520,00", "2 086,75"]];
+  var vue = "propose", caseChoisie = "dossier", decoupage = "annee";
+  var LEGENDE = document.getElementById("legende-modele").innerHTML;
+  function barre(b) { return '<div class="barre-couleurs">' + b.map(function (x) { return '<span style="background:' + x[0] + ";flex:" + x[1] + '"></span>'; }).join("") + "</div>"; }
+  function periode(nom, sorties, entrees, ticket, bar) {
+    return '<div class="periode"><div class="periode-tete"><span class="periode-nom">' + nom + "</span>" +
+      (ticket ? '<span class="sans-ticket">' + ticket + "</span>" : "") + "</div>" + barre(bar) +
+      '<div class="totaux"><span>' + sorties + e + "</span><span>" + entrees + e + "</span></div></div>";
+  }
+  function segments() {
+    return '<div class="segments" role="group" aria-label="Découpage">' +
+      [["mois", "Mois"], ["trimestre", "Trimestre"], ["annee", "Année"]].map(function (d) {
+        return '<button type="button" data-decoupage="' + d[0] + '" aria-pressed="' + (d[0] === decoupage) + '">' + d[1] + "</button>";
+      }).join("") + "</div>";
+  }
+  function rendreEcran() {
+    var h;
+    if (vue === "auj") {
+      h = '<div class="segments" aria-hidden="true"><span>Mois</span><span>Trimestre</span><span class="choisi">Année</span></div>' + LEGENDE +
+          periode("2026", "−285,41", "+500,00", "6 sans ticket", BARRE_DOSSIER);
+    } else {
+      h = '<div class="deux-cases">' +
+        '<button type="button" class="case-releve" data-case="dossier" aria-pressed="' + (caseChoisie === "dossier") + '"><b>Dossier en cours</b><small>depuis le 28 octobre</small><span class="totaux"><span>−285,41' + e + "</span><span>+500,00" + e + "</span></span></button>" +
+        '<button type="button" class="case-releve" data-case="annee" aria-pressed="' + (caseChoisie === "annee") + '"><b>Depuis le 1<sup>er</sup> janvier</b><small>toute l’année 2026</small><span class="totaux"><span>−31 875,42' + e + "</span><span>+52 340,00" + e + "</span></span></button>" +
+        "</div>";
+      if (caseChoisie === "dossier") {
+        h += '<div style="margin-top:14px">' + segments() + "</div>" + LEGENDE +
+          DOSSIER[decoupage].map(function (p) { return periode(p[0], p[1], p[2], p[3], BARRE_DOSSIER); }).join("");
+      } else {
+        h += '<div style="margin-top:14px"></div>' + LEGENDE +
+          periode("2026, du 1<sup>er</sup> janvier au 8 novembre", "−31 875,42", "+52 340,00", "", BARRE_ANNEE) +
+          '<ul class="mois">' + ANNEE.map(function (m) { return "<li><span>" + m[0] + "</span><span>−" + m[2] + e + ", +" + m[1] + e + "</span></li>"; }).join("") + "</ul>";
+      }
+    }
+    document.getElementById("releves").innerHTML = h;
+  }
+  document.getElementById("releves").addEventListener("click", function (ev) {
+    var c = ev.target.closest("[data-case]"); if (c) { caseChoisie = c.dataset.case; rendreEcran(); return; }
+    var d = ev.target.closest("[data-decoupage]"); if (d) { decoupage = d.dataset.decoupage; rendreEcran(); }
+  });
   var QUESTIONS = {
     annee: { q: "Mes entrées et sorties de l’année ?",
              r: "Depuis le 1<sup>er</sup> janvier 2026 :" + chiffres([["Entrées", "52 340,00" + e], ["Sorties", "31 875,42" + e], ["Reste", "20 464,58" + e]]) },
@@ -172,16 +233,6 @@ document.addEventListener("DOMContentLoaded", function () {
   };
   function chiffres(l) {
     return '<div class="chiffres">' + l.map(function (x) { return "<span>" + x[0] + "</span><span>" + x[1] + "</span>"; }).join("") + "</div>";
-  }
-  function rendreEcran(cle) {
-    var p = ECRANS[cle];
-    document.getElementById("periode").innerHTML =
-      '<div class="periode-tete"><span class="periode-nom">' + p.nom + "</span>" +
-      (p.ticket ? '<span class="sans-ticket">' + p.ticket + "</span>" : "") + "</div>" +
-      '<div class="barre-couleurs">' + p.barre.map(function (b) { return '<span style="background:' + b[0] + ";flex:" + b[1] + '"></span>'; }).join("") + "</div>" +
-      '<div class="totaux"><span>' + p.sorties + "</span><span>" + p.entrees + "</span></div>" +
-      (p.precision ? '<p class="precision">' + p.precision + "</p>" : "") +
-      (p.dossier ? '<p class="dossier-seul">' + p.dossier + "</p>" : "");
   }
   function rendreQuestion(cle) {
     var x = QUESTIONS[cle];
@@ -195,9 +246,9 @@ document.addEventListener("DOMContentLoaded", function () {
       rendre(b.dataset[attr]);
     });
   }
-  relier("choix-ecran", "ecran", rendreEcran);
+  relier("choix-ecran", "ecran", function (v) { vue = v; rendreEcran(); });
   relier("choix-question", "q", rendreQuestion);
-  rendreEcran("a");
+  rendreEcran();
   rendreQuestion("annee");
 });
 </script>
