@@ -17,7 +17,8 @@ zéro), alors que tout est sur son téléphone. **Ce n'est pas un défaut du cod
 le PC ouvre l'espace `super-duper-umbrella-vpg6477549gjcxxjx` (ouvert le
 3 octobre pour `claude/app-sur-ordinateur`, §568), le téléphone ouvre
 `reimagined-space-yodel`, sur `main` (sa capture de github.com, le
-8 novembre). C'est celui-là qui porte ses données. Chaque espace porte son propre PostgreSQL (`atlas-pgdata`,
+8 novembre). C'est celui-là qui porte ses données. **Réglé le jour même** : il a ouvert
+yodel sur son PC, s'est connecté, et a retrouvé ses clients. Chaque espace porte son propre PostgreSQL (`atlas-pgdata`,
 `.devcontainer/docker-compose.yml`) : deux espaces, deux bases, rien entre les
 deux. Un espace n'expose que du HTTP, donc deux espaces ne peuvent pas partager
 une base : la seule base commune viendra avec l'hébergement (Scaleway, décidé).
