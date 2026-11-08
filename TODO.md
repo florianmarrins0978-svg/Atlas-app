@@ -124,6 +124,11 @@ rapport à l'année dernière, à la même date. Et à la limite le mois en cour
 l'écart), et « Tous les mois ». La période s'écrit une fois au-dessus. **Lu
 comme le cumul depuis janvier**, pas comme le facturé du seul jour : à
 confirmer s'il voulait le jour seul (le 8 novembre 2025 était un samedi).
+
+**La phrase du bénéfice, réécrite le 8 novembre** : *« c'est-à-dire quoi, sur
+100 euros encaissés il vous reste 14,51 ? »*. Elle dit désormais « Sur 1 000 €
+encaissés, il vous reste 145 € une fois tout payé. Pour votre objectif, il en
+faudrait 167 € » : des euros ronds, et ce qui a été retiré.
 **Tranché par lui le 8 novembre** : *« il faut comparer le jour, le 8 avec le
 8 de l'année dernière »*. La comparaison au même jour du calendrier est donc
 retenue ; elle ne se redemande pas.

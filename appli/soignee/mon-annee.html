@@ -389,9 +389,7 @@
 
   /* ─── L'écriture des montants ─────────────────────────────────────────── */
   var FR = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 });
-  var FR2 = new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   function e(n) { return FR.format(n) + " €"; }
-  function e2(n) { return FR2.format(n) + " €"; }
   function cent(n) { return Math.round(n / 100) * 100; }
   function dix(n) { return Math.round(n / 10) * 10; }
   function mille(n) { return Math.round(n / 1000) * 1000; }
@@ -561,8 +559,11 @@
       var tonB = c.faut100 !== null && c.sur100 < c.faut100 ? "ambre" : "vert";
       h += '<span class="chiffres"><b>' + e(c.benefice) + "</b>" + (c.B ? " sur " + e(c.B) : "") + "</span>";
       if (c.B) h += jauge(c.benefice / c.B, null, tonB);
-      h += '<p class="plage-ton" data-ton="' + tonB + '">Sur 100&nbsp;€ encaissés, il vous reste <b>' + e2(c.sur100) + "</b>." +
-        (c.faut100 !== null ? " Il en faut " + e2(c.faut100) + "." : "") + "</p>" +
+      /* Sur 1 000 €, en euros ronds : « sur 100 € encaissés, il vous reste
+         14,51 € » ne se comprenait pas (sa question du 8 novembre). Le
+         « une fois tout payé » dit ce qui a été retiré. */
+      h += '<p class="plage-ton" data-ton="' + tonB + '">Sur 1&nbsp;000&nbsp;€ encaissés, il vous reste <b>' + e(Math.round(c.sur100 * 10)) + "</b> une fois tout payé." +
+        (c.faut100 !== null ? " Pour votre objectif, il en faudrait " + e(Math.round(c.faut100 * 10)) + "." : "") + "</p>" +
         '<button class="bouton-texte or" type="button" data-ouvre="f-benefice">Voir le compte</button>';
     }
     h += "</section>";
