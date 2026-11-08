@@ -1,5 +1,39 @@
 # Prochaines tâches
 
+## ⏳ À REGARDER PAR LUI (8 novembre 2026) : la fiche de chantier, soignée
+
+Sa demande, capture à l'appui : *« tu peux me faire une planche de cette
+page-là, l'idée ça serait de faire cette page en plus jolie ; inspire-toi de
+ce qu'on a déjà amélioré : les couleurs, la forme des catégories, les
+boutons »*.
+
+**La planche** : `appli/fiche-de-chantier-soignee.html`, sur le vrai écran
+figé (`/paysage/fiche`, base de démonstration : Mme Costa et « Sans client »
+en cours, trois rapports en novembre, un en octobre). Proposé et Aujourd'hui ;
+Retirer, Annuler, le mois, la roue du jour et la recherche répondent.
+
+**Ce qui change, et d'où ça vient** :
+
+| | Pris sur |
+|---|---|
+| Composer ma fiche : la tuile d'icône des outils de Paysage ; le liseré d'or reste (sa planche du 11 octobre) | `src/app/paysage/page.tsx`, `ListeDesFiches.tsx` |
+| Créer une fiche sur toute la largeur, 58 px | le bouton plein de l'appli |
+| « En cours 2 » et « Rapports envoyés 3 » : le compteur de Vos chantiers, toujours noir gras (22 septembre) | le compteur de l'accueil |
+| Chaque fiche en cours : une carte ambre, « Reprendre » et « Retirer » écrits | la carte de réponse de l'accueil, l'ambre « à vous » (`ton-des-cartes.ts`) |
+| Les rapports : la frise de Vos chantiers, le jour en grand, un point vert « parti » | la frise de l'accueil |
+
+**Ce qui ne bouge pas** (ses décisions) : Composer ma fiche en tête
+(26 août, 11 octobre) ; le mois et la recherche AU-DESSUS de « Rapports
+envoyés » (24 septembre) ; « Retirer » et son tiroir ; pas d'étiquette
+« Brouillon » (11 octobre) ; l'en-tête, le filtre de date et la barre de
+recherche de l'appli, inchangés.
+
+**À coder après son oui** : `FichesEnCours.tsx` (la carte), `RapportsEnvoyes.tsx`
+(la frise, qui ne passe plus par `LignePassage` : celle-ci ne sert alors plus
+qu'aux brouillons, ou disparaît, `CLAUDE.md` §4 quinquies), `OuvrirFiche.tsx`
+(la largeur), `page.tsx` (la tuile), et le titre compté dans les deux
+sections. La frise de l'accueil se reprend, elle ne se recopie pas.
+
 ## ⏳ À REGARDER PAR LUI (8 novembre 2026) : le compteur de jours dans Équipe
 
 Sa demande : *« ça serait bien d'avoir dans mes équipes le compteur de jours
