@@ -181,7 +181,12 @@
 /* La case « Services à la personne » : cochée, le crédit d'impôt et ses
    mentions ; décochée, un devis ou une facture comme aujourd'hui (sa
    remarque du 8 novembre : « quand je décoche, il n'y a rien qui se passe »). */
-.ecran[data-sap="non"] [data-si-sap], .ecran:not([data-sap="non"]) [data-si-normal] { display: none; }
+.ecran[data-sap="non"] [data-si-sap], .ecran:not([data-sap="non"]) [data-si-sans-sap],
+.ecran[data-nova="non"] [data-si-nova], .ecran:not([data-nova="non"]) [data-si-sans-nova],
+.ecran[data-cote="non"] [data-si-cote], .ecran:not([data-cote="non"]) [data-si-sans-cote],
+.ecran[data-logo="non"] [data-si-logo], .ecran:not([data-logo="non"]) [data-si-sans-logo],
+.ecran[data-signature="non"] [data-si-signature], .ecran:not([data-signature="non"]) [data-si-sans-signature] { display: none; }
+.vide-signature { width: 100%; font-size: 15px; color: var(--atlas-inkSoft); border: 1.5px dashed var(--atlas-line); box-shadow: none; }
 
 /* ─── Le devis (chantier.html, le devis complet), en plus court ─────────── */
 .dc-tete { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; }
@@ -239,7 +244,7 @@
           <div class="defile">
             <div class="tete-ronds">
               <button class="rond-creux" type="button" aria-label="Retour aux réglages" data-note="Retour aux Réglages."><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
-              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-note="L'assistant de l'appli, comme aujourd'hui."><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
             </div>
             <header class="tete" style="margin-top:0"><h1 class="tete-titre">Mon entreprise</h1></header>
 
@@ -247,56 +252,64 @@
             <div class="plage reglages">
               <div class="reglage">
                 <div class="ligne-bascule-doc">
-                  <span class="ligne-corps"><b>Mon entreprise est déclarée sur NOVA</b><small>Vos clients particuliers récupèrent la moitié.</small></span>
-                  <button class="bascule" type="button" role="switch" aria-checked="true" aria-label="Mon entreprise est déclarée sur NOVA"></button>
+                  <span class="ligne-corps"><b>Mon entreprise est déclarée sur NOVA</b><small data-si-nova>Vos clients particuliers récupèrent la moitié.</small><small data-si-sans-nova>Pas de crédit d'impôt pour vos clients.</small></span>
+                  <button class="bascule" type="button" role="switch" aria-checked="true" aria-label="Mon entreprise est déclarée sur NOVA" data-pilote="nova"></button>
                 </div>
               </div>
-              <label class="reglage">
+              <label class="reglage" data-si-nova>
                 <span class="reglage-libelle">N° de déclaration</span>
                 <input class="reglage-valeur chiffre" value="SAP123456789">
               </label>
-              <label class="reglage">
+              <label class="reglage" data-si-nova>
                 <span class="reglage-libelle">Déclarée le</span>
                 <input class="reglage-valeur chiffre" value="12 mars 2024">
               </label>
-              <div class="reglage">
+              <div class="reglage" data-si-nova>
                 <span class="reglage-libelle">Logo des services à la personne</span>
-                <span class="attache">
+                <span class="attache" data-si-logo>
                   <span class="pastille-ico" data-ton="vert"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span>
                   <span class="ligne-corps"><b>Déposé</b><span>Sur vos devis et vos factures</span></span>
-                  <button class="retirer" type="button" data-note="Le logo se retire ; il se télécharge sur NOVA.">Retirer</button>
+                  <button class="retirer" type="button" data-pose="logo:non">Retirer</button>
+                </span>
+                <span class="attache" data-si-sans-logo>
+                  <span class="pastille-ico" data-ton="ambre"><svg class="ico" aria-hidden="true"><use href="#i-alerte"/></svg></span>
+                  <span class="ligne-corps"><b>À déposer</b><span>Obligatoire. Il se télécharge sur NOVA.</span></span>
+                  <button class="retirer" type="button" data-pose="logo:oui">Déposer</button>
                 </span>
               </div>
-              <div class="reglage">
+              <div class="reglage" data-si-nova>
                 <div class="ligne-bascule-doc">
-                  <span class="ligne-corps"><b>Une activité à côté</b><small>Création, clients professionnels.</small></span>
-                  <button class="bascule" type="button" role="switch" aria-checked="true" aria-label="Une activité à côté"></button>
+                  <span class="ligne-corps"><b>Une activité à côté</b><small data-si-cote>Création, clients professionnels.</small><small data-si-sans-cote>Seulement des services à la personne.</small></span>
+                  <button class="bascule" type="button" role="switch" aria-checked="true" aria-label="Une activité à côté" data-pilote="cote"></button>
                 </div>
-                <div class="part"><b>18&nbsp;%</b><span>6&#8239;120&nbsp;€ sur 34&#8239;000&nbsp;€ cette année</span></div>
-                <span class="jauge"><span style="width:60%"></span></span>
-                <span class="reglage-sous">30&nbsp;% au plus.</span>
+                <div data-si-cote>
+                  <div class="part"><b>18&nbsp;%</b><span>6&#8239;120&nbsp;€ sur 34&#8239;000&nbsp;€ cette année</span></div>
+                  <span class="jauge"><span style="width:60%"></span></span>
+                  <span class="reglage-sous">30&nbsp;% au plus.</span>
+                </div>
               </div>
-              <div class="reglage">
+              <div class="reglage" data-si-nova>
                 <div class="rang-espace">
                   <span class="reglage-libelle">Votre signature</span>
-                  <button class="bouton-texte or" type="button" data-note="La case se vide ; signez de nouveau avec le doigt." style="min-height:40px">Effacer</button>
+                  <button class="bouton-texte or" type="button" data-pose="signature:non" data-si-signature style="min-height:40px">Effacer</button>
                 </div>
-                <div class="signature" aria-label="Votre signature">
+                <div class="signature" aria-label="Votre signature" data-si-signature>
                   <svg viewBox="0 0 170 60" aria-hidden="true"><path d="M8 40c10-22 18-30 22-24 4 7-10 30-4 30 7 0 14-26 22-24 6 2-2 20 4 20 8 0 10-14 18-14 7 0 3 12 10 12 9 0 14-18 24-18 7 0 4 10 12 10 10 0 22-12 34-16"/><path d="M40 52c30-4 70-6 110-4"/></svg>
                 </div>
+                <button class="signature vide-signature" type="button" data-pose="signature:oui" data-si-sans-signature>Signez ici avec le doigt</button>
                 <span class="reglage-sous">Elle se pose sur chaque attestation.</span>
               </div>
             </div>
 
-            <p class="rubrique rubrique-or">Avance immédiate</p>
-            <div class="plage" data-si-etat="non">
+            <p class="rubrique rubrique-or" data-si-nova>Avance immédiate</p>
+            <div class="plage" data-si-etat="non" data-si-nova>
               <div class="urssaf">
                 <span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-banque"/></svg></span>
                 <span class="ligne-corps"><b>L'Urssaf n'est pas reliée</b><small>Vos clients ne paient que la moitié, l'Urssaf vous verse toute la facture.</small></span>
               </div>
               <button class="bouton bouton-plein" type="button" data-ouvre="relier">Relier l'Urssaf</button>
             </div>
-            <div class="plage" data-si-etat="reliee">
+            <div class="plage" data-si-etat="reliee" data-si-nova>
               <div class="urssaf">
                 <span class="pastille-ico" data-ton="vert"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span>
                 <span class="ligne-corps"><b>L'Urssaf est reliée</b><small>Depuis le 8 novembre.</small></span>
@@ -345,27 +358,27 @@
           <div class="defile">
             <div class="tete-ronds">
               <button class="rond-creux" type="button" aria-label="Retour à Vos clients" data-note="Retour à Vos clients."><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
-              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-note="L'assistant de l'appli, comme aujourd'hui."><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
             </div>
             <header class="tete" style="margin-top:0"><h1 class="tete-titre">Mr. Lambert</h1></header>
             <p class="tete-situation">12 rue des Lilas, Rezé</p>
 
-            <p class="rubrique rubrique-or">Avance immédiate</p>
-            <div class="plage" data-si-etat="neuf">
+            <p class="rubrique rubrique-or" data-si-nova>Avance immédiate</p>
+            <div class="plage" data-si-etat="neuf" data-si-nova>
               <div class="urssaf">
                 <span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-euro"/></svg></span>
                 <span class="ligne-corps"><b>Il paie la moitié</b><small>Ses factures passent par l'Urssaf, qui vous verse tout.</small></span>
               </div>
               <button class="bouton bouton-plein" type="button" data-ouvre="inscrire">L'inscrire à l'Urssaf</button>
             </div>
-            <div class="plage" data-si-etat="attente">
+            <div class="plage" data-si-etat="attente" data-si-nova>
               <div class="urssaf">
                 <span class="pastille-ico" data-ton="ambre"><svg class="ico" aria-hidden="true"><use href="#i-horloge-sable"/></svg></span>
                 <span class="ligne-corps"><b>En attente de Mr. Lambert</b><small>L'Urssaf lui a écrit le 8 novembre. Il a 7 jours pour accepter.</small></span>
               </div>
               <button class="bouton-texte or" type="button" data-note="L'Urssaf lui renvoie le lien.">Lui renvoyer le lien</button>
             </div>
-            <div class="plage" data-si-etat="inscrit">
+            <div class="plage" data-si-etat="inscrit" data-si-nova>
               <div class="urssaf">
                 <span class="pastille-ico" data-ton="vert"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span>
                 <span class="ligne-corps"><b>Inscrit</b><small>Depuis le 9 novembre. Ses factures partent à l'Urssaf.</small></span>
@@ -446,13 +459,13 @@
             <div class="dc-tete">
               <button class="retour-nu" type="button" aria-label="Retour" data-note="Retour au chantier."><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
               <span class="espace"></span>
-              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-note="L'assistant de l'appli, comme aujourd'hui."><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
             </div>
 
-            <div class="plage choix-sap">
+            <div class="plage choix-sap" data-si-nova>
               <div class="ligne-bascule-doc">
-                <span class="ligne-corps"><b>Services à la personne</b><small data-si-sap>Mr. Lambert ne paiera que 252,00&nbsp;€</small><small data-si-normal>Devis normal</small></span>
-                <button class="bascule" type="button" role="switch" aria-checked="true" aria-label="Services à la personne" data-sap-bascule></button>
+                <span class="ligne-corps"><b>Services à la personne</b><small data-si-sap>Mr. Lambert ne paiera que 252,00&nbsp;€</small><small data-si-sans-sap>Devis normal</small></span>
+                <button class="bascule" type="button" role="switch" aria-checked="true" aria-label="Services à la personne" data-pilote="sap"></button>
               </div>
             </div>
 
@@ -485,7 +498,7 @@
                 <div class="dc-tot"><span>TVA (20 %)</span><span>84,00&nbsp;€</span></div>
                 <div class="dc-tot ttc"><span>Total TTC</span><span>504,00&nbsp;€</span></div>
               </div>
-              <div class="ajouts" data-si-normal>
+              <div class="ajouts" data-si-sans-sap>
                 <button class="puce-ajout" type="button" data-note="Comme aujourd'hui."><svg class="ico" aria-hidden="true"><use href="#i-euro"/></svg>Ajouter un acompte</button>
               </div>
               <p class="sans-acompte" data-si-sap>Pas d'acompte : il est inscrit à l'avance immédiate.</p>
@@ -508,7 +521,7 @@
           <div class="defile">
             <div class="tete-ronds">
               <button class="rond-creux" type="button" aria-label="Retour au planning" data-note="Retour au planning."><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
-              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-note="L'assistant de l'appli, comme aujourd'hui."><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
             </div>
             <header class="tete" style="margin-top:0"><h1 class="tete-titre">Entretien du jardin</h1></header>
             <p class="tete-situation">Mr. Lambert, mercredi 5 novembre</p>
@@ -563,7 +576,7 @@
           <div class="defile">
             <div class="tete-ronds">
               <button class="rond-creux" type="button" aria-label="Retour" data-note="Retour au chantier."><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
-              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-note="L'assistant de l'appli, comme aujourd'hui."><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
             </div>
             <div class="tete"><h2 class="tete-titre">Facture</h2></div>
             <p class="tete-situation">Mr. Lambert</p>
@@ -595,10 +608,10 @@
               </div>
             </section>
 
-            <section class="carte-doc">
+            <section class="carte-doc" data-si-nova>
               <div class="ligne-bascule-doc">
-                <span class="ligne-corps"><b>Services à la personne</b><small data-si-sap>Comme le devis</small><small data-si-normal>Facture normale</small></span>
-                <button class="bascule" type="button" role="switch" aria-checked="true" aria-label="Services à la personne" data-sap-bascule></button>
+                <span class="ligne-corps"><b>Services à la personne</b><small data-si-sap>Comme le devis</small><small data-si-sans-sap>Facture normale</small></span>
+                <button class="bascule" type="button" role="switch" aria-checked="true" aria-label="Services à la personne" data-pilote="sap"></button>
               </div>
               <div class="somme" data-si-sap>
                 <div class="rang-ligne"><span class="nom">Payé par Mr. Lambert</span><span class="prix">252,00&nbsp;€</span></div>
@@ -630,7 +643,7 @@
             </section>
           </div>
           <div class="action-bas">
-            <div data-si-etat="brouillon" data-si-normal>
+            <div data-si-etat="brouillon" data-si-sans-sap>
               <button class="bouton bouton-plein" type="button" data-note="Elle part comme aujourd'hui, par SMS ou e-mail ; il paie tout, sans crédit d'impôt.">Envoyer la facture</button>
             </div>
             <div data-si-etat="brouillon" data-si-sap>
@@ -678,7 +691,7 @@
           <div class="defile">
             <header class="tete">
               <h1 class="tete-titre">Terminés</h1>
-              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-note="L'assistant de l'appli, comme aujourd'hui."><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
             </header>
             <div class="argent">
               <a class="case case-tva" href="#" data-note="Inchangé : voir la planche Terminés.">
@@ -697,7 +710,7 @@
               <a class="porte porte-or" href="#" data-note="Inchangé : voir la planche Terminés.">Créer une facture</a>
             </div>
 
-            <button class="attestations touche" type="button" data-ton="ambre" data-ouvre="liste" id="carte-att">
+            <button class="attestations touche" type="button" data-ton="ambre" data-ouvre="liste" id="carte-att" data-si-nova>
               <span class="ligne-corps"><b>Attestations fiscales 2026</b><span id="carte-att-texte">3 à envoyer, avant le 31 mars</span></span>
               <svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg>
             </button>
@@ -781,22 +794,46 @@
       b.setAttribute("aria-pressed", b.getAttribute("data-etat") === etat ? "true" : "false");
     });
   }
-  /* La case « Services à la personne », sur le devis et sur la facture. Le kit
-     bascule l'interrupteur ; on lit son état après lui. Une facture partie à
+  /* Chaque interrupteur PILOTE ce qui en dépend (sa colère du 8 novembre :
+     « tous les boutons on-off, quand on les décoche, il n'y a rien qui se
+     passe »). data-pilote="nova" pose data-nova="oui|non" sur l'écran, et le
+     CSS montre data-si-nova ou data-si-sans-nova. Le kit bascule
+     l'interrupteur ; on lit son état après lui. Une facture partie à
      l'Urssaf ne se change plus : la case revient, et l'écran le dit. */
   document.addEventListener("click", function (ev) {
-    var b = ev.target.closest("[data-sap-bascule]");
-    if (!b) return;
-    var ecran = b.closest(".ecran");
-    setTimeout(function () {
-      var envoyee = ecran.id === "ecran-fac" && ecran.getAttribute("data-etat") !== "brouillon";
-      if (envoyee) {
-        b.setAttribute("aria-checked", "true");
-        Kit.note(ecran, "Envoyée, elle ne se modifie plus. Une correction passerait par un avoir.");
-        return;
-      }
-      ecran.setAttribute("data-sap", b.getAttribute("aria-checked") === "true" ? "oui" : "non");
-    }, 0);
+    var b = ev.target.closest("[data-pilote]");
+    if (b) {
+      var ecran = b.closest(".ecran");
+      var nom = b.getAttribute("data-pilote");
+      setTimeout(function () {
+        var envoyee = ecran.id === "ecran-fac" && ecran.getAttribute("data-etat") !== "brouillon";
+        if (envoyee) {
+          b.setAttribute("aria-checked", "true");
+          Kit.note(ecran, "Envoyée, elle ne se modifie plus. Une correction passerait par un avoir.");
+          return;
+        }
+        var val = b.getAttribute("aria-checked") === "true" ? "oui" : "non";
+        ecran.setAttribute("data-" + nom, val);
+        /* Une entreprise qui n'est plus déclarée n'a plus de crédit d'impôt
+           NULLE PART : la fiche du client, le devis, la facture et Terminés
+           le suivent, et devis et facture redeviennent normaux. */
+        if (nom === "nova") {
+          document.querySelectorAll(".ecran").forEach(function (e) { e.setAttribute("data-nova", val); });
+          document.querySelectorAll('[data-pilote="sap"]').forEach(function (s) {
+            s.setAttribute("aria-checked", val === "oui" ? "true" : "false");
+            s.closest(".ecran").setAttribute("data-sap", val);
+          });
+        }
+      }, 0);
+      return;
+    }
+    /* Un geste qui pose un état sans interrupteur : Retirer le logo, Effacer
+       la signature, et leur contraire. */
+    var pose = ev.target.closest("[data-pose]");
+    if (pose) {
+      var c = pose.getAttribute("data-pose").split(":");
+      pose.closest(".ecran").setAttribute("data-" + c[0], c[1]);
+    }
   });
   function noter(ecran, texte) { Kit.fermerFeuilles(ecran); setTimeout(function () { Kit.note(ecran, texte); }, 200); }
   /* Sa règle du 8 novembre : n'importe quel nombre d'heures, la roulette de

@@ -701,6 +701,18 @@ Concrètement, pour toute planche dont on attend un choix :
    qu'une proposition. Regarder soi-même l'image d'une maquette avant de la
    livrer reste obligatoire — c'est ce qui attrape un débordement ou un libellé
    collé ; ce qui est interdit, c'est de **la lui envoyer à la place du lien** ;
+2 quater. **CHAQUE GESTE D'UNE PLANCHE FAIT QUELQUE CHOSE — 8 novembre 2026.**
+   Sa colère : *« tous les boutons on-off, quand on les décoche, il n'y a rien
+   qui se passe ? Applique-toi ! Chaque fois je suis obligé de te reprendre
+   sur des détails. »* Un interrupteur décoché qui ne change rien se lit comme
+   une planche bâclée, et c'est lui qui le trouve. Donc : chaque interrupteur
+   **pilote ce qui en dépend**, y compris sur les autres écrans de la planche
+   (une entreprise qui n'est plus déclarée n'a plus de crédit d'impôt nulle
+   part) ; chaque bouton change un état, ouvre une feuille, ou dit en une
+   ligne ce qu'il ferait. **Avant de donner l'adresse**, toucher dans un
+   navigateur chaque bouton de chaque écran et de chaque feuille, et n'en
+   laisser aucun muet. Modèle : `appli/soignee/credit-d-impot.html`
+   (`data-pilote`, `data-pose`) ;
 3. rien d'autre à faire pour qu'elle soit vérifiée en ligne : depuis le
    20 août 2026, `pages.yml` **déduit sa liste des liens d'`essais.html`** —
    une liste tenue à la main s'oubliait à chaque page neuve, et l'oubli ne se
