@@ -2338,6 +2338,24 @@ va de 0 à 24 h, celle des minutes de 00 à 59, une par une (la planche
 d'octobre s'arrêtait à 12 h, par quarts d'heure). Posé dans la planche, à
 garder tel quel au codage.
 
+**L'ÉLAGAGE N'EST PAS DU SERVICE À LA PERSONNE, et les 30 % jouent dans
+l'autre sens (8 novembre 2026).** Sa lecture : *« mes utilisateurs font de
+l'élagage à 80 % et un peu de service à la personne ; tant que le service à la
+personne ne dépasse pas 30 %, c'est bon »*. C'est l'inverse. La page officielle
+(servicesalapersonne.gouv.fr, « Les 26 activités », lue le 8 novembre 2026) :
+*« Le petit jardinage ne comprend pas […] la conception et la réalisation de
+parcs paysagers, l'élagage, les travaux de terrassement »* ; il comprend
+l'entretien courant, *« la taille des haies et des arbres et le
+débroussaillage »*, plafond 5 000 € de dépenses par an. Et la dispense de
+2025 ne vaut que pour une entreprise qui fait du service à la personne *« à
+titre principal »* : c'est l'activité HORS services à la personne qui est
+plafonnée à 30 % du chiffre d'affaires de l'année précédente. **Un élagueur à
+80 % d'élagage ne peut donc pas avoir son numéro** : le module « son propre
+numéro » de la planche ne le sert pas. Pour lui, les voies sont une structure
+à part dédiée aux services à la personne, ou une coopérative comme Unipros
+(c'est exactement ce qu'elle vend). La frontière entre « taille des arbres »
+(dedans) et « élagage » (dehors) est à faire préciser par la DDETS.
+
 **Ses deux remarques suivantes, le même jour :**
 
 - *« le client paie 252 et l'Urssaf te verse 504, alors que la facture vaut
