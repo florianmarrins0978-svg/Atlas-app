@@ -88,6 +88,62 @@ if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
   exit 0
 fi
 
+# ─────────────────────────────────────────────────────────────────────────────
+# **UNE BRANCHE DE SESSION FINIE RAMÈNE L'ESPACE SUR `main` — 8 novembre 2026.**
+#
+# Sa plainte : *« il lui manque énormément de versions »*. Son espace PC avait
+# été ouvert le 3 octobre sur `claude/app-sur-ordinateur`, pour essayer ce
+# lot-là. Le lot est parti sur `main` le soir même, et l'espace a continué
+# d'avancer SA branche en ligne droite : une branche que plus personne ne
+# pousse. Il a servi le code du 3 octobre pendant un mois, 1 486 commits
+# derrière `main`, et cette mise à jour répondait « à jour » à chaque allumage.
+# Effacée du distant, la même branche le figeait aussi, avec un faux motif
+# (« le dépôt distant n'a pas pu être joint »).
+#
+# **Une branche est finie quand tout ce qu'elle porte est déjà dans `main`**,
+# ici ET sur le distant. Regarder la seule tête locale ne suffit pas : une
+# branche ouverte depuis `main` est « dans main » jusqu'à ce que la session y
+# pousse son lot, et l'espace quitterait le lot au moment où il arrive. Un lot
+# pas encore fusionné, lui, reste suivi sur sa branche, comme avant.
+#
+# Le passage ne perd rien : rien de ce que porte la branche n'est absent de
+# `main`, l'arbre est propre (vérifié au-dessus), et une `main` locale qui porte
+# un commit à elle est refusée plutôt que forcée.
+LIVREE="main"
+branche_finie() {
+  [ "$BRANCHE" != "$LIVREE" ] || return 1
+  git fetch --quiet origin "+refs/heads/$LIVREE:refs/remotes/origin/$LIVREE" 2>/dev/null || return 1
+  git merge-base --is-ancestor HEAD "origin/$LIVREE" 2>/dev/null || return 1
+  git ls-remote --exit-code origin "refs/heads/$BRANCHE" > /dev/null 2>&1
+  case $? in
+    # Effacée du distant : fusionnée puis supprimée, personne ne la poussera plus.
+    2) return 0 ;;
+    0) git fetch --quiet origin "+refs/heads/$BRANCHE:refs/remotes/origin/$BRANCHE" 2>/dev/null \
+         && git merge-base --is-ancestor "origin/$BRANCHE" "origin/$LIVREE" 2>/dev/null ;;
+    # Le distant ne répond pas : on ne conclut rien.
+    *) return 1 ;;
+  esac
+}
+
+if branche_finie; then
+  AVANT="$(git rev-parse HEAD)"
+  if git show-ref --verify --quiet "refs/heads/$LIVREE"; then
+    if ! git merge-base --is-ancestor "$LIVREE" "origin/$LIVREE" 2>/dev/null; then
+      echo "impossible : la branche « $LIVREE » de l'espace porte un commit absent du dépôt distant"
+      exit 0
+    fi
+    git checkout --quiet "$LIVREE" 2>/dev/null \
+      && git merge --ff-only --quiet "origin/$LIVREE" 2>/dev/null \
+      || { echo "impossible : le passage sur « $LIVREE » a échoué"; exit 0; }
+  else
+    git checkout --quiet -b "$LIVREE" "origin/$LIVREE" 2>/dev/null \
+      || { echo "impossible : le passage sur « $LIVREE » a échoué"; exit 0; }
+  fi
+  echo "mise à jour : « $BRANCHE » est entièrement dans $LIVREE, l'espace suit $LIVREE désormais" >&2
+  if [ "$AVANT" = "$(git rev-parse HEAD)" ]; then echo "à jour"; else echo "faite"; fi
+  exit 0
+fi
+
 if ! git fetch --quiet origin "$BRANCHE" 2>/dev/null; then
   echo "impossible : le dépôt distant n'a pas pu être joint"
   exit 0
