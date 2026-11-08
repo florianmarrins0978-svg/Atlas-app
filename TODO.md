@@ -1,6 +1,6 @@
 # Prochaines tâches
 
-## ⏳ À CHOISIR PAR LUI (8 novembre 2026) : sur ordinateur, la largeur de la colonne
+## ~~⏳ À CHOISIR PAR LUI (8 novembre 2026) : sur ordinateur, la largeur de la colonne~~ TRANCHÉ LE 8 NOVEMBRE : 672 PX ; CODÉ LE 8 NOVEMBRE, batterie entière à jouer (plancher : `globals.css`)
 
 Sa demande, photo de son portable à l'appui : *« les bandes s'étirent jusqu'au
 milieu de l'écran alors que le texte s'arrête à un quart ; pareil pour les

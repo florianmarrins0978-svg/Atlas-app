@@ -265,8 +265,15 @@ body {
 }
 
 @media (min-width: 1024px) {
+  /* **42rem, la largeur de la feuille du devis — sa décision du 8 novembre
+   * 2026**, sur planche (`appli/sur-ordinateur-largeur.html`). La colonne a
+   * d'abord fait 64rem : sur son portable, tout ce qui prend la largeur
+   * (bandes, notifications, lignes des listes) s'étirait bien au-delà de son
+   * texte, et le mois du planning passait sous le tiroir du bas. Les écrans
+   * sont dessinés pour 28rem ; une fois et demie, c'est le juste milieu
+   * qu'il a choisi entre 36, 42 et 48rem. */
   :root {
-    --atlas-largeur: 64rem;
+    --atlas-largeur: 42rem;
   }
 
   /* Le décalage ne sert qu'à côté de la barre de gauche. Posé aussi sur

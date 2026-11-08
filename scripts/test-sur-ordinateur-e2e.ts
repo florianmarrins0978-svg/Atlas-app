@@ -25,6 +25,8 @@ import type { Browser, BrowserContextOptions } from "playwright";
 
 const BASE = ADRESSE;
 const TOLERANCE_PX = 1.5;
+/** `--atlas-largeur` au-delà de 1024 px d'écran : 42rem (`globals.css`, « L'ORDINATEUR »). */
+const LARGEUR_SUR_ORDINATEUR = 672;
 
 let echecs = 0;
 
@@ -124,13 +126,25 @@ async function main() {
       }
     });
 
-    await cas(`ordinateur, ${chemin} : le contenu s'ouvre à côté de la barre, et en grand`, async () => {
+    // **672 px, et pas plus — sa décision du 8 novembre 2026.** La colonne a
+    // d'abord fait 1024 px (§447) ; sur son portable, les bandes et les
+    // notifications s'étiraient alors bien au-delà de leur texte, et le mois du
+    // planning ne tenait plus à l'écran. Il a choisi sur planche
+    // (`appli/sur-ordinateur-largeur.html`) la largeur de la feuille du devis.
+    // Ce cas refuse donc les deux dérives : retomber dans la colonne du
+    // téléphone (448 px), ou s'étirer de nouveau.
+    await cas(`ordinateur, ${chemin} : le contenu fait 672 px, centré à côté de la barre`, async () => {
       const { barre, contenu } = exiger(m);
       if (contenu.gauche < barre.droite - TOLERANCE_PX) {
         throw new Error(`le contenu commence à ${contenu.gauche} px, sous la barre qui finit à ${barre.droite} px`);
       }
-      if (contenu.largeur < 900) {
-        throw new Error(`contenu de ${contenu.largeur} px : il est resté dans la colonne du téléphone`);
+      if (Math.abs(contenu.largeur - LARGEUR_SUR_ORDINATEUR) > TOLERANCE_PX) {
+        throw new Error(`contenu de ${contenu.largeur} px : la colonne choisie fait ${LARGEUR_SUR_ORDINATEUR} px`);
+      }
+      const aGauche = contenu.gauche - barre.droite;
+      const aDroite = m.fenetre.largeur - contenu.droite;
+      if (Math.abs(aGauche - aDroite) > 2 * TOLERANCE_PX) {
+        throw new Error(`${aGauche} px à gauche, ${aDroite} px à droite : la colonne n'est pas centrée dans la place qui reste`);
       }
       if (m.defileEnLargeur) throw new Error("la page défile en largeur : quelque chose déborde");
     });

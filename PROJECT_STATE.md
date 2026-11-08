@@ -505,7 +505,8 @@ consigne : une seule pour l'ensemble, avec son accord).** Détail :
 
 ## SUR `main` DEPUIS LE 6 OCTOBRE : L'APPLICATION SUR ORDINATEUR (3 octobre 2026)
 
-Au-delà de 1024 px, la barre passe à gauche et le contenu s'ouvre sur 1024 px ;
+Au-delà de 1024 px, la barre passe à gauche et le contenu s'ouvre sur 672 px
+(1024 px jusqu'au 8 novembre 2026, §569) ;
 les écrans sont les mêmes que sur le téléphone, seul le cadre change
 (`ARCHITECTURE.md` §447). Branche `claude/app-sur-ordinateur`. Types, lint, les
 suites de garde et sept suites navigateur de la barre au vert ; **la batterie
