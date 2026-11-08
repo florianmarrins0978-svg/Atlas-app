@@ -2342,12 +2342,16 @@ janvier.
   prendra la case (un passage d'entretien n'a jamais de devis) : la case lue
   est celle de la facture, sinon du devis, sinon la règle d'une pièce neuve ;
 - **une facture payée sans aucune heure enregistrée rend l'attestation « À
-  compléter »**, et elle ne part pas : aucune durée n'est devinée. Conséquence
-  à trancher par lui : **toutes les interventions d'avant ce lot n'ont pas
-  d'heures**, donc les attestations de 2026 de ses clients seront à compléter
-  en janvier. Deux voies : une saisie de rattrapage sur l'attestation (contre
-  sa règle du 9 octobre, « le jour même »), ou les faire à la main cette
-  année ;
+  compléter »**, et elle ne part pas : aucune durée n'est devinée.
+  **Tranché le 8 novembre 2026 : à la main, rien à coder.** Sa réponse :
+  *« il n'y aura pas d'attestation avant 2026 »*, puis *« elles peuvent se
+  faire à la main, ou un écran pour saisir les heures après coup, les deux me
+  vont »*. Le cas est rare : une facture déjà envoyée n'a pas la case et
+  n'entre dans aucune attestation ; seul un chantier fait AVANT la mise en
+  service et facturé APRÈS, case cochée, reste « À compléter », et l'artisan
+  fait cette attestation à la main. Si le cas devient fréquent : une planche
+  d'abord, pour compléter seulement les dates qui manquent, depuis
+  l'attestation ;
 - **pas de « gérant » ni de « président » deviné** : la phrase dit « Je
   soussigné Thomas Leroy, pour Jardins Démo » (soussignée pour Mme), le nom du
   premier compte propriétaire ; sans nom, l'entreprise certifie seule. Un
