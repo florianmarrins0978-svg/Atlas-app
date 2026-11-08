@@ -141,6 +141,11 @@
 <td><code>beneficeEstime</code></td>
 </tr>
 <tr>
+<td>Les factures importées comptent par leur HT, les anciennes relues une fois (avec l'IA)</td>
+<td>codé</td>
+<td><code>lireChampsDuTexte</code>, <code>lireLeHt</code>, <code>chercherLesHt</code>, <code>htDeLaPieceImportee</code></td>
+</tr>
+<tr>
 <td><strong>Vos prix, par vos tarifs</strong></td>
 <td><strong>pas codé : lot 2</strong></td>
 <td>voir plus bas</td>
@@ -149,7 +154,7 @@
 <h2 id="ce-qui-a-été-fait-autrement-que-la-planche-et-pourquoi">Ce qui a été fait autrement que la planche, et pourquoi</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <ul>
-<li><strong>Les factures importées ne comptent qu'en franchise de TVA.</strong> L'import ne lit que leur montant TTC. Mêlé à du HT, l'an dernier paraîtrait plus haut qu'il n'était. Une entreprise assujettie qui n'a que des factures importées pour 2025 n'aura donc ni saison, ni Face à 2025, tant que ses factures de 2025 ne sont pas faites dans Atlas.</li>
+<li><strong>Les factures importées comptent par leur HT.</strong> L'import ne lisait que le TTC ; il lit désormais le « Total HT » imprimé, ou le total d'une facture en franchise (« 293 B »). Les factures importées avant se relisent une fois, dix à chaque ouverture de Mon année : le texte d'abord, l'IA ensuite, sur vos crédits (votre réponse : « tu peux les lire avec l'IA aussi »). <strong>Une facture dont le HT reste illisible ne compte pas</strong> : le HT ne se déduit pas du TTC, le taux varie.</li>
 <li><strong>Sans année dernière dans l'appli, ni trait, ni retard, ni Face à 2025.</strong> Rien ne s'invente. Le reste à facturer se répartit alors sur les jours ouvrés.</li>
 <li><strong>« Pareil » ne se dit que de deux montants égaux.</strong> La planche disait « Pareil » sous 100 € d'écart : 80 € de plus n'est pas pareil.</li>
 <li><strong>Une sortie de banque sans pièce compte comme une dépense.</strong> Elle est partie ; l'ignorer gonflerait le bénéfice. Le compte la montre à part : « Pas encore justifié ».</li>
@@ -193,8 +198,12 @@
 <td>vert</td>
 </tr>
 <tr>
-<td><code>test-mon-annee.ts</code> (règles pures, 28 cas)</td>
+<td><code>test-mon-annee.ts</code> (règles pures)</td>
 <td>vert ; <strong>vu rouge</strong> en cassant volontairement la règle « au même jour »</td>
+</tr>
+<tr>
+<td><code>test-import-pieces.ts</code> (lecture du HT)</td>
+<td>vert ; <strong>vu rouge</strong> en déduisant le HT du TTC</td>
 </tr>
 <tr>
 <td>Accès, rubriques, couches, code mort, pansements, tirets, flèches, chartes</td>

@@ -1,9 +1,17 @@
 import type { Ctx } from "../repositories/context";
-import { noterIllisible, noterLecture, noterObjetCherche, pdfSansObjetCherche, prendrePiecesALire } from "../repositories/pieces-importees";
+import {
+  facturesSansHtCherche,
+  noterHtCherche,
+  noterIllisible,
+  noterLecture,
+  noterObjetCherche,
+  pdfSansObjetCherche,
+  prendrePiecesALire,
+} from "../repositories/pieces-importees";
 import { getEntreprise } from "../repositories/entreprises";
 import { lireObjet } from "../storage";
 import { logger } from "../logger";
-import { extraireTexte, lirePiece } from "./lire-piece";
+import { extraireTexte, lireLeHt, lirePiece } from "./lire-piece";
 import { lireChampsDuTexte } from "../../lib/import-pieces";
 import { pourLeCompteDe } from "../ai/compteur";
 
@@ -81,5 +89,40 @@ export async function chercherLesObjets(ctx: Ctx, clientId: string): Promise<voi
       logger.warn("Objet d'une pièce importée illisible", { piece: p.id, erreur: err instanceof Error ? err.message : String(err) });
     }
     await noterObjetCherche(ctx, p.id, objet);
+  }
+}
+
+/** Combien de factures une visite de Mon année relit au plus : l'IA répond en secondes. */
+const HT_PAR_VISITE = 10;
+const htEnCours = new Set<string>();
+
+/**
+ * LE HT DES FACTURES IMPORTÉES AVANT LUI (migration 0176), cherché une fois.
+ * Sa question du 8 novembre 2026 : *« la limite, comment on peut corriger ce
+ * problème ? »* ; Mon année ne compte une facture importée qu'en HT, et
+ * l'import ne lisait que le TTC.
+ *
+ * Le modèle de `chercherLesObjets`, à une différence près, et c'est la sienne :
+ * l'IA lit aussi, pour les scans et les mises en page que le texte ne dit pas
+ * (*« tu peux les lire avec l'IA aussi »*), sur ses crédits (`pourLeCompteDe`).
+ * Lancé par `after()` depuis Mon année : dix par visite, une seule boucle par
+ * entreprise et par serveur.
+ */
+export async function chercherLesHt(ctx: Ctx): Promise<void> {
+  if (htEnCours.has(ctx.entrepriseId)) return;
+  htEnCours.add(ctx.entrepriseId);
+  try {
+    for (const p of await facturesSansHtCherche(ctx, HT_PAR_VISITE)) {
+      try {
+        const ht = await pourLeCompteDe(ctx, async () => lireLeHt(new Uint8Array(await lireObjet(p.fichierCle))));
+        await noterHtCherche(ctx, p.id, ht);
+      } catch (err) {
+        // Non marquée : une panne passagère (l'IA, le stockage) ne la laisse pas
+        // sans HT pour toujours. Elle se relira à la visite suivante.
+        logger.warn("HT d'une facture importée pas encore lu", { piece: p.id, erreur: err instanceof Error ? err.message : String(err) });
+      }
+    }
+  } finally {
+    htEnCours.delete(ctx.entrepriseId);
   }
 }

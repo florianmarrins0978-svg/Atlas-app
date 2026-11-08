@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { and, asc, desc, eq, inArray, isNotNull, isNull, ne, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNotNull, isNull, ne, notInArray, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { chantiers, clients, envoisPieces, piecesImportees } from "../db/schema";
 import type { Ctx } from "./context";
@@ -183,6 +183,10 @@ export async function noterLecture(ctx: Ctx, id: string, champs: ChampsLus): Pro
         numero: champs.numero,
         jour: champs.jour,
         montantTtc: champs.montantTtc,
+        // Le HT trouvé à la lecture est cherché ; absent, `chercherLesHt` le
+        // cherchera une fois, l'IA comprise (sa réponse du 8 novembre 2026).
+        montantHt: champs.montantHt,
+        htChercheLe: champs.montantHt ? new Date() : null,
         nomLu: champs.nomLu,
         adresseLue: champs.adresseLue?.slice(0, 300) ?? null,
         telephoneLu: champs.telephoneLu?.slice(0, 40) ?? null,
@@ -636,6 +640,40 @@ export async function noterObjetCherche(ctx: Ctx, id: string, objet: string | nu
     await tx
       .update(piecesImportees)
       .set({ objet: sql`coalesce(${piecesImportees.objet}, ${objet ? objet.slice(0, 200) : null})`, objetChercheLe: new Date(), updatedAt: new Date() })
+      .where(eq(piecesImportees.id, id));
+  });
+}
+
+/**
+ * Les factures importées dont le HT n'a jamais été cherché : celles d'avant
+ * la migration 0176, et celles dont la lecture ne l'a pas trouvé. Une pièce
+ * encore en lecture attend sa lecture, qui le cherche déjà.
+ */
+export async function facturesSansHtCherche(ctx: Ctx, combien: number): Promise<{ id: string; fichierCle: string }[]> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const lignes = await tx
+      .select({ id: piecesImportees.id, fichierCle: piecesImportees.fichierCle })
+      .from(piecesImportees)
+      .where(
+        and(
+          eq(piecesImportees.genre, "facture"),
+          isNotNull(piecesImportees.fichierCle),
+          isNull(piecesImportees.montantHt),
+          isNull(piecesImportees.htChercheLe),
+          notInArray(piecesImportees.statut, ["a_lire", "en_lecture"])
+        )
+      )
+      .limit(combien);
+    return lignes.map((l) => ({ id: l.id, fichierCle: l.fichierCle! }));
+  });
+}
+
+/** Le HT trouvé, ou rien : la pièce ne se relira plus. Un HT déjà là n'est jamais écrasé. */
+export async function noterHtCherche(ctx: Ctx, id: string, ht: string | null): Promise<void> {
+  await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    await tx
+      .update(piecesImportees)
+      .set({ montantHt: sql`coalesce(${piecesImportees.montantHt}, ${ht})`, htChercheLe: new Date(), updatedAt: new Date() })
       .where(eq(piecesImportees.id, id));
   });
 }

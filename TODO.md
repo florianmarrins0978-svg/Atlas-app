@@ -208,6 +208,14 @@ argent), et aucune batterie n'a été autorisée. Le détail et ce qui reste :
 | PAS éprouvé ici | `test-mon-annee-db.ts` (écrite, elle vide la base) ; l'écran lui-même (il faut le serveur, sur le port 3000) |
 | **reste à faire, lot 2** | « Vos prix », rangés par SES tarifs : faire garder à chaque ligne de devis le tarif d'où elle vient (`proposition-prix.ts` connaît `tarifId`, `lignes_prix` n'a pas de colonne), colonne nullable (expand) ; seuls les devis faits ensuite seront rangés |
 
+**Les factures importées comptent par leur HT, codé le 8 novembre** (sa question
+*« la limite, comment on peut corriger ce problème ? »*, puis *« tu peux les lire
+avec l'IA aussi »*). L'import lit le « Total HT » imprimé, ou le total d'une
+pièce « 293 B » (`pieces_importees.montant_ht`, migration 0176) ; les factures
+importées avant se relisent UNE fois (`chercherLesHt`, dix par visite de Mon
+année, le texte puis l'IA sur ses crédits). Un HT illisible ne se déduit
+jamais du TTC.
+
 **Tranché par lui le 8 novembre** : le rôle Facturation VOIT Mon année
 (*« ils peuvent le voir »*), l'écran et la ligne de Terminés ; il ne pose ni
 l'objectif ni l'interrupteur (`exigerProprietaire`). **Par défaut, à lui

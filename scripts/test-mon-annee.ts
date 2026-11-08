@@ -12,6 +12,7 @@ import {
   etatDeLAnnee,
   etatDeLObjectif,
   faceAnDernier,
+  htDeLaPieceImportee,
   joursOuvres,
   lireEurosSaisis,
   manqueEncore,
@@ -106,6 +107,12 @@ essai("le dernier jour du mois, le mois se compare en entier", () => {
 essai("« pareil » seulement au centime près : 80 € de plus n'est pas pareil", () => {
   assert.equal(sensDeLEcart({ cetteAnnee: 8000, anDernier: 0 }), "plus");
   assert.equal(sensDeLEcart({ cetteAnnee: 0, anDernier: 0 }), "pareil");
+});
+
+essai("une facture importée compte par son HT ; assujetti sans HT lu, elle ne compte pas", () => {
+  assert.equal(htDeLaPieceImportee("900.00", "1080.00", "assujettie"), "900.00");
+  assert.equal(htDeLaPieceImportee(null, "1080.00", "assujettie"), null);
+  assert.equal(htDeLaPieceImportee(null, "500.00", "franchise"), "500.00");
 });
 
 console.log("La saison et le trait");

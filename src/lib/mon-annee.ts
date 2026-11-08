@@ -114,6 +114,20 @@ export function joursOuvres(du: JourIso, au: JourIso, alsaceMoselle = false): nu
   return n;
 }
 
+/**
+ * Le HT d'une facture IMPORTÉE, ou rien. Celui qu'elle imprime (migration
+ * 0176) ; à défaut, en franchise, son total : il n'y a pas de TVA. Assujetti
+ * et sans HT lu, rien : un TTC mêlé à du HT ferait paraître l'an dernier plus
+ * haut qu'il n'était, et le HT ne se déduit pas d'un taux qu'on ne connaît pas.
+ */
+export function htDeLaPieceImportee(
+  montantHt: string | null,
+  montantTtc: string | null,
+  regimeTva: "assujettie" | "franchise"
+): string | null {
+  return montantHt ?? (regimeTva === "franchise" ? montantTtc : null);
+}
+
 // ─── Les sommes ─────────────────────────────────────────────────────────────
 
 /** Ce qui a été facturé entre deux jours, bornes comprises. */

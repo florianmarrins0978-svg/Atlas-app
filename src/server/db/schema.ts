@@ -4345,6 +4345,14 @@ export const piecesImportees = pgTable("pieces_importees", {
   numero: text("numero"),
   jour: date("jour"),
   montantTtc: numeric("montant_ttc", { precision: 12, scale: 2 }),
+  /**
+   * Le total HT lu sur la pièce (migration 0176). NULL : pas lu, jamais déduit
+   * du TTC, dont le taux de TVA varie (10 %, 20 %). En franchise, le document
+   * porte « TVA non applicable, art. 293 B » et le HT est le total à payer.
+   */
+  montantHt: numeric("montant_ht", { precision: 12, scale: 2 }),
+  /** Le HT d'une pièce importée avant lui a été cherché une fois (`chercherLesHt`). */
+  htChercheLe: timestamp("ht_cherche_le", { withTimezone: true }),
   nomLu: text("nom_lu"),
   /** Le titre lu dans la colonne « Objet » d'un tableau (migration 0154). */
   objet: text("objet"),

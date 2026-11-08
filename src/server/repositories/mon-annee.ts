@@ -9,17 +9,17 @@
  * d'émission, moins les avoirs à la leur. Un brouillon n'est parti chez
  * personne.
  *
- * **Les factures IMPORTÉES ne comptent qu'en franchise.** L'import ne lit que
- * leur montant TTC ; en franchise il n'y a pas de TVA, TTC et HT se valent.
- * Assujetti, les compter mêlerait des TTC à des HT, et l'an dernier paraîtrait
- * plus haut qu'il n'était : rien ne s'invente, elles restent dehors.
+ * **Les factures IMPORTÉES comptent par leur HT** (`htDeLaPieceImportee`) :
+ * celui que l'import lit depuis la migration 0176, et que `chercherLesHt`
+ * cherche une fois sur les plus anciennes. Assujetti et sans HT lu, une pièce
+ * reste dehors : rien ne se déduit du TTC.
  */
-import { and, desc, eq, gte, inArray, isNotNull, isNull, lte } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, isNull, lte } from "drizzle-orm";
 import { estEnAlsaceMoselle } from "@/lib/jours-feries";
 import { jourIso } from "@/lib/jour";
 import { centimesDe } from "@/lib/franchise-plafond";
 import { aFacturerPartout, preparer } from "@/lib/termines-par-mois";
-import { enDecimal, type MouvementPourBenefice, type Piece } from "@/lib/mon-annee";
+import { enDecimal, htDeLaPieceImportee, type MouvementPourBenefice, type Piece } from "@/lib/mon-annee";
 import { withEntreprise } from "../db/with-entreprise";
 import {
   avoirs,
@@ -85,8 +85,8 @@ async function lObjectif(tx: Tx, entrepriseId: string, annee: number): Promise<D
   return o ? { chiffreAffaires: centimesDe(o.ca), benefice: centimes(o.benefice) } : null;
 }
 
-/** Les factures émises et les avoirs (et les importées en franchise) entre deux jours. */
-async function lesPieces(tx: Tx, regimeTva: string, du: string, au: string): Promise<Piece[]> {
+/** Les factures émises, les avoirs et les factures importées, en HT, entre deux jours. */
+async function lesPieces(tx: Tx, regimeTva: "assujettie" | "franchise", du: string, au: string): Promise<Piece[]> {
   const emises = await tx
     .select({ jour: factures.dateEmission, ht: factures.totalHt })
     .from(factures)
@@ -95,24 +95,17 @@ async function lesPieces(tx: Tx, regimeTva: string, du: string, au: string): Pro
     .select({ jour: avoirs.dateEmission, ht: avoirs.totalHt })
     .from(avoirs)
     .where(and(gte(avoirs.dateEmission, du), lte(avoirs.dateEmission, au)));
-  const importees =
-    regimeTva === "franchise"
-      ? await tx
-          .select({ jour: piecesImportees.jour, total: piecesImportees.montantTtc })
-          .from(piecesImportees)
-          .where(
-            and(
-              eq(piecesImportees.genre, "facture"),
-              isNotNull(piecesImportees.montantTtc),
-              gte(piecesImportees.jour, du),
-              lte(piecesImportees.jour, au)
-            )
-          )
-      : [];
+  const importees = await tx
+    .select({ jour: piecesImportees.jour, ht: piecesImportees.montantHt, ttc: piecesImportees.montantTtc })
+    .from(piecesImportees)
+    .where(and(eq(piecesImportees.genre, "facture"), gte(piecesImportees.jour, du), lte(piecesImportees.jour, au)));
   return [
     ...emises.map((f) => ({ jour: f.jour, centimes: centimesDe(f.ht) })),
     ...deduits.map((a) => ({ jour: a.jour, centimes: -centimesDe(a.ht) })),
-    ...importees.flatMap((p) => (p.jour && p.total ? [{ jour: p.jour, centimes: centimesDe(p.total) }] : [])),
+    ...importees.flatMap((p) => {
+      const ht = htDeLaPieceImportee(p.ht, p.ttc, regimeTva);
+      return p.jour && ht ? [{ jour: p.jour, centimes: centimesDe(ht) }] : [];
+    }),
   ];
 }
 

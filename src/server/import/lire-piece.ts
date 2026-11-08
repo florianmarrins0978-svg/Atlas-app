@@ -29,7 +29,7 @@ import {
 
 const SYSTEME = `Tu lis un devis ou une facture qu'un artisan a envoyé à son client.
 Tu réponds UNIQUEMENT par un objet JSON, sans phrase avant ni après, sans balises de code :
-{"genre": "devis"|"facture"|null, "numero": string|null, "date": "AAAA-MM-JJ"|null, "montant_ttc": string|null, "client": string|null, "adresse": string|null, "telephone": string|null, "chantier": string|null, "objet": string|null}
+{"genre": "devis"|"facture"|null, "numero": string|null, "date": "AAAA-MM-JJ"|null, "montant_ttc": string|null, "montant_ht": string|null, "client": string|null, "adresse": string|null, "telephone": string|null, "chantier": string|null, "objet": string|null}
 Règles :
 - client : le nom du client destinataire tel qu'il est écrit (« Mme Aubry », « SARL Les Jardins »), jamais celui de l'artisan qui émet le document.
 - adresse : l'adresse du client destinataire, rue, code postal et ville (« 8 rue du Port, 44120 Vertou »), jamais celle de l'artisan, ni le lieu des travaux quand il est écrit à part.
@@ -37,6 +37,7 @@ Règles :
 - chantier : le lieu des travaux (ou d'intervention) quand il est écrit à part et diffère de l'adresse du client, sinon null.
 - objet : le titre du document, ce qui suit « Objet : » (« Elagage », « Taille de haie »), en quelques mots, jamais la liste des lignes.
 - montant_ttc : le total TTC à payer, avec la virgule ou le point tel quel.
+- montant_ht : le total hors taxes, tel qu'il est imprimé. Si le document porte « TVA non applicable » (article 293 B), c'est le total à payer. Jamais calculé depuis le TTC.
 - date : la date du document, pas l'échéance.
 - Tu ne DEVINES jamais : une valeur illisible ou absente vaut null.`;
 
@@ -78,18 +79,23 @@ async function extraireTexteSeul(octets: Uint8Array): Promise<string> {
   }
 }
 
-async function demanderAuTexte(texte: string): Promise<ChampsLus | null> {
-  const r = await getFournisseurLLM().genererTexte(SYSTEME, `${CONSIGNE}\n\n${texte.slice(0, TEXTE_MAX)}`);
-  return r.succes ? relireReponseIA(r.texte) : null;
-}
-
-async function demanderAuScan(octets: Uint8Array): Promise<ChampsLus | null> {
+/**
+ * La réponse brute de l'IA, sur le texte ou sur l'image d'un scan. `null` :
+ * elle n'a PAS répondu (panne, pas de vision). Distinct d'une réponse qui ne
+ * dit rien : la lecture d'une pièce s'en passe, la recherche du HT, non
+ * (`lireLeHt`).
+ */
+async function reponseDeLIA(texte: string, octets: Uint8Array): Promise<string | null> {
+  if (texte.trim().length > 50) {
+    const r = await getFournisseurLLM().genererTexte(SYSTEME, `${CONSIGNE}\n\n${texte.slice(0, TEXTE_MAX)}`);
+    return r.succes ? r.texte : null;
+  }
   const vision = getFournisseurVision();
   if (!vision.lireImages) return null;
   const r = await vision.lireImages(SYSTEME, CONSIGNE, [{ base64: Buffer.from(octets).toString("base64"), mimeType: "application/pdf" }], {
     maxTokens: 400,
   });
-  return r.succes ? relireReponseIA(r.texte) : null;
+  return r.succes ? r.texte : null;
 }
 
 /**
@@ -111,12 +117,35 @@ export async function lirePiece(octets: Uint8Array, artisan: string | null = nul
   if (texteSuffit(parLeTexte)) return parLeTexte;
 
   try {
-    const ia = texte.trim().length > 50 ? await demanderAuTexte(texte) : await demanderAuScan(octets);
-    return fusionnerLectures(ia, parLeTexte);
+    const brut = await reponseDeLIA(texte, octets);
+    return fusionnerLectures(brut === null ? null : relireReponseIA(brut), parLeTexte);
   } catch (err) {
     logger.error("Lecture d'une pièce importée par l'IA impossible", { erreur: err instanceof Error ? err.message : String(err) });
     return parLeTexte;
   }
+}
+
+/**
+ * Le HT seul d'une facture déjà importée (migration 0176). Le texte d'abord,
+ * gratuit ; l'IA seulement s'il ne le dit pas, sur le texte, ou sur l'image
+ * d'un scan. Sa réponse du 8 novembre 2026 : *« tu peux les lire avec l'IA
+ * aussi »*. `null` : le document ne le dit pas, et rien ne se déduit du TTC.
+ *
+ * **Une panne de l'IA LÈVE** : la pièce n'est alors pas marquée « cherchée »,
+ * et se relira à la visite suivante au lieu de rester sans HT pour toujours.
+ */
+export async function lireLeHt(octets: Uint8Array): Promise<string | null> {
+  let texte = "";
+  try {
+    texte = await extraireTexte(octets);
+  } catch (err) {
+    logger.warn("Texte d'une facture importée illisible", { erreur: err instanceof Error ? err.message : String(err) });
+  }
+  const parLeTexte = texte.trim().length > 50 ? lireChampsDuTexte(texte).montantHt : null;
+  if (parLeTexte) return parLeTexte;
+  const brut = await reponseDeLIA(texte, octets);
+  if (brut === null) throw new Error("L'IA n'a pas répondu pour le HT d'une facture importée.");
+  return relireReponseIA(brut)?.montantHt ?? null;
 }
 
 /**

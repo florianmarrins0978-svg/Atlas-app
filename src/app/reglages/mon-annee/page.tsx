@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font } from "@/lib/design-tokens";
 import {
@@ -14,6 +15,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { garderLaPage } from "@/server/garde-page";
 import { estProprietaire } from "@/server/autorisation";
 import { donneesMonAnnee } from "@/server/repositories/mon-annee";
+import { chercherLesHt } from "@/server/import/traiter-pieces";
 import MonAnnee from "./MonAnnee";
 
 export const dynamic = "force-dynamic";
@@ -36,6 +38,9 @@ export default async function MonAnneePage() {
   await garderLaPage();
   const ctx = await getCurrentCtx();
   const d = await donneesMonAnnee(ctx);
+  // Le HT des factures importées avant la migration 0176, cherché après la
+  // réponse : l'écran ne l'attend pas, la visite suivante le compte.
+  after(() => chercherLesHt(ctx));
   // La facturation lit ; le patron seul pose l'objectif et l'interrupteur.
   const modifiable = await estProprietaire(ctx);
 

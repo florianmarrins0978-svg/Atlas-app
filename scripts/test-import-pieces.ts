@@ -114,6 +114,7 @@ async function main() {
       numero: "F2026-000001",
       jour: "2026-04-01",
       montantTtc: "1080.00",
+      montantHt: null,
       nomLu: `${MR} Vasseur`,
       adresseLue: null,
       telephoneLu: "06 22 00 00 22",
@@ -361,12 +362,36 @@ async function main() {
       numero: "F-1",
       jour: null,
       montantTtc: null,
+      montantHt: null,
       nomLu: "SARL Les Tilleuls",
       adresseLue: null,
       telephoneLu: null,
       chantierLu: null,
       objetLu: null,
     });
+  });
+
+  // Le HT (migration 0176) : sa question du 8 novembre 2026 sur la limite des
+  // factures importées. Lu tel qu'imprimé, jamais déduit du TTC.
+  await cas("le HT se lit tel qu'imprimé, le dernier « Total HT »", () => {
+    const t = "FACTURE n° F12 03/03/2025 M. Faucher Total HT 900,00 € TVA 20 % 180,00 € Total TTC 1 080,00 €";
+    assert.equal(lireChampsDuTexte(t).montantHt, "900.00");
+    assert.equal(lireChampsDuTexte(t).montantTtc, "1080.00");
+    assert.equal(lireChampsDuTexte("FACTURE n° F13 Total hors taxes : 450,00 Total TTC 540,00").montantHt, "450.00");
+  });
+
+  await cas("en franchise, « 293 B » imprimé : le HT est le total à payer", () => {
+    const t = "FACTURE n° 7 12/05/2025 Mme Lenoir Net à payer 500,00 € TVA non applicable, art. 293 B du CGI";
+    assert.equal(lireChampsDuTexte(t).montantHt, "500.00");
+  });
+
+  await cas("sans « Total HT » ni « 293 B », le HT reste inconnu : rien ne se déduit du TTC", () => {
+    assert.equal(lireChampsDuTexte("FACTURE n° F14 M. Bernard Total TTC 1 200,00 €").montantHt, null);
+  });
+
+  await cas("l'IA rend le HT, et un HT hors forme est écarté", () => {
+    assert.equal(relireReponseIA('{"genre":"facture","montant_ttc":"1080,00","montant_ht":"900,00"}')?.montantHt, "900.00");
+    assert.equal(relireReponseIA('{"genre":"facture","montant_ht":"neuf cents"}')?.montantHt, null);
   });
 
   await cas("l'IA complète le texte sans l'écraser par du vide", () => {

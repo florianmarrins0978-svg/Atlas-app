@@ -26,11 +26,12 @@
 | Il reste à facturer : d'ici le 31 décembre, ce mois, par jour, mois par mois | codé | `resteMoisParMois` |
 | Ce qui peut encore rentrer, et ce qu'il manque encore de devis signés | codé | `donneesMonAnnee`, `manqueEncore` |
 | Le bénéfice, sur 1 000 € encaissés, et son compte | codé | `beneficeEstime` |
+| Les factures importées comptent par leur HT, les anciennes relues une fois (avec l'IA) | codé | `lireChampsDuTexte`, `lireLeHt`, `chercherLesHt`, `htDeLaPieceImportee` |
 | **Vos prix, par vos tarifs** | **pas codé : lot 2** | voir plus bas |
 
 ## Ce qui a été fait autrement que la planche, et pourquoi
 
-- **Les factures importées ne comptent qu'en franchise de TVA.** L'import ne lit que leur montant TTC. Mêlé à du HT, l'an dernier paraîtrait plus haut qu'il n'était. Une entreprise assujettie qui n'a que des factures importées pour 2025 n'aura donc ni saison, ni Face à 2025, tant que ses factures de 2025 ne sont pas faites dans Atlas.
+- **Les factures importées comptent par leur HT.** L'import ne lisait que le TTC ; il lit désormais le « Total HT » imprimé, ou le total d'une facture en franchise (« 293 B »). Les factures importées avant se relisent une fois, dix à chaque ouverture de Mon année : le texte d'abord, l'IA ensuite, sur vos crédits (votre réponse : « tu peux les lire avec l'IA aussi »). **Une facture dont le HT reste illisible ne compte pas** : le HT ne se déduit pas du TTC, le taux varie.
 - **Sans année dernière dans l'appli, ni trait, ni retard, ni Face à 2025.** Rien ne s'invente. Le reste à facturer se répartit alors sur les jours ouvrés.
 - **« Pareil » ne se dit que de deux montants égaux.** La planche disait « Pareil » sous 100 € d'écart : 80 € de plus n'est pas pareil.
 - **Une sortie de banque sans pièce compte comme une dépense.** Elle est partie ; l'ignorer gonflerait le bénéfice. Le compte la montre à part : « Pas encore justifié ».
@@ -50,7 +51,8 @@
 |---|---|
 | Types (`tsc`) | vert |
 | Style (`eslint`, fichiers du lot) | vert |
-| `test-mon-annee.ts` (règles pures, 28 cas) | vert ; **vu rouge** en cassant volontairement la règle « au même jour » |
+| `test-mon-annee.ts` (règles pures) | vert ; **vu rouge** en cassant volontairement la règle « au même jour » |
+| `test-import-pieces.ts` (lecture du HT) | vert ; **vu rouge** en déduisant le HT du TTC |
 | Accès, rubriques, couches, code mort, pansements, tirets, flèches, chartes | verts |
 | `test-mon-annee-db.ts` (isolation entre entreprises, objectif, interrupteur, factures émises) | **écrite, pas jouée** : elle vide la base, et aucune batterie n'était autorisée |
 | L'écran lui-même | **pas regardé ici** : il faut le serveur, et donc son accord |

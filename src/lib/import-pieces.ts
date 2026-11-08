@@ -82,6 +82,12 @@ export type ChampsLus = {
   jour: string | null;
   /** « 1250.00 » */
   montantTtc: string | null;
+  /**
+   * Le total HT imprimé (migration 0176), ou le total à payer d'une pièce en
+   * franchise, qui porte « TVA non applicable, art. 293 B ». **Jamais déduit du
+   * TTC** : le taux varie d'une ligne à l'autre (10 %, 20 %).
+   */
+  montantHt: string | null;
   nomLu: string | null;
   /**
    * Ce qu'un tableau donne en colonnes, pour que le PDF passe par le même écran
@@ -105,6 +111,7 @@ export const RIEN_LU: ChampsLus = {
   numero: null,
   jour: null,
   montantTtc: null,
+  montantHt: null,
   nomLu: null,
   adresseLue: null,
   telephoneLu: null,
@@ -672,6 +679,14 @@ export function lireChampsDuTexte(brut: string, artisan: string | null = null): 
   for (const m of texte.matchAll(/(?:total\s*TTC|net\s*à\s*payer|montant\s*TTC)\s*:?\s*(?:€\s*)?(\d[\d\s  .]*,\d{2}|\d+\.\d{2})/gi)) {
     montantTtc = montantLu(m[1]) ?? montantTtc;
   }
+  // Le DERNIER « Total HT », pour la même raison. En franchise, la pièce imprime
+  // « TVA non applicable, art. 293 B » : il n'y a pas de TVA, le HT est le total
+  // à payer. Ce n'est pas une déduction, c'est ce que le document dit.
+  let montantHt: string | null = null;
+  for (const m of texte.matchAll(/(?:total\s*H\.?\s*T\.?|montant\s*H\.?\s*T\.?|total\s*hors\s*taxes?)\s*:?\s*(?:€\s*)?(\d[\d\s  .]*,\d{2}|\d+\.\d{2})/gi)) {
+    montantHt = montantLu(m[1]) ?? montantHt;
+  }
+  if (!montantHt && montantTtc && /293\s*B/i.test(texte)) montantHt = montantTtc;
 
   // Le nom se cherche AVANT le recollage : recollées, les capitales espacées
   // d'un titre de tableau (« D É S I G N A T I O N ») deviennent un mot qui se
@@ -683,6 +698,7 @@ export function lireChampsDuTexte(brut: string, artisan: string | null = null): 
     numero,
     jour,
     montantTtc,
+    montantHt,
     nomLu: client?.nom ?? null,
     ...coordonneesApresLeNom(plat, client),
     chantierLu: null,
@@ -701,6 +717,7 @@ export function fusionnerLectures(ia: ChampsLus | null, texte: ChampsLus): Champ
     numero: ia.numero ?? texte.numero,
     jour: ia.jour ?? texte.jour,
     montantTtc: ia.montantTtc ?? texte.montantTtc,
+    montantHt: ia.montantHt ?? texte.montantHt,
     nomLu: ia.nomLu ?? texte.nomLu,
     adresseLue: ia.adresseLue ?? texte.adresseLue,
     telephoneLu: ia.telephoneLu ?? texte.telephoneLu,
@@ -736,6 +753,7 @@ export function relireReponseIA(texte: string): ChampsLus | null {
   const jourBrut = chaine(o.date, 10);
   const jour = jourBrut && /^\d{4}-\d{2}-\d{2}$/.test(jourBrut) ? jourIsoDe(jourBrut.slice(8), jourBrut.slice(5, 7), jourBrut.slice(0, 4)) : null;
   const montant = chaine(o.montant_ttc, 20);
+  const ht = chaine(o.montant_ht, 20);
   const telephone = chaine(o.telephone, 30);
   const adresse = chaine(o.adresse, 300);
   const chantier = chaine(o.chantier, 300);
@@ -744,6 +762,7 @@ export function relireReponseIA(texte: string): ChampsLus | null {
     numero: chaine(o.numero, 40),
     jour,
     montantTtc: montant ? montantLu(montant) : null,
+    montantHt: ht ? montantLu(ht) : null,
     nomLu: chaine(o.client, 120),
     adresseLue: adresse,
     // Un numéro qui n'en est pas un ne rapproche personne : il en séparerait deux.
