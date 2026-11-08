@@ -54,16 +54,25 @@ et insère les données de démonstration. Les fois suivantes, quelques secondes
 
 Vous saurez que c'est prêt quand le terminal affiche **« Atlas est prêt »**.
 
-> **Un espace de travail est figé à sa création.** Il garde la version du dépôt
-> qu'il avait ce jour-là, y compris sa base de données. Quand du travail neuf
-> arrive sur `main`, un ancien espace ne le voit pas — et échoue de façon
-> déroutante, par exemple sur `Missing script: "essai"`.
+> **Un seul espace, une seule base.** Vos chantiers, vos clients et vos
+> factures vivent dans la base de CET espace, et nulle part ailleurs. Un
+> deuxième espace a sa propre base, vide : l'application y paraît vierge, avec
+> le même compte. C'est ce qu'il a vu sur son PC le 8 novembre 2026 : son
+> téléphone ouvrait un espace, son PC un autre.
 >
-> **Le réflexe : en créer un neuf**, plutôt que de rattraper l'ancien. Un
-> `git pull` ramènerait les fichiers mais pas la base, qui n'est montée qu'à la
-> création — et l'erreur suivante serait plus obscure que la première.
+> **Sur un autre appareil, ouvrez la MÊME adresse** que sur le téléphone
+> (`https://<nom-de-l-espace>-3000.app.github.dev`). C'est l'adresse qui porte
+> vos données, pas l'appareil. N'ouvrez pas d'espace de plus.
 >
-> Supprimer l'ancien : `github.com/codespaces`, menu **⋯** → **Delete**.
+> **L'espace se met à jour tout seul**, à chaque allumage : le code de `main`
+> (`mettre-a-jour.sh`) et le schéma de la base (`appliquer-migrations.sh`). Il
+> n'y a donc aucune raison d'en créer un neuf. **Et un espace ne se supprime
+> pas** : sa base part avec lui (`CLAUDE.md` §4 septies).
+>
+> *Corrigé le 8 novembre 2026.* Ce paragraphe disait « un espace est figé à sa
+> création ; le réflexe : en créer un neuf, puis supprimer l'ancien ». C'était
+> faux depuis que le démarrage met à jour le code et la base, et c'était le
+> chemin exact vers deux bases, puis vers des données effacées.
 
 ### 2. Ne rien faire
 

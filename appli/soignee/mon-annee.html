@@ -452,7 +452,10 @@
       var fait = s.mois[i], avant = partiel ? an2025Jusquau(i, jour) : MOIS_2025[i], n = fait - avant;
       var ecart = Math.abs(n) < 100 ? "<small>Pareil</small>"
         : '<small class="' + (n > 0 ? "plus" : "moins") + '">' + e(Math.abs(n)) + (n > 0 ? " de plus" : " de moins") + "</small>";
-      h += "<tr><td>" + Maj(MOIS[i]) + (partiel ? "<small>Du 1er au " + jour + "</small>" : "") + "</td>" +
+      /* Le jour avant le mois, toujours : « du 1er au 8 novembre », jamais
+         « novembre, au 8 » (sa remarque du 8 novembre : « la date est à
+         l'envers »). */
+      h += "<tr><td>" + (partiel ? "Du 1er au " + jour + " " + MOIS[i] : Maj(MOIS[i])) + "</td>" +
         "<td>" + e(avant) + "</td><td>" + e(fait) + ecart + "</td></tr>";
     }
     return h + '</tbody></table><button class="bouton-texte fermer" type="button" data-ferme>Fermer</button>';
@@ -472,7 +475,7 @@
   function rendreAnnee(cle) {
     var c = calculer(cle), s = c.s, h = "";
     var jourLu = new Date(s.jour).getUTCDate() + " " + MOIS[new Date(s.jour).getUTCMonth()];
-    document.querySelector("[data-annee-situation]").textContent = "2026, au " + jourLu;
+    document.querySelector("[data-annee-situation]").textContent = "Au " + jourLu + " 2026";
 
     if (c.vide) {
       h += '<div class="plage vide-annee"><p class="vide-titre">Pas encore d\'objectif</p>' +
@@ -505,7 +508,7 @@
       var premier = c.mois[0];
       h += '<h2 class="rubrique">Il reste à facturer</h2><section class="plage">' +
         ligne("D'ici le 31 décembre", e(c.reste), "fort") +
-        ligne(Maj(MOIS[premier.m]) + (premier.entier ? "" : ", d'ici le " + new Date(finDuMois(premier.m)).getUTCDate()) +
+        ligne((premier.entier ? Maj(MOIS[premier.m]) : "D'ici le " + new Date(finDuMois(premier.m)).getUTCDate() + " " + MOIS[premier.m]) +
           "<small>" + pluriel(premier.jours, "jour travaillé", "jours travaillés") + "</small>", e(premier.montant)) +
         ligne("Par jour travaillé", e(dix(premier.montant / premier.jours)));
       if (c.mois.length > 1) h += '<button class="bouton-texte or" type="button" data-ouvre="f-mois">Mois par mois</button>';

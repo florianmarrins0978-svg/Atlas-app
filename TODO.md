@@ -1,5 +1,24 @@
 # Prochaines tâches
 
+## ⏳ À CHOISIR PAR LUI (8 novembre 2026) : au planning, un client sans fiche, A ou B
+
+Sa demande, photo du planning à l'appui : *« soit rechercher un client, soit
+décider de créer une fiche, sans créer un contact ; une touche pour dire que sa
+fiche ne sera pas créée »*.
+
+**Aujourd'hui** (`src/app/planning/AjoutDunClient.tsx`) : un nom inconnu ouvre
+toujours Téléphone, E-mail, Adresse, et la fiche se crée (sa décision du
+10 septembre 2026). Le seul chemin sans fiche est « Autre chose »
+(`poserDuTempsAction`, un chantier sans client).
+
+**La planche** : `appli/soignee/planning-sans-fiche.html`. A : deux mots sous le
+nom, « Créer sa fiche » (d'office) ou « Sans fiche », au dessin de Matin,
+Après-midi, Journée (conseillé). B : la phrase d'aujourd'hui et une case.
+Sans fiche, le nom va seul au planning, comme « Autre chose ».
+
+**Aussi à trancher** : un devis fait plus tard à ce nom ; proposé : créer sa
+fiche à ce moment-là.
+
 ## ~~⏳ À CHOISIR PAR LUI (8 novembre 2026) : sur ordinateur, la largeur de la colonne~~ TRANCHÉ LE 8 NOVEMBRE : 672 PX ; CODÉ LE 8 NOVEMBRE, batterie entière à jouer (plancher : `globals.css`)
 
 Sa demande, photo de son portable à l'appui : *« les bandes s'étirent jusqu'au
@@ -24,6 +43,17 @@ mesurer la colonne.
 de 10 px de chaque côté (`mx-4` contre `mx-[26px]`, `src/app/paysage/page.tsx`),
 téléphone compris. Proposé à part sur la planche.
 
+## La fiche de l'espace ne dit pas QUEL espace l'a écrite (8 novembre 2026)
+
+Deux espaces allumés (son PC et son téléphone) réécrivent la même fiche n°47
+tour à tour, et rien n'y dit lequel parle : une session qui la lit croit lire
+l'espace du téléphone et peut lire celui du PC. Le 8 novembre, c'est ainsi
+qu'Atlas « vide sur PC » s'expliquait par un autre espace, avec une autre
+base. **À faire** : publier `CODESPACE_NAME` dans la fiche
+(`scripts/rapporter-espace.mjs`), et dire en tête quand deux noms
+différents l'ont écrite dans la dernière heure. Pas codé : pas demandé ce
+jour-là.
+
 ## ⏳ À CHOISIR PAR LUI (8 novembre 2026) : Mon année, l'objectif de chiffre d'affaires et de bénéfice
 
 **Sa demande du 8 novembre** : *« pouvoir se mettre des objectifs : cette
@@ -46,7 +76,10 @@ et « … 2025 », la date écrite en entier, puis l'écart. « Depuis janvier �
 ligne « novembre 2025 entier » sont retirés ; **la feuille de tous les mois
 revient** (*« pouvoir voir tous les mois, ça c'est bien »*), en tableau
 Mois, 2025, 2026 et l'écart. **« Déjà en main » devient « Ce qui peut encore
-rentrer »** : il ne comprenait pas le titre.
+rentrer »** : il ne comprenait pas le titre. **Le jour avant le mois, partout**
+(*« la date est toujours à l'envers »*) : « Au 8 novembre 2026 », « D'ici le
+30 novembre », « Du 1er au 8 novembre », jamais « 2026, au 8 novembre » ni
+« Novembre, d'ici le 30 ».
 **Tranché par lui le 8 novembre** : *« il faut comparer le jour, le 8 avec le
 8 de l'année dernière »*. La comparaison au même jour du calendrier est donc
 retenue ; elle ne se redemande pas.
@@ -2379,6 +2412,21 @@ numéro » de la planche ne le sert pas. Pour lui, les voies sont une structure
 à part dédiée aux services à la personne, ou une coopérative comme Unipros
 (c'est exactement ce qu'elle vend). La frontière entre « taille des arbres »
 (dedans) et « élagage » (dehors) est à faire préciser par la DDETS.
+
+**« Le devis sur Atlas, la facture par une coopérative » : pas tel quel
+(8 novembre 2026).** Sa proposition pour l'élagueur à 81 % : faire le devis
+dans Atlas, l'envoyer à une coopérative existante qui fait la facture. Deux
+obstacles, lus le même jour : (1) la règle officielle (servicesalapersonne.gouv.fr,
+« comment demander une déclaration ») veut que les DEVIS et les factures
+portent la mention de la déclaration ; l'organisme déclaré étant la
+coopérative, le devis doit porter SON numéro, son logo et ses CGV (celles
+d'Unipros se signent avec le devis) ; un devis d'Atlas au nom de l'artisan
+ne le fait pas ; (2) chez Unipros, *« vous créez le devis depuis votre espace
+Unipros »* (page « services à la personne », étape 01), puis la facture part
+*« à l'entête de la coopérative »*. Seule la coopérative peut dire si elle
+accepte un devis fait ailleurs, à son en-tête, ou un import. Un chantier qui
+mêle élagage et taille donne deux devis et deux émetteurs : l'élagage chez
+l'artisan, la taille chez la coopérative.
 
 **Ses deux remarques suivantes, le même jour :**
 
