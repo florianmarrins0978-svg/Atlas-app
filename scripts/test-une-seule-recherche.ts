@@ -72,7 +72,10 @@ export function recherchesHorsDeLaBarre(html: string): string[] {
     const avant = html.slice(0, m.index ?? 0);
     const ouverture = avant.lastIndexOf('class="champ-recherche');
     const fermeture = Math.max(avant.lastIndexOf("</div>"), avant.lastIndexOf("</label>"));
-    const dansLaBarre = ouverture >= 0 && ouverture > fermeture;
+    // `atlas-recherche` n'est peint que par `ChampRecherche` : un champ qui la
+    // porte EST la barre de l'appli, figée sur une planche posée sur le vrai écran.
+    const barreDeLAppli = /\bclass="atlas-recherche\b/.test(balise);
+    const dansLaBarre = barreDeLAppli || (ouverture >= 0 && ouverture > fermeture);
     const enBoite = /\bclass="[^"]*\b(?:champ-saisie|case-saisie)\b/.test(balise);
     if (!dansLaBarre || enBoite) fautes.push(balise.slice(0, 120));
   }
@@ -99,6 +102,14 @@ cas("le contrôle des planches sait rougir : la boîte du 31 octobre est refusé
   const juste =
     '<div class="champ-recherche"><svg class="ico"><use href="#i-loupe"/></svg><input type="text" inputmode="search" placeholder="Un nom de client" aria-label="Chercher un client"></div>';
   assert.equal(recherchesHorsDeLaBarre(juste).length, 0, "la barre du kit est refusée : le contrôle accuse à tort");
+  // **Une planche posée sur le VRAI écran figé** (sa demande du 8 novembre
+  // 2026 : *« c'est pas la vraie page, donc c'est de la merde »*) porte la
+  // barre que `ChampRecherche` a peinte, et elle seule fait `atlas-recherche`.
+  const figee =
+    '<div class="relative flex items-center gap-[12px] border-b-[1.5px]"><svg></svg><input type="text" inputmode="search" placeholder="Chercher un nom, un titre, un montant" aria-label="Chercher un nom, un titre, un montant" class="atlas-recherche min-w-0 flex-1 border-0 bg-transparent py-[11px] outline-none" value=""></div>';
+  assert.equal(recherchesHorsDeLaBarre(figee).length, 0, "la vraie barre de l'appli, figée, est refusée : le contrôle accuse à tort");
+  const enBoite = figee.replace('class="atlas-recherche', 'class="atlas-recherche champ-saisie');
+  assert.equal(recherchesHorsDeLaBarre(enBoite).length, 1, "la barre de l'appli mise en boîte passait");
 });
 
 cas("la barre de l'appli existe, et le kit des planches la porte", () => {
