@@ -646,7 +646,7 @@ export async function noterObjetCherche(ctx: Ctx, id: string, objet: string | nu
 
 /**
  * Les factures importées dont le HT n'a jamais été cherché : celles d'avant
- * la migration 0176, et celles dont la lecture ne l'a pas trouvé. Une pièce
+ * la migration 0181, et celles dont la lecture ne l'a pas trouvé. Une pièce
  * encore en lecture attend sa lecture, qui le cherche déjà.
  */
 export async function facturesSansHtCherche(ctx: Ctx, combien: number): Promise<{ id: string; fichierCle: string }[]> {

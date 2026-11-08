@@ -200,13 +200,13 @@ un booléen par entreprise, faux par défaut (expand, colonne nullable ou
 `default false`).
 
 **CODÉ LE 8 NOVEMBRE** (son « tu peux coder ça. Ne lance pas de batterie »),
-sur `claude/eager-cori-g7qv8y`, **pas sur `main`** : niveau 3 (migration 0176,
+sur `claude/eager-cori-g7qv8y`, **pas sur `main`** : niveau 3 (migration 0181,
 argent), et aucune batterie n'a été autorisée. Le détail et ce qui reste :
 `docs/mon-annee.md`, `ARCHITECTURE.md` §569.
 
 | | |
 |---|---|
-| codé | l'objectif (migration 0176), Réglages, Mon année (rubrique en tête de L'entreprise), l'interrupteur « Afficher sur Terminés » éteint de base, la ligne sur Terminés, le chiffre et sa saison, Face à l'an dernier (le jour, du 1er au jour, tous les mois), le reste mois par mois, ce qui peut encore rentrer, le bénéfice sur la banque, **Vos prix** rangés par ses tarifs (`src/lib/vos-prix.ts`), le plafond de la franchise dans la feuille de l'objectif |
+| codé | l'objectif (migration 0181), Réglages, Mon année (rubrique en tête de L'entreprise), l'interrupteur « Afficher sur Terminés » éteint de base, la ligne sur Terminés, le chiffre et sa saison, Face à l'an dernier (le jour, du 1er au jour, tous les mois), le reste mois par mois, ce qui peut encore rentrer, le bénéfice sur la banque, **Vos prix** rangés par ses tarifs (`src/lib/vos-prix.ts`), le plafond de la franchise dans la feuille de l'objectif |
 | éprouvé ici | types, style, `test-mon-annee.ts` et `test-vos-prix.ts` (chacune vue rouge en cassant une règle), accès, rubriques, couches, code mort, pansements, tirets, flèches, chartes |
 | PAS éprouvé ici | `test-mon-annee-db.ts` (écrite, elle vide la base) ; l'écran lui-même (il faut le serveur, sur le port 3000) |
 | **reste à faire** | son « oui » pour la batterie, puis `main` |
@@ -214,7 +214,7 @@ argent), et aucune batterie n'a été autorisée. Le détail et ce qui reste :
 **Les factures importées comptent par leur HT, codé le 8 novembre** (sa question
 *« la limite, comment on peut corriger ce problème ? »*, puis *« tu peux les lire
 avec l'IA aussi »*). L'import lit le « Total HT » imprimé, ou le total d'une
-pièce « 293 B » (`pieces_importees.montant_ht`, migration 0176) ; les factures
+pièce « 293 B » (`pieces_importees.montant_ht`, migration 0181) ; les factures
 importées avant se relisent UNE fois (`chercherLesHt`, dix par visite de Mon
 année, le texte puis l'IA sur ses crédits). Un HT illisible ne se déduit
 jamais du TTC.

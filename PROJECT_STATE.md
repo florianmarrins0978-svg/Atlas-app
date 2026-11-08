@@ -2,7 +2,7 @@
 
 ## MON ANNÉE, CODÉE (8 novembre 2026), PAS SUR `main`
 
-Sur `claude/eager-cori-g7qv8y`. Niveau 3 (migration 0176, argent) : elle
+Sur `claude/eager-cori-g7qv8y`. Niveau 3 (migration 0181, argent) : elle
 attend sa batterie, qu'il n'a pas autorisée. Codé : Réglages, Mon année, son
 interrupteur de Terminés, l'objectif, la saison, l'an dernier au même jour,
 le reste mois par mois, ce qui peut encore rentrer, le bénéfice sur la banque,

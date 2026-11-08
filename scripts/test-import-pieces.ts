@@ -371,7 +371,7 @@ async function main() {
     });
   });
 
-  // Le HT (migration 0176) : sa question du 8 novembre 2026 sur la limite des
+  // Le HT (migration 0181) : sa question du 8 novembre 2026 sur la limite des
   // factures importées. Lu tel qu'imprimé, jamais déduit du TTC.
   await cas("le HT se lit tel qu'imprimé, le dernier « Total HT »", () => {
     const t = "FACTURE n° F12 03/03/2025 M. Faucher Total HT 900,00 € TVA 20 % 180,00 € Total TTC 1 080,00 €";

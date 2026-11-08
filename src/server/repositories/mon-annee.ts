@@ -10,7 +10,7 @@
  * personne.
  *
  * **Les factures IMPORTÉES comptent par leur HT** (`htDeLaPieceImportee`) :
- * celui que l'import lit depuis la migration 0176, et que `chercherLesHt`
+ * celui que l'import lit depuis la migration 0181, et que `chercherLesHt`
  * cherche une fois sur les plus anciennes. Assujetti et sans HT lu, une pièce
  * reste dehors : rien ne se déduit du TTC.
  */

@@ -38,7 +38,7 @@ export default async function MonAnneePage() {
   await garderLaPage();
   const ctx = await getCurrentCtx();
   const d = await donneesMonAnnee(ctx);
-  // Le HT des factures importées avant la migration 0176, cherché après la
+  // Le HT des factures importées avant la migration 0181, cherché après la
   // réponse : l'écran ne l'attend pas, la visite suivante le compte.
   after(() => chercherLesHt(ctx));
   // La facturation lit ; le patron seul pose l'objectif et l'interrupteur.

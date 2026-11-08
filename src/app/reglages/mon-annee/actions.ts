@@ -30,7 +30,7 @@ export async function ecrireObjectifAction(chiffreAffaires: string, benefice: st
   } catch {
     return { ok: false, raison: "Seul le patron pose l'objectif." };
   }
-  // La même règle que l'écran, et que les CHECK de la migration 0176.
+  // La même règle que l'écran, et que les CHECK de la migration 0181.
   const lu = objectifValide(chiffreAffaires, benefice);
   if (!lu.ok) return lu;
   try {

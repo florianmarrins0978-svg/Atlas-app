@@ -97,7 +97,7 @@ const HT_PAR_VISITE = 10;
 const htEnCours = new Set<string>();
 
 /**
- * LE HT DES FACTURES IMPORTÉES AVANT LUI (migration 0176), cherché une fois.
+ * LE HT DES FACTURES IMPORTÉES AVANT LUI (migration 0181), cherché une fois.
  * Sa question du 8 novembre 2026 : *« la limite, comment on peut corriger ce
  * problème ? »* ; Mon année ne compte une facture importée qu'en HT, et
  * l'import ne lisait que le TTC.

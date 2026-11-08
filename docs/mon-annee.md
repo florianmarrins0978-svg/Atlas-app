@@ -17,7 +17,7 @@
 |---|---|---|
 | Mon année dans Réglages, en tête de L'entreprise | codé | `src/lib/rubriques-reglages.ts` |
 | Le patron y entre et écrit ; la facturation lit (sa réponse : « ils peuvent le voir ») ; ni commercial ni salarié | codé | `src/lib/acces-roles.ts` (`REGLAGES_DE_LA_FACTURATION`), `exigerProprietaire` dans les actions |
-| L'objectif de l'année : chiffre d'affaires HT, bénéfice facultatif | codé | migration `drizzle/0176_mon_annee.sql`, `src/app/reglages/mon-annee/actions.ts` |
+| L'objectif de l'année : chiffre d'affaires HT, bénéfice facultatif | codé | migration `drizzle/0181_mon_annee.sql`, `src/app/reglages/mon-annee/actions.ts` |
 | « Afficher sur Terminés », au-dessus de Face à 2025, **éteint de base** | codé | colonne `entreprises.mon_annee_sur_termines`, faux par défaut |
 | La ligne sous les deux boutons de Terminés, seulement allumée | codé | `src/components/atlas/LigneMonAnnee.tsx`, `src/app/termines/page.tsx` |
 | Le chiffre, sa jauge, le trait de la saison, le retard ou l'avance | codé | `etatDeLAnnee`, `src/lib/mon-annee.ts` |

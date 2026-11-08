@@ -83,7 +83,7 @@ export type ChampsLus = {
   /** « 1250.00 » */
   montantTtc: string | null;
   /**
-   * Le total HT imprimé (migration 0176), ou le total à payer d'une pièce en
+   * Le total HT imprimé (migration 0181), ou le total à payer d'une pièce en
    * franchise, qui porte « TVA non applicable, art. 293 B ». **Jamais déduit du
    * TTC** : le taux varie d'une ligne à l'autre (10 %, 20 %).
    */

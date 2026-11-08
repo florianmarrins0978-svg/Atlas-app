@@ -126,7 +126,7 @@ export async function lirePiece(octets: Uint8Array, artisan: string | null = nul
 }
 
 /**
- * Le HT seul d'une facture déjà importée (migration 0176). Le texte d'abord,
+ * Le HT seul d'une facture déjà importée (migration 0181). Le texte d'abord,
  * gratuit ; l'IA seulement s'il ne le dit pas, sur le texte, ou sur l'image
  * d'un scan. Sa réponse du 8 novembre 2026 : *« tu peux les lire avec l'IA
  * aussi »*. `null` : le document ne le dit pas, et rien ne se déduit du TTC.

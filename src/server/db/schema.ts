@@ -382,7 +382,7 @@ export const entreprises = pgTable("entreprises", {
   /** L'e-mail parti sept jours avant l'effacement (`aPrevenir`), une seule fois. */
   prevenuLe: timestamp("prevenu_le", { withTimezone: true }),
   /**
-   * Mon année se montre-t-elle aussi sur Terminés (migration 0176) ? Sa règle
+   * Mon année se montre-t-elle aussi sur Terminés (migration 0181) ? Sa règle
    * du 8 novembre 2026 : *« il ne faut pas que ça s'affiche de base »*. Faux
    * tant qu'il ne l'a pas allumé, dans Réglages, Mon année.
    */
@@ -4271,7 +4271,7 @@ export const demandesEnvoyees = pgTable("demandes_envoyees", {
 });
 
 /**
- * L'objectif d'une année civile (migration 0176, sa planche « Mon année » du
+ * L'objectif d'une année civile (migration 0181, sa planche « Mon année » du
  * 8 novembre 2026). Le chiffre d'affaires HT est obligatoire, le bénéfice
  * facultatif. Une année neuve part SANS objectif : rien n'est recopié de l'an
  * dernier. Les bornes sont celles de `objectifValide` (`src/lib/mon-annee.ts`),
@@ -4346,7 +4346,7 @@ export const piecesImportees = pgTable("pieces_importees", {
   jour: date("jour"),
   montantTtc: numeric("montant_ttc", { precision: 12, scale: 2 }),
   /**
-   * Le total HT lu sur la pièce (migration 0176). NULL : pas lu, jamais déduit
+   * Le total HT lu sur la pièce (migration 0181). NULL : pas lu, jamais déduit
    * du TTC, dont le taux de TVA varie (10 %, 20 %). En franchise, le document
    * porte « TVA non applicable, art. 293 B » et le HT est le total à payer.
    */

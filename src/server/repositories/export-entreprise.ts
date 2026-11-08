@@ -502,7 +502,7 @@ export async function exporterEntreprise(
       // Les factures d'abonnement qu'Atlas lui a émises (migration 0175) : ses
       // factures d'achat, que son comptable lui réclamera. Leur PDF part avec.
       tx.select().from(facturesAtlas).where(eq(facturesAtlas.entrepriseId, e)),
-      // Ses objectifs de l'année (migration 0176) : SA saisie, que rien ne
+      // Ses objectifs de l'année (migration 0181) : SA saisie, que rien ne
       // reconstitue.
       tx.select().from(objectifsAnnee).where(eq(objectifsAnnee.entrepriseId, e)),
     ]);

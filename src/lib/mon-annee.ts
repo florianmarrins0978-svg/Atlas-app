@@ -117,7 +117,7 @@ export function joursOuvres(du: JourIso, au: JourIso, alsaceMoselle = false): nu
 
 /**
  * Le HT d'une facture IMPORTÉE, ou rien. Celui qu'elle imprime (migration
- * 0176) ; à défaut, en franchise, son total : il n'y a pas de TVA. Assujetti
+ * 0181) ; à défaut, en franchise, son total : il n'y a pas de TVA. Assujetti
  * et sans HT lu, rien : un TTC mêlé à du HT ferait paraître l'an dernier plus
  * haut qu'il n'était, et le HT ne se déduit pas d'un taux qu'on ne connaît pas.
  */
@@ -441,7 +441,7 @@ export function lireEurosSaisis(texte: string): number | null {
 
 export type ObjectifLu = { ok: true; chiffreAffaires: number; benefice: number | null } | { ok: false; raison: string };
 
-/** Les mêmes bornes que les CHECK de la migration 0176. */
+/** Les mêmes bornes que les CHECK de la migration 0181. */
 export function objectifValide(chiffreAffaires: string, benefice: string): ObjectifLu {
   const ca = lireEurosSaisis(chiffreAffaires);
   if (ca === null) return { ok: false, raison: "Le chiffre d'affaires manque." };
