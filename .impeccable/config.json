@@ -777,6 +777,15 @@
         ],
         "createdAt": "2026-11-08T10:27:34.003Z",
         "reason": "charte existante d'Atlas : fond crème repris d'Arborea (PRODUCT.md, Brand Commitments) ; la planche montre ses vrais écrans dans leur monde"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/planning-sans-fiche.html"
+        ],
+        "createdAt": "2026-11-08T11:25:24.370Z",
+        "reason": "charte existante d'Atlas : fond crème du kit des planches (appli/soignee/kit.css), repris d'Arborea (PRODUCT.md)"
       }
     ]
   }
