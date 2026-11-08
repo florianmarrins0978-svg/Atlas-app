@@ -1,5 +1,70 @@
 # Prochaines tâches
 
+## ⏳ À REGARDER PAR LUI (8 novembre 2026) : la fiche de chantier, soignée
+
+Sa demande, capture à l'appui : *« tu peux me faire une planche de cette
+page-là, l'idée ça serait de faire cette page en plus jolie ; inspire-toi de
+ce qu'on a déjà amélioré : les couleurs, la forme des catégories, les
+boutons »*.
+
+**La planche** : `appli/fiche-de-chantier-soignee.html`, sur le vrai écran
+figé (`/paysage/fiche`, base de démonstration : Mme Costa et « Sans client »
+en cours, trois rapports en novembre, un en octobre). A, B et Aujourd'hui ;
+Retirer, Annuler, le mois, la roue du jour et la recherche répondent.
+
+**SA PREMIÈRE RÉPONSE, LE SOIR MÊME : NON.** *« Ce que tu as mis là, comme si
+c'était la première page chantier, j'aime pas du tout. »* La première
+version prenait tout à Vos chantiers (cartes ambre « Reprendre », frise
+datée, compteur « En cours 2 ») : **cet écran ne doit pas ressembler à
+l'accueil.** Elle est dans l'historique git du fichier, pas à reproposer.
+
+**Les deux pistes d'aujourd'hui, prises dans Paysage** :
+
+| | A, comme la liste de Paysage | B, comme les fiches de sécurité |
+|---|---|---|
+| Composer ma fiche | tuile d'icône, liseré d'or d'1 px | rond doré, liseré d'or de 1,5 px, coins de 13 px |
+| En cours | une carte blanche, une ligne par fiche, tuile d'icône, filet sous le nom | une carte dorée par fiche, rond doré |
+| Rapports envoyés | une carte blanche, une ligne par rapport, chevron | rangés par client (son nom en titre), une carte par rapport, rond vert |
+| Pris sur | `src/app/paysage/page.tsx` | `src/app/paysage/fiches-securite/ListeDesFiches.tsx` |
+
+Communs aux deux : Créer une fiche sur toute la largeur ; la date sur sa
+ligne et ce qui a été fait dessous (sur une ligne, « 1 h » et « 40 » se
+séparaient).
+
+**Ce qui ne bouge pas** (ses décisions) : Composer ma fiche en tête
+(26 août, 11 octobre) ; le mois et la recherche AU-DESSUS de « Rapports
+envoyés » (24 septembre) ; les titres en noir gras (22 septembre) ;
+« Retirer » et son tiroir ; pas d'étiquette « Brouillon » (11 octobre) ;
+l'en-tête, le filtre de date et la barre de recherche de l'appli.
+
+**À coder après son choix** : `LignePassage.tsx` (la ligne A, ou la carte
+B), `RapportsEnvoyes.tsx` (B range par client), `OuvrirFiche.tsx` (la
+largeur), `page.tsx` (la carte Composer). Les dessins sont ceux de
+`paysage/page.tsx` : ils se partagent, ils ne se recopient pas (`CLAUDE.md` §3).
+
+## ⏳ À REGARDER PAR LUI (8 novembre 2026) : le compteur de jours dans Équipe
+
+Sa demande : *« ça serait bien d'avoir dans mes équipes le compteur de jours
+qu'on peut retrouver dans le dossier pour mon comptable »*. Une première
+planche (le chiffre seul sous chaque nom) a été **remplacée le soir même** par
+sa capture de Jours travaillés : *« dans Équipe, sous combien de salariés,
+j'aimerais avoir ça »*.
+
+**La planche** : `appli/soignee/equipe-jours-travailles.html`, sur les vrais
+écrans figés (base de démonstration : Antoine, Julien en congé du 19 au 20,
+Marc ; Paysage, 4 zones). Sous « Combien de salariés ? » et avant Absences,
+une rubrique « Jours travaillés » : le mois, la ligne des ouvrés, « Paysage,
+4 zones, Modifier », la carte des salariés avec leurs zones. Un nom ou une
+case ouvre sa feuille par-dessus Équipe. **Laissés à l'écran du comptable** :
+le titre de l'écran et « Envoyer à mon comptable » (mon choix, à lui dire).
+
+**À coder après son oui** : un seul composant pour les deux écrans, jamais
+une copie (`CLAUDE.md` §3) : `JoursTravailles` reçoit de quoi taire son envoi,
+et la page Équipe lit `moisDesSalaries` comme l'écran du comptable. Le mois
+changé dans Équipe reste dans Équipe (`?mois=` sur `/reglages/equipe`).
+À vérifier en codant : `situerQuelquesChantiers` coûte à chaque ouverture
+d'Équipe ; un salarié ajouté au compteur sans recharger.
+
 ## BATTERIE COMMUNE DU 8 NOVEMBRE : VERTE, SUR main LE 8 NOVEMBRE
 
 Trois lots, une batterie (sa demande : *« fusionne les 3 et joue qu'une seule
