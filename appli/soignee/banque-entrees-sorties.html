@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vos entrées et sorties</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  VOS ENTRÉES ET SORTIES DE L'ANNÉE (src/app/termines/comptable/page.tsx,
+  DossierEnCours.tsx ; l'assistant, src/server/ai/tools/).
+  Sa question du 8 novembre 2026, sur « Pour mon comptable » : « c'est normal
+  que quand je lui demande mes entrées et mes sorties de l'année, il me les
+  trouve pas ». Puis, devant les deux corrections proposées : « fais une
+  maquette d'abord ».
+
+  CE QUI EST VRAI AUJOURD'HUI, LU DANS LE CODE :
+  - l'écran ne lit que le DOSSIER EN COURS (lignesDuReleve(ctx, du, au)) :
+    chez lui, depuis le 28 octobre. « Année » découpe ces jours-là et
+    s'intitule « 2026 » ;
+  - la banque est pourtant lue plus loin (cinq ans, deux ans ou 90 jours,
+    selon ce que la banque accepte, NIVEAUX_D_HISTORIQUE_JOURS), et chaque
+    ligne est gardée (ajouterMouvements) ;
+  - l'assistant n'a aucun outil qui lise le relevé.
+
+  LES CHIFFRES DE CETTE PLANCHE SONT DES EXEMPLES, sauf ceux du dossier en
+  cours (−285,41 €, +500,00 €, 6 sans ticket), recopiés de sa photo.
+*/
+.ecran { background: var(--atlas-cream); }
+.titre-page { margin: 6px 0 2px; font: 400 30px/1.1 var(--serif); color: var(--atlas-ink); }
+.sous-titre { margin: 0 0 16px; font-size: 14px; color: var(--atlas-inkSoft); }
+.rubrique-petite { margin: 18px 0 8px; font-size: 11.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--atlas-inkSoft); }
+.segments { display: grid; grid-template-columns: repeat(3, 1fr); padding: 3px; border-radius: 22px; background: var(--atlas-rustTint); }
+.segments span { display: grid; place-items: center; min-height: 38px; border-radius: 19px; font-size: 14px; color: var(--atlas-inkSoft); }
+.segments .choisi { background: var(--atlas-card); color: var(--atlas-ink); font-weight: 600; box-shadow: 0 1px 2px rgba(28,28,26,.08); }
+.legende { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 12px 0 0; font-size: 12.5px; color: var(--atlas-inkSoft); }
+.legende i { display: inline-block; width: 8px; height: 8px; margin-right: 5px; border-radius: 50%; }
+.periode { margin-top: 14px; }
+.periode-tete { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.periode-nom { font: 400 19px/1.2 var(--serif); color: var(--atlas-ink); }
+.sans-ticket { font-size: 12.5px; color: var(--atlas-alerte); white-space: nowrap; }
+.barre-couleurs { display: flex; gap: 2px; height: 7px; margin: 8px 0 6px; border-radius: 4px; overflow: hidden; }
+.barre-couleurs span { display: block; height: 100%; }
+.totaux { display: flex; gap: 14px; font-size: 14px; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
+.precision { margin: 8px 0 0; font-size: 13px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.dossier-seul { margin: 14px 0 0; padding: 12px 14px; border-radius: 12px; background: var(--atlas-card); font-size: 13.5px; color: var(--atlas-inkSoft); }
+.dossier-seul b { color: var(--atlas-ink); font-weight: 600; }
+
+/* L'assistant : le panneau de l'appli (AssistantSidebar.tsx), ses bulles et sa saisie. */
+.assistant { display: flex; flex-direction: column; height: 100%; background: var(--atlas-cream); }
+.assistant-tete { display: flex; align-items: center; justify-content: space-between; min-height: 64px; padding: 0 16px;
+                  border-bottom: 1px solid var(--atlas-line); }
+.assistant-tete b { font: 400 22px/1 var(--serif); color: var(--atlas-ink); font-weight: 400; }
+.assistant-tete .fermer { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: var(--atlas-card); color: var(--atlas-ink); }
+.fil { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
+.bulle { max-width: 85%; padding: 9px 12px; border-radius: 4px; font-size: 14.5px; line-height: 1.45; color: var(--atlas-ink); }
+.bulle.moi { align-self: flex-end; background: var(--atlas-rustTint); }
+.bulle.lui { align-self: flex-start; background: var(--atlas-card); }
+.bulle .chiffres { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; margin: 6px 0 4px; font-variant-numeric: tabular-nums; }
+.bulle .chiffres span:nth-child(odd) { color: var(--atlas-inkSoft); }
+.bulle .chiffres span:nth-child(even) { text-align: right; font-weight: 600; }
+.bulle .note { margin-top: 6px; font-size: 13px; color: var(--atlas-inkSoft); }
+.saisie { display: flex; gap: 8px; padding: 10px 12px 14px; border-top: 1px solid var(--atlas-line); }
+.saisie span { flex: 1; min-height: 42px; display: flex; align-items: center; padding: 0 14px; border-radius: 4px; background: var(--atlas-card); color: var(--atlas-muted); font-size: 15px; }
+.saisie i { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; background: var(--atlas-plein); color: var(--sur-plein, #faf9f5); font-style: normal; }
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">Vos entrées et sorties</h1>
+  <p class="pl-verdict">À gauche, « Année » dit enfin ce qu’il compte. À droite, l’assistant lit votre banque. Touchez les choix au-dessus de chaque écran.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans" style="grid-template-columns: repeat(auto-fit, minmax(300px, 390px));">
+
+    <!-- 1. Pour mon comptable -->
+    <div>
+      <p class="pl-legende">Pour mon comptable</p>
+      <div class="pl-etats" id="choix-ecran">
+        <button type="button" data-ecran="auj" aria-pressed="false">Aujourd’hui</button>
+        <button type="button" data-ecran="a" aria-pressed="true">A, le dossier</button>
+        <button type="button" data-ecran="b" aria-pressed="false">B, l’année entière</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran">
+          <div class="defile">
+            <h1 class="titre-page">Pour mon comptable</h1>
+            <p class="sous-titre">Dossier en cours depuis le 28 octobre 2026</p>
+            <p class="rubrique-petite">Mes relevés</p>
+            <div class="segments" aria-hidden="true"><span>Mois</span><span>Trimestre</span><span class="choisi">Année</span></div>
+            <div class="legende" aria-hidden="true">
+              <span><i style="background:#3f4f7a"></i>Carburant</span><span><i style="background:#b0673f"></i>Repas</span>
+              <span><i style="background:#8a6a3b"></i>Matériel</span><span><i style="background:#7a63c7"></i>Hôtel</span>
+              <span><i style="background:#3f6f82"></i>Train, taxi</span><span><i style="background:#c0505b"></i>Virement</span>
+              <span><i style="background:#6b6b66"></i>Autre</span>
+            </div>
+            <div class="periode" id="periode"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. L'assistant -->
+    <div>
+      <p class="pl-legende">L’assistant</p>
+      <div class="pl-etats" id="choix-question">
+        <button type="button" data-q="annee" aria-pressed="true">L’année</button>
+        <button type="button" data-q="mois" aria-pressed="false">Octobre</button>
+        <button type="button" data-q="partielle" aria-pressed="false">Banque lue en partie</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran">
+          <div class="assistant">
+            <div class="assistant-tete"><b>Assistant</b><span class="fermer" aria-hidden="true">×</span></div>
+            <div class="fil" id="fil"></div>
+            <div class="saisie" aria-hidden="true"><span>Votre question…</span><i><svg class="ico ico-p" aria-hidden="true"><use href="#i-envoyer"/></svg></i></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li><b>A, le dossier</b> : l’écran garde le dossier en cours, mais le dit. « 2026 » devient « Depuis le 28 octobre ».</li>
+      <li><b>B, l’année entière</b> : « Année » compte tout 2026, depuis le 1<sup>er</sup> janvier. Ce qui reste à justifier, lui, reste celui du dossier.</li>
+      <li><b>L’assistant</b> lit votre relevé : entrées, sorties et ce qui reste, sur l’année, un mois, ou depuis une date. Il ne change rien, il lit.</li>
+      <li>Si la banque n’a donné qu’une partie de l’année, l’écran et l’assistant le disent, avec la date. Rien n’est deviné avant.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>L’écran : A ou B ?</li>
+      <li>L’assistant : les totaux seuls, ou aussi mois par mois quand vous demandez l’année ?</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Le Check up, « À justifier » et ce qui part au comptable : toujours le dossier en cours.</li>
+      <li>Les chiffres d’exemple de cette planche, hors ceux du 28 octobre recopiés de votre photo, ne sont pas les vôtres.</li>
+    </ul>
+  </section>
+</main>
+
+<script src="kit.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  "use strict";
+  // L'espace insécable fin des montants français, comme l'appli les écrit.
+  var e = " €";
+  var BARRE_DOSSIER = [["#c0505b", 86], ["#6b6b66", 14]];
+  var BARRE_ANNEE = [["#3f4f7a", 18], ["#b0673f", 9], ["#8a6a3b", 31], ["#7a63c7", 3], ["#3f6f82", 2], ["#c0505b", 27], ["#6b6b66", 10]];
+  var ECRANS = {
+    auj: { nom: "2026", barre: BARRE_DOSSIER, sorties: "−285,41" + e, entrees: "+500,00" + e, ticket: "6 sans ticket",
+           precision: "" },
+    a:   { nom: "Depuis le 28 octobre", barre: BARRE_DOSSIER, sorties: "−285,41" + e, entrees: "+500,00" + e, ticket: "6 sans ticket",
+           precision: "" },
+    b:   { nom: "2026", barre: BARRE_ANNEE, sorties: "−31 875,42" + e, entrees: "+52 340,00" + e, ticket: "",
+           precision: "Du 1<sup>er</sup> janvier à aujourd’hui.",
+           dossier: "<b>Dossier en cours</b>, depuis le 28 octobre : −285,41" + e + ", +500,00" + e + ", 6 sans ticket." }
+  };
+  var QUESTIONS = {
+    annee: { q: "Mes entrées et sorties de l’année ?",
+             r: "Depuis le 1<sup>er</sup> janvier 2026 :" + chiffres([["Entrées", "52 340,00" + e], ["Sorties", "31 875,42" + e], ["Reste", "20 464,58" + e]]) },
+    mois: { q: "Et en octobre ?",
+            r: "En octobre 2026 :" + chiffres([["Entrées", "6 120,00" + e], ["Sorties", "3 402,17" + e], ["Reste", "2 717,83" + e]]) },
+    partielle: { q: "Mes entrées et sorties de l’année ?",
+                 r: "Depuis le 12 août 2026 :" + chiffres([["Entrées", "21 480,00" + e], ["Sorties", "12 915,06" + e], ["Reste", "8 564,94" + e]]) +
+                    '<p class="note">Votre banque ne m’a donné vos lignes qu’à partir du 12 août. Avant, je ne sais pas.</p>' }
+  };
+  function chiffres(l) {
+    return '<div class="chiffres">' + l.map(function (x) { return "<span>" + x[0] + "</span><span>" + x[1] + "</span>"; }).join("") + "</div>";
+  }
+  function rendreEcran(cle) {
+    var p = ECRANS[cle];
+    document.getElementById("periode").innerHTML =
+      '<div class="periode-tete"><span class="periode-nom">' + p.nom + "</span>" +
+      (p.ticket ? '<span class="sans-ticket">' + p.ticket + "</span>" : "") + "</div>" +
+      '<div class="barre-couleurs">' + p.barre.map(function (b) { return '<span style="background:' + b[0] + ";flex:" + b[1] + '"></span>'; }).join("") + "</div>" +
+      '<div class="totaux"><span>' + p.sorties + "</span><span>" + p.entrees + "</span></div>" +
+      (p.precision ? '<p class="precision">' + p.precision + "</p>" : "") +
+      (p.dossier ? '<p class="dossier-seul">' + p.dossier + "</p>" : "");
+  }
+  function rendreQuestion(cle) {
+    var x = QUESTIONS[cle];
+    document.getElementById("fil").innerHTML = '<div class="bulle moi">' + x.q + '</div><div class="bulle lui">' + x.r + "</div>";
+  }
+  function relier(id, attr, rendre) {
+    var g = document.getElementById(id);
+    g.addEventListener("click", function (ev) {
+      var b = ev.target.closest("button"); if (!b) return;
+      g.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+      rendre(b.dataset[attr]);
+    });
+  }
+  relier("choix-ecran", "ecran", rendreEcran);
+  relier("choix-question", "q", rendreQuestion);
+  rendreEcran("a");
+  rendreQuestion("annee");
+});
+</script>
+</body>
+</html>

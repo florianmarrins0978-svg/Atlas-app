@@ -1,5 +1,60 @@
 # Prochaines tâches
 
+## ⏳ À CHOISIR PAR LUI (8 novembre 2026) : vos entrées et sorties, l'écran A ou B, et l'assistant
+
+Sa question, sur « Pour mon comptable » : *« c'est normal que quand je lui
+demande mes entrées et mes sorties de l'année, il me les trouve pas »*. Puis :
+*« fais une maquette d'abord »*.
+
+**Lu dans le code** : l'écran ne lit que le dossier en cours
+(`lignesDuReleve(ctx, du, au)`, chez lui depuis le 28 octobre) et intitule
+« 2026 » ce qui n'en est qu'une dizaine de jours ; la banque est pourtant lue
+plus loin (`NIVEAUX_D_HISTORIQUE_JOURS`) et gardée (`ajouterMouvements`) ; aucun
+outil de l'assistant (`src/server/ai/tools/`) ne lit le relevé.
+
+**La planche** : `appli/soignee/banque-entrees-sorties.html`. Écran A : « 2026 »
+devient « Depuis le 28 octobre ». Écran B : « Année » compte tout 2026, le
+dossier reste dit à part. L'assistant : entrées, sorties, reste, sur une
+période ; si la banque n'a donné qu'une partie, il le dit avec la date.
+
+**Aussi à trancher** : l'assistant donne-t-il le détail mois par mois quand on
+demande l'année ? Niveau 3 au codage (argent).
+
+## ⏳ À CHOISIR PAR LUI (8 novembre 2026) : au planning, un client sans fiche, A ou B
+
+Sa demande, photo du planning à l'appui : *« soit rechercher un client, soit
+décider de créer une fiche, sans créer un contact ; une touche pour dire que sa
+fiche ne sera pas créée »*.
+
+**Aujourd'hui** (`src/app/planning/AjoutDunClient.tsx`) : un nom inconnu ouvre
+toujours Téléphone, E-mail, Adresse, et la fiche se crée (sa décision du
+10 septembre 2026). Le seul chemin sans fiche est « Autre chose »
+(`poserDuTempsAction`, un chantier sans client).
+
+**La planche** : `appli/soignee/planning-sans-fiche.html`. A : deux mots sous le
+nom, « Créer sa fiche » (d'office) ou « Sans fiche », au dessin de Matin,
+Après-midi, Journée (conseillé). B : la phrase d'aujourd'hui et une case.
+Sans fiche, le nom va seul au planning, comme « Autre chose ».
+
+**Revu le même jour, sa correction** : *« même si on ne crée pas sa fiche
+client, il faut quand même pouvoir mettre le nom, le prénom, l'adresse, le
+numéro de téléphone, parce que c'est un client qu'on va peut-être
+facturer »*. Une facture porte le nom et l'adresse du client : c'est une
+fiche. Le choix devient sa PLACE : « Dans Vos clients » d'office, ou « Pas
+encore », et elle y entre seule à son premier devis ou sa première facture.
+Les cases restent ouvertes, avec un prénom en plus (aujourd'hui le nom et le
+prénom s'écrivent ensemble dans `clients.nom` : une colonne neuve, donc une
+migration en deux temps, si elle est gardée).
+
+**Revu une seconde fois, sa précision** : *« ça sera un client que je ne
+facturerai pas ; il passera par une autre plateforme pour être facturé,
+comme Unipros ; il faut préciser qu'il ne pourra pas facturer ce client »*.
+Retour à « Créer sa fiche » ou « Sans fiche ». Sans fiche : « Il ne pourra
+pas être facturé dans Atlas. », plus de prénom, téléphone ni e-mail (aucune
+place sans fiche), l'adresse reste sur le chantier (`adresse_chantier`). C'est
+« Autre chose » plus une adresse : aucune migration. Reste à trancher : A ou
+B, et un téléphone sur le chantier pour l'appeler la veille.
+
 ## ⏳ À CHOISIR PAR LUI (8 novembre 2026) : sur ordinateur, la largeur de la colonne
 
 Sa demande, photo de son portable à l'appui : *« les bandes s'étirent jusqu'au
@@ -23,6 +78,17 @@ mesurer la colonne.
 **Vu en passant, hors de sa demande** : sur Paysage, la liste dépasse le titre
 de 10 px de chaque côté (`mx-4` contre `mx-[26px]`, `src/app/paysage/page.tsx`),
 téléphone compris. Proposé à part sur la planche.
+
+## La fiche de l'espace ne dit pas QUEL espace l'a écrite (8 novembre 2026)
+
+Deux espaces allumés (son PC et son téléphone) réécrivent la même fiche n°47
+tour à tour, et rien n'y dit lequel parle : une session qui la lit croit lire
+l'espace du téléphone et peut lire celui du PC. Le 8 novembre, c'est ainsi
+qu'Atlas « vide sur PC » s'expliquait par un autre espace, avec une autre
+base. **À faire** : publier `CODESPACE_NAME` dans la fiche
+(`scripts/rapporter-espace.mjs`), et dire en tête quand deux noms
+différents l'ont écrite dans la dernière heure. Pas codé : pas demandé ce
+jour-là.
 
 ## ⏳ À CHOISIR PAR LUI (8 novembre 2026) : Mon année, l'objectif de chiffre d'affaires et de bénéfice
 
