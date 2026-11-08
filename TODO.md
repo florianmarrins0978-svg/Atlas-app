@@ -9,30 +9,38 @@ boutons »*.
 
 **La planche** : `appli/fiche-de-chantier-soignee.html`, sur le vrai écran
 figé (`/paysage/fiche`, base de démonstration : Mme Costa et « Sans client »
-en cours, trois rapports en novembre, un en octobre). Proposé et Aujourd'hui ;
+en cours, trois rapports en novembre, un en octobre). A, B et Aujourd'hui ;
 Retirer, Annuler, le mois, la roue du jour et la recherche répondent.
 
-**Ce qui change, et d'où ça vient** :
+**SA PREMIÈRE RÉPONSE, LE SOIR MÊME : NON.** *« Ce que tu as mis là, comme si
+c'était la première page chantier, j'aime pas du tout. »* La première
+version prenait tout à Vos chantiers (cartes ambre « Reprendre », frise
+datée, compteur « En cours 2 ») : **cet écran ne doit pas ressembler à
+l'accueil.** Elle est dans l'historique git du fichier, pas à reproposer.
 
-| | Pris sur |
-|---|---|
-| Composer ma fiche : la tuile d'icône des outils de Paysage ; le liseré d'or reste (sa planche du 11 octobre) | `src/app/paysage/page.tsx`, `ListeDesFiches.tsx` |
-| Créer une fiche sur toute la largeur, 58 px | le bouton plein de l'appli |
-| « En cours 2 » et « Rapports envoyés 3 » : le compteur de Vos chantiers, toujours noir gras (22 septembre) | le compteur de l'accueil |
-| Chaque fiche en cours : une carte ambre, « Reprendre » et « Retirer » écrits | la carte de réponse de l'accueil, l'ambre « à vous » (`ton-des-cartes.ts`) |
-| Les rapports : la frise de Vos chantiers, le jour en grand, un point vert « parti » | la frise de l'accueil |
+**Les deux pistes d'aujourd'hui, prises dans Paysage** :
+
+| | A, comme la liste de Paysage | B, comme les fiches de sécurité |
+|---|---|---|
+| Composer ma fiche | tuile d'icône, liseré d'or d'1 px | rond doré, liseré d'or de 1,5 px, coins de 13 px |
+| En cours | une carte blanche, une ligne par fiche, tuile d'icône, filet sous le nom | une carte dorée par fiche, rond doré |
+| Rapports envoyés | une carte blanche, une ligne par rapport, chevron | rangés par client (son nom en titre), une carte par rapport, rond vert |
+| Pris sur | `src/app/paysage/page.tsx` | `src/app/paysage/fiches-securite/ListeDesFiches.tsx` |
+
+Communs aux deux : Créer une fiche sur toute la largeur ; la date sur sa
+ligne et ce qui a été fait dessous (sur une ligne, « 1 h » et « 40 » se
+séparaient).
 
 **Ce qui ne bouge pas** (ses décisions) : Composer ma fiche en tête
 (26 août, 11 octobre) ; le mois et la recherche AU-DESSUS de « Rapports
-envoyés » (24 septembre) ; « Retirer » et son tiroir ; pas d'étiquette
-« Brouillon » (11 octobre) ; l'en-tête, le filtre de date et la barre de
-recherche de l'appli, inchangés.
+envoyés » (24 septembre) ; les titres en noir gras (22 septembre) ;
+« Retirer » et son tiroir ; pas d'étiquette « Brouillon » (11 octobre) ;
+l'en-tête, le filtre de date et la barre de recherche de l'appli.
 
-**À coder après son oui** : `FichesEnCours.tsx` (la carte), `RapportsEnvoyes.tsx`
-(la frise, qui ne passe plus par `LignePassage` : celle-ci ne sert alors plus
-qu'aux brouillons, ou disparaît, `CLAUDE.md` §4 quinquies), `OuvrirFiche.tsx`
-(la largeur), `page.tsx` (la tuile), et le titre compté dans les deux
-sections. La frise de l'accueil se reprend, elle ne se recopie pas.
+**À coder après son choix** : `LignePassage.tsx` (la ligne A, ou la carte
+B), `RapportsEnvoyes.tsx` (B range par client), `OuvrirFiche.tsx` (la
+largeur), `page.tsx` (la carte Composer). Les dessins sont ceux de
+`paysage/page.tsx` : ils se partagent, ils ne se recopient pas (`CLAUDE.md` §3).
 
 ## ⏳ À REGARDER PAR LUI (8 novembre 2026) : le compteur de jours dans Équipe
 
