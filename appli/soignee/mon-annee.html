@@ -196,14 +196,6 @@
             <header class="tete"><h1 class="tete-titre">Mon année</h1></header>
             <p class="tete-situation" data-annee-situation>2026</p>
             <div data-annee></div>
-            <!-- Sa demande du 8 novembre : Mon année vit dans Réglages, et ne se
-                 montre sur Terminés que s'il l'allume. Éteint de base. -->
-            <div class="plage plage-serree mt-24">
-              <div class="ligne-bascule">
-                <span class="ligne-corps"><b>Afficher sur Terminés</b></span>
-                <button class="bascule" type="button" role="switch" aria-checked="false" aria-label="Afficher sur Terminés" id="bascule-termines"></button>
-              </div>
-            </div>
           </div>
           <nav class="barre" aria-label="Navigation principale"><div class="barre-onglets">
             <a class="barre-onglet" href="accueil.html">Chantiers</a>
@@ -514,6 +506,16 @@
       ? '<p class="plage-ton" data-ton="or">Pareil.</p>'
       : '<p class="plage-ton" data-ton="' + (n > 0 ? "vert" : "ambre") + '"><b>' + e(Math.abs(n)) + "</b>" + (n > 0 ? " de plus." : " de moins.") + "</p>";
   }
+  /* L'interrupteur, au-dessus de Face à 2025 (sa demande du 8 novembre).
+     Éteint de base : Mon année vit dans Réglages, et ne se montre sur
+     Terminés que s'il l'allume. */
+  function rendreInterrupteur() {
+    var allume = etatDe(ecranT, "eteint") !== "eteint";
+    return '<div class="plage plage-serree mt-24"><div class="ligne-bascule">' +
+      '<span class="ligne-corps"><b>Afficher sur Terminés</b></span>' +
+      '<button class="bascule" type="button" role="switch" aria-checked="' + allume + '" aria-label="Afficher sur Terminés" id="bascule-termines"></button>' +
+      "</div></div>";
+  }
   function rendreFace(s) {
     var d = new Date(s.jour), m = d.getUTCMonth(), jour = d.getUTCDate(), entier = s.jour === finDuMois(m);
     var h = '<h2 class="rubrique">Face à 2025</h2><section class="plage">' +
@@ -572,7 +574,7 @@
       h += '<div class="plage vide-annee"><p class="vide-titre">Pas encore d\'objectif</p>' +
         '<p class="vide-texte">Facturé cette année, ' + e(s.facture) + ". L'an dernier, " + e(AN_DERNIER) + ".</p>" +
         '<button class="bouton bouton-plein" type="button" data-geste="fixer">Fixer mon objectif</button></div>';
-      return h + rendreFace(s);
+      return h + rendreInterrupteur() + rendreFace(s);
     }
 
     var passe = c.reste <= 0;
@@ -592,7 +594,7 @@
       h += '<p class="plage-ton" data-ton="vert"><b>' + e(c.ecart) + "</b> d'avance sur votre saison.</p>";
     }
     if (!passe) h += '<p class="discret">Le trait suit votre saison de l\'an dernier.</p>';
-    h += "</section>" + rendreFace(s);
+    h += "</section>" + rendreInterrupteur() + rendreFace(s);
 
     /* Ce qu'il reste à facturer, ce mois-ci et par jour. */
     if (!passe) {
@@ -737,7 +739,6 @@
     ecranA.querySelector("[data-tous-les-mois]").innerHTML = rendreTousLesMois(cle);
     var cleT = etatDe(ecranT, "eteint");
     ecranT.querySelector("[data-porte]").innerHTML = rendrePorte(cleT);
-    document.getElementById("bascule-termines").setAttribute("aria-checked", cleT === "eteint" ? "false" : "true");
   }
   new MutationObserver(tout).observe(ecranA, { attributes: true, attributeFilter: ["data-etat"] });
   new MutationObserver(tout).observe(ecranT, { attributes: true, attributeFilter: ["data-etat"] });
@@ -752,12 +753,14 @@
      panneau : on le voit en changeant d'onglet. Une seule source dit s'il est
      allumé, l'état de Terminés ; le kit, qui retourne seul toute bascule, ne
      la touche donc pas (sinon il la retournait une seconde fois). */
-  document.getElementById("bascule-termines").addEventListener("click", function (ev) {
-    ev.stopPropagation();
-    var allume = ev.currentTarget.getAttribute("aria-checked") !== "true";
+  document.addEventListener("click", function (ev) {
+    var bascule = ev.target.closest("#bascule-termines");
+    if (!bascule) return;
+    ev.stopImmediatePropagation();
+    var allume = bascule.getAttribute("aria-checked") !== "true";
     var b = document.querySelector('.pl-etats[data-ecran="#ecran-termines"] button[data-etat="' + (allume ? "retard" : "eteint") + '"]');
     if (b) b.click();
-  });
+  }, true);
 
   document.addEventListener("click", function (ev) {
     var n = ev.target.closest("[data-note]");
