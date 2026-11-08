@@ -3,22 +3,25 @@
 ## ⏳ À REGARDER PAR LUI (8 novembre 2026) : le compteur de jours dans Équipe
 
 Sa demande : *« ça serait bien d'avoir dans mes équipes le compteur de jours
-qu'on peut retrouver dans le dossier pour mon comptable »*. Son choix, posé
-le même jour entre trois formes : **le chiffre sous chaque nom** (pas une ligne
-de plus, ni les deux).
+qu'on peut retrouver dans le dossier pour mon comptable »*. Une première
+planche (le chiffre seul sous chaque nom) a été **remplacée le soir même** par
+sa capture de Jours travaillés : *« dans Équipe, sous combien de salariés,
+j'aimerais avoir ça »*.
 
 **La planche** : `appli/soignee/equipe-jours-travailles.html`, sur les vrais
-écrans figés (Équipe et Jours travaillés, base de démonstration : Antoine,
-Julien en congé du 19 au 20, Marc). Sous chaque nom de « Combien de
-salariés ? », « 18 jours en novembre », dans l'or des liens (`orTexte`) ;
-le toucher ouvre Jours travaillés. **Le retour de cet écran ramène déjà à
-Équipe** (`data-geste-retour`, l'historique) : rien à changer là.
+écrans figés (base de démonstration : Antoine, Julien en congé du 19 au 20,
+Marc ; Paysage, 4 zones). Sous « Combien de salariés ? » et avant Absences,
+une rubrique « Jours travaillés » : le mois, la ligne des ouvrés, « Paysage,
+4 zones, Modifier », la carte des salariés avec leurs zones. Un nom ou une
+case ouvre sa feuille par-dessus Équipe. **Laissés à l'écran du comptable** :
+le titre de l'écran et « Envoyer à mon comptable » (mon choix, à lui dire).
 
-**À coder après son oui** : le chiffre se lit dans `moisDesSalaries`
-(`src/server/repositories/jours-travailles.ts`), le même chargement que
-l'écran et le PDF du comptable, jamais un second calcul (`CLAUDE.md` §3) ;
-`VosSalaries` le reçoit par rang. À trancher en codant : un nom effacé ou
-un salarié ajouté sans recharger (le chiffre suit le rang, pas le nom).
+**À coder après son oui** : un seul composant pour les deux écrans, jamais
+une copie (`CLAUDE.md` §3) : `JoursTravailles` reçoit de quoi taire son envoi,
+et la page Équipe lit `moisDesSalaries` comme l'écran du comptable. Le mois
+changé dans Équipe reste dans Équipe (`?mois=` sur `/reglages/equipe`).
+À vérifier en codant : `situerQuelquesChantiers` coûte à chaque ouverture
+d'Équipe ; un salarié ajouté au compteur sans recharger.
 
 ## BATTERIE COMMUNE DU 8 NOVEMBRE : VERTE, SUR main LE 8 NOVEMBRE
 
