@@ -1,5 +1,24 @@
 # Prochaines tâches
 
+## ⏳ À CHOISIR PAR LUI (8 novembre 2026) : au planning, un client sans fiche, A ou B
+
+Sa demande, photo du planning à l'appui : *« soit rechercher un client, soit
+décider de créer une fiche, sans créer un contact ; une touche pour dire que sa
+fiche ne sera pas créée »*.
+
+**Aujourd'hui** (`src/app/planning/AjoutDunClient.tsx`) : un nom inconnu ouvre
+toujours Téléphone, E-mail, Adresse, et la fiche se crée (sa décision du
+10 septembre 2026). Le seul chemin sans fiche est « Autre chose »
+(`poserDuTempsAction`, un chantier sans client).
+
+**La planche** : `appli/soignee/planning-sans-fiche.html`. A : deux mots sous le
+nom, « Créer sa fiche » (d'office) ou « Sans fiche », au dessin de Matin,
+Après-midi, Journée (conseillé). B : la phrase d'aujourd'hui et une case.
+Sans fiche, le nom va seul au planning, comme « Autre chose ».
+
+**Aussi à trancher** : un devis fait plus tard à ce nom ; proposé : créer sa
+fiche à ce moment-là.
+
 ## ⏳ À CHOISIR PAR LUI (8 novembre 2026) : sur ordinateur, la largeur de la colonne
 
 Sa demande, photo de son portable à l'appui : *« les bandes s'étirent jusqu'au

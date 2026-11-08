@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Un client sans fiche</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  POSER UN CLIENT SANS LUI CRÉER DE FICHE (src/app/planning/AjoutDunClient.tsx).
+  Sa demande du 8 novembre 2026, photo du planning à l'appui : « soit
+  rechercher un client, soit décider de créer une fiche, sans créer un
+  contact ; une touche pour dire que sa fiche ne sera pas créée ».
+
+  CE QUI EST VRAI AUJOURD'HUI : « Un client » cherche le nom ; inconnu, il
+  écrit « Inconnu, sa fiche sera créée » et ouvre Téléphone, E-mail, Adresse
+  du chantier. La fiche se crée toujours (sa décision du 10 septembre 2026).
+  Le seul chemin sans fiche est « Autre chose » (poserDuTempsAction : un
+  chantier sans client, nommé par lui), pensé pour la banque ou une livraison.
+
+  CE QUI CHANGE : sous un nom inconnu, deux mots au même dessin que Matin,
+  Après-midi, Journée. « Créer sa fiche » reste choisi d'office ; « Sans
+  fiche » referme les trois cases, et le nom va seul au planning, comme
+  « Autre chose ». Rien n'est codé.
+*/
+.ecran { background: var(--atlas-cream); }
+.semaine { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin: 0 0 14px; }
+.semaine span { display: grid; place-items: center; height: 52px; border-radius: 10px;
+                font: 400 17px/1 var(--serif); color: var(--atlas-ink); }
+.semaine .we { background: var(--atlas-rustTint); color: var(--atlas-muted); }
+.semaine .choisi { box-shadow: inset 0 0 0 1.5px var(--atlas-ink); }
+.fiche-jour { background: var(--atlas-card); border-radius: 16px; padding: 16px 16px 14px; }
+.fiche-jour h2 { margin: 0 0 8px; font: 400 21px/1.2 var(--serif); color: var(--atlas-ink); }
+.moment { display: flex; justify-content: space-between; align-items: baseline; min-height: 30px;
+          font-size: 15px; font-weight: 600; color: var(--atlas-ink); }
+.moment em { font-style: normal; font-weight: 400; font-size: 13px; color: var(--atlas-muted); }
+.moment em.pose { color: var(--atlas-ink); font-size: 15px; font-weight: 600; }
+.formulaire { margin-top: 10px; }
+.verdict { margin: 8px 0 0; font-size: 13px; color: var(--atlas-inkSoft); }
+.mots { display: flex; gap: 18px; margin-top: 6px; }
+.mots button { min-height: 40px; padding: 0; font-size: 14.5px; color: var(--atlas-inkSoft);
+               border-bottom: 1.5px solid transparent; transition: color 160ms var(--courbe), border-color 160ms var(--courbe); }
+.mots button[aria-pressed="true"] { color: var(--atlas-ink); font-weight: 600; border-bottom-color: var(--atlas-ink); }
+.mots button:focus-visible { outline: 2px solid var(--atlas-or); outline-offset: 3px; }
+.trouves { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.trouves button { min-height: 40px; padding: 0 14px; border-radius: 20px; font-size: 14.5px;
+                  background: var(--atlas-cream); box-shadow: inset 0 0 0 1px var(--atlas-line); color: var(--atlas-ink); }
+.case { display: flex; align-items: center; gap: 10px; min-height: 44px; margin-top: 6px; font-size: 14.5px; color: var(--atlas-ink); }
+.case input { width: 20px; height: 20px; accent-color: var(--atlas-rust); }
+.cases .champ-saisie { margin-top: 8px; min-height: 48px; background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.cases { overflow: hidden; transition: opacity 180ms var(--courbe); }
+.cases[hidden] { display: none; }
+.pied { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+.pied .bouton-petit { min-height: 40px; }
+.discretion { min-height: 40px; padding: 0 14px; border-radius: 20px; font-size: 14px;
+              box-shadow: inset 0 0 0 1px var(--atlas-line); color: var(--atlas-inkSoft); }
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">Un client sans fiche</h1>
+  <p class="pl-verdict">Tapez un nom. Connu, il se propose. Inconnu, vous choisissez : <b>Créer sa fiche</b> ou <b>Sans fiche</b>. Essayez « Bernard », puis « Luloui ».</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+    <div>
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats" id="variante">
+        <button type="button" data-variante="a" aria-pressed="true">A, deux mots (conseillé)</button>
+        <button type="button" data-variante="b" aria-pressed="false">B, une case</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran">
+          <div class="defile">
+            <header class="tete">
+              <h1 class="tete-titre">Planning</h1>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </header>
+            <div class="semaine" aria-hidden="true">
+              <span>16</span><span class="choisi">17</span><span>18</span><span>19</span><span>20</span><span class="we">21</span><span class="we">22</span>
+            </div>
+            <section class="fiche-jour" aria-label="Mardi 17 novembre">
+              <h2>Mardi 17 novembre</h2>
+              <div class="moment">Matin <em id="slot-matin">libre</em></div>
+              <div class="moment">Après-midi <em id="slot-am">libre</em></div>
+
+              <div class="formulaire" id="formulaire">
+                <label class="champ-recherche">
+                  <svg class="ico" aria-hidden="true"><use href="#i-recherche"/></svg>
+                  <input type="text" id="nom" placeholder="Nom du client" autocomplete="off" aria-label="Nom du client" value="Luloui">
+                  <button class="effacer" type="button" id="effacer" aria-label="Effacer le nom"><svg class="ico ico-p" aria-hidden="true"><use href="#i-croix"/></svg></button>
+                </label>
+
+                <div id="zone-trouves" class="trouves" hidden></div>
+
+                <div id="zone-inconnu">
+                  <!-- A : deux mots, au dessin de Matin, Après-midi, Journée. -->
+                  <div id="choix-a">
+                    <p class="verdict">Inconnu.</p>
+                    <div class="mots" role="group" aria-label="Sa fiche">
+                      <button type="button" data-fiche="oui" aria-pressed="true">Créer sa fiche</button>
+                      <button type="button" data-fiche="non" aria-pressed="false">Sans fiche</button>
+                    </div>
+                  </div>
+                  <!-- B : la phrase d'aujourd'hui, et une case. -->
+                  <div id="choix-b" hidden>
+                    <p class="verdict" id="phrase-b">Inconnu, sa fiche sera créée</p>
+                    <label class="case"><input type="checkbox" id="case-sans">Sans fiche</label>
+                  </div>
+                  <div class="cases" id="cases">
+                    <input class="champ-saisie" placeholder="Téléphone" aria-label="Téléphone">
+                    <input class="champ-saisie" placeholder="E-mail" aria-label="E-mail">
+                    <input class="champ-saisie" placeholder="Adresse du chantier" aria-label="Adresse du chantier">
+                  </div>
+                </div>
+
+                <div class="mots" role="group" aria-label="Quand" id="quand">
+                  <button type="button" data-quand="matin" aria-pressed="false">Matin</button>
+                  <button type="button" data-quand="am" aria-pressed="false">Après-midi</button>
+                  <button type="button" data-quand="jour" aria-pressed="true">Journée</button>
+                </div>
+
+                <div class="pied">
+                  <button type="button" class="discretion" id="annuler">Annuler</button>
+                  <button type="button" class="bouton bouton-plein bouton-petit" id="poser">Poser</button>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>Sous un nom inconnu, deux mots au même dessin que Matin, Après-midi, Journée : <b>Créer sa fiche</b>, choisi d’office comme aujourd’hui, ou <b>Sans fiche</b>.</li>
+      <li>Sans fiche, les trois cases se referment et seul le nom va au planning. Aucun contact n’est créé.</li>
+      <li>C’est ce que fait déjà « Autre chose » (lu dans le code) : le planning sait poser un nom sans client. Ici, on y arrive depuis « Un client ».</li>
+    </ul>
+    <h2>A ou B</h2>
+    <ul>
+      <li><b>A</b> montre le choix avant les cases : on voit tout de suite qu’on peut s’en passer.</li>
+      <li><b>B</b> garde la phrase d’aujourd’hui et ajoute une case, plus discrète, mais les trois cases s’ouvrent d’abord.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>A ou B ?</li>
+      <li>Si vous faites plus tard un devis à ce nom, je propose qu’Atlas vous demande de créer sa fiche à ce moment-là. D’accord ?</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Un nom connu se propose et se touche, comme aujourd’hui.</li>
+      <li>« Autre chose » reste pour la banque, une livraison, une formation.</li>
+    </ul>
+  </section>
+</main>
+
+<script src="kit.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  "use strict";
+  // Les clients de la démonstration : un nom connu doit se proposer, pas
+  // demander une fiche.
+  var CONNUS = ["Mme Aubry", "M. Bernard", "Mme Costa", "M. Faucher"];
+  var variante = "a", sansFiche = false, quand = "jour";
+  var nom = document.getElementById("nom");
+  var zoneTrouves = document.getElementById("zone-trouves");
+  var zoneInconnu = document.getElementById("zone-inconnu");
+  var choixA = document.getElementById("choix-a");
+  var choixB = document.getElementById("choix-b");
+  var cases = document.getElementById("cases");
+  var caseSans = document.getElementById("case-sans");
+  var phraseB = document.getElementById("phrase-b");
+
+  function sansAccent(s) { return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase(); }
+
+  function rendre() {
+    var mot = nom.value.trim();
+    var trouves = mot.length >= 2 ? CONNUS.filter(function (c) { return sansAccent(c).indexOf(sansAccent(mot)) >= 0; }) : [];
+    var retenu = CONNUS.indexOf(mot) >= 0;
+    zoneTrouves.hidden = retenu || trouves.length === 0;
+    zoneTrouves.innerHTML = trouves.map(function (c) { return '<button type="button" data-client="' + c + '">' + c + "</button>"; }).join("");
+    var inconnu = !retenu && mot.length >= 2 && trouves.length === 0;
+    zoneInconnu.hidden = !inconnu;
+    choixA.hidden = variante !== "a";
+    choixB.hidden = variante !== "b";
+    cases.hidden = sansFiche;
+    phraseB.textContent = sansFiche ? "Inconnu" : "Inconnu, sa fiche sera créée";
+    document.querySelectorAll("[data-fiche]").forEach(function (b) {
+      b.setAttribute("aria-pressed", String((b.dataset.fiche === "non") === sansFiche));
+    });
+    caseSans.checked = sansFiche;
+  }
+
+  nom.addEventListener("input", rendre);
+  document.getElementById("effacer").addEventListener("click", function () { nom.value = ""; nom.focus(); rendre(); });
+  zoneTrouves.addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    nom.value = b.dataset.client; rendre();
+  });
+  document.querySelectorAll("[data-fiche]").forEach(function (b) {
+    b.addEventListener("click", function () { sansFiche = b.dataset.fiche === "non"; rendre(); });
+  });
+  caseSans.addEventListener("change", function () { sansFiche = caseSans.checked; rendre(); });
+  document.getElementById("variante").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    variante = b.dataset.variante; sansFiche = false;
+    this.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+    rendre();
+  });
+  document.getElementById("quand").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    quand = b.dataset.quand;
+    this.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+  });
+  document.getElementById("poser").addEventListener("click", function () {
+    var mot = nom.value.trim(); if (mot.length < 2) return;
+    var m = document.getElementById("slot-matin"), a = document.getElementById("slot-am");
+    [m, a].forEach(function (s) { s.textContent = "libre"; s.classList.remove("pose"); });
+    if (quand !== "am") { m.textContent = mot; m.classList.add("pose"); }
+    if (quand !== "matin") { a.textContent = mot; a.classList.add("pose"); }
+    document.getElementById("formulaire").hidden = true;
+  });
+  document.getElementById("annuler").addEventListener("click", function () {
+    nom.value = ""; sansFiche = false; rendre();
+  });
+  rendre();
+});
+</script>
+</body>
+</html>
