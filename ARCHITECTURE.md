@@ -37175,3 +37175,19 @@ Contrôles : `test-reprise-des-prix`, `test-hausse-du-devis` (purs, verts), `tes
 
 Le dépôt lit les adresses des patrons par `adressesDesPatronsDans` (`membres-entreprise.ts`), écrite pour être la seule lecture de « qui est le patron » des envois d'Atlas ; l'e-mail d'avant l'effacement (`lot/fermeture-compte`) la reprendra à la fusion des deux lots.
 
+
+## §568 : Un espace resté sur une branche de session finie rejoint `main` tout seul
+
+*8 novembre 2026, sa plainte : « il lui manque énormément de versions ».*
+
+Son espace PC avait été ouvert le 3 octobre sur `claude/app-sur-ordinateur`. Le lot est parti sur `main` le soir même ; l'espace, lui, a continué d'avancer SA branche en ligne droite, et `mettre-a-jour.sh` répondait « à jour » à chaque allumage. Un mois plus tard il servait le code du 3 octobre, 1 486 commits derrière `main`. La fiche le disait (« Branche suivie »), rien ne le corrigeait.
+
+| Décision | Pourquoi |
+|---|---|
+| une branche est **finie** quand tout ce qu'elle porte est dans `origin/main`, la tête locale ET la tête distante | la seule tête locale ferait quitter un lot ouvert depuis `main` au moment où la session y pousse |
+| une branche effacée du distant compte comme finie (`ls-remote` rend 2) | effacée, elle figeait l'espace avec un faux motif : « le dépôt distant n'a pas pu être joint » |
+| finie : l'espace passe sur `main`, en ligne droite ; sinon rien ne change | un lot pas encore fusionné qu'il est en train d'essayer reste suivi |
+| une `main` locale qui porte un commit à elle est refusée, jamais forcée | même prudence que pour sa propre branche |
+| le distant qui ne répond pas ne fait rien conclure | ne pas savoir n'est pas « finie » |
+
+**Ce que la correction ne rattrape pas seule** : un espace déjà figé exécute l'ANCIEN script, celui de sa branche. Il faut que le nouveau y arrive une fois, soit par sa branche avancée jusqu'à `main` (sans perte : elle n'a rien que `main` n'ait), soit par un passage sur `main` fait à la main. Éprouvé par `scripts/test-mise-a-jour-espace.ts` (cinq cas, rouges avant la correction) et sur une copie du vrai dépôt à l'état de son espace : « à jour » avec l'ancien script, « faite » et `main` du jour avec le nouveau.

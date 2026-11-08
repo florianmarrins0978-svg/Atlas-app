@@ -223,6 +223,141 @@ cas("un dossier qui n'est pas un dépôt ne fait pas planter non plus", () => {
   assert.ok(issue.startsWith("impossible"), `Attendu un refus explicite, reçu « ${issue} ».`);
 });
 
+console.log("=== Un espace resté sur une branche de session finie rejoint main ===");
+
+// **Sa panne du 8 novembre 2026** : *« il lui manque énormément de versions »*.
+// Son espace PC avait été ouvert le 3 octobre sur `claude/app-sur-ordinateur`,
+// pour essayer ce lot-là. Le lot a été fusionné le soir même, et l'espace a
+// continué d'avancer « sa propre branche » en ligne droite : une branche que
+// plus personne ne pousse. Il servait le code du 3 octobre, 1 486 commits
+// derrière `main`, et la mise à jour répondait « à jour » à chaque allumage.
+
+/** Un distant dont la branche livrée s'appelle `main`, comme le vrai. */
+function monterDepotMain(): { racine: string; source: string; distant: string } {
+  const racine = mkdtempSync(path.join(tmpdir(), "atlas-espace-"));
+  const source = path.join(racine, "source");
+  const distant = path.join(racine, "distant.git");
+  execFileSync("git", ["init", "--quiet", "-b", "main", source]);
+  git(source, "config", "core.autocrlf", "false");
+  writeFileSync(path.join(source, "fichier.txt"), "version 1\n");
+  git(source, "add", ".");
+  git(source, "commit", "--quiet", "-m", "version 1");
+  execFileSync("git", ["clone", "--quiet", "--bare", source, distant]);
+  git(source, "remote", "add", "origin", distant);
+  return { racine, source, distant };
+}
+
+/** Un commit sur `branche` dans la source, poussé sur le distant. */
+function commit(source: string, branche: string, contenu: string) {
+  git(source, "checkout", "--quiet", branche);
+  writeFileSync(path.join(source, "fichier.txt"), contenu);
+  git(source, "commit", "--quiet", "-am", contenu.trim());
+  git(source, "push", "--quiet", "origin", branche);
+}
+
+/** L'espace ouvert sur `branche`, comme GitHub l'ouvre depuis une branche. */
+function ouvrirEspaceSur(racine: string, distant: string, branche: string): string {
+  const espace = path.join(racine, "espace");
+  execFileSync("git", ["-c", "core.autocrlf=false", "clone", "--quiet", "-b", branche, distant, espace]);
+  git(espace, "config", "core.autocrlf", "false");
+  return espace;
+}
+
+const brancheCourante = (d: string) => git(d, "rev-parse", "--abbrev-ref", "HEAD").trim();
+const tete = (d: string, ref = "HEAD") => git(d, "rev-parse", ref).trim();
+
+cas("UNE BRANCHE DE SESSION FUSIONNÉE NE FIGE PLUS L'ESPACE, sa panne du 8 novembre", () => {
+  const { racine, source, distant } = monterDepotMain();
+  aNettoyer.push(racine);
+  git(source, "checkout", "--quiet", "-b", "claude/app-sur-ordinateur");
+  commit(source, "claude/app-sur-ordinateur", "le lot essayé\n");
+  const espace = ouvrirEspaceSur(racine, distant, "claude/app-sur-ordinateur");
+
+  // Le lot part sur main, puis main continue sans lui.
+  git(source, "checkout", "--quiet", "main");
+  git(source, "merge", "--quiet", "--ff-only", "claude/app-sur-ordinateur");
+  git(source, "push", "--quiet", "origin", "main");
+  commit(source, "main", "ce que main a livré ensuite\n");
+
+  const issue = lancer(espace);
+  assert.equal(issue, "faite", `L'espace est resté sur une branche que plus personne ne pousse (reçu « ${issue} »).`);
+  assert.equal(brancheCourante(espace), "main", "L'espace n'a pas rejoint main.");
+  assert.equal(tete(espace), tete(source, "main"), "L'espace a rejoint main sans en prendre le dernier commit.");
+});
+
+cas("une branche de session EFFACÉE du distant rejoint main aussi", () => {
+  const { racine, source, distant } = monterDepotMain();
+  aNettoyer.push(racine);
+  git(source, "checkout", "--quiet", "-b", "claude/lot-fini");
+  commit(source, "claude/lot-fini", "le lot essayé\n");
+  const espace = ouvrirEspaceSur(racine, distant, "claude/lot-fini");
+
+  git(source, "checkout", "--quiet", "main");
+  git(source, "merge", "--quiet", "--ff-only", "claude/lot-fini");
+  git(source, "push", "--quiet", "origin", "main");
+  git(source, "push", "--quiet", "origin", "--delete", "claude/lot-fini");
+  commit(source, "main", "ce que main a livré ensuite\n");
+
+  const issue = lancer(espace);
+  assert.equal(issue, "faite", `Une branche disparue a figé l'espace (reçu « ${issue} »).`);
+  assert.equal(brancheCourante(espace), "main");
+  assert.equal(tete(espace), tete(source, "main"));
+});
+
+cas("un lot PAS ENCORE fusionné reste suivi sur sa branche", () => {
+  const { racine, source, distant } = monterDepotMain();
+  aNettoyer.push(racine);
+  git(source, "checkout", "--quiet", "-b", "claude/lot-en-essai");
+  commit(source, "claude/lot-en-essai", "première version du lot\n");
+  const espace = ouvrirEspaceSur(racine, distant, "claude/lot-en-essai");
+  commit(source, "claude/lot-en-essai", "seconde version du lot\n");
+
+  assert.equal(lancer(espace), "faite");
+  assert.equal(brancheCourante(espace), "claude/lot-en-essai", "L'espace a quitté un lot qu'il était en train d'essayer.");
+  assert.equal(tete(espace), tete(source, "claude/lot-en-essai"));
+});
+
+cas("une branche ouverte depuis main, que la session pousse ENSUITE, reste suivie", () => {
+  // Le piège du raisonnement trop court : la tête LOCALE est dans main (la
+  // branche vient d'être créée), mais le distant a déjà reçu le lot. Regarder
+  // la seule tête locale ferait quitter le lot au moment où il arrive.
+  const { racine, source, distant } = monterDepotMain();
+  aNettoyer.push(racine);
+  git(source, "checkout", "--quiet", "-b", "claude/lot-qui-arrive");
+  git(source, "push", "--quiet", "origin", "claude/lot-qui-arrive");
+  const espace = ouvrirEspaceSur(racine, distant, "claude/lot-qui-arrive");
+  commit(source, "claude/lot-qui-arrive", "le lot arrive\n");
+
+  assert.equal(lancer(espace), "faite");
+  assert.equal(brancheCourante(espace), "claude/lot-qui-arrive");
+  assert.equal(tete(espace), tete(source, "claude/lot-qui-arrive"));
+});
+
+cas("une main LOCALE qui porte un commit à elle n'est jamais forcée", () => {
+  const { racine, source, distant } = monterDepotMain();
+  aNettoyer.push(racine);
+  git(source, "checkout", "--quiet", "-b", "claude/lot-fini");
+  commit(source, "claude/lot-fini", "le lot essayé\n");
+  const espace = ouvrirEspaceSur(racine, distant, "claude/lot-fini");
+  git(espace, "branch", "--quiet", "main", "origin/main");
+  git(espace, "checkout", "--quiet", "main");
+  writeFileSync(path.join(espace, "local.txt"), "travail fait sur place\n");
+  git(espace, "add", ".");
+  git(espace, "commit", "--quiet", "-m", "travail local");
+  const local = tete(espace);
+  git(espace, "checkout", "--quiet", "claude/lot-fini");
+
+  git(source, "checkout", "--quiet", "main");
+  git(source, "merge", "--quiet", "--ff-only", "claude/lot-fini");
+  git(source, "push", "--quiet", "origin", "main");
+  commit(source, "main", "ce que main a livré ensuite\n");
+
+  const issue = lancer(espace);
+  assert.ok(issue.startsWith("impossible"), `Attendu un refus, reçu « ${issue} ».`);
+  assert.equal(tete(espace, "main"), local, "Un commit local de main a été effacé.");
+  assert.equal(brancheCourante(espace), "claude/lot-fini", "Le refus a laissé l'espace ailleurs que là où il était.");
+});
+
 for (const d of aNettoyer) rmSync(d, { recursive: true, force: true });
 
 if (echecs > 0) {
