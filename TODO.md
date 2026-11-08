@@ -2175,16 +2175,47 @@ une coopérative déclarée (n° SAP850484650) : d'après son site, l'adhérent
 émet ses factures depuis son espace Unipros, **au nom de la coopérative**, qui
 porte la déclaration, le crédit d'impôt et l'avance immédiate ; elle lui
 reverse le HT par autofacturation (39,99 € HT par mois, sans commission).
-Lu dans des extraits de recherche seulement : `unipros.coop` est refusé par le
-réseau de cette session. **Conséquence :** coder le crédit d'impôt ou la
-liaison Urssaf dans Atlas ne sert pas un adhérent d'une coopérative, qui n'a
-pas de numéro à lui ; cela sert l'artisan déclaré en son nom. Pour l'adhérent,
-le seul pont possible est vers l'outil de la coopérative (import ou API, à
-demander à Unipros). Ce qu'Evoliz fait pour lui n'est pas connu. Un comparatif
-le dit compatible avec l'avance immédiate (non lu, site refusé). **Rien n'est
-décidé** : trois questions sont à poser au collègue avant d'écrire du code
-(d'où sortent ses factures aux particuliers, à quoi sert Evoliz, quelle
-activité et quel rythme de facturation).
+**Lu sur les sites eux-mêmes le soir même**, après qu'il a ouvert le réseau
+(unipros.coop, www.evoliz.com, evoliz.io, help.evoliz.com) :
+
+- **Unipros** : l'adhérent facture « sous notre numéro », depuis Uniconnect, le
+  logiciel maison de la coopérative, réservé aux adhérents ; la coopérative
+  encaisse (chèque, carte, Cesu, virement, avance immédiate), reverse sous
+  48 h, et génère les attestations fiscales. Ses données s'exportent à tout
+  moment ; aucune API ni aucun import annoncés. **Le logiciel d'Unipros
+  s'appelle Uniconnect, pas Evoliz** : à faire confirmer par le collègue ;
+- **Evoliz** : fait le crédit d'impôt pour un organisme déclaré EN SON NOM
+  (numéro SAP, attestations fiscales, connexion Urssaf pour l'avance
+  immédiate). Exporte ses factures en Excel ou CSV (aide Evoliz, 2 octobre
+  2026), ce que l'import d'Atlas sait lire ; non éprouvé sur un vrai fichier ;
+- **l'API publique d'Evoliz** (`evoliz.io/api-docs/api-docs.yaml`, 149
+  routes) : clients, devis, factures, acomptes, paiements, transmission à la
+  plateforme agréée, FEC. **Aucune route Urssaf ni attestation fiscale** :
+  l'avance immédiate se déclenche dans l'écran d'Evoliz. Accès par clés que
+  l'artisan crée lui-même (Paramètres, Applications), sans programme
+  partenaire à ouvrir, contrairement à Pennylane (`docs/A-FAIRE.md` §6) ;
+- **l'habilitation à l'avance immédiate est celle de l'ORGANISME** : il la
+  demande sur api.gouv.fr (DataPass) en nommant son logiciel, reçoit un
+  `client_id` et un `client_secret`, et les colle dans ce logiciel. Le
+  logiciel doit être reconnu par l'Urssaf. Pour Atlas : être reconnu comme
+  éditeur, puis chaque artisan fait sa propre demande ;
+- **garantie financière** (aide Evoliz, 20 octobre 2026, non lue à l'Urssaf
+  dont le site ne répond pas d'ici) : exigée depuis le 1er janvier 2025, à
+  déposer avant le 31 octobre 2026, **dès le premier euro si l'organisme
+  encaisse un acompte et le déclare dans sa demande de paiement**, sinon à
+  200 000 € déclarés dans l'année. Atlas vit d'acomptes : à peser avant toute
+  liaison Urssaf.
+
+**Conséquence :** coder le crédit d'impôt ou la liaison Urssaf dans Atlas ne
+sert pas un adhérent d'une coopérative, qui n'a pas de numéro à lui ; cela sert
+l'artisan déclaré en son nom. Pour celui qui est sur Evoliz en son nom, la voie
+la plus courte est le branchement Evoliz déjà prévu (Atlas prépare, Evoliz
+émet et déclenche l'avance immédiate), qui règle aussi la facturation
+électronique. Non vérifié : qu'une facture créée par l'API puisse partir à
+l'Urssaf depuis l'écran d'Evoliz (essai gratuit de 15 jours pour le savoir).
+**Rien n'est décidé** : trois questions sont à poser au collègue avant d'écrire
+du code (d'où sortent ses factures aux particuliers, Evoliz ou Uniconnect, à
+quoi sert l'autre, quelle activité et quel rythme de facturation).
 
 **Tranché le 9 octobre 2026 : les acomptes gardent leur taux CUMULÉ.** C'est
 sa propre façon de compter : *« 1er acompte 30 %, 2e 50 %, 3e 75 % »*, soit
