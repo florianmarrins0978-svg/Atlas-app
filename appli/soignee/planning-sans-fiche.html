@@ -33,6 +33,12 @@
   (chantier.clientTelephone) : sans fiche, il reste gris. Les travaux à faire
   se remplissent sur la fiche d'intervention, une fois le chantier posé.
 
+  SON ACCORD, LE MÊME JOUR : « 1, c'est OK. Ne va pas me changer la
+  catégorie Un client ou Autre chose. Change-moi juste à partir du moment où
+  on clique sur Autre chose. » La planche montrait les deux mots au-dessus du
+  formulaire : dans l'appli, ils s'effacent dès qu'on en touche un
+  (AjoutAuJour.tsx). Retirés : rien ne change avant le toucher.
+
   CE QUI CHANGE : « Autre chose » prend l'adresse, le téléphone et les
   travaux à faire. L'adresse va où elle va déjà ; le téléphone demande une
   case neuve sur le chantier (une colonne, vide pour tout ce qui existe) ;
@@ -50,9 +56,6 @@
           font-size: 15px; font-weight: 600; color: var(--atlas-ink); }
 .moment em { font-style: normal; font-weight: 400; font-size: 13px; color: var(--atlas-muted); }
 .moment em.pose { color: var(--atlas-ink); font-size: 15px; font-weight: 600; }
-.voies { display: flex; flex-wrap: wrap; gap: 4px 18px; margin-top: 12px; }
-.voies button { min-height: 40px; font-size: 15px; font-weight: 600; color: var(--atlas-orTexte); }
-.voies button[aria-pressed="true"] { color: var(--atlas-ink); border-bottom: 1.5px solid var(--atlas-ink); }
 .champ-saisie { margin-top: 8px; min-height: 48px; background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
 .rubrique-champs { margin: 14px 0 0; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--atlas-inkSoft); }
 .travaux { list-style: none; margin: 6px 0 0; padding: 0; }
@@ -113,11 +116,7 @@
               <div class="moment">Après-midi <em id="slot-am">libre</em></div>
 
               <div id="formulaire">
-                <div class="voies" aria-hidden="true">
-                  <button type="button" tabindex="-1">Un client</button>
-                  <button type="button" tabindex="-1" aria-pressed="true">Autre chose</button>
-                </div>
-                <input class="champ-saisie" id="nom" value="Jean Luloui" placeholder="Un nom, un rendez-vous, une livraison" aria-label="Nom">
+                <input class="champ-saisie" id="nom" style="margin-top:14px" value="Jean Luloui" placeholder="Un nom, un rendez-vous, une livraison" aria-label="Nom">
                 <input class="champ-saisie" id="adresse" value="4 rue des Tilleuls, Vertou" placeholder="Adresse" aria-label="Adresse">
                 <input class="champ-saisie" id="telephone" value="06 41 22 87 10" placeholder="Téléphone" aria-label="Téléphone" inputmode="tel">
 
@@ -178,6 +177,7 @@
     </ul>
     <h2>Ce qui ne bouge pas</h2>
     <ul class="garde">
+      <li>« Un client » et « Autre chose » eux-mêmes, au même endroit, du même dessin. Seul change ce qui s’ouvre après « Autre chose ».</li>
       <li>« Un client » : un nom connu se propose, un nom inconnu crée sa fiche, comme aujourd’hui.</li>
       <li>La fiche d’intervention : la note, la fiche de sécurité, les travaux, au même endroit.</li>
     </ul>
