@@ -1387,6 +1387,13 @@ Son banc d'essai ne sait faire qu'une chose (`.devcontainer/mettre-a-jour.sh`) :
 (`--ff-only`). Une branche qu'il ne suit pas ne lui arrivera **jamais**, quoi
 qu'on y pousse — et il n'aura pas le moindre message pour le lui dire.
 
+**Sauf une branche de session déjà fusionnée — 8 novembre 2026.** Son espace
+PC a servi un mois le code de `claude/app-sur-ordinateur`, 1 486 commits
+derrière `main`. Depuis, une branche dont tout le contenu est dans `main` (ou
+qui a été effacée) ramène l'espace sur `main` à l'allumage suivant
+(`ARCHITECTURE.md` §568). Devant « il me manque des versions », lire d'abord la
+ligne « Branche suivie » de sa fiche.
+
 **Donc : un lot n'est terminé qu'une fois sur `main`.** Le pousser sur sa
 branche est une étape, pas une livraison. Demander l'accord (§6 ci-dessus), puis
 fusionner et pousser — sans quoi il éprouve une version d'avant en croyant

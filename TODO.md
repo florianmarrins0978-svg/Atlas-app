@@ -2223,6 +2223,134 @@ pratique déjà avec un autre logiciel : l'attestation retire ce que le client
 a déjà touché. La liaison (habilitation d'Atlas comme logiciel partenaire,
 API « tiers de prestation ») se rouvrira si des artisans la demandent.
 
+**Un collègue dans une coopérative ne se sert pas de cette liaison (8 novembre
+2026).** Sa question : un collègue en services à la personne, adhérent
+d'Unipros et utilisateur d'Evoliz, pourrait-il passer sur Atlas ? Unipros est
+une coopérative déclarée (n° SAP850484650) : d'après son site, l'adhérent
+émet ses factures depuis son espace Unipros, **au nom de la coopérative**, qui
+porte la déclaration, le crédit d'impôt et l'avance immédiate ; elle lui
+reverse le HT par autofacturation (39,99 € HT par mois, sans commission).
+**Lu sur les sites eux-mêmes le soir même**, après qu'il a ouvert le réseau
+(unipros.coop, www.evoliz.com, evoliz.io, help.evoliz.com) :
+
+- **Unipros** : l'adhérent facture « sous notre numéro », depuis Uniconnect, le
+  logiciel maison de la coopérative, réservé aux adhérents ; la coopérative
+  encaisse (chèque, carte, Cesu, virement, avance immédiate), reverse sous
+  48 h, et génère les attestations fiscales. Ses données s'exportent à tout
+  moment ; aucune API ni aucun import annoncés. **Le logiciel d'Unipros
+  s'appelle Uniconnect, pas Evoliz** : à faire confirmer par le collègue ;
+- **Evoliz** : fait le crédit d'impôt pour un organisme déclaré EN SON NOM
+  (numéro SAP, attestations fiscales, connexion Urssaf pour l'avance
+  immédiate). Exporte ses factures en Excel ou CSV (aide Evoliz, 2 octobre
+  2026), ce que l'import d'Atlas sait lire ; non éprouvé sur un vrai fichier ;
+- **l'API publique d'Evoliz** (`evoliz.io/api-docs/api-docs.yaml`, 149
+  routes) : clients, devis, factures, acomptes, paiements, transmission à la
+  plateforme agréée, FEC. **Aucune route Urssaf ni attestation fiscale** :
+  l'avance immédiate se déclenche dans l'écran d'Evoliz. Accès par clés que
+  l'artisan crée lui-même (Paramètres, Applications), sans programme
+  partenaire à ouvrir, contrairement à Pennylane (`docs/A-FAIRE.md` §6) ;
+- **l'habilitation à l'avance immédiate est celle de l'ORGANISME** : il la
+  demande sur api.gouv.fr (DataPass) en nommant son logiciel, reçoit un
+  `client_id` et un `client_secret`, et les colle dans ce logiciel. Le
+  logiciel doit être reconnu par l'Urssaf. Pour Atlas : être reconnu comme
+  éditeur, puis chaque artisan fait sa propre demande ;
+- **garantie financière** (aide Evoliz, 20 octobre 2026, non lue à l'Urssaf
+  dont le site ne répond pas d'ici) : exigée depuis le 1er janvier 2025, à
+  déposer avant le 31 octobre 2026, **dès le premier euro si l'organisme
+  encaisse un acompte et le déclare dans sa demande de paiement**, sinon à
+  200 000 € déclarés dans l'année. Atlas vit d'acomptes : à peser avant toute
+  liaison Urssaf.
+
+**Conséquence :** coder le crédit d'impôt ou la liaison Urssaf dans Atlas ne
+sert pas un adhérent d'une coopérative, qui n'a pas de numéro à lui ; cela sert
+l'artisan déclaré en son nom. Pour celui qui est sur Evoliz en son nom, la voie
+la plus courte est le branchement Evoliz déjà prévu (Atlas prépare, Evoliz
+émet et déclenche l'avance immédiate), qui règle aussi la facturation
+électronique. Non vérifié : qu'une facture créée par l'API puisse partir à
+l'Urssaf depuis l'écran d'Evoliz (essai gratuit de 15 jours pour le savoir).
+**Rien n'est décidé** : trois questions sont à poser au collègue avant d'écrire
+du code (d'où sortent ses factures aux particuliers, Evoliz ou Uniconnect, à
+quoi sert l'autre, quelle activité et quel rythme de facturation).
+
+**Sa vraie demande, le même soir :** *« Je veux pas brancher quelque chose,
+j'aimerais pouvoir faire la même chose. Qu'il puisse faire ce qu'il faisait
+chez Unipro, mais chez moi. »* Le collègue ne peut pas facturer en son nom.
+
+**Ce qu'est Unipros, d'après ses CGV et son règlement intérieur** (lus le
+8 novembre 2026) : une SCIC SA dont l'objet est l'exercice **exclusif**
+d'activités de services à la personne, « dont l'exécution est confiée à ses
+sociétaires ». Elle est l'organisme déclaré, émet la facture, encaisse
+(l'avance immédiate comprise), reverse 100 % en 24 à 48 h, génère les
+attestations fiscales et les déclarations SAP. Elle exige de chaque
+sociétaire une assurance de responsabilité civile professionnelle, vérifie
+son identité, et réclame tous les six mois les documents de vigilance contre
+le travail dissimulé (articles L. 8221-1 et D. 8254-2 du code du travail).
+Son règlement se réclame des « coopératives d'artisans de services à la
+personne » : **le droit de confier l'exécution à des sociétaires non déclarés
+tient à cette forme coopérative**, et rien ne dit qu'une société ordinaire
+puisse en faire autant. À faire trancher par un avocat avant toute ligne de
+code sur cette voie.
+
+**Ce qui se copie dans Atlas, et ce qui ne s'y copie pas :**
+
+| | |
+|---|---|
+| le logiciel (numéro, mentions, attestations, heures, Cesu, avance immédiate) | **se code** : c'est la planche `appli/credit-d-impot.html`, plus la liaison Urssaf ; sert tout artisan qui a SON numéro |
+| être l'organisme déclaré à la place de l'artisan | **ne se code pas** : il faut une structure à lui, déclarée, à activité exclusive (donc pas Eden Nature), probablement une coopérative ; c'est une entreprise à créer, avec ses obligations |
+| facturer et encaisser pour un autre artisan, reverser, autofacturer | se code, mais **traverse l'isolation entre entreprises** (l'organisme émet pour le travail d'un autre compte) et **revient sur la décision du 31 juillet 2026** : Atlas prépare, il n'émet pas (`docs/AGENT.md` §6, `MVP.md`) |
+
+**Et une prémisse à vérifier avec lui :** depuis le 1er janvier 2025, un
+micro-entrepreneur ou une entreprise de moins de 11 salariés dont les services
+à la personne sont l'activité principale peut avoir SON numéro tout en gardant
+jusqu'à 30 % d'activité hors services à la personne (décret n° 2024-851,
+FAQ de servicesalapersonne.gouv.fr lue le 8 novembre 2026). Si c'est
+l'activité exclusive qui empêchait le collègue d'avoir son numéro, ce n'est
+peut-être plus vrai.
+
+**Proposé, pas décidé :** coder d'abord le module crédit d'impôt pour les
+artisans qui ont leur numéro (il servira aussi à la voie coopérative, s'il la
+choisit), et ne rien coder de la voie coopérative avant l'avis d'un avocat.
+
+**Pourquoi la planche d'octobre n'a jamais été codée (sa question du
+8 novembre 2026, « comment ça se fait ? »)** : posée le 8 et le 9 octobre,
+elle finissait par « Tout est dessiné » et attendait son choix (§3 bis :
+une planche ne se code qu'une fois choisie). Le choix n'est jamais venu, et
+aucune session ne la lui a représentée.
+
+**Refaite le 8 novembre 2026, à sa demande (« remonte-moi la maquette, et
+regarde si tu peux l'améliorer »)** : `appli/soignee/credit-d-impot.html`,
+sur le kit de l'appli soignée, cinq écrans (Mon entreprise, Le client, Retour
+du jour, La facture, L'attestation). Ce qu'elle ajoute : l'avance immédiate
+de bout en bout (relier l'Urssaf avec les deux codes de l'habilitation,
+inscrire un client depuis sa fiche avec les seules cases qui manquent,
+« Envoyer à l'Urssaf », le suivi envoyée, validée, versée ou refusée), pas
+d'acompte pour un client inscrit (garantie financière), le logo sur les
+papiers, l'attestation de janvier sur papier. L'ancienne planche reste, son
+lien d'`essais.html` renvoie à la nouvelle. **Rien n'est codé ; elle attend
+son choix.** Ce qu'elle laisse à trancher est écrit sous ses écrans.
+
+**Sa règle du 8 novembre 2026 pour les heures du retour du jour** : *« il
+faut pouvoir mettre n'importe quel nombre d'heures »*. La roulette des heures
+va de 0 à 24 h, celle des minutes de 00 à 59, une par une (la planche
+d'octobre s'arrêtait à 12 h, par quarts d'heure). Posé dans la planche, à
+garder tel quel au codage.
+
+**Ses deux remarques suivantes, le même jour :**
+
+- *« le client paie 252 et l'Urssaf te verse 504, alors que la facture vaut
+  504 : il n'y a pas un problème dans le calcul ? »* Le calcul était juste,
+  l'écran trompait : deux cartes côte à côte se lisaient comme deux paiements.
+  L'Urssaf verse TOUTE la facture ; elle prélève la moitié chez le client et
+  avance l'autre, son crédit d'impôt ; l'artisan ne reçoit rien du client
+  lui-même. La planche l'écrit désormais en addition (payé par le client,
+  son crédit d'impôt, puis « L'Urssaf vous verse » sous le trait). Et une
+  phrase de Mon entreprise était fausse (« l'Urssaf vous verse le reste ») :
+  corrigée en « toute la facture » ;
+- *« on va pas toutes les envoyer d'un coup ; le mieux, c'est une par une »* :
+  plus de bouton « Les envoyer ». Chaque attestation s'ouvre, se relit et part
+  seule, par le canal des factures du client ; la liste montre « À envoyer » ou
+  « Envoyée » par client, et la ligne de Terminés compte ce qui reste.
+
 **Tranché le 9 octobre 2026 : les acomptes gardent leur taux CUMULÉ.** C'est
 sa propre façon de compter : *« 1er acompte 30 %, 2e 50 %, 3e 75 % »*, soit
 ce que le client a payé en tout à chaque étape. L'appli fait déjà ainsi
