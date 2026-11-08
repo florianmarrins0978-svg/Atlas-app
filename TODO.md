@@ -779,7 +779,13 @@ ici** : que `ATLAS_EDITEUR_EMAIL` soit posée sur son espace avec son adresse.
 `demo@atlas.local` (sa réponse) ; `completer-env-local.sh` l'écrit remplie
 dans `.env.local` à l'allumage. **Pas vérifié ICI** : qu'une variable vide
 posée par `run-e2e-tests.ts` l'emporte sur `.env.local` pour `next start`
-(si non, `test-idees-e2e` rougit sur son espace, et le dira). Le signe
+(si non, `test-idees-e2e` rougit sur son espace, et le dira).
+**Provisoire, et il l'a dit** (8 novembre 2026) : *« un jour cette appli sera
+chez un hébergeur et je vais sûrement changer de compte éditeur ; là, c'est
+juste pour faire des tests »*. `demo@atlas.local` ne vaut que pour son banc
+(`.devcontainer/`). Chez l'hébergeur : poser `ATLAS_EDITEUR_EMAIL` avec la
+nouvelle adresse dans ses réglages, jamais la reprendre du banc, et ne pas y
+garder le compte de démonstration. Le signe
 à l'écran : Réglages, Atlas IA, le paquet « Ce qu'elle sait reconnaître » et
 Mon vocabulaire n'apparaissent qu'à l'éditeur. Le jour où les artisans
 auront une adresse en ligne, la même variable devra y être posée, sinon
