@@ -31,6 +31,15 @@
   fiche mais sur sa place : « Dans Vos clients » d'office, ou « Pas encore »,
   et la fiche y entre seule à son premier devis ou sa première facture. Les
   cases restent ouvertes dans les deux cas, avec le prénom en plus.
+
+  REVU UNE SECONDE FOIS, SA PRÉCISION : « ça sera un client que je ne
+  facturerai pas ; il passera par une autre plateforme pour être facturé,
+  comme Unipros, mais j'ai envie de l'ajouter à mon planning. Il faut
+  préciser au moment où l'utilisateur va utiliser cette case qu'il ne pourra
+  pas facturer ce client. » Retour à « Créer sa fiche » ou « Sans fiche » :
+  sans fiche, une phrase le dit tout de suite, le prénom, le téléphone et
+  l'e-mail s'en vont (ils n'ont pas de place sans fiche), et l'adresse reste,
+  portée par le chantier (chantiers.adresse_chantier) pour savoir où aller.
 */
 .ecran { background: var(--atlas-cream); }
 .semaine { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin: 0 0 14px; }
@@ -59,6 +68,7 @@
 .cases .champ-saisie { margin-top: 8px; min-height: 48px; background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
 .cases { overflow: hidden; transition: opacity 180ms var(--courbe); }
 .cases[hidden] { display: none; }
+.avertissement { margin: 8px 0 0; font-size: 13.5px; line-height: 1.4; color: var(--atlas-alerte); }
 .pied { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
 .pied .bouton-petit { min-height: 40px; }
 .discretion { min-height: 40px; padding: 0 14px; border-radius: 20px; font-size: 14px;
@@ -70,7 +80,7 @@
 <header class="pl-tete">
   <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
   <h1 class="pl-titre">Un client sans fiche</h1>
-  <p class="pl-verdict">Tapez un nom. Connu, il se propose. Inconnu, vous remplissez ce que vous savez, et vous choisissez : <b>Dans Vos clients</b> ou <b>Pas encore</b>. Essayez « Bernard », puis « Luloui ».</p>
+  <p class="pl-verdict">Tapez un nom. Connu, il se propose. Inconnu, vous choisissez : <b>Créer sa fiche</b>, ou <b>Sans fiche</b> pour un client facturé ailleurs. Essayez « Bernard », puis « Luloui ».</p>
 </header>
 
 <main class="pl-scene">
@@ -110,19 +120,22 @@
                   <div id="choix-a">
                     <p class="verdict">Inconnu.</p>
                     <div class="mots" role="group" aria-label="Sa fiche">
-                      <button type="button" data-fiche="oui" aria-pressed="true">Dans Vos clients</button>
-                      <button type="button" data-fiche="non" aria-pressed="false">Pas encore</button>
+                      <button type="button" data-fiche="oui" aria-pressed="true">Créer sa fiche</button>
+                      <button type="button" data-fiche="non" aria-pressed="false">Sans fiche</button>
                     </div>
                   </div>
                   <!-- B : la phrase d'aujourd'hui, et une case. -->
                   <div id="choix-b" hidden>
                     <p class="verdict" id="phrase-b">Inconnu, sa fiche sera créée</p>
-                    <label class="case"><input type="checkbox" id="case-sans">Pas encore dans Vos clients</label>
+                    <label class="case"><input type="checkbox" id="case-sans">Sans fiche</label>
                   </div>
+                  <p class="avertissement" id="avert" hidden>Il ne pourra pas être facturé dans Atlas.</p>
                   <div class="cases" id="cases">
                     <input class="champ-saisie" placeholder="Prénom" aria-label="Prénom">
                     <input class="champ-saisie" placeholder="Téléphone" aria-label="Téléphone">
                     <input class="champ-saisie" placeholder="E-mail" aria-label="E-mail">
+                  </div>
+                  <div class="cases">
                     <input class="champ-saisie" placeholder="Adresse du chantier" aria-label="Adresse du chantier">
                   </div>
                 </div>
@@ -148,9 +161,9 @@
   <section class="pl-notes">
     <h2>Ce qui change</h2>
     <ul>
-      <li>Sous un nom inconnu, le prénom, le téléphone, l’e-mail et l’adresse se remplissent toujours : c’est un client que vous facturerez peut-être.</li>
-      <li>Puis deux mots : <b>Dans Vos clients</b>, choisi d’office comme aujourd’hui, ou <b>Pas encore</b>.</li>
-      <li>Pas encore : tout est gardé, mais il n’encombre pas « Vos clients ». Il y entre tout seul à son premier devis ou sa première facture.</li>
+      <li>Sous un nom inconnu, deux mots : <b>Créer sa fiche</b>, choisi d’office comme aujourd’hui, ou <b>Sans fiche</b>, pour un client facturé ailleurs (Unipros, par exemple).</li>
+      <li>Sans fiche, une phrase le dit tout de suite : <b>il ne pourra pas être facturé dans Atlas</b>.</li>
+      <li>Sans fiche, le prénom, le téléphone et l’e-mail s’en vont. L’adresse du chantier reste, pour savoir où aller.</li>
     </ul>
     <h2>A ou B</h2>
     <ul>
@@ -160,7 +173,8 @@
     <h2>À trancher</h2>
     <ul class="a-trancher">
       <li>A ou B ?</li>
-      <li>Le prénom est une case nouvelle : aujourd’hui, le nom et le prénom s’écrivent ensemble. On la garde ?</li>
+      <li>Le téléphone d’un client sans fiche : il n’a pas de place aujourd’hui. On l’ajoute au chantier, pour l’appeler la veille ?</li>
+      <li>Le prénom, avec une fiche, est une case nouvelle : aujourd’hui, le nom et le prénom s’écrivent ensemble. On la garde ?</li>
     </ul>
     <h2>Ce qui ne bouge pas</h2>
     <ul class="garde">
@@ -199,7 +213,9 @@ document.addEventListener("DOMContentLoaded", function () {
     zoneInconnu.hidden = !inconnu;
     choixA.hidden = variante !== "a";
     choixB.hidden = variante !== "b";
-    phraseB.textContent = sansFiche ? "Inconnu, gardé hors de Vos clients" : "Inconnu, sa fiche sera créée";
+    cases.hidden = sansFiche;
+    document.getElementById("avert").hidden = !sansFiche;
+    phraseB.textContent = sansFiche ? "Inconnu" : "Inconnu, sa fiche sera créée";
     document.querySelectorAll("[data-fiche]").forEach(function (b) {
       b.setAttribute("aria-pressed", String((b.dataset.fiche === "non") === sansFiche));
     });
