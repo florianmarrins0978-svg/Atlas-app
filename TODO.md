@@ -22,7 +22,10 @@ et « … 2025 », la date écrite en entier, puis l'écart. « Depuis janvier �
 ligne « novembre 2025 entier » sont retirés ; **la feuille de tous les mois
 revient** (*« pouvoir voir tous les mois, ça c'est bien »*), en tableau
 Mois, 2025, 2026 et l'écart. **« Déjà en main » devient « Ce qui peut encore
-rentrer »** : il ne comprenait pas le titre.
+rentrer »** : il ne comprenait pas le titre. **Le jour avant le mois, partout**
+(*« la date est toujours à l'envers »*) : « Au 8 novembre 2026 », « D'ici le
+30 novembre », « Du 1er au 8 novembre », jamais « 2026, au 8 novembre » ni
+« Novembre, d'ici le 30 ».
 **Tranché par lui le 8 novembre** : *« il faut comparer le jour, le 8 avec le
 8 de l'année dernière »*. La comparaison au même jour du calendrier est donc
 retenue ; elle ne se redemande pas.
