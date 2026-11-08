@@ -1,5 +1,29 @@
 # Prochaines tâches
 
+## ⏳ À CHOISIR PAR LUI (8 novembre 2026) : sur ordinateur, la largeur de la colonne
+
+Sa demande, photo de son portable à l'appui : *« les bandes s'étirent jusqu'au
+milieu de l'écran alors que le texte s'arrête à un quart ; pareil pour les
+notifications. Est-ce qu'on peut trouver un juste milieu ? »*
+
+**La racine** : sur ordinateur, `--atlas-largeur` vaut 64rem (1024 px,
+`globals.css`, « L'ORDINATEUR », §447), plus du double de la colonne pour
+laquelle les écrans sont dessinés. Tout ce qui prend la largeur s'étire, et le
+mois du planning ne tient plus à l'écran.
+
+**La planche** : `appli/sur-ordinateur-largeur.html`, ses vrais écrans rendus à
+1536 x 730 px avec seule cette variable changée (1024, 768, 672, 576 px).
+Conseillée : **672 px (42rem)**, la largeur de la feuille du devis.
+
+**Ce que la correction touchera, une fois choisie** : la seule valeur de
+`--atlas-largeur` au-delà de 1024 px d'écran, et §447. Aucun écran ; le
+téléphone ne bouge pas. Relire `scripts/test-sur-ordinateur-e2e.ts`, qui peut
+mesurer la colonne.
+
+**Vu en passant, hors de sa demande** : sur Paysage, la liste dépasse le titre
+de 10 px de chaque côté (`mx-4` contre `mx-[26px]`, `src/app/paysage/page.tsx`),
+téléphone compris. Proposé à part sur la planche.
+
 ## ⏳ À CHOISIR PAR LUI (8 novembre 2026) : Mon année, l'objectif de chiffre d'affaires et de bénéfice
 
 **Sa demande du 8 novembre** : *« pouvoir se mettre des objectifs : cette
@@ -18,8 +42,11 @@ huit jours, sans quoi chaque début de mois paraîtrait en retard). Il se montre
 aussi sans objectif. **Allégé sur sa demande du même jour** : *« on voit la
 date d'aujourd'hui par rapport à la date de l'année dernière, ce qu'on a fait
 en plus ou en moins, c'est tout »*. Deux lignes, « Du 1er au 8 novembre 2026 »
-et « … 2025 », la date écrite en entier, puis l'écart. « Depuis janvier », la
-ligne « novembre 2025 entier » et la feuille de tous les mois sont retirés.
+et « … 2025 », la date écrite en entier, puis l'écart. « Depuis janvier » et la
+ligne « novembre 2025 entier » sont retirés ; **la feuille de tous les mois
+revient** (*« pouvoir voir tous les mois, ça c'est bien »*), en tableau
+Mois, 2025, 2026 et l'écart. **« Déjà en main » devient « Ce qui peut encore
+rentrer »** : il ne comprenait pas le titre.
 **Tranché par lui le 8 novembre** : *« il faut comparer le jour, le 8 avec le
 8 de l'année dernière »*. La comparaison au même jour du calendrier est donc
 retenue ; elle ne se redemande pas.

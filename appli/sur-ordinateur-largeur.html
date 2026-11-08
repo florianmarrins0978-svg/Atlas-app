@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sur ordinateur, la largeur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!--
+  Sa demande du 8 novembre 2026, sur son portable : « les bandes s'étirent
+  jusqu'au milieu de l'écran alors que le texte s'arrête à un quart ; pareil
+  pour les notifications. Est-ce qu'on peut trouver un juste milieu ? »
+
+  Les images sont les VRAIS écrans d'Atlas, rendus à la largeur de son
+  portable (1536 x 730 px, écran Full HD à 125 %), avec le jeu de
+  démonstration. D'une image à l'autre, une seule chose change : la variable
+  `--atlas-largeur` du cadre (`src/app/globals.css`, « L'ORDINATEUR »), qui
+  vaut aujourd'hui 64rem. C'est exactement ce que la correction toucherait :
+  aucun écran n'est réécrit, et le téléphone ne bouge pas.
+-->
+<style>
+  :root{
+    --fond:#e9e6df; --carte:#faf9f5; --encre:#1c1c1a; --doux:#4a4a44; --gris:#5f5a52;
+    --trait:rgba(28,28,26,.12); --or:#8b6835; --or-clair:#B98B47; --vert:#2f3b2f;
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--fond)}
+  body{font-family:var(--sans);color:var(--encre);-webkit-font-smoothing:antialiased}
+  ::selection{background:rgba(185,139,71,.28)}
+  .page{max-width:1120px;margin:0 auto;padding:36px 20px 80px}
+  h1{font:500 34px/1.12 var(--serif);margin:0 0 8px;letter-spacing:-.01em}
+  .chapeau{color:var(--doux);font-size:15.5px;line-height:1.55;margin:0 0 26px;max-width:60ch}
+
+  .choix{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+  .choix button{appearance:none;border:0;cursor:pointer;font:600 13px/1 var(--sans);
+    padding:12px 16px;border-radius:999px;background:var(--carte);color:var(--doux);
+    box-shadow:inset 0 0 0 1px var(--trait);transition:background .2s,color .2s,box-shadow .2s}
+  .choix button:hover{box-shadow:inset 0 0 0 1px var(--or-clair)}
+  .choix button:focus-visible{outline:2px solid var(--or-clair);outline-offset:2px}
+  .choix button[aria-pressed="true"]{background:var(--vert);color:#faf9f5;box-shadow:none}
+  .choix .conseil{font-weight:500;opacity:.8;margin-left:6px}
+  .ligne-choix{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+  .ligne-choix .quoi{font:600 11px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;
+    color:var(--gris);min-width:72px}
+
+  .ecran{margin:22px 0 0;border-radius:14px;overflow:hidden;background:var(--carte);
+    box-shadow:0 14px 40px -18px rgba(28,24,16,.35),0 2px 6px rgba(28,24,16,.08),inset 0 0 0 1px var(--trait)}
+  .ecran .barre{display:flex;gap:6px;padding:10px 14px;background:#efece5;border-bottom:1px solid var(--trait)}
+  .ecran .barre span{width:9px;height:9px;border-radius:50%;background:#d6d1c6}
+  .ecran img{display:block;width:100%;height:auto;aspect-ratio:1536/730;background:#f3f1ec}
+  .mesure{margin:12px 2px 0;color:var(--gris);font-size:13.5px;line-height:1.5}
+  .mesure b{color:var(--encre);font-weight:600}
+
+  h2{font:500 24px/1.2 var(--serif);margin:52px 0 14px}
+  .vu{list-style:none;margin:0;padding:0;max-width:72ch}
+  .vu li{padding:14px 0;border-top:1px solid var(--trait);font-size:15px;line-height:1.55;color:var(--doux)}
+  .vu li:last-child{border-bottom:1px solid var(--trait)}
+  .vu b{color:var(--encre);font-weight:600}
+  .question{margin:34px 0 0;padding:18px 20px;border-radius:12px;background:var(--carte);
+    box-shadow:inset 0 0 0 1px var(--trait);max-width:72ch;font-size:15px;line-height:1.55}
+  .question b{font-weight:600}
+  @media (max-width:640px){
+    h1{font-size:28px}
+    .choix button{padding:11px 13px;font-size:12.5px}
+  }
+</style>
+</head>
+<body>
+<main class="page">
+  <h1>Sur ordinateur, la largeur</h1>
+  <p class="chapeau">Vos vrais écrans, à la taille de votre portable. Seule la largeur de la colonne change. Le téléphone ne bouge pas.</p>
+
+  <div class="ligne-choix">
+    <span class="quoi">Écran</span>
+    <div class="choix" id="ecrans" role="group" aria-label="Écran">
+      <button data-ecran="chantiers" aria-pressed="true">Chantiers</button>
+      <button data-ecran="clients" aria-pressed="false">Clients</button>
+      <button data-ecran="client" aria-pressed="false">Fiche client</button>
+      <button data-ecran="planning" aria-pressed="false">Planning</button>
+      <button data-ecran="reglages" aria-pressed="false">Réglages</button>
+    </div>
+  </div>
+  <div class="ligne-choix">
+    <span class="quoi">Largeur</span>
+    <div class="choix" id="largeurs" role="group" aria-label="Largeur">
+      <button data-largeur="actuelle" aria-pressed="false">Aujourd’hui, 1024 px</button>
+      <button data-largeur="48" aria-pressed="false">768 px</button>
+      <button data-largeur="42" aria-pressed="true">672 px<span class="conseil">conseillée</span></button>
+      <button data-largeur="36" aria-pressed="false">576 px</button>
+    </div>
+  </div>
+
+  <figure class="ecran" style="margin-left:0;margin-right:0">
+    <div class="barre" aria-hidden="true"><span></span><span></span><span></span></div>
+    <img id="image" src="images/largeur/chantiers-42.jpg" alt="L’écran Chantiers, colonne de 672 px" width="1536" height="730">
+  </figure>
+  <p class="mesure" id="mesure"></p>
+
+  <h2>Ce que j’ai regardé sur ordinateur</h2>
+  <ul class="vu">
+    <li><b>Tout s’étire, pas seulement les bandes.</b> Les notifications, les lignes des listes, le bouton « Importer devis / facture », les deux actions de la fiche client. Le texte reste à gauche, la flèche part au bout de 1024 px.</li>
+    <li><b>Le planning ne tient pas à l’écran.</b> À 1024 px, chaque jour fait près de 150 px de haut : la fin du mois passe sous « 1 client sans date ». À 672 px, le mois entier se voit.</li>
+    <li><b>672 px, c’est la largeur du devis.</b> La feuille du devis la porte déjà : toutes les pages auraient la même.</li>
+    <li><b>Paysage : la liste dépasse le titre de 10 px de chaque côté.</b> Petit décalage, sur téléphone aussi. À corriger à part si vous le voulez.</li>
+  </ul>
+
+  <p class="question"><b>Votre choix :</b> quelle largeur ? Un seul réglage la change pour toutes les pages, et tout ce qui sera modifié sur le téléphone suivra.</p>
+</main>
+
+<script>
+  const MESURES = {
+    actuelle: "<b>1024 px</b>, comme aujourd’hui.",
+    "48": "<b>768 px</b>, un pas vers le juste milieu.",
+    "42": "<b>672 px</b>, comme la feuille du devis.",
+    "36": "<b>576 px</b>, à peine plus qu’un téléphone.",
+  };
+  const NOMS = { chantiers: "Chantiers", clients: "Clients", client: "Fiche client", planning: "Planning", reglages: "Réglages" };
+  let ecran = "chantiers", largeur = "42";
+  const image = document.getElementById("image");
+  const mesure = document.getElementById("mesure");
+  // Les vingt images se chargent d'avance : passer d'une largeur à l'autre doit
+  // être instantané, sinon on compare une image à un écran blanc.
+  for (const e of Object.keys(NOMS)) for (const l of Object.keys(MESURES)) new Image().src = `images/largeur/${e}-${l}.jpg`;
+  function montrer() {
+    image.src = `images/largeur/${ecran}-${largeur}.jpg`;
+    image.alt = `L’écran ${NOMS[ecran]}, ${largeur === "actuelle" ? "colonne d’aujourd’hui" : "autre largeur"}`;
+    mesure.innerHTML = MESURES[largeur];
+  }
+  function relier(groupe, attribut, poser) {
+    groupe.addEventListener("click", (ev) => {
+      const b = ev.target.closest("button");
+      if (!b) return;
+      for (const x of groupe.querySelectorAll("button")) x.setAttribute("aria-pressed", String(x === b));
+      poser(b.dataset[attribut]);
+      montrer();
+    });
+  }
+  relier(document.getElementById("ecrans"), "ecran", (v) => (ecran = v));
+  relier(document.getElementById("largeurs"), "largeur", (v) => (largeur = v));
+  montrer();
+</script>
+</body>
+</html>
