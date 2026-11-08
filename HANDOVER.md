@@ -10,6 +10,27 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## DEUX ESPACES, DEUX BASES (8 novembre 2026)
+
+**Sa plainte :** sur son PC, Atlas est vide (aucun client, aucune facture, TVA à
+zéro), alors que tout est sur son téléphone. **Ce n'est pas un défaut du code** :
+le PC ouvre l'espace `super-duper-umbrella-vpg6477549gjcxxjx` (ouvert le
+3 octobre pour `claude/app-sur-ordinateur`, §568), le téléphone en ouvre un
+autre. Chaque espace porte son propre PostgreSQL (`atlas-pgdata`,
+`.devcontainer/docker-compose.yml`) : deux espaces, deux bases, rien entre les
+deux. Un espace n'expose que du HTTP, donc deux espaces ne peuvent pas partager
+une base : la seule base commune viendra avec l'hébergement (Scaleway, décidé).
+
+**Le remède, sans code :** ouvrir sur le PC la MÊME adresse que sur le
+téléphone. `docs/ESSAYER.md` disait l'inverse (« en créer un neuf, puis
+supprimer l'ancien ») : corrigé.
+
+**Le piège pour la session suivante :** la fiche n°47 n'écrit pas le nom de
+l'espace qui la publie. Avec deux espaces allumés, elle décrit le dernier qui
+a écrit : le 8 novembre à 10 h 12, c'était le PC (« Branche suivie :
+claude/app-sur-ordinateur »), pas le téléphone. `TODO.md` le porte.
+
+---
 ## LA BATTERIE COMMUNE DU 6 NOVEMBRE : CE QUE LA RENCONTRE DE QUATRE LOTS A COÛTÉ
 
 **Les pièges :** quatre lots partis de `main` à des jours différents prenaient les mêmes numéros. Avant de fusionner, lister `drizzle/` de chaque branche : 0165 était pris trois fois, 0167 deux fois. Une migration qui n'est sur aucun `main` se renumérote sans risque (aucune base ne l'a jouée), et ses renvois se relisent UN PAR UN, jamais au `sed` : « 0167 » désignait aussi les zones. Même chose pour les paragraphes d'`ARCHITECTURE.md` (§556 pris deux fois). Une constante retirée par un lot (`MENTION_FRANCHISE`) peut être lue par un autre : le compilateur l'a dit, la suite `test-facture-x` le tient. **Une suite qui passe seule et tombe à la batterie ne ment pas** : elle dépend de ce que les autres laissent. Lui faire DIRE ce que l'écran montre a donné la cause en un tour (`test-le-client-s-est-trompe-e2e`, qui se propose désormais son propre jour). Le détail : `docs/batterie-commune-6-novembre.md`.

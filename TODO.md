@@ -1,5 +1,16 @@
 # Prochaines tâches
 
+## La fiche de l'espace ne dit pas QUEL espace l'a écrite (8 novembre 2026)
+
+Deux espaces allumés (son PC et son téléphone) réécrivent la même fiche n°47
+tour à tour, et rien n'y dit lequel parle : une session qui la lit croit lire
+l'espace du téléphone et peut lire celui du PC. Le 8 novembre, c'est ainsi
+qu'Atlas « vide sur PC » s'expliquait par un autre espace, avec une autre
+base. **À faire** : publier `CODESPACE_NAME` dans la fiche
+(`scripts/rapporter-espace.mjs`), et dire en tête quand deux noms
+différents l'ont écrite dans la dernière heure. Pas codé : pas demandé ce
+jour-là.
+
 ## ⏳ À CHOISIR PAR LUI (8 novembre 2026) : Mon année, l'objectif de chiffre d'affaires et de bénéfice
 
 **Sa demande du 8 novembre** : *« pouvoir se mettre des objectifs : cette
