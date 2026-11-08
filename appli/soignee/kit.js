@@ -314,7 +314,7 @@
     "comptable-attestation", "comptable-retour", "devis-detail-ligne", "devis-mise-en-page", "devis-mise-en-page-questions",
     "reglages-facture-electronique", "jours-travailles", "jours-feries", "zones-deplacement", "motif-absence",
     "note-sans-reseau", "franchise-plafond", "restrictions-d-eau", "heures-du-jour", "hiverner-l-arrosage", "fiche-travaux",
-    "fiche-de-securite", "fiche-de-securite-pdf"];
+    "fiche-de-securite", "fiche-de-securite-pdf", "mon-annee"];
 
   function planchePrete(href) {
     if (!href || /^(https?:|#|mailto:|tel:|\.\.\/)/.test(href)) return true;

@@ -1,5 +1,43 @@
 # Prochaines tâches
 
+## ⏳ À CHOISIR PAR LUI (8 novembre 2026) : Mon année, l'objectif de chiffre d'affaires et de bénéfice
+
+**Sa demande du 8 novembre** : *« pouvoir se mettre des objectifs : cette
+année, 300 000 euros de chiffre d'affaires, dont 50 000 de bénéfice ; si tu es
+à la moitié, ce que tu dois facturer par jour ou par mois ; et des conseils :
+il faudrait que tu augmentes les prix sur ça »*. Il cite une appli concurrente
+(« Evolise », sans doute Evoliz). **Rien dans `src/`** : ni table, ni réglage,
+ni écran d'objectif, cherché le 8 novembre.
+
+Planche : `appli/soignee/mon-annee.html` (l'écran, ses cinq feuilles, et la
+porte sur Terminés). **Ajout du même jour, sa demande** : *« un retour sur la
+mensualité de l'année dernière : en novembre 2025 il a fait tant, et comparé à
+cette année il manque tant ou il a fait plus »*. Le bloc « Face à 2025 » : le
+mois en cours contre le même mois de 2025 **au même jour** (huit jours contre
+huit jours, sans quoi chaque début de mois paraîtrait en retard), depuis
+janvier, et tous les mois dans une feuille. Il se montre aussi sans objectif.
+**Tranché par lui le 8 novembre** : *« il faut comparer le jour, le 8 avec le
+8 de l'année dernière »*. La comparaison au même jour du calendrier est donc
+retenue ; elle ne se redemande pas.
+La saison du rythme et cette comparaison lisent le même relevé de 2025. Tout ce qu'elle montre sort de données que l'appli tient
+déjà : `bilan-periode.ts` (facturé, encaissé), `aFacturerPartout`
+(`termines-par-mois.ts`), `devis.statut`, `prestations.nature`,
+`chantiers.duree_demi_journees`, `jours-feries.ts`, `mouvements_bancaires`
+(sorties et motifs).
+
+**Trois corrections de sa demande, posées dans la planche :**
+
+| | ce qu'il demandait | ce que la planche fait, et pourquoi |
+|---|---|---|
+| le rythme | par jour ou par mois, à parts égales | suit la part de chaque mois dans l'an dernier : un paysagiste n'a pas le même mois de janvier que de mai. Sans an dernier dans l'appli, ni trait ni retard, le reste sur les jours ouvrés |
+| le bénéfice | un objectif comme le chiffre | encaissé moins les sorties pro de la banque reliée. **Sans banque, il ne s'affiche pas** : les tickets seuls oublient salaires, loyer, cotisations, et le chiffre serait faux |
+| les conseils | « augmente les prix sur ça » | un compte, jamais un prix proposé (`docs/AGENT.md` §3) : ce que rapporte une journée d'équipe par travail face à ce qu'il en faut, et la part des devis signés |
+
+**À trancher par lui** : la porte (Terminés ou Chantiers) ; impôts et
+cotisations comptés comme dépense ; le rôle Facturation le voit-il ; ce qui se
+dit sans an dernier. Le compte « par journée » ne prend que les chantiers d'un
+seul travail (`prix-attribuable.ts` : un montant partagé n'appartient à aucun).
+
 ## BATTERIE COMMUNE DU 6 NOVEMBRE AU SOIR : VERTE, SUR main LE 7 NOVEMBRE
 
 **Sa demande, à 18 h** : *« il y a déjà 3 sessions ou 4 sessions qui attendent
