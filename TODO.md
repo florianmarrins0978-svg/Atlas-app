@@ -1,5 +1,29 @@
 # Prochaines tâches
 
+## ⏳ À CHOISIR PAR LUI (8 novembre 2026) : sur ordinateur, la largeur de la colonne
+
+Sa demande, photo de son portable à l'appui : *« les bandes s'étirent jusqu'au
+milieu de l'écran alors que le texte s'arrête à un quart ; pareil pour les
+notifications. Est-ce qu'on peut trouver un juste milieu ? »*
+
+**La racine** : sur ordinateur, `--atlas-largeur` vaut 64rem (1024 px,
+`globals.css`, « L'ORDINATEUR », §447), plus du double de la colonne pour
+laquelle les écrans sont dessinés. Tout ce qui prend la largeur s'étire, et le
+mois du planning ne tient plus à l'écran.
+
+**La planche** : `appli/sur-ordinateur-largeur.html`, ses vrais écrans rendus à
+1536 x 730 px avec seule cette variable changée (1024, 768, 672, 576 px).
+Conseillée : **672 px (42rem)**, la largeur de la feuille du devis.
+
+**Ce que la correction touchera, une fois choisie** : la seule valeur de
+`--atlas-largeur` au-delà de 1024 px d'écran, et §447. Aucun écran ; le
+téléphone ne bouge pas. Relire `scripts/test-sur-ordinateur-e2e.ts`, qui peut
+mesurer la colonne.
+
+**Vu en passant, hors de sa demande** : sur Paysage, la liste dépasse le titre
+de 10 px de chaque côté (`mx-4` contre `mx-[26px]`, `src/app/paysage/page.tsx`),
+téléphone compris. Proposé à part sur la planche.
+
 ## La fiche de l'espace ne dit pas QUEL espace l'a écrite (8 novembre 2026)
 
 Deux espaces allumés (son PC et son téléphone) réécrivent la même fiche n°47
@@ -25,8 +49,18 @@ porte sur Terminés). **Ajout du même jour, sa demande** : *« un retour sur la
 mensualité de l'année dernière : en novembre 2025 il a fait tant, et comparé à
 cette année il manque tant ou il a fait plus »*. Le bloc « Face à 2025 » : le
 mois en cours contre le même mois de 2025 **au même jour** (huit jours contre
-huit jours, sans quoi chaque début de mois paraîtrait en retard), depuis
-janvier, et tous les mois dans une feuille. Il se montre aussi sans objectif.
+huit jours, sans quoi chaque début de mois paraîtrait en retard). Il se montre
+aussi sans objectif. **Allégé sur sa demande du même jour** : *« on voit la
+date d'aujourd'hui par rapport à la date de l'année dernière, ce qu'on a fait
+en plus ou en moins, c'est tout »*. Deux lignes, « Du 1er au 8 novembre 2026 »
+et « … 2025 », la date écrite en entier, puis l'écart. « Depuis janvier » et la
+ligne « novembre 2025 entier » sont retirés ; **la feuille de tous les mois
+revient** (*« pouvoir voir tous les mois, ça c'est bien »*), en tableau
+Mois, 2025, 2026 et l'écart. **« Déjà en main » devient « Ce qui peut encore
+rentrer »** : il ne comprenait pas le titre. **Le jour avant le mois, partout**
+(*« la date est toujours à l'envers »*) : « Au 8 novembre 2026 », « D'ici le
+30 novembre », « Du 1er au 8 novembre », jamais « 2026, au 8 novembre » ni
+« Novembre, d'ici le 30 ».
 **Tranché par lui le 8 novembre** : *« il faut comparer le jour, le 8 avec le
 8 de l'année dernière »*. La comparaison au même jour du calendrier est donc
 retenue ; elle ne se redemande pas.
@@ -2341,6 +2375,39 @@ faut pouvoir mettre n'importe quel nombre d'heures »*. La roulette des heures
 va de 0 à 24 h, celle des minutes de 00 à 59, une par une (la planche
 d'octobre s'arrêtait à 12 h, par quarts d'heure). Posé dans la planche, à
 garder tel quel au codage.
+
+**L'ÉLAGAGE N'EST PAS DU SERVICE À LA PERSONNE, et les 30 % jouent dans
+l'autre sens (8 novembre 2026).** Sa lecture : *« mes utilisateurs font de
+l'élagage à 80 % et un peu de service à la personne ; tant que le service à la
+personne ne dépasse pas 30 %, c'est bon »*. C'est l'inverse. La page officielle
+(servicesalapersonne.gouv.fr, « Les 26 activités », lue le 8 novembre 2026) :
+*« Le petit jardinage ne comprend pas […] la conception et la réalisation de
+parcs paysagers, l'élagage, les travaux de terrassement »* ; il comprend
+l'entretien courant, *« la taille des haies et des arbres et le
+débroussaillage »*, plafond 5 000 € de dépenses par an. Et la dispense de
+2025 ne vaut que pour une entreprise qui fait du service à la personne *« à
+titre principal »* : c'est l'activité HORS services à la personne qui est
+plafonnée à 30 % du chiffre d'affaires de l'année précédente. **Un élagueur à
+80 % d'élagage ne peut donc pas avoir son numéro** : le module « son propre
+numéro » de la planche ne le sert pas. Pour lui, les voies sont une structure
+à part dédiée aux services à la personne, ou une coopérative comme Unipros
+(c'est exactement ce qu'elle vend). La frontière entre « taille des arbres »
+(dedans) et « élagage » (dehors) est à faire préciser par la DDETS.
+
+**« Le devis sur Atlas, la facture par une coopérative » : pas tel quel
+(8 novembre 2026).** Sa proposition pour l'élagueur à 81 % : faire le devis
+dans Atlas, l'envoyer à une coopérative existante qui fait la facture. Deux
+obstacles, lus le même jour : (1) la règle officielle (servicesalapersonne.gouv.fr,
+« comment demander une déclaration ») veut que les DEVIS et les factures
+portent la mention de la déclaration ; l'organisme déclaré étant la
+coopérative, le devis doit porter SON numéro, son logo et ses CGV (celles
+d'Unipros se signent avec le devis) ; un devis d'Atlas au nom de l'artisan
+ne le fait pas ; (2) chez Unipros, *« vous créez le devis depuis votre espace
+Unipros »* (page « services à la personne », étape 01), puis la facture part
+*« à l'entête de la coopérative »*. Seule la coopérative peut dire si elle
+accepte un devis fait ailleurs, à son en-tête, ou un import. Un chantier qui
+mêle élagage et taille donne deux devis et deux émetteurs : l'élagage chez
+l'artisan, la taille chez la coopérative.
 
 **Ses deux remarques suivantes, le même jour :**
 

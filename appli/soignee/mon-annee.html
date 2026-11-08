@@ -103,19 +103,6 @@
 .rang-ligne.fort .prix { color: var(--atlas-or); }
 .plage > .bouton-texte { margin-top: 4px; }
 
-/* Face à l'an dernier : le mois, 2025 dessous ; le montant, l'écart dessous. */
-.compare { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 11px 0; }
-.compare + .compare { box-shadow: inset 0 1px 0 var(--atlas-lineSoft); }
-.compare .nom { flex: 1; min-width: 0; font: 400 18px/1.25 var(--serif); color: var(--atlas-ink); }
-.compare .nom small { display: block; margin-top: 3px; font: 400 14px/1.35 var(--sans); color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
-.compare .prix { display: flex; flex-direction: column; align-items: flex-end; font-size: 17px; line-height: 1.25; color: var(--atlas-ink);
-                 font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
-.ecart { margin-top: 3px; font-size: 14px; font-weight: 700; color: var(--atlas-inkSoft); }
-.ecart[data-ton="vert"] { color: var(--atlas-carteVertTexte); }
-.ecart[data-ton="ambre"] { color: var(--atlas-carteAmbreTexte); }
-.feuille .total { margin-top: 4px; box-shadow: inset 0 1px 0 var(--atlas-line); }
-.feuille .total .compare .nom { font-size: 20px; }
-
 /* Ce qui est en main : des lignes à toucher, qui mènent là où ça se fait. */
 .main-ligne { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 60px; padding: 8px 0; text-align: left; }
 .main-ligne + .main-ligne { box-shadow: inset 0 1px 0 var(--atlas-lineSoft); }
@@ -139,6 +126,9 @@
 .travaux td:first-child { font: 400 17px/1.25 var(--serif); }
 .travaux td small { display: block; margin-top: 2px; font: 400 13.5px/1.3 var(--sans); color: var(--atlas-inkSoft); }
 .travaux .bas { color: var(--atlas-carteAmbreTexte); font-weight: 700; }
+.travaux td small.plus, .travaux td small.moins { font-weight: 700; }
+.travaux td small.plus { color: var(--atlas-carteVertTexte); }
+.travaux td small.moins { color: var(--atlas-carteAmbreTexte); }
 
 .feuille .rang-ligne.total { margin-top: 4px; box-shadow: inset 0 1px 0 var(--atlas-line); }
 .feuille .rang-ligne.total .nom, .feuille .rang-ligne.total .prix { font: 400 20px/1.2 var(--serif); }
@@ -157,7 +147,7 @@
 <header class="pl-tete">
   <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
   <h1 class="pl-titre">Mon année</h1>
-  <p class="pl-verdict">L'objectif de l'année, <b>chaque mois face au même mois de 2025</b>, ce qu'il reste à facturer <b>mois par mois</b>, ce qui est déjà en main, le bénéfice, et <b>vos prix</b> face à l'objectif. Touchez <b>Modifier</b> et changez l'objectif : tout se recalcule. Les montants sont des exemples.</p>
+  <p class="pl-verdict">L'objectif de l'année, <b>le mois face au même jour de 2025</b>, ce qu'il reste à facturer <b>mois par mois</b>, ce qui peut encore rentrer, le bénéfice, et <b>vos prix</b> face à l'objectif. Touchez <b>Modifier</b> et changez l'objectif : tout se recalcule. Les montants sont des exemples.</p>
 </header>
 <main class="pl-scene">
   <div class="pl-ecrans">
@@ -209,8 +199,8 @@
               <button class="bouton-texte fermer" type="button" data-ferme>Fermer</button>
             </div>
           </section>
-          <section class="feuille" id="f-an-dernier" aria-hidden="true" aria-label="2026 face à 2025">
-            <div class="feuille-poignee"></div><div class="feuille-dedans" data-an-dernier></div>
+          <section class="feuille" id="f-tous-les-mois" aria-hidden="true" aria-label="Tous les mois, face à 2025">
+            <div class="feuille-poignee"></div><div class="feuille-dedans" data-tous-les-mois></div>
           </section>
           <section class="feuille" id="f-mois" aria-hidden="true" aria-label="Mois par mois">
             <div class="feuille-poignee"></div><div class="feuille-dedans" data-mois></div>
@@ -277,9 +267,9 @@
     <ul>
       <li>Un objectif par an, en HT : le chiffre d'affaires, et le bénéfice si vous voulez le suivre. Rien n'est rempli d'avance ; l'an dernier est écrit dessous pour repère.</li>
       <li>La jauge dit où vous en êtes. Le trait dit où vous devriez être aujourd'hui, d'après votre saison de l'an dernier : un paysagiste ne facture pas en janvier ce qu'il facture en mai. Couper l'objectif en douze parts égales vous dirait « en retard » tout l'hiver et « en avance » tout le printemps.</li>
-      <li>Face à 2025 : le mois en cours contre le même mois de l'an dernier, et depuis janvier, avec l'écart en plus ou en moins. Le mois en cours se compare au même jour : le 8 novembre, huit jours de novembre 2026 contre huit jours de novembre 2025, sans quoi chaque début de mois paraîtrait en retard. Tous les mois dans une feuille. Elle se montre aussi sans objectif.</li>
+      <li>Face à 2025 : du 1er à aujourd'hui, cette année et l'an dernier au même jour, et ce que vous avez fait en plus ou en moins. Tous les mois dans un tableau, d'un appui. Il se montre aussi sans objectif.</li>
       <li>Ce qu'il reste à facturer, mois par mois et par jour travaillé, suit la même saison. Les jours travaillés sont les jours ouvrés, fériés retirés.</li>
-      <li>Ce qui est déjà en main : les chantiers finis pas encore facturés, les devis signés pas encore faits, les devis sans réponse. Avec les deux premiers, il reste ce qu'il faut encore faire signer.</li>
+      <li>Ce qui peut encore rentrer : les chantiers finis pas encore facturés, les devis signés pas encore faits, les devis sans réponse. Dessous, ce qu'il manque encore de nouveaux devis signés pour l'objectif, une fois les deux premiers facturés.</li>
       <li>Le bénéfice : ce qui est encaissé, moins les sorties pro de votre banque. Il ne s'affiche qu'avec la banque reliée : avec les tickets seuls, il manquerait les salaires, le loyer, les cotisations, et le chiffre serait faux.</li>
       <li>Vos prix : rangés par <b>vos tarifs</b>, ceux de Réglages, Tarifs &amp; catalogue, avec vos mots. Un électricien lirait « Tableau électrique », pas « Tonte ». Pour chacun, ce que rapporte une journée d'équipe face à ce qu'il en faut pour l'objectif, et la part des devis signés. Un chantier compte pour le tarif qui fait plus de la moitié de son montant. Presque tous signés, c'est souvent un prix trop bas. L'appli ne propose jamais un prix : elle montre le compte, vous décidez.</li>
       <li>Vous seul le voyez. Un salarié ne voit jamais un euro, ici non plus.</li>
@@ -431,45 +421,44 @@
     };
   }
 
-  /* Face à l'an dernier : chaque mois de 2026 contre le même mois de 2025,
-     et le mois en cours contre 2025 AU MÊME JOUR. Comparer huit jours de
-     novembre à tout novembre 2025 dirait « en retard » chaque début de mois. */
-  function comparer(s) {
-    var d = new Date(s.jour), m = d.getUTCMonth(), jour = d.getUTCDate();
-    var entier = s.jour === finDuMois(m);
-    var liste = s.mois.map(function (fait, i) {
-      return { m: i, fait: fait, avant: i < m || entier ? MOIS_2025[i] : an2025Jusquau(i, jour), partiel: i === m && !entier };
-    });
-    var depuis = liste.reduce(function (a, x) { return a + x.fait; }, 0);
-    var depuisAvant = liste.reduce(function (a, x) { return a + x.avant; }, 0);
-    return { jour: jour, liste: liste, courant: liste[m], depuis: depuis, depuisAvant: depuisAvant, moisEntier2025: MOIS_2025[m] };
+  /* Face à 2025 : le mois en cours contre 2025 AU MÊME JOUR, et rien
+     d'autre (sa règle du 8 novembre : « la date d'aujourd'hui par rapport à
+     la date de l'année dernière, ce qu'on a fait en plus ou en moins, c'est
+     tout »). Comparer huit jours de novembre à tout novembre 2025 dirait
+     « en retard » chaque début de mois. */
+  function periode(jour, m, entier, annee) {
+    if (entier) return Maj(MOIS[m]) + " " + annee;
+    return (jour === 1 ? "Le 1er " : "Du 1er au " + jour + " ") + MOIS[m] + " " + annee;
   }
-  function ecart(fait, avant) {
-    var n = fait - avant;
-    if (Math.abs(n) < 100) return '<span class="ecart">Pareil</span>';
-    return '<span class="ecart" data-ton="' + (n > 0 ? "vert" : "ambre") + '">' + e(Math.abs(n)) + (n > 0 ? " de plus" : " de moins") + "</span>";
-  }
-  function ligneCompare(nom, fait, avant) {
-    return '<div class="compare"><span class="nom">' + nom + "<small>2025, " + e(avant) + "</small></span>" +
-      '<span class="prix">' + e(fait) + ecart(fait, avant) + "</span></div>";
-  }
-  function nomDuMois(x, jour) { return Maj(MOIS[x.m]) + (x.partiel ? ", au " + jour : ""); }
   function rendreFace(s) {
-    var c = comparer(s);
+    var d = new Date(s.jour), m = d.getUTCMonth(), jour = d.getUTCDate(), entier = s.jour === finDuMois(m);
+    var fait = s.mois[m], avant = entier ? MOIS_2025[m] : an2025Jusquau(m, jour), n = fait - avant;
+    var dit = Math.abs(n) < 100
+      ? '<p class="plage-ton" data-ton="or">Pareil.</p>'
+      : '<p class="plage-ton" data-ton="' + (n > 0 ? "vert" : "ambre") + '"><b>' + e(Math.abs(n)) + "</b>" + (n > 0 ? " de plus." : " de moins.") + "</p>";
     return '<h2 class="rubrique">Face à 2025</h2><section class="plage">' +
-      ligneCompare(nomDuMois(c.courant, c.jour), c.courant.fait, c.courant.avant) +
-      ligneCompare("Depuis janvier", c.depuis, c.depuisAvant) +
-      (c.courant.partiel ? '<p class="discret">' + Maj(MOIS[c.courant.m]) + " 2025 entier, " + e(c.moisEntier2025) + ".</p>" : "") +
-      '<button class="bouton-texte or" type="button" data-ouvre="f-an-dernier">Tous les mois</button></section>';
+      ligne(periode(jour, m, entier, 2026), e(fait)) + ligne(periode(jour, m, entier, 2025), e(avant)) + dit +
+      '<button class="bouton-texte or" type="button" data-ouvre="f-tous-les-mois">Tous les mois</button></section>';
   }
-  function rendreAnDernier(cle) {
-    var s = ETATS[cle], c = comparer(s);
-    var h = '<h2 class="feuille-titre">2026 face à 2025</h2>';
-    c.liste.slice().reverse().forEach(function (x) { h += ligneCompare(nomDuMois(x, c.jour), x.fait, x.avant); });
-    h += '<div class="total">' + ligneCompare("Depuis janvier", c.depuis, c.depuisAvant) + "</div>" +
-      '<p class="discret">En HT, les avoirs retirés. Le mois en cours se compare au même jour de 2025.</p>' +
-      '<button class="bouton-texte fermer" type="button" data-ferme>Fermer</button>';
-    return h;
+  /* Tous les mois, sa demande du 8 novembre (« pouvoir voir tous les mois,
+     ça c'est bien ») : un tableau, le plus récent en haut. Le mois en cours
+     se compare au même jour, comme le bloc. */
+  function rendreTousLesMois(cle) {
+    var s = ETATS[cle], d = new Date(s.jour), m = d.getUTCMonth(), jour = d.getUTCDate(), entier = s.jour === finDuMois(m);
+    var h = '<h2 class="feuille-titre">Face à 2025</h2>' +
+      '<table class="travaux"><thead><tr><th scope="col">Mois</th><th scope="col">2025</th><th scope="col">2026</th></tr></thead><tbody>';
+    for (var i = m; i >= 0; i--) {
+      var partiel = i === m && !entier;
+      var fait = s.mois[i], avant = partiel ? an2025Jusquau(i, jour) : MOIS_2025[i], n = fait - avant;
+      var ecart = Math.abs(n) < 100 ? "<small>Pareil</small>"
+        : '<small class="' + (n > 0 ? "plus" : "moins") + '">' + e(Math.abs(n)) + (n > 0 ? " de plus" : " de moins") + "</small>";
+      /* Le jour avant le mois, toujours : « du 1er au 8 novembre », jamais
+         « novembre, au 8 » (sa remarque du 8 novembre : « la date est à
+         l'envers »). */
+      h += "<tr><td>" + (partiel ? "Du 1er au " + jour + " " + MOIS[i] : Maj(MOIS[i])) + "</td>" +
+        "<td>" + e(avant) + "</td><td>" + e(fait) + ecart + "</td></tr>";
+    }
+    return h + '</tbody></table><button class="bouton-texte fermer" type="button" data-ferme>Fermer</button>';
   }
 
   function pct(n) { return Math.max(0, Math.min(100, n * 100)).toFixed(1) + "%"; }
@@ -486,7 +475,7 @@
   function rendreAnnee(cle) {
     var c = calculer(cle), s = c.s, h = "";
     var jourLu = new Date(s.jour).getUTCDate() + " " + MOIS[new Date(s.jour).getUTCMonth()];
-    document.querySelector("[data-annee-situation]").textContent = "2026, au " + jourLu;
+    document.querySelector("[data-annee-situation]").textContent = "Au " + jourLu + " 2026";
 
     if (c.vide) {
       h += '<div class="plage vide-annee"><p class="vide-titre">Pas encore d\'objectif</p>' +
@@ -519,15 +508,16 @@
       var premier = c.mois[0];
       h += '<h2 class="rubrique">Il reste à facturer</h2><section class="plage">' +
         ligne("D'ici le 31 décembre", e(c.reste), "fort") +
-        ligne(Maj(MOIS[premier.m]) + (premier.entier ? "" : ", d'ici le " + new Date(finDuMois(premier.m)).getUTCDate()) +
+        ligne((premier.entier ? Maj(MOIS[premier.m]) : "D'ici le " + new Date(finDuMois(premier.m)).getUTCDate() + " " + MOIS[premier.m]) +
           "<small>" + pluriel(premier.jours, "jour travaillé", "jours travaillés") + "</small>", e(premier.montant)) +
         ligne("Par jour travaillé", e(dix(premier.montant / premier.jours)));
       if (c.mois.length > 1) h += '<button class="bouton-texte or" type="button" data-ouvre="f-mois">Mois par mois</button>';
       h += "</section>";
     }
 
-    /* Ce qui est déjà en main. */
-    h += '<h2 class="rubrique">Déjà en main</h2><section class="plage plage-serree">' +
+    /* Ce qui peut encore rentrer. « Déjà en main » ne se comprenait pas (sa
+       remarque du 8 novembre) : le titre dit ce que c'est, de l'argent. */
+    h += '<h2 class="rubrique">Ce qui peut encore rentrer</h2><section class="plage plage-serree">' +
       '<button class="main-ligne touche" type="button" data-note="Ouvre Terminés, sur ce qui reste à facturer."><span class="nom">' +
         pluriel(s.aFacturer[0], "chantier fini, à facturer", "chantiers finis, à facturer") + '</span><span class="prix">' + e(s.aFacturer[1]) +
         '</span><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></button>' +
@@ -540,8 +530,8 @@
       "</section>";
     if (!passe) {
       h += c.aTrouver > 0
-        ? '<p class="plage-ton mt-8" data-ton="or">Avec les deux premiers, il reste <b>' + e(c.aTrouver) + "</b> à faire signer.</p>"
-        : '<p class="plage-ton mt-8" data-ton="vert">Avec les deux premiers, l\'objectif est atteint.</p>';
+        ? '<p class="plage-ton mt-8" data-ton="or">Pour l\'objectif, il manque encore <b>' + e(c.aTrouver) + "</b> de nouveaux devis signés.</p>"
+        : '<p class="plage-ton mt-8" data-ton="vert">Les chantiers à facturer et les devis signés suffisent pour l\'objectif.</p>';
     }
 
     /* Le bénéfice. */
@@ -649,7 +639,7 @@
     ecranA.querySelector("[data-mois]").innerHTML = rendreMois(cle);
     ecranA.querySelector("[data-benefice]").innerHTML = rendreBenefice(cle);
     ecranA.querySelector("[data-travaux]").innerHTML = rendreTravaux(cle);
-    ecranA.querySelector("[data-an-dernier]").innerHTML = rendreAnDernier(cle);
+    ecranA.querySelector("[data-tous-les-mois]").innerHTML = rendreTousLesMois(cle);
     ecranT.querySelector("[data-porte]").innerHTML = rendrePorte(etatDe(ecranT, "retard"));
   }
   new MutationObserver(tout).observe(ecranA, { attributes: true, attributeFilter: ["data-etat"] });
