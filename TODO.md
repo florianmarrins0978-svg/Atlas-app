@@ -18,8 +18,11 @@ huit jours, sans quoi chaque début de mois paraîtrait en retard). Il se montre
 aussi sans objectif. **Allégé sur sa demande du même jour** : *« on voit la
 date d'aujourd'hui par rapport à la date de l'année dernière, ce qu'on a fait
 en plus ou en moins, c'est tout »*. Deux lignes, « Du 1er au 8 novembre 2026 »
-et « … 2025 », la date écrite en entier, puis l'écart. « Depuis janvier », la
-ligne « novembre 2025 entier » et la feuille de tous les mois sont retirés.
+et « … 2025 », la date écrite en entier, puis l'écart. « Depuis janvier » et la
+ligne « novembre 2025 entier » sont retirés ; **la feuille de tous les mois
+revient** (*« pouvoir voir tous les mois, ça c'est bien »*), en tableau
+Mois, 2025, 2026 et l'écart. **« Déjà en main » devient « Ce qui peut encore
+rentrer »** : il ne comprenait pas le titre.
 **Tranché par lui le 8 novembre** : *« il faut comparer le jour, le 8 avec le
 8 de l'année dernière »*. La comparaison au même jour du calendrier est donc
 retenue ; elle ne se redemande pas.
