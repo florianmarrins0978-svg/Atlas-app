@@ -143,6 +143,15 @@ en cours : si on est le 25, du 1er au 25, plus le 25 de l'année dernière. »*
 facturé du jour se lit sur la date d'émission des factures, comme le reste
 (`bilan-periode.ts` avec du = au).
 
+**« À ce rythme, 241 000 € au 31 décembre » est retiré** (sa demande du
+8 novembre : *« ça veut rien dire, la ligne à ce rythme tu l'enlèves »*). Il
+reste « 52 400 € de retard sur votre saison. » Ne pas la remettre.
+
+**Le tableau « Tous les mois »** (sa demande du 8 novembre) : 2026 d'abord,
+2025 à droite, l'écart sous 2025 ; chaque mois sur une bande vert pâle quand
+il a fait plus, bordeaux pâle quand il a fait moins (les jetons
+`carteVertFond` et `carteRougeFond`, qui suivent les chartes sombres).
+
 **La phrase du bénéfice, réécrite le 8 novembre** : *« c'est-à-dire quoi, sur
 100 euros encaissés il vous reste 14,51 ? »*. Elle dit désormais « Sur 1 000 €
 encaissés, il vous reste 145 € une fois tout payé. Pour votre objectif, il en
@@ -177,7 +186,16 @@ déjà : `bilan-periode.ts` (facturé, encaissé), `aFacturerPartout`
 | le bénéfice | un objectif comme le chiffre | encaissé moins les sorties pro de la banque reliée. **Sans banque, il ne s'affiche pas** : les tickets seuls oublient salaires, loyer, cotisations, et le chiffre serait faux |
 | les conseils | « augmente les prix sur ça » | un compte, jamais un prix proposé (`docs/AGENT.md` §3) : ce que rapporte une journée d'équipe par travail face à ce qu'il en faut, et la part des devis signés |
 
-**À trancher par lui** : la porte (Terminés ou Chantiers) ; impôts et
+**La porte, tranchée par lui le 8 novembre** : *« une catégorie Mon année dans
+les réglages, avec un bouton on/off si l'utilisateur veut que ça s'affiche aussi
+sur Terminés ; il ne faut pas que ça s'affiche de base »*. Mon année est une
+rubrique de Réglages, sous L'entreprise ; en bas de l'écran, « Afficher sur
+Terminés », **éteint de base**. Allumé, la ligne de Mon année se pose sur
+Terminés sous les deux boutons, à côté de celle de la franchise. Au codage :
+un booléen par entreprise, faux par défaut (expand, colonne nullable ou
+`default false`).
+
+**À trancher par lui** : impôts et
 cotisations comptés comme dépense ; le rôle Facturation le voit-il ; ce qui se
 dit sans an dernier. Le compte « par journée » ne prend que les chantiers d'un
 seul travail (`prix-attribuable.ts` : un montant partagé n'appartient à aucun).
