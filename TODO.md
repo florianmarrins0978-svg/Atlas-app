@@ -1,22 +1,23 @@
 # Prochaines tâches
 
-## ⏳ À REGARDER PAR LUI (8 novembre 2026) : une facture depuis la fiche d'un client
+## ⏳ À REGARDER PAR LUI (8 novembre 2026) : importer un devis depuis la fiche d'un client
 
-Sa question : *« si je vais dans Mes clients, que je clique sur Bernard, est-ce
-que je peux ajouter un devis, une facture, juste pour ce client-là ? »*, puis
-*« montre-moi la maquette finie que tu veux coder avant de coder quoi que ce
-soit »*.
+Sa correction de la planche « Nouvelle facture » : *« c'est pas ce que je
+voulais ; j'étais avant sur une autre application et j'avais juste un devis à
+importer pour Bernard : est-ce que je peux, à partir de Bernard, cliquer sur
+importer un devis ? »*
 
-**Lu dans le code** : la fiche (`RepartirDeCeClient.tsx`) porte « Dernier
-devis », « Nouveau devis » (`/chantiers/nouveau?client=`) et « Contrat
-d'entretien » ; une facture sans devis ne part que de Terminés
-(`/chantiers/nouveau?facture=1`). La page lit déjà les deux réglages ensemble.
+**Lu dans le code** : l'import ne part que de « Vos clients »
+(`/clients/importer`, `ImporterPieces.tsx`) et range chaque pièce par le nom
+qu'il y lit ; sa page ne prend aucun client en paramètre.
 
-**La planche** : `appli/soignee/client-nouvelle-facture.html`. Un geste
-« Nouvelle facture » (`?client=<id>&facture=1`) ; quatre gestes deux par deux,
-trois sur une ligne. Niveau 3 au codage (argent).
+**La planche** : `appli/soignee/client-nouvelle-facture.html` (même adresse).
+Un geste « Importer devis / facture » sur la fiche ; l'import s'ouvre
+attaché à ce client, et ce qu'il lit se range chez lui sans chercher son nom.
+Au codage : l'import doit porter le client choisi jusqu'au rangement (niveau
+3, argent : des pièces comptables).
 
-## ⏳ À REGARDER PAR LUI (8 novembre 2026) : vos entrées et sorties, deux cases, et l'assistant
+## ⏳ À REGARDER PAR LUI (8 novembre 2026) : vos entrées et sorties, deux cases, et l'assistant (couleurs de l'écran reprises à l'identique le 8 novembre)
 
 Sa question, sur « Pour mon comptable » : *« c'est normal que quand je lui
 demande mes entrées et mes sorties de l'année, il me les trouve pas »*. Puis :

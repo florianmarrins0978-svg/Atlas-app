@@ -38,18 +38,31 @@
 .titre-page { margin: 6px 0 2px; font: 400 30px/1.1 var(--serif); color: var(--atlas-ink); }
 .sous-titre { margin: 0 0 16px; font-size: 14px; color: var(--atlas-inkSoft); }
 .rubrique-petite { margin: 18px 0 8px; font-size: 11.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--atlas-inkSoft); }
-.segments { display: grid; grid-template-columns: repeat(3, 1fr); padding: 3px; border-radius: 22px; background: var(--atlas-rustTint); }
-.segments span { display: grid; place-items: center; min-height: 38px; border-radius: 19px; font-size: 14px; color: var(--atlas-inkSoft); }
-.segments .choisi { background: var(--atlas-card); color: var(--atlas-ink); font-weight: 600; box-shadow: 0 1px 2px rgba(28,28,26,.08); }
-.legende { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 12px 0 0; font-size: 12.5px; color: var(--atlas-inkSoft); }
-.legende i { display: inline-block; width: 8px; height: 8px; margin-right: 5px; border-radius: 50%; }
-.periode { margin-top: 14px; }
-.periode-tete { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
-.periode-nom { font: 400 19px/1.2 var(--serif); color: var(--atlas-ink); }
-.sans-ticket { font-size: 12.5px; color: var(--atlas-alerte); white-space: nowrap; }
-.barre-couleurs { display: flex; gap: 2px; height: 7px; margin: 8px 0 6px; border-radius: 4px; overflow: hidden; }
-.barre-couleurs span { display: block; height: 100%; }
-.totaux { display: flex; gap: 14px; font-size: 14px; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
+/* RECOPIÉ DE L'ÉCRAN, PAS INVENTÉ (sa demande : « ne change pas la charte des
+   couleurs ») : DossierEnCours.tsx pour le dessin, src/lib/chartes.ts (Origine)
+   pour les teintes, src/lib/couleurs-comptable.ts pour l'ordre des catégories. */
+.ecran { --cat-carburant: #1e3a8a; --cat-repas: #c1480a; --cat-materiel: #956603; --cat-hotel: #9835f6;
+         --cat-transport: #077995; --cat-virement: #d02370; --cat-autre: #736f64;
+         --montant-sortie: #b3392b; --montant-entree: #1f7a45; --vert-texte: #506f44; }
+.segments { display: flex; padding: 3px; border-radius: 999px; background: var(--atlas-rustTint); }
+.segments span, .segments button { flex: 1; display: grid; place-items: center; min-height: 44px; border-radius: 999px; font-size: 15px; font-weight: 500; color: var(--atlas-inkSoft); }
+.segments .choisi, .segments button[aria-pressed="true"] { background: var(--atlas-card); color: var(--atlas-ink); box-shadow: 0 0 0 1px var(--atlas-line); }
+.legende { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 14px 0 0; font-size: 14px; color: var(--atlas-inkSoft); }
+.legende span { display: inline-flex; align-items: center; gap: 7px; }
+.legende i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
+.periode { padding: 14px 0 12px; }
+.periode + .periode { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.periode-tete { display: flex; align-items: center; gap: 10px; }
+.periode-nom { flex: 1; min-width: 0; font: 400 19px/1.25 var(--serif); color: var(--atlas-ink); }
+.sans-ticket { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: var(--atlas-alerte); white-space: nowrap; }
+.sans-ticket.ok { color: var(--vert-texte); }
+.sans-ticket i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.chevron { color: rgba(28,28,26,0.28); }
+.barre-couleurs { display: flex; gap: 2px; height: 10px; margin: 10px 0 0; }
+.barre-couleurs span { display: block; height: 100%; min-width: 4px; border-radius: 999px; }
+.totaux { display: flex; align-items: baseline; gap: 14px; margin-top: 8px; font-size: 15px; font-variant-numeric: tabular-nums; }
+.totaux .sortie { color: var(--montant-sortie); }
+.totaux .entree { color: var(--montant-entree); }
 .precision { margin: 8px 0 0; font-size: 13px; line-height: 1.45; color: var(--atlas-inkSoft); }
 .deux-cases { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .case-releve { display: block; text-align: left; padding: 12px; border-radius: 12px; background: var(--atlas-card);
@@ -57,9 +70,7 @@
 .case-releve[aria-pressed="true"] { box-shadow: inset 0 0 0 1.5px var(--atlas-ink); }
 .case-releve b { display: block; font-size: 14px; font-weight: 600; }
 .case-releve small { display: block; margin-top: 2px; font-size: 12.5px; color: var(--atlas-inkSoft); }
-.case-releve .totaux { margin-top: 8px; font-size: 13px; gap: 8px; flex-wrap: wrap; }
-.segments button { display: grid; place-items: center; min-height: 38px; border-radius: 19px; font-size: 14px; color: var(--atlas-inkSoft); }
-.segments button[aria-pressed="true"] { background: var(--atlas-card); color: var(--atlas-ink); font-weight: 600; box-shadow: 0 1px 2px rgba(28,28,26,.08); }
+.case-releve .totaux { margin-top: 8px; font-size: 14px; gap: 10px; flex-wrap: wrap; }
 .mois { list-style: none; margin: 10px 0 0; padding: 0; }
 .mois li { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-top: 1px solid var(--atlas-lineSoft);
            font-size: 14px; color: var(--atlas-ink); font-variant-numeric: tabular-nums; }
@@ -112,10 +123,10 @@
             <p class="rubrique-petite">Mes relevés</p>
             <div id="releves"></div>
             <div hidden id="legende-modele"><div class="legende" aria-hidden="true">
-              <span><i style="background:#3f4f7a"></i>Carburant</span><span><i style="background:#b0673f"></i>Repas</span>
-              <span><i style="background:#8a6a3b"></i>Matériel</span><span><i style="background:#7a63c7"></i>Hôtel</span>
-              <span><i style="background:#3f6f82"></i>Train, taxi</span><span><i style="background:#c0505b"></i>Virement</span>
-              <span><i style="background:#6b6b66"></i>Autre</span>
+              <span><i style="background:var(--cat-carburant)"></i>Carburant</span><span><i style="background:var(--cat-repas)"></i>Repas</span>
+              <span><i style="background:var(--cat-materiel)"></i>Matériel</span><span><i style="background:var(--cat-hotel)"></i>Hôtel</span>
+              <span><i style="background:var(--cat-transport)"></i>Train, taxi</span><span><i style="background:var(--cat-virement)"></i>Virement</span>
+              <span><i style="background:var(--cat-autre)"></i>Autre</span>
             </div></div>
 
           </div>
@@ -170,8 +181,8 @@ document.addEventListener("DOMContentLoaded", function () {
   "use strict";
   // L'espace insécable fin des montants français, comme l'appli les écrit.
   var e = " €";
-  var BARRE_DOSSIER = [["#c0505b", 86], ["#6b6b66", 14]];
-  var BARRE_ANNEE = [["#3f4f7a", 18], ["#b0673f", 9], ["#8a6a3b", 31], ["#7a63c7", 3], ["#3f6f82", 2], ["#c0505b", 27], ["#6b6b66", 10]];
+  var BARRE_DOSSIER = [["virement", 86], ["autre", 14]];
+  var BARRE_ANNEE = [["carburant", 18], ["repas", 9], ["materiel", 31], ["hotel", 3], ["transport", 2], ["virement", 27], ["autre", 10]];
   // Le dossier en cours, tel que sa photo le montre : 285,41 € sortis, 500 € entrés, depuis le 28 octobre.
   var DOSSIER = {
     mois: [["Novembre", "−120,10", "+500,00", "4 sans ticket"], ["Octobre, depuis le 28", "−165,31", "+0,00", "2 sans ticket"]],
@@ -185,11 +196,12 @@ document.addEventListener("DOMContentLoaded", function () {
     ["Octobre", "6 120,00", "3 402,17"], ["Novembre, au 8", "3 520,00", "2 086,75"]];
   var vue = "propose", caseChoisie = "dossier", decoupage = "annee";
   var LEGENDE = document.getElementById("legende-modele").innerHTML;
-  function barre(b) { return '<div class="barre-couleurs">' + b.map(function (x) { return '<span style="background:' + x[0] + ";flex:" + x[1] + '"></span>'; }).join("") + "</div>"; }
+  function barre(b) { return '<div class="barre-couleurs" aria-hidden="true">' + b.map(function (x) { return '<span style="background:var(--cat-' + x[0] + ");flex:" + x[1] + ' 1 0"></span>'; }).join("") + "</div>"; }
   function periode(nom, sorties, entrees, ticket, bar) {
     return '<div class="periode"><div class="periode-tete"><span class="periode-nom">' + nom + "</span>" +
-      (ticket ? '<span class="sans-ticket">' + ticket + "</span>" : "") + "</div>" + barre(bar) +
-      '<div class="totaux"><span>' + sorties + e + "</span><span>" + entrees + e + "</span></div></div>";
+      (ticket ? '<span class="sans-ticket"><i></i>' + ticket + "</span>" : "") +
+      '<svg class="ico ico-p chevron" aria-hidden="true"><use href="#i-suivant"/></svg></div>' + barre(bar) +
+      '<div class="totaux"><span class="sortie">' + sorties + e + '</span><span class="entree">' + entrees + e + "</span></div></div>";
   }
   function segments() {
     return '<div class="segments" role="group" aria-label="Découpage">' +
@@ -204,8 +216,8 @@ document.addEventListener("DOMContentLoaded", function () {
           periode("2026", "−285,41", "+500,00", "6 sans ticket", BARRE_DOSSIER);
     } else {
       h = '<div class="deux-cases">' +
-        '<button type="button" class="case-releve" data-case="dossier" aria-pressed="' + (caseChoisie === "dossier") + '"><b>Dossier en cours</b><small>depuis le 28 octobre</small><span class="totaux"><span>−285,41' + e + "</span><span>+500,00" + e + "</span></span></button>" +
-        '<button type="button" class="case-releve" data-case="annee" aria-pressed="' + (caseChoisie === "annee") + '"><b>Depuis le 1<sup>er</sup> janvier</b><small>toute l’année 2026</small><span class="totaux"><span>−31 875,42' + e + "</span><span>+52 340,00" + e + "</span></span></button>" +
+        '<button type="button" class="case-releve" data-case="dossier" aria-pressed="' + (caseChoisie === "dossier") + '"><b>Dossier en cours</b><small>depuis le 28 octobre</small><span class="totaux"><span class="sortie">−285,41' + e + '</span><span class="entree">+500,00' + e + "</span></span></button>" +
+        '<button type="button" class="case-releve" data-case="annee" aria-pressed="' + (caseChoisie === "annee") + '"><b>Depuis le 1<sup>er</sup> janvier</b><small>toute l’année 2026</small><span class="totaux"><span class="sortie">−31 875,42' + e + '</span><span class="entree">+52 340,00' + e + "</span></span></button>" +
         "</div>";
       if (caseChoisie === "dossier") {
         h += '<div style="margin-top:14px">' + segments() + "</div>" + LEGENDE +
@@ -213,7 +225,7 @@ document.addEventListener("DOMContentLoaded", function () {
       } else {
         h += '<div style="margin-top:14px"></div>' + LEGENDE +
           periode("2026, du 1<sup>er</sup> janvier au 8 novembre", "−31 875,42", "+52 340,00", "", BARRE_ANNEE) +
-          '<ul class="mois">' + ANNEE.map(function (m) { return "<li><span>" + m[0] + "</span><span>−" + m[2] + e + ", +" + m[1] + e + "</span></li>"; }).join("") + "</ul>";
+          ANNEE.map(function (m) { return periode(m[0], "−" + m[2], "+" + m[1], "", BARRE_ANNEE); }).join("");
       }
     }
     document.getElementById("releves").innerHTML = h;

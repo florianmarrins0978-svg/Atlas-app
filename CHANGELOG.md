@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-08
 
+- **Deux planches corrigées sur ses remarques.** Entrées et sorties : les couleurs inventées sont remplacées par celles de l'écran (`src/lib/chartes.ts`, Origine ; le dessin de `DossierEnCours.tsx`). La fiche client : « Nouvelle facture » n'était pas sa demande ; c'est « Importer devis / facture », attaché au client. Pas codé.
 - **Une facture depuis la fiche d'un client : une planche** (`appli/soignee/client-nouvelle-facture.html`, sa question). Sa fiche propose un devis mais pas de facture : un geste « Nouvelle facture » ouvrirait l'écran de Terminés, le client déjà rempli. Pas codé.
 - **« Autre chose », en entier : la maquette finie** (`appli/soignee/planning-sans-fiche.html`). Le nom, l'adresse, le téléphone et les travaux à faire, sans fiche client. Pas codé.
 - **Vos entrées et sorties : une planche** (`appli/soignee/banque-entrees-sorties.html`, sa question). « Année » sur « Pour mon comptable » ne comptait que le dossier en cours (depuis le 28 octobre chez lui) en s'intitulant « 2026 », et l'assistant ne sait pas lire la banque. A : le dire ; B : compter toute l'année. Et l'assistant qui lit le relevé. Ce que ça évite : un total de l'année faux de dix mois, présenté comme juste. Pas codé.
