@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mon année, l'objectif</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  MON ANNÉE : l'objectif de chiffre d'affaires et de bénéfice, le rythme à
+  tenir, et ce qui ferait la différence. Sa demande du 8 novembre 2026 :
+  « se mettre des objectifs, 300 000 euros de chiffre d'affaires dont 50 000
+  de bénéfice ; si tu es à la moitié, ce que tu dois facturer par jour ou par
+  mois ; et des conseils, augmenter les prix sur ça ».
+
+  CE QUE L'APPLI SAIT DÉJÀ, cherché le 8 novembre 2026 (rien n'est inventé) :
+    le facturé et l'encaissé d'une période : src/lib/bilan-periode.ts ;
+    ce qui attend sa facture : src/lib/termines-par-mois.ts (aFacturerPartout) ;
+    les devis envoyés, signés, refusés : devis.statut ;
+    la nature de chaque travail : prestations.nature, src/lib/natures-prestation.ts ;
+    le temps réservé au planning : chantiers.duree_demi_journees ;
+    les jours ouvrés et les fériés : src/lib/jours-feries.ts ;
+    toutes les sorties de la banque reliée, avec leur motif (fournisseur,
+      salaire, loyer, impôts, prêt, perso, entre comptes) : mouvements_bancaires.
+  AUCUN objectif nulle part : ni table, ni réglage, ni écran.
+
+  LES TROIS RÈGLES QUI FONT LES CHIFFRES :
+    1. LE RYTHME SUIT SA SAISON. Un paysagiste ne facture pas autant en
+       janvier qu'en mai : un objectif coupé en parts égales dirait « en
+       retard » chaque hiver et « en avance » chaque printemps. Le trait de la
+       jauge et les montants de chaque mois suivent la part de chaque mois dans
+       l'an dernier. Sans an dernier dans l'appli, ni trait ni retard : le
+       reste se répartit sur les jours ouvrés, et rien ne prétend le contraire.
+    2. LE BÉNÉFICE NE S'AFFICHE QU'AVEC TOUTES LES DÉPENSES. Encaissé moins
+       les sorties pro du relevé. Les tickets seuls en oublieraient la moitié,
+       et un bénéfice sans la moitié des dépenses est faux : sans banque
+       reliée, il ne s'affiche pas.
+    3. UN CONSEIL EST UN COMPTE, JAMAIS UN PRIX PROPOSÉ. Ce que rapporte une
+       journée d'équipe par travail, face à ce qu'il en faut ; la part des
+       devis signés. Aucune IA, rien à croire sur parole (docs/AGENT.md §3,
+       et lecons-prix.ts : « un RAPPEL, jamais un calcul »).
+
+  LES CHIFFRES SONT DES EXEMPLES : une entreprise à deux équipes, 254 000 € HT
+  l'an dernier. Les jours ouvrés et les fériés de 2026, eux, sont vrais.
+
+  RIEN N'EST CODÉ DANS src/.
+*/
+
+/* ─── Terminés, le haut de l'écran (recopié de termines.html) ──────────── */
+.argent { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.case { display: flex; flex-direction: column; min-height: 140px; padding: 16px 14px; border-radius: var(--r-plage);
+        text-decoration: none; color: inherit; }
+.case-titre { font-size: 13px; font-weight: 700; line-height: 1.35; letter-spacing: 0.1em; text-wrap: balance; text-transform: uppercase; color: var(--atlas-or); }
+.case-sous { margin-top: 6px; font: 400 17px/1.2 var(--serif); color: var(--atlas-ink); }
+.case-pied { margin-top: auto; padding-top: 14px; }
+.case-valeur { font: 400 26px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; letter-spacing: -0.01em; white-space: nowrap; color: var(--atlas-ink); }
+.case-bien { display: flex; align-items: center; gap: 6px; font: 400 18px/1.15 var(--serif); color: var(--atlas-ink); }
+.case-bien .ico { width: 20px; height: 20px; stroke-width: 2; }
+.case-tva { background: var(--atlas-carteAmbreFond); }
+.case-compta { background: var(--atlas-carteVertFond); }
+.case-compta .case-titre, .case-compta .case-bien .ico { color: var(--atlas-carteVertTexte); }
+.portes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+.porte { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 56px; padding: 0 14px;
+         border-radius: 28px; font-size: 15px; font-weight: 500; line-height: 1.2; text-align: center; text-decoration: none;
+         color: var(--atlas-ink); background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.porte-or { color: var(--atlas-or); background: transparent; box-shadow: inset 0 0 0 1.5px var(--atlas-or); }
+.mois-nom { margin: 34px 0 0; text-align: center; font: 400 30px/1.1 var(--serif); }
+
+/* La ligne de Mon année sur Terminés : la sœur de celle de la franchise. */
+.entree-annee { display: block; width: 100%; margin-top: 10px; padding: 14px 16px 16px; border-radius: var(--r-plage); text-align: left;
+                background: var(--atlas-card); color: var(--atlas-ink); }
+.entree-annee-haut { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 15.5px; font-weight: 700; color: var(--atlas-or); }
+.entree-annee-haut .ico { width: 20px; height: 20px; stroke-width: 2; }
+.entree-annee-chiffres { display: block; margin: 6px 0 12px; font: 400 19px/1.25 var(--serif); font-variant-numeric: tabular-nums lining-nums; }
+
+/* ─── La jauge : le plein, et le trait de la saison ─────────────────────── */
+.jauge { position: relative; display: block; height: 8px; border-radius: 4px; background: color-mix(in srgb, var(--atlas-ink) 10%, transparent); }
+.jauge > span { display: block; height: 100%; max-width: 100%; border-radius: 4px; background: var(--atlas-or); }
+.jauge[data-ton="ambre"] > span { background: var(--atlas-carteAmbreTexte); }
+.jauge[data-ton="vert"] > span { background: var(--atlas-carteVertTexte); }
+.jauge > i { position: absolute; top: -4px; width: 2px; height: 16px; margin-left: -1px; border-radius: 1px; background: var(--atlas-ink); }
+
+/* ─── Mon année ─────────────────────────────────────────────────────────── */
+.bloc-tete { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.bloc-tete .bouton-texte { min-height: 40px; margin: -10px -4px -10px 0; }
+.chiffres { display: block; margin: 6px 0 14px; font: 400 19px/1.25 var(--serif); font-variant-numeric: tabular-nums lining-nums; color: var(--atlas-inkSoft); }
+.chiffres b { font-weight: 400; font-size: 30px; letter-spacing: -0.01em; color: var(--atlas-ink); }
+.plage .plage-ton { margin-top: 14px; }
+.plage .discret { margin-top: 8px; }
+.rang-ligne { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; padding: 11px 0; }
+.rang-ligne + .rang-ligne { box-shadow: inset 0 1px 0 var(--atlas-lineSoft); }
+.rang-ligne .nom { flex: 1; min-width: 0; font-size: 16px; line-height: 1.35; color: var(--atlas-ink); }
+.rang-ligne .nom small { display: block; margin-top: 2px; font-size: 14px; color: var(--atlas-inkSoft); }
+.rang-ligne .prix { font-size: 16.5px; color: var(--atlas-ink); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
+.rang-ligne.fort .nom, .rang-ligne.fort .prix { font: 400 20px/1.2 var(--serif); }
+.rang-ligne.fort .prix { color: var(--atlas-or); }
+.plage > .bouton-texte { margin-top: 4px; }
+
+/* Ce qui est en main : des lignes à toucher, qui mènent là où ça se fait. */
+.main-ligne { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 60px; padding: 8px 0; text-align: left; }
+.main-ligne + .main-ligne { box-shadow: inset 0 1px 0 var(--atlas-lineSoft); }
+.main-ligne .nom { flex: 1; min-width: 0; font-size: 16px; line-height: 1.35; }
+.main-ligne .prix { font-size: 16.5px; font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
+.main-ligne .ico { width: 18px; height: 18px; color: var(--atlas-chevron); stroke-width: 2; }
+
+/* Les conseils : le travail, ce qu'il rapporte, et ce que ça changerait. */
+.conseil { display: block; width: 100%; padding: 14px 0; text-align: left; }
+.conseil + .conseil { box-shadow: inset 0 1px 0 var(--atlas-lineSoft); }
+.conseil-nom { display: flex; align-items: center; justify-content: space-between; gap: 10px; font: 400 19px/1.25 var(--serif); }
+.conseil-nom .ico { width: 18px; height: 18px; color: var(--atlas-chevron); stroke-width: 2; }
+.conseil-dit { display: block; margin-top: 4px; font-size: 15px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.conseil-dit b { font-weight: 700; color: var(--atlas-ink); font-variant-numeric: tabular-nums; }
+
+/* Le tableau des travaux, dans sa feuille. */
+.travaux { width: 100%; margin-top: 14px; border-collapse: collapse; font-variant-numeric: tabular-nums lining-nums; }
+.travaux th { padding: 0 0 8px; font-size: 13px; font-weight: 600; text-align: right; color: var(--atlas-inkSoft); }
+.travaux th:first-child, .travaux td:first-child { text-align: left; }
+.travaux td { padding: 12px 0; font-size: 16px; text-align: right; box-shadow: inset 0 1px 0 var(--atlas-lineSoft); }
+.travaux td:first-child { font: 400 17px/1.25 var(--serif); }
+.travaux td small { display: block; margin-top: 2px; font: 400 13.5px/1.3 var(--sans); color: var(--atlas-inkSoft); }
+.travaux .bas { color: var(--atlas-carteAmbreTexte); font-weight: 700; }
+
+.feuille .rang-ligne.total { margin-top: 4px; box-shadow: inset 0 1px 0 var(--atlas-line); }
+.feuille .rang-ligne.total .nom, .feuille .rang-ligne.total .prix { font: 400 20px/1.2 var(--serif); }
+.feuille .discret { margin-top: 12px; }
+.feuille .fermer { display: flex; width: 100%; justify-content: center; margin-top: 8px; color: var(--atlas-inkSoft); }
+.feuille .bouton-plein { margin-top: 20px; }
+.champ-euros { position: relative; }
+.champ-euros .champ-saisie { padding-right: 40px; font-size: 20px; font-variant-numeric: tabular-nums lining-nums; }
+.champ-euros::after { content: "€"; position: absolute; right: 15px; bottom: 14px; font-size: 18px; color: var(--atlas-inkSoft); pointer-events: none; }
+.vide-annee { padding: 26px 18px 22px; text-align: center; }
+.vide-annee .vide-titre { font: 400 24px/1.2 var(--serif); }
+.vide-annee .vide-texte { margin: 8px 0 20px; color: var(--atlas-inkSoft); }
+</style>
+</head>
+<body class="pl pl-pilules">
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">Mon année</h1>
+  <p class="pl-verdict">L'objectif de l'année, ce qu'il reste à facturer <b>mois par mois</b>, ce qui est déjà en main, le bénéfice, et <b>vos prix</b> face à l'objectif. Touchez <b>Modifier</b> et changez l'objectif : tout se recalcule. Les montants sont des exemples.</p>
+</header>
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <!-- ═══ Mon année ════════════════════════════════════════════════════════ -->
+    <div data-vue-panneau="Mon année">
+      <p class="pl-legende">L'écran, ouvert depuis Terminés</p>
+      <div class="pl-etats" data-ecran="#ecran-annee">
+        <button type="button" data-etat="vide" aria-pressed="false">Pas d'objectif</button>
+        <button type="button" data-etat="moitie" aria-pressed="false">À la moitié, 30 juin</button>
+        <button type="button" data-etat="retard" aria-pressed="true">En retard, 8 novembre</button>
+        <button type="button" data-etat="depasse" aria-pressed="false">Dépassé, 18 décembre</button>
+        <button type="button" data-etat="sansbanque" aria-pressed="false">Sans banque reliée</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre" id="ecran-annee">
+          <div class="defile">
+            <div class="tete-ronds">
+              <button class="rond-creux" type="button" data-note="Retour à Terminés." aria-label="Retour à Terminés"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-note="L'assistant lit les mêmes chiffres : « combien il me reste pour mon objectif ? »"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </div>
+            <header class="tete"><h1 class="tete-titre">Mon année</h1></header>
+            <p class="tete-situation" data-annee-situation>2026</p>
+            <div data-annee></div>
+          </div>
+          <nav class="barre" aria-label="Navigation principale"><div class="barre-onglets">
+            <a class="barre-onglet" href="accueil.html">Chantiers</a>
+            <a class="barre-onglet" href="planning.html">Planning</a>
+            <a class="barre-onglet" href="termines.html" aria-current="page">Terminés</a>
+            <a class="barre-onglet" href="paysage.html">Paysage</a>
+            <a class="barre-onglet" href="reglages.html">Réglages</a>
+            <span class="barre-trait" aria-hidden="true"><span></span></span>
+          </div></nav>
+
+          <section class="feuille" id="f-objectif" aria-hidden="true" aria-label="Mon objectif">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre">Mon objectif 2026</h2>
+              <label class="champ champ-euros">
+                <span class="champ-libelle">Chiffre d'affaires, HT</span>
+                <input class="champ-saisie" id="saisie-ca" inputmode="numeric" autocomplete="off" placeholder="300 000">
+              </label>
+              <span class="champ-aide">L'an dernier, 254&#8239;000&nbsp;€.</span>
+              <label class="champ champ-euros">
+                <span class="champ-libelle">Bénéfice</span>
+                <input class="champ-saisie" id="saisie-benefice" inputmode="numeric" autocomplete="off" placeholder="Facultatif">
+              </label>
+              <button class="bouton bouton-plein" type="button" data-geste="garder">Garder</button>
+              <button class="bouton-texte fermer" type="button" data-ferme>Fermer</button>
+            </div>
+          </section>
+          <section class="feuille" id="f-mois" aria-hidden="true" aria-label="Mois par mois">
+            <div class="feuille-poignee"></div><div class="feuille-dedans" data-mois></div>
+          </section>
+          <section class="feuille" id="f-benefice" aria-hidden="true" aria-label="Le compte du bénéfice">
+            <div class="feuille-poignee"></div><div class="feuille-dedans" data-benefice></div>
+          </section>
+          <section class="feuille" id="f-travaux" aria-hidden="true" aria-label="Ce que rapporte une journée">
+            <div class="feuille-poignee"></div><div class="feuille-dedans" data-travaux></div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ Sur Terminés : la porte ═════════════════════════════════════════ -->
+    <div data-vue-panneau="Sur Terminés">
+      <p class="pl-legende">La porte, sur Terminés, sous les deux boutons</p>
+      <div class="pl-etats" data-ecran="#ecran-termines">
+        <button type="button" data-etat="moitie" aria-pressed="false">À la moitié, 30 juin</button>
+        <button type="button" data-etat="retard" aria-pressed="true">En retard, 8 novembre</button>
+        <button type="button" data-etat="vide" aria-pressed="false">Pas d'objectif</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre" id="ecran-termines">
+          <div class="defile">
+            <header class="tete">
+              <h1 class="tete-titre">Terminés</h1>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant" data-note="Inchangé."><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </header>
+            <div class="argent">
+              <a class="case case-tva" href="#" data-note="Inchangé : voir la planche Terminés.">
+                <span class="case-titre">Ma TVA à déclarer</span>
+                <span class="case-sous">Octobre 2026</span>
+                <span class="case-pied"><span class="case-valeur">4&#8239;212,00&nbsp;€</span></span>
+              </a>
+              <a class="case case-compta" href="#" data-note="Inchangé : voir la planche Terminés.">
+                <span class="case-titre">Pour mon comptable</span>
+                <span class="case-sous">Dossier en cours</span>
+                <span class="case-pied"><span class="case-bien"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg>Tout est justifié</span></span>
+              </a>
+            </div>
+            <div class="portes">
+              <a class="porte" href="#" data-note="Inchangé : voir la planche Terminés.">Retours d'intervention</a>
+              <a class="porte porte-or" href="#" data-note="Inchangé : voir la planche Terminés.">Créer une facture</a>
+            </div>
+            <div data-porte></div>
+            <p class="mois-nom">Novembre 2026</p>
+          </div>
+          <nav class="barre" aria-label="Navigation principale"><div class="barre-onglets">
+            <a class="barre-onglet" href="accueil.html">Chantiers</a>
+            <a class="barre-onglet" href="planning.html">Planning</a>
+            <a class="barre-onglet" href="termines.html" aria-current="page">Terminés</a>
+            <a class="barre-onglet" href="paysage.html">Paysage</a>
+            <a class="barre-onglet" href="reglages.html">Réglages</a>
+            <span class="barre-trait" aria-hidden="true"><span></span></span>
+          </div></nav>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce que je propose</h2>
+    <ul>
+      <li>Un objectif par an, en HT : le chiffre d'affaires, et le bénéfice si vous voulez le suivre. Rien n'est rempli d'avance ; l'an dernier est écrit dessous pour repère.</li>
+      <li>La jauge dit où vous en êtes. Le trait dit où vous devriez être aujourd'hui, d'après votre saison de l'an dernier : un paysagiste ne facture pas en janvier ce qu'il facture en mai. Couper l'objectif en douze parts égales vous dirait « en retard » tout l'hiver et « en avance » tout le printemps.</li>
+      <li>Ce qu'il reste à facturer, mois par mois et par jour travaillé, suit la même saison. Les jours travaillés sont les jours ouvrés, fériés retirés.</li>
+      <li>Ce qui est déjà en main : les chantiers finis pas encore facturés, les devis signés pas encore faits, les devis sans réponse. Avec les deux premiers, il reste ce qu'il faut encore faire signer.</li>
+      <li>Le bénéfice : ce qui est encaissé, moins les sorties pro de votre banque. Il ne s'affiche qu'avec la banque reliée : avec les tickets seuls, il manquerait les salaires, le loyer, les cotisations, et le chiffre serait faux.</li>
+      <li>Vos prix : ce que rapporte une journée d'équipe, travail par travail, face à ce qu'il en faut pour l'objectif ; et la part des devis signés. Presque tous signés, c'est souvent un prix trop bas. L'appli ne propose jamais un prix : elle montre le compte, vous décidez.</li>
+      <li>Vous seul le voyez. Un salarié ne voit jamais un euro, ici non plus.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>La porte : sur Terminés, sous les deux boutons (la planche), ou en haut de Chantiers, que vous ouvrez tous les jours.</li>
+      <li>Le bénéfice : encaissé moins les sorties pro de la banque, impôts et cotisations comptés comme une dépense. Les prêts n'y sont pas : la banque ne sépare pas le capital des intérêts. Le vrai chiffre reste celui de votre comptable.</li>
+      <li>Le rôle Facturation : le voit-il aussi, ou vous seul ?</li>
+      <li>Sans l'an dernier dans l'appli (une première année, ou des factures jamais importées), ni trait ni retard : le reste se répartit sur les jours ouvrés. Importer ses anciennes factures donne la saison.</li>
+      <li>En franchise de TVA, un objectif au-dessus du plafond se signale dans la feuille de l'objectif : la franchise s'arrête avant.</li>
+    </ul>
+    <h2>Ce que l'appli sait déjà</h2>
+    <ul class="garde">
+      <li>Le facturé et l'encaissé de n'importe quelle période, les avoirs retirés.</li>
+      <li>Les chantiers finis qui attendent leur facture, et les devis envoyés, signés ou refusés.</li>
+      <li>La nature de chaque travail du devis (abattage, élagage, haie, tonte…), et le temps réservé au planning.</li>
+      <li>Les sorties de la banque reliée, avec leur motif : fournisseur, salaire, loyer, impôts, prêt, perso.</li>
+      <li>Rien de l'objectif lui-même : ni réglage, ni écran. C'est ce qui reste à faire.</li>
+    </ul>
+  </section>
+</main>
+<script src="kit.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* ─── Le calendrier, vrai : jours ouvrés de 2026, fériés retirés ──────── */
+  function paques(a) {
+    var b = a % 19, c = Math.floor(a / 100), d = a % 100, e = Math.floor(c / 4), f = c % 4,
+        g = Math.floor((c + 8) / 25), h = Math.floor((c - g + 1) / 3), i = (19 * b + c - e - h + 15) % 30,
+        k = Math.floor(d / 4), l = d % 4, m = (32 + 2 * f + 2 * k - i - l) % 7, n = Math.floor((b + 11 * i + 22 * m) / 451),
+        mois = Math.floor((i + m - 7 * n + 114) / 31), jour = ((i + m - 7 * n + 114) % 31) + 1;
+    return Date.UTC(a, mois - 1, jour);
+  }
+  var JOUR = 86400000;
+  function feries(a) {
+    var p = paques(a);
+    return [Date.UTC(a, 0, 1), p + JOUR, Date.UTC(a, 4, 1), Date.UTC(a, 4, 8), p + 39 * JOUR, p + 50 * JOUR,
+            Date.UTC(a, 6, 14), Date.UTC(a, 7, 15), Date.UTC(a, 10, 1), Date.UTC(a, 10, 11), Date.UTC(a, 11, 25)];
+  }
+  var FERIES = feries(2026);
+  function ouvre(t) { var j = new Date(t).getUTCDay(); return j !== 0 && j !== 6 && FERIES.indexOf(t) < 0; }
+  /* Les jours ouvrés entre deux jours, bornes comprises. */
+  function ouvres(du, au) { var n = 0; for (var t = du; t <= au; t += JOUR) if (ouvre(t)) n++; return n; }
+  function finDuMois(m) { return Date.UTC(2026, m + 1, 0); }
+  var JOURS_ANNEE = ouvres(Date.UTC(2026, 0, 1), Date.UTC(2026, 11, 31));
+
+  var MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+  function Maj(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+  /* ─── L'an dernier : la part de chaque mois dans l'année (exemple) ────── */
+  var AN_DERNIER = 254000;
+  var SAISON = [4, 5, 9, 11, 12, 11, 9, 6, 10, 10, 8, 5];
+  var EQUIPES = 2;
+
+  /* La part de l'année faite à ce jour, mois en cours compté au prorata de
+     ses jours ouvrés passés. */
+  function partFaite(t) {
+    var d = new Date(t), m = d.getUTCMonth(), part = 0;
+    for (var i = 0; i < m; i++) part += SAISON[i];
+    var debut = Date.UTC(2026, m, 1);
+    part += SAISON[m] * ouvres(debut, t) / ouvres(debut, finDuMois(m));
+    return part / 100;
+  }
+
+  /* ─── Les quatre moments de l'année (exemples) ───────────────────────── */
+  var ETATS = {
+    moitie: { jour: Date.UTC(2026, 5, 30), facture: 150000, encaisse: 138200,
+      depenses: [["Fournisseurs", 48600], ["Salaires", 42100], ["Loyer", 4800], ["Impôts et cotisations", 21900]],
+      aFacturer: [3, 5200], signes: [14, 46800], attente: [19, 63400] },
+    retard: { jour: Date.UTC(2026, 10, 8), facture: 214600, encaisse: 201900,
+      depenses: [["Fournisseurs", 71400], ["Salaires", 62300], ["Loyer", 8800], ["Impôts et cotisations", 30100]],
+      aFacturer: [4, 7800], signes: [6, 18600], attente: [11, 41200] },
+    depasse: { jour: Date.UTC(2026, 11, 18), facture: 312400, encaisse: 296100,
+      depenses: [["Fournisseurs", 102900], ["Salaires", 89400], ["Loyer", 9600], ["Impôts et cotisations", 46400]],
+      aFacturer: [2, 3900], signes: [1, 2100], attente: [5, 16800] }
+  };
+  ETATS.vide = ETATS.retard;
+  ETATS.sansbanque = ETATS.retard;
+
+  /* Ce que rapporte une journée d'équipe, sur les chantiers d'un seul
+     travail : le facturé HT divisé par le temps réservé au planning. */
+  var TRAVAUX = [
+    { nom: "Abattage", jour: 980, chantiers: 14, signes: 13, envoyes: 14, annee: 41200 },
+    { nom: "Élagage", jour: 760, chantiers: 22, signes: 18, envoyes: 24, annee: 50200 },
+    { nom: "Plantation", jour: 610, chantiers: 9, signes: 7, envoyes: 12, annee: 24100 },
+    { nom: "Taille de haie", jour: 540, chantiers: 31, signes: 27, envoyes: 33, annee: 33500 },
+    { nom: "Tonte", jour: 340, chantiers: 48, signes: 40, envoyes: 41, annee: 31000 }
+  ];
+
+  var objectifs = { moitie: [300000, 50000], retard: [300000, 50000], depasse: [300000, 50000], vide: null, sansbanque: [300000, 50000] };
+
+  /* ─── L'écriture des montants ─────────────────────────────────────────── */
+  var FR = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 });
+  var FR2 = new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  function e(n) { return FR.format(n) + " €"; }
+  function e2(n) { return FR2.format(n) + " €"; }
+  function cent(n) { return Math.round(n / 100) * 100; }
+  function dix(n) { return Math.round(n / 10) * 10; }
+  function mille(n) { return Math.round(n / 1000) * 1000; }
+
+  function calculer(cle) {
+    var s = ETATS[cle], o = objectifs[cle];
+    if (!o) return { s: s, vide: true };
+    var O = o[0], B = o[1], t = s.jour, d = new Date(t), m = d.getUTCMonth();
+    var part = partFaite(t), attendu = cent(O * part), reste = O - s.facture;
+    /* Le reste, réparti sur ce qui reste de la saison. */
+    var lendemain = t + JOUR, mois = [], poidsRestant = 0;
+    for (var i = m; i < 12; i++) {
+      var debut = i === m ? lendemain : Date.UTC(2026, i, 1);
+      var jours = ouvres(debut, finDuMois(i));
+      if (!jours) continue;
+      var poids = SAISON[i] * (i === m ? jours / ouvres(Date.UTC(2026, i, 1), finDuMois(i)) : 1);
+      mois.push({ m: i, jours: jours, poids: poids, entier: i !== m || debut === Date.UTC(2026, i, 1) });
+      poidsRestant += poids;
+    }
+    mois.forEach(function (x) { x.montant = cent(reste * x.poids / poidsRestant); });
+    var depenses = s.depenses.reduce(function (a, x) { return a + x[1]; }, 0);
+    var benefice = s.encaisse - depenses;
+    return {
+      s: s, O: O, B: B, part: part, attendu: attendu, ecart: s.facture - attendu, reste: reste,
+      mois: mois, projection: mille(s.facture / part),
+      enMain: s.aFacturer[1] + s.signes[1], aTrouver: reste - s.aFacturer[1] - s.signes[1],
+      depenses: depenses, benefice: benefice,
+      sur100: benefice / s.encaisse * 100, faut100: B ? B / O * 100 : null,
+      parJournee: dix(O / (JOURS_ANNEE * EQUIPES))
+    };
+  }
+
+  function pct(n) { return Math.max(0, Math.min(100, n * 100)).toFixed(1) + "%"; }
+  function jauge(fait, trait, ton) {
+    return '<span class="jauge" data-ton="' + ton + '"><span style="width:' + pct(fait) + '"></span>' +
+      (trait === null ? "" : '<i style="left:' + pct(trait) + '" aria-hidden="true"></i>') + "</span>";
+  }
+  function ligne(nom, prix, cls) {
+    return '<div class="rang-ligne' + (cls ? " " + cls : "") + '"><span class="nom">' + nom + '</span><span class="prix">' + prix + "</span></div>";
+  }
+  function pluriel(n, un, plusieurs) { return n + " " + (n < 2 ? un : plusieurs); }
+
+  /* ─── Mon année ───────────────────────────────────────────────────────── */
+  function rendreAnnee(cle) {
+    var c = calculer(cle), s = c.s, h = "";
+    var jourLu = new Date(s.jour).getUTCDate() + " " + MOIS[new Date(s.jour).getUTCMonth()];
+    document.querySelector("[data-annee-situation]").textContent = "2026, au " + jourLu;
+
+    if (c.vide) {
+      h += '<div class="plage vide-annee"><p class="vide-titre">Pas encore d\'objectif</p>' +
+        '<p class="vide-texte">Facturé cette année, ' + e(s.facture) + ". L'an dernier, " + e(AN_DERNIER) + ".</p>" +
+        '<button class="bouton bouton-plein" type="button" data-geste="fixer">Fixer mon objectif</button></div>';
+      return h;
+    }
+
+    var passe = c.reste <= 0;
+    var ton = passe ? "vert" : c.ecart < 0 ? "ambre" : "vert";
+
+    /* Le chiffre d'affaires. */
+    h += '<section class="plage">' +
+      '<div class="bloc-tete"><span class="reglage-libelle">Chiffre d\'affaires</span>' +
+      '<button class="bouton-texte or" type="button" data-geste="fixer">Modifier</button></div>' +
+      '<span class="chiffres"><b>' + e(s.facture) + "</b> sur " + e(c.O) + "</span>" +
+      jauge(s.facture / c.O, passe ? null : c.attendu / c.O, ton);
+    if (passe) {
+      h += '<p class="plage-ton" data-ton="vert">Objectif passé de <b>' + e(-c.reste) + "</b>.</p>";
+    } else if (c.ecart < 0) {
+      h += '<p class="plage-ton" data-ton="ambre"><b>' + e(-c.ecart) + "</b> de retard sur votre saison. À ce rythme, " + e(c.projection) + " au 31 décembre.</p>";
+    } else {
+      h += '<p class="plage-ton" data-ton="vert"><b>' + e(c.ecart) + "</b> d'avance sur votre saison.</p>";
+    }
+    if (!passe) h += '<p class="discret">Le trait suit votre saison de l\'an dernier.</p>';
+    h += "</section>";
+
+    /* Ce qu'il reste à facturer, ce mois-ci et par jour. */
+    if (!passe) {
+      var premier = c.mois[0];
+      h += '<h2 class="rubrique">Il reste à facturer</h2><section class="plage">' +
+        ligne("D'ici le 31 décembre", e(c.reste), "fort") +
+        ligne(Maj(MOIS[premier.m]) + (premier.entier ? "" : ", d'ici le " + new Date(finDuMois(premier.m)).getUTCDate()) +
+          "<small>" + pluriel(premier.jours, "jour travaillé", "jours travaillés") + "</small>", e(premier.montant)) +
+        ligne("Par jour travaillé", e(dix(premier.montant / premier.jours)));
+      if (c.mois.length > 1) h += '<button class="bouton-texte or" type="button" data-ouvre="f-mois">Mois par mois</button>';
+      h += "</section>";
+    }
+
+    /* Ce qui est déjà en main. */
+    h += '<h2 class="rubrique">Déjà en main</h2><section class="plage plage-serree">' +
+      '<button class="main-ligne touche" type="button" data-note="Ouvre Terminés, sur ce qui reste à facturer."><span class="nom">' +
+        pluriel(s.aFacturer[0], "chantier fini, à facturer", "chantiers finis, à facturer") + '</span><span class="prix">' + e(s.aFacturer[1]) +
+        '</span><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></button>' +
+      '<button class="main-ligne touche" type="button" data-note="Ouvre le planning de ces chantiers."><span class="nom">' +
+        pluriel(s.signes[0], "devis signé, pas encore fait", "devis signés, pas encore faits") + '</span><span class="prix">' + e(s.signes[1]) +
+        '</span><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></button>' +
+      '<button class="main-ligne touche" type="button" data-note="Ouvre les devis qui attendent leur réponse, pour relancer."><span class="nom">' +
+        pluriel(s.attente[0], "devis sans réponse", "devis sans réponse") + '</span><span class="prix">' + e(s.attente[1]) +
+        '</span><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></button>' +
+      "</section>";
+    if (!passe) {
+      h += c.aTrouver > 0
+        ? '<p class="plage-ton mt-8" data-ton="or">Avec les deux premiers, il reste <b>' + e(c.aTrouver) + "</b> à faire signer.</p>"
+        : '<p class="plage-ton mt-8" data-ton="vert">Avec les deux premiers, l\'objectif est atteint.</p>';
+    }
+
+    /* Le bénéfice. */
+    h += '<h2 class="rubrique">Bénéfice</h2><section class="plage">';
+    if (cle === "sansbanque") {
+      h += '<p class="conseil-dit" style="margin:0 0 16px">Sans votre banque, l\'appli ne voit pas vos dépenses.</p>' +
+        '<button class="bouton bouton-creux" type="button" data-note="Ouvre Réglages, Ma banque.">Relier ma banque</button>';
+    } else {
+      var tonB = c.faut100 !== null && c.sur100 < c.faut100 ? "ambre" : "vert";
+      h += '<span class="chiffres"><b>' + e(c.benefice) + "</b>" + (c.B ? " sur " + e(c.B) : "") + "</span>";
+      if (c.B) h += jauge(c.benefice / c.B, null, tonB);
+      h += '<p class="plage-ton" data-ton="' + tonB + '">Sur 100&nbsp;€ encaissés, il vous reste <b>' + e2(c.sur100) + "</b>." +
+        (c.faut100 !== null ? " Il en faut " + e2(c.faut100) + "." : "") + "</p>" +
+        '<button class="bouton-texte or" type="button" data-ouvre="f-benefice">Voir le compte</button>';
+    }
+    h += "</section>";
+
+    /* Vos prix : deux conseils au plus. Le travail qui rapporte le moins sous
+       ce qu'il faut ; puis, PARMI LES AUTRES, celui dont presque tous les
+       devis sont signés. Quand les deux signaux tombent sur le même travail,
+       ils se disent ensemble : c'est le cas le plus net d'un prix trop bas. */
+    function presqueTout(x) { return x.envoyes >= 8 && x.signes / x.envoyes >= 0.9; }
+    var bas = TRAVAUX.filter(function (x) { return x.jour < c.parJournee; }).sort(function (a, b) { return a.jour - b.jour; })[0];
+    var signe = TRAVAUX.filter(function (x) { return x !== bas && presqueTout(x); }).sort(function (a, b) { return b.signes / b.envoyes - a.signes / a.envoyes; })[0];
+    h += '<h2 class="rubrique">Vos prix</h2><section class="plage plage-serree">';
+    if (bas) {
+      h += '<button class="conseil touche" type="button" data-ouvre="f-travaux"><span class="conseil-nom">' + bas.nom +
+        '<svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>' +
+        '<span class="conseil-dit"><b>' + e(bas.jour) + "</b> la journée, il en faut " + e(c.parJournee) +
+        (presqueTout(bas) ? ", et " + bas.signes + " devis sur " + bas.envoyes + " sont signés." : ".") +
+        " 10&nbsp;% plus cher : <b>" + e(cent(bas.annee * 0.1)) + "</b> de plus sur l'année, au même nombre de chantiers.</span></button>";
+    }
+    if (signe) {
+      h += '<button class="conseil touche" type="button" data-ouvre="f-travaux"><span class="conseil-nom">' + signe.nom +
+        '<svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>' +
+        '<span class="conseil-dit"><b>' + signe.signes + " devis signés sur " + signe.envoyes + "</b>. Presque tout est accepté : vos prix peuvent sans doute monter.</span></button>";
+    }
+    h += "</section>" +
+      '<button class="bouton-texte or" type="button" data-ouvre="f-travaux">Tous les travaux</button>';
+    return h;
+  }
+
+  function rendreMois(cle) {
+    var c = calculer(cle);
+    if (c.vide || c.reste <= 0) return "";
+    var h = '<h2 class="feuille-titre">Mois par mois</h2>';
+    c.mois.forEach(function (x) {
+      h += ligne(Maj(MOIS[x.m]) + "<small>" + pluriel(x.jours, "jour travaillé", "jours travaillés") + ", " + e(dix(x.montant / x.jours)) + " par jour</small>", e(x.montant));
+    });
+    h += ligne("D'ici le 31 décembre", e(c.reste), "total") +
+      '<p class="discret">Réparti comme votre saison de l\'an dernier.</p>' +
+      '<button class="bouton-texte fermer" type="button" data-ferme>Fermer</button>';
+    return h;
+  }
+
+  function rendreBenefice(cle) {
+    var c = calculer(cle);
+    if (c.vide) return "";
+    var h = '<h2 class="feuille-titre">Bénéfice estimé, 2026</h2>' + ligne("Encaissé", e(c.s.encaisse));
+    c.s.depenses.forEach(function (x) { h += ligne(x[0], "moins " + e(x[1])); });
+    h += ligne("Bénéfice estimé", e(c.benefice), "total") +
+      '<p class="discret">Pas comptés : vos dépenses perso, vos prêts, les virements entre vos comptes. Le vrai chiffre, c\'est votre comptable.</p>' +
+      '<button class="bouton-texte fermer" type="button" data-ferme>Fermer</button>';
+    return h;
+  }
+
+  function rendreTravaux(cle) {
+    var c = calculer(cle);
+    if (c.vide) return "";
+    var h = '<h2 class="feuille-titre">Ce que rapporte une journée</h2>' +
+      '<p class="plage-ton" data-ton="or">Pour ' + e(c.O) + ", une journée d'équipe doit rapporter <b>" + e(c.parJournee) + "</b>.</p>" +
+      '<table class="travaux"><thead><tr><th scope="col">Travail</th><th scope="col">La journée</th><th scope="col">Signés</th></tr></thead><tbody>';
+    TRAVAUX.forEach(function (x) {
+      h += "<tr><td>" + x.nom + "<small>" + pluriel(x.chantiers, "chantier", "chantiers") + "</small></td>" +
+        '<td class="' + (x.jour < c.parJournee ? "bas" : "") + '">' + e(x.jour) + "</td>" +
+        "<td>" + x.signes + " sur " + x.envoyes + "</td></tr>";
+    });
+    h += "</tbody></table>" +
+      '<p class="discret">Sur les chantiers d\'un seul travail, facturé HT divisé par le temps réservé au planning.</p>' +
+      '<button class="bouton-texte fermer" type="button" data-ferme>Fermer</button>';
+    return h;
+  }
+
+  /* ─── La porte, sur Terminés ──────────────────────────────────────────── */
+  function rendrePorte(cle) {
+    var c = calculer(cle);
+    if (c.vide) {
+      return '<button class="entree-annee touche" type="button" data-note="Ouvre Mon année, et sa feuille Mon objectif.">' +
+        '<span class="entree-annee-haut">Mon année<svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>' +
+        '<span class="entree-annee-chiffres" style="margin-bottom:0">Fixer mon objectif</span></button>';
+    }
+    return '<button class="entree-annee touche" type="button" data-note="Ouvre Mon année.">' +
+      '<span class="entree-annee-haut">Mon année<svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>' +
+      '<span class="entree-annee-chiffres">' + e(c.s.facture) + " sur " + e(c.O) + "</span>" +
+      jauge(c.s.facture / c.O, c.attendu / c.O, c.ecart < 0 ? "ambre" : "vert") + "</button>";
+  }
+
+  /* ─── Le branchement ──────────────────────────────────────────────────── */
+  var ecranA = document.getElementById("ecran-annee");
+  var ecranT = document.getElementById("ecran-termines");
+  function etatDe(ecran, defaut) { return ecran.getAttribute("data-etat") || defaut; }
+  function tout() {
+    var cle = etatDe(ecranA, "retard");
+    ecranA.querySelector("[data-annee]").innerHTML = rendreAnnee(cle);
+    ecranA.querySelector("[data-mois]").innerHTML = rendreMois(cle);
+    ecranA.querySelector("[data-benefice]").innerHTML = rendreBenefice(cle);
+    ecranA.querySelector("[data-travaux]").innerHTML = rendreTravaux(cle);
+    ecranT.querySelector("[data-porte]").innerHTML = rendrePorte(etatDe(ecranT, "retard"));
+  }
+  new MutationObserver(tout).observe(ecranA, { attributes: true, attributeFilter: ["data-etat"] });
+  new MutationObserver(tout).observe(ecranT, { attributes: true, attributeFilter: ["data-etat"] });
+  tout();
+
+  var saisieCa = document.getElementById("saisie-ca");
+  var saisieB = document.getElementById("saisie-benefice");
+  function lireEuros(champ) { var n = parseInt(String(champ.value).replace(/[^\d]/g, ""), 10); return isFinite(n) && n > 0 ? n : null; }
+  function poserEuros(champ, n) { champ.value = n ? FR.format(n) : ""; }
+
+  document.addEventListener("click", function (ev) {
+    var n = ev.target.closest("[data-note]");
+    if (n) { ev.preventDefault(); var ec = n.closest(".ecran"); Kit.fermerFeuilles(ec); setTimeout(function () { Kit.note(ec, n.getAttribute("data-note")); }, 200); return; }
+    var g = ev.target.closest("[data-geste]");
+    if (!g) return;
+    var geste = g.getAttribute("data-geste"), cle = etatDe(ecranA, "retard");
+    if (geste === "fixer") {
+      var o = objectifs[cle];
+      poserEuros(saisieCa, o ? o[0] : null);
+      poserEuros(saisieB, o ? o[1] : null);
+      Kit.ouvrirFeuille("f-objectif", g);
+      return;
+    }
+    if (geste === "garder") {
+      var ca = lireEuros(saisieCa);
+      if (!ca) { saisieCa.closest(".champ").classList.add("champ-manque"); saisieCa.focus(); return; }
+      saisieCa.closest(".champ").classList.remove("champ-manque");
+      objectifs[cle] = [ca, lireEuros(saisieB)];
+      Kit.fermerFeuilles(ecranA);
+      tout();
+    }
+  });
+  /* Le montant se lit avec ses espaces pendant qu'on le tape. */
+  [saisieCa, saisieB].forEach(function (champ) {
+    champ.addEventListener("input", function () { var n = lireEuros(champ); poserEuros(champ, n); });
+  });
+})();
+</script>
+</body>
+</html>

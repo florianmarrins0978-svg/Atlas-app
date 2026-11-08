@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-11-08
+
+- **Mon année, l'objectif : une planche** (`appli/soignee/mon-annee.html`, sa demande). Un chiffre d'affaires et un bénéfice pour l'année ; ce qu'il reste à facturer mois par mois et par jour travaillé, réparti comme sa saison de l'an dernier ; ce qui est déjà en main (à facturer, signé, en attente) ; le bénéfice, seulement avec la banque reliée ; ce que rapporte une journée d'équipe par travail, face à ce qu'il en faut. Ce que ça évite : un rythme à parts égales qui le dirait en retard tout l'hiver, un bénéfice faux faute des salaires et du loyer, un prix proposé sans source. Pas codé.
+
 ## 2026-11-07
 
 - **Neuf lots de quatre sessions sur `main`, par une seule batterie** (sa demande : *« fusionne-la avec la tienne »*, puis son « Oui ») : le vrai sablier, hiverner l'arrosage, la note sans réseau, le plafond de la franchise, déplacer un chantier en un appui, la fiche travaux, la fiche de sécurité soignée, fermer son compte, la facture d'abonnement d'Atlas. Migrations renumérotées 0171 à 0175, §561 à §567. La batterie a trouvé un vrai oubli : les factures d'abonnement d'Atlas manquaient à « Mes données » et leur PDF à la liste des fichiers stockés ; les autres rouges étaient des suites qui se trompaient (une lecture sans contexte d'entreprise, une fermeture reprogrammée sur un compte déjà fermé, une note comptée trop tôt). À la fusion : le mois du planning porte le férié et la goutte, « Le prévoir » refuse un férié, la dictée d'une idée n'emporte pas l'identifiant d'envoi de la note. Retour : `docs/batterie-commune-6-novembre-soir.md`.
