@@ -2168,6 +2168,24 @@ pratique déjà avec un autre logiciel : l'attestation retire ce que le client
 a déjà touché. La liaison (habilitation d'Atlas comme logiciel partenaire,
 API « tiers de prestation ») se rouvrira si des artisans la demandent.
 
+**Un collègue dans une coopérative ne se sert pas de cette liaison (8 novembre
+2026).** Sa question : un collègue en services à la personne, adhérent
+d'Unipros et utilisateur d'Evoliz, pourrait-il passer sur Atlas ? Unipros est
+une coopérative déclarée (n° SAP850484650) : d'après son site, l'adhérent
+émet ses factures depuis son espace Unipros, **au nom de la coopérative**, qui
+porte la déclaration, le crédit d'impôt et l'avance immédiate ; elle lui
+reverse le HT par autofacturation (39,99 € HT par mois, sans commission).
+Lu dans des extraits de recherche seulement : `unipros.coop` est refusé par le
+réseau de cette session. **Conséquence :** coder le crédit d'impôt ou la
+liaison Urssaf dans Atlas ne sert pas un adhérent d'une coopérative, qui n'a
+pas de numéro à lui ; cela sert l'artisan déclaré en son nom. Pour l'adhérent,
+le seul pont possible est vers l'outil de la coopérative (import ou API, à
+demander à Unipros). Ce qu'Evoliz fait pour lui n'est pas connu. Un comparatif
+le dit compatible avec l'avance immédiate (non lu, site refusé). **Rien n'est
+décidé** : trois questions sont à poser au collègue avant d'écrire du code
+(d'où sortent ses factures aux particuliers, à quoi sert Evoliz, quelle
+activité et quel rythme de facturation).
+
 **Tranché le 9 octobre 2026 : les acomptes gardent leur taux CUMULÉ.** C'est
 sa propre façon de compter : *« 1er acompte 30 %, 2e 50 %, 3e 75 % »*, soit
 ce que le client a payé en tout à chaque étape. L'appli fait déjà ainsi
