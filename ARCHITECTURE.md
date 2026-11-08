@@ -37263,3 +37263,17 @@ L'import ne partait que de Vos clients et rangeait chaque pièce par le nom lu :
 | rangé, on revient sur sa fiche, et `BandeImport` (le même) y dit « 2 documents rangés », entre la loupe et les onglets | la place qu'il a sous la recherche de Vos clients |
 
 Éprouvé par `scripts/test-import-tableau.ts` (trois cas, rouges contre une règle fausse), `scripts/test-pieces-importees-db.ts` (trois cas sous `atlas_app`, chacun rouge quand on casse sa protection) et `scripts/test-importer-pieces-e2e.ts` (le geste entier, rouge sur l'appli sans le geste).
+
+## §573 : La fiche de l'espace dit quel espace l'a écrite, par une empreinte, jamais par son nom
+
+*8 novembre 2026. Son PC et son téléphone ouvraient deux espaces, chacun avec sa base, et les deux réécrivaient la fiche n°47 tour à tour : une session a lu celle du PC en croyant lire celle du téléphone. Son « tu peux le faire ».*
+
+| Décision | Pourquoi |
+|---|---|
+| la fiche porte « Écrite par l'espace : » et six caractères (`empreinteEspace`, SHA-256 du nom) | distinguer ses espaces suffit ; le nom n'ajoute rien de plus à une session |
+| **jamais le nom** (`CODESPACE_NAME`), contre ce que `TODO.md` proposait le matin | le port 3000 est public (`devcontainer.json`) et l'adresse est « nom-3000.app.github.dev » : le nom sur une fiche d'un dépôt public afficherait l'adresse de son appli |
+| avant de réécrire, l'espace relit la fiche : les espaces de l'heure vivent dans un commentaire que la page ne montre pas (`ecrivainsRecents`) | la fiche est réécrite entièrement à chaque publication ; sans mémoire, le second espace effacerait la trace du premier |
+| deux espaces dans l'heure : un avertissement en tête, qui nomme le dernier | une session lit le haut de la fiche ; la date fraîche ne prouve plus que CET espace tourne |
+| ce qui ne se lit pas comme une empreinte et une date ne compte pas | la fiche est publique : n'importe qui peut écrire dans son commentaire |
+
+Éprouvé par `scripts/test-rapport-espace.ts` (trois cas, rouges avant). La publication elle-même (relire, puis réécrire) ne se joue pas d'ici, le mandataire refusant l'API GitHub : la CI la joue sur une fiche jetable (`eprouver-publication-fiche.mjs`).

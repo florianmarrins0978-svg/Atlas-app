@@ -32,6 +32,8 @@
  * ───────────────────────────────────────────────────────────────────────────
  */
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
+import { hostname } from "node:os";
 
 /**
  * Le titre EXACT de la fiche : c'est lui qui évite d'en créer une par allumage.
@@ -111,8 +113,59 @@ const MOMENTS = {
   main: "à la main",
 };
 
+/**
+ * **Quel espace a écrit la fiche ?** — 8 novembre 2026. Son PC et son
+ * téléphone ouvraient deux espaces, chacun avec sa base, et les deux
+ * réécrivaient cette fiche tour à tour : une session a lu celle du PC en
+ * croyant lire celle du téléphone, et cherché pourquoi Atlas était vide.
+ *
+ * **Une empreinte, jamais le nom.** Le port 3000 de l'espace est public
+ * (`devcontainer.json`) et son adresse est « <nom>-3000.app.github.dev » ;
+ * écrire le nom sur une fiche d'un dépôt public afficherait l'adresse de son
+ * appli sur la place. Six caractères suffisent à distinguer ses espaces, et
+ * ne ramènent pas au nom.
+ */
+export function empreinteEspace(nom) {
+  const n = String(nom ?? "").trim();
+  return n ? createHash("sha256").update(n).digest("hex").slice(0, 6) : null;
+}
+
+const UNE_HEURE_MS = 60 * 60 * 1000;
+const COMMENTAIRE_ECRIVAINS = /<!-- ecrivains: (.*?) -->/;
+
+/**
+ * Les espaces qui ont écrit la fiche dans l'heure, le plus récent d'abord,
+ * relus dans la fiche d'avant (un commentaire que la page ne montre pas).
+ * Ce qui ne se lit pas comme une empreinte et une date ne compte pas : la
+ * fiche est publique, et n'importe qui peut la modifier.
+ */
+export function ecrivainsRecents(corpsPrecedent, actuel) {
+  const maintenant = Date.parse(actuel.quand);
+  let anciens = [];
+  try {
+    const lu = JSON.parse(String(corpsPrecedent ?? "").match(COMMENTAIRE_ECRIVAINS)?.[1] ?? "[]");
+    anciens = Array.isArray(lu) ? lu : [];
+  } catch {
+    anciens = [];
+  }
+  const valables = anciens.filter((e) => {
+    const t = Date.parse(e?.quand);
+    return typeof e?.espace === "string" && /^[0-9a-f]{6}$/.test(e.espace) && e.espace !== actuel.espace
+      && Number.isFinite(t) && t <= maintenant && maintenant - t <= UNE_HEURE_MS;
+  });
+  const parEspace = new Map();
+  for (const e of [actuel, ...valables.sort((a, b) => Date.parse(b.quand) - Date.parse(a.quand))]) {
+    if (e.espace && !parEspace.has(e.espace)) parEspace.set(e.espace, { espace: e.espace, quand: e.quand });
+  }
+  return [...parEspace.values()];
+}
+
+/** « 14:00 UTC » : l'heure de chaque espace, sans la date, qui est celle d'au-dessus. */
+const heure = (iso) => `${String(iso).slice(11, 16)} UTC`;
+
 /** Le corps de la fiche. Rendu séparément pour être éprouvable sans réseau. */
-export function corpsDuRapport({ diagnostic, quand, moment = "main" }) {
+export function corpsDuRapport({ diagnostic, quand, moment = "main", espace = null, ecrivains = [] }) {
+  const plusieurs = ecrivains.length > 1;
   return [
     "> Fiche écrite automatiquement par l'espace de travail du patron, à chaque",
     "> allumage. Elle existe pour que l'agent voie sa machine sans avoir à lui",
@@ -121,7 +174,18 @@ export function corpsDuRapport({ diagnostic, quand, moment = "main" }) {
     "",
     `**Dernière publication :** ${quand}`,
     `**Écrite :** ${MOMENTS[moment] ?? MOMENTS.main}`,
+    `**Écrite par l'espace :** ${espace ?? "inconnu"}`,
     "",
+    // Deux espaces dans l'heure : la fiche ne décrit que le dernier, et une
+    // session qui l'ignore croit lire l'autre (le 8 novembre 2026).
+    ...(plusieurs
+      ? [
+          `> **${ecrivains.length === 2 ? "Deux" : ecrivains.length} espaces écrivent cette fiche dans la dernière heure** :`,
+          `> ${ecrivains.map((e) => `${e.espace} à ${heure(e.quand)}`).join(", ")}.`,
+          `> **Elle ne décrit que le dernier :** ${ecrivains[0].espace}. Les autres ont chacun leur base.`,
+          "",
+        ]
+      : []),
     // **La date EST un diagnostic, et c'est le plus rapide de tous.** Le
     // veilleur republie tous les quarts d'heure tant que l'espace tourne : une
     // fiche qui a vieilli ne dit pas « le serveur va mal », elle dit « la
@@ -142,6 +206,8 @@ export function corpsDuRapport({ diagnostic, quand, moment = "main" }) {
     "> Le journal de démarrage n'est **pas** publié ici : ce dépôt est public, et",
     "> une censure faite au jugé finirait par laisser passer l'imprévu. Voir",
     "> l'en-tête de `scripts/rapporter-espace.mjs`.",
+    "",
+    `<!-- ecrivains: ${JSON.stringify(ecrivains)} -->`,
   ].join("\n");
 }
 
@@ -191,7 +257,7 @@ export function choisirFiche(fiches, titre) {
  * développement où l'on s'est authentifié à la main).
  * ───────────────────────────────────────────────────────────────────────────
  */
-async function publierParHttp(corps, jeton) {
+async function publierParHttp(fabriquer, jeton) {
   let origine;
   try {
     origine = commande("git", ["remote", "get-url", "origin"]);
@@ -227,6 +293,14 @@ async function publierParHttp(corps, jeton) {
     existante = await lister();
   }
 
+  // La fiche d'avant dit qui l'a écrite dans l'heure (`ecrivainsRecents`).
+  let precedent = "";
+  if (existante) {
+    const r = await fetch(`${racine}/${existante}`, { headers: entetes });
+    if (r.ok) precedent = (await r.json())?.body ?? "";
+  }
+  const corps = fabriquer(precedent);
+
   const reponse = existante
     ? await fetch(`${racine}/${existante}`, {
         method: "PATCH",
@@ -247,12 +321,14 @@ async function publierParHttp(corps, jeton) {
 }
 
 /** Le second recours : `gh`, quand il est là et qu'aucun jeton n'est posé. */
-function publierParGh(corps) {
+function publierParGh(fabriquer) {
   const trouvees = commande("gh", [
     "issue", "list", "--state", "open", "--limit", "50",
     "--search", TITRE_FICHE, "--json", "number,title",
   ]);
   const existante = choisirFiche(JSON.parse(trouvees), TITRE_FICHE);
+  const precedent = existante ? JSON.parse(commande("gh", ["issue", "view", String(existante), "--json", "body"])).body ?? "" : "";
+  const corps = fabriquer(precedent);
   if (existante) {
     commande("gh", ["issue", "edit", String(existante), "--body-file", "-"], { input: corps });
     return `mise à jour #${existante}`;
@@ -277,18 +353,25 @@ async function main() {
   // recopie des noms de fichiers modifiés, et rien n'interdit qu'un jour l'un
   // d'eux porte un secret. Une ceinture ne se retire pas parce qu'on a mis des
   // bretelles — surtout sur un dépôt public.
-  const corps = expurger(
-    corpsDuRapport({
-      diagnostic,
-      // L'heure vient du système : une fiche sans date ne dit pas si l'on
-      // regarde l'état d'aujourd'hui ou celui d'avant-hier.
-      quand: new Date().toISOString(),
-      // Posé par qui appelle : `demarrer.sh` distingue ses deux passages, le
-      // veilleur se nomme, et un appel à la main ne prétend être ni l'un ni
-      // l'autre.
-      moment: process.env.ATLAS_MOMENT,
-    })
-  );
+  // L'heure vient du système : une fiche sans date ne dit pas si l'on
+  // regarde l'état d'aujourd'hui ou celui d'avant-hier.
+  const quand = new Date().toISOString();
+  // Hors d'un espace GitHub (une machine de développement), le nom de la
+  // machine ; dans les deux cas, son empreinte seule part (`empreinteEspace`).
+  const espace = empreinteEspace(process.env.CODESPACE_NAME || hostname());
+  const fabriquer = (precedent) =>
+    expurger(
+      corpsDuRapport({
+        diagnostic,
+        quand,
+        // Posé par qui appelle : `demarrer.sh` distingue ses deux passages, le
+        // veilleur se nomme, et un appel à la main ne prétend être ni l'un ni
+        // l'autre.
+        moment: process.env.ATLAS_MOMENT,
+        espace,
+        ecrivains: ecrivainsRecents(precedent, { espace, quand }),
+      })
+    );
 
   // Le jeton d'abord, `gh` ensuite. L'ordre compte : dans l'espace du patron,
   // le jeton est là et `gh` ne l'est pas — commencer par `gh` reviendrait à ne
@@ -297,7 +380,7 @@ async function main() {
 
   try {
     if (jeton) {
-      const issue = await publierParHttp(corps, jeton);
+      const issue = await publierParHttp(fabriquer, jeton);
       if (issue !== "sans-depot") {
         console.log(`✅ État publié — fiche ${issue}.`);
         return 0;
@@ -310,7 +393,7 @@ async function main() {
   }
 
   try {
-    console.log(`✅ État publié — fiche ${publierParGh(corps)}.`);
+    console.log(`✅ État publié — fiche ${publierParGh(fabriquer)}.`);
   } catch (e) {
     console.error(`⚠ Rapport non publié : ${String(e.message).split("\n")[0]}`);
     console.error("  L'espace fonctionne normalement — seule la remontée vers l'agent manque.");

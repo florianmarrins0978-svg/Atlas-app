@@ -107,16 +107,17 @@ mesurer la colonne.
 de 10 px de chaque côté (`mx-4` contre `mx-[26px]`, `src/app/paysage/page.tsx`),
 téléphone compris. Proposé à part sur la planche.
 
-## La fiche de l'espace ne dit pas QUEL espace l'a écrite (8 novembre 2026)
+## ~~La fiche de l'espace ne dit pas QUEL espace l'a écrite (8 novembre 2026)~~ CODÉ LE 8 NOVEMBRE, à son « tu peux le faire » (§573) ; contrôle de niveau 2 à jouer avec son accord
 
 Deux espaces allumés (son PC et son téléphone) réécrivent la même fiche n°47
 tour à tour, et rien n'y dit lequel parle : une session qui la lit croit lire
 l'espace du téléphone et peut lire celui du PC. Le 8 novembre, c'est ainsi
 qu'Atlas « vide sur PC » s'expliquait par un autre espace, avec une autre
-base. **À faire** : publier `CODESPACE_NAME` dans la fiche
-(`scripts/rapporter-espace.mjs`), et dire en tête quand deux noms
-différents l'ont écrite dans la dernière heure. Pas codé : pas demandé ce
-jour-là.
+base. **Codé le 8 novembre** (`ARCHITECTURE.md` §573) : la fiche porte
+l'EMPREINTE de l'espace (six caractères), jamais son nom, et dit en tête
+quand deux espaces l'ont écrite dans la dernière heure. **Corrigé noir sur
+blanc** : « publier `CODESPACE_NAME` », écrit ici le matin, aurait publié
+l'adresse de son appli, port 3000 public, sur un dépôt public.
 
 ## ⏳ À CHOISIR PAR LUI (8 novembre 2026) : Mon année, l'objectif de chiffre d'affaires et de bénéfice
 
