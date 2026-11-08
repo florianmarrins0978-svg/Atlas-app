@@ -35,10 +35,13 @@ import {
   reprendreLeDevisAction,
   majDateTravauxFactureAction,
   majAutoliquidationFactureAction,
+  majServicesALaPersonneFactureAction,
   majTvaClientFactureAction,
   majReferencesChorusFactureAction,
 } from "./actions";
 import ListeDesManques from "@/components/atlas/ListeDesManques";
+import CaseServicesALaPersonne from "@/components/atlas/CaseServicesALaPersonne";
+import { phraseSousLaCase } from "@/lib/services-a-la-personne";
 import { ArretDuPlafond } from "@/components/atlas/FranchiseDeTva";
 import type { ArretDuPlafond as Arret } from "@/lib/franchise-plafond";
 import type { Manque } from "@/lib/mentions-manquantes";
@@ -74,6 +77,12 @@ export type FacturePourEcran = {
   dateTravaux: string | null;
   /** Sous-traitance du bâtiment, sans TVA (`src/lib/autoliquidation.ts`). */
   autoliquidation: boolean;
+  /**
+   * La case « Services à la personne » (migration 0178), reprise du devis, et
+   * si elle paraît : l'entreprise déclarée, le client particulier.
+   */
+  servicesALaPersonne: boolean;
+  servicesALaPersonnePossible: boolean;
   clientNumeroTva: string | null;
   /** Recopié du devis : l'avis sur la clé du n° TVA le compare au SIREN. */
   clientSiret: string | null;
@@ -288,6 +297,43 @@ export default function FactureClient({
   // compte de l'année avec cette facture, et le geste à reprendre s'il
   // l'envoie sans TVA, l'envoi ou le dépôt sur Chorus Pro.
   const [arretPlafond, setArretPlafond] = useState<{ arret: Arret; reprendre: "envoi" | "chorus" } | null>(null);
+
+  // La case « Services à la personne » : posée tout de suite, remise où elle
+  // était si le serveur refuse (la facture est partie entre-temps, la
+  // déclaration s'est éteinte).
+  //
+  // **Elle suit la valeur du serveur quand celle-ci change** : reprendre le
+  // devis la réécrit (`instantaneDuDevis`), et l'écran se relit par
+  // `router.refresh()`, qui garde les états. Sans ce rattrapage, l'écran
+  // montrerait la case d'avant la reprise. D'où le `refresh` après chaque
+  // bascule aussi : la valeur lue reste celle de la base.
+  const sapDuServeur = initialFacture?.servicesALaPersonne ?? false;
+  const [sapLu, setSapLu] = useState(sapDuServeur);
+  const [sap, setSap] = useState(sapDuServeur);
+  if (sapLu !== sapDuServeur) {
+    setSapLu(sapDuServeur);
+    setSap(sapDuServeur);
+  }
+  const [sapEnCours, setSapEnCours] = useState(false);
+  const [refusSap, setRefusSap] = useState<string | null>(null);
+  async function basculerSap(coche: boolean) {
+    if (!initialFacture) return;
+    const avant = sap;
+    setSap(coche);
+    setRefusSap(null);
+    setSapEnCours(true);
+    try {
+      const r = await majServicesALaPersonneFactureAction(initialFacture.id, coche);
+      if (!r.succes) {
+        setSap(avant);
+        setRefusSap(r.erreur);
+        return;
+      }
+      router.refresh();
+    } finally {
+      setSapEnCours(false);
+    }
+  }
 
   async function basculerSousTraitance() {
     if (!initialFacture) return;
@@ -1125,6 +1171,27 @@ export default function FactureClient({
           </div>
         </div>
       </section>
+
+      {/* **La case « Services à la personne », sous les totaux** (sa planche du
+          8 novembre 2026) : reprise du devis, elle se décoche encore avant
+          l'envoi, et la facture redevient normale ; partie, elle se lit sans
+          se changer. */}
+      {initialFacture.servicesALaPersonnePossible && (
+        <CaseServicesALaPersonne
+          coche={sap}
+          modifiable={!emise}
+          enCours={sapEnCours}
+          refus={refusSap}
+          onBasculer={(coche) => void basculerSap(coche)}
+          sous={phraseSousLaCase({
+            coche: sap,
+            genre: "facture",
+            clientNom: initialFacture.clientNom,
+            clientCivilite: initialFacture.clientCivilite,
+            totalTtc: totaux.totalTtc,
+          })}
+        />
+      )}
 
       {/* Les règlements reçus et le net à payer — **en lecture**. Sa correction
           du 21 septembre 2026 : « + Règlement reçu » vit là où il REMPLIT la

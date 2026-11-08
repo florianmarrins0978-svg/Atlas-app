@@ -189,6 +189,9 @@ const PLANCHER = MARGE + 14;
  */
 const ECART_SOUS_LE_CONTENU = 22.4;
 
+/** Entre son logo et celui des services à la personne, côte à côte en tête. */
+const ECART_ENTRE_LOGOS = 12;
+
 /** Un espace : la hauteur d'une ligne d'un seul libellé (11 + 19 points), blanche. */
 const ESPACE_D_UNE_LIGNE = 30;
 
@@ -751,6 +754,12 @@ export type LogoDocument = { octets: Uint8Array; mime: string };
  */
 export type AttestationDocument = { octets: Uint8Array; mime: string };
 
+/**
+ * Ce que la case « Services à la personne » met sur la pièce : le logo, s'il
+ * est déposé, et la mention, toujours (`mentionSurLePapier`).
+ */
+export type ServicesALaPersonneDocument = { logo: LogoDocument | null; mention: string };
+
 export type OptionsDocument = {
   /** « DEVIS », « FACTURE », ou leur variante brouillon. */
   titre: string;
@@ -777,6 +786,13 @@ export type OptionsDocument = {
    * (C. ass. L243-2). Lue par le dépôt, comme le logo.
    */
   attestation?: AttestationDocument | null;
+  /**
+   * LES SERVICES À LA PERSONNE (migration 0178), quand la case est retenue :
+   * leur logo en tête, à droite du sien (R7232-19), et la mention du crédit
+   * d'impôt au pied, sous la décennale. Lus et décidés par le dépôt
+   * (`papierServicesALaPersonne`) ; ce module écrit. Absents : rien ne change.
+   */
+  servicesALaPersonne?: ServicesALaPersonneDocument | null;
   /** Le bloc de références en haut à droite : libellé et valeur. */
   references: [string, string][];
   /** Intertitre du bloc de notes — le devis y met aussi ses conditions. */
@@ -1066,15 +1082,27 @@ async function composerUneFois(
   // droit de cette même bande : un logo posé à gauche du nom viendrait les
   // toucher dès qu'il est un peu large, et un numéro de devis illisible coûte
   // plus cher qu'un en-tête d'un centimètre plus haut.
-  const logo = await imageDuLogo(pdfDoc, options.logo);
-  if (logo) {
+  //
+  // **Le logo des services à la personne se pose À DROITE du sien**, sur la
+  // même bande et à la même hauteur (migration 0178). Deux logos de 150 points
+  // au plus et leur écart s'arrêtent avant la colonne des références
+  // (`DROITE - 175`) : la règle d'au-dessus tient pour les deux.
+  const logos = [
+    await imageDuLogo(pdfDoc, options.logo),
+    await imageDuLogo(pdfDoc, options.servicesALaPersonne?.logo),
+  ].filter((image): image is PDFImage => image !== null);
+  let xLogo = MARGE;
+  let basDesLogos: number | null = null;
+  for (const logo of logos) {
     const t = taillePourLogo(logo.width, logo.height);
     const yImage = HAUTEUR - MARGE - t.hauteur;
-    ctx.page.drawImage(logo, { x: MARGE, y: yImage, width: t.largeur, height: t.hauteur });
-    ctx.trace.logos.push({ x: MARGE, y: yImage, largeur: t.largeur, hauteur: t.hauteur });
-    // Le nom descend sous le logo ; les références, elles, restent en haut.
-    y = yImage - 10 - 22;
+    ctx.page.drawImage(logo, { x: xLogo, y: yImage, width: t.largeur, height: t.hauteur });
+    ctx.trace.logos.push({ x: xLogo, y: yImage, largeur: t.largeur, hauteur: t.hauteur });
+    xLogo += t.largeur + ECART_ENTRE_LOGOS;
+    basDesLogos = basDesLogos === null ? yImage : Math.min(basDesLogos, yImage);
   }
+  // Le nom descend sous le plus haut des logos ; les références, elles, restent en haut.
+  if (basDesLogos !== null) y = basDesLogos - 10 - 22;
 
   // ─── En-tête : l'entreprise à gauche, les références à droite ───────────
   ecrire(ctx, data.entrepriseNom, MARGE, y, { taille: 22, police: ctx.sans });
@@ -1609,6 +1637,9 @@ async function composerUneFois(
       mediateurNom: data.entrepriseMediateurNom,
       mediateurCoordonnees: data.entrepriseMediateurCoordonnees,
     }),
+    // La mention du crédit d'impôt, sous la décennale (migration 0178) : le
+    // même pied pour le devis et la facture, une ligne à elle.
+    ...(options.servicesALaPersonne ? [options.servicesALaPersonne.mention] : []),
   ];
   const lignesDuPied = paragraphes.flatMap((p) => enLignes(p, ctx.sans, 7.8, 290));
 

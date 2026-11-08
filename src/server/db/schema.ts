@@ -381,6 +381,26 @@ export const entreprises = pgTable("entreprises", {
   resteEffaceLe: timestamp("reste_efface_le", { withTimezone: true }),
   /** L'e-mail parti sept jours avant l'effacement (`aPrevenir`), une seule fois. */
   prevenuLe: timestamp("prevenu_le", { withTimezone: true }),
+  /**
+   * LES SERVICES À LA PERSONNE (migration 0178), le crédit d'impôt de ses
+   * clients. **Déclarée, jamais déduite**, comme le régime de TVA : éteinte,
+   * le reste est gardé et rien ne s'imprime. Les règles vivent dans
+   * `src/lib/services-a-la-personne.ts`.
+   */
+  sapDeclaree: boolean("sap_declaree").notNull().default(false),
+  /** « SAP » et neuf chiffres, ou « SIR » et le SIRET pour une coopérative. */
+  sapNumero: text("sap_numero"),
+  sapDeclareeLe: date("sap_declaree_le"),
+  /** Le logo des services à la personne (R7232-19), dans le stockage, comme le logo. */
+  sapLogoCle: text("sap_logo_cle"),
+  sapLogoMime: text("sap_logo_mime"),
+  /** Une activité hors services à la personne : 30 % au plus du HT de l'année. */
+  sapActiviteACote: boolean("sap_activite_a_cote").notNull().default(false),
+  /**
+   * Le dernier numéro d'intervenant DONNÉ. Il ne redescend jamais : un
+   * numéro ne se redonne pas. Seul `tirer_numero_intervenant` l'écrit.
+   */
+  dernierNumeroIntervenant: integer("dernier_numero_intervenant").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
@@ -542,11 +562,20 @@ export const equipes = pgTable(
      * la base.
      */
     chefId: uuid("chef_id"),
+    /**
+     * Le numéro d'intervenant (migration 0178), pour l'attestation fiscale.
+     * Ni le rang (il se renumérote), ni le numéro de sécurité sociale. Tiré
+     * par le déclencheur à la création de la ligne ; NULL pour une ligne
+     * d'avant, jusqu'à la première lecture de l'équipe d'une entreprise
+     * déclarée (`numerosDesIntervenants`).
+     */
+    numeroIntervenant: integer("numero_intervenant"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
     unique("equipes_entreprise_rang_uk").on(t.entrepriseId, t.rang),
+    unique("equipes_numero_intervenant_uk").on(t.entrepriseId, t.numeroIntervenant),
     unique("equipes_id_entreprise_uk").on(t.id, t.entrepriseId),
     foreignKey({
       columns: [t.chefId, t.entrepriseId],
@@ -1559,6 +1588,12 @@ export const devis = pgTable(
      * déjà à zéro : l'état vit sur le chantier (`chantiers.autoliquidation`).
      */
     autoliquidation: boolean("autoliquidation").notNull().default(false),
+    /**
+     * La case « Services à la personne » (migration 0178), une pour tout le
+     * devis. Cochée, le logo et la mention s'impriment, si l'entreprise est
+     * déclarée et le client particulier (`caseRetenue`). La facture la reprend.
+     */
+    servicesALaPersonne: boolean("services_a_la_personne").notNull().default(false),
     clientNumeroTva: text("client_numero_tva"),
     clientAdresse: text("client_adresse"),
     clientTelephone: text("client_telephone"),
@@ -2558,6 +2593,12 @@ export const factures = pgTable(
      * avoirs, relevé) la lit donc sans TVA sans avoir à connaître ce drapeau.
      */
     autoliquidation: boolean("autoliquidation").notNull().default(false),
+    /**
+     * La case « Services à la personne » (migration 0178), reprise du devis.
+     * Elle se change encore tant que la facture est un brouillon ; arrêtée,
+     * `trg_facture_immuable` la fige avec le reste.
+     */
+    servicesALaPersonne: boolean("services_a_la_personne").notNull().default(false),
     /** Le numéro de TVA du donneur d'ordre, imprimé sous son nom (242 nonies A, I-4°). */
     clientNumeroTva: text("client_numero_tva"),
     tauxAvantAutoliquidation: jsonb("taux_avant_autoliquidation").$type<{

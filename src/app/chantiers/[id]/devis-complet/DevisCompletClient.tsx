@@ -82,6 +82,7 @@ import EnvoiAuClient from "../export/EnvoiAuClient";
 import { ouvrirLaMessagerie } from "@/lib/ouvrir-messagerie";
 import {
   majAutoliquidationDevisAction,
+  majServicesALaPersonneDevisAction,
   appliquerRetouchesAction,
   majEmetteurAction,
   majClientDuDevisAction,
@@ -102,6 +103,8 @@ import {
   retirerAcompteAction,
 } from "./actions";
 import OuLeClientLiraLaNote, { IMAGE_NOTE_CHEZ_LE_CLIENT } from "./OuLeClientLiraLaNote";
+import CaseServicesALaPersonne from "@/components/atlas/CaseServicesALaPersonne";
+import { phraseSousLaCase } from "@/lib/services-a-la-personne";
 import { preload } from "react-dom";
 
 // **Le devis, seul sur sa page — et à l'image du papier.**
@@ -171,6 +174,12 @@ type Props = {
    */
   sousTraitance: boolean;
   sousTraitancePossible: boolean;
+  /**
+   * La case « Services à la personne » (migration 0178), et si elle paraît :
+   * une entreprise déclarée et un client particulier (`laCaseExiste`).
+   */
+  servicesALaPersonne: boolean;
+  servicesALaPersonnePossible: boolean;
   devisId: string;
   numeroCommercial: string;
   dateEmission: string;
@@ -287,6 +296,27 @@ export default function DevisCompletClient(props: Props) {
   /** Le dernier IBAN que le serveur a accepté : abandonner la preuve y revient. */
   const [ibanEnregistre, setIbanEnregistre] = useState(props.emetteur.iban);
   const [refusSousTraitance, setRefusSousTraitance] = useState<string | null>(null);
+  // La case « Services à la personne » : posée tout de suite, remise où elle
+  // était si le serveur refuse. Une case qui resterait cochée à l'écran sur un
+  // refus lui ferait croire à une mention qui ne s'imprimera pas.
+  const [sap, setSap] = useState(props.servicesALaPersonne);
+  const [sapEnCours, setSapEnCours] = useState(false);
+  const [refusSap, setRefusSap] = useState<string | null>(null);
+  async function basculerSap(coche: boolean) {
+    const avant = sap;
+    setSap(coche);
+    setRefusSap(null);
+    setSapEnCours(true);
+    try {
+      const r = await majServicesALaPersonneDevisAction(props.chantierId, coche);
+      if (!r.ok) {
+        setSap(avant);
+        setRefusSap(r.raison);
+      }
+    } finally {
+      setSapEnCours(false);
+    }
+  }
   // Les taux viennent d'être réécrits côté serveur : la page se relit, et la
   // clé de l'écran (`page.tsx`) le fait repartir des lignes réelles plutôt que
   // de l'état d'avant.
@@ -1074,6 +1104,29 @@ export default function DevisCompletClient(props: Props) {
           {!fige && <DicterDansLeDevis chantierId={props.chantierId} onApplique={appliquerRetouches} />}
         </div>
       </div>
+
+      {/* **La case « Services à la personne », au-dessus de la feuille** (sa
+          planche du 8 novembre 2026) : le choix se fait au devis, une fois pour
+          tout le devis. Elle ne paraît que pour une entreprise déclarée et un
+          client particulier ; sur un devis parti, elle se lit sans se changer. */}
+      {props.servicesALaPersonnePossible && (
+        <div className="mx-auto mb-3 w-full max-w-[820px]">
+          <CaseServicesALaPersonne
+            coche={sap}
+            modifiable={!fige}
+            enCours={sapEnCours}
+            refus={refusSap}
+            onBasculer={(coche) => void basculerSap(coche)}
+            sous={phraseSousLaCase({
+              coche: sap,
+              genre: "devis",
+              clientNom: props.client.nom,
+              clientCivilite: props.client.civilite,
+              totalTtc: (totalHt + totalTva).toFixed(2),
+            })}
+          />
+        </div>
+      )}
 
       <article
       className="mx-auto w-full max-w-[820px] rounded-[10px] px-5 py-7 sm:px-12 sm:py-12"

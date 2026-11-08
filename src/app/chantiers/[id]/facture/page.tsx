@@ -20,6 +20,7 @@ import SuiteDeLaFacture from "./SuiteDeLaFacture";
 import { avoirsDeLaFacture } from "@/server/repositories/avoirs";
 import { PARAM_PROVENANCE, retourDepuisLePlanning } from "@/lib/retour-au-planning";
 import { avecCivilite } from "@/lib/civilite";
+import { laCaseExiste } from "@/lib/services-a-la-personne";
 import { jourIso } from "@/lib/jour";
 import { garderLaPage } from "@/server/garde-page";
 
@@ -192,6 +193,15 @@ export default async function FacturePage({
                   dateEcheance: existante.facture.dateEcheance,
                   dateTravaux: existante.facture.dateTravaux,
                   autoliquidation: existante.facture.autoliquidation,
+                  // La case « Services à la personne » (migration 0178), et si
+                  // elle paraît : l'entreprise déclarée, le client de la facture
+                  // particulier.
+                  servicesALaPersonne: existante.facture.servicesALaPersonne,
+                  servicesALaPersonnePossible: laCaseExiste({
+                    declaree: entreprise?.sapDeclaree ?? false,
+                    clientNom: existante.facture.clientNom,
+                    clientCivilite: existante.facture.clientCivilite,
+                  }),
                   clientNumeroTva: existante.facture.clientNumeroTva,
                   clientSiret: existante.facture.clientSiret,
                   clientNumeroEngagement: existante.facture.clientNumeroEngagement,

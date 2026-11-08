@@ -16,6 +16,7 @@ import { jourIso } from "@/lib/jour";
 import { garderLaPage } from "@/server/garde-page";
 import { compteDeLaFranchise } from "@/server/repositories/franchise-plafond";
 import { CompteurDeLaFranchise } from "@/components/atlas/FranchiseDeTva";
+import { compteDeLActiviteACote } from "@/server/repositories/services-a-la-personne";
 
 export const dynamic = "force-dynamic";
 
@@ -63,6 +64,9 @@ export default async function IdentitePage() {
   // Le compte de l'année, sous Franchise en base (sa planche du 5 novembre
   // 2026, B) : lu même en Assujettie, l'écran le montre dès la carte choisie.
   const franchise = await compteDeLaFranchise(ctx);
+  // Le compte de l'activité à côté (migration 0178) : lu même éteint, comme la
+  // franchise, pour paraître dès qu'il allume l'interrupteur.
+  const activiteACote = await compteDeLActiviteACote(ctx);
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -101,6 +105,14 @@ export default async function IdentitePage() {
             : []
         }
         compteFranchise={<CompteurDeLaFranchise compte={franchise.compte} />}
+        servicesALaPersonne={{
+          declaree: e?.sapDeclaree ?? false,
+          numero: e?.sapNumero ?? null,
+          declareeLe: e?.sapDeclareeLe ?? null,
+          activiteACote: e?.sapActiviteACote ?? false,
+          logoDepose: !!e?.sapLogoCle,
+        }}
+        compteActiviteACote={activiteACote}
         declarations={
           <>
             <PeriodiciteTvaReglage initiale={periodicite} />

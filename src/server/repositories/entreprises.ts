@@ -536,15 +536,21 @@ export async function attestationLue(
   }
 }
 
-async function logoLu(
+/**
+ * Un logo lu dans le stockage, ou `null` : le document sort quand même, sans
+ * lui (`imageDuLogo`). Le sien, et celui des services à la personne
+ * (`papierServicesALaPersonne`) : `quoi` dit lequel au journal.
+ */
+export async function logoLu(
   storageKey: string | null,
-  mime: string | null
+  mime: string | null,
+  quoi = "Logo de l'entreprise"
 ): Promise<LogoDocument | null> {
   if (!storageKey || !mime) return null;
   try {
     return { octets: await lireObjet(storageKey), mime };
   } catch (err) {
-    logger.error("Logo de l'entreprise illisible, document composé sans lui", {
+    logger.error(`${quoi} illisible, document composé sans lui`, {
       storageKey,
       erreur: err instanceof Error ? err.message : String(err),
     });

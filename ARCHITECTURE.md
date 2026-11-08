@@ -37206,3 +37206,32 @@ Son espace PC avait été ouvert le 3 octobre sur `claude/app-sur-ordinateur`. L
 
 **Ce qui n'est pas fait.** Ni écran, ni place en base pour les codes (une migration, chiffrée, au lot suivant), ni branchement à la facture. La planche `appli/soignee/credit-d-impot.html` attend son choix (§3 bis).
 
+## §570 : Le crédit d'impôt de ses clients, lot 1 : une case par pièce, la déclaration sur l'entreprise, un numéro qui ne se redonne pas
+
+*8 novembre 2026, sa consigne : « Code tout ce que tu peux coder et ne lance pas de batterie. » Planche `appli/soignee/credit-d-impot.html`, écrans Mon entreprise, Le devis, La facture. Migration 0178.*
+
+**Une seule règle pour l'écran, le serveur et le papier.** `src/lib/services-a-la-personne.ts` porte tout ce qui se décide : la forme du numéro (`SAP` et 9 chiffres, ou `SIR` et 14), sa saisie tolérante, la date, la case (`laCaseExiste` : entreprise déclarée ET client particulier, la catégorie des listes de clients, `categorieDuClient`), son défaut (`caseParDefaut` : cochée sans activité à côté), la case qui compte (`caseRetenue`), le crédit (la moitié du TTC, arrondie au centime inférieur), la mention et le compte de l'activité à côté. Le plafond de 5 000 € de dépenses du jardinage n'est PAS calculé : il se compte par foyer, chez tous ses prestataires, et Atlas n'en voit qu'une partie.
+
+**La case vit sur la pièce, la déclaration sur l'entreprise.** `devis.services_a_la_personne` et `factures.services_a_la_personne` : une case pour tout le document, jamais ligne par ligne. Un devis neuf prend `caseParDefaut`, une version corrigée garde le choix de la précédente, la facture née d'un devis le reprend (`instantaneDuDevis`, donc aussi à la reprise du devis), une facture sans devis prend la règle d'un document neuf. Sur la facture, elle se change tant que c'est un brouillon (`factureEncoreEnBrouillon`), puis `trg_facture_immuable` la fige avec le reste. **La mention se lit sur l'entreprise au moment de composer**, pas figée comme la décennale (§368) : une pièce partie garde son PDF archivé, et une entreprise qui n'est plus déclarée n'imprime plus de numéro, même sur un brouillon coché avant. Seul l'exemplaire acquitté, recomposé après coup, relit donc la déclaration du jour, comme il relit déjà le logo (`TODO.md`).
+
+**Le papier.** `papierServicesALaPersonne` (dépôt) rend le logo et la mention, ou rien ; `document-commun.ts` pose le logo des services à la personne À DROITE du sien, sur la même bande (deux logos de 150 points au plus s'arrêtent avant la colonne des références), et la mention au pied, sous la décennale. La feuille de chantier n'en porte rien. Une colonne de plus que le brief : `entreprises.sap_logo_mime`, parce que `pdf-lib` embarque un PNG et un JPEG par deux portes, et que le logo de l'entreprise garde déjà le sien (`logo_mime`).
+
+**Le numéro d'intervenant ne se tire qu'à un endroit.** `equipes` porte les salariés, et CINQ chemins y créent une ligne (le nom, deux photos, l'absence, la pose d'un chantier). Un appel dans chacun aurait été cinq copies, et le sixième chemin l'aurait oublié : la fonction SQL `tirer_numero_intervenant` incrémente `entreprises.dernier_numero_intervenant` (le verrou de la ligne sérialise deux créations), et le déclencheur `trg_numero_intervenant` la pose sur toute ligne neuve. Les lignes d'avant, et les salariés que le compteur annonce sans ligne, reçoivent le leur à la lecture d'Équipe d'une entreprise déclarée (`numerosDesIntervenants`), par la même fonction, dans l'ordre des rangs. Le compteur ne redescend jamais : une ligne effacée laisse un trou, jamais un doublon (`equipes_numero_intervenant_uk`, unique quand non nul). En lecture seule (essai fini, compte fermé), la lecture ne numérote rien et montre ce qui existe. Le patron est le n° 0 (`NUMERO_DU_PATRON`), sans ligne.
+
+**L'activité à côté se compte comme la franchise.** Le HT des factures ARRÊTÉES de l'année civile, avec et sans la case ; chaque avoir se déduit du côté de sa facture ; les pièces importées ne comptent pas (rien ne dit de quel côté elles sont). La part s'arrondit vers le haut : le chiffre écrit dépasse 30 exactement quand le plafond est dépassé. « Facturé ou encaissé » reste ouvert.
+
+**Le numéro 0178, et pas 0176.** Deux sessions voisines ont pris 0176 et 0177 sur leurs branches ; un numéro libre évite un treizième doublon (`test-numeros-migrations.ts`). Expand seul : colonnes neuves avec un défaut qui ne change rien, aucune ligne lue ni écrite.
+
+| | |
+|---|---|
+| `drizzle/0178_services_a_la_personne.sql` | les colonnes, les deux contraintes, la fonction et le déclencheur |
+| `src/lib/services-a-la-personne.ts` | toutes les règles |
+| `src/server/repositories/services-a-la-personne.ts` | réglages, logo, compte, papier, numéros |
+| `src/app/reglages/identite/ServicesALaPersonne.tsx` | la rubrique de Mon entreprise, après le médiateur |
+| `src/components/atlas/CaseServicesALaPersonne.tsx` | la case du devis et de la facture |
+| `scripts/test-services-a-la-personne.ts` | les règles (pure) |
+| `scripts/test-services-a-la-personne-pdf.ts` | le chemin jusqu'au papier (pure) |
+| `scripts/test-services-a-la-personne-db.ts` | le parcours en base sous `atlas_app` : écrite, PAS jouée (sa consigne) |
+
+**Ce qui n'est pas fait.** La signature, le retour du jour (les heures), l'attestation de janvier, le Cesu et l'avance immédiate : lots suivants. Aucun écran n'a été regardé ni aucune suite base jouée : la batterie (niveau 3, argent et migration) attend son accord.
+

@@ -29,6 +29,7 @@ import {
   changerTauxAcompte,
   retirerAcompte,
   majAutoliquidationDevis,
+  majServicesALaPersonneDevis,
 } from "@/server/repositories/devis";
 import { logger } from "@/server/logger";
 import { marquerAideNoteDevisVue } from "@/server/repositories/aide-note-devis";
@@ -555,6 +556,28 @@ export async function majAutoliquidationDevisAction(
     return r;
   } catch (err) {
     logger.error("Sous-traitance du devis non enregistrée", { erreur: err instanceof Error ? err.message : String(err) });
+    return { ok: false, raison: "Le changement n'a pas pu être enregistré. Réessayez." };
+  }
+}
+
+/**
+ * La case « Services à la personne » du devis (migration 0178). Le refus
+ * revient en valeur : l'écran remet la case où elle était et dit pourquoi.
+ */
+export async function majServicesALaPersonneDevisAction(
+  chantierId: string,
+  coche: boolean
+): Promise<{ ok: true; servicesALaPersonne: boolean } | { ok: false; raison: string }> {
+  const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "cocher les services à la personne");
+  try {
+    const r = await majServicesALaPersonneDevis(ctx, chantierId, coche === true);
+    if (r.ok) revalidatePath(`/chantiers/${chantierId}/devis-complet`);
+    return r;
+  } catch (err) {
+    logger.error("Case services à la personne du devis non enregistrée", {
+      erreur: err instanceof Error ? err.message : String(err),
+    });
     return { ok: false, raison: "Le changement n'a pas pu être enregistré. Réessayez." };
   }
 }

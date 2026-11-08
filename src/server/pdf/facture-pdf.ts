@@ -9,6 +9,7 @@ import {
   type TraceDocument,
   type AttestationDocument,
   type LogoDocument,
+  type ServicesALaPersonneDocument,
 } from "./document-commun";
 import { jourNumerique } from "../../lib/jour";
 import type { Allure } from "@/lib/allure-documents";
@@ -102,6 +103,8 @@ export type OptionsFacturePdf = {
   logo?: LogoDocument | null;
   /** L'attestation décennale figée sur cette facture, lue par le dépôt. */
   attestation?: AttestationDocument | null;
+  /** Le logo et la mention des services à la personne, quand la case est retenue (migration 0178). */
+  servicesALaPersonne?: ServicesALaPersonneDocument | null;
   /** La facture d'exemple des Réglages : EXEMPLE en travers de la page. */
   exemple?: boolean;
   /** Pour une Factur-X (`facture-x-pdf.ts`) : polices embarquées, sans verrou. */
@@ -174,6 +177,7 @@ export async function composerFacturePdf(
     allure: options.allure ?? null,
     logo: options.logo ?? null,
     attestation: options.attestation ?? null,
+    servicesALaPersonne: options.servicesALaPersonne ?? null,
     titre: data.statut === "brouillon" ? "FACTURE (BROUILLON)" : "FACTURE",
     numero: data.numeroCommercial,
     titreLibre: data.titre,

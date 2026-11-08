@@ -30,6 +30,8 @@ import ActionBas from "@/components/atlas/reglages/ActionBas";
 import ChoixEnMots from "@/components/atlas/reglages/ChoixEnMots";
 import VoirUnExemple, { ADRESSE_DE_L_EXEMPLE } from "../VoirUnExemple";
 import Picto from "@/components/atlas/reglages/Picto";
+import ServicesALaPersonne, { type EtatServicesALaPersonne } from "./ServicesALaPersonne";
+import { ceQuiManqueALaDeclaration, type CompteDeLActiviteACote } from "@/lib/services-a-la-personne";
 
 /**
  * L'identité de l'entreprise — d'après `maquettes/atlas-reglages-identite.html`,
@@ -83,7 +85,16 @@ type Identite = {
 };
 
 /** Les cases que l'écran signale en ambre quand elles sont vides. */
-type CaseObligatoire = "nom" | "adresse" | "siret" | "iban" | "adresseAssureur" | "attestation" | "mediateur";
+type CaseObligatoire =
+  | "nom"
+  | "adresse"
+  | "siret"
+  | "iban"
+  | "adresseAssureur"
+  | "attestation"
+  | "mediateur"
+  | "sapNumero"
+  | "sapLogo";
 
 /**
  * **CE QUI MANQUE, DIT PAR UNE SEULE RÈGLE** — celle des alertes de l'écran.
@@ -97,9 +108,19 @@ type CaseObligatoire = "nom" | "adresse" | "siret" | "iban" | "adresseAssureur" 
  * l'assureur ENREGISTRÉ, jamais pendant qu'il tape (sa règle du 5 octobre
  * 2026, voir `assureurEnregistre`).
  */
-function casesQuiManquent(v: Identite, assureurEnregistre: string, attestationDeposee: boolean): Set<CaseObligatoire> {
+function casesQuiManquent(
+  v: Identite,
+  assureurEnregistre: string,
+  attestationDeposee: boolean,
+  sap: EtatServicesALaPersonne
+): Set<CaseObligatoire> {
   const vide = (texte: string) => texte.trim() === "";
   const manquent = new Set<CaseObligatoire>();
+  // Une entreprise déclarée sans numéro ni logo : par la règle des lignes
+  // en ambre de la rubrique, jamais une seconde (`ceQuiManqueALaDeclaration`).
+  const sapManque = ceQuiManqueALaDeclaration({ declaree: sap.declaree, numero: sap.numero, logoDepose: sap.logoDepose });
+  if (sapManque.numero) manquent.add("sapNumero");
+  if (sapManque.logo) manquent.add("sapLogo");
   if (vide(v.nom)) manquent.add("nom");
   if (vide(v.adresse)) manquent.add("adresse");
   if (vide(v.siret)) manquent.add("siret");
@@ -117,8 +138,14 @@ export default function IdentiteClient({
   compteFranchise,
   attestationDeposee: attestationDeposeeInitiale,
   remarquesAttestation,
+  servicesALaPersonne: servicesALaPersonneInitiaux,
+  compteActiviteACote,
 }: {
   initial: Identite;
+  /** Les services à la personne tels que la base les porte (migration 0178). */
+  servicesALaPersonne: EtatServicesALaPersonne;
+  /** Le compte de l'année hors services à la personne, contre 30 %. */
+  compteActiviteACote: CompteDeLActiviteACote;
   /** Une attestation décennale est-elle déposée (migration 0121) ? */
   attestationDeposee: boolean;
   /** Ce que l'IA a lu sur le fichier déposé, rappelé sans bloquer (7 octobre 2026). */
@@ -196,6 +223,8 @@ export default function IdentiteClient({
   const [assureurEnregistre, setAssureurEnregistre] = useState(initial.assureurDecennale.trim());
   /** L'attestation déposée : tenue ici, parce que le compte du haut la lit. */
   const [attestationDeposee, setAttestationDeposee] = useState(attestationDeposeeInitiale);
+  /** Les services à la personne ENREGISTRÉS : le compte du haut les lit aussi. */
+  const [sap, setSap] = useState(servicesALaPersonneInitiaux);
 
   function enregistrer(partiel: Partial<Identite>) {
     demarrer(async () => {
@@ -230,7 +259,7 @@ export default function IdentiteClient({
   }
 
   const siren = sirenDepuisSiret(valeurs.siret);
-  const manquent = casesQuiManquent(valeurs, assureurEnregistre, attestationDeposee);
+  const manquent = casesQuiManquent(valeurs, assureurEnregistre, attestationDeposee, sap);
   const societe = formeADuCapital(valeurs.formeJuridique);
   /**
    * **L'en-tête tel qu'il s'imprime**, par la fonction que le PDF lit
@@ -551,6 +580,15 @@ export default function IdentiteClient({
           onFini={(duChamp) => enregistrer({ mediateurCoordonnees: duChamp })}
         />
       </Paquet>
+
+      {/* **Les services à la personne, après le médiateur** (sa planche du
+          8 novembre 2026) : le crédit d'impôt de ses clients, déclaré ici une
+          fois, coché ensuite devis par devis. */}
+      <ServicesALaPersonne
+        etat={sap}
+        onEtat={(partiel) => setSap((avant) => ({ ...avant, ...partiel }))}
+        compte={compteActiviteACote}
+      />
 
       {/* **Voir un exemple, sous le pouce** (planche soignée du 26 octobre
           2026) : il attendait au bout de cinq écrans de défilement. Posé AVANT

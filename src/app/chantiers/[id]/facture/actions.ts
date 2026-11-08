@@ -17,6 +17,7 @@ import {
   ajouterMainDoeuvreDeFacture,
   majDateTravauxFacture,
   majAutoliquidationFacture,
+  majServicesALaPersonneFacture,
   majTvaClientFacture,
   manquesDeLaFactureAEmettre,
   FactureDejaEmiseError,
@@ -607,6 +608,27 @@ export async function majAutoliquidationFactureAction(
       : { succes: false, erreur: r.raison };
   } catch (err) {
     logger.error("Sous-traitance non enregistrée", { erreur: err instanceof Error ? err.message : String(err) });
+    return { succes: false, erreur: "Le changement n'a pas pu être enregistré. Réessayez." };
+  }
+}
+
+/**
+ * La case « Services à la personne » de la facture (migration 0178), tant
+ * qu'elle est un brouillon. Le refus revient en valeur, jamais en exception.
+ */
+export async function majServicesALaPersonneFactureAction(
+  factureId: string,
+  coche: boolean
+): Promise<{ succes: true; servicesALaPersonne: boolean } | { succes: false; erreur: string }> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "cocher les services à la personne");
+  try {
+    const r = await majServicesALaPersonneFacture(ctx, factureId, coche === true);
+    return r.ok ? { succes: true, servicesALaPersonne: r.servicesALaPersonne } : { succes: false, erreur: r.raison };
+  } catch (err) {
+    logger.error("Case services à la personne de la facture non enregistrée", {
+      erreur: err instanceof Error ? err.message : String(err),
+    });
     return { succes: false, erreur: "Le changement n'a pas pu être enregistré. Réessayez." };
   }
 }

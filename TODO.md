@@ -2273,14 +2273,49 @@ proxy. Les deux rouges (`test-connexion-service-en-panne-e2e`,
 (`verifier-rouge-prealable`), et repassent verts dans le complément d'après
 fusion (`verifier-ce-qui-a-bouge`).
 
-## ⏳ LE CRÉDIT D'IMPÔT DE SES CLIENTS : PLANCHE POSÉE, UNE QUESTION OUVERTE (8 octobre 2026)
+## ⏳ LE CRÉDIT D'IMPÔT DE SES CLIENTS : LOT 1 CODÉ LE 8 NOVEMBRE 2026, BATTERIE ET LOTS SUIVANTS À FAIRE (8 octobre 2026)
+
+**LOT 1, CODÉ LE 8 NOVEMBRE 2026 SUR SA CONSIGNE** (*« Code tout ce que tu peux
+coder et ne lance pas de batterie »*), migration 0178, `ARCHITECTURE.md` §570.
+
+| | |
+|---|---|
+| **codé** | Mon entreprise : « Services à la personne » après le médiateur (déclarée sur NOVA, n° de déclaration, déclarée le, logo à déposer, activité à côté et son compte contre 30 %) ; la case du devis et sa phrase ; la facture qui la reprend et se décoche avant l'envoi ; le logo et la mention sur les deux PDF ; le n° d'intervenant dans Équipe, le patron n° 0 |
+| **pas codé** | la signature ; le retour du jour (les heures) ; l'attestation de janvier ; Cesu et avance immédiate au règlement ; pas d'acompte pour un client inscrit ; l'avance immédiate entière (codes, inscription, envoi, suivi) |
+| **pas éprouvé** | la migration n'a jamais été appliquée ; `scripts/test-services-a-la-personne-db.ts` est écrite, pas jouée ; aucun écran regardé. **La batterie (niveau 3 : argent et `drizzle/`) se joue avec son accord**, puis les trois écrans se regardent (`npm run voir -- /reglages/identite`, un devis, une facture, Équipe) |
+
+**Tranché seul en codant, à lui dire :**
+
+- la mention se lit sur l'entreprise au moment d'imprimer, elle n'est pas figée
+  sur la pièce comme la décennale : une pièce partie garde son PDF archivé,
+  mais l'exemplaire acquitté, recomposé après coup, relit la déclaration du
+  jour (comme il relit déjà le logo) ;
+- une facture née sans devis, ou d'un passage d'entretien, prend la règle d'un
+  devis neuf (cochée sans activité à côté) ;
+- sur la facture, la ligne sous la case est celle du devis (« Mr. X récupère
+  N € sur ses impôts ») et non « Comme le devis » de la planche, qui allait
+  avec l'addition de l'avance immédiate, pas codée ;
+- le compte de l'activité à côté compte le FACTURÉ (factures arrêtées de
+  l'année, avoirs déduits de leur côté), sans les pièces importées ; « facturé
+  ou encaissé » reste à trancher par lui ou son comptable ;
+- un salarié annoncé au compteur sans ligne en base en reçoit une, sans nom,
+  avec son numéro, à la lecture d'Équipe d'une entreprise déclarée ; un nom
+  réécrit sur une ligne garde son numéro (Atlas ne sait pas si c'est une
+  correction ou une autre personne) ;
+- `sap_logo_mime` s'ajoute à `sap_logo_cle`, comme pour son logo ;
+- le logo des services à la personne n'est pas montré sur l'écran du devis
+  (seulement sur le PDF) : le montrer demandait d'ouvrir sa clé à la route des
+  fichiers, une porte de sécurité, hors de ce lot ;
+- le commentaire de la planche dit encore « RIEN N'EST CODÉ DANS src/ » : à
+  reprendre à sa prochaine publication.
 
 Sa question : « faire une facture à une cliente pour qu'elle soit exonérée
 d'impôts ». C'est le crédit d'impôt de 50 % des services à la personne
 (article 199 sexdecies du CGI), qui dépend d'abord de la déclaration de son
 entreprise (NOVA, numéro SAP). Planche `appli/credit-d-impot.html` : le numéro
 dans Mon entreprise, la case sur la facture, l'attestation fiscale annuelle
-dans Terminés. **Rien n'est codé.**
+dans Terminés. Le lot 1 est codé depuis le 8 novembre 2026 (ci-dessus) ; le
+reste ne l'est pas.
 
 **Tranché le 9 octobre 2026 : les heures se tapent LE JOUR DE
 L'INTERVENTION**, au retour d'intervention, et l'attestation les additionne
@@ -2471,8 +2506,9 @@ inscrire un client depuis sa fiche avec les seules cases qui manquent,
 « Envoyer à l'Urssaf », le suivi envoyée, validée, versée ou refusée), pas
 d'acompte pour un client inscrit (garantie financière), le logo sur les
 papiers, l'attestation de janvier sur papier. L'ancienne planche reste, son
-lien d'`essais.html` renvoie à la nouvelle. **Rien n'est codé ; elle attend
-son choix.** Ce qu'elle laisse à trancher est écrit sous ses écrans.
+lien d'`essais.html` renvoie à la nouvelle. Son lot 1 (Mon entreprise, le
+devis, la facture, Équipe) est codé le 8 novembre 2026 sur sa consigne ; le
+reste attend. Ce qu'elle laisse à trancher est écrit sous ses écrans.
 
 **Sa règle du 8 novembre 2026 pour les heures du retour du jour** : *« il
 faut pouvoir mettre n'importe quel nombre d'heures »*. La roulette des heures
@@ -2620,7 +2656,8 @@ chaque salarié le sien dans l'ordre d'arrivée, affiché seulement quand
 l'entreprise est déclarée. **Un numéro ne se redonne jamais** : sinon deux
 personnes le partagent sur deux années d'attestations. Il ne peut donc pas
 être le rang de la ligne (`VosSalaries`, qui se renumérote quand on retire un
-salarié) : il faudra une colonne à lui. Jamais le numéro de sécurité sociale. Mention exacte de la
+salarié) : il a sa colonne depuis le 8 novembre 2026 (`equipes.numero_intervenant`,
+migration 0178). Jamais le numéro de sécurité sociale. Mention exacte de la
 facture et condition d'activité exclusive : à confirmer (page officielle
 servicesalapersonne.gouv.fr ou DDETS, bloquées d'ici).
 

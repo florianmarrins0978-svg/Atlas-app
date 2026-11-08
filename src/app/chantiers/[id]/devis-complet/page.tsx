@@ -21,6 +21,7 @@ import { aideNoteDevisAMontrer } from "@/server/repositories/aide-note-devis";
 import { PARAM_PROVENANCE, PARAM_RELANCE, jourDeRelecture, lienRetourDeRelecture } from "@/lib/retour-au-planning";
 import { retourDuDevis } from "@/lib/retour-du-devis";
 import { estUneEntreprise } from "@/lib/civilite";
+import { laCaseExiste } from "@/lib/services-a-la-personne";
 import PreparationDictee from "./PreparationDictee";
 import { garderLaPage } from "@/server/garde-page";
 import { donneesDeLaMainOeuvre } from "@/server/chiffrage/main-oeuvre-choisie";
@@ -159,6 +160,14 @@ export default async function DevisCompletPage({
         sousTraitancePossible={
           entreprise?.regimeTva !== "franchise" && estUneEntreprise(client?.nom, client?.civilite ?? null)
         }
+        // La case « Services à la personne » (migration 0178) : une entreprise
+        // déclarée et un client particulier, la règle du serveur.
+        servicesALaPersonne={devisRow.servicesALaPersonne}
+        servicesALaPersonnePossible={laCaseExiste({
+          declaree: entreprise?.sapDeclaree ?? false,
+          clientNom: client?.nom,
+          clientCivilite: client?.civilite ?? null,
+        })}
         devisId={devisRow.id}
         numeroCommercial={devisRow.numeroCommercial}
         dateEmission={devisRow.dateEmission}

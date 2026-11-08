@@ -12,6 +12,7 @@ import {
   retirerPhotoSalarieAction,
 } from "./actions";
 import CompteurRond from "./CompteurRond";
+import { NUMERO_DU_PATRON, libelleNumeroIntervenant } from "@/lib/services-a-la-personne";
 
 /**
  * « Combien de salariés ? » — combien ils sont, et comment ils s'appellent.
@@ -48,10 +49,18 @@ import CompteurRond from "./CompteurRond";
 export default function VosSalaries({
   initialNombreSalaries,
   initialNoms,
+  numeros,
 }: {
   initialNombreSalaries: number;
   /** Ce que la base porte, par rang. Un rang absent est un cas ordinaire. */
   initialNoms: { rang: number; nom: string | null; photo: string | null }[];
+  /**
+   * Le numéro d'intervenant de chacun, par rang (migration 0178), ou `null`
+   * quand l'entreprise n'est pas déclarée aux services à la personne : rien ne
+   * s'affiche alors. Un salarié ajouté à l'instant reçoit le sien à la
+   * prochaine ouverture de l'écran.
+   */
+  numeros?: Record<number, number> | null;
 }) {
   const [nombre, setNombre] = useState(initialNombreSalaries);
   // Les noms vivent ici par RANG, pas par identifiant : l'écran montre des
@@ -115,13 +124,26 @@ export default function VosSalaries({
           {phraseDesSalaries(nombre)}
         </p>
 
+        {/* **Le patron porte le n° 0** (sa planche du 9 octobre 2026), qu'il
+            ait des salariés ou qu'il travaille seul : il est alors le seul
+            intervenant de ses attestations. */}
+        {numeros ? (
+          <div className="mt-3 flex min-h-[56px] items-center gap-3.5" data-atlas="intervenant-patron">
+            <span className="min-w-0 flex-1 text-[18px] leading-[1.3]" style={{ fontFamily: font.display, color: colors.ink }}>
+              Vous
+            </span>
+            <NumeroIntervenant numero={NUMERO_DU_PATRON} />
+          </div>
+        ) : null}
+
         {nombre > 0 ? (
           <div className="mt-3">
             {lignes.map((e, i) => (
               <LigneNom
                 key={e.rang}
                 rang={e.rang}
-                premiere={i === 0}
+                numero={numeros?.[e.rang] ?? null}
+                premiere={i === 0 && !numeros}
                 valeur={noms[e.rang] ?? ""}
                 photo={photos[e.rang] ?? null}
                 onOuvrirFiche={() => setFiche(e.rang)}
@@ -187,6 +209,7 @@ export default function VosSalaries({
  */
 function LigneNom({
   rang,
+  numero,
   premiere,
   valeur,
   photo,
@@ -195,6 +218,8 @@ function LigneNom({
   onPoser,
 }: {
   rang: number;
+  /** Son numéro d'intervenant, ou `null` : pas déclarée, ou pas encore tiré. */
+  numero: number | null;
   premiere: boolean;
   valeur: string;
   photo: string | null;
@@ -244,6 +269,24 @@ function LigneNom({
         className="min-w-0 flex-1 border-0 bg-transparent p-0 outline-none"
         style={{ fontFamily: font.display, fontSize: 18, lineHeight: 1.3, color: colors.ink }}
       />
+      {numero !== null && <NumeroIntervenant numero={numero} />}
     </div>
+  );
+}
+
+/**
+ * « n° 3 », au bout de la ligne : le numéro d'intervenant de l'attestation
+ * fiscale. **Jamais le rang** (il se renumérote quand on retire un salarié),
+ * jamais le numéro de sécurité sociale (migration 0178).
+ */
+function NumeroIntervenant({ numero }: { numero: number }) {
+  return (
+    <span
+      className="flex-none text-[14px]"
+      data-atlas="numero-intervenant"
+      style={{ color: colors.inkSoft, fontVariantNumeric: "tabular-nums lining-nums" }}
+    >
+      {libelleNumeroIntervenant(numero)}
+    </span>
   );
 }
