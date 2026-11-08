@@ -2395,6 +2395,13 @@ accepte un devis fait ailleurs, à son en-tête, ou un import. Un chantier qui
 mêle élagage et taille donne deux devis et deux émetteurs : l'élagage chez
 l'artisan, la taille chez la coopérative.
 
+**Le nom ET le numéro de chaque intervenant sur l'attestation (sa question
+du 8 novembre 2026, « des numéros, ou les noms ? »).** La page officielle
+(« Les obligations réglementaires ») exige *« nom et numéro d'identification
+des intervenants, dates et durées des interventions »*, avec un regroupement
+mensuel permis pour des prestations quotidiennes ou périodiques. La planche
+ne montrait que « n° 1 » : corrigé, chaque ligne porte le nom puis le numéro.
+
 **Ses deux remarques suivantes, le même jour :**
 
 - *« le client paie 252 et l'Urssaf te verse 504, alors que la facture vaut
