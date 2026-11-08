@@ -9,25 +9,34 @@ boutons »*.
 
 **La planche** : `appli/fiche-de-chantier-soignee.html`, sur le vrai écran
 figé (`/paysage/fiche`, base de démonstration : Mme Costa et « Sans client »
-en cours, trois rapports en novembre, un en octobre). A, B et Aujourd'hui ;
-Retirer, Annuler, le mois, la roue du jour et la recherche répondent.
+en cours, trois rapports en novembre, un en octobre). A, B, C, D et
+Aujourd'hui ; Retirer, Annuler, le mois, la roue du jour et la recherche
+répondent.
 
-**SA PREMIÈRE RÉPONSE, LE SOIR MÊME : NON.** *« Ce que tu as mis là, comme si
-c'était la première page chantier, j'aime pas du tout. »* La première
-version prenait tout à Vos chantiers (cartes ambre « Reprendre », frise
-datée, compteur « En cours 2 ») : **cet écran ne doit pas ressembler à
-l'accueil.** Elle est dans l'historique git du fichier, pas à reproposer.
+**SES TROIS RÉPONSES, LE MÊME SOIR** (rien de tout cela n'est à reproposer) :
 
-**Les deux pistes d'aujourd'hui, prises dans Paysage** :
+1. **v1, refusée** : *« comme si c'était la première page chantier, j'aime
+   pas du tout »*. Tout venait de Vos chantiers (cartes ambre « Reprendre »,
+   frise datée, compteur « En cours 2 ») : **cet écran ne doit pas
+   ressembler à l'accueil.**
+2. **v2** : A (liste de Paysage) et B (cartes dorées des fiches de
+   sécurité, rapports rangés par client). *« Garde le choix A pour
+   l'instant et propose-moi d'autres, j'aime toujours pas ; il faut que ça
+   soit plus joli. »* L'ancienne B est retirée.
+3. **Composer ma fiche** : *« c'est trop carré, j'aime pas »*. Le rectangle
+   à coins de 4 px ne revient pas.
 
-| | A, comme la liste de Paysage | B, comme les fiches de sécurité |
-|---|---|---|
-| Composer ma fiche | tuile d'icône, liseré d'or d'1 px | rond doré, liseré d'or de 1,5 px, coins de 13 px |
-| En cours | une carte blanche, une ligne par fiche, tuile d'icône, filet sous le nom | une carte dorée par fiche, rond doré |
-| Rapports envoyés | une carte blanche, une ligne par rapport, chevron | rangés par client (son nom en titre), une carte par rapport, rond vert |
-| Pris sur | `src/app/paysage/page.tsx` | `src/app/paysage/fiches-securite/ListeDesFiches.tsx` |
+**Les pistes d'aujourd'hui** (A gardée telle quelle, B, C, D neuves, toutes
+arrondies) :
 
-Communs aux deux : Créer une fiche sur toute la largeur ; la date sur sa
+| | Composer ma fiche | Les listes | Pris sur |
+|---|---|---|---|
+| **A** (gardée) | tuile d'icône, liseré d'or d'1 px | carte blanche, tuile d'icône par ligne | `paysage/page.tsx` |
+| **B** | tuile arrondie à côté d'une tuile verte « Créer une fiche » | celles de A, arrondies | les cases de Terminés |
+| **C** | porte dorée arrondie, titre doré, chevron doré | carte blanche arrondie, initiales du client | `clients/page.tsx` (`Porte`), `ListeClients.tsx` |
+| **D** | carte blanche arrondie, rond doré au trait | icônes et chevrons dorés | l'écran Réglages |
+
+Communs : Créer une fiche sur toute la largeur (sauf B) ; la date sur sa
 ligne et ce qui a été fait dessous (sur une ligne, « 1 h » et « 40 » se
 séparaient).
 
@@ -37,10 +46,11 @@ envoyés » (24 septembre) ; les titres en noir gras (22 septembre) ;
 « Retirer » et son tiroir ; pas d'étiquette « Brouillon » (11 octobre) ;
 l'en-tête, le filtre de date et la barre de recherche de l'appli.
 
-**À coder après son choix** : `LignePassage.tsx` (la ligne A, ou la carte
-B), `RapportsEnvoyes.tsx` (B range par client), `OuvrirFiche.tsx` (la
-largeur), `page.tsx` (la carte Composer). Les dessins sont ceux de
-`paysage/page.tsx` : ils se partagent, ils ne se recopient pas (`CLAUDE.md` §3).
+**À coder après son choix** : `LignePassage.tsx` (la ligne de la piste),
+`FichesEnCours.tsx` et `RapportsEnvoyes.tsx` (la carte qui les tient),
+`OuvrirFiche.tsx` (la largeur, ou la tuile de B), `page.tsx` (Composer).
+Les dessins, la porte de C et les initiales (`initialesDuClient`) existent
+déjà : ils se partagent, ils ne se recopient pas (`CLAUDE.md` §3).
 
 ## ⏳ À REGARDER PAR LUI (8 novembre 2026) : le compteur de jours dans Équipe
 
