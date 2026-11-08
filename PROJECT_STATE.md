@@ -1,8 +1,8 @@
 # État du projet
 
-## JOURS TRAVAILLÉS DANS ÉQUIPE, CODÉ (8 novembre 2026), PAS ENCORE SUR `main`
+## JOURS TRAVAILLÉS DANS ÉQUIPE, CODÉ (8 novembre 2026), SUR `main` LE 8 NOVEMBRE
 
-Sous « Combien de salariés ? », le même écran que Pour mon comptable, qui garde sa porte (`chargerJoursTravailles`, prop `ou` de `JoursTravailles`). Types, lint, écran regardé, gestes joués à la main (nombre de salariés, mois d'avant, Modifier). Contrôle de son niveau pas encore joué : il attend son oui.
+Sous « Combien de salariés ? », le même écran que Pour mon comptable, qui garde sa porte (`chargerJoursTravailles`, prop `ou` de `JoursTravailles`). Écran regardé, gestes joués à la main ; `verifier:avant-fusion` vert avec son oui (31 suites navigateur sur 31, dont `test-jours-dans-equipe-e2e`), puis la rencontre avec `main` rejouée verte (599 suites base sur 599).
 
 ---
 ## MON ANNÉE, CODÉE (8 novembre 2026), SUR `main` LE 8 NOVEMBRE

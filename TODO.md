@@ -52,7 +52,7 @@ l'en-tête, le filtre de date et la barre de recherche de l'appli.
 Les dessins, la porte de C et les initiales (`initialesDuClient`) existent
 déjà : ils se partagent, ils ne se recopient pas (`CLAUDE.md` §3).
 
-## ~~⏳ À REGARDER PAR LUI (8 novembre 2026) : le compteur de jours dans Équipe~~ TRANCHÉ LE 8 NOVEMBRE (« FAIS-MOI UNE COPIE »), CODÉ LE 8 NOVEMBRE, PAS ENCORE SUR main
+## ~~⏳ À REGARDER PAR LUI (8 novembre 2026) : le compteur de jours dans Équipe~~ TRANCHÉ LE 8 NOVEMBRE (« FAIS-MOI UNE COPIE »), CODÉ LE 8 NOVEMBRE, SUR main LE 8 NOVEMBRE
 
 Sa demande, puis sa capture de Jours travaillés : *« dans Équipe, sous
 combien de salariés, j'aimerais avoir ça »*, et *« tu me fais juste une
@@ -68,8 +68,7 @@ salariés et absence relisent `/reglages/equipe` (`revaliderLesJoursDEquipe`).
 
 | reste | qui |
 |---|---|
-| le contrôle de son niveau, avec son oui | lui, puis moi |
-| aucune suite navigateur n'ouvre encore Jours travaillés, ni dans Équipe | moi, avec le lot |
+| qu'il le regarde sur son espace, une fois rallumé | lui |
 | `situerQuelquesChantiers` tourne désormais à chaque ouverture d'Équipe : à mesurer sur sa base | moi |
 
 ## BATTERIE COMMUNE DU 8 NOVEMBRE : VERTE, SUR main LE 8 NOVEMBRE
