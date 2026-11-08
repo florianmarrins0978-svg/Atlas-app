@@ -11,6 +11,8 @@ import { refusDeLEnvoi } from "@/lib/import-pieces";
 
 export const dynamic = "force-dynamic";
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function POST(requete: Request) {
   const ctx = await patronQuiImporte();
   if (!ctx) return NextResponse.json({ error: "Introuvable" }, { status: 404 });
@@ -23,7 +25,7 @@ export async function POST(requete: Request) {
     throw erreur;
   }
   const corps = lu as
-    | { nom?: unknown; nombre?: unknown; octets?: unknown; fermer?: unknown }
+    | { nom?: unknown; nombre?: unknown; octets?: unknown; fermer?: unknown; client?: unknown }
     | null;
 
   // La fin d'un envoi : il attend désormais ce qui est vraiment arrivé.
@@ -38,6 +40,13 @@ export async function POST(requete: Request) {
   const refus = refusDeLEnvoi(nombre, octets);
   if (refus) return NextResponse.json({ ok: false, raison: refus }, { status: 400 });
   const nom = typeof corps?.nom === "string" && corps.nom.trim() ? corps.nom.trim() : "Devis et factures";
-  const envoi = await creerEnvoi(ctx, nom, nombre);
-  return NextResponse.json({ ok: true, envoiId: envoi.id });
+  // Ouvert depuis la fiche d'un client : il se range chez lui (8 novembre 2026).
+  // Un identifiant mal formé ne part pas jusqu'à la base.
+  const client = typeof corps?.client === "string" && UUID.test(corps.client) ? corps.client : null;
+  if (corps?.client !== undefined && corps.client !== null && !client) {
+    return NextResponse.json({ ok: false, raison: "Ce client n’existe plus." }, { status: 400 });
+  }
+  const ouvert = await creerEnvoi(ctx, nom, nombre, client);
+  if (!ouvert.ok) return NextResponse.json({ ok: false, raison: ouvert.raison }, { status: 409 });
+  return NextResponse.json({ ok: true, envoiId: ouvert.envoi.id });
 }

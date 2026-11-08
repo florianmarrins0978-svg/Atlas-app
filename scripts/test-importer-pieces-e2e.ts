@@ -6,6 +6,7 @@ import { ecrireArchiveZip } from "../src/lib/archive-zip";
 import { fichierDemandeALaVisionneuse } from "../src/lib/visionneuse-pdf";
 import { ANNULER_PENDANT_MS } from "../src/lib/delai-annuler";
 import { CIVILITES } from "../src/lib/civilite";
+import { pool } from "../src/server/db/client";
 
 // IMPORTER DEVIS ET FACTURES, par SON geste — 22 octobre 2026.
 //
@@ -305,7 +306,69 @@ async function main() {
     assert.equal(await page.getByText(CLIENT, { exact: true }).count(), 0, "le client du tableau est resté");
   });
 
+  // ── Depuis la fiche d'un client — sa demande du 8 novembre 2026 ────────
+  // Planche `appli/client-importer-depuis-sa-fiche.html` : *« j'avais juste un
+  // devis à importer pour Bernard : est-ce que je peux, à partir de Bernard,
+  // cliquer sur importer un devis ? »*. Le client existe avant l'import, sous
+  // un nom que les PDF ne disent PAS : seul le geste de sa fiche peut les
+  // ranger chez lui.
+  const SUR_LA_FICHE = `${CIVILITES.mr} Fiche${marque}`;
+  const AUTRE_NOM = `Durand${marque}`;
+  await cas("depuis la fiche d'un client, « Importer devis / facture » range tout chez lui, et revient sur sa fiche", async () => {
+    const { rows } = await pool.query(
+      `INSERT INTO clients (entreprise_id, nom, telephone)
+       SELECT m.entreprise_id, $1, '06 55 44 33 22' FROM membres_entreprise m JOIN users u ON u.id = m.utilisateur_id
+        WHERE u.email = 'demo@atlas.local' LIMIT 1
+       RETURNING id`,
+      [SUR_LA_FICHE]
+    );
+    assert.ok(rows[0], "le compte de démonstration est absent : la base n'est pas amorcée");
+    const id = (rows[0] as { id: string }).id;
+    await page.goto(`${BASE}/clients/${id}`, { waitUntil: "networkidle" });
+    const porte = page.locator('[data-atlas="porte-import"]');
+    await porte.waitFor({ state: "visible", timeout: 20_000 });
+    await porte.click();
+    await page.waitForURL(new RegExp(`/clients/importer\\?client=${id}$`), { timeout: 20_000 });
+    assert.match(await page.locator("body").innerText(), new RegExp(SUR_LA_FICHE, "i"), "l'import ne dit pas chez qui il range");
+
+    const devis = await pdfAvecTexte(["Jardins Eden", `DEVIS n° DF-${marque}`, "14/03/2025", `Client : Mme ${AUTRE_NOM}`, "12 allée des Tilleuls 44300 Nantes", "Total TTC 1 250,00"]);
+    const facture = await pdfAvecTexte(["Jardins Eden", `FACTURE n° FF-${marque}`, "22/04/2025", "SARL Les Tilleuls", "Total TTC 1 250,00"]);
+    await page.setInputFiles('[data-atlas="choisir-pieces"]', [
+      { name: "devis.pdf", mimeType: "application/pdf", buffer: Buffer.from(devis) },
+      { name: "facture.pdf", mimeType: "application/pdf", buffer: Buffer.from(facture) },
+    ]);
+    await page.locator('[data-atlas="import-tableau"]').waitFor({ state: "visible", timeout: 120_000 });
+    const lus = page.locator('[data-atlas="client-lu"]');
+    assert.equal(await lus.count(), 1, "les pièces se répartissent sur plusieurs clients");
+    const carte = (await lus.innerText()).replace(/\s+/g, " ");
+    assert.match(carte, new RegExp(SUR_LA_FICHE), `la carte ne porte pas son nom : ${carte}`);
+    assert.match(carte, /Déjà client/, "le client de la fiche n'est pas reconnu");
+    const ranger = page.locator('[data-atlas="ranger-tableau"]');
+    assert.equal((await ranger.textContent())?.trim(), "Ranger 2 documents");
+    await ranger.click();
+
+    await page.waitForURL(`${BASE}/clients/${id}`, { timeout: 60_000 });
+    await page.locator('[data-atlas="bandeau-rangement"]').waitFor({ state: "visible", timeout: 20_000 });
+    const titres = async () => (await page.locator('[role="tabpanel"]:not([hidden]) [data-atlas="piece-titre"]').allInnerTexts()).join(" | ");
+    assert.match(await titres(), new RegExp(`DF-${marque}`), "le devis n'est pas sur sa fiche");
+    await page.locator('[data-atlas="registre"]:text-is("Factures")').click();
+    assert.match(await titres(), new RegExp(`FF-${marque}`), "la facture n'est pas sur sa fiche");
+
+    await page.goto(`${BASE}/clients`, { waitUntil: "networkidle" });
+    assert.equal(await page.getByText(AUTRE_NOM).count(), 0, "une fiche est née du nom lu sur le devis");
+  });
+
+  await cas("sa fiche se supprime avec les pièces importées depuis elle", async () => {
+    await page.goto(`${BASE}/clients`, { waitUntil: "networkidle" });
+    await page.getByText(SUR_LA_FICHE, { exact: true }).first().click();
+    await page.click('[data-atlas="supprimer-client"]');
+    await page.locator('[data-atlas="sauvegarde-ailleurs"]').click();
+    await page.click('[data-atlas="confirmer-suppression"]');
+    await page.waitForURL(`${BASE}/clients`, { timeout: 30_000 });
+  });
+
   await navigateur.close();
+  await pool.end();
   if (echecs > 0) {
     console.log(`\n✗ ${echecs} échec(s)`);
     process.exit(1);

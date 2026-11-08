@@ -13,6 +13,7 @@ import {
   chantierDeLaLigne,
   compteDesClients,
   grouperParClient,
+  lignesPourLeClient,
   jourDuTableau,
   lireLignes,
   ordreDesDates,
@@ -69,11 +70,18 @@ const SANS_CELLULES: string[][] = [];
 export default function ImporterTableau({
   lot,
   connus,
+  pourLeClient = null,
   autreFichier,
   children,
 }: {
   lot: LotAImporter;
   connus: ClientConnu[];
+  /**
+   * L'import part de sa fiche (8 novembre 2026) : ses pièces se présentent
+   * sous son nom, et la règle de toujours les range chez lui
+   * (`lignesPourLeClient`, la même que le serveur).
+   */
+  pourLeClient?: ClientConnu | null;
   /** Revenir au choix du fichier. */
   autreFichier: () => void;
   /** Sous la liste : les fichiers d'un envoi de PDF qui ne sont pas partis. */
@@ -94,7 +102,11 @@ export default function ImporterTableau({
     () => (lot.quoi === "pdf" ? ({ ok: true } as const) : reglagesDesDecisions(grille, { colonnes, ordreDate, genreFixe })),
     [lot.quoi, grille, colonnes, ordreDate, genreFixe]
   );
-  const pdf = useMemo(() => (lot.quoi === "pdf" ? lignesDesPdf(lot.pieces, genres) : null), [lot, genres]);
+  const pdf = useMemo(() => {
+    if (lot.quoi !== "pdf") return null;
+    const lues = lignesDesPdf(lot.pieces, genres);
+    return pourLeClient ? { ...lues, lignes: lignesPourLeClient(lues.lignes, pourLeClient) } : lues;
+  }, [lot, genres, pourLeClient]);
   const lecture = useMemo<Lecture | null>(() => {
     if (pdf) {
       const factures = pdf.lignes.filter((l) => l.genre === "facture").length;
@@ -137,7 +149,7 @@ export default function ImporterTableau({
         const id = pdf?.idDuRang.get(Number(rang));
         if (id && nom.trim()) parId[id] = nom;
       }
-      const r = await rangerLesPdfAction(lot.envoiId, { choix, tapes: parId, genres }).catch(() => ({
+      const r = await rangerLesPdfAction(lot.envoiId, { choix, tapes: parId, genres }, pourLeClient?.id ?? null).catch(() => ({
         ok: false as const,
         raison: "Le réseau ne répond pas. Réessayez.",
       }));
@@ -145,7 +157,9 @@ export default function ImporterTableau({
         setEnvoi({ quoi: "refus", raison: r.raison });
         return;
       }
-      router.push("/clients");
+      // « N documents rangés », et « Annuler » : sur sa fiche quand l'import
+      // en part, sur Vos clients sinon (`BandeImport`).
+      router.push(pourLeClient ? `/clients/${pourLeClient.id}` : "/clients");
       router.refresh();
       return;
     }

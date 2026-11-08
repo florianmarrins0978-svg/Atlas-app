@@ -4,6 +4,10 @@
 dernière migration `drizzle/0170_idees_pour_l_appli.sql` (une idée pour l'appli, 0167 sur sa branche), avec `0169_plateforme_facture_electronique.sql` (la Factur-X, 0165 sur sa branche) et `0165` à `0168` (nature d'une absence, jours travaillés corrigés, zones de déplacement, couleur du férié), sur `main` le 6 novembre ; avant elles `0164_sauts_de_page_du_devis.sql`, sur `main` le 4 novembre
 
 ---
+## IMPORTER DEPUIS LA FICHE D'UN CLIENT, CODÉ (8 novembre 2026), PAS ENCORE SUR `main`
+
+Sa planche `appli/client-importer-depuis-sa-fiche.html` (*« code la 2, pas de batterie »*). Le bouton « Importer devis / facture » au bout de la fiche (`src/app/clients/PorteImport.tsx`, partagé avec Vos clients) ; l'envoi retient le client (migration `0177`) ; ses pièces se rangent chez lui (`lignesPourLeClient`, `src/lib/import-tableau.ts`) ; retour sur sa fiche avec `BandeImport`. Verts ici : règle, base (23), navigateur (13). **Niveau 3 : la batterie, avec son accord, avant `main`.** `ARCHITECTURE.md` §572.
+---
 ## LA VITESSE DE LA VERSION RAPIDE, MESURÉE LE 8 NOVEMBRE 2026
 
 Sa crainte, devant son espace qui « ramait de fou » sous le bandeau « un écran

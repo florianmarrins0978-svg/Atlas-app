@@ -4303,6 +4303,12 @@ export const envoisPieces = pgTable("envois_pieces", {
     .$type<{ clientId: string; champ: "adresse" | "telephone"; valeur: string }[]>()
     .notNull()
     .default(sql`'[]'::jsonb`),
+  /**
+   * Le client depuis la fiche duquel l'import a été ouvert (migration 0177) :
+   * tout ce que l'envoi apporte se range chez lui. `null` : un import de Vos
+   * clients, rangé par les noms lus.
+   */
+  clientId: uuid("client_id"),
   createdBy: uuid("created_by").references(() => users.id),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

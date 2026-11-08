@@ -50,7 +50,7 @@ type Phase =
    * Un tableau CSV ou Excel lu au serveur (28 octobre 2026), ou les PDF d'un
    * envoi une fois lus (31 octobre 2026) : le même écran « Par client ».
    */
-  | { quoi: "par-client"; lot: LotAImporter; connus: ClientConnu[] };
+  | { quoi: "par-client"; lot: LotAImporter; connus: ClientConnu[]; pourLeClient: ClientConnu | null };
 
 /** Quelques pièces à la fois : assez pour remplir le réseau, pas assez pour l'étouffer. */
 const PAQUET = 8;
@@ -89,7 +89,18 @@ async function envoyerPiece(envoiId: string, nom: string, octets: Uint8Array, em
   return "Le réseau ne répond pas.";
 }
 
-export default function ImporterPieces({ repriseEnvoiId }: { repriseEnvoiId: string | null }) {
+/**
+ * `pourLeClient` : l'import part de la fiche de ce client (sa demande du
+ * 8 novembre 2026) ; tout ce qu'il apporte se range chez lui. Un tableau, qui
+ * porte les pièces de tous ses clients, s'importe depuis Vos clients.
+ */
+export default function ImporterPieces({
+  repriseEnvoiId,
+  pourLeClient = null,
+}: {
+  repriseEnvoiId: string | null;
+  pourLeClient?: { id: string; nom: string } | null;
+}) {
   const router = useRouter();
   const choix = useRef<HTMLInputElement>(null);
   // Un envoi déjà lu, pas encore rangé : l'écran s'ouvre sur la lecture, qui
@@ -113,7 +124,8 @@ export default function ImporterPieces({ repriseEnvoiId }: { repriseEnvoiId: str
       if (etat.recues > 0 && etat.lues >= etat.recues) {
         const r = await piecesDeLEnvoiAction(etat.id);
         if (fini) return;
-        if (r.ok) setPhase({ quoi: "par-client", lot: { quoi: "pdf", envoiId: etat.id, nom: etat.nom, pieces: r.pieces }, connus: r.connus });
+        if (r.ok)
+          setPhase({ quoi: "par-client", lot: { quoi: "pdf", envoiId: etat.id, nom: etat.nom, pieces: r.pieces }, connus: r.connus, pourLeClient: r.pourLeClient });
         else setPhase({ quoi: "choisir", refus: r.raison });
       } else {
         setPhase({ quoi: "lecture", lues: etat.lues, recues: etat.recues });
@@ -148,13 +160,17 @@ export default function ImporterPieces({ repriseEnvoiId }: { repriseEnvoiId: str
       setPhase({ quoi: "choisir", refus: r.raison ?? "Ce tableau ne s'est pas lu. Réessayez." });
       return;
     }
-    setPhase({ quoi: "par-client", lot: { quoi: "tableau", fichier: f, grille: r.grille }, connus: r.connus });
+    setPhase({ quoi: "par-client", lot: { quoi: "tableau", fichier: f, grille: r.grille }, connus: r.connus, pourLeClient: null });
   }
 
   async function choisis(fichiers: FileList | null) {
     if (!fichiers || fichiers.length === 0) return;
     const tableaux = Array.from(fichiers).filter((f) => formatDuTableau(f.name));
     if (tableaux.length > 0) {
+      if (pourLeClient) {
+        setPhase({ quoi: "choisir", refus: "Un tableau s’importe depuis Vos clients." });
+        return;
+      }
       if (fichiers.length > 1) {
         setPhase({ quoi: "choisir", refus: "Un tableau se choisit seul. Importez-le, puis vos PDF dans un second envoi." });
         return;
@@ -200,7 +216,7 @@ export default function ImporterPieces({ repriseEnvoiId }: { repriseEnvoiId: str
     const ouvert = await fetch("/api/pieces-importees/envois", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nom: nomEnvoi, nombre: sources.length, octets }),
+      body: JSON.stringify({ nom: nomEnvoi, nombre: sources.length, octets, client: pourLeClient?.id ?? null }),
     }).then((r) => r.json() as Promise<{ ok: boolean; envoiId?: string; raison?: string }>);
     if (!ouvert.ok || !ouvert.envoiId) {
       setPhase({ quoi: "choisir", refus: ouvert.raison ?? "L'envoi n'a pas pu commencer. Réessayez." });
@@ -275,7 +291,7 @@ export default function ImporterPieces({ repriseEnvoiId }: { repriseEnvoiId: str
 
   if (phase.quoi === "par-client") {
     return (
-      <ImporterTableau lot={phase.lot} connus={phase.connus} autreFichier={() => setPhase({ quoi: "choisir" })}>
+      <ImporterTableau lot={phase.lot} connus={phase.connus} pourLeClient={phase.pourLeClient} autreFichier={() => setPhase({ quoi: "choisir" })}>
         <Refuses refuses={refuses} />
       </ImporterTableau>
     );
@@ -285,13 +301,17 @@ export default function ImporterPieces({ repriseEnvoiId }: { repriseEnvoiId: str
     return (
       <section className="mx-[26px] mt-[26px]">
         <p className={`mb-[10px] ${libelleCaps}`} style={{ color: colors.inkSoft }}>
-          Vos devis et factures
+          {pourLeClient ? "Ses devis et factures" : "Vos devis et factures"}
         </p>
         <input
           ref={choix}
           type="file"
           multiple
-          accept=".pdf,.zip,.jpg,.jpeg,.png,.csv,.xlsx,.xls,application/pdf,application/zip,image/jpeg,image/png,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+          accept={
+            pourLeClient
+              ? ".pdf,.zip,.jpg,.jpeg,.png,application/pdf,application/zip,image/jpeg,image/png"
+              : ".pdf,.zip,.jpg,.jpeg,.png,.csv,.xlsx,.xls,application/pdf,application/zip,image/jpeg,image/png,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+          }
           className="hidden"
           data-atlas="choisir-pieces"
           onChange={(e) => {
@@ -309,7 +329,7 @@ export default function ImporterPieces({ repriseEnvoiId }: { repriseEnvoiId: str
           {phase.quoi === "preparer" ? "Un instant…" : "Choisir mes fichiers"}
         </button>
         <p className="mt-[12px] text-[14.5px] leading-[1.5]" style={{ color: colors.inkSoft }}>
-          PDF, photos, dossier .zip, tableau CSV ou Excel.
+          {pourLeClient ? "PDF, photos, dossier .zip." : "PDF, photos, dossier .zip, tableau CSV ou Excel."}
           <br />
           Jusqu’à {nombre(LIMITES_IMPORT.documentsParEnvoi)} PDF par envoi.
         </p>
@@ -348,11 +368,11 @@ export default function ImporterPieces({ repriseEnvoiId }: { repriseEnvoiId: str
         {phase.recues > 0 && chiffre(phase.lues, phase.recues)}
         <p className="mt-[26px] text-[16px] leading-[1.5]">Vous pouvez fermer l’appli. La lecture continue sans vous.</p>
         <p className="mt-[8px] text-[14px] leading-[1.5]" style={{ color: colors.inkSoft }}>
-          Vos clients apparaîtront quand vous aurez tout rangé.
+          {pourLeClient ? "Ses pièces apparaîtront sur sa fiche quand vous aurez tout rangé." : "Vos clients apparaîtront quand vous aurez tout rangé."}
         </p>
         <button
           type="button"
-          onClick={() => router.push("/clients")}
+          onClick={() => router.push(pourLeClient ? `/clients/${pourLeClient.id}` : "/clients")}
           className="atlas-plein mt-[28px] flex min-h-[54px] w-full items-center justify-center rounded-full text-[18px]"
           style={{ backgroundColor: colors.plein, color: colors.cream, fontFamily: font.display }}
         >

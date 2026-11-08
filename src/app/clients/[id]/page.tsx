@@ -20,6 +20,9 @@ import { etatHivernageDuClient } from "@/server/repositories/hivernage";
 import { getRole } from "@/server/autorisation";
 import { ceQueLaFicheDit } from "@/lib/hivernage";
 import { peutModifierLePlanning } from "@/lib/acces-roles";
+import { estProprietaire } from "@/server/autorisation";
+import PorteImport from "../PorteImport";
+import BandeImport from "../BandeImport";
 import ArrosageDuClient from "./ArrosageDuClient";
 
 // **La fiche d'un client : son nom, ce qu'on lui a fait la dernière fois, et
@@ -125,7 +128,7 @@ export default async function FicheClientPage({
   // ce que la fiche en dit se décide dans `src/lib/hivernage.ts`, au jour que
   // le serveur compte, à l'heure de son atelier.
   const aujourdHui = jourIso(new Date());
-  const [etatArrosage, role] = await Promise.all([etatHivernageDuClient(ctx, id), getRole(ctx)]);
+  const [etatArrosage, role, importe] = await Promise.all([etatHivernageDuClient(ctx, id), getRole(ctx), estProprietaire(ctx)]);
   const arrosage = etatArrosage ? ceQueLaFicheDit(etatArrosage, aujourdHui) : null;
 
   // **L'ADRESSE, PUIS LE TÉLÉPHONE À LA LIGNE — sa demande du 26 août 2026 :**
@@ -294,6 +297,7 @@ export default async function FicheClientPage({
         nomClient={fiche.client.nom}
         // Une pièce trouvée par la loupe de Vos clients ouvre SON onglet.
         ouvert={typeof registre === "string" ? registre : undefined}
+        avantLesOnglets={importe ? <BandeImport duClient={fiche.client.id} /> : null}
         registres={[
           { cle: "devis", libelle: "Devis", pieces: devis, rien: "Aucun devis parti" },
           { cle: "factures", libelle: "Factures", pieces: factures, rien: "Aucune facture émise" },
@@ -305,6 +309,13 @@ export default async function FicheClientPage({
           ...(avoirs.length > 0 ? [{ cle: "avoirs", libelle: "Avoirs", pieces: avoirs, rien: "" }] : []),
         ]}
       />
+
+      {/* ─── IMPORTER DEVIS / FACTURE, CHEZ LUI — 8 novembre 2026 ────────────
+          *« j'avais juste un devis à importer pour Bernard : est-ce que je
+          peux, à partir de Bernard, cliquer sur importer un devis ? »* Le
+          bouton de Vos clients, tel quel, au bout de son dossier ; un geste du
+          patron, comme là-bas (`import/garde.ts`). */}
+      {importe && <PorteImport clientId={fiche.client.id} />}
 
       <SupprimerCeClient
         clientId={id}

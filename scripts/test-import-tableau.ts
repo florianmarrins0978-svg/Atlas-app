@@ -8,6 +8,7 @@ import {
   reglagesDesDecisions,
   grouperParClient,
   jourDuTableau,
+  lignesPourLeClient,
   lireCsv,
   lireLignes,
   montantDuTableau,
@@ -19,6 +20,7 @@ import {
   type ClientConnu,
   type LigneLue,
 } from "../src/lib/import-tableau";
+import { complementsPourFiche } from "../src/lib/rapprochement-client";
 
 // **IMPORTER UN TABLEAU DE DEVIS ET FACTURES** — ses demandes du 28 octobre
 // 2026, planche `appli/soignee/clients-importer.html` : un export de son
@@ -388,6 +390,67 @@ cas("les pastilles comptent les fiches qui naîtront, celles qui reçoivent, cel
   const { groupes } = grouperParClient(lignes, [BERNARD], {});
   const choix = Object.fromEntries(groupes.filter((g) => g.conflit).map((g) => [g.cle, g.conflit === "deux" ? "deux" : "meme"])) as Record<string, "deux" | "meme">;
   assert.deepEqual(compteDesClients(grouperParClient(lignes, [BERNARD], choix).groupes), { nouveaux: 5, deja: 1, aVerifier: 0 });
+});
+
+// **DEPUIS LA FICHE D'UN CLIENT** — sa demande du 8 novembre 2026, planche
+// `appli/client-importer-depuis-sa-fiche.html` : *« j'avais juste un devis à
+// importer pour Bernard : est-ce que je peux, à partir de Bernard, cliquer sur
+// importer un devis ? »*. Tout ce qui s'importe de là est à LUI : le nom lu ne
+// décide plus de rien, et sa fiche ne se complète que d'une case vide, d'une
+// adresse sans doute possible.
+const piece = (rang: number, nom: string | null, adresse: string | null, telephone: string | null = null): LigneLue => ({
+  rang,
+  genre: rang % 2 ? "devis" : "facture",
+  numero: `P-${rang}`,
+  objet: null,
+  jour: `2025-0${rang}-12`,
+  montant: "480.00",
+  nom,
+  adresse,
+  telephone,
+  chantier: null,
+});
+const planDuClient = (lignes: LigneLue[], client: ClientConnu) => planDeRangement(lignesPourLeClient(lignes, client), [client], {}, {});
+// Ce que le rangement écrira vraiment sur sa fiche : la règle du serveur, qui ne remplit qu'une case vide.
+const ceQuiChange = (client: ClientConnu, c: { adresse: string | null; telephone: string | null }) =>
+  complementsPourFiche(client, { nom: client.nom, adresse: c.adresse, telephone: c.telephone });
+const chantiersParRang = (pieces: { rang: number; chantier: string | null }[]) =>
+  Object.fromEntries(pieces.map((p) => [p.rang, p.chantier]));
+
+cas("depuis sa fiche, tout va chez lui : un autre nom lu, un nom illisible, un autre téléphone", () => {
+  const lignes = [piece(1, "Mme Durand", null, "06 99 99 99 99"), piece(2, null, null), piece(3, "Mr. Bernard", null)];
+  const { groupes, sansNom } = grouperParClient(lignesPourLeClient(lignes, BERNARD), [BERNARD], {});
+  assert.equal(sansNom.length, 0, "une pièce attend encore un nom");
+  assert.equal(groupes.length, 1, "les pièces se répartissent sur plusieurs clients");
+  assert.equal(groupes[0].deja?.id, BERNARD.id, "le client de la fiche n'est pas retrouvé");
+  assert.equal(groupes[0].conflit, null, "une question se pose alors qu'il a dit qui c'est");
+  const plan = planDuClient(lignes, BERNARD);
+  assert.ok(plan.ok);
+  assert.equal(plan.clients.length, 1);
+  assert.equal(plan.clients[0].existant, BERNARD.id, "une fiche neuve naîtrait");
+  assert.equal(plan.clients[0].pieces.length, 3);
+  assert.deepEqual(ceQuiChange({ ...BERNARD, telephone: null }, plan.clients[0]), {}, "le téléphone d'une autre personne compléterait sa fiche");
+});
+
+cas("depuis sa fiche, une autre adresse lue reste sur la pièce, et sa fiche garde la sienne", () => {
+  const plan = planDuClient([piece(1, "M. Bernard", "21 quai de la Fosse, 44000 Nantes"), piece(2, "M. Bernard", "4 rue des Tilleuls, 44120 Vertou")], BERNARD);
+  assert.ok(plan.ok);
+  assert.equal(plan.clients[0].existant, BERNARD.id);
+  assert.deepEqual(ceQuiChange(BERNARD, plan.clients[0]), {}, "sa fiche changerait");
+  assert.deepEqual(chantiersParRang(plan.clients[0].pieces), { 1: null, 2: "4 rue des Tilleuls, 44120 Vertou" });
+});
+
+cas("depuis sa fiche sans adresse : une seule adresse lue la complète ; deux restent sur leurs pièces", () => {
+  const sansAdresse: ClientConnu = { ...BERNARD, adresse: null };
+  const une = planDuClient([piece(1, "M. Bernard", "4 rue des Tilleuls, 44120 Vertou"), piece(2, null, "4, rue des Tilleuls 44120 Vertou")], sansAdresse);
+  assert.ok(une.ok);
+  assert.deepEqual(ceQuiChange(sansAdresse, une.clients[0]), { adresse: "4 rue des Tilleuls, 44120 Vertou" }, "l'adresse sans doute possible ne complète pas sa fiche vide");
+  assert.deepEqual(chantiersParRang(une.clients[0].pieces), { 1: null, 2: null });
+  const deux = planDuClient([piece(1, "M. Bernard", "4 rue des Tilleuls, 44120 Vertou"), piece(2, "M. Bernard", "9 rue Haute, 44000 Nantes")], sansAdresse);
+  assert.ok(deux.ok);
+  assert.equal(deux.clients[0].existant, sansAdresse.id, "deux adresses font naître deux fiches");
+  assert.deepEqual(ceQuiChange(sansAdresse, deux.clients[0]), {}, "Atlas choisirait seul laquelle est la sienne");
+  assert.deepEqual(chantiersParRang(deux.clients[0].pieces), { 1: "4 rue des Tilleuls, 44120 Vertou", 2: "9 rue Haute, 44000 Nantes" });
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Importer un tableau — ${echecs} échec(s).`);

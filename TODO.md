@@ -1,6 +1,6 @@
 # Prochaines tâches
 
-## ⏳ À REGARDER PAR LUI (8 novembre 2026) : importer un devis depuis la fiche d'un client
+## ~~⏳ À REGARDER PAR LUI (8 novembre 2026) : importer un devis depuis la fiche d'un client~~ TRANCHÉ LE 8 NOVEMBRE : « CODE LA 2, PAS DE BATTERIE » ; CODÉ LE 8 NOVEMBRE (§572), batterie entière à jouer avec son accord (migration 0177, route d'API)
 
 Sa correction de la planche « Nouvelle facture » : *« c'est pas ce que je
 voulais ; j'étais avant sur une autre application et j'avais juste un devis à
@@ -20,8 +20,12 @@ lui sans chercher son nom ; on revient sur sa fiche avec le bandeau
 « 2 documents rangés ». Elle vit à la racine d'`appli/`, comme les autres
 écrans figés (`appli/moyen-de-reglement-termines.html`) : `soignee/` garde les
 planches dessinées au kit.
-Au codage : l'import doit porter le client choisi jusqu'au rangement (niveau
-3, argent : des pièces comptables).
+**Codé le 8 novembre** (`ARCHITECTURE.md` §572) : l'envoi retient le client
+(migration 0177), ses pièces se présentent sous son nom (`lignesPourLeClient`),
+le bandeau revient sur sa fiche. Un tableau CSV ou Excel s'importe toujours
+depuis Vos clients. Règle, base (23) et navigateur (13, rouge sur l'appli sans
+le geste) verts ici ; **reste la batterie entière**, avec son accord, puis
+`main`.
 
 ## ~~⏳ À REGARDER PAR LUI (8 novembre 2026) : vos entrées et sorties, deux cases, et l'assistant~~ TRANCHÉ LE 8 NOVEMBRE : « 1 TU PEUX CODER » ; CODÉ LE 8 NOVEMBRE (§571), batterie entière à jouer (argent, rayon de 17 points d'entrée)
 

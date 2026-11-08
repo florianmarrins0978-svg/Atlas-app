@@ -37242,3 +37242,24 @@ La racine n'était dans aucun écran : `--atlas-largeur` valait 64rem (1024 px) 
 | une période d'avant le premier jour donné se refuse, avec la date ; une année entamée se dit « partielle » | la même règle que la case |
 
 Aucune migration : le relevé est déjà gardé (`mouvements_bancaires`). L'assistant n'est ouvert qu'au patron (`peutUtiliserLAssistant`), donc l'outil n'ouvre la banque à personne qui ne la voit déjà. Éprouvé par `scripts/test-pour-mon-comptable.ts` (les trois règles, rouges avant), `scripts/test-assistant-releve-db.ts` (six cas sous `atlas_app`, dont l'isolation ; rouges sans l'outil enregistré) et `scripts/test-pour-mon-comptable-e2e.ts` (les deux cases, rouge sur l'ancien écran).
+
+## §572 : Importer depuis la fiche d'un client : l'envoi retient son client, et le plan de toujours range tout chez lui
+
+*8 novembre 2026, sa demande : « j'avais juste un devis à importer pour Bernard : est-ce que je peux, à partir de Bernard, cliquer sur importer un devis ? ». Planche `appli/client-importer-depuis-sa-fiche.html`, son « code la 2 ».*
+
+L'import ne partait que de Vos clients et rangeait chaque pièce par le nom lu : un devis d'une autre appli au nom mal lu, ou sans civilité, ne trouvait pas Bernard.
+
+| Décision | Pourquoi |
+|---|---|
+| le bouton de Vos clients, le même composant (`PorteImport`), au bout de sa fiche ; patron seul | sa planche ; un seul dessin pour les deux portes |
+| l'envoi retient le client en base (`envois_pieces.client_id`, migration 0177, étendre seulement) | un envoi se reprend : fermé pendant la lecture, il se rouvre par Vos clients et doit encore savoir chez qui ranger |
+| ses lignes se présentent sous son nom (`lignesPourLeClient`), puis `grouperParClient` et `planDeRangement` de toujours | une seule façon de ranger, la même à l'écran et au serveur ; aucune règle de rangement dupliquée |
+| le téléphone lu ne compte pas et ne complète jamais sa fiche | il peut être celui de n'importe qui sur la pièce ; un téléphone différent aurait aussi fait naître une fiche neuve (`rapprocherClient`) |
+| son adresse ne se complète que vide, et d'une seule adresse lue ; toute autre adresse reste sur sa pièce, comme chantier | deux adresses lues, personne ne sait laquelle est la sienne : « zéro erreur » |
+| un envoi ne change jamais de destination : reprendre un envoi d'ailleurs, ou emporter les restes d'une autre destination, se refuse avec la phrase qui dit quoi faire | sinon ce qui devait se ranger par les noms partirait chez Bernard, ou l'inverse, sans que rien ne le montre |
+| le serveur refait le plan, vérifie que tout va chez lui, et refuse si l'écran montrait un autre client | une fiche effacée pendant qu'il regardait l'écran : rien ne se range ailleurs que là où il l'a vu |
+| son client effacé, l'envoi redevient un envoi de Vos clients | un envoi bloqué pour toujours fermerait l'import à tous |
+| un tableau CSV ou Excel reste à Vos clients ; depuis la fiche : « PDF, photos, dossier .zip. » | un tableau porte les pièces de tous ses clients |
+| rangé, on revient sur sa fiche, et `BandeImport` (le même) y dit « 2 documents rangés », entre la loupe et les onglets | la place qu'il a sous la recherche de Vos clients |
+
+Éprouvé par `scripts/test-import-tableau.ts` (trois cas, rouges contre une règle fausse), `scripts/test-pieces-importees-db.ts` (trois cas sous `atlas_app`, chacun rouge quand on casse sa protection) et `scripts/test-importer-pieces-e2e.ts` (le geste entier, rouge sur l'appli sans le geste).
