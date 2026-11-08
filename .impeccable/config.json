@@ -741,6 +741,33 @@
         ],
         "createdAt": "2026-11-06T10:28:45.500Z",
         "reason": "Charte de l'appli recopiée : fond des planches (body.pl du kit) et crème d'Origine #f5f3ee de src/lib/design-tokens.ts, identité en place (PRODUCT.md)"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "appli/soignee/credit-d-impot.html"
+        ],
+        "createdAt": "2026-11-08T09:52:11.387Z",
+        "reason": "agent: or #b98b47, bouton plein #7d9a6d sur #faf9f5 et montant TTC en or sont la charte de l'application (src/lib/design-tokens.ts, kit.css), recopiés tels quels comme dans franchise-plafond.html et facture.html"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "appli/soignee/credit-d-impot.html"
+        ],
+        "createdAt": "2026-11-08T09:52:11.402Z",
+        "reason": "agent: .cadre est le cadre du téléphone du kit, l'écran y est posé bord à bord exprès (comme planning.html)"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/credit-d-impot.html"
+        ],
+        "createdAt": "2026-11-08T09:52:11.417Z",
+        "reason": "agent: fond crème #f5f3ee de la charte Origine de l'application (src/lib/design-tokens.ts), recopié par kit.css"
       }
     ]
   }

@@ -2256,6 +2256,24 @@ peut-être plus vrai.
 artisans qui ont leur numéro (il servira aussi à la voie coopérative, s'il la
 choisit), et ne rien coder de la voie coopérative avant l'avis d'un avocat.
 
+**Pourquoi la planche d'octobre n'a jamais été codée (sa question du
+8 novembre 2026, « comment ça se fait ? »)** : posée le 8 et le 9 octobre,
+elle finissait par « Tout est dessiné » et attendait son choix (§3 bis :
+une planche ne se code qu'une fois choisie). Le choix n'est jamais venu, et
+aucune session ne la lui a représentée.
+
+**Refaite le 8 novembre 2026, à sa demande (« remonte-moi la maquette, et
+regarde si tu peux l'améliorer »)** : `appli/soignee/credit-d-impot.html`,
+sur le kit de l'appli soignée, cinq écrans (Mon entreprise, Le client, Retour
+du jour, La facture, L'attestation). Ce qu'elle ajoute : l'avance immédiate
+de bout en bout (relier l'Urssaf avec les deux codes de l'habilitation,
+inscrire un client depuis sa fiche avec les seules cases qui manquent,
+« Envoyer à l'Urssaf », le suivi envoyée, validée, versée ou refusée), pas
+d'acompte pour un client inscrit (garantie financière), le logo sur les
+papiers, l'attestation de janvier sur papier. L'ancienne planche reste, son
+lien d'`essais.html` renvoie à la nouvelle. **Rien n'est codé ; elle attend
+son choix.** Ce qu'elle laisse à trancher est écrit sous ses écrans.
+
 **Tranché le 9 octobre 2026 : les acomptes gardent leur taux CUMULÉ.** C'est
 sa propre façon de compter : *« 1er acompte 30 %, 2e 50 %, 3e 75 % »*, soit
 ce que le client a payé en tout à chaque étape. L'appli fait déjà ainsi

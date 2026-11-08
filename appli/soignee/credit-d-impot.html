@@ -1,0 +1,735 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le crédit d'impôt de vos clients</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  LE CRÉDIT D'IMPÔT DE VOS CLIENTS, SOIGNÉ. 8 novembre 2026.
+
+  D'où elle vient : la planche du 8 octobre (appli/credit-d-impot.html),
+  dessinée sur les écrans de l'époque, jamais choisie, donc jamais codée.
+  Sa demande du 8 novembre : « regarde ce que fait Unipro pour le service à la
+  personne ; qu'il puisse faire ce qu'il faisait chez Unipro, mais chez moi »,
+  puis « remonte-moi la maquette, et regarde si tu peux l'améliorer ».
+
+  Ce qui change contre celle d'octobre :
+    les écrans de l'appli soignée (kit.css) ;
+    l'avance immédiate devient le vrai circuit de l'Urssaf (le 9 octobre on
+      avait tranché « pas relié » ; sa demande du 8 novembre le rouvre) :
+      relier l'Urssaf, inscrire le client, envoyer la facture, la suivre ;
+    le logo, que la planche d'octobre laissait de côté ;
+    l'attestation elle-même, sur papier ;
+    les deux phrases qui expliquaient Cesu et Avance immédiate sont parties.
+
+  Sources lues le 8 novembre 2026 : l'aide d'Evoliz (inscription d'un client,
+  demande de paiement, ses statuts, la garantie financière), les CGV et le
+  règlement d'Unipros, la FAQ de servicesalapersonne.gouv.fr. Le site de
+  l'Urssaf ne répond pas depuis la session : rien n'y a été lu.
+
+  Les champs de l'inscription sont ceux qu'Evoliz exige pour l'Urssaf : client
+  particulier domicilié en France, code de sa commune, adresse, IBAN ; nom,
+  date, pays et commune de naissance, portable, e-mail ; et la civilité,
+  demandée au moment d'inscrire. Le client a 7 jours pour accepter.
+
+  Les montants et les dates sont des exemples. RIEN N'EST CODÉ DANS src/.
+*/
+
+/* ─── Mon entreprise ─────────────────────────────────────────────────────── */
+.attache { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+.attache .ligne-corps b { display: block; font-size: 16px; font-weight: 600; color: var(--atlas-ink); }
+.attache .ligne-corps span { display: block; margin-top: 1px; font-size: 14px; color: var(--atlas-inkSoft); }
+.retirer { min-height: 44px; padding: 0 4px; font-size: 14px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--atlas-or); }
+.jauge { display: block; height: 8px; margin-top: 10px; border-radius: 4px; overflow: hidden; background: color-mix(in srgb, var(--atlas-ink) 10%, transparent); }
+.jauge > span { display: block; height: 100%; border-radius: 4px; background: var(--atlas-or); }
+.part { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-top: 12px; }
+.part b { font: 400 24px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; color: var(--atlas-ink); }
+.part span { font-size: 14px; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
+.signature { display: grid; place-items: center; height: 96px; margin-top: 8px; border-radius: 10px; color: var(--atlas-ink);
+             box-shadow: inset 0 0 0 1.5px var(--atlas-line); background: var(--atlas-cream); }
+.signature svg { width: 170px; height: 60px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.urssaf { display: flex; align-items: center; gap: 14px; }
+.urssaf .ligne-corps b { display: block; font: 400 19px/1.25 var(--serif); color: var(--atlas-ink); }
+.urssaf .ligne-corps small { display: block; margin-top: 3px; font-size: 14.5px; line-height: 1.4; color: var(--atlas-inkSoft); }
+.urssaf + .bouton, .urssaf + .bouton-texte { margin-top: 16px; }
+
+/* ─── La fiche du client ─────────────────────────────────────────────────── */
+.feuille .champ-saisie { background: var(--atlas-cream); }
+/* Le gris muted posé sur le crème descend à 3,3:1 ; celui des cases des
+   réglages (reglage-valeur) se lit mieux, et c'est le même geste. */
+.feuille .champ-saisie::placeholder { color: color-mix(in srgb, var(--atlas-inkSoft) 85%, var(--atlas-cream)); }
+.deux-champs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.deux-champs .champ { margin-top: 16px; }
+.manque-compte { margin: 18px 0 12px; text-align: center; font-size: 14.5px; font-weight: 600; color: var(--atlas-carteAmbreTexte); }
+
+/* ─── Le retour du jour ──────────────────────────────────────────────────── */
+.heures { display: flex; align-items: center; gap: 10px; min-height: 64px; padding: 10px 0; }
+.heures + .heures { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.heures .ligne-corps b { display: block; font: 400 18px/1.25 var(--serif); }
+.heures .ligne-corps small { display: block; margin-top: 2px; font-size: 13.5px; color: var(--atlas-inkSoft); }
+.heures select { min-height: 48px; padding: 0 12px; border: 0; border-radius: 10px; font: inherit; font-size: 16px; font-variant-numeric: tabular-nums;
+                 color: var(--atlas-ink); background: var(--atlas-cream); box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
+.heures select:focus { outline: none; box-shadow: inset 0 0 0 2px var(--atlas-rust); }
+
+/* ─── La facture (facture.html) ──────────────────────────────────────────── */
+.carte-doc { background: var(--atlas-card); border-radius: var(--r-plage); padding: 18px; }
+.carte-doc + .carte-doc { margin-top: 12px; }
+.doc-numero { font: 400 22px/1.2 var(--serif); color: var(--atlas-ink); }
+.doc-titre { margin-top: 2px; font: italic 400 18px/1.3 var(--serif); color: var(--atlas-inkSoft); }
+.pastilles-doc { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.rang-ligne { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; padding: 10px 0; }
+.rang-ligne + .rang-ligne { box-shadow: inset 0 1px 0 var(--atlas-lineSoft); }
+.rang-ligne .nom { flex: 1; min-width: 0; font-size: 16px; color: var(--atlas-ink); }
+.rang-ligne .nom small { display: block; margin-top: 2px; font-size: 14px; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
+.rang-ligne .prix { font-size: 16px; color: var(--atlas-ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.totaux .rang-ligne { padding: 6px 0; box-shadow: none; }
+.totaux .rang-ligne .nom, .totaux .rang-ligne .prix { font-size: 15.5px; color: var(--atlas-inkSoft); }
+.ttc { margin-top: 10px; padding-top: 14px; box-shadow: inset 0 1px 0 var(--atlas-line); text-align: center; }
+.ttc p { font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--atlas-inkSoft); }
+.ttc .montant-grand { margin-top: 6px; font-size: 46px; color: var(--atlas-or); }
+.ligne-bascule-doc { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.ligne-bascule-doc .ligne-corps b { display: block; font-size: 16px; font-weight: 600; }
+.ligne-bascule-doc .ligne-corps small { display: block; margin-top: 2px; font-size: 14px; color: var(--atlas-inkSoft); }
+.mention-papier { margin-top: 14px; padding-top: 12px; box-shadow: inset 0 1px 0 var(--atlas-lineSoft); font-size: 13.5px; line-height: 1.5; color: var(--atlas-inkSoft); }
+.mention-papier b { display: block; margin-bottom: 4px; font-size: 12.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
+
+/* Le partage de l'avance immédiate : ce que paie le client, ce que verse l'Urssaf. */
+.partage { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.partage > div { display: flex; flex-direction: column; padding: 14px; border-radius: 12px; background: color-mix(in srgb, var(--atlas-or) 11%, transparent); }
+.partage > div:last-child { background: var(--atlas-carteVertFond); }
+.partage p { font-size: 14px; line-height: 1.35; color: var(--atlas-inkSoft); }
+/* Les deux montants sur la même ligne, même quand un libellé passe à deux. */
+.partage .montant { display: block; margin-top: auto; padding-top: 8px; font-size: 26px; color: var(--atlas-ink); }
+
+/* Le suivi de l'Urssaf : trois pas, chacun avec son état. */
+.suivi { margin: 0; padding: 0; list-style: none; }
+.suivi li { position: relative; display: flex; gap: 14px; padding: 0 0 18px; }
+.suivi li:last-child { padding-bottom: 0; }
+.suivi li:not(:last-child)::after { content: ""; position: absolute; left: 15px; top: 34px; bottom: 2px; width: 2px; border-radius: 1px; background: var(--atlas-line); }
+.suivi .point { position: relative; z-index: 1; display: grid; place-items: center; width: 32px; height: 32px; flex: none; border-radius: 50%;
+                color: var(--atlas-muted); box-shadow: inset 0 0 0 1.5px var(--atlas-line); background: var(--atlas-card); }
+.suivi .point .ico { width: 17px; height: 17px; stroke-width: 2.2; }
+.suivi [data-ton="vert"] .point { color: var(--atlas-carteVertTexte); background: var(--atlas-carteVertFond); box-shadow: none; }
+.suivi [data-ton="ambre"] .point { color: var(--atlas-carteAmbreTexte); background: var(--atlas-carteAmbreFond); box-shadow: none; }
+.suivi [data-ton="rouge"] .point { color: var(--atlas-carteRougeTexte); background: var(--atlas-carteRougeFond); box-shadow: none; }
+.suivi .ligne-corps { padding-top: 4px; }
+.suivi b { display: block; font-size: 16px; font-weight: 600; color: var(--atlas-ink); }
+.suivi small { display: block; margin-top: 2px; font-size: 14px; color: var(--atlas-inkSoft); font-variant-numeric: tabular-nums; }
+.suivi [data-ton="gris"] b { color: var(--atlas-inkSoft); font-weight: 500; }
+
+.recap { margin: 4px 0 18px; }
+.recap .rang-ligne .nom, .recap .rang-ligne .prix { font-size: 16.5px; }
+.recap .rang-ligne .prix { font: 400 22px/1 var(--serif); }
+.action-bas .bouton-texte { display: block; width: 100%; text-align: center; }
+
+/* ─── Terminés (termines.html), le haut ──────────────────────────────────── */
+.argent { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.case { display: flex; flex-direction: column; min-height: 140px; padding: 16px 14px; border-radius: var(--r-plage); text-decoration: none; color: inherit; }
+.case-titre { font-size: 13px; font-weight: 700; line-height: 1.35; letter-spacing: 0.1em; text-wrap: balance; text-transform: uppercase; color: var(--atlas-or); }
+.case-sous { margin-top: 6px; font: 400 17px/1.2 var(--serif); color: var(--atlas-ink); }
+.case-pied { margin-top: auto; padding-top: 14px; }
+.case-valeur { font: 400 26px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; color: var(--atlas-ink); }
+.case-bien { display: flex; align-items: center; gap: 6px; font: 400 18px/1.15 var(--serif); color: var(--atlas-ink); }
+.case-bien .ico { width: 20px; height: 20px; stroke-width: 2; }
+.case-tva { background: var(--atlas-carteAmbreFond); }
+.case-compta { background: var(--atlas-carteVertFond); }
+.case-compta .case-titre, .case-compta .case-bien .ico { color: var(--atlas-carteVertTexte); }
+.portes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+.porte { display: flex; align-items: center; justify-content: center; min-height: 56px; padding: 0 14px; border-radius: 28px; font-size: 15px; font-weight: 500;
+         text-align: center; text-decoration: none; color: var(--atlas-ink); background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.porte-or { color: var(--atlas-or); background: transparent; box-shadow: inset 0 0 0 1.5px var(--atlas-or); }
+.attestations { display: flex; align-items: center; gap: 14px; width: 100%; margin-top: 10px; padding: 16px; border-radius: var(--r-plage); text-align: left; }
+.attestations[data-ton="ambre"] { background: var(--atlas-carteAmbreFond); color: var(--atlas-carteAmbreTexte); }
+.attestations[data-ton="vert"] { background: var(--atlas-carteVertFond); color: var(--atlas-carteVertTexte); }
+.attestations .ligne-corps b { display: block; font-size: 15.5px; font-weight: 700; }
+.attestations .ligne-corps span { display: block; margin-top: 4px; font: 400 19px/1.25 var(--serif); color: var(--atlas-ink); }
+.attestations > .ico { width: 20px; height: 20px; stroke-width: 2; }
+.mois-nom { margin: 34px 0 0; text-align: center; font: 400 30px/1.1 var(--serif); }
+.client-ligne { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; padding: 10px 0; text-align: left; }
+.client-ligne + .client-ligne { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.client-ligne .ligne-corps b { display: block; font: 400 19px/1.25 var(--serif); }
+.client-ligne .ligne-corps small { display: block; margin-top: 2px; font-size: 14px; color: var(--atlas-inkSoft); }
+.client-ligne .prix { font: 400 18px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
+.client-ligne .ico { width: 20px; height: 20px; color: var(--atlas-chevron); stroke-width: 2; }
+
+/* ─── Le papier de l'attestation : il part chez le client, il ne suit donc
+       pas la charte de l'artisan (comme le devis et la facture). ──────────── */
+.lettre { background: #fffdf8; color: #1c1c1a; border-radius: 6px; padding: 20px 18px; font-size: 13px; line-height: 1.5;
+          box-shadow: 0 1px 2px rgba(28,28,26,0.08), 0 8px 24px rgba(28,28,26,0.08); }
+.lettre .entete { display: flex; justify-content: space-between; gap: 12px; }
+.lettre .entete b { display: block; font-family: var(--serif); font-size: 16px; font-weight: 400; }
+.lettre .entete span { display: block; color: #4a4a44; }
+.lettre .logo { display: grid; place-items: center; width: 64px; height: 64px; flex: none; border-radius: 6px; padding: 6px; text-align: center;
+                font-size: 9.5px; line-height: 1.2; color: #4a4a44; box-shadow: inset 0 0 0 1px rgba(28,28,26,0.25); }
+.lettre h3 { margin: 18px 0 10px; font: 400 19px/1.2 var(--serif); }
+.lettre p + p { margin-top: 8px; }
+.lettre table { width: 100%; margin: 12px 0; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.lettre th { padding: 6px 4px; text-align: left; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #8b6835;
+             border-bottom: 1px solid rgba(28,28,26,0.2); }
+.lettre td { padding: 6px 4px; border-bottom: 1px solid rgba(28,28,26,0.08); }
+.lettre .total { display: flex; justify-content: space-between; margin-top: 6px; font-size: 14px; }
+.lettre .total b { font-family: var(--serif); font-size: 17px; font-weight: 400; }
+.lettre .signe { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; margin-top: 16px; }
+.lettre .signe svg { width: 120px; height: 44px; fill: none; stroke: #1c1c1a; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+</style>
+</head>
+<body class="pl pl-pilules">
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">Le crédit d'impôt de vos clients</h1>
+  <p class="pl-verdict">Ce qu'Unipros fait pour ses artisans, dans Atlas, pour une entreprise <b>qui a son numéro</b>. Vos clients ne paient que la moitié, <b>l'Urssaf vous verse tout</b>. Cinq écrans, dans l'ordre où vous les rencontrez ; touchez les boutons. Les montants et les dates sont des exemples.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <!-- ═══ 1. MON ENTREPRISE ════════════════════════════════════════════ -->
+    <div data-vue-panneau="Mon entreprise">
+      <p class="pl-legende">Une fois, dans Mon entreprise</p>
+      <div class="pl-etats" data-ecran="#ecran-ent">
+        <button type="button" data-etat="non" aria-pressed="true">Urssaf pas reliée</button>
+        <button type="button" data-etat="reliee" aria-pressed="false">Urssaf reliée</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre" id="ecran-ent">
+          <div class="defile">
+            <div class="tete-ronds">
+              <button class="rond-creux" type="button" aria-label="Retour aux réglages" data-note="Retour aux Réglages."><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </div>
+            <header class="tete" style="margin-top:0"><h1 class="tete-titre">Mon entreprise</h1></header>
+
+            <p class="rubrique rubrique-or">Services à la personne</p>
+            <div class="plage reglages">
+              <div class="reglage">
+                <div class="ligne-bascule-doc">
+                  <span class="ligne-corps"><b>Déclarée sur NOVA</b><small>Vos clients particuliers récupèrent la moitié.</small></span>
+                  <button class="bascule" type="button" role="switch" aria-checked="true" aria-label="Déclarée sur NOVA"></button>
+                </div>
+              </div>
+              <label class="reglage">
+                <span class="reglage-libelle">N° de déclaration</span>
+                <input class="reglage-valeur chiffre" value="SAP123456789">
+              </label>
+              <label class="reglage">
+                <span class="reglage-libelle">Déclarée le</span>
+                <input class="reglage-valeur chiffre" value="12 mars 2024">
+              </label>
+              <div class="reglage">
+                <span class="reglage-libelle">Logo des services à la personne</span>
+                <span class="attache">
+                  <span class="pastille-ico" data-ton="vert"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span>
+                  <span class="ligne-corps"><b>Déposé</b><span>Sur vos devis et vos factures</span></span>
+                  <button class="retirer" type="button" data-note="Le logo se retire ; il se télécharge sur NOVA.">Retirer</button>
+                </span>
+              </div>
+              <div class="reglage">
+                <div class="ligne-bascule-doc">
+                  <span class="ligne-corps"><b>Une activité à côté</b><small>Création, clients professionnels.</small></span>
+                  <button class="bascule" type="button" role="switch" aria-checked="true" aria-label="Une activité à côté"></button>
+                </div>
+                <div class="part"><b>18&nbsp;%</b><span>6&#8239;120&nbsp;€ sur 34&#8239;000&nbsp;€ cette année</span></div>
+                <span class="jauge"><span style="width:60%"></span></span>
+                <span class="reglage-sous">30&nbsp;% au plus.</span>
+              </div>
+              <div class="reglage">
+                <div class="rang-espace">
+                  <span class="reglage-libelle">Votre signature</span>
+                  <button class="bouton-texte or" type="button" data-note="La case se vide ; signez de nouveau avec le doigt." style="min-height:40px">Effacer</button>
+                </div>
+                <div class="signature" aria-label="Votre signature">
+                  <svg viewBox="0 0 170 60" aria-hidden="true"><path d="M8 40c10-22 18-30 22-24 4 7-10 30-4 30 7 0 14-26 22-24 6 2-2 20 4 20 8 0 10-14 18-14 7 0 3 12 10 12 9 0 14-18 24-18 7 0 4 10 12 10 10 0 22-12 34-16"/><path d="M40 52c30-4 70-6 110-4"/></svg>
+                </div>
+                <span class="reglage-sous">Elle se pose sur chaque attestation.</span>
+              </div>
+            </div>
+
+            <p class="rubrique rubrique-or">Avance immédiate</p>
+            <div class="plage" data-si-etat="non">
+              <div class="urssaf">
+                <span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-banque"/></svg></span>
+                <span class="ligne-corps"><b>L'Urssaf n'est pas reliée</b><small>Vos clients paient la moitié, l'Urssaf vous verse le reste.</small></span>
+              </div>
+              <button class="bouton bouton-plein" type="button" data-ouvre="relier">Relier l'Urssaf</button>
+            </div>
+            <div class="plage" data-si-etat="reliee">
+              <div class="urssaf">
+                <span class="pastille-ico" data-ton="vert"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span>
+                <span class="ligne-corps"><b>L'Urssaf est reliée</b><small>Depuis le 8 novembre.</small></span>
+              </div>
+              <button class="bouton-texte" type="button" data-passe="non" style="color:var(--atlas-inkSoft)">Délier</button>
+            </div>
+          </div>
+          <nav class="barre" aria-label="Navigation principale"><div class="barre-onglets">
+            <a class="barre-onglet" href="accueil.html">Chantiers</a>
+            <a class="barre-onglet" href="planning.html">Planning</a>
+            <a class="barre-onglet" href="termines.html">Terminés</a>
+            <a class="barre-onglet" href="paysage.html">Paysage</a>
+            <a class="barre-onglet" href="reglages.html" aria-current="page">Réglages</a>
+            <span class="barre-trait" aria-hidden="true"><span></span></span>
+          </div></nav>
+          <section class="feuille" id="relier" aria-hidden="true" aria-label="Relier l'Urssaf">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre">Relier l'Urssaf</h2>
+              <label class="champ">
+                <span class="champ-libelle">Identifiant</span>
+                <input class="champ-saisie" placeholder="Reçu de l'Urssaf par e-mail" autocomplete="off">
+              </label>
+              <label class="champ">
+                <span class="champ-libelle">Clé secrète</span>
+                <input class="champ-saisie" type="password" placeholder="Reçue avec l'identifiant" autocomplete="off">
+              </label>
+              <button class="bouton bouton-plein mt-24" type="button" data-passe="reliee">Relier</button>
+              <button class="bouton-texte or" type="button" data-note="Ouvre la demande, sur api.gouv.fr. Vous y nommez Atlas ; l'Urssaf répond par e-mail avec les deux codes." style="display:flex;width:100%;justify-content:center;margin-top:8px">Je n'ai pas encore ces codes</button>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ 2. LE CLIENT ═════════════════════════════════════════════════ -->
+    <div data-vue-panneau="Le client" hidden>
+      <p class="pl-legende">Une fois par client, sur sa fiche</p>
+      <div class="pl-etats" data-ecran="#ecran-cli">
+        <button type="button" data-etat="neuf" aria-pressed="true">Pas inscrit</button>
+        <button type="button" data-etat="attente" aria-pressed="false">En attente</button>
+        <button type="button" data-etat="inscrit" aria-pressed="false">Inscrit</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre" id="ecran-cli">
+          <div class="defile">
+            <div class="tete-ronds">
+              <button class="rond-creux" type="button" aria-label="Retour à Vos clients" data-note="Retour à Vos clients."><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </div>
+            <header class="tete" style="margin-top:0"><h1 class="tete-titre">Mr. Lambert</h1></header>
+            <p class="tete-situation">12 rue des Lilas, Rezé</p>
+
+            <p class="rubrique rubrique-or">Avance immédiate</p>
+            <div class="plage" data-si-etat="neuf">
+              <div class="urssaf">
+                <span class="pastille-ico"><svg class="ico" aria-hidden="true"><use href="#i-euro"/></svg></span>
+                <span class="ligne-corps"><b>Il paie la moitié</b><small>Ses factures passent par l'Urssaf, qui vous verse tout.</small></span>
+              </div>
+              <button class="bouton bouton-plein" type="button" data-ouvre="inscrire">L'inscrire à l'Urssaf</button>
+            </div>
+            <div class="plage" data-si-etat="attente">
+              <div class="urssaf">
+                <span class="pastille-ico" data-ton="ambre"><svg class="ico" aria-hidden="true"><use href="#i-horloge-sable"/></svg></span>
+                <span class="ligne-corps"><b>En attente de Mr. Lambert</b><small>L'Urssaf lui a écrit le 8 novembre. Il a 7 jours pour accepter.</small></span>
+              </div>
+              <button class="bouton-texte or" type="button" data-note="L'Urssaf lui renvoie le lien.">Lui renvoyer le lien</button>
+            </div>
+            <div class="plage" data-si-etat="inscrit">
+              <div class="urssaf">
+                <span class="pastille-ico" data-ton="vert"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span>
+                <span class="ligne-corps"><b>Inscrit</b><small>Depuis le 9 novembre. Ses factures partent à l'Urssaf.</small></span>
+              </div>
+            </div>
+
+            <p class="rubrique rubrique-or">Factures</p>
+            <div class="plage plage-serree">
+              <button class="client-ligne" type="button" data-note="Ouvre la facture : voir l'écran La facture.">
+                <span class="ligne-corps"><b>Entretien du jardin</b><small>F2026&#8209;000041, 5 novembre</small></span>
+                <span class="prix">504,00&nbsp;€</span>
+              </button>
+            </div>
+          </div>
+          <nav class="barre" aria-label="Navigation principale"><div class="barre-onglets">
+            <a class="barre-onglet" href="accueil.html" aria-current="page">Chantiers</a>
+            <a class="barre-onglet" href="planning.html">Planning</a>
+            <a class="barre-onglet" href="termines.html">Terminés</a>
+            <a class="barre-onglet" href="paysage.html">Paysage</a>
+            <a class="barre-onglet" href="reglages.html">Réglages</a>
+            <span class="barre-trait" aria-hidden="true"><span></span></span>
+          </div></nav>
+          <section class="feuille" id="inscrire" aria-hidden="true" aria-label="L'inscrire à l'Urssaf">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre">L'inscrire à l'Urssaf</h2>
+              <div class="choix" role="group" aria-label="Civilité">
+                <button type="button" aria-pressed="true">Monsieur</button>
+                <button type="button" aria-pressed="false">Madame</button>
+              </div>
+              <div class="deux-champs">
+                <label class="champ champ-manque">
+                  <span class="champ-libelle">Né le</span>
+                  <input class="champ-saisie" inputmode="numeric" placeholder="jj/mm/aaaa">
+                </label>
+                <label class="champ">
+                  <span class="champ-libelle">Pays</span>
+                  <input class="champ-saisie" value="France">
+                </label>
+              </div>
+              <label class="champ champ-manque">
+                <span class="champ-libelle">Commune de naissance</span>
+                <input class="champ-saisie" placeholder="Nantes">
+              </label>
+              <label class="champ">
+                <span class="champ-libelle">Portable</span>
+                <input class="champ-saisie" inputmode="tel" value="06 12 34 56 78">
+              </label>
+              <label class="champ">
+                <span class="champ-libelle">E-mail</span>
+                <input class="champ-saisie" inputmode="email" value="p.lambert@exemple.fr">
+              </label>
+              <label class="champ champ-manque">
+                <span class="champ-libelle">Son IBAN</span>
+                <input class="champ-saisie" placeholder="FR76 …">
+                <span class="champ-aide">L'Urssaf y prélève sa moitié.</span>
+              </label>
+              <p class="manque-compte">Il manque 3 cases</p>
+              <button class="bouton bouton-plein" type="button" data-passe="attente">Inscrire</button>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ 3. LE RETOUR DU JOUR ═════════════════════════════════════════ -->
+    <div data-vue-panneau="Retour du jour" hidden>
+      <p class="pl-legende">Au retour de chaque intervention</p>
+      <div class="cadre">
+        <div class="ecran avec-barre avec-action" id="ecran-ret">
+          <div class="defile">
+            <div class="tete-ronds">
+              <button class="rond-creux" type="button" aria-label="Retour au planning" data-note="Retour au planning."><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </div>
+            <header class="tete" style="margin-top:0"><h1 class="tete-titre">Entretien du jardin</h1></header>
+            <p class="tete-situation">Mr. Lambert, mercredi 5 novembre</p>
+
+            <p class="rubrique rubrique-or">Travaux faits</p>
+            <div class="plage plage-serree">
+              <div class="rang-ligne"><span class="nom">Tonte et ramassage</span></div>
+              <div class="rang-ligne"><span class="nom">Taille des haies</span></div>
+            </div>
+
+            <p class="rubrique rubrique-or">Combien d'heures ?</p>
+            <div class="plage plage-serree">
+              <div class="heures">
+                <span class="ligne-corps"><b>Martin Julien</b><small>n° 1</small></span>
+                <select aria-label="Heures de Martin Julien"><option>2 h</option><option selected>3 h</option><option>4 h</option></select>
+                <select aria-label="Minutes de Martin Julien"><option>00</option><option>15</option><option selected>30</option><option>45</option></select>
+              </div>
+              <div class="heures">
+                <span class="ligne-corps"><b>Roux Léa</b><small>n° 2</small></span>
+                <select aria-label="Heures de Roux Léa"><option>1 h</option><option selected>2 h</option><option>3 h</option></select>
+                <select aria-label="Minutes de Roux Léa"><option selected>00</option><option>15</option><option>30</option><option>45</option></select>
+              </div>
+            </div>
+            <p class="discret mt-8">Pour l'attestation de Mr. Lambert.</p>
+          </div>
+          <div class="action-bas">
+            <button class="bouton bouton-plein" type="button" data-note="Le retour part, comme aujourd'hui ; les heures restent pour l'attestation.">Envoyer le retour du jour</button>
+          </div>
+          <nav class="barre" aria-label="Navigation principale"><div class="barre-onglets">
+            <a class="barre-onglet" href="accueil.html">Chantiers</a>
+            <a class="barre-onglet" href="planning.html" aria-current="page">Planning</a>
+            <a class="barre-onglet" href="termines.html">Terminés</a>
+            <a class="barre-onglet" href="paysage.html">Paysage</a>
+            <a class="barre-onglet" href="reglages.html">Réglages</a>
+            <span class="barre-trait" aria-hidden="true"><span></span></span>
+          </div></nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ 4. LA FACTURE ════════════════════════════════════════════════ -->
+    <div data-vue-panneau="La facture" hidden>
+      <p class="pl-legende">La facture d'un client inscrit</p>
+      <div class="pl-etats" data-ecran="#ecran-fac">
+        <button type="button" data-etat="brouillon" aria-pressed="true">Avant l'envoi</button>
+        <button type="button" data-etat="urssaf" aria-pressed="false">Chez l'Urssaf</button>
+        <button type="button" data-etat="payee" aria-pressed="false">Versée</button>
+        <button type="button" data-etat="refusee" aria-pressed="false">Refusée</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre avec-action" id="ecran-fac">
+          <div class="defile">
+            <div class="tete-ronds">
+              <button class="rond-creux" type="button" aria-label="Retour" data-note="Retour au chantier."><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </div>
+            <div class="tete"><h2 class="tete-titre">Facture</h2></div>
+            <p class="tete-situation">Mr. Lambert</p>
+
+            <section class="carte-doc">
+              <p class="doc-numero">F2026&#8209;000041</p>
+              <p class="doc-titre">Entretien du jardin</p>
+              <div class="pastilles-doc">
+                <span class="etat" data-ton="bleu" data-si-etat="brouillon">Brouillon</span>
+                <span class="etat" data-ton="ambre" data-si-etat="urssaf">Chez l'Urssaf</span>
+                <span class="etat" data-ton="vert" data-si-etat="payee">Acquittée le 14 novembre</span>
+                <span class="etat" data-ton="rouge" data-si-etat="refusee">Refusée par Mr. Lambert</span>
+              </div>
+              <p class="discret mt-8">Travaux réalisés le mercredi 5 novembre</p>
+            </section>
+
+            <section class="carte-doc">
+              <p class="rubrique" style="margin-top:0">Devis 2026&#8209;000038</p>
+              <div class="rang-ligne"><span class="nom">Tonte et ramassage<small>1 passage</small></span><span class="prix">180,00&nbsp;€</span></div>
+              <div class="rang-ligne"><span class="nom">Taille des haies<small>40 ml à 6,00&nbsp;€</small></span><span class="prix">240,00&nbsp;€</span></div>
+            </section>
+
+            <section class="carte-doc totaux">
+              <div class="rang-ligne"><span class="nom">Total HT</span><span class="prix">420,00&nbsp;€</span></div>
+              <div class="rang-ligne"><span class="nom">TVA 20 %</span><span class="prix">84,00&nbsp;€</span></div>
+              <div class="ttc">
+                <p>Total TTC</p>
+                <p class="montant-grand">504,00&nbsp;€</p>
+              </div>
+            </section>
+
+            <section class="carte-doc">
+              <div class="ligne-bascule-doc">
+                <span class="ligne-corps"><b>Crédit d'impôt</b><small>Services à la personne</small></span>
+                <button class="bascule" type="button" role="switch" aria-checked="true" aria-label="Crédit d'impôt"></button>
+              </div>
+              <div class="partage mt-16">
+                <div><p>Mr. Lambert paie</p><span class="montant">252,00&nbsp;€</span></div>
+                <div><p>L'Urssaf vous verse</p><span class="montant">504,00&nbsp;€</span></div>
+              </div>
+              <p class="mention-papier"><b>Sur la facture</b>Le logo, puis <i>« Prestation de services à la personne ouvrant droit au crédit d'impôt de l'article 199 sexdecies du code général des impôts. Déclaration SAP123456789 du 12 mars 2024. »</i></p>
+            </section>
+
+            <section class="carte-doc" data-si-etat="urssaf payee refusee">
+              <p class="rubrique" style="margin-top:0">Avance immédiate</p>
+              <!-- Une liste par état : le trait qui relie les pas s'arrête au
+                   dernier pas VISIBLE, ce qu'un :last-child ne sait pas faire
+                   quand les pas des autres états dorment cachés à la suite. -->
+              <ol class="suivi" data-si-etat="urssaf">
+                <li data-ton="vert"><span class="point"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span><span class="ligne-corps"><b>Envoyée à l'Urssaf</b><small>Le 8 novembre</small></span></li>
+                <li data-ton="ambre"><span class="point"><svg class="ico" aria-hidden="true"><use href="#i-horloge-sable"/></svg></span><span class="ligne-corps"><b>Mr. Lambert la valide</b><small>Il a jusqu'au 10 novembre</small></span></li>
+                <li data-ton="gris"><span class="point"><svg class="ico" aria-hidden="true"><use href="#i-euro"/></svg></span><span class="ligne-corps"><b>L'Urssaf vous verse 504,00&nbsp;€</b></span></li>
+              </ol>
+              <ol class="suivi" data-si-etat="payee">
+                <li data-ton="vert"><span class="point"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span><span class="ligne-corps"><b>Envoyée à l'Urssaf</b><small>Le 8 novembre</small></span></li>
+                <li data-ton="vert"><span class="point"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span><span class="ligne-corps"><b>Validée par Mr. Lambert</b><small>Le 9 novembre</small></span></li>
+                <li data-ton="vert"><span class="point"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span><span class="ligne-corps"><b>Versée, 504,00&nbsp;€</b><small>Le 14 novembre, sur votre compte</small></span></li>
+              </ol>
+              <ol class="suivi" data-si-etat="refusee">
+                <li data-ton="vert"><span class="point"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg></span><span class="ligne-corps"><b>Envoyée à l'Urssaf</b><small>Le 8 novembre</small></span></li>
+                <li data-ton="rouge"><span class="point"><svg class="ico" aria-hidden="true"><use href="#i-croix"/></svg></span><span class="ligne-corps"><b>Refusée par Mr. Lambert</b><small>Le 9 novembre</small></span></li>
+              </ol>
+            </section>
+          </div>
+          <div class="action-bas">
+            <div data-si-etat="brouillon">
+              <button class="bouton bouton-plein" type="button" data-ouvre="envoi-urssaf">Envoyer à l'Urssaf</button>
+              <button class="bouton-texte" type="button" data-note="Elle part comme aujourd'hui, par SMS ou e-mail ; il paie tout, et récupère sa moitié aux impôts." style="color:var(--atlas-inkSoft)">Il paie autrement cette fois</button>
+            </div>
+            <div data-si-etat="refusee">
+              <button class="bouton bouton-creux" type="button" data-note="Elle part par SMS, comme aujourd'hui ; il paie tout.">L'envoyer par SMS</button>
+            </div>
+          </div>
+          <nav class="barre" aria-label="Navigation principale"><div class="barre-onglets">
+            <a class="barre-onglet" href="accueil.html" aria-current="page">Chantiers</a>
+            <a class="barre-onglet" href="planning.html">Planning</a>
+            <a class="barre-onglet" href="termines.html">Terminés</a>
+            <a class="barre-onglet" href="paysage.html">Paysage</a>
+            <a class="barre-onglet" href="reglages.html">Réglages</a>
+            <span class="barre-trait" aria-hidden="true"><span></span></span>
+          </div></nav>
+          <section class="feuille" id="envoi-urssaf" aria-hidden="true" aria-label="Envoyer à l'Urssaf">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre">Envoyer à l'Urssaf</h2>
+              <div class="recap">
+                <div class="rang-ligne"><span class="nom">Mr. Lambert valide, puis paie</span><span class="prix">252,00&nbsp;€</span></div>
+                <div class="rang-ligne"><span class="nom">L'Urssaf vous verse</span><span class="prix">504,00&nbsp;€</span></div>
+              </div>
+              <p class="plage-ton" data-ton="or">Envoyée, elle ne se modifie plus. Une correction passerait par un avoir.</p>
+              <button class="bouton bouton-plein mt-16" type="button" data-passe="urssaf">Envoyer</button>
+              <button class="bouton-texte" type="button" data-ferme style="display:flex;width:100%;justify-content:center;margin-top:8px;color:var(--atlas-inkSoft)">Pas encore</button>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ 5. L'ATTESTATION ═════════════════════════════════════════════ -->
+    <div data-vue-panneau="L'attestation" hidden>
+      <p class="pl-legende">En janvier, sur Terminés</p>
+      <div class="pl-etats" data-ecran="#ecran-att">
+        <button type="button" data-etat="janvier" aria-pressed="true">À envoyer</button>
+        <button type="button" data-etat="envoyees" aria-pressed="false">Envoyées</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre" id="ecran-att">
+          <div class="defile">
+            <header class="tete">
+              <h1 class="tete-titre">Terminés</h1>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </header>
+            <div class="argent">
+              <a class="case case-tva" href="#" data-note="Inchangé : voir la planche Terminés.">
+                <span class="case-titre">Ma TVA à déclarer</span>
+                <span class="case-sous">Décembre 2026</span>
+                <span class="case-pied"><span class="case-valeur">412,00&nbsp;€</span></span>
+              </a>
+              <a class="case case-compta" href="#" data-note="Inchangé : voir la planche Terminés.">
+                <span class="case-titre">Pour mon comptable</span>
+                <span class="case-sous">Dossier en cours</span>
+                <span class="case-pied"><span class="case-bien"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg>Tout est justifié</span></span>
+              </a>
+            </div>
+            <div class="portes">
+              <a class="porte" href="#" data-note="Inchangé : voir la planche Terminés.">Retours d'intervention</a>
+              <a class="porte porte-or" href="#" data-note="Inchangé : voir la planche Terminés.">Créer une facture</a>
+            </div>
+
+            <button class="attestations touche" type="button" data-ton="ambre" data-ouvre="liste" data-si-etat="janvier">
+              <span class="ligne-corps"><b>Attestations fiscales 2026</b><span>3 clients, avant le 31 mars</span></span>
+              <svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg>
+            </button>
+            <button class="attestations touche" type="button" data-ton="vert" data-ouvre="liste" data-si-etat="envoyees">
+              <span class="ligne-corps"><b>Attestations fiscales 2026</b><span>Envoyées le 12 janvier</span></span>
+              <svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg>
+            </button>
+
+            <p class="mois-nom">Janvier 2027</p>
+            <p class="discret centre mt-8">Rien à facturer ce mois-ci.</p>
+          </div>
+          <nav class="barre" aria-label="Navigation principale"><div class="barre-onglets">
+            <a class="barre-onglet" href="accueil.html">Chantiers</a>
+            <a class="barre-onglet" href="planning.html">Planning</a>
+            <a class="barre-onglet" href="termines.html" aria-current="page">Terminés</a>
+            <a class="barre-onglet" href="paysage.html">Paysage</a>
+            <a class="barre-onglet" href="reglages.html">Réglages</a>
+            <span class="barre-trait" aria-hidden="true"><span></span></span>
+          </div></nav>
+          <section class="feuille" id="liste" aria-hidden="true" aria-label="Les attestations de 2026">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre">Attestations 2026</h2>
+              <button class="client-ligne" type="button" data-papier>
+                <span class="ligne-corps"><b>Mme Vasseur</b><small>4 interventions</small></span>
+                <span class="prix">1&#8239;008,00&nbsp;€</span>
+                <svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg>
+              </button>
+              <button class="client-ligne" type="button" data-papier>
+                <span class="ligne-corps"><b>Mr. Faucher</b><small>2 interventions</small></span>
+                <span class="prix">640,00&nbsp;€</span>
+                <svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg>
+              </button>
+              <button class="client-ligne" type="button" data-papier>
+                <span class="ligne-corps"><b>Mme Costa</b><small>9 interventions</small></span>
+                <span class="prix">2&#8239;160,00&nbsp;€</span>
+                <svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg>
+              </button>
+              <button class="bouton bouton-plein mt-24" type="button" data-passe="envoyees" data-si-etat="janvier">Les envoyer</button>
+              <p class="discret centre mt-8" data-si-etat="janvier">Chacune part par SMS ou e-mail, comme une facture.</p>
+              <p class="discret centre mt-8" data-si-etat="envoyees">Envoyées le 12 janvier.</p>
+              <button class="bouton-texte" type="button" data-ferme style="display:flex;width:100%;justify-content:center;margin-top:8px;color:var(--atlas-inkSoft)">Fermer</button>
+            </div>
+          </section>
+          <section class="feuille" id="papier" aria-hidden="true" aria-label="L'attestation de Mme Vasseur">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre">Mme Vasseur</h2>
+              <div class="lettre">
+                <div class="entete">
+                  <div>
+                    <b>Jardins Démo</b>
+                    <span>4 rue des Tilleuls, 49000 Angers</span>
+                    <span>Déclaration SAP123456789 du 12 mars 2024</span>
+                  </div>
+                  <span class="logo">Logo des services à la personne</span>
+                </div>
+                <h3>Attestation fiscale 2026</h3>
+                <p>Je soussigné Julien Martin, gérant de Jardins Démo, certifie que Mme Vasseur, 8 allée des Chênes, 49100 Angers, a bénéficié à son domicile de petits travaux de jardinage.</p>
+                <table>
+                  <thead><tr><th>Date</th><th>Durée</th><th>Intervenant</th></tr></thead>
+                  <tbody>
+                    <tr><td>12 mars</td><td>2 h 30</td><td>n° 1</td></tr>
+                    <tr><td>14 mai</td><td>3 h</td><td>n° 1</td></tr>
+                    <tr><td>14 mai</td><td>3 h</td><td>n° 2</td></tr>
+                    <tr><td>21 octobre</td><td>4 h</td><td>n° 1</td></tr>
+                  </tbody>
+                </table>
+                <div class="total"><span>Payé en 2026, par virement</span><b>1&#8239;008,00&nbsp;€</b></div>
+                <div class="signe">
+                  <span>Angers, le 12 janvier 2027</span>
+                  <svg viewBox="0 0 170 60" aria-hidden="true"><path d="M8 40c10-22 18-30 22-24 4 7-10 30-4 30 7 0 14-26 22-24 6 2-2 20 4 20 8 0 10-14 18-14 7 0 3 12 10 12 9 0 14-18 24-18 7 0 4 10 12 10 10 0 22-12 34-16"/><path d="M40 52c30-4 70-6 110-4"/></svg>
+                </div>
+              </div>
+              <button class="bouton bouton-creux mt-16" type="button" data-ferme>Fermer</button>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce que je propose</h2>
+    <ul>
+      <li><b>Relier l'Urssaf une fois</b>, dans Mon entreprise, avec les deux codes qu'elle vous envoie après votre demande. Chaque artisan fait la sienne en nommant Atlas, comme chez Evoliz.</li>
+      <li><b>Inscrire un client une fois</b>, depuis sa fiche. Atlas a déjà son nom, son adresse, son portable et son e-mail ; il ne demande que ce qui manque (naissance, IBAN). Le code de sa commune se tire de son adresse. Le client accepte chez l'Urssaf sous 7 jours.</li>
+      <li><b>Ensuite, sa facture part à l'Urssaf d'un appui.</b> Il ne paie que sa moitié, l'Urssaf vous verse tout. L'envoi reste l'arrêt d'aujourd'hui : rien ne part sans vous.</li>
+      <li><b>La facture suit l'Urssaf toute seule</b> : envoyée, validée, versée. Versée, elle s'acquitte seule. Refusée, elle part par SMS comme aujourd'hui.</li>
+      <li><b>Pas d'acompte pour un client inscrit.</b> Un acompte encaissé puis déclaré à l'Urssaf oblige à une garantie bancaire dès le premier euro, et l'Urssaf refuse une facture déjà en partie payée.</li>
+      <li><b>Le logo et le numéro</b> s'impriment sur chaque devis et chaque facture.</li>
+      <li><b>En janvier</b>, Terminés prépare les attestations de l'année, avec la date et la durée de chaque intervention ; un appui les envoie. Le reste de l'année, la ligne n'existe pas.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li><b>Faire reconnaître Atlas par l'Urssaf.</b> C'est à vous, une fois, au nom d'Atlas : le dossier « API tiers de prestation » pour un éditeur de logiciel (demarche.numerique.gouv.fr). Sans lui, aucun artisan ne peut relier l'Urssaf à Atlas.</li>
+      <li><b>La garantie bancaire et l'acompte</b> : lus dans l'aide d'Evoliz du 20 octobre, pas sur le site de l'Urssaf, qui ne répond pas d'ici. À confirmer avant de coder.</li>
+      <li><b>Un client sous avance immédiate</b> : l'Urssaf transmet déjà ses paiements aux impôts. Ce que son attestation garde reste à vérifier ; la planche n'en montre donc qu'une d'un client hors avance immédiate.</li>
+      <li><b>L'activité à côté</b> : compter le facturé ou l'encaissé. Déjà ouvert en octobre.</li>
+      <li><b>Ton collègue chez Unipros</b> : cette planche sert l'artisan qui a son numéro. Sans numéro à lui, il lui faut une structure déclarée qui facture pour lui, comme Unipros ; un avocat d'abord. Et depuis 2025, un micro-entrepreneur peut avoir son numéro en gardant 30 % d'activité à côté : à vérifier avec lui.</li>
+    </ul>
+    <h2>Ce qui a changé depuis la planche d'octobre</h2>
+    <ul>
+      <li>Les écrans de l'appli soignée, plus ceux d'octobre.</li>
+      <li>L'avance immédiate était un moyen de règlement noté à la main ; c'est maintenant le vrai circuit de l'Urssaf.</li>
+      <li>Les deux phrases qui expliquaient Cesu et Avance immédiate sous les règlements sont parties.</li>
+      <li>Le logo, laissé de côté en octobre, et l'attestation elle-même, sur papier.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Le n° de chaque intervenant dans Équipe : vous n° 0, chaque salarié le sien, un numéro qui part ne se redonne pas.</li>
+      <li>Seuls les salariés cochés sur la demi-journée tapent leurs heures ; vous seulement si vous travaillez seul.</li>
+      <li>Le Cesu reste un moyen de règlement : sa part payée par l'employeur du client se retire de ce qui ouvre droit.</li>
+      <li>Un client qui n'est pas inscrit : sa facture part comme aujourd'hui, et il récupère sa moitié aux impôts avec l'attestation.</li>
+    </ul>
+  </section>
+</main>
+<script src="kit.js"></script>
+<script>
+(function () {
+  "use strict";
+  /* Un geste qui fait passer l'écran à l'état suivant. Le kit a data-va-etat,
+     mais il presse les boutons de la PREMIÈRE rangée d'états de la page : avec
+     cinq écrans, ce serait la mauvaise. Ici, c'est la rangée de cet écran. */
+  function passer(ecran, etat) {
+    Kit.appliquerEtat(ecran, etat);
+    Kit.fermerFeuilles(ecran);
+    var rangee = document.querySelector('.pl-etats[data-ecran="#' + ecran.id + '"]');
+    if (rangee) rangee.querySelectorAll("button[data-etat]").forEach(function (b) {
+      b.setAttribute("aria-pressed", b.getAttribute("data-etat") === etat ? "true" : "false");
+    });
+  }
+  function noter(ecran, texte) { Kit.fermerFeuilles(ecran); setTimeout(function () { Kit.note(ecran, texte); }, 200); }
+  document.addEventListener("click", function (ev) {
+    var p = ev.target.closest("[data-passe]");
+    if (p) { ev.preventDefault(); passer(p.closest(".ecran"), p.getAttribute("data-passe")); return; }
+    var papier = ev.target.closest("[data-papier]");
+    if (papier) {
+      var e = papier.closest(".ecran");
+      Kit.fermerFeuilles(e);
+      setTimeout(function () { Kit.ouvrirFeuille("papier", papier); }, 260);
+      return;
+    }
+    var n = ev.target.closest("[data-note]");
+    if (n) { ev.preventDefault(); noter(n.closest(".ecran"), n.getAttribute("data-note")); }
+  });
+})();
+</script>
+</body>
+</html>
