@@ -146,9 +146,14 @@
 <td><code>lireChampsDuTexte</code>, <code>lireLeHt</code>, <code>chercherLesHt</code>, <code>htDeLaPieceImportee</code></td>
 </tr>
 <tr>
-<td><strong>Vos prix, par vos tarifs</strong></td>
-<td><strong>pas codé : lot 2</strong></td>
-<td>voir plus bas</td>
+<td>En franchise, un objectif au-dessus de 37 500 € se signale dans la feuille de l'objectif</td>
+<td>codé</td>
+<td><code>objectifPasseLaFranchise</code></td>
+</tr>
+<tr>
+<td>Vos prix, par vos tarifs : ce que rapporte une journée face à ce qu'il en faut, la part des devis signés, deux conseils au plus</td>
+<td>codé</td>
+<td><code>src/lib/vos-prix.ts</code>, section « Vos prix » de <code>MonAnnee.tsx</code></td>
 </tr>
 </tbody></table></div>
 <h2 id="ce-qui-a-été-fait-autrement-que-la-planche-et-pourquoi">Ce qui a été fait autrement que la planche, et pourquoi</h2>
@@ -159,6 +164,14 @@
 <li><strong>« Pareil » ne se dit que de deux montants égaux.</strong> La planche disait « Pareil » sous 100 € d'écart : 80 € de plus n'est pas pareil.</li>
 <li><strong>Une sortie de banque sans pièce compte comme une dépense.</strong> Elle est partie ; l'ignorer gonflerait le bénéfice. Le compte la montre à part : « Pas encore justifié ».</li>
 <li><strong>« Ce qui peut encore rentrer » reprend la règle de Terminés</strong> pour les chantiers à facturer, pour que les deux écrans disent le même nombre.</li>
+<li><strong>Vos prix : le tarif d'une ligne se lit sur son libellé</strong>, comme le chiffrage le fait déjà, au lieu d'une colonne neuve sur chaque ligne de devis. Toute l'année se range tout de suite. Une ligne qui répond à deux tarifs, ou à aucun, n'est à personne : rien ne se devine. Le tarif de main d'œuvre au jour ne range rien, il va avec tous les travaux.</li>
+<li><strong>Un chantier sans durée au planning compte au facturé, pas à la journée.</strong> Sans durée, une journée ne se calcule pas.</li>
+<li><strong>« Presque tous signés » demande huit devis envoyés au moins.</strong> Sur trois devis, la part ne dit rien.</li>
+</ul>
+<h2 id="ce-qui-avait-été-dit-et-qui-était-faux">Ce qui avait été dit, et qui était faux</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li><strong>« Seuls les devis faits après ce changement pourront être rangés. »</strong> Faux : en lisant le libellé de la ligne, comme le fait le chiffrage, les devis d'avant se rangent aussi. La colonne neuve n'était pas nécessaire.</li>
 </ul>
 <h2 id="ce-qui-reste-ouvert-et-qui-le-tranche">Ce qui reste ouvert, et qui le tranche</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -176,11 +189,6 @@
 <td>Le rôle Facturation voit-il Mon année ?</td>
 <td><strong>tranché : oui</strong>, en lecture ; l'objectif et l'interrupteur restent au patron</td>
 <td>lui, le 8 novembre</td>
-</tr>
-<tr>
-<td><strong>Vos prix (lot 2)</strong></td>
-<td>chaque ligne de devis garde le tarif d'où elle vient (une colonne neuve, sans rien toucher aux anciennes lignes) ; seuls les devis faits ensuite seront rangés</td>
-<td>à coder, après la livraison de ce lot</td>
 </tr>
 </tbody></table></div>
 <h2 id="les-contrôles">Les contrôles</h2>
@@ -204,6 +212,10 @@
 <tr>
 <td><code>test-import-pieces.ts</code> (lecture du HT)</td>
 <td>vert ; <strong>vu rouge</strong> en déduisant le HT du TTC</td>
+</tr>
+<tr>
+<td><code>test-vos-prix.ts</code> (rangement par tarif, journée, signés, conseils)</td>
+<td>vert ; <strong>vu rouge</strong> en cassant la règle « plus de la moitié »</td>
 </tr>
 <tr>
 <td>Accès, rubriques, couches, code mort, pansements, tirets, flèches, chartes</td>

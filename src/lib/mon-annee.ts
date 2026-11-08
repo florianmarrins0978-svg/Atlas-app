@@ -1,4 +1,5 @@
 import { feriesDeLAnnee } from "./jours-feries";
+import { PLAFOND_CENTIMES } from "./franchise-plafond";
 
 /**
  * MON ANNÉE : l'objectif de l'année, sa saison, et l'an dernier au même jour.
@@ -452,6 +453,19 @@ export function objectifValide(chiffreAffaires: string, benefice: string): Objec
   if (Number.isNaN(b) || b > OBJECTIF_MAX_CENTIMES) return { ok: false, raison: "Ce bénéfice ne se lit pas." };
   if (b > ca) return { ok: false, raison: "Le bénéfice ne peut pas dépasser le chiffre d'affaires." };
   return { ok: true, chiffreAffaires: ca, benefice: b };
+}
+
+/**
+ * En franchise de TVA, un objectif au-dessus du plafond des services se dit
+ * dans la feuille de l'objectif : l'atteindre, c'est sortir de la franchise.
+ * Le plafond de base, pas le majoré : c'est lui qui fait perdre la franchise
+ * (au 1er janvier suivant), et le plus bas est le côté sûr
+ * (`franchise-plafond.ts`). Un montant illisible ne dit rien.
+ */
+export function objectifPasseLaFranchise(chiffreAffaires: string, regimeTva: "assujettie" | "franchise"): boolean {
+  if (regimeTva !== "franchise") return false;
+  const ca = lireEurosSaisis(chiffreAffaires);
+  return ca !== null && !Number.isNaN(ca) && ca > PLAFOND_CENTIMES;
 }
 
 /** Des centimes en décimal pour la base : 30000000 → « 300000.00 ». */

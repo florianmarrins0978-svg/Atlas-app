@@ -17,6 +17,7 @@ import {
   lireEurosSaisis,
   manqueEncore,
   memeJourAnDernier,
+  objectifPasseLaFranchise,
   objectifValide,
   partDeLAnneeFaite,
   resteMoisParMois,
@@ -272,6 +273,17 @@ essai("les douze mois d'une année ignorent les autres années", () => {
     m.reduce((t, x) => t + x, 0),
     euros(45700)
   );
+});
+
+console.log("La franchise de TVA");
+
+essai("en franchise, un objectif au-dessus de 37 500 € se signale ; pas en dessous, pas assujetti", () => {
+  assert.equal(objectifPasseLaFranchise("300 000", "franchise"), true);
+  assert.equal(objectifPasseLaFranchise("37 500,01", "franchise"), true);
+  assert.equal(objectifPasseLaFranchise("37 500", "franchise"), false);
+  assert.equal(objectifPasseLaFranchise("300 000", "assujettie"), false);
+  assert.equal(objectifPasseLaFranchise("", "franchise"), false);
+  assert.equal(objectifPasseLaFranchise("trois cents", "franchise"), false);
 });
 
 if (echecs > 0) {

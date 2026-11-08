@@ -27,7 +27,8 @@
 | Ce qui peut encore rentrer, et ce qu'il manque encore de devis signés | codé | `donneesMonAnnee`, `manqueEncore` |
 | Le bénéfice, sur 1 000 € encaissés, et son compte | codé | `beneficeEstime` |
 | Les factures importées comptent par leur HT, les anciennes relues une fois (avec l'IA) | codé | `lireChampsDuTexte`, `lireLeHt`, `chercherLesHt`, `htDeLaPieceImportee` |
-| **Vos prix, par vos tarifs** | **pas codé : lot 2** | voir plus bas |
+| En franchise, un objectif au-dessus de 37 500 € se signale dans la feuille de l'objectif | codé | `objectifPasseLaFranchise` |
+| Vos prix, par vos tarifs : ce que rapporte une journée face à ce qu'il en faut, la part des devis signés, deux conseils au plus | codé | `src/lib/vos-prix.ts`, section « Vos prix » de `MonAnnee.tsx` |
 
 ## Ce qui a été fait autrement que la planche, et pourquoi
 
@@ -36,6 +37,13 @@
 - **« Pareil » ne se dit que de deux montants égaux.** La planche disait « Pareil » sous 100 € d'écart : 80 € de plus n'est pas pareil.
 - **Une sortie de banque sans pièce compte comme une dépense.** Elle est partie ; l'ignorer gonflerait le bénéfice. Le compte la montre à part : « Pas encore justifié ».
 - **« Ce qui peut encore rentrer » reprend la règle de Terminés** pour les chantiers à facturer, pour que les deux écrans disent le même nombre.
+- **Vos prix : le tarif d'une ligne se lit sur son libellé**, comme le chiffrage le fait déjà, au lieu d'une colonne neuve sur chaque ligne de devis. Toute l'année se range tout de suite. Une ligne qui répond à deux tarifs, ou à aucun, n'est à personne : rien ne se devine. Le tarif de main d'œuvre au jour ne range rien, il va avec tous les travaux.
+- **Un chantier sans durée au planning compte au facturé, pas à la journée.** Sans durée, une journée ne se calcule pas.
+- **« Presque tous signés » demande huit devis envoyés au moins.** Sur trois devis, la part ne dit rien.
+
+## Ce qui avait été dit, et qui était faux
+
+- **« Seuls les devis faits après ce changement pourront être rangés. »** Faux : en lisant le libellé de la ligne, comme le fait le chiffrage, les devis d'avant se rangent aussi. La colonne neuve n'était pas nécessaire.
 
 ## Ce qui reste ouvert, et qui le tranche
 
@@ -43,7 +51,6 @@
 |---|---|---|
 | Impôts et cotisations, comptés comme dépense dans le bénéfice | **tranché : oui** | lui, le 8 novembre |
 | Le rôle Facturation voit-il Mon année ? | **tranché : oui**, en lecture ; l'objectif et l'interrupteur restent au patron | lui, le 8 novembre |
-| **Vos prix (lot 2)** | chaque ligne de devis garde le tarif d'où elle vient (une colonne neuve, sans rien toucher aux anciennes lignes) ; seuls les devis faits ensuite seront rangés | à coder, après la livraison de ce lot |
 
 ## Les contrôles
 
@@ -53,6 +60,7 @@
 | Style (`eslint`, fichiers du lot) | vert |
 | `test-mon-annee.ts` (règles pures) | vert ; **vu rouge** en cassant volontairement la règle « au même jour » |
 | `test-import-pieces.ts` (lecture du HT) | vert ; **vu rouge** en déduisant le HT du TTC |
+| `test-vos-prix.ts` (rangement par tarif, journée, signés, conseils) | vert ; **vu rouge** en cassant la règle « plus de la moitié » |
 | Accès, rubriques, couches, code mort, pansements, tirets, flèches, chartes | verts |
 | `test-mon-annee-db.ts` (isolation entre entreprises, objectif, interrupteur, factures émises) | **écrite, pas jouée** : elle vide la base, et aucune batterie n'était autorisée |
 | L'écran lui-même | **pas regardé ici** : il faut le serveur, et donc son accord |

@@ -167,12 +167,15 @@ question du 8 novembre : *« si c'est un électricien et qu'il a marqué tableau
 planche rangeait par `prestations.nature`, dont la liste
 (`natures-prestation.ts`) est celle de l'espace vert ; chez un électricien,
 tout y vaut `null` et la section serait vide. Ses tarifs (`tarifs`, Réglages,
-Tarifs & catalogue) sont dans ses mots, quel que soit le métier. **Ce qui
-manque pour le coder** : `proposition-prix.ts` connaît le `tarifId` d'une
-ligne et ne le stocke pas ; `lignes_prix` n'a pas de colonne pour lui. Une
-colonne nullable (expand), écrite à la naissance de la ligne ; les lignes
-d'avant restent sans tarif, rien ne se devine. Un chantier compte pour le
-tarif qui fait plus de la moitié de son montant HT.
+Tarifs & catalogue) sont dans ses mots, quel que soit le métier. **Codé le
+8 novembre AUTREMENT qu'écrit ici d'abord** : le tarif d'une ligne se LIT sur
+son libellé (`tarifsCorrespondants`, la règle même du chiffrage), au lieu
+d'une colonne neuve dans `lignes_prix`. Ce que la colonne aurait coûté :
+toucher le moteur de chiffrage à cinq endroits, et ne ranger que les devis à
+venir ; la lecture range tout l'historique. **Ce qui lui avait été dit, et qui
+était faux** : « seuls les devis faits ensuite seront rangés ». Une ligne qui
+répond à plusieurs tarifs, ou à aucun, n'est à personne. Un chantier compte
+pour le tarif qui fait plus de la moitié de son montant HT.
 La saison du rythme et cette comparaison lisent le même relevé de 2025. Tout ce qu'elle montre sort de données que l'appli tient
 déjà : `bilan-periode.ts` (facturé, encaissé), `aFacturerPartout`
 (`termines-par-mois.ts`), `devis.statut`, `prestations.nature`,
@@ -203,10 +206,10 @@ argent), et aucune batterie n'a été autorisée. Le détail et ce qui reste :
 
 | | |
 |---|---|
-| codé | l'objectif (migration 0176), Réglages, Mon année (rubrique en tête de L'entreprise), l'interrupteur « Afficher sur Terminés » éteint de base, la ligne sur Terminés, le chiffre et sa saison, Face à l'an dernier (le jour, du 1er au jour, tous les mois), le reste mois par mois, ce qui peut encore rentrer, le bénéfice sur la banque |
-| éprouvé ici | types, style, `test-mon-annee.ts` (vu rouge en cassant une règle), accès, rubriques, couches, code mort, pansements, tirets, flèches, chartes |
+| codé | l'objectif (migration 0176), Réglages, Mon année (rubrique en tête de L'entreprise), l'interrupteur « Afficher sur Terminés » éteint de base, la ligne sur Terminés, le chiffre et sa saison, Face à l'an dernier (le jour, du 1er au jour, tous les mois), le reste mois par mois, ce qui peut encore rentrer, le bénéfice sur la banque, **Vos prix** rangés par ses tarifs (`src/lib/vos-prix.ts`), le plafond de la franchise dans la feuille de l'objectif |
+| éprouvé ici | types, style, `test-mon-annee.ts` et `test-vos-prix.ts` (chacune vue rouge en cassant une règle), accès, rubriques, couches, code mort, pansements, tirets, flèches, chartes |
 | PAS éprouvé ici | `test-mon-annee-db.ts` (écrite, elle vide la base) ; l'écran lui-même (il faut le serveur, sur le port 3000) |
-| **reste à faire, lot 2** | « Vos prix », rangés par SES tarifs : faire garder à chaque ligne de devis le tarif d'où elle vient (`proposition-prix.ts` connaît `tarifId`, `lignes_prix` n'a pas de colonne), colonne nullable (expand) ; seuls les devis faits ensuite seront rangés |
+| **reste à faire** | son « oui » pour la batterie, puis `main` |
 
 **Les factures importées comptent par leur HT, codé le 8 novembre** (sa question
 *« la limite, comment on peut corriger ce problème ? »*, puis *« tu peux les lire

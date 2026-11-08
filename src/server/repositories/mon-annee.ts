@@ -20,6 +20,7 @@ import { jourIso } from "@/lib/jour";
 import { centimesDe } from "@/lib/franchise-plafond";
 import { aFacturerPartout, preparer } from "@/lib/termines-par-mois";
 import { enDecimal, htDeLaPieceImportee, type MouvementPourBenefice, type Piece } from "@/lib/mon-annee";
+import type { ChantierPourPrix, TarifPourPrix } from "@/lib/vos-prix";
 import { withEntreprise } from "../db/with-entreprise";
 import {
   avoirs,
@@ -29,9 +30,11 @@ import {
   envoisDevis,
   factures,
   liaisonsBancaires,
+  lignesPrix,
   mouvementsBancaires,
   objectifsAnnee,
   piecesImportees,
+  tarifs,
 } from "../db/schema";
 import { listerChantiersTermines } from "./factures";
 import type { Ctx } from "./context";
@@ -44,12 +47,16 @@ export type DonneesMonAnnee = {
   objectif: { chiffreAffaires: number; benefice: number | null } | null;
   surTermines: boolean;
   alsaceMoselle: boolean;
+  /** En franchise, la feuille de l'objectif dit le plafond. */
+  regimeTva: "assujettie" | "franchise";
   /** Les pièces de cette année ET de l'an dernier. */
   pieces: Piece[];
   /** `false` : la banque n'est pas reliée, et le bénéfice ne se compte pas. */
   banqueReliee: boolean;
   mouvements: MouvementPourBenefice[];
   peutRentrer: { aFacturer: Attente; signes: Attente; sansReponse: Attente };
+  /** De quoi ranger « Vos prix » (`src/lib/vos-prix.ts`) : ses tarifs, et les chantiers de l'année. */
+  vosPrix: { tarifs: TarifPourPrix[]; chantiers: ChantierPourPrix[]; equipes: number };
 };
 
 /** Un montant en centimes, ou rien : un montant illisible ne vaut pas zéro. */
@@ -69,11 +76,21 @@ function lAnnee(maintenant: Date) {
 /** Les réglages de l'entreprise que Mon année lit. */
 async function lEntreprise(tx: Tx, entrepriseId: string) {
   const [e] = await tx
-    .select({ adresse: entreprises.adresse, regimeTva: entreprises.regimeTva, surTermines: entreprises.monAnneeSurTermines })
+    .select({
+      adresse: entreprises.adresse,
+      regimeTva: entreprises.regimeTva,
+      surTermines: entreprises.monAnneeSurTermines,
+      equipes: entreprises.nombreEquipes,
+    })
     .from(entreprises)
     .where(eq(entreprises.id, entrepriseId))
     .limit(1);
-  return { regimeTva: e?.regimeTva ?? "assujettie", surTermines: e?.surTermines ?? false, alsaceMoselle: estEnAlsaceMoselle(e?.adresse) };
+  return {
+    regimeTva: e?.regimeTva ?? "assujettie",
+    surTermines: e?.surTermines ?? false,
+    alsaceMoselle: estEnAlsaceMoselle(e?.adresse),
+    equipes: e?.equipes ?? 1,
+  };
 }
 
 async function lObjectif(tx: Tx, entrepriseId: string, annee: number): Promise<DonneesMonAnnee["objectif"]> {
@@ -199,16 +216,68 @@ export async function donneesMonAnnee(ctx: Ctx, maintenant: Date = new Date()): 
       }
     }
 
+    // ─── Vos prix ───────────────────────────────────────────────────────────
+    //
+    // Les chantiers de l'année : facturés (leur HT, leur durée au planning) ou
+    // dont un devis est parti (sa dernière réponse). Leurs lignes de prix
+    // disent à quel tarif ils appartiennent (`tarifDuChantier`).
+    const debutAnnee = `${annee}-01-01`;
+    const facturesAnnee = await tx
+      .select({ chantierId: factures.chantierId, ht: factures.totalHt })
+      .from(factures)
+      .where(and(eq(factures.statut, "emise"), gte(factures.dateEmission, debutAnnee), lte(factures.dateEmission, au)));
+    const envoisAnnee = await tx
+      .selectDistinctOn([envoisDevis.chantierId], { chantierId: envoisDevis.chantierId, reponse: envoisDevis.reponse })
+      .from(envoisDevis)
+      .where(gte(envoisDevis.envoyeAt, new Date(`${debutAnnee}T00:00:00Z`)))
+      .orderBy(envoisDevis.chantierId, desc(envoisDevis.envoyeAt));
+    const parChantier = new Map<string, ChantierPourPrix>();
+    const leChantier = (id: string) => {
+      let c = parChantier.get(id);
+      if (!c) parChantier.set(id, (c = { lignes: [], factureHt: null, demiJournees: null }));
+      return c;
+    };
+    for (const f of facturesAnnee) {
+      const c = leChantier(f.chantierId);
+      c.factureHt = (c.factureHt ?? 0) + centimesDe(f.ht);
+    }
+    for (const v of envoisAnnee) leChantier(v.chantierId).reponse = v.reponse;
+    const ids = [...parChantier.keys()];
+    if (ids.length > 0) {
+      for (const l of await tx
+        .select({ chantierId: lignesPrix.chantierId, libelle: lignesPrix.libelle, montant: lignesPrix.montant, mainDoeuvre: lignesPrix.mainDoeuvre })
+        .from(lignesPrix)
+        .where(inArray(lignesPrix.chantierId, ids))) {
+        parChantier.get(l.chantierId)!.lignes.push({ libelle: l.libelle, centimes: centimesDe(l.montant), mainDoeuvre: l.mainDoeuvre });
+      }
+      // Un chantier supprimé ne range plus rien : il sort du compte.
+      const vivants = new Set<string>();
+      for (const c of await tx
+        .select({ id: chantiers.id, demi: chantiers.dureeDemiJournees })
+        .from(chantiers)
+        .where(and(inArray(chantiers.id, ids), isNull(chantiers.deletedAt)))) {
+        parChantier.get(c.id)!.demiJournees = c.demi;
+        vivants.add(c.id);
+      }
+      for (const id of ids) if (!vivants.has(id)) parChantier.delete(id);
+    }
+    const sesTarifs = await tx
+      .select({ id: tarifs.id, intitule: tarifs.intitule, prix: tarifs.prix, unite: tarifs.unite })
+      .from(tarifs)
+      .where(isNull(tarifs.deletedAt));
+
     return {
       aujourdHui,
       annee,
       objectif,
       surTermines: e.surTermines,
       alsaceMoselle: e.alsaceMoselle,
+      regimeTva: e.regimeTva,
       pieces,
       banqueReliee: Boolean(liaison),
       mouvements,
       peutRentrer: { aFacturer, signes, sansReponse },
+      vosPrix: { tarifs: sesTarifs, chantiers: [...parChantier.values()], equipes: e.equipes },
     };
   });
 }

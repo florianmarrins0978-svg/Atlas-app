@@ -22,6 +22,7 @@ import {
   dernierDuMois,
   manqueEncore,
   NOMS_DES_MOIS,
+  objectifPasseLaFranchise,
   resteSurMilleEuros,
   sensDeLEcart,
   tonDeLAnnee,
@@ -31,6 +32,8 @@ import {
   type FaceAnDernier,
   type MoisRestant,
 } from "@/lib/mon-annee";
+import { PLAFOND_CENTIMES } from "@/lib/franchise-plafond";
+import { dixPourCentDePlus, presqueToutSigne, type ConseilsDePrix, type PrixDuTarif } from "@/lib/vos-prix";
 import type { Attente } from "@/server/repositories/mon-annee";
 import { ecrireObjectifAction, ecrireSurTerminesAction } from "./actions";
 
@@ -100,11 +103,15 @@ export default function MonAnnee({
   totalAnDernier,
   etat,
   surTermines,
+  regimeTva,
   face,
   reste,
   peutRentrer,
   banqueReliee,
   benefice,
+  prix,
+  parJournee,
+  conseils,
 }: {
   /** Le patron seul pose l'objectif et l'interrupteur ; la facturation lit. */
   modifiable: boolean;
@@ -115,14 +122,20 @@ export default function MonAnnee({
   totalAnDernier: number | null;
   etat: EtatDeLObjectif | null;
   surTermines: boolean;
+  regimeTva: "assujettie" | "franchise";
   face: FaceAnDernier | null;
   reste: MoisRestant[];
   peutRentrer: { aFacturer: Attente; signes: Attente; sansReponse: Attente };
   banqueReliee: boolean;
   benefice: BeneficeEstime | null;
+  /** Vos prix, rangés par ses tarifs (`src/lib/vos-prix.ts`). */
+  prix: PrixDuTarif[];
+  /** Ce qu'une journée d'équipe doit rapporter pour l'objectif ; `null` sans objectif. */
+  parJournee: number | null;
+  conseils: ConseilsDePrix;
 }) {
   const router = useRouter();
-  const [feuille, setFeuille] = useState<null | "objectif" | "mois" | "tous" | "benefice">(null);
+  const [feuille, setFeuille] = useState<null | "objectif" | "mois" | "tous" | "benefice" | "travaux">(null);
   const [allume, setAllume] = useState(surTermines);
   const [saisieCa, setSaisieCa] = useState("");
   const [saisieBenefice, setSaisieBenefice] = useState("");
@@ -353,6 +366,37 @@ export default function MonAnnee({
         </div>
       </Paquet>
 
+      {/* ─── Vos prix : deux conseils au plus, et tous les tarifs ───────── */}
+      <Paquet titre="Vos prix" dataAtlas="vos-prix">
+        {prix.length === 0 ? (
+          <p className="py-[18px] text-[15px] leading-[1.45]" style={{ color: colors.inkSoft }}>
+            Rien encore à comparer cette année.
+          </p>
+        ) : (
+          <>
+            {conseils.bas && (
+              <Conseil nom={conseils.bas.intitule} onClick={() => setFeuille("travaux")}>
+                <b style={{ color: colors.ink }}>{eur(conseils.bas.parJournee!)}</b> la journée, il en faut {eur(parJournee!)}
+                {presqueToutSigne(conseils.bas) ? `, et ${conseils.bas.signes} devis sur ${conseils.bas.envoyes} sont signés.` : "."} 10&nbsp;% plus
+                cher : <b style={{ color: colors.ink }}>{eur(aLaCentaine(dixPourCentDePlus(conseils.bas)))}</b> de plus sur l&apos;année, au même nombre de
+                chantiers.
+              </Conseil>
+            )}
+            {conseils.signe && (
+              <Conseil nom={conseils.signe.intitule} filet={Boolean(conseils.bas)} onClick={() => setFeuille("travaux")}>
+                <b style={{ color: colors.ink }}>
+                  {conseils.signe.signes} devis signés sur {conseils.signe.envoyes}
+                </b>
+                . Presque tout est accepté : vos prix peuvent sans doute monter.
+              </Conseil>
+            )}
+            <div className={conseils.bas || conseils.signe ? "pb-1" : "py-1"}>
+              <BoutonTexte onClick={() => setFeuille("travaux")}>Tous les travaux</BoutonTexte>
+            </div>
+          </>
+        )}
+      </Paquet>
+
       {/* ─── Les feuilles ──────────────────────────────────────────────── */}
       <BottomSheet open={feuille === "objectif"} onBackdropClick={fermer}>
         <div data-atlas="feuille-objectif">
@@ -362,6 +406,11 @@ export default function MonAnnee({
             <span className="mt-1.5 block text-[13.5px]" style={{ color: colors.inkSoft }}>
               L&apos;an dernier, {eur(totalAnDernier)}.
             </span>
+          )}
+          {objectifPasseLaFranchise(saisieCa, regimeTva) && (
+            <div className="mt-3" data-atlas="objectif-passe-la-franchise">
+              <PlageTon ton="ambre">Au-dessus de {eur(PLAFOND_CENTIMES)}, vous sortez de la franchise de TVA.</PlageTon>
+            </div>
           )}
           <div className="mt-4">
             <ChampEuros libelle="Bénéfice" valeur={saisieBenefice} onChange={setSaisieBenefice} indication="Facultatif" />
@@ -407,6 +456,54 @@ export default function MonAnnee({
         </BottomSheet>
       )}
 
+      <BottomSheet open={feuille === "travaux"} onBackdropClick={fermer}>
+        <div data-atlas="feuille-vos-prix">
+          <TitreFeuille>Ce que rapporte une journée</TitreFeuille>
+          {objectif && parJournee !== null && (
+            <PlageTon ton="or">
+              Pour {eur(objectif.chiffreAffaires)}, une journée d&apos;équipe doit rapporter <b style={{ color: colors.ink }}>{eur(parJournee)}</b>.
+            </PlageTon>
+          )}
+          <table className="mt-3.5 w-full border-collapse" style={CHIFFRES}>
+            <thead>
+              <tr className="text-[13px] font-semibold" style={{ color: colors.inkSoft }}>
+                <th scope="col" className="pb-2 text-left font-semibold">Travail</th>
+                <th scope="col" className="pb-2 text-right font-semibold">La journée</th>
+                <th scope="col" className="pb-2 text-right font-semibold">Signés</th>
+              </tr>
+            </thead>
+            <tbody>
+              {prix.map((p) => (
+                <tr key={p.tarifId} style={{ boxShadow: `inset 0 1px 0 ${colors.lineSoft}` }}>
+                  <td className="py-3 pr-2 text-[17px] leading-[1.25]" style={{ fontFamily: font.display, color: colors.ink }}>
+                    {p.intitule}
+                    <small className="mt-0.5 block text-[13.5px]" style={{ fontFamily: font.body, color: colors.inkSoft }}>
+                      {pluriel(p.chantiers, "chantier facturé", "chantiers facturés")}
+                    </small>
+                  </td>
+                  <td
+                    className="py-3 text-right text-[16px]"
+                    style={{
+                      color: parJournee !== null && p.parJournee !== null && p.parJournee < parJournee ? colors.carteAmbreTexte : colors.ink,
+                      fontWeight: parJournee !== null && p.parJournee !== null && p.parJournee < parJournee ? 700 : 400,
+                    }}
+                  >
+                    {p.parJournee === null ? "Pas de durée" : eur(p.parJournee)}
+                  </td>
+                  <td className="whitespace-nowrap py-3 text-right text-[16px]" style={{ color: colors.ink }}>
+                    {p.envoyes > 0 ? `${p.signes} sur ${p.envoyes}` : "Aucun envoi"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="mt-3 text-[13.5px] leading-[1.45]" style={{ color: colors.inkSoft }}>
+            Rangé par vos tarifs. Un chantier compte pour le tarif qui fait plus de la moitié de son montant.
+          </p>
+          <Fermer onClick={fermer} />
+        </div>
+      </BottomSheet>
+
       {benefice && (
         <BottomSheet open={feuille === "benefice"} onBackdropClick={fermer}>
           <div data-atlas="feuille-benefice">
@@ -427,6 +524,27 @@ export default function MonAnnee({
         </BottomSheet>
       )}
     </div>
+  );
+}
+
+function Conseil({ nom, filet = false, onClick, children }: { nom: string; filet?: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="block w-full py-3.5 text-left"
+      style={{ boxShadow: filet ? `inset 0 1px 0 ${colors.lineSoft}` : undefined }}
+    >
+      <span className="flex items-center justify-between gap-2.5 text-[19px] leading-[1.25]" style={{ fontFamily: font.display, color: colors.ink }}>
+        {nom}
+        <span style={{ color: colors.chevron }}>
+          <IconeTrait nom="suivant" taille={18} epaisseur={2} />
+        </span>
+      </span>
+      <span className="mt-1 block text-[15px] leading-[1.45]" style={{ color: colors.inkSoft, ...CHIFFRES }}>
+        {children}
+      </span>
+    </button>
   );
 }
 
