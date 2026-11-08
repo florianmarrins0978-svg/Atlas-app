@@ -713,6 +713,18 @@ Concrètement, pour toute planche dont on attend un choix :
    navigateur chaque bouton de chaque écran et de chaque feuille, et n'en
    laisser aucun muet. Modèle : `appli/soignee/credit-d-impot.html`
    (`data-pilote`, `data-pose`) ;
+2 quinquies. **UNE PLANCHE QUI CHANGE UN ÉCRAN QUI EXISTE SE POSE SUR LE
+   VRAI ÉCRAN — 8 novembre 2026.** Sa colère, devant deux planches
+   redessinées à la main : *« C'est pas la vraie page du client, donc ce que
+   tu me proposes, c'est de la merde. Mets-le moi sur la vraie page. »* Un
+   écran redessiné n'est jamais le sien : les places, les mots, les marges
+   dérivent, et il ne reconnaît plus son écran (§3, *« une demande
+   d'affichage change le TEXTE, jamais la PLACE »*). Donc l'écran se **fige
+   tel que l'appli le peint** (son DOM, ses feuilles de style et ses polices,
+   sur des données de démonstration, sans un script), le geste se joue pour
+   de vrai pour figer chaque étape, et **seul le changement proposé s'y
+   ajoute**. Modèle : `appli/soignee/planning-sans-fiche.html`. Seul un écran
+   qui n'existe pas encore se dessine avec le kit ;
 3. rien d'autre à faire pour qu'elle soit vérifiée en ligne : depuis le
    20 août 2026, `pages.yml` **déduit sa liste des liens d'`essais.html`** —
    une liste tenue à la main s'oubliait à chaque page neuve, et l'oubli ne se
