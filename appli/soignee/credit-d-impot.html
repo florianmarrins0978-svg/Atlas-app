@@ -178,13 +178,50 @@
 .lettre .total b { font-family: var(--serif); font-size: 17px; font-weight: 400; }
 .lettre .signe { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; margin-top: 16px; }
 .lettre .signe svg { width: 120px; height: 44px; fill: none; stroke: #1c1c1a; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+/* La case « Services à la personne » : cochée, le crédit d'impôt et ses
+   mentions ; décochée, un devis ou une facture comme aujourd'hui (sa
+   remarque du 8 novembre : « quand je décoche, il n'y a rien qui se passe »). */
+.ecran[data-sap="non"] [data-si-sap], .ecran:not([data-sap="non"]) [data-si-normal] { display: none; }
+
+/* ─── Le devis (chantier.html, le devis complet), en plus court ─────────── */
+.dc-tete { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; }
+.dc-tete .espace { flex: 1; }
+.dc-tete .retour-nu { width: 40px; height: 44px; display: grid; place-items: center; color: var(--atlas-ink); }
+.dc-tete .retour-nu .ico { width: 22px; height: 22px; }
+.dc-feuille { padding: 22px 18px 20px; border-radius: 14px; background: var(--atlas-card); }
+.dc-haut { display: flex; justify-content: space-between; gap: 12px; }
+.dc-emetteur { margin: 0; font: 400 20px/1.25 var(--serif); }
+.dc-coord { margin: 6px 0 0; font-size: 15px; line-height: 1.6; }
+.dc-logo { display: grid; place-items: center; width: 58px; height: 58px; flex: none; border-radius: 6px; padding: 5px; text-align: center;
+           font-size: 9px; line-height: 1.2; color: var(--atlas-inkSoft); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.dc-cap { font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--atlas-inkSoft); }
+.dc-regle { height: 2px; margin: 20px 0 0; background: var(--atlas-ink); }
+.dc-mot { margin: 22px 0 0; text-align: center; font: 400 26px/1.1 var(--serif); }
+.dc-titre { margin: 8px 0 0; text-align: center; font: italic 400 17px/1.3 var(--serif); color: var(--atlas-inkSoft); }
+.dc-client { margin-top: 22px; }
+.dc-client p { margin: 4px 0 0; font-size: 16px; line-height: 1.4; }
+.dc-ligne { padding: 12px 0 4px; box-shadow: inset 0 -1px 0 var(--atlas-line); }
+.dc-ligne-haut { font-size: 16px; line-height: 1.35; }
+.dc-rang { display: flex; justify-content: space-between; align-items: center; min-height: 36px; font-size: 16px; font-variant-numeric: tabular-nums; }
+.dc-totaux { margin-top: 22px; }
+.dc-tot { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 36px; font-size: 15.5px; font-variant-numeric: tabular-nums; }
+.dc-tot.ttc { margin-top: 6px; padding-top: 10px; box-shadow: inset 0 2px 0 var(--atlas-ink); font-weight: 700; font-size: 17px; }
+.dc-tot.ttc span:last-child { font: 700 19px/1 var(--serif); }
+.ajouts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.puce-ajout { display: inline-flex; align-items: center; gap: 5px; min-height: 44px; padding: 0 13px 0 9px; border-radius: 22px;
+              font-size: 14.5px; font-weight: 600; color: var(--atlas-or); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 60%, transparent); }
+.puce-ajout .ico { width: 18px; height: 18px; }
+.sans-acompte { margin-top: 14px; font-size: 14px; color: var(--atlas-inkSoft); }
+.dc-mentions { margin: 22px 0 0; font-size: 13px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.dc-mentions + .dc-mentions { margin-top: 8px; }
+.choix-sap { margin-bottom: 12px; }
 </style>
 </head>
 <body class="pl pl-pilules">
 <header class="pl-tete">
   <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
   <h1 class="pl-titre">Le crédit d'impôt de vos clients</h1>
-  <p class="pl-verdict">Ce qu'Unipros fait pour ses artisans, dans Atlas, pour une entreprise <b>qui a son numéro</b>. Vos clients ne paient que la moitié, <b>l'Urssaf vous verse tout</b>. Cinq écrans, dans l'ordre où vous les rencontrez ; touchez les boutons. Les montants et les dates sont des exemples.</p>
+  <p class="pl-verdict">Ce qu'Unipros fait pour ses artisans, dans Atlas, pour une entreprise <b>qui a son numéro</b>. Vos clients ne paient que la moitié, <b>l'Urssaf vous verse tout</b>. Six écrans, dans l'ordre où vous les rencontrez ; touchez les boutons. Les montants et les dates sont des exemples.</p>
 </header>
 
 <main class="pl-scene">
@@ -394,6 +431,75 @@
       </div>
     </div>
 
+    <!-- ═══ LE DEVIS : là où le choix se fait ════════════════════════════
+         Sa remarque du 8 novembre : « à partir de quel moment ? C'est le moment
+         où je rédige le devis ». Oui : la règle veut la mention de la
+         déclaration sur le DEVIS comme sur la facture, et une activité à côté
+         se facture à part. Une case par devis, jamais ligne par ligne ; la
+         facture la reprend. Elle ne paraît que pour une entreprise déclarée
+         et un client particulier. -->
+    <div data-vue-panneau="Le devis" hidden>
+      <p class="pl-legende">Le choix se fait au devis</p>
+      <div class="cadre">
+        <div class="ecran avec-action" id="ecran-dev">
+          <div class="defile">
+            <div class="dc-tete">
+              <button class="retour-nu" type="button" aria-label="Retour" data-note="Retour au chantier."><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+              <span class="espace"></span>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </div>
+
+            <div class="plage choix-sap">
+              <div class="ligne-bascule-doc">
+                <span class="ligne-corps"><b>Services à la personne</b><small data-si-sap>Mr. Lambert ne paiera que 252,00&nbsp;€</small><small data-si-normal>Devis normal</small></span>
+                <button class="bascule" type="button" role="switch" aria-checked="true" aria-label="Services à la personne" data-sap-bascule></button>
+              </div>
+            </div>
+
+            <article class="dc-feuille">
+              <div class="dc-haut">
+                <div>
+                  <p class="dc-emetteur">Jardins Démo</p>
+                  <p class="dc-coord">4 rue des Tilleuls, Angers<br>123 456 789 00012</p>
+                </div>
+                <span class="dc-logo" data-si-sap>Logo des services à la personne</span>
+              </div>
+              <div class="dc-regle"></div>
+              <p class="dc-mot">DEVIS</p>
+              <p class="dc-titre">Entretien du jardin</p>
+              <div class="dc-client">
+                <span class="dc-cap">Client</span>
+                <p>Mr. Lambert</p>
+                <p>12 rue des Lilas, Rezé</p>
+              </div>
+              <div class="dc-ligne">
+                <div class="dc-ligne-haut">Tonte et ramassage</div>
+                <div class="dc-rang"><span class="dc-cap">Montant HT</span><span>180,00&nbsp;€</span></div>
+              </div>
+              <div class="dc-ligne">
+                <div class="dc-ligne-haut">Taille des haies</div>
+                <div class="dc-rang"><span class="dc-cap">Montant HT</span><span>240,00&nbsp;€</span></div>
+              </div>
+              <div class="dc-totaux">
+                <div class="dc-tot"><span>Total HT</span><span>420,00&nbsp;€</span></div>
+                <div class="dc-tot"><span>TVA (20 %)</span><span>84,00&nbsp;€</span></div>
+                <div class="dc-tot ttc"><span>Total TTC</span><span>504,00&nbsp;€</span></div>
+              </div>
+              <div class="ajouts" data-si-normal>
+                <button class="puce-ajout" type="button" data-note="Comme aujourd'hui."><svg class="ico" aria-hidden="true"><use href="#i-euro"/></svg>Ajouter un acompte</button>
+              </div>
+              <p class="sans-acompte" data-si-sap>Pas d'acompte : il est inscrit à l'avance immédiate.</p>
+              <p class="dc-mentions" data-si-sap>Prestation de services à la personne ouvrant droit au crédit d'impôt de l'article 199 sexdecies du code général des impôts. Déclaration SAP123456789 du 12 mars 2024.</p>
+              <p class="dc-mentions">Devis établi par Jardins Démo, valable 30 jours. Bon pour accord daté et signé par le client.</p>
+            </article>
+          </div>
+          <div class="action-bas">
+            <button class="bouton bouton-plein" type="button" data-note="Il part comme aujourd'hui ; la facture reprendra le choix du devis.">Envoyer le devis</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ═══ 3. LE RETOUR DU JOUR ═════════════════════════════════════════ -->
     <div data-vue-panneau="Retour du jour" hidden>
       <p class="pl-legende">Au retour de chaque intervention</p>
@@ -491,18 +597,18 @@
 
             <section class="carte-doc">
               <div class="ligne-bascule-doc">
-                <span class="ligne-corps"><b>Crédit d'impôt</b><small>Services à la personne</small></span>
-                <button class="bascule" type="button" role="switch" aria-checked="true" aria-label="Crédit d'impôt"></button>
+                <span class="ligne-corps"><b>Services à la personne</b><small data-si-sap>Comme le devis</small><small data-si-normal>Facture normale</small></span>
+                <button class="bascule" type="button" role="switch" aria-checked="true" aria-label="Services à la personne" data-sap-bascule></button>
               </div>
-              <div class="somme">
+              <div class="somme" data-si-sap>
                 <div class="rang-ligne"><span class="nom">Payé par Mr. Lambert</span><span class="prix">252,00&nbsp;€</span></div>
                 <div class="rang-ligne"><span class="nom">Son crédit d'impôt</span><span class="prix">252,00&nbsp;€</span></div>
                 <div class="rang-ligne total"><span class="nom">L'Urssaf vous verse</span><span class="prix">504,00&nbsp;€</span></div>
               </div>
-              <p class="mention-papier"><b>Sur la facture</b>Le logo, puis <i>« Prestation de services à la personne ouvrant droit au crédit d'impôt de l'article 199 sexdecies du code général des impôts. Déclaration SAP123456789 du 12 mars 2024. »</i></p>
+              <p class="mention-papier" data-si-sap><b>Sur la facture</b>Le logo, puis <i>« Prestation de services à la personne ouvrant droit au crédit d'impôt de l'article 199 sexdecies du code général des impôts. Déclaration SAP123456789 du 12 mars 2024. »</i></p>
             </section>
 
-            <section class="carte-doc" data-si-etat="urssaf payee refusee">
+            <section class="carte-doc" data-si-etat="urssaf payee refusee" data-si-sap>
               <p class="rubrique" style="margin-top:0">Avance immédiate</p>
               <!-- Une liste par état : le trait qui relie les pas s'arrête au
                    dernier pas VISIBLE, ce qu'un :last-child ne sait pas faire
@@ -524,7 +630,10 @@
             </section>
           </div>
           <div class="action-bas">
-            <div data-si-etat="brouillon">
+            <div data-si-etat="brouillon" data-si-normal>
+              <button class="bouton bouton-plein" type="button" data-note="Elle part comme aujourd'hui, par SMS ou e-mail ; il paie tout, sans crédit d'impôt.">Envoyer la facture</button>
+            </div>
+            <div data-si-etat="brouillon" data-si-sap>
               <button class="bouton bouton-plein" type="button" data-ouvre="envoi-urssaf">Envoyer à l'Urssaf</button>
               <button class="bouton-texte" type="button" data-note="Elle part comme aujourd'hui, par SMS ou e-mail ; il paie tout, et récupère sa moitié aux impôts." style="color:var(--atlas-inkSoft)">Il paie autrement cette fois</button>
             </div>
@@ -626,6 +735,7 @@
     <ul>
       <li><b>Relier l'Urssaf une fois</b>, dans Mon entreprise, avec les deux codes qu'elle vous envoie après votre demande. Chaque artisan fait la sienne en nommant Atlas, comme chez Evoliz.</li>
       <li><b>Inscrire un client une fois</b>, depuis sa fiche. Atlas a déjà son nom, son adresse, son portable et son e-mail ; il ne demande que ce qui manque (naissance, IBAN). Le code de sa commune se tire de son adresse. Le client accepte chez l'Urssaf sous 7 jours.</li>
+      <li><b>Le choix se fait au devis</b> : une case « Services à la personne », pour tout le devis. Cochée, le logo et la mention s'impriment, et la facture la reprend. Décochée, c'est un devis comme aujourd'hui. Sur la facture, la case se décoche encore avant l'envoi, et elle redevient une facture normale. La case ne paraît que pour une entreprise déclarée et un client particulier.</li>
       <li><b>Ensuite, sa facture part à l'Urssaf d'un appui.</b> L'Urssaf vous verse toute la facture, 504 € : elle prélève 252 € chez le client et avance les 252 € de son crédit d'impôt. Vous ne recevez rien du client lui-même. L'envoi reste l'arrêt d'aujourd'hui : rien ne part sans vous.</li>
       <li><b>La facture suit l'Urssaf toute seule</b> : envoyée, validée, versée. Versée, elle s'acquitte seule. Refusée, elle part par SMS comme aujourd'hui.</li>
       <li><b>Pas d'acompte pour un client inscrit.</b> Un acompte encaissé puis déclaré à l'Urssaf oblige à une garantie bancaire dès le premier euro, et l'Urssaf refuse une facture déjà en partie payée.</li>
@@ -671,6 +781,23 @@
       b.setAttribute("aria-pressed", b.getAttribute("data-etat") === etat ? "true" : "false");
     });
   }
+  /* La case « Services à la personne », sur le devis et sur la facture. Le kit
+     bascule l'interrupteur ; on lit son état après lui. Une facture partie à
+     l'Urssaf ne se change plus : la case revient, et l'écran le dit. */
+  document.addEventListener("click", function (ev) {
+    var b = ev.target.closest("[data-sap-bascule]");
+    if (!b) return;
+    var ecran = b.closest(".ecran");
+    setTimeout(function () {
+      var envoyee = ecran.id === "ecran-fac" && ecran.getAttribute("data-etat") !== "brouillon";
+      if (envoyee) {
+        b.setAttribute("aria-checked", "true");
+        Kit.note(ecran, "Envoyée, elle ne se modifie plus. Une correction passerait par un avoir.");
+        return;
+      }
+      ecran.setAttribute("data-sap", b.getAttribute("aria-checked") === "true" ? "oui" : "non");
+    }, 0);
+  });
   function noter(ecran, texte) { Kit.fermerFeuilles(ecran); setTimeout(function () { Kit.note(ecran, texte); }, 200); }
   /* Sa règle du 8 novembre : n'importe quel nombre d'heures, la roulette de
      0 à 24 h, et les minutes une par une, de 00 à 59. */

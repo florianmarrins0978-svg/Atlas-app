@@ -2467,6 +2467,18 @@ accepte un devis fait ailleurs, à son en-tête, ou un import. Un chantier qui
 mêle élagage et taille donne deux devis et deux émetteurs : l'élagage chez
 l'artisan, la taille chez la coopérative.
 
+**Le choix se fait AU DEVIS (sa remarque du 8 novembre 2026, *« à partir de
+quel moment ? C'est le moment où je rédige le devis »*).** Il a raison, et la
+règle le confirme : la mention de la déclaration est due sur le devis comme sur
+la facture, et une activité à côté se facture à part. Donc une case « Services
+à la personne » par devis (jamais ligne par ligne), visible seulement pour une
+entreprise déclarée et un client particulier ; cochée, le logo et la mention
+s'impriment, l'acompte disparaît pour un client inscrit à l'avance immédiate ;
+la facture reprend la case. Sur la facture, elle se décoche encore avant
+l'envoi, et la facture redevient normale (*« quand je décoche, il n'y a rien
+qui se passe »* : corrigé dans la planche) ; partie à l'Urssaf, elle ne bouge
+plus. Écran « Le devis » ajouté à `appli/soignee/credit-d-impot.html`.
+
 **Relier l'Urssaf : rien n'est codé, et voici ce que ça demande (lu le
 8 novembre 2026 sur les pages officielles).** Sa question : *« est-ce que ça
 marche ou c'est mis comme ça dans la planche ? il faut que ça fonctionne »*.
