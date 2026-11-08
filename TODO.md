@@ -36,8 +36,15 @@ nom, « Créer sa fiche » (d'office) ou « Sans fiche », au dessin de Matin,
 Après-midi, Journée (conseillé). B : la phrase d'aujourd'hui et une case.
 Sans fiche, le nom va seul au planning, comme « Autre chose ».
 
-**Aussi à trancher** : un devis fait plus tard à ce nom ; proposé : créer sa
-fiche à ce moment-là.
+**Revu le même jour, sa correction** : *« même si on ne crée pas sa fiche
+client, il faut quand même pouvoir mettre le nom, le prénom, l'adresse, le
+numéro de téléphone, parce que c'est un client qu'on va peut-être
+facturer »*. Une facture porte le nom et l'adresse du client : c'est une
+fiche. Le choix devient sa PLACE : « Dans Vos clients » d'office, ou « Pas
+encore », et elle y entre seule à son premier devis ou sa première facture.
+Les cases restent ouvertes, avec un prénom en plus (aujourd'hui le nom et le
+prénom s'écrivent ensemble dans `clients.nom` : une colonne neuve, donc une
+migration en deux temps, si elle est gardée).
 
 ## ⏳ À CHOISIR PAR LUI (8 novembre 2026) : sur ordinateur, la largeur de la colonne
 
