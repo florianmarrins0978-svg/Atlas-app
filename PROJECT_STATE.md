@@ -27,6 +27,12 @@ choisi (`docs/A-FAIRE.md` §3) : la distance réseau jusqu'au serveur et à la
 base (ici, tout est sur la même machine), et une entreprise qui a des centaines
 de chantiers (ici, la démonstration en a quelques-uns).
 
+---
+## VOS ENTRÉES ET SORTIES, CODÉES (8 novembre 2026), PAS ENCORE SUR `main`
+
+Sa planche `appli/soignee/banque-entrees-sorties.html` (*« 1 tu peux coder »*). « Pour mon comptable » porte deux cases : le dossier en cours (Mois, Trimestre, Année ; une période qu'il entame dit où elle commence) et l'année, mois par mois, depuis le 1ᵉʳ janvier ou le premier jour donné par la banque. L'assistant lit le relevé (`src/server/ai/tools/lire-releve.ts`). Règles : `libelleDansLeDossier`, `debutCouvert`, `totauxDuReleve` (`src/lib/pour-mon-comptable.ts`) ; dépôt : `premierJourDuReleve`. Écran : `src/app/termines/comptable/page.tsx`, `DossierEnCours.tsx`. Aucune migration. Verts ici : règles (48), outil sous `atlas_app` (6), navigateur (14, rouge sur l'ancien écran), garde-fous. **Niveau 3 : la batterie, avec son accord, avant `main`.** `ARCHITECTURE.md` §571.
+
+---
 ## LA BATTERIE COMMUNE DU 6 NOVEMBRE AU SOIR, SUR `main` LE 7 NOVEMBRE
 
 Neuf lots, une batterie (`docs/batterie-commune-6-novembre-soir.md`). Ceux

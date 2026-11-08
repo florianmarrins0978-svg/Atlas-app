@@ -658,6 +658,7 @@ function libelleSource(nomOutil: string): string {
     RechercherLignesDevis: "Devis des autres clients",
     RechercherTickets: "Tickets",
     LireBilans: "Bilans",
+    LireReleve: "Banque",
     LirePhotos: "Photos",
   };
   return libelles[nomOutil] ?? nomOutil;

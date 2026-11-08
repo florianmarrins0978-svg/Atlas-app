@@ -37224,3 +37224,21 @@ La racine n'était dans aucun écran : `--atlas-largeur` valait 64rem (1024 px) 
 | écarté : brider chaque bande ou chaque carte | une règle par composant pour un défaut qui vient d'une seule valeur, c'est le pansement du §4 quater |
 
 `scripts/test-sur-ordinateur-e2e.ts` exige désormais 672 px, centrés dans la place à droite de la barre : rouge sur 64rem (3 cas), vert sur 42rem (16 sur 16). Regardé après coup sur douze écrans à 1536 px : rien ne déborde, rien ne défile de côté.
+
+## §571 : Le dossier et l'année, deux cases ; et l'assistant lit le relevé
+
+*8 novembre 2026, sa question : « c'est normal que quand je lui demande mes entrées et mes sorties de l'année, il me les trouve pas ? ». Sa planche : `appli/soignee/banque-entrees-sorties.html`, version B revue (« 1 tu peux coder »).*
+
+« Pour mon comptable » ne lisait que le dossier en cours (`lignesDuReleve(ctx, du, au)`, chez lui depuis le 28 octobre) et intitulait « 2026 » ce qui n'en était qu'une dizaine de jours. Aucun outil de l'assistant ne lisait le relevé, pourtant gardé ligne à ligne.
+
+| Décision | Pourquoi |
+|---|---|
+| deux cases côte à côte, « Dossier en cours » et l'année, chacune avec ses totaux ; Mois, Trimestre, Année restent sous le dossier seul | sa phrase : *« il ne faut pas que ça nous induise en erreur »* ; ce qui part au comptable reste lisible tel quel |
+| une période que le dossier entame dit où elle commence (« 2026, depuis le 28 octobre », `libelleDansLeDossier`) | « 2026 » sur dix jours était un total faux de dix mois, présenté comme juste |
+| l'année commence au 1ᵉʳ janvier, ou au premier jour que la banque a donné s'il est plus tard (`debutCouvert`, `premierJourDuReleve`), et la case le dit | avant ce jour, rien n'est connu : compter depuis le 1ᵉʳ janvier serait inventer |
+| la vue de l'année ne porte aucun état « sans ticket » | seul le dossier se justifie et part au comptable |
+| une seule lecture de ligne et une seule mise en période pour les deux vues (`enLigneDuDossier`, `enPeriode`) | deux façons de compter finiraient par diverger (`CLAUDE.md` §3) |
+| l'outil `LireReleve` prend les mêmes lignes et les mêmes règles que l'écran (`lignesDuReleve`, `totauxDuReleve`, `totalSigne`) : totaux, reste, puis le détail mois par mois | l'assistant ne peut pas dire un autre chiffre que l'écran ; la planche montrait le détail mois par mois |
+| une période d'avant le premier jour donné se refuse, avec la date ; une année entamée se dit « partielle » | la même règle que la case |
+
+Aucune migration : le relevé est déjà gardé (`mouvements_bancaires`). L'assistant n'est ouvert qu'au patron (`peutUtiliserLAssistant`), donc l'outil n'ouvre la banque à personne qui ne la voit déjà. Éprouvé par `scripts/test-pour-mon-comptable.ts` (les trois règles, rouges avant), `scripts/test-assistant-releve-db.ts` (six cas sous `atlas_app`, dont l'isolation ; rouges sans l'outil enregistré) et `scripts/test-pour-mon-comptable-e2e.ts` (les deux cases, rouge sur l'ancien écran).

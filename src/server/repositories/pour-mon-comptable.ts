@@ -1,4 +1,4 @@
-import { and, asc, eq, gte, inArray, isNull, lte } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, isNull, lte, min } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import type { DbOrTx } from "../db/client";
 import { achatsTva, devisRecus, factures, mouvementsBancaires, societesAchat, virementsRecus } from "../db/schema";
@@ -79,6 +79,21 @@ export function pieceDeLaLigne(l: LigneDuReleve): { cle: string; nature: "photo"
   }
   if (l.justification === "facture_hors_atlas" && l.pieceJointe) return { cle: l.pieceJointe.cle, nature: l.pieceJointe.nature };
   return null;
+}
+
+/**
+ * Le premier jour que la banque a donné, ou `null` sans aucune ligne.
+ *
+ * **« Depuis le 1er janvier » ne se dit que s'il est vrai** (sa demande du
+ * 8 novembre 2026) : une banque qui n'accepte que 90 jours d'historique ne
+ * donne pas l'année entière, et l'écran comme l'assistant disent alors depuis
+ * quand ils comptent, au lieu d'appeler « l'année » une partie d'elle.
+ */
+export async function premierJourDuReleve(ctx: Ctx): Promise<string | null> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [r] = await tx.select({ jour: min(mouvementsBancaires.jour) }).from(mouvementsBancaires);
+    return r?.jour ?? null;
+  });
 }
 
 /** Les lignes du relevé entre deux jours compris, dans l'ordre du relevé, avec leurs pièces. */

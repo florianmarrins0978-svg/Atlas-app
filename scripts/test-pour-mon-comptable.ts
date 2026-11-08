@@ -3,6 +3,9 @@ import {
   bornesDePeriode,
   jourEnMots,
   libellePeriode,
+  libelleDansLeDossier,
+  debutCouvert,
+  totauxDuReleve,
   categorieDeLaLigne,
   checkUp,
   clePeriode,
@@ -421,6 +424,39 @@ test("un total nul s'écrit sans signe, les autres avec le leur", () => {
   assert.equal(totalSigne(145000, "sortie"), `−${enEurosAttendu(1450)}`);
   assert.equal(totalSigne(86400, "entree"), `+${enEurosAttendu(864)}`);
   assert.equal(totalSigne(6789, "sortie", "-"), `-${enEurosAttendu(67.89)}`);
+});
+
+// **« 2026 » ne compte plus dix jours en se disant l'année** — sa remarque du
+// 8 novembre 2026 sur « Pour mon comptable » : « si c'est dossier en cours
+// depuis le 28 octobre, il ne faut pas que ça nous induise en erreur ». Une
+// période que le dossier ne couvre qu'en partie dit où elle commence ; une
+// période entière garde son nom.
+test("une période entamée par le dossier dit où elle commence, une période entière garde son nom", () => {
+  assert.equal(libelleDansLeDossier("2026", "2026-10-28"), "2026, depuis le 28 octobre");
+  assert.equal(libelleDansLeDossier("2026-T4", "2026-10-28"), "4ᵉ trimestre 2026, depuis le 28 octobre");
+  assert.equal(libelleDansLeDossier("2026-10", "2026-10-28"), "Octobre 2026, depuis le 28 octobre");
+  assert.equal(libelleDansLeDossier("2026-11", "2026-10-28"), "Novembre 2026");
+  assert.equal(libelleDansLeDossier("2026-10", "2026-10-01"), "Octobre 2026");
+  assert.equal(libelleDansLeDossier("2026", "2026-01-01"), "2026");
+});
+
+// **« Depuis le 1er janvier » ne se dit que s'il est vrai** : une banque qui ne
+// donne que 90 jours fait commencer l'année au premier jour donné, et l'écran
+// comme l'assistant le disent (sa demande du 8 novembre 2026).
+test("l'année commence au premier jour que la banque a donné, jamais avant", () => {
+  assert.equal(debutCouvert("2026-01-01", "2026-08-12"), "2026-08-12");
+  assert.equal(debutCouvert("2026-01-01", "2025-03-02"), "2026-01-01");
+  assert.equal(debutCouvert("2026-01-01", null), "2026-01-01");
+});
+
+test("les totaux d'un relevé se comptent en centimes, entrées et sorties à part", () => {
+  const t = totauxDuReleve([
+    { montant: "62.40", sens: "sortie" },
+    { montant: "0.10", sens: "sortie" },
+    { montant: "0.20", sens: "sortie" },
+    { montant: "500.00", sens: "entree" },
+  ]);
+  assert.deepEqual(t, { entrees: 50000, sorties: 6270 });
 });
 
 console.log(`\n${passed} réussi(s), ${failed} échoué(s)`);

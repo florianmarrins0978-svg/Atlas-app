@@ -27,6 +27,7 @@ import { lireRappels } from "./lire-rappels";
 import { lireDiagnostics } from "./lire-diagnostics";
 import { rechercherTickets } from "./rechercher-tickets";
 import { lireBilans } from "./lire-bilans";
+import { lireReleve } from "./lire-releve";
 import { lirePhotos } from "./lire-photos";
 import { lireDossierClient } from "./lire-dossier-client";
 import { lireDocumentsChantier } from "./lire-documents-chantier";
@@ -73,6 +74,7 @@ export const outilsDisponibles: Outil[] = [
   lireDiagnostics,
   rechercherTickets,
   lireBilans,
+  lireReleve,
   lirePhotos,
   lireDossierClient,
   lireDocumentsChantier,

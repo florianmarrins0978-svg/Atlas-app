@@ -374,6 +374,41 @@ export function libellePeriode(cle: string): string {
   return cle;
 }
 
+/**
+ * Le nom d'une période DANS le dossier en cours : « 2026, depuis le 28 octobre ».
+ *
+ * **Sa remarque du 8 novembre 2026** : *« si c'est dossier en cours depuis le
+ * 28 octobre, il ne faut pas que ça nous induise en erreur »*. L'écran disait
+ * « 2026 » pour une dizaine de jours. Une période que le dossier n'entame qu'en
+ * cours de route dit donc où elle commence ; une période entière garde son nom.
+ */
+export function libelleDansLeDossier(cle: string, debutDuDossier: string): string {
+  const bornes = bornesDePeriode(cle);
+  const nom = libellePeriode(cle);
+  return bornes && bornes.du < debutDuDossier ? `${nom}, depuis le ${jourEnMots(debutDuDossier)}` : nom;
+}
+
+/**
+ * Le premier jour qu'une période peut compter : le sien, ou le premier que la
+ * banque a donné s'il est plus tard. Avant lui, rien n'est connu, et rien ne
+ * s'invente (`docs/AGENT.md` §3).
+ */
+export function debutCouvert(du: string, premierJourDonne: string | null): string {
+  return premierJourDonne && premierJourDonne > du ? premierJourDonne : du;
+}
+
+/** Ce qui est entré et sorti sur des lignes du relevé, en centimes. */
+export function totauxDuReleve(lignes: readonly { montant: string; sens: Sens }[]): { entrees: number; sorties: number } {
+  let entrees = 0;
+  let sorties = 0;
+  for (const l of lignes) {
+    const c = enCentimes(l.montant) ?? 0;
+    if (l.sens === "entree") entrees += c;
+    else sorties += c;
+  }
+  return { entrees, sorties };
+}
+
 /** Le jour en mots courts, comme sur la planche : « 14 octobre ». */
 export function jourEnMots(jour: string): string {
   const j = Number(jour.slice(8, 10));

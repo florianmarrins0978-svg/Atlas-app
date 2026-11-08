@@ -118,6 +118,39 @@ async function main() {
     assert.ok(mois.y < aJustifier.y, `les mois sont à ${Math.round(mois.y)} px, les lignes à justifier à ${Math.round(aJustifier.y)} px`);
   });
 
+  // **Sa remarque du 8 novembre 2026** (`appli/soignee/banque-entrees-sorties.html`) :
+  // « Année » ne doit plus se lire pour toute l'année quand il ne compte que le
+  // dossier ; et l'année entière vit dans une case à côté, avec ses mois.
+  await test("deux cases : le dossier dit où il commence, l'année montre ses mois sans état", async () => {
+    const caseDossier = page.locator('[data-atlas="case-dossier"]');
+    const caseAnnee = page.locator('[data-atlas="case-annee"]');
+    assert.equal(await caseDossier.getAttribute("aria-pressed"), "true", "le dossier n'est pas la case ouverte d'abord");
+    assert.match((await caseAnnee.innerText()).replace(/\s+/g, " "), /[−+]\S/, "la case de l'année ne porte pas ses totaux");
+
+    await page.getByRole("group", { name: "Découpage" }).getByRole("button", { name: "Année" }).click();
+    const sousTitre = (await page.locator("text=Dossier en cours depuis le").first().innerText()).toLowerCase();
+    const premiere = (await page.locator('[data-atlas="periode"]').first().innerText()).split("\n")[0];
+    if (!/1(er|ᵉʳ) janvier/.test(sousTitre)) {
+      assert.match(premiere, /, depuis le /, `« ${premiere} » se lit pour l'année entière alors que le dossier commence en cours d'année`);
+    }
+
+    await caseAnnee.click();
+    assert.equal(await caseAnnee.getAttribute("aria-pressed"), "true");
+    assert.equal(await page.getByRole("group", { name: "Découpage" }).count(), 0, "le découpage du dossier reste sous la case de l'année");
+    const noms = await page.locator('[data-atlas="periode"]').evaluateAll((n) => n.map((e) => (e.textContent ?? "").trim()));
+    assert.match(noms[0] ?? "", new RegExp(`^${aujourdhui.slice(0, 4)}, du `), `la première ligne n'est pas l'année : « ${noms[0]} »`);
+    assert.ok(noms.length >= 2, "l'année n'a aucun mois dessous");
+    assert.equal(
+      await page.locator('[data-atlas="periodes"] [data-atlas="etat-de-la-periode"]').count(),
+      0,
+      "un état « sans ticket » s'affiche sur l'année, alors que seul le dossier part au comptable"
+    );
+
+    await caseDossier.click();
+    assert.equal(await page.getByRole("group", { name: "Découpage" }).count(), 1, "le découpage ne revient pas avec le dossier");
+    await page.getByRole("group", { name: "Découpage" }).getByRole("button", { name: "Mois" }).click();
+  });
+
   await test("le Check up relie le ticket qui tombe juste, et dit ce qu'il a fait", async () => {
     await page.click('[data-atlas="check-up"]');
     const bilan = await page.locator('[data-atlas="bilan-check-up"]').textContent({ timeout: 30_000 });

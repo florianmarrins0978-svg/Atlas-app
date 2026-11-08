@@ -17,7 +17,7 @@ attaché à ce client, et ce qu'il lit se range chez lui sans chercher son nom.
 Au codage : l'import doit porter le client choisi jusqu'au rangement (niveau
 3, argent : des pièces comptables).
 
-## ⏳ À REGARDER PAR LUI (8 novembre 2026) : vos entrées et sorties, deux cases, et l'assistant (couleurs de l'écran reprises à l'identique le 8 novembre)
+## ~~⏳ À REGARDER PAR LUI (8 novembre 2026) : vos entrées et sorties, deux cases, et l'assistant~~ TRANCHÉ LE 8 NOVEMBRE : « 1 TU PEUX CODER » ; CODÉ LE 8 NOVEMBRE (§571), batterie entière à jouer (argent, rayon de 17 points d'entrée)
 
 Sa question, sur « Pour mon comptable » : *« c'est normal que quand je lui
 demande mes entrées et mes sorties de l'année, il me les trouve pas »*. Puis :
@@ -42,8 +42,11 @@ revue : deux cases côte à côte avec leurs totaux ; le dossier garde Mois,
 Trimestre, Année, chaque période disant où elle commence (« 2026, depuis le
 28 octobre ») ; l'année depuis le 1er janvier, mois par mois.
 
-**Reste à trancher** : l'assistant donne-t-il le détail mois par mois quand
-on demande l'année ? Niveau 3 au codage (argent).
+**Codé le 8 novembre** (`ARCHITECTURE.md` §571) : les deux cases, chaque
+période du dossier qui dit où elle commence, l'année depuis le premier jour que
+la banque a donné ; l'outil `LireReleve` rend les totaux puis le détail mois par
+mois, comme sa planche. Règles, outil et écran éprouvés rouge puis vert ici ;
+**reste la batterie entière** (niveau 3), avec son accord, puis `main`.
 
 ## ~~⏳ À REGARDER PAR LUI (8 novembre 2026) : « Autre chose », en entier~~ TRANCHÉ LE 8 NOVEMBRE : « 1, C'EST OK » ; CODÉ LE 8 NOVEMBRE (§569), batterie entière à jouer (migration 0176)
 
