@@ -4,6 +4,29 @@
 dernière migration `drizzle/0170_idees_pour_l_appli.sql` (une idée pour l'appli, 0167 sur sa branche), avec `0169_plateforme_facture_electronique.sql` (la Factur-X, 0165 sur sa branche) et `0165` à `0168` (nature d'une absence, jours travaillés corrigés, zones de déplacement, couleur du férié), sur `main` le 6 novembre ; avant elles `0164_sauts_de_page_du_devis.sql`, sur `main` le 4 novembre
 
 ---
+## LA VITESSE DE LA VERSION RAPIDE, MESURÉE LE 8 NOVEMBRE 2026
+
+Sa crainte, devant son espace qui « ramait de fou » sous le bandeau « un écran
+jamais ouvert peut tarder » : *« il ne faut pas que le jour où l'application
+soit hébergée, il y ait des lags »*. Ce qu'il voyait était le mode de
+construction de son banc (§225), qui n'existe pas une fois hébergé.
+
+Mesuré ici sur `next build` puis `next start`, à 1536 x 730 px, jeu de
+démonstration, médiane de trois ouvertures :
+
+| | processeur normal | processeur ralenti 4 fois |
+|---|---|---|
+| ouvrir un écran (Chantiers, Clients, Planning, Terminés, Paysage, Catalogue, fiche client) | 0,13 à 0,20 s | 0,27 à 0,34 s |
+| Réglages, le devis d'un chantier | 0,42 à 0,49 s | 0,49 s |
+| passer d'un onglet à l'autre | 0,19 à 0,37 s | 0,44 à 0,62 s |
+| réponse du serveur | 0,04 à 0,13 s | |
+| code téléchargé par écran | 154 à 237 Ko | |
+
+**Ce que ces chiffres ne disent PAS**, et qui reste à mesurer sur l'hébergement
+choisi (`docs/A-FAIRE.md` §3) : la distance réseau jusqu'au serveur et à la
+base (ici, tout est sur la même machine), et une entreprise qui a des centaines
+de chantiers (ici, la démonstration en a quelques-uns).
+
 ## LA BATTERIE COMMUNE DU 6 NOVEMBRE AU SOIR, SUR `main` LE 7 NOVEMBRE
 
 Neuf lots, une batterie (`docs/batterie-commune-6-novembre-soir.md`). Ceux
