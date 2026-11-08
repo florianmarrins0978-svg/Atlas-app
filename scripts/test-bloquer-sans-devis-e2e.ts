@@ -46,6 +46,8 @@ const INCONNUE = `Mme Renard ${Date.now() % 100000}`;
 const BANQUE = `Banque ${Date.now() % 100000}`;
 /** Une journée entière, qu'on cassera en deux pour faire attendre un morceau. */
 const JOURNEE = `Formation ${Date.now() % 100000}`;
+/** Un client facturé ailleurs (Unipros), noté en entier par « Autre chose ». */
+const FACTURE_AILLEURS = `Jean Luloui ${Date.now() % 100000}`;
 
 async function main() {
   console.log("=== Poser un client sur un jour, sans devis ===\n");
@@ -394,7 +396,82 @@ async function main() {
     assert.equal(Number(clients.rows[0].n), 0, "un client porte le nom du rendez-vous");
   });
 
-  for (const nom of [BANQUE, JOURNEE]) {
+  await cas("« Autre chose » note un client facturé ailleurs EN ENTIER, sans lui créer de fiche", async () => {
+    // **Sa demande du 8 novembre 2026**, photo de la fiche d'intervention à
+    // l'appui : un client qui passera par une autre plateforme (Unipros) pour
+    // être facturé, mais qu'il veut sur son planning. *« Quand on clique sur
+    // Autre chose, on note le nom du client, et en dessous son adresse, son
+    // numéro de téléphone ; et une case travaux à faire tout de suite. »* Puis :
+    // *« est-ce que ça va pas créer de fiches clients ? »* Non, et c'est ce que
+    // ce cas compte, sur TOUTE la table, avant et après.
+    const avant = Number((await pool.query(`SELECT count(*) AS n FROM clients`)).rows[0].n);
+    const carte = await ouvrirLeJour(jour);
+    await carte.locator('[data-atlas="ajouter"]').click();
+    await page.waitForTimeout(300);
+    await carte.locator('[data-atlas="voie-temps"]').click();
+    await page.waitForTimeout(300);
+    await carte.locator('[data-atlas="quoi-cest"]').fill(FACTURE_AILLEURS);
+    await carte.locator('[data-atlas="temps-adresse"]').fill("4 rue des Tilleuls, 44120 Vertou");
+    await carte.locator('[data-atlas="temps-telephone"]').fill("06 41 22 87 10");
+    for (const travail of ["Taille de la haie", "Évacuation des déchets verts"]) {
+      await carte.locator('[data-atlas="temps-travail"]').fill(travail);
+      await carte.locator('[data-atlas="temps-ajouter-travail"]').click();
+    }
+    assert.equal(
+      await carte.locator('[data-atlas="temps-travail-ecrit"]').count(),
+      2,
+      "les deux travaux écrits ne se voient pas avant de poser"
+    );
+    assert.match(
+      await carte.innerText(),
+      /pas de devis ni de facture dans Atlas/,
+      "rien ne prévient que ce client ne se facture pas ici"
+    );
+    await carte.locator('[data-atlas="quand-poser"][data-quand="apres_midi"]').click();
+    await carte.locator('[data-atlas="poser-le-temps"]').click();
+
+    const lu = async () =>
+      (
+        await pool.query(
+          `SELECT client_id, date_planifiee::text AS jour, adresse_chantier, telephone, travaux_a_la_main
+             FROM chantiers WHERE nom = $1 AND deleted_at IS NULL`,
+          [FACTURE_AILLEURS]
+        )
+      ).rows[0];
+    let ligne = await lu();
+    for (let i = 0; i < 40 && !ligne?.jour; i++) {
+      await page.waitForTimeout(250);
+      ligne = await lu();
+    }
+    assert.ok(ligne, "rien n'a été posé : le geste n'a rien écrit");
+    assert.equal(ligne.client_id, null, "une fiche client est attachée au chantier");
+    assert.equal(ligne.adresse_chantier, "4 rue des Tilleuls, 44120 Vertou", "l'adresse n'est pas sur le chantier");
+    assert.equal(ligne.telephone, "06 41 22 87 10", "le téléphone n'est pas sur le chantier");
+    assert.deepEqual(
+      ligne.travaux_a_la_main,
+      ["Taille de la haie", "Évacuation des déchets verts"],
+      "les travaux à faire ne sont pas sur la fiche d'intervention"
+    );
+    const apres = Number((await pool.query(`SELECT count(*) AS n FROM clients`)).rows[0].n);
+    assert.equal(apres, avant, `${apres - avant} fiche(s) client née(s) d'« Autre chose »`);
+
+    // **Le geste du patron jusqu'au bout** : la fiche d'intervention appelle
+    // ce numéro, sans fiche client derrière (`CLAUDE.md` §5 quater).
+    const carteApres = await ouvrirLeJour(jour);
+    await carteApres.locator('[data-atlas="nom-du-jour"]', { hasText: FACTURE_AILLEURS }).click();
+    const feuille = page.locator('[data-atlas="feuille"]', { hasText: FACTURE_AILLEURS });
+    await feuille.waitFor({ state: "visible", timeout: 15_000 });
+    const liens = await feuille.locator("a").evaluateAll((n) =>
+      n.map((e) => (e as HTMLAnchorElement).getAttribute("href") ?? "")
+    );
+    assert.ok(
+      liens.some((h) => h.startsWith("tel:") && h.replace(/\D/g, "").endsWith("641228710")),
+      `« Appeler le client » n'appelle pas ce numéro : ${JSON.stringify(liens)}`
+    );
+    assert.ok(liens.some((h) => h.startsWith("https://waze.com/")), "Waze ne mène pas à son adresse");
+  });
+
+  for (const nom of [BANQUE, JOURNEE, FACTURE_AILLEURS]) {
     await pool.query(
       `DELETE FROM creneaux_chantier WHERE chantier_id IN (SELECT id FROM chantiers WHERE nom = $1)`,
       [nom]

@@ -14,6 +14,7 @@ import { chercherDesClientsAction, poserUnClientAction, poserDuTempsAction } fro
 import type { ChantierPlanning } from "./types-du-planning";
 import { Choisir, Petit } from "./ElementsDuPlanning";
 import { BasculeDuMoment } from "./BasculeDuMoment";
+import { refusDuTravail } from "@/lib/taches-du-devis";
 
 /**
  * LE DESSIN DES CHAMPS DE CET ÉCRAN, écrit une fois pour les trois voies.
@@ -55,23 +56,125 @@ export function AjoutDeTemps({
   onPose: (chantier: ChantierPlanning) => void;
 }) {
   const [quoi, setQuoi] = useState("");
+  const [adresse, setAdresse] = useState("");
+  const [telephone, setTelephone] = useState("");
+  const [travaux, setTravaux] = useState<string[]>([]);
+  const [travail, setTravail] = useState("");
   const [quand, setQuand] = useState<QuandPoser>("matin");
   const [enCours, setEnCours] = useState(false);
   const [refus, setRefus] = useState<string | null>(null);
   const pret = quoi.trim().length >= 2 && !enCours;
 
+  /**
+   * **La règle de la fiche d'intervention, avant même de poser** (`refusDuTravail`) :
+   * un travail trop long ou en trop se refuse ici dans les mots qu'il lirait sur
+   * la fiche, et le serveur relit la même règle.
+   */
+  function ajouterLeTravail() {
+    const r = refusDuTravail(travail, travaux.length);
+    if (r) {
+      setRefus(r);
+      return;
+    }
+    setRefus(null);
+    setTravaux((t) => [...t, travail.trim()]);
+    setTravail("");
+  }
+
   return (
     <div className="mt-3.5 pt-3">
+      {/* **Sa demande du 8 novembre 2026** (`appli/soignee/planning-sans-fiche.html`) :
+          un client facturé ailleurs, Unipros par exemple, se note ici EN ENTIER,
+          nom, adresse, téléphone et travaux à faire, sans fiche client. Seul ce
+          qui s'ouvre après « Autre chose » change : les deux voies restent. */}
       <input
         data-atlas="quoi-cest"
         autoFocus
         value={quoi}
         onChange={(e) => setQuoi(e.target.value)}
-        placeholder="Rendez-vous à la banque, livraison…"
+        placeholder="Un nom, un rendez-vous, une livraison"
         className={CHAMP}
         style={STYLE_CHAMP}
       />
+      <input
+        data-atlas="temps-adresse"
+        value={adresse}
+        onChange={(e) => setAdresse(e.target.value)}
+        placeholder="Adresse"
+        autoComplete="street-address"
+        className={CHAMP}
+        style={STYLE_CHAMP}
+      />
+      <input
+        data-atlas="temps-telephone"
+        value={telephone}
+        onChange={(e) => setTelephone(e.target.value)}
+        placeholder="Téléphone"
+        type="tel"
+        inputMode="tel"
+        autoComplete="tel"
+        className={CHAMP}
+        style={STYLE_CHAMP}
+      />
+
+      <p className="mt-3.5 text-[12px] font-semibold uppercase tracking-[0.06em]" style={{ color: colors.inkSoft }}>
+        Travaux à faire
+      </p>
+      {travaux.length > 0 && (
+        <ul className="mt-1">
+          {travaux.map((t, i) => (
+            <li
+              key={`${i}-${t}`}
+              data-atlas="temps-travail-ecrit"
+              className="flex min-h-[44px] items-center gap-2.5 text-[15px]"
+              style={{ color: colors.ink }}
+            >
+              <span
+                aria-hidden="true"
+                className="h-5 w-5 flex-none rounded-full"
+                style={{ boxShadow: `inset 0 0 0 1.5px ${colors.muted}` }}
+              />
+              <span className="min-w-0 flex-1">{t}</span>
+              <button
+                type="button"
+                aria-label={`Retirer ${t}`}
+                onClick={() => setTravaux((l) => l.filter((_, j) => j !== i))}
+                className="flex h-11 w-11 flex-none items-center justify-center text-[20px] leading-none"
+                style={{ color: colors.muted }}
+              >
+                ×
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="flex items-center gap-2">
+        <input
+          data-atlas="temps-travail"
+          value={travail}
+          onChange={(e) => setTravail(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              ajouterLeTravail();
+            }
+          }}
+          placeholder="Ajouter un travail"
+          aria-label="Ajouter un travail"
+          className={`${CHAMP} min-w-0 flex-1`}
+          style={STYLE_CHAMP}
+        />
+        <div className="mt-2 flex-none">
+          <Petit data-atlas="temps-ajouter-travail" onClick={ajouterLeTravail}>
+            Ajouter
+          </Petit>
+        </div>
+      </div>
+
       <BasculeDuMoment retenu={quand} onChoisir={setQuand} repere="quand-poser" />
+      <p className="mt-2.5 text-[13px]" style={{ color: colors.inkSoft }}>
+        Sans fiche client : pas de devis ni de facture dans Atlas.
+      </p>
       {refus && (
         <p data-atlas="refus-du-geste" className="mt-2 text-[13px]" style={{ color: colors.bordeaux }}>
           {refus}
@@ -89,7 +192,10 @@ export function AjoutDeTemps({
           onClick={() => {
             if (!pret) return;
             setEnCours(true);
-            poserDuTempsAction(jour, quand, quoi)
+            // **Un travail tapé sans « Ajouter » n'est pas perdu** : il part
+            // avec les autres, comme si le doigt avait touché le bouton.
+            const enAttente = travail.trim() ? [...travaux, travail.trim()] : travaux;
+            poserDuTempsAction(jour, quand, { quoi, adresse, telephone, travaux: enAttente })
               .then((r) => {
                 setEnCours(false);
                 if (r.succes) onPose(r.chantier);

@@ -34165,10 +34165,10 @@ portait de règle pour un grand écran.
 | Décision | Pourquoi |
 |---|---|
 | **aucun écran propre à l'ordinateur** : seul le cadre change, dans `globals.css` (« L'ORDINATEUR ») | sa seconde phrase : une page écrite deux fois finit par diverger, et une modification faite pour le téléphone n'arriverait pas sur l'ordinateur |
-| trois variables, une source : `--atlas-cote` (la barre à gauche), `--atlas-largeur` (448 px, puis 1024 px au-delà de 1024 px d'écran ; **672 px depuis le 8 novembre 2026**, §569), `--atlas-barre` (zéro sur ordinateur) | le cadre (`.atlas-cadre`, `.atlas-colonne`), tout ce qui flotte (`.atlas-colonne-fixe`) et les feuilles montantes (`.atlas-feuille`) lisent les mêmes ; sept copies de `max-w-md` deviennent une règle |
+| trois variables, une source : `--atlas-cote` (la barre à gauche), `--atlas-largeur` (448 px, puis 1024 px au-delà de 1024 px d'écran ; **672 px depuis le 8 novembre 2026**, §570), `--atlas-barre` (zéro sur ordinateur) | le cadre (`.atlas-cadre`, `.atlas-colonne`), tout ce qui flotte (`.atlas-colonne-fixe`) et les feuilles montantes (`.atlas-feuille`) lisent les mêmes ; sept copies de `max-w-md` deviennent une règle |
 | la barre est le MÊME composant, rangée en bas ou en colonne par la feuille de style | ses colonnes et la place du trait passent de valeurs en ligne à deux variables (`--atlas-onglets`, `--atlas-onglet-rang`) : un style en ligne aurait eu le dernier mot, et `!important` est refusé (§4 quater) |
 | la barre publie la place qu'elle prend EN BAS, lue sur elle-même (étroite, elle est à gauche : zéro) | publier sa hauteur sur ordinateur aurait réservé un écran entier de vide sous chaque page ; lire sa forme évite de recopier en JavaScript la largeur qui en décide |
-| le contenu reste une colonne de 1024 px, centrée dans la place à droite de la barre (**révisé le 8 novembre 2026 : 672 px**, §569) | une ligne de formulaire étirée sur 1 200 px ne se lit plus ; 1024 px, c'est plus du double d'avant et l'écran entier d'un petit portable |
+| le contenu reste une colonne de 1024 px, centrée dans la place à droite de la barre (**révisé le 8 novembre 2026 : 672 px**, §570) | une ligne de formulaire étirée sur 1 200 px ne se lit plus ; 1024 px, c'est plus du double d'avant et l'écran entier d'un petit portable |
 | les deux panneaux de la planche (`appli/sur-ordinateur.html`), liste et fiche côte à côte, **ne sont pas faits** | ils demandaient des écrans que le téléphone n'a pas, donc l'inverse de sa règle du 3 octobre ; c'est à lui de les redemander |
 | l'assistant reste un panneau qui glisse de la droite, sur un voile | c'est déjà sa forme sur le téléphone ; la planche le montrait poussant le contenu, autre invention écartée |
 
@@ -37192,7 +37192,25 @@ Son espace PC avait été ouvert le 3 octobre sur `claude/app-sur-ordinateur`. L
 
 **Ce que la correction ne rattrape pas seule** : un espace déjà figé exécute l'ANCIEN script, celui de sa branche. Il faut que le nouveau y arrive une fois, soit par sa branche avancée jusqu'à `main` (sans perte : elle n'a rien que `main` n'ait), soit par un passage sur `main` fait à la main. Éprouvé par `scripts/test-mise-a-jour-espace.ts` (cinq cas, rouges avant la correction) et sur une copie du vrai dépôt à l'état de son espace : « à jour » avec l'ancien script, « faite » et `main` du jour avec le nouveau.
 
-## §569 : Sur ordinateur, la colonne fait 672 px, la largeur du devis
+## §569 : « Autre chose » note un client facturé ailleurs, sans lui créer de fiche
+
+*8 novembre 2026, sa demande en quatre temps et son « 1, c'est OK » sur `appli/soignee/planning-sans-fiche.html`.*
+
+Un client qui passe par une autre plateforme pour être facturé (Unipros), mais qu'il veut sur son planning. Il a d'abord demandé un choix « sans fiche » dans « Un client », puis tranché : *« quand on clique sur Autre chose, on note le nom du client, et en dessous son adresse, son numéro de téléphone ; et une case travaux à faire tout de suite »*. Et : *« ne va pas me changer la catégorie Un client ou Autre chose »*.
+
+| Décision | Pourquoi |
+|---|---|
+| tout passe par « Autre chose » (`AjoutDeTemps`, `poserDuTempsAction`), qui reste un chantier SANS client | « Un client » crée déjà les fiches ; deux chemins vers une fiche auraient été deux façons de faire la même chose, et « Vos clients » se serait rempli de banques et de livraisons, chez tous les artisans |
+| l'adresse va dans `chantiers.adresse_chantier`, les travaux dans `chantiers.travaux_a_la_main` | les deux existaient : Maps, Waze, Copier l'adresse et la liste de la fiche d'intervention les lisent déjà |
+| une colonne `chantiers.telephone`, nullable (migration 0176, expand seul) | « Appeler le client » ne lisait que la fiche client : sans fiche, aucun numéro n'avait de place |
+| le numéro se lit à UN endroit : `coalesce(clients.telephone, chantiers.telephone)` dans `listerChantiersPourPlanning` | la fiche d'intervention n'a rien à savoir ; un chantier avec fiche garde le numéro de sa fiche |
+| les travaux passent par `refusDuTravail`, à l'écran et au serveur | la règle de « Ajouter un travail » sur la fiche ; écrits ici ou là, ils obéissent à la même |
+| une ligne : « Sans fiche client : pas de devis ni de facture dans Atlas. » | sa demande : le dire au moment où l'on s'en sert ; elle ne gêne pas pour la banque |
+| les voies « Un client » et « Autre chose » ne bougent pas | sa consigne ; la planche les montrait à tort au-dessus du formulaire, retirées avant le code |
+
+`scripts/test-bloquer-sans-devis-e2e.ts` tient le cas entier par son geste : les quatre cases, deux travaux, la ligne, « Poser » ; puis en base l'adresse, le téléphone, les travaux, aucun client attaché, **le nombre de fiches clients inchangé sur toute la table** ; puis la fiche d'intervention qui appelle ce numéro et mène à Waze. Rouge sur le code d'avant (la case de l'adresse n'existait pas), vert après ; les sept cas d'avant restent verts.
+
+## §570 : Sur ordinateur, la colonne fait 672 px, la largeur du devis
 
 *8 novembre 2026, sa demande sur son portable : « les bandes s'étirent jusqu'au milieu de l'écran alors que le texte s'arrête à un quart ; pareil pour les notifications ».*
 

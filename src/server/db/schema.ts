@@ -1067,6 +1067,13 @@ export const chantiers = pgTable(
      */
     travauxALaMain: text("travaux_a_la_main").array().notNull().default(sql`'{}'::text[]`),
     /**
+     * Le téléphone d'un chantier SANS fiche client : « Autre chose », pour un
+     * client facturé ailleurs (sa demande du 8 novembre 2026, migration 0176).
+     * Avec une fiche, c'est le numéro de la fiche qui compte
+     * (`listerChantiersPourPlanning`).
+     */
+    telephone: text("telephone"),
+    /**
      * CE QU'EST CE CHANTIER, quand ce n'est pas un chantier ordinaire
      * (migration 0171). « hivernage » : posé depuis la fiche d'un client par
      * « Le prévoir ». C'est cette marque, jamais le libellé, qui fait porter

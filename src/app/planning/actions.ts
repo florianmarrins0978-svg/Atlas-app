@@ -38,6 +38,7 @@ import { poserLeClientSurLeJour } from "@/server/repositories/pose-d-un-client";
 import type { QuandPoser } from "@/lib/planning-jour";
 import { dernierEnvoi } from "@/server/repositories/envois-devis";
 import { etatEnvoi } from "@/lib/etat-envoi";
+import { refusDuTravail } from "@/lib/taches-du-devis";
 import { getOuCreerDevisBrouillon } from "@/server/repositories/devis";
 import { proposerLaGrilleDuJour } from "@/server/repositories/lignes-prix";
 import { envoyerAuClientAction } from "@/app/chantiers/[id]/export/actions";
@@ -673,20 +674,38 @@ export async function poserUnClientAction(
 export async function poserDuTempsAction(
   jour: JourIso,
   quand: QuandPoser,
-  quoi: string
+  saisie: { quoi: string; adresse?: string; telephone?: string; travaux?: string[] }
 ): Promise<ResultatPoseClient> {
   const ctx = await getCurrentCtx();
   await exigerEcritureSurLePlanning(ctx, "bloquer du temps sur ce jour");
 
-  const nom = quoi.trim();
+  const nom = saisie.quoi.trim();
   if (nom.length < 2) return { succes: false, erreur: "Écrivez ce que c'est." };
+
+  // **Les travaux passent par la règle de la fiche d'intervention**, la même
+  // que « Ajouter un travail » une fois posé (`refusDuTravail`) : écrits ici ou
+  // là, ils obéissent à une seule règle, et la fiche les relit tels quels.
+  const travaux: string[] = [];
+  for (const brut of saisie.travaux ?? []) {
+    const refus = refusDuTravail(brut, travaux.length);
+    if (refus) return { succes: false, erreur: refus };
+    travaux.push(brut.trim());
+  }
 
   // **Aucun client, et c'est tout ce qui le distingue.** `nomDuChantier` sait
   // déjà nommer un chantier sans client — mais ici le nom est écrit par lui, et
   // c'est le seul qui dise de quoi il s'agit : « Banque », « Livraison ».
+  //
+  // **Ni l'adresse ni le téléphone ne créent de fiche** (sa question du
+  // 8 novembre 2026 : « est-ce que ça va pas créer de fiches clients ? »). Pour
+  // un client facturé ailleurs, ils restent sur le chantier : l'adresse où
+  // « Y aller » la lit déjà, le téléphone dans sa colonne (migration 0176).
   const chantier = await creerChantier(ctx, {
     nom: nom.slice(0, 120),
     dureeDemiJournees: quand === "journee" ? 2 : 1,
+    adresseChantier: saisie.adresse?.trim() || undefined,
+    telephone: saisie.telephone?.trim() || undefined,
+    ...(travaux.length > 0 ? { travauxALaMain: travaux } : null),
   });
   await planifierChantier(ctx, chantier.id, jour, {
     demi: quand === "apres_midi" ? "apres_midi" : "matin",

@@ -44,7 +44,7 @@ Trimestre, Année, chaque période disant où elle commence (« 2026, depuis le
 **Reste à trancher** : l'assistant donne-t-il le détail mois par mois quand
 on demande l'année ? Niveau 3 au codage (argent).
 
-## ⏳ À REGARDER PAR LUI (8 novembre 2026) : « Autre chose », en entier (maquette finie : sans fiche client, ligne de facture gardée)
+## ~~⏳ À REGARDER PAR LUI (8 novembre 2026) : « Autre chose », en entier~~ TRANCHÉ LE 8 NOVEMBRE : « 1, C'EST OK » ; CODÉ LE 8 NOVEMBRE (§569), batterie entière à jouer (migration 0176)
 
 Sa demande, en quatre temps le même jour (le chemin est dans l'en-tête de la
 planche) ; sa décision, photo de la fiche d'intervention à l'appui : *« quand
