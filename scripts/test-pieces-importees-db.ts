@@ -24,7 +24,13 @@ import { CIVILITES } from "../src/lib/civilite";
 
 /** La fiche que le rangement crée pour lui : le nom lu s'écrit à la façon de l'appli (migration 0037). */
 const MARTINS_RANGE = `${CIVILITES.mr} Martins`;
-import { grouperParClient, planDeRangement, type ChoixAdresse } from "../src/lib/import-tableau";
+/** Un envoi que rien n'empêche d'ouvrir : un refus ici est un défaut du dépôt. */
+async function ouvert(...a: Parameters<typeof creerEnvoi>) {
+  const r = await creerEnvoi(...a);
+  if (!r.ok) throw new Error(`l'envoi ne s'ouvre pas : ${r.raison}`);
+  return r.envoi;
+}
+import { grouperParClient, lignesPourLeClient, planDeRangement, type ChoixAdresse } from "../src/lib/import-tableau";
 import { chercherLesObjets, traiterPiecesEnAttente } from "../src/server/import/traiter-pieces";
 import { enregistrerObjet } from "../src/server/storage";
 import { _reinitialiserFabriqueLLM } from "../src/server/ai/providers/llm/fabrique";
@@ -141,7 +147,7 @@ async function rangementPartiel(nom: string) {
   await nettoyerBase();
   _reinitialiserFabriqueLLM(iaDeSuite("Je ne sais pas."));
   const ctx = await monter(nom);
-  const envoi = await creerEnvoi(ctx, "lot.zip", 3);
+  const envoi = await ouvert(ctx, "lot.zip", 3);
   await deposer(ctx, envoi.id, await pdfAvecTexte(FACTURE_MARTINS));
   await deposer(ctx, envoi.id, await pdfAvecTexte(DEVIS_LENOIR));
   const { piece: tilleuls } = await deposer(ctx, envoi.id, await pdfAvecTexte(SANS_NOM));
@@ -169,7 +175,7 @@ async function main() {
     appelsIA = 0;
     _reinitialiserFabriqueLLM(iaDeSuite("{}"));
     const ctx = await monter("Essai import");
-    const envoi = await creerEnvoi(ctx, "lot.zip", 2);
+    const envoi = await ouvert(ctx, "lot.zip", 2);
     await deposer(ctx, envoi.id, await pdfAvecTexte(FACTURE_MARTINS));
     await deposer(ctx, envoi.id, await pdfAvecTexte(DEVIS_LENOIR));
     const lues = await traiterPiecesEnAttente(ctx);
@@ -187,7 +193,7 @@ async function main() {
     appelsIA = 0;
     _reinitialiserFabriqueLLM(iaDeSuite('{"genre":null,"numero":null,"date":null,"montant_ttc":null,"client":null,"adresse":"5 impasse des Roses, 44300 Nantes","telephone":null,"chantier":null}'));
     const ctx = await monter("Essai sans adresse");
-    const envoi = await creerEnvoi(ctx, "lot.zip", 1);
+    const envoi = await ouvert(ctx, "lot.zip", 1);
     await deposer(ctx, envoi.id, await pdfAvecTexte(SANS_ADRESSE));
     await traiterPiecesEnAttente(ctx);
     assert.equal(appelsIA, 1, "l'IA n'a pas été appelée alors que l'adresse manquait");
@@ -202,7 +208,7 @@ async function main() {
     // L'IA répond n'importe quoi : la pièce ne doit PAS recevoir un nom inventé.
     _reinitialiserFabriqueLLM(iaDeSuite("Je ne sais pas."));
     const ctx = await monter("Essai à vérifier");
-    const envoi = await creerEnvoi(ctx, "lot.zip", 1);
+    const envoi = await ouvert(ctx, "lot.zip", 1);
     await deposer(ctx, envoi.id, await pdfAvecTexte(SANS_NOM));
     await traiterPiecesEnAttente(ctx);
     assert.equal(appelsIA, 1, "l'IA n'a pas été appelée alors que le nom manquait");
@@ -222,7 +228,7 @@ async function main() {
     await nettoyerBase();
     _reinitialiserFabriqueLLM(iaDeSuite("Je ne sais pas."));
     const ctx = await monter("Jardins du Moulin");
-    const envoi = await creerEnvoi(ctx, "lot.zip", 1);
+    const envoi = await ouvert(ctx, "lot.zip", 1);
     await deposer(
       ctx,
       envoi.id,
@@ -237,7 +243,7 @@ async function main() {
     await nettoyerBase();
     _reinitialiserFabriqueLLM(iaDeSuite("{}"));
     const ctx = await monter("Essai doublon");
-    const envoi = await creerEnvoi(ctx, "lot.zip", 2);
+    const envoi = await ouvert(ctx, "lot.zip", 2);
     const octets = await pdfAvecTexte(FACTURE_MARTINS);
     const premier = await deposer(ctx, envoi.id, octets);
     const second = await deposer(ctx, envoi.id, octets);
@@ -251,7 +257,7 @@ async function main() {
     _reinitialiserFabriqueLLM(iaDeSuite("Je ne sais pas."));
     const ctx = await monter("Essai rangement");
     const martins = await creerClient(ctx, { nom: "M. Martins" });
-    const envoi = await creerEnvoi(ctx, "lot.zip", 3);
+    const envoi = await ouvert(ctx, "lot.zip", 3);
     await deposer(ctx, envoi.id, await pdfAvecTexte(FACTURE_MARTINS));
     await deposer(ctx, envoi.id, await pdfAvecTexte(DEVIS_LENOIR));
     const { piece: tilleuls } = await deposer(ctx, envoi.id, await pdfAvecTexte(SANS_NOM));
@@ -285,7 +291,7 @@ async function main() {
     await nettoyerBase();
     _reinitialiserFabriqueLLM(iaDeSuite("{}"));
     const ctx = await monter("Essai objet d'avant");
-    const envoi = await creerEnvoi(ctx, "lot.zip", 1);
+    const envoi = await ouvert(ctx, "lot.zip", 1);
     await deposer(ctx, envoi.id, await pdfAvecTexte(DEVIS_LENOIR));
     await traiterPiecesEnAttente(ctx);
     await ranger(ctx, envoi.id);
@@ -307,7 +313,7 @@ async function main() {
     await nettoyerBase();
     _reinitialiserFabriqueLLM(iaDeSuite("{}"));
     const ctx = await monter("Essai deux adresses");
-    const envoi = await creerEnvoi(ctx, "lot.zip", 2);
+    const envoi = await ouvert(ctx, "lot.zip", 2);
     await deposer(ctx, envoi.id, await pdfAvecTexte(DEVIS_LENOIR));
     await deposer(ctx, envoi.id, await pdfAvecTexte(FACTURE_LENOIR_AILLEURS));
     await traiterPiecesEnAttente(ctx);
@@ -334,7 +340,7 @@ async function main() {
     _reinitialiserFabriqueLLM(iaDeSuite("{}"));
     const ctx = await monter("Essai annulation");
     await creerClient(ctx, { nom: "M. Martins" });
-    const envoi = await creerEnvoi(ctx, "lot.zip", 2);
+    const envoi = await ouvert(ctx, "lot.zip", 2);
     await deposer(ctx, envoi.id, await pdfAvecTexte(FACTURE_MARTINS));
     await deposer(ctx, envoi.id, await pdfAvecTexte(DEVIS_LENOIR));
     await traiterPiecesEnAttente(ctx);
@@ -353,7 +359,7 @@ async function main() {
     await nettoyerBase();
     _reinitialiserFabriqueLLM(iaDeSuite("{}"));
     const ctx = await monter("Essai suppression");
-    const envoi = await creerEnvoi(ctx, "lot.zip", 1);
+    const envoi = await ouvert(ctx, "lot.zip", 1);
     await deposer(ctx, envoi.id, await pdfAvecTexte(DEVIS_LENOIR));
     await traiterPiecesEnAttente(ctx);
     await ranger(ctx, envoi.id);
@@ -381,7 +387,7 @@ async function main() {
     _reinitialiserFabriqueLLM(iaDeSuite("{}"));
     const a = await monter("Entreprise A");
     const b = await monter("Entreprise B");
-    const envoi = await creerEnvoi(a, "lot.zip", 1);
+    const envoi = await ouvert(a, "lot.zip", 1);
     const { empreinte } = await deposer(a, envoi.id, await pdfAvecTexte(FACTURE_MARTINS));
     await traiterPiecesEnAttente(a);
     assert.equal(await envoiEnCours(b), null, "B voit l'envoi de A");
@@ -417,7 +423,7 @@ async function main() {
     await nettoyerBase();
     _reinitialiserFabriqueLLM(iaDeSuite("{}"));
     const ctx = await monter("Essai tout rangé");
-    const envoi = await creerEnvoi(ctx, "lot.zip", 1);
+    const envoi = await ouvert(ctx, "lot.zip", 1);
     await deposer(ctx, envoi.id, await pdfAvecTexte(FACTURE_MARTINS));
     await traiterPiecesEnAttente(ctx);
     await ranger(ctx, envoi.id);
@@ -480,7 +486,7 @@ async function main() {
     // l'envoi rangé lui ferait porter deux rangements, et le laisser derrière
     // rendrait sa pièce restée introuvable.
     const { ctx, envoi, tilleuls } = await rangementPartiel("Essai envoi suivant");
-    const neuf = await creerEnvoi(ctx, "autre.zip", 4);
+    const neuf = await ouvert(ctx, "autre.zip", 4);
     assert.notEqual(neuf.id, envoi.id, "un envoi déjà rangé a été repris");
     assert.deepEqual((await piecesLuesDeLEnvoi(ctx, neuf.id)).map((p) => p.id), [tilleuls.id], "ce qui restait n'a pas suivi l'envoi neuf");
     const etat = await envoiEnCours(ctx);
@@ -552,6 +558,69 @@ async function main() {
     assert.equal(etat?.id, bilan.envoiId);
     assert.equal(envoiAReprendre(etat), bilan.envoiId, "la pièce restée n'a plus de porte une fois le tableau rangé");
     assert.deepEqual((await piecesLuesDeLEnvoi(ctx, bilan.envoiId)).map((p) => p.id), [tilleuls.id]);
+  });
+
+  // **DEPUIS LA FICHE D'UN CLIENT** — sa demande du 8 novembre 2026 (planche
+  // `appli/client-importer-depuis-sa-fiche.html`). L'action refait ce plan-là :
+  // toutes les pièces sous son nom, connus réduits à lui (`actions.ts`).
+  const rangerChez = async (ctx: Ctx, envoiId: string, clientId: string) => {
+    const client = (await clientsQuOnPeutReconnaitre(ctx)).find((c) => c.id === clientId)!;
+    const { lignes, idDuRang } = lignesDesPdf(await piecesLuesDeLEnvoi(ctx, envoiId), {});
+    const plan = planDeRangement(lignesPourLeClient(lignes, client), [client], {}, {});
+    assert.ok(plan.ok, "le plan attend une réponse alors qu'il a dit qui c'est");
+    return rangerEnvoiSelonLePlan(ctx, envoiId, plan.clients, idDuRang);
+  };
+
+  await essai("depuis sa fiche, ses pièces se rangent chez lui, quel que soit le nom lu, et l'envoi s'en souvient", async () => {
+    await nettoyerBase();
+    _reinitialiserFabriqueLLM(iaDeSuite("Je ne sais pas."));
+    const ctx = await monter("Essai depuis la fiche");
+    const bernard = await creerClient(ctx, { nom: "M. Bernard", telephone: "06 12 34 56 78" });
+    const envoi = await ouvert(ctx, "fiche.zip", 2, bernard.id);
+    assert.equal(envoi.clientId, bernard.id, "l'envoi ne retient pas le client de la fiche");
+    // Un autre nom (Martins, son téléphone et son adresse), et un nom illisible.
+    await deposer(ctx, envoi.id, await pdfAvecTexte(FACTURE_MARTINS));
+    await deposer(ctx, envoi.id, await pdfAvecTexte(SANS_NOM));
+    await traiterPiecesEnAttente(ctx);
+    const etat = await envoiEnCours(ctx);
+    assert.equal(etat?.clientId, bernard.id, "l'écran repris ne saurait plus chez qui ranger");
+    const avant = (await tousLesClients(ctx)).length;
+    const r = await rangerChez(ctx, envoi.id, bernard.id);
+    assert.equal(r.rangees, 2);
+    assert.equal(r.clientsCrees, 0, "une fiche est née d'un nom lu");
+    assert.equal((await tousLesClients(ctx)).length, avant);
+    const fiche = await chargerFicheClient(ctx, bernard.id);
+    assert.equal((fiche?.pieces.factures.length ?? 0), 2, "ses deux pièces ne sont pas sur sa fiche");
+    const [moi] = (await tousLesClients(ctx)).filter((c) => c.id === bernard.id);
+    assert.equal(moi.telephone, "06 12 34 56 78", "le téléphone d'un autre a remplacé le sien");
+  });
+
+  await essai("depuis sa fiche, un import qui attend ailleurs ne se reprend pas, et l'inverse non plus", async () => {
+    await nettoyerBase();
+    const ctx = await monter("Essai deux portes");
+    const bernard = await creerClient(ctx, { nom: "M. Bernard" });
+    await ouvert(ctx, "vos-clients.zip", 1);
+    const depuisLaFiche = await creerEnvoi(ctx, "fiche.zip", 1, bernard.id);
+    assert.equal(depuisLaFiche.ok, false, "l'envoi de Vos clients aurait été rangé chez Bernard");
+    await nettoyerBase();
+    const ctx2 = await monter("Essai deux portes, bis");
+    const lui = await creerClient(ctx2, { nom: "M. Bernard" });
+    await ouvert(ctx2, "fiche.zip", 1, lui.id);
+    const depuisVosClients = await creerEnvoi(ctx2, "vos-clients.zip", 1);
+    assert.equal(depuisVosClients.ok, false, "l'envoi de sa fiche aurait été rangé par les noms lus");
+  });
+
+  await essai("un client effacé, ou celui d'une autre entreprise, ne reçoit pas d'import", async () => {
+    await nettoyerBase();
+    const ctx = await monter("Essai effacé");
+    const voisin = await monter("Essai voisin");
+    const chezLeVoisin = await creerClient(voisin, { nom: "M. Voisin" });
+    const autre = await creerEnvoi(ctx, "fiche.zip", 1, chezLeVoisin.id);
+    assert.deepEqual(autre, { ok: false, raison: "Ce client n’existe plus." }, "un import a visé le client d'une autre entreprise");
+    const parti = await creerClient(ctx, { nom: "M. Parti" });
+    await effacerClient(ctx, parti.id);
+    const r = await creerEnvoi(ctx, "fiche.zip", 1, parti.id);
+    assert.equal(r.ok, false, "un import a visé un client effacé");
   });
 
   _reinitialiserFabriqueLLM(null);

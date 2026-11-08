@@ -6,12 +6,17 @@ import { jourIso, jourLisible } from "@/lib/jour";
 import {
   categorieDeLaLigne,
   checkUp,
+  debutCouvert,
   etatDeLaPeriode,
+  jourEnMots,
+  libelleDansLeDossier,
   libellePeriode,
   resumerPeriodes,
   ticketsPerdusEnMots,
   totalSigne,
+  totauxDuReleve,
   type Decoupage,
+  type ResumePeriode,
 } from "@/lib/pour-mon-comptable";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { lireLaBanque } from "@/server/banque/lecture";
@@ -22,6 +27,7 @@ import {
   facturesRecuesLibres,
   ligneAJustifier,
   lignesDuReleve,
+  premierJourDuReleve,
   ticketsLibres,
 } from "@/server/repositories/pour-mon-comptable";
 import DossierEnCours, { type Periode } from "./DossierEnCours";
@@ -57,8 +63,16 @@ export default async function PageDossierEnCours() {
 
   const debutTickets = new Date(`${du}T12:00:00Z`);
   debutTickets.setUTCDate(debutTickets.getUTCDate() - 5);
-  const [lignes, tickets, factures, enAttente, entreprise] = await Promise.all([
+  // **L'année, à côté du dossier** — sa demande du 8 novembre 2026, planche
+  // `appli/soignee/banque-entrees-sorties.html` : « à côté, une autre case pour
+  // voir toutes les dépenses depuis le 1er janvier ». Elle commence au premier
+  // jour que la banque a donné quand il est plus tard (`debutCouvert`) : une
+  // année comptée sur 90 jours ne se dit pas « l'année ».
+  const annee = au.slice(0, 4);
+  const debutAnnee = debutCouvert(`${annee}-01-01`, await premierJourDuReleve(ctx));
+  const [lignes, lignesAnnee, tickets, factures, enAttente, entreprise] = await Promise.all([
     lignesDuReleve(ctx, du, au),
+    lignesDuReleve(ctx, debutAnnee, au),
     ticketsLibres(ctx, debutTickets.toISOString().slice(0, 10), au),
     facturesRecuesLibres(ctx),
     facturesARapprocher(ctx),
@@ -69,33 +83,57 @@ export default async function PageDossierEnCours() {
   const mois = nomDuMois(moisDuJour(jourIso(maintenant))).split(" ")[0];
   const joursTravailles = salaries > 0 ? `${mois.charAt(0).toUpperCase() + mois.slice(1)}, ${salaries} ${salaries > 1 ? "salariés" : "salarié"}` : null;
 
-  const dossier = lignes.map((l) => ({
+  // **Une seule façon de lire une ligne et de dire une période**, pour le dossier
+  // comme pour l'année : deux écritures finiraient par compter autrement.
+  const enLigneDuDossier = (l: (typeof lignes)[number]) => ({
     jour: l.jour,
     montant: l.montant,
     sens: l.sens,
     categorie: categorieDeLaLigne({ sens: l.sens, libelle: l.libelle, natureDuTicket: l.ticket?.nature ?? null, justification: l.justification }),
     aJustifier: ligneAJustifier(l),
     ticketPerdu: l.justification === "ticket_perdu",
-  }));
+  });
+  // L'état (« 6 sans ticket ») ne se dit que dans le dossier : c'est lui seul
+  // que le comptable reçoit, et une ligne de février déjà partie n'attend rien.
+  const enPeriode = (r: ResumePeriode, nom: string, avecEtat: boolean): Periode => ({
+    cle: r.cle,
+    nom,
+    etat: avecEtat ? etatDeLaPeriode(r) : null,
+    manque: avecEtat && r.aJustifier > 0,
+    perdus: avecEtat ? ticketsPerdusEnMots(r.ticketsPerdus) : null,
+    sorties: totalSigne(r.sorties, "sortie"),
+    entrees: totalSigne(r.entrees, "entree"),
+    parCategorie: r.parCategorie,
+    totalSorties: r.sorties,
+  });
+  const dossier = lignes.map(enLigneDuDossier);
 
   const periodes = Object.fromEntries(
     (["mois", "trimestre", "annee"] as Decoupage[]).map((d) => [
       d,
-      resumerPeriodes(dossier, d).map(
-        (r): Periode => ({
-          cle: r.cle,
-          nom: libellePeriode(r.cle),
-          etat: etatDeLaPeriode(r),
-          manque: r.aJustifier > 0,
-          perdus: ticketsPerdusEnMots(r.ticketsPerdus),
-          sorties: totalSigne(r.sorties, "sortie"),
-          entrees: totalSigne(r.entrees, "entree"),
-          parCategorie: r.parCategorie,
-          totalSorties: r.sorties,
-        })
-      ),
+      // **« 2026 » ne compte plus dix jours en se disant l'année** (sa remarque du
+      // 8 novembre 2026) : une période que le dossier entame dit où elle commence.
+      resumerPeriodes(dossier, d).map((r) => enPeriode(r, libelleDansLeDossier(r.cle, du), true)),
     ])
   ) as Record<Decoupage, Periode[]>;
+
+  const ligneAnnee = lignesAnnee.map(enLigneDuDossier);
+  const toutLAnnee = debutAnnee === `${annee}-01-01`;
+  const totalDossier = totauxDuReleve(lignes);
+  const totalAnnee = totauxDuReleve(lignesAnnee);
+  const vueAnnee = {
+    titre: toutLAnnee ? "Depuis le 1ᵉʳ janvier" : `Depuis le ${jourEnMots(debutAnnee)}`,
+    sous: toutLAnnee ? `toute l’année ${annee}` : "la banque n’a rien donné avant",
+    sorties: totalSigne(totalAnnee.sorties, "sortie"),
+    entrees: totalSigne(totalAnnee.entrees, "entree"),
+    periodes: [
+      ...resumerPeriodes(ligneAnnee, "annee").map((r) => enPeriode(r, `${annee}, du ${jourEnMots(debutAnnee)} au ${jourEnMots(au)}`, false)),
+      // Les mois dans l'ordre du calendrier, janvier d'abord, comme sur sa planche.
+      ...resumerPeriodes(ligneAnnee, "mois")
+        .reverse()
+        .map((r) => enPeriode(r, libellePeriode(r.cle), false)),
+    ],
+  };
 
   // Ce qui attend sa réponse : les sorties sans pièce, avec ce que le Check up
   // en dit, et les virements reçus que rien ne justifie encore. Les plus
@@ -132,6 +170,8 @@ export default async function PageDossierEnCours() {
           banque={liaison ? { nom: liaison.banque || "Banque reliée", lue: liaison.luLe ? jourLisible(jourIso(liaison.luLe)) : null } : null}
           perdus={ticketsPerdusEnMots(perdus)}
           periodes={periodes}
+          totalDossier={{ sorties: totalSigne(totalDossier.sorties, "sortie"), entrees: totalSigne(totalDossier.entrees, "entree") }}
+          annee={vueAnnee}
           aRegarder={aRegarder}
           factures={facturesAffichees(factures)}
           joursTravailles={joursTravailles}

@@ -214,7 +214,11 @@ heures), l'état des services et la fin du journal de démarrage.
    panne, c'est **l'espace qui est arrêté** — inutile de chercher dans le
    produit, il n'y a plus personne pour le servir. Et lire **à quel moment**
    elle a été écrite : « à l'allumage », un serveur muet est normal ; « par le
-   veilleur », c'est une vraie panne ;
+   veilleur », c'est une vraie panne ; et lire **quel espace l'a écrite**
+   (une empreinte de six caractères, jamais le nom) : son PC et son
+   téléphone peuvent tourner chacun le leur, avec sa base, et la fiche
+   prévient en tête quand deux espaces l'écrivent dans la même heure
+   (`ARCHITECTURE.md` §573) ;
 
    **Cette règle a été FAUSSE du 12 au 16 août 2026, et elle a coûté une
    soirée.** La publication vivait au bas de la boucle de surveillance — une
@@ -723,8 +727,10 @@ Concrètement, pour toute planche dont on attend un choix :
    tel que l'appli le peint** (son DOM, ses feuilles de style et ses polices,
    sur des données de démonstration, sans un script), le geste se joue pour
    de vrai pour figer chaque étape, et **seul le changement proposé s'y
-   ajoute**. Modèle : `appli/soignee/planning-sans-fiche.html`. Seul un écran
-   qui n'existe pas encore se dessine avec le kit ;
+   ajoute**. Modèles : `appli/soignee/planning-sans-fiche.html` et
+   `appli/client-importer-depuis-sa-fiche.html` ; l'outil : `scripts/planche-figee/`
+   (`figer.mjs` fige, `composer.mjs` assemble, `parcourir.mjs` touche chaque
+   geste). Seul un écran qui n'existe pas encore se dessine avec le kit ;
 3. rien d'autre à faire pour qu'elle soit vérifiée en ligne : depuis le
    20 août 2026, `pages.yml` **déduit sa liste des liens d'`essais.html`** —
    une liste tenue à la main s'oubliait à chaque page neuve, et l'oubli ne se

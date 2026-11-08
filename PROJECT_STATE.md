@@ -13,6 +13,39 @@ et « Vos prix », rangés par ses tarifs lus sur le libellé des lignes.
 dernière migration `drizzle/0170_idees_pour_l_appli.sql` (une idée pour l'appli, 0167 sur sa branche), avec `0169_plateforme_facture_electronique.sql` (la Factur-X, 0165 sur sa branche) et `0165` à `0168` (nature d'une absence, jours travaillés corrigés, zones de déplacement, couleur du férié), sur `main` le 6 novembre ; avant elles `0164_sauts_de_page_du_devis.sql`, sur `main` le 4 novembre
 
 ---
+## IMPORTER DEPUIS LA FICHE D'UN CLIENT, CODÉ (8 novembre 2026), PAS ENCORE SUR `main`
+
+Sa planche `appli/client-importer-depuis-sa-fiche.html` (*« code la 2, pas de batterie »*). Le bouton « Importer devis / facture » au bout de la fiche (`src/app/clients/PorteImport.tsx`, partagé avec Vos clients) ; l'envoi retient le client (migration `0177`) ; ses pièces se rangent chez lui (`lignesPourLeClient`, `src/lib/import-tableau.ts`) ; retour sur sa fiche avec `BandeImport`. Verts ici : règle, base (23), navigateur (13). **Niveau 3 : la batterie, avec son accord, avant `main`.** `ARCHITECTURE.md` §572.
+---
+## LA VITESSE DE LA VERSION RAPIDE, MESURÉE LE 8 NOVEMBRE 2026
+
+Sa crainte, devant son espace qui « ramait de fou » sous le bandeau « un écran
+jamais ouvert peut tarder » : *« il ne faut pas que le jour où l'application
+soit hébergée, il y ait des lags »*. Ce qu'il voyait était le mode de
+construction de son banc (§225), qui n'existe pas une fois hébergé.
+
+Mesuré ici sur `next build` puis `next start`, à 1536 x 730 px, jeu de
+démonstration, médiane de trois ouvertures :
+
+| | processeur normal | processeur ralenti 4 fois |
+|---|---|---|
+| ouvrir un écran (Chantiers, Clients, Planning, Terminés, Paysage, Catalogue, fiche client) | 0,13 à 0,20 s | 0,27 à 0,34 s |
+| Réglages, le devis d'un chantier | 0,42 à 0,49 s | 0,49 s |
+| passer d'un onglet à l'autre | 0,19 à 0,37 s | 0,44 à 0,62 s |
+| réponse du serveur | 0,04 à 0,13 s | |
+| code téléchargé par écran | 154 à 237 Ko | |
+
+**Ce que ces chiffres ne disent PAS**, et qui reste à mesurer sur l'hébergement
+choisi (`docs/A-FAIRE.md` §3) : la distance réseau jusqu'au serveur et à la
+base (ici, tout est sur la même machine), et une entreprise qui a des centaines
+de chantiers (ici, la démonstration en a quelques-uns).
+
+---
+## VOS ENTRÉES ET SORTIES, CODÉES (8 novembre 2026), PAS ENCORE SUR `main`
+
+Sa planche `appli/soignee/banque-entrees-sorties.html` (*« 1 tu peux coder »*). « Pour mon comptable » porte deux cases : le dossier en cours (Mois, Trimestre, Année ; une période qu'il entame dit où elle commence) et l'année, mois par mois, depuis le 1ᵉʳ janvier ou le premier jour donné par la banque. L'assistant lit le relevé (`src/server/ai/tools/lire-releve.ts`). Règles : `libelleDansLeDossier`, `debutCouvert`, `totauxDuReleve` (`src/lib/pour-mon-comptable.ts`) ; dépôt : `premierJourDuReleve`. Écran : `src/app/termines/comptable/page.tsx`, `DossierEnCours.tsx`. Aucune migration. Verts ici : règles (48), outil sous `atlas_app` (6), navigateur (14, rouge sur l'ancien écran), garde-fous. **Niveau 3 : la batterie, avec son accord, avant `main`.** `ARCHITECTURE.md` §571.
+
+---
 ## LA BATTERIE COMMUNE DU 6 NOVEMBRE AU SOIR, SUR `main` LE 7 NOVEMBRE
 
 Neuf lots, une batterie (`docs/batterie-commune-6-novembre-soir.md`). Ceux
@@ -514,7 +547,8 @@ consigne : une seule pour l'ensemble, avec son accord).** Détail :
 
 ## SUR `main` DEPUIS LE 6 OCTOBRE : L'APPLICATION SUR ORDINATEUR (3 octobre 2026)
 
-Au-delà de 1024 px, la barre passe à gauche et le contenu s'ouvre sur 1024 px ;
+Au-delà de 1024 px, la barre passe à gauche et le contenu s'ouvre sur 672 px
+(1024 px jusqu'au 8 novembre 2026, §570) ;
 les écrans sont les mêmes que sur le téléphone, seul le cadre change
 (`ARCHITECTURE.md` §447). Branche `claude/app-sur-ordinateur`. Types, lint, les
 suites de garde et sept suites navigateur de la barre au vert ; **la batterie

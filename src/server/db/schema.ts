@@ -1073,6 +1073,13 @@ export const chantiers = pgTable(
      */
     travauxALaMain: text("travaux_a_la_main").array().notNull().default(sql`'{}'::text[]`),
     /**
+     * Le téléphone d'un chantier SANS fiche client : « Autre chose », pour un
+     * client facturé ailleurs (sa demande du 8 novembre 2026, migration 0176).
+     * Avec une fiche, c'est le numéro de la fiche qui compte
+     * (`listerChantiersPourPlanning`).
+     */
+    telephone: text("telephone"),
+    /**
      * CE QU'EST CE CHANTIER, quand ce n'est pas un chantier ordinaire
      * (migration 0171). « hivernage » : posé depuis la fiche d'un client par
      * « Le prévoir ». C'est cette marque, jamais le libellé, qui fait porter
@@ -4323,6 +4330,12 @@ export const envoisPieces = pgTable("envois_pieces", {
     .$type<{ clientId: string; champ: "adresse" | "telephone"; valeur: string }[]>()
     .notNull()
     .default(sql`'[]'::jsonb`),
+  /**
+   * Le client depuis la fiche duquel l'import a été ouvert (migration 0177) :
+   * tout ce que l'envoi apporte se range chez lui. `null` : un import de Vos
+   * clients, rangé par les noms lus.
+   */
+  clientId: uuid("client_id"),
   createdBy: uuid("created_by").references(() => users.id),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

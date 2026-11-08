@@ -1,6 +1,6 @@
 # Prochaines tâches
 
-## ⏳ À REGARDER PAR LUI (8 novembre 2026) : importer un devis depuis la fiche d'un client
+## ~~⏳ À REGARDER PAR LUI (8 novembre 2026) : importer un devis depuis la fiche d'un client~~ TRANCHÉ LE 8 NOVEMBRE : « CODE LA 2, PAS DE BATTERIE » ; CODÉ LE 8 NOVEMBRE (§572), batterie entière à jouer avec son accord (migration 0177, route d'API)
 
 Sa correction de la planche « Nouvelle facture » : *« c'est pas ce que je
 voulais ; j'étais avant sur une autre application et j'avais juste un devis à
@@ -20,10 +20,14 @@ lui sans chercher son nom ; on revient sur sa fiche avec le bandeau
 « 2 documents rangés ». Elle vit à la racine d'`appli/`, comme les autres
 écrans figés (`appli/moyen-de-reglement-termines.html`) : `soignee/` garde les
 planches dessinées au kit.
-Au codage : l'import doit porter le client choisi jusqu'au rangement (niveau
-3, argent : des pièces comptables).
+**Codé le 8 novembre** (`ARCHITECTURE.md` §572) : l'envoi retient le client
+(migration 0177), ses pièces se présentent sous son nom (`lignesPourLeClient`),
+le bandeau revient sur sa fiche. Un tableau CSV ou Excel s'importe toujours
+depuis Vos clients. Règle, base (23) et navigateur (13, rouge sur l'appli sans
+le geste) verts ici ; **reste la batterie entière**, avec son accord, puis
+`main`.
 
-## ⏳ À REGARDER PAR LUI (8 novembre 2026) : vos entrées et sorties, deux cases, et l'assistant (couleurs de l'écran reprises à l'identique le 8 novembre)
+## ~~⏳ À REGARDER PAR LUI (8 novembre 2026) : vos entrées et sorties, deux cases, et l'assistant~~ TRANCHÉ LE 8 NOVEMBRE : « 1 TU PEUX CODER » ; CODÉ LE 8 NOVEMBRE (§571), batterie entière à jouer (argent, rayon de 17 points d'entrée)
 
 Sa question, sur « Pour mon comptable » : *« c'est normal que quand je lui
 demande mes entrées et mes sorties de l'année, il me les trouve pas »*. Puis :
@@ -48,10 +52,13 @@ revue : deux cases côte à côte avec leurs totaux ; le dossier garde Mois,
 Trimestre, Année, chaque période disant où elle commence (« 2026, depuis le
 28 octobre ») ; l'année depuis le 1er janvier, mois par mois.
 
-**Reste à trancher** : l'assistant donne-t-il le détail mois par mois quand
-on demande l'année ? Niveau 3 au codage (argent).
+**Codé le 8 novembre** (`ARCHITECTURE.md` §571) : les deux cases, chaque
+période du dossier qui dit où elle commence, l'année depuis le premier jour que
+la banque a donné ; l'outil `LireReleve` rend les totaux puis le détail mois par
+mois, comme sa planche. Règles, outil et écran éprouvés rouge puis vert ici ;
+**reste la batterie entière** (niveau 3), avec son accord, puis `main`.
 
-## ⏳ À REGARDER PAR LUI (8 novembre 2026) : « Autre chose », en entier (maquette finie : sans fiche client, ligne de facture gardée)
+## ~~⏳ À REGARDER PAR LUI (8 novembre 2026) : « Autre chose », en entier~~ TRANCHÉ LE 8 NOVEMBRE : « 1, C'EST OK » ; CODÉ LE 8 NOVEMBRE (§569), batterie entière à jouer (migration 0176)
 
 Sa demande, en quatre temps le même jour (le chemin est dans l'en-tête de la
 planche) ; sa décision, photo de la fiche d'intervention à l'appui : *« quand
@@ -76,7 +83,7 @@ téléphone du chantier quand il n'y a pas de fiche ; les travaux remplissent
 la liste de `TravauxAFaire`. À trancher : la ligne de la facture, même pour la
 banque ou une livraison ?
 
-## ⏳ À CHOISIR PAR LUI (8 novembre 2026) : sur ordinateur, la largeur de la colonne
+## ~~⏳ À CHOISIR PAR LUI (8 novembre 2026) : sur ordinateur, la largeur de la colonne~~ TRANCHÉ LE 8 NOVEMBRE : 672 PX ; CODÉ LE 8 NOVEMBRE, batterie entière à jouer (plancher : `globals.css`)
 
 Sa demande, photo de son portable à l'appui : *« les bandes s'étirent jusqu'au
 milieu de l'écran alors que le texte s'arrête à un quart ; pareil pour les
@@ -100,16 +107,17 @@ mesurer la colonne.
 de 10 px de chaque côté (`mx-4` contre `mx-[26px]`, `src/app/paysage/page.tsx`),
 téléphone compris. Proposé à part sur la planche.
 
-## La fiche de l'espace ne dit pas QUEL espace l'a écrite (8 novembre 2026)
+## ~~La fiche de l'espace ne dit pas QUEL espace l'a écrite (8 novembre 2026)~~ CODÉ LE 8 NOVEMBRE, à son « tu peux le faire » (§573) ; contrôle de niveau 2 à jouer avec son accord
 
 Deux espaces allumés (son PC et son téléphone) réécrivent la même fiche n°47
 tour à tour, et rien n'y dit lequel parle : une session qui la lit croit lire
 l'espace du téléphone et peut lire celui du PC. Le 8 novembre, c'est ainsi
 qu'Atlas « vide sur PC » s'expliquait par un autre espace, avec une autre
-base. **À faire** : publier `CODESPACE_NAME` dans la fiche
-(`scripts/rapporter-espace.mjs`), et dire en tête quand deux noms
-différents l'ont écrite dans la dernière heure. Pas codé : pas demandé ce
-jour-là.
+base. **Codé le 8 novembre** (`ARCHITECTURE.md` §573) : la fiche porte
+l'EMPREINTE de l'espace (six caractères), jamais son nom, et dit en tête
+quand deux espaces l'ont écrite dans la dernière heure. **Corrigé noir sur
+blanc** : « publier `CODESPACE_NAME` », écrit ici le matin, aurait publié
+l'adresse de son appli, port 3000 public, sur un dépôt public.
 
 ## Mon année : CHOISIE ET CODÉE LE 8 NOVEMBRE 2026, PAS SUR main (elle attend sa batterie, qu'il n'a pas autorisée)
 
@@ -208,7 +216,7 @@ un booléen par entreprise, faux par défaut (expand, colonne nullable ou
 **CODÉ LE 8 NOVEMBRE** (son « tu peux coder ça. Ne lance pas de batterie »),
 sur `claude/eager-cori-g7qv8y`, **pas sur `main`** : niveau 3 (migration 0181,
 argent), et aucune batterie n'a été autorisée. Le détail et ce qui reste :
-`docs/mon-annee.md`, `ARCHITECTURE.md` §569.
+`docs/mon-annee.md`, `ARCHITECTURE.md` §578.
 
 | | |
 |---|---|

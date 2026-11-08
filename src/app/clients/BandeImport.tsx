@@ -25,6 +25,8 @@ import { annulerRangementAction } from "./importer/actions";
  */
 type Etat = {
   id: string;
+  /** Ouvert depuis la fiche de ce client ; `null` : depuis Vos clients. */
+  clientId: string | null;
   attendues: number;
   recues: number;
   lues: number;
@@ -40,7 +42,12 @@ const nombre = (n: number) => n.toLocaleString("fr-FR");
 /** « 1 document lu », « 3 documents lus » : ce qui reste n'est parfois qu'un document. */
 const documents = (n: number, participe: string) => `${nombre(n)} document${n > 1 ? "s" : ""} ${participe}${n > 1 ? "s" : ""}`;
 
-export default function BandeImport() {
+/**
+ * **Sur la fiche d'un client** (`duClient`, sa planche du 8 novembre 2026) :
+ * la bande ne parle que d'un import ouvert depuis SA fiche. Un import de Vos
+ * clients, ou d'un autre client, n'a rien à y faire, et la mènerait ailleurs.
+ */
+export default function BandeImport({ duClient = null }: { duClient?: string | null }) {
   const router = useRouter();
   // « Coupé » se calcule à la lecture de l'état, pas au rendu : l'heure du
   // téléphone n'a rien à faire dans le dessin.
@@ -82,6 +89,7 @@ export default function BandeImport() {
   }, [router, relire, refus]);
 
   if (!etat) return null;
+  if (duClient && etat.clientId !== duClient) return null;
 
   // Juste rangé : « Annuler », six secondes durant.
   if (etat.annulableMs !== null || refus) {
@@ -127,7 +135,7 @@ export default function BandeImport() {
 
   return (
     <Link
-      href="/clients/importer"
+      href={duClient ? `/clients/importer?client=${duClient}` : "/clients/importer"}
       data-atlas="bande-import"
       className="mx-[26px] mt-[16px] block rounded-[16px] px-[18px] py-[16px]"
       style={{ backgroundColor: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }}

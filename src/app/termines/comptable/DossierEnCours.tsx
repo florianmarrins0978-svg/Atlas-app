@@ -26,7 +26,8 @@ import Icone from "@/components/atlas/IconeTrait";
 export type Periode = {
   cle: string;
   nom: string;
-  etat: string;
+  /** « 6 sans ticket » : dans le dossier seulement ; `null` pour l'année. */
+  etat: string | null;
   manque: boolean;
   /** « 1 ticket perdu », dit à part sous la barre. */
   perdus: string | null;
@@ -49,6 +50,8 @@ export default function DossierEnCours({
   banque,
   perdus,
   periodes,
+  totalDossier,
+  annee,
   aRegarder,
   factures,
   joursTravailles,
@@ -58,6 +61,10 @@ export default function DossierEnCours({
   /** Les tickets perdus depuis le début du dossier : « 3 tickets perdus ». */
   perdus: string | null;
   periodes: Record<Decoupage, Periode[]>;
+  /** Ce qui est sorti et entré depuis le début du dossier, pour sa case. */
+  totalDossier: { sorties: string; entrees: string };
+  /** L'année, à côté du dossier : sa case, puis l'année et ses mois. */
+  annee: { titre: string; sous: string; sorties: string; entrees: string; periodes: Periode[] };
   aRegarder: ARegarder[];
   factures: Facture[];
   /** « Novembre, 3 salariés » ; `null` pour un artisan seul : la ligne ne paraît pas. */
@@ -66,6 +73,10 @@ export default function DossierEnCours({
   const router = useRouter();
   const [enCours, demarrer] = useTransition();
   const [decoupage, setDecoupage] = useState<Decoupage>("mois");
+  // **Deux cases côte à côte** (sa planche du 8 novembre 2026) : le dossier en
+  // cours, et l'année depuis le 1er janvier. Chacune porte ses totaux, pour
+  // qu'aucune ne se lise pour l'autre.
+  const [vue, setVue] = useState<"dossier" | "annee">("dossier");
   const [bilan, setBilan] = useState<string | null>(null);
   const [refus, setRefus] = useState<string | null>(null);
   const [passe, setPasse] = useState<string | null>(null);
@@ -162,7 +173,41 @@ export default function DossierEnCours({
           <h2 className={rubrique} style={{ color: colors.inkSoft, fontFamily: font.body }}>
             Mes relevés
           </h2>
-          <div className="mx-6 mt-3 flex rounded-full p-[3px]" style={{ backgroundColor: colors.rustTint }} role="group" aria-label="Découpage">
+          <div className="mx-6 mt-3 grid grid-cols-2 gap-2" role="group" aria-label="Ce qui est compté">
+            {(
+              [
+                ["dossier", "Dossier en cours", `depuis le ${jourEnMots(dossier.du)}`, totalDossier],
+                ["annee", annee.titre, annee.sous, annee],
+              ] as const
+            ).map(([cle, titre, sous, total]) => (
+              <button
+                key={cle}
+                type="button"
+                data-atlas={`case-${cle}`}
+                aria-pressed={vue === cle}
+                onClick={() => setVue(cle)}
+                className="min-h-[44px] rounded-[12px] p-3 text-left"
+                style={{
+                  backgroundColor: colors.card,
+                  boxShadow: `inset 0 0 0 ${vue === cle ? 1.5 : 1}px ${vue === cle ? colors.ink : colors.line}`,
+                }}
+              >
+                <span className="block text-[14px] font-semibold" style={{ color: colors.ink }}>
+                  {titre}
+                </span>
+                <span className="mt-0.5 block text-[12.5px]" style={{ color: colors.inkSoft }}>
+                  {sous}
+                </span>
+                <span className="mt-2 flex flex-wrap gap-x-2.5 text-[14px] tabular-nums">
+                  <span style={{ color: colors.montantSortie }}>{total.sorties}</span>
+                  <span style={{ color: colors.montantEntree }}>{total.entrees}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {vue === "dossier" && (
+          <div className="mx-6 mt-3.5 flex rounded-full p-[3px]" style={{ backgroundColor: colors.rustTint }} role="group" aria-label="Découpage">
             {DECOUPAGES.map((d) => (
               <button
                 key={d.cle}
@@ -176,6 +221,7 @@ export default function DossierEnCours({
               </button>
             ))}
           </div>
+          )}
 
           <div className="mx-6 mt-3.5 flex flex-wrap gap-x-3.5 gap-y-1.5 text-[14px]" style={{ color: colors.inkSoft }}>
             {ORDRE_CATEGORIES.map((c) => (
@@ -187,17 +233,19 @@ export default function DossierEnCours({
           </div>
 
           <ul className="mx-6 mt-1" data-atlas="periodes">
-            {periodes[decoupage].map((p, i) => (
+            {(vue === "dossier" ? periodes[decoupage] : annee.periodes).map((p, i) => (
               <li key={p.cle} style={i > 0 ? { boxShadow: `inset 0 1px 0 ${colors.line}` } : undefined}>
                 <Link href={`/termines/comptable/${p.cle}`} className="block pb-3 pt-3.5" data-atlas="periode">
                   <span className="flex items-center gap-2.5">
                     <span className="min-w-0 flex-1 text-[19px] leading-[1.25]" style={{ fontFamily: font.display }}>
                       {p.nom}
                     </span>
-                    <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-[14px] font-semibold" style={{ color: p.manque ? colors.alert : colors.carteVertTexte }} data-atlas="etat-de-la-periode">
-                      <i className="inline-block h-[7px] w-[7px] rounded-full" style={{ backgroundColor: "currentColor" }} />
-                      {p.etat}
-                    </span>
+                    {p.etat && (
+                      <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-[14px] font-semibold" style={{ color: p.manque ? colors.alert : colors.carteVertTexte }} data-atlas="etat-de-la-periode">
+                        <i className="inline-block h-[7px] w-[7px] rounded-full" style={{ backgroundColor: "currentColor" }} />
+                        {p.etat}
+                      </span>
+                    )}
                     <span style={{ color: colors.chevron }}>
                       <Icone nom="suivant" taille={18} epaisseur={2} />
                     </span>

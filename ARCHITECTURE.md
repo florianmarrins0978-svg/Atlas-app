@@ -34165,10 +34165,10 @@ portait de règle pour un grand écran.
 | Décision | Pourquoi |
 |---|---|
 | **aucun écran propre à l'ordinateur** : seul le cadre change, dans `globals.css` (« L'ORDINATEUR ») | sa seconde phrase : une page écrite deux fois finit par diverger, et une modification faite pour le téléphone n'arriverait pas sur l'ordinateur |
-| trois variables, une source : `--atlas-cote` (la barre à gauche), `--atlas-largeur` (448 px, puis 1024 px au-delà de 1024 px d'écran), `--atlas-barre` (zéro sur ordinateur) | le cadre (`.atlas-cadre`, `.atlas-colonne`), tout ce qui flotte (`.atlas-colonne-fixe`) et les feuilles montantes (`.atlas-feuille`) lisent les mêmes ; sept copies de `max-w-md` deviennent une règle |
+| trois variables, une source : `--atlas-cote` (la barre à gauche), `--atlas-largeur` (448 px, puis 1024 px au-delà de 1024 px d'écran ; **672 px depuis le 8 novembre 2026**, §570), `--atlas-barre` (zéro sur ordinateur) | le cadre (`.atlas-cadre`, `.atlas-colonne`), tout ce qui flotte (`.atlas-colonne-fixe`) et les feuilles montantes (`.atlas-feuille`) lisent les mêmes ; sept copies de `max-w-md` deviennent une règle |
 | la barre est le MÊME composant, rangée en bas ou en colonne par la feuille de style | ses colonnes et la place du trait passent de valeurs en ligne à deux variables (`--atlas-onglets`, `--atlas-onglet-rang`) : un style en ligne aurait eu le dernier mot, et `!important` est refusé (§4 quater) |
 | la barre publie la place qu'elle prend EN BAS, lue sur elle-même (étroite, elle est à gauche : zéro) | publier sa hauteur sur ordinateur aurait réservé un écran entier de vide sous chaque page ; lire sa forme évite de recopier en JavaScript la largeur qui en décide |
-| le contenu reste une colonne de 1024 px, centrée dans la place à droite de la barre | une ligne de formulaire étirée sur 1 200 px ne se lit plus ; 1024 px, c'est plus du double d'avant et l'écran entier d'un petit portable |
+| le contenu reste une colonne de 1024 px, centrée dans la place à droite de la barre (**révisé le 8 novembre 2026 : 672 px**, §570) | une ligne de formulaire étirée sur 1 200 px ne se lit plus ; 1024 px, c'est plus du double d'avant et l'écran entier d'un petit portable |
 | les deux panneaux de la planche (`appli/sur-ordinateur.html`), liste et fiche côte à côte, **ne sont pas faits** | ils demandaient des écrans que le téléphone n'a pas, donc l'inverse de sa règle du 3 octobre ; c'est à lui de les redemander |
 | l'assistant reste un panneau qui glisse de la droite, sur un voile | c'est déjà sa forme sur le téléphone ; la planche le montrait poussant le contenu, autre invention écartée |
 
@@ -37192,8 +37192,93 @@ Son espace PC avait été ouvert le 3 octobre sur `claude/app-sur-ordinateur`. L
 
 **Ce que la correction ne rattrape pas seule** : un espace déjà figé exécute l'ANCIEN script, celui de sa branche. Il faut que le nouveau y arrive une fois, soit par sa branche avancée jusqu'à `main` (sans perte : elle n'a rien que `main` n'ait), soit par un passage sur `main` fait à la main. Éprouvé par `scripts/test-mise-a-jour-espace.ts` (cinq cas, rouges avant la correction) et sur une copie du vrai dépôt à l'état de son espace : « à jour » avec l'ancien script, « faite » et `main` du jour avec le nouveau.
 
+## §569 : « Autre chose » note un client facturé ailleurs, sans lui créer de fiche
 
-## §569 : Mon année : la saison de l'an dernier, l'an dernier au même jour, et un bénéfice qui ne se compte qu'avec la banque
+*8 novembre 2026, sa demande en quatre temps et son « 1, c'est OK » sur `appli/soignee/planning-sans-fiche.html`.*
+
+Un client qui passe par une autre plateforme pour être facturé (Unipros), mais qu'il veut sur son planning. Il a d'abord demandé un choix « sans fiche » dans « Un client », puis tranché : *« quand on clique sur Autre chose, on note le nom du client, et en dessous son adresse, son numéro de téléphone ; et une case travaux à faire tout de suite »*. Et : *« ne va pas me changer la catégorie Un client ou Autre chose »*.
+
+| Décision | Pourquoi |
+|---|---|
+| tout passe par « Autre chose » (`AjoutDeTemps`, `poserDuTempsAction`), qui reste un chantier SANS client | « Un client » crée déjà les fiches ; deux chemins vers une fiche auraient été deux façons de faire la même chose, et « Vos clients » se serait rempli de banques et de livraisons, chez tous les artisans |
+| l'adresse va dans `chantiers.adresse_chantier`, les travaux dans `chantiers.travaux_a_la_main` | les deux existaient : Maps, Waze, Copier l'adresse et la liste de la fiche d'intervention les lisent déjà |
+| une colonne `chantiers.telephone`, nullable (migration 0176, expand seul) | « Appeler le client » ne lisait que la fiche client : sans fiche, aucun numéro n'avait de place |
+| le numéro se lit à UN endroit : `coalesce(clients.telephone, chantiers.telephone)` dans `listerChantiersPourPlanning` | la fiche d'intervention n'a rien à savoir ; un chantier avec fiche garde le numéro de sa fiche |
+| les travaux passent par `refusDuTravail`, à l'écran et au serveur | la règle de « Ajouter un travail » sur la fiche ; écrits ici ou là, ils obéissent à la même |
+| une ligne : « Sans fiche client : pas de devis ni de facture dans Atlas. » | sa demande : le dire au moment où l'on s'en sert ; elle ne gêne pas pour la banque |
+| les voies « Un client » et « Autre chose » ne bougent pas | sa consigne ; la planche les montrait à tort au-dessus du formulaire, retirées avant le code |
+
+`scripts/test-bloquer-sans-devis-e2e.ts` tient le cas entier par son geste : les quatre cases, deux travaux, la ligne, « Poser » ; puis en base l'adresse, le téléphone, les travaux, aucun client attaché, **le nombre de fiches clients inchangé sur toute la table** ; puis la fiche d'intervention qui appelle ce numéro et mène à Waze. Rouge sur le code d'avant (la case de l'adresse n'existait pas), vert après ; les sept cas d'avant restent verts.
+
+## §570 : Sur ordinateur, la colonne fait 672 px, la largeur du devis
+
+*8 novembre 2026, sa demande sur son portable : « les bandes s'étirent jusqu'au milieu de l'écran alors que le texte s'arrête à un quart ; pareil pour les notifications ».*
+
+La racine n'était dans aucun écran : `--atlas-largeur` valait 64rem (1024 px) au-delà de 1024 px d'écran (§447), plus du double de la colonne pour laquelle les écrans sont dessinés (28rem). Tout ce qui prend la largeur s'étirait : bandes, notifications, lignes des listes, le bouton « Importer devis / facture ». Chaque jour du planning faisait près de 150 px de haut, et la fin du mois passait sous le tiroir du bas.
+
+| Décision | Pourquoi |
+|---|---|
+| 42rem (672 px), choisi par lui sur planche (`appli/sur-ordinateur-largeur.html`) entre 36, 42 et 48rem | la largeur de la feuille du devis : toutes les pages ont la même ; le mois du planning tient à l'écran |
+| la seule valeur du cadre change, aucun écran | §447 tient : une modification faite pour le téléphone arrive sur l'ordinateur sans qu'on y touche ; le téléphone ne bouge pas |
+| la planche montre ses VRAIS écrans, rendus à 1536 x 730 px (son portable) avec cette seule variable injectée | il choisit sur ce qu'il verra, et la correction ne peut pas faire autre chose que ce qu'il a choisi |
+| écarté : brider chaque bande ou chaque carte | une règle par composant pour un défaut qui vient d'une seule valeur, c'est le pansement du §4 quater |
+
+`scripts/test-sur-ordinateur-e2e.ts` exige désormais 672 px, centrés dans la place à droite de la barre : rouge sur 64rem (3 cas), vert sur 42rem (16 sur 16). Regardé après coup sur douze écrans à 1536 px : rien ne déborde, rien ne défile de côté.
+
+## §571 : Le dossier et l'année, deux cases ; et l'assistant lit le relevé
+
+*8 novembre 2026, sa question : « c'est normal que quand je lui demande mes entrées et mes sorties de l'année, il me les trouve pas ? ». Sa planche : `appli/soignee/banque-entrees-sorties.html`, version B revue (« 1 tu peux coder »).*
+
+« Pour mon comptable » ne lisait que le dossier en cours (`lignesDuReleve(ctx, du, au)`, chez lui depuis le 28 octobre) et intitulait « 2026 » ce qui n'en était qu'une dizaine de jours. Aucun outil de l'assistant ne lisait le relevé, pourtant gardé ligne à ligne.
+
+| Décision | Pourquoi |
+|---|---|
+| deux cases côte à côte, « Dossier en cours » et l'année, chacune avec ses totaux ; Mois, Trimestre, Année restent sous le dossier seul | sa phrase : *« il ne faut pas que ça nous induise en erreur »* ; ce qui part au comptable reste lisible tel quel |
+| une période que le dossier entame dit où elle commence (« 2026, depuis le 28 octobre », `libelleDansLeDossier`) | « 2026 » sur dix jours était un total faux de dix mois, présenté comme juste |
+| l'année commence au 1ᵉʳ janvier, ou au premier jour que la banque a donné s'il est plus tard (`debutCouvert`, `premierJourDuReleve`), et la case le dit | avant ce jour, rien n'est connu : compter depuis le 1ᵉʳ janvier serait inventer |
+| la vue de l'année ne porte aucun état « sans ticket » | seul le dossier se justifie et part au comptable |
+| une seule lecture de ligne et une seule mise en période pour les deux vues (`enLigneDuDossier`, `enPeriode`) | deux façons de compter finiraient par diverger (`CLAUDE.md` §3) |
+| l'outil `LireReleve` prend les mêmes lignes et les mêmes règles que l'écran (`lignesDuReleve`, `totauxDuReleve`, `totalSigne`) : totaux, reste, puis le détail mois par mois | l'assistant ne peut pas dire un autre chiffre que l'écran ; la planche montrait le détail mois par mois |
+| une période d'avant le premier jour donné se refuse, avec la date ; une année entamée se dit « partielle » | la même règle que la case |
+
+Aucune migration : le relevé est déjà gardé (`mouvements_bancaires`). L'assistant n'est ouvert qu'au patron (`peutUtiliserLAssistant`), donc l'outil n'ouvre la banque à personne qui ne la voit déjà. Éprouvé par `scripts/test-pour-mon-comptable.ts` (les trois règles, rouges avant), `scripts/test-assistant-releve-db.ts` (six cas sous `atlas_app`, dont l'isolation ; rouges sans l'outil enregistré) et `scripts/test-pour-mon-comptable-e2e.ts` (les deux cases, rouge sur l'ancien écran).
+
+## §572 : Importer depuis la fiche d'un client : l'envoi retient son client, et le plan de toujours range tout chez lui
+
+*8 novembre 2026, sa demande : « j'avais juste un devis à importer pour Bernard : est-ce que je peux, à partir de Bernard, cliquer sur importer un devis ? ». Planche `appli/client-importer-depuis-sa-fiche.html`, son « code la 2 ».*
+
+L'import ne partait que de Vos clients et rangeait chaque pièce par le nom lu : un devis d'une autre appli au nom mal lu, ou sans civilité, ne trouvait pas Bernard.
+
+| Décision | Pourquoi |
+|---|---|
+| le bouton de Vos clients, le même composant (`PorteImport`), au bout de sa fiche ; patron seul | sa planche ; un seul dessin pour les deux portes |
+| l'envoi retient le client en base (`envois_pieces.client_id`, migration 0177, étendre seulement) | un envoi se reprend : fermé pendant la lecture, il se rouvre par Vos clients et doit encore savoir chez qui ranger |
+| ses lignes se présentent sous son nom (`lignesPourLeClient`), puis `grouperParClient` et `planDeRangement` de toujours | une seule façon de ranger, la même à l'écran et au serveur ; aucune règle de rangement dupliquée |
+| le téléphone lu ne compte pas et ne complète jamais sa fiche | il peut être celui de n'importe qui sur la pièce ; un téléphone différent aurait aussi fait naître une fiche neuve (`rapprocherClient`) |
+| son adresse ne se complète que vide, et d'une seule adresse lue ; toute autre adresse reste sur sa pièce, comme chantier | deux adresses lues, personne ne sait laquelle est la sienne : « zéro erreur » |
+| un envoi ne change jamais de destination : reprendre un envoi d'ailleurs, ou emporter les restes d'une autre destination, se refuse avec la phrase qui dit quoi faire | sinon ce qui devait se ranger par les noms partirait chez Bernard, ou l'inverse, sans que rien ne le montre |
+| le serveur refait le plan, vérifie que tout va chez lui, et refuse si l'écran montrait un autre client | une fiche effacée pendant qu'il regardait l'écran : rien ne se range ailleurs que là où il l'a vu |
+| son client effacé, l'envoi redevient un envoi de Vos clients | un envoi bloqué pour toujours fermerait l'import à tous |
+| un tableau CSV ou Excel reste à Vos clients ; depuis la fiche : « PDF, photos, dossier .zip. » | un tableau porte les pièces de tous ses clients |
+| rangé, on revient sur sa fiche, et `BandeImport` (le même) y dit « 2 documents rangés », entre la loupe et les onglets | la place qu'il a sous la recherche de Vos clients |
+
+Éprouvé par `scripts/test-import-tableau.ts` (trois cas, rouges contre une règle fausse), `scripts/test-pieces-importees-db.ts` (trois cas sous `atlas_app`, chacun rouge quand on casse sa protection) et `scripts/test-importer-pieces-e2e.ts` (le geste entier, rouge sur l'appli sans le geste).
+
+## §573 : La fiche de l'espace dit quel espace l'a écrite, par une empreinte, jamais par son nom
+
+*8 novembre 2026. Son PC et son téléphone ouvraient deux espaces, chacun avec sa base, et les deux réécrivaient la fiche n°47 tour à tour : une session a lu celle du PC en croyant lire celle du téléphone. Son « tu peux le faire ».*
+
+| Décision | Pourquoi |
+|---|---|
+| la fiche porte « Écrite par l'espace : » et six caractères (`empreinteEspace`, SHA-256 du nom) | distinguer ses espaces suffit ; le nom n'ajoute rien de plus à une session |
+| **jamais le nom** (`CODESPACE_NAME`), contre ce que `TODO.md` proposait le matin | le port 3000 est public (`devcontainer.json`) et l'adresse est « nom-3000.app.github.dev » : le nom sur une fiche d'un dépôt public afficherait l'adresse de son appli |
+| avant de réécrire, l'espace relit la fiche : les espaces de l'heure vivent dans un commentaire que la page ne montre pas (`ecrivainsRecents`) | la fiche est réécrite entièrement à chaque publication ; sans mémoire, le second espace effacerait la trace du premier |
+| deux espaces dans l'heure : un avertissement en tête, qui nomme le dernier | une session lit le haut de la fiche ; la date fraîche ne prouve plus que CET espace tourne |
+| ce qui ne se lit pas comme une empreinte et une date ne compte pas | la fiche est publique : n'importe qui peut écrire dans son commentaire |
+
+Éprouvé par `scripts/test-rapport-espace.ts` (trois cas, rouges avant). La publication elle-même (relire, puis réécrire) ne se joue pas d'ici, le mandataire refusant l'API GitHub : la CI la joue sur une fiche jetable (`eprouver-publication-fiche.mjs`).
+
+## §578 : Mon année : la saison de l'an dernier, l'an dernier au même jour, et un bénéfice qui ne se compte qu'avec la banque
 
 *8 novembre 2026, sa planche « Mon année » (`appli/soignee/mon-annee.html`) et son « tu peux coder ça ». Pas sur `main` : il attend sa batterie.*
 

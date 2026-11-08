@@ -264,6 +264,8 @@ export async function creerChantier(
      */
     nature?: "hivernage";
     travauxALaMain?: string[];
+    /** Le téléphone d'un chantier sans fiche client (« Autre chose », migration 0176). */
+    telephone?: string;
   }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
@@ -277,6 +279,7 @@ export async function creerChantier(
         dureeDemiJournees: data.dureeDemiJournees,
         nature: data.nature ?? null,
         ...(data.travauxALaMain ? { travauxALaMain: data.travauxALaMain } : null),
+        telephone: data.telephone,
         createdBy: ctx.utilisateurId,
         updatedBy: ctx.utilisateurId,
       })
@@ -1080,7 +1083,12 @@ export async function listerChantiersPourPlanning(ctx: Ctx) {
         // sur un chantier, en voiture, souvent sans réseau. Une feuille qui doit
         // aller chercher l'adresse arrive vide exactement là où elle sert.
         adresseChantier: chantiers.adresseChantier,
-        clientTelephone: clients.telephone,
+        // **Le numéro à appeler, à UN seul endroit** : celui de la fiche client
+        // s'il y en a une, sinon celui du chantier, qu'« Autre chose » écrit
+        // pour un client facturé ailleurs, sans fiche (migration 0176, sa
+        // demande du 8 novembre 2026). Sans lui, « Appeler le client » restait
+        // gris sur un chantier qui avait pourtant un numéro.
+        clientTelephone: sql<string | null>`coalesce(${clients.telephone}, ${chantiers.telephone})`,
         // Le pense-bête, lu sur la feuille de chantier. Il descend avec la
         // liste plutôt qu'au moment du geste : le patron ouvre sa feuille en
         // voiture, souvent sans réseau — la même raison que l'adresse.

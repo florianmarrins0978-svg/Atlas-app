@@ -66,6 +66,7 @@ export default function RegistresDuDossier({
   registres,
   nomClient,
   ouvert,
+  avantLesOnglets = null,
 }: {
   registres: Registre[];
   nomClient: string;
@@ -74,6 +75,12 @@ export default function RegistresDuDossier({
    * Vos clients ouvre la fiche sur ses factures. Inconnu ou absent : le premier.
    */
   ouvert?: string;
+  /**
+   * Entre la loupe et les onglets : la bande de l'import ouvert depuis sa fiche
+   * (« 2 documents rangés », puis « Annuler »), à la place qu'elle a sous la
+   * recherche de Vos clients (planche du 8 novembre 2026).
+   */
+  avantLesOnglets?: React.ReactNode;
 }) {
   const [actif, setActif] = useState(() => Math.max(0, registres.findIndex((r) => r.cle === ouvert)));
   const [saisie, setSaisie] = useState("");
@@ -133,6 +140,8 @@ export default function RegistresDuDossier({
           />
         </div>
       )}
+
+      {avantLesOnglets}
 
       {/* L'air au-dessus des onglets vaut les 42 px de la maquette : les 32 px
           que l'onglet se réserve au-dessus de son mot en font déjà partie.

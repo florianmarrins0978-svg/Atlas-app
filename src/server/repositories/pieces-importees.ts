@@ -65,38 +65,74 @@ async function dernierEnvoi(tx: Tx): Promise<EnvoiEnBase | undefined> {
   return dernier;
 }
 
-export async function creerEnvoi(ctx: Ctx, nom: string, attendues: number): Promise<EnvoiEnBase> {
+export type OuvertureEnvoi = { ok: true; envoi: EnvoiEnBase } | { ok: false; raison: string };
+
+/**
+ * Ouvre un envoi, ou reprend celui qui n'est pas rangé. `clientId` : l'import
+ * part de la fiche de ce client, et tout ce qu'il apporte se rangera chez lui
+ * (sa demande du 8 novembre 2026, migration 0177).
+ *
+ * **Un envoi ne change jamais de destination.** Reprendre un envoi ouvert
+ * ailleurs, ou emporter les restes d'un envoi d'une autre destination,
+ * rangerait chez Bernard ce qui devait se ranger par les noms, ou l'inverse,
+ * sans que rien ne le montre. Ces deux cas se refusent, et la phrase dit quoi
+ * faire ; l'écran d'import les évite déjà, en reprenant d'abord ce qui attend
+ * (`envoiAReprendre`).
+ */
+export async function creerEnvoi(ctx: Ctx, nom: string, attendues: number, clientId: string | null = null): Promise<OuvertureEnvoi> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    if (clientId) {
+      const [client] = await tx
+        .select({ id: clients.id })
+        .from(clients)
+        .where(and(eq(clients.id, clientId), isNull(clients.deletedAt), isNull(clients.effaceLe)))
+        .limit(1);
+      if (!client) return { ok: false, raison: "Ce client n’existe plus." };
+    }
+    const memeDestination = (e: EnvoiEnBase) => (e.clientId ?? null) === clientId;
+    const AILLEURS = "Un autre import attend d’être rangé. Rangez-le d’abord.";
     // **Un envoi pas encore rangé se REPREND** au lieu d'en ouvrir un second :
     // c'est ainsi qu'un envoi coupé (appli fermée) repart où il en était quand
     // il choisit à nouveau le même fichier. Ouvrir un second envoi laisserait
     // les pièces du premier sans écran pour les ranger.
     const dernier = await dernierEnvoi(tx);
     if (dernier && !dernier.rangeLe) {
+      if (!memeDestination(dernier)) return { ok: false, raison: AILLEURS };
       const [repris] = await tx
         .update(envoisPieces)
         .set({ attendues: Math.max(dernier.attendues, attendues) })
         .where(eq(envoisPieces.id, dernier.id))
         .returning();
-      return repris;
+      return { ok: true, envoi: repris };
     }
+    if (dernier && !memeDestination(dernier) && (await restesDe(tx, dernier)) > 0) return { ok: false, raison: AILLEURS };
     // **Un envoi déjà rangé ne se reprend pas, même s'il garde des restes** :
     // il porterait un second rangement. Ses restes partent avec l'envoi neuf,
     // et se rangent avec ce qu'il apporte (`emporterLesRestes`).
     const [e] = await tx
       .insert(envoisPieces)
-      .values({ entrepriseId: ctx.entrepriseId, nom: nom.slice(0, 160), attendues, createdBy: ctx.utilisateurId })
+      .values({ entrepriseId: ctx.entrepriseId, nom: nom.slice(0, 160), attendues, clientId, createdBy: ctx.utilisateurId })
       .returning();
     const restes = await emporterLesRestes(tx, dernier, e.id);
-    if (restes === 0) return e;
+    if (restes === 0) return { ok: true, envoi: e };
     // Il attend ce qu'il annonce plus ce qui restait : « 3 sur 13 », jamais « 13 sur 10 ».
     const [avecLesRestes] = await tx
       .update(envoisPieces)
       .set({ attendues: attendues + restes })
       .where(eq(envoisPieces.id, e.id))
       .returning();
-    return avecLesRestes;
+    return { ok: true, envoi: avecLesRestes };
   });
+}
+
+/** Ce qu'un envoi rangé a laissé : ce qu'un envoi neuf emporterait. */
+async function restesDe(tx: Tx, envoi: EnvoiEnBase): Promise<number> {
+  if (!envoi.rangeLe) return 0;
+  const [{ n }] = await tx
+    .select({ n: sql<number>`count(*)::int` })
+    .from(piecesImportees)
+    .where(and(eq(piecesImportees.envoiId, envoi.id), ne(piecesImportees.statut, "rangee")));
+  return n;
 }
 
 /**
@@ -219,6 +255,8 @@ export async function noterIllisible(ctx: Ctx, id: string): Promise<void> {
 export type EtatEnvoi = {
   id: string;
   nom: string;
+  /** Ouvert depuis la fiche de ce client (migration 0177) ; `null` : depuis Vos clients. */
+  clientId: string | null;
   attendues: number;
   /** Arrivées sur le serveur, et pas encore rangées. */
   recues: number;
@@ -271,6 +309,7 @@ export async function envoiEnCours(ctx: Ctx): Promise<EtatEnvoi | null> {
     return {
       id: e.id,
       nom: e.nom,
+      clientId: e.clientId,
       // **Un envoi rangé n'attend plus rien** : il ne se range qu'arrivé en
       // entier, et ne se reprend plus (`creerEnvoi`). Déduire ses pièces
       // rangées de ce qu'il annonçait mentait dès qu'un client supprimé en
@@ -390,7 +429,7 @@ export async function rangerEnvoiSelonLePlan(
     if (envoi.rangeLe) {
       const [neuf] = await tx
         .insert(envoisPieces)
-        .values({ entrepriseId: ctx.entrepriseId, nom: envoi.nom, attendues: 1, createdBy: ctx.utilisateurId })
+        .values({ entrepriseId: ctx.entrepriseId, nom: envoi.nom, attendues: 1, clientId: envoi.clientId, createdBy: ctx.utilisateurId })
         .returning({ id: envoisPieces.id });
       const restes = await emporterLesRestes(tx, envoi, neuf.id);
       await tx.update(envoisPieces).set({ attendues: Math.max(restes, 1) }).where(eq(envoisPieces.id, neuf.id));

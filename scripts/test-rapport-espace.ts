@@ -18,6 +18,8 @@ import {
   TITRE_FICHE,
   extraireDepot,
   choisirFiche,
+  empreinteEspace,
+  ecrivainsRecents,
 } from "./rapporter-espace.mjs";
 // Importé statiquement — donc ce module ne DOIT rien exécuter à l'import,
 // et c'est éprouvé par le simple fait que cette suite démarre.
@@ -208,8 +210,8 @@ cas("la publication ne dépend plus de `gh`", () => {
   // terminal. Ce cas garde l'ORDRE, qui est tout : `gh` d'abord reviendrait à
   // ne rien publier chez la seule personne pour qui la fiche existe.
   const source = readFileSync("scripts/rapporter-espace.mjs", "utf8");
-  const parJeton = source.indexOf("publierParHttp(corps, jeton)");
-  const parGh = source.indexOf("publierParGh(corps)");
+  const parJeton = source.indexOf("publierParHttp(fabriquer, jeton)");
+  const parGh = source.indexOf("publierParGh(fabriquer)");
   assert.ok(parJeton > 0, "le chemin par jeton a disparu : l'espace du patron redeviendra muet");
   assert.ok(parGh > 0, "le second recours par `gh` a disparu");
   assert.ok(
@@ -312,6 +314,59 @@ cas("la fiche part AVANT que le serveur ait répondu, pas seulement après", () 
       `la première fiche part après ${etape} : une étape qui ne rend pas la main la rendrait muette`
     );
   }
+});
+
+// **QUEL ESPACE A ÉCRIT LA FICHE ?** — 8 novembre 2026. Son PC et son téléphone
+// ouvraient deux espaces, chacun avec sa base, et les deux réécrivaient la
+// même fiche tour à tour : une session a lu celle du PC en croyant lire celle
+// du téléphone. La fiche dit désormais qui l'a écrite, et prévient quand deux
+// espaces l'écrivent dans la même heure.
+const NOM_DU_PC = "florian-atlas-app-g4wpq6h95q2fxyz";
+const NOM_DU_TELEPHONE = "florian-atlas-app-r7tk2m9pw3hbcde";
+
+cas("le NOM de l'espace ne sort jamais : son port 3000 est public, et le dépôt aussi", () => {
+  // `devcontainer.json` ouvre le port 3000 à tous ; son adresse est
+  // « <nom de l'espace>-3000.app.github.dev ». Publier le nom sur une fiche
+  // d'un dépôt public, ce serait afficher l'adresse de son appli sur la place.
+  const empreinte = empreinteEspace(NOM_DU_PC);
+  assert.match(String(empreinte), /^[0-9a-f]{6}$/, `l'empreinte n'est pas courte et lisible : ${empreinte}`);
+  assert.equal(empreinteEspace(NOM_DU_PC), empreinte, "le même espace ne garde pas la même empreinte");
+  assert.notEqual(empreinteEspace(NOM_DU_TELEPHONE), empreinte, "deux espaces se confondent");
+  const corps = corpsDuRapport({ diagnostic: "Serveur : répond", quand: "2026-11-08T14:00:00.000Z", espace: empreinte });
+  assert.ok(!corps.includes(NOM_DU_PC) && !corps.includes("g4wpq6h95q"), "le nom de l'espace est publié");
+  assert.match(corps, new RegExp(`Écrite par l'espace :\\*\\* ${empreinte}`), "la fiche ne dit pas quel espace l'a écrite");
+});
+
+cas("deux espaces dans la même heure : la fiche le dit en tête, et nomme le dernier", () => {
+  const pc = empreinteEspace(NOM_DU_PC)!;
+  const tel = empreinteEspace(NOM_DU_TELEPHONE)!;
+  const premiere = corpsDuRapport({
+    diagnostic: "Serveur : répond",
+    quand: "2026-11-08T13:30:00.000Z",
+    espace: pc,
+    ecrivains: ecrivainsRecents("", { espace: pc, quand: "2026-11-08T13:30:00.000Z" }),
+  });
+  assert.ok(!/Deux espaces/.test(premiere), "un espace seul fait croire à deux");
+  const ecrivains = ecrivainsRecents(premiere, { espace: tel, quand: "2026-11-08T14:00:00.000Z" });
+  assert.deepEqual(ecrivains.map((e) => e.espace), [tel, pc], "les deux espaces de l'heure ne sont pas retenus, le dernier d'abord");
+  const seconde = corpsDuRapport({ diagnostic: "Serveur : répond", quand: "2026-11-08T14:00:00.000Z", espace: tel, ecrivains });
+  const tete = seconde.slice(0, seconde.indexOf("## Ce que l'espace dit"));
+  assert.match(tete, /Deux espaces/, "rien ne prévient que deux espaces écrivent la même fiche");
+  assert.match(tete, new RegExp(`dernier :\\*\\* ${tel}`), "la fiche ne dit pas lequel elle décrit");
+});
+
+cas("un autre espace d'il y a plus d'une heure ne compte plus, et un commentaire abîmé ne fait rien croire", () => {
+  const pc = empreinteEspace(NOM_DU_PC)!;
+  const tel = empreinteEspace(NOM_DU_TELEPHONE)!;
+  const vieille = corpsDuRapport({
+    diagnostic: "",
+    quand: "2026-11-08T12:00:00.000Z",
+    espace: pc,
+    ecrivains: ecrivainsRecents("", { espace: pc, quand: "2026-11-08T12:00:00.000Z" }),
+  });
+  assert.deepEqual(ecrivainsRecents(vieille, { espace: tel, quand: "2026-11-08T13:30:00.000Z" }).map((e) => e.espace), [tel]);
+  const abime = "<!-- ecrivains: [{\"espace\":\"<script>\",\"quand\":\"hier\"}, 42] -->";
+  assert.deepEqual(ecrivainsRecents(abime, { espace: tel, quand: "2026-11-08T13:30:00.000Z" }).map((e) => e.espace), [tel]);
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Rapport de l'espace — ${echecs} échec(s).`);

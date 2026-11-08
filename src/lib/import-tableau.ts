@@ -710,6 +710,37 @@ export function chantierDeLaLigne(g: Groupe, l: LigneLue): string | null {
 }
 
 /**
+ * **Un import ouvert depuis la fiche d'un client** (sa demande du 8 novembre
+ * 2026, planche `appli/client-importer-depuis-sa-fiche.html`) : tout ce qui
+ * s'importe de là est à LUI. Les lignes se présentent donc sous son nom, et
+ * la règle de toujours (`grouperParClient`, `planDeRangement`) les range sur
+ * sa fiche : une seule façon de ranger, pour l'écran comme pour le serveur.
+ *
+ * **Ce qui est lu ne parle plus pour le client** : un autre nom, un nom
+ * illisible ou le téléphone d'un tiers ne décident de rien, et le téléphone
+ * lu ne complète jamais sa fiche (il peut être celui de n'importe qui sur la
+ * pièce). Seule son adresse le peut, quand sa fiche n'en a pas et qu'une seule
+ * adresse est lue : deux adresses lues, personne ne sait laquelle est la
+ * sienne, et chacune reste sur sa pièce comme adresse du chantier. Une
+ * adresse qui n'est pas la sienne reste toujours sur sa pièce.
+ */
+export function lignesPourLeClient(lignes: readonly LigneLue[], client: ClientConnu): LigneLue[] {
+  const lues = new Set(lignes.filter((l) => l.adresse).map((l) => normaliserAdresse(l.adresse!)));
+  const ficheDit = client.adresse?.trim() || null;
+  const sienne = ficheDit ? normaliserAdresse(ficheDit) : lues.size === 1 ? [...lues][0] : null;
+  return lignes.map((l) => {
+    const laSienne = !!l.adresse && normaliserAdresse(l.adresse) === sienne;
+    return {
+      ...l,
+      nom: client.nom,
+      telephone: null,
+      adresse: laSienne ? l.adresse : null,
+      chantier: l.chantier ?? (l.adresse && !laSienne ? l.adresse : null),
+    };
+  });
+}
+
+/**
  * Les pastilles du haut : combien de fiches naîtront, combien reçoivent des
  * pièces, combien attendent sa réponse. « Ce sont deux clients » en fait naître
  * autant que d'adresses.
