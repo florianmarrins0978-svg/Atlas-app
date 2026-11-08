@@ -146,7 +146,7 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
       "choisissez le moment, puis « Poser ».",
     source: AJOUT,
     preuves: ['data-atlas="voie-temps"', "Autre chose"],
-    ailleurs: [{ source: AJOUT_CLIENT, preuves: ['placeholder="Rendez-vous à la banque, livraison…"', 'data-atlas="poser-le-temps"'] }],
+    ailleurs: [{ source: AJOUT_CLIENT, preuves: ['placeholder="Un nom, un rendez-vous, une livraison"', 'data-atlas="poser-le-temps"'] }],
   },
   {
     id: "planning-poser-depuis-le-bas",

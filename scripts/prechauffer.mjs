@@ -136,6 +136,9 @@ export const ECRANS_A_PRECHAUFFER = [
   // réclamées par ce contrôle à la batterie commune du 6 novembre.
   "/reglages/idee",
   "/reglages/idees-recues",
+  // Mon année (8 novembre 2026), réclamée par ce contrôle à la batterie
+  // commune du même jour.
+  "/reglages/mon-annee",
   // L'onglet « Paysage » et son premier outil interne (18 août 2026). La fiche
   // de chantier s'ouvre sur un chantier, souvent en 4G : c'est exactement le
   // cas où une compilation à froid ne passe pas.

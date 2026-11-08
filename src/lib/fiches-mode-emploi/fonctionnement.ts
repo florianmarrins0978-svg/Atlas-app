@@ -256,7 +256,7 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
     preuves: ['data-atlas="import-tableau"', "Choisir un autre fichier"],
     ailleurs: [
       { source: "src/app/clients/importer/ImporterPieces.tsx", preuves: ["tableau CSV ou Excel"] },
-      { source: "src/app/clients/BandeImport.tsx", preuves: ["annulableMs", 'href="/clients/importer"', "à vérifier"] },
+      { source: "src/app/clients/BandeImport.tsx", preuves: ["annulableMs", '"/clients/importer"', "à vérifier"] },
       { source: "src/lib/delai-annuler.ts", preuves: ["ANNULER_PENDANT_MS = 6000"] },
     ],
   },

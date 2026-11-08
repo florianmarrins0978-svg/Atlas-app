@@ -37,12 +37,13 @@ export const dynamic = "force-dynamic";
 export default async function MonAnneePage() {
   await garderLaPage();
   const ctx = await getCurrentCtx();
+  // La facturation lit ; le patron seul pose l'objectif et l'interrupteur. Demandé
+  // avant toute lecture, comme toute rubrique de l'entreprise (F8).
+  const modifiable = await estProprietaire(ctx);
   const d = await donneesMonAnnee(ctx);
   // Le HT des factures importées avant la migration 0181, cherché après la
   // réponse : l'écran ne l'attend pas, la visite suivante le compte.
   after(() => chercherLesHt(ctx));
-  // La facturation lit ; le patron seul pose l'objectif et l'interrupteur.
-  const modifiable = await estProprietaire(ctx);
 
   const anDernier = aUnAnDernier(d.pieces, d.annee);
   const etat = d.objectif ? etatDeLAnnee(d.objectif.chiffreAffaires, d.pieces, d.aujourdHui, d.alsaceMoselle) : null;

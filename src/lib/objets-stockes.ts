@@ -119,6 +119,15 @@ export const COLONNES_OBJET: readonly ColonneObjet[] = [
     absenceNormale: true,
     raisonAbsence: "une entreprise dont les travaux ne relèvent pas de la décennale n'en dépose pas",
   },
+  // Le logo des services à la personne, sur l'attestation fiscale (migration
+  // 0178, 8 novembre 2026).
+  {
+    table: "entreprises",
+    colonne: "sap_logo_cle",
+    quoi: "le logo des services à la personne",
+    absenceNormale: true,
+    raisonAbsence: "seule une entreprise de services à la personne qui l'a déposé en porte un",
+  },
   {
     table: "devis",
     colonne: "entreprise_attestation_decennale_cle",

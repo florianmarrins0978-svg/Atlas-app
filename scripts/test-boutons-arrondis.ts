@@ -176,6 +176,30 @@ const HORS_CHARTE: Array<{
   },
   {
     /**
+     * **La ligne de Mon année, sous les deux portes de Terminés** : sa planche
+     * du 8 novembre 2026 (`appli/soignee/mon-annee.html`, `.entree-annee` au
+     * rayon des plages du kit). Une plage pleine largeur qui porte un titre, un
+     * montant et une jauge, et ouvre Mon année : la nature de la ligne des
+     * attestations juste au-dessus, et un repère borné.
+     */
+    motif: /^src[/\\]components[/\\]atlas[/\\]LigneMonAnnee\.tsx$/,
+    pourquoi: "plage pleine largeur qu'on parcourt, sous les portes de Terminés, et non geste en capsule",
+    seulement: /data-atlas="ligne-mon-annee"/,
+  },
+  {
+    /**
+     * **Les deux cases du relevé, Dossier en cours et l'année** : sa planche du
+     * 8 novembre 2026 (`appli/soignee/banque-entrees-sorties.html`,
+     * `.case-releve` à 12 px, « 1 tu peux coder »). Deux cartes côte à côte qui
+     * portent un titre et une phrase, comme les cartes A et B du contrat : en
+     * capsule, une carte de deux lignes devient un galet. Bornées à leur repère.
+     */
+    motif: /^src[/\\]app[/\\]termines[/\\]comptable[/\\]DossierEnCours\.tsx$/,
+    pourquoi: "les deux cases du relevé, cartes côte à côte de sa planche du 8 novembre 2026",
+    seulement: /data-atlas=\{`case-/,
+  },
+  {
+    /**
      * **La ligne qui rassemble les clients à hiverner, en tête de Vos clients**
      * : sa planche du 5 novembre 2026, la B retenue le 6
      * (`appli/soignee/hiverner-l-arrosage.html`). Une plage bleue pleine

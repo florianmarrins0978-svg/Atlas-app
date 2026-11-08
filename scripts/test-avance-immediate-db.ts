@@ -191,7 +191,10 @@ async function main() {
           codeNature: "ENF",
         })
       ),
-      /liaisons_urssaf_chiffres_ck/
+      // Drizzle enveloppe le refus de PostgreSQL dans « Failed query » : le nom
+      // de la contrainte vit dans `cause`, et c'est lui qui prouve que c'est
+      // CETTE garde qui a refusé, et non une autre.
+      (e: unknown) => (e as { cause?: { constraint?: string } }).cause?.constraint === "liaisons_urssaf_chiffres_ck"
     );
   });
 

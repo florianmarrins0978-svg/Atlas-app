@@ -37,7 +37,7 @@ Règles :
 - chantier : le lieu des travaux (ou d'intervention) quand il est écrit à part et diffère de l'adresse du client, sinon null.
 - objet : le titre du document, ce qui suit « Objet : » (« Elagage », « Taille de haie »), en quelques mots, jamais la liste des lignes.
 - montant_ttc : le total TTC à payer, avec la virgule ou le point tel quel.
-- montant_ht : le total hors taxes, tel qu'il est imprimé. Si le document porte « TVA non applicable » (article 293 B), c'est le total à payer. Jamais calculé depuis le TTC.
+- montant_ht : le total hors taxes, tel qu'il est imprimé. Si le document dit que la TVA ne s'applique pas (franchise, article 293 B du CGI ou L. 233-3 du CIBS), c'est le total à payer. Jamais calculé depuis le TTC.
 - date : la date du document, pas l'échéance.
 - Tu ne DEVINES jamais : une valeur illisible ou absente vaut null.`;
 
