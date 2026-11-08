@@ -1,6 +1,22 @@
 # Prochaines tâches
 
-## ⏳ À CHOISIR PAR LUI (8 novembre 2026) : vos entrées et sorties, l'écran A ou B, et l'assistant
+## ⏳ À REGARDER PAR LUI (8 novembre 2026) : une facture depuis la fiche d'un client
+
+Sa question : *« si je vais dans Mes clients, que je clique sur Bernard, est-ce
+que je peux ajouter un devis, une facture, juste pour ce client-là ? »*, puis
+*« montre-moi la maquette finie que tu veux coder avant de coder quoi que ce
+soit »*.
+
+**Lu dans le code** : la fiche (`RepartirDeCeClient.tsx`) porte « Dernier
+devis », « Nouveau devis » (`/chantiers/nouveau?client=`) et « Contrat
+d'entretien » ; une facture sans devis ne part que de Terminés
+(`/chantiers/nouveau?facture=1`). La page lit déjà les deux réglages ensemble.
+
+**La planche** : `appli/soignee/client-nouvelle-facture.html`. Un geste
+« Nouvelle facture » (`?client=<id>&facture=1`) ; quatre gestes deux par deux,
+trois sur une ligne. Niveau 3 au codage (argent).
+
+## ⏳ À REGARDER PAR LUI (8 novembre 2026) : vos entrées et sorties, deux cases, et l'assistant
 
 Sa question, sur « Pour mon comptable » : *« c'est normal que quand je lui
 demande mes entrées et mes sorties de l'année, il me les trouve pas »*. Puis :
@@ -17,43 +33,41 @@ devient « Depuis le 28 octobre ». Écran B : « Année » compte tout 2026, le
 dossier reste dit à part. L'assistant : entrées, sorties, reste, sur une
 période ; si la banque n'a donné qu'une partie, il le dit avec la date.
 
-**Aussi à trancher** : l'assistant donne-t-il le détail mois par mois quand on
-demande l'année ? Niveau 3 au codage (argent).
+**Sa réponse, le même jour** : *« la B. Par contre, si c'est dossier en cours
+depuis le 28 octobre, il ne faut pas que ça nous induise en erreur : le mois,
+les trimestres et l'année seulement sur le dossier en cours, et à côté, une
+autre case pour voir toutes les dépenses depuis le 1er janvier »*. Planche
+revue : deux cases côte à côte avec leurs totaux ; le dossier garde Mois,
+Trimestre, Année, chaque période disant où elle commence (« 2026, depuis le
+28 octobre ») ; l'année depuis le 1er janvier, mois par mois.
 
-## ⏳ À CHOISIR PAR LUI (8 novembre 2026) : au planning, un client sans fiche, A ou B
+**Reste à trancher** : l'assistant donne-t-il le détail mois par mois quand
+on demande l'année ? Niveau 3 au codage (argent).
 
-Sa demande, photo du planning à l'appui : *« soit rechercher un client, soit
-décider de créer une fiche, sans créer un contact ; une touche pour dire que sa
-fiche ne sera pas créée »*.
+## ⏳ À REGARDER PAR LUI (8 novembre 2026) : « Autre chose », en entier (maquette finie : sans fiche client, ligne de facture gardée)
 
-**Aujourd'hui** (`src/app/planning/AjoutDunClient.tsx`) : un nom inconnu ouvre
-toujours Téléphone, E-mail, Adresse, et la fiche se crée (sa décision du
-10 septembre 2026). Le seul chemin sans fiche est « Autre chose »
-(`poserDuTempsAction`, un chantier sans client).
+Sa demande, en quatre temps le même jour (le chemin est dans l'en-tête de la
+planche) ; sa décision, photo de la fiche d'intervention à l'appui : *« quand
+on clique sur Autre chose, on note le nom du client, et en dessous son
+adresse, son numéro de téléphone ; et une case travaux à faire tout de suite,
+pas besoin d'aller sur la fiche d'intervention »*. Pour un client facturé
+ailleurs (Unipros). « Un client » ne bouge pas.
 
-**La planche** : `appli/soignee/planning-sans-fiche.html`. A : deux mots sous le
-nom, « Créer sa fiche » (d'office) ou « Sans fiche », au dessin de Matin,
-Après-midi, Journée (conseillé). B : la phrase d'aujourd'hui et une case.
-Sans fiche, le nom va seul au planning, comme « Autre chose ».
+**Lu dans le code** : « Autre chose » (`AjoutDeTemps`, `poserDuTempsAction`)
+n'a qu'une case ; Maps, Waze, Copier l'adresse lisent
+`chantiers.adresse_chantier` ; « Appeler le client » lit
+`chantier.clientTelephone`, donc la fiche client : sans fiche, il reste gris.
 
-**Revu le même jour, sa correction** : *« même si on ne crée pas sa fiche
-client, il faut quand même pouvoir mettre le nom, le prénom, l'adresse, le
-numéro de téléphone, parce que c'est un client qu'on va peut-être
-facturer »*. Une facture porte le nom et l'adresse du client : c'est une
-fiche. Le choix devient sa PLACE : « Dans Vos clients » d'office, ou « Pas
-encore », et elle y entre seule à son premier devis ou sa première facture.
-Les cases restent ouvertes, avec un prénom en plus (aujourd'hui le nom et le
-prénom s'écrivent ensemble dans `clients.nom` : une colonne neuve, donc une
-migration en deux temps, si elle est gardée).
+**La planche** : `appli/soignee/planning-sans-fiche.html` (même adresse que
+les trois versions d'avant). Nom, adresse, téléphone, travaux à faire,
+moment ; la ligne « Sans fiche client : pas de devis ni de facture dans
+Atlas. » ; posé, la fiche d'intervention prête.
 
-**Revu une seconde fois, sa précision** : *« ça sera un client que je ne
-facturerai pas ; il passera par une autre plateforme pour être facturé,
-comme Unipros ; il faut préciser qu'il ne pourra pas facturer ce client »*.
-Retour à « Créer sa fiche » ou « Sans fiche ». Sans fiche : « Il ne pourra
-pas être facturé dans Atlas. », plus de prénom, téléphone ni e-mail (aucune
-place sans fiche), l'adresse reste sur le chantier (`adresse_chantier`). C'est
-« Autre chose » plus une adresse : aucune migration. Reste à trancher : A ou
-B, et un téléphone sur le chantier pour l'appeler la veille.
+**Au codage** : une colonne téléphone sur `chantiers`, nullable (étendre
+seulement, rien d'existant ne change) ; « Appeler le client » lit le
+téléphone du chantier quand il n'y a pas de fiche ; les travaux remplissent
+la liste de `TravauxAFaire`. À trancher : la ligne de la facture, même pour la
+banque ou une livraison ?
 
 ## ⏳ À CHOISIR PAR LUI (8 novembre 2026) : sur ordinateur, la largeur de la colonne
 
@@ -2480,6 +2494,34 @@ Unipros »* (page « services à la personne », étape 01), puis la facture par
 accepte un devis fait ailleurs, à son en-tête, ou un import. Un chantier qui
 mêle élagage et taille donne deux devis et deux émetteurs : l'élagage chez
 l'artisan, la taille chez la coopérative.
+
+**Relier l'Urssaf : rien n'est codé, et voici ce que ça demande (lu le
+8 novembre 2026 sur les pages officielles).** Sa question : *« est-ce que ça
+marche ou c'est mis comme ça dans la planche ? il faut que ça fonctionne »*.
+Ce n'est que dessiné. Sources : la fiche de l'API sur data.gouv.fr
+(`api-tiers-de-prestation`) et le formulaire vierge de la démarche
+(demarche.numerique.gouv.fr, `api-tiers-de-prestations/dossier_vide`). Le
+portail technique (portailapi.urssaf.fr) ne répond pas depuis la session.
+
+| | |
+|---|---|
+| **ce que c'est** | une API, pas le site : `https://api.urssaf.fr/atp/v1/tiersPrestations`, accès restreint. Trois gestes : inscrire un particulier, transmettre une demande de paiement, lire son statut. Atlas ÉCRIT (inscription, facture) et LIT (statut, virement, rejet) : pas de lecture seule |
+| **le dossier d'Atlas** | une fois, par sa société, case « Je suis éditeur de logiciel » (numéro SAP facultatif pour un éditeur) |
+| **le dossier de chaque artisan** | case « J'ai recours à un éditeur de logiciel », en nommant Atlas ; son contact technique reçoit les codes d'accès, qu'il colle dans Atlas |
+| **les pièces** | justificatif de promotion du dispositif (mentions imposées : service mis en place par l'Urssaf et la DGFiP, non obligatoire, activation du compte, 48 h pour valider ou contester, l'organisme reste l'interlocuteur, lien vers les plafonds sur impots.gouv.fr ; un kit Urssaf existe), attestation de régularité fiscale de moins d'un mois, RIB de virement, pièce d'identité du dirigeant, contacts (dirigeant, gestion, comptabilité, technique), CGU acceptées |
+| **les délais** | 19 jours au mieux, environ 2 mois avec échanges, 3 mois si le dossier est incomplet |
+| **les règles qui touchent le produit** | le client doit avoir déjà fait une déclaration de revenus ; une demande de paiement ne couvre pas plus d'un mois calendaire ; un RIB de prélèvement sur lequel **l'Urssaf prélève l'artisan si le client ne paie pas sa part** |
+
+Rien ne peut s'éprouver avant que l'Urssaf donne ses codes : le code
+s'écrirait à l'aveugle. Ordre proposé : son dossier d'éditeur d'abord, le
+code pendant l'instruction, l'essai sur les codes reçus.
+
+**Le nom ET le numéro de chaque intervenant sur l'attestation (sa question
+du 8 novembre 2026, « des numéros, ou les noms ? »).** La page officielle
+(« Les obligations réglementaires ») exige *« nom et numéro d'identification
+des intervenants, dates et durées des interventions »*, avec un regroupement
+mensuel permis pour des prestations quotidiennes ou périodiques. La planche
+ne montrait que « n° 1 » : corrigé, chaque ligne porte le nom puis le numéro.
 
 **Ses deux remarques suivantes, le même jour :**
 

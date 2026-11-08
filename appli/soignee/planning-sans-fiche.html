@@ -3,43 +3,40 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Un client sans fiche</title>
+<title>Autre chose, en entier</title>
 <link rel="stylesheet" href="kit.css">
 <style>
 /*
-  POSER UN CLIENT SANS LUI CRÉER DE FICHE (src/app/planning/AjoutDunClient.tsx).
-  Sa demande du 8 novembre 2026, photo du planning à l'appui : « soit
-  rechercher un client, soit décider de créer une fiche, sans créer un
-  contact ; une touche pour dire que sa fiche ne sera pas créée ».
+  « AUTRE CHOSE », EN ENTIER (src/app/planning/AjoutDunClient.tsx,
+  AjoutDeTemps ; la fiche d'intervention, FeuilleChantier.tsx et
+  TravauxAFaire.tsx).
 
-  CE QUI EST VRAI AUJOURD'HUI : « Un client » cherche le nom ; inconnu, il
-  écrit « Inconnu, sa fiche sera créée » et ouvre Téléphone, E-mail, Adresse
-  du chantier. La fiche se crée toujours (sa décision du 10 septembre 2026).
-  Le seul chemin sans fiche est « Autre chose » (poserDuTempsAction : un
-  chantier sans client, nommé par lui), pensé pour la banque ou une livraison.
+  LE CHEMIN DE SA DEMANDE DU 8 NOVEMBRE 2026, dans l'ordre :
+  1. « rechercher un client, ou décider de créer une fiche, sans créer un
+     contact » : une planche « Créer sa fiche » ou « Sans fiche » dans
+     « Un client » ;
+  2. « il faut quand même pouvoir mettre le nom, le prénom, l'adresse, le
+     téléphone, on va peut-être le facturer » ;
+  3. « je me suis trompé : un client que je ne facturerai pas, il passera
+     par une autre plateforme comme Unipros, mais je veux l'ajouter à mon
+     planning ; il faut préciser qu'il ne pourra pas être facturé » ;
+  4. sa décision, photo de la fiche d'intervention à l'appui : « quand on
+     clique sur Autre chose, on note le nom du client, et en dessous son
+     adresse, son numéro de téléphone ; et une case travaux à faire tout de
+     suite, pas besoin d'aller sur la fiche d'intervention ».
+  Les versions 1 à 3 sont dans l'historique git de ce fichier.
 
-  CE QUI CHANGE : sous un nom inconnu, deux mots au même dessin que Matin,
-  Après-midi, Journée. « Créer sa fiche » reste choisi d'office ; « Sans
-  fiche » referme les trois cases, et le nom va seul au planning, comme
-  « Autre chose ». Rien n'est codé.
+  CE QUI EST VRAI AUJOURD'HUI, LU DANS LE CODE : « Autre chose » n'a qu'une
+  case (poserDuTempsAction : un chantier sans client, nommé par lui). Sur sa
+  fiche, Maps, Waze et Copier l'adresse lisent chantiers.adresse_chantier ;
+  « Appeler le client » lit le téléphone de la FICHE CLIENT
+  (chantier.clientTelephone) : sans fiche, il reste gris. Les travaux à faire
+  se remplissent sur la fiche d'intervention, une fois le chantier posé.
 
-  REVU LE MÊME JOUR, SA CORRECTION : « même si on ne crée pas sa fiche
-  client, il faut quand même pouvoir mettre le nom, le prénom, l'adresse, le
-  numéro de téléphone, parce que c'est un client qu'on va ajouter au planning
-  et qu'on va peut-être facturer ». Une facture porte le nom et l'adresse du
-  client : ce qu'il décrit EST une fiche. Le choix ne porte donc plus sur la
-  fiche mais sur sa place : « Dans Vos clients » d'office, ou « Pas encore »,
-  et la fiche y entre seule à son premier devis ou sa première facture. Les
-  cases restent ouvertes dans les deux cas, avec le prénom en plus.
-
-  REVU UNE SECONDE FOIS, SA PRÉCISION : « ça sera un client que je ne
-  facturerai pas ; il passera par une autre plateforme pour être facturé,
-  comme Unipros, mais j'ai envie de l'ajouter à mon planning. Il faut
-  préciser au moment où l'utilisateur va utiliser cette case qu'il ne pourra
-  pas facturer ce client. » Retour à « Créer sa fiche » ou « Sans fiche » :
-  sans fiche, une phrase le dit tout de suite, le prénom, le téléphone et
-  l'e-mail s'en vont (ils n'ont pas de place sans fiche), et l'adresse reste,
-  portée par le chantier (chantiers.adresse_chantier) pour savoir où aller.
+  CE QUI CHANGE : « Autre chose » prend l'adresse, le téléphone et les
+  travaux à faire. L'adresse va où elle va déjà ; le téléphone demande une
+  case neuve sur le chantier (une colonne, vide pour tout ce qui existe) ;
+  les travaux remplissent la liste de la fiche. « Un client » ne bouge pas.
 */
 .ecran { background: var(--atlas-cream); }
 .semaine { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin: 0 0 14px; }
@@ -53,44 +50,53 @@
           font-size: 15px; font-weight: 600; color: var(--atlas-ink); }
 .moment em { font-style: normal; font-weight: 400; font-size: 13px; color: var(--atlas-muted); }
 .moment em.pose { color: var(--atlas-ink); font-size: 15px; font-weight: 600; }
-.formulaire { margin-top: 10px; }
-.verdict { margin: 8px 0 0; font-size: 13px; color: var(--atlas-inkSoft); }
-.mots { display: flex; gap: 18px; margin-top: 6px; }
-.mots button { min-height: 40px; padding: 0; font-size: 14.5px; color: var(--atlas-inkSoft);
-               border-bottom: 1.5px solid transparent; transition: color 160ms var(--courbe), border-color 160ms var(--courbe); }
+.voies { display: flex; flex-wrap: wrap; gap: 4px 18px; margin-top: 12px; }
+.voies button { min-height: 40px; font-size: 15px; font-weight: 600; color: var(--atlas-orTexte); }
+.voies button[aria-pressed="true"] { color: var(--atlas-ink); border-bottom: 1.5px solid var(--atlas-ink); }
+.champ-saisie { margin-top: 8px; min-height: 48px; background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.rubrique-champs { margin: 14px 0 0; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--atlas-inkSoft); }
+.travaux { list-style: none; margin: 6px 0 0; padding: 0; }
+.travaux li { display: flex; align-items: center; gap: 10px; min-height: 40px; font-size: 15px; color: var(--atlas-ink); }
+.travaux li i { width: 20px; height: 20px; flex: none; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--atlas-muted); }
+.travaux li button { margin-left: auto; width: 36px; height: 36px; display: grid; place-items: center; color: var(--atlas-muted); }
+.ajout-travail { display: flex; gap: 8px; align-items: center; }
+.ajout-travail .champ-saisie { flex: 1; }
+.ajout-travail button { min-height: 44px; margin-top: 8px; padding: 0 14px; border-radius: 22px; font-size: 14px; font-weight: 600;
+                        color: var(--atlas-orTexte); box-shadow: inset 0 0 0 1px var(--atlas-or); }
+.facture-ailleurs { margin: 12px 0 0; font-size: 13px; line-height: 1.4; color: var(--atlas-inkSoft); }
+.mots { display: flex; gap: 18px; margin-top: 10px; }
+.mots button { min-height: 40px; padding: 0; font-size: 14.5px; color: var(--atlas-inkSoft); border-bottom: 1.5px solid transparent; }
 .mots button[aria-pressed="true"] { color: var(--atlas-ink); font-weight: 600; border-bottom-color: var(--atlas-ink); }
-.mots button:focus-visible { outline: 2px solid var(--atlas-or); outline-offset: 3px; }
-.trouves { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-.trouves button { min-height: 40px; padding: 0 14px; border-radius: 20px; font-size: 14.5px;
-                  background: var(--atlas-cream); box-shadow: inset 0 0 0 1px var(--atlas-line); color: var(--atlas-ink); }
-.case { display: flex; align-items: center; gap: 10px; min-height: 44px; margin-top: 6px; font-size: 14.5px; color: var(--atlas-ink); }
-.case input { width: 20px; height: 20px; accent-color: var(--atlas-rust); }
-.cases .champ-saisie { margin-top: 8px; min-height: 48px; background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
-.cases { overflow: hidden; transition: opacity 180ms var(--courbe); }
-.cases[hidden] { display: none; }
-.avertissement { margin: 8px 0 0; font-size: 13.5px; line-height: 1.4; color: var(--atlas-alerte); }
 .pied { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
 .pied .bouton-petit { min-height: 40px; }
-.discretion { min-height: 40px; padding: 0 14px; border-radius: 20px; font-size: 14px;
-              box-shadow: inset 0 0 0 1px var(--atlas-line); color: var(--atlas-inkSoft); }
+.discretion { min-height: 40px; padding: 0 14px; border-radius: 20px; font-size: 14px; box-shadow: inset 0 0 0 1px var(--atlas-line); color: var(--atlas-inkSoft); }
+
+/* La fiche d'intervention, une fois posé : les quatre gestes et ses travaux. */
+.fiche-intervention { margin-top: 14px; padding: 14px; border-radius: 14px; background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.fiche-intervention .etiquette { margin: 0; text-align: center; font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--atlas-inkSoft); }
+.fiche-intervention h3 { margin: 4px 0 12px; text-align: center; font: 400 21px/1.2 var(--serif); color: var(--atlas-ink); }
+.gestes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.gestes span { display: grid; justify-items: center; gap: 4px; padding: 10px 2px; border-radius: 10px; background: var(--atlas-cream);
+               font-size: 11.5px; text-align: center; color: var(--atlas-ink); }
+.gestes span.gris { color: var(--atlas-muted); opacity: .55; }
+.gestes .ico { width: 19px; height: 19px; color: var(--atlas-rust); }
+.bandeau-travaux { display: flex; justify-content: space-between; margin-top: 12px; padding: 10px 12px; border-radius: 10px;
+                   background: color-mix(in srgb, var(--atlas-rust) 10%, var(--atlas-card)); font-size: 14.5px; color: var(--atlas-ink); }
+.bandeau-travaux b { font-weight: 600; font-size: 13px; }
 </style>
 </head>
 <body class="pl">
 
 <header class="pl-tete">
   <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
-  <h1 class="pl-titre">Un client sans fiche</h1>
-  <p class="pl-verdict">Tapez un nom. Connu, il se propose. Inconnu, vous choisissez : <b>Créer sa fiche</b>, ou <b>Sans fiche</b> pour un client facturé ailleurs. Essayez « Bernard », puis « Luloui ».</p>
+  <h1 class="pl-titre">Autre chose, en entier</h1>
+  <p class="pl-verdict"><b>La maquette finie, celle que je coderai.</b> « Autre chose » prend le nom, l’adresse, le téléphone et les travaux à faire. Remplissez, posez : la fiche d’intervention est déjà prête, avec Maps, Waze et « Appeler le client ».</p>
 </header>
 
 <main class="pl-scene">
   <div class="pl-ecrans">
     <div>
       <p class="pl-legende">Proposé</p>
-      <div class="pl-etats" id="variante">
-        <button type="button" data-variante="a" aria-pressed="true">A, deux mots (conseillé)</button>
-        <button type="button" data-variante="b" aria-pressed="false">B, une case</button>
-      </div>
       <div class="cadre">
         <div class="ecran">
           <div class="defile">
@@ -106,38 +112,20 @@
               <div class="moment">Matin <em id="slot-matin">libre</em></div>
               <div class="moment">Après-midi <em id="slot-am">libre</em></div>
 
-              <div class="formulaire" id="formulaire">
-                <label class="champ-recherche">
-                  <svg class="ico" aria-hidden="true"><use href="#i-recherche"/></svg>
-                  <input type="text" id="nom" placeholder="Nom du client" autocomplete="off" aria-label="Nom du client" value="Luloui">
-                  <button class="effacer" type="button" id="effacer" aria-label="Effacer le nom"><svg class="ico ico-p" aria-hidden="true"><use href="#i-croix"/></svg></button>
-                </label>
+              <div id="formulaire">
+                <div class="voies" aria-hidden="true">
+                  <button type="button" tabindex="-1">Un client</button>
+                  <button type="button" tabindex="-1" aria-pressed="true">Autre chose</button>
+                </div>
+                <input class="champ-saisie" id="nom" value="Jean Luloui" placeholder="Un nom, un rendez-vous, une livraison" aria-label="Nom">
+                <input class="champ-saisie" id="adresse" value="4 rue des Tilleuls, Vertou" placeholder="Adresse" aria-label="Adresse">
+                <input class="champ-saisie" id="telephone" value="06 41 22 87 10" placeholder="Téléphone" aria-label="Téléphone" inputmode="tel">
 
-                <div id="zone-trouves" class="trouves" hidden></div>
-
-                <div id="zone-inconnu">
-                  <!-- A : deux mots, au dessin de Matin, Après-midi, Journée. -->
-                  <div id="choix-a">
-                    <p class="verdict">Inconnu.</p>
-                    <div class="mots" role="group" aria-label="Sa fiche">
-                      <button type="button" data-fiche="oui" aria-pressed="true">Créer sa fiche</button>
-                      <button type="button" data-fiche="non" aria-pressed="false">Sans fiche</button>
-                    </div>
-                  </div>
-                  <!-- B : la phrase d'aujourd'hui, et une case. -->
-                  <div id="choix-b" hidden>
-                    <p class="verdict" id="phrase-b">Inconnu, sa fiche sera créée</p>
-                    <label class="case"><input type="checkbox" id="case-sans">Sans fiche</label>
-                  </div>
-                  <p class="avertissement" id="avert" hidden>Il ne pourra pas être facturé dans Atlas.</p>
-                  <div class="cases" id="cases">
-                    <input class="champ-saisie" placeholder="Prénom" aria-label="Prénom">
-                    <input class="champ-saisie" placeholder="Téléphone" aria-label="Téléphone">
-                    <input class="champ-saisie" placeholder="E-mail" aria-label="E-mail">
-                  </div>
-                  <div class="cases">
-                    <input class="champ-saisie" placeholder="Adresse du chantier" aria-label="Adresse du chantier">
-                  </div>
+                <p class="rubrique-champs">Travaux à faire</p>
+                <ul class="travaux" id="travaux"></ul>
+                <div class="ajout-travail">
+                  <input class="champ-saisie" id="travail" placeholder="Ajouter un travail" aria-label="Ajouter un travail">
+                  <button type="button" id="ajouter-travail">Ajouter</button>
                 </div>
 
                 <div class="mots" role="group" aria-label="Quand" id="quand">
@@ -145,11 +133,26 @@
                   <button type="button" data-quand="am" aria-pressed="false">Après-midi</button>
                   <button type="button" data-quand="jour" aria-pressed="true">Journée</button>
                 </div>
+                <p class="facture-ailleurs">Sans fiche client : pas de devis ni de facture dans Atlas.</p>
 
                 <div class="pied">
                   <button type="button" class="discretion" id="annuler">Annuler</button>
                   <button type="button" class="bouton bouton-plein bouton-petit" id="poser">Poser</button>
                 </div>
+              </div>
+
+              <div class="fiche-intervention" id="fiche" hidden>
+                <p class="etiquette">Fiche d’intervention</p>
+                <h3 id="fiche-nom"></h3>
+                <div class="gestes">
+                  <span id="g-maps"><svg class="ico" aria-hidden="true"><use href="#i-lieu"/></svg>Maps</span>
+                  <span id="g-waze"><svg class="ico" aria-hidden="true"><use href="#i-envoyer"/></svg>Waze</span>
+                  <span id="g-copier"><svg class="ico" aria-hidden="true"><use href="#i-copier"/></svg>Copier l’adresse</span>
+                  <span id="g-appeler"><svg class="ico" aria-hidden="true"><use href="#i-telephone"/></svg>Appeler le client</span>
+                </div>
+                <div class="bandeau-travaux"><span>Travaux à faire</span><b id="compte-travaux"></b></div>
+                <ul class="travaux" id="travaux-fiche"></ul>
+                <div class="pied"><button type="button" class="discretion" id="recommencer">Recommencer</button></div>
               </div>
             </section>
           </div>
@@ -161,25 +164,22 @@
   <section class="pl-notes">
     <h2>Ce qui change</h2>
     <ul>
-      <li>Sous un nom inconnu, deux mots : <b>Créer sa fiche</b>, choisi d’office comme aujourd’hui, ou <b>Sans fiche</b>, pour un client facturé ailleurs (Unipros, par exemple).</li>
-      <li>Sans fiche, une phrase le dit tout de suite : <b>il ne pourra pas être facturé dans Atlas</b>.</li>
-      <li>Sans fiche, le prénom, le téléphone et l’e-mail s’en vont. L’adresse du chantier reste, pour savoir où aller.</li>
+      <li>« Autre chose » prend, sous le nom, <b>l’adresse</b>, <b>le téléphone</b> et <b>les travaux à faire</b>. Tout est facultatif, sauf le nom.</li>
+      <li>Posé, la fiche d’intervention est prête : Maps, Waze et Copier l’adresse s’allument, « Appeler le client » aussi, et les travaux sont déjà dans la liste.</li>
+      <li>Une ligne le dit, sous les moments : <b>sans fiche client, pas de devis ni de facture dans Atlas</b>. Pour un client facturé ailleurs, Unipros par exemple.</li>
+      <li>Le téléphone demande une case neuve sur le chantier : aujourd’hui, « Appeler le client » ne lit que la fiche client. Rien de ce qui existe ne change.</li>
     </ul>
-    <h2>A ou B</h2>
+    <h2>Décidé, puisque vous me faites confiance</h2>
     <ul>
-      <li><b>A</b> montre le choix sous le nom, en deux mots.</li>
-      <li><b>B</b> garde la phrase d’aujourd’hui et ajoute une case, plus discrète.</li>
-    </ul>
-    <h2>À trancher</h2>
-    <ul class="a-trancher">
-      <li>A ou B ?</li>
-      <li>Le téléphone d’un client sans fiche : il n’a pas de place aujourd’hui. On l’ajoute au chantier, pour l’appeler la veille ?</li>
-      <li>Le prénom, avec une fiche, est une case nouvelle : aujourd’hui, le nom et le prénom s’écrivent ensemble. On la garde ?</li>
+      <li><b>Aucune fiche client n’est créée</b> : « Un client » le fait déjà, et « Vos clients » reste sans banque ni livraison.</li>
+      <li>La ligne « Sans fiche client : pas de devis ni de facture dans Atlas. » reste, même pour la banque : elle ne gêne pas, et elle évite une surprise.</li>
+      <li>Adresse ou téléphone laissés vides : le geste qui en dépend reste gris, comme aujourd’hui.</li>
+      <li>Un contrôle comptera les fiches clients avant et après « Poser » : s’il en naît une, rien n’est livré.</li>
     </ul>
     <h2>Ce qui ne bouge pas</h2>
     <ul class="garde">
-      <li>Un nom connu se propose et se touche, comme aujourd’hui.</li>
-      <li>« Autre chose » reste pour la banque, une livraison, une formation.</li>
+      <li>« Un client » : un nom connu se propose, un nom inconnu crée sa fiche, comme aujourd’hui.</li>
+      <li>La fiche d’intervention : la note, la fiche de sécurité, les travaux, au même endroit.</li>
     </ul>
   </section>
 </main>
@@ -188,55 +188,26 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   "use strict";
-  // Les clients de la démonstration : un nom connu doit se proposer, pas
-  // demander une fiche.
-  var CONNUS = ["Mme Aubry", "M. Bernard", "Mme Costa", "M. Faucher"];
-  var variante = "a", sansFiche = false, quand = "jour";
-  var nom = document.getElementById("nom");
-  var zoneTrouves = document.getElementById("zone-trouves");
-  var zoneInconnu = document.getElementById("zone-inconnu");
-  var choixA = document.getElementById("choix-a");
-  var choixB = document.getElementById("choix-b");
-  var cases = document.getElementById("cases");
-  var caseSans = document.getElementById("case-sans");
-  var phraseB = document.getElementById("phrase-b");
+  var travaux = ["Taille de la haie", "Évacuation des déchets verts"];
+  var quand = "jour";
+  var liste = document.getElementById("travaux");
+  var champTravail = document.getElementById("travail");
 
-  function sansAccent(s) { return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase(); }
-
-  function rendre() {
-    var mot = nom.value.trim();
-    var trouves = mot.length >= 2 ? CONNUS.filter(function (c) { return sansAccent(c).indexOf(sansAccent(mot)) >= 0; }) : [];
-    var retenu = CONNUS.indexOf(mot) >= 0;
-    zoneTrouves.hidden = retenu || trouves.length === 0;
-    zoneTrouves.innerHTML = trouves.map(function (c) { return '<button type="button" data-client="' + c + '">' + c + "</button>"; }).join("");
-    var inconnu = !retenu && mot.length >= 2 && trouves.length === 0;
-    zoneInconnu.hidden = !inconnu;
-    choixA.hidden = variante !== "a";
-    choixB.hidden = variante !== "b";
-    cases.hidden = sansFiche;
-    document.getElementById("avert").hidden = !sansFiche;
-    phraseB.textContent = sansFiche ? "Inconnu" : "Inconnu, sa fiche sera créée";
-    document.querySelectorAll("[data-fiche]").forEach(function (b) {
-      b.setAttribute("aria-pressed", String((b.dataset.fiche === "non") === sansFiche));
-    });
-    caseSans.checked = sansFiche;
+  function echapper(t) { return t.replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function rendreTravaux() {
+    liste.innerHTML = travaux.map(function (t, i) {
+      return '<li><i aria-hidden="true"></i>' + echapper(t) + '<button type="button" data-retirer="' + i + '" aria-label="Retirer ce travail"><svg class="ico ico-p" aria-hidden="true"><use href="#i-croix"/></svg></button></li>';
+    }).join("");
   }
-
-  nom.addEventListener("input", rendre);
-  document.getElementById("effacer").addEventListener("click", function () { nom.value = ""; nom.focus(); rendre(); });
-  zoneTrouves.addEventListener("click", function (e) {
-    var b = e.target.closest("button"); if (!b) return;
-    nom.value = b.dataset.client; rendre();
-  });
-  document.querySelectorAll("[data-fiche]").forEach(function (b) {
-    b.addEventListener("click", function () { sansFiche = b.dataset.fiche === "non"; rendre(); });
-  });
-  caseSans.addEventListener("change", function () { sansFiche = caseSans.checked; rendre(); });
-  document.getElementById("variante").addEventListener("click", function (e) {
-    var b = e.target.closest("button"); if (!b) return;
-    variante = b.dataset.variante; sansFiche = false;
-    this.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
-    rendre();
+  function ajouter() {
+    var t = champTravail.value.trim(); if (!t) return;
+    travaux.push(t); champTravail.value = ""; rendreTravaux(); champTravail.focus();
+  }
+  document.getElementById("ajouter-travail").addEventListener("click", ajouter);
+  champTravail.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); ajouter(); } });
+  liste.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-retirer]"); if (!b) return;
+    travaux.splice(Number(b.dataset.retirer), 1); rendreTravaux();
   });
   document.getElementById("quand").addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
@@ -244,17 +215,32 @@ document.addEventListener("DOMContentLoaded", function () {
     this.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
   });
   document.getElementById("poser").addEventListener("click", function () {
-    var mot = nom.value.trim(); if (mot.length < 2) return;
+    var nom = document.getElementById("nom").value.trim(); if (nom.length < 2) return;
+    var adresse = document.getElementById("adresse").value.trim();
+    var tel = document.getElementById("telephone").value.trim();
     var m = document.getElementById("slot-matin"), a = document.getElementById("slot-am");
     [m, a].forEach(function (s) { s.textContent = "libre"; s.classList.remove("pose"); });
-    if (quand !== "am") { m.textContent = mot; m.classList.add("pose"); }
-    if (quand !== "matin") { a.textContent = mot; a.classList.add("pose"); }
+    if (quand !== "am") { m.textContent = nom; m.classList.add("pose"); }
+    if (quand !== "matin") { a.textContent = nom; a.classList.add("pose"); }
+    document.getElementById("fiche-nom").textContent = nom;
+    ["g-maps", "g-waze", "g-copier"].forEach(function (id) { document.getElementById(id).classList.toggle("gris", !adresse); });
+    document.getElementById("g-appeler").classList.toggle("gris", !tel);
+    document.getElementById("compte-travaux").textContent = travaux.length + (travaux.length > 1 ? " travaux" : " travail");
+    document.getElementById("travaux-fiche").innerHTML = travaux.map(function (t) { return '<li><i aria-hidden="true"></i>' + echapper(t) + "</li>"; }).join("");
     document.getElementById("formulaire").hidden = true;
+    document.getElementById("fiche").hidden = false;
   });
+  function recommencer() {
+    document.getElementById("formulaire").hidden = false;
+    document.getElementById("fiche").hidden = true;
+    ["slot-matin", "slot-am"].forEach(function (id) { var s = document.getElementById(id); s.textContent = "libre"; s.classList.remove("pose"); });
+  }
+  document.getElementById("recommencer").addEventListener("click", recommencer);
   document.getElementById("annuler").addEventListener("click", function () {
-    nom.value = ""; sansFiche = false; rendre();
+    ["nom", "adresse", "telephone", "travail"].forEach(function (id) { document.getElementById(id).value = ""; });
+    travaux = []; rendreTravaux();
   });
-  rendre();
+  rendreTravaux();
 });
 </script>
 </body>
