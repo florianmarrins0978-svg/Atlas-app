@@ -16,6 +16,9 @@ cette année il manque tant ou il a fait plus »*. Le bloc « Face à 2025 » : 
 mois en cours contre le même mois de 2025 **au même jour** (huit jours contre
 huit jours, sans quoi chaque début de mois paraîtrait en retard), depuis
 janvier, et tous les mois dans une feuille. Il se montre aussi sans objectif.
+**Tranché par lui le 8 novembre** : *« il faut comparer le jour, le 8 avec le
+8 de l'année dernière »*. La comparaison au même jour du calendrier est donc
+retenue ; elle ne se redemande pas.
 La saison du rythme et cette comparaison lisent le même relevé de 2025. Tout ce qu'elle montre sort de données que l'appli tient
 déjà : `bilan-periode.ts` (facturé, encaissé), `aFacturerPartout`
 (`termines-par-mois.ts`), `devis.statut`, `prestations.nature`,
