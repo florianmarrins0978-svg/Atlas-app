@@ -172,7 +172,8 @@
 .lettre table { width: 100%; margin: 12px 0; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 .lettre th { padding: 6px 4px; text-align: left; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #8b6835;
              border-bottom: 1px solid rgba(28,28,26,0.2); }
-.lettre td { padding: 6px 4px; border-bottom: 1px solid rgba(28,28,26,0.08); }
+.lettre td { padding: 6px 4px; border-bottom: 1px solid rgba(28,28,26,0.08); vertical-align: top; }
+.lettre td small { display: block; font-size: 11.5px; color: #4a4a44; }
 .lettre .total { display: flex; justify-content: space-between; margin-top: 6px; font-size: 14px; }
 .lettre .total b { font-family: var(--serif); font-size: 17px; font-weight: 400; }
 .lettre .signe { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; margin-top: 16px; }
@@ -690,13 +691,18 @@
      Les montants et les dates sont des exemples. */
   var ATT = [
     { nom: "Mme Vasseur", adresse: "8 allée des Chênes, 49100 Angers", total: "1 008,00 €", moyen: "par virement", canal: "e-mail",
-      lignes: [["12 mars", "2 h 30", "n° 1"], ["14 mai", "3 h", "n° 1"], ["14 mai", "3 h", "n° 2"], ["21 octobre", "4 h", "n° 1"]] },
+      lignes: [["12 mars", "2 h 30", 1], ["14 mai", "3 h", 1], ["14 mai", "3 h", 2], ["21 octobre", "4 h", 1]] },
     { nom: "Mr. Faucher", adresse: "3 rue du Moulin, 49130 Les Ponts-de-Cé", total: "640,00 €", moyen: "par chèque", canal: "SMS",
-      lignes: [["2 avril", "3 h", "n° 1"], ["18 septembre", "2 h 15", "n° 2"]] },
+      lignes: [["2 avril", "3 h", 1], ["18 septembre", "2 h 15", 2]] },
     { nom: "Mme Costa", adresse: "21 avenue Jean Joxé, 49100 Angers", total: "2 160,00 €", moyen: "par virement", canal: "e-mail",
-      lignes: [["15 janvier", "2 h", "n° 1"], ["12 février", "2 h", "n° 1"], ["19 mars", "2 h 30", "n° 1"], ["16 avril", "3 h", "n° 2"], ["21 mai", "3 h", "n° 1"],
-               ["18 juin", "3 h", "n° 1"], ["23 juillet", "2 h 30", "n° 2"], ["17 septembre", "3 h", "n° 1"], ["22 octobre", "3 h", "n° 1"]] }
+      lignes: [["15 janvier", "2 h", 1], ["12 février", "2 h", 1], ["19 mars", "2 h 30", 1], ["16 avril", "3 h", 2], ["21 mai", "3 h", 1],
+               ["18 juin", "3 h", 1], ["23 juillet", "2 h 30", 2], ["17 septembre", "3 h", 1], ["22 octobre", "3 h", 1]] }
   ];
+  /* Sa question du 8 novembre (« des numéros, ou les noms ? ») : la règle
+     officielle demande les DEUX, « nom et numéro d'identification des
+     intervenants » (servicesalapersonne.gouv.fr, Les obligations
+     réglementaires). Le numéro vient d'Équipe et ne se redonne jamais. */
+  var INTERVENANTS = { 1: "Martin Julien", 2: "Roux Léa" };
   var envoyee = ATT.map(function () { return false; });
   var SIGNATURE = '<svg viewBox="0 0 170 60" aria-hidden="true"><path d="M8 40c10-22 18-30 22-24 4 7-10 30-4 30 7 0 14-26 22-24 6 2-2 20 4 20 8 0 10-14 18-14 7 0 3 12 10 12 9 0 14-18 24-18 7 0 4 10 12 10 10 0 22-12 34-16"/><path d="M40 52c30-4 70-6 110-4"/></svg>';
   var CHEVRON = '<svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg>';
@@ -730,10 +736,10 @@
       '<div class="lettre"><div class="entete"><div><b>Jardins Démo</b><span>4 rue des Tilleuls, 49000 Angers</span>' +
       '<span>Déclaration SAP123456789 du 12 mars 2024</span></div><span class="logo">Logo des services à la personne</span></div>' +
       '<h3>Attestation fiscale 2026</h3>' +
-      '<p>Je soussigné Julien Martin, gérant de Jardins Démo, certifie que ' + a.nom + ', ' + a.adresse +
+      '<p>Je soussigné Thomas Leroy, gérant de Jardins Démo, certifie que ' + a.nom + ', ' + a.adresse +
       ', a bénéficié à son domicile de petits travaux de jardinage.</p>' +
       '<table><thead><tr><th>Date</th><th>Durée</th><th>Intervenant</th></tr></thead><tbody>' +
-      a.lignes.map(function (l) { return '<tr><td>' + l[0] + '</td><td>' + l[1] + '</td><td>' + l[2] + '</td></tr>'; }).join("") +
+      a.lignes.map(function (l) { return '<tr><td>' + l[0] + '</td><td>' + l[1] + '</td><td>' + INTERVENANTS[l[2]] + '<small>n° ' + l[2] + '</small></td></tr>'; }).join("") +
       '</tbody></table>' +
       '<div class="total"><span>Payé en 2026, ' + a.moyen + '</span><b>' + a.total + '</b></div>' +
       '<div class="signe"><span>Angers, le 12 janvier 2027</span>' + SIGNATURE + '</div></div>' + pied;

@@ -20,40 +20,30 @@ période ; si la banque n'a donné qu'une partie, il le dit avec la date.
 **Aussi à trancher** : l'assistant donne-t-il le détail mois par mois quand on
 demande l'année ? Niveau 3 au codage (argent).
 
-## ⏳ À CHOISIR PAR LUI (8 novembre 2026) : au planning, un client sans fiche, A ou B
+## ⏳ À REGARDER PAR LUI (8 novembre 2026) : « Autre chose », en entier
 
-Sa demande, photo du planning à l'appui : *« soit rechercher un client, soit
-décider de créer une fiche, sans créer un contact ; une touche pour dire que sa
-fiche ne sera pas créée »*.
+Sa demande, en quatre temps le même jour (le chemin est dans l'en-tête de la
+planche) ; sa décision, photo de la fiche d'intervention à l'appui : *« quand
+on clique sur Autre chose, on note le nom du client, et en dessous son
+adresse, son numéro de téléphone ; et une case travaux à faire tout de suite,
+pas besoin d'aller sur la fiche d'intervention »*. Pour un client facturé
+ailleurs (Unipros). « Un client » ne bouge pas.
 
-**Aujourd'hui** (`src/app/planning/AjoutDunClient.tsx`) : un nom inconnu ouvre
-toujours Téléphone, E-mail, Adresse, et la fiche se crée (sa décision du
-10 septembre 2026). Le seul chemin sans fiche est « Autre chose »
-(`poserDuTempsAction`, un chantier sans client).
+**Lu dans le code** : « Autre chose » (`AjoutDeTemps`, `poserDuTempsAction`)
+n'a qu'une case ; Maps, Waze, Copier l'adresse lisent
+`chantiers.adresse_chantier` ; « Appeler le client » lit
+`chantier.clientTelephone`, donc la fiche client : sans fiche, il reste gris.
 
-**La planche** : `appli/soignee/planning-sans-fiche.html`. A : deux mots sous le
-nom, « Créer sa fiche » (d'office) ou « Sans fiche », au dessin de Matin,
-Après-midi, Journée (conseillé). B : la phrase d'aujourd'hui et une case.
-Sans fiche, le nom va seul au planning, comme « Autre chose ».
+**La planche** : `appli/soignee/planning-sans-fiche.html` (même adresse que
+les trois versions d'avant). Nom, adresse, téléphone, travaux à faire,
+moment ; la ligne « Sans fiche client : pas de devis ni de facture dans
+Atlas. » ; posé, la fiche d'intervention prête.
 
-**Revu le même jour, sa correction** : *« même si on ne crée pas sa fiche
-client, il faut quand même pouvoir mettre le nom, le prénom, l'adresse, le
-numéro de téléphone, parce que c'est un client qu'on va peut-être
-facturer »*. Une facture porte le nom et l'adresse du client : c'est une
-fiche. Le choix devient sa PLACE : « Dans Vos clients » d'office, ou « Pas
-encore », et elle y entre seule à son premier devis ou sa première facture.
-Les cases restent ouvertes, avec un prénom en plus (aujourd'hui le nom et le
-prénom s'écrivent ensemble dans `clients.nom` : une colonne neuve, donc une
-migration en deux temps, si elle est gardée).
-
-**Revu une seconde fois, sa précision** : *« ça sera un client que je ne
-facturerai pas ; il passera par une autre plateforme pour être facturé,
-comme Unipros ; il faut préciser qu'il ne pourra pas facturer ce client »*.
-Retour à « Créer sa fiche » ou « Sans fiche ». Sans fiche : « Il ne pourra
-pas être facturé dans Atlas. », plus de prénom, téléphone ni e-mail (aucune
-place sans fiche), l'adresse reste sur le chantier (`adresse_chantier`). C'est
-« Autre chose » plus une adresse : aucune migration. Reste à trancher : A ou
-B, et un téléphone sur le chantier pour l'appeler la veille.
+**Au codage** : une colonne téléphone sur `chantiers`, nullable (étendre
+seulement, rien d'existant ne change) ; « Appeler le client » lit le
+téléphone du chantier quand il n'y a pas de fiche ; les travaux remplissent
+la liste de `TravauxAFaire`. À trancher : la ligne de la facture, même pour la
+banque ou une livraison ?
 
 ## ~~⏳ À CHOISIR PAR LUI (8 novembre 2026) : sur ordinateur, la largeur de la colonne~~ TRANCHÉ LE 8 NOVEMBRE : 672 PX ; CODÉ LE 8 NOVEMBRE, batterie entière à jouer (plancher : `globals.css`)
 
@@ -116,6 +106,19 @@ rentrer »** : il ne comprenait pas le titre. **Le jour avant le mois, partout**
 (*« la date est toujours à l'envers »*) : « Au 8 novembre 2026 », « D'ici le
 30 novembre », « Du 1er au 8 novembre », jamais « 2026, au 8 novembre » ni
 « Novembre, d'ici le 30 ».
+
+**Face à 2025, sa forme arrêtée le 8 novembre** : *« la date d'aujourd'hui par
+rapport à l'année dernière, à la même date. Et à la limite le mois en cours, du
+1er au 8. Et le jour, c'est tout. »* Deux comparaisons : « Du 1er janvier au
+8 novembre » (2026, 2025, l'écart), puis « Du 1er au 8 novembre » (2026, 2025,
+l'écart), et « Tous les mois ». La période s'écrit une fois au-dessus. **Lu
+comme le cumul depuis janvier**, pas comme le facturé du seul jour : à
+confirmer s'il voulait le jour seul (le 8 novembre 2025 était un samedi).
+
+**La phrase du bénéfice, réécrite le 8 novembre** : *« c'est-à-dire quoi, sur
+100 euros encaissés il vous reste 14,51 ? »*. Elle dit désormais « Sur 1 000 €
+encaissés, il vous reste 145 € une fois tout payé. Pour votre objectif, il en
+faudrait 167 € » : des euros ronds, et ce qui a été retiré.
 **Tranché par lui le 8 novembre** : *« il faut comparer le jour, le 8 avec le
 8 de l'année dernière »*. La comparaison au même jour du calendrier est donc
 retenue ; elle ne se redemande pas.
@@ -2463,6 +2466,13 @@ Unipros »* (page « services à la personne », étape 01), puis la facture par
 accepte un devis fait ailleurs, à son en-tête, ou un import. Un chantier qui
 mêle élagage et taille donne deux devis et deux émetteurs : l'élagage chez
 l'artisan, la taille chez la coopérative.
+
+**Le nom ET le numéro de chaque intervenant sur l'attestation (sa question
+du 8 novembre 2026, « des numéros, ou les noms ? »).** La page officielle
+(« Les obligations réglementaires ») exige *« nom et numéro d'identification
+des intervenants, dates et durées des interventions »*, avec un regroupement
+mensuel permis pour des prestations quotidiennes ou périodiques. La planche
+ne montrait que « n° 1 » : corrigé, chaque ligne porte le nom puis le numéro.
 
 **Ses deux remarques suivantes, le même jour :**
 
