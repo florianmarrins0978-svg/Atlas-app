@@ -218,9 +218,11 @@ jamais du TTC.
 
 **Tranché par lui le 8 novembre** : le rôle Facturation VOIT Mon année
 (*« ils peuvent le voir »*), l'écran et la ligne de Terminés ; il ne pose ni
-l'objectif ni l'interrupteur (`exigerProprietaire`). **Par défaut, à lui
-confirmer** : impôts et cotisations comptent comme dépense ; sans an dernier
-dans l'appli, ni trait, ni retard, ni Face à l'an dernier.
+l'objectif ni l'interrupteur (`exigerProprietaire`). **Tranché par lui le
+8 novembre** : impôts et cotisations comptent comme une dépense dans le
+bénéfice (*« oui, ça compte comme une dépense »*) ; c'est ce que
+`beneficeEstime` fait déjà. Par défaut : sans an dernier dans l'appli, ni
+trait, ni retard, ni Face à l'an dernier.
 
 ## BATTERIE COMMUNE DU 6 NOVEMBRE AU SOIR : VERTE, SUR main LE 7 NOVEMBRE
 

@@ -41,7 +41,7 @@
 
 | Point | Proposé par défaut | Qui tranche |
 |---|---|---|
-| Impôts et cotisations, comptés comme dépense dans le bénéfice | oui | lui |
+| Impôts et cotisations, comptés comme dépense dans le bénéfice | **tranché : oui** | lui, le 8 novembre |
 | Le rôle Facturation voit-il Mon année ? | **tranché : oui**, en lecture ; l'objectif et l'interrupteur restent au patron | lui, le 8 novembre |
 | **Vos prix (lot 2)** | chaque ligne de devis garde le tarif d'où elle vient (une colonne neuve, sans rien toucher aux anciennes lignes) ; seuls les devis faits ensuite seront rangés | à coder, après la livraison de ce lot |
 
