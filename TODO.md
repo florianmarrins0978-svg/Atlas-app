@@ -9,8 +9,14 @@ il faudrait que tu augmentes les prix sur ça »*. Il cite une appli concurrente
 (« Evolise », sans doute Evoliz). **Rien dans `src/`** : ni table, ni réglage,
 ni écran d'objectif, cherché le 8 novembre.
 
-Planche : `appli/soignee/mon-annee.html` (l'écran, ses quatre feuilles, et la
-porte sur Terminés). Tout ce qu'elle montre sort de données que l'appli tient
+Planche : `appli/soignee/mon-annee.html` (l'écran, ses cinq feuilles, et la
+porte sur Terminés). **Ajout du même jour, sa demande** : *« un retour sur la
+mensualité de l'année dernière : en novembre 2025 il a fait tant, et comparé à
+cette année il manque tant ou il a fait plus »*. Le bloc « Face à 2025 » : le
+mois en cours contre le même mois de 2025 **au même jour** (huit jours contre
+huit jours, sans quoi chaque début de mois paraîtrait en retard), depuis
+janvier, et tous les mois dans une feuille. Il se montre aussi sans objectif.
+La saison du rythme et cette comparaison lisent le même relevé de 2025. Tout ce qu'elle montre sort de données que l'appli tient
 déjà : `bilan-periode.ts` (facturé, encaissé), `aFacturerPartout`
 (`termines-par-mois.ts`), `devis.statut`, `prestations.nature`,
 `chantiers.duree_demi_journees`, `jours-feries.ts`, `mouvements_bancaires`
