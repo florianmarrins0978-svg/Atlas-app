@@ -412,13 +412,13 @@
             <div class="plage plage-serree">
               <div class="heures">
                 <span class="ligne-corps"><b>Martin Julien</b><small>n° 1</small></span>
-                <select aria-label="Heures de Martin Julien"><option>2 h</option><option selected>3 h</option><option>4 h</option></select>
-                <select aria-label="Minutes de Martin Julien"><option>00</option><option>15</option><option selected>30</option><option>45</option></select>
+                <select aria-label="Heures de Martin Julien" data-heures="3"></select>
+                <select aria-label="Minutes de Martin Julien" data-minutes="30"></select>
               </div>
               <div class="heures">
                 <span class="ligne-corps"><b>Roux Léa</b><small>n° 2</small></span>
-                <select aria-label="Heures de Roux Léa"><option>1 h</option><option selected>2 h</option><option>3 h</option></select>
-                <select aria-label="Minutes de Roux Léa"><option selected>00</option><option>15</option><option>30</option><option>45</option></select>
+                <select aria-label="Heures de Roux Léa" data-heures="2"></select>
+                <select aria-label="Minutes de Roux Léa" data-minutes="0"></select>
               </div>
             </div>
             <p class="discret mt-8">Pour l'attestation de Mr. Lambert.</p>
@@ -716,6 +716,21 @@
     });
   }
   function noter(ecran, texte) { Kit.fermerFeuilles(ecran); setTimeout(function () { Kit.note(ecran, texte); }, 200); }
+  /* Sa règle du 8 novembre : n'importe quel nombre d'heures, la roulette de
+     0 à 24 h, et les minutes une par une, de 00 à 59. */
+  function remplir(sel, max, ecrire, choisi) {
+    for (var i = 0; i <= max; i++) {
+      var o = document.createElement("option");
+      o.value = String(i); o.textContent = ecrire(i); o.selected = i === choisi;
+      sel.appendChild(o);
+    }
+  }
+  document.querySelectorAll("select[data-heures]").forEach(function (s) {
+    remplir(s, 24, function (i) { return i + " h"; }, Number(s.getAttribute("data-heures")));
+  });
+  document.querySelectorAll("select[data-minutes]").forEach(function (s) {
+    remplir(s, 59, function (i) { return (i < 10 ? "0" : "") + i; }, Number(s.getAttribute("data-minutes")));
+  });
   document.addEventListener("click", function (ev) {
     var p = ev.target.closest("[data-passe]");
     if (p) { ev.preventDefault(); passer(p.closest(".ecran"), p.getAttribute("data-passe")); return; }

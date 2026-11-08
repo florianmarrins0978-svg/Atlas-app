@@ -2325,6 +2325,12 @@ papiers, l'attestation de janvier sur papier. L'ancienne planche reste, son
 lien d'`essais.html` renvoie à la nouvelle. **Rien n'est codé ; elle attend
 son choix.** Ce qu'elle laisse à trancher est écrit sous ses écrans.
 
+**Sa règle du 8 novembre 2026 pour les heures du retour du jour** : *« il
+faut pouvoir mettre n'importe quel nombre d'heures »*. La roulette des heures
+va de 0 à 24 h, celle des minutes de 00 à 59, une par une (la planche
+d'octobre s'arrêtait à 12 h, par quarts d'heure). Posé dans la planche, à
+garder tel quel au codage.
+
 **Tranché le 9 octobre 2026 : les acomptes gardent leur taux CUMULÉ.** C'est
 sa propre façon de compter : *« 1er acompte 30 %, 2e 50 %, 3e 75 % »*, soit
 ce que le client a payé en tout à chaque étape. L'appli fait déjà ainsi
