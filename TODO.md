@@ -1,5 +1,87 @@
 # Prochaines tâches
 
+## ⏳ À REGARDER PAR LUI (9 novembre 2026) : la main d'œuvre « sur une ligne » avale les travaux, et un frêne inventé
+
+Sa plainte, capture à l'appui (devis de Luc, 12 rue Marcadet) : *« j'ai dicté
+trois tâches différentes, j'ai sélectionné la main d'œuvre sur une seule ligne
+[...] ça m'a mis la main d'œuvre plus les trois tâches dans la même case, avec
+en plus il a complètement inventé : j'ai jamais parlé de feuille de frêne,
+oxyphylle »*. La case portait : « Main d'œuvre : taille de haie de photinia,
+élagage d'un frêne à feuilles de frêne (frêne oxyphylle), plantation d'un
+olivier », puis les trois détails collés en un paragraphe, 3 jour/homme à 400.
+
+**1. Les trois travaux dans une case : le code fait ce que deux planches
+disent, et c'est leur RENCONTRE qui ne va pas.**
+
+| | |
+|---|---|
+| sa planche du 21 octobre (`appli/main-d-oeuvre-repartie.html`) | en mode « ligne », UNE ligne « Main d'œuvre : démontage d'un chêne, dessouchage, taille de haie de laurier » ; codé tel quel, `proposition-prix.ts` (`choix.mode === "ligne"`, `libelleMainOeuvre`) |
+| sa planche du 4 novembre (détail sous la ligne) | `appliquer-proposition.ts` colle sous le nom le détail de CHAQUE prestation que la ligne vend (`libelleAvecDetail`) |
+
+La première ne montrait que des noms, la seconde une ligne par travail. Avec
+trois travaux détaillés, les trois détails se collent sans dire lequel est à
+qui. Aucune ligne de devis ne sait aujourd'hui être « comprise dans la main
+d'œuvre » (ni prix, ni « à chiffrer ») : un travail sans prix se lit gratuit ou
+bloque l'envoi.
+
+**SON CHOIX DU 9 NOVEMBRE** (entre trois, il a pris « Main d'œuvre à part ») :
+en mode « ligne », chaque travail garde SA ligne et SON détail, la colonne du
+montant dit « Dans la main d'œuvre », et la main d'œuvre a sa propre ligne
+(« Main d'œuvre », 3 jour/homme, 400 €), après les travaux. Écartés : chaque
+travail à son prix sans ligne Main d'œuvre (c'est déjà « Répartis sur les
+travaux ») ; la main d'œuvre ET un prix par travail (contraire à sa règle du
+21 octobre, les jours couvrent tout le chantier).
+
+**La planche** : `appli/soignee/devis-main-d-oeuvre-compris.html`, sur le vrai
+écran du devis figé (base de démonstration, client Luc, tarif main d'œuvre
+passé à 400 € pour retrouver ses chiffres). « Aujourd'hui » est la sortie
+réelle de `appliquerPropositionPrix` sur ses trois travaux : le défaut se
+reproduit à l'identique, et ce même montage fera le test rouge. « Proposé » :
+quatre vraies lignes, puis le prix unitaire retiré des trois travaux et
+« Dans la main d'œuvre » écrit à la place du montant (« Compris dans la main
+d'œuvre » débordait de la colonne à 390 px). Les quantité et unité restent :
+« 20 ml » d'une haie se lit encore.
+
+**À coder sur son « oui »** : un nouvel état de ligne (ni prix, ni « à
+chiffrer », hors du total) : migration en deux temps, `proposition-prix.ts`
+(mode « ligne » : une ligne par travail, puis la main d'œuvre),
+`appliquer-proposition.ts` (le détail de CHAQUE travail sous SON nom), l'écran
+du devis, le PDF, la facture, « dont main d'œuvre HT ». Niveau 3.
+
+**2. « à feuilles de frêne (frêne oxyphylle) » n'est écrit nulle part dans le
+dépôt** (code, vocabulaire soufflé au transcripteur, amorçage, migrations,
+vérifié le 9 novembre). Il vient donc du transcripteur ou du modèle qui
+découpe la dictée, et il est entré dans le libellé de la prestation (la ligne
+Main d'œuvre reprend ce libellé). La consigne d'extraction
+(`extraction-service.ts`) interdit d'inventer une quantité, une durée, une
+espèce ou un détail, **mais ne dit rien du LIBELLÉ** : rien n'y interdit un
+nom savant, une variété ou une parenthèse qu'il n'a pas dite. **Qui l'a
+inventé, sa transcription le dit** (« Votre dictée », sur la fiche) ; pas
+visible ici. Si elle ne porte pas « oxyphylle », c'est le modèle : règle du
+libellé dans la consigne, et `npm run verifier:dictee` sur son espace.
+
+**Vu sur la même capture, cause non cherchée** : sous la case, « La dernière
+fois, pour Taille de haie de laurier de ml, vous aviez retenu 650 € HT »
+compare la ligne de main d'œuvre à une taille de haie.
+
+## ⏳ À REGARDER PAR LUI (9 novembre 2026) : jeter la dictée, en clair
+
+Sa remarque : *« moi je ne savais pas que ce mécanisme jetait la dictée,
+il faut peut-être mettre un truc plus clair ; il n'y a pas déjà un bouton
+poubelle ? »* **Lu dans le code** : la poubelle « Jeter »
+(`AnneauNoteVocale.tsx`, `dictee-jeter`) ne vit que PENDANT la dictée ; une
+fois la note envoyée, seul le glissement de « Votre dictée »
+(`LigneRetirable`, `FormulaireNouveauChantier.tsx`) la jette, et rien ne le
+montre.
+
+**La planche** : `appli/jeter-la-dictee.html`, sur sa vraie fiche client
+(M. Bernard, une note envoyée). A : « Retirer » écrit au bout de la ligne,
+comme sur les fiches en cours (sa planche du 11 octobre). B : la poubelle
+cerclée de la dictée, avec « Jeter ». Le tiroir « Annuler » reste.
+
+**Reste** : son choix, puis le coder (et récrire la fiche du mode d'emploi
+`chantier-dictee-retirer`, qui décrit le glissement).
+
 ## « Votre dictée » cachée pendant le devis : CODÉ LE 9 NOVEMBRE, CONTRÔLE À JOUER AVEC SON ACCORD
 
 Sa demande, capture de la fiche client : *« retire-moi la phrase "votre
