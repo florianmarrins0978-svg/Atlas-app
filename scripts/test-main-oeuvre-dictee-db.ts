@@ -182,7 +182,7 @@ async function main() {
     ]);
   });
 
-  await test("« sur une ligne Main d'œuvre » : une seule ligne qui nomme les travaux, 2 jour/homme × 400 €", async () => {
+  await test("« sur une ligne Main d'œuvre » : la ligne Main d'œuvre à 2 jour/homme × 400 €, puis la haie à sa grille", async () => {
     const A = await sonEntreprise("ligne");
     const c = await chantierDicte(A, {
       prestations: [{ ...base, libelle: "Taille de haie de laurier", nature: "haie", quantite: "20", unite: "ml" }],
@@ -193,8 +193,61 @@ async function main() {
     const p = (await preparerPropositionPrix(A, c.id))!;
     assert.deepEqual(
       p.lignes.map((l) => [l.libelle, Number(l.montant), l.quantite, l.unite]),
-      [["Main d'œuvre : taille de haie de laurier", 800, "2", "jour/homme"]]
+      [
+        ["Main d’œuvre", 800, "2", "jour/homme"],
+        ["Taille de haie de laurier", 300, "20", "ml"],
+      ]
     );
+  });
+
+  // **Son devis de Luc, 12 rue Marcadet, le 9 novembre 2026** : trois travaux,
+  // une journée à trois, « sur une ligne Main d'œuvre ». Il a reçu UNE case
+  // « Main d'œuvre : taille de haie de photinia, élagage d'un frêne,
+  // plantation d'un olivier », les trois détails collés dessous. Sa demande :
+  // *« une ligne main d'œuvre avec la journée à trois hommes, donc 1 200 €, et
+  // en plus de ça chaque tâche a son prix : le photinia, 20 mètres linéaires à
+  // 10 €, 200 € »* (`appli/soignee/devis-main-d-oeuvre-et-prix.html`).
+  await test("« sur une ligne Main d'œuvre », son devis de Luc : la main d'œuvre à 1 200 €, puis chaque travail sur SA ligne, à SON prix, avec SON détail", async () => {
+    const A = await sonEntreprise("luc");
+    await poserPrixGrille(A, "haie", CELLULE_HAIE, "10");
+    const c = await chantierDicte(A, {
+      prestations: [
+        { ...base, libelle: "Taille de haie de photinia", nature: "haie", quantite: "20", unite: "ml", detail: "Taille des 3 faces." },
+        { ...base, libelle: "Élagage d'un frêne", detail: "Taille de cohabitation avec la maison." },
+        { ...base, libelle: "Plantation d'un olivier", detail: "Avec apport de terreau et d'engrais." },
+      ],
+      dureePrevue: "1 jour",
+      tailleEquipe: "3 hommes",
+    });
+    await repondre(A, c.id, { mode: "ligne", parts: {}, retires: [] });
+    const p = (await preparerPropositionPrix(A, c.id))!;
+    assert.deepEqual(
+      p.lignes.map((l) => [l.libelle, l.montant === null ? null : Number(l.montant), l.quantite, l.unite, l.mainDoeuvre === true]),
+      [
+        ["Main d’œuvre", 1200, "3", "jour/homme", true],
+        ["Taille de haie de photinia", 200, "20", "ml", false],
+        ["Élagage d'un frêne", null, "1", null, false],
+        ["Plantation d'un olivier", null, "1", null, false],
+      ]
+    );
+    // La ligne de main d'œuvre ne vend aucun travail : c'est ce qui collait
+    // les trois détails sous elle.
+    assert.deepEqual(p.lignes[0].prestationIds, []);
+    assert.ok(p.lignes.slice(1).every((l) => l.prestationIds.length === 1), "chaque travail vend SA prestation");
+
+    assert.ok((await appliquerPropositionPrix(A, c.id)).succes);
+    assert.deepEqual(
+      (await listerLignesPrix(A, c.id)).map((l) => [l.libelle, l.montant, l.aChiffrer, l.mainDoeuvre]),
+      [
+        ["Main d’œuvre", "1200.00", false, true],
+        ["Taille de haie de photinia\nTaille des 3 faces.", "200.00", false, false],
+        ["Élagage d'un frêne\nTaille de cohabitation avec la maison.", "0.00", true, false],
+        ["Plantation d'un olivier\nAvec apport de terreau et d'engrais.", "0.00", true, false],
+      ]
+    );
+    const d = await getOuCreerDevisBrouillon(A, c.id);
+    assert.equal(d.totalHt, "1400.00", "la main d'œuvre PLUS le prix de chaque travail");
+    assert.equal(d.mainDoeuvreHt, "1200.00", "« dont main d'œuvre HT » compte la ligne, pas la haie");
   });
 
   // **Le partenaire pris sur la question** : son « B » du 4 novembre 2026
@@ -238,7 +291,10 @@ async function main() {
     const p = (await preparerPropositionPrix(A, c.id))!;
     assert.deepEqual(
       p.lignes.map((l) => [l.libelle, Number(l.montant), l.quantite, l.unite, l.mainDoeuvre]),
-      [["Main d’œuvre : Élagage Durand", 1215, "2", "journée", true]]
+      [
+        ["Main d’œuvre : Élagage Durand", 1215, "2", "journée", true],
+        ["Taille de haie de laurier", 300, "20", "ml", undefined],
+      ]
     );
     assert.ok(
       p.explication.calcul.some((x) => /Élagage Durand/.test(x.detail) && /2 jours × 450\s€ × 1,35/.test(x.detail)),
@@ -279,7 +335,7 @@ async function main() {
     });
     await repondre(A, c.id, { mode: "ligne", parts: {}, retires: [], partenaire: { prixId: chezB.id, quantite: 2 } });
     const p = (await preparerPropositionPrix(A, c.id))!;
-    assert.deepEqual(p.lignes.map((l) => l.montant), [null], JSON.stringify(p.lignes));
+    assert.deepEqual(p.lignes.map((l) => l.montant), [null, "300.00"], JSON.stringify(p.lignes));
     assert.ok(p.explication.donneesManquantes.some((m) => /partenaire/.test(m)), JSON.stringify(p.explication.donneesManquantes));
   });
 
@@ -299,7 +355,10 @@ async function main() {
     const p = (await preparerPropositionPrix(A, c.id))!;
     assert.deepEqual(
       p.lignes.map((l) => [l.libelle, l.mainDoeuvre === true, l.partMainDoeuvre ?? null]),
-      [["Main d'œuvre : taille de haie de laurier", true, null]]
+      [
+        ["Main d’œuvre", true, null],
+        ["Taille de haie de laurier", false, null],
+      ]
     );
     assert.ok((await appliquerPropositionPrix(A, c.id)).succes);
     const [ligne] = await listerLignesPrix(A, c.id);
@@ -394,7 +453,10 @@ async function main() {
     const { dictee, question } = await questionMainOeuvre(A, c.id);
     assert.equal(dictee, true);
     assert.equal(question, null, "la question ne revient pas");
-    assert.deepEqual(await lignes(A, c.id), [["Main d'œuvre : tonte du fond", 400]]);
+    assert.deepEqual(await lignes(A, c.id), [
+      ["Main d’œuvre", 400],
+      ["Tonte du fond", null],
+    ]);
   });
 
   await test("la carte main d'œuvre S'AJOUTE aux questions de grille, elle ne les fait pas taire", async () => {
