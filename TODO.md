@@ -57,7 +57,7 @@ se séparaient).
 `OuvrirFiche.tsx` (la largeur), `LignePassage.tsx` (la ligne : un visuel,
 le nom, la date, le détail ; l'icône dorée ou la tuile selon la liste),
 `FichesEnCours.tsx` et `RapportsEnvoyes.tsx` (la carte qui les tient). Le
-rond doré et la tuile d'icône existent déjà (Réglages, `paysage/page.tsx`) :
+rond doré et la tuile d'icône existent déjà (Réglages, `src/app/paysage/page.tsx`) :
 ils se partagent, ils ne se recopient pas (`CLAUDE.md` §3).
 
 ## ~~⏳ À REGARDER PAR LUI (8 novembre 2026) : le compteur de jours dans Équipe~~ TRANCHÉ LE 8 NOVEMBRE (« FAIS-MOI UNE COPIE »), CODÉ LE 8 NOVEMBRE, SUR main LE 8 NOVEMBRE
@@ -853,10 +853,17 @@ peut nommer un client), un seul pour les idées d'une même journée. **Pas de
 seconde application** : elle lirait la même base, et ce serait une porte de
 plus à protéger. Ajouté sur la planche, sous « Chez vous ». **Pas vérifiable
 ici** : que `ATLAS_EDITEUR_EMAIL` soit posée sur son espace avec son adresse.
-~~**Vérifié dans le dépôt le 5 novembre : rien ne la pose.**~~ **Réglé le
-8 novembre 2026** : il a écrit une idée et ne l'a jamais reçue. Son compte est
-`demo@atlas.local` (sa réponse) ; `completer-env-local.sh` l'écrit remplie
-dans `.env.local` à l'allumage. `run-e2e-tests.ts` la pose vide pour les
+~~**Vérifié dans le dépôt le 5 novembre : rien ne la pose.**~~ ~~**Réglé le
+8 novembre 2026**~~ **FAUX, corrigé le 9 novembre** : le lendemain, l'idée
+n'arrivait toujours pas. Son compte est `demo@atlas.local` (sa réponse) ;
+`completer-env-local.sh` l'écrit remplie dans `.env.local`, mais seulement à
+l'allumage, AVANT d'aller chercher le code neuf, et le bouton « Mettre à
+jour » des Réglages ne repasse jamais par là : la ligne n'atteignait son
+serveur qu'au deuxième allumage après sa livraison. Depuis le 9 novembre,
+`banc.mjs` complète le fichier avant chaque lancement (`reglages-du-banc.mjs`),
+sans jamais le faire naître. **Pas vérifié ICI** : que la ligne soit posée sur
+son espace ; le signe est la ligne « Les idées reçues » au-dessus de « Une idée
+pour l'appli », dans Réglages. `run-e2e-tests.ts` la pose vide pour les
 suites, et cela tient : `@next/env` ne prend une valeur de `.env.local` que si
 la variable est `undefined` (lu dans `node_modules/@next/env`, le 8 novembre).
 **Provisoire, et il l'a dit** (8 novembre 2026) : *« un jour cette appli sera

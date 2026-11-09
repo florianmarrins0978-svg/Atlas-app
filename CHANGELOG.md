@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-09
 
+- **Ses idées se lisent pour de bon : le correctif d'hier n'était jamais arrivé jusqu'à son serveur** (sa capture : *« j'ai toujours pas reçu la demande sur mon compte »*). Son espace servait le code du 8 novembre, mais `.env.local` ne se complétait qu'à l'allumage, avant d'aller chercher le code neuf, et le bouton « Mettre à jour » des Réglages ne repasse jamais par là : la ligne de l'éditeur attendait le deuxième allumage après sa livraison. `banc.mjs`, que les deux chemins relancent, complète désormais le fichier juste avant de servir, avec le modèle du code qui vient d'arriver ; il ne le fait jamais naître (la batterie le lance chez l'agent et en CI). Ce que ça évite : tout nom ajouté au modèle qui dormirait des jours sur son disque. Ce qui lui avait été dit hier, « réglé », était faux.
 - **La fiche de chantier, soignée : son choix, D et B** (`appli/fiche-de-chantier-soignee.html`). Ses mots : *« tu gardes la D jusqu'à en cours ; pour les rapports envoyés, tu mets ce que tu as fait pour la B »*. La planche ne porte plus que cette composition et l'écran d'aujourd'hui : Composer ma fiche avec le rond doré de Réglages, Créer une fiche sur toute la largeur, En cours aux icônes dorées, les rapports aux tuiles teintées. Les deux listes prennent la même carte et la même colonne (B arrondissait à 16, D posait ses noms 8 px plus à gauche) : empilées, elles ne s'alignaient plus. Pas codé, en attente de son « oui ».
 
 ## 2026-11-08

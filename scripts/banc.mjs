@@ -34,6 +34,7 @@ import { randomBytes } from "node:crypto";
 import { annoncePrete } from "./annonce-adresse.mjs";
 import { prendreVerrouBanc, libererVerrouBanc } from "./verrou-banc.mjs";
 import { noterEtape } from "./etape-du-banc.mjs";
+import { completerReglagesDuBanc } from "./reglages-du-banc.mjs";
 import { peutPrechauffer, memoireDisponibleMo } from "./memoire-prechauffage.mjs";
 import {
   versionEpinglee,
@@ -956,6 +957,18 @@ async function annoncerDesQueCaRepond(bati, davant = false) {
 // Ne coûte rien quand tout va bien : deux `package.json` lus, aucune commande.
 noterEtape("dépendances");
 await reinstallerSiDesaccordees();
+
+// **Les noms neufs de `.env.local` arrivent avec le code qui les nomme**
+// (9 novembre 2026) : sans quoi le bouton « Mettre à jour » servait un code qui
+// attend `ATLAS_EDITEUR_EMAIL` sur un fichier qui ne la portait pas, et ses
+// idées restaient sans lecteur. Le pourquoi vit dans `reglages-du-banc.mjs`.
+// Un échec se dit et laisse partir le serveur : un banc qui ne démarre plus
+// ferait pire qu'une ligne absente.
+try {
+  completerReglagesDuBanc(process.cwd());
+} catch (erreur) {
+  console.error(`⚠ .env.local non complété (${erreur instanceof Error ? erreur.message.split("\n")[0] : erreur}) : les noms neufs attendront l'allumage.`);
+}
 
 // **La clé de session DE SON ESPACE, jamais celle du dépôt** (audit du
 // 25 octobre 2026, E1). `AUTH_SECRET` venait de `docker-compose.yml`, écrit en
