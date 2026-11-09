@@ -1,8 +1,8 @@
 # État du projet
 
-## LA MAIN D'ŒUVRE SUR UNE LIGNE, CHAQUE TRAVAIL À SON PRIX, CODÉE (9 novembre 2026), PAS SUR `main`
+## LA MAIN D'ŒUVRE SUR UNE LIGNE, CHAQUE TRAVAIL À SON PRIX, CODÉE (9 novembre 2026), SUR `main` LE 9 NOVEMBRE
 
-Sa planche `appli/soignee/devis-main-d-oeuvre-et-prix.html`, approuvée. `propositionAvecMainOeuvre` pose la ligne « Main d’œuvre », puis chaque travail à sa grille, sinon à chiffrer. Types, lint et contrôles purs verts ; suite base vue rouge sur le code d'avant, puis 17 sur 17 ; batterie (niveau 3) lancée sur son « oui ». `ARCHITECTURE.md` §579.
+Sa planche `appli/soignee/devis-main-d-oeuvre-et-prix.html`, approuvée. `propositionAvecMainOeuvre` pose la ligne « Main d’œuvre », puis chaque travail à sa grille, sinon à chiffrer. Types, lint et contrôles purs verts ; suite base vue rouge sur le code d'avant, puis 17 sur 17 ; batterie (niveau 3) verte sur son « oui », 217 suites navigateur sur 217. `ARCHITECTURE.md` §579.
 
 ---
 ## JOURS TRAVAILLÉS DANS ÉQUIPE, CODÉ (8 novembre 2026), SUR `main` LE 8 NOVEMBRE

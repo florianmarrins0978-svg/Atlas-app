@@ -1,6 +1,6 @@
 # Prochaines tâches
 
-## ⏳ SA BATTERIE, SUR SON « OUI » (9 novembre 2026) : la main d'œuvre « sur une ligne », chaque travail à son prix ; et un frêne inventé
+## ⏳ LA MAIN D'ŒUVRE « SUR UNE LIGNE », SUR `main` LE 9 NOVEMBRE 2026 ; restent la croix de la carte et un frêne inventé
 
 Sa plainte, capture à l'appui (devis de Luc, 12 rue Marcadet) : *« j'ai dicté
 trois tâches différentes, j'ai sélectionné la main d'œuvre sur une seule ligne
@@ -61,8 +61,11 @@ d'avant (le libellé exact de sa capture, six cas rouges), puis 17 sur 17 : (1 2
 1 400 € HT, « dont » 1 200 €) ; cinq assertions de l'ancienne règle
 réécrites. `ARCHITECTURE.md` §579.
 
-**Reste** : sa batterie (niveau 3, argent : rayon de 66 points d'entrée),
-lancée sur son « oui, lance tout » du 9 novembre, puis `main`.
+**Livré** : sa batterie (niveau 3, argent : rayon de 66 points d'entrée),
+jouée sur son « oui, lance tout » du 9 novembre, verte (217 suites navigateur
+sur 217, connexion derrière un proxy comprise), puis `main`. Reste à la
+regarder sur son espace : une dictée de plusieurs travaux, « Sur une ligne
+Main d'œuvre ».
 
 **Vu en codant, pas changé (une apparence, donc une planche d'abord)** : sur
 la carte « Avant de chiffrer », en mode « Sur une ligne Main d'œuvre », la
