@@ -6,7 +6,7 @@ sert.
 
 **Point de reprise :** 2026-11-09 · `claude/ecstatic-pascal-a14c04` : la main
 d'œuvre « sur une ligne », chaque travail à son prix (`ARCHITECTURE.md` §579),
-codée, en attente de son « oui » pour la suite base et la batterie (niveau 3).
+codée, suite base verte, batterie (niveau 3) lancée sur son « oui ».
 Avant : sur `main`, la batterie commune du 8 novembre
 (`docs/batterie-commune-8-novembre.md`).
 (l'historique fait foi : `git log --oneline -20`)

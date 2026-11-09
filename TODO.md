@@ -55,16 +55,14 @@ puis chaque travail comme un travail sorti par la croix (`aSaGrille`). Le
 détail de chacun descend donc sous SON nom sans toucher à
 `appliquer-proposition.ts`. `libelleMainOeuvre` est retirée (plus rien ne
 l'appelait). La carte « Avant de chiffrer » n'a pas eu à changer : son total
-est celui de la main d'œuvre, et c'est ce qu'elle dit. Test écrit, **pas
-encore joué** (il vide la base) : `test-main-oeuvre-dictee-db.ts`, « son devis
-de Luc » (1 200 € de main d'œuvre, la haie 20 ml à 10 €, le frêne et l'olivier à chiffrer, total
+est celui de la main d'œuvre, et c'est ce qu'elle dit. Test
+`test-main-oeuvre-dictee-db.ts`, « son devis de Luc », vu ROUGE sur le code
+d'avant (le libellé exact de sa capture, six cas rouges), puis 17 sur 17 : (1 200 € de main d'œuvre, la haie 20 ml à 10 €, le frêne et l'olivier à chiffrer, total
 1 400 € HT, « dont » 1 200 €) ; cinq assertions de l'ancienne règle
 réécrites. `ARCHITECTURE.md` §579.
 
-**Reste, dans cet ordre** : sa batterie (niveau 3, argent : rayon de 66
-points d'entrée), qui attend son « oui ». Avant elle, la suite base jouée
-seule, sur le code d'avant (elle doit rougir sur « son devis de Luc »), puis
-sur celui-ci (`CLAUDE.md` §5, test rouge d'abord). Puis `main`.
+**Reste** : sa batterie (niveau 3, argent : rayon de 66 points d'entrée),
+lancée sur son « oui, lance tout » du 9 novembre, puis `main`.
 
 **Vu en codant, pas changé (une apparence, donc une planche d'abord)** : sur
 la carte « Avant de chiffrer », en mode « Sur une ligne Main d'œuvre », la

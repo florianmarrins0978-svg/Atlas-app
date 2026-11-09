@@ -37450,6 +37450,8 @@ le total de la main d'œuvre, et c'est encore ce qu'il est. Sa croix, en mode
 « ligne », ne change plus le devis : c'est une apparence, donc une planche
 d'abord (`TODO.md`).
 
-`scripts/test-main-oeuvre-dictee-db.ts`, « son devis de Luc » : écrit, pas
-encore joué (il vide la base, et la batterie attend son accord).
+`scripts/test-main-oeuvre-dictee-db.ts`, « son devis de Luc » : vu rouge sur
+le code d'avant, avec le libellé exact de sa capture (« Main d'œuvre : taille
+de haie de photinia, élagage d'un frêne, plantation d'un olivier »), puis vert,
+17 sur 17.
 

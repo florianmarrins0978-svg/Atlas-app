@@ -213,7 +213,7 @@ async function main() {
     const c = await chantierDicte(A, {
       prestations: [
         { ...base, libelle: "Taille de haie de photinia", nature: "haie", quantite: "20", unite: "ml", detail: "Taille des 3 faces." },
-        { ...base, libelle: "Élagage d'un frêne", detail: "Taille de cohabitation avec la maison." },
+        { ...base, libelle: "Élagage d'un frêne", nature: "elagage", detail: "Taille de cohabitation avec la maison." },
         { ...base, libelle: "Plantation d'un olivier", detail: "Avec apport de terreau et d'engrais." },
       ],
       dureePrevue: "1 jour",
