@@ -235,8 +235,9 @@ async function main() {
     // sur quatre, et rien d'autre : ni l'adresse, ni ce que montrait l'anneau,
     // ni le refus éventuel. Sans cela, on ne pourrait que deviner pourquoi la
     // chaîne n'est pas partie.
+    const preparation = page.locator('[data-atlas="preparation-automatique"]');
     await Promise.any([
-      page.locator('[data-atlas="preparation-automatique"]').waitFor({ timeout: 60_000 }),
+      preparation.waitFor({ timeout: 60_000 }),
       page.waitForURL(/\/devis-complet$/, { timeout: 60_000 }),
     ]).catch(async () => {
       const anneauVu = (await anneau.count()) > 0 ? (await anneau.innerText()).replace(/\s+/g, " ").trim() : "absent";
@@ -245,6 +246,19 @@ async function main() {
           `Adresse : ${page.url()}, anneau : « ${anneauVu} »`
       );
     });
+
+    // **Pendant qu'Atlas prépare, « Votre dictée » se tait**, sa demande du
+    // 9 novembre 2026 : *« retire-moi la phrase "votre dictée" »*, sous
+    // « Atlas prépare votre devis ». Lu seulement si la préparation est encore
+    // à l'écran : partie sur le devis, elle n'a plus rien à montrer, et ce
+    // contrôle ne conclurait sur rien.
+    if (await preparation.isVisible()) {
+      assert.equal(
+        await page.getByText("Votre dictée", { exact: true }).count(),
+        0,
+        "« Votre dictée » reste sous « Atlas prépare votre devis » : il l'a fait retirer le 9 novembre"
+      );
+    }
   });
 
   await cas("la note dictée se voit, et elle se JETTE depuis cet écran", async () => {
