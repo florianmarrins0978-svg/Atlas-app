@@ -5,7 +5,7 @@ import { colors, libelleCaps, smallCaps } from "@/lib/design-tokens";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
 import { jourLisible } from "@/lib/jour";
-import LignePassage, { type PassageListe } from "./LignePassage";
+import LignePassage, { CarteDesFiches, type PassageListe } from "./LignePassage";
 import { supprimerFicheAction } from "./actions";
 
 /**
@@ -76,7 +76,7 @@ export default function FichesEnCours({ brouillons }: { brouillons: PassageListe
             En cours
           </h2>
 
-          <div className="mt-[10px]">
+          <CarteDesFiches>
             {visibles.map((p) => (
               <LignePassage
                 key={p.id}
@@ -104,7 +104,7 @@ export default function FichesEnCours({ brouillons }: { brouillons: PassageListe
                 }
               />
             ))}
-          </div>
+          </CarteDesFiches>
         </section>
       )}
 

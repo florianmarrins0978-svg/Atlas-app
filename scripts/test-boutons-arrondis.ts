@@ -229,13 +229,15 @@ const HORS_CHARTE: Array<{
      * Elle était une phrase ; il l'a dit introuvable — *« c'est bien mais juste
      * une phrase, on la trouve difficilement »* —, puis a choisi la carte, *« mais
      * fais-la moins large »*. Elle mène quelque part, donc `<Link>` ; ce qu'on
-     * voit est une plage qu'on parcourt, et la charte lui donne 4 px.
+     * voit est une plage qu'on parcourt, pas un geste en capsule. Ses 14 px
+     * sont ceux de sa planche du 9 novembre 2026 (D) : à 4 px, il la trouvait
+     * « trop carrée ».
      *
      * **Bornée à son repère** : tout autre bouton carré de cet écran fait
      * toujours rougir.
      */
     motif: /^src[/\\]app[/\\]paysage[/\\]fiche[/\\]page\.tsx$/,
-    pourquoi: "carte qu'on parcourt, plage à 4 px et non geste en capsule",
+    pourquoi: "carte qu'on parcourt, arrondie à 14 px (planche du 9 novembre), et non geste en capsule",
     seulement: /data-atlas="carte-composer-ma-fiche"/,
   },
   {

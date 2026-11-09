@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
+import TuileIcone from "@/components/atlas/TuileIcone";
 import { cardShadow, colors, font, libelleCaps, radius, texteSituation } from "@/lib/design-tokens";
 import { fonctionOuverte, type FonctionReservee } from "@/lib/abonnements";
 import { getCurrentCtx } from "@/server/session-ctx";
@@ -186,11 +187,7 @@ function LigneOutil({ outil, premiere, fermee }: { outil: Outil; premiere: boole
           style={{ left: 68, backgroundColor: colors.line }}
         />
       )}
-      <span
-        aria-hidden="true"
-        className="flex h-10 w-10 flex-none items-center justify-center rounded-[12px]"
-        style={{ backgroundColor: colors.rustTint, color: fermee ? colors.inkSoft : colors.rust }}
-      >
+      <TuileIcone eteinte={fermee}>
         <svg
           width="22"
           height="22"
@@ -203,7 +200,7 @@ function LigneOutil({ outil, premiere, fermee }: { outil: Outil; premiere: boole
         >
           {outil.dessin}
         </svg>
-      </span>
+      </TuileIcone>
       <span
         className="min-w-0 flex-1 text-[18px] leading-[1.25]"
         style={{ fontFamily: font.display, color: colors.ink }}

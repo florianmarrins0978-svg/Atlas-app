@@ -1,6 +1,6 @@
 # Prochaines tâches
 
-## ⏳ À REGARDER PAR LUI (9 novembre 2026) : la fiche de chantier, soignée, D ET B
+## ~~⏳ À REGARDER PAR LUI (9 novembre 2026) : la fiche de chantier, soignée, D ET B~~ TRANCHÉ LE 9 NOVEMBRE (« TU PEUX CODER »), CODÉ LE 9 NOVEMBRE, CONTRÔLE DE NIVEAU 2 À JOUER AVEC SON ACCORD
 
 Sa demande, capture à l'appui : *« tu peux me faire une planche de cette
 page-là, l'idée ça serait de faire cette page en plus jolie ; inspire-toi de
@@ -53,12 +53,25 @@ l'en-tête, le filtre de date et la barre de recherche de l'appli ; la date
 sur sa ligne et ce qui a été fait dessous (sur une ligne, « 1 h » et « 40 »
 se séparaient).
 
-**À coder sur son « oui »** : `page.tsx` (la carte de Composer),
-`OuvrirFiche.tsx` (la largeur), `LignePassage.tsx` (la ligne : un visuel,
-le nom, la date, le détail ; l'icône dorée ou la tuile selon la liste),
-`FichesEnCours.tsx` et `RapportsEnvoyes.tsx` (la carte qui les tient). Le
-rond doré et la tuile d'icône existent déjà (Réglages, `paysage/page.tsx`) :
-ils se partagent, ils ne se recopient pas (`CLAUDE.md` §3).
+**CODÉ LE 9 NOVEMBRE**, sur son *« très bien, ça je valide, tu peux
+coder »* : `page.tsx` (la carte de Composer : `RondDore`, arrondi 14,
+chevron doré), `OuvrirFiche.tsx` (`pleineLargeur`), `LignePassage.tsx` (le
+visuel selon la fiche, la date sur sa ligne et le détail dessous, le filet à
+68 px ; `CarteDesFiches` pour les deux listes). Le rond doré du sceau des
+Réglages est devenu `src/components/atlas/RondDore.tsx`, la tuile des outils
+de Paysage `src/components/atlas/TuileIcone.tsx` : partagés, pas recopiés.
+Les trois dessins vivent dans `src/app/paysage/fiche/icones.tsx` : dans
+`IconeTrait`, ils faisaient passer le lot au niveau 3 (34 écrans).
+
+**Un écart avec la planche, délibéré** : « Créer une fiche » garde la
+hauteur de toutes les capsules de l'appli (`PrimaryButton`, environ 51 px,
+17 px de texte) ; la planche la dessinait à 56 px et 18 px. Deux formes
+d'action principale, c'est ce que `PrimaryButton` refuse.
+
+| reste | qui |
+|---|---|
+| son accord pour `npm run verifier:avant-fusion` (niveau 2 : 30 suites navigateur), puis `main` | lui, puis moi |
+| qu'il la regarde sur son espace une fois sur `main` | lui |
 
 ## ~~⏳ À REGARDER PAR LUI (8 novembre 2026) : le compteur de jours dans Équipe~~ TRANCHÉ LE 8 NOVEMBRE (« FAIS-MOI UNE COPIE »), CODÉ LE 8 NOVEMBRE, SUR main LE 8 NOVEMBRE
 

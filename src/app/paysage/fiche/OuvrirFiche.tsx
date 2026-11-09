@@ -20,8 +20,12 @@ export default function OuvrirFiche() {
 
   return (
     <div>
+      {/* **Sur toute la largeur, sa planche du 9 novembre 2026** (D) : sous la
+          carte de Composer ma fiche, le geste de tous les jours prend la même
+          largeur qu'elle. La capsule ne change pas de dessin (`PrimaryButton`). */}
       <PrimaryButton
         repere="ouvrir-fiche-chantier"
+        pleineLargeur
         disabled={enCours}
         onClick={() =>
           demarrer(async () => {
