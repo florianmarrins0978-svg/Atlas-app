@@ -64,6 +64,24 @@ libellé dans la consigne, et `npm run verifier:dictee` sur son espace.
 fois, pour Taille de haie de laurier de ml, vous aviez retenu 650 € HT »
 compare la ligne de main d'œuvre à une taille de haie.
 
+## ⏳ À REGARDER PAR LUI (9 novembre 2026) : jeter la dictée, en clair
+
+Sa remarque : *« moi je ne savais pas que ce mécanisme jetait la dictée,
+il faut peut-être mettre un truc plus clair ; il n'y a pas déjà un bouton
+poubelle ? »* **Lu dans le code** : la poubelle « Jeter »
+(`AnneauNoteVocale.tsx`, `dictee-jeter`) ne vit que PENDANT la dictée ; une
+fois la note envoyée, seul le glissement de « Votre dictée »
+(`LigneRetirable`, `FormulaireNouveauChantier.tsx`) la jette, et rien ne le
+montre.
+
+**La planche** : `appli/jeter-la-dictee.html`, sur sa vraie fiche client
+(M. Bernard, une note envoyée). A : « Retirer » écrit au bout de la ligne,
+comme sur les fiches en cours (sa planche du 11 octobre). B : la poubelle
+cerclée de la dictée, avec « Jeter ». Le tiroir « Annuler » reste.
+
+**Reste** : son choix, puis le coder (et récrire la fiche du mode d'emploi
+`chantier-dictee-retirer`, qui décrit le glissement).
+
 ## ⏳ À REGARDER PAR LUI (9 novembre 2026) : la fiche ouverte et Composer ma fiche, soignées
 
 Sa demande, après avoir validé D et B : *« ensuite, tu t'attelles à ce qui se
