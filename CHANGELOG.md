@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-09
 
+- **La fiche ouverte et Composer ma fiche, soignées : deux planches sur les vrais écrans** (sa demande : *« ce qui se passe quand on clique sur créer une fiche, composer ma fiche et les fiches arrêtées que tu peux modifier, et rendre plus jolies »*). `appli/fiche-de-chantier-ouverte-soignee.html` montre la fiche neuve et la fiche en cours (le même écran), A en liste dans des cartes au rond doré, B en pastilles ; `appli/composer-ma-fiche-soignee.html` A tout déplié, B les familles repliées. Chaque geste répond (207 et 88 touchés, aucun muet). Pas codé.
 - **La fiche de chantier, soignée : son choix, D et B** (`appli/fiche-de-chantier-soignee.html`). Ses mots : *« tu gardes la D jusqu'à en cours ; pour les rapports envoyés, tu mets ce que tu as fait pour la B »*. La planche ne porte plus que cette composition et l'écran d'aujourd'hui : Composer ma fiche avec le rond doré de Réglages, Créer une fiche sur toute la largeur, En cours aux icônes dorées, les rapports aux tuiles teintées. Les deux listes prennent la même carte et la même colonne (B arrondissait à 16, D posait ses noms 8 px plus à gauche) : empilées, elles ne s'alignaient plus. Pas codé, en attente de son « oui ».
 
 ## 2026-11-08
