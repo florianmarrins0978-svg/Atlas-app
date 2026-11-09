@@ -2,6 +2,7 @@ import Link from "next/link";
 import { colors, font, libelleCaps, radius } from "@/lib/design-tokens";
 import type { EnsembleRubriques, Rubrique } from "@/lib/rubriques-reglages";
 import IconeReglage from "./icones";
+import RondDore from "@/components/atlas/RondDore";
 
 /**
  * Le sommaire des réglages, dans la grammaire des écrans refaits.
@@ -219,13 +220,7 @@ function Carte({ rubrique, nomEntreprise }: { rubrique: Rubrique; nomEntreprise:
       className="flex min-h-[60px] items-center gap-[14px] p-[18px]"
       style={{ background: colors.card, borderRadius: radius.card }}
     >
-      <span
-        aria-hidden="true"
-        className="grid h-[52px] w-[52px] flex-none place-items-center rounded-full text-[22px] leading-none"
-        style={{ boxShadow: `inset 0 0 0 1.5px ${colors.or}`, color: colors.or, fontFamily: font.display }}
-      >
-        {nom ? nom.charAt(0).toUpperCase() : <IconeReglage nom={rubrique.icone} />}
-      </span>
+      <RondDore>{nom ? nom.charAt(0).toUpperCase() : <IconeReglage nom={rubrique.icone} />}</RondDore>
       <span className="min-w-0 flex-1">
         <span className="block text-[21px] leading-[1.2]" style={{ fontFamily: font.display, color: colors.ink }}>
           {nom ?? rubrique.nom}

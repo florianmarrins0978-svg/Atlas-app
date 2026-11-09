@@ -1,13 +1,16 @@
 import Link from "next/link";
 import AnnonceTransmission from "@/components/atlas/AnnonceTransmission";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
-import { cardShadow, colors, font, radius, texteSituation } from "@/lib/design-tokens";
+import IconeTrait from "@/components/atlas/IconeTrait";
+import RondDore from "@/components/atlas/RondDore";
+import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { estProprietaire } from "@/server/autorisation";
 import { listerPassages } from "@/server/repositories/passages-entretien";
 import { listerPrestations } from "@/server/repositories/prestations-entretien";
 import OuvrirFiche from "./OuvrirFiche";
 import FichesEnCours from "./FichesEnCours";
+import IconeDeFiche from "./icones";
 import RapportsEnvoyes from "./RapportsEnvoyes";
 import { garderLaPage } from "@/server/garde-page";
 
@@ -81,49 +84,38 @@ export default async function FichesPage() {
             qu'elle ouvre le refuserait de toute façon. */}
         {proprietaire && modele.length > 0 && (
           <section className="mx-[26px] mt-[22px]">
-            {/* **PLEINE LARGEUR, LE LISERÉ D'OR GARDÉ — sa planche du
-                11 octobre 2026** (`appli/fiche-de-chantier-l-accueil.html`,
-                version Corrigé) : *« remets le bouton d'avant, juste mets-lui
-                un bandeau doré celui de l'appli »*. La carte étroite du 26 août
-                (*« une carte mais fais-la moins large »*) cède à sa demande la
-                plus récente.
+            {/* **LE ROND DORÉ DES RÉGLAGES, sa planche du 9 novembre 2026**
+                (`appli/fiche-de-chantier-soignee.html`, D) : *« tu gardes la D
+                jusqu'à en cours »*. La D est « comme Réglages » : le sceau de
+                Mon entreprise (`RondDore`), la serif à 21 px, le chevron doré.
+                Elle remplace le liseré d'or du 11 octobre, et la carte n'est
+                plus « trop carrée » (sa remarque du 9 novembre sur l'ancienne) :
+                14 px d'arrondi, celui des deux listes du dessous.
 
-                Les coins et l'ombre sont ceux des cartes de Paysage
-                (`radius.card`, `cardShadow`). Le fond reste `card` et le liseré
-                `colors.or`, ses deux demandes du 22 septembre 2026 : sur les
-                chartes sombres, `card` devient leur carte sombre, jamais un
-                aplat blanc illisible. « Créer une fiche », dessous, reste la
-                capsule : c'est le geste de tous les jours. */}
+                Le fond reste `card`, sa demande du 22 septembre 2026 : sur les
+                chartes sombres, il devient leur carte sombre, jamais un aplat
+                blanc illisible. « Créer une fiche », dessous, reste la capsule :
+                c'est le geste de tous les jours. */}
             <Link
               href="/paysage/fiche/composer"
               data-atlas="carte-composer-ma-fiche"
-              className="flex min-h-[64px] w-full items-center gap-[14px] px-[18px] py-[15px]"
-              style={{
-                backgroundColor: colors.card,
-                border: `1px solid ${colors.or}`,
-                borderRadius: radius.card,
-                boxShadow: cardShadow,
-              }}
+              className="flex min-h-[84px] w-full items-center gap-[16px] rounded-[14px] px-[16px] py-[14px]"
+              style={{ backgroundColor: colors.card }}
             >
+              <RondDore>
+                <IconeDeFiche nom="composer" taille={24} epaisseur={1.6} />
+              </RondDore>
               <span className="min-w-0 flex-1">
-                <span className="block text-[19px] leading-[1.2]" style={{ fontFamily: font.display }}>
+                <span className="block text-[21px] leading-[1.2]" style={{ fontFamily: font.display, color: colors.ink }}>
                   Composer ma fiche
                 </span>
-                <span className={`mt-[3px] block ${texteSituation}`} style={{ color: colors.inkSoft }}>
+                <span className="mt-[3px] block text-[15px]" style={{ color: colors.inkSoft }}>
                   {modele.length} prestation{modele.length > 1 ? "s" : ""}
                 </span>
               </span>
-              {/* Le même chevron que les lignes du dessous et que le sommaire des
-                  réglages : ce qui mène quelque part se reconnaît à lui. */}
-              <span
-                aria-hidden="true"
-                className="h-2 w-2 rotate-45"
-                style={{
-                  flex: "none",
-                  borderRight: `1.5px solid ${colors.chevron}`,
-                  borderTop: `1.5px solid ${colors.chevron}`,
-                }}
-              />
+              <span className="flex" style={{ color: colors.or }}>
+                <IconeTrait nom="suivant" taille={18} epaisseur={1.75} />
+              </span>
             </Link>
           </section>
         )}

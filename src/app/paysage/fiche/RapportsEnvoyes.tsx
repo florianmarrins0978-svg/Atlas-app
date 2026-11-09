@@ -7,7 +7,7 @@ import FiltreDeDate from "@/components/atlas/FiltreDeDate";
 import { rapportsAMontrer } from "@/lib/passage-entretien";
 import { moisEnCours, porteeDeLaPeriode, titreDeLaPeriode } from "@/lib/periode";
 import { adresseDuRapportDansLAppli } from "@/lib/rapport-dans-l-appli";
-import LignePassage, { type PassageListe } from "./LignePassage";
+import LignePassage, { CarteDesFiches, type PassageListe } from "./LignePassage";
 
 /**
  * « Rapports envoyés », et de quoi les retrouver.
@@ -55,7 +55,7 @@ export default function RapportsEnvoyes({ rapports }: { rapports: PassageListe[]
               : `Aucun rapport envoyé en ${titreDeLaPeriode(periode).toLowerCase()}.`}
         </p>
       ) : (
-        <div className="mt-[10px]">
+        <CarteDesFiches>
           {montres.map((p) => (
             // **Le rapport tel que le client l'a reçu**, et non la fiche à
             // cocher : sa demande du 22 septembre 2026, *« quand je clique sur
@@ -70,7 +70,7 @@ export default function RapportsEnvoyes({ rapports }: { rapports: PassageListe[]
               href={p.jeton ? adresseDuRapportDansLAppli(p.jeton) : `/paysage/fiche/${p.id}`}
             />
           ))}
-        </div>
+        </CarteDesFiches>
       )}
     </section>
   );
