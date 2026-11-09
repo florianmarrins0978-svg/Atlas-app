@@ -1,5 +1,53 @@
 # Prochaines tâches
 
+## ⏳ À TRANCHER PAR LUI (9 novembre 2026) : la main d'œuvre « sur une ligne » avale les travaux, et un frêne inventé
+
+Sa plainte, capture à l'appui (devis de Luc, 12 rue Marcadet) : *« j'ai dicté
+trois tâches différentes, j'ai sélectionné la main d'œuvre sur une seule ligne
+[...] ça m'a mis la main d'œuvre plus les trois tâches dans la même case, avec
+en plus il a complètement inventé : j'ai jamais parlé de feuille de frêne,
+oxyphylle »*. La case portait : « Main d'œuvre : taille de haie de photinia,
+élagage d'un frêne à feuilles de frêne (frêne oxyphylle), plantation d'un
+olivier », puis les trois détails collés en un paragraphe, 3 jour/homme à 400.
+
+**1. Les trois travaux dans une case : le code fait ce que deux planches
+disent, et c'est leur RENCONTRE qui ne va pas.**
+
+| | |
+|---|---|
+| sa planche du 21 octobre (`appli/main-d-oeuvre-repartie.html`) | en mode « ligne », UNE ligne « Main d'œuvre : démontage d'un chêne, dessouchage, taille de haie de laurier » ; codé tel quel, `proposition-prix.ts` (`choix.mode === "ligne"`, `libelleMainOeuvre`) |
+| sa planche du 4 novembre (détail sous la ligne) | `appliquer-proposition.ts` colle sous le nom le détail de CHAQUE prestation que la ligne vend (`libelleAvecDetail`) |
+
+La première ne montrait que des noms, la seconde une ligne par travail. Avec
+trois travaux détaillés, les trois détails se collent sans dire lequel est à
+qui. Aucune ligne de devis ne sait aujourd'hui être « comprise dans la main
+d'œuvre » (ni prix, ni « à chiffrer ») : un travail sans prix se lit gratuit ou
+bloque l'envoi.
+
+**Ce qui est proposé** (planche d'abord, sur le vrai écran, §3 bis) : en mode
+« ligne », chaque travail garde SA ligne et SON détail, la colonne du montant
+dit qu'il est compris dans la main d'œuvre, et la main d'œuvre a sa propre
+ligne (« Main d'œuvre », 3 jour/homme, 400 €). C'est un nouvel état de ligne :
+migration, PDF, facture, totaux, « dont main d'œuvre HT ». Niveau 3. **La
+planche demande un serveur et la base de démonstration : son « oui » d'abord**
+(règle du 5 novembre).
+
+**2. « à feuilles de frêne (frêne oxyphylle) » n'est écrit nulle part dans le
+dépôt** (code, vocabulaire soufflé au transcripteur, amorçage, migrations,
+vérifié le 9 novembre). Il vient donc du transcripteur ou du modèle qui
+découpe la dictée, et il est entré dans le libellé de la prestation (la ligne
+Main d'œuvre reprend ce libellé). La consigne d'extraction
+(`extraction-service.ts`) interdit d'inventer une quantité, une durée, une
+espèce ou un détail, **mais ne dit rien du LIBELLÉ** : rien n'y interdit un
+nom savant, une variété ou une parenthèse qu'il n'a pas dite. **Qui l'a
+inventé, sa transcription le dit** (« Votre dictée », sur la fiche) ; pas
+visible ici. Si elle ne porte pas « oxyphylle », c'est le modèle : règle du
+libellé dans la consigne, et `npm run verifier:dictee` sur son espace.
+
+**Vu sur la même capture, cause non cherchée** : sous la case, « La dernière
+fois, pour Taille de haie de laurier de ml, vous aviez retenu 650 € HT »
+compare la ligne de main d'œuvre à une taille de haie.
+
 ## ⏳ À REGARDER PAR LUI (9 novembre 2026) : la fiche de chantier, soignée, D ET B
 
 Sa demande, capture à l'appui : *« tu peux me faire une planche de cette
