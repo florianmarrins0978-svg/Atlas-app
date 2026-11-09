@@ -278,6 +278,15 @@ se refait en redictant) ; 2, la case gardée avec la poubelle cerclée
 **Reste** : son choix entre 1 et 2. Pour 2 : récrire la fiche du mode
 d'emploi `chantier-dictee-retirer`, qui décrit le glissement.
 
+## « Votre dictée » cachée pendant le devis : CODÉ LE 9 NOVEMBRE, CONTRÔLE À JOUER AVEC SON ACCORD
+
+Sa demande, capture de la fiche client : *« retire-moi la phrase "votre
+dictée" »*. La case est le geste qui jette la dictée (13 septembre) : sur
+son choix (« cachée pendant le devis »), elle se tait tant qu'Atlas prépare
+(`atlasTravaille`, `FormulaireNouveauChantier.tsx`) et revient dès que la
+préparation s'arrête. `test-anneau-dictee-e2e` la vérifie absente pendant la
+préparation : pas encore joué (suites navigateur, son accord).
+
 ## ~~⏳ À REGARDER PAR LUI (9 novembre 2026) : la fiche ouverte et Composer ma fiche, soignées~~ TRANCHÉ LE 17 NOVEMBRE (« POUR LA 1 LA A, ET LA 2 A AUSSI »), CODÉ LE 17 NOVEMBRE, CONTRÔLE DE NIVEAU 2 À JOUER AVEC SON ACCORD
 
 Sa demande, après avoir validé D et B : *« ensuite, tu t'attelles à ce qui se

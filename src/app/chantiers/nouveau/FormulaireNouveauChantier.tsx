@@ -1587,8 +1587,16 @@ export default function FormulaireNouveauChantier({
 
                 **Et le retrait rend le micro à l'invite** : sans cela, l'écran
                 resterait muet après un jet, et il ne saurait pas qu'il peut
-                recommencer — ce qui est tout l'objet de sa demande. */}
-            {noteAretirer && (
+                recommencer — ce qui est tout l'objet de sa demande.
+
+                **Elle se tait pendant qu'Atlas prépare le devis, sa demande
+                du 9 novembre 2026**, capture à l'appui : *« retire-moi la
+                phrase "votre dictée" »*. Sous « Atlas prépare votre devis »,
+                elle ne servait à rien : la préparation réussie l'emmène sur le
+                devis. Elle revient dès que la préparation s'arrête, et c'est
+                là qu'elle sert, sa raison du 13 septembre : jeter une dictée
+                ratée pour redicter. */}
+            {noteAretirer && !atlasTravaille && (
               <div className="mt-4">
                 <LigneRetirable
                   libelle="cette note vocale"
