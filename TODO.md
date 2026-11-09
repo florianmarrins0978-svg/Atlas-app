@@ -1,5 +1,33 @@
 # Prochaines tâches
 
+## ⏳ À REGARDER PAR LUI (9 novembre 2026) : la fiche ouverte et Composer ma fiche, soignées
+
+Sa demande, après avoir validé D et B : *« ensuite, tu t'attelles à ce qui se
+passe quand on clique sur créer une fiche, composer ma fiche et les fiches
+arrêtées que tu peux modifier, et rendre plus jolies »*. Créer une fiche et
+rouvrir une fiche en cours mènent au MÊME écran (`/paysage/fiche/[id]`) :
+deux planches, pas trois.
+
+| planche | A | B |
+|---|---|---|
+| `appli/fiche-de-chantier-ouverte-soignee.html` (neuve : Sans client ; en cours : Mme Costa) | le client dans une carte au rond doré (« Ajouter un client » doré, en serif) ; chaque famille dans une carte arrondie à 14 px, la case arrondie à 8 px et la coche au trait ; le temps dans une seule carte ; le bouton sur toute la largeur | pareil, mais les prestations en pastilles, teintées quand elles sont faites |
+| `appli/composer-ma-fiche-soignee.html` | tout déplié : cartes à 14 px, « Ajouter une prestation » derrière un anneau doré, « Ajouter une famille » dans une carte au rond doré | les familles repliées, une carte chacune ; le chevron ou la pastille du haut déplie |
+
+**Ce qui s'écarte de ses décisions, et c'est délibéré** : les noms de
+famille de la fiche passent en noir gras (ils étaient en encre douce depuis
+le 11 octobre), comme « En cours » sur la liste qu'il vient de choisir ; et
+« Ajouter un client » n'est plus centré (22 septembre), il reste gros et
+doré dans sa carte.
+
+**Ce qui ne bouge pas** : le jour en tête et sa roue (24 septembre) ; le
+client en haut (arrangement C) ; « Envoyé par » ; la molette du temps
+(16 août) et « Visible » contre son interrupteur ; « Retirer » et son
+tiroir ; « Retirer la famille » au bas de sa carte (24 août) ; les pastilles
+des familles en haut de Composer.
+
+**Reste** : qu'il choisisse, puis le coder sur son « oui »
+(`FicheChantierClient.tsx`, `ComposerMaFiche.tsx`).
+
 ## ⏳ À REGARDER PAR LUI (9 novembre 2026) : la fiche de chantier, soignée, D ET B
 
 Sa demande, capture à l'appui : *« tu peux me faire une planche de cette
