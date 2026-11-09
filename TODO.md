@@ -24,29 +24,36 @@ qui. Aucune ligne de devis ne sait aujourd'hui être « comprise dans la main
 d'œuvre » (ni prix, ni « à chiffrer ») : un travail sans prix se lit gratuit ou
 bloque l'envoi.
 
-**SON CHOIX DU 9 NOVEMBRE** (entre trois, il a pris « Main d'œuvre à part ») :
-en mode « ligne », chaque travail garde SA ligne et SON détail, la colonne du
-montant dit « Dans la main d'œuvre », et la main d'œuvre a sa propre ligne
-(« Main d'œuvre », 3 jour/homme, 400 €), après les travaux. Écartés : chaque
-travail à son prix sans ligne Main d'œuvre (c'est déjà « Répartis sur les
-travaux ») ; la main d'œuvre ET un prix par travail (contraire à sa règle du
-21 octobre, les jours couvrent tout le chantier).
+**SA DEMANDE DU 9 NOVEMBRE**, après un premier choix dans une liste : *« il y
+aura une ligne main d'œuvre avec la journée à trois hommes, donc 1 200 €, et en
+plus de ça, chaque tâche a son prix : le photinia, 20 mètres linéaires à 10 €,
+200 € »*. Donc, en mode « sur une ligne » : la ligne Main d'œuvre (les jours
+dictés × son tarif) à sa place d'aujourd'hui, puis chaque travail sur SA ligne,
+avec SON détail et SON prix : sa grille, sinon « à chiffrer ». **Cela revient,
+pour ce mode seulement, sur sa réponse du 21 octobre** (« 1 600 € pour les deux
+travaux, pas 1 600 € plus la fente ») : dit au patron le 9 novembre. « Répartis
+sur les travaux » garde la règle du 21 octobre.
 
-**La planche** : `appli/soignee/devis-main-d-oeuvre-compris.html`, sur le vrai
+Une première planche (« compris dans la main d'œuvre », sans prix par travail)
+a été faite sur son premier choix, puis retirée avant publication : sa phrase
+l'a remplacée.
+
+**La planche** : `appli/soignee/devis-main-d-oeuvre-et-prix.html`, sur le vrai
 écran du devis figé (base de démonstration, client Luc, tarif main d'œuvre
 passé à 400 € pour retrouver ses chiffres). « Aujourd'hui » est la sortie
 réelle de `appliquerPropositionPrix` sur ses trois travaux : le défaut se
 reproduit à l'identique, et ce même montage fera le test rouge. « Proposé » :
-quatre vraies lignes, puis le prix unitaire retiré des trois travaux et
-« Dans la main d'œuvre » écrit à la place du montant (« Compris dans la main
-d'œuvre » débordait de la colonne à 390 px). Les quantité et unité restent :
-« 20 ml » d'une haie se lit encore.
+quatre vraies lignes, sans retouche (Main d'œuvre 3 jour/homme × 400 €, haie
+20 ml × 10 €, frêne 550 € comme sur sa capture, olivier à chiffrer), total
+1 950 € HT, « dont main d'œuvre HT » 1 200 €.
 
-**À coder sur son « oui »** : un nouvel état de ligne (ni prix, ni « à
-chiffrer », hors du total) : migration en deux temps, `proposition-prix.ts`
-(mode « ligne » : une ligne par travail, puis la main d'œuvre),
-`appliquer-proposition.ts` (le détail de CHAQUE travail sous SON nom), l'écran
-du devis, le PDF, la facture, « dont main d'œuvre HT ». Niveau 3.
+**À coder sur son « oui »** : `proposition-prix.ts` (mode « ligne » : la ligne
+Main d'œuvre, puis chaque travail chiffré comme un travail sorti par la croix,
+sa grille sinon à chiffrer), `appliquer-proposition.ts` (le détail de CHAQUE
+travail sous SON nom), la question « Avant de chiffrer » (le total qu'elle
+annonce n'est plus celui du devis), et les suites qui fixaient l'ancienne
+règle (`test-main-oeuvre-dictee-db.ts`, « une seule ligne qui nomme les
+travaux »). Argent : niveau 3.
 
 **2. « à feuilles de frêne (frêne oxyphylle) » n'est écrit nulle part dans le
 dépôt** (code, vocabulaire soufflé au transcripteur, amorçage, migrations,
