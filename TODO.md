@@ -1,6 +1,6 @@
 # Prochaines tâches
 
-## ⏳ À REGARDER PAR LUI (9 novembre 2026) : la main d'œuvre « sur une ligne » avale les travaux, et un frêne inventé
+## ⏳ SA BATTERIE, SUR SON « OUI » (9 novembre 2026) : la main d'œuvre « sur une ligne », chaque travail à son prix ; et un frêne inventé
 
 Sa plainte, capture à l'appui (devis de Luc, 12 rue Marcadet) : *« j'ai dicté
 trois tâches différentes, j'ai sélectionné la main d'œuvre sur une seule ligne
@@ -47,19 +47,36 @@ quatre vraies lignes, sans retouche (Main d'œuvre 3 jour/homme × 400 €, haie
 20 ml × 10 €, frêne 550 € comme sur sa capture, olivier à chiffrer), total
 1 950 € HT, « dont main d'œuvre HT » 1 200 €.
 
-**À coder sur son « oui »** : `proposition-prix.ts` (mode « ligne » : la ligne
-Main d'œuvre, puis chaque travail chiffré comme un travail sorti par la croix,
-sa grille sinon à chiffrer), `appliquer-proposition.ts` (le détail de CHAQUE
-travail sous SON nom), la question « Avant de chiffrer » (le total qu'elle
-annonce n'est plus celui du devis), et les suites qui fixaient l'ancienne
-règle (`test-main-oeuvre-dictee-db.ts`, « une seule ligne qui nomme les
-travaux »). Argent : niveau 3.
+**CODÉ LE 9 NOVEMBRE 2026**, sur son *« très bien, c'est exactement ce que je
+veux »* : `propositionAvecMainOeuvre` (`proposition-prix.ts`), en mode
+« ligne », pose la ligne « Main d’œuvre » (le nom de celle de « + Main
+d'œuvre », `LIBELLE_LIGNE_MAIN_DOEUVRE`), qui ne vend plus aucune prestation,
+puis chaque travail comme un travail sorti par la croix (`aSaGrille`). Le
+détail de chacun descend donc sous SON nom sans toucher à
+`appliquer-proposition.ts`. `libelleMainOeuvre` est retirée (plus rien ne
+l'appelait). La carte « Avant de chiffrer » n'a pas eu à changer : son total
+est celui de la main d'œuvre, et c'est ce qu'elle dit. Test écrit, **pas
+encore joué** (il vide la base) : `test-main-oeuvre-dictee-db.ts`, « son devis
+de Luc » (1 200 € de main d'œuvre, la haie 20 ml à 10 €, le frêne et l'olivier à chiffrer, total
+1 400 € HT, « dont » 1 200 €) ; cinq assertions de l'ancienne règle
+réécrites. `ARCHITECTURE.md` §579.
+
+**Reste, dans cet ordre** : sa batterie (niveau 3, argent : rayon de 66
+points d'entrée), qui attend son « oui ». Avant elle, la suite base jouée
+seule, sur le code d'avant (elle doit rougir sur « son devis de Luc »), puis
+sur celui-ci (`CLAUDE.md` §5, test rouge d'abord). Puis `main`.
+
+**Vu en codant, pas changé (une apparence, donc une planche d'abord)** : sur
+la carte « Avant de chiffrer », en mode « Sur une ligne Main d'œuvre », la
+croix de chaque travail ne change plus le devis (dedans ou sorti, il prend sa
+grille), et la carte ne montre pas le prix que chaque travail aura. À lui
+proposer en planche (`RepartirLaMainOeuvre.tsx`).
 
 **2. « à feuilles de frêne (frêne oxyphylle) » n'est écrit nulle part dans le
 dépôt** (code, vocabulaire soufflé au transcripteur, amorçage, migrations,
 vérifié le 9 novembre). Il vient donc du transcripteur ou du modèle qui
 découpe la dictée, et il est entré dans le libellé de la prestation (la ligne
-Main d'œuvre reprend ce libellé). La consigne d'extraction
+Main d'œuvre le reprenait ; depuis le 9 novembre, c'est la ligne du frêne). La consigne d'extraction
 (`extraction-service.ts`) interdit d'inventer une quantité, une durée, une
 espèce ou un détail, **mais ne dit rien du LIBELLÉ** : rien n'y interdit un
 nom savant, une variété ou une parenthèse qu'il n'a pas dite. **Qui l'a
@@ -174,7 +191,7 @@ se séparaient).
 `OuvrirFiche.tsx` (la largeur), `LignePassage.tsx` (la ligne : un visuel,
 le nom, la date, le détail ; l'icône dorée ou la tuile selon la liste),
 `FichesEnCours.tsx` et `RapportsEnvoyes.tsx` (la carte qui les tient). Le
-rond doré et la tuile d'icône existent déjà (Réglages, `paysage/page.tsx`) :
+rond doré et la tuile d'icône existent déjà (Réglages, `src/app/paysage/page.tsx`) :
 ils se partagent, ils ne se recopient pas (`CLAUDE.md` §3).
 
 ## ~~⏳ À REGARDER PAR LUI (8 novembre 2026) : le compteur de jours dans Équipe~~ TRANCHÉ LE 8 NOVEMBRE (« FAIS-MOI UNE COPIE »), CODÉ LE 8 NOVEMBRE, SUR main LE 8 NOVEMBRE

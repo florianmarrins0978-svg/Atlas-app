@@ -1,5 +1,10 @@
 # État du projet
 
+## LA MAIN D'ŒUVRE SUR UNE LIGNE, CHAQUE TRAVAIL À SON PRIX, CODÉE (9 novembre 2026), PAS SUR `main`
+
+Sa planche `appli/soignee/devis-main-d-oeuvre-et-prix.html`, approuvée. `propositionAvecMainOeuvre` pose la ligne « Main d’œuvre », puis chaque travail à sa grille, sinon à chiffrer. Types, lint et contrôles purs verts ; suite base et batterie (niveau 3) en attente de son « oui ». `ARCHITECTURE.md` §579.
+
+---
 ## JOURS TRAVAILLÉS DANS ÉQUIPE, CODÉ (8 novembre 2026), SUR `main` LE 8 NOVEMBRE
 
 Sous « Combien de salariés ? », le même écran que Pour mon comptable, qui garde sa porte (`chargerJoursTravailles`, prop `ou` de `JoursTravailles`). Écran regardé, gestes joués à la main ; `verifier:avant-fusion` vert avec son oui (31 suites navigateur sur 31, dont `test-jours-dans-equipe-e2e`), puis la rencontre avec `main` rejouée verte (599 suites base sur 599).

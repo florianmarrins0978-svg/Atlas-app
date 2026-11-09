@@ -4,9 +4,11 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-11-08 · `main` : la batterie commune de trois lots
-(Mon année ; l'import depuis la fiche et les entrées et sorties ; le crédit
-d'impôt et l'avance immédiate), `docs/batterie-commune-8-novembre.md`
+**Point de reprise :** 2026-11-09 · `claude/ecstatic-pascal-a14c04` : la main
+d'œuvre « sur une ligne », chaque travail à son prix (`ARCHITECTURE.md` §579),
+codée, en attente de son « oui » pour la suite base et la batterie (niveau 3).
+Avant : sur `main`, la batterie commune du 8 novembre
+(`docs/batterie-commune-8-novembre.md`).
 (l'historique fait foi : `git log --oneline -20`)
 
 ---

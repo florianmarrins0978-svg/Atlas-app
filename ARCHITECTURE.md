@@ -35532,8 +35532,9 @@ poste par poste sans la main d'œuvre ; et sans total, la grille n'était jamais
 lue. Chaque travail prend désormais son prix sur SA ligne.
 
 **La répartition** (`src/lib/main-oeuvre-dictee.ts`, sa planche
-`appli/main-d-oeuvre-repartie.html`) : une ligne « Main d'œuvre » qui nomme
-les travaux, ou des parts au curseur ; la croix sort un travail vers sa grille,
+`appli/main-d-oeuvre-repartie.html`) : une ligne « Main d'œuvre » (qui
+nommait les travaux jusqu'au 9 novembre 2026 ; depuis, chaque travail a sa
+ligne et son prix, §579), ou des parts au curseur ; la croix sort un travail vers sa grille,
 sinon « à chiffrer ». Les curseurs partent de sa règle du 7 août (« 850 + 250 ») :
 le prix de grille pour ce qu'elle connaît, le reste au principal. Après trois
 réponses identiques (`modeRetenu`), la question ne se pose plus.
@@ -37420,3 +37421,35 @@ L'import ne partait que de Vos clients et rangeait chaque pièce par le nom lu :
 | un conseil est un compte, jamais un prix proposé ; deux au plus, et quand les deux signaux tombent sur le même tarif ils se disent ensemble | `docs/AGENT.md` §3 : l'appli montre, il décide |
 
 Règles pures dans `src/lib/mon-annee.ts` (`scripts/test-mon-annee.ts`, vue rouge en cassant la règle du même jour) et `src/lib/vos-prix.ts` (`scripts/test-vos-prix.ts`, vue rouge en cassant la règle de la moitié), lecture dans `src/server/repositories/mon-annee.ts` (`scripts/test-mon-annee-db.ts`, écrite, pas jouée : elle vide la base, et aucune batterie n'était autorisée).
+
+## §579 : Sur une ligne Main d'œuvre, la main d'œuvre a SA ligne et chaque travail garde SON prix
+
+*9 novembre 2026, son devis de Luc (12 rue Marcadet) et sa planche
+`appli/soignee/devis-main-d-oeuvre-et-prix.html` : « très bien, c'est
+exactement ce que je veux ». Pas sur `main` : il attend sa batterie.*
+
+**Le défaut.** Trois travaux dictés, une journée à trois, « Sur une ligne Main
+d'œuvre » : il a reçu UNE case « Main d'œuvre : taille de haie de photinia,
+élagage d'un frêne, plantation d'un olivier », 1 200 €, et sous elle les trois
+détails collés en un paragraphe. Chaque règle faisait ce que sa planche disait
+(celle du 21 octobre, une ligne qui nomme les travaux ; celle du 4 novembre, le
+détail de ce qu'une ligne vend sous son nom) : c'est leur rencontre qui
+collait tout. Ses mots : *« une ligne main d'œuvre avec la journée à trois
+hommes, donc 1 200 €, et en plus de ça chaque tâche a son prix »*.
+
+| Décision | Pourquoi |
+|---|---|
+| en mode « ligne », la ligne « Main d’œuvre » (`LIBELLE_LIGNE_MAIN_DOEUVRE`), sans prestation, devant le premier travail qu'elle couvrait | la même main d'œuvre se lit pareil, dictée ou posée par « + Main d'œuvre » ; ne vendant rien, elle ne ramasse plus le détail des autres |
+| puis chaque travail chiffré comme un travail sorti par la croix (`aSaGrille`) : sa grille, sinon « à chiffrer », et la phrase le dit | une seule règle pour « un travail à son prix, hors main d'œuvre », au lieu de deux |
+| `appliquer-proposition.ts` inchangé | il écrit déjà le détail de chaque prestation sous la ligne qui la vend : une ligne par travail suffit |
+| « Répartis sur les travaux » garde la règle du 21 octobre (les jours couvrent le chantier) | **sa demande revient sur sa réponse du 21 octobre pour ce mode seulement**, dit au patron le 9 novembre |
+| `libelleMainOeuvre` retirée | plus rien ne l'appelait (`CLAUDE.md` §4 quinquies) |
+
+**Ce qui n'a pas changé, et pourquoi.** La carte « Avant de chiffrer » annonce
+le total de la main d'œuvre, et c'est encore ce qu'il est. Sa croix, en mode
+« ligne », ne change plus le devis : c'est une apparence, donc une planche
+d'abord (`TODO.md`).
+
+`scripts/test-main-oeuvre-dictee-db.ts`, « son devis de Luc » : écrit, pas
+encore joué (il vide la base, et la batterie attend son accord).
+
