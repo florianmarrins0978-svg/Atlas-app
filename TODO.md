@@ -146,7 +146,20 @@ des familles en haut de Composer.
 **Reste** : qu'il choisisse, puis le coder sur son « oui »
 (`FicheChantierClient.tsx`, `ComposerMaFiche.tsx`).
 
-## ~~⏳ À REGARDER PAR LUI (9 novembre 2026) : la fiche de chantier, soignée, D ET B~~ TRANCHÉ LE 9 NOVEMBRE (« TU PEUX CODER »), CODÉ LE 9 NOVEMBRE, CONTRÔLE DE NIVEAU 2 LANCÉ LE 16 NOVEMBRE SUR SON « OUI »
+## ⚠️ `test-double-verification-db` ROUGIT PAR HASARD À LA LIMITE DES 30 SECONDES (vu le 16 novembre 2026)
+
+Un rouge sur 599 pendant le contrôle de la fiche D et B (« personne d'autre ne
+lit ces lignes […] : l'activation n'aboutit pas »), vert au passage suivant et
+au troisième. **Lu dans le code** : `activer` calcule le code de la tranche
+PRÉCÉDENTE (`codeDuTelephone(secret, -1)`), et `verifierCodeTotp` n'accepte
+que la tranche courante et ses deux voisines. Si la limite des trente secondes
+tombe entre le calcul et la vérification, le code devient celui d'il y a deux
+tranches, et il est refusé. Le produit n'est pas en cause : un téléphone donne
+le code de la tranche courante. **Pas corrigé** (hors du lot) : le `-1` laisse
+sans doute de la place aux codes des cas suivants (`dernierPas`), à vérifier
+avant d'y toucher. Qui : une session, avec son test rouge d'abord.
+
+## ~~⏳ À REGARDER PAR LUI (9 novembre 2026) : la fiche de chantier, soignée, D ET B~~ TRANCHÉ LE 9 NOVEMBRE (« TU PEUX CODER »), CODÉ LE 9 NOVEMBRE, SUR `main` LE 16 NOVEMBRE (NIVEAU 2 VERT, SUR SON « OUI »)
 
 Sa demande, capture à l'appui : *« tu peux me faire une planche de cette
 page-là, l'idée ça serait de faire cette page en plus jolie ; inspire-toi de
@@ -216,7 +229,7 @@ d'action principale, c'est ce que `PrimaryButton` refuse.
 
 | reste | qui |
 |---|---|
-| `npm run verifier:avant-fusion` (niveau 2), son « oui » du 16 novembre : *« la fiche DB, tu peux la coder et la mettre dans l'appli »* ; puis `main` | moi |
+| ~~`npm run verifier:avant-fusion` (niveau 2), son « oui » du 16 novembre : *« la fiche DB, tu peux la coder et la mettre dans l'appli »* ; puis `main`~~ vert le 16 novembre (599 suites du dépôt, 34 suites navigateur), sur `main` | fait |
 | qu'il la regarde sur son espace une fois sur `main` | lui |
 
 ## ~~⏳ À REGARDER PAR LUI (8 novembre 2026) : le compteur de jours dans Équipe~~ TRANCHÉ LE 8 NOVEMBRE (« FAIS-MOI UNE COPIE »), CODÉ LE 8 NOVEMBRE, SUR main LE 8 NOVEMBRE

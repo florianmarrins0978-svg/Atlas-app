@@ -1,5 +1,10 @@
 # État du projet
 
+## LA FICHE DE CHANTIER SOIGNÉE, D ET B, CODÉE (9 novembre 2026), SUR `main` LE 16 NOVEMBRE
+
+Sa planche `appli/fiche-de-chantier-soignee.html`, validée le 9 novembre ; son « oui » pour l'appli le 16. Composer ma fiche au sceau doré (`RondDore`, partagé avec les Réglages), Créer une fiche sur toute la largeur, En cours et Rapports envoyés dans une carte (`CarteDesFiches`), la tuile de Paysage pour un rapport parti (`TuileIcone`). Niveau 2 vert : 599 suites du dépôt, 34 suites navigateur.
+
+---
 ## LA MAIN D'ŒUVRE SUR UNE LIGNE, CHAQUE TRAVAIL À SON PRIX, CODÉE (9 novembre 2026), SUR `main` LE 9 NOVEMBRE
 
 Sa planche `appli/soignee/devis-main-d-oeuvre-et-prix.html`, approuvée. `propositionAvecMainOeuvre` pose la ligne « Main d’œuvre », puis chaque travail à sa grille, sinon à chiffrer. Types, lint et contrôles purs verts ; suite base vue rouge sur le code d'avant, puis 17 sur 17 ; batterie (niveau 3) verte sur son « oui », 217 suites navigateur sur 217. `ARCHITECTURE.md` §579.

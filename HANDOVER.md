@@ -4,7 +4,7 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-11-09 · `main` : la main d'œuvre « sur une
+**Point de reprise :** 2026-11-16 · `main` : la fiche de chantier soignée, D et B (niveau 2 vert). Avant, le 9 novembre : la main d'œuvre « sur une
 ligne », chaque travail à son prix (`ARCHITECTURE.md` §579), batterie verte
 (217 suites navigateur sur 217). Restent la croix de la carte en mode « ligne »
 (une planche) et l'origine de « frêne oxyphylle » (`TODO.md`).
