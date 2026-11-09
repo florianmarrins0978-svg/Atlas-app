@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-11-09
+
+- **La fiche de chantier, soignée : son choix, D et B** (`appli/fiche-de-chantier-soignee.html`). Ses mots : *« tu gardes la D jusqu'à en cours ; pour les rapports envoyés, tu mets ce que tu as fait pour la B »*. La planche ne porte plus que cette composition et l'écran d'aujourd'hui : Composer ma fiche avec le rond doré de Réglages, Créer une fiche sur toute la largeur, En cours aux icônes dorées, les rapports aux tuiles teintées. Les deux listes prennent la même carte et la même colonne (B arrondissait à 16, D posait ses noms 8 px plus à gauche) : empilées, elles ne s'alignaient plus. Pas codé, en attente de son « oui ».
+
 ## 2026-11-08
 
 - **Jours travaillés aussi dans Équipe** (sa demande, capture à l'appui : *« dans Équipe, sous combien de salariés, j'aimerais avoir ça »*, puis *« tu me fais juste une copie, j'ai la porte dans mon comptable et dans mon équipe »*). Le même composant aux deux endroits, préparé par une seule fonction (`chargerJoursTravailles`) : deux pages qui recopieraient la préparation finiraient par compter deux mois différents. Dans Équipe, ni titre d'écran ni envoi au comptable, « Modifier » ramène dans Équipe, le mois changé y reste. Les actions d'Équipe (nom, nombre de salariés, absence) relisent l'écran : sans quoi le bloc garderait le compte d'avant sous ses yeux. Planche : `appli/soignee/equipe-jours-travailles.html`.

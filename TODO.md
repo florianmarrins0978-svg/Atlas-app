@@ -1,6 +1,6 @@
 # Prochaines tâches
 
-## ⏳ À REGARDER PAR LUI (8 novembre 2026) : la fiche de chantier, soignée
+## ⏳ À REGARDER PAR LUI (9 novembre 2026) : la fiche de chantier, soignée, D ET B
 
 Sa demande, capture à l'appui : *« tu peux me faire une planche de cette
 page-là, l'idée ça serait de faire cette page en plus jolie ; inspire-toi de
@@ -9,48 +9,56 @@ boutons »*.
 
 **La planche** : `appli/fiche-de-chantier-soignee.html`, sur le vrai écran
 figé (`/paysage/fiche`, base de démonstration : Mme Costa et « Sans client »
-en cours, trois rapports en novembre, un en octobre). A, B, C, D et
-Aujourd'hui ; Retirer, Annuler, le mois, la roue du jour et la recherche
+en cours, trois rapports en novembre, un en octobre). « D et B » et
+« Aujourd'hui » ; Retirer, Annuler, le mois, la roue du jour et la recherche
 répondent.
 
-**SES TROIS RÉPONSES, LE MÊME SOIR** (rien de tout cela n'est à reproposer) :
+**SON CHOIX DU 9 NOVEMBRE** : *« tu gardes la D jusqu'à en cours ; pour les
+rapports envoyés, tu mets ce que tu as fait pour la B »*. La planche ne porte
+plus que cette composition. Reste à la lui montrer, puis à la coder sur son
+« oui ».
+
+| | Ce qui est posé | Pris sur |
+|---|---|---|
+| **Composer ma fiche** | carte blanche, arrondi 14, rond doré au trait (52 px), titre en serif 21, « 20 prestations », chevron doré | D (l'écran Réglages) |
+| **Créer une fiche** | le bouton vert, sur toute la largeur | D |
+| **En cours** | carte blanche arrondie, icône dorée au trait, « Retirer » | D |
+| **Rapports envoyés** | carte blanche arrondie, tuile d'icône teintée (40 px, arrondi 12), chevron gris | B (les listes de A, arrondies) |
+
+**Ce qui s'écarte des deux pistes, et c'est délibéré** : les deux listes ont
+la même carte (arrondi 14, celui de Composer ; B arrondissait à 16) et la
+même colonne (marge 14, visuel de 40 px, écart 14, filet à 68 px ; D posait
+ses noms 8 px plus à gauche). Empilées, elles ne s'alignaient plus.
+
+**SES RÉPONSES D'AVANT** (rien de tout cela n'est à reproposer) :
 
 1. **v1, refusée** : *« comme si c'était la première page chantier, j'aime
    pas du tout »*. Tout venait de Vos chantiers (cartes ambre « Reprendre »,
    frise datée, compteur « En cours 2 ») : **cet écran ne doit pas
    ressembler à l'accueil.**
 2. **v2** : A (liste de Paysage) et B (cartes dorées des fiches de
-   sécurité, rapports rangés par client). *« Garde le choix A pour
-   l'instant et propose-moi d'autres, j'aime toujours pas ; il faut que ça
-   soit plus joli. »* L'ancienne B est retirée.
+   sécurité). *« Garde le choix A pour l'instant et propose-moi d'autres,
+   j'aime toujours pas ; il faut que ça soit plus joli. »*
 3. **Composer ma fiche** : *« c'est trop carré, j'aime pas »*. Le rectangle
    à coins de 4 px ne revient pas.
-
-**Les pistes d'aujourd'hui** (A gardée telle quelle, B, C, D neuves, toutes
-arrondies) :
-
-| | Composer ma fiche | Les listes | Pris sur |
-|---|---|---|---|
-| **A** (gardée) | tuile d'icône, liseré d'or d'1 px | carte blanche, tuile d'icône par ligne | `paysage/page.tsx` |
-| **B** | tuile arrondie à côté d'une tuile verte « Créer une fiche » | celles de A, arrondies | les cases de Terminés |
-| **C** | porte dorée arrondie, titre doré, chevron doré | carte blanche arrondie, initiales du client | `clients/page.tsx` (`Porte`), `ListeClients.tsx` |
-| **D** | carte blanche arrondie, rond doré au trait | icônes et chevrons dorés | l'écran Réglages |
-
-Communs : Créer une fiche sur toute la largeur (sauf B) ; la date sur sa
-ligne et ce qui a été fait dessous (sur une ligne, « 1 h » et « 40 » se
-séparaient).
+4. **v3** : A gardée, B deux tuiles en tête, C comme Vos clients (porte
+   dorée, initiales), D comme Réglages. Il a composé D et B (ci-dessus) ;
+   C et la tuile verte de B ne sont pas retenues.
 
 **Ce qui ne bouge pas** (ses décisions) : Composer ma fiche en tête
 (26 août, 11 octobre) ; le mois et la recherche AU-DESSUS de « Rapports
 envoyés » (24 septembre) ; les titres en noir gras (22 septembre) ;
 « Retirer » et son tiroir ; pas d'étiquette « Brouillon » (11 octobre) ;
-l'en-tête, le filtre de date et la barre de recherche de l'appli.
+l'en-tête, le filtre de date et la barre de recherche de l'appli ; la date
+sur sa ligne et ce qui a été fait dessous (sur une ligne, « 1 h » et « 40 »
+se séparaient).
 
-**À coder après son choix** : `LignePassage.tsx` (la ligne de la piste),
-`FichesEnCours.tsx` et `RapportsEnvoyes.tsx` (la carte qui les tient),
-`OuvrirFiche.tsx` (la largeur, ou la tuile de B), `page.tsx` (Composer).
-Les dessins, la porte de C et les initiales (`initialesDuClient`) existent
-déjà : ils se partagent, ils ne se recopient pas (`CLAUDE.md` §3).
+**À coder sur son « oui »** : `page.tsx` (la carte de Composer),
+`OuvrirFiche.tsx` (la largeur), `LignePassage.tsx` (la ligne : un visuel,
+le nom, la date, le détail ; l'icône dorée ou la tuile selon la liste),
+`FichesEnCours.tsx` et `RapportsEnvoyes.tsx` (la carte qui les tient). Le
+rond doré et la tuile d'icône existent déjà (Réglages, `paysage/page.tsx`) :
+ils se partagent, ils ne se recopient pas (`CLAUDE.md` §3).
 
 ## ~~⏳ À REGARDER PAR LUI (8 novembre 2026) : le compteur de jours dans Équipe~~ TRANCHÉ LE 8 NOVEMBRE (« FAIS-MOI UNE COPIE »), CODÉ LE 8 NOVEMBRE, SUR main LE 8 NOVEMBRE
 
