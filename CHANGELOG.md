@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-11-12
+
+- **Ses colliers de fixation murale, en Ø16 et en Ø25, s'ajoutent à la liste d'arrosage** (sa demande, photo à l'appui : *« les crochets noirs en diamètre 25 pour accrocher les PE sur un mur »*, puis *« les diamètres 16 et les diamètres 25 »*). Le relevé Aqua Plus n'en porte pas (seulement des colliers de serrage et des crampons de sol) : ils entrent sans référence, comme ses raccords Plasson du Ø16 rigide, dans « Ajouter une pièce », catégorie Raccords PE, avec la photo qu'il a envoyée (`fixations` dans `catalogue.js`, `collier-mural.jpg`). Les instantanés de calcul des planches (`appli/arrosage-*-calcul.js`) ne sont pas reconstruits : l'écran de l'application les porte, les planches non. Contrôle `test-arrosage-postes.ts`, vu rouge sans les colliers.
+
 ## 2026-11-09
 
 - **Sur une ligne Main d'œuvre : la main d'œuvre a sa ligne, et chaque travail garde son prix** (son devis de Luc, sa planche `appli/soignee/devis-main-d-oeuvre-et-prix.html`, *« c'est exactement ce que je veux »*). Il recevait une seule case « Main d'œuvre : haie, frêne, olivier » avec les trois détails collés dessous. Désormais : « Main d’œuvre » 3 jour/homme à 400 €, puis la haie 20 ml à 10 €, le frêne et l'olivier à leur grille, sinon à chiffrer, chacun avec son détail. « Répartis sur les travaux » ne change pas. `ARCHITECTURE.md` §579. Suite base rouge sur le code d'avant, verte sur celui-ci ; batterie verte, 217 suites navigateur sur 217.
