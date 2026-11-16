@@ -246,46 +246,25 @@ async function main() {
           `Adresse : ${page.url()}, anneau : « ${anneauVu} »`
       );
     });
-
-    // **Pendant qu'Atlas prépare, « Votre dictée » se tait**, sa demande du
-    // 9 novembre 2026 : *« retire-moi la phrase "votre dictée" »*, sous
-    // « Atlas prépare votre devis ». Lu seulement si la préparation est encore
-    // à l'écran : partie sur le devis, elle n'a plus rien à montrer, et ce
-    // contrôle ne conclurait sur rien.
-    if (await preparation.isVisible()) {
-      assert.equal(
-        await page.getByText("Votre dictée", { exact: true }).count(),
-        0,
-        "« Votre dictée » reste sous « Atlas prépare votre devis » : il l'a fait retirer le 9 novembre"
-      );
-    }
   });
 
-  await cas("la note dictée se voit, et elle se JETTE depuis cet écran", async () => {
+  await cas("après la dictée, le micro reste pour redicter, et rien ne la jette", async () => {
     /**
-     * **CE CAS RÉCLAMAIT LE LECTEUR — retiré le 13 septembre 2026.**
+     * **Sa décision du 16 novembre 2026 :** *« à partir du moment où on a
+     * envoyé la dictée, c'est qu'on n'a plus envie de la jeter »*. La case
+     * « Votre dictée » et son glissement (13 septembre) sont partis ; pour
+     * refaire, il redicte, et la nouvelle note remplace la première
+     * (`enregistrerNoteVocale`).
      *
-     * Il exigeait que l'anneau « redevienne le lecteur » et que la fosse
-     * `.atlas-fosse` soit là. Or ce rendu n'était monté par AUCUN écran : le
-     * contrôle défendait du code que le patron ne pouvait pas atteindre
-     * (`CLAUDE.md` §5 bis — on adapte le contrôle, on ne remet pas ce qu'il a
-     * fait enlever).
-     *
-     * Ce qui compte n'a jamais été la forme de l'anneau : c'est qu'une note
-     * dictée se VOIE, et qu'il puisse la jeter sans quitter l'écran — sa
-     * décision du 13 septembre, *« en cas de problème on peut supprimer la
-     * dictée comme ça »*.
+     * Ce cas tenait le lecteur, puis la case qui jetait : il tient
+     * maintenant ce qui reste, le micro, et ce qu'il a fait retirer.
      */
     await page.goto(fiche, { waitUntil: "networkidle" });
     assert.equal(await anneau.count(), 1, "le micro a disparu après la dictée : il ne peut plus redicter");
     assert.equal(
-      await page.getByText("Votre dictée").count(),
-      1,
-      "rien ne dit qu'une note est là : il ne sait ni ce qu'il a envoyé, ni quoi jeter"
-    );
-    assert.ok(
-      await page.locator(".atlas-glisse").count(),
-      "la note ne glisse pas : c'est une note qu'on ne peut plus enlever"
+      await page.getByText("Votre dictée", { exact: true }).count(),
+      0,
+      "« Votre dictée » est revenue sur la fiche client : il l'a fait retirer le 16 novembre"
     );
   });
 

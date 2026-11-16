@@ -259,33 +259,38 @@ compare la ligne de main d'œuvre à une taille de haie.
 
 ## ~~⏳ À REGARDER PAR LUI (9 novembre 2026, refaite le 17) : jeter la dictée, en clair~~ TRANCHÉ LE 17 NOVEMBRE : LA 1, SON CHOIX DU 16 (« ON LAISSE COMME ON A DÉCIDÉ LE 16 »)
 
-Sa remarque : *« moi je ne savais pas que ce mécanisme jetait la dictée,
-il faut peut-être mettre un truc plus clair ; il n'y a pas déjà un bouton
-poubelle ? »* **Lu dans le code** : la poubelle « Jeter »
-(`AnneauNoteVocale.tsx`, `dictee-jeter`) ne vit que PENDANT la dictée ; une
-fois la note envoyée, seul le glissement de « Votre dictée »
-(`LigneRetirable`, `FormulaireNouveauChantier.tsx`) la jette, et rien ne le
-montre.
+Sa demande du 9 novembre, capture de la fiche client : *« retire-moi la
+phrase "votre dictée" »*. Codée d'abord « cachée pendant le devis » (son
+premier choix), puis une planche pour la jeter en clair
+(`appli/jeter-la-dictee.html`). Sa réponse, le 16 novembre : *« à partir du
+moment où on a envoyé la dictée, c'est qu'on n'a plus envie de la jeter »*.
 
 **La planche** : `appli/jeter-la-dictee.html`, sur sa vraie fiche client
 (M. Bernard, une note envoyée). Le 16 novembre, il a d'abord choisi d'enlever
 la case ; le 17, il a répondu « B » sur la première planche, puis *« montre-moi
 les deux planches »*. Elle porte donc : 1, la case enlevée (une dictée envoyée
 se refait en redictant) ; 2, la case gardée avec la poubelle cerclée
-« Jeter » au bout, et le tiroir « Annuler ». L'option 1 attend sur la branche
-`claude/amazing-mendel-skfnud`, batterie complète à jouer.
+« Jeter » au bout, et le tiroir « Annuler ». Il a gardé 1, son choix du 16.
 
-**Reste** : son choix entre 1 et 2. Pour 2 : récrire la fiche du mode
-d'emploi `chantier-dictee-retirer`, qui décrit le glissement.
+**Ce qui a été vérifié avant de trancher** : l'écran Transcription, que je
+lui avais proposé pour y poser le bouton, ne s'atteint que depuis un devis
+resté sans prix, puis Informations (`DevisDepuisDictee`, état `sansPrix`) :
+un bouton posé là aurait été inatteignable. Son contenu est passé dans le
+devis : effacer la dictée ne l'en retire pas. Une nouvelle dictée remplace la
+première (`enregistrerNoteVocale`). Il a choisi de l'enlever.
 
-## « Votre dictée » cachée pendant le devis : CODÉ LE 9 NOVEMBRE, CONTRÔLE À JOUER AVEC SON ACCORD
+**Codé** : la case, son glissement et son tiroir partent de
+`FormulaireNouveauChantier.tsx` ; `supprimerNoteVocaleAction` et
+`supprimerNoteVocale` n'avaient plus d'appelant et partent aussi, avec leur
+cas de `test-note-vocale-repo.ts` et la suite `test-retirer-sa-dictee-e2e.ts`.
+Les fiches du mode d'emploi `chantier-dictee-retirer` (on redicte) et
+`donnees-ia` (« Jeter » avant l'envoi) sont récrites ; `test-anneau-dictee-e2e`
+tient le micro présent et la case absente. Types, lint, `test-mode-emploi`,
+`test-pas-de-code-mort`, `test-aucun-tiret`, `test-couches` verts.
 
-Sa demande, capture de la fiche client : *« retire-moi la phrase "votre
-dictée" »*. La case est le geste qui jette la dictée (13 septembre) : sur
-son choix (« cachée pendant le devis »), elle se tait tant qu'Atlas prépare
-(`atlasTravaille`, `FormulaireNouveauChantier.tsx`) et revient dès que la
-préparation s'arrête. `test-anneau-dictee-e2e` la vérifie absente pendant la
-préparation : pas encore joué (suites navigateur, son accord).
+| reste | qui |
+|---|---|
+| son accord pour le contrôle de son niveau (suites base et navigateur), puis `main` | lui, puis moi |
 
 ## ~~⏳ À REGARDER PAR LUI (9 novembre 2026) : la fiche ouverte et Composer ma fiche, soignées~~ TRANCHÉ LE 17 NOVEMBRE (« POUR LA 1 LA A, ET LA 2 A AUSSI »), CODÉ LE 17 NOVEMBRE, CONTRÔLE DE NIVEAU 2 À JOUER AVEC SON ACCORD
 
