@@ -1,0 +1,68 @@
+<!doctype html>
+<html
+  lang="fr"
+  data-resolution="portrait"
+  data-composition-variables='[
+    {"id":"sol-nuit","type":"color","label":"Sol vert nuit","default":"#0e2a1b"},
+    {"id":"sol-sauge","type":"color","label":"Sol sauge","default":"#e4ebda"},
+    {"id":"sol-sable","type":"color","label":"Sol sable","default":"#efe6d3"},
+    {"id":"encre","type":"color","label":"Encre","default":"#12261b"},
+    {"id":"encre-douce","type":"color","label":"Encre des lignes","default":"#4b5a50"},
+    {"id":"sur-nuit","type":"color","label":"Texte sur le vert nuit","default":"#f3efe3"},
+    {"id":"or","type":"color","label":"Or sur clair","default":"#95600f"},
+    {"id":"or-clair","type":"color","label":"Or sur vert nuit","default":"#f0b43c"}
+  ]'
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>Atlas, la pub Instagram</title>
+    <!-- GSAP est posé à côté : le réseau du nuage refuse son CDN (6 novembre 2026). -->
+    <script src="assets/gsap.min.js"></script>
+    <style>
+      :root {
+        --sol-nuit: #0e2a1b;
+        --sol-sauge: #e4ebda;
+        --sol-sable: #efe6d3;
+        --encre: #12261b;
+        --encre-douce: #4b5a50;
+        --sur-nuit: #f3efe3;
+        --or: #95600f;
+        --or-clair: #f0b43c;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: var(--sol-nuit);
+      }
+      #root {
+        position: relative;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="50.7" data-width="1080" data-height="1920">
+      <div id="accroche" data-composition-id="accroche" data-composition-src="compositions/accroche.html" data-start="0" data-duration="2.4" data-track-index="1" data-track-kind="graphics" data-width="1080" data-height="1920" style="z-index: 1"></div>
+      <div id="corvees" data-composition-id="corvees" data-composition-src="compositions/corvees.html" data-start="2.4" data-duration="6.5" data-track-index="2" data-track-kind="graphics" data-width="1080" data-height="1920" style="z-index: 2"></div>
+      <div id="dictez" data-composition-id="dictez" data-composition-src="compositions/dictez.html" data-start="8.4" data-duration="10.6" data-track-index="3" data-track-kind="graphics" data-width="1080" data-height="1920" style="z-index: 3"></div>
+      <div id="envoyez" data-composition-id="envoyez" data-composition-src="compositions/envoyez.html" data-start="19" data-duration="9.4" data-track-index="4" data-track-kind="graphics" data-width="1080" data-height="1920" style="z-index: 4"></div>
+      <div id="planifiez" data-composition-id="planifiez" data-composition-src="compositions/planifiez.html" data-start="28.4" data-duration="6.6" data-track-index="5" data-track-kind="graphics" data-width="1080" data-height="1920" style="z-index: 5"></div>
+      <div id="encaissez" data-composition-id="encaissez" data-composition-src="compositions/encaissez.html" data-start="35" data-duration="9.4" data-track-index="6" data-track-kind="graphics" data-width="1080" data-height="1920" style="z-index: 6"></div>
+      <div id="fin" data-composition-id="fin" data-composition-src="compositions/fin.html" data-start="44.4" data-duration="6.3" data-track-index="7" data-track-kind="graphics" data-width="1080" data-height="1920" style="z-index: 7"></div>
+    </div>
+    <script>
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>

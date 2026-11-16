@@ -1,0 +1,12 @@
+{
+  "film": "planning.mp4",
+  "images": 256,
+  "secondes": 8.533,
+  "reperes": {
+    "carte": 1.133,
+    "onglet": 2.733,
+    "mois": 4.433,
+    "defile": 6.033,
+    "jour": 6.933
+  }
+}

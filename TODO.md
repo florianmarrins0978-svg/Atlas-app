@@ -1,5 +1,16 @@
 # Prochaines tâches
 
+## ⏳ LA PUB INSTAGRAM : MONTÉE LE 16 NOVEMBRE 2026, attend son regard
+
+Sa demande : une pub de lancement pour Instagram, moins d'une minute, faite des vraies pages. Livrée : `appli/vente/pub-instagram/` (51 secondes, verticale), sur la branche `claude/charming-edison-u856hv`.
+
+| Ce qui reste | Qui |
+|---|---|
+| regarder la vidéo, dire ce qui est à reprendre | lui |
+| la musique : aucune n'a pu être prise ici sans compte ; elle s'ajoute dans Instagram (pour une publicité payante, dans la bibliothèque de sons de Meta) | lui |
+| le site de vente porte encore « Vous êtes artisan. Pas secrétaire. » (`appli/vente/chapitres-6.html`), qu'il a jugé discriminant pour la pub : la garder ou la changer là aussi | lui |
+| où mène le bouton « Essayer 15 jours gratuits » : le site de vente n'a pas encore son adresse ni son contact (voir « Site de vente : l'adresse de contact et le nom ») | lui |
+
 ## ⏳ LA MAIN D'ŒUVRE « SUR UNE LIGNE », SUR `main` LE 9 NOVEMBRE 2026 ; restent la croix de la carte et un frêne inventé
 
 Sa plainte, capture à l'appui (devis de Luc, 12 rue Marcadet) : *« j'ai dicté

@@ -1,0 +1,192 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Instrument Serif";
+      src: url("assets/fonts/instrument-serif.woff2") format("woff2");
+      font-weight: 400;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: "Hanken Grotesk";
+      src: url("assets/fonts/hanken-grotesk.woff2") format("woff2");
+      font-weight: 100 900;
+      font-style: normal;
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+    #envoyez-sol {
+      position: absolute;
+      inset: 0;
+      background: var(--sol-sable, #efe6d3);
+    }
+    #envoyez-mot {
+      position: absolute;
+      left: 72px;
+      top: 272px;
+      font-family: "Instrument Serif", serif;
+      font-size: 150px;
+      line-height: 0.9;
+      letter-spacing: -0.015em;
+      color: var(--encre, #12261b);
+      white-space: nowrap;
+    }
+    #envoyez-mot b {
+      font-weight: 400;
+      color: var(--or, #95600f);
+    }
+    .envoyez-ligne {
+      position: absolute;
+      left: 76px;
+      top: 420px;
+      width: 940px;
+      font-family: "Hanken Grotesk", sans-serif;
+      font-weight: 500;
+      font-size: 56px;
+      line-height: 1.14;
+      letter-spacing: -0.01em;
+      color: var(--encre-douce, #4b5a50);
+    }
+    .envoyez-tel {
+      position: absolute;
+      left: 83px;
+      top: 568px;
+      width: 914px;
+      height: 1382px;
+      border-radius: 100px;
+    }
+    /* Le téléphone de l'artisan : la même coque encre qu'au chapitre d'avant. */
+    #envoyez-tel-a {
+      background: #12261b;
+      box-shadow:
+        0 50px 110px rgba(18, 38, 27, 0.26),
+        inset 0 0 0 2px rgba(243, 239, 227, 0.1);
+    }
+    /* Celui du client : une coque claire, pour qu'on voie que c'en est un autre. */
+    #envoyez-tel-b {
+      background: #fbf8f1;
+      box-shadow:
+        0 50px 110px rgba(69, 52, 20, 0.24),
+        inset 0 0 0 2px rgba(18, 38, 27, 0.1);
+    }
+    .envoyez-ecran {
+      position: absolute;
+      left: 22px;
+      top: 22px;
+      width: 870px;
+      height: 1338px;
+      border-radius: 78px;
+      overflow: hidden;
+      background: #f4f2ed;
+    }
+    #envoyez-tel-b .envoyez-ecran {
+      box-shadow: 0 0 0 2px rgba(18, 38, 27, 0.12);
+    }
+    .envoyez-plan {
+      position: absolute;
+      inset: 0;
+    }
+    .envoyez-plan video {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 870px;
+      height: 1338px;
+      object-fit: cover;
+    }
+  </style>
+
+  <div id="root" data-composition-id="envoyez" data-width="1080" data-height="1920">
+    <div id="envoyez-sol"></div>
+
+    <div id="envoyez-mot" class="clip" data-start="0" data-duration="9.4" data-track-index="1">
+      <span id="envoyez-mot-i">Envoyez<b>.</b></span>
+    </div>
+
+    <div id="envoyez-ligne-a" class="envoyez-ligne clip" data-start="0.3" data-duration="3" data-track-index="2">
+      <div id="envoyez-ligne-a-i">Proposez une date.</div>
+    </div>
+
+    <div id="envoyez-ligne-b" class="envoyez-ligne clip" data-start="3.4" data-duration="6" data-track-index="2">
+      <div id="envoyez-ligne-b-i">Votre client accepte<br />sur son téléphone.</div>
+    </div>
+
+    <div id="envoyez-tel-a" class="envoyez-tel" data-layout-allow-overflow>
+      <div class="envoyez-ecran">
+        <div class="envoyez-plan">
+          <video id="envoyez-film-envoi" class="clip" data-start="0" data-duration="2.99" data-media-start="0.05" data-playback-rate="1.3" data-track-index="3" muted playsinline src="assets/films/envoi.mp4"></video>
+        </div>
+        <!-- Après l'appui, l'appli affiche « Envoi du devis… » puis un écran de
+             chargement : on tient la première image, le téléphone part avec. -->
+        <div class="envoyez-plan">
+          <video id="envoyez-film-parti" class="clip" data-start="2.99" data-duration="0.55" data-media-start="3.94" data-playback-rate="0.1" data-track-index="3" muted playsinline src="assets/films/envoi.mp4"></video>
+        </div>
+      </div>
+    </div>
+
+    <div id="envoyez-tel-b" class="envoyez-tel" data-layout-allow-overflow>
+      <div class="envoyez-ecran">
+        <div class="envoyez-plan">
+          <video id="envoyez-film-client" class="clip" data-start="3.2" data-duration="4.12" data-media-start="0.6" data-playback-rate="1.3" data-track-index="4" muted playsinline src="assets/films/client.mp4"></video>
+        </div>
+        <div class="envoyez-plan">
+          <video id="envoyez-film-note" class="clip" data-start="7.32" data-duration="2.08" data-media-start="5.95" data-playback-rate="0.72" data-track-index="5" muted playsinline src="assets/films/client.mp4"></video>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      gsap.set("#envoyez-tel-a", { transformOrigin: "0px 0px" });
+      gsap.set("#envoyez-tel-b", { transformOrigin: "50% 40%" });
+
+      // Le téléphone reste, le sol change : on passe de la sauge au sable.
+      tl.fromTo("#envoyez-sol", { backgroundColor: "#e4ebda" }, { backgroundColor: "#efe6d3", duration: 0.45, ease: "power2.inOut" }, 0);
+      tl.fromTo(
+        "#envoyez-mot-i",
+        { opacity: 0, filter: "blur(14px)" },
+        { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power2.out" },
+        0.12
+      );
+      tl.fromTo(
+        "#envoyez-ligne-a-i",
+        { opacity: 0, filter: "blur(10px)" },
+        { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power2.out" },
+        0.34
+      );
+
+      // « Envoyer le devis » : le téléphone de l'artisan part, celui du client arrive.
+      tl.fromTo(
+        "#envoyez-ligne-a-i",
+        { opacity: 1, filter: "blur(0px)" },
+        { opacity: 0, filter: "blur(10px)", duration: 0.16, ease: "power2.in", immediateRender: false },
+        3.05
+      );
+      tl.fromTo("#envoyez-tel-a", { x: 0 }, { x: -1200, duration: 0.42, ease: "power3.in" }, 3.04);
+      tl.fromTo("#envoyez-tel-b", { x: 1200, scale: 1 }, { x: 0, duration: 0.6, ease: "expo.out" }, 3.22);
+      tl.fromTo(
+        "#envoyez-ligne-b-i",
+        { opacity: 0, filter: "blur(10px)" },
+        { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power2.out" },
+        3.5
+      );
+
+      // « C'est noté » arrive un peu grand, et se pose.
+      tl.fromTo("#envoyez-tel-b", { scale: 1.05 }, { scale: 1, duration: 0.55, ease: "expo.out", immediateRender: false }, 7.32);
+
+      // Le client a répondu : son téléphone repart.
+      tl.fromTo(
+        ["#envoyez-mot-i", "#envoyez-ligne-b-i"],
+        { opacity: 1, filter: "blur(0px)" },
+        { opacity: 0, filter: "blur(12px)", duration: 0.2, ease: "power2.in", immediateRender: false },
+        9.0
+      );
+      tl.fromTo("#envoyez-tel-b", { x: 0 }, { x: 1200, duration: 0.42, ease: "power3.in", immediateRender: false }, 8.96);
+      window.__timelines["envoyez"] = tl;
+    })();
+  </script>
+</template>

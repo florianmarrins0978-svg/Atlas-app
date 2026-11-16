@@ -1,5 +1,10 @@
 # État du projet
 
+## LA PUB INSTAGRAM, MONTÉE (16 novembre 2026), sur la branche `claude/charming-edison-u856hv`
+
+Une vidéo verticale de 51 secondes (1080 × 1920) pour lancer Atlas sur Instagram, dans `appli/vente/pub-instagram/` : l'accroche « Artisans, marre de la paperasse ? », les trois corvées barrées, puis Dictez, Envoyez, Planifiez, Encaissez sur les vrais écrans, et « Essayer 15 jours gratuits ». Chaque écran est l'appli du jour, filmée sur une base d'essai du nuage (`appli/vente/pub-instagram/tournage/`, son accord) ; le montage est un projet HyperFrames (`appli/vente/pub-instagram/index.html` et ses `compositions/`). Contrôle HyperFrames vert, images et enchaînements regardés. Muette (pas de musique sans compte). Rien dans `src/`. Attend son regard. `appli/vente/pub-instagram/LISEZ-MOI.md`.
+
+---
 ## LA MAIN D'ŒUVRE SUR UNE LIGNE, CHAQUE TRAVAIL À SON PRIX, CODÉE (9 novembre 2026), SUR `main` LE 9 NOVEMBRE
 
 Sa planche `appli/soignee/devis-main-d-oeuvre-et-prix.html`, approuvée. `propositionAvecMainOeuvre` pose la ligne « Main d’œuvre », puis chaque travail à sa grille, sinon à chiffrer. Types, lint et contrôles purs verts ; suite base vue rouge sur le code d'avant, puis 17 sur 17 ; batterie (niveau 3) verte sur son « oui », 217 suites navigateur sur 217. `ARCHITECTURE.md` §579.

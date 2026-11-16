@@ -1,0 +1,141 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Instrument Serif";
+      src: url("assets/fonts/instrument-serif.woff2") format("woff2");
+      font-weight: 400;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: "Hanken Grotesk";
+      src: url("assets/fonts/hanken-grotesk.woff2") format("woff2");
+      font-weight: 100 900;
+      font-style: normal;
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+    #planifiez-sol {
+      position: absolute;
+      inset: 0;
+      background: var(--sol-sauge, #e4ebda);
+    }
+    #planifiez-mot {
+      position: absolute;
+      left: 72px;
+      top: 272px;
+      font-family: "Instrument Serif", serif;
+      font-size: 150px;
+      line-height: 0.9;
+      letter-spacing: -0.015em;
+      color: var(--encre, #12261b);
+      white-space: nowrap;
+    }
+    #planifiez-mot b {
+      font-weight: 400;
+      color: var(--or, #95600f);
+    }
+    #planifiez-ligne {
+      position: absolute;
+      left: 76px;
+      top: 420px;
+      width: 940px;
+      font-family: "Hanken Grotesk", sans-serif;
+      font-weight: 500;
+      font-size: 56px;
+      line-height: 1.14;
+      letter-spacing: -0.01em;
+      color: var(--encre-douce, #4b5a50);
+    }
+    #planifiez-tel {
+      position: absolute;
+      left: 83px;
+      top: 568px;
+      width: 914px;
+      height: 1382px;
+      border-radius: 100px;
+      background: #12261b;
+      box-shadow:
+        0 50px 110px rgba(18, 38, 27, 0.26),
+        inset 0 0 0 2px rgba(243, 239, 227, 0.1);
+    }
+    .planifiez-ecran {
+      position: absolute;
+      left: 22px;
+      top: 22px;
+      width: 870px;
+      height: 1338px;
+      border-radius: 78px;
+      overflow: hidden;
+      background: #f4f2ed;
+    }
+    .planifiez-plan {
+      position: absolute;
+      inset: 0;
+    }
+    .planifiez-plan video {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 870px;
+      height: 1338px;
+      object-fit: cover;
+    }
+  </style>
+
+  <div id="root" data-composition-id="planifiez" data-width="1080" data-height="1920">
+    <div id="planifiez-sol"></div>
+
+    <div id="planifiez-mot" class="clip" data-start="0" data-duration="6.6" data-track-index="1">
+      <span id="planifiez-mot-i">Planifiez<b>.</b></span>
+    </div>
+
+    <div id="planifiez-ligne" class="clip" data-start="0.3" data-duration="6.3" data-track-index="2">
+      <div id="planifiez-ligne-i">Le chantier se pose<br />au planning.</div>
+    </div>
+
+    <div id="planifiez-tel" data-layout-allow-overflow>
+      <div class="planifiez-ecran">
+        <div class="planifiez-plan">
+          <video id="planifiez-film-carte" class="clip" data-start="0" data-duration="2.1" data-media-start="1.15" data-playback-rate="0.75" data-track-index="3" muted playsinline src="assets/films/planning.mp4"></video>
+        </div>
+        <div class="planifiez-plan">
+          <video id="planifiez-film-mois" class="clip" data-start="2.1" data-duration="4.5" data-media-start="3.07" data-playback-rate="1.21" data-track-index="4" muted playsinline src="assets/films/planning.mp4"></video>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      gsap.set("#planifiez-tel", { transformOrigin: "0px 0px" });
+
+      // Retour chez l'artisan : le sable redevient sauge, son téléphone revient.
+      tl.fromTo("#planifiez-sol", { backgroundColor: "#efe6d3" }, { backgroundColor: "#e4ebda", duration: 0.45, ease: "power2.inOut" }, 0);
+      tl.fromTo("#planifiez-tel", { x: -1200 }, { x: 0, duration: 0.6, ease: "expo.out" }, 0.04);
+      tl.fromTo(
+        "#planifiez-mot-i",
+        { opacity: 0, filter: "blur(14px)" },
+        { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power2.out" },
+        0.16
+      );
+      tl.fromTo(
+        "#planifiez-ligne-i",
+        { opacity: 0, filter: "blur(10px)" },
+        { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power2.out" },
+        0.4
+      );
+      // Le téléphone reste pour le chapitre suivant ; seuls les mots s'effacent.
+      tl.fromTo(
+        ["#planifiez-mot-i", "#planifiez-ligne-i"],
+        { opacity: 1, filter: "blur(0px)" },
+        { opacity: 0, filter: "blur(12px)", duration: 0.2, ease: "power2.in", immediateRender: false },
+        6.38
+      );
+      window.__timelines["planifiez"] = tl;
+    })();
+  </script>
+</template>

@@ -1,0 +1,221 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Instrument Serif";
+      src: url("assets/fonts/instrument-serif.woff2") format("woff2");
+      font-weight: 400;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: "Hanken Grotesk";
+      src: url("assets/fonts/hanken-grotesk.woff2") format("woff2");
+      font-weight: 100 900;
+      font-style: normal;
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+    #encaissez-sol {
+      position: absolute;
+      inset: 0;
+      background: var(--sol-nuit, #0e2a1b);
+    }
+    #encaissez-mot {
+      position: absolute;
+      left: 72px;
+      top: 272px;
+      font-family: "Instrument Serif", serif;
+      font-size: 150px;
+      line-height: 0.9;
+      letter-spacing: -0.015em;
+      white-space: nowrap;
+      color: var(--sur-nuit, #f3efe3);
+    }
+    #encaissez-mot b {
+      font-weight: 400;
+      color: var(--or-clair, #f0b43c);
+    }
+    .encaissez-ligne {
+      position: absolute;
+      left: 76px;
+      top: 420px;
+      width: 940px;
+      font-family: "Hanken Grotesk", sans-serif;
+      font-weight: 500;
+      font-size: 56px;
+      line-height: 1.14;
+      letter-spacing: -0.01em;
+      color: #c9d6cc;
+    }
+    /* La scène du téléphone commence sous les mots : en gros plan, l'écran
+       passe sous cette ligne au lieu de les couvrir. */
+    #encaissez-scene {
+      position: absolute;
+      left: 0;
+      top: 548px;
+      width: 1080px;
+      height: 1372px;
+      overflow: hidden;
+    }
+    /* Sur le vert nuit, la coque encre se perdait : elle s'éclaircit. */
+    #encaissez-tel {
+      position: absolute;
+      left: 83px;
+      top: 20px;
+      width: 914px;
+      height: 1382px;
+      border-radius: 100px;
+      background: #2c4838;
+      box-shadow:
+        0 50px 110px rgba(0, 0, 0, 0.34),
+        inset 0 0 0 2px rgba(243, 239, 227, 0.18);
+    }
+    .encaissez-ecran {
+      position: absolute;
+      left: 22px;
+      top: 22px;
+      width: 870px;
+      height: 1338px;
+      border-radius: 78px;
+      overflow: hidden;
+      background: #f4f2ed;
+    }
+    .encaissez-plan {
+      position: absolute;
+      inset: 0;
+    }
+    .encaissez-plan video,
+    .encaissez-plan img {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 870px;
+      height: 1338px;
+      object-fit: cover;
+    }
+  </style>
+
+  <div id="root" data-composition-id="encaissez" data-width="1080" data-height="1920">
+    <div id="encaissez-sol"></div>
+
+    <div id="encaissez-mot" class="clip" data-start="0" data-duration="9.4" data-track-index="1">
+      <span id="encaissez-mot-i">Encaissez<b>.</b></span>
+    </div>
+
+    <div id="encaissez-ligne-a" class="encaissez-ligne clip" data-start="0.4" data-duration="3.4" data-track-index="2">
+      <div id="encaissez-ligne-a-i">La facture reprend<br />le devis.</div>
+    </div>
+
+    <div id="encaissez-ligne-b" class="encaissez-ligne clip" data-start="4.4" data-duration="2.3" data-track-index="2">
+      <div id="encaissez-ligne-b-i">La TVA du mois,<br />déjà calculée.</div>
+    </div>
+
+    <div id="encaissez-ligne-c" class="encaissez-ligne clip" data-start="6.7" data-duration="2.7" data-track-index="2">
+      <div id="encaissez-ligne-c-i">Pour votre comptable,<br />tout est justifié.</div>
+    </div>
+
+    <div id="encaissez-scene" data-layout-allow-overflow>
+      <div id="encaissez-tel">
+        <div class="encaissez-ecran">
+          <div class="encaissez-plan">
+            <video id="encaissez-film-planning" class="clip" data-start="0" data-duration="0.4" data-media-start="8.2" data-playback-rate="0.5" data-track-index="3" muted playsinline src="assets/films/planning.mp4"></video>
+          </div>
+          <div class="encaissez-plan" id="encaissez-plan-facture">
+            <video id="encaissez-film-facture" class="clip" data-start="0.05" data-duration="3.8" data-media-start="3.45" data-playback-rate="1.25" data-track-index="4" muted playsinline src="assets/films/facture.mp4"></video>
+          </div>
+          <div class="encaissez-plan" id="encaissez-plan-termines">
+            <img id="encaissez-vue-termines" class="clip" data-start="3.6" data-duration="5.8" data-track-index="5" src="assets/films/termines.png" alt="" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // Où poser le téléphone pour qu'un point de l'écran de l'appli (en points
+      // de l'appli, 390 de large) tombe à un endroit du cadre, à une échelle.
+      const TEL = { x: 83, y: 568, bord: 22, k: 870 / 390 };
+      const viser = (appX, appY, echelle, cadreX, cadreY) => ({
+        scale: echelle,
+        x: cadreX - TEL.x - (TEL.bord + TEL.k * appX) * echelle,
+        y: cadreY - TEL.y - (TEL.bord + TEL.k * appY) * echelle,
+      });
+      const REPOS = { scale: 1, x: 0, y: 0 };
+      // Les deux cartes de l'écran Terminés, en points de l'appli. À cette
+      // échelle une carte tient la largeur du cadre, et la ligne des mots
+      // tombe entre le titre de l'écran et le haut des cartes.
+      const CARTE_TVA = viser(108, 172, 2.45, 540, 953);
+      const CARTE_COMPTABLE = viser(282, 172, 2.45, 540, 953);
+      gsap.set("#encaissez-tel", { transformOrigin: "0px 0px" });
+
+      // La journée est finie : la sauge tombe au vert nuit, le téléphone reste.
+      tl.fromTo("#encaissez-sol", { backgroundColor: "#e4ebda" }, { backgroundColor: "#0e2a1b", duration: 0.5, ease: "power2.inOut" }, 0);
+      tl.fromTo("#encaissez-tel", { backgroundColor: "#12261b" }, { backgroundColor: "#2c4838", duration: 0.5, ease: "power2.inOut" }, 0);
+      tl.fromTo("#encaissez-plan-facture", { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power1.inOut" }, 0.05);
+      tl.fromTo(
+        "#encaissez-mot-i",
+        { opacity: 0, filter: "blur(14px)" },
+        { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power2.out" },
+        0.2
+      );
+      tl.fromTo(
+        "#encaissez-ligne-a-i",
+        { opacity: 0, filter: "blur(10px)" },
+        { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power2.out" },
+        0.45
+      );
+
+      // La facture est partie : l'écran Terminés, d'abord en entier.
+      tl.fromTo(
+        "#encaissez-ligne-a-i",
+        { opacity: 1, filter: "blur(0px)" },
+        { opacity: 0, filter: "blur(10px)", duration: 0.16, ease: "power2.in", immediateRender: false },
+        3.6
+      );
+      tl.fromTo("#encaissez-plan-termines", { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power1.inOut" }, 3.6);
+
+      // Gros plan sur la carte de la TVA.
+      tl.fromTo("#encaissez-tel", REPOS, { ...CARTE_TVA, duration: 0.6, ease: "power2.inOut", immediateRender: false }, 4.3);
+      tl.fromTo(
+        "#encaissez-ligne-b-i",
+        { opacity: 0, filter: "blur(10px)" },
+        { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power2.out" },
+        4.5
+      );
+
+      // Puis la caméra glisse jusqu'à sa voisine, celle du comptable.
+      tl.fromTo(
+        "#encaissez-ligne-b-i",
+        { opacity: 1, filter: "blur(0px)" },
+        { opacity: 0, filter: "blur(10px)", duration: 0.16, ease: "power2.in", immediateRender: false },
+        6.5
+      );
+      tl.fromTo("#encaissez-tel", CARTE_TVA, { ...CARTE_COMPTABLE, duration: 0.6, ease: "power2.inOut", immediateRender: false }, 6.45);
+      tl.fromTo(
+        "#encaissez-ligne-c-i",
+        { opacity: 0, filter: "blur(10px)" },
+        { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power2.out" },
+        6.8
+      );
+
+      // Tout est rangé : l'écran redescend sous le cadre.
+      tl.fromTo(
+        ["#encaissez-mot-i", "#encaissez-ligne-c-i"],
+        { opacity: 1, filter: "blur(0px)" },
+        { opacity: 0, filter: "blur(12px)", duration: 0.2, ease: "power2.in", immediateRender: false },
+        9.1
+      );
+      tl.fromTo(
+        "#encaissez-tel",
+        CARTE_COMPTABLE,
+        { ...CARTE_COMPTABLE, y: CARTE_COMPTABLE.y + 1500, duration: 0.45, ease: "power3.in", immediateRender: false },
+        8.93
+      );
+      window.__timelines["encaissez"] = tl;
+    })();
+  </script>
+</template>

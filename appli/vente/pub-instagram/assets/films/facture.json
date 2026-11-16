@@ -1,0 +1,16 @@
+{
+  "film": "facture.mp4",
+  "images": 427,
+  "secondes": 14.233,
+  "reperes": {
+    "creer": 1.033,
+    "facture": 2.133,
+    "defile-lignes": 3.333,
+    "lignes": 4.133,
+    "defile-total": 5.733,
+    "total": 6.733,
+    "acquittee": 9.433,
+    "envoyer": 12.133,
+    "envoyee": 13.233
+  }
+}

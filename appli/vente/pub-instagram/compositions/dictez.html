@@ -1,0 +1,266 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Instrument Serif";
+      src: url("assets/fonts/instrument-serif.woff2") format("woff2");
+      font-weight: 400;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: "Instrument Serif";
+      src: url("assets/fonts/instrument-serif-italic.woff2") format("woff2");
+      font-weight: 400;
+      font-style: italic;
+    }
+    @font-face {
+      font-family: "Hanken Grotesk";
+      src: url("assets/fonts/hanken-grotesk.woff2") format("woff2");
+      font-weight: 100 900;
+      font-style: normal;
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+    #dictez-sol {
+      position: absolute;
+      inset: 0;
+      background: var(--sol-sauge, #e4ebda);
+    }
+    #dictez-mot {
+      position: absolute;
+      left: 72px;
+      top: 272px;
+      font-family: "Instrument Serif", serif;
+      font-size: 150px;
+      line-height: 0.9;
+      letter-spacing: -0.015em;
+      color: var(--encre, #12261b);
+      white-space: nowrap;
+    }
+    #dictez-mot b {
+      font-weight: 400;
+      color: var(--or, #95600f);
+    }
+    .dictez-ligne {
+      position: absolute;
+      left: 76px;
+      top: 420px;
+      width: 940px;
+      font-family: "Hanken Grotesk", sans-serif;
+      font-weight: 500;
+      font-size: 56px;
+      line-height: 1.14;
+      letter-spacing: -0.01em;
+      color: var(--encre-douce, #4b5a50);
+    }
+    #dictez-dite {
+      position: absolute;
+      left: 76px;
+      top: 414px;
+      width: 960px;
+      font-family: "Instrument Serif", serif;
+      font-style: italic;
+      font-size: 58px;
+      line-height: 1.08;
+      color: var(--encre, #12261b);
+    }
+    .dictez-dit {
+      display: inline-block;
+    }
+    /* Le téléphone : une coque encre, l'écran de l'appli dedans. Il monte du
+       bas du cadre, son pied reste sous le bord. */
+    /* La scène du téléphone commence sous les mots : quand la caméra avance et
+       que le téléphone monte, il passe sous cette ligne au lieu de les couvrir. */
+    #dictez-scene {
+      position: absolute;
+      left: 0;
+      top: 548px;
+      width: 1080px;
+      height: 1372px;
+      overflow: hidden;
+    }
+    #dictez-tel {
+      position: absolute;
+      left: 83px;
+      top: 20px;
+      width: 914px;
+      height: 1382px;
+      border-radius: 100px;
+      background: #12261b;
+      box-shadow:
+        0 50px 110px rgba(18, 38, 27, 0.26),
+        inset 0 0 0 2px rgba(243, 239, 227, 0.1);
+    }
+    .dictez-ecran {
+      position: absolute;
+      left: 22px;
+      top: 22px;
+      width: 870px;
+      height: 1338px;
+      border-radius: 78px;
+      overflow: hidden;
+      background: #f4f2ed;
+    }
+    .dictez-plan {
+      position: absolute;
+      inset: 0;
+    }
+    .dictez-plan video {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 870px;
+      height: 1338px;
+      object-fit: cover;
+    }
+  </style>
+
+  <div id="root" data-composition-id="dictez" data-width="1080" data-height="1920">
+    <div id="dictez-sol"></div>
+
+    <div id="dictez-mot" class="clip" data-start="0" data-duration="10.6" data-track-index="1">
+      <span id="dictez-mot-i">Dictez<b>.</b></span>
+    </div>
+
+    <div id="dictez-ligne-a" class="dictez-ligne clip" data-start="0.3" data-duration="2.3" data-track-index="2">
+      <div id="dictez-ligne-a-i">Décrivez le chantier<br />à voix haute.</div>
+    </div>
+
+    <div id="dictez-dite" class="clip" data-start="2.5" data-duration="3.5" data-track-index="2">
+      <div id="dictez-dite-i">
+        <span class="dictez-dit">«&nbsp;On</span>
+        <span class="dictez-dit">arrache</span>
+        <span class="dictez-dit">l’ancienne</span>
+        <span class="dictez-dit">haie</span><br />
+        <span class="dictez-dit">de</span>
+        <span class="dictez-dit">thuyas</span>
+        <span class="dictez-dit">sur</span>
+        <span class="dictez-dit">douze</span>
+        <span class="dictez-dit">mètres.&nbsp;»</span>
+      </div>
+    </div>
+
+    <div id="dictez-ligne-b" class="dictez-ligne clip" data-start="6" data-duration="4.6" data-track-index="2">
+      <div id="dictez-ligne-b-i">Atlas écrit le devis,<br />avec vos prix.</div>
+    </div>
+
+    <div id="dictez-scene" data-layout-allow-overflow>
+    <div id="dictez-tel">
+      <div class="dictez-ecran">
+        <div class="dictez-plan" id="dictez-plan-1">
+          <video id="dictez-film-ouverture" class="clip" data-start="0" data-duration="2.5" data-media-start="0.3" data-track-index="3" muted playsinline src="assets/films/ouverture.mp4"></video>
+        </div>
+        <div class="dictez-plan" id="dictez-plan-2">
+          <video id="dictez-film-micro" class="clip" data-start="2.1" data-duration="3.9" data-media-start="1.45" data-playback-rate="1.6" data-track-index="4" muted playsinline src="assets/films/micro.mp4"></video>
+        </div>
+        <div class="dictez-plan" id="dictez-plan-3">
+          <video id="dictez-film-devis" class="clip" data-start="5.8" data-duration="4.8" data-media-start="1.1" data-playback-rate="1.1" data-track-index="5" muted playsinline src="assets/films/devis.mp4"></video>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      const REPOS = { scale: 1, x: 0, y: 0 };
+      // La caméra avance en gardant le haut du téléphone à sa place : plus
+      // haut, il passerait sur les mots ; plus bas, le geste tomberait sous
+      // l'habillage d'Instagram (rien d'utile sous 1248).
+      const AVANCE = { scale: 1.1, x: -(914 * 0.1) / 2, y: 0 };
+      // Le micro vit au bas de la fiche, là où le pouce le trouve : pour le
+      // filmer, la caméra va le chercher et le monte au milieu du cadre.
+      const TEL = { x: 83, y: 568, bord: 22, k: 870 / 390 };
+      const viser = (appX, appY, echelle, cadreX, cadreY) => ({
+        scale: echelle,
+        x: cadreX - TEL.x - (TEL.bord + TEL.k * appX) * echelle,
+        y: cadreY - TEL.y - (TEL.bord + TEL.k * appY) * echelle,
+      });
+      const MICRO = viser(195, 466, 1.15, 540, 1010);
+      gsap.set("#dictez-tel", { transformOrigin: "0px 0px" });
+
+      // Le sol sauge monte et recouvre le vert nuit ; le téléphone monte avec lui.
+      tl.fromTo(
+        "#dictez-sol",
+        { clipPath: "inset(100% 0% 0% 0%)" },
+        { clipPath: "inset(0% 0% 0% 0%)", duration: 0.5, ease: "power3.inOut" },
+        0
+      );
+      tl.fromTo("#dictez-tel", { y: 1500, scale: 1, x: 0 }, { y: 0, duration: 0.7, ease: "expo.out" }, 0.08);
+
+      // Le mot du chapitre, puis sa ligne.
+      tl.fromTo(
+        "#dictez-mot-i",
+        { opacity: 0, filter: "blur(14px)" },
+        { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power2.out" },
+        0.3
+      );
+      tl.fromTo(
+        "#dictez-ligne-a-i",
+        { opacity: 0, filter: "blur(10px)" },
+        { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power2.out" },
+        0.5
+      );
+      tl.fromTo(
+        "#dictez-ligne-a-i",
+        { opacity: 1, filter: "blur(0px)" },
+        { opacity: 0, filter: "blur(10px)", duration: 0.16, ease: "power2.in", immediateRender: false },
+        2.3
+      );
+
+      // La fiche remplie prend la place de la fiche vide ; la caméra avance
+      // vers le micro, puis tient pendant que le chrono tourne.
+      tl.fromTo("#dictez-plan-2", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "power1.inOut" }, 2.4);
+      tl.fromTo("#dictez-tel", REPOS, { ...MICRO, duration: 0.6, ease: "power2.inOut", immediateRender: false }, 2.15);
+
+      // La phrase dictée, au rythme d'une voix.
+      tl.fromTo(
+        ".dictez-dit",
+        { opacity: 0, filter: "blur(8px)" },
+        { opacity: 1, filter: "blur(0px)", duration: 0.14, stagger: 0.24, ease: "power2.out" },
+        2.7
+      );
+      tl.fromTo(
+        "#dictez-dite-i",
+        { opacity: 1, filter: "blur(0px)" },
+        { opacity: 0, filter: "blur(10px)", duration: 0.18, ease: "power2.in", immediateRender: false },
+        5.8
+      );
+
+      // Le devis : la caméra recule, la ligne dictée est là, à son prix.
+      tl.fromTo("#dictez-plan-3", { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "power1.inOut" }, 5.9);
+      tl.fromTo(
+        "#dictez-tel",
+        MICRO,
+        { ...REPOS, duration: 0.55, ease: "power2.inOut", immediateRender: false },
+        5.7
+      );
+      tl.fromTo(
+        "#dictez-ligne-b-i",
+        { opacity: 0, filter: "blur(10px)" },
+        { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power2.out" },
+        6.1
+      );
+
+      // Le total : la caméra avance dessus, tient, puis revient à sa place
+      // pour que le chapitre suivant reprenne le téléphone là où il est.
+      tl.fromTo("#dictez-tel", REPOS, { ...AVANCE, duration: 0.5, ease: "power2.inOut", immediateRender: false }, 8.9);
+      tl.fromTo(
+        "#dictez-tel",
+        AVANCE,
+        { ...REPOS, duration: 0.4, ease: "power2.inOut", immediateRender: false },
+        10.18
+      );
+      tl.fromTo(
+        ["#dictez-mot-i", "#dictez-ligne-b-i"],
+        { opacity: 1, filter: "blur(0px)" },
+        { opacity: 0, filter: "blur(12px)", duration: 0.2, ease: "power2.in", immediateRender: false },
+        10.38
+      );
+      window.__timelines["dictez"] = tl;
+    })();
+  </script>
+</template>
