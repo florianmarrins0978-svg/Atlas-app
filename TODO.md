@@ -1,5 +1,140 @@
 # Prochaines tâches
 
+## ⏳ LA MAIN D'ŒUVRE « SUR UNE LIGNE », SUR `main` LE 9 NOVEMBRE 2026 ; restent la croix de la carte et un frêne inventé
+
+Sa plainte, capture à l'appui (devis de Luc, 12 rue Marcadet) : *« j'ai dicté
+trois tâches différentes, j'ai sélectionné la main d'œuvre sur une seule ligne
+[...] ça m'a mis la main d'œuvre plus les trois tâches dans la même case, avec
+en plus il a complètement inventé : j'ai jamais parlé de feuille de frêne,
+oxyphylle »*. La case portait : « Main d'œuvre : taille de haie de photinia,
+élagage d'un frêne à feuilles de frêne (frêne oxyphylle), plantation d'un
+olivier », puis les trois détails collés en un paragraphe, 3 jour/homme à 400.
+
+**1. Les trois travaux dans une case : le code fait ce que deux planches
+disent, et c'est leur RENCONTRE qui ne va pas.**
+
+| | |
+|---|---|
+| sa planche du 21 octobre (`appli/main-d-oeuvre-repartie.html`) | en mode « ligne », UNE ligne « Main d'œuvre : démontage d'un chêne, dessouchage, taille de haie de laurier » ; codé tel quel, `proposition-prix.ts` (`choix.mode === "ligne"`, `libelleMainOeuvre`) |
+| sa planche du 4 novembre (détail sous la ligne) | `appliquer-proposition.ts` colle sous le nom le détail de CHAQUE prestation que la ligne vend (`libelleAvecDetail`) |
+
+La première ne montrait que des noms, la seconde une ligne par travail. Avec
+trois travaux détaillés, les trois détails se collent sans dire lequel est à
+qui. Aucune ligne de devis ne sait aujourd'hui être « comprise dans la main
+d'œuvre » (ni prix, ni « à chiffrer ») : un travail sans prix se lit gratuit ou
+bloque l'envoi.
+
+**SA DEMANDE DU 9 NOVEMBRE**, après un premier choix dans une liste : *« il y
+aura une ligne main d'œuvre avec la journée à trois hommes, donc 1 200 €, et en
+plus de ça, chaque tâche a son prix : le photinia, 20 mètres linéaires à 10 €,
+200 € »*. Donc, en mode « sur une ligne » : la ligne Main d'œuvre (les jours
+dictés × son tarif) à sa place d'aujourd'hui, puis chaque travail sur SA ligne,
+avec SON détail et SON prix : sa grille, sinon « à chiffrer ». **Cela revient,
+pour ce mode seulement, sur sa réponse du 21 octobre** (« 1 600 € pour les deux
+travaux, pas 1 600 € plus la fente ») : dit au patron le 9 novembre. « Répartis
+sur les travaux » garde la règle du 21 octobre.
+
+Une première planche (« compris dans la main d'œuvre », sans prix par travail)
+a été faite sur son premier choix, puis retirée avant publication : sa phrase
+l'a remplacée.
+
+**La planche** : `appli/soignee/devis-main-d-oeuvre-et-prix.html`, sur le vrai
+écran du devis figé (base de démonstration, client Luc, tarif main d'œuvre
+passé à 400 € pour retrouver ses chiffres). « Aujourd'hui » est la sortie
+réelle de `appliquerPropositionPrix` sur ses trois travaux : le défaut se
+reproduit à l'identique, et ce même montage fera le test rouge. « Proposé » :
+quatre vraies lignes, sans retouche (Main d'œuvre 3 jour/homme × 400 €, haie
+20 ml × 10 €, frêne 550 € comme sur sa capture, olivier à chiffrer), total
+1 950 € HT, « dont main d'œuvre HT » 1 200 €.
+
+**CODÉ LE 9 NOVEMBRE 2026**, sur son *« très bien, c'est exactement ce que je
+veux »* : `propositionAvecMainOeuvre` (`proposition-prix.ts`), en mode
+« ligne », pose la ligne « Main d’œuvre » (le nom de celle de « + Main
+d'œuvre », `LIBELLE_LIGNE_MAIN_DOEUVRE`), qui ne vend plus aucune prestation,
+puis chaque travail comme un travail sorti par la croix (`aSaGrille`). Le
+détail de chacun descend donc sous SON nom sans toucher à
+`appliquer-proposition.ts`. `libelleMainOeuvre` est retirée (plus rien ne
+l'appelait). La carte « Avant de chiffrer » n'a pas eu à changer : son total
+est celui de la main d'œuvre, et c'est ce qu'elle dit. Test
+`test-main-oeuvre-dictee-db.ts`, « son devis de Luc », vu ROUGE sur le code
+d'avant (le libellé exact de sa capture, six cas rouges), puis 17 sur 17 : (1 200 € de main d'œuvre, la haie 20 ml à 10 €, le frêne et l'olivier à chiffrer, total
+1 400 € HT, « dont » 1 200 €) ; cinq assertions de l'ancienne règle
+réécrites. `ARCHITECTURE.md` §579.
+
+**Livré** : sa batterie (niveau 3, argent : rayon de 66 points d'entrée),
+jouée sur son « oui, lance tout » du 9 novembre, verte (217 suites navigateur
+sur 217, connexion derrière un proxy comprise), puis `main`. Reste à la
+regarder sur son espace : une dictée de plusieurs travaux, « Sur une ligne
+Main d'œuvre ».
+
+**Vu en codant, pas changé (une apparence, donc une planche d'abord)** : sur
+la carte « Avant de chiffrer », en mode « Sur une ligne Main d'œuvre », la
+croix de chaque travail ne change plus le devis (dedans ou sorti, il prend sa
+grille), et la carte ne montre pas le prix que chaque travail aura. À lui
+proposer en planche (`RepartirLaMainOeuvre.tsx`).
+
+**2. « à feuilles de frêne (frêne oxyphylle) » n'est écrit nulle part dans le
+dépôt** (code, vocabulaire soufflé au transcripteur, amorçage, migrations,
+vérifié le 9 novembre). Il vient donc du transcripteur ou du modèle qui
+découpe la dictée, et il est entré dans le libellé de la prestation (la ligne
+Main d'œuvre le reprenait ; depuis le 9 novembre, c'est la ligne du frêne). La consigne d'extraction
+(`extraction-service.ts`) interdit d'inventer une quantité, une durée, une
+espèce ou un détail, **mais ne dit rien du LIBELLÉ** : rien n'y interdit un
+nom savant, une variété ou une parenthèse qu'il n'a pas dite. **Qui l'a
+inventé, sa transcription le dit** (« Votre dictée », sur la fiche) ; pas
+visible ici. Si elle ne porte pas « oxyphylle », c'est le modèle : règle du
+libellé dans la consigne, et `npm run verifier:dictee` sur son espace.
+
+**Vu sur la même capture, cause non cherchée** : sous la case, « La dernière
+fois, pour Taille de haie de laurier de ml, vous aviez retenu 650 € HT »
+compare la ligne de main d'œuvre à une taille de haie.
+
+## ⏳ À REGARDER PAR LUI (9 novembre 2026) : jeter la dictée, en clair
+
+Sa remarque : *« moi je ne savais pas que ce mécanisme jetait la dictée,
+il faut peut-être mettre un truc plus clair ; il n'y a pas déjà un bouton
+poubelle ? »* **Lu dans le code** : la poubelle « Jeter »
+(`AnneauNoteVocale.tsx`, `dictee-jeter`) ne vit que PENDANT la dictée ; une
+fois la note envoyée, seul le glissement de « Votre dictée »
+(`LigneRetirable`, `FormulaireNouveauChantier.tsx`) la jette, et rien ne le
+montre.
+
+**La planche** : `appli/jeter-la-dictee.html`, sur sa vraie fiche client
+(M. Bernard, une note envoyée). A : « Retirer » écrit au bout de la ligne,
+comme sur les fiches en cours (sa planche du 11 octobre). B : la poubelle
+cerclée de la dictée, avec « Jeter ». Le tiroir « Annuler » reste.
+
+**Reste** : son choix, puis le coder (et récrire la fiche du mode d'emploi
+`chantier-dictee-retirer`, qui décrit le glissement).
+
+## ⏳ À REGARDER PAR LUI (9 novembre 2026) : la fiche ouverte et Composer ma fiche, soignées
+
+Sa demande, après avoir validé D et B : *« ensuite, tu t'attelles à ce qui se
+passe quand on clique sur créer une fiche, composer ma fiche et les fiches
+arrêtées que tu peux modifier, et rendre plus jolies »*. Créer une fiche et
+rouvrir une fiche en cours mènent au MÊME écran (`/paysage/fiche/[id]`) :
+deux planches, pas trois.
+
+| planche | A | B |
+|---|---|---|
+| `appli/fiche-de-chantier-ouverte-soignee.html` (neuve : Sans client ; en cours : Mme Costa) | le client dans une carte au rond doré (« Ajouter un client » doré, en serif) ; chaque famille dans une carte arrondie à 14 px, la case arrondie à 8 px et la coche au trait ; le temps dans une seule carte ; le bouton sur toute la largeur | pareil, mais les prestations en pastilles, teintées quand elles sont faites |
+| `appli/composer-ma-fiche-soignee.html` | tout déplié : cartes à 14 px, « Ajouter une prestation » derrière un anneau doré, « Ajouter une famille » dans une carte au rond doré | les familles repliées, une carte chacune ; le chevron ou la pastille du haut déplie |
+
+**Ce qui s'écarte de ses décisions, et c'est délibéré** : les noms de
+famille de la fiche passent en noir gras (ils étaient en encre douce depuis
+le 11 octobre), comme « En cours » sur la liste qu'il vient de choisir ; et
+« Ajouter un client » n'est plus centré (22 septembre), il reste gros et
+doré dans sa carte.
+
+**Ce qui ne bouge pas** : le jour en tête et sa roue (24 septembre) ; le
+client en haut (arrangement C) ; « Envoyé par » ; la molette du temps
+(16 août) et « Visible » contre son interrupteur ; « Retirer » et son
+tiroir ; « Retirer la famille » au bas de sa carte (24 août) ; les pastilles
+des familles en haut de Composer.
+
+**Reste** : qu'il choisisse, puis le coder sur son « oui »
+(`FicheChantierClient.tsx`, `ComposerMaFiche.tsx`).
+
 ## ⏳ À REGARDER PAR LUI (9 novembre 2026) : la fiche de chantier, soignée, D ET B
 
 Sa demande, capture à l'appui : *« tu peux me faire une planche de cette

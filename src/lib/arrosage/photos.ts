@@ -325,6 +325,8 @@ export const PHOTOS: Record<string, string> = {
   "plasson16-te-taraude": "plasson16-te-taraude.png",
   "plasson16-coude": "plasson16-coude.png",
   "plasson16-manchon-filete": "plasson16-manchon-filete.png",
+  "collier-mural-16": "collier-mural.jpg",
+  "collier-mural-25": "collier-mural.jpg",
   "MID6362": "MID6362.png",
   "OPP506715": "pp-mamelon-double.jpg",
   "OPP506720": "pp-mamelon-double.jpg",

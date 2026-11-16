@@ -1357,6 +1357,18 @@ var CATALOGUE = {
     { ref:'plasson16-manchon-filete', nom:'manchon fileté à compression Plasson 16 x 3/4", pour 16 rigide', categorie:'raccord PE', marque:'Plasson', diametre:'16', filetage:'3/4"', source:'patron', photo:'sa photo du 18 octobre 2026' }
   ],
 
+  /* ── SES COLLIERS DE FIXATION MURALE, EN Ø16 ET EN Ø25 ────────────────────
+     Sa demande du 12 novembre 2026, photo à l'appui : *« les crochets noirs en
+     diamètre 25 pour accrocher les PE sur un mur »*, puis *« il faudrait
+     l'ajouter au catalogue, les diamètres 16 et les diamètres 25 »*. Absents du
+     relevé Aqua Plus (qui n'a que des colliers de serrage et des crampons de
+     sol) : AUCUNE RÉFÉRENCE, comme ses raccords Plasson du Ø16 rigide. Une même
+     photo pour les deux diamètres, celle qu'il a envoyée. */
+  fixations: [
+    { ref:'collier-mural-16', nom:'collier de fixation murale à clipser Ø16', categorie:'raccord PE', diametre:'16', source:'patron', photo:'sa photo du 12 novembre 2026' },
+    { ref:'collier-mural-25', nom:'collier de fixation murale à clipser Ø25', categorie:'raccord PE', diametre:'25', source:'patron', photo:'sa photo du 12 novembre 2026' }
+  ],
+
   /* ── Le reste du matériel ───────────────────────────────────────────────
      **Ses lignes provisoires sont RETIRÉES, le 16 octobre 2026** (« supprime
      toutes les lignes provisoires ») : électrovanne et regard génériques,

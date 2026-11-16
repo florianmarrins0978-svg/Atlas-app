@@ -8,8 +8,9 @@ import { CATALOGUE } from "./catalogue.js";
  * Tout vient du catalogue, mot pour mot (`CLAUDE.md` §4 bis) : les pièces de
  * nourrice, celles du réseau, les coudes SBE, les corps d'arroseur, les tubes
  * de goutte-à-goutte, les pièces Aqua Plus relevées, et ses raccords Plasson
- * du Ø16 rigide, sans référence (*« je ne sais pas si c'est ça la référence »*,
- * 18 octobre 2026). Une référence ne s'écrit que si elle a été relevée.
+ * du Ø16 rigide et ses colliers de fixation murale, sans référence (*« je ne
+ * sais pas si c'est ça la référence »*, 18 octobre 2026). Une référence ne
+ * s'écrit que si elle a été relevée.
  */
 export type Choix = { ref: string; nom: string; categorie: string; sansReference?: boolean };
 
@@ -21,6 +22,7 @@ type Cat = {
   gaines: { ref: string; nom: string }[];
   piecesAjoutables: { ref: string; nom: string; categorie: string }[];
   raccords16Rigide?: { ref: string; nom: string; categorie: string }[];
+  fixations?: { ref: string; nom: string; categorie: string }[];
 };
 const CAT = CATALOGUE as unknown as Cat;
 
@@ -51,7 +53,7 @@ export function toutesLesPieces(): Choix[] {
   for (const c of CAT.corps) out.push({ ref: c.ref, nom: c.nom + (c.detail ? `, ${c.detail}` : ""), categorie: "arroseur" });
   for (const g of CAT.gaines) out.push({ ref: g.ref, nom: g.nom, categorie: "raccord goutte-à-goutte" });
   for (const x of CAT.piecesAjoutables) if (!out.some((y) => y.ref === x.ref)) out.push({ ref: x.ref, nom: x.nom, categorie: x.categorie });
-  for (const x of CAT.raccords16Rigide ?? []) out.push({ ref: x.ref, nom: x.nom, categorie: x.categorie, sansReference: true });
+  for (const x of [...(CAT.raccords16Rigide ?? []), ...(CAT.fixations ?? [])]) out.push({ ref: x.ref, nom: x.nom, categorie: x.categorie, sansReference: true });
   liste = out;
   return out;
 }
