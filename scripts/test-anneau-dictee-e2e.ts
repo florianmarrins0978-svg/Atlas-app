@@ -71,7 +71,8 @@ async function main() {
 
   // Un chantier NEUF : ni photo, ni dictée — exactement le sien.
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="Bernard"]', `Anneau e2e ${Date.now()}`);
+  const nomDuClient = `Anneau e2e ${Date.now()}`;
+  await page.fill('input[placeholder="Bernard"]', nomDuClient);
   const chantierId = await creerPuisFiche(page);
   // **L'ANNEAU VIT SUR LA FICHE CLIENT** — 4 septembre 2026. Il était au milieu
   // de la fiche du chantier depuis sa demande du 11 août ; cette fiche est
@@ -265,6 +266,16 @@ async function main() {
       await page.getByText("Votre dictée", { exact: true }).count(),
       0,
       "« Votre dictée » est revenue sur la fiche client : il l'a fait retirer le 16 novembre"
+    );
+    // **Sa règle du même jour : la dictée ne touche pas au client.** *« Si je
+    // supprime la dictée qui est censée remplir le devis, ça va me supprimer
+    // aussi le nom, le prénom, le numéro de téléphone et l'adresse mail du
+    // client. Ça, il faut pas. »* La dictée remplit le devis ; le client vit
+    // sur sa fiche, et rien de la dictée ne doit le récrire ni l'effacer.
+    assert.equal(
+      await page.locator('input[placeholder="Bernard"]').inputValue(),
+      nomDuClient,
+      "le nom du client a changé après la dictée : elle ne doit toucher qu'au devis"
     );
   });
 

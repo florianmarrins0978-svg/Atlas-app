@@ -110,7 +110,9 @@ première (`enregistrerNoteVocale`). Il a choisi de l'enlever.
 cas de `test-note-vocale-repo.ts` et la suite `test-retirer-sa-dictee-e2e.ts`.
 Les fiches du mode d'emploi `chantier-dictee-retirer` (on redicte) et
 `donnees-ia` (« Jeter » avant l'envoi) sont récrites ; `test-anneau-dictee-e2e`
-tient le micro présent et la case absente. Types, lint, `test-mode-emploi`,
+tient le micro présent, la case absente, et le nom du client intact après la
+dictée (sa règle du 16 novembre : *« ça va me supprimer aussi le nom […] du
+client. Ça, il faut pas »*). Types, lint, `test-mode-emploi`,
 `test-pas-de-code-mort`, `test-aucun-tiret`, `test-couches` verts.
 
 | reste | qui |
