@@ -70,8 +70,19 @@ Main d'œuvre ».
 **Vu en codant, pas changé (une apparence, donc une planche d'abord)** : sur
 la carte « Avant de chiffrer », en mode « Sur une ligne Main d'œuvre », la
 croix de chaque travail ne change plus le devis (dedans ou sorti, il prend sa
-grille), et la carte ne montre pas le prix que chaque travail aura. À lui
-proposer en planche (`RepartirLaMainOeuvre.tsx`).
+grille), et la carte ne montre pas le prix que chaque travail aura.
+**LA PLANCHE, SUR SON « VAS-Y, FAIS LA PLANCHE » DU 16 NOVEMBRE 2026** :
+`appli/soignee/carte-main-d-oeuvre-sur-une-ligne.html`, sur sa vraie carte
+figée (base de démonstration, chantier de Luc, 3 hommes pendant 1 jour à
+400 €). « Proposé » : en mode « ligne », plus de croix ; à sa place, le prix
+que le travail aura sur le devis, écrit comme le montant de « Répartis » mais
+sans se toucher (haie 200 €, frêne et olivier « À chiffrer »). « Répartis »
+ne change pas. « Continuer vers le devis » mène au vrai devis qui en sort
+(1 400 € HT, dont 1 200 € de main d'œuvre). Attend sa réponse. À coder,
+s'il dit oui : le prix vient de `t.grille`, déjà dans la question, et la
+croix sort du mode « ligne » de `RepartirLaMainOeuvre.tsx` ; `retires`
+cesse alors de compter dans ce mode (`proposition-prix.ts` ne s'en sert déjà
+plus que pour placer la ligne Main d'œuvre).
 
 **2. « à feuilles de frêne (frêne oxyphylle) » n'est écrit nulle part dans le
 dépôt** (code, vocabulaire soufflé au transcripteur, amorçage, migrations,
