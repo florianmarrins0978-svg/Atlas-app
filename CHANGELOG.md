@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-11-16
+
+- **Planche « La carte sur une ligne »** (son « vas-y, fais la planche »). Sur sa vraie carte « Avant de chiffrer », en « Sur une ligne Main d'œuvre », la croix de chaque travail ne changeait plus rien au devis ; proposé : son prix à la place (200 €, ou « À chiffrer »), comme sur le devis qui en sort. `appli/soignee/carte-main-d-oeuvre-sur-une-ligne.html`. Rien dans `src/`.
+
 ## 2026-11-12
 
 - **Ses colliers de fixation murale, en Ø16 et en Ø25, s'ajoutent à la liste d'arrosage** (sa demande, photo à l'appui : *« les crochets noirs en diamètre 25 pour accrocher les PE sur un mur »*, puis *« les diamètres 16 et les diamètres 25 »*). Le relevé Aqua Plus n'en porte pas (seulement des colliers de serrage et des crampons de sol) : ils entrent sans référence, comme ses raccords Plasson du Ø16 rigide, dans « Ajouter une pièce », catégorie Raccords PE, avec la photo qu'il a envoyée (`fixations` dans `catalogue.js`, `collier-mural.jpg`). Les instantanés de calcul des planches (`appli/arrosage-*-calcul.js`) ne sont pas reconstruits : l'écran de l'application les porte, les planches non. Contrôle `test-arrosage-postes.ts`, vu rouge sans les colliers.
