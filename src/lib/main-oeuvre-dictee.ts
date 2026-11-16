@@ -16,6 +16,10 @@ import type { PrixDePartenaire } from "./feuille-main-oeuvre";
  * les deux travaux, pas 1 600 € plus la fente. Ce qui sort de la main d'œuvre
  * (la croix) prend son prix ailleurs, sa grille, sinon « à chiffrer ».
  *
+ * **Sauf sur une ligne Main d'œuvre** (sa demande du 9 novembre 2026,
+ * `appli/soignee/devis-main-d-oeuvre-et-prix.html`) : la ligne Main d'œuvre,
+ * puis chaque travail à son prix, sa grille sinon « à chiffrer ».
+ *
  * Fonctions pures : aucune base, aucun écran. L'écran et le chiffrage lisent
  * les MÊMES (`CLAUDE.md` §3).
  */
@@ -307,11 +311,4 @@ export function ecrireUnMontant(
     touches.push(j);
   }
   return { montants: c.map(enEuros), touches };
-}
-
-/** Le libellé de la ligne Main d'œuvre : les travaux qu'elle couvre, nommés. */
-export function libelleMainOeuvre(travaux: readonly string[]): string {
-  if (travaux.length === 0) return "Main d'œuvre";
-  const noms = travaux.map((t) => t.charAt(0).toLowerCase() + t.slice(1));
-  return `Main d'œuvre : ${noms.join(", ")}`;
 }

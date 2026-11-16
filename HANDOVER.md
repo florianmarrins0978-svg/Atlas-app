@@ -4,9 +4,12 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-11-08 · `main` : la batterie commune de trois lots
-(Mon année ; l'import depuis la fiche et les entrées et sorties ; le crédit
-d'impôt et l'avance immédiate), `docs/batterie-commune-8-novembre.md`
+**Point de reprise :** 2026-11-09 · `main` : la main d'œuvre « sur une
+ligne », chaque travail à son prix (`ARCHITECTURE.md` §579), batterie verte
+(217 suites navigateur sur 217). Restent la croix de la carte en mode « ligne »
+(une planche) et l'origine de « frêne oxyphylle » (`TODO.md`).
+Avant : sur `main`, la batterie commune du 8 novembre
+(`docs/batterie-commune-8-novembre.md`).
 (l'historique fait foi : `git log --oneline -20`)
 
 ---

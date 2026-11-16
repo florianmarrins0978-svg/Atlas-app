@@ -1,6 +1,6 @@
 # Prochaines tâches
 
-## ⏳ À REGARDER PAR LUI (9 novembre 2026) : la main d'œuvre « sur une ligne » avale les travaux, et un frêne inventé
+## ⏳ LA MAIN D'ŒUVRE « SUR UNE LIGNE », SUR `main` LE 9 NOVEMBRE 2026 ; restent la croix de la carte et un frêne inventé
 
 Sa plainte, capture à l'appui (devis de Luc, 12 rue Marcadet) : *« j'ai dicté
 trois tâches différentes, j'ai sélectionné la main d'œuvre sur une seule ligne
@@ -24,35 +24,60 @@ qui. Aucune ligne de devis ne sait aujourd'hui être « comprise dans la main
 d'œuvre » (ni prix, ni « à chiffrer ») : un travail sans prix se lit gratuit ou
 bloque l'envoi.
 
-**SON CHOIX DU 9 NOVEMBRE** (entre trois, il a pris « Main d'œuvre à part ») :
-en mode « ligne », chaque travail garde SA ligne et SON détail, la colonne du
-montant dit « Dans la main d'œuvre », et la main d'œuvre a sa propre ligne
-(« Main d'œuvre », 3 jour/homme, 400 €), après les travaux. Écartés : chaque
-travail à son prix sans ligne Main d'œuvre (c'est déjà « Répartis sur les
-travaux ») ; la main d'œuvre ET un prix par travail (contraire à sa règle du
-21 octobre, les jours couvrent tout le chantier).
+**SA DEMANDE DU 9 NOVEMBRE**, après un premier choix dans une liste : *« il y
+aura une ligne main d'œuvre avec la journée à trois hommes, donc 1 200 €, et en
+plus de ça, chaque tâche a son prix : le photinia, 20 mètres linéaires à 10 €,
+200 € »*. Donc, en mode « sur une ligne » : la ligne Main d'œuvre (les jours
+dictés × son tarif) à sa place d'aujourd'hui, puis chaque travail sur SA ligne,
+avec SON détail et SON prix : sa grille, sinon « à chiffrer ». **Cela revient,
+pour ce mode seulement, sur sa réponse du 21 octobre** (« 1 600 € pour les deux
+travaux, pas 1 600 € plus la fente ») : dit au patron le 9 novembre. « Répartis
+sur les travaux » garde la règle du 21 octobre.
 
-**La planche** : `appli/soignee/devis-main-d-oeuvre-compris.html`, sur le vrai
+Une première planche (« compris dans la main d'œuvre », sans prix par travail)
+a été faite sur son premier choix, puis retirée avant publication : sa phrase
+l'a remplacée.
+
+**La planche** : `appli/soignee/devis-main-d-oeuvre-et-prix.html`, sur le vrai
 écran du devis figé (base de démonstration, client Luc, tarif main d'œuvre
 passé à 400 € pour retrouver ses chiffres). « Aujourd'hui » est la sortie
 réelle de `appliquerPropositionPrix` sur ses trois travaux : le défaut se
 reproduit à l'identique, et ce même montage fera le test rouge. « Proposé » :
-quatre vraies lignes, puis le prix unitaire retiré des trois travaux et
-« Dans la main d'œuvre » écrit à la place du montant (« Compris dans la main
-d'œuvre » débordait de la colonne à 390 px). Les quantité et unité restent :
-« 20 ml » d'une haie se lit encore.
+quatre vraies lignes, sans retouche (Main d'œuvre 3 jour/homme × 400 €, haie
+20 ml × 10 €, frêne 550 € comme sur sa capture, olivier à chiffrer), total
+1 950 € HT, « dont main d'œuvre HT » 1 200 €.
 
-**À coder sur son « oui »** : un nouvel état de ligne (ni prix, ni « à
-chiffrer », hors du total) : migration en deux temps, `proposition-prix.ts`
-(mode « ligne » : une ligne par travail, puis la main d'œuvre),
-`appliquer-proposition.ts` (le détail de CHAQUE travail sous SON nom), l'écran
-du devis, le PDF, la facture, « dont main d'œuvre HT ». Niveau 3.
+**CODÉ LE 9 NOVEMBRE 2026**, sur son *« très bien, c'est exactement ce que je
+veux »* : `propositionAvecMainOeuvre` (`proposition-prix.ts`), en mode
+« ligne », pose la ligne « Main d’œuvre » (le nom de celle de « + Main
+d'œuvre », `LIBELLE_LIGNE_MAIN_DOEUVRE`), qui ne vend plus aucune prestation,
+puis chaque travail comme un travail sorti par la croix (`aSaGrille`). Le
+détail de chacun descend donc sous SON nom sans toucher à
+`appliquer-proposition.ts`. `libelleMainOeuvre` est retirée (plus rien ne
+l'appelait). La carte « Avant de chiffrer » n'a pas eu à changer : son total
+est celui de la main d'œuvre, et c'est ce qu'elle dit. Test
+`test-main-oeuvre-dictee-db.ts`, « son devis de Luc », vu ROUGE sur le code
+d'avant (le libellé exact de sa capture, six cas rouges), puis 17 sur 17 : (1 200 € de main d'œuvre, la haie 20 ml à 10 €, le frêne et l'olivier à chiffrer, total
+1 400 € HT, « dont » 1 200 €) ; cinq assertions de l'ancienne règle
+réécrites. `ARCHITECTURE.md` §579.
+
+**Livré** : sa batterie (niveau 3, argent : rayon de 66 points d'entrée),
+jouée sur son « oui, lance tout » du 9 novembre, verte (217 suites navigateur
+sur 217, connexion derrière un proxy comprise), puis `main`. Reste à la
+regarder sur son espace : une dictée de plusieurs travaux, « Sur une ligne
+Main d'œuvre ».
+
+**Vu en codant, pas changé (une apparence, donc une planche d'abord)** : sur
+la carte « Avant de chiffrer », en mode « Sur une ligne Main d'œuvre », la
+croix de chaque travail ne change plus le devis (dedans ou sorti, il prend sa
+grille), et la carte ne montre pas le prix que chaque travail aura. À lui
+proposer en planche (`RepartirLaMainOeuvre.tsx`).
 
 **2. « à feuilles de frêne (frêne oxyphylle) » n'est écrit nulle part dans le
 dépôt** (code, vocabulaire soufflé au transcripteur, amorçage, migrations,
 vérifié le 9 novembre). Il vient donc du transcripteur ou du modèle qui
 découpe la dictée, et il est entré dans le libellé de la prestation (la ligne
-Main d'œuvre reprend ce libellé). La consigne d'extraction
+Main d'œuvre le reprenait ; depuis le 9 novembre, c'est la ligne du frêne). La consigne d'extraction
 (`extraction-service.ts`) interdit d'inventer une quantité, une durée, une
 espèce ou un détail, **mais ne dit rien du LIBELLÉ** : rien n'y interdit un
 nom savant, une variété ou une parenthèse qu'il n'a pas dite. **Qui l'a

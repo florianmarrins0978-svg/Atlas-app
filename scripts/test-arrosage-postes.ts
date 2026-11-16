@@ -10,6 +10,7 @@ import { motsPresents } from "../src/lib/arrosage/mots-du-plan";
 import { euros, prixDeLigne, totalDeLaListe } from "../src/lib/arrosage/prix-de-la-liste";
 import { ROBINET, departDeLOutil, departRetenu, departsPossibles, libelleDepart, phraseDuManque, voiesManquantes, type Depart, type Montage } from "../src/lib/arrosage/robinet";
 import { CATALOGUE } from "../src/lib/arrosage/catalogue.js";
+import { trouverLaPiece } from "../src/lib/arrosage/choix-de-pieces";
 import type { ParametresPlan } from "../src/lib/arrosage/consignes";
 import { existsSync, readFileSync } from "node:fs";
 
@@ -315,6 +316,18 @@ cas("les pièces du robinet portent les noms du catalogue, et leurs photos sont 
     exige(readFileSync(`public/arrosage-robinet-photos/${p.photo}`).equals(readFileSync(`appli/arrosage-robinet-photos/${p.photo}`)), `photo qui diffère entre appli/ et public/ : ${p.photo}`);
   }
   exige(photoDe("BRO3493") === "/arrosage-robinet-photos/BRO3493.jpg", "la double sortie a sa photo, servie depuis son dossier");
+});
+
+// Sa demande du 12 novembre 2026 : ses colliers de fixation murale, en Ø16 et
+// en Ø25, dans « Ajouter une pièce », sans référence et avec SA photo.
+cas("ses colliers de fixation murale Ø16 et Ø25 s'ajoutent, sans référence, avec sa photo", () => {
+  for (const [ref, diametre] of [["collier-mural-16", "Ø16"], ["collier-mural-25", "Ø25"]]) {
+    const p = trouverLaPiece(ref);
+    exige(p !== null, `${ref} n'est pas dans la liste des pièces à ajouter`);
+    exige(p!.sansReference === true, `${ref} afficherait sa clé comme une référence Aqua Plus`);
+    exige(p!.nom.endsWith(diametre) && p!.categorie === "raccord PE", `${ref} : « ${p!.nom} », ${p!.categorie}`);
+    exige(photoDe(ref) === "/arrosage-photos/collier-mural.jpg", `${ref} n'a pas sa photo : ${photoDe(ref)}`);
+  }
 });
 
 // ═══ SES DEMANDES DU 19 OCTOBRE 2026 : barrer, supprimer un bloc, une voie de moins, les prix ═══

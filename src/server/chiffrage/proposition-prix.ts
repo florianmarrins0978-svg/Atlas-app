@@ -16,7 +16,6 @@ import {
   SUJET_MAIN_OEUVRE,
   choixParDefaut,
   journeesFacturees,
-  libelleMainOeuvre,
   lireChoix,
   modeRetenu,
   partsDeDepart,
@@ -25,6 +24,7 @@ import {
   tarifAvecSonHomme,
 } from "../../lib/main-oeuvre-dictee";
 import { mainOeuvreDUnPartenaire, prixDesPartenaires, quantiteDuPartenaire } from "../../lib/feuille-main-oeuvre";
+import { LIBELLE_LIGNE_MAIN_DOEUVRE } from "../../lib/main-doeuvre-devis";
 import {
   lignesVendables,
   membresDuLibelle,
@@ -738,11 +738,13 @@ async function partenaireDuChoix(
  * Le devis quand il a dicté des jours et des hommes
  * (`appli/main-d-oeuvre-repartie.html`). Chaque travail prend, dans l'ordre :
  * le prix qu'il a dicté ; son tarif nommé ; s'il l'a sorti par la croix, sa
- * grille, sinon « à chiffrer » ; sinon sa part de la main d'œuvre, sur une
- * ligne qui le nomme ou selon ses curseurs.
+ * grille, sinon « à chiffrer » ; sinon, réparti, sa part de la main d'œuvre
+ * selon ses curseurs.
  *
- * Les jours couvrent tout le chantier : sa grille ne s'ajoute pas, elle donne
- * seulement la position de départ des curseurs.
+ * Réparti, les jours couvrent tout le chantier : sa grille ne s'ajoute pas,
+ * elle donne seulement la position de départ des curseurs. Sur une ligne Main
+ * d'œuvre (sa demande du 9 novembre 2026), la main d'œuvre a sa ligne et
+ * chaque travail garde sa grille, sinon « à chiffrer ».
  */
 async function propositionAvecMainOeuvre(
   ctx: Ctx,
@@ -860,13 +862,9 @@ async function propositionAvecMainOeuvre(
     calcul.push(h.calcul);
     placees.push({ rang: h.rang, ligne: auForfait(h.vendable, h.montant) });
   }
-  const dedans: TravauxDeLaMainOeuvre["couverts"] = [];
-  for (const c of t.couverts) {
-    if (!choix.retires.includes(c.vendable.libelle)) {
-      dedans.push(c);
-      continue;
-    }
-    // Sorti par la croix : sa grille, sinon à chiffrer, et la phrase le dit.
+  // Un travail à SON prix, hors de la main d'œuvre : sa grille, sinon à
+  // chiffrer, et la phrase le dit.
+  const aSaGrille = (c: TravauxDeLaMainOeuvre["couverts"][number]) => {
     calcul.push(...c.grille.calcul);
     if (c.grille.prix === null) {
       donneesManquantes.push(
@@ -888,6 +886,15 @@ async function propositionAvecMainOeuvre(
             }
           : auForfait(c.vendable, g.prix, g),
     });
+  };
+  const dedans: TravauxDeLaMainOeuvre["couverts"] = [];
+  for (const c of t.couverts) {
+    if (!choix.retires.includes(c.vendable.libelle)) {
+      dedans.push(c);
+      continue;
+    }
+    // Sorti par la croix.
+    aSaGrille(c);
   }
 
   // Sans journée à facturer (tout est conducteur), rien à répartir : jamais un
@@ -895,21 +902,33 @@ async function propositionAvecMainOeuvre(
   const montantMO =
     partenaire === null ? (journees > 0 ? totalMO.toFixed(2) : null) : "introuvable" in partenaire ? null : partenaire.montant;
   if (choix.mode === "ligne" || dedans.length === 0) {
-    const travaux = libelleMainOeuvre(dedans.map((x) => membresDuLibelle(x.vendable.libelle)[0] ?? x.vendable.libelle));
+    // **Sa demande du 9 novembre 2026, sur son devis de Luc**
+    // (`appli/soignee/devis-main-d-oeuvre-et-prix.html`) : *« une ligne main
+    // d'œuvre avec la journée à trois hommes, donc 1 200 €, et en plus de ça
+    // chaque tâche a son prix »*. La ligne ne nomme plus les travaux et n'en
+    // vend aucun : elle les avalait, et le détail de chacun se collait sous
+    // elle sans dire lequel était à qui. Elle porte le nom de la ligne posée
+    // par « + Main d'œuvre », la même main d'œuvre se lit pareil.
     // La ligne d'un partenaire dit son nom, comme celle de la feuille du devis.
     const sienne = partenaire !== null && !("introuvable" in partenaire) ? partenaire.ligne : null;
     placees.push({
-      rang: dedans[0]?.rang ?? Number.MAX_SAFE_INTEGER,
+      // Sa place d'avant : devant le premier travail qu'elle couvrait.
+      rang: dedans.length > 0 ? dedans[0].rang - 0.5 : Number.MAX_SAFE_INTEGER,
       ligne: {
-        libelle: sienne?.libelle ?? travaux,
+        libelle: sienne?.libelle ?? LIBELLE_LIGNE_MAIN_DOEUVRE,
         montant: montantMO,
         quantite: sienne?.quantite ?? String(journees),
         unite: sienne?.unite ?? "jour/homme",
         prixUnitaire: sienne ? (sienne.prixUnitaire ?? "0") : partenaire === null ? new Decimal(mo.tarif.prix).toFixed(2) : "0",
-        prestationIds: dedans.flatMap((x) => ids(x.vendable)),
+        prestationIds: [],
         mainDoeuvre: true,
       },
     });
+    // **Cela revient, sur une ligne seulement, sur sa réponse du 21 octobre**
+    // (« 1 600 € pour les deux travaux, pas 1 600 € plus la fente ») : les
+    // jours ne couvrent plus les travaux, chacun s'ajoute à SON prix.
+    // « Répartis sur les travaux » garde la règle du 21 octobre.
+    for (const x of dedans) aSaGrille(x);
   } else {
     const aPartager = montantMO ?? "0";
     const cles = dedans.map((x) => x.vendable.libelle);
