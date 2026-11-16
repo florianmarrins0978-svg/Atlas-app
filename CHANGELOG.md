@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-16
 
+- **Planche : le site de vente sous le nom Cause** (`appli/vente/cause.html`, avec `mentions-legales-cause.html`). L'Afnic exige une maquette du site avant d'accorder cause.fr, terme soumis à examen préalable ; chapitres-6 portait encore le nom de travail. Seuls changent le nom, l'adresse de contact (contact@cause.fr, pas encore créée) et le lien des mentions légales ; chapitres-6 reste la référence, une retouche s'y fait d'abord. Rien dans `src/`.
 - **Planche « La carte sur une ligne »** (son « vas-y, fais la planche »). Sur sa vraie carte « Avant de chiffrer », en « Sur une ligne Main d'œuvre », la croix de chaque travail ne changeait plus rien au devis ; proposé : son prix à la place (200 €, ou « À chiffrer »), comme sur le devis qui en sort. `appli/soignee/carte-main-d-oeuvre-sur-une-ligne.html`. Rien dans `src/`.
 
 ## 2026-11-12
