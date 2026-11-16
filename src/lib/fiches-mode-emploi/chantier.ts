@@ -298,10 +298,13 @@ export const FICHES_CHANTIER: FicheModeEmploi[] = [
     ou: OU_FICHE_CLIENT,
     intitule: "Retirer ou remplacer une note vocale déjà envoyée",
     motsCles: ["retirer", "supprimer", "effacer", "enlever", "dictee", "note", "vocale", "redicter", "remplacer", "refaire"],
-    geste: "Glissez la ligne « Votre dictée » de droite à gauche, puis « Retirer ». Vous pouvez redicter.",
-    reserve: "« Annuler » reste quelques secondes pour revenir en arrière.",
+    geste: "Une dictée envoyée ne se retire pas. Pour la refaire, touchez de nouveau le micro et redictez : la nouvelle remplace la première.",
     source: FICHE,
-    preuves: ["Votre dictée", "LigneRetirable", "retraitDeLaNote"],
+    preuves: ["<AnneauNoteVocale"],
+    // Sa décision du 16 novembre 2026 : une dictée envoyée ne se jette plus.
+    // Le remplacement, lui, est dans le dépôt : la note existante est récrite.
+    ailleurs: [{ source: "src/server/repositories/notes-vocales.ts", preuves: ["export async function enregistrerNoteVocale", "if (existante)"] }],
+    absences: ["supprimerNoteVocale"],
   },
   {
     id: "photos-ajouter",

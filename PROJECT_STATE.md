@@ -1,5 +1,10 @@
 # État du projet
 
+## DEUX LOTS CODÉS SUR LA BRANCHE `claude/amazing-mendel-skfnud`, CONTRÔLES À JOUER AVEC SON ACCORD (16 novembre 2026)
+
+**La fiche de chantier, D et B** (9 novembre, `src/app/paysage/fiche/`, `RondDore`, `TuileIcone`) : niveau 2, `npm run verifier:avant-fusion`. **« Votre dictée » enlevée de la fiche client** (9 puis 16 novembre, `FormulaireNouveauChantier.tsx`, `supprimerNoteVocale` retirée, `ARCHITECTURE.md` §342 révisé). Types, lint et les contrôles sans base sont verts ; ni suite base ni suite navigateur jouée, faute de son « oui ». Rien n'est sur `main`. Le détail est dans `TODO.md`.
+
+---
 ## LA MAIN D'ŒUVRE SUR UNE LIGNE, CHAQUE TRAVAIL À SON PRIX, CODÉE (9 novembre 2026), SUR `main` LE 9 NOVEMBRE
 
 Sa planche `appli/soignee/devis-main-d-oeuvre-et-prix.html`, approuvée. `propositionAvecMainOeuvre` pose la ligne « Main d’œuvre », puis chaque travail à sa grille, sinon à chiffrer. Types, lint et contrôles purs verts ; suite base vue rouge sur le code d'avant, puis 17 sur 17 ; batterie (niveau 3) verte sur son « oui », 217 suites navigateur sur 217. `ARCHITECTURE.md` §579.

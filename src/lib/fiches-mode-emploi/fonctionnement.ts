@@ -84,11 +84,11 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
     geste:
       "Pour transcrire une dictée, rédiger un devis ou regarder une photo, Atlas envoie ce contenu à ses " +
       "fournisseurs d'intelligence artificielle. Ne dictez pas ce que vous ne voulez pas voir transmis, comme " +
-      "une information de santé. Une dictée se retire depuis la fiche client du chantier : glissez " +
-      "« Votre dictée », puis « Retirer ».",
+      "une information de santé. Tant qu'elle n'est pas envoyée, une dictée se jette avec « Jeter », à " +
+      "gauche de l'avion : rien ne part.",
     source: CONDITIONS,
     preuves: ["est transmis aux fournisseurs listés dans la politique de confidentialité"],
-    ailleurs: [{ source: "src/app/chantiers/nouveau/FormulaireNouveauChantier.tsx", preuves: ["Votre dictée", "retraitDeLaNote"] }],
+    ailleurs: [{ source: "src/app/chantiers/[id]/AnneauNoteVocale.tsx", preuves: ['aria-label="Supprimer la note"'] }],
   },
 
   // --- Ses questions jouées le 28 septembre 2026 ------------------------------

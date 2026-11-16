@@ -29464,6 +29464,16 @@ s'apprêtait à lui reproposer ce qu'il a interdit deux fois — le 10 août, pu
 
 ## §342 — Jeter sa dictée là où il la fait, et le lecteur que personne ne montait
 
+**RÉVISÉ LE 16 NOVEMBRE 2026 : la case « Votre dictée » est retirée.** Sa
+raison : *« à partir du moment où on a envoyé la dictée, c'est qu'on n'a plus
+envie de la jeter »*. Avant l'envoi, la poubelle « Jeter » de l'anneau la
+jette ; après, une nouvelle dictée remplace la première
+(`enregistrerNoteVocale`). Ce qui a été pesé : la case était le seul geste qui
+effaçait une dictée envoyée, mais son contenu est déjà passé dans le devis, et
+l'écran Transcription, où l'on aurait pu le reposer, ne s'atteint que depuis un
+devis resté sans prix. `supprimerNoteVocale` est parti avec elle. Ce qui suit
+raconte la décision du 13 septembre.
+
 **Sa décision du 13 septembre 2026 :** *« C'est sur cet écran que je le
 voulais ! Car en cas de problème on peut supprimer la dictée comme ça. »*
 

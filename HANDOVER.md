@@ -4,6 +4,8 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
+**Sur la branche `claude/amazing-mendel-skfnud`, hors de `main` (16 novembre 2026)** : la fiche de chantier D et B, et « Votre dictée » enlevée de la fiche client. Codés, contrôles à jouer avec son accord (`PROJECT_STATE.md`).
+
 **Point de reprise :** 2026-11-09 · `main` : la main d'œuvre « sur une
 ligne », chaque travail à son prix (`ARCHITECTURE.md` §579), batterie verte
 (217 suites navigateur sur 217). Restent la croix de la carte en mode « ligne »
