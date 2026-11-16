@@ -4,9 +4,9 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Sur la branche `claude/amazing-mendel-skfnud`, hors de `main` (16 novembre 2026)** : la fiche de chantier D et B, et « Votre dictée » enlevée de la fiche client. Codés, contrôles à jouer avec son accord (`PROJECT_STATE.md`).
+**Sur la branche `claude/amazing-mendel-skfnud`, hors de `main` (16 novembre 2026)** : « Votre dictée » enlevée de la fiche client. Codé, batterie complète à jouer avec son accord (`PROJECT_STATE.md`).
 
-**Point de reprise :** 2026-11-09 · `main` : la main d'œuvre « sur une
+**Point de reprise :** 2026-11-16 · `main` : la fiche de chantier soignée, D et B (niveau 2 vert). Avant, le 9 novembre : la main d'œuvre « sur une
 ligne », chaque travail à son prix (`ARCHITECTURE.md` §579), batterie verte
 (217 suites navigateur sur 217). Restent la croix de la carte en mode « ligne »
 (une planche) et l'origine de « frêne oxyphylle » (`TODO.md`).
@@ -55,7 +55,7 @@ claude/app-sur-ordinateur »), pas le téléphone. `TODO.md` le porte.
 ---
 ## UNE IDÉE POUR L'APPLI (5 novembre 2026), sur `main` le 6 novembre
 
-**Les pièges :** `idees` est la SEULE table où un compte lit d'autres entreprises que la sienne, et seulement dans `withEditeur` (`app.lecteur_des_idees`). Ne jamais poser ce réglage ailleurs, et ne jamais lire `users` ni `entreprises` pour l'éditeur : le nom de l'auteur et celui de son entreprise sont figés sur la ligne exprès. L'artisan n'a ni UPDATE ni DELETE : « Annuler » se joue avant l'envoi (`useRetraits`), ne pas le « réparer » par un effacement. `withEditeur` lève pour tout autre compte : la page Réglages appelle `estEditeur` avant de compter. `idees_alertes` est sans isolation (une date seule), `atlas_app` n'y efface rien : une suite la vide sous le propriétaire. Le banc d'essai tourne sans `ATLAS_EDITEUR_EMAIL` : le côté éditeur s'éprouve en base (`test-idees-db.ts`), la suite navigateur vérifie que la porte reste fermée au compte de démonstration. Sur son espace, `completer-env-local.sh` écrit `ATLAS_EDITEUR_EMAIL=demo@atlas.local` dans `.env.local` (8 novembre 2026) ; `run-e2e-tests.ts` la vide pour les suites. `ARCHITECTURE.md` §558.
+**Les pièges :** `idees` est la SEULE table où un compte lit d'autres entreprises que la sienne, et seulement dans `withEditeur` (`app.lecteur_des_idees`). Ne jamais poser ce réglage ailleurs, et ne jamais lire `users` ni `entreprises` pour l'éditeur : le nom de l'auteur et celui de son entreprise sont figés sur la ligne exprès. L'artisan n'a ni UPDATE ni DELETE : « Annuler » se joue avant l'envoi (`useRetraits`), ne pas le « réparer » par un effacement. `withEditeur` lève pour tout autre compte : la page Réglages appelle `estEditeur` avant de compter. `idees_alertes` est sans isolation (une date seule), `atlas_app` n'y efface rien : une suite la vide sous le propriétaire. Le banc d'essai tourne sans `ATLAS_EDITEUR_EMAIL` : le côté éditeur s'éprouve en base (`test-idees-db.ts`), la suite navigateur vérifie que la porte reste fermée au compte de démonstration. Sur son espace, `completer-env-local.sh` écrit `ATLAS_EDITEUR_EMAIL=demo@atlas.local` dans `.env.local` (8 novembre 2026), et `banc.mjs` le rejoue avant chaque lancement (9 novembre) : à l'allumage seul, il tournait avant la récupération du code, et le bouton « Mettre à jour » n'y passait jamais. `run-e2e-tests.ts` la vide pour les suites. `ARCHITECTURE.md` §558.
 
 ---
 ## HIVERNER L'ARROSAGE (6 novembre 2026), lot `lot/hivernage`, pas sur `main`

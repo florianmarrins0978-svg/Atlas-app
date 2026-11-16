@@ -1390,7 +1390,12 @@ sujets sur la même branche, c'est deux batteries pour le prix d'une, et un
 rouge qui bloque un travail qui n'y est pour rien. Le dossier de batterie
 (`npm run sessions:preparer --liste`) sert à ça : `git checkout --detach
 origin/main`, `git cherry-pick` des seuls commits du lot, ses contrôles, sa
-poussée.
+poussée. **Ses dépendances se lient fichier à fichier** (`cp -al
+<dossier principal>/node_modules node_modules`), jamais par un lien vers le
+dossier voisin : la construction refuse un `node_modules` qui sort du dossier
+(*« Could not find the Next.js package »*), et ce sont alors les suites
+navigateur qui tombent, sans un mot sur la cause. Payé le 16 novembre 2026 ;
+`scripts/_temoin-de-main.mjs` le faisait déjà.
 
 **L'EXCEPTION : PLUSIEURS CORRECTIONS D'UN MÊME SUJET SE GROUPENT EN VAGUE —
 sa décision du 25 octobre 2026**, pendant l'audit de sécurité : *« si à chaque

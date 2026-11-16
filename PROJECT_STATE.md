@@ -1,8 +1,13 @@
 # État du projet
 
-## DEUX LOTS CODÉS SUR LA BRANCHE `claude/amazing-mendel-skfnud`, CONTRÔLES À JOUER AVEC SON ACCORD (16 novembre 2026)
+## « VOTRE DICTÉE » ENLEVÉE DE LA FICHE CLIENT, CODÉE (16 novembre 2026), SUR LA BRANCHE `claude/amazing-mendel-skfnud`, BATTERIE À JOUER AVEC SON ACCORD
 
-**La fiche de chantier, D et B** (9 novembre, `src/app/paysage/fiche/`, `RondDore`, `TuileIcone`) : niveau 2, `npm run verifier:avant-fusion`. **« Votre dictée » enlevée de la fiche client** (9 puis 16 novembre, `FormulaireNouveauChantier.tsx`, `supprimerNoteVocale` retirée, `ARCHITECTURE.md` §342 révisé). Types, lint et les contrôles sans base sont verts ; ni suite base ni suite navigateur jouée, faute de son « oui ». Rien n'est sur `main`. Le détail est dans `TODO.md`.
+Sa demande du 9 novembre, son choix du 16 (« l'enlever »). `FormulaireNouveauChantier.tsx`, `supprimerNoteVocale` retirée, `ARCHITECTURE.md` §342 révisé. Niveau 3 (le dépôt des notes vocales atteint 14 écrans) : `npm run verifier:avant-livraison`. Types, lint et les contrôles sans base sont verts ; rien d'autre n'est joué. Le détail est dans `TODO.md`.
+
+---
+## LA FICHE DE CHANTIER SOIGNÉE, D ET B, CODÉE (9 novembre 2026), SUR `main` LE 16 NOVEMBRE
+
+Sa planche `appli/fiche-de-chantier-soignee.html`, validée le 9 novembre ; son « oui » pour l'appli le 16. Composer ma fiche au sceau doré (`RondDore`, partagé avec les Réglages), Créer une fiche sur toute la largeur, En cours et Rapports envoyés dans une carte (`CarteDesFiches`), la tuile de Paysage pour un rapport parti (`TuileIcone`). Niveau 2 vert : 599 suites du dépôt, 34 suites navigateur.
 
 ---
 ## LA MAIN D'ŒUVRE SUR UNE LIGNE, CHAQUE TRAVAIL À SON PRIX, CODÉE (9 novembre 2026), SUR `main` LE 9 NOVEMBRE

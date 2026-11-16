@@ -37465,3 +37465,17 @@ le code d'avant, avec le libellé exact de sa capture (« Main d'œuvre : taille
 de haie de photinia, élagage d'un frêne, plantation d'un olivier »), puis vert,
 17 sur 17.
 
+## §580 : `.env.local` se complète au lancement du banc, pas seulement à l'allumage
+
+*9 novembre 2026, son idée toujours sans lecteur le lendemain du correctif de l'éditeur.*
+
+| Décision | Pourquoi |
+|---|---|
+| `banc.mjs` rejoue `completer-env-local.sh` avant de lancer le serveur (`scripts/reglages-du-banc.mjs`) | les deux chemins qui apportent du code neuf, l'allumage et le bouton « Mettre à jour », relancent `npm run banc`, qui relit son code depuis le disque ; `demarrer.sh` complétait AVANT `mettre-a-jour.sh`, et le bouton n'y passe pas |
+| le modèle est pris à côté du module (`import.meta.url`), jamais par le dossier courant | c'est le modèle du code qui vient d'arriver qui doit servir |
+| `next start` lit lui-même `.env.local` pour ce que l'environnement ne porte pas (`@next/env`) | le veilleur garde l'environnement de l'allumage ; aucun export à refaire |
+| un fichier absent n'est pas créé | la batterie lance ce banc chez l'agent et en CI (`verifier-connexion-avec-serveur.mts`) : y faire naître le fichier nommerait le compte de démonstration éditeur pour les serveurs suivants du dossier |
+| `demarrer.sh` garde son appel | il fait naître le fichier sur son espace et exporte ce qu'il porte pour le bandeau et `verifier:ia` |
+| un échec se dit et laisse partir le serveur | une ligne absente coûte moins qu'un banc qui ne démarre plus |
+
+Éprouvé par `scripts/test-completer-env-local.ts`, vu rouge avant le branchement (« banc.mjs ne complète pas .env.local »).

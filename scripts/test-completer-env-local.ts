@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { exigerLesOutils } from "./_outil-requis";
+import { completerReglagesDuBanc } from "./reglages-du-banc.mjs";
 
 // **Sans ces outils, cette suite ne mesure RIEN** — elle le dit et sort du
 // compte, au lieu de rougir sur une machine qui n'y est pour rien
@@ -114,6 +115,46 @@ cas("une adresse d'éditeur déjà posée n'est pas remplacée", () => {
   assert.match(apres, /^ATLAS_EDITEUR_EMAIL=autre@exemple\.fr$/m, "Son choix a été écrasé.");
   const combien = apres.split("\n").filter((l) => l.startsWith("ATLAS_EDITEUR_EMAIL=")).length;
   assert.equal(combien, 1, "Deux lignes d'éditeur : la seconde contredit la première.");
+});
+
+console.log("=== Le serveur relancé par « Mettre à jour » lit les noms d'aujourd'hui ===");
+
+// **Le 9 novembre 2026, l'idée n'arrivait toujours pas**, le lendemain du
+// correctif ci-dessus. Le correctif était sur son espace ; la ligne, non. Le
+// fichier ne se complétait qu'à l'allumage (`demarrer.sh`), AVANT d'aller
+// chercher le code neuf, et le bouton « Mettre à jour » des Réglages récupère
+// le code puis relance le serveur sans jamais repasser par là. Un nom ajouté à
+// `completer-env-local.sh` n'atteignait donc son serveur qu'au deuxième
+// allumage après sa livraison : il met à jour par le bouton, il pouvait
+// attendre des jours. Ce qui relance le serveur, dans les deux chemins, c'est
+// `banc.mjs` : c'est lui qui complète, juste avant de servir.
+
+cas("un fichier d'avant le correctif reçoit l'éditeur au démarrage du banc", () => {
+  const dossier = mkdtempSync(path.join(tmpdir(), "atlas-banc-"));
+  const fichier = path.join(dossier, ".env.local");
+  writeFileSync(fichier, "OPENAI_API_KEY=sk-la-sienne\nANTHROPIC_API_KEY=\n");
+  assert.equal(completerReglagesDuBanc(dossier), true, "Le banc n'a pas complété un fichier qui existe.");
+  const apres = readFileSync(fichier, "utf8");
+  assert.match(apres, /^ATLAS_EDITEUR_EMAIL=demo@atlas\.local$/m, "Le serveur relancé ne connaît toujours pas l'éditeur.");
+  assert.match(apres, /^OPENAI_API_KEY=sk-la-sienne$/m, "Sa clé a été perdue.");
+});
+
+cas("sans fichier, le banc n'en crée pas : sa naissance reste à l'allumage de son espace", () => {
+  // `verifier-connexion-avec-serveur.mts` lance ce banc dans la batterie, chez
+  // l'agent comme en CI : y faire naître un `.env.local` y nommerait le compte
+  // de démonstration éditeur pour tout serveur suivant du même dossier.
+  const dossier = mkdtempSync(path.join(tmpdir(), "atlas-banc-"));
+  assert.equal(completerReglagesDuBanc(dossier), false, "Le banc dit avoir complété un fichier absent.");
+  assert.equal(existsSync(path.join(dossier, ".env.local")), false, "Le banc a fait naître un .env.local.");
+});
+
+cas("banc.mjs complète AVANT de lancer le serveur", () => {
+  const banc = readFileSync(path.join(__dirname, "banc.mjs"), "utf8");
+  const iCompleter = banc.indexOf("completerReglagesDuBanc(process.cwd())");
+  const iLancement = banc.search(/let serveur = modeDeveloppement \? lancerDev\(\) : lancerBati\(\)/);
+  assert.ok(iLancement >= 0, "Le lancement du serveur n'est plus reconnaissable dans banc.mjs.");
+  assert.ok(iCompleter >= 0, "banc.mjs ne complète pas .env.local.");
+  assert.ok(iCompleter < iLancement, "banc.mjs lance le serveur avant d'avoir complété .env.local.");
 });
 
 console.log("=== Et ce qu'il écrit n'efface rien au chargement ===");
