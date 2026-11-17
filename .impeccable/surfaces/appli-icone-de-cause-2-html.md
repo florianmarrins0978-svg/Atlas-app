@@ -20,6 +20,14 @@ FIRST VIEWPORT : à 390 × 664, le titre sur une ligne, le bureau entier de la b
 FORM : seed: none (pinned) « une planche pour l'icône de l'application quand il sera sur le bureau des téléphones des clients ». Interaction signature : toucher l'icône ouvre l'appli depuis sa place, « Revenir au bureau » la referme sur elle. Voie code-led, aucune image générée.
 FINISH : unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance.
 
+## Provenance
+
+Un seul raster : `appli/vente/images/accueil.jpg`, une capture réelle de l'accueil de l'appli, déjà publiée avec le site de vente (`appli/vente/cause.html`). Reprise telle quelle, non modifiée. Tout le reste est du tracé écrit dans la planche.
+
+## Relecture
+
+Relue le 17 novembre 2026 par un second regard, sur captures : « à corriger », huit points, tous appliqués (le filet du téléphone qui tient quand l'appli est ouverte, le bouton de dictée agrandi, la carte des voisines qui se fondait dans le fond d'écran, la lettre choisie cerclée de vert pin, le C recentré, une phrase et un titre en moins). Pas de `DESIGN.md` : la planche étend le monde de l'appli, elle n'en crée pas.
+
 ## Ce qui reste ouvert
 
 - Son choix de lettre. Rien ne s'installe avant.
