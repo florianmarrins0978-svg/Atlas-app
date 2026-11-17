@@ -37469,3 +37469,15 @@ de haie de photinia, élagage d'un frêne, plantation d'un olivier »), puis ver
 | un échec se dit et laisse partir le serveur | une ligne absente coûte moins qu'un banc qui ne démarre plus |
 
 Éprouvé par `scripts/test-completer-env-local.ts`, vu rouge avant le branchement (« banc.mjs ne complète pas .env.local »).
+
+## §582 : Next.js arrête la construction lancée par une IA tant que sa version a une faille connue
+
+*17 novembre 2026, la batterie du nom Cause tombée à l'étape Construction.*
+
+| Constat | Ce qu'on en fait |
+|---|---|
+| Next.js 16.4 interroge les avis de sécurité de npm à chaque `next build` ; si la version installée en porte un et qu'il reconnaît un agent d'IA, il s'arrête sur `SecurityFatalError` (`node_modules/next/dist/lib/upgrade/nudge.js`, réglage par défaut `experimental.agentUpgrade: 'security'`) | un rouge à « Construction », suivi des suites navigateur et de la connexion, sans un mot sur le produit : lire la ligne `SecurityFatalError` avant de chercher ailleurs |
+| il laisse repasser la même commande dans les cinq minutes, une fois | la batterie reconstruit bien plus tard : la porte ne sert pas, et ce serait contourner l'avis au lieu de le traiter |
+| son espace, lui, n'est pas arrêté : sans agent, Next.js ne fait que proposer | la faille n'en reste pas moins à corriger |
+| **la racine : monter de version**, dans un lot à part (`package.json` est un plancher, batterie entière) | jamais couper le réglage : ce serait faire taire un avis de sécurité pour passer |
+
