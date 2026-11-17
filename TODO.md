@@ -15,7 +15,7 @@ Sa décision, devant la pub : *« L'application s'appellera plus Atlas mais Caus
 
 ## ⏳ LA PUB INSTAGRAM DE CAUSE : REMONTÉE LE 17 NOVEMBRE 2026, attend son regard
 
-Sa demande : une pub de lancement pour Instagram, moins d'une minute, faite des vraies pages ; puis, devant le premier montage, entrer tout de suite dans l'appli. Livrée : `appli/vente/pub-instagram/` (30 secondes, verticale), sur la branche `claude/charming-edison-u856hv`.
+Sa demande : une pub de lancement pour Instagram, moins d'une minute, faite des vraies pages ; puis, devant les deux premiers montages, une accroche courte et l'appli tout de suite, depuis sa première page. Livrée : `appli/vente/pub-instagram/` (36 secondes, verticale), sur la branche `claude/charming-edison-u856hv`.
 
 | Ce qui reste | Qui |
 |---|---|

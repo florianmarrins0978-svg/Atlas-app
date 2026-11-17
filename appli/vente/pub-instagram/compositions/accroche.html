@@ -1,0 +1,66 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Instrument Serif";
+      src: url("assets/fonts/instrument-serif.woff2") format("woff2");
+      font-weight: 400;
+      font-style: normal;
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: var(--sol-nuit, #0e2a1b);
+    }
+    #accroche-bloc {
+      position: absolute;
+      left: 72px;
+      top: 480px;
+      width: 960px;
+      font-family: "Instrument Serif", serif;
+      font-size: 196px;
+      line-height: 0.94;
+      letter-spacing: -0.015em;
+      color: var(--sur-nuit, #f3efe3);
+      white-space: nowrap;
+    }
+    #accroche-bloc b {
+      font-weight: 400;
+    }
+  </style>
+
+  <div id="root" data-composition-id="accroche" data-width="1080" data-height="1920">
+    <!-- Une phrase pour les artisans, et rien d'autre : elle passe vite, le
+         temps de la lire. Sa demande du 17 novembre 2026. -->
+    <div id="accroche-bloc" class="clip" data-start="0" data-duration="2.05" data-track-index="1">
+      <div id="accroche-interieur">
+        <div class="accroche-l" id="accroche-l1">Artisans,</div>
+        <div class="accroche-l accroche-suite">marre de la</div>
+        <div class="accroche-l accroche-suite"><b id="accroche-or">paperasse</b>&nbsp;?</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // « Artisans, » est là dès la première image, c'est elle qu'on voit dans
+      // le fil. Les deux autres lignes arrivent dans le quart de seconde.
+      tl.fromTo(
+        ".accroche-suite",
+        { opacity: 0, filter: "blur(12px)" },
+        { opacity: 1, filter: "blur(0px)", duration: 0.12, stagger: 0.08, ease: "power2.out" },
+        0.08
+      );
+      tl.fromTo("#accroche-or", { color: "#f3efe3" }, { color: "#f0b43c", duration: 0.25, ease: "power2.inOut" }, 0.35);
+      // Elle file vers le haut, poussée par l'appli qui monte.
+      tl.fromTo(
+        "#accroche-interieur",
+        { opacity: 1, y: 0, filter: "blur(0px)" },
+        { opacity: 0, y: -520, filter: "blur(10px)", duration: 0.34, ease: "power3.in" },
+        1.58
+      );
+      window.__timelines["accroche"] = tl;
+    })();
+  </script>
+</template>

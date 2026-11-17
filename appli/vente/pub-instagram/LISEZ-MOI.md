@@ -11,29 +11,37 @@ Sa correction du 17 novembre, devant le premier montage : l'appli s'appelle
 sujet : il faut directement qu'ils puissent voir ce qu'il y a dans
 l'application et ce qui va les aider »*.
 
-Une vidéo verticale de 30 secondes, 1080 × 1920, faite avec HyperFrames
+Puis, devant ce second montage : *« au tout début de la vidéo, une petite
+phrase d'accroche pour les artisans qui défile très rapidement, enfin qu'on
+puisse la lire quand même. Et ensuite la première page de l'application, où on
+cliquerait sur créer le devis pour voir apparaître la fiche client, et là où
+tu dictes ton devis. »*
+
+Une vidéo verticale de 36 secondes, 1080 × 1920, faite avec HyperFrames
 (`.claude/skills/hyperframes`) : `cause-pub-instagram.mp4`, dans ce dossier.
 Le montage retenu et ceux qui ne le sont pas sont dans `STORYLINES.md`, la
 fiche du film dans `SPEC.md`, la relecture dans `REVIEW.md`.
 
 ## Ce que le film montre
 
-Aucune introduction : l'appli est à l'image dès la première, et chaque plan
-dit un bénéfice sur l'écran qui le prouve.
+Une accroche d'une seconde et demie, puis l'appli : chaque plan dit un
+bénéfice sur l'écran qui le prouve.
 
 | Temps | Scène | Ce qu'on lit | L'écran de l'appli |
 |---|---|---|---|
-| 0 à 4,2 s | `dictez` | Artisans, dictez vos devis. | la fiche client, le micro et son chrono |
-| 4,2 à 8,4 s | `dictez` | Cause écrit le devis, avec vos prix. | le devis, sa ligne, son total |
-| 8,4 à 13,8 s | `client` | Votre client accepte sur son téléphone. | la page que reçoit le client |
-| 13,8 à 17,6 s | `planning` | Le chantier se pose au planning. | le planning du mois, la journée |
-| 17,6 à 21,1 s | `encaissez` | La facture reprend le devis. | la facture |
-| 21,1 à 26,3 s | `encaissez` | La TVA du mois, déjà calculée. Pour votre comptable, tout est justifié. | Terminés, ses deux cartes en gros plan |
-| 26,3 à 30,5 s | `fin` | Cause, Le logiciel des artisans, Essayer 15 jours gratuits | aucun |
+| 0 à 1,6 s | `accroche` | Artisans, marre de la paperasse ? | aucun |
+| 1,6 à 5,7 s | `dictez` | Dictez vos devis, sur le chantier. | l'accueil, « Créer un devis », la fiche client qui monte, puis remplie |
+| 5,7 à 9,3 s | `dictez` | la phrase dictée | le micro et son chrono |
+| 9,3 à 13,7 s | `dictez` | Cause écrit le devis, avec vos prix. | le devis, sa ligne, son total |
+| 13,7 à 19 s | `client` | Votre client accepte sur son téléphone. | la page que reçoit le client |
+| 19 à 22,9 s | `planning` | Le chantier se pose au planning. | le planning du mois, la journée |
+| 22,9 à 26,4 s | `encaissez` | La facture reprend le devis. | la facture |
+| 26,4 à 31,6 s | `encaissez` | La TVA du mois, déjà calculée. Pour votre comptable, tout est justifié. | Terminés, ses deux cartes en gros plan |
+| 31,6 à 35,8 s | `fin` | Cause, Le logiciel des artisans, Essayer 15 jours gratuits | aucun |
 
-Les phrases sont celles du site de vente (`appli/vente/chapitres-6.html`). Le
-nom de l'appli s'écrit à deux endroits : `compositions/dictez.html` et
-`compositions/fin.html`.
+Les phrases sont celles du site de vente (`appli/vente/chapitres-6.html`) ;
+l'accroche est la sienne. Le nom de l'appli s'écrit à deux endroits :
+`compositions/dictez.html` et `compositions/fin.html`.
 
 ## Rien n'est dessiné
 
@@ -47,8 +55,8 @@ base d'essai du nuage (son accord du jour). Les films sont dans
 - **Le chantier Lemaire passe par les vrais boutons** (`tournage/tourner.mjs`) :
   fiche client, note vocale, devis, dates proposées, accord du client sur sa
   page, facture créée, acquittée et envoyée. La TVA de novembre affichée par
-  Terminés vaut bien 143,70 €. Le tournage filme aussi l'accueil et la feuille
-  d'envoi, que le montage de trente secondes n'emploie pas.
+  Terminés vaut bien 143,70 €. Le tournage filme aussi la feuille d'envoi et
+  ses dates, que le montage n'emploie pas.
 - **La caméra** (`tournage/_prise.mjs`) fige l'horloge de la page et l'avance
   d'une image à la fois, animations de l'appli comprises : trente images par
   seconde, sans une saccade. C'est la méthode des films du site de vente.
@@ -80,7 +88,7 @@ ATLAS_PROFIL=banc AUTH_TRUST_HOST=true TRANSCRIPTION_PROVIDER=essai \
 
 bash appli/vente/pub-instagram/tournage/poser-la-scene.sh
 TOURNAGE_SORTIE=/tmp/tournage-atlas node appli/vente/pub-instagram/tournage/tourner.mjs
-for f in micro devis client planning facture; do
+for f in ouverture micro devis client planning facture; do
   cp /tmp/tournage-atlas/$f.mp4 /tmp/tournage-atlas/$f.json appli/vente/pub-instagram/assets/films/
 done
 cp /tmp/tournage-atlas/termines.png appli/vente/pub-instagram/assets/films/
@@ -94,7 +102,7 @@ repères (`assets/films/<prise>.json`), sur lesquels le montage cale ses coupes.
 ```bash
 cd appli/vente/pub-instagram
 npx hyperframes check --json
-npx hyperframes snapshot --at 0.6,3.8,7.8,12.6,15.2,22.8,24.3,29
+npx hyperframes snapshot --at 0.5,2.4,3.25,4.75,6.2,8.4,12.6,17.8,20.5,28.1,29.6,34.5
 npx hyperframes render --quality delivery -o cause-pub-instagram.mp4
 ```
 
