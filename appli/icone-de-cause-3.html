@@ -88,7 +88,7 @@ body { margin:0; background:var(--creme); color:var(--encre); font:400 16px/1.5 
 :focus-visible { outline:2px solid var(--or); outline-offset:3px; border-radius:10px }
 button { -webkit-tap-highlight-color:transparent; cursor:pointer }
 main { max-width:430px; margin:0 auto; padding:0 16px }
-h1 { font:400 28px/1.1 var(--serif); margin:8px 0 6px; letter-spacing:-.01em }
+h1 { font:400 28px/1.1 var(--serif); margin:6px 0 4px; letter-spacing:-.01em }
 h2 { font:400 22px/1.2 var(--serif); margin:0; letter-spacing:-.005em; text-wrap:balance }
 p { margin:0 }
 
@@ -116,7 +116,7 @@ p { margin:0 }
 .coup svg { display:block }
 .coup span { font-size:15px; opacity:.8 }
 .android .coup { display:flex }
-.grille { display:grid; grid-template-columns:repeat(4,60px); justify-content:space-between; row-gap:13px; padding:10px 27px 0 }
+.grille { display:grid; grid-template-columns:repeat(4,60px); justify-content:space-between; row-gap:12px; padding:10px 27px 0 }
 .app { display:flex; flex-direction:column; align-items:center; gap:6px; width:60px; margin:0; padding:0; border:0; background:none; color:inherit; font:inherit }
 .app .tuile { width:60px; height:60px }
 .app > span:last-child { margin:0 -12px; max-width:84px; font:500 11px/13px var(--sans); white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
@@ -328,7 +328,7 @@ p { margin:0 }
   // un rond vert : en vert, le casque fait casque militaire, et la rosace est
   // l'emblème d'un parti italien (l'en-tête de la planche le dit).
   var medaillon = function (dessin) {
-    return '<circle cx="256" cy="256" r="200" fill="' + VERT + '"/><g transform="translate(256 256) scale(.78) translate(-256 -256)">' + dessin + "</g>";
+    return '<circle cx="256" cy="256" r="200" fill="' + VERT + '"/><g transform="translate(256 256) scale(.84) translate(-256 -256)">' + dessin + "</g>";
   };
 
   var CAUSE = {
