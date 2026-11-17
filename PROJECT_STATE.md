@@ -1,5 +1,10 @@
 # État du projet
 
+## LE SITE DE VENTE EN MOUVEMENT, UNE PLANCHE (17 novembre 2026), EN ATTENTE DE SON REGARD
+
+Sa demande, depuis son téléphone : *« une maquette de la version améliorée, des animations plus jolies, plus spectaculaires, je te laisse toutes les libertés, ne modifie pas cette version »*. `appli/vente/cause-2.html`, à côté de `appli/vente/cause.html` qui n'a pas bougé : mêmes textes, mêmes prix, mêmes captures et mêmes films, seul le mouvement change (son en-tête dit quoi et pourquoi). Éprouvé dans Chromium, téléphone (390 × 664) et ordinateur, chaque geste touché ; **pas regardé sur Safari**, ce poste n'en a pas. Rien dans `src/`. Ce qu'il a à dire, et la question des trois pages à tenir s'il la retient : `TODO.md`.
+
+---
 ## LA FICHE DE CHANTIER SOIGNÉE, D ET B, CODÉE (9 novembre 2026), SUR `main` LE 16 NOVEMBRE
 
 Sa planche `appli/fiche-de-chantier-soignee.html`, validée le 9 novembre ; son « oui » pour l'appli le 16. Composer ma fiche au sceau doré (`RondDore`, partagé avec les Réglages), Créer une fiche sur toute la largeur, En cours et Rapports envoyés dans une carte (`CarteDesFiches`), la tuile de Paysage pour un rapport parti (`TuileIcone`). Niveau 2 vert : 599 suites du dépôt, 34 suites navigateur.

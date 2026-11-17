@@ -1,5 +1,49 @@
 # Prochaines tâches
 
+## ⏳ UNE PLANCHE À REGARDER : LE SITE DE VENTE EN MOUVEMENT (17 novembre 2026)
+
+Sa demande, depuis son téléphone, devant `appli/vente/cause.html` : *« fais-moi
+une maquette de la version améliorée, j'aimerais avoir des animations plus
+jolies, plus spectaculaires. Je te laisse toutes les libertés que tu désires.
+Ne modifie pas cette version, crée une autre maquette pour pouvoir comparer. »*
+
+**La planche :** `appli/vente/cause-2.html`, posée à côté de `cause.html`, qui
+n'a pas bougé d'une ligne. Mêmes textes, mêmes prix, mêmes captures, mêmes
+films : la comparaison ne porte que sur le mouvement. Son en-tête dit ce qui
+bouge, pourquoi, et ce que ses retours passés interdisent (rien de dessiné sur
+un écran de l'appli, aucun geste d'écran lié au défilement, une scène qui part
+à un tiers de l'écran mais laisse une demi-seconde avant le geste).
+
+**Ce qu'il a à dire :** s'il garde ce mouvement, ce qu'il en retire, et ce qui
+accroche sur son iPhone.
+
+**Ce qui n'est PAS vérifié, et qu'il ne faut pas croire vérifié :** Safari. Ce
+poste n'a que Chromium. La planche est écrite pour lui (masques préfixés,
+cadres arrondis isolés autour des films, aucune nouveauté sans repli), mais
+personne ne l'a regardée sur un iPhone. Les points à surveiller en premier :
+les téléphones qui tournent en 3D avec un film dedans, la feuille qui s'écrit
+(un masque qui glisse), les bandes nuit qui s'élargissent (un rognage), le
+grand chiffre de la TVA (des rouleaux rognés en haut et en bas), la feuille
+d'Envoyez rognée par sa scène (la coulisse).
+
+**Ce qui a été relu, et jusqu'où :** un second regard a relu le mouvement sur
+des pellicules, deux fois. Neuf corrections au premier tour, huit tenues au
+second. La neuvième (la feuille d'Envoyez dépassait de sa scène) a été refaite
+après le second verdict et n'a pas été relue : à lui montrer en premier.
+
+**S'il la retient, une question à lui poser avant de toucher quoi que ce
+soit :** `cause.html` dit que `chapitres-6.html` reste la référence (« une
+retouche s'y fait d'abord, puis se recopie ici »). Avec `cause-2.html`, cela
+ferait trois pages à tenir pour un seul site. Laquelle devient la référence,
+et lesquelles s'arrêtent là ?
+
+**Pour qui reprendra la planche :** la relecture du mouvement et ses
+pellicules sont dans `.impeccable/review/motion/` (dossier ignoré de git, à
+refaire). `impeccable motion-capture` ne sait ni défiler ni suivre des scènes
+enchaînées par minuteries : il n'a servi que pour la bascule des prix et les
+questions. La direction retenue est dans
+`.impeccable/surfaces/appli-vente-cause-2-html.md`.
+
 ## ⏳ LA MAIN D'ŒUVRE « SUR UNE LIGNE », SUR `main` LE 9 NOVEMBRE 2026 ; restent la croix de la carte et un frêne inventé
 
 Sa plainte, capture à l'appui (devis de Luc, 12 rue Marcadet) : *« j'ai dicté

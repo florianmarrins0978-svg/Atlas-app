@@ -804,6 +804,15 @@
         ],
         "createdAt": "2026-11-08T11:32:29.081Z",
         "reason": "faux positifs : .cadre est le téléphone du kit, son écran y est bord à bord par construction ; l'en-tête de l'assistant centre un bouton de 44 px dans 64 px, comme AssistantSidebar.tsx"
+      },
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          "appli/vente/cause-2.html"
+        ],
+        "createdAt": "2026-11-17T06:58:06.774Z",
+        "reason": "repris tel quel de appli/vente/cause.html, la charte du site de vente retenue le 6 novembre 2026 : l'ombre dorée du bouton d'essai sur les bandes vert nuit. La planche ne change que le mouvement ; le détecteur rend les mêmes 18 relevés sur les deux fichiers"
       }
     ]
   }

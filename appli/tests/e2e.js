@@ -671,22 +671,27 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
   // PLUS la marge que l'iPhone réserve à sa barre d'accueil. Chromium vaut 0
   // pour cette marge : la page est servie ici avec 34 px, la valeur d'un
   // iPhone, sans quoi le contrôle ne verrait jamais le défaut.
-  {
+  //
+  // `cause-2.html` (17 novembre 2026) reprend ce bouton et ces films dans une
+  // page au mouvement refait : elle passe les deux mêmes contrôles, sans quoi
+  // les deux défauts qu'il a signalés pourraient y revenir sans rien dire.
+  const PAGES_DE_VENTE = [['chapitres-6.html', 'vente'], ['cause-2.html', 'vente, en mouvement']];
+  for (const [fichier, nomPage] of PAGES_DE_VENTE) {
     const cVe = await browser.newContext({ viewport: { width: 390, height: 844 } });
-    await cVe.route(/\/vente\/chapitres-6\.html$/, async (route) => {
+    await cVe.route((url) => url.pathname.endsWith('/vente/' + fichier), async (route) => {
       const r = await route.fetch();
       route.fulfill({ response: r, body: (await r.text()).replace(/env\(safe-area-inset-bottom\)/g, '34px') });
     });
     const page = await cVe.newPage();
-    await page.goto(`${B}/vente/chapitres-6.html`, { waitUntil: 'domcontentloaded' });
+    await page.goto(`${B}/vente/${fichier}`, { waitUntil: 'domcontentloaded' });
     await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
     await page.waitForTimeout(1200);
     const pouce = await page.evaluate(() => {
       const el = document.getElementById('pouce'), r = el.getBoundingClientRect();
       return { cache: !el.classList.contains('vu'), haut: r.top, ecran: innerHeight, visible: getComputedStyle(el).visibility };
     });
-    ok('vente : au bas du site, le bouton d\'essai est caché', pouce.cache);
-    ok('vente : caché, il ne dépasse pas du bas de l\'écran',
+    ok(nomPage + ' : au bas du site, le bouton d\'essai est caché', pouce.cache);
+    ok(nomPage + ' : caché, il ne dépasse pas du bas de l\'écran',
        pouce.visible === 'hidden' || pouce.haut >= pouce.ecran,
        'il dépasse de ' + Math.round(pouce.ecran - pouce.haut) + ' px');
     await cVe.close();
@@ -699,10 +704,10 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
   // (« nov-film- » + data-film) : aucun grep ne dit qu'un fichier manque, et
   // un film absent laisserait un téléphone figé sur sa première image. On
   // les regarde donc jouer, un par un, comme lui en descendant.
-  {
+  for (const [fichier, nomPage] of PAGES_DE_VENTE) {
     const cFi = await browser.newContext({ viewport: { width: 390, height: 844 } });
     const page = await cFi.newPage();
-    await page.goto(`${B}/vente/chapitres-6.html`, { waitUntil: 'domcontentloaded' });
+    await page.goto(`${B}/vente/${fichier}`, { waitUntil: 'domcontentloaded' });
     for (const nom of ['micro', 'envoi', 'mois', 'equipe', 'travaux']) {
       await page.evaluate((n) => { const el = document.querySelector('[data-film="' + n + '"]'); scrollTo(0, scrollY + el.getBoundingClientRect().top - 90); }, nom);
       const fin = await page.waitForFunction((n) => {
@@ -714,8 +719,8 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
         const vu = (s) => { const i = c.querySelector(s); return !!(i && i.complete && i.naturalWidth); };
         return { erreur: v && v.error && v.error.code, joue: v && v.played.length ? v.played.end(v.played.length - 1) / v.duration : 0, debut: vu('.film-debut'), fin: vu('.film-fin') };
       }, nom);
-      ok('vente : le film ' + nom + ' se joue jusqu\'au bout', fin && !etat.erreur && etat.joue > 0.95, JSON.stringify(etat));
-      ok('vente : le film ' + nom + ' a sa première et sa dernière image', etat.debut && etat.fin, JSON.stringify(etat));
+      ok(nomPage + ' : le film ' + nom + ' se joue jusqu\'au bout', fin && !etat.erreur && etat.joue > 0.95, JSON.stringify(etat));
+      ok(nomPage + ' : le film ' + nom + ' a sa première et sa dernière image', etat.debut && etat.fin, JSON.stringify(etat));
     }
     await cFi.close();
   }
