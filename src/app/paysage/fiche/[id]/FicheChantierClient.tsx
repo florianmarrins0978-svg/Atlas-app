@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
+import IconeTrait from "@/components/atlas/IconeTrait";
+import RondDore from "@/components/atlas/RondDore";
 import { ChampRecherche } from "@/components/atlas/ChampRecherche";
 import { colors, font, libelleCaps, smallCaps, surPlein, texteSituation } from "@/lib/design-tokens";
 import { jourEnTitre, jourLisible } from "@/lib/jour";
@@ -334,44 +336,63 @@ export default function FicheChantierClient({
                 version Corrigé) : le nom en 21 px, « Changer » en petites
                 capitales sur 44 px, au bout de la ligne, et les phrases grises
                 en inkSoft. Ce qui se touche se touche avec des gants ; ce qui
-                se lit se lit au soleil. */}
-            <div className="mt-[6px] flex items-center gap-[10px]">
-              <span className="min-w-0 flex-1 text-[21px] leading-[1.2]" style={{ fontFamily: font.display }}>
-                {clientNom}
+                se lit se lit au soleil.
+
+                **Dans une carte au rond doré depuis sa planche A du
+                17 novembre 2026** (`appli/fiche-de-chantier-ouverte-soignee.html`) :
+                la langue de la liste des fiches qu'il a choisie le 9 (D et B).
+                Le constat descend sous le nom, DANS la carte : il dit ce que le
+                choix du client vient de cocher. */}
+            <div
+              className="mt-[16px] flex min-h-[84px] items-center gap-[16px] rounded-[14px] py-[14px] pl-[16px] pr-[8px]"
+              style={{ backgroundColor: colors.card }}
+            >
+              <RondDore>
+                <IconeTrait nom="personne" taille={24} epaisseur={1.6} />
+              </RondDore>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[21px] leading-[1.2]" style={{ fontFamily: font.display, color: colors.ink }}>
+                  {clientNom}
+                </span>
+                {constat && !parti && (
+                  <span className="mt-[3px] block text-[15px] leading-[1.35]" style={{ color: colors.inkSoft }}>
+                    {constat}
+                  </span>
+                )}
               </span>
               {!parti && (
                 <button
                   type="button"
                   onClick={() => setChoixOuvert(true)}
-                  className={`min-h-[44px] flex-none pl-[12px] ${libelleCaps}`}
+                  className={`min-h-[44px] flex-none pl-[12px] pr-[8px] ${libelleCaps}`}
                   style={{ color: colors.rust }}
                 >
                   Changer
                 </button>
               )}
             </div>
-            {constat && !parti && (
-              <p
-                className={`mt-[4px] ${texteSituation}`}
-                style={{ color: colors.inkSoft }}
-              >
-                {constat}
-              </p>
-            )}
             {!parti && (
               <ChoixDuCanal canal={canal} setCanal={setCanal} telephone={telephone} email={email} />
             )}
           </>
         ) : (
           !parti && (
+            // **Sa carte au rond doré, planche A du 17 novembre 2026** : gros
+            // et doré comme le 22 septembre, mais plus centré, la même carte
+            // que « Composer ma fiche » sur la liste.
             <button
               type="button"
               data-atlas="pont-client"
               onClick={() => setChoixOuvert(true)}
-              className="mt-[10px] block min-h-[52px] w-full text-center text-[20px]"
-              style={{ color: colors.or }}
+              className="mt-[16px] flex min-h-[84px] w-full items-center gap-[16px] rounded-[14px] px-[16px] py-[14px] text-left"
+              style={{ backgroundColor: colors.card, color: colors.or }}
             >
-              + Ajouter un client
+              <RondDore>
+                <IconeTrait nom="plus" taille={24} epaisseur={1.6} />
+              </RondDore>
+              <span className="text-[21px] leading-[1.2]" style={{ fontFamily: font.display }}>
+                Ajouter un client
+              </span>
             </button>
           )
         )}
@@ -388,15 +409,21 @@ export default function FicheChantierClient({
       )}
 
       {/* ─── LES PRESTATIONS ────────────────────────────────────────────────── */}
-      {/* Lignes et cases un peu plus hautes, noms de famille en inkSoft :
-          planche du 11 octobre 2026, moins d'appuis ratés sous un gant. */}
-      <section className="mx-[26px] mt-[26px]">
+      {/* Lignes et cases un peu plus hautes : planche du 11 octobre 2026,
+          moins d'appuis ratés sous un gant.
+
+          **Une carte par famille, sa planche A du 17 novembre 2026** : le nom
+          de la famille en noir gras au-dessus (il était en encre douce depuis
+          le 11 octobre), comme « En cours » sur la liste ; les lignes dans la
+          carte, séparées d'un filet qui part après la case ; la case arrondie
+          à 8 px et la coche au trait. */}
+      <section className="mx-[26px] mt-[30px]">
         {familles.map((groupe) => (
           <div key={groupe.famille} className="mt-[22px] first:mt-0">
-            <h2 className={smallCaps} style={{ color: colors.inkSoft }}>
+            <h2 className={smallCaps} style={{ color: colors.ink, fontWeight: 700 }}>
               {groupe.famille}
             </h2>
-            <div className="mt-[8px]">
+            <div className="mt-[12px] overflow-hidden rounded-[14px]" style={{ backgroundColor: colors.card }}>
               {groupe.lignes.map((l) => (
                 <button
                   key={l.id}
@@ -405,23 +432,27 @@ export default function FicheChantierClient({
                   onClick={() => cocher(l)}
                   aria-pressed={l.faite}
                   data-atlas="prestation"
-                  className="flex min-h-[52px] w-full items-center gap-[14px] border-b py-[12px] text-left"
-                  style={{ borderColor: colors.line }}
+                  className="group relative flex min-h-[56px] w-full items-center gap-[14px] px-[14px] py-[12px] text-left"
                 >
                   <span
                     aria-hidden="true"
-                    className="flex h-[24px] w-[24px] items-center justify-center rounded-[7px] text-[14px]"
+                    className="absolute left-[52px] right-0 top-0 h-px group-first:hidden"
+                    style={{ backgroundColor: colors.line }}
+                  />
+                  <span
+                    aria-hidden="true"
+                    className="flex h-[24px] w-[24px] items-center justify-center rounded-[8px]"
                     style={{
                       flex: "none",
                       backgroundColor: l.faite ? colors.rust : "transparent",
-                      border: `1.5px solid ${l.faite ? colors.rust : colors.chevron}`,
+                      boxShadow: l.faite ? "none" : `inset 0 0 0 1.5px ${colors.chevron}`,
                       color: colors.card,
                     }}
                   >
-                    {l.faite ? "✓" : ""}
+                    {l.faite && <IconeTrait nom="coche" taille={15} epaisseur={2.4} />}
                   </span>
                   <span
-                    className="min-w-0 flex-1 text-[16px] leading-[1.3]"
+                    className="min-w-0 flex-1 text-[16.5px] leading-[1.3]"
                     style={{ color: l.faite ? colors.ink : colors.inkSoft }}
                   >
                     {l.libelle}
@@ -440,7 +471,7 @@ export default function FicheChantierClient({
             deux chantiers. Et le mot est CONTRE son curseur : posé à droite, il
             se rattacherait au titre de la section suivante. */}
         <div className="flex items-center justify-between gap-3">
-          <h2 className={smallCaps} style={{ color: colors.inkSoft }}>
+          <h2 className={smallCaps} style={{ color: colors.ink, fontWeight: 700 }}>
             Temps passé
           </h2>
           <button
@@ -491,7 +522,7 @@ export default function FicheChantierClient({
 
       {/* ─── LES OBSERVATIONS ───────────────────────────────────────────────── */}
       <section className="mx-[26px] mt-[26px]">
-        <h2 className={smallCaps} style={{ color: colors.inkSoft }}>
+        <h2 className={smallCaps} style={{ color: colors.ink, fontWeight: 700 }}>
           Observations
         </h2>
         <textarea
@@ -506,8 +537,8 @@ export default function FicheChantierClient({
           placeholder="Ce que le client doit savoir : une haie à reprendre, un arrosage coupé…"
           // 16 px : en dessous, l'iPhone agrandit la page dès qu'on touche le
           // champ (planche du 11 octobre 2026, `styleChampPlage`).
-          className="mt-[8px] w-full rounded-[14px] px-[15px] py-3 text-[16px] leading-[1.5] outline-none"
-          style={{ backgroundColor: colors.card, color: colors.ink, border: `1px solid ${colors.line}` }}
+          className="mt-[12px] w-full rounded-[14px] px-[16px] py-[14px] text-[16px] leading-[1.5] outline-none"
+          style={{ backgroundColor: colors.card, color: colors.ink }}
         />
       </section>
 
@@ -535,7 +566,9 @@ export default function FicheChantierClient({
           />
         ) : (
           <>
-            <PrimaryButton repere="envoyer-fiche" disabled={empechement !== null} onClick={envoyer}>
+            {/* Sur toute la largeur, comme « Créer une fiche » (planche A du
+                17 novembre 2026). */}
+            <PrimaryButton repere="envoyer-fiche" pleineLargeur disabled={empechement !== null} onClick={envoyer}>
               Enregistrer et envoyer
             </PrimaryButton>
             {/* **Le bouton éteint DIT pourquoi.** Un bouton gris muet passe pour
@@ -599,7 +632,7 @@ function ChoixDuCanal({
   ];
 
   return (
-    <div className="mt-[12px] flex flex-wrap items-center gap-[8px]" data-atlas="choix-du-canal">
+    <div className="mt-[14px] flex flex-wrap items-center gap-[8px]" data-atlas="choix-du-canal">
       <span className={`mr-[4px] ${smallCaps}`} style={{ color: colors.inkSoft, flex: "none" }}>
         Envoyé par
       </span>
@@ -659,21 +692,23 @@ function MoletteDuree({
   const heures = minutes === null ? 0 : Math.floor(minutes / 60);
   const reste = minutes === null ? 0 : minutes % 60;
 
+  // **Une seule carte pour les deux, séparées d'un filet** : sa planche A du
+  // 17 novembre 2026. Ce sont toujours les listes natives qu'il a choisies.
   const style = {
-    backgroundColor: colors.card,
+    backgroundColor: "transparent",
     color: colors.ink,
-    border: `1px solid ${colors.line}`,
+    border: "none",
     fontFamily: font.display,
   };
 
   return (
-    <div className="mt-[8px] flex items-center gap-[10px]">
+    <div className="mt-[12px] flex items-stretch overflow-hidden rounded-[14px]" style={{ backgroundColor: colors.card }}>
       <select
         aria-label="Heures"
         disabled={figee}
         value={heures}
         onChange={(e) => poser(Number(e.target.value) * 60 + reste)}
-        className="min-h-[52px] flex-1 rounded-[14px] px-[15px] py-3 text-[17px] outline-none"
+        className="min-h-[56px] flex-1 px-[16px] text-[19px] outline-none"
         style={style}
       >
         {Array.from({ length: MINUTES_MAX / 60 + 1 }, (_, h) => (
@@ -687,8 +722,8 @@ function MoletteDuree({
         disabled={figee}
         value={reste}
         onChange={(e) => poser(heures * 60 + Number(e.target.value))}
-        className="min-h-[52px] flex-1 rounded-[14px] px-[15px] py-3 text-[17px] outline-none"
-        style={style}
+        className="min-h-[56px] flex-1 px-[16px] text-[19px] outline-none"
+        style={{ ...style, borderLeft: `1px solid ${colors.line}` }}
       >
         {Array.from({ length: 60 / PAS_MINUTES }, (_, i) => i * PAS_MINUTES).map((m) => (
           <option key={m} value={m}>

@@ -8,13 +8,17 @@ import { colors, font } from "@/lib/design-tokens";
  * Un seul dessin pour les deux : recopié, le premier retouché aurait fait deux
  * ors dans la même application (`CLAUDE.md` §3). Ce qu'il porte suit
  * `currentColor` : une initiale en serif, ou une icône au trait.
+ *
+ * **Deux tailles, un seul dessin** (sa planche A du 17 novembre 2026) : 52 px
+ * en tête d'une carte (« Ajouter un client », « Ajouter une famille »), 28 px
+ * devant « Ajouter une prestation », au fil d'une liste.
  */
-export default function RondDore({ children }: { children: React.ReactNode }) {
+export default function RondDore({ children, taille = 52 }: { children: React.ReactNode; taille?: number }) {
   return (
     <span
       aria-hidden="true"
-      className="grid h-[52px] w-[52px] flex-none place-items-center rounded-full text-[22px] leading-none"
-      style={{ boxShadow: `inset 0 0 0 1.5px ${colors.or}`, color: colors.or, fontFamily: font.display }}
+      className="grid flex-none place-items-center rounded-full text-[22px] leading-none"
+      style={{ width: taille, height: taille, boxShadow: `inset 0 0 0 1.5px ${colors.or}`, color: colors.or, fontFamily: font.display }}
     >
       {children}
     </span>

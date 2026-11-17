@@ -8,9 +8,7 @@ Tout texte neuf écrit **Cause**, jamais Atlas. Les noms internes (`atlas_app`, 
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Sur la branche `claude/amazing-mendel-skfnud`, hors de `main` (16 novembre 2026)** : « Votre dictée » enlevée de la fiche client. Codé, batterie complète à jouer avec son accord (`PROJECT_STATE.md`).
-
-**Point de reprise :** 2026-11-16 · `main` : la fiche de chantier soignée, D et B (niveau 2 vert). Avant, le 9 novembre : la main d'œuvre « sur une
+**Point de reprise :** 2026-11-17 · `main` : la fiche ouverte et Composer ma fiche en A, et « Votre dictée » enlevée de la fiche client, en une seule batterie (niveau 3). Avant, le 16 novembre : la fiche de chantier soignée, D et B (niveau 2 vert). Avant, le 9 novembre : la main d'œuvre « sur une
 ligne », chaque travail à son prix (`ARCHITECTURE.md` §579), batterie verte
 (217 suites navigateur sur 217). Restent la croix de la carte en mode « ligne »
 (une planche) et l'origine de « frêne oxyphylle » (`TODO.md`).
@@ -19,13 +17,20 @@ Avant : sur `main`, la batterie commune du 8 novembre
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
-## L'ICÔNE DE CAUSE SUR LE BUREAU DU TÉLÉPHONE (17 novembre 2026) : UNE PLANCHE, EN ATTENTE DE SA LETTRE
+## L'ICÔNE DE CAUSE (17 novembre 2026) : TROIS PLANCHES, EN ATTENTE D'UNE LETTRE ET D'UN FOND
 
-`appli/icone-de-cause-2.html`, posée à côté de `appli/icone-de-cause.html` pour comparer (le matin, il demandait si un autre modèle ferait mieux pour l'icône). Sept icônes sur un bureau de téléphone à taille réelle : A, B et C recopiés de la première planche, D à G nouvelles.
+`appli/icone-de-cause.html` (A, B, C, une autre session), `appli/icone-de-cause-2.html` (les mêmes et D à G, sur un bureau de téléphone à taille réelle), puis `appli/icone-de-cause-3.html`. **Il a jugé les lettres « hyper basiques »** et veut un dessin qui se retient : la troisième planche porte trois images sans lettre (le rouge-gorge H, le casque I, la rosace J), chacune sur trois fonds. C'est elle qui attend sa réponse.
 
 **Les pièges :**
 
-- **Les lettres ne bougent jamais.** A, B, C sont la première planche, D à G la seconde. Une proposition de plus prend la lettre suivante (H) ; une proposition retirée laisse sa lettre vide. Il répond par une lettre, et elle doit vouloir dire la même chose sur les deux pages.
+- **La troisième planche RECOPIE le banc d'essai de la deuxième** (le bureau, les voisines, les réglages, l'appli qui s'ouvre). Un défaut corrigé dans l'une se corrige dans l'autre ; le contrôle de `appli/tests/e2e.js` joue les mêmes gestes sur les deux (`PLANCHES_D_ICONE`).
+- **Dans la troisième, « fond » veut dire le fond de l'ICÔNE** (vert, or, crème, `data-fond`), et le fond d'écran du téléphone s'appelle `papier` (`data-papier`). Dans la deuxième, `data-fond` est encore le fond d'écran.
+- **Un dessin dit ses couleurs fond par fond** (`teintes`) : sur le crème, l'or ne tient pas seul (1,6 pour 1), la forme y passe au vert.
+- **Trois couleurs de dessin ne se changent pas sans relire l'en-tête de la troisième planche** : la gorge du rouge-gorge est ROUGE (`#E4572E`, la seule couleur hors de sa charte ; en or, l'oiseau rond devenait un poussin) ; la rosace n'est JAMAIS verte sur un fond clair (verte dans un cercle vert sur du blanc, c'est le « Sole delle Alpi », l'emblème de la Lega italienne) ; le casque n'est JAMAIS vert (un casque militaire). Sur fond or ou crème, casque et rosace restent dorés sur un rond vert (`medaillon`, `rond`).
+- **Le choix se dit par le nom du dessin** (« Je prends le casque »), pas par sa lettre : un I en bâton se lit comme un l ou un 1. Les lettres restent dans la barre, en serif.
+- **Il a cité l'icône de Claude et celle de ChatGPT comme exemples de ce qui claque.** Ce sont des exemples, pas des modèles : tout éclat de rayons et tout entrelacs proche ont été écartés pour ne pas les copier.
+
+- **Les lettres ne bougent jamais.** A, B, C sont la première planche, D à G la deuxième, H à J la troisième. Une proposition de plus prend la lettre suivante (K) ; une proposition retirée laisse sa lettre vide. Il répond par une lettre, et elle doit vouloir dire la même chose sur les deux pages.
 - **A, B et C sont une COPIE** des dessins de la première planche (l'objet `CAUSE` du script). Si la première change, la seconde ne suit pas : les deux se retouchent ensemble.
 - **Android se montre comme `scripts/generer-icones.mjs` le fabrique**, pas comme un simple rond rogné : le dessin réduit à 60 % sur son fond étendu, dont le rond garde 80 %. D'où le `scale(.75)` de la fonction `image` de la planche. Un dessin qui va jusqu'aux bords (la carte, la feuille de notes des voisines) porte `plein` et se rogne sans se réduire.
 - **`FOND` est écrit en dur en crème dans `scripts/generer-icones.mjs`.** Une icône au fond coloré (B, D, E, F) sortirait sur Android en carré de couleur dans un rond crème. À corriger à l'installation, pas avant (`TODO.md`).

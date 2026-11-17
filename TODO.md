@@ -5,7 +5,7 @@
 Le texte de l'appli dit Cause (`ARCHITECTURE.md` §581). Restent, et chacun est à lui :
 
 - **les conditions générales** : une version nouvelle qui dit Cause, que chaque compte acceptera de nouveau. Le plus simple : la faire quand sa micro-entreprise a son SIREN, pour remplir dans la même version les cases « Qui édite » encore à compléter (une seule acceptation au lieu de deux) ;
-- **l'icône** : le « A » provisoire ne va plus. Deux planches attendent sa lettre (ci-dessous), puis `npm run icones` ;
+- **l'icône** : le « A » provisoire ne va plus. Trois planches (ci-dessous) : il a jugé les lettres des deux premières trop basiques, la troisième porte des dessins et attend une lettre et un fond, puis `npm run icones` ;
 - **l'adresse d'envoi des courriels** : le nom affiché dit Cause, l'adresse reste celle de sa variable `COURRIEL_EXPEDITEUR`, à passer sur cause.fr quand l'Afnic aura accordé le domaine.
 ## DEUX SUITES ROUGES UN JOUR PAR MOIS : LE « 1ER » (17 novembre 2026)
 
@@ -19,7 +19,49 @@ Le produit est juste ; ce sont les deux motifs à corriger, dans un lot à part
 (accepter `\d+(er)? `). D'ici là, ces deux rouges ne bloquent personne : le
 garde-fou les reconnaît comme préexistants.
 
-## ⏳ UNE PLANCHE À REGARDER : L'ICÔNE DE CAUSE SUR LE BUREAU DU TÉLÉPHONE (17 novembre 2026)
+## ⏳ UNE PLANCHE À REGARDER : L'ICÔNE DE CAUSE, EN DESSIN (17 novembre 2026)
+
+**Sa réponse du même jour devant la deuxième planche (les lettres), et elle
+change la demande :** *« Ok, très bien, mais là tu m'as fait un truc hyper
+basique. C'est une lettre avec une couleur. [...] Regarde l'application de
+Claude. C'est une espèce de soleil blanc sur un fond orange. ChatGPT, on
+dirait des mailles qui s'entrelacent. Et je pense que pour Cause, il faudrait
+également trouver peut-être un design, un dessin, une image, quelque chose qui
+claque, quelque chose qui rentre facilement dans la tête et pour que le plus
+grand nombre d'utilisateurs ne l'oublie pas dès qu'il la voit. Propose-moi
+d'autres choses du coup. »*
+
+**Donc plus de lettre.** `appli/icone-de-cause-3.html` : trois dessins qu'on
+peut nommer, le rouge-gorge (H), le casque de chantier en bulle (I), la rosace
+des charpentiers (J), chacun sur trois fonds (vert, or, crème), sur le même
+bureau de téléphone. **Ce qu'il a à dire : une lettre et un fond**, ou ce qui
+manque encore. A à G (les lettres) restent sur les deux planches d'avant, qui
+ne bougent pas.
+
+**À savoir pour la suite de cette recherche :**
+
+- **Ce qui a été écarté est nommé dans l'en-tête de la planche**, avec ce que
+  chaque idée devenait en petit (un mètre ruban se lit comme un escargot, un
+  niveau comme une gélule, une bulle faite de lignes comme une ruche). Ne pas
+  les reproposer sans les avoir regardées à 60, 29 et 16 px.
+- **Pas dessinée : la cocotte en papier** (la paperasse, pliée en oiseau). Sa
+  géométrie n'a pas pu être vérifiée d'ici (Wikipédia est hors du réseau de ce
+  poste) et une cocotte fausse ne se reconnaît pas. À reprendre s'il aime
+  l'oiseau.
+- **Les couleurs de ces dessins ne sont pas des jetons de l'appli** : l'or est
+  celui du site de vente (`#F0B43C`), le vert un vert forêt (`#15402A`), plus
+  franc que le vert pin, et la gorge du rouge-gorge est rouge (`#E4572E`), la
+  seule couleur hors de sa charte. Si un dessin est retenu, dire où elles
+  vivent (l'icône seule, ou aussi le manifeste et l'écran de lancement).
+- **La rosace ressemble à un emblème politique dès qu'elle est verte sur un
+  fond clair** (le « Sole delle Alpi » de la Lega, un parti italien). La
+  planche ne la montre donc qu'en or. Il doit le savoir avant de la choisir :
+  dit dans la conversation le 17 novembre.
+- **Les entrelacs ont été écartés sans dessin** : des anneaux, des losanges, un
+  trèfle sont déjà des marques connues. S'il y tient, c'est un travail à part.
+
+Ce qui suit vaut pour les trois planches (la première, la deuxième et la
+troisième).
 
 Sa demande, depuis son téléphone : *« J'ai besoin que tu me fasses une planche
 pour l'icône de l'application quand il sera sur le bureau des téléphones des
@@ -33,9 +75,8 @@ qui n'a pas bougé d'une ligne. Un bureau de téléphone à taille réelle, sept
 icônes à y essayer : A, B et C recopiés de la première planche, D, E, F et G
 nouvelles. Son en-tête dit le parti pris et ce qui a été écarté.
 
-**Ce qu'il a à dire :** une lettre, de A à G. **Les lettres ne se
-renumérotent jamais** : A, B et C désignent les dessins de la première
-planche, D à G ceux de la seconde, sur les deux pages.
+**Les lettres ne se renumérotent jamais** : A, B et C désignent les dessins de
+la première planche, D à G ceux de la deuxième, H à J ceux de la troisième.
 
 **Ce qui n'est PAS vérifié, et qu'il ne faut pas croire vérifié :**
 
@@ -55,9 +96,9 @@ planche, D à G ceux de la seconde, sur les deux pages.
 1. `public/icone-source.svg` prend le dessin retenu. Les tracés sont dans la
    planche (l'objet `CAUSE` de son script), sans aucune police.
 2. **`scripts/generer-icones.mjs` étend l'icône d'Android avec un fond crème
-   écrit en dur** (`FOND`). Pour B, D, E et F, dont le fond n'est pas crème, il
-   doit prendre le fond du dessin : sans cela Android montrera un carré de
-   couleur dans un rond crème. Trouvé en dessinant la planche, pas corrigé
+   écrit en dur** (`FOND`). Pour B, D, E, F et pour tout dessin de la troisième
+   planche sur fond vert ou or, il doit prendre le fond du dessin : sans cela
+   Android montrera un carré de couleur dans un rond crème. Trouvé en dessinant la planche, pas corrigé
    (rien ne s'installe avant son choix).
 3. La marge de cette icône d'Android (60 %) rend le motif petit dans le rond.
    À regarder sur un vrai Android avant de la garder.
@@ -67,8 +108,52 @@ planche, D à G ceux de la seconde, sur les deux pages.
 **À savoir pour qui reprendra :** la première planche cite
 `ARCHITECTURE.md` §581 (« l'application s'appelle Cause »), arrivé sur `main`
 avec le renommage le 17 novembre 2026, après la montée de Next.js en 16.4.6
-(§582). Le manifeste dit Cause. La direction de la planche est dans
-`.impeccable/surfaces/appli-icone-de-cause-2-html.md`.
+(§582). Le manifeste dit Cause ; l'icône, elle, est toujours le « A »
+provisoire. La direction de chaque planche est dans
+`.impeccable/surfaces/appli-icone-de-cause-2-html.md` et
+`.impeccable/surfaces/appli-icone-de-cause-3-html.md`.
+
+## ⏳ À TRANCHER : QUATRE VERTS DE BOUTON ENTRE L'APPLI, LES PLANCHES ET LE SITE (17 novembre 2026)
+
+Sa question, depuis son téléphone : *« souvent tu me proposais un certain vert
+pour les boutons qui n'était pas le vert qu'il y a déjà dans l'application, il
+était un peu plus foncé, et je voulais savoir si c'est le même que celui que tu
+as utilisé pour le site internet ou c'est encore un troisième vert »*.
+
+**Mesuré, pas lu** : la couleur PEINTE, demandée au navigateur
+(`getComputedStyle`) sur les boutons des 429 pages de `appli/`, et les pixels
+des vraies captures de l'appli du 6 novembre (`appli/vente/images/nov-*.jpg`).
+
+| | Vert | Où il est | Le mot posé dessus |
+|---|---|---|---|
+| 1 | `#7d9a6d` | **l'appli** : tous ses boutons pleins (`colors.plein`, sa décision du 3 septembre, la D de `appli/boutons-verts.html`) ; 171 planches | crème, 3,0 pour 1 (son choix, écrit dans `globals.css`) |
+| 2 | `#6f8a5f` | **18 planches dessinées à la main** en septembre et octobre (`--plein:#6f8a5f`, recopié de l'une à l'autre) ; nulle part dans `src/` | blanc, 3,8 pour 1 |
+| 3 | `#1d7a3c` | **le site de vente seul** (`chapitres-6.html`, `cause.html`, `cause-2.html`), choisi le 6 novembre pour que le blanc s'y lise | blanc, 5,4 pour 1 |
+| 4 | `#2f3b2f` | **le vert pin**, l'accent de l'appli (textes, icônes, onglet où l'on est) ; sur les planches récentes il remplit les boutons de choix de la planche elle-même (« Je prends la A », « Proposé, votre B ») | crème, 11 pour 1 |
+
+**Ce que ça dit.** Le vert du site est un vert de plus : ni le 1, ni le 2. Le 2
+n'a aucune décision derrière lui. Depuis novembre, les planches sont posées sur
+les vrais écrans figés ou sur le kit (`appli/soignee/kit.css`), qui portent le
+1 : l'écart du 2 ne se reproduit plus. Ce qu'il a pu voir de « plus foncé » sur
+les dernières planches, c'est le 4, sur les boutons de choix.
+
+**Ce qui se tranche, par lui :**
+
+- **le bouton du site** : garder le 3, ou prendre le vert de l'appli (alors le
+  mot dessus passe à l'encre, le blanc n'y tient que 3 pour 1) ;
+- **les boutons de choix des planches** : les laisser en vert pin, ou les
+  sortir du vert (le noir de `appli/fiche-de-chantier-soignee.html`), pour
+  qu'aucun ne se lise comme un bouton de l'appli dans une autre couleur ;
+- **les 18 planches au vert 2** : les remettre au 1, ou les laisser (ce sont
+  d'anciennes propositions, la plupart déjà tranchées).
+
+**Pour refaire la mesure :** servir `appli/` (`python3 -m http.server`),
+ouvrir chaque planche dans Playwright et lire le fond calculé des boutons. Une
+recherche des couleurs dans les fichiers ne suffit pas : les planches figées
+recopient les feuilles de style de l'appli, où dorment d'autres verts qui ne
+peignent aucun bouton (`#1f7a45`, le vert des montants reçus ; `#506f44`, le
+texte des cartes vertes).
+
 
 ## ⏳ UNE PLANCHE À REGARDER : LE SITE DE VENTE EN MOUVEMENT (17 novembre 2026)
 
@@ -214,7 +299,7 @@ libellé dans la consigne, et `npm run verifier:dictee` sur son espace.
 fois, pour Taille de haie de laurier de ml, vous aviez retenu 650 € HT »
 compare la ligne de main d'œuvre à une taille de haie.
 
-## ⏳ À REGARDER PAR LUI (9 novembre 2026, refaite le 17) : jeter la dictée, en clair
+## ~~⏳ À REGARDER PAR LUI (9 novembre 2026, refaite le 17) : jeter la dictée, en clair~~ TRANCHÉ LE 17 NOVEMBRE : LA 1, SON CHOIX DU 16 (« ON LAISSE COMME ON A DÉCIDÉ LE 16 »), SUR `main` LE 17 NOVEMBRE
 
 Sa demande du 9 novembre, capture de la fiche client : *« retire-moi la
 phrase "votre dictée" »*. Codée d'abord « cachée pendant le devis » (son
@@ -227,17 +312,16 @@ moment où on a envoyé la dictée, c'est qu'on n'a plus envie de la jeter »*.
 la case ; le 17, il a répondu « B » sur la première planche, puis *« montre-moi
 les deux planches »*. Elle porte donc : 1, la case enlevée (une dictée envoyée
 se refait en redictant) ; 2, la case gardée avec la poubelle cerclée
-« Jeter » au bout, et le tiroir « Annuler ». L'option 1 attend sur la branche
-`claude/amazing-mendel-skfnud`, batterie complète à jouer.
+« Jeter » au bout, et le tiroir « Annuler ». Il a gardé 1, son choix du 16.
 
-**Ce qui a été vérifié avant son choix du 16** : l'écran Transcription, que je
+**Ce qui a été vérifié avant de trancher** : l'écran Transcription, que je
 lui avais proposé pour y poser le bouton, ne s'atteint que depuis un devis
 resté sans prix, puis Informations (`DevisDepuisDictee`, état `sansPrix`) :
 un bouton posé là aurait été inatteignable. Son contenu est passé dans le
 devis : effacer la dictée ne l'en retire pas. Une nouvelle dictée remplace la
 première (`enregistrerNoteVocale`). Il a choisi de l'enlever.
 
-**L'option 1, prête sur la branche** : la case, son glissement et son tiroir partent de
+**Codé** : la case, son glissement et son tiroir partent de
 `FormulaireNouveauChantier.tsx` ; `supprimerNoteVocaleAction` et
 `supprimerNoteVocale` n'avaient plus d'appelant et partent aussi, avec leur
 cas de `test-note-vocale-repo.ts` et la suite `test-retirer-sa-dictee-e2e.ts`.
@@ -248,12 +332,7 @@ dictée (sa règle du 16 novembre : *« ça va me supprimer aussi le nom […] d
 client. Ça, il faut pas »*). Types, lint, `test-mode-emploi`,
 `test-pas-de-code-mort`, `test-aucun-tiret`, `test-couches` verts.
 
-| reste | qui |
-|---|---|
-| son choix entre 1 et 2 | lui |
-| si 1 : la batterie complète (niveau 3), puis `main` ; si 2 : défaire l'option 1 sur la branche et coder la poubelle | moi |
-
-## ⏳ À REGARDER PAR LUI (9 novembre 2026) : la fiche ouverte et Composer ma fiche, soignées
+## ~~⏳ À REGARDER PAR LUI (9 novembre 2026) : la fiche ouverte et Composer ma fiche, soignées~~ TRANCHÉ LE 17 NOVEMBRE (« POUR LA 1 LA A, ET LA 2 A AUSSI »), CODÉ ET SUR `main` LE 17 NOVEMBRE, AVEC LA DICTÉE, EN UNE SEULE BATTERIE
 
 Sa demande, après avoir validé D et B : *« ensuite, tu t'attelles à ce qui se
 passe quand on clique sur créer une fiche, composer ma fiche et les fiches
@@ -278,8 +357,21 @@ client en haut (arrangement C) ; « Envoyé par » ; la molette du temps
 tiroir ; « Retirer la famille » au bas de sa carte (24 août) ; les pastilles
 des familles en haut de Composer.
 
-**Reste** : qu'il choisisse, puis le coder sur son « oui »
-(`FicheChantierClient.tsx`, `ComposerMaFiche.tsx`).
+**CODÉ LE 17 NOVEMBRE**, sur son choix (*« pour la 1 la A, et la 2 A
+aussi »*) : `FicheChantierClient.tsx` (le client dans une carte au rond doré,
+le constat sous son nom ; une carte par famille, la case à 8 px et la coche
+`IconeTrait` ; la molette dans une seule carte ; « Enregistrer et envoyer »
+`pleineLargeur`), `ComposerMaFiche.tsx` (cartes à 14 px sans ombre, « Ajouter
+une prestation » derrière un rond doré de 28 px, « Ajouter une famille » dans
+sa carte). `RondDore` prend une `taille` (52 par défaut) : un seul dessin pour
+les trois. Le « + » est devenu un dessin muet, donc les boutons s'appellent
+« Ajouter une prestation », « Ajouter une famille », « Ajouter un client » :
+`test-fiche-entretien-e2e` et cinq fiches du mode d'emploi (`paysage.ts`)
+suivent. `test-boutons-arrondis` borne les deux nouvelles cartes à leur
+repère. Écrans regardés (neuve, Mme Costa cochée, Composer) ; types, lint et
+contrôles sans base verts. Livré avec « Votre dictée » enlevée, en un seul lot
+de niveau 3 et une seule batterie (sa demande : *« fusionne le tout et joue
+qu'une seule batterie »*).
 
 ## ⚠️ `test-double-verification-db` ROUGIT PAR HASARD À LA LIMITE DES 30 SECONDES (vu le 16 novembre 2026)
 
