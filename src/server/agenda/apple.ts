@@ -101,7 +101,7 @@ export class DestinationRefusee extends Error {
     readonly adresse: string,
     readonly phrase: string
   ) {
-    super(`Atlas refuse de joindre cette adresse. ${phrase}`);
+    super(`Cause refuse de joindre cette adresse. ${phrase}`);
     this.name = "DestinationRefusee";
   }
 }
@@ -155,7 +155,7 @@ async function appel(
     }
     const entetes: Record<string, string> = {
       authorization: autorisation(id),
-      "user-agent": "Atlas/1.0",
+      "user-agent": "Cause/1.0",
     };
     if (options.corps !== undefined) {
       entetes["content-type"] = options.typeContenu ?? 'application/xml; charset="utf-8"';

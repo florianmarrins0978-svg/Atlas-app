@@ -167,7 +167,7 @@ export async function optionsEnregistrement(
 
   const deja = await identifiantsDe(utilisateur.id);
   const options = await generateRegistrationOptions({
-    rpName: "Atlas",
+    rpName: "Cause",
     rpID: ctx.origine.rpId,
     userID: utilisateur.id,
     userName: utilisateur.email,

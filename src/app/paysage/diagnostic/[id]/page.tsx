@@ -51,7 +51,7 @@ import { garderLaPage } from "@/server/garde-page";
  * libre — le nom qu'il donne à l'essence, ses réserves — ne monte jamais ici.
  */
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Diagnostic, Atlas" };
+export const metadata = { title: "Diagnostic, Cause" };
 
 export default async function ResultatPage({ params }: { params: Promise<{ id: string }> }) {
   await garderLaPage();

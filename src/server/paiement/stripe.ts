@@ -167,7 +167,7 @@ async function prixDeLaFormule(f: (typeof FORMULES)[number], periodicite: Period
       // reprendre évite un refus pour clé occupée — la seule cause possible
       // étant un prix qu'on a nous-même désactivé.
       transfer_lookup_key: "true",
-      "product_data[name]": `Atlas ${f.nom}`,
+      "product_data[name]": `Cause ${f.nom}`,
     })
   );
   if (!cree.ok) return cree;

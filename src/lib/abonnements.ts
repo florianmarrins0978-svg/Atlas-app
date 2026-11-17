@@ -345,7 +345,7 @@ export const FORMULES: readonly Formule[] = [
   {
     code: "illimite",
     nom: "Illimité",
-    accroche: "Toute votre équipe sur Atlas.",
+    accroche: "Toute votre équipe sur Cause.",
     prixMensuel: 159,
     prixAnnuel: 1590,
     plafondFabricants: null,
@@ -547,7 +547,7 @@ export function etatAffiche(
   maintenant: Date
 ): EtatAffiche {
   if (!abonnement) {
-    return { titre: "Aucun abonnement", detail: "Atlas ne vous facture rien aujourd’hui.", ton: "calme", signe: { genre: "aucun" } };
+    return { titre: "Aucun abonnement", detail: "Cause ne vous facture rien aujourd’hui.", ton: "calme", signe: { genre: "aucun" } };
   }
 
   const f = formule(abonnement.formule);

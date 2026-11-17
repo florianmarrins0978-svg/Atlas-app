@@ -49,7 +49,7 @@ export default async function VocabulairePage() {
           allure="soignee"
           titre="Mon vocabulaire"
           precision={<EtatEcrit ton="or">{"Réservé à l'éditeur"}</EtatEcrit>}
-          retour={{ href: "/reglages/ia", libelle: "Retour à Atlas IA" }}
+          retour={{ href: "/reglages/ia", libelle: "Retour à Cause IA" }}
         />
 
         {/* **Une phrase en tête, le partage sur une plage bleue** (même

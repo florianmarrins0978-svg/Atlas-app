@@ -375,7 +375,7 @@ async function main() {
     await page.waitForTimeout(2000);
 
     const texte = await page.locator("body").innerText();
-    assert.match(texte, /ne peut plus ouvrir Atlas/i, `lu à l'écran : « ${texte.slice(0, 300)} »`);
+    assert.match(texte, /ne peut plus ouvrir Cause/i, `lu à l'écran : « ${texte.slice(0, 300)} »`);
     // Et le message rassure sur ce qui reste : c'est ce qu'on veut lire quand
     // on vient de perdre son téléphone.
     assert.match(texte, /mot de passe.{0,40}marche toujours/i);

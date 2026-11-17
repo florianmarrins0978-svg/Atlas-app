@@ -57,7 +57,7 @@ const RETOURS: Record<string, { ton: "bien" | "mal"; texte: string }> = {
   relie: { ton: "bien", texte: "Agenda Google relié." },
   refus: { ton: "mal", texte: "Annulé chez Google. Rien n'a changé." },
   etat: { ton: "mal", texte: "Le retour de Google n'a pas pu être vérifié. Recommencez." },
-  non_configure: { ton: "mal", texte: "Atlas n'a pas encore d'identifiants Google." },
+  non_configure: { ton: "mal", texte: "Cause n'a pas encore d'identifiants Google." },
   echec: { ton: "mal", texte: "Google a refusé. Rien n'a été relié, vous pouvez réessayer." },
   identifiants: { ton: "bien", texte: "Identifiants enregistrés. Il reste à relier." },
 };
@@ -214,7 +214,7 @@ function GererGoogle({ etat, recharger }: { etat: EtatAgenda; recharger: () => v
         />
       </Plage>
       <Debrancher
-        phrase="Atlas cessera de lire cet agenda."
+        phrase="Cause cessera de lire cet agenda."
         debrancher={() => demarrer(async () => { await debrancherAgendaAction(); recharger(); })}
         enCours={enCours}
       />
@@ -272,7 +272,7 @@ function GererApple({
         // **Taire des restes serait mentir sur un ménage qui n'a pas eu lieu.**
         // Il les découvrirait dans son téléphone un mois plus tard.
         return setMotif(
-          `Débranché, mais Atlas n'a pas pu retirer ses rendez-vous de votre agenda : ${r.restes}. Ils sont à supprimer depuis le Calendrier.`
+          `Débranché, mais Cause n'a pas pu retirer ses rendez-vous de votre agenda : ${r.restes}. Ils sont à supprimer depuis le Calendrier.`
         );
       }
       recharger();
@@ -350,7 +350,7 @@ function GererApple({
       )}
 
       <Debrancher
-        phrase="Atlas retirera de votre agenda les rendez-vous qu'il y a posés. Les vôtres ne sont pas touchés."
+        phrase="Cause retirera de votre agenda les rendez-vous qu'il y a posés. Les vôtres ne sont pas touchés."
         debrancher={debrancher}
         enCours={enCours}
       />

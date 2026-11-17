@@ -5,7 +5,7 @@ import { rechercherCartes } from "../../repositories/mots-catalogue";
 export const rechercherPrestation: Outil = {
   nom: "RechercherPrestation",
   description:
-    "Recherche les prestations correspondant à un mot-clé dans le vocabulaire partagé d'Atlas ET dans les mots " +
+    "Recherche les prestations correspondant à un mot-clé dans le vocabulaire partagé de Cause ET dans les mots " +
     "ajoutés par l'entreprise (ex. « sapin » peut correspondre à « Élagage »).",
   schema: z.object({ motCle: z.string() }),
   // **Depuis le 17 août 2026, cette recherche voit AUSSI ses mots à lui.**

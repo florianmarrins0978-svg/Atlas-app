@@ -345,7 +345,7 @@ async function main() {
     assert.equal(Number(reste), Number(facture.reste) - Number(moitie), "le paiement n'a pas été noté sur la facture");
 
     assert.equal((await confirmerLaLigneRecue(ctx, m.id, facture.id, moitie)).ok, false, "le même virement a payé deux fois");
-    assert.deepEqual(await poserMotif(ctx, m.id, "pret"), { ok: false, raison: "Ce virement paie déjà une facture d'Atlas." });
+    assert.deepEqual(await poserMotif(ctx, m.id, "pret"), { ok: false, raison: "Ce virement paie déjà une facture de Cause." });
   });
 
   await test("un virement reçu se confirme même sans virement en attente sur l'accueil", async () => {

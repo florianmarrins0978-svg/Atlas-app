@@ -1,5 +1,13 @@
 # Prochaines tâches
 
+## ⏳ CAUSE : CE QUI ATTEND APRÈS LE CHANGEMENT DE NOM (17 novembre 2026)
+
+Le texte de l'appli dit Cause (`ARCHITECTURE.md` §581). Restent, et chacun est à lui :
+
+- **les conditions générales** : une version nouvelle qui dit Cause, que chaque compte acceptera de nouveau. Le plus simple : la faire quand sa micro-entreprise a son SIREN, pour remplir dans la même version les cases « Qui édite » encore à compléter (une seule acceptation au lieu de deux) ;
+- **l'icône** : le « A » provisoire ne va plus. Une planche avec des propositions, puis `npm run icones` ;
+- **l'adresse d'envoi des courriels** : le nom affiché dit Cause, l'adresse reste celle de sa variable `COURRIEL_EXPEDITEUR`, à passer sur cause.fr quand l'Afnic aura accordé le domaine.
+
 ## ⏳ LA MAIN D'ŒUVRE « SUR UNE LIGNE », SUR `main` LE 9 NOVEMBRE 2026 ; restent la croix de la carte et un frêne inventé
 
 Sa plainte, capture à l'appui (devis de Luc, 12 rue Marcadet) : *« j'ai dicté

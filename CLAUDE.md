@@ -521,6 +521,13 @@ retransmet — un document périmé le ferait travailler sur une version disparu
   c'est sa décision, pas une correction de forme. Le relevé complet est dans
   `docs/les-points-inutiles.md`.
 
+- **L'application s'appelle Cause.** Sa demande du 17 novembre 2026 : tout
+  texte qu'il lit dit **Cause**, jamais Atlas (« de Cause », « que Cause »).
+  Les noms internes gardent atlas (`data-atlas`, `atlas_app`, `ATLAS_*`, le
+  préfixe `atlas-` des rendez-vous) : les renommer casse sans rien montrer
+  (`ARCHITECTURE.md` §581). `scripts/test-nom-cause.ts` refuse le vieux nom
+  dans un texte de `src/` ; seules les conditions générales publiées y
+  échappent, jusqu'à leur version nouvelle.
 - **Pas de flèches décoratives au bout des libellés.** Sa consigne du 25 août
   2026 : *« arrête de mettre des flèches, c'est moche »*. Le « → » (et le « › »)
   ajouté à la fin d'un bouton ou d'un lien — « Régler à la main → », « Créer le

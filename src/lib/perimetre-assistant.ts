@@ -110,4 +110,4 @@ export function horsPerimetre(question: string): VerdictPerimetre {
  * possible). Pas d'excuse, pas de « je peux néanmoins » : une porte entrouverte
  * se repousse, et il réessaierait.
  */
-export const REPONSE_HORS_PERIMETRE = "Je ne réponds qu'aux questions sur Atlas.";
+export const REPONSE_HORS_PERIMETRE = "Je ne réponds qu'aux questions sur Cause.";

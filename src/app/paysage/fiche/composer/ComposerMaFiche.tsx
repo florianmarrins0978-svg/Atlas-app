@@ -459,7 +459,7 @@ export default function FicheEntretienClient({
             className="mt-[18px] block min-h-[44px] rounded-full px-[18px] text-[14px]"
             style={{ color: colors.inkSoft, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
           >
-            Remettre le modèle Atlas
+            Remettre le modèle Cause
           </button>
         )}
 

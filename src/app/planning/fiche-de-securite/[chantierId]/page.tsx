@@ -8,7 +8,7 @@ import FormulaireFicheDeSecurite from "./FormulaireFicheDeSecurite";
 import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Fiche de sécurité, Atlas" };
+export const metadata = { title: "Fiche de sécurité, Cause" };
 
 /**
  * LA FICHE DE SÉCURITÉ D'UN CHANTIER — sous /planning, ouverte à tous ceux qui

@@ -181,11 +181,11 @@ export function nouvellesEnMots(nombre: number): string | null {
  */
 export function courrielDAlerte(entrepriseNom: string): { objet: string; texte: string } {
   return {
-    objet: "Une idée vous attend dans Atlas",
+    objet: "Une idée vous attend dans Cause",
     texte: [
       `${entrepriseNom} vous a envoyé une idée.`,
       "",
-      "Elle se lit dans Atlas : Réglages, puis Les idées reçues.",
+      "Elle se lit dans Cause : Réglages, puis Les idées reçues.",
       "",
       "Les autres idées de la journée vous attendent au même endroit, sans nouveau courriel.",
     ].join("\n"),

@@ -750,7 +750,7 @@ export function ceQueLeRoleChange(role: Role): { peut: string[]; nonPlus: string
   switch (role) {
     case "proprietaire":
       return {
-        peut: ["Tout Atlas", "Les tarifs, l'identité, l'IBAN, l'abonnement", "Donner et retirer les accès"],
+        peut: ["Tout Cause", "Les tarifs, l'identité, l'IBAN, l'abonnement", "Donner et retirer les accès"],
         nonPlus: [],
       };
     /**

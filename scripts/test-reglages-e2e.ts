@@ -172,12 +172,12 @@ async function main() {
   // y va PAR LE SOMMAIRE : viser l'adresse directement laisserait passer une
   // ligne « Atlas IA » qui ne mène nulle part.
   await page.goto(`${BASE}/reglages`, { waitUntil: "networkidle" });
-  await page.getByRole("link", { name: /Atlas IA/ }).click();
-  await page.getByRole("heading", { name: "Atlas IA" }).waitFor({ timeout: 15000 });
+  await page.getByRole("link", { name: /Cause IA/ }).click();
+  await page.getByRole("heading", { name: "Cause IA" }).waitFor({ timeout: 15000 });
   const ecran = await page.locator("body").innerText();
   assert.match(
     ecran,
-    /Atlas IA/i,
+    /Cause IA/i,
     "L'écran ne dit plus quels fournisseurs d'IA tournent."
   );
   /**

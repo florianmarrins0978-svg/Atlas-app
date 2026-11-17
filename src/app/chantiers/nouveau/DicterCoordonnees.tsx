@@ -204,7 +204,7 @@ export default function DicterCoordonnees({
           enCours
             ? "Arrêter la dictée"
             : travaille
-              ? "Atlas reprend ce que vous avez dit"
+              ? "Cause reprend ce que vous avez dit"
               : "Dicter les informations du client"
         }
         className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full"

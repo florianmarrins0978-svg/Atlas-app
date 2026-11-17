@@ -46,7 +46,7 @@ import { garderLaPage } from "@/server/garde-page";
  * d'Atlas, et le disait. Ce commentaire décrivait donc un monde disparu : il est
  * corrigé dans le même commit que le code, comme le dépôt l'exige.
  */
-export const metadata = { title: "Paysage, Atlas" };
+export const metadata = { title: "Paysage, Cause" };
 
 /*
  * LA PLANCHE `appli/paysage-les-outils.html`, version « Corrigé », retenue le

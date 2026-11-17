@@ -129,7 +129,7 @@ async function main() {
     await page.goto(`${BASE}/paysage/fiche/composer`, { waitUntil: "networkidle" });
     // Le compte de démonstration le porte d'office depuis le 29 septembre 2026 ;
     // une suite voisine a pu le vider, et c'est alors son bouton qui le remet.
-    const remettre = page.getByRole("button", { name: "Remettre le modèle Atlas" });
+    const remettre = page.getByRole("button", { name: "Remettre le modèle Cause" });
     if ((await page.locator("[data-prestation]").count()) === 0 && (await remettre.isVisible().catch(() => false))) {
       await remettre.click();
     }

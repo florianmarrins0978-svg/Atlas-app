@@ -446,7 +446,7 @@ export default function Verification({
                   <b className="font-bold">
                     <span className="capitalize">{nomDuMois(moisChoisi)}</span> est vérifié.
                   </b>{" "}
-                  {a.rejetees > 0 ? `${entreprise} reçoit vos rejets dans Atlas.` : "Tout est validé."}
+                  {a.rejetees > 0 ? `${entreprise} reçoit vos rejets dans Cause.` : "Tout est validé."}
                 </p>
               )}
               {demandeRouge ? (
@@ -685,7 +685,7 @@ function Piece({ jeton, ligne, entreprise }: { jeton: string; ligne: LigneAVerif
   return (
     <>
       <div role="group" aria-label="La pièce" className="mt-3.5 flex gap-[3px] rounded-full p-[3px]" style={{ backgroundColor: voile(colors.ink, 0.06) }} data-atlas="onglets-de-la-piece">
-        {onglet("reconstituee", "Reconstitué par Atlas", "onglet-reconstitue")}
+        {onglet("reconstituee", "Reconstitué par Cause", "onglet-reconstitue")}
         {onglet("origine", original === "pdf" ? "Facture d’origine" : "Photo d’origine", "onglet-origine")}
       </div>
       <div className="mt-3.5 flex justify-center" hidden={vue !== "reconstituee"}>
@@ -777,7 +777,7 @@ function Reconstituee({ piece: p, entreprise }: { piece: PieceAffichee; entrepri
     case "hors_atlas":
       // Son total a été lu sur la facture ou tapé par le patron : le papier
       // ne dit que ce qui est sûr, l'original est à l'onglet d'à côté.
-      return facture(nom(entreprise), p.sortie ? "Facture du fournisseur" : "Facture faite hors d’Atlas", p.total, null);
+      return facture(nom(entreprise), p.sortie ? "Facture du fournisseur" : "Facture faite hors de Cause", p.total, null);
     case "emise":
       return facture(
         <div className="flex justify-between gap-2">
@@ -786,7 +786,7 @@ function Reconstituee({ piece: p, entreprise }: { piece: PieceAffichee; entrepri
         </div>,
         null,
         p.total,
-        "Facture émise par Atlas"
+        "Facture émise par Cause"
       );
     case "perdu":
       return (

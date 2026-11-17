@@ -34,7 +34,7 @@ import { estPageVieillie } from "@/lib/reprise-erreur";
  * chercher au mauvais endroit — la faute que ce dépôt paie le plus cher.
  */
 const PHRASE_PAGE_VIEILLIE =
-  "Atlas a été mis à jour depuis l'ouverture de cette page : ce que vous venez de faire n'est pas parti. Rechargez la page.";
+  "Cause a été mis à jour depuis l'ouverture de cette page : ce que vous venez de faire n'est pas parti. Rechargez la page.";
 
 export default function VeilleReponseServeur() {
   const [phrase, setPhrase] = useState<string | null>(null);

@@ -671,8 +671,8 @@ cas("chaque clé de refus a sa phrase ET son entrée de geste", () => {
 });
 
 cas("le compte des fiches s'écrit au singulier comme au pluriel", () => {
-  assert.equal(phraseFichesConnues(1), "Atlas connaît 1 problème pour l’instant.");
-  assert.equal(phraseFichesConnues(3), "Atlas connaît 3 problèmes pour l’instant.");
+  assert.equal(phraseFichesConnues(1), "Cause connaît 1 problème pour l’instant.");
+  assert.equal(phraseFichesConnues(3), "Cause connaît 3 problèmes pour l’instant.");
   assert.ok(REFUS_PAR_LA_BIBLIOTHEQUE.includes("aucune_piste"));
 });
 

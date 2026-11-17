@@ -116,9 +116,9 @@ function metadonnees(titre: string, auteur: string, date: Date): string {
     '<rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/">' +
     `<dc:title><rdf:Alt><rdf:li xml:lang="x-default">${xmlEchappe(titre)}</rdf:li></rdf:Alt></dc:title>` +
     `<dc:creator><rdf:Seq><rdf:li>${xmlEchappe(auteur)}</rdf:li></rdf:Seq></dc:creator></rdf:Description>` +
-    '<rdf:Description rdf:about="" xmlns:pdf="http://ns.adobe.com/pdf/1.3/"><pdf:Producer>Atlas</pdf:Producer></rdf:Description>' +
+    '<rdf:Description rdf:about="" xmlns:pdf="http://ns.adobe.com/pdf/1.3/"><pdf:Producer>Cause</pdf:Producer></rdf:Description>' +
     '<rdf:Description rdf:about="" xmlns:xmp="http://ns.adobe.com/xap/1.0/">' +
-    `<xmp:CreatorTool>Atlas</xmp:CreatorTool><xmp:CreateDate>${quand}</xmp:CreateDate><xmp:ModifyDate>${quand}</xmp:ModifyDate><xmp:MetadataDate>${quand}</xmp:MetadataDate></rdf:Description>` +
+    `<xmp:CreatorTool>Cause</xmp:CreatorTool><xmp:CreateDate>${quand}</xmp:CreateDate><xmp:ModifyDate>${quand}</xmp:ModifyDate><xmp:MetadataDate>${quand}</xmp:MetadataDate></rdf:Description>` +
     '<rdf:Description rdf:about="" xmlns:fx="urn:factur-x:pdfa:CrossIndustryDocument:invoice:1p0#">' +
     "<fx:DocumentType>INVOICE</fx:DocumentType><fx:DocumentFileName>factur-x.xml</fx:DocumentFileName>" +
     "<fx:Version>1.0</fx:Version><fx:ConformanceLevel>EN 16931</fx:ConformanceLevel></rdf:Description>" +
@@ -148,8 +148,8 @@ export async function enPdfA3(
   // Le dictionnaire Info et le XMP disent la même chose : la norme les compare.
   doc.setTitle(meta.titre);
   doc.setAuthor(meta.auteur);
-  doc.setProducer("Atlas");
-  doc.setCreator("Atlas");
+  doc.setProducer("Cause");
+  doc.setCreator("Cause");
   doc.setCreationDate(meta.date);
   doc.setModificationDate(meta.date);
 

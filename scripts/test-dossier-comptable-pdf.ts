@@ -164,7 +164,7 @@ async function main() {
     assert.match(texte, /\+3 004,00 €/, "le total des entrées manque");
     assert.match(texte, /Ticket perdu, mention validée/);
     assert.match(texte, /Justifié par sa nature : impôts, cotisations/);
-    assert.match(texte, /Facture F2026-000028, émise par Atlas/);
+    assert.match(texte, /Facture F2026-000028, émise par Cause/);
     assert.match(texte, /TOTAL TTC/);
     assert.match(texte, /Pépinières Durand/);
   });
@@ -241,7 +241,7 @@ async function main() {
 
   await test("la facture faite hors d'Atlas justifie son virement, et son fichier est posé au bout, aller et retour", async () => {
     assert.ok(octobre);
-    assert.match(octobre.texte, /Facture faite hors d'Atlas Total TTC 640,00 €/);
+    assert.match(octobre.texte, /Facture faite hors de Cause Total TTC 640,00 €/);
     const voir = octobre.liens.filter((k) => k.texte === "Voir la facture");
     const cibles = voir.map((k) => pages[k.vers - 1]).filter((p) => p.texte.includes("VIR SCI DU PARC"));
     assert.equal(cibles.length, 1, "aucun « Voir la facture » ne mène au fichier de la facture faite hors d'Atlas");

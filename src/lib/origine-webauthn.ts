@@ -148,7 +148,7 @@ export function origineWebAuthn(entree: {
       // de l'artisan (`AGENTS.md` — « une erreur qui accuse à tort coûte plus
       // cher que pas d'erreur du tout »).
       raison:
-        "ATLAS_RP_ID n'est pas posé : Atlas ne sait pas sous quel domaine enregistrer une clé d'appareil.",
+        "ATLAS_RP_ID n'est pas posé : Cause ne sait pas sous quel domaine enregistrer une clé d'appareil.",
     };
   }
 

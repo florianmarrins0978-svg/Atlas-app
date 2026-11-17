@@ -147,10 +147,10 @@ function egauxEnTempsConstant(a: string, b: string): boolean {
  * lira dans son appli, à côté d'« Atlas », s'il en a plusieurs.
  */
 export function uriOtpauth(secretBase32: string, email: string): string {
-  const etiquette = encodeURIComponent(`Atlas:${email}`);
+  const etiquette = encodeURIComponent(`Cause:${email}`);
   const params = new URLSearchParams({
     secret: secretBase32,
-    issuer: "Atlas",
+    issuer: "Cause",
     algorithm: "SHA1",
     digits: String(CHIFFRES),
     period: String(PERIODE_SECONDES),

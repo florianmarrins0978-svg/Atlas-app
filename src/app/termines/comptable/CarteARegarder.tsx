@@ -361,7 +361,7 @@ export default function CarteARegarder({
       ) : etape.e === "facture" && a.genre === "entree" ? (
         <>
           <p className="mt-2.5 text-[15px] leading-[1.45]" style={{ color: colors.inkSoft }}>
-            {a.factures.length > 0 ? "Laquelle ? Les factures qui attendent leur paiement :" : "Aucune facture d’Atlas n’attend de paiement."}
+            {a.factures.length > 0 ? "Laquelle ? Les factures qui attendent leur paiement :" : "Aucune facture de Cause n’attend de paiement."}
           </p>
           <ul className="mt-3">
             {justesDAbord(a.factures, a.montantBrut, (f) => f.resteBrut).map((f) => (
@@ -384,7 +384,7 @@ export default function CarteARegarder({
             ))}
             <li>
               <Piece
-                nom="Une facture faite hors d’Atlas"
+                nom="Une facture faite hors de Cause"
                 sous="La photographier ou choisir le PDF"
                 disabled={enCours}
                 data="facture-hors-atlas"
@@ -493,7 +493,7 @@ export default function CarteARegarder({
               {a.genre === "entree"
                 ? a.factures.some((f) => marque(f.resteBrut))
                   ? "Sa facture n’est pas encore confirmée."
-                  : "Aucune facture d’Atlas ne fait ce montant."
+                  : "Aucune facture de Cause ne fait ce montant."
                 : a.genre === "virement"
                   ? "Aucune facture jointe."
                   : "Aucun ticket ne correspond."}

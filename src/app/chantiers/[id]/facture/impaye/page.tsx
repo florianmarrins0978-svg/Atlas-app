@@ -67,7 +67,7 @@ export default async function PageImpaye({ params }: { params: Promise<{ id: str
           `/chantiers/${id}/facture/non-payee`,
           "non-payee",
           "Il ne me paiera pas",
-          "La facture reste due. Atlas arrête de vous la rappeler."
+          "La facture reste due. Cause arrête de vous la rappeler."
         )}
       </div>
     </div>

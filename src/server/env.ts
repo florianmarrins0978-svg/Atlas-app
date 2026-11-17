@@ -275,7 +275,7 @@ function construireEnv(): Env {
     throw new ErreurConfiguration(
       `NODE_ENV vaut « ${nodeEnvBrut} », qui n'est pas une valeur connue.\n` +
         "Les seules acceptées sont development, test et production, en minuscules.\n" +
-        "Une valeur inattendue faisait basculer Atlas en posture de développement sans le dire :\n" +
+        "Une valeur inattendue faisait basculer Cause en posture de développement sans le dire :\n" +
         "secret de session en dur, stockage local, IA simulée, et la porte de test rouverte."
     );
   }

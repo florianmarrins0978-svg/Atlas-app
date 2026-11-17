@@ -535,7 +535,7 @@ export function appliquerClassement(entrants: Candidat[], sortants: Candidat[]):
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const MOTIFS_REFUS = {
-  base_vide: "La base phytosanitaire d’Atlas ne contient encore aucune fiche validée. Aucun diagnostic n’est possible pour l’instant.",
+  base_vide: "La base phytosanitaire de Cause ne contient encore aucune fiche validée. Aucun diagnostic n’est possible pour l’instant.",
   aucune_piste: "Aucune fiche ne correspond à ce qui est visible sur cette photo.",
   trop_faible: "Je ne peux pas confirmer l’identification à partir de cette photo.",
   trop_proches:
@@ -578,7 +578,7 @@ export type MotifRefus = keyof typeof MOTIFS_REFUS;
  */
 export const GESTE_APRES_REFUS: Record<MotifRefus, string | null> = {
   base_vide: null,
-  aucune_piste: "Ce problème n’est peut-être pas encore dans Atlas.",
+  aucune_piste: "Ce problème n’est peut-être pas encore dans Cause.",
   trop_faible: "Une photo plus proche du détail peut suffire.",
   trop_proches: "À examiner sur place.",
   photo_illisible: "Rapprochez-vous, en pleine lumière, sans flou.",
@@ -595,8 +595,8 @@ export const GESTE_APRES_REFUS: Record<MotifRefus, string | null> = {
  */
 export function phraseFichesConnues(nombre: number): string {
   return nombre === 1
-    ? "Atlas connaît 1 problème pour l’instant."
-    : `Atlas connaît ${nombre} problèmes pour l’instant.`;
+    ? "Cause connaît 1 problème pour l’instant."
+    : `Cause connaît ${nombre} problèmes pour l’instant.`;
 }
 
 /** Les refus qui tiennent à ce que la base SAIT, et non à la photo. */

@@ -36,7 +36,7 @@ import {
 
 function texteDuCode(code: string): { objet: string; texte: string } {
   return {
-    objet: `Votre code Atlas : ${code}`,
+    objet: `Votre code Cause : ${code}`,
     texte:
       `Votre code pour changer de mot de passe : ${code}\n\n` +
       `Il vaut un quart d'heure. Si vous n'avez rien demandé, ignorez ce message : votre mot de passe ne change pas.`,
@@ -51,7 +51,7 @@ function texteDuCode(code: string): { objet: string; texte: string } {
  */
 function texteDuChangement(): { objet: string; texte: string } {
   return {
-    objet: "Votre mot de passe Atlas a changé",
+    objet: "Votre mot de passe Cause a changé",
     texte:
       "Votre mot de passe vient d'être changé, et vos autres appareils ont été déconnectés.\n\n" +
       "Si ce n'est pas vous, changez-le tout de suite depuis l'écran de connexion, avec « Mot de passe oublié ? ».",

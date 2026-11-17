@@ -126,7 +126,7 @@ export const MESSAGE_PHOTO_REFUSEE =
  * sait pas que ça se règle. La phrase nomme donc l'endroit exact.
  */
 export const MESSAGE_HEIC_REFUSE =
-  "Votre iPhone a envoyé cette photo au format HEIC, dont Atlas ne sait pas retirer les données de localisation. " +
+  "Votre iPhone a envoyé cette photo au format HEIC, dont Cause ne sait pas retirer les données de localisation. " +
   "Sur votre téléphone : Réglages, Appareil photo, Formats, « Le plus compatible ». Reprenez ensuite la photo.";
 
 /**

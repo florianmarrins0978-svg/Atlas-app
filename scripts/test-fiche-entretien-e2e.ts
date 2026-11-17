@@ -88,13 +88,13 @@ async function main() {
   // 29 septembre 2026, et sa réponse « B » : ce qui manque revient, ses lignes
   // restent. La fiche vidée par le décor est celle d'un patron qui a tout retiré.
   await cas("une fiche vidée ne se remplit pas en l'ouvrant, et montre « Remettre le modèle Atlas »", async () => {
-    await page.getByRole("button", { name: "Remettre le modèle Atlas" }).waitFor({ timeout: 20_000 });
+    await page.getByRole("button", { name: "Remettre le modèle Cause" }).waitFor({ timeout: 20_000 });
     const { rows } = await pool.query(`select count(*)::int as n from prestations_entretien`);
     assert.equal(rows[0].n, 0, "des prestations ont été écrites par le simple fait d'ouvrir l'écran");
   });
 
   await cas("« Remettre le modèle Atlas » pose le modèle, et le bouton s'efface", async () => {
-    await page.getByRole("button", { name: "Remettre le modèle Atlas" }).click();
+    await page.getByRole("button", { name: "Remettre le modèle Cause" }).click();
     await page.waitForSelector("[data-prestation]", { timeout: 30_000 });
     const combien = await page.locator("[data-prestation]").count();
     assert.equal(
@@ -157,7 +157,7 @@ async function main() {
   await cas("un retrait aussitôt suivi de « Remettre » est écrit AVANT, et la ligne revient", async () => {
     await pool.query(`delete from prestations_entretien where libelle = 'Engrais'`);
     await page.reload({ waitUntil: "networkidle" });
-    await page.getByRole("button", { name: "Remettre le modèle Atlas" }).waitFor({ timeout: 20_000 });
+    await page.getByRole("button", { name: "Remettre le modèle Cause" }).waitFor({ timeout: 20_000 });
     // En chaîne, pas en fonction : `tsx` renomme les fonctions (`__name`), et
     // le helper n'existe pas dans la page (`e2e-browser.ts`).
     await page.evaluate(`

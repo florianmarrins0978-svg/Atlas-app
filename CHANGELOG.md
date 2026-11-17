@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-11-17
+
+- **L'application s'appelle Cause** (sa demande). Tout le texte qu'il lit, et que lisent ses clients et son comptable, dit Cause : écrans, titres, manifeste, courriels, PDF, assistant, mode d'emploi (309 morceaux de texte dans 121 fichiers, plus le manifeste et le générateur d'icônes). Les noms internes gardent atlas, les conditions générales et l'icône attendent sa décision (`ARCHITECTURE.md` §581, `TODO.md`). Les tests qui citent un texte de l'appli suivent ; ceux qui nomment une entreprise inventée « Atlas » restent.
+
 ## 2026-11-16
 
 - **Planche : le site de vente sous le nom Cause** (`appli/vente/cause.html`, avec `mentions-legales-cause.html`). L'Afnic exige une maquette du site avant d'accorder cause.fr, terme soumis à examen préalable ; chapitres-6 portait encore le nom de travail. Seuls changent le nom, l'adresse de contact (contact@cause.fr, pas encore créée) et le lien des mentions légales ; chapitres-6 reste la référence, une retouche s'y fait d'abord. Rien dans `src/`.

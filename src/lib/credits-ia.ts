@@ -142,7 +142,7 @@ export function coutDUneEcoute(fournisseur: string, octets: number): number {
  * ce qui s'est passé : en dictant, il ne vient pas de lire l'Abonnement.
  */
 export function phraseCreditsEpuises(reprise: Date): string {
-  return `Crédits IA épuisés. Atlas IA reprend le ${jourDeReprise(reprise)}. D'ici là, tout s'écrit à la main.`;
+  return `Crédits IA épuisés. Cause IA reprend le ${jourDeReprise(reprise)}. D'ici là, tout s'écrit à la main.`;
 }
 
 /** « 1er novembre » : la reprise tombe toujours un premier du mois. */

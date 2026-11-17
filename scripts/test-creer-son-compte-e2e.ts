@@ -353,7 +353,7 @@ async function main() {
     assert.equal(e.periodicite_tva, "mensuelle");
     assert.equal(e.tva_exigibilite, "encaissements");
 
-    await page.getByRole("link", { name: "Entrer dans Atlas" }).click();
+    await page.getByRole("link", { name: "Entrer dans Cause" }).click();
     await page.waitForURL((u) => u.pathname === "/", { timeout: 30_000 });
     await page.getByText("Créer un devis").first().waitFor({ timeout: 30_000 });
   });

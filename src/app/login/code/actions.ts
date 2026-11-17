@@ -56,7 +56,7 @@ export async function codeAction(_etat: EtatCode | undefined, formData: FormData
         type: err.type,
         cause: err.cause instanceof Error ? err.cause.message : String(err.cause ?? ""),
       });
-      return { erreur: "Un service d'Atlas ne répond pas. Réessayez dans un instant." };
+      return { erreur: "Un service de Cause ne répond pas. Réessayez dans un instant." };
     }
     throw err;
   }

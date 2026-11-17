@@ -80,7 +80,7 @@ export function donneesFactureAtlas(p: {
     .filter(([, v]) => !v?.trim())
     .map(([nom]) => nom);
   if (manque.length > 0) {
-    return { ok: false, raison: `L'identité d'Atlas est incomplète (${manque.join(", ")}) : aucune facture ne part.` };
+    return { ok: false, raison: `L'identité de Cause est incomplète (${manque.join(", ")}) : aucune facture ne part.` };
   }
 
   // **Les montants se recoupent, ou rien ne part.** Le XML recalcule le total
@@ -129,7 +129,7 @@ export function donneesFactureAtlas(p: {
       totalTtc: ttc.toFixed(2),
       lignes: [
         {
-          libelle: `Abonnement Atlas ${e.formuleNom}, du ${jourFr(e.periodeDebut)} au ${jourFr(e.periodeFin)}`,
+          libelle: `Abonnement Cause ${e.formuleNom}, du ${jourFr(e.periodeDebut)} au ${jourFr(e.periodeFin)}`,
           quantite: "1",
           prixUnitaire: montant,
           montant,

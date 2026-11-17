@@ -222,7 +222,7 @@ export const COLONNES_OBJET: readonly ColonneObjet[] = [
   {
     table: "factures_atlas",
     colonne: "pdf_storage_key",
-    quoi: "la facture d'abonnement qu'Atlas a émise à l'artisan",
+    quoi: "la facture d'abonnement que Cause a émise à l'artisan",
     // Elle naît avec son PDF (NOT NULL) et se garde dix ans : son absence est une perte.
     absenceNormale: false,
   },

@@ -59,7 +59,7 @@ export default function SectionFaceId({ clesInitiales }: { clesInitiales: CleApp
         return;
       }
       setCles(r.cles);
-      setFait("Cet appareil ne peut plus ouvrir Atlas. Votre mot de passe, lui, marche toujours.");
+      setFait("Cet appareil ne peut plus ouvrir Cause. Votre mot de passe, lui, marche toujours.");
     });
   }
 
