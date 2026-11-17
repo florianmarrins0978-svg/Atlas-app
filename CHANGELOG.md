@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-11-17
+
+- **Planche : l'icône de Cause** (`appli/icone-de-cause.html`, sa réponse du jour). Le « A » provisoire ne va plus avec le nom. Trois « C » dessinés en contours (la serif des devis relevée par fontkit, pour que `npm run icones` rende exactement ce qui est montré), dans les couleurs de l'appli, chacun dans le cercle qu'Android garde. Rien dans `src/`.
+
 ## 2026-11-16
 
 - **Planche : le site de vente sous le nom Cause** (`appli/vente/cause.html`, avec `mentions-legales-cause.html`). L'Afnic exige une maquette du site avant d'accorder cause.fr, terme soumis à examen préalable ; chapitres-6 portait encore le nom de travail. Seuls changent le nom, l'adresse de contact (contact@cause.fr, pas encore créée) et le lien des mentions légales ; chapitres-6 reste la référence, une retouche s'y fait d'abord. Rien dans `src/`.
