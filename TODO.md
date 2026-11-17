@@ -214,7 +214,7 @@ libellé dans la consigne, et `npm run verifier:dictee` sur son espace.
 fois, pour Taille de haie de laurier de ml, vous aviez retenu 650 € HT »
 compare la ligne de main d'œuvre à une taille de haie.
 
-## ⏳ À REGARDER PAR LUI (9 novembre 2026) : jeter la dictée, en clair
+## ⏳ À REGARDER PAR LUI (9 novembre 2026, refaite le 17) : jeter la dictée, en clair
 
 Sa remarque : *« moi je ne savais pas que ce mécanisme jetait la dictée,
 il faut peut-être mettre un truc plus clair ; il n'y a pas déjà un bouton
@@ -225,12 +225,15 @@ fois la note envoyée, seul le glissement de « Votre dictée »
 montre.
 
 **La planche** : `appli/jeter-la-dictee.html`, sur sa vraie fiche client
-(M. Bernard, une note envoyée). A : « Retirer » écrit au bout de la ligne,
-comme sur les fiches en cours (sa planche du 11 octobre). B : la poubelle
-cerclée de la dictée, avec « Jeter ». Le tiroir « Annuler » reste.
+(M. Bernard, une note envoyée). Le 16 novembre, il a d'abord choisi d'enlever
+la case ; le 17, il a répondu « B » sur la première planche, puis *« montre-moi
+les deux planches »*. Elle porte donc : 1, la case enlevée (une dictée envoyée
+se refait en redictant) ; 2, la case gardée avec la poubelle cerclée
+« Jeter » au bout, et le tiroir « Annuler ». L'option 1 attend sur la branche
+`claude/amazing-mendel-skfnud`, batterie complète à jouer.
 
-**Reste** : son choix, puis le coder (et récrire la fiche du mode d'emploi
-`chantier-dictee-retirer`, qui décrit le glissement).
+**Reste** : son choix entre 1 et 2. Pour 2 : récrire la fiche du mode
+d'emploi `chantier-dictee-retirer`, qui décrit le glissement.
 
 ## ⏳ À REGARDER PAR LUI (9 novembre 2026) : la fiche ouverte et Composer ma fiche, soignées
 
