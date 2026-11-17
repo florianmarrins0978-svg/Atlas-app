@@ -257,7 +257,7 @@ libellé dans la consigne, et `npm run verifier:dictee` sur son espace.
 fois, pour Taille de haie de laurier de ml, vous aviez retenu 650 € HT »
 compare la ligne de main d'œuvre à une taille de haie.
 
-## ~~⏳ À REGARDER PAR LUI (9 novembre 2026, refaite le 17) : jeter la dictée, en clair~~ TRANCHÉ LE 17 NOVEMBRE : LA 1, SON CHOIX DU 16 (« ON LAISSE COMME ON A DÉCIDÉ LE 16 »)
+## ~~⏳ À REGARDER PAR LUI (9 novembre 2026, refaite le 17) : jeter la dictée, en clair~~ TRANCHÉ LE 17 NOVEMBRE : LA 1, SON CHOIX DU 16 (« ON LAISSE COMME ON A DÉCIDÉ LE 16 »), SUR `main` LE 17 NOVEMBRE
 
 Sa demande du 9 novembre, capture de la fiche client : *« retire-moi la
 phrase "votre dictée" »*. Codée d'abord « cachée pendant le devis » (son
@@ -290,11 +290,7 @@ dictée (sa règle du 16 novembre : *« ça va me supprimer aussi le nom […] d
 client. Ça, il faut pas »*). Types, lint, `test-mode-emploi`,
 `test-pas-de-code-mort`, `test-aucun-tiret`, `test-couches` verts.
 
-| reste | qui |
-|---|---|
-| son accord pour le contrôle de son niveau (suites base et navigateur), puis `main` | lui, puis moi |
-
-## ~~⏳ À REGARDER PAR LUI (9 novembre 2026) : la fiche ouverte et Composer ma fiche, soignées~~ TRANCHÉ LE 17 NOVEMBRE (« POUR LA 1 LA A, ET LA 2 A AUSSI »), CODÉ LE 17 NOVEMBRE, CONTRÔLE DE NIVEAU 2 À JOUER AVEC SON ACCORD
+## ~~⏳ À REGARDER PAR LUI (9 novembre 2026) : la fiche ouverte et Composer ma fiche, soignées~~ TRANCHÉ LE 17 NOVEMBRE (« POUR LA 1 LA A, ET LA 2 A AUSSI »), CODÉ ET SUR `main` LE 17 NOVEMBRE, AVEC LA DICTÉE, EN UNE SEULE BATTERIE
 
 Sa demande, après avoir validé D et B : *« ensuite, tu t'attelles à ce qui se
 passe quand on clique sur créer une fiche, composer ma fiche et les fiches
@@ -331,11 +327,9 @@ les trois. Le « + » est devenu un dessin muet, donc les boutons s'appellent
 `test-fiche-entretien-e2e` et cinq fiches du mode d'emploi (`paysage.ts`)
 suivent. `test-boutons-arrondis` borne les deux nouvelles cartes à leur
 repère. Écrans regardés (neuve, Mme Costa cochée, Composer) ; types, lint et
-contrôles sans base verts.
-
-| reste | qui |
-|---|---|
-| son accord pour `npm run verifier:avant-fusion` (niveau 2), puis `main` | lui, puis moi |
+contrôles sans base verts. Livré avec « Votre dictée » enlevée, en un seul lot
+de niveau 3 et une seule batterie (sa demande : *« fusionne le tout et joue
+qu'une seule batterie »*).
 
 ## ⚠️ `test-double-verification-db` ROUGIT PAR HASARD À LA LIMITE DES 30 SECONDES (vu le 16 novembre 2026)
 

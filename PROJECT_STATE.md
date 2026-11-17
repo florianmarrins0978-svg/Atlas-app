@@ -1,8 +1,8 @@
 # État du projet
 
-## LA FICHE OUVERTE ET COMPOSER MA FICHE, SOIGNÉES (A), CODÉES (17 novembre 2026), CONTRÔLE DE NIVEAU 2 À JOUER AVEC SON ACCORD
+## LA FICHE OUVERTE ET COMPOSER MA FICHE (A), ET « VOTRE DICTÉE » ENLEVÉE, SUR `main` (17 novembre 2026)
 
-`FicheChantierClient.tsx`, `ComposerMaFiche.tsx`, `RondDore` (une `taille`). Écrans regardés, types, lint et contrôles sans base verts. Rien n'est sur `main`. Le détail est dans `TODO.md`.
+Un seul lot et une seule batterie (sa demande : *« fusionne le tout et joue qu'une seule batterie »*), niveau 3 : rayon de 14 points d'entrée par `notes-vocales.ts`. La fiche ouverte et Composer en A : `FicheChantierClient.tsx`, `ComposerMaFiche.tsx`, `RondDore` (une `taille`). La case « Votre dictée » quitte la fiche client : une dictée envoyée se refait en redictant, et le client reste intact (`test-anneau-dictee-e2e`). Le détail est dans `TODO.md`.
 
 ---
 ## LE NOM CAUSE, LIVRÉ (17 novembre 2026)
