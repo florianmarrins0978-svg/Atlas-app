@@ -257,7 +257,7 @@ libellé dans la consigne, et `npm run verifier:dictee` sur son espace.
 fois, pour Taille de haie de laurier de ml, vous aviez retenu 650 € HT »
 compare la ligne de main d'œuvre à une taille de haie.
 
-## ⏳ À REGARDER PAR LUI (9 novembre 2026, refaite le 17) : jeter la dictée, en clair
+## ~~⏳ À REGARDER PAR LUI (9 novembre 2026, refaite le 17) : jeter la dictée, en clair~~ TRANCHÉ LE 17 NOVEMBRE : LA 1, SON CHOIX DU 16 (« ON LAISSE COMME ON A DÉCIDÉ LE 16 »)
 
 Sa remarque : *« moi je ne savais pas que ce mécanisme jetait la dictée,
 il faut peut-être mettre un truc plus clair ; il n'y a pas déjà un bouton
@@ -278,7 +278,7 @@ se refait en redictant) ; 2, la case gardée avec la poubelle cerclée
 **Reste** : son choix entre 1 et 2. Pour 2 : récrire la fiche du mode
 d'emploi `chantier-dictee-retirer`, qui décrit le glissement.
 
-## ⏳ À REGARDER PAR LUI (9 novembre 2026) : la fiche ouverte et Composer ma fiche, soignées
+## ~~⏳ À REGARDER PAR LUI (9 novembre 2026) : la fiche ouverte et Composer ma fiche, soignées~~ TRANCHÉ LE 17 NOVEMBRE (« POUR LA 1 LA A, ET LA 2 A AUSSI »), CODÉ LE 17 NOVEMBRE, CONTRÔLE DE NIVEAU 2 À JOUER AVEC SON ACCORD
 
 Sa demande, après avoir validé D et B : *« ensuite, tu t'attelles à ce qui se
 passe quand on clique sur créer une fiche, composer ma fiche et les fiches
@@ -303,8 +303,23 @@ client en haut (arrangement C) ; « Envoyé par » ; la molette du temps
 tiroir ; « Retirer la famille » au bas de sa carte (24 août) ; les pastilles
 des familles en haut de Composer.
 
-**Reste** : qu'il choisisse, puis le coder sur son « oui »
-(`FicheChantierClient.tsx`, `ComposerMaFiche.tsx`).
+**CODÉ LE 17 NOVEMBRE**, sur son choix (*« pour la 1 la A, et la 2 A
+aussi »*) : `FicheChantierClient.tsx` (le client dans une carte au rond doré,
+le constat sous son nom ; une carte par famille, la case à 8 px et la coche
+`IconeTrait` ; la molette dans une seule carte ; « Enregistrer et envoyer »
+`pleineLargeur`), `ComposerMaFiche.tsx` (cartes à 14 px sans ombre, « Ajouter
+une prestation » derrière un rond doré de 28 px, « Ajouter une famille » dans
+sa carte). `RondDore` prend une `taille` (52 par défaut) : un seul dessin pour
+les trois. Le « + » est devenu un dessin muet, donc les boutons s'appellent
+« Ajouter une prestation », « Ajouter une famille », « Ajouter un client » :
+`test-fiche-entretien-e2e` et cinq fiches du mode d'emploi (`paysage.ts`)
+suivent. `test-boutons-arrondis` borne les deux nouvelles cartes à leur
+repère. Écrans regardés (neuve, Mme Costa cochée, Composer) ; types, lint et
+contrôles sans base verts.
+
+| reste | qui |
+|---|---|
+| son accord pour `npm run verifier:avant-fusion` (niveau 2), puis `main` | lui, puis moi |
 
 ## ⚠️ `test-double-verification-db` ROUGIT PAR HASARD À LA LIMITE DES 30 SECONDES (vu le 16 novembre 2026)
 

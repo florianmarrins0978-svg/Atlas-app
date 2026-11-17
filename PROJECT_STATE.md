@@ -1,5 +1,10 @@
 # État du projet
 
+## LA FICHE OUVERTE ET COMPOSER MA FICHE, SOIGNÉES (A), CODÉES (17 novembre 2026), CONTRÔLE DE NIVEAU 2 À JOUER AVEC SON ACCORD
+
+`FicheChantierClient.tsx`, `ComposerMaFiche.tsx`, `RondDore` (une `taille`). Écrans regardés, types, lint et contrôles sans base verts. Rien n'est sur `main`. Le détail est dans `TODO.md`.
+
+---
 ## LE NOM CAUSE, LIVRÉ (17 novembre 2026)
 
 Le texte affiché dit Cause partout ; le code garde atlas. Restent à lui : les conditions générales (version nouvelle), l'icône (planche). `ARCHITECTURE.md` §581.

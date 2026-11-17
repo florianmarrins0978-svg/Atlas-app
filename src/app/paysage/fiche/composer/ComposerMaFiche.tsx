@@ -1,8 +1,10 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { cardShadow, colors, font, libelleCaps, radius, texteSituation } from "@/lib/design-tokens";
+import { colors, font, libelleCaps, texteSituation } from "@/lib/design-tokens";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
+import IconeTrait from "@/components/atlas/IconeTrait";
+import RondDore from "@/components/atlas/RondDore";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
@@ -291,11 +293,13 @@ export default function FicheEntretienClient({
             key={f.famille}
             id={`famille-${rang}`}
             data-atlas="carte-famille"
-            className="mt-[18px] px-[18px] pb-[6px] pt-[16px]"
+            // **Arrondie à 14 px, sans ombre** : sa planche A du 17 novembre
+            // 2026, les cartes de la liste des fiches qu'il a choisie le 9.
+            className="mt-[18px] rounded-[14px] px-[16px] pb-[4px] pt-[16px]"
             // La marge de défilement laisse la rangée collée au-dessus du nom
             // de la famille : sans elle, l'appui sur une pastille cacherait
             // justement le titre qu'on venait chercher.
-            style={{ backgroundColor: colors.card, borderRadius: radius.card, boxShadow: cardShadow, scrollMarginTop: 84 }}
+            style={{ backgroundColor: colors.card, scrollMarginTop: 84 }}
           >
             {/* La famille se renomme sur place : c'est son mot, pas une
                 nomenclature imposée. En serif, comme un nom : c'est le titre
@@ -308,7 +312,7 @@ export default function FicheEntretienClient({
               className="block w-full bg-transparent text-[21px] leading-[1.2] outline-none"
               style={{ color: colors.ink, border: "none", padding: 0, fontFamily: font.display }}
             />
-            <p className={`mt-[4px] mb-[6px] ${texteSituation}`} style={{ color: colors.inkSoft }}>
+            <p className="mb-[4px] mt-[3px] text-[14.5px] leading-[1.4]" style={{ color: colors.inkSoft }}>
               {f.lignes.length} prestation{f.lignes.length > 1 ? "s" : ""}
             </p>
 
@@ -323,7 +327,7 @@ export default function FicheEntretienClient({
                   aria-label={`Prestation ${p.libelle}`}
                   data-prestation={p.id}
                   onBlur={(e) => renommer(p.id, p.libelle, e.target.value)}
-                  className="min-h-[50px] min-w-0 flex-1 bg-transparent text-[16px]"
+                  className="min-h-[50px] min-w-0 flex-1 bg-transparent text-[16.5px]"
                   style={{ color: colors.ink, border: "none", padding: 0 }}
                 />
                 {/* « Retirer » et non plus « × » : le mot du reste de
@@ -358,16 +362,22 @@ export default function FicheEntretienClient({
               </div>
             ) : (
               <div className="flex min-h-[52px] flex-wrap items-center justify-between gap-x-[10px]">
+                {/* Derrière un petit rond doré, sa planche A du 17 novembre
+                    2026 : le même que celui d'« Ajouter une famille », en
+                    petit, au fil de la liste. */}
                 <button
                   type="button"
-                  className="min-h-[44px] whitespace-nowrap text-left text-[14px]"
+                  className="flex min-h-[44px] items-center gap-[10px] whitespace-nowrap text-left text-[15px]"
                   style={{ color: colors.or }}
                   onClick={() => {
                     setSaisie("");
                     setAjoutOuvert(f.famille);
                   }}
                 >
-                  + Ajouter une prestation
+                  <RondDore taille={28}>
+                    <IconeTrait nom="plus" taille={16} epaisseur={1.7} />
+                  </RondDore>
+                  Ajouter une prestation
                 </button>
                 {/* **AU PIED DE SA CARTE**, planche du 11 octobre 2026 : posé
                     contre le nom, il se lisait comme le geste du titre ; ici,
@@ -432,17 +442,25 @@ export default function FicheEntretienClient({
             </p>
           </div>
         ) : (
+          // **Dans une carte au rond doré**, sa planche A du 17 novembre 2026 :
+          // la même que « Ajouter un client » sur la fiche ouverte.
           <button
             type="button"
-            className="mt-[22px] min-h-[44px] text-[14px]"
-            style={{ color: colors.or }}
+            data-atlas="ajouter-une-famille"
+            className="mt-[18px] flex min-h-[84px] w-full items-center gap-[16px] rounded-[14px] px-[16px] py-[14px] text-left"
+            style={{ backgroundColor: colors.card, color: colors.or }}
             onClick={() => {
               setSaisie("");
               setSaisieFamille("");
               setAjoutOuvert("__neuve__");
             }}
           >
-            + Ajouter une famille
+            <RondDore>
+              <IconeTrait nom="plus" taille={24} epaisseur={1.6} />
+            </RondDore>
+            <span className="text-[21px] leading-[1.2]" style={{ fontFamily: font.display }}>
+              Ajouter une famille
+            </span>
           </button>
         )}
 
