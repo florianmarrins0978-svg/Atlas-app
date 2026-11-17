@@ -725,6 +725,61 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     await cFi.close();
   }
 
+  // ── L'icône de Cause, sur le bureau du téléphone ─────────────────────────
+  //
+  // Sa demande du 17 novembre 2026. La planche attend une lettre, de A à G :
+  // chaque geste doit y changer quelque chose (CLAUDE.md §3 bis, « chaque
+  // geste d'une planche fait quelque chose »), et c'est ici qu'on les touche,
+  // pas chez lui. On lit ce qui est PEINT (le dessin posé, la forme, le fond,
+  // le filtre), jamais une classe : un bouton qui poserait sa classe sans
+  // rien changer à l'écran resterait vert. La capture de l'appli vit dans un
+  // autre dossier (vente/images) : un fichier déplacé ouvrirait l'appli sur
+  // un écran vide, donc on exige des pixels.
+  {
+    const cIc = await browser.newContext({ viewport: { width: 390, height: 664 } });
+    const page = await cIc.newPage();
+    const errs = []; page.on('pageerror', e => errs.push('icône : ' + e.message));
+    await page.goto(`${B}/icone-de-cause-2.html`, { waitUntil: 'networkidle' });
+    const attendre = (fn) => page.waitForFunction(fn, null, { timeout: 5000 }).then(() => true, () => false);
+    const dessin = () => page.evaluate(() => document.querySelector('#grille .notre .tuile').innerHTML);
+    const dessins = new Set();
+    for (const k of 'ABCDEFG') { await page.click(`[data-choix="${k}"]`); dessins.add(await dessin()); }
+    ok('icône : les sept lettres posent sept dessins sur le bureau', dessins.size === 7, dessins.size + ' dessins');
+    ok('icône : le bouton du choix suit la lettre', (await page.textContent('#prendre')) === 'Je prends la G');
+    await page.click('[data-forme="android"]');
+    ok('icône : Android arrondit l\'icône',
+       await page.evaluate(() => getComputedStyle(document.querySelector('#grille .notre .tuile')).borderRadius === '50%'));
+    await page.click('[data-forme="iphone"]');
+    const fond = () => page.evaluate(() => getComputedStyle(document.querySelector('#ecran')).backgroundImage);
+    const clair = await fond();
+    await page.click('[data-fond="sombre"]');
+    ok('icône : Sombre change le fond d\'écran', (await fond()) !== clair);
+    await page.click('#soleil');
+    ok('icône : Plein soleil délave l\'écran',
+       await attendre(() => /contrast\(0\.58\)/.test(getComputedStyle(document.querySelector('.peau')).filter)));
+    await page.click('#sept');
+    ok('icône : Les sept posent sept icônes de Cause', (await page.locator('#grille .notre').count()) === 7);
+    const ordre = () => page.evaluate(() => [...document.querySelectorAll('#grille > *')].map(c => c.dataset.cle).join());
+    const avant = await ordre();
+    await page.click('#melanger');
+    ok('icône : Mélanger change l\'ordre', (await ordre()) !== avant);
+    await page.waitForTimeout(700);
+    await page.click('#grille .notre[data-ouvre="E"]');
+    ok('icône : toucher une icône en fait le choix', (await page.textContent('#prendre')) === 'Je prends la E');
+    ok('icône : l\'appli s\'ouvre sur sa capture, avec des pixels', await attendre(() => {
+      const i = document.querySelector('.accueil');
+      return getComputedStyle(i).display !== 'none' && i.complete && i.naturalWidth > 0;
+    }));
+    await page.click('#fermer');
+    ok('icône : « Revenir au bureau » la referme', await attendre(() => document.querySelector('#appli').hidden));
+    await page.click('#prendre');
+    ok('icône : le choix dit quelle lettre écrire', /« E »/.test(await page.textContent('#reponse')));
+    const largeIc = await page.evaluate(() => document.documentElement.scrollWidth);
+    ok('icône : rien ne déborde à 390 px', largeIc <= 391, 'largeur ' + largeIc);
+    ok('icône : aucune erreur de page', errs.length === 0, errs.join(' | '));
+    await cIc.close();
+  }
+
   await browser.close();
   console.log(`\n✅ PASS: ${pass}   ❌ FAIL: ${fail}`);
   if (fails.length){ console.log('\nÉchecs :'); fails.forEach(f => console.log('  - ' + f)); }

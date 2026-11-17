@@ -13,6 +13,22 @@ Avant : sur `main`, la batterie commune du 8 novembre
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## L'ICÔNE DE CAUSE SUR LE BUREAU DU TÉLÉPHONE (17 novembre 2026) : UNE PLANCHE, EN ATTENTE DE SA LETTRE
+
+`appli/icone-de-cause-2.html`, posée à côté de `appli/icone-de-cause.html` pour comparer (le matin, il demandait si un autre modèle ferait mieux pour l'icône). Sept icônes sur un bureau de téléphone à taille réelle : A, B et C recopiés de la première planche, D à G nouvelles.
+
+**Les pièges :**
+
+- **Les lettres ne bougent jamais.** A, B, C sont la première planche, D à G la seconde. Une proposition de plus prend la lettre suivante (H) ; une proposition retirée laisse sa lettre vide. Il répond par une lettre, et elle doit vouloir dire la même chose sur les deux pages.
+- **A, B et C sont une COPIE** des dessins de la première planche (l'objet `CAUSE` du script). Si la première change, la seconde ne suit pas : les deux se retouchent ensemble.
+- **Android se montre comme `scripts/generer-icones.mjs` le fabrique**, pas comme un simple rond rogné : le dessin réduit à 60 % sur son fond étendu, dont le rond garde 80 %. D'où le `scale(.75)` de la fonction `image` de la planche. Un dessin qui va jusqu'aux bords (la carte, la feuille de notes des voisines) porte `plein` et se rogne sans se réduire.
+- **`FOND` est écrit en dur en crème dans `scripts/generer-icones.mjs`.** Une icône au fond coloré (B, D, E, F) sortirait sur Android en carré de couleur dans un rond crème. À corriger à l'installation, pas avant (`TODO.md`).
+- **Une icône se juge à 60, 29 et 16 px, parmi des voisines de couleur.** Quatre idées ont été écartées à cette épreuve alors qu'elles tenaient en grand (l'en-tête de la planche les nomme) : ne pas les reproposer sans les avoir regardées à ces tailles.
+- **Safari n'a pas été regardé.** L'appli s'ouvre depuis l'icône par un rognage animé (`clip-path`), le geste le plus fragile hors de Chromium.
+- **Le contrôle de `appli/tests/e2e.js` lit ce qui est PEINT** (le dessin posé, la forme, le fond, le filtre), jamais une classe. Il barre la publication de toutes les planches : s'il rougit, c'est la planche qui se corrige.
+- **La capture de l'appli ouverte vient de `appli/vente/images/accueil.jpg`.** Si le dossier du site de vente est rangé autrement, le contrôle le dira (il exige des pixels).
+
+---
 ## LE SITE DE VENTE EN MOUVEMENT (17 novembre 2026) : UNE PLANCHE, PAS ENCORE REGARDÉE PAR LUI
 
 `appli/vente/cause-2.html`, posée à côté de `appli/vente/cause.html` pour comparer (sa demande : des animations plus spectaculaires, toutes libertés, sans toucher à l'autre). Les textes, les prix, les captures et les films sont ceux de `cause.html`.

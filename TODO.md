@@ -1,5 +1,58 @@
 # Prochaines tâches
 
+## ⏳ UNE PLANCHE À REGARDER : L'ICÔNE DE CAUSE SUR LE BUREAU DU TÉLÉPHONE (17 novembre 2026)
+
+Sa demande, depuis son téléphone : *« J'ai besoin que tu me fasses une planche
+pour l'icône de l'application quand il sera sur le bureau des téléphones des
+clients. »* Le matin même, devant la première planche
+(`appli/icone-de-cause.html`, trois « C »), il demandait si un autre modèle
+ferait mieux pour l'icône, et on lui avait répondu d'ouvrir une autre session
+pour comparer. C'est ce qu'il a fait.
+
+**La planche :** `appli/icone-de-cause-2.html`, posée à côté de la première,
+qui n'a pas bougé d'une ligne. Un bureau de téléphone à taille réelle, sept
+icônes à y essayer : A, B et C recopiés de la première planche, D, E, F et G
+nouvelles. Son en-tête dit le parti pris et ce qui a été écarté.
+
+**Ce qu'il a à dire :** une lettre, de A à G. **Les lettres ne se
+renumérotent jamais** : A, B et C désignent les dessins de la première
+planche, D à G ceux de la seconde, sur les deux pages.
+
+**Ce qui n'est PAS vérifié, et qu'il ne faut pas croire vérifié :**
+
+- **Safari.** Ce poste n'a que Chromium. L'ouverture de l'appli depuis l'icône
+  est un rognage animé (`clip-path`) : c'est le premier geste à lui faire
+  essayer sur son iPhone.
+- **La taille exacte du motif sur Android.** La planche montre ce que
+  `scripts/generer-icones.mjs` fabrique (le dessin réduit à 60 %, puis le rond
+  qui en garde 80 %, la zone que la norme garantit). Selon le lanceur, le rond
+  peut garder un peu plus : le motif serait alors encore un peu plus petit.
+- **Qu'aucune marque ne porte déjà un dessin proche.** Un C en bulle est un
+  motif courant des messageries. À regarder avant tout dépôt de marque ; rien
+  n'a été cherché ici.
+
+**Le jour où il donne sa lettre, dans cet ordre :**
+
+1. `public/icone-source.svg` prend le dessin retenu. Les tracés sont dans la
+   planche (l'objet `CAUSE` de son script), sans aucune police.
+2. **`scripts/generer-icones.mjs` étend l'icône d'Android avec un fond crème
+   écrit en dur** (`FOND`). Pour B, D, E et F, dont le fond n'est pas crème, il
+   doit prendre le fond du dessin : sans cela Android montrera un carré de
+   couleur dans un rond crème. Trouvé en dessinant la planche, pas corrigé
+   (rien ne s'installe avant son choix).
+3. La marge de cette icône d'Android (60 %) rend le motif petit dans le rond.
+   À regarder sur un vrai Android avant de la garder.
+4. `npm run icones`, puis regarder l'icône installée sur son téléphone.
+5. `public/` et `scripts/` : le niveau se calcule (`npm run niveau`).
+
+**À savoir pour qui reprendra :** la première planche cite un
+`ARCHITECTURE.md` §581 (« l'application s'appelle Cause ») qui n'est pas sur
+`main`. Il vit dans le lot du renommage d'Atlas en Cause, tenu par une autre
+session et retenu par une batterie rouge sur la construction (Next.js à
+mettre à jour, en attente de sa réponse). Le manifeste de `main` dit donc
+encore « Atlas ». La direction de la planche est dans
+`.impeccable/surfaces/appli-icone-de-cause-2-html.md`.
+
 ## ⏳ UNE PLANCHE À REGARDER : LE SITE DE VENTE EN MOUVEMENT (17 novembre 2026)
 
 Sa demande, depuis son téléphone, devant `appli/vente/cause.html` : *« fais-moi
