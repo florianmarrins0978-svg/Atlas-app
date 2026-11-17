@@ -346,7 +346,7 @@ class Montage:
 
 OUVRIR = .56
 CHOISIR = .30
-FERMER = .56
+FERMER = .46      # on referme plus vite qu'on n'ouvre : il n'y a plus rien à lire
 
 
 def replier(r):
@@ -375,7 +375,11 @@ PASSAGES = [
                  # « et Julien » attend que « Lucas » lui ait laissé la place :
                  # plus tôt, les deux mots se chevauchaient en chemin.
                  'droite_reste': {'quand': (.55, 1), 'trajet': (10, 0)},
-                 'adresse_a': {'quand': (0, .28)}, 'adresse_b': {'quand': (.36, .95), 'trajet': (0, -6)}}),
+                 # L'adresse est le seul élément qui s'efface puis revient
+                 # (elle change de ligne) : le vide entre les deux tient en un
+                 # dixième de seconde. Plus tôt, elle reviendrait sur le bord
+                 # de la carte, qui n'a pas encore fini de descendre.
+                 'adresse_a': {'quand': (0, .28)}, 'adresse_b': {'quand': (.30, .80), 'trajet': (0, -6)}}),
     (3, 4, FERMER, replier('m')),
     # L'après-midi, pareil. L'en-tête dit déjà « Lucas et Julien ».
     (4, 5, OUVRIR, deplier('a')),
