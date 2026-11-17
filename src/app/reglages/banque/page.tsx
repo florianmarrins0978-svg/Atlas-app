@@ -121,7 +121,7 @@ export default async function BanquePage({
         <Paquet titre="Sur ce compte">
           {(
             [
-              ["oeil", "Atlas lit les entrées et les sorties."],
+              ["oeil", "Cause lit les entrées et les sorties."],
               ["cadenas", "Il ne peut ni payer, ni déplacer de l'argent."],
               ["document", "Il ne met rien au relevé de TVA sans votre oui."],
             ] as const

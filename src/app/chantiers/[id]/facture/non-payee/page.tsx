@@ -53,7 +53,7 @@ export default async function PageNonPayee({ params }: { params: Promise<{ id: s
           </p>
         </section>
         <p className="mt-4 text-center text-[13px]" style={{ color: colors.inkSoft }}>
-          Rien ne part chez lui. La facture passe dans Non payées, et Atlas arrête de vous la rappeler.
+          Rien ne part chez lui. La facture passe dans Non payées, et Cause arrête de vous la rappeler.
         </p>
         <p className="text-center">
           <Link

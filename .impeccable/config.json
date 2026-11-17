@@ -867,6 +867,42 @@
         ],
         "createdAt": "2026-11-17T08:22:28.370Z",
         "reason": "faux positif, identique sur appli/vente/cause.html : la dernière image d'un film de l'appli, invisible tant que le film n'est pas fini (mécanique des films, éprouvée sur son iPhone le 6 novembre 2026)"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/icone-de-cause-2.html"
+        ],
+        "createdAt": "2026-11-17T12:02:38.077Z",
+        "reason": "Claude : le fond crème est la charte de l'appli (src/lib/design-tokens.ts, cream #f5f3ee), que toute planche du dépôt reprend"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "appli/icone-de-cause-2.html"
+        ],
+        "createdAt": "2026-11-17T12:02:38.091Z",
+        "reason": "Claude : .ecran dessine un écran de téléphone, dont la barre d'état et le fond vont bord à bord ; la grille dedans a ses marges (27 px)"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/icone-de-cause-3.html"
+        ],
+        "createdAt": "2026-11-17T17:05:19.096Z",
+        "reason": "Claude : le fond crème est la charte de l'appli (src/lib/design-tokens.ts, cream #f5f3ee), que toute planche du dépôt reprend"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "appli/icone-de-cause-3.html"
+        ],
+        "createdAt": "2026-11-17T17:05:19.109Z",
+        "reason": "Claude : .ecran dessine un écran de téléphone, dont la barre d'état et le fond vont bord à bord ; la grille dedans a ses marges (27 px)"
       }
     ]
   }

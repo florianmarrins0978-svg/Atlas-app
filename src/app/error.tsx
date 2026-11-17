@@ -34,7 +34,7 @@ export default function Erreur({
     >
       <div className="px-6 pt-9">
         <p className={smallCaps} style={{ color: colors.rust, marginBottom: 8 }}>
-          Atlas
+          Cause
         </p>
         <h1 className="text-[36px] leading-none" style={{ fontFamily: font.display }}>
           Une erreur

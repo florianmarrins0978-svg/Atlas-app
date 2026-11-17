@@ -130,7 +130,7 @@ export default function VocabulaireClient({ initiaux }: { initiaux: Terme[] }) {
           />
           {/* Le champ qui fait le travail — d'où la précision à côté du libellé. */}
           <Champ
-            label="Ce qu'Atlas doit en faire"
+            label="Ce que Cause doit en faire"
             precision="(le plus utile)"
             placeholder={
               nature === "mot"

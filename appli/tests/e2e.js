@@ -725,6 +725,101 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     await cFi.close();
   }
 
+  // ── L'icône de Cause, sur le bureau du téléphone ─────────────────────────
+  //
+  // Ses demandes du 17 novembre 2026. Chaque planche attend une lettre, et
+  // chaque geste doit y changer quelque chose (CLAUDE.md §3 bis, « chaque
+  // geste d'une planche fait quelque chose ») : c'est ici qu'on les touche,
+  // pas chez lui. On lit ce qui est PEINT (le dessin posé, la forme, le fond,
+  // le filtre), jamais une classe : un bouton qui poserait sa classe sans
+  // rien changer à l'écran resterait vert. La capture de l'appli vit dans un
+  // autre dossier (vente/images) : un fichier déplacé ouvrirait l'appli sur
+  // un écran vide, donc on exige des pixels.
+  //
+  // Deux planches partagent le même bureau : la deuxième (sept icônes, des
+  // lettres) et la troisième (trois dessins, chacun sur trois fonds). Les
+  // mêmes contrôles les gardent toutes les deux ; la troisième ajoute le fond.
+  const PLANCHES_D_ICONE = [
+    { fichier: 'icone-de-cause-2.html', nom: 'icône', lettres: 'ABCDEFG', ensemble: '#sept', papier: 'fond', fonds: [],
+      choix: k => 'la ' + k, dit: k => '« ' + k + ' »' },
+    // La troisième dit son choix par le NOM du dessin : la lettre I, seule, se lit comme un l ou un 1.
+    { fichier: 'icone-de-cause-3.html', nom: 'icône en dessin', lettres: 'HIJ', ensemble: '#ensemble', papier: 'papier', fonds: ['vert', 'or', 'creme'],
+      choix: k => ({ H: 'le rouge-gorge', I: 'le casque', J: 'la rosace' })[k], dit: k => '« ' + ({ H: 'le rouge-gorge', I: 'le casque', J: 'la rosace' })[k] + ', fond ' },
+  ];
+  for (const pl of PLANCHES_D_ICONE) {
+    const N = pl.nom, derniere = pl.lettres[pl.lettres.length - 1], milieu = pl.lettres[1];
+    const cIc = await browser.newContext({ viewport: { width: 390, height: 664 } });
+    const page = await cIc.newPage();
+    const errs = []; page.on('pageerror', e => errs.push(N + ' : ' + e.message));
+    await page.goto(`${B}/${pl.fichier}`, { waitUntil: 'networkidle' });
+    const attendre = (fn) => page.waitForFunction(fn, null, { timeout: 5000 }).then(() => true, () => false);
+    const dessin = () => page.evaluate(() => document.querySelector('#grille .notre .tuile').innerHTML);
+    const dessins = new Set();
+    for (const k of pl.lettres) { await page.click(`[data-choix="${k}"]`); dessins.add(await dessin()); }
+    ok(N + ' : chaque lettre pose son dessin sur le bureau', dessins.size === pl.lettres.length, dessins.size + ' dessins');
+    ok(N + ' : le bouton du choix suit la lettre', (await page.textContent('#prendre')) === 'Je prends ' + pl.choix(derniere));
+    // Le fond de l'icône : chaque pastille repeint la tuile, et le choix le dit.
+    if (pl.fonds.length) {
+      const peints = new Set();
+      for (const f of pl.fonds) { await page.click(`[data-fond="${f}"]`); peints.add(await dessin()); }
+      ok(N + ' : chaque fond repeint l\'icône', peints.size === pl.fonds.length, peints.size + ' rendus');
+      await page.click('#prendre');
+      ok(N + ' : le choix dit le dessin ET le fond', (await page.textContent('#reponse')).includes(pl.dit(derniere) + 'crème »'));
+      await page.click(`[data-fond="${pl.fonds[0]}"]`);
+      ok(N + ' : changer de fond efface la réponse', (await page.textContent('#reponse')) === '');
+    }
+    await page.click('[data-forme="android"]');
+    ok(N + ' : Android arrondit l\'icône',
+       await page.evaluate(() => getComputedStyle(document.querySelector('#grille .notre .tuile')).borderRadius === '50%'));
+    await page.click('[data-forme="iphone"]');
+    const fond = () => page.evaluate(() => getComputedStyle(document.querySelector('#ecran')).backgroundImage);
+    const clair = await fond();
+    await page.click(`[data-${pl.papier}="sombre"]`);
+    ok(N + ' : Sombre change le fond d\'écran', (await fond()) !== clair);
+    await page.click('#soleil');
+    ok(N + ' : Plein soleil délave l\'écran',
+       await attendre(() => /contrast\(0\.58\)/.test(getComputedStyle(document.querySelector('.peau')).filter)));
+    await page.click(pl.ensemble);
+    ok(N + ' : ensemble, toutes les icônes de Cause sont sur le bureau', (await page.locator('#grille .notre').count()) === pl.lettres.length);
+    const ordre = () => page.evaluate(() => [...document.querySelectorAll('#grille > *')].map(c => c.dataset.cle).join());
+    const avant = await ordre();
+    await page.click('#melanger');
+    ok(N + ' : Mélanger change l\'ordre', (await ordre()) !== avant);
+    await page.waitForTimeout(700);
+    await page.click(`#grille .notre[data-ouvre="${milieu}"]`);
+    ok(N + ' : toucher une icône en fait le choix', (await page.textContent('#prendre')) === 'Je prends ' + pl.choix(milieu));
+    ok(N + ' : l\'appli s\'ouvre sur sa capture, avec des pixels', await attendre(() => {
+      const i = document.querySelector('.accueil');
+      return getComputedStyle(i).display !== 'none' && i.complete && i.naturalWidth > 0;
+    }));
+    await page.click('#fermer');
+    ok(N + ' : « Revenir au bureau » la referme', await attendre(() => document.querySelector('#appli').hidden));
+    // Le bureau d'Android est plus haut que celui de l'iPhone (la date, la
+    // recherche) : son bas passe sous la barre du bas. Le bouton qui referme
+    // l'appli y tombait, caché, et il ne restait qu'à deviner qu'il fallait
+    // faire défiler. Trouvé à la relecture du 17 novembre 2026.
+    await page.click(pl.ensemble);
+    await page.click('[data-forme="android"]');
+    await page.evaluate(() => scrollTo(0, 0));
+    await page.click('#grille .notre');
+    await page.waitForTimeout(700);
+    const sortie = await page.evaluate(() => {
+      const b = document.querySelector('#fermer').getBoundingClientRect();
+      return { bas: Math.round(b.bottom), barre: Math.round(document.querySelector('.barre').getBoundingClientRect().top), haut: Math.round(b.top) };
+    });
+    ok(N + ' : sur Android, « Revenir au bureau » reste au-dessus de la barre',
+       sortie.haut >= 0 && sortie.bas <= sortie.barre, JSON.stringify(sortie));
+    await page.click('#fermer');
+    ok(N + ' : et il referme l\'appli', await attendre(() => document.querySelector('#appli').hidden));
+    await page.click('[data-forme="iphone"]');
+    await page.click('#prendre');
+    ok(N + ' : le choix dit quoi écrire', (await page.textContent('#reponse')).includes(pl.dit(milieu)));
+    const largeIc = await page.evaluate(() => document.documentElement.scrollWidth);
+    ok(N + ' : rien ne déborde à 390 px', largeIc <= 391, 'largeur ' + largeIc);
+    ok(N + ' : aucune erreur de page', errs.length === 0, errs.join(' | '));
+    await cIc.close();
+  }
+
   await browser.close();
   console.log(`\n✅ PASS: ${pass}   ❌ FAIL: ${fail}`);
   if (fails.length){ console.log('\nÉchecs :'); fails.forEach(f => console.log('  - ' + f)); }

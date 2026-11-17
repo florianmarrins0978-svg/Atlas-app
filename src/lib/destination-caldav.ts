@@ -162,7 +162,7 @@ export function destinationAutorisee(
     return {
       ok: false,
       refus: "schema",
-      phrase: `Atlas ne parle à un agenda qu'en https. « ${url.protocol.replace(":", "")} » est refusé.`,
+      phrase: `Cause ne parle à un agenda qu'en https. « ${url.protocol.replace(":", "")} » est refusé.`,
     };
   }
 
@@ -172,7 +172,7 @@ export function destinationAutorisee(
     return {
       ok: false,
       refus: "adresse-interne",
-      phrase: `« ${hote} » désigne une machine interne : Atlas n'y enverra jamais un agenda.`,
+      phrase: `« ${hote} » désigne une machine interne : Cause n'y enverra jamais un agenda.`,
     };
   }
 

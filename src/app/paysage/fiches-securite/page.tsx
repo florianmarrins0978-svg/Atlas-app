@@ -7,7 +7,7 @@ import ListeDesFiches from "./ListeDesFiches";
 import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Fiches de sécurité, Atlas" };
+export const metadata = { title: "Fiches de sécurité, Cause" };
 
 /**
  * LES FICHES DE SÉCURITÉ — dans Paysage, une ligne de plus parmi les outils du

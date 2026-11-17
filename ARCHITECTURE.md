@@ -37469,3 +37469,30 @@ de haie de photinia, élagage d'un frêne, plantation d'un olivier »), puis ver
 | un échec se dit et laisse partir le serveur | une ligne absente coûte moins qu'un banc qui ne démarre plus |
 
 Éprouvé par `scripts/test-completer-env-local.ts`, vu rouge avant le branchement (« banc.mjs ne complète pas .env.local »).
+
+## §581 : L'application s'appelle Cause ; le code garde « atlas »
+
+*17 novembre 2026, sa demande : « l'application va s'appeler Cause, remplace Atlas partout dans l'application ».*
+
+| Décision | Pourquoi |
+|---|---|
+| tout TEXTE affiché dit Cause : écrans, titres d'onglet, manifeste, courriels, objets, PDF (producteur, créateur), invite de l'assistant, fiches du mode d'emploi, nom de la clé d'appareil et de la double vérification, ligne Stripe | c'est ce qu'il lit, ce que ses clients et son comptable lisent |
+| le remplacement a lu le code comme un arbre (chaînes, gabarits, texte JSX), jamais comme du texte brut | un commentaire, un identifiant ou un nom de fichier ne sont pas des nœuds de texte : ils ne pouvaient pas être touchés par accident |
+| les élisions suivent : « d'Atlas » devient « de Cause », « qu'Atlas » devient « que Cause » | « d'Cause » ne se lit pas |
+| **les noms internes gardent atlas** : rôles `atlas_app` et `atlas_owner`, bases `atlas_test`, variables `ATLAS_*`, repères `data-atlas`, classes `.atlas-*`, dossier `components/atlas`, préfixe `atlas-` des événements d'agenda, clés de rangement | les renommer ne montre rien de plus et casse : ses rendez-vous déjà posés ne seraient plus reconnus (`estEvenementAtlas`), les bases de son espace ne s'ouvriraient plus, huit cents suites perdraient leurs repères |
+| **les conditions générales ne bougent pas** (`src/server/documents-legaux/versions.ts`, `public/conditions-utilisation.html`, `public/confidentialite.html`) | une version publiée ne se modifie jamais : le nom y changera par une version nouvelle, que chaque compte acceptera de nouveau. C'est sa décision (`TODO.md`) |
+| **l'icône reste le « A »** (`public/icone-source.svg`) | un logo est une apparence : planche d'abord (`CLAUDE.md` §3 bis) |
+| les données de test gardent leurs noms d'entreprise (« Atlas SAS », « Jardins Atlas ») | ce sont des clients inventés, pas le nom du produit |
+| les anciennes planches de `appli/` gardent Atlas | elles racontent le chemin ; le site de vente sous le nom Cause est `appli/vente/cause.html` |
+
+## §582 : Next.js arrête la construction lancée par une IA tant que sa version a une faille connue
+
+*17 novembre 2026, la batterie du nom Cause tombée à l'étape Construction.*
+
+| Constat | Ce qu'on en fait |
+|---|---|
+| Next.js 16.4 interroge les avis de sécurité de npm à chaque `next build` ; si la version installée en porte un et qu'il reconnaît un agent d'IA, il s'arrête sur `SecurityFatalError` (`node_modules/next/dist/lib/upgrade/nudge.js`, réglage par défaut `experimental.agentUpgrade: 'security'`) | un rouge à « Construction », suivi des suites navigateur et de la connexion, sans un mot sur le produit : lire la ligne `SecurityFatalError` avant de chercher ailleurs |
+| il laisse repasser la même commande dans les cinq minutes, une fois | la batterie reconstruit bien plus tard : la porte ne sert pas, et ce serait contourner l'avis au lieu de le traiter |
+| son espace, lui, n'est pas arrêté : sans agent, Next.js ne fait que proposer | la faille n'en reste pas moins à corriger |
+| **la racine : monter de version**, dans un lot à part (`package.json` est un plancher, batterie entière) | jamais couper le réglage : ce serait faire taire un avis de sécurité pour passer |
+

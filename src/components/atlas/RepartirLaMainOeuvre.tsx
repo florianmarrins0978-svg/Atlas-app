@@ -376,7 +376,7 @@ export default function RepartirLaMainOeuvre({
                   </div>
                   <p className="mt-0.5 text-[13px]" style={{ color: colors.rust }}>
                     {t.grille !== null
-                      ? `Atlas va se référer à votre grille tarifaire : ${euros(t.grille)}.`
+                      ? `Cause va se référer à votre grille tarifaire : ${euros(t.grille)}.`
                       : "Pas de prix dans votre grille, cette ligne sera à chiffrer."}
                   </p>
                 </div>

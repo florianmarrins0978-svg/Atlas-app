@@ -92,7 +92,7 @@ async function main() {
     await page.waitForTimeout(3500);
 
     const corps = await page.locator("body").innerText();
-    const prepare = /Atlas prépare/.test(corps);
+    const prepare = /Cause prépare/.test(corps);
 
     await page.addStyleTag({
       content: "nextjs-portal, #__next-build-watcher { display: none !important; }",

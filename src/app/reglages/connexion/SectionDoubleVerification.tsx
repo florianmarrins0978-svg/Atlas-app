@@ -114,7 +114,7 @@ export default function SectionDoubleVerification({
   }
 
   function telecharger() {
-    const texte = `Atlas, codes de secours\nChacun ouvre une fois.\n\n${codes.join("\n")}\n`;
+    const texte = `Cause, codes de secours\nChacun ouvre une fois.\n\n${codes.join("\n")}\n`;
     const lien = document.createElement("a");
     lien.href = URL.createObjectURL(new Blob([texte], { type: "text/plain" }));
     lien.download = "atlas-codes-de-secours.txt";

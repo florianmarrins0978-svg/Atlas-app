@@ -134,7 +134,7 @@ await prendre("code-refus");
 }
 await page.getByRole("textbox", { name: "Le code reçu par e-mail" }).fill("004213");
 await page.click("text=Continuer");
-await page.waitForSelector("text=Entrer dans Atlas", { timeout: 60_000 });
+await page.waitForSelector("text=Entrer dans Cause", { timeout: 60_000 });
 await prendre("fin");
 
 await page.goto(`${ADRESSE}/login`, { waitUntil: "networkidle" });

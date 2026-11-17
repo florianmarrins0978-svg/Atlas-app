@@ -51,7 +51,7 @@ export async function relierPlateforme(
   recuperer: typeof fetch = fetch
 ): Promise<{ ok: true } | { ok: false; raison: string }> {
   if (!estUnePlateforme(saisie.plateforme) || !plateformesOffertes().includes(saisie.plateforme)) {
-    return { ok: false, raison: "Cette plateforme ne se relie pas encore à Atlas." };
+    return { ok: false, raison: "Cette plateforme ne se relie pas encore à Cause." };
   }
   const secret = saisie.secret.trim();
   if (!secret) return { ok: false, raison: "Collez le secret de votre compte." };

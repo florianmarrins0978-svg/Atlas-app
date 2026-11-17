@@ -337,7 +337,7 @@ export const NATURES_PAR_DEFAUT: readonly Nature[] = [
     // L'unité est dite à l'écran, parce que c'est elle qui change tout : un
     // prix saisi ici sera MULTIPLIÉ par le tonnage du chantier. Le taire ferait
     // écrire un forfait dans une case qui n'en est pas une.
-    aide: "Un prix à la tonne. Atlas le multiplie par le tonnage enlevé sur le chantier.",
+    aide: "Un prix à la tonne. Cause le multiplie par le tonnage enlevé sur le chantier.",
     axe: "",
     forme: "une-case",
     cleUnique: CELLULE_GRUMES,
@@ -363,7 +363,7 @@ export const NATURES_PAR_DEFAUT: readonly Nature[] = [
   {
     cle: "haie",
     titre: "Tailler une haie",
-    aide: "Un seul prix, au mètre linéaire. Atlas le multiplie par la longueur du chantier.",
+    aide: "Un seul prix, au mètre linéaire. Cause le multiplie par la longueur du chantier.",
     axe: "",
     forme: "une-case",
     cleUnique: CELLULE_HAIE,

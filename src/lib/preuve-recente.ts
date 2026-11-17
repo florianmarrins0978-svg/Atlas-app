@@ -103,6 +103,6 @@ export function messagePreuveExigee(geste: GesteSensible): string {
     case GESTES_SENSIBLES.accesALEntreprise:
       return "Les accès ouvrent votre entreprise : vérifiez que c'est bien vous.";
     case GESTES_SENSIBLES.fermerLeCompte:
-      return "Vos salariés n'auront plus accès à Atlas : vérifiez que c'est bien vous.";
+      return "Vos salariés n'auront plus accès à Cause : vérifiez que c'est bien vous.";
   }
 }

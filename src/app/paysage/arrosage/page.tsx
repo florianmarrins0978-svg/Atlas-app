@@ -16,7 +16,7 @@ import { garderLaPage } from "@/server/garde-page";
  * jusqu'au navigateur serait lisible par n'importe qui. Seul le fait qu'elle
  * existe voyage.
  */
-export const metadata = { title: "Plan d'arrosage, Atlas" };
+export const metadata = { title: "Plan d'arrosage, Cause" };
 export const dynamic = "force-dynamic";
 
 export default async function ArrosagePage() {

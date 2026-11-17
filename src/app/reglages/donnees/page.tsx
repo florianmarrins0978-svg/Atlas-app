@@ -90,7 +90,7 @@ export default async function DonneesPage() {
                 {nomFichier}
               </span>
               <span className="mt-[5px] block text-[15px] leading-[1.4]" style={{ color: colors.inkSoft }}>
-                Tout ce qu&apos;Atlas garde pour vous, dans un fichier qui s&apos;ouvre sans lui.
+                Tout ce que Cause garde pour vous, dans un fichier qui s&apos;ouvre sans lui.
               </span>
             </span>
           </div>

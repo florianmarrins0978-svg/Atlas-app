@@ -192,7 +192,7 @@ async function main() {
   await test("le relevé du mois montre chaque pièce, la plus récente en haut", async () => {
     await page.goto(`${BASE}/termines/comptable/${aujourdhui.slice(0, 7)}`, { waitUntil: "networkidle" });
     const texte = (await page.locator('[data-atlas="releve"]').textContent()) ?? "";
-    assert.match(texte, /CB STATION E2E[\s\S]*Ticket du [\s\S]*relié par Atlas/);
+    assert.match(texte, /CB STATION E2E[\s\S]*Ticket du [\s\S]*relié par Cause/);
     assert.match(texte, /CB BOULANGERIE E2E[\s\S]*Ticket perdu, mention validée/);
     assert.match(texte, /PRLV URSSAF E2E[\s\S]*Impôts, cotisations/);
     const jours = await page.locator('[data-atlas="releve"] li > h3').allTextContents();

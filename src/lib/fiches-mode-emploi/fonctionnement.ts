@@ -30,8 +30,8 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
     intitule: "La durée de conservation de vos données, et où elles sont gardées",
     motsCles: ["conserver", "conservation", "garder", "gardees", "duree", "donnees", "stockees", "effacees", "archivees", "photos", "automatiquement"],
     geste:
-      "Tout ce que vous mettez dans Atlas (chantiers, clients, devis, factures, photos, notes) reste enregistré " +
-      "tant que votre compte existe, sur le serveur d'Atlas et pas dans votre téléphone. Rien ne s'efface tout " +
+      "Tout ce que vous mettez dans Cause (chantiers, clients, devis, factures, photos, notes) reste enregistré " +
+      "tant que votre compte existe, sur le serveur de Cause et pas dans votre téléphone. Rien ne s'efface tout " +
       "seul : seule une suppression faite par vous retire une donnée. Les factures se gardent dix ans, comme " +
       "la loi l'impose, même si vous supprimez le client.",
     reserve: "Pour garder votre propre copie : Mes données, « Télécharger mes données ».",
@@ -50,11 +50,11 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
     id: "donnees-apres-resiliation",
     ecran: "Mes données",
     ou: DONNEES,
-    intitule: "Ce que deviennent vos données si vous arrêtez Atlas",
+    intitule: "Ce que deviennent vos données si vous arrêtez Cause",
     motsCles: ["deviennent", "arret", "arreter", "resiliation", "apres", "recuperer", "perdre", "quitte"],
     geste:
       "Avant d'arrêter, téléchargez tout : Mes données, « Télécharger mes données ». Le fichier se lit sans " +
-      "Atlas. Les pièces comptables restent gardées dix ans, comme la loi l'impose.",
+      "Cause. Les pièces comptables restent gardées dix ans, comme la loi l'impose.",
     reserve: "Le délai pendant lequel vos données restent récupérables après la fin de l'abonnement n'est pas encore fixé.",
     source: CONDITIONS,
     preuves: ["restent récupérables par ce moyen pendant [À COMPLÉTER", "dans un format exploitable sans Atlas"],
@@ -77,12 +77,12 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
   },
   {
     id: "donnees-ia",
-    ecran: "Atlas IA",
-    ou: "« Réglages » dans la barre du bas, puis Atlas IA",
+    ecran: "Cause IA",
+    ou: "« Réglages » dans la barre du bas, puis Cause IA",
     intitule: "Où partent vos dictées et vos photos quand l'IA travaille",
     motsCles: ["ia", "intelligence", "transmis", "partent", "fournisseur", "fournisseurs", "confidentialite", "envoye", "ecoute", "ecoutees", "audio", "enregistrement"],
     geste:
-      "Pour transcrire une dictée, rédiger un devis ou regarder une photo, Atlas envoie ce contenu à ses " +
+      "Pour transcrire une dictée, rédiger un devis ou regarder une photo, Cause envoie ce contenu à ses " +
       "fournisseurs d'intelligence artificielle. Ne dictez pas ce que vous ne voulez pas voir transmis, comme " +
       "une information de santé. Une dictée se retire depuis la fiche client du chantier : glissez " +
       "« Votre dictée », puis « Retirer ».",
@@ -99,9 +99,9 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
   // le jour où l'écran arrive, la fiche rougit au lieu de mentir.
   {
     id: "atlas-internet",
-    ecran: "Atlas",
+    ecran: "Cause",
     ou: "partout",
-    intitule: "Utiliser Atlas sans internet, hors ligne",
+    intitule: "Utiliser Cause sans internet, hors ligne",
     motsCles: ["internet", "hors ligne", "reseau", "connexion", "wifi", "campagne", "capte", "note", "dictee", "gardee"],
     // **La note dictée est gardée depuis le 6 novembre 2026** (sa planche B,
     // `appli/soignee/note-sans-reseau.html`) : la fiche disait « attendez d'en
@@ -109,7 +109,7 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
     // perdue, et elle l'était. Le reste d'Atlas, lui, n'a toujours pas de mode
     // hors ligne : il ne s'ouvre pas sans réseau.
     geste:
-      "Atlas a besoin d'internet pour s'ouvrir et pour enregistrer : il n'a pas de mode hors ligne. " +
+      "Cause a besoin d'internet pour s'ouvrir et pour enregistrer : il n'a pas de mode hors ligne. " +
       "Une note dictée sans réseau reste gardée sur le téléphone : touchez Envoyer quand le réseau revient.",
     source: "src/app/layout.tsx",
     preuves: ['manifest: "/manifest.json"'],
@@ -122,12 +122,12 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
   },
   {
     id: "atlas-ordinateur-telephone",
-    ecran: "Atlas",
+    ecran: "Cause",
     ou: "le navigateur, Safari ou Chrome",
-    intitule: "Ouvrir Atlas sur un ordinateur, l'installer sur l'écran d'accueil du téléphone",
+    intitule: "Ouvrir Cause sur un ordinateur, l'installer sur l'écran d'accueil du téléphone",
     motsCles: ["ordinateur", "pc", "mac", "tablette", "installer", "installation", "telecharger", "android", "iphone", "icone", "raccourci", "accueil", "ipad", "bureau"],
     geste:
-      "Atlas s'ouvre dans le navigateur, sur téléphone comme sur ordinateur, avec le même compte. " +
+      "Cause s'ouvre dans le navigateur, sur téléphone comme sur ordinateur, avec le même compte. " +
       "Pour l'avoir sur l'écran du téléphone : sur iPhone, dans Safari, touchez Partager puis « Sur l'écran d'accueil » ; " +
       "sur Android, dans Chrome, menu puis « Ajouter à l'écran d'accueil ».",
     source: "src/app/layout.tsx",
@@ -161,9 +161,9 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
   },
   {
     id: "ecrire-a-atlas",
-    ecran: "Atlas",
+    ecran: "Cause",
     ou: "par e-mail",
-    intitule: "Contacter Atlas, écrire à l'équipe",
+    intitule: "Contacter Cause, écrire à l'équipe",
     motsCles: ["contacter", "contact", "ecrire", "joindre", "aide", "probleme", "bug", "reclamation", "souci", "adresser", "panne"],
     geste: `Écrivez à ${CONTACT_ATLAS}.`,
     source: "src/lib/contact-atlas.ts",
@@ -183,7 +183,7 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
     // l'espace (`plateformesOffertes`, `ARCHITECTURE.md` §555) : sans elle,
     // l'assistant enseignerait un geste introuvable.
     reserve:
-      "Réservé au patron. Tant que la ligne n'est pas dans Réglages, Atlas envoie la facture à votre client " +
+      "Réservé au patron. Tant que la ligne n'est pas dans Réglages, Cause envoie la facture à votre client " +
       "par SMS ou par e-mail, sans plateforme.",
     source: "src/app/reglages/facture-electronique/page.tsx",
     preuves: ['libelle="Relier mon compte"', "Identifiant", "Secret"],
@@ -230,7 +230,7 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
     intitule: "Voir son chiffre d'affaires, ce qu'on a facturé ou encaissé sur une période",
     motsCles: ["chiffre", "affaires", "gagne", "total", "bilan", "mois", "annee"],
     geste:
-      "Atlas n'a pas d'écran de chiffre d'affaires : demandez-le à l'assistant, par exemple « combien j'ai facturé " +
+      "Cause n'a pas d'écran de chiffre d'affaires : demandez-le à l'assistant, par exemple « combien j'ai facturé " +
       "en septembre » ou « combien j'ai encaissé cette année ».",
     source: "src/server/ai/tools/lire-factures.ts",
     preuves: ["bilanDeLaPeriode"],
@@ -243,7 +243,7 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
     motsCles: ["importer", "import", "excel", "csv", "pdf", "zip", "fichier", "liste", "clients", "carnet", "contacts", "tableau", "ancien", "logiciel"],
     geste:
       "Dans « Vos clients », touchez « Importer devis / facture » et choisissez vos PDF, un dossier .zip, ou le " +
-      "tableau CSV ou Excel (.xlsx) exporté de votre ancien logiciel. Atlas lit chaque pièce, crée les fiches avec " +
+      "tableau CSV ou Excel (.xlsx) exporté de votre ancien logiciel. Cause lit chaque pièce, crée les fiches avec " +
       "leur adresse et range chaque pièce sur la sienne, par date ; quand un nom, une colonne ou une adresse le fait " +
       "hésiter, il vous demande avant de ranger. « Annuler » défait ce rangement, six secondes durant. Ce qui " +
       "n'a pas pu se ranger, un nom illisible par exemple, reste dans la bande sous la recherche : touchez-la pour le ranger.",
@@ -262,8 +262,8 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
   },
   {
     id: "ia-se-trompe",
-    ecran: "Atlas IA",
-    ou: "« Réglages » dans la barre du bas, puis Atlas IA",
+    ecran: "Cause IA",
+    ou: "« Réglages » dans la barre du bas, puis Cause IA",
     intitule: "L'IA peut-elle se tromper",
     motsCles: ["ia", "intelligence", "artificielle", "fiable", "fiabilite", "confiance", "verifier"],
     geste:
@@ -289,11 +289,11 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
   },
   {
     id: "atlas-langue",
-    ecran: "Atlas",
+    ecran: "Cause",
     ou: "partout",
-    intitule: "Changer la langue d'Atlas",
+    intitule: "Changer la langue de Cause",
     motsCles: ["langue", "anglais", "espagnol", "portugais", "traduire", "traduction", "francais"],
-    geste: "Atlas n'existe qu'en français pour l'instant.",
+    geste: "Cause n'existe qu'en français pour l'instant.",
     source: "src/app/layout.tsx",
     preuves: ['<html lang="fr"'],
     absences: ["next-intl", "i18next"],
@@ -305,7 +305,7 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
     intitule: "Faire une facture de situation, facturer en plusieurs fois",
     motsCles: ["situation", "avancement", "plusieurs", "fois", "partielle", "echelonner", "etapes", "tranche"],
     geste:
-      "Atlas ne fait pas encore de facture de situation. Pour être payé en plusieurs fois, demandez un acompte " +
+      "Cause ne fait pas encore de facture de situation. Pour être payé en plusieurs fois, demandez un acompte " +
       "sur le devis : la facture le reprend dans ses règlements reçus.",
     source: "src/app/chantiers/[id]/devis-complet/DevisCompletClient.tsx",
     preuves: ['libelle="Ajouter un acompte"'],
@@ -322,12 +322,12 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
   // décidé (l'hébergeur, le contrat de sous-traitance) se dit comme tel.
   {
     id: "atlas-securite",
-    ecran: "Atlas",
+    ecran: "Cause",
     ou: "partout",
-    intitule: "Atlas est-il sécurisé : ce qui protège votre compte et vos données",
+    intitule: "Cause est-il sécurisé : ce qui protège votre compte et vos données",
     motsCles: ["securise", "securisee", "protege", "chiffre", "chiffrees", "pirate", "piratage", "hacker", "https", "fiable"],
     geste:
-      "Les échanges avec Atlas sont toujours chiffrés (https). Chaque entreprise est cloisonnée dans la base " +
+      "Les échanges avec Cause sont toujours chiffrés (https). Chaque entreprise est cloisonnée dans la base " +
       "elle-même : aucune autre n'y a accès. Votre mot de passe est gardé chiffré, les essais répétés sont " +
       "freinés, et vous pouvez entrer avec Face ID.",
     reserve: "Le chiffrement des données sur le disque dépend de l'hébergeur, qui n'est pas encore désigné.",
@@ -345,7 +345,7 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
     intitule: "Comment votre mot de passe est protégé",
     motsCles: ["mot", "passe", "motdepasse", "protege", "connait", "clair", "caracteres", "longueur", "deviner", "essais", "tentatives", "bloque"],
     geste:
-      `Votre mot de passe fait au moins ${LONGUEUR_MINIMALE} caractères. Atlas ne le garde jamais en clair : ` +
+      `Votre mot de passe fait au moins ${LONGUEUR_MINIMALE} caractères. Cause ne le garde jamais en clair : ` +
       "seule une empreinte chiffrée est enregistrée, personne ne peut le relire. " +
       `Après ${SEUIL_AVANT_TEMPORISATION} essais ratés, chaque nouvel essai doit attendre, jusqu'à ` +
       `${Math.max(...PALIERS_MS) / 60_000} minutes.`,
@@ -381,7 +381,7 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
     intitule: "La double authentification, un code en plus du mot de passe",
     motsCles: ["double", "authentification", "deux", "etapes", "facteurs", "2fa", "verification"],
     geste:
-      "Allumez Double vérification, ajoutez Atlas à votre appli d'authentification (Google Authenticator, par " +
+      "Allumez Double vérification, ajoutez Cause à votre appli d'authentification (Google Authenticator, par " +
       "exemple), tapez le premier code qu'elle affiche, puis gardez vos codes de secours. Ensuite, chaque " +
       "connexion par mot de passe demande le code de l'appli. Face ID entre sans code.",
     source: "src/app/reglages/connexion/SectionDoubleVerification.tsx",
@@ -389,12 +389,12 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
   },
   {
     id: "donnees-usage",
-    ecran: "Atlas",
+    ecran: "Cause",
     ou: "les conditions d'utilisation, acceptées à l'inscription",
-    intitule: "Ce qu'Atlas fait de vos données, s'il les revend",
+    intitule: "Ce que Cause fait de vos données, s'il les revend",
     motsCles: ["revend", "revendre", "vendre", "vend", "publicite", "exploite", "utilise", "commercial", "usage"],
     geste:
-      "Atlas ne se sert de vos données que pour faire tourner le service : les afficher, les sauvegarder, les " +
+      "Cause ne se sert de vos données que pour faire tourner le service : les afficher, les sauvegarder, les " +
       "transmettre à ses sous-traitants, fabriquer vos documents. Les conditions d'utilisation limitent cet usage " +
       "à ce qui est strictement nécessaire.",
     source: CONDITIONS,
@@ -402,9 +402,9 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
   },
   {
     id: "atlas-rgpd",
-    ecran: "Atlas",
+    ecran: "Cause",
     ou: "« Réglages » dans la barre du bas, puis Mes données",
-    intitule: "Atlas et le RGPD",
+    intitule: "Cause et le RGPD",
     motsCles: ["rgpd", "conforme", "conformite", "cnil", "reglementation", "personnelles", "protection"],
     geste:
       "Vos données sont cloisonnées et se téléchargent dans Mes données. Un client s'efface de sa fiche, ses " +
@@ -421,11 +421,11 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
     id: "abonnement-carte",
     ecran: "Abonnement",
     ou: "« Réglages » dans la barre du bas, puis Abonnement",
-    intitule: "Atlas garde-t-il ma carte bancaire",
+    intitule: "Cause garde-t-il ma carte bancaire",
     motsCles: ["carte", "bancaire", "cb", "garde", "stocke", "numero", "prelevement"],
     geste:
       "Non. Votre carte se saisit sur les pages sécurisées du prestataire de paiement, qui seul la garde : " +
-      "Atlas ne la voit jamais.",
+      "Cause ne la voit jamais.",
     source: CONDITIONS,
     preuves: ["ne collecte ni ne conserve aucune donnée de carte bancaire"],
   },
@@ -444,12 +444,12 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
   },
   {
     id: "atlas-astuces",
-    ecran: "Atlas",
+    ecran: "Cause",
     ou: "partout",
     intitule: "Gagner du temps : les gestes qui font le plus",
     motsCles: ["astuce", "astuces", "vite", "rapide", "rapidement", "temps", "gagner", "conseil", "maximum", "efficace", "utiliser"],
     geste:
-      "Dictez le chantier au lieu de le taper : Atlas écrit le devis. Pour un client déjà venu, « Dernier devis » " +
+      "Dictez le chantier au lieu de le taper : Cause écrit le devis. Pour un client déjà venu, « Dernier devis » " +
       "sur sa fiche reprend le précédent. Posez vos prix une fois dans vos tarifs, ils reviennent dans chaque " +
       "devis. Et demandez à l'assistant : « qui me doit de l'argent », « crée un chantier pour Martin ».",
     source: "src/app/chantiers/[id]/AnneauNoteVocale.tsx",

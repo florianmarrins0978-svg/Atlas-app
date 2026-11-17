@@ -97,7 +97,7 @@ export default async function FactureElectroniquePage({
         ) : (
           <Paquet>
             <p className="py-4 text-[17px] leading-[1.4]" style={{ fontFamily: font.display }}>
-              Aucune plateforme ne se relie encore à Atlas.
+              Aucune plateforme ne se relie encore à Cause.
             </p>
           </Paquet>
         )}
@@ -106,8 +106,8 @@ export default async function FactureElectroniquePage({
           {(
             [
               ["envoyer", "Chaque facture d'entreprise que vous envoyez part aussi chez elle."],
-              ["document", "Vos factures de fournisseurs arrivent chez elle, pas dans Atlas."],
-              ["cadenas", "Atlas n'y fait rien d'autre."],
+              ["document", "Vos factures de fournisseurs arrivent chez elle, pas dans Cause."],
+              ["cadenas", "Cause n'y fait rien d'autre."],
             ] as const
           ).map(([picto, phrase], i) => (
             <div key={picto} className="relative flex min-h-[58px] items-center gap-[14px] py-2.5">

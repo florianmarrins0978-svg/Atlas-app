@@ -173,7 +173,7 @@ export function AjoutDeTemps({
 
       <BasculeDuMoment retenu={quand} onChoisir={setQuand} repere="quand-poser" />
       <p className="mt-2.5 text-[13px]" style={{ color: colors.inkSoft }}>
-        Sans fiche client : pas de devis ni de facture dans Atlas.
+        Sans fiche client : pas de devis ni de facture dans Cause.
       </p>
       {refus && (
         <p data-atlas="refus-du-geste" className="mt-2 text-[13px]" style={{ color: colors.bordeaux }}>

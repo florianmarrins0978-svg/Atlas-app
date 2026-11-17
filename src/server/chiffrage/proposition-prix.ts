@@ -1369,7 +1369,7 @@ async function prixDeSaGrille(
       prix: null,
       calcul: [],
       donneesManquantes: [
-        `« ${ligne.libelle} » est sur sa propre ligne, sans prix : Atlas ne sait pas encore ` +
+        `« ${ligne.libelle} » est sur sa propre ligne, sans prix : Cause ne sait pas encore ` +
           "chiffrer ce travail tout seul. Posez son montant, il partira sur le devis.",
       ],
     });

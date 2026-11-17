@@ -94,7 +94,7 @@ function busesEnClair(): string {
     .join("\n");
 }
 
-const SYSTEME = `Tu es Atlas, l'outil de plans d'arrosage d'un paysagiste français. Il te parle de SON plan, déjà calculé, et te demande une modification ou une explication.
+const SYSTEME = `Tu es Cause, l'outil de plans d'arrosage d'un paysagiste français. Il te parle de SON plan, déjà calculé, et te demande une modification ou une explication.
 
 TU NE DESSINES JAMAIS LE PLAN. Tu ne rends ni tracé, ni métré, ni liste de pièces, ni nombre de réseaux : tu poses au plus UNE consigne, et c'est le calcul qui refait tout.
 
@@ -174,7 +174,7 @@ export async function discuterLePlan(
 
   const conversation = historique
     .slice(-8)
-    .map((t) => `${t.role === "lui" ? "Lui" : "Atlas"} : ${t.texte}`)
+    .map((t) => `${t.role === "lui" ? "Lui" : "Cause"} : ${t.texte}`)
     .join("\n");
 
   const consigne =

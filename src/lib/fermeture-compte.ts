@@ -156,9 +156,9 @@ export function aPrevenir(f: Fermeture | null | undefined, prevenuLe: Date | nul
 export function courrielAvantEffacement(effacementLe: Date): { objet: string; texte: string } {
   const jour = jourEnMots(effacementLe);
   return {
-    objet: `Votre compte Atlas s'efface le ${jour}`,
+    objet: `Votre compte Cause s'efface le ${jour}`,
     texte:
-      `Votre compte Atlas est fermé. Le ${jour}, ce qui ne se garde pas s'efface : ` +
+      `Votre compte Cause est fermé. Le ${jour}, ce qui ne se garde pas s'efface : ` +
       "les devis jamais acceptés, les clients sans facture, les photos, les notes et les dictées.\n\n" +
       "Vos factures, vos avoirs, vos devis et contrats acceptés restent dix ans, lisibles avec votre mot de passe.\n\n" +
       "Pour garder une copie de tout, ou pour rouvrir votre compte : Réglages, puis Mes données.",

@@ -330,7 +330,7 @@ async function main() {
     const reponse = await poserQuestion(A, chantier.id, [], "est-ce que le CGR de Mantes est ouvert ?");
     assert.equal(reponse.succes, true);
     if (!reponse.succes) return;
-    assert.match(reponse.texte, /ne réponds qu'aux questions sur Atlas/i);
+    assert.match(reponse.texte, /ne réponds qu'aux questions sur Cause/i);
     assert.deepEqual(reponse.sources, [], "Aucun outil ne doit avoir été consulté");
   });
 
@@ -473,7 +473,7 @@ async function main() {
     );
     assert.equal(reponse.succes, true);
     if (!reponse.succes) return;
-    assert.match(reponse.texte, /ne réponds qu'aux questions sur Atlas/i);
+    assert.match(reponse.texte, /ne réponds qu'aux questions sur Cause/i);
     assert.deepEqual(reponse.sources, []);
   });
 

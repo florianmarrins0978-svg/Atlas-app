@@ -31,7 +31,7 @@ export async function envoyerParBrevo(
         accept: "application/json",
       },
       body: JSON.stringify({
-        sender: { name: "Atlas", email: acces.expediteur },
+        sender: { name: "Cause", email: acces.expediteur },
         to: [{ email: courriel.a }],
         subject: courriel.objet,
         textContent: courriel.texte,

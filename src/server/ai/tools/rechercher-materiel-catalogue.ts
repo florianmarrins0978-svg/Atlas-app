@@ -5,7 +5,7 @@ import { rechercherCartes } from "../../repositories/mots-catalogue";
 export const rechercherMaterielCatalogueOutil: Outil = {
   nom: "RechercherMateriel",
   description:
-    "Recherche les matériels correspondant à un mot-clé dans le vocabulaire partagé d'Atlas ET dans les mots " +
+    "Recherche les matériels correspondant à un mot-clé dans le vocabulaire partagé de Cause ET dans les mots " +
     "ajoutés par l'entreprise.",
   schema: z.object({ motCle: z.string() }),
   async executer(contexte, parametres) {

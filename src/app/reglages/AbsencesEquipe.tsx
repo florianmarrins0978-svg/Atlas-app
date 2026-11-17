@@ -152,7 +152,7 @@ export default function AbsencesEquipe({
             <span className="font-semibold" style={{ color: colors.ink }}>
               Pour vos congés, posez-les dans votre agenda
             </span>{" "}
-            : Atlas en tient compte et ne proposera rien sur ces jours-là.
+            : Cause en tient compte et ne proposera rien sur ces jours-là.
           </>
         ) : (
           <>
@@ -163,7 +163,7 @@ export default function AbsencesEquipe({
             >
               reliez votre agenda
             </span>{" "}
-            : Atlas n’en tient compte qu’une fois relié.
+            : Cause n’en tient compte qu’une fois relié.
           </>
         )}
       </p>
@@ -368,7 +368,7 @@ export default function AbsencesEquipe({
 
       <p className="mx-0.5 mt-3 text-[14px] leading-[1.5]" style={{ color: colors.inkSoft }}>
         Un absent <span className="font-semibold" style={{ color: colors.ink }}>ne compte plus</span> ces
-        jours-là : Atlas propose une date de moins, et tout revient normal
+        jours-là : Cause propose une date de moins, et tout revient normal
         ensuite. Vos clients ne voient rien de tout ceci.
       </p>
 

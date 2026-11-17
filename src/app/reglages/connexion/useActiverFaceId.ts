@@ -77,7 +77,7 @@ export function useActiverFaceId(onCles: (cles: CleAppareil[]) => void) {
           return;
         }
         onCles(r.cles);
-        setFait("Cet appareil est enregistré. Vous pourrez ouvrir Atlas avec Face ID.");
+        setFait("Cet appareil est enregistré. Vous pourrez ouvrir Cause avec Face ID.");
       } catch (erreur) {
         const nom = erreur instanceof Error ? erreur.name : null;
         // **Fermer la fenêtre du système n'est pas une faute.** Rien à l'écran.

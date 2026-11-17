@@ -22,10 +22,10 @@ import { empreinteDeLaSaisie, empreinteDuCode, tirerUnCode } from "@/server/empr
 
 function texteDuCourriel(code: string): { objet: string; texte: string } {
   return {
-    objet: `Votre code Atlas : ${code}`,
+    objet: `Votre code Cause : ${code}`,
     texte:
       `Votre code : ${code}\n\n` +
-      `Il vaut un quart d'heure. Si vous n'avez pas créé de compte Atlas, ignorez ce message.`,
+      `Il vaut un quart d'heure. Si vous n'avez pas créé de compte Cause, ignorez ce message.`,
   };
 }
 

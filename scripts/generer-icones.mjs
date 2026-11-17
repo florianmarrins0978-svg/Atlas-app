@@ -58,8 +58,8 @@ for (const { nom, taille, marge } of CIBLES) {
 // Le manifeste décrit l'application au téléphone : sans lui, « Ajouter à
 // l'écran d'accueil » produit un raccourci de navigateur, pas une application.
 const manifeste = {
-  name: "Atlas",
-  short_name: "Atlas",
+  name: "Cause",
+  short_name: "Cause",
   description: "Dictée de chantier, vérification et préparation de devis pour artisans.",
   start_url: "/",
   scope: "/",

@@ -189,7 +189,7 @@ export function messageRefusAcces(refus: RefusAcces): string {
     case "email-invalide":
       return "Cette adresse e-mail n'est pas valable.";
     case "email-deja-pris":
-      return "Un compte Atlas utilise déjà cette adresse.";
+      return "Un compte Cause utilise déjà cette adresse.";
     case "role-inconnu":
       return "Ce rôle n'existe pas.";
     // **Les deux phrases du mot de passe sont celles de « Mon compte »**, mot

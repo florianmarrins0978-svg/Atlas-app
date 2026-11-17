@@ -1,5 +1,9 @@
 # Reprendre le travail
 
+## L'APPLICATION S'APPELLE CAUSE (17 novembre 2026)
+
+Tout texte neuf écrit **Cause**, jamais Atlas. Les noms internes (`atlas_app`, `data-atlas`, `ATLAS_*`, préfixe `atlas-` des rendez-vous) ne se renomment pas : `ARCHITECTURE.md` §581 dit pourquoi.
+
 **À lire en premier, dans une nouvelle conversation.** Ce fichier suppose que
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
@@ -11,6 +15,30 @@ ligne », chaque travail à son prix (`ARCHITECTURE.md` §579), batterie verte
 Avant : sur `main`, la batterie commune du 8 novembre
 (`docs/batterie-commune-8-novembre.md`).
 (l'historique fait foi : `git log --oneline -20`)
+
+---
+## L'ICÔNE DE CAUSE (17 novembre 2026) : TROIS PLANCHES, EN ATTENTE D'UNE LETTRE ET D'UN FOND
+
+`appli/icone-de-cause.html` (A, B, C, une autre session), `appli/icone-de-cause-2.html` (les mêmes et D à G, sur un bureau de téléphone à taille réelle), puis `appli/icone-de-cause-3.html`. **Il a jugé les lettres « hyper basiques »** et veut un dessin qui se retient : la troisième planche porte trois images sans lettre (le rouge-gorge H, le casque I, la rosace J), chacune sur trois fonds. C'est elle qui attend sa réponse.
+
+**Les pièges :**
+
+- **La troisième planche RECOPIE le banc d'essai de la deuxième** (le bureau, les voisines, les réglages, l'appli qui s'ouvre). Un défaut corrigé dans l'une se corrige dans l'autre ; le contrôle de `appli/tests/e2e.js` joue les mêmes gestes sur les deux (`PLANCHES_D_ICONE`).
+- **Dans la troisième, « fond » veut dire le fond de l'ICÔNE** (vert, or, crème, `data-fond`), et le fond d'écran du téléphone s'appelle `papier` (`data-papier`). Dans la deuxième, `data-fond` est encore le fond d'écran.
+- **Un dessin dit ses couleurs fond par fond** (`teintes`) : sur le crème, l'or ne tient pas seul (1,6 pour 1), la forme y passe au vert.
+- **Trois couleurs de dessin ne se changent pas sans relire l'en-tête de la troisième planche** : la gorge du rouge-gorge est ROUGE (`#E4572E`, la seule couleur hors de sa charte ; en or, l'oiseau rond devenait un poussin) ; la rosace n'est JAMAIS verte sur un fond clair (verte dans un cercle vert sur du blanc, c'est le « Sole delle Alpi », l'emblème de la Lega italienne) ; le casque n'est JAMAIS vert (un casque militaire). Sur fond or ou crème, casque et rosace restent dorés sur un rond vert (`medaillon`, `rond`).
+- **Le choix se dit par le nom du dessin** (« Je prends le casque »), pas par sa lettre : un I en bâton se lit comme un l ou un 1. Les lettres restent dans la barre, en serif.
+- **Il a cité l'icône de Claude et celle de ChatGPT comme exemples de ce qui claque.** Ce sont des exemples, pas des modèles : tout éclat de rayons et tout entrelacs proche ont été écartés pour ne pas les copier.
+
+- **Les lettres ne bougent jamais.** A, B, C sont la première planche, D à G la deuxième, H à J la troisième. Une proposition de plus prend la lettre suivante (K) ; une proposition retirée laisse sa lettre vide. Il répond par une lettre, et elle doit vouloir dire la même chose sur les deux pages.
+- **A, B et C sont une COPIE** des dessins de la première planche (l'objet `CAUSE` du script). Si la première change, la seconde ne suit pas : les deux se retouchent ensemble.
+- **Android se montre comme `scripts/generer-icones.mjs` le fabrique**, pas comme un simple rond rogné : le dessin réduit à 60 % sur son fond étendu, dont le rond garde 80 %. D'où le `scale(.75)` de la fonction `image` de la planche. Un dessin qui va jusqu'aux bords (la carte, la feuille de notes des voisines) porte `plein` et se rogne sans se réduire.
+- **`FOND` est écrit en dur en crème dans `scripts/generer-icones.mjs`.** Une icône au fond coloré (B, D, E, F) sortirait sur Android en carré de couleur dans un rond crème. À corriger à l'installation, pas avant (`TODO.md`).
+- **Une icône se juge à 60, 29 et 16 px, parmi des voisines de couleur.** Quatre idées ont été écartées à cette épreuve alors qu'elles tenaient en grand (l'en-tête de la planche les nomme) : ne pas les reproposer sans les avoir regardées à ces tailles.
+- **Safari n'a pas été regardé.** L'appli s'ouvre depuis l'icône par un rognage animé (`clip-path`), le geste le plus fragile hors de Chromium.
+- **Le contrôle de `appli/tests/e2e.js` lit ce qui est PEINT** (le dessin posé, la forme, le fond, le filtre), jamais une classe. Il barre la publication de toutes les planches : s'il rougit, c'est la planche qui se corrige.
+- **« Revenir au bureau » se place d'après ce qui se VOIT**, pas d'après le bas du cadre : le bureau d'Android est plus haut et passe sous la barre des sept, un petit téléphone aussi. La variable `--remonte` porte ce qui est caché ; le bouton et le fondu sous lui remontent d'autant. Le contrôle l'a vu rouge avant la correction.
+- **La capture de l'appli ouverte vient de `appli/vente/images/accueil.jpg`.** Si le dossier du site de vente est rangé autrement, le contrôle le dira (il exige des pixels).
 
 ---
 ## LE SITE DE VENTE EN MOUVEMENT (17 novembre 2026) : UNE PLANCHE, PAS ENCORE REGARDÉE PAR LUI

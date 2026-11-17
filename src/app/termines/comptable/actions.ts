@@ -61,7 +61,7 @@ async function contexte(action: string) {
  */
 async function apres(r: Fait): Promise<Fait> {
   if (!r.ok) return r;
-  if (r.pieceRetiree) await supprimerObjet(r.pieceRetiree).catch((err) => logger.warn("Une facture hors d'Atlas remplacée n'a pas pu être effacée", { erreur: err instanceof Error ? err.message : String(err) }));
+  if (r.pieceRetiree) await supprimerObjet(r.pieceRetiree).catch((err) => logger.warn("Une facture hors de Cause remplacée n'a pas pu être effacée", { erreur: err instanceof Error ? err.message : String(err) }));
   revalidatePath("/termines/comptable", "layout");
   return { ok: true };
 }
@@ -180,7 +180,7 @@ export async function deposerFactureHorsAtlasAction(formData: FormData): Promise
   const fichier = formData.get("fichier");
   if (typeof mouvementId !== "string" || !UUID.test(mouvementId)) return ADRESSE_INVALIDE;
   if (!(fichier instanceof File)) return { ok: false, raison: "Aucun fichier reçu." };
-  const ctx = await contexte("joindre une facture faite hors d'Atlas");
+  const ctx = await contexte("joindre une facture faite hors de Cause");
   const ligne = await ligneDeposable(ctx, mouvementId);
   if (!ligne) return ADRESSE_INVALIDE;
   if (ligne.justifiee) return { ok: false, raison: "Cette ligne est déjà justifiée." };
@@ -205,7 +205,7 @@ export async function deposerFactureHorsAtlasAction(formData: FormData): Promise
     nature = "pdf";
   } else {
     // La porte commune des photos : signature vérifiée, position GPS retirée.
-    const prete = await preparerPhotoEntrante(fichier, "facture faite hors d'Atlas");
+    const prete = await preparerPhotoEntrante(fichier, "facture faite hors de Cause");
     if (!prete.ok) return { ok: false, raison: prete.raison };
     octets = Buffer.from(prete.photo.octets);
     extension = prete.photo.extension;
@@ -219,7 +219,7 @@ export async function deposerFactureHorsAtlasAction(formData: FormData): Promise
     total = (await lireFactureHorsAtlas(octets.toString("base64"), mimeRange))?.totalTtc ?? null;
   } catch (err) {
     // On journalise avant de se taire : la lecture échouera chez lui, pas ici.
-    logger.warn("Lecture d'une facture faite hors d'Atlas impossible", { erreur: err instanceof Error ? err.message : String(err) });
+    logger.warn("Lecture d'une facture faite hors de Cause impossible", { erreur: err instanceof Error ? err.message : String(err) });
   }
   const piece: PieceDeposee = { cle: objet.storageKey, nature, total };
   if (total === null) return { ok: false, raison: "Le total ne se lit pas. Tapez-le.", piece };
@@ -240,7 +240,7 @@ export async function joindreFactureHorsAtlasAction(
   malgreEcart = false
 ): Promise<ResultatDepot> {
   if (!UUID.test(mouvementId)) return ADRESSE_INVALIDE;
-  const ctx = await contexte("joindre une facture faite hors d'Atlas");
+  const ctx = await contexte("joindre une facture faite hors de Cause");
   if (typeof piece?.cle !== "string" || !piece.cle.startsWith(PREFIXE_HORS_ATLAS(ctx.entrepriseId)) || piece.cle.includes("..")) {
     return { ok: false, raison: "Cette facture n'est pas reconnue." };
   }
@@ -256,11 +256,11 @@ export async function joindreFactureHorsAtlasAction(
 
 /** « Reprendre la photo », « Annuler » : la facture déposée et jamais jointe quitte le stockage. */
 export async function abandonnerFactureHorsAtlasAction(cle: string): Promise<Fait> {
-  const ctx = await contexte("joindre une facture faite hors d'Atlas");
+  const ctx = await contexte("joindre une facture faite hors de Cause");
   if (typeof cle !== "string" || !cle.startsWith(PREFIXE_HORS_ATLAS(ctx.entrepriseId)) || cle.includes("..")) return { ok: false, raison: "Cette facture n'est pas reconnue." };
   // Jointe à une ligne, elle se garde : seule la ligne la rend (`apres`).
   if (await pieceDejaJointe(ctx, cle)) return { ok: true };
-  await supprimerObjet(cle).catch((err) => logger.warn("Une facture hors d'Atlas abandonnée n'a pas pu être effacée", { erreur: err instanceof Error ? err.message : String(err) }));
+  await supprimerObjet(cle).catch((err) => logger.warn("Une facture hors de Cause abandonnée n'a pas pu être effacée", { erreur: err instanceof Error ? err.message : String(err) }));
   return { ok: true };
 }
 

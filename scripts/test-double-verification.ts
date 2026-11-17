@@ -100,9 +100,9 @@ essai("l'adresse otpauth porte la clé, l'émetteur et le compte", () => {
   const u = new URL(uriOtpauth("MZXW6YTBOI", "anne@exemple.fr"));
   assert.equal(u.protocol, "otpauth:");
   assert.equal(u.host, "totp");
-  assert.equal(decodeURIComponent(u.pathname), "/Atlas:anne@exemple.fr");
+  assert.equal(decodeURIComponent(u.pathname), "/Cause:anne@exemple.fr");
   assert.equal(u.searchParams.get("secret"), "MZXW6YTBOI");
-  assert.equal(u.searchParams.get("issuer"), "Atlas");
+  assert.equal(u.searchParams.get("issuer"), "Cause");
   assert.equal(u.searchParams.get("digits"), "6");
   assert.equal(u.searchParams.get("period"), "30");
 });

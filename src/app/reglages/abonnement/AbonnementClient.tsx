@@ -139,7 +139,7 @@ export default function AbonnementClient({
                   Gérer mon abonnement
                 </span>
                 <span className="mt-[3px] block text-[14.5px] leading-[1.4]" style={{ color: colors.inkSoft }}>
-                  Changer de carte, vos factures Atlas.
+                  Changer de carte, vos factures Cause.
                 </span>
               </span>
               <span style={{ color: colors.chevron }}>
@@ -159,7 +159,7 @@ export default function AbonnementClient({
             <b className="font-semibold" style={{ color: colors.ink }}>
               Attention au mot.
             </b>{" "}
-            Ici, « factures » désigne celles qu&apos;Atlas vous envoie. Celles de vos clients sont dans « Terminés ».
+            Ici, « factures » désigne celles que Cause vous envoie. Celles de vos clients sont dans « Terminés ».
           </p>
 
           {/* Résilier se fait ICI, et non chez le prestataire : « Avant de

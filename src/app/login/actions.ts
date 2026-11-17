@@ -41,7 +41,7 @@ const MESSAGE_GENERIQUE = "Email ou mot de passe incorrect.";
  * répare du côté du service. Le journal, lui, dit tout.
  */
 const MESSAGE_SERVICE_INDISPONIBLE =
-  "Impossible de vérifier vos identifiants : un service d'Atlas ne répond pas. " +
+  "Impossible de vérifier vos identifiants : un service de Cause ne répond pas. " +
   "Ce n'est pas votre mot de passe. Réessayez dans un instant.";
 
 /**

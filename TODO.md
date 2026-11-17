@@ -1,5 +1,118 @@
 # Prochaines tâches
 
+## ⏳ CAUSE : CE QUI ATTEND APRÈS LE CHANGEMENT DE NOM (17 novembre 2026)
+
+Le texte de l'appli dit Cause (`ARCHITECTURE.md` §581). Restent, et chacun est à lui :
+
+- **les conditions générales** : une version nouvelle qui dit Cause, que chaque compte acceptera de nouveau. Le plus simple : la faire quand sa micro-entreprise a son SIREN, pour remplir dans la même version les cases « Qui édite » encore à compléter (une seule acceptation au lieu de deux) ;
+- **l'icône** : le « A » provisoire ne va plus. Trois planches (ci-dessous) : il a jugé les lettres des deux premières trop basiques, la troisième porte des dessins et attend une lettre et un fond, puis `npm run icones` ;
+- **l'adresse d'envoi des courriels** : le nom affiché dit Cause, l'adresse reste celle de sa variable `COURRIEL_EXPEDITEUR`, à passer sur cause.fr quand l'Afnic aura accordé le domaine.
+## DEUX SUITES ROUGES UN JOUR PAR MOIS : LE « 1ER » (17 novembre 2026)
+
+`test-le-client-s-est-trompe-e2e` et `test-message-sans-autre-date-e2e`
+cherchent une date par `\d+ ` (un nombre suivi d'une espace). Le jour où
+« dans 45 jours » tombe un 1er du mois, l'appli écrit, à juste titre,
+« vendredi 1er janvier » : les deux suites rougissent, sur `main` comme
+ailleurs. Vu le 17 novembre 2026 (17 novembre + 45 jours = 1er janvier),
+rejoué sur `main` (`verifier-rouge-prealable.ts` : même sort des deux côtés).
+Le produit est juste ; ce sont les deux motifs à corriger, dans un lot à part
+(accepter `\d+(er)? `). D'ici là, ces deux rouges ne bloquent personne : le
+garde-fou les reconnaît comme préexistants.
+
+## ⏳ UNE PLANCHE À REGARDER : L'ICÔNE DE CAUSE, EN DESSIN (17 novembre 2026)
+
+**Sa réponse du même jour devant la deuxième planche (les lettres), et elle
+change la demande :** *« Ok, très bien, mais là tu m'as fait un truc hyper
+basique. C'est une lettre avec une couleur. [...] Regarde l'application de
+Claude. C'est une espèce de soleil blanc sur un fond orange. ChatGPT, on
+dirait des mailles qui s'entrelacent. Et je pense que pour Cause, il faudrait
+également trouver peut-être un design, un dessin, une image, quelque chose qui
+claque, quelque chose qui rentre facilement dans la tête et pour que le plus
+grand nombre d'utilisateurs ne l'oublie pas dès qu'il la voit. Propose-moi
+d'autres choses du coup. »*
+
+**Donc plus de lettre.** `appli/icone-de-cause-3.html` : trois dessins qu'on
+peut nommer, le rouge-gorge (H), le casque de chantier en bulle (I), la rosace
+des charpentiers (J), chacun sur trois fonds (vert, or, crème), sur le même
+bureau de téléphone. **Ce qu'il a à dire : une lettre et un fond**, ou ce qui
+manque encore. A à G (les lettres) restent sur les deux planches d'avant, qui
+ne bougent pas.
+
+**À savoir pour la suite de cette recherche :**
+
+- **Ce qui a été écarté est nommé dans l'en-tête de la planche**, avec ce que
+  chaque idée devenait en petit (un mètre ruban se lit comme un escargot, un
+  niveau comme une gélule, une bulle faite de lignes comme une ruche). Ne pas
+  les reproposer sans les avoir regardées à 60, 29 et 16 px.
+- **Pas dessinée : la cocotte en papier** (la paperasse, pliée en oiseau). Sa
+  géométrie n'a pas pu être vérifiée d'ici (Wikipédia est hors du réseau de ce
+  poste) et une cocotte fausse ne se reconnaît pas. À reprendre s'il aime
+  l'oiseau.
+- **Les couleurs de ces dessins ne sont pas des jetons de l'appli** : l'or est
+  celui du site de vente (`#F0B43C`), le vert un vert forêt (`#15402A`), plus
+  franc que le vert pin, et la gorge du rouge-gorge est rouge (`#E4572E`), la
+  seule couleur hors de sa charte. Si un dessin est retenu, dire où elles
+  vivent (l'icône seule, ou aussi le manifeste et l'écran de lancement).
+- **La rosace ressemble à un emblème politique dès qu'elle est verte sur un
+  fond clair** (le « Sole delle Alpi » de la Lega, un parti italien). La
+  planche ne la montre donc qu'en or. Il doit le savoir avant de la choisir :
+  dit dans la conversation le 17 novembre.
+- **Les entrelacs ont été écartés sans dessin** : des anneaux, des losanges, un
+  trèfle sont déjà des marques connues. S'il y tient, c'est un travail à part.
+
+Ce qui suit vaut pour les trois planches (la première, la deuxième et la
+troisième).
+
+Sa demande, depuis son téléphone : *« J'ai besoin que tu me fasses une planche
+pour l'icône de l'application quand il sera sur le bureau des téléphones des
+clients. »* Le matin même, devant la première planche
+(`appli/icone-de-cause.html`, trois « C »), il demandait si un autre modèle
+ferait mieux pour l'icône, et on lui avait répondu d'ouvrir une autre session
+pour comparer. C'est ce qu'il a fait.
+
+**La planche :** `appli/icone-de-cause-2.html`, posée à côté de la première,
+qui n'a pas bougé d'une ligne. Un bureau de téléphone à taille réelle, sept
+icônes à y essayer : A, B et C recopiés de la première planche, D, E, F et G
+nouvelles. Son en-tête dit le parti pris et ce qui a été écarté.
+
+**Les lettres ne se renumérotent jamais** : A, B et C désignent les dessins de
+la première planche, D à G ceux de la deuxième, H à J ceux de la troisième.
+
+**Ce qui n'est PAS vérifié, et qu'il ne faut pas croire vérifié :**
+
+- **Safari.** Ce poste n'a que Chromium. L'ouverture de l'appli depuis l'icône
+  est un rognage animé (`clip-path`) : c'est le premier geste à lui faire
+  essayer sur son iPhone.
+- **La taille exacte du motif sur Android.** La planche montre ce que
+  `scripts/generer-icones.mjs` fabrique (le dessin réduit à 60 %, puis le rond
+  qui en garde 80 %, la zone que la norme garantit). Selon le lanceur, le rond
+  peut garder un peu plus : le motif serait alors encore un peu plus petit.
+- **Qu'aucune marque ne porte déjà un dessin proche.** Un C en bulle est un
+  motif courant des messageries. À regarder avant tout dépôt de marque ; rien
+  n'a été cherché ici.
+
+**Le jour où il donne sa lettre, dans cet ordre :**
+
+1. `public/icone-source.svg` prend le dessin retenu. Les tracés sont dans la
+   planche (l'objet `CAUSE` de son script), sans aucune police.
+2. **`scripts/generer-icones.mjs` étend l'icône d'Android avec un fond crème
+   écrit en dur** (`FOND`). Pour B, D, E, F et pour tout dessin de la troisième
+   planche sur fond vert ou or, il doit prendre le fond du dessin : sans cela
+   Android montrera un carré de couleur dans un rond crème. Trouvé en dessinant la planche, pas corrigé
+   (rien ne s'installe avant son choix).
+3. La marge de cette icône d'Android (60 %) rend le motif petit dans le rond.
+   À regarder sur un vrai Android avant de la garder.
+4. `npm run icones`, puis regarder l'icône installée sur son téléphone.
+5. `public/` et `scripts/` : le niveau se calcule (`npm run niveau`).
+
+**À savoir pour qui reprendra :** la première planche cite
+`ARCHITECTURE.md` §581 (« l'application s'appelle Cause »), arrivé sur `main`
+avec le renommage le 17 novembre 2026, après la montée de Next.js en 16.4.6
+(§582). Le manifeste dit Cause ; l'icône, elle, est toujours le « A »
+provisoire. La direction de chaque planche est dans
+`.impeccable/surfaces/appli-icone-de-cause-2-html.md` et
+`.impeccable/surfaces/appli-icone-de-cause-3-html.md`.
+
 ## ⏳ À TRANCHER : QUATRE VERTS DE BOUTON ENTRE L'APPLI, LES PLANCHES ET LE SITE (17 novembre 2026)
 
 Sa question, depuis son téléphone : *« souvent tu me proposais un certain vert
@@ -40,6 +153,7 @@ recherche des couleurs dans les fichiers ne suffit pas : les planches figées
 recopient les feuilles de style de l'appli, où dorment d'autres verts qui ne
 peignent aucun bouton (`#1f7a45`, le vert des montants reçus ; `#506f44`, le
 texte des cartes vertes).
+
 
 ## ⏳ UNE PLANCHE À REGARDER : LE SITE DE VENTE EN MOUVEMENT (17 novembre 2026)
 
@@ -185,7 +299,7 @@ libellé dans la consigne, et `npm run verifier:dictee` sur son espace.
 fois, pour Taille de haie de laurier de ml, vous aviez retenu 650 € HT »
 compare la ligne de main d'œuvre à une taille de haie.
 
-## ⏳ À REGARDER PAR LUI (9 novembre 2026) : jeter la dictée, en clair
+## ⏳ À REGARDER PAR LUI (9 novembre 2026, refaite le 17) : jeter la dictée, en clair
 
 Sa remarque : *« moi je ne savais pas que ce mécanisme jetait la dictée,
 il faut peut-être mettre un truc plus clair ; il n'y a pas déjà un bouton
@@ -196,12 +310,15 @@ fois la note envoyée, seul le glissement de « Votre dictée »
 montre.
 
 **La planche** : `appli/jeter-la-dictee.html`, sur sa vraie fiche client
-(M. Bernard, une note envoyée). A : « Retirer » écrit au bout de la ligne,
-comme sur les fiches en cours (sa planche du 11 octobre). B : la poubelle
-cerclée de la dictée, avec « Jeter ». Le tiroir « Annuler » reste.
+(M. Bernard, une note envoyée). Le 16 novembre, il a d'abord choisi d'enlever
+la case ; le 17, il a répondu « B » sur la première planche, puis *« montre-moi
+les deux planches »*. Elle porte donc : 1, la case enlevée (une dictée envoyée
+se refait en redictant) ; 2, la case gardée avec la poubelle cerclée
+« Jeter » au bout, et le tiroir « Annuler ». L'option 1 attend sur la branche
+`claude/amazing-mendel-skfnud`, batterie complète à jouer.
 
-**Reste** : son choix, puis le coder (et récrire la fiche du mode d'emploi
-`chantier-dictee-retirer`, qui décrit le glissement).
+**Reste** : son choix entre 1 et 2. Pour 2 : récrire la fiche du mode
+d'emploi `chantier-dictee-retirer`, qui décrit le glissement.
 
 ## ⏳ À REGARDER PAR LUI (9 novembre 2026) : la fiche ouverte et Composer ma fiche, soignées
 

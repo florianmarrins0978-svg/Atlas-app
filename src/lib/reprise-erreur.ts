@@ -142,7 +142,7 @@ export function repriseApresErreur(
     return {
       rechargement: true,
       automatique: true,
-      phrase: "Atlas n'a pas retrouvé une partie de son code : la page se recharge.",
+      phrase: "Cause n'a pas retrouvé une partie de son code : la page se recharge.",
       bouton: "Recharger",
     };
   }
@@ -155,7 +155,7 @@ export function repriseApresErreur(
     rechargement: true,
     automatique: false,
     phrase:
-      "Atlas n'a pas retrouvé une partie de son code, même après un rechargement. " +
+      "Cause n'a pas retrouvé une partie de son code, même après un rechargement. " +
       "Une mise à jour est peut-être en cours, ou la connexion a coupé : réessayez dans une minute.",
     bouton: "Recharger",
   };

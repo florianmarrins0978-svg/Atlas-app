@@ -1,6 +1,6 @@
 {
-  "name": "Atlas",
-  "short_name": "Atlas",
+  "name": "Cause",
+  "short_name": "Cause",
   "description": "Dictée de chantier, vérification et préparation de devis pour artisans.",
   "start_url": "/",
   "scope": "/",

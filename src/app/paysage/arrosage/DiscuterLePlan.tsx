@@ -145,7 +145,7 @@ export default function DiscuterLePlan({
             }
           }}
           rows={1}
-          placeholder="Écrire à Atlas…"
+          placeholder="Écrire à Cause…"
           aria-label="Demander une modification du plan"
           data-atlas="champ-discussion"
           className="min-h-[44px] flex-1 resize-none border-0 bg-transparent px-2 py-[11px] text-[16px] outline-none"
