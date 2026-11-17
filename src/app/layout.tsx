@@ -18,8 +18,8 @@ import { roleDeLaSession } from "@/server/autorisation";
 // a validé, et il l'a redemandé en propres termes. Les piles sont dans
 // `globals.css` — voir le commentaire de `--font-display`.
 export const metadata: Metadata = {
-  title: "Atlas",
-  description: "Atlas : dictée de chantier, vérification et préparation de devis.",
+  title: "Cause",
+  description: "Cause : dictée de chantier, vérification et préparation de devis.",
   manifest: "/manifest.json",
   // iOS ne lit pas les icônes du manifeste : il cherche `apple-touch-icon`.
   // L'oublier donne, sur l'écran d'accueil, une vignette de la page au lieu
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Atlas",
+    title: "Cause",
   },
 
   // **Safari fabriquait des liens que personne n'avait écrits.**

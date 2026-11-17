@@ -116,7 +116,7 @@ export async function composerAttestationFiscale(
   const doc = await PDFDocument.create();
   doc.setTitle(papier(`${c.titre}, ${c.entete.nom}`));
   doc.setAuthor(papier(c.entete.nom));
-  doc.setCreator("Atlas");
+  doc.setCreator("Cause");
   const p = await polices(doc);
   const image = await imageDuLogo(doc, logo);
   const trace: TraceAttestation = { textes: [], logos: 0, pages: 0 };

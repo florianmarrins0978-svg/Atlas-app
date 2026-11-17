@@ -71,7 +71,7 @@ export function formatDuTableau(nom: string): "csv" | "xlsx" | "xls" | null {
 
 /** La phrase qui refuse un `.xls`, en attendant de savoir le lire. */
 export const REFUS_XLS =
-  "Ce fichier .xls est un ancien format d'Excel, qu'Atlas ne lit pas encore. Dans Excel, « Enregistrer sous » puis « Classeur Excel (.xlsx) » ou « CSV », et choisissez ce fichier-là.";
+  "Ce fichier .xls est un ancien format d'Excel, que Cause ne lit pas encore. Dans Excel, « Enregistrer sous » puis « Classeur Excel (.xlsx) » ou « CSV », et choisissez ce fichier-là.";
 
 // ─── Lire un CSV ────────────────────────────────────────────────────────────
 

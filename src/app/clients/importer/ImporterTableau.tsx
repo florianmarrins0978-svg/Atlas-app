@@ -174,7 +174,7 @@ export default function ImporterTableau({
       return;
     }
     if (!r.rangees) {
-      setEnvoi({ quoi: "refus", raison: `Ces ${nombre(r.dejaLa ?? aRanger)} pièces sont déjà dans Atlas : rien de nouveau à ranger.` });
+      setEnvoi({ quoi: "refus", raison: `Ces ${nombre(r.dejaLa ?? aRanger)} pièces sont déjà dans Cause : rien de nouveau à ranger.` });
       return;
     }
     // « N documents rangés », et « Annuler », sur Vos clients (`BandeImport`).
@@ -241,7 +241,7 @@ export default function ImporterTableau({
         <>
           <Rubrique>Colonnes</Rubrique>
           <p className="-mt-[4px] mb-[10px] text-[14.5px] leading-[1.45]" style={{ color: colors.inkSoft }}>
-            Atlas hésite sur une colonne. Vérifiez, et changez ce qui ne va pas.
+            Cause hésite sur une colonne. Vérifiez, et changez ce qui ne va pas.
           </p>
           <div className="rounded-[14px] px-[18px] py-[4px]" style={{ backgroundColor: colors.card }} data-atlas="colonnes-tableau">
             {[...reconnaissance.hesite, ...CHAMPS_DU_TABLEAU.filter((c) => !reconnaissance.hesite.includes(c))].map((champ, rang) => (

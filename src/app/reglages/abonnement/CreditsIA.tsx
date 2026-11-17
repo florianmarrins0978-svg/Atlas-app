@@ -33,7 +33,7 @@ export default function CreditsIA({ credits }: { credits: EtatCreditsIA }) {
   const jour = jourDeReprise(reprise);
   const detail =
     etat === "epuise"
-      ? `Atlas IA reprend le ${jour}. D'ici là, tout s'écrit à la main.`
+      ? `Cause IA reprend le ${jour}. D'ici là, tout s'écrit à la main.`
       : etat === "presque"
         ? `Il en reste peu jusqu'au ${jour}.`
         : `Repart à zéro le ${jour}.`;

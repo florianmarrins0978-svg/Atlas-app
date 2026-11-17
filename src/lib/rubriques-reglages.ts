@@ -198,7 +198,7 @@ const L_APPLICATION: Rubrique[] = [
   // cette fiche » ; dix jours d'usage lui ont fait changer d'avis, et c'est
   // cette décision-là qui vaut. Le motif d'origine, laissé tel quel, aurait
   // suffi à l'y ramener de bonne foi.
-  { nom: "Atlas IA", icone: "etincelle", href: "/reglages/ia" },
+  { nom: "Cause IA", icone: "etincelle", href: "/reglages/ia" },
   {
     // **« Intégrations » A ÉTÉ RETIRÉ LE 5 SEPTEMBRE 2026, et le motif n'est
     // pas seulement que c'est un mot d'informaticien.**

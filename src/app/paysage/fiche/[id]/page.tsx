@@ -10,7 +10,7 @@ import FicheChantierClient from "./FicheChantierClient";
 import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Fiche de chantier, Atlas" };
+export const metadata = { title: "Fiche de chantier, Cause" };
 
 /**
  * La fiche qu'il coche sur un chantier — **arrangement C**, sa décision du

@@ -424,7 +424,7 @@ async function main() {
     );
     assert.match(
       await carte.innerText(),
-      /pas de devis ni de facture dans Atlas/,
+      /pas de devis ni de facture dans Cause/,
       "rien ne prévient que ce client ne se facture pas ici"
     );
     await carte.locator('[data-atlas="quand-poser"][data-quand="apres_midi"]').click();

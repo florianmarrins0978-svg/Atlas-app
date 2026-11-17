@@ -1,5 +1,9 @@
 # Reprendre le travail
 
+## L'APPLICATION S'APPELLE CAUSE (17 novembre 2026)
+
+Tout texte neuf écrit **Cause**, jamais Atlas. Les noms internes (`atlas_app`, `data-atlas`, `ATLAS_*`, préfixe `atlas-` des rendez-vous) ne se renomment pas : `ARCHITECTURE.md` §581 dit pourquoi.
+
 **À lire en premier, dans une nouvelle conversation.** Ce fichier suppose que
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.

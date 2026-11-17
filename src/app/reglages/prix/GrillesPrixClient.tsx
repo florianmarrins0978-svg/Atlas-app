@@ -111,7 +111,7 @@ export default function GrillesPrixClient({
     <div className="mt-6 flex flex-col gap-6 px-[26px]">
       <p className="text-[13px]" style={{ color: colors.muted }}>
         {cases.size === 0
-          ? `Aucune case remplie sur ${total}. Atlas posera la question à chaque chantier, et rangera ici ce que vous répondez.`
+          ? `Aucune case remplie sur ${total}. Cause posera la question à chaque chantier, et rangera ici ce que vous répondez.`
           : `${cases.size} case${cases.size > 1 ? "s" : ""} remplie${cases.size > 1 ? "s" : ""} sur ${total}.`}
       </p>
 
@@ -214,7 +214,7 @@ function Section({
         // chiffrage sait retrouver un abattage ou une fente dans une dictée ;
         // il ne sait pas retrouver « le broyage des branches ».
         <p className="text-[12px] leading-snug" style={{ color: colors.muted }}>
-          Ce travail est à vous : Atlas y range vos prix et vous les relit, mais il ne le reconnaîtra pas tout seul
+          Ce travail est à vous : Cause y range vos prix et vous les relit, mais il ne le reconnaîtra pas tout seul
           dans une note vocale.
         </p>
       )}

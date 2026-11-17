@@ -42,7 +42,7 @@ export default async function IAPage() {
   if (!(await estProprietaire(ctx))) {
     return (
       <RubriqueReservee
-        titre="Atlas IA"
+        titre="Cause IA"
         // **« … et ce qu'ils coûtent » est parti le 26 octobre 2026** : aucun
         // coût ne s'affiche sur cet écran, la phrase promettait une page qui
         // n'existe pas (relevé sur la planche des Réglages soignés).
@@ -77,7 +77,7 @@ export default async function IAPage() {
       <div className="pb-24">
         <EnTeteEcran
           allure="soignee"
-          titre="Atlas IA"
+          titre="Cause IA"
           retour={{ href: "/reglages", libelle: "Retour aux réglages" }}
         />
 
@@ -98,7 +98,7 @@ export default async function IAPage() {
             11 px posées à droite. Le dessin suit le RÔLE, jamais le libellé :
             « Lire vos croquis » peut changer de mots, il reste la lecture
             d’image. */}
-        <Paquet titre="Ce qu&apos;Atlas sait faire">
+        <Paquet titre="Ce que Cause sait faire">
           {etatsIA.map((etat) => {
             const [s] = ceQuAtlasSaitFaire([etat]);
             return (
@@ -195,7 +195,7 @@ export default async function IAPage() {
                     Mon vocabulaire
                   </span>
                   <span className="mt-[3px] block text-[14.5px] leading-[1.4]" style={{ color: colors.inkSoft }}>
-                    Les mots qu&apos;Atlas rattache à une prestation quand vous dictez.
+                    Les mots que Cause rattache à une prestation quand vous dictez.
                   </span>
                 </span>
                 <span style={{ color: colors.chevron }}>

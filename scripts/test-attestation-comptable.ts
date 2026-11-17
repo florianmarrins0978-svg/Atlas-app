@@ -100,7 +100,7 @@ test("les comptes se font sur les verdicts, et les rejets s'écrivent avec leur 
   assert.equal(c.rejets[0].jour, "05/10");
   assert.equal(c.rejets[0].note, "Contrat du domicile.");
   assert.match(c.rejets[0].montant, /^−9,28/);
-  assert.equal(c.phrase, "J’atteste avoir contrôlé les 3 lignes de ce dossier et leurs justificatifs, tels que présentés dans Atlas.");
+  assert.equal(c.phrase, "J’atteste avoir contrôlé les 3 lignes de ce dossier et leurs justificatifs, tels que présentés dans Cause.");
   assert.deepEqual(c.signataire.slice(0, 2), ["Claire Bernard", "Expert-comptable, Ordre n° 14-0087654"]);
   assert.equal(c.fait, "Fait le 27 octobre 2026");
   assert.ok(c.empreinte.startsWith("Empreinte du dossier 9f3c21ab 7d40e8b5"));

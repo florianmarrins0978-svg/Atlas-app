@@ -1,5 +1,9 @@
 # État du projet
 
+## LE NOM CAUSE, LIVRÉ (17 novembre 2026)
+
+Le texte affiché dit Cause partout ; le code garde atlas. Restent à lui : les conditions générales (version nouvelle), l'icône (planche). `ARCHITECTURE.md` §581.
+
 ## L'ICÔNE DE CAUSE, EN DESSIN (17 novembre 2026), EN ATTENTE D'UNE LETTRE ET D'UN FOND
 
 Sa réponse devant les lettres : *« un truc hyper basique [...] il faudrait un dessin, une image, quelque chose qui claque »*. `appli/icone-de-cause-3.html` : trois dessins sans lettre, le rouge-gorge (H), le casque (I), la rosace (J), chacun sur fond vert, or ou crème, sur le bureau de téléphone de la planche d'avant. Éprouvée dans Chromium à 390, 360, 320 et 1280 px, chaque geste touché, gardée par `appli/tests/e2e.js` ; **pas regardée sur Safari**. Rien dans `src/`, rien d'installé. La suite : `TODO.md`.

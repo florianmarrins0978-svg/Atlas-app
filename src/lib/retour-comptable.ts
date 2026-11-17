@@ -61,7 +61,7 @@ export function courrielDuRetour(d: { du: string; au: string; rejetees: number }
     objet: "Votre comptable demande une correction",
     texte:
       `Bonjour,\n\nVotre comptable vous renvoie le dossier justifié du ${jourComplet(d.du)} au ${jourComplet(d.au)} : ${lignesAReprendre(d.rejetees).replace(/\.$/, "")}.\n\n` +
-      "Les lignes et son mot sont dans Atlas : Terminés, Pour mon comptable, Mes dossiers justifiés.\n\nAtlas",
+      "Les lignes et son mot sont dans Cause : Terminés, Pour mon comptable, Mes dossiers justifiés.\n\nCause",
   };
 }
 

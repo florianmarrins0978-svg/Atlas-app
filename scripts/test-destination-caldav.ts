@@ -246,7 +246,7 @@ async function brancheeSurLeReseau() {
   await essaiAsync("le refus dit que c'est ATLAS qui refuse, pas Apple", async () => {
     await assert.rejects(
       () => poserEvenement(IDENT, "https://10.0.0.5/dav", "uid-5", "BEGIN:VCALENDAR"),
-      (e: Error) => /Atlas refuse de joindre/.test(e.message) && !/mot de passe pour les apps/.test(e.message)
+      (e: Error) => /Cause refuse de joindre/.test(e.message) && !/mot de passe pour les apps/.test(e.message)
     );
   });
 

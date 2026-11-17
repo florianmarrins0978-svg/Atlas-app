@@ -50,7 +50,7 @@ cas("les deux à dix secondes ordinaires ne signalent rien", () => {
   for (const ms of [0, 1_000, 5_000, 9_999, SEUIL_LONGUE_MS - 1]) {
     assert.strictEqual(etapeAttente(ms), "normale", `${ms} ms devrait rester ordinaire`);
   }
-  assert.strictEqual(phraseAttente("normale"), "Atlas rédige…");
+  assert.strictEqual(phraseAttente("normale"), "Cause rédige…");
 });
 
 cas("AUCUNE phrase ne dépasse la colonne où elle vit", () => {

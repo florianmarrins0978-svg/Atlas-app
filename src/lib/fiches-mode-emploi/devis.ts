@@ -35,7 +35,7 @@ export const FICHES_DEVIS: FicheModeEmploi[] = [
     motsCles: ["date", "dates", "proposer", "intervention", "calendrier", "jour", "choisir", "client"],
     geste:
       "Appuyez sur « Choisir la date », puis touchez le jour voulu dans le calendrier. " +
-      "Atlas pose déjà le premier jour libre : touchez un autre jour pour le remplacer.",
+      "Cause pose déjà le premier jour libre : touchez un autre jour pour le remplacer.",
     reserve: "Le client ne verra que la date, jamais la demi-journée.",
     source: ENVOI,
     preuves: ["Proposez une ou deux dates", "Ce chantier prend"],
@@ -144,7 +144,7 @@ export const FICHES_DEVIS: FicheModeEmploi[] = [
     ou: "un chantier, écran Devis, en bas",
     intitule: "Poser le prix d'une ligne marquée à chiffrer",
     motsCles: ["chiffrer", "prix", "manque", "manquant", "vide", "poser", "bloque", "disparu", "grise"],
-    geste: "Appuyez sur « Poser le prix » en bas du devis : Atlas vous amène sur la case du prix qui manque.",
+    geste: "Appuyez sur « Poser le prix » en bas du devis : Cause vous amène sur la case du prix qui manque.",
     reserve: "Tant qu'une ligne est à chiffrer, le devis ne peut pas partir.",
     source: DC,
     preuves: ["à chiffrer", '"Poser le prix"', '"Poser les prix"'],
@@ -156,7 +156,7 @@ export const FICHES_DEVIS: FicheModeEmploi[] = [
     intitule: "Reprendre le prix d'un chantier comparable",
     motsCles: ["reprendre", "prix", "dernier", "comparable", "habitude", "rappel", "ancien", "derniere", "fois"],
     geste: "Sous la ligne, appuyez sur « Reprendre ce prix ».",
-    reserve: "Ne s'affiche que si Atlas connaît un travail comparable sur un autre chantier.",
+    reserve: "Ne s'affiche que si Cause connaît un travail comparable sur un autre chantier.",
     source: DC,
     preuves: ["Reprendre ce prix"],
   },
@@ -334,8 +334,8 @@ export const FICHES_DEVIS: FicheModeEmploi[] = [
   {
     id: "devis-questions-chiffrage",
     ecran: "Devis",
-    ou: "l'encadré « Avant de chiffrer », pendant qu'Atlas prépare le devis",
-    intitule: "Répondre aux questions d'Atlas avant le chiffrage",
+    ou: "l'encadré « Avant de chiffrer », pendant que Cause prépare le devis",
+    intitule: "Répondre aux questions de Cause avant le chiffrage",
     motsCles: ["questions", "chiffrer", "avant", "repondre", "preparation", "precision"],
     geste:
       "Touchez une réponse sous chaque question, puis « Continuer vers le devis ». " +
@@ -396,8 +396,8 @@ export const FICHES_DEVIS: FicheModeEmploi[] = [
     ou: "après « Choisir la date », dans le calendrier",
     intitule: "Voir si l'équipe est libre un jour donné",
     motsCles: ["libre", "occupe", "disponible", "dispo", "place", "matin", "apres", "planning"],
-    geste: "Touchez le jour : dessous, Atlas montre le matin et l'après-midi de votre planning.",
-    reserve: "Si le jour ne va pas, Atlas propose un autre jour : appuyez sur « Proposer le » jour indiqué.",
+    geste: "Touchez le jour : dessous, Cause montre le matin et l'après-midi de votre planning.",
+    reserve: "Si le jour ne va pas, Cause propose un autre jour : appuyez sur « Proposer le » jour indiqué.",
     source: ENVOI,
     preuves: ["JourneeRegardee", "Proposer le "],
     ailleurs: [{ source: "src/app/chantiers/[id]/export/JourneeRegardee.tsx", preuves: ['"Matin"', '"Après-midi"'] }],

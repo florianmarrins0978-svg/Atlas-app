@@ -33,7 +33,7 @@ export const FICHES_FACTURE: FicheModeEmploi[] = [
     intitule: "Facturer un chantier terminé",
     motsCles: ["facturer", "facture", "creer", "faire", "preparer", "fin", "termine", "realise", "chantier", "fini", "passer", "transformer", "devis"],
     geste:
-      "Touchez la ligne du chantier, puis « Créer la facture » : Atlas la prépare à partir du devis. Rien ne part encore.",
+      "Touchez la ligne du chantier, puis « Créer la facture » : Cause la prépare à partir du devis. Rien ne part encore.",
     source: F,
     preuves: ["Créer la facture", "Le chantier est réalisé ?"],
     ailleurs: [{ source: LT, preuves: ["À facturer", 'data-atlas="ligne-terminee"'] }],
@@ -516,7 +516,7 @@ export const FICHES_FACTURE: FicheModeEmploi[] = [
     geste: "Descendez dans « Ma TVA à déclarer » : « Vos factures » sous TVA collectée, « Vos achats » sous TVA déductible.",
     reserve: "Ce relevé ne vaut pas déclaration : elle reste à faire par votre outil comptable.",
     source: TVA,
-    preuves: ["Vos factures", "Vos achats", "Ce relevé est préparé par Atlas à partir de vos"],
+    preuves: ["Vos factures", "Vos achats", "Ce relevé est préparé par Cause à partir de vos"],
     lieu: true,
   },
   {
@@ -620,7 +620,7 @@ export const FICHES_FACTURE: FicheModeEmploi[] = [
     motsCles: ["paiera", "paie", "impaye", "impayee", "impayees", "payee", "payees", "mauvais", "payeur", "ranger"],
     geste:
       "Touchez « Terminés », la ligne du chantier, puis « Il ne me paiera pas ». La facture se range dans « Non payées », " +
-      "et Atlas ne vous la rappelle plus. S'il paie un jour, ouvrez-la et touchez « J'ai reçu le paiement ».",
+      "et Cause ne vous la rappelle plus. S'il paie un jour, ouvrez-la et touchez « J'ai reçu le paiement ».",
     source: "src/app/termines/ListeTermines.tsx",
     preuves: ["Il ne me paiera pas"],
     ailleurs: [{ source: "src/app/chantiers/[id]/facture/SuiteDeLaFacture.tsx", preuves: ["J&apos;ai reçu le paiement"] }],

@@ -715,7 +715,7 @@ function Compteur({ valeur, min, max, onChange }: { valeur: number; min: number;
           `verifierJourPropose`). */}
       <p className="mt-3 text-[14.5px] leading-[1.45]" style={{ color: colors.inkSoft }}>
         <b style={{ color: colors.ink, fontWeight: 600 }}>Ça ne bloque rien</b> : un jour complet se choisit quand même,
-        Atlas vous prévient seulement.
+        Cause vous prévient seulement.
       </p>
     </>
   );

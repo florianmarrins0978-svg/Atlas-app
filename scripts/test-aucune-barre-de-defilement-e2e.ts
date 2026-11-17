@@ -107,7 +107,7 @@ async function ecrans(): Promise<Array<[string, string]>> {
     ["les terminés", "/termines"],
     ["les réglages", "/reglages"],
     ["les tarifs", "/reglages/tarifs"],
-    ["Atlas IA", "/reglages/ia"],
+    ["Cause IA", "/reglages/ia"],
     ["mes prix", "/reglages/prix"],
     ["mon agenda", "/reglages/agenda"],
     // « /reglages/mes-donnees » n'a JAMAIS existé : cette ligne éprouvait une

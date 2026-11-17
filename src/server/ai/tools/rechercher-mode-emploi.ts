@@ -33,7 +33,7 @@ function lue(f: FicheModeEmploi) {
 export const rechercherModeEmploi: Outil = {
   nom: "RechercherModeEmploi",
   description:
-    "Explique COMMENT on fait quelque chose dans Atlas, et OÙ se trouve chaque chose : le geste exact, " +
+    "Explique COMMENT on fait quelque chose dans Cause, et OÙ se trouve chaque chose : le geste exact, " +
     "écran par écran. À utiliser pour toute question du type « comment je fais pour… », « où est… », " +
     "« où sont rangés… », « je cherche le bouton… », « à quoi sert… », « comment fonctionne… », " +
     "« explique-moi… ». Donne « question » telle qu'il l'a " +

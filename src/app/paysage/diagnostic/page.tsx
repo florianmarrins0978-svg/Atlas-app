@@ -21,7 +21,7 @@ import { garderLaPage } from "@/server/garde-page";
  *    l'ajouter d'avance encombrerait l'écran d'un service que personne n'a
  *    encore demandé.
  */
-export const metadata = { title: "Diagnostic végétal, Atlas" };
+export const metadata = { title: "Diagnostic végétal, Cause" };
 
 export default async function DiagnosticPage() {
   await garderLaPage();

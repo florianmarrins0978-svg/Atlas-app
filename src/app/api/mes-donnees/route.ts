@@ -28,7 +28,7 @@ CE QU'IL Y A DANS CE FICHIER
 ----------------------------
   donnees.json   Toutes les données de votre entreprise : clients, chantiers,
                  devis, factures, tarifs, transcriptions. Un fichier texte.
-                 Il s'ouvre dans n'importe quel éditeur, sans Atlas.
+                 Il s'ouvre dans n'importe quel éditeur, sans Cause.
   fichiers/      Vos photos, vos enregistrements et vos PDF, rangés par
                  client puis par chantier.
 
@@ -42,7 +42,7 @@ public, il ne s'envoie pas par messagerie sans raison.
 CE QU'IL NE CONTIENT PAS
 ------------------------
   - Vos identifiants de connexion (ils ne sont pas des données d'entreprise).
-  - Le catalogue de prestations, identique sur toute installation d'Atlas.
+  - Le catalogue de prestations, identique sur toute installation de Cause.
 
 CE QU'ON EN FAIT
 ----------------

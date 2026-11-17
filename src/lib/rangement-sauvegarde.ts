@@ -62,7 +62,7 @@ const DOSSIER_PAR_ORIGINE: Record<OrigineFichier, string> = {
   "dossier-comptable": "Pour mon comptable",
   "bilan-comptable": "Pour mon comptable",
   "attestation-comptable": "Pour mon comptable",
-  "abonnement-atlas": "Abonnement Atlas",
+  "abonnement-atlas": "Abonnement Cause",
 };
 
 const NOM_PAR_ORIGINE: Record<OrigineFichier, string> = {

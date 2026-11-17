@@ -1,5 +1,24 @@
 # Prochaines tâches
 
+## ⏳ CAUSE : CE QUI ATTEND APRÈS LE CHANGEMENT DE NOM (17 novembre 2026)
+
+Le texte de l'appli dit Cause (`ARCHITECTURE.md` §581). Restent, et chacun est à lui :
+
+- **les conditions générales** : une version nouvelle qui dit Cause, que chaque compte acceptera de nouveau. Le plus simple : la faire quand sa micro-entreprise a son SIREN, pour remplir dans la même version les cases « Qui édite » encore à compléter (une seule acceptation au lieu de deux) ;
+- **l'icône** : le « A » provisoire ne va plus. Trois planches (ci-dessous) : il a jugé les lettres des deux premières trop basiques, la troisième porte des dessins et attend une lettre et un fond, puis `npm run icones` ;
+- **l'adresse d'envoi des courriels** : le nom affiché dit Cause, l'adresse reste celle de sa variable `COURRIEL_EXPEDITEUR`, à passer sur cause.fr quand l'Afnic aura accordé le domaine.
+## DEUX SUITES ROUGES UN JOUR PAR MOIS : LE « 1ER » (17 novembre 2026)
+
+`test-le-client-s-est-trompe-e2e` et `test-message-sans-autre-date-e2e`
+cherchent une date par `\d+ ` (un nombre suivi d'une espace). Le jour où
+« dans 45 jours » tombe un 1er du mois, l'appli écrit, à juste titre,
+« vendredi 1er janvier » : les deux suites rougissent, sur `main` comme
+ailleurs. Vu le 17 novembre 2026 (17 novembre + 45 jours = 1er janvier),
+rejoué sur `main` (`verifier-rouge-prealable.ts` : même sort des deux côtés).
+Le produit est juste ; ce sont les deux motifs à corriger, dans un lot à part
+(accepter `\d+(er)? `). D'ici là, ces deux rouges ne bloquent personne : le
+garde-fou les reconnaît comme préexistants.
+
 ## ⏳ UNE PLANCHE À REGARDER : L'ICÔNE DE CAUSE, EN DESSIN (17 novembre 2026)
 
 **Sa réponse du même jour devant la deuxième planche (les lettres), et elle
@@ -73,21 +92,21 @@ la première planche, D à G ceux de la deuxième, H à J ceux de la troisième.
    planche (l'objet `CAUSE` de son script), sans aucune police.
 2. **`scripts/generer-icones.mjs` étend l'icône d'Android avec un fond crème
    écrit en dur** (`FOND`). Pour B, D, E, F et pour tout dessin de la troisième
-   planche sur fond vert ou or, il doit prendre le fond du dessin : sans cela Android montrera un carré de
-   couleur dans un rond crème. Trouvé en dessinant la planche, pas corrigé
+   planche sur fond vert ou or, il doit prendre le fond du dessin : sans cela
+   Android montrera un carré de couleur dans un rond crème. Trouvé en dessinant la planche, pas corrigé
    (rien ne s'installe avant son choix).
 3. La marge de cette icône d'Android (60 %) rend le motif petit dans le rond.
    À regarder sur un vrai Android avant de la garder.
 4. `npm run icones`, puis regarder l'icône installée sur son téléphone.
 5. `public/` et `scripts/` : le niveau se calcule (`npm run niveau`).
 
-**À savoir pour qui reprendra :** la première planche cite un
-`ARCHITECTURE.md` §581 (« l'application s'appelle Cause ») qui n'est pas sur
-`main`. Il vit dans le lot du renommage d'Atlas en Cause, tenu par une autre
-session et retenu par une batterie rouge sur la construction (Next.js à
-mettre à jour, en attente de sa réponse). Le manifeste de `main` dit donc
-encore « Atlas ». La direction de la planche est dans
-`.impeccable/surfaces/appli-icone-de-cause-2-html.md`.
+**À savoir pour qui reprendra :** la première planche cite
+`ARCHITECTURE.md` §581 (« l'application s'appelle Cause »), arrivé sur `main`
+avec le renommage le 17 novembre 2026, après la montée de Next.js en 16.4.6
+(§582). Le manifeste dit Cause ; l'icône, elle, est toujours le « A »
+provisoire. La direction de chaque planche est dans
+`.impeccable/surfaces/appli-icone-de-cause-2-html.md` et
+`.impeccable/surfaces/appli-icone-de-cause-3-html.md`.
 
 ## ⏳ UNE PLANCHE À REGARDER : LE SITE DE VENTE EN MOUVEMENT (17 novembre 2026)
 
@@ -233,7 +252,7 @@ libellé dans la consigne, et `npm run verifier:dictee` sur son espace.
 fois, pour Taille de haie de laurier de ml, vous aviez retenu 650 € HT »
 compare la ligne de main d'œuvre à une taille de haie.
 
-## ⏳ À REGARDER PAR LUI (9 novembre 2026) : jeter la dictée, en clair
+## ⏳ À REGARDER PAR LUI (9 novembre 2026, refaite le 17) : jeter la dictée, en clair
 
 Sa remarque : *« moi je ne savais pas que ce mécanisme jetait la dictée,
 il faut peut-être mettre un truc plus clair ; il n'y a pas déjà un bouton
@@ -244,12 +263,15 @@ fois la note envoyée, seul le glissement de « Votre dictée »
 montre.
 
 **La planche** : `appli/jeter-la-dictee.html`, sur sa vraie fiche client
-(M. Bernard, une note envoyée). A : « Retirer » écrit au bout de la ligne,
-comme sur les fiches en cours (sa planche du 11 octobre). B : la poubelle
-cerclée de la dictée, avec « Jeter ». Le tiroir « Annuler » reste.
+(M. Bernard, une note envoyée). Le 16 novembre, il a d'abord choisi d'enlever
+la case ; le 17, il a répondu « B » sur la première planche, puis *« montre-moi
+les deux planches »*. Elle porte donc : 1, la case enlevée (une dictée envoyée
+se refait en redictant) ; 2, la case gardée avec la poubelle cerclée
+« Jeter » au bout, et le tiroir « Annuler ». L'option 1 attend sur la branche
+`claude/amazing-mendel-skfnud`, batterie complète à jouer.
 
-**Reste** : son choix, puis le coder (et récrire la fiche du mode d'emploi
-`chantier-dictee-retirer`, qui décrit le glissement).
+**Reste** : son choix entre 1 et 2. Pour 2 : récrire la fiche du mode
+d'emploi `chantier-dictee-retirer`, qui décrit le glissement.
 
 ## ⏳ À REGARDER PAR LUI (9 novembre 2026) : la fiche ouverte et Composer ma fiche, soignées
 

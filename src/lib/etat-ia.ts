@@ -354,7 +354,7 @@ export type SavoirFaire = {
  */
 export function ceQuAtlasSaitFaire(etats: EtatFournisseur[]): SavoirFaire[] {
   const mots: Record<EtatFournisseur["role"], { quoi: string; precision: string }> = {
-    Transcription: { quoi: "Écouter vos dictées", precision: "Vous parlez, Atlas écrit" },
+    Transcription: { quoi: "Écouter vos dictées", precision: "Vous parlez, Cause écrit" },
     Rédaction: { quoi: "Écrire vos devis", precision: "À partir de ce que vous avez dicté" },
     "Lecture d’image": { quoi: "Lire vos croquis", precision: "Pour le plan d’arrosage" },
   };

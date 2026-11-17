@@ -56,7 +56,7 @@ export default async function CataloguePage() {
             ont désormais leur ligne avec « Retirer », il n'y a plus de couleur
             à expliquer. */}
         <p className="mx-[26px] mt-[14px] max-w-[32ch] text-[14px] leading-[1.55]" style={{ color: colors.inkSoft }}>
-          Les mots qu&apos;Atlas reconnaît quand vous dictez.
+          Les mots que Cause reconnaît quand vous dictez.
         </p>
 
         <MotsProposes proposes={proposes} />

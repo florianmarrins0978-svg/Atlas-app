@@ -446,7 +446,7 @@ export default async function ReleveTvaPage({
             compte VRAIMENT**, selon le régime. La mention ne doit pas dire
             « règlements » à qui déclare aux débits. */}
         <p className="mt-10 px-8 text-center text-[14px] leading-[1.55]" style={{ color: colors.inkSoft }}>
-          Ce relevé est préparé par Atlas à partir de vos{" "}
+          Ce relevé est préparé par Cause à partir de vos{" "}
           {releve.regime === "encaissements" ? "règlements" : "factures émises"}. Il ne
           vaut pas déclaration : celle-ci reste à faire par votre outil
           comptable.

@@ -146,7 +146,7 @@ export const QUESTIONS: readonly Question[] = [
     id: "email",
     chapitre: "Vous",
     question: "Votre adresse e-mail ?",
-    aide: "C’est elle qui vous ouvrira Atlas.",
+    aide: "C’est elle qui vous ouvrira Cause.",
     requis: true,
     champs: [{ cle: "email", placeholder: "Votre e-mail", type: "email", autocomplete: "username", inputMode: "email" }],
   },

@@ -221,7 +221,7 @@ async function main() {
       "la facture réglée ne figure pas au relevé"
     );
     assert.ok(
-      await page.locator("text=Ce relevé est préparé par Atlas").isVisible(),
+      await page.locator("text=Ce relevé est préparé par Cause").isVisible(),
       "la réserve sur la valeur du relevé n'est pas affichée"
     );
   });

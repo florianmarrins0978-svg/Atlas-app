@@ -412,7 +412,7 @@ export function construireVevenement(e: EvenementAEcrire): string {
   const lignes = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Atlas//Agenda//FR",
+    "PRODID:-//Cause//Agenda//FR",
     "CALSCALE:GREGORIAN",
     "BEGIN:VEVENT",
     `UID:${e.uid}`,

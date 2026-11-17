@@ -197,7 +197,7 @@ export async function composerAttestation(c: ContenuAttestation, signaturePng: U
   doc.setTitle(`${c.titre}, ${c.dossier}`);
   doc.setAuthor(auteur);
   doc.setSubject(papier(c.periode));
-  doc.setCreator("Atlas");
+  doc.setCreator("Cause");
   const p = await polices(doc);
   const signature: PDFImage = await doc.embedPng(signaturePng);
   const verdict = TEINTE_DU_TON[TON_DE_LA_CONCLUSION[c.conclusion]];

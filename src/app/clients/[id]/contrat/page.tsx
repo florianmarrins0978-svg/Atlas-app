@@ -17,7 +17,7 @@ import ContratClient from "./ContratClient";
 import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Contrat d'entretien, Atlas" };
+export const metadata = { title: "Contrat d'entretien, Cause" };
 
 /**
  * LE CONTRAT D'ENTRETIEN D'UN CLIENT — sa planche 129 du 26 septembre 2026.

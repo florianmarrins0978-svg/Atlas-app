@@ -129,11 +129,11 @@ type Etat =
  * moins que quelque chose se passe encore, et jusqu'à quand on l'a laissé.
  */
 function libelleEnCours(etat: Etat): string | null {
-  if (etat.type === "encours") return "Atlas prépare le devis…";
+  if (etat.type === "encours") return "Cause prépare le devis…";
   if (etat.type === "attente") {
     return etat.secondes < 15
-      ? "Atlas prépare le devis…"
-      : `Atlas prépare toujours le devis… (${etat.secondes} s)`;
+      ? "Cause prépare le devis…"
+      : `Cause prépare toujours le devis… (${etat.secondes} s)`;
   }
   return null;
 }
@@ -295,7 +295,7 @@ export default function DevisDepuisDictee({
               de suspension, qui ne disaient pas que ça travaille. */}
           {(
             libelleEnCours(etat)?.replace("le devis", "votre devis") ??
-            (etat.type === "repos" ? "Atlas reprend votre dictée et écrit le devis…" : "")
+            (etat.type === "repos" ? "Cause reprend votre dictée et écrit le devis…" : "")
           ).replace(/…$/, "")}
           {(travaille || etat.type === "repos") && <PointsQuiSoufflent />}
         </p>
@@ -630,7 +630,7 @@ function QuestionsChiffrage({
         className="atlas-plein mt-5 w-full rounded-full py-3 text-[15px] font-medium disabled:opacity-40"
         style={{ backgroundColor: colors.plein, color: colors.cream }}
       >
-        {envoi ? "Atlas termine le devis…" : toutesRepondues ? "Continuer vers le devis" : "Continuer sans répondre à tout"}
+        {envoi ? "Cause termine le devis…" : toutesRepondues ? "Continuer vers le devis" : "Continuer sans répondre à tout"}
       </button>
       <button
         type="button"
