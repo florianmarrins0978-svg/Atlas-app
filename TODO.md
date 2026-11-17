@@ -113,6 +113,48 @@ provisoire. La direction de chaque planche est dans
 `.impeccable/surfaces/appli-icone-de-cause-2-html.md` et
 `.impeccable/surfaces/appli-icone-de-cause-3-html.md`.
 
+## ⏳ À TRANCHER : QUATRE VERTS DE BOUTON ENTRE L'APPLI, LES PLANCHES ET LE SITE (17 novembre 2026)
+
+Sa question, depuis son téléphone : *« souvent tu me proposais un certain vert
+pour les boutons qui n'était pas le vert qu'il y a déjà dans l'application, il
+était un peu plus foncé, et je voulais savoir si c'est le même que celui que tu
+as utilisé pour le site internet ou c'est encore un troisième vert »*.
+
+**Mesuré, pas lu** : la couleur PEINTE, demandée au navigateur
+(`getComputedStyle`) sur les boutons des 429 pages de `appli/`, et les pixels
+des vraies captures de l'appli du 6 novembre (`appli/vente/images/nov-*.jpg`).
+
+| | Vert | Où il est | Le mot posé dessus |
+|---|---|---|---|
+| 1 | `#7d9a6d` | **l'appli** : tous ses boutons pleins (`colors.plein`, sa décision du 3 septembre, la D de `appli/boutons-verts.html`) ; 171 planches | crème, 3,0 pour 1 (son choix, écrit dans `globals.css`) |
+| 2 | `#6f8a5f` | **18 planches dessinées à la main** en septembre et octobre (`--plein:#6f8a5f`, recopié de l'une à l'autre) ; nulle part dans `src/` | blanc, 3,8 pour 1 |
+| 3 | `#1d7a3c` | **le site de vente seul** (`chapitres-6.html`, `cause.html`, `cause-2.html`), choisi le 6 novembre pour que le blanc s'y lise | blanc, 5,4 pour 1 |
+| 4 | `#2f3b2f` | **le vert pin**, l'accent de l'appli (textes, icônes, onglet où l'on est) ; sur les planches récentes il remplit les boutons de choix de la planche elle-même (« Je prends la A », « Proposé, votre B ») | crème, 11 pour 1 |
+
+**Ce que ça dit.** Le vert du site est un vert de plus : ni le 1, ni le 2. Le 2
+n'a aucune décision derrière lui. Depuis novembre, les planches sont posées sur
+les vrais écrans figés ou sur le kit (`appli/soignee/kit.css`), qui portent le
+1 : l'écart du 2 ne se reproduit plus. Ce qu'il a pu voir de « plus foncé » sur
+les dernières planches, c'est le 4, sur les boutons de choix.
+
+**Ce qui se tranche, par lui :**
+
+- **le bouton du site** : garder le 3, ou prendre le vert de l'appli (alors le
+  mot dessus passe à l'encre, le blanc n'y tient que 3 pour 1) ;
+- **les boutons de choix des planches** : les laisser en vert pin, ou les
+  sortir du vert (le noir de `appli/fiche-de-chantier-soignee.html`), pour
+  qu'aucun ne se lise comme un bouton de l'appli dans une autre couleur ;
+- **les 18 planches au vert 2** : les remettre au 1, ou les laisser (ce sont
+  d'anciennes propositions, la plupart déjà tranchées).
+
+**Pour refaire la mesure :** servir `appli/` (`python3 -m http.server`),
+ouvrir chaque planche dans Playwright et lire le fond calculé des boutons. Une
+recherche des couleurs dans les fichiers ne suffit pas : les planches figées
+recopient les feuilles de style de l'appli, où dorment d'autres verts qui ne
+peignent aucun bouton (`#1f7a45`, le vert des montants reçus ; `#506f44`, le
+texte des cartes vertes).
+
+
 ## ⏳ UNE PLANCHE À REGARDER : LE SITE DE VENTE EN MOUVEMENT (17 novembre 2026)
 
 Sa demande, depuis son téléphone, devant `appli/vente/cause.html` : *« fais-moi
