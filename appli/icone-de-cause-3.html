@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f5f3ee">
+<title>L'icône de Cause : un dessin</title>
+<meta name="description" content="Planche : trois dessins pour l'icône de Cause, sans lettre, essayés sur un écran d'accueil à taille réelle.">
+<!--
+  PLANCHE, rien n'est codé dans l'application. Sa réponse du 17 novembre
+  2026, devant icone-de-cause-2.html : « là tu m'as fait un truc hyper
+  basique. C'est une lettre avec une couleur. [...] Regarde l'application de
+  Claude. C'est une espèce de soleil blanc sur un fond orange. ChatGPT, on
+  dirait des mailles qui s'entrelacent. [...] pour Cause, il faudrait
+  trouver un design, un dessin, une image, quelque chose qui claque,
+  quelque chose qui rentre facilement dans la tête. [...] Propose-moi
+  d'autres choses. »
+
+  DONC : PLUS DE LETTRE. Trois dessins qu'on peut NOMMER (« le
+  rouge-gorge », « le casque », « la rosace »), parce qu'une image qui a un
+  nom se retient mieux qu'un signe. Les deux planches d'avant ne bougent
+  pas d'une ligne ; les lettres continuent (H, I, J) pour qu'une lettre
+  veuille toujours dire le même dessin.
+    H  Le rouge-gorge. L'oiseau qui suit le jardinier, et qui chante :
+       celui qui cause. Un rond, une gorge, un bec ouvert, la queue
+       relevée.
+    I  Le casque de chantier, dont le bord porte la pointe d'une bulle.
+    J  La rosace à six pétales, celle que les charpentiers tracent au
+       compas, dans son cercle.
+
+  LES COULEURS CLAQUENT PLUS QUE CELLES DE L'APPLI, et c'est voulu : l'or
+  est celui du site de vente (--or-clair, #F0B43C), le vert est un vert
+  forêt (#15402A), plus franc que le vert pin de l'appli, qui se lit
+  presque gris sur un bureau. Chaque dessin se voit sur trois fonds
+  (vert, or, crème) : la couleur fait la moitié d'une icône.
+
+  ÉCARTÉS après les avoir regardés à 60, 29 et 16 px :
+    · un niveau à bulle (se lit comme une gélule, ou un interrupteur) ;
+    · un mètre ruban en spirale (un escargot : le contraire de la
+      promesse) ;
+    · une clé de voûte (un compteur, ou un soleil levant) ;
+    · une queue d'aronde (une feuille déchirée) ;
+    · une bulle avec un coin plié (l'icône de n'importe quelles notes) ;
+    · une bulle faite de lignes (une ruche) ;
+    · une plume (une feuille : elle ramène au seul jardin) ;
+    · des mailles entrelacées : la place est prise (des anneaux, des
+      losanges, un trèfle sont déjà des marques connues) ;
+    · tout éclat de rayons : trop près du dessin qu'il cite en exemple.
+  PAS DESSINÉE : la cocotte en papier (la paperasse, pliée en oiseau). Sa
+  géométrie n'a pas pu être vérifiée d'ici, et une cocotte fausse ne se
+  reconnaît pas. À reprendre s'il aime l'oiseau.
+
+  LE BANC D'ESSAI est celui de icone-de-cause-2.html, recopié : le bureau
+  à taille réelle, les voisines, « Plein soleil », « Mélanger », l'appli
+  qui s'ouvre. Seuls changent les dessins, la barre du bas (le dessin et
+  son fond) et les textes. Android y est montré comme `npm run icones` le
+  fabrique (le dessin réduit, le fond étendu).
+
+  Le choix fait : remplacer public/icone-source.svg par le dessin et son
+  fond, corriger FOND dans scripts/generer-icones.mjs (TODO.md), puis
+  `npm run icones`. Tous les dessins sont des tracés, sans police.
+-->
+<style>
+:root {
+  --creme:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre-2:#4a4a44;
+  --pin:#2f3b2f; --or:#B98B47; --or-texte:#8b6835; --trait:rgba(28,28,26,.12);
+  --serif:ui-serif, Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+  --sans:ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --sortie:cubic-bezier(.16,1,.3,1);
+  --fond-clair:linear-gradient(168deg, #f5ecdf 0%, #e6eae0 42%, #d3e0e2 74%, #c9d9cc 100%);
+  --fond-sombre:linear-gradient(168deg, #23362f 0%, #141f24 46%, #0e1516 78%, #0a0f0d 100%);
+}
+* { box-sizing:border-box }
+html { -webkit-text-size-adjust:100% }
+body { margin:0; background:var(--creme); color:var(--encre); font:400 16px/1.5 var(--sans); -webkit-font-smoothing:antialiased; padding-bottom:calc(112px + env(safe-area-inset-bottom)) }
+::selection { background:rgba(185,139,71,.32) }
+:focus-visible { outline:2px solid var(--or); outline-offset:3px; border-radius:10px }
+button { -webkit-tap-highlight-color:transparent; cursor:pointer }
+main { max-width:430px; margin:0 auto; padding:0 16px }
+h1 { font:400 28px/1.1 var(--serif); margin:8px 0 6px; letter-spacing:-.01em }
+h2 { font:400 22px/1.2 var(--serif); margin:0; letter-spacing:-.005em; text-wrap:balance }
+p { margin:0 }
+
+/* Une tuile d'icône : le carré arrondi d'un iPhone, le rond d'un Android. */
+.tuile { display:block; flex:none; overflow:hidden; border-radius:22.5% }
+.tuile svg { display:block; width:100%; height:100% }
+.android .tuile { border-radius:50% }
+.bordee { box-shadow:0 0 0 1px var(--trait) }
+
+/* ── Le bureau, à taille réelle ─────────────────────────────────────────── */
+.telephone { margin:0 -16px }
+.ecran { position:relative; overflow:hidden; border-radius:34px; background-color:#e3e8de; background-image:var(--fond-clair); color:#1c1c1a; isolation:isolate }
+.sombre .ecran { background-color:#131c1f; background-image:var(--fond-sombre); color:#f3f1ea }
+/* Le bord de l'écran, posé AU-DESSUS de tout : sans lui, l'appli ouverte (crème) se fond dans la page (crème). */
+.ecran::before { content:""; position:absolute; inset:0; z-index:5; border-radius:inherit; box-shadow:inset 0 0 0 1px var(--trait); pointer-events:none }
+.dans-l-appli::before { box-shadow:inset 0 0 0 1px rgba(28,28,26,.24) }
+.peau { padding-bottom:9px }
+.etat { position:relative; z-index:4; height:42px; display:flex; align-items:center; justify-content:space-between; padding:0 30px; font:600 15px/1 var(--sans) }
+.signes { display:flex; align-items:center; gap:6px }
+.signes svg { display:block; fill:currentColor }
+.ile { position:absolute; top:9px; left:50%; width:94px; height:27px; margin-left:-47px; border-radius:20px; background:#060606 }
+.android .ile { top:14px; width:13px; height:13px; margin-left:-6.5px }
+.dans-l-appli .etat { color:#1c1c1a }
+.coup { display:none; align-items:center; gap:10px; padding:6px 28px 2px; font:400 21px/1.2 var(--sans) }
+.coup svg { display:block }
+.coup span { font-size:15px; opacity:.8 }
+.android .coup { display:flex }
+.grille { display:grid; grid-template-columns:repeat(4,60px); justify-content:space-between; row-gap:13px; padding:10px 27px 0 }
+.app { display:flex; flex-direction:column; align-items:center; gap:6px; width:60px; margin:0; padding:0; border:0; background:none; color:inherit; font:inherit }
+.app .tuile { width:60px; height:60px }
+.app > span:last-child { margin:0 -12px; max-width:84px; font:500 11px/13px var(--sans); white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+.notre:active .tuile { transform:scale(.94) }
+.quai { display:grid; grid-template-columns:repeat(4,60px); justify-content:space-between; margin:14px 12px 0; padding:10px 15px; border-radius:30px; background:rgba(255,255,255,.34) }
+.sombre .quai { background:rgba(255,255,255,.12) }
+.android .quai { background:none; padding:4px 15px 0; margin-top:14px }
+.cherche { display:none; align-items:center; height:46px; margin:12px 16px 0; padding:0 17px; border-radius:23px; background:rgba(255,255,255,.74); color:#4a4a44 }
+.sombre .cherche { background:rgba(255,255,255,.14); color:#e8e6df }
+.android .cherche { display:flex }
+.cherche svg { display:block }
+.maison { width:128px; height:5px; margin:8px auto 0; border-radius:3px; background:currentColor; opacity:.5 }
+.android .maison { width:96px; height:4px; margin-top:12px }
+
+/* Plein soleil : l'écran délavé d'un chantier en plein jour. */
+.soleil .peau, .soleil .appli { filter:contrast(.58) brightness(1.2) saturate(.7) }
+.soleil::after { content:""; position:absolute; inset:0; z-index:4; pointer-events:none; background:linear-gradient(112deg, rgba(255,255,255,0) 26%, rgba(255,255,255,.42) 46%, rgba(255,255,255,.1) 60%, rgba(255,255,255,0) 74%) }
+
+/* L'appli qui s'ouvre depuis l'icône touchée. */
+.appli { position:absolute; inset:0; z-index:3; background:#f5f3ee; color:#1c1c1a }
+.lancement { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; font:400 27px/1 var(--serif) }
+.lancement .tuile { width:104px; height:104px }
+.accueil { display:none; position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:top }
+.arrivee .accueil { display:block }
+@keyframes arriver { from { opacity:0 } }
+/* --remonte : ce que le bas de l'écran a de caché sous la barre des sept. Le bouton qui referme, et le fondu sous lui, remontent d'autant. */
+.appli::after { content:""; position:absolute; left:0; right:0; bottom:0; height:calc(150px + var(--remonte, 0px)); pointer-events:none; background:linear-gradient(rgba(245,243,238,0), #f5f3ee 46%) }
+.retour { position:absolute; z-index:1; left:50%; bottom:calc(20px + var(--remonte, 0px)); transform:translateX(-50%); min-height:46px; padding:0 22px; border:0; border-radius:23px; background:var(--pin); color:var(--carte); font:600 15px/1 var(--sans); white-space:nowrap; box-shadow:0 10px 24px -10px rgba(28,28,26,.55) }
+
+/* ── Les réglages de l'essai ────────────────────────────────────────────── */
+.reglages { display:flex; flex-wrap:wrap; gap:8px; margin-top:16px }
+.bascule { display:inline-flex; padding:3px; border-radius:999px; background:var(--carte); border:1px solid var(--trait) }
+.bascule button { border:0; background:none; min-height:38px; padding:0 15px; border-radius:999px; font:500 14.5px/1 var(--sans); color:var(--encre-2) }
+.bascule button[aria-pressed="true"] { background:var(--pin); color:var(--carte) }
+.pastille { min-height:46px; padding:0 15px; border-radius:999px; border:1px solid var(--trait); background:var(--carte); color:var(--encre); font:500 14.5px/1 var(--sans) }
+.pastille[aria-pressed="true"] { background:var(--pin); border-color:var(--pin); color:var(--carte) }
+.pastille:active, .bascule button:active { transform:scale(.97) }
+
+/* ── La fiche de l'icône choisie ────────────────────────────────────────── */
+.fiche { display:flex; align-items:center; gap:18px; margin-top:34px }
+.fiche .tuile { width:148px; height:148px }
+.mots { min-width:0 }
+.sceau { display:grid; place-items:center; width:40px; height:40px; margin-bottom:10px; border-radius:50%; box-shadow:inset 0 0 0 1.5px var(--or); color:var(--or-texte); font:400 20px/1 var(--serif) }
+.mots p { margin-top:8px; font-size:15px; line-height:1.45; color:var(--encre-2) }
+
+/* ── En tout petit ──────────────────────────────────────────────────────── */
+.petit { margin-top:36px }
+.verrou { margin-top:14px; padding:14px; border-radius:24px; background-color:#e3e8de; background-image:var(--fond-clair) }
+.sombre .verrou { background-color:#131c1f; background-image:var(--fond-sombre) }
+.notif { display:grid; grid-template-columns:38px 1fr auto; gap:1px 12px; align-items:start; padding:12px 14px; border-radius:18px; background:rgba(250,249,245,.88); color:#1c1c1a }
+.sombre .notif { background:rgba(44,49,46,.86); color:#f3f1ea }
+.notif .tuile { grid-row:span 2; width:38px; height:38px }
+.notif b { font:600 14px/1.3 var(--sans) }
+.notif time { font-size:12.5px; line-height:1.4; opacity:.7 }
+.notif p { grid-column:2 / span 2; font-size:14.5px; line-height:1.35 }
+.onglets { display:flex; align-items:flex-end; margin-top:16px; border-bottom:1px solid var(--trait) }
+.onglet { display:flex; align-items:center; gap:9px; margin-bottom:-1px; padding:10px 28px 10px 13px; background:var(--carte); border:1px solid var(--trait); border-bottom-color:var(--carte); border-radius:12px 12px 0 0; font:500 14px/1 var(--sans) }
+.onglet .fav { width:16px; height:16px; border-radius:3.5px; overflow:hidden; flex:none }
+.onglet .fav svg { display:block; width:100%; height:100% }
+
+/* ── Le choix ───────────────────────────────────────────────────────────── */
+.choix { margin-top:36px }
+.plein { width:100%; min-height:56px; border:0; border-radius:999px; background:var(--pin); color:var(--carte); font:600 17px/1 var(--sans) }
+.plein:active { transform:scale(.985) }
+.reponse { min-height:24px; margin-top:12px; text-align:center; font-size:16px; color:var(--encre) }
+.pied { margin-top:26px; font-size:14px; color:var(--encre-2) }
+.pied a { color:var(--encre); text-decoration-color:var(--or); text-decoration-thickness:1.5px; text-underline-offset:3px }
+
+/* ── La barre : les sept, sous le pouce ─────────────────────────────────── */
+.barre { position:fixed; left:0; right:0; bottom:0; z-index:5; padding:8px 16px calc(8px + env(safe-area-inset-bottom)); background:var(--creme); border-top:1px solid var(--trait) }
+.dedans { display:flex; gap:12px; max-width:398px; margin:0 auto }
+.groupe { display:flex; flex-direction:column; gap:5px; min-width:0 }
+.groupe:first-child { flex:1 1 0 }
+.groupe + .groupe { flex:1 1 0; padding-left:12px; border-left:1px solid var(--trait) }
+.groupe p { font:500 11px/13px var(--sans); letter-spacing:.02em; color:var(--encre-2); white-space:nowrap }
+.rang { display:flex; gap:8px }
+.vignette { flex:1 1 0; min-width:0; max-width:44px; display:flex; flex-direction:column; align-items:center; gap:4px; margin:0; padding:2px 0 0; border:0; background:none; font:500 14px/16px var(--sans); color:var(--encre-2) }
+.vignette .tuile { width:calc(100% - 4px); aspect-ratio:1; box-shadow:0 0 0 1px var(--trait) }
+.vignette[aria-pressed="true"] { color:var(--encre); font-weight:700 }
+.vignette[aria-pressed="true"] .tuile { box-shadow:0 0 0 2px var(--creme), 0 0 0 5px var(--pin) }
+/* Une pastille de fond : la même forme que la vignette d'un dessin, un rond de couleur dedans. */
+.vignette .teinte { display:block; width:calc(100% - 4px); aspect-ratio:1; border-radius:50%; box-shadow:0 0 0 1px var(--trait) }
+.vignette[aria-pressed="true"] .teinte { box-shadow:0 0 0 2px var(--creme), 0 0 0 5px var(--pin) }
+
+@media (max-width:350px) {
+  .grille { padding-left:16px; padding-right:16px }
+  .app > span:last-child { max-width:72px }
+}
+@media (min-width:462px) {
+  .telephone { width:410px; margin:0 auto; padding:10px; border-radius:58px; background:#101210; box-shadow:0 22px 44px -22px rgba(28,28,26,.5) }
+  .ecran { border-radius:48px }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .appli { transition:clip-path .46s var(--sortie), -webkit-clip-path .46s var(--sortie) }
+  .arrivee .accueil { animation:arriver .4s ease-out both }
+  .ecran { transition:background-color .3s }
+  .peau { transition:filter .5s var(--sortie) }
+  .etat { transition:color .3s }
+  .notre .tuile, .pastille, .bascule button, .plein { transition:transform .18s var(--sortie) }
+  .fiche .tuile { transition:border-radius .32s var(--sortie) }
+  .vignette .tuile, .vignette .teinte { transition:box-shadow .12s }
+}
+</style>
+</head>
+<body>
+<main>
+  <h1>L'icône de Cause</h1>
+
+  <div class="telephone">
+    <div class="ecran" id="ecran">
+      <div class="peau">
+        <div class="etat">
+          <span>7:30</span>
+          <span class="ile"></span>
+          <span class="signes" aria-hidden="true">
+            <svg width="18" height="12" viewBox="0 0 18 12"><rect y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" width="3" height="12" rx="1"/></svg>
+            <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 11.4 1 3.8a10.3 10.3 0 0 1 14 0Z"/></svg>
+            <svg width="27" height="12" viewBox="0 0 27 12"><rect x=".5" y=".5" width="22" height="11" rx="3.2" fill="none" stroke="currentColor" opacity=".45"/><rect x="2" y="2" width="16" height="8" rx="1.8"/><rect x="24" y="4" width="2.2" height="4" rx="1"/></svg>
+          </span>
+        </div>
+        <div class="coup" aria-hidden="true">mar. 17 nov. <svg width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="5" fill="#F0B43C"/></svg><span>8°</span></div>
+        <div class="grille" id="grille"></div>
+        <div class="quai" id="quai" aria-hidden="true"></div>
+        <div class="cherche" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8.6" cy="8.6" r="5.6"/><path d="m13 13 4.4 4.4"/></svg></div>
+        <div class="maison" aria-hidden="true"></div>
+      </div>
+      <div class="appli" id="appli" hidden>
+        <div class="lancement"><span class="tuile" data-icone></span>Cause</div>
+        <img class="accueil" src="vente/images/accueil.jpg" alt="L'accueil de Cause : Vos chantiers" width="1170" height="1992" decoding="async">
+        <button type="button" class="retour" id="fermer">Revenir au bureau</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="reglages">
+    <div class="bascule" role="group" aria-label="Téléphone">
+      <button type="button" data-forme="iphone" aria-pressed="true">iPhone</button>
+      <button type="button" data-forme="android" aria-pressed="false">Android</button>
+    </div>
+    <div class="bascule" role="group" aria-label="Fond d'écran">
+      <button type="button" data-papier="clair" aria-pressed="true">Clair</button>
+      <button type="button" data-papier="sombre" aria-pressed="false">Sombre</button>
+    </div>
+    <button type="button" class="pastille" id="soleil" aria-pressed="false">Plein soleil</button>
+    <button type="button" class="pastille" id="ensemble" aria-pressed="false">Les trois</button>
+    <button type="button" class="pastille" id="melanger">Mélanger</button>
+  </div>
+
+  <section class="fiche" aria-live="polite">
+    <span class="tuile bordee" data-icone></span>
+    <div class="mots">
+      <span class="sceau" id="lettre" aria-hidden="true">H</span>
+      <h2 id="nom">Le rouge-gorge</h2>
+      <p id="desc">L'ami du jardinier, celui qui chante : l'oiseau qui cause.</p>
+    </div>
+  </section>
+
+  <section class="petit">
+    <h2>En tout petit</h2>
+    <div class="verrou">
+      <div class="notif">
+        <span class="tuile" data-icone></span><b>Cause</b><time>maintenant</time>
+        <p>Mr. Lemaire a accepté le devis.</p>
+      </div>
+    </div>
+    <div class="onglets"><div class="onglet"><span class="fav" data-favicon></span>Cause</div></div>
+  </section>
+
+  <section class="choix">
+    <button type="button" class="plein" id="prendre">Je prends la H</button>
+    <p class="reponse" id="reponse" aria-live="polite"></p>
+    <p class="pied">Les lettres sont sur <a href="icone-de-cause-2.html">la planche d'avant</a>. Rien n'est installé.</p>
+  </section>
+</main>
+
+<nav class="barre" aria-label="Le dessin et son fond">
+  <div class="dedans">
+    <div class="groupe">
+      <p>Le dessin</p>
+      <div class="rang">
+        <button type="button" class="vignette" data-choix="H" aria-pressed="true" aria-label="Dessin H, le rouge-gorge"><span class="tuile" data-fixe="H"></span>H</button>
+        <button type="button" class="vignette" data-choix="I" aria-pressed="false" aria-label="Dessin I, le casque"><span class="tuile" data-fixe="I"></span>I</button>
+        <button type="button" class="vignette" data-choix="J" aria-pressed="false" aria-label="Dessin J, la rosace"><span class="tuile" data-fixe="J"></span>J</button>
+      </div>
+    </div>
+    <div class="groupe">
+      <p>Son fond</p>
+      <div class="rang">
+        <button type="button" class="vignette" data-fond="vert" aria-pressed="true"><span class="teinte" style="background:#15402A"></span>Vert</button>
+        <button type="button" class="vignette" data-fond="or" aria-pressed="false"><span class="teinte" style="background:#F0B43C"></span>Or</button>
+        <button type="button" class="vignette" data-fond="creme" aria-pressed="false"><span class="teinte" style="background:#F6F1E6"></span>Crème</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<script>
+(function () {
+  "use strict";
+
+  var VERT = "#15402A", OR = "#F0B43C", CREME = "#F6F1E6";
+  var FONDS = { vert: { nom: "vert", couleur: VERT }, or: { nom: "or", couleur: OR }, creme: { nom: "crème", couleur: CREME } };
+  var plein = function (d, couleur, bord) {
+    return '<path d="' + d + '" fill="' + couleur + '" stroke="' + couleur + '" stroke-width="' + bord + '" stroke-linejoin="round"/>';
+  };
+
+  // Chaque dessin dit ses couleurs fond par fond : sur le crème, l'or ne tient
+  // pas seul (1,6 pour 1), donc la forme y passe au vert et l'or reste un accent.
+  var CAUSE = {
+    H: { nom: "Le rouge-gorge", desc: "L'ami du jardinier, celui qui chante : l'oiseau qui cause.",
+      teintes: {
+        vert: { corps: CREME, gorge: OR, bec: OR, oeil: VERT },
+        or: { corps: CREME, gorge: VERT, bec: VERT, oeil: VERT },
+        creme: { corps: VERT, gorge: OR, bec: VERT, oeil: CREME }
+      },
+      // Un rond, la queue relevée, le bec ouvert. La gorge est la part du rond
+      // que recouvre un second cercle : un seul tracé, sans masque.
+      dessin: function (c) {
+        return '<g transform="translate(4 -8)">' + plein("M150 196 L62 138 L96 110 L176 176 Z", c.corps, 14) +
+          plein("M370 200 L444 208 L378 232 Z", c.bec, 8) + plein("M378 244 L436 262 L368 268 Z", c.bec, 8) +
+          '<circle cx="244" cy="280" r="146" fill="' + c.corps + '"/>' +
+          '<path d="M375 215.5 A146 146 0 0 1 245 426 A128 128 0 0 1 375 215.5 Z" fill="' + c.gorge + '"/>' +
+          '<circle cx="304" cy="212" r="15" fill="' + c.oeil + '"/></g>';
+      } },
+    I: { nom: "Le casque", desc: "Un casque de chantier qui porte la pointe d'une bulle : le chantier qui parle.",
+      teintes: {
+        vert: { coque: OR, creux: VERT },
+        or: { coque: VERT, creux: OR },
+        creme: { coque: VERT, creux: OR }
+      },
+      dessin: function (c) {
+        return '<g transform="translate(0 -22)"><path d="M104 300 C104 196 172 132 256 132 C340 132 408 196 408 300 Z" fill="' + c.coque + '"/>' +
+          '<rect x="70" y="312" width="372" height="50" rx="25" fill="' + c.coque + '"/>' + plein("M146 352 L104 432 L236 352 Z", c.coque, 14) +
+          '<path d="M230 300 V176 M282 300 V176" fill="none" stroke="' + c.creux + '" stroke-width="12" stroke-linecap="round"/></g>';
+      } },
+    J: { nom: "La rosace", desc: "La rosace à six pétales, que les charpentiers tracent au compas.",
+      teintes: {
+        vert: { petale: OR },
+        or: { petale: VERT },
+        creme: { petale: VERT }
+      },
+      // Six pétales de rayon 168, chacun entre deux arcs du même rayon : c'est
+      // le tracé au compas. Leurs pointes touchent le cercle, comme sur le bois.
+      dessin: function (c) {
+        return [[256, 88], [401.5, 172], [401.5, 340], [256, 424], [110.5, 340], [110.5, 172]].map(function (p) {
+          return '<path d="M256 256 A168 168 0 0 1 ' + p[0] + " " + p[1] + ' A168 168 0 0 1 256 256 Z" fill="' + c.petale + '"/>';
+        }).join("") + '<circle cx="256" cy="256" r="179" fill="none" stroke="' + c.petale + '" stroke-width="22"/>';
+      } }
+  };
+  // Les voisines : des dessins génériques, aux couleurs qu'on trouve sur un vrai bureau.
+  var POLICE = "-apple-system, system-ui, 'Segoe UI', Roboto, sans-serif";
+  var VOISINES = {
+    agenda: { nom: "Agenda", fond: "#FFFFFF",
+      dessin: '<text x="256" y="172" text-anchor="middle" font-family="' + POLICE + '" font-size="92" font-weight="600" fill="#E5484D">MAR.</text><text x="256" y="404" text-anchor="middle" font-family="' + POLICE + '" font-size="252" font-weight="300" fill="#1C1C1A">17</text>' },
+    photos: { nom: "Photos", fond: "#FFFFFF",
+      dessin: '<circle cx="352" cy="172" r="46" fill="#F5B83D"/><path d="M76 396 198 236l90 108 52-58 98 110Z" fill="#4BA36B" stroke="#4BA36B" stroke-width="22" stroke-linejoin="round"/>' },
+    appareil: { nom: "Appareil photo", fond: "#D5D8DD",
+      dessin: '<rect x="96" y="170" width="320" height="216" rx="44" fill="#2A2C31"/><rect x="196" y="132" width="120" height="72" rx="22" fill="#2A2C31"/><circle cx="256" cy="278" r="72" fill="#14151A" stroke="#8C9099" stroke-width="18"/><circle cx="256" cy="278" r="26" fill="#3A4254"/>' },
+    meteo: { nom: "Météo", fond: "url(#ciel)",
+      defs: '<defs><linearGradient id="ciel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2F7FE0"/><stop offset="1" stop-color="#7CC0F6"/></linearGradient></defs>',
+      dessin: '<circle cx="182" cy="196" r="62" fill="#FFD44D"/><g fill="#FFFFFF"><circle cx="212" cy="318" r="62"/><circle cx="296" cy="282" r="82"/><circle cx="372" cy="326" r="54"/><path d="M212 318h160v62H212z"/></g>' },
+    horloge: { nom: "Horloge", fond: "#131416",
+      dessin: '<circle cx="256" cy="256" r="168" fill="#F4F4F2"/><path d="M256 256V146M256 256l76 44" fill="none" stroke="#131416" stroke-width="18" stroke-linecap="round"/><circle cx="256" cy="256" r="14" fill="#E0692F"/>' },
+    plans: { nom: "Plans", fond: "#CFE3BE", plein: true,
+      dessin: '<path d="M0 0h190l-64 136H0Z" fill="#B2D49C"/><path d="M512 512V352L352 512Z" fill="#9CC8EC"/><path d="M-20 372 540 160" stroke="#FFFFFF" stroke-width="64"/><path d="M160-20 300 540" stroke="#F2D27A" stroke-width="40"/><path d="M336 118a62 62 0 0 1 62 62c0 46-62 112-62 112s-62-66-62-112a62 62 0 0 1 62-62Z" fill="#E5484D"/><circle cx="336" cy="180" r="22" fill="#FFFFFF"/>' },
+    notes: { nom: "Notes", fond: "#FFFFFF", plein: true,
+      dessin: '<path d="M0 0h512v138H0z" fill="#F4C542"/><path d="M96 226h320M96 306h320M96 386h216" fill="none" stroke="#C9C6BC" stroke-width="18" stroke-linecap="round"/>' },
+    rappels: { nom: "Rappels", fond: "#FFFFFF",
+      dessin: '<circle cx="132" cy="170" r="30" fill="#3B82F6"/><circle cx="132" cy="256" r="30" fill="#E5484D"/><circle cx="132" cy="342" r="30" fill="#F59E0B"/><path d="M204 170h196M204 256h196M204 342h196" fill="none" stroke="#C9C6BC" stroke-width="20" stroke-linecap="round"/>' },
+    reglages: { nom: "Réglages", fond: "#8D9198",
+      dessin: '<circle cx="256" cy="256" r="150" fill="none" stroke="#E9EAEC" stroke-width="56" stroke-dasharray="46 32.54"/><circle cx="256" cy="256" r="112" fill="none" stroke="#E9EAEC" stroke-width="34"/><circle cx="256" cy="256" r="40" fill="#E9EAEC"/>' },
+    calculette: { nom: "Calculette", fond: "#1C1D21",
+      dessin: '<g fill="#A9ACB3"><circle cx="160" cy="160" r="36"/><circle cx="256" cy="160" r="36"/></g><g fill="#6B6E76"><circle cx="160" cy="256" r="36"/><circle cx="256" cy="256" r="36"/><circle cx="160" cy="352" r="36"/><circle cx="256" cy="352" r="36"/></g><g fill="#F29B27"><circle cx="352" cy="160" r="36"/><circle cx="352" cy="256" r="36"/><circle cx="352" cy="352" r="36"/></g>' },
+    banque: { nom: "Banque", fond: "#1E3A6B",
+      dessin: '<g fill="#FFFFFF"><path d="M256 104 408 196H104Z"/><rect x="132" y="222" width="44" height="130" rx="6"/><rect x="234" y="222" width="44" height="130" rx="6"/><rect x="336" y="222" width="44" height="130" rx="6"/><rect x="100" y="372" width="312" height="40" rx="8"/></g>' },
+    contacts: { nom: "Contacts", fond: "#DCD6CB", plein: true,
+      dessin: '<circle cx="256" cy="212" r="74" fill="#857F73"/><path d="M92 512v-58a164 132 0 0 1 328 0v58Z" fill="#857F73"/>' },
+    fichiers: { nom: "Fichiers", fond: "#FFFFFF",
+      dessin: '<path d="M92 190a28 28 0 0 1 28-28h92l36 40h144a28 28 0 0 1 28 28v150a28 28 0 0 1-28 28H120a28 28 0 0 1-28-28Z" fill="#3D8BEB"/>' },
+    sante: { nom: "Santé", fond: "#FFFFFF",
+      dessin: '<path d="M256 396C150 320 108 262 108 206a76 76 0 0 1 148-26 76 76 0 0 1 148 26c0 56-42 114-148 190Z" fill="#EF476F"/>' },
+    mail: { nom: "Mail", fond: "#2F7FE0",
+      dessin: '<rect x="88" y="150" width="336" height="216" rx="34" fill="#FFFFFF"/><path d="m108 178 148 112 148-112" fill="none" stroke="#2F7FE0" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>' },
+    telephone: { nom: "Téléphone", fond: "#2DBE5A",
+      dessin: '<path d="M172 152c0 118 70 188 188 188" fill="none" stroke="#FFFFFF" stroke-width="54" stroke-linecap="round"/><circle cx="172" cy="156" r="44" fill="#FFFFFF"/><circle cx="356" cy="340" r="44" fill="#FFFFFF"/>' },
+    navigateur: { nom: "Internet", fond: "#FFFFFF",
+      dessin: '<circle cx="256" cy="256" r="164" fill="#2F7FE0"/><path d="M340 172 284 284 172 340l56-112Z" fill="#FFFFFF"/><path d="M340 172 284 284l-56-56Z" fill="#E5484D"/>' },
+    messages: { nom: "Messages", fond: "#34C465",
+      dessin: '<ellipse cx="256" cy="238" rx="156" ry="126" fill="#FFFFFF"/><path d="M156 318l-28 94 108-56Z" fill="#FFFFFF"/>' },
+    musique: { nom: "Musique", fond: "url(#rose)",
+      defs: '<defs><linearGradient id="rose" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F43F5E"/><stop offset="1" stop-color="#FB8A7A"/></linearGradient></defs>',
+      dessin: '<g fill="#FFFFFF"><path d="M214 150 372 116v56l-158 34Z"/><path d="M214 150h26v196h-26zM346 120h26v196h-26z"/><ellipse cx="190" cy="350" rx="50" ry="38"/><ellipse cx="322" cy="320" rx="50" ry="38"/></g>' }
+  };
+  var QUAI = ["telephone", "navigateur", "messages", "musique"];
+  var ordre = {
+    seul: ["agenda", "photos", "appareil", "meteo", "horloge", "plans", "notes", "rappels", "reglages", "calculette", "banque", "cause", "fichiers", "sante", "mail", "contacts"],
+    ensemble: ["agenda", "photos", "H", "meteo", "horloge", "plans", "notes", "rappels", "reglages", "I", "banque", "calculette", "fichiers", "sante", "mail", "J"]
+  };
+
+  var etat = { choix: "H", fond: "vert", forme: "iphone", papier: "clair", soleil: false, ensemble: false };
+  var reduit = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var un = function (s) { return document.querySelector(s); };
+  var tous = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
+  var ecran = un("#ecran"), grille = un("#grille"), appli = un("#appli"), fermer = un("#fermer");
+  var depart = "", ouvreur = null, minuterie = 0;
+
+  /**
+   * L'image d'une icône. Sur Android, on montre ce que `npm run icones` fabrique :
+   * le dessin réduit à 60 % sur son fond étendu, dont le rond garde 80 %. Le motif
+   * est donc aux trois quarts de sa taille d'iPhone. `plein` : un dessin qui va
+   * jusqu'aux bords (une carte, une feuille de notes) se rogne, il ne se réduit pas.
+   */
+  function image(i, forme) {
+    var corps = forme === "android" && !i.plein ? '<g transform="translate(256 256) scale(.75) translate(-256 -256)">' + i.dessin + "</g>" : i.dessin;
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true">' + (i.defs || "") + '<rect width="512" height="512" fill="' + i.fond + '"/>' + corps + "</svg>";
+  }
+
+  /** Une icône de Cause : son dessin, dans les couleurs du fond choisi. */
+  function icone(lettre) {
+    var d = CAUSE[lettre];
+    return { fond: FONDS[etat.fond].couleur, dessin: d.dessin(d.teintes[etat.fond]) };
+  }
+
+  function peindreLesIcones() {
+    tous("[data-icone]").forEach(function (el) { el.innerHTML = image(icone(etat.choix), etat.forme); });
+    tous("[data-fixe]").forEach(function (el) { el.innerHTML = image(icone(el.dataset.fixe), etat.forme); });
+    tous("[data-voisine]").forEach(function (el) { el.innerHTML = image(VOISINES[el.dataset.voisine], etat.forme); });
+    // Un onglet de navigateur montre l'image carrée, quel que soit le téléphone.
+    tous("[data-favicon]").forEach(function (el) { el.innerHTML = image(icone(etat.choix), "iphone"); });
+  }
+
+  function caseDuBureau(cle) {
+    var el;
+    if (VOISINES[cle]) {
+      el = document.createElement("div");
+      el.className = "app";
+      el.innerHTML = '<span class="tuile" data-voisine="' + cle + '"></span><span>' + VOISINES[cle].nom + "</span>";
+    } else {
+      // Notre icône : elle s'ouvre comme sur un téléphone.
+      var lettre = cle === "cause" ? "" : cle;
+      el = document.createElement("button");
+      el.type = "button";
+      el.className = "app notre";
+      el.dataset.ouvre = lettre;
+      el.setAttribute("aria-label", lettre ? "Ouvrir Cause, icône " + lettre : "Ouvrir Cause");
+      el.innerHTML = '<span class="tuile" ' + (lettre ? 'data-fixe="' + lettre + '"' : "data-icone") + "></span><span>" + (lettre || "Cause") + "</span>";
+    }
+    el.dataset.cle = cle;
+    return el;
+  }
+
+  function monterLeBureau() {
+    fermerNet();
+    grille.textContent = "";
+    ordre[etat.ensemble ? "ensemble" : "seul"].forEach(function (cle) { grille.appendChild(caseDuBureau(cle)); });
+    peindreLesIcones();
+  }
+
+  function peindre() {
+    var c = CAUSE[etat.choix];
+    document.body.classList.toggle("android", etat.forme === "android");
+    document.body.classList.toggle("sombre", etat.papier === "sombre");
+    ecran.classList.toggle("soleil", etat.soleil);
+    peindreLesIcones();
+    un("#lettre").textContent = etat.choix;
+    un("#nom").textContent = c.nom;
+    un("#desc").textContent = c.desc;
+    un("#prendre").textContent = "Je prends la " + etat.choix;
+    tous("[data-choix]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.choix === etat.choix)); });
+    tous("[data-forme]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.forme === etat.forme)); });
+    tous("[data-papier]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.papier === etat.papier)); });
+    tous("[data-fond]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.fond === etat.fond)); });
+    un("#soleil").setAttribute("aria-pressed", String(etat.soleil));
+    un("#ensemble").setAttribute("aria-pressed", String(etat.ensemble));
+  }
+
+  function choisir(lettre) {
+    if (lettre !== etat.choix) un("#reponse").textContent = "";
+    etat.choix = lettre;
+    peindre();
+  }
+
+  // ── L'appli s'ouvre depuis l'icône touchée, et se referme sur elle. ──
+  function rogner(valeur) {
+    appli.style.webkitClipPath = valeur;
+    appli.style.clipPath = valeur;
+  }
+  function ouvrir(source) {
+    var e = ecran.getBoundingClientRect(), t = source.querySelector(".tuile").getBoundingClientRect();
+    depart = "inset(" + (t.top - e.top) + "px " + (e.right - t.right) + "px " + (e.bottom - t.bottom) + "px " + (t.left - e.left) + "px round " + (etat.forme === "android" ? t.width / 2 : t.width * 0.225) + "px)";
+    ouvreur = source;
+    // Le bas de l'écran peut passer sous la barre des sept (le bureau d'Android
+    // est plus haut, un petit téléphone aussi) : le bouton qui referme remonte
+    // d'autant. Il se place d'après ce qui se VOIT, pas d'après le bas du cadre.
+    var cache = Math.max(0, e.bottom - un(".barre").getBoundingClientRect().top);
+    appli.style.setProperty("--remonte", Math.min(cache, e.height - 140) + "px");
+    clearTimeout(minuterie);
+    appli.classList.remove("arrivee");
+    appli.hidden = false;
+    ecran.classList.add("dans-l-appli");
+    appli.style.transition = "none";
+    rogner(depart);
+    appli.getBoundingClientRect();
+    appli.style.transition = "";
+    rogner("inset(0px 0px 0px 0px round 0px)");
+    minuterie = setTimeout(function () { appli.classList.add("arrivee"); }, reduit ? 0 : 800);
+    fermer.focus({ preventScroll: true });
+  }
+  function refermer() {
+    if (appli.hidden) return;
+    clearTimeout(minuterie);
+    appli.classList.remove("arrivee");
+    ecran.classList.remove("dans-l-appli");
+    rogner(depart);
+    var cible = ouvreur;
+    minuterie = setTimeout(function () {
+      appli.hidden = true;
+      if (cible && document.body.contains(cible)) cible.focus({ preventScroll: true });
+    }, reduit ? 0 : 430);
+  }
+  function fermerNet() {
+    clearTimeout(minuterie);
+    appli.classList.remove("arrivee");
+    ecran.classList.remove("dans-l-appli");
+    appli.hidden = true;
+  }
+
+  // ── Mélanger : chaque case glisse de son ancienne place à la nouvelle. ──
+  function melanger() {
+    fermerNet();
+    var cases = Array.prototype.slice.call(grille.children);
+    var avant = cases.map(function (c) { return c.getBoundingClientRect(); });
+    var liste = ordre[etat.ensemble ? "ensemble" : "seul"], ancien = liste.join();
+    do {
+      for (var i = liste.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1)), garde = liste[i];
+        liste[i] = liste[j];
+        liste[j] = garde;
+      }
+    } while (liste.join() === ancien);
+    liste.forEach(function (cle) { grille.appendChild(grille.querySelector('[data-cle="' + cle + '"]')); });
+    if (reduit) return;
+    cases.forEach(function (c, n) {
+      var apres = c.getBoundingClientRect();
+      c.style.transition = "none";
+      c.style.transform = "translate(" + (avant[n].left - apres.left) + "px," + (avant[n].top - apres.top) + "px)";
+    });
+    grille.getBoundingClientRect();
+    cases.forEach(function (c) {
+      c.style.transition = "transform .55s cubic-bezier(.16,1,.3,1)";
+      c.style.transform = "";
+    });
+  }
+
+  // ── Les gestes ──
+  grille.addEventListener("click", function (ev) {
+    var b = ev.target.closest(".notre");
+    if (!b) return;
+    if (b.dataset.ouvre) choisir(b.dataset.ouvre);
+    ouvrir(b);
+  });
+  fermer.addEventListener("click", refermer);
+  document.addEventListener("keydown", function (ev) { if (ev.key === "Escape") refermer(); });
+  tous("[data-choix]").forEach(function (b) {
+    b.addEventListener("click", function () { refermer(); choisir(b.dataset.choix); });
+  });
+  tous("[data-forme]").forEach(function (b) {
+    b.addEventListener("click", function () { fermerNet(); etat.forme = b.dataset.forme; peindre(); });
+  });
+  tous("[data-papier]").forEach(function (b) {
+    b.addEventListener("click", function () { etat.papier = b.dataset.papier; peindre(); });
+  });
+  // Changer le fond de l'icône ramène au bureau, comme changer de dessin : c'est là qu'il se voit.
+  tous("[data-fond]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      refermer();
+      if (b.dataset.fond !== etat.fond) un("#reponse").textContent = "";
+      etat.fond = b.dataset.fond;
+      peindre();
+    });
+  });
+  un("#soleil").addEventListener("click", function () { etat.soleil = !etat.soleil; peindre(); });
+  un("#ensemble").addEventListener("click", function () { etat.ensemble = !etat.ensemble; monterLeBureau(); peindre(); });
+  un("#melanger").addEventListener("click", melanger);
+  un("#prendre").addEventListener("click", function () {
+    un("#reponse").textContent = "Écrivez « " + etat.choix + ", fond " + FONDS[etat.fond].nom + " » dans la conversation.";
+  });
+
+  // Le quai ne change jamais : quatre voisines, posées une fois.
+  un("#quai").innerHTML = QUAI.map(function (cle) { return '<span class="tuile" data-voisine="' + cle + '" style="width:60px;height:60px"></span>'; }).join("");
+  // Une adresse peut ouvrir la planche sur une lettre : …icone-de-cause-3.html#I
+  var voulue = (location.hash || "").slice(1).toUpperCase();
+  if (CAUSE[voulue]) etat.choix = voulue;
+  monterLeBureau();
+  peindre();
+})();
+</script>
+</body>
+</html>
