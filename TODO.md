@@ -164,13 +164,28 @@ Ne modifie pas cette version, crée une autre maquette pour pouvoir comparer. »
 
 **La planche :** `appli/vente/cause-2.html`, posée à côté de `cause.html`, qui
 n'a pas bougé d'une ligne. Mêmes textes, mêmes prix, mêmes captures, mêmes
-films : la comparaison ne porte que sur le mouvement. Son en-tête dit ce qui
+films (sauf celui de l'équipe, voir plus bas) : la comparaison ne porte que sur
+le mouvement. Son en-tête dit ce qui
 bouge, pourquoi, et ce que ses retours passés interdisent (rien de dessiné sur
 un écran de l'appli, aucun geste d'écran lié au défilement, une scène qui part
 à un tiers de l'écran mais laisse une demi-seconde avant le geste).
 
-**Ce qu'il a à dire :** s'il garde ce mouvement, ce qu'il en retire, et ce qui
-accroche sur son iPhone.
+**Vue par lui le soir même, un bémol, corrigé :** *« le seul petit bémol,
+c'est le moment de choisir les salariés pour les affilier à une journée. C'est
+pas fluide. »* L'appli change d'état d'un coup à cet endroit, et son film le
+montrait tel quel (neuf états, huit coupes). La planche joue maintenant
+`nov-film-equipe-fluide`, où chaque élément glisse d'un état au suivant
+(`appli/scripts/film-equipe-fluide.py`). Les deux autres pages gardent leur
+film.
+
+**Ce qu'il a à dire :** si ce passage lui va maintenant, s'il garde ce
+mouvement, ce qu'il en retire, et ce qui accroche sur son iPhone.
+
+**Une question née de ce bémol, à lui de trancher :** le site montre ce
+passage plus souple que l'appli ne le fait. Veut-il que l'appli glisse aussi
+quand on choisit les salariés d'une demi-journée ? Si oui : une planche
+d'abord (`CLAUDE.md` §3 bis), sur le vrai écran du planning, et rien dans
+`src/` avant son choix.
 
 **Ce qui n'est PAS vérifié, et qu'il ne faut pas croire vérifié :** Safari. Ce
 poste n'a que Chromium. La planche est écrite pour lui (masques préfixés,

@@ -675,7 +675,15 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
   // `cause-2.html` (17 novembre 2026) reprend ce bouton et ces films dans une
   // page au mouvement refait : elle passe les deux mêmes contrôles, sans quoi
   // les deux défauts qu'il a signalés pourraient y revenir sans rien dire.
-  const PAGES_DE_VENTE = [['chapitres-6.html', 'vente'], ['cause-2.html', 'vente, en mouvement']];
+  // Chaque page nomme ses films : celui de l'équipe a été remonté pour la
+  // planche en mouvement (« c'est pas fluide », 17 novembre 2026), et l'autre
+  // page garde le sien. Un film renommé d'un seul côté ferait chercher un
+  // cadre qui n'existe pas : le contrôle le dit au lieu de s'y casser.
+  const FILMS = ['micro', 'envoi', 'mois', 'equipe', 'travaux'];
+  const PAGES_DE_VENTE = [
+    ['chapitres-6.html', 'vente', FILMS],
+    ['cause-2.html', 'vente, en mouvement', FILMS.map((f) => (f === 'equipe' ? 'equipe-fluide' : f))],
+  ];
   for (const [fichier, nomPage] of PAGES_DE_VENTE) {
     const cVe = await browser.newContext({ viewport: { width: 390, height: 844 } });
     await cVe.route((url) => url.pathname.endsWith('/vente/' + fichier), async (route) => {
@@ -704,12 +712,14 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
   // (« nov-film- » + data-film) : aucun grep ne dit qu'un fichier manque, et
   // un film absent laisserait un téléphone figé sur sa première image. On
   // les regarde donc jouer, un par un, comme lui en descendant.
-  for (const [fichier, nomPage] of PAGES_DE_VENTE) {
+  for (const [fichier, nomPage, films] of PAGES_DE_VENTE) {
     const cFi = await browser.newContext({ viewport: { width: 390, height: 844 } });
     const page = await cFi.newPage();
     await page.goto(`${B}/vente/${fichier}`, { waitUntil: 'domcontentloaded' });
-    for (const nom of ['micro', 'envoi', 'mois', 'equipe', 'travaux']) {
-      await page.evaluate((n) => { const el = document.querySelector('[data-film="' + n + '"]'); scrollTo(0, scrollY + el.getBoundingClientRect().top - 90); }, nom);
+    for (const nom of films) {
+      const cadre = await page.evaluate((n) => { const el = document.querySelector('[data-film="' + n + '"]'); if (el) scrollTo(0, scrollY + el.getBoundingClientRect().top - 90); return !!el; }, nom);
+      ok(nomPage + ' : le film ' + nom + ' a son cadre dans la page', cadre);
+      if (!cadre) continue;
       const fin = await page.waitForFunction((n) => {
         const f = document.querySelector('[data-film="' + n + '"] .film-fin');
         return f && f.classList.contains('vue');

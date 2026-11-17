@@ -25,7 +25,8 @@
   des films, éprouvée sur son iPhone : la première image posée dessous, le
   film qui ne se montre qu'une fois lancé, la dernière image à la fin.
   L'en-tête de cause.html dit d'où vient chaque texte, chaque capture et
-  chaque film : il reste vrai ici.
+  chaque film : il reste vrai ici. Un seul film n'est plus le sien, celui
+  de l'équipe (voir « LE FILM DE L'ÉQUIPE » plus bas).
 
   L'IDÉE : RIEN NE SE RETAPE, TOUT SE PORTE. C'est la promesse du produit
   (« du devis dicté à la facture, sans rien retaper »), et c'est le geste que
@@ -112,6 +113,25 @@
   feuille d'Envoyez, passée derrière le téléphone, dépassait encore de la
   scène et le bord de l'écran la coupait. Elle a été refaite ensuite (la
   coulisse) et regardée ici, mais PAS relue une troisième fois.
+
+  LE FILM DE L'ÉQUIPE, REMONTÉ LE SOIR MÊME. Sa remarque, la planche vue :
+  « le seul petit bémol, c'est le moment de choisir les salariés pour les
+  affilier à une journée. C'est pas fluide. » La cause n'était pas dans la
+  page : à cet endroit l'appli change d'état d'un seul coup (ouvrir la
+  liste, choisir Lucas, puis Julien, refermer), et son film, fidèle, tenait
+  en neuf images immobiles séparées par huit coupes, la carte sautant de
+  quarante à soixante pixels à chaque fois. Ici la scène joue
+  images/nov-film-equipe-fluide : les MÊMES neuf états, pris dans le film
+  d'origine, et entre deux chaque élément glisse de sa place à la suivante
+  (la liste se déplie, le trait de sélection se tire, « Lucas » se pousse
+  pour laisser entrer « et Julien », la carte descend). Soixante images par
+  seconde au lieu de trente, 6,85 s au lieu de 6,63. Rien n'est redessiné :
+  chaque pixel d'encre vient du film de la vraie appli. Il se refabrique
+  avec appli/scripts/film-equipe-fluide.py, qui dit comment. cause.html et
+  chapitres-6.html gardent leur film à coupes, pour comparer.
+  À SAVOIR : le site montre donc ce passage plus souple que l'appli ne le
+  fait aujourd'hui. Rendre l'appli aussi souple est un autre travail, qui
+  passe par une planche d'abord.
 
   PAS ÉPROUVÉ SUR SAFARI ICI (Chromium seul) : la planche est à regarder sur
   son iPhone. Ce qui a été écrit pour lui : chaque masque porte son préfixe,
@@ -897,7 +917,7 @@ html.anime .geant.vu span{transform:none}
         <div class="socle" data-t><div class="leve"><figure class="gros film" id="scene-mois" data-film="mois" data-vu="0.15" style="--film:780/1042"><img class="film-pose" src="images/nov-mois-5.jpg" alt="Planning de novembre : demi-journées en vert clair, vert foncé et rouge, le vendredi 6 entouré d'or" width="1170" height="1563" decoding="async"></figure></div></div>
         <div class="paire">
           <div class="socle" data-t><div class="leve douce">
-            <figure class="gros film" id="scene-equipe" data-film="equipe" data-vu="0.15" style="--film:692/600"><img class="film-pose" src="images/nov-film-equipe-fin.jpg" alt="Le chantier de Mr. Lemaire, le vendredi 6 novembre : Lucas et Julien le matin et l'après-midi" width="692" height="600" decoding="async"></figure>
+            <figure class="gros film" id="scene-equipe" data-film="equipe-fluide" data-vu="0.15" style="--film:692/600"><img class="film-pose" src="images/nov-film-equipe-fluide-fin.jpg" alt="Le chantier de Mr. Lemaire, le vendredi 6 novembre : Lucas et Julien le matin et l'après-midi" width="692" height="600" decoding="async"></figure>
             <p class="sous">L'équipe se pose à la demi-journée.</p>
           </div></div>
           <div class="socle" data-t><div class="leve douce">
