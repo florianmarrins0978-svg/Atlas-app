@@ -22,16 +22,27 @@
   pas d'une ligne ; les lettres continuent (H, I, J) pour qu'une lettre
   veuille toujours dire le même dessin.
     H  Le rouge-gorge. L'oiseau qui suit le jardinier, et qui chante :
-       celui qui cause. Un rond, une gorge, un bec ouvert, la queue
+       celui qui cause. Un rond, une gorge ROUGE, un bec ouvert, la queue
        relevée.
     I  Le casque de chantier, dont le bord porte la pointe d'une bulle.
     J  La rosace à six pétales, celle que les charpentiers tracent au
        compas, dans son cercle.
 
+  TROIS CHOSES QUE LA RELECTURE A FAIT CHANGER, À NE PAS DÉFAIRE :
+    · la gorge est rouge (#E4572E), la seule couleur hors de sa charte.
+      En or, l'oiseau rond se lisait comme un poussin, et un rouge-gorge
+      sans rouge ne se nomme pas ;
+    · la rosace ne se montre JAMAIS en vert sur un fond clair : c'est,
+      trait pour trait, le « Sole delle Alpi », l'emblème de la Lega, un
+      parti italien. Elle reste en or, sur un rond vert quand le fond est
+      or ou crème ;
+    · le casque ne se montre JAMAIS en vert : il devient un casque
+      militaire. Il reste jaune, sur un rond vert quand le fond est clair.
+
   LES COULEURS CLAQUENT PLUS QUE CELLES DE L'APPLI, et c'est voulu : l'or
   est celui du site de vente (--or-clair, #F0B43C), le vert est un vert
   forêt (#15402A), plus franc que le vert pin de l'appli, qui se lit
-  presque gris sur un bureau. Chaque dessin se voit sur trois fonds
+  presque gris sur un bureau. Le rouge n'est que la gorge de l'oiseau. Chaque dessin se voit sur trois fonds
   (vert, or, crème) : la couleur fait la moitié d'une icône.
 
   ÉCARTÉS après les avoir regardés à 60, 29 et 16 px :
@@ -131,7 +142,7 @@ p { margin:0 }
 .accueil { display:none; position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:top }
 .arrivee .accueil { display:block }
 @keyframes arriver { from { opacity:0 } }
-/* --remonte : ce que le bas de l'écran a de caché sous la barre des sept. Le bouton qui referme, et le fondu sous lui, remontent d'autant. */
+/* --remonte : ce que le bas de l'écran a de caché sous la barre du bas. Le bouton qui referme, et le fondu sous lui, remontent d'autant. */
 .appli::after { content:""; position:absolute; left:0; right:0; bottom:0; height:calc(150px + var(--remonte, 0px)); pointer-events:none; background:linear-gradient(rgba(245,243,238,0), #f5f3ee 46%) }
 .retour { position:absolute; z-index:1; left:50%; bottom:calc(20px + var(--remonte, 0px)); transform:translateX(-50%); min-height:46px; padding:0 22px; border:0; border-radius:23px; background:var(--pin); color:var(--carte); font:600 15px/1 var(--sans); white-space:nowrap; box-shadow:0 10px 24px -10px rgba(28,28,26,.55) }
 
@@ -174,20 +185,22 @@ p { margin:0 }
 .pied { margin-top:26px; font-size:14px; color:var(--encre-2) }
 .pied a { color:var(--encre); text-decoration-color:var(--or); text-decoration-thickness:1.5px; text-underline-offset:3px }
 
-/* ── La barre : les sept, sous le pouce ─────────────────────────────────── */
+/* ── La barre : le dessin et son fond, sous le pouce ────────────────────── */
 .barre { position:fixed; left:0; right:0; bottom:0; z-index:5; padding:8px 16px calc(8px + env(safe-area-inset-bottom)); background:var(--creme); border-top:1px solid var(--trait) }
 .dedans { display:flex; gap:12px; max-width:398px; margin:0 auto }
 .groupe { display:flex; flex-direction:column; gap:5px; min-width:0 }
 .groupe:first-child { flex:1 1 0 }
 .groupe + .groupe { flex:1 1 0; padding-left:12px; border-left:1px solid var(--trait) }
-.groupe p { font:500 11px/13px var(--sans); letter-spacing:.02em; color:var(--encre-2); white-space:nowrap }
+.groupe p { font:500 13px/15px var(--sans); color:var(--encre); white-space:nowrap }
 .rang { display:flex; gap:8px }
-.vignette { flex:1 1 0; min-width:0; max-width:44px; display:flex; flex-direction:column; align-items:center; gap:4px; margin:0; padding:2px 0 0; border:0; background:none; font:500 14px/16px var(--sans); color:var(--encre-2) }
+.vignette { flex:1 1 0; min-width:0; max-width:48px; display:flex; flex-direction:column; align-items:center; gap:4px; margin:0; padding:2px 0 0; border:0; background:none; font:500 14px/16px var(--sans); color:var(--encre-2) }
 .vignette .tuile { width:calc(100% - 4px); aspect-ratio:1; box-shadow:0 0 0 1px var(--trait) }
 .vignette[aria-pressed="true"] { color:var(--encre); font-weight:700 }
 .vignette[aria-pressed="true"] .tuile { box-shadow:0 0 0 2px var(--creme), 0 0 0 5px var(--pin) }
 /* Une pastille de fond : la même forme que la vignette d'un dessin, un rond de couleur dedans. */
-.vignette .teinte { display:block; width:calc(100% - 4px); aspect-ratio:1; border-radius:50%; box-shadow:0 0 0 1px var(--trait) }
+/* Les lettres prennent la serif du sceau : en bâton, le I se lit comme un l ou un 1. */
+.vignette[data-choix] { font-family:var(--serif); font-size:16px }
+.vignette .teinte { display:block; width:calc(100% - 4px); aspect-ratio:1; border-radius:50%; box-shadow:0 0 0 1px rgba(28,28,26,.3) }
 .vignette[aria-pressed="true"] .teinte { box-shadow:0 0 0 2px var(--creme), 0 0 0 5px var(--pin) }
 
 @media (max-width:350px) {
@@ -259,7 +272,7 @@ p { margin:0 }
     <div class="mots">
       <span class="sceau" id="lettre" aria-hidden="true">H</span>
       <h2 id="nom">Le rouge-gorge</h2>
-      <p id="desc">L'ami du jardinier, celui qui chante : l'oiseau qui cause.</p>
+      <p id="desc">L'ami du jardinier, celui qui chante&nbsp;: l'oiseau qui cause.</p>
     </div>
   </section>
 
@@ -275,7 +288,7 @@ p { margin:0 }
   </section>
 
   <section class="choix">
-    <button type="button" class="plein" id="prendre">Je prends la H</button>
+    <button type="button" class="plein" id="prendre">Je prends le rouge-gorge</button>
     <p class="reponse" id="reponse" aria-live="polite"></p>
     <p class="pied">Les lettres sont sur <a href="icone-de-cause-2.html">la planche d'avant</a>. Rien n'est installé.</p>
   </section>
@@ -306,53 +319,63 @@ p { margin:0 }
 (function () {
   "use strict";
 
-  var VERT = "#15402A", OR = "#F0B43C", CREME = "#F6F1E6";
+  var VERT = "#15402A", OR = "#F0B43C", CREME = "#F6F1E6", ROUGE = "#E4572E";
   var FONDS = { vert: { nom: "vert", couleur: VERT }, or: { nom: "or", couleur: OR }, creme: { nom: "crème", couleur: CREME } };
   var plein = function (d, couleur, bord) {
     return '<path d="' + d + '" fill="' + couleur + '" stroke="' + couleur + '" stroke-width="' + bord + '" stroke-linejoin="round"/>';
   };
+  // Sur un fond clair, le casque et la rosace gardent leur or en se posant sur
+  // un rond vert : en vert, le casque fait casque militaire, et la rosace est
+  // l'emblème d'un parti italien (l'en-tête de la planche le dit).
+  var medaillon = function (dessin) {
+    return '<circle cx="256" cy="256" r="200" fill="' + VERT + '"/><g transform="translate(256 256) scale(.78) translate(-256 -256)">' + dessin + "</g>";
+  };
 
-  // Chaque dessin dit ses couleurs fond par fond : sur le crème, l'or ne tient
-  // pas seul (1,6 pour 1), donc la forme y passe au vert et l'or reste un accent.
   var CAUSE = {
-    H: { nom: "Le rouge-gorge", desc: "L'ami du jardinier, celui qui chante : l'oiseau qui cause.",
+    H: { nom: "Le rouge-gorge", choix: "le rouge-gorge", desc: "L'ami du jardinier, celui qui chante\u00a0: l'oiseau qui cause.",
       teintes: {
-        vert: { corps: CREME, gorge: OR, bec: OR, oeil: VERT },
-        or: { corps: CREME, gorge: VERT, bec: VERT, oeil: VERT },
-        creme: { corps: VERT, gorge: OR, bec: VERT, oeil: CREME }
+        vert: { corps: CREME, gorge: ROUGE, bec: OR, oeil: VERT },
+        or: { corps: CREME, gorge: ROUGE, bec: VERT, oeil: VERT },
+        creme: { corps: VERT, gorge: ROUGE, bec: VERT, oeil: CREME }
       },
-      // Un rond, la queue relevée, le bec ouvert. La gorge est la part du rond
-      // que recouvre un second cercle : un seul tracé, sans masque.
+      // Un rond, la queue relevée (large au corps, plus fine au bout), le bec
+      // ouvert. La gorge est la part du rond que recouvre un second cercle ;
+      // elle déborde le rond d'un pixel et demi, sans quoi un liseré de la
+      // couleur du corps la cerne. L'œil se tient à un rayon d'elle.
       dessin: function (c) {
-        return '<g transform="translate(4 -8)">' + plein("M150 196 L62 138 L96 110 L176 176 Z", c.corps, 14) +
+        return '<g transform="translate(4 -8)">' + plein("M132 214 L62 138 L92 112 L188 166 Z", c.corps, 14) +
           plein("M370 200 L444 208 L378 232 Z", c.bec, 8) + plein("M378 244 L436 262 L368 268 Z", c.bec, 8) +
           '<circle cx="244" cy="280" r="146" fill="' + c.corps + '"/>' +
-          '<path d="M375 215.5 A146 146 0 0 1 245 426 A128 128 0 0 1 375 215.5 Z" fill="' + c.gorge + '"/>' +
-          '<circle cx="304" cy="212" r="15" fill="' + c.oeil + '"/></g>';
+          '<path d="M376.9 216.1 A147.5 147.5 0 0 1 246.5 427.5 A128 128 0 0 1 376.9 216.1 Z" fill="' + c.gorge + '"/>' +
+          '<circle cx="292" cy="198" r="15" fill="' + c.oeil + '"/></g>';
       } },
-    I: { nom: "Le casque", desc: "Un casque de chantier qui porte la pointe d'une bulle : le chantier qui parle.",
+    I: { nom: "Le casque", choix: "le casque", desc: "Un casque de chantier qui porte la pointe d'une bulle\u00a0: le chantier qui parle.",
       teintes: {
         vert: { coque: OR, creux: VERT },
-        or: { coque: VERT, creux: OR },
-        creme: { coque: VERT, creux: OR }
+        or: { coque: OR, creux: VERT, rond: true },
+        creme: { coque: OR, creux: VERT, rond: true }
       },
       dessin: function (c) {
-        return '<g transform="translate(0 -22)"><path d="M104 300 C104 196 172 132 256 132 C340 132 408 196 408 300 Z" fill="' + c.coque + '"/>' +
+        var casque = '<g transform="translate(0 -22)"><path d="M104 300 C104 196 172 132 256 132 C340 132 408 196 408 300 Z" fill="' + c.coque + '"/>' +
           '<rect x="70" y="312" width="372" height="50" rx="25" fill="' + c.coque + '"/>' + plein("M146 352 L104 432 L236 352 Z", c.coque, 14) +
           '<path d="M230 300 V176 M282 300 V176" fill="none" stroke="' + c.creux + '" stroke-width="12" stroke-linecap="round"/></g>';
+        return c.rond ? medaillon(casque) : casque;
       } },
-    J: { nom: "La rosace", desc: "La rosace à six pétales, que les charpentiers tracent au compas.",
+    J: { nom: "La rosace", choix: "la rosace", desc: "La rosace à six pétales, que les charpentiers tracent au compas.",
       teintes: {
         vert: { petale: OR },
-        or: { petale: VERT },
-        creme: { petale: VERT }
+        or: { petale: OR, rond: true },
+        creme: { petale: OR, rond: true }
       },
       // Six pétales de rayon 168, chacun entre deux arcs du même rayon : c'est
-      // le tracé au compas. Leurs pointes touchent le cercle, comme sur le bois.
+      // le tracé au compas. Sur le vert, leurs pointes touchent un cercle d'or ;
+      // sur un fond clair, le rond vert plein tient lieu de cercle.
       dessin: function (c) {
-        return [[256, 88], [401.5, 172], [401.5, 340], [256, 424], [110.5, 340], [110.5, 172]].map(function (p) {
+        var petales = [[256, 88], [401.5, 172], [401.5, 340], [256, 424], [110.5, 340], [110.5, 172]].map(function (p) {
           return '<path d="M256 256 A168 168 0 0 1 ' + p[0] + " " + p[1] + ' A168 168 0 0 1 256 256 Z" fill="' + c.petale + '"/>';
-        }).join("") + '<circle cx="256" cy="256" r="179" fill="none" stroke="' + c.petale + '" stroke-width="22"/>';
+        }).join("");
+        return c.rond ? '<circle cx="256" cy="256" r="190" fill="' + VERT + '"/>' + petales
+          : petales + '<circle cx="256" cy="256" r="179" fill="none" stroke="' + c.petale + '" stroke-width="22"/>';
       } }
   };
   // Les voisines : des dessins génériques, aux couleurs qu'on trouve sur un vrai bureau.
@@ -473,7 +496,7 @@ p { margin:0 }
     un("#lettre").textContent = etat.choix;
     un("#nom").textContent = c.nom;
     un("#desc").textContent = c.desc;
-    un("#prendre").textContent = "Je prends la " + etat.choix;
+    un("#prendre").textContent = "Je prends " + c.choix;
     tous("[data-choix]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.choix === etat.choix)); });
     tous("[data-forme]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.forme === etat.forme)); });
     tous("[data-papier]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.papier === etat.papier)); });
@@ -497,7 +520,7 @@ p { margin:0 }
     var e = ecran.getBoundingClientRect(), t = source.querySelector(".tuile").getBoundingClientRect();
     depart = "inset(" + (t.top - e.top) + "px " + (e.right - t.right) + "px " + (e.bottom - t.bottom) + "px " + (t.left - e.left) + "px round " + (etat.forme === "android" ? t.width / 2 : t.width * 0.225) + "px)";
     ouvreur = source;
-    // Le bas de l'écran peut passer sous la barre des sept (le bureau d'Android
+    // Le bas de l'écran peut passer sous la barre du bas (le bureau d'Android
     // est plus haut, un petit téléphone aussi) : le bouton qui referme remonte
     // d'autant. Il se place d'après ce qui se VOIT, pas d'après le bas du cadre.
     var cache = Math.max(0, e.bottom - un(".barre").getBoundingClientRect().top);
@@ -591,7 +614,7 @@ p { margin:0 }
   un("#ensemble").addEventListener("click", function () { etat.ensemble = !etat.ensemble; monterLeBureau(); peindre(); });
   un("#melanger").addEventListener("click", melanger);
   un("#prendre").addEventListener("click", function () {
-    un("#reponse").textContent = "Écrivez « " + etat.choix + ", fond " + FONDS[etat.fond].nom + " » dans la conversation.";
+    un("#reponse").textContent = "Écrivez « " + CAUSE[etat.choix].choix + ", fond " + FONDS[etat.fond].nom + " » dans la conversation.";
   });
 
   // Le quai ne change jamais : quatre voisines, posées une fois.

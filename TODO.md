@@ -48,10 +48,15 @@ ne bougent pas.
   géométrie n'a pas pu être vérifiée d'ici (Wikipédia est hors du réseau de ce
   poste) et une cocotte fausse ne se reconnaît pas. À reprendre s'il aime
   l'oiseau.
-- **Les deux couleurs de ces dessins ne sont pas des jetons de l'appli** : l'or
-  est celui du site de vente (`#F0B43C`), le vert un vert forêt (`#15402A`),
-  plus franc que le vert pin. Si un dessin est retenu, dire où elles vivent
-  (l'icône seule, ou aussi le manifeste et l'écran de lancement).
+- **Les couleurs de ces dessins ne sont pas des jetons de l'appli** : l'or est
+  celui du site de vente (`#F0B43C`), le vert un vert forêt (`#15402A`), plus
+  franc que le vert pin, et la gorge du rouge-gorge est rouge (`#E4572E`), la
+  seule couleur hors de sa charte. Si un dessin est retenu, dire où elles
+  vivent (l'icône seule, ou aussi le manifeste et l'écran de lancement).
+- **La rosace ressemble à un emblème politique dès qu'elle est verte sur un
+  fond clair** (le « Sole delle Alpi » de la Lega, un parti italien). La
+  planche ne la montre donc qu'en or. Il doit le savoir avant de la choisir :
+  dit dans la conversation le 17 novembre.
 - **Les entrelacs ont été écartés sans dessin** : des anneaux, des losanges, un
   trèfle sont déjà des marques connues. S'il y tient, c'est un travail à part.
 

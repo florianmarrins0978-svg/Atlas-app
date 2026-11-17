@@ -740,8 +740,11 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
   // lettres) et la troisième (trois dessins, chacun sur trois fonds). Les
   // mêmes contrôles les gardent toutes les deux ; la troisième ajoute le fond.
   const PLANCHES_D_ICONE = [
-    { fichier: 'icone-de-cause-2.html', nom: 'icône', lettres: 'ABCDEFG', ensemble: '#sept', papier: 'fond', fonds: [] },
-    { fichier: 'icone-de-cause-3.html', nom: 'icône en dessin', lettres: 'HIJ', ensemble: '#ensemble', papier: 'papier', fonds: ['vert', 'or', 'creme'] },
+    { fichier: 'icone-de-cause-2.html', nom: 'icône', lettres: 'ABCDEFG', ensemble: '#sept', papier: 'fond', fonds: [],
+      choix: k => 'la ' + k, dit: k => '« ' + k + ' »' },
+    // La troisième dit son choix par le NOM du dessin : la lettre I, seule, se lit comme un l ou un 1.
+    { fichier: 'icone-de-cause-3.html', nom: 'icône en dessin', lettres: 'HIJ', ensemble: '#ensemble', papier: 'papier', fonds: ['vert', 'or', 'creme'],
+      choix: k => ({ H: 'le rouge-gorge', I: 'le casque', J: 'la rosace' })[k], dit: k => '« ' + ({ H: 'le rouge-gorge', I: 'le casque', J: 'la rosace' })[k] + ', fond ' },
   ];
   for (const pl of PLANCHES_D_ICONE) {
     const N = pl.nom, derniere = pl.lettres[pl.lettres.length - 1], milieu = pl.lettres[1];
@@ -754,14 +757,14 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     const dessins = new Set();
     for (const k of pl.lettres) { await page.click(`[data-choix="${k}"]`); dessins.add(await dessin()); }
     ok(N + ' : chaque lettre pose son dessin sur le bureau', dessins.size === pl.lettres.length, dessins.size + ' dessins');
-    ok(N + ' : le bouton du choix suit la lettre', (await page.textContent('#prendre')) === 'Je prends la ' + derniere);
+    ok(N + ' : le bouton du choix suit la lettre', (await page.textContent('#prendre')) === 'Je prends ' + pl.choix(derniere));
     // Le fond de l'icône : chaque pastille repeint la tuile, et le choix le dit.
     if (pl.fonds.length) {
       const peints = new Set();
       for (const f of pl.fonds) { await page.click(`[data-fond="${f}"]`); peints.add(await dessin()); }
       ok(N + ' : chaque fond repeint l\'icône', peints.size === pl.fonds.length, peints.size + ' rendus');
       await page.click('#prendre');
-      ok(N + ' : le choix dit la lettre ET le fond', /« [A-Z], fond crème »/.test(await page.textContent('#reponse')));
+      ok(N + ' : le choix dit le dessin ET le fond', (await page.textContent('#reponse')).includes(pl.dit(derniere) + 'crème »'));
       await page.click(`[data-fond="${pl.fonds[0]}"]`);
       ok(N + ' : changer de fond efface la réponse', (await page.textContent('#reponse')) === '');
     }
@@ -784,7 +787,7 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     ok(N + ' : Mélanger change l\'ordre', (await ordre()) !== avant);
     await page.waitForTimeout(700);
     await page.click(`#grille .notre[data-ouvre="${milieu}"]`);
-    ok(N + ' : toucher une icône en fait le choix', (await page.textContent('#prendre')) === 'Je prends la ' + milieu);
+    ok(N + ' : toucher une icône en fait le choix', (await page.textContent('#prendre')) === 'Je prends ' + pl.choix(milieu));
     ok(N + ' : l\'appli s\'ouvre sur sa capture, avec des pixels', await attendre(() => {
       const i = document.querySelector('.accueil');
       return getComputedStyle(i).display !== 'none' && i.complete && i.naturalWidth > 0;
@@ -810,7 +813,7 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     ok(N + ' : et il referme l\'appli', await attendre(() => document.querySelector('#appli').hidden));
     await page.click('[data-forme="iphone"]');
     await page.click('#prendre');
-    ok(N + ' : le choix dit quelle lettre écrire', new RegExp('« ' + milieu).test(await page.textContent('#reponse')));
+    ok(N + ' : le choix dit quoi écrire', (await page.textContent('#reponse')).includes(pl.dit(milieu)));
     const largeIc = await page.evaluate(() => document.documentElement.scrollWidth);
     ok(N + ' : rien ne déborde à 390 px', largeIc <= 391, 'largeur ' + largeIc);
     ok(N + ' : aucune erreur de page', errs.length === 0, errs.join(' | '));
