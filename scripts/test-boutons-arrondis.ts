@@ -241,6 +241,20 @@ const HORS_CHARTE: Array<{
     seulement: /data-atlas="carte-composer-ma-fiche"/,
   },
   {
+    /**
+     * **La même carte au rond doré, sur la fiche ouverte et sur Composer** :
+     * « Ajouter un client » et « Ajouter une famille », sa planche A du
+     * 17 novembre 2026 (`appli/fiche-de-chantier-ouverte-soignee.html`,
+     * `appli/composer-ma-fiche-soignee.html`). Une plage qu'on parcourt, à
+     * 14 px comme la carte de Composer sur la liste, et non un geste en
+     * capsule. **Bornées à leur repère** : tout autre bouton carré de ces
+     * deux écrans fait toujours rougir.
+     */
+    motif: /^src[/\\]app[/\\]paysage[/\\]fiche[/\\](\[id\][/\\]FicheChantierClient|composer[/\\]ComposerMaFiche)\.tsx$/,
+    pourquoi: "carte au rond doré qu'on parcourt, arrondie à 14 px (planche A du 17 novembre), et non geste en capsule",
+    seulement: /data-atlas="(pont-client|ajouter-une-famille)"/,
+  },
+  {
     // **UNE VIGNETTE PHOTO, PAS UN BOUTON D'ACTION.** Arrivée le 8 septembre
     // 2026 avec « repartir d'un client » : un carré de 62 px qui montre une
     // photo de l'ancien chantier, et qu'on touche pour la reprendre. La charte

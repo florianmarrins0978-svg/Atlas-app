@@ -157,7 +157,13 @@ Ce qui existe aujourd'hui est donc de l'**existant**, pas un engagement :
   l'historique git ;
 - la charte reprise d'**Arborea** — son propre site —, relevée au navigateur et
   non approchée à l'œil : vert pin `#2f3b2f` en accent d'action, or `#B98B47`
-  en accent de lecture, fond crème, polices du système.
+  en accent de lecture, fond crème, polices du système. **Les boutons pleins
+  qu'on appuie portent le vert sauge `#7d9a6d`** (`colors.plein`), depuis sa
+  décision du 3 septembre 2026 ; le vert pin reste aux textes, aux icônes et à
+  l'onglet où l'on est. C'est LE vert d'un bouton de l'appli, sur un écran
+  comme sur une planche. Le site de vente a le sien, `#1d7a3c`, et une famille
+  d'anciennes planches en porte un troisième par dérive : `TODO.md`, « quatre
+  verts de bouton ».
 
 Cette identité fait autorité **pour le code existant** et ne se touche pas sans
 demande explicite ; elle n'a pas été confirmée ici comme définitive.

@@ -104,22 +104,6 @@ async function main() {
     assert.equal(note, null);
   });
 
-  await test("supprimerNoteVocale : suppression réelle et complète", async () => {
-    await notesRepo.supprimerNoteVocale(A, chantier.id);
-    const note = await notesRepo.getNoteVocale(A, chantier.id);
-    assert.equal(note, null);
-    const client = await pool.connect();
-    try {
-      await client.query("BEGIN");
-      await client.query(`SELECT set_config('app.entreprise_id', $1, true)`, [A.entrepriseId]);
-      const { rows } = await client.query(`SELECT COUNT(*) FROM notes_vocales WHERE chantier_id = $1`, [chantier.id]);
-      assert.equal(Number(rows[0].count), 0);
-      await client.query("COMMIT");
-    } finally {
-      client.release();
-    }
-  });
-
   console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);
   await pool.end();
   if (failed > 0) process.exit(1);

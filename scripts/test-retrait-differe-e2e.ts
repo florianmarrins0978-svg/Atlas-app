@@ -9,9 +9,8 @@ import { ADRESSE } from "./_adresse";
 // l'écran. Le patron, le 10 août 2026 : *« une annulation qui ne rend rien est
 // pire que pas d'annulation »*.
 //
-// Une photo et une note vocale ont un fichier derrière elles, et
-// `supprimerPhoto` / `supprimerNoteVocale` mettent ce fichier en file de purge
-// **dans la même transaction** que la suppression (`fichiers_a_purger`).
+// Une photo a un fichier derrière elle, et `supprimerPhoto` le met en file
+// de purge **dans la même transaction** que la suppression (`fichiers_a_purger`).
 // Appeler le serveur au moment du geste rendrait « Annuler » menteur : la ligne
 // reviendrait, le fichier non — et il serait effacé du disque à la purge
 // suivante.

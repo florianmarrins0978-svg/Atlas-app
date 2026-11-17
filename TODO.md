@@ -7,6 +7,65 @@ Le texte de l'appli dit Cause (`ARCHITECTURE.md` §581). Restent, et chacun est 
 - **les conditions générales** : une version nouvelle qui dit Cause, que chaque compte acceptera de nouveau. Le plus simple : la faire quand sa micro-entreprise a son SIREN, pour remplir dans la même version les cases « Qui édite » encore à compléter (une seule acceptation au lieu de deux) ;
 - **l'icône** : le « A » provisoire ne va plus. Trois planches (ci-dessous) : il a jugé les lettres des deux premières trop basiques, la troisième porte des dessins et attend une lettre et un fond, puis `npm run icones` ;
 - **l'adresse d'envoi des courriels** : le nom affiché dit Cause, l'adresse reste celle de sa variable `COURRIEL_EXPEDITEUR`, à passer sur cause.fr quand l'Afnic aura accordé le domaine.
+## ⏳ UNE PLANCHE À REGARDER : FAIRE SIGNER LA FICHE D'ENTRETIEN (17 novembre 2026)
+
+**Sa demande, qui revient sur sa décision du 16 août** (pas de signature sur les
+rapports) : *« quand les gars font la tonte, l'entretien des massifs, ils mettent
+le temps passé. Si le client est là, ils lui font signer. S'il n'est pas là, ils
+ne lui font pas signer. Il ne faut pas que ça soit obligatoire pour enregistrer
+la fiche »*, puis *« « la signature se met dans l'encadré où il doit signer »*. **Pas de signature
+depuis le lien pour l'entretien** : sa phrase sur le lien visait le DEVIS (sa
+correction du même soir, *« NON ! Je parlais pour le devis »*).
+
+`appli/soignee/fiche-signee-par-le-client.html`, posée sur les vrais écrans
+figés (fiche de chantier, fiche envoyée, page du client) et sur le vrai PDF :
+la toile de `Signature.tsx` (fiche de sécurité) sous les observations,
+« Enregistrer et envoyer » jamais bloqué ; la page du client montre la
+signature faite sur place ; dans le PDF, le cadre en pointillés du devis avec
+la signature et « Signée par Mme Lefèvre, sur place, le … ». **Ce qui reste vrai de la règle du 16 août** : sans
+signature, aucun encadré sur le PDF, jamais de « Non signé ». **Pas encore
+codé** : à son choix, une migration (expand : la signature, son nom, son heure,
+d'où elle vient), et l'empreinte du rapport doit dire QUEL contenu a été signé.
+
+## ⏳ UNE PLANCHE À REGARDER : SIGNER SON DEVIS DEPUIS LE LIEN (17 novembre 2026)
+
+**Sa demande :** *« lui donner la possibilité de signer, qu'il y ait une petite
+case où il puisse accoler sa signature, cliquer sur signer, et la signature
+apparaîtrait sur le devis à l'endroit où ça doit être signé »*.
+
+`appli/soignee/devis-signe-par-le-client.html`, sur le vrai lien et le vrai
+PDF : « Votre signature » (la toile de `Signature.tsx`) avant « J'accepte ce
+devis », qui refuse tant que rien n'est signé ; accepté, la signature reste à
+l'écran ; dans le PDF, elle remplit l'encadré « Bon pour accord » avec
+« Signé en ligne par Mme Lefèvre, le … », et la mention du pied ne réclame
+plus la mention manuscrite. **Décision prise, à lui de la défaire** : la
+signature est OBLIGATOIRE pour accepter en ligne (sinon l'encadré resterait
+vide sur la moitié des devis). Ses conditions générales disent encore « retourné
+daté et signé avec la mention bon pour accord » (article 1) : le texte est le
+sien, à revoir avec l'accord en ligne. Constat : aujourd'hui, le PDF d'un devis
+accepté en ligne est identique à celui d'avant (encadré vide). Le devis papier
+signé (`accordSurPapier`) ne change pas.
+
+## DEUX DÉFAUTS VUS EN FABRIQUANT CETTE PLANCHE, NON CORRIGÉS (17 novembre 2026)
+
+Trouvés sur une base neuve, par le vrai parcours d'inscription. Ni l'un ni
+l'autre n'est dans le lot de la planche ; chacun demande son lot, son test rouge.
+
+1. **Un compte créé par l'inscription ne peut pas faire son premier devis.**
+   `creerCompteDepuisLaPorte` (`src/server/repositories/creation-compte.ts`)
+   n'insère pas la ligne `entreprise_compteurs`, que `creerEntreprise` pose.
+   `attribuerNumeroDevis` lit alors `rows[0].numero` sur zéro ligne :
+   « Cannot read properties of undefined (reading 'numero') » sur
+   `/chantiers/<id>/devis-complet`. Gravité argent, niveau 3. Les comptes déjà
+   créés par la porte n'ont pas la ligne non plus : il faudra une migration
+   qui la pose pour chaque entreprise qui n'en a pas (`ON CONFLICT DO NOTHING`,
+   sous FORCE RLS, `.claude/rules/migrations.md`). Vérifier aussi le numéro de
+   facture, qui lit le même compteur.
+2. **Le PDF du retour d'intervention écrit « Mr. » devant toutes les
+   clientes.** `composerRapportEntretienPdf` ne passe pas `clientCivilite` :
+   `avecCivilite` retombe sur la civilité par défaut. `RapportPublic` ne porte
+   pas la civilité ; la page du client écrit « chez Lefèvre », sans civilité.
+
 ## DEUX SUITES ROUGES UN JOUR PAR MOIS : LE « 1ER » (17 novembre 2026)
 
 `test-le-client-s-est-trompe-e2e` et `test-message-sans-autre-date-e2e`
@@ -113,6 +172,48 @@ provisoire. La direction de chaque planche est dans
 `.impeccable/surfaces/appli-icone-de-cause-2-html.md` et
 `.impeccable/surfaces/appli-icone-de-cause-3-html.md`.
 
+## ⏳ À TRANCHER : QUATRE VERTS DE BOUTON ENTRE L'APPLI, LES PLANCHES ET LE SITE (17 novembre 2026)
+
+Sa question, depuis son téléphone : *« souvent tu me proposais un certain vert
+pour les boutons qui n'était pas le vert qu'il y a déjà dans l'application, il
+était un peu plus foncé, et je voulais savoir si c'est le même que celui que tu
+as utilisé pour le site internet ou c'est encore un troisième vert »*.
+
+**Mesuré, pas lu** : la couleur PEINTE, demandée au navigateur
+(`getComputedStyle`) sur les boutons des 429 pages de `appli/`, et les pixels
+des vraies captures de l'appli du 6 novembre (`appli/vente/images/nov-*.jpg`).
+
+| | Vert | Où il est | Le mot posé dessus |
+|---|---|---|---|
+| 1 | `#7d9a6d` | **l'appli** : tous ses boutons pleins (`colors.plein`, sa décision du 3 septembre, la D de `appli/boutons-verts.html`) ; 171 planches | crème, 3,0 pour 1 (son choix, écrit dans `globals.css`) |
+| 2 | `#6f8a5f` | **18 planches dessinées à la main** en septembre et octobre (`--plein:#6f8a5f`, recopié de l'une à l'autre) ; nulle part dans `src/` | blanc, 3,8 pour 1 |
+| 3 | `#1d7a3c` | **le site de vente seul** (`chapitres-6.html`, `cause.html`, `cause-2.html`), choisi le 6 novembre pour que le blanc s'y lise | blanc, 5,4 pour 1 |
+| 4 | `#2f3b2f` | **le vert pin**, l'accent de l'appli (textes, icônes, onglet où l'on est) ; sur les planches récentes il remplit les boutons de choix de la planche elle-même (« Je prends la A », « Proposé, votre B ») | crème, 11 pour 1 |
+
+**Ce que ça dit.** Le vert du site est un vert de plus : ni le 1, ni le 2. Le 2
+n'a aucune décision derrière lui. Depuis novembre, les planches sont posées sur
+les vrais écrans figés ou sur le kit (`appli/soignee/kit.css`), qui portent le
+1 : l'écart du 2 ne se reproduit plus. Ce qu'il a pu voir de « plus foncé » sur
+les dernières planches, c'est le 4, sur les boutons de choix.
+
+**Ce qui se tranche, par lui :**
+
+- **le bouton du site** : garder le 3, ou prendre le vert de l'appli (alors le
+  mot dessus passe à l'encre, le blanc n'y tient que 3 pour 1) ;
+- **les boutons de choix des planches** : les laisser en vert pin, ou les
+  sortir du vert (le noir de `appli/fiche-de-chantier-soignee.html`), pour
+  qu'aucun ne se lise comme un bouton de l'appli dans une autre couleur ;
+- **les 18 planches au vert 2** : les remettre au 1, ou les laisser (ce sont
+  d'anciennes propositions, la plupart déjà tranchées).
+
+**Pour refaire la mesure :** servir `appli/` (`python3 -m http.server`),
+ouvrir chaque planche dans Playwright et lire le fond calculé des boutons. Une
+recherche des couleurs dans les fichiers ne suffit pas : les planches figées
+recopient les feuilles de style de l'appli, où dorment d'autres verts qui ne
+peignent aucun bouton (`#1f7a45`, le vert des montants reçus ; `#506f44`, le
+texte des cartes vertes).
+
+
 ## ⏳ UNE PLANCHE À REGARDER : LE SITE DE VENTE EN MOUVEMENT (17 novembre 2026)
 
 Sa demande, depuis son téléphone, devant `appli/vente/cause.html` : *« fais-moi
@@ -122,13 +223,28 @@ Ne modifie pas cette version, crée une autre maquette pour pouvoir comparer. »
 
 **La planche :** `appli/vente/cause-2.html`, posée à côté de `cause.html`, qui
 n'a pas bougé d'une ligne. Mêmes textes, mêmes prix, mêmes captures, mêmes
-films : la comparaison ne porte que sur le mouvement. Son en-tête dit ce qui
+films (sauf celui de l'équipe, voir plus bas) : la comparaison ne porte que sur
+le mouvement. Son en-tête dit ce qui
 bouge, pourquoi, et ce que ses retours passés interdisent (rien de dessiné sur
 un écran de l'appli, aucun geste d'écran lié au défilement, une scène qui part
 à un tiers de l'écran mais laisse une demi-seconde avant le geste).
 
-**Ce qu'il a à dire :** s'il garde ce mouvement, ce qu'il en retire, et ce qui
-accroche sur son iPhone.
+**Vue par lui le soir même, un bémol, corrigé :** *« le seul petit bémol,
+c'est le moment de choisir les salariés pour les affilier à une journée. C'est
+pas fluide. »* L'appli change d'état d'un coup à cet endroit, et son film le
+montrait tel quel (neuf états, huit coupes). La planche joue maintenant
+`nov-film-equipe-fluide`, où chaque élément glisse d'un état au suivant
+(`appli/scripts/film-equipe-fluide.py`). Les deux autres pages gardent leur
+film.
+
+**Ce qu'il a à dire :** si ce passage lui va maintenant, s'il garde ce
+mouvement, ce qu'il en retire, et ce qui accroche sur son iPhone.
+
+**Une question née de ce bémol, à lui de trancher :** le site montre ce
+passage plus souple que l'appli ne le fait. Veut-il que l'appli glisse aussi
+quand on choisit les salariés d'une demi-journée ? Si oui : une planche
+d'abord (`CLAUDE.md` §3 bis), sur le vrai écran du planning, et rien dans
+`src/` avant son choix.
 
 **Ce qui n'est PAS vérifié, et qu'il ne faut pas croire vérifié :** Safari. Ce
 poste n'a que Chromium. La planche est écrite pour lui (masques préfixés,
@@ -259,28 +375,40 @@ libellé dans la consigne, et `npm run verifier:dictee` sur son espace.
 fois, pour Taille de haie de laurier de ml, vous aviez retenu 650 € HT »
 compare la ligne de main d'œuvre à une taille de haie.
 
-## ⏳ À REGARDER PAR LUI (9 novembre 2026, refaite le 17) : jeter la dictée, en clair
+## ~~⏳ À REGARDER PAR LUI (9 novembre 2026, refaite le 17) : jeter la dictée, en clair~~ TRANCHÉ LE 17 NOVEMBRE : LA 1, SON CHOIX DU 16 (« ON LAISSE COMME ON A DÉCIDÉ LE 16 »), SUR `main` LE 17 NOVEMBRE
 
-Sa remarque : *« moi je ne savais pas que ce mécanisme jetait la dictée,
-il faut peut-être mettre un truc plus clair ; il n'y a pas déjà un bouton
-poubelle ? »* **Lu dans le code** : la poubelle « Jeter »
-(`AnneauNoteVocale.tsx`, `dictee-jeter`) ne vit que PENDANT la dictée ; une
-fois la note envoyée, seul le glissement de « Votre dictée »
-(`LigneRetirable`, `FormulaireNouveauChantier.tsx`) la jette, et rien ne le
-montre.
+Sa demande du 9 novembre, capture de la fiche client : *« retire-moi la
+phrase "votre dictée" »*. Codée d'abord « cachée pendant le devis » (son
+premier choix), puis une planche pour la jeter en clair
+(`appli/jeter-la-dictee.html`). Sa réponse, le 16 novembre : *« à partir du
+moment où on a envoyé la dictée, c'est qu'on n'a plus envie de la jeter »*.
 
 **La planche** : `appli/jeter-la-dictee.html`, sur sa vraie fiche client
 (M. Bernard, une note envoyée). Le 16 novembre, il a d'abord choisi d'enlever
 la case ; le 17, il a répondu « B » sur la première planche, puis *« montre-moi
 les deux planches »*. Elle porte donc : 1, la case enlevée (une dictée envoyée
 se refait en redictant) ; 2, la case gardée avec la poubelle cerclée
-« Jeter » au bout, et le tiroir « Annuler ». L'option 1 attend sur la branche
-`claude/amazing-mendel-skfnud`, batterie complète à jouer.
+« Jeter » au bout, et le tiroir « Annuler ». Il a gardé 1, son choix du 16.
 
-**Reste** : son choix entre 1 et 2. Pour 2 : récrire la fiche du mode
-d'emploi `chantier-dictee-retirer`, qui décrit le glissement.
+**Ce qui a été vérifié avant de trancher** : l'écran Transcription, que je
+lui avais proposé pour y poser le bouton, ne s'atteint que depuis un devis
+resté sans prix, puis Informations (`DevisDepuisDictee`, état `sansPrix`) :
+un bouton posé là aurait été inatteignable. Son contenu est passé dans le
+devis : effacer la dictée ne l'en retire pas. Une nouvelle dictée remplace la
+première (`enregistrerNoteVocale`). Il a choisi de l'enlever.
 
-## ⏳ À REGARDER PAR LUI (9 novembre 2026) : la fiche ouverte et Composer ma fiche, soignées
+**Codé** : la case, son glissement et son tiroir partent de
+`FormulaireNouveauChantier.tsx` ; `supprimerNoteVocaleAction` et
+`supprimerNoteVocale` n'avaient plus d'appelant et partent aussi, avec leur
+cas de `test-note-vocale-repo.ts` et la suite `test-retirer-sa-dictee-e2e.ts`.
+Les fiches du mode d'emploi `chantier-dictee-retirer` (on redicte) et
+`donnees-ia` (« Jeter » avant l'envoi) sont récrites ; `test-anneau-dictee-e2e`
+tient le micro présent, la case absente, et le nom du client intact après la
+dictée (sa règle du 16 novembre : *« ça va me supprimer aussi le nom […] du
+client. Ça, il faut pas »*). Types, lint, `test-mode-emploi`,
+`test-pas-de-code-mort`, `test-aucun-tiret`, `test-couches` verts.
+
+## ~~⏳ À REGARDER PAR LUI (9 novembre 2026) : la fiche ouverte et Composer ma fiche, soignées~~ TRANCHÉ LE 17 NOVEMBRE (« POUR LA 1 LA A, ET LA 2 A AUSSI »), CODÉ ET SUR `main` LE 17 NOVEMBRE, AVEC LA DICTÉE, EN UNE SEULE BATTERIE
 
 Sa demande, après avoir validé D et B : *« ensuite, tu t'attelles à ce qui se
 passe quand on clique sur créer une fiche, composer ma fiche et les fiches
@@ -305,8 +433,21 @@ client en haut (arrangement C) ; « Envoyé par » ; la molette du temps
 tiroir ; « Retirer la famille » au bas de sa carte (24 août) ; les pastilles
 des familles en haut de Composer.
 
-**Reste** : qu'il choisisse, puis le coder sur son « oui »
-(`FicheChantierClient.tsx`, `ComposerMaFiche.tsx`).
+**CODÉ LE 17 NOVEMBRE**, sur son choix (*« pour la 1 la A, et la 2 A
+aussi »*) : `FicheChantierClient.tsx` (le client dans une carte au rond doré,
+le constat sous son nom ; une carte par famille, la case à 8 px et la coche
+`IconeTrait` ; la molette dans une seule carte ; « Enregistrer et envoyer »
+`pleineLargeur`), `ComposerMaFiche.tsx` (cartes à 14 px sans ombre, « Ajouter
+une prestation » derrière un rond doré de 28 px, « Ajouter une famille » dans
+sa carte). `RondDore` prend une `taille` (52 par défaut) : un seul dessin pour
+les trois. Le « + » est devenu un dessin muet, donc les boutons s'appellent
+« Ajouter une prestation », « Ajouter une famille », « Ajouter un client » :
+`test-fiche-entretien-e2e` et cinq fiches du mode d'emploi (`paysage.ts`)
+suivent. `test-boutons-arrondis` borne les deux nouvelles cartes à leur
+repère. Écrans regardés (neuve, Mme Costa cochée, Composer) ; types, lint et
+contrôles sans base verts. Livré avec « Votre dictée » enlevée, en un seul lot
+de niveau 3 et une seule batterie (sa demande : *« fusionne le tout et joue
+qu'une seule batterie »*).
 
 ## ⚠️ `test-double-verification-db` ROUGIT PAR HASARD À LA LIMITE DES 30 SECONDES (vu le 16 novembre 2026)
 

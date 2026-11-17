@@ -8,7 +8,7 @@ Tout texte neuf écrit **Cause**, jamais Atlas. Les noms internes (`atlas_app`, 
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-11-16 · `main` : la fiche de chantier soignée, D et B (niveau 2 vert). Avant, le 9 novembre : la main d'œuvre « sur une
+**Point de reprise :** 2026-11-17 · `main` : la fiche ouverte et Composer ma fiche en A, et « Votre dictée » enlevée de la fiche client, en une seule batterie (niveau 3). Avant, le 16 novembre : la fiche de chantier soignée, D et B (niveau 2 vert). Avant, le 9 novembre : la main d'œuvre « sur une
 ligne », chaque travail à son prix (`ARCHITECTURE.md` §579), batterie verte
 (217 suites navigateur sur 217). La croix de la carte en mode « ligne » :
 planche choisie le 17 novembre, codée sur la branche de session, batterie en
@@ -42,9 +42,9 @@ Avant : sur `main`, la batterie commune du 8 novembre
 - **La capture de l'appli ouverte vient de `appli/vente/images/accueil.jpg`.** Si le dossier du site de vente est rangé autrement, le contrôle le dira (il exige des pixels).
 
 ---
-## LE SITE DE VENTE EN MOUVEMENT (17 novembre 2026) : UNE PLANCHE, PAS ENCORE REGARDÉE PAR LUI
+## LE SITE DE VENTE EN MOUVEMENT (17 novembre 2026) : UNE PLANCHE, VUE PAR LUI, UN BÉMOL CORRIGÉ
 
-`appli/vente/cause-2.html`, posée à côté de `appli/vente/cause.html` pour comparer (sa demande : des animations plus spectaculaires, toutes libertés, sans toucher à l'autre). Les textes, les prix, les captures et les films sont ceux de `cause.html`.
+`appli/vente/cause-2.html`, posée à côté de `appli/vente/cause.html` pour comparer (sa demande : des animations plus spectaculaires, toutes libertés, sans toucher à l'autre). Les textes, les prix, les captures et les films sont ceux de `cause.html`, sauf le film de l'équipe (plus bas). Il l'a regardée le soir même : un seul bémol, le choix des salariés, *« pas fluide »*.
 
 **Comment elle tient, en trois phrases.** Un petit script en tête pose la classe `anime` avant le premier rendu (jamais en mouvement réduit, jamais sans script) : tout état caché ne l'est que sous elle, et elle saute au bout de quatre secondes si le script du bas n'aboutit pas. Une seule boucle suit le défilement et pose `--t` sur chaque socle proche de l'écran (1 à l'entrée, 0 posé) : la feuille de style en tire la rotation, le socle mesuré ne bouge jamais, et un objet posé perd sa transformation (`.repos`). Les scènes d'écran se jouent dans le temps, à l'arrivée, avec la mécanique des films de `cause.html` (`bobine`, `scene`, `camera`), reprise telle quelle.
 
@@ -52,12 +52,14 @@ Avant : sur `main`, la batterie commune du 8 novembre
 
 - **Safari n'a pas été regardé.** Ce poste n'a que Chromium, et l'installation d'un WebKit y a été refusée. Sur son iPhone, regarder d'abord : les téléphones en 3D avec un film dedans, la feuille qui s'écrit (masque), les bandes nuit qui s'élargissent (rognage), le compteur de la TVA.
 - **La relecture du mouvement s'est arrêtée à deux tours**, son plafond. Le second verdict tenait huit corrections sur neuf ; la neuvième, la feuille d'Envoyez qui dépassait de sa scène, a été refaite après lui (elle vit dans `.coulisse`, rognée au cadre de la scène, et le script mesure la place autour du téléphone). Personne d'autre que son auteur ne l'a regardée depuis : c'est la première scène à lui faire juger.
+- **Le film de l'équipe est le sien** (`images/nov-film-equipe-fluide.*`, soixante images par seconde). Celui d'origine montrait l'appli telle qu'elle est : neuf états, huit coupes, la carte qui saute. Le nouveau sort de `appli/scripts/film-equipe-fluide.py`, qui reprend ces neuf états dans le film d'origine et calcule le glissement entre deux. **Ne pas écraser `nov-film-equipe.*`** : `cause.html` et `chapitres-6.html` le jouent toujours. Pour changer un rythme, toucher `PASSAGES` et `REPOS` dans le script et le rejouer (`python3 appli/scripts/film-equipe-fluide.py appli/vente/images`) ; `--planches <dossier> --sans-film` donne une pellicule par passage, à regarder avant d'encoder. Trois pièges payés en l'écrivant : il calcule sur les plans du film (luminance et couleur), parce que passer par des couleurs d'écran le sortait un cran plus sombre que sa dernière image ; un élément se cale sur la FORME de son encre, parce qu'un carré qui fonce déplaçait son centre et dédoublait « Matin » ; et un libellé et son carré ont chacun leur lutin, parce que dans le film d'origine ils ne descendent pas toujours du même nombre de pixels (38 et 40).
+- **L'appli, elle, change toujours d'un coup à cet endroit.** Le site est donc plus souple qu'elle sur ce passage, et il le sait (dit dans le message du 17 novembre). S'il veut la même souplesse dans l'appli : une planche d'abord (`CLAUDE.md` §3 bis), puis le film se refilmerait sur l'appli au lieu d'être calculé.
 - **Ses refus passés sont dans l'en-tête de la planche**, avec ses phrases. Les relire avant d'ajouter un effet : un geste d'écran lié au défilement, un dessin posé sur un écran de l'appli ou une scène qui part tard lui ont déjà fait dire non.
 - **Rien ne doit dépasser en largeur.** Une capture de toute la largeur qui grossit ou se penche vers le lecteur dépasse de l'écran : `--tp` (la seule part d'entrée de `--t`) sert à cela.
 - **`impeccable motion-capture` ne sait ni défiler ni suivre des scènes enchaînées par minuteries.** Il sert pour un clic (la bascule des prix, une question). Pour le reste, on descend la page par petits pas dans Playwright et l'on photographie aux instants voulus.
 - **Après `npm ci`, la suite des maquettes ne trouve plus son navigateur dans le nuage** : `appli/tests/e2e.js` prend alors le Playwright du dépôt, qui attend une autre version de Chromium. Lui donner celui du poste : `PLAYWRIGHT_EXECUTABLE_PATH=/opt/pw-browsers/chromium BASE_URL=http://127.0.0.1:8787 node tests/e2e.js`, depuis `appli/`, avec `python3 -m http.server 8787` lancé dans `appli/`.
 - **Sur téléphone, le bouton d'essai couvre le bas de l'écran presque tout le long de la page.** Ce qui ne se joue qu'une fois en entrant prend la marge `sousLePouce` (104 px), sans quoi il se joue caché. Sauf dans le pied de page, où le bouton n'est plus là : avec cette marge, le grand nom du bas ne pouvait jamais être assez vu pour monter.
-- **Deux contrôles la gardent** dans `appli/tests/e2e.js` (`PAGES_DE_VENTE`), les mêmes que pour `chapitres-6.html` : le bouton d'essai caché ne dépasse pas avec la marge d'un iPhone, et chaque film se joue jusqu'à sa dernière image. Vus rouges en servant la page avec des films introuvables.
+- **Deux contrôles la gardent** dans `appli/tests/e2e.js` (`PAGES_DE_VENTE`), les mêmes que pour `chapitres-6.html` : le bouton d'essai caché ne dépasse pas avec la marge d'un iPhone, et chaque film se joue jusqu'à sa dernière image. Vus rouges en servant la page avec des films introuvables. Chaque page y nomme ses films : renommer un film dans une page sans le dire là fait rougir « a son cadre dans la page ».
 - **S'il la retient**, trois pages décriraient le même site (`chapitres-6.html`, `cause.html`, `cause-2.html`) : lui demander laquelle devient la référence avant toute retouche (`TODO.md`).
 
 ---

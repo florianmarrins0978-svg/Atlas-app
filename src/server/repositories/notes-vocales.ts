@@ -80,22 +80,6 @@ export async function enregistrerNoteVocale(ctx: Ctx, chantierId: string, fichie
   });
 }
 
-// Suppression réelle et complète (pas un remplacement) : retire la note et met
-// son fichier en file de purge différée — jamais de suppression physique
-// immédiate, même ici.
-export async function supprimerNoteVocale(ctx: Ctx, chantierId: string) {
-  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    const [existante] = await tx.select().from(notesVocales).where(eq(notesVocales.chantierId, chantierId)).limit(1);
-    if (!existante) return null;
-    await tx.delete(notesVocales).where(eq(notesVocales.id, existante.id));
-    // Rien à mettre en file si l'audio a déjà été purgé après transcription.
-    if (existante.storageKey) {
-      await tx.insert(fichiersAPurger).values({ storageKey: existante.storageKey });
-    }
-    return existante;
-  });
-}
-
 // --- États de transcription (lot IA-01) -----------------------------------
 // non_demandee -> en_cours -> reussie | echouee. Jamais de transcription
 // inventée en cas d'échec : le champ `transcription` ne change que sur succès.

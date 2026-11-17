@@ -278,7 +278,7 @@ async function main() {
   await cas("une prestation ajoutée se range dans SA famille", async () => {
     await page.reload({ waitUntil: "networkidle" });
     // Le bouton d'ajout de la première famille (Pelouse).
-    await page.getByRole("button", { name: "+ Ajouter une prestation" }).first().click();
+    await page.getByRole("button", { name: "Ajouter une prestation", exact: true }).first().click();
     await page.getByLabel(/Nouvelle prestation dans Pelouse/).fill("Aération du gazon");
     await page.getByRole("button", { name: /Ajouter à Pelouse/ }).click();
     await page.waitForTimeout(3_000);
@@ -292,7 +292,7 @@ async function main() {
 
   await cas("un doublon est refusé AVEC UNE PHRASE, jamais avec un code", async () => {
     await page.reload({ waitUntil: "networkidle" });
-    await page.getByRole("button", { name: "+ Ajouter une prestation" }).first().click();
+    await page.getByRole("button", { name: "Ajouter une prestation", exact: true }).first().click();
     await page.getByLabel(/Nouvelle prestation dans Pelouse/).fill("tonte et EBARBAGE");
     await page.getByRole("button", { name: /Ajouter à Pelouse/ }).click();
     await page.waitForTimeout(1_500);
@@ -312,7 +312,7 @@ async function main() {
     // rangeait la ligne dans « Divers », à charge pour lui de renommer le titre
     // juste au-dessus — un second geste que rien n'annonçait.
     await page.reload({ waitUntil: "networkidle" });
-    await page.getByRole("button", { name: "+ Ajouter une famille" }).click();
+    await page.getByRole("button", { name: "Ajouter une famille", exact: true }).click();
     await page.getByLabel("Nom de la nouvelle famille").fill("Potager");
     await page.getByLabel(/Première prestation de la nouvelle famille/).fill("Binage des rangs");
     await page.getByRole("button", { name: /Créer la famille/ }).click();
@@ -333,7 +333,7 @@ async function main() {
     // Le refus vient du dépôt, pas d'une règle recopiée dans l'écran : c'est
     // `PHRASE_REFUS.famille_vide` qui parle.
     await page.reload({ waitUntil: "networkidle" });
-    await page.getByRole("button", { name: "+ Ajouter une famille" }).click();
+    await page.getByRole("button", { name: "Ajouter une famille", exact: true }).click();
     await page.getByLabel(/Première prestation de la nouvelle famille/).fill("Une ligne sans famille");
     await page.getByRole("button", { name: /Créer la famille/ }).click();
     await page.waitForTimeout(1_500);
