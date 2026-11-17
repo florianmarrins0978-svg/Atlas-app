@@ -13,19 +13,38 @@ Le texte de l'appli dit Cause (`ARCHITECTURE.md` §581). Restent, et chacun est 
 rapports) : *« quand les gars font la tonte, l'entretien des massifs, ils mettent
 le temps passé. Si le client est là, ils lui font signer. S'il n'est pas là, ils
 ne lui font pas signer. Il ne faut pas que ça soit obligatoire pour enregistrer
-la fiche »*, puis *« la possibilité de signer lorsqu'il reçoit son lien, et la
-signature se met dans l'encadré où il doit signer »*.
+la fiche »*, puis *« « la signature se met dans l'encadré où il doit signer »*. **Pas de signature
+depuis le lien pour l'entretien** : sa phrase sur le lien visait le DEVIS (sa
+correction du même soir, *« NON ! Je parlais pour le devis »*).
 
 `appli/soignee/fiche-signee-par-le-client.html`, posée sur les vrais écrans
 figés (fiche de chantier, fiche envoyée, page du client) et sur le vrai PDF :
 la toile de `Signature.tsx` (fiche de sécurité) sous les observations,
-« Enregistrer et envoyer » jamais bloqué ; chez le client, « Votre signature »
-et « Signer » tant que personne n'a signé ; dans le PDF, le cadre en pointillés
-du devis avec la signature et « Signée par Mme Lefèvre, sur place (ou depuis
-son lien), le … ». **Ce qui reste vrai de la règle du 16 août** : sans
+« Enregistrer et envoyer » jamais bloqué ; la page du client montre la
+signature faite sur place ; dans le PDF, le cadre en pointillés du devis avec
+la signature et « Signée par Mme Lefèvre, sur place, le … ». **Ce qui reste vrai de la règle du 16 août** : sans
 signature, aucun encadré sur le PDF, jamais de « Non signé ». **Pas encore
 codé** : à son choix, une migration (expand : la signature, son nom, son heure,
 d'où elle vient), et l'empreinte du rapport doit dire QUEL contenu a été signé.
+
+## ⏳ UNE PLANCHE À REGARDER : SIGNER SON DEVIS DEPUIS LE LIEN (17 novembre 2026)
+
+**Sa demande :** *« lui donner la possibilité de signer, qu'il y ait une petite
+case où il puisse accoler sa signature, cliquer sur signer, et la signature
+apparaîtrait sur le devis à l'endroit où ça doit être signé »*.
+
+`appli/soignee/devis-signe-par-le-client.html`, sur le vrai lien et le vrai
+PDF : « Votre signature » (la toile de `Signature.tsx`) avant « J'accepte ce
+devis », qui refuse tant que rien n'est signé ; accepté, la signature reste à
+l'écran ; dans le PDF, elle remplit l'encadré « Bon pour accord » avec
+« Signé en ligne par Mme Lefèvre, le … », et la mention du pied ne réclame
+plus la mention manuscrite. **Décision prise, à lui de la défaire** : la
+signature est OBLIGATOIRE pour accepter en ligne (sinon l'encadré resterait
+vide sur la moitié des devis). Ses conditions générales disent encore « retourné
+daté et signé avec la mention bon pour accord » (article 1) : le texte est le
+sien, à revoir avec l'accord en ligne. Constat : aujourd'hui, le PDF d'un devis
+accepté en ligne est identique à celui d'avant (encadré vide). Le devis papier
+signé (`accordSurPapier`) ne change pas.
 
 ## DEUX DÉFAUTS VUS EN FABRIQUANT CETTE PLANCHE, NON CORRIGÉS (17 novembre 2026)
 
