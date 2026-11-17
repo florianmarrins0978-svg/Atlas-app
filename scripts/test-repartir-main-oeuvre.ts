@@ -4,6 +4,7 @@ import {
   glisserLeJoint,
   jointATirer,
   repartirMainOeuvre,
+  sortisParLaCroix,
 } from "../src/lib/main-oeuvre-dictee";
 import { contraste } from "../src/lib/chartes";
 import { pastelsMainOeuvre } from "../src/lib/design-tokens";
@@ -190,6 +191,16 @@ test("ce que la barre écrit, le devis le garde : la boucle complète sur 397 �
     apres,
     `la barre montrait ${apres.join(", ")}, le devis écrit ${JSON.stringify(devis)}`
   );
+});
+
+console.log("\n=== Sur une ligne, la croix ne compte plus ===\n");
+
+// Sa planche du 16 novembre 2026, son « ok » du 17 : sur une ligne, chaque
+// travail prend son prix, barré ou non ; la carte n'a plus de croix. Une croix
+// posée en « Répartis » reste dans sa réponse, pour y revenir intacte.
+test("sur une ligne, aucun travail n'est sorti ; en « Répartis », ceux de la croix", () => {
+  assert.deepEqual(sortisParLaCroix({ mode: "ligne", parts: {}, retires: ["haie", "frêne"] }), []);
+  assert.deepEqual(sortisParLaCroix({ mode: "reparti", parts: {}, retires: ["haie", "frêne"] }), ["haie", "frêne"]);
 });
 
 console.log("\n=== Les montants se lisent sur les cinq teintes ===\n");
