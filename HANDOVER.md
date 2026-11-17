@@ -1,5 +1,9 @@
 # Reprendre le travail
 
+## L'APPLICATION S'APPELLE CAUSE (17 novembre 2026)
+
+Tout texte neuf écrit **Cause**, jamais Atlas. Les noms internes (`atlas_app`, `data-atlas`, `ATLAS_*`, préfixe `atlas-` des rendez-vous) ne se renomment pas : `ARCHITECTURE.md` §581 dit pourquoi.
+
 **À lire en premier, dans une nouvelle conversation.** Ce fichier suppose que
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
@@ -13,6 +17,42 @@ ligne », chaque travail à son prix (`ARCHITECTURE.md` §579), batterie verte
 Avant : sur `main`, la batterie commune du 8 novembre
 (`docs/batterie-commune-8-novembre.md`).
 (l'historique fait foi : `git log --oneline -20`)
+
+---
+## L'ICÔNE DE CAUSE SUR LE BUREAU DU TÉLÉPHONE (17 novembre 2026) : UNE PLANCHE, EN ATTENTE DE SA LETTRE
+
+`appli/icone-de-cause-2.html`, posée à côté de `appli/icone-de-cause.html` pour comparer (le matin, il demandait si un autre modèle ferait mieux pour l'icône). Sept icônes sur un bureau de téléphone à taille réelle : A, B et C recopiés de la première planche, D à G nouvelles.
+
+**Les pièges :**
+
+- **Les lettres ne bougent jamais.** A, B, C sont la première planche, D à G la seconde. Une proposition de plus prend la lettre suivante (H) ; une proposition retirée laisse sa lettre vide. Il répond par une lettre, et elle doit vouloir dire la même chose sur les deux pages.
+- **A, B et C sont une COPIE** des dessins de la première planche (l'objet `CAUSE` du script). Si la première change, la seconde ne suit pas : les deux se retouchent ensemble.
+- **Android se montre comme `scripts/generer-icones.mjs` le fabrique**, pas comme un simple rond rogné : le dessin réduit à 60 % sur son fond étendu, dont le rond garde 80 %. D'où le `scale(.75)` de la fonction `image` de la planche. Un dessin qui va jusqu'aux bords (la carte, la feuille de notes des voisines) porte `plein` et se rogne sans se réduire.
+- **`FOND` est écrit en dur en crème dans `scripts/generer-icones.mjs`.** Une icône au fond coloré (B, D, E, F) sortirait sur Android en carré de couleur dans un rond crème. À corriger à l'installation, pas avant (`TODO.md`).
+- **Une icône se juge à 60, 29 et 16 px, parmi des voisines de couleur.** Quatre idées ont été écartées à cette épreuve alors qu'elles tenaient en grand (l'en-tête de la planche les nomme) : ne pas les reproposer sans les avoir regardées à ces tailles.
+- **Safari n'a pas été regardé.** L'appli s'ouvre depuis l'icône par un rognage animé (`clip-path`), le geste le plus fragile hors de Chromium.
+- **Le contrôle de `appli/tests/e2e.js` lit ce qui est PEINT** (le dessin posé, la forme, le fond, le filtre), jamais une classe. Il barre la publication de toutes les planches : s'il rougit, c'est la planche qui se corrige.
+- **« Revenir au bureau » se place d'après ce qui se VOIT**, pas d'après le bas du cadre : le bureau d'Android est plus haut et passe sous la barre des sept, un petit téléphone aussi. La variable `--remonte` porte ce qui est caché ; le bouton et le fondu sous lui remontent d'autant. Le contrôle l'a vu rouge avant la correction.
+- **La capture de l'appli ouverte vient de `appli/vente/images/accueil.jpg`.** Si le dossier du site de vente est rangé autrement, le contrôle le dira (il exige des pixels).
+
+---
+## LE SITE DE VENTE EN MOUVEMENT (17 novembre 2026) : UNE PLANCHE, PAS ENCORE REGARDÉE PAR LUI
+
+`appli/vente/cause-2.html`, posée à côté de `appli/vente/cause.html` pour comparer (sa demande : des animations plus spectaculaires, toutes libertés, sans toucher à l'autre). Les textes, les prix, les captures et les films sont ceux de `cause.html`.
+
+**Comment elle tient, en trois phrases.** Un petit script en tête pose la classe `anime` avant le premier rendu (jamais en mouvement réduit, jamais sans script) : tout état caché ne l'est que sous elle, et elle saute au bout de quatre secondes si le script du bas n'aboutit pas. Une seule boucle suit le défilement et pose `--t` sur chaque socle proche de l'écran (1 à l'entrée, 0 posé) : la feuille de style en tire la rotation, le socle mesuré ne bouge jamais, et un objet posé perd sa transformation (`.repos`). Les scènes d'écran se jouent dans le temps, à l'arrivée, avec la mécanique des films de `cause.html` (`bobine`, `scene`, `camera`), reprise telle quelle.
+
+**Les pièges :**
+
+- **Safari n'a pas été regardé.** Ce poste n'a que Chromium, et l'installation d'un WebKit y a été refusée. Sur son iPhone, regarder d'abord : les téléphones en 3D avec un film dedans, la feuille qui s'écrit (masque), les bandes nuit qui s'élargissent (rognage), le compteur de la TVA.
+- **La relecture du mouvement s'est arrêtée à deux tours**, son plafond. Le second verdict tenait huit corrections sur neuf ; la neuvième, la feuille d'Envoyez qui dépassait de sa scène, a été refaite après lui (elle vit dans `.coulisse`, rognée au cadre de la scène, et le script mesure la place autour du téléphone). Personne d'autre que son auteur ne l'a regardée depuis : c'est la première scène à lui faire juger.
+- **Ses refus passés sont dans l'en-tête de la planche**, avec ses phrases. Les relire avant d'ajouter un effet : un geste d'écran lié au défilement, un dessin posé sur un écran de l'appli ou une scène qui part tard lui ont déjà fait dire non.
+- **Rien ne doit dépasser en largeur.** Une capture de toute la largeur qui grossit ou se penche vers le lecteur dépasse de l'écran : `--tp` (la seule part d'entrée de `--t`) sert à cela.
+- **`impeccable motion-capture` ne sait ni défiler ni suivre des scènes enchaînées par minuteries.** Il sert pour un clic (la bascule des prix, une question). Pour le reste, on descend la page par petits pas dans Playwright et l'on photographie aux instants voulus.
+- **Après `npm ci`, la suite des maquettes ne trouve plus son navigateur dans le nuage** : `appli/tests/e2e.js` prend alors le Playwright du dépôt, qui attend une autre version de Chromium. Lui donner celui du poste : `PLAYWRIGHT_EXECUTABLE_PATH=/opt/pw-browsers/chromium BASE_URL=http://127.0.0.1:8787 node tests/e2e.js`, depuis `appli/`, avec `python3 -m http.server 8787` lancé dans `appli/`.
+- **Sur téléphone, le bouton d'essai couvre le bas de l'écran presque tout le long de la page.** Ce qui ne se joue qu'une fois en entrant prend la marge `sousLePouce` (104 px), sans quoi il se joue caché. Sauf dans le pied de page, où le bouton n'est plus là : avec cette marge, le grand nom du bas ne pouvait jamais être assez vu pour monter.
+- **Deux contrôles la gardent** dans `appli/tests/e2e.js` (`PAGES_DE_VENTE`), les mêmes que pour `chapitres-6.html` : le bouton d'essai caché ne dépasse pas avec la marge d'un iPhone, et chaque film se joue jusqu'à sa dernière image. Vus rouges en servant la page avec des films introuvables.
+- **S'il la retient**, trois pages décriraient le même site (`chapitres-6.html`, `cause.html`, `cause-2.html`) : lui demander laquelle devient la référence avant toute retouche (`TODO.md`).
 
 ---
 ## DEUX ESPACES, DEUX BASES (8 novembre 2026)

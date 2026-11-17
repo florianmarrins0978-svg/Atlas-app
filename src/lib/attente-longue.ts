@@ -77,7 +77,7 @@ export function etapeAttente(ecouleMs: number): EtapeAttente {
 export function phraseAttente(etape: EtapeAttente): string {
   switch (etape) {
     case "normale":
-      return "Atlas rédige…";
+      return "Cause rédige…";
     case "longue":
       // **Courte, et c'est une contrainte de PLACE, pas de style.** Mesurée sur
       // son écran de 390 px, la première version — qui ajoutait « vous pouvez

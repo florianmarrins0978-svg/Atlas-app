@@ -269,7 +269,7 @@ export async function pdfDesJoursTravailles(lu: MoisDesSalaries, enCours: boolea
     : "Une demi-journée d’absence compte pour une demie.";
   const sous = [
     enCours ? `Préparé le ${prepareLe} : le mois n’est pas fini, les jours qui restent sont comptés travaillés.` : `Préparé le ${prepareLe}.`,
-    avecZones ? "Atlas compte les jours, les montants restent ceux de votre barème." : null,
+    avecZones ? "Cause compte les jours, les montants restent ceux de votre barème." : null,
   ].filter((x): x is string => !!x);
   const lTete = enLignes(tete, p.sans, 10.5, UTILE - 26);
   const lSous = sous.flatMap((t) => enLignes(t, p.sans, 9, UTILE - 26));

@@ -15,7 +15,7 @@ import RapportsEnvoyes from "./RapportsEnvoyes";
 import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Fiche de chantier, Atlas" };
+export const metadata = { title: "Fiche de chantier, Cause" };
 
 /**
  * « Fiche de chantier » — ce qu'il retrouve en ouvrant l'outil.

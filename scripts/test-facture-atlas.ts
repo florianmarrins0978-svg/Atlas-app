@@ -62,7 +62,7 @@ cas("39 € HT, 7,80 € de TVA, 46,80 € TTC, Atlas vendeur, l'artisan acheteu
   assert.equal(r.donnees.entrepriseNom, "Atlas SAS");
   assert.equal(r.donnees.clientNom, "Jardins Démo");
   assert.equal(r.donnees.clientCivilite, "entreprise", "sans cela, « Jardins Démo » partirait en facture de particulier");
-  assert.match(r.donnees.lignes[0].libelle, /Abonnement Atlas Artisan, du 06\/11\/2026 au 05\/12\/2026/);
+  assert.match(r.donnees.lignes[0].libelle, /Abonnement Cause Artisan, du 06\/11\/2026 au 05\/12\/2026/);
 });
 
 cas("c'est une Factur-X que le code du lot Factur-X accepte", () => {

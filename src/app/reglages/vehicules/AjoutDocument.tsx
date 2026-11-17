@@ -22,11 +22,11 @@ export const AJOUTER_UN_DOCUMENT: QuoiAjouter = {
 };
 export const AJOUTER_LA_CARTE_GRISE: QuoiAjouter = {
   titre: "Ajoutez la carte grise du véhicule",
-  sous: "Atlas y lit la plaque, le modèle et le poids.",
+  sous: "Cause y lit la plaque, le modèle et le poids.",
 };
 export const AJOUTER_LE_PROCES_VERBAL: QuoiAjouter = {
   titre: "Ajoutez le nouveau procès‑verbal",
-  sous: "Atlas y lit les prochaines dates.",
+  sous: "Cause y lit les prochaines dates.",
 };
 
 /**
@@ -153,12 +153,12 @@ export default function AjoutDocument({
             <span className="mb-3 motion-safe:animate-spin [animation-duration:1.4s]" style={{ color: colors.or }}>
               <Picto nom="etincelle" taille={34} />
             </span>
-            Atlas lit le document
+            Cause lit le document
           </p>
         ) : aClasser ? (
           <>
             {titre("Quel est ce document ?")}
-            {sous("Atlas ne l’a pas reconnu. Il est rangé, les cases se remplissent à la main.")}
+            {sous("Cause ne l’a pas reconnu. Il est rangé, les cases se remplissent à la main.")}
             {plage(
               NATURES_DOCUMENT_VEHICULE.map((n) => (
                 <LigneDeFeuille key={n} repere={`classer-${n}`} onClick={() => classer(n)}>

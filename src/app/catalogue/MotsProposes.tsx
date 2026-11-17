@@ -52,7 +52,7 @@ export default function MotsProposes({ proposes }: { proposes: MotPropose[] }) {
           tiraient l'œil sans rien proposer, et le « Non » en gris pâle ne se
           lisait plus : il passe en encre douce. */}
       <p className={`mb-[10px] ${libelleCaps}`} style={{ color: colors.muted }}>
-        Atlas a entendu ces mots
+        Cause a entendu ces mots
       </p>
 
       <ul className="flex flex-col gap-[9px]">

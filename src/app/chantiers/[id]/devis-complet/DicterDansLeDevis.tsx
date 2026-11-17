@@ -197,7 +197,7 @@ export default function DicterDansLeDevis({
         onClick={enCours ? arreter : demarrer}
         disabled={travaille}
         aria-label={
-          enCours ? "Arrêter la dictée" : travaille ? "Atlas reprend ce que vous avez dit" : "Dicter dans le devis"
+          enCours ? "Arrêter la dictée" : travaille ? "Cause reprend ce que vous avez dit" : "Dicter dans le devis"
         }
         className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full"
         style={{
@@ -296,7 +296,7 @@ function FeuilleRetouches({
   return (
     <BottomSheet open onBackdropClick={onFermer}>
       <p className={`mb-1 text-center ${libelleCaps}`} style={{ color: colors.or }}>
-        Ce qu’Atlas a compris
+        Ce que Cause a compris
       </p>
       <p
         className="text-center"

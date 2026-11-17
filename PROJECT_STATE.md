@@ -1,8 +1,22 @@
 # État du projet
 
-## « VOTRE DICTÉE » ENLEVÉE DE LA FICHE CLIENT, CODÉE (16 novembre 2026), SUR LA BRANCHE `claude/amazing-mendel-skfnud`, BATTERIE À JOUER AVEC SON ACCORD
+## « VOTRE DICTÉE » ENLEVÉE DE LA FICHE CLIENT, PRÊTE SUR LA BRANCHE `claude/amazing-mendel-skfnud` (16 novembre 2026), EN ATTENTE DE SON CHOIX ENTRE 1 ET 2 (17 novembre)
 
 Sa demande du 9 novembre, son choix du 16 (« l'enlever »). `FormulaireNouveauChantier.tsx`, `supprimerNoteVocale` retirée, `ARCHITECTURE.md` §342 révisé. Niveau 3 (le dépôt des notes vocales atteint 14 écrans) : `npm run verifier:avant-livraison`. Types, lint et les contrôles sans base sont verts ; rien d'autre n'est joué. Le détail est dans `TODO.md`.
+
+---
+## LE NOM CAUSE, LIVRÉ (17 novembre 2026)
+
+Le texte affiché dit Cause partout ; le code garde atlas. Restent à lui : les conditions générales (version nouvelle), l'icône (planche). `ARCHITECTURE.md` §581.
+
+## L'ICÔNE DE CAUSE SUR LE BUREAU DU TÉLÉPHONE, UNE PLANCHE (17 novembre 2026), EN ATTENTE DE SA LETTRE
+
+Sa demande, depuis son téléphone : *« une planche pour l'icône de l'application quand il sera sur le bureau des téléphones des clients »*. `appli/icone-de-cause-2.html`, à côté de `appli/icone-de-cause.html` qui n'a pas bougé : un bureau à taille réelle, sept icônes à y essayer (A, B, C de la première planche, D à G nouvelles), iPhone ou Android, clair ou sombre, plein soleil, les sept ensemble. Éprouvée dans Chromium à 390, 360, 320 et 1280 px, chaque geste touché, et gardée par `appli/tests/e2e.js` ; **pas regardée sur Safari**, ce poste n'en a pas. Rien dans `src/`, rien d'installé : l'icône de `main` reste le « A » provisoire. Ce qu'il a à dire, et ce qu'il faudra faire à l'installation : `TODO.md`.
+
+---
+## LE SITE DE VENTE EN MOUVEMENT, UNE PLANCHE (17 novembre 2026), EN ATTENTE DE SON REGARD
+
+Sa demande, depuis son téléphone : *« une maquette de la version améliorée, des animations plus jolies, plus spectaculaires, je te laisse toutes les libertés, ne modifie pas cette version »*. `appli/vente/cause-2.html`, à côté de `appli/vente/cause.html` qui n'a pas bougé : mêmes textes, mêmes prix, mêmes captures et mêmes films, seul le mouvement change (son en-tête dit quoi et pourquoi). Éprouvé dans Chromium, téléphone (390 × 664) et ordinateur, chaque geste touché ; **pas regardé sur Safari**, ce poste n'en a pas. Rien dans `src/`. Ce qu'il a à dire, et la question des trois pages à tenir s'il la retient : `TODO.md`.
 
 ---
 ## LA FICHE DE CHANTIER SOIGNÉE, D ET B, CODÉE (9 novembre 2026), SUR `main` LE 16 NOVEMBRE

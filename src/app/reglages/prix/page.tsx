@@ -88,7 +88,7 @@ export default async function GrillesPrixPage() {
 
         <div className="px-[26px] pt-4">
           <p className="text-[14px] leading-snug" style={{ color: colors.muted }}>
-            Abattre, enlever les grumes, fendre, dessoucher, tailler une haie. Atlas y prend le montant au lieu de
+            Abattre, enlever les grumes, fendre, dessoucher, tailler une haie. Cause y prend le montant au lieu de
             l&apos;inventer, et{" "}
             <strong>une case vide reste une question</strong>, jamais une estimation.
           </p>

@@ -129,7 +129,7 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
       "Ouvrez le jour, appuyez sur « Ajouter » puis « Un client ». Tapez son nom et touchez-le s'il est proposé, " +
       "choisissez « Matin », « Après-midi » ou « Journée », puis « Poser ».",
     reserve:
-      "Un nom inconnu crée sa fiche : Atlas demande alors téléphone, e-mail et adresse du chantier. " +
+      "Un nom inconnu crée sa fiche : Cause demande alors téléphone, e-mail et adresse du chantier. " +
       "« Annuler » ramène aux trois choix.",
     source: AJOUT_CLIENT,
     preuves: ['placeholder="Nom du client"', "Inconnu, sa fiche sera créée", 'data-atlas="poser-le-client"', '"Poser"'],
@@ -351,7 +351,7 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
       "avec « + », écrivez sous « À signaler », puis « Envoyer le retour du jour ». Touchez une photo pour la voir en grand " +
       "et faire défiler les autres : « Joindre » ou « Ne pas joindre » s'y choisit.",
     reserve:
-      "Le patron peut exiger qu'une ligne soit cochée et une photo posée : Atlas dit alors ce qui manque. " +
+      "Le patron peut exiger qu'une ligne soit cochée et une photo posée : Cause dit alors ce qui manque. " +
       "Les retours se lisent dans Terminés, Retours d'intervention.",
     source: TRAVAUX,
     preuves: ["Travaux à faire", 'aria-label="Ajouter une photo"', 'placeholder="À signaler, facultatif"', "Envoyer le retour du jour", "À retrouver dans Terminés"],

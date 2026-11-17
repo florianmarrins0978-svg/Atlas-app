@@ -940,12 +940,12 @@ function Fiche({
                 <span style={{ color: colors.or }}>
                   <PointsQuiSoufflent />
                 </span>
-                {facture ? "Atlas lit la facture" : "Atlas lit le devis"}
+                {facture ? "Cause lit la facture" : "Cause lit le devis"}
               </p>
             )}
             {luRien && (
               <p className="mx-[2px] mt-3 text-[14.5px] leading-[1.45]" style={{ color: colors.inkSoft }}>
-                {facture ? "Facture gardée." : "Devis gardé."} Atlas n’a pas pu en lire les prix : tapez-les dans « Prix ».
+                {facture ? "Facture gardée." : "Devis gardé."} Cause n’a pas pu en lire les prix : tapez-les dans « Prix ».
               </p>
             )}
             {lu && (

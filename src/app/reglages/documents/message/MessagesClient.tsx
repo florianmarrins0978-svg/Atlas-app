@@ -201,7 +201,7 @@ export default function MessagesClient({
                     {titre}
                   </span>
                   <span className="mt-[3px] block text-[14.5px] leading-[1.4]" style={{ color: colors.inkSoft }}>
-                    {raison ? <Etat ton="rouge">Incomplet</Etat> : sien ? <Etat>Le vôtre</Etat> : "Celui d'Atlas"}
+                    {raison ? <Etat ton="rouge">Incomplet</Etat> : sien ? <Etat>Le vôtre</Etat> : "Celui de Cause"}
                   </span>
                 </span>
                 <span
@@ -282,7 +282,7 @@ export default function MessagesClient({
                     style={{ color: colors.or }}
                   >
                     <Picto nom="annuler" taille={18} />
-                    Remettre le message d&apos;Atlas
+                    Remettre le message de Cause
                   </button>
                 )}
               </div>

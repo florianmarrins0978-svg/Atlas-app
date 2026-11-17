@@ -252,7 +252,7 @@ export default function UneIdee({ idees }: { idees: IdeeAffichee[] }) {
 
       {!magnetophone.enregistre && !transcription && (
         <p className="mt-[14px] text-center text-[13px]" style={{ color: colors.inkSoft }}>
-          Elle arrive chez Atlas, avec votre nom.
+          Elle arrive chez Cause, avec votre nom.
         </p>
       )}
 
@@ -346,7 +346,7 @@ function Idee({
       )}
       {reponse && (
         <p className="mt-[9px] text-[14.5px] leading-[1.45]" style={{ color: colors.inkSoft }}>
-          <b style={{ color: colors.ink }}>Atlas&nbsp;:</b> {reponse}
+          <b style={{ color: colors.ink }}>Cause&nbsp;:</b> {reponse}
         </p>
       )}
     </li>

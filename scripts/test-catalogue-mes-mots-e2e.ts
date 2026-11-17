@@ -148,11 +148,11 @@ async function main() {
       // le texte TRANSFORMÉ. Cherché tel qu'il est écrit dans le code, il ne se
       // trouve jamais — le contrôle accusait le produit d'un tort qui était le
       // sien.
-      /atlas a entendu ces mots/i.test(avecProposition) && avecProposition.includes(entendu),
+      /cause a entendu ces mots/i.test(avecProposition) && avecProposition.includes(entendu),
       // **Le message montre l'écran.** Sans lui, un rouge ici n'apprend rien :
       // on ne sait pas si Atlas n'a rien proposé, s'il a proposé autre chose,
       // ou si la page n'est même pas celle du catalogue.
-      `Atlas n'a rien proposé pour « ${entendu} », alors que la dictée le porte et que la ligne retenue ` +
+      `Cause n'a rien proposé pour « ${entendu} », alors que la dictée le porte et que la ligne retenue ` +
         `est un élagage. L'écran dit : ${JSON.stringify(avecProposition.slice(0, 400))}`
     );
     assert.ok(

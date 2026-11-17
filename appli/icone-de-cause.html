@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>L'icône de Cause</title>
+<meta name="description" content="Planche : trois propositions d'icône pour Cause.">
+<!--
+  PLANCHE, rien n'est codé dans l'application. Sa réponse du 17 novembre
+  2026 : « oui, tu peux faire une proposition avec une maquette d'icône ».
+  L'application s'appelle Cause (ARCHITECTURE.md §581) et l'icône portait
+  encore le « A » provisoire (public/icone-source.svg).
+
+  Les trois « C » sont DESSINÉS, jamais écrits avec une police : la lettre
+  de B et de C est le contour du « C » de la serif des devis
+  (src/server/pdf/polices/atlas-archive-serif), relevé par fontkit. Ainsi
+  `npm run icones` rendra exactement ce qui est montré ici, sur n'importe
+  quelle machine. A reprend le trait du « A » d'aujourd'hui : 44 px, bouts
+  ronds.
+
+  Couleurs de l'appli : vert pin #2F3B2F, or #B98B47, le crème de l'icône
+  actuelle #F6F1E6. La terre cuite du « A » n'est plus nulle part dans
+  l'appli depuis le 3 août : aucune proposition ne la garde.
+
+  Chaque dessin tient dans le cercle qu'Android garde quand il découpe
+  l'icône (80 % de la largeur) : le point d'or de C s'y arrête à 183 px du
+  centre sur 204. Le centre de A et de B est décalé de quelques pixels vers
+  la droite, parce que l'ouverture du C tire l'œil à gauche.
+
+  Le choix fait, l'installer : remplacer public/icone-source.svg par le
+  dessin retenu, puis `npm run icones`.
+-->
+<style>
+:root {
+  --atlas-cream:#f5f3ee; --atlas-card:#faf9f5; --atlas-ink:#1c1c1a; --atlas-inkSoft:#4a4a44;
+  --atlas-rust:#2f3b2f; --atlas-or:#B98B47; --atlas-orTexte:#8b6835; --atlas-line:rgba(28,28,26,0.12);
+  --serif:ui-serif, Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+  --sans:ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --fond-clair:linear-gradient(160deg,#e9e3d6 0%,#d6dccf 55%,#c9d2c6 100%);
+  --fond-sombre:linear-gradient(160deg,#1d2620 0%,#26302a 60%,#151b17 100%);
+}
+* { box-sizing:border-box }
+html { -webkit-text-size-adjust:100% }
+body { margin:0; background:var(--atlas-cream); color:var(--atlas-ink); font:400 16px/1.5 var(--sans); -webkit-font-smoothing:antialiased }
+::selection { background:color-mix(in srgb, var(--atlas-or) 35%, transparent) }
+:focus-visible { outline:2px solid var(--atlas-or); outline-offset:3px; border-radius:8px }
+main { max-width:460px; margin:0 auto; padding:24px 16px 120px }
+h1 { font:400 34px/1.1 var(--serif); margin:8px 0 6px; letter-spacing:-.01em }
+h2 { font:400 21px/1.2 var(--serif); margin:40px 0 12px }
+p { margin:0 }
+.second { color:var(--atlas-inkSoft); font-size:15px }
+.choix-rang { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:24px }
+.choix { display:flex; flex-direction:column; align-items:center; gap:8px; padding:12px 8px 10px; border:1px solid var(--atlas-line); border-radius:16px; background:var(--atlas-card); font:600 15px/1 var(--sans); color:var(--atlas-ink); cursor:pointer }
+.choix[aria-pressed="true"] { border-color:var(--atlas-or); box-shadow:0 0 0 1px var(--atlas-or) }
+.mini { width:64px; height:64px; border-radius:15px; display:block }
+.desc { margin-top:14px; font-size:15px; color:var(--atlas-inkSoft); min-height:45px }
+.bascule { display:inline-flex; padding:3px; border-radius:999px; background:var(--atlas-card); border:1px solid var(--atlas-line); margin-bottom:14px }
+.bascule button { border:0; background:none; padding:9px 16px; border-radius:999px; font:500 14px/1 var(--sans); color:var(--atlas-inkSoft); cursor:pointer; min-height:36px }
+.bascule button[aria-pressed="true"] { background:var(--atlas-rust); color:var(--atlas-card) }
+.telephone { position:relative; width:100%; max-width:340px; aspect-ratio:9/18.5; margin:0 auto; border-radius:46px; padding:12px; background:#121512; box-shadow:0 18px 40px -18px rgba(28,28,26,.45) }
+.ecran { position:relative; height:100%; border-radius:36px; overflow:hidden; background:var(--fond-clair); padding:44px 18px 0 }
+.telephone.sombre .ecran { background:var(--fond-sombre) }
+.heure { position:absolute; top:14px; left:30px; font:600 14px/1 var(--sans); color:#1c1c1a }
+.telephone.sombre .heure { color:#f2efe6 }
+.grille { display:grid; grid-template-columns:repeat(4,1fr); gap:18px 14px }
+.app { display:flex; flex-direction:column; align-items:center; gap:5px; min-width:0 }
+.app span { font:500 10.5px/1.1 var(--sans); color:#1c1c1a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100% }
+.telephone.sombre .app span { color:#f2efe6 }
+.tuile { width:100%; aspect-ratio:1; border-radius:23%; overflow:hidden }
+.tuile svg { width:100%; height:100%; display:block }
+.notre { box-shadow:0 2px 6px -2px rgba(0,0,0,.25) }
+.dock { position:absolute; left:12px; right:12px; bottom:12px; display:grid; grid-template-columns:repeat(4,1fr); gap:14px; padding:12px 14px; border-radius:30px; background:rgba(255,255,255,.35); backdrop-filter:blur(14px) }
+.telephone.sombre .dock { background:rgba(255,255,255,.10) }
+.mini, .grand, .moyen, .onglet .fav, .notif .ic { box-shadow:0 0 0 1px var(--atlas-line) }
+.grand-rang { display:flex; gap:24px; align-items:flex-end; justify-content:center; padding:24px 0 8px }
+.grand { width:200px; height:200px; overflow:hidden }
+.grand svg, .moyen svg { width:100%; height:100%; display:block }
+.forme-iphone .grand, .forme-iphone .moyen { border-radius:22.5% }
+.forme-android .grand, .forme-android .moyen { border-radius:50% }
+.moyen { width:60px; height:60px; overflow:hidden }
+.onglet { display:flex; align-items:center; gap:10px; max-width:260px; padding:10px 14px; background:var(--atlas-card); border:1px solid var(--atlas-line); border-radius:12px 12px 0 0; font:500 14px/1 var(--sans) }
+.onglet .fav { width:18px; height:18px; border-radius:4px; overflow:hidden; flex:none }
+.onglet .fav svg { width:100%; height:100%; display:block }
+.notif { display:grid; grid-template-columns:38px 1fr auto; gap:4px 12px; align-items:start; margin-top:16px; padding:14px; border-radius:20px; background:rgba(245,243,238,.92); border:1px solid var(--atlas-line) }
+.notif .ic { grid-row:span 2; width:38px; height:38px; border-radius:9px; overflow:hidden }
+.notif .ic svg { width:100%; height:100%; display:block }
+.notif b { font:600 14px/1.2 var(--sans) }
+.notif time { font-size:12.5px; color:var(--atlas-inkSoft) }
+.notif p { grid-column:2 / span 2; font-size:14px }
+.action { position:fixed; left:0; right:0; bottom:0; padding:12px 16px calc(12px + env(safe-area-inset-bottom)); background:linear-gradient(transparent, var(--atlas-cream) 30%) }
+.action .dedans { max-width:460px; margin:0 auto }
+.plein { width:100%; min-height:56px; border:0; border-radius:16px; background:var(--atlas-rust); color:var(--atlas-card); font:600 17px/1 var(--sans); cursor:pointer }
+.reponse { margin-top:8px; text-align:center; font-size:14.5px; color:var(--atlas-orTexte); min-height:21px }
+@media (prefers-reduced-motion: no-preference) {
+  .choix { transition:border-color .2s, box-shadow .2s }
+  .ecran { transition:background .35s }
+  .grand { transition:border-radius .3s cubic-bezier(.16,1,.3,1) }
+}
+</style>
+</head>
+<body>
+<main>
+  <h1>L'icône de Cause</h1>
+  <p class="second">Le « A » ne va plus avec le nom. Trois « C » à essayer.</p>
+
+  <div class="choix-rang" role="group" aria-label="Les trois propositions"><button type="button" class="choix" data-choix="A" aria-pressed="true"><svg class="mini" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" fill="#F6F1E6"/><path d="M346.6 172.6 A116 116 0 1 0 346.6 339.4" fill="none" stroke="#2F3B2F" stroke-width="44" stroke-linecap="round"/></svg><span>A</span></button><button type="button" class="choix" data-choix="B" aria-pressed="false"><svg class="mini" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" fill="#2F3B2F"/><g fill="#B98B47"><path transform="translate(113.01 397.76) scale(0.21221 -0.21221)" d="M815 -20Q478 -20 289 159Q100 338 100 655Q100 999 280.5 1177.5Q461 1356 814 1356Q1047 1356 1297 1289L1303 967L1213 967L1185 1161Q1053 1251 878 1251Q646 1251 539 1106.5Q432 962 432 658Q432 377 544 230Q656 83 870 83Q983 83 1067.5 113Q1152 143 1200 184L1232 404L1323 404L1317 64Q1227 29 1083 4.5Q939 -20 815 -20Z"/></g></svg><span>B</span></button><button type="button" class="choix" data-choix="C" aria-pressed="false"><svg class="mini" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" fill="#F6F1E6"/><g fill="#2F3B2F"><path transform="translate(96.74 384.16) scale(0.19186 -0.19186)" d="M774 -20Q448 -20 266 157.5Q84 335 84 655Q84 1001 259 1178.5Q434 1356 778 1356Q987 1356 1227 1305L1233 1012L1167 1012L1137 1186Q1067 1229 974.5 1252.5Q882 1276 786 1276Q529 1276 411 1125Q293 974 293 657Q293 365 416.5 211Q540 57 776 57Q890 57 991 84.5Q1092 112 1151 158L1188 358L1253 358L1247 43Q1027 -20 774 -20Z"/></g><circle cx="378.1" cy="363.0" r="21" fill="#B98B47"/></svg><span>C</span></button></div>
+  <p class="desc" id="desc" aria-live="polite">Le trait du « A » d'aujourd'hui, en vert pin sur crème.</p>
+
+  <h2>Sur votre téléphone</h2>
+  <div class="bascule" role="group" aria-label="Fond d'écran">
+    <button type="button" data-fond="clair" aria-pressed="true">Fond clair</button>
+    <button type="button" data-fond="sombre" aria-pressed="false">Fond sombre</button>
+  </div>
+  <div class="telephone" id="telephone">
+    <div class="ecran">
+      <span class="heure">7:30</span>
+      <div class="grille"><div class="app"><div class="tuile" style="background:#c9c2b3"></div><span>Photos</span></div><div class="app"><div class="tuile" style="background:#b7c0b0"></div><span>Plans</span></div><div class="app"><div class="tuile" style="background:#c5cdd3"></div><span>Météo</span></div><div class="app"><div class="tuile" style="background:#d8cfbd"></div><span>Notes</span></div><div class="app"><div class="tuile" style="background:#c8bfb8"></div><span>Agenda</span></div><div class="app"><div class="tuile" style="background:#bfc6bd"></div><span>Appareil</span></div><div class="app"><div class="tuile" style="background:#cbc3b1"></div><span>Banque</span></div><div class="app"><div class="tuile" style="background:#c2c8cc"></div><span>Horloge</span></div><div class="app"><div class="tuile" style="background:#d1c4bf"></div><span>Musique</span></div><div class="app"><div class="tuile" style="background:#bcc2b7"></div><span>Réglages</span></div><div class="app"><div class="tuile" style="background:#c9cfc4"></div><span>Fichiers</span></div><div class="app"><div class="tuile notre" data-icone></div><span>Cause</span></div><div class="app"><div class="tuile" style="background:#cfc6b4"></div><span>Rappels</span></div><div class="app"><div class="tuile" style="background:#c0c6c9"></div><span>Calculette</span></div><div class="app"><div class="tuile" style="background:#c6c0b5"></div><span>Boussole</span></div><div class="app"><div class="tuile" style="background:#cbd0c4"></div><span>Contacts</span></div></div>
+      <div class="dock"><div class="tuile" style="background:#bfc6bd"></div><div class="tuile" style="background:#c5cdd3"></div><div class="tuile" style="background:#d1c4bf"></div><div class="tuile" style="background:#c9c2b3"></div></div>
+    </div>
+  </div>
+
+  <h2>En grand</h2>
+  <div class="bascule" role="group" aria-label="Forme">
+    <button type="button" data-forme="iphone" aria-pressed="true">iPhone</button>
+    <button type="button" data-forme="android" aria-pressed="false">Android</button>
+  </div>
+  <div id="formes" class="forme-iphone">
+    <div class="grand-rang"><div class="grand" data-icone></div><div class="moyen" data-icone></div></div>
+  </div>
+
+  <h2>Ailleurs</h2>
+  <div class="onglet"><span class="fav" data-icone></span>Cause</div>
+  <div class="notif">
+    <span class="ic" data-icone></span><b>Cause</b><time>maintenant</time>
+    <p>Mr. Lemaire a accepté le devis.</p>
+  </div>
+</main>
+
+<div class="action"><div class="dedans">
+  <button type="button" class="plein" id="prendre">Je prends la A</button>
+  <p class="reponse" id="reponse" aria-live="polite"></p>
+</div></div>
+
+<script>
+(function(){
+  var ICONES = {"A": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\"><rect width=\"512\" height=\"512\" fill=\"#F6F1E6\"/><path d=\"M346.6 172.6 A116 116 0 1 0 346.6 339.4\" fill=\"none\" stroke=\"#2F3B2F\" stroke-width=\"44\" stroke-linecap=\"round\"/></svg>", "B": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\"><rect width=\"512\" height=\"512\" fill=\"#2F3B2F\"/><g fill=\"#B98B47\"><path transform=\"translate(113.01 397.76) scale(0.21221 -0.21221)\" d=\"M815 -20Q478 -20 289 159Q100 338 100 655Q100 999 280.5 1177.5Q461 1356 814 1356Q1047 1356 1297 1289L1303 967L1213 967L1185 1161Q1053 1251 878 1251Q646 1251 539 1106.5Q432 962 432 658Q432 377 544 230Q656 83 870 83Q983 83 1067.5 113Q1152 143 1200 184L1232 404L1323 404L1317 64Q1227 29 1083 4.5Q939 -20 815 -20Z\"/></g></svg>", "C": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\"><rect width=\"512\" height=\"512\" fill=\"#F6F1E6\"/><g fill=\"#2F3B2F\"><path transform=\"translate(96.74 384.16) scale(0.19186 -0.19186)\" d=\"M774 -20Q448 -20 266 157.5Q84 335 84 655Q84 1001 259 1178.5Q434 1356 778 1356Q987 1356 1227 1305L1233 1012L1167 1012L1137 1186Q1067 1229 974.5 1252.5Q882 1276 786 1276Q529 1276 411 1125Q293 974 293 657Q293 365 416.5 211Q540 57 776 57Q890 57 991 84.5Q1092 112 1151 158L1188 358L1253 358L1247 43Q1027 -20 774 -20Z\"/></g><circle cx=\"378.1\" cy=\"363.0\" r=\"21\" fill=\"#B98B47\"/></svg>"};
+  var DESC = {"A": "Le trait du « A » d'aujourd'hui, en vert pin sur crème.", "B": "La lettre des devis, en or sur vert pin.", "C": "La lettre des devis et le point d'or des titres du site, sur crème."};
+  var choisie = "A";
+  function poser(k){
+    choisie = k;
+    document.querySelectorAll("[data-icone]").forEach(function(el){ el.innerHTML = ICONES[k]; });
+    document.querySelectorAll("[data-choix]").forEach(function(b){ b.setAttribute("aria-pressed", String(b.dataset.choix === k)); });
+    document.getElementById("desc").textContent = DESC[k];
+    document.getElementById("prendre").textContent = "Je prends la " + k;
+    document.getElementById("reponse").textContent = "";
+  }
+  document.querySelectorAll("[data-choix]").forEach(function(b){ b.addEventListener("click", function(){ poser(b.dataset.choix); }); });
+  document.querySelectorAll("[data-fond]").forEach(function(b){
+    b.addEventListener("click", function(){
+      document.getElementById("telephone").classList.toggle("sombre", b.dataset.fond === "sombre");
+      document.querySelectorAll("[data-fond]").forEach(function(x){ x.setAttribute("aria-pressed", String(x === b)); });
+    });
+  });
+  document.querySelectorAll("[data-forme]").forEach(function(b){
+    b.addEventListener("click", function(){
+      document.getElementById("formes").className = "forme-" + b.dataset.forme;
+      document.querySelectorAll("[data-forme]").forEach(function(x){ x.setAttribute("aria-pressed", String(x === b)); });
+    });
+  });
+  document.getElementById("prendre").addEventListener("click", function(){
+    document.getElementById("reponse").textContent = "Écrivez « " + choisie + " » dans la conversation : je l'installe.";
+  });
+  poser("A");
+})();
+</script>
+</body>
+</html>

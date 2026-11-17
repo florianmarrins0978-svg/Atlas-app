@@ -138,7 +138,7 @@ export default function ListeVehicules({ patron, vehicules }: { patron: boolean;
   return (
     <>
       {vehicules.length === 0 ? (
-        <Vide>Ajoutez la carte grise : Atlas y lit la plaque, le modèle et le poids.</Vide>
+        <Vide>Ajoutez la carte grise : Cause y lit la plaque, le modèle et le poids.</Vide>
       ) : (
         <div className="mx-[22px] mt-7 overflow-hidden rounded-[6px] px-[18px]" style={{ backgroundColor: colors.card }}>
           {vehicules.map((v, i) => {

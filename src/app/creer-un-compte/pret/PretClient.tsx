@@ -55,7 +55,7 @@ export default function PretClient({
             <path d="M26 28v5M50 28v5M38 30v13h-4M28 52c6 5 14 5 20 0" />
           </svg>
           <h1 className="text-[30px] leading-[1.12] tracking-[-0.01em]" style={SERIF}>
-            Ouvrir Atlas avec Face&nbsp;ID&nbsp;?
+            Ouvrir Cause avec Face&nbsp;ID&nbsp;?
           </h1>
           <p className="mt-2 text-[15px] leading-[1.45]" style={{ color: colors.inkSoft }}>
             Sans retaper votre mot de passe.
@@ -66,7 +66,7 @@ export default function PretClient({
               className="mt-5 rounded-[14px] px-4 py-[13px] text-[14.5px] leading-[1.45]"
               style={{ backgroundColor: colors.carteVertFond, color: colors.carteVertTexte }}
             >
-              Cet appareil est enregistré. Vous pourrez ouvrir Atlas avec Face ID.
+              Cet appareil est enregistré. Vous pourrez ouvrir Cause avec Face ID.
             </p>
           )}
           {faceId.refus && (
@@ -182,7 +182,7 @@ export default function PretClient({
           className="flex min-h-[56px] w-full items-center justify-center rounded-full text-[17px] font-semibold"
           style={{ background: colors.plein, color: surPlein }}
         >
-          Entrer dans Atlas
+          Entrer dans Cause
         </Link>
       </div>
     </>

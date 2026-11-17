@@ -496,8 +496,8 @@ export default function FormulaireFicheDeSecurite({
             {contenu.prevention === "oui" && <span className="mt-2.5 block"><b className="font-semibold" style={{ color: colors.ink }}>Obligatoire</b> : envoyez-lui la fiche.{envoyerA("client", "Envoyer au client")}</span>}
             {contenu.prevention === "non" && <span className="mt-2.5 block">Rien à envoyer. Un particulier n’a pas à la recevoir.</span>}
           </Destinataire>
-          <Destinataire titre="La garder" obligation={finalisee ? "Fait par Atlas" : "Après toutes les signatures"} ton={finalisee ? "vert" : "neutre"}>
-            Elle doit rester sur le chantier pendant les travaux : votre téléphone suffit. {finalisee ? `Atlas la garde deux ans, jusqu’au ${dateLongue(gardeeJusquAu(signeeLe))}, rangée dans Paysage.` : "Atlas la garde deux ans, dès qu’elle est enregistrée."}
+          <Destinataire titre="La garder" obligation={finalisee ? "Fait par Cause" : "Après toutes les signatures"} ton={finalisee ? "vert" : "neutre"}>
+            Elle doit rester sur le chantier pendant les travaux : votre téléphone suffit. {finalisee ? `Cause la garde deux ans, jusqu’au ${dateLongue(gardeeJusquAu(signeeLe))}, rangée dans Paysage.` : "Cause la garde deux ans, dès qu’elle est enregistrée."}
             {finalisee && paysageOuvert && <> <Link href="/paysage/fiches-securite" className="font-bold no-underline" style={{ color: colors.ink }}>Voir où</Link></>}
           </Destinataire>
         </Bloc>

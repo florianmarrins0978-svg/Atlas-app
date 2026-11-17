@@ -96,7 +96,7 @@ export async function GET() {
     titre = `Préchauffage en cours, ${faits} écran(s) prêts sur ${total}`;
     insiste = "Pendant ce temps, vos propres clics passent derrière la file.";
     explication =
-      "Atlas compile ses écrans d'avance : un écran que vous ouvrez maintenant peut donc " +
+      "Cause compile ses écrans d'avance : un écran que vous ouvrez maintenant peut donc " +
       "mettre une minute. Ce n'est pas une panne, et il n'y a rien à faire. Attendez que " +
       "cette page affiche « prêts »." +
       (etat.encours ? ` En train de compiler : ${etat.encours}` : "");
@@ -108,7 +108,7 @@ export async function GET() {
 <html lang="fr"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>État du banc, Atlas</title>
+<title>État du banc, Cause</title>
 <style>
  body{margin:0;padding:24px;font:16px/1.5 system-ui,sans-serif;color:#1c1a17;background:#faf7f2}
  h1{font-size:20px;margin:0 0 4px}

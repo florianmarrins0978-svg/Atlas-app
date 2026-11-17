@@ -64,5 +64,5 @@ export function estReponseIllisible(message: unknown): boolean {
  * regarde.
  */
 export const PHRASE_REPONSE_ILLISIBLE =
-  "Le serveur n'a pas répondu à temps. C'est presque toujours qu'Atlas est en train " +
+  "Le serveur n'a pas répondu à temps. C'est presque toujours que Cause est en train " +
   "de se préparer après une mise à jour. Attendez un instant, puis rechargez.";

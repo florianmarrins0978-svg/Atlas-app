@@ -216,11 +216,11 @@ export function contenuDeLAttestation(d: {
     observations: d.observations,
     phrase:
       n === 1
-        ? "J’atteste avoir contrôlé la ligne de ce dossier et son justificatif, tels que présentés dans Atlas."
-        : `J’atteste avoir contrôlé les ${n} lignes de ce dossier et leurs justificatifs, tels que présentés dans Atlas.`,
+        ? "J’atteste avoir contrôlé la ligne de ce dossier et son justificatif, tels que présentés dans Cause."
+        : `J’atteste avoir contrôlé les ${n} lignes de ce dossier et leurs justificatifs, tels que présentés dans Cause.`,
     signataire: lignesDuSignataire(d.signataire),
     fait: `Fait le ${jourComplet(d.signeLe)}`,
-    pied: "Cette attestation porte sur les justificatifs présentés dans Atlas. Elle ne certifie pas les comptes.",
+    pied: "Cette attestation porte sur les justificatifs présentés dans Cause. Elle ne certifie pas les comptes.",
     empreinte: `Empreinte du dossier ${enGroupes(d.empreinteDuDossier)}`,
   };
 }
@@ -258,7 +258,7 @@ export function courrielDeLAttestation(d: { nom: string; societe: string; du: st
     objet: `Votre dossier est vérifié : ${mot}`,
     texte:
       `Bonjour,\n\n${d.nom}, ${d.societe}, a vérifié votre dossier justifié du ${jourComplet(d.du)} au ${jourComplet(d.au)} et signé l’attestation : ${mot}.\n\n` +
-      "L’attestation signée est jointe, et rangée avec le dossier dans Atlas : Terminés, Pour mon comptable, Mes dossiers justifiés.\n\nAtlas",
+      "L’attestation signée est jointe, et rangée avec le dossier dans Cause : Terminés, Pour mon comptable, Mes dossiers justifiés.\n\nCause",
   };
 }
 

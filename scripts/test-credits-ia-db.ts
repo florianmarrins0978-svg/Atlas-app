@@ -103,7 +103,7 @@ async function main() {
       assert.equal(r.succes, false);
       assert.equal(!r.succes && r.erreur.type, "credits_epuises");
       // La phrase que la dictée, l'assistant et la note vocale relaient telle quelle.
-      assert.match(!r.succes ? r.erreur.message : "", /^Crédits IA épuisés\. Atlas IA reprend le 1er \S+\. D'ici là, tout s'écrit à la main\.$/);
+      assert.match(!r.succes ? r.erreur.message : "", /^Crédits IA épuisés\. Cause IA reprend le 1er \S+\. D'ici là, tout s'écrit à la main\.$/);
       assert.equal(appels, avant, "LE FOURNISSEUR A ÉTÉ PAYÉ AU-DELÀ DU PLAFOND");
     });
 

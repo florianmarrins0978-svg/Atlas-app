@@ -103,7 +103,7 @@ export default function NotificationsClient({ initial }: { initial: ReglagesRapp
           que LUI reçoit et ce que ses CLIENTS reçoivent ; sur cet écran, ses
           clients n'ont rien à faire. */}
       <p className="mx-[24px] mt-[18px] text-[15px] leading-[1.45]" style={{ color: colors.inkSoft }}>
-        Ces rappels s&apos;affichent sur votre écran d&apos;accueil, quand vous ouvrez Atlas.
+        Ces rappels s&apos;affichent sur votre écran d&apos;accueil, quand vous ouvrez Cause.
       </p>
 
       {/* **CE QU'IL RÈGLE D'ABORD — sa proposition B, retenue le 9 septembre 2026.**

@@ -370,7 +370,7 @@ export function joindreFactureHorsAtlas(
     { ...VIDE, justification: "facture_hors_atlas", pieceCle: piece.cle, pieceNature: piece.nature, pieceTotal: piece.total, reliePar: "patron", justifieLe: new Date() },
     {
       controle: async (ligne, tx) => {
-        if (ligne.sens === "entree" && (await factureConfirmee(tx, ligne.cle))) return { ok: false, raison: "Ce virement paie déjà une facture d'Atlas." };
+        if (ligne.sens === "entree" && (await factureConfirmee(tx, ligne.cle))) return { ok: false, raison: "Ce virement paie déjà une facture de Cause." };
         return refusDEcart(ligne, piece.total, malgreEcart);
       },
     }
@@ -397,7 +397,7 @@ export function poserMotif(ctx: Ctx, mouvementId: string, motif: Motif): Promise
     controle: async (ligne, tx) => {
       if (!estMotif(motif, ligne.sens)) return { ok: false, raison: "Dites ce qu'est ce virement." };
       if (ligne.sens === "entree") {
-        if (await factureConfirmee(tx, ligne.cle)) return { ok: false, raison: "Ce virement paie déjà une facture d'Atlas." };
+        if (await factureConfirmee(tx, ligne.cle)) return { ok: false, raison: "Ce virement paie déjà une facture de Cause." };
         await tx
           .update(virementsRecus)
           .set({ etat: "ecarte", reponduAt: new Date() })

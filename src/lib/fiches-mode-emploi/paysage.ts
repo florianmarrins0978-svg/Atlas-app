@@ -185,7 +185,7 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
     intitule: "Demander une modification du plan : marque, matériel, buse",
     motsCles: ["modifier", "changer", "marque", "materiel", "buse", "discuter", "demander", "corriger", "modification"],
     geste:
-      "Sous « Demander une modification », écrivez ce que vous voulez changer dans « Écrire à Atlas… », " +
+      "Sous « Demander une modification », écrivez ce que vous voulez changer dans « Écrire à Cause… », " +
       "par exemple une marque, un matériel ou une buse, puis touchez le bouton rond d'envoi : le plan se refait.",
     reserve:
       "La discussion n'existe qu'avec un plan à l'écran. Pour changer un métré ou l'endroit de la nourrice, " +
@@ -193,7 +193,7 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
     source: "src/app/paysage/arrosage/DiscuterLePlan.tsx",
     preuves: [
       "Demander une modification",
-      'placeholder="Écrire à Atlas…"',
+      'placeholder="Écrire à Cause…"',
       'aria-label="Envoyer la demande"',
       "Pour changer un métré ou l’endroit de la nourrice, corrigez le croquis et",
     ],
@@ -241,7 +241,7 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
     id: "diagnostic-photo-de-plus",
     ecran: "Diagnostic végétal",
     ou: "« Paysage », Diagnostic végétal, après la photo",
-    intitule: "Atlas demande une photo de plus",
+    intitule: "Cause demande une photo de plus",
     motsCles: ["photo", "plus", "deuxieme", "complement", "autre", "consigne", "demande"],
     geste: "Suivez la consigne écrite, puis touchez « Prendre cette photo ». « Recommencer » repart de zéro.",
     reserve: "Une seule photo de plus, jamais deux.",
@@ -649,7 +649,7 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
     id: "catalogue-mots",
     ecran: "Catalogue",
     ou: "« Réglages » dans la barre du bas, puis Tarifs & catalogue, puis Le catalogue",
-    intitule: "Apprendre à Atlas un mot du métier",
+    intitule: "Apprendre à Cause un mot du métier",
     motsCles: ["mot", "mots", "vocabulaire", "catalogue", "comprendre", "apprendre", "dictee", "ecime", "jargon", "synonyme"],
     geste: "Sous la prestation ou le matériel, touchez « Ajouter un mot », écrivez le mot tel que vous le dites, puis « Ajouter ».",
     reserve: "Vos mots s'ajoutent sous la carte, un par ligne.",
@@ -684,7 +684,7 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
     id: "catalogue-retirer-mot",
     ecran: "Catalogue",
     ou: "« Réglages », Tarifs & catalogue, puis Le catalogue",
-    intitule: "Retirer un mot qu'on avait appris à Atlas",
+    intitule: "Retirer un mot qu'on avait appris à Cause",
     motsCles: ["retirer", "supprimer", "enlever", "effacer", "mot", "vocabulaire", "croix"],
     geste: "Sous la carte, touchez « Retirer » au bout de la ligne de votre mot.",
     reserve: "Seuls vos mots ont « Retirer », pas ceux du catalogue commun.",
@@ -695,12 +695,12 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
     id: "catalogue-mots-proposes",
     ecran: "Catalogue",
     ou: "« Réglages », Tarifs & catalogue, puis Le catalogue, en haut",
-    intitule: "Accepter ou refuser un mot qu'Atlas a entendu dans une dictée",
+    intitule: "Accepter ou refuser un mot que Cause a entendu dans une dictée",
     motsCles: ["propose", "entendu", "retenir", "accepter", "refuser", "mot", "dictee", "suggestion"],
-    geste: "Sous « Atlas a entendu ces mots », touchez « Oui, retenir » ou « Non ».",
-    reserve: "Ce bloc n'apparaît que quand Atlas a relevé un mot inconnu dans vos dictées.",
+    geste: "Sous « Cause a entendu ces mots », touchez « Oui, retenir » ou « Non ».",
+    reserve: "Ce bloc n'apparaît que quand Cause a relevé un mot inconnu dans vos dictées.",
     source: "src/app/catalogue/MotsProposes.tsx",
-    preuves: ["Atlas a entendu ces mots", "Oui, retenir", "Non", "restants.length === 0"],
+    preuves: ["Cause a entendu ces mots", "Oui, retenir", "Non", "restants.length === 0"],
   },
   // --- Clients --------------------------------------------------------------
   {
@@ -731,11 +731,11 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
     // « B ») : les deux boutons « Partir du modèle Atlas » et « Je préfère
     // composer la mienne » sont partis avec la fiche vide qu'ils servaient.
     geste:
-      "Ouvrez « Composer ma fiche » : le modèle Atlas y est déjà, modifiez-le. " +
-      "S'il vous manque une ligne du modèle, « Remettre le modèle Atlas » la fait revenir.",
+      "Ouvrez « Composer ma fiche » : le modèle Cause y est déjà, modifiez-le. " +
+      "S'il vous manque une ligne du modèle, « Remettre le modèle Cause » la fait revenir.",
     reserve: "Réservé au patron. La modifier ne change aucun rapport déjà envoyé.",
     source: "src/app/paysage/fiche/composer/ComposerMaFiche.tsx",
-    preuves: ["Remettre le modèle Atlas", "+ Ajouter une famille"],
+    preuves: ["Remettre le modèle Cause", "+ Ajouter une famille"],
     ailleurs: [{ source: "src/app/paysage/fiche/page.tsx", preuves: ["Composer ma fiche"] }],
   },
   {

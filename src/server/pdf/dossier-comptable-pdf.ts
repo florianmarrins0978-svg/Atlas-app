@@ -349,7 +349,7 @@ function rangsDeLaPiece(piece: PieceDeLaLigne, p: Polices): Rang[] | null {
     case "facture":
       return [nom(piece.societe), { genre: "titre", t: piece.nom, police: p.sans, taille: 8, teinte: GRIS, h: 10.6 }, { genre: "blanc", h: 5 }, totalTtc(piece.totalTtc)];
     case "facture-hors-atlas":
-      return [nom(piece.sortie ? "Facture du fournisseur" : "Facture faite hors d'Atlas"), { genre: "blanc", h: 5 }, totalTtc(piece.totalTtc)];
+      return [nom(piece.sortie ? "Facture du fournisseur" : "Facture faite hors de Cause"), { genre: "blanc", h: 5 }, totalTtc(piece.totalTtc)];
     case "facture-emise":
       return null;
   }
@@ -396,7 +396,7 @@ function nomDeLaPiece(piece: PieceDeLaLigne): string {
     case "facture":
       return `Facture ${piece.societe}`;
     case "facture-hors-atlas":
-      return piece.sortie ? "Facture du fournisseur" : "Facture faite hors d'Atlas";
+      return piece.sortie ? "Facture du fournisseur" : "Facture faite hors de Cause";
     case "facture-emise":
       return `Facture ${piece.numero}`;
   }
@@ -436,7 +436,7 @@ function planifier(l: LignePourLeDossier, p: Polices): Plan {
     phrase = [
       { t: nomDeLaPiece(l.piece), police: p.gras, teinte: ENCRE },
       ...(suite ? [{ t: suite, police: p.gras, teinte: teinteDeLaSuite }] : []),
-      { t: ", émise par Atlas", police: p.sans, teinte: DOUX },
+      { t: ", émise par Cause", police: p.sans, teinte: DOUX },
     ];
   } else if (!l.piece && l.ticketPerdu) {
     phrase = [{ t: "Ticket perdu, mention validée. TVA non déduite.", police: p.oblique, teinte: SORTIE }];
@@ -833,7 +833,7 @@ async function poserLaPhoto(c: Composition, page: PDFPage, l: LignePourLeDossier
     if (pose.genre === "image") page.drawImage(pose.objet, pos);
     else page.drawPage(pose.objet, pos);
   } else {
-    ecrire(page, "Photo non lisible ici, gardée dans Atlas", cadre.x + 8, cadre.y + cadre.h / 2, p.sans, 8, GRIS, cadre.w - 16);
+    ecrire(page, "Photo non lisible ici, gardée dans Cause", cadre.x + 8, cadre.y + cadre.h / 2, p.sans, 8, GRIS, cadre.w - 16);
   }
   liaisons.photo.set(l, { page, y: yHaut + 10 });
   const yb = yHaut - lh;
@@ -876,7 +876,7 @@ export async function composerDossierComptable(d: DonneesDossier): Promise<Uint8
   const doc = await PDFDocument.create();
   doc.setTitle(texteDuPapier(`Dossier justifié du ${jourComplet(d.du)} au ${jourComplet(d.au)}`));
   doc.setAuthor(texteDuPapier(d.entreprise.nom));
-  doc.setCreator("Atlas");
+  doc.setCreator("Cause");
   const c: Composition = {
     doc,
     p: {

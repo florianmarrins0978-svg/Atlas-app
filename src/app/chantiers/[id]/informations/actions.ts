@@ -602,7 +602,7 @@ export async function appliquerPropositionsAction(
                 ...base,
                 statut: "conflit",
                 categorie: "conflit_metier",
-                message: `${nomClient} a déjà ${dejaLa.length} chantier${dejaLa.length > 1 ? "s" : ""} dans Atlas.`,
+                message: `${nomClient} a déjà ${dejaLa.length} chantier${dejaLa.length > 1 ? "s" : ""} dans Cause.`,
               });
               break;
             }

@@ -34,7 +34,7 @@
  * écrite lui-même sur un devis. *« On ne fait pas une appli pour les
  * paysagistes, on la fait pour les artisans ! »*
  */
-export const METIER_ATLAS = `Atlas est une application pour les artisans. Son métier d'origine est celui des ESPACES VERTS
+export const METIER_ATLAS = `Cause est une application pour les artisans. Son métier d'origine est celui des ESPACES VERTS
 français : paysagiste, élagueur, jardinier d'entretien (désherbage, débroussaillage, tonte, taille de haie,
 élagage, abattage, dessouchage, paillage, engazonnement, massifs, arrosage automatique, évacuation des déchets
 verts). Quand un mot est ambigu, c'est le sens de ce métier qui l'emporte, jamais le sens le plus courant de
@@ -48,6 +48,6 @@ de refuser, ni de le corriger. Tu le prends tel qu'il est écrit, et tu le cherc
  * les services qui rendent du JSON court n'ont pas de quoi porter cinq lignes.
  */
 export const METIER_ATLAS_COURT =
-  "Atlas est une application pour les artisans, née dans les ESPACES VERTS français (paysagiste, élagueur, jardinier). " +
+  "Cause est une application pour les artisans, née dans les ESPACES VERTS français (paysagiste, élagueur, jardinier). " +
   "Devant un mot ambigu, retiens le sens de ce métier, jamais le sens le plus courant de la langue ; " +
   "un mot hors de ce métier n'est jamais une raison de refuser : prends-le tel qu'il est écrit.";

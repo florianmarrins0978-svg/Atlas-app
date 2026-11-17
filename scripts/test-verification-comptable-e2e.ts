@@ -252,11 +252,11 @@ async function main() {
 
   await test("une facture faite hors d'Atlas se voit comme pièce, avec son total, et s'ouvre", async () => {
     const rangee = lui.locator('[data-atlas="ligne-du-comptable"]', { hasText: "VIR DURAND HORS ATLAS E2E" });
-    assert.match(await rangee.locator('[data-atlas="ouvrir-justificatif"]').innerText(), /Facture faite hors d’Atlas/);
+    assert.match(await rangee.locator('[data-atlas="ouvrir-justificatif"]').innerText(), /Facture faite hors de Cause/);
     await rangee.locator('[data-atlas="ouvrir-justificatif"]').click();
     const panneau = lui.locator('[data-atlas="panneau-justificatif"]');
-    assert.match(await panneau.locator('[data-atlas="reconstituee"]').innerText(), /Facture faite hors d’Atlas[\s\S]*Total TTC[\s\S]*1\s728,00\s€/);
-    assert.match(await panneau.locator('[data-atlas="ecart-de-la-piece"]').innerText(), /Facture faite hors d’Atlas, payée en partie/);
+    assert.match(await panneau.locator('[data-atlas="reconstituee"]').innerText(), /Facture faite hors de Cause[\s\S]*Total TTC[\s\S]*1\s728,00\s€/);
+    assert.match(await panneau.locator('[data-atlas="ecart-de-la-piece"]').innerText(), /Facture faite hors de Cause, payée en partie/);
     // Servie par la route du jeton, par `pieceDeLaLigne` : la photo jointe.
     await panneau.locator('[data-atlas="onglet-origine"]').click();
     await origineChargee(lui);

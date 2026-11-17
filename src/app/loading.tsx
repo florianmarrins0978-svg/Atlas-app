@@ -18,7 +18,7 @@ export default function Chargement() {
     >
       <div className="px-6 pt-9">
         <p className={smallCaps} style={{ color: colors.rust, marginBottom: 8 }}>
-          Atlas
+          Cause
         </p>
         <p className="mt-2 text-[14px]" style={{ color: colors.muted }}>
           Chargement…

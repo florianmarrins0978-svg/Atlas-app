@@ -70,7 +70,7 @@ function etiquette(p: PieceAffichee): string {
     case "facture":
       return "Facture";
     case "hors_atlas":
-      return p.sortie ? "Facture du fournisseur" : "Facture faite hors d’Atlas";
+      return p.sortie ? "Facture du fournisseur" : "Facture faite hors de Cause";
     case "emise":
       return `Facture ${p.numero}`;
     case "perdu":

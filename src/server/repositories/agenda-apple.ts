@@ -134,7 +134,7 @@ export async function relierAgendaApple(
   const trouves = await decouvrirAgendas({ compte, motDePasse });
   if (trouves.length === 0) {
     throw new Error(
-      "Ce compte a bien répondu, mais Atlas n'y a trouvé aucun agenda où lire des rendez-vous."
+      "Ce compte a bien répondu, mais Cause n'y a trouvé aucun agenda où lire des rendez-vous."
     );
   }
 
@@ -236,7 +236,7 @@ export async function reglerEcritureApple(
   if (reglage.calendrier != null) {
     const forme = destinationAutorisee(reglage.calendrier.href);
     if (!forme.ok) {
-      throw new Error(`Ce calendrier n'est pas une adresse qu'Atlas peut servir. ${forme.phrase}`);
+      throw new Error(`Ce calendrier n'est pas une adresse que Cause peut servir. ${forme.phrase}`);
     }
 
     const ident = await identifiants(executer, ctx.entrepriseId);
@@ -262,7 +262,7 @@ export async function reglerEcritureApple(
   }
 
   if (reglage.active && !calendrier.href) {
-    throw new Error("Choisissez d'abord dans quel calendrier Atlas doit écrire.");
+    throw new Error("Choisissez d'abord dans quel calendrier Cause doit écrire.");
   }
 
   await executer(async (tx) => {
@@ -315,7 +315,7 @@ async function retirerToutCeQuAtlasAPose(ctx: Ctx, calendrier: string): Promise<
     await noterEcriture(
       executer,
       ctx.entrepriseId,
-      `L'écriture est coupée, mais des rendez-vous posés par Atlas sont restés dans votre agenda : ${messageDePanne(e)}`
+      `L'écriture est coupée, mais des rendez-vous posés par Cause sont restés dans votre agenda : ${messageDePanne(e)}`
     );
   }
 }
@@ -574,7 +574,7 @@ function veveneementDe(c: ChantierAEcrire): string {
     fin: bornes.fin,
     intitule: intituleChantier(c),
     lieu: c.adresse,
-    description: "Posé par Atlas. Modifier ici ne change rien dans Atlas.",
+    description: "Posé par Cause. Modifier ici ne change rien dans Cause.",
     ecritLe: new Date(),
   });
 }

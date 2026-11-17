@@ -139,7 +139,7 @@ export function phraseDuRefus(refus: RefusMot): string {
     case "vide":
       return "Écrivez un mot avant de valider.";
     case "deja_chez_atlas":
-      return "Atlas connaît déjà ce mot pour cette entrée : il est reconnu quand vous dictez.";
+      return "Cause connaît déjà ce mot pour cette entrée : il est reconnu quand vous dictez.";
     case "deja_chez_moi":
       return "Vous avez déjà posé ce mot ailleurs. Un mot ne peut désigner qu'une chose.";
     case "trop_de_mots":

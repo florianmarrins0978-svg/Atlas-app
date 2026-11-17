@@ -14,18 +14,18 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
   {
     id: "arrivee-creer-compte",
     ecran: "Créer un compte",
-    ou: "l'écran d'accueil d'Atlas, avant d'être connecté",
-    intitule: "Créer son compte Atlas, s'inscrire",
+    ou: "l'écran d'accueil de Cause, avant d'être connecté",
+    intitule: "Créer son compte Cause, s'inscrire",
     motsCles: ["creer", "compte", "inscrire", "inscription", "nouveau", "commencer", "ouvrir", "premier"],
     geste:
       "Sur l'écran d'accueil, touchez « Créer un compte », répondez à chaque question puis « Continuer ». " +
-      "« Passer » saute une question facultative. À la fin, touchez « Entrer dans Atlas ».",
-    reserve: "Si Atlas vous envoie un code par e-mail, il faut le saisir avant d'entrer.",
+      "« Passer » saute une question facultative. À la fin, touchez « Entrer dans Cause ».",
+    reserve: "Si Cause vous envoie un code par e-mail, il faut le saisir avant d'entrer.",
     source: "src/app/bienvenue/page.tsx",
     preuves: ['href="/creer-un-compte"', "Créer un compte"],
     ailleurs: [
       { source: "src/app/creer-un-compte/page.tsx", preuves: ['"Continuer"', "Passer", "Créer mon compte"] },
-      { source: "src/app/creer-un-compte/pret/PretClient.tsx", preuves: ["Entrer dans Atlas"] },
+      { source: "src/app/creer-un-compte/pret/PretClient.tsx", preuves: ["Entrer dans Cause"] },
     ],
   },
   {
@@ -42,8 +42,8 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
   {
     id: "arrivee-se-connecter",
     ecran: "Connexion",
-    ou: "l'écran d'accueil d'Atlas, avant d'être connecté",
-    intitule: "Se connecter, entrer dans Atlas avec son adresse et son mot de passe",
+    ou: "l'écran d'accueil de Cause, avant d'être connecté",
+    intitule: "Se connecter, entrer dans Cause avec son adresse et son mot de passe",
     motsCles: ["connecter", "connexion", "entrer", "identifier", "login", "adresse", "passe"],
     geste: "Touchez « Se connecter », écrivez votre adresse et votre mot de passe, puis « Entrer ».",
     source: "src/app/login/FormulaireConnexion.tsx",
@@ -57,7 +57,7 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     intitule: "Se connecter avec Google ou avec Apple",
     motsCles: ["google", "apple", "connecter", "connexion", "compte", "entrer", "gmail", "icloud"],
     geste: "Sur l'écran Connexion, touchez « Google » ou « Apple ».",
-    reserve: "Ces deux boutons n'apparaissent que si votre installation d'Atlas les propose.",
+    reserve: "Ces deux boutons n'apparaissent que si votre installation de Cause les propose.",
     source: "src/app/login/BoutonsFournisseurs.tsx",
     preuves: ["entrerAvecAction", "{f.libelle}"],
     ailleurs: [{ source: "src/lib/fournisseurs-connexion.ts", preuves: ['google: "Google"', 'apple: "Apple"'] }],
@@ -66,7 +66,7 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     id: "arrivee-face-id",
     ecran: "Connexion",
     ou: "l'écran Connexion",
-    intitule: "Entrer dans Atlas avec Face ID, sans taper le mot de passe",
+    intitule: "Entrer dans Cause avec Face ID, sans taper le mot de passe",
     motsCles: ["face", "faceid", "empreinte", "entrer", "connecter", "connexion", "sans", "rapide"],
     geste: "Sur l'écran Connexion, touchez « Ouvrir avec Face ID ».",
     reserve:
@@ -84,7 +84,7 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     geste:
       "Touchez un document pour le lire en entier, « Fermer » pour revenir, puis « Accepter ». " +
       "Pour partir sans accepter, « Se déconnecter ». Déjà client, « Refuser » mène à vos données, puis à la résiliation remboursée.",
-    reserve: "Atlas ne s'ouvre pas tant que les documents ne sont pas acceptés.",
+    reserve: "Cause ne s'ouvre pas tant que les documents ne sont pas acceptés.",
     source: "src/app/documents-legaux/formulaire.tsx",
     preuves: ['"Accepter"', "Fermer", "Se déconnecter", "Refuser"],
     ailleurs: [{ source: "src/app/documents-legaux/page.tsx", preuves: ["Avant de commencer"] }],
@@ -105,7 +105,7 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     id: "reglages-version",
     ecran: "Réglages",
     ou: `${R}, tout en bas`,
-    intitule: "Voir quelle version d'Atlas tourne",
+    intitule: "Voir quelle version de Cause tourne",
     motsCles: ["version", "numero", "mise", "jour", "correctif", "corrections", "derniere"],
     geste: "Descendez tout en bas de « Réglages » : la ligne « Version » donne la date et le numéro servis.",
     source: "src/app/reglages/page.tsx",
@@ -116,7 +116,7 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     id: "reglages-chercher-corrections",
     ecran: "Réglages",
     ou: `${R}, tout en bas, sous Version`,
-    intitule: "Récupérer les dernières corrections d'Atlas",
+    intitule: "Récupérer les dernières corrections de Cause",
     motsCles: ["corrections", "mise", "jour", "mettre", "chercher", "nouvelle", "version", "recuperer"],
     geste: "Touchez « Chercher les dernières corrections » sous la ligne Version.",
     reserve: "Ce bouton n'existe que sur un espace d'essai, et seulement pour le patron. Rien n'est effacé.",
@@ -159,7 +159,7 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     motsCles: ["importer", "import", "excel", "csv", "fichier", "tableur", "liste", "tarifs", "charger"],
     geste:
       "Sous « Ajouter un tarif », touchez « Reprendre mes prix d'un fichier Excel ou CSV ». " +
-      "Vérifiez ce qu'Atlas ajouterait, puis « Enregistrer ces tarifs ».",
+      "Vérifiez ce que Cause ajouterait, puis « Enregistrer ces tarifs ».",
     reserve: "Rien n'est enregistré avant « Enregistrer ces tarifs ». « Annuler » laisse vos tarifs tels quels.",
     source: "src/app/reglages/ImportTarifs.tsx",
     preuves: ["Reprendre mes prix d'un fichier Excel ou CSV", "Enregistrer ces tarifs", "Annuler"],
@@ -174,7 +174,7 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     geste:
       "Touchez la case du diamètre voulu et écrivez le montant : il s'enregistre en quittant la case. " +
       "Pour l'abattage, touchez d'abord la façon de faire pour ouvrir ses cases. Videz la case pour effacer le prix.",
-    reserve: "Une case vide reste une question : Atlas vous la posera sur le chantier.",
+    reserve: "Une case vide reste une question : Cause vous la posera sur le chantier.",
     source: "src/app/reglages/prix/GrillesPrixClient.tsx",
     preuves: ["Aucune case remplie sur", "aria-expanded={ouvert}", "onBlur={(e) => onPoser(nature, cle, e.target.value)}"],
   },
@@ -302,7 +302,7 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     motsCles: ["iban", "rib", "banque", "bancaire", "compte", "titulaire", "virement", "coordonnees", "payer"],
     geste:
       "Dans « Pour être payé », corrigez l'IBAN ou le titulaire du compte. " +
-      "Atlas redemande votre mot de passe : tapez-le, puis « Continuer ».",
+      "Cause redemande votre mot de passe : tapez-le, puis « Continuer ».",
     source: "src/app/reglages/identite/IdentiteClient.tsx",
     preuves: ["Pour être payé", 'data-atlas="plage-iban"', "Titulaire du compte"],
     ailleurs: [{ source: "src/components/atlas/DemanderPreuve.tsx", preuves: ["Vérifiez que c&apos;est bien vous"] }],
@@ -345,7 +345,7 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     id: "reglages-preuve-mot-de-passe",
     ecran: "Réglages",
     ou: "une fenêtre « Vérifiez que c'est bien vous »",
-    intitule: "Atlas me redemande mon mot de passe",
+    intitule: "Cause me redemande mon mot de passe",
     motsCles: ["redemande", "verifiez", "bien", "vous", "passe", "securite", "confirmer", "pourquoi"],
     geste: "Tapez votre mot de passe, puis « Continuer ».",
     reserve: "Il est demandé pour changer l'IBAN, enregistrer ou retirer Face ID, et télécharger vos données.",
@@ -421,10 +421,10 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     motsCles: ["message", "texte", "envoi", "envoye", "sms", "mail", "accompagne", "modifier", "changer", "politesse"],
     geste:
       "Ouvrez « Mon message au client », touchez le document voulu : son message s'ouvre. Corrigez-le, puis « Enregistrer ». " +
-      "« Remettre le message d'Atlas » revient au texte d'origine.",
+      "« Remettre le message de Cause » revient au texte d'origine.",
     reserve: "Les mots en doré se remplissent seuls. Le lien et le mot du document ne peuvent pas être retirés.",
     source: "src/app/reglages/documents/message/MessagesClient.tsx",
-    preuves: ["Ce que j'envoie avec un devis", "Ce que j'envoie avec une facture", "Remettre le message d&apos;Atlas"],
+    preuves: ["Ce que j'envoie avec un devis", "Ce que j'envoie avec une facture", "Remettre le message de Cause"],
     ailleurs: [{ source: "src/components/atlas/BarreEnregistrer.tsx", preuves: ['"Enregistrer"'] }],
   },
   {
@@ -468,7 +468,7 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     id: "reglages-donner-acces",
     ecran: "Équipe",
     ou: `${R}, puis Équipe`,
-    intitule: "Ajouter un salarié, lui donner un accès à Atlas",
+    intitule: "Ajouter un salarié, lui donner un accès à Cause",
     motsCles: ["ajouter", "salarie", "salaries", "employe", "ouvrier", "acces", "inviter", "compte", "gars"],
     geste:
       "Ouvrez « Équipe », puis « Donner un accès ». Choisissez d'abord son rôle, puis remplissez nom, adresse e-mail, " +
@@ -612,7 +612,7 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
       "Ouvrez « Mon agenda » et touchez « Relier » sur la ligne Google Agenda, puis choisissez votre compte chez Google. " +
       "Si la ligne dit « Ne se lit plus », touchez « Rebrancher ».",
     reserve:
-      "Réservé au patron. Sans agenda relié, Atlas ne voit pas les rendez-vous notés ailleurs et peut proposer ce jour-là.",
+      "Réservé au patron. Sans agenda relié, Cause ne voit pas les rendez-vous notés ailleurs et peut proposer ce jour-là.",
     source: "src/app/reglages/agenda/MonAgendaClient.tsx",
     preuves: ['"Google Agenda"', '"Relier"', '"Rebrancher"'],
     ailleurs: [{ source: "src/lib/agenda-externe.ts", preuves: ['"Ne se lit plus"', '"Relié"'] }],
@@ -651,33 +651,33 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     geste:
       "Touchez « Gérer » sur la ligne iCloud, allumez « Écrire mes chantiers dedans » et touchez le calendrier voulu. " +
       "« Renvoyer mes chantiers » les remet tous.",
-    reserve: "Il faut d'abord avoir relié l'agenda Apple. Atlas ne touche jamais un rendez-vous qu'il n'a pas posé.",
+    reserve: "Il faut d'abord avoir relié l'agenda Apple. Cause ne touche jamais un rendez-vous qu'il n'a pas posé.",
     source: "src/app/reglages/agenda/MonAgendaClient.tsx",
     preuves: ['"Écrire mes chantiers dedans"', "Dans quel calendrier", "Renvoyer mes chantiers"],
   },
   // --- Atlas IA ---------------------------------------------------------------
   {
     id: "reglages-atlas-ia",
-    ecran: "Atlas IA",
-    ou: `${R}, puis Atlas IA`,
-    intitule: "Voir ce que l'IA d'Atlas sait faire aujourd'hui",
+    ecran: "Cause IA",
+    ou: `${R}, puis Cause IA`,
+    intitule: "Voir ce que l'IA de Cause sait faire aujourd'hui",
     motsCles: ["ia", "intelligence", "artificielle", "sait", "dictee", "branchee"],
-    geste: "Ouvrez « Atlas IA » : chaque ligne dit « Oui » ou « Pas encore ».",
+    geste: "Ouvrez « Cause IA » : chaque ligne dit « Oui » ou « Pas encore ».",
     reserve: "Réservé au patron. Rien à faire de votre côté pour ce qui n'est pas encore branché.",
     source: "src/app/reglages/ia/page.tsx",
-    preuves: ["Ce qu&apos;Atlas sait faire", '"Pas encore"'],
+    preuves: ["Ce que Cause sait faire", '"Pas encore"'],
     lieu: true,
   },
   {
     id: "vocabulaire-regles",
     ecran: "Mon vocabulaire",
-    ou: `${R}, puis Atlas IA, puis Mon vocabulaire`,
+    ou: `${R}, puis Cause IA, puis Mon vocabulaire`,
     intitule: "Poser un mot ou une règle que l'IA doit suivre",
     motsCles: ["regle", "regles", "ia", "consigne", "vocabulaire", "habitude", "toujours", "mot"],
     geste:
       "Touchez « Un mot » ou « Une règle », remplissez l'intitulé et « Ce que ça veut dire », puis « Ajouter ». " +
       "Sur une ligne, « Mettre de côté » la suspend et « Supprimer » l'efface.",
-    reserve: "Réservé à l'éditeur d'Atlas. Vos propres mots se règlent dans Tarifs & catalogue, Le catalogue.",
+    reserve: "Réservé à l'éditeur de Cause. Vos propres mots se règlent dans Tarifs & catalogue, Le catalogue.",
     source: "src/app/reglages/vocabulaire/VocabulaireClient.tsx",
     preuves: ["Mes règles", "Une règle", "Ce que ça veut dire", "Mettre de côté", "Supprimer"],
     ailleurs: [{ source: "src/app/reglages/vocabulaire/page.tsx", preuves: ["Réservé à l'éditeur"] }],
@@ -690,7 +690,7 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     intitule: "Télécharger toutes ses données, en garder une copie",
     motsCles: ["donnee", "donnees", "export", "telecharger", "sauvegarde", "copie", "rgpd", "fichier"],
     geste: "Ouvrez « Mes données », puis « Télécharger mes données ».",
-    reserve: "Atlas peut redemander votre mot de passe. Le fichier porte les coordonnées de vos clients.",
+    reserve: "Cause peut redemander votre mot de passe. Le fichier porte les coordonnées de vos clients.",
     source: "src/app/reglages/donnees/BoutonTelecharger.tsx",
     preuves: ["Télécharger mes données", "<DemanderPreuve"],
   },
@@ -698,7 +698,7 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     id: "reglages-effacer-compte",
     ecran: "Mes données",
     ou: `${R}, puis Mes données, en bas`,
-    intitule: "Fermer ou effacer son compte Atlas",
+    intitule: "Fermer ou effacer son compte Cause",
     motsCles: ["effacer", "supprimer", "compte", "fermer", "desinscrire", "quitter", "resilier", "definitivement"],
     geste: "Ouvrez « Mes données », puis « Fermer mon compte » en bas.",
     reserve:
@@ -711,18 +711,18 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     id: "reglages-abonnement",
     ecran: "Abonnement",
     ou: `${R}, puis Abonnement`,
-    intitule: "Changer de carte, voir ses factures Atlas, résilier",
+    intitule: "Changer de carte, voir ses factures Cause, résilier",
     motsCles: ["abonnement", "carte", "bancaire", "facture", "atlas", "resilier", "arreter", "gerer"],
     geste: "Ouvrez « Abonnement ». « Gérer mon abonnement » pour la carte et les factures, « Résilier » pour partir.",
     reserve: "Réservé au patron, et seulement une fois abonné. Les factures de vos clients sont dans « Terminés ».",
     source: "src/app/reglages/abonnement/AbonnementClient.tsx",
-    preuves: ["Gérer mon abonnement", "Changer de carte, vos factures Atlas.", "Résilier"],
+    preuves: ["Gérer mon abonnement", "Changer de carte, vos factures Cause.", "Résilier"],
   },
   {
     id: "reglages-formule",
     ecran: "Abonnement",
     ou: `${R}, puis Abonnement`,
-    intitule: "Le prix d'Atlas, s'abonner ou changer de formule, payer au mois ou à l'année",
+    intitule: "Le prix de Cause, s'abonner ou changer de formule, payer au mois ou à l'année",
     motsCles: ["formule", "abonner", "offre", "entreprise", "prix", "annuel", "mois", "annee", "changer", "coute", "abonnement", "prix d'atlas"],
     geste:
       "Ouvrez « Abonnement », choisissez « Au mois » ou « À l’année, 2 mois offerts », " +
@@ -765,7 +765,7 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     id: "reglages-face-id",
     ecran: "Mot de passe",
     ou: `${R}, puis Mot de passe`,
-    intitule: "Ouvrir Atlas avec Face ID",
+    intitule: "Ouvrir Cause avec Face ID",
     motsCles: ["face", "id", "faceid", "empreinte", "biometrie", "ouvrir", "connexion", "rapide", "touch"],
     geste: "Ouvrez « Mot de passe », puis « Enregistrer cet appareil » sous « Ouvrir avec Face ID ».",
     reserve:
@@ -781,7 +781,7 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     intitule: "Retirer Face ID d'un appareil",
     motsCles: ["face", "faceid", "retirer", "supprimer", "enlever", "appareil", "telephone", "ancien"],
     geste: "Touchez « Retirer » sur la ligne de l'appareil.",
-    reserve: "Votre mot de passe marche toujours. Atlas peut vous le redemander avant.",
+    reserve: "Votre mot de passe marche toujours. Cause peut vous le redemander avant.",
     source: "src/app/reglages/connexion/SectionFaceId.tsx",
     preuves: ["Ouvrir avec Face ID", "Retirer", "retirerCleAction"],
   },
@@ -936,7 +936,7 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     id: "reglages-notifications",
     ecran: "Notifications",
     ou: "Réglages, puis Notifications",
-    intitule: "Choisir ce qu'Atlas signale et quand",
+    intitule: "Choisir ce que Cause signale et quand",
     motsCles: ["notification", "notifications", "alerte", "rappel", "signaler", "relance", "impaye", "prevenir"],
     geste: "Ouvrez « Notifications » et réglez chaque rappel, ainsi que son délai.",
     reserve: "Deux alertes ne se coupent pas : la réponse à un devis et le lien de devis expiré.",
@@ -973,7 +973,7 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     id: "reglages-une-idee",
     ecran: "Réglages",
     ou: `${R}, tout en bas`,
-    intitule: "Dire à Atlas ce qui vous manque, proposer une idée",
+    intitule: "Dire à Cause ce qui vous manque, proposer une idée",
     motsCles: ["idee", "manque", "proposer", "suggestion", "ameliorer", "amelioration", "demander", "fonction", "ajouter", "avis"],
     geste: "Touchez « Une idée pour l'appli », puis le micro, et dites ce qui vous manque. Ou « J'écris mon idée ».",
     reserve: "Vos idées restent dessous, avec leur suite : Envoyée, Prévue, Dans l'appli ou Pas prévue.",

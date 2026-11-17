@@ -255,7 +255,7 @@ const ECRIT = construireVevenement({
   fin: new Date("2026-08-12T11:00:00Z"),
   intitule: "Taille de haie, M. Bernard",
   lieu: "12, rue des Lilas, Angers",
-  description: "Posé par Atlas.",
+  description: "Posé par Cause.",
   ecritLe: new Date("2026-08-12T05:00:00Z"),
 });
 

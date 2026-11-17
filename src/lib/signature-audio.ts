@@ -427,7 +427,7 @@ export type AudioDecrit =
 
 export const MESSAGE_AUDIO_NON_RECONNU =
   "Ce fichier n'est pas un enregistrement audio reconnu. " +
-  "Atlas accepte les formats des téléphones et des ordinateurs : webm, m4a, ogg, wav, mp3, aac, flac.";
+  "Cause accepte les formats des téléphones et des ordinateurs : webm, m4a, ogg, wav, mp3, aac, flac.";
 
 /**
  * La porte : des octets et ce que le navigateur en dit, vers ce qu'Atlas range.
