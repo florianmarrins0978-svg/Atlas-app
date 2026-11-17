@@ -1,0 +1,159 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Instrument Serif";
+      src: url("assets/fonts/instrument-serif.woff2") format("woff2");
+      font-weight: 400;
+      font-style: normal;
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+    #client-sol {
+      position: absolute;
+      inset: 0;
+      background: var(--sol-sable, #efe6d3);
+    }
+    .client-titre {
+      position: absolute;
+      left: 72px;
+      top: 290px;
+      width: 950px;
+      font-family: "Instrument Serif", serif;
+      font-size: 118px;
+      line-height: 1;
+      letter-spacing: -0.015em;
+      color: var(--encre, #12261b);
+      white-space: nowrap;
+    }
+    .client-titre b {
+      font-weight: 400;
+      color: var(--or, #95600f);
+    }
+    #client-scene {
+      position: absolute;
+      left: 0;
+      top: 548px;
+      width: 1080px;
+      height: 1372px;
+      overflow: hidden;
+    }
+    .client-tel {
+      position: absolute;
+      left: 83px;
+      top: 20px;
+      width: 914px;
+      height: 1382px;
+      border-radius: 100px;
+    }
+    /* Le téléphone de l'artisan : la même coque encre qu'au plan d'avant. */
+    #client-tel-a {
+      background: #12261b;
+      box-shadow:
+        0 50px 110px rgba(18, 38, 27, 0.26),
+        inset 0 0 0 2px rgba(243, 239, 227, 0.1);
+    }
+    /* Celui du client : une coque claire, pour qu'on voie que c'en est un autre. */
+    #client-tel-b {
+      background: #fbf8f1;
+      box-shadow:
+        0 50px 110px rgba(69, 52, 20, 0.24),
+        inset 0 0 0 2px rgba(18, 38, 27, 0.1);
+    }
+    .client-ecran {
+      position: absolute;
+      left: 22px;
+      top: 22px;
+      width: 870px;
+      height: 1338px;
+      border-radius: 78px;
+      overflow: hidden;
+      background: #f4f2ed;
+    }
+    #client-tel-b .client-ecran {
+      box-shadow: 0 0 0 2px rgba(18, 38, 27, 0.12);
+    }
+    .client-plan {
+      position: absolute;
+      inset: 0;
+    }
+    .client-plan video {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 870px;
+      height: 1338px;
+      object-fit: cover;
+    }
+  </style>
+
+  <div id="root" data-composition-id="client" data-width="1080" data-height="1920">
+    <div id="client-sol"></div>
+
+    <div id="client-t" class="client-titre clip" data-start="0.3" data-duration="5.1" data-track-index="1">
+      <div id="client-t-i">
+        <div class="client-l">Votre client <b>accepte</b></div>
+        <div class="client-l">sur son téléphone.</div>
+      </div>
+    </div>
+
+    <div id="client-scene" data-layout-allow-overflow>
+      <div id="client-tel-a" class="client-tel">
+        <div class="client-ecran">
+          <div class="client-plan">
+            <!-- La dernière image du devis, tenue : le téléphone part avec. -->
+            <video id="client-film-devis" class="clip" data-start="0" data-duration="0.5" data-media-start="6.36" data-playback-rate="0.1" data-track-index="2" muted playsinline src="assets/films/devis.mp4"></video>
+          </div>
+        </div>
+      </div>
+
+      <div id="client-tel-b" class="client-tel">
+        <div class="client-ecran">
+          <div class="client-plan">
+            <video id="client-film-accord" class="clip" data-start="0.2" data-duration="3.66" data-media-start="0.9" data-playback-rate="1.4" data-track-index="3" muted playsinline src="assets/films/client.mp4"></video>
+          </div>
+          <div class="client-plan">
+            <video id="client-film-note" class="clip" data-start="3.86" data-duration="1.54" data-media-start="6.03" data-playback-rate="0.8" data-track-index="4" muted playsinline src="assets/films/client.mp4"></video>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // Là où le plan d'avant a laissé le téléphone de l'artisan.
+      const AVANCE = { scale: 1.1, x: -(914 * 0.1) / 2, y: 0 };
+      gsap.set("#client-tel-a", { transformOrigin: "0px 0px" });
+      gsap.set("#client-tel-b", { transformOrigin: "50% 40%" });
+
+      // Le devis part : le sol passe de la sauge au sable, le téléphone de
+      // l'artisan sort, celui du client arrive.
+      tl.fromTo("#client-sol", { backgroundColor: "#e4ebda" }, { backgroundColor: "#efe6d3", duration: 0.4, ease: "power2.inOut" }, 0);
+      tl.fromTo("#client-tel-a", AVANCE, { ...AVANCE, x: AVANCE.x - 1300, duration: 0.4, ease: "power3.in" }, 0.03);
+      tl.fromTo("#client-tel-b", { x: 1200, scale: 1 }, { x: 0, duration: 0.6, ease: "expo.out" }, 0.2);
+      tl.fromTo(
+        "#client-t-i .client-l",
+        { opacity: 0, filter: "blur(12px)" },
+        { opacity: 1, filter: "blur(0px)", duration: 0.18, stagger: 0.1, ease: "power2.out" },
+        0.34
+      );
+
+      // « C'est noté » arrive un peu grand, et se pose.
+      tl.fromTo("#client-tel-b", { scale: 1.05 }, { scale: 1, duration: 0.5, ease: "expo.out", immediateRender: false }, 3.82);
+
+      // Le client a répondu : son téléphone repart.
+      tl.fromTo(
+        "#client-t-i",
+        { opacity: 1, filter: "blur(0px)" },
+        { opacity: 0, filter: "blur(12px)", duration: 0.16, ease: "power2.in" },
+        5.06
+      );
+      tl.fromTo("#client-tel-b", { x: 0 }, { x: 1200, duration: 0.4, ease: "power3.in", immediateRender: false }, 5.0);
+      window.__timelines["client"] = tl;
+    })();
+  </script>
+</template>

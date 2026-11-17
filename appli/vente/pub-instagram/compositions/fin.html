@@ -18,24 +18,11 @@
       overflow: hidden;
       background: var(--sol-nuit, #0e2a1b);
     }
-    #fin-promesse {
-      position: absolute;
-      left: 72px;
-      top: 560px;
-      width: 960px;
-      font-family: "Instrument Serif", serif;
-      font-size: 168px;
-      line-height: 0.96;
-      letter-spacing: -0.015em;
-      color: var(--sur-nuit, #f3efe3);
-    }
-    .fin-mot {
-      display: inline-block;
-    }
+    /* Le nom, le 17 novembre 2026 : l'appli s'appelle Cause. */
     #fin-nom {
       position: absolute;
       left: 0;
-      top: 440px;
+      top: 430px;
       width: 1080px;
       text-align: center;
       font-family: "Instrument Serif", serif;
@@ -50,7 +37,7 @@
     #fin-metier {
       position: absolute;
       left: 0;
-      top: 816px;
+      top: 806px;
       width: 1080px;
       text-align: center;
       font-family: "Hanken Grotesk", sans-serif;
@@ -63,7 +50,7 @@
     #fin-bouton {
       position: absolute;
       left: 110px;
-      top: 980px;
+      top: 970px;
       width: 860px;
       height: 148px;
     }
@@ -89,7 +76,7 @@
     #fin-rassure {
       position: absolute;
       left: 0;
-      top: 1170px;
+      top: 1160px;
       width: 1080px;
       text-align: center;
       font-family: "Hanken Grotesk", sans-serif;
@@ -101,28 +88,20 @@
   </style>
 
   <div id="root" data-composition-id="fin" data-width="1080" data-height="1920">
-    <div id="fin-promesse" class="clip" data-start="0" data-duration="2.55" data-track-index="1">
-      <div id="fin-promesse-i">
-        <div><span class="fin-mot">Vous</span> <span class="fin-mot">restez</span></div>
-        <div><span class="fin-mot">sur</span> <span class="fin-mot">le</span></div>
-        <div><span class="fin-mot">chantier.</span></div>
-      </div>
+    <div id="fin-nom" class="clip" data-start="0" data-duration="4.2" data-track-index="1">
+      <span class="fin-lettre">C</span><span class="fin-lettre">a</span><span class="fin-lettre">u</span><span class="fin-lettre">s</span><span class="fin-lettre">e</span>
     </div>
 
-    <div id="fin-nom" class="clip" data-start="2.6" data-duration="3.7" data-track-index="2">
-      <span class="fin-lettre">A</span><span class="fin-lettre">t</span><span class="fin-lettre">l</span><span class="fin-lettre">a</span><span class="fin-lettre">s</span>
-    </div>
-
-    <div id="fin-metier" class="clip" data-start="3.2" data-duration="3.1" data-track-index="3">
+    <div id="fin-metier" class="clip" data-start="0.6" data-duration="3.6" data-track-index="2">
       <div id="fin-metier-i">Le logiciel des artisans.</div>
     </div>
 
-    <div id="fin-bouton" class="clip" data-start="3.5" data-duration="2.8" data-track-index="4">
+    <div id="fin-bouton" class="clip" data-start="0.9" data-duration="3.3" data-track-index="3">
       <div id="fin-bouton-fond"></div>
       <div id="fin-bouton-texte"><span id="fin-bouton-texte-i">Essayer 15 jours gratuits</span></div>
     </div>
 
-    <div id="fin-rassure" class="clip" data-start="4" data-duration="2.3" data-track-index="5">
+    <div id="fin-rassure" class="clip" data-start="1.4" data-duration="2.8" data-track-index="4">
       <div id="fin-rassure-i">Sans carte bancaire. Sans engagement.</div>
     </div>
   </div>
@@ -131,51 +110,37 @@
     (function () {
       const tl = gsap.timeline({ paused: true });
 
-      // La promesse, mot à mot, puis elle s'efface d'un geste.
-      tl.fromTo(
-        ".fin-mot",
-        { opacity: 0, filter: "blur(12px)" },
-        { opacity: 1, filter: "blur(0px)", duration: 0.16, stagger: 0.09, ease: "power2.out" },
-        0.12
-      );
-      tl.fromTo(
-        "#fin-promesse-i",
-        { opacity: 1, y: 0, filter: "blur(0px)" },
-        { opacity: 0, y: -46, filter: "blur(12px)", duration: 0.24, ease: "power3.in" },
-        2.28
-      );
-
       // Le nom, lettre à lettre. Il ne bouge plus une fois posé.
       tl.fromTo(
         ".fin-lettre",
         { opacity: 0, filter: "blur(18px)" },
-        { opacity: 1, filter: "blur(0px)", duration: 0.3, stagger: 0.09, ease: "power2.out" },
-        2.66
+        { opacity: 1, filter: "blur(0px)", duration: 0.28, stagger: 0.08, ease: "power2.out" },
+        0.1
       );
       tl.fromTo(
         "#fin-metier-i",
         { opacity: 0, filter: "blur(10px)" },
-        { opacity: 1, filter: "blur(0px)", duration: 0.22, ease: "power2.out" },
-        3.26
+        { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power2.out" },
+        0.68
       );
       // Le bouton s'ouvre de son centre, son libellé arrive dedans.
       tl.fromTo(
         "#fin-bouton-fond",
         { clipPath: "inset(0% 50% 0% 50% round 74px)" },
-        { clipPath: "inset(0% 0% 0% 0% round 74px)", duration: 0.5, ease: "expo.out" },
-        3.56
+        { clipPath: "inset(0% 0% 0% 0% round 74px)", duration: 0.45, ease: "expo.out" },
+        0.95
       );
       tl.fromTo(
         "#fin-bouton-texte-i",
         { opacity: 0, filter: "blur(8px)" },
         { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power2.out" },
-        3.78
+        1.15
       );
       tl.fromTo(
         "#fin-rassure-i",
         { opacity: 0, filter: "blur(8px)" },
         { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power2.out" },
-        4.08
+        1.46
       );
       window.__timelines["fin"] = tl;
     })();

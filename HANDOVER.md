@@ -13,9 +13,11 @@ Avant : sur `main`, la batterie commune du 8 novembre
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
-## LA PUB INSTAGRAM (16 novembre 2026)
+## LA PUB INSTAGRAM, ET LE NOM : CAUSE (17 novembre 2026)
 
-`appli/vente/pub-instagram/` porte une vidéo de lancement de 51 secondes, faite des vrais écrans de l'appli. Pour la reprendre : `appli/vente/pub-instagram/LISEZ-MOI.md` dit comment refaire les films (`appli/vente/pub-instagram/tournage/poser-la-scene.sh`, `appli/vente/pub-instagram/tournage/tourner.mjs`, l'appli lancée sur une base d'essai, son accord d'abord) et le rendu (`npx hyperframes render`). Trois choses à savoir avant d'y toucher. Un : il a jugé « Pas secrétaire » discriminant, l'accroche est « marre de la paperasse » ; le site de vente porte encore l'ancienne phrase (`TODO.md`). Deux : sans clé d'IA dans le nuage, la dictée ne rend pas les lignes du devis ; le devis filmé est écrit à la main par les vrais champs. Trois : tout texte tient entre 270 et 1248 px de haut, la zone qu'Instagram ne recouvre pas.
+**L'appli s'appelle Cause** : sa décision du 17 novembre 2026 (*« L'application s'appellera plus Atlas mais Cause »*). Seule la pub porte ce nom ; ne rien renommer ailleurs sans sa demande, c'est un lot à part (`TODO.md`).
+
+`appli/vente/pub-instagram/` porte la vidéo de lancement, 30 secondes, faite des vrais écrans de l'appli. Pour la reprendre : `appli/vente/pub-instagram/LISEZ-MOI.md` dit comment refaire les films (`appli/vente/pub-instagram/tournage/poser-la-scene.sh`, `appli/vente/pub-instagram/tournage/tourner.mjs`, l'appli lancée sur une base d'essai, son accord d'abord) et le rendu (`npx hyperframes render`). Quatre choses à savoir avant d'y toucher. Un : il veut qu'on entre tout de suite dans l'appli ; un premier montage de 51 secondes ouvrait sur huit secondes de texte, il l'a fait refaire. Deux : il a jugé « Pas secrétaire » discriminant ; le site de vente porte encore cette phrase (`TODO.md`). Trois : sans clé d'IA dans le nuage, la dictée ne rend pas les lignes du devis ; le devis filmé est écrit à la main par les vrais champs. Quatre : tout texte tient entre 270 et 1248 px de haut, la zone qu'Instagram ne recouvre pas.
 
 ---
 ## DEUX ESPACES, DEUX BASES (8 novembre 2026)

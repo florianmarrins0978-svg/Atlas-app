@@ -1,8 +1,21 @@
 # Prochaines tâches
 
-## ⏳ LA PUB INSTAGRAM : MONTÉE LE 16 NOVEMBRE 2026, attend son regard
+## ⏳ LE NOM EST CAUSE (17 novembre 2026) : seule la pub le porte, le reste dit encore Atlas
 
-Sa demande : une pub de lancement pour Instagram, moins d'une minute, faite des vraies pages. Livrée : `appli/vente/pub-instagram/` (51 secondes, verticale), sur la branche `claude/charming-edison-u856hv`.
+Sa décision, devant la pub : *« L'application s'appellera plus Atlas mais Cause »*. Écrite dans `PRODUCT.md`.
+
+| Ce qui dit encore Atlas | Ce que ça demande |
+|---|---|
+| l'appli elle-même (écran de chargement, titres, messages, mode d'emploi, nom de l'appli installée) | un lot à part, transversal, donc batterie entière, sur son accord |
+| le site de vente (`appli/vente/chapitres-6.html` et ses pages légales) | une planche d'abord, comme toute apparence |
+| les documents que reçoit le client (devis, facture, e-mails) | à vérifier un par un : ce sont des papiers gardés |
+| ce dépôt, ses scripts, ses variables (`ATLAS_...`) | rien d'urgent : personne ne les lit que nous |
+
+**Rien n'est renommé tant qu'il ne le demande pas.** À lui de dire quand, et si le nom doit aussi changer chez les comptes déjà ouverts.
+
+## ⏳ LA PUB INSTAGRAM DE CAUSE : REMONTÉE LE 17 NOVEMBRE 2026, attend son regard
+
+Sa demande : une pub de lancement pour Instagram, moins d'une minute, faite des vraies pages ; puis, devant le premier montage, entrer tout de suite dans l'appli. Livrée : `appli/vente/pub-instagram/` (30 secondes, verticale), sur la branche `claude/charming-edison-u856hv`.
 
 | Ce qui reste | Qui |
 |---|---|

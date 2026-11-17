@@ -134,8 +134,9 @@ aucune clé : ce qui en dépend se vérifie sur son espace, jamais ici.
   n'est pas calculé se dit à l'écran.
 - **Rien n'est envoyé, validé ni facturé sans un geste du patron.**
 
-**Explicitement non décidé, à ne pas inventer :** le nom du produit et sa
-marque (voir ci-dessous) ; le fonctionnement hors réseau.
+**Explicitement non décidé, à ne pas inventer :** la marque du produit (son
+nom, lui, est arrêté depuis le 17 novembre 2026 : Cause, voir ci-dessous) ; le
+fonctionnement hors réseau.
 
 **L'abonnement, lui, est tranché** (corrigé le 25 octobre 2026 : cette ligne le
 disait encore indécis) : la grille vient de ses planches du 9 et du
@@ -146,12 +147,20 @@ l'est pas.
 
 ## Brand Commitments
 
-**Rien n'est arrêté, et c'est sa réponse du 2 septembre 2026 : « tout est
-ouvert » — ni le nom, ni la marque.**
+**LE NOM EST ARRÊTÉ LE 17 NOVEMBRE 2026 : l'appli s'appelle Cause.** Ses mots,
+devant la pub Instagram : *« L'application s'appellera plus Atlas mais
+Cause. »* La pub (`appli/vente/pub-instagram/`) porte déjà ce nom. **Rien
+d'autre n'est renommé** : l'appli, le site de vente, les documents et ce dépôt
+disent encore Atlas, et ce changement-là est un lot à part, à sa demande
+(`TODO.md`).
 
-Ce qui existe aujourd'hui est donc de l'**existant**, pas un engagement :
+**La marque, elle, reste ouverte** (sa réponse du 2 septembre 2026 : « tout est
+ouvert ») : aucun dessin, aucun logo n'est arrêté.
 
-- le nom **Atlas**, employé partout dans le dépôt ;
+Ce qui existe aujourd'hui dans le code est donc de l'**existant**, pas un
+engagement :
+
+- le nom **Atlas**, encore employé partout dans le dépôt ;
 - la **feuille dessinée au trait** — retirée du code le 10 septembre 2026 avec
   `MarqueAtlas.tsx`, la porte étant son dernier usage ; elle reste dans
   l'historique git ;

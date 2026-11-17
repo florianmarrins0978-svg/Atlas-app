@@ -1,8 +1,10 @@
 # État du projet
 
-## LA PUB INSTAGRAM, MONTÉE (16 novembre 2026), sur la branche `claude/charming-edison-u856hv`
+## LA PUB INSTAGRAM DE CAUSE, REMONTÉE (17 novembre 2026), sur la branche `claude/charming-edison-u856hv`
 
-Une vidéo verticale de 51 secondes (1080 × 1920) pour lancer Atlas sur Instagram, dans `appli/vente/pub-instagram/` : l'accroche « Artisans, marre de la paperasse ? », les trois corvées barrées, puis Dictez, Envoyez, Planifiez, Encaissez sur les vrais écrans, et « Essayer 15 jours gratuits ». Chaque écran est l'appli du jour, filmée sur une base d'essai du nuage (`appli/vente/pub-instagram/tournage/`, son accord) ; le montage est un projet HyperFrames (`appli/vente/pub-instagram/index.html` et ses `compositions/`). Contrôle HyperFrames vert, images et enchaînements regardés. Muette (pas de musique sans compte). Rien dans `src/`. Attend son regard. `appli/vente/pub-instagram/LISEZ-MOI.md`.
+**Le nom de l'appli est arrêté : Cause** (sa décision du 17 novembre). Seule la pub le porte ; l'appli, le site de vente et ce dépôt disent encore Atlas (`PRODUCT.md`, `TODO.md`).
+
+Une vidéo verticale de 30 secondes (1080 × 1920) dans `appli/vente/pub-instagram/`, refaite à sa demande pour entrer tout de suite dans l'appli : « Artisans, dictez vos devis. » sur le micro dès la première image, puis un bénéfice par plan sur les vrais écrans (le devis, la page du client, le planning, la facture, la TVA, le comptable), et « Essayer 15 jours gratuits ». Chaque écran est l'appli du 16 novembre, filmée sur une base d'essai du nuage (`appli/vente/pub-instagram/tournage/`, son accord) ; le montage est un projet HyperFrames (`appli/vente/pub-instagram/index.html` et ses `compositions/`). Contrôle HyperFrames vert, images et enchaînements regardés. Muette (pas de musique sans compte). Rien dans `src/`. Attend son regard. `appli/vente/pub-instagram/LISEZ-MOI.md`.
 
 ---
 ## LA MAIN D'ŒUVRE SUR UNE LIGNE, CHAQUE TRAVAIL À SON PRIX, CODÉE (9 novembre 2026), SUR `main` LE 9 NOVEMBRE
