@@ -19,6 +19,11 @@ Sa demande, depuis son téléphone : *« une maquette de la version améliorée,
 Sa planche `appli/fiche-de-chantier-soignee.html`, validée le 9 novembre ; son « oui » pour l'appli le 16. Composer ma fiche au sceau doré (`RondDore`, partagé avec les Réglages), Créer une fiche sur toute la largeur, En cours et Rapports envoyés dans une carte (`CarteDesFiches`), la tuile de Paysage pour un rapport parti (`TuileIcone`). Niveau 2 vert : 599 suites du dépôt, 34 suites navigateur.
 
 ---
+## SUR UNE LIGNE, LE PRIX DE CHAQUE TRAVAIL À LA PLACE DE SA CROIX, CODÉ (17 novembre 2026), BATTERIE EN ATTENTE DE SON « OUI »
+
+Sa planche `appli/soignee/carte-main-d-oeuvre-sur-une-ligne.html`, son « ok » du 17. La carte « Avant de chiffrer » et la feuille « + Main d'œuvre » du devis (la même carte) : sur une ligne, plus de croix, le prix du travail (`prixSurUneLigne`) ou « À chiffrer ». `sortisParLaCroix` : une croix de « Répartis » ne compte plus sur une ligne. Types, lint, contrôles purs verts ; suites base et navigateur écrites, pas jouées (elles vident la base : son « oui »). `ARCHITECTURE.md` §579.
+
+---
 ## LA MAIN D'ŒUVRE SUR UNE LIGNE, CHAQUE TRAVAIL À SON PRIX, CODÉE (9 novembre 2026), SUR `main` LE 9 NOVEMBRE
 
 Sa planche `appli/soignee/devis-main-d-oeuvre-et-prix.html`, approuvée. `propositionAvecMainOeuvre` pose la ligne « Main d’œuvre », puis chaque travail à sa grille, sinon à chiffrer. Types, lint et contrôles purs verts ; suite base vue rouge sur le code d'avant, puis 17 sur 17 ; batterie (niveau 3) verte sur son « oui », 217 suites navigateur sur 217. `ARCHITECTURE.md` §579.

@@ -37450,6 +37450,21 @@ le total de la main d'œuvre, et c'est encore ce qu'il est. Sa croix, en mode
 « ligne », ne change plus le devis : c'est une apparence, donc une planche
 d'abord (`TODO.md`).
 
+**Sa planche du 16 novembre 2026, son « ok » du 17**
+(`appli/soignee/carte-main-d-oeuvre-sur-une-ligne.html`) : en mode « ligne »,
+la croix sort de la carte, et le prix que le travail aura sur le devis prend sa
+place (`prixSurUneLigne`, sinon « À chiffrer »).
+
+| Décision | Pourquoi |
+|---|---|
+| `sortisParLaCroix` rend `[]` en mode « ligne », lue par la carte ET par `proposition-prix.ts` | une croix posée en « Répartis » restait dans sa réponse : la carte ne la montrerait plus, mais elle déplaçait encore la ligne Main d'œuvre derrière le travail barré. Une seule règle, deux lecteurs (`CLAUDE.md` §3) |
+| les croix de « Répartis » restent dans la réponse | il y retrouve ce qu'il avait barré s'il y revient |
+| le prix vient du producteur de la question, jamais deviné par la carte | dictée : la grille, que `aSaGrille` écrit ; feuille du devis : le montant de la ligne, qu'elle garde. La feuille passait `grille: null` : sans ce champ, elle aurait affiché « À chiffrer » sur des lignes déjà chiffrées |
+
+`test-main-oeuvre-dictee-db.ts` (une croix d'avant ne change plus le devis),
+`test-repartir-main-oeuvre.ts`, `test-main-oeuvre-sur-une-ligne-e2e.ts` (les
+prix que la carte montre sont ceux du devis) et `test-feuille-main-oeuvre-e2e.ts`.
+
 `scripts/test-main-oeuvre-dictee-db.ts`, « son devis de Luc » : vu rouge sur
 le code d'avant, avec le libellé exact de sa capture (« Main d'œuvre : taille
 de haie de photinia, élagage d'un frêne, plantation d'un olivier »), puis vert,

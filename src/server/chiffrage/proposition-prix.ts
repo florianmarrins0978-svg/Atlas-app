@@ -21,6 +21,7 @@ import {
   partsDeDepart,
   questionDeLaMainOeuvre,
   repartirMainOeuvre,
+  sortisParLaCroix,
   tarifAvecSonHomme,
 } from "../../lib/main-oeuvre-dictee";
 import { mainOeuvreDUnPartenaire, prixDesPartenaires, quantiteDuPartenaire } from "../../lib/feuille-main-oeuvre";
@@ -702,6 +703,8 @@ export async function questionMainOeuvre(
           libelle: membresDuLibelle(c.vendable.libelle)[0] ?? c.vendable.libelle,
           part: parts[c.vendable.libelle] ?? 0,
           grille: c.grille.prix,
+          // Sur une ligne, chaque travail s'écrit à sa grille (`aSaGrille`).
+          prixSurUneLigne: c.grille.prix,
         })),
         engins: engins.map((e) => e.libelle),
         hommes: mo.hommes,
@@ -888,8 +891,9 @@ async function propositionAvecMainOeuvre(
     });
   };
   const dedans: TravauxDeLaMainOeuvre["couverts"] = [];
+  const sortis = sortisParLaCroix(choix);
   for (const c of t.couverts) {
-    if (!choix.retires.includes(c.vendable.libelle)) {
+    if (!sortis.includes(c.vendable.libelle)) {
       dedans.push(c);
       continue;
     }

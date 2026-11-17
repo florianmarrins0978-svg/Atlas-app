@@ -11,6 +11,7 @@ import {
   PAS_DE_LA_POIGNEE,
   PART_MINIMUM,
   repartirMainOeuvre,
+  sortisParLaCroix,
   type ChoixMainOeuvre,
   type QuestionMainOeuvre,
 } from "@/lib/main-oeuvre-dictee";
@@ -31,6 +32,11 @@ import {
  * des pourcentages qui faisaient 101 %. Désormais une poignée entre deux
  * travaux ne change qu'eux deux, de 10 € en 10 € (`glisserLeJoint`), et le
  * montant se touche pour s'écrire, à l'euro près (`ecrireUnMontant`).
+ *
+ * **Sur une ligne, pas de croix, sa planche du 16 novembre 2026**
+ * (`appli/soignee/carte-main-d-oeuvre-sur-une-ligne.html`, choisie le 17) :
+ * chaque travail y prend déjà son prix à part, et la croix ne changeait rien
+ * au devis. À sa place, ce prix (`prixSurUneLigne`), sinon « À chiffrer ».
  */
 export function choixDeDepart(q: QuestionMainOeuvre): string {
   const choix: ChoixMainOeuvre = {
@@ -63,7 +69,8 @@ export default function RepartirLaMainOeuvre({
   sousLeDetail?: ReactNode;
 }) {
   const choix = lireChoix(valeur) ?? lireChoix(choixDeDepart(question))!;
-  const dedans = question.travaux.filter((t) => !choix.retires.includes(t.cle));
+  const sortis = sortisParLaCroix(choix);
+  const dedans = question.travaux.filter((t) => !sortis.includes(t.cle));
   const repartis = repartirMainOeuvre(
     question.total,
     dedans.map((t) => t.cle),
@@ -356,7 +363,7 @@ export default function RepartirLaMainOeuvre({
 
         <div>
           {question.travaux.map((t, i) => {
-            const sorti = choix.retires.includes(t.cle);
+            const sorti = sortis.includes(t.cle);
             const separe = i > 0 ? filet : undefined;
             if (sorti) {
               return (
@@ -470,17 +477,29 @@ export default function RepartirLaMainOeuvre({
                       {montants[k] > 0 ? euros(montants[k]) : "À chiffrer"}
                     </button>
                   ))}
-                <button
-                  type="button"
-                  aria-label={`Retirer ${t.libelle} de la main d'œuvre`}
-                  onClick={() => changer({ retires: [...choix.retires, t.cle] })}
-                  className="-mr-2.5 grid h-10 w-10 flex-none place-items-center"
-                  style={{ color: colors.muted }}
-                >
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
-                    <path d="M6 6l12 12M18 6L6 18" />
-                  </svg>
-                </button>
+                {choix.mode === "ligne" ? (
+                  // Écrit comme le montant de « Répartis », mais il ne se
+                  // touche pas : c'est le prix du travail, pas une part.
+                  <span
+                    data-atlas="prix-du-travail"
+                    className="inline-flex min-h-11 flex-none items-center px-0.5 text-[17px] tabular-nums"
+                    style={{ fontWeight: 650, color: colors.ink }}
+                  >
+                    {t.prixSurUneLigne !== null ? euros(t.prixSurUneLigne) : "À chiffrer"}
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    aria-label={`Retirer ${t.libelle} de la main d'œuvre`}
+                    onClick={() => changer({ retires: [...choix.retires, t.cle] })}
+                    className="-mr-2.5 grid h-10 w-10 flex-none place-items-center"
+                    style={{ color: colors.muted }}
+                  >
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+                      <path d="M6 6l12 12M18 6L6 18" />
+                    </svg>
+                  </button>
+                )}
               </div>
             );
           })}

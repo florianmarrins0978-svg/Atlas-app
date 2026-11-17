@@ -50,7 +50,8 @@ type Props = {
    * Absente, la feuille ne propose que la ligne.
    */
   repartition?: {
-    travaux: readonly { id: string; libelle: string }[];
+    /** Avec ce que chaque ligne vaut déjà : sur une ligne, c'est le prix qu'elle garde. */
+    travaux: readonly { id: string; libelle: string; montant: string }[];
     onRepartir: (choix: ChoixDeMainOeuvre, parts: Record<string, number>) => void;
   };
   onValider: (choix: ChoixDeMainOeuvre) => void;
@@ -166,7 +167,7 @@ function Contenu({ donnees, repartition, onValider, onFermer }: Props) {
     total: montant ?? "0",
     detail: "",
     prixJourHomme: tarifLu === null ? "" : String(tarifLu),
-    travaux: travaux.map((t) => ({ cle: t.id, libelle: t.libelle, part: 0, grille: null })),
+    travaux: travaux.map((t) => ({ cle: t.id, libelle: t.libelle, part: 0, grille: null, prixSurUneLigne: t.montant })),
     engins: [],
     hommes,
     jours: DUREES_MAIN_OEUVRE[rang].jours,
