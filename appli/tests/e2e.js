@@ -772,6 +772,24 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     }));
     await page.click('#fermer');
     ok('icône : « Revenir au bureau » la referme', await attendre(() => document.querySelector('#appli').hidden));
+    // Le bureau d'Android est plus haut que celui de l'iPhone (la date, la
+    // recherche) : son bas passe sous la barre des sept. Le bouton qui referme
+    // l'appli y tombait, caché, et il ne restait qu'à deviner qu'il fallait
+    // faire défiler. Trouvé à la relecture du 17 novembre 2026.
+    await page.click('#sept');
+    await page.click('[data-forme="android"]');
+    await page.evaluate(() => scrollTo(0, 0));
+    await page.click('#grille .notre');
+    await page.waitForTimeout(700);
+    const sortie = await page.evaluate(() => {
+      const b = document.querySelector('#fermer').getBoundingClientRect();
+      return { bas: Math.round(b.bottom), barre: Math.round(document.querySelector('.barre').getBoundingClientRect().top), haut: Math.round(b.top) };
+    });
+    ok('icône : sur Android, « Revenir au bureau » reste au-dessus de la barre',
+       sortie.haut >= 0 && sortie.bas <= sortie.barre, JSON.stringify(sortie));
+    await page.click('#fermer');
+    ok('icône : et il referme l\'appli', await attendre(() => document.querySelector('#appli').hidden));
+    await page.click('[data-forme="iphone"]');
     await page.click('#prendre');
     ok('icône : le choix dit quelle lettre écrire', /« E »/.test(await page.textContent('#reponse')));
     const largeIc = await page.evaluate(() => document.documentElement.scrollWidth);

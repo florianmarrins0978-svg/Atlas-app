@@ -141,8 +141,9 @@ p { margin:0 }
 .accueil { display:none; position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:top }
 .arrivee .accueil { display:block }
 @keyframes arriver { from { opacity:0 } }
-.appli::after { content:""; position:absolute; left:0; right:0; bottom:0; height:150px; pointer-events:none; background:linear-gradient(rgba(245,243,238,0), #f5f3ee 46%) }
-.retour { position:absolute; z-index:1; left:50%; bottom:20px; transform:translateX(-50%); min-height:46px; padding:0 22px; border:0; border-radius:23px; background:var(--pin); color:var(--carte); font:600 15px/1 var(--sans); white-space:nowrap; box-shadow:0 10px 24px -10px rgba(28,28,26,.55) }
+/* --remonte : ce que le bas de l'écran a de caché sous la barre des sept. Le bouton qui referme, et le fondu sous lui, remontent d'autant. */
+.appli::after { content:""; position:absolute; left:0; right:0; bottom:0; height:calc(150px + var(--remonte, 0px)); pointer-events:none; background:linear-gradient(rgba(245,243,238,0), #f5f3ee 46%) }
+.retour { position:absolute; z-index:1; left:50%; bottom:calc(20px + var(--remonte, 0px)); transform:translateX(-50%); min-height:46px; padding:0 22px; border:0; border-radius:23px; background:var(--pin); color:var(--carte); font:600 15px/1 var(--sans); white-space:nowrap; box-shadow:0 10px 24px -10px rgba(28,28,26,.55) }
 
 /* ── Les réglages de l'essai ────────────────────────────────────────────── */
 .reglages { display:flex; flex-wrap:wrap; gap:8px; margin-top:16px }
@@ -479,6 +480,11 @@ p { margin:0 }
     var e = ecran.getBoundingClientRect(), t = source.querySelector(".tuile").getBoundingClientRect();
     depart = "inset(" + (t.top - e.top) + "px " + (e.right - t.right) + "px " + (e.bottom - t.bottom) + "px " + (t.left - e.left) + "px round " + (etat.forme === "android" ? t.width / 2 : t.width * 0.225) + "px)";
     ouvreur = source;
+    // Le bas de l'écran peut passer sous la barre des sept (le bureau d'Android
+    // est plus haut, un petit téléphone aussi) : le bouton qui referme remonte
+    // d'autant. Il se place d'après ce qui se VOIT, pas d'après le bas du cadre.
+    var cache = Math.max(0, e.bottom - un(".barre").getBoundingClientRect().top);
+    appli.style.setProperty("--remonte", Math.min(cache, e.height - 140) + "px");
     clearTimeout(minuterie);
     appli.classList.remove("arrivee");
     appli.hidden = false;

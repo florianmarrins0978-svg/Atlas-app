@@ -26,6 +26,7 @@ Avant : sur `main`, la batterie commune du 8 novembre
 - **Une icône se juge à 60, 29 et 16 px, parmi des voisines de couleur.** Quatre idées ont été écartées à cette épreuve alors qu'elles tenaient en grand (l'en-tête de la planche les nomme) : ne pas les reproposer sans les avoir regardées à ces tailles.
 - **Safari n'a pas été regardé.** L'appli s'ouvre depuis l'icône par un rognage animé (`clip-path`), le geste le plus fragile hors de Chromium.
 - **Le contrôle de `appli/tests/e2e.js` lit ce qui est PEINT** (le dessin posé, la forme, le fond, le filtre), jamais une classe. Il barre la publication de toutes les planches : s'il rougit, c'est la planche qui se corrige.
+- **« Revenir au bureau » se place d'après ce qui se VOIT**, pas d'après le bas du cadre : le bureau d'Android est plus haut et passe sous la barre des sept, un petit téléphone aussi. La variable `--remonte` porte ce qui est caché ; le bouton et le fondu sous lui remontent d'autant. Le contrôle l'a vu rouge avant la correction.
 - **La capture de l'appli ouverte vient de `appli/vente/images/accueil.jpg`.** Si le dossier du site de vente est rangé autrement, le contrôle le dira (il exige des pixels).
 
 ---
