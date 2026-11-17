@@ -813,6 +813,60 @@
         ],
         "createdAt": "2026-11-17T06:58:06.774Z",
         "reason": "repris tel quel de appli/vente/cause.html, la charte du site de vente retenue le 6 novembre 2026 : l'ombre dorée du bouton d'essai sur les bandes vert nuit. La planche ne change que le mouvement ; le détecteur rend les mêmes 18 relevés sur les deux fichiers"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/vente/cause-2.html"
+        ],
+        "createdAt": "2026-11-17T08:22:28.289Z",
+        "reason": "repris tel quel de appli/vente/cause.html, où le détecteur rend le même relevé : la charte du site de vente retenue le 6 novembre 2026 (fond crème d'Arborea, Instrument Serif, interlignes des titres). La planche ne change que le mouvement, pour que la comparaison se fasse à l'identique"
+      },
+      {
+        "rule": "italic-serif-display",
+        "value": "*",
+        "files": [
+          "appli/vente/cause-2.html"
+        ],
+        "createdAt": "2026-11-17T08:22:28.305Z",
+        "reason": "repris tel quel de appli/vente/cause.html, où le détecteur rend le même relevé : la charte du site de vente retenue le 6 novembre 2026 (fond crème d'Arborea, Instrument Serif, interlignes des titres). La planche ne change que le mouvement, pour que la comparaison se fasse à l'identique"
+      },
+      {
+        "rule": "overused-font",
+        "value": "*",
+        "files": [
+          "appli/vente/cause-2.html"
+        ],
+        "createdAt": "2026-11-17T08:22:28.319Z",
+        "reason": "repris tel quel de appli/vente/cause.html, où le détecteur rend le même relevé : la charte du site de vente retenue le 6 novembre 2026 (fond crème d'Arborea, Instrument Serif, interlignes des titres). La planche ne change que le mouvement, pour que la comparaison se fasse à l'identique"
+      },
+      {
+        "rule": "tight-leading",
+        "value": "*",
+        "files": [
+          "appli/vente/cause-2.html"
+        ],
+        "createdAt": "2026-11-17T08:22:28.335Z",
+        "reason": "repris tel quel de appli/vente/cause.html, où le détecteur rend le même relevé : la charte du site de vente retenue le 6 novembre 2026 (fond crème d'Arborea, Instrument Serif, interlignes des titres). La planche ne change que le mouvement, pour que la comparaison se fasse à l'identique"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "appli/vente/cause-2.html"
+        ],
+        "createdAt": "2026-11-17T08:22:28.354Z",
+        "reason": "faux positif, identique sur appli/vente/cause.html : des bandes de pleine largeur dont le contenu est rentré par .large (16 px de marge de chaque côté), et une grille dont le filet du haut porte déjà son espace"
+      },
+      {
+        "rule": "buried-raster",
+        "value": "*",
+        "files": [
+          "appli/vente/cause-2.html"
+        ],
+        "createdAt": "2026-11-17T08:22:28.370Z",
+        "reason": "faux positif, identique sur appli/vente/cause.html : la dernière image d'un film de l'appli, invisible tant que le film n'est pas fini (mécanique des films, éprouvée sur son iPhone le 6 novembre 2026)"
       }
     ]
   }
