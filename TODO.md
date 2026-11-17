@@ -314,28 +314,40 @@ libellé dans la consigne, et `npm run verifier:dictee` sur son espace.
 fois, pour Taille de haie de laurier de ml, vous aviez retenu 650 € HT »
 compare la ligne de main d'œuvre à une taille de haie.
 
-## ⏳ À REGARDER PAR LUI (9 novembre 2026, refaite le 17) : jeter la dictée, en clair
+## ~~⏳ À REGARDER PAR LUI (9 novembre 2026, refaite le 17) : jeter la dictée, en clair~~ TRANCHÉ LE 17 NOVEMBRE : LA 1, SON CHOIX DU 16 (« ON LAISSE COMME ON A DÉCIDÉ LE 16 »), SUR `main` LE 17 NOVEMBRE
 
-Sa remarque : *« moi je ne savais pas que ce mécanisme jetait la dictée,
-il faut peut-être mettre un truc plus clair ; il n'y a pas déjà un bouton
-poubelle ? »* **Lu dans le code** : la poubelle « Jeter »
-(`AnneauNoteVocale.tsx`, `dictee-jeter`) ne vit que PENDANT la dictée ; une
-fois la note envoyée, seul le glissement de « Votre dictée »
-(`LigneRetirable`, `FormulaireNouveauChantier.tsx`) la jette, et rien ne le
-montre.
+Sa demande du 9 novembre, capture de la fiche client : *« retire-moi la
+phrase "votre dictée" »*. Codée d'abord « cachée pendant le devis » (son
+premier choix), puis une planche pour la jeter en clair
+(`appli/jeter-la-dictee.html`). Sa réponse, le 16 novembre : *« à partir du
+moment où on a envoyé la dictée, c'est qu'on n'a plus envie de la jeter »*.
 
 **La planche** : `appli/jeter-la-dictee.html`, sur sa vraie fiche client
 (M. Bernard, une note envoyée). Le 16 novembre, il a d'abord choisi d'enlever
 la case ; le 17, il a répondu « B » sur la première planche, puis *« montre-moi
 les deux planches »*. Elle porte donc : 1, la case enlevée (une dictée envoyée
 se refait en redictant) ; 2, la case gardée avec la poubelle cerclée
-« Jeter » au bout, et le tiroir « Annuler ». L'option 1 attend sur la branche
-`claude/amazing-mendel-skfnud`, batterie complète à jouer.
+« Jeter » au bout, et le tiroir « Annuler ». Il a gardé 1, son choix du 16.
 
-**Reste** : son choix entre 1 et 2. Pour 2 : récrire la fiche du mode
-d'emploi `chantier-dictee-retirer`, qui décrit le glissement.
+**Ce qui a été vérifié avant de trancher** : l'écran Transcription, que je
+lui avais proposé pour y poser le bouton, ne s'atteint que depuis un devis
+resté sans prix, puis Informations (`DevisDepuisDictee`, état `sansPrix`) :
+un bouton posé là aurait été inatteignable. Son contenu est passé dans le
+devis : effacer la dictée ne l'en retire pas. Une nouvelle dictée remplace la
+première (`enregistrerNoteVocale`). Il a choisi de l'enlever.
 
-## ⏳ À REGARDER PAR LUI (9 novembre 2026) : la fiche ouverte et Composer ma fiche, soignées
+**Codé** : la case, son glissement et son tiroir partent de
+`FormulaireNouveauChantier.tsx` ; `supprimerNoteVocaleAction` et
+`supprimerNoteVocale` n'avaient plus d'appelant et partent aussi, avec leur
+cas de `test-note-vocale-repo.ts` et la suite `test-retirer-sa-dictee-e2e.ts`.
+Les fiches du mode d'emploi `chantier-dictee-retirer` (on redicte) et
+`donnees-ia` (« Jeter » avant l'envoi) sont récrites ; `test-anneau-dictee-e2e`
+tient le micro présent, la case absente, et le nom du client intact après la
+dictée (sa règle du 16 novembre : *« ça va me supprimer aussi le nom […] du
+client. Ça, il faut pas »*). Types, lint, `test-mode-emploi`,
+`test-pas-de-code-mort`, `test-aucun-tiret`, `test-couches` verts.
+
+## ~~⏳ À REGARDER PAR LUI (9 novembre 2026) : la fiche ouverte et Composer ma fiche, soignées~~ TRANCHÉ LE 17 NOVEMBRE (« POUR LA 1 LA A, ET LA 2 A AUSSI »), CODÉ ET SUR `main` LE 17 NOVEMBRE, AVEC LA DICTÉE, EN UNE SEULE BATTERIE
 
 Sa demande, après avoir validé D et B : *« ensuite, tu t'attelles à ce qui se
 passe quand on clique sur créer une fiche, composer ma fiche et les fiches
@@ -360,8 +372,21 @@ client en haut (arrangement C) ; « Envoyé par » ; la molette du temps
 tiroir ; « Retirer la famille » au bas de sa carte (24 août) ; les pastilles
 des familles en haut de Composer.
 
-**Reste** : qu'il choisisse, puis le coder sur son « oui »
-(`FicheChantierClient.tsx`, `ComposerMaFiche.tsx`).
+**CODÉ LE 17 NOVEMBRE**, sur son choix (*« pour la 1 la A, et la 2 A
+aussi »*) : `FicheChantierClient.tsx` (le client dans une carte au rond doré,
+le constat sous son nom ; une carte par famille, la case à 8 px et la coche
+`IconeTrait` ; la molette dans une seule carte ; « Enregistrer et envoyer »
+`pleineLargeur`), `ComposerMaFiche.tsx` (cartes à 14 px sans ombre, « Ajouter
+une prestation » derrière un rond doré de 28 px, « Ajouter une famille » dans
+sa carte). `RondDore` prend une `taille` (52 par défaut) : un seul dessin pour
+les trois. Le « + » est devenu un dessin muet, donc les boutons s'appellent
+« Ajouter une prestation », « Ajouter une famille », « Ajouter un client » :
+`test-fiche-entretien-e2e` et cinq fiches du mode d'emploi (`paysage.ts`)
+suivent. `test-boutons-arrondis` borne les deux nouvelles cartes à leur
+repère. Écrans regardés (neuve, Mme Costa cochée, Composer) ; types, lint et
+contrôles sans base verts. Livré avec « Votre dictée » enlevée, en un seul lot
+de niveau 3 et une seule batterie (sa demande : *« fusionne le tout et joue
+qu'une seule batterie »*).
 
 ## ⚠️ `test-double-verification-db` ROUGIT PAR HASARD À LA LIMITE DES 30 SECONDES (vu le 16 novembre 2026)
 

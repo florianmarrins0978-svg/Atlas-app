@@ -327,11 +327,11 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
     intitule: "Remplir une fiche de chantier et l'envoyer au client",
     motsCles: ["fiche", "chantier", "entretien", "cocher", "rapport", "compte", "rendu", "envoyer", "passage", "intervention"],
     geste:
-      "Touchez « Créer une fiche », puis « + Ajouter un client », cochez les prestations faites, ajoutez vos observations, " +
+      "Touchez « Créer une fiche », puis « Ajouter un client », cochez les prestations faites, ajoutez vos observations, " +
       "puis « Enregistrer et envoyer » : le SMS ou l'e-mail s'ouvre, prêt à partir.",
     reserve: "Sans client nommé et sans une prestation cochée, l'envoi est refusé. Un rapport parti ne se modifie plus.",
     source: FICHE,
-    preuves: ["+ Ajouter un client", "Enregistrer et envoyer", "Observations"],
+    preuves: ["Ajouter un client", "Enregistrer et envoyer", "Observations"],
     ailleurs: [
       { source: "src/app/paysage/fiche/OuvrirFiche.tsx", preuves: ['"Créer une fiche"'] },
       {
@@ -363,12 +363,12 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
     intitule: "Choisir ou changer le client d'une fiche de chantier",
     motsCles: ["client", "changer", "choisir", "nommer", "ajouter", "qui", "fiche"],
     geste:
-      "Touchez « + Ajouter un client », ou « Changer » à côté de son nom, cherchez-le dans « Chercher un client » et touchez son nom.",
+      "Touchez « Ajouter un client », ou « Changer » à côté de son nom, cherchez-le dans « Chercher un client » et touchez son nom.",
     reserve:
       "Les prestations de son dernier chantier se cochent toutes seules. Un client ne se crée pas ici : il naît d'un devis.",
     source: FICHE,
     preuves: [
-      "+ Ajouter un client",
+      "Ajouter un client",
       "Changer",
       "Pour qui ?",
       'placeholder="Chercher un client"',
@@ -454,9 +454,9 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
     intitule: "Ajouter une prestation à cocher sur la fiche",
     motsCles: ["ajouter", "prestation", "ligne", "nouvelle", "fiche", "cocher", "tache"],
     geste:
-      "Sous la famille voulue, touchez « + Ajouter une prestation », écrivez son nom, puis « Ajouter à » suivi du nom de la famille.",
+      "Sous la famille voulue, touchez « Ajouter une prestation », écrivez son nom, puis « Ajouter à » suivi du nom de la famille.",
     source: COMPOSER,
-    preuves: ["+ Ajouter une prestation", 'placeholder="Nom de la prestation"', "Ajouter à {f.famille}"],
+    preuves: ["Ajouter une prestation", 'placeholder="Nom de la prestation"', "Ajouter à {f.famille}"],
   },
   {
     id: "composer-ajouter-famille",
@@ -464,9 +464,9 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
     ou: "« Paysage », Fiche de chantier, puis Composer ma fiche",
     intitule: "Ajouter une famille de prestations",
     motsCles: ["famille", "categorie", "rubrique", "groupe", "ajouter", "nouvelle", "creer"],
-    geste: "En bas, touchez « + Ajouter une famille », écrivez son nom et sa première prestation, puis « Créer la famille ».",
+    geste: "En bas, touchez « Ajouter une famille », écrivez son nom et sa première prestation, puis « Créer la famille ».",
     source: COMPOSER,
-    preuves: ["+ Ajouter une famille", 'placeholder="Nom de la famille"', 'placeholder="Sa première prestation"', "Créer la famille"],
+    preuves: ["Ajouter une famille", 'placeholder="Nom de la famille"', 'placeholder="Sa première prestation"', "Créer la famille"],
   },
   {
     id: "composer-renommer",
@@ -735,7 +735,7 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
       "S'il vous manque une ligne du modèle, « Remettre le modèle Cause » la fait revenir.",
     reserve: "Réservé au patron. La modifier ne change aucun rapport déjà envoyé.",
     source: "src/app/paysage/fiche/composer/ComposerMaFiche.tsx",
-    preuves: ["Remettre le modèle Cause", "+ Ajouter une famille"],
+    preuves: ["Remettre le modèle Cause", "Ajouter une famille"],
     ailleurs: [{ source: "src/app/paysage/fiche/page.tsx", preuves: ["Composer ma fiche"] }],
   },
   {

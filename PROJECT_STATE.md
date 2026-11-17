@@ -1,5 +1,10 @@
 # État du projet
 
+## LA FICHE OUVERTE ET COMPOSER MA FICHE (A), ET « VOTRE DICTÉE » ENLEVÉE, SUR `main` (17 novembre 2026)
+
+Un seul lot et une seule batterie (sa demande : *« fusionne le tout et joue qu'une seule batterie »*), niveau 3 : rayon de 14 points d'entrée par `notes-vocales.ts`. La fiche ouverte et Composer en A : `FicheChantierClient.tsx`, `ComposerMaFiche.tsx`, `RondDore` (une `taille`). La case « Votre dictée » quitte la fiche client : une dictée envoyée se refait en redictant, et le client reste intact (`test-anneau-dictee-e2e`). Le détail est dans `TODO.md`.
+
+---
 ## LE NOM CAUSE, LIVRÉ (17 novembre 2026)
 
 Le texte affiché dit Cause partout ; le code garde atlas. Restent à lui : les conditions générales (version nouvelle), l'icône (planche). `ARCHITECTURE.md` §581.
