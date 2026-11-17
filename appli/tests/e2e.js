@@ -671,22 +671,27 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
   // PLUS la marge que l'iPhone réserve à sa barre d'accueil. Chromium vaut 0
   // pour cette marge : la page est servie ici avec 34 px, la valeur d'un
   // iPhone, sans quoi le contrôle ne verrait jamais le défaut.
-  {
+  //
+  // `cause-2.html` (17 novembre 2026) reprend ce bouton et ces films dans une
+  // page au mouvement refait : elle passe les deux mêmes contrôles, sans quoi
+  // les deux défauts qu'il a signalés pourraient y revenir sans rien dire.
+  const PAGES_DE_VENTE = [['chapitres-6.html', 'vente'], ['cause-2.html', 'vente, en mouvement']];
+  for (const [fichier, nomPage] of PAGES_DE_VENTE) {
     const cVe = await browser.newContext({ viewport: { width: 390, height: 844 } });
-    await cVe.route(/\/vente\/chapitres-6\.html$/, async (route) => {
+    await cVe.route((url) => url.pathname.endsWith('/vente/' + fichier), async (route) => {
       const r = await route.fetch();
       route.fulfill({ response: r, body: (await r.text()).replace(/env\(safe-area-inset-bottom\)/g, '34px') });
     });
     const page = await cVe.newPage();
-    await page.goto(`${B}/vente/chapitres-6.html`, { waitUntil: 'domcontentloaded' });
+    await page.goto(`${B}/vente/${fichier}`, { waitUntil: 'domcontentloaded' });
     await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
     await page.waitForTimeout(1200);
     const pouce = await page.evaluate(() => {
       const el = document.getElementById('pouce'), r = el.getBoundingClientRect();
       return { cache: !el.classList.contains('vu'), haut: r.top, ecran: innerHeight, visible: getComputedStyle(el).visibility };
     });
-    ok('vente : au bas du site, le bouton d\'essai est caché', pouce.cache);
-    ok('vente : caché, il ne dépasse pas du bas de l\'écran',
+    ok(nomPage + ' : au bas du site, le bouton d\'essai est caché', pouce.cache);
+    ok(nomPage + ' : caché, il ne dépasse pas du bas de l\'écran',
        pouce.visible === 'hidden' || pouce.haut >= pouce.ecran,
        'il dépasse de ' + Math.round(pouce.ecran - pouce.haut) + ' px');
     await cVe.close();
@@ -699,10 +704,10 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
   // (« nov-film- » + data-film) : aucun grep ne dit qu'un fichier manque, et
   // un film absent laisserait un téléphone figé sur sa première image. On
   // les regarde donc jouer, un par un, comme lui en descendant.
-  {
+  for (const [fichier, nomPage] of PAGES_DE_VENTE) {
     const cFi = await browser.newContext({ viewport: { width: 390, height: 844 } });
     const page = await cFi.newPage();
-    await page.goto(`${B}/vente/chapitres-6.html`, { waitUntil: 'domcontentloaded' });
+    await page.goto(`${B}/vente/${fichier}`, { waitUntil: 'domcontentloaded' });
     for (const nom of ['micro', 'envoi', 'mois', 'equipe', 'travaux']) {
       await page.evaluate((n) => { const el = document.querySelector('[data-film="' + n + '"]'); scrollTo(0, scrollY + el.getBoundingClientRect().top - 90); }, nom);
       const fin = await page.waitForFunction((n) => {
@@ -714,10 +719,83 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
         const vu = (s) => { const i = c.querySelector(s); return !!(i && i.complete && i.naturalWidth); };
         return { erreur: v && v.error && v.error.code, joue: v && v.played.length ? v.played.end(v.played.length - 1) / v.duration : 0, debut: vu('.film-debut'), fin: vu('.film-fin') };
       }, nom);
-      ok('vente : le film ' + nom + ' se joue jusqu\'au bout', fin && !etat.erreur && etat.joue > 0.95, JSON.stringify(etat));
-      ok('vente : le film ' + nom + ' a sa première et sa dernière image', etat.debut && etat.fin, JSON.stringify(etat));
+      ok(nomPage + ' : le film ' + nom + ' se joue jusqu\'au bout', fin && !etat.erreur && etat.joue > 0.95, JSON.stringify(etat));
+      ok(nomPage + ' : le film ' + nom + ' a sa première et sa dernière image', etat.debut && etat.fin, JSON.stringify(etat));
     }
     await cFi.close();
+  }
+
+  // ── L'icône de Cause, sur le bureau du téléphone ─────────────────────────
+  //
+  // Sa demande du 17 novembre 2026. La planche attend une lettre, de A à G :
+  // chaque geste doit y changer quelque chose (CLAUDE.md §3 bis, « chaque
+  // geste d'une planche fait quelque chose »), et c'est ici qu'on les touche,
+  // pas chez lui. On lit ce qui est PEINT (le dessin posé, la forme, le fond,
+  // le filtre), jamais une classe : un bouton qui poserait sa classe sans
+  // rien changer à l'écran resterait vert. La capture de l'appli vit dans un
+  // autre dossier (vente/images) : un fichier déplacé ouvrirait l'appli sur
+  // un écran vide, donc on exige des pixels.
+  {
+    const cIc = await browser.newContext({ viewport: { width: 390, height: 664 } });
+    const page = await cIc.newPage();
+    const errs = []; page.on('pageerror', e => errs.push('icône : ' + e.message));
+    await page.goto(`${B}/icone-de-cause-2.html`, { waitUntil: 'networkidle' });
+    const attendre = (fn) => page.waitForFunction(fn, null, { timeout: 5000 }).then(() => true, () => false);
+    const dessin = () => page.evaluate(() => document.querySelector('#grille .notre .tuile').innerHTML);
+    const dessins = new Set();
+    for (const k of 'ABCDEFG') { await page.click(`[data-choix="${k}"]`); dessins.add(await dessin()); }
+    ok('icône : les sept lettres posent sept dessins sur le bureau', dessins.size === 7, dessins.size + ' dessins');
+    ok('icône : le bouton du choix suit la lettre', (await page.textContent('#prendre')) === 'Je prends la G');
+    await page.click('[data-forme="android"]');
+    ok('icône : Android arrondit l\'icône',
+       await page.evaluate(() => getComputedStyle(document.querySelector('#grille .notre .tuile')).borderRadius === '50%'));
+    await page.click('[data-forme="iphone"]');
+    const fond = () => page.evaluate(() => getComputedStyle(document.querySelector('#ecran')).backgroundImage);
+    const clair = await fond();
+    await page.click('[data-fond="sombre"]');
+    ok('icône : Sombre change le fond d\'écran', (await fond()) !== clair);
+    await page.click('#soleil');
+    ok('icône : Plein soleil délave l\'écran',
+       await attendre(() => /contrast\(0\.58\)/.test(getComputedStyle(document.querySelector('.peau')).filter)));
+    await page.click('#sept');
+    ok('icône : Les sept posent sept icônes de Cause', (await page.locator('#grille .notre').count()) === 7);
+    const ordre = () => page.evaluate(() => [...document.querySelectorAll('#grille > *')].map(c => c.dataset.cle).join());
+    const avant = await ordre();
+    await page.click('#melanger');
+    ok('icône : Mélanger change l\'ordre', (await ordre()) !== avant);
+    await page.waitForTimeout(700);
+    await page.click('#grille .notre[data-ouvre="E"]');
+    ok('icône : toucher une icône en fait le choix', (await page.textContent('#prendre')) === 'Je prends la E');
+    ok('icône : l\'appli s\'ouvre sur sa capture, avec des pixels', await attendre(() => {
+      const i = document.querySelector('.accueil');
+      return getComputedStyle(i).display !== 'none' && i.complete && i.naturalWidth > 0;
+    }));
+    await page.click('#fermer');
+    ok('icône : « Revenir au bureau » la referme', await attendre(() => document.querySelector('#appli').hidden));
+    // Le bureau d'Android est plus haut que celui de l'iPhone (la date, la
+    // recherche) : son bas passe sous la barre des sept. Le bouton qui referme
+    // l'appli y tombait, caché, et il ne restait qu'à deviner qu'il fallait
+    // faire défiler. Trouvé à la relecture du 17 novembre 2026.
+    await page.click('#sept');
+    await page.click('[data-forme="android"]');
+    await page.evaluate(() => scrollTo(0, 0));
+    await page.click('#grille .notre');
+    await page.waitForTimeout(700);
+    const sortie = await page.evaluate(() => {
+      const b = document.querySelector('#fermer').getBoundingClientRect();
+      return { bas: Math.round(b.bottom), barre: Math.round(document.querySelector('.barre').getBoundingClientRect().top), haut: Math.round(b.top) };
+    });
+    ok('icône : sur Android, « Revenir au bureau » reste au-dessus de la barre',
+       sortie.haut >= 0 && sortie.bas <= sortie.barre, JSON.stringify(sortie));
+    await page.click('#fermer');
+    ok('icône : et il referme l\'appli', await attendre(() => document.querySelector('#appli').hidden));
+    await page.click('[data-forme="iphone"]');
+    await page.click('#prendre');
+    ok('icône : le choix dit quelle lettre écrire', /« E »/.test(await page.textContent('#reponse')));
+    const largeIc = await page.evaluate(() => document.documentElement.scrollWidth);
+    ok('icône : rien ne déborde à 390 px', largeIc <= 391, 'largeur ' + largeIc);
+    ok('icône : aucune erreur de page', errs.length === 0, errs.join(' | '));
+    await cIc.close();
   }
 
   await browser.close();

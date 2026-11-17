@@ -5,8 +5,114 @@
 Le texte de l'appli dit Cause (`ARCHITECTURE.md` §581). Restent, et chacun est à lui :
 
 - **les conditions générales** : une version nouvelle qui dit Cause, que chaque compte acceptera de nouveau. Le plus simple : la faire quand sa micro-entreprise a son SIREN, pour remplir dans la même version les cases « Qui édite » encore à compléter (une seule acceptation au lieu de deux) ;
-- **l'icône** : le « A » provisoire ne va plus. Une planche avec des propositions, puis `npm run icones` ;
+- **l'icône** : le « A » provisoire ne va plus. Deux planches attendent sa lettre (ci-dessous), puis `npm run icones` ;
 - **l'adresse d'envoi des courriels** : le nom affiché dit Cause, l'adresse reste celle de sa variable `COURRIEL_EXPEDITEUR`, à passer sur cause.fr quand l'Afnic aura accordé le domaine.
+## DEUX SUITES ROUGES UN JOUR PAR MOIS : LE « 1ER » (17 novembre 2026)
+
+`test-le-client-s-est-trompe-e2e` et `test-message-sans-autre-date-e2e`
+cherchent une date par `\d+ ` (un nombre suivi d'une espace). Le jour où
+« dans 45 jours » tombe un 1er du mois, l'appli écrit, à juste titre,
+« vendredi 1er janvier » : les deux suites rougissent, sur `main` comme
+ailleurs. Vu le 17 novembre 2026 (17 novembre + 45 jours = 1er janvier),
+rejoué sur `main` (`verifier-rouge-prealable.ts` : même sort des deux côtés).
+Le produit est juste ; ce sont les deux motifs à corriger, dans un lot à part
+(accepter `\d+(er)? `). D'ici là, ces deux rouges ne bloquent personne : le
+garde-fou les reconnaît comme préexistants.
+
+## ⏳ UNE PLANCHE À REGARDER : L'ICÔNE DE CAUSE SUR LE BUREAU DU TÉLÉPHONE (17 novembre 2026)
+
+Sa demande, depuis son téléphone : *« J'ai besoin que tu me fasses une planche
+pour l'icône de l'application quand il sera sur le bureau des téléphones des
+clients. »* Le matin même, devant la première planche
+(`appli/icone-de-cause.html`, trois « C »), il demandait si un autre modèle
+ferait mieux pour l'icône, et on lui avait répondu d'ouvrir une autre session
+pour comparer. C'est ce qu'il a fait.
+
+**La planche :** `appli/icone-de-cause-2.html`, posée à côté de la première,
+qui n'a pas bougé d'une ligne. Un bureau de téléphone à taille réelle, sept
+icônes à y essayer : A, B et C recopiés de la première planche, D, E, F et G
+nouvelles. Son en-tête dit le parti pris et ce qui a été écarté.
+
+**Ce qu'il a à dire :** une lettre, de A à G. **Les lettres ne se
+renumérotent jamais** : A, B et C désignent les dessins de la première
+planche, D à G ceux de la seconde, sur les deux pages.
+
+**Ce qui n'est PAS vérifié, et qu'il ne faut pas croire vérifié :**
+
+- **Safari.** Ce poste n'a que Chromium. L'ouverture de l'appli depuis l'icône
+  est un rognage animé (`clip-path`) : c'est le premier geste à lui faire
+  essayer sur son iPhone.
+- **La taille exacte du motif sur Android.** La planche montre ce que
+  `scripts/generer-icones.mjs` fabrique (le dessin réduit à 60 %, puis le rond
+  qui en garde 80 %, la zone que la norme garantit). Selon le lanceur, le rond
+  peut garder un peu plus : le motif serait alors encore un peu plus petit.
+- **Qu'aucune marque ne porte déjà un dessin proche.** Un C en bulle est un
+  motif courant des messageries. À regarder avant tout dépôt de marque ; rien
+  n'a été cherché ici.
+
+**Le jour où il donne sa lettre, dans cet ordre :**
+
+1. `public/icone-source.svg` prend le dessin retenu. Les tracés sont dans la
+   planche (l'objet `CAUSE` de son script), sans aucune police.
+2. **`scripts/generer-icones.mjs` étend l'icône d'Android avec un fond crème
+   écrit en dur** (`FOND`). Pour B, D, E et F, dont le fond n'est pas crème, il
+   doit prendre le fond du dessin : sans cela Android montrera un carré de
+   couleur dans un rond crème. Trouvé en dessinant la planche, pas corrigé
+   (rien ne s'installe avant son choix).
+3. La marge de cette icône d'Android (60 %) rend le motif petit dans le rond.
+   À regarder sur un vrai Android avant de la garder.
+4. `npm run icones`, puis regarder l'icône installée sur son téléphone.
+5. `public/` et `scripts/` : le niveau se calcule (`npm run niveau`).
+
+**À savoir pour qui reprendra :** la première planche cite
+`ARCHITECTURE.md` §581 (« l'application s'appelle Cause »), arrivé sur `main`
+avec le renommage le 17 novembre 2026, après la montée de Next.js en 16.4.6
+(§582). Le manifeste dit Cause. La direction de la planche est dans
+`.impeccable/surfaces/appli-icone-de-cause-2-html.md`.
+
+## ⏳ UNE PLANCHE À REGARDER : LE SITE DE VENTE EN MOUVEMENT (17 novembre 2026)
+
+Sa demande, depuis son téléphone, devant `appli/vente/cause.html` : *« fais-moi
+une maquette de la version améliorée, j'aimerais avoir des animations plus
+jolies, plus spectaculaires. Je te laisse toutes les libertés que tu désires.
+Ne modifie pas cette version, crée une autre maquette pour pouvoir comparer. »*
+
+**La planche :** `appli/vente/cause-2.html`, posée à côté de `cause.html`, qui
+n'a pas bougé d'une ligne. Mêmes textes, mêmes prix, mêmes captures, mêmes
+films : la comparaison ne porte que sur le mouvement. Son en-tête dit ce qui
+bouge, pourquoi, et ce que ses retours passés interdisent (rien de dessiné sur
+un écran de l'appli, aucun geste d'écran lié au défilement, une scène qui part
+à un tiers de l'écran mais laisse une demi-seconde avant le geste).
+
+**Ce qu'il a à dire :** s'il garde ce mouvement, ce qu'il en retire, et ce qui
+accroche sur son iPhone.
+
+**Ce qui n'est PAS vérifié, et qu'il ne faut pas croire vérifié :** Safari. Ce
+poste n'a que Chromium. La planche est écrite pour lui (masques préfixés,
+cadres arrondis isolés autour des films, aucune nouveauté sans repli), mais
+personne ne l'a regardée sur un iPhone. Les points à surveiller en premier :
+les téléphones qui tournent en 3D avec un film dedans, la feuille qui s'écrit
+(un masque qui glisse), les bandes nuit qui s'élargissent (un rognage), le
+grand chiffre de la TVA (des rouleaux rognés en haut et en bas), la feuille
+d'Envoyez rognée par sa scène (la coulisse).
+
+**Ce qui a été relu, et jusqu'où :** un second regard a relu le mouvement sur
+des pellicules, deux fois. Neuf corrections au premier tour, huit tenues au
+second. La neuvième (la feuille d'Envoyez dépassait de sa scène) a été refaite
+après le second verdict et n'a pas été relue : à lui montrer en premier.
+
+**S'il la retient, une question à lui poser avant de toucher quoi que ce
+soit :** `cause.html` dit que `chapitres-6.html` reste la référence (« une
+retouche s'y fait d'abord, puis se recopie ici »). Avec `cause-2.html`, cela
+ferait trois pages à tenir pour un seul site. Laquelle devient la référence,
+et lesquelles s'arrêtent là ?
+
+**Pour qui reprendra la planche :** la relecture du mouvement et ses
+pellicules sont dans `.impeccable/review/motion/` (dossier ignoré de git, à
+refaire). `impeccable motion-capture` ne sait ni défiler ni suivre des scènes
+enchaînées par minuteries : il n'a servi que pour la bascule des prix et les
+questions. La direction retenue est dans
+`.impeccable/surfaces/appli-vente-cause-2-html.md`.
 
 ## ⏳ LA MAIN D'ŒUVRE « SUR UNE LIGNE », SUR `main` LE 9 NOVEMBRE 2026 ; restent la croix de la carte et un frêne inventé
 
