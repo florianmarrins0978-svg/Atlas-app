@@ -7,6 +7,46 @@ Le texte de l'appli dit Cause (`ARCHITECTURE.md` §581). Restent, et chacun est 
 - **les conditions générales** : une version nouvelle qui dit Cause, que chaque compte acceptera de nouveau. Le plus simple : la faire quand sa micro-entreprise a son SIREN, pour remplir dans la même version les cases « Qui édite » encore à compléter (une seule acceptation au lieu de deux) ;
 - **l'icône** : le « A » provisoire ne va plus. Trois planches (ci-dessous) : il a jugé les lettres des deux premières trop basiques, la troisième porte des dessins et attend une lettre et un fond, puis `npm run icones` ;
 - **l'adresse d'envoi des courriels** : le nom affiché dit Cause, l'adresse reste celle de sa variable `COURRIEL_EXPEDITEUR`, à passer sur cause.fr quand l'Afnic aura accordé le domaine.
+## ⏳ UNE PLANCHE À REGARDER : FAIRE SIGNER LA FICHE D'ENTRETIEN (17 novembre 2026)
+
+**Sa demande, qui revient sur sa décision du 16 août** (pas de signature sur les
+rapports) : *« quand les gars font la tonte, l'entretien des massifs, ils mettent
+le temps passé. Si le client est là, ils lui font signer. S'il n'est pas là, ils
+ne lui font pas signer. Il ne faut pas que ça soit obligatoire pour enregistrer
+la fiche »*, puis *« la possibilité de signer lorsqu'il reçoit son lien, et la
+signature se met dans l'encadré où il doit signer »*.
+
+`appli/soignee/fiche-signee-par-le-client.html`, posée sur les vrais écrans
+figés (fiche de chantier, fiche envoyée, page du client) et sur le vrai PDF :
+la toile de `Signature.tsx` (fiche de sécurité) sous les observations,
+« Enregistrer et envoyer » jamais bloqué ; chez le client, « Votre signature »
+et « Signer » tant que personne n'a signé ; dans le PDF, le cadre en pointillés
+du devis avec la signature et « Signée par Mme Lefèvre, sur place (ou depuis
+son lien), le … ». **Ce qui reste vrai de la règle du 16 août** : sans
+signature, aucun encadré sur le PDF, jamais de « Non signé ». **Pas encore
+codé** : à son choix, une migration (expand : la signature, son nom, son heure,
+d'où elle vient), et l'empreinte du rapport doit dire QUEL contenu a été signé.
+
+## DEUX DÉFAUTS VUS EN FABRIQUANT CETTE PLANCHE, NON CORRIGÉS (17 novembre 2026)
+
+Trouvés sur une base neuve, par le vrai parcours d'inscription. Ni l'un ni
+l'autre n'est dans le lot de la planche ; chacun demande son lot, son test rouge.
+
+1. **Un compte créé par l'inscription ne peut pas faire son premier devis.**
+   `creerCompteDepuisLaPorte` (`src/server/repositories/creation-compte.ts`)
+   n'insère pas la ligne `entreprise_compteurs`, que `creerEntreprise` pose.
+   `attribuerNumeroDevis` lit alors `rows[0].numero` sur zéro ligne :
+   « Cannot read properties of undefined (reading 'numero') » sur
+   `/chantiers/<id>/devis-complet`. Gravité argent, niveau 3. Les comptes déjà
+   créés par la porte n'ont pas la ligne non plus : il faudra une migration
+   qui la pose pour chaque entreprise qui n'en a pas (`ON CONFLICT DO NOTHING`,
+   sous FORCE RLS, `.claude/rules/migrations.md`). Vérifier aussi le numéro de
+   facture, qui lit le même compteur.
+2. **Le PDF du retour d'intervention écrit « Mr. » devant toutes les
+   clientes.** `composerRapportEntretienPdf` ne passe pas `clientCivilite` :
+   `avecCivilite` retombe sur la civilité par défaut. `RapportPublic` ne porte
+   pas la civilité ; la page du client écrit « chez Lefèvre », sans civilité.
+
 ## DEUX SUITES ROUGES UN JOUR PAR MOIS : LE « 1ER » (17 novembre 2026)
 
 `test-le-client-s-est-trompe-e2e` et `test-message-sans-autre-date-e2e`
