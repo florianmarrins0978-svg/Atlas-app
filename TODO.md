@@ -5,7 +5,7 @@
 Le texte de l'appli dit Cause (`ARCHITECTURE.md` §581). Restent, et chacun est à lui :
 
 - **les conditions générales** : une version nouvelle qui dit Cause, que chaque compte acceptera de nouveau. Le plus simple : la faire quand sa micro-entreprise a son SIREN, pour remplir dans la même version les cases « Qui édite » encore à compléter (une seule acceptation au lieu de deux) ;
-- **l'icône** : le « A » provisoire ne va plus. Deux planches attendent sa lettre (ci-dessous), puis `npm run icones` ;
+- **l'icône** : le « A » provisoire ne va plus. Trois planches (ci-dessous) : il a jugé les lettres des deux premières trop basiques, la troisième porte des dessins et attend une lettre et un fond, puis `npm run icones` ;
 - **l'adresse d'envoi des courriels** : le nom affiché dit Cause, l'adresse reste celle de sa variable `COURRIEL_EXPEDITEUR`, à passer sur cause.fr quand l'Afnic aura accordé le domaine.
 ## DEUX SUITES ROUGES UN JOUR PAR MOIS : LE « 1ER » (17 novembre 2026)
 
@@ -19,7 +19,49 @@ Le produit est juste ; ce sont les deux motifs à corriger, dans un lot à part
 (accepter `\d+(er)? `). D'ici là, ces deux rouges ne bloquent personne : le
 garde-fou les reconnaît comme préexistants.
 
-## ⏳ UNE PLANCHE À REGARDER : L'ICÔNE DE CAUSE SUR LE BUREAU DU TÉLÉPHONE (17 novembre 2026)
+## ⏳ UNE PLANCHE À REGARDER : L'ICÔNE DE CAUSE, EN DESSIN (17 novembre 2026)
+
+**Sa réponse du même jour devant la deuxième planche (les lettres), et elle
+change la demande :** *« Ok, très bien, mais là tu m'as fait un truc hyper
+basique. C'est une lettre avec une couleur. [...] Regarde l'application de
+Claude. C'est une espèce de soleil blanc sur un fond orange. ChatGPT, on
+dirait des mailles qui s'entrelacent. Et je pense que pour Cause, il faudrait
+également trouver peut-être un design, un dessin, une image, quelque chose qui
+claque, quelque chose qui rentre facilement dans la tête et pour que le plus
+grand nombre d'utilisateurs ne l'oublie pas dès qu'il la voit. Propose-moi
+d'autres choses du coup. »*
+
+**Donc plus de lettre.** `appli/icone-de-cause-3.html` : trois dessins qu'on
+peut nommer, le rouge-gorge (H), le casque de chantier en bulle (I), la rosace
+des charpentiers (J), chacun sur trois fonds (vert, or, crème), sur le même
+bureau de téléphone. **Ce qu'il a à dire : une lettre et un fond**, ou ce qui
+manque encore. A à G (les lettres) restent sur les deux planches d'avant, qui
+ne bougent pas.
+
+**À savoir pour la suite de cette recherche :**
+
+- **Ce qui a été écarté est nommé dans l'en-tête de la planche**, avec ce que
+  chaque idée devenait en petit (un mètre ruban se lit comme un escargot, un
+  niveau comme une gélule, une bulle faite de lignes comme une ruche). Ne pas
+  les reproposer sans les avoir regardées à 60, 29 et 16 px.
+- **Pas dessinée : la cocotte en papier** (la paperasse, pliée en oiseau). Sa
+  géométrie n'a pas pu être vérifiée d'ici (Wikipédia est hors du réseau de ce
+  poste) et une cocotte fausse ne se reconnaît pas. À reprendre s'il aime
+  l'oiseau.
+- **Les couleurs de ces dessins ne sont pas des jetons de l'appli** : l'or est
+  celui du site de vente (`#F0B43C`), le vert un vert forêt (`#15402A`), plus
+  franc que le vert pin, et la gorge du rouge-gorge est rouge (`#E4572E`), la
+  seule couleur hors de sa charte. Si un dessin est retenu, dire où elles
+  vivent (l'icône seule, ou aussi le manifeste et l'écran de lancement).
+- **La rosace ressemble à un emblème politique dès qu'elle est verte sur un
+  fond clair** (le « Sole delle Alpi » de la Lega, un parti italien). La
+  planche ne la montre donc qu'en or. Il doit le savoir avant de la choisir :
+  dit dans la conversation le 17 novembre.
+- **Les entrelacs ont été écartés sans dessin** : des anneaux, des losanges, un
+  trèfle sont déjà des marques connues. S'il y tient, c'est un travail à part.
+
+Ce qui suit vaut pour les trois planches (la première, la deuxième et la
+troisième).
 
 Sa demande, depuis son téléphone : *« J'ai besoin que tu me fasses une planche
 pour l'icône de l'application quand il sera sur le bureau des téléphones des
@@ -33,9 +75,8 @@ qui n'a pas bougé d'une ligne. Un bureau de téléphone à taille réelle, sept
 icônes à y essayer : A, B et C recopiés de la première planche, D, E, F et G
 nouvelles. Son en-tête dit le parti pris et ce qui a été écarté.
 
-**Ce qu'il a à dire :** une lettre, de A à G. **Les lettres ne se
-renumérotent jamais** : A, B et C désignent les dessins de la première
-planche, D à G ceux de la seconde, sur les deux pages.
+**Les lettres ne se renumérotent jamais** : A, B et C désignent les dessins de
+la première planche, D à G ceux de la deuxième, H à J ceux de la troisième.
 
 **Ce qui n'est PAS vérifié, et qu'il ne faut pas croire vérifié :**
 
@@ -55,9 +96,9 @@ planche, D à G ceux de la seconde, sur les deux pages.
 1. `public/icone-source.svg` prend le dessin retenu. Les tracés sont dans la
    planche (l'objet `CAUSE` de son script), sans aucune police.
 2. **`scripts/generer-icones.mjs` étend l'icône d'Android avec un fond crème
-   écrit en dur** (`FOND`). Pour B, D, E et F, dont le fond n'est pas crème, il
-   doit prendre le fond du dessin : sans cela Android montrera un carré de
-   couleur dans un rond crème. Trouvé en dessinant la planche, pas corrigé
+   écrit en dur** (`FOND`). Pour B, D, E, F et pour tout dessin de la troisième
+   planche sur fond vert ou or, il doit prendre le fond du dessin : sans cela
+   Android montrera un carré de couleur dans un rond crème. Trouvé en dessinant la planche, pas corrigé
    (rien ne s'installe avant son choix).
 3. La marge de cette icône d'Android (60 %) rend le motif petit dans le rond.
    À regarder sur un vrai Android avant de la garder.
@@ -67,8 +108,10 @@ planche, D à G ceux de la seconde, sur les deux pages.
 **À savoir pour qui reprendra :** la première planche cite
 `ARCHITECTURE.md` §581 (« l'application s'appelle Cause »), arrivé sur `main`
 avec le renommage le 17 novembre 2026, après la montée de Next.js en 16.4.6
-(§582). Le manifeste dit Cause. La direction de la planche est dans
-`.impeccable/surfaces/appli-icone-de-cause-2-html.md`.
+(§582). Le manifeste dit Cause ; l'icône, elle, est toujours le « A »
+provisoire. La direction de chaque planche est dans
+`.impeccable/surfaces/appli-icone-de-cause-2-html.md` et
+`.impeccable/surfaces/appli-icone-de-cause-3-html.md`.
 
 ## ⏳ UNE PLANCHE À REGARDER : LE SITE DE VENTE EN MOUVEMENT (17 novembre 2026)
 
