@@ -64,7 +64,7 @@ export function useActiverFaceId(onCles: (cles: CleAppareil[]) => void) {
           return;
         }
         const { startRegistration } = await import("@simplewebauthn/browser");
-        const reponse = await startRegistration(defi.options);
+        const reponse = await startRegistration({ optionsJSON: defi.options });
         const r = await enregistrerCleAction(JSON.stringify(reponse));
         if (!r.ok) {
           // Le serveur réclame une identité récente : on la demande, puis on

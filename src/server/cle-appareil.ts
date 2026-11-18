@@ -4,9 +4,10 @@ import {
   generateRegistrationOptions,
   verifyAuthenticationResponse,
   verifyRegistrationResponse,
+  type AuthenticationResponseJSON,
+  type RegistrationResponseJSON,
 } from "@simplewebauthn/server";
-import { isoBase64URL } from "@simplewebauthn/server/helpers";
-import type { AuthenticationResponseJSON, RegistrationResponseJSON } from "@simplewebauthn/types";
+import { isoBase64URL, isoUint8Array } from "@simplewebauthn/server/helpers";
 import { getEnv } from "./env";
 import { estBancDEssai } from "../profil-banc";
 import { origineWebAuthn, type OrigineWebAuthn } from "../lib/origine-webauthn";
@@ -169,11 +170,16 @@ export async function optionsEnregistrement(
   const options = await generateRegistrationOptions({
     rpName: "Cause",
     rpID: ctx.origine.rpId,
-    userID: utilisateur.id,
+    // **Les MÊMES octets qu'avant la version 13, et c'est voulu.** La version 9
+    // envoyait l'identifiant en texte, que le navigateur posait en UTF-8 sur la
+    // clé. Le garder tel quel laisse au téléphone le même compte pour la même
+    // personne : une clé refaite sur l'appareil remplace la sienne au lieu de
+    // s'ajouter à côté (`test-face-id-e2e.ts` lit ce que l'appareil a retenu).
+    userID: isoUint8Array.fromUTF8String(utilisateur.id),
     userName: utilisateur.email,
     userDisplayName: utilisateur.nom ?? utilisateur.email,
     attestationType: "none",
-    excludeCredentials: deja.map((id) => ({ id: isoBase64URL.toBuffer(id), type: "public-key" as const })),
+    excludeCredentials: deja.map((id) => ({ id })),
     authenticatorSelection: {
       residentKey: "required",
       userVerification: "required",
@@ -218,15 +224,18 @@ export async function enregistrerCle(
 
   if (!verifie.verified || !verifie.registrationInfo) return { ok: false, refus: "panne-activation" };
 
-  const { credentialID, credentialPublicKey, counter } = verifie.registrationInfo;
+  // Rangée comme la version 9 la rangeait : l'identifiant en base64url, la clé
+  // publique COSE en base64url. Les clés déjà posées s'ouvrent donc sans
+  // conversion (`test-face-id-e2e.ts`, « une clé posée avant la version 13 »).
+  const { credential } = verifie.registrationInfo;
   const entetes = await headers();
   const nomAppareil = nommerAppareil(entetes.get("user-agent"));
 
   const pose = await ajouterCle({
     utilisateurId,
-    identifiantCle: isoBase64URL.fromBuffer(credentialID),
-    clePublique: isoBase64URL.fromBuffer(credentialPublicKey),
-    compteur: counter,
+    identifiantCle: credential.id,
+    clePublique: isoBase64URL.fromBuffer(credential.publicKey),
+    compteur: credential.counter,
     nomAppareil,
   });
   if (!pose.ok) return { ok: false, refus: pose.refus };
@@ -299,12 +308,12 @@ export async function ouvrirAvecCle(reponse: AuthenticationResponseJSON): Promis
       expectedOrigin: defi.origine.origine,
       expectedRPID: defi.origine.rpId,
       requireUserVerification: true,
-      authenticator: {
+      credential: {
         // L'identifiant TEL QU'IL EST EN BASE, jamais celui que la réponse
         // porte : c'est la ligne retrouvée qui fait foi, pas ce qu'on nous
         // présente.
-        credentialID: isoBase64URL.toBuffer(cle.identifiantCle),
-        credentialPublicKey: isoBase64URL.toBuffer(cle.clePublique),
+        id: cle.identifiantCle,
+        publicKey: isoBase64URL.toBuffer(cle.clePublique),
         counter: cle.compteur,
       },
     });

@@ -37532,9 +37532,22 @@ de haie de photinia, élagage d'un frêne, plantation d'un olivier »), puis ver
 | minimatch, déni de service par un motif (moyenne, GHSA-g3hv-75wg-m249) | ESLint (`typescript-eslint`), Sentry à la construction | non, même raison | `typescript-eslint` 8.73 l'enlève d'ESLint ; pas pour lui seul (ci-dessous) |
 | glob, délai d'abandon contourné (moyenne, GHSA-3g3m-2fjr-6pw4) | Sentry, à la construction | non | attendre que Sentry passe à glob 14 |
 | esbuild, serveur de développement lisible par un site (moyenne, GHSA-67mh-4wv8-2f99) | `drizzle-kit` (son vieux chargeur `@esbuild-kit`) | non : `drizzle-kit` ne lance jamais le serveur d'esbuild, et ne tourne que sur un poste de développement | attendre `drizzle-kit` ; `npm audit` propose de le RAMENER à 0.18, ce qui serait pire |
-| @simplewebauthn/server 9.0.3, chaîne de certificats de l'attestation mal vérifiée (faible, GHSA-6hxq-p678-4hr2) | l'entrée par Face ID (`src/server/cle-appareil.ts`), la seule qui tourne dans l'application | non : l'enregistrement demande `attestationType: "none"` et ne décide rien d'après l'attestation (ni modèle d'appareil, ni AAGUID). Ce que la faille fausse, l'application ne le lit pas | passer à 13.3.3 ou 14 le jour où l'on touche à Face ID, dans un lot à lui : cinq versions majeures d'écart sur l'authentification ne se montent pas en passant |
+| @simplewebauthn/server 9.0.3, chaîne de certificats de l'attestation mal vérifiée (faible, GHSA-6hxq-p678-4hr2) | l'entrée par Face ID (`src/server/cle-appareil.ts`), la seule qui tourne dans l'application | non : l'enregistrement demande `attestationType: "none"` et ne décide rien d'après l'attestation (ni modèle d'appareil, ni AAGUID). Ce que la faille fausse, l'application ne le lit pas | **monté à 13.3.3 le 18 novembre, sur sa demande** (ci-dessous) |
 
 **Pourquoi pas `npm audit fix`.** Sans `--force`, il réécrit une large part de `package-lock.json` (des dizaines de liaisons de plateforme) pour ne mettre à jour que des outils de relecture : un lot de niveau 3, une batterie entière, et rien de plus sûr pour un artisan. Avec `--force`, il rétrograde `eslint-config-next` en 14, `@sentry/nextjs` en 8, `next-auth` en 4 et `drizzle-kit` en 0.18 : il casserait l'application pour des failles qu'elle n'atteint pas.
+
+**Face ID passe de `@simplewebauthn` 9 à 13 (18 novembre 2026, sa demande : *« occupe-toi de Face ID »*).**
+
+| Décision | Pourquoi |
+|---|---|
+| 13.3.3, pas 14 | la 14 exige Node 22, le projet déclare Node 20 (`engines`) ; la 13.3.3 corrige déjà la faille (visée jusqu'à 13.3.1) |
+| serveur ET navigateur à 13 | la 9 envoyait l'identifiant du compte en texte, que le navigateur 9 encodait en UTF-8 ; la 13 l'envoie en base64url. Un serveur 13 face à un navigateur 9 aurait changé ce que le téléphone retient, sans que rien ne le dise |
+| `userID: isoUint8Array.fromUTF8String(utilisateur.id)` | les mêmes octets qu'en 9 : pour le téléphone, c'est le même compte, et une clé refaite remplace la sienne au lieu de s'ajouter |
+| la base ne change pas | la 9 rangeait l'identifiant et la clé publique COSE en base64url ; la 13 rend `credential.id` en base64url et `credential.publicKey` en octets, rangés pareil. Les clés déjà posées s'ouvrent sans conversion |
+| les types viennent de `@simplewebauthn/server` | `@simplewebauthn/types`, qu'on importait sans le déclarer, est abandonné ; il n'arrivait que par la 9 |
+| next-auth déclare la 9 en dépendance « pair » FACULTATIVE | il ne s'en sert que pour son propre fournisseur passkey, que l'application n'emploie pas (`src/auth.ts` dit pourquoi). `npm ls` le signale en profondeur seulement : `npm ls --silent`, que `banc.mjs` interroge quand une construction échoue, rend 0 et ne voit rien (mesuré) |
+
+`test-face-id-e2e.ts` en porte deux cas : l'appareil retient le compte sous les mêmes octets qu'avant, et une clé fabriquée et rangée comme la 9 la rangeait s'ouvre toujours (après qu'une clé publique fausse, sur la même ligne, a été refusée : le contrôle sait échouer).
 
 **Ce qui ferait changer ce verdict** : une faille dans un paquet que le SERVEUR exécute pour une requête (Next.js, next-auth, `@simplewebauthn/server` avec une attestation lue, `pg`, les fournisseurs d'IA), ou une version corrigée de picomatch. Refaire le tour avec `npm audit --json`, puis `npm ls <paquet>` pour savoir qui l'amène.
 

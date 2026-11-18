@@ -9,8 +9,7 @@ import { messageRefusCle, type CleAppareil } from "@/lib/cle-appareil";
 import { enregistrerCle, optionsEnregistrement } from "@/server/cle-appareil";
 import { listerCles, retirerCle } from "@/server/repositories/cles-appareil";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
-import type { PublicKeyCredentialCreationOptionsJSON } from "@simplewebauthn/types";
-import type { RegistrationResponseJSON } from "@simplewebauthn/types";
+import type { PublicKeyCredentialCreationOptionsJSON, RegistrationResponseJSON } from "@simplewebauthn/server";
 
 /**
  * Le mot de passe, et la déconnexion générale.

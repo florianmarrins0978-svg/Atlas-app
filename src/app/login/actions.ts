@@ -14,7 +14,7 @@ import { messageRefusCle } from "@/lib/cle-appareil";
 import { estBranche, estNomFournisseur, messageNonBranche } from "@/lib/fournisseurs-connexion";
 import { clesFournisseurs } from "@/server/cles-fournisseurs";
 import { optionsConnexion } from "@/server/cle-appareil";
-import type { PublicKeyCredentialRequestOptionsJSON } from "@simplewebauthn/types";
+import type { PublicKeyCredentialRequestOptionsJSON } from "@simplewebauthn/server";
 
 /** Ce que le navigateur attend pour ouvrir la fenêtre du système. */
 type OptionsPubliquesConnexion = PublicKeyCredentialRequestOptionsJSON;
