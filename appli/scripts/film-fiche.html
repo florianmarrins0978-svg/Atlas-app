@@ -188,8 +188,12 @@ html,body{margin:0;background:#f5f4f0}
   var borne = function(v){ return v < 0 ? 0 : v > 1 ? 1 : v; };
   var part = function(t, a, b){ return borne((t - a) / (b - a)); };
   var doux = function(v){ return v * v * (3 - 2 * v); };
-  // Une appli qui s'ouvre sur un iPhone : elle part vite et se pose longuement.
-  var OUVRE = courbe(.2, .84, .2, 1), FERME = courbe(.5, 0, .3, 1), TRACE = courbe(.4, 0, .2, 1);
+  // L'écran de l'autre appli sort de sa case en quatre images lisibles, puis
+  // se pose longuement. Une courbe plus vive (.2, .84, .2, 1) le posait à
+  // 40 % de sa taille dès la deuxième image : la case touchée était
+  // recouverte avant qu'on ait vu d'où il venait. Elle reste à l'épingle,
+  // qui, elle, doit tomber franchement.
+  var SORT = courbe(.3, .3, .15, 1), POSE = courbe(.2, .84, .2, 1), FERME = courbe(.5, 0, .3, 1), TRACE = courbe(.4, 0, .2, 1);
 
   // ── Le trajet : il suit les rues du plan, au point près ──────────────────
   // Une rue est une courbe de Bézier ; le trajet en emprunte des morceaux.
@@ -248,12 +252,25 @@ html,body{margin:0;background:#f5f4f0}
   // premières quand on arrive en descendant. La note vient ensuite, le temps
   // qu'elle soit montée au-dessus du bouton d'essai du téléphone.
   var NOTE = "Clé du portail chez la voisine. Prendre le broyeur.";
+  // Waze garde près d'une demi-seconde de repos une fois son épingle posée :
+  // refermé aussitôt, « Navigation lancée » n'était qu'un tressaillement. Le
+  // temps est pris sur le repos du début (la page attend déjà une demi-seconde
+  // avant de lancer le film) et sur celui de la fin (c'est déjà la dernière
+  // image, qui reste).
   var T = {
-    maps: {appui: .40, ouvre: .52, trace: .94, tracee: .70, ferme: 2.22, origine: [49.5, 123]},
-    waze: {appui: 2.74, ouvre: 2.86, trace: 3.22, tracee: .58, ferme: 4.06, origine: [114.5, 123]},
-    curseur: 4.62, ecrit: 4.80
+    maps: {appui: .24, ouvre: .36, trace: .78, tracee: .70, ferme: 2.06, centre: [49.5, 123]},
+    waze: {appui: 2.58, ouvre: 2.70, trace: 3.06, tracee: .58, ferme: 4.20, centre: [114.5, 123]},
+    curseur: 4.76, ecrit: 4.94
   };
   var DUREE_OUVRE = .46, DUREE_FERME = .36;
+  // L'écran part de la taille d'une case (un cinquième de la sienne), posé
+  // SUR elle. Le point fixe d'une mise à l'échelle n'est pas le centre de ce
+  // qu'on veut voir rétrécir dessus : prendre le centre de la case pour point
+  // fixe faisait naître l'écran vingt pixels à droite et trente plus bas, à
+  // cheval sur la case voisine. Le point fixe se calcule : c'est celui qui
+  // amène le centre de l'écran sur le centre de la case à l'échelle de départ.
+  var PETIT = .2, ECRAN = [147, 266];
+  var pointFixe = function(centre){ return [(centre[0] - PETIT * ECRAN[0]) / (1 - PETIT), (centre[1] - PETIT * ECRAN[1]) / (1 - PETIT)]; };
   // La frappe : régulière sans être mécanique, un souffle après un point.
   // Une quarantaine de millisecondes par lettre : c'est le rythme de la
   // remarque du film des travaux (« Le portail ferme mal, à revoir. »).
@@ -265,27 +282,27 @@ html,body{margin:0;background:#f5f4f0}
   }
   T.ecritFin = instants[instants.length - 1];
   T.enregistre = T.ecritFin + .38;
-  var DUREE = Math.ceil((T.enregistre + .8) * 60) / 60;
+  var DUREE = Math.ceil((T.enregistre + .5) * 60) / 60;
 
   var poserAutre = function(nom, t){
     var el = $(nom), r = T[nom], j = TRAJETS[nom];
     var appui = $("appui-" + nom);
     appui.style.opacity = (doux(part(t, r.appui, r.appui + .07)) * (1 - doux(part(t, r.ouvre + .1, r.ouvre + .3)))).toFixed(3);
-    var ouvert = t < r.ferme ? OUVRE(part(t, r.ouvre, r.ouvre + DUREE_OUVRE)) : 1 - FERME(part(t, r.ferme, r.ferme + DUREE_FERME));
-    if (ouvert <= 0){ el.style.opacity = "0"; el.style.transform = "scale(.2)"; return; }
+    var ouvert = t < r.ferme ? SORT(part(t, r.ouvre, r.ouvre + DUREE_OUVRE)) : 1 - FERME(part(t, r.ferme, r.ferme + DUREE_FERME));
+    if (ouvert <= 0){ el.style.opacity = "0"; el.style.transform = "scale(" + PETIT + ")"; return; }
     // Elle sort de la case touchée et y rentre : l'échelle part de la taille
-    // de la case, et les coins s'ouvrent avec elle.
-    var echelle = .2 + .8 * ouvert;
-    el.style.transformOrigin = r.origine[0] + "px " + r.origine[1] + "px";
+    // de la case, avec son arrondi (12 px), et les coins s'ouvrent avec elle.
+    var echelle = PETIT + (1 - PETIT) * ouvert, fixe = pointFixe(r.centre);
+    el.style.transformOrigin = fixe[0].toFixed(3) + "px " + fixe[1].toFixed(3) + "px";
     el.style.transform = "scale(" + echelle.toFixed(4) + ")";
-    el.style.borderRadius = (58 * (1 - ouvert) / echelle).toFixed(2) + "px";
+    el.style.borderRadius = (12 * (1 - ouvert) / echelle).toFixed(2) + "px";
     el.style.opacity = doux(part(ouvert, 0, t < r.ferme ? .3 : .2)).toFixed(3);
     // Le trajet se trace du départ à l'arrivée ; l'épingle se pose au bout.
     var DUREE_TRACE = r.tracee;
     var trace = TRACE(part(t, r.trace, r.trace + DUREE_TRACE));
     var decalage = (j.longueur * (1 - trace)).toFixed(2);
     j.dessous.setAttribute("stroke-dashoffset", decalage); j.dessus.setAttribute("stroke-dashoffset", decalage);
-    var pose = part(t, r.trace + DUREE_TRACE * .62, r.trace + DUREE_TRACE * .62 + .34), chute = OUVRE(pose);
+    var pose = part(t, r.trace + DUREE_TRACE * .62, r.trace + DUREE_TRACE * .62 + .34), chute = POSE(pose);
     j.epingle.setAttribute("transform", "translate(" + ARRIVEE[0] + " " + (ARRIVEE[1] - 16 * (1 - chute)).toFixed(2) + ") scale(" + (.6 + .4 * chute).toFixed(3) + ")");
     j.epingle.setAttribute("opacity", doux(part(pose, 0, .35)).toFixed(3));
     j.ombre.setAttribute("opacity", doux(part(pose, .3, 1)).toFixed(3));
