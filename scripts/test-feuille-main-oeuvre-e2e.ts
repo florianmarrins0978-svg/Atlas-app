@@ -232,6 +232,15 @@ async function main() {
       await regler("mo-hommes", "1");
       await regler("mo-duree", "1 journée");
       await page.fill('[data-atlas="mo-tarif"]', "280");
+      // Sur une ligne d'abord : sa planche du 16 novembre 2026, son « ok » du
+      // 17. Plus de croix, qui ne changeait rien ; à sa place, le prix que la
+      // ligne garde sur le devis.
+      const ou = page.locator('[data-atlas="mo-ou"]');
+      assert.equal(await ou.getByRole("button", { name: /^Retirer / }).count(), 0, "une croix reste sur une ligne, où elle ne change rien");
+      assert.deepEqual(
+        (await ou.locator('[data-atlas="prix-du-travail"]').allInnerTexts()).map((p) => p.replace(/\s+/g, " ")),
+        ["200 €", "180 €"]
+      );
       await page.getByRole("button", { name: "Répartis sur les travaux" }).click();
       await page.locator('[data-atlas="barre-main-oeuvre"]').waitFor();
       const noms = await page.locator('[data-atlas="mo-ou"]').innerText();

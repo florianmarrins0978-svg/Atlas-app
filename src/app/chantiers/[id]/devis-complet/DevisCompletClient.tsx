@@ -2040,7 +2040,7 @@ export default function DevisCompletClient(props: Props) {
                 montantDeLaLigne(l) > 0 &&
                 (tauxDeLaMainOeuvre === null || tauxDeLaLigne({ tauxTva: l.tauxTva }, tauxDuDevis) === tauxDeLaMainOeuvre)
             )
-            .map((l) => ({ id: l.id, libelle: l.libelle.trim() || "Sans description" })),
+            .map((l) => ({ id: l.id, libelle: l.libelle.trim() || "Sans description", montant: montantDeLaLigne(l).toFixed(2) })),
           onRepartir: (choix, parts) => void repartirMainDoeuvre(choix, parts),
         }}
         onValider={(choix) => void ajouterMainDoeuvre(choix)}

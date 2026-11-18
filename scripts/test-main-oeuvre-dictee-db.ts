@@ -250,6 +250,51 @@ async function main() {
     assert.equal(d.mainDoeuvreHt, "1200.00", "« dont main d'œuvre HT » compte la ligne, pas la haie");
   });
 
+  // **Sa planche du 16 novembre 2026, son « ok » du 17**
+  // (`appli/soignee/carte-main-d-oeuvre-sur-une-ligne.html`) : sur une ligne,
+  // la croix ne changeait rien au prix d'un travail, elle sort donc de ce mode.
+  // Une croix posée en « Répartis » reste dans sa réponse quand il passe « sur
+  // une ligne » ; elle ne doit plus rien changer au devis. Elle déplaçait la
+  // ligne Main d'œuvre derrière le travail barré, que la carte ne montre plus
+  // barré.
+  await test("« sur une ligne », une croix posée avant en « Répartis » ne change plus rien au devis", async () => {
+    const A = await sonEntreprise("ligne-croix");
+    await poserPrixGrille(A, "haie", CELLULE_HAIE, "10");
+    const c = await chantierDicte(A, {
+      prestations: [
+        { ...base, libelle: "Taille de haie de photinia", nature: "haie", quantite: "20", unite: "ml" },
+        { ...base, libelle: "Élagage d'un frêne", nature: "elagage" },
+        { ...base, libelle: "Plantation d'un olivier" },
+      ],
+      dureePrevue: "1 jour",
+      tailleEquipe: "3 hommes",
+    });
+    const { question } = await questionMainOeuvre(A, c.id);
+    const travaux = question!.mainOeuvre!.travaux;
+    const devis = async (retires: string[]) => {
+      await repondre(A, c.id, { mode: "ligne", parts: {}, retires });
+      return (await preparerPropositionPrix(A, c.id))!.lignes.map((l) => [l.libelle, l.montant === null ? null : Number(l.montant)]);
+    };
+    const sansCroix = await devis([]);
+    assert.deepEqual(sansCroix, [
+      ["Main d’œuvre", 1200],
+      ["Taille de haie de photinia", 200],
+      ["Élagage d'un frêne", null],
+      ["Plantation d'un olivier", null],
+    ]);
+    assert.deepEqual(await devis([travaux[0].cle]), sansCroix, "la haie barrée en « Répartis » a déplacé la main d'œuvre");
+    assert.deepEqual(await devis(travaux.map((t) => t.cle)), sansCroix, "tout barré en « Répartis » a envoyé la main d'œuvre en bas");
+    // Ce que la carte montre à la place de la croix : le prix de chaque travail sur ce devis.
+    assert.deepEqual(
+      travaux.map((t) => [t.libelle, t.prixSurUneLigne === null ? null : Number(t.prixSurUneLigne)]),
+      [
+        ["Taille de haie de photinia", 200],
+        ["Élagage d'un frêne", null],
+        ["Plantation d'un olivier", null],
+      ]
+    );
+  });
+
   // **Le partenaire pris sur la question** : son « B » du 4 novembre 2026
   // (`appli/soignee/main-oeuvre-dictee-partenaires.html`). Le prix se relit en
   // base, jamais sur la parole de l'écran : une quantité mentie à la journée ne

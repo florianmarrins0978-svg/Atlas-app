@@ -37460,6 +37460,21 @@ le total de la main d'œuvre, et c'est encore ce qu'il est. Sa croix, en mode
 « ligne », ne change plus le devis : c'est une apparence, donc une planche
 d'abord (`TODO.md`).
 
+**Sa planche du 16 novembre 2026, son « ok » du 17**
+(`appli/soignee/carte-main-d-oeuvre-sur-une-ligne.html`) : en mode « ligne »,
+la croix sort de la carte, et le prix que le travail aura sur le devis prend sa
+place (`prixSurUneLigne`, sinon « À chiffrer »).
+
+| Décision | Pourquoi |
+|---|---|
+| `sortisParLaCroix` rend `[]` en mode « ligne », lue par la carte ET par `proposition-prix.ts` | une croix posée en « Répartis » restait dans sa réponse : la carte ne la montrerait plus, mais elle déplaçait encore la ligne Main d'œuvre derrière le travail barré. Une seule règle, deux lecteurs (`CLAUDE.md` §3) |
+| les croix de « Répartis » restent dans la réponse | il y retrouve ce qu'il avait barré s'il y revient |
+| le prix vient du producteur de la question, jamais deviné par la carte | dictée : la grille, que `aSaGrille` écrit ; feuille du devis : le montant de la ligne, qu'elle garde. La feuille passait `grille: null` : sans ce champ, elle aurait affiché « À chiffrer » sur des lignes déjà chiffrées |
+
+`test-main-oeuvre-dictee-db.ts` (une croix d'avant ne change plus le devis),
+`test-repartir-main-oeuvre.ts`, `test-main-oeuvre-sur-une-ligne-e2e.ts` (les
+prix que la carte montre sont ceux du devis) et `test-feuille-main-oeuvre-e2e.ts`.
+
 `scripts/test-main-oeuvre-dictee-db.ts`, « son devis de Luc » : vu rouge sur
 le code d'avant, avec le libellé exact de sa capture (« Main d'œuvre : taille
 de haie de photinia, élagage d'un frêne, plantation d'un olivier »), puis vert,
@@ -37505,4 +37520,5 @@ de haie de photinia, élagage d'un frêne, plantation d'un olivier »), puis ver
 | il laisse repasser la même commande dans les cinq minutes, une fois | la batterie reconstruit bien plus tard : la porte ne sert pas, et ce serait contourner l'avis au lieu de le traiter |
 | son espace, lui, n'est pas arrêté : sans agent, Next.js ne fait que proposer | la faille n'en reste pas moins à corriger |
 | **la racine : monter de version**, dans un lot à part (`package.json` est un plancher, batterie entière) | jamais couper le réglage : ce serait faire taire un avis de sécurité pour passer |
+| **le même refus vient d'un `node_modules` resté en arrière** (18 novembre 2026) : une fusion de `main` qui monte `package.json` ne réinstalle rien, et la batterie construit avec la version d'avant (« ▲ Next.js 16.4.2 » dans son journal, 16.4.6 dans le `package.json`) | avant de croire à une nouvelle faille, comparer la version que la construction annonce à celle du `package-lock.json` ; après une fusion qui touche `package.json`, `npm ci` avant la batterie |
 

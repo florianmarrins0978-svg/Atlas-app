@@ -33,7 +33,10 @@ export type ChoixMainOeuvre = {
   mode: ModeMainOeuvre;
   /** Sa part de chaque travail, par libellé de ligne. Absente : parts égales. */
   parts: Record<string, number>;
-  /** Les travaux sortis de la main d'œuvre par la croix : leur grille, sinon à chiffrer. */
+  /**
+   * Les travaux sortis de la main d'œuvre par la croix : leur grille, sinon à
+   * chiffrer. En « Répartis » seulement : `sortisParLaCroix`.
+   */
   retires: string[];
   /**
    * Le prix d'un de ses partenaires, pris à la place de son équipe : son « B »
@@ -50,8 +53,13 @@ export type QuestionMainOeuvre = {
   /** « 2 hommes pendant 2 jours, 400 € le jour par homme ». */
   detail: string;
   prixJourHomme: string;
-  /** Les travaux qu'elle peut couvrir, avec leur part de départ et le prix de leur grille. */
-  travaux: { cle: string; libelle: string; part: number; grille: string | null }[];
+  /**
+   * Les travaux qu'elle peut couvrir, avec leur part de départ, le prix de leur
+   * grille, et le prix qu'ils auront sur le devis si elle part sur une ligne :
+   * leur grille pour un travail dicté, leur montant pour une ligne déjà posée
+   * (la feuille du devis). `null` : à chiffrer.
+   */
+  travaux: { cle: string; libelle: string; part: number; grille: string | null; prixSurUneLigne: string | null }[];
   /** Les engins dictés qui partent avec leur conducteur. */
   engins: string[];
   hommes: number;
@@ -65,6 +73,18 @@ export type QuestionMainOeuvre = {
 export function questionDeLaMainOeuvre(total: string | null): string {
   if (total === null) return "Où mettre la main d'œuvre ?";
   return `Où mettre les ${new Decimal(total).toNumber().toLocaleString("fr-FR")} € de main d'œuvre ?`;
+}
+
+/**
+ * Les travaux que la croix sort de la main d'œuvre. **Sur une ligne, aucun** :
+ * sa planche du 16 novembre 2026, son « ok » du 17
+ * (`appli/soignee/carte-main-d-oeuvre-sur-une-ligne.html`). Chaque travail y
+ * prend déjà son prix, barré ou non ; la croix n'y changeait rien, elle n'y
+ * est plus. Ce qu'il a barré en « Répartis » reste dans sa réponse, et l'y
+ * attend s'il y revient.
+ */
+export function sortisParLaCroix(choix: ChoixMainOeuvre): string[] {
+  return choix.mode === "ligne" ? [] : choix.retires;
 }
 
 /** Le choix par défaut, tant qu'il n'a rien dit : réparti, parts de sa grille. */
