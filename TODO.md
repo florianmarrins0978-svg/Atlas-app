@@ -356,8 +356,12 @@ CODÉ LE 17 NOVEMBRE** (`ARCHITECTURE.md` §579). La croix sort du mode « ligne
 de `RepartirLaMainOeuvre.tsx`, le prix vient de `prixSurUneLigne` (la grille
 pour la dictée, le montant de la ligne pour la feuille « + Main d'œuvre » du
 devis, qui monte la même carte), et `sortisParLaCroix` fait que `retires` ne
-compte plus sur une ligne. **Reste : sa batterie** (niveau 3, argent), qui
-attend son « oui », puis `main`.
+compte plus sur une ligne. **Livré sur `main` le 18 novembre** (`f692fa54`),
+sur son « si tu peux la lancer, lance-la » : batterie de niveau 3, puis la
+rencontre avec `main` rejouée verte (600 suites base sur 600, 114 suites
+navigateur sur 114), les deux écrans regardés sur le chantier de Luc. Reste à
+la regarder sur son espace : une dictée de plusieurs travaux, « Sur une
+ligne Main d'œuvre ».
 
 **2. « à feuilles de frêne (frêne oxyphylle) » n'est écrit nulle part dans le
 dépôt** (code, vocabulaire soufflé au transcripteur, amorçage, migrations,

@@ -37520,4 +37520,5 @@ de haie de photinia, élagage d'un frêne, plantation d'un olivier »), puis ver
 | il laisse repasser la même commande dans les cinq minutes, une fois | la batterie reconstruit bien plus tard : la porte ne sert pas, et ce serait contourner l'avis au lieu de le traiter |
 | son espace, lui, n'est pas arrêté : sans agent, Next.js ne fait que proposer | la faille n'en reste pas moins à corriger |
 | **la racine : monter de version**, dans un lot à part (`package.json` est un plancher, batterie entière) | jamais couper le réglage : ce serait faire taire un avis de sécurité pour passer |
+| **le même refus vient d'un `node_modules` resté en arrière** (18 novembre 2026) : une fusion de `main` qui monte `package.json` ne réinstalle rien, et la batterie construit avec la version d'avant (« ▲ Next.js 16.4.2 » dans son journal, 16.4.6 dans le `package.json`) | avant de croire à une nouvelle faille, comparer la version que la construction annonce à celle du `package-lock.json` ; après une fusion qui touche `package.json`, `npm ci` avant la batterie |
 

@@ -11,8 +11,8 @@ sert.
 **Point de reprise :** 2026-11-17 · `main` : la fiche ouverte et Composer ma fiche en A, et « Votre dictée » enlevée de la fiche client, en une seule batterie (niveau 3). Avant, le 16 novembre : la fiche de chantier soignée, D et B (niveau 2 vert). Avant, le 9 novembre : la main d'œuvre « sur une
 ligne », chaque travail à son prix (`ARCHITECTURE.md` §579), batterie verte
 (217 suites navigateur sur 217). La croix de la carte en mode « ligne » :
-planche choisie le 17 novembre, codée sur la branche de session, batterie en
-attente de son « oui » (`TODO.md`). Reste l'origine de « frêne oxyphylle ».
+planche choisie le 17 novembre, sur `main` le 18 (le prix du travail à sa
+place, `ARCHITECTURE.md` §579). Reste l'origine de « frêne oxyphylle ».
 Avant : sur `main`, la batterie commune du 8 novembre
 (`docs/batterie-commune-8-novembre.md`).
 (l'historique fait foi : `git log --oneline -20`)
