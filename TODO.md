@@ -45,7 +45,7 @@ d'où elle vient), et l'empreinte du rapport doit dire QUEL contenu a été sign
 comme sur le devis. Reste : `test-fiche-signee-db` (écrite, pas jouée : elle
 vide la base, sa règle du 5 novembre) et la batterie, sur son « oui ».
 
-## ⏳ UNE PLANCHE À REGARDER : LA SIGNATURE DU DEVIS DANS UNE FEUILLE, OPTION B (18 novembre 2026)
+## ⏳ CODÉE, EN ATTENTE DE SA BATTERIE : LA SIGNATURE DU DEVIS DANS UNE FEUILLE, OPTION B (18 novembre 2026)
 
 **Sa demande :** *« fais-moi une planche pour la B »*. La toile de 170 px de la
 planche d'avant faisait déborder la page du client, que sa règle du 31 août
@@ -56,6 +56,11 @@ contenu remplacé) : « J'accepte ce devis » ouvre « Votre signature », la to
 et « J'accepte ce devis », qui refuse tant que rien n'est signé. La page,
 sans toile, mesure 664 px. **Ce qu'il a à dire : B, ou la planche d'avant.**
 Son choix vaudra aussi pour le contrat d'entretien, pas encore codé.
+
+**Son choix du 18 novembre : la B, « pour tout ».** Codée pour le devis et le
+contrat d'entretien (migration 0184), `ARCHITECTURE.md` §584. La fiche
+d'entretien garde sa toile dans l'écran de l'artisan, comme sa planche validée.
+La batterie tourne sur son « oui » du même jour.
 
 ## ⏳ CODÉ, EN ATTENTE DE SON ARBITRAGE ET DE SA BATTERIE : SIGNER SON DEVIS DEPUIS LE LIEN (17 novembre 2026)
 
@@ -85,7 +90,7 @@ seul écran de 390 × 664, sans défiler (`test-devis-client-e2e`, « TOUT TIENT
 DANS UN ÉCRAN », déjà sans un pixel de marge) ; la toile de 170 px de la
 planche la fait déborder. Soit la planche l'emporte (la suite s'adapte), soit
 « J'accepte ce devis » ouvre une feuille « Votre signature » par-dessus (la
-page garde sa hauteur). Les 27 suites qui acceptaient un devis signent
+page garde sa hauteur). **Tranché le 18 novembre : la feuille (B).** Les 27 suites qui acceptaient un devis signent
 désormais (`_signature-essai.ts`, `_signer-au-doigt.ts`).
 
 ## DEUX DÉFAUTS VUS EN FABRIQUANT CETTE PLANCHE, NON CORRIGÉS (17 novembre 2026)

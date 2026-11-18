@@ -44,3 +44,6 @@ export function signatureAuDoigtValable(png: unknown, points: unknown): png is s
  * formulaire a été rejoué sans trait.
  */
 export const SIGNEZ_AVANT_D_ACCEPTER = "Signez dans le cadre, au doigt, avant d'accepter le devis.";
+
+/** La même, pour le contrat d'entretien (sa planche B du 18 novembre 2026). */
+export const SIGNEZ_AVANT_D_ACCEPTER_LE_CONTRAT = "Signez dans le cadre, au doigt, avant d'accepter le contrat.";

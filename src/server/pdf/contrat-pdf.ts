@@ -1,4 +1,4 @@
-import { composerDocument, type DonneesDocument, type LogoDocument } from "./document-commun";
+import { composerDocument, type DonneesDocument, type LogoDocument, type TraceDocument } from "./document-commun";
 import type { Allure } from "@/lib/allure-documents";
 import {
   designationSurLePapier,
@@ -32,6 +32,11 @@ export type DonneesContratPdf = Omit<DonneesDocument, "lignes" | "totalHt" | "to
   tauxTva: string;
   dateDuDocument: string;
   statut: "brouillon" | "envoye" | "accepte" | "refuse";
+  /**
+   * Accepté et signé sur son lien (migration 0184) : le trait se pose dans le
+   * cadre, avec son nom et le jour, sans l'heure. Absente : le cadre vide.
+   */
+  signature?: { png: Uint8Array; nom: string; jour: string } | null;
 };
 
 function jourNumerique(iso: string): string {
@@ -62,12 +67,16 @@ function conditionsDuContrat(d: DonneesContratPdf, ttc: string): string {
   return phrases.join(" ");
 }
 
+/**
+ * Le PDF et sa trace : la trace dit où la signature est tombée, ce qu'aucun
+ * contrôle ne lirait dans un PDF protégé (`test-contrat-signe-pdf.ts`).
+ */
 export async function composerContratPdf(
   d: DonneesContratPdf,
   habillage: { allure?: Allure | null; logo?: LogoDocument | null } = {}
-): Promise<Uint8Array> {
+): Promise<{ pdf: Uint8Array; trace: TraceDocument }> {
   const totaux = totauxDuContrat(d.prestations, d.periode, d.tauxTva);
-  const { pdf } = await composerDocument(
+  return composerDocument(
     {
       ...d,
       devise: "EUR",
@@ -105,10 +114,14 @@ export async function composerContratPdf(
           ? [{ libelle: "Soit par mois", montant: mensualites(totaux.totalTtc, d.periode.dureeMois).montant, style: "grand" }]
           : [],
       mentionLegale: (x) =>
-        `Contrat établi par ${x.entrepriseNom}. Bon pour accord donné par le client sur le lien reçu, ` +
-        "ou daté et signé ci-contre.",
+        d.signature
+          ? `Contrat établi par ${x.entrepriseNom}. Accepté et signé en ligne par le client le ${jourNumerique(d.signature.jour)}.`
+          : `Contrat établi par ${x.entrepriseNom}. Bon pour accord donné par le client sur le lien reçu, ` +
+            "ou daté et signé ci-contre.",
       cadreSignature: true,
+      signature: d.signature
+        ? { png: d.signature.png, phrase: `Signé en ligne par ${d.signature.nom}, le ${jourNumerique(d.signature.jour)}.` }
+        : null,
     }
   );
-  return pdf;
 }

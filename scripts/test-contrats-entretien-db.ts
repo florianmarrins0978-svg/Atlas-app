@@ -19,6 +19,7 @@ import { planifierChantier } from "../src/server/repositories/chantiers";
 import { terminerChantier, listerChantiersTermines, getFacturePourChantier } from "../src/server/repositories/factures";
 import { ouvrirPassage, nommerClient, cocherLigne, figerPassage } from "../src/server/repositories/passages-entretien";
 import type { ContratSaisi } from "../src/lib/contrats-entretien";
+import { SIGNATURE_ESSAI } from "./_signature-essai";
 
 // Les contrats d'entretien, sous `atlas_app` : c'est ce rôle qui prouve la RLS.
 //
@@ -150,7 +151,14 @@ async function main() {
   });
 
   await cas("la réponse ne se donne qu'une fois", async () => {
-    const r1 = await repondreAuContrat(jeton, { decision: "accepte", adresseIp: "203.0.113.4", agent: "essai" }, new Date("2027-02-10T10:00:00Z"));
+    // Sans trait, l'accord ne passe pas (sa planche B du 18 novembre 2026).
+    const sansTrait = await repondreAuContrat(jeton, { decision: "accepte" }, new Date("2027-02-10T10:00:00Z"));
+    assert.deepEqual(sansTrait, { ok: false, motif: "signature_manquante" });
+    const r1 = await repondreAuContrat(
+      jeton,
+      { decision: "accepte", adresseIp: "203.0.113.4", agent: "essai", signature: SIGNATURE_ESSAI },
+      new Date("2027-02-10T10:00:00Z")
+    );
     assert.deepEqual(r1, { ok: true });
     const r2 = await repondreAuContrat(jeton, { decision: "refuse" });
     assert.deepEqual(r2, { ok: false, motif: "deja_repondu" });
@@ -238,7 +246,7 @@ async function main() {
     const e = await envoyerContrat(a.ctx, r.contrat.id);
     assert.ok(e.ok);
     if (!e.ok) return;
-    await repondreAuContrat(e.jeton, { decision: "accepte" }, new Date("2027-02-10T10:00:00Z"));
+    await repondreAuContrat(e.jeton, { decision: "accepte", signature: SIGNATURE_ESSAI }, new Date("2027-02-10T10:00:00Z"));
     await poserLesPassagesArrives(a.ctx, "2027-03-20");
     const [passage] = await passagesDuContrat(a.ctx, r.contrat.id);
     await planifierChantier(a.ctx, passage.id, "2027-04-08");
@@ -314,7 +322,7 @@ async function main() {
     assert.deepEqual(lignes.map((c) => c.statut), ["brouillon"]);
     if (repris.ok) assert.equal(await retirerContratDeLaListe(a.ctx, repris.contrat.id), true);
 
-    await repondreAuContrat(e.jeton, { decision: "accepte" });
+    await repondreAuContrat(e.jeton, { decision: "accepte", signature: SIGNATURE_ESSAI });
     assert.equal(await statutLu(), undefined, "accepté, il vit au planning");
   });
 

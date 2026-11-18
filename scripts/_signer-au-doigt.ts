@@ -25,3 +25,19 @@ export async function signerAuDoigt(page: Page, zone = '[data-atlas="signature-d
   }
   await page.mouse.up();
 }
+
+/**
+ * ACCEPTER COMME LE CLIENT — sa planche B du 18 novembre 2026 : « J'accepte ce
+ * devis » (ou « le contrat ») ouvre la feuille « Votre signature », il signe,
+ * et c'est le bouton de la feuille qui envoie l'accord. Le trait déjà posé
+ * reste : rouvrir la feuille après un refus ne le perd pas.
+ */
+export async function accepterEnSignant(page: Page, quoi: "devis" | "contrat" = "devis"): Promise<void> {
+  const libelle = quoi === "devis" ? "J'accepte ce devis" : "J'accepte le contrat";
+  const zone = quoi === "devis" ? '[data-atlas="signature-devis"]' : '[data-atlas="signature-contrat"]';
+  const feuille = page.locator(zone);
+  if (!(await feuille.isVisible())) await page.getByRole("button", { name: libelle }).first().click();
+  await feuille.waitFor({ state: "visible", timeout: 15_000 });
+  await signerAuDoigt(page, zone);
+  await feuille.getByRole("button", { name: libelle }).click();
+}

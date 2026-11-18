@@ -959,6 +959,8 @@ export const contratsEntretien = pgTable(
     reponduLe: timestamp("repondu_le", { withTimezone: true }),
     reponseAdresseIp: text("reponse_adresse_ip"),
     reponseAgent: text("reponse_agent"),
+    /** Le trait du client, signé au doigt sur son lien (migration 0184). */
+    signaturePng: text("signature_png"),
     // Retiré de « Vos chantiers » par un glissement, sans rien effacer : le
     // lien du client reste ouvert (migration 0114).
     retireDeLaListeAt: timestamp("retire_de_la_liste_at", { withTimezone: true }),

@@ -4,7 +4,7 @@ import { pool } from "../src/server/db/client";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { cocherLaDemandeExpresse } from "./_demande-expresse-e2e";
 import { ADRESSE } from "./_adresse";
-import { signerAuDoigt } from "./_signer-au-doigt";
+import { accepterEnSignant } from "./_signer-au-doigt";
 
 /**
  * LA RÉPONSE DU CLIENT ARRIVE SANS QU'IL RECHARGE.
@@ -112,8 +112,7 @@ async function main() {
   await dateProposee.check();
   await pageClient.waitForTimeout(400);
   await cocherLaDemandeExpresse(pageClient);
-  await signerAuDoigt(pageClient);
-  await bouton.click();
+  await accepterEnSignant(pageClient);
   await pageClient.waitForTimeout(2500);
 
   const { rows: repondu } = await pool.query(
