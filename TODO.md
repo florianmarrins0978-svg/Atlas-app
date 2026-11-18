@@ -284,8 +284,8 @@ Ne modifie pas cette version, crée une autre maquette pour pouvoir comparer. »
 
 **La planche :** `appli/vente/cause-2.html`, posée à côté de `cause.html`, qui
 n'a pas bougé d'une ligne. Mêmes textes, mêmes prix, mêmes captures, mêmes
-films (sauf celui de l'équipe, voir plus bas) : la comparaison ne porte que sur
-le mouvement. Son en-tête dit ce qui
+films (sauf celui de l'équipe, la fiche et la signature du client, voir plus
+bas) : la comparaison ne porte que sur le mouvement. Son en-tête dit ce qui
 bouge, pourquoi, et ce que ses retours passés interdisent (rien de dessiné sur
 un écran de l'appli, aucun geste d'écran lié au défilement, une scène qui part
 à un tiers de l'écran mais laisse une demi-seconde avant le geste).
@@ -318,9 +318,34 @@ sont pas des captures de Google Maps ni d'un téléphone (l'appli les ouvre, ell
 n'a ni carte ni téléphone à elle). La note écrite est de moi : « Clé du portail chez la voisine.
 Prendre le broyeur. »
 
+**Le 18 novembre, une troisième demande, faite :** *« quand il clique sur
+accepter le devis, il y a le petit truc pour signer électroniquement qui
+apparaît. Il signe et ensuite sa signature vient s'apposer sur le devis. Ça
+serait bien que tu mettes cette animation sur le site. »* Le téléphone
+d'Envoyez joue `nov-film-envoi-signe` (7,3 s, `appli/scripts/film-envoi-signe.cjs`) :
+la date, la case des quatorze jours, « J'accepte ce devis », la feuille « Votre
+signature » qui monte, le paraphe qui se trace, « C'est noté » avec la
+signature dans son cadre, puis le devis paraît et la signature tombe dans
+l'encadré « Bon pour accord ». **La signature du devis n'est pas encore dans
+l'appli** : le film anime sa planche B
+(`appli/soignee/devis-signe-dans-une-feuille.html`, en cours de codage par une
+autre session) avec le chantier de Mr. Lemaire, il ne filme pas l'appli. **Il
+est à refaire en filmant l'appli le jour où elle est livrée**, et à revoir si
+la planche change d'ici là. Le paraphe « Lemaire » est de moi. Les phrases du
+chapitre n'ont pas bougé : elles ne parlent pas de signature.
+
+**Vu en faisant ce film, pour qui code la signature :** sur le PDF du devis, le
+filet qui ferme le corps du document traverse le haut de l'encadré « Bon pour
+accord » (visible sur `appli/vente/images/nov-devis.jpg`, et sur les deux PDF
+de la planche B). Tant que l'encadré est vide, il ne gêne pas ; avec une
+signature dedans, il passe sur son haut. Pas touché ici (le film montre le PDF
+tel qu'il est) : à regarder dans le lot de la signature.
+
 **Ce qu'il a à dire :** si ces passages lui vont, s'il garde ce mouvement, ce
 qu'il en retire, et ce qui accroche sur son iPhone. Si la carte et l'écran
-d'appel dessinés lui conviennent, et la phrase de la note. Et si l'ordre des métiers doit être
+d'appel dessinés lui conviennent, et la phrase de la note. Si le paraphe et la
+fin du film (la signature qui se pose sur le devis) lui vont, et s'il veut le
+mot « signe » dans la phrase du chapitre Envoyez. Et si l'ordre des métiers doit être
 reporté dans `cause.html` et `chapitres-6.html`, qui gardent l'ancien.
 
 **Une question née de ce bémol, à lui de trancher :** le site montre ce

@@ -676,13 +676,15 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
   // page au mouvement refait : elle passe les deux mêmes contrôles, sans quoi
   // les deux défauts qu'il a signalés pourraient y revenir sans rien dire.
   // Chaque page nomme ses films : celui de l'équipe a été remonté pour la
-  // planche en mouvement (« c'est pas fluide », 17 novembre 2026), et l'autre
-  // page garde le sien. Un film renommé d'un seul côté ferait chercher un
-  // cadre qui n'existe pas : le contrôle le dit au lieu de s'y casser.
+  // planche en mouvement (« c'est pas fluide », 17 novembre 2026), celui de
+  // l'envoi y montre le client qui signe (18 novembre 2026), et l'autre page
+  // garde les siens. Un film renommé d'un seul côté ferait chercher un cadre
+  // qui n'existe pas : le contrôle le dit au lieu de s'y casser.
   const FILMS = ['micro', 'envoi', 'mois', 'equipe', 'travaux'];
+  const EN_MOUVEMENT = { equipe: 'equipe-fluide', envoi: 'envoi-signe' };
   const PAGES_DE_VENTE = [
     ['chapitres-6.html', 'vente', FILMS],
-    ['cause-2.html', 'vente, en mouvement', FILMS.map((f) => (f === 'equipe' ? 'equipe-fluide' : f)).concat('fiche')],
+    ['cause-2.html', 'vente, en mouvement', FILMS.map((f) => EN_MOUVEMENT[f] || f).concat('fiche')],
   ];
   for (const [fichier, nomPage] of PAGES_DE_VENTE) {
     const cVe = await browser.newContext({ viewport: { width: 390, height: 844 } });
