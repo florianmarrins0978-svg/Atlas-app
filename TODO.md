@@ -272,10 +272,21 @@ leur rang, et les autres suivent. **Lu ainsi, pas plus :** ni le titre de
 l'ouverture ni l'ordre des sections n'ont bougé. S'il voulait que le SITE
 commence par là, c'est à refaire.
 
-**Ce qu'il a à dire :** si ces deux passages lui vont, s'il garde ce
-mouvement, ce qu'il en retire, et ce qui accroche sur son iPhone. Et si
-l'ordre des métiers doit être reporté dans `cause.html` et
-`chapitres-6.html`, qui gardent l'ancien.
+**Le 18 novembre, une seconde demande, faite :** *« Il faut faire une
+animation pour cette page aussi ! Qu'on voit qu'en un clic on peut avoir
+l'adresse sur Maps ou Waze. Pour la note tu peux écrire quelque chose comme tu
+as fait pour le retour du jour. »* La fiche d'intervention est devenue un film
+(`nov-film-fiche`, `appli/scripts/film-fiche.cjs`) : Maps puis Waze s'ouvrent
+depuis leur case avec l'adresse déjà posée, puis la note s'écrit et
+s'enregistre. **Les deux cartes sont dessinées**, sans logo : ce ne sont pas
+des captures de Google Maps ni de Waze (l'appli les ouvre, elle n'a pas de
+carte à elle). La note écrite est de moi : « Clé du portail chez la voisine.
+Prendre le broyeur. »
+
+**Ce qu'il a à dire :** si ces passages lui vont, s'il garde ce mouvement, ce
+qu'il en retire, et ce qui accroche sur son iPhone. Si les cartes dessinées
+lui conviennent, et la phrase de la note. Et si l'ordre des métiers doit être
+reporté dans `cause.html` et `chapitres-6.html`, qui gardent l'ancien.
 
 **Une question née de ce bémol, à lui de trancher :** le site montre ce
 passage plus souple que l'appli ne le fait. Veut-il que l'appli glisse aussi

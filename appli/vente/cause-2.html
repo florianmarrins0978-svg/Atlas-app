@@ -528,6 +528,9 @@ html.anime .ligne.t-la .total{opacity:1;transition:opacity .3s ease}
    film ni images : la capture posée dans le balisage, l'état le plus
    parlant. */
 .film{position:relative}
+/* Ce qui s'anime dans la fiche d'intervention : de ses quatre cases au bas
+   de sa note. La scène part quand cette zone est entière à l'écran. */
+.film .zone-depart{position:absolute;left:0;right:0;top:15.5%;height:40.5%;pointer-events:none}
 .film video,.film img.film-debut,.film img.film-fin{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;object-position:top}
 .film img.film-debut{z-index:1}
 .film video{z-index:2;opacity:0}
@@ -958,7 +961,7 @@ html.anime .geant.vu span{transform:none}
             <p class="sous">L'équipe se pose à la demi-journée.</p>
           </div></div>
           <div class="socle" data-t><div class="leve douce">
-            <figure class="gros" data-vu="0.15"><img src="images/nov-fiche-intervention.jpg" alt="Fiche d'intervention entière : Maps, Waze, Copier l'adresse, Appeler le client, la note, la fiche de sécurité, les travaux à faire, le devis sans les prix" width="882" height="1596" decoding="async"></figure>
+            <figure class="gros film" id="scene-fiche" data-film="fiche" data-vu="0.15" style="--film:882/1596"><img class="film-pose" src="images/nov-film-fiche-fin.jpg" alt="Fiche d'intervention entière : Maps, Waze, Copier l'adresse, Appeler le client, la note du jour écrite et enregistrée, la fiche de sécurité, les travaux à faire, le devis sans les prix" width="882" height="1596" decoding="async"></figure>
             <p class="sous">Le jour J, tout tient sur la fiche.</p>
           </div></div>
         </div>
@@ -1549,17 +1552,24 @@ html.anime .geant.vu span{transform:none}
   };
   // Une scène se joue quand elle est assez à l'écran ; la quitter l'arrête,
   // y revenir la rejoue depuis le début.
-  var scene = function(el, seuil, prete, jouer, arreter){
-    var tour = 0, chargee = false;
+  var scene = function(el, seuil, prete, jouer, arreter, depart){
+    var tour = 0, chargee = false, lancee = false;
     // Arrivé d'un coup (un lien, un défilement rapide), la scène peut se jouer
     // avant d'avoir préparé ses images : elle les prépare alors elle-même,
     // sans quoi l'écran du téléphone restait vide un instant.
     var charger = function(){ if (!chargee){ chargee = true; prete(); } };
+    var lancer = function(){ charger(); lancee = true; tour++; var mien = tour; jouer(function(){ return mien === tour; }); };
     new IntersectionObserver(function(e){ if (e[0].isIntersecting) charger(); }, {rootMargin:"900px 0px"}).observe(el);
     new IntersectionObserver(function(e){
-      if (e[0].isIntersecting){ charger(); tour++; var mien = tour; jouer(function(){ return mien === tour; }); }
-      else { tour++; if (arreter) arreter(); }
+      if (e[0].isIntersecting){ if (!depart) lancer(); }
+      else { lancee = false; tour++; if (arreter) arreter(); }
     }, {threshold:seuil}).observe(el);
+    // Une scène aussi haute que l'écran ne peut pas partir « quand elle est
+    // assez visible » : ce qui s'anime en elle serait encore sous le bouton
+    // d'essai, ou déjà sous la barre du haut. Elle part quand SA ZONE (ce qui
+    // va bouger) est entière à l'écran, et ne s'arrête qu'une fois presque
+    // sortie.
+    if (depart) new IntersectionObserver(function(e){ if (e[0].isIntersecting && !lancee) lancer(); }, {rootMargin:depart.marge, threshold:.95}).observe(depart.zone);
   };
 
   // 0. L'OUVERTURE. Le chapo et les boutons arrivent tout de suite. Le
@@ -1825,13 +1835,35 @@ html.anime .geant.vu span{transform:none}
     // nouvelle commence : elle ne doit pas libérer l'équipe à sa place.
     if (encore()) moisEnCours = false;
   }, function(){ moisEnCours = false; mois.arreter(); });
+  var equipeEnCours = false;
   var equipe = bobine(document.getElementById("scene-equipe"));
   scene(document.getElementById("scene-equipe"), 0.4, equipe.preparer, async function(encore){
-    equipe.remettre();
+    equipeEnCours = true; equipe.remettre();
     while (moisEnCours){ await attendre(150); if (!encore()) return; }
     await attendre(500); if (!encore()) return;
-    equipe.jouer();
-  }, equipe.arreter);
+    await equipe.jouer();
+    if (encore()) equipeEnCours = false;
+  }, function(){ equipeEnCours = false; equipe.arreter(); });
+  // La fiche d'intervention (sa demande du 18 novembre 2026 : « il faut faire
+  // une animation pour cette page aussi »). Elle est aussi haute qu'un
+  // téléphone : elle part quand ses cases ET sa note sont à l'écran, entre la
+  // barre du haut et le bouton d'essai (sa zone), et s'arrête quand il n'en
+  // reste presque rien. Mesuré avant ce réglage : partie à la moitié visible,
+  // elle écrivait sa note sous le bouton, et s'arrêtait dès qu'on continuait
+  // de descendre. Sur ordinateur elle est à côté de l'équipe : elle attend
+  // alors la fin de son film, pour qu'on ne regarde pas deux écrans à la fois.
+  // Sur téléphone elles sont l'une sous l'autre, et elle n'attend pas : c'est
+  // elle qu'on regarde.
+  var cadreFiche = document.getElementById("scene-fiche"), zoneFiche = document.createElement("span");
+  zoneFiche.className = "zone-depart"; cadreFiche.appendChild(zoneFiche);
+  var aCote = function(){ return Math.abs(cadreFiche.getBoundingClientRect().top - document.getElementById("scene-equipe").getBoundingClientRect().top) < 120; };
+  var fiche = bobine(cadreFiche);
+  scene(cadreFiche, 0.3, fiche.preparer, async function(encore){
+    fiche.remettre();
+    while (equipeEnCours && aCote()){ await attendre(150); if (!encore()) return; }
+    await attendre(500); if (!encore()) return;
+    fiche.jouer();
+  }, fiche.arreter, {zone:zoneFiche, marge:"-72px 0px " + sousLePouce + " 0px"});
 
   // 4. ENCAISSEZ. Le grand chiffre : un compteur. Chaque chiffre est un
   // rouleau qui tourne et s'arrête sur le sien, de gauche à droite. Le texte

@@ -682,7 +682,7 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
   const FILMS = ['micro', 'envoi', 'mois', 'equipe', 'travaux'];
   const PAGES_DE_VENTE = [
     ['chapitres-6.html', 'vente', FILMS],
-    ['cause-2.html', 'vente, en mouvement', FILMS.map((f) => (f === 'equipe' ? 'equipe-fluide' : f))],
+    ['cause-2.html', 'vente, en mouvement', FILMS.map((f) => (f === 'equipe' ? 'equipe-fluide' : f)).concat('fiche')],
   ];
   for (const [fichier, nomPage] of PAGES_DE_VENTE) {
     const cVe = await browser.newContext({ viewport: { width: 390, height: 844 } });
