@@ -8,6 +8,8 @@ Ses deux planches du 17, approuvées le 18. Le client signe au doigt avant « J'
 
 Tout texte neuf écrit **Cause**, jamais Atlas. Les noms internes (`atlas_app`, `data-atlas`, `ATLAS_*`, préfixe `atlas-` des rendez-vous) ne se renomment pas : `ARCHITECTURE.md` §581 dit pourquoi.
 
+**L'icône est le C** (18 novembre 2026) : une seule source, `public/icone-source.svg`, dont le dessin doit tenir dans le cercle central de 80 % ; `npm run icones` refait tout, favicon compris (`ARCHITECTURE.md` §586).
+
 **À lire en premier, dans une nouvelle conversation.** Ce fichier suppose que
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.

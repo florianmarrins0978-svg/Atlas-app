@@ -37506,7 +37506,7 @@ de haie de photinia, élagage d'un frêne, plantation d'un olivier »), puis ver
 | les élisions suivent : « d'Atlas » devient « de Cause », « qu'Atlas » devient « que Cause » | « d'Cause » ne se lit pas |
 | **les noms internes gardent atlas** : rôles `atlas_app` et `atlas_owner`, bases `atlas_test`, variables `ATLAS_*`, repères `data-atlas`, classes `.atlas-*`, dossier `components/atlas`, préfixe `atlas-` des événements d'agenda, clés de rangement | les renommer ne montre rien de plus et casse : ses rendez-vous déjà posés ne seraient plus reconnus (`estEvenementAtlas`), les bases de son espace ne s'ouvriraient plus, huit cents suites perdraient leurs repères |
 | **les conditions générales ne bougent pas** (`src/server/documents-legaux/versions.ts`, `public/conditions-utilisation.html`, `public/confidentialite.html`) | une version publiée ne se modifie jamais : le nom y changera par une version nouvelle, que chaque compte acceptera de nouveau. C'est sa décision (`TODO.md`) |
-| **l'icône reste le « A »** (`public/icone-source.svg`) | un logo est une apparence : planche d'abord (`CLAUDE.md` §3 bis) |
+| **l'icône est le C** de la première planche, son choix du 18 novembre (`public/icone-source.svg`, §586) | un logo est une apparence : planche d'abord (`CLAUDE.md` §3 bis) |
 | les données de test gardent leurs noms d'entreprise (« Atlas SAS », « Jardins Atlas ») | ce sont des clients inventés, pas le nom du produit |
 | les anciennes planches de `appli/` gardent Atlas | elles racontent le chemin ; le site de vente sous le nom Cause est `appli/vente/cause.html` |
 
@@ -37597,3 +37597,18 @@ Migrations 0182 et 0183, expand seul. Suites : `test-devis-signe-pdf`, `test-fic
 **Un `ENOTCACHED` hors ligne n'accuse pas le cache.** Un arbre cohérent se résout depuis le verrou seul, cache vide compris (mesuré). Si npm a dû demander au registre, il cherchait une version que le verrou ne lui donnait pas : le contrôle redemande alors en ligne pour nommer le conflit.
 
 **À retirer** quand next-auth publiera une version qui accepte `@simplewebauthn` 13 : la dérogation deviendra inutile, et ce contrôle le dira si elle devient fausse.
+
+## §586 : L'icône est le C ; la source garde son dessin dans le cercle d'Android, le générateur n'ajoute plus de marge
+
+*18 novembre 2026, son choix : « je prends la C de la première planche » (`appli/icone-de-cause.html`).*
+
+| Décision | Pourquoi |
+|---|---|
+| `public/icone-source.svg` porte le « C » de la serif des devis (un contour relevé par fontkit, aucune police à charger), vert pin sur crème, et le point d'or | c'est le dessin qu'il a choisi, tracé tel quel : `npm run icones` rend exactement la planche |
+| **la source garde tout son dessin dans le cercle central de 80 %** (rayon 204,8 sur 512 ; le point d'or s'arrête à 183) | c'est ce qu'Android garde quand il découpe l'icône en rond. La règle vit dans la source, pas dans le générateur |
+| **le générateur n'ajoute plus de marge** : plus de `icone-maskable-512.png`, le manifeste déclare la 512 pour `any` et pour `maskable` | l'ancienne marge réduisait le motif à 60 % sur un crème écrit en dur (`FOND`) : sur une source déjà dans le cercle, le C perdait la moitié de sa taille, et tout fond d'une autre couleur aurait été cerné de crème |
+| **le générateur fabrique aussi `src/app/favicon.ico`** (16, 32, 48 px, des PNG dans un sommaire .ico écrit à la main, sharp ne sachant pas l'écrire) | l'onglet montrait encore le triangle par défaut de Next.js : aucune icône du manifeste ne le remplaçait |
+| le favicon est cadré sur le carré central (320 sur 512) | à 16 px, la marge du cercle laissait au C huit pixels de haut, un trait gris illisible ; l'onglet ne découpe rien |
+
+**Ce qui n'est pas vérifié** : l'icône sur un vrai iPhone et un vrai Android, une fois l'appli réinstallée sur l'écran d'accueil (un téléphone garde l'ancienne icône tant que le raccourci n'est pas recréé). Regardée ici en carré arrondi, en rond, dans le cercle minimal et à 16 px.
+

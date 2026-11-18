@@ -11,9 +11,13 @@ Un seul lot et une seule batterie (sa demande : *« fusionne le tout et joue qu'
 ---
 ## LE NOM CAUSE, LIVRÉ (17 novembre 2026)
 
-Le texte affiché dit Cause partout ; le code garde atlas. Restent à lui : les conditions générales (version nouvelle), l'icône (planche). `ARCHITECTURE.md` §581.
+Le texte affiché dit Cause partout ; le code garde atlas. Reste à lui : les conditions générales (version nouvelle). L'icône est le C, choisi le 18 novembre (§586). `ARCHITECTURE.md` §581.
 
-## L'ICÔNE DE CAUSE, EN DESSIN (17 novembre 2026), EN ATTENTE D'UNE LETTRE ET D'UN FOND
+## L'ICÔNE DE CAUSE : LE C, INSTALLÉ (18 novembre 2026)
+
+Son choix : *« je prends la C de la première planche »* (`appli/icone-de-cause.html`). `public/icone-source.svg` porte le C de la serif des devis et le point d'or ; `npm run icones` en tire les icônes d'iPhone et d'Android, le manifeste, et désormais le favicon de l'onglet (c'était encore le triangle par défaut de Next.js). `ARCHITECTURE.md` §586. Pas vu sur un vrai téléphone.
+
+## L'ICÔNE DE CAUSE, EN DESSIN (17 novembre 2026), ÉCARTÉE LE 18 NOVEMBRE POUR LE C
 
 Sa réponse devant les lettres : *« un truc hyper basique [...] il faudrait un dessin, une image, quelque chose qui claque »*. `appli/icone-de-cause-3.html` : trois dessins sans lettre, le rouge-gorge (H), le casque (I), la rosace (J), chacun sur fond vert, or ou crème, sur le bureau de téléphone de la planche d'avant. Éprouvée dans Chromium à 390, 360, 320 et 1280 px, chaque geste touché, gardée par `appli/tests/e2e.js` ; **pas regardée sur Safari**. Rien dans `src/`, rien d'installé. La suite : `TODO.md`.
 
