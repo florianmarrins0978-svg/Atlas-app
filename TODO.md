@@ -1,5 +1,26 @@
 # Prochaines tâches
 
+## ⏳ UNE PLANCHE À REGARDER : LE MODULE PAYSAGE, ET ARTISAN POUR UNE SEULE PERSONNE (18 novembre 2026)
+
+`appli/soignee/abonnement-module-paysage.html`, posée sur le vrai écran
+Abonnement (figé avec `scripts/planche-figee/`). Le détail et ce que le code
+devra faire : `docs/abonnement-module-paysage.md`. **Rien dans `src/`.**
+
+**Tranché par lui le 18 novembre** : Artisan est **un seul accès**, salariés
+compris ; le module **Paysage** coûte **6 € HT par mois, 60 € HT à l'année**,
+ouvre les **trois** outils de Paysage (arrosage, diagnostic, fiches de
+chantier) et s'ajoute à Artisan seul (compris dans Entreprise et Illimité) ;
+choisir Artisan avec des salariés déjà invités est **refusé** tant qu'il ne
+les a pas retirés (article 14.6). **À trancher par lui : A (dans la carte
+Artisan, conseillé) ou B (en haut).** Puis : la version 4 des conditions
+générales (la version 3 dit les salariés jamais comptés), et le plafond d'IA
+d'Artisan avec le module.
+
+**Écart trouvé en chemin, déjà là** : le passage d'Entreprise à Artisan avec
+plusieurs personnes qui facturent n'est refusé nulle part (`placePourUnFabricant`
+ne sert qu'à l'invitation, `membres-entreprise.ts`), contre l'article 14.6. Le
+lot du module le fermera.
+
 ## `npm ci` REFUSÉ SUR `main` DEPUIS FACE ID 13.3.3 (18 novembre 2026)
 
 Vu en rejouant la batterie de la signature : `6ef2ae3` (« Passer Face ID à
