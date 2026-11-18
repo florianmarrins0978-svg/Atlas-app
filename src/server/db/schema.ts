@@ -507,6 +507,13 @@ export const passagesEntretien = pgTable(
     empreinte: char("empreinte", { length: 64 }),
     /** L'adresse publique du rapport. NULL tant qu'il n'est pas parti. */
     jeton: text("jeton"),
+    /**
+     * Signée sur place par le client présent, jamais obligatoire (migration
+     * 0183) : le trait, son nom tel qu'il s'imprime, et quand. Tout ou rien.
+     */
+    signaturePng: text("signature_png"),
+    signataire: text("signataire"),
+    signeeLe: timestamp("signee_le", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -2376,6 +2383,13 @@ export const envoisDevis = pgTable(
 
     adresseIp: text("adresse_ip"),
     agentUtilisateur: text("agent_utilisateur"),
+    /**
+     * Le trait du client, signé au doigt sur son lien (migration 0182). NULL
+     * sur un envoi d'avant, un refus, une correction, un accord papier.
+     */
+    signaturePng: text("signature_png"),
+    /** Le devis recomposé avec sa signature ; celui de l'envoi ne change jamais. */
+    pdfSigneCle: text("pdf_signe_cle"),
     vuParPatronAt: timestamp("vu_par_patron_at", { withTimezone: true }),
   },
   (t) => [
@@ -2426,6 +2440,8 @@ export const acceptationsDefaites = pgTable(
     accordSurPapier: boolean("accord_sur_papier").notNull(),
     adresseIp: text("adresse_ip"),
     agentUtilisateur: text("agent_utilisateur"),
+    /** La signature du client, gardée avec la preuve de l'accord défait (migration 0182). */
+    signaturePng: text("signature_png"),
     defaitePar: uuid("defaite_par").notNull(),
     defaiteAt: timestamp("defaite_at", { withTimezone: true }).notNull().defaultNow(),
   },

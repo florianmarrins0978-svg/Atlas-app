@@ -1,7 +1,8 @@
 import type { RapportPublic } from "@/server/repositories/passages-entretien";
 import { libelleMinutes } from "@/lib/passage-entretien";
 import { parFamilles } from "@/lib/prestations-entretien";
-import { jourEnTitre } from "@/lib/jour";
+import { jourDeLettre, jourEnTitre } from "@/lib/jour";
+import { SignatureDuClient } from "./Signature";
 import { colors, font, voile } from "@/lib/design-tokens";
 import { CocheFaite, TeteDeLettre } from "./LettreDuClient";
 import IconeTrait from "./IconeTrait";
@@ -87,6 +88,20 @@ export default function RapportEntretien({ rapport }: { rapport: RapportPublic }
         >
           {rapport.observations}
         </p>
+      )}
+      {/* Signée sur place par le client présent (sa planche du 17 novembre
+          2026). Sans signature, rien : la page ne doit jamais avoir l'air
+          inachevée, c'est la règle du 16 août. */}
+      {rapport.signature && (
+        <section data-atlas="signature-client">
+          <h2
+            className="mt-7 mb-2.5 text-[13px] font-semibold uppercase tracking-[0.12em]"
+            style={{ color: colors.inkSoft, fontFamily: font.body }}
+          >
+            Votre signature
+          </h2>
+          <SignatureDuClient png={rapport.signature.png} phrase={`Signée sur place, le ${jourDeLettre(rapport.signature.jour)}.`} />
+        </section>
       )}
     </div>
   );

@@ -17,6 +17,7 @@ const UNE_JOURNEE = 2;
 const RIEN_DE_PLANIFIE = { occupation: compterOccupation([], 1), nombreEquipes: 1, dureeDemiJournees: UNE_JOURNEE };
 import { mettreEnRegle } from "./_entreprise-en-regle";
 import { nettoyerBase } from "./_test-db";
+import { SIGNATURE_ESSAI } from "./_signature-essai";
 
 let passed = 0;
 let failed = 0;
@@ -370,7 +371,7 @@ async function main() {
     const r = await enregistrerReponse(
       envoi.jeton,
       {
-        decision: "accepte", demarrageAnticipe: true,
+        decision: "accepte", signature: SIGNATURE_ESSAI, demarrageAnticipe: true,
         dateRetenue: dans(10),
         precision: null,
         adresseIp: null,
@@ -417,7 +418,7 @@ async function main() {
     await chantiersRepo.planifierChantier(ctx, long.id, dans(0));
 
     const r = await enregistrerReponse(envoi.jeton, {
-      decision: "accepte", demarrageAnticipe: true,
+      decision: "accepte", signature: SIGNATURE_ESSAI, demarrageAnticipe: true,
       dateRetenue: dans(2),
       precision: null,
       adresseIp: null,
@@ -468,7 +469,7 @@ async function main() {
     const r = await enregistrerReponse(
       envoi.jeton,
       {
-        decision: "accepte", demarrageAnticipe: true,
+        decision: "accepte", signature: SIGNATURE_ESSAI, demarrageAnticipe: true,
         dateRetenue: dans(10),
         precision: null,
         adresseIp: null,

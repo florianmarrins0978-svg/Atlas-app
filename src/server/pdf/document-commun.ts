@@ -304,6 +304,12 @@ export type TraceDocument = {
    */
   logos: { x: number; y: number; largeur: number; hauteur: number }[];
   /**
+   * La signature du client posée dans le cadre : une image ne laisse pas de
+   * texte, et sans sa place aucun contrôle ne saurait dire qu'elle est DANS le
+   * cadre plutôt qu'à côté.
+   */
+  signatures: { page: number; x: number; y: number; largeur: number; hauteur: number }[];
+  /**
    * Où chaque élément du corps est tombé : chaque ligne (`ligne:<id>`, ou
    * `ligne-<rang>` sans identifiant), les totaux, les notes, les modalités.
    * C'est ce que l'aperçu du devis lit pour savoir quelle ligne il a touchée :
@@ -838,6 +844,19 @@ export type OptionsDocument = {
   /** Le devis se signe, la facture se règle. */
   cadreSignature: boolean;
   /**
+   * Ce qui s'écrit sous le cadre. Absente : « Bon pour accord, signature du
+   * client », celle du devis. `null` : rien, la phrase de la signature suffit
+   * (le retour d'intervention, qui ne vaut pas accord).
+   */
+  legendeCadre?: string | null;
+  /**
+   * LA SIGNATURE DU CLIENT, POSÉE DANS LE CADRE — ses planches du 17 novembre
+   * 2026 : le trait tracé au doigt (PNG, règle de `signature-au-doigt.ts`) et
+   * la phrase qui dit qui a signé et quand, sous la légende. Absente : le cadre
+   * reste vide, comme le papier qu'on signe à la main. Sans cadre, ignorée.
+   */
+  signature?: { png: Uint8Array; phrase: string } | null;
+  /**
    * Des lignes SOUS le « Total TTC » — libellé et montant, la dernière en gras.
    *
    * **Pour l'échéancier du devis** (12 septembre 2026) : chaque acompte avec ce
@@ -1025,7 +1044,7 @@ async function composerUneFois(
     numeroPage: 1,
     ...polices,
     teintes: teintesDe(options.allure),
-    trace: { pages: 1, textes: [], traits: [], cadres: [], fonds: [], logos: [], elements: [], espaces: [], pied: null },
+    trace: { pages: 1, textes: [], traits: [], cadres: [], fonds: [], logos: [], signatures: [], elements: [], espaces: [], pied: null },
   };
   poserPapier(ctx);
 
@@ -1653,8 +1672,12 @@ async function composerUneFois(
   const ecritSurLaPage = ctx.trace.textes.filter((t) => t.page === ctx.numeroPage).map((t) => t.y);
   const derniereLigne = ecritSurLaPage.length ? Math.min(...ecritSurLaPage) : y;
   const yPied = derniereLigne - ECART_SOUS_LE_CONTENU - 22;
+  const signature = options.cadreSignature ? (options.signature ?? null) : null;
+  // La légende tient une ligne sous le cadre, la phrase de la signature une de
+  // plus : le pied qui déborde se juge sur ce qui s'écrit vraiment.
+  const basDuCadre = yPied - 38 - (signature && options.legendeCadre !== null ? 10 : 0);
   const basDuPied =
-    Math.min(yPied - (lignesDuPied.length - 1) * 10, options.cadreSignature ? yPied - 38 : Number.POSITIVE_INFINITY) - 3;
+    Math.min(yPied - (lignesDuPied.length - 1) * 10, options.cadreSignature ? basDuCadre : Number.POSITIVE_INFINITY) - 3;
   const piedDeborde = basDuPied < BAS_DU_PIED;
   ctx.trace.pied = { page: ctx.numeroPage, haut: yPied + (options.cadreSignature ? 26 : 22), bas: basDuPied };
   trait(ctx, yPied + 22, 0.7, ctx.teintes.traitClair);
@@ -1684,14 +1707,31 @@ async function composerUneFois(
       hauteur: 50,
       page: ctx.numeroPage,
     });
-    const legende = "Bon pour accord, signature du client";
-    ecrire(
-      ctx,
-      legende,
-      gaucheSignature + (largeurSignature - ctx.sans.widthOfTextAtSize(legende, 7.8)) / 2,
-      yPied - 38,
-      { taille: 7.8, couleur: ctx.teintes.etiquette }
+    const sousLeCadre = [
+      ...(options.legendeCadre === null ? [] : [{ texte: options.legendeCadre ?? "Bon pour accord, signature du client", couleur: ctx.teintes.etiquette }]),
+      ...(signature ? [{ texte: signature.phrase, couleur: ctx.teintes.legal }] : []),
+    ];
+    sousLeCadre.forEach(({ texte, couleur }, i) =>
+      ecrire(
+        ctx,
+        texte,
+        gaucheSignature + (largeurSignature - ctx.sans.widthOfTextAtSize(texte, 7.8)) / 2,
+        yPied - 38 - i * 10,
+        { taille: 7.8, couleur }
+      )
     );
+    if (signature) {
+      // Le trait garde ses proportions et tient dans le cadre, à quatre points
+      // du bord : déformé, ce ne serait plus sa signature.
+      const image = await ctx.pdfDoc.embedPng(signature.png);
+      const echelle = Math.min((largeurSignature - 8) / image.width, (50 - 8) / image.height);
+      const largeur = image.width * echelle;
+      const hauteur = image.height * echelle;
+      const x = gaucheSignature + (largeurSignature - largeur) / 2;
+      const yImage = yPied - 24 + (50 - hauteur) / 2;
+      ctx.page.drawImage(image, { x, y: yImage, width: largeur, height: hauteur });
+      ctx.trace.signatures.push({ page: ctx.numeroPage, x, y: yImage, largeur, hauteur });
+    }
   }
 
   // ─── L'annexe : ses conditions générales, après le bon pour accord ─────────

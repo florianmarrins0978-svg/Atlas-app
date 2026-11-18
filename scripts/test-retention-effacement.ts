@@ -25,6 +25,7 @@ import { versJourIso, ajouterJours } from "../src/lib/disponibilites";
 import { nettoyerBase } from "./_test-db";
 import { listerFichesClients } from "../src/server/repositories/fiche-client";
 import { factures as facturesTable, envoisDevis as envoisDevisTable } from "../src/server/db/schema";
+import { SIGNATURE_ESSAI } from "./_signature-essai";
 
 let passed = 0;
 let failed = 0;
@@ -295,7 +296,7 @@ async function main() {
     );
     await enregistrerReponse(
       envoi.jeton,
-      { decision: "accepte" as const, demarrageAnticipe: true, dateRetenue: versJourIso(ajouterJours(MAINTENANT, 10)) },
+      { decision: "accepte" as const, signature: SIGNATURE_ESSAI, demarrageAnticipe: true, dateRetenue: versJourIso(ajouterJours(MAINTENANT, 10)) },
       MAINTENANT
     );
 
@@ -343,7 +344,7 @@ async function main() {
     );
     await enregistrerReponse(
       envoi.jeton,
-      { decision: "accepte" as const, demarrageAnticipe: true, dateRetenue: versJourIso(ajouterJours(MAINTENANT, 12)) },
+      { decision: "accepte" as const, signature: SIGNATURE_ESSAI, demarrageAnticipe: true, dateRetenue: versJourIso(ajouterJours(MAINTENANT, 12)) },
       MAINTENANT
     );
 

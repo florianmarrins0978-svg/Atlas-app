@@ -12,6 +12,7 @@ import { fenetreProposition, versJourIso, ajouterJours } from "../src/lib/dispon
 import { ADRESSE } from "./_adresse";
 import { cocherLaDemandeExpresse } from "./_demande-expresse-e2e";
 import { adresseDeTelechargement } from "../src/lib/remise-de-fichier";
+import { signerAuDoigt } from "./_signer-au-doigt";
 
 // Parcours réel de la page publique de réponse au devis (docs/AGENT.md §2.2 bis).
 // Exercée dans un navigateur, SANS session : c'est tout l'intérêt de cette page,
@@ -287,6 +288,7 @@ async function main() {
 
     const dateVoulue = versJourIso(ajouterJours(maintenant, 24));
     await page.locator(`input[name="choixDate"][value="${dateVoulue}"]`).check();
+    await signerAuDoigt(page);
     await page.click('button:has-text("J\'accepte ce devis")');
     await page.waitForSelector("text=Votre artisan est prévenu", { timeout: 10000 });
 
@@ -391,6 +393,7 @@ async function main() {
     const page = await context.newPage();
     await page.goto(`${BASE}/devis/${envoi.jeton}`, { waitUntil: "networkidle" });
 
+    await signerAuDoigt(page);
     await page.click('button:has-text("J\'accepte ce devis")');
     // Sélecteur restreint au paragraphe : Next.js injecte son propre élément
     // role="alert" (l'annonceur de route), qui rendrait le sélecteur ambigu.
@@ -430,6 +433,7 @@ async function main() {
     const alerte = page.locator('p[role="alert"]');
     let dernier = "";
     for (let essai = 1; essai <= 10; essai++) {
+      await signerAuDoigt(page);
       await page.click('button:has-text("J\'accepte ce devis")');
       await page.waitForSelector('p[role="alert"]', { timeout: 10000 });
       dernier = await alerte.innerText();
@@ -440,6 +444,7 @@ async function main() {
       );
     }
 
+    await signerAuDoigt(page);
     await page.click('button:has-text("J\'accepte ce devis")');
     // Le message change de contenu sans changer d'élément : on attend le
     // changement lui-même, jamais un délai fixe.
@@ -472,6 +477,7 @@ async function main() {
       .locator(`input[name="choixDate"][value="${versJourIso(ajouterJours(maintenant, 15))}"]`)
       .check();
     await cocherLaDemandeExpresse(page);
+    await signerAuDoigt(page);
     await page.click('button:has-text("J\'accepte ce devis")');
     await page.waitForSelector("text=Votre artisan est prévenu", { timeout: 10000 });
 
@@ -687,6 +693,7 @@ async function main() {
       .locator(`input[name="choixDate"][value="${versJourIso(ajouterJours(maintenant, 8))}"]`)
       .check();
     await cocherLaDemandeExpresse(page);
+    await signerAuDoigt(page);
     await page.click('button:has-text("J\'accepte ce devis")');
     await page.waitForSelector("text=Votre artisan est prévenu", { timeout: 10000 });
 

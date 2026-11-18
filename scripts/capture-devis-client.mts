@@ -20,6 +20,7 @@ import * as prixRepo from "../src/server/repositories/lignes-prix";
 import { creerEnvoi } from "../src/server/repositories/envois-devis";
 import { versJourIso, ajouterJours } from "../src/lib/disponibilites";
 import { pool } from "../src/server/db/client";
+import { signerAuDoigt } from "./_signer-au-doigt";
 
 const { entreprise, utilisateurId } = await entreprisesRepo.creerEntreprise(
   { nom: "Atlas" },
@@ -55,6 +56,7 @@ const page = await (await nav.newContext()).newPage();
 await page.goto(`http://localhost:3000/devis/${envoi.jeton}`, { waitUntil: "networkidle" });
 await page.screenshot({ path: "/tmp/captures/client-1-choix.png" });
 await page.locator(`input[name="choixDate"][value="${versJourIso(ajouterJours(maintenant, 3))}"]`).check();
+await signerAuDoigt(page);
 await page.click('button:has-text("J\'accepte ce devis")');
 await page.waitForSelector("text=Votre artisan est prévenu");
 await page.screenshot({ path: "/tmp/captures/client-2-accepte.png" });

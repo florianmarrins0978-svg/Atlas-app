@@ -8,6 +8,7 @@ import * as clientsRepo from "../src/server/repositories/clients";
 import { creerEnvoi, lireParJeton } from "../src/server/repositories/envois-devis";
 import { versJourIso, ajouterJours } from "../src/lib/disponibilites";
 import { ADRESSE } from "./_adresse";
+import { signerAuDoigt } from "./_signer-au-doigt";
 
 // **« Lorsque le client choisit sa date, voilà ce que l'appli dit. »** Le
 // patron, le 17 octobre 2026 à 23 h 17 : « Une erreur, cette page n'a pas pu
@@ -75,6 +76,7 @@ async function main() {
 
   await page.locator(`input[name="choixDate"][value="${dateVoulue}"]`).check();
   const rechargement = page.waitForEvent("load", { timeout: 20_000 }).catch(() => null);
+  await signerAuDoigt(page);
   await page.click('button:has-text("J\'accepte ce devis")');
 
   // --- 1. Pas d'impasse : la page se recharge seule --------------------------
@@ -92,6 +94,7 @@ async function main() {
 
   // --- 2. Rechargée, son choix aboutit, et le chantier se planifie ----------
   await page.locator(`input[name="choixDate"][value="${dateVoulue}"]`).check();
+  await signerAuDoigt(page);
   await page.click('button:has-text("J\'accepte ce devis")');
   await page.waitForSelector("text=Votre artisan est prévenu", { timeout: 15_000 });
   assert.equal((await lireParJeton(envoi.jeton))?.reponse, "acceptee");

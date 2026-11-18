@@ -37522,3 +37522,23 @@ de haie de photinia, élagage d'un frêne, plantation d'un olivier »), puis ver
 | **la racine : monter de version**, dans un lot à part (`package.json` est un plancher, batterie entière) | jamais couper le réglage : ce serait faire taire un avis de sécurité pour passer |
 | **le même refus vient d'un `node_modules` resté en arrière** (18 novembre 2026) : une fusion de `main` qui monte `package.json` ne réinstalle rien, et la batterie construit avec la version d'avant (« ▲ Next.js 16.4.2 » dans son journal, 16.4.6 dans le `package.json`) | avant de croire à une nouvelle faille, comparer la version que la construction annonce à celle du `package-lock.json` ; après une fusion qui touche `package.json`, `npm ci` avant la batterie |
 
+## §583 : La signature du client, sur le devis et sur la fiche d'entretien
+
+*18 novembre 2026, ses deux planches du 17 (`appli/soignee/devis-signe-par-le-client.html`, `appli/soignee/fiche-signee-par-le-client.html`), puis « les deux me vont, tu peux coder ».*
+
+| Décision | Pourquoi |
+|---|---|
+| **Une seule règle de ce qui est une signature** : `src/lib/signature-au-doigt.ts` (un vrai PNG `data:`, au moins 8 points, moins de 500 000 caractères) | elle vivait dans `fiche-securite.ts` ; recopiée pour le devis, elle aurait divergé (§3). Chaque papier garde sa phrase de refus |
+| **Une seule toile** : `src/components/atlas/Signature.tsx` (sortie de la fiche de sécurité), et `SignatureDuClient` pour la relire | le client et le patron reconnaissent la même chose d'un écran à l'autre |
+| **Devis : accepter, c'est signer** — `enregistrerReponse` refuse `signature_manquante` | l'écran éteint le geste, mais la page est publique et se rejoue : la règle vit au dépôt. Un refus et une correction n'en demandent pas. Un accord papier non plus |
+| **Le devis signé est RECOMPOSÉ et rangé à côté** (`envois_devis.pdf_signe_cle`), jamais posé sur celui de l'envoi | le PDF parti est protégé contre la modification (`proteger-pdf.ts`) : rien ne peut s'y écrire, et il doit rester la pièce de référence. Composé une fois (`cleDuDevisSigne`, écriture sur `pdf_signe_cle IS NULL`), juste après l'accord, et rattrapé à la première ouverture si cela a échoué |
+| **Ce que la recomposition ne garantit pas** | l'allure, le logo ou les conditions générales changés entre l'envoi et la signature apparaissent sur l'exemplaire signé. Les lignes, les prix et le client sont figés à l'envoi |
+| **Le lien, l'écran du patron et le dossier servent l'exemplaire signé** quand il existe | c'est celui que le client a vu et téléchargé |
+| **Accord défait** : la signature part dans `acceptations_defaites`, l'envoi perd sa signature et sa clé signée | le lien ne doit plus servir un devis « signé » ; la preuve garde le trait |
+| **Fiche d'entretien : jamais obligatoire**, signée seulement sur place, à l'envoi (`figerPassage(ctx, id, signature)`) | sa demande : « s'il n'est pas là, ils ne lui font pas signer ». Un tap est refusé et dit. La signature entre dans l'empreinte ; sans signature, l'empreinte se calcule comme avant |
+| **Sans signature, rien** : ni cadre vide, ni « Non signé », sur l'écran comme sur le PDF | la règle du 16 août reste vraie |
+| **Ni l'heure, ni « Bon pour accord » sur le retour d'intervention** ; le jour seul partout | sa demande du 18 : « pas besoin de mettre l'heure de la signature ». L'heure reste en base (`responduAt`, `signee_le`) |
+| Moteur PDF : `legendeCadre` et `signature` dans `composerDocument`, la place posée dans `trace.signatures` | une image ne laisse pas de texte : sans sa place, aucun contrôle ne saurait dire qu'elle est DANS le cadre |
+
+Migrations 0182 et 0183, expand seul. Suites : `test-devis-signe-pdf`, `test-fiche-signee-pdf` (pures), `test-devis-signe-db`, `test-fiche-signee-db`. Les suites qui acceptaient un devis signent désormais par `scripts/_signature-essai.ts` (base) et `scripts/_signer-au-doigt.ts` (navigateur, le vrai geste).
+

@@ -444,7 +444,7 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
       "Ensuite, chaque personne de l'équipe signe l'avoir lue, puis « Enregistrer ».",
     source: FORM,
     preuves: ["Signer la fiche", "Pour pouvoir signer", "que la loi exige", "signer avant d’enregistrer la fiche", "Enregistrer"],
-    ailleurs: [{ source: "src/app/planning/fiche-de-securite/[chantierId]/Signature.tsx", preuves: ["Signez ici, au doigt", "Effacer"] }],
+    ailleurs: [{ source: "src/components/atlas/Signature.tsx", preuves: ["Signez ici, au doigt", "Effacer"] }],
   },
   {
     id: "fiche-securite-transmettre",

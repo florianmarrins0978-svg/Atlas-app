@@ -53,7 +53,7 @@ import {
 } from "../../fiche-securite-actions";
 import { transmettreLePdf } from "@/components/atlas/transmettre-le-pdf";
 import VisionneusePhoto from "@/components/atlas/VisionneusePhoto";
-import Signature, { pngDeLaSignature, type Trace } from "./Signature";
+import Signature, { pngDeLaSignature, type Trace } from "@/components/atlas/Signature";
 import { DessinDuCroquis, EditeurDuCroquis, LegendeDuCroquis, ObligatoiresDuCroquis } from "./Croquis";
 
 /**

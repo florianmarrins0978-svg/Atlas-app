@@ -5,6 +5,7 @@ import { exigerOuverture } from "@/server/garde-route";
 import { withEntreprise } from "@/server/db/with-entreprise";
 import { devis } from "@/server/db/schema";
 import { genererPdfPourApercu, getOuCreerDevisBrouillon } from "@/server/repositories/devis";
+import { cleSigneeDuDevis } from "@/server/repositories/envois-devis";
 import { lireObjet } from "@/server/storage";
 import { enTetesDeRemise, veutTelecharger } from "@/lib/remise-de-fichier";
 
@@ -31,7 +32,12 @@ export async function GET(requete: Request, { params }: { params: Promise<{ id: 
 
   const d = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [row] = await tx.select().from(devis).where(eq(devis.id, id)).limit(1);
-    return row ?? null;
+    if (!row) return null;
+    // **Signé par son client, c'est l'exemplaire signé qu'il ouvre** — encadré
+    // rempli, comme celui que le client a téléchargé. Celui de l'envoi reste
+    // rangé, intact.
+    const cleSignee = row.statut === "envoye" ? await cleSigneeDuDevis(tx, row.id) : null;
+    return { ...row, cleSignee };
   });
 
   if (!d) {
@@ -42,11 +48,11 @@ export async function GET(requete: Request, { params }: { params: Promise<{ id: 
   // régénéré depuis les données courantes du chantier.
   if (d.statut === "envoye" && d.pdfStorageKey) {
     try {
-      const octets = await lireObjet(d.pdfStorageKey);
+      const octets = await lireObjet(d.cleSignee ?? d.pdfStorageKey);
       return new NextResponse(new Uint8Array(octets), {
         headers: enTetesDeRemise({
           telecharger: enPieceJointe,
-          nom: `devis-${d.numeroCommercial}.pdf`,
+          nom: `devis-${d.numeroCommercial}${d.cleSignee ? "-signe" : ""}.pdf`,
           type: "application/pdf",
         }),
       });

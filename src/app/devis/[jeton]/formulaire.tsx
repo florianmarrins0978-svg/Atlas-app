@@ -1,10 +1,10 @@
 "use client";
 
 import type React from "react";
-import { useActionState, useRef, useState } from "react";
+import { useActionState, useMemo, useRef, useState } from "react";
 import { repondreAction } from "./actions";
 import type { EnvoiPourClient } from "@/server/repositories/envois-devis";
-import { joursEnToutesLettres, joursSurDeuxLignes, dansDelaiRetractation } from "@/lib/jour";
+import { joursEnToutesLettres, joursSurDeuxLignes, dansDelaiRetractation, jourDeLettre } from "@/lib/jour";
 import { DROIT_DE_RETRACTATION } from "@/lib/retractation";
 import {
   libelleAutreDate,
@@ -18,6 +18,8 @@ import BottomSheet from "@/components/atlas/BottomSheet";
 import { colors, font, surPlein, voile } from "@/lib/design-tokens";
 import { CocheFaite } from "@/components/atlas/LettreDuClient";
 import NoteDuDevis from "./NoteDuDevis";
+import Signature, { pngDeLaSignature, SignatureDuClient, type Trace } from "@/components/atlas/Signature";
+import { SIGNEZ_AVANT_D_ACCEPTER } from "@/lib/signature-au-doigt";
 
 export default function FormulaireReponse({
   envoi,
@@ -132,6 +134,14 @@ export default function FormulaireReponse({
   const [refus, setRefus] = useState<string | null>(null);
   const [messageOuvert, setMessageOuvert] = useState(false);
   const champMessage = useRef<HTMLTextAreaElement>(null);
+  /**
+   * SA SIGNATURE AU DOIGT — sa planche du 17 novembre 2026. Le trait vit dans
+   * `trace` (la toile se vide quand le téléphone tourne) ; le PNG et le nombre
+   * de points partent avec « J'accepte ce devis », et le serveur les juge.
+   */
+  const [trace, setTrace] = useState<Trace>([]);
+  const signaturePng = useMemo(() => pngDeLaSignature(trace), [trace]);
+  const pointsDeSignature = trace.reduce((n, t) => n + t.length, 0);
 
   const joursDe = (d: string) => envoi.joursProposes?.[envoi.datesProposees.indexOf(d)] ?? [d];
   /**
@@ -202,6 +212,17 @@ export default function FormulaireReponse({
         <p className="mt-1.5 text-[14px]" style={{ color: colors.inkSoft }}>
           Vous pouvez fermer cette page.
         </p>
+        {/* Sa signature reste sous ses yeux : c'est elle qui est dans
+            l'encadré du devis qu'il télécharge. Rien sur un refus ou une
+            correction, qui ne se signent pas. */}
+        {signaturePng && etat.accepte && (
+          <section className="mt-4 text-left" data-atlas="signature-du-devis">
+            <h2 className="text-[18px] leading-tight" style={{ fontFamily: font.display, color: colors.ink }}>
+              Votre signature
+            </h2>
+            <SignatureDuClient png={signaturePng} phrase={`Signé le ${jourDeLettre(aujourdHui)}.`} />
+          </section>
+        )}
         {/* **PAS DE BOUTON ICI — sa correction du 9 septembre 2026 :** *« il y
             a marqué deux fois télécharger, garde celui sous le TTC »*. Celui
             du haut reste ; l'écran de RETOUR, quand il rouvre son SMS le
@@ -520,6 +541,31 @@ export default function FormulaireReponse({
         </label>
       )}
 
+      {/* **ACCEPTER, C'EST SIGNER** — sa planche du 17 novembre 2026. La toile
+          est celle de la fiche de sécurité, et son trait se pose dans
+          l'encadré « Bon pour accord » du devis. Un refus ou une correction
+          ne la lisent pas : ils ne s'engagent à rien. */}
+      <section
+        className="mt-1.5 rounded-md px-3 py-[9px]"
+        style={{ backgroundColor: colors.card }}
+        data-atlas="signature-devis"
+      >
+        <h2 className="text-[18px] leading-tight" style={{ fontFamily: font.display, color: colors.ink }}>
+          Votre signature
+        </h2>
+        <div className="mt-2">
+          <Signature
+            trace={trace}
+            onTrace={(t) => {
+              setTrace(t);
+              if (refus === SIGNEZ_AVANT_D_ACCEPTER) setRefus(null);
+            }}
+          />
+        </div>
+        <input type="hidden" name="signaturePng" value={signaturePng ?? ""} />
+        <input type="hidden" name="signaturePoints" value={pointsDeSignature} />
+      </section>
+
       {/* Elle se tait pendant qu'une feuille est ouverte : celle du calendrier
           porte sa propre phrase, et deux fois la même ne se lit pas. */}
       {!feuilleOuverte && !confirmationRefus && erreur && (
@@ -543,6 +589,13 @@ export default function FormulaireReponse({
           name="decision"
           value="accepte"
           disabled={enCours}
+          onClick={(e) => {
+            // Rien ne part sans trait : la phrase dit quoi faire, au-dessus du
+            // bouton, et le serveur redirait la même s'il était rejoué.
+            if (signaturePng) return;
+            e.preventDefault();
+            setRefus(SIGNEZ_AVANT_D_ACCEPTER);
+          }}
           className="atlas-plein min-h-12 rounded-full text-[19px] disabled:opacity-50"
           style={{ backgroundColor: colors.plein, color: surPlein, fontFamily: font.display }}
         >

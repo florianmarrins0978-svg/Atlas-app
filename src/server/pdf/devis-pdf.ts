@@ -167,7 +167,18 @@ export type OptionsDevisPdf = {
   attestation?: AttestationDocument | null;
   /** Le logo et la mention des services à la personne, quand la case est retenue (migration 0178). */
   servicesALaPersonne?: ServicesALaPersonneDocument | null;
+  /**
+   * LE CLIENT A SIGNÉ SUR SON LIEN — sa planche du 17 novembre 2026. Son trait
+   * se pose dans l'encadré « Bon pour accord », avec son nom et le jour (sans
+   * l'heure : sa demande du 18 novembre), et la mention du pied ne lui réclame
+   * plus une signature manuscrite qu'il a déjà donnée. Absente : le devis tel
+   * qu'il part, encadré vide.
+   */
+  signature?: SignatureDuClient | null;
 };
+
+/** Le trait du client, son nom tel qu'il s'imprime, et le jour de son accord. */
+export type SignatureDuClient = { png: Uint8Array; nom: string; jour: string };
 
 /**
  * Le bloc « NOTES / CONDITIONS » : SON texte d'abord, les conditions réglées
@@ -262,12 +273,14 @@ function annexeFormulaire(data: DevisPdfData, sansPrix: boolean) {
  * s'imprime : « valable selon la durée indiquée ci-dessus » restait écrit sur
  * un devis dont il avait retiré la durée, et renvoyait à une ligne absente.
  */
-function mentionDuDevis(d: DevisPdfData): string {
+function mentionDuDevis(d: DevisPdfData, signature: SignatureDuClient | null): string {
   const validite = libelleValiditeDevis(d.validiteJours);
   const base =
     `Devis établi par ${d.entrepriseNom}` +
     (validite ? `, valable ${validite}. ` : ". ") +
-    "Bon pour accord précédé de la mention manuscrite, daté et signé par le client.";
+    (signature
+      ? `Accepté et signé en ligne par le client le ${jourNumerique(signature.jour)}.`
+      : "Bon pour accord précédé de la mention manuscrite, daté et signé par le client.");
   // L'autoliquidation passe avant le taux : à 0 % sur un devis d'avant 0118,
   // `sousFranchise` répondrait « franchise » (la même garde que la facture).
   if (d.autoliquidation) return `${base} ${MENTION_AUTOLIQUIDATION}`;
@@ -297,6 +310,8 @@ export async function composerDevisPdf(
   options: OptionsDevisPdf = {}
 ): Promise<{ pdf: Uint8Array; trace: TraceDocument }> {
   const sansPrix = Boolean(options.sansChiffrage);
+  // La feuille de travail ne se signe pas : elle n'a ni cadre ni accord.
+  const signature = sansPrix ? null : (options.signature ?? null);
   const notes = blocNotes(data, sansPrix);
   return composerDocument({ ...data, conditionsPaiement: notes.sien }, {
     // La feuille de chantier ne reprend pas ses sauts : ils mettent en page le
@@ -370,8 +385,11 @@ export async function composerDevisPdf(
       sansPrix
         ? `Feuille de travail établie par ${d.entrepriseNom} d'après le devis ` +
           "correspondant. Elle ne vaut ni devis ni facture, et n'appelle aucun paiement."
-        : mentionDuDevis({ ...data, entrepriseNom: d.entrepriseNom }),
+        : mentionDuDevis({ ...data, entrepriseNom: d.entrepriseNom }, signature),
     cadreSignature: !sansPrix,
+    signature: signature
+      ? { png: signature.png, phrase: `Signé en ligne par ${signature.nom}, le ${jourNumerique(signature.jour)}.` }
+      : null,
   });
 }
 

@@ -32,6 +32,7 @@ import * as devisRepo from "../src/server/repositories/devis";
 import { creerEnvoi, enregistrerReponse, lireParJeton } from "../src/server/repositories/envois-devis";
 import { versJourIso, ajouterJours } from "../src/lib/disponibilites";
 import { nettoyerBase } from "./_test-db";
+import { SIGNATURE_ESSAI } from "./_signature-essai";
 
 let reussis = 0;
 let echoues = 0;
@@ -112,7 +113,7 @@ async function main() {
     const siens = [MARDI_10, MERCREDI_11, JEUDI_12, LUNDI_16];
     const r = await enregistrerReponse(
       envoi.jeton,
-      { decision: "accepte", demarrageAnticipe: true, dateRetenue: MARDI_10, joursRetenus: siens },
+      { decision: "accepte", signature: SIGNATURE_ESSAI, demarrageAnticipe: true, dateRetenue: MARDI_10, joursRetenus: siens },
       MARDI
     );
     assert.equal(r.succes, true, "L'acceptation de ses jours a été refusée.");
@@ -134,7 +135,7 @@ async function main() {
 
     const r = await enregistrerReponse(
       envoi.jeton,
-      { decision: "accepte", demarrageAnticipe: true, dateRetenue: MARDI_10, joursRetenus: [MARDI_10, MERCREDI_11, JEUDI_12, LUNDI_16] },
+      { decision: "accepte", signature: SIGNATURE_ESSAI, demarrageAnticipe: true, dateRetenue: MARDI_10, joursRetenus: [MARDI_10, MERCREDI_11, JEUDI_12, LUNDI_16] },
       MARDI
     );
     assert.equal(r.succes, true);
@@ -149,7 +150,7 @@ async function main() {
     const r = await enregistrerReponse(
       envoi.jeton,
       {
-        decision: "accepte", demarrageAnticipe: true,
+        decision: "accepte", signature: SIGNATURE_ESSAI, demarrageAnticipe: true,
         dateRetenue: MARDI_10,
         joursRetenus: [MARDI_10, MERCREDI_11, JEUDI_12, VENDREDI_13],
       },
@@ -166,7 +167,7 @@ async function main() {
 
     const r = await enregistrerReponse(
       envoi.jeton,
-      { decision: "accepte", demarrageAnticipe: true, dateRetenue: MARDI_10, joursRetenus: [MARDI_10, MERCREDI_11, LUNDI_16] },
+      { decision: "accepte", signature: SIGNATURE_ESSAI, demarrageAnticipe: true, dateRetenue: MARDI_10, joursRetenus: [MARDI_10, MERCREDI_11, LUNDI_16] },
       MARDI
     );
     assert.equal(r.succes, false, "Trois jours sur quatre sont passés.");
@@ -185,7 +186,7 @@ async function main() {
     const r = await enregistrerReponse(
       envoi.jeton,
       {
-        decision: "accepte", demarrageAnticipe: true,
+        decision: "accepte", signature: SIGNATURE_ESSAI, demarrageAnticipe: true,
         dateRetenue: LUNDI_16,
         joursRetenus: [MARDI_10, MERCREDI_11, JEUDI_12, VENDREDI_13],
       },
@@ -202,7 +203,7 @@ async function main() {
 
     await enregistrerReponse(
       envoi.jeton,
-      { decision: "accepte", demarrageAnticipe: true, dateRetenue: MARDI_10, joursRetenus: siens },
+      { decision: "accepte", signature: SIGNATURE_ESSAI, demarrageAnticipe: true, dateRetenue: MARDI_10, joursRetenus: siens },
       MARDI
     );
     const lu = await lireParJeton(envoi.jeton, MARDI);
@@ -214,7 +215,7 @@ async function main() {
     const c = await chantierPret(ctx, "Massif", "4 jours");
     const envoi = await envoiDeQuatreJours(ctx, c, "G");
 
-    const r = await enregistrerReponse(envoi.jeton, { decision: "accepte", demarrageAnticipe: true, dateRetenue: MARDI_10 }, MARDI);
+    const r = await enregistrerReponse(envoi.jeton, { decision: "accepte", signature: SIGNATURE_ESSAI, demarrageAnticipe: true, dateRetenue: MARDI_10 }, MARDI);
     assert.equal(r.succes, true);
     const poses = await chantiersRepo.creneauxDunChantier(ctx, c.chantierId);
     assert.deepEqual(joursPoses(poses), [MARDI_10, MERCREDI_11, JEUDI_12, VENDREDI_13]);
@@ -234,7 +235,7 @@ async function main() {
 
     const r = await enregistrerReponse(
       envoi.jeton,
-      { decision: "accepte", demarrageAnticipe: true, dateRetenue: MARDI_10, joursRetenus: [MARDI_10, MERCREDI_11, JEUDI_12, LUNDI_16] },
+      { decision: "accepte", signature: SIGNATURE_ESSAI, demarrageAnticipe: true, dateRetenue: MARDI_10, joursRetenus: [MARDI_10, MERCREDI_11, JEUDI_12, LUNDI_16] },
       MARDI
     );
     assert.equal(r.succes, false, "Une contre-proposition est passée sur un envoi fermé.");

@@ -33,6 +33,7 @@ import { defaireLAcceptation, AcceptationNonDefaite } from "../src/server/reposi
 import { terminerChantier } from "../src/server/repositories/factures";
 import { versJourIso, ajouterJours } from "../src/lib/disponibilites";
 import { nettoyerBase } from "./_test-db";
+import { SIGNATURE_ESSAI } from "./_signature-essai";
 
 let reussis = 0;
 let echoues = 0;
@@ -80,7 +81,7 @@ async function devisAccepte(ctx: Ctx, nom: string) {
   const r = await enregistrerReponse(
     envoi.jeton,
     {
-      decision: "accepte",
+      decision: "accepte", signature: SIGNATURE_ESSAI,
       dateRetenue: PROPOSEE,
       joursRetenus: [PROPOSEE, LENDEMAIN],
       adresseIp: "203.0.113.7",
@@ -141,7 +142,7 @@ async function main() {
 
     const encore = await enregistrerReponse(
       c.jeton,
-      { decision: "accepte", dateRetenue: PROPOSEE, joursRetenus: [PROPOSEE, LENDEMAIN] },
+      { decision: "accepte", signature: SIGNATURE_ESSAI, dateRetenue: PROPOSEE, joursRetenus: [PROPOSEE, LENDEMAIN] },
       MARDI
     );
     assert.equal(encore.succes, true, `Le client ne peut plus répondre par son lien : ${JSON.stringify(encore)}`);
@@ -160,7 +161,7 @@ async function main() {
 
     const encore = await enregistrerReponse(
       c.jeton,
-      { decision: "accepte", dateRetenue: PROPOSEE, joursRetenus: [PROPOSEE, LENDEMAIN] },
+      { decision: "accepte", signature: SIGNATURE_ESSAI, dateRetenue: PROPOSEE, joursRetenus: [PROPOSEE, LENDEMAIN] },
       MARDI
     );
     assert.equal(encore.succes, false, "Le client a pu accepter un devis noté refusé.");

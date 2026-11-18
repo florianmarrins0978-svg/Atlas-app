@@ -96,6 +96,7 @@ async function main() {
       { famille: "Taille", libelle: "Taille de la haie" },
       { famille: "Tonte", libelle: "Ramassage de l'herbe" },
     ],
+    signature: null,
   };
 
   await cas("il porte ce qui a été fait, le temps, les observations, et aucun montant", async () => {

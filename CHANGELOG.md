@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-11-18
+
+- **Le client signe son devis depuis son lien, et la fiche d'entretien se signe sur place** (ses planches du 17 novembre, son « tu peux coder » du 18). Devis : « Votre signature », la toile de la fiche de sécurité, avant « J'accepte ce devis », qui ne part pas sans trait ; le dépôt le refuse aussi (`signature_manquante`). Le devis est recomposé avec le trait dans l'encadré « Bon pour accord » et « Signé en ligne par Mme X, le JJ/MM/AAAA. », la mention du pied ne réclame plus la mention manuscrite ; il est rangé à côté de celui de l'envoi, qui ne change pas, et c'est lui que servent le lien, l'écran du patron et le dossier. Fiche d'entretien : la toile sous les observations, jamais obligatoire ; signée, le retour d'intervention (page et PDF) porte la signature et « Signée par Mme X, sur place, le … » ; sans signature, rien. Ni l'heure, ni cadre vide. Migrations 0182 et 0183 (expand seul), `ARCHITECTURE.md` §583. Ce que ça évite : un devis accepté en ligne dont le PDF restait identique, encadré vide. Suites pures vertes et vues rouges ; la suite base du devis jouée deux fois avant que je relise sa règle du 5 novembre (verte, vue rouge règle neutralisée) ; celle de la fiche est écrite, pas jouée. Batterie en attente de son « oui ».
+
 ## 2026-11-17
 
 - **Sur une ligne Main d'œuvre, le prix de chaque travail à la place de sa croix** (sa planche « La carte sur une ligne », son « ok »). En « Sur une ligne », la croix ne changeait rien au prix d'un travail ; elle sort de la carte, et chaque travail montre le prix qu'il aura sur le devis : sa grille, sinon « À chiffrer ». La feuille « + Main d'œuvre » du devis, qui monte la même carte, montre le montant de chaque ligne. Une croix posée en « Répartis » ne déplace plus la ligne Main d'œuvre une fois passé sur une ligne. `ARCHITECTURE.md` §579. Suite base vue rouge sur le code d'avant ; batterie de niveau 3 sur son « oui », la rencontre avec `main` rejouée verte (600 suites base, 114 suites navigateur), puis `main` le 18 novembre.

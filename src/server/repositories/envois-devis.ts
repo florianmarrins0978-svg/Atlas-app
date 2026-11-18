@@ -2,7 +2,7 @@ import { nomAvecForme } from "@/lib/formes-juridiques";
 import type { CiviliteClient } from "../../lib/civilite";
 import { dansDelaiRetractation, jourIso } from "@/lib/jour";
 import { randomBytes, createHash } from "node:crypto";
-import { and, asc, desc, eq, gte, isNull, lte, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, isNotNull, isNull, lte, sql } from "drizzle-orm";
 import { db, type DbOrTx } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
 import { fusionnerOccupationExterne, type PeriodeOccupee } from "../../lib/agenda-externe";
@@ -22,7 +22,9 @@ import {
   encoreEnCoursDepuis,
   equipesParChantier,
 } from "./occupation-chantiers";
-import { lireObjet } from "../storage";
+import { enregistrerObjet, lireObjet } from "../storage";
+import { signatureAuDoigtValable } from "../../lib/signature-au-doigt";
+import { composerLeDevisSigne } from "./devis";
 // Le seul écrivain de « où le chantier est posé » — partagé avec le planning.
 import { ecrireLesCreneaux } from "./creneaux-poses";
 import {
@@ -715,6 +717,84 @@ export async function lireParJeton(
  * expiré ne rend rien, et seul le PDF **archivé à l'envoi** est servi — jamais
  * une reconstruction, qui pourrait ne plus être la pièce acceptée.
  */
+/**
+ * LA CLÉ DU DEVIS SIGNÉ de cet envoi, composé une fois puis gardé — sa planche
+ * du 17 novembre 2026.
+ *
+ * `null` quand rien n'est signé : un envoi sans réponse, un refus, un accord
+ * papier ou d'avant la migration 0182. Le PDF de l'envoi sert alors, tel quel.
+ *
+ * **Composé à la première demande, jamais deux fois** : l'action qui reçoit
+ * l'accord l'appelle aussitôt, et le lien du client comme l'écran du patron
+ * rattrapent un accord dont la composition aurait échoué. L'écriture ne vise
+ * que `pdf_signe_cle IS NULL` : deux ouvertures simultanées ne remplacent pas
+ * l'exemplaire déjà rangé.
+ *
+ * Le contexte de l'entreprise doit être posé par l'appelant (`devis` n'a pas
+ * de politique par jeton).
+ */
+export async function cleDuDevisSigne(
+  tx: DbOrTx,
+  envoi: Pick<
+    typeof envoisDevis.$inferSelect,
+    "id" | "entrepriseId" | "chantierId" | "devisId" | "reponse" | "responduAt" | "signaturePng" | "pdfSigneCle"
+  >
+): Promise<string | null> {
+  if (envoi.reponse !== "acceptee" || !envoi.signaturePng || !envoi.responduAt) return null;
+  if (envoi.pdfSigneCle) return envoi.pdfSigneCle;
+  const png = Buffer.from(envoi.signaturePng.slice(envoi.signaturePng.indexOf(",") + 1), "base64");
+  const octets = await composerLeDevisSigne(tx, envoi.entrepriseId, envoi.devisId, {
+    png: new Uint8Array(png),
+    jour: jourIso(envoi.responduAt),
+  });
+  if (!octets) return null;
+  const objet = await enregistrerObjet(`chantiers/${envoi.chantierId}/devis`, Buffer.from(octets), ".pdf");
+  const [ecrit] = await tx
+    .update(envoisDevis)
+    .set({ pdfSigneCle: objet.storageKey })
+    .where(and(eq(envoisDevis.id, envoi.id), isNull(envoisDevis.pdfSigneCle)))
+    .returning({ cle: envoisDevis.pdfSigneCle });
+  if (ecrit?.cle) return ecrit.cle;
+  // Une autre ouverture l'a rangé pendant ce temps : c'est le sien qui fait foi.
+  const [deja] = await tx
+    .select({ cle: envoisDevis.pdfSigneCle })
+    .from(envoisDevis)
+    .where(eq(envoisDevis.id, envoi.id))
+    .limit(1);
+  return deja?.cle ?? null;
+}
+
+/**
+ * L'exemplaire signé d'un devis, pour l'écran du patron et le dossier du
+ * client : celui du dernier accord signé, s'il y en a un. Sous
+ * `withEntreprise` : la RLS ne laisse voir que ses envois.
+ */
+export async function cleSigneeDuDevis(tx: DbOrTx, devisId: string): Promise<string | null> {
+  const [envoi] = await tx
+    .select()
+    .from(envoisDevis)
+    .where(and(eq(envoisDevis.devisId, devisId), eq(envoisDevis.reponse, "acceptee"), isNotNull(envoisDevis.signaturePng)))
+    .orderBy(desc(envoisDevis.responduAt))
+    .limit(1);
+  return envoi ? cleDuDevisSigne(tx, envoi) : null;
+}
+
+/**
+ * Compose le devis signé juste après l'accord, depuis le lien du client. Rien
+ * ne s'y joue de l'accord lui-même : s'il échoue, l'accord tient et le PDF se
+ * compose à la prochaine ouverture (`cleDuDevisSigne`).
+ */
+export async function deposerLeDevisSigne(jeton: string): Promise<void> {
+  if (!jeton) return;
+  await db.transaction(async (tx) => {
+    await tx.execute(sql`SELECT set_config('app.jeton_envoi', ${jeton}, true)`);
+    const [envoi] = await tx.select().from(envoisDevis).where(eq(envoisDevis.jeton, jeton)).limit(1);
+    if (!envoi) return;
+    await tx.execute(sql`SELECT set_config('app.entreprise_id', ${envoi.entrepriseId}, true)`);
+    await cleDuDevisSigne(tx, envoi);
+  });
+}
+
 export async function pdfDevisParJeton(
   jeton: string,
   maintenant: Date = new Date()
@@ -747,12 +827,15 @@ export async function pdfDevisParJeton(
 
     const [d] = await tx.select().from(devis).where(eq(devis.id, envoi.devisId)).limit(1);
     if (!d?.pdfStorageKey) return null;
-    return { storageKey: d.pdfStorageKey, numero: d.numeroCommercial };
+    // **Signé, il télécharge l'exemplaire signé** : c'est celui qu'il vient de
+    // voir à l'écran, encadré rempli.
+    const signe = await cleDuDevisSigne(tx, envoi);
+    return { storageKey: signe ?? d.pdfStorageKey, numero: d.numeroCommercial, signe: signe !== null };
   });
 
   if (!cle) return null;
   try {
-    return { octets: await lireObjet(cle.storageKey), nom: `devis-${cle.numero}.pdf` };
+    return { octets: await lireObjet(cle.storageKey), nom: `devis-${cle.numero}${cle.signe ? "-signe" : ""}.pdf` };
   } catch {
     // Le fichier a disparu du stockage : on le dit par un 404, sans reconstruire
     // un document qui ne serait plus celui que le client a reçu.
@@ -861,6 +944,13 @@ export type ReponseClient = {
   demarrageAnticipe?: boolean;
   adresseIp?: string | null;
   agentUtilisateur?: string | null;
+  /**
+   * SA SIGNATURE AU DOIGT, exigée pour accepter — sa planche du 17 novembre
+   * 2026. Le trait (PNG `data:`) et le nombre de points tracés, tels que le
+   * formulaire les poste : rien n'est cru, `signatureAuDoigtValable` juge.
+   * Ignorée sur un refus ou une correction, qui ne s'engagent à rien.
+   */
+  signature?: { png: unknown; points: unknown } | null;
 };
 
 export type ResultatReponse =
@@ -886,7 +976,9 @@ export type ResultatReponse =
          * La date tombe dans ses 14 jours de rétractation et il n'a pas coché la
          * demande expresse (L221-25, son choix 3A du 3 octobre 2026).
          */
-        | "demarrage_non_demande";
+        | "demarrage_non_demande"
+        /** Il accepte sans avoir signé au doigt (sa planche du 17 novembre 2026). */
+        | "signature_manquante";
     };
 
 /**
@@ -942,6 +1034,21 @@ export async function enregistrerReponse(
     const precision = reponse.precision?.trim() || null;
     if (reponse.decision === "correction" && !precision) {
       return { succes: false, motif: "message_manquant" as const };
+    }
+
+    /**
+     * **ACCEPTER, C'EST SIGNER** — sa planche du 17 novembre 2026, approuvée
+     * le 18. L'écran éteint « J'accepte ce devis » tant que le cadre est vide,
+     * mais cette page est publique et son formulaire se rejoue : la règle vit
+     * ici, une seule fois (`CLAUDE.md` §3). Sans elle, un accord sans trait
+     * laisserait l'encadré du devis vide, et c'est ce qu'il a voulu finir.
+     */
+    const signaturePng =
+      reponse.decision === "accepte" && signatureAuDoigtValable(reponse.signature?.png, reponse.signature?.points)
+        ? reponse.signature!.png as string
+        : null;
+    if (reponse.decision === "accepte" && !signaturePng) {
+      return { succes: false, motif: "signature_manquante" as const };
     }
 
     /**
@@ -1112,6 +1219,7 @@ export async function enregistrerReponse(
           demarrageAnticipe: reponse.demarrageAnticipe ?? false,
           adresseIp: reponse.adresseIp ?? null,
           agentUtilisateur: reponse.agentUtilisateur ?? null,
+          signaturePng,
         })
         .where(eq(envoisDevis.jeton, jeton));
       return { succes: true as const, dateRetenue: date, contreProposee: false };
@@ -1203,6 +1311,7 @@ export async function enregistrerReponse(
         demarrageAnticipe: reponse.demarrageAnticipe ?? false,
         adresseIp: reponse.adresseIp ?? null,
         agentUtilisateur: reponse.agentUtilisateur ?? null,
+        signaturePng,
       })
       .where(eq(envoisDevis.jeton, jeton));
 

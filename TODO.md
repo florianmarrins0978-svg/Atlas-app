@@ -7,7 +7,7 @@ Le texte de l'appli dit Cause (`ARCHITECTURE.md` §581). Restent, et chacun est 
 - **les conditions générales** : une version nouvelle qui dit Cause, que chaque compte acceptera de nouveau. Le plus simple : la faire quand sa micro-entreprise a son SIREN, pour remplir dans la même version les cases « Qui édite » encore à compléter (une seule acceptation au lieu de deux) ;
 - **l'icône** : le « A » provisoire ne va plus. Trois planches (ci-dessous) : il a jugé les lettres des deux premières trop basiques, la troisième porte des dessins et attend une lettre et un fond, puis `npm run icones` ;
 - **l'adresse d'envoi des courriels** : le nom affiché dit Cause, l'adresse reste celle de sa variable `COURRIEL_EXPEDITEUR`, à passer sur cause.fr quand l'Afnic aura accordé le domaine.
-## ⏳ UNE PLANCHE À REGARDER : FAIRE SIGNER LA FICHE D'ENTRETIEN (17 novembre 2026)
+## ⏳ CODÉ, EN ATTENTE DE SA BATTERIE : FAIRE SIGNER LA FICHE D'ENTRETIEN (17 novembre 2026)
 
 **Sa demande, qui revient sur sa décision du 16 août** (pas de signature sur les
 rapports) : *« quand les gars font la tonte, l'entretien des massifs, ils mettent
@@ -27,7 +27,12 @@ signature, aucun encadré sur le PDF, jamais de « Non signé ». **Pas encore
 codé** : à son choix, une migration (expand : la signature, son nom, son heure,
 d'où elle vient), et l'empreinte du rapport doit dire QUEL contenu a été signé.
 
-## ⏳ UNE PLANCHE À REGARDER : SIGNER SON DEVIS DEPUIS LE LIEN (17 novembre 2026)
+**Approuvée et CODÉE le 18 novembre** (`ARCHITECTURE.md` §583, migration
+0183), sur la branche de session, pas sur `main`. Le jour seul, sans l'heure,
+comme sur le devis. Reste : `test-fiche-signee-db` (écrite, pas jouée : elle
+vide la base, sa règle du 5 novembre) et la batterie, sur son « oui ».
+
+## ⏳ CODÉ, EN ATTENTE DE SON ARBITRAGE ET DE SA BATTERIE : SIGNER SON DEVIS DEPUIS LE LIEN (17 novembre 2026)
 
 **Sa demande :** *« lui donner la possibilité de signer, qu'il y ait une petite
 case où il puisse accoler sa signature, cliquer sur signer, et la signature
@@ -47,6 +52,16 @@ daté et signé avec la mention bon pour accord » (article 1) : le texte est le
 sien, à revoir avec l'accord en ligne. Constat : aujourd'hui, le PDF d'un devis
 accepté en ligne est identique à celui d'avant (encadré vide). Le devis papier
 signé (`accordSurPapier`) ne change pas.
+
+**Approuvée (sans l'heure) et CODÉE le 18 novembre** (`ARCHITECTURE.md` §583,
+migration 0182), sur la branche de session, pas sur `main`. **Une question à
+lui avant la batterie** : sa règle du 31 août veut la page du client sur un
+seul écran de 390 × 664, sans défiler (`test-devis-client-e2e`, « TOUT TIENT
+DANS UN ÉCRAN », déjà sans un pixel de marge) ; la toile de 170 px de la
+planche la fait déborder. Soit la planche l'emporte (la suite s'adapte), soit
+« J'accepte ce devis » ouvre une feuille « Votre signature » par-dessus (la
+page garde sa hauteur). Les 27 suites qui acceptaient un devis signent
+désormais (`_signature-essai.ts`, `_signer-au-doigt.ts`).
 
 ## DEUX DÉFAUTS VUS EN FABRIQUANT CETTE PLANCHE, NON CORRIGÉS (17 novembre 2026)
 

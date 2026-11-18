@@ -10,6 +10,7 @@ import * as clientsRepo from "../src/server/repositories/clients";
 import * as devisRepo from "../src/server/repositories/devis";
 import { creerEnvoi } from "../src/server/repositories/envois-devis";
 import { ajouterJours, versJourIso } from "../src/lib/disponibilites";
+import { signerAuDoigt } from "./_signer-au-doigt";
 
 // ═════════════════════════════════════════════════════════════════════════════
 // POSER UN CLIENT À SA PLACE — son choix B du 7 octobre 2026.
@@ -169,6 +170,7 @@ async function main() {
     const jours = sienne.locator('[data-atlas="jours-fixes"]');
     assert.equal(await jours.count(), 1, "le jour posé n'est pas écrit");
     assert.equal(await sienne.locator('input[type="radio"][name="choixDate"]').count(), 0, "des dates s'offrent encore");
+    await signerAuDoigt(sienne);
     await sienne.getByRole("button", { name: "J'accepte ce devis" }).click();
     await sienne.waitForSelector("text=C'est noté", { timeout: 15_000 });
     const envoi = (
