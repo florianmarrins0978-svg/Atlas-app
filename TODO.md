@@ -40,6 +40,18 @@ signature, aucun encadré sur le PDF, jamais de « Non signé ». **Pas encore
 codé** : à son choix, une migration (expand : la signature, son nom, son heure,
 d'où elle vient), et l'empreinte du rapport doit dire QUEL contenu a été signé.
 
+## ⏳ UNE PLANCHE À REGARDER : LA SIGNATURE DU DEVIS DANS UNE FEUILLE, OPTION B (18 novembre 2026)
+
+**Sa demande :** *« fais-moi une planche pour la B »*. La toile de 170 px de la
+planche d'avant faisait déborder la page du client, que sa règle du 31 août
+veut sur un seul écran de 390 × 664 (`test-devis-client-e2e`, « TOUT TIENT
+DANS UN ÉCRAN »). `appli/soignee/devis-signe-dans-une-feuille.html`, posée sur
+le vrai lien et sur une vraie feuille de l'appli (celle du calendrier, son
+contenu remplacé) : « J'accepte ce devis » ouvre « Votre signature », la toile
+et « J'accepte ce devis », qui refuse tant que rien n'est signé. La page,
+sans toile, mesure 664 px. **Ce qu'il a à dire : B, ou la planche d'avant.**
+Son choix vaudra aussi pour le contrat d'entretien, pas encore codé.
+
 ## ⏳ UNE PLANCHE À REGARDER : SIGNER SON DEVIS DEPUIS LE LIEN (17 novembre 2026)
 
 **Sa demande :** *« lui donner la possibilité de signer, qu'il y ait une petite
