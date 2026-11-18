@@ -252,8 +252,18 @@ montrait tel quel (neuf états, huit coupes). La planche joue maintenant
 (`appli/scripts/film-equipe-fluide.py`). Les deux autres pages gardent leur
 film.
 
-**Ce qu'il a à dire :** si ce passage lui va maintenant, s'il garde ce
-mouvement, ce qu'il en retire, et ce qui accroche sur son iPhone.
+**Le 18 novembre, une demande, faite :** *« le mot fort, c'est de dire que
+c'est pour tous les artisans. Et ensuite, il faut mettre en priorité paysagiste
+et élagueur, et tu enchaînes avec les autres. »* Dans la section des métiers,
+« tous » porte le titre, Paysagiste et Élagueur ouvrent la liste, seuls sur
+leur rang, et les autres suivent. **Lu ainsi, pas plus :** ni le titre de
+l'ouverture ni l'ordre des sections n'ont bougé. S'il voulait que le SITE
+commence par là, c'est à refaire.
+
+**Ce qu'il a à dire :** si ces deux passages lui vont, s'il garde ce
+mouvement, ce qu'il en retire, et ce qui accroche sur son iPhone. Et si
+l'ordre des métiers doit être reporté dans `cause.html` et
+`chapitres-6.html`, qui gardent l'ancien.
 
 **Une question née de ce bémol, à lui de trancher :** le site montre ce
 passage plus souple que l'appli ne le fait. Veut-il que l'appli glisse aussi
