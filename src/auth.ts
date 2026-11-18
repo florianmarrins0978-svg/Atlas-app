@@ -13,7 +13,7 @@ import { marquerSession } from "./lib/identite-session";
 import { emailProuve, fournisseursDisponibles, ouAllerSansCompte } from "./lib/fournisseurs-connexion";
 import { clesFournisseurs } from "./server/cles-fournisseurs";
 import { identifiantPourEmailProuve } from "./server/identite-externe";
-import type { AuthenticationResponseJSON } from "@simplewebauthn/types";
+import type { AuthenticationResponseJSON } from "@simplewebauthn/server";
 import { CodeRequis, attenteSiCodeExige, verifierLeCodeEnAttente } from "./server/double-verification-connexion";
 
 // Provider Credentials : aucun accès réseau externe requis (contrairement à

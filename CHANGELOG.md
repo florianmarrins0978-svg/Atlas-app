@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-11-18
 
+- **Face ID passe à `@simplewebauthn` 13.3.3** (sa demande, après le tour des failles). Elle corrige la faille de l'attestation (GHSA-6hxq-p678-4hr2), que l'application ne lisait pas. Le serveur et le navigateur montent ensemble ; le compte garde sur le téléphone les mêmes octets qu'en version 9, et la base ne change pas : les clés déjà enregistrées s'ouvrent comme avant. Deux cas neufs dans `test-face-id-e2e.ts`, dont une clé rangée comme la 9 la rangeait. `ARCHITECTURE.md` §583. Batterie : attend son « oui ».
 - **Le tour des failles que GitHub signale dans les dépendances** (sa demande). Cinq failles distinctes (picomatch, minimatch, glob, esbuild, `@simplewebauthn/server`) ; aucune n'est atteignable dans l'application servie : quatre ne vivent que dans les outils de construction et de relecture, la cinquième vise l'attestation de Face ID, que l'application ne lit pas. Rien n'a été changé : `npm audit fix` réécrivait le fichier de verrouillage pour des outils, et sa version forcée rétrogradait Next.js, next-auth et Sentry. `ARCHITECTURE.md` §583, deux choses à surveiller dans `TODO.md`.
 
 ## 2026-11-17

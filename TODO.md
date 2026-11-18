@@ -6,10 +6,11 @@ Le tour des 6 failles que GitHub signale est fait (`ARCHITECTURE.md` §583) :
 aucune n'est atteignable dans l'application servie, rien n'a été changé.
 Restent deux choses, à faire quand elles se présentent :
 
-- **`@simplewebauthn/server` 9.0.3 vers 13.3.3 ou 14**, dans un lot à lui, le
-  jour où l'on touche à Face ID (`src/server/cle-appareil.ts`) : la faille
-  vise l'attestation, que l'application ne lit pas, mais cinq versions
-  majeures d'écart sur l'authentification se rattrapent mal d'un coup ;
+- ~~**`@simplewebauthn/server` 9.0.3 vers 13.3.3 ou 14**~~ : **CODÉ LE
+  18 NOVEMBRE, sur sa demande** (« occupe-toi de Face ID »), en 13.3.3, le
+  navigateur avec (`ARCHITECTURE.md` §583). Batterie de niveau 3 : attend son
+  « oui », puis `main`. Reste à essayer Face ID sur son téléphone, une clé
+  déjà enregistrée ;
 - **picomatch** : aucune version corrigée n'existe ; quand elle sortira, la
   prendre par la mise à jour des outils qui l'amènent (Sentry, ESLint).
 
