@@ -1,20 +1,26 @@
 <!--
-  Icône PROVISOIRE d'Atlas, en attendant un vrai logo.
+  Icône de Cause : le « C » de la serif des devis, en vert pin sur crème, et le
+  point d'or des titres du site. Son choix du 18 novembre 2026 : « je prends la
+  C de la première planche » (appli/icone-de-cause.html).
 
-  Un « A » bâti comme un chevron de charpente, sur le fond crème de
-  l'application. Volontairement simple : une icône provisoire qui chercherait à
-  bien faire donne l'illusion d'une décision prise, et personne ne la remplace
-  jamais.
+  Le « C » est un contour, pas du texte : il a été relevé par fontkit dans
+  src/server/pdf/polices/atlas-archive-serif. Aucune police n'est donc
+  nécessaire pour le rendre, et `npm run icones` donne la même image sur
+  n'importe quelle machine.
 
-  Source unique : les fichiers PNG du dossier public/icones/ sont RÉGÉNÉRÉS
-  depuis ce fichier par `npm run icones`. Ne pas les retoucher à la main.
+  LE DESSIN TIENT DANS LE CERCLE CENTRAL DE 80 % (rayon 204,8 sur 512) : c'est
+  ce qu'Android garde quand il découpe l'icône en rond. Le point d'or s'y arrête
+  à 183 du centre. C'est pour cela que l'icône d'Android est rendue sans marge
+  (`scripts/generer-icones.mjs`) : réduire encore rapetisserait le C. Un dessin
+  qui déborderait de ce cercle serait rogné sur Android.
 
-  Pour changer le logo : remplacer ce fichier, relancer `npm run icones`.
+  Source unique : les PNG de public/icones/ et src/app/favicon.ico sont
+  RÉGÉNÉRÉS depuis ce fichier par `npm run icones`. Ne pas les retoucher à la main.
 -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <rect width="512" height="512" fill="#F6F1E6"/>
-  <!-- Le chevron : deux jambages et leur entrait, comme une ferme de toit. -->
-  <path d="M256 108 L392 404" fill="none" stroke="#C0621F" stroke-width="44" stroke-linecap="round"/>
-  <path d="M256 108 L120 404" fill="none" stroke="#C0621F" stroke-width="44" stroke-linecap="round"/>
-  <path d="M178 300 L334 300" fill="none" stroke="#C0621F" stroke-width="40" stroke-linecap="round"/>
+  <g fill="#2F3B2F">
+    <path transform="translate(96.74 384.16) scale(0.19186 -0.19186)" d="M774 -20Q448 -20 266 157.5Q84 335 84 655Q84 1001 259 1178.5Q434 1356 778 1356Q987 1356 1227 1305L1233 1012L1167 1012L1137 1186Q1067 1229 974.5 1252.5Q882 1276 786 1276Q529 1276 411 1125Q293 974 293 657Q293 365 416.5 211Q540 57 776 57Q890 57 991 84.5Q1092 112 1151 158L1188 358L1253 358L1247 43Q1027 -20 774 -20Z"/>
+  </g>
+  <circle cx="378.1" cy="363.0" r="21" fill="#B98B47"/>
 </svg>

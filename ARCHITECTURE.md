@@ -37506,7 +37506,7 @@ de haie de photinia, élagage d'un frêne, plantation d'un olivier »), puis ver
 | les élisions suivent : « d'Atlas » devient « de Cause », « qu'Atlas » devient « que Cause » | « d'Cause » ne se lit pas |
 | **les noms internes gardent atlas** : rôles `atlas_app` et `atlas_owner`, bases `atlas_test`, variables `ATLAS_*`, repères `data-atlas`, classes `.atlas-*`, dossier `components/atlas`, préfixe `atlas-` des événements d'agenda, clés de rangement | les renommer ne montre rien de plus et casse : ses rendez-vous déjà posés ne seraient plus reconnus (`estEvenementAtlas`), les bases de son espace ne s'ouvriraient plus, huit cents suites perdraient leurs repères |
 | **les conditions générales ne bougent pas** (`src/server/documents-legaux/versions.ts`, `public/conditions-utilisation.html`, `public/confidentialite.html`) | une version publiée ne se modifie jamais : le nom y changera par une version nouvelle, que chaque compte acceptera de nouveau. C'est sa décision (`TODO.md`) |
-| **l'icône reste le « A »** (`public/icone-source.svg`) | un logo est une apparence : planche d'abord (`CLAUDE.md` §3 bis) |
+| **l'icône est le C** de la première planche, son choix du 18 novembre (`public/icone-source.svg`, §586) | un logo est une apparence : planche d'abord (`CLAUDE.md` §3 bis) |
 | les données de test gardent leurs noms d'entreprise (« Atlas SAS », « Jardins Atlas ») | ce sont des clients inventés, pas le nom du produit |
 | les anciennes planches de `appli/` gardent Atlas | elles racontent le chemin ; le site de vente sous le nom Cause est `appli/vente/cause.html` |
 
@@ -37545,7 +37545,7 @@ de haie de photinia, élagage d'un frêne, plantation d'un olivier »), puis ver
 | `userID: isoUint8Array.fromUTF8String(utilisateur.id)` | les mêmes octets qu'en 9 : pour le téléphone, c'est le même compte, et une clé refaite remplace la sienne au lieu de s'ajouter |
 | la base ne change pas | la 9 rangeait l'identifiant et la clé publique COSE en base64url ; la 13 rend `credential.id` en base64url et `credential.publicKey` en octets, rangés pareil. Les clés déjà posées s'ouvrent sans conversion |
 | les types viennent de `@simplewebauthn/server` | `@simplewebauthn/types`, qu'on importait sans le déclarer, est abandonné ; il n'arrivait que par la 9 |
-| next-auth déclare la 9 en dépendance « pair » FACULTATIVE | il ne s'en sert que pour son propre fournisseur passkey, que l'application n'emploie pas (`src/auth.ts` dit pourquoi). `npm ls` le signale en profondeur seulement : `npm ls --silent`, que `banc.mjs` interroge quand une construction échoue, rend 0 et ne voit rien (mesuré) |
+| next-auth déclare la 9 en dépendance « pair » FACULTATIVE | il ne s'en sert que pour son propre fournisseur passkey, que l'application n'emploie pas (`src/auth.ts` dit pourquoi). `npm ls` le signale en profondeur seulement : `npm ls --silent`, que `banc.mjs` interroge quand une construction échoue, rend 0 et ne voit rien (mesuré). **Faux, corrigé le jour même** : `npm ci` et `npm install` refusaient d'installer le dépôt (ERESOLVE), la batterie l'ignorait faute de réinstaller. Voir §585 |
 
 `test-face-id-e2e.ts` en porte deux cas : l'appareil retient le compte sous les mêmes octets qu'avant, et une clé fabriquée et rangée comme la 9 la rangeait s'ouvre toujours (après qu'une clé publique fausse, sur la même ligne, a été refusée : le contrôle sait échouer).
 
@@ -37572,4 +37572,43 @@ de haie de photinia, élagage d'un frêne, plantation d'un olivier »), puis ver
 | Moteur PDF : `legendeCadre` et `signature` dans `composerDocument`, la place posée dans `trace.signatures` | une image ne laisse pas de texte : sans sa place, aucun contrôle ne saurait dire qu'elle est DANS le cadre |
 
 Migrations 0182 et 0183, expand seul. Suites : `test-devis-signe-pdf`, `test-fiche-signee-pdf` (pures), `test-devis-signe-db`, `test-fiche-signee-db`. Les suites qui acceptaient un devis signent désormais par `scripts/_signature-essai.ts` (base) et `scripts/_signer-au-doigt.ts` (navigateur, le vrai geste).
+
+## §585 : Les dépendances s'installent depuis zéro, et un contrôle le vérifie
+
+*18 novembre 2026. Trouvé en reposant un autre lot sur `main`, vingt minutes après la livraison de Face ID 13.3.3 (§583), batterie de niveau 3 verte.*
+
+**Ce qui était cassé.** `npm ci`, sur une copie propre de `main` (`645630eb`), refusait :
+
+    ERESOLVE could not resolve
+    peerOptional @simplewebauthn/browser@"^9.0.1" from next-auth@5.0.0-beta.32
+
+`npm install` refusait de même. Pour son espace, cela voulait dire au prochain allumage : `npm ci` et `npm install` refusés, « les dépendances n'ont pas suivi le code », et le geste que le démarrage lui donne alors (`rm -rf node_modules && npm ci`) l'aurait laissé SANS dépendances. La CI, qui commence par `npm ci`, ne pouvait plus rien jouer.
+
+**Pourquoi la batterie était verte.** Elle se joue sur un `node_modules` déjà posé, et rien, dans aucune étape, ne réinstalle depuis zéro. Comment celui de la session de Face ID a reçu la 13 malgré le refus (`--force`, `--legacy-peer-deps` ?) n'est pas vérifié d'ici.
+
+| Décision | Pourquoi |
+|---|---|
+| `overrides` dans `package.json`, limité à next-auth : ses deux `@simplewebauthn` suivent ceux de la racine (`$@simplewebauthn/...`) | next-auth ne s'en sert que pour son fournisseur passkey, que l'application n'emploie pas (`src/auth.ts`). Lui dire « prends la 13 de la racine » est vrai ; il n'en exécute rien |
+| pas `--legacy-peer-deps`, ni dans un `.npmrc` | il tairait TOUS les conflits de pairs, y compris le prochain, qui pourrait viser un paquet réellement exécuté |
+| pas de montée de next-auth | `5.0.0-beta.32` est la dernière bêta publiée, et elle déclare toujours la 9 (`npm view next-auth@beta peerDependencies`, mesuré) |
+| le verrou ne bouge pas | npm n'y écrit pas les dérogations ; `npm ci` relit `package.json` et accepte (mesuré : 574 paquets, `@simplewebauthn` 13.3.3 et 13.3.0) |
+| `scripts/test-dependances-installables.ts`, dans `npm test` | il demande à npm de résoudre l'arbre ENTIER, sans réseau ni écriture (`--package-lock-only --dry-run --offline`) : la même résolution que `npm ci`, en une seconde. Rouge sur `645630eb` (il nomme next-auth et la 9), vert avec la dérogation |
+
+**Un `ENOTCACHED` hors ligne n'accuse pas le cache.** Un arbre cohérent se résout depuis le verrou seul, cache vide compris (mesuré). Si npm a dû demander au registre, il cherchait une version que le verrou ne lui donnait pas : le contrôle redemande alors en ligne pour nommer le conflit.
+
+**À retirer** quand next-auth publiera une version qui accepte `@simplewebauthn` 13 : la dérogation deviendra inutile, et ce contrôle le dira si elle devient fausse.
+
+## §586 : L'icône est le C ; la source garde son dessin dans le cercle d'Android, le générateur n'ajoute plus de marge
+
+*18 novembre 2026, son choix : « je prends la C de la première planche » (`appli/icone-de-cause.html`).*
+
+| Décision | Pourquoi |
+|---|---|
+| `public/icone-source.svg` porte le « C » de la serif des devis (un contour relevé par fontkit, aucune police à charger), vert pin sur crème, et le point d'or | c'est le dessin qu'il a choisi, tracé tel quel : `npm run icones` rend exactement la planche |
+| **la source garde tout son dessin dans le cercle central de 80 %** (rayon 204,8 sur 512 ; le point d'or s'arrête à 183) | c'est ce qu'Android garde quand il découpe l'icône en rond. La règle vit dans la source, pas dans le générateur |
+| **le générateur n'ajoute plus de marge** : plus de `icone-maskable-512.png`, le manifeste déclare la 512 pour `any` et pour `maskable` | l'ancienne marge réduisait le motif à 60 % sur un crème écrit en dur (`FOND`) : sur une source déjà dans le cercle, le C perdait la moitié de sa taille, et tout fond d'une autre couleur aurait été cerné de crème |
+| **le générateur fabrique aussi `src/app/favicon.ico`** (16, 32, 48 px, des PNG dans un sommaire .ico écrit à la main, sharp ne sachant pas l'écrire) | l'onglet montrait encore le triangle par défaut de Next.js : aucune icône du manifeste ne le remplaçait |
+| le favicon est cadré sur le carré central (320 sur 512) | à 16 px, la marge du cercle laissait au C huit pixels de haut, un trait gris illisible ; l'onglet ne découpe rien |
+
+**Ce qui n'est pas vérifié** : l'icône sur un vrai iPhone et un vrai Android, une fois l'appli réinstallée sur l'écran d'accueil (un téléphone garde l'ancienne icône tant que le raccourci n'est pas recréé). Regardée ici en carré arrondi, en rond, dans le cercle minimal et à 16 px.
 

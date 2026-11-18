@@ -24,7 +24,9 @@ plusieurs personnes qui facturent n'est refusé nulle part (`placePourUnFabrican
 ne sert qu'à l'invitation, `membres-entreprise.ts`), contre l'article 14.6. Le
 lot du module le fermera.
 
-## `npm ci` REFUSÉ SUR `main` DEPUIS FACE ID 13.3.3 (18 novembre 2026)
+## ~~`npm ci` REFUSÉ SUR `main` DEPUIS FACE ID 13.3.3~~ RÉPARÉ LE 18 NOVEMBRE 2026
+
+**Réparé par un `overrides` limité à next-auth dans `package.json`** (`ARCHITECTURE.md` §585), pas par `.npmrc` `legacy-peer-deps=true`, qui tairait tous les conflits de pairs, le suivant compris. Éprouvé par un `npm ci` sur un dossier vide (574 paquets, `@simplewebauthn` 13), batterie de niveau 3 verte ; `test-dependances-installables.ts` refait la résolution de `npm ci` à chaque `npm test`. Ce qui suit est le constat d'origine.
 
 Vu en rejouant la batterie de la signature : `6ef2ae3` (« Passer Face ID à
 @simplewebauthn 13.3.3 ») déclare `@simplewebauthn/server` et `browser` en 13,
@@ -48,7 +50,9 @@ Restent deux choses, à faire quand elles se présentent :
   18 NOVEMBRE, sur sa demande** (« occupe-toi de Face ID »), en 13.3.3, le
   navigateur avec (`ARCHITECTURE.md` §583). Batterie de niveau 3 verte sur son
   « oui » (217 suites navigateur sur 217), sur `main` le 18 novembre. Reste à essayer Face ID sur son téléphone, une clé
-  déjà enregistrée ;
+  déjà enregistrée. **Son `npm ci` refusait le dépôt** (next-auth réclame la 9) :
+  réparé le même jour par une dérogation limitée à next-auth, à retirer quand
+  next-auth acceptera la 13 (`ARCHITECTURE.md` §585) ;
 - **picomatch** : aucune version corrigée n'existe ; quand elle sortira, la
   prendre par la mise à jour des outils qui l'amènent (Sentry, ESLint).
 
@@ -57,7 +61,7 @@ Restent deux choses, à faire quand elles se présentent :
 Le texte de l'appli dit Cause (`ARCHITECTURE.md` §581). Restent, et chacun est à lui :
 
 - **les conditions générales** : une version nouvelle qui dit Cause, que chaque compte acceptera de nouveau. Le plus simple : la faire quand sa micro-entreprise a son SIREN, pour remplir dans la même version les cases « Qui édite » encore à compléter (une seule acceptation au lieu de deux) ;
-- **l'icône** : le « A » provisoire ne va plus. Trois planches (ci-dessous) : il a jugé les lettres des deux premières trop basiques, la troisième porte des dessins et attend une lettre et un fond, puis `npm run icones` ;
+- ~~**l'icône**~~ : **tranché le 18 novembre 2026, le C de la première planche**, installé le jour même (`ARCHITECTURE.md` §586) ;
 - **l'adresse d'envoi des courriels** : le nom affiché dit Cause, l'adresse reste celle de sa variable `COURRIEL_EXPEDITEUR`, à passer sur cause.fr quand l'Afnic aura accordé le domaine.
 ## ✅ LIVRÉ SUR `main` : FAIRE SIGNER LA FICHE D'ENTRETIEN (17 novembre 2026)
 
@@ -163,7 +167,9 @@ Le produit est juste ; ce sont les deux motifs à corriger, dans un lot à part
 (accepter `\d+(er)? `). D'ici là, ces deux rouges ne bloquent personne : le
 garde-fou les reconnaît comme préexistants.
 
-## ⏳ UNE PLANCHE À REGARDER : L'ICÔNE DE CAUSE, EN DESSIN (17 novembre 2026)
+## ~~⏳ UNE PLANCHE À REGARDER : L'ICÔNE DE CAUSE, EN DESSIN (17 novembre 2026)~~ TRANCHÉ LE 18 NOVEMBRE : LE C DE LA PREMIÈRE PLANCHE (« JE PRENDS LA C DE LA PREMIÈRE PLANCHE »), INSTALLÉ LE 18 NOVEMBRE
+
+**Installé** (`ARCHITECTURE.md` §586) : `public/icone-source.svg` porte le C, `npm run icones` a refait les icônes et le favicon. Les deux défauts notés plus bas pour l'installation (le crème écrit en dur pour Android, le motif réduit à 60 %) ont disparu avec la marge : la source garde elle-même son dessin dans le cercle d'Android. Les dessins (H, I, J) et les lettres D à G sont écartés ; les planches restent, elles racontent le chemin. **Pas vu sur un vrai téléphone** : à regarder une fois l'appli réinstallée sur son écran d'accueil.
 
 **Sa réponse du même jour devant la deuxième planche (les lettres), et elle
 change la demande :** *« Ok, très bien, mais là tu m'as fait un truc hyper
