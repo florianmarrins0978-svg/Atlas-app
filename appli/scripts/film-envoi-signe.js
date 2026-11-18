@@ -40,8 +40,9 @@
    CE QUI EST DU MONTAGE, ET PAS DE L'APPLI. La feuille monte et redescend
    (dans l'appli elle apparaît d'un coup), la case des quatorze jours prend
    sa place en glissant, et le passage de la page du client à son devis (le
-   devis qui paraît sous la signature, la signature qui s'y pose) est une
-   image : dans l'appli, le client ouvre son PDF et la trouve dedans. La
+   devis qui paraît sous la signature, la signature qui se soulève avec son
+   ombre et retombe dans l'encadré) est une image : dans l'appli, le client
+   ouvre son PDF et la trouve dedans. La
    caméra aussi, qui s'approche à peine pour la date et recule quand la
    feuille monte : elle ne coupe aucun mot.
    D'un écran à l'autre, un fondu court et rien d'autre : glisser, empiler
@@ -82,7 +83,11 @@
   var entre = function (a, b, p) { return a + (b - a) * p; };
   // ARRIVE : ce qui entre à l'écran part vite et se pose longuement (la
   // feuille). SORT : ce qui s'en va prend son élan d'abord.
-  var VA_ET_VIENT = courbe(.5, 0, .2, 1), ARRIVE = courbe(.2, .8, .2, 1), SORT = courbe(.3, 0, .1, 1), TOMBE = courbe(.65, 0, .45, 1);
+  var VA_ET_VIENT = courbe(.5, 0, .2, 1), ARRIVE = courbe(.2, .8, .2, 1), SORT = courbe(.3, 0, .1, 1);
+  // Ce qu'on lance en l'air ralentit jusqu'en haut, et ce qui tombe accélère
+  // jusqu'au contact : il n'y a ni pause en haut ni freinage en bas.
+  var lance = function (p) { return 1 - (1 - p) * (1 - p); }, tombe = function (p) { return Math.pow(p, 2.4); };
+  var IMAGE = 1 / 60;
 
   // ── La scène : un écran de 390 × 664. La caméra porte la page du client ;
   // le devis, la signature qui voyage et la feuille sont posés sur l'écran
@@ -200,10 +205,33 @@
   var dessin = toile.querySelector("svg");
   dessin.querySelector("path").remove();
   var plume = poserTraits(dessin).map(function (p) { var l = p.getTotalLength(); p.setAttribute("stroke-dasharray", l + " " + l); return { trait: p, longueur: l }; });
-  // Le temps de chaque trait suit sa longueur, à l'allure d'une main, avec un
-  // souffle à chaque levée de plume.
-  var LEVEE = 60, tempsDe = function (p) { return Math.max(18, p.longueur); };
-  var totalTraits = plume.reduce(function (s, p) { return s + tempsDe(p); }, 0) + LEVEE * (plume.length - 1);
+  // La plume, geste par geste : quel trait, jusqu'à quelle part de sa
+  // longueur, en combien d'images, à quelle allure ; entre deux, la plume
+  // levée. Une main ne va pas d'un pas égal, et surtout elle ne freine pas
+  // là où elle s'élance : le trait de sortie et le soulignement accélèrent
+  // jusqu'au bout et s'arrêtent net (relecture du 18 novembre : ils
+  // traînaient, c'était le passage le plus lent du paraphe).
+  var main = function (q) { return VA_ET_VIENT(q) * .5 + q * .5; };        // part, prend son élan, freine
+  var pente = function (f) { return (f(1) - f(.999)) / .001; };
+  // Les lettres vont comme le début d'un trait entier, coupé avant qu'il
+  // freine : le trait de sortie les prolonge, il repart à la vitesse où
+  // elles finissent et accélère.
+  var SORTIE = TRAITS[1].lastIndexOf("C"), partDesLettres = (function () { var e = svg("path", { d: TRAITS[1].slice(0, SORTIE) }, dessin), l = e.getTotalLength(); e.remove(); return l / plume[1].longueur; })();
+  var coupe = (function () { var a = 0, b = 1, m; for (var i = 0; i < 40; i++) { m = (a + b) / 2; if (main(m) < partDesLettres) a = m; else b = m; } return (a + b) / 2; })();
+  var lettres = function (q) { return main(q * coupe) / main(coupe); };
+  var IMAGES_DES_LETTRES = 32.1 * coupe, IMAGES_DE_LA_SORTIE = 4.5;
+  var entree = pente(lettres) * (partDesLettres / IMAGES_DES_LETTRES) * IMAGES_DE_LA_SORTIE / (1 - partDesLettres);
+  var GESTES = [
+    { trait: 0, jusqua: 1, images: 13, allure: main },                                        // le L
+    { images: 4.2 },
+    { trait: 1, jusqua: partDesLettres, images: IMAGES_DES_LETTRES, allure: lettres },        // « emaire »
+    { trait: 1, jusqua: 1, images: IMAGES_DE_LA_SORTIE, allure: function (w) { return entree * w + (1 - entree) * w * w; } },
+    { images: 6.5 },
+    { trait: 2, jusqua: 1, images: 2, allure: function (w) { return w; } },                   // le point du i
+    { images: 6.5 },
+    { trait: 3, jusqua: 1, images: 10, allure: function (w) { return Math.pow(w, 1.3); } }    // le soulignement
+  ];
+  var DUREE_DU_TRACE = GESTES.reduce(function (s, g) { return s + g.images; }, 0) * IMAGE;
 
   // ── L'accord donné : sa signature dans son cadre ─────────────────────────
   var image = accepte.querySelector('[data-atlas="signature-donnee"] img');
@@ -213,12 +241,16 @@
   var griffe = svg("svg", { id: "griffe", viewBox: "20 20 300 120" }, plateau); poserTraits(griffe);
 
   // ── Le déroulé, en secondes ──────────────────────────────────────────────
-  var T = {
-    approche: .2, date: .74, coche: 1.36, accepte: 1.86, feuille: 1.96,
-    signe: 2.66, signeFin: 3.96, valide: 4.26, envoi: 4.36, range: 4.72,
-    leve: 5.85, devis: 5.93, tombe: 6.24, pose: 6.6, mention: 6.7
-  };
-  var DUREE = 7.4;
+  // Chaque instant se compte depuis celui qui le précède : raccourcir un
+  // geste avance tous les suivants sans changer leurs écarts.
+  var T = { approche: .2, date: .74, coche: 1.36, accepte: 1.74, feuille: 1.96, signe: 2.66 };
+  T.signeFin = T.signe + DUREE_DU_TRACE; T.valide = T.signeFin + .3; T.envoi = T.valide + .1; T.range = T.envoi + .36;
+  // La fin. La signature se décolle seule, page du client encore pleine
+  // (8 images) ; le devis paraît (16 images) pendant qu'elle finit de
+  // monter ; en haut elle retombe aussitôt, en 12 images ; la mention suit
+  // le contact de 7 images.
+  T.leve = T.range + 1.13; T.devis = T.leve + 6 * IMAGE; T.tombe = T.devis + 16 * IMAGE; T.pose = T.tombe + 12 * IMAGE; T.mention = T.pose + 7 * IMAGE;
+  var DUREE = Math.ceil((T.mention + 12 * IMAGE + .65) * 60) / 60;
 
   // Ce que la caméra cadre : [x, y, largeur] de la page. De près, elle laisse
   // l'en-tête et garde tout le reste, cartes comprises : la page tient déjà
@@ -236,9 +268,12 @@
     var a = CADRES[i], b = CADRES[i + 1], p = (b[2] || doux)(part(t, a[0], b[0])), A = reglage(a[1]), B = reglage(b[1]);
     camera.style.transform = "translate(" + entre(A[1], B[1], p).toFixed(3) + "px," + entre(A[2], B[2], p).toFixed(3) + "px) scale(" + entre(A[0], B[0], p).toFixed(5) + ")";
   };
-  var appuyer = function (bouton, t, quand) {
-    // L'aller en 70 ms, le retour en 190 : les durées de l'appli.
-    var p = t < quand + .08 ? doux(part(t, quand, quand + .07)) : 1 - doux(part(t, quand + .08, quand + .27));
+  // Un bouton reste enfoncé tant que le doigt est dessus, et ne se relâche
+  // qu'au moment où l'appli réagit. L'aller en 70 ms, le retour en 190 : les
+  // durées de l'appli. Sans rien pour montrer le doigt, c'est la tenue qui
+  // fait voir l'appui : à 100 ms, la relecture ne le voyait pas.
+  var appuyer = function (bouton, t, pose, leve) {
+    var p = t < leve ? doux(part(t, pose, pose + .07)) : 1 - doux(part(t, leve, leve + .19));
     bouton.style.transform = "scale(" + (1 - .025 * p).toFixed(4) + ")"; bouton.style.setProperty("--appui", (.14 * p).toFixed(3));
   };
 
@@ -248,6 +283,13 @@
   var rectangle = function (e) { var r = e.getBoundingClientRect(), o = plateau.getBoundingClientRect(); return { x: r.left - o.left, y: r.top - o.top, l: r.width }; };
   var DEPART = rectangle(signee), largeurPosee = ENCADRE.h * 300 / 120;
   var ARRIVEE = { x: (ENCADRE.x + (ENCADRE.l - largeurPosee) / 2 - VUE.x) * ZOOM, y: (ENCADRE.y - VUE.y) * ZOOM, l: largeurPosee * ZOOM };
+  // En l'air, juste avant de tomber : à l'aplomb de l'encadré, un sixième
+  // plus grande que posée, et assez haut pour que son encre (elle descend
+  // jusqu'à 89 % de sa hauteur) reste au-dessus du bord de l'encadré. Plus
+  // bas, elle y était déjà à moitié et la chute se lisait comme un
+  // ajustement (relecture du 18 novembre).
+  var EN_L_AIR = { l: ARRIVEE.l * 1.16 };
+  EN_L_AIR.x = ARRIVEE.x + (ARRIVEE.l - EN_L_AIR.l) / 2; EN_L_AIR.y = ARRIVEE.y - .89 * EN_L_AIR.l * 120 / 300;
 
   window.DUREE = DUREE;
   window.INSTANTS = T;
@@ -265,49 +307,54 @@
     droit.style.opacity = (1 - doux(part(g, 0, .45))).toFixed(3); caseDelai.style.opacity = doux(part(g, .4, 1)).toFixed(3);
     coche.checked = t >= T.coche;
     // 2. « J'accepte ce devis » : la feuille monte, la page recule.
-    appuyer(boutonPage, t, T.accepte);
+    appuyer(boutonPage, t, T.accepte, T.feuille);
     var monte = t < T.range ? ARRIVE(part(t, T.feuille, T.feuille + .4)) : 1 - SORT(part(t, T.range, T.range + .34));
     voile.style.display = monte > 0 ? "" : "none";
     voile.style.backgroundColor = "rgba(0,0,0," + (.35 * monte).toFixed(3) + ")";
     feuille.style.transform = "translateY(" + ((1 - monte) * H_FEUILLE).toFixed(2) + "px)";
     // 3. Il signe. L'invite s'efface au premier trait, « Effacer » arrive.
-    var avance = part(t, T.signe, T.signeFin) * totalTraits, fait = 0;
+    var trace = plume.map(function () { return null; }), debut = T.signe;
+    GESTES.forEach(function (g) {
+      if (g.allure && t > debut) {
+        var depuis = trace[g.trait] || 0;
+        trace[g.trait] = depuis + (g.jusqua - depuis) * g.allure(part(t, debut, debut + g.images * IMAGE));
+      }
+      debut += g.images * IMAGE;
+    });
     plume.forEach(function (p, i) {
-      var q = borne((avance - fait) / tempsDe(p));
-      // Une main part et freine : chaque trait a son élan. Le point, lui, se
-      // pose d'un coup.
-      p.trait.setAttribute("stroke-dashoffset", (p.longueur * (1 - (p.longueur < 18 ? q : VA_ET_VIENT(q) * .5 + q * .5))).toFixed(2));
-      p.trait.style.visibility = avance > fait ? "visible" : "hidden";
-      fait += tempsDe(p) + LEVEE;
+      p.trait.style.visibility = trace[i] === null ? "hidden" : "visible";
+      p.trait.setAttribute("stroke-dashoffset", (p.longueur * (1 - (trace[i] || 0))).toFixed(2));
     });
     var commence = doux(part(t, T.signe, T.signe + .16));
     invite.style.opacity = (1 - commence).toFixed(3); effacer.style.opacity = commence.toFixed(3);
     // 4. Il accepte : le bouton dit « Envoi… », puis la feuille se range. La
     // page a déjà changé derrière elle : en descendant, c'est l'accord
     // qu'elle découvre.
-    appuyer(boutonFeuille, t, T.valide);
+    appuyer(boutonFeuille, t, T.valide, T.envoi);
     boutonFeuille.firstChild.nodeValue = t >= T.envoi ? "Envoi…" : "J'accepte ce devis";
     boutonFeuille.style.opacity = t >= T.envoi ? ".5" : "1";
     var note = doux(part(t, T.range - .06, T.range + .08));
     accepte.style.opacity = note.toFixed(3); accepte.style.visibility = note > 0 ? "visible" : "hidden";
     page.style.visibility = note < 1 ? "visible" : "hidden";
-    // 5. La signature se décolle de son cadre et vient vers nous pendant que
-    // le devis paraît dessous dans un fondu court : à sa hauteur il n'a que
-    // du papier blanc et son encadré, aucun texte ne se mêle à elle. Puis
-    // elle tombe dans l'encadré « Bon pour accord » en rapetissant, comme on
-    // pose un tampon : en l'air elle est plus grande que posée. La mention du
-    // PDF signé suit.
-    var parait = doux(part(t, T.devis, T.devis + .26));
+    // 5. La signature se décolle de son cadre, seule d'abord, pour qu'on la
+    // voie quitter la page du client ; le devis paraît dessous dans un fondu
+    // court pendant qu'elle finit de monter. Elle monte comme ce qu'on lance
+    // (elle ralentit jusqu'en haut), s'y trouve au-dessus de l'encadré « Bon
+    // pour accord », plus grande que posée, sur du papier blanc ; et elle y
+    // retombe aussitôt, tout droit, en accélérant jusqu'au contact : c'est
+    // l'arrêt net qui fait le coup de tampon. Son ombre s'ouvre en montant et
+    // se referme au contact. La mention du PDF signé suit.
+    var parait = doux(part(t, T.devis, T.tombe));
     devis.style.visibility = parait > 0 ? "visible" : "hidden";
     devis.style.opacity = parait.toFixed(3);
-    var leve = doux(part(t, T.leve, T.devis + .26)), tombe = TOMBE(part(t, T.tombe, T.pose));
-    var enLAir = { x: DEPART.x + DEPART.l / 2, y: DEPART.y - 14, l: ARRIVEE.l * 1.11 };
-    var gl = entre(entre(DEPART.l, enLAir.l, leve), ARRIVEE.l, tombe), centre = entre(enLAir.x, ARRIVEE.x + ARRIVEE.l / 2, tombe);
-    var haut = entre(entre(DEPART.y, enLAir.y, leve), ARRIVEE.y, tombe);
-    griffe.style.transform = "translate(" + (centre - gl / 2).toFixed(3) + "px," + haut.toFixed(3) + "px) scale(" + (gl / 300).toFixed(5) + ")";
+    var envol = lance(part(t, T.leve, T.tombe)), chute = tombe(part(t, T.tombe, T.pose)), enLAir = envol * (1 - chute);
+    var gl = entre(entre(DEPART.l, EN_L_AIR.l, envol), ARRIVEE.l, chute), centre = entre(DEPART.x + DEPART.l / 2, EN_L_AIR.x + EN_L_AIR.l / 2, envol);
+    var haut = entre(entre(DEPART.y, EN_L_AIR.y, envol), ARRIVEE.y, chute), echelle = gl / 300;
+    griffe.style.transform = "translate(" + (centre - gl / 2).toFixed(3) + "px," + haut.toFixed(3) + "px) scale(" + echelle.toFixed(5) + ")";
+    griffe.style.filter = enLAir > .004 ? "drop-shadow(0 " + (9 * enLAir / echelle).toFixed(2) + "px " + (6 * enLAir / echelle).toFixed(2) + "px rgba(28,28,26," + (.3 * enLAir).toFixed(3) + "))" : "none";
     griffe.style.visibility = t >= T.leve ? "visible" : "hidden";
     signee.style.visibility = t >= T.leve ? "hidden" : "visible";
-    mention.style.opacity = doux(part(t, T.mention, T.mention + .25)).toFixed(3);
+    mention.style.opacity = doux(part(t, T.mention, T.mention + 12 * IMAGE)).toFixed(3);
   };
   window.poser(Number(new URLSearchParams(location.search).get("t")) || 0);
 })();

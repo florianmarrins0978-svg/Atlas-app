@@ -289,7 +289,7 @@ Prendre le broyeur. »
 accepter le devis, il y a le petit truc pour signer électroniquement qui
 apparaît. Il signe et ensuite sa signature vient s'apposer sur le devis. Ça
 serait bien que tu mettes cette animation sur le site. »* Le téléphone
-d'Envoyez joue `nov-film-envoi-signe` (7,4 s, `appli/scripts/film-envoi-signe.cjs`) :
+d'Envoyez joue `nov-film-envoi-signe` (7,3 s, `appli/scripts/film-envoi-signe.cjs`) :
 la date, la case des quatorze jours, « J'accepte ce devis », la feuille « Votre
 signature » qui monte, le paraphe qui se trace, « C'est noté » avec la
 signature dans son cadre, puis le devis paraît et la signature tombe dans
@@ -300,6 +300,13 @@ autre session) avec le chantier de Mr. Lemaire, il ne filme pas l'appli. **Il
 est à refaire en filmant l'appli le jour où elle est livrée**, et à revoir si
 la planche change d'ici là. Le paraphe « Lemaire » est de moi. Les phrases du
 chapitre n'ont pas bougé : elles ne parlent pas de signature.
+
+**Vu en faisant ce film, pour qui code la signature :** sur le PDF du devis, le
+filet qui ferme le corps du document traverse le haut de l'encadré « Bon pour
+accord » (visible sur `appli/vente/images/nov-devis.jpg`, et sur les deux PDF
+de la planche B). Tant que l'encadré est vide, il ne gêne pas ; avec une
+signature dedans, il passe sur son haut. Pas touché ici (le film montre le PDF
+tel qu'il est) : à regarder dans le lot de la signature.
 
 **Ce qu'il a à dire :** si ces passages lui vont, s'il garde ce mouvement, ce
 qu'il en retire, et ce qui accroche sur son iPhone. Si la carte et l'écran
